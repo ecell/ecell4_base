@@ -28,7 +28,7 @@ public:
     typedef typename particle_container_type::species_id_type species_id_type;
     typedef typename particle_container_type::position_type position_type;
     typedef typename particle_container_type::particle_shape_type particle_shape_type;
-    typedef typename particle_container_type::species_info_type species_info_type;
+    typedef typename particle_container_type::molecule_info_type molecule_info_type;
     typedef typename particle_container_type::length_type length_type;
     typedef typename particle_container_type::particle_id_type particle_id_type;
     typedef typename particle_container_type::particle_type particle_type;
@@ -94,7 +94,7 @@ public:
         }
 
         const species_id_type& species_id(pp.second.sid());
-        const species_info_type species(tx_.find_species(species_id));
+        const molecule_info_type species(tx_.find_molecule_info(species_id));
         if (species.D == 0.)
             return true;
 
@@ -159,7 +159,7 @@ public:
     }
 
 private:
-    position_type drawR_free(species_info_type const& species)
+    position_type drawR_free(molecule_info_type const& species)
     {
         return tx_.get_structure(species.structure_id)->bd_displacement(std::sqrt(2.0 * species.D * dt_), rng_);
     }
@@ -192,7 +192,7 @@ private:
 
                 case 1:
                     {
-                        const species_info_type s0(tx_.get_species(products[0]));
+                        const molecule_info_type s0(tx_.get_molecule_info(products[0]));
                         const particle_id_pair new_p(
                             pp.first, particle_type(products[0],
                                 pp.second.position(), s0.radius, s0.D));
@@ -230,8 +230,8 @@ private:
                     {
                         const species_id_type& product_id0(products[0]),
                             product_id1(products[1]);
-                        const species_info_type s0(tx_.get_species(product_id0)),
-                                s1(tx_.get_species(product_id1));
+                        const molecule_info_type s0(tx_.get_molecule_info(product_id0)),
+                                s1(tx_.get_molecule_info(product_id1));
                         const Real D01(s0.D + s1.D);
                         const length_type r01(s0.radius + s1.radius);
                         int i = max_retry_count_;
@@ -314,8 +314,8 @@ private:
             return false;
         }
 
-        const species_info_type s0(tx_.find_species(pp0.second.sid())),
-                s1(tx_.find_species(pp1.second.sid()));
+        const molecule_info_type s0(tx_.find_molecule_info(pp0.second.sid())),
+                s1(tx_.find_molecule_info(pp1.second.sid()));
         const length_type r01(s0.radius + s1.radius);
 
         const Real rnd(rng_.random());
@@ -348,7 +348,7 @@ private:
                 case 1:
                     {
                         const species_id_type product(products[0]);
-                        const species_info_type sp(tx_.get_species(product));
+                        const molecule_info_type sp(tx_.get_molecule_info(product));
 
                         const position_type new_pos(
                             tx_.apply_boundary(

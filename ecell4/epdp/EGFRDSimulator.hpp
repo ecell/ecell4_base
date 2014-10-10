@@ -201,7 +201,7 @@ public:
     typedef typename world_type::traits_type::rng_type rng_type;
     typedef typename world_type::traits_type::particle_type particle_type;
     typedef typename world_type::traits_type::D_type D_type;
-    typedef typename world_type::traits_type::species_info_type species_info_type;
+    typedef typename world_type::traits_type::molecule_info_type molecule_info_type;
     typedef typename world_type::traits_type::species_id_type species_id_type;
     typedef typename world_type::traits_type::structure_type structure_type;
     typedef typename world_type::particle_shape_type particle_shape_type;
@@ -587,7 +587,7 @@ protected:
         {
             boost::shared_ptr<structure_type> const _structure(
                 world_.get_structure(
-                    world_.find_species(
+                    world_.find_molecule_info(
                         domain.particles()[0].second.sid())
                     .structure_id));
             
@@ -649,7 +649,7 @@ protected:
     //                            time_type dt) const
     //     {
     //         boost::shared_ptr<structure_type> const _structure(
-    //             world_.find_species(
+    //             world_.find_molecule_info(
     //                 domain.particles()[0].second.sid())
     //             .structure_id);
     //
@@ -719,7 +719,7 @@ protected:
         {
             boost::shared_ptr<structure_type> const _structure(
                 world_.get_structure(
-                    world_.find_species(
+                    world_.find_molecule_info(
                         domain.particles()[0].second.sid())
                     .structure_id));
             
@@ -786,7 +786,7 @@ protected:
         {
             boost::shared_ptr<structure_type> const _structure(
                 world_.get_structure(
-                    world_.find_species(
+                    world_.find_molecule_info(
                         domain.particles()[0].second.sid()).structure_id));
             
             cylindrical_surface_type const* const structure(
@@ -853,7 +853,7 @@ protected:
         {
             boost::shared_ptr<structure_type> const _structure(
                 world_.get_structure(
-                    world_.find_species(
+                    world_.find_molecule_info(
                         domain.particles()[0].second.sid())
                     .structure_id));
 
@@ -1544,7 +1544,7 @@ protected:
             domain_kind& kind;
         };
 
-        species_info_type const& species((*base_type::world_).find_species(p.second.sid()));
+        molecule_info_type const& species((*base_type::world_).find_molecule_info(p.second.sid()));
         dynamic_cast<particle_simulation_structure_type const&>(*(*base_type::world_).get_structure(species.structure_id)).accept(factory(this, p, did, new_single, kind));
         boost::shared_ptr<domain_type> const retval(new_single);
         domains_.insert(std::make_pair(did, retval));
@@ -1640,7 +1640,7 @@ protected:
             domain_kind& kind;
         };
 
-        species_info_type const& species((*base_type::world_).find_species(p0.second.sid()));
+        molecule_info_type const& species((*base_type::world_).find_molecule_info(p0.second.sid()));
         dynamic_cast<particle_simulation_structure_type&>(*(*base_type::world_).get_structure(species.structure_id)).accept(factory(this, p0, p1, com, iv, shell_size, did, new_pair, kind));
 
         boost::shared_ptr<domain_type> const retval(new_pair);
@@ -2106,7 +2106,7 @@ protected:
     bool attempt_single_reaction(single_type& domain)
     {
         const particle_id_pair reactant(domain.particle());
-        const species_info_type reactant_species((*base_type::world_).find_species(reactant.second.sid()));
+        const molecule_info_type reactant_species((*base_type::world_).find_molecule_info(reactant.second.sid()));
         reaction_rules const& rules((*base_type::network_rules_).query_reaction_rule(reactant.second.sid()));
         if (::size(rules) == 0)
         {
@@ -2132,8 +2132,8 @@ protected:
         case 1: 
             {
                 species_id_type const& product_id0(r.get_products()[0]);
-                species_info_type const& product_species(
-                    (*base_type::world_).get_species(product_id0));
+                molecule_info_type const& product_species(
+                    (*base_type::world_).get_molecule_info(product_id0));
 
                 if (reactant_species.radius < product_species.radius)
                     clear_volume(::shape(reactant.second), domain.id());
@@ -2166,9 +2166,9 @@ protected:
             {
                 species_id_type const& product_id0(r.get_products()[0]);
                 species_id_type const& product_id1(r.get_products()[1]);
-                species_info_type const* const product_species[] = {
-                    &(*base_type::world_).get_species(product_id0),
-                    &(*base_type::world_).get_species(product_id1)
+                molecule_info_type const* const product_species[] = {
+                    &(*base_type::world_).get_molecule_info(product_id0),
+                    &(*base_type::world_).get_molecule_info(product_id1)
                 };
 
                 D_type const D0(product_species[0]->D), D1(product_species[1]->D);
@@ -3298,8 +3298,8 @@ protected:
                 case 1:
                     {
                         species_id_type const& new_species_id(r.get_products()[0]);
-                        species_info_type const& new_species(
-                            (*base_type::world_).get_species(new_species_id));
+                        molecule_info_type const& new_species(
+                            (*base_type::world_).get_molecule_info(new_species_id));
 
                         // calculate new R
                         position_type const new_com(

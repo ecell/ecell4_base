@@ -67,7 +67,6 @@ struct WorldTraitsBase
     typedef ecell4::Species::serial_type species_id_type; // std::string
     typedef ecell4::Particle particle_type;
     typedef ecell4::Position3 position_type;
-    // typedef ecell4::Position3 point_type;
     typedef ecell4::GSLRandomNumberGenerator rng_type;
     typedef ecell4::Model model_type;
 
@@ -79,7 +78,7 @@ struct WorldTraitsBase
     };
 
     typedef MoleculeInfo molecule_info_type;
-    typedef MoleculeInfo species_info_type;
+    // typedef MoleculeInfo species_info_type;
     // typedef SpeciesInfo<species_id_type, D_type, length_type, structure_id_type>
     //     species_info_type;
 
@@ -220,7 +219,6 @@ public:
     typedef ParticleContainerBase<World> base_type;
     typedef ParticleContainer<traits_type> particle_container_type;
     typedef typename traits_type::length_type length_type;
-    typedef typename traits_type::species_info_type species_info_type;
     typedef typename traits_type::molecule_info_type molecule_info_type;
     typedef typename traits_type::position_type position_type;
     typedef typename traits_type::particle_type particle_type;
@@ -238,19 +236,19 @@ public:
     typedef typename traits_type::model_type model_type;
 
 protected:
-    typedef std::map<species_id_type, species_info_type> species_map;
+    typedef std::map<species_id_type, molecule_info_type> molecule_info_map;
     typedef std::map<structure_id_type, boost::shared_ptr<structure_type> > structure_map;
     typedef std::set<particle_id_type> particle_id_set;
     typedef std::map<species_id_type, particle_id_set> per_species_particle_id_set;
-    typedef select_second<typename species_map::value_type> species_second_selector_type;
+    typedef select_second<typename molecule_info_map::value_type> species_second_selector_type;
     typedef select_second<typename structure_map::value_type> surface_second_selector_type;
 
 public:
     typedef boost::transform_iterator<species_second_selector_type,
-            typename species_map::const_iterator> species_iterator;
+            typename molecule_info_map::const_iterator> molecule_info_iterator;
     typedef boost::transform_iterator<surface_second_selector_type,
             typename structure_map::const_iterator> surface_iterator;
-    typedef sized_iterator_range<species_iterator> species_range;
+    typedef sized_iterator_range<molecule_info_iterator> molecule_info_range;
     typedef sized_iterator_range<surface_iterator> structures_range;
 
 public:
@@ -277,9 +275,9 @@ public:
     virtual particle_id_pair new_particle(species_id_type const& sid,
             position_type const& pos)
     {
-        species_info_type const& species(get_species(sid));
+        molecule_info_type const& minfo(get_molecule_info(sid));
         particle_id_pair retval(pidgen_(),
-            particle_type(sid, pos, species.radius, species.D));
+            particle_type(sid, pos, minfo.radius, minfo.D));
         update_particle(retval);
         return retval;
     }
@@ -298,7 +296,7 @@ public:
                     j(particle_pool_.find(pi_pair.second.sid()));
                 if (j == particle_pool_.end())
                 {
-                    this->add_species(pi_pair.second.sid());
+                    this->register_species(pi_pair.second.sid());
                     j = particle_pool_.find(pi_pair.second.sid());
                 }
                 (*j).second.insert(pi_pair.first);
@@ -312,7 +310,7 @@ public:
             k(particle_pool_.find(pi_pair.second.sid()));
         if (k == particle_pool_.end())
         {
-            this->add_species(pi_pair.second.sid());
+            this->register_species(pi_pair.second.sid());
             k = particle_pool_.find(pi_pair.second.sid());
         }
         (*k).second.insert(pi_pair.first);
@@ -332,22 +330,22 @@ public:
         return true;
     }
 
-    virtual species_info_type const& get_species(species_id_type const& sid)
+    virtual molecule_info_type const& get_molecule_info(species_id_type const& sid)
     {
-        typename species_map::const_iterator i(species_map_.find(sid));
-        if (species_map_.end() == i)
+        typename molecule_info_map::const_iterator i(molecule_info_map_.find(sid));
+        if (molecule_info_map_.end() == i)
         {
-            return this->add_species(sid);
+            return this->register_species(sid);
             // throw not_found(std::string("Unknown species (id=")
             //     + boost::lexical_cast<std::string>(sid) + ")");
         }
         return (*i).second;
     }
 
-    species_info_type const& find_species(species_id_type const& sid) const
+    virtual molecule_info_type const& find_molecule_info(species_id_type const& sid) const
     {
-        typename species_map::const_iterator i(species_map_.find(sid));
-        if (species_map_.end() == i)
+        typename molecule_info_map::const_iterator i(molecule_info_map_.find(sid));
+        if (molecule_info_map_.end() == i)
         {
             throw not_found(std::string("Unknown species (id=")
                 + boost::lexical_cast<std::string>(sid) + ")");
@@ -355,12 +353,14 @@ public:
         return (*i).second;
     }
 
-    species_range get_species() const
+    molecule_info_range get_molecule_info_range() const
     {
-        return species_range(
-            species_iterator(species_map_.begin(), species_second_selector_type()),
-            species_iterator(species_map_.end(), species_second_selector_type()),
-            species_map_.size());
+        return molecule_info_range(
+            molecule_info_iterator(
+                molecule_info_map_.begin(), species_second_selector_type()),
+            molecule_info_iterator(
+                molecule_info_map_.end(), species_second_selector_type()),
+            molecule_info_map_.size());
     }
 
     bool add_structure(boost::shared_ptr<structure_type> surface)
@@ -368,12 +368,14 @@ public:
         return structure_map_.insert(std::make_pair(surface->id(), surface)).second;
     }
 
-    virtual boost::shared_ptr<structure_type> get_structure(structure_id_type const& id) const
+    virtual boost::shared_ptr<structure_type> get_structure(
+        structure_id_type const& id) const
     {
         typename structure_map::const_iterator i(structure_map_.find(id));
         if (structure_map_.end() == i)
         {
-            throw not_found(std::string("Unknown surface (id=") + boost::lexical_cast<std::string>(id) + ")");
+            throw not_found(std::string("Unknown surface (id=")
+                + boost::lexical_cast<std::string>(id) + ")");
         }
         return (*i).second;
     }
@@ -392,7 +394,8 @@ public:
             particle_pool_.find(sid));
         if (i == particle_pool_.end())
         {
-            throw not_found(std::string("Unknown species (id=") + boost::lexical_cast<std::string>(sid) + ")");
+            throw not_found(std::string("Unknown species (id=")
+                + boost::lexical_cast<std::string>(sid) + ")");
         }
         return (*i).second;
     }
@@ -643,8 +646,8 @@ public:
     new_particle(const ecell4::Species& sp, const position_type& pos)
     {
         const species_id_type sid(sp.serial());
-        species_info_type const& spinfo(get_species(sid));
-        return new_particle(particle_type(sid, pos, spinfo.radius(), spinfo.D()));
+        molecule_info_type const& minfo(get_molecule_info(sid));
+        return new_particle(particle_type(sid, pos, minfo.radius, minfo.D));
     }
 
     std::pair<std::pair<particle_id_type, particle_type>, bool>
@@ -747,23 +750,15 @@ public:
         return info;
     }
 
-    /** an adapter function to "void add_species(species_info_type const&)".
-     */
+protected:
 
-    const species_info_type& add_species(const species_id_type& sid)
+    const molecule_info_type& register_species(const species_id_type& sid)
     {
-        return this->add_species(ecell4::Species(sid));
-    }
-
-    const species_info_type& add_species(const ecell4::Species& sp)
-    {
+        const ecell4::Species sp(sid);
         molecule_info_type info(get_molecule_info(sp));
-        const species_id_type sid(sp.serial());
-        // species_map_[sid] = spinfo;
-        species_map_.insert(std::make_pair(sid, info));
+        molecule_info_map_.insert(std::make_pair(sid, info));
         particle_pool_[sid] = particle_id_set();
-        // return species_map_[sid];
-        return (*species_map_.find(sid)).second;
+        return (*molecule_info_map_.find(sid)).second;
     }
 
     void add_world_structure()
@@ -781,7 +776,7 @@ public:
 
 private:
     particle_id_generator pidgen_;
-    species_map species_map_;
+    molecule_info_map molecule_info_map_;
     structure_map structure_map_;
     per_species_particle_id_set particle_pool_;
 

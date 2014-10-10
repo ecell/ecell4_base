@@ -102,7 +102,7 @@ public:
     typedef ParticleContainer<Ttraits_> base_type;
     typedef Ttraits_ traits_type;
     typedef typename traits_type::length_type length_type;
-    typedef typename traits_type::species_info_type species_info_type;
+    typedef typename traits_type::molecule_info_type molecule_info_type;
     typedef typename traits_type::position_type position_type;
     typedef typename traits_type::particle_type particle_type;
     typedef typename traits_type::particle_id_type particle_id_type;

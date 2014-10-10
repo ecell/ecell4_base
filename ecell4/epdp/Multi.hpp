@@ -30,7 +30,7 @@ public:
 
     typedef typename traits_type::particle_type particle_type;
     typedef typename traits_type::particle_shape_type particle_shape_type;
-    typedef typename traits_type::species_info_type species_info_type;
+    typedef typename traits_type::molecule_info_type molecule_info_type;
     typedef typename traits_type::species_id_type species_id_type;
     typedef typename traits_type::position_type position_type;
     typedef typename traits_type::particle_id_type particle_id_type;
@@ -70,14 +70,14 @@ public:
         return world_.world_size();
     }
 
-    virtual species_info_type const& find_species(species_id_type const& id) const
+    virtual molecule_info_type const& find_molecule_info(species_id_type const& id) const
     {
-        return world_.find_species(id);
+        return world_.find_molecule_info(id);
     }
 
-    virtual species_info_type const& get_species(species_id_type const& id)
+    virtual molecule_info_type const& get_molecule_info(species_id_type const& id)
     {
-        return world_.get_species(id);
+        return world_.get_molecule_info(id);
     }
 
     virtual boost::shared_ptr<structure_type> get_structure(structure_id_type const& id) const
@@ -236,7 +236,7 @@ public:
 
     typedef typename world_type::particle_type particle_type;
     typedef typename world_type::particle_shape_type particle_shape_type;
-    typedef typename world_type::species_info_type species_info_type;
+    typedef typename world_type::molecule_info_type molecule_info_type;
     typedef typename world_type::species_id_type species_id_type;
     typedef typename world_type::position_type position_type;
     typedef typename world_type::particle_id_type particle_id_type;
@@ -348,7 +348,7 @@ public:
     {
         Real D_max(0.), radius_min(std::numeric_limits<Real>::max());
 
-        BOOST_FOREACH(species_info_type s, world.get_species())
+        BOOST_FOREACH(molecule_info_type s, world.get_molecule_info_range())
         {
             if (D_max < s.D)
                 D_max = s.D;

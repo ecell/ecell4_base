@@ -41,7 +41,7 @@ public:
 
     typedef typename traits_type::particle_type particle_type;
     typedef typename traits_type::particle_shape_type particle_shape_type;
-    typedef typename traits_type::species_info_type species_info_type;
+    typedef typename traits_type::molecule_info_type molecule_info_type;
     typedef typename traits_type::species_id_type species_id_type;
     typedef typename traits_type::position_type position_type;
     typedef typename traits_type::particle_id_type particle_id_type;
@@ -150,14 +150,14 @@ public:
         return pc_.get_structure(id);
     }
 
-    virtual species_info_type const& find_species(species_id_type const& id) const
+    virtual molecule_info_type const& find_molecule_info(species_id_type const& id) const
     {
-        return pc_.find_species(id);
+        return pc_.find_molecule_info(id);
     }
 
-    virtual species_info_type const& get_species(species_id_type const& id)
+    virtual molecule_info_type const& get_molecule_info(species_id_type const& id)
     {
-        return pc_.get_species(id);
+        return pc_.get_molecule_info(id);
     }
 
     virtual ecell4::Integer num_particles() const
@@ -185,7 +185,6 @@ public:
         return make_range_generator<true>(
             make_transform_iterator_range(added_particles_,
                 boost::bind(&TransactionImpl::get_particle, this, _1)));
-            
     }
 
     virtual particle_id_pair_generator* get_removed_particles() const

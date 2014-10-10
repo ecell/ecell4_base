@@ -23,7 +23,7 @@ public:
 
     typedef typename traits_type::particle_type particle_type;
     typedef typename traits_type::particle_shape_type particle_shape_type;
-    typedef typename traits_type::species_info_type species_info_type;
+    typedef typename traits_type::molecule_info_type molecule_info_type;
     typedef typename traits_type::species_id_type species_id_type;
     typedef typename traits_type::position_type position_type;
     typedef typename traits_type::particle_id_type particle_id_type;
@@ -50,8 +50,8 @@ public:
 
     virtual length_type world_size() const = 0;
 
-    virtual species_info_type const& get_species(species_id_type const& id) = 0;
-    virtual species_info_type const& find_species(species_id_type const& id) const = 0;
+    virtual molecule_info_type const& get_molecule_info(species_id_type const& id) = 0;
+    virtual molecule_info_type const& find_molecule_info(species_id_type const& id) const = 0;
 
     virtual boost::shared_ptr<structure_type> get_structure(
         structure_id_type const& id) const = 0;
