@@ -18,6 +18,8 @@
 
 #include <ecell4/core/get_mapper_mf.hpp>
 #include <ecell4/core/Model.hpp>
+#include <ecell4/core/EventScheduler.hpp>
+#include <ecell4/core/SerialIDGenerator.hpp>
 
 #include "utils/array_helper.hpp"
 //#include "utils/get_mapper_mf.hpp"
@@ -30,7 +32,7 @@
 #include "ShellID.hpp"
 #include "DomainID.hpp"
 #include "Shell.hpp"
-#include "EventScheduler.hpp"
+//#include "EventScheduler.hpp"
 #include "PairGreensFunction.hpp"
 #include "ParticleSimulator.hpp"
 #include "MatrixSpace.hpp"
@@ -52,11 +54,12 @@ struct EGFRDSimulatorTraitsBase: public ParticleSimulatorTraitsBase<Tworld_>
 
     typedef ShellID shell_id_type;
     typedef DomainID domain_id_type;
-    typedef SerialIDGenerator<shell_id_type> shell_id_generator;
-    typedef SerialIDGenerator<domain_id_type> domain_id_generator;
+    typedef ecell4::SerialIDGenerator<shell_id_type> shell_id_generator;
+    typedef ecell4::SerialIDGenerator<domain_id_type> domain_id_generator;
     typedef Domain<EGFRDSimulatorTraitsBase> domain_type;
     typedef std::pair<const domain_id_type, boost::shared_ptr<domain_type> > domain_id_pair;
-    typedef EventScheduler<typename base_type::time_type> event_scheduler_type;
+    typedef ecell4::EventScheduler event_scheduler_type; // base_type::time_type == ecell4::Real
+    // typedef EventScheduler<typename base_type::time_type> event_scheduler_type;
 
     typedef typename event_scheduler_type::identifier_type event_id_type;
     typedef typename event_scheduler_type::Event event_type;

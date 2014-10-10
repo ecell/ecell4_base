@@ -18,20 +18,20 @@
 #include <ecell4/epdp/utils/range.hpp>
 #include <ecell4/epdp/World.hpp>
 //#include <ecell4/epdp/ParticleModel.hpp>
-#include <ecell4/epdp/SpeciesType.hpp>
+//#include <ecell4/epdp/SpeciesType.hpp>
 //#include <ecell4/epdp/SpeciesTypeID.hpp>
-#include <ecell4/epdp/CuboidalRegion.hpp>
+//#include <ecell4/epdp/CuboidalRegion.hpp>
 //#include <ecell4/epdp/NetworkRules.hpp>
 //#include <ecell4/epdp/ReactionRule.hpp>
 #include <ecell4/epdp/EGFRDSimulator.hpp>
-#include <ecell4/epdp/NetworkRulesAdapter.hpp>
+//#include <ecell4/epdp/NetworkRulesAdapter.hpp>
 //#include <ecell4/epdp/GSLRandomNumberGenerator.hpp>
 #include <ecell4/core/Model.hpp>
 #include <ecell4/core/RandomNumberGenerator.hpp>
 #include <ecell4/core/NetworkModel.hpp>
 #include <ecell4/core/Species.hpp>
 #include <ecell4/core/ReactionRule.hpp>
-#include <ecell4/core/Model.hpp>
+// #include <ecell4/core/Model.hpp>
 
 
 typedef double Real;

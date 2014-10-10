@@ -12,6 +12,7 @@
 #include <ecell4/core/RandomNumberGenerator.hpp>
 #include <ecell4/core/Model.hpp>
 #include <ecell4/core/extras.hpp>
+#include <ecell4/core/SerialIDGenerator.hpp>
 #include "./ParticleTraits.hpp" // This refers ecell4::Particle
 
 #include "ParticleContainerBase.hpp"
@@ -27,10 +28,10 @@
 #include "generator.hpp"
 #include "filters.hpp"
 //#include "ParticleID.hpp"
-#include "SpeciesTypeID.hpp"
+//#include "SpeciesTypeID.hpp"
 //#include "SpeciesInfo.hpp"
 #include "Defs.hpp"
-#include "SerialIDGenerator.hpp"
+//#include "SerialIDGenerator.hpp"
 #include "Transaction.hpp"
 #include "Structure.hpp"
 #include "Surface.hpp"
@@ -61,17 +62,14 @@ struct WorldTraitsBase
     typedef ecell4::Real length_type;
     typedef ecell4::Real D_type;
     typedef ecell4::Real time_type;
-    // typedef TD_ v_type;
     typedef ecell4::ParticleID particle_id_type;
     typedef ecell4::SerialIDGenerator<particle_id_type> particle_id_generator;
     typedef ecell4::Species::serial_type species_id_type; // std::string
     typedef ecell4::Particle particle_type;
-    typedef Sphere particle_shape_type;
-    typedef std::string structure_id_type;
-    typedef ecell4::Position3 point_type;
-    typedef typename particle_type::position_type position_type;
+    typedef ecell4::Position3 position_type;
+    // typedef ecell4::Position3 point_type;
     typedef ecell4::GSLRandomNumberGenerator rng_type;
-    typedef Structure<Tderived_> structure_type;
+    typedef ecell4::Model model_type;
 
     struct MoleculeInfo
     {
@@ -83,10 +81,14 @@ struct WorldTraitsBase
     typedef MoleculeInfo molecule_info_type;
     typedef MoleculeInfo species_info_type;
     // typedef SpeciesInfo<species_id_type, D_type, length_type, structure_id_type>
-    //     species_info_type; // species_type;
+    //     species_info_type;
 
-    // typedef std::pair<const particle_id_type, particle_type> particle_id_pair;
+    typedef Sphere particle_shape_type;
+    typedef std::string structure_id_type;
+    typedef Structure<Tderived_> structure_type;
+
     typedef std::pair<particle_id_type, particle_type> particle_id_pair;
+    // typedef std::pair<const particle_id_type, particle_type> particle_id_pair;
     typedef std::pair<particle_id_pair, length_type> particle_id_pair_and_distance;
     // typedef unassignable_adapter<particle_id_pair_and_distance, get_default_impl::std::vector> particle_id_pair_and_distance_list;
     typedef std::vector<particle_id_pair_and_distance> particle_id_pair_and_distance_list;
@@ -100,8 +102,6 @@ struct WorldTraitsBase
     typedef CylindricalSurface<Tderived_> cylindrical_surface_type;
     typedef PlanarSurface<Tderived_> planar_surface_type;
     typedef CuboidalRegion<Tderived_> cuboidal_region_type;
-
-    typedef ecell4::Model model_type;
 
     static const Real TOLERANCE = 1e-7;
 };
@@ -331,22 +331,6 @@ public:
         base_type::remove_particle(id);
         return true;
     }
-
-    // void add_species(species_info_type const& species)
-    // {
-    //     species_map_[species.id()] = species;
-    //     particle_pool_[species.id()] = particle_id_set();
-    // }
-
-    // void add_species(
-    //     species_id_type const &sid,
-    //     molecule_info_type const &info,
-    //     structure_id_type structure_id = structure_id_type("world"))
-    // {
-    //     species_info_type sp(sid, info.D, info.radius, structure_id);
-    //     species_map_[sp.id()] = sp;
-    //     particle_pool_[sp.id()] = particle_id_set();
-    // }
 
     virtual species_info_type const& get_species(species_id_type const& sid)
     {
@@ -762,27 +746,6 @@ public:
         molecule_info_type info = {radius, D, structure_id};
         return info;
     }
-
-    // species_info_type get_molecule_info(const ecell4::Species &sp) const
-    // {
-    //     const ecell4::Species::serial_type sid(sp.serial());
-    //     const Real D(std::atof(sp.get_attribute("D").c_str()));
-    //     const Real radius(std::atof(sp.get_attribute("radius").c_str()));
-    //     const typename species_info_type::structure_id_type
-    //         structure_id(
-    //                 sp.has_attribute("structure_id")?
-    //                   sp.get_attribute("structure_id"):
-    //                   structure_id_type("world"));
-    //     return species_info_type(sid, D, radius, structure_id);
-    // }
-
-    // molecule_info_type get_molecule_info(const ecell4::Species &sp) const
-    // {
-    //     const Real radius(std::atof(sp.get_attribute("radius").c_str()));
-    //     const Real D(std::atof(sp.get_attribute("D").c_str()));
-    //     molecule_info_type info = {radius, D};
-    //     return info;
-    // }
 
     /** an adapter function to "void add_species(species_info_type const&)".
      */

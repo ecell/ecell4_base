@@ -9,7 +9,7 @@
 #include "ParticleContainer.hpp"
 #include "ParticleContainerBase.hpp"
 #include "Sphere.hpp"
-#include "BDSimulator.hpp"
+// #include "BDSimulator.hpp"
 #include "BDPropagator.hpp"
 #include "Logger.hpp"
 #include "PairGreensFunction.hpp"
@@ -232,19 +232,21 @@ public:
     typedef Tsim_ simulator_type;
     typedef typename simulator_type::traits_type traits_type;
     typedef Domain<traits_type> base_type;
-    typedef typename traits_type::world_type::particle_type particle_type;
-    typedef typename traits_type::world_type::particle_shape_type particle_shape_type;
-    typedef typename traits_type::world_type::species_info_type species_info_type;
-    typedef typename traits_type::world_type::species_id_type species_id_type;
-    typedef typename traits_type::world_type::position_type position_type;
-    typedef typename traits_type::world_type::particle_id_type particle_id_type;
-    typedef typename traits_type::world_type::length_type length_type;
-    typedef typename traits_type::world_type::size_type size_type;
-    typedef typename traits_type::world_type::structure_type structure_type;
-    typedef typename traits_type::world_type::particle_id_pair particle_id_pair;
-    typedef typename traits_type::world_type::particle_id_pair_and_distance
+    typedef typename traits_type::world_type world_type;
+
+    typedef typename world_type::particle_type particle_type;
+    typedef typename world_type::particle_shape_type particle_shape_type;
+    typedef typename world_type::species_info_type species_info_type;
+    typedef typename world_type::species_id_type species_id_type;
+    typedef typename world_type::position_type position_type;
+    typedef typename world_type::particle_id_type particle_id_type;
+    typedef typename world_type::length_type length_type;
+    typedef typename world_type::size_type size_type;
+    typedef typename world_type::structure_type structure_type;
+    typedef typename world_type::particle_id_pair particle_id_pair;
+    typedef typename world_type::particle_id_pair_and_distance
         particle_id_pair_and_distance;
-    typedef typename traits_type::world_type::particle_id_pair_and_distance_list
+    typedef typename world_type::particle_id_pair_and_distance_list
         particle_id_pair_and_distance_list;
 
     typedef typename traits_type::shell_id_type shell_id_type;
@@ -338,7 +340,22 @@ public:
           shells_(), last_event_(NONE)
     {
         BOOST_ASSERT(dt_factor > 0.);
-        base_type::dt_ = dt_factor_ * BDSimulator<traits_type>::determine_dt(*main_.world());
+        base_type::dt_ = dt_factor_ * determine_dt(*main_.world());
+        // base_type::dt_ = dt_factor_ * BDSimulator<traits_type>::determine_dt(*main_.world());
+    }
+
+    static Real determine_dt(world_type const& world)
+    {
+        Real D_max(0.), radius_min(std::numeric_limits<Real>::max());
+
+        BOOST_FOREACH(species_info_type s, world.get_species())
+        {
+            if (D_max < s.D)
+                D_max = s.D;
+            if (radius_min > s.radius)
+                radius_min = s.radius;
+        }
+        return gsl_pow_2(radius_min * 2) / (D_max * 2);
     }
 
     event_kind const& last_event() const

@@ -1,20 +1,19 @@
 set(CPP_FILES
-    Logger.cpp ConsoleAppender.cpp utils.cpp findRoot.cpp
-    funcSum.cpp GreensFunction1DAbsAbs.cpp GreensFunction1DRadAbs.cpp
+    Logger.cpp ConsoleAppender.cpp utils.cpp findRoot.cpp funcSum.cpp
+    GreensFunction1DAbsAbs.cpp GreensFunction1DRadAbs.cpp
     PairGreensFunction.cpp GreensFunction3D.cpp GreensFunction3DAbs.cpp
     GreensFunction3DAbsSym.cpp GreensFunction3DRadAbsBase.cpp
     GreensFunction3DRadAbs.cpp GreensFunction3DRadInf.cpp
-    GreensFunction3DSym.cpp SphericalBesselGenerator.cpp
-    SpeciesType.cpp
-    StructureType.cpp)
+    GreensFunction3DSym.cpp SphericalBesselGenerator.cpp)
 
 set(HPP_FILES
-    Surface.hpp Multi.hpp Box.hpp Plane.hpp Vector3.hpp ReactionRecord.hpp sorted_list.hpp factorial.hpp ParticleContainerBase.hpp NetworkRulesAdapter.hpp Logger.hpp MatrixSpace.hpp SphericalSurface.hpp DomainFactory.hpp abstract_set.hpp BasicReactionRecorderImpl.hpp SpeciesTypeID.hpp twofold_container.hpp ParticleTraits.hpp DomainID.hpp GreensFunction3D.hpp BDSimulator.hpp geometry.hpp generator.hpp Cylinder.hpp ReactionRecorder.hpp GreensFunction1DAbsAbs.hpp PairGreensFunction.hpp AnalyticalPair.hpp utils.hpp SerialIDGenerator.hpp DomainUtils.hpp EGFRDSimulator.hpp freeFunctions.hpp GreensFunction3DRadAbsBase.hpp Position3Type.hpp Structure.hpp ReactionRuleInfo.hpp CylindricalSurface.hpp BDPropagator.hpp VolumeClearer.hpp funcSum.hpp PyEventScheduler.hpp GreensFunction3DAbs.hpp CylindricalBesselGenerator.hpp World.hpp GreensFunction3DRadAbs.hpp Identifier.hpp GreensFunction3DAbsSym.hpp Point.hpp PlanarSurface.hpp GreensFunction1DRadAbs.hpp OldDefs.hpp CuboidalRegion.hpp AnalyticalSingle.hpp HalfOrderBesselGenerator.hpp EventScheduler.hpp bessel.hpp ShapedDomain.hpp ParticleContainer.hpp ParticleSimulationStructure.hpp ParticleSimulator.hpp Region.hpp ParticleID.hpp SpeciesType.hpp Defs.hpp Pair.hpp Domain.hpp GreensFunction3DSym.hpp NetworkRulesWrapper.hpp DynamicPriorityQueue.hpp filters.hpp ShellID.hpp Shape.hpp Shell.hpp findRoot.hpp ConsoleAppender.hpp GreensFunction.hpp Single.hpp GreensFunction3DRadInf.hpp StructureType.hpp Transaction.hpp linear_algebra.hpp Sphere.hpp exceptions.hpp SphericalBesselGenerator.hpp
+    Surface.hpp Multi.hpp Box.hpp Plane.hpp Vector3.hpp ReactionRecord.hpp sorted_list.hpp factorial.hpp ParticleContainerBase.hpp NetworkRulesAdapter.hpp Logger.hpp MatrixSpace.hpp SphericalSurface.hpp DomainFactory.hpp abstract_set.hpp twofold_container.hpp ParticleTraits.hpp DomainID.hpp geometry.hpp generator.hpp Cylinder.hpp ReactionRecorder.hpp AnalyticalPair.hpp utils.hpp DomainUtils.hpp EGFRDSimulator.hpp freeFunctions.hpp Position3Type.hpp Structure.hpp ReactionRuleInfo.hpp CylindricalSurface.hpp BDPropagator.hpp VolumeClearer.hpp funcSum.hpp World.hpp Identifier.hpp Point.hpp PlanarSurface.hpp OldDefs.hpp CuboidalRegion.hpp AnalyticalSingle.hpp ShapedDomain.hpp ParticleContainer.hpp ParticleSimulationStructure.hpp ParticleSimulator.hpp Region.hpp Defs.hpp Pair.hpp Domain.hpp filters.hpp ShellID.hpp Shape.hpp Shell.hpp findRoot.hpp ConsoleAppender.hpp Single.hpp Transaction.hpp linear_algebra.hpp Sphere.hpp exceptions.hpp
+    GreensFunction3D.hpp GreensFunction3DSym.hpp GreensFunction3DRadInf.hpp SphericalBesselGenerator.hpp GreensFunction1DAbsAbs.hpp PairGreensFunction.hpp GreensFunction3DRadAbsBase.hpp GreensFunction3DAbs.hpp GreensFunction3DRadAbs.hpp GreensFunction3DAbsSym.hpp GreensFunction1DRadAbs.hpp GreensFunction.hpp CylindricalBesselGenerator.hpp HalfOrderBesselGenerator.hpp
     utils/base_type_walker.hpp utils/memberwise_compare.hpp utils/array_helper.hpp utils/range_support.hpp utils/random.hpp utils/pair.hpp utils/fun_wrappers.hpp utils/reset.hpp utils/math.hpp utils/swap.hpp utils/unassignable_adapter.hpp utils/stringizer.hpp utils/array_traits.hpp utils/fun_composition.hpp utils/range.hpp utils/assoc_container_traits.hpp utils/reference_or_instance.hpp utils/pointer_as_ref.hpp utils/get_default_impl.hpp utils/map_adapter.hpp utils/pointer_preds.hpp
     compat.h)
 
-# CPP_FILES BasicNetworkRulesImpl.cpp NetworkRules.cpp
-# HPP_FILES StructureUtils.hpp EGFRDSimulatorFactory.hpp ParticleSimulatorFactory.hpp Model.hpp ParticleModel.hpp BasicNetworkRulesImpl.hpp NetworkRules.hpp ReactionRule.hpp SpeciesInfo.hpp 
+# CPP_FILES BasicNetworkRulesImpl.cpp NetworkRules.cpp SpeciesType.cpp StructureType.cpp
+# HPP_FILES StructureUtils.hpp EGFRDSimulatorFactory.hpp ParticleSimulatorFactory.hpp Model.hpp ParticleModel.hpp BasicNetworkRulesImpl.hpp NetworkRules.hpp ReactionRule.hpp SpeciesInfo.hpp BDSimulator.hpp SpeciesTypeID.hpp SpeciesType.hpp ParticleID.hpp StructureType.hpp bessel.hpp PyEventScheduler.hpp NetworkRulesWrapper.hpp BasicReactionRecorderImpl.hpp DynamicPriorityQueue.hpp EventScheduler.hpp SerialIDGenerator.hpp
 
 find_library(BOOST_REGEX_LIBRARIES boost_regex)
 
