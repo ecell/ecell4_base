@@ -38,6 +38,7 @@ BOOST_FIXTURE_TEST_SUITE(suite, Fixture)
 
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_constructor)
 {
+    ;
 }
 
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_num_species)
@@ -577,7 +578,9 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_structure_update)
     BOOST_CHECK(space.update_structure(Particle(structure, pos, radius, D)));
     BOOST_CHECK_EQUAL(space.list_particles().size(), 1);
     ParticleID pid(sidgen());
-    BOOST_CHECK(space.update_particle(pid, Particle(sp, pos, radius, D)));
+    //XXX: BOOST_CHECK(space.update_particle(pid, Particle(sp, pos, radius, D)));
+    BOOST_CHECK(space.update_voxel(
+        pid, Voxel(sp, space.position2coordinate(pos), radius, D, structure.serial())));
     BOOST_CHECK_EQUAL(space.list_particles().size(), 1);
     BOOST_CHECK_EQUAL(space.list_particles(sp).size(), 1);
     BOOST_CHECK(space.remove_particle(pid));
@@ -598,7 +601,9 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_structure_move)
     BOOST_CHECK_EQUAL(space.list_particles().size(), 2); // TODO -> 0
 
     ParticleID pid(sidgen());
-    BOOST_CHECK(space.update_particle(pid, Particle(sp, pos1, radius, D)));
+    //XXX: BOOST_CHECK(space.update_particle(pid, Particle(sp, pos1, radius, D)));
+    BOOST_CHECK(space.update_voxel(
+        pid, Voxel(sp, space.position2coordinate(pos1), radius, D, structure.serial())));
     BOOST_CHECK_EQUAL(space.list_particles(sp).size(), 1);
     BOOST_CHECK_EQUAL(space.list_particles(structure).size(), 1);
     BOOST_CHECK_EQUAL(space.list_particles().size(), 2); // TODO -> 1
