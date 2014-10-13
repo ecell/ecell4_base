@@ -157,12 +157,10 @@ std::pair<bool, LatticeSimulator::reaction_type> LatticeSimulator::apply_reactio
 
         std::pair<std::pair<ParticleID, Voxel>, bool> new_mol(
             world_->new_voxel_private(product_species, coord));
-        if (new_mol.second)
+        if (!new_mol.second)
         {
-            //XXX: ???
-            return std::pair<bool, reaction_type>(false, reaction);
+            throw IllegalState("no place for the product.");
         }
-
         reaction.products.push_back(
             reaction_type::particle_type(
                 new_mol.first.first,
@@ -179,12 +177,21 @@ std::pair<bool, LatticeSimulator::reaction_type> LatticeSimulator::apply_reactio
 
         std::pair<std::pair<ParticleID, Voxel>, bool> new_mol0(
             world_->new_voxel_private(product_species0, from_coord));
+        if (!new_mol0.second)
+        {
+            throw IllegalState("no place for the first product.");
+        }
         reaction.products.push_back(
             reaction_type::particle_type(
                 new_mol0.first.first,
                 this->private_voxel2voxel(new_mol0.first.second)));
+
         std::pair<std::pair<ParticleID, Voxel>, bool> new_mol1(
             world_->new_voxel_private(product_species1, to_coord));
+        if (!new_mol1.second)
+        {
+            throw IllegalState("no place for the second product.");
+        }
         reaction.products.push_back(
             reaction_type::particle_type(
                 new_mol1.first.first,
@@ -239,6 +246,10 @@ std::pair<bool, LatticeSimulator::reaction_type> LatticeSimulator::apply_reactio
         const Species& product_species(*(products.begin()));
         std::pair<std::pair<ParticleID, Voxel>, bool> new_mol(
             world_->new_voxel_private(product_species, info.first));
+        if (!new_mol.second)
+        {
+            throw IllegalState("no place for the product.");
+        }
         reaction.products.push_back(
             reaction_type::particle_type(
                 new_mol.first.first,
@@ -261,12 +272,21 @@ std::pair<bool, LatticeSimulator::reaction_type> LatticeSimulator::apply_reactio
 
         std::pair<std::pair<ParticleID, Voxel>, bool> new_mol0(
             world_->new_voxel_private(product_species0, coord));
+        if (!new_mol0.second)
+        {
+            throw IllegalState("no place for the first product.");
+        }
         reaction.products.push_back(
             reaction_type::particle_type(
                 new_mol0.first.first,
                 this->private_voxel2voxel(new_mol0.first.second)));
+
         std::pair<std::pair<ParticleID, Voxel>, bool> new_mol1(
             world_->new_voxel_private(product_species1, neighbor.first));
+        if (!new_mol1.second)
+        {
+            throw IllegalState("no place for the second product.");
+        }
         reaction.products.push_back(
             reaction_type::particle_type(
                 new_mol1.first.first,
