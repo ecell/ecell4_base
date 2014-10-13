@@ -187,6 +187,13 @@ protected:
     void register_events(const Species& species);
     // void register_step_event(const Species& species);
 
+    inline Voxel private_voxel2voxel(const Voxel& v) const
+    {
+        const LatticeWorld::coordinate_type
+            coord(world_->private2coord(v.coordinate()));
+        return Voxel(v.species(), coord, v.radius(), v.D(), v.loc());
+    }
+
 protected:
 
     EventScheduler scheduler_;
