@@ -9,8 +9,15 @@ namespace ecell4
 class VacantType
     : public MolecularTypeBase
 {
+public:
+
+    typedef MolecularTypeBase base_type;
+    typedef base_type::particle_info particle_info;
+    typedef base_type::private_coordinate_type private_coordinate_type;
+    typedef base_type::container_type container_type;
 
 public:
+
     ~VacantType()
     {
     }
@@ -21,24 +28,45 @@ public:
         return instance;
     }
 
-    void addVoxel(particle_info info)
+    virtual void add_voxel_without_checking(const particle_info& info)
     {
+        ; // do nothing
     }
 
-    bool removeVoxel(LatticeSpace::private_coordinate_type coord)
+    virtual void replace_voxel(
+        private_coordinate_type from_coord,
+        const particle_info& to_info)
     {
-        return true;
+        ; // do nothing
+    }
+
+    virtual void remove_voxel(const container_type::iterator& position)
+    {
+        ; // do nothing
+    }
+
+    void addVoxel(particle_info info)
+    {
+        ; // do nothing
+    }
+
+    bool removeVoxel(private_coordinate_type coord)
+    {
+        return true; // just return true
     }
 
     bool is_vacant() const
     {
         return true;
     }
-private:
-    VacantType() : MolecularTypeBase(Species("VACANT", "0"), NULL, 0, 0)
-    {
-    }
 
+private:
+
+    VacantType()
+        : MolecularTypeBase(Species("VACANT", "0"), NULL, 0, 0)
+    {
+        ;
+    }
 };
 
 } // ecell4

@@ -413,24 +413,32 @@ void LatticeSimulator::walk(const Species& species, const Real& alpha)
     pids.reserve(max);
     while(i < max)
     {
+        // const std::pair<std::pair<LatticeWorld::particle_info,
+        //     LatticeWorld::private_coordinate_type>, bool> neighbor(
+        //             world_->move_to_neighbor(mtype, i));
+        const MolecularTypeBase::iterator position(mtype->begin() + i);
         const std::pair<std::pair<LatticeWorld::particle_info,
-            LatticeWorld::private_coordinate_type>, bool> neighbor(
-                    world_->move_to_neighbor(mtype, i));
-        const LatticeWorld::particle_info info(neighbor.first.first);
+            LatticeWorld::private_coordinate_type>, bool>
+            neighbor(world_->move_to_neighbor(
+                position, rng->uniform_int(0, 11)));
+
+        const LatticeWorld::particle_info& info(neighbor.first.first);
         const LatticeWorld::private_coordinate_type coord(neighbor.first.second);
         pids.push_back(info.second);
 
         if (!neighbor.second)
         {
-            const std::pair<bool, Reaction<Voxel> > retval(attempt_reaction_(info, coord));
+            const std::pair<bool, Reaction<Voxel> >
+                retval(attempt_reaction_(info, coord));
             if (retval.first)
             {
                 const Reaction<Voxel> reaction(retval.second);
-                for (std::vector<Reaction<Voxel>::particle_type>::const_iterator itr(reaction.reactants.begin());
-                        itr != reaction.reactants.end(); ++itr)
+                for (std::vector<Reaction<Voxel>::particle_type>::const_iterator
+                    itr(reaction.reactants.begin());
+                    itr != reaction.reactants.end(); ++itr)
                 {
-                    for (std::vector<ParticleID>::const_iterator pid_itr(pids.begin());
-                            pid_itr != pids.end(); ++pid_itr)
+                    for (std::vector<ParticleID>::const_iterator
+                        pid_itr(pids.begin()); pid_itr != pids.end(); ++pid_itr)
                     {
                         if (*pid_itr == (*itr).first)
                         {

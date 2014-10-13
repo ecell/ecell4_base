@@ -12,8 +12,10 @@ class MolecularType
 {
 public:
 
-    typedef MolecularTypeBase::particle_info particle_info;
-    typedef MolecularTypeBase::container_type container_type;
+    typedef MolecularTypeBase base_type;
+    typedef base_type::particle_info particle_info;
+    typedef base_type::private_coordinate_type private_coordinate_type;
+    typedef base_type::container_type container_type;
 
 public:
 

@@ -9,28 +9,33 @@
 #include "Space.hpp"
 #include "Global.hpp"
 #include "LatticeSpaceHDF5Writer.hpp"
+#include "MolecularTypeBase.hpp"
+#include "MolecularType.hpp"
 
 
 namespace ecell4
 {
 
-class MolecularTypeBase;
-class MolecularType;
-
 class LatticeSpace
     : public Space
 {
+public:
+
+    typedef MolecularTypeBase::particle_info particle_info;
+    typedef MolecularTypeBase::private_coordinate_type private_coordinate_type;
+    typedef private_coordinate_type coordinate_type;
+
+    typedef std::map<Species, MolecularType> spmap;
+
+    // typedef Integer coordinate_type;
+    // typedef coordinate_type private_coordinate_type;
+    // typedef std::pair<private_coordinate_type, ParticleID> particle_info;
+
 protected:
 
     typedef std::vector<MolecularTypeBase*> voxel_container;
 
 public:
-
-    typedef std::map<Species, MolecularType> spmap;
-    typedef Integer coordinate_type;
-    typedef coordinate_type private_coordinate_type;
-
-    typedef std::pair<private_coordinate_type, ParticleID> particle_info;
 
     LatticeSpace(
         const Position3& edge_lengths, const Real& voxel_radius,
@@ -132,8 +137,13 @@ public:
     // bool update_molecule(private_coordinate_type coord, const Species& species);
     // bool add_molecule(const Species& sp, private_coordinate_type coord, const ParticleID& pid);
     bool move(coordinate_type from, coordinate_type to);
-    std::pair<private_coordinate_type, bool> move_to_neighbor(private_coordinate_type coord, Integer nrand);
-    std::pair<private_coordinate_type, bool> move_to_neighbor(particle_info& info, Integer nrand);
+
+    std::pair<private_coordinate_type, bool> move_to_neighbor(
+        private_coordinate_type coord, Integer nrand);
+    std::pair<private_coordinate_type, bool> move_to_neighbor(
+        particle_info& info, Integer nrand);
+    std::pair<std::pair<particle_info, coordinate_type>, bool>
+        move_to_neighbor(const MolecularTypeBase::iterator& itr, const Integer nrand);
 
     inline bool is_periodic() const
     {

@@ -573,14 +573,17 @@ bool LatticeSpace::remove_voxel(const ParticleID& pid)
         if (j != mt.end())
         {
             const private_coordinate_type coord((*j).first);
-            if (mt.removeVoxel(coord))
+            if (!mt.removeVoxel(coord))
             {
-                voxel_container::iterator itr(voxels_.begin() + coord);
-                (*itr) = mt.location();
-                mt.location()->addVoxel(particle_info(coord, ParticleID()));
-                return true;
+                return false;
             }
-            return false;
+
+            voxel_container::iterator itr(voxels_.begin() + coord);
+            (*itr) = mt.location();
+            // mt.location()->addVoxel(particle_info(coord, ParticleID()));
+            mt.location()->add_voxel_without_checking(
+                particle_info(coord, ParticleID()));
+            return true;
         }
     }
     return false;
@@ -628,7 +631,7 @@ std::pair<LatticeSpace::private_coordinate_type, bool> LatticeSpace::move_(
 {
     if (private_from == private_to)
     {
-        std::cerr << " from == to ";
+        // std::cerr << " from == to ";
         return std::pair<private_coordinate_type, bool>(private_from, false);
     }
 
@@ -642,7 +645,7 @@ std::pair<LatticeSpace::private_coordinate_type, bool> LatticeSpace::move_(
 
     if (to_mt == border_)
     {
-        std::cerr << " to_mt is border ";
+        // std::cerr << " to_mt is border ";
         return std::pair<private_coordinate_type, bool>(private_from, false);
     }
     else if (to_mt == periodic_)
@@ -653,7 +656,7 @@ std::pair<LatticeSpace::private_coordinate_type, bool> LatticeSpace::move_(
 
     if (to_mt != from_mt->location())
     {
-        std::cerr << " to_mt is " << to_mt->species().serial() << " ";
+        // std::cerr << " to_mt is " << to_mt->species().serial() << " ";
         return std::pair<private_coordinate_type, bool>(private_to, false);
     }
 
@@ -661,8 +664,9 @@ std::pair<LatticeSpace::private_coordinate_type, bool> LatticeSpace::move_(
     (*itr).first = private_to;
     voxel_container::iterator from_itr(voxels_.begin() + private_from);
     (*from_itr) = to_mt;
-    to_mt->removeVoxel(private_to);
-    to_mt->addVoxel(particle_info(private_from, ParticleID()));
+    // to_mt->removeVoxel(private_to);
+    // to_mt->addVoxel(particle_info(private_from, ParticleID()));
+    to_mt->replace_voxel(private_to, particle_info(private_from, ParticleID()));
     voxel_container::iterator to_itr(voxels_.begin() + private_to);
     (*to_itr) = from_mt;
 
@@ -703,13 +707,31 @@ std::pair<LatticeSpace::private_coordinate_type, bool> LatticeSpace::move_(
 
     voxel_container::iterator from_itr(voxels_.begin() + private_from);
     (*from_itr) = to_mt;
-    to_mt->removeVoxel(private_to);
-    to_mt->addVoxel(particle_info(private_from, ParticleID()));
+    // to_mt->removeVoxel(private_to);
+    // to_mt->addVoxel(particle_info(private_from, ParticleID()));
+    to_mt->replace_voxel(private_to, particle_info(private_from, ParticleID()));
+
+    //XXX:
+    //XXX: NEVER USE REFERENCE MODIFICATION!!!
+    //XXX:
     info.first = private_to;
+
     voxel_container::iterator to_itr(voxels_.begin() + private_to);
     (*to_itr) = from_mt;
 
     return std::pair<private_coordinate_type, bool>(private_to, true);
+}
+
+std::pair<std::pair<LatticeSpace::particle_info, LatticeSpace::coordinate_type>, bool>
+    LatticeSpace::move_to_neighbor(
+        const MolecularTypeBase::iterator& itr, const Integer nrand)
+{
+    particle_info& info(*itr);
+    const private_coordinate_type to_coord(get_neighbor(info.first, nrand));
+    std::pair<private_coordinate_type, bool> neighbor(move_(info, to_coord));
+    return std::make_pair(std::make_pair(info, neighbor.first), neighbor.second);
+
+    ; //XXX:
 }
 
 std::vector<LatticeSpace::private_coordinate_type>
@@ -961,9 +983,12 @@ bool LatticeSpace::update_voxel_private(const Voxel& v)
         return false; // Vacant has no ParticleID. Call remove_voxel.
     }
 
-    MolecularTypeBase::particle_info info(*(src_mt->find(coord)));
-    src_mt->removeVoxel(coord);
-    new_mt->addVoxel(info);
+    // MolecularTypeBase::particle_info info(*(src_mt->find(coord)));
+    // src_mt->removeVoxel(coord);
+    // new_mt->addVoxel(info);
+    MolecularTypeBase::iterator position(src_mt->find(coord));
+    new_mt->add_voxel_without_checking(*position);
+    src_mt->remove_voxel(position);
     voxel_container::iterator itr(voxels_.begin() + coord);
     (*itr) = new_mt;
     return true;
@@ -1014,15 +1039,25 @@ bool LatticeSpace::update_voxel_private(const ParticleID& pid, const Voxel& v)
             MolecularTypeBase* src_mt(voxels_.at(from_coord));
             src_mt->removeVoxel(from_coord);
             voxel_container::iterator itr(voxels_.begin() + from_coord);
-            voxels_.erase(itr);
-            voxels_.insert(itr, dest_mt);
-            dest_mt->addVoxel(particle_info(from_coord, ParticleID()));
+            // voxels_.erase(itr);
+            // voxels_.insert(itr, dest_mt);
+            (*itr) = dest_mt;
+            // dest_mt->addVoxel(particle_info(from_coord, ParticleID()));
+            // dest_mt->add_voxel_without_checking(
+            //     particle_info(from_coord, ParticleID()));
+            // dest_mt->removeVoxel(to_coord);
+            dest_mt->replace_voxel(to_coord, particle_info(from_coord, ParticleID()));
+            new_mt->add_voxel_without_checking(particle_info(to_coord, pid));
+            itr = voxels_.begin() + to_coord;
+            (*itr) = new_mt;
+            return true;
         }
     }
 
-    new_mt->addVoxel(MolecularTypeBase::particle_info(to_coord, pid));
-    voxel_container::iterator itr(voxels_.begin() + to_coord);
-    (*itr) = new_mt;
+    // new_mt->addVoxel(MolecularTypeBase::particle_info(to_coord, pid));
+    new_mt->add_voxel_without_checking(particle_info(to_coord, pid));
+    voxel_container::iterator to_itr(voxels_.begin() + to_coord);
+    (*to_itr) = new_mt;
     dest_mt->removeVoxel(to_coord);
     return true;
 }

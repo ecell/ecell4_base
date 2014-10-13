@@ -251,6 +251,8 @@ public:
     std::pair<coordinate_type, bool> move_to_neighbor(particle_info& info, Integer nrand);
     std::pair<std::pair<particle_info, private_coordinate_type>, bool>
         move_to_neighbor(MolecularTypeBase* mtype, Integer index);
+    std::pair<std::pair<particle_info, coordinate_type>, bool>
+        move_to_neighbor(const MolecularTypeBase::iterator& itr, const Integer nrand);
 
     private_coordinate_type get_neighbor(
             private_coordinate_type private_coord, Integer nrand) const
