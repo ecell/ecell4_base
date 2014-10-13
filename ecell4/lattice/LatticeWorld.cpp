@@ -183,6 +183,14 @@ LatticeWorld::new_voxel_private(const Voxel& v)
 }
 
 std::pair<std::pair<ParticleID, Voxel>, bool>
+LatticeWorld::new_voxel_private(const Species& sp, const private_coordinate_type& coord)
+{
+    const molecule_info_type minfo(get_molecule_info(sp));
+    return new_voxel_private(
+        Voxel(sp, coord, minfo.radius, minfo.D, minfo.loc));
+}
+
+std::pair<std::pair<ParticleID, Voxel>, bool>
 LatticeWorld::new_voxel_structure(const Voxel& v)
 {
     const bool is_succeeded(space_.update_voxel_private(ParticleID(), v));
