@@ -27,6 +27,7 @@ class LatticeSimulator
 public:
 
     typedef Simulator<Model, LatticeWorld> base_type;
+    typedef Reaction<Voxel> reaction_type;
 
 protected:
 
@@ -172,14 +173,14 @@ protected:
         const Species& species, const Real& t);
     boost::shared_ptr<EventScheduler::Event> create_first_order_reaction_event(
         const ReactionRule& reaction_rule, const Real& t);
-    std::pair<bool, Reaction<Voxel> > attempt_reaction_(
+    std::pair<bool, reaction_type> attempt_reaction_(
         const LatticeWorld::particle_info info,
         LatticeWorld::coordinate_type to_coord);
-    std::pair<bool, Reaction<Voxel> > apply_reaction_(
+    std::pair<bool, reaction_type> apply_reaction_(
         const ReactionRule& reaction_rule,
         const LatticeWorld::particle_info from_info,
         const LatticeWorld::particle_info to_info);
-    std::pair<bool, Reaction<Voxel> > apply_reaction_(
+    std::pair<bool, reaction_type> apply_reaction_(
         const ReactionRule& reaction_rule,
         const LatticeWorld::particle_info info);
     void step_();
