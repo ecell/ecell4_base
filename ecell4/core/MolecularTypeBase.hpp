@@ -96,6 +96,19 @@ public:
         voxels_.pop_back();
     }
 
+    virtual void swap(
+        const container_type::iterator& a, const container_type::iterator& b)
+    {
+        if (a == b)
+        {
+            return;
+        }
+
+        const container_type::value_type info(*b);
+        (*b) = (*a);
+        (*a) = info;
+    }
+
     virtual void addVoxel(particle_info info)
     {
         container_type::iterator itr(find(info.first));

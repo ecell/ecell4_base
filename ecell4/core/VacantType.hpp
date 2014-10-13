@@ -45,6 +45,12 @@ public:
         ; // do nothing
     }
 
+    virtual void swap(
+        const container_type::iterator& a, const container_type::iterator& b)
+    {
+        ; // do nothing
+    }
+
     void addVoxel(particle_info info)
     {
         ; // do nothing
