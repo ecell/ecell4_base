@@ -184,7 +184,7 @@ std::pair<bool, LatticeSimulator::reaction_type> LatticeSimulator::apply_reactio
                 new_mol0.first.first,
                 this->private_voxel2voxel(new_mol0.first.second)));
         std::pair<std::pair<ParticleID, Voxel>, bool> new_mol1(
-            world_->new_voxel_private(product_species0, to_coord));
+            world_->new_voxel_private(product_species1, to_coord));
         reaction.products.push_back(
             reaction_type::particle_type(
                 new_mol1.first.first,
