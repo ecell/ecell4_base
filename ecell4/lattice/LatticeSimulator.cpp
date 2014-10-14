@@ -409,13 +409,12 @@ void LatticeSimulator::walk(const Species& species, const Real& alpha)
     const boost::shared_ptr<RandomNumberGenerator>& rng(world_->rng());
 
     MolecularTypeBase* mtype(world_->find_molecular_type(species));
-    Integer max(rng->binomial(alpha, mtype->size()));
-    // mtype->shuffle(*rng);
+    //XXX: mtype->shuffle(*rng);
 
-    std::vector<ParticleID> pids;
-    pids.reserve(max);
+    // std::vector<ParticleID> pids;
+    // pids.reserve(max);
 
-    Integer i(0);
+    Integer i(0), max(rng->binomial(alpha, mtype->size()));
     while (i < max)
     {
         const MolecularTypeBase::iterator position(mtype->begin() + i);
@@ -423,40 +422,45 @@ void LatticeSimulator::walk(const Species& species, const Real& alpha)
             neighbor(world_->move_to_neighbor(
                 position, rng->uniform_int(0, 11)));
 
-        const LatticeWorld::particle_info info(*position);
-        const LatticeWorld::private_coordinate_type to_coord(neighbor.first);
-        pids.push_back(info.second);
+        // pids.push_back(info.second);
 
         if (!neighbor.second)
         {
+            const LatticeWorld::particle_info info(*position);
+            const LatticeWorld::private_coordinate_type to_coord(neighbor.first);
+
             const std::pair<bool, reaction_type>
                 retval(attempt_reaction_(info, to_coord));
             if (retval.first)
             {
-                const reaction_type& reaction(retval.second);
-                for (std::vector<reaction_type::particle_type>::const_iterator
-                    itr(reaction.reactants.begin());
-                    itr != reaction.reactants.end(); ++itr)
+                --i;
+                --max;
+
+                if (max > mtype->size())
                 {
-                    for (std::vector<ParticleID>::const_iterator
-                        pid_itr(pids.begin()); pid_itr != pids.end(); ++pid_itr)
-                    {
-                        if (*pid_itr == (*itr).first)
-                        {
-                            --i;
-                            --max;
-                            break;
-                        }
-                    }
+                    max = mtype->size(); //XXX: for a dimerization
                 }
+
+                // const reaction_type& reaction(retval.second);
+                // for (std::vector<reaction_type::particle_type>::const_iterator
+                //     itr(reaction.reactants.begin());
+                //     itr != reaction.reactants.end(); ++itr)
+                // {
+                //     for (std::vector<ParticleID>::const_iterator
+                //         pid_itr(pids.begin()); pid_itr != pids.end(); ++pid_itr)
+                //     {
+                //         if (*pid_itr == (*itr).first)
+                //         {
+                //             --i;
+                //             --max;
+                //             break;
+                //         }
+                //     }
+                // }
             }
         }
 
         ++i;
-        // if (max > mtype->size())
-        // {
-        //     max = mtype->size();
-        // }
     }
 }
 
