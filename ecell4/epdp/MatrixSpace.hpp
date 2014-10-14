@@ -17,6 +17,9 @@
 #include "utils/unassignable_adapter.hpp"
 #include "utils/get_default_impl.hpp"
 
+#include <ecell4/core/Global.hpp>
+
+
 template<typename Tobj_, typename Tkey_,
         template<typename, typename> class MFget_mapper_ =
             get_default_impl::std::template map>
@@ -49,16 +52,24 @@ public:
     typedef typename all_values_type::reference reference;
     typedef typename all_values_type::const_reference const_reference;
 
+    typedef ecell4::Global matrix_sizes_type;
+
 private:
     typedef std::pair<key_type, mapped_type> nonconst_value_type;
 
 public:
-    MatrixSpace(length_type world_size = 1.0,
-            typename matrix_type::size_type size = 1)
-        : world_size_(world_size),
-          cell_size_(world_size / size),
-          matrix_(boost::extents[size][size][size])
+
+    MatrixSpace(
+        const position_type& edge_lengths, const matrix_sizes_type& matrix_sizes)
+        : edge_lengths_(edge_lengths),
+          cell_sizes_(
+            edge_lengths[0] / matrix_sizes[0],
+            edge_lengths[1] / matrix_sizes[1],
+            edge_lengths[2] / matrix_sizes[2]),
+          matrix_(
+            boost::extents[matrix_sizes[0]][matrix_sizes[1]][matrix_sizes[2]])
     {
+        ;
     }
 
     inline cell_index_type index(const position_type& pos,
@@ -66,11 +77,11 @@ public:
     {
         return array_gen<typename matrix_type::size_type>(
             static_cast<typename matrix_type::size_type>(
-                pos[0] / cell_size_ ) % matrix_.shape()[0],
+                pos[0] / cell_sizes_[0]) % matrix_.shape()[0],
             static_cast<typename matrix_type::size_type>(
-                pos[1] / cell_size_ ) % matrix_.shape()[1],
+                pos[1] / cell_sizes_[1]) % matrix_.shape()[1],
             static_cast<typename matrix_type::size_type>(
-                pos[2] / cell_size_ ) % matrix_.shape()[2] );
+                pos[2] / cell_sizes_[2]) % matrix_.shape()[2]);
     }
 
     inline bool offset_index(
@@ -106,7 +117,7 @@ public:
             retval[0] 
                 = (o[0] - 
                    static_cast<typename matrix_type::difference_type>
-                   (t - i[0])) * cell_size_;
+                   (t - i[0])) * cell_sizes_[0];
             i[0] = t;
         }
         else if (matrix_.shape()[0] - o[0] <= i[0])
@@ -116,7 +127,7 @@ public:
             retval[0] 
                 = (o[0] - 
                    static_cast<typename matrix_type::difference_type>
-                   (t - i[0])) * cell_size_;
+                   (t - i[0])) * cell_sizes_[0];
             i[0] = t;
         }
         else
@@ -130,14 +141,14 @@ public:
             typename matrix_type::size_type t(
                     (i[1] + matrix_.shape()[1] - (-o[1] % matrix_.shape()[1])) %
                         matrix_.shape()[1]);
-            retval[1] = (o[1] - static_cast<typename matrix_type::difference_type>(t - i[1])) * cell_size_;
+            retval[1] = (o[1] - static_cast<typename matrix_type::difference_type>(t - i[1])) * cell_sizes_[1];
             i[1] = t;
         }
         else if (matrix_.shape()[1] - o[1] <= i[1])
         {
             typename matrix_type::size_type t(
                     (i[1] + (o[1] % matrix_.shape()[1])) % matrix_.shape()[1]);
-            retval[1] = (o[1] - static_cast<typename matrix_type::difference_type>(t - i[1])) * cell_size_;
+            retval[1] = (o[1] - static_cast<typename matrix_type::difference_type>(t - i[1])) * cell_sizes_[1];
             i[1] = t;
         }
         else
@@ -151,14 +162,14 @@ public:
             typename matrix_type::size_type t(
                     (i[2] + matrix_.shape()[2] - (-o[2] % matrix_.shape()[2])) %
                         matrix_.shape()[2]);
-            retval[2] = (o[2] - static_cast<typename matrix_type::difference_type>(t - i[2])) * cell_size_;
+            retval[2] = (o[2] - static_cast<typename matrix_type::difference_type>(t - i[2])) * cell_sizes_[2];
             i[2] = t;
         }
         else if (matrix_.shape()[2] - o[2] <= i[2])
         {
             typename matrix_type::size_type t(
                     (i[2] + (o[2] % matrix_.shape()[2])) % matrix_.shape()[2]);
-            retval[2] = (o[2] - static_cast<typename matrix_type::difference_type>(t - i[2])) * cell_size_;
+            retval[2] = (o[2] - static_cast<typename matrix_type::difference_type>(t - i[2])) * cell_sizes_[2];
             i[2] = t;
         }
         else
@@ -179,19 +190,25 @@ public:
         return matrix_[i[0]][i[1]][i[2]];
     }
 
-    inline length_type world_size() const
+    inline const position_type& edge_lengths() const
     {
-        return world_size_;
+        return edge_lengths_;
     }
 
-    inline length_type cell_size() const
+    inline const position_type& cell_sizes() const
     {
-        return cell_size_;
+        return cell_sizes_;
     }
 
-    inline typename matrix_type::size_type matrix_size() const
+    //XXX: inline typename matrix_type::size_type matrix_size() const
+    //XXX: {
+    //XXX:     return matrix_.shape()[0];
+    //XXX: }
+
+    inline const matrix_sizes_type matrix_sizes() const
     {
-        return matrix_.shape()[0];
+        const size_type* sizes(matrix_.shape());
+        return matrix_sizes_type(sizes[0], sizes[1], sizes[2]);
     }
 
     inline size_type size() const
@@ -570,8 +587,8 @@ private:
     }
 
 private:
-    const length_type world_size_;
-    const length_type cell_size_;
+    const position_type edge_lengths_;
+    const position_type cell_sizes_;
     matrix_type matrix_;
     key_to_value_mapper_type rmap_;
     all_values_type values_;

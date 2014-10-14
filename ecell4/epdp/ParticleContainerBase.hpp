@@ -125,11 +125,12 @@ public:
 
     typedef MatrixSpace<particle_type, particle_id_type, ecell4::utils::get_mapper_mf> particle_matrix_type;
     typedef sized_iterator_range<typename particle_matrix_type::const_iterator> particle_id_pair_range;
+    typedef typename particle_matrix_type::matrix_sizes_type matrix_sizes_type;
 
 protected:
 public:
-    ParticleContainerBase(length_type world_size, size_type size)
-        : pmat_(world_size, size) {}
+    ParticleContainerBase(const position_type& edge_lengths, const matrix_sizes_type& sizes)
+        : pmat_(edge_lengths, sizes) {}
 
     virtual ecell4::Integer num_particles() const
     {
@@ -141,52 +142,52 @@ public:
     //     return pmat_.size();
     // }
 
-    virtual length_type world_size() const
+    virtual const position_type& edge_lengths() const
     {
-        return pmat_.world_size();
+        return pmat_.edge_lengths();
     }
 
-    length_type cell_size() const
+    position_type cell_sizes() const
     {
-        return pmat_.cell_size();
+        return pmat_.cell_sizes();
     }
 
-    size_type matrix_size() const
+    matrix_sizes_type matrix_sizes() const
     {
-        return pmat_.matrix_size();
+        return pmat_.matrix_sizes();
     }
 
     template<typename T_>
     length_type distance(T_ const& lhs, position_type const& rhs) const
     {
-        return traits_type::distance(lhs, rhs, world_size());
+        return traits_type::distance(lhs, rhs, edge_lengths());
     }
 
     virtual length_type distance(position_type const& lhs,
                                  position_type const& rhs) const
     {
-        return traits_type::distance(lhs, rhs, world_size());
+        return traits_type::distance(lhs, rhs, edge_lengths());
     }
 
     virtual position_type apply_boundary(position_type const& v) const
     {
-        return traits_type::apply_boundary(v, world_size());
+        return traits_type::apply_boundary(v, edge_lengths());
     }
 
-    virtual length_type apply_boundary(length_type const& v) const
-    {
-        return traits_type::apply_boundary(v, world_size());
-    }
+    // virtual length_type apply_boundary(length_type const& v) const
+    // {
+    //     return traits_type::apply_boundary(v, edge_lengths());
+    // }
 
     virtual position_type cyclic_transpose(position_type const& p0, position_type const& p1) const
     {
-        return traits_type::cyclic_transpose(p0, p1, world_size());
+        return traits_type::cyclic_transpose(p0, p1, edge_lengths());
     }
 
-    virtual length_type cyclic_transpose(length_type const& p0, length_type const& p1) const
-    {
-        return traits_type::cyclic_transpose(p0, p1, world_size());
-    }
+    // virtual length_type cyclic_transpose(length_type const& p0, length_type const& p1) const
+    // {
+    //     return traits_type::cyclic_transpose(p0, p1, world_size());
+    // }
 
     template<typename T1_>
     T1_ calculate_pair_CoM(
@@ -204,7 +205,7 @@ public:
             divide(
                 add(multiply(p1, D2), multiply(p2t, D1)),
                 add(D1, D2)),
-            world_size());
+            edge_lengths());
     }
 
     virtual particle_id_pair_and_distance_list* check_overlap(particle_shape_type const& s) const

@@ -74,6 +74,16 @@ distance_cyclic(
     return distance(p1, cyclic_transpose(p2, shape_position(p1), world_size));
 }
 
+template< typename T1_, typename T2_ >
+inline typename shape_length_type<T1_>::type
+distance_cyclic(
+        T1_ const& p1, T2_ const& p2,
+        typename shape_position_type<T1_>::type const& edge_lengths,
+        typename boost::enable_if<is_shape<T1_> >::type* = 0)
+{
+    return distance(p1, cyclic_transpose(p2, shape_position(p1), edge_lengths));
+}
+
 template<typename T, typename Trng>
 inline typename shape_position_type<T>::type
 random_position(T const& shape, Trng const& rng)

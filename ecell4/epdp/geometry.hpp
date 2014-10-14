@@ -78,6 +78,16 @@ inline T_ cyclic_transpose(T_ const& p0, T_ const& p1, typename element_type_of<
     return retval;
 }
 
+template<typename T_>
+inline T_ cyclic_transpose(T_ const& p0, T_ const& p1, T_ const& edge_lengths, typename boost::enable_if<is_vector3<T_> >::type*)
+{
+    T_ retval;
+    retval[0] = cyclic_transpose(p0[0], p1[0], edge_lengths[0], (void*)0);
+    retval[1] = cyclic_transpose(p0[1], p1[1], edge_lengths[1], (void*)0);
+    retval[2] = cyclic_transpose(p0[2], p1[2], edge_lengths[2], (void*)0);
+    return retval;
+}
+
 template<typename T1_, typename T2_>
 inline T1_ cyclic_transpose(T1_ const& p0, T1_ const& p1, T2_ const& world_size)
 {
@@ -99,6 +109,12 @@ inline T_ apply_boundary(T_ const& p1,
 }
 
 template<typename T1_, typename T2_>
+inline T1_ apply_boundary(T1_ const& p1, T2_ const& edge_lengths, typename boost::enable_if<typename boost::mpl::and_<is_vector3<T1_>, is_vector3<T2_> > >::type*)
+{
+    return modulo(p1, edge_lengths);
+}
+
+template<typename T1_, typename T2_>
 inline T1_ apply_boundary(T1_ const& p1, T2_ const& world_size)
 {
     return apply_boundary(p1, world_size, (void*)0);
@@ -114,6 +130,18 @@ inline typename element_type_of<T1_>::type distance_cyclic(
                 is_vector3<T2_> > >::type* = 0)
 {
     return distance(p1, cyclic_transpose(p2, p1, world_size));
+}
+
+template<typename T1_, typename T2_, typename T3_>
+inline typename element_type_of<T1_>::type distance_cyclic(
+        T1_ const& p1, T2_ const& p2, T3_ const& edge_lengths,
+        typename boost::enable_if<
+            typename boost::mpl::and_<
+                is_vector3<T1_>,
+                is_vector3<T2_>,
+                is_vector3<T3_> > >::type* = 0)
+{
+    return distance(p1, cyclic_transpose(p2, p1, edge_lengths));
 }
 
 template<typename T_>

@@ -65,9 +65,9 @@ public:
     //     return particles_.size();
     // }
 
-    virtual length_type world_size() const
+    virtual const position_type& edge_lengths() const
     {
-        return world_.world_size();
+        return world_.edge_lengths();
     }
 
     virtual molecule_info_type const& find_molecule_info(species_id_type const& id) const
@@ -184,20 +184,20 @@ public:
         return world_.apply_boundary(v);
     }
 
-    virtual length_type apply_boundary(length_type const& v) const
-    {
-        return world_.apply_boundary(v);
-    }
+    // virtual length_type apply_boundary(length_type const& v) const
+    // {
+    //     return world_.apply_boundary(v);
+    // }
 
     virtual position_type cyclic_transpose(position_type const& p0, position_type const& p1) const
     {
         return world_.cyclic_transpose(p0, p1);
     }
 
-    virtual length_type cyclic_transpose(length_type const& p0, length_type const& p1) const
-    {
-        return world_.cyclic_transpose(p0, p1);
-    }
+    // virtual length_type cyclic_transpose(length_type const& p0, length_type const& p1) const
+    // {
+    //     return world_.cyclic_transpose(p0, p1);
+    // }
 
     particle_id_pair_range get_particles_range() const
     {

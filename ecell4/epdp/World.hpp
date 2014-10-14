@@ -114,19 +114,19 @@ public:
     typedef typename base_type::position_type position_type;
 
     template<typename Tval_>
-    static Tval_ apply_boundary(Tval_ const& v, length_type const& world_size)
+    static Tval_ apply_boundary(Tval_ const& v, position_type const& edge_lengths)
     {
         return v;
     }
 
     template<typename Tval_>
-    static Tval_ cyclic_transpose(Tval_ const& p0, Tval_ const& p1, length_type const& world_size)
+    static Tval_ cyclic_transpose(Tval_ const& p0, Tval_ const& p1, Tval_ const& world_size)
     {
         return p0;
     }
 
     template<typename T1_, typename T2_>
-    static length_type distance(T1_ const& p0, T2_ const& p1, length_type const& world_size)
+    static length_type distance(T1_ const& p0, T2_ const& p1, position_type const& edge_lengths)
     {
         return ::distance(p0, p1);
     }
@@ -165,9 +165,9 @@ public:
     typedef typename base_type::position_type position_type;
 
     template<typename Tval_>
-    static Tval_ apply_boundary(Tval_ const& v, length_type const& world_size)
+    static Tval_ apply_boundary(Tval_ const& v, position_type const& edge_lengths)
     {
-        return ::apply_boundary(v, world_size);
+        return ::apply_boundary(v, edge_lengths);
     }
 
     static length_type cyclic_transpose(length_type const& p0, length_type const& p1, length_type const& world_size)
@@ -175,15 +175,15 @@ public:
         return ::cyclic_transpose(p0, p1, world_size);
     }
 
-    static position_type cyclic_transpose(position_type const& p0, position_type const& p1, length_type const& world_size)
+    static position_type cyclic_transpose(position_type const& p0, position_type const& p1, position_type const& edge_lengths)
     {
-        return ::cyclic_transpose(p0, p1, world_size);
+        return ::cyclic_transpose(p0, p1, edge_lengths);
     }
 
-    template<typename T1_, typename T2_>
-    static length_type distance(T1_ const& p0, T2_ const& p1, length_type const& world_size)
+    template<typename T1_, typename T2_, typename T3_>
+    static length_type distance(T1_ const& p0, T2_ const& p1, T3_ const& edge_lengths)
     {
-        return distance_cyclic(p0, p1, world_size);
+        return distance_cyclic(p0, p1, edge_lengths);
     }
 
     template<typename Toc_, typename Tfun_, typename Tsphere_>
@@ -235,6 +235,8 @@ public:
         particle_id_pair_and_distance_list;
     typedef typename traits_type::model_type model_type;
 
+    typedef typename base_type::matrix_sizes_type matrix_sizes_type;
+
 protected:
     typedef std::map<species_id_type, molecule_info_type> molecule_info_map;
     typedef std::map<structure_id_type, boost::shared_ptr<structure_type> > structure_map;
@@ -254,8 +256,8 @@ public:
 public:
 
     World(
-        length_type world_size = 1., size_type size = 1)
-        : base_type(world_size, size), edge_lengths_(world_size, world_size, world_size)
+        const position_type& edge_lengths, const matrix_sizes_type& sizes)
+        : base_type(edge_lengths, sizes)
     {
         rng_ = boost::shared_ptr<rng_type>(new rng_type());
         (*rng_).seed();
@@ -264,10 +266,9 @@ public:
     }
 
     World(
-        length_type world_size, size_type size,
+        const position_type& edge_lengths, const matrix_sizes_type& sizes,
         const boost::shared_ptr<rng_type>& rng)
-        : base_type(world_size, size), edge_lengths_(world_size, world_size, world_size),
-        rng_(rng)
+        : base_type(edge_lengths, sizes), rng_(rng)
     {
         add_world_structure();
     }
@@ -422,13 +423,13 @@ public:
 
     virtual const length_type volume() const
     {
-        const length_type L(this->world_size());
-        return L * L * L;
+        const position_type& L(edge_lengths());
+        return L[0] * L[1] * L[2];
     }
 
     virtual const position_type& edge_lengths() const
     {
-        return edge_lengths_;
+        return base_type::edge_lengths();
     }
 
     virtual bool has_particle(const particle_id_type& pid) const
@@ -782,7 +783,6 @@ private:
 
     /** ecell4::Space
      */
-    position_type edge_lengths_;
     boost::shared_ptr<rng_type> rng_;
     boost::weak_ptr<model_type> model_;
 };

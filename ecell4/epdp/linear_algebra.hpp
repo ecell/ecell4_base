@@ -339,6 +339,16 @@ inline T_ modulo(T_ const& p1, typename element_type_of<T_>::type const& p2, typ
 }
 
 template<typename T_>
+inline T_ modulo(T_ const& p1, T_ const& p2, typename boost::enable_if<is_vector3<T_> >::type* = 0)
+{
+    T_ retval;
+    retval[0] = modulo(p1[0], p2[0]);
+    retval[1] = modulo(p1[1], p2[1]);
+    retval[2] = modulo(p1[2], p2[2]);
+    return retval;
+}
+
+template<typename T_>
 inline T_ negate(T_ const& v, typename boost::enable_if<is_vector3<T_> >::type* = 0)
 {
     T_ retval;

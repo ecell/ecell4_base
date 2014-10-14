@@ -48,8 +48,6 @@ public:
     virtual ecell4::Integer num_particles() const = 0;
     // virtual size_type num_particles() const = 0;
 
-    virtual length_type world_size() const = 0;
-
     virtual molecule_info_type const& get_molecule_info(species_id_type const& id) = 0;
     virtual molecule_info_type const& find_molecule_info(species_id_type const& id) const = 0;
 
@@ -111,13 +109,13 @@ public:
 
     virtual position_type apply_boundary(position_type const& v) const = 0;
 
-    virtual length_type apply_boundary(length_type const& v) const = 0;
+    // virtual length_type apply_boundary(length_type const& v) const = 0;
 
     virtual position_type cyclic_transpose(
         position_type const& p0, position_type const& p1) const = 0;
 
-    virtual length_type cyclic_transpose(
-        length_type const& p0, length_type const& p1) const = 0;
+    // virtual length_type cyclic_transpose(
+    //     length_type const& p0, length_type const& p1) const = 0;
 };
 
 

@@ -497,7 +497,7 @@ protected:
         template<typename T>
         void operator()(T const& smat) const
         {
-            BOOST_ASSERT(world_.world_size() == smat.second.world_size());
+            BOOST_ASSERT(world_.edge_lengths() == smat.second.edge_lengths());
             BOOST_FOREACH (typename boost::remove_reference<typename T::second_type>::type::value_type pair, smat.second)
             {
                 did_map_[pair.second.did()].insert(pair.first);
@@ -912,8 +912,8 @@ public:
     //       num_retries_(dissociation_retry_moves),
     //       bd_dt_factor_(bd_dt_factor),
     //       user_max_shell_size_(user_max_shell_size),
-    //       ssmat_((*world).world_size(), (*world).matrix_size()),
-    //       csmat_((*world).world_size(), (*world).matrix_size()),
+    //       ssmat_((*world).edge_lengths(), (*world).matrix_sizes()),
+    //       csmat_((*world).edge_lengths(), (*world).matrix_sizes()),
     //       smatm_(boost::fusion::pair<spherical_shell_type,
     //                                  spherical_shell_matrix_type&>(ssmat_),
     //              boost::fusion::pair<cylindrical_shell_type,
@@ -937,8 +937,8 @@ public:
           num_retries_(dissociation_retry_moves),
           bd_dt_factor_(bd_dt_factor),
           user_max_shell_size_(user_max_shell_size),
-          ssmat_((*world).world_size(), (*world).matrix_size()),
-          csmat_((*world).world_size(), (*world).matrix_size()),
+          ssmat_((*world).edge_lengths(), (*world).matrix_sizes()),
+          csmat_((*world).edge_lengths(), (*world).matrix_sizes()),
           smatm_(boost::fusion::pair<spherical_shell_type,
                                      spherical_shell_matrix_type&>(ssmat_),
                  boost::fusion::pair<cylindrical_shell_type,
@@ -960,7 +960,10 @@ public:
 
     length_type max_shell_size() const
     {
-        return std::min((*base_type::world_).cell_size() / 2 /
+        const position_type& cell_sizes((*base_type::world_).cell_sizes());
+        const length_type min_cell_size(
+            std::min(cell_sizes[0], std::min(cell_sizes[1], cell_sizes[2])));
+        return std::min(min_cell_size / 2 /
                         traits_type::SAFETY,
                    user_max_shell_size_);
     }

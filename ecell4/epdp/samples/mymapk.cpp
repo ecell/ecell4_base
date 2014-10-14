@@ -48,9 +48,10 @@ int main(int argc, char **argv)
 
     // Constants
     // {{{
-    const Real world_size(1e-6);
-    const Integer matrix_size(3);
-    const Real volume(world_size * world_size * world_size);
+    const Real L(1e-6);
+    const ecell4::Position3 edge_lengths(L, L, L);
+    const ecell4::Global matrix_sizes(3, 3, 3);
+    const Real volume(L * L * L);
     const Integer N(60);
     const Real kd(0.1), U(0.5);
     const Real ka(kd * volume * (1 - U) / (U * U * N));
@@ -104,7 +105,7 @@ int main(int argc, char **argv)
     // World Definition
     // {{{
     boost::shared_ptr<world_type>
-        world(new world_type(world_size, matrix_size, rng));
+        world(new world_type(edge_lengths, matrix_sizes, rng));
     world->bind_to(model);
     // }}}
 
@@ -142,6 +143,7 @@ int main(int argc, char **argv)
     // {{{
     boost::shared_ptr<simulator_type> sim(
         new simulator_type(world, model, dissociation_retry_moves));
+    // sim->paranoiac() = true;
     sim->initialize();
     // }}}
 

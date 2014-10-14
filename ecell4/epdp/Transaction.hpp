@@ -170,9 +170,9 @@ public:
     //     return pc_.num_particles();
     // }
 
-    virtual length_type world_size() const
+    virtual const position_type& edge_lengths() const
     {
-        return pc_.world_size();
+        return pc_.edge_lengths();
     }
 
     virtual particle_id_pair_generator* get_particles() const
@@ -233,20 +233,20 @@ public:
         return pc_.apply_boundary(v);
     }
 
-    virtual length_type apply_boundary(length_type const& v) const
-    {
-        return pc_.apply_boundary(v);
-    }
+    // virtual length_type apply_boundary(length_type const& v) const
+    // {
+    //     return pc_.apply_boundary(v);
+    // }
 
     virtual position_type cyclic_transpose(position_type const& p0, position_type const& p1) const
     {
         return pc_.cyclic_transpose(p0, p1);
     }
 
-    virtual length_type cyclic_transpose(length_type const& p0, length_type const& p1) const
-    {
-        return pc_.cyclic_transpose(p0, p1);
-    }
+    // virtual length_type cyclic_transpose(length_type const& p0, length_type const& p1) const
+    // {
+    //     return pc_.cyclic_transpose(p0, p1);
+    // }
 
     virtual ~TransactionImpl() {}
 
