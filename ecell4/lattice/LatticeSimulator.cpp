@@ -402,38 +402,38 @@ void LatticeSimulator::walk(const Species& species)
 void LatticeSimulator::walk(const Species& species, const Real& alpha)
 {
     if (alpha < 0 || alpha > 1)
+    {
         return; // INVALID ALPHA VALUE
+    }
 
-    boost::shared_ptr<RandomNumberGenerator> rng(world_->rng());
+    const boost::shared_ptr<RandomNumberGenerator>& rng(world_->rng());
 
     MolecularTypeBase* mtype(world_->find_molecular_type(species));
-    mtype->shuffle(*rng);
-    std::vector<ParticleID> pids;
-    Integer i(0);
     Integer max(rng->binomial(alpha, mtype->size()));
+    // mtype->shuffle(*rng);
+
+    std::vector<ParticleID> pids;
     pids.reserve(max);
-    while(i < max)
+
+    Integer i(0);
+    while (i < max)
     {
-        // const std::pair<std::pair<LatticeWorld::particle_info,
-        //     LatticeWorld::private_coordinate_type>, bool> neighbor(
-        //             world_->move_to_neighbor(mtype, i));
         const MolecularTypeBase::iterator position(mtype->begin() + i);
-        const std::pair<std::pair<LatticeWorld::particle_info,
-            LatticeWorld::private_coordinate_type>, bool>
+        const std::pair<LatticeWorld::private_coordinate_type, bool>
             neighbor(world_->move_to_neighbor(
                 position, rng->uniform_int(0, 11)));
 
-        const LatticeWorld::particle_info& info(neighbor.first.first);
-        const LatticeWorld::private_coordinate_type coord(neighbor.first.second);
+        const LatticeWorld::particle_info info(*position);
+        const LatticeWorld::private_coordinate_type to_coord(neighbor.first);
         pids.push_back(info.second);
 
         if (!neighbor.second)
         {
             const std::pair<bool, reaction_type>
-                retval(attempt_reaction_(info, coord));
+                retval(attempt_reaction_(info, to_coord));
             if (retval.first)
             {
-                const reaction_type reaction(retval.second);
+                const reaction_type& reaction(retval.second);
                 for (std::vector<reaction_type::particle_type>::const_iterator
                     itr(reaction.reactants.begin());
                     itr != reaction.reactants.end(); ++itr)
@@ -444,15 +444,19 @@ void LatticeSimulator::walk(const Species& species, const Real& alpha)
                         if (*pid_itr == (*itr).first)
                         {
                             --i;
+                            --max;
                             break;
                         }
                     }
                 }
             }
         }
+
         ++i;
-        if (max > mtype->size())
-            max = mtype->size();
+        // if (max > mtype->size())
+        // {
+        //     max = mtype->size();
+        // }
     }
 }
 

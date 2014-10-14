@@ -619,15 +619,15 @@ std::pair<LatticeSpace::coordinate_type, bool> LatticeSpace::move_to_neighbor(
     return move_(coord, neighbor);
 }
 
-std::pair<LatticeSpace::private_coordinate_type, bool> LatticeSpace::move_to_neighbor(MolecularTypeBase::particle_info& info,
-        Integer nrand)
+std::pair<LatticeSpace::private_coordinate_type, bool> LatticeSpace::move_to_neighbor(
+    MolecularTypeBase::particle_info& info, Integer nrand)
 {
     const coordinate_type neighbor(get_neighbor(info.first, nrand));
     return move_(info, neighbor);
 }
 
 std::pair<LatticeSpace::private_coordinate_type, bool> LatticeSpace::move_(
-        private_coordinate_type private_from, private_coordinate_type private_to)
+    private_coordinate_type private_from, private_coordinate_type private_to)
 {
     if (private_from == private_to)
     {
@@ -674,7 +674,7 @@ std::pair<LatticeSpace::private_coordinate_type, bool> LatticeSpace::move_(
 }
 
 std::pair<LatticeSpace::private_coordinate_type, bool> LatticeSpace::move_(
-        MolecularTypeBase::particle_info& info, private_coordinate_type private_to)
+    MolecularTypeBase::particle_info& info, private_coordinate_type private_to)
 {
     const private_coordinate_type private_from(info.first);
     if (private_from == private_to)
@@ -722,16 +722,48 @@ std::pair<LatticeSpace::private_coordinate_type, bool> LatticeSpace::move_(
     return std::pair<private_coordinate_type, bool>(private_to, true);
 }
 
-std::pair<std::pair<LatticeSpace::particle_info, LatticeSpace::coordinate_type>, bool>
-    LatticeSpace::move_to_neighbor(
-        const MolecularTypeBase::iterator& itr, const Integer nrand)
+std::pair<LatticeSpace::private_coordinate_type, bool> LatticeSpace::move_to_neighbor(
+    const MolecularTypeBase::iterator& itr, const Integer nrand)
 {
-    particle_info& info(*itr);
-    const private_coordinate_type to_coord(get_neighbor(info.first, nrand));
-    std::pair<private_coordinate_type, bool> neighbor(move_(info, to_coord));
-    return std::make_pair(std::make_pair(info, neighbor.first), neighbor.second);
+    const private_coordinate_type private_from((*itr).first);
+    private_coordinate_type private_to(get_neighbor((*itr).first, nrand));
 
-    ; //XXX:
+    // if (private_from == private_to)
+    // {
+    //     throw IllegalState("an invalid neighbor was given.");
+    // }
+
+    voxel_container::iterator from_itr(voxels_.begin() + private_from);
+    MolecularTypeBase* from_mt(*from_itr);
+    // if (from_mt->is_vacant())
+    // {
+    //     throw IllegalState("a vacant voxel is immobile.");
+    // }
+
+    voxel_container::iterator to_itr(voxels_.begin() + private_to);
+    MolecularTypeBase* to_mt(*to_itr);
+    if (to_mt == border_)
+    {
+        return std::make_pair(private_from, false);
+    }
+    else if (to_mt == periodic_)
+    {
+        private_to = apply_boundary_(private_to);
+        // to_mt = voxels_.at(private_to);
+        to_itr = voxels_.begin() + private_to;
+        to_mt = (*to_itr);
+    }
+
+    if (to_mt != from_mt->location())
+    {
+        return std::make_pair(private_to, false);
+    }
+
+    (*from_itr) = to_mt;
+    to_mt->replace_voxel(private_to, particle_info(private_from, ParticleID()));
+    (*to_itr) = from_mt;
+    (*itr).first = private_to; //XXX: updating data
+    return std::make_pair(private_to, true);
 }
 
 std::vector<LatticeSpace::private_coordinate_type>
@@ -756,29 +788,29 @@ LatticeSpace::private_coordinate_type LatticeSpace::get_neighbor(
     switch(nrand)
     {
     case 1:
-        return private_coord+1;
+        return private_coord + 1;
     case 2:
-        return private_coord+(odd_col^odd_lay)-NUM_ROW-1;
+        return private_coord + (odd_col ^ odd_lay) - NUM_ROW - 1;
     case 3:
-        return private_coord+(odd_col^odd_lay)-NUM_ROW;
+        return private_coord + (odd_col ^ odd_lay) - NUM_ROW;
     case 4:
-        return private_coord+(odd_col^odd_lay)+NUM_ROW-1;
+        return private_coord + (odd_col ^ odd_lay) + NUM_ROW - 1;
     case 5:
-        return private_coord+(odd_col^odd_lay)+NUM_ROW;
+        return private_coord + (odd_col ^ odd_lay) + NUM_ROW;
     case 6:
-        return private_coord-(2*odd_col-1)*NUM_COLROW-NUM_ROW;
+        return private_coord - (2 * odd_col - 1) * NUM_COLROW - NUM_ROW;
     case 7:
-        return private_coord-(2*odd_col-1)*NUM_COLROW+NUM_ROW;
+        return private_coord - (2 * odd_col - 1) * NUM_COLROW + NUM_ROW;
     case 8:
-        return private_coord+(odd_col^odd_lay)-NUM_COLROW-1;
+        return private_coord + (odd_col ^ odd_lay) - NUM_COLROW - 1;
     case 9:
-        return private_coord+(odd_col^odd_lay)-NUM_COLROW;
+        return private_coord + (odd_col ^ odd_lay) - NUM_COLROW;
     case 10:
-        return private_coord+(odd_col^odd_lay)+NUM_COLROW-1;
+        return private_coord + (odd_col ^ odd_lay) + NUM_COLROW - 1;
     case 11:
-        return private_coord+(odd_col^odd_lay)+NUM_COLROW;
+        return private_coord + (odd_col ^ odd_lay) + NUM_COLROW;
     }
-    return private_coord-1;
+    return private_coord - 1;
 }
 
 const Particle LatticeSpace::particle_at(private_coordinate_type coord) const

@@ -142,7 +142,7 @@ public:
         private_coordinate_type coord, Integer nrand);
     std::pair<private_coordinate_type, bool> move_to_neighbor(
         particle_info& info, Integer nrand);
-    std::pair<std::pair<particle_info, coordinate_type>, bool>
+    std::pair<private_coordinate_type, bool>
         move_to_neighbor(const MolecularTypeBase::iterator& itr, const Integer nrand);
 
     inline bool is_periodic() const
