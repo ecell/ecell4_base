@@ -13,6 +13,7 @@
 #include <ecell4/core/Model.hpp>
 #include <ecell4/core/extras.hpp>
 #include <ecell4/core/SerialIDGenerator.hpp>
+#include <ecell4/core/ParticleSpaceHDF5Writer.hpp>
 #include "./ParticleTraits.hpp" // This refers ecell4::Particle
 
 #include "ParticleContainerBase.hpp"
@@ -286,8 +287,8 @@ public:
     virtual bool update_particle(particle_id_pair const& pi_pair)
     {
         typename base_type::particle_matrix_type::iterator i(
-                base_type::pmat_.find(pi_pair.first));
-        if (i != base_type::pmat_.end())
+                (*base_type::pmat_).find(pi_pair.first));
+        if (i != (*base_type::pmat_).end())
         {
             if ((*i).second.sid() != pi_pair.second.sid())
             {
@@ -297,12 +298,13 @@ public:
                     j(particle_pool_.find(pi_pair.second.sid()));
                 if (j == particle_pool_.end())
                 {
-                    this->register_species(pi_pair.second.sid());
+                    this->register_species(pi_pair);
+                    // this->register_species(pi_pair.second.sid());
                     j = particle_pool_.find(pi_pair.second.sid());
                 }
                 (*j).second.insert(pi_pair.first);
             }
-            base_type::pmat_.update(i, pi_pair);
+            (*base_type::pmat_).update(i, pi_pair);
             return false;
         }
 
@@ -311,7 +313,8 @@ public:
             k(particle_pool_.find(pi_pair.second.sid()));
         if (k == particle_pool_.end())
         {
-            this->register_species(pi_pair.second.sid());
+            this->register_species(pi_pair);
+            // this->register_species(pi_pair.second.sid());
             k = particle_pool_.find(pi_pair.second.sid());
         }
         (*k).second.insert(pi_pair.first);
@@ -409,17 +412,53 @@ public:
         return rng_;
     }
 
-    // virtual void save(const std::string& filename) const
-    // {
-    //     throw NotSupported(
-    //         "save(const std::string) is not supported by this space class");
-    // }
+    virtual void save(const std::string& filename) const
+    {
+        boost::scoped_ptr<H5::H5File>
+            fout(new H5::H5File(filename.c_str(), H5F_ACC_TRUNC));
+        rng_->save(fout.get());
+        pidgen_.save(fout.get());
+        boost::scoped_ptr<H5::Group>
+            group(new H5::Group(fout->createGroup("ParticleSpace")));
+       //  ps_->save(group.get());
+       ecell4::save_particle_space(*this, group.get());
+    }
 
-    // virtual void load(const std::string& filename)
-    // {
-    //     throw NotSupported(
-    //         "load(const std::string) is not supported by this space class");
-    // }
+    virtual void load(const std::string& filename)
+    {
+        //XXX: structures and matrix_sizes will be lost.
+        //XXX: the order of particles in MatrixSpace will be lost.
+        //XXX: initialize Simulator
+        boost::scoped_ptr<H5::H5File>
+            fin(new H5::H5File(filename.c_str(), H5F_ACC_RDONLY));
+        const H5::Group group(fin->openGroup("ParticleSpace"));
+        // ps_->load(group);
+        clear();
+        ecell4::load_particle_space(group, this);
+        pidgen_.load(*fin);
+        rng_->load(*fin);
+    }
+
+    virtual void clear()
+    {
+        // particle_id_generator pidgen_;
+        // boost::shared_ptr<rng_type> rng_;
+        // boost::weak_ptr<model_type> model_;
+        ; // do nothing
+
+        // molecule_info_map molecule_info_map_;
+        // structure_map structure_map_;
+        // per_species_particle_id_set particle_pool_;
+        molecule_info_map_.clear();
+        structure_map_.clear();
+        particle_pool_.clear();
+
+        // ParticleContainerBase
+        // particle_matrix_type pmat_;
+        // time_type t_;
+        (*base_type::pmat_).clear();
+        base_type::t_ = 0.0;
+    }
 
     virtual const length_type volume() const
     {
@@ -430,6 +469,11 @@ public:
     virtual const position_type& edge_lengths() const
     {
         return base_type::edge_lengths();
+    }
+
+    virtual void set_edge_lengths(const position_type& lengths)
+    {
+        base_type::set_edge_lengths(lengths);
     }
 
     virtual bool has_particle(const particle_id_type& pid) const
@@ -669,6 +713,11 @@ public:
         }
     }
 
+    virtual bool update_particle(const particle_id_type& pid, const particle_type& p)
+    {
+        return this->update_particle(std::make_pair(pid, p));
+    }
+
     void add_molecules(const ecell4::Species& sp, const ecell4::Integer& num)
     {
         ecell4::extras::throw_in_particles(*this, sp, num, rng());
@@ -717,8 +766,15 @@ public:
      */
     molecule_info_type get_molecule_info(const ecell4::Species& sp) const
     {
-        ecell4::Real radius(0.0), D(0.0);
-        std::string structure_id("world");
+        const molecule_info_type defaults = {0.0, 0.0, "world"};
+        return get_molecule_info(sp, defaults);
+    }
+
+    molecule_info_type get_molecule_info(
+        const ecell4::Species& sp, const molecule_info_type& defaults) const
+    {
+        ecell4::Real radius(defaults.radius), D(defaults.D);
+        std::string structure_id(defaults.structure_id);
 
         if (sp.has_attribute("radius") && sp.has_attribute("D"))
         {
@@ -752,6 +808,18 @@ public:
     }
 
 protected:
+
+    const molecule_info_type& register_species(const particle_id_pair& pid_pair)
+    {
+        const molecule_info_type defaults
+            = {pid_pair.second.radius(), pid_pair.second.D(), "world"};
+        const species_id_type sid(pid_pair.second.sid());
+        const ecell4::Species sp(sid);
+        molecule_info_type info(get_molecule_info(sp, defaults));
+        molecule_info_map_.insert(std::make_pair(sid, info));
+        particle_pool_[sid] = particle_id_set();
+        return (*molecule_info_map_.find(sid)).second;
+    }
 
     const molecule_info_type& register_species(const species_id_type& sid)
     {

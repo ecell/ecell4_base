@@ -130,31 +130,43 @@ public:
 protected:
 public:
     ParticleContainerBase(const position_type& edge_lengths, const matrix_sizes_type& sizes)
-        : pmat_(edge_lengths, sizes) {}
+        : pmat_(new particle_matrix_type(edge_lengths, sizes)), t_(0.0) {}
 
     virtual ecell4::Integer num_particles() const
     {
-        return pmat_.size();
+        return (*pmat_).size();
     }
 
     // virtual size_type num_particles() const
     // {
-    //     return pmat_.size();
+    //     return (*pmat_).size();
     // }
 
     virtual const position_type& edge_lengths() const
     {
-        return pmat_.edge_lengths();
+        return (*pmat_).edge_lengths();
+    }
+
+    virtual void set_edge_lengths(const position_type& lengths)
+    {
+        (*pmat_).clear();
+        const matrix_sizes_type sizes((*pmat_).matrix_sizes());
+        // pmat_ = particle_matrix_type(lengths, sizes);
+        boost::scoped_ptr<particle_matrix_type>
+            newpmat(new particle_matrix_type(lengths, sizes));
+        pmat_.swap(newpmat);
+
+        ; // newpmat will be released here
     }
 
     position_type cell_sizes() const
     {
-        return pmat_.cell_sizes();
+        return (*pmat_).cell_sizes();
     }
 
     matrix_sizes_type matrix_sizes() const
     {
-        return pmat_.matrix_sizes();
+        return (*pmat_).matrix_sizes();
     }
 
     template<typename T_>
@@ -228,7 +240,7 @@ public:
         typename boost::disable_if<boost::is_same<Tsph_, particle_id_pair> >::type* =0) const
     {
         typename utils::template overlap_checker<Tset_> oc(ignore);
-        traits_type::take_neighbor(pmat_, oc, s);
+        traits_type::take_neighbor(*pmat_, oc, s);
         return oc.result();
     }
 
@@ -237,14 +249,14 @@ public:
         typename boost::disable_if<boost::is_same<Tsph_, particle_id_pair> >::type* =0) const
     {
         typename utils::template overlap_checker<boost::array<particle_id_type, 0> > oc;
-        traits_type::take_neighbor(pmat_, oc, s);
+        traits_type::take_neighbor(*pmat_, oc, s);
         return oc.result();
     }
 
     particle_id_pair get_particle(particle_id_type const& id, bool& found) const
     {
-        typename particle_matrix_type::const_iterator i(pmat_.find(id));
-        if (pmat_.end() == i) {
+        typename particle_matrix_type::const_iterator i((*pmat_).find(id));
+        if ((*pmat_).end() == i) {
             found = false;
             return particle_id_pair();
         }
@@ -254,8 +266,8 @@ public:
 
     virtual particle_id_pair get_particle(particle_id_type const& id) const
     {
-        typename particle_matrix_type::const_iterator i(pmat_.find(id));
-        if (pmat_.end() == i) {
+        typename particle_matrix_type::const_iterator i((*pmat_).find(id));
+        if ((*pmat_).end() == i) {
             throw not_found(std::string("No such particle: id=")
                     + boost::lexical_cast<std::string>(id));
         }
@@ -264,29 +276,29 @@ public:
 
     virtual bool has_particle(particle_id_type const& id) const
     {
-        return pmat_.end() != pmat_.find(id);
+        return (*pmat_).end() != (*pmat_).find(id);
     }
 
     virtual transaction_type* create_transaction();
 
     virtual particle_id_pair_generator* get_particles() const
     {
-        return make_range_generator<particle_id_pair>(pmat_);
+        return make_range_generator<particle_id_pair>(*pmat_);
     }
 
     particle_id_pair_range get_particles_range() const
     {
-        return particle_id_pair_range(pmat_.begin(), pmat_.end(), pmat_.size());
+        return particle_id_pair_range((*pmat_).begin(), (*pmat_).end(), (*pmat_).size());
     }
 
     virtual bool update_particle(particle_id_pair const& pi_pair)
     {
-        return pmat_.update(pi_pair).second;
+        return (*pmat_).update(pi_pair).second;
     }
 
     virtual bool remove_particle(particle_id_type const& id)
     {
-        return pmat_.erase(id);
+        return (*pmat_).erase(id);
     }
 
     /** ecell4::Space
@@ -302,7 +314,7 @@ public:
     }
 
 protected:
-    particle_matrix_type pmat_;
+    boost::scoped_ptr<particle_matrix_type> pmat_;
 
     time_type t_;
 };

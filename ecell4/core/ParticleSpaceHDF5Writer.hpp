@@ -12,6 +12,7 @@
 #include "get_mapper_mf.hpp"
 #include "Species.hpp"
 #include "Particle.hpp"
+#include "Space.hpp"
 
 
 namespace ecell4

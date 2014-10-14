@@ -1,6 +1,7 @@
 #ifndef MATRIX_SPACE_HPP
 #define MATRIX_SPACE_HPP
 
+// #include <iostream>
 #include <cstddef>
 #include <algorithm>
 #include <iterator>
@@ -71,6 +72,11 @@ public:
     {
         ;
     }
+
+    // ~MatrixSpace()
+    // {
+    //     std::cerr << "MatrixSpace was released." << std::endl; //XXX: DEBUG
+    // }
 
     inline cell_index_type index(const position_type& pos,
             double t = 1e-10) const
@@ -199,11 +205,6 @@ public:
     {
         return cell_sizes_;
     }
-
-    //XXX: inline typename matrix_type::size_type matrix_size() const
-    //XXX: {
-    //XXX:     return matrix_.shape()[0];
-    //XXX: }
 
     inline const matrix_sizes_type matrix_sizes() const
     {

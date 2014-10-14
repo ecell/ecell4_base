@@ -177,6 +177,8 @@ int main(int argc, char **argv)
     }
     // }}}
 
+    world->save("test.h5");
+
     // Statistics
     // {{{
     int num_single_steps_per_type[simulator_type::NUM_SINGLE_EVENT_KINDS];
@@ -221,6 +223,19 @@ int main(int argc, char **argv)
     std::cout << (boost::format("%1%: %2% \n")
         % "REACTION" % sim->num_multi_steps_per_type(multi_type::REACTION));
     // }}}
+
+    // {
+    //     boost::scoped_ptr<world_type>
+    //         world2(new world_type(ecell4::Position3(1, 2, 3), ecell4::Global(3, 6, 9)));
+    //     std::cout << "edge_lengths:" << world2->edge_lengths()[0] << " " << world2->edge_lengths()[1] << " " << world2->edge_lengths()[2] << std::endl;
+    //     std::cout << "matrix_sizes:" << world2->matrix_sizes()[0] << " " << world2->matrix_sizes()[1] << " " << world2->matrix_sizes()[2] << std::endl;
+    //     std::cout << "num_particles: " << world2->num_particles() << std::endl;
+
+    //     world2->load("test.h5");
+    //     std::cout << "edge_lengths:" << world2->edge_lengths()[0] << " " << world2->edge_lengths()[1] << " " << world2->edge_lengths()[2] << std::endl;
+    //     std::cout << "matrix_sizes:" << world2->matrix_sizes()[0] << " " << world2->matrix_sizes()[1] << " " << world2->matrix_sizes()[2] << std::endl;
+    //     std::cout << "num_particles: " << world2->num_particles() << std::endl;
+    // }
 
     return 0;
 }
