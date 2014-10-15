@@ -51,10 +51,10 @@ public:
         throw NotImplemented("edge_lengths() not implemented");
     }
 
-    virtual void set_edge_lengths(const Position3& edge_lengths)
+    virtual void reset(const Position3& edge_lengths)
     {
         throw NotImplemented(
-            "set_edge_lengths(const Position3&) not implemented");
+            "reset(const Position3&) not implemented");
     }
 
     /**
@@ -148,6 +148,7 @@ class CompartmentSpaceVectorImpl
 {
 protected:
 
+    typedef CompartmentSpace base_type;
     typedef std::vector<Integer> num_molecules_container_type;
     typedef std::vector<Species> species_container_type;
     typedef utils::get_mapper_mf<
@@ -157,7 +158,7 @@ public:
 
     CompartmentSpaceVectorImpl(const Position3& edge_lengths)
     {
-        set_edge_lengths(edge_lengths);
+        reset(edge_lengths);
     }
 
     const Position3& edge_lengths() const
@@ -165,8 +166,13 @@ public:
         return edge_lengths_;
     }
 
-    void set_edge_lengths(const Position3& edge_lengths)
+    void reset(const Position3& edge_lengths)
     {
+        base_type::t_ = 0.0;
+        index_map_.clear();
+        num_molecules_.clear();
+        species_.clear();
+
         for (Position3::size_type dim(0); dim < 3; ++dim)
         {
             if (edge_lengths[dim] <= 0)
@@ -205,7 +211,6 @@ public:
     void load(const H5::Group& root)
     {
         typedef CompartmentSpaceHDF5Traits<CompartmentSpaceVectorImpl> traits_type;
-        clear();
         load_compartment_space<traits_type>(root, this);
     }
 
@@ -213,7 +218,6 @@ protected:
 
     void reserve_species(const Species& sp);
     void release_species(const Species& sp);
-    void clear();
 
 protected:
 

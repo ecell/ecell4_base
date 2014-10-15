@@ -170,10 +170,6 @@ void load_lattice_space(const H5::Group& root, Tspace_* space)
     typedef typename traits_type::h5_species_struct h5_species_struct;
     typedef typename traits_type::h5_voxel_struct h5_voxel_struct;
 
-    double t;
-    root.openAttribute("t").read(H5::PredType::IEEE_F64LE, &t);
-    space->set_t(t);
-
     uint32_t is_periodic;
     root.openAttribute("is_periodic").read(
         H5::PredType::STD_I32LE, &is_periodic);
@@ -186,7 +182,11 @@ void load_lattice_space(const H5::Group& root, Tspace_* space)
     double voxel_radius;
     root.openAttribute("voxel_radius").read(H5::PredType::IEEE_F64LE, &voxel_radius);
 
-    space->cleanup(edge_lengths, voxel_radius, (is_periodic != 0));
+    space->reset(edge_lengths, voxel_radius, (is_periodic != 0));
+
+    double t;
+    root.openAttribute("t").read(H5::PredType::IEEE_F64LE, &t);
+    space->set_t(t);
 
     {
         H5::DataSet species_dset(root.openDataSet("species"));

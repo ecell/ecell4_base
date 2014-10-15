@@ -114,12 +114,6 @@ public:
 
     virtual ~ParticleSimulator() {}
 
-    // ParticleSimulator(boost::shared_ptr<world_type> world,
-    //                   boost::shared_ptr<network_rules_type const> network_rules,
-    //                   rng_type& rng)
-    //     : world_(world), network_rules_(network_rules), rrec_(), rng_(rng),
-    //       t_(0.), dt_(0.), num_steps_(0), paranoiac_(false) {}
-
     ParticleSimulator(
         const boost::shared_ptr<world_type>& world,
         const boost::shared_ptr<model_type>& model)
@@ -144,11 +138,6 @@ public:
     // boost::shared_ptr<reaction_recorder_type>& reaction_recorder()
     // {
     //     return rrec_;
-    // }
-
-    // rng_type& rng() const
-    // {
-    //     return rng_;
     // }
 
     inline rng_type& rng() const
@@ -183,8 +172,6 @@ public:
 protected:
     boost::shared_ptr<network_rules_type const> network_rules_;
     boost::shared_ptr<reaction_recorder_type> rrec_;
-    // rng_type& rng_;
-    // time_type t_;
     time_type dt_;
     bool paranoiac_;
 

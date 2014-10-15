@@ -311,6 +311,7 @@ class ParticleSpaceVectorImpl
 {
 public:
 
+    typedef ParticleSpace base_type;
     typedef ParticleSpace::particle_container_type particle_container_type;
 
 protected:
@@ -322,7 +323,7 @@ public:
 
     ParticleSpaceVectorImpl(const Position3& edge_lengths)
     {
-        set_edge_lengths(edge_lengths);
+        reset(edge_lengths);
     }
 
     // ParticleSpaceTraits
@@ -379,15 +380,10 @@ public:
 
     void load(const H5::Group& root)
     {
-        clear();
         load_particle_space(root, this);
     }
 
-    void set_edge_lengths(const Position3& edge_lengths);
-
-protected:
-
-    void clear();
+    void reset(const Position3& edge_lengths);
 
 protected:
 

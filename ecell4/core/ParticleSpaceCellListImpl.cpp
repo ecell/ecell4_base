@@ -6,8 +6,24 @@
 namespace ecell4
 {
 
-void ParticleSpaceCellListImpl::set_edge_lengths(const Position3& edge_lengths)
+void ParticleSpaceCellListImpl::reset(const Position3& edge_lengths)
 {
+    base_type::t_ = 0.0;
+    particles_.clear();
+    rmap_.clear();
+    particle_pool_.clear();
+
+    for (int i(0); i < matrix_.shape()[0]; ++i)
+    {
+        for (int j(0); j < matrix_.shape()[1]; ++j)
+        {
+            for (int k(0); k < matrix_.shape()[2]; ++k)
+            {
+                matrix_[i][j][k].clear();
+            }
+        }
+    }
+
     for (Position3::size_type dim(0); dim < 3; ++dim)
     {
         if (edge_lengths[dim] <= 0)
@@ -113,24 +129,6 @@ Integer ParticleSpaceCellListImpl::num_molecules(const Species& sp) const
 Integer ParticleSpaceCellListImpl::num_molecules_exact(const Species& sp) const
 {
     return num_particles_exact(sp);
-}
-
-void ParticleSpaceCellListImpl::clear()
-{
-    particles_.clear();
-    rmap_.clear();
-    particle_pool_.clear();
-
-    for (int i(0); i < matrix_.shape()[0]; ++i)
-    {
-        for (int j(0); j < matrix_.shape()[1]; ++j)
-        {
-            for (int k(0); k < matrix_.shape()[2]; ++k)
-            {
-                matrix_[i][j][k].clear();
-            }
-        }
-    }
 }
 
 std::vector<std::pair<ParticleID, Particle> >

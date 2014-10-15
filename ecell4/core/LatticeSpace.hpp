@@ -178,7 +178,7 @@ public:
         load_lattice_space(root, this);
     }
 
-    void cleanup(const Position3& edge_lengths, const Real& voxel_radius,
+    void reset(const Position3& edge_lengths, const Real& voxel_radius,
         const bool is_periodic)
     {
         edge_lengths_ = edge_lengths;

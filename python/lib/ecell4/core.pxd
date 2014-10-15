@@ -136,7 +136,7 @@ cdef extern from "ecell4/core/CompartmentSpace.hpp" namespace "ecell4":
         Real volume()
         Integer num_molecules(Cpp_Species &sp)
         vector[Cpp_Species] list_species()
-        void set_edge_lengths(Cpp_Position3&)
+        void reset(Cpp_Position3&)
         Cpp_Position3 edge_lengths()
         void set_volume(Real)
         void add_molecules(Cpp_Species &sp, Integer num)

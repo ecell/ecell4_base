@@ -155,11 +155,4 @@ void CompartmentSpaceVectorImpl::remove_molecules(
     num_molecules_[(*i).second] -= num;
 }
 
-void CompartmentSpaceVectorImpl::clear()
-{
-    index_map_.clear();
-    num_molecules_.clear();
-    species_.clear();
-}
-
 } // ecell4

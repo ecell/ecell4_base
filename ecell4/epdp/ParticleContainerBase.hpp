@@ -146,11 +146,15 @@ public:
         return (*pmat_).edge_lengths();
     }
 
-    virtual void set_edge_lengths(const position_type& lengths)
+    virtual void reset(const position_type& lengths)
+    {
+        const matrix_sizes_type sizes((*pmat_).matrix_sizes());
+        this->reset(lengths, sizes);
+    }
+
+    virtual void reset(const position_type& lengths, const matrix_sizes_type& sizes)
     {
         (*pmat_).clear();
-        const matrix_sizes_type sizes((*pmat_).matrix_sizes());
-        // pmat_ = particle_matrix_type(lengths, sizes);
         boost::scoped_ptr<particle_matrix_type>
             newpmat(new particle_matrix_type(lengths, sizes));
         pmat_.swap(newpmat);

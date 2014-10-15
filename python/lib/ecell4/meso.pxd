@@ -19,7 +19,7 @@ cdef extern from "ecell4/meso/MesoscopicWorld.hpp" namespace "ecell4::meso":
         Real volume()
         Real subvolume()
         Integer num_subvolumes()
-        void set_edge_lengths(Cpp_Position3&)
+        void reset(Cpp_Position3&)
         Cpp_Position3 edge_lengths()
         Cpp_Global matrix_sizes()
         Integer num_molecules(Cpp_Species &)

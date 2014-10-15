@@ -422,20 +422,41 @@ public:
         pidgen_.save(fout.get());
         boost::scoped_ptr<H5::Group>
             group(new H5::Group(fout->createGroup("ParticleSpace")));
-       //  ps_->save(group.get());
-       ecell4::save_particle_space(*this, group.get());
+        //  ps_->save(group.get());
+        ecell4::save_particle_space(*this, group.get());
+
+        /** matrix_sizes
+         */
+        const matrix_sizes_type sizes = base_type::matrix_sizes();
+        const hsize_t dims[] = {3};
+        const H5::ArrayType sizes_type(H5::PredType::NATIVE_INT, 1, dims);
+        H5::Attribute attr_sizes(
+            group->createAttribute(
+                "matrix_sizes", sizes_type, H5::DataSpace(H5S_SCALAR)));
+        int data[] = {sizes[0], sizes[1], sizes[2]};
+        attr_sizes.write(sizes_type, data);
     }
 
     virtual void load(const std::string& filename)
     {
-        //XXX: structures and matrix_sizes will be lost.
+        //XXX: structures will be lost.
         //XXX: the order of particles in MatrixSpace will be lost.
         //XXX: initialize Simulator
         boost::scoped_ptr<H5::H5File>
             fin(new H5::H5File(filename.c_str(), H5F_ACC_RDONLY));
         const H5::Group group(fin->openGroup("ParticleSpace"));
+
+        /** matrix_sizes
+         */
+        int data[3];
+        const hsize_t dims[] = {3};
+        const H5::ArrayType sizes_type(H5::PredType::NATIVE_INT, 1, dims);
+        group.openAttribute("matrix_sizes").read(sizes_type, data);
+        matrix_sizes_type sizes(data[0], data[1], data[2]);
+        //XXX: reset is called twice. see ecell4::load_particle_space
+        this->reset(edge_lengths(), sizes);
+
         // ps_->load(group);
-        clear();
         ecell4::load_particle_space(group, this);
         pidgen_.load(*fin);
         rng_->load(*fin);
@@ -472,9 +493,14 @@ public:
         return base_type::edge_lengths();
     }
 
-    virtual void set_edge_lengths(const position_type& lengths)
+    virtual void reset(const position_type& lengths)
     {
-        base_type::set_edge_lengths(lengths);
+        base_type::reset(lengths);
+    }
+
+    virtual void reset(const position_type& lengths, const matrix_sizes_type& sizes)
+    {
+        base_type::reset(lengths, sizes);
     }
 
     virtual bool has_particle(const particle_id_type& pid) const

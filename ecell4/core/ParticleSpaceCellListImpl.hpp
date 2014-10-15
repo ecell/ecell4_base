@@ -58,7 +58,7 @@ public:
         return edge_lengths_;
     }
 
-    void set_edge_lengths(const Position3& edge_lengths);
+    void reset(const Position3& edge_lengths);
 
     bool update_particle(const ParticleID& pid, const Particle& p);
 
@@ -91,7 +91,6 @@ public:
 
     void load(const H5::Group& root)
     {
-        clear();
         load_particle_space(root, this);
     }
 
@@ -108,8 +107,6 @@ public:
             const ParticleID& ignore1, const ParticleID& ignore2) const;
 
 protected:
-
-    void clear();
 
     // inline cell_index_type index(const Position3& pos, double t = 1e-10) const
     inline cell_index_type index(const Position3& pos) const

@@ -52,13 +52,13 @@ public:
     ODEWorld(const Position3& edge_lengths = Position3(1, 1, 1))
         : t_(0.0)
     {
-        set_edge_lengths(edge_lengths);
+        reset(edge_lengths);
     }
 
     ODEWorld(const std::string& filename)
         : t_(0.0)
     {
-        set_edge_lengths(Position3(1, 1, 1));
+        reset(Position3(1, 1, 1));
         this->load(filename);
     }
 
@@ -83,8 +83,13 @@ public:
         return edge_lengths_;
     }
 
-    void set_edge_lengths(const Position3& edge_lengths)
+    void reset(const Position3& edge_lengths)
     {
+        t_ = 0.0;
+        index_map_.clear();
+        num_molecules_.clear();
+        species_.clear();
+
         for (Position3::size_type dim(0); dim < 3; ++dim)
         {
             if (edge_lengths[dim] <= 0)
@@ -269,15 +274,6 @@ public:
     void add_molecules(const Species& sp, const Integer& num, const Shape& shape)
     {
         add_molecules(sp, num);
-    }
-
-protected:
-
-    void clear()
-    {
-        index_map_.clear();
-        num_molecules_.clear();
-        species_.clear();
     }
 
 protected:

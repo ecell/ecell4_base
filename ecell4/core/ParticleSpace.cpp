@@ -216,8 +216,12 @@ ParticleSpaceVectorImpl::list_particles_within_radius(
     return retval;
 }
 
-void ParticleSpaceVectorImpl::set_edge_lengths(const Position3& edge_lengths)
+void ParticleSpaceVectorImpl::reset(const Position3& edge_lengths)
 {
+    base_type::t_ = 0.0;
+    particles_.clear();
+    index_map_.clear();
+
     for (Position3::size_type dim(0); dim < 3; ++dim)
     {
         if (edge_lengths[dim] <= 0)
@@ -227,12 +231,6 @@ void ParticleSpaceVectorImpl::set_edge_lengths(const Position3& edge_lengths)
     }
 
     edge_lengths_ = edge_lengths;
-}
-
-void ParticleSpaceVectorImpl::clear()
-{
-    particles_.clear();
-    index_map_.clear();
 }
 
 } // ecell4

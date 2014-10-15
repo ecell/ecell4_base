@@ -107,7 +107,7 @@ public:
         remove_molecules(sp, num, global2coord(g));
     }
 
-    virtual void cleanup(const Position3& edge_lengths, const Global& matrix_sizes) = 0;
+    virtual void reset(const Position3& edge_lengths, const Global& matrix_sizes) = 0;
     virtual void save(H5::Group* root) const = 0;
     virtual void load(const H5::Group& root) = 0;
 
@@ -137,7 +137,7 @@ public:
         matrix_sizes_[1] = matrix_sizes.row;
         matrix_sizes_[2] = matrix_sizes.layer;
 
-        set_edge_lengths(edge_lengths);
+        reset(edge_lengths);
     }
 
     virtual ~SubvolumeSpaceVectorImpl()
@@ -161,19 +161,6 @@ public:
             edge_lengths_[0] / matrix_sizes_[0],
             edge_lengths_[1] / matrix_sizes_[1],
             edge_lengths_[2] / matrix_sizes_[2]);
-    }
-
-    void set_edge_lengths(const Position3& edge_lengths)
-    {
-        for (Position3::size_type dim(0); dim < 3; ++dim)
-        {
-            if (edge_lengths[dim] <= 0)
-            {
-                throw std::invalid_argument("the edge length must be positive.");
-            }
-        }
-
-        edge_lengths_ = edge_lengths;
     }
 
     const Real volume() const
@@ -253,14 +240,30 @@ public:
         load_subvolume_space(root, this);
     }
 
-    void cleanup(const Position3& edge_lengths, const Global& matrix_sizes)
+    void reset(const Position3& edge_lengths)
     {
-        set_edge_lengths(edge_lengths);
+        reset(edge_lengths, matrix_sizes());
+    }
+
+    void reset(const Position3& edge_lengths, const Global& matrix_sizes)
+    {
+        base_type::t_ = 0.0;
+        matrix_.clear();
+        species_.clear();
+
+        for (Position3::size_type dim(0); dim < 3; ++dim)
+        {
+            if (edge_lengths[dim] <= 0)
+            {
+                throw std::invalid_argument("the edge length must be positive.");
+            }
+        }
+
+        edge_lengths_ = edge_lengths;
+
         matrix_sizes_[0] = matrix_sizes.col;
         matrix_sizes_[1] = matrix_sizes.row;
         matrix_sizes_[2] = matrix_sizes.layer;
-        matrix_.clear();
-        species_.clear();
     }
 
 protected:
