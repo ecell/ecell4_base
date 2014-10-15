@@ -46,11 +46,6 @@ public:
         last_reactions_.clear();
     }
 
-    Real t() const
-    {
-        return (*world_).t();
-    }
-
     Real dt() const
     {
         return dt_;
@@ -64,11 +59,6 @@ public:
     std::vector<ReactionRule> last_reactions() const
     {
         return last_reactions_;
-    }
-
-    void set_t(const Real& t)
-    {
-        (*world_).set_t(t);
     }
 
     void set_dt(const Real& dt)

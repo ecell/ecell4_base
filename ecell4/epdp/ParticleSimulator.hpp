@@ -15,7 +15,7 @@
 
 #include "NetworkRulesAdapter.hpp"
 #include "ReactionRecorderWrapper.hpp"
-#include <ecell4/core/Simulator.hpp>
+#include <ecell4/core/SimulatorBase.hpp>
 
 
 template<typename Tworld_>
@@ -86,7 +86,9 @@ struct MutativeStructureVisitor
 
 template<typename Ttraits_>
 class ParticleSimulator
-    : public ecell4::Simulator
+    : public ecell4::SimulatorBase<
+        typename Ttraits_::world_type::traits_type::model_type,
+        typename Ttraits_::world_type>
 {
 public:
 
@@ -106,6 +108,8 @@ public:
     typedef typename world_type::traits_type::rng_type rng_type;
     typedef typename world_type::traits_type::model_type model_type;
 
+    typedef ecell4::SimulatorBase<model_type, world_type> base_type;
+
 public:
 
     virtual ~ParticleSimulator() {}
@@ -118,18 +122,13 @@ public:
 
     ParticleSimulator(
         const boost::shared_ptr<world_type>& world,
-        const boost::shared_ptr<model_type>& ecell4_model)
-        : world_(world), model_(ecell4_model),
-        network_rules_(new network_rules_type(ecell4_model)),
+        const boost::shared_ptr<model_type>& model)
+        : base_type(model, world),
+        network_rules_(new network_rules_type(model)),
         rrec_(new ReactionRecorderWrapper<reaction_record_type>()),
-        dt_(0.), num_steps_(0), paranoiac_(false)
+        dt_(0.), paranoiac_(false)
     {
-        world_->bind_to(model_);
-    }
-
-    boost::shared_ptr<world_type> const& world() const
-    {
-        return world_;
+        ;
     }
 
     boost::shared_ptr<network_rules_type const> const& network_rules() const
@@ -154,18 +153,18 @@ public:
 
     inline rng_type& rng() const
     {
-        return (*(*world_).rng().get());
+        return (*(*base_type::world_).rng().get());
     }
 
-    virtual time_type t() const
+    virtual void set_dt(const Real& dt)
     {
-        // return t_;
-        return (*world_).t();
+        std::cerr << "WARN: set_dt(const Real&) was just ignored." << std::endl;
+        dt_ = dt;
     }
 
     virtual time_type dt() const
     {
-        return dt_;
+        return dt_; //XXX: dt has no mean for egfrd.
     }
 
     bool const& paranoiac() const
@@ -178,47 +177,15 @@ public:
         return paranoiac_;
     }
 
-    // int num_steps() const
-    // {
-    //     return num_steps_;
-    // }
-
-    virtual ecell4::Integer num_steps() const
-    {
-        return num_steps_;
-    }
-
     virtual void step() = 0;
-
-    // virtual bool step(time_type upto) = 0;
     virtual bool step(const time_type& upto) = 0;
 
-    /* ecell4::Simulator
-     */
-    virtual void set_dt(const Real& dt)
-    {
-        std::cerr << "WARN: set_dt(const Real&) was just ignored." << std::endl;
-    }
-
-    virtual void set_t(const Real& t)
-    {
-        (*world_).set_t(t);
-    }
-
-    const boost::shared_ptr<model_type>& model()
-    {
-        return model_;
-    }
-
 protected:
-    boost::shared_ptr<world_type> world_;
-    boost::shared_ptr<model_type> model_; // ecell4
     boost::shared_ptr<network_rules_type const> network_rules_;
     boost::shared_ptr<reaction_recorder_type> rrec_;
     // rng_type& rng_;
     // time_type t_;
     time_type dt_;
-    int num_steps_;
     bool paranoiac_;
 
 };

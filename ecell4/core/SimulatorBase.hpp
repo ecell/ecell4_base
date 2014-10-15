@@ -101,6 +101,16 @@ public:
         return num_steps_;
     }
 
+    virtual Real t() const
+    {
+        return (*world_).t();
+    }
+
+    virtual void set_t(const Real& t)
+    {
+        (*world_).set_t(t);
+    }
+
     /**
      * set step interval.
      */

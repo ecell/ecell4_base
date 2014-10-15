@@ -339,8 +339,6 @@ public:
     }
 
     // SimulatorTraits
-
-    Real t(void) const;
     Real dt(void) const;
 
     void step(void) ;
@@ -348,7 +346,6 @@ public:
 
     // Optional members
 
-    void set_t(const Real &t);
     std::vector<ReactionRule> last_reactions() const;
 
     /**

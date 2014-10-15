@@ -143,11 +143,6 @@ public:
         initialize();
     }
 
-    virtual Real t() const
-    {
-        return world_->t();
-    }
-
     virtual Real dt() const
     {
         return dt_;
