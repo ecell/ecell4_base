@@ -414,9 +414,11 @@ std::pair<LatticeWorld::coordinate_type, bool> LatticeWorld::move_to_neighbor(
 }
 
 std::pair<LatticeWorld::private_coordinate_type, bool>
-LatticeWorld::move_to_neighbor(const MolecularTypeBase::iterator& itr, const Integer nrand)
+LatticeWorld::move_to_neighbor(
+    MolecularTypeBase* const& from_mt, MolecularTypeBase* const& loc,
+    particle_info& info, const Integer nrand)
 {
-    return space_.move_to_neighbor(itr, nrand);
+    return space_.move_to_neighbor(from_mt, loc, info, nrand);
 }
 
 std::pair<std::pair<LatticeWorld::particle_info,

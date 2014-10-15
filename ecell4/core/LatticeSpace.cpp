@@ -711,9 +711,6 @@ std::pair<LatticeSpace::private_coordinate_type, bool> LatticeSpace::move_(
     // to_mt->addVoxel(particle_info(private_from, ParticleID()));
     to_mt->replace_voxel(private_to, particle_info(private_from, ParticleID()));
 
-    //XXX:
-    //XXX: NEVER USE REFERENCE MODIFICATION!!!
-    //XXX:
     info.first = private_to;
 
     voxel_container::iterator to_itr(voxels_.begin() + private_to);
@@ -723,46 +720,49 @@ std::pair<LatticeSpace::private_coordinate_type, bool> LatticeSpace::move_(
 }
 
 std::pair<LatticeSpace::private_coordinate_type, bool> LatticeSpace::move_to_neighbor(
-    const MolecularTypeBase::iterator& itr, const Integer nrand)
+    MolecularTypeBase* const& from_mt, MolecularTypeBase* const& loc,
+    MolecularTypeBase::particle_info& info, const Integer nrand)
 {
-    const private_coordinate_type private_from((*itr).first);
-    private_coordinate_type private_to(get_neighbor((*itr).first, nrand));
+    const private_coordinate_type private_from(info.first);
+    private_coordinate_type private_to(get_neighbor(private_from, nrand));
 
-    // if (private_from == private_to)
-    // {
-    //     throw IllegalState("an invalid neighbor was given.");
-    // }
+    //XXX: assert(private_from != private_to);
+    //XXX: assert(from_mt == voxels_[private_from]);
+    //XXX: assert(from_mt != vacant_);
 
-    voxel_container::iterator from_itr(voxels_.begin() + private_from);
-    MolecularTypeBase* from_mt(*from_itr);
-    // if (from_mt->is_vacant())
-    // {
-    //     throw IllegalState("a vacant voxel is immobile.");
-    // }
+    MolecularTypeBase* to_mt(voxels_[private_to]);
 
-    voxel_container::iterator to_itr(voxels_.begin() + private_to);
-    MolecularTypeBase* to_mt(*to_itr);
-    if (to_mt == border_)
+    if (to_mt != loc)
     {
-        return std::make_pair(private_from, false);
-    }
-    else if (to_mt == periodic_)
-    {
-        private_to = apply_boundary_(private_to);
-        // to_mt = voxels_.at(private_to);
-        to_itr = voxels_.begin() + private_to;
-        to_mt = (*to_itr);
-    }
+        if (to_mt == border_)
+        {
+            return std::make_pair(private_from, false);
+        }
+        else if (to_mt == periodic_)
+        {
+            private_to = apply_boundary_(private_to);
+            to_mt = voxels_[private_to];
 
-    if (to_mt != from_mt->location())
-    {
-        return std::make_pair(private_to, false);
+            if (to_mt != loc)
+            {
+                return std::make_pair(private_to, false);
+            }
+        }
+        else
+        {
+            return std::make_pair(private_to, false);
+        }
     }
 
-    (*from_itr) = to_mt;
-    to_mt->replace_voxel(private_to, particle_info(private_from, ParticleID()));
-    (*to_itr) = from_mt;
-    (*itr).first = private_to; //XXX: updating data
+    voxels_[private_from] = to_mt;
+    voxels_[private_to] = from_mt;
+    info.first = private_to; //XXX: updating data
+
+    if (to_mt != vacant_) // (!to_mt->is_vacant())
+    {
+        to_mt->replace_voxel(
+            private_to, particle_info(private_from, ParticleID()));
+    }
     return std::make_pair(private_to, true);
 }
 

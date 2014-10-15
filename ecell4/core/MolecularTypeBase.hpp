@@ -130,19 +130,24 @@ public:
         return false;
     }
 
-    const container_type& voxels() const
-    {
-        return voxels_;
-    }
-
-    container_type& voxels()
-    {
-        return voxels_;
-    }
-
     particle_info& at(const Integer& index)
     {
         return voxels_.at(index);
+    }
+
+    particle_info const& at(const Integer& index) const
+    {
+        return voxels_.at(index);
+    }
+
+    particle_info& operator[](const Integer& n)
+    {
+        return voxels_[n];
+    }
+
+    particle_info const& operator[](const Integer& n) const
+    {
+        return voxels_[n];
     }
 
     const Integer size() const
