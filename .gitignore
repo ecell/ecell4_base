@@ -10,3 +10,4 @@ Makefile
 CMakeFiles
 *.so
 ecell4/*/tests/*.h5
+ecell4/*/tests/*_test
