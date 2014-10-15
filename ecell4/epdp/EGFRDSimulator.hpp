@@ -937,12 +937,12 @@ public:
           num_retries_(dissociation_retry_moves),
           bd_dt_factor_(bd_dt_factor),
           user_max_shell_size_(user_max_shell_size),
-          ssmat_((*world).edge_lengths(), (*world).matrix_sizes()),
-          csmat_((*world).edge_lengths(), (*world).matrix_sizes()),
+          ssmat_(new spherical_shell_matrix_type((*world).edge_lengths(), (*world).matrix_sizes())),
+          csmat_(new cylindrical_shell_matrix_type((*world).edge_lengths(), (*world).matrix_sizes())),
           smatm_(boost::fusion::pair<spherical_shell_type,
-                                     spherical_shell_matrix_type&>(ssmat_),
+                                     spherical_shell_matrix_type&>(*ssmat_),
                  boost::fusion::pair<cylindrical_shell_type,
-                                     cylindrical_shell_matrix_type&>(csmat_)),
+                                     cylindrical_shell_matrix_type&>(*csmat_)),
           single_shell_factor_(.1),
           multi_shell_factor_(.05),
           rejected_moves_(0), zero_step_count_(0), dirty_(true)
@@ -1070,9 +1070,24 @@ public:
 
     virtual void initialize()
     {
+        const position_type& edge_lengths((*base_type::world_).edge_lengths());
+        const typename world_type::matrix_sizes_type&
+            matrix_sizes((*base_type::world_).matrix_sizes());
+
         domains_.clear();
-        ssmat_.clear();
-        csmat_.clear();
+        (*ssmat_).clear();
+        (*csmat_).clear();
+
+        if (edge_lengths != (*ssmat_).edge_lengths()
+            || matrix_sizes != (*ssmat_).matrix_sizes())
+        {
+            boost::scoped_ptr<spherical_shell_matrix_type>
+                newssmat(new spherical_shell_matrix_type(edge_lengths, matrix_sizes));
+            boost::scoped_ptr<cylindrical_shell_matrix_type>
+                newcsmat(new cylindrical_shell_matrix_type(edge_lengths, matrix_sizes));
+            ssmat_.swap(newssmat);
+            csmat_.swap(newcsmat);
+        }
 
         BOOST_FOREACH (particle_id_pair const& pp,
                        (*base_type::world_).get_particles_range())
@@ -3920,8 +3935,8 @@ protected:
     length_type const user_max_shell_size_;
 
     domain_map domains_;
-    spherical_shell_matrix_type ssmat_;
-    cylindrical_shell_matrix_type csmat_;
+    boost::scoped_ptr<spherical_shell_matrix_type> ssmat_;
+    boost::scoped_ptr<cylindrical_shell_matrix_type> csmat_;
     shell_matrix_map_type smatm_;
     shell_id_generator shidgen_;
     domain_id_generator didgen_;
