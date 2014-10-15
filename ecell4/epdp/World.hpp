@@ -286,10 +286,12 @@ public:
 
     virtual bool update_particle(particle_id_pair const& pi_pair)
     {
-        typename base_type::particle_matrix_type::iterator i(
-                (*base_type::pmat_).find(pi_pair.first));
-        if (i != (*base_type::pmat_).end())
+        std::pair<bool, typename base_type::particle_matrix_type::iterator>
+            retval(base_type::__has_particle(pi_pair.first));
+        if (retval.first)
         {
+            typename base_type::particle_matrix_type::iterator&
+                i(retval.second);
             if ((*i).second.sid() != pi_pair.second.sid())
             {
                 particle_pool_[(*i).second.sid()].erase((*i).first);
@@ -304,7 +306,7 @@ public:
                 }
                 (*j).second.insert(pi_pair.first);
             }
-            (*base_type::pmat_).update(i, pi_pair);
+            base_type::__update_particle(i, pi_pair);
             return false;
         }
 
@@ -456,8 +458,7 @@ public:
         // ParticleContainerBase
         // particle_matrix_type pmat_;
         // time_type t_;
-        (*base_type::pmat_).clear();
-        base_type::t_ = 0.0;
+        base_type::clear();
     }
 
     virtual const length_type volume() const

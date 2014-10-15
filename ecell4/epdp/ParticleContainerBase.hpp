@@ -127,7 +127,6 @@ public:
     typedef sized_iterator_range<typename particle_matrix_type::const_iterator> particle_id_pair_range;
     typedef typename particle_matrix_type::matrix_sizes_type matrix_sizes_type;
 
-protected:
 public:
     ParticleContainerBase(const position_type& edge_lengths, const matrix_sizes_type& sizes)
         : pmat_(new particle_matrix_type(edge_lengths, sizes)), t_(0.0) {}
@@ -311,6 +310,28 @@ public:
     virtual void set_t(const time_type& t)
     {
         t_ = t;
+    }
+
+protected:
+
+    std::pair<bool, typename particle_matrix_type::iterator>
+    __has_particle(const particle_id_type& pid)
+    {
+        typename particle_matrix_type::iterator i((*pmat_).find(pid));
+        return std::make_pair(i != (*pmat_).end(), i);
+    }
+
+    typename particle_matrix_type::iterator __update_particle(
+        const typename particle_matrix_type::iterator& position,
+        const particle_id_pair& pi_pair)
+    {
+        return (*pmat_).update(position, pi_pair);
+    }
+
+    virtual void clear()
+    {
+        (*pmat_).clear();
+        t_ = 0.0;
     }
 
 protected:
