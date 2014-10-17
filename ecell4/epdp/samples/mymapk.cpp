@@ -13,50 +13,54 @@
 
 #include <boost/format.hpp>
 
-// epdp headers
-#include <ecell4/epdp/config.h>
-#include <ecell4/epdp/utils/range.hpp>
-#include <ecell4/epdp/World.hpp>
-//#include <ecell4/epdp/ParticleModel.hpp>
-//#include <ecell4/epdp/SpeciesType.hpp>
-//#include <ecell4/epdp/SpeciesTypeID.hpp>
-//#include <ecell4/epdp/CuboidalRegion.hpp>
-//#include <ecell4/epdp/NetworkRules.hpp>
-//#include <ecell4/epdp/ReactionRule.hpp>
-#include <ecell4/epdp/EGFRDSimulator.hpp>
-//#include <ecell4/epdp/NetworkRulesAdapter.hpp>
-//#include <ecell4/epdp/GSLRandomNumberGenerator.hpp>
+// // epdp headers
+// #include <ecell4/epdp/config.h>
+// #include <ecell4/epdp/utils/range.hpp>
+// #include <ecell4/epdp/World.hpp>
+// //#include <ecell4/epdp/ParticleModel.hpp>
+// //#include <ecell4/epdp/SpeciesType.hpp>
+// //#include <ecell4/epdp/SpeciesTypeID.hpp>
+// //#include <ecell4/epdp/CuboidalRegion.hpp>
+// //#include <ecell4/epdp/NetworkRules.hpp>
+// //#include <ecell4/epdp/ReactionRule.hpp>
+// #include <ecell4/epdp/EGFRDSimulator.hpp>
+// //#include <ecell4/epdp/NetworkRulesAdapter.hpp>
+// //#include <ecell4/epdp/GSLRandomNumberGenerator.hpp>
+
 #include <ecell4/core/Model.hpp>
 #include <ecell4/core/RandomNumberGenerator.hpp>
 #include <ecell4/core/NetworkModel.hpp>
 #include <ecell4/core/Species.hpp>
 #include <ecell4/core/ReactionRule.hpp>
-// #include <ecell4/core/Model.hpp>
+
+#include <ecell4/epdp/egfrd.hpp>
 
 
-typedef double Real;
+// typedef double Real;
 
 int main(int argc, char **argv)
 {
     // Traits typedefs
     // {{{
-    typedef ::World< ::CyclicWorldTraits<Real> > world_type;
-    typedef EGFRDSimulator< ::EGFRDSimulatorTraitsBase<world_type> >
-        simulator_type;
+    // typedef ::World< ::CyclicWorldTraits<Real> > world_type;
+    // typedef EGFRDSimulator< ::EGFRDSimulatorTraitsBase<world_type> >
+    //     simulator_type;
+    typedef ecell4::egfrd::EGFRDWorld world_type;
+    typedef ecell4::egfrd::EGFRDSimulator simulator_type;
     typedef simulator_type::multi_type multi_type;
     // }}}
 
     // Constants
     // {{{
-    const Real L(1e-6);
+    const ecell4::Real L(1e-6);
     const ecell4::Position3 edge_lengths(L, L, L);
     const ecell4::Global matrix_sizes(3, 3, 3);
-    const Real volume(L * L * L);
-    const Integer N(60);
-    const Real kd(0.1), U(0.5);
-    const Real ka(kd * volume * (1 - U) / (U * U * N));
-    const Real k2(ka), k1(kd);
-    const Integer dissociation_retry_moves(3);
+    const ecell4::Real volume(L * L * L);
+    const ecell4::Integer N(60);
+    const ecell4::Real kd(0.1), U(0.5);
+    const ecell4::Real ka(kd * volume * (1 - U) / (U * U * N));
+    const ecell4::Real k2(ka), k1(kd);
+    const ecell4::Integer dissociation_retry_moves(3);
     // }}}
 
     boost::shared_ptr<ecell4::NetworkModel>
@@ -149,14 +153,14 @@ int main(int argc, char **argv)
 
     // Simulation Executed
     // {{{
-    Real next_time(0.0), dt(0.02);
+    ecell4::Real next_time(0.0), dt(0.02);
     std::cout << sim->t() << "\t"
         << world->num_molecules_exact(sp1) << "\t"
         << world->num_molecules_exact(sp2) << "\t"
         << world->num_molecules_exact(sp3) << "\t" << std::endl;
     // for (int i(0); i < 10; i++)
+    // for (int i(0); i < 100; i++)
     for (int i(0); i < 100; i++)
-    // for (int i(0); i < 10000; i++)
     {
         next_time += dt;
         while (sim->step(next_time))
@@ -177,7 +181,7 @@ int main(int argc, char **argv)
     }
     // }}}
 
-    world->save("test.h5");
+    // world->save("test.h5");
 
     // Statistics
     // {{{
