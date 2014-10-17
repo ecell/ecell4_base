@@ -262,16 +262,16 @@ protected:
     typedef boost::fusion::map<
         boost::fusion::pair<spherical_shell_type, 
                             MatrixSpace<spherical_shell_type,
-                                        shell_id_type, ecell4::utils::get_mapper_mf>&>,
+                                        shell_id_type, ecell4::utils::get_mapper_mf>*>,
         boost::fusion::pair<cylindrical_shell_type, MatrixSpace<cylindrical_shell_type,
-                                        shell_id_type, ecell4::utils::get_mapper_mf>&> >
+                                        shell_id_type, ecell4::utils::get_mapper_mf>*> >
             shell_matrix_map_type;
-    typedef typename boost::remove_reference<
+    typedef typename boost::remove_pointer<
         typename boost::fusion::result_of::value_at_key<
             shell_matrix_map_type,
             spherical_shell_type>::type>::type
                 spherical_shell_matrix_type;
-    typedef typename boost::remove_reference<
+    typedef typename boost::remove_pointer<
         typename boost::fusion::result_of::value_at_key<
             shell_matrix_map_type,
             cylindrical_shell_type>::type>::type
@@ -478,7 +478,7 @@ protected:
         template<typename T>
         void operator()(T const& smat) const
         {
-            world_type::traits_type::each_neighbor(smat.second, col_, pos_);
+            world_type::traits_type::each_neighbor(*smat.second, col_, pos_);
         }
 
     private:
@@ -497,8 +497,8 @@ protected:
         template<typename T>
         void operator()(T const& smat) const
         {
-            BOOST_ASSERT(world_.edge_lengths() == smat.second.edge_lengths());
-            BOOST_FOREACH (typename boost::remove_reference<typename T::second_type>::type::value_type pair, smat.second)
+            BOOST_ASSERT(world_.edge_lengths() == (*smat.second).edge_lengths());
+            BOOST_FOREACH (typename boost::remove_pointer<typename T::second_type>::type::value_type pair, *smat.second)
             {
                 did_map_[pair.second.did()].insert(pair.first);
             }
@@ -519,13 +519,13 @@ protected:
         void operator()(T const& smat) const
         {
             std::for_each(
-                boost::begin(smat.second),
-                boost::end(smat.second),
+                boost::begin(*smat.second),
+                boost::end(*smat.second),
                 compose_unary(
                     boost::bind(&insert<Tset_>,
                                 boost::reference_wrapper<Tset_>(shell_ids_),
                                 _1),
-                    select_first<typename boost::remove_reference<
+                    select_first<typename boost::remove_pointer<
                         typename T::second_type>::type::value_type>()));
         }
 
@@ -541,8 +541,8 @@ protected:
         template<typename T>
         void operator()(T const& smat) const
         {
-            typename boost::remove_reference<typename T::second_type>::type::const_iterator i(smat.second.find(id));
-            if (i != smat.second.end())
+            typename boost::remove_pointer<typename T::second_type>::type::const_iterator i((*smat.second).find(id));
+            if (i != (*smat.second).end())
             {
                 result = (*i).second;
             }
@@ -902,32 +902,6 @@ public:
         //                  select_second<typename domain_map::value_type>()));
     }
 
-    // EGFRDSimulator(boost::shared_ptr<world_type> world,
-    //                boost::shared_ptr<network_rules_type const> network_rules,
-    //                rng_type& rng, int dissociation_retry_moves = 1,
-    //                Real bd_dt_factor = 1e-5, 
-    //                length_type user_max_shell_size =
-    //                 std::numeric_limits<length_type>::infinity())
-    //     : base_type(world, network_rules, rng),
-    //       num_retries_(dissociation_retry_moves),
-    //       bd_dt_factor_(bd_dt_factor),
-    //       user_max_shell_size_(user_max_shell_size),
-    //       ssmat_((*world).edge_lengths(), (*world).matrix_sizes()),
-    //       csmat_((*world).edge_lengths(), (*world).matrix_sizes()),
-    //       smatm_(boost::fusion::pair<spherical_shell_type,
-    //                                  spherical_shell_matrix_type&>(ssmat_),
-    //              boost::fusion::pair<cylindrical_shell_type,
-    //                                  cylindrical_shell_matrix_type&>(csmat_)),
-    //       single_shell_factor_(.1),
-    //       multi_shell_factor_(.05),
-    //       rejected_moves_(0), zero_step_count_(0), dirty_(true)
-    // {
-    //     std::fill(domain_count_per_type_.begin(), domain_count_per_type_.end(), 0);
-    //     std::fill(single_step_count_.begin(), single_step_count_.end(), 0);
-    //     std::fill(pair_step_count_.begin(), pair_step_count_.end(), 0);
-    //     std::fill(multi_step_count_.begin(), multi_step_count_.end(), 0);
-    // }
-
     EGFRDSimulator(
         const boost::shared_ptr<world_type>& world,
         const boost::shared_ptr<model_type>& ecell4_model,
@@ -940,9 +914,9 @@ public:
           ssmat_(new spherical_shell_matrix_type((*world).edge_lengths(), (*world).matrix_sizes())),
           csmat_(new cylindrical_shell_matrix_type((*world).edge_lengths(), (*world).matrix_sizes())),
           smatm_(boost::fusion::pair<spherical_shell_type,
-                                     spherical_shell_matrix_type&>(*ssmat_),
+                                     spherical_shell_matrix_type*>(ssmat_.get()),
                  boost::fusion::pair<cylindrical_shell_type,
-                                     cylindrical_shell_matrix_type&>(*csmat_)),
+                                     cylindrical_shell_matrix_type*>(csmat_.get())),
           single_shell_factor_(.1),
           multi_shell_factor_(.05),
           rejected_moves_(0), zero_step_count_(0), dirty_(true)
@@ -975,18 +949,18 @@ public:
     {
         typedef typename traits_type::template shell_generator<Tshape>::type shell_type;
         std::pair<const shell_id_type, shell_type> const retval(shidgen_(), shell_type(did, shape));
-        boost::fusion::at_key<shell_type>(smatm_).update(retval);
+        boost::fusion::at_key<shell_type>(smatm_)->update(retval);
         return retval;
     }
 
     template<typename T>
     std::pair<const shell_id_type, T> const& get_shell(shell_id_type const& id) const
     {
-        typedef typename boost::remove_reference<
+        typedef typename boost::remove_pointer<
             typename boost::fusion::result_of::value_at_key<
                 shell_matrix_map_type, T>::type>::type shell_matrix_type;
 
-        shell_matrix_type const& smat(boost::fusion::at_key<T>(smatm_));
+        shell_matrix_type const& smat(*boost::fusion::at_key<T>(smatm_));
         
         typename shell_matrix_type::const_iterator i(smat.find(id));
         if (i == smat.end())
@@ -1087,6 +1061,8 @@ public:
                 newcsmat(new cylindrical_shell_matrix_type(edge_lengths, matrix_sizes));
             ssmat_.swap(newssmat);
             csmat_.swap(newcsmat);
+            boost::fusion::at_key<spherical_shell_type>(smatm_) = ssmat_.get();
+            boost::fusion::at_key<cylindrical_shell_type>(smatm_) = csmat_.get();
         }
 
         BOOST_FOREACH (particle_id_pair const& pp,
@@ -1275,7 +1251,7 @@ protected:
     void move_shell(std::pair<const shell_id_type, Tshell> const& shell)
     {
         typedef Tshell shell_type;
-        boost::fusion::at_key<shell_type>(smatm_).update(shell);
+        boost::fusion::at_key<shell_type>(smatm_)->update(shell);
     }
 
     template<typename T>
@@ -1380,7 +1356,7 @@ protected:
     void remove_domain(AnalyticalSingle<traits_type, T>& domain)
     {
         typedef T shell_type;
-        boost::fusion::at_key<shell_type>(smatm_).erase(domain.shell().first);
+        boost::fusion::at_key<shell_type>(smatm_)->erase(domain.shell().first);
         remove_domain_but_shell(domain);
     }
 
@@ -1388,7 +1364,7 @@ protected:
     void remove_domain(AnalyticalPair<traits_type, T>& domain)
     {
         typedef T shell_type;
-        boost::fusion::at_key<shell_type>(smatm_).erase(domain.shell().first);
+        boost::fusion::at_key<shell_type>(smatm_)->erase(domain.shell().first);
         remove_domain_but_shell(domain);
     }
 
@@ -1396,7 +1372,7 @@ protected:
     {
         BOOST_FOREACH (spherical_shell_id_pair const& shell, domain.get_shells())
         {
-            boost::fusion::at_key<spherical_shell_type>(smatm_).erase(shell.first);
+            boost::fusion::at_key<spherical_shell_type>(smatm_)->erase(shell.first);
         }
         remove_domain_but_shell(domain);
     }
@@ -2980,7 +2956,7 @@ protected:
 
         // merge other_multi into multi. other_multi will be removed.
         spherical_shell_matrix_type& mat(
-            boost::fusion::at_key<spherical_shell_type>(smatm_));
+            *boost::fusion::at_key<spherical_shell_type>(smatm_));
         BOOST_FOREACH (spherical_shell_id_pair const& _shell,
                        other_multi.get_shells())
         {
