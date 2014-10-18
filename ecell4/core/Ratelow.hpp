@@ -9,6 +9,9 @@
 #include <vector>
 #include <algorithm>
 
+// For Jacobi
+#include <boost/numeric/ublas/matrix.hpp>
+
 namespace ecell4
 {
 
@@ -17,14 +20,16 @@ class Ratelow
 public:
     // The order of the species must be the same as
     //  reactants' container of ReactionRule object.
+    //
+    //  state_container_type must be resized when called 
+    //   jacobi_func and deriv_func.
     typedef std::vector<Real> state_container_type;
+    typedef boost::numeric::ublas::matrix<double> matrix_type;
 public:
-    Ratelow(){;}
-    virtual ~Ratelow() {;}
     virtual bool is_available() const = 0;
     virtual Real operator()(state_container_type const &state_array, Real volume) = 0;
-    virtual Real deriv_func(state_container_type const &state_array, Real volume);
-    virtual void jacobi_func(state_container_type const &state_array, state_container_type &jacobian, Real volume) = 0;
+    virtual Real deriv_func(state_container_type const &state_array, Real volume) = 0;
+    virtual void jacobi_func(matrix_type &jacobian, state_container_type const &state_array, Real const volume) = 0;
 };
 
 class RatelowCppCallback : public Ratelow
@@ -35,8 +40,8 @@ class RatelowCppCallback : public Ratelow
 public:
     typedef double (*Ratelow_Callback)(state_container_type const &, double);
 public:
-    RatelowCppCallback(Ratelow_Callback func) : func_(func) {;}
-    RatelowCppCallback() : func_(0) {}
+    RatelowCppCallback(Ratelow_Callback func) : func_(func), h_(1.0e-8) {;}
+    RatelowCppCallback() : func_(0), h_(1.0e-8) {}
     virtual ~RatelowCppCallback(){;}
 
     virtual bool is_available() const
@@ -45,30 +50,40 @@ public:
     }
     virtual Real operator()(state_container_type const &state_array, Real volume)
     {
-        if (!is_available() )
+        return this->deriv_func(state_array, volume);
+    }
+    virtual Real deriv_func(state_container_type const &state_array, Real volume)
+    {
+        if (!is_available())
         {
             throw IllegalState("Callback Function has not been registerd");
         }
         return this->func_(state_array, volume);
     }
-    virtual Real deriv_func(state_container_type const &state_array, Real volume)
-    {
-        // This is the same as deriv_func
-        // Should they be united to this function?
-        return (*this)(state_array, volume);
-    }
     virtual void jacobi_func(
-            state_container_type const &state_array, state_container_type &jacobian, Real volume)
+            matrix_type &jacobian, state_container_type const &state_array, Real volume)
     {
-        Real h( 1.0e-8 ); //XXX  Temporary using 1.0e-8. Should be fixed
-        std::fill(jacobian.begin(), jacobian.end(), Real(0.0));
+        Real h(this->h_); //XXX  1.0e-8. Should be fixed
+        std::fill(jacobian.data().begin(), jacobian.data().end(), Real(0.0));
         Real flux( this->deriv_func(state_array, volume) );
-        for(int i(0); i < jacobian.size(); i++) 
+        double num_reactants(state_array.size());
+        for(int i(0); i < num_reactants; i++) 
         {
             //XXX For now, we are using FORWARD difference method.
             state_container_type h_shift(state_array);
             h_shift[i] += h;
-            jacobian[i] = ((this->deriv_func(h_shift, volume)) - flux) / h;
+            double deriv = ((this->deriv_func(h_shift, volume)) - flux) / h;
+            for(int j(0); j < jacobian.size1() ; j++)
+            {
+                if (j < num_reactants) 
+                {
+                    jacobian(j, i) -= deriv;
+                }
+                else
+                {
+                    jacobian(j, i) += deriv;
+                }
+            }
         }
     }
 
@@ -87,6 +102,7 @@ public:
         return prev;
     }
 private:
+    Real h_;
     Ratelow_Callback func_;
 };
 
@@ -102,32 +118,48 @@ public:
     }
     virtual Real operator()(state_container_type const &state_array, Real volume)
     {
-        Real flux(this->k_ * volume);
-        for(int i(0); i < this->num_reactant_; i++) {
-            flux *= Real(state_array[i]) / volume;
-        }
+        // Forward to deriv_func()
+        Real flux( this->deriv_func(state_array, volume) );
         return flux;
     }
     virtual Real deriv_func(state_container_type const &state_array, Real volume)
     {
-        Real flux( (*this)(state_array, volume) );
+        // The 1st argument 'state_array' must be resized when calling.
+        Real flux(this->k_ * volume);
+        for(state_container_type::const_iterator it(state_array.begin());
+                it != state_array.end(); it++) 
+        {
+            flux *= (*it) / volume;
+        }
         return flux;
     }
     virtual void jacobi_func(
-            state_container_type const &state_array, state_container_type &jacobian, 
-            Real volume)
+            matrix_type &jacobian, 
+            state_container_type const &state_array, Real const volume)
     {
-        // The size of the argument 'jacobian' must be resized to 
-        //  the number of reactants.
-        std::fill(jacobian.begin(), jacobian.end(), Real(0.0));
+        // The size of the argument 'state_array' must be resized to the number of reactants.
+        // The size of the argument 'jacobian' must be resized to the number of (reactants + products)
+        std::fill(jacobian.data().begin(), jacobian.data().end(), Real(0.0));
         Real flux( this->deriv_func(state_array, volume) );
         if (flux == Real(0.0))
         {
             return;
         }
-        for(int i(0); i < state_array.size(); i++) {
+        int num_reactants(state_array.size());
+        for(int i(0); i < num_reactants; i++) 
+        {
             Real partial(flux / state_array[i]);
-            jacobian[i] = partial;
+            for(int j(0); j < jacobian.size1(); j++)
+            {
+                if (j < num_reactants)
+                {
+                    jacobian(j, i) -= partial;
+                }
+                else
+                {
+                    jacobian(j, i) += partial;
+                }
+            }
         }
     }
     void set_k(Real k)

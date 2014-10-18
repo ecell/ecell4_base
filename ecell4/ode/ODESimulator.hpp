@@ -44,6 +44,7 @@ public:
         index_container_type reactants;
         index_container_type products;
         Real k;
+        boost::weak_ptr<Ratelow> ratelow;
     } reaction_type;
 
     typedef std::vector<reaction_type> reaction_container_type;
@@ -64,23 +65,32 @@ public:
             {
                 *i = 0.0;
             }
-
+            // XXX
             for (reaction_container_type::const_iterator
-                i(reactions_.begin()); i != reactions_.end(); ++i)
+                i(reactions_.begin()); i != reactions_.end(); i++)
             {
-                double flux((*i).k * volume_);
+                // Prepare state_array that contain amounts of each reactants.
+                Ratelow::state_container_type reactants_states(i->reactants.size());
+                Ratelow::state_container_type::size_type cnt(0);
                 for (index_container_type::const_iterator
-                    j((*i).reactants.begin()); j != (*i).reactants.end(); ++j)
+                    j((*i).reactants.begin()); j != (*i).reactants.end(); ++j, cnt++)
                 {
-                    flux *= x[*j] * vinv_;
+                    reactants_states[cnt] = x[*j];
                 }
+                // Get pointer of Ratelow object and call it.
+                if (i->ratelow.expired()) 
+                {
+                    throw IllegalState("Ratelow is not registered");
+                }
+                boost::shared_ptr<Ratelow> ratelow = (*i).ratelow.lock();
+                double flux((*ratelow).deriv_func(reactants_states, volume_));
 
+                // Merge each reaction's flux into whole dxdt
                 for (index_container_type::const_iterator
                     j((*i).reactants.begin()); j != (*i).reactants.end(); ++j)
                 {
                     dxdt[*j] -= flux;
                 }
-
                 for (index_container_type::const_iterator
                     j((*i).products.begin()); j != (*i).products.end(); ++j)
                 {
@@ -109,47 +119,51 @@ public:
         void operator()(
             const state_type& x, matrix_type& jacobi, const double& t, state_type& dfdt) const
         {
+            // fill 0 into jacobi and dfdt
             for (state_type::iterator i(dfdt.begin()); i != dfdt.end(); ++i)
             {
                 *i = 0.0;
             }
-
             for (matrix_type::array_type::iterator i(jacobi.data().begin());
                 i != jacobi.data().end(); ++i)
             {
                 *i = 0.0;
             }
 
+            // Calculate jacobian for each reaction and merge it.
             for (reaction_container_type::const_iterator
-                i(reactions_.begin()); i != reactions_.end(); ++i)
+                i(reactions_.begin()); i != reactions_.end(); i++)
             {
-                double flux((*i).k * volume_);
-                for (index_container_type::const_iterator
-                    j((*i).reactants.begin()); j != (*i).reactants.end(); ++j)
+                if (i->ratelow.expired()) 
                 {
-                    flux *= x[*j] * vinv_;
+                    throw IllegalState("Ratelow is not registered");
                 }
-
-                if (flux == 0)
-                {
-                    continue;
-                }
-
+                // Calculate a reaction's jacobian.
+                // prepare state_array that contain amounts of reactants
+                Ratelow::state_container_type reactants_states(i->reactants.size());
+                Ratelow::state_container_type::size_type cnt(0);
                 for (index_container_type::const_iterator
-                    j((*i).reactants.begin()); j != (*i).reactants.end(); ++j)
+                    j((*i).reactants.begin()); j != (*i).reactants.end(); ++j, cnt++)
                 {
-                    const double partial(flux / x[*j]); //XXX: consider squares
+                    reactants_states[cnt] = x[*j];
+                }
+                // prepare matrix object that will be filled with numerical differentiate.
+                matrix_type::size_type row_length = (*i).reactants.size() + (*i).products.size();
+                matrix_type::size_type col_length = row_length;
+                matrix_type mat(row_length, col_length); 
 
-                    for (index_container_type::const_iterator
-                        k((*i).reactants.begin()); k != (*i).reactants.end(); ++k)
+                // get the pointer of Ratelow object and call it.
+                boost::shared_ptr<Ratelow> ratelow = (*i).ratelow.lock();
+                (*ratelow).jacobi_func(mat, reactants_states, volume_);
+                
+                //merge jacobian
+                for(int row(0); row < row_length; row++)
+                {
+                    int j_row(row < (*i).reactants.size() ? (*i).reactants[row] : (*i).products[row - (*i).reactants.size()]);
+                    for(int col(0); col < col_length; col++)
                     {
-                        jacobi(*k, *j) -= partial;
-                    }
-
-                    for (index_container_type::const_iterator
-                        k((*i).products.begin()); k != (*i).products.end(); ++k)
-                    {
-                        jacobi(*k, *j) += partial;
+                        int j_col(col < (*i).reactants.size() ? (*i).reactants[col] : (*i).products[col - (*i).reactants.size()]);
+                        jacobi(j_row, j_col) += mat(row, col);
                     }
                 }
             }
