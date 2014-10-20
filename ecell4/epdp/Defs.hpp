@@ -2,9 +2,13 @@
 #define __DEFS_HPP
 
 #include <cstddef>
+#include <ecell4/core/types.hpp>
 
-typedef double Real;
-typedef long int Integer;
+// typedef double Real;
+// typedef long int Integer;
+// typedef unsigned long int UnsignedInteger;
+typedef ecell4::Real Real;
+typedef ecell4::Integer Integer;
 typedef unsigned long int UnsignedInteger;
 typedef size_t Index;
 
