@@ -72,3 +72,20 @@ cdef extern from "ecell4/ode/ODESimulator.hpp" namespace "ecell4::ode":
 #  a python wrapper for Cpp_ODESimulator
 cdef class ODESimulator:
     cdef Cpp_ODESimulator *thisptr
+
+cdef ODESimulator ODESimulator_from_Cpp_ODESimulator(Cpp_ODESimulator* s)
+
+## Cpp_ODEFactory
+#  ecell4::ode::ODEFactory
+cdef extern from "ecell4/ode/ODEFactory.hpp" namespace "ecell4::ode":
+    cdef cppclass Cpp_ODEFactory "ecell4::ode::ODEFactory":
+        Cpp_ODEFactory() except +
+        Cpp_ODEWorld* create_world(string)
+        Cpp_ODEWorld* create_world(Cpp_Position3&)
+        Cpp_ODESimulator* create_simulator(shared_ptr[Cpp_Model], shared_ptr[Cpp_ODEWorld])
+        Cpp_ODESimulator* create_simulator(shared_ptr[Cpp_ODEWorld])
+
+## ODEFactory
+#  a python wrapper for Cpp_ODEFactory
+cdef class ODEFactory:
+    cdef Cpp_ODEFactory* thisptr

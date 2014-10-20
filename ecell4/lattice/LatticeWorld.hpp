@@ -40,7 +40,7 @@ public:
 public:
 
     LatticeWorld(const Position3& edge_lengths, const Real& voxel_radius,
-            boost::shared_ptr<RandomNumberGenerator> rng)
+        const boost::shared_ptr<RandomNumberGenerator>& rng)
         : space_(edge_lengths, voxel_radius), rng_(rng)
     {
         ; // do nothing

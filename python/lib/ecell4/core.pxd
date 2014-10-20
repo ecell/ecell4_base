@@ -263,6 +263,8 @@ cdef class NetfreeModel:
 cdef NetfreeModel NetfreeModel_from_Cpp_NetfreeModel(
     shared_ptr[Cpp_NetfreeModel] m)
 
+cdef shared_ptr[Cpp_Model]* Cpp_Model_from_Model(m)
+
 ## Cpp_Position3
 #  ecell4::Position3
 cdef extern from "ecell4/core/Position3.hpp" namespace "ecell4":

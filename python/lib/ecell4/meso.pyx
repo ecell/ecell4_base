@@ -147,15 +147,7 @@ cdef class MesoscopicWorld:
         self.thisptr.get().load(filename)
 
     def bind_to(self, m):
-        if isinstance(m, NetworkModel):
-            self.thisptr.get().bind_to(
-                <shared_ptr[Cpp_Model]>deref((<NetworkModel>m).thisptr))
-        elif isinstance(m, NetfreeModel):
-            self.thisptr.get().bind_to(
-                <shared_ptr[Cpp_Model]>deref((<NetfreeModel>m).thisptr))
-        else:
-            raise ValueError, ("a wrong argument was given [%s]." % (type(m))
-                + " the argument must be NetworkModel or NetfreeModel")
+        self.thisptr.get().bind_to(deref(Cpp_Model_from_Model(m)))
 
     def rng(self):
         return GSLRandomNumberGenerator_from_Cpp_RandomNumberGenerator(
@@ -163,7 +155,7 @@ cdef class MesoscopicWorld:
 
 cdef MesoscopicWorld MesoscopicWorld_from_Cpp_MesoscopicWorld(
     shared_ptr[Cpp_MesoscopicWorld] w):
-    r = MesoscopicWorld(Position3(1, 1, 1), 1, 1, 1)
+    r = MesoscopicWorld(Position3(1, 1, 1), Global(1, 1, 1))
     r.thisptr.swap(w)
     return r
 
@@ -172,17 +164,12 @@ cdef MesoscopicWorld MesoscopicWorld_from_Cpp_MesoscopicWorld(
 cdef class MesoscopicSimulator:
 
     def __cinit__(self, m, MesoscopicWorld w):
-        if isinstance(m, NetworkModel):
+        if w is None:
             self.thisptr = new Cpp_MesoscopicSimulator(
-                <shared_ptr[Cpp_Model]>deref((<NetworkModel>m).thisptr),
-                deref(w.thisptr))
-        elif isinstance(m, NetfreeModel):
-            self.thisptr = new Cpp_MesoscopicSimulator(
-                <shared_ptr[Cpp_Model]>deref((<NetfreeModel>m).thisptr),
-                deref(w.thisptr))
+                deref((<MesoscopicWorld>w).thisptr))
         else:
-            raise ValueError, ("a wrong argument was given [%s]." % (type(m))
-                + " the first argument must be NetworkModel or NetfreeModel")
+            self.thisptr = new Cpp_MesoscopicSimulator(
+                deref(Cpp_Model_from_Model(m)), deref(w.thisptr))
 
     def __dealloc__(self):
         del self.thisptr
@@ -239,3 +226,46 @@ cdef class MesoscopicSimulator:
             for obs in observers:
                 tmp.push_back(deref((<Observer>(obs.as_base())).thisptr))
             self.thisptr.run(duration, tmp)
+
+cdef MesoscopicSimulator MesoscopicSimulator_from_Cpp_MesoscopicSimulator(
+    Cpp_MesoscopicSimulator* s):
+    r = MesoscopicSimulator(
+        Model_from_Cpp_Model(s.model()),
+        MesoscopicWorld_from_Cpp_MesoscopicWorld(s.world()))
+    del r.thisptr
+    r.thisptr = s
+    return r
+
+## MesoscopicFactory
+#  a python wrapper for Cpp_MesoscopicFactory
+cdef class MesoscopicFactory:
+
+    def __cinit__(self, Global matrix_sizes=None, GSLRandomNumberGenerator rng=None):
+        if rng is not None:
+            self.thisptr = new Cpp_MesoscopicFactory(
+                deref(matrix_sizes.thisptr), deref(rng.thisptr))
+        elif matrix_sizes is not None:
+            self.thisptr = new Cpp_MesoscopicFactory(deref(matrix_sizes.thisptr))
+        else:
+            self.thisptr = new Cpp_MesoscopicFactory()
+
+    def __dealloc__(self):
+        del self.thisptr
+
+    def create_world(self, arg1):
+        if isinstance(arg1, Position3):
+            return MesoscopicWorld_from_Cpp_MesoscopicWorld(
+                shared_ptr[Cpp_MesoscopicWorld](
+                    self.thisptr.create_world(deref((<Position3>arg1).thisptr))))
+        else:
+            return MesoscopicWorld_from_Cpp_MesoscopicWorld(
+                shared_ptr[Cpp_MesoscopicWorld](self.thisptr.create_world(<string>(arg1))))
+
+    def create_simulator(self, arg1, MesoscopicWorld arg2=None):
+        if arg2 is None:
+            return MesoscopicSimulator_from_Cpp_MesoscopicSimulator(
+                self.thisptr.create_simulator(deref((<MesoscopicWorld>arg1).thisptr)))
+        else:
+            return MesoscopicSimulator_from_Cpp_MesoscopicSimulator(
+                self.thisptr.create_simulator(
+                    deref(Cpp_Model_from_Model(arg1)), deref(arg2.thisptr)))

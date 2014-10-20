@@ -57,14 +57,14 @@ protected:
 
 public:
 
-    SimulatorBase(boost::shared_ptr<model_type> model,
-        boost::shared_ptr<world_type> world)
+    SimulatorBase(const boost::shared_ptr<model_type>& model,
+        const boost::shared_ptr<world_type>& world)
         : model_(model), world_(world), num_steps_(0)
     {
         world_->bind_to(model_);
     }
 
-    SimulatorBase(boost::shared_ptr<world_type> world)
+    SimulatorBase(const boost::shared_ptr<world_type>& world)
         : world_(world), num_steps_(0)
     {
         if (boost::shared_ptr<model_type> bound_model = world_->lock_model())

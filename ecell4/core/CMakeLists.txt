@@ -22,7 +22,7 @@ set(HPP_FILES
     ParticleSpaceHDF5Writer.hpp Reaction.hpp Simulator.hpp SimulatorBase.hpp
     UnitSpecies.hpp observers.hpp exceptions.hpp get_mapper_mf.hpp types.hpp
     Shape.hpp Sphere.hpp AABB.hpp StructureType.hpp ParticleSpaceCellListImpl.hpp
-    comparators.hpp)
+    comparators.hpp SimulatorFactory.hpp)
 
 find_package(HDF5 COMPONENTS C CXX HL REQUIRED)
 include_directories(${HDF5_INCLUDE_DIRS})

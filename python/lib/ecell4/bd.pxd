@@ -67,6 +67,8 @@ cdef extern from "ecell4/bd/BDSimulator.hpp" namespace "ecell4::bd":
         #     Integer dissociation_retry_moves) except +
         Cpp_BDSimulator(
             shared_ptr[Cpp_Model], shared_ptr[Cpp_BDWorld]) except +
+        Cpp_BDSimulator(
+            shared_ptr[Cpp_BDWorld]) except +
         Integer num_steps()
         void step()
         bool step(Real& upto)
@@ -85,3 +87,21 @@ cdef extern from "ecell4/bd/BDSimulator.hpp" namespace "ecell4::bd":
 #  a python wrapper for Cpp_BDSimulator
 cdef class BDSimulator:
     cdef Cpp_BDSimulator* thisptr
+
+cdef BDSimulator BDSimulator_from_Cpp_BDSimulator(Cpp_BDSimulator* s)
+
+## Cpp_BDFactory
+#  ecell4::bd::BDFactory
+cdef extern from "ecell4/bd/BDFactory.hpp" namespace "ecell4::bd":
+    cdef cppclass Cpp_BDFactory "ecell4::bd::BDFactory":
+        Cpp_BDFactory() except +
+        Cpp_BDFactory(shared_ptr[Cpp_RandomNumberGenerator]) except +
+        Cpp_BDWorld* create_world(string)
+        Cpp_BDWorld* create_world(Cpp_Position3&)
+        Cpp_BDSimulator* create_simulator(shared_ptr[Cpp_Model], shared_ptr[Cpp_BDWorld])
+        Cpp_BDSimulator* create_simulator(shared_ptr[Cpp_BDWorld])
+
+## BDFactory
+#  a python wrapper for Cpp_BDFactory
+cdef class BDFactory:
+    cdef Cpp_BDFactory* thisptr

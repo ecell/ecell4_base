@@ -79,16 +79,7 @@ cdef class GillespieWorld:
         self.thisptr.get().load(filename)
 
     def bind_to(self, m):
-        if isinstance(m, NetworkModel):
-            self.thisptr.get().bind_to(
-                <shared_ptr[Cpp_Model]>deref((<NetworkModel>m).thisptr))
-        elif isinstance(m, NetfreeModel):
-            self.thisptr.get().bind_to(
-                <shared_ptr[Cpp_Model]>deref((<NetfreeModel>m).thisptr))
-        else:
-            raise ValueError, ("a wrong argument was given [%s]." % (type(m))
-                + " the argument must be NetworkModel or NetfreeModel")
-
+        self.thisptr.get().bind_to(deref(Cpp_Model_from_Model(m)))
 
     def rng(self):
         return GSLRandomNumberGenerator_from_Cpp_RandomNumberGenerator(
@@ -105,17 +96,12 @@ cdef GillespieWorld GillespieWorld_from_Cpp_GillespieWorld(
 cdef class GillespieSimulator:
 
     def __cinit__(self, m, GillespieWorld w):
-        if isinstance(m, NetworkModel):
+        if w is None:
             self.thisptr = new Cpp_GillespieSimulator(
-                <shared_ptr[Cpp_Model]>deref((<NetworkModel>m).thisptr),
-                deref(w.thisptr))
-        elif isinstance(m, NetfreeModel):
-            self.thisptr = new Cpp_GillespieSimulator(
-                <shared_ptr[Cpp_Model]>deref((<NetfreeModel>m).thisptr),
-                deref(w.thisptr))
+                deref((<GillespieWorld>w).thisptr))
         else:
-            raise ValueError, ("a wrong argument was given [%s]." % (type(m))
-                + " the first argument must be NetworkModel or NetfreeModel")
+            self.thisptr = new Cpp_GillespieSimulator(
+                deref(Cpp_Model_from_Model(m)), deref(w.thisptr))
 
     def __dealloc__(self):
         del self.thisptr
@@ -172,3 +158,41 @@ cdef class GillespieSimulator:
             for obs in observers:
                 tmp.push_back(deref((<Observer>(obs.as_base())).thisptr))
             self.thisptr.run(duration, tmp)
+
+cdef GillespieSimulator GillespieSimulator_from_Cpp_GillespieSimulator(Cpp_GillespieSimulator* s):
+    r = GillespieSimulator(
+        Model_from_Cpp_Model(s.model()), GillespieWorld_from_Cpp_GillespieWorld(s.world()))
+    del r.thisptr
+    r.thisptr = s
+    return r
+
+## GillespieFactory
+#  a python wrapper for Cpp_GillespieFactory
+cdef class GillespieFactory:
+
+    def __cinit__(self, GSLRandomNumberGenerator rng=None):
+        if rng is None:
+            self.thisptr = new Cpp_GillespieFactory()
+        else:
+            self.thisptr = new Cpp_GillespieFactory(deref(rng.thisptr))
+
+    def __dealloc__(self):
+        del self.thisptr
+
+    def create_world(self, arg1):
+        if isinstance(arg1, Position3):
+            return GillespieWorld_from_Cpp_GillespieWorld(
+                shared_ptr[Cpp_GillespieWorld](
+                    self.thisptr.create_world(deref((<Position3>arg1).thisptr))))
+        else:
+            return GillespieWorld_from_Cpp_GillespieWorld(
+                shared_ptr[Cpp_GillespieWorld](self.thisptr.create_world(<string>(arg1))))
+
+    def create_simulator(self, arg1, GillespieWorld arg2=None):
+        if arg2 is None:
+            return GillespieSimulator_from_Cpp_GillespieSimulator(
+                self.thisptr.create_simulator(deref((<GillespieWorld>arg1).thisptr)))
+        else:
+            return GillespieSimulator_from_Cpp_GillespieSimulator(
+                self.thisptr.create_simulator(
+                    deref(Cpp_Model_from_Model(arg1)), deref(arg2.thisptr)))

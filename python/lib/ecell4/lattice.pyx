@@ -300,15 +300,7 @@ cdef class LatticeWorld:
         return self.thisptr.get().size()
 
     def bind_to(self, m):
-        if isinstance(m, NetworkModel):
-            self.thisptr.get().bind_to(
-                <shared_ptr[Cpp_Model]>deref((<NetworkModel>m).thisptr))
-        elif isinstance(m, NetfreeModel):
-            self.thisptr.get().bind_to(
-                <shared_ptr[Cpp_Model]>deref((<NetfreeModel>m).thisptr))
-        else:
-            raise ValueError, ("a wrong argument was given [%s]." % (type(m))
-                + " the argument must be NetworkModel or NetfreeModel")
+        self.thisptr.get().bind_to(deref(Cpp_Model_from_Model(m)))
 
     def private2position(self, Integer coord):
         cdef Cpp_Position3 pos = self.thisptr.get().private2position(coord)
@@ -362,17 +354,12 @@ cdef LatticeWorld LatticeWorld_from_Cpp_LatticeWorld(
 cdef class LatticeSimulator:
 
     def __cinit__(self, m, LatticeWorld w):
-        if isinstance(m, NetworkModel):
+        if w is None:
             self.thisptr = new Cpp_LatticeSimulator(
-                <shared_ptr[Cpp_Model]>deref((<NetworkModel>m).thisptr),
-                deref(w.thisptr))
-        elif isinstance(m, NetfreeModel):
-            self.thisptr = new Cpp_LatticeSimulator(
-                <shared_ptr[Cpp_Model]>deref((<NetfreeModel>m).thisptr),
-                deref(w.thisptr))
+                deref((<LatticeWorld>w).thisptr))
         else:
-            raise ValueError, ("a wrong argument was given [%s]." % (type(m))
-                + " the first argument must be NetworkModel or NetfreeModel")
+            self.thisptr = new Cpp_LatticeSimulator(
+                deref(Cpp_Model_from_Model(m)), deref(w.thisptr))
 
     def __dealloc__(self):
         del self.thisptr
@@ -426,3 +413,43 @@ cdef class LatticeSimulator:
             for obs in observers:
                 tmp.push_back(deref((<Observer>(obs.as_base())).thisptr))
             self.thisptr.run(duration, tmp)
+
+cdef LatticeSimulator LatticeSimulator_from_Cpp_LatticeSimulator(Cpp_LatticeSimulator* s):
+    r = LatticeSimulator(
+        Model_from_Cpp_Model(s.model()), LatticeWorld_from_Cpp_LatticeWorld(s.world()))
+    del r.thisptr
+    r.thisptr = s
+    return r
+
+## LatticeFactory
+#  a python wrapper for Cpp_LatticeFactory
+cdef class LatticeFactory:
+
+    def __cinit__(self, voxel_radius=None, GSLRandomNumberGenerator rng=None):
+        if rng is not None:
+            self.thisptr = new Cpp_LatticeFactory(<Real>voxel_radius, deref(rng.thisptr))
+        elif voxel_radius is not None:
+            self.thisptr = new Cpp_LatticeFactory(<Real>voxel_radius)
+        else:
+            self.thisptr = new Cpp_LatticeFactory()
+
+    def __dealloc__(self):
+        del self.thisptr
+
+    def create_world(self, arg1):
+        if isinstance(arg1, Position3):
+            return LatticeWorld_from_Cpp_LatticeWorld(
+                shared_ptr[Cpp_LatticeWorld](
+                    self.thisptr.create_world(deref((<Position3>arg1).thisptr))))
+        else:
+            return LatticeWorld_from_Cpp_LatticeWorld(
+                shared_ptr[Cpp_LatticeWorld](self.thisptr.create_world(<string>(arg1))))
+
+    def create_simulator(self, arg1, LatticeWorld arg2=None):
+        if arg2 is None:
+            return LatticeSimulator_from_Cpp_LatticeSimulator(
+                self.thisptr.create_simulator(deref((<LatticeWorld>arg1).thisptr)))
+        else:
+            return LatticeSimulator_from_Cpp_LatticeSimulator(
+                self.thisptr.create_simulator(
+                    deref(Cpp_Model_from_Model(arg1)), deref(arg2.thisptr)))
