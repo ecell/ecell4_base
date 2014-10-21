@@ -64,7 +64,8 @@ public:
 public:
 
     FixedIntervalObserver(const Real& dt)
-        : base_type(false), tnext_(0.0), dt_(dt), num_steps_(0)
+        : base_type(false), t0_(0.0), dt_(dt), num_steps_(0)
+        // : base_type(false), tnext_(0.0), dt_(dt), num_steps_(0)
     {
         ;
     }
@@ -76,7 +77,8 @@ public:
 
     const Real next_time() const
     {
-        return tnext_;
+        return t0_ + dt_ * num_steps_;
+        // return tnext_;
     }
 
     const Integer num_steps() const
@@ -86,19 +88,21 @@ public:
 
     virtual void initialize(const Space* space)
     {
-        tnext_ = space->t();
+        t0_ = space->t();
+        // tnext_ = space->t();
         num_steps_ = 0;
     }
 
     virtual void fire(const Simulator* sim, const Space* space)
     {
-        tnext_ += dt_;
+        // tnext_ += dt_;
         ++num_steps_;
     }
 
 protected:
 
-    Real tnext_, dt_;
+    Real t0_, dt_;
+    // Real tnext_, dt_;
     Integer num_steps_;
 };
 
