@@ -125,7 +125,8 @@ public:
 
     void add_appender(boost::shared_ptr<LogAppender> const& appender);
 
-    LoggerManager(char const* name, enum Logger::level level = Logger::L_INFO);
+    LoggerManager(char const* name, enum Logger::level level = Logger::L_WARNING);
+    // LoggerManager(char const* name, enum Logger::level level = Logger::L_INFO);
 
     static void register_logger_manager(char const* logger_name_pattern,
                                         boost::shared_ptr<LoggerManager> const& manager);
