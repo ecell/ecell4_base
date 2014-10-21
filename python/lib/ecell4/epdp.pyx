@@ -279,33 +279,75 @@ cdef EGFRDSimulator EGFRDSimulator_from_Cpp_EGFRDSimulator(Cpp_EGFRDSimulator* s
     r.thisptr = s
     return r
 
-# ## EGFRDFactory
-# #  a python wrapper for Cpp_EGFRDFactory
-# cdef class EGFRDFactory:
-# 
-#     def __cinit__(self, GSLRandomNumberGenerator rng=None):
-#         if rng is None:
-#             self.thisptr = new Cpp_EGFRDFactory()
-#         else:
-#             self.thisptr = new Cpp_EGFRDFactory(deref(rng.thisptr))
-# 
-#     def __dealloc__(self):
-#         del self.thisptr
-# 
-#     def create_world(self, arg1):
-#         if isinstance(arg1, Position3):
-#             return EGFRDWorld_from_Cpp_EGFRDWorld(
-#                 shared_ptr[Cpp_EGFRDWorld](
-#                     self.thisptr.create_world(deref((<Position3>arg1).thisptr))))
-#         else:
-#             return EGFRDWorld_from_Cpp_EGFRDWorld(
-#                 shared_ptr[Cpp_EGFRDWorld](self.thisptr.create_world(<string>(arg1))))
-# 
-#     def create_simulator(self, arg1, EGFRDWorld arg2=None):
-#         if arg2 is None:
-#             return EGFRDSimulator_from_Cpp_EGFRDSimulator(
-#                 self.thisptr.create_simulator(deref((<EGFRDWorld>arg1).thisptr)))
-#         else:
-#             return EGFRDSimulator_from_Cpp_EGFRDSimulator(
-#                 self.thisptr.create_simulator(
-#                     deref(Cpp_Model_from_Model(arg1)), deref(arg2.thisptr)))
+## EGFRDFactory
+#  a python wrapper for Cpp_EGFRDFactory
+cdef class EGFRDFactory:
+
+    def __cinit__(self, arg1=None, arg2=None, arg3=None, arg4=None, arg5=None):
+        self.thisptr = new Cpp_EGFRDFactory()
+        if isinstance(arg1, Global):
+            if isinstance(arg2, GSLRandomNumberGenerator):
+                if arg3 is None:
+                    self.thisptr = new Cpp_EGFRDFactory(
+                        deref((<Global>arg1).thisptr),
+                        deref((<GSLRandomNumberGenerator>arg2).thisptr))
+                elif arg4 is None:
+                    self.thisptr = new Cpp_EGFRDFactory(
+                        deref((<Global>arg1).thisptr),
+                        deref((<GSLRandomNumberGenerator>arg2).thisptr), <Integer>arg3)
+                elif arg5 is None:
+                    self.thisptr = new Cpp_EGFRDFactory(
+                        deref((<Global>arg1).thisptr),
+                        deref((<GSLRandomNumberGenerator>arg2).thisptr),
+                        <Integer>arg3, <Real>arg4)
+                else:
+                    self.thisptr = new Cpp_EGFRDFactory(
+                        deref((<Global>arg1).thisptr),
+                        deref((<GSLRandomNumberGenerator>arg2).thisptr),
+                        <Integer>arg3, <Real>arg4, <Real>arg5)
+            else:
+                if arg5 is not None:
+                    raise RuntimeError, "too many arguments were given."
+                elif arg2 is None:
+                    self.thisptr = new Cpp_EGFRDFactory(deref((<Global>arg1).thisptr))
+                elif arg3 is None:
+                    self.thisptr = new Cpp_EGFRDFactory(
+                        deref((<Global>arg1).thisptr), <Integer>arg2)
+                elif arg4 is None:
+                    self.thisptr = new Cpp_EGFRDFactory(
+                        deref((<Global>arg1).thisptr), <Integer>arg2, <Real>arg3)
+                else:
+                    self.thisptr = new Cpp_EGFRDFactory(
+                        deref((<Global>arg1).thisptr), <Integer>arg2, <Real>arg3, <Real>arg4)
+        else:
+            if arg4 is not None or arg5 is not None:
+                raise RuntimeError, "too many arguments were given."
+            elif arg1 is None:
+                self.thisptr = new Cpp_EGFRDFactory()
+            elif arg2 is None:
+                self.thisptr = new Cpp_EGFRDFactory(<Integer>arg1)
+            elif arg3 is None:
+                self.thisptr = new Cpp_EGFRDFactory(<Integer>arg1, <Real>arg2)
+            else:
+                self.thisptr = new Cpp_EGFRDFactory(<Integer>arg1, <Real>arg2, <Real>arg3)
+
+    def __dealloc__(self):
+        del self.thisptr
+
+    def create_world(self, arg1):
+        if isinstance(arg1, Position3):
+            return EGFRDWorld_from_Cpp_EGFRDWorld(
+                shared_ptr[Cpp_EGFRDWorld](
+                    self.thisptr.create_world(deref((<Position3>arg1).thisptr))))
+        else:
+            return EGFRDWorld_from_Cpp_EGFRDWorld(
+                shared_ptr[Cpp_EGFRDWorld](self.thisptr.create_world(<string>(arg1))))
+
+    def create_simulator(self, arg1, EGFRDWorld arg2=None):
+        if arg2 is None:
+            return EGFRDSimulator_from_Cpp_EGFRDSimulator(
+                self.thisptr.create_simulator(deref((<EGFRDWorld>arg1).thisptr)))
+        else:
+            return EGFRDSimulator_from_Cpp_EGFRDSimulator(
+                self.thisptr.create_simulator(
+                    deref(Cpp_Model_from_Model(arg1)), deref(arg2.thisptr)))

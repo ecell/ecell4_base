@@ -70,11 +70,32 @@ cdef extern from "ecell4/epdp/egfrd.hpp" namespace "ecell4::egfrd":
         void run(Real)
         void run(Real, vector[shared_ptr[Cpp_Observer]])
 
+    cdef cppclass Cpp_EGFRDFactory "ecell4::egfrd::EGFRDFactory":
+        Cpp_EGFRDFactory() except +
+        Cpp_EGFRDFactory(Integer) except +
+        Cpp_EGFRDFactory(Integer, Real) except +
+        Cpp_EGFRDFactory(Integer, Real, Real) except +
+        Cpp_EGFRDFactory(Cpp_Global&) except +
+        Cpp_EGFRDFactory(Cpp_Global&, Integer) except +
+        Cpp_EGFRDFactory(Cpp_Global&, Integer, Real) except +
+        Cpp_EGFRDFactory(Cpp_Global&, Integer, Real, Real) except +
+        Cpp_EGFRDFactory(Cpp_Global&, shared_ptr[Cpp_RandomNumberGenerator]&) except +
+        Cpp_EGFRDFactory(Cpp_Global&, shared_ptr[Cpp_RandomNumberGenerator]&, Integer) except +
+        Cpp_EGFRDFactory(Cpp_Global&, shared_ptr[Cpp_RandomNumberGenerator]&, Integer, Real) except +
+        Cpp_EGFRDFactory(Cpp_Global&, shared_ptr[Cpp_RandomNumberGenerator]&, Integer, Real, Real) except +
+        Cpp_EGFRDWorld* create_world(string)
+        Cpp_EGFRDWorld* create_world(Cpp_Position3&)
+        Cpp_EGFRDSimulator* create_simulator(shared_ptr[Cpp_Model], shared_ptr[Cpp_EGFRDWorld])
+        Cpp_EGFRDSimulator* create_simulator(shared_ptr[Cpp_EGFRDWorld])
+
 cdef class EGFRDWorld:
     cdef shared_ptr[Cpp_EGFRDWorld]* thisptr
 
 cdef class EGFRDSimulator:
     cdef Cpp_EGFRDSimulator* thisptr
+
+cdef class EGFRDFactory:
+    cdef Cpp_EGFRDFactory* thisptr
 
 cdef EGFRDWorld EGFRDWorld_from_Cpp_EGFRDWorld(
     shared_ptr[Cpp_EGFRDWorld] m)

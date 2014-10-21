@@ -285,6 +285,13 @@ public:
         add_world_structure();
     }
 
+    World(const std::string filename)
+        : base_type(position_type(1, 1, 1), matrix_sizes_type(3, 3, 3)), rng_()
+    {
+        rng_ = boost::shared_ptr<rng_type>(new rng_type());
+        this->load(filename);
+    }
+
     virtual particle_id_pair new_particle(species_id_type const& sid,
             position_type const& pos)
     {
