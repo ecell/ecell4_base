@@ -15,7 +15,7 @@ class Transaction;
 
 template<typename Ttraits_>
 class ParticleContainer
-    : ecell4::Space
+    : public ecell4::Space
 {
 public:
 

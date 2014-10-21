@@ -4,6 +4,7 @@
 #include <boost/bind.hpp>
 #include <boost/array.hpp>
 #include <boost/format.hpp>
+#include <boost/foreach.hpp>
 #include <boost/optional.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/scoped_ptr.hpp>

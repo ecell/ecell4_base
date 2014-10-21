@@ -310,7 +310,9 @@ public:
 
         typename all_values_type::size_type const old_index(i - values_.begin());
 
-        BOOST_ASSERT(cell(index((*i).second.position())).erase(old_index));
+        bool is_succeeded(cell(index((*i).second.position())).erase(old_index));
+        BOOST_ASSERT(is_succeeded);
+        // BOOST_ASSERT(cell(index((*i).second.position())).erase(old_index));
         rmap_.erase((*i).first);
 
         typename all_values_type::size_type const last_index(values_.size() - 1);
@@ -319,7 +321,9 @@ public:
         {
             value_type const& last(values_[last_index]);
             cell_type& old_c(cell(index(last.second.position())));
-            BOOST_ASSERT(old_c.erase(last_index));
+            is_succeeded = old_c.erase(last_index);
+            BOOST_ASSERT(is_succeeded);
+            // BOOST_ASSERT(old_c.erase(last_index));
             old_c.push(old_index);
             rmap_[last.first] = old_index;
             reinterpret_cast<nonconst_value_type&>(*i) = last; 

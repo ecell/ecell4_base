@@ -2,6 +2,7 @@
 #define MULTI_HPP
 
 #include <boost/scoped_ptr.hpp>
+#include <boost/foreach.hpp>
 #include <boost/algorithm/string/join.hpp>
 
 #include "exceptions.hpp"

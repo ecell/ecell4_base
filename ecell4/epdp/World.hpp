@@ -25,6 +25,7 @@
 #include <boost/array.hpp>
 #include <boost/utility/enable_if.hpp>
 #include <boost/type_traits/is_same.hpp>
+#include <boost/foreach.hpp>
 #include "exceptions.hpp"
 #include "generator.hpp"
 #include "filters.hpp"
@@ -257,7 +258,8 @@ public:
 public:
 
     World(
-        const position_type& edge_lengths, const matrix_sizes_type& sizes)
+        const position_type& edge_lengths = position_type(1, 1, 1),
+        const matrix_sizes_type& sizes = matrix_sizes_type(3, 3, 3))
         : base_type(edge_lengths, sizes)
     {
         rng_ = boost::shared_ptr<rng_type>(new rng_type());
@@ -270,6 +272,15 @@ public:
         const position_type& edge_lengths, const matrix_sizes_type& sizes,
         const boost::shared_ptr<rng_type>& rng)
         : base_type(edge_lengths, sizes), rng_(rng)
+    {
+        add_world_structure();
+    }
+
+    World(
+        const position_type& edge_lengths, const matrix_sizes_type& sizes,
+        const boost::shared_ptr<ecell4::RandomNumberGenerator>& rng)
+        : base_type(edge_lengths, sizes),
+        rng_(boost::dynamic_pointer_cast<rng_type>(rng))
     {
         add_world_structure();
     }
@@ -310,7 +321,9 @@ public:
             return false;
         }
 
-        BOOST_ASSERT(base_type::update_particle(pi_pair));
+        const bool is_succeeded(base_type::update_particle(pi_pair));
+        BOOST_ASSERT(is_succeeded);
+        // BOOST_ASSERT(base_type::update_particle(pi_pair)); //XXX: -DNDEBUG!!!
         typename per_species_particle_id_set::iterator
             k(particle_pool_.find(pi_pair.second.sid()));
         if (k == particle_pool_.end())
@@ -656,7 +669,7 @@ public:
         const particle_id_type& ignore) const
     {
         boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped(
-            base_type::check_overlap(particle_shape_type(pos, radius, ignore)));
+            base_type::check_overlap(particle_shape_type(pos, radius), ignore));
         std::vector<std::pair<std::pair<particle_id_type, particle_type>, length_type> >
             retval;
         if (overlapped && ::size(*overlapped))
@@ -677,7 +690,7 @@ public:
     {
         boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped(
             base_type::check_overlap(
-                particle_shape_type(pos, radius, ignore1, ignore2)));
+                particle_shape_type(pos, radius), ignore1, ignore2));
         std::vector<std::pair<std::pair<particle_id_type, particle_type>, length_type> >
             retval;
         if (overlapped && ::size(*overlapped))
@@ -735,8 +748,7 @@ public:
         }
         else
         {
-            update_particle(retval);
-            return std::make_pair(retval, true);
+            return std::make_pair(retval, update_particle(retval));
         }
     }
 
@@ -771,7 +783,7 @@ public:
 
         typename per_species_particle_id_set::const_iterator
             i(particle_pool_.find(sp.serial()));
-        if (i == particle_pool_.end() || (*i).size() < num)
+        if (i == particle_pool_.end() || (*i).second.size() < num)
         {
             throw std::invalid_argument(
                 "The number of molecules cannot be negative.");
@@ -779,10 +791,14 @@ public:
 
         for (unsigned int j(0); j < num; ++j)
         {
-            const Integer n(rng()->uniform_int(0, (*i).size() - 1));
+            const Integer n(rng()->uniform_int(0, (*i).second.size() - 1));
+            // typename particle_id_set::const_iterator
+            //     target(std::advance((*i).second.begin(), n));
+            // this->remove_particle((*target).first);
             typename particle_id_set::const_iterator
-                target(std::advance((*i).begin(), n));
-            this->remove_particle((*target).first);
+                target((*i).second.begin());
+            std::advance(target, n);
+            this->remove_particle(*target);
         }
     }
 
