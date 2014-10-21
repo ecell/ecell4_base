@@ -92,56 +92,60 @@ class SpeciesAttributesCallback(Callback):
     def notify_bitwise_operations(self, obj):
         if not isinstance(obj, parseobj.OrExp):
             raise RuntimeError, 'an invalid object was given [%s]' % (repr(obj))
-        elif len(obj._elements()) != 2:
-            raise RuntimeError, 'only one attribute is allowed. [%d] given' % (
-                len(obj._elements()))
+        # elif len(obj._elements()) != 2:
+        #     raise RuntimeError, 'only one attribute is allowed. [%d] given' % (
+        #         len(obj._elements()))
 
-        lhs, rhs = obj._elements()
+        elems = obj._elements()
+        rhs = elems[-1]
+        if isinstance(rhs, parseobj.ExpBase):
+            return
 
-        species_list = generate_Species(lhs)
-        if len(species_list) != 1:
-            raise RuntimeError, (
-                'only a single species must be given; %d given'
-                % len(species_list))
-
-        sp = species_list[0]
-        if sp is None:
-            raise RuntimeError, "no species given [%s]" % (repr(obj))
-
-        if self.keys is None:
-            if not isinstance(rhs, types.DictType):
+        for lhs in elems[: -1]:
+            species_list = generate_Species(lhs)
+            if len(species_list) != 1:
                 raise RuntimeError, (
-                    'parameter must be given as a dict; "%s" given'
-                    % str(rhs))
-            for key, value in rhs.items():
-                if not (isinstance(key, types.StringType)
-                    and isinstance(value, types.StringType)):
+                    'only a single species must be given; %d given'
+                    % len(species_list))
+
+            sp = species_list[0]
+            if sp is None:
+                raise RuntimeError, "no species given [%s]" % (repr(obj))
+
+            if self.keys is None:
+                if not isinstance(rhs, types.DictType):
                     raise RuntimeError, (
-                        'attributes must be given as a pair of strings;'
-                        + ' "%s" and "%s" given'
-                        % (str(key), str(value)))
-                sp.set_attribute(key, value)
-        else:
-            if not isinstance(rhs, (types.TupleType, types.ListType)):
-                if len(self.keys) == 1:
-                    rhs = (rhs, )
-                else:
-                    raise RuntimeError, (
-                        'parameters must be given as a tuple or list; "%s" given'
+                        'parameter must be given as a dict; "%s" given'
                         % str(rhs))
-            if len(rhs) != len(self.keys):
-                raise RuntimeError, (
-                    'the number of parameters must be %d; %d given'
-                    % (len(self.keys), len(rhs)))
-            else:
-                for key, value in zip(self.keys, rhs):
-                    if not isinstance(value, types.StringType):
+                for key, value in rhs.items():
+                    if not (isinstance(key, types.StringType)
+                        and isinstance(value, types.StringType)):
                         raise RuntimeError, (
-                            'paramter must be given as a string; "%s" given'
-                            % str(value))
+                            'attributes must be given as a pair of strings;'
+                            + ' "%s" and "%s" given'
+                            % (str(key), str(value)))
                     sp.set_attribute(key, value)
+            else:
+                if not isinstance(rhs, (types.TupleType, types.ListType)):
+                    if len(self.keys) == 1:
+                        rhs = (rhs, )
+                    else:
+                        raise RuntimeError, (
+                            'parameters must be given as a tuple or list; "%s" given'
+                            % str(rhs))
+                if len(rhs) != len(self.keys):
+                    raise RuntimeError, (
+                        'the number of parameters must be %d; %d given'
+                        % (len(self.keys), len(rhs)))
+                else:
+                    for key, value in zip(self.keys, rhs):
+                        if not isinstance(value, types.StringType):
+                            raise RuntimeError, (
+                                'paramter must be given as a string; "%s" given'
+                                % str(value))
+                        sp.set_attribute(key, value)
 
-        self.bitwise_operations.append(sp)
+            self.bitwise_operations.append(sp)
 
     def notify_comparisons(self, obj):
         raise RuntimeError, (
