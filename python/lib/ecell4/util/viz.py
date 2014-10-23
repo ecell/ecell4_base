@@ -19,7 +19,7 @@ def init_ipynb():
     html = open(path).read()
     return display(HTML(html))
 
-def parse_world(world, radius=None, config, species_list=None):
+def parse_world(world, radius=None, config={}, species_list=None):
     if species_list is None:
         species = [p.species().serial() for pid, p in world.list_particles()]
         species = sorted(set(species), key=species.index) # pick unique ones
@@ -60,7 +60,6 @@ def parse_world(world, radius=None, config, species_list=None):
 
     info['ranges'] = {'x': rangex, 'y': rangey, 'z': rangez}
     config = color_scale.get_config()
-
     return info, config
 
 
@@ -76,7 +75,7 @@ def plot_movie(worlds, radius=None, width=500, height=500, config={}, grid=False
     # find information in each worlds
     i=0
     for world in worlds:
-        info = parse_world(world, config, species_list)
+        info, trash = parse_world(world, radius, config, species_list)
         for species in info['particles']:
             data[species['name']]['data'].append({
                 'df': species['data'],
@@ -88,7 +87,7 @@ def plot_movie(worlds, radius=None, width=500, height=500, config={}, grid=False
         'player': True,
         'autorange': False,
         'space_mode':'wireframe',
-        'grid': grid
+        'grid': grid,
         'range': ranges
     }
 
@@ -127,9 +126,9 @@ def plot_world(world, radius=None, width=500, height=500, config={}, grid=False,
 
     info, config = parse_world(world, radius, config, species_list)
 
-    plot = []
+    plots = []
     for species in info['particles']:
-        plot.append({
+        plots.append({
             'type': 'Particles',
             'data': species['data'],
             'options': {'name': species['name'], 'color': species['color'], 'size': species['size']}
