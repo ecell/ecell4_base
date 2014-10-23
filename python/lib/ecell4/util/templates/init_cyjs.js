@@ -1,7 +1,7 @@
 <script>
 if(window['cytoscape'] === undefined){
     var paths = {
-	cytoscape: 'http://cytoscape.github.io/cytoscape.js/api/cytoscape.js-latest/cytoscape.min.js',
+	cytoscape: 'http://cdnjs.cloudflare.com/ajax/libs/cytoscape/2.2.10/cytoscape'
     };
 
     console.log('Begin loading all JavaScript libs...');
