@@ -1,0 +1,53 @@
+<html>
+  <head>
+    <script type="text/javascript">
+     //
+     // templ variables: model_id, data
+     // * model_id: uuid
+     // * data: array of array of hash
+     //    [
+     //      [{df: {x: [0,1,2,..,4], y: [], z: []}, t: 0}, {}],
+     //      [],[],[],...
+     //    ]
+     // * colors: array of string
+     // * names: array of string
+     // * options: hash
+     //
+     (function(){
+       function render(){
+	 console.log("Begin rendering...");
+	 var stage = new Elegans.Stage(d3.select("#"+{{model_id}})[0][0], {{options}});
+	 var data = {{data}};
+	 var colors = {{colors}};
+	 var names = {{names}};
+
+	 for(var i=0; i < data.length; i++){
+	   Elegans.DataBase.add("database-particles"+String(i), data[i], "df", "t", 0)
+	   stage.add(new Elegans.Particles("database-particles"+String(i), {
+	     color: colors[i],
+	     name: names[i]
+	   }));
+	 }
+       }
+
+       function before_render(){
+	 if(!(['d3', 'THREE', 'Elegans'].some(function(lib_name){
+	   if(window[lib_name] === undefined){
+             console.log(lib_name + ' is not loaded.');
+             window.addEventListener("load_elegans", before_render);
+             return true;
+	   }
+	   return false;
+	 }))){
+	   render();
+	 };
+       };
+
+       before_render();
+     })();
+    </script>
+  </head>
+  <body>
+    <div id={{model_id}}></div>
+  </body>
+</html>
