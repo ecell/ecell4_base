@@ -14,6 +14,7 @@
 #include <ecell4/core/extras.hpp>
 #include <ecell4/core/SerialIDGenerator.hpp>
 #include <ecell4/core/ParticleSpaceHDF5Writer.hpp>
+#include <ecell4/core/Sphere.hpp>
 #include "./ParticleTraits.hpp" // This refers ecell4::Particle
 
 #include "ParticleContainerBase.hpp"
@@ -84,7 +85,8 @@ struct WorldTraitsBase
     // typedef SpeciesInfo<species_id_type, D_type, length_type, structure_id_type>
     //     species_info_type;
 
-    typedef Sphere particle_shape_type;
+    // typedef Sphere particle_shape_type;
+    typedef ecell4::Sphere particle_shape_type; //XXX:
     typedef std::string structure_id_type;
     typedef Structure<Tderived_> structure_type;
 

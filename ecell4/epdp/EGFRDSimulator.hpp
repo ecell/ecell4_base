@@ -1521,7 +1521,9 @@ protected:
             virtual void operator()(cuboidal_region_type const& structure) const
             {
                 spherical_shell_id_pair new_shell(
-                    _this->new_shell(did, ::shape(p.second)));
+                    _this->new_shell(
+                        did, sphere_type(p.second.position(), p.second.radius())));
+                    // _this->new_shell(did, ::shape(p.second)));
                 new_single = new spherical_single_type(did, p, new_shell);
                 kind = SPHERICAL_SINGLE;
             }
@@ -2509,7 +2511,7 @@ protected:
         if (base_type::paranoiac_)
         {
             BOOST_ASSERT(check_overlap(
-                sphere_type(domain.position(), new_shell_size),
+                particle_shape_type(domain.position(), new_shell_size),
                 domain.particle().first));
         }
         domain.size() = new_shell_size;
