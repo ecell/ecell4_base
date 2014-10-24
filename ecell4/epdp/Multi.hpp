@@ -253,7 +253,9 @@ public:
     typedef typename traits_type::shell_id_type shell_id_type;
     typedef typename traits_type::domain_id_type identifier_type;
     typedef typename traits_type::template shell_generator<
-        typename simulator_type::sphere_type>::type spherical_shell_type;
+        ecell4::Sphere>::type spherical_shell_type;
+    // typedef typename traits_type::template shell_generator<
+    //     typename simulator_type::sphere_type>::type spherical_shell_type;
     typedef std::pair<const typename traits_type::shell_id_type, spherical_shell_type> spherical_shell_id_pair;
     typedef typename traits_type::reaction_record_type reaction_record_type;
 

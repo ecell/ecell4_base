@@ -6,28 +6,30 @@
 #include "Position3Type.hpp"
 #include "geometry.hpp"
 
+template<typename Tshape_>
+struct is_shape: public boost::mpl::false_ {};
+
 template<typename Tobj_>
 inline typename Tobj_::shape_type const& shape(Tobj_ const& obj)
 {
     return obj.shape();
 }
 
-template<typename Tobj_>
-inline typename Tobj_::shape_type& shape(Tobj_& obj)
-{
-    return obj.shape();
-}
-
-template<typename Tshape_>
-inline Tshape_ offset(Tshape_ const& shape, typename Tshape_::position_type off)
-{
-    Tshape_ retval(shape);
-    retval.position() += off;
-    return retval;
-}
-
-template<typename Tshape_>
-struct is_shape: public boost::mpl::false_ {};
+//XXX: See Shell.hpp and ParticleTraits.hpp
+// template<typename Tobj_>
+// inline typename Tobj_::shape_type& shape(Tobj_& obj)
+// {
+//     return obj.shape();
+// }
+//
+// template<typename Tshape_>
+// inline Tshape_ offset(Tshape_ const& shape, typename Tshape_::position_type off,
+//         typename boost::enable_if<is_shape<Tshape_> >::type* = 0)
+// {
+//     Tshape_ retval(shape);
+//     retval.position() += off;
+//     return retval;
+// }
 
 template<typename T_>
 struct shape_position_type
@@ -43,24 +45,28 @@ struct shape_length_type
 };
 
 template<typename T_>
-inline typename shape_position_type<T_>::type const& shape_position(T_ const& shape)
+inline typename shape_position_type<T_>::type const& shape_position(T_ const& shape,
+        typename boost::enable_if<is_shape<T_> >::type* = 0)
 {
     return shape.position();
 }
 
 template<typename T_>
-inline typename shape_position_type<T_>::type& shape_position(T_& shape)
+inline typename shape_position_type<T_>::type& shape_position(T_& shape,
+        typename boost::enable_if<is_shape<T_> >::type* = 0)
 {
     return shape.position();
 }
 
 template<typename T_>
-inline typename shape_length_type<T_>::type const& shape_size(T_ const& shape)
+inline typename shape_length_type<T_>::type const& shape_size(T_ const& shape,
+        typename boost::enable_if<is_shape<T_> >::type* = 0)
 {
 }
 
 template<typename T_>
-inline typename shape_length_type<T_>::type& shape_size(T_& shape)
+inline typename shape_length_type<T_>::type& shape_size(T_& shape,
+        typename boost::enable_if<is_shape<T_> >::type* = 0)
 {
 }
 

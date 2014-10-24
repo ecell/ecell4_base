@@ -96,8 +96,8 @@ public:
     typedef typename traits_type::world_type world_type;
     typedef Sphere sphere_type;
     typedef Cylinder cylinder_type;
-    typedef Box box_type;
-    typedef Plane plane_type;
+    // typedef Box box_type;
+    // typedef Plane plane_type;
 
     typedef typename traits_type::network_rules_type network_rules_type;
     typedef typename traits_type::time_type time_type;

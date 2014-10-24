@@ -84,13 +84,25 @@ template<typename T_>
 struct get_greens_function {};
 
 template<>
-struct get_greens_function<Sphere>
+struct get_greens_function<ecell4::Sphere>
 {
     typedef GreensFunction3DAbsSym type;
 };
 
+// template<>
+// struct get_greens_function<Cylinder>
+// {
+//     typedef GreensFunction3DAbsSym type;
+// };
+// 
+// template<>
+// struct get_greens_function<Sphere>
+// {
+//     typedef GreensFunction3DAbsSym type;
+// };
+
 template<>
-struct get_greens_function<Cylinder>
+struct get_greens_function<ecell4::Cylinder>
 {
     typedef GreensFunction3DAbsSym type;
 };
@@ -99,18 +111,32 @@ template<typename T_>
 struct get_pair_greens_function {};
 
 template<>
-struct get_pair_greens_function<Sphere>
+struct get_pair_greens_function<ecell4::Sphere>
 {
     typedef GreensFunction3DRadAbs iv_type;
     typedef GreensFunction3DAbsSym com_type;
 };
 
 template<>
-struct get_pair_greens_function<Cylinder>
+struct get_pair_greens_function<ecell4::Cylinder>
 {
     typedef GreensFunction3DRadAbs iv_type;
     typedef GreensFunction3DAbsSym com_type;
 };
+
+// template<>
+// struct get_pair_greens_function<Sphere>
+// {
+//     typedef GreensFunction3DRadAbs iv_type;
+//     typedef GreensFunction3DAbsSym com_type;
+// };
+// 
+// template<>
+// struct get_pair_greens_function<Cylinder>
+// {
+//     typedef GreensFunction3DRadAbs iv_type;
+//     typedef GreensFunction3DAbsSym com_type;
+// };
 
 } // namespace detail
 
@@ -182,8 +208,10 @@ public:
     typedef typename traits_type::world_type world_type;
     typedef typename traits_type::domain_id_type domain_id_type;
     typedef typename traits_type::shell_id_type shell_id_type;
-    typedef typename traits_type::template shell_generator<sphere_type>::type spherical_shell_type;
-    typedef typename traits_type::template shell_generator<cylinder_type>::type cylindrical_shell_type;
+    typedef typename traits_type::template shell_generator<ecell4::Sphere>::type spherical_shell_type;
+    typedef typename traits_type::template shell_generator<ecell4::Cylinder>::type cylindrical_shell_type;
+    // typedef typename traits_type::template shell_generator<sphere_type>::type spherical_shell_type;
+    // typedef typename traits_type::template shell_generator<cylinder_type>::type cylindrical_shell_type;
     typedef typename traits_type::domain_type domain_type;
     typedef typename traits_type::domain_id_pair domain_id_pair;
     typedef typename traits_type::time_type time_type;
@@ -1497,7 +1525,7 @@ protected:
                 // and the move may be rejected (NoSpace error).
                 const cylindrical_shell_id_pair new_shell(
                     _this->new_shell(
-                        did, cylinder_type(
+                        did, typename cylindrical_shell_type::shape_type(
                             p.second.position(), p.second.radius(),
                             structure.shape().unit_z(),
                             p.second.radius())));
@@ -1508,7 +1536,7 @@ protected:
             virtual void operator()(planar_surface_type const& structure) const
             {
                 cylindrical_shell_id_pair const new_shell(
-                    _this->new_shell(did, cylinder_type(
+                    _this->new_shell(did, typename cylindrical_shell_type::shape_type(
                         p.second.position(), p.second.radius(),
                         normalize(cross_product(
                             structure.shape().unit_x(),
@@ -1522,7 +1550,8 @@ protected:
             {
                 spherical_shell_id_pair new_shell(
                     _this->new_shell(
-                        did, sphere_type(p.second.position(), p.second.radius())));
+                        did, typename spherical_shell_type::shape_type(
+                            p.second.position(), p.second.radius())));
                     // _this->new_shell(did, ::shape(p.second)));
                 new_single = new spherical_single_type(did, p, new_shell);
                 kind = SPHERICAL_SINGLE;
@@ -1578,7 +1607,7 @@ protected:
                 // undergoes an unbinding reaction we still have to clear the
                 // target volume and the move may be rejected (NoSpace error).
                 cylindrical_shell_id_pair const new_shell(
-                    _this->new_shell(did, cylinder_type(
+                    _this->new_shell(did, typename cylindrical_shell_type::shape_type(
                         com,
                         shell_size,
                         shape(structure).unit_z(),
@@ -1592,7 +1621,7 @@ protected:
             virtual void operator()(planar_surface_type const& structure) const
             {
                 cylindrical_shell_id_pair const new_shell(
-                    _this->new_shell(did, cylinder_type(
+                    _this->new_shell(did, typename cylindrical_shell_type::shape_type(
                         com,
                         shell_size,
                         normalize(cross_product(
@@ -1608,7 +1637,7 @@ protected:
             {
                 spherical_shell_id_pair new_shell(
                     _this->new_shell(did,
-                        sphere_type(com, shell_size)));
+                        typename spherical_shell_type::shape_type(com, shell_size)));
                 new_pair = new spherical_pair_type(did, p0, p1, new_shell,
                                                    iv, rules);
                 kind = SPHERICAL_PAIR;
@@ -1742,7 +1771,8 @@ protected:
         AnalyticalSingle<traits_type, cylindrical_shell_type> const& domain,
         length_type r)
     {
-        return multiply(shape(domain.shell().second).unit_z(), r);
+        // return multiply(shape(domain.shell().second).unit_z(), r);
+        return multiply(shape(domain.shell().second).axis(), r);
     }
     // }}}
 
@@ -2931,7 +2961,7 @@ protected:
         spherical_shell_id_pair sid_shell_pair(
             new_shell(
                 multi.id(),
-                sphere_type(
+                typename spherical_shell_type::shape_type(
                     single.particle().second.position(),
                     single.particle().second.radius() *
                         (1. + multi_shell_factor_))));

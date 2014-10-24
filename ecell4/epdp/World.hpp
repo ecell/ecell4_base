@@ -86,7 +86,7 @@ struct WorldTraitsBase
     //     species_info_type;
 
     // typedef Sphere particle_shape_type;
-    typedef ecell4::Sphere particle_shape_type; //XXX:
+    typedef ecell4::Sphere particle_shape_type;
     typedef std::string structure_id_type;
     typedef Structure<Tderived_> structure_type;
 

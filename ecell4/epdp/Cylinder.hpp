@@ -76,6 +76,16 @@ public:
         return unit_z_;
     }
 
+    inline position_type const& axis() const
+    {
+        return unit_z_;
+    }
+
+    inline position_type& axis()
+    {
+        return unit_z_;
+    }
+
     length_type const& half_length() const
     {
         return half_length_;

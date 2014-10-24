@@ -8,7 +8,7 @@ set(CPP_FILES
     CompartmentSpace.cpp Context.cpp Global.cpp Journal.cpp ReactionRule.cpp
     LatticeSpace.cpp Model.cpp NetworkModel.cpp NetfreeModel.cpp ParticleSpace.cpp
     Position3.cpp RandomNumberGenerator.cpp Species.cpp UnitSpecies.cpp
-    Sphere.cpp SubvolumeSpace.cpp ParticleSpaceCellListImpl.cpp)
+    Sphere.cpp Cylinder.cpp SubvolumeSpace.cpp ParticleSpaceCellListImpl.cpp)
 
 set(HPP_FILES
     CompartmentSpace.hpp DynamicPriorityQueue.hpp LatticeSpace.hpp
@@ -21,7 +21,8 @@ set(HPP_FILES
     Context.hpp Global.hpp Journal.hpp Model.hpp NetworkModel.hpp NetfreeModel.hpp
     ParticleSpaceHDF5Writer.hpp Reaction.hpp Simulator.hpp SimulatorBase.hpp
     UnitSpecies.hpp observers.hpp exceptions.hpp get_mapper_mf.hpp types.hpp
-    Shape.hpp Sphere.hpp AABB.hpp StructureType.hpp ParticleSpaceCellListImpl.hpp
+    Shape.hpp Sphere.hpp Cylinder.hpp AABB.hpp StructureType.hpp
+    ParticleSpaceCellListImpl.hpp
     comparators.hpp SimulatorFactory.hpp)
 
 find_package(HDF5 COMPONENTS C CXX HL REQUIRED)
