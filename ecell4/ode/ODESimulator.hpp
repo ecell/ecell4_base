@@ -86,13 +86,18 @@ public:
                     products_states[cnt] = x[*j];
                 }
 
+                double flux;
                 // Get pointer of Ratelow object and call it.
                 if (i->ratelow.expired()) 
                 {
-                    throw IllegalState("Ratelow is not registered");
+                    boost::scoped_ptr<Ratelow> temporary_ratelow_obj(new RatelowMassAction(i->k));
+                    flux = temporary_ratelow_obj->deriv_func(reactants_states, products_states, volume_);
                 }
-                boost::shared_ptr<Ratelow> ratelow = (*i).ratelow.lock();
-                double flux((*ratelow).deriv_func(reactants_states, products_states, volume_));
+                else
+                {
+                    boost::shared_ptr<Ratelow> ratelow = (*i).ratelow.lock();
+                    flux = (*ratelow).deriv_func(reactants_states, products_states, volume_);
+                }
 
                 // Merge each reaction's flux into whole dxdt
                 for (index_container_type::const_iterator
@@ -143,14 +148,10 @@ public:
             for (reaction_container_type::const_iterator
                 i(reactions_.begin()); i != reactions_.end(); i++)
             {
-                if (i->ratelow.expired()) 
-                {
-                    throw IllegalState("Ratelow is not registered");
-                }
-                int reactants_size(i->reactants.size());
-                int products_size(i->products.size());
                 // Calculate a reaction's jacobian.
                 // prepare state_array that contain amounts of reactants
+                int reactants_size(i->reactants.size());
+                int products_size(i->products.size());
                 Ratelow::state_container_type reactants_states(reactants_size);
                 Ratelow::state_container_type products_states(products_size);
                 Ratelow::state_container_type::size_type cnt(0);
@@ -171,8 +172,16 @@ public:
                 matrix_type mat(row_length, col_length); 
 
                 // get the pointer of Ratelow object and call it.
-                boost::shared_ptr<Ratelow> ratelow = (*i).ratelow.lock();
-                (*ratelow).jacobi_func(mat, reactants_states, products_states, volume_);
+                if (i->ratelow.expired()) 
+                {
+                    boost::scoped_ptr<Ratelow> temporary_ratelow_obj(new RatelowMassAction(i->k));
+                    temporary_ratelow_obj->jacobi_func(mat, reactants_states, products_states, volume_);                   
+                }
+                else
+                {
+                    boost::shared_ptr<Ratelow> ratelow = (*i).ratelow.lock();
+                    (*ratelow).jacobi_func(mat, reactants_states, products_states, volume_);
+                }
                 
                 //merge jacobian
                 for(int row(0); row < row_length; row++)
