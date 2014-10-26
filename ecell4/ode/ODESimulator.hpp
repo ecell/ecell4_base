@@ -88,7 +88,7 @@ public:
 
                 double flux;
                 // Get pointer of Ratelow object and call it.
-                if (i->ratelow.expired()) 
+                if (i->ratelow.expired() || i->ratelow.lock()->is_available() == false) 
                 {
                     boost::scoped_ptr<Ratelow> temporary_ratelow_obj(new RatelowMassAction(i->k));
                     flux = temporary_ratelow_obj->deriv_func(reactants_states, products_states, volume_);
@@ -172,7 +172,7 @@ public:
                 matrix_type mat(row_length, col_length); 
 
                 // get the pointer of Ratelow object and call it.
-                if (i->ratelow.expired()) 
+                if (i->ratelow.expired() || i->ratelow.lock()->is_available() == false) 
                 {
                     boost::scoped_ptr<Ratelow> temporary_ratelow_obj(new RatelowMassAction(i->k));
                     temporary_ratelow_obj->jacobi_func(mat, reactants_states, products_states, volume_);                   
