@@ -61,10 +61,14 @@ cdef class ODEWorld:
     def set_volume(self, Real vol):
         self.thisptr.get().set_volume(vol)
 
-    def add_molecules(self, Species sp, Real num):
-        self.thisptr.get().add_molecules(deref(sp.thisptr), num)
+    def add_molecules(self, Species sp, Integer num, shape=None):
+        if shape is None:
+            self.thisptr.get().add_molecules(deref(sp.thisptr), num)
+        else:
+            self.thisptr.get().add_molecules(
+                deref(sp.thisptr), num, deref((<Shape>(shape.as_base())).thisptr))
 
-    def remove_molecules(self, Species sp, Real num):
+    def remove_molecules(self, Species sp, Integer num):
         self.thisptr.get().remove_molecules(deref(sp.thisptr), num)
 
     def get_value(self, Species sp):
@@ -90,6 +94,13 @@ cdef class ODEWorld:
 
     def bind_to(self, NetworkModel m):
         self.thisptr.get().bind_to(deref(m.thisptr))
+
+    def as_base(self):
+        retval = Space()
+        del retval.thisptr
+        retval.thisptr = new shared_ptr[Cpp_Space](
+            <shared_ptr[Cpp_Space]>deref(self.thisptr))
+        return retval
 
 cdef ODEWorld ODEWorld_from_Cpp_ODEWorld(
     shared_ptr[Cpp_ODEWorld] w):

@@ -73,6 +73,7 @@ public:
     virtual const Real subvolume() const = 0;
     virtual coordinate_type global2coord(const Global& g) const = 0;
     virtual Global coord2global(const coordinate_type& c) const = 0;
+    virtual Global position2global(const Position3& pos) const = 0;
     virtual Integer num_molecules(
         const Species& sp, const coordinate_type& c) const = 0;
     virtual Integer num_molecules_exact(
@@ -206,6 +207,14 @@ public:
         const Integer surplus(c - layer * rowcol);
         const Integer row(static_cast<Integer>(surplus / matrix_sizes_[0]));
         return Global(surplus - row * matrix_sizes_[0], row, layer);
+    }
+
+    Global position2global(const Position3& pos) const
+    {
+        return Global(
+            static_cast<Integer>(floor(pos[0] * matrix_sizes_[0] / edge_lengths_[0])),
+            static_cast<Integer>(floor(pos[1] * matrix_sizes_[1] / edge_lengths_[1])),
+            static_cast<Integer>(floor(pos[2] * matrix_sizes_[2] / edge_lengths_[2])));
     }
 
     Integer num_molecules(const Species& sp) const;

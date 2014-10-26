@@ -5,7 +5,9 @@
 #include "Species.hpp"
 #include "Identifier.hpp"
 #include "RandomNumberGenerator.hpp"
-#include "LatticeSpace.hpp"
+#include "Identifier.hpp"
+// #include "LatticeSpace.hpp"
+
 
 namespace ecell4
 {
@@ -14,13 +16,19 @@ class MolecularTypeBase
 {
 public:
 
-    typedef LatticeSpace::particle_info particle_info;
+    typedef std::pair<Integer, ParticleID> particle_info;
+    typedef particle_info::first_type private_coordinate_type;
+    // typedef LatticeSpace::particle_info particle_info;
+
     typedef std::vector<particle_info> container_type;
+    typedef container_type::const_iterator const_iterator;
+    typedef container_type::iterator iterator;
 
 public:
 
-    MolecularTypeBase(const Species& species, MolecularTypeBase* location,
-            const Real& radius, const Real& D)
+    MolecularTypeBase(
+        const Species& species, MolecularTypeBase* location,
+        const Real& radius, const Real& D)
         : species_(species), location_(location), radius_(radius), D_(D)
     {
         ;
@@ -63,6 +71,44 @@ public:
         return D_;
     }
 
+    virtual void add_voxel_without_checking(const particle_info& info)
+    {
+        voxels_.push_back(info);
+    }
+
+    virtual void replace_voxel(
+        private_coordinate_type from_coord,
+        const particle_info& to_info)
+    {
+        container_type::iterator itr(find(from_coord));
+        if (itr == voxels_.end())
+        {
+            throw NotFound("no corresponding coordinate was found.");
+        }
+
+        (*itr) = to_info;
+    }
+
+    virtual void remove_voxel(const container_type::iterator& position)
+    {
+        // voxels_.erase(position);
+        (*position) = voxels_.back();
+        voxels_.pop_back();
+    }
+
+    virtual void swap(
+        const container_type::iterator& a, const container_type::iterator& b)
+    {
+        if (a == b)
+        {
+            return;
+        }
+
+        const container_type::value_type info(*b);
+        (*b) = (*a);
+        (*a) = info;
+    }
+
     virtual void addVoxel(particle_info info)
     {
         container_type::iterator itr(find(info.first));
@@ -73,30 +119,35 @@ public:
         voxels_.push_back(info);
     }
 
-    virtual bool removeVoxel(LatticeSpace::private_coordinate_type coord)
+    virtual bool removeVoxel(private_coordinate_type coord)
     {
         container_type::iterator itr(find(coord));
         if (itr != voxels_.end())
         {
-            voxels_.erase(itr);
+            this->remove_voxel(itr);
             return true;
         }
         return false;
     }
 
-    const container_type& voxels() const
-    {
-        return voxels_;
-    }
-
-    container_type& voxels()
-    {
-        return voxels_;
-    }
-
     particle_info& at(const Integer& index)
     {
         return voxels_.at(index);
+    }
+
+    particle_info const& at(const Integer& index) const
+    {
+        return voxels_.at(index);
+    }
+
+    particle_info& operator[](const Integer& n)
+    {
+        return voxels_[n];
+    }
+
+    particle_info const& operator[](const Integer& n) const
+    {
+        return voxels_[n];
     }
 
     const Integer size() const
@@ -129,7 +180,7 @@ public:
         return voxels_.end();
     }
 
-    container_type::iterator find(LatticeSpace::private_coordinate_type coord)
+    container_type::iterator find(private_coordinate_type coord)
     {
         container_type::iterator itr;
         for (itr = voxels_.begin(); itr != voxels_.end(); ++itr)
@@ -142,7 +193,7 @@ public:
         return itr;
     }
 
-    container_type::const_iterator find(LatticeSpace::private_coordinate_type coord) const
+    container_type::const_iterator find(private_coordinate_type coord) const
     {
         container_type::const_iterator itr;
         for (itr = voxels_.begin(); itr != voxels_.end(); ++itr)
@@ -155,7 +206,7 @@ public:
         return itr;
     }
 
-    container_type::iterator find(ParticleID pid)
+    container_type::iterator find(const ParticleID& pid)
     {
         container_type::iterator itr;
         for (itr = voxels_.begin(); itr != voxels_.end(); ++itr)
@@ -168,7 +219,7 @@ public:
         return itr;
     }
 
-    container_type::const_iterator find(ParticleID pid) const
+    container_type::const_iterator find(const ParticleID& pid) const
     {
         container_type::const_iterator itr;
         for (itr = voxels_.begin(); itr != voxels_.end(); ++itr)

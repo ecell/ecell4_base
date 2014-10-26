@@ -79,6 +79,9 @@ cdef class MesoscopicWorld:
             self.thisptr.get().add_molecules(deref(sp.thisptr), num)
         elif isinstance(c, Global):
             self.thisptr.get().add_molecules(deref(sp.thisptr), num, deref((<Global>c).thisptr))
+        elif hasattr(c, "as_base"):
+            self.thisptr.get().add_molecules(
+                deref(sp.thisptr), num, deref((<Shape>(c.as_base())).thisptr))
         else:
             self.thisptr.get().add_molecules(deref(sp.thisptr), num, <Integer>c)
 
@@ -157,6 +160,13 @@ cdef class MesoscopicWorld:
     def rng(self):
         return GSLRandomNumberGenerator_from_Cpp_RandomNumberGenerator(
             self.thisptr.get().rng())
+
+    def as_base(self):
+        retval = Space()
+        del retval.thisptr
+        retval.thisptr = new shared_ptr[Cpp_Space](
+            <shared_ptr[Cpp_Space]>deref(self.thisptr))
+        return retval
 
 cdef MesoscopicWorld MesoscopicWorld_from_Cpp_MesoscopicWorld(
     shared_ptr[Cpp_MesoscopicWorld] w):

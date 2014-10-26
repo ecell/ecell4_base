@@ -50,8 +50,12 @@ cdef class GillespieWorld:
     def num_molecules_exact(self, Species sp):
         return self.thisptr.get().num_molecules_exact(deref(sp.thisptr))
 
-    def add_molecules(self, Species sp, Integer num):
-        self.thisptr.get().add_molecules(deref(sp.thisptr), num)
+    def add_molecules(self, Species sp, Integer num, shape=None):
+        if shape is None:
+            self.thisptr.get().add_molecules(deref(sp.thisptr), num)
+        else:
+            self.thisptr.get().add_molecules(
+                deref(sp.thisptr), num, deref((<Shape>(shape.as_base())).thisptr))
 
     def remove_molecules(self, Species sp, Integer num):
         self.thisptr.get().remove_molecules(deref(sp.thisptr), num)
@@ -89,6 +93,13 @@ cdef class GillespieWorld:
     def rng(self):
         return GSLRandomNumberGenerator_from_Cpp_RandomNumberGenerator(
             self.thisptr.get().rng())
+
+    def as_base(self):
+        retval = Space()
+        del retval.thisptr
+        retval.thisptr = new shared_ptr[Cpp_Space](
+            <shared_ptr[Cpp_Space]>deref(self.thisptr))
+        return retval
 
 cdef GillespieWorld GillespieWorld_from_Cpp_GillespieWorld(
     shared_ptr[Cpp_GillespieWorld] w):

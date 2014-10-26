@@ -323,7 +323,7 @@ public:
         base_type::initialize(space);
     }
 
-    virtual void fire(const SimulatorBase* sim, const Space* space)
+    void log(const Space* space)
     {
         typedef std::vector<std::pair<ParticleID, Particle> >
             particle_container_type;
@@ -362,7 +362,11 @@ public:
         }
 
         ofs.close();
+    }
 
+    virtual void fire(const SimulatorBase* sim, const Space* space)
+    {
+        log(space);
         base_type::fire(sim, space);
     }
 

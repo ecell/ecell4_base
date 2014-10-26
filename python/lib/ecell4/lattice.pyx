@@ -351,6 +351,13 @@ cdef class LatticeWorld:
         return GSLRandomNumberGenerator_from_Cpp_RandomNumberGenerator(
             self.thisptr.get().rng())
 
+    def as_base(self):
+        retval = Space()
+        del retval.thisptr
+        retval.thisptr = new shared_ptr[Cpp_Space](
+            <shared_ptr[Cpp_Space]>deref(self.thisptr))
+        return retval
+
 cdef LatticeWorld LatticeWorld_from_Cpp_LatticeWorld(
     shared_ptr[Cpp_LatticeWorld] w):
     r = LatticeWorld(Position3(1, 1, 1))

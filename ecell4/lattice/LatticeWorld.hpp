@@ -163,7 +163,6 @@ public:
         return space_.get_value_exact(sp);
     }
 
-
     const spmap& molecular_types() const
     {
         return space_.molecular_types();
@@ -237,6 +236,7 @@ public:
     std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel(const Voxel& v);
     std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel(const Species& sp, const coordinate_type& coord);
     std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel_private(const Voxel& v);
+    std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel_private(const Species& sp, const private_coordinate_type& coord);
     std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel_structure(const Voxel& v);
     bool add_molecules(const Species& sp, const Integer& num);
     bool add_molecules(const Species& sp, const Integer& num, const Shape& shape);
@@ -251,6 +251,10 @@ public:
     std::pair<coordinate_type, bool> move_to_neighbor(particle_info& info, Integer nrand);
     std::pair<std::pair<particle_info, private_coordinate_type>, bool>
         move_to_neighbor(MolecularTypeBase* mtype, Integer index);
+
+    std::pair<private_coordinate_type, bool> move_to_neighbor(
+        MolecularTypeBase* const& from_mt, MolecularTypeBase* const& loc,
+        particle_info& info, const Integer nrand);
 
     private_coordinate_type get_neighbor(
             private_coordinate_type private_coord, Integer nrand) const
@@ -288,6 +292,12 @@ public:
     Real voxel_radius() const
     {
         return space_.voxel_radius();
+    }
+
+    Real voxel_volume() const
+    {
+        const Real r(voxel_radius());
+        return 4.0 * sqrt(2.0) * r * r * r;
     }
 
     boost::shared_ptr<RandomNumberGenerator> rng()

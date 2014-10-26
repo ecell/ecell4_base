@@ -170,8 +170,15 @@ cdef class BDWorld:
     # def add_species(self, Species sp):
     #     self.thisptr.get().add_species(deref(sp.thisptr))
 
-    def add_molecules(self, Species sp, Integer num):
-        self.thisptr.get().add_molecules(deref(sp.thisptr), num)
+    # def add_molecules(self, Species sp, Integer num):
+    #     self.thisptr.get().add_molecules(deref(sp.thisptr), num)
+
+    def add_molecules(self, Species sp, Integer num, shape=None):
+        if shape is None:
+            self.thisptr.get().add_molecules(deref(sp.thisptr), num)
+        else:
+            self.thisptr.get().add_molecules(
+                deref(sp.thisptr), num, deref((<Shape>(shape.as_base())).thisptr))
 
     def remove_molecules(self, Species sp, Integer num):
         self.thisptr.get().remove_molecules(deref(sp.thisptr), num)
@@ -196,6 +203,13 @@ cdef class BDWorld:
     def rng(self):
         return GSLRandomNumberGenerator_from_Cpp_RandomNumberGenerator(
             self.thisptr.get().rng())
+
+    def as_base(self):
+        retval = Space()
+        del retval.thisptr
+        retval.thisptr = new shared_ptr[Cpp_Space](
+            <shared_ptr[Cpp_Space]>deref(self.thisptr))
+        return retval
 
 cdef BDWorld BDWorld_from_Cpp_BDWorld(
     shared_ptr[Cpp_BDWorld] w):

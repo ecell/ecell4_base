@@ -6,6 +6,7 @@
 #include <ecell4/core/Space.hpp>
 #include <ecell4/core/NetworkModel.hpp>
 #include <ecell4/core/CompartmentSpaceHDF5Writer.hpp>
+#include <ecell4/core/Shape.hpp>
 
 #include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
@@ -263,6 +264,11 @@ public:
     boost::shared_ptr<NetworkModel> lock_model() const
     {
         return model_.lock();
+    }
+
+    void add_molecules(const Species& sp, const Integer& num, const Shape& shape)
+    {
+        add_molecules(sp, num);
     }
 
 protected:

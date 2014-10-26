@@ -13,6 +13,9 @@
 #include "types.hpp"
 #include "Position3.hpp"
 
+// #include <RandomLib/Random.hpp>
+// #include <RandomLib/NormalDistribution.hpp>
+
 
 namespace ecell4
 {
@@ -121,6 +124,68 @@ protected:
 
     rng_handle rng_;
 };
+
+// class RandomLibRandomNumberGenerator
+//     : public RandomNumberGenerator
+// {
+// public:
+// 
+//     virtual Real uniform(Real min, Real max)
+//     {
+//         return rng_.Fixed() * (max - min) + min;
+//     }
+// 
+//     virtual Integer uniform_int(Integer min, Integer max)
+//     {
+//         return rng_.IntegerC<Integer>(min, max);
+//     }
+// 
+//     virtual Real gaussian(Real mean, Real sigma)
+//     {
+//         RandomLib::NormalDistribution<Real> dist;
+//         return dist(rng_);
+//     }
+// 
+//     virtual Integer binomial(Real p, Integer n)
+//     {
+//         return n; //XXX: DUMMY
+//     }
+// 
+//     virtual Position3 direction3d(Real length)
+//     {
+//         throw NotImplemented("not implemented yet.");
+//     }
+// 
+//     virtual void seed(Integer val)
+//     {
+//         rng_.Reseed(val);
+//     }
+// 
+//     virtual void seed()
+//     {
+//         rng_.Reseed();
+//     }
+// 
+//     virtual void save(H5::CommonFG* root) const
+//     {
+//         throw NotImplemented("not implemented yet.");
+//     }
+// 
+//     virtual void load(const H5::CommonFG& root)
+//     {
+//         throw NotImplemented("not implemented yet.");
+//     }
+// 
+//     RandomLibRandomNumberGenerator()
+//         : rng_()
+//     {
+//         ;
+//     }
+// 
+// protected:
+// 
+//     RandomLib::Random rng_;
+// };
 
 } // ecell4
 

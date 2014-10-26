@@ -1,3 +1,4 @@
+#include <iostream>
 #include <boost/shared_ptr.hpp>
 
 #include <ecell4/core/NetworkModel.hpp>
@@ -13,29 +14,33 @@ namespace ecell4
 
 void run()
 {
-    const Real world_size(1e-6);
+    const Real world_size(1);
     const Position3 edge_lengths(world_size, world_size, world_size);
-    // const Real volume(world_size * world_size * world_size);
-    const Real voxel_radius(2.5e-9);
+    const Real voxel_radius(0.0025);
 
     const Integer N(60);
 
-    const std::string D("1e-12"), radius("2.5e-9");
+    const std::string D("1.0"), radius("0.0025");
 
     Species sp("A", radius, D);
 
     boost::shared_ptr<NetworkModel> model(new NetworkModel());
     boost::shared_ptr<GSLRandomNumberGenerator>
         rng(new GSLRandomNumberGenerator());
-    rng->seed(time(NULL));
+    rng->seed(0);
+    // rng->seed(time(NULL));
 
     boost::shared_ptr<world_type> world(
         new world_type(edge_lengths, voxel_radius, rng));
 
+    std::cout << "col size = " << world->col_size() << ", row size = " << world->row_size() << ", layer size = " << world->layer_size() << std::endl;
+    std::cout << "total size = " << world->size() << std::endl;
+
     world->add_molecules(sp, N);
 
     simulator_type sim(model, world);
-    while(sim.step(1.0));
+    std::cout << "dt = " << sim.dt() << std::endl;
+    while (sim.step(5.0));
 }
 
 } // ecell4
