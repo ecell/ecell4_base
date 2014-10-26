@@ -207,7 +207,7 @@ public:
     {
         this->k_ = k;
     }
-    Real get_k(Real k) const
+    Real get_k() const
     {
         return this->k_;
     }
