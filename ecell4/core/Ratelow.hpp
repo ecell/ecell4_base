@@ -145,8 +145,8 @@ private:
 class RatelowMassAction : public Ratelow
 {
 public:
-    RatelowMassAction(Real k = 0.0, std::size_t num_reactant = 0) 
-        : k_(k), num_reactant_(num_reactant) {}
+    RatelowMassAction(Real k = 0.0) 
+        : k_(k) {}
     virtual ~RatelowMassAction(){;}
     virtual bool is_available() const
     {
@@ -213,7 +213,6 @@ public:
     }
 private:
     Real k_;
-    std::size_t num_reactant_;
 };
 
 } // ecell4

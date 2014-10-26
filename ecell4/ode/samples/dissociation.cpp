@@ -25,7 +25,7 @@ int main(int argc, char** argv)
     rr1.add_reactant(sp1);
     rr1.add_product(sp2);
     rr1.add_product(sp3);
-    boost::shared_ptr<RatelowMassAction> ratelow(new RatelowMassAction(1.0, 2));
+    boost::shared_ptr<RatelowMassAction> ratelow(new RatelowMassAction(1.0));
     rr1.set_ratelow(ratelow);
 
     boost::shared_ptr<NetworkModel> model(new NetworkModel());
