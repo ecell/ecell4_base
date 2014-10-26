@@ -1,9 +1,6 @@
 set(TEST_NAMES
     ODESimulator_test)
 
-set(RATELOW_TEST_NAMES
-    ODESimulator_test2)
-
 set(test_library_dependencies)
 find_library(BOOST_UNITTEST_FRAMEWORK_LIBRARY boost_unit_test_framework)
 if (BOOST_UNITTEST_FRAMEWORK_LIBRARY)
@@ -18,8 +15,3 @@ foreach(TEST_NAME ${TEST_NAMES})
     add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME})
 endforeach(TEST_NAME)
 
-foreach(TEST_NAME ${RATELOW_TEST_NAMES})
-    add_executable(${TEST_NAME} ${TEST_NAME}.cpp)
-    target_link_libraries(${TEST_NAME} ecell4-ode-ratelow ${test_library_dependencies})
-    add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME})
-endforeach(TEST_NAME)

@@ -27,18 +27,27 @@ public:
     typedef boost::numeric::ublas::matrix<double> matrix_type;
 public:
     virtual bool is_available() const = 0;
-    virtual Real operator()(state_container_type const &state_array, Real volume) = 0;
-    virtual Real deriv_func(state_container_type const &state_array, Real volume) = 0;
-    virtual void jacobi_func(matrix_type &jacobian, state_container_type const &state_array, Real const volume) = 0;
+    virtual Real operator()(
+            state_container_type const &reactants_state_array, 
+            state_container_type const &products_state_array, Real const volume) = 0;
+    virtual Real deriv_func(
+            state_container_type const &reactants_state_array, 
+            state_container_type const &products_state_array, Real const volume) = 0;
+    virtual void jacobi_func(
+            matrix_type &jacobian, 
+            state_container_type const &reactants_state_array, 
+            state_container_type const &products_state_array, 
+            Real const volume) = 0;
 };
 
 class RatelowCppCallback : public Ratelow
 {
-    /** Function object for calculate ratelow called by C++
+    /** Function object to calculate ratelow called by C++
      *  This class must not be exposed to Cython interface.
      */
 public:
-    typedef double (*Ratelow_Callback)(state_container_type const &, double);
+    //                                 reactants_state,              products_state,               volume
+    typedef double (*Ratelow_Callback)(state_container_type const &, state_container_type const &, double const);
 public:
     RatelowCppCallback(Ratelow_Callback func) : func_(func), h_(1.0e-8) {;}
     RatelowCppCallback() : func_(0), h_(1.0e-8) {}
@@ -48,31 +57,40 @@ public:
     {
         return this->func_ != 0;
     }
-    virtual Real operator()(state_container_type const &state_array, Real volume)
+    virtual Real operator()(
+            state_container_type const &reactants_state_array, 
+            state_container_type const &products_state_array, Real const volume)
     {
-        return this->deriv_func(state_array, volume);
+        return this->deriv_func(reactants_state_array, products_state_array, volume);
     }
-    virtual Real deriv_func(state_container_type const &state_array, Real volume)
+    virtual Real deriv_func(
+            state_container_type const &reactants_state_array, 
+            state_container_type const &products_state_array, Real volume)
     {
         if (!is_available())
         {
             throw IllegalState("Callback Function has not been registerd");
         }
-        return this->func_(state_array, volume);
+        return this->func_(reactants_state_array, products_state_array, volume);
     }
     virtual void jacobi_func(
-            matrix_type &jacobian, state_container_type const &state_array, Real volume)
+            matrix_type &jacobian, 
+            state_container_type const &reactants_state_array, 
+            state_container_type const &products_state_array, 
+            Real const volume)
     {
         Real h(this->h_); //XXX  1.0e-8. Should be fixed
         std::fill(jacobian.data().begin(), jacobian.data().end(), Real(0.0));
-        Real flux( this->deriv_func(state_array, volume) );
-        double num_reactants(state_array.size());
+        Real flux( this->deriv_func(reactants_state_array, products_state_array, volume) );
+        double num_reactants(reactants_state_array.size());
+        double num_products(products_state_array.size());
+        // Differentiates by Reactants.
         for(int i(0); i < num_reactants; i++) 
         {
             //XXX For now, we are using FORWARD difference method.
-            state_container_type h_shift(state_array);
+            state_container_type h_shift(reactants_state_array);
             h_shift[i] += h;
-            double deriv = ((this->deriv_func(h_shift, volume)) - flux) / h;
+            double deriv = ((this->deriv_func(h_shift, products_state_array, volume)) - flux) / h;
             for(int j(0); j < jacobian.size1() ; j++)
             {
                 if (j < num_reactants) 
@@ -82,6 +100,24 @@ public:
                 else
                 {
                     jacobian(j, i) += deriv;
+                }
+            }
+        }
+        // Differentiates by Products.
+        for(int i(0); i < num_products; i++)
+        {
+            state_container_type h_shift(products_state_array);
+            h_shift[i] += h;
+            double deriv = ((this->deriv_func(reactants_state_array, h_shift, volume)) - flux) / h;
+            for(int j(0); j < jacobian.size1(); j++)
+            {
+                if (j < num_reactants)
+                {
+                    jacobian(j, i + num_reactants) -= deriv;
+                }
+                else
+                {
+                    jacobian(j, i + num_reactants) += deriv;
                 }
             }
         }
@@ -116,18 +152,22 @@ public:
     {
         return true;    // always true
     }
-    virtual Real operator()(state_container_type const &state_array, Real volume)
+    virtual Real operator()(
+            state_container_type const &reactants_state_array, 
+            state_container_type const &products_state_array, Real const volume)
     {
         // Forward to deriv_func()
-        Real flux( this->deriv_func(state_array, volume) );
+        Real flux( this->deriv_func(reactants_state_array, products_state_array, volume) );
         return flux;
     }
-    virtual Real deriv_func(state_container_type const &state_array, Real volume)
+    virtual Real deriv_func(
+            state_container_type const &reactants_state_array, 
+            state_container_type const &products_state_array, Real const volume)
     {
         // The 1st argument 'state_array' must be resized when calling.
         Real flux(this->k_ * volume);
-        for(state_container_type::const_iterator it(state_array.begin());
-                it != state_array.end(); it++) 
+        for(state_container_type::const_iterator it(reactants_state_array.begin());
+                it != reactants_state_array.end(); it++) 
         {
             flux *= (*it) / volume;
         }
@@ -135,20 +175,21 @@ public:
     }
     virtual void jacobi_func(
             matrix_type &jacobian, 
-            state_container_type const &state_array, Real const volume)
+            state_container_type const &reactants_state_array, 
+            state_container_type const &products_state_array, Real const volume)
     {
         // The size of the argument 'state_array' must be resized to the number of reactants.
         // The size of the argument 'jacobian' must be resized to the number of (reactants + products)
         std::fill(jacobian.data().begin(), jacobian.data().end(), Real(0.0));
-        Real flux( this->deriv_func(state_array, volume) );
+        Real flux( this->deriv_func(reactants_state_array, products_state_array, volume) );
         if (flux == Real(0.0))
         {
             return;
         }
-        int num_reactants(state_array.size());
+        int num_reactants(reactants_state_array.size());
         for(int i(0); i < num_reactants; i++) 
         {
-            Real partial(flux / state_array[i]);
+            Real partial(flux / reactants_state_array[i]);
             for(int j(0); j < jacobian.size1(); j++)
             {
                 if (j < num_reactants)
