@@ -11,11 +11,12 @@
 #elif defined(HAVE_BOOST_FUNCTIONAL_HASH_HPP)
 #include <boost/functional/hash.hpp>
 #endif
-#include "Identifier.hpp"
+// #include "Identifier.hpp"
+#include <ecell4/core/Identifier.hpp>
 
-struct ShellID: public Identifier<ShellID, unsigned long long, int>
+struct ShellID: public ecell4::Identifier<ShellID, unsigned long long, int>
 {
-    typedef Identifier<ShellID, unsigned long long, int> base_type;
+    typedef ecell4::Identifier<ShellID, unsigned long long, int> base_type;
 
     ShellID(value_type const& value = value_type(0, 0))
         : base_type(value) {}

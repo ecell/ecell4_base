@@ -9,7 +9,7 @@
 #include "Domain.hpp"
 #include "ParticleContainer.hpp"
 #include "ParticleContainerBase.hpp"
-#include "Sphere.hpp"
+// #include "Sphere.hpp"
 // #include "BDSimulator.hpp"
 #include "BDPropagator.hpp"
 #include "Logger.hpp"

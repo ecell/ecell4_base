@@ -62,5 +62,10 @@ public:
         : base_type(id, shape) {}
 };
 
+template<typename Ttraits_>
+inline typename PlanarSurface<Ttraits_>::shape_type const& shape(PlanarSurface<Ttraits_> const& obj)
+{
+    return obj.shape();
+}
 
 #endif /* PLANAR_SURFACE_HPP */

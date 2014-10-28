@@ -4,8 +4,13 @@
 #include <ecell4/core/Particle.hpp>
 #include <ecell4/core/Sphere.hpp>
 #include <ecell4/core/Cylinder.hpp>
-#include "Sphere.hpp"
-#include "Shape.hpp"
+// #include "Sphere.hpp"
+// #include "Shape.hpp"
+//XXX: Shape.hpp
+#include <boost/type_traits/remove_cv.hpp>
+#include "Position3Type.hpp"
+#include "geometry.hpp"
+//XXX
 
 inline ecell4::Particle offset(
     ecell4::Particle const& shape, typename ecell4::Particle::position_type off)
@@ -15,18 +20,16 @@ inline ecell4::Particle offset(
     return retval;
 }
 
-inline
-ecell4::Sphere shape(ecell4::Particle &p)
-{
-    return ecell4::Sphere(p.position(), p.radius());
-    // return Sphere(p.position(), p.radius());
-}
+// inline
+// ecell4::Sphere shape(ecell4::Particle &p)
+// {
+//     return ecell4::Sphere(p.position(), p.radius());
+// }
 
 inline
 ecell4::Sphere shape(const ecell4::Particle &p)
 {
     return ecell4::Sphere(p.position(), p.radius());
-    // return Sphere(p.position(), p.radius());
 }
 
 // inline ecell4::Sphere offset(

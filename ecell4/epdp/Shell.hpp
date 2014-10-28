@@ -79,18 +79,17 @@ inline Shell<Tshape_, Tdid_> offset(
     return retval;
 }
 
-template<typename Tshape_, typename Tdid_>
-inline typename Shell<Tshape_, Tdid_>::shape_type& shape(Shell<Tshape_, Tdid_>& obj)
-{
-    return obj.shape();
-}
-
 // template<typename Tshape_, typename Tdid_>
-// inline typename Shell<Tshape_, Tdid_>::shape_type const& shape(
-//     Shell<Tshape_, Tdid_> const& obj)
+// inline typename Shell<Tshape_, Tdid_>::shape_type& shape(Shell<Tshape_, Tdid_>& obj)
 // {
 //     return obj.shape();
 // }
+
+template<typename Tshape_, typename Tdid_>
+inline typename Shell<Tshape_, Tdid_>::shape_type const& shape(Shell<Tshape_, Tdid_> const& obj)
+{
+    return obj.shape();
+}
 
 template<typename Tstrm_, typename Ttraits_, typename Tshape_, typename Tdid_>
 inline std::basic_ostream<Tstrm_, Ttraits_>& operator<<(std::basic_ostream<Tstrm_, Ttraits_>& strm, const Shell<Tshape_, Tdid_>& v)

@@ -11,11 +11,12 @@
 #elif defined(HAVE_BOOST_FUNCTIONAL_HASH_HPP)
 #include <boost/functional/hash.hpp>
 #endif
-#include "Identifier.hpp"
+// #include "Identifier.hpp"
+#include <ecell4/core/Identifier.hpp>
 
-struct DomainID: public Identifier<DomainID, unsigned long long, int>
+struct DomainID: public ecell4::Identifier<DomainID, unsigned long long, int>
 {
-    typedef Identifier<DomainID, unsigned long long, int> base_type;
+    typedef ecell4::Identifier<DomainID, unsigned long long, int> base_type;
 
     DomainID(value_type const& value = value_type(0, 0))
         : base_type(value) {}

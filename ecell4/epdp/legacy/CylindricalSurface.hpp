@@ -55,4 +55,10 @@ public:
         : base_type(id, shape) {}
 };
 
+template<typename Ttraits_>
+inline typename CylindricalSurface<Ttraits_>::shape_type const& shape(CylindricalSurface<Ttraits_> const& obj)
+{
+    return obj.shape();
+}
+
 #endif /* CYLINDRICAL_SURFACE_HPP */

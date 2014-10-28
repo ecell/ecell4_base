@@ -43,7 +43,7 @@ public:
             const length_type sigma(R0 + R1);
             const length_type D_tot(D0 + D1);
             const length_type D_geom(std::sqrt(D0 * D1));
-            const length_type shell_size(shape(shell.second).radius() / traits_type::SAFETY);
+            const length_type shell_size(shell.second.shape().radius() / traits_type::SAFETY);
             const length_type r0(this->r0());
             BOOST_ASSERT(r0 >= sigma);
             if (((D_geom - D0) * r0) / D_tot + shell_size
@@ -123,22 +123,22 @@ public:
 
     virtual position_type const& position() const
     {
-        return shape_position(shape(shell_.second));
+        return shape_position(shell_.second.shape());
     }
 
     virtual position_type& position()
     {
-        return shape_position(shape(shell_.second));
+        return shape_position(shell_.second.shape());
     }
 
     virtual length_type const& size() const
     {
-        return shape_size(shape(shell_.second));
+        return shape_size(shell_.second.shape());
     }
 
     virtual length_type& size()
     {
-        return shape_size(shape(shell_.second));
+        return shape_size(shell_.second.shape());
     }
 
     virtual char const* type_name() const

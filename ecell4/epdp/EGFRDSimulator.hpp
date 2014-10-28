@@ -201,8 +201,8 @@ public:
     typedef Ttraits_ traits_type;
     typedef ParticleSimulator<Ttraits_> base_type;
 
-    typedef typename base_type::sphere_type sphere_type;
-    typedef typename base_type::cylinder_type cylinder_type;
+    // typedef typename base_type::sphere_type sphere_type;
+    // typedef typename base_type::cylinder_type cylinder_type;
     typedef typename base_type::model_type model_type;
 
     typedef typename traits_type::world_type world_type;
@@ -238,14 +238,21 @@ public:
     typedef typename world_type::particle_id_pair particle_id_pair;
     typedef typename world_type::particle_id_pair_and_distance particle_id_pair_and_distance;
     typedef typename world_type::particle_id_pair_and_distance_list particle_id_pair_and_distance_list;
-    typedef typename world_type::traits_type::particle_simulation_structure_type particle_simulation_structure_type;
-    typedef typename world_type::traits_type::spherical_surface_type spherical_surface_type;
-    typedef typename world_type::traits_type::cylindrical_surface_type cylindrical_surface_type;
-    typedef typename world_type::traits_type::planar_surface_type planar_surface_type;
-    typedef typename world_type::traits_type::cuboidal_region_type cuboidal_region_type;
+
 
     typedef std::pair<const shell_id_type, spherical_shell_type> spherical_shell_id_pair;
     typedef std::pair<const shell_id_type, cylindrical_shell_type> cylindrical_shell_id_pair;
+
+
+    typedef typename world_type::traits_type::particle_simulation_structure_type
+        particle_simulation_structure_type;
+    // typedef typename world_type::traits_type::spherical_surface_type
+    //     spherical_surface_type;
+    // typedef typename world_type::traits_type::cylindrical_surface_type
+    //     cylindrical_surface_type;
+    // typedef typename world_type::traits_type::planar_surface_type planar_surface_type;
+    typedef typename world_type::traits_type::cuboidal_region_type cuboidal_region_type;
+
 
     typedef Single<traits_type> single_type;
     typedef Pair<traits_type> pair_type;
@@ -594,7 +601,7 @@ protected:
                         rng_.uniform(-1., 1.),
                         rng_.uniform(-1., 1.)),
                     domain.a_R()));
-
+            //XXX: ERROR!!! Use rng_.direction3d
         }
 
         position_type draw_iv(spherical_pair_type const& domain,
@@ -614,30 +621,32 @@ protected:
         position_type draw_com(cylindrical_pair_type const& domain,
                                time_type dt) const
         {
-            boost::shared_ptr<structure_type> const _structure(
-                world_.get_structure(
-                    world_.find_molecule_info(
-                        domain.particles()[0].second.sid())
-                    .structure_id));
-            
-            cylindrical_surface_type const* const structure(
-                dynamic_cast<cylindrical_surface_type*>(_structure.get()));
+            throw not_implemented("unsupported pair type.");
+            // boost::shared_ptr<structure_type> const _structure(
+            //     world_.get_structure(
+            //         world_.find_molecule_info(
+            //             domain.particles()[0].second.sid())
+            //         .structure_id));
 
-            return add(
-                domain.shell().second.position(),
-                multiply(structure->shape().unit_z(), domain.a_R()));
+            // cylindrical_surface_type const* const structure(
+            //     dynamic_cast<cylindrical_surface_type*>(_structure.get()));
+
+            // return add(
+            //     domain.shell().second.position(),
+            //     multiply(structure->shape().unit_z(), domain.a_R()));
         }
 
         position_type draw_iv(cylindrical_pair_type const& domain,
                               time_type dt, position_type const& old_iv) const
         {
             BOOST_ASSERT(::size(domain.reactions()) == 1);
-            length_type const r(
-                draw_r(rng_, GreensFunction3DRadAbs(domain.D_tot(),
-                    domain.reactions()[0].k(), domain.r0(),
-                    domain.sigma(), domain.a_r()),
-                   dt, domain.a_r(), domain.sigma()));
-            return multiply(normalize(old_iv), r);
+            throw not_implemented("unsupported pair type.");
+            // length_type const r(
+            //     draw_r(rng_, GreensFunction3DRadAbs(domain.D_tot(),
+            //         domain.reactions()[0].k(), domain.r0(),
+            //         domain.sigma(), domain.a_r()),
+            //        dt, domain.a_r(), domain.sigma()));
+            // return multiply(normalize(old_iv), r);
         }
 
         draw_on_com_escape(rng_type& rng, world_type const& world)
@@ -746,30 +755,32 @@ protected:
         position_type draw_com(cylindrical_pair_type const& domain,
                                time_type dt)
         {
-            boost::shared_ptr<structure_type> const _structure(
-                world_.get_structure(
-                    world_.find_molecule_info(
-                        domain.particles()[0].second.sid())
-                    .structure_id));
-            
-            cylindrical_surface_type const* const structure(
-                dynamic_cast<cylindrical_surface_type*>(_structure.get()));
+            throw not_implemented("unsupported pair type.");
+            // boost::shared_ptr<structure_type> const _structure(
+            //     world_.get_structure(
+            //         world_.find_molecule_info(
+            //             domain.particles()[0].second.sid())
+            //         .structure_id));
 
-            BOOST_ASSERT(structure);
+            // cylindrical_surface_type const* const structure(
+            //     dynamic_cast<cylindrical_surface_type*>(_structure.get()));
 
-            length_type const r_R(draw_r(
-                rng_,
-                GreensFunction3DAbsSym(domain.D_R(), domain.a_R()),
-                dt, domain.a_R()));
-            return add(
-                domain.shell().second.position(),
-                multiply(structure->shape().unit_z(), r_R));
+            // BOOST_ASSERT(structure);
+
+            // length_type const r_R(draw_r(
+            //     rng_,
+            //     GreensFunction3DAbsSym(domain.D_R(), domain.a_R()),
+            //     dt, domain.a_R()));
+            // return add(
+            //     domain.shell().second.position(),
+            //     multiply(structure->shape().unit_z(), r_R));
         }
 
         position_type draw_iv(cylindrical_pair_type const& domain,
                               time_type dt, position_type const& old_iv)
         {
-            return multiply(normalize(old_iv), domain.a_r());
+            throw not_implemented("unsupported pair type.");
+            // return multiply(normalize(old_iv), domain.a_r());
         }
 
         draw_on_iv_escape(rng_type& rng, world_type const& world)
@@ -813,29 +824,31 @@ protected:
         position_type draw_com(cylindrical_pair_type const& domain,
                                time_type dt)
         {
-            boost::shared_ptr<structure_type> const _structure(
-                world_.get_structure(
-                    world_.find_molecule_info(
-                        domain.particles()[0].second.sid()).structure_id));
-            
-            cylindrical_surface_type const* const structure(
-                dynamic_cast<cylindrical_surface_type*>(_structure.get()));
+            throw not_implemented("unsupported pair type.");
+            // boost::shared_ptr<structure_type> const _structure(
+            //     world_.get_structure(
+            //         world_.find_molecule_info(
+            //             domain.particles()[0].second.sid()).structure_id));
+            //
+            // cylindrical_surface_type const* const structure(
+            //     dynamic_cast<cylindrical_surface_type*>(_structure.get()));
 
-            BOOST_ASSERT(structure);
+            // BOOST_ASSERT(structure);
 
-            length_type const r_R(draw_r(
-                rng_,
-                GreensFunction3DAbsSym(domain.D_R(), domain.a_R()),
-                dt, domain.a_R()));
-            return add(
-                domain.shell().second.position(),
-                multiply(structure->shape().unit_z(), r_R));
+            // length_type const r_R(draw_r(
+            //     rng_,
+            //     GreensFunction3DAbsSym(domain.D_R(), domain.a_R()),
+            //     dt, domain.a_R()));
+            // return add(
+            //     domain.shell().second.position(),
+            //     multiply(structure->shape().unit_z(), r_R));
         }
 
         position_type draw_iv(cylindrical_pair_type const& domain,
                               time_type dt, position_type const& old_iv)
         {
-            return multiply(domain.sigma(), normalize(old_iv));
+            throw not_implemented("unsupported pair type.");
+            // return multiply(domain.sigma(), normalize(old_iv));
         }
 
         draw_on_iv_reaction(rng_type& rng, world_type const& world)
@@ -880,38 +893,40 @@ protected:
         position_type draw_com(cylindrical_pair_type const& domain,
                                time_type dt)
         {
-            boost::shared_ptr<structure_type> const _structure(
-                world_.get_structure(
-                    world_.find_molecule_info(
-                        domain.particles()[0].second.sid())
-                    .structure_id));
+            throw not_implemented("unsupported pair type.");
+            // boost::shared_ptr<structure_type> const _structure(
+            //     world_.get_structure(
+            //         world_.find_molecule_info(
+            //             domain.particles()[0].second.sid())
+            //         .structure_id));
 
-            cylindrical_surface_type const* const structure(
-                dynamic_cast<cylindrical_surface_type*>(_structure.get()));
+            // cylindrical_surface_type const* const structure(
+            //     dynamic_cast<cylindrical_surface_type*>(_structure.get()));
 
-            BOOST_ASSERT(structure);
+            // BOOST_ASSERT(structure);
 
-            length_type const r_R(draw_r(
-                rng_,
-                GreensFunction3DAbsSym(domain.D_R(), domain.a_R()),
-                dt, domain.a_R()));
-            return add(
-                domain.shell().second.position(),
-                multiply(structure->shape().unit_z(), r_R));
+            // length_type const r_R(draw_r(
+            //     rng_,
+            //     GreensFunction3DAbsSym(domain.D_R(), domain.a_R()),
+            //     dt, domain.a_R()));
+            // return add(
+            //     domain.shell().second.position(),
+            //     multiply(structure->shape().unit_z(), r_R));
         }
 
         position_type draw_iv(cylindrical_pair_type const& domain,
                               time_type dt, position_type const& old_iv)
         {
-            BOOST_ASSERT(::size(domain.reactions()) == 1);
-            length_type const r(
-                draw_r(rng_,
-                    GreensFunction3DRadAbs(
-                        domain.D_tot(),
-                        domain.reactions()[0].k(), domain.r0(),
-                        domain.sigma(), domain.a_r()),
-                    dt, domain.a_r(), domain.sigma()));
-            return multiply(normalize(old_iv), r);
+            throw not_implemented("unsupported pair type.");
+            // BOOST_ASSERT(::size(domain.reactions()) == 1);
+            // length_type const r(
+            //     draw_r(rng_,
+            //         GreensFunction3DRadAbs(
+            //             domain.D_tot(),
+            //             domain.reactions()[0].k(), domain.r0(),
+            //             domain.sigma(), domain.a_r()),
+            //         dt, domain.a_r(), domain.sigma()));
+            // return multiply(normalize(old_iv), r);
         }
 
         draw_on_burst(rng_type& rng, world_type const& world)
@@ -1507,44 +1522,44 @@ protected:
         {
             virtual ~factory() {}
 
-            virtual void operator()(spherical_surface_type const& structure) const
-            {
-                throw not_implemented(
-                    (boost::format("unsupported structure type: %s") %
-                        boost::lexical_cast<std::string>(structure)).str());
-            }
+            // virtual void operator()(spherical_surface_type const& structure) const
+            // {
+            //     throw not_implemented(
+            //         (boost::format("unsupported structure type: %s") %
+            //             boost::lexical_cast<std::string>(structure)).str());
+            // }
 
-            virtual void operator()(cylindrical_surface_type const& structure) const
-            {
-                // Heads up. The cylinder's *size*, not radius, is changed when
-                // you make the cylinder bigger, because of the redefinition of
-                // set_radius.
-                // The radius of a rod is not more than it has to be (namely
-                // the radius of the particle), so if the particle undergoes an
-                // unbinding reaction, we still have to clear the target volume
-                // and the move may be rejected (NoSpace error).
-                const cylindrical_shell_id_pair new_shell(
-                    _this->new_shell(
-                        did, typename cylindrical_shell_type::shape_type(
-                            p.second.position(), p.second.radius(),
-                            structure.shape().unit_z(),
-                            p.second.radius())));
-                new_single = new cylindrical_single_type(did, p, new_shell);
-                kind = CYLINDRICAL_SINGLE;
-            }
+            // virtual void operator()(cylindrical_surface_type const& structure) const
+            // {
+            //     // Heads up. The cylinder's *size*, not radius, is changed when
+            //     // you make the cylinder bigger, because of the redefinition of
+            //     // set_radius.
+            //     // The radius of a rod is not more than it has to be (namely
+            //     // the radius of the particle), so if the particle undergoes an
+            //     // unbinding reaction, we still have to clear the target volume
+            //     // and the move may be rejected (NoSpace error).
+            //     const cylindrical_shell_id_pair new_shell(
+            //         _this->new_shell(
+            //             did, typename cylindrical_shell_type::shape_type(
+            //                 p.second.position(), p.second.radius(),
+            //                 structure.shape().unit_z(),
+            //                 p.second.radius())));
+            //     new_single = new cylindrical_single_type(did, p, new_shell);
+            //     kind = CYLINDRICAL_SINGLE;
+            // }
 
-            virtual void operator()(planar_surface_type const& structure) const
-            {
-                cylindrical_shell_id_pair const new_shell(
-                    _this->new_shell(did, typename cylindrical_shell_type::shape_type(
-                        p.second.position(), p.second.radius(),
-                        normalize(cross_product(
-                            structure.shape().unit_x(),
-                            structure.shape().unit_y())),
-                        p.second.radius())));
-                new_single = new cylindrical_single_type(did, p, new_shell);
-                kind = CYLINDRICAL_SINGLE;
-            }
+            // virtual void operator()(planar_surface_type const& structure) const
+            // {
+            //     cylindrical_shell_id_pair const new_shell(
+            //         _this->new_shell(did, typename cylindrical_shell_type::shape_type(
+            //             p.second.position(), p.second.radius(),
+            //             normalize(cross_product(
+            //                 structure.shape().unit_x(),
+            //                 structure.shape().unit_y())),
+            //             p.second.radius())));
+            //     new_single = new cylindrical_single_type(did, p, new_shell);
+            //     kind = CYLINDRICAL_SINGLE;
+            // }
 
             virtual void operator()(cuboidal_region_type const& structure) const
             {
@@ -1593,45 +1608,45 @@ protected:
 
         struct factory: ImmutativeStructureVisitor<typename world_type::traits_type>
         {
-            virtual void operator()(spherical_surface_type const& structure) const
-            {
-                throw not_implemented(
-                    (boost::format("unsupported structure type: %s") %
-                        boost::lexical_cast<std::string>(structure)).str());
-            }
+            // virtual void operator()(spherical_surface_type const& structure) const
+            // {
+            //     throw not_implemented(
+            //         (boost::format("unsupported structure type: %s") %
+            //             boost::lexical_cast<std::string>(structure)).str());
+            // }
 
-            virtual void operator()(cylindrical_surface_type const& structure) const
-            {
-                // The radius of a rod is not more than it has to be (namely
-                // the radius of the biggest particle), so if the particle
-                // undergoes an unbinding reaction we still have to clear the
-                // target volume and the move may be rejected (NoSpace error).
-                cylindrical_shell_id_pair const new_shell(
-                    _this->new_shell(did, typename cylindrical_shell_type::shape_type(
-                        com,
-                        shell_size,
-                        shape(structure).unit_z(),
-                        std::max(p0.second.radius(), p1.second.radius()))));
-                new_pair = new cylindrical_pair_type(did, p0, p1, new_shell,
-                                                     iv, rules);
-                kind = CYLINDRICAL_PAIR;
-            }
+            // virtual void operator()(cylindrical_surface_type const& structure) const
+            // {
+            //     // The radius of a rod is not more than it has to be (namely
+            //     // the radius of the biggest particle), so if the particle
+            //     // undergoes an unbinding reaction we still have to clear the
+            //     // target volume and the move may be rejected (NoSpace error).
+            //     cylindrical_shell_id_pair const new_shell(
+            //         _this->new_shell(did, typename cylindrical_shell_type::shape_type(
+            //             com,
+            //             shell_size,
+            //             shape(structure).unit_z(),
+            //             std::max(p0.second.radius(), p1.second.radius()))));
+            //     new_pair = new cylindrical_pair_type(did, p0, p1, new_shell,
+            //                                          iv, rules);
+            //     kind = CYLINDRICAL_PAIR;
+            // }
 
         
-            virtual void operator()(planar_surface_type const& structure) const
-            {
-                cylindrical_shell_id_pair const new_shell(
-                    _this->new_shell(did, typename cylindrical_shell_type::shape_type(
-                        com,
-                        shell_size,
-                        normalize(cross_product(
-                            shape(structure).unit_x(),
-                            shape(structure).unit_y())),
-                        std::max(p0.second.radius(), p1.second.radius()))));
-                new_pair = new cylindrical_pair_type(did, p0, p1, new_shell,
-                                                       iv, rules);
-                kind = CYLINDRICAL_PAIR;
-            }
+            // virtual void operator()(planar_surface_type const& structure) const
+            // {
+            //     cylindrical_shell_id_pair const new_shell(
+            //         _this->new_shell(did, typename cylindrical_shell_type::shape_type(
+            //             com,
+            //             shell_size,
+            //             normalize(cross_product(
+            //                 shape(structure).unit_x(),
+            //                 shape(structure).unit_y())),
+            //             std::max(p0.second.radius(), p1.second.radius()))));
+            //     new_pair = new cylindrical_pair_type(did, p0, p1, new_shell,
+            //                                            iv, rules);
+            //     kind = CYLINDRICAL_PAIR;
+            // }
 
             virtual void operator()(cuboidal_region_type const& structure) const
             {

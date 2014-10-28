@@ -16,6 +16,7 @@
 #include <ecell4/core/ParticleSpaceHDF5Writer.hpp>
 #include <ecell4/core/Sphere.hpp>
 #include "./ParticleTraits.hpp" // This refers ecell4::Particle
+#include "structures.hpp"
 
 #include "ParticleContainerBase.hpp"
 
@@ -36,19 +37,20 @@
 #include "Defs.hpp"
 //#include "SerialIDGenerator.hpp"
 #include "Transaction.hpp"
-#include "Structure.hpp"
-#include "Surface.hpp"
-#include "Region.hpp"
+// #include "Structure.hpp"
+// #include "Surface.hpp"
+// #include "Region.hpp"
 #include "geometry.hpp"
 //#include "GSLRandomNumberGenerator.hpp"
-#include "Point.hpp" // XXX: workaround. should be removed later.
+//#include "Point.hpp" // XXX: workaround. should be removed later.
+#include "Position3Type.hpp"
 #include "utils/pair.hpp"
 
-#include "ParticleSimulationStructure.hpp"
-#include "CuboidalRegion.hpp"
-#include "PlanarSurface.hpp"
-#include "CylindricalSurface.hpp"
-#include "SphericalSurface.hpp"
+// #include "ParticleSimulationStructure.hpp"
+// #include "CuboidalRegion.hpp"
+// #include "PlanarSurface.hpp"
+// #include "CylindricalSurface.hpp"
+// #include "SphericalSurface.hpp"
 
 
 // For twofold_container
@@ -88,7 +90,6 @@ struct WorldTraitsBase
     // typedef Sphere particle_shape_type;
     typedef ecell4::Sphere particle_shape_type;
     typedef std::string structure_id_type;
-    typedef Structure<Tderived_> structure_type;
 
     typedef std::pair<particle_id_type, particle_type> particle_id_pair;
     // typedef std::pair<const particle_id_type, particle_type> particle_id_pair;
@@ -97,14 +98,19 @@ struct WorldTraitsBase
     typedef std::vector<particle_id_pair_and_distance> particle_id_pair_and_distance_list;
     typedef abstract_limited_generator<particle_id_pair> particle_id_pair_generator;
 
-    typedef ParticleSimulationStructure<Tderived_>
-        particle_simulation_structure_type;
-    typedef Surface<Tderived_> surface_type;
-    typedef Region<Tderived_> region_type;
-    typedef SphericalSurface<Tderived_> spherical_surface_type;
-    typedef CylindricalSurface<Tderived_> cylindrical_surface_type;
-    typedef PlanarSurface<Tderived_> planar_surface_type;
-    typedef CuboidalRegion<Tderived_> cuboidal_region_type;
+    typedef ecell4::Structure<Tderived_> structure_type;
+    typedef ecell4::Structure<Tderived_> particle_simulation_structure_type;
+    typedef ecell4::AABBRegion<Tderived_> cuboidal_region_type;
+
+    // typedef Structure<Tderived_> structure_type;
+    // typedef ParticleSimulationStructure<Tderived_>
+    //     particle_simulation_structure_type;
+    // // typedef Surface<Tderived_> surface_type;
+    // // typedef Region<Tderived_> region_type;
+    // // typedef SphericalSurface<Tderived_> spherical_surface_type;
+    // // typedef CylindricalSurface<Tderived_> cylindrical_surface_type;
+    // // typedef PlanarSurface<Tderived_> planar_surface_type;
+    // typedef CuboidalRegion<Tderived_> cuboidal_region_type;
 
     static const Real TOLERANCE = 1e-7;
 };
@@ -888,11 +894,16 @@ protected:
         typedef typename cuboidal_region_type::shape_type
             cuboidal_region_shape_type;
 
-        const position_type& center(edge_lengths() * 0.5);
         this->add_structure(
             boost::shared_ptr<structure_type>(
                 new cuboidal_region_type(
-                    "world", cuboidal_region_shape_type(center, center))));
+                    "world", cuboidal_region_shape_type(
+                        position_type(0, 0, 0), edge_lengths()))));
+        // const position_type& center(edge_lengths() * 0.5);
+        // this->add_structure(
+        //     boost::shared_ptr<structure_type>(
+        //         new cuboidal_region_type(
+        //             "world", cuboidal_region_shape_type(center, center))));
     }
 
 private:

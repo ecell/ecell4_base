@@ -40,7 +40,7 @@ public:
 
     length_type mobility_radius() const
     {
-        return shape_size(shape(shell_.second)) - base_type::particle().second.radius();
+        return shape_size(shell_.second.shape()) - base_type::particle().second.radius();
     }
 
     virtual char const* type_name() const
@@ -50,22 +50,22 @@ public:
 
     virtual position_type const& position() const
     {
-        return shape_position(shape(shell_.second));
+        return shape_position(shell_.second.shape());
     }
 
     virtual position_type& position()
     {
-        return shape_position(shape(shell_.second));
+        return shape_position(shell_.second.shape());
     }
 
     virtual length_type const& size() const
     {
-        return shape_size(shape(shell_.second));
+        return shape_size(shell_.second.shape());
     }
 
     virtual length_type& size()
     {
-        return shape_size(shape(shell_.second));
+        return shape_size(shell_.second.shape());
     }
 
     virtual typename Domain<traits_type>::size_type num_shells() const

@@ -9,11 +9,11 @@
 template<typename Tshape_>
 struct is_shape: public boost::mpl::false_ {};
 
-template<typename Tobj_>
-inline typename Tobj_::shape_type const& shape(Tobj_ const& obj)
-{
-    return obj.shape();
-}
+// template<typename Tobj_>
+// inline typename Tobj_::shape_type const& shape(Tobj_ const& obj)
+// {
+//     return obj.shape();
+// }
 
 //XXX: See Shell.hpp and ParticleTraits.hpp
 // template<typename Tobj_>

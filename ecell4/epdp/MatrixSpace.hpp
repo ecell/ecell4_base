@@ -9,7 +9,7 @@
 #include <boost/mpl/if.hpp>
 #include <boost/range/size.hpp>
 #include <boost/range/difference_type.hpp>
-#include "Vector3.hpp"
+// #include "Vector3.hpp"
 #include "Position3Type.hpp"
 #include "sorted_list.hpp"
 #include "utils/array_helper.hpp"

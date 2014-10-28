@@ -3,9 +3,9 @@
 
 #include <boost/bind.hpp>
 #include <boost/shared_ptr.hpp>
-#include "Sphere.hpp"
-#include "Cylinder.hpp"
-#include "Box.hpp"
+// #include "Sphere.hpp"
+// #include "Cylinder.hpp"
+// #include "Box.hpp"
 #include "utils/range_support.hpp"
 //#include "NetworkRulesWrapper.hpp"
 #include "ReactionRuleInfo.hpp"
@@ -48,19 +48,16 @@ template<typename Ttraits_>
 struct ImmutativeStructureVisitor
 {
     typedef Ttraits_ traits_type;
-    typedef typename traits_type::spherical_surface_type spherical_surface_type;
-    typedef typename traits_type::cylindrical_surface_type cylindrical_surface_type;
-    typedef typename traits_type::planar_surface_type planar_surface_type;
+    // typedef typename traits_type::spherical_surface_type spherical_surface_type;
+    // typedef typename traits_type::cylindrical_surface_type cylindrical_surface_type;
+    // typedef typename traits_type::planar_surface_type planar_surface_type;
     typedef typename traits_type::cuboidal_region_type cuboidal_region_type;
 
     virtual ~ImmutativeStructureVisitor() {}
 
-    virtual void operator()(spherical_surface_type const&) const = 0;
-
-    virtual void operator()(cylindrical_surface_type const&) const = 0;
-
-    virtual void operator()(planar_surface_type const&) const = 0;
-
+    // virtual void operator()(spherical_surface_type const&) const = 0;
+    // virtual void operator()(cylindrical_surface_type const&) const = 0;
+    // virtual void operator()(planar_surface_type const&) const = 0;
     virtual void operator()(cuboidal_region_type const&) const = 0;
 };
 
@@ -68,19 +65,16 @@ template<typename Ttraits_>
 struct MutativeStructureVisitor
 {
     typedef Ttraits_ traits_type;
-    typedef typename traits_type::spherical_surface_type spherical_surface_type;
-    typedef typename traits_type::cylindrical_surface_type cylindrical_surface_type;
-    typedef typename traits_type::planar_surface_type planar_surface_type;
+    // typedef typename traits_type::spherical_surface_type spherical_surface_type;
+    // typedef typename traits_type::cylindrical_surface_type cylindrical_surface_type;
+    // typedef typename traits_type::planar_surface_type planar_surface_type;
     typedef typename traits_type::cuboidal_region_type cuboidal_region_type;
 
     virtual ~MutativeStructureVisitor() {}
 
-    virtual void operator()(spherical_surface_type&) const = 0;
-
-    virtual void operator()(cylindrical_surface_type&) const = 0;
-
-    virtual void operator()(planar_surface_type&) const = 0;
-
+    // virtual void operator()(spherical_surface_type&) const = 0;
+    // virtual void operator()(cylindrical_surface_type&) const = 0;
+    // virtual void operator()(planar_surface_type&) const = 0;
     virtual void operator()(cuboidal_region_type&) const = 0;
 };
 
@@ -94,8 +88,8 @@ public:
 
     typedef Ttraits_ traits_type;
     typedef typename traits_type::world_type world_type;
-    typedef Sphere sphere_type;
-    typedef Cylinder cylinder_type;
+    // typedef Sphere sphere_type;
+    // typedef Cylinder cylinder_type;
     // typedef Box box_type;
     // typedef Plane plane_type;
 
