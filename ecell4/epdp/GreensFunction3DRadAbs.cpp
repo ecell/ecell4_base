@@ -23,11 +23,14 @@
 #include "SphericalBesselGenerator.hpp"
 #include "GreensFunction3DRadAbs.hpp"
 
-const Real GreensFunction3DRadAbs::TOLERANCE;
-const Real GreensFunction3DRadAbs::MIN_T_FACTOR;
-const unsigned int GreensFunction3DRadAbs::MAX_ORDER;
-const unsigned int GreensFunction3DRadAbs::MAX_ALPHA_SEQ;
+// const Real GreensFunction3DRadAbs::TOLERANCE;
+// const Real GreensFunction3DRadAbs::MIN_T_FACTOR;
+// const unsigned int GreensFunction3DRadAbs::MAX_ORDER;
+// const unsigned int GreensFunction3DRadAbs::MAX_ALPHA_SEQ;
 
+const Real GreensFunction3DRadAbs::TOLERANCE = 1e-8;
+const Real GreensFunction3DRadAbs::THETA_TOLERANCE = 1e-5;
+const Real GreensFunction3DRadAbs::MIN_T_FACTOR = 1e-8;
 
 GreensFunction3DRadAbs::GreensFunction3DRadAbs(
     Real D, Real kf, Real r0, Real Sigma, Real a)
@@ -557,7 +560,7 @@ GreensFunction3DRadAbs::updateAlphaTable(const unsigned int n,
 {
     if (!(n >= 0 && n <= this->MAX_ORDER))
     {
-        throw std::range_error((boost::format("n >= 0 && n <= this->MAX_ORDER : n=%.16g, this->MAX_ORDER=%.16g") % n % this->MAX_ORDER).str());
+        throw std::range_error((boost::format("n >= 0 && n <= this->MAX_ORDER : n=%.16g, this->MAX_ORDER=%.16g") % n % static_cast<const unsigned int>(this->MAX_ORDER)).str());
     }
 
 
@@ -1116,9 +1119,9 @@ GreensFunction3DRadAbs::guess_maxi(Real t) const
 
     const unsigned int 
         maxi(safety + 
-              static_cast<unsigned int>(max_alpha * (a - sigma) / M_PI));
+              static_cast<const unsigned int>(max_alpha * (a - sigma) / M_PI));
 
-    return std::min(maxi, this->MAX_ALPHA_SEQ);
+    return std::min(maxi, static_cast<unsigned int>(this->MAX_ALPHA_SEQ));
 }
 
 

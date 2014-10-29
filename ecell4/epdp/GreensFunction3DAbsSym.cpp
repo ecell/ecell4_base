@@ -21,6 +21,9 @@
 #include "findRoot.hpp"
 #include "GreensFunction3DAbsSym.hpp"
 
+const Real GreensFunction3DAbsSym::CUTOFF = 1e-10;
+const Real GreensFunction3DAbsSym::CUTOFF_H = 6.0;
+
 /**
   EllipticTheta[4,0,q]
 

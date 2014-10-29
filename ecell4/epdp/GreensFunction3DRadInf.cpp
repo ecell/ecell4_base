@@ -29,6 +29,10 @@
 #include "GreensFunction3DRadInf.hpp"
 
 
+const Real GreensFunction3DRadInf::TOLERANCE = 1e-8;
+const Real GreensFunction3DRadInf::THETA_TOLERANCE = 1e-5;
+const Real GreensFunction3DRadInf::MIN_T = 1e-12;
+const Real GreensFunction3DRadInf::H = 4.0;
 
 GreensFunction3DRadInf::GreensFunction3DRadInf(Real D, Real kf, Real r0, Real Sigma)
     : PairGreensFunction(D, kf, r0, Sigma),

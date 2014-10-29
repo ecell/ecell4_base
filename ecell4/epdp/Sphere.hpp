@@ -132,6 +132,11 @@ struct shape_position_type<Sphere> {
 };
 
 template<>
+struct shape_position_type<const Sphere> {
+    typedef Sphere::position_type type;
+};
+
+template<>
 struct shape_length_type<Sphere> {
     typedef Sphere::length_type type;
 };

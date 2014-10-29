@@ -220,6 +220,12 @@ struct shape_position_type<Cylinder>
 };
 
 template<>
+struct shape_position_type<const Cylinder>
+{
+    typedef typename Cylinder::position_type type;
+};
+
+template<>
 struct shape_length_type<Cylinder> {
     typedef typename Cylinder::length_type type;
 };

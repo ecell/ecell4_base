@@ -19,9 +19,8 @@ class GreensFunction3DSym
     
 private:
 
-    static const Real TOLERANCE = 1e-8;
-
-    static const Real H = 6;
+    static const Real TOLERANCE;
+    static const Real H;
     
 public:
     

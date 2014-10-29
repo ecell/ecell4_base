@@ -10,6 +10,9 @@
 #include "freeFunctions.hpp"
 #include "GreensFunction3D.hpp"
 
+const Real GreensFunction3D::TOLERANCE = 1e-8;
+const Real GreensFunction3D::H = 7;
+
 GreensFunction3D::~GreensFunction3D()
 {
     ; // do nothing
