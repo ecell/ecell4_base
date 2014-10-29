@@ -7,7 +7,7 @@
 #include <utility>
 #include <cstdio>
 #include <functional>
-#include <boost/regex.hpp>
+// #include <boost/regex.hpp> //XXX: disabled pattern matching once
 #include <boost/foreach.hpp>
 #include <boost/type_traits/remove_pointer.hpp>
 #include <boost/ptr_container/ptr_map.hpp>
@@ -47,12 +47,13 @@ struct map_adapter_handler
 class LoggerManagerRegistry
 {
 private:
-    typedef std::pair<boost::regex, boost::shared_ptr<LoggerManager> > entry_type;
+    typedef std::pair<std::string, boost::shared_ptr<LoggerManager> > entry_type;
+    // typedef std::pair<boost::regex, boost::shared_ptr<LoggerManager> > entry_type;
 public:
     void register_logger_manager(char const* logger_name_pattern,
                                  boost::shared_ptr<LoggerManager> const& manager)
     {
-        managers_.push_back(entry_type(boost::regex(logger_name_pattern), manager));
+        managers_.push_back(entry_type(entry_type::first_type(logger_name_pattern), manager));
     }
 
     boost::shared_ptr<LoggerManager>
@@ -68,10 +69,16 @@ public:
             return default_manager_;
 
 
-        char const* const logger_name_end(logger_name + std::strlen(logger_name));
+        // char const* const logger_name_end(logger_name + std::strlen(logger_name));
+        // BOOST_FOREACH (entry_type const& i, managers_)
+        // {
+        //     if (boost::regex_match(logger_name, logger_name_end, i.first))
+        //         return i.second;
+        // }
+        const std::string _logger_name(logger_name);
         BOOST_FOREACH (entry_type const& i, managers_)
         {
-            if (boost::regex_match(logger_name, logger_name_end, i.first))
+            if (_logger_name == i.first)
                 return i.second;
         }
 
