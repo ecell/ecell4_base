@@ -140,20 +140,20 @@ public:
 
     std::pair<iterator, bool> insert(value_type const& v)
     {
-        hdlr_.insert<map_adapter>(v);
+        hdlr_.template insert<map_adapter>(v);
         return cntnr_.insert(v);
     }
 
     iterator insert(iterator const& hint, value_type const& v)
     {
-        hdlr_.insert<map_adapter>(v);
+        hdlr_.template insert<map_adapter>(v);
         return cntnr_.insert(hint, v);
     }
 
     template<typename Titer_>
     void insert(Titer_ const& b, Titer_ const& e)
     {
-        hdlr_.insert<map_adapter>(b, e);
+        hdlr_.template insert<map_adapter>(b, e);
         cntnr_.insert(b, e);
     }
 
