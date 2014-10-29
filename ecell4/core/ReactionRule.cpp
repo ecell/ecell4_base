@@ -40,7 +40,17 @@ std::vector<ReactionRule> ReactionRule::generate(const reactant_container_type& 
     for (std::vector<std::vector<Species> >::const_iterator i(possibles.begin());
         i != possibles.end(); ++i)
     {
-        retval.push_back(ReactionRule(reactants, *i, this->k()));
+        const ReactionRule rr(reactants, *i, this->k());
+        std::vector<ReactionRule>::iterator
+            j(std::find(retval.begin(), retval.end(), rr));
+        if (j != retval.end())
+        {
+            (*j).set_k((*j).k() + rr.k());
+        }
+        else
+        {
+            retval.push_back(rr);
+        }
     }
     return retval;
 }

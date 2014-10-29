@@ -105,11 +105,15 @@ bool NetworkModel::has_species_attribute(const Species& sp) const
 
 void NetworkModel::add_reaction_rule(const ReactionRule& rr)
 {
-    reaction_rule_container_type::const_iterator
+    reaction_rule_container_type::iterator
         i(std::find(reaction_rules_.begin(), reaction_rules_.end(), rr));
     if (i != reaction_rules_.end())
     {
-        throw AlreadyExists("reaction rule already exists");
+        // throw AlreadyExists("reaction rule already exists");
+        std::cerr << "WARNING: reaction rule already exists ["
+            << rr.as_string() << "]." << std::endl;
+        (*i) = ReactionRule((*i).reactants(), (*i).products(), (*i).k() + rr.k());
+        return;
     }
 
     const reaction_rule_container_type::size_type idx(reaction_rules_.size());

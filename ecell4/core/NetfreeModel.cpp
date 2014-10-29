@@ -49,6 +49,11 @@ std::vector<ReactionRule> NetfreeModel::query_reaction_rules(
             while (rrexp.next());
         }
 
+        if (sp1 == sp2)
+        {
+            continue;
+        }
+
         if (rrexp.match(sp2, sp1))
         {
             do
@@ -284,5 +289,190 @@ bool NetfreeModel::has_reaction_rule(const ReactionRule& rr) const
         i(std::find(reaction_rules_.begin(), reaction_rules_.end(), rr));
     return (i != reaction_rules_.end());
 }
+
+namespace extras
+{
+
+bool check_stoichiometry(const Species& sp,
+    const utils::get_mapper_mf<Species, Integer>::type& max_stoich)
+{
+    typedef utils::get_mapper_mf<Species, Integer>::type stoichiometry_map_type;
+    for (stoichiometry_map_type::const_iterator i(max_stoich.begin());
+        i != max_stoich.end(); ++i)
+    {
+        if (sp.count((*i).first) > (*i).second)
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool check_stoichiometry(const ReactionRule& rr,
+    const utils::get_mapper_mf<Species, Integer>::type& max_stoich)
+{
+    for (ReactionRule::product_container_type::const_iterator
+        i(rr.products().begin()); i != rr.products().end(); ++i)
+    {
+        if (!check_stoichiometry(*i, max_stoich))
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+void __add_reaction_rules(
+    const std::vector<ReactionRule>& reaction_rules,
+    std::vector<ReactionRule>& reactions, std::vector<Species>& newseeds,
+    const std::vector<Species>& seeds,
+    const utils::get_mapper_mf<Species, Integer>::type& max_stoich)
+{
+    for (std::vector<ReactionRule>::const_iterator i(reaction_rules.begin());
+        i != reaction_rules.end(); ++i)
+    {
+        const ReactionRule& rr(*i);
+        if (!check_stoichiometry(rr, max_stoich))
+        {
+            continue;
+        }
+
+        reactions.push_back(rr);
+
+        for (ReactionRule::product_container_type::const_iterator
+            j(rr.products().begin()); j != rr.products().end(); ++j)
+        {
+            const Species sp(format_species(*j));
+            if (std::find(newseeds.begin(), newseeds.end(), sp)
+                == newseeds.end()
+                && std::find(seeds.begin(), seeds.end(), sp)
+                == seeds.end())
+            {
+                newseeds.push_back(sp);
+            }
+        }
+    }
+}
+
+void __generate_recurse(
+    const NetfreeModel& nfm, std::vector<ReactionRule>& reactions,
+    std::vector<Species>& seeds1, std::vector<Species>& seeds2,
+    const utils::get_mapper_mf<Species, Integer>::type& max_stoich)
+{
+    std::vector<Species> newseeds;
+    seeds2.insert(seeds2.begin(), seeds1.begin(), seeds1.end());
+
+    for (NetfreeModel::reaction_rule_container_type::const_iterator
+        i(nfm.reaction_rules().begin()); i != nfm.reaction_rules().end(); ++i)
+    {
+        const ReactionRule& rr(*i);
+
+        switch (rr.reactants().size())
+        {
+        case 0:
+            continue;
+        case 1:
+            for (std::vector<Species>::const_iterator j(seeds1.begin());
+                j != seeds1.end(); ++j)
+            {
+                ReactionRule::reactant_container_type reactants(1);
+                reactants[0] = *j;
+                __add_reaction_rules(
+                    rr.generate(reactants), reactions, newseeds, seeds2, max_stoich);
+            }
+            break;
+        case 2:
+            for (std::vector<Species>::const_iterator j(seeds1.begin());
+                j != seeds1.end(); ++j)
+            {
+                const std::vector<Species>::const_iterator start(
+                    seeds2.begin() + std::distance<std::vector<Species>::const_iterator>(seeds1.begin(), j));
+                for (std::vector<Species>::const_iterator
+                    k(start); k != seeds2.end(); ++k)
+                {
+                    ReactionRule::reactant_container_type reactants(2);
+                    reactants[0] = *j;
+                    reactants[1] = *k;
+                    const std::vector<ReactionRule>
+                        retval1(rr.generate(reactants));
+                    __add_reaction_rules(
+                        retval1, reactions, newseeds, seeds2, max_stoich);
+
+                    if (*j != *k)
+                    {
+                        reactants[0] = *k;
+                        reactants[1] = *j;
+                        std::vector<ReactionRule>
+                            retval2(rr.generate(reactants));
+                        __add_reaction_rules(
+                            retval2, reactions, newseeds, seeds2, max_stoich);
+                    }
+                }
+            }
+            break;
+        default:
+            throw NotImplemented(
+                "No reaction rule with more than two reactants is accepted.");
+        }
+    }
+
+    seeds1.swap(newseeds);
+}
+
+ReactionRule format_reaction_rule(const ReactionRule& rr)
+{
+    ReactionRule::reactant_container_type reactants(rr.reactants());
+    ReactionRule::product_container_type products(rr.products());
+    std::sort(reactants.begin(), reactants.end());
+    std::sort(products.begin(), products.end());
+    return ReactionRule(reactants, products, rr.k());
+}
+
+NetworkModel generate_network_from_netfree_model(
+    const NetfreeModel& nfm, const std::vector<Species>& seeds, const Integer max_itr,
+    const utils::get_mapper_mf<Species, Integer>::type& max_stoich)
+{
+    std::vector<ReactionRule> reactions;
+    std::vector<Species> seeds1(seeds);
+    std::vector<Species> seeds2;
+
+    for (NetfreeModel::reaction_rule_container_type::const_iterator
+        i(nfm.reaction_rules().begin()); i != nfm.reaction_rules().end(); ++i)
+    {
+        const ReactionRule& rr(*i);
+        if (rr.reactants().size() == 0 && check_stoichiometry(rr, max_stoich))
+        {
+            reactions.push_back(rr);
+            for (ReactionRule::product_container_type::const_iterator
+                j(rr.products().begin()); j != rr.products().end(); ++j)
+            {
+                const Species sp(format_species(*j));
+                if (std::find(seeds1.begin(), seeds1.end(), sp)
+                    == seeds1.end())
+                {
+                    seeds1.push_back(sp);
+                }
+            }
+        }
+    }
+
+    Integer cnt(0);
+    while (seeds1.size() > 0 && cnt < max_itr)
+    {
+        __generate_recurse(nfm, reactions, seeds1, seeds2, max_stoich);
+        cnt += 1;
+    }
+
+    NetworkModel nwm;
+    for (std::vector<ReactionRule>::const_iterator i(reactions.begin());
+        i != reactions.end(); ++i)
+    {
+        const ReactionRule rr(format_reaction_rule(*i));
+        nwm.add_reaction_rule(rr);
+    }
+    return nwm;
+}
+
+} // extras
 
 } // ecell4

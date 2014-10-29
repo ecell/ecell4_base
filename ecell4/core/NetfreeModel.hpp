@@ -14,6 +14,7 @@
 #include "Model.hpp"
 
 #include "Context.hpp"
+#include "NetworkModel.hpp"
 
 
 namespace ecell4
@@ -100,6 +101,23 @@ protected:
     species_container_type species_attributes_;
     reaction_rule_container_type reaction_rules_;
 };
+
+namespace extras
+{
+
+NetworkModel generate_network_from_netfree_model(
+    const NetfreeModel& nfm, const std::vector<Species>& seeds, const Integer max_itr,
+    const utils::get_mapper_mf<Species, Integer>::type& max_stoich);
+
+inline NetworkModel generate_network_from_netfree_model(
+    const NetfreeModel& nfm, const std::vector<Species>& seeds, const Integer max_itr)
+{
+    const utils::get_mapper_mf<Species, Integer>::type max_stoich;
+    return generate_network_from_netfree_model(
+        nfm, seeds, max_itr, max_stoich);
+}
+
+} // extras
 
 } // ecell4
 
