@@ -1,6 +1,8 @@
 #ifndef __ECELL4_EXTRAS_HPP
 #define __ECELL4_EXTRAS_HPP
 
+#include <boost/scoped_ptr.hpp>
+
 #include "types.hpp"
 #include "Position3.hpp"
 #include "Species.hpp"
