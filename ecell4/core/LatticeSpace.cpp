@@ -732,23 +732,22 @@ std::pair<LatticeSpace::private_coordinate_type, bool> LatticeSpace::move_to_nei
 
     MolecularTypeBase* to_mt(voxels_[private_to]);
 
-    if (to_mt != loc)
+    if (to_mt != loc) // (to_mt != from_mt->location())
     {
         if (to_mt == border_)
         {
             return std::make_pair(private_from, false);
         }
-        else if (to_mt == periodic_)
+        else if (to_mt != periodic_)
         {
-            private_to = apply_boundary_(private_to);
-            to_mt = voxels_[private_to];
-
-            if (to_mt != loc)
-            {
-                return std::make_pair(private_to, false);
-            }
+            return std::make_pair(private_to, false);
         }
-        else
+
+        // to_mt == periodic_
+        private_to = apply_boundary_(private_to);
+        to_mt = voxels_[private_to];
+
+        if (to_mt != loc)
         {
             return std::make_pair(private_to, false);
         }
