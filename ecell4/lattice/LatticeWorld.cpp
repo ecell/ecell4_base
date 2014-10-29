@@ -401,17 +401,17 @@ bool LatticeWorld::move(coordinate_type from, coordinate_type to)
     return space_.move(from, to);
 }
 
-std::pair<LatticeWorld::coordinate_type, bool> LatticeWorld::move_to_neighbor(
-        coordinate_type coord, Integer nrand)
-{
-    return space_.move_to_neighbor(coord, nrand);
-}
-
-std::pair<LatticeWorld::coordinate_type, bool> LatticeWorld::move_to_neighbor(
-        particle_info& info, Integer nrand)
-{
-    return space_.move_to_neighbor(info, nrand);
-}
+// std::pair<LatticeWorld::coordinate_type, bool> LatticeWorld::move_to_neighbor(
+//         coordinate_type coord, Integer nrand)
+// {
+//     return space_.move_to_neighbor(coord, nrand);
+// }
+// 
+// std::pair<LatticeWorld::coordinate_type, bool> LatticeWorld::move_to_neighbor(
+//         particle_info& info, Integer nrand)
+// {
+//     return space_.move_to_neighbor(info, nrand);
+// }
 
 std::pair<LatticeWorld::private_coordinate_type, bool>
 LatticeWorld::move_to_neighbor(
