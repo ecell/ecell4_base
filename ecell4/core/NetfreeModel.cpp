@@ -469,8 +469,14 @@ boost::shared_ptr<NetworkModel> generate_network_from_netfree_model(
         __generate_recurse(nfm, reactions, seeds1, seeds2, max_stoich);
         cnt += 1;
     }
+    seeds2.insert(seeds2.begin(), seeds1.begin(), seeds1.end());
 
     boost::shared_ptr<NetworkModel> nwm(new NetworkModel());
+    for (std::vector<Species>::const_iterator i(seeds2.begin());
+        i != seeds2.end(); ++i)
+    {
+        (*nwm).add_species_attribute(nfm.apply_species_attributes(*i));
+    }
     for (std::vector<ReactionRule>::const_iterator i(reactions.begin());
         i != reactions.end(); ++i)
     {
