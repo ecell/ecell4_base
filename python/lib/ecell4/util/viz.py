@@ -19,7 +19,17 @@ def init_ipynb():
     html = open(path).read()
     return display(HTML(html))
 
-def parse_world(world, radius=None, config={}, species_list=None):
+def __parse_world(world, radius=None, config={}, species_list=None):
+    """Private function to parse world
+    return value:
+        info : Dict whose key are 'particles' and 'range'
+        {
+             particles: [{name: 'sp1', 'data': {x: [0,1,2], y: [0,1,2], z: [0,1,2]}}, {}, ..],
+             range: {x: [0,1], y: [0,1], z: [0,1]}
+        }
+        config : color config
+    """
+
     if species_list is None:
         species = [p.species().serial() for pid, p in world.list_particles()]
         species = sorted(set(species), key=species.index) # pick unique ones
@@ -64,24 +74,38 @@ def parse_world(world, radius=None, config={}, species_list=None):
 
 
 def plot_movie(worlds, radius=None, width=500, height=500, config={}, grid=False, species_list=None):
+    """Generate a movie from received instances of World and show them on IPython notebook.
+
+    Parameters
+    ----------
+    worlds : list of World
+        Worlds to render.
+    radius : float, default None
+        If this value is set, all particles in the world will be rendered as if their radius are the same.
+    width: float, default 500
+        Width of the plotting area.
+    height: float, default 500
+        Height of the plotting area.
+    config: dict, default {}
+        Dict for configure default colors. Its values are colors unique to each speices.
+        Colors included in config dict will never be used for other speices.
+    """
     from IPython.core.display import display, HTML
     from jinja2 import Template
 
     # find information in world[0]
-    info, config = parse_world(worlds[0], radius, config, species_list)
+    info, config = __parse_world(worlds[0], radius, config, species_list)
     ranges = info['ranges']
     data = { species['name']: {'data': [], 'name': species['name'], 'color': species['color']} for species in info['particles']}
 
     # find information in each worlds
-    i=0
-    for world in worlds:
-        info, trash = parse_world(world, radius, config, species_list)
+    for i, world in enumerate(worlds):
+        info, trash = __parse_world(world, radius, config, species_list)
         for species in info['particles']:
             data[species['name']]['data'].append({
                 'df': species['data'],
                 't': i
             })
-        i += 1
 
     options = {
         'player': True,
@@ -127,7 +151,7 @@ def plot_world(world, radius=None, width=500, height=500, config={}, grid=False,
     """
     from IPython.core.display import display, HTML
 
-    info, config = parse_world(world, radius, config, species_list)
+    info, config = __parse_world(world, radius, config, species_list)
 
     plots = []
     for species in info['particles']:
