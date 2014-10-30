@@ -6,6 +6,7 @@ from libcpp cimport bool
 #        that don't cast c-objects into python objects automatically.
 from libcpp.pair cimport pair
 from libcpp.vector cimport vector
+from libcpp.map cimport map
 
 from types cimport *
 from multiset cimport multiset
@@ -263,6 +264,10 @@ cdef extern from "ecell4/core/NetfreeModel.hpp" namespace "ecell4":
             Cpp_Species sp, Cpp_Species sp)
         vector[Cpp_ReactionRule] reaction_rules()
         vector[Cpp_Species] species_attributes()
+
+        shared_ptr[Cpp_NetworkModel] expand(vector[Cpp_Species])
+        shared_ptr[Cpp_NetworkModel] expand(vector[Cpp_Species], Integer)
+        shared_ptr[Cpp_NetworkModel] expand(vector[Cpp_Species], Integer, map[Cpp_Species, Integer])
 
 ## NetfreeModel
 #  a python wrapper for Cpp_NetfreeModel, but wrapped by shared_ptr

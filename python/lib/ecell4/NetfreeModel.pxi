@@ -2,6 +2,8 @@ from cython.operator cimport dereference as deref, preincrement as inc
 from cython cimport address
 
 from libcpp.vector cimport vector
+from libcpp.map cimport map
+from shared_ptr cimport shared_ptr
 
 
 cdef class NetfreeModel:
@@ -89,13 +91,23 @@ cdef class NetfreeModel:
             inc(it)
         return retval
 
-    # def add_reactant(self, PySpecies sp):
-    #     self.thisptr.add_reactant(deref(sp.thisptr))
-    # def add_product(self, PySpecies sp):
-    #     self.thisptr.add_product(deref(sp.thisptr))
-    # def reactants(self):
-    #     # self.thisptr.reactants()
-    #     pass
+    def expand(self, seeds, max_itr=None, max_stoich=None):
+        cdef vector[Cpp_Species] _seeds
+        cdef map[Cpp_Species, Integer] _max_stoich
+        for sp in seeds:
+            _seeds.push_back(deref((<Species>sp).thisptr))
+
+        if max_stoich is not None:
+            for sp, n in max_stoich.items():
+                _max_stoich[deref((<Species>sp).thisptr)] = <Integer>n
+            return NetworkModel_from_Cpp_NetworkModel(
+                self.thisptr.get().expand(_seeds, <Integer>max_itr, _max_stoich))
+        elif max_itr is not None:
+            return NetworkModel_from_Cpp_NetworkModel(
+                self.thisptr.get().expand(_seeds, <Integer>max_itr))
+        else:
+            return NetworkModel_from_Cpp_NetworkModel(
+                self.thisptr.get().expand(_seeds))
 
 cdef NetfreeModel NetfreeModel_from_Cpp_NetfreeModel(
     shared_ptr[Cpp_NetfreeModel] m):

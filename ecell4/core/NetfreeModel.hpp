@@ -7,6 +7,7 @@
 #include <set>
 #include <algorithm>
 #include <iterator>
+#include <boost/shared_ptr.hpp>
 
 #include "types.hpp"
 #include "Species.hpp"
@@ -96,14 +97,14 @@ public:
         return reaction_rules_.size();
     }
 
-    NetworkModel expand(
+    boost::shared_ptr<NetworkModel> expand(
         const std::vector<Species>& sp, const Integer max_itr,
-        const utils::get_mapper_mf<Species, Integer>::type& max_stoich) const;
+        const std::map<Species, Integer>& max_stoich) const;
 
-    inline NetworkModel expand(
+    inline boost::shared_ptr<NetworkModel> expand(
         const std::vector<Species>& sp, const Integer max_itr=100) const
     {
-        const utils::get_mapper_mf<Species, Integer>::type max_stoich;
+        const std::map<Species, Integer> max_stoich;
         return this->expand(sp, max_itr, max_stoich);
     }
 
@@ -116,14 +117,14 @@ protected:
 namespace extras
 {
 
-NetworkModel generate_network_from_netfree_model(
+boost::shared_ptr<NetworkModel> generate_network_from_netfree_model(
     const NetfreeModel& nfm, const std::vector<Species>& seeds, const Integer max_itr,
-    const utils::get_mapper_mf<Species, Integer>::type& max_stoich);
+    const std::map<Species, Integer>& max_stoich);
 
-inline NetworkModel generate_network_from_netfree_model(
+inline boost::shared_ptr<NetworkModel> generate_network_from_netfree_model(
     const NetfreeModel& nfm, const std::vector<Species>& seeds, const Integer max_itr)
 {
-    const utils::get_mapper_mf<Species, Integer>::type max_stoich;
+    const std::map<Species, Integer> max_stoich;
     return generate_network_from_netfree_model(
         nfm, seeds, max_itr, max_stoich);
 }

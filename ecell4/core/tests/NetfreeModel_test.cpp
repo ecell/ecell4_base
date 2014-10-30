@@ -124,18 +124,19 @@ BOOST_AUTO_TEST_CASE(NetfreeModel_generation1)
     seeds[0] = Species("X(p^1,q=a).X(p^1,q=a)");
     // seeds[1] = Species("X(p,q=a)");
 
-    NetworkModel nwm(nfm.expand(seeds, 10));
-    // NetworkModel nwm(extras::generate_network_from_netfree_model(nfm, seeds, 10));
+    boost::shared_ptr<NetworkModel> nwm(nfm.expand(seeds, 10));
+    // boost::shared_ptr<NetworkModel> nwm(
+    //     extras::generate_network_from_netfree_model(nfm, seeds, 10));
 
     // for (NetworkModel::reaction_rule_container_type::const_iterator
-    //     i(nwm.reaction_rules().begin()); i != nwm.reaction_rules().end(); ++i)
+    //     i((*nwm).reaction_rules().begin()); i != (*nwm).reaction_rules().end(); ++i)
     // {
     //     NetworkModel::reaction_rule_container_type::difference_type
-    //         idx(std::distance(nwm.reaction_rules().begin(), i));
+    //         idx(std::distance((*nwm).reaction_rules().begin(), i));
     //     std::cout << "[" << idx << "]: " << (*i).as_string() << std::endl;
     // }
 
-    BOOST_CHECK_EQUAL(nwm.reaction_rules().size(), 10);
+    BOOST_CHECK_EQUAL((*nwm).reaction_rules().size(), 10);
 }
 
 BOOST_AUTO_TEST_CASE(NetfreeModel_generation2)
@@ -151,22 +152,22 @@ BOOST_AUTO_TEST_CASE(NetfreeModel_generation2)
              Species("X(r^1).X(l^1)"),Species("X(r)"), Species("X(l)"), 1.0));
 
     std::vector<Species> seeds(0);
-    utils::get_mapper_mf<Species, Integer>::type max_stoich;
+    std::map<Species, Integer> max_stoich;
     max_stoich[Species("X")] = 5;
 
-    NetworkModel nwm(nfm.expand(seeds, 10, max_stoich));
-    // NetworkModel nwm(extras::generate_network_from_netfree_model(
+    boost::shared_ptr<NetworkModel> nwm(nfm.expand(seeds, 10, max_stoich));
+    // boost::shared_ptr<NetworkModel> nwm(extras::generate_network_from_netfree_model(
     //     nfm, seeds, 10, max_stoich));
 
     // for (NetworkModel::reaction_rule_container_type::const_iterator
-    //     i(nwm.reaction_rules().begin()); i != nwm.reaction_rules().end(); ++i)
+    //     i((*nwm).reaction_rules().begin()); i != (*nwm).reaction_rules().end(); ++i)
     // {
     //     NetworkModel::reaction_rule_container_type::difference_type
-    //         idx(std::distance(nwm.reaction_rules().begin(), i));
+    //         idx(std::distance((*nwm).reaction_rules().begin(), i));
     //     std::cout << "[" << idx << "]: " << (*i).as_string() << std::endl;
     // }
 
-    BOOST_CHECK_EQUAL(nwm.reaction_rules().size(), 13);
+    BOOST_CHECK_EQUAL((*nwm).reaction_rules().size(), 13);
 }
 
 BOOST_AUTO_TEST_CASE(NetfreeModel_reaction_rule_test1)
