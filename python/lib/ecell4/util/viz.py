@@ -19,28 +19,16 @@ def init_ipynb():
     html = open(path).read()
     return display(HTML(html))
 
-def __parse_world(world, radius=None, config={}, species_list=None):
-    """Private function to parse world
-    return value:
-        info : Dict whose key are 'particles' and 'range'
-        {
-             particles: [{name: 'sp1', 'data': {x: [0,1,2], y: [0,1,2], z: [0,1,2]}}, {}, ..],
-             range: {x: [0,1], y: [0,1], z: [0,1]}
-        }
-        config : color config
+def __parse_world(world, radius=None, species_list=None):
+    """Private function to parse world. Return infomation about particles (name, coordinates and particle size) for each species.
     """
 
     if species_list is None:
-        species = [p.species().serial() for pid, p in world.list_particles()]
-        species = sorted(set(species), key=species.index) # pick unique ones
-    else:
-        species = copy.copy(species_list)
+        species_list = [p.species().serial() for pid, p in world.list_particles()]
+        species_list = sorted(set(species_list), key=species_list.index) # pick unique ones
 
-    color_scale = ColorScale(config=config)
-
-    info = {'particles': [], 'ranges': {}}
-
-    for name in species:
+    species = []
+    for name in species_list:
         particles = [{'pos': p.position(), 'r': p.radius()}
             for pid, p in world.list_particles() if p.species().serial() == name]
         data = {
@@ -49,29 +37,25 @@ def __parse_world(world, radius=None, config={}, species_list=None):
             'z': [p['pos'][2] for p in particles]
         }
 
-        color = color_scale.get_color(name)
-
-        # assume that all particles have the same radius
+        # assume that all particles belong to one species have the same radius
         r = max([p['r'] for p in particles]) if radius is None else radius
         size = 30/min(world.edge_lengths()) * r
 
-        info['particles'].append({
+        species.append({
             'name': name,
-            'color': color,
             'data': data,
             'size': size
         })
 
+    return species
+
+def __get_range_of_world(world):
     edge_lengths = world.edge_lengths()
     max_length = max(tuple(edge_lengths))
     rangex = [(edge_lengths[0] - max_length) * 0.5, (edge_lengths[0] + max_length) * 0.5]
     rangey = [(edge_lengths[1] - max_length) * 0.5, (edge_lengths[1] + max_length) * 0.5]
     rangez = [(edge_lengths[2] - max_length) * 0.5, (edge_lengths[2] + max_length) * 0.5]
-
-    info['ranges'] = {'x': rangex, 'y': rangey, 'z': rangez}
-    config = color_scale.get_config()
-    return info, config
-
+    return {'x': rangex, 'y': rangey, 'z': rangez}
 
 def plot_movie(worlds, radius=None, width=500, height=500, config={}, grid=False, species_list=None):
     """Generate a movie from received instances of World and show them on IPython notebook.
@@ -89,21 +73,20 @@ def plot_movie(worlds, radius=None, width=500, height=500, config={}, grid=False
     config: dict, default {}
         Dict for configure default colors. Its values are colors unique to each speices.
         Colors included in config dict will never be used for other speices.
+    species_list: array of string, default None
+        If set, plot_movie will not search the list of species
     """
     from IPython.core.display import display, HTML
     from jinja2 import Template
 
-    # find information in world[0]
-    info, config = __parse_world(worlds[0], radius, config, species_list)
-    ranges = info['ranges']
-    data = { species['name']: {'data': [], 'name': species['name'], 'color': species['color']} for species in info['particles']}
-
-    # find information in each worlds
+    data = {}
     for i, world in enumerate(worlds):
-        info, trash = __parse_world(world, radius, config, species_list)
-        for species in info['particles']:
-            data[species['name']]['data'].append({
-                'df': species['data'],
+        species = __parse_world(world, radius, species_list)
+        for species_info in species:
+            if data.get(species_info['name']) is None:
+                data[species_info['name']] = []
+            data[species_info['name']].append({
+                'df': species_info['data'],
                 't': i
             })
 
@@ -112,20 +95,21 @@ def plot_movie(worlds, radius=None, width=500, height=500, config={}, grid=False
         'autorange': False,
         'space_mode':'wireframe',
         'grid': grid,
-        'range': ranges
+        'range': __get_range_of_world(worlds[0])
     }
 
     model_id = "\"movie" +  str(uuid.uuid4()) + "\"";
+    color_scale = ColorScale(config=config)
 
     display(HTML(generate_html({
         'model_id': model_id,
-        'data': json.dumps([d['data'] for d in data.values()]),
-        'options': json.dumps(options),
-        'colors': json.dumps([d['color'] for d in data.values()]),
-        'names': json.dumps([d['name'] for d in data.values()]),
+        'names': json.dumps(data.keys()),
+        'data': json.dumps(data.values()),
+        'colors': json.dumps([color_scale.get_color(name) for name in data.keys()]),
+        'options': json.dumps(options)
     },'/templates/movie.tmpl')))
 
-    return config
+    return color_scale.get_config()
 
 def plot_world(world, radius=None, width=500, height=500, config={}, grid=False, species_list=None, debug=None):
     """Generate a plot from received instance of World and show it on IPython notebook.
@@ -145,20 +129,35 @@ def plot_world(world, radius=None, width=500, height=500, config={}, grid=False,
     config: dict, default {}
         Dict for configure default colors. Its values are colors unique to each speices.
         Colors included in config dict will never be used for other speices.
-    debug: array, default []
+    species_list: array of string, default None
+        If set, plot_world will not search the list of species.
+    debug: array of dict, default []
+        *** EXPERIMENTAL IMPRIMENTATION ***
         example:
-          [{'type': 'box', 'x': 10, 'y': 10, 'z': 10, 'width': 1, 'height': 1}]
+          [{'type': 'box', 'x': 10, 'y': 10, 'z': 10, options:{ 'width': 1, 'height': 1}}]
+        type: 'box', 'plane', 'sphere', and 'cylinder'
+        x, y, z: float
+        options:
+            box: width, height, depth
+            plane: width, height
+            sphere: radius
+            cylinder: radius, height
     """
     from IPython.core.display import display, HTML
 
-    info, config = __parse_world(world, radius, config, species_list)
-
+    species = __parse_world(world, radius, species_list)
+    color_scale = ColorScale(config=config)
     plots = []
-    for species in info['particles']:
+
+    for species_info in species:
         plots.append({
             'type': 'Particles',
-            'data': species['data'],
-            'options': {'name': species['name'], 'color': species['color'], 'size': species['size']}
+            'data': species_info['data'],
+            'options': {
+                'name': species_info['name'],
+                'color': color_scale.get_color(species_info['name']),
+                'size': species_info['size']
+            }
         })
 
     if debug != None:
@@ -178,7 +177,7 @@ def plot_world(world, radius=None, width=500, height=500, config={}, grid=False,
         'options': {
             'width': width,
             'height': height,
-            'range': info['ranges'],
+            'range': __get_range_of_world(world),
             'autorange': False,
             'space_mode':'wireframe',
             'grid': grid
@@ -187,7 +186,7 @@ def plot_world(world, radius=None, width=500, height=500, config={}, grid=False,
 
     model_id = "\"viz" +  str(uuid.uuid4()) + "\"";
     display(HTML(generate_html({'model': json.dumps(model), 'model_id': model_id}, '/templates/particles.tmpl')))
-    return config
+    return color_scale.get_config()
 
 def generate_html(keywords, tmpl_path):
     """Generate static html file from JSON model and its own id.
