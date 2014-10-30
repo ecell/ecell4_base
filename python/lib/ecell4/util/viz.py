@@ -103,7 +103,7 @@ def plot_movie(worlds, radius=None, width=500, height=500, config={}, grid=False
 
     return config
 
-def plot_world(world, radius=None, width=500, height=500, config={}, grid=False, species_list=None):
+def plot_world(world, radius=None, width=500, height=500, config={}, grid=False, species_list=None, debug=None):
     """Generate a plot from received instance of World and show it on IPython notebook.
     This method returns the instance of dict that indicates color setting for each speices.
     You can use the dict as the parameter of plot_world, in order to use the same colors in another plot.
@@ -121,6 +121,9 @@ def plot_world(world, radius=None, width=500, height=500, config={}, grid=False,
     config: dict, default {}
         Dict for configure default colors. Its values are colors unique to each speices.
         Colors included in config dict will never be used for other speices.
+    debug: array, default []
+        example:
+          [{'type': 'box', 'x': 10, 'y': 10, 'z': 10, 'width': 1, 'height': 1}]
     """
     from IPython.core.display import display, HTML
 
@@ -134,6 +137,18 @@ def plot_world(world, radius=None, width=500, height=500, config={}, grid=False,
             'options': {'name': species['name'], 'color': species['color'], 'size': species['size']}
         })
 
+    if debug != None:
+        data = {'type':[], 'x':[], 'y':[], 'z':[], 'options':[]}
+        for obj in debug:
+            for k, v in obj.items():
+                data[k].append(v)
+
+        plots.append({
+            'type': 'DebugObject',
+            'data': data,
+            'options': {}
+        })
+
     model = {
         'plots': plots,
         'options': {
@@ -144,7 +159,7 @@ def plot_world(world, radius=None, width=500, height=500, config={}, grid=False,
             'space_mode':'wireframe',
             'grid': grid
         }
-    };
+    }
 
     model_id = "\"viz" +  str(uuid.uuid4()) + "\"";
     display(HTML(generate_html({'model': json.dumps(model), 'model_id': model_id}, '/templates/particles.tmpl')))
