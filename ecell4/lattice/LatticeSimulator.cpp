@@ -155,6 +155,10 @@ std::pair<bool, LatticeSimulator::reaction_type> LatticeSimulator::apply_reactio
         const LatticeWorld::private_coordinate_type coord(to_info.first);
         const Species& product_species(*(products.begin()));
 
+        if (!world_->has_species(product_species))
+        {
+            new_species_.push_back(product_species);
+        }
         std::pair<std::pair<ParticleID, Voxel>, bool> new_mol(
             world_->new_voxel_private(product_species, coord));
         if (!new_mol.second)
@@ -175,6 +179,10 @@ std::pair<bool, LatticeSimulator::reaction_type> LatticeSimulator::apply_reactio
         const Species& product_species0(*(products.begin()));
         const Species& product_species1(*(++(products.begin())));
 
+        if (!world_->has_species(product_species0))
+        {
+            new_species_.push_back(product_species0);
+        }
         std::pair<std::pair<ParticleID, Voxel>, bool> new_mol0(
             world_->new_voxel_private(product_species0, from_coord));
         if (!new_mol0.second)
@@ -186,6 +194,10 @@ std::pair<bool, LatticeSimulator::reaction_type> LatticeSimulator::apply_reactio
                 new_mol0.first.first,
                 this->private_voxel2voxel(new_mol0.first.second)));
 
+        if (!world_->has_species(product_species1))
+        {
+            new_species_.push_back(product_species1);
+        }
         std::pair<std::pair<ParticleID, Voxel>, bool> new_mol1(
             world_->new_voxel_private(product_species1, to_coord));
         if (!new_mol1.second)
@@ -199,14 +211,14 @@ std::pair<bool, LatticeSimulator::reaction_type> LatticeSimulator::apply_reactio
     }
 
     reactions_.push_back(reaction_rule);
-    for (ReactionRule::product_container_type::const_iterator
-        i(products.begin()); i != products.end(); ++i)
-    {
-        if (!world_->has_species(*i))
-        {
-            new_species_.push_back(*i);
-        }
-    }
+    // for (ReactionRule::product_container_type::const_iterator
+    //     i(products.begin()); i != products.end(); ++i)
+    // {
+    //     if (!world_->has_species(*i))
+    //     {
+    //         new_species_.push_back(*i);
+    //     }
+    // }
 
     return std::pair<bool, reaction_type>(true, reaction);
 }
@@ -244,6 +256,10 @@ std::pair<bool, LatticeSimulator::reaction_type> LatticeSimulator::apply_reactio
         world_->remove_voxel_private(info.first);
 
         const Species& product_species(*(products.begin()));
+        if (!world_->has_species(product_species))
+        {
+            new_species_.push_back(product_species);
+        }
         std::pair<std::pair<ParticleID, Voxel>, bool> new_mol(
             world_->new_voxel_private(product_species, info.first));
         if (!new_mol.second)
@@ -270,6 +286,10 @@ std::pair<bool, LatticeSimulator::reaction_type> LatticeSimulator::apply_reactio
         const Species& product_species0(*(products.begin()));
         const Species& product_species1(*(++(products.begin())));
 
+        if (!world_->has_species(product_species0))
+        {
+            new_species_.push_back(product_species0);
+        }
         std::pair<std::pair<ParticleID, Voxel>, bool> new_mol0(
             world_->new_voxel_private(product_species0, coord));
         if (!new_mol0.second)
@@ -281,6 +301,10 @@ std::pair<bool, LatticeSimulator::reaction_type> LatticeSimulator::apply_reactio
                 new_mol0.first.first,
                 this->private_voxel2voxel(new_mol0.first.second)));
 
+        if (!world_->has_species(product_species1))
+        {
+            new_species_.push_back(product_species1);
+        }
         std::pair<std::pair<ParticleID, Voxel>, bool> new_mol1(
             world_->new_voxel_private(product_species1, neighbor.first));
         if (!new_mol1.second)
@@ -294,14 +318,14 @@ std::pair<bool, LatticeSimulator::reaction_type> LatticeSimulator::apply_reactio
     }
 
     reactions_.push_back(reaction_rule);
-    for (ReactionRule::product_container_type::const_iterator
-        i(products.begin()); i != products.end(); ++i)
-    {
-        if (!world_->has_species(*i))
-        {
-            new_species_.push_back(*i);
-        }
-    }
+    // for (ReactionRule::product_container_type::const_iterator
+    //     i(products.begin()); i != products.end(); ++i)
+    // {
+    //     if (!world_->has_species(*i))
+    //     {
+    //         new_species_.push_back(*i);
+    //     }
+    // }
 
     return std::pair<bool, reaction_type>(true, reaction);
 }
@@ -377,7 +401,7 @@ void LatticeSimulator::step_()
     scheduler_.add(top.second);
 
     for (std::vector<Species>::const_iterator itr(new_species_.begin());
-            itr != new_species_.end(); ++itr)
+        itr != new_species_.end(); ++itr)
     {
         register_events(*itr);
     }
