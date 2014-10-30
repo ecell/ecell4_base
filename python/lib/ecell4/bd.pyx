@@ -190,15 +190,7 @@ cdef class BDWorld:
         self.thisptr.get().load(filename)
 
     def bind_to(self, m):
-        if isinstance(m, NetworkModel):
-            self.thisptr.get().bind_to(
-                <shared_ptr[Cpp_Model]>deref((<NetworkModel>m).thisptr))
-        elif isinstance(m, NetfreeModel):
-            self.thisptr.get().bind_to(
-                <shared_ptr[Cpp_Model]>deref((<NetfreeModel>m).thisptr))
-        else:
-            raise ValueError, ("a wrong argument was given [%s]." % (type(m))
-                + " the argument must be NetworkModel or NetfreeModel")
+        self.thisptr.get().bind_to(deref(Cpp_Model_from_Model(m)))
 
     def rng(self):
         return GSLRandomNumberGenerator_from_Cpp_RandomNumberGenerator(
@@ -221,9 +213,13 @@ cdef BDWorld BDWorld_from_Cpp_BDWorld(
 #  a python wrapper for Cpp_BDSimulator
 cdef class BDSimulator:
 
-    def __cinit__(self, NetworkModel m, BDWorld w):
-        self.thisptr = new Cpp_BDSimulator(
-            <shared_ptr[Cpp_Model]>deref(m.thisptr), deref(w.thisptr))
+    def __cinit__(self, m, BDWorld w=None):
+        if w is None:
+            self.thisptr = new Cpp_BDSimulator(
+                deref((<BDWorld>w).thisptr))
+        else:
+            self.thisptr = new Cpp_BDSimulator(
+                deref(Cpp_Model_from_Model(m)), deref(w.thisptr))
 
     def __dealloc__(self):
         del self.thisptr
@@ -277,3 +273,41 @@ cdef class BDSimulator:
             for obs in observers:
                 tmp.push_back(deref((<Observer>(obs.as_base())).thisptr))
             self.thisptr.run(duration, tmp)
+
+cdef BDSimulator BDSimulator_from_Cpp_BDSimulator(Cpp_BDSimulator* s):
+    r = BDSimulator(
+        Model_from_Cpp_Model(s.model()), BDWorld_from_Cpp_BDWorld(s.world()))
+    del r.thisptr
+    r.thisptr = s
+    return r
+
+## BDFactory
+#  a python wrapper for Cpp_BDFactory
+cdef class BDFactory:
+
+    def __cinit__(self, GSLRandomNumberGenerator rng=None):
+        if rng is None:
+            self.thisptr = new Cpp_BDFactory()
+        else:
+            self.thisptr = new Cpp_BDFactory(deref(rng.thisptr))
+
+    def __dealloc__(self):
+        del self.thisptr
+
+    def create_world(self, arg1):
+        if isinstance(arg1, Position3):
+            return BDWorld_from_Cpp_BDWorld(
+                shared_ptr[Cpp_BDWorld](
+                    self.thisptr.create_world(deref((<Position3>arg1).thisptr))))
+        else:
+            return BDWorld_from_Cpp_BDWorld(
+                shared_ptr[Cpp_BDWorld](self.thisptr.create_world(<string>(arg1))))
+
+    def create_simulator(self, arg1, BDWorld arg2=None):
+        if arg2 is None:
+            return BDSimulator_from_Cpp_BDSimulator(
+                self.thisptr.create_simulator(deref((<BDWorld>arg1).thisptr)))
+        else:
+            return BDSimulator_from_Cpp_BDSimulator(
+                self.thisptr.create_simulator(
+                    deref(Cpp_Model_from_Model(arg1)), deref(arg2.thisptr)))

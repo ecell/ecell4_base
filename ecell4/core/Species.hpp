@@ -47,7 +47,13 @@ public:
         ; // do nothing
     }
 
-    Species(const serial_type& name)
+    // Species(const Species& sp)
+    //     : units_()
+    // {
+    //     deserialize(sp.serial());
+    // }
+
+    explicit Species(const serial_type& name)
         : units_()
     {
         deserialize(name);
@@ -150,6 +156,13 @@ public:
     bool operator>(const Species& rhs) const;
 
     Integer count(const Species& pttrn) const;
+
+    /** for epdp
+     */
+    serial_type name() const
+    {
+        return serial();
+    }
 
 protected:
 

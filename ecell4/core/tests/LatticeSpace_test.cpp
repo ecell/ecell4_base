@@ -578,6 +578,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_structure_update)
     BOOST_CHECK(space.update_structure(Particle(structure, pos, radius, D)));
     BOOST_CHECK_EQUAL(space.list_particles().size(), 1);
     ParticleID pid(sidgen());
+    //XXX: Particle has no information about the location.
     //XXX: BOOST_CHECK(space.update_particle(pid, Particle(sp, pos, radius, D)));
     BOOST_CHECK(space.update_voxel(
         pid, Voxel(sp, space.position2coordinate(pos), radius, D, structure.serial())));

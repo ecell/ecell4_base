@@ -1,0 +1,75 @@
+
+:author: Koichi Takahashi
+
+
+Prerequisites
+-------------------------
+
+1. autotools
+   (autoconf (>=2.50), automake (>=1.11) libtool (>=2.2.6))
+2. GNU Scientific Library (GSL) 1.11 or later.
+3. Boost C++ Library 1.37 or later.
+4. Python 2.4 or later.
+5. Scipy 0.5 or later, Numpy 1.0 or later.
+
+If you use Fedora or any other RedHat lines of linux, check
+if the following RPM packages are installed:
+
+gsl, gsl-devel, numpy, scipy, boost, and boost-devel.
+
+On Ubuntu Linux and some other Debian families, install the following:
+
+gsl-bin libgsl0-dev libboost-dev libboost-date-time-dev libboost-python-dev libboost-regex-dev libboost-test-dev python-scipy.
+
+
+In addition to above, optionally,
+6. python-matplotlib if you want to use the plotting scripts in the samples.
+7. Pychecker if you want to run 'make pycheck'.
+
+
+A note on GSL version
+++++++++++++++++++++++++++++++
+
+GSL version 1.10 and earlier has at least two bugs that can cause abnormal
+program exits when a Bessel function is evaluated with specific argument
+values.  These bugs can hit stability of this software.
+For this reason, use of GSL version 1.11 or later is recommended.
+
+
+Building this package
+-------------------------
+
+1. ./configure
+2. make
+
+
+If you cannot find the configure script, or the build process
+fails to complete even if you have set up the environment correctly,
+try
+
+./autogen.sh
+
+to remake the entire build mechanism.
+
+
+Testing
+-------------------
+
+% make check
+
+checks if some of the core components of the software run correctly.
+
+In addition, you may run
+
+% make pycheck
+
+if you want to be super-strict about Python syntax.
+
+
+Running
+-------------------------
+
+Go to subdirectories under doc/samples, and read README files 
+included about how to run the samples.
+
+

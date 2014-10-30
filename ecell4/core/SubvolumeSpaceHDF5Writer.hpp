@@ -128,10 +128,6 @@ void load_subvolume_space(const H5::Group& root, Tspace_* space)
     typedef typename traits_type::h5_species_struct h5_species_struct;
     // typedef typename traits_type::h5_voxel_struct h5_voxel_struct;
 
-    double t;
-    root.openAttribute("t").read(H5::PredType::IEEE_F64LE, &t);
-    space->set_t(t);
-
     Position3 edge_lengths;
     const hsize_t dims[] = {3};
     const H5::ArrayType lengths_type(H5::PredType::NATIVE_DOUBLE, 1, dims);
@@ -142,7 +138,11 @@ void load_subvolume_space(const H5::Group& root, Tspace_* space)
     root.openAttribute("matrix_sizes").read(sizes_type, sizes);
     const Global matrix_sizes(sizes[0], sizes[1], sizes[2]);
 
-    space->cleanup(edge_lengths, matrix_sizes);
+    space->reset(edge_lengths, matrix_sizes);
+
+    double t;
+    root.openAttribute("t").read(H5::PredType::IEEE_F64LE, &t);
+    space->set_t(t);
 
     {
         H5::DataSet species_dset(root.openDataSet("species"));

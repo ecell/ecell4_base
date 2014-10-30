@@ -5,7 +5,7 @@
 #include <boost/shared_ptr.hpp>
 
 #include <ecell4/core/Model.hpp>
-#include <ecell4/core/Simulator.hpp>
+#include <ecell4/core/SimulatorBase.hpp>
 
 #include "BDWorld.hpp"
 #include "BDPropagator.hpp"
@@ -18,11 +18,11 @@ namespace bd
 {
 
 class BDSimulator
-    : public Simulator<Model, BDWorld>
+    : public SimulatorBase<Model, BDWorld>
 {
 public:
 
-    typedef Simulator<Model, BDWorld> base_type;
+    typedef SimulatorBase<Model, BDWorld> base_type;
 
 public:
 
@@ -46,11 +46,6 @@ public:
         last_reactions_.clear();
     }
 
-    Real t() const
-    {
-        return (*world_).t();
-    }
-
     Real dt() const
     {
         return dt_;
@@ -64,11 +59,6 @@ public:
     std::vector<ReactionRule> last_reactions() const
     {
         return last_reactions_;
-    }
-
-    void set_t(const Real& t)
-    {
-        (*world_).set_t(t);
     }
 
     void set_dt(const Real& dt)

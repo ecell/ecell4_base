@@ -143,7 +143,7 @@ public:
      * this function is a member of ParticleSpace
      * @param pid ParticleID
      * @param p Particle
-     * @return if the particle already exists or not bool
+     * @return if the particle does not exist or not bool
      */
     virtual bool update_particle(const ParticleID& pid, const Particle& p) = 0;
 
@@ -291,6 +291,16 @@ public:
 
     virtual const particle_container_type& particles() const = 0;
 
+    virtual Real get_value(const Species& sp) const
+    {
+        return static_cast<Real>(num_molecules(sp));
+    }
+
+    virtual Real get_value_exact(const Species& sp) const
+    {
+        return static_cast<Real>(num_molecules_exact(sp));
+    }
+
 protected:
 
     Real t_;
@@ -301,6 +311,7 @@ class ParticleSpaceVectorImpl
 {
 public:
 
+    typedef ParticleSpace base_type;
     typedef ParticleSpace::particle_container_type particle_container_type;
 
 protected:
@@ -312,7 +323,7 @@ public:
 
     ParticleSpaceVectorImpl(const Position3& edge_lengths)
     {
-        set_edge_lengths(edge_lengths);
+        reset(edge_lengths);
     }
 
     // ParticleSpaceTraits
@@ -369,15 +380,10 @@ public:
 
     void load(const H5::Group& root)
     {
-        clear();
         load_particle_space(root, this);
     }
 
-    void set_edge_lengths(const Position3& edge_lengths);
-
-protected:
-
-    void clear();
+    void reset(const Position3& edge_lengths);
 
 protected:
 

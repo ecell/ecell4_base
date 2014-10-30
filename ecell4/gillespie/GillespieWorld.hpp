@@ -60,9 +60,9 @@ public:
         return cs_->edge_lengths();
     }
 
-    void set_edge_lengths(const Position3& edge_lengths)
+    void reset(const Position3& edge_lengths)
     {
-        cs_->set_edge_lengths(edge_lengths);
+        cs_->reset(edge_lengths);
     }
 
     // CompartmentSpaceTraits

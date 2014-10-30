@@ -12,6 +12,7 @@
 #include "get_mapper_mf.hpp"
 #include "Species.hpp"
 #include "Particle.hpp"
+#include "Space.hpp"
 
 
 namespace ecell4
@@ -100,12 +101,12 @@ void save_particle_space(const Tspace_& space, H5::Group* root)
     for (unsigned int i(0); i < num_particles; ++i)
     {
         species_id_map_type::const_iterator
-            it(species_id_map.find(particles[i].second.species().serial()));
+            it(species_id_map.find(particles[i].second.species_serial()));
         if (it == species_id_map.end())
         {
             species.push_back(particles[i].second.species());
             it = species_id_map.insert(
-                std::make_pair(particles[i].second.species().serial(),
+                std::make_pair(particles[i].second.species_serial(),
                                species.size())).first;
         }
 
@@ -173,15 +174,15 @@ void load_particle_space(const H5::Group& root, Tspace_* space)
     typedef typename traits_type::h5_species_struct h5_species_struct;
     typedef typename traits_type::h5_particle_struct h5_particle_struct;
 
-    double t;
-    root.openAttribute("t").read(H5::PredType::IEEE_F64LE, &t);
-    space->set_t(t);
-
     Position3 edge_lengths;
     const hsize_t dims[] = {3};
     const H5::ArrayType lengths_type(H5::PredType::NATIVE_DOUBLE, 1, dims);
     root.openAttribute("edge_lengths").read(lengths_type, &edge_lengths);
-    space->set_edge_lengths(edge_lengths);
+    space->reset(edge_lengths);
+
+    double t;
+    root.openAttribute("t").read(H5::PredType::IEEE_F64LE, &t);
+    space->set_t(t);
 
     {
         H5::DataSet species_dset(root.openDataSet("species"));
@@ -220,12 +221,12 @@ void load_particle_space(const H5::Group& root, Tspace_* space)
         // for (unsigned int i(0); i < num_particles; ++i)
         // {
         //     species_id_map_type::const_iterator
-        //         it(species_id_map.find(particles[i].second.species().serial()));
+        //         it(species_id_map.find(particles[i].second.species_serial()));
         //     if (it == species_id_map.end())
         //     {
         //         species.push_back(particles[i].second.species());
         //         it = species_id_map.insert(
-        //             std::make_pair(particles[i].second.species().serial(),
+        //             std::make_pair(particles[i].second.species_serial(),
         //                            species.size())).first;
         //     }
 

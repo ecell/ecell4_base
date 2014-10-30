@@ -197,16 +197,6 @@ void GillespieSimulator::initialize(void)
     this->draw_next_reaction();
 }
 
-void GillespieSimulator::set_t(const Real &t)
-{
-    this->world_->set_t(t);
-}
-
-Real GillespieSimulator::t(void) const
-{
-    return this->world_->t();
-}
-
 Real GillespieSimulator::dt(void) const
 {
     return this->dt_;

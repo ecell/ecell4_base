@@ -58,6 +58,9 @@ if with_cpp_shared_libraries:
     ext_modules = [
         Extension("ecell4.core", sources=["lib/ecell4/core.pyx"],
             include_dirs=["."], libraries=["ecell4-core"], language="c++"),
+        Extension("ecell4.epdp", sources=["lib/ecell4/epdp.pyx"],
+            include_dirs=["."], libraries=["ecell4-core", "ecell4-epdp"],
+            language="c++", extra_compile_args=["-w"]),
         Extension("ecell4.gillespie", sources=["lib/ecell4/gillespie.pyx"],
             include_dirs=["."], libraries=["ecell4-core", "ecell4-gillespie"],
             language="c++"),

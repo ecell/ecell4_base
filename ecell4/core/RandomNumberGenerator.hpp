@@ -13,9 +13,6 @@
 #include "types.hpp"
 #include "Position3.hpp"
 
-// #include <RandomLib/Random.hpp>
-// #include <RandomLib/NormalDistribution.hpp>
-
 
 namespace ecell4
 {
@@ -29,11 +26,12 @@ public:
         ;
     }
 
+    virtual Real random() = 0;
     virtual Real uniform(Real min, Real max) = 0;
     virtual Integer uniform_int(Integer min, Integer max) = 0;
-    virtual Real gaussian(Real mean, Real sigma) = 0;
+    virtual Real gaussian(Real sigma, Real mean = 0.0) = 0;
     virtual Integer binomial(Real p, Integer n) = 0;
-    virtual Position3 direction3d(Real length) = 0;
+    virtual Position3 direction3d(Real length = 1.0) = 0;
 
     virtual void seed(Integer val) = 0;
     virtual void seed() = 0;
@@ -63,42 +61,14 @@ public:
 
 public:
 
-    Real uniform(Real min, Real max)
-    {
-        return gsl_rng_uniform(rng_.get()) * (max - min) + min;
-    }
-
-    Integer uniform_int(Integer min, Integer max)
-    {
-        return gsl_rng_uniform_int(rng_.get(), max - min + 1) + min;
-    }
-
-    Real gaussian(Real mean, Real sigma)
-    {
-        return gsl_ran_gaussian(rng_.get(), sigma) + mean;
-    }
-
-    Integer binomial(Real p, Integer n)
-    {
-        return gsl_ran_binomial(rng_.get(), p, n);
-    }
-
-    Position3 direction3d(Real length)
-    {
-        double x, y, z;
-        gsl_ran_dir_3d(rng_.get(), &x, &y, &z);
-        return Position3(x * length, y * length, z * length);
-    }
-
-    void seed(Integer val)
-    {
-        gsl_rng_set(rng_.get(), val);
-    }
-
-    void seed()
-    {
-        gsl_rng_set(rng_.get(), unsigned(std::time(0)));
-    }
+    Real random();
+    Real uniform(Real min, Real max);
+    Integer uniform_int(Integer min, Integer max);
+    Real gaussian(Real sigma, Real mean = 0.0);
+    Integer binomial(Real p, Integer n);
+    Position3 direction3d(Real length);
+    void seed(Integer val);
+    void seed();
 
     void save(H5::CommonFG* root) const;
     void load(const H5::CommonFG& root);
@@ -115,77 +85,10 @@ public:
         ;
     }
 
-    inline rng_handle handle()
-    {
-        return rng_;
-    }
-
 protected:
 
     rng_handle rng_;
 };
-
-// class RandomLibRandomNumberGenerator
-//     : public RandomNumberGenerator
-// {
-// public:
-// 
-//     virtual Real uniform(Real min, Real max)
-//     {
-//         return rng_.Fixed() * (max - min) + min;
-//     }
-// 
-//     virtual Integer uniform_int(Integer min, Integer max)
-//     {
-//         return rng_.IntegerC<Integer>(min, max);
-//     }
-// 
-//     virtual Real gaussian(Real mean, Real sigma)
-//     {
-//         RandomLib::NormalDistribution<Real> dist;
-//         return dist(rng_);
-//     }
-// 
-//     virtual Integer binomial(Real p, Integer n)
-//     {
-//         return n; //XXX: DUMMY
-//     }
-// 
-//     virtual Position3 direction3d(Real length)
-//     {
-//         throw NotImplemented("not implemented yet.");
-//     }
-// 
-//     virtual void seed(Integer val)
-//     {
-//         rng_.Reseed(val);
-//     }
-// 
-//     virtual void seed()
-//     {
-//         rng_.Reseed();
-//     }
-// 
-//     virtual void save(H5::CommonFG* root) const
-//     {
-//         throw NotImplemented("not implemented yet.");
-//     }
-// 
-//     virtual void load(const H5::CommonFG& root)
-//     {
-//         throw NotImplemented("not implemented yet.");
-//     }
-// 
-//     RandomLibRandomNumberGenerator()
-//         : rng_()
-//     {
-//         ;
-//     }
-// 
-// protected:
-// 
-//     RandomLib::Random rng_;
-// };
 
 } // ecell4
 

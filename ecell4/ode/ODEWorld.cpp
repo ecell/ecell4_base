@@ -21,7 +21,6 @@ void ODEWorld::save(const std::string& filename) const
 
 void ODEWorld::load(const std::string& filename)
 {
-    clear();
     boost::scoped_ptr<H5::H5File>
         fin(new H5::H5File(filename.c_str(), H5F_ACC_RDONLY));
     const H5::Group group(fin->openGroup("CompartmentSpace"));

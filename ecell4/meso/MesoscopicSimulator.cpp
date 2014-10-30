@@ -196,16 +196,6 @@ void MesoscopicSimulator::initialize(void)
     }
 }
 
-void MesoscopicSimulator::set_t(const Real &t)
-{
-    this->world_->set_t(t);
-}
-
-Real MesoscopicSimulator::t(void) const
-{
-    return this->world_->t();
-}
-
 Real MesoscopicSimulator::dt(void) const
 {
     return next_time() - t();

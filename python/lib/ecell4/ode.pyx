@@ -171,3 +171,39 @@ cdef class ODESimulator:
             for obs in observers:
                 tmp.push_back(deref((<Observer>(obs.as_base())).thisptr))
             self.thisptr.run(duration, tmp)
+
+cdef ODESimulator ODESimulator_from_Cpp_ODESimulator(Cpp_ODESimulator* s):
+    r = ODESimulator(
+        NetworkModel_from_Cpp_NetworkModel(s.model()),
+        ODEWorld_from_Cpp_ODEWorld(s.world()))
+    del r.thisptr
+    r.thisptr = s
+    return r
+
+## ODEFactory
+#  a python wrapper for Cpp_ODEFactory
+cdef class ODEFactory:
+
+    def __cinit__(self):
+        self.thisptr = new Cpp_ODEFactory()
+
+    def __dealloc__(self):
+        del self.thisptr
+
+    def create_world(self, arg1):
+        if isinstance(arg1, Position3):
+            return ODEWorld_from_Cpp_ODEWorld(
+                shared_ptr[Cpp_ODEWorld](
+                    self.thisptr.create_world(deref((<Position3>arg1).thisptr))))
+        else:
+            return ODEWorld_from_Cpp_ODEWorld(
+                shared_ptr[Cpp_ODEWorld](self.thisptr.create_world(<string>(arg1))))
+
+    def create_simulator(self, arg1, ODEWorld arg2=None):
+        if arg2 is None:
+            return ODESimulator_from_Cpp_ODESimulator(
+                self.thisptr.create_simulator(deref((<ODEWorld>arg1).thisptr)))
+        else:
+            return ODESimulator_from_Cpp_ODESimulator(
+                self.thisptr.create_simulator(
+                    deref(Cpp_Model_from_Model(arg1)), deref(arg2.thisptr)))

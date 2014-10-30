@@ -9,7 +9,7 @@
 #include <ecell4/core/ReactionRule.hpp>
 #include <ecell4/core/Reaction.hpp>
 #include <ecell4/core/MolecularTypeBase.hpp>
-#include <ecell4/core/Simulator.hpp>
+#include <ecell4/core/SimulatorBase.hpp>
 #include <ecell4/core/RandomNumberGenerator.hpp>
 #include <ecell4/core/EventScheduler.hpp>
 
@@ -22,11 +22,11 @@ namespace lattice
 {
 
 class LatticeSimulator
-    : public Simulator<Model, LatticeWorld>
+    : public SimulatorBase<Model, LatticeWorld>
 {
 public:
 
-    typedef Simulator<Model, LatticeWorld> base_type;
+    typedef SimulatorBase<Model, LatticeWorld> base_type;
     typedef Reaction<Voxel> reaction_type;
 
 protected:
@@ -142,11 +142,6 @@ public:
         : base_type(world)
     {
         initialize();
-    }
-
-    virtual Real t() const
-    {
-        return world_->t();
     }
 
     virtual Real dt() const

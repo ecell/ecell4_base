@@ -8,8 +8,17 @@
 #include <cmath>
 #include <boost/array.hpp>
 
+#include "config.h"
 #include "types.hpp"
 #include "functions.hpp"
+
+#if defined(HAVE_TR1_FUNCTIONAL)
+#include <tr1/functional>
+#elif defined(HAVE_STD_HASH)
+#include <functional>
+#elif defined(HAVE_BOOST_FUNCTIONAL_HASH_HPP)
+#include <boost/functional/hash.hpp>
+#endif
 
 
 namespace ecell4
@@ -187,5 +196,34 @@ inline std::basic_ostream<Tstrm_, Ttraits_>& operator<<(
 }
 
 } // ecell4
+
+#if defined(HAVE_TR1_FUNCTIONAL)
+namespace std { namespace tr1 {
+#elif defined(HAVE_STD_HASH)
+namespace std {
+#elif defined(HAVE_BOOST_FUNCTIONAL_HASH_HPP)
+namespace boost {
+#endif
+
+template<>
+struct hash<ecell4::Position3>
+{
+    typedef ecell4::Position3 argument_type;
+
+    std::size_t operator()(argument_type const& val)
+    {
+        return hash<argument_type::value_type>()(val[0]) ^
+            hash<argument_type::value_type>()(val[1]) ^
+            hash<argument_type::value_type>()(val[2]);
+    }
+};
+
+#if defined(HAVE_TR1_FUNCTIONAL)
+} } // namespace std::tr1
+#elif defined(HAVE_STD_HASH)
+} // namespace std
+#elif defined(HAVE_BOOST_FUNCTIONAL_HASH_HPP)
+} // namespace boost
+#endif
 
 #endif /* __ECELL4_POSITION3_HPP */

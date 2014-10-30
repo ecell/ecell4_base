@@ -1,6 +1,7 @@
 #ifndef __ECELL4_SPHERE_HPP
 #define __ECELL4_SPHERE_HPP
 
+#include <ostream>
 #include "Shape.hpp"
 
 namespace ecell4
@@ -11,16 +12,46 @@ struct SphericalSurface;
 struct Sphere
     : public Shape
 {
+public:
+
+    /** for epdp
+     */
+    typedef Position3 position_type;
+    typedef position_type::value_type length_type;
+    typedef position_type::value_type value_type;
+
+public:
+
     Sphere();
     Sphere(const Position3& center, const Real radius);
     Sphere(const Sphere& rhs);
-    Real radius() const;
-    Position3 center() const;
+    const Real& radius() const;
+    const Position3& center() const;
     Real is_inside(const Position3& coord) const;
     Real distance(const Position3& pos) const;
     SphericalSurface surface() const;
     Position3 draw_position(
         boost::shared_ptr<RandomNumberGenerator>& rng) const;
+
+    inline const Position3& position() const
+    {
+        return center_;
+    }
+
+    Position3& position()
+    {
+        return center_;
+    }
+
+    inline const Real& size() const
+    {
+        return radius_;
+    }
+
+    Real& size()
+    {
+        return radius_;
+    }
 
 protected:
 
@@ -34,8 +65,8 @@ struct SphericalSurface
     SphericalSurface();
     SphericalSurface(const Position3& center, const Real radius);
     SphericalSurface(const SphericalSurface& rhs);
-    Real radius() const;
-    Position3 center() const;
+    const Real& radius() const;
+    const Position3& center() const;
     Real is_inside(const Position3& coord) const;
     Real distance(const Position3& pos) const;
     Sphere inside() const;

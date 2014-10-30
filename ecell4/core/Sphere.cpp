@@ -21,12 +21,12 @@ Sphere::Sphere(const Sphere& rhs)
     ;
 }
 
-Real Sphere::radius() const
+const Real& Sphere::radius() const
 {
     return radius_;
 }
 
-Position3 Sphere::center() const
+const Position3& Sphere::center() const
 {
     return center_;
 }
@@ -88,12 +88,12 @@ SphericalSurface::SphericalSurface(const SphericalSurface& rhs)
     ;
 }
 
-Real SphericalSurface::radius() const
+const Real& SphericalSurface::radius() const
 {
     return radius_;
 }
 
-Position3 SphericalSurface::center() const
+const Position3& SphericalSurface::center() const
 {
     return center_;
 }

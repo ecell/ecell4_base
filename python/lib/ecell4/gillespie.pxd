@@ -15,7 +15,7 @@ cdef extern from "ecell4/gillespie/GillespieWorld.hpp" namespace "ecell4::gilles
         void set_t(Real)
         Real t()
         Real volume()
-        void set_edge_lengths(Cpp_Position3&)
+        void reset(Cpp_Position3&)
         Cpp_Position3 edge_lengths()
         Integer num_molecules(Cpp_Species &)
         Integer num_molecules_exact(Cpp_Species &)
@@ -42,6 +42,8 @@ cdef extern from "ecell4/gillespie/GillespieSimulator.hpp" namespace "ecell4::gi
     cdef cppclass Cpp_GillespieSimulator "ecell4::gillespie::GillespieSimulator":
         Cpp_GillespieSimulator(
             shared_ptr[Cpp_Model], shared_ptr[Cpp_GillespieWorld]) except +
+        Cpp_GillespieSimulator(
+            shared_ptr[Cpp_GillespieWorld]) except +
         Integer num_steps()
         void step()
         bool step(Real)
@@ -62,3 +64,21 @@ cdef extern from "ecell4/gillespie/GillespieSimulator.hpp" namespace "ecell4::gi
 #  a python wrapper for Cpp_GillespieSimulator
 cdef class GillespieSimulator:
     cdef Cpp_GillespieSimulator* thisptr
+
+cdef GillespieSimulator GillespieSimulator_from_Cpp_GillespieSimulator(Cpp_GillespieSimulator* s)
+
+## Cpp_GillespieFactory
+#  ecell4::gillespie::GillespieFactory
+cdef extern from "ecell4/gillespie/GillespieFactory.hpp" namespace "ecell4::gillespie":
+    cdef cppclass Cpp_GillespieFactory "ecell4::gillespie::GillespieFactory":
+        Cpp_GillespieFactory() except +
+        Cpp_GillespieFactory(shared_ptr[Cpp_RandomNumberGenerator]) except +
+        Cpp_GillespieWorld* create_world(string)
+        Cpp_GillespieWorld* create_world(Cpp_Position3&)
+        Cpp_GillespieSimulator* create_simulator(shared_ptr[Cpp_Model], shared_ptr[Cpp_GillespieWorld])
+        Cpp_GillespieSimulator* create_simulator(shared_ptr[Cpp_GillespieWorld])
+
+## GillespieFactory
+#  a python wrapper for Cpp_GillespieFactory
+cdef class GillespieFactory:
+    cdef Cpp_GillespieFactory* thisptr

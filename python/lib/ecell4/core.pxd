@@ -23,6 +23,7 @@ cdef extern from "ecell4/core/RandomNumberGenerator.hpp" namespace "ecell4":
     cdef cppclass Cpp_RandomNumberGenerator "ecell4::RandomNumberGenerator":
         # RandomNumberGenerator(shared_ptr[gsl_rng]) except +
         Cpp_RandomNumberGenerator() except +
+        Real random()
         Real uniform(Real, Real)
         Integer uniform_int(Integer, Integer)
         Real gaussian(Real, Real)
@@ -147,7 +148,7 @@ cdef extern from "ecell4/core/CompartmentSpace.hpp" namespace "ecell4":
         Real volume()
         Integer num_molecules(Cpp_Species &sp)
         vector[Cpp_Species] list_species()
-        void set_edge_lengths(Cpp_Position3&)
+        void reset(Cpp_Position3&)
         Cpp_Position3 edge_lengths()
         void set_volume(Real)
         void add_molecules(Cpp_Species &sp, Integer num)
@@ -277,6 +278,8 @@ cdef class NetfreeModel:
 
 cdef NetfreeModel NetfreeModel_from_Cpp_NetfreeModel(
     shared_ptr[Cpp_NetfreeModel] m)
+
+cdef shared_ptr[Cpp_Model]* Cpp_Model_from_Model(m)
 
 ## Cpp_Position3
 #  ecell4::Position3

@@ -2,7 +2,7 @@ set(CPP_FILES
     MesoscopicSimulator.cpp MesoscopicWorld.cpp)
 
 set(HPP_FILES
-    MesoscopicSimulator.hpp MesoscopicWorld.hpp)
+    MesoscopicSimulator.hpp MesoscopicWorld.hpp MesoscopicFactory.hpp)
 
 add_library(ecell4-meso SHARED ${CPP_FILES} ${HPP_FILES})
 target_link_libraries(ecell4-meso ecell4-core)

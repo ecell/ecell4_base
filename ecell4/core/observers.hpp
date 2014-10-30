@@ -3,7 +3,7 @@
 
 #include "types.hpp"
 #include "Space.hpp"
-#include "SimulatorBase.hpp"
+#include "Simulator.hpp"
 
 #include <fstream>
 #include <boost/format.hpp>
@@ -42,7 +42,7 @@ public:
         ;
     }
 
-    virtual void fire(const SimulatorBase* sim, const Space* space) = 0;
+    virtual void fire(const Simulator* sim, const Space* space) = 0;
 
     bool every()
     {
@@ -64,7 +64,8 @@ public:
 public:
 
     FixedIntervalObserver(const Real& dt)
-        : base_type(false), tnext_(0.0), dt_(dt), num_steps_(0)
+        : base_type(false), t0_(0.0), dt_(dt), num_steps_(0)
+        // : base_type(false), tnext_(0.0), dt_(dt), num_steps_(0)
     {
         ;
     }
@@ -76,7 +77,8 @@ public:
 
     const Real next_time() const
     {
-        return tnext_;
+        return t0_ + dt_ * num_steps_;
+        // return tnext_;
     }
 
     const Integer num_steps() const
@@ -86,19 +88,21 @@ public:
 
     virtual void initialize(const Space* space)
     {
-        tnext_ = space->t();
+        t0_ = space->t();
+        // tnext_ = space->t();
         num_steps_ = 0;
     }
 
-    virtual void fire(const SimulatorBase* sim, const Space* space)
+    virtual void fire(const Simulator* sim, const Space* space)
     {
-        tnext_ += dt_;
+        // tnext_ += dt_;
         ++num_steps_;
     }
 
 protected:
 
-    Real tnext_, dt_;
+    Real t0_, dt_;
+    // Real tnext_, dt_;
     Integer num_steps_;
 };
 
@@ -170,7 +174,7 @@ public:
         logger_.initialize();
     }
 
-    virtual void fire(const SimulatorBase* sim, const Space* space)
+    virtual void fire(const Simulator* sim, const Space* space)
     {
         logger_.log(space);
         base_type::fire(sim, space);
@@ -224,7 +228,7 @@ public:
         base_type::finalize(space);
     }
 
-    virtual void fire(const SimulatorBase* sim, const Space* space)
+    virtual void fire(const Simulator* sim, const Space* space)
     {
         if (sim->last_reactions().size() > 0)
         {
@@ -272,7 +276,7 @@ public:
         base_type::initialize(space);
     }
 
-    virtual void fire(const SimulatorBase* sim, const Space* space)
+    virtual void fire(const Simulator* sim, const Space* space)
     {
         space->save(filename());
 
@@ -323,6 +327,12 @@ public:
         base_type::initialize(space);
     }
 
+    virtual void fire(const Simulator* sim, const Space* space)
+    {
+        log(space);
+        base_type::fire(sim, space);
+    }
+
     void log(const Space* space)
     {
         typedef std::vector<std::pair<ParticleID, Particle> >
@@ -345,11 +355,11 @@ public:
 
             unsigned int idx;
             serial_map_type::iterator
-                j(serials.find((*i).second.species().serial()));
+                j(serials.find((*i).second.species_serial()));
             if (j == serials.end())
             {
                 idx = cnt;
-                serials.insert(std::make_pair((*i).second.species().serial(), idx));
+                serials.insert(std::make_pair((*i).second.species_serial(), idx));
                 ++cnt;
             }
             else
@@ -362,12 +372,6 @@ public:
         }
 
         ofs.close();
-    }
-
-    virtual void fire(const SimulatorBase* sim, const Space* space)
-    {
-        log(space);
-        base_type::fire(sim, space);
     }
 
     const std::string filename() const

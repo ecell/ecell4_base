@@ -31,7 +31,6 @@ public:
     // typedef coordinate_type private_coordinate_type;
     // typedef std::pair<private_coordinate_type, ParticleID> particle_info;
 
-protected:
 
     typedef std::vector<MolecularTypeBase*> voxel_container;
 
@@ -189,7 +188,7 @@ public:
         load_lattice_space(root, this);
     }
 
-    void cleanup(const Position3& edge_lengths, const Real& voxel_radius,
+    void reset(const Position3& edge_lengths, const Real& voxel_radius,
         const bool is_periodic)
     {
         edge_lengths_ = edge_lengths;
