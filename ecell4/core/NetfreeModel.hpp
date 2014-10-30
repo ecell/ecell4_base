@@ -96,6 +96,17 @@ public:
         return reaction_rules_.size();
     }
 
+    NetworkModel expand(
+        const std::vector<Species>& sp, const Integer max_itr,
+        const utils::get_mapper_mf<Species, Integer>::type& max_stoich) const;
+
+    inline NetworkModel expand(
+        const std::vector<Species>& sp, const Integer max_itr=100) const
+    {
+        const utils::get_mapper_mf<Species, Integer>::type max_stoich;
+        return this->expand(sp, max_itr, max_stoich);
+    }
+
 protected:
 
     species_container_type species_attributes_;

@@ -290,6 +290,14 @@ bool NetfreeModel::has_reaction_rule(const ReactionRule& rr) const
     return (i != reaction_rules_.end());
 }
 
+NetworkModel NetfreeModel::expand(
+    const std::vector<Species>& sp, const Integer max_itr,
+    const utils::get_mapper_mf<Species, Integer>::type& max_stoich) const
+{
+    return extras::generate_network_from_netfree_model(
+        *this, sp, max_itr, max_stoich);
+}
+
 namespace extras
 {
 
