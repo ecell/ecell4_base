@@ -269,6 +269,45 @@ def logo(x=1, y=None):
     # display(h, j)
     display(h)
 
+def plot_number_observer(*args, **kwargs):
+    import matplotlib.pylab as plt
+    import numpy
+    import collections
+
+    color_cycle = plt.rcParams['axes.color_cycle']
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+
+    is_first = True
+    if len(args) != 1 and isinstance(args[1], str):
+        for obs, fmt in zip(args[: : 2], args[1: : 2]):
+            data = numpy.array(obs.data()).T
+            for i, sp in enumerate(obs.targets()):
+                if is_first:
+                    ax.plot(data[0], data[i + 1], fmt,
+                        color=color_cycle[i % len(color_cycle)], label=sp.serial(), **kwargs)
+                else:
+                    ax.plot(data[0], data[i + 1], fmt,
+                        color=color_cycle[i % len(color_cycle)], **kwargs)
+            is_first = False
+    else:
+        for obs in args:
+            data = numpy.array(obs.data()).T
+            for i, sp in enumerate(obs.targets()):
+                if is_first:
+                    ax.plot(data[0], data[i + 1],
+                        color=color_cycle[i % len(color_cycle)], label=sp.serial(), **kwargs)
+                else:
+                    ax.plot(data[0], data[i + 1],
+                        color=color_cycle[i % len(color_cycle)], **kwargs)
+            is_first = False
+
+    ax.legend(*ax.get_legend_handles_labels(), loc="best", shadow=True)
+    ax.set_xlabel("Time")
+    ax.set_ylabel("The Number of Molecules")
+    # fig.show()
+
 class ColorScale:
     """Color scale for species.
     """
