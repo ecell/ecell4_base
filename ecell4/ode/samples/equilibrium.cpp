@@ -6,6 +6,8 @@
 #include <ecell4/core/NetworkModel.hpp>
 #include <ecell4/ode/ODESimulator.hpp>
 
+#include <ecell4/core/Ratelow.hpp>
+
 using namespace ecell4;
 using namespace ecell4::ode;
 
@@ -26,11 +28,15 @@ int main(int argc, char** argv)
     rr1.add_reactant(sp1);
     rr1.add_product(sp2);
     rr1.add_product(sp3);
+    boost::shared_ptr<RatelowMassAction> ratelow1(new RatelowMassAction(ka));
+    rr1.set_ratelow(ratelow1);
     const Real kd(ka * volume * (1 - U) / (U * U * N));
     rr2.set_k(kd);
     rr2.add_reactant(sp2);
     rr2.add_reactant(sp3);
     rr2.add_product(sp1);
+    boost::shared_ptr<RatelowMassAction> ratelow2(new RatelowMassAction(kd));
+    rr2.set_ratelow(ratelow2);
 
     boost::shared_ptr<NetworkModel> model(new NetworkModel());
     model->add_species_attribute(sp1);

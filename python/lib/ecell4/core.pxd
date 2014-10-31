@@ -104,6 +104,19 @@ cdef class Species:
 
 cdef Species Species_from_Cpp_Species(Cpp_Species *sp)
 
+cdef extern from "ecell4/core/Ratelow.hpp" namespace "ecell4":
+    cdef cppclass Cpp_RatelowMassAction "ecell4::RatelowMassAction":
+        Cpp_RatelowMassAction(Real) except +
+        Cpp_RatelowMassAction(Cpp_RatelowMassAction&) except +
+        bool is_available()
+        void set_k(Real)
+        Real get_k()
+
+## RatelowMassAction
+#  a python wrapper for Cpp_RatelowMassAction
+cdef class RatelowMassAction:
+    cdef shared_ptr[Cpp_RatelowMassAction]* thisptr
+
 ## Cpp_ReactionRule
 #  ecell4::ReactionRule
 cdef extern from "ecell4/core/ReactionRule.hpp" namespace "ecell4":
@@ -121,6 +134,7 @@ cdef extern from "ecell4/core/ReactionRule.hpp" namespace "ecell4":
         string as_string()
         Integer count(vector[Cpp_Species])
         vector[Cpp_ReactionRule] generate(vector[Cpp_Species])
+        void set_ratelow(shared_ptr[Cpp_RatelowMassAction])
 
 ## ReactionRule
 #  a python wrapper for Cpp_ReactionRule

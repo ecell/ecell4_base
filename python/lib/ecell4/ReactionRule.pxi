@@ -53,6 +53,15 @@ cdef class ReactionRule:
             cpp_reactants.push_back(deref((<Species> sp).thisptr))
         return self.thisptr.count(cpp_reactants)
 
+    def set_ratelow(self, ratelow):
+        if (isinstance(ratelow, RatelowMassAction)):
+            self.set_ratelow_massaction(ratelow)
+        else:
+            pass
+
+    def set_ratelow_massaction(self, RatelowMassAction ratelow):
+        self.thisptr.set_ratelow(deref(ratelow.thisptr))
+
     def generate(self, reactants):
         cdef vector[Cpp_Species] cpp_reactants
         for sp in reactants:

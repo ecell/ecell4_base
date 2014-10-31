@@ -1,5 +1,6 @@
 include "UnitSpecies.pxi"
 include "Species.pxi"
+include "Ratelow.pxi"
 include "ReactionRule.pxi"
 include "Space.pxi"
 include "CompartmentSpace.pxi"

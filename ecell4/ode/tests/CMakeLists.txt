@@ -14,3 +14,4 @@ foreach(TEST_NAME ${TEST_NAMES})
     target_link_libraries(${TEST_NAME} ecell4-ode ${test_library_dependencies})
     add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME})
 endforeach(TEST_NAME)
+
