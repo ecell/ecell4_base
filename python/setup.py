@@ -83,6 +83,11 @@ else:
         Extension("ecell4.core", sources=["lib/ecell4/core.pyx"] + core_src,
             extra_compile_args=extra_compile_args,
             include_dirs=[".", ".."], libraries=dependent_libs, language="c++"),
+        Extension("ecell4.epdp",
+            sources=["lib/ecell4/epdp.pyx"]
+                + glob.glob("../ecell4/epdp/*.cpp") + core_src,
+            extra_compile_args=extra_compile_args,
+            libraries=dependent_libs, include_dirs=[".", ".."], language="c++"),
         Extension("ecell4.gillespie",
             sources=["lib/ecell4/gillespie.pyx"]
                 + glob.glob("../ecell4/gillespie/*.cpp") + core_src,
