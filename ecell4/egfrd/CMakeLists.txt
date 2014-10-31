@@ -31,36 +31,36 @@ int main() { double a, b; sincos(0., &a, &b); return 0; }"
     HAVE_SINCOS)
 
 configure_file(
-    ${PROJECT_SOURCE_DIR}/ecell4/epdp/config.h.in
-    ${PROJECT_BINARY_DIR}/ecell4/epdp/config.h)
+    ${PROJECT_SOURCE_DIR}/ecell4/egfrd/config.h.in
+    ${PROJECT_BINARY_DIR}/ecell4/egfrd/config.h)
 
-execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/ecell4/epdp/epdp)
+execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/ecell4/egfrd)
 
 add_custom_command(
     OUTPUT SphericalBesselTable.hpp
-    COMMAND python make_sjy_table.py ${PROJECT_BINARY_DIR}/ecell4/epdp/SphericalBesselTable.hpp)
+    COMMAND python make_sjy_table.py ${PROJECT_BINARY_DIR}/ecell4/egfrd/SphericalBesselTable.hpp)
 add_custom_command(
     OUTPUT CylindricalBesselTable.hpp
-    COMMAND python make_cjy_table.py ${PROJECT_BINARY_DIR}/ecell4/epdp/CylindricalBesselTable.hpp)
-add_custom_target(BesselTables ALL DEPENDS ${PROJECT_BINARY_DIR}/ecell4/epdp/SphericalBesselTable.hpp ${PROJECT_BINARY_DIR}/ecell4/epdp/CylindricalBesselTable.hpp)
+    COMMAND python make_cjy_table.py ${PROJECT_BINARY_DIR}/ecell4/egfrd/CylindricalBesselTable.hpp)
+add_custom_target(BesselTables ALL DEPENDS ${PROJECT_BINARY_DIR}/ecell4/egfrd/SphericalBesselTable.hpp ${PROJECT_BINARY_DIR}/ecell4/egfrd/CylindricalBesselTable.hpp)
 
-include_directories(${PROJECT_SOURCE_DIR}/ecell4/epdp ${PROJECT_BINARY_DIR}/ecell4/epdp)
+include_directories(${PROJECT_SOURCE_DIR}/ecell4/egfrd ${PROJECT_BINARY_DIR}/ecell4/egfrd)
 
 add_definitions(-DHAVE_CONFIG_H -DHAVE_INLINE)
 
-add_library(ecell4-epdp SHARED
+add_library(ecell4-egfrd SHARED
     ${CPP_FILES} ${HPP_FILES} ${UTILS_HPP_FILES}
-    "${PROJECT_BINARY_DIR}/ecell4/epdp/config.h")
-target_link_libraries(ecell4-epdp ecell4-core ${BOOST_REGEX_LIBRARIES})
+    "${PROJECT_BINARY_DIR}/ecell4/egfrd/config.h")
+target_link_libraries(ecell4-egfrd ecell4-core ${BOOST_REGEX_LIBRARIES})
 
 # add_subdirectory(tests)
 add_subdirectory(samples)
 
-install(TARGETS ecell4-epdp DESTINATION lib)
-add_dependencies(ecell4-epdp BesselTables)
+install(TARGETS ecell4-egfrd DESTINATION lib)
+add_dependencies(ecell4-egfrd BesselTables)
 
-install(FILES ${HPP_FILES} "${PROJECT_BINARY_DIR}/ecell4/epdp/config.h"
-    "${PROJECT_BINARY_DIR}/ecell4/epdp/SphericalBesselTable.hpp"
-    "${PROJECT_BINARY_DIR}/ecell4/epdp/CylindricalBesselTable.hpp"
-    DESTINATION "include/ecell4/epdp")
-install(FILES ${UTILS_HPP_FILES} DESTINATION "include/ecell4/epdp/utils")
+install(FILES ${HPP_FILES} "${PROJECT_BINARY_DIR}/ecell4/egfrd/config.h"
+    "${PROJECT_BINARY_DIR}/ecell4/egfrd/SphericalBesselTable.hpp"
+    "${PROJECT_BINARY_DIR}/ecell4/egfrd/CylindricalBesselTable.hpp"
+    DESTINATION "include/ecell4/egfrd")
+install(FILES ${UTILS_HPP_FILES} DESTINATION "include/ecell4/egfrd/utils")

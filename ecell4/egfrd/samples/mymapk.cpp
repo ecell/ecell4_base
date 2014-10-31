@@ -33,7 +33,7 @@
 #include <ecell4/core/Species.hpp>
 #include <ecell4/core/ReactionRule.hpp>
 
-#include <ecell4/epdp/egfrd.hpp>
+#include <ecell4/egfrd/egfrd.hpp>
 
 
 // typedef double Real;

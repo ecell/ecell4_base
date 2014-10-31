@@ -58,8 +58,8 @@ if with_cpp_shared_libraries:
     ext_modules = [
         Extension("ecell4.core", sources=["lib/ecell4/core.pyx"],
             include_dirs=["."], libraries=["ecell4-core"], language="c++"),
-        Extension("ecell4.epdp", sources=["lib/ecell4/epdp.pyx"],
-            include_dirs=["."], libraries=["ecell4-core", "ecell4-epdp"],
+        Extension("ecell4.egfrd", sources=["lib/ecell4/egfrd.pyx"],
+            include_dirs=["."], libraries=["ecell4-core", "ecell4-egfrd"],
             language="c++", extra_compile_args=["-w"]),
         Extension("ecell4.gillespie", sources=["lib/ecell4/gillespie.pyx"],
             include_dirs=["."], libraries=["ecell4-core", "ecell4-gillespie"],
@@ -83,9 +83,9 @@ else:
         Extension("ecell4.core", sources=["lib/ecell4/core.pyx"] + core_src,
             extra_compile_args=extra_compile_args,
             include_dirs=[".", ".."], libraries=dependent_libs, language="c++"),
-        Extension("ecell4.epdp",
-            sources=["lib/ecell4/epdp.pyx"]
-                + glob.glob("../ecell4/epdp/*.cpp") + core_src,
+        Extension("ecell4.egfrd",
+            sources=["lib/ecell4/egfrd.pyx"]
+                + glob.glob("../ecell4/egfrd/*.cpp") + core_src,
             extra_compile_args=extra_compile_args,
             libraries=dependent_libs, include_dirs=[".", ".."], language="c++"),
         Extension("ecell4.gillespie",
@@ -120,7 +120,7 @@ setup(
     package_dir = {"": "lib"},
     package_data = {"ecell4.util": [
         "templates/init_ipynb.js", "templates/init_cyjs.js", "templates/template.html",
-        "templates/particles.tmpl", "templates/ecelllogo/*.png"]},
+        "templates/*.tmpl", "templates/ecelllogo/*.png"]},
     packages = ["ecell4",
         "ecell4.util", "ecell4.util.legacy"],
     cmdclass = {'build_ext': build_ext, 'test': run_tests},
