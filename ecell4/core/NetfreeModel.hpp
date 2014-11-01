@@ -97,13 +97,12 @@ public:
         return reaction_rules_.size();
     }
 
-    boost::shared_ptr<NetworkModel> expand(
+    boost::shared_ptr<Model> expand(
         const std::vector<Species>& sp, const Integer max_itr,
         const std::map<Species, Integer>& max_stoich) const;
-    boost::shared_ptr<NetworkModel> expand(
+    boost::shared_ptr<Model> expand(
         const std::vector<Species>& sp, const Integer max_itr) const;
-    boost::shared_ptr<NetworkModel> expand(
-        const std::vector<Species>& sp) const;
+    boost::shared_ptr<Model> expand(const std::vector<Species>& sp) const;
 
 protected:
 

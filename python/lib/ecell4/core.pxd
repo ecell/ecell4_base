@@ -221,6 +221,10 @@ cdef extern from "ecell4/core/Model.hpp" namespace "ecell4":
         vector[Cpp_Species] species_attributes()
         vector[Cpp_ReactionRule] reaction_rules()
 
+        shared_ptr[Cpp_Model] expand(vector[Cpp_Species])
+        shared_ptr[Cpp_Model] expand(vector[Cpp_Species], Integer)
+        shared_ptr[Cpp_Model] expand(vector[Cpp_Species], Integer, map[Cpp_Species, Integer])
+
 ## Model
 #  a python wrapper for Cpp_Model, but wrapped by shared_ptr
 cdef class Model:
@@ -249,6 +253,10 @@ cdef extern from "ecell4/core/NetworkModel.hpp" namespace "ecell4":
             Cpp_Species sp, Cpp_Species sp)
         vector[Cpp_ReactionRule] reaction_rules()
         vector[Cpp_Species] species_attributes()
+
+        shared_ptr[Cpp_Model] expand(vector[Cpp_Species])
+        shared_ptr[Cpp_Model] expand(vector[Cpp_Species], Integer)
+        shared_ptr[Cpp_Model] expand(vector[Cpp_Species], Integer, map[Cpp_Species, Integer])
 
 ## NetworkModel
 #  a python wrapper for Cpp_NetowrkModel, but wrapped by shared_ptr
@@ -280,9 +288,9 @@ cdef extern from "ecell4/core/NetfreeModel.hpp" namespace "ecell4":
         vector[Cpp_ReactionRule] reaction_rules()
         vector[Cpp_Species] species_attributes()
 
-        shared_ptr[Cpp_NetworkModel] expand(vector[Cpp_Species])
-        shared_ptr[Cpp_NetworkModel] expand(vector[Cpp_Species], Integer)
-        shared_ptr[Cpp_NetworkModel] expand(vector[Cpp_Species], Integer, map[Cpp_Species, Integer])
+        shared_ptr[Cpp_Model] expand(vector[Cpp_Species])
+        shared_ptr[Cpp_Model] expand(vector[Cpp_Species], Integer)
+        shared_ptr[Cpp_Model] expand(vector[Cpp_Species], Integer, map[Cpp_Species, Integer])
 
 ## NetfreeModel
 #  a python wrapper for Cpp_NetfreeModel, but wrapped by shared_ptr

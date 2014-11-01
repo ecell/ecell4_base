@@ -77,6 +77,24 @@ public:
         return sp;
     }
 
+    boost::shared_ptr<Model> expand(
+        const std::vector<Species>& sp, const Integer max_itr,
+        const std::map<Species, Integer>& max_stoich) const
+    {
+        return boost::shared_ptr<Model>(new NetworkModel(*this));
+    }
+
+    boost::shared_ptr<Model> expand(
+        const std::vector<Species>& sp, const Integer max_itr) const
+    {
+        return boost::shared_ptr<Model>(new NetworkModel(*this));
+    }
+
+    boost::shared_ptr<Model> expand(const std::vector<Species>& sp) const
+    {
+        return boost::shared_ptr<Model>(new NetworkModel(*this));
+    }
+
     // NetworkModelTraits
 
     void add_species_attribute(const Species& sp);

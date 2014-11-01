@@ -290,7 +290,7 @@ bool NetfreeModel::has_reaction_rule(const ReactionRule& rr) const
     return (i != reaction_rules_.end());
 }
 
-boost::shared_ptr<NetworkModel> NetfreeModel::expand(
+boost::shared_ptr<Model> NetfreeModel::expand(
     const std::vector<Species>& sp, const Integer max_itr,
     const std::map<Species, Integer>& max_stoich) const
 {
@@ -299,14 +299,14 @@ boost::shared_ptr<NetworkModel> NetfreeModel::expand(
 }
 
 
-boost::shared_ptr<NetworkModel> NetfreeModel::expand(
+boost::shared_ptr<Model> NetfreeModel::expand(
     const std::vector<Species>& sp, const Integer max_itr) const
 {
     return extras::generate_network_from_netfree_model(
         *this, sp, max_itr).first;
 }
 
-boost::shared_ptr<NetworkModel> NetfreeModel::expand(
+boost::shared_ptr<Model> NetfreeModel::expand(
     const std::vector<Species>& sp) const
 {
     const Integer max_itr(30);

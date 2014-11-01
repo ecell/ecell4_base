@@ -211,7 +211,7 @@ cdef class EGFRDSimulator:
             deref(w.thisptr), deref(Cpp_Model_from_Model(m)))
         # if w is None:
         #     self.thisptr = new Cpp_EGFRDSimulator(
-        #         deref((<EGFRDWorld>w).thisptr))
+        #         deref((<EGFRDWorld>m).thisptr))
         # else:
         #     self.thisptr = new Cpp_EGFRDSimulator(
         #         deref(w.thisptr), deref(Cpp_Model_from_Model(m)))

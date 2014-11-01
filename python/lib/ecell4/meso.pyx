@@ -170,10 +170,10 @@ cdef MesoscopicWorld MesoscopicWorld_from_Cpp_MesoscopicWorld(
 #  a python wrapper for Cpp_MesoscopicSimulator
 cdef class MesoscopicSimulator:
 
-    def __cinit__(self, m, MesoscopicWorld w):
+    def __cinit__(self, m, MesoscopicWorld w=None):
         if w is None:
             self.thisptr = new Cpp_MesoscopicSimulator(
-                deref((<MesoscopicWorld>w).thisptr))
+                deref((<MesoscopicWorld>m).thisptr))
         else:
             self.thisptr = new Cpp_MesoscopicSimulator(
                 deref(Cpp_Model_from_Model(m)), deref(w.thisptr))

@@ -124,9 +124,7 @@ BOOST_AUTO_TEST_CASE(NetfreeModel_generation1)
     seeds[0] = Species("X(p^1,q=a).X(p^1,q=a)");
     // seeds[1] = Species("X(p,q=a)");
 
-    boost::shared_ptr<NetworkModel> nwm(nfm.expand(seeds, 10));
-    // boost::shared_ptr<NetworkModel> nwm(
-    //     extras::generate_network_from_netfree_model(nfm, seeds, 10));
+    boost::shared_ptr<Model> nwm(nfm.expand(seeds, 10));
 
     // for (NetworkModel::reaction_rule_container_type::const_iterator
     //     i((*nwm).reaction_rules().begin()); i != (*nwm).reaction_rules().end(); ++i)
@@ -155,9 +153,7 @@ BOOST_AUTO_TEST_CASE(NetfreeModel_generation2)
     std::map<Species, Integer> max_stoich;
     max_stoich[Species("X")] = 5;
 
-    boost::shared_ptr<NetworkModel> nwm(nfm.expand(seeds, 10, max_stoich));
-    // boost::shared_ptr<NetworkModel> nwm(extras::generate_network_from_netfree_model(
-    //     nfm, seeds, 10, max_stoich));
+    boost::shared_ptr<Model> nwm(nfm.expand(seeds, 10, max_stoich));
 
     // for (NetworkModel::reaction_rule_container_type::const_iterator
     //     i((*nwm).reaction_rules().begin()); i != (*nwm).reaction_rules().end(); ++i)

@@ -2,9 +2,10 @@
 #define __ECELL4_ODE_ODE_WORLD_HPP
 
 #include <ecell4/core/Species.hpp>
+#include <ecell4/core/Context.hpp>
 #include <ecell4/core/Position3.hpp>
 #include <ecell4/core/Space.hpp>
-#include <ecell4/core/NetworkModel.hpp>
+#include <ecell4/core/Model.hpp>
 #include <ecell4/core/CompartmentSpaceHDF5Writer.hpp>
 #include <ecell4/core/Shape.hpp>
 
@@ -253,9 +254,9 @@ public:
         index_map_.erase(sp);
     }
 
-    void bind_to(boost::shared_ptr<NetworkModel> model)
+    void bind_to(boost::shared_ptr<Model> model)
     {
-        if (boost::shared_ptr<NetworkModel> bound_model = lock_model())
+        if (boost::shared_ptr<Model> bound_model = lock_model())
         {
             if (bound_model.get() != model.get())
             {
@@ -266,7 +267,7 @@ public:
         this->model_ = model;
     }
 
-    boost::shared_ptr<NetworkModel> lock_model() const
+    boost::shared_ptr<Model> lock_model() const
     {
         return model_.lock();
     }
@@ -286,7 +287,8 @@ protected:
     species_container_type species_;
     species_map_type index_map_;
 
-    boost::weak_ptr<NetworkModel> model_;
+    boost::weak_ptr<Model> model_;
+    bool is_netfree_;
 };
 
 } // ode

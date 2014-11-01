@@ -13,7 +13,7 @@ std::pair<ODESimulator::deriv_func, ODESimulator::jacobi_func>
 ODESimulator::generate_system() const
 {
     const std::vector<Species> species(world_->list_species());
-    const Model::reaction_rule_container_type& reaction_rules(model_->reaction_rules());
+    const Model::reaction_rule_container_type& reaction_rules(expanded_->reaction_rules());
 
     typedef utils::get_mapper_mf<
         Species, state_type::size_type>::type species_map_type;

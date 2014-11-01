@@ -27,11 +27,11 @@ namespace ode
 {
 
 class ODESimulator
-    : public SimulatorBase<NetworkModel, ODEWorld>
+    : public SimulatorBase<Model, ODEWorld>
 {
 public:
 
-    typedef SimulatorBase<NetworkModel, ODEWorld> base_type;
+    typedef SimulatorBase<Model, ODEWorld> base_type;
 
 public:
 
@@ -88,7 +88,7 @@ public:
 
                 double flux;
                 // Get pointer of Ratelow object and call it.
-                if (i->ratelow.expired() || i->ratelow.lock()->is_available() == false) 
+                if (i->ratelow.expired() || i->ratelow.lock()->is_available() == false)
                 {
                     boost::scoped_ptr<Ratelow> temporary_ratelow_obj(new RatelowMassAction(i->k));
                     flux = temporary_ratelow_obj->deriv_func(reactants_states, products_states, volume_);
@@ -169,20 +169,20 @@ public:
                 // prepare matrix object that will be filled with numerical differentiate.
                 matrix_type::size_type row_length = reactants_size + products_size;
                 matrix_type::size_type col_length = row_length;
-                matrix_type mat(row_length, col_length); 
+                matrix_type mat(row_length, col_length);
 
                 // get the pointer of Ratelow object and call it.
-                if (i->ratelow.expired() || i->ratelow.lock()->is_available() == false) 
+                if (i->ratelow.expired() || i->ratelow.lock()->is_available() == false)
                 {
                     boost::scoped_ptr<Ratelow> temporary_ratelow_obj(new RatelowMassAction(i->k));
-                    temporary_ratelow_obj->jacobi_func(mat, reactants_states, products_states, volume_);                   
+                    temporary_ratelow_obj->jacobi_func(mat, reactants_states, products_states, volume_);
                 }
                 else
                 {
                     boost::shared_ptr<Ratelow> ratelow = (*i).ratelow.lock();
                     (*ratelow).jacobi_func(mat, reactants_states, products_states, volume_);
                 }
-                
+
                 //merge jacobian
                 for(int row(0); row < row_length; row++)
                 {
@@ -228,14 +228,14 @@ public:
 public:
 
     ODESimulator(
-        boost::shared_ptr<NetworkModel> model,
-        boost::shared_ptr<ODEWorld> world)
+        const boost::shared_ptr<Model>& model,
+        const boost::shared_ptr<ODEWorld>& world)
         : base_type(model, world), dt_(inf)
     {
         initialize();
     }
 
-    ODESimulator(boost::shared_ptr<ODEWorld> world)
+    ODESimulator(const boost::shared_ptr<ODEWorld>& world)
         : base_type(world), dt_(inf)
     {
         initialize();
@@ -243,9 +243,16 @@ public:
 
     void initialize()
     {
-        const std::vector<Species> species(model_->list_species());
+        boost::shared_ptr<Model> expanded(model_->expand(world_->list_species()));
+        if (!expanded)
+        {
+            throw IllegalState("The model failed to be expanded.");
+        }
+        expanded_.swap(expanded); // use expanded_, but not model_
+
+        const std::vector<Species> species(expanded_->list_species());
         for (std::vector<Species>::const_iterator
-                 i(species.begin()); i != species.end(); ++i)
+            i(species.begin()); i != species.end(); ++i)
         {
             if (!(*world_).has_species(*i))
             {
@@ -296,6 +303,7 @@ protected:
 protected:
 
     Real dt_;
+    boost::shared_ptr<Model> expanded_;
 };
 
 } // ode

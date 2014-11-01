@@ -91,6 +91,24 @@ cdef class Model:
             inc(it)
         return retval
 
+    def expand(self, seeds, max_itr=None, max_stoich=None):
+        cdef vector[Cpp_Species] _seeds
+        cdef map[Cpp_Species, Integer] _max_stoich
+        for sp in seeds:
+            _seeds.push_back(deref((<Species>sp).thisptr))
+
+        if max_stoich is not None:
+            for sp, n in max_stoich.items():
+                _max_stoich[deref((<Species>sp).thisptr)] = <Integer>n
+            return Model_from_Cpp_Model(
+                self.thisptr.get().expand(_seeds, <Integer>max_itr, _max_stoich))
+        elif max_itr is not None:
+            return Model_from_Cpp_Model(
+                self.thisptr.get().expand(_seeds, <Integer>max_itr))
+        else:
+            return Model_from_Cpp_Model(
+                self.thisptr.get().expand(_seeds))
+
 cdef Model Model_from_Cpp_Model(shared_ptr[Cpp_Model] m):
     r = Model()
     r.thisptr.swap(m)

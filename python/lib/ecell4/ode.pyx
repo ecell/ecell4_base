@@ -92,8 +92,8 @@ cdef class ODEWorld:
     def release_species(self, Species sp):
         self.thisptr.get().release_species(deref(sp.thisptr))
 
-    def bind_to(self, NetworkModel m):
-        self.thisptr.get().bind_to(deref(m.thisptr))
+    def bind_to(self, m):
+        self.thisptr.get().bind_to(deref(Cpp_Model_from_Model(m)))
 
     def as_base(self):
         retval = Space()
@@ -112,9 +112,13 @@ cdef ODEWorld ODEWorld_from_Cpp_ODEWorld(
 #  a python wrapper for Cpp_ODESimulator
 cdef class ODESimulator:
 
-    def __cinit__(self, NetworkModel m, ODEWorld w):
-        self.thisptr = new Cpp_ODESimulator(
-            deref(m.thisptr), deref(w.thisptr))
+    def __cinit__(self, m, ODEWorld w=None):
+        if w is None:
+            self.thisptr = new Cpp_ODESimulator(
+                deref((<ODEWorld>m).thisptr))
+        else:
+            self.thisptr = new Cpp_ODESimulator(
+                deref(Cpp_Model_from_Model(m)), deref(w.thisptr))
 
     def __dealloc__(self):
         del self.thisptr
@@ -157,7 +161,7 @@ cdef class ODESimulator:
         return retval
 
     def model(self):
-        return NetworkModel_from_Cpp_NetworkModel(self.thisptr.model())
+        return Model_from_Cpp_Model(self.thisptr.model())
 
     def world(self):
         return ODEWorld_from_Cpp_ODEWorld(self.thisptr.world())
@@ -174,7 +178,7 @@ cdef class ODESimulator:
 
 cdef ODESimulator ODESimulator_from_Cpp_ODESimulator(Cpp_ODESimulator* s):
     r = ODESimulator(
-        NetworkModel_from_Cpp_NetworkModel(s.model()),
+        Model_from_Cpp_Model(s.model()),
         ODEWorld_from_Cpp_ODEWorld(s.world()))
     del r.thisptr
     r.thisptr = s

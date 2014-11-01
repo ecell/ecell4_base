@@ -216,7 +216,7 @@ cdef class BDSimulator:
     def __cinit__(self, m, BDWorld w=None):
         if w is None:
             self.thisptr = new Cpp_BDSimulator(
-                deref((<BDWorld>w).thisptr))
+                deref((<BDWorld>m).thisptr))
         else:
             self.thisptr = new Cpp_BDSimulator(
                 deref(Cpp_Model_from_Model(m)), deref(w.thisptr))

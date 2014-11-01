@@ -360,10 +360,10 @@ cdef LatticeWorld LatticeWorld_from_Cpp_LatticeWorld(
 #  a python wrapper for Cpp_LatticeSimulator
 cdef class LatticeSimulator:
 
-    def __cinit__(self, m, LatticeWorld w):
+    def __cinit__(self, m, LatticeWorld w=None):
         if w is None:
             self.thisptr = new Cpp_LatticeSimulator(
-                deref((<LatticeWorld>w).thisptr))
+                deref((<LatticeWorld>m).thisptr))
         else:
             self.thisptr = new Cpp_LatticeSimulator(
                 deref(Cpp_Model_from_Model(m)), deref(w.thisptr))

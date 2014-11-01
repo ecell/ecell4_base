@@ -100,13 +100,13 @@ cdef class NetfreeModel:
         if max_stoich is not None:
             for sp, n in max_stoich.items():
                 _max_stoich[deref((<Species>sp).thisptr)] = <Integer>n
-            return NetworkModel_from_Cpp_NetworkModel(
+            return Model_from_Cpp_Model(
                 self.thisptr.get().expand(_seeds, <Integer>max_itr, _max_stoich))
         elif max_itr is not None:
-            return NetworkModel_from_Cpp_NetworkModel(
+            return Model_from_Cpp_Model(
                 self.thisptr.get().expand(_seeds, <Integer>max_itr))
         else:
-            return NetworkModel_from_Cpp_NetworkModel(
+            return Model_from_Cpp_Model(
                 self.thisptr.get().expand(_seeds))
 
 cdef NetfreeModel NetfreeModel_from_Cpp_NetfreeModel(

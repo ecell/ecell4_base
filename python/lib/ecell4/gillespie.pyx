@@ -102,10 +102,10 @@ cdef GillespieWorld GillespieWorld_from_Cpp_GillespieWorld(
 #  a python wrapper for Cpp_GillespieSimulator
 cdef class GillespieSimulator:
 
-    def __cinit__(self, m, GillespieWorld w):
+    def __cinit__(self, m, GillespieWorld w=None):
         if w is None:
             self.thisptr = new Cpp_GillespieSimulator(
-                deref((<GillespieWorld>w).thisptr))
+                deref((<GillespieWorld>m).thisptr))
         else:
             self.thisptr = new Cpp_GillespieSimulator(
                 deref(Cpp_Model_from_Model(m)), deref(w.thisptr))
