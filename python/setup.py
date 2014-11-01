@@ -46,13 +46,13 @@ if sys.platform == "win32":
 elif sys.platform == "darwin":
     dependent_libs = ['gsl', 'gslcblas', 'm', 'hdf5_cpp', 'hdf5']
     extra_compile_args = []
-    # with_cpp_shared_libraries = False
     with_cpp_shared_libraries = False
+    # with_cpp_shared_libraries = True
 else:
     dependent_libs = ['gsl', 'gslcblas', 'm', 'hdf5_cpp', 'hdf5']
     extra_compile_args = []
-    with_cpp_shared_libraries = False
-    # with_cpp_shared_libraries = True
+    # with_cpp_shared_libraries = False
+    with_cpp_shared_libraries = True
 
 if with_cpp_shared_libraries:
     ext_modules = [
