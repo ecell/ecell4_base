@@ -274,22 +274,24 @@ def plot_number_observer(*args, **kwargs):
     import numpy
     import collections
 
-    color_cycle = plt.rcParams['axes.color_cycle']
+    special_keys = ("xlim", "ylim", "xlabel", "ylabel")
+    plot_opts = {key: value for key, value in kwargs.items() if key not in special_keys}
 
     fig = plt.figure()
     ax = fig.add_subplot(111)
 
     is_first = True
+    color_cycle = plt.rcParams['axes.color_cycle']
     if len(args) != 1 and isinstance(args[1], str):
         for obs, fmt in zip(args[: : 2], args[1: : 2]):
             data = numpy.array(obs.data()).T
             for i, sp in enumerate(obs.targets()):
                 if is_first:
                     ax.plot(data[0], data[i + 1], fmt,
-                        color=color_cycle[i % len(color_cycle)], label=sp.serial(), **kwargs)
+                        color=color_cycle[i % len(color_cycle)], label=sp.serial(), **plot_opts)
                 else:
                     ax.plot(data[0], data[i + 1], fmt,
-                        color=color_cycle[i % len(color_cycle)], **kwargs)
+                        color=color_cycle[i % len(color_cycle)], **plot_opts)
             is_first = False
     else:
         for obs in args:
@@ -297,15 +299,25 @@ def plot_number_observer(*args, **kwargs):
             for i, sp in enumerate(obs.targets()):
                 if is_first:
                     ax.plot(data[0], data[i + 1],
-                        color=color_cycle[i % len(color_cycle)], label=sp.serial(), **kwargs)
+                        color=color_cycle[i % len(color_cycle)], label=sp.serial(), **plot_opts)
                 else:
                     ax.plot(data[0], data[i + 1],
-                        color=color_cycle[i % len(color_cycle)], **kwargs)
+                        color=color_cycle[i % len(color_cycle)], **plot_opts)
             is_first = False
 
     ax.legend(*ax.get_legend_handles_labels(), loc="best", shadow=True)
-    ax.set_xlabel("Time")
-    ax.set_ylabel("The Number of Molecules")
+    if "xlabel" in kwargs.keys():
+        ax.set_xlabel(kwargs["xlabel"])
+    else:
+        ax.set_xlabel("Time")
+    if "ylabel" in kwargs.keys():
+        ax.set_ylabel(kwargs["ylabel"])
+    else:
+        ax.set_ylabel("The Number of Molecules")
+    if "xlim" in kwargs.keys():
+        ax.set_xlim(kwargs["xlim"])
+    if "ylim" in kwargs.keys():
+        ax.set_ylim(kwargs["ylim"])
     # fig.show()
 
 class ColorScale:
