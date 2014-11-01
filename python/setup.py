@@ -51,8 +51,8 @@ elif sys.platform == "darwin":
 else:
     dependent_libs = ['gsl', 'gslcblas', 'm', 'hdf5_cpp', 'hdf5']
     extra_compile_args = []
-    # with_cpp_shared_libraries = False
-    with_cpp_shared_libraries = True
+    with_cpp_shared_libraries = False
+    # with_cpp_shared_libraries = True
 
 if with_cpp_shared_libraries:
     ext_modules = [
@@ -78,6 +78,18 @@ if with_cpp_shared_libraries:
             language="c++"),
         ]
 else:
+    import subprocess
+    import os.path
+    path_to_egfrd = os.path.join(os.path.abspath(".."), "ecell4", "egfrd")
+    sjy_table_path = os.path.join(path_to_egfrd, "SphericalBesselTable.hpp")
+    cjy_table_path = os.path.join(path_to_egfrd, "CylindricalBesselTable.hpp")
+    if not os.path.isfile(sjy_table_path):
+        subprocess.check_call(["python",
+            os.path.join(path_to_egfrd, "make_sjy_table.py"), sjy_table_path])
+    if not os.path.isfile(cjy_table_path):
+        subprocess.check_call(["python",
+            os.path.join(path_to_egfrd, "make_cjy_table.py"), cjy_table_path])
+
     core_src = glob.glob("../ecell4/core/*.cpp")
     ext_modules = [
         Extension("ecell4.core", sources=["lib/ecell4/core.pyx"] + core_src,
