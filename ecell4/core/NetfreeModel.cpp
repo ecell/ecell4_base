@@ -295,7 +295,31 @@ boost::shared_ptr<NetworkModel> NetfreeModel::expand(
     const std::map<Species, Integer>& max_stoich) const
 {
     return extras::generate_network_from_netfree_model(
-        *this, sp, max_itr, max_stoich);
+        *this, sp, max_itr, max_stoich).first;
+}
+
+
+boost::shared_ptr<NetworkModel> NetfreeModel::expand(
+    const std::vector<Species>& sp, const Integer max_itr) const
+{
+    return extras::generate_network_from_netfree_model(
+        *this, sp, max_itr).first;
+}
+
+boost::shared_ptr<NetworkModel> NetfreeModel::expand(
+    const std::vector<Species>& sp) const
+{
+    const Integer max_itr(30);
+    std::pair<boost::shared_ptr<NetworkModel>, bool>
+        retval(extras::generate_network_from_netfree_model(*this, sp, max_itr));
+    if (retval.second)
+    {
+        return retval.first;
+    }
+    else
+    {
+        return boost::shared_ptr<NetworkModel>(); // return null
+    }
 }
 
 namespace extras
@@ -435,7 +459,7 @@ ReactionRule format_reaction_rule(const ReactionRule& rr)
     return ReactionRule(reactants, products, rr.k());
 }
 
-boost::shared_ptr<NetworkModel> generate_network_from_netfree_model(
+std::pair<boost::shared_ptr<NetworkModel>, bool> generate_network_from_netfree_model(
     const NetfreeModel& nfm, const std::vector<Species>& seeds, const Integer max_itr,
     const std::map<Species, Integer>& max_stoich)
 {
@@ -469,7 +493,17 @@ boost::shared_ptr<NetworkModel> generate_network_from_netfree_model(
         __generate_recurse(nfm, reactions, seeds1, seeds2, max_stoich);
         cnt += 1;
     }
-    seeds2.insert(seeds2.begin(), seeds1.begin(), seeds1.end());
+
+    bool is_completed;
+    if (seeds1.size() != 0)
+    {
+        is_completed = false;
+        seeds2.insert(seeds2.begin(), seeds1.begin(), seeds1.end());
+    }
+    else
+    {
+        is_completed = true;
+    }
 
     boost::shared_ptr<NetworkModel> nwm(new NetworkModel());
     for (std::vector<Species>::const_iterator i(seeds2.begin());
@@ -483,7 +517,7 @@ boost::shared_ptr<NetworkModel> generate_network_from_netfree_model(
         const ReactionRule rr(format_reaction_rule(*i));
         (*nwm).add_reaction_rule(rr);
     }
-    return nwm;
+    return std::make_pair(nwm, is_completed);
 }
 
 } // extras

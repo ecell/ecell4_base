@@ -100,13 +100,10 @@ public:
     boost::shared_ptr<NetworkModel> expand(
         const std::vector<Species>& sp, const Integer max_itr,
         const std::map<Species, Integer>& max_stoich) const;
-
-    inline boost::shared_ptr<NetworkModel> expand(
-        const std::vector<Species>& sp, const Integer max_itr=100) const
-    {
-        const std::map<Species, Integer> max_stoich;
-        return this->expand(sp, max_itr, max_stoich);
-    }
+    boost::shared_ptr<NetworkModel> expand(
+        const std::vector<Species>& sp, const Integer max_itr) const;
+    boost::shared_ptr<NetworkModel> expand(
+        const std::vector<Species>& sp) const;
 
 protected:
 
@@ -117,11 +114,11 @@ protected:
 namespace extras
 {
 
-boost::shared_ptr<NetworkModel> generate_network_from_netfree_model(
+std::pair<boost::shared_ptr<NetworkModel>, bool> generate_network_from_netfree_model(
     const NetfreeModel& nfm, const std::vector<Species>& seeds, const Integer max_itr,
     const std::map<Species, Integer>& max_stoich);
 
-inline boost::shared_ptr<NetworkModel> generate_network_from_netfree_model(
+inline std::pair<boost::shared_ptr<NetworkModel>, bool> generate_network_from_netfree_model(
     const NetfreeModel& nfm, const std::vector<Species>& seeds, const Integer max_itr)
 {
     const std::map<Species, Integer> max_stoich;
