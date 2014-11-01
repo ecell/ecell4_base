@@ -104,18 +104,18 @@ cdef class Species:
 
 cdef Species Species_from_Cpp_Species(Cpp_Species *sp)
 
-cdef extern from "ecell4/core/Ratelow.hpp" namespace "ecell4":
-    cdef cppclass Cpp_RatelowMassAction "ecell4::RatelowMassAction":
-        Cpp_RatelowMassAction(Real) except +
-        Cpp_RatelowMassAction(Cpp_RatelowMassAction&) except +
+cdef extern from "ecell4/core/Ratelaw.hpp" namespace "ecell4":
+    cdef cppclass Cpp_RatelawMassAction "ecell4::RatelawMassAction":
+        Cpp_RatelawMassAction(Real) except +
+        Cpp_RatelawMassAction(Cpp_RatelawMassAction&) except +
         bool is_available()
         void set_k(Real)
         Real get_k()
 
-## RatelowMassAction
-#  a python wrapper for Cpp_RatelowMassAction
-cdef class RatelowMassAction:
-    cdef shared_ptr[Cpp_RatelowMassAction]* thisptr
+## RatelawMassAction
+#  a python wrapper for Cpp_RatelawMassAction
+cdef class RatelawMassAction:
+    cdef shared_ptr[Cpp_RatelawMassAction]* thisptr
 
 ## Cpp_ReactionRule
 #  ecell4::ReactionRule
@@ -134,7 +134,7 @@ cdef extern from "ecell4/core/ReactionRule.hpp" namespace "ecell4":
         string as_string()
         Integer count(vector[Cpp_Species])
         vector[Cpp_ReactionRule] generate(vector[Cpp_Species])
-        void set_ratelow(shared_ptr[Cpp_RatelowMassAction])
+        void set_ratelaw(shared_ptr[Cpp_RatelawMassAction])
 
 ## ReactionRule
 #  a python wrapper for Cpp_ReactionRule

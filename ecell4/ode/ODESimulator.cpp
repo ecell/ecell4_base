@@ -41,9 +41,9 @@ ODESimulator::generate_system() const
         r.k = (*i).k();
         r.reactants.reserve(reactants.size());
         r.products.reserve(products.size());
-        if ((*i).has_ratelow())
+        if ((*i).has_ratelaw())
         {
-            r.ratelow = (*i).get_ratelow();
+            r.ratelaw = (*i).get_ratelaw();
         }
 
         for (ReactionRule::reactant_container_type::const_iterator

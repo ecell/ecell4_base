@@ -15,7 +15,7 @@
 namespace ecell4
 {
 
-class Ratelow
+class Ratelaw
 {
 public:
     // The order of the species must be the same as
@@ -40,18 +40,18 @@ public:
             Real const volume) = 0;
 };
 
-class RatelowCppCallback : public Ratelow
+class RatelawCppCallback : public Ratelaw
 {
-    /** Function object to calculate ratelow called by C++
+    /** Function object to calculate ratelaw called by C++
      *  This class must not be exposed to Cython interface.
      */
 public:
     //                                 reactants_state,              products_state,               volume
-    typedef double (*Ratelow_Callback)(state_container_type const &, state_container_type const &, double const);
+    typedef double (*Ratelaw_Callback)(state_container_type const &, state_container_type const &, double const);
 public:
-    RatelowCppCallback(Ratelow_Callback func) : func_(func), h_(1.0e-8) {;}
-    RatelowCppCallback() : func_(0), h_(1.0e-8) {}
-    virtual ~RatelowCppCallback(){;}
+    RatelawCppCallback(Ratelaw_Callback func) : func_(func), h_(1.0e-8) {;}
+    RatelawCppCallback() : func_(0), h_(1.0e-8) {}
+    virtual ~RatelawCppCallback(){;}
 
     virtual bool is_available() const
     {
@@ -123,31 +123,31 @@ public:
         }
     }
 
-    Ratelow_Callback get_callback() const
+    Ratelaw_Callback get_callback() const
     {
         return this->func_;
     }
-    Ratelow_Callback set_callback(Ratelow_Callback new_func)
+    Ratelaw_Callback set_callback(Ratelaw_Callback new_func)
     {
         if (new_func == 0)
         {
-            throw std::invalid_argument("Ratelow Callback must not be 0");
+            throw std::invalid_argument("Ratelaw Callback must not be 0");
         }
-        Ratelow_Callback prev = get_callback();
+        Ratelaw_Callback prev = get_callback();
         this->func_ = new_func;
         return prev;
     }
 private:
     Real h_;
-    Ratelow_Callback func_;
+    Ratelaw_Callback func_;
 };
 
-class RatelowMassAction : public Ratelow
+class RatelawMassAction : public Ratelaw
 {
 public:
-    RatelowMassAction(Real k = 0.0) 
+    RatelawMassAction(Real k = 0.0) 
         : k_(k) {}
-    virtual ~RatelowMassAction(){;}
+    virtual ~RatelawMassAction(){;}
     virtual bool is_available() const
     {
         return true;    // always true

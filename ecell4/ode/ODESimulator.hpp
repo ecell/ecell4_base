@@ -44,7 +44,7 @@ public:
         index_container_type reactants;
         index_container_type products;
         Real k;
-        boost::weak_ptr<Ratelow> ratelow;
+        boost::weak_ptr<Ratelaw> ratelaw;
     } reaction_type;
 
     typedef std::vector<reaction_type> reaction_container_type;
@@ -70,9 +70,9 @@ public:
                 i(reactions_.begin()); i != reactions_.end(); i++)
             {
                 // Prepare  state_array of reactants and products that contain amounts of each reactants.
-                Ratelow::state_container_type reactants_states(i->reactants.size());
-                Ratelow::state_container_type products_states(i->products.size());
-                Ratelow::state_container_type::size_type cnt(0);
+                Ratelaw::state_container_type reactants_states(i->reactants.size());
+                Ratelaw::state_container_type products_states(i->products.size());
+                Ratelaw::state_container_type::size_type cnt(0);
 
                 for (index_container_type::const_iterator
                     j((*i).reactants.begin()); j != (*i).reactants.end(); ++j, cnt++)
@@ -87,16 +87,16 @@ public:
                 }
 
                 double flux;
-                // Get pointer of Ratelow object and call it.
-                if (i->ratelow.expired() || i->ratelow.lock()->is_available() == false)
+                // Get pointer of Ratelaw object and call it.
+                if (i->ratelaw.expired() || i->ratelaw.lock()->is_available() == false)
                 {
-                    boost::scoped_ptr<Ratelow> temporary_ratelow_obj(new RatelowMassAction(i->k));
-                    flux = temporary_ratelow_obj->deriv_func(reactants_states, products_states, volume_);
+                    boost::scoped_ptr<Ratelaw> temporary_ratelaw_obj(new RatelawMassAction(i->k));
+                    flux = temporary_ratelaw_obj->deriv_func(reactants_states, products_states, volume_);
                 }
                 else
                 {
-                    boost::shared_ptr<Ratelow> ratelow = (*i).ratelow.lock();
-                    flux = (*ratelow).deriv_func(reactants_states, products_states, volume_);
+                    boost::shared_ptr<Ratelaw> ratelaw = (*i).ratelaw.lock();
+                    flux = (*ratelaw).deriv_func(reactants_states, products_states, volume_);
                 }
 
                 // Merge each reaction's flux into whole dxdt
@@ -152,9 +152,9 @@ public:
                 // prepare state_array that contain amounts of reactants
                 int reactants_size(i->reactants.size());
                 int products_size(i->products.size());
-                Ratelow::state_container_type reactants_states(reactants_size);
-                Ratelow::state_container_type products_states(products_size);
-                Ratelow::state_container_type::size_type cnt(0);
+                Ratelaw::state_container_type reactants_states(reactants_size);
+                Ratelaw::state_container_type products_states(products_size);
+                Ratelaw::state_container_type::size_type cnt(0);
                 for (index_container_type::const_iterator
                     j((*i).reactants.begin()); j != (*i).reactants.end(); ++j, cnt++)
                 {
@@ -171,16 +171,16 @@ public:
                 matrix_type::size_type col_length = row_length;
                 matrix_type mat(row_length, col_length);
 
-                // get the pointer of Ratelow object and call it.
-                if (i->ratelow.expired() || i->ratelow.lock()->is_available() == false)
+                // get the pointer of Ratelaw object and call it.
+                if (i->ratelaw.expired() || i->ratelaw.lock()->is_available() == false)
                 {
-                    boost::scoped_ptr<Ratelow> temporary_ratelow_obj(new RatelowMassAction(i->k));
-                    temporary_ratelow_obj->jacobi_func(mat, reactants_states, products_states, volume_);
+                    boost::scoped_ptr<Ratelaw> temporary_ratelaw_obj(new RatelawMassAction(i->k));
+                    temporary_ratelaw_obj->jacobi_func(mat, reactants_states, products_states, volume_);
                 }
                 else
                 {
-                    boost::shared_ptr<Ratelow> ratelow = (*i).ratelow.lock();
-                    (*ratelow).jacobi_func(mat, reactants_states, products_states, volume_);
+                    boost::shared_ptr<Ratelaw> ratelaw = (*i).ratelaw.lock();
+                    (*ratelaw).jacobi_func(mat, reactants_states, products_states, volume_);
                 }
 
                 //merge jacobian

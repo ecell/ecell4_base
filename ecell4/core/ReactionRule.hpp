@@ -6,7 +6,7 @@
 
 #include "types.hpp"
 #include "Species.hpp"
-#include "Ratelow.hpp"
+#include "Ratelaw.hpp"
 
 
 namespace ecell4
@@ -85,18 +85,18 @@ public:
         products_.push_back(sp);
     }
 
-    // Ratelow related functions.
-    void set_ratelow(const boost::shared_ptr<Ratelow> ratelow)
+    // Ratelaw related functions.
+    void set_ratelaw(const boost::shared_ptr<Ratelaw> ratelaw)
     {
-        this->ratelow_ = ratelow;
+        this->ratelaw_ = ratelaw;
     }
-    boost::shared_ptr<Ratelow> get_ratelow() const
+    boost::shared_ptr<Ratelaw> get_ratelaw() const
     {
-        return this->ratelow_.lock();
+        return this->ratelaw_.lock();
     }
-    bool has_ratelow() const
+    bool has_ratelaw() const
     {
-        return !(this->ratelow_.expired());
+        return !(this->ratelaw_.expired());
     }
 
     const std::string as_string() const;
@@ -108,7 +108,7 @@ protected:
     Real k_;
     reactant_container_type reactants_;
     product_container_type products_;
-    boost::weak_ptr<Ratelow> ratelow_;
+    boost::weak_ptr<Ratelaw> ratelaw_;
 };
 
 inline bool operator<(const ReactionRule& lhs, const ReactionRule& rhs)

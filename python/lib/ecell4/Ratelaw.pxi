@@ -4,9 +4,9 @@ from cython cimport address
 
 from libcpp.vector cimport vector
 
-cdef class RatelowMassAction:
+cdef class RatelawMassAction:
     def __cinit__(self, Real k):
-        self.thisptr = new shared_ptr[Cpp_RatelowMassAction]( <Cpp_RatelowMassAction*>(new Cpp_RatelowMassAction(k)))
+        self.thisptr = new shared_ptr[Cpp_RatelawMassAction]( <Cpp_RatelawMassAction*>(new Cpp_RatelawMassAction(k)))
     def __dealloc__(self):
         del self.thisptr
     def set_k(self, Real k):
