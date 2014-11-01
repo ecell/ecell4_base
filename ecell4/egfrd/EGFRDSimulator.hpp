@@ -1095,6 +1095,7 @@ public:
         domains_.clear();
         (*ssmat_).clear();
         (*csmat_).clear();
+        scheduler_.clear();
 
         if (edge_lengths != (*ssmat_).edge_lengths()
             || matrix_sizes != (*ssmat_).matrix_sizes())
@@ -1128,29 +1129,8 @@ public:
         _step();
     }
 
-    // virtual bool step(time_type upto)
-    virtual bool step(const time_type& upto)
+    void finalize()
     {
-        if (dirty_)
-        {
-            initialize();
-        }
-
-        if (upto <= this->t())
-        {
-            return false;
-        }
-
-        if (upto >= scheduler_.top().second->time())
-        {
-            _step();
-            return true;
-        }
-
-        LOG_INFO(("stop at %.16g", upto));
-
-        this->set_t(upto);
-
         std::vector<domain_id_type> non_singles;
 
         // first burst all Singles.
@@ -1175,7 +1155,31 @@ public:
         burst_domains(non_singles);
 
         base_type::dt_ = 0.;
+    }
 
+    // virtual bool step(time_type upto)
+    virtual bool step(const time_type& upto)
+    {
+        if (dirty_)
+        {
+            initialize();
+        }
+
+        if (upto <= this->t())
+        {
+            return false;
+        }
+
+        if (upto >= scheduler_.top().second->time())
+        {
+            _step();
+            return true;
+        }
+
+        LOG_INFO(("stop at %.16g", upto));
+
+        this->set_t(upto);
+        this->finalize();
         return false;
     }
 
