@@ -150,8 +150,8 @@ public:
             {
                 // Calculate a reaction's jacobian.
                 // prepare state_array that contain amounts of reactants
-                int reactants_size(i->reactants.size());
-                int products_size(i->products.size());
+                index_container_type::size_type reactants_size(i->reactants.size());
+                index_container_type::size_type products_size(i->products.size());
                 Ratelaw::state_container_type reactants_states(reactants_size);
                 Ratelaw::state_container_type products_states(products_size);
                 Ratelaw::state_container_type::size_type cnt(0);
@@ -184,12 +184,12 @@ public:
                 }
 
                 //merge jacobian
-                for(int row(0); row < row_length; row++)
+                for(matrix_type::size_type row(0); row < row_length; row++)
                 {
-                    int j_row(row < reactants_size ? (*i).reactants[row] : (*i).products[row - reactants_size]);
-                    for(int col(0); col < col_length; col++)
+                    matrix_type::size_type j_row(row < reactants_size ? (*i).reactants[row] : (*i).products[row - reactants_size]);
+                    for(matrix_type::size_type col(0); col < col_length; col++)
                     {
-                        int j_col(col < reactants_size ? (*i).reactants[col] : (*i).products[col - reactants_size]);
+                        matrix_type::size_type j_col(col < reactants_size ? (*i).reactants[col] : (*i).products[col - reactants_size]);
                         jacobi(j_row, j_col) += mat(row, col);
                     }
                 }

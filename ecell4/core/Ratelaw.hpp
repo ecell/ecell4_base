@@ -91,7 +91,7 @@ public:
             state_container_type h_shift(reactants_state_array);
             h_shift[i] += h;
             double deriv = ((this->deriv_func(h_shift, products_state_array, volume)) - flux) / h;
-            for(int j(0); j < jacobian.size1() ; j++)
+            for(matrix_type::size_type j(0); j < jacobian.size1() ; j++)
             {
                 if (j < num_reactants) 
                 {
@@ -109,7 +109,7 @@ public:
             state_container_type h_shift(products_state_array);
             h_shift[i] += h;
             double deriv = ((this->deriv_func(reactants_state_array, h_shift, volume)) - flux) / h;
-            for(int j(0); j < jacobian.size1(); j++)
+            for(matrix_type::size_type j(0); j < jacobian.size1(); j++)
             {
                 if (j < num_reactants)
                 {
@@ -138,8 +138,8 @@ public:
         return prev;
     }
 private:
-    Real h_;
     Ratelaw_Callback func_;
+    Real h_;
 };
 
 class RatelawMassAction : public Ratelaw
@@ -186,11 +186,12 @@ public:
         {
             return;
         }
-        int num_reactants(reactants_state_array.size());
-        for(int i(0); i < num_reactants; i++) 
+        matrix_type::size_type num_reactants(
+            static_cast<matrix_type::size_type>(reactants_state_array.size()));
+        for(matrix_type::size_type i(0); i < num_reactants; i++) 
         {
             Real partial(flux / reactants_state_array[i]);
-            for(int j(0); j < jacobian.size1(); j++)
+            for(matrix_type::size_type j(0); j < jacobian.size1(); j++)
             {
                 if (j < num_reactants)
                 {
