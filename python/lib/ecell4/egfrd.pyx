@@ -25,10 +25,10 @@ cdef class EGFRDWorld:
         elif isinstance(edge_lengths, Position3):
             self.thisptr = new shared_ptr[Cpp_EGFRDWorld](
                 new Cpp_EGFRDWorld(deref((<Position3>edge_lengths).thisptr)))
-        # else:
-        #     filename = edge_lengths
-        #     self.thisptr = new shared_ptr[Cpp_EGFRDWorld](
-        #         new Cpp_EGFRDWorld(filename))
+        else:
+            filename = edge_lengths
+            self.thisptr = new shared_ptr[Cpp_EGFRDWorld](
+                new Cpp_EGFRDWorld(filename))
 
     def __dealloc__(self):
         # XXX: Here, we release shared pointer,

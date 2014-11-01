@@ -15,6 +15,7 @@ cdef extern from "ecell4/egfrd/egfrd.hpp" namespace "ecell4::egfrd":
             Cpp_Position3&, Cpp_Global&,
             shared_ptr[Cpp_RandomNumberGenerator]&) except +
         #     shared_ptr[Cpp_GSLRandomNumberGenerator]&) except +
+        Cpp_EGFRDWorld(string&) except +
         pair[pair[Cpp_ParticleID, Cpp_Particle], bool] new_particle(Cpp_Particle& p)
         pair[pair[Cpp_ParticleID, Cpp_Particle], bool] new_particle(Cpp_Species& sp, Cpp_Position3& pos)
         void set_t(Real t)
