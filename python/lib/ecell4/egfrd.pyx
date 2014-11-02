@@ -6,7 +6,7 @@ from cython.operator cimport dereference as deref, preincrement as inc
 #  a python wrapper for Cpp_EGFRDWorld
 cdef class EGFRDWorld:
 
-    def __cinit__(self, edge_lengths=None, Global matrix_sizes=None,
+    def __cinit__(self, edge_lengths=None, Integer3 matrix_sizes=None,
         GSLRandomNumberGenerator rng=None):
         cdef string filename
 
@@ -285,40 +285,40 @@ cdef class EGFRDFactory:
 
     def __cinit__(self, arg1=None, arg2=None, arg3=None, arg4=None, arg5=None):
         self.thisptr = new Cpp_EGFRDFactory()
-        if isinstance(arg1, Global):
+        if isinstance(arg1, Integer3):
             if isinstance(arg2, GSLRandomNumberGenerator):
                 if arg3 is None:
                     self.thisptr = new Cpp_EGFRDFactory(
-                        deref((<Global>arg1).thisptr),
+                        deref((<Integer3>arg1).thisptr),
                         deref((<GSLRandomNumberGenerator>arg2).thisptr))
                 elif arg4 is None:
                     self.thisptr = new Cpp_EGFRDFactory(
-                        deref((<Global>arg1).thisptr),
+                        deref((<Integer3>arg1).thisptr),
                         deref((<GSLRandomNumberGenerator>arg2).thisptr), <Integer>arg3)
                 elif arg5 is None:
                     self.thisptr = new Cpp_EGFRDFactory(
-                        deref((<Global>arg1).thisptr),
+                        deref((<Integer3>arg1).thisptr),
                         deref((<GSLRandomNumberGenerator>arg2).thisptr),
                         <Integer>arg3, <Real>arg4)
                 else:
                     self.thisptr = new Cpp_EGFRDFactory(
-                        deref((<Global>arg1).thisptr),
+                        deref((<Integer3>arg1).thisptr),
                         deref((<GSLRandomNumberGenerator>arg2).thisptr),
                         <Integer>arg3, <Real>arg4, <Real>arg5)
             else:
                 if arg5 is not None:
                     raise RuntimeError, "too many arguments were given."
                 elif arg2 is None:
-                    self.thisptr = new Cpp_EGFRDFactory(deref((<Global>arg1).thisptr))
+                    self.thisptr = new Cpp_EGFRDFactory(deref((<Integer3>arg1).thisptr))
                 elif arg3 is None:
                     self.thisptr = new Cpp_EGFRDFactory(
-                        deref((<Global>arg1).thisptr), <Integer>arg2)
+                        deref((<Integer3>arg1).thisptr), <Integer>arg2)
                 elif arg4 is None:
                     self.thisptr = new Cpp_EGFRDFactory(
-                        deref((<Global>arg1).thisptr), <Integer>arg2, <Real>arg3)
+                        deref((<Integer3>arg1).thisptr), <Integer>arg2, <Real>arg3)
                 else:
                     self.thisptr = new Cpp_EGFRDFactory(
-                        deref((<Global>arg1).thisptr), <Integer>arg2, <Real>arg3, <Real>arg4)
+                        deref((<Integer3>arg1).thisptr), <Integer>arg2, <Real>arg3, <Real>arg4)
         else:
             if arg4 is not None or arg5 is not None:
                 raise RuntimeError, "too many arguments were given."

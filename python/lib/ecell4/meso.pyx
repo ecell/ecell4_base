@@ -24,13 +24,13 @@ cdef class MesoscopicWorld:
             self.thisptr = new shared_ptr[Cpp_MesoscopicWorld](
                 new Cpp_MesoscopicWorld(
                     deref((<Position3>edge_lengths).thisptr),
-                    deref((<Global>matrix_sizes).thisptr)))
+                    deref((<Integer3>matrix_sizes).thisptr)))
         else:
             # XXX: GSLRandomNumberGenerator -> RandomNumberGenerator
             self.thisptr = new shared_ptr[Cpp_MesoscopicWorld](
                 new Cpp_MesoscopicWorld(
                     deref((<Position3>edge_lengths).thisptr),
-                    deref((<Global>matrix_sizes).thisptr), deref(rng.thisptr)))
+                    deref((<Integer3>matrix_sizes).thisptr), deref(rng.thisptr)))
 
     def __dealloc__(self):
         # XXX: Here, we release shared pointer,
@@ -49,8 +49,8 @@ cdef class MesoscopicWorld:
         return Position3_from_Cpp_Position3(address(lengths))
 
     def matrix_sizes(self):
-        cdef Cpp_Global sizes = self.thisptr.get().matrix_sizes()
-        return Global_from_Cpp_Global(address(sizes))
+        cdef Cpp_Integer3 sizes = self.thisptr.get().matrix_sizes()
+        return Integer3_from_Cpp_Integer3(address(sizes))
 
     def volume(self):
         return self.thisptr.get().volume()
@@ -61,24 +61,24 @@ cdef class MesoscopicWorld:
     def num_molecules(self, Species sp, c = None):
         if c is None:
             return self.thisptr.get().num_molecules(deref(sp.thisptr))
-        elif isinstance(c, Global):
-            return self.thisptr.get().num_molecules(deref(sp.thisptr), deref((<Global>c).thisptr))
+        elif isinstance(c, Integer3):
+            return self.thisptr.get().num_molecules(deref(sp.thisptr), deref((<Integer3>c).thisptr))
         else:
             return self.thisptr.get().num_molecules(deref(sp.thisptr), <Integer>c)
 
     def num_molecules_exact(self, Species sp, c = None):
         if c is None:
             return self.thisptr.get().num_molecules_exact(deref(sp.thisptr))
-        elif isinstance(c, Global):
-            return self.thisptr.get().num_molecules_exact(deref(sp.thisptr), deref((<Global>c).thisptr))
+        elif isinstance(c, Integer3):
+            return self.thisptr.get().num_molecules_exact(deref(sp.thisptr), deref((<Integer3>c).thisptr))
         else:
             return self.thisptr.get().num_molecules_exact(deref(sp.thisptr), <Integer>c)
 
     def add_molecules(self, Species sp, Integer num, c = None):
         if c is None:
             self.thisptr.get().add_molecules(deref(sp.thisptr), num)
-        elif isinstance(c, Global):
-            self.thisptr.get().add_molecules(deref(sp.thisptr), num, deref((<Global>c).thisptr))
+        elif isinstance(c, Integer3):
+            self.thisptr.get().add_molecules(deref(sp.thisptr), num, deref((<Integer3>c).thisptr))
         elif hasattr(c, "as_base"):
             self.thisptr.get().add_molecules(
                 deref(sp.thisptr), num, deref((<Shape>(c.as_base())).thisptr))
@@ -88,8 +88,8 @@ cdef class MesoscopicWorld:
     def remove_molecules(self, Species sp, Integer num, c = None):
         if c is None:
             self.thisptr.get().remove_molecules(deref(sp.thisptr), num)
-        elif isinstance(c, Global):
-            self.thisptr.get().remove_molecules(deref(sp.thisptr), num, deref((<Global>c).thisptr))
+        elif isinstance(c, Integer3):
+            self.thisptr.get().remove_molecules(deref(sp.thisptr), num, deref((<Integer3>c).thisptr))
         else:
             self.thisptr.get().remove_molecules(deref(sp.thisptr), num, <Integer>c)
 
@@ -162,7 +162,7 @@ cdef class MesoscopicWorld:
 
 cdef MesoscopicWorld MesoscopicWorld_from_Cpp_MesoscopicWorld(
     shared_ptr[Cpp_MesoscopicWorld] w):
-    r = MesoscopicWorld(Position3(1, 1, 1), Global(1, 1, 1))
+    r = MesoscopicWorld(Position3(1, 1, 1), Integer3(1, 1, 1))
     r.thisptr.swap(w)
     return r
 
@@ -247,7 +247,7 @@ cdef MesoscopicSimulator MesoscopicSimulator_from_Cpp_MesoscopicSimulator(
 #  a python wrapper for Cpp_MesoscopicFactory
 cdef class MesoscopicFactory:
 
-    def __cinit__(self, Global matrix_sizes=None, GSLRandomNumberGenerator rng=None):
+    def __cinit__(self, Integer3 matrix_sizes=None, GSLRandomNumberGenerator rng=None):
         if rng is not None:
             self.thisptr = new Cpp_MesoscopicFactory(
                 deref(matrix_sizes.thisptr), deref(rng.thisptr))

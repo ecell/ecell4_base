@@ -10,9 +10,9 @@ cdef extern from "ecell4/egfrd/egfrd.hpp" namespace "ecell4::egfrd":
     cdef cppclass Cpp_EGFRDWorld "ecell4::egfrd::EGFRDWorld":
         Cpp_EGFRDWorld() except +
         Cpp_EGFRDWorld(Cpp_Position3&) except +
-        Cpp_EGFRDWorld(Cpp_Position3&, Cpp_Global&) except +
+        Cpp_EGFRDWorld(Cpp_Position3&, Cpp_Integer3&) except +
         Cpp_EGFRDWorld(
-            Cpp_Position3&, Cpp_Global&,
+            Cpp_Position3&, Cpp_Integer3&,
             shared_ptr[Cpp_RandomNumberGenerator]&) except +
         #     shared_ptr[Cpp_GSLRandomNumberGenerator]&) except +
         Cpp_EGFRDWorld(string&) except +
@@ -76,14 +76,14 @@ cdef extern from "ecell4/egfrd/egfrd.hpp" namespace "ecell4::egfrd":
         Cpp_EGFRDFactory(Integer) except +
         Cpp_EGFRDFactory(Integer, Real) except +
         Cpp_EGFRDFactory(Integer, Real, Real) except +
-        Cpp_EGFRDFactory(Cpp_Global&) except +
-        Cpp_EGFRDFactory(Cpp_Global&, Integer) except +
-        Cpp_EGFRDFactory(Cpp_Global&, Integer, Real) except +
-        Cpp_EGFRDFactory(Cpp_Global&, Integer, Real, Real) except +
-        Cpp_EGFRDFactory(Cpp_Global&, shared_ptr[Cpp_RandomNumberGenerator]&) except +
-        Cpp_EGFRDFactory(Cpp_Global&, shared_ptr[Cpp_RandomNumberGenerator]&, Integer) except +
-        Cpp_EGFRDFactory(Cpp_Global&, shared_ptr[Cpp_RandomNumberGenerator]&, Integer, Real) except +
-        Cpp_EGFRDFactory(Cpp_Global&, shared_ptr[Cpp_RandomNumberGenerator]&, Integer, Real, Real) except +
+        Cpp_EGFRDFactory(Cpp_Integer3&) except +
+        Cpp_EGFRDFactory(Cpp_Integer3&, Integer) except +
+        Cpp_EGFRDFactory(Cpp_Integer3&, Integer, Real) except +
+        Cpp_EGFRDFactory(Cpp_Integer3&, Integer, Real, Real) except +
+        Cpp_EGFRDFactory(Cpp_Integer3&, shared_ptr[Cpp_RandomNumberGenerator]&) except +
+        Cpp_EGFRDFactory(Cpp_Integer3&, shared_ptr[Cpp_RandomNumberGenerator]&, Integer) except +
+        Cpp_EGFRDFactory(Cpp_Integer3&, shared_ptr[Cpp_RandomNumberGenerator]&, Integer, Real) except +
+        Cpp_EGFRDFactory(Cpp_Integer3&, shared_ptr[Cpp_RandomNumberGenerator]&, Integer, Real, Real) except +
         Cpp_EGFRDWorld* create_world(string)
         Cpp_EGFRDWorld* create_world(Cpp_Position3&)
         Cpp_EGFRDSimulator* create_simulator(shared_ptr[Cpp_Model], shared_ptr[Cpp_EGFRDWorld])

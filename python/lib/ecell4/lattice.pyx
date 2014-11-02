@@ -320,20 +320,20 @@ cdef class LatticeWorld:
     def coord2private(self, Integer coord):
         return self.thisptr.get().coord2private(coord)
 
-    def global2coord(self, Global coord):
+    def global2coord(self, Integer3 coord):
         return self.thisptr.get().global2coord(deref(coord.thisptr))
 
     def coord2global(self, Integer coord):
-        cdef Cpp_Global g = self.thisptr.get().coord2global(coord)
-        return Global_from_Cpp_Global(address(g))
+        cdef Cpp_Integer3 g = self.thisptr.get().coord2global(coord)
+        return Integer3_from_Cpp_Integer3(address(g))
 
-    def global2position(self, Global g):
+    def global2position(self, Integer3 g):
         cdef Cpp_Position3 pos = self.thisptr.get().global2position(deref(g.thisptr))
         return Position3_from_Cpp_Position3(address(pos))
 
     def position2global(self, Position3 pos):
-        cdef Cpp_Global g = self.thisptr.get().position2global(deref(pos.thisptr))
-        return Global_from_Cpp_Global(address(g))
+        cdef Cpp_Integer3 g = self.thisptr.get().position2global(deref(pos.thisptr))
+        return Integer3_from_Cpp_Integer3(address(g))
 
     def add_structure(self, Species sp, shape):
         return self.thisptr.get().add_structure(

@@ -324,23 +324,23 @@ cdef class Position3:
 
 cdef Position3 Position3_from_Cpp_Position3(Cpp_Position3 *p)
 
-## Cpp_Global
-#  ecell4::Global
-cdef extern from "ecell4/core/Global.hpp" namespace "ecell4":
-    cdef cppclass Cpp_Global "ecell4::Global":
-        Cpp_Global() except +
-        Cpp_Global(Integer, Integer, Integer) except +
-        Cpp_Global(Cpp_Global&) except +
+## Cpp_Integer3
+#  ecell4::Integer3
+cdef extern from "ecell4/core/Integer3.hpp" namespace "ecell4":
+    cdef cppclass Cpp_Integer3 "ecell4::Integer3":
+        Cpp_Integer3() except +
+        Cpp_Integer3(Integer, Integer, Integer) except +
+        Cpp_Integer3(Cpp_Integer3&) except +
         Integer col
         Integer row
         Integer layer
 
         Integer& operator[](Integer)
 
-cdef class Global:
-    cdef Cpp_Global* thisptr
+cdef class Integer3:
+    cdef Cpp_Integer3* thisptr
 
-cdef Global Global_from_Cpp_Global(Cpp_Global *g)
+cdef Integer3 Integer3_from_Cpp_Integer3(Cpp_Integer3 *g)
 
 ## Cpp_ParticleID
 #  ecell4::ParticleID
