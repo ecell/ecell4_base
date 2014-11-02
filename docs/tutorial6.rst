@@ -12,7 +12,7 @@ This is a tutorial for E-Cell4.
     from ecell4.lattice import LatticeWorld
     from ecell4.bd import BDWorld
     
-    edge_lengths = Position3(1, 2, 3)
+    edge_lengths = Real3(1, 2, 3)
 .. code:: python
 
     m = NetworkModel()
@@ -29,7 +29,7 @@ and ``Particle`` with if the creation is succeeded or not.
 
 .. code:: python
 
-    ((pid, p), is_succeeded) = w.new_particle(Species("A"), Position3(0.5, 0.5, 0.5))
+    ((pid, p), is_succeeded) = w.new_particle(Species("A"), Real3(0.5, 0.5, 0.5))
 .. code:: python
 
     print pid, p, is_succeeded
@@ -78,7 +78,7 @@ To move a ``Particle`` to the new position, use ``update_particle``.
 
 .. code:: python
 
-    w.update_particle(pid, Particle(p.species(), Position3(0.5, 1.5, 2.5), p.radius(), p.D()))
+    w.update_particle(pid, Particle(p.species(), Real3(0.5, 1.5, 2.5), p.radius(), p.D()))
     _, newp = w.get_particle(pid)
     print tuple(newp.position()), w.num_molecules(Species("A"))
 
@@ -120,19 +120,19 @@ You can remove a ``Particle`` by ``remove_particle``.
 
 
 Positions in ``LatticeSpace`` is represented as a single ``Integer``
-named ``coordinate``, which is corresponding to ``Position3``
+named ``coordinate``, which is corresponding to ``Real3``
 (``position``) in ``ParticleSpace``. ``coordinate2position`` and
 ``position2coordinate`` give the way to convert between them.
 
 .. code:: python
 
-    coord = w.position2coordinate(Position3(0.5, 0.5, 0.5))
+    coord = w.position2coordinate(Real3(0.5, 0.5, 0.5))
     pos = w.coordinate2position(coord)
     new_coord = w.position2coordinate(pos)
     
     print coord, tuple(pos)
     print new_coord, tuple(w.coordinate2position(new_coord))
-    print w.position2coordinate(Position3(0.5, 1.5, 2.5))
+    print w.position2coordinate(Real3(0.5, 1.5, 2.5))
 
 .. parsed-literal::
 
@@ -226,9 +226,9 @@ the same ``RandomNumberGenerator``.
 
 .. code:: python
 
-    w = GillespieWorld(Position3(1, 1, 1), rng1)
-    # w = BDWorld(Position3(1, 1, 1), rng1)
-    # w = LatticeWorld(Position3(1, 1, 1), 0.05, rng1) # The second argument is voxel_radius.
+    w = GillespieWorld(Real3(1, 1, 1), rng1)
+    # w = BDWorld(Real3(1, 1, 1), rng1)
+    # w = LatticeWorld(Real3(1, 1, 1), 0.05, rng1) # The second argument is voxel_radius.
 .. code:: python
 
     print w.rng().uniform(0, 1), rng2.uniform(0, 1), rng1.uniform(0, 1)

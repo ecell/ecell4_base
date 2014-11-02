@@ -39,7 +39,7 @@ Create a world and simulator:
 
 .. code:: python
 
-    w = world_type(Position3(L, L, L))
+    w = world_type(Real3(L, L, L))
     w.bind_to(m)
     w.add_molecules(Species("A"), N)
     w.add_molecules(Species("B"), N)

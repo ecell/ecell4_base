@@ -10,9 +10,9 @@ are introduced.
 
 World classes accept different sets of arguments. However, at least, any
 ``World`` classes can be instantiated only with their size, named
-``edge_lengths``. The type of ``edge_lengths`` is ``Position3``, which
+``edge_lengths``. The type of ``edge_lengths`` is ``Real3``, which
 represents a triplet of ``Real``\ s. In E-Cell4, all 3-dimensional
-positions are treated as a ``Position3``.
+positions are treated as a ``Real3``.
 
 .. code:: python
 
@@ -22,7 +22,7 @@ positions are treated as a ``Position3``.
     from ecell4.lattice import LatticeWorld
     from ecell4.bd import BDWorld
     
-    edge_lengths = Position3(1, 2, 3)
+    edge_lengths = Real3(1, 2, 3)
     w1 = GillespieWorld(edge_lengths)
     w2 = ODEWorld(edge_lengths)
     w3 = LatticeWorld(edge_lengths)
@@ -117,10 +117,10 @@ Finally, you can save/load the state of a World into/from a HDF5 file.
     del w1, w2, w3, w4
 .. code:: python
 
-    w1 = GillespieWorld(Position3(1, 1, 1))
-    w2 = ODEWorld(Position3(1, 1, 1))
-    w3 = LatticeWorld(Position3(1, 1, 1))
-    w4 = BDWorld(Position3(1, 1, 1))
+    w1 = GillespieWorld(Real3(1, 1, 1))
+    w2 = ODEWorld(Real3(1, 1, 1))
+    w3 = LatticeWorld(Real3(1, 1, 1))
+    w4 = BDWorld(Real3(1, 1, 1))
     print w1.t(), tuple(w1.edge_lengths()), w1.volume(), w1.num_molecules(Species("A")), w1.num_molecules(Species("B"))
     print w2.t(), tuple(w2.edge_lengths()), w2.volume(), w2.num_molecules(Species("A")), w2.num_molecules(Species("B"))
     print w3.t(), tuple(w3.edge_lengths()), w3.volume(), w3.num_molecules(Species("A")), w3.num_molecules(Species("B"))

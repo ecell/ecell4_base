@@ -22,7 +22,7 @@ Simulator needs a NetworkModel and World at the instantiation.
     m.add_species_attribute(Species("A", "0.0025", "1"))
     m.add_reaction_rule(create_degradation_reaction_rule(Species("A"), 0.693 / 1))
     
-    w = world_type(Position3(1, 1, 1))
+    w = world_type(Real3(1, 1, 1))
     w.bind_to(m)
     w.add_molecules(Species("A"), 60)
     

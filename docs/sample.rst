@@ -88,7 +88,7 @@ A simple VTK viewer is also available:
 .. code:: python
 
     from ecell4.bd import BDWorld
-    w = BDWorld(Position3(L, L, L))
+    w = BDWorld(Real3(L, L, L))
     w.add_molecules(sp1, int(round(data[-1][1])))
     w.add_molecules(sp2, int(round(data[-1][2])))
     w.add_molecules(sp3, int(round(data[-1][3])))

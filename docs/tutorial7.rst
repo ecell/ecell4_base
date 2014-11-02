@@ -89,7 +89,7 @@ This is a tutorial for E-Cell4.
     from ecell4.gillespie import GillespieWorld as world_type, GillespieSimulator as simulator_type
     # from ecell4.ode import ODEWorld as world_type, ODESimulator as simulator_type
     
-    w = world_type(Position3(1, 1, 1))
+    w = world_type(Real3(1, 1, 1))
     w.bind_to(m)
     w.add_molecules(Species("K"), 120)
     w.add_molecules(Species("KK"), 30)
