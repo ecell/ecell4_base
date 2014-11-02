@@ -133,7 +133,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_coordinate)
         for (Integer row(0); row < space.row_size(); ++row)
             for (Integer layer(0); layer < space.layer_size(); ++layer)
             {
-                const Global global(col, row, layer);
+                const Integer3 global(col, row, layer);
                 const LatticeSpace::private_coordinate_type private_coord(
                         space.global2private_coord(global));
                 const LatticeSpace::coordinate_type coord(space.global2coord(global));
@@ -146,7 +146,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_coordinate_global_translation)
 {
     for (LatticeSpace::coordinate_type coord(0); coord < space.size(); ++coord)
     {
-        const Global global(space.coord2global(coord));
+        const Integer3 global(space.coord2global(coord));
         LatticeSpace::coordinate_type created_coord(
                 space.global2coord(global));
         BOOST_CHECK_EQUAL(coord, created_coord);
@@ -181,7 +181,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_coordinate_position_translation)
     for (LatticeSpace::private_coordinate_type coord(0); coord < size; ++coord)
     {
         const Position3 pos(space.private2position(coord));
-        const Global global(space.position2global(pos));
+        const Integer3 global(space.position2global(pos));
         const LatticeSpace::private_coordinate_type created_coord(
                 space.position2private(pos));
         BOOST_CHECK_EQUAL(coord, created_coord);
@@ -191,7 +191,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_coordinate_position_translation)
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_add_remove_molecule)
 {
     const LatticeSpace::private_coordinate_type private_coord(
-            space.global2private_coord(Global(3,4,5)));
+            space.global2private_coord(Integer3(3,4,5)));
     ParticleID pid(sidgen());
     BOOST_CHECK(space.update_voxel_private(
         pid, Voxel(sp, private_coord, radius, D)));
@@ -207,7 +207,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_add_remove_molecule)
 
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_move)
 {
-    const Global global0(3,4,5);
+    const Integer3 global0(3,4,5);
     const LatticeSpace::private_coordinate_type private_coord(
             space.global2private_coord(global0));
     const LatticeSpace::coordinate_type coord(
@@ -220,7 +220,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_move)
     MolecularTypeBase* from_mt(space.get_molecular_type(private_coord));
     BOOST_CHECK(!from_mt->is_vacant());
 
-    const Global global1(3,5,5);
+    const Integer3 global1(3,5,5);
     const LatticeSpace::private_coordinate_type private_to_coord(
             space.global2private_coord(global1));
     const LatticeSpace::coordinate_type to_coord(
@@ -241,7 +241,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_update_molecule)
     Species reactant(std::string("Reactant")),
             product(std::string("Product"));
 
-    const Global global(3,4,5);
+    const Integer3 global(3,4,5);
     const LatticeSpace::private_coordinate_type private_coord(
             space.global2private_coord(global));
 
@@ -373,7 +373,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_periodic_col)
         for (int j(0); j < layer_size; ++j)
         {
             const LatticeSpace::private_coordinate_type private_coord(
-                    space.global2private_coord(Global(0, i, j)));
+                    space.global2private_coord(Integer3(0, i, j)));
             BOOST_CHECK(space.update_voxel_private(
                 sidgen(), Voxel(sp, private_coord, radius, D)));
         }
@@ -386,7 +386,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_periodic_col)
         for (int j(0); j < layer_size; ++j)
         {
             const LatticeSpace::private_coordinate_type private_coord(
-                    space.global2private_coord(Global(0, i, j)));
+                    space.global2private_coord(Integer3(0, i, j)));
             const Integer nrnd((j&1)==1?2:3);
             std::pair<LatticeSpace::private_coordinate_type, bool> retval(
                     space.move_to_neighbor(private_coord, nrnd));
@@ -403,7 +403,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_periodic_col)
         for (int j(0); j < layer_size; ++j)
         {
             const LatticeSpace::private_coordinate_type private_coord(
-                    space.global2private_coord(Global(col_size-1, i, j)));
+                    space.global2private_coord(Integer3(col_size-1, i, j)));
             const Integer nrnd((j&1)==1?4:5);
             std::pair<LatticeSpace::private_coordinate_type, bool> retval(
                     space.move_to_neighbor(private_coord, nrnd));
@@ -426,7 +426,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_periodic_row)
         for (int col(0); col < col_size; ++col)
         {
             const LatticeSpace::private_coordinate_type private_coord(
-                    space.global2private_coord(Global(col, 0, layer)));
+                    space.global2private_coord(Integer3(col, 0, layer)));
             BOOST_CHECK(space.update_voxel_private(
                 sidgen(), Voxel(sp, private_coord, radius, D)));
         }
@@ -439,7 +439,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_periodic_row)
         for (int col(0); col < col_size; ++col)
         {
             const LatticeSpace::private_coordinate_type private_coord(
-                    space.global2private_coord(Global(col, row, layer)));
+                    space.global2private_coord(Integer3(col, row, layer)));
             const Integer nrnd(0);
             std::pair<LatticeSpace::private_coordinate_type, bool> retval(
                     space.move_to_neighbor(private_coord, nrnd));
@@ -456,7 +456,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_periodic_row)
         for (int col(0); col < col_size; ++col)
         {
             const LatticeSpace::private_coordinate_type private_coord(
-                    space.global2private_coord(Global(col, row, layer)));
+                    space.global2private_coord(Integer3(col, row, layer)));
             const Integer nrnd(1);
             std::pair<LatticeSpace::private_coordinate_type, bool> retval(
                     space.move_to_neighbor(private_coord, nrnd));
@@ -480,7 +480,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_periodic_layer)
         for (int col(0); col < col_size; ++col)
         {
             const LatticeSpace::private_coordinate_type private_coord(
-                    space.global2private_coord(Global(col, row, layer)));
+                    space.global2private_coord(Integer3(col, row, layer)));
             BOOST_CHECK(space.update_voxel_private(
                 sidgen(), Voxel(sp, private_coord, radius, D)));
         }
@@ -492,7 +492,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_periodic_layer)
         for (int col(0); col < col_size; ++col)
         {
             const LatticeSpace::private_coordinate_type private_coord(
-                    space.global2private_coord(Global(col, row, layer)));
+                    space.global2private_coord(Integer3(col, row, layer)));
             const Integer nrnd((col&1)==1?8:9);
             std::pair<LatticeSpace::private_coordinate_type, bool> retval(
                     space.move_to_neighbor(private_coord, nrnd));
@@ -509,7 +509,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_periodic_layer)
         for (int col(0); col < col_size; ++col)
         {
             const LatticeSpace::private_coordinate_type private_coord(
-                    space.global2private_coord(Global(col, row, layer)));
+                    space.global2private_coord(Integer3(col, row, layer)));
             const Integer nrnd((col&1)==1?10:11);
             std::pair<LatticeSpace::private_coordinate_type, bool> retval(
                     space.move_to_neighbor(private_coord, nrnd));
@@ -523,11 +523,11 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_periodic_layer)
 
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_coordinates2)
 {
-    const Global g1(4, 4, 4);
+    const Integer3 g1(4, 4, 4);
     const LatticeSpace::coordinate_type c1(space.global2coord(g1));
     const LatticeSpace::private_coordinate_type pc1(space.global2private_coord(g1));
-    const Global g2(space.coord2global(c1));
-    const Global g3(space.private_coord2global(pc1));
+    const Integer3 g2(space.coord2global(c1));
+    const Integer3 g3(space.private_coord2global(pc1));
 
     BOOST_CHECK_EQUAL(space.private2coord(space.coord2private(c1)), c1);
     BOOST_CHECK_EQUAL(space.coord2private(c1), pc1);
@@ -537,7 +537,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_coordinates2)
     BOOST_CHECK(g1.col == g3.col && g1.row == g3.row && g1.layer == g3.layer);
 
     const Position3 p1(space.global2position(g1));
-    const Global g4(space.position2global(p1));
+    const Integer3 g4(space.position2global(p1));
 
     BOOST_CHECK(g1.col == g4.col && g1.row == g4.row && g1.layer == g4.layer);
     BOOST_CHECK_EQUAL(c1, space.position2coordinate(p1));

@@ -340,18 +340,18 @@ public:
         return space_.coordinate2position(private2coord(coord));
     }
 
-    const Position3 global2position(const Global& global) const
+    const Position3 global2position(const Integer3& global) const
     {
         return space_.global2position(global);
     }
 
-    const Global position2global(const Position3& pos) const
+    const Integer3 position2global(const Position3& pos) const
     {
         return space_.position2global(pos);
     }
 
-    coordinate_type global2coord(const Global& global) const;
-    const Global coord2global(coordinate_type coord) const;
+    coordinate_type global2coord(const Integer3& global) const;
+    const Integer3 coord2global(coordinate_type coord) const;
     coordinate_type private2coord(const private_coordinate_type&
             private_coord) const;
     private_coordinate_type coord2private(const coordinate_type&
@@ -403,7 +403,7 @@ protected:
 
     Integer add_structure2(const Species& sp, const Shape& shape);
     Integer add_structure3(const Species& sp, const Shape& shape);
-    bool is_surface_voxel(const Global& g, const Shape& shape) const;
+    bool is_surface_voxel(const Integer3& g, const Shape& shape) const;
 
 protected:
 

@@ -47,7 +47,7 @@ std::vector<std::pair<ParticleID, Particle> >
         for (coordinate_type j(0); j < num_subvolumes(); ++j)
         {
             const Integer num(num_molecules_exact(*i, j));
-            const Global g(coord2global(j));
+            const Integer3 g(coord2global(j));
 
             for (Integer k(0); k < num; ++k)
             {
@@ -74,7 +74,7 @@ std::vector<std::pair<ParticleID, Particle> >
     for (coordinate_type j(0); j < num_subvolumes(); ++j)
     {
         const Integer num(num_molecules_exact(sp, j));
-        const Global g(coord2global(j));
+        const Integer3 g(coord2global(j));
 
         for (Integer k(0); k < num; ++k)
         {
@@ -100,7 +100,7 @@ std::vector<std::pair<ParticleID, Particle> >
     for (coordinate_type j(0); j < num_subvolumes(); ++j)
     {
         const Integer num(num_molecules(sp, j));
-        const Global g(coord2global(j));
+        const Integer3 g(coord2global(j));
 
         for (Integer k(0); k < num; ++k)
         {
@@ -160,17 +160,17 @@ const Real MesoscopicWorld::volume() const
     return cs_->volume();
 }
 
-MesoscopicWorld::coordinate_type MesoscopicWorld::global2coord(const Global& g) const
+MesoscopicWorld::coordinate_type MesoscopicWorld::global2coord(const Integer3& g) const
 {
     return cs_->global2coord(g);
 }
 
-Global MesoscopicWorld::coord2global(const MesoscopicWorld::coordinate_type& c) const
+Integer3 MesoscopicWorld::coord2global(const MesoscopicWorld::coordinate_type& c) const
 {
     return cs_->coord2global(c);
 }
 
-Global MesoscopicWorld::position2global(const Position3& pos) const
+Integer3 MesoscopicWorld::position2global(const Position3& pos) const
 {
     return cs_->position2global(pos);
 }

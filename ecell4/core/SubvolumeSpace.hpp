@@ -6,7 +6,7 @@
 #include "exceptions.hpp"
 #include "Species.hpp"
 #include "Space.hpp"
-#include "Global.hpp"
+#include "Integer3.hpp"
 #include "SubvolumeSpaceHDF5Writer.hpp"
 
 namespace ecell4
@@ -67,13 +67,13 @@ public:
         return static_cast<Real>(num_molecules_exact(sp));
     }
 
-    virtual const Global matrix_sizes() const = 0;
+    virtual const Integer3 matrix_sizes() const = 0;
     virtual const Position3 subvolume_edge_lengths() const = 0;
     virtual const Integer num_subvolumes() const = 0;
     virtual const Real subvolume() const = 0;
-    virtual coordinate_type global2coord(const Global& g) const = 0;
-    virtual Global coord2global(const coordinate_type& c) const = 0;
-    virtual Global position2global(const Position3& pos) const = 0;
+    virtual coordinate_type global2coord(const Integer3& g) const = 0;
+    virtual Integer3 coord2global(const coordinate_type& c) const = 0;
+    virtual Integer3 position2global(const Position3& pos) const = 0;
     virtual Integer num_molecules(
         const Species& sp, const coordinate_type& c) const = 0;
     virtual Integer num_molecules_exact(
@@ -87,27 +87,27 @@ public:
     virtual coordinate_type get_neighbor(
         const coordinate_type& c, const Integer rnd) const = 0;
 
-    virtual Integer num_molecules(const Species& sp, const Global& g) const
+    virtual Integer num_molecules(const Species& sp, const Integer3& g) const
     {
         return num_molecules(sp, global2coord(g));
     }
 
-    virtual Integer num_molecules_exact(const Species& sp, const Global& g) const
+    virtual Integer num_molecules_exact(const Species& sp, const Integer3& g) const
     {
         return num_molecules_exact(sp, global2coord(g));
     }
 
-    virtual void add_molecules(const Species& sp, const Integer& num, const Global& g)
+    virtual void add_molecules(const Species& sp, const Integer& num, const Integer3& g)
     {
         add_molecules(sp, num, global2coord(g));
     }
 
-    virtual void remove_molecules(const Species& sp, const Integer& num, const Global& g)
+    virtual void remove_molecules(const Species& sp, const Integer& num, const Integer3& g)
     {
         remove_molecules(sp, num, global2coord(g));
     }
 
-    virtual void reset(const Position3& edge_lengths, const Global& matrix_sizes) = 0;
+    virtual void reset(const Position3& edge_lengths, const Integer3& matrix_sizes) = 0;
     virtual void save(H5::Group* root) const = 0;
     virtual void load(const H5::Group& root) = 0;
 
@@ -130,7 +130,7 @@ public:
 public:
 
     SubvolumeSpaceVectorImpl(
-        const Position3& edge_lengths, const Global matrix_sizes)
+        const Position3& edge_lengths, const Integer3 matrix_sizes)
         : base_type()
     {
         matrix_sizes_[0] = matrix_sizes.col;
@@ -150,9 +150,9 @@ public:
         return edge_lengths_;
     }
 
-    const Global matrix_sizes() const
+    const Integer3 matrix_sizes() const
     {
-        return Global(matrix_sizes_[0], matrix_sizes_[1], matrix_sizes_[2]);
+        return Integer3(matrix_sizes_[0], matrix_sizes_[1], matrix_sizes_[2]);
     }
 
     const Position3 subvolume_edge_lengths() const
@@ -178,7 +178,7 @@ public:
         return volume() / num_subvolumes();
     }
 
-    coordinate_type global2coord(const Global& g) const
+    coordinate_type global2coord(const Integer3& g) const
     {
         const coordinate_type coord(
             modulo(g.col, matrix_sizes_[0])
@@ -187,18 +187,18 @@ public:
         return coord;
     }
 
-    Global coord2global(const coordinate_type& c) const
+    Integer3 coord2global(const coordinate_type& c) const
     {
         const Integer rowcol(matrix_sizes_[0] * matrix_sizes_[1]);
         const Integer layer(static_cast<Integer>(c / rowcol));
         const Integer surplus(c - layer * rowcol);
         const Integer row(static_cast<Integer>(surplus / matrix_sizes_[0]));
-        return Global(surplus - row * matrix_sizes_[0], row, layer);
+        return Integer3(surplus - row * matrix_sizes_[0], row, layer);
     }
 
-    Global position2global(const Position3& pos) const
+    Integer3 position2global(const Position3& pos) const
     {
-        return Global(
+        return Integer3(
             static_cast<Integer>(floor(pos[0] * matrix_sizes_[0] / edge_lengths_[0])),
             static_cast<Integer>(floor(pos[1] * matrix_sizes_[1] / edge_lengths_[1])),
             static_cast<Integer>(floor(pos[2] * matrix_sizes_[2] / edge_lengths_[2])));
@@ -245,7 +245,7 @@ public:
         reset(edge_lengths, matrix_sizes());
     }
 
-    void reset(const Position3& edge_lengths, const Global& matrix_sizes)
+    void reset(const Position3& edge_lengths, const Integer3& matrix_sizes)
     {
         base_type::t_ = 0.0;
         matrix_.clear();

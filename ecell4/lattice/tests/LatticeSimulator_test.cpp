@@ -400,9 +400,9 @@ BOOST_AUTO_TEST_CASE(LattiecSimulator_test_scheduler)
     boost::shared_ptr<LatticeWorld> world(
             new LatticeWorld(edge_lengths, voxel_radius, rng));
 
-    LatticeWorld::coordinate_type c1(world->global2coord(Global(40,34,56))),
-          c2(world->global2coord(Global(32,50,24))),
-          c3(world->global2coord(Global(60,36,89)));
+    LatticeWorld::coordinate_type c1(world->global2coord(Integer3(40,34,56))),
+          c2(world->global2coord(Integer3(32,50,24))),
+          c3(world->global2coord(Integer3(60,36,89)));
     BOOST_CHECK(world->place_voxel_private(sp1, c1).second);
     BOOST_CHECK(world->place_voxel_private(sp2, c2).second);
     BOOST_CHECK(world->place_voxel_private(sp3, c3).second);

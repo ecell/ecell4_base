@@ -278,7 +278,7 @@ Integer LatticeWorld::add_structure3(const Species& sp, const Shape& shape)
         {
             for (Integer layer(0); layer < layer_size(); ++layer)
             {
-                const Global g(col, row, layer);
+                const Integer3 g(col, row, layer);
                 const Real L(shape.is_inside(global2position(g)));
                 if (L > 0)
                 {
@@ -307,7 +307,7 @@ Integer LatticeWorld::add_structure2(const Species& sp, const Shape& shape)
         {
             for (Integer layer(0); layer < layer_size(); ++layer)
             {
-                const Global g(col, row, layer);
+                const Integer3 g(col, row, layer);
                 if (!is_surface_voxel(g, shape))
                 {
                     continue;
@@ -325,7 +325,7 @@ Integer LatticeWorld::add_structure2(const Species& sp, const Shape& shape)
     return count;
 }
 
-bool LatticeWorld::is_surface_voxel(const Global& g, const Shape& shape) const
+bool LatticeWorld::is_surface_voxel(const Integer3& g, const Shape& shape) const
 {
     const Real L(shape.is_inside(global2position(g)));
     if (L <= 0 || L > 2 * voxel_radius())
@@ -447,12 +447,12 @@ LatticeWorld::check_neighbor_private(
 //     return space_.update_molecule(at, species);
 // }
 
-LatticeWorld::coordinate_type LatticeWorld::global2coord(const Global& global) const
+LatticeWorld::coordinate_type LatticeWorld::global2coord(const Integer3& global) const
 {
     return space_.global2coord(global);
 }
 
-const Global LatticeWorld::coord2global(coordinate_type coord) const
+const Integer3 LatticeWorld::coord2global(coordinate_type coord) const
 {
     return space_.coord2global(coord);
 }

@@ -32,7 +32,7 @@ public:
 public:
 
     MesoscopicWorld(const std::string& filename)
-        : cs_(new SubvolumeSpaceVectorImpl(Position3(1, 1, 1), Global(1, 1, 1)))
+        : cs_(new SubvolumeSpaceVectorImpl(Position3(1, 1, 1), Integer3(1, 1, 1)))
     {
         rng_ = boost::shared_ptr<RandomNumberGenerator>(
             new GSLRandomNumberGenerator());
@@ -40,7 +40,7 @@ public:
     }
 
     MesoscopicWorld(const Position3& edge_lengths = Position3(1, 1, 1))
-        : cs_(new SubvolumeSpaceVectorImpl(edge_lengths, Global(1, 1, 1)))
+        : cs_(new SubvolumeSpaceVectorImpl(edge_lengths, Integer3(1, 1, 1)))
     {
         rng_ = boost::shared_ptr<RandomNumberGenerator>(
             new GSLRandomNumberGenerator());
@@ -48,13 +48,13 @@ public:
     }
 
     MesoscopicWorld(const Position3& edge_lengths,
-        const Global& matrix_sizes, boost::shared_ptr<RandomNumberGenerator> rng)
+        const Integer3& matrix_sizes, boost::shared_ptr<RandomNumberGenerator> rng)
         : cs_(new SubvolumeSpaceVectorImpl(edge_lengths, matrix_sizes)), rng_(rng)
     {
         ;
     }
 
-    MesoscopicWorld(const Position3& edge_lengths, const Global& matrix_sizes)
+    MesoscopicWorld(const Position3& edge_lengths, const Integer3& matrix_sizes)
         : cs_(new SubvolumeSpaceVectorImpl(edge_lengths, matrix_sizes))
     {
         rng_ = boost::shared_ptr<RandomNumberGenerator>(
@@ -119,14 +119,14 @@ public:
     const Position3 subvolume_edge_lengths() const;
     const Position3& edge_lengths() const;
 
-    const Global matrix_sizes() const
+    const Integer3 matrix_sizes() const
     {
         return cs_->matrix_sizes();
     }
 
-    coordinate_type global2coord(const Global& g) const;
-    Global coord2global(const coordinate_type& c) const;
-    Global position2global(const Position3& pos) const;
+    coordinate_type global2coord(const Integer3& g) const;
+    Integer3 coord2global(const coordinate_type& c) const;
+    Integer3 position2global(const Position3& pos) const;
 
     coordinate_type get_neighbor(const coordinate_type& c, const Integer rnd) const
     {
@@ -142,22 +142,22 @@ public:
     void add_molecules(const Species& sp, const Integer& num, const coordinate_type& c);
     void remove_molecules(const Species& sp, const Integer& num, const coordinate_type& c);
 
-    Integer num_molecules(const Species& sp, const Global& g) const
+    Integer num_molecules(const Species& sp, const Integer3& g) const
     {
         return cs_->num_molecules(sp, g);
     }
 
-    Integer num_molecules_exact(const Species& sp, const Global& g) const
+    Integer num_molecules_exact(const Species& sp, const Integer3& g) const
     {
         return cs_->num_molecules_exact(sp, g);
     }
 
-    void add_molecules(const Species& sp, const Integer& num, const Global& g)
+    void add_molecules(const Species& sp, const Integer& num, const Integer3& g)
     {
         cs_->add_molecules(sp, num, g);
     }
 
-    void remove_molecules(const Species& sp, const Integer& num, const Global& g)
+    void remove_molecules(const Species& sp, const Integer& num, const Integer3& g)
     {
         cs_->remove_molecules(sp, num, g);
     }

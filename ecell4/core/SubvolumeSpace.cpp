@@ -111,7 +111,7 @@ void SubvolumeSpaceVectorImpl::remove_molecules(
 SubvolumeSpaceVectorImpl::coordinate_type SubvolumeSpaceVectorImpl::get_neighbor(
     const coordinate_type& c, const Integer rnd) const
 {
-    Global g(coord2global(c));
+    Integer3 g(coord2global(c));
 
     switch (rnd)
     {

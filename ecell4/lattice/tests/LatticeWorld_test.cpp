@@ -160,7 +160,7 @@ BOOST_AUTO_TEST_CASE(LatticeWorld_test_neighbor)
         rng(new GSLRandomNumberGenerator());
     LatticeWorld world(edge_lengths, voxel_radius, rng);
 
-    const Global center(
+    const Integer3 center(
             world.col_size()/2, world.row_size()/2, world.layer_size()/2);
     const LatticeWorld::private_coordinate_type cc(
             world.coord2private(world.global2coord(center)));

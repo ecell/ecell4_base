@@ -12,7 +12,7 @@
 namespace ecell4
 {
 
-struct Global
+struct Integer3
 {
     typedef std::size_t size_type;
 
@@ -20,33 +20,33 @@ struct Global
     Integer row;
     Integer layer;
 
-    Global()
+    Integer3()
     {
         this->col = 0;
         this->row = 0;
         this->layer = 0;
     }
 
-    Global(Integer col, Integer row, Integer layer)
+    Integer3(Integer col, Integer row, Integer layer)
     {
         this->col = col;
         this->row = row;
         this->layer = layer;
     }
 
-    Global(const Global& global)
+    Integer3(const Integer3& global)
     {
         this->col = global.col;
         this->row = global.row;
         this->layer = global.layer;
     }
 
-    Global east() const;
-    Global west() const;
-    Global south() const;
-    Global north() const;
-    Global dorsal() const;
-    Global ventral() const;
+    Integer3 east() const;
+    Integer3 west() const;
+    Integer3 south() const;
+    Integer3 north() const;
+    Integer3 dorsal() const;
+    Integer3 ventral() const;
 
     Integer& operator[](size_type i)
     {
@@ -77,59 +77,59 @@ struct Global
     }
 };
 
-inline Global add(const Global& g1, const Global& g2)
+inline Integer3 add(const Integer3& g1, const Integer3& g2)
 {
-    Global retval;
+    Integer3 retval;
     retval.col = g1.col + g2.col;
     retval.row = g1.row + g2.row;
     retval.layer = g1.layer + g2.layer;
     return retval;
 }
 
-inline Global subtract(const Global& g1, const Global& g2)
+inline Integer3 subtract(const Integer3& g1, const Integer3& g2)
 {
-    Global retval;
+    Integer3 retval;
     retval.col = g1.col - g2.col;
     retval.row = g1.row - g2.row;
     retval.layer = g1.layer - g2.layer;
     return retval;
 }
 
-inline Global operator+(const Global& lhs, const Global& rhs)
+inline Integer3 operator+(const Integer3& lhs, const Integer3& rhs)
 {
     return add(lhs, rhs);
 }
 
-inline Global operator-(const Global& lhs, const Global& rhs)
+inline Integer3 operator-(const Integer3& lhs, const Integer3& rhs)
 {
     return subtract(lhs, rhs);
 }
 
-inline bool operator<(const Global& lhs, const Global& rhs)
+inline bool operator<(const Integer3& lhs, const Integer3& rhs)
 {
     return (lhs.col < rhs.col ? true :
         (lhs.row < rhs.row ? true : (lhs.layer < lhs.layer ? true : false)));
 }
 
-inline bool operator>(const Global& lhs, const Global& rhs)
+inline bool operator>(const Integer3& lhs, const Integer3& rhs)
 {
     return (lhs.col > rhs.col ? true :
         (lhs.row > rhs.row ? true : (lhs.layer > lhs.layer ? true : false)));
 }
 
-inline bool operator==(const Global& lhs, const Global& rhs)
+inline bool operator==(const Integer3& lhs, const Integer3& rhs)
 {
     return (lhs.col == rhs.col && lhs.row == rhs.row && lhs.layer == rhs.layer);
 }
 
-inline bool operator!=(const Global& lhs, const Global& rhs)
+inline bool operator!=(const Integer3& lhs, const Integer3& rhs)
 {
     return (lhs.col != rhs.col || lhs.row != rhs.row || lhs.layer != rhs.layer);
 }
 
 template<typename Tstrm_, typename Ttraits_>
 inline std::basic_ostream<Tstrm_, Ttraits_>& operator<<(
-    std::basic_ostream<Tstrm_, Ttraits_>& strm, const Global& g)
+    std::basic_ostream<Tstrm_, Ttraits_>& strm, const Integer3& g)
 {
     strm << "{" << g.col <<  ", " << g.row <<  ", " << g.layer << "}";
     return strm;

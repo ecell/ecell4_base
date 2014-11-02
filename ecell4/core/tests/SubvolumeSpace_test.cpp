@@ -19,19 +19,19 @@ void SubvolumeSpace_test_volume_template()
 {
     const Real L(1e-6);
     const Position3 edge_lengths(L, L, L);
-    const Global matrix_sizes(2, 3, 4);
+    const Integer3 matrix_sizes(2, 3, 4);
     Timpl_ target(edge_lengths, matrix_sizes);
 
     BOOST_CHECK_CLOSE(target.volume(), 1e-18, 1e-6);
     BOOST_CHECK_EQUAL(target.num_subvolumes(), 24);
     BOOST_CHECK_CLOSE(target.subvolume(), 4.166666666666667e-20, 1e-6);
 
-    BOOST_CHECK_EQUAL(target.global2coord(Global()), 0);
-    BOOST_CHECK_EQUAL(target.global2coord(Global(1, 0, 0)), 1);
-    BOOST_CHECK_EQUAL(target.global2coord(Global(1, 2, 3)), 23);
-    BOOST_CHECK_EQUAL(target.coord2global(0), Global(0, 0, 0));
-    BOOST_CHECK_EQUAL(target.coord2global(1), Global(1, 0, 0));
-    BOOST_CHECK_EQUAL(target.coord2global(23), Global(1, 2, 3));
+    BOOST_CHECK_EQUAL(target.global2coord(Integer3()), 0);
+    BOOST_CHECK_EQUAL(target.global2coord(Integer3(1, 0, 0)), 1);
+    BOOST_CHECK_EQUAL(target.global2coord(Integer3(1, 2, 3)), 23);
+    BOOST_CHECK_EQUAL(target.coord2global(0), Integer3(0, 0, 0));
+    BOOST_CHECK_EQUAL(target.coord2global(1), Integer3(1, 0, 0));
+    BOOST_CHECK_EQUAL(target.coord2global(23), Integer3(1, 2, 3));
 }
 
 BOOST_AUTO_TEST_CASE(SubvolumeSpace_test_volume)
@@ -44,7 +44,7 @@ void SubvolumeSpace_test_num_molecules_template()
 {
     const Real L(1e-6);
     const Position3 edge_lengths(L, L, L);
-    const Global matrix_sizes(2, 3, 4);
+    const Integer3 matrix_sizes(2, 3, 4);
     Timpl_ target(edge_lengths, matrix_sizes);
 
     const Species sp1("A"), sp2("B");

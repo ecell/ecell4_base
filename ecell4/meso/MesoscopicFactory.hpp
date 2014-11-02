@@ -29,13 +29,13 @@ public:
         ; // do nothing
     }
 
-    MesoscopicFactory(const Global& matrix_sizes)
+    MesoscopicFactory(const Integer3& matrix_sizes)
         : base_type(), matrix_sizes_(matrix_sizes), rng_()
     {
         ; // do nothing
     }
 
-    MesoscopicFactory(const Global& matrix_sizes,
+    MesoscopicFactory(const Integer3& matrix_sizes,
         const boost::shared_ptr<RandomNumberGenerator>& rng)
         : base_type(), matrix_sizes_(matrix_sizes), rng_(rng)
     {
@@ -84,7 +84,7 @@ public:
 
 protected:
 
-    Global matrix_sizes_;
+    Integer3 matrix_sizes_;
     boost::shared_ptr<RandomNumberGenerator> rng_;
 };
 

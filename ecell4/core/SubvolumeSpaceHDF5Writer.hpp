@@ -112,7 +112,7 @@ void save_subvolume_space(const Tspace_& space, H5::Group* root)
     double lengths[] = {edge_lengths[0], edge_lengths[1], edge_lengths[2]};
     attr_lengths.write(lengths_type, lengths);
 
-    const Global matrix_sizes = space.matrix_sizes();
+    const Integer3 matrix_sizes = space.matrix_sizes();
     const H5::ArrayType sizes_type(H5::PredType::STD_I64LE, 1, dims);
     H5::Attribute attr_sizes(
         root->createAttribute(
@@ -136,7 +136,7 @@ void load_subvolume_space(const H5::Group& root, Tspace_* space)
     int64_t sizes[3];
     const H5::ArrayType sizes_type(H5::PredType::STD_I64LE, 1, dims);
     root.openAttribute("matrix_sizes").read(sizes_type, sizes);
-    const Global matrix_sizes(sizes[0], sizes[1], sizes[2]);
+    const Integer3 matrix_sizes(sizes[0], sizes[1], sizes[2]);
 
     space->reset(edge_lengths, matrix_sizes);
 

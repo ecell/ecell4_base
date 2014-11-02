@@ -7,7 +7,7 @@
 #include <stdexcept>
 
 #include "Space.hpp"
-#include "Global.hpp"
+#include "Integer3.hpp"
 #include "LatticeSpaceHDF5Writer.hpp"
 #include "MolecularTypeBase.hpp"
 #include "MolecularType.hpp"
@@ -203,10 +203,10 @@ public:
     /*
      * Coordinate transformations
      */
-    coordinate_type global2coord(const Global& global) const;
-    coordinate_type global2private_coord(const Global& global) const;
-    const Global coord2global(coordinate_type coord) const;
-    const Global private_coord2global(private_coordinate_type coord) const;
+    coordinate_type global2coord(const Integer3& global) const;
+    coordinate_type global2private_coord(const Integer3& global) const;
+    const Integer3 coord2global(coordinate_type coord) const;
+    const Integer3 private_coord2global(private_coordinate_type coord) const;
 
     private_coordinate_type coord2private(coordinate_type cood) const;
     coordinate_type private2coord(private_coordinate_type private_coord) const;
@@ -227,16 +227,16 @@ public:
     /*
      * Coordinate transformations
      */
-    private_coordinate_type global2coord_(const Global& global,
+    private_coordinate_type global2coord_(const Integer3& global,
             Integer col_size, Integer row_size, Integer layer_size) const;
-    const Global coord2global_(coordinate_type coord,
+    const Integer3 coord2global_(coordinate_type coord,
             Integer col_size, Integer row_size, Integer layer_size) const;
 
-    const Global private_coord2private_global(
+    const Integer3 private_coord2private_global(
             const private_coordinate_type privatre_coord) const;
 
-    const Position3 global2position(const Global& global) const;
-    const Global position2global(const Position3& pos) const;
+    const Position3 global2position(const Integer3& global) const;
+    const Integer3 position2global(const Position3& pos) const;
 
     private_coordinate_type apply_boundary_(
             const private_coordinate_type& private_coord) const;

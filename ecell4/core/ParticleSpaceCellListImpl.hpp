@@ -6,7 +6,7 @@
 
 #include "ParticleSpace.hpp"
 #include "ParticleSpaceHDF5Writer.hpp"
-#include "Global.hpp"
+#include "Integer3.hpp"
 
 
 namespace ecell4
@@ -42,7 +42,7 @@ public:
     }
 
     ParticleSpaceCellListImpl(
-        const Position3& edge_lengths, const Global& matrix_sizes)
+        const Position3& edge_lengths, const Integer3& matrix_sizes)
         : base_type(), edge_lengths_(edge_lengths),
         matrix_(boost::extents[matrix_sizes.col][matrix_sizes.row][matrix_sizes.layer])
     {

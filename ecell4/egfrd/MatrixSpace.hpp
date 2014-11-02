@@ -18,7 +18,7 @@
 #include "utils/unassignable_adapter.hpp"
 #include "utils/get_default_impl.hpp"
 
-#include <ecell4/core/Global.hpp>
+#include <ecell4/core/Integer3.hpp>
 
 
 template<typename Tobj_, typename Tkey_,
@@ -53,7 +53,7 @@ public:
     typedef typename all_values_type::reference reference;
     typedef typename all_values_type::const_reference const_reference;
 
-    typedef ecell4::Global matrix_sizes_type;
+    typedef ecell4::Integer3 matrix_sizes_type;
 
 private:
     typedef std::pair<key_type, mapped_type> nonconst_value_type;
