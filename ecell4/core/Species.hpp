@@ -59,13 +59,13 @@ public:
         deserialize(name);
     }
 
-    Species(
-        const serial_type& name, const std::string& D)
-        : units_()
-    {
-        deserialize(name);
-        set_attribute("D", D);
-    }
+    // Species(
+    //     const serial_type& name, const std::string& D)
+    //     : units_()
+    // {
+    //     deserialize(name);
+    //     set_attribute("D", D);
+    // }
 
     Species(
         const serial_type& name, const std::string& radius, const std::string& D)

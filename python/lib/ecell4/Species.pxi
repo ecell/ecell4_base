@@ -11,11 +11,11 @@ cdef class Species:
     def __cinit__(self, serial=None, radius=None, D=None):
         if serial is None:
             self.thisptr = new Cpp_Species()
-        elif radius is None or D is None:
-            self.thisptr = new Cpp_Species(<string> serial)
-        else:
+        elif radius is not None and D is not None:
             self.thisptr = new Cpp_Species(
-                <string> serial, <string> radius, <string> D)
+                <string>serial, <string>radius, <string>D)
+        else:
+            self.thisptr = new Cpp_Species(<string>serial) #XXX:
 
     def __dealloc__(self):
         del self.thisptr

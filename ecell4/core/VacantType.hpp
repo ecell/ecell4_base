@@ -69,7 +69,7 @@ public:
 private:
 
     VacantType()
-        : MolecularTypeBase(Species("VACANT", "0"), NULL, 0, 0)
+        : MolecularTypeBase(Species("VACANT", "0", "0"), NULL, 0, 0)
     {
         ;
     }

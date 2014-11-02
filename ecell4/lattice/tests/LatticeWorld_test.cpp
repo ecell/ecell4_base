@@ -249,7 +249,7 @@ BOOST_AUTO_TEST_CASE(LatticeWorld_test_structure)
         rng(new GSLRandomNumberGenerator());
     LatticeWorld world(edge_lengths, voxel_radius, rng);
 
-    Species membrane("Membrane", "2.5e-9");
+    Species membrane("Membrane", "2.5e-9", "0");
 
     Species sp("SpeciesA", "2.5e-9", "1e-12");
     sp.set_attribute("location", "Membrane");

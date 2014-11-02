@@ -3,6 +3,7 @@
 #include "VacantType.hpp"
 #include "LatticeSpace.hpp"
 #include <cmath>
+#include <sstream>
 
 #ifdef WIN32_MSC
 #include <boost/numeric/interval/detail/msvc_rounding_control.hpp>
@@ -30,8 +31,10 @@ LatticeSpace::LatticeSpace(const Position3& edge_lengths,
     is_periodic_(is_periodic)
 {
     vacant_ = &(VacantType::getInstance());
-    border_ = new MolecularType(Species("Border", "0"));
-    periodic_ = new MolecularType(Species("Periodic", "0"));
+    std::stringstream ss;
+    ss << voxel_radius_;
+    border_ = new MolecularType(Species("Border", ss.str(), "0"));
+    periodic_ = new MolecularType(Species("Periodic", ss.str(), "0"));
 
     set_lattice_properties(is_periodic_);
 }

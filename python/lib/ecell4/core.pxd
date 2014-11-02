@@ -78,7 +78,7 @@ cdef extern from "ecell4/core/Species.hpp" namespace "ecell4":
     cdef cppclass Cpp_Species "ecell4::Species":
         Cpp_Species() except +
         Cpp_Species(string) except +
-        Cpp_Species(string, string) except +
+        # Cpp_Species(string, string) except +
         Cpp_Species(string, string, string) except +
         Cpp_Species(Cpp_Species&) except+
         bool operator==(Cpp_Species& rhs)
