@@ -3,7 +3,7 @@
 
 #include <ecell4/core/Species.hpp>
 #include <ecell4/core/Context.hpp>
-#include <ecell4/core/Position3.hpp>
+#include <ecell4/core/Real3.hpp>
 #include <ecell4/core/Space.hpp>
 #include <ecell4/core/Model.hpp>
 #include <ecell4/core/CompartmentSpaceHDF5Writer.hpp>
@@ -50,7 +50,7 @@ protected:
 
 public:
 
-    ODEWorld(const Position3& edge_lengths = Position3(1, 1, 1))
+    ODEWorld(const Real3& edge_lengths = Real3(1, 1, 1))
         : t_(0.0)
     {
         reset(edge_lengths);
@@ -59,7 +59,7 @@ public:
     ODEWorld(const std::string& filename)
         : t_(0.0)
     {
-        reset(Position3(1, 1, 1));
+        reset(Real3(1, 1, 1));
         this->load(filename);
     }
 
@@ -79,19 +79,19 @@ public:
         t_ = t;
     }
 
-    const Position3& edge_lengths() const
+    const Real3& edge_lengths() const
     {
         return edge_lengths_;
     }
 
-    void reset(const Position3& edge_lengths)
+    void reset(const Real3& edge_lengths)
     {
         t_ = 0.0;
         index_map_.clear();
         num_molecules_.clear();
         species_.clear();
 
-        for (Position3::size_type dim(0); dim < 3; ++dim)
+        for (Real3::size_type dim(0); dim < 3; ++dim)
         {
             if (edge_lengths[dim] <= 0)
             {
@@ -117,7 +117,7 @@ public:
 
         volume_ = volume;
         const Real L(cbrt(volume));
-        edge_lengths_ = Position3(L, L, L);
+        edge_lengths_ = Real3(L, L, L);
     }
 
     // CompartmentSpaceTraits
@@ -279,7 +279,7 @@ public:
 
 protected:
 
-    Position3 edge_lengths_;
+    Real3 edge_lengths_;
     Real volume_;
     Real t_;
 

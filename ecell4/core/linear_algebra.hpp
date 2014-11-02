@@ -3,7 +3,7 @@
 
 #include <algorithm>
 
-#include "Position3.hpp"
+#include "Real3.hpp"
 
 namespace ecell4
 {
@@ -31,7 +31,7 @@ BOOST_PP_REPEAT_FROM_TO(2, CREATE_VECTOR_LIMIT_REPEAT, CREATE_VECTOR_TPL, )
 #undef CREATE_VECTOR_INNER_TPL
 
 template<typename T_>
-inline bool is_cartesian_vector(const Position3& vector)
+inline bool is_cartesian_vector(const Real3& vector)
 {
     return (vector == create_vector<T_>(1, 0, 0) ||
             vector == create_vector<T_>(0, 1, 0) ||

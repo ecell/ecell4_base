@@ -145,7 +145,7 @@ ParticleSpaceVectorImpl::list_particles_exact(const Species& sp) const
 
 std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
 ParticleSpaceVectorImpl::list_particles_within_radius(
-    const Position3& pos, const Real& radius) const
+    const Real3& pos, const Real& radius) const
 {
     const Real rsq(pow_2(radius));
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > retval;
@@ -167,7 +167,7 @@ ParticleSpaceVectorImpl::list_particles_within_radius(
 
 std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
 ParticleSpaceVectorImpl::list_particles_within_radius(
-    const Position3& pos, const Real& radius, const ParticleID& ignore) const
+    const Real3& pos, const Real& radius, const ParticleID& ignore) const
 {
     const Real rsq(pow_2(radius));
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > retval;
@@ -192,7 +192,7 @@ ParticleSpaceVectorImpl::list_particles_within_radius(
 
 std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
 ParticleSpaceVectorImpl::list_particles_within_radius(
-    const Position3& pos, const Real& radius,
+    const Real3& pos, const Real& radius,
     const ParticleID& ignore1, const ParticleID& ignore2) const
 {
     const Real rsq(pow_2(radius));
@@ -216,13 +216,13 @@ ParticleSpaceVectorImpl::list_particles_within_radius(
     return retval;
 }
 
-void ParticleSpaceVectorImpl::reset(const Position3& edge_lengths)
+void ParticleSpaceVectorImpl::reset(const Real3& edge_lengths)
 {
     base_type::t_ = 0.0;
     particles_.clear();
     index_map_.clear();
 
-    for (Position3::size_type dim(0); dim < 3; ++dim)
+    for (Real3::size_type dim(0); dim < 3; ++dim)
     {
         if (edge_lengths[dim] <= 0)
         {

@@ -46,15 +46,15 @@ public:
 
     // CompartmentSpaceTraits
 
-    virtual const Position3& edge_lengths() const
+    virtual const Real3& edge_lengths() const
     {
         throw NotImplemented("edge_lengths() not implemented");
     }
 
-    virtual void reset(const Position3& edge_lengths)
+    virtual void reset(const Real3& edge_lengths)
     {
         throw NotImplemented(
-            "reset(const Position3&) not implemented");
+            "reset(const Real3&) not implemented");
     }
 
     /**
@@ -156,24 +156,24 @@ protected:
 
 public:
 
-    CompartmentSpaceVectorImpl(const Position3& edge_lengths)
+    CompartmentSpaceVectorImpl(const Real3& edge_lengths)
     {
         reset(edge_lengths);
     }
 
-    const Position3& edge_lengths() const
+    const Real3& edge_lengths() const
     {
         return edge_lengths_;
     }
 
-    void reset(const Position3& edge_lengths)
+    void reset(const Real3& edge_lengths)
     {
         base_type::t_ = 0.0;
         index_map_.clear();
         num_molecules_.clear();
         species_.clear();
 
-        for (Position3::size_type dim(0); dim < 3; ++dim)
+        for (Real3::size_type dim(0); dim < 3; ++dim)
         {
             if (edge_lengths[dim] <= 0)
             {
@@ -221,7 +221,7 @@ protected:
 
 protected:
 
-    Position3 edge_lengths_;
+    Real3 edge_lengths_;
     Real volume_;
 
     num_molecules_container_type num_molecules_;

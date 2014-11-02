@@ -1,7 +1,7 @@
 #ifndef __ECELL4_SHAPE_HPP
 #define __ECELL4_SHAPE_HPP
 
-#include "Position3.hpp"
+#include "Real3.hpp"
 #include "RandomNumberGenerator.hpp"
 
 
@@ -24,8 +24,8 @@ struct Shape
         return THREE;
     }
 
-    virtual Real is_inside(const Position3& coord) const = 0;
-    virtual Position3 draw_position(
+    virtual Real is_inside(const Real3& coord) const = 0;
+    virtual Real3 draw_position(
         boost::shared_ptr<RandomNumberGenerator>& rng) const = 0;
 };
 

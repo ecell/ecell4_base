@@ -9,7 +9,7 @@ Sphere::Sphere()
     ;
 }
 
-Sphere::Sphere(const Position3& center, const Real radius)
+Sphere::Sphere(const Real3& center, const Real radius)
     : center_(center), radius_(radius)
 {
     ;
@@ -26,17 +26,17 @@ const Real& Sphere::radius() const
     return radius_;
 }
 
-const Position3& Sphere::center() const
+const Real3& Sphere::center() const
 {
     return center_;
 }
 
-Real Sphere::distance(const Position3& coord) const
+Real Sphere::distance(const Real3& coord) const
 {
     return length(coord - center_) - radius_;
 }
 
-Real Sphere::is_inside(const Position3& coord) const
+Real Sphere::is_inside(const Real3& coord) const
 {
     return distance(coord);
 }
@@ -46,7 +46,7 @@ SphericalSurface Sphere::surface() const
     return SphericalSurface(center_, radius_);
 }
 
-Position3 Sphere::draw_position(
+Real3 Sphere::draw_position(
     boost::shared_ptr<RandomNumberGenerator>& rng) const
 {
     if (radius_ <= 0.0)
@@ -59,8 +59,8 @@ Position3 Sphere::draw_position(
         const Real x(rng->uniform(-radius_, +radius_));
         const Real y(rng->uniform(-radius_, +radius_));
         const Real z(rng->uniform(-radius_, +radius_));
-        const Position3 dir(x, y, z);
-        const Position3 pos(dir + center_);
+        const Real3 dir(x, y, z);
+        const Real3 pos(dir + center_);
         if (is_inside(pos) <= 0.0)
         {
             return pos;
@@ -76,7 +76,7 @@ SphericalSurface::SphericalSurface()
     ;
 }
 
-SphericalSurface::SphericalSurface(const Position3& center, const Real radius)
+SphericalSurface::SphericalSurface(const Real3& center, const Real radius)
     : center_(center), radius_(radius)
 {
     ;
@@ -93,17 +93,17 @@ const Real& SphericalSurface::radius() const
     return radius_;
 }
 
-const Position3& SphericalSurface::center() const
+const Real3& SphericalSurface::center() const
 {
     return center_;
 }
 
-Real SphericalSurface::distance(const Position3& coord) const
+Real SphericalSurface::distance(const Real3& coord) const
 {
     return length(coord - center_) - radius_;
 }
 
-Real SphericalSurface::is_inside(const Position3& coord) const
+Real SphericalSurface::is_inside(const Real3& coord) const
 {
     return distance(coord);
 }
@@ -113,7 +113,7 @@ Sphere SphericalSurface::inside() const
     return Sphere(center_, radius_);
 }
 
-Position3 SphericalSurface::draw_position(
+Real3 SphericalSurface::draw_position(
     boost::shared_ptr<RandomNumberGenerator>& rng) const
 {
     if (radius_ <= 0.0)

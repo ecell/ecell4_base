@@ -27,14 +27,14 @@ class GillespieWorld
 {
 public:
 
-    GillespieWorld(const Position3& edge_lengths,
+    GillespieWorld(const Real3& edge_lengths,
                    boost::shared_ptr<RandomNumberGenerator> rng)
         : cs_(new CompartmentSpaceVectorImpl(edge_lengths)), rng_(rng)
     {
         ;
     }
 
-    GillespieWorld(const Position3& edge_lengths = Position3(1, 1, 1))
+    GillespieWorld(const Real3& edge_lengths = Real3(1, 1, 1))
         : cs_(new CompartmentSpaceVectorImpl(edge_lengths))
     {
         rng_ = boost::shared_ptr<RandomNumberGenerator>(
@@ -43,7 +43,7 @@ public:
     }
 
     GillespieWorld(const std::string filename)
-        : cs_(new CompartmentSpaceVectorImpl(Position3(1, 1, 1)))
+        : cs_(new CompartmentSpaceVectorImpl(Real3(1, 1, 1)))
     {
         rng_ = boost::shared_ptr<RandomNumberGenerator>(
             new GSLRandomNumberGenerator());
@@ -55,12 +55,12 @@ public:
     const Real& t(void) const;
     void set_t(const Real& t);
 
-    const Position3& edge_lengths() const
+    const Real3& edge_lengths() const
     {
         return cs_->edge_lengths();
     }
 
-    void reset(const Position3& edge_lengths)
+    void reset(const Real3& edge_lengths)
     {
         cs_->reset(edge_lengths);
     }

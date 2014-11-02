@@ -180,7 +180,7 @@ protected:
 
         std::pair<ReactionRule, coordinate_type> draw(const coordinate_type& c)
         {
-            const Position3 lengths(sim_->world()->subvolume_edge_lengths());
+            const Real3 lengths(sim_->world()->subvolume_edge_lengths());
             const Real px(1.0 / (lengths[0] * lengths[0])),
                 py(1.0 / (lengths[1] * lengths[1])),
                 pz(1.0 / (lengths[2] * lengths[2]));
@@ -219,7 +219,7 @@ protected:
         {
             const Species sp(rr_.reactants()[0]);
             const Real D(sim_->world()->get_molecule_info(sp).D);
-            const Position3 lengths(sim_->world()->subvolume_edge_lengths());
+            const Real3 lengths(sim_->world()->subvolume_edge_lengths());
             const Real px(1.0 / (lengths[0] * lengths[0])),
                 py(1.0 / (lengths[1] * lengths[1])),
                 pz(1.0 / (lengths[2] * lengths[2]));

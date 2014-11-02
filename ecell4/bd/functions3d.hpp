@@ -3,7 +3,7 @@
 
 #include <ecell4/core/config.h>
 #include <ecell4/core/types.hpp>
-#include <ecell4/core/Position3.hpp>
+#include <ecell4/core/Real3.hpp>
 #include <ecell4/core/RandomNumberGenerator.hpp>
 
 namespace ecell4
@@ -35,11 +35,11 @@ Real Igbd_3d(const Real& sigma, const Real& t, const Real& D);
  */
 Real Igbd_r_3d(Real r, Real sigma, Real t, Real D);
 
-Position3 random_spherical_uniform(RandomNumberGenerator& rng, const Real& r);
-Position3 random_displacement_3d(
+Real3 random_spherical_uniform(RandomNumberGenerator& rng, const Real& r);
+Real3 random_displacement_3d(
     RandomNumberGenerator& rng, const Real& t, const Real& D);
 
-Position3 random_ipv_3d(
+Real3 random_ipv_3d(
     RandomNumberGenerator& rng, const Real& sigma, const Real& t, const Real& D);
 
 struct Igbd_r_3d_params

@@ -33,7 +33,7 @@ void CompartmentSpaceVectorImpl::set_volume(const Real& volume)
 
     volume_ = volume;
     const Real L(cbrt(volume));
-    edge_lengths_ = Position3(L, L, L);
+    edge_lengths_ = Real3(L, L, L);
 }
 
 void CompartmentSpaceVectorImpl::reserve_species(const Species& sp)

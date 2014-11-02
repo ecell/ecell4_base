@@ -4,7 +4,7 @@
 #include <map>
 
 #include "types.hpp"
-#include "Position3.hpp"
+#include "Real3.hpp"
 #include "Species.hpp"
 #include "Identifier.hpp"
 #include "config.h"
@@ -22,7 +22,7 @@ class Particle
 {
 public:
 
-    typedef Position3 position_type;
+    typedef Real3 position_type;
     typedef Real length_type;
     typedef Real D_type;
     typedef Species species_type;
@@ -36,7 +36,7 @@ public:
     }
 
     explicit Particle(
-        const Species& sp, const Position3& pos, const Real& radius,
+        const Species& sp, const Real3& pos, const Real& radius,
         const Real& D)
         // : position_(pos), radius_(radius), D_(D)
         : species_serial_(sp.serial()), position_(pos), radius_(radius), D_(D)
@@ -46,7 +46,7 @@ public:
     }
 
     Particle(
-        const species_serial_type& sid, const Position3& pos,
+        const species_serial_type& sid, const Real3& pos,
         const Real& radius, const Real& D)
         // : position_(pos), radius_(radius), D_(D)
         : species_serial_(sid), position_(pos), radius_(radius), D_(D)
@@ -55,12 +55,12 @@ public:
         // std::strcpy(species_serial_, sid.c_str());
     }
 
-    Position3& position()
+    Real3& position()
     {
         return position_;
     }
 
-    const Position3& position() const
+    const Real3& position() const
     {
         return position_;
     }
@@ -155,7 +155,7 @@ private:
     // Species species_;
     species_serial_type species_serial_;
     // char species_serial_[32];
-    Position3 position_;
+    Real3 position_;
     Real radius_, D_;
 };
 

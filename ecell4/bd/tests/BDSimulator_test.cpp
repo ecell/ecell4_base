@@ -17,7 +17,7 @@ using namespace ecell4::bd;
 BOOST_AUTO_TEST_CASE(BDSimulator_test_constructor)
 {
     const Real L(1e-6);
-    const Position3 edge_lengths(L, L, L);
+    const Real3 edge_lengths(L, L, L);
     boost::shared_ptr<RandomNumberGenerator> rng(new GSLRandomNumberGenerator());
 
     boost::shared_ptr<NetworkModel> model(new NetworkModel());
@@ -29,7 +29,7 @@ BOOST_AUTO_TEST_CASE(BDSimulator_test_constructor)
 BOOST_AUTO_TEST_CASE(BDSimulator_test_step1)
 {
     const Real L(1e-6);
-    const Position3 edge_lengths(L, L, L);
+    const Real3 edge_lengths(L, L, L);
     boost::shared_ptr<RandomNumberGenerator> rng(new GSLRandomNumberGenerator());
 
     boost::shared_ptr<NetworkModel> model(new NetworkModel());
@@ -42,7 +42,7 @@ BOOST_AUTO_TEST_CASE(BDSimulator_test_step1)
 BOOST_AUTO_TEST_CASE(BDSimulator_test_step2)
 {
     const Real L(1e-6);
-    const Position3 edge_lengths(L, L, L);
+    const Real3 edge_lengths(L, L, L);
     boost::shared_ptr<RandomNumberGenerator> rng(new GSLRandomNumberGenerator());
 
     boost::shared_ptr<NetworkModel> model(new NetworkModel());
@@ -50,7 +50,7 @@ BOOST_AUTO_TEST_CASE(BDSimulator_test_step2)
     model->add_species_attribute(sp1);
 
     boost::shared_ptr<BDWorld> world(new BDWorld(edge_lengths, rng));
-    world->new_particle(Particle(sp1, Position3(0, 0, 0), 2.5e-9, 1e-12));
+    world->new_particle(Particle(sp1, Real3(0, 0, 0), 2.5e-9, 1e-12));
     world->add_molecules(sp1, 10);
 
     BDSimulator target(model, world);

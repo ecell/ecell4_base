@@ -20,7 +20,7 @@ template<typename Timpl_>
 void CompartmentSpace_test_volume_template()
 {
     const Real L(1e-6);
-    const Position3 edge_lengths(L, L, L);
+    const Real3 edge_lengths(L, L, L);
     Timpl_ target(edge_lengths);
     const Real new_volume(2 * target.volume());
     target.set_volume(new_volume);
@@ -36,7 +36,7 @@ template<typename Timpl_>
 void CompartmentSpace_test_species_template()
 {
     const Real L(1e-6);
-    const Position3 edge_lengths(L, L, L);
+    const Real3 edge_lengths(L, L, L);
     Timpl_ target(edge_lengths);
 
     Species sp1("A"), sp2("B"), sp3("C");

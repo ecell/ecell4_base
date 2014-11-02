@@ -38,7 +38,7 @@ public:
     }
 
     virtual ODEWorld* create_world(
-        const Position3& edge_lengths = Position3(1, 1, 1)) const
+        const Real3& edge_lengths = Real3(1, 1, 1)) const
     {
         return new ODEWorld(edge_lengths);
     }

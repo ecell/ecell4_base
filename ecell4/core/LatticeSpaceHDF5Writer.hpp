@@ -153,7 +153,7 @@ void save_lattice_space(const Tspace_& space, H5::Group* root)
             "voxel_radius", H5::PredType::IEEE_F64LE, H5::DataSpace(H5S_SCALAR)));
     attr_voxel_radius.write(H5::PredType::IEEE_F64LE, &voxel_radius);
 
-    const Position3 edge_lengths = space.edge_lengths();
+    const Real3 edge_lengths = space.edge_lengths();
     const hsize_t dims[] = {3};
     const H5::ArrayType lengths_type(H5::PredType::NATIVE_DOUBLE, 1, dims);
     H5::Attribute attr_lengths(
@@ -174,7 +174,7 @@ void load_lattice_space(const H5::Group& root, Tspace_* space)
     root.openAttribute("is_periodic").read(
         H5::PredType::STD_I32LE, &is_periodic);
 
-    Position3 edge_lengths;
+    Real3 edge_lengths;
     const hsize_t dims[] = {3};
     const H5::ArrayType lengths_type(H5::PredType::NATIVE_DOUBLE, 1, dims);
     root.openAttribute("edge_lengths").read(lengths_type, &edge_lengths);

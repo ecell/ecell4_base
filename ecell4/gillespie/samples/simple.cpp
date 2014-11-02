@@ -28,7 +28,7 @@ int main(int argc, char **argv)
     rng->seed(time(NULL));
 
     const Real L(1.0);
-    const Position3 edge_lengths(L, L, L);
+    const Real3 edge_lengths(L, L, L);
     boost::shared_ptr<GillespieWorld> world(new GillespieWorld(edge_lengths, rng));
     world->add_molecules(sp3, 10);
     world->save("test_gillespie.h5");

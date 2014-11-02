@@ -31,7 +31,7 @@ BOOST_AUTO_TEST_CASE(MesoscopicSimulator_test_step)
     model->add_reaction_rule(rr1);
 
     const Real L(1.0);
-    const Position3 edge_lengths(L, L, L);
+    const Real3 edge_lengths(L, L, L);
     boost::shared_ptr<RandomNumberGenerator> rng(new GSLRandomNumberGenerator());
     boost::shared_ptr<MesoscopicWorld> world(
         new MesoscopicWorld(edge_lengths, Integer3(2, 3, 4), rng));

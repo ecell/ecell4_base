@@ -39,14 +39,14 @@ public:
 
 public:
 
-    LatticeWorld(const Position3& edge_lengths, const Real& voxel_radius,
+    LatticeWorld(const Real3& edge_lengths, const Real& voxel_radius,
         const boost::shared_ptr<RandomNumberGenerator>& rng)
         : space_(edge_lengths, voxel_radius), rng_(rng)
     {
         ; // do nothing
     }
 
-    LatticeWorld(const Position3& edge_lengths, const Real& voxel_radius)
+    LatticeWorld(const Real3& edge_lengths, const Real& voxel_radius)
         : space_(edge_lengths, voxel_radius)
     {
         rng_ = boost::shared_ptr<RandomNumberGenerator>(
@@ -54,7 +54,7 @@ public:
         (*rng_).seed();
     }
 
-    LatticeWorld(const Position3& edge_lengths = Position3(1, 1, 1))
+    LatticeWorld(const Real3& edge_lengths = Real3(1, 1, 1))
         : space_(edge_lengths, edge_lengths[0] / 100) //XXX: sloppy default
     {
         rng_ = boost::shared_ptr<RandomNumberGenerator>(
@@ -63,7 +63,7 @@ public:
     }
 
     LatticeWorld(const std::string filename)
-        : space_(Position3(1, 1, 1), 1 / 100) //XXX: sloppy default
+        : space_(Real3(1, 1, 1), 1 / 100) //XXX: sloppy default
     {
         rng_ = boost::shared_ptr<RandomNumberGenerator>(
             new GSLRandomNumberGenerator());
@@ -137,7 +137,7 @@ public:
     const Real& t() const;
     void set_t(const Real& t);
 
-    const Position3& edge_lengths() const;
+    const Real3& edge_lengths() const;
     const Real volume() const;
     Integer num_species() const;
     bool has_species(const Species &sp) const;
@@ -187,7 +187,7 @@ public:
     }
 
     std::pair<std::pair<ParticleID, Particle>, bool>
-    new_particle(const Species& sp, const Position3& pos)
+    new_particle(const Species& sp, const Real3& pos)
     {
         const MoleculeInfo info(get_molecule_info(sp));
         return new_particle(Particle(sp, pos, info.radius, info.D));
@@ -325,27 +325,27 @@ public:
         return space_.size();
     }
 
-    coordinate_type position2coordinate(const Position3& pos) const
+    coordinate_type position2coordinate(const Real3& pos) const
     {
         return space_.position2coordinate(pos);
     }
 
-    const Position3 coordinate2position(const coordinate_type& coord) const
+    const Real3 coordinate2position(const coordinate_type& coord) const
     {
         return space_.coordinate2position(coord);
     }
 
-    const Position3 private2position(const private_coordinate_type& coord) const
+    const Real3 private2position(const private_coordinate_type& coord) const
     {
         return space_.coordinate2position(private2coord(coord));
     }
 
-    const Position3 global2position(const Integer3& global) const
+    const Real3 global2position(const Integer3& global) const
     {
         return space_.global2position(global);
     }
 
-    const Integer3 position2global(const Position3& pos) const
+    const Integer3 position2global(const Real3& pos) const
     {
         return space_.position2global(pos);
     }

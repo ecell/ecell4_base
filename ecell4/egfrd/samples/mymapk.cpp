@@ -53,7 +53,7 @@ int main(int argc, char **argv)
     // Constants
     // {{{
     const ecell4::Real L(1e-6);
-    const ecell4::Position3 edge_lengths(L, L, L);
+    const ecell4::Real3 edge_lengths(L, L, L);
     const ecell4::Integer3 matrix_sizes(3, 3, 3);
     const ecell4::Real volume(L * L * L);
     const ecell4::Integer N(60);
@@ -130,7 +130,7 @@ int main(int argc, char **argv)
     for (particle_id_pair_list::const_iterator i(particles.begin());
         i != particles.end(); ++i)
     {
-        const ecell4::Position3 pos((*i).second.position());
+        const ecell4::Real3 pos((*i).second.position());
         std::cout << "(" << pos[0] << pos[1] << pos[2] << ")" << std::endl;
     }
     // }}}
@@ -230,7 +230,7 @@ int main(int argc, char **argv)
 
     // {
     //     boost::scoped_ptr<world_type>
-    //         world2(new world_type(ecell4::Position3(1, 2, 3), ecell4::Integer3(3, 6, 9)));
+    //         world2(new world_type(ecell4::Real3(1, 2, 3), ecell4::Integer3(3, 6, 9)));
     //     std::cout << "edge_lengths:" << world2->edge_lengths()[0] << " " << world2->edge_lengths()[1] << " " << world2->edge_lengths()[2] << std::endl;
     //     std::cout << "matrix_sizes:" << world2->matrix_sizes()[0] << " " << world2->matrix_sizes()[1] << " " << world2->matrix_sizes()[2] << std::endl;
     //     std::cout << "num_particles: " << world2->num_particles() << std::endl;

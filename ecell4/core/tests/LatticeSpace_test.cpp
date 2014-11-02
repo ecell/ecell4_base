@@ -18,7 +18,7 @@ using namespace ecell4;
 
 struct Fixture
 {
-    const Position3 edge_lengths;
+    const Real3 edge_lengths;
     const Real voxel_radius;
     LatticeSpace space;
     SerialIDGenerator<ParticleID> sidgen;
@@ -55,7 +55,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_update_particle)
 {
     ParticleID id(sidgen());
 
-    Position3 pos(2e-8, 1.7e-8, 1.5e-8);
+    Real3 pos(2e-8, 1.7e-8, 1.5e-8);
     Real r(1.0);
     Real d(2.3);
     Particle particle(sp, pos, r, d);
@@ -67,13 +67,13 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_update_particle)
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_num_particles)
 {
     ParticleID id(sidgen());
-    Position3 pos(2e-8, 1.7e-8, 1.5e-8);
+    Real3 pos(2e-8, 1.7e-8, 1.5e-8);
     Real r(1.0), d(2.3);
     Particle particle(sp, pos, r, d);
 
     ParticleID a_id(sidgen());
     Species a(std::string("ANOTHER"));
-    Position3 pos1(1e-8, 2e-8, 1e-9);
+    Real3 pos1(1e-8, 2e-8, 1e-9);
     Real r1(1.1);
     Real d1(4.3);
     Particle another(a, pos1, r1, d1);
@@ -87,13 +87,13 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_num_particles)
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_list_particles)
 {
     ParticleID id(sidgen());
-    Position3 pos(2e-8, 1.7e-8, 1.5e-8);
+    Real3 pos(2e-8, 1.7e-8, 1.5e-8);
     Real r(1.0), d(2.3);
     Particle particle(sp, pos, r, d);
 
     ParticleID a_id(sidgen());
     Species a(std::string("ANOTHER"));
-    Position3 pos1(1e-8, 2e-8, 1e-9);
+    Real3 pos1(1e-8, 2e-8, 1e-9);
     Real r1(1.1);
     Real d1(4.3);
     Particle another(a, pos1, r1, d1);
@@ -155,21 +155,21 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_coordinate_global_translation)
 
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_coordinate_position_translation)
 {
-    const Position3 private_origin(space.private2position(0));
+    const Real3 private_origin(space.private2position(0));
     BOOST_ASSERT(private_origin[0] < 0);
     BOOST_ASSERT(private_origin[1] < 0);
     BOOST_ASSERT(private_origin[2] < 0);
 
     const LatticeSpace::private_coordinate_type origin(
                 (space.col_size() + 3) * (space.row_size() + 2) + 1);
-    const Position3 origin_p(space.private2position(origin));
+    const Real3 origin_p(space.private2position(origin));
     BOOST_ASSERT(origin_p[0] == 0);
     BOOST_ASSERT(origin_p[1] == 0);
     BOOST_ASSERT(origin_p[2] == 0);
 
     for (Integer i(0); i < 12; ++i)
     {
-        const Position3 neighbor(
+        const Real3 neighbor(
                 space.private2position(space.get_neighbor(origin, i)));
         const LatticeSpace::private_coordinate_type coord(
                 space.position2private(origin_p * 0.7 + neighbor * 0.3));
@@ -180,7 +180,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_coordinate_position_translation)
             (space.col_size()+2) * (space.layer_size() + 2) * (space.row_size() + 2));
     for (LatticeSpace::private_coordinate_type coord(0); coord < size; ++coord)
     {
-        const Position3 pos(space.private2position(coord));
+        const Real3 pos(space.private2position(coord));
         const Integer3 global(space.position2global(pos));
         const LatticeSpace::private_coordinate_type created_coord(
                 space.position2private(pos));
@@ -260,7 +260,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_update_voxel)
     const ParticleID pid(sidgen());
     for (LatticeSpace::coordinate_type coord(0); coord < space.size(); ++coord)
     {
-        const Position3 pos(space.coordinate2position(coord));
+        const Real3 pos(space.coordinate2position(coord));
         BOOST_CHECK(space.update_voxel(pid, Voxel(sp, coord, radius, D)));
         BOOST_CHECK_EQUAL(space.num_particles(), 1);
         std::pair<ParticleID, Particle> pair(space.list_particles()[0]);
@@ -278,7 +278,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_save_and_load)
     const ParticleID pid(sidgen());
     for (LatticeSpace::coordinate_type coord(0); coord < space.size(); ++coord)
     {
-        const Position3 pos(space.coordinate2position(coord));
+        const Real3 pos(space.coordinate2position(coord));
         BOOST_CHECK(space.update_voxel(pid, Voxel(sp, coord, radius, D)));
 
         H5::H5File fout("data.h5", H5F_ACC_TRUNC);
@@ -290,7 +290,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_save_and_load)
         boost::scoped_ptr<H5::H5File>
             fin(new H5::H5File("data.h5", H5F_ACC_RDONLY));
         const H5::Group groupin(fin->openGroup("LatticeSpace"));
-        LatticeSpace space2(Position3(3e-8, 3e-8, 3e-8), voxel_radius);
+        LatticeSpace space2(Real3(3e-8, 3e-8, 3e-8), voxel_radius);
         space2.load(groupin);
         fin->close();
 
@@ -324,15 +324,15 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_neighbor)
 {
     for (LatticeSpace::coordinate_type coord(0); coord < space.size(); ++coord)
     {
-        Position3 center(space.coordinate2position(coord));
+        Real3 center(space.coordinate2position(coord));
         for (int i(0); i < 12; ++i)
         {
             LatticeSpace::private_coordinate_type neighbor(
                     space.get_neighbor(space.coord2private(coord), i));
             if (!space.is_inside(neighbor))
                 continue;
-            Position3 pos(space.coordinate2position(space.private2coord(neighbor)));
-            Position3 vec((pos-center)/voxel_radius/2);
+            Real3 pos(space.coordinate2position(space.private2coord(neighbor)));
+            Real3 vec((pos-center)/voxel_radius/2);
             Real r_ratio(length(pos-center)/voxel_radius/2);
             BOOST_ASSERT(r_ratio < 1.0001);
         }
@@ -343,7 +343,7 @@ BOOST_AUTO_TEST_SUITE_END()
 
 struct PeriodicFixture
 {
-    const Position3 edge_lengths;
+    const Real3 edge_lengths;
     const Real voxel_radius;
     LatticeSpace space;
     SerialIDGenerator<ParticleID> sidgen;
@@ -536,14 +536,14 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_coordinates2)
     BOOST_CHECK(g1.col == g2.col && g1.row == g2.row && g1.layer == g2.layer);
     BOOST_CHECK(g1.col == g3.col && g1.row == g3.row && g1.layer == g3.layer);
 
-    const Position3 p1(space.global2position(g1));
+    const Real3 p1(space.global2position(g1));
     const Integer3 g4(space.position2global(p1));
 
     BOOST_CHECK(g1.col == g4.col && g1.row == g4.row && g1.layer == g4.layer);
     BOOST_CHECK_EQUAL(c1, space.position2coordinate(p1));
     BOOST_CHECK_EQUAL(pc1, space.position2private(p1));
 
-    const Position3 p2(space.coordinate2position(c1));
+    const Real3 p2(space.coordinate2position(c1));
     BOOST_CHECK_EQUAL(c1, space.position2coordinate(p2));
 }
 
@@ -551,7 +551,7 @@ BOOST_AUTO_TEST_SUITE_END()
 
 struct StructureFixture
 {
-    const Position3 edge_lengths;
+    const Real3 edge_lengths;
     const Real voxel_radius;
     LatticeSpace space;
     SerialIDGenerator<ParticleID> sidgen;
@@ -574,7 +574,7 @@ BOOST_FIXTURE_TEST_SUITE(structure_suite, StructureFixture)
 
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_structure_update)
 {
-    const Position3 pos(2.7e-9, 1.3e-8, 2.0e-8);
+    const Real3 pos(2.7e-9, 1.3e-8, 2.0e-8);
     BOOST_CHECK(space.update_structure(Particle(structure, pos, radius, D)));
     BOOST_CHECK_EQUAL(space.list_particles().size(), 1);
     ParticleID pid(sidgen());
@@ -594,8 +594,8 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_structure_update)
 
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_structure_move)
 {
-    const Position3 pos1(2.7e-9, 1.3e-8, 2.0e-8);
-    const Position3 pos2(1.2e-8, 1.5e-8, 1.8e-8);
+    const Real3 pos1(2.7e-9, 1.3e-8, 2.0e-8);
+    const Real3 pos2(1.2e-8, 1.5e-8, 1.8e-8);
     BOOST_CHECK(space.update_structure(Particle(structure, pos1, radius, D)));
     BOOST_CHECK_EQUAL(space.list_particles().size(), 1);
     BOOST_CHECK(space.update_structure(Particle(structure, pos2, radius, D)));

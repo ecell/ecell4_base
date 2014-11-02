@@ -7,7 +7,7 @@
 #include <ecell4/core/types.hpp>
 #include <ecell4/core/Identifier.hpp>
 #include <ecell4/core/SerialIDGenerator.hpp>
-#include <ecell4/core/Position3.hpp>
+#include <ecell4/core/Real3.hpp>
 #include <ecell4/core/Context.hpp>
 #include <ecell4/core/RandomNumberGenerator.hpp>
 #include <ecell4/core/Model.hpp>
@@ -43,7 +43,7 @@
 #include "geometry.hpp"
 //#include "GSLRandomNumberGenerator.hpp"
 //#include "Point.hpp" // XXX: workaround. should be removed later.
-#include "Position3Type.hpp"
+#include "Real3Type.hpp"
 #include "utils/pair.hpp"
 
 // #include "ParticleSimulationStructure.hpp"
@@ -71,7 +71,7 @@ struct WorldTraitsBase
     typedef ecell4::SerialIDGenerator<particle_id_type> particle_id_generator;
     typedef ecell4::Species::serial_type species_id_type; // std::string
     typedef ecell4::Particle particle_type;
-    typedef ecell4::Position3 position_type;
+    typedef ecell4::Real3 position_type;
     typedef ecell4::GSLRandomNumberGenerator rng_type;
     typedef ecell4::Model model_type;
 

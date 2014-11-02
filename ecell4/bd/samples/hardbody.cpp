@@ -2,7 +2,7 @@
 
 #include <ecell4/core/types.hpp>
 #include <ecell4/core/Species.hpp>
-#include <ecell4/core/Position3.hpp>
+#include <ecell4/core/Real3.hpp>
 #include <ecell4/core/NetworkModel.hpp>
 
 #include <ecell4/bd/BDSimulator.hpp>
@@ -15,7 +15,7 @@ using namespace ecell4::bd;
  */
 void print_particle_position(const BDWorld& world, const ParticleID& pid)
 {
-    const Position3 pos(world.get_particle(pid).second.position());
+    const Real3 pos(world.get_particle(pid).second.position());
     std::cout << std::setprecision(12) << world.t() << " : " << pos << std::endl;
 }
 
@@ -27,7 +27,7 @@ int main(int argc, char** argv)
     /// simulation parameters
     const Real L(1e-6);
     std::string D("5e-12"), radius("5e-9");
-    const Position3 edge_lengths(L, L, L);
+    const Real3 edge_lengths(L, L, L);
 
     /// instantiate NetworkModel
     boost::shared_ptr<NetworkModel> model(new NetworkModel());
@@ -47,7 +47,7 @@ int main(int argc, char** argv)
     /// create a Particle, and inject it into BDWorld
     BDWorld::molecule_info_type info1((*world).get_molecule_info(Species("A")));
     const Particle p1(
-        sp1, Position3(0, 0, 0), info1.radius, info1.D);
+        sp1, Real3(0, 0, 0), info1.radius, info1.D);
     const ParticleID pid1((*world).new_particle(p1).first.first);
     world->save("test_bd.h5");
 

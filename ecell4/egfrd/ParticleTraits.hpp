@@ -8,7 +8,7 @@
 // #include "Shape.hpp"
 //XXX: Shape.hpp
 #include <boost/type_traits/remove_cv.hpp>
-#include "Position3Type.hpp"
+#include "Real3Type.hpp"
 #include "geometry.hpp"
 //XXX
 

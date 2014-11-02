@@ -34,7 +34,7 @@ public:
 
 public:
 
-    BDWorld(const Position3& edge_lengths = Position3(1, 1, 1))
+    BDWorld(const Real3& edge_lengths = Real3(1, 1, 1))
         : ps_(new ParticleSpaceVectorImpl(edge_lengths))
     {
         rng_ = boost::shared_ptr<RandomNumberGenerator>(
@@ -43,7 +43,7 @@ public:
     }
 
     BDWorld(
-        const Position3& edge_lengths,
+        const Real3& edge_lengths,
         boost::shared_ptr<RandomNumberGenerator> rng)
         : ps_(new ParticleSpaceVectorImpl(edge_lengths)), rng_(rng)
     {
@@ -51,7 +51,7 @@ public:
     }
 
     BDWorld(const std::string& filename)
-        : ps_(new ParticleSpaceVectorImpl(Position3(1, 1, 1)))
+        : ps_(new ParticleSpaceVectorImpl(Real3(1, 1, 1)))
     {
         rng_ = boost::shared_ptr<RandomNumberGenerator>(
             new GSLRandomNumberGenerator());
@@ -84,7 +84,7 @@ public:
     }
 
     std::pair<std::pair<ParticleID, Particle>, bool>
-    new_particle(const Species& sp, const Position3& pos)
+    new_particle(const Species& sp, const Real3& pos)
     {
         const MoleculeInfo info(get_molecule_info(sp));
         return new_particle(Particle(sp, pos, info.radius, info.D));
@@ -134,7 +134,7 @@ public:
 
     // ParticleSpaceTraits
 
-    const Position3& edge_lengths() const
+    const Real3& edge_lengths() const
     {
         return (*ps_).edge_lengths();
     }
@@ -204,43 +204,43 @@ public:
 
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
     list_particles_within_radius(
-        const Position3& pos, const Real& radius) const
+        const Real3& pos, const Real& radius) const
     {
         return (*ps_).list_particles_within_radius(pos, radius);
     }
 
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
     list_particles_within_radius(
-        const Position3& pos, const Real& radius, const ParticleID& ignore) const
+        const Real3& pos, const Real& radius, const ParticleID& ignore) const
     {
         return (*ps_).list_particles_within_radius(pos, radius, ignore);
     }
 
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
     list_particles_within_radius(
-        const Position3& pos, const Real& radius,
+        const Real3& pos, const Real& radius,
         const ParticleID& ignore1, const ParticleID& ignore2) const
     {
         return (*ps_).list_particles_within_radius(pos, radius, ignore1, ignore2);
     }
 
-    inline Position3 periodic_transpose(
-        const Position3& pos1, const Position3& pos2) const
+    inline Real3 periodic_transpose(
+        const Real3& pos1, const Real3& pos2) const
     {
         return (*ps_).periodic_transpose(pos1, pos2);
     }
 
-    inline Position3 apply_boundary(const Position3& pos) const
+    inline Real3 apply_boundary(const Real3& pos) const
     {
         return (*ps_).apply_boundary(pos);
     }
 
-    inline Real distance_sq(const Position3& pos1, const Position3& pos2) const
+    inline Real distance_sq(const Real3& pos1, const Real3& pos2) const
     {
         return (*ps_).distance_sq(pos1, pos2);
     }
 
-    inline Real distance(const Position3& pos1, const Position3& pos2) const
+    inline Real distance(const Real3& pos1, const Real3& pos2) const
     {
         return (*ps_).distance(pos1, pos2);
     }
@@ -294,7 +294,7 @@ public:
 
     const Real volume() const
     {
-        const Position3& lengths(edge_lengths());
+        const Real3& lengths(edge_lengths());
         return lengths[0] * lengths[1] * lengths[2];
     }
 

@@ -4,7 +4,7 @@
 #include <boost/scoped_ptr.hpp>
 
 #include "types.hpp"
-#include "Position3.hpp"
+#include "Real3.hpp"
 #include "Species.hpp"
 #include "Particle.hpp"
 #include "AABB.hpp"
@@ -30,14 +30,14 @@ void throw_in_particles(
         throw std::invalid_argument("the number of particles must be positive.");
     }
 
-    const Position3 edge_lengths(world.edge_lengths());
+    const Real3 edge_lengths(world.edge_lengths());
     const molecule_info_type info(world.get_molecule_info(sp));
 
     for (int i(0); i < N; ++i)
     {
         while (true)
         {
-            // const Position3 pos(
+            // const Real3 pos(
             //     rng.uniform(0.0, edge_lengths[0]),
             //     rng.uniform(0.0, edge_lengths[1]),
             //     rng.uniform(0.0, edge_lengths[2]));
@@ -47,7 +47,7 @@ void throw_in_particles(
             //     world.new_particle(Particle(sp, pos, info.radius, info.D));
             //     break;
             // }
-            const Position3 pos(shape.draw_position(myrng));
+            const Real3 pos(shape.draw_position(myrng));
             if (world.new_particle(Particle(sp, pos, info.radius, info.D)).second)
             {
                 break;
@@ -60,7 +60,7 @@ template<typename Tworld_, typename Trng_>
 void throw_in_particles(
     Tworld_& world, const Species& sp, const Integer& N, boost::shared_ptr<Trng_>& rng)
 {
-    boost::scoped_ptr<Shape> shape(new AABB(Position3(0, 0, 0), world.edge_lengths()));
+    boost::scoped_ptr<Shape> shape(new AABB(Real3(0, 0, 0), world.edge_lengths()));
     throw_in_particles(world, sp, N, *shape, rng);
 }
 

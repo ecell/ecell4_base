@@ -16,29 +16,29 @@ public:
 
     /** for epdp
      */
-    typedef Position3 position_type;
+    typedef Real3 position_type;
     typedef position_type::value_type length_type;
     typedef position_type::value_type value_type;
 
 public:
 
     Sphere();
-    Sphere(const Position3& center, const Real radius);
+    Sphere(const Real3& center, const Real radius);
     Sphere(const Sphere& rhs);
     const Real& radius() const;
-    const Position3& center() const;
-    Real is_inside(const Position3& coord) const;
-    Real distance(const Position3& pos) const;
+    const Real3& center() const;
+    Real is_inside(const Real3& coord) const;
+    Real distance(const Real3& pos) const;
     SphericalSurface surface() const;
-    Position3 draw_position(
+    Real3 draw_position(
         boost::shared_ptr<RandomNumberGenerator>& rng) const;
 
-    inline const Position3& position() const
+    inline const Real3& position() const
     {
         return center_;
     }
 
-    Position3& position()
+    Real3& position()
     {
         return center_;
     }
@@ -55,7 +55,7 @@ public:
 
 protected:
 
-    Position3 center_;
+    Real3 center_;
     Real radius_;
 };
 
@@ -63,14 +63,14 @@ struct SphericalSurface
     : public Shape
 {
     SphericalSurface();
-    SphericalSurface(const Position3& center, const Real radius);
+    SphericalSurface(const Real3& center, const Real radius);
     SphericalSurface(const SphericalSurface& rhs);
     const Real& radius() const;
-    const Position3& center() const;
-    Real is_inside(const Position3& coord) const;
-    Real distance(const Position3& pos) const;
+    const Real3& center() const;
+    Real is_inside(const Real3& coord) const;
+    Real distance(const Real3& pos) const;
     Sphere inside() const;
-    Position3 draw_position(
+    Real3 draw_position(
         boost::shared_ptr<RandomNumberGenerator>& rng) const;
 
     dimension_kind dimension() const
@@ -80,7 +80,7 @@ struct SphericalSurface
 
 protected:
 
-    Position3 center_;
+    Real3 center_;
     Real radius_;
 };
 

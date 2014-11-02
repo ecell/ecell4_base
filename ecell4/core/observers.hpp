@@ -350,7 +350,7 @@ public:
         for(particle_container_type::const_iterator i(particles.begin());
             i != particles.end(); ++i)
         {
-            const Position3 pos((*i).second.position());
+            const Real3 pos((*i).second.position());
             const Real radius((*i).second.radius());
 
             unsigned int idx;

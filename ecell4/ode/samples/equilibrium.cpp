@@ -17,7 +17,7 @@ using namespace ecell4::ode;
 int main(int argc, char** argv)
 {
     const Real L(1e-6);
-    const Position3 edge_lengths(L, L, L);
+    const Real3 edge_lengths(L, L, L);
     const Real volume(L * L * L);
     const Real N(60);
     const Real ka(0.1), U(0.5);

@@ -167,7 +167,7 @@ void save_compartment_space(const typename Ttraits_::space_type& space, H5::Grou
     dataset_num_table->write(
         species_num_table.get(), dataset_num_table->getDataType());
 
-    const Position3 edge_lengths = space.edge_lengths();
+    const Real3 edge_lengths = space.edge_lengths();
     const hsize_t dims[] = {3};
     const H5::ArrayType lengths_type(H5::PredType::NATIVE_DOUBLE, 1, dims);
     H5::Attribute attr_lengths(
@@ -187,7 +187,7 @@ void load_compartment_space(const H5::Group& root, typename Ttraits_::space_type
     typedef typename traits_type::species_id_table_struct species_id_table_struct;
     typedef typename traits_type::species_num_struct species_num_struct;
 
-    Position3 edge_lengths;
+    Real3 edge_lengths;
     const hsize_t dims[] = {3};
     const H5::ArrayType lengths_type(H5::PredType::NATIVE_DOUBLE, 1, dims);
     root.openAttribute("edge_lengths").read(lengths_type, &edge_lengths);

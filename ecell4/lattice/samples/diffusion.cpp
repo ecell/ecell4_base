@@ -2,7 +2,7 @@
 #include <boost/shared_ptr.hpp>
 
 #include <ecell4/core/NetworkModel.hpp>
-#include <ecell4/core/Position3.hpp>
+#include <ecell4/core/Real3.hpp>
 #include <ecell4/core/RandomNumberGenerator.hpp>
 
 #include <ecell4/lattice/LatticeSimulator.hpp>
@@ -15,7 +15,7 @@ namespace ecell4
 void run()
 {
     const Real world_size(1);
-    const Position3 edge_lengths(world_size, world_size, world_size);
+    const Real3 edge_lengths(world_size, world_size, world_size);
     const Real voxel_radius(0.0025);
 
     const Integer N(60);

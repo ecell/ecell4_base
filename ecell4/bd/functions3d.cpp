@@ -10,7 +10,7 @@ namespace ecell4
 namespace bd
 {
 
-Position3 random_spherical_uniform(
+Real3 random_spherical_uniform(
     RandomNumberGenerator& rng, const Real& r)
 {
     Real a(0), b(0), r2(1);
@@ -22,14 +22,14 @@ Position3 random_spherical_uniform(
     }
 
     const Real scale(8 * r * std::sqrt(0.25 - r2));
-    return Position3(a * scale, b * scale, r * (8 * r2 - 1));
+    return Real3(a * scale, b * scale, r * (8 * r2 - 1));
 }
 
-Position3 random_displacement_3d(
+Real3 random_displacement_3d(
     RandomNumberGenerator& rng, const Real& t, const Real& D)
 {
     const Real sigma(std::sqrt(2 * D * t));
-    return Position3(
+    return Real3(
         rng.gaussian(sigma), rng.gaussian(sigma), rng.gaussian(sigma));
 }
 
@@ -142,7 +142,7 @@ Real random_ipv_length_3d(
     return low;
 }
 
-Position3 random_ipv_3d(
+Real3 random_ipv_3d(
     RandomNumberGenerator& rng, const Real& sigma, const Real& t, const Real& D)
 {
     const Real r(random_ipv_length_3d(rng, sigma, t, D));

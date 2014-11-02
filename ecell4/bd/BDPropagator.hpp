@@ -68,12 +68,12 @@ public:
 
     void remove_particle(const ParticleID& pid);
 
-    inline Position3 draw_displacement(const Particle& particle)
+    inline Real3 draw_displacement(const Particle& particle)
     {
         return random_displacement_3d(rng(), dt(), particle.D());
     }
 
-    inline Position3 draw_ipv(const Real& sigma, const Real& t, const Real& D)
+    inline Real3 draw_ipv(const Real& sigma, const Real& t, const Real& D)
     {
         return random_ipv_3d(rng(), sigma, t, D);
     }

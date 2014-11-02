@@ -26,7 +26,7 @@ BOOST_AUTO_TEST_CASE(GillespieWorld_test)
     Species sp2("B");
 
     const Real L(1.0);
-    const Position3 edge_lengths(L, L, L);
+    const Real3 edge_lengths(L, L, L);
     boost::shared_ptr<GillespieWorld> world(new GillespieWorld(edge_lengths, rng));
 
     world->add_molecules(sp1, 10);

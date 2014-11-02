@@ -25,7 +25,7 @@ double round(const double x)
 }
 #endif
 
-LatticeSpace::LatticeSpace(const Position3& edge_lengths,
+LatticeSpace::LatticeSpace(const Real3& edge_lengths,
         const Real& voxel_radius, const bool is_periodic) :
     voxel_radius_(voxel_radius), edge_lengths_(edge_lengths), t_(0),
     is_periodic_(is_periodic)
@@ -109,7 +109,7 @@ Integer LatticeSpace::num_molecules_exact(const Species& sp) const
     return num_voxels_exact(sp);
 }
 
-const Position3& LatticeSpace::edge_lengths() const
+const Real3& LatticeSpace::edge_lengths() const
 {
     return edge_lengths_;
 }
@@ -819,7 +819,7 @@ const Particle LatticeSpace::particle_at(private_coordinate_type coord) const
 {
     const MolecularTypeBase* ptr_mt(voxels_.at(coord));
     // const Species& sp = ptr_mt->species();
-    // const Position3& pos = coordinate2position(coord);
+    // const Real3& pos = coordinate2position(coord);
     // const Real& radius = 0;
     // const Real& D = 0;
     // Particle particle(sp, pos, radius, D);
@@ -885,10 +885,10 @@ const Integer3 LatticeSpace::private_coord2private_global(
     return coord2global_(private_coord, col_size_, row_size_, layer_size_);
 }
 
-const Position3 LatticeSpace::global2position(const Integer3& global) const
+const Real3 LatticeSpace::global2position(const Integer3& global) const
 {
     //the center point of a voxel
-    Position3 position;
+    Real3 position;
     position[0] = global.col * HCP_X;
     position[1] = (global.col % 2) * HCP_L + HCP_Y * global.layer;
     position[2] = (global.row * 2 + (global.layer + global.col) % 2)
@@ -896,7 +896,7 @@ const Position3 LatticeSpace::global2position(const Integer3& global) const
     return position;
 }
 
-const Integer3 LatticeSpace::position2global(const Position3& pos) const
+const Integer3 LatticeSpace::position2global(const Real3& pos) const
 {
     Integer3 global;
     global.col = round(pos[0] / HCP_X);
@@ -906,26 +906,26 @@ const Integer3 LatticeSpace::position2global(const Position3& pos) const
     return global;
 }
 
-const Position3 LatticeSpace::coordinate2position(coordinate_type coord) const
+const Real3 LatticeSpace::coordinate2position(coordinate_type coord) const
 {
     return private2position(coord2private(coord));
     //return global2position(coord2global(coord));
 }
 
 LatticeSpace::coordinate_type LatticeSpace::position2coordinate(
-        const Position3& pos) const
+        const Real3& pos) const
 {
     return global2coord(position2global(pos));
 }
 
-const Position3 LatticeSpace::private2position(
+const Real3 LatticeSpace::private2position(
         private_coordinate_type private_coord) const
 {
     return global2position(private_coord2global(private_coord));
 }
 
 LatticeSpace::private_coordinate_type LatticeSpace::position2private(
-        const Position3& pos) const
+        const Real3& pos) const
 {
     return global2private_coord(position2global(pos));
 }

@@ -21,7 +21,7 @@ const Real DEFAULT_VOXEL_RADIUS = 1e-8;
 BOOST_AUTO_TEST_CASE(LatticeSimulator_test_constructor)
 {
     const Real L(1e-6);
-    const Position3 edge_lengths(L, L, L);
+    const Real3 edge_lengths(L, L, L);
     const Real voxel_radius(DEFAULT_VOXEL_RADIUS);
 
     const std::string D("1e-12"), radius("2.5e-9");
@@ -45,7 +45,7 @@ BOOST_AUTO_TEST_CASE(LatticeSimulator_test_constructor)
 BOOST_AUTO_TEST_CASE(LatticeSimulator_test_hdf5_save)
 {
     const Real L(1e-6);
-    const Position3 edge_lengths(L, L, L);
+    const Real3 edge_lengths(L, L, L);
     const Real voxel_radius(DEFAULT_VOXEL_RADIUS);
     const Integer N(60);
 
@@ -70,7 +70,7 @@ BOOST_AUTO_TEST_CASE(LatticeSimulator_test_hdf5_save)
 BOOST_AUTO_TEST_CASE(LatticeSimulator_test_step_with_single_particle)
 {
     const Real L(2.5e-8);
-    const Position3 edge_lengths(L, L, L);
+    const Real3 edge_lengths(L, L, L);
     const Real voxel_radius(2.5e-9);
 
     const std::string D("1e-12"), radius("2.5e-9");
@@ -113,7 +113,7 @@ BOOST_AUTO_TEST_CASE(LatticeSimulator_test_step_with_single_particle)
 BOOST_AUTO_TEST_CASE(LatticeSimulator_test_step_with_single_species)
 {
     const Real L(1e-6);
-    const Position3 edge_lengths(L, L, L);
+    const Real3 edge_lengths(L, L, L);
     const Real voxel_radius(2.5e-9);
     const Integer N(60);
 
@@ -144,7 +144,7 @@ BOOST_AUTO_TEST_CASE(LatticeSimulator_test_step_with_single_species)
 BOOST_AUTO_TEST_CASE(LatticeSimulator_test_save_step_with_single_species)
 {
     const Real L(1e-6);
-    const Position3 edge_lengths(L, L, L);
+    const Real3 edge_lengths(L, L, L);
     const Real voxel_radius(2.5e-9);
     const Integer N(60);
 
@@ -187,7 +187,7 @@ BOOST_AUTO_TEST_CASE(LatticeSimulator_test_save_step_with_single_species)
 BOOST_AUTO_TEST_CASE(LatticeSimulator_test_save_step_with_periodic)
 {
     const Real L(1e-6);
-    const Position3 edge_lengths(L, L, L);
+    const Real3 edge_lengths(L, L, L);
     const Real voxel_radius(2.5e-9);
     const Integer N(60);
 
@@ -230,7 +230,7 @@ BOOST_AUTO_TEST_CASE(LatticeSimulator_test_save_step_with_periodic)
 BOOST_AUTO_TEST_CASE(LatticeSimulator_test_unimolecular_reaction)
 {
     const Real L(2.5e-8);
-    const Position3 edge_lengths(L, L, L);
+    const Real3 edge_lengths(L, L, L);
     const Real voxel_radius(2.5e-9);
     const std::string radius("1.25e-9");
     const ecell4::Species sp1("A", radius, "1.0e-12"),
@@ -268,7 +268,7 @@ BOOST_AUTO_TEST_CASE(LatticeSimulator_test_unimolecular_reaction)
 BOOST_AUTO_TEST_CASE(LatticeSimulator_test_binding_reaction)
 {
     const Real L(2.5e-8);
-    const Position3 edge_lengths(L, L, L);
+    const Real3 edge_lengths(L, L, L);
     const Real voxel_radius(2.5e-9);
     const std::string radius("1.25e-9");
     const ecell4::Species sp1("A", radius, "1.0e-12"),
@@ -308,7 +308,7 @@ BOOST_AUTO_TEST_CASE(LatticeSimulator_test_binding_reaction)
 BOOST_AUTO_TEST_CASE(LatticeSimulator_test_unbinding_reaction)
 {
     const Real L(2.5e-8);
-    const Position3 edge_lengths(L, L, L);
+    const Real3 edge_lengths(L, L, L);
     const Real voxel_radius(2.5e-9);
     const std::string radius("1.25e-9");
     const ecell4::Species sp1("A", radius, "1.0e-12"),
@@ -347,7 +347,7 @@ BOOST_AUTO_TEST_CASE(LatticeSimulator_test_unbinding_reaction)
 BOOST_AUTO_TEST_CASE(LatticeSimulator_test_degradation_reaction)
 {
     const Real L(2.5e-8);
-    const Position3 edge_lengths(L, L, L);
+    const Real3 edge_lengths(L, L, L);
     const Real voxel_radius(2.5e-9);
     const std::string radius("1.25e-9");
     const ecell4::Species sp1("A", radius, "1.0e-12");
@@ -379,7 +379,7 @@ BOOST_AUTO_TEST_CASE(LatticeSimulator_test_degradation_reaction)
 BOOST_AUTO_TEST_CASE(LattiecSimulator_test_scheduler)
 {
     const Real L(1e-6);
-    const Position3 edge_lengths(L, L, L);
+    const Real3 edge_lengths(L, L, L);
     const Real voxel_radius(2.5e-9);
 
     const std::string D1("1.0e-12"),
@@ -460,7 +460,7 @@ BOOST_AUTO_TEST_CASE(LattiecSimulator_test_scheduler)
 BOOST_AUTO_TEST_CASE(LatticeSimulator_test_finalize)
 {
     const Real L(1e-6);
-    const Position3 edge_lengths(L, L, L);
+    const Real3 edge_lengths(L, L, L);
     const Real voxel_radius(2.5e-9);
     const Integer N(60);
 
@@ -491,7 +491,7 @@ BOOST_AUTO_TEST_CASE(LatticeSimulator_test_finalize)
 BOOST_AUTO_TEST_CASE(LatticeSimulator_test_shape)
 {
     const Real L(2.5e-8);
-    const Position3 edge_lengths(L, L, L);
+    const Real3 edge_lengths(L, L, L);
     const Real voxel_radius(1e-9);
     const std::string D("1e-12"), radius("2.5e-9");
     Species membrane("Membrane", "2.5e-9", "0");
@@ -508,10 +508,10 @@ BOOST_AUTO_TEST_CASE(LatticeSimulator_test_shape)
 
     LatticeSimulator sim(model, world);
 
-    const Sphere sphere(Position3(L/2, L/2, L/2), L*1/3);
+    const Sphere sphere(Real3(L/2, L/2, L/2), L*1/3);
 
     BOOST_CHECK(world->add_structure(membrane, sphere) > 0);
-    BOOST_CHECK(world->new_particle(Particle(sp, Position3(L/2, L/2, L*5/6),
+    BOOST_CHECK(world->new_particle(Particle(sp, Real3(L/2, L/2, L*5/6),
                     2.5e-9, 1e-12)).second);
 
     sim.initialize();

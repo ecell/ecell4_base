@@ -37,7 +37,7 @@ public:
 public:
 
     LatticeSpace(
-        const Position3& edge_lengths, const Real& voxel_radius,
+        const Real3& edge_lengths, const Real& voxel_radius,
         const bool is_periodic = true);
     ~LatticeSpace();
 
@@ -61,7 +61,7 @@ public:
         t_ = t;
     }
 
-    const Position3& edge_lengths() const;
+    const Real3& edge_lengths() const;
 
     const Real volume() const
     {
@@ -188,7 +188,7 @@ public:
         load_lattice_space(root, this);
     }
 
-    void reset(const Position3& edge_lengths, const Real& voxel_radius,
+    void reset(const Real3& edge_lengths, const Real& voxel_radius,
         const bool is_periodic)
     {
         edge_lengths_ = edge_lengths;
@@ -211,11 +211,11 @@ public:
     private_coordinate_type coord2private(coordinate_type cood) const;
     coordinate_type private2coord(private_coordinate_type private_coord) const;
 
-    const Position3 coordinate2position(coordinate_type coord) const;
-    coordinate_type position2coordinate(const Position3& pos) const;
+    const Real3 coordinate2position(coordinate_type coord) const;
+    coordinate_type position2coordinate(const Real3& pos) const;
 
-    const Position3 private2position(private_coordinate_type private_coord) const;
-    private_coordinate_type position2private(const Position3& pos) const;
+    const Real3 private2position(private_coordinate_type private_coord) const;
+    private_coordinate_type position2private(const Real3& pos) const;
 
     std::vector<private_coordinate_type> get_neighbors(
             private_coordinate_type coord) const;
@@ -235,8 +235,8 @@ public:
     const Integer3 private_coord2private_global(
             const private_coordinate_type privatre_coord) const;
 
-    const Position3 global2position(const Integer3& global) const;
-    const Integer3 position2global(const Position3& pos) const;
+    const Real3 global2position(const Integer3& global) const;
+    const Integer3 position2global(const Real3& pos) const;
 
     private_coordinate_type apply_boundary_(
             const private_coordinate_type& private_coord) const;
@@ -269,7 +269,7 @@ protected:
 protected:
 
     Real voxel_radius_;
-    Position3 edge_lengths_;
+    Real3 edge_lengths_;
     Real t_;
     bool is_periodic_;
 

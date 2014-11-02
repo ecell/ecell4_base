@@ -157,7 +157,7 @@ void save_particle_space(const Tspace_& space, H5::Group* root)
             "t", H5::PredType::IEEE_F64LE, H5::DataSpace(H5S_SCALAR)));
     attr_t.write(H5::PredType::IEEE_F64LE, &t);
 
-    const Position3 edge_lengths = space.edge_lengths();
+    const Real3 edge_lengths = space.edge_lengths();
     const hsize_t dims[] = {3};
     const H5::ArrayType lengths_type(H5::PredType::NATIVE_DOUBLE, 1, dims);
     H5::Attribute attr_lengths(
@@ -174,7 +174,7 @@ void load_particle_space(const H5::Group& root, Tspace_* space)
     typedef typename traits_type::h5_species_struct h5_species_struct;
     typedef typename traits_type::h5_particle_struct h5_particle_struct;
 
-    Position3 edge_lengths;
+    Real3 edge_lengths;
     const hsize_t dims[] = {3};
     const H5::ArrayType lengths_type(H5::PredType::NATIVE_DOUBLE, 1, dims);
     root.openAttribute("edge_lengths").read(lengths_type, &edge_lengths);
@@ -213,7 +213,7 @@ void load_particle_space(const H5::Group& root, Tspace_* space)
 
         for (unsigned int i(0); i < num_particles; ++i)
         {
-            space->update_particle(ParticleID(std::make_pair(h5_particle_table[i].lot, h5_particle_table[i].serial)), Particle(Species(species_id_map[h5_particle_table[i].sid]), Position3(h5_particle_table[i].posx, h5_particle_table[i].posy, h5_particle_table[i].posz), h5_particle_table[i].radius, h5_particle_table[i].D));
+            space->update_particle(ParticleID(std::make_pair(h5_particle_table[i].lot, h5_particle_table[i].serial)), Particle(Species(species_id_map[h5_particle_table[i].sid]), Real3(h5_particle_table[i].posx, h5_particle_table[i].posy, h5_particle_table[i].posz), h5_particle_table[i].radius, h5_particle_table[i].D));
         }
 
         // boost::scoped_array<h5_particle_struct>

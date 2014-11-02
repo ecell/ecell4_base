@@ -61,11 +61,11 @@ Integer GSLRandomNumberGenerator::binomial(Real p, Integer n)
     return gsl_ran_binomial(rng_.get(), p, n);
 }
 
-Position3 GSLRandomNumberGenerator::direction3d(Real length)
+Real3 GSLRandomNumberGenerator::direction3d(Real length)
 {
     double x, y, z;
     gsl_ran_dir_3d(rng_.get(), &x, &y, &z);
-    return Position3(x * length, y * length, z * length);
+    return Real3(x * length, y * length, z * length);
 }
 
 void GSLRandomNumberGenerator::seed(Integer val)

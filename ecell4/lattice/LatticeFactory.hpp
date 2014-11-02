@@ -53,7 +53,7 @@ public:
     }
 
     virtual LatticeWorld* create_world(
-        const Position3& edge_lengths = Position3(1, 1, 1)) const
+        const Real3& edge_lengths = Real3(1, 1, 1)) const
     {
         if (rng_)
         {

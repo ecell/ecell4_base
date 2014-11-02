@@ -11,7 +11,7 @@
 #include <H5Cpp.h>
 
 #include "types.hpp"
-#include "Position3.hpp"
+#include "Real3.hpp"
 
 
 namespace ecell4
@@ -31,7 +31,7 @@ public:
     virtual Integer uniform_int(Integer min, Integer max) = 0;
     virtual Real gaussian(Real sigma, Real mean = 0.0) = 0;
     virtual Integer binomial(Real p, Integer n) = 0;
-    virtual Position3 direction3d(Real length = 1.0) = 0;
+    virtual Real3 direction3d(Real length = 1.0) = 0;
 
     virtual void seed(Integer val) = 0;
     virtual void seed() = 0;
@@ -66,7 +66,7 @@ public:
     Integer uniform_int(Integer min, Integer max);
     Real gaussian(Real sigma, Real mean = 0.0);
     Integer binomial(Real p, Integer n);
-    Position3 direction3d(Real length);
+    Real3 direction3d(Real length);
     void seed(Integer val);
     void seed();
 

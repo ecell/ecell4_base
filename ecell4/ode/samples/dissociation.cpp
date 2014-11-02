@@ -17,7 +17,7 @@ using namespace ecell4::ode;
 int main(int argc, char** argv)
 {
     const Real L(1e-6);
-    const Position3 edge_lengths(L, L, L);
+    const Real3 edge_lengths(L, L, L);
 
     Species sp1("A"), sp2("B"), sp3("C");
     ReactionRule rr1;

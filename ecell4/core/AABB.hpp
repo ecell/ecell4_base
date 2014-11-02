@@ -15,7 +15,7 @@ struct AABB
         ;
     }
 
-    AABB(const Position3& lower, const Position3& upper)
+    AABB(const Real3& lower, const Real3& upper)
         : lower_(lower), upper_(upper)
     {
         ;
@@ -27,19 +27,19 @@ struct AABB
         ;
     }
 
-    const Position3& lower() const
+    const Real3& lower() const
     {
         return lower_;
     }
 
-    const Position3& upper() const
+    const Real3& upper() const
     {
         return upper_;
     }
 
-    Real distance(const Position3& pos) const
+    Real distance(const Real3& pos) const
     {
-        const Position3 closest(
+        const Real3 closest(
             std::min(std::max(pos[0], lower_[0]), upper_[0]),
             std::min(std::max(pos[1], lower_[1]), upper_[1]),
             std::min(std::max(pos[2], lower_[2]), upper_[2]));
@@ -62,15 +62,15 @@ struct AABB
         }
     }
 
-    Real is_inside(const Position3& coord) const
+    Real is_inside(const Real3& coord) const
     {
         return distance(coord);
     }
 
-    Position3 draw_position(
+    Real3 draw_position(
         boost::shared_ptr<RandomNumberGenerator>& rng) const
     {
-        const Position3 pos(
+        const Real3 pos(
             rng->uniform(lower_[0], upper_[0]),
             rng->uniform(lower_[1], upper_[1]),
             rng->uniform(lower_[2], upper_[2]));
@@ -79,7 +79,7 @@ struct AABB
 
 protected:
 
-    Position3 lower_, upper_;
+    Real3 lower_, upper_;
 };
 
 }// ecell4

@@ -6,7 +6,7 @@
 namespace ecell4
 {
 
-void ParticleSpaceCellListImpl::reset(const Position3& edge_lengths)
+void ParticleSpaceCellListImpl::reset(const Real3& edge_lengths)
 {
     base_type::t_ = 0.0;
     particles_.clear();
@@ -24,7 +24,7 @@ void ParticleSpaceCellListImpl::reset(const Position3& edge_lengths)
         }
     }
 
-    for (Position3::size_type dim(0); dim < 3; ++dim)
+    for (Real3::size_type dim(0); dim < 3; ++dim)
     {
         if (edge_lengths[dim] <= 0)
         {
@@ -182,7 +182,7 @@ std::vector<std::pair<ParticleID, Particle> >
 
 std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
     ParticleSpaceCellListImpl::list_particles_within_radius(
-        const Position3& pos, const Real& radius) const
+        const Real3& pos, const Real& radius) const
 {
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > retval;
 
@@ -204,7 +204,7 @@ std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
             for (off[0] = -1; off[0] <= 1; ++off[0])
             {
                 cell_index_type newidx(idx);
-                const Position3 stride(this->offset_index_cyclic(newidx, off));
+                const Real3 stride(this->offset_index_cyclic(newidx, off));
                 const cell_type& c(this->cell(newidx));
                 for (cell_type::const_iterator i(c.begin()); i != c.end(); ++i)
                 {
@@ -232,7 +232,7 @@ std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
 
 std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
     ParticleSpaceCellListImpl::list_particles_within_radius(
-        const Position3& pos, const Real& radius,
+        const Real3& pos, const Real& radius,
         const ParticleID& ignore) const
 {
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > retval;
@@ -255,7 +255,7 @@ std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
             for (off[0] = -1; off[0] <= 1; ++off[0])
             {
                 cell_index_type newidx(idx);
-                const Position3 stride(this->offset_index_cyclic(newidx, off));
+                const Real3 stride(this->offset_index_cyclic(newidx, off));
                 const cell_type& c(this->cell(newidx));
                 for (cell_type::const_iterator i(c.begin()); i != c.end(); ++i)
                 {
@@ -286,7 +286,7 @@ std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
 
 std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
     ParticleSpaceCellListImpl::list_particles_within_radius(
-        const Position3& pos, const Real& radius,
+        const Real3& pos, const Real& radius,
         const ParticleID& ignore1, const ParticleID& ignore2) const
 {
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > retval;
@@ -309,7 +309,7 @@ std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
             for (off[0] = -1; off[0] <= 1; ++off[0])
             {
                 cell_index_type newidx(idx);
-                const Position3 stride(this->offset_index_cyclic(newidx, off));
+                const Real3 stride(this->offset_index_cyclic(newidx, off));
                 const cell_type& c(this->cell(newidx));
                 for (cell_type::const_iterator i(c.begin()); i != c.end(); ++i)
                 {

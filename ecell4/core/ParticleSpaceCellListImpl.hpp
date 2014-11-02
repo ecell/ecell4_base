@@ -33,7 +33,7 @@ public:
 
 public:
 
-    ParticleSpaceCellListImpl(const Position3& edge_lengths)
+    ParticleSpaceCellListImpl(const Real3& edge_lengths)
         : base_type(), edge_lengths_(edge_lengths), matrix_(boost::extents[3][3][3])
     {
         cell_sizes_[0] = edge_lengths_[0] / matrix_.shape()[0];
@@ -42,7 +42,7 @@ public:
     }
 
     ParticleSpaceCellListImpl(
-        const Position3& edge_lengths, const Integer3& matrix_sizes)
+        const Real3& edge_lengths, const Integer3& matrix_sizes)
         : base_type(), edge_lengths_(edge_lengths),
         matrix_(boost::extents[matrix_sizes.col][matrix_sizes.row][matrix_sizes.layer])
     {
@@ -53,12 +53,12 @@ public:
 
     // ParticleSpaceTraits
 
-    const Position3& edge_lengths() const
+    const Real3& edge_lengths() const
     {
         return edge_lengths_;
     }
 
-    void reset(const Position3& edge_lengths);
+    void reset(const Real3& edge_lengths);
 
     bool update_particle(const ParticleID& pid, const Particle& p);
 
@@ -96,20 +96,20 @@ public:
 
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
         list_particles_within_radius(
-            const Position3& pos, const Real& radius) const;
+            const Real3& pos, const Real& radius) const;
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
         list_particles_within_radius(
-            const Position3& pos, const Real& radius,
+            const Real3& pos, const Real& radius,
             const ParticleID& ignore) const;
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
         list_particles_within_radius(
-            const Position3& pos, const Real& radius,
+            const Real3& pos, const Real& radius,
             const ParticleID& ignore1, const ParticleID& ignore2) const;
 
 protected:
 
-    // inline cell_index_type index(const Position3& pos, double t = 1e-10) const
-    inline cell_index_type index(const Position3& pos) const
+    // inline cell_index_type index(const Real3& pos, double t = 1e-10) const
+    inline cell_index_type index(const Real3& pos) const
     {
         cell_index_type retval = {{
             static_cast<matrix_type::size_type>(
@@ -122,10 +122,10 @@ protected:
         return retval;
     }
 
-    inline Position3 offset_index_cyclic(
+    inline Real3 offset_index_cyclic(
         cell_index_type& i, const cell_offset_type& o) const
     {
-        Position3 retval;
+        Real3 retval;
 
         if (o[0] < 0 &&
             static_cast<matrix_type::size_type>(-o[0]) > i[0])
@@ -418,14 +418,14 @@ protected:
 
 protected:
 
-    Position3 edge_lengths_;
+    Real3 edge_lengths_;
 
     particle_container_type particles_;
     key_to_value_map_type rmap_;
     per_species_particle_id_set particle_pool_;
 
     matrix_type matrix_;
-    Position3 cell_sizes_;
+    Real3 cell_sizes_;
 };
 
 }; // ecell4

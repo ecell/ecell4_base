@@ -18,7 +18,7 @@ template<typename Timpl_>
 void SubvolumeSpace_test_volume_template()
 {
     const Real L(1e-6);
-    const Position3 edge_lengths(L, L, L);
+    const Real3 edge_lengths(L, L, L);
     const Integer3 matrix_sizes(2, 3, 4);
     Timpl_ target(edge_lengths, matrix_sizes);
 
@@ -43,7 +43,7 @@ template<typename Timpl_>
 void SubvolumeSpace_test_num_molecules_template()
 {
     const Real L(1e-6);
-    const Position3 edge_lengths(L, L, L);
+    const Real3 edge_lengths(L, L, L);
     const Integer3 matrix_sizes(2, 3, 4);
     Timpl_ target(edge_lengths, matrix_sizes);
 

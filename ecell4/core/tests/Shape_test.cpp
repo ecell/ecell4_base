@@ -15,7 +15,7 @@ using namespace ecell4;
 
 struct Fixture
 {
-    const Position3 center;
+    const Real3 center;
     const Real radius;
     Sphere sphere;
     Fixture() :
@@ -34,12 +34,12 @@ BOOST_AUTO_TEST_CASE(Shape_test_constructor)
 BOOST_AUTO_TEST_CASE(Shape_test_is_inside)
 {
     BOOST_CHECK(sphere.is_inside(center) <= 0);
-    BOOST_CHECK(sphere.is_inside(Position3(2.3e-6, 2.5e-6, 2.5e-6)) <= 0);
-    BOOST_CHECK(sphere.is_inside(Position3(2.5e-6, 2.3e-6, 2.5e-6)) <= 0);
-    BOOST_CHECK(sphere.is_inside(Position3(2.5e-6, 2.5e-6, 2.3e-6)) <= 0);
-    BOOST_CHECK(sphere.is_inside(Position3(2.2e-6, 2.5e-6, 2.5e-6)) > 0);
-    BOOST_CHECK(sphere.is_inside(Position3(2.5e-6, 2.2e-6, 2.5e-6)) > 0);
-    BOOST_CHECK(sphere.is_inside(Position3(2.5e-6, 2.5e-6, 2.2e-6)) > 0);
+    BOOST_CHECK(sphere.is_inside(Real3(2.3e-6, 2.5e-6, 2.5e-6)) <= 0);
+    BOOST_CHECK(sphere.is_inside(Real3(2.5e-6, 2.3e-6, 2.5e-6)) <= 0);
+    BOOST_CHECK(sphere.is_inside(Real3(2.5e-6, 2.5e-6, 2.3e-6)) <= 0);
+    BOOST_CHECK(sphere.is_inside(Real3(2.2e-6, 2.5e-6, 2.5e-6)) > 0);
+    BOOST_CHECK(sphere.is_inside(Real3(2.5e-6, 2.2e-6, 2.5e-6)) > 0);
+    BOOST_CHECK(sphere.is_inside(Real3(2.5e-6, 2.5e-6, 2.2e-6)) > 0);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

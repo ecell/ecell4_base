@@ -7,12 +7,12 @@
 set(CPP_FILES
     CompartmentSpace.cpp Context.cpp Integer3.cpp Journal.cpp ReactionRule.cpp
     LatticeSpace.cpp Model.cpp NetworkModel.cpp NetfreeModel.cpp ParticleSpace.cpp
-    Position3.cpp RandomNumberGenerator.cpp Species.cpp UnitSpecies.cpp
+    Real3.cpp RandomNumberGenerator.cpp Species.cpp UnitSpecies.cpp
     Sphere.cpp Cylinder.cpp SubvolumeSpace.cpp ParticleSpaceCellListImpl.cpp)
 
 set(HPP_FILES
     CompartmentSpace.hpp DynamicPriorityQueue.hpp LatticeSpace.hpp
-	MolecularType.hpp Particle.hpp Position3.hpp ReactionRule.hpp Space.hpp Ratelaw.hpp
+	MolecularType.hpp Particle.hpp Real3.hpp ReactionRule.hpp Space.hpp Ratelaw.hpp
     VacantType.hpp extras.hpp linear_algebra.hpp CompartmentSpaceHDF5Writer.hpp
     EventScheduler.hpp Identifier.hpp LatticeSpaceHDF5Writer.hpp
     SubvolumeSpace.hpp SubvolumeSpaceHDF5Writer.hpp

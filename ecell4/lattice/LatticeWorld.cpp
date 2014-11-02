@@ -18,7 +18,7 @@ void LatticeWorld::set_t(const Real& t)
     space_.set_t(t);
 }
 
-const Position3& LatticeWorld::edge_lengths() const
+const Real3& LatticeWorld::edge_lengths() const
 {
     return space_.edge_lengths();
 }
@@ -240,7 +240,7 @@ bool LatticeWorld::add_molecules(
     Integer count(0);
     while (count < num)
     {
-        const Position3 pos(shape.draw_position(rng_));
+        const Real3 pos(shape.draw_position(rng_));
         const Voxel v(sp, space_.position2private(pos), info.radius, info.D, info.loc);
 
         if (space_.on_structure(v))

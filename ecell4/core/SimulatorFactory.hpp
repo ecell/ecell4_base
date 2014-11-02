@@ -29,7 +29,7 @@ public:
     }
 
     virtual Space* create_world(const std::string filename) const = 0;
-    virtual Space* create_world(const Position3& edge_lengths) const = 0;
+    virtual Space* create_world(const Real3& edge_lengths) const = 0;
 
     virtual Simulator* create_simulator(
         const boost::shared_ptr<Model>& model,

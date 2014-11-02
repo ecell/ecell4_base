@@ -11,8 +11,8 @@ Cylinder::Cylinder()
     ;
 }
 
-Cylinder::Cylinder(const Position3& center, const Real radius,
-    const Position3& axis, const Real half_height)
+Cylinder::Cylinder(const Real3& center, const Real radius,
+    const Real3& axis, const Real half_height)
     : center_(center), radius_(radius), axis_(axis), half_height_(half_height_)
 {
     ;
@@ -30,7 +30,7 @@ const Real& Cylinder::radius() const
     return radius_;
 }
 
-const Position3& Cylinder::center() const
+const Real3& Cylinder::center() const
 {
     return center_;
 }
@@ -40,12 +40,12 @@ const Real& Cylinder::half_height() const
     return half_height_;
 }
 
-const Position3& Cylinder::axis() const
+const Real3& Cylinder::axis() const
 {
     return axis_;
 }
 
-Real Cylinder::distance(const Position3& coord) const
+Real Cylinder::distance(const Real3& coord) const
 {
     /* First compute the (z,r) components of pos in a coordinate system 
      * defined by the vectors unitR and unit_z, where unitR is
@@ -87,7 +87,7 @@ Real Cylinder::distance(const Position3& coord) const
     return L;
 }
 
-Real Cylinder::is_inside(const Position3& coord) const
+Real Cylinder::is_inside(const Real3& coord) const
 {
     return distance(coord);
 }
@@ -97,7 +97,7 @@ CylindricalSurface Cylinder::surface() const
     return CylindricalSurface(center_, radius_, axis_, half_height_);
 }
 
-Position3 Cylinder::draw_position(
+Real3 Cylinder::draw_position(
     boost::shared_ptr<RandomNumberGenerator>& rng) const
 {
     throw NotImplemented("not implemented yet.");
@@ -109,8 +109,8 @@ CylindricalSurface::CylindricalSurface()
     ;
 }
 
-CylindricalSurface::CylindricalSurface(const Position3& center, const Real radius,
-    const Position3& axis, const Real half_height)
+CylindricalSurface::CylindricalSurface(const Real3& center, const Real radius,
+    const Real3& axis, const Real half_height)
     : center_(center), radius_(radius), axis_(axis), half_height_(half_height_)
 {
     ;
@@ -128,7 +128,7 @@ const Real& CylindricalSurface::radius() const
     return radius_;
 }
 
-const Position3& CylindricalSurface::center() const
+const Real3& CylindricalSurface::center() const
 {
     return center_;
 }
@@ -138,17 +138,17 @@ const Real& CylindricalSurface::half_height() const
     return half_height_;
 }
 
-const Position3& CylindricalSurface::axis() const
+const Real3& CylindricalSurface::axis() const
 {
     return axis_;
 }
 
-Real CylindricalSurface::distance(const Position3& coord) const
+Real CylindricalSurface::distance(const Real3& coord) const
 {
     return inside().distance(coord); //XXX: This is too slow.
 }
 
-Real CylindricalSurface::is_inside(const Position3& coord) const
+Real CylindricalSurface::is_inside(const Real3& coord) const
 {
     return distance(coord);
 }
@@ -158,7 +158,7 @@ Cylinder CylindricalSurface::inside() const
     return Cylinder(center_, radius_, axis_, half_height_);
 }
 
-Position3 CylindricalSurface::draw_position(
+Real3 CylindricalSurface::draw_position(
     boost::shared_ptr<RandomNumberGenerator>& rng) const
 {
     throw NotImplemented("not implemented yet.");

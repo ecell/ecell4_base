@@ -32,14 +32,14 @@ public:
 public:
 
     MesoscopicWorld(const std::string& filename)
-        : cs_(new SubvolumeSpaceVectorImpl(Position3(1, 1, 1), Integer3(1, 1, 1)))
+        : cs_(new SubvolumeSpaceVectorImpl(Real3(1, 1, 1), Integer3(1, 1, 1)))
     {
         rng_ = boost::shared_ptr<RandomNumberGenerator>(
             new GSLRandomNumberGenerator());
         this->load(filename);
     }
 
-    MesoscopicWorld(const Position3& edge_lengths = Position3(1, 1, 1))
+    MesoscopicWorld(const Real3& edge_lengths = Real3(1, 1, 1))
         : cs_(new SubvolumeSpaceVectorImpl(edge_lengths, Integer3(1, 1, 1)))
     {
         rng_ = boost::shared_ptr<RandomNumberGenerator>(
@@ -47,14 +47,14 @@ public:
         (*rng_).seed();
     }
 
-    MesoscopicWorld(const Position3& edge_lengths,
+    MesoscopicWorld(const Real3& edge_lengths,
         const Integer3& matrix_sizes, boost::shared_ptr<RandomNumberGenerator> rng)
         : cs_(new SubvolumeSpaceVectorImpl(edge_lengths, matrix_sizes)), rng_(rng)
     {
         ;
     }
 
-    MesoscopicWorld(const Position3& edge_lengths, const Integer3& matrix_sizes)
+    MesoscopicWorld(const Real3& edge_lengths, const Integer3& matrix_sizes)
         : cs_(new SubvolumeSpaceVectorImpl(edge_lengths, matrix_sizes))
     {
         rng_ = boost::shared_ptr<RandomNumberGenerator>(
@@ -116,8 +116,8 @@ public:
     const Integer num_subvolumes() const;
     const Real subvolume() const;
     const Real volume() const;
-    const Position3 subvolume_edge_lengths() const;
-    const Position3& edge_lengths() const;
+    const Real3 subvolume_edge_lengths() const;
+    const Real3& edge_lengths() const;
 
     const Integer3 matrix_sizes() const
     {
@@ -126,7 +126,7 @@ public:
 
     coordinate_type global2coord(const Integer3& g) const;
     Integer3 coord2global(const coordinate_type& c) const;
-    Integer3 position2global(const Position3& pos) const;
+    Integer3 position2global(const Real3& pos) const;
 
     coordinate_type get_neighbor(const coordinate_type& c, const Integer rnd) const
     {
@@ -174,7 +174,7 @@ public:
     {
         for (Integer i(0); i < num; ++i)
         {
-            const Position3 pos(shape.draw_position(rng_));
+            const Real3 pos(shape.draw_position(rng_));
             cs_->add_molecules(sp, 1, cs_->global2coord(cs_->position2global(pos)));
         }
     }

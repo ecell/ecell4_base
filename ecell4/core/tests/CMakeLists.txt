@@ -1,5 +1,5 @@
 set(TEST_NAMES
-    Position3_test CompartmentSpace_test Species_test
+    Real3_test CompartmentSpace_test Species_test
     ReactionRule_test NetworkModel_test NetfreeModel_test get_mapper_mf_test
     LatticeSpace_test EventScheduler_test Shape_test SubvolumeSpace_test)
 

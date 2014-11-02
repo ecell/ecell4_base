@@ -34,7 +34,7 @@ bool BDPropagator::operator()()
         return true;
     }
 
-    const Position3 newpos(
+    const Real3 newpos(
         world_.apply_boundary(
             particle.position() + draw_displacement(particle)));
     Particle particle_to_update(
@@ -132,7 +132,7 @@ bool BDPropagator::attempt_reaction(
 
                     const Real D12(D1 + D2);
                     const Real r12(radius1 + radius2);
-                    Position3 newpos1, newpos2;
+                    Real3 newpos1, newpos2;
                     Integer i(max_retry_count_);
                     while (true)
                     {
@@ -142,7 +142,7 @@ bool BDPropagator::attempt_reaction(
                             return false;
                         }
 
-                        const Position3 ipv(draw_ipv(r12, dt(), D12));
+                        const Real3 ipv(draw_ipv(r12, dt(), D12));
 
                         newpos1 = world_.apply_boundary(
                             particle.position() + ipv * (D1 / D12));
@@ -234,12 +234,12 @@ bool BDPropagator::attempt_reaction(
                     const Real radius_new(info.radius);
                     const Real D_new(info.D);
 
-                    const Position3 pos1(particle1.position());
-                    const Position3 pos2(
+                    const Real3 pos1(particle1.position());
+                    const Real3 pos2(
                         world_.periodic_transpose(particle2.position(), pos1));
                     const Real D1(particle1.D()), D2(particle2.D());
                     const Real D12(D1 + D2);
-                    const Position3 newpos(
+                    const Real3 newpos(
                         world_.apply_boundary((pos1 * D2 + pos2 * D1) / D12));
 
                     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >

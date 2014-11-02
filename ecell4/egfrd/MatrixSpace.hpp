@@ -10,7 +10,7 @@
 #include <boost/range/size.hpp>
 #include <boost/range/difference_type.hpp>
 // #include "Vector3.hpp"
-#include "Position3Type.hpp"
+#include "Real3Type.hpp"
 #include "sorted_list.hpp"
 #include "utils/array_helper.hpp"
 #include "utils/get_default_impl.hpp"
@@ -31,7 +31,7 @@ public:
     typedef Tkey_ key_type;
     typedef Tobj_ mapped_type;
     // typedef Vector3<length_type> position_type;
-    typedef ecell4::Position3 position_type;
+    typedef ecell4::Real3 position_type;
 
     // typedef std::pair<const key_type, mapped_type> value_type;
     // typedef unassignable_adapter<value_type, get_default_impl::std::vector> all_values_type;

@@ -7,7 +7,7 @@
 #include "types.hpp"
 #include "functions.hpp"
 #include "exceptions.hpp"
-#include "Position3.hpp"
+#include "Real3.hpp"
 #include "Particle.hpp"
 #include "Species.hpp"
 #include "Space.hpp"
@@ -59,9 +59,9 @@ public:
     /**
      * get the axes lengths of a cuboidal region.
      * this function is a part of the trait of ParticleSpace.
-     * @return edge lengths Position3
+     * @return edge lengths Real3
      */
-    virtual const Position3& edge_lengths() const
+    virtual const Real3& edge_lengths() const
     {
         throw NotImplemented("edge_lengths() not implemented");
     }
@@ -172,7 +172,7 @@ public:
      */
     virtual std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
     list_particles_within_radius(
-        const Position3& pos, const Real& radius) const = 0;
+        const Real3& pos, const Real& radius) const = 0;
 
     /**
      * get particles within a spherical region except for ignore(s).
@@ -184,7 +184,7 @@ public:
      */
     virtual std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
     list_particles_within_radius(
-        const Position3& pos, const Real& radius,
+        const Real3& pos, const Real& radius,
         const ParticleID& ignore) const = 0;
 
     /**
@@ -198,7 +198,7 @@ public:
      */
     virtual std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
     list_particles_within_radius(
-        const Position3& pos, const Real& radius,
+        const Real3& pos, const Real& radius,
         const ParticleID& ignore1, const ParticleID& ignore2) const = 0;
 
     /**
@@ -206,14 +206,14 @@ public:
      * this function is a part of the trait of ParticleSpace.
      * @param pos1 a target position
      * @param pos2 a reference position
-     * @return a transposed position Position3
+     * @return a transposed position Real3
      */
-    Position3 periodic_transpose(
-        const Position3& pos1, const Position3& pos2) const
+    Real3 periodic_transpose(
+        const Real3& pos1, const Real3& pos2) const
     {
-        Position3 retval(pos1);
-        const Position3& edges(edge_lengths());
-        for (Position3::size_type dim(0); dim < 3; ++dim)
+        Real3 retval(pos1);
+        const Real3& edges(edge_lengths());
+        for (Real3::size_type dim(0); dim < 3; ++dim)
         {
             const Real edge_length(edges[dim]);
             const Real diff(pos2[dim] - pos1[dim]), half(edge_length * 0.5);
@@ -235,9 +235,9 @@ public:
      * if the position is in the region, returns the original position.
      * this function is a part of the trait of ParticleSpace.
      * @param pos a target position
-     * @return a transposed position Position3
+     * @return a transposed position Real3
      */
-    inline Position3 apply_boundary(const Position3& pos) const
+    inline Real3 apply_boundary(const Real3& pos) const
     {
         return modulo(pos, edge_lengths());
     }
@@ -250,11 +250,11 @@ public:
      * @return a square of the distance
      */
     Real distance_sq(
-        const Position3& pos1, const Position3& pos2) const
+        const Real3& pos1, const Real3& pos2) const
     {
         Real retval(0);
-        const Position3& edges(edge_lengths());
-        for (Position3::size_type dim(0); dim < 3; ++dim)
+        const Real3& edges(edge_lengths());
+        for (Real3::size_type dim(0); dim < 3; ++dim)
         {
             const Real edge_length(edges[dim]);
             const Real diff(pos2[dim] - pos1[dim]), half(edge_length * 0.5);
@@ -282,7 +282,7 @@ public:
      * @param pos2
      * @return the distance
      */
-    inline Real distance(const Position3& pos1, const Position3& pos2) const
+    inline Real distance(const Real3& pos1, const Real3& pos2) const
     {
         return std::sqrt(distance_sq(pos1, pos2));
     }
@@ -321,14 +321,14 @@ protected:
 
 public:
 
-    ParticleSpaceVectorImpl(const Position3& edge_lengths)
+    ParticleSpaceVectorImpl(const Real3& edge_lengths)
     {
         reset(edge_lengths);
     }
 
     // ParticleSpaceTraits
 
-    const Position3& edge_lengths() const
+    const Real3& edge_lengths() const
     {
         return edge_lengths_;
     }
@@ -351,14 +351,14 @@ public:
 
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
     list_particles_within_radius(
-        const Position3& pos, const Real& radius) const;
+        const Real3& pos, const Real& radius) const;
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
     list_particles_within_radius(
-        const Position3& pos, const Real& radius,
+        const Real3& pos, const Real& radius,
         const ParticleID& ignore) const;
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
     list_particles_within_radius(
-        const Position3& pos, const Real& radius,
+        const Real3& pos, const Real& radius,
         const ParticleID& ignore1, const ParticleID& ignore2) const;
 
     // CompartmentSpaceTraits
@@ -383,11 +383,11 @@ public:
         load_particle_space(root, this);
     }
 
-    void reset(const Position3& edge_lengths);
+    void reset(const Real3& edge_lengths);
 
 protected:
 
-    Position3 edge_lengths_;
+    Real3 edge_lengths_;
     particle_container_type particles_;
     particle_map_type index_map_;
 };
