@@ -13,9 +13,9 @@ cdef class MesoscopicWorld:
         if edge_lengths is None:
             self.thisptr = new shared_ptr[Cpp_MesoscopicWorld](new Cpp_MesoscopicWorld())
         elif matrix_sizes is None:
-            if isinstance(edge_lengths, Position3):
+            if isinstance(edge_lengths, Real3):
                 self.thisptr = new shared_ptr[Cpp_MesoscopicWorld](
-                    new Cpp_MesoscopicWorld(deref((<Position3>edge_lengths).thisptr)))
+                    new Cpp_MesoscopicWorld(deref((<Real3>edge_lengths).thisptr)))
             else:
                 filename = edge_lengths
                 self.thisptr = new shared_ptr[Cpp_MesoscopicWorld](
@@ -23,13 +23,13 @@ cdef class MesoscopicWorld:
         elif rng is None:
             self.thisptr = new shared_ptr[Cpp_MesoscopicWorld](
                 new Cpp_MesoscopicWorld(
-                    deref((<Position3>edge_lengths).thisptr),
+                    deref((<Real3>edge_lengths).thisptr),
                     deref((<Integer3>matrix_sizes).thisptr)))
         else:
             # XXX: GSLRandomNumberGenerator -> RandomNumberGenerator
             self.thisptr = new shared_ptr[Cpp_MesoscopicWorld](
                 new Cpp_MesoscopicWorld(
-                    deref((<Position3>edge_lengths).thisptr),
+                    deref((<Real3>edge_lengths).thisptr),
                     deref((<Integer3>matrix_sizes).thisptr), deref(rng.thisptr)))
 
     def __dealloc__(self):
@@ -45,8 +45,8 @@ cdef class MesoscopicWorld:
         return self.thisptr.get().t()
 
     def edge_lengths(self):
-        cdef Cpp_Position3 lengths = self.thisptr.get().edge_lengths()
-        return Position3_from_Cpp_Position3(address(lengths))
+        cdef Cpp_Real3 lengths = self.thisptr.get().edge_lengths()
+        return Real3_from_Cpp_Real3(address(lengths))
 
     def matrix_sizes(self):
         cdef Cpp_Integer3 sizes = self.thisptr.get().matrix_sizes()
@@ -162,7 +162,7 @@ cdef class MesoscopicWorld:
 
 cdef MesoscopicWorld MesoscopicWorld_from_Cpp_MesoscopicWorld(
     shared_ptr[Cpp_MesoscopicWorld] w):
-    r = MesoscopicWorld(Position3(1, 1, 1), Integer3(1, 1, 1))
+    r = MesoscopicWorld(Real3(1, 1, 1), Integer3(1, 1, 1))
     r.thisptr.swap(w)
     return r
 
@@ -260,10 +260,10 @@ cdef class MesoscopicFactory:
         del self.thisptr
 
     def create_world(self, arg1):
-        if isinstance(arg1, Position3):
+        if isinstance(arg1, Real3):
             return MesoscopicWorld_from_Cpp_MesoscopicWorld(
                 shared_ptr[Cpp_MesoscopicWorld](
-                    self.thisptr.create_world(deref((<Position3>arg1).thisptr))))
+                    self.thisptr.create_world(deref((<Real3>arg1).thisptr))))
         else:
             return MesoscopicWorld_from_Cpp_MesoscopicWorld(
                 shared_ptr[Cpp_MesoscopicWorld](self.thisptr.create_world(<string>(arg1))))

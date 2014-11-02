@@ -11,13 +11,13 @@ from ecell4.core cimport *
 cdef extern from "ecell4/ode/ODEWorld.hpp" namespace "ecell4::ode":
     cdef cppclass Cpp_ODEWorld "ecell4::ode::ODEWorld":
         Cpp_ODEWorld() except +
-        Cpp_ODEWorld(Cpp_Position3&) except +
+        Cpp_ODEWorld(Cpp_Real3&) except +
         Cpp_ODEWorld(string&) except +
         # SpaceTraits
         Real& t()
         void set_t(Real&)
-        void reset(Cpp_Position3&)
-        Cpp_Position3 edge_lengths()
+        void reset(Cpp_Real3&)
+        Cpp_Real3 edge_lengths()
         # CompartmentSpaceTraits
         Real &volume()
         Integer num_molecules(Cpp_Species &)
@@ -83,7 +83,7 @@ cdef extern from "ecell4/ode/ODEFactory.hpp" namespace "ecell4::ode":
     cdef cppclass Cpp_ODEFactory "ecell4::ode::ODEFactory":
         Cpp_ODEFactory() except +
         Cpp_ODEWorld* create_world(string)
-        Cpp_ODEWorld* create_world(Cpp_Position3&)
+        Cpp_ODEWorld* create_world(Cpp_Real3&)
         Cpp_ODESimulator* create_simulator(shared_ptr[Cpp_Model], shared_ptr[Cpp_ODEWorld])
         Cpp_ODESimulator* create_simulator(shared_ptr[Cpp_ODEWorld])
 

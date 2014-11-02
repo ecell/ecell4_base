@@ -9,18 +9,18 @@ from core cimport *
 cdef extern from "ecell4/meso/MesoscopicWorld.hpp" namespace "ecell4::meso":
     cdef cppclass Cpp_MesoscopicWorld "ecell4::meso::MesoscopicWorld":
         Cpp_MesoscopicWorld() except +
-        Cpp_MesoscopicWorld(Cpp_Position3&) except +
+        Cpp_MesoscopicWorld(Cpp_Real3&) except +
         Cpp_MesoscopicWorld(string&) except +
-        Cpp_MesoscopicWorld(Cpp_Position3&, Cpp_Integer3&) except +
-        Cpp_MesoscopicWorld(Cpp_Position3&, Cpp_Integer3&,
+        Cpp_MesoscopicWorld(Cpp_Real3&, Cpp_Integer3&) except +
+        Cpp_MesoscopicWorld(Cpp_Real3&, Cpp_Integer3&,
             shared_ptr[Cpp_RandomNumberGenerator]) except +
         void set_t(Real)
         Real t()
         Real volume()
         Real subvolume()
         Integer num_subvolumes()
-        void reset(Cpp_Position3&)
-        Cpp_Position3 edge_lengths()
+        void reset(Cpp_Real3&)
+        Cpp_Real3 edge_lengths()
         Cpp_Integer3 matrix_sizes()
         Integer num_molecules(Cpp_Species &)
         Integer num_molecules_exact(Cpp_Species &)
@@ -91,7 +91,7 @@ cdef extern from "ecell4/meso/MesoscopicFactory.hpp" namespace "ecell4::meso":
         Cpp_MesoscopicFactory(Cpp_Integer3&) except +
         Cpp_MesoscopicFactory(Cpp_Integer3&, shared_ptr[Cpp_RandomNumberGenerator]) except +
         Cpp_MesoscopicWorld* create_world(string)
-        Cpp_MesoscopicWorld* create_world(Cpp_Position3&)
+        Cpp_MesoscopicWorld* create_world(Cpp_Real3&)
         Cpp_MesoscopicSimulator* create_simulator(shared_ptr[Cpp_Model], shared_ptr[Cpp_MesoscopicWorld])
         Cpp_MesoscopicSimulator* create_simulator(shared_ptr[Cpp_MesoscopicWorld])
 

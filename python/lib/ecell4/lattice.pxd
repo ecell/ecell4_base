@@ -12,21 +12,21 @@ from ecell4.core cimport *
 cdef extern from "ecell4/lattice/LatticeWorld.hpp" namespace "ecell4::lattice":
     cdef cppclass Cpp_LatticeWorld "ecell4::lattice::LatticeWorld":
         Cpp_LatticeWorld(
-            Cpp_Position3& edge_lengths, const Real& voxel_radius,
+            Cpp_Real3& edge_lengths, const Real& voxel_radius,
             shared_ptr[Cpp_RandomNumberGenerator] rng) except +
         Cpp_LatticeWorld(
-            Cpp_Position3& edge_lengths, const Real& voxel_radius) except +
-        Cpp_LatticeWorld(Cpp_Position3& edge_lengths) except +
+            Cpp_Real3& edge_lengths, const Real& voxel_radius) except +
+        Cpp_LatticeWorld(Cpp_Real3& edge_lengths) except +
         Cpp_LatticeWorld(string&) except +
         Cpp_LatticeWorld() except +
 
         void set_t(Real t)
         Real t()
-        Cpp_Position3 edge_lengths()
+        Cpp_Real3 edge_lengths()
         Real volume()
 
         pair[pair[Cpp_ParticleID, Cpp_Particle], bool] new_particle(Cpp_Particle& p)
-        pair[pair[Cpp_ParticleID, Cpp_Particle], bool] new_particle(Cpp_Species& sp, Cpp_Position3& pos)
+        pair[pair[Cpp_ParticleID, Cpp_Particle], bool] new_particle(Cpp_Species& sp, Cpp_Real3& pos)
         bool remove_particle(Cpp_ParticleID& pid)
         bool remove_voxel(Cpp_ParticleID& pid)
         pair[Cpp_ParticleID, Cpp_Particle] get_particle(Cpp_ParticleID& pid)
@@ -43,13 +43,13 @@ cdef extern from "ecell4/lattice/LatticeWorld.hpp" namespace "ecell4::lattice":
         vector[pair[Cpp_ParticleID, Cpp_Particle]] list_particles_exact(Cpp_Species& sp)
         bool has_particle(Cpp_ParticleID& pid)
         bool update_particle(Cpp_ParticleID& pid, Cpp_Particle& p)
-        # vector[pair[pair[Cpp_ParticleID, Cpp_Particle], Real]] list_particles_within_radius(Cpp_Position3& pos, Real& radius)
-        # vector[pair[pair[Cpp_ParticleID, Cpp_Particle], Real]] list_particles_within_radius(Cpp_Position3& pos, Real& radius, Cpp_ParticleID& ignore)
-        # vector[pair[pair[Cpp_ParticleID, Cpp_Particle], Real]] list_particles_within_radius(Cpp_Position3& pos, Real& radius, Cpp_ParticleID& ignore1, Cpp_ParticleID& ignore2)
-        # Cpp_Position3 periodic_transpose(Cpp_Position3& pos1, Cpp_Position3& pos2)
-        # Cpp_Position3 apply_boundary(Cpp_Position3& pos)
-        # Real distance_sq(Cpp_Position3& pos1, Cpp_Position3& pos2)
-        # Real distance(Cpp_Position3& pos1, Cpp_Position3& pos2)
+        # vector[pair[pair[Cpp_ParticleID, Cpp_Particle], Real]] list_particles_within_radius(Cpp_Real3& pos, Real& radius)
+        # vector[pair[pair[Cpp_ParticleID, Cpp_Particle], Real]] list_particles_within_radius(Cpp_Real3& pos, Real& radius, Cpp_ParticleID& ignore)
+        # vector[pair[pair[Cpp_ParticleID, Cpp_Particle], Real]] list_particles_within_radius(Cpp_Real3& pos, Real& radius, Cpp_ParticleID& ignore1, Cpp_ParticleID& ignore2)
+        # Cpp_Real3 periodic_transpose(Cpp_Real3& pos1, Cpp_Real3& pos2)
+        # Cpp_Real3 apply_boundary(Cpp_Real3& pos)
+        # Real distance_sq(Cpp_Real3& pos1, Cpp_Real3& pos2)
+        # Real distance(Cpp_Real3& pos1, Cpp_Real3& pos2)
         # Real volume()
         # # bool has_species(Cpp_Species& sp)
         Integer num_molecules()
@@ -73,17 +73,17 @@ cdef extern from "ecell4/lattice/LatticeWorld.hpp" namespace "ecell4::lattice":
         Integer layer_size()
         Integer size()
         void bind_to(shared_ptr[Cpp_Model])
-        Cpp_Position3 coordinate2position(Integer)
-        Integer position2coordinate(Cpp_Position3)
+        Cpp_Real3 coordinate2position(Integer)
+        Integer position2coordinate(Cpp_Real3)
         shared_ptr[Cpp_RandomNumberGenerator] rng()
 
-        Cpp_Position3 private2position(Integer)
+        Cpp_Real3 private2position(Integer)
         Integer private2coord(Integer)
         Integer coord2private(Integer)
         Cpp_Integer3 coord2global(Integer)
         Integer global2coord(Cpp_Integer3)
-        Cpp_Position3 global2position(Cpp_Integer3)
-        Cpp_Integer3 position2global(Cpp_Position3)
+        Cpp_Real3 global2position(Cpp_Integer3)
+        Cpp_Integer3 position2global(Cpp_Real3)
         Integer add_structure(Cpp_Species&, Cpp_Shape&)
         void add_molecules(Cpp_Species& sp, Integer num, Cpp_Shape&)
 
@@ -132,7 +132,7 @@ cdef extern from "ecell4/lattice/LatticeFactory.hpp" namespace "ecell4::lattice"
         Cpp_LatticeFactory(Real) except +
         Cpp_LatticeFactory(Real, shared_ptr[Cpp_RandomNumberGenerator]&) except +
         Cpp_LatticeWorld* create_world(string)
-        Cpp_LatticeWorld* create_world(Cpp_Position3&)
+        Cpp_LatticeWorld* create_world(Cpp_Real3&)
         Cpp_LatticeSimulator* create_simulator(shared_ptr[Cpp_Model], shared_ptr[Cpp_LatticeWorld])
         Cpp_LatticeSimulator* create_simulator(shared_ptr[Cpp_LatticeWorld])
 

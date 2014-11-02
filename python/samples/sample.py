@@ -37,9 +37,9 @@ def singlerun(seed):
     rng = GSLRandomNumberGenerator()
     rng.seed(seed)
 
-    # w = world_type(Position3(L, L, L), voxel_radius, rng) # lattice
-    w = world_type(Position3(L, L, L), rng) # gillespie
-    # w = world_type(Position3(L, L, L)) # ode
+    # w = world_type(Real3(L, L, L), voxel_radius, rng) # lattice
+    w = world_type(Real3(L, L, L), rng) # gillespie
+    # w = world_type(Real3(L, L, L)) # ode
     w.add_molecules(sp1, N)
     # w.save("test.h5")
 

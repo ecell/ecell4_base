@@ -24,7 +24,7 @@ cdef class ParticleID:
 
 cdef class Particle:
 
-    def __cinit__(self, Species sp, Position3 pos, Real radius, Real D):
+    def __cinit__(self, Species sp, Real3 pos, Real radius, Real D):
         self.thisptr = new Cpp_Particle(
             deref(sp.thisptr), deref(pos.thisptr), radius, D)
 
@@ -32,8 +32,8 @@ cdef class Particle:
         del self.thisptr
 
     def position(self):
-        cdef Cpp_Position3 pos = self.thisptr.position()
-        return Position3_from_Cpp_Position3(address(pos))
+        cdef Cpp_Real3 pos = self.thisptr.position()
+        return Real3_from_Cpp_Real3(address(pos))
 
     def radius(self):
         return self.thisptr.radius()
@@ -54,7 +54,7 @@ cdef ParticleID ParticleID_from_Cpp_ParticleID(Cpp_ParticleID* p):
 
 cdef Particle Particle_from_Cpp_Particle(Cpp_Particle* p):
     cdef Cpp_Particle *new_obj = new Cpp_Particle(<Cpp_Particle> deref(p))
-    r = Particle(Species(), Position3(0, 0, 0), 0, 0)
+    r = Particle(Species(), Real3(0, 0, 0), 0, 0)
     del r.thisptr
     r.thisptr = new_obj
     return r

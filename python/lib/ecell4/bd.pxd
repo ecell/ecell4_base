@@ -13,15 +13,15 @@ cdef extern from "ecell4/bd/BDWorld.hpp" namespace "ecell4::bd":
     cdef cppclass Cpp_BDWorld "ecell4::bd::BDWorld":
         Cpp_BDWorld() except +
         Cpp_BDWorld(string& edge_lengths) except +
-        Cpp_BDWorld(Cpp_Position3& edge_lengths) except +
+        Cpp_BDWorld(Cpp_Real3& edge_lengths) except +
         Cpp_BDWorld(
-            Cpp_Position3& edge_lengths,
+            Cpp_Real3& edge_lengths,
             shared_ptr[Cpp_RandomNumberGenerator] rng) except +
         pair[pair[Cpp_ParticleID, Cpp_Particle], bool] new_particle(Cpp_Particle& p)
-        pair[pair[Cpp_ParticleID, Cpp_Particle], bool] new_particle(Cpp_Species& sp, Cpp_Position3& pos)
+        pair[pair[Cpp_ParticleID, Cpp_Particle], bool] new_particle(Cpp_Species& sp, Cpp_Real3& pos)
         void set_t(Real t)
         Real t()
-        Cpp_Position3 edge_lengths()
+        Cpp_Real3 edge_lengths()
         Integer num_particles()
         Integer num_particles(Cpp_Species& sp)
         Integer num_particles_exact(Cpp_Species& sp)
@@ -32,13 +32,13 @@ cdef extern from "ecell4/bd/BDWorld.hpp" namespace "ecell4::bd":
         bool update_particle(Cpp_ParticleID& pid, Cpp_Particle& p)
         pair[Cpp_ParticleID, Cpp_Particle] get_particle(Cpp_ParticleID& pid)
         void remove_particle(Cpp_ParticleID& pid)
-        vector[pair[pair[Cpp_ParticleID, Cpp_Particle], Real]] list_particles_within_radius(Cpp_Position3& pos, Real& radius)
-        vector[pair[pair[Cpp_ParticleID, Cpp_Particle], Real]] list_particles_within_radius(Cpp_Position3& pos, Real& radius, Cpp_ParticleID& ignore)
-        vector[pair[pair[Cpp_ParticleID, Cpp_Particle], Real]] list_particles_within_radius(Cpp_Position3& pos, Real& radius, Cpp_ParticleID& ignore1, Cpp_ParticleID& ignore2)
-        Cpp_Position3 periodic_transpose(Cpp_Position3& pos1, Cpp_Position3& pos2)
-        Cpp_Position3 apply_boundary(Cpp_Position3& pos)
-        Real distance_sq(Cpp_Position3& pos1, Cpp_Position3& pos2)
-        Real distance(Cpp_Position3& pos1, Cpp_Position3& pos2)
+        vector[pair[pair[Cpp_ParticleID, Cpp_Particle], Real]] list_particles_within_radius(Cpp_Real3& pos, Real& radius)
+        vector[pair[pair[Cpp_ParticleID, Cpp_Particle], Real]] list_particles_within_radius(Cpp_Real3& pos, Real& radius, Cpp_ParticleID& ignore)
+        vector[pair[pair[Cpp_ParticleID, Cpp_Particle], Real]] list_particles_within_radius(Cpp_Real3& pos, Real& radius, Cpp_ParticleID& ignore1, Cpp_ParticleID& ignore2)
+        Cpp_Real3 periodic_transpose(Cpp_Real3& pos1, Cpp_Real3& pos2)
+        Cpp_Real3 apply_boundary(Cpp_Real3& pos)
+        Real distance_sq(Cpp_Real3& pos1, Cpp_Real3& pos2)
+        Real distance(Cpp_Real3& pos1, Cpp_Real3& pos2)
         Real volume()
         # bool has_species(Cpp_Species& sp)
         Integer num_molecules(Cpp_Species& sp)
@@ -97,7 +97,7 @@ cdef extern from "ecell4/bd/BDFactory.hpp" namespace "ecell4::bd":
         Cpp_BDFactory() except +
         Cpp_BDFactory(shared_ptr[Cpp_RandomNumberGenerator]) except +
         Cpp_BDWorld* create_world(string)
-        Cpp_BDWorld* create_world(Cpp_Position3&)
+        Cpp_BDWorld* create_world(Cpp_Real3&)
         Cpp_BDSimulator* create_simulator(shared_ptr[Cpp_Model], shared_ptr[Cpp_BDWorld])
         Cpp_BDSimulator* create_simulator(shared_ptr[Cpp_BDWorld])
 

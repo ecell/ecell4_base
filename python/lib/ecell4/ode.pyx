@@ -16,9 +16,9 @@ cdef class ODEWorld:
 
         if edge_lengths is None:
             self.thisptr = new shared_ptr[Cpp_ODEWorld](new Cpp_ODEWorld())
-        elif isinstance(edge_lengths, Position3):
+        elif isinstance(edge_lengths, Real3):
             self.thisptr = new shared_ptr[Cpp_ODEWorld](
-                new Cpp_ODEWorld(deref((<Position3>edge_lengths).thisptr)))
+                new Cpp_ODEWorld(deref((<Real3>edge_lengths).thisptr)))
         else:
             filename = edge_lengths
             self.thisptr = new shared_ptr[Cpp_ODEWorld](new Cpp_ODEWorld(filename))
@@ -36,8 +36,8 @@ cdef class ODEWorld:
         return self.thisptr.get().t()
 
     def edge_lengths(self):
-        cdef Cpp_Position3 lengths = self.thisptr.get().edge_lengths()
-        return Position3_from_Cpp_Position3(address(lengths))
+        cdef Cpp_Real3 lengths = self.thisptr.get().edge_lengths()
+        return Real3_from_Cpp_Real3(address(lengths))
 
     def volume(self):
         return self.thisptr.get().volume()
@@ -104,7 +104,7 @@ cdef class ODEWorld:
 
 cdef ODEWorld ODEWorld_from_Cpp_ODEWorld(
     shared_ptr[Cpp_ODEWorld] w):
-    r = ODEWorld(Position3(1, 1, 1))
+    r = ODEWorld(Real3(1, 1, 1))
     r.thisptr.swap(w)
     return r
 
@@ -195,10 +195,10 @@ cdef class ODEFactory:
         del self.thisptr
 
     def create_world(self, arg1):
-        if isinstance(arg1, Position3):
+        if isinstance(arg1, Real3):
             return ODEWorld_from_Cpp_ODEWorld(
                 shared_ptr[Cpp_ODEWorld](
-                    self.thisptr.create_world(deref((<Position3>arg1).thisptr))))
+                    self.thisptr.create_world(deref((<Real3>arg1).thisptr))))
         else:
             return ODEWorld_from_Cpp_ODEWorld(
                 shared_ptr[Cpp_ODEWorld](self.thisptr.create_world(<string>(arg1))))

@@ -4,7 +4,7 @@ from cython.operator cimport dereference as deref
 
 cdef class CompartmentSpaceVectorImpl:
 
-    def __cinit__(self, Position3 edge_lengths):
+    def __cinit__(self, Real3 edge_lengths):
         self.thisptr = new Cpp_CompartmentSpaceVectorImpl(deref(edge_lengths.thisptr))
 
     def __dealloc__(self):
@@ -14,8 +14,8 @@ cdef class CompartmentSpaceVectorImpl:
         return self.thisptr.volume()
 
     def edge_lengths(self):
-        cdef Cpp_Position3 lengths = self.thisptr.edge_lengths()
-        return Position3_from_Cpp_Position3(address(lengths))
+        cdef Cpp_Real3 lengths = self.thisptr.edge_lengths()
+        return Real3_from_Cpp_Real3(address(lengths))
 
     def num_molecules(self, Species sp):
         return self.thisptr.num_molecules(deref(sp.thisptr))

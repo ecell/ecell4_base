@@ -9,21 +9,21 @@ class ParticleSpaceTest(unittest.TestCase):
         self.ParticleSpace = ParticleSpaceVectorImpl
 
     def test_constructor(self):
-        space = self.ParticleSpace(Position3(1e-6, 1e-6, 1e-6))
+        space = self.ParticleSpace(Real3(1e-6, 1e-6, 1e-6))
 
     def test_edge_lengths(self):
-        space = self.ParticleSpace(Position3(1e-6, 1e-6, 1e-6))
+        space = self.ParticleSpace(Real3(1e-6, 1e-6, 1e-6))
         lengths = space.edge_lengths()
         self.assertEqual(lengths[0], 1e-6)
         self.assertEqual(lengths[1], 1e-6)
         self.assertEqual(lengths[2], 1e-6)
 
     def test_update_particle(self):
-        space = self.ParticleSpace(Position3(1e-6, 1e-6, 1e-6))
+        space = self.ParticleSpace(Real3(1e-6, 1e-6, 1e-6))
         self.assertEqual(len(space.list_particles()), 0)
         space.update_particle(
             ParticleID(1, 2),
-            Particle(Species("A"), Position3(0, 0, 0), 2.5e-9, 0))
+            Particle(Species("A"), Real3(0, 0, 0), 2.5e-9, 0))
         self.assertEqual(len(space.list_particles()), 1)
         pid, p = space.list_particles()[0]
         self.assertEqual(pid.lot(), 1)

@@ -19,10 +19,10 @@ cdef class LatticeWorld:
         if edge_lengths is None:
             self.thisptr = new shared_ptr[Cpp_LatticeWorld](new Cpp_LatticeWorld())
         elif voxel_radius is None:
-            if isinstance(edge_lengths, Position3):
+            if isinstance(edge_lengths, Real3):
                 self.thisptr = new shared_ptr[Cpp_LatticeWorld](
                     new Cpp_LatticeWorld(
-                        deref((<Position3>edge_lengths).thisptr)))
+                        deref((<Real3>edge_lengths).thisptr)))
             else:
                 filename = edge_lengths
                 self.thisptr = new shared_ptr[Cpp_LatticeWorld](
@@ -30,11 +30,11 @@ cdef class LatticeWorld:
         elif rng is None:
             self.thisptr = new shared_ptr[Cpp_LatticeWorld](
                 new Cpp_LatticeWorld(
-                    deref((<Position3>edge_lengths).thisptr), <Real>voxel_radius))
+                    deref((<Real3>edge_lengths).thisptr), <Real>voxel_radius))
         else:
             self.thisptr = new shared_ptr[Cpp_LatticeWorld](
                 new Cpp_LatticeWorld(
-                    deref((<Position3>edge_lengths).thisptr), <Real>voxel_radius,
+                    deref((<Real3>edge_lengths).thisptr), <Real>voxel_radius,
                     deref(rng.thisptr)))
 
     def __dealloc__(self):
@@ -52,7 +52,7 @@ cdef class LatticeWorld:
     def volume(self):
         return self.thisptr.get().volume()
 
-    def new_particle(self, arg1, Position3 arg2=None):
+    def new_particle(self, arg1, Real3 arg2=None):
         cdef pair[pair[Cpp_ParticleID, Cpp_Particle], bool] retval
 
         if arg2 is None:
@@ -80,8 +80,8 @@ cdef class LatticeWorld:
         self.thisptr.get().remove_voxel(deref(pid.thisptr))
 
     def edge_lengths(self):
-        cdef Cpp_Position3 lengths = self.thisptr.get().edge_lengths()
-        return Position3_from_Cpp_Position3(address(lengths))
+        cdef Cpp_Real3 lengths = self.thisptr.get().edge_lengths()
+        return Real3_from_Cpp_Real3(address(lengths))
 
     def num_particles(self, Species sp = None):
         if sp is None:
@@ -155,7 +155,7 @@ cdef class LatticeWorld:
     #     self.thisptr.get().remove_particle(deref(pid.thisptr))
 
     # def list_particles_within_radius(
-    #     self, Position3 pos, Real radius,
+    #     self, Real3 pos, Real radius,
     #     ParticleID ignore1 = None, ParticleID ignore2 = None):
     #     cdef vector[pair[pair[Cpp_ParticleID, Cpp_Particle], Real]] particles
     #     if ignore1 is None and ignore2 is None:
@@ -182,19 +182,19 @@ cdef class LatticeWorld:
     #         inc(it)
     #     return retval
 
-    # def periodic_transpose(self, Position3 pos1, Position3 pos2):
-    #     cdef Cpp_Position3 newpos = self.thisptr.get().periodic_transpose(
+    # def periodic_transpose(self, Real3 pos1, Real3 pos2):
+    #     cdef Cpp_Real3 newpos = self.thisptr.get().periodic_transpose(
     #         deref(pos1.thisptr), deref(pos2.thisptr))
-    #     return Position3_from_Cpp_Position3(address(newpos))
+    #     return Real3_from_Cpp_Real3(address(newpos))
 
-    # def apply_boundary(self, Position3 pos):
-    #     cdef Cpp_Position3 newpos = self.thisptr.get().apply_boundary(deref(pos.thisptr))
-    #     return Position3_from_Cpp_Position3(address(newpos))
+    # def apply_boundary(self, Real3 pos):
+    #     cdef Cpp_Real3 newpos = self.thisptr.get().apply_boundary(deref(pos.thisptr))
+    #     return Real3_from_Cpp_Real3(address(newpos))
 
-    # def distance_sq(self, Position3 pos1, Position3 pos2):
+    # def distance_sq(self, Real3 pos1, Real3 pos2):
     #     return self.thisptr.get().distance_sq(deref(pos1.thisptr), deref(pos2.thisptr))
 
-    # def distance(self, Position3 pos1, Position3 pos2):
+    # def distance(self, Real3 pos1, Real3 pos2):
     #     return self.thisptr.get().distance(deref(pos1.thisptr), deref(pos2.thisptr))
 
     # def volume(self):
@@ -303,14 +303,14 @@ cdef class LatticeWorld:
         self.thisptr.get().bind_to(deref(Cpp_Model_from_Model(m)))
 
     def private2position(self, Integer coord):
-        cdef Cpp_Position3 pos = self.thisptr.get().private2position(coord)
-        return Position3_from_Cpp_Position3(address(pos))
+        cdef Cpp_Real3 pos = self.thisptr.get().private2position(coord)
+        return Real3_from_Cpp_Real3(address(pos))
 
     def coordinate2position(self, Integer coord):
-        cdef Cpp_Position3 pos = self.thisptr.get().coordinate2position(coord)
-        return Position3_from_Cpp_Position3(address(pos))
+        cdef Cpp_Real3 pos = self.thisptr.get().coordinate2position(coord)
+        return Real3_from_Cpp_Real3(address(pos))
 
-    def position2coordinate(self, Position3 pos):
+    def position2coordinate(self, Real3 pos):
         return self.thisptr.get().position2coordinate(
             deref(pos.thisptr))
 
@@ -328,10 +328,10 @@ cdef class LatticeWorld:
         return Integer3_from_Cpp_Integer3(address(g))
 
     def global2position(self, Integer3 g):
-        cdef Cpp_Position3 pos = self.thisptr.get().global2position(deref(g.thisptr))
-        return Position3_from_Cpp_Position3(address(pos))
+        cdef Cpp_Real3 pos = self.thisptr.get().global2position(deref(g.thisptr))
+        return Real3_from_Cpp_Real3(address(pos))
 
-    def position2global(self, Position3 pos):
+    def position2global(self, Real3 pos):
         cdef Cpp_Integer3 g = self.thisptr.get().position2global(deref(pos.thisptr))
         return Integer3_from_Cpp_Integer3(address(g))
 
@@ -352,7 +352,7 @@ cdef class LatticeWorld:
 
 cdef LatticeWorld LatticeWorld_from_Cpp_LatticeWorld(
     shared_ptr[Cpp_LatticeWorld] w):
-    r = LatticeWorld(Position3(1, 1, 1))
+    r = LatticeWorld(Real3(1, 1, 1))
     r.thisptr.swap(w)
     return r
 
@@ -444,10 +444,10 @@ cdef class LatticeFactory:
         del self.thisptr
 
     def create_world(self, arg1):
-        if isinstance(arg1, Position3):
+        if isinstance(arg1, Real3):
             return LatticeWorld_from_Cpp_LatticeWorld(
                 shared_ptr[Cpp_LatticeWorld](
-                    self.thisptr.create_world(deref((<Position3>arg1).thisptr))))
+                    self.thisptr.create_world(deref((<Real3>arg1).thisptr))))
         else:
             return LatticeWorld_from_Cpp_LatticeWorld(
                 shared_ptr[Cpp_LatticeWorld](self.thisptr.create_world(<string>(arg1))))

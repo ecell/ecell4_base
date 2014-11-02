@@ -158,12 +158,12 @@ cdef class Space:
 #  ecell4::CompartmentSpaceVectorImpl
 cdef extern from "ecell4/core/CompartmentSpace.hpp" namespace "ecell4":
     cdef cppclass Cpp_CompartmentSpaceVectorImpl "ecell4::CompartmentSpaceVectorImpl":
-        Cpp_CompartmentSpaceVectorImpl(Cpp_Position3&) except+
+        Cpp_CompartmentSpaceVectorImpl(Cpp_Real3&) except+
         Real volume()
         Integer num_molecules(Cpp_Species &sp)
         vector[Cpp_Species] list_species()
-        void reset(Cpp_Position3&)
-        Cpp_Position3 edge_lengths()
+        void reset(Cpp_Real3&)
+        Cpp_Real3 edge_lengths()
         void set_volume(Real)
         void add_molecules(Cpp_Species &sp, Integer num)
         void remove_molecules(Cpp_Species &sp, Integer num)
@@ -177,8 +177,8 @@ cdef class CompartmentSpaceVectorImpl:
 #  ecell4::ParticleSpaceVectorImpl
 cdef extern from "ecell4/core/ParticleSpace.hpp" namespace "ecell4":
     cdef cppclass Cpp_ParticleSpaceVectorImpl "ecell4::ParticleSpaceVectorImpl":
-        Cpp_ParticleSpaceVectorImpl(Cpp_Position3&) except+
-        Cpp_Position3 edge_lengths()
+        Cpp_ParticleSpaceVectorImpl(Cpp_Real3&) except+
+        Cpp_Real3 edge_lengths()
         Integer num_particles()
         Integer num_particles(Cpp_Species&)
         vector[pair[Cpp_ParticleID, Cpp_Particle]] list_particles()
@@ -189,11 +189,11 @@ cdef extern from "ecell4/core/ParticleSpace.hpp" namespace "ecell4":
         pair[Cpp_ParticleID, Cpp_Particle] get_particle(Cpp_ParticleID &pid)
         void remove_particle(Cpp_ParticleID &pid)
         vector[pair[pair[Cpp_ParticleID, Cpp_Particle], Real] ] list_particles_within_radius(
-                Cpp_Position3 &pos, Real &radius)
+                Cpp_Real3 &pos, Real &radius)
         vector[pair[pair[Cpp_ParticleID, Cpp_Particle], Real] ] list_particles_within_radius(
-                Cpp_Position3 &pos, Real &radius, Cpp_ParticleID &ignore)
+                Cpp_Real3 &pos, Real &radius, Cpp_ParticleID &ignore)
         vector[pair[pair[Cpp_ParticleID, Cpp_Particle], Real] ] list_particles_within_radius(
-                Cpp_Position3 &pos, Real &radius, Cpp_ParticleID &ignore1, Cpp_ParticleID &ignore2)
+                Cpp_Real3 &pos, Real &radius, Cpp_ParticleID &ignore1, Cpp_ParticleID &ignore2)
 
 ## ParticleSpaceVectorImpl
 #  a python wrapper for ParticleSpaceVectorImpl
@@ -303,26 +303,26 @@ cdef NetfreeModel NetfreeModel_from_Cpp_NetfreeModel(
 
 cdef shared_ptr[Cpp_Model]* Cpp_Model_from_Model(m)
 
-## Cpp_Position3
-#  ecell4::Position3
-cdef extern from "ecell4/core/Position3.hpp" namespace "ecell4":
-    cdef cppclass Cpp_Position3 "ecell4::Position3":
-        Cpp_Position3() except +
-        Cpp_Position3(Real, Real, Real) except +
-        Cpp_Position3(Cpp_Position3 &rhs) except+
+## Cpp_Real3
+#  ecell4::Real3
+cdef extern from "ecell4/core/Real3.hpp" namespace "ecell4":
+    cdef cppclass Cpp_Real3 "ecell4::Real3":
+        Cpp_Real3() except +
+        Cpp_Real3(Real, Real, Real) except +
+        Cpp_Real3(Cpp_Real3 &rhs) except+
 
         Real& operator[](Integer)
-        Cpp_Position3 operator+(Cpp_Position3, Cpp_Position3)
-        Cpp_Position3 operator-(Cpp_Position3, Cpp_Position3)
-        Cpp_Position3 operator/(Cpp_Position3, Real)
-        Cpp_Position3 operator*(Cpp_Position3, Real)
+        Cpp_Real3 operator+(Cpp_Real3, Cpp_Real3)
+        Cpp_Real3 operator-(Cpp_Real3, Cpp_Real3)
+        Cpp_Real3 operator/(Cpp_Real3, Real)
+        Cpp_Real3 operator*(Cpp_Real3, Real)
 
-## Position3
-#  a python wrapper for Cpp_Position3
-cdef class Position3:
-    cdef Cpp_Position3* thisptr
+## Real3
+#  a python wrapper for Cpp_Real3
+cdef class Real3:
+    cdef Cpp_Real3* thisptr
 
-cdef Position3 Position3_from_Cpp_Position3(Cpp_Position3 *p)
+cdef Real3 Real3_from_Cpp_Real3(Cpp_Real3 *p)
 
 ## Cpp_Integer3
 #  ecell4::Integer3
@@ -383,9 +383,9 @@ cdef ParticleID ParticleID_from_Cpp_ParticleID(Cpp_ParticleID* p)
 cdef extern from "ecell4/core/Particle.hpp" namespace "ecell4":
     cdef cppclass Cpp_Particle "ecell4::Particle":
         Cpp_Particle() except +
-        Cpp_Particle(Cpp_Species, Cpp_Position3, Real radius, Real D) except +
+        Cpp_Particle(Cpp_Species, Cpp_Real3, Real radius, Real D) except +
         Cpp_Particle(Cpp_Particle &rhs) except+
-        Cpp_Position3 position()
+        Cpp_Real3 position()
         Real radius()
         Real D()
         Cpp_Species &species()
@@ -472,7 +472,7 @@ cdef class FixedIntervalCSVObserver:
 #  ecell4::Shape
 cdef extern from "ecell4/core/Shape.hpp" namespace "ecell4":
     cdef cppclass Cpp_Shape "ecell4::Shape":
-        bool is_inside(Cpp_Position3&)
+        bool is_inside(Cpp_Real3&)
         Integer dimension()
 
 ## Cpp_Sphere
@@ -480,10 +480,10 @@ cdef extern from "ecell4/core/Shape.hpp" namespace "ecell4":
 cdef extern from "ecell4/core/Sphere.hpp" namespace "ecell4":
     cdef cppclass Cpp_Sphere "ecell4::Sphere":
         Cpp_Sphere()
-        Cpp_Sphere(Cpp_Position3&, Real)
+        Cpp_Sphere(Cpp_Real3&, Real)
         Cpp_Sphere(Cpp_Sphere&)
-        Real distance(Cpp_Position3&)
-        Real is_inside(Cpp_Position3&)
+        Real distance(Cpp_Real3&)
+        Real is_inside(Cpp_Real3&)
         Cpp_SphericalSurface surface()
         Integer dimension()
 
@@ -492,10 +492,10 @@ cdef extern from "ecell4/core/Sphere.hpp" namespace "ecell4":
 cdef extern from "ecell4/core/Sphere.hpp" namespace "ecell4":
     cdef cppclass Cpp_SphericalSurface "ecell4::SphericalSurface":
         Cpp_SphericalSurface()
-        Cpp_SphericalSurface(Cpp_Position3&, Real)
+        Cpp_SphericalSurface(Cpp_Real3&, Real)
         Cpp_SphericalSurface(Cpp_SphericalSurface&)
-        Real distance(Cpp_Position3&)
-        Real is_inside(Cpp_Position3&)
+        Real distance(Cpp_Real3&)
+        Real is_inside(Cpp_Real3&)
         Cpp_Sphere inside()
         Integer dimension()
 
@@ -504,13 +504,13 @@ cdef extern from "ecell4/core/Sphere.hpp" namespace "ecell4":
 cdef extern from "ecell4/core/AABB.hpp" namespace "ecell4":
     cdef cppclass Cpp_AABB "ecell4::AABB":
         Cpp_AABB()
-        Cpp_AABB(Cpp_Position3&, Cpp_Position3&)
+        Cpp_AABB(Cpp_Real3&, Cpp_Real3&)
         Cpp_AABB(Cpp_AABB&)
-        Real distance(Cpp_Position3&)
-        Real is_inside(Cpp_Position3&)
+        Real distance(Cpp_Real3&)
+        Real is_inside(Cpp_Real3&)
         Integer dimension()
-        Cpp_Position3 upper()
-        Cpp_Position3 lower()
+        Cpp_Real3 upper()
+        Cpp_Real3 lower()
 
 ## Shape
 #  a python wrapper for Cpp_Shape

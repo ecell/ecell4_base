@@ -13,7 +13,7 @@ def singlerun():
     m.add_species_attribute(sp3)
     m.add_reaction_rule(rr1)
 
-    w = ODEWorld(Position3(L, L, L))
+    w = ODEWorld(Real3(L, L, L))
     w.add_molecules(sp1, 60)
 
     target = ODESimulator(m, w)

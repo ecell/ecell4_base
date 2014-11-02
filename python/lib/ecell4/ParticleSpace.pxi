@@ -7,15 +7,15 @@ from libcpp.vector cimport vector
 
 cdef class ParticleSpaceVectorImpl:
 
-    def __cinit__(self, Position3 edge_lengths):
+    def __cinit__(self, Real3 edge_lengths):
         self.thisptr = new Cpp_ParticleSpaceVectorImpl(deref(edge_lengths.thisptr))
 
     def __dealloc__(self):
         del self.thisptr
 
     def edge_lengths(self):
-        cdef Cpp_Position3 r = self.thisptr.edge_lengths()
-        return Position3_from_Cpp_Position3(address(r))
+        cdef Cpp_Real3 r = self.thisptr.edge_lengths()
+        return Real3_from_Cpp_Real3(address(r))
 
     def num_particles(self, Species sp = None):
         if sp is None:
@@ -51,7 +51,7 @@ cdef class ParticleSpaceVectorImpl:
     def remove_particle(self, ParticleID pid):
         self.thisptr.remove_particle(deref(pid.thisptr))
 
-    def list_particles_within_radius(self, Position3 pos, Real radius, ParticleID ignore1 = None, ParticleID ignore2 = None):
+    def list_particles_within_radius(self, Real3 pos, Real radius, ParticleID ignore1 = None, ParticleID ignore2 = None):
         cdef vector[pair[pair[Cpp_ParticleID, Cpp_Particle], Real] ] raw_list_particles_within_radius
         if ignore1 == None and ignore2 == None:
             raw_list_particles_within_radius = self.thisptr.list_particles_within_radius(
