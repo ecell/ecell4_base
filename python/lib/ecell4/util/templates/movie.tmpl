@@ -20,12 +20,14 @@
 	 var data = {{data}};
 	 var colors = {{colors}};
 	 var names = {{names}};
+	 var sizes = {{sizes}};
 
 	 for(var i=0; i < data.length; i++){
 	   Elegans.DataBase.add("database-particles"+String(i), data[i], "df", "t", 0)
 	   stage.add(new Elegans.Particles("database-particles"+String(i), {
 	     color: colors[i],
-	     name: names[i]
+	     name: names[i],
+	     size: sizes[i]
 	   }));
 	 }
 

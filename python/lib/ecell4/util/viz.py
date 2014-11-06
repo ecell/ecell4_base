@@ -80,6 +80,7 @@ def plot_movie(worlds, radius=None, width=500, height=500, config={}, grid=False
     from jinja2 import Template
 
     data = {}
+    sizes = {}
     for i, world in enumerate(worlds):
         species = __parse_world(world, radius, species_list)
         for species_info in species:
@@ -89,6 +90,7 @@ def plot_movie(worlds, radius=None, width=500, height=500, config={}, grid=False
                 'df': species_info['data'],
                 't': i
             })
+            sizes[species_info['name']] = species_info['size']
 
     options = {
         'player': True,
@@ -106,6 +108,7 @@ def plot_movie(worlds, radius=None, width=500, height=500, config={}, grid=False
         'names': json.dumps(data.keys()),
         'data': json.dumps(data.values()),
         'colors': json.dumps([color_scale.get_color(name) for name in data.keys()]),
+        'sizes': json.dumps([sizes[name] for name in data.keys()]),
         'options': json.dumps(options)
     },'/templates/movie.tmpl')))
 
