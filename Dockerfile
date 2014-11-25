@@ -13,7 +13,7 @@ RUN cd /ecell4; git checkout -t origin/rulebase; CPLUS_INCLUDE_PATH=/usr/include
 RUN apt-get install -y python cython
 RUN cd /ecell4/python; python setup.py install
 
-RUN cd /; apt-get install -y python-pip python-zmq python-matplotlib
+RUN cd /; apt-get install -y python-setuptools python-pip python-zmq python-matplotlib
 RUN pip install ipython jinja2 tornado
 
 EXPOSE 8888
