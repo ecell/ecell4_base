@@ -12,7 +12,7 @@ RUN cd /ecell4; CPLUS_INCLUDE_PATH=/usr/include cmake .; make; make install
 
 RUN cd /ecell4/python; python setup.py install
 
-RUN cd /; pip install ipython jinja2 tornado
+RUN cd /; pip install "ipython[notebook]"
 
 EXPOSE 8888
 CMD LD_LIBRARY_PATH=/usr/local/lib ipython notebook --notebook-dir='/ecell4/ipynb' --no-browser --ip='*' --port 8888
