@@ -6,7 +6,7 @@ RUN apt-get update
 # RUN cd /; git clone git://github.com/ecell/ecell4
 # RUN cd /ecell4; PREFIX=/usr/local PYTHONPATH=/usr/local/lib/python2.7/dist-packages bash /ecell4/install.sh core core_python gillespie gillespie_python ode ode_python lattice lattice_python util_python bd bd_python
 
-RUN apt-get install -y git cmake g++ libboost-dev libgsl0-dev libhdf5-serial-dev libboost-regex-dev python python-numpy cython python-pip python-zmq python-matplotlib
+RUN apt-get install -y git cmake g++ libboost-dev libgsl0-dev libhdf5-serial-dev libboost-regex-dev python python-numpy python-scipy cython python-pip python-zmq python-matplotlib
 RUN cd /; git clone git://github.com/ecell/ecell4
 RUN cd /ecell4; CPLUS_INCLUDE_PATH=/usr/include cmake .; make; make install
 
