@@ -84,8 +84,8 @@ The latest version of boot2docker sets up a host only network adaptor which prov
 ```shell
 $ boot2docker ssh
 ######## in boot2docker
-docker@boot2docker:~$ docker pull ecell/ecell4:latest
-docker@boot2docker:~$ docker run --rm -i -t -p 8888:8888 ecell/ecell4:latest
+docker@boot2docker:~$ docker pull ecell/ecell4:develop
+docker@boot2docker:~$ docker run --rm -i -t -p 8888:8888 ecell/ecell4:develop
 ```
 
 Then you should be able to access the E-Cell4 IPython notebook server using the IP address reported to you using:
@@ -100,8 +100,8 @@ Typically, it is 192.168.59.103, so please open 192.168.59.103:8888 with your fa
 ### Docker (Linux)
 
 ```shell
-$ sudo docker pull ecell4/ecell4:latest
-$ sudo docker run --rm -i -t -p 8888:8888 ecell/ecell4:latest
+$ sudo docker pull ecell4/ecell4:develop
+$ sudo docker run --rm -i -t -p 8888:8888 ecell/ecell4:develop
 ```
 
 Open localhost:8888 with your favorite browser.
