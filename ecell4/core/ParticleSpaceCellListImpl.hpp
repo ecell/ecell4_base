@@ -357,7 +357,7 @@ protected:
 
     inline bool erase(const ParticleID& k)
     {
-        typename key_to_value_map_type::const_iterator p(rmap_.find(k));
+        key_to_value_map_type::const_iterator p(rmap_.find(k));
         if (rmap_.end() == p)
         {
             return false;
