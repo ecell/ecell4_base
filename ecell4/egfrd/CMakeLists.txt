@@ -36,12 +36,20 @@ configure_file(
 
 execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/ecell4/egfrd)
 
+add_executable(make_sjy_table make_sjy_table.cpp)
+add_executable(make_cjy_table make_cjy_table.cpp)
+target_link_libraries(make_sjy_table gsl cblas)
+target_link_libraries(make_cjy_table gsl cblas)
 add_custom_command(
     OUTPUT SphericalBesselTable.hpp
-    COMMAND python make_sjy_table.py ${PROJECT_BINARY_DIR}/ecell4/egfrd/SphericalBesselTable.hpp)
+    #COMMAND g++ make_sjy_table.cpp -lgsl -lcblas -o make_sjy_table && ./make_sjy_table ${PROJECT_BINARY_DIR}/ecell4/egfrd/SphericalBesselTable.hpp
+    COMMAND make_sjy_table ${PROJECT_BINARY_DIR}/ecell4/egfrd/SphericalBesselTable.hpp
+    DEPENDS make_sjy_table)
 add_custom_command(
     OUTPUT CylindricalBesselTable.hpp
-    COMMAND python make_cjy_table.py ${PROJECT_BINARY_DIR}/ecell4/egfrd/CylindricalBesselTable.hpp)
+    #COMMAND g++ make_cjy_table.cpp -lgsl -lcblas -o make_cjy_table && ./make_cjy_table ${PROJECT_BINARY_DIR}/ecell4/egfrd/CylindricalBesselTable.hpp
+    COMMAND make_cjy_table ${PROJECT_BINARY_DIR}/ecell4/egfrd/CylindricalBesselTable.hpp
+    DEPENDS make_cjy_table)
 add_custom_target(BesselTables ALL DEPENDS ${PROJECT_BINARY_DIR}/ecell4/egfrd/SphericalBesselTable.hpp ${PROJECT_BINARY_DIR}/ecell4/egfrd/CylindricalBesselTable.hpp)
 
 include_directories(${PROJECT_SOURCE_DIR}/ecell4/egfrd ${PROJECT_BINARY_DIR}/ecell4/egfrd)
