@@ -190,7 +190,7 @@ void Logger::logv(enum level lv, char const* format, va_list ap)
         return;
 
     char buf[1024];
-    std::vsnprintf(buf, sizeof(buf), format, ap);
+    vsnprintf(buf, sizeof(buf), format, ap);
 
     std::for_each(appenders_.begin(), appenders_.end(),
             invoke_appender(lv, name_.c_str(),
