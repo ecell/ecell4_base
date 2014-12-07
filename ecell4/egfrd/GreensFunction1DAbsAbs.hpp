@@ -42,7 +42,7 @@ private:
     // The minimum
     static const int MIN_TERMS = 20;
 
-    static const Real INFINITY;
+    static const Real INF;
 
 public:
     enum EventKind

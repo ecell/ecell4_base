@@ -23,7 +23,7 @@ const Real GreensFunction1DAbsAbs::L_TYPICAL = 1E-8;
 const Real GreensFunction1DAbsAbs::T_TYPICAL = 1E-6;
 const Real GreensFunction1DAbsAbs::EPSILON = 1E-12;
 const Real GreensFunction1DAbsAbs::PDENS_TYPICAL = 1;
-const Real GreensFunction1DAbsAbs::INFINITY = ecell4::inf;
+const Real GreensFunction1DAbsAbs::INF = ecell4::inf;
 
 // Calculates the probability of finding the particle inside the domain at 
 // time t
@@ -137,7 +137,7 @@ GreensFunction1DAbsAbs::prob_r (Real r, Real t) const
 	// the probability density function is a delta function
 	if (r == r0)
 	{
-	    return INFINITY;
+	    return INF;
 	}
 	else
 	{      
@@ -206,9 +206,9 @@ GreensFunction1DAbsAbs::leaves(Real t) const
 
     if ( fabs(r0-sigma) < L*EPSILON || fabs(a-r0) < L*EPSILON || L < 0.0 )
     {
-	// The flux of a zero domain is INFINITY. Also if the particle 
+	// The flux of a zero domain is INF. Also if the particle 
 	// started on the left boundary (leaking out immediately).
-	return INFINITY;
+	return INF;
     }
     else if ( t < EPSILON*this->t_scale )
     {
@@ -261,9 +261,9 @@ GreensFunction1DAbsAbs::leavea(Real t) const
 
     if ( fabs(r0-sigma) < L*EPSILON || fabs(a-r0) < L*EPSILON || L < 0.0 )
     {
-	// The flux of a zero domain is INFINITY. Also if the particle 
+	// The flux of a zero domain is INF. Also if the particle 
 	// started on the right boundary (leaking out immediately).
-	return INFINITY;
+	return INF;
     }
     else if ( t < EPSILON*this->t_scale )
     {
@@ -406,7 +406,7 @@ GreensFunction1DAbsAbs::drawTime (Real rnd) const
     
     if (D == 0.0 )
     {
-	return INFINITY;
+	return INF;
     }
     else if ( L < 0.0 || fabs(a-r0) < EPSILON*L || fabs(r0-sigma) > (1.0 - EPSILON)*L )
     {
