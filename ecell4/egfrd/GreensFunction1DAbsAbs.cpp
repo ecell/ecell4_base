@@ -19,6 +19,11 @@
 #include "GreensFunction1DAbsAbs.hpp"
 #include "Defs.hpp"
 
+const Real GreensFunction1DAbsAbs::L_TYPICAL = 1E-8;
+const Real GreensFunction1DAbsAbs::T_TYPICAL = 1E-6;
+const Real GreensFunction1DAbsAbs::EPSILON = 1E-12;
+const Real GreensFunction1DAbsAbs::PDENS_TYPICAL = 1;
+const Real GreensFunction1DAbsAbs::INFINITY = ecell4::inf;
 
 // Calculates the probability of finding the particle inside the domain at 
 // time t
