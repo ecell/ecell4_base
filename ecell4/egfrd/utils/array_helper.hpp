@@ -21,7 +21,11 @@ inline ::boost::array<T_, __n__> array_gen(\
     return retval; \
 }
 
+#ifndef WIN32_MSC
 BOOST_PP_REPEAT_FROM_TO(0, BOOST_PP_LIMIT_REPEAT, ARRAY_HELPER_TPL, )
+#else
+BOOST_PP_REPEAT_FROM_TO(0, 128, ARRAY_HELPER_TPL, )
+#endif
 
 #undef ARRAY_HELPER_TPL
 #undef ARRAY_HELPER_INNER_TPL
