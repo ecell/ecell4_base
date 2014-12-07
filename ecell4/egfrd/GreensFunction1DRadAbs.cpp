@@ -15,6 +15,7 @@
 
 #include <math.h>
 
+#include "compat.h"
 #include "findRoot.hpp"
 #include "GreensFunction1DRadAbs.hpp"
 #include "Defs.hpp"
@@ -23,7 +24,6 @@ const Real GreensFunction1DRadAbs::L_TYPICAL = 1E-8;
 const Real GreensFunction1DRadAbs::T_TYPICAL = 1E-6;
 const Real GreensFunction1DRadAbs::EPSILON = 1E-10;
 const Real GreensFunction1DRadAbs::PDENS_TYPICAL = 1;
-const Real GreensFunction1DRadAbs::INF = ecell4::inf;
 
 // This is the appropriate definition of the function defining
 // the roots of our Green's functions in GSL.
@@ -217,7 +217,7 @@ const
 	// the probability density function is a delta function
 	if (r == r0)
 	{
-	    return INF;
+	    return INFINITY;
 	}
 	else
 	{
@@ -414,9 +414,9 @@ GreensFunction1DRadAbs::drawTime (Real rnd) const
     const Real h((this->getk()+this->getv()/2.0)/this->getD());
     
 
-    if ( D == 0.0 || L == INF )
+    if ( D == 0.0 || L == INFINITY )
     {
-	return INF;
+	return INFINITY;
     }
 
     if ( rnd <= EPSILON || L < 0.0 || fabs(a-r0) < EPSILON*L )
