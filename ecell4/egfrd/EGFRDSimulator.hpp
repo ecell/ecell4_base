@@ -72,11 +72,34 @@ struct EGFRDSimulatorTraitsBase: public ParticleSimulatorTraitsBase<Tworld_>
         typedef Shell<Tshape_, domain_id_type> type;
     };
 
-    static const Real SAFETY = 1. + 1e-5;
-    static const Real SINGLE_SHELL_FACTOR = .1;
-    static const Real DEFAULT_DT_FACTOR = 1e-5;
-    static const Real CUTOFF_FACTOR = 5.6;
+    static const Real safety();
+    static const Real single_shell_factor();
+    static const Real default_dt_factor();
+    static const Real cutoff_factor();
+
+    static const Real SAFETY;
+    static const Real SINGLE_SHELL_FACTOR;
+    static const Real DEFAULT_DT_FACTOR;
+    static const Real CUTOFF_FACTOR;
 };
+
+template<typename Tworld_>
+const Real EGFRDSimulatorTraitsBase<Tworld_>::safety() { return 1. + 1e-5; }
+template<typename Tworld_>
+const Real EGFRDSimulatorTraitsBase<Tworld_>::single_shell_factor() { return 0.1; }
+template<typename Tworld_>
+const Real EGFRDSimulatorTraitsBase<Tworld_>::default_dt_factor() { return 1e-5; }
+template<typename Tworld_>
+const Real EGFRDSimulatorTraitsBase<Tworld_>::cutoff_factor() { return 5.6; }
+
+template<typename Tworld_>
+const Real EGFRDSimulatorTraitsBase<Tworld_>::SAFETY = EGFRDSimulatorTraitsBase<Tworld_>::safety();
+template<typename Tworld_>
+const Real EGFRDSimulatorTraitsBase<Tworld_>::SINGLE_SHELL_FACTOR = EGFRDSimulatorTraitsBase<Tworld_>::single_shell_factor();
+template<typename Tworld_>
+const Real EGFRDSimulatorTraitsBase<Tworld_>::DEFAULT_DT_FACTOR = EGFRDSimulatorTraitsBase<Tworld_>::default_dt_factor();
+template<typename Tworld_>
+const Real EGFRDSimulatorTraitsBase<Tworld_>::CUTOFF_FACTOR = EGFRDSimulatorTraitsBase<Tworld_>::cutoff_factor();
 
 namespace detail {
 

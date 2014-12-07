@@ -112,8 +112,18 @@ struct WorldTraitsBase
     // // typedef PlanarSurface<Tderived_> planar_surface_type;
     // typedef CuboidalRegion<Tderived_> cuboidal_region_type;
 
-    static const Real TOLERANCE = 1e-7;
+    static const Real tolelance();
+    static const Real TOLERANCE;
 };
+
+template<typename Tderived_, typename TD_>
+const Real WorldTraitsBase<Tderived_, TD_>::tolelance()
+{
+    return 1e-7;
+}
+
+template<typename Tderived_, typename TD_>
+const Real WorldTraitsBase<Tderived_, TD_>::TOLERANCE = WorldTraitsBase<Tderived_, TD_>::tolerance();
 
 template<typename TD_>
 struct WorldTraits: public WorldTraitsBase<WorldTraits<TD_>, TD_>

@@ -209,4 +209,5 @@ private:
     // This is the time scale of the system, used by drawTime_f
     Real t_scale;
 };
+
 #endif // __FIRSTPASSAGEGREENSFUNCTION1D_HPP
