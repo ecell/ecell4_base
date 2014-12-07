@@ -16,13 +16,13 @@ public:
 
 private:
     // Error tolerance used by default.
-    static const Real TOLERANCE = 1e-8;
+    static const Real TOLERANCE;
 
     // SphericalBesselGenerator's accuracy, used by some
     // theta-related calculations.
-    static const Real THETA_TOLERANCE = 1e-5;
+    static const Real THETA_TOLERANCE;
 
-    static const Real MIN_T = 1e-18;
+    static const Real MIN_T;
 
     static const unsigned int MAX_ORDER = 50;
     static const unsigned int MAX_ALPHA_SEQ = 1005;

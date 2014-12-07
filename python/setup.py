@@ -39,8 +39,7 @@ class run_tests(Command):
         test_runner.run(suite)
 
 if sys.platform == "win32":
-    dependent_libs = [
-        'gsl', 'cblas', 'hdf5_cpp', 'hdf5']
+    dependent_libs = ['gsl', 'cblas', 'hdf5_cpp', 'hdf5']
     extra_compile_args = ["/EHsc", "/w"]
     with_cpp_shared_libraries = False
 elif sys.platform == "darwin":

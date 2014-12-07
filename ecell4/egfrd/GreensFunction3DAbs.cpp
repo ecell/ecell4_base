@@ -26,6 +26,10 @@
 
 typedef GreensFunction3DAbs GF3DA;
 
+const Real GF3DA::TOLERANCE = 1e-8;
+const Real GF3DA::THETA_TOLERANCE = 1e-5;
+const Real GF3DA::MIN_T = 1e-18;
+
 GF3DA::GreensFunction3DAbs(Real D, Real r0, Real a) 
     : GreensFunction3DRadAbsBase(D, 0., r0, 0.), a(a)
 {
@@ -867,6 +871,7 @@ GF3DA::drawTheta(Real rnd, Real r, Real t) const
 GF3DA::EventKind GF3DA::drawEventType(Real rnd, Real t) const
 {
     assert(0);
+    return EventKind::IV_ESCAPE; //XXX: DUMMY?
 }
 
 //

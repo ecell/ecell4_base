@@ -195,7 +195,7 @@ Real GreensFunction3DAbsSym::p_r_fourier(Real r, Real t) const
         ++n;
     }
 
-    const Real factor(1.0 / (sqrt(2) * PIsq * pow(D * t, 1.5)));
+    const Real factor(1.0 / (sqrt(2.0) * PIsq * pow(D * t, 1.5)));
 
     return value * factor;
 } 
