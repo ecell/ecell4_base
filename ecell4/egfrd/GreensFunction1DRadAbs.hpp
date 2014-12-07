@@ -39,8 +39,6 @@ private:
     // The minimum number of terms
     static const int MIN_TERMS = 20;
 
-    static const Real INF;
-
 public:
     GreensFunction1DRadAbs(Real D, Real k, Real r0, Real sigma, Real a)
 	: GreensFunction(D), v(0.0), k(k), r0(r0), sigma(sigma), a(a), l_scale(L_TYPICAL), t_scale(T_TYPICAL)
