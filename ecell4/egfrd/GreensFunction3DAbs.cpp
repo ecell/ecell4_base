@@ -26,6 +26,10 @@
 
 typedef GreensFunction3DAbs GF3DA;
 
+const Real GF3DA::TOLERANCE = 1e-8;
+const Real GF3DA::THETA_TOLERANCE = 1e-5;
+const Real GF3DA::MIN_T = 1e-18;
+
 GF3DA::GreensFunction3DAbs(Real D, Real r0, Real a) 
     : GreensFunction3DRadAbsBase(D, 0., r0, 0.), a(a)
 {
@@ -611,7 +615,7 @@ GF3DA::drawTime(Real rnd) const
    p_survival_params params = { this, rnd };
 
    gsl_function F = {
-       reinterpret_cast<typeof(F.function)>(&p_survival_F),
+       reinterpret_cast<double (*)(double, void*)>( &p_survival_F ),
        &params 
    };
 
@@ -713,7 +717,7 @@ GF3DA::drawR(Real rnd, Real t) const
     p_int_r_params params = { this, t, rnd * psurv };
 
     gsl_function F = {
-        reinterpret_cast<typeof(F.function)>(&p_int_r_F),
+        reinterpret_cast<double (*)(double, void*)>( &p_int_r_F ),
         &params 
     };
 
@@ -823,7 +827,7 @@ GF3DA::drawTheta(Real rnd, Real r, Real t) const
     ip_theta_params params = { this, r, t, p_nTable, rnd * ip_theta_pi };
 
     gsl_function F = {
-        reinterpret_cast<typeof(F.function)>(&ip_theta_F),
+        reinterpret_cast<double (*)(double, void*)>( &ip_theta_F ),
         &params 
     };
 
@@ -867,6 +871,7 @@ GF3DA::drawTheta(Real rnd, Real r, Real t) const
 GF3DA::EventKind GF3DA::drawEventType(Real rnd, Real t) const
 {
     assert(0);
+    return IV_ESCAPE; //XXX: DUMMY?
 }
 
 //

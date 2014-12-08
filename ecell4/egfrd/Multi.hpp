@@ -358,7 +358,7 @@ public:
             if (radius_min > s.radius)
                 radius_min = s.radius;
         }
-        return gsl_pow_2(radius_min * 2) / (D_max * 2);
+        return pow_2(radius_min * 2) / (D_max * 2);
     }
 
     event_kind const& last_event() const

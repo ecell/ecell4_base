@@ -38,8 +38,18 @@ struct ParticleSimulatorTraitsBase
     typedef ReactionRecorder<reaction_record_type> reaction_recorder_type;
     typedef VolumeClearer<typename world_type::particle_shape_type, typename world_type::particle_id_type> volume_clearer_type;
 
-    static const Real MINIMAL_SEPARATION_FACTOR = (1.0 + 1e-7);
+    static const Real minimal_separation_factor();
+    static const Real MINIMAL_SEPARATION_FACTOR;
 };
+
+template<typename Tworld_>
+const Real ParticleSimulatorTraitsBase<Tworld_>::minimal_separation_factor()
+{
+    return 1 + 1e-7;
+}
+
+template<typename Tworld_>
+const Real ParticleSimulatorTraitsBase<Tworld_>::MINIMAL_SEPARATION_FACTOR = ParticleSimulatorTraitsBase<Tworld_>::minimal_separation_factor();
 
 template<typename Ttraits_>
 class ParticleSimulator;

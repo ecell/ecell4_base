@@ -30,7 +30,7 @@ Real GreensFunction3D::p_r(Real r, Real t) const
     const Real Dt4( 4.0 * Dt );
     const Real rr04( 4.0 * r * r0 );
 
-    const Real mrr0sq_over_4Dt( - gsl_pow_2( r + r0 ) / Dt4 );
+    const Real mrr0sq_over_4Dt( - pow_2( r + r0 ) / Dt4 );
 
     const Real num1( expm1( mrr0sq_over_4Dt ) );
     const Real num2( expm1( mrr0sq_over_4Dt + rr04 / Dt4 ) );
@@ -50,8 +50,8 @@ Real GreensFunction3D::ip_r(Real r, Real t) const
     const Real sqrtDt4( sqrt( Dt4 ) );
     const Real sqrtDt4r( 1.0 / sqrtDt4 );
 
-    const Real num1a( exp( - gsl_pow_2( r - r0 ) * Dt4r ) );
-    const Real num1b( exp( - gsl_pow_2( r + r0 ) * Dt4r ) );
+    const Real num1a( exp( - pow_2( r - r0 ) * Dt4r ) );
+    const Real num1b( exp( - pow_2( r + r0 ) * Dt4r ) );
     const Real den1( r0 * sqrt( M_PI ) );
 
     const Real term1( sqrtDt4 * ( - num1a + num1b ) / den1 );
@@ -113,7 +113,7 @@ Real GreensFunction3D::drawR(Real rnd, Real t) const
 
     gsl_function F = 
         {
-            reinterpret_cast<typeof(F.function)>( &ip_r_F ),
+            reinterpret_cast<double (*)(double, void*)>( &ip_r_F ),
             &params 
         };
 
@@ -219,7 +219,7 @@ Real GreensFunction3D::drawTheta(Real rnd, Real r, Real t) const
 
     gsl_function F = 
         {
-            reinterpret_cast<typeof(F.function)>( &ip_theta_F ),
+            reinterpret_cast<double (*)(double, void*)>( &ip_theta_F ),
             &params 
         };
 

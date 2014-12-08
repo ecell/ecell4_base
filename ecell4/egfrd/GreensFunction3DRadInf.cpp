@@ -194,8 +194,8 @@ GreensFunction3DRadInf::p_int_r(Real r, Real t) const
     const Real r_r0__sqrtDt4((r - r0) / sqrtDt4);
     const Real r0_s__sqrtDt4((r0 - sigma) / sqrtDt4);
 
-    const Real term1((expm1(- gsl_pow_2(r_r0__2s___sqrtDt4 ))
-                        - expm1(- gsl_pow_2(r_r0__sqrtDt4))) * 
+    const Real term1((expm1(- pow_2(r_r0__2s___sqrtDt4 ))
+                        - expm1(- pow_2(r_r0__sqrtDt4))) * 
                         sqrt(Dt / M_PI));
 
     const Real erf_r_r0__2s___sqrtDt4(erf(r_r0__2s___sqrtDt4));
@@ -263,7 +263,7 @@ Real GreensFunction3DRadInf::drawTime(Real rnd) const
 
     gsl_function F = 
         {
-            reinterpret_cast<typeof(F.function)>(&p_reaction_F),
+            reinterpret_cast<double (*)(double, void*)>(&p_reaction_F),
             &params 
         };
 
@@ -339,7 +339,7 @@ Real GreensFunction3DRadInf::drawR(Real rnd, Real t) const
 
     gsl_function F = 
         {
-            reinterpret_cast<typeof(F.function)>(&p_int_r_F),
+            reinterpret_cast<double (*)(double, void*)>(&p_int_r_F),
             &params 
         };
 
@@ -459,7 +459,7 @@ GreensFunction3DRadInf::Rn(unsigned int n, Real r, Real t,
     p_corr_R_params params = { this, n, r, t };
     gsl_function F = 
         {
-            reinterpret_cast<typeof(F.function)>(&p_corr_R_F),
+            reinterpret_cast<double (*)(double, void*)>(&p_corr_R_F),
             &params
         };
 
@@ -599,7 +599,7 @@ static const Real p_free_max(Real r, Real r0, Real t, Real D)
     const Real Dt4(4.0 * D * t);
     const Real Dt4Pi(Dt4 * M_PI);
 
-    const Real term1(exp(- gsl_pow_2(r - r0) / Dt4));
+    const Real term1(exp(- pow_2(r - r0) / Dt4));
     const Real term2(1.0 / sqrt(Dt4Pi * Dt4Pi * Dt4Pi));
 
     return term1 * term2;
@@ -735,7 +735,7 @@ Real GreensFunction3DRadInf::drawTheta(Real rnd, Real r, Real t) const
 
     gsl_function F = 
         {
-            reinterpret_cast<typeof(F.function)>(&ip_theta_F),
+            reinterpret_cast<double (*)(double, void*)>(&ip_theta_F),
             &params 
         };
 

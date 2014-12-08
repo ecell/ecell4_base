@@ -17,6 +17,7 @@
 #include <boost/preprocessor/repetition/repeat_from_to.hpp>
 
 #include "utils/array_traits.hpp"
+#include "freeFunctions.hpp"
 
 #define CREATE_VECTOR_LIMIT_REPEAT 16
 #define POPULATE_MATRIX_BY_VECTORS_LIMIT_REPEAT 16
@@ -389,13 +390,13 @@ inline T_ cross_product(T_ const& p1, T_ const& p2, typename boost::enable_if<is
 template<typename T_>
 inline typename element_type_of<T_>::type length_sq(T_ const& r, typename boost::enable_if<is_vector2<T_> >::type* = 0)
 {
-    return gsl_pow_2(r[0]) + gsl_pow_2(r[1]);
+    return pow_2(r[0]) + pow_2(r[1]);
 }
 
 template< typename T_ >
 inline typename element_type_of< T_ >::type length_sq(T_ const& r, typename boost::enable_if<is_vector3<T_> >::type* = 0)
 {
-    return gsl_pow_2(r[0]) + gsl_pow_2(r[1]) + gsl_pow_2(r[2]);
+    return pow_2(r[0]) + pow_2(r[1]) + pow_2(r[2]);
 }
 
 template< typename T_ >

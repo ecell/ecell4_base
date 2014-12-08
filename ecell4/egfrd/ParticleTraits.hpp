@@ -13,7 +13,7 @@
 //XXX
 
 inline ecell4::Particle offset(
-    ecell4::Particle const& shape, typename ecell4::Particle::position_type off)
+    ecell4::Particle const& shape, ecell4::Particle::position_type off)
 {
     ecell4::Particle retval(shape);
     retval.position() += off;

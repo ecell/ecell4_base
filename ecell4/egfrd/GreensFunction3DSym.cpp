@@ -11,6 +11,7 @@
 #include <gsl/gsl_roots.h>
 
 #include "GreensFunction3DSym.hpp"
+#include "freeFunctions.hpp"
 
 
 const Real GreensFunction3DSym::TOLERANCE = 1e-8;
@@ -88,7 +89,7 @@ Real GreensFunction3DSym::drawR(Real rnd, Real t) const
 
     gsl_function F = 
         {
-            reinterpret_cast<typeof(F.function)>( &ip_r_F ),
+            reinterpret_cast<double (*)(double, void*)>( &ip_r_F ),
             &params 
         };
 

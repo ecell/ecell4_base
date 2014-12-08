@@ -1,0 +1,9 @@
+/* WARNING! All changes made to this file will be lost! */
+#ifndef __ECELL4_EPDP_CONFIG_H
+#define __ECELL4_EPDP_CONFIG_H
+
+#define HAVE_DECL_INFINITY 0
+// #define HAVE_ISFINITE
+// #define HAVE_SINCOS
+
+#endif /* __ECELL4_EPDP_CONFIG_H */

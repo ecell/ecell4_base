@@ -15,9 +15,9 @@ inline typename element_type_of< T1_ >::type distance(
                 is_vector3<T2_> > >::type* = 0)
 {
     return std::sqrt(
-        gsl_pow_2( p1[0] - p2[0] )
-        + gsl_pow_2( p1[1] - p2[1] ) 
-        + gsl_pow_2( p1[2] - p2[2] ) );
+        pow_2( p1[0] - p2[0] )
+        + pow_2( p1[1] - p2[1] ) 
+        + pow_2( p1[2] - p2[2] ) );
 }
 
 template<typename T_>
