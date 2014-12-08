@@ -134,8 +134,7 @@ Real GreensFunction3DRadAbs::alpha0_i(Integer i) const
 
 
     gsl_function F = 
-        { reinterpret_cast<typeof(F.function)>(&f_alpha0_aux_F), &params };
-
+        { reinterpret_cast<double (*)(double, void*)>(&f_alpha0_aux_F), &params};
 
     // We know the range of the solution from - Pi/2 <= atan <= Pi/2.
     const Real interval(M_PI / (a - sigma));
@@ -460,7 +459,7 @@ GreensFunction3DRadAbs::alpha_i(Integer i, Integer n,
     f_alpha_aux_params params = { this, n, target };
 
     gsl_function F = 
-        { reinterpret_cast<typeof(F.function)>(&f_alpha_aux_F), &params };
+        { reinterpret_cast<double (*)(double, void*)>(&f_alpha_aux_F), &params };
 
     gsl_root_fsolver_set(solver, &F, low, high);
 
@@ -1374,7 +1373,7 @@ Real GreensFunction3DRadAbs::drawTime(Real rnd) const
 
     gsl_function F = 
         {
-            reinterpret_cast<typeof(F.function)>(&p_survival_table_F),
+            reinterpret_cast<double (*)(double, void*)>(&p_survival_table_F),
             &params 
         };
 
@@ -1712,7 +1711,7 @@ Real GreensFunction3DRadAbs::drawR(Real rnd, Real t) const
 
     gsl_function F = 
         {
-            reinterpret_cast<typeof(F.function)>(&p_int_r_F),
+            reinterpret_cast<double (*)(double, void*)>(&p_int_r_F),
             &params 
         };
 
@@ -2479,7 +2478,7 @@ GreensFunction3DRadAbs::drawTheta(Real rnd, Real r, Real t) const
     ip_theta_params params = { this, r, t, p_nTable, rnd * ip_theta_pi };
 
     gsl_function F = 
-        { reinterpret_cast<typeof(F.function)>(&ip_theta_F), &params };
+        { reinterpret_cast<double (*)(double, void*)>(&ip_theta_F), &params };
 
     const gsl_root_fsolver_type* solverType(gsl_root_fsolver_brent);
     gsl_root_fsolver* solver(gsl_root_fsolver_alloc(solverType));

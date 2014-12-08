@@ -615,7 +615,7 @@ GF3DA::drawTime(Real rnd) const
    p_survival_params params = { this, rnd };
 
    gsl_function F = {
-       reinterpret_cast<typeof(F.function)>(&p_survival_F),
+       reinterpret_cast<double (*)(double, void*)>( &p_survival_F ),
        &params 
    };
 
@@ -717,7 +717,7 @@ GF3DA::drawR(Real rnd, Real t) const
     p_int_r_params params = { this, t, rnd * psurv };
 
     gsl_function F = {
-        reinterpret_cast<typeof(F.function)>(&p_int_r_F),
+        reinterpret_cast<double (*)(double, void*)>( &p_int_r_F ),
         &params 
     };
 
@@ -827,7 +827,7 @@ GF3DA::drawTheta(Real rnd, Real r, Real t) const
     ip_theta_params params = { this, r, t, p_nTable, rnd * ip_theta_pi };
 
     gsl_function F = {
-        reinterpret_cast<typeof(F.function)>(&ip_theta_F),
+        reinterpret_cast<double (*)(double, void*)>( &ip_theta_F ),
         &params 
     };
 

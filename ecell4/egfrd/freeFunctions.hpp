@@ -390,7 +390,7 @@ static inline Real drawR_gbd(Real rnd, Real sigma, Real t, Real D)
 
     gsl_function F =
     {
-        reinterpret_cast<typeof(F.function)>(&I_gbd_r_F),
+        reinterpret_cast<double (*)(double, void*)>(&I_gbd_r_F),
         &params
     };
 

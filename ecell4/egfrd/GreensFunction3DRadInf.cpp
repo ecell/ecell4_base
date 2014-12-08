@@ -263,7 +263,7 @@ Real GreensFunction3DRadInf::drawTime(Real rnd) const
 
     gsl_function F = 
         {
-            reinterpret_cast<typeof(F.function)>(&p_reaction_F),
+            reinterpret_cast<double (*)(double, void*)>(&p_reaction_F),
             &params 
         };
 
@@ -339,7 +339,7 @@ Real GreensFunction3DRadInf::drawR(Real rnd, Real t) const
 
     gsl_function F = 
         {
-            reinterpret_cast<typeof(F.function)>(&p_int_r_F),
+            reinterpret_cast<double (*)(double, void*)>(&p_int_r_F),
             &params 
         };
 
@@ -459,7 +459,7 @@ GreensFunction3DRadInf::Rn(unsigned int n, Real r, Real t,
     p_corr_R_params params = { this, n, r, t };
     gsl_function F = 
         {
-            reinterpret_cast<typeof(F.function)>(&p_corr_R_F),
+            reinterpret_cast<double (*)(double, void*)>(&p_corr_R_F),
             &params
         };
 
@@ -735,7 +735,7 @@ Real GreensFunction3DRadInf::drawTheta(Real rnd, Real r, Real t) const
 
     gsl_function F = 
         {
-            reinterpret_cast<typeof(F.function)>(&ip_theta_F),
+            reinterpret_cast<double (*)(double, void*)>(&ip_theta_F),
             &params 
         };
 
