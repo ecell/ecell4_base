@@ -11,6 +11,7 @@
 #include <gsl/gsl_roots.h>
 
 #include "GreensFunction3DSym.hpp"
+#include "freeFunctions.hpp"
 
 
 const Real GreensFunction3DSym::TOLERANCE = 1e-8;

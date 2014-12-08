@@ -19,6 +19,7 @@
 #include <gsl/gsl_roots.h>
 
 #include "findRoot.hpp"
+#include "freeFunctions.hpp"
 #include "GreensFunction3DAbsSym.hpp"
 
 const Real GreensFunction3DAbsSym::CUTOFF = 1e-10;

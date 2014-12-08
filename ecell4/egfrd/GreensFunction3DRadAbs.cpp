@@ -262,7 +262,7 @@ static Real P(Integer n, Real x)
     Real sx2(1.0);
     Integer term1(1);
 
-    const Real x2sq_r(1.0 / gsl_pow_2(x + x));
+    const Real x2sq_r(1.0 / pow_2(x + x));
     const unsigned int maxm(n / 2);
     for(unsigned int m(0); m <= maxm; ++m)
     {
@@ -284,7 +284,7 @@ static std::pair<Real, Real> P2(Integer n, Real x)
     Real sx2(1.0);
     Integer term1(1);
 
-    const Real x2sq_r(1.0 / gsl_pow_2(x + x));
+    const Real x2sq_r(1.0 / pow_2(x + x));
     const unsigned int np1(n + 1);
     const unsigned int maxm(n / 2);
     for(unsigned int m(0); m <= maxm; ++m)

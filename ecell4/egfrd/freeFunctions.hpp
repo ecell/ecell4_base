@@ -1,6 +1,8 @@
 #ifndef FREE_FUNTIONS_HPP
 #define FREE_FUNTIONS_HPP
 
+#include <ecell4/core/config.h>
+
 #include "Defs.hpp"
 #include "compat.h"
 
@@ -9,6 +11,35 @@
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_roots.h>
 #include <gsl/gsl_errno.h>
+
+#ifdef WIN32_MSC
+#include <gsl/gsl_sf_erf.h>
+
+inline double erf(const double x)
+{
+    return gsl_sf_erf(x);
+}
+
+inline double pow_2(const double x)
+{
+    return x * x;
+}
+
+static inline double expm1(const double x)
+{
+    return gsl_expm1(x);
+}
+
+static inline double erfc(const double x)
+{
+    return gsl_sf_erfc(x);
+}
+#else
+inline double pow_2(const double x)
+{
+    return gsl_pow_2(x);
+}
+#endif
 
 /**
    Calculates std::exp(x^2) * erfc(x)
@@ -67,8 +98,8 @@ static inline Real __p_irr(Real r, Real t, Real r0, Real kf, Real D, Real sigma,
     const Real Dt4(4.0 * D * t);
     const Real r_plus_r0_minus_2sigma(r + r0 - 2.0 * sigma);
 
-    const Real num1(std::exp(- gsl_pow_2(r - r0) / Dt4));
-    const Real num2(std::exp(- gsl_pow_2(r_plus_r0_minus_2sigma) / Dt4));
+    const Real num1(std::exp(- pow_2(r - r0) / Dt4));
+    const Real num2(std::exp(- pow_2(r_plus_r0_minus_2sigma) / Dt4));
     const Real num3(W(r_plus_r0_minus_2sigma / std::sqrt(Dt4), 
                         alpha * std::sqrt(t)));
 
@@ -311,8 +342,8 @@ static inline Real I_bd_r(Real r, Real sigma, Real t, Real D)
 
     const Real rsigma(r * sigma);
 
-    const Real rps_sq(gsl_pow_2(r + sigma));
-    const Real rms_sq(gsl_pow_2(r - sigma));
+    const Real rps_sq(pow_2(r + sigma));
+    const Real rms_sq(pow_2(r - sigma));
 
     const Real term1(- 2.0 * sqrtDt / sqrtPi);
     const Real term2(std::exp(- sigmasq / Dt) * (sigmasq - Dt2));
