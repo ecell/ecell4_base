@@ -5,6 +5,23 @@
 #include <boost/foreach.hpp>
 #include <boost/algorithm/string/join.hpp>
 
+#include <ecell4/core/config.h>
+#ifdef WIN32_MSC
+#include <boost/container/map.hpp>
+#endif
+namespace win32_workaround
+{
+template <typename Key, typename T>
+struct get_mapper_mf
+{
+#ifdef WIN32_MSC
+    typedef boost::container::map<Key, T> type;
+#else
+    typedef std::map<Key, T> type;
+#endif
+};
+}
+
 #include "exceptions.hpp"
 #include "Domain.hpp"
 #include "ParticleContainer.hpp"
@@ -49,7 +66,8 @@ public:
 
     typedef typename base_type::transaction_type transaction_type;
 
-    typedef std::map<particle_id_type, particle_type> particle_map;
+    //XXX: typedef std::map<particle_id_type, particle_type> particle_map;
+    typedef typename win32_workaround::get_mapper_mf<particle_id_type, particle_type>::type particle_map;
     typedef sized_iterator_range<typename particle_map::const_iterator> particle_id_pair_range;
 
     typedef typename world_type::particle_container_type::time_type time_type;
@@ -259,7 +277,8 @@ public:
     typedef std::pair<const typename traits_type::shell_id_type, spherical_shell_type> spherical_shell_id_pair;
     typedef typename traits_type::reaction_record_type reaction_record_type;
 
-    typedef std::map<shell_id_type, spherical_shell_type> spherical_shell_map;
+    //XXX: typedef std::map<shell_id_type, spherical_shell_type> spherical_shell_map;
+    typedef typename win32_workaround::get_mapper_mf<shell_id_type, spherical_shell_type>::type spherical_shell_map;
     typedef sized_iterator_range<typename spherical_shell_map::const_iterator> spherical_shell_id_pair_range;
     typedef MultiParticleContainer<traits_type> multi_particle_container_type;
 
