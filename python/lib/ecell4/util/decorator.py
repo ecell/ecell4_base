@@ -219,7 +219,7 @@ class ReactionRulesCallback(Callback):
         else:
             raise RuntimeError, 'an invalid object was given [%s]' % (repr(obj))
 
-def get_model(is_netfree=True):
+def get_model(is_netfree=False):
     global SPECIES_ATTRIBUTES
     global REACTION_RULES
 
@@ -236,9 +236,6 @@ def get_model(is_netfree=True):
     SPECIES_ATTRIBUTES = []
     REACTION_RULES = []
     return m
-
-# reaction_rules = functools.partial(parse_decorator, ReactionRulesCallback)
-# species_attributes = functools.partial(parse_decorator, SpeciesAttributesCallback)
 
 reaction_rules = functools.partial(ParseDecorator, ReactionRulesCallback)
 species_attributes = functools.partial(ParseDecorator, SpeciesAttributesCallback)
