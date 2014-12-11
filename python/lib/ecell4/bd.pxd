@@ -81,6 +81,7 @@ cdef extern from "ecell4/bd/BDSimulator.hpp" namespace "ecell4::bd":
         shared_ptr[Cpp_Model] model()
         shared_ptr[Cpp_BDWorld] world()
         void run(Real)
+        void run(Real, shared_ptr[Cpp_Observer])
         void run(Real, vector[shared_ptr[Cpp_Observer]])
 
 ## BDSimulator

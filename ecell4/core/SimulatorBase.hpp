@@ -128,6 +128,13 @@ public:
         }
     }
 
+    void run(const Real& duration, const boost::shared_ptr<Observer>& observer)
+    {
+        std::vector<boost::shared_ptr<Observer> > observers;
+        observers.push_back(observer);
+        run(duration, observers);
+    }
+
     void run(const Real& duration, std::vector<boost::shared_ptr<Observer> > observers)
     {
         const Real upto(t() + duration);

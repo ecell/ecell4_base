@@ -1,3 +1,4 @@
+import collections
 from cython.operator cimport dereference as deref, preincrement as inc
 from cython cimport address
 from libcpp.string cimport string
@@ -269,10 +270,13 @@ cdef class BDSimulator:
 
         if observers is None:
             self.thisptr.run(duration)
-        else:
+        elif isinstance(observers, collections.Iterable):
             for obs in observers:
                 tmp.push_back(deref((<Observer>(obs.as_base())).thisptr))
             self.thisptr.run(duration, tmp)
+        else:
+            self.thisptr.run(duration,
+                deref((<Observer>(observers.as_base())).thisptr))
 
 cdef BDSimulator BDSimulator_from_Cpp_BDSimulator(Cpp_BDSimulator* s):
     r = BDSimulator(

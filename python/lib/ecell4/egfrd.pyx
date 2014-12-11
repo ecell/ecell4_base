@@ -1,3 +1,4 @@
+import collections
 from cython cimport address
 from cython.operator cimport dereference as deref, preincrement as inc
 
@@ -267,10 +268,13 @@ cdef class EGFRDSimulator:
 
         if observers is None:
             self.thisptr.run(duration)
-        else:
+        elif isinstance(observers, collections.Iterable):
             for obs in observers:
                 tmp.push_back(deref((<Observer>(obs.as_base())).thisptr))
             self.thisptr.run(duration, tmp)
+        else:
+            self.thisptr.run(duration,
+                deref((<Observer>(observers.as_base())).thisptr))
 
 cdef EGFRDSimulator EGFRDSimulator_from_Cpp_EGFRDSimulator(Cpp_EGFRDSimulator* s):
     r = EGFRDSimulator(
