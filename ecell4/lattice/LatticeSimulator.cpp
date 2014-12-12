@@ -101,7 +101,7 @@ std::pair<bool, LatticeSimulator::reaction_type> LatticeSimulator::attempt_react
         if (accp >= rnd)
         {
             LatticeWorld::particle_info to_info(*(to_mt->find(to_coord)));
-            return apply_reaction_(*itr, info, to_info);
+            return apply_second_order_reaction_(*itr, info, to_info);
         }
     }
     return std::pair<bool, reaction_type>(false, reaction_type());
@@ -110,7 +110,7 @@ std::pair<bool, LatticeSimulator::reaction_type> LatticeSimulator::attempt_react
 /*
  * the Reaction between two molecules
  */
-std::pair<bool, LatticeSimulator::reaction_type> LatticeSimulator::apply_reaction_(
+std::pair<bool, LatticeSimulator::reaction_type> LatticeSimulator::apply_second_order_reaction_(
     const ReactionRule& reaction_rule,
     const LatticeWorld::particle_info from_info,
     const LatticeWorld::particle_info to_info)
@@ -226,7 +226,7 @@ std::pair<bool, LatticeSimulator::reaction_type> LatticeSimulator::apply_reactio
 /*
  * the First Order Reaction
  */
-std::pair<bool, LatticeSimulator::reaction_type> LatticeSimulator::apply_reaction_(
+std::pair<bool, LatticeSimulator::reaction_type> LatticeSimulator::apply_first_order_reaction_(
         const ReactionRule& reaction_rule, const LatticeWorld::particle_info info)
 {
     const ReactionRule::product_container_type&
