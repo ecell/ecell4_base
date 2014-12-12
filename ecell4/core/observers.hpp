@@ -428,7 +428,10 @@ public:
         for (std::vector<ParticleID>::const_iterator i(pids_.begin());
             i != pids_.end(); ++i)
         {
-            (*j).push_back(space->get_particle(*i).second.position());
+            if (space->has_particle(*i))
+            {
+                (*j).push_back(space->get_particle(*i).second.position());
+            }
             ++j;
         }
     }
