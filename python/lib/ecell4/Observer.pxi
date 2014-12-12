@@ -150,12 +150,16 @@ cdef class FixedIntervalCSVObserver:
 
 cdef class FixedIntervalTrajectoryObserver:
 
-    def __cinit__(self, Real dt, pids):
+    def __cinit__(self, Real dt, pids, resolve_boundary=None):
         cdef vector[Cpp_ParticleID] tmp
         for pid in pids:
             tmp.push_back(deref((<ParticleID>pid).thisptr))
-        self.thisptr = new shared_ptr[Cpp_FixedIntervalTrajectoryObserver](
-            new Cpp_FixedIntervalTrajectoryObserver(dt, tmp))
+        if resolve_boundary is None:
+            self.thisptr = new shared_ptr[Cpp_FixedIntervalTrajectoryObserver](
+                new Cpp_FixedIntervalTrajectoryObserver(dt, tmp))
+        else:
+            self.thisptr = new shared_ptr[Cpp_FixedIntervalTrajectoryObserver](
+                new Cpp_FixedIntervalTrajectoryObserver(dt, tmp, <bool>resolve_boundary))
 
     def __dealloc__(self):
         del self.thisptr
