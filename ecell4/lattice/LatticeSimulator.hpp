@@ -188,6 +188,15 @@ protected:
         const Species& product_species0,
         const Species& product_species1,
         reaction_type& reaction);
+    void apply_a2b(
+        const LatticeWorld::private_coordinate_type coord,
+        const Species& product_species,
+        reaction_type& reaction);
+    bool apply_a2bc(
+        const LatticeWorld::private_coordinate_type coord,
+        const Species& product_species0,
+        const Species& product_species1,
+        reaction_type& reaction);
 
     void step_();
     void register_events(const Species& species);
