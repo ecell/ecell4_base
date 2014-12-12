@@ -197,6 +197,7 @@ protected:
         const Species& product_species0,
         const Species& product_species1,
         reaction_type& reaction);
+    void  register_product_species(const Species& product_species);
 
     void step_();
     void register_events(const Species& species);
