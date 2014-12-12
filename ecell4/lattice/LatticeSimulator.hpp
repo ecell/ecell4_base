@@ -178,6 +178,17 @@ protected:
     std::pair<bool, reaction_type> apply_first_order_reaction_(
         const ReactionRule& reaction_rule,
         const LatticeWorld::particle_info info);
+    void apply_ab2c(
+        const LatticeWorld::private_coordinate_type coord,
+        const Species& product_species,
+        reaction_type& reaction);
+    void apply_ab2cd(
+        const LatticeWorld::private_coordinate_type from_coord,
+        const LatticeWorld::private_coordinate_type to_coord,
+        const Species& product_species0,
+        const Species& product_species1,
+        reaction_type& reaction);
+
     void step_();
     void register_events(const Species& species);
     // void register_step_event(const Species& species);
