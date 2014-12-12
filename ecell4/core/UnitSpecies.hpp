@@ -73,16 +73,22 @@ public:
     {
         std::pair<std::string, site_type> val(
             std::make_pair(name, std::make_pair(state, bond)));
-        if (std::binary_search(
-            sites_.begin(), sites_.end(), val, site_comparerator()))
+        container_type::iterator it(
+            std::lower_bound(sites_.begin(), sites_.end(), val, site_comparerator()));
+        if (it == sites_.end() || (*it).first != name)
         {
+            sites_.insert(it, val);
+            return true;
+        }
+        else
+        {
+            if (state != "")
+            {
+                (*it).second.first = state;
+            }
+            (*it).second.second = bond;
             return false;
         }
-        sites_.insert(
-            std::lower_bound(sites_.begin(), sites_.end(), val,
-                site_comparerator()),
-            val);
-        return true;
     }
 
     Integer num_sites() const
