@@ -393,6 +393,57 @@ protected:
     std::string prefix_;
 };
 
+class FixedIntervalTrajectoryObserver
+    : public FixedIntervalObserver
+{
+public:
+
+    typedef FixedIntervalObserver base_type;
+
+public:
+
+    FixedIntervalTrajectoryObserver(const Real& dt, const std::vector<ParticleID>& pids)
+        : base_type(dt), pids_(pids)
+    {
+        ;
+    }
+
+    virtual ~FixedIntervalTrajectoryObserver()
+    {
+        ;
+    }
+
+    virtual void initialize(const Space* space)
+    {
+        base_type::initialize(space);
+        trajectories_.clear();
+        trajectories_.resize(pids_.size(), std::vector<Real3>());
+    }
+
+    virtual void fire(const Simulator* sim, const Space* space)
+    {
+        base_type::fire(sim, space);
+
+        std::vector<std::vector<Real3> >::iterator j(trajectories_.begin());
+        for (std::vector<ParticleID>::const_iterator i(pids_.begin());
+            i != pids_.end(); ++i)
+        {
+            (*j).push_back(space->get_particle(*i).second.position());
+            ++j;
+        }
+    }
+
+    const std::vector<std::vector<Real3> >& data() const
+    {
+        return trajectories_;
+    }
+
+protected:
+
+    std::vector<ParticleID> pids_;
+    std::vector<std::vector<Real3> > trajectories_;
+};
+
 } // ecell4
 
 #endif /* __ECELL4_OBSEVER_HPP */

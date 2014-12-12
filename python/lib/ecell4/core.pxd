@@ -451,6 +451,12 @@ cdef extern from "ecell4/core/observers.hpp" namespace "ecell4":
         string filename()
         void log(Cpp_Space*)
 
+    cdef cppclass Cpp_FixedIntervalTrajectoryObserver "ecell4::FixedIntervalTrajectoryObserver":
+        Cpp_FixedIntervalTrajectoryObserver(Real, vector[Cpp_ParticleID]) except +
+        Real next_time()
+        Integer num_steps()
+        vector[vector[Cpp_Real3]] data()
+
 ## FixedIntervalNumberObserver
 #  a python wrapper for Cpp_FixedIntervalNumberObserver
 cdef class Observer:
@@ -467,6 +473,9 @@ cdef class FixedIntervalHDF5Observer:
 
 cdef class FixedIntervalCSVObserver:
     cdef shared_ptr[Cpp_FixedIntervalCSVObserver]* thisptr
+
+cdef class FixedIntervalTrajectoryObserver:
+    cdef shared_ptr[Cpp_FixedIntervalTrajectoryObserver]* thisptr
 
 ## Cpp_Shape
 #  ecell4::Shape

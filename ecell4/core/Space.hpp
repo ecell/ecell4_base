@@ -181,6 +181,13 @@ public:
             " by this space class");
     }
 
+    virtual std::pair<ParticleID, Particle> get_particle(const ParticleID& pid) const
+    {
+        throw NotSupported(
+            "get_particle(const ParticleID&) is not supported"
+            " by this space class");
+    }
+
     /**
      * get all particles.
      * this function is a part of the trait of ParticleSpace.
