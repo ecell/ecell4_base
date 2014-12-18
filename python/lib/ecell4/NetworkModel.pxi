@@ -89,6 +89,18 @@ cdef class NetworkModel:
             inc(it)
         return retval
 
+    def add_species_attributes(self, attrs):
+        cdef vector[Cpp_Species] species
+        for sp in attrs:
+            species.push_back(deref((<Species>sp).thisptr))
+        self.thisptr.get().add_species_attributes(species)
+
+    def add_reaction_rules(self, rrs):
+        cdef vector[Cpp_ReactionRule] reaction_rules
+        for rr in rrs:
+            reaction_rules.push_back(deref((<ReactionRule>rr).thisptr))
+        self.thisptr.get().add_reaction_rules(reaction_rules)
+
     def expand(self, seeds, max_itr=None, max_stoich=None):
         cdef vector[Cpp_Species] _seeds
         cdef map[Cpp_Species, Integer] _max_stoich
