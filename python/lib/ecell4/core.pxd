@@ -221,6 +221,9 @@ cdef extern from "ecell4/core/Model.hpp" namespace "ecell4":
         vector[Cpp_Species] species_attributes()
         vector[Cpp_ReactionRule] reaction_rules()
 
+        void add_species_attributes(vector[Cpp_Species])
+        void add_reaction_rules(vector[Cpp_ReactionRule])
+
         shared_ptr[Cpp_Model] expand(vector[Cpp_Species])
         shared_ptr[Cpp_Model] expand(vector[Cpp_Species], Integer)
         shared_ptr[Cpp_Model] expand(vector[Cpp_Species], Integer, map[Cpp_Species, Integer])
@@ -253,6 +256,8 @@ cdef extern from "ecell4/core/NetworkModel.hpp" namespace "ecell4":
             Cpp_Species sp, Cpp_Species sp)
         vector[Cpp_ReactionRule] reaction_rules()
         vector[Cpp_Species] species_attributes()
+        void add_species_attributes(vector[Cpp_Species])
+        void add_reaction_rules(vector[Cpp_ReactionRule])
 
         shared_ptr[Cpp_Model] expand(vector[Cpp_Species])
         shared_ptr[Cpp_Model] expand(vector[Cpp_Species], Integer)
@@ -287,6 +292,8 @@ cdef extern from "ecell4/core/NetfreeModel.hpp" namespace "ecell4":
             Cpp_Species sp, Cpp_Species sp)
         vector[Cpp_ReactionRule] reaction_rules()
         vector[Cpp_Species] species_attributes()
+        void add_species_attributes(vector[Cpp_Species])
+        void add_reaction_rules(vector[Cpp_ReactionRule])
 
         shared_ptr[Cpp_Model] expand(vector[Cpp_Species])
         shared_ptr[Cpp_Model] expand(vector[Cpp_Species], Integer)
@@ -451,6 +458,13 @@ cdef extern from "ecell4/core/observers.hpp" namespace "ecell4":
         string filename()
         void log(Cpp_Space*)
 
+    cdef cppclass Cpp_FixedIntervalTrajectoryObserver "ecell4::FixedIntervalTrajectoryObserver":
+        Cpp_FixedIntervalTrajectoryObserver(Real, vector[Cpp_ParticleID]) except +
+        Cpp_FixedIntervalTrajectoryObserver(Real, vector[Cpp_ParticleID], bool) except +
+        Real next_time()
+        Integer num_steps()
+        vector[vector[Cpp_Real3]] data()
+
 ## FixedIntervalNumberObserver
 #  a python wrapper for Cpp_FixedIntervalNumberObserver
 cdef class Observer:
@@ -467,6 +481,9 @@ cdef class FixedIntervalHDF5Observer:
 
 cdef class FixedIntervalCSVObserver:
     cdef shared_ptr[Cpp_FixedIntervalCSVObserver]* thisptr
+
+cdef class FixedIntervalTrajectoryObserver:
+    cdef shared_ptr[Cpp_FixedIntervalTrajectoryObserver]* thisptr
 
 ## Cpp_Shape
 #  ecell4::Shape

@@ -393,6 +393,90 @@ protected:
     std::string prefix_;
 };
 
+class FixedIntervalTrajectoryObserver
+    : public FixedIntervalObserver
+{
+public:
+
+    typedef FixedIntervalObserver base_type;
+
+public:
+
+    FixedIntervalTrajectoryObserver(
+        const Real& dt, const std::vector<ParticleID>& pids,
+        const bool& resolve_boundary = true)
+        : base_type(dt), pids_(pids), resolve_boundary_(resolve_boundary)
+    {
+        ;
+    }
+
+    virtual ~FixedIntervalTrajectoryObserver()
+    {
+        ;
+    }
+
+    virtual void initialize(const Space* space)
+    {
+        base_type::initialize(space);
+        trajectories_.clear();
+        trajectories_.resize(pids_.size(), std::vector<Real3>());
+        strides_.clear();
+        strides_.resize(pids_.size(), Real3(0, 0, 0));
+    }
+
+    virtual void fire(const Simulator* sim, const Space* space)
+    {
+        base_type::fire(sim, space);
+
+        const Real3 edge_lengths(space->edge_lengths());
+        std::vector<std::vector<Real3> >::iterator j(trajectories_.begin());
+        std::vector<Real3>::iterator k(strides_.begin());
+        for (std::vector<ParticleID>::const_iterator i(pids_.begin());
+            i != pids_.end(); ++i)
+        {
+            if (space->has_particle(*i))
+            {
+                Real3& stride(*k);
+                Real3 pos(stride
+                    + space->get_particle(*i).second.position());
+                if (resolve_boundary_ && (*j).size() > 0)
+                {
+                    const Real3 prev((*j)[(*j).size() - 1]);
+                    for (unsigned int dim(0); dim != 3; ++dim)
+                    {
+                        const Real L(edge_lengths[dim]);
+                        if (pos[dim] - prev[dim] >= L * 0.5)
+                        {
+                            stride[dim] -= L;
+                            pos[dim] -= L;
+                        }
+                        else if (pos[dim] - prev[dim] <= L * -0.5)
+                        {
+                            stride[dim] += L;
+                            pos[dim] += L;
+                        }
+                    }
+                }
+                (*j).push_back(pos);
+            }
+            ++j;
+            ++k;
+        }
+    }
+
+    const std::vector<std::vector<Real3> >& data() const
+    {
+        return trajectories_;
+    }
+
+protected:
+
+    std::vector<ParticleID> pids_;
+    std::vector<std::vector<Real3> > trajectories_;
+    std::vector<Real3> strides_;
+    bool resolve_boundary_;
+};
+
 } // ecell4
 
 #endif /* __ECELL4_OBSEVER_HPP */

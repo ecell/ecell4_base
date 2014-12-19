@@ -47,8 +47,9 @@ public:
         const boost::shared_ptr<Model>& model,
         const boost::shared_ptr<world_type>& world) const
     {
-        return new ODESimulator(
-            boost::dynamic_pointer_cast<NetworkModel>(model), world); //XXX:
+        return new ODESimulator(model, world);
+        // return new ODESimulator(
+        //     boost::dynamic_pointer_cast<NetworkModel>(model), world); //XXX:
     }
 
     virtual ODESimulator* create_simulator(

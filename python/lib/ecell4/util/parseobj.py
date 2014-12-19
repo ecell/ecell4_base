@@ -1,6 +1,7 @@
 import operator
 import copy
 from logger import log_call
+import inspect
 
 
 class AnyCallable:
@@ -16,6 +17,9 @@ All the members must start with '_'."""
 
     def __getattr__(self, key):
         return getattr(self._as_ParseObj(), key)
+
+    def __deepcopy__(self, key):
+        return AnyCallable(self.__root, self.__name)
 
     def __coerce__(self, other):
         return None
@@ -36,9 +40,16 @@ class ParseElem:
         self.key = None
         self.modification = None
 
-    def set_arguments(self, *args, **kwargs):
-        self.args = args
-        self.kwargs = kwargs
+    def update_arguments(self, *args, **kwargs):
+        if self.args is None:
+            self.args = args
+        else:
+            self.args += args
+
+        if self.kwargs is None:
+            self.kwargs = kwargs
+        else:
+            self.kwargs.update(kwargs)
 
     def set_key(self, key):
         self.key = key
@@ -71,6 +82,10 @@ class ExpBase(object):
 
     def __init__(self, root):
         self.__root = root
+
+    @property
+    def _root(self):
+        return self.__root
 
     def __repr__(self):
         return "<%s.%s: %s>" % (
@@ -114,10 +129,19 @@ class ExpBase(object):
 class ParseObj(ExpBase):
     """All the members must start with '_'."""
 
-    def __init__(self, root, name, elems=[]):
+    def __init__(self, root, name=None, elems=None):
         ExpBase.__init__(self, root)
 
-        self.__elems = elems + [ParseElem(name)]
+        if name is None and elems is None:
+            raise RuntimeError, "a name or elements must be given"
+
+        if elems is None:
+            self.__elems = []
+        else:
+            self.__elems = copy.copy(elems)
+
+        if name is not None:
+            self.__elems += [ParseElem(name)]
 
     def _elements(self):
         return copy.copy(self.__elems)
@@ -125,29 +149,75 @@ class ParseObj(ExpBase):
     def _size(self):
         return len(self.__elems)
 
+    def _last(self):
+        return self.__elems[-1]
+
+    def _append(self, elem):
+        if not isinstance(elem, ParseElem):
+            raise RuntimeError, "an invalid unit name was given [%s]" % (
+                str(elem))
+        self.__elems.append(elem)
+
+    def _extend(self, elems):
+        for elem in elems:
+            if not isinstance(elem, ParseElem):
+                raise RuntimeError, "an invalid unit name was given [%s]" % (
+                    str(elem))
+        self.__elems.extend(elems)
+
+    def _eval_last(self, *args, **kwargs):
+        obj = self.__elems.pop()
+        return obj(*args, **kwargs)
+
+    def __deepcopy__(self, memo):
+        return ParseObj(self._root, elems=copy.deepcopy(self.__elems))
+
     @log_call
     def __call__(self, *args, **kwargs):
-        self.__elems[-1].set_arguments(*args, **kwargs)
-        return self
+        if len(args) == 0 and len(kwargs) == 0:
+            return self
+
+        retval = copy.deepcopy(self)
+        retval._last().update_arguments(*args, **kwargs)
+        return retval
 
     @log_call
     def __getitem__(self, key):
-        self.__elems[-1].set_key(key)
-        return self
+        retval = copy.deepcopy(self)
+        retval._last().set_key(key)
+        return retval
 
     @log_call
     def __xor__(self, rhs):
-        self.__elems[-1].set_modification(rhs)
-        return self
+        retval = copy.deepcopy(self)
+        retval._last().set_modification(rhs)
+        return retval
 
-    @log_call
+    # @log_call #XXX: donot wrap
     def __getattr__(self, key):
         if key[0] == "_" and len(key) > 1 and not key[1: ].isdigit():
             raise RuntimeError, (
                 "'%s' object has no attribute '%s'"
                     % (self.__class__.__name__, key))
-        self.__elems.append(ParseElem(key))
-        return self
+
+        retval = copy.deepcopy(self)
+        calling_frame = inspect.currentframe().f_back
+
+        try:
+            obj = eval(key, calling_frame.f_globals, calling_frame.f_locals)
+        except NameError:
+            retval._append(ParseElem(key))
+            return retval
+
+        if isinstance(obj, (AnyCallable, ParseObj)):
+            retval._extend(obj._elements())
+        elif isinstance(obj, ParseElem):
+            retval._append(obj)
+        else:
+            raise ValueError, (
+                "[%s] must be either ParseObj or ParseElem. [%s] given."
+                % (key, str(obj)))
+        return retval
 
     def __str__(self):
         labels = [str(elem) for elem in self.__elems]

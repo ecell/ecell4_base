@@ -147,3 +147,46 @@ cdef class FixedIntervalCSVObserver:
         retval.thisptr = new shared_ptr[Cpp_Observer](
             <shared_ptr[Cpp_Observer]>deref(self.thisptr))
         return retval
+
+cdef class FixedIntervalTrajectoryObserver:
+
+    def __cinit__(self, Real dt, pids, resolve_boundary=None):
+        cdef vector[Cpp_ParticleID] tmp
+        for pid in pids:
+            tmp.push_back(deref((<ParticleID>pid).thisptr))
+        if resolve_boundary is None:
+            self.thisptr = new shared_ptr[Cpp_FixedIntervalTrajectoryObserver](
+                new Cpp_FixedIntervalTrajectoryObserver(dt, tmp))
+        else:
+            self.thisptr = new shared_ptr[Cpp_FixedIntervalTrajectoryObserver](
+                new Cpp_FixedIntervalTrajectoryObserver(dt, tmp, <bool>resolve_boundary))
+
+    def __dealloc__(self):
+        del self.thisptr
+
+    def next_time(self):
+        return self.thisptr.get().next_time()
+
+    def num_steps(self):
+        return self.thisptr.get().num_steps()
+
+    def data(self):
+        cdef vector[vector[Cpp_Real3]] d = self.thisptr.get().data()
+        retval = []
+        cdef vector[vector[Cpp_Real3]].iterator it = d.begin()
+        cdef vector[Cpp_Real3].iterator it2
+        while it != d.end():
+            it2 = deref(it).begin()
+            retval.append([])
+            while it2 != deref(it).end():
+                retval[-1].append(Real3_from_Cpp_Real3(address(deref(it2))))
+                inc(it2)
+            inc(it)
+        return retval
+
+    def as_base(self):
+        retval = Observer()
+        del retval.thisptr
+        retval.thisptr = new shared_ptr[Cpp_Observer](
+            <shared_ptr[Cpp_Observer]>deref(self.thisptr))
+        return retval

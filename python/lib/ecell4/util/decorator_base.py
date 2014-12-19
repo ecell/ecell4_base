@@ -2,7 +2,6 @@ import copy
 import types
 import warnings
 import functools
-
 import inspect
 
 import parseobj
@@ -69,7 +68,7 @@ class ParseDecorator:
                 del vardict[ignore]
         for k in self.__func.func_code.co_names:
             if (not k in vardict.keys()
-                and not k in dir(vardict['__builtins__'])): # is this enough?
+                and not k in dict(vardict['__builtins__'])): # is this enough?
                 vardict[k] = parseobj.AnyCallable(cache, k)
         g = types.FunctionType(self.__func.func_code, vardict)
         with warnings.catch_warnings():
@@ -90,7 +89,7 @@ class ParseDecorator:
                 calling_frame.f_globals[k] = parseobj.AnyCallable(self.__callback, k)
                 self.__newvars[k] = vardict[k]
             elif (not k in vardict.keys()
-                and not k in dir(vardict['__builtins__'])):
+                and not k in dict(vardict['__builtins__'])):
                 # print "WARNING: '%s' is undefined." % k
                 calling_frame.f_globals[k] = parseobj.AnyCallable(self.__callback, k)
                 self.__newvars[k] = None
@@ -124,7 +123,7 @@ def parse_decorator(callback_class, func):
                 del vardict[ignore]
         for k in func.func_code.co_names:
             if (not k in vardict.keys()
-                and not k in dir(vardict['__builtins__'])): # is this enough?
+                and not k in dict(vardict['__builtins__'])): # is this enough?
                 vardict[k] = parseobj.AnyCallable(cache, k)
         g = types.FunctionType(func.func_code, vardict)
         with warnings.catch_warnings():
