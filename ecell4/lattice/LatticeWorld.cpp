@@ -260,8 +260,10 @@ Integer LatticeWorld::add_structure(const Species& sp, const boost::shared_ptr<c
     switch (shape->dimension())
     {
     case Shape::THREE:
+        dimension_map_.insert(dimension_map_type::value_type(sp.serial(), shape->dimension()));
         return add_structure3(sp, shape);
     case Shape::TWO:
+        dimension_map_.insert(dimension_map_type::value_type(sp.serial(), shape->dimension()));
         return add_structure2(sp, shape);
     }
 
@@ -467,6 +469,15 @@ LatticeWorld::private_coordinate_type LatticeWorld::coord2private(
         const coordinate_type& coord) const
 {
     return space_.coord2private(coord);
+}
+
+Shape::dimension_kind LatticeWorld::get_dimension_kind(const std::string& name) const
+{
+    dimension_map_type::const_iterator itr(dimension_map_.find(name));
+    if (itr != dimension_map_.end())
+        return (*itr).second;
+
+    return Shape::THREE; // Default value (ex. for VACANT Type)
 }
 
 } // lattice

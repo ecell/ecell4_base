@@ -37,6 +37,8 @@ public:
     typedef LatticeSpace::spmap spmap;
     typedef MoleculeInfo molecule_info_type;
 
+    typedef std::map<std::string, Shape::dimension_kind> dimension_map_type;
+
 public:
 
     LatticeWorld(const Real3& edge_lengths, const Real& voxel_radius,
@@ -357,6 +359,8 @@ public:
     private_coordinate_type coord2private(const coordinate_type&
             coord) const;
 
+    Shape::dimension_kind get_dimension_kind(const std::string& name) const;
+
     /*
      * HDF5 Save
      */
@@ -410,6 +414,7 @@ protected:
     LatticeSpace space_;
     boost::shared_ptr<RandomNumberGenerator> rng_;
     SerialIDGenerator<ParticleID> sidgen_;
+    dimension_map_type dimension_map_;
 
     boost::weak_ptr<Model> model_;
 };
