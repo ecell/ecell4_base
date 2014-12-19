@@ -79,20 +79,48 @@ std::pair<bool, LatticeSimulator::reaction_type> LatticeSimulator::attempt_react
     const std::vector<ReactionRule> rules(model_->query_reaction_rules(
                 from_species, to_species));
 
-    const Real factor((from_species == to_species) ? 2 : 1);
     const LatticeWorld::molecule_info_type
         from_minfo(world_->get_molecule_info(from_species)),
         to_minfo(world_->get_molecule_info(to_species));
 
     const Real Dtot(from_minfo.D + to_minfo.D);
     const Real rnd(world_->rng()->uniform(0,1));
+    const Shape::dimension_kind dimensionA(world_->get_dimension_kind(from_minfo.loc));
+    const Shape::dimension_kind dimensionB(world_->get_dimension_kind(to_minfo.loc));
+    const Real gamma(pow(2*sqrt(2) + 4*sqrt(3) + 3*sqrt(6) + sqrt(22), 2) /
+        (72*(6*sqrt(2) + 4*sqrt(3) + 3*sqrt(6))));
+    Real factor(0);
+    if (dimensionA == Shape::THREE && dimensionB == Shape::THREE)
+    {
+        if (from_species != to_species)
+            factor = 1. / (6 * sqrt(2.) * Dtot * world_->voxel_radius());
+        else
+            factor = 1. / (6 * sqrt(2.) * from_minfo.D * world_->voxel_radius());
+    }
+    else if (dimensionA == Shape::TWO && dimensionB == Shape::TWO)
+    {
+        if (from_species != to_species)
+            factor = gamma / Dtot;
+        else
+            factor = gamma / from_minfo.D;
+    }
+    else if (dimensionA == Shape::THREE && dimensionB == Shape::TWO)
+    {
+        factor = sqrt(2) / (3 * from_minfo.D * world_->voxel_radius());
+    }
+    else if (dimensionA == Shape::TWO && dimensionB == Shape::THREE)
+    {
+        factor = sqrt(2) / (3 * to_minfo.D * world_->voxel_radius()); // 不要?
+    }
+    else
+        throw NotSupported("The dimension of a shape must be two or three.");
+
     Real accp(0.);
     for (std::vector<ReactionRule>::const_iterator itr(rules.begin());
             itr != rules.end(); ++itr)
     {
         const Real k((*itr).k());
-        const Real P(k * factor/ (6 * sqrt(2.)
-                    * Dtot * world_->voxel_radius()));
+        const Real P(k * factor);
         accp += P;
         if (accp > 1)
         {
