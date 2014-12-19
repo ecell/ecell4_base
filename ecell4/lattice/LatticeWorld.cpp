@@ -228,7 +228,7 @@ bool LatticeWorld::add_molecules(const Species& sp, const Integer& num)
 }
 
 bool LatticeWorld::add_molecules(
-    const Species& sp, const Integer& num, const Shape& shape)
+    const Species& sp, const Integer& num, const boost::shared_ptr<const Shape> shape)
 {
     if (num < 0)
     {
@@ -240,7 +240,7 @@ bool LatticeWorld::add_molecules(
     Integer count(0);
     while (count < num)
     {
-        const Real3 pos(shape.draw_position(rng_));
+        const Real3 pos(shape->draw_position(rng_));
         const Voxel v(sp, space_.position2private(pos), info.radius, info.D, info.loc);
 
         if (space_.on_structure(v))
@@ -255,9 +255,9 @@ bool LatticeWorld::add_molecules(
     return true;
 }
 
-Integer LatticeWorld::add_structure(const Species& sp, const Shape& shape)
+Integer LatticeWorld::add_structure(const Species& sp, const boost::shared_ptr<const Shape> shape)
 {
-    switch (shape.dimension())
+    switch (shape->dimension())
     {
     case Shape::THREE:
         return add_structure3(sp, shape);
@@ -268,7 +268,7 @@ Integer LatticeWorld::add_structure(const Species& sp, const Shape& shape)
     throw NotSupported("The dimension of a shape must be two or three.");
 }
 
-Integer LatticeWorld::add_structure3(const Species& sp, const Shape& shape)
+Integer LatticeWorld::add_structure3(const Species& sp, const boost::shared_ptr<const Shape> shape)
 {
     const LatticeWorld::molecule_info_type info(get_molecule_info(sp));
     Integer count(0);
@@ -279,7 +279,7 @@ Integer LatticeWorld::add_structure3(const Species& sp, const Shape& shape)
             for (Integer layer(0); layer < layer_size(); ++layer)
             {
                 const Integer3 g(col, row, layer);
-                const Real L(shape.is_inside(global2position(g)));
+                const Real L(shape->is_inside(global2position(g)));
                 if (L > 0)
                 {
                     continue;
@@ -297,7 +297,7 @@ Integer LatticeWorld::add_structure3(const Species& sp, const Shape& shape)
     return count;
 }
 
-Integer LatticeWorld::add_structure2(const Species& sp, const Shape& shape)
+Integer LatticeWorld::add_structure2(const Species& sp, const boost::shared_ptr<const Shape> shape)
 {
     const LatticeWorld::molecule_info_type info(get_molecule_info(sp));
     Integer count(0);
@@ -325,9 +325,9 @@ Integer LatticeWorld::add_structure2(const Species& sp, const Shape& shape)
     return count;
 }
 
-bool LatticeWorld::is_surface_voxel(const Integer3& g, const Shape& shape) const
+bool LatticeWorld::is_surface_voxel(const Integer3& g, const boost::shared_ptr<const Shape> shape) const
 {
-    const Real L(shape.is_inside(global2position(g)));
+    const Real L(shape->is_inside(global2position(g)));
     if (L <= 0 || L > 2 * voxel_radius())
     {
         return false;
@@ -337,7 +337,7 @@ bool LatticeWorld::is_surface_voxel(const Integer3& g, const Shape& shape) const
         private_coord(space_.global2private_coord(g));
     for (Integer i(0); i < 12; ++i)
     {
-        if (shape.is_inside(global2position(space_.private_coord2global(
+        if (shape->is_inside(global2position(space_.private_coord2global(
             space_.get_neighbor(private_coord, i)))) <= 0)
         {
             return true;

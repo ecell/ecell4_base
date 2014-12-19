@@ -204,7 +204,7 @@ BOOST_AUTO_TEST_CASE(LatticeWorld_test_add_shape)
     sp.set_attribute("radius", "2.5e-9");
     sp.set_attribute("D", "1e-12");
 
-    const Sphere sphere(Real3(5e-7, 5e-7, 5e-7), 5e-7*1.5);
+    boost::shared_ptr<const Sphere> sphere(new Sphere(Real3(5e-7, 5e-7, 5e-7), 5e-7*1.5));
 
     const Integer n(world.add_structure(sp, sphere));
     BOOST_ASSERT(n > 0);
@@ -254,7 +254,7 @@ BOOST_AUTO_TEST_CASE(LatticeWorld_test_structure)
     Species sp("SpeciesA", "2.5e-9", "1e-12");
     sp.set_attribute("location", "Membrane");
 
-    const Sphere sphere(Real3(2.5e-7, 2.5e-7, 2.5e-7), 2e-7);
+    boost::shared_ptr<const Sphere> sphere(new Sphere(Real3(2.5e-7, 2.5e-7, 2.5e-7), 2e-7));
 
     BOOST_CHECK(world.add_structure(membrane, sphere) > 0);
     BOOST_CHECK(world.new_particle(Particle(sp, Real3(2.5e-7, 2.5e-7, 4.5e-7),
