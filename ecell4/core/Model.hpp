@@ -189,6 +189,24 @@ public:
             std::unique(retval.begin(), retval.end()), retval.end());
         return retval;
     }
+
+    void add_species_attributes(const std::vector<Species>& attrs)
+    {
+        for (std::vector<Species>::const_iterator i(attrs.begin());
+            i != attrs.end(); ++i)
+        {
+            add_species_attribute(*i);
+        }
+    }
+
+    void add_reaction_rules(const std::vector<ReactionRule>& rrs)
+    {
+        for (std::vector<ReactionRule>::const_iterator i(rrs.begin());
+            i != rrs.end(); ++i)
+        {
+            add_reaction_rule(*i);
+        }
+    }
 };
 
 } // ecell4

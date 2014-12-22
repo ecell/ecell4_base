@@ -44,6 +44,13 @@ class JustParseCallback(Callback):
                           DeprecationWarning)
         self.comparisons.append(obj)
 
+def keys_from_builtins(vardict):
+    b = vardict['__builtins__']
+    if isinstance(b, types.ModuleType):
+        return dir(b)
+    else:
+        return dict(b).keys()
+
 class ParseDecorator:
 
     def __init__(self, callback_class, func=None):
@@ -68,7 +75,7 @@ class ParseDecorator:
                 del vardict[ignore]
         for k in self.__func.func_code.co_names:
             if (not k in vardict.keys()
-                and not k in dict(vardict['__builtins__'])): # is this enough?
+                and not k in keys_from_builtins(vardict)): # is this enough?
                 vardict[k] = parseobj.AnyCallable(cache, k)
         g = types.FunctionType(self.__func.func_code, vardict)
         with warnings.catch_warnings():
@@ -89,7 +96,7 @@ class ParseDecorator:
                 calling_frame.f_globals[k] = parseobj.AnyCallable(self.__callback, k)
                 self.__newvars[k] = vardict[k]
             elif (not k in vardict.keys()
-                and not k in dict(vardict['__builtins__'])):
+                and not k in keys_from_builtins(vardict)):
                 # print "WARNING: '%s' is undefined." % k
                 calling_frame.f_globals[k] = parseobj.AnyCallable(self.__callback, k)
                 self.__newvars[k] = None
@@ -123,7 +130,7 @@ def parse_decorator(callback_class, func):
                 del vardict[ignore]
         for k in func.func_code.co_names:
             if (not k in vardict.keys()
-                and not k in dict(vardict['__builtins__'])): # is this enough?
+                and not k in keys_from_builtins(vardict)): # is this enough?
                 vardict[k] = parseobj.AnyCallable(cache, k)
         g = types.FunctionType(func.func_code, vardict)
         with warnings.catch_warnings():
