@@ -56,11 +56,15 @@ cdef class ReactionRule:
     def set_ratelaw(self, ratelaw):
         if (isinstance(ratelaw, RatelawMassAction)):
             self.set_ratelaw_massaction(ratelaw)
+        elif (isinstance(ratelaw, RatelawCallback)):
+            self.set_ratelaw_callback(ratelaw)
         else:
             pass
 
     def set_ratelaw_massaction(self, RatelawMassAction ratelaw):
         self.thisptr.set_ratelaw(deref(ratelaw.thisptr))
+    def set_ratelaw_callback(self, RatelawCallback ratelaw):
+        self.thisptr.set_ratelaw2(deref(ratelaw.thisptr))
 
     def generate(self, reactants):
         cdef vector[Cpp_Species] cpp_reactants

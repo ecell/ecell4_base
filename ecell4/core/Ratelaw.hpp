@@ -142,6 +142,114 @@ private:
     Real h_;
 };
 
+class RatelawCythonCallback : public Ratelaw
+{
+    /** Function object to calculate ratelaw called by Cython
+     *  This class must not be used from C++ users' code.
+     */
+public:
+    //                                 reactants_state,              products_state,               volume
+    //typedef double (*Ratelaw_Callback)(state_container_type const &, state_container_type const &, double const);
+    typedef void* Python_Functype;
+    typedef double (*Indirect_Functype)(Python_Functype, state_container_type, state_container_type, Real);
+public:
+    RatelawCythonCallback(Indirect_Functype indirect_func, void* pyfunc) :
+        indirect_func_(indirect_func), python_func_(pyfunc), h_(1.0e-8) {;}
+    RatelawCythonCallback() :
+        indirect_func_(0), python_func_(0), h_(1.0e-8) {;}
+
+    virtual ~RatelawCythonCallback(){;}
+
+    virtual bool is_available() const
+    {
+        return (this->indirect_func_ != 0 && this->python_func_ != 0);
+    }
+    virtual Real operator()(
+            state_container_type const &reactants_state_array,
+            state_container_type const &products_state_array, Real const volume)
+    {
+        return this->deriv_func(reactants_state_array, products_state_array, volume);
+    }
+    virtual Real deriv_func(
+            state_container_type const &reactants_state_array,
+            state_container_type const &products_state_array, Real volume)
+    {
+        if (!is_available())
+        {
+            throw IllegalState("Callback Function has not been registerd");
+        }
+        return this->indirect_func_(this->python_func_, reactants_state_array, products_state_array, volume);
+    }
+    virtual void jacobi_func(
+            matrix_type &jacobian,
+            state_container_type const &reactants_state_array,
+            state_container_type const &products_state_array,
+            Real const volume)
+    {
+        Real h(this->h_); //XXX  1.0e-8. Should be fixed
+        std::fill(jacobian.data().begin(), jacobian.data().end(), Real(0.0));
+        Real flux( this->deriv_func(reactants_state_array, products_state_array, volume) );
+        double num_reactants(reactants_state_array.size());
+        double num_products(products_state_array.size());
+        // Differentiates by Reactants.
+        for(int i(0); i < num_reactants; i++)
+        {
+            //XXX For now, we are using FORWARD difference method.
+            state_container_type h_shift(reactants_state_array);
+            h_shift[i] += h;
+            double deriv = ((this->deriv_func(h_shift, products_state_array, volume)) - flux) / h;
+            for(matrix_type::size_type j(0); j < jacobian.size1() ; j++)
+            {
+ if (j < num_reactants)
+                {
+                    jacobian(j, i) -= deriv;
+                }
+                else
+                {
+                    jacobian(j, i) += deriv;
+                }
+            }
+        }
+        // Differentiates by Products.
+        for(int i(0); i < num_products; i++)
+        {
+            state_container_type h_shift(products_state_array);
+            h_shift[i] += h;
+            double deriv = ((this->deriv_func(reactants_state_array, h_shift, volume)) - flux) / h;
+            for(matrix_type::size_type j(0); j < jacobian.size1(); j++)
+            {
+                if (j < num_reactants)
+                {
+                    jacobian(j, i + num_reactants) -= deriv;
+                }
+                else
+                {
+                    jacobian(j, i + num_reactants) += deriv;
+                }
+            }
+        }
+        return; //XXX
+    }
+
+    void set_callback_pyfunc(Python_Functype new_func)
+    {
+        if (new_func == 0)
+        {
+            throw std::invalid_argument("Ratelaw Callback must not be 0");
+        }
+        this->python_func_ = new_func;
+    }
+    Real call() const
+    {
+        //return this->indirect_func_(this->python_func_);
+        return 0.0;
+    }
+private:
+    Python_Functype python_func_;
+    Indirect_Functype indirect_func_;
+    Real h_;
+};
+
 class RatelawMassAction : public Ratelaw
 {
 public:
