@@ -24,7 +24,7 @@ cdef double indirect_function(void *func, vector[Real] reactants, vector[Real] p
     py_products = []
     cdef vector[Real].iterator it2 = products.begin()
     while it2 != products.end():
-        py_products.append(deref(it1))
+        py_products.append(deref(it2))
         inc(it2)
     return (<object>func)(py_reactants, py_products, volume)
 
