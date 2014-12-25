@@ -465,6 +465,13 @@ cdef extern from "ecell4/core/observers.hpp" namespace "ecell4":
         Integer num_steps()
         vector[vector[Cpp_Real3]] data()
 
+    cdef cppclass Cpp_BioImagingObserver "ecell4::BioImagingObserver":
+        Cpp_BioImagingObserver(Real, Real, Integer, Real, Real) except +
+        Real next_time()
+        Integer num_steps()
+        string filename()
+        void log(Cpp_Space*)
+
 ## FixedIntervalNumberObserver
 #  a python wrapper for Cpp_FixedIntervalNumberObserver
 cdef class Observer:
@@ -484,6 +491,9 @@ cdef class FixedIntervalCSVObserver:
 
 cdef class FixedIntervalTrajectoryObserver:
     cdef shared_ptr[Cpp_FixedIntervalTrajectoryObserver]* thisptr
+
+cdef class BioImagingObserver:
+    cdef shared_ptr[Cpp_BioImagingObserver]* thisptr
 
 ## Cpp_Shape
 #  ecell4::Shape
