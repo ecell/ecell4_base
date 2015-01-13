@@ -8,18 +8,14 @@ E-Cell System, a software platform for modeling, simulation and analysis of comp
 
 ### Requirements
 
-- Python 2.7.8(**32bit**) https://www.python.org/ftp/python/2.7.8/python-2.7.8.msi
-- virtualenv https://pypi.python.org/packages/source/v/virtualenv/virtualenv-1.11.6.tar.gz
-- HDF5-1.8.13 Pre-built Binary(**32-bit**) http://www.hdfgroup.org/ftp/HDF5/current/bin/windows/hdf5-1.8.13-win32-VS2012-shared.zip
+- Python 2.7.9(**32bit**) https://www.python.org/ftp/python/2.7.9/python-2.7.9.msi
+- HDF5-1.8.14 Pre-built Binary(**32-bit**) http://www.hdfgroup.org/ftp/HDF5/current/bin/windows/extra/hdf5-1.8.14-win32-vs2008-shared.zip
+
+Please add `C:\Python27\Scripts` and `C:\Program Files (x86)\HDF_Group\HDF5\1.8.14\bin` to your **PATH** enviromental variable.
 
 ```
-:: creating virtualenv environment
-cd C:\path\to\virtualenv-1.11.6 
-python virtualenv.py C:\path\to\myenv
-cd C:\path\to\myenv\Scripts
-activate.bat
-:: now you are in virtual environment
-pip install http://dev.e-cell.org/downloads/ecell4/win/latest/ecell4-0.0.0-cp27-none-win32.whl
+:: Please download ecell4-4.0.0_beta1-cp27-none-win32.whl from release page
+pip install ecell4-4.0.0_beta1-cp27-none-win32.whl
 ```
 
 ## Installing E-Cell (Mac OS X)
