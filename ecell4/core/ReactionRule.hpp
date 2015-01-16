@@ -85,14 +85,21 @@ public:
         products_.push_back(sp);
     }
 
-    // Ratelaw related functions.
+    const std::string as_string() const;
+    Integer count(const reactant_container_type& reactants) const;
+    std::vector<ReactionRule> generate(const reactant_container_type& reactants) const;
+
+    /** Ratelaw related functions.
+      */
+
     void set_ratelaw(const boost::shared_ptr<Ratelaw> ratelaw)
     {
         this->ratelaw_ = ratelaw;
     }
-    // This is for Cython
-    //  Two types of  Ratelaw classes is exported to python wrapper.
-    //  But cython is not good at derivative classes.
+
+    //XXX: This is for Cython
+    //XXX: Two types of Ratelaw classes is exported to python wrapper.
+    //XXX: But cython is not good at derivative classes.
     void set_ratelaw2(const boost::shared_ptr<Ratelaw> ratelaw)
     {
         this->ratelaw_ = ratelaw;
@@ -102,20 +109,18 @@ public:
     {
         return this->ratelaw_.lock();
     }
+
     bool has_ratelaw() const
     {
         return !(this->ratelaw_.expired());
     }
-
-    const std::string as_string() const;
-    Integer count(const reactant_container_type& reactants) const;
-    std::vector<ReactionRule> generate(const reactant_container_type& reactants) const;
 
 protected:
 
     Real k_;
     reactant_container_type reactants_;
     product_container_type products_;
+
     boost::weak_ptr<Ratelaw> ratelaw_;
 };
 

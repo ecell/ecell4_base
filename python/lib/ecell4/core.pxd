@@ -118,7 +118,9 @@ cdef class RatelawMassAction:
     cdef shared_ptr[Cpp_RatelawMassAction]* thisptr
 
 ctypedef void* Python_Functype
-ctypedef double (*Indirect_Functype)(Python_Functype pyfunc, vector[Real], vector[Real], Real)
+ctypedef double (*Indirect_Functype)(
+    Python_Functype pyfunc, vector[Real], vector[Real], Real)
+
 cdef extern from "ecell4/core/Ratelaw.hpp" namespace "ecell4":
     cdef cppclass Cpp_RatelawCythonCallback "ecell4::RatelawCythonCallback":
         Cpp_RatelawCythonCallback(Indirect_Functype, Python_Functype) except+
@@ -129,7 +131,6 @@ cdef extern from "ecell4/core/Ratelaw.hpp" namespace "ecell4":
 
 cdef class RatelawCallback:
     cdef shared_ptr[Cpp_RatelawCythonCallback]* thisptr
-
 
 ## Cpp_ReactionRule
 #  ecell4::ReactionRule
@@ -148,8 +149,9 @@ cdef extern from "ecell4/core/ReactionRule.hpp" namespace "ecell4":
         string as_string()
         Integer count(vector[Cpp_Species])
         vector[Cpp_ReactionRule] generate(vector[Cpp_Species])
-        void set_ratelaw(shared_ptr[Cpp_RatelawMassAction])
-        void set_ratelaw2(shared_ptr[Cpp_RatelawCythonCallback])
+
+        void set_ratelaw(shared_ptr[Cpp_RatelawMassAction]) #XXX:
+        void set_ratelaw2(shared_ptr[Cpp_RatelawCythonCallback]) #XXX:
 
 ## ReactionRule
 #  a python wrapper for Cpp_ReactionRule
