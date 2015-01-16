@@ -28,11 +28,12 @@ pip install pyparsing
 pip install "ipython[notebook]"
 ```
 
-next, download and install matplotlib and numpy from
+next, download matplotlib and numpy from
 
-https://downloads.sourceforge.net/project/matplotlib/matplotlib/matplotlib-1.4.2/windows/matplotlib-1.4.2-cp27-none-win32.whl
+https://downloads.sourceforge.net/project/matplotlib/matplotlib/matplotlib-1.4.2/windows/matplotlib-1.4.2-cp27-none-win32.whl  
 http://sourceforge.net/projects/numpy/files/NumPy/1.9.1/numpy-1.9.1-win32-superpack-python2.7.exe/download
 
+and install these exe files.
 
 ## Installing E-Cell (Mac OS X)
 
