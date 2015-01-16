@@ -40,15 +40,16 @@ and install these exe files.
 
 ### Requirements
 
-- hdf5 (latest)
-- pip (latest)
+- homebrew
+- hdf5
+- pip
 
 ```shell
 # here we use homebrew to install hdf5, please install hdf5 to /usr/local/lib
 brew install homebrew/science/hdf5 --enable-cxx
 brew install wget
 wget https://bootstrap.pypa.io/get-pip.py
-python get-pip.py --user
+sudo python get-pip.py
 # please download whl file from release page(https://github.com/ecell/ecell4/releases)
 pip install ecell4-4.0.0_beta1-cp27-none-macosx_10_10_intel.whl --user
 # if you are using Mountain Lion
@@ -60,8 +61,10 @@ We recommend you run E-Cell4 models from IPython notebook.
 Below is IPython notebook(and matplotlib) installation for Mac.
 
 ```shell
+sudo pip install setuptools --upgrade
+sudo pip install numpy --upgrade
+sudo pip install matplotlib --upgrade
 pip install "ipython[notebook]" --user
-pip install matplotlib --user
 ```
 
 ## Installing E-Cell (Ubuntu 14.04)
