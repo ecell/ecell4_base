@@ -134,7 +134,7 @@ setup(
         "templates/init_ipynb.js", "templates/init_cyjs.js", "templates/template.html",
         "templates/*.tmpl", "templates/ecelllogo/*.png"]},
     data_files = [('ecell4ipynb', ['../ipynb/index.ipynb']),
-                  ('ipynb/Tutorials', glob.glob('../ipynb/Tutorials/*.ipynb'))],
+                  ('ecell4ipynb/Tutorials', glob.glob('../ipynb/Tutorials/*.ipynb'))],
     packages = ["ecell4",
         "ecell4.util", "ecell4.util.legacy"],
     cmdclass = {'build_ext': build_ext, 'test': run_tests},
