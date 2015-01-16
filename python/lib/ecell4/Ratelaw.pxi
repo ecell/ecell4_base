@@ -54,6 +54,7 @@ cdef class RatelawCallback:
         self.thisptr = new shared_ptr[Cpp_RatelawCythonCallback](
             <Cpp_RatelawCythonCallback*>(new Cpp_RatelawCythonCallback(
                 <Indirect_Functype>indirect_function, <void*>pyfunc)))
+        self.pyfunc = pyfunc
 
     def __dealloc__(self):
         del self.thisptr

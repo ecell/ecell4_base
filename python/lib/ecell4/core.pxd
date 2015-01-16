@@ -140,6 +140,7 @@ cdef extern from "ecell4/core/Ratelaw.hpp" namespace "ecell4":
 
 cdef class RatelawCallback:
     cdef shared_ptr[Cpp_RatelawCythonCallback]* thisptr
+    cdef object pyfunc
 
 ## Cpp_ReactionRule
 #  ecell4::ReactionRule
