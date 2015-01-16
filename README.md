@@ -18,6 +18,22 @@ Please add `C:\Python27\Scripts` and `C:\Program Files (x86)\HDF_Group\HDF5\1.8.
 pip install ecell4-4.0.0_beta1-cp27-none-win32.whl
 ```
 
+### IPython notebook
+We recommend you run E-Cell4 models from IPython notebook.
+Below is IPython notebook(and matplotlib) installation for Windows.
+
+```
+pip install python-dateutil
+pip install pyparsing
+pip install "ipython[notebook]"
+```
+
+next, download and install matplotlib and numpy from
+
+https://downloads.sourceforge.net/project/matplotlib/matplotlib/matplotlib-1.4.2/windows/matplotlib-1.4.2-cp27-none-win32.whl
+http://sourceforge.net/projects/numpy/files/NumPy/1.9.1/numpy-1.9.1-win32-superpack-python2.7.exe/download
+
+
 ## Installing E-Cell (Mac OS X)
 
 ### Requirements
