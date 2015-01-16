@@ -84,8 +84,8 @@ cdef extern from "ecell4/lattice/LatticeWorld.hpp" namespace "ecell4::lattice":
         Integer global2coord(Cpp_Integer3)
         Cpp_Real3 global2position(Cpp_Integer3)
         Cpp_Integer3 position2global(Cpp_Real3)
-        Integer add_structure(Cpp_Species&, Cpp_Shape&)
-        void add_molecules(Cpp_Species& sp, Integer num, Cpp_Shape&)
+        Integer add_structure(Cpp_Species&, shared_ptr[Cpp_Shape])
+        void add_molecules(Cpp_Species& sp, Integer num, shared_ptr[Cpp_Shape])
 
 ## LatticeWorld
 #  a python wrapper for Cpp_LatticeWorld

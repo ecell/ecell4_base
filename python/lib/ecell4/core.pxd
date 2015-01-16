@@ -516,6 +516,17 @@ cdef extern from "ecell4/core/Sphere.hpp" namespace "ecell4":
         Cpp_Sphere inside()
         Integer dimension()
 
+## Cpp_PlanarSurface
+# ecell4::PlanarSurface
+cdef extern from "ecell4/core/PlanarSurface.hpp" namespace "ecell4":
+    cdef cppclass Cpp_PlanarSurface "ecell4::PlanarSurface":
+        Cpp_PlanarSurface()
+        Cpp_PlanarSurface(Cpp_Real3&, Cpp_Real3&, Cpp_Real3&)
+        Cpp_PlanarSurface(Cpp_PlanarSurface)
+        Real is_inside(Cpp_Real3&)
+        Cpp_Real3 draw_position(shared_ptr[Cpp_RandomNumberGenerator])
+        Integer dimension()
+
 ## Cpp_AABB
 #  ecell4::AABB
 cdef extern from "ecell4/core/AABB.hpp" namespace "ecell4":
@@ -532,22 +543,27 @@ cdef extern from "ecell4/core/AABB.hpp" namespace "ecell4":
 ## Shape
 #  a python wrapper for Cpp_Shape
 cdef class Shape:
-    cdef Cpp_Shape* thisptr
+    cdef shared_ptr[Cpp_Shape]* thisptr
 
 ## Sphere
 #  a python wrapper for Cpp_Sphere
 cdef class Sphere:
-    cdef Cpp_Sphere* thisptr
+    cdef shared_ptr[Cpp_Sphere]* thisptr
 
 ## SphericalSurface
 #  a python wrapper for Cpp_SphericalSurface
 cdef class SphericalSurface:
-    cdef Cpp_SphericalSurface* thisptr
+    cdef shared_ptr[Cpp_SphericalSurface]* thisptr
+
+## PlanarSurface
+#  a python wrapper for Cpp_PlanarSurface
+cdef class PlanarSurface:
+    cdef shared_ptr[Cpp_PlanarSurface]* thisptr
 
 ## AABB
 #  a python wrapper for Cpp_AABB
 cdef class AABB:
-    cdef Cpp_AABB* thisptr
+    cdef shared_ptr[Cpp_AABB]* thisptr
 
 cdef Sphere Sphere_from_Cpp_Sphere(Cpp_Sphere* p)
 cdef SphericalSurface SphericalSurface_from_Cpp_SphericalSurface(Cpp_SphericalSurface* p)
