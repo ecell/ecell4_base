@@ -13,6 +13,7 @@ E-Cell System, a software platform for modeling, simulation and analysis of comp
 
 Please add `C:\Python27\Scripts` and `C:\Program Files (x86)\HDF_Group\HDF5\1.8.14\bin` to your **PATH** enviromental variable.
 
+And run following command with command prompt.
 ```
 :: Please download ecell4-4.0.0_beta1-cp27-none-win32.whl from release page
 pip install ecell4-4.0.0_beta1-cp27-none-win32.whl
