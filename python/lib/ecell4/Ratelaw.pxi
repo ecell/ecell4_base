@@ -3,6 +3,15 @@ from cython cimport address
 
 from libcpp.vector cimport vector
 
+cdef class Ratelaw:
+
+    def __cinit__(self):
+        self.thisptr = new shared_ptr[Cpp_Ratelaw](
+            <Cpp_Ratelaw*>(new Cpp_RatelawMassAction(0.0))) #XXX: DUMMY
+
+    def __dealloc__(self):
+        del self.thisptr
+
 cdef class RatelawMassAction:
 
     def __cinit__(self, Real k):
@@ -17,6 +26,13 @@ cdef class RatelawMassAction:
 
     def get_k(self):
         return self.thisptr.get().get_k()
+
+    def as_base(self):
+        retval = Ratelaw()
+        del retval.thisptr
+        retval.thisptr = new shared_ptr[Cpp_Ratelaw](
+            <shared_ptr[Cpp_Ratelaw]>deref(self.thisptr))
+        return retval
 
 cdef double indirect_function(
     void *func, vector[Real] reactants, vector[Real] products, Real volume):
@@ -47,3 +63,10 @@ cdef class RatelawCallback:
 
     def call(self):
         return self.thisptr.get().call()
+
+    def as_base(self):
+        retval = Ratelaw()
+        del retval.thisptr
+        retval.thisptr = new shared_ptr[Cpp_Ratelaw](
+            <shared_ptr[Cpp_Ratelaw]>deref(self.thisptr))
+        return retval

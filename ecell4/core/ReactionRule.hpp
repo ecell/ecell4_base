@@ -97,14 +97,6 @@ public:
         this->ratelaw_ = ratelaw;
     }
 
-    //XXX: This is for Cython
-    //XXX: Two types of Ratelaw classes is exported to python wrapper.
-    //XXX: But cython is not good at derivative classes.
-    void set_ratelaw2(const boost::shared_ptr<Ratelaw> ratelaw)
-    {
-        this->ratelaw_ = ratelaw;
-    }
-
     boost::shared_ptr<Ratelaw> get_ratelaw() const
     {
         return this->ratelaw_.lock();
