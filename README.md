@@ -49,9 +49,9 @@ brew install wget
 wget https://bootstrap.pypa.io/get-pip.py
 python get-pip.py --user
 # please download whl file from release page(https://github.com/ecell/ecell4/releases)
-pip install ecell4-4.0.0_beta1-cp27-none-macosx_10_10_intel.whl
+pip install ecell4-4.0.0_beta1-cp27-none-macosx_10_10_intel.whl --user
 # if you are using Mountain Lion
-# pip install ecell4-4.0.0b1-cp27-none-macosx_10_9_intel.whl
+# pip install ecell4-4.0.0b1-cp27-none-macosx_10_9_intel.whl --user
 ```
 
 ### IPython notebook
@@ -59,8 +59,8 @@ We recommend you run E-Cell4 models from IPython notebook.
 Below is IPython notebook(and matplotlib) installation for Mac.
 
 ```shell
-pip install "ipython[notebook]"
-pip install matplotlib
+pip install "ipython[notebook]" --user
+pip install matplotlib --user
 ```
 
 ## Installing E-Cell (Ubuntu 14.04)
