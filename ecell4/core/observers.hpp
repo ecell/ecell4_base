@@ -504,7 +504,7 @@ public:
     {
         if (num_div_ > 1)
         {
-            const Real offset(t0_ + dt_ * floor(num_steps_ / num_div_));
+            const Real offset(t0_ + dt_ * static_cast<Real>(num_steps_ / num_div_));
             return offset + (exposure_time_ / num_div_) * (num_steps_ % num_div_);
         }
         else
