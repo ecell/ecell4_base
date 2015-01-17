@@ -61,10 +61,10 @@ We recommend you run E-Cell4 models from IPython notebook.
 Below is IPython notebook(and matplotlib) installation for Mac.
 
 ```shell
-sudo pip install setuptools --upgrade
-sudo pip install numpy --upgrade
-sudo pip install matplotlib --upgrade
+pip install matplotlib --user
 pip install "ipython[notebook]" --user
+cd ~/Library/Python/2.7/ecell4ipynb
+PYTHONPATH=~/Library/Python/2.7/lib/python/site-packages/ ipython notebook
 ```
 
 ## Installing E-Cell (Ubuntu 14.04)
