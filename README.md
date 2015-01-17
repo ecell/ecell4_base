@@ -67,6 +67,8 @@ cd ~/Library/Python/2.7/ecell4ipynb
 PYTHONPATH=~/Library/Python/2.7/lib/python/site-packages/ ipython notebook
 ```
 
+now you can see IPython notebooks, please open index.ipynb to see E-Cell4 models.
+
 ## Installing E-Cell (Ubuntu 14.04)
 
 ```shell
