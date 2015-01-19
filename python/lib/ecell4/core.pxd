@@ -136,7 +136,6 @@ cdef extern from "ecell4/core/Ratelaw.hpp" namespace "ecell4":
         Cpp_RatelawCythonCallback() except+
         bool is_available()
         void set_callback_pyfunc(Python_Functype)
-        Real call()
 
 cdef class RatelawCallback:
     cdef shared_ptr[Cpp_RatelawCythonCallback]* thisptr

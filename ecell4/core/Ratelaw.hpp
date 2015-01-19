@@ -294,12 +294,6 @@ public:
         this->python_func_ = new_func;
     }
 
-    Real call() const
-    {
-        // return this->indirect_func_(this->python_func_);
-        return 0.0;
-    }
-
 private:
 
     Python_Functype python_func_;

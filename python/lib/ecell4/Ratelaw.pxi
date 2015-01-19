@@ -62,9 +62,6 @@ cdef class RatelawCallback:
     def set_callback(self, pyfunc):
         self.thisptr.get().set_callback_pyfunc(<Python_Functype>pyfunc)
 
-    def call(self):
-        return self.thisptr.get().call()
-
     def as_base(self):
         retval = Ratelaw()
         del retval.thisptr
