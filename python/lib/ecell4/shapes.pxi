@@ -100,6 +100,66 @@ cdef class PlanarSurface:
         retval.thisptr = new_obj
         return retval
 
+cdef class Rod:
+
+    def __cinit__(self, Real length, Real radius):
+        self.thisptr = new shared_ptr[Cpp_Rod](
+            new Cpp_Rod(length, radius))
+
+    def __dealloc__(self):
+        del self.thisptr;
+
+    def dimension(self):
+        return self.thisptr.get().dimension()
+
+    def distance(self, Real3 pos):
+        return self.thisptr.get().distance(deref(pos.thisptr))
+
+    def is_inside(self, Real3 pos):
+        return self.thisptr.get().is_inside(deref(pos.thisptr))
+
+    def surface(self):
+        cdef Cpp_RodSurface surface = self.thisptr.get().surface()
+        return RodSurface_from_Cpp_RodSurface(address(surface))
+
+    def as_base(self):
+        cdef shared_ptr[Cpp_Shape] *new_obj = new shared_ptr[Cpp_Shape](
+            <Cpp_Shape*>(new Cpp_Rod(<Cpp_Rod> deref(self.thisptr.get()))))
+        retval = Shape()
+        del retval.thisptr
+        retval.thisptr = new_obj
+        return retval
+
+cdef class RodSurface:
+
+    def __cinit__(self, Real length, Real radius):
+        self.thisptr = new shared_ptr[Cpp_RodSurface](
+            new Cpp_RodSurface(length, radius))
+
+    def __dealloc__(self):
+        del self.thisptr
+
+    def dimension(self):
+        return self.thisptr.get().dimension()
+
+    def distance(self, Real3 pos):
+        return self.thisptr.get().distance(deref(pos.thisptr))
+
+    def is_inside(self, Real3 pos):
+        return self.thisptr.get().is_inside(deref(pos.thisptr))
+
+    def inside(self):
+        cdef Cpp_Rod shape = self.thisptr.get().inside()
+        return Rod_from_Cpp_Rod(address(shape))
+
+    def as_base(self):
+        cdef shared_ptr[Cpp_Shape] *new_obj = new shared_ptr[Cpp_Shape](
+            <Cpp_Shape*>(new Cpp_RodSurface(<Cpp_RodSurface> deref(self.thisptr.get()))))
+        retval = Shape()
+        del retval.thisptr
+        retval.thisptr = new_obj
+        return retval
+
 cdef class AABB:
 
     def __cinit__(self, Real3 lower, Real3 upper):
@@ -146,6 +206,22 @@ cdef SphericalSurface SphericalSurface_from_Cpp_SphericalSurface(Cpp_SphericalSu
     cdef shared_ptr[Cpp_SphericalSurface] *new_obj = new shared_ptr[Cpp_SphericalSurface](
         new Cpp_SphericalSurface(<Cpp_SphericalSurface> deref(shape)))
     retval = SphericalSurface(Real3(0, 0, 0), 0)
+    del retval.thisptr
+    retval.thisptr = new_obj
+    return retval
+
+cdef Rod Rod_from_Cpp_Rod(Cpp_Rod* shape):
+    cdef shared_ptr[Cpp_Rod] *new_obj = new shared_ptr[Cpp_Rod](
+        new Cpp_Rod(<Cpp_Rod> deref(shape)))
+    retval = Rod(0.5e-6, 2e-6)
+    del retval.thisptr
+    retval.thisptr = new_obj
+    return retval
+
+cdef RodSurface RodSurface_from_Cpp_RodSurface(Cpp_RodSurface* shape):
+    cdef shared_ptr[Cpp_RodSurface] *new_obj = new shared_ptr[Cpp_RodSurface](
+        new Cpp_RodSurface(<Cpp_RodSurface> deref(shape)))
+    retval = RodSurface(0.5e-6, 2e-6)
     del retval.thisptr
     retval.thisptr = new_obj
     return retval

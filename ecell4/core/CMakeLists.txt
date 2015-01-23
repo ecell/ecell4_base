@@ -8,12 +8,12 @@ set(CPP_FILES
     CompartmentSpace.cpp Context.cpp Integer3.cpp Journal.cpp ReactionRule.cpp
     LatticeSpace.cpp Model.cpp NetworkModel.cpp NetfreeModel.cpp ParticleSpace.cpp
     Real3.cpp RandomNumberGenerator.cpp Species.cpp UnitSpecies.cpp
-    Sphere.cpp Cylinder.cpp PlanarSurface.cpp
+    Sphere.cpp Cylinder.cpp PlanarSurface.cpp Rod.cpp
     SubvolumeSpace.cpp ParticleSpaceCellListImpl.cpp)
 
 set(HPP_FILES
     CompartmentSpace.hpp DynamicPriorityQueue.hpp LatticeSpace.hpp
-	MolecularType.hpp Particle.hpp Real3.hpp ReactionRule.hpp Space.hpp Ratelaw.hpp
+    MolecularType.hpp Particle.hpp Real3.hpp ReactionRule.hpp Space.hpp Ratelaw.hpp
     VacantType.hpp extras.hpp linear_algebra.hpp CompartmentSpaceHDF5Writer.hpp
     EventScheduler.hpp Identifier.hpp LatticeSpaceHDF5Writer.hpp
     SubvolumeSpace.hpp SubvolumeSpaceHDF5Writer.hpp
@@ -23,7 +23,7 @@ set(HPP_FILES
     ParticleSpaceHDF5Writer.hpp Reaction.hpp Simulator.hpp SimulatorBase.hpp
     UnitSpecies.hpp observers.hpp exceptions.hpp get_mapper_mf.hpp types.hpp
     Shape.hpp Sphere.hpp Cylinder.hpp AABB.hpp StructureType.hpp
-    PlanarSurface.hpp
+    PlanarSurface.hpp Rod.hpp
     ParticleSpaceCellListImpl.hpp
     comparators.hpp SimulatorFactory.hpp)
 

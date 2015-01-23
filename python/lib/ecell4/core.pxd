@@ -526,6 +526,30 @@ cdef extern from "ecell4/core/PlanarSurface.hpp" namespace "ecell4":
         Real is_inside(Cpp_Real3&)
         Integer dimension()
 
+## Cpp_Rod
+# ecell4::Rod
+cdef extern from "ecell4/core/Rod.hpp" namespace "ecell4":
+    cdef cppclass Cpp_Rod "ecell4::Rod":
+        Cpp_Rod()
+        Cpp_Rod(Real, Real)
+        Cpp_Rod(Cpp_Rod&)
+        Real distance(Cpp_Real3&)
+        Real is_inside(Cpp_Real3&)
+        Cpp_RodSurface surface()
+        Integer dimension()
+
+## Cpp_RodSurface
+# ecell4::RodSurface
+cdef extern from "ecell4/core/Rod.hpp" namespace "ecell4":
+    cdef cppclass Cpp_RodSurface "ecell4::RodSurface":
+        Cpp_RodSurface()
+        Cpp_RodSurface(Real, Real)
+        Cpp_RodSurface(Cpp_RodSurface)
+        Real distance(Cpp_Real3&)
+        Real is_inside(Cpp_Real3&)
+        Cpp_Rod inside()
+        Integer dimension()
+
 ## Cpp_AABB
 #  ecell4::AABB
 cdef extern from "ecell4/core/AABB.hpp" namespace "ecell4":
@@ -558,6 +582,17 @@ cdef class SphericalSurface:
 #  a python wrapper for Cpp_PlanarSurface
 cdef class PlanarSurface:
     cdef shared_ptr[Cpp_PlanarSurface]* thisptr
+
+## Rod
+# a python wrapper for Cpp_Rod
+cdef class Rod:
+    cdef shared_ptr[Cpp_Rod]* thisptr
+
+## RodSurface
+# a python wrapper for Cpp_RodSurface
+cdef class RodSurface:
+    cdef shared_ptr[Cpp_RodSurface]* thisptr
+
 
 ## AABB
 #  a python wrapper for Cpp_AABB
