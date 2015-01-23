@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 2.8)
 INCLUDE(CheckCXXSourceCompiles)
 set(CPP_FILES
     Logger.cpp ConsoleAppender.cpp utils.cpp findRoot.cpp funcSum.cpp
