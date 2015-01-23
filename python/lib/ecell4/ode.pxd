@@ -27,7 +27,7 @@ cdef extern from "ecell4/ode/ODEWorld.hpp" namespace "ecell4::ode":
         # CompartmentSpace member functions
         void set_volume(Real &)
         void add_molecules(Cpp_Species &sp, Integer &num)
-        void add_molecules(Cpp_Species &sp, Integer &num, Cpp_Shape&)
+        void add_molecules(Cpp_Species &sp, Integer &num, shared_ptr[Cpp_Shape])
         void remove_molecules(Cpp_Species &sp, Integer &num)
         # Optional members
         Real get_value(Cpp_Species &)

@@ -44,7 +44,7 @@ cdef extern from "ecell4/bd/BDWorld.hpp" namespace "ecell4::bd":
         Integer num_molecules(Cpp_Species& sp)
         Integer num_molecules_exact(Cpp_Species& sp)
         void add_molecules(Cpp_Species& sp, Integer num)
-        void add_molecules(Cpp_Species& sp, Integer num, Cpp_Shape&)
+        void add_molecules(Cpp_Species& sp, Integer num, shared_ptr[Cpp_Shape])
         void remove_molecules(Cpp_Species& sp, Integer num)
         void save(string filename)
         void load(string filename)

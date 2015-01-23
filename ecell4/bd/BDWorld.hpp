@@ -262,7 +262,7 @@ public:
         extras::throw_in_particles(*this, sp, num, rng());
     }
 
-    void add_molecules(const Species& sp, const Integer& num, const Shape& shape)
+    void add_molecules(const Species& sp, const Integer& num, const boost::shared_ptr<Shape> shape)
     {
         extras::throw_in_particles(*this, sp, num, shape, rng());
     }

@@ -1,7 +1,7 @@
 #ifndef __ECELL4_EXTRAS_HPP
 #define __ECELL4_EXTRAS_HPP
 
-#include <boost/scoped_ptr.hpp>
+#include <boost/shared_ptr.hpp>
 
 #include "types.hpp"
 #include "Real3.hpp"
@@ -18,7 +18,7 @@ namespace extras
 
 template<typename Tworld_, typename Trng_>
 void throw_in_particles(
-    Tworld_& world, const Species& sp, const Integer& N, const Shape& shape,
+    Tworld_& world, const Species& sp, const Integer& N, const boost::shared_ptr<Shape> shape,
     boost::shared_ptr<Trng_>& rng)
 {
     typedef typename Tworld_::molecule_info_type molecule_info_type;
@@ -47,7 +47,7 @@ void throw_in_particles(
             //     world.new_particle(Particle(sp, pos, info.radius, info.D));
             //     break;
             // }
-            const Real3 pos(shape.draw_position(myrng));
+            const Real3 pos(shape->draw_position(myrng));
             if (world.new_particle(Particle(sp, pos, info.radius, info.D)).second)
             {
                 break;
@@ -60,8 +60,8 @@ template<typename Tworld_, typename Trng_>
 void throw_in_particles(
     Tworld_& world, const Species& sp, const Integer& N, boost::shared_ptr<Trng_>& rng)
 {
-    boost::scoped_ptr<Shape> shape(new AABB(Real3(0, 0, 0), world.edge_lengths()));
-    throw_in_particles(world, sp, N, *shape, rng);
+    boost::shared_ptr<Shape> shape(new AABB(Real3(0, 0, 0), world.edge_lengths()));
+    throw_in_particles(world, sp, N, shape, rng);
 }
 
 } // extras

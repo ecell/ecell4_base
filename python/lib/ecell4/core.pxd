@@ -524,7 +524,6 @@ cdef extern from "ecell4/core/PlanarSurface.hpp" namespace "ecell4":
         Cpp_PlanarSurface(Cpp_Real3&, Cpp_Real3&, Cpp_Real3&)
         Cpp_PlanarSurface(Cpp_PlanarSurface)
         Real is_inside(Cpp_Real3&)
-        Cpp_Real3 draw_position(shared_ptr[Cpp_RandomNumberGenerator])
         Integer dimension()
 
 ## Cpp_AABB
