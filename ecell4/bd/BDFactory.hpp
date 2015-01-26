@@ -45,12 +45,25 @@ public:
         return new BDWorld(filename);
     }
 
+    BDWorld* create_world(
+        const Real3& edge_lengths, const Integer3& matrix_sizes) const
+    {
+        if (rng_)
+        {
+            return new BDWorld(edge_lengths, matrix_sizes, rng_);
+        }
+        else
+        {
+            return new BDWorld(edge_lengths, matrix_sizes);
+        }
+    }
+
     virtual BDWorld* create_world(
         const Real3& edge_lengths = Real3(1, 1, 1)) const
     {
         if (rng_)
         {
-            return new BDWorld(edge_lengths, rng_);
+            return new BDWorld(edge_lengths, Integer3(3, 3, 3), rng_);
         }
         else
         {

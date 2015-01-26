@@ -12,11 +12,16 @@ from ecell4.core cimport *
 cdef extern from "ecell4/bd/BDWorld.hpp" namespace "ecell4::bd":
     cdef cppclass Cpp_BDWorld "ecell4::bd::BDWorld":
         Cpp_BDWorld() except +
-        Cpp_BDWorld(string& edge_lengths) except +
+        Cpp_BDWorld(string& filename) except +
         Cpp_BDWorld(Cpp_Real3& edge_lengths) except +
         Cpp_BDWorld(
             Cpp_Real3& edge_lengths,
+            Cpp_Integer3& matrix_sizes) except +
+        Cpp_BDWorld(
+            Cpp_Real3& edge_lengths,
+            Cpp_Integer3& matrix_sizes,
             shared_ptr[Cpp_RandomNumberGenerator] rng) except +
+
         pair[pair[Cpp_ParticleID, Cpp_Particle], bool] new_particle(Cpp_Particle& p)
         pair[pair[Cpp_ParticleID, Cpp_Particle], bool] new_particle(Cpp_Species& sp, Cpp_Real3& pos)
         void set_t(Real t)
@@ -99,6 +104,7 @@ cdef extern from "ecell4/bd/BDFactory.hpp" namespace "ecell4::bd":
         Cpp_BDFactory(shared_ptr[Cpp_RandomNumberGenerator]) except +
         Cpp_BDWorld* create_world(string)
         Cpp_BDWorld* create_world(Cpp_Real3&)
+        Cpp_BDWorld* create_world(Cpp_Real3&, Cpp_Integer3&)
         Cpp_BDSimulator* create_simulator(shared_ptr[Cpp_Model], shared_ptr[Cpp_BDWorld])
         Cpp_BDSimulator* create_simulator(shared_ptr[Cpp_BDWorld])
 

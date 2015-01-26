@@ -13,21 +13,27 @@ from ecell4.core cimport *
 #  a python wrapper for Cpp_BDWorld
 cdef class BDWorld:
 
-    def __cinit__(self, edge_lengths = None, GSLRandomNumberGenerator rng = None):
+    def __cinit__(self, edge_lengths=None, Integer3 matrix_sizes=None,
+        GSLRandomNumberGenerator rng=None):
         cdef string filename
 
         if edge_lengths is None:
             self.thisptr = new shared_ptr[Cpp_BDWorld](new Cpp_BDWorld())
-        elif rng is None:
+        elif matrix_sizes is None:
             if isinstance(edge_lengths, Real3):
                 self.thisptr = new shared_ptr[Cpp_BDWorld](
                     new Cpp_BDWorld(deref((<Real3>edge_lengths).thisptr)))
             else:
                 filename = edge_lengths
                 self.thisptr = new shared_ptr[Cpp_BDWorld](new Cpp_BDWorld(filename))
+        elif rng is None:
+            self.thisptr = new shared_ptr[Cpp_BDWorld](
+                new Cpp_BDWorld(deref((<Real3>edge_lengths).thisptr),
+                    deref(matrix_sizes.thisptr)))
         else:
             self.thisptr = new shared_ptr[Cpp_BDWorld](
-                new Cpp_BDWorld(deref((<Real3>edge_lengths).thisptr), deref(rng.thisptr)))
+                new Cpp_BDWorld(deref((<Real3>edge_lengths).thisptr),
+                    deref(matrix_sizes.thisptr), deref(rng.thisptr)))
 
     def __dealloc__(self):
         # XXX: Here, we release shared pointer,
@@ -298,11 +304,18 @@ cdef class BDFactory:
     def __dealloc__(self):
         del self.thisptr
 
-    def create_world(self, arg1):
+    def create_world(self, arg1, arg2=None):
         if isinstance(arg1, Real3):
-            return BDWorld_from_Cpp_BDWorld(
-                shared_ptr[Cpp_BDWorld](
-                    self.thisptr.create_world(deref((<Real3>arg1).thisptr))))
+            if arg2 is not None:
+                return BDWorld_from_Cpp_BDWorld(
+                    shared_ptr[Cpp_BDWorld](
+                        self.thisptr.create_world(
+                            deref((<Real3>arg1).thisptr),
+                            deref((<Integer3>arg2).thisptr))))
+            else:
+                return BDWorld_from_Cpp_BDWorld(
+                    shared_ptr[Cpp_BDWorld](
+                        self.thisptr.create_world(deref((<Real3>arg1).thisptr))))
         else:
             return BDWorld_from_Cpp_BDWorld(
                 shared_ptr[Cpp_BDWorld](self.thisptr.create_world(<string>(arg1))))

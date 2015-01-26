@@ -9,6 +9,7 @@
 #include <ecell4/core/RandomNumberGenerator.hpp>
 #include <ecell4/core/SerialIDGenerator.hpp>
 #include <ecell4/core/ParticleSpace.hpp>
+#include <ecell4/core/ParticleSpaceCellListImpl.hpp>
 #include <ecell4/core/Model.hpp>
 
 
@@ -30,12 +31,15 @@ class BDWorld
 public:
 
     typedef MoleculeInfo molecule_info_type;
-    typedef ParticleSpace::particle_container_type particle_container_type;
+    typedef ParticleSpaceCellListImpl particle_space_type;
+    // typedef ParticleSpaceVectorImpl particle_space_type;
+    typedef particle_space_type::particle_container_type particle_container_type;
 
 public:
 
-    BDWorld(const Real3& edge_lengths = Real3(1, 1, 1))
-        : ps_(new ParticleSpaceVectorImpl(edge_lengths))
+    BDWorld(const Real3& edge_lengths = Real3(1, 1, 1),
+        const Integer3& matrix_sizes = Integer3(3, 3, 3))
+        : ps_(new particle_space_type(edge_lengths, matrix_sizes))
     {
         rng_ = boost::shared_ptr<RandomNumberGenerator>(
             new GSLRandomNumberGenerator());
@@ -43,15 +47,15 @@ public:
     }
 
     BDWorld(
-        const Real3& edge_lengths,
+        const Real3& edge_lengths, const Integer3& matrix_sizes,
         boost::shared_ptr<RandomNumberGenerator> rng)
-        : ps_(new ParticleSpaceVectorImpl(edge_lengths)), rng_(rng)
+        : ps_(new particle_space_type(edge_lengths, matrix_sizes)), rng_(rng)
     {
         ;
     }
 
     BDWorld(const std::string& filename)
-        : ps_(new ParticleSpaceVectorImpl(Real3(1, 1, 1)))
+        : ps_(new particle_space_type(Real3(1, 1, 1)))
     {
         rng_ = boost::shared_ptr<RandomNumberGenerator>(
             new GSLRandomNumberGenerator());
