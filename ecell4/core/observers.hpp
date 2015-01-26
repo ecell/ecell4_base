@@ -624,8 +624,10 @@ public:
 
 protected:
 
-    Real t0_, dt_, exposure_time_, voxel_radius_, scale_;
-    Integer num_div_, num_steps_;
+    Real t0_, dt_, exposure_time_;
+    Integer num_div_;
+    Real voxel_radius_, scale_;
+    Integer num_steps_;
 
     serial_map_type serials_;
 };
