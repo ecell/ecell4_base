@@ -180,6 +180,11 @@ public:
         return (*ps_).list_particles_exact(sp);
     }
 
+    std::vector<Species> list_species() const
+    {
+        return (*ps_).list_species();
+    }
+
     // ParticleSpace member functions
 
     bool update_particle(const ParticleID& pid, const Particle& p)

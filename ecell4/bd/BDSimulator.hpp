@@ -28,13 +28,13 @@ public:
 
     BDSimulator(boost::shared_ptr<Model> model,
         boost::shared_ptr<BDWorld> world)
-        : base_type(model, world), dt_(0)
+        : base_type(model, world), dt_(0), bd_dt_factor_(1e-5)
     {
         initialize();
     }
 
     BDSimulator(boost::shared_ptr<BDWorld> world)
-        : base_type(world), dt_(0)
+        : base_type(world), dt_(0), bd_dt_factor_(1e-5)
     {
         initialize();
     }
@@ -44,6 +44,33 @@ public:
     void initialize()
     {
         last_reactions_.clear();
+        dt_ = determine_dt();
+    }
+
+    Real determine_dt() const
+    {
+        const std::vector<Species> splist(world_->list_species());
+
+        Real rmin(inf), Dmax(0.0);
+        for (std::vector<Species>::const_iterator i(splist.begin());
+            i != splist.end(); ++i)
+        {
+            const BDWorld::molecule_info_type
+                info(world_->get_molecule_info(*i));
+            if (rmin > info.radius)
+            {
+                rmin = info.radius;
+            }
+            if (Dmax < info.D)
+            {
+                Dmax = info.D;
+            }
+        }
+
+        const Real dt(rmin < inf && Dmax > 0.0
+            ? rmin * rmin / (6.0 * Dmax) * bd_dt_factor_
+            : inf);
+        return dt;
     }
 
     Real dt() const
@@ -82,6 +109,7 @@ protected:
      * they are needed to be saved/loaded with Visitor pattern.
      */
     Real dt_;
+    const Real bd_dt_factor_;
     std::vector<ReactionRule> last_reactions_;
 };
 
