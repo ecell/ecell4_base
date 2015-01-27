@@ -98,7 +98,7 @@ public:
         const private_coordinate_type& coord) = 0;
 
     virtual private_coordinate_type get_neighbor(
-        private_coordinate_type private_coord, Integer nrand) const = 0;
+        const private_coordinate_type& private_coord, const Integer& nrand) const = 0;
 
     /**
      Coordinate transformations
@@ -417,9 +417,41 @@ public:
         return global2coord(private_coord2global(private_coord));
     }
 
-    virtual std::pair<private_coordinate_type, bool> move_to_neighbor(
-        MolecularTypeBase* const& from_mt, MolecularTypeBase* const& loc,
-        particle_info_type& info, const Integer nrand) = 0;
+    private_coordinate_type get_neighbor(
+        const private_coordinate_type& private_coord, const Integer& nrand) const
+    {
+        const Integer NUM_COLROW(col_size_ * row_size_);
+        const Integer NUM_ROW(row_size_);
+        const bool odd_col(((private_coord % NUM_COLROW) / NUM_ROW) & 1);
+        const bool odd_lay((private_coord / NUM_COLROW) & 1);
+
+        switch (nrand)
+        {
+        case 1:
+            return private_coord + 1;
+        case 2:
+            return private_coord + (odd_col ^ odd_lay) - NUM_ROW - 1;
+        case 3:
+            return private_coord + (odd_col ^ odd_lay) - NUM_ROW;
+        case 4:
+            return private_coord + (odd_col ^ odd_lay) + NUM_ROW - 1;
+        case 5:
+            return private_coord + (odd_col ^ odd_lay) + NUM_ROW;
+        case 6:
+            return private_coord - (2 * odd_col - 1) * NUM_COLROW - NUM_ROW;
+        case 7:
+            return private_coord - (2 * odd_col - 1) * NUM_COLROW + NUM_ROW;
+        case 8:
+            return private_coord + (odd_col ^ odd_lay) - NUM_COLROW - 1;
+        case 9:
+            return private_coord + (odd_col ^ odd_lay) - NUM_COLROW;
+        case 10:
+            return private_coord + (odd_col ^ odd_lay) + NUM_COLROW - 1;
+        case 11:
+            return private_coord + (odd_col ^ odd_lay) + NUM_COLROW;
+        }
+        return private_coord - 1; // nrand == 0
+    }
 
 protected:
 
@@ -573,8 +605,8 @@ public:
 
     // std::vector<private_coordinate_type> get_neighbors(
     //         private_coordinate_type coord) const;
-    virtual private_coordinate_type get_neighbor(
-        private_coordinate_type private_coord, Integer nrand) const;
+    // virtual private_coordinate_type get_neighbor(
+    //     private_coordinate_type private_coord, Integer nrand) const;
 
     virtual const Particle particle_at(const coordinate_type& coord) const
     {

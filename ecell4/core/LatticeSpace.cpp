@@ -164,41 +164,41 @@ const Integer3 LatticeSpaceVectorImpl::coord2global_(coordinate_type coord,
 //     return global2coord(private_coord2global(private_coord));
 // }
 
-LatticeSpaceVectorImpl::private_coordinate_type LatticeSpaceVectorImpl::get_neighbor(
-        private_coordinate_type private_coord, Integer nrand) const
-{
-    const Integer NUM_COLROW(col_size_ * row_size_);
-    const Integer NUM_ROW(row_size_);
-    const bool odd_col(((private_coord % NUM_COLROW) / NUM_ROW) & 1);
-    const bool odd_lay((private_coord / NUM_COLROW) & 1);
-
-    switch(nrand)
-    {
-    case 1:
-        return private_coord + 1;
-    case 2:
-        return private_coord + (odd_col ^ odd_lay) - NUM_ROW - 1;
-    case 3:
-        return private_coord + (odd_col ^ odd_lay) - NUM_ROW;
-    case 4:
-        return private_coord + (odd_col ^ odd_lay) + NUM_ROW - 1;
-    case 5:
-        return private_coord + (odd_col ^ odd_lay) + NUM_ROW;
-    case 6:
-        return private_coord - (2 * odd_col - 1) * NUM_COLROW - NUM_ROW;
-    case 7:
-        return private_coord - (2 * odd_col - 1) * NUM_COLROW + NUM_ROW;
-    case 8:
-        return private_coord + (odd_col ^ odd_lay) - NUM_COLROW - 1;
-    case 9:
-        return private_coord + (odd_col ^ odd_lay) - NUM_COLROW;
-    case 10:
-        return private_coord + (odd_col ^ odd_lay) + NUM_COLROW - 1;
-    case 11:
-        return private_coord + (odd_col ^ odd_lay) + NUM_COLROW;
-    }
-    return private_coord - 1;
-}
+// LatticeSpaceVectorImpl::private_coordinate_type LatticeSpaceVectorImpl::get_neighbor(
+//         private_coordinate_type private_coord, Integer nrand) const
+// {
+//     const Integer NUM_COLROW(col_size_ * row_size_);
+//     const Integer NUM_ROW(row_size_);
+//     const bool odd_col(((private_coord % NUM_COLROW) / NUM_ROW) & 1);
+//     const bool odd_lay((private_coord / NUM_COLROW) & 1);
+// 
+//     switch(nrand)
+//     {
+//     case 1:
+//         return private_coord + 1;
+//     case 2:
+//         return private_coord + (odd_col ^ odd_lay) - NUM_ROW - 1;
+//     case 3:
+//         return private_coord + (odd_col ^ odd_lay) - NUM_ROW;
+//     case 4:
+//         return private_coord + (odd_col ^ odd_lay) + NUM_ROW - 1;
+//     case 5:
+//         return private_coord + (odd_col ^ odd_lay) + NUM_ROW;
+//     case 6:
+//         return private_coord - (2 * odd_col - 1) * NUM_COLROW - NUM_ROW;
+//     case 7:
+//         return private_coord - (2 * odd_col - 1) * NUM_COLROW + NUM_ROW;
+//     case 8:
+//         return private_coord + (odd_col ^ odd_lay) - NUM_COLROW - 1;
+//     case 9:
+//         return private_coord + (odd_col ^ odd_lay) - NUM_COLROW;
+//     case 10:
+//         return private_coord + (odd_col ^ odd_lay) + NUM_COLROW - 1;
+//     case 11:
+//         return private_coord + (odd_col ^ odd_lay) + NUM_COLROW;
+//     }
+//     return private_coord - 1;
+// }
 
 void LatticeSpaceVectorImpl::set_lattice_properties(const bool is_periodic)
 {
