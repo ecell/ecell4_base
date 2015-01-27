@@ -100,8 +100,13 @@ public:
     virtual private_coordinate_type get_neighbor(
         private_coordinate_type private_coord, Integer nrand) const = 0;
 
-    virtual Integer3 private_coord2global(const private_coordinate_type& coord) const = 0;
+    /**
+     Coordinate transformations
+     */
+
+    virtual coordinate_type global2coord(const Integer3& global) const = 0;
     virtual coordinate_type global2private_coord(const Integer3& global) const = 0;
+    virtual Integer3 private_coord2global(const private_coordinate_type& coord) const = 0;
     virtual Real3 private2position(
         const private_coordinate_type& private_coord) const = 0;
     virtual private_coordinate_type position2private(const Real3& pos) const = 0;
@@ -110,7 +115,6 @@ public:
     virtual private_coordinate_type coord2private(const coordinate_type& cood) const = 0;
     virtual coordinate_type private2coord(
         const private_coordinate_type& private_coord) const = 0;
-    virtual coordinate_type global2coord(const Integer3& global) const = 0;
     virtual Integer3 coord2global(coordinate_type coord) const = 0;
     virtual Real3 global2position(const Integer3& global) const = 0;
     virtual Integer3 position2global(const Real3& pos) const = 0;
@@ -243,12 +247,193 @@ protected:
     Real voxel_radius_;
 };
 
-class LatticeSpaceVectorImpl
+class LatticeSpaceBase
     : public LatticeSpace
 {
 public:
 
     typedef LatticeSpace base_type;
+
+public:
+
+    LatticeSpaceBase(
+        const Real3& edge_lengths, const Real& voxel_radius)
+        : base_type(voxel_radius), edge_lengths_(edge_lengths)
+    {
+        //XXX: derived from SpatiocyteStepper::setLatticeProperties()
+        HCP_L = voxel_radius_ / sqrt(3.0);
+        HCP_X = voxel_radius_ * sqrt(8.0 / 3.0); // Lx
+        HCP_Y = voxel_radius_ * sqrt(3.0); // Ly
+
+        const Real lengthX = edge_lengths_[0];
+        const Real lengthY = edge_lengths_[1];
+        const Real lengthZ = edge_lengths_[2];
+
+        row_size_ = (Integer)rint((lengthZ / 2) / voxel_radius_) + 2;
+        layer_size_ = (Integer)rint(lengthY / HCP_Y) + 2;
+        col_size_ = (Integer)rint(lengthX / HCP_X) + 2;
+    }
+
+    virtual ~LatticeSpaceBase()
+    {
+        ; // do nothing
+    }
+
+    /**
+     * Primitives
+     */
+
+    const Real3& edge_lengths() const
+    {
+        return edge_lengths_;
+    }
+
+    const Real volume() const
+    {
+        return edge_lengths_[0] * edge_lengths_[1] * edge_lengths_[2];
+    }
+
+    virtual const Integer col_size() const
+    {
+        return col_size_ - 2;
+    }
+
+    virtual const Integer row_size() const
+    {
+        return row_size_ - 2;
+    }
+
+    virtual const Integer layer_size() const
+    {
+        return layer_size_ - 2;
+    }
+
+    /**
+     Coordinate transformations
+     */
+
+    static coordinate_type __global2coord(
+        const Integer3& global,
+        const Integer& num_col, const Integer& num_row, const Integer& num_layer)
+    {
+        return global.row + num_row * (global.col + num_col * global.layer);
+    }
+
+    static Integer3 __coord2global(
+        const coordinate_type& coord,
+        const Integer& num_col, const Integer& num_row, const Integer& num_layer)
+    {
+        const Integer NUM_COLROW(num_row * num_col);
+        const Integer LAYER(coord / NUM_COLROW);
+        const Integer SURPLUS(coord - LAYER * NUM_COLROW);
+        const Integer COL(SURPLUS / num_row);
+        const Integer3 retval(COL, SURPLUS - COL * num_row, LAYER);
+        return retval;
+    }
+
+    /** global -> */
+
+    coordinate_type global2coord(const Integer3& global) const
+    {
+        return __global2coord(global, col_size(), row_size(), layer_size());
+    }
+
+    coordinate_type global2private_coord(const Integer3& global) const
+    {
+        const Integer3 g(global.col + 1, global.row + 1, global.layer + 1);
+        return __global2coord(global, col_size_, row_size_, layer_size_);
+    }
+
+    Real3 global2position(const Integer3& global) const
+    {
+        // the center point of a voxel
+        const Real3 pos(
+            global.col * HCP_X,
+            (global.col % 2) * HCP_L + HCP_Y * global.layer,
+            (global.row * 2 + (global.layer + global.col) % 2)
+                * voxel_radius_);
+        return pos;
+    }
+
+    /** -> global */
+
+    Integer3 coord2global(coordinate_type coord) const
+    {
+        return __coord2global(coord, col_size(), row_size(), layer_size());
+    }
+
+    Integer3 private_coord2global(const private_coordinate_type& coord) const
+    {
+        const Integer3 private_global(
+            __coord2global(coord, col_size_, row_size_, layer_size_));
+        const Integer3 retval(
+            private_global.col - 1, private_global.row - 1, private_global.layer - 1);
+        return retval;
+    }
+
+    Integer3 position2global(const Real3& pos) const
+    {
+        const Integer col(round(pos[0] / HCP_X));
+        const Integer layer(round((pos[1] - (col % 2) * HCP_L) / HCP_Y));
+        const Integer row(round(
+            (pos[2] / voxel_radius_ - ((layer + col) % 2)) / 2));
+        const Integer3 global(col, row, layer);
+        return global;
+    }
+
+    /** others */
+
+    Real3 coordinate2position(const coordinate_type& coord) const
+    {
+        // return global2position(private_coord2global(
+        //     global2private_coord(coord2global(coord))));
+        return global2position(coord2global(coord));
+    }
+
+    private_coordinate_type coord2private(const coordinate_type& coord) const
+    {
+        return global2private_coord(coord2global(coord));
+    }
+
+    Real3 private2position(
+        const private_coordinate_type& private_coord) const
+    {
+        return global2position(private_coord2global(private_coord));
+    }
+
+    private_coordinate_type position2private(const Real3& pos) const
+    {
+        return global2private_coord(position2global(pos));
+    }
+
+    coordinate_type position2coordinate(const Real3& pos) const
+    {
+        return global2coord(position2global(pos));
+    }
+
+    coordinate_type private2coord(
+        const private_coordinate_type& private_coord) const
+    {
+        return global2coord(private_coord2global(private_coord));
+    }
+
+    virtual std::pair<private_coordinate_type, bool> move_to_neighbor(
+        MolecularTypeBase* const& from_mt, MolecularTypeBase* const& loc,
+        particle_info_type& info, const Integer nrand) = 0;
+
+protected:
+
+    Real3 edge_lengths_;
+    Real HCP_L, HCP_X, HCP_Y;
+    Integer row_size_, layer_size_, col_size_;
+};
+
+class LatticeSpaceVectorImpl
+    : public LatticeSpaceBase
+{
+public:
+
+    typedef LatticeSpaceBase base_type;
 
     typedef base_type::particle_info_type particle_info_type;
     typedef base_type::private_coordinate_type private_coordinate_type;
@@ -269,13 +454,6 @@ public:
      *
      * using ParticleID, Species and Posision3
      */
-
-    const Real3& edge_lengths() const;
-
-    const Real volume() const
-    {
-        return edge_lengths_[0] * edge_lengths_[1] * edge_lengths_[2];
-    }
 
     Integer num_species() const;
 
@@ -351,21 +529,6 @@ public:
         return is_periodic_;
     }
 
-    virtual const Integer col_size() const
-    {
-        return col_size_ - 2;
-    }
-
-    virtual const Integer row_size() const
-    {
-        return row_size_ - 2;
-    }
-
-    virtual const Integer layer_size() const
-    {
-        return layer_size_ - 2;
-    }
-
     /*
      * HDF5 Save
      */
@@ -394,24 +557,19 @@ public:
     /*
      * Coordinate transformations
      */
-    virtual Integer3 private_coord2global(const private_coordinate_type& coord) const;
-    virtual coordinate_type global2private_coord(const Integer3& global) const;
-
-    virtual private_coordinate_type coord2private(const coordinate_type& cood) const;
-    virtual coordinate_type private2coord(
-        const private_coordinate_type& private_coord) const;
-
-    virtual Real3 coordinate2position(const coordinate_type& coord) const;
-    virtual coordinate_type position2coordinate(const Real3& pos) const;
-
-    virtual Real3 private2position(const private_coordinate_type& private_coord) const;
-    virtual private_coordinate_type position2private(const Real3& pos) const;
-
-    virtual coordinate_type global2coord(const Integer3& global) const;
-    virtual Integer3 coord2global(coordinate_type coord) const;
-
-    virtual Real3 global2position(const Integer3& global) const;
-    virtual Integer3 position2global(const Real3& pos) const;
+    // virtual Integer3 private_coord2global(const private_coordinate_type& coord) const;
+    // virtual coordinate_type global2private_coord(const Integer3& global) const;
+    // virtual private_coordinate_type coord2private(const coordinate_type& cood) const;
+    // virtual coordinate_type private2coord(
+    //     const private_coordinate_type& private_coord) const;
+    // virtual Real3 coordinate2position(const coordinate_type& coord) const;
+    // virtual coordinate_type position2coordinate(const Real3& pos) const;
+    // virtual Real3 private2position(const private_coordinate_type& private_coord) const;
+    // virtual private_coordinate_type position2private(const Real3& pos) const;
+    // virtual coordinate_type global2coord(const Integer3& global) const;
+    // virtual Integer3 coord2global(coordinate_type coord) const;
+    // virtual Real3 global2position(const Integer3& global) const;
+    // virtual Integer3 position2global(const Real3& pos) const;
 
     // std::vector<private_coordinate_type> get_neighbors(
     //         private_coordinate_type coord) const;
@@ -466,10 +624,7 @@ protected:
 
 protected:
 
-    Real3 edge_lengths_;
     bool is_periodic_;
-
-    Real HCP_L, HCP_X, HCP_Y;
 
     spmap spmap_;
     voxel_container voxels_;
@@ -477,8 +632,6 @@ protected:
     MolecularTypeBase* vacant_;
     MolecularTypeBase* border_;
     MolecularTypeBase* periodic_;
-
-    Integer row_size_, layer_size_, col_size_;
 };
 
 }
