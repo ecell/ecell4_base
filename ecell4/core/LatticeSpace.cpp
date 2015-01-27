@@ -49,33 +49,33 @@ LatticeSpaceVectorImpl::~LatticeSpaceVectorImpl()
  * Coordinate transformations
  */
 
-LatticeSpaceVectorImpl::coordinate_type LatticeSpaceVectorImpl::global2coord_(const Integer3& global,
-        Integer col_size, Integer row_size, Integer layer_size) const
-{
-    return global.row +
-        row_size * (global.col) +
-        row_size * col_size * (global.layer);
-}
+// LatticeSpaceVectorImpl::coordinate_type LatticeSpaceVectorImpl::global2coord_(const Integer3& global,
+//         Integer col_size, Integer row_size, Integer layer_size) const
+// {
+//     return global.row +
+//         row_size * (global.col) +
+//         row_size * col_size * (global.layer);
+// }
 
-const Integer3 LatticeSpaceVectorImpl::coord2global_(coordinate_type coord,
-        Integer col_size, Integer row_size, Integer layer_size) const
-{
-    // Integer3 retval;
-    // retval.col = coord / (row_size * layer_size);
-    // retval.layer = (coord % (row_size * layer_size)) / row_size;
-    // retval.row = (coord % (row_size * layer_size)) % row_size;
-    // return retval;
-
-    Integer3 retval;
-    const Integer NUM_COLROW(row_size * col_size);
-    const Integer LAYER(coord / NUM_COLROW);
-    const Integer SURPLUS(coord - LAYER * NUM_COLROW);
-    const Integer COL(SURPLUS / row_size);
-    retval.col = COL;
-    retval.layer = LAYER;
-    retval.row = SURPLUS - COL * row_size;
-    return retval;
-}
+// const Integer3 LatticeSpaceVectorImpl::coord2global_(coordinate_type coord,
+//         Integer col_size, Integer row_size, Integer layer_size) const
+// {
+//     // Integer3 retval;
+//     // retval.col = coord / (row_size * layer_size);
+//     // retval.layer = (coord % (row_size * layer_size)) / row_size;
+//     // retval.row = (coord % (row_size * layer_size)) % row_size;
+//     // return retval;
+// 
+//     Integer3 retval;
+//     const Integer NUM_COLROW(row_size * col_size);
+//     const Integer LAYER(coord / NUM_COLROW);
+//     const Integer SURPLUS(coord - LAYER * NUM_COLROW);
+//     const Integer COL(SURPLUS / row_size);
+//     retval.col = COL;
+//     retval.layer = LAYER;
+//     retval.row = SURPLUS - COL * row_size;
+//     return retval;
+// }
 
 // LatticeSpaceVectorImpl::coordinate_type LatticeSpaceVectorImpl::global2coord(const Integer3& global) const
 // {
@@ -216,6 +216,7 @@ void LatticeSpaceVectorImpl::set_lattice_properties(const bool is_periodic)
 
     private_coordinate_type voxel_size(
             col_size_ * row_size_ * layer_size_);
+    std::cout << "voxel_size = " << voxel_size << std::endl;
     voxels_.reserve(voxel_size);
     for (private_coordinate_type coord(0); coord < voxel_size; ++coord)
     {
@@ -889,37 +890,50 @@ bool LatticeSpaceVectorImpl::is_in_range_private(private_coordinate_type coord) 
 
 bool LatticeSpaceVectorImpl::is_inside(private_coordinate_type coord) const
 {
-    const Integer3 global(private_coord2private_global(coord));
-    return global.col > 0 && global.col < col_size_-1
-        && global.row > 0 && global.row < row_size_-1
-        && global.layer > 0 && global.layer < layer_size_-1;
+    const Integer3 global(private_coord2global(coord));
+    return global.col >= 0 && global.col < col_size()
+        && global.row >= 0 && global.row < row_size()
+        && global.layer >= 0 && global.layer < layer_size();
+    // const Integer3 global(private_coord2private_global(coord));
+    // return global.col > 0 && global.col < col_size_-1
+    //     && global.row > 0 && global.row < row_size_-1
+    //     && global.layer > 0 && global.layer < layer_size_-1;
 }
 
 /*
  * Coordinate transformations
  */
 
-const Integer3 LatticeSpaceVectorImpl::private_coord2private_global(
-        const private_coordinate_type private_coord) const
-{
-    return coord2global_(private_coord, col_size_, row_size_, layer_size_);
-}
+// const Integer3 LatticeSpaceVectorImpl::private_coord2private_global(
+//         const private_coordinate_type private_coord) const
+// {
+//     return coord2global_(private_coord, col_size_, row_size_, layer_size_);
+// }
 
-LatticeSpaceVectorImpl::private_coordinate_type LatticeSpaceVectorImpl::apply_boundary_(
-        const private_coordinate_type& private_coord) const
-{
-    Integer3 global(private_coord2private_global(private_coord));
-
-    global.col = (global.col - 1) % col_size();
-    global.row = (global.row - 1) % row_size();
-    global.layer = (global.layer - 1) % layer_size();
-
-    global.col = global.col < 0 ? global.col + col_size() : global.col;
-    global.row = global.row < 0 ? global.row + row_size() : global.row;
-    global.layer = global.layer < 0 ? global.layer + layer_size() : global.layer;
-
-    return global2private_coord(global);
-}
+// LatticeSpaceVectorImpl::private_coordinate_type LatticeSpaceVectorImpl::apply_boundary_(
+//         const private_coordinate_type& private_coord) const
+// {
+//     Integer3 global(private_coord2global(private_coord));
+// 
+//     global.col = global.col % col_size();
+//     global.row = global.row % row_size();
+//     global.layer = global.layer % layer_size();
+// 
+//     global.col = global.col < 0 ? global.col + col_size() : global.col;
+//     global.row = global.row < 0 ? global.row + row_size() : global.row;
+//     global.layer = global.layer < 0 ? global.layer + layer_size() : global.layer;
+// 
+//     return global2private_coord(global);
+// 
+//     // Integer3 global(private_coord2private_global(private_coord));
+//     // global.col = (global.col - 1) % col_size();
+//     // global.row = (global.row - 1) % row_size();
+//     // global.layer = (global.layer - 1) % layer_size();
+//     // global.col = global.col < 0 ? global.col + col_size() : global.col;
+//     // global.row = global.row < 0 ? global.row + row_size() : global.row;
+//     // global.layer = global.layer < 0 ? global.layer + layer_size() : global.layer;
+//     // return global2private_coord(global);
+// }
 
 Integer LatticeSpaceVectorImpl::num_voxels_exact(const Species& sp) const
 {

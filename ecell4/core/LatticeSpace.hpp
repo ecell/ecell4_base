@@ -54,9 +54,6 @@ public:
         t_ = t;
     }
 
-    /**
-      */
-
     Real voxel_radius() const
     {
         return voxel_radius_;
@@ -68,9 +65,8 @@ public:
         return 4.0 * sqrt(2.0) * r * r * r;
     }
 
-    virtual const Integer col_size() const = 0;
-    virtual const Integer row_size() const = 0;
-    virtual const Integer layer_size() const = 0;
+    /**
+      */
 
     virtual std::vector<Species> list_species() const = 0;
 
@@ -97,12 +93,19 @@ public:
     virtual MolecularTypeBase* get_molecular_type(
         const private_coordinate_type& coord) = 0;
 
-    virtual private_coordinate_type get_neighbor(
-        const private_coordinate_type& private_coord, const Integer& nrand) const = 0;
+    virtual bool on_structure(const Voxel& v) = 0;
+
+    virtual std::pair<private_coordinate_type, bool> move_to_neighbor(
+        MolecularTypeBase* const& from_mt, MolecularTypeBase* const& loc,
+        particle_info_type& info, const Integer nrand) = 0;
 
     /**
      Coordinate transformations
      */
+
+    virtual const Integer col_size() const = 0;
+    virtual const Integer row_size() const = 0;
+    virtual const Integer layer_size() const = 0;
 
     virtual coordinate_type global2coord(const Integer3& global) const = 0;
     virtual coordinate_type global2private_coord(const Integer3& global) const = 0;
@@ -119,11 +122,8 @@ public:
     virtual Real3 global2position(const Integer3& global) const = 0;
     virtual Integer3 position2global(const Real3& pos) const = 0;
 
-    virtual bool on_structure(const Voxel& v) = 0;
-
-    virtual std::pair<private_coordinate_type, bool> move_to_neighbor(
-        MolecularTypeBase* const& from_mt, MolecularTypeBase* const& loc,
-        particle_info_type& info, const Integer nrand) = 0;
+    virtual private_coordinate_type get_neighbor(
+        const private_coordinate_type& private_coord, const Integer& nrand) const = 0;
 
     /**
       */
@@ -453,6 +453,22 @@ public:
         return private_coord - 1; // nrand == 0
     }
 
+    private_coordinate_type periodic_transpose_private(
+        const private_coordinate_type& private_coord) const
+    {
+        Integer3 global(private_coord2global(private_coord));
+
+        global.col = global.col % col_size();
+        global.row = global.row % row_size();
+        global.layer = global.layer % layer_size();
+
+        global.col = global.col < 0 ? global.col + col_size() : global.col;
+        global.row = global.row < 0 ? global.row + row_size() : global.row;
+        global.layer = global.layer < 0 ? global.layer + layer_size() : global.layer;
+
+        return global2private_coord(global);
+    }
+
 protected:
 
     Real3 edge_lengths_;
@@ -618,17 +634,18 @@ public:
     /*
      * Coordinate transformations
      */
-    private_coordinate_type global2coord_(const Integer3& global,
-            Integer col_size, Integer row_size, Integer layer_size) const;
-    const Integer3 coord2global_(coordinate_type coord,
-            Integer col_size, Integer row_size, Integer layer_size) const;
-
-    const Integer3 private_coord2private_global(
-            const private_coordinate_type privatre_coord) const;
+    // private_coordinate_type global2coord_(const Integer3& global,
+    //         Integer col_size, Integer row_size, Integer layer_size) const;
+    // const Integer3 coord2global_(coordinate_type coord,
+    //         Integer col_size, Integer row_size, Integer layer_size) const;
+    // const Integer3 private_coord2private_global(
+    //         const private_coordinate_type privatre_coord) const;
 
     private_coordinate_type apply_boundary_(
-            const private_coordinate_type& private_coord) const;
-
+        const private_coordinate_type& private_coord) const
+    {
+        return periodic_transpose_private(private_coord);
+    }
 
     const spmap& molecular_types() const
     {
