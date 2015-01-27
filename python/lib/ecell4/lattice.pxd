@@ -58,7 +58,7 @@ cdef extern from "ecell4/lattice/LatticeWorld.hpp" namespace "ecell4::lattice":
         void add_molecules(Cpp_Species& sp, Integer num)
         void remove_molecules(Cpp_Species& sp, Integer num)
         # shared_ptr[Cpp_GSLRandomNumberGenerator] rng()
-        Integer get_neighbor(Integer, Integer)
+        # Integer get_neighbor(Integer, Integer)
         void save(string filename)
         void load(string filename)
         pair[pair[Cpp_ParticleID, Cpp_Voxel], bool] new_voxel(Cpp_Voxel& p)

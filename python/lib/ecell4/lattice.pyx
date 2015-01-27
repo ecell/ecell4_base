@@ -137,8 +137,8 @@ cdef class LatticeWorld:
             inc(it)
         return retval
 
-    def get_neighbor(self, coord, nrand):
-        return self.thisptr.get().get_neighbor(coord, nrand)
+    # def get_neighbor(self, coord, nrand):
+    #     return self.thisptr.get().get_neighbor(coord, nrand)
 
     def has_particle(self, ParticleID pid):
         return self.thisptr.get().has_particle(deref(pid.thisptr))

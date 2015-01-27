@@ -169,15 +169,15 @@ protected:
     boost::shared_ptr<EventScheduler::Event> create_first_order_reaction_event(
         const ReactionRule& reaction_rule, const Real& t);
     std::pair<bool, reaction_type> attempt_reaction_(
-        const LatticeWorld::particle_info info,
+        const LatticeWorld::particle_info_type info,
         LatticeWorld::coordinate_type to_coord);
     std::pair<bool, reaction_type> apply_reaction_(
         const ReactionRule& reaction_rule,
-        const LatticeWorld::particle_info from_info,
-        const LatticeWorld::particle_info to_info);
+        const LatticeWorld::particle_info_type from_info,
+        const LatticeWorld::particle_info_type to_info);
     std::pair<bool, reaction_type> apply_reaction_(
         const ReactionRule& reaction_rule,
-        const LatticeWorld::particle_info info);
+        const LatticeWorld::particle_info_type info);
     void step_();
     void register_events(const Species& species);
     // void register_step_event(const Species& species);

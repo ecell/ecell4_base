@@ -20,7 +20,7 @@ struct Fixture
 {
     const Real3 edge_lengths;
     const Real voxel_radius;
-    LatticeSpace space;
+    LatticeSpaceVectorImpl space;
     SerialIDGenerator<ParticleID> sidgen;
     const Real D, radius;
     const Species sp;
@@ -290,7 +290,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_save_and_load)
         boost::scoped_ptr<H5::H5File>
             fin(new H5::H5File("data.h5", H5F_ACC_RDONLY));
         const H5::Group groupin(fin->openGroup("LatticeSpace"));
-        LatticeSpace space2(Real3(3e-8, 3e-8, 3e-8), voxel_radius);
+        LatticeSpaceVectorImpl space2(Real3(3e-8, 3e-8, 3e-8), voxel_radius);
         space2.load(groupin);
         fin->close();
 
@@ -345,7 +345,7 @@ struct PeriodicFixture
 {
     const Real3 edge_lengths;
     const Real voxel_radius;
-    LatticeSpace space;
+    LatticeSpaceVectorImpl space;
     SerialIDGenerator<ParticleID> sidgen;
     const Real D, radius;
     const Species sp;
@@ -553,7 +553,7 @@ struct StructureFixture
 {
     const Real3 edge_lengths;
     const Real voxel_radius;
-    LatticeSpace space;
+    LatticeSpaceVectorImpl space;
     SerialIDGenerator<ParticleID> sidgen;
     const Real D, radius;
     const Species structure;

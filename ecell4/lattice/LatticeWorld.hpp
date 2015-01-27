@@ -31,23 +31,25 @@ class LatticeWorld
 {
 public:
 
+    typedef LatticeSpaceVectorImpl lattice_space_type;
+
+    typedef MoleculeInfo molecule_info_type;
+
+    typedef LatticeSpace::particle_info_type particle_info_type;
     typedef LatticeSpace::coordinate_type coordinate_type;
     typedef LatticeSpace::private_coordinate_type private_coordinate_type;
-    typedef LatticeSpace::particle_info particle_info;
-    typedef LatticeSpace::spmap spmap;
-    typedef MoleculeInfo molecule_info_type;
 
 public:
 
     LatticeWorld(const Real3& edge_lengths, const Real& voxel_radius,
         const boost::shared_ptr<RandomNumberGenerator>& rng)
-        : space_(edge_lengths, voxel_radius), rng_(rng)
+        : space_(new lattice_space_type(edge_lengths, voxel_radius)), rng_(rng)
     {
         ; // do nothing
     }
 
     LatticeWorld(const Real3& edge_lengths, const Real& voxel_radius)
-        : space_(edge_lengths, voxel_radius)
+        : space_(new lattice_space_type(edge_lengths, voxel_radius))
     {
         rng_ = boost::shared_ptr<RandomNumberGenerator>(
             new GSLRandomNumberGenerator());
@@ -55,7 +57,7 @@ public:
     }
 
     LatticeWorld(const Real3& edge_lengths = Real3(1, 1, 1))
-        : space_(edge_lengths, edge_lengths[0] / 100) //XXX: sloppy default
+        : space_(new lattice_space_type(edge_lengths, edge_lengths[0] / 100)) //XXX: sloppy default
     {
         rng_ = boost::shared_ptr<RandomNumberGenerator>(
             new GSLRandomNumberGenerator());
@@ -63,7 +65,7 @@ public:
     }
 
     LatticeWorld(const std::string filename)
-        : space_(Real3(1, 1, 1), 1 / 100) //XXX: sloppy default
+        : space_(new lattice_space_type(Real3(1, 1, 1), 1 / 100)) //XXX: sloppy default
     {
         rng_ = boost::shared_ptr<RandomNumberGenerator>(
             new GSLRandomNumberGenerator());
@@ -155,18 +157,18 @@ public:
 
     Real get_value(const Species& sp) const
     {
-        return space_.get_value(sp);
+        return (*space_).get_value(sp);
     }
 
     Real get_value_exact(const Species& sp) const
     {
-        return space_.get_value_exact(sp);
+        return (*space_).get_value_exact(sp);
     }
 
-    const spmap& molecular_types() const
-    {
-        return space_.molecular_types();
-    }
+    // const spmap& molecular_types() const
+    // {
+    //     return (*space_).molecular_types();
+    // }
 
     /**
      * create and add a new particle
@@ -182,7 +184,7 @@ public:
         // {
         //     throw AlreadyExists("particle already exists");
         // }
-        const bool is_succeeded(space_.update_particle(pid, p));
+        const bool is_succeeded((*space_).update_particle(pid, p));
         return std::make_pair(get_particle(pid), is_succeeded);
     }
 
@@ -195,22 +197,22 @@ public:
 
     std::pair<ParticleID, Particle> get_particle(const ParticleID& pid) const
     {
-        return space_.get_particle(pid);
+        return (*space_).get_particle(pid);
     }
 
     std::pair<ParticleID, Voxel> get_voxel(const ParticleID& pid) const
     {
-        return space_.get_voxel(pid);
+        return (*space_).get_voxel(pid);
     }
 
     bool remove_particle(const ParticleID& pid)
     {
-        return space_.remove_particle(pid);
+        return (*space_).remove_particle(pid);
     }
 
     bool remove_voxel(const ParticleID& pid)
     {
-        return space_.remove_voxel(pid);
+        return (*space_).remove_voxel(pid);
     }
 
     bool has_voxel(const ParticleID& pid) const;
@@ -225,12 +227,14 @@ public:
     bool update_particle(const ParticleID& pid, const Particle& p);
 
     std::vector<std::pair<ParticleID, Voxel> >
+        list_voxels() const;
+    std::vector<std::pair<ParticleID, Voxel> >
         list_voxels(const Species& sp) const;
     std::vector<std::pair<ParticleID, Voxel> >
         list_voxels_exact(const Species& sp) const;
 
     std::vector<Species> list_species() const;
-    std::vector<coordinate_type> list_coords(const Species& sp) const;
+    // std::vector<coordinate_type> list_coords(const Species& sp) const;
     MolecularTypeBase* find_molecular_type(const Species& species);
     MolecularTypeBase* get_molecular_type_private(const private_coordinate_type& coord);
     std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel(const Voxel& v);
@@ -248,19 +252,19 @@ public:
     bool remove_voxel_private(const private_coordinate_type coord);
     bool move(coordinate_type from, coordinate_type to);
     // std::pair<coordinate_type, bool> move_to_neighbor(coordinate_type coord, Integer nrand);
-    // std::pair<coordinate_type, bool> move_to_neighbor(particle_info& info, Integer nrand);
-    std::pair<std::pair<particle_info, private_coordinate_type>, bool>
-        move_to_neighbor(MolecularTypeBase* mtype, Integer index);
+    // std::pair<coordinate_type, bool> move_to_neighbor(particle_info_type& info, Integer nrand);
+    // std::pair<std::pair<particle_info_type, private_coordinate_type>, bool>
+    //     move_to_neighbor(MolecularTypeBase* mtype, Integer index);
 
     std::pair<private_coordinate_type, bool> move_to_neighbor(
         MolecularTypeBase* const& from_mt, MolecularTypeBase* const& loc,
-        particle_info& info, const Integer nrand);
+        particle_info_type& info, const Integer nrand);
 
-    private_coordinate_type get_neighbor(
-            private_coordinate_type private_coord, Integer nrand) const
-    {
-        return space_.get_neighbor(private_coord, nrand);
-    }
+    // private_coordinate_type get_neighbor(
+    //         private_coordinate_type private_coord, Integer nrand) const
+    // {
+    //     return (*space_).get_neighbor(private_coord, nrand);
+    // }
 
     std::pair<private_coordinate_type, bool> check_neighbor_private(
             const private_coordinate_type coord);
@@ -268,36 +272,35 @@ public:
 
     const Species& draw_species(const Species& pttrn) const;
 
-    std::pair<std::pair<ParticleID, Voxel>, bool> place_voxel_private(const Species& sp, const private_coordinate_type& coord)
-    {
-        const molecule_info_type& info(get_molecule_info(sp));
-        return new_voxel_private(ecell4::Voxel(sp, coord, info.radius, info.D));
-    }
+    // std::pair<std::pair<ParticleID, Voxel>, bool> place_voxel_private(const Species& sp, const private_coordinate_type& coord)
+    // {
+    //     const molecule_info_type& info(get_molecule_info(sp));
+    //     return new_voxel_private(ecell4::Voxel(sp, coord, info.radius, info.D));
+    // }
 
     bool update_voxel(const ParticleID& pid, const Voxel& v)
     {
-        return space_.update_voxel(pid, v);
+        return (*space_).update_voxel(pid, v);
     }
 
     bool update_voxel_private(const Voxel& v)
     {
-        return space_.update_voxel_private(v);
+        return (*space_).update_voxel_private(v);
     }
 
     bool update_voxel_private(const ParticleID& pid, const Voxel& v)
     {
-        return space_.update_voxel_private(pid, v);
+        return (*space_).update_voxel_private(pid, v);
     }
 
     Real voxel_radius() const
     {
-        return space_.voxel_radius();
+        return (*space_).voxel_radius();
     }
 
     Real voxel_volume() const
     {
-        const Real r(voxel_radius());
-        return 4.0 * sqrt(2.0) * r * r * r;
+        return (*space_).voxel_volume();
     }
 
     boost::shared_ptr<RandomNumberGenerator> rng()
@@ -307,55 +310,75 @@ public:
 
     const Integer col_size() const
     {
-        return space_.col_size();
+        return (*space_).col_size();
     }
 
     const Integer row_size() const
     {
-        return space_.row_size();
+        return (*space_).row_size();
     }
 
     const Integer layer_size() const
     {
-        return space_.layer_size();
+        return (*space_).layer_size();
     }
 
     const Integer size() const
     {
-        return space_.size();
+        return (*space_).size();
     }
 
     coordinate_type position2coordinate(const Real3& pos) const
     {
-        return space_.position2coordinate(pos);
+        return (*space_).position2coordinate(pos);
     }
 
     const Real3 coordinate2position(const coordinate_type& coord) const
     {
-        return space_.coordinate2position(coord);
+        return (*space_).coordinate2position(coord);
+    }
+
+    private_coordinate_type position2private(const Real3& pos) const
+    {
+        return (*space_).position2private(pos);
     }
 
     const Real3 private2position(const private_coordinate_type& coord) const
     {
-        return space_.coordinate2position(private2coord(coord));
+        return (*space_).coordinate2position(private2coord(coord));
+    }
+
+    coordinate_type private2coord(
+        const private_coordinate_type& private_coord) const
+    {
+        return (*space_).private2coord(private_coord);
+    }
+
+    private_coordinate_type coord2private(
+        const coordinate_type& coord) const
+    {
+        return (*space_).coord2private(coord);
     }
 
     const Real3 global2position(const Integer3& global) const
     {
-        return space_.global2position(global);
+        return (*space_).global2position(global);
     }
 
     const Integer3 position2global(const Real3& pos) const
     {
-        return space_.position2global(pos);
+        return (*space_).position2global(pos);
     }
 
-    coordinate_type global2coord(const Integer3& global) const;
-    const Integer3 coord2global(coordinate_type coord) const;
-    coordinate_type private2coord(const private_coordinate_type&
-            private_coord) const;
-    private_coordinate_type coord2private(const coordinate_type&
-            coord) const;
+    coordinate_type global2coord(const Integer3& global) const
+    {
+        return (*space_).global2coord(global);
+    }
+
+    const Integer3 coord2global(coordinate_type coord) const
+    {
+        return (*space_).coord2global(coord);
+    }
 
     /*
      * HDF5 Save
@@ -368,7 +391,7 @@ public:
         sidgen_.save(fout.get());
         boost::scoped_ptr<H5::Group>
             group(new H5::Group(fout->createGroup("LatticeSpace")));
-        space_.save(group.get());
+        (*space_).save(group.get());
     }
 
     void load(const std::string& filename)
@@ -376,7 +399,7 @@ public:
         boost::scoped_ptr<H5::H5File>
             fin(new H5::H5File(filename.c_str(), H5F_ACC_RDONLY));
         const H5::Group group(fin->openGroup("LatticeSpace"));
-        space_.load(group);
+        (*space_).load(group);
         sidgen_.load(*fin);
         rng_->load(*fin);
     }
@@ -407,7 +430,8 @@ protected:
 
 protected:
 
-    LatticeSpace space_;
+    boost::scoped_ptr<lattice_space_type> space_;
+    // boost::scoped_ptr<LatticeSpace> space_;
     boost::shared_ptr<RandomNumberGenerator> rng_;
     SerialIDGenerator<ParticleID> sidgen_;
 

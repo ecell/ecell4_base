@@ -128,7 +128,8 @@ BOOST_AUTO_TEST_CASE(LatticeWorld_test_add_molecule)
     sp.set_attribute("D", "1e-12");
 
     LatticeWorld::private_coordinate_type coord(486420);
-    BOOST_CHECK(world.place_voxel_private(sp, coord).second);
+    // BOOST_CHECK(world.place_voxel_private(sp, coord).second);
+    BOOST_CHECK(world.new_voxel(sp, world.private2coord(coord)).second);
     BOOST_CHECK_EQUAL(world.num_particles(sp), 1);
 
     MolecularTypeBase* mt(world.get_molecular_type_private(coord));
@@ -227,12 +228,15 @@ BOOST_AUTO_TEST_CASE(LatticeWorld_test_move)
 
     LatticeWorld::coordinate_type from(1034), to(786420);
 
-    LatticeWorld::private_coordinate_type private_from(
-            world.coord2private(from));
-    BOOST_CHECK(world.place_voxel_private(sp, private_from).second);
+    // LatticeWorld::private_coordinate_type private_from(
+    //         world.coord2private(from));
+    // BOOST_CHECK(world.place_voxel(sp, private_from).second);
 
     LatticeWorld::private_coordinate_type private_to(
             world.coord2private(to));
+    // BOOST_CHECK(world.move(from, to));
+
+    BOOST_CHECK(world.new_voxel(sp, from).second);
     BOOST_CHECK(world.move(from, to));
 
     MolecularTypeBase* mt(world.get_molecular_type_private(private_to));

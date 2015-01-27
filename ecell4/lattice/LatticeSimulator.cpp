@@ -70,7 +70,7 @@ LatticeSimulator::create_first_order_reaction_event(
 }
 
 std::pair<bool, LatticeSimulator::reaction_type> LatticeSimulator::attempt_reaction_(
-    const LatticeWorld::particle_info info, LatticeWorld::coordinate_type to_coord)
+    const LatticeWorld::particle_info_type info, LatticeWorld::coordinate_type to_coord)
 {
     const Species
         from_species(world_->get_molecular_type_private(info.first)->species());
@@ -100,7 +100,7 @@ std::pair<bool, LatticeSimulator::reaction_type> LatticeSimulator::attempt_react
         }
         if (accp >= rnd)
         {
-            LatticeWorld::particle_info to_info(*(to_mt->find(to_coord)));
+            LatticeWorld::particle_info_type to_info(*(to_mt->find(to_coord)));
             return apply_reaction_(*itr, info, to_info);
         }
     }
@@ -112,8 +112,8 @@ std::pair<bool, LatticeSimulator::reaction_type> LatticeSimulator::attempt_react
  */
 std::pair<bool, LatticeSimulator::reaction_type> LatticeSimulator::apply_reaction_(
     const ReactionRule& reaction_rule,
-    const LatticeWorld::particle_info from_info,
-    const LatticeWorld::particle_info to_info)
+    const LatticeWorld::particle_info_type from_info,
+    const LatticeWorld::particle_info_type to_info)
 {
     const ReactionRule::product_container_type&
         products(reaction_rule.products());
@@ -227,7 +227,7 @@ std::pair<bool, LatticeSimulator::reaction_type> LatticeSimulator::apply_reactio
  * the First Order Reaction
  */
 std::pair<bool, LatticeSimulator::reaction_type> LatticeSimulator::apply_reaction_(
-        const ReactionRule& reaction_rule, const LatticeWorld::particle_info info)
+        const ReactionRule& reaction_rule, const LatticeWorld::particle_info_type info)
 {
     const ReactionRule::product_container_type&
         products(reaction_rule.products());
@@ -445,7 +445,7 @@ void LatticeSimulator::walk(const Species& species, const Real& alpha)
 
         if (!neighbor.second)
         {
-            const LatticeWorld::particle_info info((*mtype)[i]);
+            const LatticeWorld::particle_info_type info((*mtype)[i]);
             const LatticeWorld::private_coordinate_type to_coord(neighbor.first);
 
             const std::pair<bool, reaction_type>
