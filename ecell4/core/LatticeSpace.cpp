@@ -36,7 +36,7 @@ LatticeSpaceVectorImpl::LatticeSpaceVectorImpl(
     border_ = new MolecularType(Species("Border", ss.str(), "0"));
     periodic_ = new MolecularType(Species("Periodic", ss.str(), "0"));
 
-    set_lattice_properties(is_periodic_);
+    initialize_voxels(is_periodic_);
 }
 
 LatticeSpaceVectorImpl::~LatticeSpaceVectorImpl()
@@ -45,187 +45,25 @@ LatticeSpaceVectorImpl::~LatticeSpaceVectorImpl()
     delete periodic_;
 }
 
-/*
- * Coordinate transformations
- */
-
-// LatticeSpaceVectorImpl::coordinate_type LatticeSpaceVectorImpl::global2coord_(const Integer3& global,
-//         Integer col_size, Integer row_size, Integer layer_size) const
-// {
-//     return global.row +
-//         row_size * (global.col) +
-//         row_size * col_size * (global.layer);
-// }
-
-// const Integer3 LatticeSpaceVectorImpl::coord2global_(coordinate_type coord,
-//         Integer col_size, Integer row_size, Integer layer_size) const
-// {
-//     // Integer3 retval;
-//     // retval.col = coord / (row_size * layer_size);
-//     // retval.layer = (coord % (row_size * layer_size)) / row_size;
-//     // retval.row = (coord % (row_size * layer_size)) % row_size;
-//     // return retval;
-// 
-//     Integer3 retval;
-//     const Integer NUM_COLROW(row_size * col_size);
-//     const Integer LAYER(coord / NUM_COLROW);
-//     const Integer SURPLUS(coord - LAYER * NUM_COLROW);
-//     const Integer COL(SURPLUS / row_size);
-//     retval.col = COL;
-//     retval.layer = LAYER;
-//     retval.row = SURPLUS - COL * row_size;
-//     return retval;
-// }
-
-// LatticeSpaceVectorImpl::coordinate_type LatticeSpaceVectorImpl::global2coord(const Integer3& global) const
-// {
-//     return global2coord_(global, col_size(), row_size(), layer_size());
-// }
-
-// LatticeSpaceVectorImpl::private_coordinate_type LatticeSpaceVectorImpl::global2private_coord(
-//         const Integer3& global) const
-// {
-//     Integer3 modified_global;
-//     modified_global.col = global.col + 1;
-//     modified_global.row = global.row + 1;
-//     modified_global.layer = global.layer + 1;
-//     return global2coord_(modified_global, col_size_, row_size_, layer_size_);
-// }
-
-// Integer3 LatticeSpaceVectorImpl::coord2global(coordinate_type coord) const
-// {
-//     return coord2global_(coord, col_size(), row_size(), layer_size());
-// }
-
-// Integer3 LatticeSpaceVectorImpl::private_coord2global(
-//     const private_coordinate_type& private_coord) const
-// {
-//     Integer3 retval(private_coord2private_global(private_coord));
-//     retval.col--;
-//     retval.row--;
-//     retval.layer--;
-//     return retval;
-// }
-
-// Real3 LatticeSpaceVectorImpl::global2position(const Integer3& global) const
-// {
-//     //the center point of a voxel
-//     Real3 position;
-//     position[0] = global.col * HCP_X;
-//     position[1] = (global.col % 2) * HCP_L + HCP_Y * global.layer;
-//     position[2] = (global.row * 2 + (global.layer + global.col) % 2)
-//         * voxel_radius_;
-//     return position;
-// }
-
-// Integer3 LatticeSpaceVectorImpl::position2global(const Real3& pos) const
-// {
-//     Integer3 global;
-//     global.col = round(pos[0] / HCP_X);
-//     global.layer = round((pos[1] - (global.col % 2) * HCP_L) / HCP_Y);
-//     global.row = round((pos[2] / voxel_radius_
-//                 - ((global.layer + global.col) % 2)) / 2);
-//     return global;
-// }
-
-// Real3 LatticeSpaceVectorImpl::coordinate2position(const coordinate_type& coord) const
-// {
-//     return private2position(coord2private(coord));
-// }
-// 
-// LatticeSpaceVectorImpl::coordinate_type LatticeSpaceVectorImpl::position2coordinate(
-//         const Real3& pos) const
-// {
-//     return global2coord(position2global(pos));
-// }
-// 
-// Real3 LatticeSpaceVectorImpl::private2position(
-//     const private_coordinate_type& private_coord) const
-// {
-//     return global2position(private_coord2global(private_coord));
-// }
-// 
-// LatticeSpaceVectorImpl::private_coordinate_type LatticeSpaceVectorImpl::position2private(
-//         const Real3& pos) const
-// {
-//     return global2private_coord(position2global(pos));
-// }
-// 
-// 
-// LatticeSpaceVectorImpl::private_coordinate_type LatticeSpaceVectorImpl::coord2private(
-//     const coordinate_type& coord) const
-// {
-//     return global2private_coord(coord2global(coord));
-// }
-// 
-// LatticeSpaceVectorImpl::coordinate_type LatticeSpaceVectorImpl::private2coord(
-//     const private_coordinate_type& private_coord) const
-// {
-//     return global2coord(private_coord2global(private_coord));
-// }
-
-// LatticeSpaceVectorImpl::private_coordinate_type LatticeSpaceVectorImpl::get_neighbor(
-//         private_coordinate_type private_coord, Integer nrand) const
-// {
-//     const Integer NUM_COLROW(col_size_ * row_size_);
-//     const Integer NUM_ROW(row_size_);
-//     const bool odd_col(((private_coord % NUM_COLROW) / NUM_ROW) & 1);
-//     const bool odd_lay((private_coord / NUM_COLROW) & 1);
-// 
-//     switch(nrand)
-//     {
-//     case 1:
-//         return private_coord + 1;
-//     case 2:
-//         return private_coord + (odd_col ^ odd_lay) - NUM_ROW - 1;
-//     case 3:
-//         return private_coord + (odd_col ^ odd_lay) - NUM_ROW;
-//     case 4:
-//         return private_coord + (odd_col ^ odd_lay) + NUM_ROW - 1;
-//     case 5:
-//         return private_coord + (odd_col ^ odd_lay) + NUM_ROW;
-//     case 6:
-//         return private_coord - (2 * odd_col - 1) * NUM_COLROW - NUM_ROW;
-//     case 7:
-//         return private_coord - (2 * odd_col - 1) * NUM_COLROW + NUM_ROW;
-//     case 8:
-//         return private_coord + (odd_col ^ odd_lay) - NUM_COLROW - 1;
-//     case 9:
-//         return private_coord + (odd_col ^ odd_lay) - NUM_COLROW;
-//     case 10:
-//         return private_coord + (odd_col ^ odd_lay) + NUM_COLROW - 1;
-//     case 11:
-//         return private_coord + (odd_col ^ odd_lay) + NUM_COLROW;
-//     }
-//     return private_coord - 1;
-// }
-
-void LatticeSpaceVectorImpl::set_lattice_properties(const bool is_periodic)
+void LatticeSpaceVectorImpl::initialize_voxels(const bool is_periodic)
 {
-    // HCP_L = voxel_radius_ / sqrt(3.0);
-    // HCP_X = voxel_radius_ * sqrt(8.0 / 3.0); //Lx
-    // HCP_Y = voxel_radius_ * sqrt(3.0); //Ly
-
-    // const Real lengthX = edge_lengths_[0];
-    // const Real lengthY = edge_lengths_[1];
-    // const Real lengthZ = edge_lengths_[2];
-
-    // row_size_ = (Integer)rint((lengthZ/2)/voxel_radius_) + 2;
-    // layer_size_ = (Integer)rint(lengthY/HCP_Y) + 2;
-    // col_size_ = (Integer)rint(lengthX/HCP_X) + 2;
-
-    private_coordinate_type voxel_size(
-            col_size_ * row_size_ * layer_size_);
-    std::cout << "voxel_size = " << voxel_size << std::endl;
+    const private_coordinate_type voxel_size(
+        col_size_ * row_size_ * layer_size_);
+    // std::cout << "voxel_size = " << voxel_size << std::endl;
+    voxels_.clear();
     voxels_.reserve(voxel_size);
     for (private_coordinate_type coord(0); coord < voxel_size; ++coord)
     {
         if (!is_inside(coord))
         {
             if (is_periodic)
+            {
                 voxels_.push_back(periodic_);
+            }
             else
+            {
                 voxels_.push_back(border_);
+            }
         }
         else
         {
@@ -274,82 +112,6 @@ bool LatticeSpaceVectorImpl::has_voxel(const ParticleID& pid) const
 
     return false;
 }
-
-// std::vector<std::pair<ParticleID, Particle> >
-//     LatticeSpaceVectorImpl::list_particles() const
-// {
-//     std::vector<std::pair<ParticleID, Particle> > retval;
-//     for (spmap::const_iterator itr(spmap_.begin());
-//             itr != spmap_.end(); ++itr)
-//     {
-//         const MolecularTypeBase& mt((*itr).second);
-//         if (mt.is_vacant())
-//         {
-//             continue;
-//         }
-// 
-//         for (MolecularTypeBase::container_type::const_iterator vitr(mt.begin());
-//                 vitr != mt.end(); ++vitr)
-//         {
-//             retval.push_back(std::pair<ParticleID, Particle>(
-//                         (*vitr).second, particle_at((*vitr).first)));
-//         }
-//     }
-// 
-//     return retval;
-// }
-// 
-// std::vector<std::pair<ParticleID, Particle> >
-//     LatticeSpaceVectorImpl::list_particles_exact(const Species& sp) const
-// {
-//     std::vector<std::pair<ParticleID, Particle> > retval;
-//     spmap::const_iterator itr(spmap_.find(sp));
-//     if (itr != spmap_.end())
-//     {
-//         const MolecularTypeBase& mt((*itr).second);
-//         if (mt.is_vacant())
-//         {
-//             return retval;
-//         }
-// 
-//         for (MolecularTypeBase::container_type::const_iterator vitr(mt.begin());
-//                 vitr != mt.end(); ++vitr)
-//         {
-//             retval.push_back(std::pair<ParticleID, Particle>(
-//                         (*vitr).second, particle_at((*vitr).first)));
-//         }
-//     }
-//     return retval;
-// }
-// 
-// std::vector<std::pair<ParticleID, Particle> >
-//     LatticeSpaceVectorImpl::list_particles(const Species& sp) const
-// {
-//     SpeciesExpressionMatcher sexp(sp);
-//     std::vector<std::pair<ParticleID, Particle> > retval;
-//     for (spmap::const_iterator itr(spmap_.begin());
-//             itr != spmap_.end(); ++itr)
-//     {
-//         if (!sexp.match((*itr).first))
-//         {
-//             continue;
-//         }
-// 
-//         const MolecularTypeBase& mt((*itr).second);
-//         if (mt.is_vacant())
-//         {
-//             return retval;
-//         }
-// 
-//         for (MolecularTypeBase::container_type::const_iterator vitr(mt.begin());
-//                 vitr != mt.end(); ++vitr)
-//         {
-//             retval.push_back(std::pair<ParticleID, Particle>(
-//                         (*vitr).second, particle_at((*vitr).first)));
-//         }
-//     }
-//     return retval;
-// }
 
 std::pair<ParticleID, Voxel>
 LatticeSpaceVectorImpl::get_voxel(const ParticleID& pid) const
@@ -606,11 +368,6 @@ bool LatticeSpaceVectorImpl::on_structure(const Voxel& v)
     return voxels_.at(v.coordinate()) != get_molecular_type(v)->location();
 }
 
-// bool LatticeSpaceVectorImpl::register_species(const Species& sp)
-// {
-//     return __get_molecular_type(sp).second;
-// }
-
 /*
  * Protected functions
  */
@@ -854,17 +611,6 @@ std::pair<LatticeSpaceVectorImpl::private_coordinate_type, bool> LatticeSpaceVec
     return std::make_pair(private_to, true);
 }
 
-// std::vector<LatticeSpaceVectorImpl::private_coordinate_type>
-// LatticeSpaceVectorImpl::get_neighbors(LatticeSpaceVectorImpl::private_coordinate_type coord) const
-// {
-//     std::vector<LatticeSpaceVectorImpl::private_coordinate_type> retval;
-//     for (Integer i(0); i < 12; i++)
-//     {
-//         retval.push_back(get_neighbor(coord, i));
-//     }
-//     return retval;
-// }
-
 const Particle LatticeSpaceVectorImpl::particle_at_private(private_coordinate_type coord) const
 {
     const MolecularTypeBase* ptr_mt(voxels_.at(coord));
@@ -894,46 +640,7 @@ bool LatticeSpaceVectorImpl::is_inside(private_coordinate_type coord) const
     return global.col >= 0 && global.col < col_size()
         && global.row >= 0 && global.row < row_size()
         && global.layer >= 0 && global.layer < layer_size();
-    // const Integer3 global(private_coord2private_global(coord));
-    // return global.col > 0 && global.col < col_size_-1
-    //     && global.row > 0 && global.row < row_size_-1
-    //     && global.layer > 0 && global.layer < layer_size_-1;
 }
-
-/*
- * Coordinate transformations
- */
-
-// const Integer3 LatticeSpaceVectorImpl::private_coord2private_global(
-//         const private_coordinate_type private_coord) const
-// {
-//     return coord2global_(private_coord, col_size_, row_size_, layer_size_);
-// }
-
-// LatticeSpaceVectorImpl::private_coordinate_type LatticeSpaceVectorImpl::apply_boundary_(
-//         const private_coordinate_type& private_coord) const
-// {
-//     Integer3 global(private_coord2global(private_coord));
-// 
-//     global.col = global.col % col_size();
-//     global.row = global.row % row_size();
-//     global.layer = global.layer % layer_size();
-// 
-//     global.col = global.col < 0 ? global.col + col_size() : global.col;
-//     global.row = global.row < 0 ? global.row + row_size() : global.row;
-//     global.layer = global.layer < 0 ? global.layer + layer_size() : global.layer;
-// 
-//     return global2private_coord(global);
-// 
-//     // Integer3 global(private_coord2private_global(private_coord));
-//     // global.col = (global.col - 1) % col_size();
-//     // global.row = (global.row - 1) % row_size();
-//     // global.layer = (global.layer - 1) % layer_size();
-//     // global.col = global.col < 0 ? global.col + col_size() : global.col;
-//     // global.row = global.row < 0 ? global.row + row_size() : global.row;
-//     // global.layer = global.layer < 0 ? global.layer + layer_size() : global.layer;
-//     // return global2private_coord(global);
-// }
 
 Integer LatticeSpaceVectorImpl::num_voxels_exact(const Species& sp) const
 {

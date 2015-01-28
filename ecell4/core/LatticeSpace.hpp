@@ -100,7 +100,7 @@ public:
         particle_info_type& info, const Integer nrand) = 0;
 
     /**
-     Coordinate transformations
+     Coordinate transformations: See LatticeSpaceBase for the implementation
      */
 
     virtual const Integer col_size() const = 0;
@@ -559,7 +559,6 @@ public:
     virtual MolecularTypeBase* find_molecular_type(const Species& sp);
     // MolecularTypeBase* find_molecular_type(const std::string name);
     virtual MolecularTypeBase* get_molecular_type(const private_coordinate_type& coord);
-    // bool register_species(const Species& sp);
     // bool update_molecule(private_coordinate_type coord, const Species& species);
     // bool add_molecule(const Species& sp, private_coordinate_type coord, const ParticleID& pid);
     virtual bool move(const coordinate_type& from, const coordinate_type& to);
@@ -597,49 +596,14 @@ public:
         voxel_radius_ = voxel_radius;
         is_periodic_ = is_periodic;
 
-        voxels_.clear();
         spmap_.clear();
-        set_lattice_properties(is_periodic_);
+        initialize_voxels(is_periodic_);
     }
-
-    /*
-     * Coordinate transformations
-     */
-    // virtual Integer3 private_coord2global(const private_coordinate_type& coord) const;
-    // virtual coordinate_type global2private_coord(const Integer3& global) const;
-    // virtual private_coordinate_type coord2private(const coordinate_type& cood) const;
-    // virtual coordinate_type private2coord(
-    //     const private_coordinate_type& private_coord) const;
-    // virtual Real3 coordinate2position(const coordinate_type& coord) const;
-    // virtual coordinate_type position2coordinate(const Real3& pos) const;
-    // virtual Real3 private2position(const private_coordinate_type& private_coord) const;
-    // virtual private_coordinate_type position2private(const Real3& pos) const;
-    // virtual coordinate_type global2coord(const Integer3& global) const;
-    // virtual Integer3 coord2global(coordinate_type coord) const;
-    // virtual Real3 global2position(const Integer3& global) const;
-    // virtual Integer3 position2global(const Real3& pos) const;
-
-    // std::vector<private_coordinate_type> get_neighbors(
-    //         private_coordinate_type coord) const;
-    // virtual private_coordinate_type get_neighbor(
-    //     private_coordinate_type private_coord, Integer nrand) const;
 
     virtual const Particle particle_at(const coordinate_type& coord) const
     {
         return particle_at_private(coord2private(coord));
     }
-
-public:
-
-    /*
-     * Coordinate transformations
-     */
-    // private_coordinate_type global2coord_(const Integer3& global,
-    //         Integer col_size, Integer row_size, Integer layer_size) const;
-    // const Integer3 coord2global_(coordinate_type coord,
-    //         Integer col_size, Integer row_size, Integer layer_size) const;
-    // const Integer3 private_coord2private_global(
-    //         const private_coordinate_type privatre_coord) const;
 
     private_coordinate_type apply_boundary_(
         const private_coordinate_type& private_coord) const
@@ -653,7 +617,6 @@ public:
     }
 
     bool is_inside(private_coordinate_type coord) const;
-
     virtual bool on_structure(const Voxel& v);
 
 protected:
@@ -661,7 +624,8 @@ protected:
     std::pair<spmap::iterator, bool> __get_molecular_type(const Voxel& v);
     MolecularTypeBase* get_molecular_type(const Voxel& v);
 
-    void set_lattice_properties(const bool is_periodic);
+    void initialize_voxels(const bool is_periodic);
+
     std::pair<private_coordinate_type, bool> move_(
             private_coordinate_type private_from, private_coordinate_type private_to);
     std::pair<private_coordinate_type, bool> move_(
