@@ -191,45 +191,114 @@ public:
 
     virtual bool update_voxel_private(const Voxel& v)
     {
-        return false;
+        const private_coordinate_type coord(v.coordinate());
+        MolecularTypeBase* src_mt(get_molecular_type(coord));
+        if (src_mt->is_vacant())
+        {
+            return false;
+        }
+
+        MolecularTypeBase* new_mt(get_molecular_type(v));
+        if (new_mt->is_vacant())
+        {
+            // ???
+            return false;
+        }
+
+        MolecularTypeBase::iterator i(src_mt->find(coord));
+        new_mt->add_voxel_without_checking(*i);
+        src_mt->remove_voxel(i);
+        return true;
     }
 
-    virtual bool update_voxel_private(const ParticleID& pid, const Voxel& v)
-    {
-        return false;
-    }
+    virtual bool update_voxel_private(const ParticleID& pid, const Voxel& v);
 
     virtual std::pair<ParticleID, Voxel> get_voxel(const ParticleID& pid) const
     {
-        for (spmap::const_iterator i(spmap_.begin()); i != spmap_.end(); ++i)
+        const std::pair<const MolecularTypeBase*, private_coordinate_type>
+            target(__get_coordinate(pid));
+        if (target.second == -1)
         {
-            const MolecularType& mt((*i).second);
-            MolecularType::container_type::const_iterator j(mt.find(pid));
-            if (j != mt.end())
-            {
-                const coordinate_type coord(private2coord((*j).first));
-                const std::string loc((mt.location()->is_vacant())
-                    ? "" : mt.location()->species().serial());
-                return std::make_pair(
-                    pid, Voxel((*i).first, coord, mt.radius(), mt.D(), loc));
-            }
+            throw NotFound("voxel not found.");
         }
 
-        throw NotFound("voxel not found.");
+        const coordinate_type coord(private2coord(target.second));
+        const MolecularTypeBase* mt(target.first);
+        const std::string loc((mt->location()->is_vacant())
+            ? "" : mt->location()->species().serial());
+        return std::make_pair(
+            pid, Voxel(mt->species(), coord, mt->radius(), mt->D(), loc));
     }
 
     virtual bool remove_voxel(const ParticleID& pid)
     {
-        return true;
+        std::pair<MolecularTypeBase*, private_coordinate_type>
+            target(__get_coordinate(pid));
+        if (target.second != -1)
+        {
+            MolecularTypeBase* mt(target.first);
+            const private_coordinate_type coord(target.second);
+            if (!mt->removeVoxel(coord))
+            {
+                return false;
+            }
+
+            mt->location()->add_voxel_without_checking(
+                particle_info_type(coord, ParticleID()));
+            return true;
+        }
+        return false;
     }
 
     virtual bool remove_voxel_private(const private_coordinate_type& coord)
     {
+        MolecularTypeBase* mt(get_molecular_type(coord));
+        if (mt->is_vacant())
+        {
+            return false;
+        }
+
+        if (mt->removeVoxel(coord))
+        {
+            // ???
+            return true;
+        }
         return true;
     }
 
     virtual bool move(const coordinate_type& from, const coordinate_type& to)
     {
+        const private_coordinate_type private_from(coord2private(from));
+        private_coordinate_type private_to(coord2private(to));
+
+        if (private_from == private_to)
+        {
+            return false;
+        }
+
+        MolecularTypeBase* from_mt(get_molecular_type(private_from));
+        if (from_mt->is_vacant())
+        {
+            return true;
+        }
+
+        MolecularTypeBase* to_mt(get_molecular_type(private_to));
+        if (to_mt == border_)
+        {
+            return false;
+        }
+        else if (to_mt == periodic_)
+        {
+            private_to = periodic_transpose_private(private_to);
+            to_mt = get_molecular_type(private_to);
+        }
+
+        if (to_mt != from_mt->location())
+        {
+            return false;
+        }
+
+        ; // do
         return true;
     }
 
@@ -252,6 +321,11 @@ public:
         const private_coordinate_type& coord)
     {
         return vacant_;
+    }
+
+    MolecularTypeBase* get_molecular_type(const Voxel& v)
+    {
+        return &((*(__get_molecular_type(v).first)).second);
     }
 
     virtual bool on_structure(const Voxel& v)
@@ -278,6 +352,10 @@ public:
 protected:
 
     std::pair<spmap::iterator, bool> __get_molecular_type(const Voxel& v);
+    std::pair<MolecularTypeBase*, private_coordinate_type>
+        __get_coordinate(const ParticleID& pid);
+    std::pair<const MolecularTypeBase*, private_coordinate_type>
+        __get_coordinate(const ParticleID& pid) const;
 
 protected:
 

@@ -17,6 +17,64 @@ Integer LatticeSpaceCellListImpl::num_molecules(const Species& sp) const
     return count;
 }
 
+bool LatticeSpaceCellListImpl::update_voxel_private(const ParticleID& pid, const Voxel& v)
+{
+    const private_coordinate_type& to_coord(v.coordinate());
+    if (!is_in_range_private(to_coord))
+    {
+        return false;
+    }
+
+    MolecularTypeBase* new_mt(get_molecular_type(v)); //XXX: need MoleculeInfo
+    if (new_mt->is_vacant())
+    {
+        // ???
+        return false; // Vacant has no ParticleID.
+    }
+
+    MolecularTypeBase* dest_mt(get_molecular_type(to_coord));
+    if (!dest_mt->is_vacant() && dest_mt != new_mt->location())
+    {
+        if (dest_mt->species() == periodic_->species()
+            || dest_mt->species() == border_->species())
+        {
+            throw NotSupported("The coordinate points a boundary.");
+        }
+
+        MolecularTypeBase::container_type::const_iterator
+            dest_itr(dest_mt->find(to_coord));
+        if (dest_itr == dest_mt->end())
+        {
+            throw IllegalState(
+                "MolecularTypaBase [" + dest_mt->species().serial()
+                + "] doesn't contain a proper coordinate.");
+        }
+        else if (!(pid != ParticleID() && (*dest_itr).second == pid))
+        {
+            return false; // collision
+        }
+    }
+
+    if (pid != ParticleID())
+    {
+        const std::pair<MolecularTypeBase*, private_coordinate_type>
+            target(__get_coordinate(pid));
+        const private_coordinate_type& from_coord(target.second);
+        if (from_coord != -1)
+        {
+            MolecularTypeBase* src_mt(target.first);
+            src_mt->removeVoxel(from_coord);
+            dest_mt->replace_voxel(to_coord, particle_info_type(from_coord, ParticleID()));
+            new_mt->add_voxel_without_checking(particle_info_type(to_coord, pid));
+            return true;
+        }
+    }
+
+    new_mt->add_voxel_without_checking(particle_info_type(to_coord, pid));
+    dest_mt->removeVoxel(to_coord);
+    return true;
+}
+
 std::pair<LatticeSpaceCellListImpl::spmap::iterator, bool>
 LatticeSpaceCellListImpl::__get_molecular_type(const Voxel& v)
 {
@@ -68,6 +126,56 @@ LatticeSpaceCellListImpl::__get_molecular_type(const Voxel& v)
         throw AlreadyExists("never reach here.");
     }
     return retval;
+}
+
+std::pair<MolecularTypeBase*, LatticeSpaceCellListImpl::private_coordinate_type>
+    LatticeSpaceCellListImpl::__get_coordinate(const ParticleID& pid)
+{
+    for (spmap::iterator itr(spmap_.begin());
+        itr != spmap_.end(); ++itr)
+    {
+        MolecularTypeBase& mt((*itr).second);
+        if (mt.is_vacant())
+        {
+            continue;
+        }
+
+        for (MolecularTypeBase::container_type::const_iterator vitr(mt.begin());
+            vitr != mt.end(); ++vitr)
+        {
+            if ((*vitr).second == pid)
+            {
+                return std::pair<MolecularTypeBase*, private_coordinate_type>(
+                    &mt, (*vitr).first);
+            }
+        }
+    }
+    return std::make_pair<MolecularTypeBase*, private_coordinate_type>(NULL, -1);
+}
+
+std::pair<const MolecularTypeBase*, LatticeSpaceCellListImpl::private_coordinate_type>
+    LatticeSpaceCellListImpl::__get_coordinate(const ParticleID& pid) const
+{
+    for (spmap::const_iterator itr(spmap_.begin());
+        itr != spmap_.end(); ++itr)
+    {
+        const MolecularTypeBase& mt((*itr).second);
+        if (mt.is_vacant())
+        {
+            continue;
+        }
+
+        for (MolecularTypeBase::container_type::const_iterator vitr(mt.begin());
+            vitr != mt.end(); ++vitr)
+        {
+            if ((*vitr).second == pid)
+            {
+                return std::pair<const MolecularTypeBase*, private_coordinate_type>(
+                    &mt, (*vitr).first);
+            }
+        }
+    }
+    return std::make_pair<const MolecularTypeBase*, private_coordinate_type>(NULL, -1);
 }
 
 } // ecell4

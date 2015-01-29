@@ -624,24 +624,6 @@ const Particle LatticeSpaceVectorImpl::particle_at_private(private_coordinate_ty
                 private2coord(coord)), ptr_mt->radius(), ptr_mt->D());
 }
 
-bool LatticeSpaceVectorImpl::is_in_range(coordinate_type coord) const
-{
-    return coord >= 0 && coord < row_size() * layer_size() * col_size();
-}
-
-bool LatticeSpaceVectorImpl::is_in_range_private(private_coordinate_type coord) const
-{
-    return coord >= 0 && coord < row_size_ * col_size_ * layer_size_;
-}
-
-bool LatticeSpaceVectorImpl::is_inside(private_coordinate_type coord) const
-{
-    const Integer3 global(private_coord2global(coord));
-    return global.col >= 0 && global.col < col_size()
-        && global.row >= 0 && global.row < row_size()
-        && global.layer >= 0 && global.layer < layer_size();
-}
-
 Integer LatticeSpaceVectorImpl::num_voxels_exact(const Species& sp) const
 {
     spmap::const_iterator itr(spmap_.find(sp));
@@ -691,6 +673,7 @@ bool LatticeSpaceVectorImpl::update_voxel_private(const Voxel& v)
     MolecularTypeBase* new_mt(get_molecular_type(v)); //XXX: need MoleculeInfo
     if (new_mt->is_vacant())
     {
+        // ???
         return false; // Vacant has no ParticleID. Call remove_voxel.
     }
 

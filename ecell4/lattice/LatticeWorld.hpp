@@ -6,6 +6,7 @@
 #include <boost/weak_ptr.hpp>
 
 #include <ecell4/core/LatticeSpace.hpp>
+#include <ecell4/core/LatticeSpaceCellListImpl.hpp>
 #include <ecell4/core/MolecularTypeBase.hpp>
 #include <ecell4/core/MolecularType.hpp>
 #include <ecell4/core/RandomNumberGenerator.hpp>
@@ -31,7 +32,8 @@ class LatticeWorld
 {
 public:
 
-    typedef LatticeSpaceVectorImpl lattice_space_type;
+    typedef LatticeSpaceCellListImpl lattice_space_type;
+    // typedef LatticeSpaceVectorImpl lattice_space_type;
 
     typedef MoleculeInfo molecule_info_type;
 
@@ -430,8 +432,8 @@ protected:
 
 protected:
 
-    boost::scoped_ptr<lattice_space_type> space_;
-    // boost::scoped_ptr<LatticeSpace> space_;
+    // boost::scoped_ptr<lattice_space_type> space_;
+    boost::scoped_ptr<LatticeSpace> space_;
     boost::shared_ptr<RandomNumberGenerator> rng_;
     SerialIDGenerator<ParticleID> sidgen_;
 

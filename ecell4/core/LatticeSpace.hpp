@@ -65,6 +65,18 @@ public:
         return 4.0 * sqrt(2.0) * r * r * r;
     }
 
+    virtual void save(H5::Group* root) const
+    {
+        throw NotSupported(
+            "load(H5::Group* root) is not supported by this space class");
+    }
+
+    virtual void load(const H5::Group& root)
+    {
+        throw NotSupported(
+            "load(const H5::Group& root) is not supported by this space class");
+    }
+
     /**
       */
 
@@ -469,6 +481,26 @@ public:
         return global2private_coord(global);
     }
 
+public:
+
+    bool is_in_range(const coordinate_type& coord) const
+    {
+        return coord >= 0 && coord < row_size() * layer_size() * col_size();
+    }
+
+    bool is_in_range_private(const private_coordinate_type& coord) const
+    {
+        return coord >= 0 && coord < row_size_ * col_size_ * layer_size_;
+    }
+
+    bool is_inside(const private_coordinate_type& coord) const
+    {
+        const Integer3 global(private_coord2global(coord));
+        return global.col >= 0 && global.col < col_size()
+            && global.row >= 0 && global.row < row_size()
+            && global.layer >= 0 && global.layer < layer_size();
+    }
+
 protected:
 
     Real3 edge_lengths_;
@@ -616,7 +648,6 @@ public:
         return spmap_;
     }
 
-    bool is_inside(private_coordinate_type coord) const;
     virtual bool on_structure(const Voxel& v);
 
 protected:
@@ -632,8 +663,6 @@ protected:
             particle_info_type& info, private_coordinate_type private_to);
     private_coordinate_type get_coord(const ParticleID& pid) const;
     const Particle particle_at_private(private_coordinate_type coord) const;
-    bool is_in_range(coordinate_type coord) const;
-    bool is_in_range_private(private_coordinate_type coord) const;
 
 protected:
 
