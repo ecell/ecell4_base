@@ -364,6 +364,20 @@ cdef LatticeWorld LatticeWorld_from_Cpp_LatticeWorld(
     r.thisptr.swap(w)
     return r
 
+cdef LatticeWorld create_lattice_world_cell_list_impl(edge_lengths, voxel_radius, rng):
+    cdef shared_ptr[Cpp_LatticeWorld]* w = new shared_ptr[Cpp_LatticeWorld](
+        create_lattice_world_cell_list_impl_alias(
+            deref((<Real3>edge_lengths).thisptr), <Real>voxel_radius,
+            deref((<GSLRandomNumberGenerator>rng).thisptr)))
+    return LatticeWorld_from_Cpp_LatticeWorld(deref(w))
+
+cdef LatticeWorld create_lattice_world_vector_impl(edge_lengths, voxel_radius, rng):
+    cdef shared_ptr[Cpp_LatticeWorld]* w = new shared_ptr[Cpp_LatticeWorld](
+        create_lattice_world_vector_impl_alias(
+            deref((<Real3>edge_lengths).thisptr), <Real>voxel_radius,
+            deref((<GSLRandomNumberGenerator>rng).thisptr)))
+    return LatticeWorld_from_Cpp_LatticeWorld(deref(w))
+
 ## LatticeSimulator
 #  a python wrapper for Cpp_LatticeSimulator
 cdef class LatticeSimulator:

@@ -32,8 +32,8 @@ class LatticeWorld
 {
 public:
 
-    typedef LatticeSpaceCellListImpl lattice_space_type;
-    // typedef LatticeSpaceVectorImpl lattice_space_type;
+    // typedef LatticeSpaceCellListImpl default_space_type;
+    typedef LatticeSpaceVectorImpl default_space_type;
 
     typedef MoleculeInfo molecule_info_type;
 
@@ -45,13 +45,13 @@ public:
 
     LatticeWorld(const Real3& edge_lengths, const Real& voxel_radius,
         const boost::shared_ptr<RandomNumberGenerator>& rng)
-        : space_(new lattice_space_type(edge_lengths, voxel_radius)), rng_(rng)
+        : space_(new default_space_type(edge_lengths, voxel_radius)), rng_(rng)
     {
         ; // do nothing
     }
 
     LatticeWorld(const Real3& edge_lengths, const Real& voxel_radius)
-        : space_(new lattice_space_type(edge_lengths, voxel_radius))
+        : space_(new default_space_type(edge_lengths, voxel_radius))
     {
         rng_ = boost::shared_ptr<RandomNumberGenerator>(
             new GSLRandomNumberGenerator());
@@ -59,7 +59,7 @@ public:
     }
 
     LatticeWorld(const Real3& edge_lengths = Real3(1, 1, 1))
-        : space_(new lattice_space_type(edge_lengths, edge_lengths[0] / 100)) //XXX: sloppy default
+        : space_(new default_space_type(edge_lengths, edge_lengths[0] / 100)) //XXX: sloppy default
     {
         rng_ = boost::shared_ptr<RandomNumberGenerator>(
             new GSLRandomNumberGenerator());
@@ -67,11 +67,18 @@ public:
     }
 
     LatticeWorld(const std::string filename)
-        : space_(new lattice_space_type(Real3(1, 1, 1), 1 / 100)) //XXX: sloppy default
+        : space_(new default_space_type(Real3(1, 1, 1), 1 / 100)) //XXX: sloppy default
     {
         rng_ = boost::shared_ptr<RandomNumberGenerator>(
             new GSLRandomNumberGenerator());
         this->load(filename);
+    }
+
+    LatticeWorld(LatticeSpace* space,
+        const boost::shared_ptr<RandomNumberGenerator>& rng)
+        : space_(space), rng_(rng)
+    {
+        ; // do nothing
     }
 
     /**
@@ -442,13 +449,37 @@ protected:
 
 protected:
 
-    // boost::scoped_ptr<lattice_space_type> space_;
     boost::scoped_ptr<LatticeSpace> space_;
     boost::shared_ptr<RandomNumberGenerator> rng_;
     SerialIDGenerator<ParticleID> sidgen_;
 
     boost::weak_ptr<Model> model_;
 };
+
+LatticeWorld* create_lattice_world_cell_list_impl(
+    const Real3& edge_lengths, const Real& voxel_radius,
+    const boost::shared_ptr<RandomNumberGenerator>& rng);
+LatticeWorld* create_lattice_world_vector_impl(
+    const Real3& edge_lengths, const Real& voxel_radius,
+    const boost::shared_ptr<RandomNumberGenerator>& rng);
+
+/**
+ * Alias functions for Cython
+ */
+
+inline LatticeWorld* create_lattice_world_cell_list_impl_alias(
+    const Real3& edge_lengths, const Real& voxel_radius,
+    const boost::shared_ptr<RandomNumberGenerator>& rng)
+{
+    return create_lattice_world_cell_list_impl(edge_lengths, voxel_radius, rng);
+}
+
+inline LatticeWorld* create_lattice_world_vector_impl_alias(
+    const Real3& edge_lengths, const Real& voxel_radius,
+    const boost::shared_ptr<RandomNumberGenerator>& rng)
+{
+    return create_lattice_world_vector_impl(edge_lengths, voxel_radius, rng);
+}
 
 } // lattice
 

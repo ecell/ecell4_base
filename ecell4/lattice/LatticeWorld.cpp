@@ -8,6 +8,22 @@ namespace ecell4
 namespace lattice
 {
 
+LatticeWorld* create_lattice_world_cell_list_impl(
+    const Real3& edge_lengths, const Real& voxel_radius,
+    const boost::shared_ptr<RandomNumberGenerator>& rng)
+{
+    return new LatticeWorld(
+        new LatticeSpaceCellListImpl(edge_lengths, voxel_radius), rng);
+}
+
+LatticeWorld* create_lattice_world_vector_impl(
+    const Real3& edge_lengths, const Real& voxel_radius,
+    const boost::shared_ptr<RandomNumberGenerator>& rng)
+{
+    return new LatticeWorld(
+        new LatticeSpaceVectorImpl(edge_lengths, voxel_radius), rng);
+}
+
 const Real& LatticeWorld::t() const
 {
     return (*space_).t();

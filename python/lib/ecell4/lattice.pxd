@@ -89,6 +89,11 @@ cdef extern from "ecell4/lattice/LatticeWorld.hpp" namespace "ecell4::lattice":
         Integer add_structure(Cpp_Species&, Cpp_Shape&)
         void add_molecules(Cpp_Species& sp, Integer num, Cpp_Shape&)
 
+    cdef Cpp_LatticeWorld* create_lattice_world_cell_list_impl_alias(
+        Cpp_Real3&, Real, shared_ptr[Cpp_RandomNumberGenerator]&)
+    cdef Cpp_LatticeWorld* create_lattice_world_vector_impl_alias(
+        Cpp_Real3&, Real, shared_ptr[Cpp_RandomNumberGenerator]&)
+
 ## LatticeWorld
 #  a python wrapper for Cpp_LatticeWorld
 cdef class LatticeWorld:
@@ -96,6 +101,9 @@ cdef class LatticeWorld:
 
 cdef LatticeWorld LatticeWorld_from_Cpp_LatticeWorld(
     shared_ptr[Cpp_LatticeWorld] m)
+
+cdef LatticeWorld create_lattice_world_cell_list_impl(edge_lengths, voxel_radius, rng)
+cdef LatticeWorld create_lattice_world_vector_impl(edge_lengths, voxel_radius, rng)
 
 ## Cpp_LatticeSimulator
 #  ecell4::lattice::LatticeSimulator
