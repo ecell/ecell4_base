@@ -50,6 +50,8 @@ void LatticeSpaceVectorImpl::initialize_voxels(const bool is_periodic)
     const private_coordinate_type voxel_size(
         col_size_ * row_size_ * layer_size_);
     // std::cout << "voxel_size = " << voxel_size << std::endl;
+
+    spmap_.clear();
     voxels_.clear();
     voxels_.reserve(voxel_size);
     for (private_coordinate_type coord(0); coord < voxel_size; ++coord)

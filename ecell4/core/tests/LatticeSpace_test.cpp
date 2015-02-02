@@ -295,6 +295,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_save_and_load)
         fin->close();
 
         BOOST_CHECK_EQUAL(space.edge_lengths(), space2.edge_lengths());
+        BOOST_CHECK_EQUAL(space2.num_particles(), 1);
         std::pair<ParticleID, Particle> pair(space2.list_particles()[0]);
         BOOST_CHECK_EQUAL(pid, pair.first);
         BOOST_CHECK_EQUAL(pos, pair.second.position());

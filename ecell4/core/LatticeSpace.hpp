@@ -272,6 +272,25 @@ public:
         const Real3& edge_lengths, const Real& voxel_radius)
         : base_type(voxel_radius), edge_lengths_(edge_lengths)
     {
+        set_lattice_properties();
+    }
+
+    virtual ~LatticeSpaceBase()
+    {
+        ; // do nothing
+    }
+
+    virtual void reset(const Real3& edge_lengths, const Real& voxel_radius,
+        const bool is_periodic)
+    {
+        edge_lengths_ = edge_lengths;
+        voxel_radius_ = voxel_radius;
+
+        set_lattice_properties();
+    }
+
+    void set_lattice_properties()
+    {
         //XXX: derived from SpatiocyteStepper::setLatticeProperties()
         HCP_L = voxel_radius_ / sqrt(3.0);
         HCP_X = voxel_radius_ * sqrt(8.0 / 3.0); // Lx
@@ -284,11 +303,6 @@ public:
         row_size_ = (Integer)rint((lengthZ / 2) / voxel_radius_) + 2;
         layer_size_ = (Integer)rint(lengthY / HCP_Y) + 2;
         col_size_ = (Integer)rint(lengthX / HCP_X) + 2;
-    }
-
-    virtual ~LatticeSpaceBase()
-    {
-        ; // do nothing
     }
 
     /**
@@ -624,11 +638,9 @@ public:
     void reset(const Real3& edge_lengths, const Real& voxel_radius,
         const bool is_periodic)
     {
-        edge_lengths_ = edge_lengths;
-        voxel_radius_ = voxel_radius;
-        is_periodic_ = is_periodic;
+        base_type::reset(edge_lengths, voxel_radius, is_periodic);
 
-        spmap_.clear();
+        is_periodic_ = is_periodic;
         initialize_voxels(is_periodic_);
     }
 
