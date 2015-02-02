@@ -298,13 +298,18 @@ public:
             return false;
         }
 
-        ; // do
+        MolecularTypeBase::container_type::iterator i(from_mt->find(private_from));
+        (*i).first = private_to;
+        to_mt->replace_voxel(private_to, particle_info_type(private_from, ParticleID()));
         return true;
     }
 
     virtual const Particle particle_at(const coordinate_type& coord) const
     {
-        return Particle(Species(""), coordinate2position(coord), voxel_radius_, 0); //XXX: DUMMY
+        const private_coordinate_type private_coord(coord2private(coord));
+        const MolecularTypeBase* mt(get_molecular_type(private_coord));
+        return Particle(
+            mt->species(), coordinate2position(coord), mt->radius(), mt->D());
     }
 
     virtual MolecularTypeBase* find_molecular_type(const Species& sp)
@@ -320,6 +325,61 @@ public:
     virtual MolecularTypeBase* get_molecular_type(
         const private_coordinate_type& coord)
     {
+        /**
+         XXX: This may no work
+         */
+        for (spmap::iterator itr(spmap_.begin());
+            itr != spmap_.end(); ++itr)
+        {
+            MolecularTypeBase& mt((*itr).second);
+            if (mt.is_vacant())
+            {
+                continue;
+            }
+
+            MolecularTypeBase::container_type::const_iterator j(mt.find(coord));
+            if (j != mt.end())
+            {
+                return (&mt);
+            }
+        }
+
+        if (is_inside(coord))
+        {
+            return vacant_;
+        }
+        else if (is_periodic_)
+        {
+            return periodic_;
+        }
+        else
+        {
+            return border_;
+        }
+    }
+
+    const MolecularTypeBase* get_molecular_type(
+        const private_coordinate_type& coord) const
+    {
+        /**
+         XXX: This may no work
+         */
+
+        for (spmap::const_iterator itr(spmap_.begin());
+            itr != spmap_.end(); ++itr)
+        {
+            const MolecularTypeBase& mt((*itr).second);
+            if (mt.is_vacant())
+            {
+                continue;
+            }
+
+            MolecularTypeBase::container_type::const_iterator j(mt.find(coord));
+            if (j != mt.end())
+            {
+                return (&mt);
+            }
+        }
         return vacant_;
     }
 
@@ -330,7 +390,8 @@ public:
 
     virtual bool on_structure(const Voxel& v)
     {
-        return true;
+        return (get_molecular_type(v.coordinate())
+            != get_molecular_type(v)->location()); //XXX: == ???
     }
 
     virtual std::pair<private_coordinate_type, bool> move_to_neighbor(
@@ -339,6 +400,33 @@ public:
     {
         const private_coordinate_type private_from(info.first);
         private_coordinate_type private_to(get_neighbor(private_from, nrand));
+        MolecularTypeBase* to_mt(get_molecular_type(private_to));
+        if (to_mt != loc)
+        {
+            if (to_mt == border_)
+            {
+                return std::make_pair(private_from, false);
+            }
+            else if (to_mt != periodic_)
+            {
+                return std::make_pair(private_to, false);
+            }
+
+            // to_mt == periodic_
+            private_to = periodic_transpose_private(private_to);
+            to_mt = get_molecular_type(private_to);
+            if (to_mt != loc)
+            {
+                return std::make_pair(private_to, false);
+            }
+        }
+
+        info.first = private_to;
+        if (to_mt != vacant_) // (!to_mt->is_vacant())
+        {
+            to_mt->replace_voxel(
+                private_to, particle_info_type(private_from, ParticleID()));
+        }
         return std::make_pair(private_to, false);
     }
 
@@ -348,6 +436,24 @@ public:
     }
 
     virtual Integer num_molecules(const Species& sp) const;
+
+    /**
+     */
+
+    virtual Real get_value(const Species& sp) const
+    {
+        return static_cast<Real>(num_molecules(sp));
+    }
+
+    virtual Real get_value_exact(const Species& sp) const
+    {
+        return static_cast<Real>(num_molecules_exact(sp));
+    }
+
+    bool has_species(const Species& sp) const
+    {
+        return spmap_.find(sp) != spmap_.end();
+    }
 
 protected:
 
