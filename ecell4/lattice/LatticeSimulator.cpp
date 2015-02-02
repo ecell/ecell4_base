@@ -100,6 +100,9 @@ std::pair<bool, LatticeSimulator::reaction_type> LatticeSimulator::attempt_react
         }
         if (accp >= rnd)
         {
+            // std::cout << "from_coord = " << info.first << " : " << from_species.serial() << std::endl;
+            // std::cout << "to_coord = " << to_coord << " : " << to_species.serial() << std::endl;
+
             LatticeWorld::particle_info_type to_info(*(to_mt->find(to_coord)));
             return apply_reaction_(*itr, info, to_info);
         }
@@ -439,9 +442,10 @@ void LatticeSimulator::walk(const Species& species, const Real& alpha)
     Integer i(0), max(rng->binomial(alpha, mtype->size()));
     while (i < max)
     {
+        const Integer rnd(rng->uniform_int(0, 11));
         const std::pair<LatticeWorld::private_coordinate_type, bool>
             neighbor(world_->move_to_neighbor(
-                mtype, loc, (*mtype)[i], rng->uniform_int(0, 11)));
+                mtype, loc, (*mtype)[i], rnd));
 
         if (!neighbor.second)
         {

@@ -353,7 +353,7 @@ public:
     coordinate_type global2private_coord(const Integer3& global) const
     {
         const Integer3 g(global.col + 1, global.row + 1, global.layer + 1);
-        return __global2coord(global, col_size_, row_size_, layer_size_);
+        return __global2coord(g, col_size_, row_size_, layer_size_);
     }
 
     Real3 global2position(const Integer3& global) const
