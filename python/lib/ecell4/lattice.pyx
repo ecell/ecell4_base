@@ -328,6 +328,13 @@ cdef class LatticeWorld:
         cdef Cpp_Integer3 g = self.thisptr.get().coord2global(coord)
         return Integer3_from_Cpp_Integer3(address(g))
 
+    def global2private(self, Integer3 coord):
+        return self.thisptr.get().global2private(deref(coord.thisptr))
+
+    def private2global(self, Integer coord):
+        cdef Cpp_Integer3 g = self.thisptr.get().private2global(coord)
+        return Integer3_from_Cpp_Integer3(address(g))
+
     def global2position(self, Integer3 g):
         cdef Cpp_Real3 pos = self.thisptr.get().global2position(deref(g.thisptr))
         return Real3_from_Cpp_Real3(address(pos))

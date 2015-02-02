@@ -382,6 +382,16 @@ public:
         return (*space_).coord2global(coord);
     }
 
+    private_coordinate_type global2private(const Integer3& global) const
+    {
+        return (*space_).global2private_coord(global);
+    }
+
+    const Integer3 private2global(private_coordinate_type coord) const
+    {
+        return (*space_).private_coord2global(coord);
+    }
+
     /*
      * HDF5 Save
      */

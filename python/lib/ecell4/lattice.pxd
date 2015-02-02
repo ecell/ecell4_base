@@ -82,6 +82,8 @@ cdef extern from "ecell4/lattice/LatticeWorld.hpp" namespace "ecell4::lattice":
         Integer coord2private(Integer)
         Cpp_Integer3 coord2global(Integer)
         Integer global2coord(Cpp_Integer3)
+        Cpp_Integer3 private2global(Integer)
+        Integer global2private(Cpp_Integer3)
         Cpp_Real3 global2position(Cpp_Integer3)
         Cpp_Integer3 position2global(Cpp_Real3)
         Integer add_structure(Cpp_Species&, Cpp_Shape&)
