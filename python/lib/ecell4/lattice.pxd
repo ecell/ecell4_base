@@ -90,7 +90,7 @@ cdef extern from "ecell4/lattice/LatticeWorld.hpp" namespace "ecell4::lattice":
         void add_molecules(Cpp_Species& sp, Integer num, Cpp_Shape&)
 
     cdef Cpp_LatticeWorld* create_lattice_world_cell_list_impl_alias(
-        Cpp_Real3&, Real, shared_ptr[Cpp_RandomNumberGenerator]&)
+        Cpp_Real3&, Real, Cpp_Integer3&, shared_ptr[Cpp_RandomNumberGenerator]&)
     cdef Cpp_LatticeWorld* create_lattice_world_vector_impl_alias(
         Cpp_Real3&, Real, shared_ptr[Cpp_RandomNumberGenerator]&)
 

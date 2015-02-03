@@ -10,10 +10,11 @@ namespace lattice
 
 LatticeWorld* create_lattice_world_cell_list_impl(
     const Real3& edge_lengths, const Real& voxel_radius,
+    const Integer3& matrix_sizes,
     const boost::shared_ptr<RandomNumberGenerator>& rng)
 {
     return new LatticeWorld(
-        new LatticeSpaceCellListImpl(edge_lengths, voxel_radius), rng);
+        new LatticeSpaceCellListImpl(edge_lengths, voxel_radius, matrix_sizes), rng);
 }
 
 LatticeWorld* create_lattice_world_vector_impl(

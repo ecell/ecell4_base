@@ -364,10 +364,12 @@ cdef LatticeWorld LatticeWorld_from_Cpp_LatticeWorld(
     r.thisptr.swap(w)
     return r
 
-def create_lattice_world_cell_list_impl(edge_lengths, voxel_radius, rng):
+def create_lattice_world_cell_list_impl(
+    edge_lengths, voxel_radius, matrix_sizes, rng):
     cdef shared_ptr[Cpp_LatticeWorld]* w = new shared_ptr[Cpp_LatticeWorld](
         create_lattice_world_cell_list_impl_alias(
             deref((<Real3>edge_lengths).thisptr), <Real>voxel_radius,
+            deref((<Integer3>matrix_sizes).thisptr),
             deref((<GSLRandomNumberGenerator>rng).thisptr)))
     return LatticeWorld_from_Cpp_LatticeWorld(deref(w))
 

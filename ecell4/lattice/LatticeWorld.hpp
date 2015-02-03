@@ -458,6 +458,7 @@ protected:
 
 LatticeWorld* create_lattice_world_cell_list_impl(
     const Real3& edge_lengths, const Real& voxel_radius,
+    const Integer3& matrix_sizes,
     const boost::shared_ptr<RandomNumberGenerator>& rng);
 LatticeWorld* create_lattice_world_vector_impl(
     const Real3& edge_lengths, const Real& voxel_radius,
@@ -469,9 +470,11 @@ LatticeWorld* create_lattice_world_vector_impl(
 
 inline LatticeWorld* create_lattice_world_cell_list_impl_alias(
     const Real3& edge_lengths, const Real& voxel_radius,
+    const Integer3& matrix_sizes,
     const boost::shared_ptr<RandomNumberGenerator>& rng)
 {
-    return create_lattice_world_cell_list_impl(edge_lengths, voxel_radius, rng);
+    return create_lattice_world_cell_list_impl(
+        edge_lengths, voxel_radius, matrix_sizes, rng);
 }
 
 inline LatticeWorld* create_lattice_world_vector_impl_alias(
