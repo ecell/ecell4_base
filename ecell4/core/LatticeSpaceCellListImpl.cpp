@@ -66,12 +66,23 @@ bool LatticeSpaceCellListImpl::update_voxel_private(const ParticleID& pid, const
             src_mt->removeVoxel(from_coord);
             dest_mt->replace_voxel(to_coord, particle_info_type(from_coord, ParticleID()));
             new_mt->add_voxel_without_checking(particle_info_type(to_coord, pid));
+
+            if (!dest_mt->is_vacant())
+            {
+                update_matrix(from_coord, dest_mt);
+                update_matrix(to_coord, new_mt);
+            }
+            else
+            {
+                update_matrix(from_coord, to_coord, new_mt);
+            }
             return true;
         }
     }
 
     new_mt->add_voxel_without_checking(particle_info_type(to_coord, pid));
     dest_mt->removeVoxel(to_coord);
+    update_matrix(to_coord, new_mt);
     return true;
 }
 

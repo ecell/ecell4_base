@@ -12,6 +12,11 @@
 namespace ecell4
 {
 
+inline unsigned int ceilint(const unsigned int x, const unsigned int y)
+{
+    return x / y + (x % y != 0);
+}
+
 class LatticeSpaceCellListImpl
     : public LatticeSpaceBase
 {
@@ -24,15 +29,23 @@ public:
     typedef base_type::private_coordinate_type coordinate_type;
 
     typedef std::map<Species, MolecularType> spmap;
-    // typedef std::vector<MolecularTypeBase*> voxel_container;
+    typedef std::vector<std::pair<MolecularTypeBase*, private_coordinate_type> >
+        cell_type;
+    typedef std::vector<cell_type> matrix_type;
 
 public:
 
     LatticeSpaceCellListImpl(
         const Real3& edge_lengths, const Real& voxel_radius,
         const bool is_periodic = true)
-        : base_type(edge_lengths, voxel_radius), is_periodic_(is_periodic)
+        : base_type(edge_lengths, voxel_radius), is_periodic_(is_periodic),
+        matrix_sizes_(5, 5, 5),
+        matrix_(matrix_sizes_[0] * matrix_sizes_[1] * matrix_sizes_[2])
     {
+        cell_sizes_[0] = ceilint(col_size_, matrix_sizes_[0]);
+        cell_sizes_[1] = ceilint(row_size_, matrix_sizes_[1]);
+        cell_sizes_[2] = ceilint(layer_size_, matrix_sizes_[2]);
+
         vacant_ = &(VacantType::getInstance());
         std::stringstream ss;
         ss << voxel_radius_;
@@ -45,6 +58,113 @@ public:
         delete border_;
         delete periodic_;
     }
+
+    /**
+     */
+
+    inline matrix_type::size_type coord2index(const private_coordinate_type& coord) const
+    {
+        return global2index(private_coord2global(coord));
+    }
+
+    inline matrix_type::size_type global2index(const Integer3& g) const
+    {
+        return (g.col / cell_sizes_[0]) + matrix_sizes_[0] * ((g.row / cell_sizes_[1]) + matrix_sizes_[1] * (g.layer / cell_sizes_[2]));
+    }
+
+    cell_type::iterator find_from_matrix(
+        const private_coordinate_type& coord, cell_type& cell)
+    {
+        cell_type::iterator i(cell.begin());
+        for (; i != cell.end(); ++i)
+        {
+            if ((*i).second == coord)
+            {
+                return i;
+            }
+        }
+        return i;
+    }
+
+    void update_matrix(const private_coordinate_type& coord, MolecularTypeBase* mt)
+    {
+        cell_type& cell(matrix_[coord2index(coord)]);
+        cell_type::iterator i(find_from_matrix(coord, cell));
+
+        if (i != cell.end())
+        {
+            if (mt->is_vacant())
+            {
+                cell.erase(i);
+            }
+            else
+            {
+                (*i).first = mt;
+            }
+        }
+        else if (!mt->is_vacant())
+        {
+            cell.push_back(std::make_pair(mt, coord));
+        }
+        else
+        {
+            throw NotFound("1");
+        }
+    }
+
+    void update_matrix(const private_coordinate_type& from_coord,
+        const private_coordinate_type& to_coord,
+        MolecularTypeBase* mt)
+    {
+        const matrix_type::size_type from_idx(coord2index(from_coord)),
+            to_idx(coord2index(to_coord));
+        if (from_idx == to_idx)
+        {
+            cell_type& cell(matrix_[from_idx]);
+            cell_type::iterator i(find_from_matrix(from_coord, cell));
+            if (i == cell.end())
+            {
+                throw NotFound("2");
+            }
+            (*i).first = mt;
+            (*i).second = to_coord;
+        }
+        else
+        {
+            cell_type& cell(matrix_[from_idx]);
+            cell_type::iterator i(find_from_matrix(from_coord, cell));
+            if (i == cell.end())
+            {
+                throw NotFound("3");
+            }
+            cell.erase(i);
+            matrix_[to_idx].push_back(std::make_pair(mt, to_coord));
+        }
+    }
+
+    void dump_matrix()
+    {
+        std::cout << "=====================" << std::endl;
+        for (matrix_type::size_type i(0); i != matrix_.size(); ++i)
+        {
+            cell_type& c(matrix_[i]);
+            if (c.size() == 0)
+            {
+                continue;
+            }
+
+            std::cout << i << " : ";
+            for (cell_type::const_iterator j(c.begin()); j != c.end(); ++j)
+            {
+                std::cout << (*j).second << " ";
+            }
+            std::cout << std::endl;
+        }
+        std::cout << "=====================" << std::endl;
+    }
+
+    /**
+     */
 
     virtual std::vector<Species> list_species() const
     {
@@ -208,6 +328,7 @@ public:
         MolecularTypeBase::iterator i(src_mt->find(coord));
         new_mt->add_voxel_without_checking(*i);
         src_mt->remove_voxel(i);
+        update_matrix(coord, new_mt);
         return true;
     }
 
@@ -245,6 +366,7 @@ public:
 
             mt->location()->add_voxel_without_checking(
                 particle_info_type(coord, ParticleID()));
+            update_matrix(coord, mt->location());
             return true;
         }
         return false;
@@ -261,6 +383,7 @@ public:
         if (mt->removeVoxel(coord))
         {
             // ???
+            update_matrix(coord, vacant_);
             return true;
         }
         return true;
@@ -301,6 +424,15 @@ public:
         MolecularTypeBase::container_type::iterator i(from_mt->find(private_from));
         (*i).first = private_to;
         to_mt->replace_voxel(private_to, particle_info_type(private_from, ParticleID()));
+        if (!to_mt->is_vacant())
+        {
+            update_matrix(private_from, to_mt);
+            update_matrix(private_to, from_mt);
+        }
+        else
+        {
+            update_matrix(private_from, private_to, from_mt);
+        }
         return true;
     }
 
@@ -328,34 +460,48 @@ public:
         /**
          XXX: This may no work
          */
-        for (spmap::iterator itr(spmap_.begin());
-            itr != spmap_.end(); ++itr)
+        if (!is_inside(coord))
         {
-            MolecularTypeBase& mt((*itr).second);
-            if (mt.is_vacant())
+            if (is_periodic_)
             {
-                continue;
+                return periodic_;
             }
-
-            MolecularTypeBase::container_type::const_iterator j(mt.find(coord));
-            if (j != mt.end())
+            else
             {
-                return (&mt);
+                return border_;
             }
         }
 
-        if (is_inside(coord))
+        // for (spmap::iterator itr(spmap_.begin());
+        //     itr != spmap_.end(); ++itr)
+        // {
+        //     MolecularTypeBase& mt((*itr).second);
+        //     if (mt.is_vacant())
+        //     {
+        //         continue;
+        //     }
+
+        //     MolecularTypeBase::container_type::const_iterator j(mt.find(coord));
+        //     if (j != mt.end())
+        //     {
+        //         return (&mt);
+        //     }
+        // }
+
+        cell_type& cell(matrix_[coord2index(coord)]);
+        if (cell.size() == 0)
         {
             return vacant_;
         }
-        else if (is_periodic_)
+
+        for (cell_type::const_iterator i(cell.begin()); i != cell.end(); ++i)
         {
-            return periodic_;
+            if ((*i).second == coord)
+            {
+                return (*i).first;
+            }
         }
-        else
-        {
-            return border_;
-        }
+        return vacant_;
     }
 
     const MolecularTypeBase* get_molecular_type(
@@ -364,20 +510,45 @@ public:
         /**
          XXX: This may no work
          */
-
-        for (spmap::const_iterator itr(spmap_.begin());
-            itr != spmap_.end(); ++itr)
+        if (!is_inside(coord))
         {
-            const MolecularTypeBase& mt((*itr).second);
-            if (mt.is_vacant())
+            if (is_periodic_)
             {
-                continue;
+                return periodic_;
             }
-
-            MolecularTypeBase::container_type::const_iterator j(mt.find(coord));
-            if (j != mt.end())
+            else
             {
-                return (&mt);
+                return border_;
+            }
+        }
+
+        // for (spmap::const_iterator itr(spmap_.begin());
+        //     itr != spmap_.end(); ++itr)
+        // {
+        //     const MolecularTypeBase& mt((*itr).second);
+        //     if (mt.is_vacant())
+        //     {
+        //         continue;
+        //     }
+
+        //     MolecularTypeBase::container_type::const_iterator j(mt.find(coord));
+        //     if (j != mt.end())
+        //     {
+        //         return (&mt);
+        //     }
+        // }
+
+        const cell_type& cell(matrix_[coord2index(coord)]);
+        if (cell.size() == 0)
+        {
+            return vacant_;
+        }
+
+        for (cell_type::const_iterator i(cell.begin()); i != cell.end(); ++i)
+        {
+            if ((*i).second == coord)
+            {
+                return (*i).first;
             }
         }
         return vacant_;
@@ -426,8 +597,14 @@ public:
         {
             to_mt->replace_voxel(
                 private_to, particle_info_type(private_from, ParticleID()));
+            update_matrix(private_from, to_mt);
+            update_matrix(private_to, from_mt);
         }
-        return std::make_pair(private_to, false);
+        else
+        {
+            update_matrix(private_from, private_to, from_mt);
+        }
+        return std::make_pair(private_to, true);
     }
 
     virtual Integer num_molecules() const
@@ -468,11 +645,13 @@ protected:
     bool is_periodic_;
 
     spmap spmap_;
-    // voxel_container voxels_;
 
     MolecularTypeBase* vacant_;
     MolecularTypeBase* border_;
     MolecularTypeBase* periodic_;
+
+    Integer3 matrix_sizes_, cell_sizes_;
+    matrix_type matrix_;
 };
 
 } // ecell4

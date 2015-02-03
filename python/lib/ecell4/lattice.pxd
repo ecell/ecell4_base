@@ -102,9 +102,6 @@ cdef class LatticeWorld:
 cdef LatticeWorld LatticeWorld_from_Cpp_LatticeWorld(
     shared_ptr[Cpp_LatticeWorld] m)
 
-cdef LatticeWorld create_lattice_world_cell_list_impl(edge_lengths, voxel_radius, rng)
-cdef LatticeWorld create_lattice_world_vector_impl(edge_lengths, voxel_radius, rng)
-
 ## Cpp_LatticeSimulator
 #  ecell4::lattice::LatticeSimulator
 cdef extern from "ecell4/lattice/LatticeSimulator.hpp" namespace "ecell4::lattice":
