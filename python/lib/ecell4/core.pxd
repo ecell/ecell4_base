@@ -406,14 +406,12 @@ cdef Particle Particle_from_Cpp_Particle(Cpp_Particle* p)
 
 ## Cpp_Voxel
 #  ecell4::Voxel
-ctypedef int Coord
-
 cdef extern from "ecell4/core/Voxel.hpp" namespace "ecell4":
     cdef cppclass Cpp_Voxel "ecell4::Voxel":
         Cpp_Voxel() except +
-        Cpp_Voxel(Cpp_Species, Coord, Real radius, Real D) except +
+        Cpp_Voxel(Cpp_Species, Integer, Real radius, Real D) except +
         Cpp_Voxel(Cpp_Voxel &rhs) except+
-        Coord coordinate()
+        Integer coordinate()
         Real D()
         Real radius()
         Cpp_Species &species()
