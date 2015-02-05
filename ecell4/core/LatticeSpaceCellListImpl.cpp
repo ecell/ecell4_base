@@ -189,4 +189,107 @@ std::pair<const MolecularTypeBase*, LatticeSpaceCellListImpl::private_coordinate
     return std::make_pair<const MolecularTypeBase*, private_coordinate_type>(NULL, -1);
 }
 
+MolecularTypeBase* LatticeSpaceCellListImpl::get_molecular_type(
+    const LatticeSpaceCellListImpl::private_coordinate_type& coord)
+{
+    /**
+     XXX: This may no work
+     */
+    if (!is_inside(coord))
+    {
+        if (is_periodic_)
+        {
+            return periodic_;
+        }
+        else
+        {
+            return border_;
+        }
+    }
+
+    // for (spmap::iterator itr(spmap_.begin());
+    //     itr != spmap_.end(); ++itr)
+    // {
+    //     MolecularTypeBase& mt((*itr).second);
+    //     if (mt.is_vacant())
+    //     {
+    //         continue;
+    //     }
+
+    //     MolecularTypeBase::container_type::const_iterator j(mt.find(coord));
+    //     if (j != mt.end())
+    //     {
+    //         return (&mt);
+    //     }
+    // }
+
+    cell_type& cell(matrix_[coord2index(coord)]);
+    if (cell.size() == 0)
+    {
+        return vacant_;
+    }
+
+    cell_type::iterator i(find_from_cell(coord, cell));
+    if (i != cell.end())
+    {
+        return (*i).first;
+    }
+
+    return vacant_;
+}
+
+const MolecularTypeBase* LatticeSpaceCellListImpl::get_molecular_type(
+    const LatticeSpaceCellListImpl::private_coordinate_type& coord) const
+{
+    /**
+     XXX: This may no work
+     */
+    if (!is_inside(coord))
+    {
+        if (is_periodic_)
+        {
+            return periodic_;
+        }
+        else
+        {
+            return border_;
+        }
+    }
+
+    // for (spmap::const_iterator itr(spmap_.begin());
+    //     itr != spmap_.end(); ++itr)
+    // {
+    //     const MolecularTypeBase& mt((*itr).second);
+    //     if (mt.is_vacant())
+    //     {
+    //         continue;
+    //     }
+
+    //     MolecularTypeBase::container_type::const_iterator j(mt.find(coord));
+    //     if (j != mt.end())
+    //     {
+    //         return (&mt);
+    //     }
+    // }
+
+    const cell_type& cell(matrix_[coord2index(coord)]);
+    if (cell.size() == 0)
+    {
+        return vacant_;
+    }
+
+    cell_type::const_iterator i(find_from_cell(coord, cell));
+    if (i != cell.end())
+    {
+        return (*i).first;
+    }
+
+    return vacant_;
+}
+
+MolecularTypeBase* LatticeSpaceCellListImpl::get_molecular_type(const Voxel& v)
+{
+    return &((*(__get_molecular_type(v).first)).second);
+}
+
 } // ecell4

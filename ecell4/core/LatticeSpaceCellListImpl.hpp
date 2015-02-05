@@ -7,6 +7,7 @@
 // #include <cmath>
 #include <sstream>
 
+#include "comparators.hpp"
 #include "LatticeSpace.hpp"
 
 namespace ecell4
@@ -72,24 +73,44 @@ public:
         return (g.col / cell_sizes_[0]) + matrix_sizes_[0] * ((g.row / cell_sizes_[1]) + matrix_sizes_[1] * (g.layer / cell_sizes_[2]));
     }
 
-    cell_type::iterator find_from_matrix(
+    cell_type::iterator find_from_cell(
         const private_coordinate_type& coord, cell_type& cell)
     {
-        cell_type::iterator i(cell.begin());
-        for (; i != cell.end(); ++i)
-        {
-            if ((*i).second == coord)
-            {
-                return i;
-            }
-        }
-        return i;
+        return std::find_if(cell.begin(), cell.end(),
+            utils::pair_second_element_unary_predicator<
+                MolecularTypeBase*, private_coordinate_type>(coord));
+        // cell_type::iterator i(cell.begin());
+        // for (; i != cell.end(); ++i)
+        // {
+        //     if ((*i).second == coord)
+        //     {
+        //         return i;
+        //     }
+        // }
+        // return i;
+    }
+
+    cell_type::const_iterator find_from_cell(
+        const private_coordinate_type& coord, const cell_type& cell) const
+    {
+        return std::find_if(cell.begin(), cell.end(),
+            utils::pair_second_element_unary_predicator<
+                MolecularTypeBase*, private_coordinate_type>(coord));
+        // cell_type::const_iterator i(cell.begin());
+        // for (; i != cell.end(); ++i)
+        // {
+        //     if ((*i).second == coord)
+        //     {
+        //         return i;
+        //     }
+        // }
+        // return i;
     }
 
     void update_matrix(const private_coordinate_type& coord, MolecularTypeBase* mt)
     {
         cell_type& cell(matrix_[coord2index(coord)]);
-        cell_type::iterator i(find_from_matrix(coord, cell));
+        cell_type::iterator i(find_from_cell(coord, cell));
 
         if (i != cell.end())
         {
@@ -121,7 +142,7 @@ public:
         if (from_idx == to_idx)
         {
             cell_type& cell(matrix_[from_idx]);
-            cell_type::iterator i(find_from_matrix(from_coord, cell));
+            cell_type::iterator i(find_from_cell(from_coord, cell));
             if (i == cell.end())
             {
                 throw NotFound("2");
@@ -132,7 +153,7 @@ public:
         else
         {
             cell_type& cell(matrix_[from_idx]);
-            cell_type::iterator i(find_from_matrix(from_coord, cell));
+            cell_type::iterator i(find_from_cell(from_coord, cell));
             if (i == cell.end())
             {
                 throw NotFound("3");
@@ -455,109 +476,10 @@ public:
     }
 
     virtual MolecularTypeBase* get_molecular_type(
-        const private_coordinate_type& coord)
-    {
-        /**
-         XXX: This may no work
-         */
-        if (!is_inside(coord))
-        {
-            if (is_periodic_)
-            {
-                return periodic_;
-            }
-            else
-            {
-                return border_;
-            }
-        }
-
-        // for (spmap::iterator itr(spmap_.begin());
-        //     itr != spmap_.end(); ++itr)
-        // {
-        //     MolecularTypeBase& mt((*itr).second);
-        //     if (mt.is_vacant())
-        //     {
-        //         continue;
-        //     }
-
-        //     MolecularTypeBase::container_type::const_iterator j(mt.find(coord));
-        //     if (j != mt.end())
-        //     {
-        //         return (&mt);
-        //     }
-        // }
-
-        cell_type& cell(matrix_[coord2index(coord)]);
-        if (cell.size() == 0)
-        {
-            return vacant_;
-        }
-
-        for (cell_type::const_iterator i(cell.begin()); i != cell.end(); ++i)
-        {
-            if ((*i).second == coord)
-            {
-                return (*i).first;
-            }
-        }
-        return vacant_;
-    }
-
+        const private_coordinate_type& coord);
     const MolecularTypeBase* get_molecular_type(
-        const private_coordinate_type& coord) const
-    {
-        /**
-         XXX: This may no work
-         */
-        if (!is_inside(coord))
-        {
-            if (is_periodic_)
-            {
-                return periodic_;
-            }
-            else
-            {
-                return border_;
-            }
-        }
-
-        // for (spmap::const_iterator itr(spmap_.begin());
-        //     itr != spmap_.end(); ++itr)
-        // {
-        //     const MolecularTypeBase& mt((*itr).second);
-        //     if (mt.is_vacant())
-        //     {
-        //         continue;
-        //     }
-
-        //     MolecularTypeBase::container_type::const_iterator j(mt.find(coord));
-        //     if (j != mt.end())
-        //     {
-        //         return (&mt);
-        //     }
-        // }
-
-        const cell_type& cell(matrix_[coord2index(coord)]);
-        if (cell.size() == 0)
-        {
-            return vacant_;
-        }
-
-        for (cell_type::const_iterator i(cell.begin()); i != cell.end(); ++i)
-        {
-            if ((*i).second == coord)
-            {
-                return (*i).first;
-            }
-        }
-        return vacant_;
-    }
-
-    MolecularTypeBase* get_molecular_type(const Voxel& v)
-    {
-        return &((*(__get_molecular_type(v).first)).second);
-    }
+        const private_coordinate_type& coord) const;
+    MolecularTypeBase* get_molecular_type(const Voxel& v);
 
     virtual bool on_structure(const Voxel& v)
     {
