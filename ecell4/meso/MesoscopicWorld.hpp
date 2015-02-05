@@ -170,11 +170,11 @@ public:
         }
     }
 
-    void add_molecules(const Species& sp, const Integer& num, const Shape& shape)
+    void add_molecules(const Species& sp, const Integer& num, const boost::shared_ptr<Shape> shape)
     {
         for (Integer i(0); i < num; ++i)
         {
-            const Real3 pos(shape.draw_position(rng_));
+            const Real3 pos(shape->draw_position(rng_));
             cs_->add_molecules(sp, 1, cs_->global2coord(cs_->position2global(pos)));
         }
     }

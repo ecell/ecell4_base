@@ -8,7 +8,8 @@ set(CPP_FILES
     CompartmentSpace.cpp Context.cpp Integer3.cpp Journal.cpp ReactionRule.cpp
     LatticeSpace.cpp Model.cpp NetworkModel.cpp NetfreeModel.cpp ParticleSpace.cpp
     Real3.cpp RandomNumberGenerator.cpp Species.cpp UnitSpecies.cpp
-    Sphere.cpp Cylinder.cpp SubvolumeSpace.cpp ParticleSpaceCellListImpl.cpp
+    Sphere.cpp Cylinder.cpp PlanarSurface.cpp Rod.cpp
+    SubvolumeSpace.cpp ParticleSpaceCellListImpl.cpp
     LatticeSpaceCellListImpl.cpp)
 
 set(HPP_FILES
@@ -24,6 +25,7 @@ set(HPP_FILES
     UnitSpecies.hpp observers.hpp exceptions.hpp get_mapper_mf.hpp types.hpp
     Shape.hpp Sphere.hpp Cylinder.hpp AABB.hpp StructureType.hpp
     ParticleSpaceCellListImpl.hpp LatticeSpaceCellListImpl.hpp
+    PlanarSurface.hpp Rod.hpp
     comparators.hpp SimulatorFactory.hpp)
 
 find_package(HDF5 COMPONENTS C CXX HL REQUIRED)

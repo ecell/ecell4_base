@@ -98,7 +98,7 @@ protected:
             const Species reactant(*(rule_.reactants().begin()));
             MolecularTypeBase* mt(sim_->world_->find_molecular_type(reactant));
             const Integer index(sim_->world_->rng()->uniform_int(0, mt->size() - 1));
-            sim_->apply_reaction_(rule_, mt->at(index));
+            sim_->apply_first_order_reaction_(rule_, mt->at(index));
             time_ += draw_dt();
         }
 
@@ -171,13 +171,34 @@ protected:
     std::pair<bool, reaction_type> attempt_reaction_(
         const LatticeWorld::particle_info_type info,
         LatticeWorld::coordinate_type to_coord);
-    std::pair<bool, reaction_type> apply_reaction_(
+    std::pair<bool, reaction_type> apply_second_order_reaction_(
         const ReactionRule& reaction_rule,
         const LatticeWorld::particle_info_type from_info,
         const LatticeWorld::particle_info_type to_info);
-    std::pair<bool, reaction_type> apply_reaction_(
+    std::pair<bool, reaction_type> apply_first_order_reaction_(
         const ReactionRule& reaction_rule,
         const LatticeWorld::particle_info_type info);
+    void apply_ab2c(
+        const LatticeWorld::private_coordinate_type coord,
+        const Species& product_species,
+        reaction_type& reaction);
+    void apply_ab2cd(
+        const LatticeWorld::private_coordinate_type from_coord,
+        const LatticeWorld::private_coordinate_type to_coord,
+        const Species& product_species0,
+        const Species& product_species1,
+        reaction_type& reaction);
+    void apply_a2b(
+        const LatticeWorld::private_coordinate_type coord,
+        const Species& product_species,
+        reaction_type& reaction);
+    bool apply_a2bc(
+        const LatticeWorld::private_coordinate_type coord,
+        const Species& product_species0,
+        const Species& product_species1,
+        reaction_type& reaction);
+    void  register_product_species(const Species& product_species);
+
     void step_();
     void register_events(const Species& species);
     // void register_step_event(const Species& species);

@@ -524,6 +524,40 @@ cdef extern from "ecell4/core/Sphere.hpp" namespace "ecell4":
         Cpp_Sphere inside()
         Integer dimension()
 
+## Cpp_PlanarSurface
+# ecell4::PlanarSurface
+cdef extern from "ecell4/core/PlanarSurface.hpp" namespace "ecell4":
+    cdef cppclass Cpp_PlanarSurface "ecell4::PlanarSurface":
+        Cpp_PlanarSurface()
+        Cpp_PlanarSurface(Cpp_Real3&, Cpp_Real3&, Cpp_Real3&)
+        Cpp_PlanarSurface(Cpp_PlanarSurface)
+        Real is_inside(Cpp_Real3&)
+        Integer dimension()
+
+## Cpp_Rod
+# ecell4::Rod
+cdef extern from "ecell4/core/Rod.hpp" namespace "ecell4":
+    cdef cppclass Cpp_Rod "ecell4::Rod":
+        Cpp_Rod()
+        Cpp_Rod(Real, Real)
+        Cpp_Rod(Cpp_Rod&)
+        Real distance(Cpp_Real3&)
+        Real is_inside(Cpp_Real3&)
+        Cpp_RodSurface surface()
+        Integer dimension()
+
+## Cpp_RodSurface
+# ecell4::RodSurface
+cdef extern from "ecell4/core/Rod.hpp" namespace "ecell4":
+    cdef cppclass Cpp_RodSurface "ecell4::RodSurface":
+        Cpp_RodSurface()
+        Cpp_RodSurface(Real, Real)
+        Cpp_RodSurface(Cpp_RodSurface)
+        Real distance(Cpp_Real3&)
+        Real is_inside(Cpp_Real3&)
+        Cpp_Rod inside()
+        Integer dimension()
+
 ## Cpp_AABB
 #  ecell4::AABB
 cdef extern from "ecell4/core/AABB.hpp" namespace "ecell4":
@@ -540,22 +574,38 @@ cdef extern from "ecell4/core/AABB.hpp" namespace "ecell4":
 ## Shape
 #  a python wrapper for Cpp_Shape
 cdef class Shape:
-    cdef Cpp_Shape* thisptr
+    cdef shared_ptr[Cpp_Shape]* thisptr
 
 ## Sphere
 #  a python wrapper for Cpp_Sphere
 cdef class Sphere:
-    cdef Cpp_Sphere* thisptr
+    cdef shared_ptr[Cpp_Sphere]* thisptr
 
 ## SphericalSurface
 #  a python wrapper for Cpp_SphericalSurface
 cdef class SphericalSurface:
-    cdef Cpp_SphericalSurface* thisptr
+    cdef shared_ptr[Cpp_SphericalSurface]* thisptr
+
+## PlanarSurface
+#  a python wrapper for Cpp_PlanarSurface
+cdef class PlanarSurface:
+    cdef shared_ptr[Cpp_PlanarSurface]* thisptr
+
+## Rod
+# a python wrapper for Cpp_Rod
+cdef class Rod:
+    cdef shared_ptr[Cpp_Rod]* thisptr
+
+## RodSurface
+# a python wrapper for Cpp_RodSurface
+cdef class RodSurface:
+    cdef shared_ptr[Cpp_RodSurface]* thisptr
+
 
 ## AABB
 #  a python wrapper for Cpp_AABB
 cdef class AABB:
-    cdef Cpp_AABB* thisptr
+    cdef shared_ptr[Cpp_AABB]* thisptr
 
 cdef Sphere Sphere_from_Cpp_Sphere(Cpp_Sphere* p)
 cdef SphericalSurface SphericalSurface_from_Cpp_SphericalSurface(Cpp_SphericalSurface* p)

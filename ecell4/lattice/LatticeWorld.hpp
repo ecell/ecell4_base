@@ -41,6 +41,8 @@ public:
     typedef LatticeSpace::coordinate_type coordinate_type;
     typedef LatticeSpace::private_coordinate_type private_coordinate_type;
 
+    typedef std::map<std::string, Shape::dimension_kind> dimension_map_type;
+
 public:
 
     LatticeWorld(const Real3& edge_lengths, const Real& voxel_radius,
@@ -252,8 +254,8 @@ public:
     std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel_private(const Species& sp, const private_coordinate_type& coord);
     std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel_structure(const Voxel& v);
     bool add_molecules(const Species& sp, const Integer& num);
-    bool add_molecules(const Species& sp, const Integer& num, const Shape& shape);
-    Integer add_structure(const Species& sp, const Shape& shape);
+    bool add_molecules(const Species& sp, const Integer& num, const boost::shared_ptr<const Shape> shape);
+    Integer add_structure(const Species& sp, const boost::shared_ptr<const Shape> shape);
     Integer add_neighbors(const Species& sp,
             const private_coordinate_type center); // TODO
     void remove_molecules(const Species& sp, const Integer& num);
@@ -399,6 +401,8 @@ public:
         return (*space_).private_coord2global(coord);
     }
 
+    Shape::dimension_kind get_dimension_kind(const std::string& name) const;
+
     /*
      * HDF5 Save
      */
@@ -443,15 +447,16 @@ public:
 
 protected:
 
-    Integer add_structure2(const Species& sp, const Shape& shape);
-    Integer add_structure3(const Species& sp, const Shape& shape);
-    bool is_surface_voxel(const Integer3& g, const Shape& shape) const;
+    Integer add_structure2(const Species& sp, const boost::shared_ptr<const Shape> shape);
+    Integer add_structure3(const Species& sp, const boost::shared_ptr<const Shape> shape);
+    bool is_surface_voxel(const Integer3& g, const boost::shared_ptr<const Shape> shape) const;
 
 protected:
 
     boost::scoped_ptr<LatticeSpace> space_;
     boost::shared_ptr<RandomNumberGenerator> rng_;
     SerialIDGenerator<ParticleID> sidgen_;
+    dimension_map_type dimension_map_;
 
     boost::weak_ptr<Model> model_;
 };
