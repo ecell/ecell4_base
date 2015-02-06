@@ -531,10 +531,13 @@ cdef extern from "ecell4/core/PlanarSurface.hpp" namespace "ecell4":
 cdef extern from "ecell4/core/Rod.hpp" namespace "ecell4":
     cdef cppclass Cpp_Rod "ecell4::Rod":
         Cpp_Rod()
-        Cpp_Rod(Real, Real)
+        #Cpp_Rod(Real, Real)
+        Cpp_Rod(Real, Real, Cpp_Real3&)
         Cpp_Rod(Cpp_Rod&)
         Real distance(Cpp_Real3&)
         Real is_inside(Cpp_Real3&)
+        Cpp_Real3& origin()
+        void shift(Cpp_Real3&)
         Cpp_RodSurface surface()
         Integer dimension()
 
@@ -543,10 +546,13 @@ cdef extern from "ecell4/core/Rod.hpp" namespace "ecell4":
 cdef extern from "ecell4/core/Rod.hpp" namespace "ecell4":
     cdef cppclass Cpp_RodSurface "ecell4::RodSurface":
         Cpp_RodSurface()
-        Cpp_RodSurface(Real, Real)
+        #Cpp_RodSurface(Real, Real)
+        Cpp_RodSurface(Real, Real, Cpp_Real3&)
         Cpp_RodSurface(Cpp_RodSurface)
         Real distance(Cpp_Real3&)
         Real is_inside(Cpp_Real3&)
+        Cpp_Real3& origin()
+        void shift(Cpp_Real3&)
         Cpp_Rod inside()
         Integer dimension()
 
