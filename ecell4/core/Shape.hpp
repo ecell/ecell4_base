@@ -27,6 +27,7 @@ struct Shape
     virtual Real is_inside(const Real3& coord) const = 0;
     virtual Real3 draw_position(
         boost::shared_ptr<RandomNumberGenerator>& rng) const = 0;
+    virtual bool test_AABB(const Real3& l, const Real3& u) const = 0;
 };
 
 } // ecell4

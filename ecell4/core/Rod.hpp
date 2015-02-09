@@ -24,6 +24,7 @@ public:
     Real distance(const Real3& pos) const;
     Real3 draw_position(boost::shared_ptr<RandomNumberGenerator>& rng) const;
     RodSurface surface() const;
+    bool test_AABB(const Real3& l, const Real3& u) const;
 
 protected:
 
@@ -45,6 +46,7 @@ public:
     Real distance(const Real3& pos) const;
     Real3 draw_position(boost::shared_ptr<RandomNumberGenerator>& rng) const;
     Rod inside() const;
+    bool test_AABB(const Real3& l, const Real3& u) const;
 
     dimension_kind dimension() const
     {

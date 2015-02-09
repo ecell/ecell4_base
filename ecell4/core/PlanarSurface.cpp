@@ -36,4 +36,18 @@ Real3 PlanarSurface::draw_position(
     return origin_ + e0_ * a + e1_ * b;
 }
 
+bool PlanarSurface::test_AABB(const Real3& lower, const Real3& upper) const
+{
+    const Real3 c(multiply(lower + upper, 0.5));
+    const Real3 e(upper - c);
+
+    const Real3 m(cross_product(e0_, e1_));
+    const Real3 n(divide(m, length(m)));
+    const Real d(-1.0 * dot_product(origin_, n));
+
+    const Real r(e[0] * abs(n[0]) + e[1] * abs(n[1]) + e[2] * abs(n[2]));
+    const Real s(dot_product(n, c) - d);
+    return (abs(s) <= r);
+}
+
 }

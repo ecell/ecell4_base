@@ -1,4 +1,6 @@
 #include "Sphere.hpp"
+#include "AABB.hpp"
+
 
 namespace ecell4
 {
@@ -70,6 +72,13 @@ Real3 Sphere::draw_position(
     ; // never reach here
 }
 
+bool Sphere::test_AABB(const Real3& l, const Real3& u) const
+{
+    const AABB b(l, u);
+    const Real Lsq(b.distance_sq(center_));
+    return (Lsq <= radius_ * radius_);
+}
+
 SphericalSurface::SphericalSurface()
     : center_(), radius_()
 {
@@ -122,6 +131,21 @@ Real3 SphericalSurface::draw_position(
     }
 
     return rng->direction3d(radius_) + center_;
+}
+
+bool SphericalSurface::test_AABB(const Real3& l, const Real3& u) const
+{
+    const AABB b(l, u);
+    const Real rsq(radius_ * radius_);
+    if (b.distance_sq(center_) > rsq)
+    {
+        return false;
+    }
+    else if (b.farthest_distance_sq(center_) < rsq)
+    {
+        return false;
+    }
+    return true;
 }
 
 } // ecell4

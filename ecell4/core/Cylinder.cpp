@@ -103,6 +103,11 @@ Real3 Cylinder::draw_position(
     throw NotImplemented("not implemented yet.");
 }
 
+bool Cylinder::test_AABB(const Real3& l, const Real3& u) const
+{
+    throw NotImplemented("not implemented yet.");
+}
+
 CylindricalSurface::CylindricalSurface()
     : center_(), radius_(), axis_(), half_height_()
 {
@@ -160,6 +165,11 @@ Cylinder CylindricalSurface::inside() const
 
 Real3 CylindricalSurface::draw_position(
     boost::shared_ptr<RandomNumberGenerator>& rng) const
+{
+    throw NotImplemented("not implemented yet.");
+}
+
+bool CylindricalSurface::test_AABB(const Real3& l, const Real3& u) const
 {
     throw NotImplemented("not implemented yet.");
 }
