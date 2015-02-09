@@ -177,7 +177,7 @@ bool Rod::test_AABB(const Real3& lower, const Real3& upper) const
     const Real3 axis(1.0, 0.0, 0.0); //XXX: DEFAULT
 
     const Real3 d(multiply(axis, length_));
-    const Real3 p0(center - multiply(axis, radius_));
+    const Real3 p0(center - multiply(axis, length_ * 0.5));
     const Real3 p1(p0 + d);
 
     const AABB b(lower, upper);
@@ -208,22 +208,23 @@ bool Rod::test_AABB(const Real3& lower, const Real3& upper) const
         std::pair<bool, Real> retval;
         retval = intersect_segment_capsule(
             p0, p1, b.corner(v), b.corner(v^1), radius_);
-        if (!retval.first)
+        if (retval.first)
         {
             tmin = std::min(retval.second, tmin);
         }
         retval = intersect_segment_capsule(
             p0, p1, b.corner(v), b.corner(v^2), radius_);
-        if (!retval.first)
+        if (retval.first)
         {
             tmin = std::min(retval.second, tmin);
         }
         retval = intersect_segment_capsule(
             p0, p1, b.corner(v), b.corner(v^4), radius_);
-        if (!retval.first)
+        if (retval.first)
         {
             tmin = std::min(retval.second, tmin);
         }
+
         if (tmin == inf)
         {
             return false;

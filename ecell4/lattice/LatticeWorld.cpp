@@ -1,4 +1,5 @@
 #include <stdexcept>
+#include <fstream>
 
 #include "LatticeWorld.hpp"
 
@@ -294,6 +295,23 @@ Integer LatticeWorld::add_structure(const Species& sp, const boost::shared_ptr<c
 
 Integer LatticeWorld::add_structure3(const Species& sp, const boost::shared_ptr<const Shape> shape)
 {
+    // std::ofstream fout("shape.csv");
+    // fout << "# " << sp.serial() << std::endl;
+    // const unsigned int n(50);
+    // const Real3 L(edge_lengths() / static_cast<Real>(n));
+    // for (unsigned int i(0); i < n * n * n; ++i)
+    // {
+    //     const unsigned int x(i % n);
+    //     const unsigned int y((i / n) % n);
+    //     const unsigned int z(i / (n * n));
+    //     if (shape->test_AABB(Real3(x * L[0], y * L[1], z * L[2]),
+    //         Real3((x + 1) * L[0], (y + 1) * L[1], (z + 1) * L[2])))
+    //     {
+    //         fout << x << "," << y << "," << z << std::endl;
+    //     }
+    // }
+    // fout.close();
+
     const LatticeWorld::molecule_info_type info(get_molecule_info(sp));
     Integer count(0);
     for (Integer col(0); col < col_size(); ++col)
@@ -323,6 +341,23 @@ Integer LatticeWorld::add_structure3(const Species& sp, const boost::shared_ptr<
 
 Integer LatticeWorld::add_structure2(const Species& sp, const boost::shared_ptr<const Shape> shape)
 {
+    // std::ofstream fout("shape.csv");
+    // fout << "# " << sp.serial() << std::endl;
+    // const unsigned int n(50);
+    // const Real3 L(edge_lengths() / static_cast<Real>(n));
+    // for (unsigned int i(0); i < n * n * n; ++i)
+    // {
+    //     const unsigned int x(i % n);
+    //     const unsigned int y((i / n) % n);
+    //     const unsigned int z(i / (n * n));
+    //     if (shape->test_AABB(Real3(x * L[0], y * L[1], z * L[2]),
+    //         Real3((x + 1) * L[0], (y + 1) * L[1], (z + 1) * L[2])))
+    //     {
+    //         fout << x << "," << y << "," << z << std::endl;
+    //     }
+    // }
+    // fout.close();
+
     const LatticeWorld::molecule_info_type info(get_molecule_info(sp));
     Integer count(0);
     for (Integer col(0); col < col_size(); ++col)

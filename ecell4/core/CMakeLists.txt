@@ -8,7 +8,7 @@ set(CPP_FILES
     CompartmentSpace.cpp Context.cpp Integer3.cpp Journal.cpp ReactionRule.cpp
     LatticeSpace.cpp Model.cpp NetworkModel.cpp NetfreeModel.cpp ParticleSpace.cpp
     Real3.cpp RandomNumberGenerator.cpp Species.cpp UnitSpecies.cpp
-    Sphere.cpp Cylinder.cpp PlanarSurface.cpp Rod.cpp
+    AABB.cpp Sphere.cpp Cylinder.cpp PlanarSurface.cpp Rod.cpp
     SubvolumeSpace.cpp ParticleSpaceCellListImpl.cpp
     LatticeSpaceCellListImpl.cpp)
 
