@@ -102,9 +102,9 @@ cdef class PlanarSurface:
 
 cdef class Rod:
 
-    def __cinit__(self, Real length, Real radius):
+    def __cinit__(self, Real length, Real radius, Real3 origin = Real3(0, 0, 0)):
         self.thisptr = new shared_ptr[Cpp_Rod](
-            new Cpp_Rod(length, radius))
+            new Cpp_Rod(length, radius, deref(origin.thisptr)))
 
     def __dealloc__(self):
         del self.thisptr;
@@ -117,6 +117,13 @@ cdef class Rod:
 
     def is_inside(self, Real3 pos):
         return self.thisptr.get().is_inside(deref(pos.thisptr))
+
+    def origin(self):
+        cdef Cpp_Real3 origin = self.thisptr.get().origin()
+        return Real3_from_Cpp_Real3(address(origin))
+
+    def shift(self, Real3 vec):
+        self.thisptr.get().shift(deref(vec.thisptr))
 
     def surface(self):
         cdef Cpp_RodSurface surface = self.thisptr.get().surface()
@@ -132,9 +139,9 @@ cdef class Rod:
 
 cdef class RodSurface:
 
-    def __cinit__(self, Real length, Real radius):
+    def __cinit__(self, Real length, Real radius, Real3 origin = Real3(0, 0, 0)):
         self.thisptr = new shared_ptr[Cpp_RodSurface](
-            new Cpp_RodSurface(length, radius))
+            new Cpp_RodSurface(length, radius, deref(origin.thisptr)))
 
     def __dealloc__(self):
         del self.thisptr
@@ -147,6 +154,13 @@ cdef class RodSurface:
 
     def is_inside(self, Real3 pos):
         return self.thisptr.get().is_inside(deref(pos.thisptr))
+
+    def origin(self):
+        cdef Cpp_Real3 origin = self.thisptr.get().origin()
+        return Real3_from_Cpp_Real3(address(origin))
+
+    def shift(self, Real3 vec):
+        self.thisptr.get().shift(deref(vec.thisptr))
 
     def inside(self):
         cdef Cpp_Rod shape = self.thisptr.get().inside()
