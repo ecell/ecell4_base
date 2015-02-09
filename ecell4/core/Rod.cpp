@@ -189,11 +189,10 @@ std::pair<bool, Real> intersect_segment_capsule(
 
 bool Rod::test_AABB(const Real3& lower, const Real3& upper) const
 {
-    const Real3 center(0.0, 0.0, 0.0); //XXX: DEFAULT
     const Real3 axis(1.0, 0.0, 0.0); //XXX: DEFAULT
 
     const Real3 d(multiply(axis, length_));
-    const Real3 p0(center - multiply(axis, length_ * 0.5));
+    const Real3 p0(origin_ - multiply(axis, length_ * 0.5));
     const Real3 p1(p0 + d);
 
     const AABB b(lower, upper);
