@@ -33,6 +33,7 @@ public:
     typedef std::vector<std::pair<MolecularTypeBase*, private_coordinate_type> >
         cell_type;
     typedef std::vector<cell_type> matrix_type;
+    typedef std::map<Species, boost::shared_ptr<const Shape> > structure_container_type;
 
 public:
 
@@ -487,6 +488,11 @@ public:
             != get_molecular_type(v)->location()); //XXX: == ???
     }
 
+    virtual void add_structure(const Species& sp,
+        const boost::shared_ptr<const Shape>& s);
+    virtual const boost::shared_ptr<const Shape>& get_structure(const Species& sp) const;
+    virtual const Shape::dimension_kind get_structure_dimension(const Species& sp) const;
+
     virtual std::pair<private_coordinate_type, bool> move_to_neighbor(
         MolecularTypeBase* const& from_mt, MolecularTypeBase* const& loc,
         particle_info_type& info, const Integer nrand);
@@ -536,6 +542,7 @@ protected:
 
     Integer3 matrix_sizes_, cell_sizes_;
     matrix_type matrix_;
+    structure_container_type structures_;
 };
 
 } // ecell4

@@ -6,6 +6,7 @@
 #include <map>
 #include <stdexcept>
 
+#include "Shape.hpp"
 #include "Space.hpp"
 #include "Integer3.hpp"
 #include "LatticeSpaceHDF5Writer.hpp"
@@ -100,6 +101,11 @@ public:
     virtual bool remove_voxel_private(const private_coordinate_type& coord) = 0;
     virtual bool move(const coordinate_type& from, const coordinate_type& to) = 0;
     virtual const Particle particle_at(const coordinate_type& coord) const = 0;
+
+    virtual void add_structure(const Species& sp,
+        const boost::shared_ptr<const Shape>& s) = 0;
+    virtual const boost::shared_ptr<const Shape>& get_structure(const Species& sp) const = 0;
+    virtual const Shape::dimension_kind get_structure_dimension(const Species& sp) const = 0;
 
     virtual MolecularTypeBase* find_molecular_type(const Species& sp) = 0;
     virtual MolecularTypeBase* get_molecular_type(
@@ -535,6 +541,7 @@ public:
 
     typedef std::map<Species, MolecularType> spmap;
     typedef std::vector<MolecularTypeBase*> voxel_container;
+    typedef std::map<Species, boost::shared_ptr<const Shape> > structure_container_type;
 
 public:
 
@@ -609,6 +616,11 @@ public:
     // bool add_molecule(const Species& sp, private_coordinate_type coord, const ParticleID& pid);
     virtual bool move(const coordinate_type& from, const coordinate_type& to);
 
+    virtual void add_structure(const Species& sp,
+        const boost::shared_ptr<const Shape>& s);
+    virtual const boost::shared_ptr<const Shape>& get_structure(const Species& sp) const;
+    virtual const Shape::dimension_kind get_structure_dimension(const Species& sp) const;
+
     std::pair<private_coordinate_type, bool> move_to_neighbor(
         private_coordinate_type coord, Integer nrand);
     std::pair<private_coordinate_type, bool> move_to_neighbor(
@@ -682,6 +694,7 @@ protected:
 
     spmap spmap_;
     voxel_container voxels_;
+    structure_container_type structures_;
 
     MolecularTypeBase* vacant_;
     MolecularTypeBase* border_;

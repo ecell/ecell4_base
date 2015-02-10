@@ -41,8 +41,6 @@ public:
     typedef LatticeSpace::coordinate_type coordinate_type;
     typedef LatticeSpace::private_coordinate_type private_coordinate_type;
 
-    typedef std::map<std::string, Shape::dimension_kind> dimension_map_type;
-
 public:
 
     LatticeWorld(const Real3& edge_lengths, const Real& voxel_radius,
@@ -456,7 +454,6 @@ protected:
     boost::scoped_ptr<LatticeSpace> space_;
     boost::shared_ptr<RandomNumberGenerator> rng_;
     SerialIDGenerator<ParticleID> sidgen_;
-    dimension_map_type dimension_map_;
 
     boost::weak_ptr<Model> model_;
 };

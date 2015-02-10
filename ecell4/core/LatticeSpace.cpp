@@ -758,4 +758,37 @@ bool LatticeSpaceVectorImpl::update_voxel_private(const ParticleID& pid, const V
     return true;
 }
 
+void LatticeSpaceVectorImpl::add_structure(const Species& sp,
+    const boost::shared_ptr<const Shape>& s)
+{
+    structure_container_type::const_iterator i(structures_.find(sp));
+    if (i != structures_.end())
+    {
+        throw NotSupported("not supported yet.");
+    }
+    structures_.insert(std::make_pair(sp, s));
+}
+
+const boost::shared_ptr<const Shape>& LatticeSpaceVectorImpl::get_structure(
+    const Species& sp) const
+{
+    structure_container_type::const_iterator i(structures_.find(sp));
+    if (i == structures_.end())
+    {
+        throw NotFound("not found.");
+    }
+    return (*i).second;
+}
+
+const Shape::dimension_kind LatticeSpaceVectorImpl::get_structure_dimension(
+    const Species& sp) const
+{
+    structure_container_type::const_iterator i(structures_.find(sp));
+    if (i == structures_.end())
+    {
+        return Shape::THREE; // Default value (ex. for VACANT type)
+    }
+    return (*i).second->dimension();
+}
+
 } // ecell4
