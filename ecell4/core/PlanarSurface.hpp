@@ -17,6 +17,8 @@ struct PlanarSurface
     Real3 draw_position(
         boost::shared_ptr<RandomNumberGenerator>& rng) const;
     bool test_AABB(const Real3& lower, const Real3& upper) const;
+    void bounding_box(
+        const Real3& edge_lengths, Real3& lower, Real3& u) const;
 
     const Real3& origin() const
     {
@@ -46,7 +48,7 @@ struct PlanarSurface
 protected:
 
     Real3 origin_, e0_, e1_, n_;
-
+    Real d_;
 };
 
 }
