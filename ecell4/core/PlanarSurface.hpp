@@ -18,6 +18,26 @@ struct PlanarSurface
         boost::shared_ptr<RandomNumberGenerator>& rng) const;
     bool test_AABB(const Real3& lower, const Real3& upper) const;
 
+    const Real3& origin() const
+    {
+        return origin_;
+    }
+
+    const Real3& e0() const
+    {
+        return e0_;
+    }
+
+    const Real3& e1() const
+    {
+        return e1_;
+    }
+
+    const Real3& normal() const
+    {
+        return n_;
+    }
+
     dimension_kind dimension() const
     {
         return TWO;

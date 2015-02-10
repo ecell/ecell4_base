@@ -59,8 +59,6 @@ public:
         return radius_;
     }
 
-protected:
-
     inline std::pair<Real, Real> to_internal(const Real3& pos) const
     {
         const Real3 v(pos - center_);

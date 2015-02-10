@@ -1,5 +1,5 @@
 #include "Sphere.hpp"
-#include "AABB.hpp"
+#include "collision.hpp"
 
 
 namespace ecell4
@@ -74,9 +74,7 @@ Real3 Sphere::draw_position(
 
 bool Sphere::test_AABB(const Real3& l, const Real3& u) const
 {
-    const AABB b(l, u);
-    const Real Lsq(b.distance_sq(center_));
-    return (Lsq <= radius_ * radius_);
+    return collision::test_sphere_AABB(*this, l, u);
 }
 
 SphericalSurface::SphericalSurface()
@@ -135,17 +133,7 @@ Real3 SphericalSurface::draw_position(
 
 bool SphericalSurface::test_AABB(const Real3& l, const Real3& u) const
 {
-    const AABB b(l, u);
-    const Real rsq(radius_ * radius_);
-    if (b.distance_sq(center_) > rsq)
-    {
-        return false;
-    }
-    else if (b.farthest_distance_sq(center_) < rsq)
-    {
-        return false;
-    }
-    return true;
+    return collision::test_shell_AABB(*this, l, u);
 }
 
 } // ecell4

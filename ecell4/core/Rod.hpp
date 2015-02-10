@@ -29,6 +29,11 @@ public:
     RodSurface surface() const;
     bool test_AABB(const Real3& l, const Real3& u) const;
 
+    const Real half_length() const
+    {
+        return length_ * 0.5;
+    }
+
 protected:
 
     Real length_; // LengthX

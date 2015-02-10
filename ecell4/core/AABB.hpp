@@ -57,7 +57,6 @@ struct AABB
 
     Real3 draw_position(
         boost::shared_ptr<RandomNumberGenerator>& rng) const;
-    Real farthest_distance_sq(const Real3& pos) const;
     bool test_AABB(const Real3& l, const Real3& u) const;
     bool test_segment(const Real3& p0, const Real3& p1) const;
     std::pair<bool, Real> intersect_ray(const Real3& p, const Real3& d) const;

@@ -1,5 +1,6 @@
 #include "Cylinder.hpp"
 #include "exceptions.hpp"
+#include "collision.hpp"
 
 
 namespace ecell4
@@ -47,44 +48,7 @@ const Real3& Cylinder::axis() const
 
 Real Cylinder::distance(const Real3& coord) const
 {
-    /* First compute the (z,r) components of pos in a coordinate system 
-     * defined by the vectors unitR and unit_z, where unitR is
-     * choosen such that unitR and unit_z define a plane in which
-     * pos lies. */
-    const std::pair<Real, Real> r_z(to_internal(coord));
-
-    /* Then compute distance to cylinder. */
-    const Real dz(std::fabs(r_z.second) - half_height_);
-    const Real dr(r_z.first - radius_);
-
-    Real L;
-    if (dz > 0)
-    {
-        // pos is (either) to the right or to the left of the cylinder.
-        if (r_z.first > radius_)
-        {
-            // Compute distance to edge.
-            L = std::sqrt(dz * dz + dr * dr);
-        }
-        else
-        {
-            L = dz;
-        }
-    }
-    else
-    {
-        if (dr > radius_)
-        {
-            // pos is somewhere 'parallel' to the cylinder.
-            L = dr;
-        }
-        else
-        {
-            // Inside cylinder.
-            L = std::max(dr, dz);
-        }
-    }
-    return L;
+    return collision::distance_point_cylinder(coord, *this);
 }
 
 Real Cylinder::is_inside(const Real3& coord) const
