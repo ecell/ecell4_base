@@ -9,6 +9,8 @@ import json
 import base64
 import copy
 
+import random
+
 def init_ipynb():
     """Load all depending JavaScript libraries to IPython notebook.
 
@@ -19,7 +21,7 @@ def init_ipynb():
     html = open(path).read()
     return display(HTML(html))
 
-def __parse_world(world, radius=None, species_list=None):
+def __parse_world(world, radius=None, species_list=None, max_count=None):
     """Private function to parse world. Return infomation about particles (name, coordinates and particle size) for each species.
     """
 
@@ -31,6 +33,10 @@ def __parse_world(world, radius=None, species_list=None):
     for name in species_list:
         particles = [{'pos': p.position(), 'r': p.radius()}
             for pid, p in world.list_particles() if p.species().serial() == name]
+
+        if max_count is not None and len(particles) > max_count:
+            particles = random.sample(particles, max_count)
+
         data = {
             'x': [p['pos'][0] for p in particles],
             'y': [p['pos'][1] for p in particles],
@@ -114,7 +120,7 @@ def plot_movie(worlds, radius=None, width=500, height=500, config={}, grid=False
 
     return color_scale.get_config()
 
-def plot_world(world, radius=None, width=500, height=500, config={}, grid=False, species_list=None, debug=None):
+def plot_world(world, radius=None, width=500, height=500, config={}, grid=False, species_list=None, debug=None, max_count=1000):
     """Generate a plot from received instance of World and show it on IPython notebook.
     This method returns the instance of dict that indicates color setting for each speices.
     You can use the dict as the parameter of plot_world, in order to use the same colors in another plot.
@@ -148,7 +154,7 @@ def plot_world(world, radius=None, width=500, height=500, config={}, grid=False,
     """
     from IPython.core.display import display, HTML
 
-    species = __parse_world(world, radius, species_list)
+    species = __parse_world(world, radius, species_list, max_count)
     color_scale = ColorScale(config=config)
     plots = []
 
