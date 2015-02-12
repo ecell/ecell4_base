@@ -54,8 +54,8 @@ void PlanarSurface::bounding_box(
     }
     else
     {
-        lower[0] = origin_[0];
-        upper[0] = origin_[0];
+        lower[0] = 0.0;
+        upper[0] = edge_lengths[0];
     }
     if (n_[1] > epsilon)
     {
@@ -65,8 +65,8 @@ void PlanarSurface::bounding_box(
     }
     else
     {
-        lower[1] = origin_[1];
-        upper[1] = origin_[1];
+        lower[1] = 0.0;
+        upper[1] = edge_lengths[1];
     }
     if (n_[2] > epsilon)
     {
@@ -76,8 +76,8 @@ void PlanarSurface::bounding_box(
     }
     else
     {
-        lower[2] = origin_[2];
-        upper[2] = origin_[2];
+        lower[2] = 0.0;
+        upper[2] = edge_lengths[2];
     }
 }
 
