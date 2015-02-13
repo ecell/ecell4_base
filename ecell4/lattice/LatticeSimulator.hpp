@@ -96,9 +96,7 @@ protected:
         virtual void fire()
         {
             const Species reactant(*(rule_.reactants().begin()));
-            MolecularTypeBase* mt(sim_->world_->find_molecular_type(reactant));
-            const Integer index(sim_->world_->rng()->uniform_int(0, mt->size() - 1));
-            sim_->apply_first_order_reaction_(rule_, mt->at(index));
+            sim_->apply_first_order_reaction_(rule_, sim_->world_->choice(reactant));
             time_ += draw_dt();
         }
 
@@ -173,11 +171,11 @@ protected:
         LatticeWorld::coordinate_type to_coord);
     std::pair<bool, reaction_type> apply_second_order_reaction_(
         const ReactionRule& reaction_rule,
-        const LatticeWorld::particle_info_type from_info,
-        const LatticeWorld::particle_info_type to_info);
+        const reaction_type::particle_type& p0,
+        const reaction_type::particle_type& p1);
     std::pair<bool, reaction_type> apply_first_order_reaction_(
         const ReactionRule& reaction_rule,
-        const LatticeWorld::particle_info_type info);
+        const reaction_type::particle_type& p);
     void apply_ab2c(
         const LatticeWorld::private_coordinate_type coord,
         const Species& product_species,

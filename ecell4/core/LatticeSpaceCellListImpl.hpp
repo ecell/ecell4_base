@@ -347,9 +347,10 @@ public:
             return false;
         }
 
-        MolecularTypeBase::iterator i(src_mt->find(coord));
-        new_mt->add_voxel_without_checking(*i);
-        src_mt->remove_voxel(i);
+        // MolecularTypeBase::iterator i(src_mt->find(coord));
+        // new_mt->add_voxel_without_checking(*i);
+        // src_mt->remove_voxel(i);
+        new_mt->add_voxel_without_checking(src_mt->pop(coord));
         update_matrix(coord, new_mt);
         return true;
     }
@@ -381,7 +382,7 @@ public:
         {
             MolecularTypeBase* mt(target.first);
             const private_coordinate_type coord(target.second);
-            if (!mt->removeVoxel(coord))
+            if (!mt->remove_voxel_if_exists(coord))
             {
                 return false;
             }
@@ -402,7 +403,7 @@ public:
             return false;
         }
 
-        if (mt->removeVoxel(coord))
+        if (mt->remove_voxel_if_exists(coord))
         {
             // ???
             update_matrix(coord, vacant_);
@@ -443,9 +444,11 @@ public:
             return false;
         }
 
-        MolecularTypeBase::container_type::iterator i(from_mt->find(private_from));
-        (*i).first = private_to;
-        to_mt->replace_voxel(private_to, particle_info_type(private_from, ParticleID()));
+        // MolecularTypeBase::container_type::iterator i(from_mt->find(private_from));
+        // (*i).first = private_to;
+        // to_mt->replace_voxel(private_to, particle_info_type(private_from, ParticleID()));
+        from_mt->replace_voxel(private_from, private_to);
+        to_mt->replace_voxel(private_to, private_from);
         if (!to_mt->is_vacant())
         {
             update_matrix(private_from, to_mt);

@@ -401,6 +401,45 @@ public:
 
     Shape::dimension_kind get_dimension_kind(const std::string& name) const;
 
+    /**
+     * temp
+     */
+
+    const molecule_info_type get_molecule_info(const MolecularTypeBase* mt) const
+    {
+        const std::string loc(
+            mt->location()->is_vacant() ? "" : mt->location()->species().serial());
+        molecule_info_type info = {mt->radius(), mt->D(), loc};
+        return info;
+    }
+
+    std::pair<ParticleID, Voxel> make_pid_voxel_pair(
+        const MolecularTypeBase* mt, const private_coordinate_type& private_coord) const
+    {
+        const particle_info_type info(
+            std::make_pair(private_coord, mt->find_particle_id(private_coord)));
+        return make_pid_voxel_pair(mt, info);
+    }
+
+    std::pair<ParticleID, Voxel> make_pid_voxel_pair(
+        const MolecularTypeBase* mt, const particle_info_type& info) const
+    {
+        const std::string loc(
+            mt->location()->is_vacant() ? "" : mt->location()->species().serial());
+        const coordinate_type coord(private2coord(info.first));
+
+        return std::make_pair<ParticleID, Voxel>(
+            info.second, Voxel(mt->species(), coord, mt->radius(), mt->D(), loc));
+    }
+
+    std::pair<ParticleID, Voxel> choice(const Species& sp)
+    {
+        MolecularTypeBase* mt(find_molecular_type(sp));
+        const Integer i(rng_->uniform_int(0, mt->size() - 1));
+        const particle_info_type& info(mt->at(i));
+        return make_pid_voxel_pair(mt, info);
+    }
+
     /*
      * HDF5 Save
      */

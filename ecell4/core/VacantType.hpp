@@ -34,8 +34,15 @@ public:
     }
 
     virtual void replace_voxel(
-        private_coordinate_type from_coord,
+        const private_coordinate_type& from_coord,
         const particle_info& to_info)
+    {
+        ; // do nothing
+    }
+
+    virtual void replace_voxel(
+        const private_coordinate_type& from_coord,
+        const private_coordinate_type& to_coord)
     {
         ; // do nothing
     }
@@ -45,26 +52,26 @@ public:
         ; // do nothing
     }
 
+    bool remove_voxel_if_exists(const private_coordinate_type& coord)
+    {
+        return true; // just return true
+    }
+
     virtual void swap(
         const container_type::iterator& a, const container_type::iterator& b)
     {
         ; // do nothing
     }
 
-    void addVoxel(particle_info info)
-    {
-        ; // do nothing
-    }
-
-    bool removeVoxel(private_coordinate_type coord)
-    {
-        return true; // just return true
-    }
-
     bool is_vacant() const
     {
         return true;
     }
+
+    // void addVoxel(particle_info info)
+    // {
+    //     ; // do nothing
+    // }
 
 private:
 

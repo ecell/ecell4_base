@@ -528,9 +528,9 @@ std::pair<LatticeWorld::private_coordinate_type, bool>
 LatticeWorld::check_neighbor_private(
         const private_coordinate_type coord)
 {
-    const Integer rnd(rng()->uniform_int(0,11));
+    const Integer rnd(rng()->uniform_int(0, 11));
     const private_coordinate_type neighbor((*space_).get_neighbor(coord, rnd));
-    bool flg = get_molecular_type_private(neighbor)->is_vacant();
+    bool flg = get_molecular_type_private(neighbor)->is_vacant(); //XXX: loc
     return std::make_pair(neighbor, flg);
 }
 

@@ -41,18 +41,24 @@ bool LatticeSpaceCellListImpl::update_voxel_private(const ParticleID& pid, const
             throw NotSupported("The coordinate points a boundary.");
         }
 
-        MolecularTypeBase::container_type::const_iterator
-            dest_itr(dest_mt->find(to_coord));
-        if (dest_itr == dest_mt->end())
-        {
-            throw IllegalState(
-                "MolecularTypaBase [" + dest_mt->species().serial()
-                + "] doesn't contain a proper coordinate.");
-        }
-        else if (!(pid != ParticleID() && (*dest_itr).second == pid))
+        const ParticleID to_pid(dest_mt->find_particle_id(to_coord));
+        if (pid == ParticleID() || to_pid != pid)
         {
             return false; // collision
         }
+
+        // MolecularTypeBase::container_type::const_iterator
+        //     dest_itr(dest_mt->find(to_coord));
+        // if (dest_itr == dest_mt->end())
+        // {
+        //     throw IllegalState(
+        //         "MolecularTypaBase [" + dest_mt->species().serial()
+        //         + "] doesn't contain a proper coordinate.");
+        // }
+        // else if (!(pid != ParticleID() && (*dest_itr).second == pid))
+        // {
+        //     return false; // collision
+        // }
     }
 
     if (pid != ParticleID())
@@ -63,7 +69,7 @@ bool LatticeSpaceCellListImpl::update_voxel_private(const ParticleID& pid, const
         if (from_coord != -1)
         {
             MolecularTypeBase* src_mt(target.first);
-            src_mt->removeVoxel(from_coord);
+            src_mt->remove_voxel_if_exists(from_coord);
             dest_mt->replace_voxel(to_coord, particle_info_type(from_coord, ParticleID()));
             new_mt->add_voxel_without_checking(particle_info_type(to_coord, pid));
 
@@ -81,7 +87,7 @@ bool LatticeSpaceCellListImpl::update_voxel_private(const ParticleID& pid, const
     }
 
     new_mt->add_voxel_without_checking(particle_info_type(to_coord, pid));
-    dest_mt->removeVoxel(to_coord);
+    dest_mt->remove_voxel_if_exists(to_coord);
     update_matrix(to_coord, new_mt);
     return true;
 }
