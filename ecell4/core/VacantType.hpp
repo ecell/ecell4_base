@@ -15,11 +15,24 @@ public:
     typedef base_type::particle_info particle_info;
     typedef base_type::private_coordinate_type private_coordinate_type;
     typedef base_type::container_type container_type;
+    typedef base_type::iterator iterator;
+    typedef base_type::const_iterator const_iterator;
 
 public:
 
     ~VacantType()
     {
+        ; // do nothing
+    }
+
+    bool is_vacant() const
+    {
+        return true;
+    }
+
+    bool with_voxels() const
+    {
+        return false;
     }
 
     static VacantType& getInstance()
@@ -47,36 +60,15 @@ public:
         ; // do nothing
     }
 
-    virtual void remove_voxel(const container_type::iterator& position)
-    {
-        ; // do nothing
-    }
-
     bool remove_voxel_if_exists(const private_coordinate_type& coord)
     {
         return true; // just return true
     }
 
-    virtual void swap(
-        const container_type::iterator& a, const container_type::iterator& b)
-    {
-        ; // do nothing
-    }
-
-    bool is_vacant() const
-    {
-        return true;
-    }
-
-    // void addVoxel(particle_info info)
-    // {
-    //     ; // do nothing
-    // }
-
 private:
 
     VacantType()
-        : MolecularTypeBase(Species("VACANT", "0", "0"), NULL, 0, 0)
+        : base_type(Species("VACANT", "0", "0"), NULL, 0, 0)
     {
         ;
     }

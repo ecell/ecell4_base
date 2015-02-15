@@ -16,9 +16,8 @@ class MolecularTypeBase
 {
 public:
 
-    typedef std::pair<Integer, ParticleID> particle_info;
-    typedef particle_info::first_type private_coordinate_type;
-    // typedef LatticeSpace::particle_info particle_info;
+    typedef Integer private_coordinate_type;
+    typedef std::pair<private_coordinate_type, ParticleID> particle_info;
 
     typedef std::vector<particle_info> container_type;
     typedef container_type::const_iterator const_iterator;
@@ -40,6 +39,11 @@ public:
     }
 
     virtual bool is_vacant() const = 0;
+
+    virtual bool with_voxels() const
+    {
+        return true;
+    }
 
     const Species& species() const
     {
@@ -110,13 +114,6 @@ public:
         return info;
     }
 
-    virtual void remove_voxel(const container_type::iterator& position)
-    {
-        // voxels_.erase(position);
-        (*position) = voxels_.back();
-        voxels_.pop_back();
-    }
-
     virtual bool remove_voxel_if_exists(const private_coordinate_type& coord)
     {
         container_type::iterator itr(find(coord));
@@ -128,7 +125,14 @@ public:
         return false;
     }
 
-    virtual void swap(
+    void remove_voxel(const container_type::iterator& position)
+    {
+        // voxels_.erase(position);
+        (*position) = voxels_.back();
+        voxels_.pop_back();
+    }
+
+    void swap(
         const container_type::iterator& a, const container_type::iterator& b)
     {
         if (a == b)
@@ -226,16 +230,6 @@ public:
         }
         return itr;
     }
-
-    // virtual void addVoxel(particle_info info)
-    // {
-    //     container_type::iterator itr(find(info.first));
-    //     if (itr != voxels_.end())
-    //     {
-    //         voxels_.erase(itr);
-    //     }
-    //     voxels_.push_back(info);
-    // }
 
 protected:
 

@@ -1,6 +1,7 @@
 #include "Context.hpp"
 #include "MolecularType.hpp"
 #include "VacantType.hpp"
+#include "StructureType.hpp"
 #include "LatticeSpace.hpp"
 #include <cmath>
 #include <sstream>
@@ -86,8 +87,19 @@ Integer LatticeSpaceVectorImpl::num_molecules(const Species& sp) const
     for (spmap::const_iterator itr(spmap_.begin());
             itr != spmap_.end(); ++itr)
     {
-        const MolecularTypeBase* mt(&((*itr).second));
-        count += mt->size() * sexp.count((*itr).first);
+        const boost::shared_ptr<MolecularType>& mt((*itr).second);
+
+        const Integer cnt(sexp.count((*itr).first));
+        if (cnt > 0)
+        {
+            if (!mt->with_voxels())
+            {
+                throw NotSupported(
+                    "num_molecules for MolecularType with no voxel"
+                    " is not supporeted now");
+            }
+            count += mt->size() * cnt;
+        }
     }
     return count;
 }
@@ -97,13 +109,14 @@ bool LatticeSpaceVectorImpl::has_voxel(const ParticleID& pid) const
     for (spmap::const_iterator itr(spmap_.begin());
             itr != spmap_.end(); ++itr)
     {
-        const MolecularTypeBase& mt((*itr).second);
-        if (mt.is_vacant())
+        const boost::shared_ptr<MolecularType>& mt((*itr).second);
+
+        if (mt->is_vacant())
         {
             return false;
         }
-        for (MolecularTypeBase::container_type::const_iterator vitr(mt.begin());
-                vitr != mt.end(); ++vitr)
+        for (MolecularType::const_iterator vitr(mt->begin());
+            vitr != mt->end(); ++vitr)
         {
             if ((*vitr).second == pid)
             {
@@ -111,7 +124,6 @@ bool LatticeSpaceVectorImpl::has_voxel(const ParticleID& pid) const
             }
         }
     }
-
     return false;
 }
 
@@ -120,14 +132,16 @@ LatticeSpaceVectorImpl::get_voxel(const ParticleID& pid) const
 {
     for (spmap::const_iterator i(spmap_.begin()); i != spmap_.end(); ++i)
     {
-        const MolecularType& mt((*i).second);
-        MolecularType::container_type::const_iterator j(mt.find(pid));
-        if (j != mt.end())
+        const boost::shared_ptr<MolecularType>& mt((*i).second);
+
+        MolecularType::container_type::const_iterator j(mt->find(pid));
+        if (j != mt->end())
         {
             const coordinate_type coord(private2coord((*j).first));
-            const std::string loc((mt.location()->is_vacant())
-                ? "" : mt.location()->species().serial());
-            return std::make_pair(pid, Voxel((*i).first, coord, mt.radius(), mt.D(), loc));
+            const std::string loc((mt->location()->is_vacant())
+                ? "" : mt->location()->species().serial());
+            return std::make_pair(pid,
+                Voxel((*i).first, coord, mt->radius(), mt->D(), loc));
         }
     }
 
@@ -179,10 +193,9 @@ std::vector<LatticeSpaceVectorImpl::coordinate_type>
         return retval;
     }
 
-    const MolecularTypeBase* mt(&((*itr).second));
+    const boost::shared_ptr<MolecularType>& mt((*itr).second);
 
-    for (MolecularTypeBase::container_type::const_iterator itr(mt->begin());
-            itr != mt->end(); ++itr)
+    for (MolecularType::const_iterator itr(mt->begin()); itr != mt->end(); ++itr)
     {
         retval.push_back(private2coord((*itr).first));
     }
@@ -200,10 +213,10 @@ std::vector<LatticeSpaceVectorImpl::coordinate_type> LatticeSpaceVectorImpl::lis
             continue;
         }
 
-        const MolecularTypeBase* mt(&((*itr).second));
+        const boost::shared_ptr<MolecularType>& mt((*itr).second);
 
-        for (MolecularTypeBase::container_type::const_iterator itr(mt->begin());
-                itr != mt->end(); ++itr)
+        for (MolecularType::const_iterator itr(mt->begin());
+            itr != mt->end(); ++itr)
         {
             retval.push_back(private2coord((*itr).first));
         }
@@ -218,16 +231,17 @@ LatticeSpaceVectorImpl::list_voxels() const
 
     for (spmap::const_iterator itr(spmap_.begin()); itr != spmap_.end(); ++itr)
     {
-        const MolecularTypeBase* mt(&((*itr).second));
+        const boost::shared_ptr<MolecularType>& mt((*itr).second);
+
         const std::string loc((mt->location()->is_vacant())
             ? "" : mt->location()->species().serial());
         const Species& sp(mt->species());
-        for (MolecularTypeBase::container_type::const_iterator itr(mt->begin());
-            itr != mt->end(); ++itr)
+        for (MolecularType::const_iterator i(mt->begin());
+            i != mt->end(); ++i)
         {
             retval.push_back(std::make_pair(
-                (*itr).second,
-                Voxel(sp, private2coord((*itr).first), mt->radius(), mt->D(), loc)));
+                (*i).second,
+                Voxel(sp, private2coord((*i).first), mt->radius(), mt->D(), loc)));
         }
     }
     return retval;
@@ -243,15 +257,15 @@ LatticeSpaceVectorImpl::list_voxels_exact(const Species& sp) const
         return retval;
     }
 
-    const MolecularTypeBase* mt(&((*itr).second));
+    const boost::shared_ptr<MolecularType>& mt((*itr).second);
     const std::string loc((mt->location()->is_vacant())
         ? "" : mt->location()->species().serial());
-    for (MolecularTypeBase::container_type::const_iterator itr(mt->begin());
-        itr != mt->end(); ++itr)
+    for (MolecularType::const_iterator i(mt->begin());
+        i != mt->end(); ++i)
     {
         retval.push_back(std::make_pair(
-            (*itr).second,
-            Voxel(sp, private2coord((*itr).first), mt->radius(), mt->D(), loc)));
+            (*i).second,
+            Voxel(sp, private2coord((*i).first), mt->radius(), mt->D(), loc)));
     }
     return retval;
 }
@@ -269,15 +283,15 @@ LatticeSpaceVectorImpl::list_voxels(const Species& sp) const
             continue;
         }
 
-        const MolecularTypeBase* mt(&((*itr).second));
+        const boost::shared_ptr<MolecularType>& mt((*itr).second);
         const std::string loc((mt->location()->is_vacant())
             ? "" : mt->location()->species().serial());
-        for (MolecularTypeBase::container_type::const_iterator itr(mt->begin());
-            itr != mt->end(); ++itr)
+        for (MolecularType::const_iterator i(mt->begin());
+            i != mt->end(); ++i)
         {
             retval.push_back(std::make_pair(
-                (*itr).second,
-                Voxel(sp, private2coord((*itr).first), mt->radius(), mt->D(), loc)));
+                (*i).second,
+                Voxel(sp, private2coord((*i).first), mt->radius(), mt->D(), loc)));
         }
     }
     return retval;
@@ -313,7 +327,8 @@ LatticeSpaceVectorImpl::__get_molecular_type(const Voxel& v)
             // XXX: LatticeSpaceVectorImpl::load will raise a problem about this issue.
             // XXX: In this implementation, the MolecularTypeBase for a structure is
             // XXX: created with default arguments.
-            MolecularType locmt(locsp, vacant_, voxel_radius_, 0);
+            boost::shared_ptr<MolecularType>
+                locmt(new MolecularType(locsp, vacant_, voxel_radius_, 0));
             std::pair<LatticeSpaceVectorImpl::spmap::iterator, bool> locval(
                 spmap_.insert(LatticeSpaceVectorImpl::spmap::value_type(locsp, locmt)));
             if (!locval.second)
@@ -322,11 +337,12 @@ LatticeSpaceVectorImpl::__get_molecular_type(const Voxel& v)
                     "never reach here. find_molecular_type seems wrong.");
             }
 
-            location = &((*locval.first).second);
+            location = (*locval.first).second.get();
         }
     }
 
-    MolecularType mt(v.species(), location, v.radius(), v.D());
+    boost::shared_ptr<MolecularType>
+        mt(new MolecularType(v.species(), location, v.radius(), v.D()));
     std::pair<LatticeSpaceVectorImpl::spmap::iterator, bool> retval(
         spmap_.insert(LatticeSpaceVectorImpl::spmap::value_type(v.species(), mt)));
     if (!retval.second)
@@ -343,25 +359,12 @@ MolecularTypeBase* LatticeSpaceVectorImpl::find_molecular_type(const Species& sp
     {
         throw NotFound("MolecularType not found.");
     }
-    return &((*itr).second);
+    return (*itr).second.get(); //XXX: Raw pointer was thrown.
 }
-
-// MolecularTypeBase* LatticeSpaceVectorImpl::find_molecular_type(const std::string name)
-// {
-//     for (spmap::iterator itr(spmap_.begin());
-//             itr != spmap_.end(); ++itr)
-//     {
-//         if ((*itr).first.serial() == name) {
-//             return &((*itr).second);
-//         }
-//     }
-// 
-//     throw NotFound("MolecularType not found.");
-// }
 
 MolecularTypeBase* LatticeSpaceVectorImpl::get_molecular_type(const Voxel& v)
 {
-    return &((*(__get_molecular_type(v).first)).second);
+    return (*(__get_molecular_type(v).first)).second.get(); //XXX: Raw pointer was thrown.
 }
 
 bool LatticeSpaceVectorImpl::on_structure(const Voxel& v)
@@ -374,18 +377,15 @@ bool LatticeSpaceVectorImpl::on_structure(const Voxel& v)
  * Protected functions
  */
 
-LatticeSpaceVectorImpl::private_coordinate_type LatticeSpaceVectorImpl::get_coord(const ParticleID& pid) const
+LatticeSpaceVectorImpl::private_coordinate_type LatticeSpaceVectorImpl::get_coord(
+    const ParticleID& pid) const
 {
     for (spmap::const_iterator itr(spmap_.begin());
             itr != spmap_.end(); ++itr)
     {
-        const MolecularTypeBase& mt((*itr).second);
-        if (mt.is_vacant())
-        {
-            continue;
-        }
-        for (MolecularTypeBase::container_type::const_iterator vitr(mt.begin());
-                vitr != mt.end(); ++vitr)
+        const boost::shared_ptr<MolecularType>& mt((*itr).second);
+        for (MolecularType::const_iterator vitr(mt->begin());
+            vitr != mt->end(); ++vitr)
         {
             if ((*vitr).second == pid)
             {
@@ -393,10 +393,11 @@ LatticeSpaceVectorImpl::private_coordinate_type LatticeSpaceVectorImpl::get_coor
             }
         }
     }
-    return -1;
+    return -1; //XXX: a bit dirty way
 }
 
-MolecularTypeBase* LatticeSpaceVectorImpl::get_molecular_type(const private_coordinate_type& coord)
+MolecularTypeBase* LatticeSpaceVectorImpl::get_molecular_type(
+    const private_coordinate_type& coord)
 {
     // return voxels_.at(coord2private(coord));
     return voxels_.at(coord);
@@ -416,20 +417,19 @@ bool LatticeSpaceVectorImpl::remove_voxel(const ParticleID& pid)
 {
     for (spmap::iterator i(spmap_.begin()); i != spmap_.end(); ++i)
     {
-        MolecularType& mt((*i).second);
-        MolecularType::container_type::const_iterator j(mt.find(pid));
-        if (j != mt.end())
+        const boost::shared_ptr<MolecularType>& mt((*i).second);
+        MolecularType::const_iterator j(mt->find(pid));
+        if (j != mt->end())
         {
             const private_coordinate_type coord((*j).first);
-            if (!mt.remove_voxel_if_exists(coord))
+            if (!mt->remove_voxel_if_exists(coord))
             {
                 return false;
             }
 
             voxel_container::iterator itr(voxels_.begin() + coord);
-            (*itr) = mt.location();
-            // mt.location()->addVoxel(particle_info_type(coord, ParticleID()));
-            mt.location()->add_voxel_without_checking(
+            (*itr) = mt->location();
+            mt->location()->add_voxel_without_checking(
                 particle_info_type(coord, ParticleID()));
             return true;
         }
@@ -460,22 +460,25 @@ bool LatticeSpaceVectorImpl::move(const coordinate_type& from, const coordinate_
     return move_(private_from, private_to).second;
 }
 
-std::pair<LatticeSpaceVectorImpl::coordinate_type, bool> LatticeSpaceVectorImpl::move_to_neighbor(
+std::pair<LatticeSpaceVectorImpl::coordinate_type, bool>
+    LatticeSpaceVectorImpl::move_to_neighbor(
         private_coordinate_type coord, Integer nrand)
 {
     const private_coordinate_type neighbor(get_neighbor(coord, nrand));
     return move_(coord, neighbor);
 }
 
-std::pair<LatticeSpaceVectorImpl::private_coordinate_type, bool> LatticeSpaceVectorImpl::move_to_neighbor(
-    particle_info_type& info, Integer nrand)
+std::pair<LatticeSpaceVectorImpl::private_coordinate_type, bool>
+    LatticeSpaceVectorImpl::move_to_neighbor(
+        particle_info_type& info, Integer nrand)
 {
     const coordinate_type neighbor(get_neighbor(info.first, nrand));
     return move_(info, neighbor);
 }
 
-std::pair<LatticeSpaceVectorImpl::private_coordinate_type, bool> LatticeSpaceVectorImpl::move_(
-    private_coordinate_type private_from, private_coordinate_type private_to)
+std::pair<LatticeSpaceVectorImpl::private_coordinate_type, bool>
+    LatticeSpaceVectorImpl::move_(
+        private_coordinate_type private_from, private_coordinate_type private_to)
 {
     if (private_from == private_to)
     {
@@ -508,22 +511,21 @@ std::pair<LatticeSpaceVectorImpl::private_coordinate_type, bool> LatticeSpaceVec
         return std::pair<private_coordinate_type, bool>(private_to, false);
     }
 
-    // MolecularTypeBase::container_type::iterator itr(from_mt->find(private_from));
-    // (*itr).first = private_to;
     from_mt->replace_voxel(private_from, private_to);
     voxel_container::iterator from_itr(voxels_.begin() + private_from);
     (*from_itr) = to_mt;
-    // to_mt->remove_voxel_if_exists(private_to);
-    // to_mt->addVoxel(particle_info_type(private_from, ParticleID()));
-    to_mt->replace_voxel(private_to, particle_info_type(private_from, ParticleID()));
+
+    // to_mt->replace_voxel(private_to, particle_info_type(private_from, ParticleID()));
+    to_mt->replace_voxel(private_to, private_from);
     voxel_container::iterator to_itr(voxels_.begin() + private_to);
     (*to_itr) = from_mt;
 
     return std::pair<private_coordinate_type, bool>(private_to, true);
 }
 
-std::pair<LatticeSpaceVectorImpl::private_coordinate_type, bool> LatticeSpaceVectorImpl::move_(
-    particle_info_type& info, private_coordinate_type private_to)
+std::pair<LatticeSpaceVectorImpl::private_coordinate_type, bool>
+    LatticeSpaceVectorImpl::move_(
+        particle_info_type& info, private_coordinate_type private_to)
 {
     const private_coordinate_type private_from(info.first);
     if (private_from == private_to)
@@ -554,23 +556,22 @@ std::pair<LatticeSpaceVectorImpl::private_coordinate_type, bool> LatticeSpaceVec
         return std::pair<private_coordinate_type, bool>(private_to, false);
     }
 
+    info.first = private_to;
     voxel_container::iterator from_itr(voxels_.begin() + private_from);
     (*from_itr) = to_mt;
-    // to_mt->remove_voxel_if_exists(private_to);
-    // to_mt->addVoxel(particle_info_type(private_from, ParticleID()));
-    to_mt->replace_voxel(private_to, particle_info_type(private_from, ParticleID()));
 
-    info.first = private_to;
-
+    // to_mt->replace_voxel(private_to, particle_info_type(private_from, ParticleID()));
+    to_mt->replace_voxel(private_to, private_from);
     voxel_container::iterator to_itr(voxels_.begin() + private_to);
     (*to_itr) = from_mt;
 
     return std::pair<private_coordinate_type, bool>(private_to, true);
 }
 
-std::pair<LatticeSpaceVectorImpl::private_coordinate_type, bool> LatticeSpaceVectorImpl::move_to_neighbor(
-    MolecularTypeBase* const& from_mt, MolecularTypeBase* const& loc,
-    particle_info_type& info, const Integer nrand)
+std::pair<LatticeSpaceVectorImpl::private_coordinate_type, bool>
+    LatticeSpaceVectorImpl::move_to_neighbor(
+        MolecularTypeBase* const& from_mt, MolecularTypeBase* const& loc,
+        particle_info_type& info, const Integer nrand)
 {
     const private_coordinate_type private_from(info.first);
     private_coordinate_type private_to(get_neighbor(private_from, nrand));
@@ -581,7 +582,7 @@ std::pair<LatticeSpaceVectorImpl::private_coordinate_type, bool> LatticeSpaceVec
 
     MolecularTypeBase* to_mt(voxels_[private_to]);
 
-    if (to_mt != loc) // (to_mt != from_mt->location())
+    if (to_mt != loc)
     {
         if (to_mt == border_)
         {
@@ -606,25 +607,23 @@ std::pair<LatticeSpaceVectorImpl::private_coordinate_type, bool> LatticeSpaceVec
     voxels_[private_to] = from_mt;
     info.first = private_to; //XXX: updating data
 
-    if (to_mt != vacant_) // (!to_mt->is_vacant())
-    {
-        to_mt->replace_voxel(
-            private_to, particle_info_type(private_from, ParticleID()));
-    }
+    to_mt->replace_voxel(private_to, private_from);
+    // if (to_mt != vacant_) // (!to_mt->is_vacant())
+    // {
+    //     to_mt->replace_voxel(
+    //         private_to, particle_info_type(private_from, ParticleID()));
+    // }
     return std::make_pair(private_to, true);
 }
 
-const Particle LatticeSpaceVectorImpl::particle_at_private(private_coordinate_type coord) const
+const Particle LatticeSpaceVectorImpl::particle_at_private(
+    private_coordinate_type coord) const
 {
-    const MolecularTypeBase* ptr_mt(voxels_.at(coord));
-    // const Species& sp = ptr_mt->species();
-    // const Real3& pos = coordinate2position(coord);
-    // const Real& radius = 0;
-    // const Real& D = 0;
-    // Particle particle(sp, pos, radius, D);
-    // return particle;
-    return Particle(ptr_mt->species(), coordinate2position(
-                private2coord(coord)), ptr_mt->radius(), ptr_mt->D());
+    const MolecularTypeBase* mt(voxels_.at(coord));
+    return Particle(
+        mt->species(),
+        coordinate2position(private2coord(coord)),
+        mt->radius(), mt->D());
 }
 
 Integer LatticeSpaceVectorImpl::num_voxels_exact(const Species& sp) const
@@ -634,7 +633,13 @@ Integer LatticeSpaceVectorImpl::num_voxels_exact(const Species& sp) const
     {
         return 0;
     }
-    const MolecularTypeBase* mt(&((*itr).second));
+    const boost::shared_ptr<MolecularType>& mt((*itr).second);
+    if (!mt->with_voxels())
+    {
+        throw NotSupported(
+            "num_voxels_exact for MolecularType with no voxel"
+            " is not supporeted now");
+    }
     return mt->size();
 }
 
@@ -647,7 +652,13 @@ Integer LatticeSpaceVectorImpl::num_voxels(const Species& sp) const
     {
         if (sexp.match((*itr).first))
         {
-            const MolecularTypeBase* mt(&((*itr).second));
+            const boost::shared_ptr<MolecularType>& mt((*itr).second);
+            if (!mt->with_voxels())
+            {
+                throw NotSupported(
+                    "num_voxels_exact for MolecularType with no voxel"
+                    " is not supporeted now");
+            }
             count += mt->size();
         }
     }
@@ -659,116 +670,183 @@ Integer LatticeSpaceVectorImpl::num_voxels() const
     Integer retval(0);
     for (spmap::const_iterator itr(spmap_.begin()); itr != spmap_.end(); ++itr)
     {
-        retval += (*itr).second.size();
+        retval += (*itr).second->size();
+        // retval += (*itr).second.size();
     }
     return retval;
 }
 
-bool LatticeSpaceVectorImpl::update_voxel_private(const Voxel& v)
+/**
+ * Change the Species at v.coordinate() to v.species.
+ * The ParticleID must be kept after this update.
+ */
+void LatticeSpaceVectorImpl::update_voxel_private(const Voxel& v)
 {
-    const LatticeSpaceVectorImpl::private_coordinate_type coord(v.coordinate());
+    const private_coordinate_type coord(v.coordinate());
     MolecularTypeBase* src_mt(voxels_.at(coord));
-    if (src_mt->is_vacant())
-    {
-        return false;
-    }
-
     MolecularTypeBase* new_mt(get_molecular_type(v)); //XXX: need MoleculeInfo
-    if (new_mt->is_vacant())
+
+    if (src_mt->with_voxels() != new_mt->with_voxels())
     {
-        // ???
-        return false; // Vacant has no ParticleID. Call remove_voxel.
+        throw NotSupported("ParticleID is needed/lost.");
     }
 
-    // MolecularTypeBase::particle_info_type info(*(src_mt->find(coord)));
-    // src_mt->remove_voxel_if_exists(coord);
-    // new_mt->addVoxel(info);
-    // MolecularTypeBase::iterator position(src_mt->find(coord));
-    // new_mt->add_voxel_without_checking(*position);
-    // src_mt->remove_voxel(position);
     new_mt->add_voxel_without_checking(src_mt->pop(coord));
     voxel_container::iterator itr(voxels_.begin() + coord);
     (*itr) = new_mt;
-    return true;
+
+    // const LatticeSpaceVectorImpl::private_coordinate_type coord(v.coordinate());
+    // MolecularTypeBase* src_mt(voxels_.at(coord));
+    // // if (src_mt->is_vacant())
+    // if (!src_mt->with_voxels())
+    // {
+    //     return false; // has no ParticleID. Call update_voxel_private with a ParticleID.
+    // }
+
+    // MolecularTypeBase* new_mt(get_molecular_type(v)); //XXX: need MoleculeInfo
+    // // if (new_mt->is_vacant())
+    // if (!new_mt->with_voxels())
+    // {
+    //     return false; // has no ParticleID. Call remove_voxel.
+    // }
+
+    // // MolecularTypeBase::particle_info_type info(*(src_mt->find(coord)));
+    // // src_mt->remove_voxel_if_exists(coord);
+    // // new_mt->addVoxel(info);
+    // // MolecularTypeBase::iterator position(src_mt->find(coord));
+    // // new_mt->add_voxel_without_checking(*position);
+    // // src_mt->remove_voxel(position);
+    // new_mt->add_voxel_without_checking(src_mt->pop(coord));
+    // voxel_container::iterator itr(voxels_.begin() + coord);
+    // (*itr) = new_mt;
+    // return true;
 }
 
+/*
+ * Change the Species and coordinate of a Voxel with ParticleID, pid, to
+ * v.species() and v.coordinate() respectively and return false.
+ * If no Voxel with pid is found, create a new Voxel at v.coordiante() and return ture.
+ */
 bool LatticeSpaceVectorImpl::update_voxel_private(const ParticleID& pid, const Voxel& v)
 {
     const LatticeSpaceVectorImpl::private_coordinate_type& to_coord(v.coordinate());
     if (!is_in_range_private(to_coord))
     {
-        return false;
+        throw NotSupported("Out of bounds");
     }
 
     MolecularTypeBase* new_mt(get_molecular_type(v)); //XXX: need MoleculeInfo
-    if (new_mt->is_vacant())
-    {
-        return false; // Vacant has no ParticleID.
-    }
-
     MolecularTypeBase* dest_mt(get_molecular_type(to_coord));
-    if (!dest_mt->is_vacant() && dest_mt != new_mt->location())
+
+    if (dest_mt != new_mt->location())
     {
-        if (dest_mt->species() == periodic_->species()
-            || dest_mt->species() == border_->species())
-        {
-            throw NotSupported("The coordinate points a boundary.");
-        }
-
-        const ParticleID to_pid(dest_mt->find_particle_id(to_coord));
-        if (pid == ParticleID() || to_pid != pid)
-        {
-            return false; // collision
-        }
-
-        // MolecularTypeBase::container_type::const_iterator
-        //     dest_itr(dest_mt->find(to_coord));
-        // if (dest_itr == dest_mt->end())
-        // {
-        //     throw IllegalState(
-        //         "MolecularTypaBase [" + dest_mt->species().serial()
-        //         + "] doesn't contain a proper coordinate.");
-        // }
-        // else if (!(pid != ParticleID() && (*dest_itr).second == pid))
-        // {
-        //     return false; // collision
-        // }
+        throw NotSupported("Mismatch in the location.");
     }
 
-    if (pid != ParticleID())
+    const LatticeSpaceVectorImpl::private_coordinate_type
+        from_coord(pid != ParticleID() ? get_coord(pid) : -1);
+    if (from_coord != -1)
     {
-        const LatticeSpaceVectorImpl::private_coordinate_type from_coord(get_coord(pid));
-        if (from_coord != -1)
-        {
-            MolecularTypeBase* src_mt(voxels_.at(from_coord));
-            src_mt->remove_voxel_if_exists(from_coord);
-            voxel_container::iterator itr(voxels_.begin() + from_coord);
-            // voxels_.erase(itr);
-            // voxels_.insert(itr, dest_mt);
-            (*itr) = dest_mt;
-            // dest_mt->addVoxel(particle_info_type(from_coord, ParticleID()));
-            // dest_mt->add_voxel_without_checking(
-            //     particle_info_type(from_coord, ParticleID()));
-            // dest_mt->remove_voxel_if_exists(to_coord);
-            dest_mt->replace_voxel(to_coord, particle_info_type(from_coord, ParticleID()));
-            new_mt->add_voxel_without_checking(particle_info_type(to_coord, pid));
-            itr = voxels_.begin() + to_coord;
-            (*itr) = new_mt;
-            return true;
-        }
+        // move
+        MolecularTypeBase* src_mt(voxels_.at(from_coord));
+        src_mt->remove_voxel_if_exists(from_coord);
+
+        //XXX: use location?
+        dest_mt->replace_voxel(to_coord, from_coord);
+        voxel_container::iterator from_itr(voxels_.begin() + from_coord);
+        (*from_itr) = dest_mt;
+
+        new_mt->add_voxel_without_checking(particle_info_type(to_coord, pid));
+        voxel_container::iterator to_itr(voxels_.begin() + to_coord);
+        (*to_itr) = new_mt;
+        return false;
     }
 
-    // new_mt->addVoxel(MolecularTypeBase::particle_info_type(to_coord, pid));
+    // new
+    dest_mt->remove_voxel_if_exists(to_coord);
+
     new_mt->add_voxel_without_checking(particle_info_type(to_coord, pid));
     voxel_container::iterator to_itr(voxels_.begin() + to_coord);
     (*to_itr) = new_mt;
-    dest_mt->remove_voxel_if_exists(to_coord);
     return true;
+
+    // const LatticeSpaceVectorImpl::private_coordinate_type& to_coord(v.coordinate());
+    // if (!is_in_range_private(to_coord))
+    // {
+    //     return false;
+    // }
+
+    // MolecularTypeBase* new_mt(get_molecular_type(v)); //XXX: need MoleculeInfo
+    // if (new_mt->is_vacant())
+    // {
+    //     return false; // has no ParticleID.
+    // }
+
+    // MolecularTypeBase* dest_mt(get_molecular_type(to_coord));
+    // if (!dest_mt->is_vacant() && dest_mt != new_mt->location())
+    // {
+    //     if (dest_mt->species() == periodic_->species()
+    //         || dest_mt->species() == border_->species())
+    //     {
+    //         throw NotSupported("The coordinate points a boundary.");
+    //     }
+
+    //     const ParticleID to_pid(dest_mt->find_particle_id(to_coord));
+    //     if (pid == ParticleID() || to_pid != pid)
+    //     {
+    //         return false; // collision
+    //     }
+    // }
+
+    // if (pid != ParticleID())
+    // {
+    //     if (!new_mt->with_voxels())
+    //     {
+    //         return false; // has no ParticleID
+    //     }
+
+    //     const LatticeSpaceVectorImpl::private_coordinate_type from_coord(get_coord(pid));
+    //     if (from_coord != -1)
+    //     {
+    //         MolecularTypeBase* src_mt(voxels_.at(from_coord));
+    //         // assert(src_mt->with_voxels());
+    //         src_mt->remove_voxel_if_exists(from_coord);
+    //         voxel_container::iterator itr(voxels_.begin() + from_coord);
+    //         (*itr) = dest_mt;
+    //         dest_mt->replace_voxel(to_coord, from_coord);
+    //         new_mt->add_voxel_without_checking(particle_info_type(to_coord, pid));
+    //         itr = voxels_.begin() + to_coord;
+    //         (*itr) = new_mt;
+    //         return true;
+    //     }
+    // }
+
+    // new_mt->add_voxel_without_checking(particle_info_type(to_coord, pid));
+    // voxel_container::iterator to_itr(voxels_.begin() + to_coord);
+    // (*to_itr) = new_mt;
+    // dest_mt->remove_voxel_if_exists(to_coord);
+    // return true;
+}
+
+bool LatticeSpaceVectorImpl::make_structure_type(const Species& sp)
+{
+    spmap::iterator itr(spmap_.find(sp));
+    if (itr != spmap_.end())
+    {
+        return false;
+    }
+
+    boost::shared_ptr<MolecularType> mt(new StructureType(sp, voxel_radius_));
+    std::pair<spmap::iterator, bool>
+        retval(spmap_.insert(std::make_pair(sp, mt)));
+    return retval.second;
 }
 
 void LatticeSpaceVectorImpl::add_structure(const Species& sp,
     const boost::shared_ptr<const Shape>& s)
 {
+    // make_structure_type(sp);
+
     structure_container_type::const_iterator i(structures_.find(sp));
     if (i != structures_.end())
     {

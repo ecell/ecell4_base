@@ -571,6 +571,11 @@ void LatticeSimulator::walk(const Species& species, const Real& alpha)
     MolecularTypeBase* loc(mtype->location());
     //XXX: mtype->shuffle(*rng);
 
+    if (!mtype->with_voxels())
+    {
+        throw NotSupported("MolecularType must be with voxels.");
+    }
+
     Integer i(0), max(rng->binomial(alpha, mtype->size()));
     while (i < max)
     {

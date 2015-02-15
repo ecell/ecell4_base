@@ -94,7 +94,7 @@ public:
     virtual std::vector<std::pair<ParticleID, Voxel> >
         list_voxels_exact(const Species& sp) const = 0;
 
-    virtual bool update_voxel_private(const Voxel& v) = 0;
+    virtual void update_voxel_private(const Voxel& v) = 0;
     virtual bool update_voxel_private(const ParticleID& pid, const Voxel& v) = 0;
     virtual std::pair<ParticleID, Voxel> get_voxel(const ParticleID& pid) const = 0;
     virtual bool remove_voxel(const ParticleID& pid) = 0;
@@ -539,7 +539,7 @@ public:
     typedef base_type::private_coordinate_type private_coordinate_type;
     typedef base_type::private_coordinate_type coordinate_type;
 
-    typedef std::map<Species, MolecularType> spmap;
+    typedef std::map<Species, boost::shared_ptr<MolecularType> > spmap;
     typedef std::vector<MolecularTypeBase*> voxel_container;
     typedef std::map<Species, boost::shared_ptr<const Shape> > structure_container_type;
 
@@ -601,8 +601,7 @@ public:
 
     virtual Integer num_molecules(const Species& sp) const; //XXX:
 
-    // bool update_voxel(const ParticleID& pid, const Voxel& v);
-    virtual bool update_voxel_private(const Voxel& v);
+    virtual void update_voxel_private(const Voxel& v);
     virtual bool update_voxel_private(const ParticleID& pid, const Voxel& v);
 
     std::vector<Species> list_species() const;
@@ -667,11 +666,6 @@ public:
         return periodic_transpose_private(private_coord);
     }
 
-    const spmap& molecular_types() const
-    {
-        return spmap_;
-    }
-
     virtual bool on_structure(const Voxel& v);
 
 protected:
@@ -687,6 +681,8 @@ protected:
             particle_info_type& info, private_coordinate_type private_to);
     private_coordinate_type get_coord(const ParticleID& pid) const;
     const Particle particle_at_private(private_coordinate_type coord) const;
+
+    bool make_structure_type(const Species& sp);
 
 protected:
 

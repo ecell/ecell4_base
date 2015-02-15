@@ -248,8 +248,8 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_update_molecule)
     ParticleID pid(sidgen());
     BOOST_CHECK(space.update_voxel_private(
         pid, Voxel(reactant, private_coord, radius, D)));
-    BOOST_CHECK(space.update_voxel_private(
-        Voxel(product, private_coord, radius, D)));
+    space.update_voxel_private(
+        Voxel(product, private_coord, radius, D));
 
     const MolecularTypeBase* mt(space.get_molecular_type(private_coord));
     BOOST_ASSERT(mt->species() == product);
@@ -261,7 +261,9 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_update_voxel)
     for (LatticeSpace::coordinate_type coord(0); coord < space.size(); ++coord)
     {
         const Real3 pos(space.coordinate2position(coord));
-        BOOST_CHECK(space.update_voxel(pid, Voxel(sp, coord, radius, D)));
+        const bool succeeded(
+            space.update_voxel(pid, Voxel(sp, coord, radius, D)));
+        BOOST_CHECK(succeeded == (coord == 0));
         BOOST_CHECK_EQUAL(space.num_particles(), 1);
         std::pair<ParticleID, Particle> pair(space.list_particles()[0]);
         BOOST_CHECK_EQUAL(pid, pair.first);
@@ -279,7 +281,9 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_save_and_load)
     for (LatticeSpace::coordinate_type coord(0); coord < space.size(); ++coord)
     {
         const Real3 pos(space.coordinate2position(coord));
-        BOOST_CHECK(space.update_voxel(pid, Voxel(sp, coord, radius, D)));
+        const bool succeeded(
+            space.update_voxel(pid, Voxel(sp, coord, radius, D)));
+        BOOST_CHECK(succeeded == (coord == 0));
 
         H5::H5File fout("data.h5", H5F_ACC_TRUNC);
         boost::scoped_ptr<H5::Group>
@@ -590,7 +594,9 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_structure_update)
     BOOST_CHECK_EQUAL(space.list_particles(sp).size(), 0);
 
     Species sp2("B", "2.5e-9", "1e-12");
-    BOOST_CHECK(!space.update_particle(sidgen(), Particle(sp2, pos, radius, D)));
+    BOOST_CHECK_THROW(
+        space.update_particle(sidgen(), Particle(sp2, pos, radius, D)),
+        NotSupported);
 }
 
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_structure_move)

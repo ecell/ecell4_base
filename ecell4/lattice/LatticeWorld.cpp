@@ -161,11 +161,6 @@ std::vector<std::pair<ParticleID, Voxel> >
     return (*space_).list_voxels_exact(sp);
 }
 
-// std::vector<LatticeWorld::coordinate_type> LatticeWorld::list_coords(const Species& sp) const
-// {
-//     return (*space_).list_coords(sp);
-// }
-
 MolecularTypeBase* LatticeWorld::find_molecular_type(const Species& species)
 {
     return (*space_).find_molecular_type(species);
@@ -278,7 +273,8 @@ bool LatticeWorld::add_molecules(
     return true;
 }
 
-Integer LatticeWorld::add_structure(const Species& sp, const boost::shared_ptr<const Shape> shape)
+Integer LatticeWorld::add_structure(
+    const Species& sp, const boost::shared_ptr<const Shape> shape)
 {
     (*space_).add_structure(sp, shape);
 
@@ -466,7 +462,12 @@ void LatticeWorld::remove_molecules(const Species& sp, const Integer& num)
     }
 
     MolecularTypeBase* mtype(find_molecular_type(sp));
-    if (mtype->size() < num)
+    if (!mtype->with_voxels())
+    {
+        throw NotSupported(
+            "remove_molecuels for MolecularType with no voxel is not supported now");
+    }
+    else if (mtype->size() < num)
     {
         throw std::invalid_argument(
             "The number of molecules cannot be negative.");
@@ -493,18 +494,6 @@ bool LatticeWorld::move(coordinate_type from, coordinate_type to)
     return (*space_).move(from, to);
 }
 
-// std::pair<LatticeWorld::coordinate_type, bool> LatticeWorld::move_to_neighbor(
-//         coordinate_type coord, Integer nrand)
-// {
-//     return (*space_).move_to_neighbor(coord, nrand);
-// }
-// 
-// std::pair<LatticeWorld::coordinate_type, bool> LatticeWorld::move_to_neighbor(
-//         particle_info_type& info, Integer nrand)
-// {
-//     return (*space_).move_to_neighbor(info, nrand);
-// }
-
 std::pair<LatticeWorld::private_coordinate_type, bool>
 LatticeWorld::move_to_neighbor(
     MolecularTypeBase* const& from_mt, MolecularTypeBase* const& loc,
@@ -512,17 +501,6 @@ LatticeWorld::move_to_neighbor(
 {
     return (*space_).move_to_neighbor(from_mt, loc, info, nrand);
 }
-
-// std::pair<std::pair<LatticeWorld::particle_info_type,
-//     LatticeWorld::private_coordinate_type>, bool>
-// LatticeWorld::move_to_neighbor(MolecularTypeBase* mtype, Integer index)
-// {
-//     const Integer rnd(rng()->uniform_int(0,11));
-//     particle_info_type& info(mtype->at(index));
-//     std::pair<private_coordinate_type, bool> neighbor(
-//             (*space_).move_to_neighbor(info, rnd));
-//     return std::make_pair(std::make_pair(info, neighbor.first), neighbor.second);
-// }
 
 std::pair<LatticeWorld::private_coordinate_type, bool>
 LatticeWorld::check_neighbor_private(
@@ -533,11 +511,6 @@ LatticeWorld::check_neighbor_private(
     bool flg = get_molecular_type_private(neighbor)->is_vacant(); //XXX: loc
     return std::make_pair(neighbor, flg);
 }
-
-// bool LatticeWorld::update_molecule(coordinate_type at, Species species)
-// {
-//     return (*space_).update_molecule(at, species);
-// }
 
 Shape::dimension_kind LatticeWorld::get_dimension_kind(const std::string& name) const
 {

@@ -29,7 +29,7 @@ public:
     typedef base_type::private_coordinate_type private_coordinate_type;
     typedef base_type::private_coordinate_type coordinate_type;
 
-    typedef std::map<Species, MolecularType> spmap;
+    typedef std::map<Species, boost::shared_ptr<MolecularType> > spmap;
     typedef std::vector<std::pair<MolecularTypeBase*, private_coordinate_type> >
         cell_type;
     typedef std::vector<cell_type> matrix_type;
@@ -207,7 +207,7 @@ public:
         {
             return 0;
         }
-        const MolecularTypeBase* mt(&((*itr).second));
+        const boost::shared_ptr<MolecularType>& mt((*itr).second);
         return mt->size();
     }
 
@@ -220,7 +220,7 @@ public:
         {
             if (sexp.match((*itr).first))
             {
-                const MolecularTypeBase* mt(&((*itr).second));
+                const boost::shared_ptr<MolecularType>& mt((*itr).second);
                 count += mt->size();
             }
         }
@@ -233,7 +233,7 @@ public:
         for (spmap::const_iterator itr(spmap_.begin());
             itr != spmap_.end(); ++itr)
         {
-            retval += (*itr).second.size();
+            retval += (*itr).second->size();
         }
         return retval;
     }
@@ -243,13 +243,13 @@ public:
         for (spmap::const_iterator itr(spmap_.begin());
             itr != spmap_.end(); ++itr)
         {
-            const MolecularTypeBase& mt((*itr).second);
-            if (mt.is_vacant())
+            const boost::shared_ptr<MolecularType>& mt((*itr).second);
+            if (mt->is_vacant())
             {
                 return false;
             }
-            for (MolecularTypeBase::container_type::const_iterator vitr(mt.begin());
-                vitr != mt.end(); ++vitr)
+            for (MolecularType::const_iterator vitr(mt->begin());
+                vitr != mt->end(); ++vitr)
             {
                 if ((*vitr).second == pid)
                 {
@@ -266,11 +266,11 @@ public:
 
         for (spmap::const_iterator itr(spmap_.begin()); itr != spmap_.end(); ++itr)
         {
-            const MolecularTypeBase* mt(&((*itr).second));
+            const boost::shared_ptr<MolecularType>& mt((*itr).second);
             const std::string loc((mt->location()->is_vacant())
                 ? "" : mt->location()->species().serial());
             const Species& sp(mt->species());
-            for (MolecularTypeBase::container_type::const_iterator itr(mt->begin());
+            for (MolecularType::const_iterator itr(mt->begin());
                 itr != mt->end(); ++itr)
             {
                 retval.push_back(std::make_pair(
@@ -294,15 +294,15 @@ public:
                 continue;
             }
 
-            const MolecularTypeBase* mt(&((*itr).second));
+            const boost::shared_ptr<MolecularType>& mt((*itr).second);
             const std::string loc((mt->location()->is_vacant())
                 ? "" : mt->location()->species().serial());
-            for (MolecularTypeBase::container_type::const_iterator itr(mt->begin());
-                itr != mt->end(); ++itr)
+            for (MolecularType::const_iterator i(mt->begin());
+                i != mt->end(); ++i)
             {
                 retval.push_back(std::make_pair(
-                    (*itr).second,
-                    Voxel(sp, private2coord((*itr).first), mt->radius(), mt->D(), loc)));
+                    (*i).second,
+                    Voxel(sp, private2coord((*i).first), mt->radius(), mt->D(), loc)));
             }
         }
         return retval;
@@ -318,41 +318,54 @@ public:
             return retval;
         }
 
-        const MolecularTypeBase* mt(&((*itr).second));
+        const boost::shared_ptr<MolecularType>& mt((*itr).second);
         const std::string loc((mt->location()->is_vacant())
             ? "" : mt->location()->species().serial());
-        for (MolecularTypeBase::container_type::const_iterator itr(mt->begin());
-            itr != mt->end(); ++itr)
+        for (MolecularType::const_iterator i(mt->begin());
+            i != mt->end(); ++i)
         {
             retval.push_back(std::make_pair(
-                (*itr).second,
-                Voxel(sp, private2coord((*itr).first), mt->radius(), mt->D(), loc)));
+                (*i).second,
+                Voxel(sp, private2coord((*i).first), mt->radius(), mt->D(), loc)));
         }
         return retval;
     }
 
-    virtual bool update_voxel_private(const Voxel& v)
+    /**
+     * Change the Species at v.coordinate() to v.species.
+     * The ParticleID must be kept after this update.
+     */
+    virtual void update_voxel_private(const Voxel& v)
     {
         const private_coordinate_type coord(v.coordinate());
         MolecularTypeBase* src_mt(get_molecular_type(coord));
-        if (src_mt->is_vacant())
-        {
-            return false;
-        }
-
         MolecularTypeBase* new_mt(get_molecular_type(v));
-        if (new_mt->is_vacant())
+
+        if (src_mt->with_voxels() != new_mt->with_voxels())
         {
-            // ???
-            return false;
+            throw NotSupported("ParticleID is needed/lost.");
         }
 
-        // MolecularTypeBase::iterator i(src_mt->find(coord));
-        // new_mt->add_voxel_without_checking(*i);
-        // src_mt->remove_voxel(i);
         new_mt->add_voxel_without_checking(src_mt->pop(coord));
         update_matrix(coord, new_mt);
-        return true;
+
+        // const private_coordinate_type coord(v.coordinate());
+        // MolecularTypeBase* src_mt(get_molecular_type(coord));
+        // if (src_mt->is_vacant())
+        // {
+        //     return false;
+        // }
+
+        // MolecularTypeBase* new_mt(get_molecular_type(v));
+        // if (new_mt->is_vacant())
+        // {
+        //     // ???
+        //     return false;
+        // }
+
+        // new_mt->add_voxel_without_checking(src_mt->pop(coord));
+        // update_matrix(coord, new_mt);
+        // return true;
     }
 
     virtual bool update_voxel_private(const ParticleID& pid, const Voxel& v);
@@ -444,9 +457,6 @@ public:
             return false;
         }
 
-        // MolecularTypeBase::container_type::iterator i(from_mt->find(private_from));
-        // (*i).first = private_to;
-        // to_mt->replace_voxel(private_to, particle_info_type(private_from, ParticleID()));
         from_mt->replace_voxel(private_from, private_to);
         to_mt->replace_voxel(private_to, private_from);
         if (!to_mt->is_vacant())
@@ -471,12 +481,12 @@ public:
 
     virtual MolecularTypeBase* find_molecular_type(const Species& sp)
     {
-        LatticeSpaceVectorImpl::spmap::iterator itr(spmap_.find(sp));
+        spmap::iterator itr(spmap_.find(sp));
         if (itr == spmap_.end())
         {
             throw NotFound("MolecularType not found.");
         }
-        return &((*itr).second);
+        return (*itr).second.get(); //XXX: Raw pointer was thrown.
     }
 
     virtual MolecularTypeBase* get_molecular_type(
@@ -532,6 +542,8 @@ protected:
         __get_coordinate(const ParticleID& pid);
     std::pair<const MolecularTypeBase*, private_coordinate_type>
         __get_coordinate(const ParticleID& pid) const;
+
+    bool make_structure_type(const Species& sp);
 
 protected:
 

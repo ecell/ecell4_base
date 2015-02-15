@@ -292,9 +292,9 @@ public:
         return (*space_).update_voxel(pid, v);
     }
 
-    bool update_voxel_private(const Voxel& v)
+    void update_voxel_private(const Voxel& v)
     {
-        return (*space_).update_voxel_private(v);
+        (*space_).update_voxel_private(v);
     }
 
     bool update_voxel_private(const ParticleID& pid, const Voxel& v)
@@ -435,6 +435,11 @@ public:
     std::pair<ParticleID, Voxel> choice(const Species& sp)
     {
         MolecularTypeBase* mt(find_molecular_type(sp));
+        if (!mt->with_voxels())
+        {
+            throw NotSupported(
+                "choice for a Species with no voxel is not supporeted.");
+        }
         const Integer i(rng_->uniform_int(0, mt->size() - 1));
         const particle_info_type& info(mt->at(i));
         return make_pid_voxel_pair(mt, info);
