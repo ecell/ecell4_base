@@ -18,9 +18,10 @@ Integer LatticeSpaceCellListImpl::num_molecules(const Species& sp) const
         {
             if (!mt->with_voxels())
             {
-                throw NotSupported(
-                    "num_molecules for MolecularType with no voxel"
-                    " is not supporeted now");
+                count += count_voxels(mt);
+                // throw NotSupported(
+                //     "num_molecules for MolecularType with no voxel"
+                //     " is not supporeted now");
             }
             count += mt->size() * cnt;
         }

@@ -291,30 +291,30 @@ Integer LatticeWorld::add_structure(
 
 Integer LatticeWorld::add_structure3(const Species& sp, const boost::shared_ptr<const Shape> shape)
 {
-    // std::ofstream fout("shape.csv");
-    // fout << "# " << sp.serial() << std::endl;
-    // const unsigned int n(50);
-    // const Real3 L(edge_lengths() / static_cast<Real>(n));
-    // for (unsigned int i(0); i < n * n * n; ++i)
-    // {
-    //     const unsigned int x(i % n);
-    //     const unsigned int y((i / n) % n);
-    //     const unsigned int z(i / (n * n));
-    //     if (shape->test_AABB(Real3(x * L[0], y * L[1], z * L[2]),
-    //         Real3((x + 1) * L[0], (y + 1) * L[1], (z + 1) * L[2])))
-    //     {
-    //         fout << x << "," << y << "," << z << std::endl;
-    //     }
-    // }
-    // fout.close();
+    Real3 l, u;
+    shape->bounding_box(edge_lengths(), l, u);
+    const Real sigma(voxel_radius() * 2);
+    const unsigned int ndim(3);
+    for (unsigned int i(0); i != ndim; ++i)
+    {
+        l[i] = std::max(0.0, l[i] - sigma);
+        u[i] = std::min(edge_lengths()[i], u[i] + sigma);
+    }
+    const Integer3 lower(position2global(l)), upper(position2global(u));
 
     const LatticeWorld::molecule_info_type info(get_molecule_info(sp));
     Integer count(0);
-    for (Integer col(0); col < col_size(); ++col)
+    // for (Integer col(0); col < col_size(); ++col)
+    // {
+    //     for (Integer row(0); row < row_size(); ++row)
+    //     {
+    //         for (Integer layer(0); layer < layer_size(); ++layer)
+    //         {
+    for (Integer col(lower[0]); col < upper[0]; ++col)
     {
-        for (Integer row(0); row < row_size(); ++row)
+        for (Integer row(lower[1]); row < upper[1]; ++row)
         {
-            for (Integer layer(0); layer < layer_size(); ++layer)
+            for (Integer layer(lower[2]); layer < upper[2]; ++layer)
             {
                 const Integer3 g(col, row, layer);
                 const Real L(shape->is_inside(global2position(g)));

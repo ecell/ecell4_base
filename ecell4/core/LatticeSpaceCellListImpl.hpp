@@ -200,6 +200,22 @@ public:
         return keys;
     }
 
+    Integer count_voxels(
+        const boost::shared_ptr<MolecularType>& mt) const
+    {
+        Integer count(0);
+        utils::pair_first_element_unary_predicator<
+            MolecularTypeBase*, private_coordinate_type> pred(mt.get());
+
+        for (matrix_type::const_iterator i(matrix_.begin());
+            i != matrix_.end(); ++i)
+        {
+            count += static_cast<Integer>(
+                std::count_if((*i).begin(), (*i).end(), pred));
+        }
+        return count;
+    }
+
     virtual Integer num_voxels_exact(const Species& sp) const
     {
         spmap::const_iterator itr(spmap_.find(sp));
