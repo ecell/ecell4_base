@@ -186,7 +186,7 @@ public:
         while (i < num)
         {
             const coordinate_type j(rng_->uniform_int(0, num_subvolumes() - 1));
-            if (cs_->check_structure(st, j))
+            if (cs_->check_structure(minfo.loc, j))
             {
                 cs_->add_molecules(sp, 1, j);
                 i++;
@@ -222,7 +222,7 @@ public:
             const Real3 pos(shape->draw_position(rng_));
             const Integer3 g(cs_->position2global(pos));
             const coordinate_type j(cs_->global2coord(g));
-            if (cs_->check_structure(st, j))
+            if (cs_->check_structure(minfo.loc, j))
             {
                 cs_->add_molecules(sp, 1, j);
                 i++;

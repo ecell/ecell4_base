@@ -152,13 +152,14 @@ void SubvolumeSpaceVectorImpl::add_structure(
         const bool is_overlap(shape->test_AABB(corner, corner + lengths));
         overlap[i] = (is_overlap ? 1 : 0);
     }
-    structure_matrix_.insert(std::make_pair(sp, overlap));
+    structure_matrix_.insert(std::make_pair(sp.serial(), overlap));
 }
 
 bool SubvolumeSpaceVectorImpl::check_structure(
-    const Species& sp, const SubvolumeSpaceVectorImpl::coordinate_type& coord) const
+    const Species::serial_type& serial,
+    const SubvolumeSpaceVectorImpl::coordinate_type& coord) const
 {
-    structure_matrix_type::const_iterator i(structure_matrix_.find(sp));
+    structure_matrix_type::const_iterator i(structure_matrix_.find(serial));
     if (i == structure_matrix_.end())
     {
         return false;
@@ -168,7 +169,7 @@ bool SubvolumeSpaceVectorImpl::check_structure(
 
 Real SubvolumeSpaceVectorImpl::get_volume(const Species& sp) const
 {
-    structure_matrix_type::const_iterator i(structure_matrix_.find(sp));
+    structure_matrix_type::const_iterator i(structure_matrix_.find(sp.serial()));
     if (i == structure_matrix_.end())
     {
         return 0.0;
