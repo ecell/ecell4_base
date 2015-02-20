@@ -8,12 +8,16 @@ cimport context
 
 cdef class Species:
 
-    def __cinit__(self, serial=None, radius=None, D=None):
+    def __cinit__(self, serial=None, radius=None, D=None, location=None):
         if serial is None:
             self.thisptr = new Cpp_Species()
         elif radius is not None and D is not None:
-            self.thisptr = new Cpp_Species(
-                <string>serial, <string>radius, <string>D)
+            if location is None:
+                self.thisptr = new Cpp_Species(
+                    <string>serial, <string>radius, <string>D)
+            else:
+                self.thisptr = new Cpp_Species(
+                    <string>serial, <string>radius, <string>D, <string>location)
         else:
             self.thisptr = new Cpp_Species(<string>serial) #XXX:
 

@@ -68,12 +68,14 @@ public:
     // }
 
     Species(
-        const serial_type& name, const std::string& radius, const std::string& D)
+        const serial_type& name, const std::string& radius, const std::string& D,
+        const std::string location = "")
         : units_()
     {
         deserialize(name);
         set_attribute("radius", radius);
         set_attribute("D", D);
+        set_attribute("location", location);
     }
 
     void deserialize(const serial_type& serial);
