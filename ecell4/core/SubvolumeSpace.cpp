@@ -166,4 +166,14 @@ bool SubvolumeSpaceVectorImpl::check_structure(
     return ((*i).second[coord] > 0);
 }
 
+Real SubvolumeSpaceVectorImpl::get_volume(const Species& sp) const
+{
+    structure_matrix_type::const_iterator i(structure_matrix_.find(sp));
+    if (i == structure_matrix_.end())
+    {
+        return 0.0;
+    }
+    return subvolume() * std::accumulate((*i).second.begin(), (*i).second.end(), 0);
+}
+
 } // ecell4

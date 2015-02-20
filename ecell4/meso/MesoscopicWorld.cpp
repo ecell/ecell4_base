@@ -249,6 +249,11 @@ bool MesoscopicWorld::on_structure(
     return cs_->check_structure(Species(minfo.loc), coord);
 }
 
+Real MesoscopicWorld::get_volume(const Species& sp) const
+{
+    return cs_->get_volume(sp);
+}
+
 } // meso
 
 } // ecell4

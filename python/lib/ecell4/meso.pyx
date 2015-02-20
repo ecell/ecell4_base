@@ -98,6 +98,12 @@ cdef class MesoscopicWorld:
         self.thisptr.get().add_structure(
             deref(sp.thisptr), deref((<Shape>(shape.as_base())).thisptr))
 
+    def get_volume(self, Species sp):
+        return self.thisptr.get().get_volume(deref(sp.thisptr))
+
+    def on_structure(self, Species sp, Integer3 g):
+        return self.thisptr.get().on_structure(deref(sp.thisptr), deref(g.thisptr))
+
     def list_species(self):
         cdef vector[Cpp_Species] species = self.thisptr.get().list_species()
 

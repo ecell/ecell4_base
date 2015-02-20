@@ -267,6 +267,13 @@ public:
     void add_structure(const Species& sp, const boost::shared_ptr<const Shape>& shape);
     bool on_structure(const Species& sp, const coordinate_type& coord) const;
 
+    inline bool on_structure(const Species& sp, const Integer3& g) const
+    {
+        return on_structure(sp, global2coord(g));
+    }
+
+    Real get_volume(const Species& sp) const;
+
     const std::vector<Species>& species() const;
     std::vector<Species> list_species() const;
 
