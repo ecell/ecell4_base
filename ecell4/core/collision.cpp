@@ -263,6 +263,10 @@ bool test_shell_AABB(const SphericalSurface& s, const AABB& b)
     return true;
 }
 
+/**
+ * intersect_ray_AABB
+ * See RTCD p.180;
+ */
 bool intersect_ray_AABB(
     const Real3& p, const Real3& d, const Real3& lower, const Real3& upper,
     Real& tmin, Real3& q)
@@ -328,7 +332,7 @@ bool intersect_moving_sphere_AABB(
         Real3(upper[0] + radius, upper[1] + radius, upper[2] + radius));
 
     Real3 p;
-    if (intersect_ray_AABB(p0, d, e, t, p) || t > 1.0)
+    if (!intersect_ray_AABB(p0, d, e, t, p) || t > 1.0)
     {
         return false;
     }
