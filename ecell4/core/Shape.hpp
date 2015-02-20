@@ -33,7 +33,7 @@ struct Shape
         const Real3& edge_lengths, Real3& lower, Real3& upper) const
     {
         lower = Real3(0.0, 0.0, 0.0);
-        upper = Real3(0.0, 0.0, 0.0);
+        upper = edge_lengths;
     }
 };
 
