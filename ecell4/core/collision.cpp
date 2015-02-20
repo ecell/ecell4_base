@@ -39,7 +39,7 @@ Real farthest_distance_sq_point_AABB(const Real3& pos, const AABB& b)
         pos[0] > c[0] ? lower[0] : upper[0],
         pos[1] > c[1] ? lower[1] : upper[1],
         pos[2] > c[2] ? lower[2] : upper[2]);
-    return length_sq(q);
+    return length_sq(q - pos);
 }
 
 Real distance_point_cylinder(const Real3& pos, const Cylinder& c)
