@@ -489,6 +489,19 @@ protected:
             if (!(reactants.size() == 1 && products.size() == 1
                 && reactants[0] == products[0] && coord_ == tgt_))
             {
+                for (ReactionRule::product_container_type::const_iterator
+                    it(rr_.products().begin());
+                    it != rr_.products().end(); ++it)
+                {
+                    const Species& sp(*it);
+                    if (!sim_->world()->on_structure(sp, tgt_))
+                    {
+                        // sim_->set_last_reaction(rr_);
+                        update();
+                        return; // XXX: do finalize
+                    }
+                }
+
                 for (ReactionRule::reactant_container_type::const_iterator
                     it(rr_.reactants().begin());
                     it != rr_.reactants().end(); ++it)

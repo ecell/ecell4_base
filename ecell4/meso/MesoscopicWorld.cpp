@@ -10,7 +10,15 @@ namespace meso
 MoleculeInfo MesoscopicWorld::get_molecule_info(const Species& sp) const
 {
     const bool with_D(sp.has_attribute("D"));
+    const bool with_loc(sp.has_attribute("location"));
+
     Real D(0.0);
+    std::string loc("");
+
+    if (with_loc)
+    {
+        loc = sp.get_attribute("location");
+    }
 
     if (with_D)
     {
@@ -25,10 +33,15 @@ MoleculeInfo MesoscopicWorld::get_molecule_info(const Species& sp) const
             {
                 D = std::atof(attributed.get_attribute("D").c_str());
             }
+
+            if (!with_loc && attributed.has_attribute("location"))
+            {
+                loc = attributed.get_attribute("location");
+            }
         }
     }
 
-    MoleculeInfo info = {D};
+    MoleculeInfo info = {D, loc};
     return info;
 }
 
@@ -217,6 +230,23 @@ const std::vector<Species>& MesoscopicWorld::species() const
 std::vector<Species> MesoscopicWorld::list_species() const
 {
     return cs_->list_species();
+}
+
+void MesoscopicWorld::add_structure(
+    const Species& sp, const boost::shared_ptr<const Shape>& shape)
+{
+    cs_->add_structure(sp, shape);
+}
+
+bool MesoscopicWorld::on_structure(
+    const Species& sp, const coordinate_type& coord) const
+{
+    const molecule_info_type minfo(get_molecule_info(sp));
+    if (minfo.loc == "")
+    {
+        return true;
+    }
+    return cs_->check_structure(Species(minfo.loc), coord);
 }
 
 } // meso

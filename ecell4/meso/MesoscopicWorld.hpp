@@ -20,6 +20,7 @@ namespace meso
 struct MoleculeInfo
 {
     const Real D;
+    const std::string loc;
 };
 
 class MesoscopicWorld
@@ -28,6 +29,7 @@ class MesoscopicWorld
 public:
 
     typedef SubvolumeSpace::coordinate_type coordinate_type;
+    typedef MoleculeInfo molecule_info_type;
 
 public:
 
@@ -164,18 +166,67 @@ public:
 
     void add_molecules(const Species& sp, const Integer& num)
     {
-        for (Integer i(0); i < num; ++i)
+        const molecule_info_type minfo(get_molecule_info(sp));
+        if (minfo.loc == "")
         {
-            cs_->add_molecules(sp, 1, rng_->uniform_int(0, num_subvolumes() - 1));
+            for (Integer i(0); i < num; ++i)
+            {
+                cs_->add_molecules(sp, 1, rng_->uniform_int(0, num_subvolumes() - 1));
+            }
+            return;
+        }
+
+        const Species st(minfo.loc);
+        if (!cs_->has_structure(st))
+        {
+            throw NotFound("no space to throw-in.");
+        }
+
+        Integer i(0);
+        while (i < num)
+        {
+            const coordinate_type j(rng_->uniform_int(0, num_subvolumes() - 1));
+            if (cs_->check_structure(st, j))
+            {
+                cs_->add_molecules(sp, 1, j);
+                i++;
+            }
         }
     }
 
-    void add_molecules(const Species& sp, const Integer& num, const boost::shared_ptr<Shape> shape)
+    void add_molecules(const Species& sp, const Integer& num,
+        const boost::shared_ptr<Shape> shape)
     {
-        for (Integer i(0); i < num; ++i)
+        const molecule_info_type minfo(get_molecule_info(sp));
+        if (minfo.loc == "")
+        {
+            for (Integer i(0); i < num; ++i)
+            {
+                const Real3 pos(shape->draw_position(rng_));
+                const coordinate_type& coord(
+                    cs_->global2coord(cs_->position2global(pos)));
+                cs_->add_molecules(sp, 1, coord);
+            }
+            return;
+        }
+
+        const Species st(minfo.loc);
+        if (!cs_->has_structure(st))
+        {
+            throw NotFound("no space to throw-in.");
+        }
+
+        Integer i(0);
+        while (i < num)
         {
             const Real3 pos(shape->draw_position(rng_));
-            cs_->add_molecules(sp, 1, cs_->global2coord(cs_->position2global(pos)));
+            const Integer3 g(cs_->position2global(pos));
+            const coordinate_type j(cs_->global2coord(g));
+            if (cs_->check_structure(st, j))
+            {
+                cs_->add_molecules(sp, 1, j);
+                i++;
+            }
         }
     }
 
@@ -212,6 +263,9 @@ public:
             }
         }
     }
+
+    void add_structure(const Species& sp, const boost::shared_ptr<const Shape>& shape);
+    bool on_structure(const Species& sp, const coordinate_type& coord) const;
 
     const std::vector<Species>& species() const;
     std::vector<Species> list_species() const;

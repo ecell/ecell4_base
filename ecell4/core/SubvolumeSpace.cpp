@@ -132,4 +132,38 @@ SubvolumeSpaceVectorImpl::coordinate_type SubvolumeSpaceVectorImpl::get_neighbor
     throw IllegalState("the number of neighbors is less than 6.");
 }
 
+void SubvolumeSpaceVectorImpl::add_structure(
+    const Species& sp, const boost::shared_ptr<const Shape>& shape)
+{
+    structure_container_type::const_iterator i(structures_.find(sp));
+    if (i != structures_.end())
+    {
+        throw NotSupported("not supported yet.");
+    }
+    structures_.insert(std::make_pair(sp, shape));
+
+    std::vector<Integer> overlap(num_subvolumes());
+    const Real3 lengths(subvolume_edge_lengths());
+    for (std::vector<Integer>::size_type i(0); i != overlap.size(); ++i)
+    {
+        const Integer3 g(coord2global(i));
+        const Real3 corner(
+            lengths[0] * g[0], lengths[1] * g[1], lengths[2] * g[2]);
+        const bool is_overlap(shape->test_AABB(corner, corner + lengths));
+        overlap[i] = (is_overlap ? 1 : 0);
+    }
+    structure_matrix_.insert(std::make_pair(sp, overlap));
+}
+
+bool SubvolumeSpaceVectorImpl::check_structure(
+    const Species& sp, const SubvolumeSpaceVectorImpl::coordinate_type& coord) const
+{
+    structure_matrix_type::const_iterator i(structure_matrix_.find(sp));
+    if (i == structure_matrix_.end())
+    {
+        return false;
+    }
+    return ((*i).second[coord] > 0);
+}
+
 } // ecell4

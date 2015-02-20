@@ -94,6 +94,10 @@ cdef class MesoscopicWorld:
         else:
             self.thisptr.get().remove_molecules(deref(sp.thisptr), num, <Integer>c)
 
+    def add_structure(self, Species sp, shape):
+        self.thisptr.get().add_structure(
+            deref(sp.thisptr), deref((<Shape>(shape.as_base())).thisptr))
+
     def list_species(self):
         cdef vector[Cpp_Species] species = self.thisptr.get().list_species()
 
