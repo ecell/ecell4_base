@@ -9,8 +9,13 @@ CURDIR=$(cd $(dirname $0); pwd)
 # make clean; rm -rf ${PREFIX}; rm CMakeCache.txt
 # rm -rf python/build python/lib/ecell4/*.cpp
 cmake -DCMAKE_INSTALL_PREFIX=${PREFIX} .
-make VERBOSE=1
-# make test
+make
+# cmake -DCMAKE_INSTALL_PREFIX=${PREFIX} -DECELL4_ENABLE_PROFILING=1 .
+# make VERBOSE=1
+make test
+if [ $? ]; then
+    exit $?
+fi
 make install
 
 cd python
