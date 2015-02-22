@@ -477,6 +477,161 @@ protected:
     bool resolve_boundary_;
 };
 
+class BioImagingObserver
+    : public Observer
+{
+public:
+
+    typedef Observer base_type;
+    typedef utils::get_mapper_mf<Species::serial_type, unsigned int>::type
+        serial_map_type;
+
+public:
+
+    BioImagingObserver(const Real& dt, const Real& exposure_time, const Integer& num_div, const Real& voxel_radius, const Real& scale)
+        : base_type(false), t0_(0.0), dt_(dt), exposure_time_(exposure_time),
+        num_div_(num_div), voxel_radius_(voxel_radius), scale_(scale), num_steps_(0)
+    {
+        ;
+    }
+
+    virtual ~BioImagingObserver()
+    {
+        ;
+    }
+
+    const Real next_time() const
+    {
+        if (num_div_ > 1)
+        {
+            const Real offset(t0_ + dt_ * static_cast<Real>(num_steps_ / num_div_));
+            return offset + (exposure_time_ / num_div_) * (num_steps_ % num_div_);
+        }
+        else
+        {
+            return t0_ + dt_ * num_steps_;
+        }
+    }
+
+    const Integer num_steps() const
+    {
+        return num_steps_;
+    }
+
+    virtual void initialize(const Space* space)
+    {
+        t0_ = space->t();
+        serials_.clear();
+        num_steps_ = 0;
+    }
+
+    virtual void fire(const Simulator* sim, const Space* space)
+    {
+        log(space);
+        ++num_steps_;
+    }
+
+    void log(const Space* space)
+    {
+        typedef std::vector<std::pair<ParticleID, Particle> >
+            particle_container_type;
+        const particle_container_type particles(space->list_particles());
+
+        unsigned int cnt(serials_.size());
+
+        const Real t(space->t());
+
+        std::ofstream ofs(filename().c_str(), std::ios::out);
+        ofs << std::setprecision(17);
+        for(particle_container_type::const_iterator i(particles.begin());
+            i != particles.end(); ++i)
+        {
+            const Real3 pos((*i).second.position());
+            const Real radius((*i).second.radius());
+            const ParticleID& pid((*i).first);
+
+            unsigned int idx;
+            serial_map_type::iterator
+                j(serials_.find((*i).second.species_serial()));
+            if (j == serials_.end())
+            {
+                idx = cnt;
+                serials_.insert(std::make_pair((*i).second.species_serial(), idx));
+                ++cnt;
+            }
+            else
+            {
+                idx = (*j).second;
+            }
+
+            ofs << t
+                << "," << pos[0] * scale_
+                << "," << pos[1] * scale_
+                << "," << pos[2] * scale_
+                << "," << radius * scale_
+                << ",\"(" << pid.serial() << ",0)\""
+                << ",\"(" << idx << ",0)\"" << std::endl;
+        }
+
+        ofs.close();
+
+        write_header(space);
+    }
+
+    void write_header(const Space* space)
+    {
+        std::ofstream ofs("pt-input.csv", std::ios::out);
+
+        if (num_div_ > 1)
+        {
+            ofs << exposure_time_ / num_div_;
+        }
+        else
+        {
+            ofs << exposure_time_;
+        }
+
+        const Real3 edge_lengths(space->edge_lengths());
+        ofs << "," << edge_lengths[1] / (voxel_radius_ * 2)
+            << "," << edge_lengths[2] / (voxel_radius_ * 2)
+            << "," << edge_lengths[0] / (voxel_radius_ * 2)
+            << "," << voxel_radius_ * scale_;
+
+        std::vector<Species::serial_type> species(serials_.size());
+        for (serial_map_type::const_iterator i(serials_.begin());
+            i != serials_.end(); ++i)
+        {
+            species[(*i).second] = (*i).first;
+        }
+        for (std::vector<Species::serial_type>::const_iterator i(species.begin());
+            i != species.end(); ++i)
+        {
+            ofs << ",[/:" << (*i) << "]=" << voxel_radius_ * scale_;
+        }
+        ofs << std::endl;
+        ofs.close();
+    }
+
+    const std::string filename() const
+    {
+        const Integer i(num_steps_ / num_div_);
+        const Integer j(num_steps_ % num_div_);
+
+        boost::format fmt("pt-%09d.%03d.csv");
+        const std::string fname((fmt % i % j).str());
+        return fname;
+    }
+
+protected:
+
+    Real t0_, dt_, exposure_time_;
+    Integer num_div_;
+    Real voxel_radius_, scale_;
+    Integer num_steps_;
+
+    serial_map_type serials_;
+};
+
 } // ecell4
 
 #endif /* __ECELL4_OBSEVER_HPP */

@@ -1,3 +1,5 @@
+cmake_minimum_required(VERSION 2.8)
+INCLUDE(CheckCXXSourceCompiles)
 set(CPP_FILES
     Logger.cpp ConsoleAppender.cpp utils.cpp findRoot.cpp funcSum.cpp
     GreensFunction1DAbsAbs.cpp GreensFunction1DRadAbs.cpp
@@ -16,7 +18,7 @@ set(UTILS_HPP_FILES
     utils/base_type_walker.hpp utils/memberwise_compare.hpp utils/array_helper.hpp utils/range_support.hpp utils/random.hpp utils/pair.hpp utils/fun_wrappers.hpp utils/reset.hpp utils/math.hpp utils/swap.hpp utils/unassignable_adapter.hpp utils/stringizer.hpp utils/array_traits.hpp utils/fun_composition.hpp utils/range.hpp utils/assoc_container_traits.hpp utils/reference_or_instance.hpp utils/pointer_as_ref.hpp utils/get_default_impl.hpp utils/map_adapter.hpp utils/pointer_preds.hpp)
 
 # CPP_FILES BasicNetworkRulesImpl.cpp NetworkRules.cpp SpeciesType.cpp StructureType.cpp
-# HPP_FILES StructureUtils.hpp EGFRDSimulatorFactory.hpp ParticleSimulatorFactory.hpp Model.hpp ParticleModel.hpp BasicNetworkRulesImpl.hpp NetworkRules.hpp ReactionRule.hpp SpeciesInfo.hpp BDSimulator.hpp SpeciesTypeID.hpp SpeciesType.hpp ParticleID.hpp StructureType.hpp bessel.hpp PyEventScheduler.hpp NetworkRulesWrapper.hpp BasicReactionRecorderImpl.hpp DynamicPriorityQueue.hpp EventScheduler.hpp SerialIDGenerator.hpp Surface.hpp SphericalSurface.hpp Structure.hpp CylindricalSurface.hpp PlanarSurface.hpp CuboidalRegion.hpp ParticleSimulationStructure.hpp Region.hpp Box.hpp Plane.hpp Cylinder.hpp Shape.hpp Sphere.hpp Point.hpp Vector3.hpp Identifier.hpp 
+# HPP_FILES StructureUtils.hpp EGFRDSimulatorFactory.hpp ParticleSimulatorFactory.hpp Model.hpp ParticleModel.hpp BasicNetworkRulesImpl.hpp NetworkRules.hpp ReactionRule.hpp SpeciesInfo.hpp BDSimulator.hpp SpeciesTypeID.hpp SpeciesType.hpp ParticleID.hpp StructureType.hpp bessel.hpp PyEventScheduler.hpp NetworkRulesWrapper.hpp BasicReactionRecorderImpl.hpp DynamicPriorityQueue.hpp EventScheduler.hpp SerialIDGenerator.hpp Surface.hpp SphericalSurface.hpp Structure.hpp CylindricalSurface.hpp PlanarSurface.hpp CuboidalRegion.hpp ParticleSimulationStructure.hpp Region.hpp Box.hpp Plane.hpp Cylinder.hpp Shape.hpp Sphere.hpp Point.hpp Vector3.hpp Identifier.hpp
 
 find_library(BOOST_REGEX_LIBRARIES boost_regex)
 
@@ -31,10 +33,10 @@ int main() { double a, b; sincos(0., &a, &b); return 0; }"
     HAVE_SINCOS)
 
 configure_file(
-    ${PROJECT_SOURCE_DIR}/ecell4/egfrd/config.h.in
+    ${PROJECT_SOURCE_DIR}/../config.h.in
     ${PROJECT_BINARY_DIR}/ecell4/egfrd/config.h)
 
-execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/ecell4/egfrd)
+execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR})
 
 add_executable(make_sjy_table make_sjy_table.cpp)
 add_executable(make_cjy_table make_cjy_table.cpp)
@@ -42,33 +44,10 @@ target_link_libraries(make_sjy_table gsl cblas)
 target_link_libraries(make_cjy_table gsl cblas)
 add_custom_command(
     OUTPUT SphericalBesselTable.hpp
-    #COMMAND g++ make_sjy_table.cpp -lgsl -lcblas -o make_sjy_table && ./make_sjy_table ${PROJECT_BINARY_DIR}/ecell4/egfrd/SphericalBesselTable.hpp
-    COMMAND make_sjy_table ${PROJECT_BINARY_DIR}/ecell4/egfrd/SphericalBesselTable.hpp
+    COMMAND make_sjy_table ${PROJECT_BINARY_DIR}/SphericalBesselTable.hpp
     DEPENDS make_sjy_table)
 add_custom_command(
     OUTPUT CylindricalBesselTable.hpp
-    #COMMAND g++ make_cjy_table.cpp -lgsl -lcblas -o make_cjy_table && ./make_cjy_table ${PROJECT_BINARY_DIR}/ecell4/egfrd/CylindricalBesselTable.hpp
-    COMMAND make_cjy_table ${PROJECT_BINARY_DIR}/ecell4/egfrd/CylindricalBesselTable.hpp
+    COMMAND make_cjy_table ${PROJECT_BINARY_DIR}/CylindricalBesselTable.hpp
     DEPENDS make_cjy_table)
-add_custom_target(BesselTables ALL DEPENDS ${PROJECT_BINARY_DIR}/ecell4/egfrd/SphericalBesselTable.hpp ${PROJECT_BINARY_DIR}/ecell4/egfrd/CylindricalBesselTable.hpp)
-
-include_directories(${PROJECT_SOURCE_DIR}/ecell4/egfrd ${PROJECT_BINARY_DIR}/ecell4/egfrd)
-
-add_definitions(-DHAVE_CONFIG_H -DHAVE_INLINE)
-
-add_library(ecell4-egfrd SHARED
-    ${CPP_FILES} ${HPP_FILES} ${UTILS_HPP_FILES}
-    "${PROJECT_BINARY_DIR}/ecell4/egfrd/config.h")
-target_link_libraries(ecell4-egfrd ecell4-core ${BOOST_REGEX_LIBRARIES})
-
-# add_subdirectory(tests)
-add_subdirectory(samples)
-
-install(TARGETS ecell4-egfrd DESTINATION lib)
-add_dependencies(ecell4-egfrd BesselTables)
-
-install(FILES ${HPP_FILES} "${PROJECT_BINARY_DIR}/ecell4/egfrd/config.h"
-    "${PROJECT_BINARY_DIR}/ecell4/egfrd/SphericalBesselTable.hpp"
-    "${PROJECT_BINARY_DIR}/ecell4/egfrd/CylindricalBesselTable.hpp"
-    DESTINATION "include/ecell4/egfrd")
-install(FILES ${UTILS_HPP_FILES} DESTINATION "include/ecell4/egfrd/utils")
+add_custom_target(BesselTables ALL DEPENDS ${PROJECT_BINARY_DIR}/SphericalBesselTable.hpp ${PROJECT_BINARY_DIR}/CylindricalBesselTable.hpp)

@@ -8,48 +8,73 @@ E-Cell System, a software platform for modeling, simulation and analysis of comp
 
 ### Requirements
 
-- Python 2.7.8(**32bit**) https://www.python.org/ftp/python/2.7.8/python-2.7.8.msi
-- virtualenv https://pypi.python.org/packages/source/v/virtualenv/virtualenv-1.11.6.tar.gz
-- HDF5-1.8.13 Pre-built Binary(**32-bit**) http://www.hdfgroup.org/ftp/HDF5/current/bin/windows/hdf5-1.8.13-win32-VS2012-shared.zip
+- Python 2.7.9(**32bit**) https://www.python.org/ftp/python/2.7.9/python-2.7.9.msi
+- HDF5-1.8.14 Pre-built Binary(**32-bit**) http://www.hdfgroup.org/ftp/HDF5/current/bin/windows/extra/hdf5-1.8.14-win32-vs2008-shared.zip
+
+Please add `C:\Python27\Scripts` and `C:\Program Files (x86)\HDF_Group\HDF5\1.8.14\bin` to your **PATH** enviromental variable.
+
+And run following command with command prompt.
+```
+:: Please download ecell4-4.0.0_beta1-cp27-none-win32.whl from release page
+pip install ecell4-4.0.0_beta1-cp27-none-win32.whl
+```
+
+### IPython notebook
+We recommend you run E-Cell4 models from IPython notebook.
+Below is IPython notebook(and matplotlib) installation for Windows.
 
 ```
-:: creating virtualenv environment
-cd C:\path\to\virtualenv-1.11.6 
-python virtualenv.py C:\path\to\myenv
-cd C:\path\to\myenv\Scripts
-activate.bat
-:: now you are in virtual environment
-pip install http://dev.e-cell.org/downloads/ecell4/win/latest/ecell4-0.0.0-cp27-none-win32.whl
+pip install python-dateutil
+pip install pyparsing
+pip install "ipython[notebook]"
 ```
+
+next, download matplotlib and numpy from
+
+https://downloads.sourceforge.net/project/matplotlib/matplotlib/matplotlib-1.4.2/windows/matplotlib-1.4.2-cp27-none-win32.whl  
+http://sourceforge.net/projects/numpy/files/NumPy/1.9.1/numpy-1.9.1-win32-superpack-python2.7.exe/download
+
+and install these exe files.
 
 ## Installing E-Cell (Mac OS X)
 
 ### Requirements
 
-- hdf5 (latest)
-- pip (latest)
+- homebrew
+- hdf5
+- pip
 
 ```shell
 # here we use homebrew to install hdf5, please install hdf5 to /usr/local/lib
 brew install homebrew/science/hdf5 --enable-cxx
-sudo easy_install pip
-pip install http://dev.e-cell.org/downloads/ecell4/mac/mavericks/latest/ecell4-0.0.0-cp27-none-macosx_10_9_intel.whl
+brew install wget
+wget https://bootstrap.pypa.io/get-pip.py
+sudo python get-pip.py
+# please download whl file from release page(https://github.com/ecell/ecell4/releases)
+pip install ecell4-4.0.0_beta1-cp27-none-macosx_10_10_intel.whl --user
 # if you are using Mountain Lion
-# pip install http://dev.e-cell.org/downloads/ecell4/mac/mountainlion/latest/ecell4-0.0.0-cp27-none-macosx_10_8_intel.whl
+# pip install ecell4-4.0.0b1-cp27-none-macosx_10_9_intel.whl --user
 ```
 
-## Installing E-Cell (Ubuntu 14.04)
+### IPython notebook
+We recommend you run E-Cell4 models from IPython notebook.
+Below is IPython notebook(and matplotlib) installation for Mac.
 
 ```shell
-$ sudo apt-get install python-pip libgsl0-dev libhdf5-serial-dev libboost-dev
-$ sudo pip install http://dev.e-cell.org/downloads/ecell4/ubuntu-trusty-amd64/latest/ecell4-0.0.0-cp27-none-linux_x86_64.whl
+pip install matplotlib --user
+pip install "ipython[notebook]" --user
+cd ~/Library/Python/2.7/ecell4ipynb
+PYTHONPATH=~/Library/Python/2.7/lib/python/site-packages/ ipython notebook
 ```
+
+now you can see IPython notebooks, please open index.ipynb to see E-Cell4 models.
+
 
 ## Building and installing E-Cell (Ubuntu 14.04)
 
 ```shell
 # dependent packages
-$ sudo apt-get install libgsl0-dev libboost-dev libboost-test-dev libboost-regex-dev libhdf5-serial-dev
+$ sudo apt-get install cmake libgsl0-dev libboost-dev libboost-regex-dev libhdf5-dev libatlas-base-dev
 $ sudo apt-get instal python-dev cython
 
 $ wget https://github.com/ecell/ecell4/archive/master.zip   

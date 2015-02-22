@@ -82,12 +82,6 @@ else:
     path_to_egfrd = os.path.join(os.path.abspath(".."), "ecell4", "egfrd")
     sjy_table_path = os.path.join(path_to_egfrd, "SphericalBesselTable.hpp")
     cjy_table_path = os.path.join(path_to_egfrd, "CylindricalBesselTable.hpp")
-    if not os.path.isfile(sjy_table_path):
-        subprocess.check_call(["python",
-            os.path.join(path_to_egfrd, "make_sjy_table.py"), sjy_table_path])
-    if not os.path.isfile(cjy_table_path):
-        subprocess.check_call(["python",
-            os.path.join(path_to_egfrd, "make_cjy_table.py"), cjy_table_path])
 
     core_src = glob.glob("../ecell4/core/*.cpp")
     ext_modules = [
@@ -128,11 +122,13 @@ else:
 
 setup(
     name = "ecell4",
-    version = "4.0.0-beta1",
+    version = "4.0.0b1",
     package_dir = {"": "lib"},
     package_data = {"ecell4.util": [
         "templates/init_ipynb.js", "templates/init_cyjs.js", "templates/template.html",
         "templates/*.tmpl", "templates/ecelllogo/*.png"]},
+    data_files = [('ecell4ipynb', ['../ipynb/index.ipynb']),
+                  ('ecell4ipynb/Tutorials', glob.glob('../ipynb/Tutorials/*.ipynb'))],
     packages = ["ecell4",
         "ecell4.util", "ecell4.util.legacy"],
     cmdclass = {'build_ext': build_ext, 'test': run_tests},

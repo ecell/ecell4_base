@@ -28,6 +28,7 @@ int main(int argc, char** argv)
     const Real L(1e-6);
     std::string D("5e-12"), radius("5e-9");
     const Real3 edge_lengths(L, L, L);
+    const Integer3 matrix_sizes(3, 3, 3);
 
     /// instantiate NetworkModel
     boost::shared_ptr<NetworkModel> model(new NetworkModel());
@@ -41,7 +42,7 @@ int main(int argc, char** argv)
     boost::shared_ptr<RandomNumberGenerator> rng(new GSLRandomNumberGenerator());
 
     /// instantiate BDWorld
-    boost::shared_ptr<BDWorld> world(new BDWorld(edge_lengths, rng));
+    boost::shared_ptr<BDWorld> world(new BDWorld(edge_lengths, matrix_sizes, rng));
     world->bind_to(model);
 
     /// create a Particle, and inject it into BDWorld
