@@ -316,6 +316,23 @@ def logo(x=1, y=None):
 
 
 def plot_number_observer(*args, **kwargs):
+    """Generate a plot from NumberObservers and show it on IPython notebook
+    with matplotlib.
+
+    Parameters
+    ----------
+    obs : NumberObserver (e.g. FixedIntervalNumberObserver)
+    fmt : str
+    opt : dict
+        matplotlib plot options.
+
+    Examples
+    --------
+    >>> plot_number_observer(obs1)
+    >>> plot_number_observer(obs1, 'o')
+    >>> plot_number_observer(obs1, obs2, obs3, {'linewidth': 2})
+    >>> plot_number_observer(obs1, 'k-', obs2, 'k--')
+    """
     import matplotlib.pylab as plt
     import numpy
     import collections
@@ -370,6 +387,10 @@ def plot_number_observer(*args, **kwargs):
     if "ylim" in kwargs.keys():
         ax.set_ylim(kwargs["ylim"])
     # fig.show()
+
+
+def run_simulation(m):
+    pass
 
 
 class ColorScale:
