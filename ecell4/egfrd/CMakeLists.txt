@@ -38,8 +38,8 @@ execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}
 
 add_executable(make_sjy_table make_sjy_table.cpp)
 add_executable(make_cjy_table make_cjy_table.cpp)
-target_link_libraries(make_sjy_table gsl cblas)
-target_link_libraries(make_cjy_table gsl cblas)
+target_link_libraries(make_sjy_table gsl gslcblas)
+target_link_libraries(make_cjy_table gsl gslcblas)
 add_custom_command(
     OUTPUT SphericalBesselTable.hpp
     #COMMAND g++ make_sjy_table.cpp -lgsl -lcblas -o make_sjy_table && ./make_sjy_table ${PROJECT_BINARY_DIR}/ecell4/egfrd/SphericalBesselTable.hpp
