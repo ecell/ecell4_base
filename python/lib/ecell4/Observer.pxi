@@ -220,3 +220,46 @@ cdef class BioImagingObserver:
             <shared_ptr[Cpp_Observer]>deref(self.thisptr))
         return retval
 
+cdef class TimingNumberObserver:
+
+    def __cinit__(self, vector[Real] t, vector[string] species):
+        self.thisptr = new shared_ptr[Cpp_TimingNumberObserver](
+            new Cpp_TimingNumberObserver(t, species))
+
+    def __dealloc__(self):
+        del self.thisptr
+
+    def next_time(self):
+        return self.thisptr.get().next_time()
+
+    def num_steps(self):
+        return self.thisptr.get().num_steps()
+
+    def data(self):
+        cdef vector[vector[Real]] d = self.thisptr.get().data()
+        retval = []
+        cdef vector[vector[Real]].iterator it = d.begin()
+        while it != d.end():
+            retval.append(deref(it))
+            inc(it)
+        return retval
+
+    def targets(self):
+        cdef vector[Cpp_Species] species = self.thisptr.get().targets()
+
+        retval = []
+        cdef vector[Cpp_Species].iterator it = species.begin()
+        while it != species.end():
+            retval.append(
+                 Species_from_Cpp_Species(
+                     <Cpp_Species*>(address(deref(it)))))
+            inc(it)
+        return retval
+
+    def as_base(self):
+        retval = Observer()
+        del retval.thisptr
+        retval.thisptr = new shared_ptr[Cpp_Observer](
+            <shared_ptr[Cpp_Observer]>deref(self.thisptr))
+        return retval
+

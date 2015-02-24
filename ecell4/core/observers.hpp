@@ -251,6 +251,104 @@ protected:
     NumberLogger logger_;
 };
 
+class TimingObserver
+    : public Observer
+{
+public:
+
+    typedef Observer base_type;
+
+public:
+
+    TimingObserver(const std::vector<Real>& t)
+        : base_type(false), t_(t), num_steps_(0)
+    {
+        ;
+    }
+
+    virtual ~TimingObserver()
+    {
+        ;
+    }
+
+    const Real next_time() const
+    {
+        if (num_steps_ >= t_.size())
+        {
+            return inf;
+        }
+        return t_[num_steps_];
+    }
+
+    const Integer num_steps() const
+    {
+        return num_steps_;
+    }
+
+    virtual void initialize(const Space* space)
+    {
+        num_steps_ = 0;
+    }
+
+    virtual void fire(const Simulator* sim, const Space* space)
+    {
+        ++num_steps_;
+    }
+
+protected:
+
+    std::vector<Real> t_;
+    Integer num_steps_;
+};
+
+class TimingNumberObserver
+    : public TimingObserver
+{
+public:
+
+    typedef TimingObserver base_type;
+
+public:
+
+    TimingNumberObserver(
+        const std::vector<Real>& t, const std::vector<std::string>& species)
+        : base_type(t), logger_(species)
+    {
+        ;
+    }
+
+    virtual ~TimingNumberObserver()
+    {
+        ;
+    }
+
+    virtual void initialize(const Space* space)
+    {
+        base_type::initialize(space);
+        logger_.initialize();
+    }
+
+    virtual void fire(const Simulator* sim, const Space* space)
+    {
+        logger_.log(space);
+        base_type::fire(sim, space);
+    }
+
+    NumberLogger::data_container_type data() const
+    {
+        return logger_.data;
+    }
+
+    NumberLogger::species_container_type targets() const
+    {
+        return logger_.targets;
+    }
+
+protected:
+
+    NumberLogger logger_;
+};
+
 class FixedIntervalHDF5Observer
     : public FixedIntervalObserver
 {

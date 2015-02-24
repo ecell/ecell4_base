@@ -28,3 +28,8 @@ cdef shared_ptr[Cpp_Model]* Cpp_Model_from_Model(m):
     else:
         raise ValueError, ("a wrong argument was given [%s]." % (type(m))
             + " the first argument must be Model, NetworkModel or NetfreeModel")
+
+cimport functions
+
+def cbrt(Real x):
+    return functions.cbrt(x)

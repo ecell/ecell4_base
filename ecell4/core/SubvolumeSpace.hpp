@@ -111,7 +111,8 @@ public:
 
     virtual void add_structure(
         const Species& sp, const boost::shared_ptr<const Shape>& shape) = 0;
-    virtual bool check_structure(const Species::serial_type& serial, const coordinate_type& coord) const = 0;
+    virtual bool check_structure(
+        const Species::serial_type& serial, const coordinate_type& coord) const = 0;
     virtual bool has_structure(const Species& sp) const = 0;
     virtual Real get_volume(const Species& sp) const = 0;
 
