@@ -11,6 +11,9 @@ cdef class Observer:
     def next_time(self):
         return self.thisptr.get().next_time()
 
+    def reset(self):
+        self.thisptr.get().reset()
+
 cdef class FixedIntervalNumberObserver:
 
     def __cinit__(self, Real dt, vector[string] species):
@@ -54,6 +57,9 @@ cdef class FixedIntervalNumberObserver:
             <shared_ptr[Cpp_Observer]>deref(self.thisptr))
         return retval
 
+    def reset(self):
+        self.thisptr.get().reset()
+
 cdef class NumberObserver:
 
     def __cinit__(self, vector[string] species):
@@ -94,6 +100,9 @@ cdef class NumberObserver:
             <shared_ptr[Cpp_Observer]>deref(self.thisptr))
         return retval
 
+    def reset(self):
+        self.thisptr.get().reset()
+
 cdef class FixedIntervalHDF5Observer:
 
     def __cinit__(self, Real dt, string filename):
@@ -118,6 +127,9 @@ cdef class FixedIntervalHDF5Observer:
         retval.thisptr = new shared_ptr[Cpp_Observer](
             <shared_ptr[Cpp_Observer]>deref(self.thisptr))
         return retval
+
+    def reset(self):
+        self.thisptr.get().reset()
 
 cdef class FixedIntervalCSVObserver:
 
@@ -147,6 +159,9 @@ cdef class FixedIntervalCSVObserver:
         retval.thisptr = new shared_ptr[Cpp_Observer](
             <shared_ptr[Cpp_Observer]>deref(self.thisptr))
         return retval
+
+    def reset(self):
+        self.thisptr.get().reset()
 
 cdef class FixedIntervalTrajectoryObserver:
 
@@ -191,34 +206,40 @@ cdef class FixedIntervalTrajectoryObserver:
             <shared_ptr[Cpp_Observer]>deref(self.thisptr))
         return retval
 
-cdef class BioImagingObserver:
+    def reset(self):
+        self.thisptr.get().reset()
 
-    def __cinit__(self, Real dt, Real exposure_time, Integer num_div, Real voxel_radius, Real scale):
-        self.thisptr = new shared_ptr[Cpp_BioImagingObserver](
-            new Cpp_BioImagingObserver(dt, exposure_time, num_div, voxel_radius, scale))
-
-    def __dealloc__(self):
-        del self.thisptr
-
-    def next_time(self):
-        return self.thisptr.get().next_time()
-
-    def num_steps(self):
-        return self.thisptr.get().num_steps()
-
-    def log(self, w):
-        cdef Space space = w.as_base()
-        self.thisptr.get().log(space.thisptr.get())
-
-    def filename(self):
-        return self.thisptr.get().filename()
-
-    def as_base(self):
-        retval = Observer()
-        del retval.thisptr
-        retval.thisptr = new shared_ptr[Cpp_Observer](
-            <shared_ptr[Cpp_Observer]>deref(self.thisptr))
-        return retval
+# cdef class BioImagingObserver:
+# 
+#     def __cinit__(self, Real dt, Real exposure_time, Integer num_div, Real voxel_radius, Real scale):
+#         self.thisptr = new shared_ptr[Cpp_BioImagingObserver](
+#             new Cpp_BioImagingObserver(dt, exposure_time, num_div, voxel_radius, scale))
+# 
+#     def __dealloc__(self):
+#         del self.thisptr
+# 
+#     def next_time(self):
+#         return self.thisptr.get().next_time()
+# 
+#     def num_steps(self):
+#         return self.thisptr.get().num_steps()
+# 
+#     def log(self, w):
+#         cdef Space space = w.as_base()
+#         self.thisptr.get().log(space.thisptr.get())
+# 
+#     def filename(self):
+#         return self.thisptr.get().filename()
+# 
+#     def as_base(self):
+#         retval = Observer()
+#         del retval.thisptr
+#         retval.thisptr = new shared_ptr[Cpp_Observer](
+#             <shared_ptr[Cpp_Observer]>deref(self.thisptr))
+#         return retval
+# 
+#     def reset(self):
+#         self.thisptr.get().reset()
 
 cdef class TimingNumberObserver:
 
@@ -263,3 +284,5 @@ cdef class TimingNumberObserver:
             <shared_ptr[Cpp_Observer]>deref(self.thisptr))
         return retval
 
+    def reset(self):
+        self.thisptr.get().reset()

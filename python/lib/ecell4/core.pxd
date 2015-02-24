@@ -430,6 +430,7 @@ cdef Voxel Voxel_from_Cpp_Voxel(Cpp_Voxel* p)
 cdef extern from "ecell4/core/observers.hpp" namespace "ecell4":
     cdef cppclass Cpp_Observer "ecell4::Observer":
         Real next_time()
+        void reset()
 
     cdef cppclass Cpp_FixedIntervalNumberObserver "ecell4::FixedIntervalNumberObserver":
         Cpp_FixedIntervalNumberObserver(Real, vector[string]) except +
@@ -437,18 +438,21 @@ cdef extern from "ecell4/core/observers.hpp" namespace "ecell4":
         Integer num_steps()
         vector[vector[Real]] data()
         vector[Cpp_Species] targets()
+        void reset()
 
     cdef cppclass Cpp_NumberObserver "ecell4::NumberObserver":
         Cpp_NumberObserver(vector[string]) except +
         Real next_time()
         vector[vector[Real]] data()
         vector[Cpp_Species] targets()
+        void reset()
 
     cdef cppclass Cpp_FixedIntervalHDF5Observer "ecell4::FixedIntervalHDF5Observer":
         Cpp_FixedIntervalHDF5Observer(Real, string) except +
         Real next_time()
         Integer num_steps()
         string filename()
+        void reset()
 
     cdef cppclass Cpp_FixedIntervalCSVObserver "ecell4::FixedIntervalCSVObserver":
         Cpp_FixedIntervalCSVObserver(Real, string) except +
@@ -456,6 +460,7 @@ cdef extern from "ecell4/core/observers.hpp" namespace "ecell4":
         Integer num_steps()
         string filename()
         void log(Cpp_Space*)
+        void reset()
 
     cdef cppclass Cpp_FixedIntervalTrajectoryObserver "ecell4::FixedIntervalTrajectoryObserver":
         Cpp_FixedIntervalTrajectoryObserver(Real, vector[Cpp_ParticleID]) except +
@@ -463,13 +468,15 @@ cdef extern from "ecell4/core/observers.hpp" namespace "ecell4":
         Real next_time()
         Integer num_steps()
         vector[vector[Cpp_Real3]] data()
+        void reset()
 
-    cdef cppclass Cpp_BioImagingObserver "ecell4::BioImagingObserver":
-        Cpp_BioImagingObserver(Real, Real, Integer, Real, Real) except +
-        Real next_time()
-        Integer num_steps()
-        string filename()
-        void log(Cpp_Space*)
+    # cdef cppclass Cpp_BioImagingObserver "ecell4::BioImagingObserver":
+    #     Cpp_BioImagingObserver(Real, Real, Integer, Real, Real) except +
+    #     Real next_time()
+    #     Integer num_steps()
+    #     string filename()
+    #     void log(Cpp_Space*)
+    #     void reset()
 
     cdef cppclass Cpp_TimingNumberObserver "ecell4::TimingNumberObserver":
         Cpp_TimingNumberObserver(vector[Real], vector[string]) except +
@@ -477,6 +484,7 @@ cdef extern from "ecell4/core/observers.hpp" namespace "ecell4":
         Integer num_steps()
         vector[vector[Real]] data()
         vector[Cpp_Species] targets()
+        void reset()
 
 ## FixedIntervalNumberObserver
 #  a python wrapper for Cpp_FixedIntervalNumberObserver
@@ -501,8 +509,8 @@ cdef class FixedIntervalCSVObserver:
 cdef class FixedIntervalTrajectoryObserver:
     cdef shared_ptr[Cpp_FixedIntervalTrajectoryObserver]* thisptr
 
-cdef class BioImagingObserver:
-    cdef shared_ptr[Cpp_BioImagingObserver]* thisptr
+# cdef class BioImagingObserver:
+#     cdef shared_ptr[Cpp_BioImagingObserver]* thisptr
 
 ## Cpp_Shape
 #  ecell4::Shape
