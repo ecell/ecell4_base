@@ -349,7 +349,7 @@ def plot_number_observer(*args, **kwargs):
     if len(args) != 1 and isinstance(args[1], str):
         for obs, fmt in zip(args[:: 2], args[1:: 2]):
             data = numpy.array(obs.data()).T
-            for i, sp in enumerate(obs.targets()):
+            for i, sp in enumerate(sorted(obs.targets())):
                 if is_first:
                     ax.plot(data[0], data[i + 1], fmt,
                             color=color_cycle[i % len(color_cycle)],
@@ -362,7 +362,7 @@ def plot_number_observer(*args, **kwargs):
     else:
         for obs in args:
             data = numpy.array(obs.data()).T
-            for i, sp in enumerate(obs.targets()):
+            for i, sp in enumerate(sorted(obs.targets())):
                 if is_first:
                     ax.plot(data[0], data[i + 1],
                             color=color_cycle[i % len(color_cycle)],
@@ -387,10 +387,6 @@ def plot_number_observer(*args, **kwargs):
     if "ylim" in kwargs.keys():
         ax.set_ylim(kwargs["ylim"])
     # fig.show()
-
-
-def run_simulation(m):
-    pass
 
 
 class ColorScale:
