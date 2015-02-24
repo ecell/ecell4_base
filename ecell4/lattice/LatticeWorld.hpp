@@ -445,6 +445,11 @@ public:
         return make_pid_voxel_pair(mt, info);
     }
 
+    bool on_structure(const Voxel& v)
+    {
+        return (*space_).on_structure(v);
+    }
+
     /*
      * HDF5 Save
      */

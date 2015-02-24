@@ -18,6 +18,22 @@ void LatticeSimulator::initialize()
         register_events(*itr);
     }
 
+
+    const std::vector<ReactionRule>& rules(model_->reaction_rules());
+    for (std::vector<ReactionRule>::const_iterator i(rules.begin());
+        i != rules.end(); ++i)
+    {
+        const ReactionRule& rr(*i);
+        if (rr.reactants().size() != 0)
+        {
+            continue;
+        }
+        const boost::shared_ptr<EventScheduler::Event>
+            zeroth_order_reaction_event(
+                create_zeroth_order_reaction_event(rr, world_->t()));
+        scheduler_.add(zeroth_order_reaction_event);
+    }
+
     // Model::reaction_rule_container_type rules(model_->reaction_rules());
     // for (Model::reaction_rule_container_type::iterator itr(rules.begin());
     //         itr != rules.end(); ++itr)
@@ -61,12 +77,72 @@ boost::shared_ptr<EventScheduler::Event> LatticeSimulator::create_step_event(
 }
 
 boost::shared_ptr<EventScheduler::Event>
+LatticeSimulator::create_zeroth_order_reaction_event(
+    const ReactionRule& reaction_rule, const Real& t)
+{
+    boost::shared_ptr<EventScheduler::Event> event(new ZerothOrderReactionEvent(
+                this, reaction_rule, t));
+    return event;
+}
+
+boost::shared_ptr<EventScheduler::Event>
 LatticeSimulator::create_first_order_reaction_event(
     const ReactionRule& reaction_rule, const Real& t)
 {
     boost::shared_ptr<EventScheduler::Event> event(new FirstOrderReactionEvent(
                 this, reaction_rule, t));
     return event;
+}
+
+/*
+ * the Zeroth Order Reaction
+ */
+std::pair<bool, LatticeSimulator::reaction_type>
+    LatticeSimulator::apply_zeroth_order_reaction_(
+        const ReactionRule& reaction_rule)
+{
+    const ReactionRule::product_container_type&
+        products(reaction_rule.products());
+    reaction_type reaction;
+    reaction.rule = reaction_rule;
+    // return std::pair<bool, reaction_type>(false, reaction);
+
+    for (ReactionRule::product_container_type::const_iterator
+        i(reaction_rule.products().begin());
+        i != reaction_rule.products().end(); ++i)
+    {
+        const Species& sp(*i);
+        const LatticeWorld::molecule_info_type
+            info(world_->get_molecule_info(sp));
+        register_product_species(sp);
+
+        while (true)
+        {
+            const LatticeWorld::coordinate_type
+                coord(world_->rng()->uniform_int(0, world_->size() - 1));
+            const Voxel v(
+                sp, world_->coord2private(coord),
+                info.radius, info.D, info.loc);
+
+            if (world_->on_structure(v))
+            {
+                continue;
+            }
+
+            const std::pair<std::pair<ParticleID, Voxel>, bool>
+                retval(world_->new_voxel_private(v));
+            if (retval.second)
+            {
+                reaction.products.push_back(
+                    reaction_type::particle_type(
+                        retval.first.first,
+                        this->private_voxel2voxel(retval.first.second)));
+                break;
+            }
+        }
+    }
+    reactions_.push_back(reaction_rule);
+    return std::pair<bool, reaction_type>(true, reaction);
 }
 
 std::pair<bool, LatticeSimulator::reaction_type> LatticeSimulator::attempt_reaction_(

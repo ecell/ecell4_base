@@ -80,6 +80,49 @@ protected:
         Real alpha_;
     };
 
+    struct ZerothOrderReactionEvent : EventScheduler::Event
+    {
+        ZerothOrderReactionEvent(
+            LatticeSimulator* sim, const ReactionRule& rule, const Real& t)
+            : EventScheduler::Event(t), sim_(sim), rule_(rule)
+        {
+            time_ = t + draw_dt();
+        }
+
+        virtual ~ZerothOrderReactionEvent()
+        {
+        }
+
+        virtual void fire()
+        {
+            sim_->apply_zeroth_order_reaction_(rule_);
+            time_ += draw_dt();
+        }
+
+        virtual void interrupt(Real const& t)
+        {
+            time_ = t + draw_dt();
+        }
+
+        Real draw_dt()
+        {
+            const Real k(rule_.k());
+            const Real p = k;
+            Real dt(inf);
+            if (p != 0.)
+            {
+                const Real rnd(sim_->world_->rng()->uniform(0.,1.));
+                dt = - log(1 - rnd) / p;
+            }
+            return dt;
+        }
+
+    protected:
+
+        LatticeSimulator* sim_;
+        ReactionRule rule_;
+    };
+
     struct FirstOrderReactionEvent : EventScheduler::Event
     {
         FirstOrderReactionEvent(
@@ -164,6 +207,8 @@ protected:
 
     boost::shared_ptr<EventScheduler::Event> create_step_event(
         const Species& species, const Real& t);
+    boost::shared_ptr<EventScheduler::Event> create_zeroth_order_reaction_event(
+        const ReactionRule& reaction_rule, const Real& t);
     boost::shared_ptr<EventScheduler::Event> create_first_order_reaction_event(
         const ReactionRule& reaction_rule, const Real& t);
     std::pair<bool, reaction_type> attempt_reaction_(
@@ -195,6 +240,9 @@ protected:
         const Species& product_species0,
         const Species& product_species1,
         reaction_type& reaction);
+    std::pair<bool, reaction_type> apply_zeroth_order_reaction_(
+        const ReactionRule& reaction_rule);
+
     void  register_product_species(const Species& product_species);
 
     void step_();
