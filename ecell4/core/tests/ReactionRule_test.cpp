@@ -95,3 +95,17 @@ BOOST_AUTO_TEST_CASE(ReactionRule_test_compare)
     BOOST_CHECK(rr1 != rr4);
     BOOST_CHECK(rr1 == rr5);
 }
+
+BOOST_AUTO_TEST_CASE(ReactionRule_test_generate1)
+{
+    ReactionRule rr1;
+    Species sp1("A");
+    rr1.add_product(sp1);
+    rr1.set_k(1.0);
+
+    std::vector<Species> reactants;  // XXX: empty
+    std::vector<ReactionRule> retval(rr1.generate(reactants));
+
+    BOOST_CHECK_EQUAL(retval.size(), 1);
+    BOOST_CHECK(retval[0] == rr1);
+}

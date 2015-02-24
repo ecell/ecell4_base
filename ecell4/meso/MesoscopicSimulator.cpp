@@ -162,7 +162,11 @@ void MesoscopicSimulator::initialize(void)
     {
         const ReactionRule& rr(*i);
 
-        if (rr.reactants().size() == 1)
+        if (rr.reactants().size() == 0)
+        {
+            proxies_.push_back(new ZerothOrderReactionRuleProxy(this, rr));
+        }
+        else if (rr.reactants().size() == 1)
         {
             proxies_.push_back(new FirstOrderReactionRuleProxy(this, rr));
         }
