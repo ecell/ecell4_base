@@ -543,7 +543,8 @@ public:
     FixedIntervalTrajectoryObserver(
         const Real& dt, const std::vector<ParticleID>& pids,
         const bool& resolve_boundary = true)
-        : base_type(dt), pids_(pids), resolve_boundary_(resolve_boundary)
+        : base_type(dt), pids_(pids), resolve_boundary_(resolve_boundary),
+        trajectories_(pids.size()), strides_(pids.size())
     {
         ;
     }
