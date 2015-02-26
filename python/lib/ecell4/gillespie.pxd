@@ -27,6 +27,9 @@ cdef extern from "ecell4/gillespie/GillespieWorld.hpp" namespace "ecell4::gilles
         void load(string)
         void bind_to(shared_ptr[Cpp_Model])
         shared_ptr[Cpp_RandomNumberGenerator] rng()
+        vector[pair[Cpp_ParticleID, Cpp_Particle]] list_particles()
+        vector[pair[Cpp_ParticleID, Cpp_Particle]] list_particles(Cpp_Species& sp)
+        vector[pair[Cpp_ParticleID, Cpp_Particle]] list_particles_exact(Cpp_Species& sp)
 
 ## GillespieWorld
 #  a python wrapper for Cpp_GillespieWorld

@@ -73,6 +73,41 @@ cdef class GillespieWorld:
             inc(it)
         return retval
 
+    def list_particles(self, Species sp = None):
+        cdef vector[pair[Cpp_ParticleID, Cpp_Particle]] particles
+        if sp is None:
+            particles = self.thisptr.get().list_particles()
+        else:
+            particles = self.thisptr.get().list_particles(deref(sp.thisptr))
+
+        retval = []
+        cdef vector[pair[Cpp_ParticleID, Cpp_Particle]].iterator \
+            it = particles.begin()
+        while it != particles.end():
+            retval.append(
+                (ParticleID_from_Cpp_ParticleID(
+                     <Cpp_ParticleID*>(address(deref(it).first))),
+                 Particle_from_Cpp_Particle(
+                     <Cpp_Particle*>(address(deref(it).second)))))
+            inc(it)
+        return retval
+
+    def list_particles_exact(self, Species sp):
+        cdef vector[pair[Cpp_ParticleID, Cpp_Particle]] particles
+        particles = self.thisptr.get().list_particles_exact(deref(sp.thisptr))
+
+        retval = []
+        cdef vector[pair[Cpp_ParticleID, Cpp_Particle]].iterator \
+            it = particles.begin()
+        while it != particles.end():
+            retval.append(
+                (ParticleID_from_Cpp_ParticleID(
+                     <Cpp_ParticleID*>(address(deref(it).first))),
+                 Particle_from_Cpp_Particle(
+                     <Cpp_Particle*>(address(deref(it).second)))))
+            inc(it)
+        return retval
+
     def save(self, string filename):
         self.thisptr.get().save(filename)
 

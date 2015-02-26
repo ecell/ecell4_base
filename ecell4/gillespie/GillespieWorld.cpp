@@ -3,6 +3,7 @@
 #include <sstream>
 #include <iostream>
 
+#include <ecell4/core/SerialIDGenerator.hpp>
 #include "GillespieWorld.hpp"
 
 
@@ -62,6 +63,85 @@ void GillespieWorld::remove_molecules(const Species& sp, const Integer& num)
 bool GillespieWorld::has_species(const Species& sp) const
 {
     return this->cs_->has_species(sp);
+}
+
+std::vector<std::pair<ParticleID, Particle> >
+    GillespieWorld::list_particles() const
+{
+    SerialIDGenerator<ParticleID> pidgen;
+    const std::vector<Species> species_list(list_species());
+    const Real3 lengths(edge_lengths());
+
+    std::vector<std::pair<ParticleID, Particle> > retval;
+    for (std::vector<Species>::const_iterator i(species_list.begin());
+        i != species_list.end(); ++i)
+    {
+        const Integer num(num_molecules_exact(*i));
+
+        for (Integer k(0); k < num; ++k)
+        {
+            const Real3 pos(
+                rng_->uniform(0, lengths[0]),
+                rng_->uniform(0, lengths[1]),
+                rng_->uniform(0, lengths[2]));
+            retval.push_back(
+                std::make_pair(pidgen(), Particle(*i, pos, 0.0, 0.0)));
+        }
+    }
+    return retval;
+}
+
+std::vector<std::pair<ParticleID, Particle> >
+    GillespieWorld::list_particles_exact(const Species& sp) const
+{
+    SerialIDGenerator<ParticleID> pidgen;
+    const Real3 lengths(edge_lengths());
+
+    std::vector<std::pair<ParticleID, Particle> > retval;
+    const Integer num(num_molecules_exact(sp));
+
+    for (Integer k(0); k < num; ++k)
+    {
+        const Real3 pos(
+            rng_->uniform(0, lengths[0]),
+            rng_->uniform(0, lengths[1]),
+            rng_->uniform(0, lengths[2]));
+        retval.push_back(
+            std::make_pair(pidgen(), Particle(sp, pos, 0.0, 0.0)));
+    }
+    return retval;
+}
+
+std::vector<std::pair<ParticleID, Particle> >
+    GillespieWorld::list_particles(const Species& sp) const
+{
+    SerialIDGenerator<ParticleID> pidgen;
+    const std::vector<Species> species_list(list_species());
+    const Real3 lengths(edge_lengths());
+
+    std::vector<std::pair<ParticleID, Particle> > retval;
+    for (std::vector<Species>::const_iterator i(species_list.begin());
+        i != species_list.end(); ++i)
+    {
+        const Integer coef(sp.count(*i));
+        if (coef == 0)
+        {
+            continue;
+        }
+
+        const Integer num(coef * num_molecules_exact(*i));
+
+        for (Integer k(0); k < num; ++k)
+        {
+            const Real3 pos(
+                rng_->uniform(0, lengths[0]),
+                rng_->uniform(0, lengths[1]),
+                rng_->uniform(0, lengths[2]));
+            retval.push_back(
+                std::make_pair(pidgen(), Particle(*i, pos, 0.0, 0.0)));
+        }
+    }
+    return retval;
 }
 
 } // gillespie

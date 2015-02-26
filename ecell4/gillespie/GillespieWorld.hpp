@@ -138,6 +138,10 @@ public:
         add_molecules(sp, num);
     }
 
+    std::vector<std::pair<ParticleID, Particle> > list_particles() const;
+    std::vector<std::pair<ParticleID, Particle> > list_particles_exact(const Species& sp) const;
+    std::vector<std::pair<ParticleID, Particle> > list_particles(const Species& sp) const;
+
 private:
 
     boost::scoped_ptr<CompartmentSpace> cs_;
