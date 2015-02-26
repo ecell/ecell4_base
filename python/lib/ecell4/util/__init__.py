@@ -9,7 +9,7 @@ __all__ = [
 
 def run_simulation(
         t, y0, volume=1.0, model=None, with_plot=True, solver='ode',
-        is_netfree=False, species_list=None):
+        factory=None, is_netfree=False, species_list=None):
     """Run a simulation with the given model and plot the result on IPython
     notebook with matplotlib.
 
@@ -26,13 +26,16 @@ def run_simulation(
     solver: str, optional
         Solver type. Choose one from 'ode', 'gillespie', 'lattice', 'meso',
         'bd' and 'egfrd'.
+    factory: Factory, optional
     is_netfree: bool, optional
         Whether the model is netfree or not. When a model is given as an
         argument, just ignored.
     """
     import ecell4
 
-    if solver == 'ode':
+    if factory is not None:
+        f = factory
+    elif solver == 'ode':
         f = ecell4.ode.ODEFactory()
     elif solver == 'gillespie':
         f = ecell4.gillespie.GillespieFactory()
