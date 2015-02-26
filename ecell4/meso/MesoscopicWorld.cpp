@@ -106,23 +106,50 @@ std::vector<std::pair<ParticleID, Particle> >
     MesoscopicWorld::list_particles(const Species& sp) const
 {
     SerialIDGenerator<ParticleID> pidgen;
+    const std::vector<Species>& species_list(species());
     const Real3 lengths(subvolume_edge_lengths());
 
     std::vector<std::pair<ParticleID, Particle> > retval;
-    MoleculeInfo info(get_molecule_info(sp));
-    for (coordinate_type j(0); j < num_subvolumes(); ++j)
-    {
-        const Integer num(num_molecules(sp, j));
-        const Integer3 g(coord2global(j));
+    // MoleculeInfo info(get_molecule_info(sp));
+    // for (coordinate_type j(0); j < num_subvolumes(); ++j)
+    // {
+    //     const Integer num(num_molecules(sp, j));
+    //     const Integer3 g(coord2global(j));
 
-        for (Integer k(0); k < num; ++k)
+    //     for (Integer k(0); k < num; ++k)
+    //     {
+    //         const Real3 pos(
+    //             rng_->uniform(g.col * lengths[0], (g.col + 1) * lengths[0]),
+    //             rng_->uniform(g.row * lengths[1], (g.row + 1) * lengths[1]),
+    //             rng_->uniform(g.layer * lengths[2], (g.layer + 1) * lengths[2]));
+    //         retval.push_back(
+    //             std::make_pair(pidgen(), Particle(sp, pos, 0.0, info.D)));
+    //     }
+    // }
+    for (std::vector<Species>::const_iterator i(species_list.begin());
+        i != species_list.end(); ++i)
+    {
+        const Integer coef(sp.count(*i));
+        if (coef == 0)
         {
-            const Real3 pos(
-                rng_->uniform(g.col * lengths[0], (g.col + 1) * lengths[0]),
-                rng_->uniform(g.row * lengths[1], (g.row + 1) * lengths[1]),
-                rng_->uniform(g.layer * lengths[2], (g.layer + 1) * lengths[2]));
-            retval.push_back(
-                std::make_pair(pidgen(), Particle(sp, pos, 0.0, info.D)));
+            continue;
+        }
+
+        MoleculeInfo info(get_molecule_info(*i));
+        for (coordinate_type j(0); j < num_subvolumes(); ++j)
+        {
+            const Integer num(coef * num_molecules_exact(*i, j));
+            const Integer3 g(coord2global(j));
+
+            for (Integer k(0); k < num; ++k)
+            {
+                const Real3 pos(
+                    rng_->uniform(g.col * lengths[0], (g.col + 1) * lengths[0]),
+                    rng_->uniform(g.row * lengths[1], (g.row + 1) * lengths[1]),
+                    rng_->uniform(g.layer * lengths[2], (g.layer + 1) * lengths[2]));
+                retval.push_back(
+                    std::make_pair(pidgen(), Particle(*i, pos, 0.0, info.D)));
+            }
         }
     }
     return retval;
