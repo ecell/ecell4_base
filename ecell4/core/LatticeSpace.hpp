@@ -8,7 +8,9 @@
 
 #include "Space.hpp"
 #include "Integer3.hpp"
+#ifdef HDF5
 #include "LatticeSpaceHDF5Writer.hpp"
+#endif
 #include "MolecularTypeBase.hpp"
 #include "MolecularType.hpp"
 
@@ -175,6 +177,7 @@ public:
         return col_size() * row_size() * layer_size();
     }
 
+#ifdef HDF5
     /*
      * HDF5 Save
      */
@@ -187,6 +190,7 @@ public:
     {
         load_lattice_space(root, this);
     }
+#endif
 
     void reset(const Real3& edge_lengths, const Real& voxel_radius,
         const bool is_periodic)

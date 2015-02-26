@@ -318,6 +318,7 @@ public:
         return serial_advance(next_, 1);
     }
 
+#ifndef HDF5
     void save(H5::CommonFG* root) const
     {
         using namespace H5;
@@ -342,6 +343,7 @@ public:
         dataset.read((unsigned char*)(&state), *optype);
         next_ = state;
     }
+#endif
 
 private:
 

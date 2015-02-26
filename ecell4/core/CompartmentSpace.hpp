@@ -6,8 +6,10 @@
 #include "exceptions.hpp"
 #include "Species.hpp"
 #include "Space.hpp"
-#include "CompartmentSpaceHDF5Writer.hpp"
 
+#ifndef HDF5
+#include "CompartmentSpaceHDF5Writer.hpp"
+#endif
 
 namespace ecell4
 {
@@ -133,10 +135,12 @@ public:
      */
     virtual void remove_molecules(const Species& sp, const Integer& num) = 0;
 
+#ifndef HDF5
     // Optional members
 
     virtual void save(H5::Group* root) const = 0;
     virtual void load(const H5::Group& root) = 0;
+#endif
 
 protected:
 
@@ -202,6 +206,7 @@ public:
 
     std::vector<Species> list_species() const;
 
+#ifndef HDF5
     void save(H5::Group* root) const
     {
         typedef CompartmentSpaceHDF5Traits<CompartmentSpaceVectorImpl> traits_type;
@@ -213,6 +218,7 @@ public:
         typedef CompartmentSpaceHDF5Traits<CompartmentSpaceVectorImpl> traits_type;
         load_compartment_space<traits_type>(root, this);
     }
+#endif
 
 protected:
 

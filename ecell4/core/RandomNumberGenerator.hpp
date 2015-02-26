@@ -7,8 +7,10 @@
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_randist.h>
 
+#ifdef HDF5
 #include <hdf5.h>
 #include <H5Cpp.h>
+#endif
 
 #include "types.hpp"
 #include "Real3.hpp"
@@ -70,8 +72,10 @@ public:
     void seed(Integer val);
     void seed();
 
+#ifndef HDF5
     void save(H5::CommonFG* root) const;
     void load(const H5::CommonFG& root);
+#endif
 
     GSLRandomNumberGenerator(rng_handle hdl)
         : rng_(hdl)
