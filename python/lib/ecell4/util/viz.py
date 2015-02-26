@@ -142,8 +142,9 @@ def plot_movie(
 
 
 def plot_world(
-        world, radius=None, width=500, height=500, config={}, grid=False,
-        species_list=None, debug=None, max_count=1000, predicator=None):
+        world, radius=None, width=500, height=500, config={}, grid=True,
+        wireframe=False, species_list=None, debug=None, max_count=1000,
+        predicator=None):
     """Generate a plot from received instance of World and show it
     on IPython notebook.
     This method returns the instance of dict that indicates color setting
@@ -216,10 +217,12 @@ def plot_world(
             'height': height,
             'range': __get_range_of_world(world),
             'autorange': False,
-            'space_mode': 'wireframe',
             'grid': grid
         }
     }
+
+    if wireframe:
+        model['options']['space_mode'] = 'wireframe'
 
     model_id = '"viz' + str(uuid.uuid4()) + '"'
     display(HTML(generate_html(
@@ -244,6 +247,96 @@ def generate_html(keywords, tmpl_path):
     template = Template(open(path).read())
     html = template.render(**keywords)
     return html
+
+
+def plot_trajectory(
+        obs, width=500, height=500, config={}, grid=True, wireframe=False,
+        max_count=10):
+    """Generate a plot from received instance of TrajectoryObserver and show it
+    on IPython notebook.
+
+    Parameters
+    ----------
+    obs : TrajectoryObserver
+        TrajectoryObserver to render.
+    width: float, default 500
+        Width of the plotting area.
+    height: float, default 500
+        Height of the plotting area.
+    config: dict, default {}
+        Dict for configure default colors. Its values are colors unique
+        to each particle.
+        Colors included in config dict will never be used for other particles.
+    """
+    from IPython.core.display import display, HTML
+
+    color_scale = ColorScale(config=config)
+    plots = []
+
+    xmin, xmax, ymin, ymax, zmin, zmax = None, None, None, None, None, None
+
+    data = obs.data()
+    if max_count is not None and len(data) > max_count:
+        data = random.sample(data, max_count)
+
+    for i, y in enumerate(data):
+        xarr, yarr, zarr = [], [], []
+        for pos in y:
+            xarr.append(pos[0])
+            yarr.append(pos[1])
+            zarr.append(pos[2])
+
+        if xmin is None:
+            if len(y) > 0:
+                xmin, xmax = min(xarr), max(xarr)
+                ymin, ymax = min(yarr), max(yarr)
+                zmin, zmax = min(zarr), max(zarr)
+        else:
+            xmin, xmax = min([xmin] + xarr), max([xmax] + xarr)
+            ymin, ymax = min([ymin] + yarr), max([ymax] + yarr)
+            zmin, zmax = min([zmin] + zarr), max([zmax] + zarr)
+
+        name = str(i + 1)
+        c = color_scale.get_color(name)
+        plots.append({
+            'type': 'Line',
+            'data': {'x': xarr, 'y': yarr, 'z': zarr},
+            'options': {
+                'name': name,
+                'thickness': 2,  # XXX: 'thikness' doesn't work on Windows
+                'colors': [c, c]}
+        })
+
+    if xmin is None:
+        xmin, xmax, ymin, ymax, zmin, zmax = 0, 1, 0, 1, 0, 1
+
+    max_length = max(xmax - xmin, ymax - ymin, zmax - zmin)
+    rangex = [(xmin + xmax - max_length) * 0.5,
+              (xmin + xmax + max_length) * 0.5]
+    rangey = [(ymin + ymax - max_length) * 0.5,
+              (ymin + ymax + max_length) * 0.5]
+    rangez = [(zmin + zmax - max_length) * 0.5,
+              (zmin + zmax + max_length) * 0.5]
+
+    model = {
+        'plots': plots,
+        'options': {
+            'width': width,
+            'height': height,
+            'range': {'x': rangex, 'y': rangey, 'z': rangez},
+            'autorange': False,
+            'grid': grid
+        }
+    }
+
+    if wireframe:
+        model['options']['space_mode'] = 'wireframe'
+
+    model_id = '"viz' + str(uuid.uuid4()) + '"'
+    display(HTML(generate_html(
+        {'model': json.dumps(model), 'model_id': model_id},
+        '/templates/particles.tmpl')))
+    return color_scale.get_config()
 
 
 def logo(x=1, y=None):
