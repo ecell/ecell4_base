@@ -9,7 +9,7 @@ __all__ = [
 
 def run_simulation(
         t, y0, volume=1.0, model=None, with_plot=True, solver='ode',
-        factory=None, is_netfree=False, species_list=None):
+        factory=None, is_netfree=False, species_list=None, as_observer=False):
     """Run a simulation with the given model and plot the result on IPython
     notebook with matplotlib.
 
@@ -30,6 +30,8 @@ def run_simulation(
     is_netfree: bool, optional
         Whether the model is netfree or not. When a model is given as an
         argument, just ignored.
+    as_observer: bool, optional
+        Return an Observer, but not an array.
     """
     import ecell4
 
@@ -74,5 +76,8 @@ def run_simulation(
 
     if with_plot:
         ecell4.viz.plot_number_observer(obs)
+
+    if as_observer:
+        return obs
 
     return obs.data()
