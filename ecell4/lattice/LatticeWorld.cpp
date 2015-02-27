@@ -397,10 +397,11 @@ Integer LatticeWorld::add_structure2(const Species& sp, const boost::shared_ptr<
     return count;
 }
 
-bool LatticeWorld::is_surface_voxel(const Integer3& g, const boost::shared_ptr<const Shape> shape) const
+bool LatticeWorld::is_surface_voxel(
+    const Integer3& g, const boost::shared_ptr<const Shape> shape) const
 {
     const Real L(shape->is_inside(global2position(g)));
-    if (L <= 0 || L > 2 * voxel_radius())
+    if (L < 0 || L >= 2 * voxel_radius())
     {
         return false;
     }
