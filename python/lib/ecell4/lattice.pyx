@@ -429,6 +429,12 @@ cdef class LatticeSimulator:
             inc(it)
         return retval
 
+    def set_alpha(self, Real alpha):
+        self.thisptr.set_alpha(alpha)
+
+    def get_alpha(self):
+        return self.thisptr.get_alpha()
+
     def model(self):
         return Model_from_Cpp_Model(self.thisptr.model())
 

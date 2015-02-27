@@ -13,7 +13,7 @@ void LatticeSimulator::initialize()
     scheduler_.clear();
     std::vector<Species> species(world_->list_species());
     for (std::vector<Species>::const_iterator itr(species.begin());
-            itr != species.end(); ++itr)
+        itr != species.end(); ++itr)
     {
         register_events(*itr);
     }
@@ -52,27 +52,36 @@ void LatticeSimulator::initialize()
     dt_ = scheduler_.next_time() - t();
 }
 
-void LatticeSimulator::finalize()
+void LatticeSimulator::register_events(const Species& sp)
 {
-    EventScheduler::events_range events(scheduler_.events());
-    for (EventScheduler::events_range::iterator itr(events.begin());
-            itr != events.end(); ++itr)
+    const boost::shared_ptr<EventScheduler::Event> step_event(
+            create_step_event(sp, world_->t()));
+    scheduler_.add(step_event);
+
+    std::vector<ReactionRule> reaction_rules(model_->query_reaction_rules(sp));
+    for (std::vector<ReactionRule>::const_iterator i(reaction_rules.begin());
+        i != reaction_rules.end(); ++i)
     {
-        const Real queued_time((*itr).second->time() - (*itr).second->dt());
-        StepEvent* step_event(dynamic_cast<StepEvent*>((*itr).second.get()));
-        if (step_event != NULL && queued_time < t())
-        {
-            const Real alpha((t() - queued_time) / (*itr).second->dt());
-            walk(step_event->species(), alpha);
-        }
+        const ReactionRule& rr(*i);
+        const boost::shared_ptr<EventScheduler::Event>
+            first_order_reaction_event(
+                create_first_order_reaction_event(rr, world_->t()));
+        scheduler_.add(first_order_reaction_event);
     }
-    initialize();
 }
+
+// void LatticeSimulator::register_step_event(const Species& species)
+// {
+//     const boost::shared_ptr<EventScheduler::Event> event(
+//             create_step_event(species, world_->t()));
+//     scheduler_.add(event);
+// }
 
 boost::shared_ptr<EventScheduler::Event> LatticeSimulator::create_step_event(
         const Species& species, const Real& t)
 {
-    boost::shared_ptr<EventScheduler::Event> event(new StepEvent(this, species, t));
+    boost::shared_ptr<EventScheduler::Event> event(
+        new StepEvent(this, species, t, alpha_));
     return event;
 }
 
@@ -92,6 +101,23 @@ LatticeSimulator::create_first_order_reaction_event(
     boost::shared_ptr<EventScheduler::Event> event(new FirstOrderReactionEvent(
                 this, reaction_rule, t));
     return event;
+}
+
+void LatticeSimulator::finalize()
+{
+    EventScheduler::events_range events(scheduler_.events());
+    for (EventScheduler::events_range::iterator itr(events.begin());
+            itr != events.end(); ++itr)
+    {
+        const Real queued_time((*itr).second->time() - (*itr).second->dt());
+        StepEvent* step_event(dynamic_cast<StepEvent*>((*itr).second.get()));
+        if (step_event != NULL && queued_time < t())
+        {
+            const Real alpha((t() - queued_time) / (*itr).second->dt());
+            walk(step_event->species(), alpha);
+        }
+    }
+    initialize();
 }
 
 /*
@@ -146,7 +172,8 @@ std::pair<bool, LatticeSimulator::reaction_type>
 }
 
 std::pair<bool, LatticeSimulator::reaction_type> LatticeSimulator::attempt_reaction_(
-    const LatticeWorld::particle_info_type info, LatticeWorld::coordinate_type to_coord)
+    const LatticeWorld::particle_info_type info, LatticeWorld::coordinate_type to_coord,
+    const Real& alpha)
 {
     const MolecularTypeBase* from_mt(
         world_->get_molecular_type_private(info.first));
@@ -211,7 +238,7 @@ std::pair<bool, LatticeSimulator::reaction_type> LatticeSimulator::attempt_react
         itr != rules.end(); ++itr)
     {
         const Real k((*itr).k());
-        const Real P(k * factor);
+        const Real P(k * factor * alpha);
         accp += P;
         if (accp > 1)
         {
@@ -541,31 +568,6 @@ void LatticeSimulator::register_product_species(const Species& product_species)
     }
 }
 
-// void LatticeSimulator::register_step_event(const Species& species)
-// {
-//     const boost::shared_ptr<EventScheduler::Event> event(
-//             create_step_event(species, world_->t()));
-//     scheduler_.add(event);
-// }
-
-void LatticeSimulator::register_events(const Species& sp)
-{
-    const boost::shared_ptr<EventScheduler::Event> step_event(
-            create_step_event(sp, world_->t()));
-    scheduler_.add(step_event);
-
-    std::vector<ReactionRule> reaction_rules(model_->query_reaction_rules(sp));
-    for (std::vector<ReactionRule>::const_iterator i(reaction_rules.begin());
-        i != reaction_rules.end(); ++i)
-    {
-        const ReactionRule& rr(*i);
-        const boost::shared_ptr<EventScheduler::Event>
-            first_order_reaction_event(
-                create_first_order_reaction_event(rr, world_->t()));
-        scheduler_.add(first_order_reaction_event);
-    }
-}
-
 void LatticeSimulator::step()
 {
     step_();
@@ -600,11 +602,12 @@ void LatticeSimulator::step_()
 
     EventScheduler::value_type top(scheduler_.pop());
     const Real time(top.second->time());
-    top.second->fire(); // top.second->time_ is updated in fire()
     world_->set_t(time);
+    top.second->fire(); // top.second->time_ is updated in fire()
+
     EventScheduler::events_range events(scheduler_.events());
     for (EventScheduler::events_range::iterator itr(events.begin());
-            itr != events.end(); ++itr)
+        itr != events.end(); ++itr)
     {
         (*itr).second->interrupt(time);
         scheduler_.update(*itr);
@@ -641,10 +644,19 @@ void LatticeSimulator::walk(const Species& species, const Real& alpha)
         return; // INVALID ALPHA VALUE
     }
 
+    // std::cout << "[" << num_steps_ << "] sp=" << species.serial() << " : t=" << t()
+    //     << " : alpha=" << alpha << " : walk." << std::endl;
+
     const boost::shared_ptr<RandomNumberGenerator>& rng(world_->rng());
 
     MolecularTypeBase* mtype(world_->find_molecular_type(species));
     MolecularTypeBase* loc(mtype->location());
+
+    Integer imax(rng->binomial(alpha, mtype->size()));
+    if (imax != mtype->size())
+    {
+        mtype->shuffle(*rng);
+    }
     //XXX: mtype->shuffle(*rng);
 
     if (!mtype->with_voxels())
@@ -652,8 +664,8 @@ void LatticeSimulator::walk(const Species& species, const Real& alpha)
         throw NotSupported("MolecularType must be with voxels.");
     }
 
-    Integer i(0), max(rng->binomial(alpha, mtype->size()));
-    while (i < max)
+    Integer i(0);
+    while (i < imax)
     {
         const Integer rnd(rng->uniform_int(0, 11));
         const std::pair<LatticeWorld::private_coordinate_type, bool>
@@ -666,15 +678,15 @@ void LatticeSimulator::walk(const Species& species, const Real& alpha)
             const LatticeWorld::private_coordinate_type to_coord(neighbor.first);
 
             const std::pair<bool, reaction_type>
-                retval(attempt_reaction_(info, to_coord));
+                retval(attempt_reaction_(info, to_coord, alpha));
             if (retval.first)
             {
                 --i;
-                --max;
+                --imax;
 
-                if (max > mtype->size())
+                if (imax > mtype->size())
                 {
-                    max = mtype->size(); //XXX: for a dimerization
+                    imax = mtype->size(); //XXX: for a dimerization
                 }
             }
         }

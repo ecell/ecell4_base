@@ -33,8 +33,10 @@ protected:
 
     struct StepEvent : EventScheduler::Event
     {
-        StepEvent(LatticeSimulator* sim, const Species& species, const Real& t)
-            : EventScheduler::Event(t), sim_(sim), species_(species), alpha_(1.0)
+        StepEvent(
+            LatticeSimulator* sim, const Species& species, const Real& t,
+            const Real alpha=1.0)
+            : EventScheduler::Event(t), sim_(sim), species_(species), alpha_(alpha)
         {
             const LatticeWorld::molecule_info_type
                 minfo(sim_->world_->get_molecule_info(species));
@@ -49,11 +51,13 @@ protected:
                 dt_ = 2 * R * R / 3 / D * alpha_;
             }
 
-            time_ = t + dt_;
+            // time_ = t + dt_;
+            time_ = t;
         }
 
         virtual ~StepEvent()
         {
+            ;
         }
 
         virtual void fire()
@@ -174,13 +178,13 @@ public:
     LatticeSimulator(
             boost::shared_ptr<Model> model,
             boost::shared_ptr<LatticeWorld> world)
-        : base_type(model, world)
+        : base_type(model, world), alpha_(1.0)
     {
         initialize();
     }
 
     LatticeSimulator(boost::shared_ptr<LatticeWorld> world)
-        : base_type(world)
+        : base_type(world), alpha_(1.0)
     {
         initialize();
     }
@@ -203,6 +207,22 @@ public:
         return reactions_;
     }
 
+    void set_alpha(const Real alpha)
+    {
+        if (alpha < 0 || alpha > 1)
+        {
+            return;  // XXX: ValueError
+        }
+
+        alpha_ = alpha;
+        initialize();
+    }
+
+    Real get_alpha() const
+    {
+        return alpha_;
+    }
+
 protected:
 
     boost::shared_ptr<EventScheduler::Event> create_step_event(
@@ -213,7 +233,7 @@ protected:
         const ReactionRule& reaction_rule, const Real& t);
     std::pair<bool, reaction_type> attempt_reaction_(
         const LatticeWorld::particle_info_type info,
-        LatticeWorld::coordinate_type to_coord);
+        LatticeWorld::coordinate_type to_coord, const Real& alpha);
     std::pair<bool, reaction_type> apply_second_order_reaction_(
         const ReactionRule& reaction_rule,
         const reaction_type::particle_type& p0,
@@ -263,6 +283,7 @@ protected:
     std::vector<Species> new_species_;
 
     Real dt_;
+    Real alpha_;
 };
 
 } // lattice
