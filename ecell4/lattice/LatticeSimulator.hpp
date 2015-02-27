@@ -86,6 +86,7 @@ protected:
             LatticeSimulator* sim, const ReactionRule& rule, const Real& t)
             : EventScheduler::Event(t), sim_(sim), rule_(rule)
         {
+            //assert(rule_.reactants().size() == 1);
             time_ = t + draw_dt();
         }
 
@@ -179,25 +180,28 @@ protected:
         const ReactionRule& reaction_rule,
         const LatticeWorld::particle_info info);
     void apply_ab2c(
-        const LatticeWorld::private_coordinate_type coord,
+        const LatticeWorld::particle_info from_info,
+        const LatticeWorld::particle_info to_info,
         const Species& product_species,
         reaction_type& reaction);
     void apply_ab2cd(
-        const LatticeWorld::private_coordinate_type from_coord,
-        const LatticeWorld::private_coordinate_type to_coord,
+        const LatticeWorld::particle_info from_info,
+        const LatticeWorld::particle_info to_info,
         const Species& product_species0,
         const Species& product_species1,
         reaction_type& reaction);
     void apply_a2b(
-        const LatticeWorld::private_coordinate_type coord,
+        const LatticeWorld::particle_info pinfo,
         const Species& product_species,
         reaction_type& reaction);
     bool apply_a2bc(
-        const LatticeWorld::private_coordinate_type coord,
+        const LatticeWorld::particle_info pinfo,
         const Species& product_species0,
         const Species& product_species1,
         reaction_type& reaction);
-    void  register_product_species(const Species& product_species);
+    void register_product_species(const Species& product_species);
+    void register_reactant_species(
+            const LatticeWorld::particle_info pinfo, reaction_type reaction) const;
 
     void step_();
     void register_events(const Species& species);
@@ -210,6 +214,12 @@ protected:
         return Voxel(v.species(), coord, v.radius(), v.D(), v.loc());
     }
 
+    const std::string get_serial(
+            const LatticeWorld::private_coordinate_type coord) const
+    {
+        const MolecularTypeBase* mtype(world_->get_molecular_type_private(coord));
+        return mtype->is_vacant() ? "" : mtype->species().serial();
+    }
 protected:
 
     EventScheduler scheduler_;

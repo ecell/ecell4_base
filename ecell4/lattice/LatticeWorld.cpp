@@ -138,7 +138,8 @@ std::vector<std::pair<ParticleID, Voxel> >
     return space_.list_voxels_exact(sp);
 }
 
-std::vector<LatticeWorld::coordinate_type> LatticeWorld::list_coords(const Species& sp) const
+std::vector<LatticeWorld::coordinate_type> LatticeWorld::list_coords(
+        const Species& sp) const
 {
     return space_.list_coords(sp);
 }
@@ -183,7 +184,8 @@ LatticeWorld::new_voxel_private(const Voxel& v)
 }
 
 std::pair<std::pair<ParticleID, Voxel>, bool>
-LatticeWorld::new_voxel_private(const Species& sp, const private_coordinate_type& coord)
+LatticeWorld::new_voxel_private(
+        const Species& sp, const private_coordinate_type& coord)
 {
     const molecule_info_type minfo(get_molecule_info(sp));
     return new_voxel_private(
@@ -195,8 +197,8 @@ LatticeWorld::new_voxel_structure(const Voxel& v)
 {
     const bool is_succeeded(space_.update_voxel_private(ParticleID(), v));
     const coordinate_type coord(private2coord(v.coordinate()));
-    return std::make_pair(
-        std::make_pair(ParticleID(), Voxel(v.species(), coord, v.radius(), v.D(), v.loc())),
+    return std::make_pair(std::make_pair(ParticleID(),
+                Voxel(v.species(), coord, v.radius(), v.D(), v.loc())),
         is_succeeded);
 }
 
