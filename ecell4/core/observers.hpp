@@ -299,7 +299,7 @@ public:
 
     const Real next_time() const
     {
-        if (count_ >= t_.size())
+        if (count_ >= static_cast<Integer>(t_.size()))
         {
             return inf;
         }
@@ -616,9 +616,9 @@ public:
 protected:
 
     std::vector<ParticleID> pids_;
+    bool resolve_boundary_;
     std::vector<std::vector<Real3> > trajectories_;
     std::vector<Real3> strides_;
-    bool resolve_boundary_;
 };
 
 // class BioImagingObserver
