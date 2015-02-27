@@ -22,8 +22,7 @@ if(window['d3'] === undefined ||
 	// URL shown below (rawgit.com) should be replaced!
 	var script = d3.select("head")
 	    .append("script")
-	    // .attr("src", 'https://rawgit.com/domitry/elegans/master/release/elegans.js')
-	    .attr("src", 'https://cdn.rawgit.com/domitry/elegans/ecolisim/release/elegans.js')
+	    .attr("src", 'https://rawgit.com/domitry/elegans/master/release/elegans.js')
 	    .attr("async", true);
 
 	script[0][0].onload = script[0][0].onreadystatechange = function(){
