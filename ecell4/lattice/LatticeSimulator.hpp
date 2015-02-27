@@ -215,11 +215,24 @@ protected:
     }
 
     const std::string get_serial(
-            const LatticeWorld::private_coordinate_type coord) const
+        const LatticeWorld::private_coordinate_type coord) const
     {
         const MolecularTypeBase* mtype(world_->get_molecular_type_private(coord));
         return mtype->is_vacant() ? "" : mtype->species().serial();
     }
+
+    const std::string get_location(
+        const LatticeWorld::private_coordinate_type coord) const
+    {
+        const MolecularTypeBase* mtype(world_->get_molecular_type_private(coord));
+        if (mtype->is_vacant())
+        {
+            return "";
+        }
+        const MolecularTypeBase* ltype(mtype->location());
+        return ltype->is_vacant() ? "" : ltype->species().serial();
+    }
+
 protected:
 
     EventScheduler scheduler_;
