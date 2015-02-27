@@ -319,6 +319,7 @@ public:
         return (*ps_).particles();
     }
 
+#ifndef HDF5
     void save(const std::string& filename) const
     {
         boost::scoped_ptr<H5::H5File>
@@ -339,6 +340,7 @@ public:
         pidgen_.load(*fin);
         rng_->load(*fin);
     }
+#endif
 
     void bind_to(boost::shared_ptr<Model> model)
     {
