@@ -11,7 +11,9 @@
 #include <ecell4/core/RandomNumberGenerator.hpp>
 #include <ecell4/core/Species.hpp>
 #include <ecell4/core/CompartmentSpace.hpp>
+#ifndef HDF5
 #include <ecell4/core/CompartmentSpaceHDF5Writer.hpp>
+#endif
 #include <ecell4/core/NetworkModel.hpp>
 #include <ecell4/core/Shape.hpp>
 
@@ -96,6 +98,7 @@ public:
         return rng_;
     }
 
+#ifndef HDF5
     void save(const std::string& filename) const
     {
         boost::scoped_ptr<H5::H5File>
@@ -114,6 +117,7 @@ public:
         const H5::Group group(fin->openGroup("CompartmentSpace"));
         cs_->load(group);
     }
+#endif
 
     void bind_to(boost::shared_ptr<Model> model)
     {
