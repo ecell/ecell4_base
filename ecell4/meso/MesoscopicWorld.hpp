@@ -82,21 +82,29 @@ public:
 
     void save(const std::string& filename) const
     {
+#ifndef HDF5
         boost::scoped_ptr<H5::H5File>
             fout(new H5::H5File(filename.c_str(), H5F_ACC_TRUNC));
         rng_->save(fout.get());
         boost::scoped_ptr<H5::Group>
             group(new H5::Group(fout->createGroup("SubvolumeSpace")));
         cs_->save(group.get());
+#else
+        throw NotSupported("not supported yet.");
+#endif
     }
 
     void load(const std::string& filename)
     {
+#ifndef HDF5
         boost::scoped_ptr<H5::H5File>
             fin(new H5::H5File(filename.c_str(), H5F_ACC_RDONLY));
         rng_->load(*fin);
         const H5::Group group(fin->openGroup("SubvolumeSpace"));
         cs_->load(group);
+#else
+       throw NotSupported("not supported yet.");
+#endif
     }
 
     boost::shared_ptr<Model> lock_model() const
