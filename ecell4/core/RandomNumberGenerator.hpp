@@ -38,8 +38,10 @@ public:
     virtual void seed(Integer val) = 0;
     virtual void seed() = 0;
 
+#ifndef HDF5
     virtual void save(H5::CommonFG* root) const = 0;
     virtual void load(const H5::CommonFG& root) = 0;
+#endif
 };
 
 template<typename Telem_>

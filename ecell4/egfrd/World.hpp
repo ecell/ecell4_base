@@ -13,7 +13,11 @@
 #include <ecell4/core/Model.hpp>
 #include <ecell4/core/extras.hpp>
 #include <ecell4/core/SerialIDGenerator.hpp>
+
+#ifndef HDF5
 #include <ecell4/core/ParticleSpaceHDF5Writer.hpp>
+#endif
+
 #include <ecell4/core/Sphere.hpp>
 #include "./ParticleTraits.hpp" // This refers ecell4::Particle
 #include "structures.hpp"
@@ -452,6 +456,7 @@ public:
         return rng_;
     }
 
+#ifndef HDF5
     virtual void save(const std::string& filename) const
     {
         boost::scoped_ptr<H5::H5File>
@@ -474,7 +479,9 @@ public:
         int data[] = {sizes[0], sizes[1], sizes[2]};
         attr_sizes.write(sizes_type, data);
     }
+#endif
 
+#ifndef HDF5
     virtual void load(const std::string& filename)
     {
         //XXX: structures will be lost.
@@ -499,6 +506,7 @@ public:
         pidgen_.load(*fin);
         rng_->load(*fin);
     }
+#endif
 
     virtual void clear()
     {
