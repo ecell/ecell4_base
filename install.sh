@@ -3,17 +3,18 @@
 CURDIR=$(cd $(dirname $0); pwd)
 # PREFIX=/usr/local
 # PREFIX=${HOME}/local
-PREFIX=${CURDIR}/local
+# PREFIX=${CURDIR}/local
 # PREFIX=
-
-set -e
 
 # make clean; rm -rf ${PREFIX}; rm CMakeCache.txt
 # rm -rf python/build python/lib/ecell4/*.cpp
+
+set -e
+
 cmake -DCMAKE_INSTALL_PREFIX=${PREFIX} .
-# make
+make
 # cmake -DCMAKE_INSTALL_PREFIX=${PREFIX} -DECELL4_ENABLE_PROFILING=1 .
-make VERBOSE=1
+# make VERBOSE=1
 make test
 make install
 

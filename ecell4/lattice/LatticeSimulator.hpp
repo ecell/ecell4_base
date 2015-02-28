@@ -243,22 +243,22 @@ protected:
         const ReactionRule& reaction_rule,
         const reaction_type::particle_type& p);
     void apply_ab2c(
-        const LatticeWorld::particle_info from_info,
-        const LatticeWorld::particle_info to_info,
+        const LatticeWorld::particle_info_type from_info,
+        const LatticeWorld::particle_info_type to_info,
         const Species& product_species,
         reaction_type& reaction);
     void apply_ab2cd(
-        const LatticeWorld::particle_info from_info,
-        const LatticeWorld::particle_info to_info,
+        const LatticeWorld::particle_info_type from_info,
+        const LatticeWorld::particle_info_type to_info,
         const Species& product_species0,
         const Species& product_species1,
         reaction_type& reaction);
     void apply_a2b(
-        const LatticeWorld::particle_info pinfo,
+        const LatticeWorld::particle_info_type pinfo,
         const Species& product_species,
         reaction_type& reaction);
     bool apply_a2bc(
-        const LatticeWorld::particle_info pinfo,
+        const LatticeWorld::particle_info_type pinfo,
         const Species& product_species0,
         const Species& product_species1,
         reaction_type& reaction);
@@ -267,7 +267,7 @@ protected:
 
     void register_product_species(const Species& product_species);
     void register_reactant_species(
-        const LatticeWorld::particle_info pinfo, reaction_type reaction) const;
+        const LatticeWorld::particle_info_type pinfo, reaction_type reaction) const;
 
     void step_();
     void register_events(const Species& species);
