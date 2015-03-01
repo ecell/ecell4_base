@@ -41,6 +41,9 @@ def __parse_world(
             if (p.species().serial() == name and
                 (predicator is None or predicator(pid, p)))]
 
+        if len(particles) != 0:
+            continue
+
         if max_count is not None and len(particles) > max_count:
             particles = random.sample(particles, max_count)
 
@@ -51,7 +54,7 @@ def __parse_world(
         }
 
         # assume that all particles belong to one species have the same radius
-        r = max([p['r'] for p in particles]) if radius is None else radius
+        r = (max([p['r'] for p in particles]) if radius is None else radius)
         size = 30/min(world.edge_lengths()) * r
 
         species.append({
