@@ -683,6 +683,7 @@ protected:
     const Particle particle_at_private(private_coordinate_type coord) const;
 
     bool make_structure_type(const Species& sp);
+    Integer count_voxels(const boost::shared_ptr<MolecularType>& mt) const;
 
 protected:
 

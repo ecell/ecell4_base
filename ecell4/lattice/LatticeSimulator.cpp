@@ -54,9 +54,13 @@ void LatticeSimulator::initialize()
 
 void LatticeSimulator::register_events(const Species& sp)
 {
-    const boost::shared_ptr<EventScheduler::Event> step_event(
-            create_step_event(sp, world_->t()));
-    scheduler_.add(step_event);
+    if (world_->find_molecular_type(sp)->with_voxels())
+    {
+        //TODO: Call steps only if sp is assigned not to StructureType.
+        const boost::shared_ptr<EventScheduler::Event> step_event(
+                create_step_event(sp, world_->t()));
+        scheduler_.add(step_event);
+    }
 
     std::vector<ReactionRule> reaction_rules(model_->query_reaction_rules(sp));
     for (std::vector<ReactionRule>::const_iterator i(reaction_rules.begin());

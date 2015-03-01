@@ -416,8 +416,12 @@ public:
     std::pair<ParticleID, Voxel> make_pid_voxel_pair(
         const MolecularTypeBase* mt, const private_coordinate_type& private_coord) const
     {
+        const ParticleID pid(
+            mt->with_voxels()
+                ? mt->find_particle_id(private_coord)
+                : ParticleID());
         const particle_info_type info(
-            std::make_pair(private_coord, mt->find_particle_id(private_coord)));
+            std::make_pair(private_coord, pid));
         return make_pid_voxel_pair(mt, info);
     }
 

@@ -5,6 +5,7 @@
 #include "LatticeSpace.hpp"
 #include <cmath>
 #include <sstream>
+#include <algorithm>
 
 #ifdef WIN32_MSC
 #include <boost/numeric/interval/detail/msvc_rounding_control.hpp>
@@ -94,11 +95,15 @@ Integer LatticeSpaceVectorImpl::num_molecules(const Species& sp) const
         {
             if (!mt->with_voxels())
             {
-                throw NotSupported(
-                    "num_molecules for MolecularType with no voxel"
-                    " is not supporeted now");
+                // throw NotSupported(
+                //     "num_molecules for MolecularType with no voxel"
+                //     " is not supporeted now");
+                count += count_voxels(mt) * cnt;
             }
-            count += mt->size() * cnt;
+            else
+            {
+                count += mt->size() * cnt;
+            }
         }
     }
     return count;
@@ -638,9 +643,10 @@ Integer LatticeSpaceVectorImpl::num_voxels_exact(const Species& sp) const
     const boost::shared_ptr<MolecularType>& mt((*itr).second);
     if (!mt->with_voxels())
     {
-        throw NotSupported(
-            "num_voxels_exact for MolecularType with no voxel"
-            " is not supporeted now");
+        // throw NotSupported(
+        //     "num_voxels_exact for MolecularType with no voxel"
+        //     " is not supporeted now");
+        return count_voxels(mt);
     }
     return mt->size();
 }
@@ -657,11 +663,15 @@ Integer LatticeSpaceVectorImpl::num_voxels(const Species& sp) const
             const boost::shared_ptr<MolecularType>& mt((*itr).second);
             if (!mt->with_voxels())
             {
-                throw NotSupported(
-                    "num_voxels_exact for MolecularType with no voxel"
-                    " is not supporeted now");
+                // throw NotSupported(
+                //     "num_voxels_exact for MolecularType with no voxel"
+                //     " is not supporeted now");
+                count += count_voxels(mt);
             }
-            count += mt->size();
+            else
+            {
+                count += mt->size();
+            }
         }
     }
     return count;
@@ -672,8 +682,15 @@ Integer LatticeSpaceVectorImpl::num_voxels() const
     Integer retval(0);
     for (spmap::const_iterator itr(spmap_.begin()); itr != spmap_.end(); ++itr)
     {
-        retval += (*itr).second->size();
-        // retval += (*itr).second.size();
+        const boost::shared_ptr<MolecularType>& mt((*itr).second);
+        if (mt->with_voxels())
+        {
+            retval += (*itr).second->size();
+        }
+        else
+        {
+            retval += count_voxels(mt);  //XXX: too slow
+        }
     }
     return retval;
 }
@@ -850,7 +867,7 @@ bool LatticeSpaceVectorImpl::make_structure_type(const Species& sp)
 void LatticeSpaceVectorImpl::add_structure(const Species& sp,
     const boost::shared_ptr<const Shape>& s)
 {
-    // make_structure_type(sp);
+    make_structure_type(sp); // Use StructureType
 
     structure_container_type::const_iterator i(structures_.find(sp));
     if (i != structures_.end())
@@ -880,6 +897,13 @@ const Shape::dimension_kind LatticeSpaceVectorImpl::get_structure_dimension(
         return Shape::THREE; // Default value (ex. for VACANT type)
     }
     return (*i).second->dimension();
+}
+
+Integer LatticeSpaceVectorImpl::count_voxels(
+    const boost::shared_ptr<MolecularType>& mt) const
+{
+    return static_cast<Integer>(
+        std::count(voxels_.begin(), voxels_.end(), mt.get()));
 }
 
 } // ecell4
