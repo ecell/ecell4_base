@@ -70,13 +70,6 @@ void LatticeSimulator::register_events(const Species& sp)
     }
 }
 
-// void LatticeSimulator::register_step_event(const Species& species)
-// {
-//     const boost::shared_ptr<EventScheduler::Event> event(
-//             create_step_event(species, world_->t()));
-//     scheduler_.add(event);
-// }
-
 boost::shared_ptr<EventScheduler::Event> LatticeSimulator::create_step_event(
         const Species& species, const Real& t)
 {
@@ -266,16 +259,11 @@ std::pair<bool, LatticeSimulator::reaction_type> LatticeSimulator::apply_second_
         products(reaction_rule.products());
     reaction_type reaction;
     reaction.rule = reaction_rule;
-    // reaction.reactants.push_back(p0);
-    // reaction.reactants.push_back(p1);
 
     const LatticeWorld::private_coordinate_type from_coord(
         world_->coord2private(p0.second.coordinate()));
     const LatticeWorld::private_coordinate_type to_coord(
         world_->coord2private(p1.second.coordinate()));
-
-    // world_->remove_voxel_private(from_coord);
-    // world_->remove_voxel_private(to_coord);
 
     const LatticeWorld::particle_info_type from_info(from_coord, p0.first);
     const LatticeWorld::particle_info_type to_info(to_coord, p1.first);
@@ -296,73 +284,9 @@ std::pair<bool, LatticeSimulator::reaction_type> LatticeSimulator::apply_second_
     }
 
     reactions_.push_back(reaction_rule);
-    // for (ReactionRule::product_container_type::const_iterator
-    //     i(products.begin()); i != products.end(); ++i)
-    // {
-    //     register_product_species(*i);
-    // }
 
     return std::pair<bool, reaction_type>(true, reaction);
 }
-
-// std::pair<bool, LatticeSimulator::reaction_type> LatticeSimulator::apply_second_order_reaction_(
-//     const ReactionRule& reaction_rule,
-//     const LatticeWorld::particle_info_type from_info,
-//     const LatticeWorld::particle_info_type to_info)
-// {
-//     const ReactionRule::product_container_type&
-//         products(reaction_rule.products());
-//     reaction_type reaction;
-//     reaction.rule = reaction_rule;
-// 
-//     MolecularTypeBase* from_mtype(world_->get_molecular_type_private(from_info.first));
-//     MolecularTypeBase* to_mtype(world_->get_molecular_type_private(to_info.first));
-// 
-//     const std::string from_loc((from_mtype->location()->is_vacant())
-//         ? "" : from_mtype->location()->species().serial());
-//     const std::string to_loc((to_mtype->location()->is_vacant())
-//         ? "" : to_mtype->location()->species().serial());
-// 
-//     reaction.reactants.push_back(
-//         reaction_type::particle_type(
-//             from_info.second,
-//             Voxel(from_mtype->species(), world_->private2coord(from_info.first),
-//                 from_mtype->radius(), from_mtype->D(), from_loc)));
-//     reaction.reactants.push_back(
-//         reaction_type::particle_type(
-//             to_info.second,
-//             Voxel(to_mtype->species(), world_->private2coord(to_info.first),
-//                 to_mtype->radius(), to_mtype->D(), to_loc)));
-// 
-//     const LatticeWorld::private_coordinate_type from_coord(from_info.first);
-//     const LatticeWorld::private_coordinate_type to_coord(to_info.first);
-// 
-//     world_->remove_voxel_private(from_coord);
-//     world_->remove_voxel_private(to_coord);
-// 
-//     const Species& product_species0(*(products.begin()));
-//     const Species& product_species1(*(++(products.begin())));
-//     switch(products.size())
-//     {
-//         case 1:
-//             apply_ab2c(to_coord, product_species0, reaction);
-//             break;
-//         case 2:
-//             apply_ab2cd(from_coord, to_coord, product_species0, product_species1, reaction);
-//             break;
-//         default:
-//             return std::pair<bool, reaction_type>(false, reaction);
-//     }
-// 
-//     reactions_.push_back(reaction_rule);
-//     // for (ReactionRule::product_container_type::const_iterator
-//     //     i(products.begin()); i != products.end(); ++i)
-//     // {
-//     //     register_product_species(*i);
-//     // }
-// 
-//     return std::pair<bool, reaction_type>(true, reaction);
-// }
 
 void LatticeSimulator::apply_ab2c(
     const LatticeWorld::particle_info_type from_info,
@@ -370,6 +294,7 @@ void LatticeSimulator::apply_ab2c(
     const Species& product_species,
     reaction_type& reaction)
 {
+    // A and B (from_info and to_info) become C (product_species)
     const std::string location(world_->get_molecule_info(product_species).loc);
     const std::string fserial(get_serial(from_info.first));
     const std::string floc(get_location(from_info.first));
@@ -378,31 +303,43 @@ void LatticeSimulator::apply_ab2c(
 
     if (fserial == location || floc == location)
     {
+        // A is on the location of C, or the location itself.
+        // Place C at the coordinate of A, and remove B.
         register_reactant_species(from_info, reaction);
         register_reactant_species(to_info, reaction);
         register_product_species(product_species);
+
+        if (fserial != location)
+        {
+            world_->remove_voxel_private(from_info.first);
+        }
+
+        world_->remove_voxel_private(to_info.first);
         std::pair<std::pair<ParticleID, Voxel>, bool> new_mol(
             world_->new_voxel_private(product_species, from_info.first));
-        if (!new_mol.second)
-        {
-            throw IllegalState("no place for the product.");
-        }
+
         reaction.products.push_back(
             reaction_type::particle_type(
                 new_mol.first.first,
                 this->private_voxel2voxel(new_mol.first.second)));
     }
-    else if(tserial == location || tloc == location)
+    else if (tserial == location || tloc == location)
     {
+        // B is on the location of C, or the location itself.
+        // Place C at the coordinate of B, and remove A.
         register_reactant_species(from_info, reaction);
         register_reactant_species(to_info, reaction);
         register_product_species(product_species);
+
+        if (tserial != location)
+        {
+            world_->remove_voxel_private(to_info.first);
+        }
+
+        world_->remove_voxel_private(from_info.first);
         std::pair<std::pair<ParticleID, Voxel>, bool> new_mol(
             world_->new_voxel_private(product_species, to_info.first));
-        if (!new_mol.second)
-        {
-            throw IllegalState("no place for the product.");
-        }
+
         reaction.products.push_back(
             reaction_type::particle_type(
                 new_mol.first.first,
@@ -440,6 +377,8 @@ void LatticeSimulator::apply_ab2cd(
             register_product_species(product_species0);
             register_product_species(product_species1);
 
+            world_->remove_voxel_private(from_info.first);
+            world_->remove_voxel_private(to_info.first);
             std::pair<std::pair<ParticleID, Voxel>, bool> new_mol0(
                 world_->new_voxel_private(product_species0, from_coord));
             if (!new_mol0.second)
@@ -472,6 +411,8 @@ void LatticeSimulator::apply_ab2cd(
             register_product_species(product_species0);
             register_product_species(product_species1);
 
+            world_->remove_voxel_private(from_info.first);
+            world_->remove_voxel_private(to_info.first);
             std::pair<std::pair<ParticleID, Voxel>, bool> new_mol0(
                 world_->new_voxel_private(product_species0, to_coord));
             if (!new_mol0.second)
@@ -510,7 +451,6 @@ std::pair<bool, LatticeSimulator::reaction_type>
     const ReactionRule::product_container_type& products(reaction_rule.products());
     reaction_type reaction;
     reaction.rule = reaction_rule;
-    // reaction.reactants.push_back(p);
 
     const LatticeWorld::private_coordinate_type coord(
         world_->coord2private(p.second.coordinate()));
@@ -536,65 +476,16 @@ std::pair<bool, LatticeSimulator::reaction_type>
     }
 
     reactions_.push_back(reaction_rule);
-    // for (ReactionRule::product_container_type::const_iterator
-    //     i(products.begin()); i != products.end(); ++i)
-    // {
-    //     register_product_species(*i);
-    // }
 
     return std::pair<bool, reaction_type>(true, reaction);
 }
-
-// std::pair<bool, LatticeSimulator::reaction_type> LatticeSimulator::apply_first_order_reaction_(
-//         const ReactionRule& reaction_rule, const LatticeWorld::particle_info_type info)
-// {
-//     const ReactionRule::product_container_type&
-//         products(reaction_rule.products());
-//     reaction_type reaction;
-//     reaction.rule = reaction_rule;
-//     MolecularTypeBase* mtype(world_->get_molecular_type_private(info.first));
-//     const std::string src_loc((mtype->location()->is_vacant())
-//         ? "" : mtype->location()->species().serial());
-//     reaction.reactants.push_back(
-//         reaction_type::particle_type(
-//             info.second,
-//             Voxel(mtype->species(), world_->private2coord(info.first),
-//                 mtype->radius(), mtype->D(), src_loc)));
-// 
-//     const LatticeWorld::private_coordinate_type coord(info.first);
-//     const Species& product_species0(*(products.begin()));
-//     const Species& product_species1(*(++(products.begin())));
-//     switch(products.size()) {
-//         case 0:
-//             world_->remove_voxel_private(info.first);
-//             break;
-//         case 1:
-//             apply_a2b(coord, product_species0, reaction);
-//             break;
-//         case 2:
-//             if (!apply_a2bc(coord, product_species0, product_species1, reaction)) {
-//                 return std::pair<bool, reaction_type>(false, reaction);
-//             }
-//             break;
-//         default:
-//             return std::pair<bool, reaction_type>(false, reaction);
-//     }
-// 
-//     reactions_.push_back(reaction_rule);
-//     // for (ReactionRule::product_container_type::const_iterator
-//     //     i(products.begin()); i != products.end(); ++i)
-//     // {
-//     //     register_product_species(*i);
-//     // }
-// 
-//     return std::pair<bool, reaction_type>(true, reaction);
-// }
 
 void LatticeSimulator::apply_a2b(
     const LatticeWorld::particle_info_type pinfo,
     const Species& product_species,
     reaction_type& reaction)
 {
+    // A (pinfo) become B (product_species)
     const LatticeWorld::private_coordinate_type coord(pinfo.first);
     const std::string location(world_->get_molecule_info(product_species).loc);
     const std::string aserial(get_serial(coord));
@@ -602,15 +493,18 @@ void LatticeSimulator::apply_a2b(
 
     if (aserial == location || aloc == location)
     {
+        // A is on the location of B, or the location itself.
         register_reactant_species(pinfo, reaction);
         register_product_species(product_species);
 
+        if (aserial != location)
+        {
+            world_->remove_voxel_private(pinfo.first);
+        }
+
         std::pair<std::pair<ParticleID, Voxel>, bool> new_mol(
             world_->new_voxel_private(product_species, coord));
-        if (!new_mol.second)
-        {
-            throw IllegalState("no place for the product.");
-        }
+
         reaction.products.push_back(
             reaction_type::particle_type(
                 new_mol.first.first,
@@ -618,28 +512,30 @@ void LatticeSimulator::apply_a2b(
     }
     else
     {
-        std::pair<LatticeWorld::private_coordinate_type, bool> neighbor(
-                world_->check_neighbor_private(coord));
+        // A is NOT on the location of B.
+        // B must be released into a neighbor, which is the location of B
+        std::pair<LatticeWorld::private_coordinate_type, bool>
+            neighbor(world_->check_neighbor_private(coord));
         const std::string nserial(get_serial(neighbor.first));
+
         if (nserial == location)
         {
-            world_->remove_voxel_private(neighbor.first);
+            // The neighbor is the location of B.
+            // Place B at the neighbor, and remove A.
             register_reactant_species(pinfo, reaction);
             register_product_species(product_species);
 
+            world_->remove_voxel_private(pinfo.first);
+            world_->remove_voxel_private(neighbor.first);
             std::pair<std::pair<ParticleID, Voxel>, bool> new_mol(
                 world_->new_voxel_private(product_species, neighbor.first));
-            if (!new_mol.second)
-            {
-                throw IllegalState("no place for the product.");
-            }
+
             reaction.products.push_back(
                 reaction_type::particle_type(
                     new_mol.first.first,
                     this->private_voxel2voxel(new_mol.first.second)));
         }
     }
-
 }
 
 bool LatticeSimulator::apply_a2bc(
@@ -668,9 +564,8 @@ bool LatticeSimulator::apply_a2bc(
             // TODO
         }
 
-        std::cout << "Neighbor is '" << nserial << "'." << std::endl;
-
         register_reactant_species(pinfo, reaction);
+        world_->remove_voxel_private(pinfo.first);
         world_->remove_voxel_private(neighbor.first);
 
         register_product_species(product_species0);
@@ -698,7 +593,6 @@ bool LatticeSimulator::apply_a2bc(
             reaction_type::particle_type(
                 new_mol1.first.first,
                 this->private_voxel2voxel(new_mol1.first.second)));
-        std::cout << "Succeeded." << std::endl;
         return true;
     }
     else if (aserial == cloc || aloc == cloc)
@@ -711,9 +605,8 @@ bool LatticeSimulator::apply_a2bc(
             // TODO
         }
 
-        std::cout << "Neighbor is '" << nserial << "'." << std::endl;
-
         register_reactant_species(pinfo, reaction);
+        world_->remove_voxel_private(pinfo.first);
         world_->remove_voxel_private(neighbor.first);
 
         register_product_species(product_species0);
@@ -741,7 +634,6 @@ bool LatticeSimulator::apply_a2bc(
             reaction_type::particle_type(
                 new_mol1.first.first,
                 this->private_voxel2voxel(new_mol1.first.second)));
-        std::cout << "Succeeded." << std::endl;
         return true;
     }
 
@@ -767,7 +659,7 @@ void LatticeSimulator::register_reactant_species(
             pinfo.second,
             Voxel(mtype->species(), world_->private2coord(pinfo.first),
                 mtype->radius(), mtype->D(), location)));
-    world_->remove_voxel_private(pinfo.first);
+    // world_->remove_voxel_private(pinfo.first);
 }
 
 void LatticeSimulator::step()

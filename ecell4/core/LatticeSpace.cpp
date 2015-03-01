@@ -448,6 +448,8 @@ bool LatticeSpaceVectorImpl::remove_voxel_private(const private_coordinate_type&
     if (mt->remove_voxel_if_exists(coord))
     {
         (*itr) = mt->location();
+        mt->location()->add_voxel_without_checking(
+            particle_info_type(coord, ParticleID()));
         return true;
     }
     return false;
@@ -740,7 +742,10 @@ bool LatticeSpaceVectorImpl::update_voxel_private(const ParticleID& pid, const V
 
     if (dest_mt != new_mt->location())
     {
-        throw NotSupported("Mismatch in the location.");
+        throw NotSupported(
+            "Mismatch in the location. Failed to place '"
+            + new_mt->species().serial() + "' to '"
+            + dest_mt->species().serial() + "'.");
     }
 
     const LatticeSpaceVectorImpl::private_coordinate_type
