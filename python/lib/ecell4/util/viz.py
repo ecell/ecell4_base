@@ -41,7 +41,7 @@ def __parse_world(
             if (p.species().serial() == name and
                 (predicator is None or predicator(pid, p)))]
 
-        if len(particles) != 0:
+        if len(particles) == 0:
             continue
 
         if max_count is not None and len(particles) > max_count:
