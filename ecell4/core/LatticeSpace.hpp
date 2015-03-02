@@ -103,7 +103,7 @@ public:
     virtual const Particle particle_at(const coordinate_type& coord) const = 0;
 
     virtual void add_structure(const Species& sp,
-        const boost::shared_ptr<const Shape>& s) = 0;
+        const boost::shared_ptr<const Shape>& s, const std::string loc) = 0;
     virtual const boost::shared_ptr<const Shape>& get_structure(const Species& sp) const = 0;
     virtual const Shape::dimension_kind get_structure_dimension(const Species& sp) const = 0;
 
@@ -616,7 +616,7 @@ public:
     virtual bool move(const coordinate_type& from, const coordinate_type& to);
 
     virtual void add_structure(const Species& sp,
-        const boost::shared_ptr<const Shape>& s);
+        const boost::shared_ptr<const Shape>& s, const std::string loc);
     virtual const boost::shared_ptr<const Shape>& get_structure(const Species& sp) const;
     virtual const Shape::dimension_kind get_structure_dimension(const Species& sp) const;
 
@@ -682,7 +682,7 @@ protected:
     private_coordinate_type get_coord(const ParticleID& pid) const;
     const Particle particle_at_private(private_coordinate_type coord) const;
 
-    bool make_structure_type(const Species& sp);
+    bool make_structure_type(const Species& sp, const std::string loc);
     Integer count_voxels(const boost::shared_ptr<MolecularType>& mt) const;
 
 protected:

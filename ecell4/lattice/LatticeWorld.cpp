@@ -277,7 +277,8 @@ bool LatticeWorld::add_molecules(
 Integer LatticeWorld::add_structure(
     const Species& sp, const boost::shared_ptr<const Shape> shape)
 {
-    (*space_).add_structure(sp, shape);
+    const LatticeWorld::molecule_info_type info(get_molecule_info(sp));
+    (*space_).add_structure(sp, shape, info.loc);
 
     switch (shape->dimension())
     {

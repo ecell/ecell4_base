@@ -768,7 +768,6 @@ void LatticeSimulator::walk(const Species& species, const Real& alpha)
         const std::pair<LatticeWorld::private_coordinate_type, bool>
             neighbor(world_->move_to_neighbor(
                 mtype, loc, (*mtype)[i], rnd));
-
         if (!neighbor.second)
         {
             const LatticeWorld::particle_info_type info((*mtype)[i]);

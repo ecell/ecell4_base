@@ -21,8 +21,11 @@ public:
 
 public:
 
-    StructureType(const Species& species, const Real& radius = 0.0)
-        : base_type(species, &(VacantType::getInstance()), radius, 0)
+    StructureType(
+        const Species& species, MolecularTypeBase* location,
+        const Real& radius = 0.0)
+        : base_type(species, location, radius, 0)
+        // : base_type(species, &(VacantType::getInstance()), radius, 0)
     {
         ;
     }

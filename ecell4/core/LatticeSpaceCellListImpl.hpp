@@ -518,7 +518,7 @@ public:
     }
 
     virtual void add_structure(const Species& sp,
-        const boost::shared_ptr<const Shape>& s);
+        const boost::shared_ptr<const Shape>& s, const std::string loc);
     virtual const boost::shared_ptr<const Shape>& get_structure(const Species& sp) const;
     virtual const Shape::dimension_kind get_structure_dimension(const Species& sp) const;
 
@@ -559,7 +559,7 @@ protected:
     std::pair<const MolecularTypeBase*, private_coordinate_type>
         __get_coordinate(const ParticleID& pid) const;
 
-    bool make_structure_type(const Species& sp);
+    bool make_structure_type(const Species& sp, const std::string loc);
 
 protected:
 

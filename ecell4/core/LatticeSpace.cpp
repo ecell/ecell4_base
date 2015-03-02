@@ -910,7 +910,7 @@ bool LatticeSpaceVectorImpl::update_voxel_private(const ParticleID& pid, const V
     // return true;
 }
 
-bool LatticeSpaceVectorImpl::make_structure_type(const Species& sp)
+bool LatticeSpaceVectorImpl::make_structure_type(const Species& sp, const std::string loc)
 {
     spmap::iterator itr(spmap_.find(sp));
     if (itr != spmap_.end())
@@ -918,16 +918,51 @@ bool LatticeSpaceVectorImpl::make_structure_type(const Species& sp)
         return false;
     }
 
-    boost::shared_ptr<MolecularType> mt(new StructureType(sp, voxel_radius_));
+    MolecularTypeBase* location;
+    if (loc == "")
+    {
+        location = vacant_;
+    }
+    else
+    {
+        const Species locsp(loc);
+        try
+        {
+            location = find_molecular_type(locsp);
+        }
+        catch (const NotFound& err)
+        {
+            // XXX: A MolecularTypeBase for the structure (location) must be allocated
+            // XXX: before the allocation of a Species on the structure.
+            // XXX: The MolecularTypeBase cannot be automatically allocated at the time
+            // XXX: because its MoleculeInfo is unknown.
+            // XXX: LatticeSpaceVectorImpl::load will raise a problem about this issue.
+            // XXX: In this implementation, the MolecularTypeBase for a structure is
+            // XXX: created with default arguments.
+            boost::shared_ptr<MolecularType>
+                locmt(new MolecularType(locsp, vacant_, voxel_radius_, 0));
+            std::pair<LatticeSpaceVectorImpl::spmap::iterator, bool> locval(
+                spmap_.insert(LatticeSpaceVectorImpl::spmap::value_type(locsp, locmt)));
+            if (!locval.second)
+            {
+                throw AlreadyExists(
+                    "never reach here. find_molecular_type seems wrong.");
+            }
+
+            location = (*locval.first).second.get();
+        }
+    }
+
+    boost::shared_ptr<MolecularType> mt(new StructureType(sp, location, voxel_radius_));
     std::pair<spmap::iterator, bool>
         retval(spmap_.insert(std::make_pair(sp, mt)));
     return retval.second;
 }
 
 void LatticeSpaceVectorImpl::add_structure(const Species& sp,
-    const boost::shared_ptr<const Shape>& s)
+    const boost::shared_ptr<const Shape>& s, const std::string loc)
 {
-    make_structure_type(sp); // Use StructureType
+    make_structure_type(sp, loc); // Use StructureType
 
     structure_container_type::const_iterator i(structures_.find(sp));
     if (i != structures_.end())
