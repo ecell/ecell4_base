@@ -678,7 +678,7 @@ bool LatticeSimulator::step(const Real& upto)
         return false;
     }
 
-    if (upto >= scheduler_.top().second->time())
+    if (scheduler_.size() > 0 && upto >= scheduler_.top().second->time())
     {
         step_();
         dt_ = scheduler_.next_time() - t();
