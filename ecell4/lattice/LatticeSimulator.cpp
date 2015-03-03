@@ -551,6 +551,8 @@ bool LatticeSimulator::apply_a2bc(
     // At least, one of A and B must be placed at the neighbor.
     const LatticeWorld::private_coordinate_type coord(pinfo.first);
     const std::string
+        bserial(product_species0.serial()),
+        cserial(product_species1.serial()),
         bloc(world_->get_molecule_info(product_species0).loc),
         cloc(world_->get_molecule_info(product_species1).loc);
     std::pair<LatticeWorld::private_coordinate_type, bool>
@@ -560,17 +562,17 @@ bool LatticeSimulator::apply_a2bc(
     const std::string nserial(get_serial(neighbor.first));
     const std::string nloc(get_location(neighbor.first));
 
-    if (aserial == bloc || aloc == bloc)
+    if (aserial == bloc || aloc == bloc || aloc == bserial)
     {
-        // A is on the location of B, or the locaiton itself
+        // A is the locaiton of B,
+        // or A is on the location of B,
+        // or B is the location of A
         // C must be placed at the neighbor
 
-        // if (nserial != cloc && nloc != cloc)
         if (nserial != cloc)
         {
             //TODO: C cannot be on the neighbor.
             return false;
-            // throw IllegalState("no place for the product.");
         }
 
         register_reactant_species(pinfo, reaction);
@@ -579,36 +581,51 @@ bool LatticeSimulator::apply_a2bc(
 
         if (aserial != bloc)
         {
+            // Remove A once if A is not the location of a new B-molecule
             world_->remove_voxel_private(pinfo.first);
         }
+
+        // No need to remove the neighbor because it's the location of C
         // world_->remove_voxel_private(neighbor.first);
 
-        std::pair<std::pair<ParticleID, Voxel>, bool> new_mol0(
-            world_->new_voxel_private(product_species0, coord));
+        if (aloc != bserial)
+        {
+            // Place a new B-molecule at the position of A
+            std::pair<std::pair<ParticleID, Voxel>, bool> new_mol0(
+                world_->new_voxel_private(product_species0, coord));
+            reaction.products.push_back(
+                reaction_type::particle_type(
+                    new_mol0.first.first,
+                    this->private_voxel2voxel(new_mol0.first.second)));
+        }
+        else
+        {
+            // When B is the location of A, it's enough to remove A
+            reaction.products.push_back(
+                reaction_type::particle_type(
+                    world_->get_voxel(world_->private2coord(coord))));
+        }
+
+        // Place a new C-molecule at the neighbor
         std::pair<std::pair<ParticleID, Voxel>, bool> new_mol1(
             world_->new_voxel_private(product_species1, neighbor.first));
-
-        reaction.products.push_back(
-            reaction_type::particle_type(
-                new_mol0.first.first,
-                this->private_voxel2voxel(new_mol0.first.second)));
         reaction.products.push_back(
             reaction_type::particle_type(
                 new_mol1.first.first,
                 this->private_voxel2voxel(new_mol1.first.second)));
         return true;
     }
-    else if (aserial == cloc || aloc == cloc)
+    else if (aserial == cloc || aloc == cloc || aloc == cserial)
     {
-        // A is on the location of C, or the locaiton itself
+        // A is the locaiton of C,
+        // or A is on the location of C,
+        // or C is the location of A
         // B must be placed at the neighbor
 
-        // if (nserial != bloc && nloc != bloc)
         if (nserial != bloc)
         {
             //TODO: B cannot be on the neighbor.
             return false;
-            // throw IllegalState("no place for the product.");
         }
 
         register_reactant_species(pinfo, reaction);
@@ -617,23 +634,38 @@ bool LatticeSimulator::apply_a2bc(
 
         if (aserial != cloc)
         {
+            // Remove A once if A is not the location of a new C-molecule
             world_->remove_voxel_private(pinfo.first);
         }
-        world_->remove_voxel_private(neighbor.first);
 
+        // No need to remove the neighbor because it's the location of B
+        // world_->remove_voxel_private(neighbor.first);
+
+        // Place a new B-molecule at the neighbor
         std::pair<std::pair<ParticleID, Voxel>, bool> new_mol0(
             world_->new_voxel_private(product_species0, neighbor.first));
-        std::pair<std::pair<ParticleID, Voxel>, bool> new_mol1(
-            world_->new_voxel_private(product_species1, coord));
-
         reaction.products.push_back(
             reaction_type::particle_type(
                 new_mol0.first.first,
                 this->private_voxel2voxel(new_mol0.first.second)));
-        reaction.products.push_back(
-            reaction_type::particle_type(
-                new_mol1.first.first,
-                this->private_voxel2voxel(new_mol1.first.second)));
+
+        if (aloc != cserial)
+        {
+            // Place a new C-molecule at the position of A
+            std::pair<std::pair<ParticleID, Voxel>, bool> new_mol1(
+                world_->new_voxel_private(product_species1, coord));
+            reaction.products.push_back(
+                reaction_type::particle_type(
+                    new_mol1.first.first,
+                    this->private_voxel2voxel(new_mol1.first.second)));
+        }
+        else
+        {
+            // When C is the location of A, it's enough to remove A
+            reaction.products.push_back(
+                reaction_type::particle_type(
+                    world_->get_voxel(world_->private2coord(coord))));
+        }
         return true;
     }
     else

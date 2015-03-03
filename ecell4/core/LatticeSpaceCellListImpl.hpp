@@ -403,6 +403,24 @@ public:
             pid, Voxel(mt->species(), coord, mt->radius(), mt->D(), loc));
     }
 
+    virtual std::pair<ParticleID, Voxel> get_voxel(const coordinate_type& coord) const
+    {
+        const private_coordinate_type private_coord(coord2private(coord));
+        const MolecularTypeBase* mt(get_molecular_type(private_coord));
+        const std::string loc((mt->location()->is_vacant())
+            ? "" : mt->location()->species().serial());
+        if (mt->with_voxels())
+        {
+            return std::make_pair(mt->find_particle_id(private_coord),
+                Voxel(mt->species(), coord, mt->radius(), mt->D(), loc));
+        }
+        else
+        {
+            return std::make_pair(ParticleID(),
+                Voxel(mt->species(), coord, mt->radius(), mt->D(), loc));
+        }
+    }
+
     virtual bool remove_voxel(const ParticleID& pid)
     {
         std::pair<MolecularTypeBase*, private_coordinate_type>

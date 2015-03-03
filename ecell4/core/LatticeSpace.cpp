@@ -153,6 +153,25 @@ LatticeSpaceVectorImpl::get_voxel(const ParticleID& pid) const
     throw NotFound("voxel not found.");
 }
 
+std::pair<ParticleID, Voxel>
+LatticeSpaceVectorImpl::get_voxel(const coordinate_type& coord) const
+{
+    const private_coordinate_type private_coord(coord2private(coord));
+    const MolecularTypeBase* mt(voxels_[private_coord]);
+    const std::string loc((mt->location()->is_vacant())
+        ? "" : mt->location()->species().serial());
+    if (mt->with_voxels())
+    {
+        return std::make_pair(mt->find_particle_id(private_coord),
+            Voxel(mt->species(), coord, mt->radius(), mt->D(), loc));
+    }
+    else
+    {
+        return std::make_pair(ParticleID(),
+            Voxel(mt->species(), coord, mt->radius(), mt->D(), loc));
+    }
+}
+
 bool LatticeSpaceVectorImpl::update_structure(const Particle& p)
 {
     //XXX: Particle does not have a location.
