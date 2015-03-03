@@ -27,6 +27,8 @@ def __parse_world(
     """Private function to parse world. Return infomation about particles
     (name, coordinates and particle size) for each species.
     """
+    from ecell4 import Species
+
     if species_list is None:
         species_list = [
             p.species().serial() for pid, p in world.list_particles()]
@@ -37,9 +39,13 @@ def __parse_world(
     for name in species_list:
         particles = [
             {'pos': p.position(), 'r': p.radius()}
-            for pid, p in world.list_particles()
-            if (p.species().serial() == name and
-                (predicator is None or predicator(pid, p)))]
+            for pid, p in world.list_particles(Species(name))
+            if predicator is None or predicator(pid, p)]
+        # particles = [
+        #     {'pos': p.position(), 'r': p.radius()}
+        #     for pid, p in world.list_particles()
+        #     if (p.species().serial() == name and
+        #         (predicator is None or predicator(pid, p)))]
 
         if len(particles) == 0:
             continue
@@ -54,8 +60,8 @@ def __parse_world(
         }
 
         # assume that all particles belong to one species have the same radius
-        r = (max([p['r'] for p in particles]) if radius is None else radius)
-        size = 30/min(world.edge_lengths()) * r
+        r = max([p['r'] for p in particles]) if radius is None else radius
+        size = 30.0 / min(world.edge_lengths()) * r
 
         species.append({
             'name': name,
