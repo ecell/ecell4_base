@@ -507,12 +507,35 @@ LatticeWorld::move_to_neighbor(
 
 std::pair<LatticeWorld::private_coordinate_type, bool>
 LatticeWorld::check_neighbor_private(
-        const private_coordinate_type coord)
+    const private_coordinate_type coord, const std::string& loc)
 {
-    const Integer rnd(rng()->uniform_int(0, 11));
-    const private_coordinate_type neighbor((*space_).get_neighbor(coord, rnd));
-    bool flg = get_molecular_type_private(neighbor)->is_vacant(); //XXX: loc
-    return std::make_pair(neighbor, flg);
+    std::vector<private_coordinate_type> tmp;
+    tmp.reserve(12);
+    for (unsigned int rnd(0); rnd < 12; ++rnd)
+    {
+        const private_coordinate_type
+            neighbor((*space_).get_neighbor(coord, rnd));
+        const MolecularTypeBase* mt(get_molecular_type_private(neighbor));
+        const std::string
+            serial(mt->is_vacant() ? "" : mt->species().serial());
+        if (serial == loc)
+        {
+            tmp.push_back(neighbor);
+        }
+    }
+
+    if (tmp.size() == 0)
+    {
+        return std::make_pair(coord, false);
+    }
+
+    return std::make_pair(
+        tmp[rng()->uniform_int(0, tmp.size() - 1)], true);
+
+    // const Integer rnd(rng()->uniform_int(0, 11));
+    // const private_coordinate_type neighbor((*space_).get_neighbor(coord, rnd));
+    // bool flg = get_molecular_type_private(neighbor)->is_vacant(); //XXX: loc
+    // return std::make_pair(neighbor, flg);
 }
 
 Shape::dimension_kind LatticeWorld::get_dimension_kind(const std::string& name) const

@@ -281,7 +281,7 @@ public:
     // }
 
     std::pair<private_coordinate_type, bool> check_neighbor_private(
-            const private_coordinate_type coord);
+            const private_coordinate_type coord, const std::string& loc);
     // bool update_molecule(coordinate_type at, Species species);
 
     const Species& draw_species(const Species& pttrn) const;

@@ -490,38 +490,51 @@ void LatticeSimulator::apply_a2b(
 {
     // A (pinfo) becomes B (product_species)
     const LatticeWorld::private_coordinate_type coord(pinfo.first);
-    const std::string location(world_->get_molecule_info(product_species).loc);
+    const std::string bloc(world_->get_molecule_info(product_species).loc);
     const std::string aserial(get_serial(coord));
     const std::string aloc(get_location(coord));
+    const std::string bserial(product_species.serial());
 
-    if (aserial == location || aloc == location)
+    if (aserial == bloc || aloc == bloc || aloc == bserial)
     {
-        // A is on the location of B, or the location itself.
+        // A is the location of B (B can be placed on A),
+        // or A is on the location of B,
+        // or A is on B.
         register_reactant_species(pinfo, reaction);
         register_product_species(product_species);
 
-        if (aserial != location)
+        if (aserial != bloc)
         {
+            // Remove A once if A is not the location of B
             world_->remove_voxel_private(pinfo.first);
         }
 
-        std::pair<std::pair<ParticleID, Voxel>, bool> new_mol(
-            world_->new_voxel_private(product_species, coord));
-
-        reaction.products.push_back(
-            reaction_type::particle_type(
-                new_mol.first.first,
-                this->private_voxel2voxel(new_mol.first.second)));
+        if (aloc != bserial)
+        {
+            // Place a new B-molecule at the position of A
+            std::pair<std::pair<ParticleID, Voxel>, bool> new_mol(
+                world_->new_voxel_private(product_species, coord));
+            reaction.products.push_back(
+                reaction_type::particle_type(
+                    new_mol.first.first,
+                    this->private_voxel2voxel(new_mol.first.second)));
+        }
+        else
+        {
+            // When B is the location of A, it's enough to remove A
+            reaction.products.push_back(
+                reaction_type::particle_type(
+                    world_->get_voxel(world_->private2coord(coord))));
+        }
     }
     else
     {
         // A is NOT on the location of B.
         // B must be released into a neighbor, which is the location of B
         std::pair<LatticeWorld::private_coordinate_type, bool>
-            neighbor(world_->check_neighbor_private(coord));
-        const std::string nserial(get_serial(neighbor.first));
+            neighbor(world_->check_neighbor_private(coord, bloc));
 
-        if (nserial == location)
+        if (neighbor.second)
         {
             // The neighbor is the location of B.
             // Place B at the neighbor, and remove A.
@@ -555,12 +568,8 @@ bool LatticeSimulator::apply_a2bc(
         cserial(product_species1.serial()),
         bloc(world_->get_molecule_info(product_species0).loc),
         cloc(world_->get_molecule_info(product_species1).loc);
-    std::pair<LatticeWorld::private_coordinate_type, bool>
-        neighbor(world_->check_neighbor_private(coord));
     const std::string aserial(get_serial(coord));
     const std::string aloc(get_location(coord));
-    const std::string nserial(get_serial(neighbor.first));
-    const std::string nloc(get_location(neighbor.first));
 
     if (aserial == bloc || aloc == bloc || aloc == bserial)
     {
@@ -569,7 +578,12 @@ bool LatticeSimulator::apply_a2bc(
         // or B is the location of A
         // C must be placed at the neighbor
 
-        if (nserial != cloc)
+        std::pair<LatticeWorld::private_coordinate_type, bool>
+            neighbor(world_->check_neighbor_private(coord, cloc));
+        const std::string nserial(get_serial(neighbor.first));
+        const std::string nloc(get_location(neighbor.first));
+
+        if (!neighbor.second)
         {
             //TODO: C cannot be on the neighbor.
             return false;
@@ -621,8 +635,12 @@ bool LatticeSimulator::apply_a2bc(
         // or A is on the location of C,
         // or C is the location of A
         // B must be placed at the neighbor
+        std::pair<LatticeWorld::private_coordinate_type, bool>
+            neighbor(world_->check_neighbor_private(coord, bloc));
+        const std::string nserial(get_serial(neighbor.first));
+        const std::string nloc(get_location(neighbor.first));
 
-        if (nserial != bloc)
+        if (!neighbor.second)
         {
             //TODO: B cannot be on the neighbor.
             return false;
