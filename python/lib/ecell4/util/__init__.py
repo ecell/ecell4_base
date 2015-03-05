@@ -1,5 +1,5 @@
-from decorator import reaction_rules, species_attributes, get_model, reset_model
-import viz
+from .decorator import reaction_rules, species_attributes, get_model, reset_model
+from . import viz
 
 __all__ = [
     'run_simulation', 'reaction_rules', 'species_attributes',

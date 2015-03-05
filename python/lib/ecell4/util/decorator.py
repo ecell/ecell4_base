@@ -5,8 +5,8 @@ import warnings
 import functools
 import itertools
 
-import parseobj
-from decorator_base import Callback, JustParseCallback, parse_decorator, ParseDecorator
+from . import parseobj
+from .decorator_base import Callback, JustParseCallback, parse_decorator, ParseDecorator
 
 import ecell4.core
 
@@ -37,12 +37,12 @@ def generate_Species(obj):
         return tuple(itertools.chain(*[
             generate_Species(subobj) for subobj in subobjs]))
     else:
-        raise RuntimeError, 'invalid expression; "%s" given' % str(obj)
+        raise RuntimeError('invalid expression; "%s" given' % str(obj))
 
 def generate_ReactionRule(lhs, rhs, k=0.0):
     if len(lhs) == 0:
         if len(rhs) != 1:
-            raise RuntimeError, (
+            raise RuntimeError(
                 "the number of products must be 1; %d given" % len(rhs))
         return ecell4.core.create_synthesis_reaction_rule(rhs[0], k)
     elif len(lhs) == 1:
@@ -55,7 +55,7 @@ def generate_ReactionRule(lhs, rhs, k=0.0):
             return ecell4.core.create_unbinding_reaction_rule(
                 lhs[0], rhs[0], rhs[1], k)
         else:
-            raise RuntimeError, (
+            raise RuntimeError(
                 "the number of products must be less than 3; %d given"
                 % len(rhs))
     elif len(lhs) == 2:
@@ -63,9 +63,9 @@ def generate_ReactionRule(lhs, rhs, k=0.0):
             return ecell4.core.create_binding_reaction_rule(
                 lhs[0], lhs[1], rhs[0], k)
         else:
-            raise RuntimeError, (
+            raise RuntimeError(
                 "the number of products must be 1; %d given" % len(rhs))
-    raise RuntimeError, (
+    raise RuntimeError(
         "the number of reactants must be less than 3; %d given" % len(lhs))
 
 class SpeciesAttributesCallback(Callback):
@@ -77,7 +77,7 @@ class SpeciesAttributesCallback(Callback):
         if len(args) > 0:
             for key in args:
                 if not isinstance(key, types.StringType):
-                    raise RuntimeError, 'non string key "%s" was given' % key
+                    raise RuntimeError('non string key "%s" was given' % key)
             self.keys = args
 
         self.bitwise_operations = []
@@ -91,7 +91,7 @@ class SpeciesAttributesCallback(Callback):
 
     def notify_bitwise_operations(self, obj):
         if not isinstance(obj, parseobj.OrExp):
-            raise RuntimeError, 'an invalid object was given [%s]' % (repr(obj))
+            raise RuntimeError('an invalid object was given [%s]' % (repr(obj)))
         # elif len(obj._elements()) != 2:
         #     raise RuntimeError, 'only one attribute is allowed. [%d] given' % (
         #         len(obj._elements()))
@@ -104,23 +104,23 @@ class SpeciesAttributesCallback(Callback):
         for lhs in elems[: -1]:
             species_list = generate_Species(lhs)
             if len(species_list) != 1:
-                raise RuntimeError, (
+                raise RuntimeError(
                     'only a single species must be given; %d given'
                     % len(species_list))
 
             sp = species_list[0]
             if sp is None:
-                raise RuntimeError, "no species given [%s]" % (repr(obj))
+                raise RuntimeError("no species given [%s]" % (repr(obj)))
 
             if self.keys is None:
                 if not isinstance(rhs, types.DictType):
-                    raise RuntimeError, (
+                    raise RuntimeError(
                         'parameter must be given as a dict; "%s" given'
                         % str(rhs))
                 for key, value in rhs.items():
                     if not (isinstance(key, types.StringType)
                         and isinstance(value, types.StringType)):
-                        raise RuntimeError, (
+                        raise RuntimeError(
                             'attributes must be given as a pair of strings;'
                             + ' "%s" and "%s" given'
                             % (str(key), str(value)))
@@ -130,17 +130,17 @@ class SpeciesAttributesCallback(Callback):
                     if len(self.keys) == 1:
                         rhs = (rhs, )
                     else:
-                        raise RuntimeError, (
+                        raise RuntimeError(
                             'parameters must be given as a tuple or list; "%s" given'
                             % str(rhs))
                 if len(rhs) != len(self.keys):
-                    raise RuntimeError, (
+                    raise RuntimeError(
                         'the number of parameters must be %d; %d given'
                         % (len(self.keys), len(rhs)))
                 else:
                     for key, value in zip(self.keys, rhs):
                         if not isinstance(value, types.StringType):
-                            raise RuntimeError, (
+                            raise RuntimeError(
                                 'paramter must be given as a string; "%s" given'
                                 % str(value))
                         sp.set_attribute(key, value)
@@ -148,7 +148,7 @@ class SpeciesAttributesCallback(Callback):
             self.bitwise_operations.append(sp)
 
     def notify_comparisons(self, obj):
-        raise RuntimeError, (
+        raise RuntimeError(
             'ReactionRule definitions are not allowed'
             + ' in "species_attributes"')
 
@@ -168,7 +168,7 @@ class ReactionRulesCallback(Callback):
 
     def notify_comparisons(self, obj):
         if not isinstance(obj, parseobj.CmpExp):
-            raise RuntimeError, 'an invalid object was given [%s]' % (repr(obj))
+            raise RuntimeError('an invalid object was given [%s]' % (repr(obj)))
         elif isinstance(obj, parseobj.NeExp):
             warnings.warn('"<>" is deprecated; use "==" instead',
                           DeprecationWarning)
@@ -179,12 +179,12 @@ class ReactionRulesCallback(Callback):
             lhs = lhs._elements()[0]
 
         if not isinstance(rhs, parseobj.OrExp):
-            raise RuntimeError, ('an invalid object was given'
+            raise RuntimeError('an invalid object was given'
                 + ' as a right-hand-side [%s].' % (repr(rhs))
                 + ' OrExp must be given')
         elif len(rhs._elements()) != 2:
-            raise RuntimeError, 'only one attribute is allowed. [%d] given' % (
-                len(rhs._elements()))
+            raise RuntimeError('only one attribute is allowed. [%d] given' % (
+                len(rhs._elements())))
 
         rhs, params = rhs._elements()
         lhs, rhs = generate_Species(lhs), generate_Species(rhs)
@@ -193,16 +193,16 @@ class ReactionRulesCallback(Callback):
 
         if isinstance(obj, (parseobj.EqExp, parseobj.NeExp)):
             if not isinstance(params, (types.ListType, types.TupleType)):
-                raise RuntimeError, (
+                raise RuntimeError(
                     'parameter must be a list or tuple with length 2; "%s" given'
                     % str(params))
             elif len(params) != 2:
-                raise RuntimeError, (
+                raise RuntimeError(
                     "parameter must be a list or tuple with length 2;"
                     + " length %d given" % len(params))
             elif not (isinstance(params[0], numbers.Number)
                 and isinstance(params[1], numbers.Number)):
-                raise RuntimeError, (
+                raise RuntimeError(
                     'parameters must be given as a list or tuple of numbers;'
                     + ' "%s" given' % str(params))
 
@@ -210,14 +210,14 @@ class ReactionRulesCallback(Callback):
             self.comparisons.append(generate_ReactionRule(rhs, lhs, params[1]))
         elif isinstance(obj, parseobj.GtExp):
             if params is None:
-                raise RuntimeError, 'no parameter is specified'
+                raise RuntimeError('no parameter is specified')
             elif not isinstance(params, numbers.Number):
-                raise RuntimeError, (
+                raise RuntimeError(
                     'parameter must be given as a number; "%s" given'
                     % str(params))
             self.comparisons.append(generate_ReactionRule(lhs, rhs, params))
         else:
-            raise RuntimeError, 'an invalid object was given [%s]' % (repr(obj))
+            raise RuntimeError('an invalid object was given [%s]' % (repr(obj)))
 
 def get_model(is_netfree=False, without_reset=False, seeds=None):
     if seeds is not None or is_netfree:

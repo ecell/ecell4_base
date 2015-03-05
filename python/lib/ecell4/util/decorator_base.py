@@ -4,7 +4,7 @@ import warnings
 import functools
 import inspect
 
-import parseobj
+from . import parseobj
 
 
 class Callback(object):
