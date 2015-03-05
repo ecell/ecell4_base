@@ -9,8 +9,8 @@ import unittest
 try:
     from Cython.Distutils import build_ext
 except ImportError:
-    print "You don't seem to have Cython installed. Please get a"
-    print "copy from www.cython.org and install it"
+    print("You don't seem to have Cython installed. Please get a")
+    print("copy from www.cython.org and install it")
     sys.exit(1)
 
 class run_tests(Command):
