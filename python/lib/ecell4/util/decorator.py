@@ -219,8 +219,8 @@ class ReactionRulesCallback(Callback):
         else:
             raise RuntimeError, 'an invalid object was given [%s]' % (repr(obj))
 
-def get_model(is_netfree=False, without_reset=False):
-    if is_netfree:
+def get_model(is_netfree=False, without_reset=False, seeds=None):
+    if seeds is not None or is_netfree:
         m = ecell4.core.NetfreeModel()
     else:
         m = ecell4.core.NetworkModel()
@@ -232,6 +232,9 @@ def get_model(is_netfree=False, without_reset=False):
 
     if not without_reset:
         reset_model()
+
+    if seeds is not None:
+        return m.expand(seeds)
 
     return m
 
