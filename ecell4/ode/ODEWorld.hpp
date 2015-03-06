@@ -20,6 +20,7 @@ namespace ecell4
 namespace ode
 {
 
+#ifdef WITH_HDF5
 template<typename Tspace_>
 struct ODEWorldHDF5Traits
     : public CompartmentSpaceHDF5TraitsBase<Tspace_, H5DataTypeTraits_double>
@@ -39,6 +40,7 @@ struct ODEWorldHDF5Traits
         space.set_value(sp, value);
     }
 };
+#endif
 
 class ODEWorld
     : public Space
