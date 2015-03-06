@@ -202,15 +202,15 @@ std::pair<bool, LatticeSimulator::reaction_type> LatticeSimulator::attempt_react
 
     const Real Dtot(D0 + D1);
     const Real rnd(world_->rng()->uniform(0,1));
-    const Real gamma(pow(2*sqrt(2) + 4*sqrt(3) + 3*sqrt(6) + sqrt(22), 2) /
-        (72*(6*sqrt(2) + 4*sqrt(3) + 3*sqrt(6))));
+    const Real gamma(pow(2 * sqrt(2.0) + 4 * sqrt(3.0) + 3 * sqrt(6.0) + sqrt(22.0), 2) /
+        (72 * (6 * sqrt(2.0) + 4 * sqrt(3.0) + 3 * sqrt(6.0))));
     Real factor(0);
     if (dimensionA == Shape::THREE && dimensionB == Shape::THREE)
     {
         if (from_species != to_species)
-            factor = 1. / (6 * sqrt(2.) * Dtot * world_->voxel_radius());
+            factor = 1. / (6 * sqrt(2.0) * Dtot * world_->voxel_radius());
         else
-            factor = 1. / (6 * sqrt(2.) * D0 * world_->voxel_radius());
+            factor = 1. / (6 * sqrt(2.0) * D0 * world_->voxel_radius());
     }
     else if (dimensionA == Shape::TWO && dimensionB == Shape::TWO)
     {
@@ -221,11 +221,11 @@ std::pair<bool, LatticeSimulator::reaction_type> LatticeSimulator::attempt_react
     }
     else if (dimensionA == Shape::THREE && dimensionB == Shape::TWO)
     {
-        factor = sqrt(2) / (3 * D0 * world_->voxel_radius());
+        factor = sqrt(2.0) / (3 * D0 * world_->voxel_radius());
     }
     else if (dimensionA == Shape::TWO && dimensionB == Shape::THREE)
     {
-        factor = sqrt(2) / (3 * D1 * world_->voxel_radius()); // 不要?
+        factor = sqrt(2.0) / (3 * D1 * world_->voxel_radius()); // 不要?
     }
     else
         throw NotSupported("The dimension of a shape must be two or three.");
