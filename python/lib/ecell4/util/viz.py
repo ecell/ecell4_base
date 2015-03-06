@@ -453,9 +453,12 @@ def plot_number_observer(*args, **kwargs):
             data = numpy.array(obs.data()).T
             for i, sp in enumerate(sorted(obs.targets())):
                 if is_first:
+                    label = sp.serial()
+                    if len(label) > 0 and label[0] == '_':
+                        label = '$\_$' + label[1:]  # XXX: lazy escaping for a special character
                     ax.plot(data[0], data[i + 1], fmt,
                             color=color_cycle[i % len(color_cycle)],
-                            label=sp.serial(), **plot_opts)
+                            label=label, **plot_opts)
                 else:
                     ax.plot(data[0], data[i + 1], fmt,
                             color=color_cycle[i % len(color_cycle)],
@@ -466,9 +469,12 @@ def plot_number_observer(*args, **kwargs):
             data = numpy.array(obs.data()).T
             for i, sp in enumerate(sorted(obs.targets())):
                 if is_first:
+                    label = sp.serial()
+                    if len(label) > 0 and label[0] == '_':
+                        label = '$\_$' + label[1:]  # XXX: lazy escaping for a special character
                     ax.plot(data[0], data[i + 1],
                             color=color_cycle[i % len(color_cycle)],
-                            label=sp.serial(), **plot_opts)
+                            label=label, **plot_opts)
                 else:
                     ax.plot(data[0], data[i + 1],
                             color=color_cycle[i % len(color_cycle)],
