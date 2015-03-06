@@ -302,21 +302,7 @@ public:
         set_lattice_properties();
     }
 
-    void set_lattice_properties()
-    {
-        //XXX: derived from SpatiocyteStepper::setLatticeProperties()
-        HCP_L = voxel_radius_ / sqrt(3.0);
-        HCP_X = voxel_radius_ * sqrt(8.0 / 3.0); // Lx
-        HCP_Y = voxel_radius_ * sqrt(3.0); // Ly
-
-        const Real lengthX = edge_lengths_[0];
-        const Real lengthY = edge_lengths_[1];
-        const Real lengthZ = edge_lengths_[2];
-
-        row_size_ = (Integer)rint((lengthZ / 2) / voxel_radius_) + 2;
-        layer_size_ = (Integer)rint(lengthY / HCP_Y) + 2;
-        col_size_ = (Integer)rint(lengthX / HCP_X) + 2;
-    }
+    void set_lattice_properties();
 
     /**
      * Primitives
@@ -410,15 +396,7 @@ public:
         return retval;
     }
 
-    Integer3 position2global(const Real3& pos) const
-    {
-        const Integer col(round(pos[0] / HCP_X));
-        const Integer layer(round((pos[1] - (col % 2) * HCP_L) / HCP_Y));
-        const Integer row(round(
-            (pos[2] / voxel_radius_ - ((layer + col) % 2)) / 2));
-        const Integer3 global(col, row, layer);
-        return global;
-    }
+    Integer3 position2global(const Real3& pos) const;
 
     /** others */
 
