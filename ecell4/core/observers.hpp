@@ -447,10 +447,24 @@ public:
 
     typedef FixedIntervalObserver base_type;
 
+    typedef std::vector<std::pair<ParticleID, Particle> >
+        particle_container_type;
+    typedef utils::get_mapper_mf<Species::serial_type, unsigned int>::type
+        serial_map_type;
+
 public:
 
-    FixedIntervalCSVObserver(const Real& dt, const std::string& filename)
-        : base_type(dt), prefix_(filename)
+    FixedIntervalCSVObserver(
+        const Real& dt, const std::string& filename)
+        : base_type(dt), prefix_(filename), species_()
+    {
+        ;
+    }
+
+    FixedIntervalCSVObserver(
+        const Real& dt, const std::string& filename,
+        const std::vector<std::string>& species)
+        : base_type(dt), prefix_(filename), species_(species)
     {
         ;
     }
@@ -471,34 +485,24 @@ public:
         base_type::fire(sim, space);
     }
 
-    void log(const Space* space)
+    void write_particles(
+        std::ofstream& ofs, const particle_container_type& particles,
+        const Species::serial_type label = "")
     {
-        typedef std::vector<std::pair<ParticleID, Particle> >
-            particle_container_type;
-        typedef utils::get_mapper_mf<Species::serial_type, unsigned int>::type
-            serial_map_type;
-
-        const particle_container_type particles(space->list_particles());
-        serial_map_type serials;
-        unsigned int cnt(0);
-
-        std::ofstream ofs(filename().c_str(), std::ios::out);
-        ofs << std::setprecision(17);
-        ofs << "x,y,z,r,sid" << std::endl;
         for(particle_container_type::const_iterator i(particles.begin());
             i != particles.end(); ++i)
         {
             const Real3 pos((*i).second.position());
             const Real radius((*i).second.radius());
+            const Species::serial_type serial(
+                label == "" ? (*i).second.species_serial() : label);
 
             unsigned int idx;
-            serial_map_type::iterator
-                j(serials.find((*i).second.species_serial()));
-            if (j == serials.end())
+            serial_map_type::iterator j(serials_.find(serial));
+            if (j == serials_.end())
             {
-                idx = cnt;
-                serials.insert(std::make_pair((*i).second.species_serial(), idx));
-                ++cnt;
+                idx = serials_.size();
+                serials_.insert(std::make_pair(serial, idx));
             }
             else
             {
@@ -507,6 +511,29 @@ public:
 
             ofs << pos[0] << "," << pos[1] << "," << pos[2] << "," << radius
                 << "," << idx << std::endl;
+        }
+    }
+
+    void log(const Space* space)
+    {
+        std::ofstream ofs(filename().c_str(), std::ios::out);
+        ofs << std::setprecision(17);
+        ofs << "x,y,z,r,sid" << std::endl;
+
+        if (species_.size() == 0)
+        {
+            const particle_container_type particles(space->list_particles());
+            write_particles(ofs, particles);
+        }
+        else
+        {
+            for (std::vector<std::string>::const_iterator i(species_.begin());
+                i != species_.end(); ++i)
+            {
+                const Species sp(*i);
+                const particle_container_type particles(space->list_particles(sp));
+                write_particles(ofs, particles, *i);
+            }
         }
 
         ofs.close();
@@ -526,9 +553,17 @@ public:
         }
     }
 
+    virtual void reset()
+    {
+        serials_.clear();
+        base_type::reset();
+    }
+
 protected:
 
     std::string prefix_;
+    std::vector<std::string> species_;
+    serial_map_type serials_;
 };
 
 class FixedIntervalTrajectoryObserver
