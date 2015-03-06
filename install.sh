@@ -7,9 +7,16 @@ CURDIR=$(cd $(dirname $0); pwd)
 # PREFIX=
 
 # make clean; rm -rf ${PREFIX}; rm CMakeCache.txt
+# rm ecell4/egfrd/SphericalBesselTable.hpp ecell4/egfrd/CylindricalBesselTable.hpp
 # rm -rf python/build python/lib/ecell4/*.cpp
 
 set -e
+
+cd ecell4/egfrd/tablegen
+cmake .
+make
+cp SphericalBesselTable.hpp CylindricalBesselTable.hpp ..
+cd ../../..
 
 cmake -DCMAKE_INSTALL_PREFIX=${PREFIX} .
 make
