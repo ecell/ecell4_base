@@ -190,7 +190,9 @@ BOOST_AUTO_TEST_CASE(LatticeWorld_test_neighbor)
     }
     ofs.close();
 
+#ifdef WITH_HDF5
     world.save("neighbor.h5");
+#endif
 }
 
 BOOST_AUTO_TEST_CASE(LatticeWorld_test_add_shape)
@@ -211,7 +213,9 @@ BOOST_AUTO_TEST_CASE(LatticeWorld_test_add_shape)
     BOOST_ASSERT(n > 0);
     BOOST_CHECK_EQUAL(world.num_particles(sp), n);
 
+#ifdef WITH_HDF5
     world.save("sphere.h5");
+#endif
 }
 
 BOOST_AUTO_TEST_CASE(LatticeWorld_test_move)
@@ -264,5 +268,7 @@ BOOST_AUTO_TEST_CASE(LatticeWorld_test_structure)
     BOOST_CHECK(world.new_particle(Particle(sp, Real3(2.5e-7, 2.5e-7, 4.5e-7),
                     2.5e-9, 1e-12)).second);
 
+#ifdef WITH_HDF5
     world.save("structure.h5");
+#endif
 }

@@ -321,6 +321,7 @@ public:
 
     void save(const std::string& filename) const
     {
+#ifdef WITH_HDF5
         boost::scoped_ptr<H5::H5File>
             fout(new H5::H5File(filename.c_str(), H5F_ACC_TRUNC));
         rng_->save(fout.get());
@@ -328,16 +329,23 @@ public:
         boost::scoped_ptr<H5::Group>
             group(new H5::Group(fout->createGroup("ParticleSpace")));
         ps_->save(group.get());
+#else
+        throw NotSupported("not supported yet.");
+#endif
     }
 
     void load(const std::string& filename)
     {
+#ifdef WITH_HDF5
         boost::scoped_ptr<H5::H5File>
             fin(new H5::H5File(filename.c_str(), H5F_ACC_RDONLY));
         const H5::Group group(fin->openGroup("ParticleSpace"));
         ps_->load(group);
         pidgen_.load(*fin);
         rng_->load(*fin);
+#else
+        throw NotSupported("not supported yet.");
+#endif
     }
 
     void bind_to(boost::shared_ptr<Model> model)

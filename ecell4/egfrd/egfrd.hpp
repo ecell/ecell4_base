@@ -3,7 +3,6 @@
 
 #include <ecell4/core/types.hpp>
 #include <ecell4/core/SimulatorFactory.hpp>
-
 #include "World.hpp"
 #include "EGFRDSimulator.hpp"
 

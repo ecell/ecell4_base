@@ -7,8 +7,11 @@
 #include "Species.hpp"
 #include "Space.hpp"
 #include "Integer3.hpp"
-#include "SubvolumeSpaceHDF5Writer.hpp"
 #include "Shape.hpp"
+
+#ifdef WITH_HDF5
+#include "SubvolumeSpaceHDF5Writer.hpp"
+#endif
 
 
 namespace ecell4
@@ -122,8 +125,11 @@ public:
     }
 
     virtual void reset(const Real3& edge_lengths, const Integer3& matrix_sizes) = 0;
+
+#ifdef WITH_HDF5
     virtual void save(H5::Group* root) const = 0;
     virtual void load(const H5::Group& root) = 0;
+#endif
 
 protected:
 
@@ -268,6 +274,7 @@ public:
         return species_;
     }
 
+#ifdef WITH_HDF5
     void save(H5::Group* root) const
     {
         save_subvolume_space(*this, root);
@@ -277,6 +284,7 @@ public:
     {
         load_subvolume_space(root, this);
     }
+#endif
 
     void reset(const Real3& edge_lengths)
     {

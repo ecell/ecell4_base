@@ -11,8 +11,10 @@
 #include "Particle.hpp"
 #include "Species.hpp"
 #include "Space.hpp"
-#include "ParticleSpaceHDF5Writer.hpp"
 
+#ifdef WITH_HDF5
+#include "ParticleSpaceHDF5Writer.hpp"
+#endif
 
 namespace ecell4
 {
@@ -149,8 +151,10 @@ public:
         return retval;
     }
 
+#ifdef WITH_HDF5
     virtual void save(H5::Group* root) const = 0;
     virtual void load(const H5::Group& root) = 0;
+#endif
 
     // ParticleSpace member functions
 
@@ -390,6 +394,7 @@ public:
         return particles_;
     }
 
+#ifdef WITH_HDF5
     void save(H5::Group* root) const
     {
         save_particle_space(*this, root);
@@ -399,6 +404,7 @@ public:
     {
         load_particle_space(root, this);
     }
+#endif
 
     void reset(const Real3& edge_lengths);
 

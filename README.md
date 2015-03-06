@@ -69,18 +69,12 @@ PYTHONPATH=~/Library/Python/2.7/lib/python/site-packages/ ipython notebook
 
 now you can see IPython notebooks, please open index.ipynb to see E-Cell4 models.
 
-## Installing E-Cell (Ubuntu 14.04)
-
-```shell
-$ sudo apt-get install python-pip libgsl0-dev libhdf5-serial-dev libboost-dev
-$ sudo pip install http://dev.e-cell.org/downloads/ecell4/ubuntu-trusty-amd64/latest/ecell4-0.0.0-cp27-none-linux_x86_64.whl
-```
 
 ## Building and installing E-Cell (Ubuntu 14.04)
 
 ```shell
 # dependent packages
-$ sudo apt-get install libgsl0-dev libboost-dev libboost-test-dev libboost-regex-dev libhdf5-serial-dev
+$ sudo apt-get install cmake libgsl0-dev libboost-dev libboost-regex-dev libhdf5-dev libatlas-base-dev
 $ sudo apt-get instal python-dev cython
 
 $ wget https://github.com/ecell/ecell4/archive/master.zip   

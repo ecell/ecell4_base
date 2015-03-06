@@ -9,10 +9,14 @@
 #include "Shape.hpp"
 #include "Space.hpp"
 #include "Integer3.hpp"
+
+#ifdef WITH_HDF5
 #include "LatticeSpaceHDF5Writer.hpp"
+#endif
+
 #include "MolecularTypeBase.hpp"
 #include "MolecularType.hpp"
-
+#include "Voxel.hpp"
 
 namespace ecell4
 {
@@ -66,6 +70,7 @@ public:
         return 4.0 * sqrt(2.0) * r * r * r;
     }
 
+#ifdef WITH_HDF5
     virtual void save(H5::Group* root) const
     {
         throw NotSupported(
@@ -77,6 +82,7 @@ public:
         throw NotSupported(
             "load(const H5::Group& root) is not supported by this space class");
     }
+#endif
 
     /**
       */
@@ -635,6 +641,8 @@ public:
         return is_periodic_;
     }
 
+
+#ifdef WITH_HDF5
     /*
      * HDF5 Save
      */
@@ -647,6 +655,7 @@ public:
     {
         load_lattice_space(root, this);
     }
+#endif
 
     void reset(const Real3& edge_lengths, const Real& voxel_radius,
         const bool is_periodic)

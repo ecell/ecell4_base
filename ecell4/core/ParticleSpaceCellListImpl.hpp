@@ -5,7 +5,11 @@
 #include <boost/multi_array.hpp>
 
 #include "ParticleSpace.hpp"
+
+#ifdef WITH_HDF5
 #include "ParticleSpaceHDF5Writer.hpp"
+#endif
+
 #include "Integer3.hpp"
 
 
@@ -84,6 +88,7 @@ public:
     std::vector<std::pair<ParticleID, Particle> >
         list_particles_exact(const Species& sp) const;
 
+#ifdef WITH_HDF5
     void save(H5::Group* root) const
     {
         save_particle_space(*this, root);
@@ -93,6 +98,7 @@ public:
     {
         load_particle_space(root, this);
     }
+#endif
 
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
         list_particles_within_radius(

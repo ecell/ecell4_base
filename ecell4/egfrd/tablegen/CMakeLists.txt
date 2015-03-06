@@ -33,7 +33,7 @@ int main() { double a, b; sincos(0., &a, &b); return 0; }"
     HAVE_SINCOS)
 
 configure_file(
-    ${PROJECT_SOURCE_DIR}/config.h.in
+    ${PROJECT_SOURCE_DIR}/../config.h.in
     ${PROJECT_BINARY_DIR}/ecell4/egfrd/config.h)
 
 execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR})

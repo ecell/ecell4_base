@@ -4,8 +4,11 @@
 #include <functional>
 #include <boost/type_traits/is_integral.hpp>
 #include <boost/scoped_ptr.hpp>
+
+#ifdef WITH_HDF5
 #include <hdf5.h>
 #include <H5Cpp.h>
+#endif
 
 
 namespace ecell4
@@ -318,6 +321,7 @@ public:
         return serial_advance(next_, 1);
     }
 
+#ifdef WITH_HDF5
     void save(H5::CommonFG* root) const
     {
         using namespace H5;
@@ -341,7 +345,9 @@ public:
         identifier_type state;
         dataset.read((unsigned char*)(&state), *optype);
         next_ = state;
+        throw NotSupported("not supported yet.");
     }
+#endif
 
 private:
 
