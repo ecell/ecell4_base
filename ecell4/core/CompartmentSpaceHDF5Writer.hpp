@@ -5,8 +5,10 @@
 #include <boost/scoped_ptr.hpp>
 #include <boost/scoped_array.hpp>
 
+#ifdef WITH_HDF5
 #include <hdf5.h>
 #include <H5Cpp.h>
+#endif
 
 #include "get_mapper_mf.hpp"
 #include "types.hpp"
