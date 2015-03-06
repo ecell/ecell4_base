@@ -6,7 +6,7 @@
 
 #include "ParticleSpace.hpp"
 
-#ifdef HDF5
+#ifdef WITH_HDF5
 #include "ParticleSpaceHDF5Writer.hpp"
 #endif
 
@@ -88,7 +88,7 @@ public:
     std::vector<std::pair<ParticleID, Particle> >
         list_particles_exact(const Species& sp) const;
 
-#ifdef HDF5
+#ifdef WITH_HDF5
     void save(H5::Group* root) const
     {
         save_particle_space(*this, root);

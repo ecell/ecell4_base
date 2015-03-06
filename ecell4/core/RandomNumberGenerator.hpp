@@ -7,7 +7,7 @@
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_randist.h>
 
-#ifdef HDF5
+#ifdef WITH_HDF5
 #include <hdf5.h>
 #include <H5Cpp.h>
 #endif
@@ -38,7 +38,7 @@ public:
     virtual void seed(Integer val) = 0;
     virtual void seed() = 0;
 
-#ifndef HDF5
+#ifdef WITH_HDF5
     virtual void save(H5::CommonFG* root) const = 0;
     virtual void load(const H5::CommonFG& root) = 0;
 #endif
@@ -74,7 +74,7 @@ public:
     void seed(Integer val);
     void seed();
 
-#ifndef HDF5
+#ifdef WITH_HDF5
     void save(H5::CommonFG* root) const;
     void load(const H5::CommonFG& root);
 #endif

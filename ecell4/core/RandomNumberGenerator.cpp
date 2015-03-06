@@ -2,7 +2,7 @@
 #include <gsl/gsl_rng.h>
 #include <sstream>
 
-#ifndef HDF5
+#ifdef WITH_HDF5
 #include <hdf5.h>
 #include <H5Cpp.h>
 #endif
@@ -13,7 +13,7 @@
 namespace ecell4
 {
 
-#ifndef HDF5
+#ifdef WITH_HDF5
 void GSLRandomNumberGenerator::save(H5::CommonFG* root) const
 {
     using namespace H5;

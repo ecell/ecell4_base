@@ -8,12 +8,14 @@
 
 #include "Space.hpp"
 #include "Integer3.hpp"
-#ifdef HDF5
+
+#ifdef WITH_HDF5
 #include "LatticeSpaceHDF5Writer.hpp"
 #endif
+
 #include "MolecularTypeBase.hpp"
 #include "MolecularType.hpp"
-
+#include "Voxel.hpp"
 
 namespace ecell4
 {
@@ -177,7 +179,7 @@ public:
         return col_size() * row_size() * layer_size();
     }
 
-#ifdef HDF5
+#ifdef WITH_HDF5
     /*
      * HDF5 Save
      */

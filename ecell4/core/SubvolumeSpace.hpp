@@ -8,7 +8,7 @@
 #include "Space.hpp"
 #include "Integer3.hpp"
 
-#ifndef HDF5
+#ifdef WITH_HDF5
 #include "SubvolumeSpaceHDF5Writer.hpp"
 #endif
 
@@ -112,7 +112,7 @@ public:
 
     virtual void reset(const Real3& edge_lengths, const Integer3& matrix_sizes) = 0;
 
-#ifndef HDF5
+#ifdef WITH_HDF5
     virtual void save(H5::Group* root) const = 0;
     virtual void load(const H5::Group& root) = 0;
 #endif
@@ -236,7 +236,7 @@ public:
         return species_;
     }
 
-#ifndef HDF5
+#ifdef WITH_HDF5
     void save(H5::Group* root) const
     {
         save_subvolume_space(*this, root);

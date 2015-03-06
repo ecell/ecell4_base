@@ -12,7 +12,7 @@
 #include "Species.hpp"
 #include "Space.hpp"
 
-#ifdef HDF5
+#ifdef WITH_HDF5
 #include "ParticleSpaceHDF5Writer.hpp"
 #endif
 
@@ -151,7 +151,7 @@ public:
         return retval;
     }
 
-#ifdef HDF5
+#ifdef WITH_HDF5
     virtual void save(H5::Group* root) const = 0;
     virtual void load(const H5::Group& root) = 0;
 #endif
@@ -394,7 +394,7 @@ public:
         return particles_;
     }
 
-#ifdef HDF5
+#ifdef WITH_HDF5
     void save(H5::Group* root) const
     {
         save_particle_space(*this, root);
