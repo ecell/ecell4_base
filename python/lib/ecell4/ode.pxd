@@ -32,7 +32,7 @@ cdef extern from "ecell4/ode/ODEWorld.hpp" namespace "ecell4::ode":
         # Optional members
         Real get_value(Cpp_Species &)
         void set_value(Cpp_Species &sp, Real &num)
-        void save(string)
+        void save(string) except +
         void load(string)
         bool has_species(Cpp_Species &)
         void reserve_species(Cpp_Species &)

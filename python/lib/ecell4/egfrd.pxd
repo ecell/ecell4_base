@@ -45,7 +45,7 @@ cdef extern from "ecell4/egfrd/egfrd.hpp" namespace "ecell4::egfrd":
         void add_molecules(Cpp_Species& sp, Integer num)
         void add_molecules(Cpp_Species& sp, Integer num, shared_ptr[Cpp_Shape])
         void remove_molecules(Cpp_Species& sp, Integer num)
-        void save(string filename)
+        void save(string filename) except +
         void load(string filename)
         void bind_to(shared_ptr[Cpp_Model])
         shared_ptr[Cpp_RandomNumberGenerator] rng()

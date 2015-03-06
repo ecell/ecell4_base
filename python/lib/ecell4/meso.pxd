@@ -39,7 +39,7 @@ cdef extern from "ecell4/meso/MesoscopicWorld.hpp" namespace "ecell4::meso":
         Real get_volume(Cpp_Species&)
         bool on_structure(Cpp_Species&, Cpp_Integer3&)
         void remove_molecules(Cpp_Species &sp, Integer &num)
-        void save(string)
+        void save(string) except +
         void load(string)
         void bind_to(shared_ptr[Cpp_Model])
         shared_ptr[Cpp_RandomNumberGenerator] rng()
