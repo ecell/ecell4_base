@@ -6,7 +6,9 @@
 #include <ecell4/core/Real3.hpp>
 #include <ecell4/core/Space.hpp>
 #include <ecell4/core/Model.hpp>
+#ifdef WITH_HDF5
 #include <ecell4/core/CompartmentSpaceHDF5Writer.hpp>
+#endif
 #include <ecell4/core/Shape.hpp>
 
 #include <boost/shared_ptr.hpp>
