@@ -32,6 +32,7 @@ public:
     SphericalSurface surface() const;
     Real3 draw_position(
         boost::shared_ptr<RandomNumberGenerator>& rng) const;
+    bool test_AABB(const Real3& l, const Real3& u) const;
 
     inline const Real3& position() const
     {
@@ -72,6 +73,7 @@ struct SphericalSurface
     Sphere inside() const;
     Real3 draw_position(
         boost::shared_ptr<RandomNumberGenerator>& rng) const;
+    bool test_AABB(const Real3& l, const Real3& u) const;
 
     dimension_kind dimension() const
     {

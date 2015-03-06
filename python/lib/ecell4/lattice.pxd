@@ -58,7 +58,7 @@ cdef extern from "ecell4/lattice/LatticeWorld.hpp" namespace "ecell4::lattice":
         void add_molecules(Cpp_Species& sp, Integer num)
         void remove_molecules(Cpp_Species& sp, Integer num)
         # shared_ptr[Cpp_GSLRandomNumberGenerator] rng()
-        Integer get_neighbor(Integer, Integer)
+        # Integer get_neighbor(Integer, Integer)
         void save(string filename)
         void load(string filename)
         pair[pair[Cpp_ParticleID, Cpp_Voxel], bool] new_voxel(Cpp_Voxel& p)
@@ -82,10 +82,17 @@ cdef extern from "ecell4/lattice/LatticeWorld.hpp" namespace "ecell4::lattice":
         Integer coord2private(Integer)
         Cpp_Integer3 coord2global(Integer)
         Integer global2coord(Cpp_Integer3)
+        Cpp_Integer3 private2global(Integer)
+        Integer global2private(Cpp_Integer3)
         Cpp_Real3 global2position(Cpp_Integer3)
         Cpp_Integer3 position2global(Cpp_Real3)
-        Integer add_structure(Cpp_Species&, Cpp_Shape&)
-        void add_molecules(Cpp_Species& sp, Integer num, Cpp_Shape&)
+        Integer add_structure(Cpp_Species&, shared_ptr[Cpp_Shape])
+        void add_molecules(Cpp_Species& sp, Integer num, shared_ptr[Cpp_Shape])
+
+    cdef Cpp_LatticeWorld* create_lattice_world_cell_list_impl_alias(
+        Cpp_Real3&, Real, Cpp_Integer3&, shared_ptr[Cpp_RandomNumberGenerator]&)
+    cdef Cpp_LatticeWorld* create_lattice_world_vector_impl_alias(
+        Cpp_Real3&, Real, shared_ptr[Cpp_RandomNumberGenerator]&)
 
 ## LatticeWorld
 #  a python wrapper for Cpp_LatticeWorld
@@ -111,6 +118,8 @@ cdef extern from "ecell4/lattice/LatticeSimulator.hpp" namespace "ecell4::lattic
         Real dt()
         void set_dt(Real)
         void initialize()
+        void set_alpha(Real)
+        Real get_alpha()
         vector[Cpp_ReactionRule] last_reactions()
         shared_ptr[Cpp_Model] model()
         shared_ptr[Cpp_LatticeWorld] world()

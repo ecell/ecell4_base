@@ -7,10 +7,12 @@
 #include "Species.hpp"
 #include "Space.hpp"
 #include "Integer3.hpp"
+#include "Shape.hpp"
 
 #ifdef WITH_HDF5
 #include "SubvolumeSpaceHDF5Writer.hpp"
 #endif
+
 
 namespace ecell4
 {
@@ -110,6 +112,18 @@ public:
         remove_molecules(sp, num, global2coord(g));
     }
 
+    virtual void add_structure(
+        const Species& sp, const boost::shared_ptr<const Shape>& shape) = 0;
+    virtual bool check_structure(
+        const Species::serial_type& serial, const coordinate_type& coord) const = 0;
+    virtual bool has_structure(const Species& sp) const = 0;
+    virtual Real get_volume(const Species& sp) const = 0;
+
+    inline bool check_structure(const Species::serial_type& serial, const Integer3& g) const
+    {
+        return check_structure(serial, global2coord(g));
+    }
+
     virtual void reset(const Real3& edge_lengths, const Integer3& matrix_sizes) = 0;
 
 #ifdef WITH_HDF5
@@ -132,6 +146,8 @@ public:
 
     typedef std::vector<Integer> cell_type;
     typedef utils::get_mapper_mf<Species, cell_type>::type matrix_type;
+    typedef std::map<Species, boost::shared_ptr<const Shape> > structure_container_type;
+    typedef utils::get_mapper_mf<Species::serial_type, cell_type>::type structure_matrix_type; //XXX: just avoid to use std::vector<bool>
 
 public:
 
@@ -218,6 +234,28 @@ public:
     void add_molecules(const Species& sp, const Integer& num, const coordinate_type& c);
     void remove_molecules(const Species& sp, const Integer& num, const coordinate_type& c);
 
+    void add_structure(const Species& sp, const boost::shared_ptr<const Shape>& shape);
+    bool check_structure(const Species::serial_type& serial, const coordinate_type& coord) const;
+    Real get_volume(const Species& sp) const;
+
+    bool has_structure(const Species& sp) const
+    {
+        structure_matrix_type::const_iterator i(structure_matrix_.find(sp.serial()));
+        if (i == structure_matrix_.end())
+        {
+            return false;
+        }
+        for (std::vector<Integer>::const_iterator j((*i).second.begin());
+            j != (*i).second.end(); ++j)
+        {
+            if ((*j) > 0)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
     coordinate_type get_neighbor(const coordinate_type& c, const Integer rnd) const;
 
     const std::vector<Species>& species() const
@@ -284,6 +322,9 @@ protected:
     boost::array<Integer, 3> matrix_sizes_;
     matrix_type matrix_;
     std::vector<Species> species_;
+
+    structure_container_type structures_;
+    structure_matrix_type structure_matrix_;
 };
 
 } // ecell4

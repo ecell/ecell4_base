@@ -1,4 +1,6 @@
 #include "Sphere.hpp"
+#include "collision.hpp"
+
 
 namespace ecell4
 {
@@ -70,6 +72,11 @@ Real3 Sphere::draw_position(
     ; // never reach here
 }
 
+bool Sphere::test_AABB(const Real3& l, const Real3& u) const
+{
+    return collision::test_sphere_AABB(*this, l, u);
+}
+
 SphericalSurface::SphericalSurface()
     : center_(), radius_()
 {
@@ -122,6 +129,11 @@ Real3 SphericalSurface::draw_position(
     }
 
     return rng->direction3d(radius_) + center_;
+}
+
+bool SphericalSurface::test_AABB(const Real3& l, const Real3& u) const
+{
+    return collision::test_shell_AABB(*this, l, u);
 }
 
 } // ecell4

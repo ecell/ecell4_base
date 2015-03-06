@@ -219,11 +219,8 @@ class ReactionRulesCallback(Callback):
         else:
             raise RuntimeError, 'an invalid object was given [%s]' % (repr(obj))
 
-def get_model(is_netfree=False):
-    global SPECIES_ATTRIBUTES
-    global REACTION_RULES
-
-    if is_netfree:
+def get_model(is_netfree=False, without_reset=False, seeds=None):
+    if seeds is not None or is_netfree:
         m = ecell4.core.NetfreeModel()
     else:
         m = ecell4.core.NetworkModel()
@@ -233,9 +230,20 @@ def get_model(is_netfree=False):
     for rr in REACTION_RULES:
         m.add_reaction_rule(rr)
 
+    if not without_reset:
+        reset_model()
+
+    if seeds is not None:
+        return m.expand(seeds)
+
+    return m
+
+def reset_model():
+    global SPECIES_ATTRIBUTES
+    global REACTION_RULES
+
     SPECIES_ATTRIBUTES = []
     REACTION_RULES = []
-    return m
 
 reaction_rules = functools.partial(ParseDecorator, ReactionRulesCallback)
 species_attributes = functools.partial(ParseDecorator, SpeciesAttributesCallback)

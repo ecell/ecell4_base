@@ -34,6 +34,7 @@ public:
 
     Real is_inside(const Real3& coord) const;
     Real distance(const Real3& pos) const;
+    bool test_AABB(const Real3& l, const Real3& u) const;
     CylindricalSurface surface() const;
     Real3 draw_position(
         boost::shared_ptr<RandomNumberGenerator>& rng) const;
@@ -57,8 +58,6 @@ public:
     {
         return radius_;
     }
-
-protected:
 
     inline std::pair<Real, Real> to_internal(const Real3& pos) const
     {
@@ -94,6 +93,7 @@ struct CylindricalSurface
     Cylinder inside() const;
     Real3 draw_position(
         boost::shared_ptr<RandomNumberGenerator>& rng) const;
+    bool test_AABB(const Real3& l, const Real3& u) const;
 
     dimension_kind dimension() const
     {

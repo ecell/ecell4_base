@@ -339,7 +339,7 @@ protected:
         }
 
         particle_container_type::size_type old_idx(i - particles_.begin());
-        cell_type& old_cell(cell(index((*i).second.position())));
+        // cell_type& old_cell(cell(index((*i).second.position())));
         // const bool succeeded(erase_from_cell(&old_cell, old_idx));
         // BOOST_ASSERT(succeeded);
         rmap_.erase((*i).first);

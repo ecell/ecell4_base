@@ -178,7 +178,11 @@ void GillespieSimulator::initialize(void)
     {
         const ReactionRule& rr(*i);
 
-        if (rr.reactants().size() == 1)
+        if (rr.reactants().size() == 0)
+        {
+            events_.push_back(new ZerothOrderReactionRuleEvent(this, rr));
+        }
+        else if (rr.reactants().size() == 1)
         {
             events_.push_back(new FirstOrderReactionRuleEvent(this, rr));
         }

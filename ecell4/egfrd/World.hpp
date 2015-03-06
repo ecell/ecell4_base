@@ -28,6 +28,7 @@
 
 #include <map>
 #include <boost/lexical_cast.hpp>
+#include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
 #include <boost/array.hpp>
 #include <boost/utility/enable_if.hpp>
@@ -805,7 +806,7 @@ public:
 
     void add_molecules(
         const ecell4::Species& sp, const ecell4::Integer& num,
-        const ecell4::Shape& shape)
+        const boost::shared_ptr<ecell4::Shape> shape)
     {
         ecell4::extras::throw_in_particles(*this, sp, num, shape, rng());
     }

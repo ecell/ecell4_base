@@ -137,8 +137,8 @@ cdef class LatticeWorld:
             inc(it)
         return retval
 
-    def get_neighbor(self, coord, nrand):
-        return self.thisptr.get().get_neighbor(coord, nrand)
+    # def get_neighbor(self, coord, nrand):
+    #     return self.thisptr.get().get_neighbor(coord, nrand)
 
     def has_particle(self, ParticleID pid):
         return self.thisptr.get().has_particle(deref(pid.thisptr))
@@ -328,6 +328,13 @@ cdef class LatticeWorld:
         cdef Cpp_Integer3 g = self.thisptr.get().coord2global(coord)
         return Integer3_from_Cpp_Integer3(address(g))
 
+    def global2private(self, Integer3 coord):
+        return self.thisptr.get().global2private(deref(coord.thisptr))
+
+    def private2global(self, Integer coord):
+        cdef Cpp_Integer3 g = self.thisptr.get().private2global(coord)
+        return Integer3_from_Cpp_Integer3(address(g))
+
     def global2position(self, Integer3 g):
         cdef Cpp_Real3 pos = self.thisptr.get().global2position(deref(g.thisptr))
         return Real3_from_Cpp_Real3(address(pos))
@@ -356,6 +363,22 @@ cdef LatticeWorld LatticeWorld_from_Cpp_LatticeWorld(
     r = LatticeWorld(Real3(1, 1, 1))
     r.thisptr.swap(w)
     return r
+
+def create_lattice_world_cell_list_impl(
+    edge_lengths, voxel_radius, matrix_sizes, rng):
+    cdef shared_ptr[Cpp_LatticeWorld]* w = new shared_ptr[Cpp_LatticeWorld](
+        create_lattice_world_cell_list_impl_alias(
+            deref((<Real3>edge_lengths).thisptr), <Real>voxel_radius,
+            deref((<Integer3>matrix_sizes).thisptr),
+            deref((<GSLRandomNumberGenerator>rng).thisptr)))
+    return LatticeWorld_from_Cpp_LatticeWorld(deref(w))
+
+def create_lattice_world_vector_impl(edge_lengths, voxel_radius, rng):
+    cdef shared_ptr[Cpp_LatticeWorld]* w = new shared_ptr[Cpp_LatticeWorld](
+        create_lattice_world_vector_impl_alias(
+            deref((<Real3>edge_lengths).thisptr), <Real>voxel_radius,
+            deref((<GSLRandomNumberGenerator>rng).thisptr)))
+    return LatticeWorld_from_Cpp_LatticeWorld(deref(w))
 
 ## LatticeSimulator
 #  a python wrapper for Cpp_LatticeSimulator
@@ -405,6 +428,12 @@ cdef class LatticeSimulator:
                 <Cpp_ReactionRule*>(address(deref(it)))))
             inc(it)
         return retval
+
+    def set_alpha(self, Real alpha):
+        self.thisptr.set_alpha(alpha)
+
+    def get_alpha(self):
+        return self.thisptr.get_alpha()
 
     def model(self):
         return Model_from_Cpp_Model(self.thisptr.model())

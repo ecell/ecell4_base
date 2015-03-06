@@ -7,26 +7,47 @@ namespace ecell4
 namespace utils
 {
 
-// template<typename Tfirst_, typename Tsecond_>
-// struct pair_first_element_unary_predicator
-// {
-//     typedef std::pair<Tfirst_, Tsecond_> element_type;
-// 
-//     pair_first_element_unary_predicator(const Tfirst_& target)
-//         : target_(target)
-//     {
-//         ; // do nothing
-//     }
-// 
-//     bool operator()(const element_type& v)
-//     {
-//         return v.first == target_;
-//     }
-// 
-// protected:
-// 
-//     Tfirst_ target_;
-// };
+template<typename Tfirst_, typename Tsecond_>
+struct pair_first_element_unary_predicator
+{
+    typedef std::pair<Tfirst_, Tsecond_> element_type;
+
+    pair_first_element_unary_predicator(const Tfirst_& target)
+        : target_(target)
+    {
+        ; // do nothing
+    }
+
+    bool operator()(const element_type& v)
+    {
+        return v.first == target_;
+    }
+
+protected:
+
+    Tfirst_ target_;
+};
+
+template<typename Tfirst_, typename Tsecond_>
+struct pair_second_element_unary_predicator
+{
+    typedef std::pair<Tfirst_, Tsecond_> element_type;
+
+    pair_second_element_unary_predicator(const Tsecond_& target)
+        : target_(target)
+    {
+        ; // do nothing
+    }
+
+    bool operator()(const element_type& v)
+    {
+        return v.second == target_;
+    }
+
+protected:
+
+    Tsecond_ target_;
+};
 
 template<typename Tfirst_, typename Tsecond_>
 struct pair_first_element_binary_predicator

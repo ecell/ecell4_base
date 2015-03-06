@@ -42,6 +42,11 @@ public:
         ;
     }
 
+    virtual void reset()
+    {
+        ;
+    }
+
     virtual void fire(const Simulator* sim, const Space* space) = 0;
 
     bool every()
@@ -64,8 +69,7 @@ public:
 public:
 
     FixedIntervalObserver(const Real& dt)
-        : base_type(false), t0_(0.0), dt_(dt), num_steps_(0)
-        // : base_type(false), tnext_(0.0), dt_(dt), num_steps_(0)
+        : base_type(false), t0_(0.0), dt_(dt), num_steps_(0), count_(0)
     {
         ;
     }
@@ -77,8 +81,7 @@ public:
 
     const Real next_time() const
     {
-        return t0_ + dt_ * num_steps_;
-        // return tnext_;
+        return t0_ + dt_ * count_;
     }
 
     const Integer num_steps() const
@@ -89,21 +92,27 @@ public:
     virtual void initialize(const Space* space)
     {
         t0_ = space->t();
-        // tnext_ = space->t();
-        num_steps_ = 0;
+        count_ = 0;
+        // num_steps_ = 0;
     }
 
     virtual void fire(const Simulator* sim, const Space* space)
     {
         // tnext_ += dt_;
+        ++count_;
         ++num_steps_;
+    }
+
+    virtual void reset()
+    {
+        num_steps_ = 0;
     }
 
 protected:
 
     Real t0_, dt_;
-    // Real tnext_, dt_;
     Integer num_steps_;
+    Integer count_;
 };
 
 struct NumberLogger
@@ -127,6 +136,11 @@ struct NumberLogger
     }
 
     void initialize()
+    {
+        ;
+    }
+
+    void reset()
     {
         data.clear();
     }
@@ -178,6 +192,12 @@ public:
     {
         logger_.log(space);
         base_type::fire(sim, space);
+    }
+
+    virtual void reset()
+    {
+        logger_.reset();
+        base_type::reset();
     }
 
     NumberLogger::data_container_type data() const
@@ -234,6 +254,124 @@ public:
         {
             logger_.log(space);
         }
+    }
+
+    virtual void reset()
+    {
+        logger_.reset();
+        base_type::reset();
+    }
+
+    NumberLogger::data_container_type data() const
+    {
+        return logger_.data;
+    }
+
+    NumberLogger::species_container_type targets() const
+    {
+        return logger_.targets;
+    }
+
+protected:
+
+    NumberLogger logger_;
+};
+
+class TimingObserver
+    : public Observer
+{
+public:
+
+    typedef Observer base_type;
+
+public:
+
+    TimingObserver(const std::vector<Real>& t)
+        : base_type(false), t_(t), num_steps_(0), count_(0)
+    {
+        ;
+    }
+
+    virtual ~TimingObserver()
+    {
+        ;
+    }
+
+    const Real next_time() const
+    {
+        if (count_ >= static_cast<Integer>(t_.size()))
+        {
+            return inf;
+        }
+        return t_[count_];
+    }
+
+    const Integer num_steps() const
+    {
+        return num_steps_;
+    }
+
+    virtual void initialize(const Space* space)
+    {
+        ;
+    }
+
+    virtual void fire(const Simulator* sim, const Space* space)
+    {
+        ++num_steps_;
+        ++count_;
+    }
+
+    virtual void reset()
+    {
+        num_steps_ = 0;
+        count_ = 0;
+    }
+
+protected:
+
+    std::vector<Real> t_;
+    Integer num_steps_;
+    Integer count_;
+};
+
+class TimingNumberObserver
+    : public TimingObserver
+{
+public:
+
+    typedef TimingObserver base_type;
+
+public:
+
+    TimingNumberObserver(
+        const std::vector<Real>& t, const std::vector<std::string>& species)
+        : base_type(t), logger_(species)
+    {
+        ;
+    }
+
+    virtual ~TimingNumberObserver()
+    {
+        ;
+    }
+
+    virtual void initialize(const Space* space)
+    {
+        base_type::initialize(space);
+        logger_.initialize();
+    }
+
+    virtual void fire(const Simulator* sim, const Space* space)
+    {
+        logger_.log(space);
+        base_type::fire(sim, space);
+    }
+
+    virtual void reset()
+    {
+        logger_.reset();
+        base_type::reset();
     }
 
     NumberLogger::data_container_type data() const
@@ -405,7 +543,8 @@ public:
     FixedIntervalTrajectoryObserver(
         const Real& dt, const std::vector<ParticleID>& pids,
         const bool& resolve_boundary = true)
-        : base_type(dt), pids_(pids), resolve_boundary_(resolve_boundary)
+        : base_type(dt), pids_(pids), resolve_boundary_(resolve_boundary),
+        trajectories_(pids.size()), strides_(pids.size())
     {
         ;
     }
@@ -418,10 +557,6 @@ public:
     virtual void initialize(const Space* space)
     {
         base_type::initialize(space);
-        trajectories_.clear();
-        trajectories_.resize(pids_.size(), std::vector<Real3>());
-        strides_.clear();
-        strides_.resize(pids_.size(), Real3(0, 0, 0));
     }
 
     virtual void fire(const Simulator* sim, const Space* space)
@@ -464,6 +599,15 @@ public:
         }
     }
 
+    virtual void reset()
+    {
+        base_type::reset();
+        trajectories_.clear();
+        trajectories_.resize(pids_.size(), std::vector<Real3>());
+        strides_.clear();
+        strides_.resize(pids_.size(), Real3(0, 0, 0));
+    }
+
     const std::vector<std::vector<Real3> >& data() const
     {
         return trajectories_;
@@ -472,165 +616,170 @@ public:
 protected:
 
     std::vector<ParticleID> pids_;
+    bool resolve_boundary_;
     std::vector<std::vector<Real3> > trajectories_;
     std::vector<Real3> strides_;
-    bool resolve_boundary_;
 };
 
-class BioImagingObserver
-    : public Observer
-{
-public:
-
-    typedef Observer base_type;
-    typedef utils::get_mapper_mf<Species::serial_type, unsigned int>::type
-        serial_map_type;
-
-public:
-
-    BioImagingObserver(const Real& dt, const Real& exposure_time, const Integer& num_div, const Real& voxel_radius, const Real& scale)
-        : base_type(false), t0_(0.0), dt_(dt), exposure_time_(exposure_time),
-        num_div_(num_div), voxel_radius_(voxel_radius), scale_(scale), num_steps_(0)
-    {
-        ;
-    }
-
-    virtual ~BioImagingObserver()
-    {
-        ;
-    }
-
-    const Real next_time() const
-    {
-        if (num_div_ > 1)
-        {
-            const Real offset(t0_ + dt_ * static_cast<Real>(num_steps_ / num_div_));
-            return offset + (exposure_time_ / num_div_) * (num_steps_ % num_div_);
-        }
-        else
-        {
-            return t0_ + dt_ * num_steps_;
-        }
-    }
-
-    const Integer num_steps() const
-    {
-        return num_steps_;
-    }
-
-    virtual void initialize(const Space* space)
-    {
-        t0_ = space->t();
-        serials_.clear();
-        num_steps_ = 0;
-    }
-
-    virtual void fire(const Simulator* sim, const Space* space)
-    {
-        log(space);
-        ++num_steps_;
-    }
-
-    void log(const Space* space)
-    {
-        typedef std::vector<std::pair<ParticleID, Particle> >
-            particle_container_type;
-        const particle_container_type particles(space->list_particles());
-
-        unsigned int cnt(serials_.size());
-
-        const Real t(space->t());
-
-        std::ofstream ofs(filename().c_str(), std::ios::out);
-        ofs << std::setprecision(17);
-        for(particle_container_type::const_iterator i(particles.begin());
-            i != particles.end(); ++i)
-        {
-            const Real3 pos((*i).second.position());
-            const Real radius((*i).second.radius());
-            const ParticleID& pid((*i).first);
-
-            unsigned int idx;
-            serial_map_type::iterator
-                j(serials_.find((*i).second.species_serial()));
-            if (j == serials_.end())
-            {
-                idx = cnt;
-                serials_.insert(std::make_pair((*i).second.species_serial(), idx));
-                ++cnt;
-            }
-            else
-            {
-                idx = (*j).second;
-            }
-
-            ofs << t
-                << "," << pos[0] * scale_
-                << "," << pos[1] * scale_
-                << "," << pos[2] * scale_
-                << "," << radius * scale_
-                << ",\"(" << pid.serial() << ",0)\""
-                << ",\"(" << idx << ",0)\"" << std::endl;
-        }
-
-        ofs.close();
-
-        write_header(space);
-    }
-
-    void write_header(const Space* space)
-    {
-        std::ofstream ofs("pt-input.csv", std::ios::out);
-
-        if (num_div_ > 1)
-        {
-            ofs << exposure_time_ / num_div_;
-        }
-        else
-        {
-            ofs << exposure_time_;
-        }
-
-        const Real3 edge_lengths(space->edge_lengths());
-        ofs << "," << edge_lengths[1] / (voxel_radius_ * 2)
-            << "," << edge_lengths[2] / (voxel_radius_ * 2)
-            << "," << edge_lengths[0] / (voxel_radius_ * 2)
-            << "," << voxel_radius_ * scale_;
-
-        std::vector<Species::serial_type> species(serials_.size());
-        for (serial_map_type::const_iterator i(serials_.begin());
-            i != serials_.end(); ++i)
-        {
-            species[(*i).second] = (*i).first;
-        }
-        for (std::vector<Species::serial_type>::const_iterator i(species.begin());
-            i != species.end(); ++i)
-        {
-            ofs << ",[/:" << (*i) << "]=" << voxel_radius_ * scale_;
-        }
-        ofs << std::endl;
-        ofs.close();
-    }
-
-    const std::string filename() const
-    {
-        const Integer i(num_steps_ / num_div_);
-        const Integer j(num_steps_ % num_div_);
-
-        boost::format fmt("pt-%09d.%03d.csv");
-        const std::string fname((fmt % i % j).str());
-        return fname;
-    }
-
-protected:
-
-    Real t0_, dt_, exposure_time_;
-    Integer num_div_;
-    Real voxel_radius_, scale_;
-    Integer num_steps_;
-
-    serial_map_type serials_;
-};
+// class BioImagingObserver
+//     : public Observer
+// {
+// public:
+// 
+//     typedef Observer base_type;
+//     typedef utils::get_mapper_mf<Species::serial_type, unsigned int>::type
+//         serial_map_type;
+// 
+// public:
+// 
+//     BioImagingObserver(const Real& dt, const Real& exposure_time, const Integer& num_div, const Real& voxel_radius, const Real& scale)
+//         : base_type(false), t0_(0.0), dt_(dt), exposure_time_(exposure_time),
+//         num_div_(num_div), voxel_radius_(voxel_radius), scale_(scale), num_steps_(0)
+//     {
+//         ;
+//     }
+// 
+//     virtual ~BioImagingObserver()
+//     {
+//         ;
+//     }
+// 
+//     const Real next_time() const
+//     {
+//         if (num_div_ > 1)
+//         {
+//             const Real offset(t0_ + dt_ * static_cast<Real>(num_steps_ / num_div_));
+//             return offset + (exposure_time_ / num_div_) * (num_steps_ % num_div_);
+//         }
+//         else
+//         {
+//             return t0_ + dt_ * num_steps_;
+//         }
+//     }
+// 
+//     const Integer num_steps() const
+//     {
+//         return num_steps_;
+//     }
+// 
+//     virtual void initialize(const Space* space)
+//     {
+//         t0_ = space->t();
+//         serials_.clear();
+//         num_steps_ = 0;
+//     }
+// 
+//     virtual void reset()
+//     {
+//         ;
+//     }
+// 
+//     virtual void fire(const Simulator* sim, const Space* space)
+//     {
+//         log(space);
+//         ++num_steps_;
+//     }
+// 
+//     void log(const Space* space)
+//     {
+//         typedef std::vector<std::pair<ParticleID, Particle> >
+//             particle_container_type;
+//         const particle_container_type particles(space->list_particles());
+// 
+//         unsigned int cnt(serials_.size());
+// 
+//         const Real t(space->t());
+// 
+//         std::ofstream ofs(filename().c_str(), std::ios::out);
+//         ofs << std::setprecision(17);
+//         for(particle_container_type::const_iterator i(particles.begin());
+//             i != particles.end(); ++i)
+//         {
+//             const Real3 pos((*i).second.position());
+//             const Real radius((*i).second.radius());
+//             const ParticleID& pid((*i).first);
+// 
+//             unsigned int idx;
+//             serial_map_type::iterator
+//                 j(serials_.find((*i).second.species_serial()));
+//             if (j == serials_.end())
+//             {
+//                 idx = cnt;
+//                 serials_.insert(std::make_pair((*i).second.species_serial(), idx));
+//                 ++cnt;
+//             }
+//             else
+//             {
+//                 idx = (*j).second;
+//             }
+// 
+//             ofs << t
+//                 << "," << pos[0] * scale_
+//                 << "," << pos[1] * scale_
+//                 << "," << pos[2] * scale_
+//                 << "," << radius * scale_
+//                 << ",\"(" << pid.serial() << ",0)\""
+//                 << ",\"(" << idx << ",0)\"" << std::endl;
+//         }
+// 
+//         ofs.close();
+// 
+//         write_header(space);
+//     }
+// 
+//     void write_header(const Space* space)
+//     {
+//         std::ofstream ofs("pt-input.csv", std::ios::out);
+// 
+//         if (num_div_ > 1)
+//         {
+//             ofs << exposure_time_ / num_div_;
+//         }
+//         else
+//         {
+//             ofs << exposure_time_;
+//         }
+// 
+//         const Real3 edge_lengths(space->edge_lengths());
+//         ofs << "," << edge_lengths[1] / (voxel_radius_ * 2)
+//             << "," << edge_lengths[2] / (voxel_radius_ * 2)
+//             << "," << edge_lengths[0] / (voxel_radius_ * 2)
+//             << "," << voxel_radius_ * scale_;
+// 
+//         std::vector<Species::serial_type> species(serials_.size());
+//         for (serial_map_type::const_iterator i(serials_.begin());
+//             i != serials_.end(); ++i)
+//         {
+//             species[(*i).second] = (*i).first;
+//         }
+//         for (std::vector<Species::serial_type>::const_iterator i(species.begin());
+//             i != species.end(); ++i)
+//         {
+//             ofs << ",[/:" << (*i) << "]=" << voxel_radius_ * scale_;
+//         }
+//         ofs << std::endl;
+//         ofs.close();
+//     }
+// 
+//     const std::string filename() const
+//     {
+//         const Integer i(num_steps_ / num_div_);
+//         const Integer j(num_steps_ % num_div_);
+// 
+//         boost::format fmt("pt-%09d.%03d.csv");
+//         const std::string fname((fmt % i % j).str());
+//         return fname;
+//     }
+// 
+// protected:
+// 
+//     Real t0_, dt_, exposure_time_;
+//     Integer num_div_;
+//     Real voxel_radius_, scale_;
+//     Integer num_steps_;
+// 
+//     serial_map_type serials_;
+// };
 
 } // ecell4
 

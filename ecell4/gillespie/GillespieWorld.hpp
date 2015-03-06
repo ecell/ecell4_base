@@ -144,10 +144,14 @@ public:
         return model_.lock();
     }
 
-    void add_molecules(const Species& sp, const Integer& num, const Shape& shape)
+    void add_molecules(const Species& sp, const Integer& num, const boost::shared_ptr<Shape> shape)
     {
         add_molecules(sp, num);
     }
+
+    std::vector<std::pair<ParticleID, Particle> > list_particles() const;
+    std::vector<std::pair<ParticleID, Particle> > list_particles_exact(const Species& sp) const;
+    std::vector<std::pair<ParticleID, Particle> > list_particles(const Species& sp) const;
 
 private:
 

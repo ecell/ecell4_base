@@ -5,6 +5,7 @@
 #include <ecell4/core/Real3.hpp>
 #include <ecell4/core/RandomNumberGenerator.hpp>
 
+#include <ecell4/lattice/LatticeWorld.hpp>
 #include <ecell4/lattice/LatticeSimulator.hpp>
 typedef ecell4::lattice::LatticeWorld world_type;
 typedef ecell4::lattice::LatticeSimulator simulator_type;
@@ -25,22 +26,34 @@ void run()
     Species sp("A", radius, D);
 
     boost::shared_ptr<NetworkModel> model(new NetworkModel());
-    boost::shared_ptr<GSLRandomNumberGenerator>
+    boost::shared_ptr<RandomNumberGenerator>
         rng(new GSLRandomNumberGenerator());
     rng->seed(0);
     // rng->seed(time(NULL));
 
+    // boost::shared_ptr<world_type> world(
+    //     new world_type(edge_lengths, voxel_radius, rng));
+    // boost::shared_ptr<world_type> world(
+    //     create_lattice_world_vector_impl(edge_lengths, voxel_radius, rng));
     boost::shared_ptr<world_type> world(
-        new world_type(edge_lengths, voxel_radius, rng));
+        ecell4::lattice::create_lattice_world_cell_list_impl(
+            edge_lengths, voxel_radius, Integer3(5, 5, 5), rng));
 
-    std::cout << "col size = " << world->col_size() << ", row size = " << world->row_size() << ", layer size = " << world->layer_size() << std::endl;
+    std::cout << "col size = " << world->col_size()
+        << ", row size = " << world->row_size()
+        << ", layer size = " << world->layer_size() << std::endl;
     std::cout << "total size = " << world->size() << std::endl;
 
     world->add_molecules(sp, N);
 
     simulator_type sim(model, world);
     std::cout << "dt = " << sim.dt() << std::endl;
-    while (sim.step(5.0));
+    for (unsigned int i(0); i != 1000; ++i)
+    {
+        sim.step();
+    }
+
+    // while (sim.step(1.0)) ; // do nothing
 }
 
 } // ecell4

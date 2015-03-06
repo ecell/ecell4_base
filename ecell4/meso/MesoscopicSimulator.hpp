@@ -262,6 +262,46 @@ protected:
         Real k_;
     };
 
+    class ZerothOrderReactionRuleProxy
+        : public ReactionRuleProxy
+    {
+    public:
+
+        typedef ReactionRuleProxy base_type;
+
+        ZerothOrderReactionRuleProxy()
+            : base_type()
+        {
+            ;
+        }
+
+        ZerothOrderReactionRuleProxy(MesoscopicSimulator* sim, const ReactionRule& rr)
+            : base_type(sim, rr)
+        {
+            ;
+        }
+
+        void inc(const Species& sp, const coordinate_type& c, const Integer val = +1)
+        {
+            ; // do nothing
+        }
+
+        void initialize()
+        {
+            ; // do nothing
+        }
+
+        std::pair<ReactionRule::reactant_container_type, Integer> __draw(const coordinate_type& c)
+        {
+            return std::make_pair(ReactionRule::reactant_container_type(), 1);
+        }
+
+        const Real propensity(const coordinate_type& c) const
+        {
+            return rr_.k();
+        }
+    };
+
     class FirstOrderReactionRuleProxy
         : public ReactionRuleProxy
     {
@@ -489,6 +529,19 @@ protected:
             if (!(reactants.size() == 1 && products.size() == 1
                 && reactants[0] == products[0] && coord_ == tgt_))
             {
+                for (ReactionRule::product_container_type::const_iterator
+                    it(rr_.products().begin());
+                    it != rr_.products().end(); ++it)
+                {
+                    const Species& sp(*it);
+                    if (!sim_->world()->on_structure(sp, tgt_))
+                    {
+                        // sim_->set_last_reaction(rr_);
+                        update();
+                        return; // XXX: do finalize
+                    }
+                }
+
                 for (ReactionRule::reactant_container_type::const_iterator
                     it(rr_.reactants().begin());
                     it != rr_.reactants().end(); ++it)

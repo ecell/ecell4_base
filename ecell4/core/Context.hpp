@@ -290,7 +290,7 @@ public:
 
     bool next()
     {
-        if (itr_ != matchers_.end())
+        if (itr_ != matchers_.end() || pttrn_.reactants().size() == 0)
         {
             return false;
         }

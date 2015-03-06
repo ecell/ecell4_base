@@ -1,36 +1,58 @@
+"""ecell4.util.viz: Visualizer of particles based on D3.js, THREE.js
+and Elegans.
 """
 
-ecell4.util.viz: Visualizer of particles based on D3.js, THREE.js and Elegans.
-
-"""
 import os
 import uuid
 import json
 import base64
 import copy
+import random
+
 
 def init_ipynb():
     """Load all depending JavaScript libraries to IPython notebook.
-
     """
     from IPython.core.display import display, HTML
 
-    path = os.path.abspath(os.path.dirname(__file__)) + '/templates/init_ipynb.js'
+    path = os.path.join(os.path.abspath(os.path.dirname(__file__)),
+                        'templates/init_ipynb.js')
     html = open(path).read()
     return display(HTML(html))
 
-def __parse_world(world, radius=None, species_list=None):
-    """Private function to parse world. Return infomation about particles (name, coordinates and particle size) for each species.
+
+def __parse_world(
+        world, radius=None, species_list=None, max_count=None,
+        predicator=None):
+    """Private function to parse world. Return infomation about particles
+    (name, coordinates and particle size) for each species.
     """
+    from ecell4 import Species
 
     if species_list is None:
-        species_list = [p.species().serial() for pid, p in world.list_particles()]
-        species_list = sorted(set(species_list), key=species_list.index) # pick unique ones
+        species_list = [
+            p.species().serial() for pid, p in world.list_particles()]
+        species_list = sorted(
+            set(species_list), key=species_list.index)  # XXX: pick unique ones
 
     species = []
     for name in species_list:
-        particles = [{'pos': p.position(), 'r': p.radius()}
-            for pid, p in world.list_particles() if p.species().serial() == name]
+        particles = [
+            {'pos': p.position(), 'r': p.radius()}
+            for pid, p in world.list_particles(Species(name))
+            if predicator is None or predicator(pid, p)]
+        # particles = [
+        #     {'pos': p.position(), 'r': p.radius()}
+        #     for pid, p in world.list_particles()
+        #     if (p.species().serial() == name and
+        #         (predicator is None or predicator(pid, p)))]
+
+        if len(particles) == 0:
+            continue
+
+        if max_count is not None and len(particles) > max_count:
+            particles = random.sample(particles, max_count)
+
         data = {
             'x': [p['pos'][0] for p in particles],
             'y': [p['pos'][1] for p in particles],
@@ -39,7 +61,7 @@ def __parse_world(world, radius=None, species_list=None):
 
         # assume that all particles belong to one species have the same radius
         r = max([p['r'] for p in particles]) if radius is None else radius
-        size = 30/min(world.edge_lengths()) * r
+        size = 30.0 / min(world.edge_lengths()) * r
 
         species.append({
             'name': name,
@@ -49,29 +71,41 @@ def __parse_world(world, radius=None, species_list=None):
 
     return species
 
+
 def __get_range_of_world(world):
     edge_lengths = world.edge_lengths()
     max_length = max(tuple(edge_lengths))
-    rangex = [(edge_lengths[0] - max_length) * 0.5, (edge_lengths[0] + max_length) * 0.5]
-    rangey = [(edge_lengths[1] - max_length) * 0.5, (edge_lengths[1] + max_length) * 0.5]
-    rangez = [(edge_lengths[2] - max_length) * 0.5, (edge_lengths[2] + max_length) * 0.5]
+
+    rangex = [(edge_lengths[0] - max_length) * 0.5,
+              (edge_lengths[0] + max_length) * 0.5]
+    rangey = [(edge_lengths[1] - max_length) * 0.5,
+              (edge_lengths[1] + max_length) * 0.5]
+    rangez = [(edge_lengths[2] - max_length) * 0.5,
+              (edge_lengths[2] + max_length) * 0.5]
+
     return {'x': rangex, 'y': rangey, 'z': rangez}
 
-def plot_movie(worlds, radius=None, width=500, height=500, config={}, grid=False, species_list=None):
-    """Generate a movie from received instances of World and show them on IPython notebook.
+
+def plot_movie(
+        worlds, radius=None, width=500, height=500, config={}, grid=False,
+        species_list=None):
+    """Generate a movie from received instances of World and show them
+    on IPython notebook.
 
     Parameters
     ----------
     worlds : list of World
         Worlds to render.
     radius : float, default None
-        If this value is set, all particles in the world will be rendered as if their radius are the same.
+        If this value is set, all particles in the world will be rendered
+        as if their radius are the same.
     width: float, default 500
         Width of the plotting area.
     height: float, default 500
         Height of the plotting area.
     config: dict, default {}
-        Dict for configure default colors. Its values are colors unique to each speices.
+        Dict for configure default colors. Its values are colors unique
+        to each speices.
         Colors included in config dict will never be used for other speices.
     species_list: array of string, default None
         If set, plot_movie will not search the list of species
@@ -95,49 +129,59 @@ def plot_movie(worlds, radius=None, width=500, height=500, config={}, grid=False
     options = {
         'player': True,
         'autorange': False,
-        'space_mode':'wireframe',
+        'space_mode': 'wireframe',
         'grid': grid,
         'range': __get_range_of_world(worlds[0])
     }
 
-    model_id = "\"movie" +  str(uuid.uuid4()) + "\"";
+    model_id = '"movie' + str(uuid.uuid4()) + '"'
     color_scale = ColorScale(config=config)
 
     display(HTML(generate_html({
         'model_id': model_id,
         'names': json.dumps(data.keys()),
         'data': json.dumps(data.values()),
-        'colors': json.dumps([color_scale.get_color(name) for name in data.keys()]),
+        'colors': json.dumps([color_scale.get_color(name)
+                              for name in data.keys()]),
         'sizes': json.dumps([sizes[name] for name in data.keys()]),
         'options': json.dumps(options)
-    },'/templates/movie.tmpl')))
+    }, '/templates/movie.tmpl')))
 
     return color_scale.get_config()
 
-def plot_world(world, radius=None, width=500, height=500, config={}, grid=False, species_list=None, debug=None):
-    """Generate a plot from received instance of World and show it on IPython notebook.
-    This method returns the instance of dict that indicates color setting for each speices.
-    You can use the dict as the parameter of plot_world, in order to use the same colors in another plot.
+
+def plot_world(
+        world, radius=None, width=500, height=500, config={}, grid=True,
+        wireframe=False, species_list=None, debug=None, max_count=1000,
+        predicator=None):
+    """Generate a plot from received instance of World and show it
+    on IPython notebook.
+    This method returns the instance of dict that indicates color setting
+    for each speices. You can use the dict as the parameter of plot_world,
+    in order to use the same colors in another plot.
 
     Parameters
     ----------
     world : World
         World to render.
     radius : float, default None
-        If this value is set, all particles in the world will be rendered as if their radius are the same.
+        If this value is set, all particles in the world will be rendered
+        as if their radius are the same.
     width: float, default 500
         Width of the plotting area.
     height: float, default 500
         Height of the plotting area.
     config: dict, default {}
-        Dict for configure default colors. Its values are colors unique to each speices.
+        Dict for configure default colors. Its values are colors unique
+        to each speices.
         Colors included in config dict will never be used for other speices.
     species_list: array of string, default None
         If set, plot_world will not search the list of species.
     debug: array of dict, default []
         *** EXPERIMENTAL IMPRIMENTATION ***
         example:
-          [{'type': 'box', 'x': 10, 'y': 10, 'z': 10, options:{ 'width': 1, 'height': 1}}]
+          [{'type': 'box', 'x': 10, 'y': 10, 'z': 10,
+            'options': {'width': 1, 'height': 1}}]
         type: 'box', 'plane', 'sphere', and 'cylinder'
         x, y, z: float
         options:
@@ -148,7 +192,7 @@ def plot_world(world, radius=None, width=500, height=500, config={}, grid=False,
     """
     from IPython.core.display import display, HTML
 
-    species = __parse_world(world, radius, species_list)
+    species = __parse_world(world, radius, species_list, max_count, predicator)
     color_scale = ColorScale(config=config)
     plots = []
 
@@ -163,8 +207,8 @@ def plot_world(world, radius=None, width=500, height=500, config={}, grid=False,
             }
         })
 
-    if debug != None:
-        data = {'type':[], 'x':[], 'y':[], 'z':[], 'options':[]}
+    if debug is not None:
+        data = {'type': [], 'x': [], 'y': [], 'z': [], 'options': []}
         for obj in debug:
             for k, v in obj.items():
                 data[k].append(v)
@@ -182,14 +226,19 @@ def plot_world(world, radius=None, width=500, height=500, config={}, grid=False,
             'height': height,
             'range': __get_range_of_world(world),
             'autorange': False,
-            'space_mode':'wireframe',
             'grid': grid
         }
     }
 
-    model_id = "\"viz" +  str(uuid.uuid4()) + "\"";
-    display(HTML(generate_html({'model': json.dumps(model), 'model_id': model_id}, '/templates/particles.tmpl')))
+    if wireframe:
+        model['options']['space_mode'] = 'wireframe'
+
+    model_id = '"viz' + str(uuid.uuid4()) + '"'
+    display(HTML(generate_html(
+        {'model': json.dumps(model), 'model_id': model_id},
+        '/templates/particles.tmpl')))
     return color_scale.get_config()
+
 
 def generate_html(keywords, tmpl_path):
     """Generate static html file from JSON model and its own id.
@@ -207,6 +256,97 @@ def generate_html(keywords, tmpl_path):
     template = Template(open(path).read())
     html = template.render(**keywords)
     return html
+
+
+def plot_trajectory(
+        obs, width=500, height=500, config={}, grid=True, wireframe=False,
+        max_count=10):
+    """Generate a plot from received instance of TrajectoryObserver and show it
+    on IPython notebook.
+
+    Parameters
+    ----------
+    obs : TrajectoryObserver
+        TrajectoryObserver to render.
+    width: float, default 500
+        Width of the plotting area.
+    height: float, default 500
+        Height of the plotting area.
+    config: dict, default {}
+        Dict for configure default colors. Its values are colors unique
+        to each particle.
+        Colors included in config dict will never be used for other particles.
+    """
+    from IPython.core.display import display, HTML
+
+    color_scale = ColorScale(config=config)
+    plots = []
+
+    xmin, xmax, ymin, ymax, zmin, zmax = None, None, None, None, None, None
+
+    data = obs.data()
+    if max_count is not None and len(data) > max_count:
+        data = random.sample(data, max_count)
+
+    for i, y in enumerate(data):
+        xarr, yarr, zarr = [], [], []
+        for pos in y:
+            xarr.append(pos[0])
+            yarr.append(pos[1])
+            zarr.append(pos[2])
+
+        if xmin is None:
+            if len(y) > 0:
+                xmin, xmax = min(xarr), max(xarr)
+                ymin, ymax = min(yarr), max(yarr)
+                zmin, zmax = min(zarr), max(zarr)
+        else:
+            xmin, xmax = min([xmin] + xarr), max([xmax] + xarr)
+            ymin, ymax = min([ymin] + yarr), max([ymax] + yarr)
+            zmin, zmax = min([zmin] + zarr), max([zmax] + zarr)
+
+        name = str(i + 1)
+        c = color_scale.get_color(name)
+        plots.append({
+            'type': 'Line',
+            'data': {'x': xarr, 'y': yarr, 'z': zarr},
+            'options': {
+                'name': name,
+                'thickness': 2,  # XXX: 'thikness' doesn't work on Windows
+                'colors': [c, c]}
+        })
+
+    if xmin is None:
+        xmin, xmax, ymin, ymax, zmin, zmax = 0, 1, 0, 1, 0, 1
+
+    max_length = max(xmax - xmin, ymax - ymin, zmax - zmin)
+    rangex = [(xmin + xmax - max_length) * 0.5,
+              (xmin + xmax + max_length) * 0.5]
+    rangey = [(ymin + ymax - max_length) * 0.5,
+              (ymin + ymax + max_length) * 0.5]
+    rangez = [(zmin + zmax - max_length) * 0.5,
+              (zmin + zmax + max_length) * 0.5]
+
+    model = {
+        'plots': plots,
+        'options': {
+            'width': width,
+            'height': height,
+            'range': {'x': rangex, 'y': rangey, 'z': rangez},
+            'autorange': False,
+            'grid': grid
+        }
+    }
+
+    if wireframe:
+        model['options']['space_mode'] = 'wireframe'
+
+    model_id = '"viz' + str(uuid.uuid4()) + '"'
+    display(HTML(generate_html(
+        {'model': json.dumps(model), 'model_id': model_id},
+        '/templates/particles.tmpl')))
+    return color_scale.get_config()
+
 
 def logo(x=1, y=None):
     if not isinstance(x, int):
@@ -262,23 +402,46 @@ def logo(x=1, y=None):
     %s
     """
 
-    filenames = [os.path.abspath(os.path.dirname(__file__))
-        + '/templates/ecelllogo/logo%02d.png' % (i + 1) for i in range(15)]
-    base64s = [base64.b64encode(open(filename, 'rt').read())
+    filenames = [
+       os.path.join(os.path.abspath(os.path.dirname(__file__)),
+                    '/templates/ecelllogo/logo%02d.png' % (i + 1))
+       for i in range(15)]
+    base64s = [
+        base64.b64encode(open(filename, 'rt').read())
         for filename in filenames]
-    img_html = '<img name="ecelllogo" style="position:relative; left:0px;" alt="ecelllogo" src="data:image/png;base64,%s" onClick="action();" />' % (base64s[0])
+    img_html = ('<img name="ecelllogo" style="position:relative;'
+                + ' left:0px;" alt="ecelllogo"'
+                + ' src="data:image/png;base64,%s"' % (base64s[0])
+                + ' onClick="action();" />')
     h = HTML(template % tuple(base64s + [("<p>%s</p>" % (img_html * x)) * y]))
-    # j = Javascript("running = true; stop = false; id = setInterval('move();', %g);" % interval)
-    # display(h, j)
     display(h)
 
+
 def plot_number_observer(*args, **kwargs):
+    """Generate a plot from NumberObservers and show it on IPython notebook
+    with matplotlib.
+
+    Parameters
+    ----------
+    obs : NumberObserver (e.g. FixedIntervalNumberObserver)
+    fmt : str
+    opt : dict
+        matplotlib plot options.
+
+    Examples
+    --------
+    >>> plot_number_observer(obs1)
+    >>> plot_number_observer(obs1, 'o')
+    >>> plot_number_observer(obs1, obs2, obs3, {'linewidth': 2})
+    >>> plot_number_observer(obs1, 'k-', obs2, 'k--')
+    """
     import matplotlib.pylab as plt
     import numpy
     import collections
 
     special_keys = ("xlim", "ylim", "xlabel", "ylabel")
-    plot_opts = {key: value for key, value in kwargs.items() if key not in special_keys}
+    plot_opts = {key: value for key, value in kwargs.items()
+                 if key not in special_keys}
 
     fig = plt.figure()
     ax = fig.add_subplot(111)
@@ -286,26 +449,36 @@ def plot_number_observer(*args, **kwargs):
     is_first = True
     color_cycle = plt.rcParams['axes.color_cycle']
     if len(args) != 1 and isinstance(args[1], str):
-        for obs, fmt in zip(args[: : 2], args[1: : 2]):
+        for obs, fmt in zip(args[:: 2], args[1:: 2]):
             data = numpy.array(obs.data()).T
-            for i, sp in enumerate(obs.targets()):
+            for i, sp in enumerate(sorted(obs.targets())):
                 if is_first:
+                    label = sp.serial()
+                    if len(label) > 0 and label[0] == '_':
+                        label = '$\_$' + label[1:]  # XXX: lazy escaping for a special character
                     ax.plot(data[0], data[i + 1], fmt,
-                        color=color_cycle[i % len(color_cycle)], label=sp.serial(), **plot_opts)
+                            color=color_cycle[i % len(color_cycle)],
+                            label=label, **plot_opts)
                 else:
                     ax.plot(data[0], data[i + 1], fmt,
-                        color=color_cycle[i % len(color_cycle)], **plot_opts)
+                            color=color_cycle[i % len(color_cycle)],
+                            **plot_opts)
             is_first = False
     else:
         for obs in args:
             data = numpy.array(obs.data()).T
-            for i, sp in enumerate(obs.targets()):
+            for i, sp in enumerate(sorted(obs.targets())):
                 if is_first:
+                    label = sp.serial()
+                    if len(label) > 0 and label[0] == '_':
+                        label = '$\_$' + label[1:]  # XXX: lazy escaping for a special character
                     ax.plot(data[0], data[i + 1],
-                        color=color_cycle[i % len(color_cycle)], label=sp.serial(), **plot_opts)
+                            color=color_cycle[i % len(color_cycle)],
+                            label=label, **plot_opts)
                 else:
                     ax.plot(data[0], data[i + 1],
-                        color=color_cycle[i % len(color_cycle)], **plot_opts)
+                            color=color_cycle[i % len(color_cycle)],
+                            **plot_opts)
             is_first = False
 
     ax.legend(*ax.get_legend_handles_labels(), loc="best", shadow=True)
@@ -323,13 +496,15 @@ def plot_number_observer(*args, **kwargs):
         ax.set_ylim(kwargs["ylim"])
     # fig.show()
 
+
 class ColorScale:
     """Color scale for species.
     """
 
-    COLORS = ["#a6cee3","#1f78b4","#b2df8a","#33a02c","#e31a1c", "#8dd3c7", "#ffffb3",
-        "#bebada","#fb8072","#80b1d3","#fdb462","#b3de69","#fccde5","#d9d9d9",
-        "#bc80bd","#ccebc5","#ffed6f"]
+    COLORS = [
+        "#a6cee3", "#1f78b4", "#b2df8a", "#33a02c", "#e31a1c", "#8dd3c7",
+        "#ffffb3", "#bebada", "#fb8072", "#80b1d3", "#fdb462", "#b3de69",
+        "#fccde5", "#d9d9d9", "#bc80bd", "#ccebc5", "#ffed6f"]
 
     def __init__(self, config={}):
         """Initialize a color scale
@@ -337,8 +512,8 @@ class ColorScale:
         Parameters
         ----------
         config : dict, default {}
-            Dict for configure default colors. Its values are colors unique to each key.
-            Colors included in config will never be used.
+            Dict for configure default colors. Its values are colors unique
+            to each key. Colors included in config will never be used.
         """
 
         self.config = config

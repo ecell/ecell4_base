@@ -128,7 +128,8 @@ BOOST_AUTO_TEST_CASE(LatticeWorld_test_add_molecule)
     sp.set_attribute("D", "1e-12");
 
     LatticeWorld::private_coordinate_type coord(486420);
-    BOOST_CHECK(world.place_voxel_private(sp, coord).second);
+    // BOOST_CHECK(world.place_voxel_private(sp, coord).second);
+    BOOST_CHECK(world.new_voxel(sp, world.private2coord(coord)).second);
     BOOST_CHECK_EQUAL(world.num_particles(sp), 1);
 
     MolecularTypeBase* mt(world.get_molecular_type_private(coord));
@@ -204,7 +205,7 @@ BOOST_AUTO_TEST_CASE(LatticeWorld_test_add_shape)
     sp.set_attribute("radius", "2.5e-9");
     sp.set_attribute("D", "1e-12");
 
-    const Sphere sphere(Real3(5e-7, 5e-7, 5e-7), 5e-7*1.5);
+    boost::shared_ptr<const Sphere> sphere(new Sphere(Real3(5e-7, 5e-7, 5e-7), 5e-7*1.5));
 
     const Integer n(world.add_structure(sp, sphere));
     BOOST_ASSERT(n > 0);
@@ -227,12 +228,15 @@ BOOST_AUTO_TEST_CASE(LatticeWorld_test_move)
 
     LatticeWorld::coordinate_type from(1034), to(786420);
 
-    LatticeWorld::private_coordinate_type private_from(
-            world.coord2private(from));
-    BOOST_CHECK(world.place_voxel_private(sp, private_from).second);
+    // LatticeWorld::private_coordinate_type private_from(
+    //         world.coord2private(from));
+    // BOOST_CHECK(world.place_voxel(sp, private_from).second);
 
     LatticeWorld::private_coordinate_type private_to(
             world.coord2private(to));
+    // BOOST_CHECK(world.move(from, to));
+
+    BOOST_CHECK(world.new_voxel(sp, from).second);
     BOOST_CHECK(world.move(from, to));
 
     MolecularTypeBase* mt(world.get_molecular_type_private(private_to));
@@ -254,7 +258,7 @@ BOOST_AUTO_TEST_CASE(LatticeWorld_test_structure)
     Species sp("SpeciesA", "2.5e-9", "1e-12");
     sp.set_attribute("location", "Membrane");
 
-    const Sphere sphere(Real3(2.5e-7, 2.5e-7, 2.5e-7), 2e-7);
+    boost::shared_ptr<const Sphere> sphere(new Sphere(Real3(2.5e-7, 2.5e-7, 2.5e-7), 2e-7));
 
     BOOST_CHECK(world.add_structure(membrane, sphere) > 0);
     BOOST_CHECK(world.new_particle(Particle(sp, Real3(2.5e-7, 2.5e-7, 4.5e-7),

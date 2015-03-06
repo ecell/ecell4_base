@@ -99,9 +99,9 @@ void MesoscopicSimulator::step(void)
 
     interrupted_ = event_ids_.size();
     EventScheduler::value_type const& top(scheduler_.top());
-    const Real time(top.second->time());
+    const Real tnext(top.second->time());
     top.second->fire(); // top.second->time_ is updated in fire()
-    this->set_t(time);
+    this->set_t(tnext);
     scheduler_.update(top);
 
     if (interrupted_ < event_ids_.size())
@@ -113,14 +113,14 @@ void MesoscopicSimulator::step(void)
     }
 
     // EventScheduler::value_type top(scheduler_.pop());
-    // const Real time(top.second->time());
+    // const Real tnext(top.second->time());
     // top.second->fire(); // top.second->time_ is updated in fire()
-    // this->set_t(time);
+    // this->set_t(tnext);
     // // EventScheduler::events_range events(scheduler_.events());
     // // for (EventScheduler::events_range::iterator itr(events.begin());
     // //         itr != events.end(); ++itr)
     // // {
-    // //     (*itr).second->interrupt(time);
+    // //     (*itr).second->interrupt(tnext);
     // //     scheduler_.update(*itr);
     // // }
     // scheduler_.add(top.second);
@@ -162,7 +162,11 @@ void MesoscopicSimulator::initialize(void)
     {
         const ReactionRule& rr(*i);
 
-        if (rr.reactants().size() == 1)
+        if (rr.reactants().size() == 0)
+        {
+            proxies_.push_back(new ZerothOrderReactionRuleProxy(this, rr));
+        }
+        else if (rr.reactants().size() == 1)
         {
             proxies_.push_back(new FirstOrderReactionRuleProxy(this, rr));
         }
@@ -178,7 +182,8 @@ void MesoscopicSimulator::initialize(void)
         proxies_.back().initialize();
     }
 
-    const std::vector<Species>& species(world_->species());
+    const std::vector<Species>& species(model_->species_attributes());
+    // const std::vector<Species>& species(world_->species());
     for (std::vector<Species>::const_iterator i(species.begin());
         i != species.end(); ++i)
     {
