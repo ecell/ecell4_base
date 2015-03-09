@@ -1,3 +1,11 @@
+from libcpp.string cimport string
+
+cdef string tostring(ustr):
+    if isinstance(ustr, unicode):
+        return <string>(ustr.encode('UTF-8'))
+    else:
+        return <string>(ustr)
+
 include "RandomNumberGenerator.pxi"
 include "UnitSpecies.pxi"
 include "Species.pxi"

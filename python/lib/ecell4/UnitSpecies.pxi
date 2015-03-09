@@ -9,7 +9,7 @@ cdef class UnitSpecies:
         if name is None:
             self.thisptr = new Cpp_UnitSpecies()
         else:
-            self.thisptr = new Cpp_UnitSpecies(<string> name)
+            self.thisptr = new Cpp_UnitSpecies(tostring(name))
 
     def __dealloc__(self):
         del self.thisptr
@@ -28,23 +28,20 @@ cdef class UnitSpecies:
         return hash(self.thisptr.serial())
 
     def serial(self):
-        return self.thisptr.serial()
+        return self.thisptr.serial().decode('UTF-8')
 
     def name(self):
-        return self.thisptr.name()
+        return self.thisptr.name().decode('UTF-8')
 
-    def serial(self):
-        return self.thisptr.serial()
+    def add_site(self, name, state, bond):
+        return self.thisptr.add_site(tostring(name), tostring(state), tostring(bond))
 
-    def add_site(self, string name, string state, string bond):
-        return self.thisptr.add_site(name, state, bond)
-
-    def deserialize(self, string serial):
-        self.thisptr.deserialize(serial)
+    def deserialize(self, serial):
+        self.thisptr.deserialize(tostring(serial))
 
 cdef UnitSpecies UnitSpecies_from_Cpp_UnitSpecies(Cpp_UnitSpecies *sp):
     cdef Cpp_UnitSpecies *new_obj = new Cpp_UnitSpecies(deref(sp))
-    r = UnitSpecies("")
+    r = UnitSpecies('')
     del r.thisptr
     r.thisptr = new_obj
     return r
