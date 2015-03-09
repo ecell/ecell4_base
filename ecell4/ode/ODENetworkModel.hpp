@@ -80,6 +80,10 @@ public:
             std::cout << it->as_string() << std::endl;
         }
     }
+    void add_reaction_rule(ODEReactionRule ode_rr)
+    {
+        this->ode_reaction_rules_.push_back(ode_rr);
+    }
 private:
     bool convert_from_networkmodel(const boost::shared_ptr<ecell4::NetworkModel> model);
 

@@ -41,6 +41,8 @@ int main(int argc, char** argv)
     boost::shared_ptr<RatelawMassAction> ratelaw2(new RatelawMassAction(kd));
     rr2.set_ratelaw(ratelaw2);
 
+
+
     boost::shared_ptr<NetworkModel> model(new NetworkModel());
     model->add_species_attribute(sp1);
     model->add_species_attribute(sp2);
@@ -49,6 +51,10 @@ int main(int argc, char** argv)
     model->add_reaction_rule(rr2);
 
     boost::shared_ptr<ODENetworkModel>  ode_model(new ODENetworkModel(model) );
+    ReactionRule rr3;
+    rr3.add_reactant(sp1);
+    rr3.add_product(sp3);
+    ode_model->add_reaction_rule(rr3);
     ode_model->dump_reactions();
 
     boost::shared_ptr<ODEWorld> world(new ODEWorld(edge_lengths));
