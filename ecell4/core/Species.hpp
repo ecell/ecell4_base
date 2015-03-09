@@ -149,6 +149,7 @@ public:
     std::string get_attribute(const std::string& name_attr) const;
     void set_attribute(const std::string& name_attr, const std::string& value);
     void set_attributes(const Species& sp);
+    void overwrite_attributes(const Species& sp);
     void remove_attribute(const std::string& name_attr);
     bool has_attribute(const std::string& name_attr) const;
 

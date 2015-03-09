@@ -27,6 +27,7 @@ public:
     typedef Model base_type;
     typedef base_type::species_container_type species_container_type;
     typedef base_type::reaction_rule_container_type reaction_rule_container_type;
+    typedef base_type::parameter_container_type parameter_container_type;
 
 protected:
 
@@ -105,6 +106,25 @@ public:
     void remove_reaction_rule(const ReactionRule& rr);
     bool has_reaction_rule(const ReactionRule& rr) const;
 
+    void add_parameter(const Species& sp)
+    {
+        parameter_container_type::iterator i(
+            std::find(parameters_.begin(), parameters_.end(), sp));
+        if (i != parameters_.end())
+        {
+            (*i).overwrite_attributes(sp);
+        }
+        else
+        {
+            parameters_.push_back(sp);
+        }
+    }
+
+    const parameter_container_type& parameters() const
+    {
+        return parameters_;
+    }
+
     // Optional functions
 
     const reaction_rule_container_type& reaction_rules() const
@@ -126,6 +146,7 @@ protected:
 
     species_container_type species_attributes_;
     reaction_rule_container_type reaction_rules_;
+    parameter_container_type parameters_;
 
     first_order_reaction_rules_map_type first_order_reaction_rules_map_;
     second_order_reaction_rules_map_type second_order_reaction_rules_map_;

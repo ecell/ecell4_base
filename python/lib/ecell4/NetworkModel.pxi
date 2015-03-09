@@ -119,6 +119,25 @@ cdef class NetworkModel:
             return Model_from_Cpp_Model(
                 self.thisptr.get().expand(_seeds))
 
+    def add_parameter(self, Species sp):
+        self.thisptr.get().add_parameter(deref(sp.thisptr))
+
+    def add_parameters(self, attrs):
+        cdef vector[Cpp_Species] species
+        for sp in attrs:
+            species.push_back(deref((<Species>sp).thisptr))
+        self.thisptr.get().add_parameters(species)
+
+    def parameters(self):
+        cdef vector[Cpp_Species] species = self.thisptr.get().parameters()
+        retval = []
+        cdef vector[Cpp_Species].iterator it = species.begin()
+        while it != species.end():
+            retval.append(Species_from_Cpp_Species(
+                <Cpp_Species*>(address(deref(it)))))
+            inc(it)
+        return retval
+
 cdef NetworkModel NetworkModel_from_Cpp_NetworkModel(
     shared_ptr[Cpp_NetworkModel] m):
     r = NetworkModel()

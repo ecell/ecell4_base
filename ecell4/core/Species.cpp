@@ -110,6 +110,16 @@ void Species::set_attributes(const Species& sp)
     attributes_ = sp.attributes();
 }
 
+void Species::overwrite_attributes(const Species& sp)
+{
+    const attributes_container_type& attrs(sp.attributes());
+    for (attributes_container_type::const_iterator i(attrs.begin());
+        i != attrs.end(); ++i)
+    {
+        this->set_attribute((*i).first, (*i).second);
+    }
+}
+
 void Species::remove_attribute(const std::string& name_attr)
 {
     attributes_container_type::iterator
