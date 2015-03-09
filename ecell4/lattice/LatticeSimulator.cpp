@@ -542,7 +542,6 @@ void LatticeSimulator::apply_a2b(
             register_product_species(product_species);
 
             world_->remove_voxel_private(pinfo.first);
-            world_->remove_voxel_private(neighbor.first);
             std::pair<std::pair<ParticleID, Voxel>, bool> new_mol(
                 world_->new_voxel_private(product_species, neighbor.first));
 
