@@ -8,6 +8,7 @@
 #include "Species.hpp"
 #include "Particle.hpp"
 #include "AABB.hpp"
+#include "Model.hpp"
 
 
 namespace ecell4
@@ -18,7 +19,8 @@ namespace extras
 
 template<typename Tworld_, typename Trng_>
 void throw_in_particles(
-    Tworld_& world, const Species& sp, const Integer& N, const boost::shared_ptr<Shape> shape,
+    Tworld_& world, const Species& sp, const Integer& N,
+    const boost::shared_ptr<Shape> shape,
     boost::shared_ptr<Trng_>& rng)
 {
     typedef typename Tworld_::molecule_info_type molecule_info_type;
@@ -62,6 +64,22 @@ void throw_in_particles(
 {
     boost::shared_ptr<Shape> shape(new AABB(Real3(0, 0, 0), world.edge_lengths()));
     throw_in_particles(world, sp, N, shape, rng);
+}
+
+template<typename Tworld_>
+void set_parameters(const Model& m, Tworld_& w)
+{
+    for (Model::parameter_container_type::const_iterator
+        i(m.parameters().begin()); i != m.parameters().end(); ++i)
+    {
+        const Species& sp(*i);
+        if (sp.has_attribute("N"))
+        {
+            w.add_molecules(
+                Species(sp.serial()),
+                std::atoi(sp.get_attribute("N").c_str()));
+        }
+    }
 }
 
 } // extras
