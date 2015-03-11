@@ -253,6 +253,12 @@ protected:
         const Species& product_species0,
         const Species& product_species1,
         reaction_type& reaction);
+    void apply_ab2cd_in_order(
+        const LatticeWorld::private_coordinate_type coord0,
+        const Species& product_species0,
+        const LatticeWorld::private_coordinate_type coord1,
+        const Species& product_species1,
+        reaction_type& reaction);
     void apply_a2b(
         const LatticeWorld::particle_info_type pinfo,
         const Species& product_species,

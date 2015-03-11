@@ -142,9 +142,17 @@ cdef class FixedIntervalHDF5Observer:
 
 cdef class FixedIntervalCSVObserver:
 
-    def __cinit__(self, Real dt, filename):
-        self.thisptr = new shared_ptr[Cpp_FixedIntervalCSVObserver](
-            new Cpp_FixedIntervalCSVObserver(dt, tostring(filename)))
+    def __cinit__(self, Real dt, filename, species=None):
+        cdef vector[string] cpp_species
+        if species is None:
+            self.thisptr = new shared_ptr[Cpp_FixedIntervalCSVObserver](
+                new Cpp_FixedIntervalCSVObserver(dt, tostring(filename)))
+        else:
+            for serial in species:
+                cpp_species.push_back(tostring(serial))
+            self.thisptr = new shared_ptr[Cpp_FixedIntervalCSVObserver](
+                new Cpp_FixedIntervalCSVObserver(
+                    dt, tostring(filename), cpp_species))
 
     def __dealloc__(self):
         del self.thisptr

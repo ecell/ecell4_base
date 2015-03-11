@@ -202,15 +202,15 @@ std::pair<bool, LatticeSimulator::reaction_type> LatticeSimulator::attempt_react
 
     const Real Dtot(D0 + D1);
     const Real rnd(world_->rng()->uniform(0,1));
-    const Real gamma(pow(2*sqrt(2) + 4*sqrt(3) + 3*sqrt(6) + sqrt(22), 2) /
-        (72*(6*sqrt(2) + 4*sqrt(3) + 3*sqrt(6))));
+    const Real gamma(pow(2 * sqrt(2.0) + 4 * sqrt(3.0) + 3 * sqrt(6.0) + sqrt(22.0), 2) /
+        (72 * (6 * sqrt(2.0) + 4 * sqrt(3.0) + 3 * sqrt(6.0))));
     Real factor(0);
     if (dimensionA == Shape::THREE && dimensionB == Shape::THREE)
     {
         if (from_species != to_species)
-            factor = 1. / (6 * sqrt(2.) * Dtot * world_->voxel_radius());
+            factor = 1. / (6 * sqrt(2.0) * Dtot * world_->voxel_radius());
         else
-            factor = 1. / (6 * sqrt(2.) * D0 * world_->voxel_radius());
+            factor = 1. / (6 * sqrt(2.0) * D0 * world_->voxel_radius());
     }
     else if (dimensionA == Shape::TWO && dimensionB == Shape::TWO)
     {
@@ -221,11 +221,11 @@ std::pair<bool, LatticeSimulator::reaction_type> LatticeSimulator::attempt_react
     }
     else if (dimensionA == Shape::THREE && dimensionB == Shape::TWO)
     {
-        factor = sqrt(2) / (3 * D0 * world_->voxel_radius());
+        factor = sqrt(2.0) / (3 * D0 * world_->voxel_radius());
     }
     else if (dimensionA == Shape::TWO && dimensionB == Shape::THREE)
     {
-        factor = sqrt(2) / (3 * D1 * world_->voxel_radius()); // 不要?
+        factor = sqrt(2.0) / (3 * D1 * world_->voxel_radius()); // 不要?
     }
     else
         throw NotSupported("The dimension of a shape must be two or three.");
@@ -381,32 +381,42 @@ void LatticeSimulator::apply_ab2cd(
             register_product_species(product_species0);
             register_product_species(product_species1);
 
-            world_->remove_voxel_private(from_info.first);
-            world_->remove_voxel_private(to_info.first);
-            std::pair<std::pair<ParticleID, Voxel>, bool> new_mol0(
-                world_->new_voxel_private(product_species0, from_coord));
-            if (!new_mol0.second)
+            if (aserial != cloc)
             {
-                throw IllegalState("no place for the first product.");
+                // Remove A once if A is not the location of C
+                world_->remove_voxel_private(from_info.first);
             }
-            std::pair<std::pair<ParticleID, Voxel>, bool> new_mol1(
-                world_->new_voxel_private(product_species1, to_coord));
-            if (!new_mol1.second)
+            if (bserial != dloc)
             {
-                throw IllegalState("no place for the first product.");
+                // Remove B once if B is not the location of D
+                world_->remove_voxel_private(to_info.first);
             }
+            apply_ab2cd_in_order(from_coord, product_species0,
+                    to_coord, product_species1, reaction);
+        }
+        else
+        {
+            std::pair<LatticeWorld::private_coordinate_type, bool>
+                neighbor(world_->check_neighbor_private(to_coord, dloc));
 
-            reaction.products.push_back(
-                reaction_type::particle_type(
-                    new_mol0.first.first,
-                    this->private_voxel2voxel(new_mol0.first.second)));
-            reaction.products.push_back(
-                reaction_type::particle_type(
-                    new_mol1.first.first,
-                    this->private_voxel2voxel(new_mol1.first.second)));
+            if (neighbor.second)
+            {
+                register_reactant_species(from_info, reaction);
+                register_reactant_species(to_info, reaction);
+                register_product_species(product_species0);
+                register_product_species(product_species1);
+
+                if (aserial != cloc)
+                {
+                    // Remove A once if A is not the location of C
+                    world_->remove_voxel_private(from_info.first);
+                }
+                apply_ab2cd_in_order(from_coord, product_species0,
+                        neighbor.first, product_species1, reaction);
+            }
         }
     }
-    else if(aserial == dloc || aloc == dloc)
+    else if (aserial == dloc || aloc == dloc)
     {
         if (bserial == cloc || bloc == dloc)
         {
@@ -415,33 +425,117 @@ void LatticeSimulator::apply_ab2cd(
             register_product_species(product_species0);
             register_product_species(product_species1);
 
-            world_->remove_voxel_private(from_info.first);
-            world_->remove_voxel_private(to_info.first);
-            std::pair<std::pair<ParticleID, Voxel>, bool> new_mol0(
-                world_->new_voxel_private(product_species0, to_coord));
-            if (!new_mol0.second)
+            if (aserial != dloc)
             {
-                throw IllegalState("no place for the first product.");
+                // Remove A once if A is not the location of D
+                world_->remove_voxel_private(from_info.first);
             }
-            std::pair<std::pair<ParticleID, Voxel>, bool> new_mol1(
-                world_->new_voxel_private(product_species1, from_coord));
-            if (!new_mol1.second)
+            if (bserial != cloc)
             {
-                throw IllegalState("no place for the first product.");
+                // Remove B once if B is not the location of C
+                world_->remove_voxel_private(to_info.first);
             }
+            apply_ab2cd_in_order(to_coord, product_species0,
+                    from_coord, product_species1, reaction);
+        }
+        else
+        {
+            std::pair<LatticeWorld::private_coordinate_type, bool>
+                neighbor(world_->check_neighbor_private(to_coord, cloc));
 
-            reaction.products.push_back(
-                reaction_type::particle_type(
-                    new_mol0.first.first,
-                    this->private_voxel2voxel(new_mol0.first.second)));
-            reaction.products.push_back(
-                reaction_type::particle_type(
-                    new_mol1.first.first,
-                    this->private_voxel2voxel(new_mol1.first.second)));
+            if (neighbor.second)
+            {
+                register_reactant_species(from_info, reaction);
+                register_reactant_species(to_info, reaction);
+                register_product_species(product_species0);
+                register_product_species(product_species1);
+
+                if (aserial != dloc)
+                {
+                    // Remove A once if A is not the location of D
+                    world_->remove_voxel_private(from_info.first);
+                }
+                apply_ab2cd_in_order(neighbor.first, product_species0,
+                        from_coord, product_species1, reaction);
+            }
         }
     }
+    else if (bserial == cloc || bloc == cloc)
+    {
+        std::pair<LatticeWorld::private_coordinate_type, bool>
+            neighbor(world_->check_neighbor_private(to_coord, dloc));
 
-    throw IllegalState("no place for the first product.");
+        if (neighbor.second)
+        {
+            register_reactant_species(from_info, reaction);
+            register_reactant_species(to_info, reaction);
+            register_product_species(product_species0);
+            register_product_species(product_species1);
+
+            if (bserial != cloc)
+            {
+                // Remove B once if B is not the location of C
+                world_->remove_voxel_private(to_info.first);
+            }
+            apply_ab2cd_in_order(to_coord, product_species0,
+                    neighbor.first, product_species1, reaction);
+        }
+    }
+    else if (bserial == dloc || bloc == dloc)
+    {
+        std::pair<LatticeWorld::private_coordinate_type, bool>
+            neighbor(world_->check_neighbor_private(to_coord, dloc));
+
+        if (neighbor.second)
+        {
+            register_reactant_species(from_info, reaction);
+            register_reactant_species(to_info, reaction);
+            register_product_species(product_species0);
+            register_product_species(product_species1);
+
+            if (bserial != dloc)
+            {
+                // Remove B once if B is not the location of D
+                world_->remove_voxel_private(to_info.first);
+            }
+            apply_ab2cd_in_order(neighbor.first, product_species0,
+                    to_coord, product_species1, reaction);
+        }
+    }
+    else
+    {
+        throw IllegalState("Not Supported.");
+    }
+}
+
+void LatticeSimulator::apply_ab2cd_in_order(
+    const LatticeWorld::private_coordinate_type coord0,
+    const Species& product_species0,
+    const LatticeWorld::private_coordinate_type coord1,
+    const Species& product_species1,
+    reaction_type& reaction)
+{
+        std::pair<std::pair<ParticleID, Voxel>, bool> new_mol0(
+            world_->new_voxel_private(product_species0, coord0));
+        if (!new_mol0.second)
+        {
+            throw IllegalState("no place for " + product_species0.serial());
+        }
+        std::pair<std::pair<ParticleID, Voxel>, bool> new_mol1(
+            world_->new_voxel_private(product_species1, coord1));
+        if (!new_mol1.second)
+        {
+            throw IllegalState("no place for " + product_species1.serial());
+        }
+
+        reaction.products.push_back(
+            reaction_type::particle_type(
+                new_mol0.first.first,
+                this->private_voxel2voxel(new_mol0.first.second)));
+        reaction.products.push_back(
+            reaction_type::particle_type(
+                new_mol1.first.first,
+                this->private_voxel2voxel(new_mol1.first.second)));
 }
 
 /*
@@ -542,7 +636,6 @@ void LatticeSimulator::apply_a2b(
             register_product_species(product_species);
 
             world_->remove_voxel_private(pinfo.first);
-            world_->remove_voxel_private(neighbor.first);
             std::pair<std::pair<ParticleID, Voxel>, bool> new_mol(
                 world_->new_voxel_private(product_species, neighbor.first));
 

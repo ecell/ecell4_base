@@ -83,7 +83,7 @@ BOOST_AUTO_TEST_CASE(RodSurface_test_draw_position)
         else
             ++just;
     }
-    std::cout << "over: " << over << ", just:" << just << ", under: " << under << std::endl;
+    // std::cout << "over: " << over << ", just:" << just << ", under: " << under << std::endl;
 }
 
 BOOST_AUTO_TEST_SUITE_END()
