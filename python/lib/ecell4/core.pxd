@@ -13,6 +13,8 @@ from multiset cimport multiset
 from shared_ptr cimport shared_ptr
 
 
+cdef string tostring(ustr)
+
 cdef extern from "gsl/gsl_rng.h":
     ctypedef struct gsl_rng:
         pass
