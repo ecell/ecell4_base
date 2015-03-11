@@ -203,7 +203,8 @@ public:
         species_map_type::const_iterator i(index_map_.find(sp));
         if (i == index_map_.end())
         {
-            throw NotFound("Species not found");
+            reserve_species(sp);
+            i = index_map_.find(sp);
         }
 
         num_molecules_[(*i).second] = num;
