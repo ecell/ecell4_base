@@ -443,6 +443,7 @@ cdef extern from "ecell4/core/observers.hpp" namespace "ecell4":
     cdef cppclass Cpp_NumberObserver "ecell4::NumberObserver":
         Cpp_NumberObserver(vector[string]) except +
         Real next_time()
+        Integer num_steps()
         vector[vector[Real]] data()
         vector[Cpp_Species] targets()
         void reset()

@@ -41,10 +41,6 @@ cdef class Model:
     # def num_reaction_rules(self):
     #     return self.thisptr.get().num_reaction_rules()
 
-    # def create_species(self, string name):
-    #     cdef Cpp_Species retval = self.thisptr.get().create_species(name)
-    #     return Species_from_Cpp_Species(address(retval))
-
     def reaction_rules(self):
         cdef vector[Cpp_ReactionRule] c_rr_vector = self.thisptr.get().reaction_rules()
         retval = []

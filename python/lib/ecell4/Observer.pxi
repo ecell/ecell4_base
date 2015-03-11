@@ -16,9 +16,12 @@ cdef class Observer:
 
 cdef class FixedIntervalNumberObserver:
 
-    def __cinit__(self, Real dt, vector[string] species):
+    def __cinit__(self, Real dt, species):
+        cdef vector[string] cpp_species
+        for serial in species:
+            cpp_species.push_back(tostring(serial))
         self.thisptr = new shared_ptr[Cpp_FixedIntervalNumberObserver](
-            new Cpp_FixedIntervalNumberObserver(dt, species))
+            new Cpp_FixedIntervalNumberObserver(dt, cpp_species))
 
     def __dealloc__(self):
         del self.thisptr
@@ -62,12 +65,18 @@ cdef class FixedIntervalNumberObserver:
 
 cdef class NumberObserver:
 
-    def __cinit__(self, vector[string] species):
+    def __cinit__(self, species):
+        cdef vector[string] cpp_species
+        for serial in species:
+            cpp_species.push_back(tostring(serial))
         self.thisptr = new shared_ptr[Cpp_NumberObserver](
-            new Cpp_NumberObserver(species))
+            new Cpp_NumberObserver(cpp_species))
 
     def __dealloc__(self):
         del self.thisptr
+
+    def num_steps(self):
+        return self.thisptr.get().num_steps()
 
     def next_time(self):
         return self.thisptr.get().next_time()
@@ -105,9 +114,9 @@ cdef class NumberObserver:
 
 cdef class FixedIntervalHDF5Observer:
 
-    def __cinit__(self, Real dt, string filename):
+    def __cinit__(self, Real dt, filename):
         self.thisptr = new shared_ptr[Cpp_FixedIntervalHDF5Observer](
-            new Cpp_FixedIntervalHDF5Observer(dt, filename))
+            new Cpp_FixedIntervalHDF5Observer(dt, tostring(filename)))
 
     def __dealloc__(self):
         del self.thisptr
@@ -119,7 +128,7 @@ cdef class FixedIntervalHDF5Observer:
         return self.thisptr.get().num_steps()
 
     def filename(self):
-        return self.thisptr.get().filename()
+        return self.thisptr.get().filename().decode('UTF-8')
 
     def as_base(self):
         retval = Observer()
@@ -133,9 +142,9 @@ cdef class FixedIntervalHDF5Observer:
 
 cdef class FixedIntervalCSVObserver:
 
-    def __cinit__(self, Real dt, string filename):
+    def __cinit__(self, Real dt, filename):
         self.thisptr = new shared_ptr[Cpp_FixedIntervalCSVObserver](
-            new Cpp_FixedIntervalCSVObserver(dt, filename))
+            new Cpp_FixedIntervalCSVObserver(dt, tostring(filename)))
 
     def __dealloc__(self):
         del self.thisptr
@@ -151,7 +160,7 @@ cdef class FixedIntervalCSVObserver:
         self.thisptr.get().log(space.thisptr.get())
 
     def filename(self):
-        return self.thisptr.get().filename()
+        return self.thisptr.get().filename().decode('UTF-8')
 
     def as_base(self):
         retval = Observer()
@@ -211,9 +220,12 @@ cdef class FixedIntervalTrajectoryObserver:
 
 cdef class TimingNumberObserver:
 
-    def __cinit__(self, vector[double] t, vector[string] species):  #XXX: vector[Real]
+    def __cinit__(self, vector[double] t, species):  #XXX: vector[Real]
+        cdef vector[string] cpp_species
+        for serial in species:
+            cpp_species.push_back(tostring(serial))
         self.thisptr = new shared_ptr[Cpp_TimingNumberObserver](
-            new Cpp_TimingNumberObserver(t, species))
+            new Cpp_TimingNumberObserver(t, cpp_species))
 
     def __dealloc__(self):
         del self.thisptr
