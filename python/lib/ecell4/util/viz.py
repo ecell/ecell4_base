@@ -451,32 +451,36 @@ def plot_number_observer(*args, **kwargs):
     if len(args) != 1 and isinstance(args[1], str):
         for obs, fmt in zip(args[:: 2], args[1:: 2]):
             data = numpy.array(obs.data()).T
-            for i, sp in enumerate(sorted(obs.targets())):
+            targets = list(enumerate(obs.targets()))
+            targets.sort(key=lambda x: x[1])
+            for i, (idx, sp) in enumerate(targets):
                 if is_first:
                     label = sp.serial()
                     if len(label) > 0 and label[0] == '_':
                         label = '$\_$' + label[1:]  # XXX: lazy escaping for a special character
-                    ax.plot(data[0], data[i + 1], fmt,
+                    ax.plot(data[0], data[idx + 1], fmt,
                             color=color_cycle[i % len(color_cycle)],
                             label=label, **plot_opts)
                 else:
-                    ax.plot(data[0], data[i + 1], fmt,
+                    ax.plot(data[0], data[idx + 1], fmt,
                             color=color_cycle[i % len(color_cycle)],
                             **plot_opts)
             is_first = False
     else:
         for obs in args:
             data = numpy.array(obs.data()).T
-            for i, sp in enumerate(sorted(obs.targets())):
+            targets = list(enumerate(obs.targets()))
+            targets.sort(key=lambda x: x[1])
+            for i, (idx, sp) in enumerate(targets):
                 if is_first:
                     label = sp.serial()
                     if len(label) > 0 and label[0] == '_':
                         label = '$\_$' + label[1:]  # XXX: lazy escaping for a special character
-                    ax.plot(data[0], data[i + 1],
+                    ax.plot(data[0], data[idx + 1],
                             color=color_cycle[i % len(color_cycle)],
                             label=label, **plot_opts)
                 else:
-                    ax.plot(data[0], data[i + 1],
+                    ax.plot(data[0], data[idx + 1],
                             color=color_cycle[i % len(color_cycle)],
                             **plot_opts)
             is_first = False
