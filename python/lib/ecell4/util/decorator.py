@@ -76,7 +76,7 @@ class SpeciesAttributesCallback(Callback):
         self.keys = None
         if len(args) > 0:
             for key in args:
-                if not isinstance(key, types.StringType):
+                if not isinstance(key, (str, bytes)):
                     raise RuntimeError('non string key "%s" was given' % key)
             self.keys = args
 
@@ -113,20 +113,20 @@ class SpeciesAttributesCallback(Callback):
                 raise RuntimeError("no species given [%s]" % (repr(obj)))
 
             if self.keys is None:
-                if not isinstance(rhs, types.DictType):
+                if not isinstance(rhs, dict):
                     raise RuntimeError(
                         'parameter must be given as a dict; "%s" given'
                         % str(rhs))
                 for key, value in rhs.items():
-                    if not (isinstance(key, types.StringType)
-                        and isinstance(value, types.StringType)):
+                    if not (isinstance(key, (str, bytes))
+                        and isinstance(value, (str, bytes))):
                         raise RuntimeError(
                             'attributes must be given as a pair of strings;'
                             + ' "%s" and "%s" given'
                             % (str(key), str(value)))
                     sp.set_attribute(key, value)
             else:
-                if not isinstance(rhs, (types.TupleType, types.ListType)):
+                if not isinstance(rhs, (tuple, list)):
                     if len(self.keys) == 1:
                         rhs = (rhs, )
                     else:
@@ -139,7 +139,7 @@ class SpeciesAttributesCallback(Callback):
                         % (len(self.keys), len(rhs)))
                 else:
                     for key, value in zip(self.keys, rhs):
-                        if not isinstance(value, types.StringType):
+                        if not isinstance(value, (str, bytes)):
                             raise RuntimeError(
                                 'paramter must be given as a string; "%s" given'
                                 % str(value))
@@ -192,7 +192,7 @@ class ReactionRulesCallback(Callback):
         rhs = tuple(sp for sp in rhs if sp is not None)
 
         if isinstance(obj, (parseobj.EqExp, parseobj.NeExp)):
-            if not isinstance(params, (types.ListType, types.TupleType)):
+            if not isinstance(params, (tuple, list)):
                 raise RuntimeError(
                     'parameter must be a list or tuple with length 2; "%s" given'
                     % str(params))

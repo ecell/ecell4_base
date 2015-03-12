@@ -94,7 +94,7 @@ class ParseDecorator:
             if k in ignores:
                 # print "WARNING: '%s' was overridden." % k
                 calling_frame.f_globals[k] = parseobj.AnyCallable(self.__callback, k)
-                self.__newvars[k] = vardict[k]
+                self.__newvars[k] = vardict.get(k)
             elif (not k in vardict.keys()
                 and not k in keys_from_builtins(vardict)):
                 # print "WARNING: '%s' is undefined." % k

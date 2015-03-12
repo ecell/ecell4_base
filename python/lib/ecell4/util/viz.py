@@ -498,7 +498,7 @@ def plot_number_observer(*args, **kwargs):
         ax.set_xlim(kwargs["xlim"])
     if "ylim" in kwargs.keys():
         ax.set_ylim(kwargs["ylim"])
-    # fig.show()
+    # plt.show()
 
 
 class ColorScale:

@@ -103,6 +103,10 @@ cdef class Model:
         cdef vector[Cpp_Species] _seeds
         cdef map[Cpp_Species, Integer] _max_stoich
         for sp in seeds:
+            if not isinstance(sp, Species):
+                raise ValueError(
+                    'seeds must be given as a list of Species.'
+                    + ' {0} given.'.format(repr(sp)))
             _seeds.push_back(deref((<Species>sp).thisptr))
 
         if max_stoich is not None:

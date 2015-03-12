@@ -31,6 +31,40 @@ All the members must start with '_'."""
         return "<%s.%s: %s>" % (
             self.__class__.__module__, self.__class__.__name__, str(self))
 
+    def __invert__(self):
+        return self.__inv__()
+
+    def __inv__(self):
+        retval = InvExp(self.__root, self)
+        self.__root.notify_unary_operations(retval)
+        return retval
+
+    # operators
+
+    def __getitem__(self, key):
+        return operator.getitem(self._as_ParseObj(), key)
+
+    def __call__(self, *args, **kwargs):
+        return self._as_ParseObj()(*args, **kwargs)
+
+    def __xor__(self, rhs):
+        return operator.xor(self._as_ParseObj(), rhs)
+
+    def __gt__(self, rhs):
+        return operator.gt(self._as_ParseObj(), rhs)
+
+    def __eq__(self, rhs):
+        return operator.eq(self._as_ParseObj(), rhs)
+
+    def __ne__(self, rhs):
+        return operator.ne(self._as_ParseObj(), rhs)
+
+    def __add__(self, rhs):
+        return operator.add(self._as_ParseObj(), rhs)
+
+    def __or__(self, rhs):
+        return operator.or_(self._as_ParseObj(), rhs)
+
 class ParseElem:
 
     def __init__(self, name):
