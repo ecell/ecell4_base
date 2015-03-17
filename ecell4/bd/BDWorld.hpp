@@ -185,6 +185,16 @@ public:
         return (*ps_).list_species();
     }
 
+    virtual Real get_value(const Species& sp) const
+    {
+        return static_cast<Real>(num_molecules(sp));
+    }
+
+    virtual Real get_value_exact(const Species& sp) const
+    {
+        return static_cast<Real>(num_molecules_exact(sp));
+    }
+
     // ParticleSpace member functions
 
     bool update_particle(const ParticleID& pid, const Particle& p)
@@ -356,8 +366,14 @@ public:
             {
                 std::cerr << "Warning: Model already bound to BDWorld"
                     << std::endl;
+                extras::set_parameters(*model, *this);
             }
         }
+        else
+        {
+            extras::set_parameters(*model, *this);
+        }
+
         model_ = model;
     }
 

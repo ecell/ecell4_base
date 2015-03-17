@@ -10,6 +10,7 @@
 #include <ecell4/core/SubvolumeSpace.hpp>
 #include <ecell4/core/Model.hpp>
 #include <ecell4/core/Shape.hpp>
+#include <ecell4/core/extras.hpp>
 
 namespace ecell4
 {
@@ -75,10 +76,16 @@ public:
         {
             if (bound_model.get() != model.get())
             {
-                std::cerr << "Warning: Model already bound to GillespieWorld."
+                std::cerr << "Warning: Model already bound to MesoscopicWorld."
                     << std::endl;
+                extras::set_parameters(*model, *this);
             }
         }
+        else
+        {
+            extras::set_parameters(*model, *this);
+        }
+
         this->model_ = model;
     }
 
