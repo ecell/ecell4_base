@@ -40,34 +40,35 @@ def generate_Species(obj):
     else:
         raise RuntimeError, 'invalid expression; "%s" given' % str(obj)
 
-def generate_ReactionRule(lhs, rhs, k=0.0):
-    if len(lhs) == 0:
-        if len(rhs) != 1:
-            raise RuntimeError, (
-                "the number of products must be 1; %d given" % len(rhs))
-        return ecell4.core.create_synthesis_reaction_rule(rhs[0], k)
-    elif len(lhs) == 1:
-        if len(rhs) == 0:
-            return ecell4.core.create_degradation_reaction_rule(lhs[0], k)
-        elif len(rhs) == 1:
-            return ecell4.core.create_unimolecular_reaction_rule(
-                lhs[0], rhs[0], k)
-        elif len(rhs) == 2:
-            return ecell4.core.create_unbinding_reaction_rule(
-                lhs[0], rhs[0], rhs[1], k)
-        else:
-            raise RuntimeError, (
-                "the number of products must be less than 3; %d given"
-                % len(rhs))
-    elif len(lhs) == 2:
-        if len(rhs) == 1:
-            return ecell4.core.create_binding_reaction_rule(
-                lhs[0], lhs[1], rhs[0], k)
-        else:
-            raise RuntimeError, (
-                "the number of products must be 1; %d given" % len(rhs))
-    raise RuntimeError, (
-        "the number of reactants must be less than 3; %d given" % len(lhs))
+def generate_ReactionRule(lhs, rhs, k=None):
+    return ecell4.core.ReactionRule(lhs, rhs, k)
+    # if len(lhs) == 0:
+    #     if len(rhs) != 1:
+    #         raise RuntimeError, (
+    #             "the number of products must be 1; %d given" % len(rhs))
+    #     return ecell4.core.create_synthesis_reaction_rule(rhs[0], k)
+    # elif len(lhs) == 1:
+    #     if len(rhs) == 0:
+    #         return ecell4.core.create_degradation_reaction_rule(lhs[0], k)
+    #     elif len(rhs) == 1:
+    #         return ecell4.core.create_unimolecular_reaction_rule(
+    #             lhs[0], rhs[0], k)
+    #     elif len(rhs) == 2:
+    #         return ecell4.core.create_unbinding_reaction_rule(
+    #             lhs[0], rhs[0], rhs[1], k)
+    #     else:
+    #         raise RuntimeError, (
+    #             "the number of products must be less than 3; %d given"
+    #             % len(rhs))
+    # elif len(lhs) == 2:
+    #     if len(rhs) == 1:
+    #         return ecell4.core.create_binding_reaction_rule(
+    #             lhs[0], lhs[1], rhs[0], k)
+    #     else:
+    #         raise RuntimeError, (
+    #             "the number of products must be 1; %d given" % len(rhs))
+    # raise RuntimeError, (
+    #     "the number of reactants must be less than 3; %d given" % len(lhs))
 
 class ParametersCallback(Callback):
 

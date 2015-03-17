@@ -123,6 +123,8 @@ cdef class RatelawMassAction:
 cdef extern from "ecell4/core/ReactionRule.hpp" namespace "ecell4":
     cdef cppclass Cpp_ReactionRule "ecell4::ReactionRule":
         Cpp_ReactionRule() except +
+        Cpp_ReactionRule(vector[Cpp_Species]&, vector[Cpp_Species]&)
+        Cpp_ReactionRule(vector[Cpp_Species]&, vector[Cpp_Species]&, Real)
         Cpp_ReactionRule(Cpp_ReactionRule&) except +
         Real k()
         vector[Cpp_Species]& reactants()

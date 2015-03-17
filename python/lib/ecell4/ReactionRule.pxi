@@ -6,8 +6,22 @@ cimport create_reaction_rule as crr
 
 cdef class ReactionRule:
 
-    def __cinit__(self):
-        self.thisptr = new Cpp_ReactionRule()
+    def __cinit__(self, reactants=None, products=None, k=None):
+        cdef vector[Cpp_Species] cpp_reactants
+        cdef vector[Cpp_Species] cpp_products
+
+        if products is None:
+            self.thisptr = new Cpp_ReactionRule()
+        else:
+            for sp in reactants:
+                cpp_reactants.push_back(deref((<Species>sp).thisptr))
+            for sp in products:
+                cpp_products.push_back(deref((<Species>sp).thisptr))
+
+            if k is None:
+                self.thisptr = new Cpp_ReactionRule(cpp_reactants, cpp_products)
+            else:
+                self.thisptr = new Cpp_ReactionRule(cpp_reactants, cpp_products, k)
 
     def __dealloc__(self):
         del self.thisptr
