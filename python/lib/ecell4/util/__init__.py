@@ -8,8 +8,9 @@ __all__ = [
 
 
 def run_simulation(
-        t, y0, volume=1.0, model=None, with_plot=True, solver='ode',
-        factory=None, is_netfree=False, species_list=None, as_observer=False):
+        t, y0={}, volume=1.0, model=None, with_plot=True, solver='ode',
+        factory=None, is_netfree=False, species_list=None, as_observer=False,
+        without_reset=False):
     """Run a simulation with the given model and plot the result on IPython
     notebook with matplotlib.
 
@@ -57,13 +58,17 @@ def run_simulation(
     L = ecell4.cbrt(volume)
 
     if model is None:
-        model = ecell4.util.decorator.get_model(is_netfree, True)
+        model = ecell4.util.decorator.get_model(is_netfree, without_reset)
 
     edge_lengths = ecell4.Real3(L, L, L)
     w = f.create_world(edge_lengths)
     w.bind_to(model)
-    for serial, n in y0.items():
-        w.add_molecules(ecell4.Species(serial), n)
+    if isinstance(w, ecell4.ode.ODEWorld):
+        for serial, n in y0.items():
+            w.set_value(ecell4.Species(serial), n)
+    else:
+        for serial, n in y0.items():
+            w.add_molecules(ecell4.Species(serial), n)
 
     if species_list is None:
         seeds = [ecell4.Species(serial) for serial in y0.keys()]
