@@ -180,6 +180,9 @@ public:
             "add_parameter is not supported in this model class");
     }
 
+    virtual bool has_parameter(const Species::serial_type& name) const = 0;
+    virtual const Species& get_parameter(
+        const Species::serial_type& name) const = 0;
     virtual const parameter_container_type& parameters() const = 0;
 
     const std::vector<Species> list_species() const

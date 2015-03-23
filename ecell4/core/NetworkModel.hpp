@@ -106,6 +106,25 @@ public:
     void remove_reaction_rule(const ReactionRule& rr);
     bool has_reaction_rule(const ReactionRule& rr) const;
 
+    bool has_parameter(const Species::serial_type& name) const
+    {
+        parameter_container_type::const_iterator i(
+            std::find(parameters_.begin(), parameters_.end(), Species(name)));
+        return (i != parameters_.end());
+    }
+
+    const Species& get_parameter(const Species::serial_type& name) const
+    {
+        parameter_container_type::const_iterator i(
+            std::find(parameters_.begin(), parameters_.end(), Species(name)));
+        if (i != parameters_.end())
+        {
+            return (*i);
+        }
+
+        throw NotFound("Parameter not found.");
+    }
+
     void add_parameter(const Species& sp)
     {
         parameter_container_type::iterator i(
