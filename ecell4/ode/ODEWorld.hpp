@@ -10,7 +10,6 @@
 #include <ecell4/core/CompartmentSpaceHDF5Writer.hpp>
 #endif
 #include <ecell4/core/Shape.hpp>
-#include <ecell4/core/extras.hpp>
 
 #include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
@@ -268,12 +267,7 @@ public:
             {
                 std::cerr << "Warning: Model already bound to ODEWorld."
                     << std::endl;
-                extras::set_parameters(*model, *this);
             }
-        }
-        else
-        {
-            extras::set_parameters(*model, *this);
         }
 
         this->model_ = model;

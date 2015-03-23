@@ -366,12 +366,7 @@ public:
             {
                 std::cerr << "Warning: Model already bound to BDWorld"
                     << std::endl;
-                extras::set_parameters(*model, *this);
             }
-        }
-        else
-        {
-            extras::set_parameters(*model, *this);
         }
 
         model_ = model;

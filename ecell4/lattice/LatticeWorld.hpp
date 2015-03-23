@@ -13,7 +13,6 @@
 #include <ecell4/core/SerialIDGenerator.hpp>
 #include <ecell4/core/Model.hpp>
 #include <ecell4/core/Shape.hpp>
-#include <ecell4/core/extras.hpp>
 
 namespace ecell4
 {
@@ -500,12 +499,7 @@ public:
             {
                 std::cerr << "Warning: Model already bound to LatticeWorld"
                     << std::endl;
-                extras::set_parameters(*model, *this);
             }
-        }
-        else
-        {
-            extras::set_parameters(*model, *this);
         }
 
         model_ = model;
