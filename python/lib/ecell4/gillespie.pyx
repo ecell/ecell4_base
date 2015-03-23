@@ -230,9 +230,13 @@ cdef class GillespieFactory:
             return GillespieWorld_from_Cpp_GillespieWorld(
                 shared_ptr[Cpp_GillespieWorld](
                     self.thisptr.create_world(deref((<Real3>arg1).thisptr))))
-        else:
+        elif isinstance(arg1, str):
             return GillespieWorld_from_Cpp_GillespieWorld(
                 shared_ptr[Cpp_GillespieWorld](self.thisptr.create_world(<string>(arg1))))
+        else:
+            return GillespieWorld_from_Cpp_GillespieWorld(
+                shared_ptr[Cpp_GillespieWorld](self.thisptr.create_world(
+                    deref(Cpp_Model_from_Model(arg1)))))
 
     def create_simulator(self, arg1, GillespieWorld arg2=None):
         if arg2 is None:

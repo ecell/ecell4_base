@@ -481,9 +481,13 @@ cdef class LatticeFactory:
             return LatticeWorld_from_Cpp_LatticeWorld(
                 shared_ptr[Cpp_LatticeWorld](
                     self.thisptr.create_world(deref((<Real3>arg1).thisptr))))
-        else:
+        elif isinstance(arg1, str):
             return LatticeWorld_from_Cpp_LatticeWorld(
                 shared_ptr[Cpp_LatticeWorld](self.thisptr.create_world(<string>(arg1))))
+        else:
+            return LatticeWorld_from_Cpp_LatticeWorld(
+                shared_ptr[Cpp_LatticeWorld](self.thisptr.create_world(
+                    deref(Cpp_Model_from_Model(arg1)))))
 
     def create_simulator(self, arg1, LatticeWorld arg2=None):
         if arg2 is None:

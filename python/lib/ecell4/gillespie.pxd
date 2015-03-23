@@ -79,6 +79,7 @@ cdef extern from "ecell4/gillespie/GillespieFactory.hpp" namespace "ecell4::gill
         Cpp_GillespieFactory(shared_ptr[Cpp_RandomNumberGenerator]) except +
         Cpp_GillespieWorld* create_world(string)
         Cpp_GillespieWorld* create_world(Cpp_Real3&)
+        Cpp_GillespieWorld* create_world(shared_ptr[Cpp_Model])
         Cpp_GillespieSimulator* create_simulator(shared_ptr[Cpp_Model], shared_ptr[Cpp_GillespieWorld])
         Cpp_GillespieSimulator* create_simulator(shared_ptr[Cpp_GillespieWorld])
 

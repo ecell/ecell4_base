@@ -278,9 +278,13 @@ cdef class MesoscopicFactory:
             return MesoscopicWorld_from_Cpp_MesoscopicWorld(
                 shared_ptr[Cpp_MesoscopicWorld](
                     self.thisptr.create_world(deref((<Real3>arg1).thisptr))))
-        else:
+        elif isinstance(arg1, str):
             return MesoscopicWorld_from_Cpp_MesoscopicWorld(
                 shared_ptr[Cpp_MesoscopicWorld](self.thisptr.create_world(<string>(arg1))))
+        else:
+            return MesoscopicWorld_from_Cpp_MesoscopicWorld(
+                shared_ptr[Cpp_MesoscopicWorld](self.thisptr.create_world(
+                    deref(Cpp_Model_from_Model(arg1)))))
 
     def create_simulator(self, arg1, MesoscopicWorld arg2=None):
         if arg2 is None:

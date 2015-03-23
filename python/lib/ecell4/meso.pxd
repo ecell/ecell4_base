@@ -96,6 +96,7 @@ cdef extern from "ecell4/meso/MesoscopicFactory.hpp" namespace "ecell4::meso":
         Cpp_MesoscopicFactory(Cpp_Integer3&, shared_ptr[Cpp_RandomNumberGenerator]) except +
         Cpp_MesoscopicWorld* create_world(string)
         Cpp_MesoscopicWorld* create_world(Cpp_Real3&)
+        Cpp_MesoscopicWorld* create_world(shared_ptr[Cpp_Model])
         Cpp_MesoscopicSimulator* create_simulator(shared_ptr[Cpp_Model], shared_ptr[Cpp_MesoscopicWorld])
         Cpp_MesoscopicSimulator* create_simulator(shared_ptr[Cpp_MesoscopicWorld])
 

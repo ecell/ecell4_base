@@ -143,6 +143,7 @@ cdef extern from "ecell4/lattice/LatticeFactory.hpp" namespace "ecell4::lattice"
         Cpp_LatticeFactory(Real, shared_ptr[Cpp_RandomNumberGenerator]&) except +
         Cpp_LatticeWorld* create_world(string)
         Cpp_LatticeWorld* create_world(Cpp_Real3&)
+        Cpp_LatticeWorld* create_world(shared_ptr[Cpp_Model])
         Cpp_LatticeSimulator* create_simulator(shared_ptr[Cpp_Model], shared_ptr[Cpp_LatticeWorld])
         Cpp_LatticeSimulator* create_simulator(shared_ptr[Cpp_LatticeWorld])
 

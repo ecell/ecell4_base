@@ -91,6 +91,11 @@ public:
         }
     }
 
+    virtual EGFRDWorld* create_world(const boost::shared_ptr<Model>& m) const
+    {
+        return extras::generate_world_from_model(*this, m);
+    }
+
     virtual EGFRDSimulator* create_simulator(
         const boost::shared_ptr<Model>& model,
         const boost::shared_ptr<world_type>& world) const

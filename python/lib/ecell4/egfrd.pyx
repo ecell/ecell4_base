@@ -343,9 +343,13 @@ cdef class EGFRDFactory:
             return EGFRDWorld_from_Cpp_EGFRDWorld(
                 shared_ptr[Cpp_EGFRDWorld](
                     self.thisptr.create_world(deref((<Real3>arg1).thisptr))))
-        else:
+        elif isinstance(arg1, str):
             return EGFRDWorld_from_Cpp_EGFRDWorld(
                 shared_ptr[Cpp_EGFRDWorld](self.thisptr.create_world(<string>(arg1))))
+        else:
+            return EGFRDWorld_from_Cpp_EGFRDWorld(
+                shared_ptr[Cpp_EGFRDWorld](self.thisptr.create_world(
+                    deref(Cpp_Model_from_Model(arg1)))))
 
     def create_simulator(self, arg1, EGFRDWorld arg2=None):
         if arg2 is None:
