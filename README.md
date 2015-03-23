@@ -75,7 +75,7 @@ now you can see IPython notebooks, please open index.ipynb to see E-Cell4 models
 ```shell
 # dependent packages
 $ sudo apt-get install cmake libgsl0-dev libboost-dev libboost-regex-dev libhdf5-dev libatlas-base-dev
-$ sudo apt-get instal python-dev cython
+$ sudo apt-get install python-dev cython
 
 $ wget https://github.com/ecell/ecell4/archive/master.zip   
 $ unzip master.zip

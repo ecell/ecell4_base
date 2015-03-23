@@ -3,8 +3,8 @@ if(window['d3'] === undefined ||
    window['THREE'] === undefined ||
    window['Elegans'] === undefined){
     var paths = {
-	d3: 'http://cdnjs.cloudflare.com/ajax/libs/d3/3.4.4/d3.min',
-	THREE: 'http://cdnjs.cloudflare.com/ajax/libs/three.js/r66/three.min'
+	d3: 'https://cdnjs.cloudflare.com/ajax/libs/d3/3.4.4/d3.min',
+	THREE: 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r66/three.min'
     };
 
     var shim = {

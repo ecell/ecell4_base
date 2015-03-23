@@ -122,7 +122,7 @@ else:
 
 setup(
     name = "ecell4",
-    version = "4.0.0b1",
+    version = "4.0.0b2",
     package_dir = {"": "lib"},
     package_data = {"ecell4.util": [
         "templates/init_ipynb.js", "templates/init_cyjs.js", "templates/template.html",
