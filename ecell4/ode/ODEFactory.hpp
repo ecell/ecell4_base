@@ -2,6 +2,8 @@
 #define __ECELL4_ODE_ODE_FACTORY_HPP
 
 #include <ecell4/core/SimulatorFactory.hpp>
+#include <ecell4/core/extras.hpp>
+
 #include "ODEWorld.hpp"
 #include "ODESimulator.hpp"
 
@@ -41,6 +43,24 @@ public:
         const Real3& edge_lengths = Real3(1, 1, 1)) const
     {
         return new ODEWorld(edge_lengths);
+    }
+
+    virtual ODEWorld* create_world(const boost::shared_ptr<Model>& m) const
+    {
+        ODEWorld* w(extras::__generate_world_from_model(*this, m));
+
+        for (Model::parameter_container_type::const_iterator
+            i(m->parameters().begin()); i != m->parameters().end(); ++i)
+        {
+            const Species& sp(*i);
+            if (sp.has_attribute("N"))
+            {
+                w->set_value(
+                    Species(sp.serial()),
+                    std::atof(sp.get_attribute("N").c_str())); //XXX: Real
+            }
+        }
+        return w;
     }
 
     virtual ODESimulator* create_simulator(

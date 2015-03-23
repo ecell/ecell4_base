@@ -203,9 +203,13 @@ cdef class ODEFactory:
             return ODEWorld_from_Cpp_ODEWorld(
                 shared_ptr[Cpp_ODEWorld](
                     self.thisptr.create_world(deref((<Real3>arg1).thisptr))))
-        else:
+        elif isinstance(arg1, str):
             return ODEWorld_from_Cpp_ODEWorld(
                 shared_ptr[Cpp_ODEWorld](self.thisptr.create_world(<string>(arg1))))
+        else:
+            return ODEWorld_from_Cpp_ODEWorld(
+                shared_ptr[Cpp_ODEWorld](self.thisptr.create_world(
+                    deref(Cpp_Model_from_Model(arg1)))))
 
     def create_simulator(self, arg1, ODEWorld arg2=None):
         if arg2 is None:

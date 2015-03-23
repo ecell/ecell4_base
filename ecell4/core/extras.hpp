@@ -66,24 +66,8 @@ void throw_in_particles(
     throw_in_particles(world, sp, N, shape, rng);
 }
 
-template<typename Tworld_>
-void set_parameters(const Model& m, Tworld_& w)
-{
-    for (Model::parameter_container_type::const_iterator
-        i(m.parameters().begin()); i != m.parameters().end(); ++i)
-    {
-        const Species& sp(*i);
-        if (sp.has_attribute("N"))
-        {
-            w.add_molecules(
-                Species(sp.serial()),
-                std::atoi(sp.get_attribute("N").c_str()));
-        }
-    }
-}
-
 template<typename Tfactory_>
-typename Tfactory_::world_type* generate_world_from_model(
+typename Tfactory_::world_type* __generate_world_from_model(
     const Tfactory_& f, const boost::shared_ptr<Model>& m)
 {
     Real3 edge_lengths(1, 1, 1);
@@ -109,6 +93,14 @@ typename Tfactory_::world_type* generate_world_from_model(
 
     typename Tfactory_::world_type* w(f.create_world(edge_lengths));
     w->bind_to(m);
+    return w;
+}
+
+template<typename Tfactory_>
+typename Tfactory_::world_type* generate_world_from_model(
+    const Tfactory_& f, const boost::shared_ptr<Model>& m)
+{
+    typename Tfactory_::world_type* w(__generate_world_from_model(f, m));
 
     for (Model::parameter_container_type::const_iterator
         i(m->parameters().begin()); i != m->parameters().end(); ++i)
@@ -121,7 +113,6 @@ typename Tfactory_::world_type* generate_world_from_model(
                 std::atoi(sp.get_attribute("N").c_str()));
         }
     }
-
     return w;
 }
 
