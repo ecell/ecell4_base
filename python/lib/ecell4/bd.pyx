@@ -295,30 +295,29 @@ cdef BDSimulator BDSimulator_from_Cpp_BDSimulator(Cpp_BDSimulator* s):
 #  a python wrapper for Cpp_BDFactory
 cdef class BDFactory:
 
-    def __cinit__(self, GSLRandomNumberGenerator rng=None):
-        if rng is None:
+    def __cinit__(self, Integer3 matrix_sizes=None, GSLRandomNumberGenerator rng=None):
+        if matrix_sizes is None:
             self.thisptr = new Cpp_BDFactory()
+        elif rng is None:
+            self.thisptr = new Cpp_BDFactory(deref(matrix_sizes.thisptr))
         else:
-            self.thisptr = new Cpp_BDFactory(deref(rng.thisptr))
+            self.thisptr = new Cpp_BDFactory(deref(matrix_sizes.thisptr), deref(rng.thisptr))
 
     def __dealloc__(self):
         del self.thisptr
 
-    def create_world(self, arg1, arg2=None):
+    def create_world(self, arg1):
         if isinstance(arg1, Real3):
-            if arg2 is not None:
-                return BDWorld_from_Cpp_BDWorld(
-                    shared_ptr[Cpp_BDWorld](
-                        self.thisptr.create_world(
-                            deref((<Real3>arg1).thisptr),
-                            deref((<Integer3>arg2).thisptr))))
-            else:
-                return BDWorld_from_Cpp_BDWorld(
-                    shared_ptr[Cpp_BDWorld](
-                        self.thisptr.create_world(deref((<Real3>arg1).thisptr))))
-        else:
+            return BDWorld_from_Cpp_BDWorld(
+                shared_ptr[Cpp_BDWorld](
+                    self.thisptr.create_world(deref((<Real3>arg1).thisptr))))
+        elif isinstance(arg1, str):
             return BDWorld_from_Cpp_BDWorld(
                 shared_ptr[Cpp_BDWorld](self.thisptr.create_world(<string>(arg1))))
+        else:
+            return BDWorld_from_Cpp_BDWorld(
+                shared_ptr[Cpp_BDWorld](self.thisptr.create_world(
+                    deref(Cpp_Model_from_Model(arg1)))))
 
     def create_simulator(self, arg1, BDWorld arg2=None):
         if arg2 is None:
