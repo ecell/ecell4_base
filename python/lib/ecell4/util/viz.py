@@ -9,18 +9,6 @@ import base64
 import copy
 import random
 
-
-def init_ipynb():
-    """Load all depending JavaScript libraries to IPython notebook.
-    """
-    from IPython.core.display import display, HTML
-
-    path = os.path.join(os.path.abspath(os.path.dirname(__file__)),
-                        'templates/init_ipynb.js')
-    html = open(path).read()
-    return display(HTML(html))
-
-
 def __parse_world(
         world, radius=None, species_list=None, max_count=None,
         predicator=None):

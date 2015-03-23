@@ -2,26 +2,31 @@
   <head>
     <script type="text/javascript">
      (function(){
-       function render(){
+       if(window["THREE"] === undefined || window["d3"] === undefined){
+	 require.config({
+	   paths:{
+	     d3: 'https://cdnjs.cloudflare.com/ajax/libs/d3/3.4.4/d3.min',
+	     THREE: 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r66/three.min',
+             Elegans: 'https://rawgit.com/domitry/elegans/master/release/elegans'
+	   },
+	   shim:{
+	     THREE: {
+	       exports: 'THREE'
+	     }
+	   }
+	 });
+
+	 require(["THREE", "d3"], function(THREE, d3){
+	   window["THREE"] = THREE;
+	   window["d3"] = d3;
+	 });
+       }
+
+       require(["Elegans"], function(Elegans){
 	 console.log("Begin rendering...");
 	 var model = {{ model }};
 	 Elegans.Embed.parse("#"+{{model_id}},model).render();
-       }
-
-       var before_render = function(){
-	 if(!(['d3', 'THREE', 'Elegans'].some(function(lib_name){
-	   if(window[lib_name] === undefined){
-	     console.log(lib_name + ' is not loaded.');
-	     window.addEventListener("load_elegans", before_render);
-	     return true;
-	   }
-	   return false;
-	 }))){
-	   render();
-	 };
-       };
-
-       before_render();
+       });
      })();
     </script>
   </head>
