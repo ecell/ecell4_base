@@ -5,13 +5,26 @@
        if(window["THREE"] === undefined || window["d3"] === undefined){
 	 require.config({
 	   paths:{
-	     d3: 'https://cdnjs.cloudflare.com/ajax/libs/d3/3.4.4/d3.min',
-	     THREE: 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r66/three.min',
-             Elegans: 'https://rawgit.com/domitry/elegans/master/release/elegans'
+	     d3: [
+	       'https://cdnjs.cloudflare.com/ajax/libs/d3/3.4.4/d3.min',
+	       'custom/d3.min'
+	     ],
+	     THREE: [
+	       'https://cdnjs.cloudflare.com/ajax/libs/three.js/r66/three.min',
+	       'custom/three.min'
+	     ],
+             Elegans: [
+	       'https://rawgit.com/domitry/elegans/master/release/elegans',
+	       'custom/elegans'
+	     ]
 	   },
 	   shim:{
 	     THREE: {
 	       exports: 'THREE'
+	     },
+	     Elegans: {
+	       deps: ['custom/three.min'],
+	       exports: 'Elegans'
 	     }
 	   }
 	 });
