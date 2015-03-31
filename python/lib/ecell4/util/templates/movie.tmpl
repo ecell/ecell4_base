@@ -17,24 +17,36 @@
        if(window["THREE"] === undefined || window["d3"] === undefined){
 	 require.config({
 	   paths:{
-	     d3: 'https://cdnjs.cloudflare.com/ajax/libs/d3/3.4.4/d3.min',
-	     THREE: 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r66/three.min',
-             Elegans: 'https://rawgit.com/domitry/elegans/master/release/elegans'
+	     d3: [
+	       'https://cdnjs.cloudflare.com/ajax/libs/d3/3.4.4/d3.min',
+	       'custom/d3.min'
+	     ],
+	     THREE: [
+	       'https://cdnjs.cloudflare.com/ajax/libs/three.js/r66/three.min',
+	       'custom/three.min'
+	     ],
+             Elegans: [
+	       'https://rawgit.com/domitry/elegans/master/release/elegans',
+	       'custom/elegans'
+	     ]
 	   },
 	   shim:{
 	     THREE: {
 	       exports: 'THREE'
+	     },
+	     Elegans: {
+	       deps: ['THREE'],
+	       exports: 'Elegans'
 	     }
 	   }
 	 });
 
-	 require(["THREE", "d3"], function(THREE, d3){
-	   window["THREE"] = THREE;
+	 require(["d3", "THREE"], function(d3){
 	   window["d3"] = d3;
 	 });
        }
 
-       require(["Elegans"], function(Elegans){
+       require(["Elegans"], function(){
 	 console.log("Begin rendering...");
 	 var stage = new Elegans.Stage(d3.select("#"+{{model_id}})[0][0], {{options}});
 	 var data = {{data}};

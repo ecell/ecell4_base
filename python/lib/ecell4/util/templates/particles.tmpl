@@ -23,19 +23,18 @@
 	       exports: 'THREE'
 	     },
 	     Elegans: {
-	       deps: ['custom/three.min'],
+	       deps: ['THREE'],
 	       exports: 'Elegans'
 	     }
 	   }
 	 });
 
-	 require(["THREE", "d3"], function(THREE, d3){
-	   window["THREE"] = THREE;
+	 require(["d3", "THREE"], function(d3){
 	   window["d3"] = d3;
 	 });
        }
 
-       require(["Elegans"], function(Elegans){
+       require(["Elegans"], function(){
 	 console.log("Begin rendering...");
 	 var model = {{ model }};
 	 Elegans.Embed.parse("#"+{{model_id}},model).render();
