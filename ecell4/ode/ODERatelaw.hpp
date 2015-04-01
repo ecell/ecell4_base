@@ -18,7 +18,7 @@ namespace ecell4
 namespace ode
 {
 
-class Ratelaw
+class ODERatelaw
 {
 public:
 
@@ -49,8 +49,8 @@ public:
         Real const volume) = 0;
 };
 
-class RatelawCppCallback
-    : public Ratelaw
+class ODERatelawCppCallback
+    : public ODERatelaw
 {
 public:
     /** Function object to calculate ratelaw called by C++
@@ -58,24 +58,24 @@ public:
      */
 
     // reactants_state, products_state, volume
-    typedef double (*Ratelaw_Callback)(
+    typedef double (*ODERatelaw_Callback)(
         state_container_type const &, state_container_type const &, double const);
 
 public:
 
-    RatelawCppCallback(Ratelaw_Callback func)
+    ODERatelawCppCallback(ODERatelaw_Callback func)
         : func_(func), h_(1.0e-8)
     {
         ;
     }
 
-    RatelawCppCallback()
+    ODERatelawCppCallback()
         : func_(0), h_(1.0e-8)
     {
         ;
     }
 
-    virtual ~RatelawCppCallback()
+    virtual ~ODERatelawCppCallback()
     {
         ;
     }
@@ -158,30 +158,30 @@ public:
         }
     }
 
-    Ratelaw_Callback get_callback() const
+    ODERatelaw_Callback get_callback() const
     {
         return this->func_;
     }
 
-    Ratelaw_Callback set_callback(Ratelaw_Callback new_func)
+    ODERatelaw_Callback set_callback(ODERatelaw_Callback new_func)
     {
         if (new_func == 0)
         {
-            throw std::invalid_argument("Ratelaw Callback must not be 0");
+            throw std::invalid_argument("ODERatelaw Callback must not be 0");
         }
-        Ratelaw_Callback prev = get_callback();
+        ODERatelaw_Callback prev = get_callback();
         this->func_ = new_func;
         return prev;
     }
 
 private:
 
-    Ratelaw_Callback func_;
+    ODERatelaw_Callback func_;
     Real h_;
 };
 
-class RatelawCythonCallback
-    : public Ratelaw
+class ODERatelawCythonCallback
+    : public ODERatelaw
 {
 public:
     /** Function object to calculate ratelaw called by Cython
@@ -189,7 +189,7 @@ public:
      */
 
     // reactants_state, products_state, volume
-    // typedef double (*Ratelaw_Callback)(
+    // typedef double (*ODERatelaw_Callback)(
     //     state_container_type const &, state_container_type const &, double const);
     typedef void* Python_Functype;
     typedef double (*Indirect_Functype)(
@@ -197,16 +197,16 @@ public:
 
 public:
 
-    RatelawCythonCallback(Indirect_Functype indirect_func, void* pyfunc)
+    ODERatelawCythonCallback(Indirect_Functype indirect_func, void* pyfunc)
         : indirect_func_(indirect_func), python_func_(pyfunc), h_(1.0e-8)
     {
         ;
     }
 
-    RatelawCythonCallback()
+    ODERatelawCythonCallback()
         : indirect_func_(0), python_func_(0), h_(1.0e-8) {;}
 
-    virtual ~RatelawCythonCallback(){;}
+    virtual ~ODERatelawCythonCallback(){;}
 
     virtual bool is_available() const
     {
@@ -292,7 +292,7 @@ public:
     {
         if (new_func == 0)
         {
-            throw std::invalid_argument("Ratelaw Callback must not be 0");
+            throw std::invalid_argument("ODERatelaw Callback must not be 0");
         }
         this->python_func_ = new_func;
     }
@@ -304,18 +304,18 @@ private:
     Real h_;
 };
 
-class RatelawMassAction
-    : public Ratelaw
+class ODERatelawMassAction
+    : public ODERatelaw
 {
 public:
 
-    RatelawMassAction(Real k = 0.0)
+    ODERatelawMassAction(Real k = 0.0)
         : k_(k)
     {
         ;
     }
 
-    virtual ~RatelawMassAction()
+    virtual ~ODERatelawMassAction()
     {
         ;
     }

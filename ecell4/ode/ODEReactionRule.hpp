@@ -8,8 +8,9 @@
 
 #include <ecell4/core/types.hpp>
 #include <ecell4/core/Species.hpp>
-#include <ecell4/core/Ratelaw.hpp>
+//#include <ecell4/core/Ratelaw.hpp>
 #include <ecell4/core/ReactionRule.hpp>
+#include "ODERatelaw.hpp"
 
 
 namespace ecell4
@@ -167,12 +168,12 @@ public:
     /** Ratelaw related functions.
       */
 
-    void set_ratelaw(const boost::shared_ptr<Ratelaw> ratelaw)
+    void set_ratelaw(const boost::shared_ptr<ODERatelaw> ratelaw)
     {
         this->ratelaw_ = ratelaw;
     }
 
-    boost::shared_ptr<Ratelaw> get_ratelaw() const
+    boost::shared_ptr<ODERatelaw> get_ratelaw() const
     {
         return this->ratelaw_.lock();
     }
@@ -192,7 +193,7 @@ protected:
     reaction_leftside_container_type reactants_;
     reaction_rightside_container_type products_;
 
-    boost::weak_ptr<Ratelaw> ratelaw_;
+    boost::weak_ptr<ODERatelaw> ratelaw_;
 };
 
 #if 0
