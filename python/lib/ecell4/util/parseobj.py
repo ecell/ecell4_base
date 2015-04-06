@@ -1,6 +1,6 @@
 import operator
 import copy
-from logger import log_call
+from .logger import log_call
 import inspect
 
 
@@ -30,6 +30,40 @@ All the members must start with '_'."""
     def __repr__(self):
         return "<%s.%s: %s>" % (
             self.__class__.__module__, self.__class__.__name__, str(self))
+
+    def __invert__(self):
+        return self.__inv__()
+
+    def __inv__(self):
+        retval = InvExp(self.__root, self)
+        self.__root.notify_unary_operations(retval)
+        return retval
+
+    # operators
+
+    def __getitem__(self, key):
+        return operator.getitem(self._as_ParseObj(), key)
+
+    def __call__(self, *args, **kwargs):
+        return self._as_ParseObj()(*args, **kwargs)
+
+    def __xor__(self, rhs):
+        return operator.xor(self._as_ParseObj(), rhs)
+
+    def __gt__(self, rhs):
+        return operator.gt(self._as_ParseObj(), rhs)
+
+    def __eq__(self, rhs):
+        return operator.eq(self._as_ParseObj(), rhs)
+
+    def __ne__(self, rhs):
+        return operator.ne(self._as_ParseObj(), rhs)
+
+    def __add__(self, rhs):
+        return operator.add(self._as_ParseObj(), rhs)
+
+    def __or__(self, rhs):
+        return operator.or_(self._as_ParseObj(), rhs)
 
 class ParseElem:
 
@@ -133,7 +167,7 @@ class ParseObj(ExpBase):
         ExpBase.__init__(self, root)
 
         if name is None and elems is None:
-            raise RuntimeError, "a name or elements must be given"
+            raise RuntimeError("a name or elements must be given")
 
         if elems is None:
             self.__elems = []
@@ -154,15 +188,15 @@ class ParseObj(ExpBase):
 
     def _append(self, elem):
         if not isinstance(elem, ParseElem):
-            raise RuntimeError, "an invalid unit name was given [%s]" % (
-                str(elem))
+            raise RuntimeError("an invalid unit name was given [%s]" % (
+                str(elem)))
         self.__elems.append(elem)
 
     def _extend(self, elems):
         for elem in elems:
             if not isinstance(elem, ParseElem):
-                raise RuntimeError, "an invalid unit name was given [%s]" % (
-                    str(elem))
+                raise RuntimeError("an invalid unit name was given [%s]" % (
+                    str(elem)))
         self.__elems.extend(elems)
 
     def _eval_last(self, *args, **kwargs):
@@ -196,7 +230,7 @@ class ParseObj(ExpBase):
     # @log_call #XXX: donot wrap
     def __getattr__(self, key):
         if key[0] == "_" and len(key) > 1 and not key[1: ].isdigit():
-            raise RuntimeError, (
+            raise RuntimeError(
                 "'%s' object has no attribute '%s'"
                     % (self.__class__.__name__, key))
 
@@ -214,7 +248,7 @@ class ParseObj(ExpBase):
         elif isinstance(obj, ParseElem):
             retval._append(obj)
         else:
-            raise ValueError, (
+            raise ValueError(
                 "[%s] must be either ParseObj or ParseElem. [%s] given."
                 % (key, str(obj)))
         return retval

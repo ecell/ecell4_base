@@ -151,6 +151,7 @@ public:
     {
         value_.first = rhs.value_.first;
         value_.second = rhs.value_.second;
+        return (*reinterpret_cast<Tbase_*>(this));
     }
 
     operator bool() const

@@ -9,8 +9,8 @@ import unittest
 try:
     from Cython.Distutils import build_ext
 except ImportError:
-    print "You don't seem to have Cython installed. Please get a"
-    print "copy from www.cython.org and install it"
+    print("You don't seem to have Cython installed. Please get a")
+    print("copy from www.cython.org and install it")
     sys.exit(1)
 
 class run_tests(Command):
@@ -129,8 +129,9 @@ setup(
         "templates/*.tmpl", "templates/ecelllogo/*.png"]},
     data_files = [('ecell4ipynb', ['../ipynb/index.ipynb']),
                   ('ecell4ipynb/Tutorials', glob.glob('../ipynb/Tutorials/*.ipynb'))],
-    packages = ["ecell4",
-        "ecell4.util", "ecell4.util.legacy"],
+    # packages = ["ecell4",
+    #     "ecell4.util", "ecell4.util.legacy"],
+    packages = ["ecell4", "ecell4.util"],
     cmdclass = {'build_ext': build_ext, 'test': run_tests},
     ext_modules = ext_modules
     )

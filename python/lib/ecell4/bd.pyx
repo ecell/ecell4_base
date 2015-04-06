@@ -24,7 +24,7 @@ cdef class BDWorld:
                 self.thisptr = new shared_ptr[Cpp_BDWorld](
                     new Cpp_BDWorld(deref((<Real3>edge_lengths).thisptr)))
             else:
-                filename = edge_lengths
+                filename = tostring(edge_lengths)
                 self.thisptr = new shared_ptr[Cpp_BDWorld](new Cpp_BDWorld(filename))
         elif rng is None:
             self.thisptr = new shared_ptr[Cpp_BDWorld](
@@ -190,11 +190,11 @@ cdef class BDWorld:
     def remove_molecules(self, Species sp, Integer num):
         self.thisptr.get().remove_molecules(deref(sp.thisptr), num)
 
-    def save(self, string filename):
-        self.thisptr.get().save(filename)
+    def save(self, filename):
+        self.thisptr.get().save(tostring(filename))
 
-    def load(self, string filename):
-        self.thisptr.get().load(filename)
+    def load(self, filename):
+        self.thisptr.get().load(tostring(filename))
 
     def bind_to(self, m):
         self.thisptr.get().bind_to(deref(Cpp_Model_from_Model(m)))

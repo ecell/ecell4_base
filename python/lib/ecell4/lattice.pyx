@@ -25,7 +25,7 @@ cdef class LatticeWorld:
                     new Cpp_LatticeWorld(
                         deref((<Real3>edge_lengths).thisptr)))
             else:
-                filename = edge_lengths
+                filename = tostring(edge_lengths)
                 self.thisptr = new shared_ptr[Cpp_LatticeWorld](
                     new Cpp_LatticeWorld(filename))
         elif rng is None:
@@ -232,11 +232,11 @@ cdef class LatticeWorld:
     def remove_molecules(self, Species sp, Integer num):
         self.thisptr.get().remove_molecules(deref(sp.thisptr), num)
 
-    def save(self, string filename):
-        self.thisptr.get().save(filename)
+    def save(self, filename):
+        self.thisptr.get().save(tostring(filename))
 
-    def load(self, string filename):
-        self.thisptr.get().load(filename)
+    def load(self, filename):
+        self.thisptr.get().load(tostring(filename))
 
     def new_voxel(self, arg1, arg2=None):
         cdef pair[pair[Cpp_ParticleID, Cpp_Voxel], bool] retval

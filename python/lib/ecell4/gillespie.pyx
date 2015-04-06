@@ -1,6 +1,7 @@
 import collections
 from cython cimport address
 from cython.operator cimport dereference as deref, preincrement as inc
+from ecell4.core cimport *
 
 
 ## GillespieWorld
@@ -17,7 +18,7 @@ cdef class GillespieWorld:
                 self.thisptr = new shared_ptr[Cpp_GillespieWorld](
                     new Cpp_GillespieWorld(deref((<Real3>edge_lengths).thisptr)))
             else:
-                filename = edge_lengths
+                filename = tostring(edge_lengths)
                 self.thisptr = new shared_ptr[Cpp_GillespieWorld](
                     new Cpp_GillespieWorld(filename))
         else:
@@ -108,11 +109,11 @@ cdef class GillespieWorld:
             inc(it)
         return retval
 
-    def save(self, string filename):
-        self.thisptr.get().save(filename)
+    def save(self, filename):
+        self.thisptr.get().save(tostring(filename))
 
-    def load(self, string filename):
-        self.thisptr.get().load(filename)
+    def load(self, filename):
+        self.thisptr.get().load(tostring(filename))
 
     def bind_to(self, m):
         self.thisptr.get().bind_to(deref(Cpp_Model_from_Model(m)))

@@ -225,7 +225,7 @@ public:
 public:
 
     NumberObserver(const std::vector<std::string>& species)
-        : base_type(true), logger_(species)
+        : base_type(true), logger_(species), num_steps_(0)
     {
         ;
     }
@@ -253,13 +253,20 @@ public:
         if (sim->last_reactions().size() > 0)
         {
             logger_.log(space);
+            ++num_steps_;
         }
     }
 
     virtual void reset()
     {
+        num_steps_ = 0;
         logger_.reset();
         base_type::reset();
+    }
+
+    const Integer num_steps() const
+    {
+        return num_steps_;
     }
 
     NumberLogger::data_container_type data() const
@@ -275,6 +282,7 @@ public:
 protected:
 
     NumberLogger logger_;
+    Integer num_steps_;
 };
 
 class TimingObserver

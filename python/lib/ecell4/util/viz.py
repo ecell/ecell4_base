@@ -127,8 +127,8 @@ def plot_movie(
 
     display(HTML(generate_html({
         'model_id': model_id,
-        'names': json.dumps(data.keys()),
-        'data': json.dumps(data.values()),
+        'names': json.dumps(list(data.keys())),
+        'data': json.dumps(list(data.values())),
         'colors': json.dumps([color_scale.get_color(name)
                               for name in data.keys()]),
         'sizes': json.dumps([sizes[name] for name in data.keys()]),
@@ -486,7 +486,7 @@ def plot_number_observer(*args, **kwargs):
         ax.set_xlim(kwargs["xlim"])
     if "ylim" in kwargs.keys():
         ax.set_ylim(kwargs["ylim"])
-    # fig.show()
+    # plt.show()
 
 
 class ColorScale:

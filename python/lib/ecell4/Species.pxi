@@ -14,12 +14,17 @@ cdef class Species:
         elif radius is not None and D is not None:
             if location is None:
                 self.thisptr = new Cpp_Species(
-                    <string>serial, <string>radius, <string>D)
+                    tostring(serial),
+                    tostring(radius),
+                    tostring(D))
             else:
                 self.thisptr = new Cpp_Species(
-                    <string>serial, <string>radius, <string>D, <string>location)
+                    tostring(serial),
+                    tostring(radius),
+                    tostring(D),
+                    tostring(location))
         else:
-            self.thisptr = new Cpp_Species(<string>serial) #XXX:
+            self.thisptr = new Cpp_Species(tostring(serial)) #XXX:
 
     def __dealloc__(self):
         del self.thisptr
@@ -35,25 +40,28 @@ cdef class Species:
         return util.richcmp_helper(compare, op)
 
     def __hash__(self):
-        return hash(self.thisptr.serial())
+        return hash(self.thisptr.serial().decode('UTF-8'))
 
     def serial(self):
-        return self.thisptr.serial()
+        return self.thisptr.serial().decode('UTF-8')
 
-    def get_attribute(self, string attr_name):
-        return self.thisptr.get_attribute(attr_name)
+    def get_attribute(self, attr_name):
+        return self.thisptr.get_attribute(
+            tostring(attr_name)).decode('UTF-8')
 
-    def set_attribute(self, string name, string value):
-        self.thisptr.set_attribute(name, value)
+    def set_attribute(self, name, value):
+        self.thisptr.set_attribute(tostring(name), tostring(value))
 
-    def remove_attribute(self, string name):
-        self.thisptr.remove_attribute(name)
+    def remove_attribute(self, name):
+        self.thisptr.remove_attribute(tostring(name))
 
-    def has_attribute(self, string name):
-        return self.thisptr.has_attribute(name)
+    def has_attribute(self, name):
+        return self.thisptr.has_attribute(tostring(name))
 
     def list_attributes(self):
-        return self.thisptr.list_attributes()
+        retval = self.thisptr.list_attributes()
+        return [(key.decode('UTF-8'), value.decode('UTF-8'))
+            for key, value in retval]
 
     def add_unit(self, UnitSpecies usp):
         self.thisptr.add_unit(deref(usp.thisptr))
@@ -72,14 +80,13 @@ cdef class Species:
             retval.append(UnitSpecies_from_Cpp_UnitSpecies(
             <Cpp_UnitSpecies*>(address(deref(it)))))
             inc(it)
-
         return retval
 
     def num_units(self):
         return self.thisptr.num_units()
 
-    def deserialize(self, string serial):
-        self.thisptr.deserialize(serial)
+    def deserialize(self, serial):
+        self.thisptr.deserialize(tostring(serial))
 
 cdef Species Species_from_Cpp_Species(Cpp_Species *sp):
     cdef Cpp_Species *new_obj = new Cpp_Species(deref(sp))

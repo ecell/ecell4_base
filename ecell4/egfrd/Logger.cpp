@@ -123,8 +123,11 @@ Logger& Logger::get_logger(char const* name)
     static loggers_type loggers(hdlr);
     std::string _name(name);
     std::pair<loggers_type::iterator, bool> i(
+            #if (_MSC_VER >= 1600)
+            loggers.insert(loggers_type::value_type(_name, nullptr)));
+            #else
             loggers.insert(loggers_type::value_type(_name, 0)));
-
+            #endif
     if (i.second)
     {
         Logger* const log(new Logger(registry, name));

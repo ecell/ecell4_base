@@ -4,6 +4,9 @@
 #include <sstream>
 #include <iomanip>
 #include <algorithm>
+#if (_MSC_VER >= 1600)
+#define _USE_MATH_DEFINES
+#endif
 #include <math.h>
 #include <vector>
 #include <boost/numeric/ublas/matrix.hpp>

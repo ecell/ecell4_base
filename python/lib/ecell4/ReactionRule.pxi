@@ -59,7 +59,7 @@ cdef class ReactionRule:
         self.thisptr.add_product(deref(sp.thisptr))
 
     def as_string(self):
-        return self.thisptr.as_string()
+        return self.thisptr.as_string().decode('UTF-8')
 
     def count(self, reactants):
         cdef vector[Cpp_Species] cpp_reactants
