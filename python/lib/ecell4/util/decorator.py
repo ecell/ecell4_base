@@ -105,7 +105,7 @@ class ParametersCallback(Callback):
 
             sp = species_list[0]
             if sp is None:
-                raise RuntimeError("no species given [%s]" % (repr(obj))
+                raise RuntimeError("no species given [%s]" % (repr(obj)))
 
             if not isinstance(rhs, types.DictType):
                 raise RuntimeError(
