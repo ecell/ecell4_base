@@ -1,21 +1,27 @@
 #!/bin/bash -x
 
-CURDIR=$(cd $(dirname $0); pwd)
-# PREFIX=/usr/local
-# PREFIX=${HOME}/local
-# PREFIX=${CURDIR}/local
-# PREFIX=
+if [ "${PREFIX-UNDEF}" = "UNDEF" ]; then
+    if [ "$PREFIX" = "" ]; then
+        PREFIX=/usr/local
+        # PREFIX=${HOME}/local
+        # CURDIR=$(cd $(dirname $0); pwd)
+        # PREFIX=${CURDIR}/local
+        # PREFIX=
+    fi
+fi
 
 # make clean; rm -rf ${PREFIX}; rm CMakeCache.txt
 # rm ecell4/egfrd/SphericalBesselTable.hpp ecell4/egfrd/CylindricalBesselTable.hpp
 
 set -e
 
-cd ecell4/egfrd/tablegen
-cmake .
-make
-cp SphericalBesselTable.hpp CylindricalBesselTable.hpp ..
-cd ../../..
+if [ ! -f ecell4/egfrd/SphericalBesselTable.hpp -o ! -f ecell4/egfrd/CylindricalBesselTable.hpp ]; then
+    cd ecell4/egfrd/tablegen
+    cmake .
+    make
+    cp SphericalBesselTable.hpp CylindricalBesselTable.hpp ..
+    cd ../../..
+fi
 
 cmake -DCMAKE_INSTALL_PREFIX=${PREFIX} .
 make
