@@ -48,8 +48,7 @@ http://sourceforge.net/projects/numpy/files/NumPy/1.9.1/numpy-1.9.1-win32-superp
 - pip
 
 ```shell
-# here we use homebrew to install hdf5, please install hdf5 to /usr/local/lib
-brew install homebrew/science/hdf5 --enable-cxx
+brew install homebrew/science/hdf5
 brew install wget
 wget https://bootstrap.pypa.io/get-pip.py
 sudo python get-pip.py
