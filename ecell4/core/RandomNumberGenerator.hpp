@@ -7,14 +7,13 @@
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_randist.h>
 
+#include "types.hpp"
+#include "Real3.hpp"
+
 #ifdef WITH_HDF5
 #include <hdf5.h>
 #include <H5Cpp.h>
 #endif
-
-#include "types.hpp"
-#include "Real3.hpp"
-
 
 namespace ecell4
 {
