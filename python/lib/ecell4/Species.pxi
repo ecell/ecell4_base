@@ -7,6 +7,24 @@ cimport context
 
 
 cdef class Species:
+    """A class representing a type of molecules with attributes.
+
+    Species(serial=None, radius=None, D=None, location=None)
+    """
+
+    def __init__(self, serial=None, radius=None, D=None, location=None):
+        """Constructor.
+
+        Args:
+          serial (str, optional): The serial name.
+          radius (str, optional): The radius of a molecule.
+            This must be given as a string.
+          D (str, optional): The diffusion rate of a molecule.
+            This must be given as a string.
+          location (str, optional): The location of a molecule.
+
+        """
+        pass  # XXX: Only used for doc string
 
     def __cinit__(self, serial=None, radius=None, D=None, location=None):
         if serial is None:
@@ -43,36 +61,91 @@ cdef class Species:
         return hash(self.thisptr.serial().decode('UTF-8'))
 
     def serial(self):
+        """Return the serial name as an unicode string."""
         return self.thisptr.serial().decode('UTF-8')
 
-    def get_attribute(self, attr_name):
+    def get_attribute(self, name):
+        """Return an attribute as an unicode string.
+        If no corresponding attribute is found, raise an error.
+
+        Args:
+          name (str): The name of an attribute.
+
+        Returns:
+          value (str): The value of the attribute.
+
+        """
         return self.thisptr.get_attribute(
-            tostring(attr_name)).decode('UTF-8')
+            tostring(name)).decode('UTF-8')
 
     def set_attribute(self, name, value):
+        """Set an attribute.
+        If existing already, the attribute will be overwritten.
+
+        Args:
+          name (str): The name of an attribute.
+          value (str): The value of an attribute.
+
+        """
         self.thisptr.set_attribute(tostring(name), tostring(value))
 
     def remove_attribute(self, name):
+        """Remove an attribute.
+        If no corresponding attribute is found, raise an error.
+
+        Args:
+          name (str): The name of an attribute to be removed.
+
+        """
         self.thisptr.remove_attribute(tostring(name))
 
     def has_attribute(self, name):
+        """Return if the attribute exists or not.
+
+        Args:
+          name (str): The name of an attribute.
+
+        Returns:
+          bool: True if the attribute exists, False otherwise.
+
+        """
         return self.thisptr.has_attribute(tostring(name))
 
     def list_attributes(self):
+        """List all attributes.
+
+        Returns:
+          list: A list of pairs of name and value.
+            ``name`` and ``value`` are given as unicode strings.
+
+        """
         retval = self.thisptr.list_attributes()
         return [(key.decode('UTF-8'), value.decode('UTF-8'))
             for key, value in retval]
 
     def add_unit(self, UnitSpecies usp):
+        """Append an ``UnitSpecies`` to the end.
+
+        Args:
+          usp (UnitSpecies): An ``UnitSpecies`` to be added.
+
+        """
         self.thisptr.add_unit(deref(usp.thisptr))
 
     def count(self, Species pttrn):
+        """Count the number of matches for a pattern given as a ``Species``.
+
+        Args:
+          pttrn (Species): A pattern to be count.
+
+        Returns:
+          int: The number of matches.
+
+        """
         return self.thisptr.count(deref(pttrn.thisptr))
 
-    # def get_unit(self, UnitSpecies usp):
-    #     return self.thisptr.get_unit(deref(usp.thisptr))
-
     def units(self):
+        """Returns a list of all ``UnitSpecies``."""
         cdef vector[Cpp_UnitSpecies] usps = self.thisptr.units()
         retval = []
         cdef vector[Cpp_UnitSpecies].iterator it = usps.begin()
@@ -83,9 +156,16 @@ cdef class Species:
         return retval
 
     def num_units(self):
+        """Returns the number of ``UnitSpecies``."""
         return self.thisptr.num_units()
 
     def deserialize(self, serial):
+        """Reset the serial. All attributes will be kept.
+
+        Args:
+          serial (string): A new serial as an unicode string.
+
+        """
         self.thisptr.deserialize(tostring(serial))
 
 cdef Species Species_from_Cpp_Species(Cpp_Species *sp):
@@ -96,37 +176,28 @@ cdef Species Species_from_Cpp_Species(Cpp_Species *sp):
     return r
 
 def spmatch(Species pttrn, Species sp):
+    """Return if a pattern matches the target ``Species`` or not.
+
+    Args:
+      pttrn (Species): A pattern.
+      sp (Species): A target.
+
+    Return:
+      bool: True if ``pttrn`` matches ``sp`` at least one time, False otherwise.
+
+    """
     return context.spmatch(deref(pttrn.thisptr), deref(sp.thisptr))
 
 def count_spmatches(Species pttrn, Species sp):
+    """Count the number of matches for a pattern given as a ``Species``.
+    Use ``Species.count``.
+
+    Args:
+      pttrn (Species): A pattern.
+      sp (Species): A target.
+
+    Return:
+      int: The number of matches.
+
+    """
     return context.count_spmatches(deref(pttrn.thisptr), deref(sp.thisptr))
-
-def rrmatch(ReactionRule pttrn, reactants):
-    cdef vector[Cpp_Species] cpp_reactants
-    for sp in reactants:
-        cpp_reactants.push_back(deref((<Species> sp).thisptr))
-    return context.rrmatch(deref(pttrn.thisptr), cpp_reactants)
-
-def count_rrmatches(ReactionRule pttrn, reactants):
-    cdef vector[Cpp_Species] cpp_reactants
-    for sp in reactants:
-        cpp_reactants.push_back(deref((<Species> sp).thisptr))
-    return context.count_rrmatches(deref(pttrn.thisptr), cpp_reactants)
-
-def rrgenerate(ReactionRule pttrn, reactants):
-    cdef vector[Cpp_Species] cpp_reactants
-    for sp in reactants:
-        cpp_reactants.push_back(deref((<Species> sp).thisptr))
-    cdef vector[vector[Cpp_Species]] cpp_products_list = \
-        context.rrgenerate(deref(pttrn.thisptr), cpp_reactants)
-    cdef vector[vector[Cpp_Species]].iterator it1 = cpp_products_list.begin()
-    cdef vector[Cpp_Species].iterator it2
-    retval = []
-    while it1 != cpp_products_list.end():
-        retval.append([])
-        it2 = deref(it1).begin()
-        while it2 != deref(it1).end():
-            retval[-1].append(Species_from_Cpp_Species(address(deref(it2))))
-            inc(it2)
-        inc(it1)
-    return retval

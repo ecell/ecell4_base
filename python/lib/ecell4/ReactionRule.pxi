@@ -128,3 +128,33 @@ def create_unbinding_reaction_rule(
 #     cdef Cpp_ReactionRule rr = crr.create_repulsive_reaction_rule(
 #         deref(reactant1.thisptr), deref(reactant2.thisptr))
 #     return ReactionRule_from_Cpp_ReactionRule(address(rr))
+
+def rrmatch(ReactionRule pttrn, reactants):
+    cdef vector[Cpp_Species] cpp_reactants
+    for sp in reactants:
+        cpp_reactants.push_back(deref((<Species> sp).thisptr))
+    return context.rrmatch(deref(pttrn.thisptr), cpp_reactants)
+
+def count_rrmatches(ReactionRule pttrn, reactants):
+    cdef vector[Cpp_Species] cpp_reactants
+    for sp in reactants:
+        cpp_reactants.push_back(deref((<Species> sp).thisptr))
+    return context.count_rrmatches(deref(pttrn.thisptr), cpp_reactants)
+
+def rrgenerate(ReactionRule pttrn, reactants):
+    cdef vector[Cpp_Species] cpp_reactants
+    for sp in reactants:
+        cpp_reactants.push_back(deref((<Species> sp).thisptr))
+    cdef vector[vector[Cpp_Species]] cpp_products_list = \
+        context.rrgenerate(deref(pttrn.thisptr), cpp_reactants)
+    cdef vector[vector[Cpp_Species]].iterator it1 = cpp_products_list.begin()
+    cdef vector[Cpp_Species].iterator it2
+    retval = []
+    while it1 != cpp_products_list.end():
+        retval.append([])
+        it2 = deref(it1).begin()
+        while it2 != deref(it1).end():
+            retval[-1].append(Species_from_Cpp_Species(address(deref(it2))))
+            inc(it2)
+        inc(it1)
+    return retval
