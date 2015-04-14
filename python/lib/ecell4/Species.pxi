@@ -145,7 +145,7 @@ cdef class Species:
         return self.thisptr.count(deref(pttrn.thisptr))
 
     def units(self):
-        """Returns a list of all ``UnitSpecies``."""
+        """Return a list of all ``UnitSpecies``."""
         cdef vector[Cpp_UnitSpecies] usps = self.thisptr.units()
         retval = []
         cdef vector[Cpp_UnitSpecies].iterator it = usps.begin()
@@ -156,7 +156,7 @@ cdef class Species:
         return retval
 
     def num_units(self):
-        """Returns the number of ``UnitSpecies``."""
+        """Return the number of ``UnitSpecies``."""
         return self.thisptr.num_units()
 
     def deserialize(self, serial):
@@ -190,7 +190,6 @@ def spmatch(Species pttrn, Species sp):
 
 def count_spmatches(Species pttrn, Species sp):
     """Count the number of matches for a pattern given as a ``Species``.
-    Use ``Species.count``.
 
     Args:
       pttrn (Species): A pattern.
@@ -198,6 +197,9 @@ def count_spmatches(Species pttrn, Species sp):
 
     Return:
       int: The number of matches.
+
+    Note:
+      Use ``Species.count``.
 
     """
     return context.count_spmatches(deref(pttrn.thisptr), deref(sp.thisptr))
