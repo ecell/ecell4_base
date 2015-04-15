@@ -413,7 +413,7 @@ bool LatticeWorld::is_surface_voxel(
     for (Integer i(0); i < 12; ++i)
     {
         if (shape->is_inside(global2position((*space_).private_coord2global(
-            (*space_).get_neighbor(private_coord, i)))) <= 0)
+            (*space_).get_neighbor(private_coord, i)))) < 0)
         {
             return true;
         }
