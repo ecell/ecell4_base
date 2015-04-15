@@ -49,7 +49,7 @@ def __parse_world(
 
         # assume that all particles belong to one species have the same radius
         r = max([p['r'] for p in particles]) if radius is None else radius
-        size = 30.0 / min(world.edge_lengths()) * r
+        size = 30.0 / max(world.edge_lengths()) * r
 
         species.append({
             'name': name,
