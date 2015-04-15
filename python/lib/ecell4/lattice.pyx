@@ -250,9 +250,12 @@ cdef class LatticeWorld:
     def update_voxel(self, ParticleID pid, Voxel v):
         return self.thisptr.get().update_voxel(deref(pid.thisptr), deref(v.thisptr))
 
-    def list_voxels(self, Species sp):
+    def list_voxels(self, Species sp = None):
         cdef vector[pair[Cpp_ParticleID, Cpp_Voxel]] voxels
-        voxels = self.thisptr.get().list_voxels(deref(sp.thisptr))
+        if sp is None:
+            voxels = self.thisptr.get().list_voxels()
+        else:
+            voxels = self.thisptr.get().list_voxels(deref(sp.thisptr))
 
         retval = []
         cdef vector[pair[Cpp_ParticleID, Cpp_Voxel]].iterator \
