@@ -10,6 +10,7 @@ cdef class Species:
     """A class representing a type of molecules with attributes.
 
     Species(serial=None, radius=None, D=None, location=None)
+
     """
 
     def __init__(self, serial=None, radius=None, D=None, location=None):

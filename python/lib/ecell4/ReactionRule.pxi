@@ -8,6 +8,7 @@ cdef class ReactionRule:
     """A class representing a reaction rule between ``Species``.
 
     ReactionRule(reactants=None, products=None, k=None)
+
     """
 
     def __init__(self, reactants=None, products=None, k=None):
