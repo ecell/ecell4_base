@@ -266,6 +266,11 @@ public:
         return col_size() * row_size() * layer_size();
     }
 
+    inline Integer3 shape() const
+    {
+        return Integer3(col_size(), row_size(), layer_size());
+    }
+
 protected:
 
     Real t_;

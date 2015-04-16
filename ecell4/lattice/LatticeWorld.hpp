@@ -342,6 +342,11 @@ public:
         return (*space_).size();
     }
 
+    const Integer3 shape() const
+    {
+        return (*space_).shape();
+    }
+
     coordinate_type position2coordinate(const Real3& pos) const
     {
         return (*space_).position2coordinate(pos);

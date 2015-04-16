@@ -73,6 +73,7 @@ cdef extern from "ecell4/lattice/LatticeWorld.hpp" namespace "ecell4::lattice":
         Integer row_size()
         Integer layer_size()
         Integer size()
+        Cpp_Integer3 shape()
         void bind_to(shared_ptr[Cpp_Model])
         Cpp_Real3 coordinate2position(Integer)
         Integer position2coordinate(Cpp_Real3)
