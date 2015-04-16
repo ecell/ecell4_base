@@ -204,7 +204,7 @@ cdef class TimingNumberObserver:
 
     """
 
-    def __init__(self, Real dt, species):
+    def __init__(self, vector[double] t, species):  #XXX: vector[Real]
         """Constructor.
 
         Args:
