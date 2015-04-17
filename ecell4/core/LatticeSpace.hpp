@@ -27,8 +27,8 @@ class LatticeSpace
 public:
 
     typedef MolecularTypeBase::particle_info particle_info_type;
-    typedef MolecularTypeBase::private_coordinate_type private_coordinate_type;
-    typedef private_coordinate_type coordinate_type;
+    typedef MolecularTypeBase::coordinate_type coordinate_type;
+    typedef MolecularTypeBase::coordinate_type private_coordinate_type;
 
 public:
 

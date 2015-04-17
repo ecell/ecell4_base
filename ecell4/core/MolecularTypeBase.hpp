@@ -16,8 +16,8 @@ class MolecularTypeBase
 {
 public:
 
-    typedef Integer private_coordinate_type;
-    typedef std::pair<private_coordinate_type, ParticleID> particle_info;
+    typedef Integer coordinate_type;
+    typedef std::pair<coordinate_type, ParticleID> particle_info;
 
     typedef std::vector<particle_info> container_type;
     typedef container_type::const_iterator const_iterator;
@@ -81,7 +81,7 @@ public:
     }
 
     virtual void replace_voxel(
-        const private_coordinate_type& from_coord,
+        const coordinate_type& from_coord,
         const particle_info& to_info)
     {
         container_type::iterator itr(find(from_coord));
@@ -94,8 +94,8 @@ public:
     }
 
     virtual void replace_voxel(
-        const private_coordinate_type& from_coord,
-        const private_coordinate_type& to_coord)
+        const coordinate_type& from_coord,
+        const coordinate_type& to_coord)
     {
         container_type::iterator itr(find(from_coord));
         if (itr == voxels_.end())
@@ -106,7 +106,7 @@ public:
         (*itr).first = to_coord;
     }
 
-    virtual particle_info pop(const private_coordinate_type& coord)
+    virtual particle_info pop(const coordinate_type& coord)
     {
         container_type::iterator position(this->find(coord));
         const particle_info info(*position);
@@ -114,7 +114,7 @@ public:
         return info;
     }
 
-    virtual bool remove_voxel_if_exists(const private_coordinate_type& coord)
+    virtual bool remove_voxel_if_exists(const coordinate_type& coord)
     {
         container_type::iterator itr(find(coord));
         if (itr != voxels_.end())
@@ -195,7 +195,7 @@ public:
         return voxels_.end();
     }
 
-    const ParticleID find_particle_id(const private_coordinate_type& coord) const
+    const ParticleID find_particle_id(const coordinate_type& coord) const
     {
         container_type::const_iterator i(this->find(coord));
         if (i == voxels_.end())
@@ -233,7 +233,7 @@ public:
 
 protected:
 
-    container_type::iterator find(private_coordinate_type coord)
+    container_type::iterator find(coordinate_type coord)
     {
         container_type::iterator itr;
         for (itr = voxels_.begin(); itr != voxels_.end(); ++itr)
@@ -246,7 +246,7 @@ protected:
         return itr;
     }
 
-    container_type::const_iterator find(private_coordinate_type coord) const
+    container_type::const_iterator find(coordinate_type coord) const
     {
         container_type::const_iterator itr;
         for (itr = voxels_.begin(); itr != voxels_.end(); ++itr)
