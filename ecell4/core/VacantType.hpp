@@ -12,7 +12,7 @@ class VacantType
 public:
 
     typedef MolecularTypeBase base_type;
-    typedef base_type::particle_info particle_info;
+    typedef base_type::coord_id_pair coord_id_pair;
     typedef base_type::coordinate_type coordinate_type;
     typedef base_type::container_type container_type;
     typedef base_type::iterator iterator;
@@ -41,14 +41,14 @@ public:
         return instance;
     }
 
-    virtual void add_voxel_without_checking(const particle_info& info)
+    virtual void add_voxel_without_checking(const coord_id_pair& info)
     {
         ; // do nothing
     }
 
     virtual void replace_voxel(
         const coordinate_type& from_coord,
-        const particle_info& to_info)
+        const coord_id_pair& to_info)
     {
         ; // do nothing
     }

@@ -17,9 +17,9 @@ class MolecularTypeBase
 public:
 
     typedef Integer coordinate_type;
-    typedef std::pair<coordinate_type, ParticleID> particle_info;
+    typedef std::pair<coordinate_type, ParticleID> coord_id_pair;
 
-    typedef std::vector<particle_info> container_type;
+    typedef std::vector<coord_id_pair> container_type;
     typedef container_type::const_iterator const_iterator;
     typedef container_type::iterator iterator;
 
@@ -75,14 +75,14 @@ public:
         return D_;
     }
 
-    virtual void add_voxel_without_checking(const particle_info& info)
+    virtual void add_voxel_without_checking(const coord_id_pair& info)
     {
         voxels_.push_back(info);
     }
 
     virtual void replace_voxel(
         const coordinate_type& from_coord,
-        const particle_info& to_info)
+        const coord_id_pair& to_info)
     {
         container_type::iterator itr(find(from_coord));
         if (itr == voxels_.end())
@@ -106,10 +106,10 @@ public:
         (*itr).first = to_coord;
     }
 
-    virtual particle_info pop(const coordinate_type& coord)
+    virtual coord_id_pair pop(const coordinate_type& coord)
     {
         container_type::iterator position(this->find(coord));
-        const particle_info info(*position);
+        const coord_id_pair info(*position);
         this->remove_voxel(position);
         return info;
     }
@@ -145,22 +145,22 @@ public:
         (*a) = info;
     }
 
-    particle_info& at(const Integer& index)
+    coord_id_pair& at(const Integer& index)
     {
         return voxels_.at(index);
     }
 
-    particle_info const& at(const Integer& index) const
+    coord_id_pair const& at(const Integer& index) const
     {
         return voxels_.at(index);
     }
 
-    particle_info& operator[](const Integer& n)
+    coord_id_pair& operator[](const Integer& n)
     {
         return voxels_[n];
     }
 
-    particle_info const& operator[](const Integer& n) const
+    coord_id_pair const& operator[](const Integer& n) const
     {
         return voxels_[n];
     }
