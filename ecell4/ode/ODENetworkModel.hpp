@@ -54,6 +54,23 @@ public:
     {
         return !(this->expanded_.expired());
     }
+
+    const std::vector<Species> list_species() const
+    {
+        std::vector<Species> retval;
+        const ode_reaction_rule_container_type &rrs(ode_reaction_rules());
+        for(ode_reaction_rule_container_type::const_iterator i(rrs.begin());
+            i != rrs.end(); i++)
+        {
+            const ODEReactionRule::reactant_container_type &reactants((*i).reactants());
+            const ODEReactionRule::product_container_type &products((*i).products());
+            std::copy(reactants.begin(), reactants.end(), std::back_inserter(retval));
+            std::copy(products.begin(), products.end(), std::back_inserter(retval));
+        }
+        std::sort(retval.begin(), retval.end());
+        retval.erase(std::unique(retval.begin(), retval.end()), retval.end());
+        return retval;
+    }
     boost::shared_ptr<NetworkModel> get_networkmodel() const
     {
         return this->expanded_.lock();

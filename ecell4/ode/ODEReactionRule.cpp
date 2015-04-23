@@ -39,7 +39,7 @@ const std::string ODEReactionRule::as_string() const
             first = false;
         }
     }
-    return (boost::format("%s ---> %s") % ss_left_side.str() % ss_right_side.str() ).str();
+    return (boost::format("%s ---> %s  (k: %f)") % ss_left_side.str() % ss_right_side.str() % k() ).str();
 }
 
 }   // ode
