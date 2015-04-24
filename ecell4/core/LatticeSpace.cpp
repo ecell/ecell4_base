@@ -955,7 +955,8 @@ bool LatticeSpaceVectorImpl::update_voxel_private(const ParticleID& pid, const V
     // return true;
 }
 
-bool LatticeSpaceVectorImpl::make_structure_type(const Species& sp, const std::string loc)
+bool LatticeSpaceVectorImpl::make_structure_type(const Species& sp,
+        const boost::shared_ptr<const Shape>& shape, const std::string loc)
 {
     spmap::iterator itr(spmap_.find(sp));
     if (itr != spmap_.end())
@@ -999,6 +1000,7 @@ bool LatticeSpaceVectorImpl::make_structure_type(const Species& sp, const std::s
     }
 
     boost::shared_ptr<MolecularType> mt(new StructureType(sp, location, voxel_radius_));
+    mt->dimension(shape->dimension());
     std::pair<spmap::iterator, bool>
         retval(spmap_.insert(std::make_pair(sp, mt)));
     return retval.second;
@@ -1007,7 +1009,7 @@ bool LatticeSpaceVectorImpl::make_structure_type(const Species& sp, const std::s
 void LatticeSpaceVectorImpl::add_structure(const Species& sp,
     const boost::shared_ptr<const Shape>& s, const std::string loc)
 {
-    make_structure_type(sp, loc); // Use StructureType
+    make_structure_type(sp, s, loc); // Use StructureType
 
     structure_container_type::const_iterator i(structures_.find(sp));
     if (i != structures_.end())

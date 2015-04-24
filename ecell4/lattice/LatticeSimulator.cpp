@@ -185,20 +185,14 @@ std::pair<bool, LatticeSimulator::reaction_type> LatticeSimulator::attempt_react
     const Species
         from_species(from_mt->species()),
         to_species(to_mt->species());
-    const LatticeWorld::molecule_info_type
-        from_minfo(world_->get_molecule_info(from_mt)),
-        to_minfo(world_->get_molecule_info(to_mt));
-    // const LatticeWorld::molecule_info_type
-    //     from_minfo(world_->get_molecule_info(from_species)),
-    //     to_minfo(world_->get_molecule_info(to_species));
 
     const std::vector<ReactionRule> rules(
         model_->query_reaction_rules(from_species, to_species));
 
-    const Real D0(from_minfo.D);
-    const Real D1(to_minfo.D);
-    const Shape::dimension_kind dimensionA(world_->get_dimension_kind(from_minfo.loc));
-    const Shape::dimension_kind dimensionB(world_->get_dimension_kind(to_minfo.loc));
+    const Real D0(from_mt->D());
+    const Real D1(to_mt->D());
+    const Shape::dimension_kind dimensionA(from_mt->location()->dimension());
+    const Shape::dimension_kind dimensionB(to_mt->location()->dimension());
 
     const Real Dtot(D0 + D1);
     const Real rnd(world_->rng()->uniform(0,1));

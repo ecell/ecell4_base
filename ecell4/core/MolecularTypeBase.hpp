@@ -3,6 +3,7 @@
 
 #include <vector>
 #include "Species.hpp"
+#include "Shape.hpp"
 #include "Identifier.hpp"
 #include "RandomNumberGenerator.hpp"
 #include "Identifier.hpp"
@@ -28,7 +29,8 @@ public:
     MolecularTypeBase(
         const Species& species, MolecularTypeBase* location,
         const Real& radius, const Real& D)
-        : species_(species), location_(location), radius_(radius), D_(D)
+        : species_(species), location_(location),
+        radius_(radius), D_(D), dimension_(Shape::THREE)
     {
         ;
     }
@@ -73,6 +75,16 @@ public:
     const Real& D() const
     {
         return D_;
+    }
+
+    void dimension(const Shape::dimension_kind dimension)
+    {
+        dimension_ = dimension;
+    }
+
+    const Shape::dimension_kind dimension() const
+    {
+        return dimension_;
     }
 
     virtual void add_voxel_without_checking(const coord_id_pair& info)
@@ -264,6 +276,7 @@ protected:
     const Species species_;
     MolecularTypeBase* location_;
     Real radius_, D_;
+    Shape::dimension_kind dimension_;
 
     container_type voxels_;
 };

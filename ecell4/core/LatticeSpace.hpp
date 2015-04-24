@@ -676,7 +676,8 @@ protected:
     private_coordinate_type get_coord(const ParticleID& pid) const;
     const Particle particle_at_private(private_coordinate_type coord) const;
 
-    bool make_structure_type(const Species& sp, const std::string loc);
+    bool make_structure_type(const Species& sp,
+            const boost::shared_ptr<const Shape>& shape, const std::string loc);
     Integer count_voxels(const boost::shared_ptr<MolecularType>& mt) const;
 
 protected:
