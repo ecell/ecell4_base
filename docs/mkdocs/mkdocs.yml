@@ -1,2 +1,4 @@
 site_name: E-Cell4 documentation
-
+pages:
+  - [index.md, Home]
+  - [about.md, About]
