@@ -4,3 +4,4 @@ pages:
   - [about.md, About]
   - [installation.md, Installation]
   - [tutorials.md, Tutorials]
+  - [api.md, API]
