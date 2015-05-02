@@ -34,13 +34,14 @@ public:
     
     typedef ODEReactionRule reacton_container_type;
 
-    typedef struct
+    struct reaction_type
     {
         index_container_type reactants;
         index_container_type products;
         Real k;
         boost::weak_ptr<ODERatelaw> ratelaw;
-    } reaction_type;
+        const ODEReactionRule *raw;
+    };
     typedef std::vector<reaction_type> reaction_container_type;
 
     class deriv_func
@@ -78,12 +79,12 @@ public:
                 if (i->ratelaw.expired() || i->ratelaw.lock()->is_available() == false)
                 {
                     boost::scoped_ptr<ODERatelaw> temporary_ratelaw_obj(new ODERatelawMassAction(i->k));
-                    flux = temporary_ratelaw_obj->deriv_func(reactants_states, products_states, volume_);
+                    flux = temporary_ratelaw_obj->deriv_func(reactants_states, products_states, volume_, t, *(i->raw) );
                 }
                 else
                 {
                     boost::shared_ptr<ODERatelaw> ratelaw = i->ratelaw.lock();
-                    flux = ratelaw->deriv_func(reactants_states, products_states, volume_);
+                    flux = ratelaw->deriv_func(reactants_states, products_states, volume_, t, *(i->raw) );
                 }
                 // Merge each reaction's flux into whole dxdt
                 for(index_container_type::const_iterator j(i->reactants.begin());
@@ -151,12 +152,12 @@ public:
                 if (i->ratelaw.expired() || i->ratelaw.lock()->is_available() == false)
                 {
                     boost::scoped_ptr<ODERatelaw> temporary_ratelaw_obj(new ODERatelawMassAction(i->k));
-                    temporary_ratelaw_obj->jacobi_func(mat, reactants_states, products_states, volume_);
+                    temporary_ratelaw_obj->jacobi_func(mat, reactants_states, products_states, volume_, t, *(i->raw) );
                 }
                 else
                 {
                     boost::shared_ptr<ODERatelaw> ratelaw = i->ratelaw.lock();
-                    ratelaw->jacobi_func(mat, reactants_states, products_states, volume_);
+                    ratelaw->jacobi_func(mat, reactants_states, products_states, volume_, t, *(i->raw) );
                 }
 
                 // Merge matrix into whole system's jacobian.

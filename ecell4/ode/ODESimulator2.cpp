@@ -25,11 +25,32 @@ ODESimulator2::generate_system() const
         i++;
     }
     std::vector<reaction_type> reactions;
-    reactions.reserve(ode_reaction_rules.size());
+    //reactions.reserve(ode_reaction_rules.size());
     for(ODENetworkModel::ode_reaction_rule_container_type::const_iterator
         i(ode_reaction_rules.begin()); i != ode_reaction_rules.end(); i++)
     {
-        
+        const ODEReactionRule::reactant_container_type reactants(i->reactants());
+        const ODEReactionRule::product_container_type products(i->products());
+        reaction_type r;
+        r.raw = &(*i);
+        r.k = i->k();
+        r.reactants.reserve(reactants.size());
+        r.products.reserve(products.size());
+        if (i->has_ratelaw())
+        {
+            r.ratelaw = i->get_ratelaw();
+        }
+        for(ODEReactionRule::reactant_container_type::const_iterator j(reactants.begin());
+            j != reactants.end(); j++)
+        {
+            r.reactants.push_back(index_map[*j]);
+        }
+        for(ODEReactionRule::product_container_type::const_iterator j(products.begin());
+            j != products.end(); j++)
+        {
+            r.products.push_back(index_map[*j]);
+        }
+        reactions.push_back(r);
     }
     return std::make_pair(
             deriv_func(reactions, world_->volume()),

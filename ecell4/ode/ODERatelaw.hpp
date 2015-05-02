@@ -8,15 +8,26 @@
 #include <boost/variant.hpp>
 #include <vector>
 #include <algorithm>
+#include <numeric>
 
 // For Jacobi
 #include <boost/numeric/ublas/matrix.hpp>
+
+
+template <typename TInputIterator, typename T>
+T cartesian_product(TInputIterator begin, TInputIterator end, T const init)
+{
+    return std::accumulate(begin, end, init, std::multiplies<T>());
+}
+
 
 namespace ecell4
 {
 
 namespace ode
 {
+
+class ODEReactionRule;
 
 class ODERatelaw
 {
@@ -34,19 +45,19 @@ public:
 
     virtual bool is_available() const = 0;
 
-    virtual Real operator()(
-        state_container_type const &reactants_state_array,
-        state_container_type const &products_state_array, Real const volume) = 0;
-
     virtual Real deriv_func(
         state_container_type const &reactants_state_array,
-        state_container_type const &products_state_array, Real const volume) = 0;
+        state_container_type const &products_state_array, 
+        Real const volume, Real const t,
+        ODEReactionRule const &reaction) = 0;
 
     virtual void jacobi_func(
         matrix_type &jacobian,
         state_container_type const &reactants_state_array,
         state_container_type const &products_state_array,
-        Real const volume) = 0;
+        Real const volume, Real const t,
+        ODEReactionRule const &reaction) = 0;
+
 };
 
 class ODERatelawCppCallback
@@ -85,16 +96,11 @@ public:
         return this->func_ != 0;
     }
 
-    virtual Real operator()(
-        state_container_type const &reactants_state_array,
-        state_container_type const &products_state_array, Real const volume)
-    {
-        return this->deriv_func(reactants_state_array, products_state_array, volume);
-    }
-
     virtual Real deriv_func(
         state_container_type const &reactants_state_array,
-        state_container_type const &products_state_array, Real volume)
+        state_container_type const &products_state_array, 
+        Real const volume, Real const t,
+        ODEReactionRule const &rr)
     {
         if (!is_available())
         {
@@ -103,16 +109,18 @@ public:
         return this->func_(reactants_state_array, products_state_array, volume);
     }
 
+
     virtual void jacobi_func(
         matrix_type &jacobian,
         state_container_type const &reactants_state_array,
         state_container_type const &products_state_array,
-        Real const volume)
+        Real const volume, Real const t, 
+        ODEReactionRule const &rr)
     {
         Real h(this->h_); //XXX: 1.0e-8. Should be fixed
 
         std::fill(jacobian.data().begin(), jacobian.data().end(), Real(0.0));
-        Real flux(this->deriv_func(reactants_state_array, products_state_array, volume));
+        Real flux(this->deriv_func(reactants_state_array, products_state_array, volume, t, rr));
         double num_reactants(reactants_state_array.size());
         double num_products(products_state_array.size());
 
@@ -123,7 +131,7 @@ public:
             state_container_type h_shift(reactants_state_array);
             h_shift[i] += h;
             double deriv = (
-                this->deriv_func(h_shift, products_state_array, volume) - flux) / h;
+                this->deriv_func(h_shift, products_state_array, volume, t, rr) - flux) / h;
             for (matrix_type::size_type j(0); j < jacobian.size1(); j++)
             {
                 if (j < num_reactants)
@@ -143,7 +151,7 @@ public:
             state_container_type h_shift(products_state_array);
             h_shift[i] += h;
             double deriv = (
-                this->deriv_func(reactants_state_array, h_shift, volume) - flux) / h;
+                this->deriv_func(reactants_state_array, h_shift, volume, t, rr) - flux) / h;
             for (matrix_type::size_type j(0); j < jacobian.size1(); j++)
             {
                 if (j < num_reactants)
@@ -157,6 +165,7 @@ public:
             }
         }
     }
+
 
     ODERatelaw_Callback get_callback() const
     {
@@ -213,16 +222,11 @@ public:
         return (this->indirect_func_ != 0 && this->python_func_ != 0);
     }
 
-    virtual Real operator()(
-        state_container_type const &reactants_state_array,
-        state_container_type const &products_state_array, Real const volume)
-    {
-        return this->deriv_func(reactants_state_array, products_state_array, volume);
-    }
-
     virtual Real deriv_func(
         state_container_type const &reactants_state_array,
-        state_container_type const &products_state_array, Real volume)
+        state_container_type const &products_state_array, 
+        Real const volume, Real const t,
+        ODEReactionRule const &rr)
     {
         if (!is_available())
         {
@@ -232,15 +236,17 @@ public:
             this->python_func_, reactants_state_array, products_state_array, volume);
     }
 
+
     virtual void jacobi_func(
         matrix_type &jacobian,
         state_container_type const &reactants_state_array,
         state_container_type const &products_state_array,
-        Real const volume)
+        Real const volume, Real const t, 
+        ODEReactionRule const &rr)
     {
         Real h(this->h_); //XXX: 1.0e-8. Should be fixed
         std::fill(jacobian.data().begin(), jacobian.data().end(), Real(0.0));
-        Real flux(this->deriv_func(reactants_state_array, products_state_array, volume));
+        Real flux(this->deriv_func(reactants_state_array, products_state_array, volume, t, rr));
         double num_reactants(reactants_state_array.size());
         double num_products(products_state_array.size());
 
@@ -251,7 +257,7 @@ public:
             state_container_type h_shift(reactants_state_array);
             h_shift[i] += h;
             double deriv = (
-                this->deriv_func(h_shift, products_state_array, volume) - flux) / h;
+                this->deriv_func(h_shift, products_state_array, volume, t, rr) - flux) / h;
             for (matrix_type::size_type j(0); j < jacobian.size1(); j++)
             {
                 if (j < num_reactants)
@@ -271,7 +277,7 @@ public:
             state_container_type h_shift(products_state_array);
             h_shift[i] += h;
             double deriv = (
-                this->deriv_func(reactants_state_array, h_shift, volume) - flux) / h;
+                this->deriv_func(reactants_state_array, h_shift, volume, t, rr) - flux) / h;
             for (matrix_type::size_type j(0); j < jacobian.size1(); j++)
             {
                 if (j < num_reactants)
@@ -325,18 +331,11 @@ public:
         return true;    // always true
     }
 
-    virtual Real operator()(
-        state_container_type const &reactants_state_array,
-        state_container_type const &products_state_array, Real const volume)
-    {
-        // Forward to deriv_func()
-        Real flux(this->deriv_func(reactants_state_array, products_state_array, volume));
-        return flux;
-    }
-
     virtual Real deriv_func(
         state_container_type const &reactants_state_array,
-        state_container_type const &products_state_array, Real const volume)
+        state_container_type const &products_state_array, 
+        Real const volume, Real const t,
+        ODEReactionRule const &rr)
     {
         // The 1st argument 'state_array' must be resized when calling.
         Real flux(this->k_ * volume);
@@ -348,17 +347,20 @@ public:
         return flux;
     }
 
+
     virtual void jacobi_func(
         matrix_type &jacobian,
         state_container_type const &reactants_state_array,
-        state_container_type const &products_state_array, Real const volume)
+        state_container_type const &products_state_array, 
+        Real const volume, Real const t, 
+        ODEReactionRule const &rr)
     {
         // The size of the argument 'state_array' must be resized
         // to the number of reactants.
         // The size of the argument 'jacobian' must be resized
         // to the number of (reactants + products)
         std::fill(jacobian.data().begin(), jacobian.data().end(), Real(0.0));
-        Real flux(this->deriv_func(reactants_state_array, products_state_array, volume));
+        Real flux(this->deriv_func(reactants_state_array, products_state_array, volume, t, rr));
         if (flux == Real(0.0))
         {
             return;
