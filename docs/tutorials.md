@@ -28,7 +28,7 @@ These three components are independent, but `World` is often dependent on a type
 
 - [World Advanced](http://nbviewer.ipython.org/github/ecell/ecell4/blob/develop/ipynb/Tutorials/WorldAdvanced.ipynb)
 - [Model Advanced](http://nbviewer.ipython.org/github/ecell/ecell4/blob/develop/ipynb/Tutorials/ModelAdvanced.ipynb)
-- [Simple equilibrium model](http://nbviewer.ipython.org/github/ecell/ecell4/blob/develop/ipynb/SimpleEquilibrium.ipynb)
+- [Simple equilibrium model](http://nbviewer.ipython.org/github/ecell/ecell4/blob/develop/ipynb/Tutorials/SimpleEquilibrium.ipynb)
 
 ## Example
 
@@ -51,7 +51,7 @@ Here is an extremely simple example with a reversible binding reaction:
 
 More examples are available below:
 
-- [MSD](https://github.com/ecell/ecell4/blob/develop/ipynb/Examples/MSD.ipynb) explains how to take statistics of trajectories of particles freely diffusing in three-dimensional space. This would be the best demonstration to explain the usage of `FixedIntervalTrajectoryObserver`.
+- [MSD](http://nbviewer.ipython.org/github/ecell/ecell4/blob/develop/ipynb/Examples/MSD.ipynb) explains how to take statistics of trajectories of particles freely diffusing in three-dimensional space. This would be the best demonstration to explain the usage of `FixedIntervalTrajectoryObserver`.
 
 <script>
   (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
