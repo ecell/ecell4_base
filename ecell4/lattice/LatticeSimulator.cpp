@@ -189,6 +189,11 @@ std::pair<bool, LatticeSimulator::reaction_type> LatticeSimulator::attempt_react
     const std::vector<ReactionRule> rules(
         model_->query_reaction_rules(speciesA, speciesB));
 
+    if (rules.empty())
+    {
+        return std::pair<bool, reaction_type>(false, reaction_type());
+    }
+
     const Real D_A(from_mt->D());
     const Real D_B(to_mt->D());
     const Shape::dimension_kind dimensionA(from_mt->location()->dimension());
