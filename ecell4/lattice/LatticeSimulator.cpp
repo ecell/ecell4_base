@@ -196,8 +196,8 @@ std::pair<bool, LatticeSimulator::reaction_type> LatticeSimulator::attempt_react
 
     const Real D_A(from_mt->D());
     const Real D_B(to_mt->D());
-    const Shape::dimension_kind dimensionA(from_mt->location()->dimension());
-    const Shape::dimension_kind dimensionB(to_mt->location()->dimension());
+    const Shape::dimension_kind dimensionA(from_mt->get_dimension());
+    const Shape::dimension_kind dimensionB(to_mt->get_dimension());
 
     const Real Dtot(D_A + D_B);
     const Real rnd(world_->rng()->uniform(0,1));

@@ -77,12 +77,12 @@ public:
         return D_;
     }
 
-    void dimension(const Shape::dimension_kind dimension)
+    void set_dimension(const Shape::dimension_kind dimension)
     {
         dimension_ = dimension;
     }
 
-    const Shape::dimension_kind dimension() const
+    const Shape::dimension_kind get_dimension() const
     {
         return dimension_;
     }
