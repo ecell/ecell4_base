@@ -15,8 +15,7 @@ There are three important components to understand E-Cell4: `Model`, `World` and
 These three components are independent, but `World` is often dependent on a type of `Simulator`.
 
 - [Model](http://nbviewer.ipython.org/github/ecell/ecell4/blob/develop/ipynb/Tutorials/ModelBasics.ipynb)
-- [World](http://nbviewer.ipython.org/github/ecell/ecell4/blob/develop/ipynb/Tutorials/WorldBasics.ipynb)
-- [Simulator](http://nbviewer.ipython.org/github/ecell/ecell4/blob/develop/ipynb/Tutorials/Simulator.ipynb)
+- [World and Simulator](http://nbviewer.ipython.org/github/ecell/ecell4/blob/develop/ipynb/Tutorials/WorldSimBasics.ipynb)
 
 ## Topical Exercises
 
