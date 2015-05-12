@@ -51,8 +51,8 @@ protected:
                 dt_ = 2 * R * R / 3 / D * alpha_;
             }
 
-            // time_ = t + dt_;
-            time_ = t;
+            time_ = t + dt_;
+            // time_ = t;
         }
 
         virtual ~StepEvent()
