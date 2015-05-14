@@ -70,6 +70,18 @@ PYTHONPATH=~/Library/Python/2.7/lib/python/site-packages/ ipython notebook
 
 now you can see IPython notebooks, please open index.ipynb to see E-Cell4 models.
 
+## Building and installing E-Cell (Ubuntu 15.04)
+
+```shell
+# dependent packages
+$ sudo apt-get install cmake libgsl0-dev libboost-dev libboost-regex-dev libhdf5-dev cython
+
+$ wget https://github.com/ecell/ecell4/archive/master.zip   
+$ unzip master.zip
+$ cd ecell4-master
+# in this case we install ecell4 to $HOME/ecell4
+$ PREFIX=$HOME/ecell4 ./install.sh
+```
 
 ## Building and installing E-Cell (Ubuntu 14.04)
 
@@ -81,13 +93,15 @@ $ sudo pip install cython
 $ wget https://github.com/ecell/ecell4/archive/master.zip   
 $ unzip master.zip
 $ cd ecell4-master
-$ PREFIX=/path/to PYTHONPATH=/path/to/lib/python2.7/site-packages ./install.sh
+# in this case we install ecell4 to $HOME/ecell4
+$ PREFIX=$HOME/ecell4 PYTHONPATH=/path/to/lib/python2.7/site-packages ./install.sh
 ```
 
 ## Running E-Cell4
 
 ```
-$ LD_LIBRARY_PATH=/pat/to/lib PYTHONPATH=/path/to/lib/python2.7/site-packages python
+# If you set PREFIX to $HOME/ecell4, make sure to append $HOME/ecell4/lib to LD_LIBRARY_PATH 
+$ LD_LIBRARY_PATH=$HOME/ecell4/lib:$LD_LIBRARY_PATH PYTHONPATH=$HOME/ecell4/lib/python2.7/site-packages python
 Python 2.7.6 (default, Mar 22 2014, 22:59:56) 
 [GCC 4.8.2] on linux2
 Type "help", "copyright", "credits" or "license" for more information.
