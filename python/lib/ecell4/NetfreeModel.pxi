@@ -33,8 +33,8 @@ cdef class NetfreeModel:
     def has_reaction_rule(self, ReactionRule rr):
         return self.thisptr.get().has_reaction_rule(deref(rr.thisptr))
 
-    # def num_reaction_rules(self):
-    #     return self.thisptr.get().num_reaction_rules()
+    def num_reaction_rules(self):
+        return self.thisptr.get().num_reaction_rules()
 
     def apply_species_attributes(self, Species sp):
         cdef Cpp_Species retval = self.thisptr.get().apply_species_attributes(

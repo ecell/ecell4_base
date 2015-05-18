@@ -156,11 +156,6 @@ public:
         return species_attributes_;
     }
 
-    const Integer num_reaction_rules() const
-    {
-        return reaction_rules_.size();
-    }
-
 protected:
 
     species_container_type species_attributes_;

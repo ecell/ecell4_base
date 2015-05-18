@@ -93,11 +93,6 @@ public:
         return species_attributes_;
     }
 
-    const Integer num_reaction_rules() const
-    {
-        return reaction_rules_.size();
-    }
-
     boost::shared_ptr<Model> expand(
         const std::vector<Species>& sp, const Integer max_itr,
         const std::map<Species, Integer>& max_stoich) const;

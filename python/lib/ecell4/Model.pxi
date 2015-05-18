@@ -38,8 +38,8 @@ cdef class Model:
             deref(sp.thisptr))
         return Species_from_Cpp_Species(address(retval))
 
-    # def num_reaction_rules(self):
-    #     return self.thisptr.get().num_reaction_rules()
+    def num_reaction_rules(self):
+        return self.thisptr.get().num_reaction_rules()
 
     def reaction_rules(self):
         cdef vector[Cpp_ReactionRule] c_rr_vector = self.thisptr.get().reaction_rules()
