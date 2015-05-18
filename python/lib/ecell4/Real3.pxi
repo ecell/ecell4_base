@@ -25,7 +25,11 @@ cdef class Real3:
     def __div__(Real3 self, Real other):
         return divide(self, other)
 
+    def __truediv__(Real3 self, Real other):
+        return divide(self, other)
+
     def __mul__(self, other):
+        print("Real3.__mul__({0}, {1})".format(self, other))
         if isinstance(self, Real3):
             return multiply(<Real3>self, <Real>other)
         elif isinstance(other, Real3):
