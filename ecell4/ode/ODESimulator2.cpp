@@ -1,6 +1,8 @@
 #include "ODESimulator2.hpp"
 
 #include <boost/numeric/odeint.hpp>
+#include <algorithm>
+
 namespace odeint = boost::numeric::odeint;
 
 namespace ecell4
@@ -25,7 +27,7 @@ ODESimulator2::generate_system() const
         i++;
     }
     std::vector<reaction_type> reactions;
-    //reactions.reserve(ode_reaction_rules.size());
+    reactions.reserve(ode_reaction_rules.size());
     for(ODENetworkModel::ode_reaction_rule_container_type::const_iterator
         i(ode_reaction_rules.begin()); i != ode_reaction_rules.end(); i++)
     {
@@ -45,11 +47,22 @@ ODESimulator2::generate_system() const
         {
             r.reactants.push_back(index_map[*j]);
         }
+
+        {
+            coefficient_container_type reactants_coeff = i->reactants_coefficients();
+            std::copy(reactants_coeff.begin(), reactants_coeff.end(), std::back_inserter(r.reactant_coefficients));
+        }
         for(ODEReactionRule::product_container_type::const_iterator j(products.begin());
             j != products.end(); j++)
         {
             r.products.push_back(index_map[*j]);
         }
+
+        {
+            coefficient_container_type products_coeff = i->products_coefficients();
+            std::copy(products_coeff.begin(), products_coeff.end(), std::back_inserter(r.product_coefficients));
+        }
+
         reactions.push_back(r);
     }
     return std::make_pair(

@@ -34,6 +34,8 @@ public:
     typedef std::vector<Species> reactant_container_type;
     typedef std::vector<Species> product_container_type;
 
+    typedef std::vector<Real> coefficient_container_type;
+
     typedef std::vector<std::pair<Real, Species> > reaction_leftside_container_type;
     typedef std::vector<std::pair<Real, Species> > reaction_rightside_container_type;
 
@@ -130,6 +132,16 @@ public:
         }
         return result;
     }
+    const coefficient_container_type reactants_coefficients() const
+    {
+        coefficient_container_type result;
+        for(reaction_leftside_container_type::const_iterator it(reactants_.begin());
+                it != reactants_.end(); it++)
+        {
+            result.push_back(it->first);
+        }
+        return result;
+    }
 
     const product_container_type products() const
     {
@@ -138,6 +150,16 @@ public:
                 it != products_.end(); it++)
         {
             result.push_back(it->second);
+        }
+        return result;
+    }
+    const coefficient_container_type products_coefficients() const
+    {
+        coefficient_container_type result;
+        for(reaction_rightside_container_type::const_iterator it(products_.begin());
+                it != products_.end(); it++)
+        {
+            result.push_back(it->first);
         }
         return result;
     }

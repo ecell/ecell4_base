@@ -4,6 +4,7 @@
 #include <cstring>
 #include <vector>
 #include <numeric>
+#include <map>
 #include <boost/shared_ptr.hpp>
 #include <boost/scoped_ptr.hpp>
 #include <boost/scoped_array.hpp>
@@ -31,13 +32,16 @@ public:
     typedef boost::numeric::ublas::vector<double> state_type;
     typedef boost::numeric::ublas::matrix<double> matrix_type;
     typedef std::vector<state_type::size_type> index_container_type;
+    typedef std::vector<Real> coefficient_container_type;
     
     typedef ODEReactionRule reacton_container_type;
 
     struct reaction_type
     {
         index_container_type reactants;
+        coefficient_container_type reactant_coefficients;
         index_container_type products;
+        coefficient_container_type product_coefficients;
         Real k;
         boost::weak_ptr<ODERatelaw> ratelaw;
         const ODEReactionRule *raw;
@@ -87,15 +91,19 @@ public:
                     flux = ratelaw->deriv_func(reactants_states, products_states, volume_, t, *(i->raw) );
                 }
                 // Merge each reaction's flux into whole dxdt
+                std::size_t nth = 0;
                 for(index_container_type::const_iterator j(i->reactants.begin());
                     j != i->reactants.end(); j++)
                 {
-                    dxdt[*j] -= flux;
+                    dxdt[*j] -= (flux * (double)i->reactant_coefficients[nth]);
+                    nth++;
                 }
+                nth = 0;
                 for(index_container_type::const_iterator j(i->products.begin()); 
                     j != i->products.end(); j++)
                 {
-                    dxdt[*j] += flux;
+                    dxdt[*j] += (flux * (double)i->product_coefficients[nth]);
+                    nth++;
                 }
             }
             return;
