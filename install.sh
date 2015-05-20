@@ -1,5 +1,7 @@
 #!/bin/bash -x
 
+PYTHON_MAJOR_VERSION="$1"
+
 if [ "${PREFIX-UNDEF}" = "UNDEF" ]; then
     if [ "$PREFIX" = "" ]; then
         PREFIX=/usr/local
@@ -32,12 +34,14 @@ make install
 
 cd python
 
+if [ "$1" == "py2" ]; then
 # rm -rf build lib/ecell4/*.cpp
 mkdir -p ${PREFIX}/lib/python2.7/site-packages
 LD_LIBRARY_PATH=${PREFIX}/lib PYTHONPATH=${PREFIX}/lib/python2.7/site-packages:/usr/local/lib/python2.7/dist-packages:${PYTHONPATH} python setup.py build_ext -L${PREFIX}/lib -I${PREFIX}/include install --prefix=${PREFIX}
 PYTHONPATH=${PREFIX}/lib/python2.7/site-packages:/usr/local/lib/python2.7/dist-packages:${PYTHONPATH} LD_LIBRARY_PATH=${PREFIX}/lib python setup.py test
-
+elif [ "$1" == "py3" ]; then
 # rm -rf build lib/ecell4/*.cpp
-# mkdir -p ${PREFIX}/lib/python3.4/site-packages
-# LD_LIBRARY_PATH=${PREFIX}/lib PYTHONPATH=${PREFIX}/lib/python3.4/site-packages:/usr/local/lib/python3.4/dist-packages:${PYTHONPATH} python3 setup.py build_ext -L${PREFIX}/lib -I${PREFIX}/include install --prefix=${PREFIX}
-# PYTHONPATH=${PREFIX}/lib/python3.4/site-packages:/usr/local/lib/python3.4/dist-packages:${PYTHONPATH} LD_LIBRARY_PATH=${PREFIX}/lib python3 setup.py test
+mkdir -p ${PREFIX}/lib/python3.4/site-packages
+LD_LIBRARY_PATH=${PREFIX}/lib PYTHONPATH=${PREFIX}/lib/python3.4/site-packages:/usr/local/lib/python3.4/dist-packages:${PYTHONPATH} python3 setup.py build_ext -L${PREFIX}/lib -I${PREFIX}/include install --prefix=${PREFIX}
+PYTHONPATH=${PREFIX}/lib/python3.4/site-packages:/usr/local/lib/python3.4/dist-packages:${PYTHONPATH} LD_LIBRARY_PATH=${PREFIX}/lib python3 setup.py test
+fi
