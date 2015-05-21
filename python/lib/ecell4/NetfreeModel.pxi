@@ -33,8 +33,8 @@ cdef class NetfreeModel:
     def has_reaction_rule(self, ReactionRule rr):
         return self.thisptr.get().has_reaction_rule(deref(rr.thisptr))
 
-    # def num_reaction_rules(self):
-    #     return self.thisptr.get().num_reaction_rules()
+    def num_reaction_rules(self):
+        return self.thisptr.get().num_reaction_rules()
 
     def apply_species_attributes(self, Species sp):
         cdef Cpp_Species retval = self.thisptr.get().apply_species_attributes(
@@ -107,6 +107,10 @@ cdef class NetfreeModel:
         cdef vector[Cpp_Species] _seeds
         cdef map[Cpp_Species, Integer] _max_stoich
         for sp in seeds:
+            if not isinstance(sp, Species):
+                raise ValueError(
+                    'seeds must be given as a list of Species.'
+                    + ' {0} given.'.format(repr(sp)))
             _seeds.push_back(deref((<Species>sp).thisptr))
 
         if max_stoich is not None:
@@ -120,6 +124,25 @@ cdef class NetfreeModel:
         else:
             return Model_from_Cpp_Model(
                 self.thisptr.get().expand(_seeds))
+
+    def add_parameter(self, Species sp):
+        self.thisptr.get().add_parameter(deref(sp.thisptr))
+
+    def add_parameters(self, attrs):
+        cdef vector[Cpp_Species] species
+        for sp in attrs:
+            species.push_back(deref((<Species>sp).thisptr))
+        self.thisptr.get().add_parameters(species)
+
+    def parameters(self):
+        cdef vector[Cpp_Species] species = self.thisptr.get().parameters()
+        retval = []
+        cdef vector[Cpp_Species].iterator it = species.begin()
+        while it != species.end():
+            retval.append(Species_from_Cpp_Species(
+                <Cpp_Species*>(address(deref(it)))))
+            inc(it)
+        return retval
 
 cdef NetfreeModel NetfreeModel_from_Cpp_NetfreeModel(
     shared_ptr[Cpp_NetfreeModel] m):

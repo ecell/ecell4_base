@@ -129,6 +129,8 @@ public:
             std::fill(dfdt.begin(), dfdt.end(), 0.0);
             std::fill(jacobi.data().begin(), jacobi.data().end(), 0.0);
 
+            const Real h(1.0e-8);
+
             // calculate jacobian for each reaction and merge it.
             for(reaction_container_type::const_iterator i(reactions_.begin()); 
                 i != reactions_.end(); i++)
@@ -151,31 +153,99 @@ public:
                 {
                     products_states[cnt] = x[*j];
                 }
-                // prepare the matrix object that will be filled by ODERatelaw.
-                matrix_type::size_type row_length = reactants_size + products_size;
-                matrix_type::size_type col_length = row_length;
-                matrix_type mat(row_length, col_length);
-                
                 // Call the ODERatelaw object
                 if (i->ratelaw.expired() || i->ratelaw.lock()->is_available() == false)
                 {
                     boost::scoped_ptr<ODERatelaw> temporary_ratelaw_obj(new ODERatelawMassAction(i->k));
-                    temporary_ratelaw_obj->jacobi_func(mat, reactants_states, products_states, volume_, t, *(i->raw) );
+                    Real flux_0 = temporary_ratelaw_obj->deriv_func(reactants_states, products_states, volume_, t, *(i->raw) );
+                    // Differentiate by each Reactants
+                    for(int j(0); j < reactants_states.size(); j++)
+                    {
+                        ODERatelaw::state_container_type h_shift(reactants_states);
+                        h_shift[j] += h;
+                        Real flux = temporary_ratelaw_obj->deriv_func(h_shift, products_states, volume_, t, *(i->raw) );
+                        Real flux_deriv = (flux - flux_0) / h;
+                        matrix_type::size_type col = i->reactants[j];
+                        for(std::size_t k(0); k < i->reactants.size(); k++)
+                        {
+                            matrix_type::size_type row = i->reactants[k];
+                            Real coeff = i->reactant_coefficients[k];
+                            jacobi(row, col) -= coeff * flux_deriv;
+                        }
+                        for(std::size_t k(0); k < i->products.size(); k++)
+                        {
+                            matrix_type::size_type row = i->products[k];
+                            Real coeff = i->product_coefficients[k];
+                            jacobi(row, col) += coeff * flux_deriv;
+                        }
+                    }
+                    // Differentiate by Products
+                    for(int j(0); j < products_states.size(); j++)
+                    {
+                        ODERatelaw::state_container_type h_shift(products_states);
+                        h_shift[j] += h;
+                        Real flux = temporary_ratelaw_obj->deriv_func(reactants_states, h_shift, volume_, t, *(i->raw));
+                        Real flux_deriv = (flux - flux_0) / h;
+                        matrix_type::size_type col = i->products[j];
+                        for(std::size_t k(0); k < i->reactants.size(); k++)
+                        {
+                            matrix_type::size_type row = i->reactants[k];
+                            Real coeff = i->reactant_coefficients[k];
+                            jacobi(row, col) -= coeff * flux_deriv;
+                        }
+                        for(std::size_t k(0); k < i->products.size(); k++)
+                        {
+                            matrix_type::size_type row = i->products[k];
+                            Real coeff = i->product_coefficients[k];
+                            jacobi(row, col) += coeff * flux_deriv;
+                        }
+                    }
                 }
                 else
                 {
                     boost::shared_ptr<ODERatelaw> ratelaw = i->ratelaw.lock();
-                    ratelaw->jacobi_func(mat, reactants_states, products_states, volume_, t, *(i->raw) );
-                }
-
-                // Merge matrix into whole system's jacobian.
-                for(matrix_type::size_type row(0); row < row_length; row++)
-                {
-                    matrix_type::size_type j_row(row < reactants_size ? i->reactants[row] : i->products[row - reactants_size]);
-                    for(matrix_type::size_type col(0); col < col_length; col++)
+                    Real flux_0 = ratelaw->deriv_func(reactants_states, products_states, volume_, t, *(i->raw) );
+                    // Differentiate by each Reactants
+                    for(int j(0); j < reactants_states.size(); j++)
                     {
-                        matrix_type::size_type j_col(col < reactants_size ? i->reactants[col] : i->products[col - reactants_size]);
-                        jacobi(j_row, j_col) += mat(row, col);
+                        ODERatelaw::state_container_type h_shift(reactants_states);
+                        h_shift[j] += h;
+                        Real flux = ratelaw->deriv_func(h_shift, products_states, volume_, t, *(i->raw) );
+                        Real flux_deriv = (flux - flux_0) / h;
+                        matrix_type::size_type col = i->reactants[j];
+                        for(std::size_t k(0); k < i->reactants.size(); k++)
+                        {
+                            matrix_type::size_type row = i->reactants[k];
+                            Real coeff = i->reactant_coefficients[k];
+                            jacobi(row, col) -= coeff * flux_deriv;
+                        }
+                        for(std::size_t k(0); k < i->products.size(); k++)
+                        {
+                            matrix_type::size_type row = i->products[k];
+                            Real coeff = i->product_coefficients[k];
+                            jacobi(row, col) += coeff * flux_deriv;
+                        }
+                    }
+                    // Differentiate by Products
+                    for(int j(0); j < products_states.size(); j++)
+                    {
+                        ODERatelaw::state_container_type h_shift(products_states);
+                        h_shift[j] += h;
+                        Real flux = ratelaw->deriv_func(reactants_states, h_shift, volume_, t, *(i->raw));
+                        Real flux_deriv = (flux - flux_0) / h;
+                        matrix_type::size_type col = i->products[j];
+                        for(std::size_t k(0); k < i->reactants.size(); k++)
+                        {
+                            matrix_type::size_type row = i->reactants[k];
+                            Real coeff = i->reactant_coefficients[k];
+                            jacobi(row, col) -= coeff * flux_deriv;
+                        }
+                        for(std::size_t k(0); k < i->products.size(); k++)
+                        {
+                            matrix_type::size_type row = i->products[k];
+                            Real coeff = i->product_coefficients[k];
+                            jacobi(row, col) += coeff * flux_deriv;
+                        }
                     }
                 }
             }

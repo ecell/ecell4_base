@@ -4,7 +4,7 @@ import warnings
 import functools
 import inspect
 
-import parseobj
+from . import parseobj
 
 
 class Callback(object):
@@ -67,17 +67,23 @@ class ParseDecorator:
 
     def __call__(self, *args, **kwargs):
         cache = self.__callback_class()
-        vardict = copy.copy(self.__func.func_globals)
+        try:
+            vardict = copy.copy(self.__func.func_globals)
+            func_code = self.__func.func_code
+        except AttributeError:
+            vardict = copy.copy(self.__func.__globals__)
+            func_code = self.__func.__code__
+
         ignores = ("_", "__", "___", "_i", "_ii", "_iii",
             "_i1", "_i2", "_i3", "_dh", "_sh", "_oh")
         for ignore in ignores:
             if ignore in vardict.keys():
                 del vardict[ignore]
-        for k in self.__func.func_code.co_names:
+        for k in func_code.co_names:
             if (not k in vardict.keys()
                 and not k in keys_from_builtins(vardict)): # is this enough?
                 vardict[k] = parseobj.AnyCallable(cache, k)
-        g = types.FunctionType(self.__func.func_code, vardict)
+        g = types.FunctionType(func_code, vardict)
         with warnings.catch_warnings():
             # warnings.simplefilter("always")
             g(*args, **kwargs)
@@ -94,7 +100,7 @@ class ParseDecorator:
             if k in ignores:
                 # print "WARNING: '%s' was overridden." % k
                 calling_frame.f_globals[k] = parseobj.AnyCallable(self.__callback, k)
-                self.__newvars[k] = vardict[k]
+                self.__newvars[k] = vardict.get(k)
             elif (not k in vardict.keys()
                 and not k in keys_from_builtins(vardict)):
                 # print "WARNING: '%s' is undefined." % k
@@ -123,16 +129,21 @@ def parse_decorator(callback_class, func):
     @functools.wraps(func)
     def wrapped(*args, **kwargs):
         cache = callback_class()
-        vardict = copy.copy(func.func_globals)
+        try:
+            vardict = copy.copy(self.__func.func_globals)
+            func_code = func.func_code
+        except AttributeError:
+            vardict = copy.copy(self.__func.__globals__)
+            func_code = func.__code__
         for ignore in ("_", "__", "___", "_i", "_ii", "_iii",
             "_i1", "_i2", "_i3", "_dh", "_sh", "_oh"):
             if ignore in vardict.keys():
                 del vardict[ignore]
-        for k in func.func_code.co_names:
+        for k in func_code.co_names:
             if (not k in vardict.keys()
                 and not k in keys_from_builtins(vardict)): # is this enough?
                 vardict[k] = parseobj.AnyCallable(cache, k)
-        g = types.FunctionType(func.func_code, vardict)
+        g = types.FunctionType(func_code, vardict)
         with warnings.catch_warnings():
             # warnings.simplefilter("always")
             g(*args, **kwargs)

@@ -2,8 +2,10 @@
 #include <gsl/gsl_rng.h>
 #include <sstream>
 
+#ifdef WITH_HDF5
 #include <hdf5.h>
 #include <H5Cpp.h>
+#endif
 
 #include "RandomNumberGenerator.hpp"
 
@@ -11,6 +13,7 @@
 namespace ecell4
 {
 
+#ifdef WITH_HDF5
 void GSLRandomNumberGenerator::save(H5::CommonFG* root) const
 {
     using namespace H5;
@@ -35,6 +38,7 @@ void GSLRandomNumberGenerator::load(const H5::CommonFG& root)
     unsigned char* state = (unsigned char*)(gsl_rng_state(rng_.get()));
     dataset.read(state, *optype);
 }
+#endif
 
 Real GSLRandomNumberGenerator::random()
 {
@@ -48,7 +52,24 @@ Real GSLRandomNumberGenerator::uniform(Real min, Real max)
 
 Integer GSLRandomNumberGenerator::uniform_int(Integer min, Integer max)
 {
-    return gsl_rng_uniform_int(rng_.get(), max - min + 1) + min;
+    const Integer n(max - min + 1);
+    const unsigned long int range(rng_->type->max - rng_->type->min);
+
+    if (n <= range)
+    {
+        return gsl_rng_uniform_int(rng_.get(), n) + min;
+    }
+    else
+    {
+        const Integer m((max - min) / range);
+        Integer k;
+        do
+        {
+            k = min + gsl_rng_uniform_int(rng_.get(), range)
+                + range * gsl_rng_uniform_int(rng_.get(), m + 1);
+        } while (k > max);
+        return k;
+    }
 }
 
 Real GSLRandomNumberGenerator::gaussian(Real sigma, Real mean)

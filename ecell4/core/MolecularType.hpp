@@ -13,28 +13,30 @@ class MolecularType
 public:
 
     typedef MolecularTypeBase base_type;
-    typedef base_type::particle_info particle_info;
-    typedef base_type::private_coordinate_type private_coordinate_type;
+    typedef base_type::coord_id_pair coord_id_pair;
+    typedef base_type::coordinate_type coordinate_type;
     typedef base_type::container_type container_type;
+    typedef base_type::iterator iterator;
+    typedef base_type::const_iterator const_iterator;
 
 public:
 
     MolecularType(const std::string& name = "")
-        : MolecularTypeBase(Species(name), &(VacantType::getInstance()), 0, 0)
+        : base_type(Species(name), &(VacantType::getInstance()), 0, 0)
     {
         ;
     }
 
     MolecularType(const Species& species, const Real& radius = 0.0,
             const Real& D = 0.0)
-        : MolecularTypeBase(species, &(VacantType::getInstance()), radius, D)
+        : base_type(species, &(VacantType::getInstance()), radius, D)
     {
         ;
     }
 
     MolecularType(const Species& species, MolecularTypeBase* location,
             const Real& radius = 0.0, const Real& D = 0.0)
-        : MolecularTypeBase(species, location, radius, D)
+        : base_type(species, location, radius, D)
     {
         ;
     }

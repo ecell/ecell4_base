@@ -3,7 +3,6 @@
 
 #include <ecell4/core/types.hpp>
 #include <ecell4/core/SimulatorFactory.hpp>
-
 #include "World.hpp"
 #include "EGFRDSimulator.hpp"
 
@@ -90,6 +89,11 @@ public:
         {
             return new EGFRDWorld(edge_lengths);
         }
+    }
+
+    virtual EGFRDWorld* create_world(const boost::shared_ptr<Model>& m) const
+    {
+        return extras::generate_world_from_model(*this, m);
     }
 
     virtual EGFRDSimulator* create_simulator(

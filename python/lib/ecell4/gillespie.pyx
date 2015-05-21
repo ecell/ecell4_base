@@ -1,6 +1,7 @@
 import collections
 from cython cimport address
 from cython.operator cimport dereference as deref, preincrement as inc
+from ecell4.core cimport *
 
 
 ## GillespieWorld
@@ -17,7 +18,7 @@ cdef class GillespieWorld:
                 self.thisptr = new shared_ptr[Cpp_GillespieWorld](
                     new Cpp_GillespieWorld(deref((<Real3>edge_lengths).thisptr)))
             else:
-                filename = edge_lengths
+                filename = tostring(edge_lengths)
                 self.thisptr = new shared_ptr[Cpp_GillespieWorld](
                     new Cpp_GillespieWorld(filename))
         else:
@@ -73,11 +74,46 @@ cdef class GillespieWorld:
             inc(it)
         return retval
 
-    def save(self, string filename):
-        self.thisptr.get().save(filename)
+    def list_particles(self, Species sp = None):
+        cdef vector[pair[Cpp_ParticleID, Cpp_Particle]] particles
+        if sp is None:
+            particles = self.thisptr.get().list_particles()
+        else:
+            particles = self.thisptr.get().list_particles(deref(sp.thisptr))
 
-    def load(self, string filename):
-        self.thisptr.get().load(filename)
+        retval = []
+        cdef vector[pair[Cpp_ParticleID, Cpp_Particle]].iterator \
+            it = particles.begin()
+        while it != particles.end():
+            retval.append(
+                (ParticleID_from_Cpp_ParticleID(
+                     <Cpp_ParticleID*>(address(deref(it).first))),
+                 Particle_from_Cpp_Particle(
+                     <Cpp_Particle*>(address(deref(it).second)))))
+            inc(it)
+        return retval
+
+    def list_particles_exact(self, Species sp):
+        cdef vector[pair[Cpp_ParticleID, Cpp_Particle]] particles
+        particles = self.thisptr.get().list_particles_exact(deref(sp.thisptr))
+
+        retval = []
+        cdef vector[pair[Cpp_ParticleID, Cpp_Particle]].iterator \
+            it = particles.begin()
+        while it != particles.end():
+            retval.append(
+                (ParticleID_from_Cpp_ParticleID(
+                     <Cpp_ParticleID*>(address(deref(it).first))),
+                 Particle_from_Cpp_Particle(
+                     <Cpp_Particle*>(address(deref(it).second)))))
+            inc(it)
+        return retval
+
+    def save(self, filename):
+        self.thisptr.get().save(tostring(filename))
+
+    def load(self, filename):
+        self.thisptr.get().load(tostring(filename))
 
     def bind_to(self, m):
         self.thisptr.get().bind_to(deref(Cpp_Model_from_Model(m)))
@@ -195,9 +231,13 @@ cdef class GillespieFactory:
             return GillespieWorld_from_Cpp_GillespieWorld(
                 shared_ptr[Cpp_GillespieWorld](
                     self.thisptr.create_world(deref((<Real3>arg1).thisptr))))
-        else:
+        elif isinstance(arg1, str):
             return GillespieWorld_from_Cpp_GillespieWorld(
                 shared_ptr[Cpp_GillespieWorld](self.thisptr.create_world(<string>(arg1))))
+        else:
+            return GillespieWorld_from_Cpp_GillespieWorld(
+                shared_ptr[Cpp_GillespieWorld](self.thisptr.create_world(
+                    deref(Cpp_Model_from_Model(arg1)))))
 
     def create_simulator(self, arg1, GillespieWorld arg2=None):
         if arg2 is None:

@@ -13,6 +13,8 @@ from multiset cimport multiset
 from shared_ptr cimport shared_ptr
 
 
+cdef string tostring(ustr)
+
 cdef extern from "gsl/gsl_rng.h":
     ctypedef struct gsl_rng:
         pass
@@ -80,6 +82,7 @@ cdef extern from "ecell4/core/Species.hpp" namespace "ecell4":
         Cpp_Species(string) except +
         # Cpp_Species(string, string) except +
         Cpp_Species(string, string, string) except +
+        Cpp_Species(string, string, string, string) except +
         Cpp_Species(Cpp_Species&) except+
         bool operator==(Cpp_Species& rhs)
         bool operator<(Cpp_Species& rhs)
@@ -146,6 +149,8 @@ cdef class RatelawCallback:
 cdef extern from "ecell4/core/ReactionRule.hpp" namespace "ecell4":
     cdef cppclass Cpp_ReactionRule "ecell4::ReactionRule":
         Cpp_ReactionRule() except +
+        Cpp_ReactionRule(vector[Cpp_Species]&, vector[Cpp_Species]&)
+        Cpp_ReactionRule(vector[Cpp_Species]&, vector[Cpp_Species]&, Real)
         Cpp_ReactionRule(Cpp_ReactionRule&) except +
         Real k()
         vector[Cpp_Species]& reactants()
@@ -241,7 +246,7 @@ cdef extern from "ecell4/core/Model.hpp" namespace "ecell4":
             Cpp_Species sp, Cpp_Species sp)
         vector[Cpp_Species] list_species()
         # Cpp_Species create_species(string name)
-        # Integer num_reaction_rules()
+        Integer num_reaction_rules()
         vector[Cpp_Species] species_attributes()
         vector[Cpp_ReactionRule] reaction_rules()
 
@@ -251,6 +256,10 @@ cdef extern from "ecell4/core/Model.hpp" namespace "ecell4":
         shared_ptr[Cpp_Model] expand(vector[Cpp_Species])
         shared_ptr[Cpp_Model] expand(vector[Cpp_Species], Integer)
         shared_ptr[Cpp_Model] expand(vector[Cpp_Species], Integer, map[Cpp_Species, Integer])
+
+        void add_parameter(Cpp_Species sp)
+        vector[Cpp_Species] parameters()
+        void add_parameters(vector[Cpp_Species])
 
 ## Model
 #  a python wrapper for Cpp_Model, but wrapped by shared_ptr
@@ -271,7 +280,7 @@ cdef extern from "ecell4/core/NetworkModel.hpp" namespace "ecell4":
         void add_reaction_rule(Cpp_ReactionRule)
         void remove_reaction_rule(Cpp_ReactionRule)
         bool has_reaction_rule(Cpp_ReactionRule)
-        # Integer num_reaction_rules()
+        Integer num_reaction_rules()
         Cpp_Species apply_species_attributes(Cpp_Species& sp)
         # Cpp_Species create_species(string name)
         vector[Cpp_Species] list_species()
@@ -286,6 +295,10 @@ cdef extern from "ecell4/core/NetworkModel.hpp" namespace "ecell4":
         shared_ptr[Cpp_Model] expand(vector[Cpp_Species])
         shared_ptr[Cpp_Model] expand(vector[Cpp_Species], Integer)
         shared_ptr[Cpp_Model] expand(vector[Cpp_Species], Integer, map[Cpp_Species, Integer])
+
+        void add_parameter(Cpp_Species sp)
+        vector[Cpp_Species] parameters()
+        void add_parameters(vector[Cpp_Species])
 
 ## NetworkModel
 #  a python wrapper for Cpp_NetowrkModel, but wrapped by shared_ptr
@@ -307,7 +320,7 @@ cdef extern from "ecell4/core/NetfreeModel.hpp" namespace "ecell4":
         void add_reaction_rule(Cpp_ReactionRule)
         void remove_reaction_rule(Cpp_ReactionRule)
         bool has_reaction_rule(Cpp_ReactionRule)
-        # Integer num_reaction_rules()
+        Integer num_reaction_rules()
         Cpp_Species apply_species_attributes(Cpp_Species& sp)
         # Cpp_Species create_species(string name)
         vector[Cpp_Species] list_species()
@@ -322,6 +335,10 @@ cdef extern from "ecell4/core/NetfreeModel.hpp" namespace "ecell4":
         shared_ptr[Cpp_Model] expand(vector[Cpp_Species])
         shared_ptr[Cpp_Model] expand(vector[Cpp_Species], Integer)
         shared_ptr[Cpp_Model] expand(vector[Cpp_Species], Integer, map[Cpp_Species, Integer])
+
+        void add_parameter(Cpp_Species sp)
+        vector[Cpp_Species] parameters()
+        void add_parameters(vector[Cpp_Species])
 
 ## NetfreeModel
 #  a python wrapper for Cpp_NetfreeModel, but wrapped by shared_ptr
@@ -430,14 +447,12 @@ cdef Particle Particle_from_Cpp_Particle(Cpp_Particle* p)
 
 ## Cpp_Voxel
 #  ecell4::Voxel
-ctypedef int Coord
-
 cdef extern from "ecell4/core/Voxel.hpp" namespace "ecell4":
     cdef cppclass Cpp_Voxel "ecell4::Voxel":
         Cpp_Voxel() except +
-        Cpp_Voxel(Cpp_Species, Coord, Real radius, Real D) except +
+        Cpp_Voxel(Cpp_Species, Integer, Real radius, Real D) except +
         Cpp_Voxel(Cpp_Voxel &rhs) except+
-        Coord coordinate()
+        Integer coordinate()
         Real D()
         Real radius()
         Cpp_Species &species()
@@ -455,6 +470,7 @@ cdef Voxel Voxel_from_Cpp_Voxel(Cpp_Voxel* p)
 cdef extern from "ecell4/core/observers.hpp" namespace "ecell4":
     cdef cppclass Cpp_Observer "ecell4::Observer":
         Real next_time()
+        void reset()
 
     cdef cppclass Cpp_FixedIntervalNumberObserver "ecell4::FixedIntervalNumberObserver":
         Cpp_FixedIntervalNumberObserver(Real, vector[string]) except +
@@ -462,25 +478,31 @@ cdef extern from "ecell4/core/observers.hpp" namespace "ecell4":
         Integer num_steps()
         vector[vector[Real]] data()
         vector[Cpp_Species] targets()
+        void reset()
 
     cdef cppclass Cpp_NumberObserver "ecell4::NumberObserver":
         Cpp_NumberObserver(vector[string]) except +
         Real next_time()
+        Integer num_steps()
         vector[vector[Real]] data()
         vector[Cpp_Species] targets()
+        void reset()
 
     cdef cppclass Cpp_FixedIntervalHDF5Observer "ecell4::FixedIntervalHDF5Observer":
         Cpp_FixedIntervalHDF5Observer(Real, string) except +
         Real next_time()
         Integer num_steps()
         string filename()
+        void reset()
 
     cdef cppclass Cpp_FixedIntervalCSVObserver "ecell4::FixedIntervalCSVObserver":
         Cpp_FixedIntervalCSVObserver(Real, string) except +
+        Cpp_FixedIntervalCSVObserver(Real, string, vector[string]) except +
         Real next_time()
         Integer num_steps()
         string filename()
         void log(Cpp_Space*)
+        void reset()
 
     cdef cppclass Cpp_FixedIntervalTrajectoryObserver "ecell4::FixedIntervalTrajectoryObserver":
         Cpp_FixedIntervalTrajectoryObserver(Real, vector[Cpp_ParticleID]) except +
@@ -488,13 +510,15 @@ cdef extern from "ecell4/core/observers.hpp" namespace "ecell4":
         Real next_time()
         Integer num_steps()
         vector[vector[Cpp_Real3]] data()
+        void reset()
 
-    cdef cppclass Cpp_BioImagingObserver "ecell4::BioImagingObserver":
-        Cpp_BioImagingObserver(Real, Real, Integer, Real, Real) except +
+    cdef cppclass Cpp_TimingNumberObserver "ecell4::TimingNumberObserver":
+        Cpp_TimingNumberObserver(vector[double], vector[string]) except +  #XXX: vector[Real]
         Real next_time()
         Integer num_steps()
-        string filename()
-        void log(Cpp_Space*)
+        vector[vector[Real]] data()
+        vector[Cpp_Species] targets()
+        void reset()
 
 ## FixedIntervalNumberObserver
 #  a python wrapper for Cpp_FixedIntervalNumberObserver
@@ -507,6 +531,9 @@ cdef class FixedIntervalNumberObserver:
 cdef class NumberObserver:
     cdef shared_ptr[Cpp_NumberObserver]* thisptr
 
+cdef class TimingNumberObserver:
+    cdef shared_ptr[Cpp_TimingNumberObserver]* thisptr
+
 cdef class FixedIntervalHDF5Observer:
     cdef shared_ptr[Cpp_FixedIntervalHDF5Observer]* thisptr
 
@@ -515,9 +542,6 @@ cdef class FixedIntervalCSVObserver:
 
 cdef class FixedIntervalTrajectoryObserver:
     cdef shared_ptr[Cpp_FixedIntervalTrajectoryObserver]* thisptr
-
-cdef class BioImagingObserver:
-    cdef shared_ptr[Cpp_BioImagingObserver]* thisptr
 
 ## Cpp_Shape
 #  ecell4::Shape
@@ -550,6 +574,46 @@ cdef extern from "ecell4/core/Sphere.hpp" namespace "ecell4":
         Cpp_Sphere inside()
         Integer dimension()
 
+## Cpp_PlanarSurface
+# ecell4::PlanarSurface
+cdef extern from "ecell4/core/PlanarSurface.hpp" namespace "ecell4":
+    cdef cppclass Cpp_PlanarSurface "ecell4::PlanarSurface":
+        Cpp_PlanarSurface()
+        Cpp_PlanarSurface(Cpp_Real3&, Cpp_Real3&, Cpp_Real3&)
+        Cpp_PlanarSurface(Cpp_PlanarSurface)
+        Real is_inside(Cpp_Real3&)
+        Integer dimension()
+
+## Cpp_Rod
+# ecell4::Rod
+cdef extern from "ecell4/core/Rod.hpp" namespace "ecell4":
+    cdef cppclass Cpp_Rod "ecell4::Rod":
+        Cpp_Rod()
+        #Cpp_Rod(Real, Real)
+        Cpp_Rod(Real, Real, Cpp_Real3&)
+        Cpp_Rod(Cpp_Rod&)
+        Real distance(Cpp_Real3&)
+        Real is_inside(Cpp_Real3&)
+        Cpp_Real3& origin()
+        void shift(Cpp_Real3&)
+        Cpp_RodSurface surface()
+        Integer dimension()
+
+## Cpp_RodSurface
+# ecell4::RodSurface
+cdef extern from "ecell4/core/Rod.hpp" namespace "ecell4":
+    cdef cppclass Cpp_RodSurface "ecell4::RodSurface":
+        Cpp_RodSurface()
+        #Cpp_RodSurface(Real, Real)
+        Cpp_RodSurface(Real, Real, Cpp_Real3&)
+        Cpp_RodSurface(Cpp_RodSurface)
+        Real distance(Cpp_Real3&)
+        Real is_inside(Cpp_Real3&)
+        Cpp_Real3& origin()
+        void shift(Cpp_Real3&)
+        Cpp_Rod inside()
+        Integer dimension()
+
 ## Cpp_AABB
 #  ecell4::AABB
 cdef extern from "ecell4/core/AABB.hpp" namespace "ecell4":
@@ -566,22 +630,38 @@ cdef extern from "ecell4/core/AABB.hpp" namespace "ecell4":
 ## Shape
 #  a python wrapper for Cpp_Shape
 cdef class Shape:
-    cdef Cpp_Shape* thisptr
+    cdef shared_ptr[Cpp_Shape]* thisptr
 
 ## Sphere
 #  a python wrapper for Cpp_Sphere
 cdef class Sphere:
-    cdef Cpp_Sphere* thisptr
+    cdef shared_ptr[Cpp_Sphere]* thisptr
 
 ## SphericalSurface
 #  a python wrapper for Cpp_SphericalSurface
 cdef class SphericalSurface:
-    cdef Cpp_SphericalSurface* thisptr
+    cdef shared_ptr[Cpp_SphericalSurface]* thisptr
+
+## PlanarSurface
+#  a python wrapper for Cpp_PlanarSurface
+cdef class PlanarSurface:
+    cdef shared_ptr[Cpp_PlanarSurface]* thisptr
+
+## Rod
+# a python wrapper for Cpp_Rod
+cdef class Rod:
+    cdef shared_ptr[Cpp_Rod]* thisptr
+
+## RodSurface
+# a python wrapper for Cpp_RodSurface
+cdef class RodSurface:
+    cdef shared_ptr[Cpp_RodSurface]* thisptr
+
 
 ## AABB
 #  a python wrapper for Cpp_AABB
 cdef class AABB:
-    cdef Cpp_AABB* thisptr
+    cdef shared_ptr[Cpp_AABB]* thisptr
 
 cdef Sphere Sphere_from_Cpp_Sphere(Cpp_Sphere* p)
 cdef SphericalSurface SphericalSurface_from_Cpp_SphericalSurface(Cpp_SphericalSurface* p)

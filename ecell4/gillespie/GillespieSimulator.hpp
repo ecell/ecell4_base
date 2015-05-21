@@ -125,6 +125,47 @@ protected:
         ReactionRule rr_;
     };
 
+    class ZerothOrderReactionRuleEvent
+        : public ReactionRuleEvent
+    {
+    public:
+
+        typedef ReactionRuleEvent base_type;
+
+        ZerothOrderReactionRuleEvent()
+            : base_type()
+        {
+            ;
+        }
+
+        ZerothOrderReactionRuleEvent(GillespieSimulator* sim, const ReactionRule& rr)
+            : base_type(sim, rr)
+        {
+            ;
+        }
+
+        void inc(const Species& sp, const Integer val = +1)
+        {
+            ; // do nothing
+        }
+
+        void initialize()
+        {
+            ; // do nothing
+        }
+
+        std::pair<ReactionRule::reactant_container_type, Integer> __draw()
+        {
+            return std::make_pair(ReactionRule::reactant_container_type(), 1);
+        }
+
+        const Real propensity() const
+        {
+            return rr_.k();
+        }
+    };
+
+
     class FirstOrderReactionRuleEvent
         : public ReactionRuleEvent
     {

@@ -21,7 +21,7 @@ cdef class ODEWorld:
             self.thisptr = new shared_ptr[Cpp_ODEWorld](
                 new Cpp_ODEWorld(deref((<Real3>edge_lengths).thisptr)))
         else:
-            filename = edge_lengths
+            filename = tostring(edge_lengths)
             self.thisptr = new shared_ptr[Cpp_ODEWorld](new Cpp_ODEWorld(filename))
 
     def __dealloc__(self):
@@ -78,11 +78,11 @@ cdef class ODEWorld:
     def set_value(self, Species sp, Real num):
         self.thisptr.get().set_value(deref(sp.thisptr), num)
 
-    def save(self, string filename):
-        self.thisptr.get().save(filename)
+    def save(self, filename):
+        self.thisptr.get().save(tostring(filename))
 
     def load(self, string filename):
-        self.thisptr.get().load(filename)
+        self.thisptr.get().load(tostring(filename))
 
     def has_species(self, Species sp):
         return self.thisptr.get().has_species(deref(sp.thisptr))
@@ -203,9 +203,13 @@ cdef class ODEFactory:
             return ODEWorld_from_Cpp_ODEWorld(
                 shared_ptr[Cpp_ODEWorld](
                     self.thisptr.create_world(deref((<Real3>arg1).thisptr))))
-        else:
+        elif isinstance(arg1, str):
             return ODEWorld_from_Cpp_ODEWorld(
                 shared_ptr[Cpp_ODEWorld](self.thisptr.create_world(<string>(arg1))))
+        else:
+            return ODEWorld_from_Cpp_ODEWorld(
+                shared_ptr[Cpp_ODEWorld](self.thisptr.create_world(
+                    deref(Cpp_Model_from_Model(arg1)))))
 
     def create_simulator(self, arg1, ODEWorld arg2=None):
         if arg2 is None:

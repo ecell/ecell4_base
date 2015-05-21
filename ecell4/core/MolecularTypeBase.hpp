@@ -3,6 +3,7 @@
 
 #include <vector>
 #include "Species.hpp"
+#include "Shape.hpp"
 #include "Identifier.hpp"
 #include "RandomNumberGenerator.hpp"
 #include "Identifier.hpp"
@@ -16,11 +17,10 @@ class MolecularTypeBase
 {
 public:
 
-    typedef std::pair<Integer, ParticleID> particle_info;
-    typedef particle_info::first_type private_coordinate_type;
-    // typedef LatticeSpace::particle_info particle_info;
+    typedef Integer coordinate_type;
+    typedef std::pair<coordinate_type, ParticleID> coord_id_pair;
 
-    typedef std::vector<particle_info> container_type;
+    typedef std::vector<coord_id_pair> container_type;
     typedef container_type::const_iterator const_iterator;
     typedef container_type::iterator iterator;
 
@@ -29,7 +29,8 @@ public:
     MolecularTypeBase(
         const Species& species, MolecularTypeBase* location,
         const Real& radius, const Real& D)
-        : species_(species), location_(location), radius_(radius), D_(D)
+        : species_(species), location_(location),
+        radius_(radius), D_(D), dimension_(Shape::THREE)
     {
         ;
     }
@@ -40,6 +41,11 @@ public:
     }
 
     virtual bool is_vacant() const = 0;
+
+    virtual bool with_voxels() const
+    {
+        return true;
+    }
 
     const Species& species() const
     {
@@ -71,14 +77,24 @@ public:
         return D_;
     }
 
-    virtual void add_voxel_without_checking(const particle_info& info)
+    void dimension(const Shape::dimension_kind dimension)
+    {
+        dimension_ = dimension;
+    }
+
+    const Shape::dimension_kind dimension() const
+    {
+        return dimension_;
+    }
+
+    virtual void add_voxel_without_checking(const coord_id_pair& info)
     {
         voxels_.push_back(info);
     }
 
     virtual void replace_voxel(
-        private_coordinate_type from_coord,
-        const particle_info& to_info)
+        const coordinate_type& from_coord,
+        const coord_id_pair& to_info)
     {
         container_type::iterator itr(find(from_coord));
         if (itr == voxels_.end())
@@ -89,14 +105,46 @@ public:
         (*itr) = to_info;
     }
 
-    virtual void remove_voxel(const container_type::iterator& position)
+    virtual void replace_voxel(
+        const coordinate_type& from_coord,
+        const coordinate_type& to_coord)
+    {
+        container_type::iterator itr(find(from_coord));
+        if (itr == voxels_.end())
+        {
+            throw NotFound("no corresponding coordinate was found.");
+        }
+
+        (*itr).first = to_coord;
+    }
+
+    virtual coord_id_pair pop(const coordinate_type& coord)
+    {
+        container_type::iterator position(this->find(coord));
+        const coord_id_pair info(*position);
+        this->remove_voxel(position);
+        return info;
+    }
+
+    virtual bool remove_voxel_if_exists(const coordinate_type& coord)
+    {
+        container_type::iterator itr(find(coord));
+        if (itr != voxels_.end())
+        {
+            this->remove_voxel(itr);
+            return true;
+        }
+        return false;
+    }
+
+    void remove_voxel(const container_type::iterator& position)
     {
         // voxels_.erase(position);
         (*position) = voxels_.back();
         voxels_.pop_back();
     }
 
-    virtual void swap(
+    void swap(
         const container_type::iterator& a, const container_type::iterator& b)
     {
         if (a == b)
@@ -109,43 +157,22 @@ public:
         (*a) = info;
     }
 
-    virtual void addVoxel(particle_info info)
-    {
-        container_type::iterator itr(find(info.first));
-        if (itr != voxels_.end())
-        {
-            voxels_.erase(itr);
-        }
-        voxels_.push_back(info);
-    }
-
-    virtual bool removeVoxel(private_coordinate_type coord)
-    {
-        container_type::iterator itr(find(coord));
-        if (itr != voxels_.end())
-        {
-            this->remove_voxel(itr);
-            return true;
-        }
-        return false;
-    }
-
-    particle_info& at(const Integer& index)
+    coord_id_pair& at(const Integer& index)
     {
         return voxels_.at(index);
     }
 
-    particle_info const& at(const Integer& index) const
+    coord_id_pair const& at(const Integer& index) const
     {
         return voxels_.at(index);
     }
 
-    particle_info& operator[](const Integer& n)
+    coord_id_pair& operator[](const Integer& n)
     {
         return voxels_[n];
     }
 
-    particle_info const& operator[](const Integer& n) const
+    coord_id_pair const& operator[](const Integer& n) const
     {
         return voxels_[n];
     }
@@ -180,30 +207,14 @@ public:
         return voxels_.end();
     }
 
-    container_type::iterator find(private_coordinate_type coord)
+    const ParticleID find_particle_id(const coordinate_type& coord) const
     {
-        container_type::iterator itr;
-        for (itr = voxels_.begin(); itr != voxels_.end(); ++itr)
+        container_type::const_iterator i(this->find(coord));
+        if (i == voxels_.end())
         {
-            if ((*itr).first == coord)
-            {
-                break;
-            }
+            throw NotFound("No corresponding ParticleID was found.");
         }
-        return itr;
-    }
-
-    container_type::const_iterator find(private_coordinate_type coord) const
-    {
-        container_type::const_iterator itr;
-        for (itr = voxels_.begin(); itr != voxels_.end(); ++itr)
-        {
-            if ((*itr).first == coord)
-            {
-                break;
-            }
-        }
-        return itr;
+        return (*i).second;
     }
 
     container_type::iterator find(const ParticleID& pid)
@@ -234,9 +245,38 @@ public:
 
 protected:
 
+    container_type::iterator find(coordinate_type coord)
+    {
+        container_type::iterator itr;
+        for (itr = voxels_.begin(); itr != voxels_.end(); ++itr)
+        {
+            if ((*itr).first == coord)
+            {
+                break;
+            }
+        }
+        return itr;
+    }
+
+    container_type::const_iterator find(coordinate_type coord) const
+    {
+        container_type::const_iterator itr;
+        for (itr = voxels_.begin(); itr != voxels_.end(); ++itr)
+        {
+            if ((*itr).first == coord)
+            {
+                break;
+            }
+        }
+        return itr;
+    }
+
+protected:
+
     const Species species_;
     MolecularTypeBase* location_;
     Real radius_, D_;
+    Shape::dimension_kind dimension_;
 
     container_type voxels_;
 };

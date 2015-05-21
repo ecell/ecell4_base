@@ -27,12 +27,12 @@ cdef extern from "ecell4/ode/ODEWorld.hpp" namespace "ecell4::ode":
         # CompartmentSpace member functions
         void set_volume(Real &)
         void add_molecules(Cpp_Species &sp, Integer &num)
-        void add_molecules(Cpp_Species &sp, Integer &num, Cpp_Shape&)
+        void add_molecules(Cpp_Species &sp, Integer &num, shared_ptr[Cpp_Shape])
         void remove_molecules(Cpp_Species &sp, Integer &num)
         # Optional members
         Real get_value(Cpp_Species &)
         void set_value(Cpp_Species &sp, Real &num)
-        void save(string)
+        void save(string) except +
         void load(string)
         bool has_species(Cpp_Species &)
         void reserve_species(Cpp_Species &)
@@ -85,6 +85,7 @@ cdef extern from "ecell4/ode/ODEFactory.hpp" namespace "ecell4::ode":
         Cpp_ODEFactory() except +
         Cpp_ODEWorld* create_world(string)
         Cpp_ODEWorld* create_world(Cpp_Real3&)
+        Cpp_ODEWorld* create_world(shared_ptr[Cpp_Model])
         Cpp_ODESimulator* create_simulator(shared_ptr[Cpp_Model], shared_ptr[Cpp_ODEWorld])
         Cpp_ODESimulator* create_simulator(shared_ptr[Cpp_ODEWorld])
 

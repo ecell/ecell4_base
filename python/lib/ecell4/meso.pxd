@@ -34,9 +34,12 @@ cdef extern from "ecell4/meso/MesoscopicWorld.hpp" namespace "ecell4::meso":
         void add_molecules(Cpp_Species &sp, Integer &num, Cpp_Integer3)
         void remove_molecules(Cpp_Species &sp, Integer &num, Cpp_Integer3)
         void add_molecules(Cpp_Species &sp, Integer &num)
-        void add_molecules(Cpp_Species &sp, Integer &num, Cpp_Shape&)
+        void add_molecules(Cpp_Species &sp, Integer &num, shared_ptr[Cpp_Shape])
+        void add_structure(Cpp_Species&, shared_ptr[Cpp_Shape])
+        Real get_volume(Cpp_Species&)
+        bool on_structure(Cpp_Species&, Cpp_Integer3&)
         void remove_molecules(Cpp_Species &sp, Integer &num)
-        void save(string)
+        void save(string) except +
         void load(string)
         void bind_to(shared_ptr[Cpp_Model])
         shared_ptr[Cpp_RandomNumberGenerator] rng()
@@ -93,6 +96,7 @@ cdef extern from "ecell4/meso/MesoscopicFactory.hpp" namespace "ecell4::meso":
         Cpp_MesoscopicFactory(Cpp_Integer3&, shared_ptr[Cpp_RandomNumberGenerator]) except +
         Cpp_MesoscopicWorld* create_world(string)
         Cpp_MesoscopicWorld* create_world(Cpp_Real3&)
+        Cpp_MesoscopicWorld* create_world(shared_ptr[Cpp_Model])
         Cpp_MesoscopicSimulator* create_simulator(shared_ptr[Cpp_Model], shared_ptr[Cpp_MesoscopicWorld])
         Cpp_MesoscopicSimulator* create_simulator(shared_ptr[Cpp_MesoscopicWorld])
 

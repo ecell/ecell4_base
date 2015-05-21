@@ -16,6 +16,29 @@ cdef class Real3:
             raise IndexError("index out of bounds")
         return deref(self.thisptr)[i]
 
+    def __add__(Real3 self, Real3 other):
+        return add(self, other)
+
+    def __sub__(Real3 self, Real3 other):
+        return subtract(self, other)
+
+    def __div__(Real3 self, Real other):
+        return divide(self, other)
+
+    def __truediv__(Real3 self, Real other):
+        return divide(self, other)
+
+    def __mul__(self, other):
+        if isinstance(self, Real3):
+            return multiply(<Real3>self, <Real>other)
+        elif isinstance(other, Real3):
+            return multiply(<Real3>other, <Real>self)
+        else:
+            raise ValueError(
+                'invalid value was given: '
+                + repr(self) + ' : ' + repr(other))
+
+
 cdef Real3 Real3_from_Cpp_Real3(Cpp_Real3 *p):
     cdef Cpp_Real3 *new_obj = new Cpp_Real3(<Cpp_Real3> deref(p))
     r = Real3(0.0, 0.0, 0.0)

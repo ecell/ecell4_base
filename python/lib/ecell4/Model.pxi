@@ -38,12 +38,8 @@ cdef class Model:
             deref(sp.thisptr))
         return Species_from_Cpp_Species(address(retval))
 
-    # def num_reaction_rules(self):
-    #     return self.thisptr.get().num_reaction_rules()
-
-    # def create_species(self, string name):
-    #     cdef Cpp_Species retval = self.thisptr.get().create_species(name)
-    #     return Species_from_Cpp_Species(address(retval))
+    def num_reaction_rules(self):
+        return self.thisptr.get().num_reaction_rules()
 
     def reaction_rules(self):
         cdef vector[Cpp_ReactionRule] c_rr_vector = self.thisptr.get().reaction_rules()
@@ -107,6 +103,10 @@ cdef class Model:
         cdef vector[Cpp_Species] _seeds
         cdef map[Cpp_Species, Integer] _max_stoich
         for sp in seeds:
+            if not isinstance(sp, Species):
+                raise ValueError(
+                    'seeds must be given as a list of Species.'
+                    + ' {0} given.'.format(repr(sp)))
             _seeds.push_back(deref((<Species>sp).thisptr))
 
         if max_stoich is not None:

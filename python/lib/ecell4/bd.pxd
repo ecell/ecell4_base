@@ -49,9 +49,9 @@ cdef extern from "ecell4/bd/BDWorld.hpp" namespace "ecell4::bd":
         Integer num_molecules(Cpp_Species& sp)
         Integer num_molecules_exact(Cpp_Species& sp)
         void add_molecules(Cpp_Species& sp, Integer num)
-        void add_molecules(Cpp_Species& sp, Integer num, Cpp_Shape&)
+        void add_molecules(Cpp_Species& sp, Integer num, shared_ptr[Cpp_Shape])
         void remove_molecules(Cpp_Species& sp, Integer num)
-        void save(string filename)
+        void save(string filename) except +
         void load(string filename)
         void bind_to(shared_ptr[Cpp_Model])
         shared_ptr[Cpp_RandomNumberGenerator] rng()
@@ -101,10 +101,11 @@ cdef BDSimulator BDSimulator_from_Cpp_BDSimulator(Cpp_BDSimulator* s)
 cdef extern from "ecell4/bd/BDFactory.hpp" namespace "ecell4::bd":
     cdef cppclass Cpp_BDFactory "ecell4::bd::BDFactory":
         Cpp_BDFactory() except +
-        Cpp_BDFactory(shared_ptr[Cpp_RandomNumberGenerator]) except +
+        Cpp_BDFactory(Cpp_Integer3&) except +
+        Cpp_BDFactory(Cpp_Integer3&, shared_ptr[Cpp_RandomNumberGenerator]) except +
         Cpp_BDWorld* create_world(string)
         Cpp_BDWorld* create_world(Cpp_Real3&)
-        Cpp_BDWorld* create_world(Cpp_Real3&, Cpp_Integer3&)
+        Cpp_BDWorld* create_world(shared_ptr[Cpp_Model])
         Cpp_BDSimulator* create_simulator(shared_ptr[Cpp_Model], shared_ptr[Cpp_BDWorld])
         Cpp_BDSimulator* create_simulator(shared_ptr[Cpp_BDWorld])
 

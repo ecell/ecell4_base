@@ -7,7 +7,7 @@ from libcpp.string cimport string
 
 cdef class Voxel:
 
-    def __cinit__(self, Species sp, Coord coord, Real radius, Real D):
+    def __cinit__(self, Species sp, Integer coord, Real radius, Real D):
         self.thisptr = new Cpp_Voxel(
             deref(sp.thisptr), coord, radius, D)
 
@@ -27,7 +27,7 @@ cdef class Voxel:
         return Species_from_Cpp_Species(address(self.thisptr.species()))
 
     def loc(self):
-        return self.thisptr.loc()
+        return self.thisptr.loc().decode('UTF-8')
 
 cdef Voxel Voxel_from_Cpp_Voxel(Cpp_Voxel* p):
     cdef Cpp_Voxel *new_obj = new Cpp_Voxel(<Cpp_Voxel> deref(p))

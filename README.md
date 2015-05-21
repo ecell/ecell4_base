@@ -8,15 +8,18 @@ E-Cell System, a software platform for modeling, simulation and analysis of comp
 
 ### Requirements
 
-- Python 2.7.9(**32bit**) https://www.python.org/ftp/python/2.7.9/python-2.7.9.msi
+Please use 32bit Python, even if you use 64bit Windows.
+We don't support 64bit Python
+
+- Python 2.7.9(**32bit**) https://www.python.org/ftp/python/2.7.9/python-2.7.9.msi **or** Python 3.4.3(**32bit**) https://www.python.org/ftp/python/3.4.3/python-3.4.3.msi
 - HDF5-1.8.14 Pre-built Binary(**32-bit**) http://www.hdfgroup.org/ftp/HDF5/current/bin/windows/extra/hdf5-1.8.14-win32-vs2008-shared.zip
 
-Please add `C:\Python27\Scripts` and `C:\Program Files (x86)\HDF_Group\HDF5\1.8.14\bin` to your **PATH** enviromental variable.
+
+Please add `C:\Python27`, `C:\Python27\Scripts` (or `C:\Python34`, `C:\Python34\Scripts`) and `C:\Program Files (x86)\HDF_Group\HDF5\1.8.14\bin` to your **PATH** enviromental variable.
 
 And run following command with command prompt.
 ```
-:: Please download ecell4-4.0.0_beta1-cp27-none-win32.whl from release page
-pip install ecell4-4.0.0_beta1-cp27-none-win32.whl
+pip install https://github.com/ecell/ecell4/releases/download/4.0.0-beta2/ecell4-4.0.0b2-cp27-none-win32.whl
 ```
 
 ### IPython notebook
@@ -29,12 +32,12 @@ pip install pyparsing
 pip install "ipython[notebook]"
 ```
 
-next, download matplotlib and numpy from
+next, install matplotlib and numpy from
 
 https://downloads.sourceforge.net/project/matplotlib/matplotlib/matplotlib-1.4.2/windows/matplotlib-1.4.2-cp27-none-win32.whl  
 http://sourceforge.net/projects/numpy/files/NumPy/1.9.1/numpy-1.9.1-win32-superpack-python2.7.exe/download
 
-and install these exe files.
+
 
 ## Installing E-Cell (Mac OS X)
 
@@ -45,15 +48,13 @@ and install these exe files.
 - pip
 
 ```shell
-# here we use homebrew to install hdf5, please install hdf5 to /usr/local/lib
-brew install homebrew/science/hdf5 --enable-cxx
+brew install homebrew/science/hdf5
 brew install wget
 wget https://bootstrap.pypa.io/get-pip.py
 sudo python get-pip.py
-# please download whl file from release page(https://github.com/ecell/ecell4/releases)
-pip install ecell4-4.0.0_beta1-cp27-none-macosx_10_10_intel.whl --user
+pip install https://github.com/ecell/ecell4/releases/download/4.0.0-beta2/ecell4-4.0.0b2-cp27-none-macosx_10_10_intel.whl --user
 # if you are using Mountain Lion
-# pip install ecell4-4.0.0b1-cp27-none-macosx_10_9_intel.whl --user
+# pip install https://github.com/ecell/ecell4/releases/download/4.0.0-beta2/ecell4-4.0.0b2-cp27-none-macosx_10_9_intel.whl --user
 ```
 
 ### IPython notebook
@@ -69,24 +70,48 @@ PYTHONPATH=~/Library/Python/2.7/lib/python/site-packages/ ipython notebook
 
 now you can see IPython notebooks, please open index.ipynb to see E-Cell4 models.
 
+## Building and installing E-Cell (Ubuntu 15.04)
+### Python2 series
+```shell
+# dependent packages
+$ sudo apt-get install cmake libgsl0-dev libboost-dev libboost-regex-dev libhdf5-dev cython
+
+$ wget https://github.com/ecell/ecell4/archive/master.zip   
+$ unzip master.zip
+$ cd ecell4-master
+# in this case we install ecell4 to $HOME/ecell4
+$ PREFIX=$HOME/ecell4 ./install.sh py2
+```
+### Python3 series
+```shell
+# dependent packages
+$ sudo apt-get install cmake libgsl0-dev libboost-dev libboost-regex-dev libhdf5-dev cython3 python3-pip
+
+$ wget https://github.com/ecell/ecell4/archive/master.zip   
+$ unzip master.zip
+$ cd ecell4-master
+# in this case we install ecell4 to $HOME/ecell4
+$ PREFIX=$HOME/ecell4 ./install.sh py3
 
 ## Building and installing E-Cell (Ubuntu 14.04)
 
 ```shell
 # dependent packages
-$ sudo apt-get install cmake libgsl0-dev libboost-dev libboost-regex-dev libhdf5-dev libatlas-base-dev
-$ sudo apt-get instal python-dev cython
+$ sudo apt-get install cmake libgsl0-dev libboost-dev libboost-regex-dev libhdf5-dev libatlas-base-dev python-dev python-pip
+$ sudo pip install cython
 
 $ wget https://github.com/ecell/ecell4/archive/master.zip   
 $ unzip master.zip
 $ cd ecell4-master
-$ PREFIX=/path/to PYTHONPATH=/path/to/lib/python2.7/site-packages ./install.sh
+# in this case we install ecell4 to $HOME/ecell4
+$ PREFIX=$HOME/ecell4 PYTHONPATH=/path/to/lib/python2.7/site-packages ./install.sh py2
 ```
 
-## How to use?
+## Running E-Cell4
 
 ```
-$ LD_LIBRARY_PATH=/pat/to/lib PYTHONPATH=/path/to/lib/python2.7/site-packages python
+# If you set PREFIX to $HOME/ecell4, make sure to append $HOME/ecell4/lib to LD_LIBRARY_PATH 
+$ LD_LIBRARY_PATH=$HOME/ecell4/lib:$LD_LIBRARY_PATH PYTHONPATH=$HOME/ecell4/lib/python2.7/site-packages python
 Python 2.7.6 (default, Mar 22 2014, 22:59:56) 
 [GCC 4.8.2] on linux2
 Type "help", "copyright", "credits" or "license" for more information.
@@ -99,8 +124,8 @@ A.B.C
 
 ## Running E-Cell4 with IPython notebook (by docker)
 
-If you use following docker images, you don't need to do OS dependent installation.  
-We have already installed E-Cell4 to docker environment.
+We support docker images too.
+If you use docker, you can easily test E-Cell4.
 
 ### boot2docker (Windows or Mac)
 
@@ -119,7 +144,7 @@ Then you should be able to access the E-Cell4 IPython notebook server using the 
 $ boot2docker ip
 ```
 
-Typically, it is 192.168.59.103, so please open 192.168.59.103:8888 with your favorite browser.
+Typically, it is 192.168.59.103, then please open 192.168.59.103:8888 with your favorite browser.
 (But it could get changed by Virtualbox's DHCP implementation.)
 
 ### Docker (Linux)

@@ -2,6 +2,7 @@
 #define WORLD_HPP
 
 
+#include <ecell4/core/exceptions.hpp>
 #include <ecell4/core/RandomNumberGenerator.hpp>
 #include <ecell4/core/Species.hpp>
 #include <ecell4/core/types.hpp>
@@ -13,7 +14,11 @@
 #include <ecell4/core/Model.hpp>
 #include <ecell4/core/extras.hpp>
 #include <ecell4/core/SerialIDGenerator.hpp>
+
+#ifdef WITH_HDF5
 #include <ecell4/core/ParticleSpaceHDF5Writer.hpp>
+#endif
+
 #include <ecell4/core/Sphere.hpp>
 #include "./ParticleTraits.hpp" // This refers ecell4::Particle
 #include "structures.hpp"
@@ -23,12 +28,12 @@
 
 #include <map>
 #include <boost/lexical_cast.hpp>
+#include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
 #include <boost/array.hpp>
 #include <boost/utility/enable_if.hpp>
 #include <boost/type_traits/is_same.hpp>
 #include <boost/foreach.hpp>
-#include "exceptions.hpp"
 #include "generator.hpp"
 #include "filters.hpp"
 //#include "ParticleID.hpp"
@@ -452,8 +457,10 @@ public:
         return rng_;
     }
 
+
     virtual void save(const std::string& filename) const
     {
+#ifdef WITH_HDF5
         boost::scoped_ptr<H5::H5File>
             fout(new H5::H5File(filename.c_str(), H5F_ACC_TRUNC));
         rng_->save(fout.get());
@@ -473,10 +480,16 @@ public:
                 "matrix_sizes", sizes_type, H5::DataSpace(H5S_SCALAR)));
         int data[] = {sizes[0], sizes[1], sizes[2]};
         attr_sizes.write(sizes_type, data);
+#else
+        throw ecell4::NotSupported("not supported yet.");
+#endif
     }
+
+
 
     virtual void load(const std::string& filename)
     {
+#ifdef WITH_HDF5
         //XXX: structures will be lost.
         //XXX: the order of particles in MatrixSpace will be lost.
         //XXX: initialize Simulator
@@ -498,7 +511,11 @@ public:
         ecell4::load_particle_space(group, this);
         pidgen_.load(*fin);
         rng_->load(*fin);
+#else
+        throw ecell4::NotSupported("not supported yet.");
+#endif
     }
+
 
     virtual void clear()
     {
@@ -739,6 +756,7 @@ public:
                     << std::endl;
             }
         }
+
         model_ = model;
     }
 
@@ -789,7 +807,7 @@ public:
 
     void add_molecules(
         const ecell4::Species& sp, const ecell4::Integer& num,
-        const ecell4::Shape& shape)
+        const boost::shared_ptr<ecell4::Shape> shape)
     {
         ecell4::extras::throw_in_particles(*this, sp, num, shape, rng());
     }

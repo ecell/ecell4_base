@@ -46,6 +46,11 @@ inline double pow_3(const double x)
 {
     return gsl_pow_3(x);
 }
+
+inline double cbrt(const double x)
+{
+    return ::cbrt(x);
+}
 #else
 inline double pow_2(const double x)
 {

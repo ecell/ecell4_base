@@ -1,3 +1,12 @@
+from libcpp.string cimport string
+
+cdef string tostring(ustr):
+    if isinstance(ustr, unicode):
+        return <string>(ustr.encode('UTF-8'))
+    else:
+        return <string>(ustr)
+
+include "RandomNumberGenerator.pxi"
 include "UnitSpecies.pxi"
 include "Species.pxi"
 include "Ratelaw.pxi"
@@ -11,7 +20,6 @@ include "NetfreeModel.pxi"
 include "Real3.pxi"
 include "Integer3.pxi"
 include "Particle.pxi"
-include "RandomNumberGenerator.pxi"
 include "Voxel.pxi"
 include "Observer.pxi"
 include "shapes.pxi"
@@ -28,3 +36,8 @@ cdef shared_ptr[Cpp_Model]* Cpp_Model_from_Model(m):
     else:
         raise ValueError, ("a wrong argument was given [%s]." % (type(m))
             + " the first argument must be Model, NetworkModel or NetfreeModel")
+
+cimport functions
+
+def cbrt(Real x):
+    return functions.cbrt(x)

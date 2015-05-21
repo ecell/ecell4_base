@@ -4,6 +4,7 @@
 #include <ecell4/core/SimulatorFactory.hpp>
 #include <ecell4/core/RandomNumberGenerator.hpp>
 
+#include <ecell4/core/extras.hpp>
 #include "GillespieWorld.hpp"
 #include "GillespieSimulator.hpp"
 
@@ -56,6 +57,11 @@ public:
         {
             return new GillespieWorld(edge_lengths);
         }
+    }
+
+    virtual GillespieWorld* create_world(const boost::shared_ptr<Model>& m) const
+    {
+        return extras::generate_world_from_model(*this, m);
     }
 
     virtual GillespieSimulator* create_simulator(

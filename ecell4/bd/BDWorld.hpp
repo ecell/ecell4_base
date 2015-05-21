@@ -185,6 +185,16 @@ public:
         return (*ps_).list_species();
     }
 
+    virtual Real get_value(const Species& sp) const
+    {
+        return static_cast<Real>(num_molecules(sp));
+    }
+
+    virtual Real get_value_exact(const Species& sp) const
+    {
+        return static_cast<Real>(num_molecules_exact(sp));
+    }
+
     // ParticleSpace member functions
 
     bool update_particle(const ParticleID& pid, const Particle& p)
@@ -271,7 +281,7 @@ public:
         extras::throw_in_particles(*this, sp, num, rng());
     }
 
-    void add_molecules(const Species& sp, const Integer& num, const Shape& shape)
+    void add_molecules(const Species& sp, const Integer& num, const boost::shared_ptr<Shape> shape)
     {
         extras::throw_in_particles(*this, sp, num, shape, rng());
     }
@@ -321,6 +331,7 @@ public:
 
     void save(const std::string& filename) const
     {
+#ifdef WITH_HDF5
         boost::scoped_ptr<H5::H5File>
             fout(new H5::H5File(filename.c_str(), H5F_ACC_TRUNC));
         rng_->save(fout.get());
@@ -328,16 +339,23 @@ public:
         boost::scoped_ptr<H5::Group>
             group(new H5::Group(fout->createGroup("ParticleSpace")));
         ps_->save(group.get());
+#else
+        throw NotSupported("not supported yet.");
+#endif
     }
 
     void load(const std::string& filename)
     {
+#ifdef WITH_HDF5
         boost::scoped_ptr<H5::H5File>
             fin(new H5::H5File(filename.c_str(), H5F_ACC_RDONLY));
         const H5::Group group(fin->openGroup("ParticleSpace"));
         ps_->load(group);
         pidgen_.load(*fin);
         rng_->load(*fin);
+#else
+        throw NotSupported("not supported yet.");
+#endif
     }
 
     void bind_to(boost::shared_ptr<Model> model)
@@ -350,6 +368,7 @@ public:
                     << std::endl;
             }
         }
+
         model_ = model;
     }
 

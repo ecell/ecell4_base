@@ -7,12 +7,13 @@
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_randist.h>
 
-#include <hdf5.h>
-#include <H5Cpp.h>
-
 #include "types.hpp"
 #include "Real3.hpp"
 
+#ifdef WITH_HDF5
+#include <hdf5.h>
+#include <H5Cpp.h>
+#endif
 
 namespace ecell4
 {
@@ -36,8 +37,10 @@ public:
     virtual void seed(Integer val) = 0;
     virtual void seed() = 0;
 
+#ifdef WITH_HDF5
     virtual void save(H5::CommonFG* root) const = 0;
     virtual void load(const H5::CommonFG& root) = 0;
+#endif
 };
 
 template<typename Telem_>
@@ -70,8 +73,10 @@ public:
     void seed(Integer val);
     void seed();
 
+#ifdef WITH_HDF5
     void save(H5::CommonFG* root) const;
     void load(const H5::CommonFG& root);
+#endif
 
     GSLRandomNumberGenerator(rng_handle hdl)
         : rng_(hdl)

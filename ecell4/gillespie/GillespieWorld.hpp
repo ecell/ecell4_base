@@ -11,7 +11,9 @@
 #include <ecell4/core/RandomNumberGenerator.hpp>
 #include <ecell4/core/Species.hpp>
 #include <ecell4/core/CompartmentSpace.hpp>
+#ifdef WITH_HDF5
 #include <ecell4/core/CompartmentSpaceHDF5Writer.hpp>
+#endif
 #include <ecell4/core/NetworkModel.hpp>
 #include <ecell4/core/Shape.hpp>
 
@@ -98,21 +100,29 @@ public:
 
     void save(const std::string& filename) const
     {
+#ifdef WITH_HDF5
         boost::scoped_ptr<H5::H5File>
             fout(new H5::H5File(filename.c_str(), H5F_ACC_TRUNC));
         rng_->save(fout.get());
         boost::scoped_ptr<H5::Group>
             group(new H5::Group(fout->createGroup("CompartmentSpace")));
         cs_->save(group.get());
+#else
+        throw NotSupported("not supported yet.");
+#endif
     }
 
     void load(const std::string& filename)
     {
+#ifdef WITH_HDF5
         boost::scoped_ptr<H5::H5File>
             fin(new H5::H5File(filename.c_str(), H5F_ACC_RDONLY));
         rng_->load(*fin);
         const H5::Group group(fin->openGroup("CompartmentSpace"));
         cs_->load(group);
+#else
+        throw NotSupported("not supported yes.");
+#endif
     }
 
     void bind_to(boost::shared_ptr<Model> model)
@@ -125,6 +135,7 @@ public:
                     << std::endl;
             }
         }
+
         this->model_ = model;
     }
 
@@ -133,10 +144,14 @@ public:
         return model_.lock();
     }
 
-    void add_molecules(const Species& sp, const Integer& num, const Shape& shape)
+    void add_molecules(const Species& sp, const Integer& num, const boost::shared_ptr<Shape> shape)
     {
         add_molecules(sp, num);
     }
+
+    std::vector<std::pair<ParticleID, Particle> > list_particles() const;
+    std::vector<std::pair<ParticleID, Particle> > list_particles_exact(const Species& sp) const;
+    std::vector<std::pair<ParticleID, Particle> > list_particles(const Species& sp) const;
 
 private:
 

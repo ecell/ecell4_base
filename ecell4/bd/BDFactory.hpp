@@ -24,13 +24,20 @@ public:
 public:
 
     BDFactory()
-        : base_type(), rng_()
+        : base_type(), matrix_sizes_(3, 3, 3), rng_()
     {
         ; // do nothing
     }
 
-    BDFactory(const boost::shared_ptr<RandomNumberGenerator>& rng)
-        : base_type(), rng_(rng)
+    BDFactory(const Integer3& matrix_sizes)
+        : base_type(), matrix_sizes_(matrix_sizes), rng_()
+    {
+        ; // do nothing
+    }
+
+    BDFactory(const Integer3& matrix_sizes,
+        const boost::shared_ptr<RandomNumberGenerator>& rng)
+        : base_type(), matrix_sizes_(matrix_sizes), rng_(rng)
     {
         ; // do nothing
     }
@@ -45,30 +52,22 @@ public:
         return new BDWorld(filename);
     }
 
-    BDWorld* create_world(
-        const Real3& edge_lengths, const Integer3& matrix_sizes) const
-    {
-        if (rng_)
-        {
-            return new BDWorld(edge_lengths, matrix_sizes, rng_);
-        }
-        else
-        {
-            return new BDWorld(edge_lengths, matrix_sizes);
-        }
-    }
-
     virtual BDWorld* create_world(
         const Real3& edge_lengths = Real3(1, 1, 1)) const
     {
         if (rng_)
         {
-            return new BDWorld(edge_lengths, Integer3(3, 3, 3), rng_);
+            return new BDWorld(edge_lengths, matrix_sizes_, rng_);
         }
         else
         {
-            return new BDWorld(edge_lengths);
+            return new BDWorld(edge_lengths, matrix_sizes_);
         }
+    }
+
+    virtual BDWorld* create_world(const boost::shared_ptr<Model>& m) const
+    {
+        return extras::generate_world_from_model(*this, m);
     }
 
     virtual BDSimulator* create_simulator(
@@ -86,6 +85,7 @@ public:
 
 protected:
 
+    Integer3 matrix_sizes_;
     boost::shared_ptr<RandomNumberGenerator> rng_;
 };
 

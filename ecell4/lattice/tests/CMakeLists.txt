@@ -1,5 +1,6 @@
 set(TEST_NAMES
-    LatticeSimulator_test LatticeWorld_test)
+    LatticeSimulator_test LatticeWorld_test
+    LatticeSimulator_profile)
 
 set(test_library_dependencies)
 find_library(BOOST_UNITTEST_FRAMEWORK_LIBRARY boost_unit_test_framework)

@@ -3,6 +3,7 @@
 
 #include <ecell4/core/SimulatorFactory.hpp>
 #include <ecell4/core/RandomNumberGenerator.hpp>
+#include <ecell4/core/extras.hpp>
 
 #include "MesoscopicWorld.hpp"
 #include "MesoscopicSimulator.hpp"
@@ -67,6 +68,11 @@ public:
         {
             return new MesoscopicWorld(edge_lengths);
         }
+    }
+
+    virtual MesoscopicWorld* create_world(const boost::shared_ptr<Model>& m) const
+    {
+        return extras::generate_world_from_model(*this, m);
     }
 
     virtual MesoscopicSimulator* create_simulator(

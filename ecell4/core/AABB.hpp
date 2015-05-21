@@ -37,30 +37,18 @@ struct AABB
         return upper_;
     }
 
-    Real distance(const Real3& pos) const
+    const Real3 center() const
     {
-        const Real3 closest(
-            std::min(std::max(pos[0], lower_[0]), upper_[0]),
-            std::min(std::max(pos[1], lower_[1]), upper_[1]),
-            std::min(std::max(pos[2], lower_[2]), upper_[2]));
-        const Real distance_plus(length(closest - pos));
-
-        if (distance_plus > 0)
-        {
-            return distance_plus;
-        }
-        else
-        {
-            std::vector<Real> tmp(6);
-            tmp[0] = lower_[0] - pos[0];
-            tmp[1] = lower_[1] - pos[1];
-            tmp[2] = lower_[2] - pos[2];
-            tmp[3] = pos[0] - upper_[0];
-            tmp[4] = pos[1] - upper_[1];
-            tmp[5] = pos[2] - upper_[2];
-            return *std::max_element(tmp.begin(), tmp.end());
-        }
+        return multiply(upper_ + lower_, 0.5);
     }
+
+    const Real3 radius() const
+    {
+        return multiply(upper_ - lower_, 0.5);
+    }
+
+    Real distance_sq(const Real3 pos) const;
+    Real distance(const Real3& pos) const;
 
     Real is_inside(const Real3& coord) const
     {
@@ -68,13 +56,23 @@ struct AABB
     }
 
     Real3 draw_position(
-        boost::shared_ptr<RandomNumberGenerator>& rng) const
+        boost::shared_ptr<RandomNumberGenerator>& rng) const;
+    bool test_AABB(const Real3& l, const Real3& u) const;
+    bool test_segment(const Real3& p0, const Real3& p1) const;
+    std::pair<bool, Real> intersect_ray(const Real3& p, const Real3& d) const;
+
+    bool test_ray(const Real3& p, const Real3& d) const
     {
-        const Real3 pos(
-            rng->uniform(lower_[0], upper_[0]),
-            rng->uniform(lower_[1], upper_[1]),
-            rng->uniform(lower_[2], upper_[2]));
-        return pos;
+        return intersect_ray(p, d).first;
+    }
+
+    inline Real3 corner(const int& n) const
+    {
+        const Real3 p(
+            ((n & 1) ? upper_[0] : lower_[0]),
+            ((n & 2) ? upper_[1] : lower_[1]),
+            ((n & 4) ? upper_[2] : lower_[2]));
+        return p;
     }
 
 protected:

@@ -9,8 +9,8 @@ import unittest
 try:
     from Cython.Distutils import build_ext
 except ImportError:
-    print "You don't seem to have Cython installed. Please get a"
-    print "copy from www.cython.org and install it"
+    print("You don't seem to have Cython installed. Please get a")
+    print("copy from www.cython.org and install it")
     sys.exit(1)
 
 class run_tests(Command):
@@ -39,7 +39,10 @@ class run_tests(Command):
         test_runner.run(suite)
 
 if sys.platform == "win32":
-    dependent_libs = ['gsl', 'cblas', 'hdf5_cpp', 'hdf5']
+    if sys.version_info.major == 2:
+        dependent_libs = ['gsl', 'cblas', 'hdf5_cpp', 'hdf5']
+    elif sys.version_info.major == 3:
+        dependent_libs = ['gsl', 'gslcblas', 'hdf5_cpp', 'hdf5']
     extra_compile_args = ["/EHsc", "/w", "-DHAVE_CONFIG_H", "-DHAVE_INLINE"]
     with_cpp_shared_libraries = False
 elif sys.platform == "darwin":
@@ -122,15 +125,16 @@ else:
 
 setup(
     name = "ecell4",
-    version = "4.0.0b1",
+    version = "4.0.0b2",
     package_dir = {"": "lib"},
     package_data = {"ecell4.util": [
         "templates/init_ipynb.js", "templates/init_cyjs.js", "templates/template.html",
         "templates/*.tmpl", "templates/ecelllogo/*.png"]},
     data_files = [('ecell4ipynb', ['../ipynb/index.ipynb']),
                   ('ecell4ipynb/Tutorials', glob.glob('../ipynb/Tutorials/*.ipynb'))],
-    packages = ["ecell4",
-        "ecell4.util", "ecell4.util.legacy"],
+    # packages = ["ecell4",
+    #     "ecell4.util", "ecell4.util.legacy"],
+    packages = ["ecell4", "ecell4.util"],
     cmdclass = {'build_ext': build_ext, 'test': run_tests},
     ext_modules = ext_modules
     )

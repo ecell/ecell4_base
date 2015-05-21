@@ -1,6 +1,7 @@
 import collections
 from cython cimport address
 from cython.operator cimport dereference as deref, preincrement as inc
+from ecell4.core cimport *
 
 
 ## MesoscopicWorld
@@ -18,7 +19,7 @@ cdef class MesoscopicWorld:
                 self.thisptr = new shared_ptr[Cpp_MesoscopicWorld](
                     new Cpp_MesoscopicWorld(deref((<Real3>edge_lengths).thisptr)))
             else:
-                filename = edge_lengths
+                filename = tostring(edge_lengths)
                 self.thisptr = new shared_ptr[Cpp_MesoscopicWorld](
                     new Cpp_MesoscopicWorld(filename))
         elif rng is None:
@@ -94,6 +95,16 @@ cdef class MesoscopicWorld:
         else:
             self.thisptr.get().remove_molecules(deref(sp.thisptr), num, <Integer>c)
 
+    def add_structure(self, Species sp, shape):
+        self.thisptr.get().add_structure(
+            deref(sp.thisptr), deref((<Shape>(shape.as_base())).thisptr))
+
+    def get_volume(self, Species sp):
+        return self.thisptr.get().get_volume(deref(sp.thisptr))
+
+    def on_structure(self, Species sp, Integer3 g):
+        return self.thisptr.get().on_structure(deref(sp.thisptr), deref(g.thisptr))
+
     def list_species(self):
         cdef vector[Cpp_Species] species = self.thisptr.get().list_species()
 
@@ -141,11 +152,11 @@ cdef class MesoscopicWorld:
             inc(it)
         return retval
 
-    def save(self, string filename):
-        self.thisptr.get().save(filename)
+    def save(self, filename):
+        self.thisptr.get().save(tostring(filename))
 
-    def load(self, string filename):
-        self.thisptr.get().load(filename)
+    def load(self, filename):
+        self.thisptr.get().load(tostring(filename))
 
     def bind_to(self, m):
         self.thisptr.get().bind_to(deref(Cpp_Model_from_Model(m)))
@@ -268,9 +279,13 @@ cdef class MesoscopicFactory:
             return MesoscopicWorld_from_Cpp_MesoscopicWorld(
                 shared_ptr[Cpp_MesoscopicWorld](
                     self.thisptr.create_world(deref((<Real3>arg1).thisptr))))
-        else:
+        elif isinstance(arg1, str):
             return MesoscopicWorld_from_Cpp_MesoscopicWorld(
                 shared_ptr[Cpp_MesoscopicWorld](self.thisptr.create_world(<string>(arg1))))
+        else:
+            return MesoscopicWorld_from_Cpp_MesoscopicWorld(
+                shared_ptr[Cpp_MesoscopicWorld](self.thisptr.create_world(
+                    deref(Cpp_Model_from_Model(arg1)))))
 
     def create_simulator(self, arg1, MesoscopicWorld arg2=None):
         if arg2 is None:

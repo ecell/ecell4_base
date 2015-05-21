@@ -1,6 +1,7 @@
 import collections
 from cython cimport address
 from cython.operator cimport dereference as deref, preincrement as inc
+from ecell4.core cimport *
 
 
 ## EGFRDWorld
@@ -27,7 +28,7 @@ cdef class EGFRDWorld:
             self.thisptr = new shared_ptr[Cpp_EGFRDWorld](
                 new Cpp_EGFRDWorld(deref((<Real3>edge_lengths).thisptr)))
         else:
-            filename = edge_lengths
+            filename = tostring(edge_lengths)
             self.thisptr = new shared_ptr[Cpp_EGFRDWorld](
                 new Cpp_EGFRDWorld(filename))
 
@@ -183,11 +184,11 @@ cdef class EGFRDWorld:
     def remove_molecules(self, Species sp, Integer num):
         self.thisptr.get().remove_molecules(deref(sp.thisptr), num)
 
-    def save(self, string filename):
-        self.thisptr.get().save(filename)
+    def save(self, filename):
+        self.thisptr.get().save(tostring(filename))
 
-    def load(self, string filename):
-        self.thisptr.get().load(filename)
+    def load(self, filename):
+        self.thisptr.get().load(tostring(filename))
 
     def bind_to(self, m):
         self.thisptr.get().bind_to(deref(Cpp_Model_from_Model(m)))
@@ -343,9 +344,13 @@ cdef class EGFRDFactory:
             return EGFRDWorld_from_Cpp_EGFRDWorld(
                 shared_ptr[Cpp_EGFRDWorld](
                     self.thisptr.create_world(deref((<Real3>arg1).thisptr))))
-        else:
+        elif isinstance(arg1, str):
             return EGFRDWorld_from_Cpp_EGFRDWorld(
                 shared_ptr[Cpp_EGFRDWorld](self.thisptr.create_world(<string>(arg1))))
+        else:
+            return EGFRDWorld_from_Cpp_EGFRDWorld(
+                shared_ptr[Cpp_EGFRDWorld](self.thisptr.create_world(
+                    deref(Cpp_Model_from_Model(arg1)))))
 
     def create_simulator(self, arg1, EGFRDWorld arg2=None):
         if arg2 is None:

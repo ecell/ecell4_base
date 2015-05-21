@@ -425,6 +425,10 @@ std::vector<Species> ReactionRuleExpressionMatcher::generate()
     {
         return std::vector<Species>();
     }
+    else if (pttrn_.reactants().size() == 0)
+    {
+        return pttrn_.products();  // XXX: zero-th order reaction
+    }
 
     const context_type ctx(context());
 

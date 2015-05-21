@@ -12,14 +12,27 @@ class VacantType
 public:
 
     typedef MolecularTypeBase base_type;
-    typedef base_type::particle_info particle_info;
-    typedef base_type::private_coordinate_type private_coordinate_type;
+    typedef base_type::coord_id_pair coord_id_pair;
+    typedef base_type::coordinate_type coordinate_type;
     typedef base_type::container_type container_type;
+    typedef base_type::iterator iterator;
+    typedef base_type::const_iterator const_iterator;
 
 public:
 
     ~VacantType()
     {
+        ; // do nothing
+    }
+
+    bool is_vacant() const
+    {
+        return true;
+    }
+
+    bool with_voxels() const
+    {
+        return false;
     }
 
     static VacantType& getInstance()
@@ -28,48 +41,34 @@ public:
         return instance;
     }
 
-    virtual void add_voxel_without_checking(const particle_info& info)
+    virtual void add_voxel_without_checking(const coord_id_pair& info)
     {
         ; // do nothing
     }
 
     virtual void replace_voxel(
-        private_coordinate_type from_coord,
-        const particle_info& to_info)
+        const coordinate_type& from_coord,
+        const coord_id_pair& to_info)
     {
         ; // do nothing
     }
 
-    virtual void remove_voxel(const container_type::iterator& position)
+    virtual void replace_voxel(
+        const coordinate_type& from_coord,
+        const coordinate_type& to_coord)
     {
         ; // do nothing
     }
 
-    virtual void swap(
-        const container_type::iterator& a, const container_type::iterator& b)
-    {
-        ; // do nothing
-    }
-
-    void addVoxel(particle_info info)
-    {
-        ; // do nothing
-    }
-
-    bool removeVoxel(private_coordinate_type coord)
+    bool remove_voxel_if_exists(const coordinate_type& coord)
     {
         return true; // just return true
-    }
-
-    bool is_vacant() const
-    {
-        return true;
     }
 
 private:
 
     VacantType()
-        : MolecularTypeBase(Species("VACANT", "0", "0"), NULL, 0, 0)
+        : base_type(Species("VACANT", "0", "0"), NULL, 0, 0)
     {
         ;
     }

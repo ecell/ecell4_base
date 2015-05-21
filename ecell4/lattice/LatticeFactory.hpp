@@ -4,6 +4,7 @@
 #include <ecell4/core/SimulatorFactory.hpp>
 #include <ecell4/core/RandomNumberGenerator.hpp>
 
+#include <ecell4/core/extras.hpp>
 #include "LatticeWorld.hpp"
 #include "LatticeSimulator.hpp"
 
@@ -67,6 +68,11 @@ public:
         {
             return new LatticeWorld(edge_lengths);
         }
+    }
+
+    virtual LatticeWorld* create_world(const boost::shared_ptr<Model>& m) const
+    {
+        return extras::generate_world_from_model(*this, m);
     }
 
     virtual LatticeSimulator* create_simulator(

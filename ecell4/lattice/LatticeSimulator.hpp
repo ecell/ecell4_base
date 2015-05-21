@@ -33,8 +33,10 @@ protected:
 
     struct StepEvent : EventScheduler::Event
     {
-        StepEvent(LatticeSimulator* sim, const Species& species, const Real& t)
-            : EventScheduler::Event(t), sim_(sim), species_(species), alpha_(1.0)
+        StepEvent(
+            LatticeSimulator* sim, const Species& species, const Real& t,
+            const Real alpha=1.0)
+            : EventScheduler::Event(t), sim_(sim), species_(species), alpha_(alpha)
         {
             const LatticeWorld::molecule_info_type
                 minfo(sim_->world_->get_molecule_info(species));
@@ -50,10 +52,12 @@ protected:
             }
 
             time_ = t + dt_;
+            // time_ = t;
         }
 
         virtual ~StepEvent()
         {
+            ;
         }
 
         virtual void fire()
@@ -80,12 +84,56 @@ protected:
         Real alpha_;
     };
 
+    struct ZerothOrderReactionEvent : EventScheduler::Event
+    {
+        ZerothOrderReactionEvent(
+            LatticeSimulator* sim, const ReactionRule& rule, const Real& t)
+            : EventScheduler::Event(t), sim_(sim), rule_(rule)
+        {
+            time_ = t + draw_dt();
+        }
+
+        virtual ~ZerothOrderReactionEvent()
+        {
+        }
+
+        virtual void fire()
+        {
+            sim_->apply_zeroth_order_reaction_(rule_);
+            time_ += draw_dt();
+        }
+
+        virtual void interrupt(Real const& t)
+        {
+            time_ = t + draw_dt();
+        }
+
+        Real draw_dt()
+        {
+            const Real k(rule_.k());
+            const Real p = k;
+            Real dt(inf);
+            if (p != 0.)
+            {
+                const Real rnd(sim_->world_->rng()->uniform(0.,1.));
+                dt = - log(1 - rnd) / p;
+            }
+            return dt;
+        }
+
+    protected:
+
+        LatticeSimulator* sim_;
+        ReactionRule rule_;
+    };
+
     struct FirstOrderReactionEvent : EventScheduler::Event
     {
         FirstOrderReactionEvent(
             LatticeSimulator* sim, const ReactionRule& rule, const Real& t)
             : EventScheduler::Event(t), sim_(sim), rule_(rule)
         {
+            //assert(rule_.reactants().size() == 1);
             time_ = t + draw_dt();
         }
 
@@ -96,9 +144,7 @@ protected:
         virtual void fire()
         {
             const Species reactant(*(rule_.reactants().begin()));
-            MolecularTypeBase* mt(sim_->world_->find_molecular_type(reactant));
-            const Integer index(sim_->world_->rng()->uniform_int(0, mt->size() - 1));
-            sim_->apply_reaction_(rule_, mt->at(index));
+            sim_->apply_first_order_reaction_(rule_, sim_->world_->choice(reactant));
             time_ += draw_dt();
         }
 
@@ -133,13 +179,13 @@ public:
     LatticeSimulator(
             boost::shared_ptr<Model> model,
             boost::shared_ptr<LatticeWorld> world)
-        : base_type(model, world)
+        : base_type(model, world), alpha_(1.0)
     {
         initialize();
     }
 
     LatticeSimulator(boost::shared_ptr<LatticeWorld> world)
-        : base_type(world)
+        : base_type(world), alpha_(1.0)
     {
         initialize();
     }
@@ -162,22 +208,73 @@ public:
         return reactions_;
     }
 
+    void set_alpha(const Real alpha)
+    {
+        if (alpha < 0 || alpha > 1)
+        {
+            return;  // XXX: ValueError
+        }
+
+        alpha_ = alpha;
+        initialize();
+    }
+
+    Real get_alpha() const
+    {
+        return alpha_;
+    }
+
 protected:
 
     boost::shared_ptr<EventScheduler::Event> create_step_event(
         const Species& species, const Real& t);
+    boost::shared_ptr<EventScheduler::Event> create_zeroth_order_reaction_event(
+        const ReactionRule& reaction_rule, const Real& t);
     boost::shared_ptr<EventScheduler::Event> create_first_order_reaction_event(
         const ReactionRule& reaction_rule, const Real& t);
     std::pair<bool, reaction_type> attempt_reaction_(
-        const LatticeWorld::particle_info info,
-        LatticeWorld::coordinate_type to_coord);
-    std::pair<bool, reaction_type> apply_reaction_(
+        const LatticeWorld::particle_info_type info,
+        LatticeWorld::coordinate_type to_coord, const Real& alpha);
+    std::pair<bool, reaction_type> apply_second_order_reaction_(
         const ReactionRule& reaction_rule,
-        const LatticeWorld::particle_info from_info,
-        const LatticeWorld::particle_info to_info);
-    std::pair<bool, reaction_type> apply_reaction_(
+        const reaction_type::particle_type& p0,
+        const reaction_type::particle_type& p1);
+    std::pair<bool, reaction_type> apply_first_order_reaction_(
         const ReactionRule& reaction_rule,
-        const LatticeWorld::particle_info info);
+        const reaction_type::particle_type& p);
+    void apply_ab2c(
+        const LatticeWorld::particle_info_type from_info,
+        const LatticeWorld::particle_info_type to_info,
+        const Species& product_species,
+        reaction_type& reaction);
+    void apply_ab2cd(
+        const LatticeWorld::particle_info_type from_info,
+        const LatticeWorld::particle_info_type to_info,
+        const Species& product_species0,
+        const Species& product_species1,
+        reaction_type& reaction);
+    void apply_ab2cd_in_order(
+        const LatticeWorld::private_coordinate_type coord0,
+        const Species& product_species0,
+        const LatticeWorld::private_coordinate_type coord1,
+        const Species& product_species1,
+        reaction_type& reaction);
+    void apply_a2b(
+        const LatticeWorld::particle_info_type pinfo,
+        const Species& product_species,
+        reaction_type& reaction);
+    bool apply_a2bc(
+        const LatticeWorld::particle_info_type pinfo,
+        const Species& product_species0,
+        const Species& product_species1,
+        reaction_type& reaction);
+    std::pair<bool, reaction_type> apply_zeroth_order_reaction_(
+        const ReactionRule& reaction_rule);
+
+    void register_product_species(const Species& product_species);
+    void register_reactant_species(
+        const LatticeWorld::particle_info_type pinfo, reaction_type reaction) const;
+
     void step_();
     void register_events(const Species& species);
     // void register_step_event(const Species& species);
@@ -189,6 +286,25 @@ protected:
         return Voxel(v.species(), coord, v.radius(), v.D(), v.loc());
     }
 
+    const std::string get_serial(
+        const LatticeWorld::private_coordinate_type coord) const
+    {
+        const MolecularTypeBase* mtype(world_->get_molecular_type_private(coord));
+        return mtype->is_vacant() ? "" : mtype->species().serial();
+    }
+
+    const std::string get_location(
+        const LatticeWorld::private_coordinate_type coord) const
+    {
+        const MolecularTypeBase* mtype(world_->get_molecular_type_private(coord));
+        if (mtype->is_vacant())
+        {
+            return "";
+        }
+        const MolecularTypeBase* ltype(mtype->location());
+        return ltype->is_vacant() ? "" : ltype->species().serial();
+    }
+
 protected:
 
     EventScheduler scheduler_;
@@ -196,6 +312,7 @@ protected:
     std::vector<Species> new_species_;
 
     Real dt_;
+    Real alpha_;
 };
 
 } // lattice
