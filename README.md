@@ -82,7 +82,9 @@ $ cd ecell4-master
 # in this case we install ecell4 to $HOME/ecell4
 $ PREFIX=$HOME/ecell4 ./install.sh py2
 ```
+
 ### Python3 series
+
 ```shell
 # dependent packages
 $ sudo apt-get install cmake libgsl0-dev libboost-dev libboost-regex-dev libhdf5-dev cython3 python3-pip
@@ -92,6 +94,7 @@ $ unzip master.zip
 $ cd ecell4-master
 # in this case we install ecell4 to $HOME/ecell4
 $ PREFIX=$HOME/ecell4 ./install.sh py3
+```
 
 ## Building and installing E-Cell (Ubuntu 14.04)
 
