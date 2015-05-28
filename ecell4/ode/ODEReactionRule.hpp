@@ -178,9 +178,20 @@ public:
         this->reactants_.push_back(std::pair<Real, Species>(coefficient, sp));
     }
 
+    void set_reactant_coefficient(const std::size_t num, const Real new_coeff)
+    {
+        this->reactants_[num].first = new_coeff;
+    }
+
+
     void add_product(const Species& sp, Real coefficient = 1.0)
     {
         this->products_.push_back(std::pair<Real, Species>(coefficient, sp));
+    }
+
+    void set_product_coefficient(const std::size_t num, const Real new_coeff)
+    {
+        this->products_[num].first = new_coeff;
     }
 
     const std::string as_string() const;

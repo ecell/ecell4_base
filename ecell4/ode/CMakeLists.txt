@@ -1,5 +1,5 @@
 set(CPP_FILES
-	ODESimulator.cpp ODEWorld.cpp ODENetworkModel.cpp ODEReactionRule.cpp ODESimulator2.cpp)
+	ODESimulator.cpp ODEWorld.cpp ODENetworkModel.cpp ODEReactionRule.cpp ODESimulator2.cpp ODERatelaw.cpp)
 
 set(HPP_FILES
 	ODESimulator.hpp ODEWorld.hpp ODEFactory.hpp ODEReactionRule.hpp ODERatelaw.hpp ODENetworkModel.hpp ODESimulator2.hpp)
