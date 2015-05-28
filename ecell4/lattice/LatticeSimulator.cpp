@@ -238,9 +238,11 @@ std::pair<bool, LatticeSimulator::reaction_type> LatticeSimulator::attempt_react
         accp += P;
         if (accp > 1)
         {
+            /*
             std::cerr << "The total acceptance probability [" << accp
                 << "] exceeds 1 for '" << speciesA.serial()
                 << "' and '" << speciesB.serial() << "'." << std::endl;
+                */
         }
         if (accp >= rnd)
         {
@@ -405,6 +407,7 @@ void LatticeSimulator::apply_ab2cd(
                 register_product_species(product_species0);
                 register_product_species(product_species1);
 
+                world_->remove_voxel_private(to_info.first);
                 if (aserial != cloc)
                 {
                     // Remove A once if A is not the location of C
@@ -449,6 +452,7 @@ void LatticeSimulator::apply_ab2cd(
                 register_product_species(product_species0);
                 register_product_species(product_species1);
 
+                world_->remove_voxel_private(to_info.first);
                 if (aserial != dloc)
                 {
                     // Remove A once if A is not the location of D
@@ -471,6 +475,7 @@ void LatticeSimulator::apply_ab2cd(
             register_product_species(product_species0);
             register_product_species(product_species1);
 
+            world_->remove_voxel_private(from_info.first);
             if (bserial != cloc)
             {
                 // Remove B once if B is not the location of C
@@ -492,6 +497,7 @@ void LatticeSimulator::apply_ab2cd(
             register_product_species(product_species0);
             register_product_species(product_species1);
 
+            world_->remove_voxel_private(from_info.first);
             if (bserial != dloc)
             {
                 // Remove B once if B is not the location of D
