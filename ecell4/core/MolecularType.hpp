@@ -50,6 +50,12 @@ public:
     {
         return false;
     }
+
+    const Shape::dimension_kind get_dimension() const
+    {
+        return location()->get_dimension();
+    }
+
 };
 
 } // ecell4

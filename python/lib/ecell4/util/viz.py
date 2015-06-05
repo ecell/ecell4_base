@@ -140,7 +140,7 @@ def plot_movie(
 
 def plot_world(
         world, radius=None, width=500, height=500, config={}, grid=True,
-        wireframe=False, species_list=None, debug=None, max_count=1000,
+        save_image=False, wireframe=False, species_list=None, debug=None, max_count=1000,
         predicator=None):
     """Generate a plot from received instance of World and show it
     on IPython notebook.
@@ -214,7 +214,8 @@ def plot_world(
             'height': height,
             'range': __get_range_of_world(world),
             'autorange': False,
-            'grid': grid
+            'grid': grid,
+            'save_image': save_image
         }
     }
 

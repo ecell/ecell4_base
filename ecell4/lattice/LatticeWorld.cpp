@@ -226,7 +226,9 @@ bool LatticeWorld::add_molecules(const Species& sp, const Integer& num)
         throw std::invalid_argument("The number of molecules must be positive.");
     }
 
+    std::cerr << "[DEBUG]" << std::endl; // DEBUG
     const LatticeWorld::molecule_info_type info(get_molecule_info(sp));
+    std::cerr << "  info.D = " << info.D << std::endl; // DEBUG
 
     Integer count(0);
     while (count < num)
@@ -403,7 +405,7 @@ bool LatticeWorld::is_surface_voxel(
     const Integer3& g, const boost::shared_ptr<const Shape> shape) const
 {
     const Real L(shape->is_inside(global2position(g)));
-    if (L < 0 || L >= 2 * voxel_radius())
+    if (L > 0 || L < -2 * voxel_radius())
     {
         return false;
     }
@@ -413,7 +415,7 @@ bool LatticeWorld::is_surface_voxel(
     for (Integer i(0); i < 12; ++i)
     {
         if (shape->is_inside(global2position((*space_).private_coord2global(
-            (*space_).get_neighbor(private_coord, i)))) < 0)
+            (*space_).get_neighbor(private_coord, i)))) > 0)
         {
             return true;
         }
