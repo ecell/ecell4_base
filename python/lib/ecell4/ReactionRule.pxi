@@ -143,7 +143,6 @@ cdef class ReactionRule:
         Args:
           reactants (list): A list of ``Species``. The order of ``reactants``
             is respected.
->>>>>>> origin/develop
 
         Return:
           list: A list of ``ReactionRule``s. The reactants of each
