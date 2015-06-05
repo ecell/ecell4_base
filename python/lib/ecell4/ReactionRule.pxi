@@ -177,9 +177,9 @@ cdef class ReactionRule:
         else:
             pass
 
-    def set_ratelaw_massaction(self, RatelawMassAction ratelaw):
-        """Warning: This member function will be deprecated."""
-        self.thisptr.set_ratelaw(deref(ratelaw.thisptr))
+    #def set_ratelaw_massaction(self, RatelawMassAction ratelaw):
+    #    """Warning: This member function will be deprecated."""
+    #    self.thisptr.set_ratelaw(deref(ratelaw.thisptr))
 
 cdef ReactionRule ReactionRule_from_Cpp_ReactionRule(Cpp_ReactionRule *rr):
     cdef Cpp_ReactionRule *new_obj = new Cpp_ReactionRule(deref(rr))
