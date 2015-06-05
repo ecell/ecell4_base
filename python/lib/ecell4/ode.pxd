@@ -139,6 +139,7 @@ cdef extern from "ecell4/ode/ODEReactionRule.hpp" namespace "ecell4::ode":
         void set_product_coefficient(int, Real)
 
         void set_ratelaw(shared_ptr[Cpp_ODERatelaw])
+        void set_ratelaw(shared_ptr[Cpp_ODERatelawMassAction])
         shared_ptr[Cpp_ODERatelaw] get_ratelaw()
         bool has_ratelaw()
 
@@ -168,7 +169,7 @@ cdef extern from "ecell4/ode/ODESimulator2.hpp" namespace "ecell4::ode":
         void step()
         bool step(Real)
         Real next_time()
-        Real t
+        Real t()
         void set_t(Real)
         Real dt()
         void set_dt(Real)

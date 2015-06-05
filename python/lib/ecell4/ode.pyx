@@ -275,7 +275,14 @@ cdef class ODEReactionRule:
         self.thisptr.set_product_coefficient(index, coeff)
 
     def set_ratelaw(self, ratelaw_obj):
-        pass
+        self.thisptr.set_ratelaw(deref( (<ODERatelaw>(ratelaw_obj.as_base())).thisptr )) 
+
+    def set_ratelaw_massaction(self, ODERatelawMassAction ratelaw_obj):
+        self.thisptr.set_ratelaw( deref(ratelaw_obj.thisptr) )
+
+    def has_ratelaw(self):
+        return self.thisptr.has_ratelaw()
+
     def reactants(self):
         cdef vector[Cpp_Species] cpp_reactants = self.thisptr.reactants()
         retval = []
@@ -382,3 +389,23 @@ cdef class ODESimulator2:
         self.thisptr = new Cpp_ODESimulator2(deref(m.thisptr), deref(w.thisptr)) 
     def __dealloc__(self):
         del self.thisptr
+    def initialize(self):
+        self.thisptr.initialize()
+    def step(self, upto = None):
+        if upto == None:
+            self.thirptr.step()
+        else:
+            return self.thisptr.step(upto)
+
+    def next_time(self):
+        return self.thisptr.next_time()
+    def t(self):
+        return self.thisptr.t()
+    def set_t(self, Real t_new):
+        self.thisptr.set_t(t_new)
+    def dt(self):
+        return self.thisptr.dt()
+    def set_dt(self, dt_new):
+        self.thisptr.set_dt(dt_new)
+    def num_steps(self):
+        return self.thisptr.num_steps()
