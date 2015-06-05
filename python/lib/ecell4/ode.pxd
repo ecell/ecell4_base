@@ -93,3 +93,86 @@ cdef extern from "ecell4/ode/ODEFactory.hpp" namespace "ecell4::ode":
 #  a python wrapper for Cpp_ODEFactory
 cdef class ODEFactory:
     cdef Cpp_ODEFactory* thisptr
+
+
+## Following definitions are ODESimulator2 related.
+
+## Cpp_ODERatelaw
+cdef extern from "ecell4/ode/ODERatelaw.hpp" namespace "ecell4::ode":
+    cdef cppclass Cpp_ODERatelaw "ecell4::ode::ODERatelaw":
+        Cpp_ODERatelaw() except +
+        bool is_available()
+
+## ODERatelaw
+cdef class ODERatelaw:
+    #cdef Cpp_ODERatelaw *thisptr
+    cdef shared_ptr[Cpp_ODERatelaw] *thisptr
+
+## Cpp_ODERatelawMassAction
+cdef extern from "ecell4/ode/ODERatelaw.hpp" namespace "ecell4::ode":
+    cdef cppclass Cpp_ODERatelawMassAction "ecell4::ode::ODERatelawMassAction":
+        Cpp_ODERatelawMassAction(Real) except +
+        bool is_available()
+        void set_k(Real)
+        Real get_k()
+
+cdef class ODERatelawMassAction:
+    #cdef Cpp_ODERatelawMassAction *thisptr
+    cdef shared_ptr[Cpp_ODERatelawMassAction] *thisptr
+
+## Cpp_ODEReactionRule
+cdef extern from "ecell4/ode/ODEReactionRule.hpp" namespace "ecell4::ode":
+    cdef cppclass Cpp_ODEReactionRule "ecell4::ode::ODEReactionRule":
+        Cpp_ODEReactionRule() except +
+        Cpp_ODEReactionRule(Cpp_ReactionRule) except +
+        Cpp_ODEReactionRule(Cpp_ODEReactionRule) except +
+        Real k()
+        void set_k(Real)
+        vector[Cpp_Species] reactants()
+        vector[Cpp_Species] products()
+        vector[Real] reactants_coefficients()
+        vector[Real] products_coefficients()
+
+        void add_reactant(Cpp_Species, Real)
+        void add_product(Cpp_Species, Real)
+        void set_reactant_coefficient(int, Real)
+        void set_product_coefficient(int, Real)
+
+        void set_ratelaw(shared_ptr[Cpp_ODERatelaw])
+        shared_ptr[Cpp_ODERatelaw] get_ratelaw()
+        bool has_ratelaw()
+
+cdef class ODEReactionRule:
+    cdef Cpp_ODEReactionRule *thisptr
+        
+## Cpp_ODENetworkModel
+cdef extern from "ecell4/ode/ODENetworkModel.hpp" namespace "ecell4::ode":
+    cdef cppclass Cpp_ODENetworkModel "ecell4::ode::ODENetworkModel":
+        Cpp_ODENetworkModel() except +
+        Cpp_ODENetworkModel( shared_ptr[Cpp_NetworkModel] ) except +
+        void update_model()
+        bool has_model()
+        vector[Cpp_ODEReactionRule] ode_reaction_rules()
+        Integer num_reaction_rules()
+        void dump_reactions()
+        void add_reaction_rule(Cpp_ODEReactionRule)
+
+cdef class ODENetworkModel:
+    cdef shared_ptr[Cpp_ODENetworkModel] *thisptr
+
+## Cpp_ODESimulator2
+cdef extern from "ecell4/ode/ODESimulator2.hpp" namespace "ecell4::ode":
+    cdef cppclass Cpp_ODESimulator2 "ecell4::ode::ODESimulator2":
+        Cpp_ODESimulator2(shared_ptr[Cpp_ODENetworkModel], shared_ptr[Cpp_ODEWorld]) except+
+        void initialize()
+        void step()
+        bool step(Real)
+        Real next_time()
+        Real t
+        void set_t(Real)
+        Real dt()
+        void set_dt(Real)
+        Integer num_steps()
+
+cdef class ODESimulator2:
+    cdef Cpp_ODESimulator2 *thisptr

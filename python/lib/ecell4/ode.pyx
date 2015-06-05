@@ -219,3 +219,166 @@ cdef class ODEFactory:
             return ODESimulator_from_Cpp_ODESimulator(
                 self.thisptr.create_simulator(
                     deref(Cpp_Model_from_Model(arg1)), deref(arg2.thisptr)))
+
+cdef class ODERatelaw:
+    # Abstract ODERatelaw Type.
+    def __cinit__(self):
+        self.thisptr = new shared_ptr[Cpp_ODERatelaw](
+                <Cpp_ODERatelaw*>(new Cpp_ODERatelawMassAction(0.0)) )  # Dummy
+
+    def __dealloc__(self):
+        del self.thisptr
+
+    def as_base(self):
+        return self
+
+cdef class ODERatelawMassAction:
+    def __cinit__(self, Real k):
+        self.thisptr = new shared_ptr[Cpp_ODERatelawMassAction](
+                <Cpp_ODERatelawMassAction*>(new Cpp_ODERatelawMassAction(k)))
+
+    def __dealloc__(self):
+        del self.thisptr
+
+    def is_available(self):
+        return self.get().is_available
+    def set_k(self, Real k):
+        self.get().thisptr.set_k(k)
+    def get_k(self):
+        return self.get().thisptr.get_k()
+    def as_base(self):
+        base_type = ODERatelaw()
+        del base_type.thisptr
+        base_type.thisptr = new shared_ptr[Cpp_ODERatelaw](
+                <shared_ptr[Cpp_ODERatelaw]>(deref(self.thisptr))
+                )
+        return base_type
+
+cdef class ODEReactionRule:
+    def __cinit__(self):
+        self.thisptr = new Cpp_ODEReactionRule()
+
+    def __dealloc__(self):
+        del self.thisptr
+
+    def k(self):
+        return self.thisptr.k()
+    def set_k(self, Real k):
+        self.thisptr.set_k(k)
+    def add_reactant(self, Species sp, Real coeff):
+        self.thisptr.add_reactant(deref(sp.thisptr), coeff)
+    def add_product(self, Species sp, Real coeff):
+        self.thisptr.add_product(deref(sp.thisptr), coeff)
+    def set_reactant_coefficient(self, Integer index, Real coeff):
+        self.thisptr.set_reactant_coefficient(index, coeff)
+    def set_product_coefficient(self, Integer index, Real coeff):
+        self.thisptr.set_product_coefficient(index, coeff)
+
+    def set_ratelaw(self, ratelaw_obj):
+        pass
+    def reactants(self):
+        cdef vector[Cpp_Species] cpp_reactants = self.thisptr.reactants()
+        retval = []
+        cdef vector[Cpp_Species].iterator it = cpp_reactants.begin()
+        while it != cpp_reactants.end():
+            retval.append(
+                    Species_from_Cpp_Species(<Cpp_Species*>address(deref(it))))
+            inc(it)
+        return retval
+
+    def reactants_coefficients(self):
+        cdef vector[Real] coefficients = self.thisptr.reactants_coefficients()
+        retval = []
+        cdef vector[Real].iterator it = coefficients.begin()
+        while it != coefficients.end():
+            retval.append( deref(it) )
+            inc(it)
+        return retval
+
+    def products(self):
+        cdef vector[Cpp_Species] cpp_products = self.thisptr.products()
+        retval = []
+        cdef vector[Cpp_Species].iterator it = cpp_products.begin()
+        while it != cpp_products.end():
+            retval.append(
+                    Species_from_Cpp_Species(<Cpp_Species*>address(deref(it))))
+            inc(it)
+        return retval
+
+    def products_coefficients(self):
+        cdef vector[Real] coefficients = self.thisptr.products_coefficients()
+        retval = []
+        cdef vector[Real].iterator it = coefficients.begin()
+        while it != coefficients.end():
+            retval.append( deref(it) )
+            inc(it)
+        return retval
+
+    def as_string(self):
+        reactants = self.reactants()
+        reactants_coeff = self.reactants_coefficients()
+        products = self.products()
+        products_coeff = self.products_coefficients()
+        retval = ""
+        first = True
+        for (sp, coeff) in zip(reactants, reactants_coeff):
+            s = "{0}({1})".format(coeff, sp.serial())
+            if first == True:
+                retval = s
+                first = False
+            else:
+                retval = "{} + {}".format(retval, s)
+        retval = retval + " ---> "
+        first = True
+        for (sp, coeff) in zip(products, products_coeff):
+            s = "{0}({1})".format(coeff, sp.serial())
+            if first == True:
+                retval += s
+                first = False
+            else:
+                retval = "{} + {}".format(retval, s)
+        return retval
+
+cdef ODEReactionRule ODEReactionRule_from_Cpp_ODEReactionRule(Cpp_ODEReactionRule *s):
+    cdef Cpp_ODEReactionRule *new_obj = new Cpp_ODEReactionRule(deref(s))
+    ret = ODEReactionRule()
+    del ret.thisptr
+    ret.thisptr = new_obj
+    return ret
+
+cdef class ODENetworkModel:
+    #def __cinit__(self):
+    #    self.thisptr = new shared_ptr[Cpp_ODENetworkModel](
+    #        <Cpp_ODENetworkModel*>(new Cpp_ODENetworkModel()) )
+    def __cinit__(self, NetworkModel m = None):
+        if m == None:
+            self.thisptr = new shared_ptr[Cpp_ODENetworkModel](
+                <Cpp_ODENetworkModel*>(new Cpp_ODENetworkModel()) )
+        else:
+            self.thisptr = new shared_ptr[Cpp_ODENetworkModel](
+                (<Cpp_ODENetworkModel*>(new Cpp_ODENetworkModel( deref(m.thisptr) ) )) )
+
+    def __dealloc__(self):
+        del self.thisptr
+    def update_model(self):
+        self.thisptr.get().update_model()
+    def has_model(self):
+        return self.thisptr.get().has_model()
+    def ode_reaction_rules(self):
+        cdef vector[Cpp_ODEReactionRule] cpp_rules = self.thisptr.get().ode_reaction_rules()
+        retval = []
+        cdef vector[Cpp_ODEReactionRule].iterator it = cpp_rules.begin()
+        while it != cpp_rules.end():
+            retval.append( ODEReactionRule_from_Cpp_ODEReactionRule(address(deref(it))) )
+            inc(it)
+        return retval
+    def num_reaction_rules(self):
+        return self.thisptr.get().num_reaction_rules()
+    def add_reaction_rule(self, ODEReactionRule rr):
+        self.thisptr.get().add_reaction_rule( deref(rr.thisptr) )
+
+cdef class ODESimulator2:
+    def __cinit__(self, ODENetworkModel m, ODEWorld w):
+        self.thisptr = new Cpp_ODESimulator2(deref(m.thisptr), deref(w.thisptr)) 
+    def __dealloc__(self):
+        del self.thisptr

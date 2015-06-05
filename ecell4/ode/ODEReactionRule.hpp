@@ -46,6 +46,15 @@ public:
     {
         ;
     }
+    ODEReactionRule(const ODEReactionRule &rr)
+        : k_(rr.k_), reactants_(rr.reactants_), products_(rr.products_)
+    {
+        if(rr.has_ratelaw())
+        {
+            this->set_ratelaw(rr.get_ratelaw());
+        }
+    }
+
     ODEReactionRule(
         const reaction_leftside_container_type& reactants,
         const reaction_rightside_container_type& products)
