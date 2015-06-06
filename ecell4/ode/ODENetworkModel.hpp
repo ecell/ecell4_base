@@ -101,6 +101,21 @@ public:
     {
         this->ode_reaction_rules_.push_back(ode_rr);
     }
+    void add_species_attribute(const Species &sp)
+    {
+        if (has_species_attribute(sp))
+        {
+            throw AlreadyExists("species already exista");
+        }
+        species_attributes_.push_back(sp);
+    }
+
+    bool has_species_attribute(const Species& sp) const
+    {
+        species_container_type::const_iterator i(
+            std::find(species_attributes_.begin(), species_attributes_.end(), sp));
+        return (i != species_attributes_.end());
+    }
 private:
     bool convert_from_networkmodel(const boost::shared_ptr<ecell4::NetworkModel> model);
 

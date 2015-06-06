@@ -12,7 +12,8 @@ def singlerun():
     rr1.add_reactant(sp1, 1.0)
     rr1.add_product(sp2, 1.0)
     rr1.add_product(sp3, 1.0)
-    rr1.set_ratelaw_massaction( ODERatelawMassAction(ka) )
+    rl1 = ODERatelawMassAction(ka)
+    rr1.set_ratelaw( rl1 )
     #rr1.set_k(ka)
     print rr1.has_ratelaw()
 
@@ -21,7 +22,8 @@ def singlerun():
     rr2.add_reactant(sp3, 1.0)
     rr2.add_product(sp1, 1.0)
     kd = ka * volume * (1 - U) / (U * U * N)
-    rr2.set_ratelaw_massaction( ODERatelawMassAction(kd) )
+    rl2 = ODERatelawMassAction(kd)
+    rr2.set_ratelaw( rl2 )
     #rr2.set_k(kd)
     print rr2.has_ratelaw()
 
