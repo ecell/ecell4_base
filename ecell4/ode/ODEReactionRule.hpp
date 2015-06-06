@@ -57,16 +57,8 @@ public:
 
     ODEReactionRule(
         const reaction_leftside_container_type& reactants,
-        const reaction_rightside_container_type& products)
-        : k_(0), reactants_(reactants), products_(products)
-    {
-        ;
-    }
-
-    ODEReactionRule(
-        const reaction_leftside_container_type& reactants,
         const reaction_rightside_container_type& products,
-        const Real &k)
+        const Real &k = 0.0)
         : k_(k), reactants_(reactants), products_(products)
     {
         ;
@@ -86,31 +78,12 @@ public:
         {
             this->add_product(*it, 1.0);
         }
-        
-    }
-
-    ODEReactionRule(
-        const reactant_container_type& reactants,
-        const product_container_type& products)
-        : k_(0)
-    {
-        // This constructor is for compatibility with ReactionRule defined in core-module.
-        for(reactant_container_type::const_iterator it(reactants.begin()); 
-                it != reactants.end(); it++)
-        {
-            this->add_reactant(*it, 1.0);
-        }
-        for(product_container_type::const_iterator it(products.begin());
-                it != products.end(); it++)
-        {
-            this->add_product(*it, 1.0);
-        }
     }
 
     ODEReactionRule(
         const reactant_container_type& reactants,
         const product_container_type& products,
-        const Real& k)
+        const Real& k = 0.0)
         : k_(k)
     {
         // This constructor is for compatibility with ReactionRule defined in core-module.
