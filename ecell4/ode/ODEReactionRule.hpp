@@ -51,7 +51,6 @@ public:
     {
         if(rr.has_ratelaw())
         {
-            std::cout << "add ratelaw" << std::endl;
             this->set_ratelaw(rr.get_ratelaw());
         }
     }
