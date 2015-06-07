@@ -127,13 +127,15 @@ public:
     // reactants_state, products_state, volume
     // typedef double (*ODERatelaw_Callback)(
     //     state_container_type const &, state_container_type const &, double const);
-    typedef void* Python_Functype;
-    typedef double (*Indirect_Functype)(
-        Python_Functype, state_container_type, state_container_type, Real);
+    typedef void* Python_CallbackFunctype;
+    typedef double (*Stepladder_Functype)(
+        Python_CallbackFunctype, 
+        state_container_type, state_container_type, 
+        Real volume, Real t, ODEReactionRule *rr);
 
 public:
 
-    ODERatelawCythonCallback(Indirect_Functype indirect_func, void* pyfunc)
+    ODERatelawCythonCallback(Stepladder_Functype indirect_func, void* pyfunc)
         : indirect_func_(indirect_func), python_func_(pyfunc), h_(1.0e-8)
     {
         ;
@@ -153,17 +155,9 @@ public:
         state_container_type const &reactants_state_array,
         state_container_type const &products_state_array, 
         Real const volume, Real const t,
-        ODEReactionRule const &rr)
-    {
-        if (!is_available())
-        {
-            throw IllegalState("Callback Function has not been registerd");
-        }
-        return this->indirect_func_(
-            this->python_func_, reactants_state_array, products_state_array, volume);
-    }
+        ODEReactionRule const &rr);
 
-    void set_callback_pyfunc(Python_Functype new_func)
+    void set_callback_pyfunc(Python_CallbackFunctype new_func)
     {
         if (new_func == 0)
         {
@@ -174,8 +168,8 @@ public:
 
 private:
 
-    Python_Functype python_func_;
-    Indirect_Functype indirect_func_;
+    Stepladder_Functype indirect_func_;
+    Python_CallbackFunctype python_func_;
     Real h_;
 };
 

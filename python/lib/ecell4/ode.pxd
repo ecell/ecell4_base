@@ -120,6 +120,22 @@ cdef class ODERatelawMassAction:
     #cdef Cpp_ODERatelawMassAction *thisptr
     cdef shared_ptr[Cpp_ODERatelawMassAction] *thisptr
 
+ctypedef void* Python_CallbackFunctype
+ctypedef double (*Stepladder_Functype)(
+    Python_CallbackFunctype pyfunc, vector[Real], vector[Real], 
+    Real volume, Real t, Cpp_ODEReactionRule *)
+
+cdef extern from "ecell4/ode/ODERatelaw.hpp" namespace "ecell4::ode":
+    cdef cppclass Cpp_ODERatelawCythonCallback " ecell4::ode::ODERatelawCythonCallback":
+        Cpp_ODERatelawCythonCallback() except+
+        Cpp_ODERatelawCythonCallback(Stepladder_Functype, Python_CallbackFunctype) except+
+        bool is_available()
+        void set_callback_pyfunc(Python_CallbackFunctype)
+
+cdef class ODERatelawCallback:
+    cdef shared_ptr[Cpp_ODERatelawCythonCallback] *thisptr
+    cdef object pyfunc
+
 ## Cpp_ODEReactionRule
 cdef extern from "ecell4/ode/ODEReactionRule.hpp" namespace "ecell4::ode":
     cdef cppclass Cpp_ODEReactionRule "ecell4::ode::ODEReactionRule":

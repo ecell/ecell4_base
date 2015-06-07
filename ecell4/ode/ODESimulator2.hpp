@@ -109,9 +109,9 @@ public:
             return;
         }
     protected:
+        const reaction_container_type reactions_;
         const Real volume_;
         const Real vinv_;
-        const reaction_container_type reactions_;
     };
 
     class jacobi_func
@@ -159,7 +159,7 @@ public:
                     boost::scoped_ptr<ODERatelaw> temporary_ratelaw_obj(new ODERatelawMassAction(i->k));
                     Real flux_0 = temporary_ratelaw_obj->deriv_func(reactants_states, products_states, volume_, t, *(i->raw) );
                     // Differentiate by each Reactants
-                    for(int j(0); j < reactants_states.size(); j++)
+                    for(std::size_t j(0); j < reactants_states.size(); j++)
                     {
                         ODERatelaw::state_container_type h_shift(reactants_states);
                         h_shift[j] += h;
@@ -180,7 +180,7 @@ public:
                         }
                     }
                     // Differentiate by Products
-                    for(int j(0); j < products_states.size(); j++)
+                    for(std::size_t j(0); j < products_states.size(); j++)
                     {
                         ODERatelaw::state_container_type h_shift(products_states);
                         h_shift[j] += h;
@@ -206,7 +206,7 @@ public:
                     boost::shared_ptr<ODERatelaw> ratelaw = i->ratelaw.lock();
                     Real flux_0 = ratelaw->deriv_func(reactants_states, products_states, volume_, t, *(i->raw) );
                     // Differentiate by each Reactants
-                    for(int j(0); j < reactants_states.size(); j++)
+                    for(std::size_t j(0); j < reactants_states.size(); j++)
                     {
                         ODERatelaw::state_container_type h_shift(reactants_states);
                         h_shift[j] += h;
@@ -227,7 +227,7 @@ public:
                         }
                     }
                     // Differentiate by Products
-                    for(int j(0); j < products_states.size(); j++)
+                    for(std::size_t j(0); j < products_states.size(); j++)
                     {
                         ODERatelaw::state_container_type h_shift(products_states);
                         h_shift[j] += h;
@@ -337,10 +337,9 @@ public:
 protected:
     std::pair<deriv_func, jacobi_func> generate_system() const;
 protected:
-    Real dt_;
     boost::shared_ptr<ODENetworkModel> model_;
     boost::shared_ptr<ODEWorld> world_;
-
+    Real dt_;
     Integer num_steps_;
 };
 

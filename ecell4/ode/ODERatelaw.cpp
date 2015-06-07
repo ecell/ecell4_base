@@ -42,6 +42,22 @@ Real ODERatelawMassAction::deriv_func(
     return flux;
 }
 
+Real ODERatelawCythonCallback::deriv_func(
+    state_container_type const &reactants_state_array,
+    state_container_type const &products_state_array, 
+    Real const volume, Real const t,
+    ODEReactionRule const &rr)
+{
+    if (!is_available())
+    {
+        throw IllegalState("Callback Function has not been registerd");
+    }
+    ODEReactionRule rr_tempolrary(rr);
+    return this->indirect_func_(
+        this->python_func_, reactants_state_array, products_state_array, 
+        volume, t, &rr_tempolrary);
+}
+
 } // ode
 
 } // ecell4

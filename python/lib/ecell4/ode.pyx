@@ -254,6 +254,43 @@ cdef class ODERatelawMassAction:
                 )
         return base_type
 
+
+cdef double indirect_function(
+    void *func, vector[Real] reactants, vector[Real] products, 
+    Real volume, Real t, Cpp_ODEReactionRule *rr):
+    py_reactants = []
+    cdef vector[Real].iterator it1 = reactants.begin()
+    while it1 != reactants.end():
+        py_reactants.append(deref(it1))
+        inc(it1)
+    py_products = []
+    cdef vector[Real].iterator it2 = products.begin()
+    while it2 != products.end():
+        py_products.append(deref(it2))
+        inc(it2)
+    return (<object>func)(
+            py_reactants, py_products, volume, t, ODEReactionRule_from_Cpp_ODEReactionRule(rr))
+
+cdef class ODERatelawCallback:
+    def __cinit__(self, pyfunc):
+        self.thisptr = new shared_ptr[Cpp_ODERatelawCythonCallback](
+            <Cpp_ODERatelawCythonCallback*>(new Cpp_ODERatelawCythonCallback(
+                <Stepladder_Functype>indirect_function, <void*>pyfunc)))
+        self.pyfunc = pyfunc
+
+    def __dealloc__(self):
+        del self.thisptr
+
+    def set_callback(self, pyfunc):
+        self.thisptr.get().set_callback_pyfunc(<Python_CallbackFunctype>pyfunc)
+
+    def as_base(self):
+        retval = ODERatelaw()
+        del retval.thisptr
+        retval.thisptr = new shared_ptr[Cpp_ODERatelaw](
+            <shared_ptr[Cpp_ODERatelaw]>deref(self.thisptr))
+        return retval
+
 cdef class ODEReactionRule:
     def __cinit__(self):
         self.thisptr = new Cpp_ODEReactionRule()

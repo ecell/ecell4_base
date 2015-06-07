@@ -1,6 +1,22 @@
 from ecell4.core import *
 from ecell4.ode import *
 
+def ratelaw_func(reactants, products, volume, t, rr):
+    #import ipdb; ipdb.set_trace()
+    flux = float(0.1 * volume)
+    for c in reactants:
+        flux *= c/volume
+    return flux
+
+def ratelaw_func2(reactants, products, volume, t, rr):
+    ka, U = 0.1, 0.5
+    N = 60
+    kd = ka * volume * (1 - U) / (U * U * N)
+    flux = float(kd * volume)
+    for c in reactants:
+        flux *= c/volume
+    return flux
+
 def singlerun():
     L = 1e-16
     edge_length = Real3(L, L, L)
@@ -12,20 +28,20 @@ def singlerun():
     rr1.add_reactant(sp1, 1.0)
     rr1.add_product(sp2, 1.0)
     rr1.add_product(sp3, 1.0)
-    rl1 = ODERatelawMassAction(ka)
-    rr1.set_ratelaw( rl1 )
-    #rr1.set_k(ka)
-    print rr1.has_ratelaw()
+    #rl1 = ODERatelawMassAction(ka)
+    #rr1.set_ratelaw( rl1 )
+    rl_cb = ODERatelawCallback(ratelaw_func)
+    rr1.set_ratelaw( rl_cb )
 
     rr2 = ODEReactionRule()
     rr2.add_reactant(sp2, 1.0)
     rr2.add_reactant(sp3, 1.0)
     rr2.add_product(sp1, 1.0)
     kd = ka * volume * (1 - U) / (U * U * N)
-    rl2 = ODERatelawMassAction(kd)
-    rr2.set_ratelaw( rl2 )
-    #rr2.set_k(kd)
-    print rr2.has_ratelaw()
+    #rl2 = ODERatelawMassAction(kd)
+    #rr2.set_ratelaw( rl2 )
+    rl_cb2 = ODERatelawCallback(ratelaw_func2)
+    rr2.set_ratelaw(rl_cb2)
 
     m = ODENetworkModel()
     m.add_reaction_rule(rr1)
