@@ -62,7 +62,7 @@ cdef class ODEWorld:
     def set_volume(self, Real vol):
         self.thisptr.get().set_volume(vol)
 
-    def add_molecules(self, Species sp, Integer num, shape=None):
+    def add_molecules(self, Species sp, Real num, shape=None):
         if shape is None:
             self.thisptr.get().add_molecules(deref(sp.thisptr), num)
         else:
@@ -363,24 +363,32 @@ cdef class ODEReactionRule:
         reactants_coeff = self.reactants_coefficients()
         products = self.products()
         products_coeff = self.products_coefficients()
+        leftside = ""
+        rightside = ""
         retval = ""
         first = True
         for (sp, coeff) in zip(reactants, reactants_coeff):
             s = "{0}({1})".format(coeff, sp.serial())
             if first == True:
-                retval = s
+                leftside = s
                 first = False
             else:
-                retval = "{} + {}".format(retval, s)
-        retval = retval + " ---> "
+                leftside = "{} + {}".format(leftside, s)
         first = True
         for (sp, coeff) in zip(products, products_coeff):
             s = "{0}({1})".format(coeff, sp.serial())
             if first == True:
-                retval += s
+                rightside += s
                 first = False
             else:
-                retval = "{} + {}".format(retval, s)
+                rightside = "{} + {}".format(retval, s)
+        s = ""
+        if self.has_ratelaw():
+            s = "HAVE"
+        else:
+            s = "DON'T HAVE"
+        k_desc = "k = {:f}\t {} Ratelaw".format(self.k(), s)
+        retval = "{} ---> {}\t{}".format(leftside, rightside, k_desc)
         return retval
 
 cdef ODEReactionRule ODEReactionRule_from_Cpp_ODEReactionRule(Cpp_ODEReactionRule *s):
