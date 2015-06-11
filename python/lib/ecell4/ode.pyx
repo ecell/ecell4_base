@@ -62,7 +62,7 @@ cdef class ODEWorld:
     def set_volume(self, Real vol):
         self.thisptr.get().set_volume(vol)
 
-    def add_molecules(self, Species sp, Real num, shape=None):
+    def add_molecules(self, Species sp, Integer num, shape=None):
         if shape is None:
             self.thisptr.get().add_molecules(deref(sp.thisptr), num)
         else:
