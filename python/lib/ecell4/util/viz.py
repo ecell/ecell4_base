@@ -249,7 +249,7 @@ def generate_html(keywords, tmpl_path):
 
 def plot_trajectory(
         obs, width=500, height=500, config={}, grid=True, wireframe=False,
-        max_count=10):
+        max_count=10, save_image=False):
     """Generate a plot from received instance of TrajectoryObserver and show it
     on IPython notebook.
 
@@ -323,7 +323,8 @@ def plot_trajectory(
             'height': height,
             'range': {'x': rangex, 'y': rangey, 'z': rangez},
             'autorange': False,
-            'grid': grid
+            'grid': grid,
+            'save_image': save_image
         }
     }
 
