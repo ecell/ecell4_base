@@ -218,7 +218,7 @@ public:
             boost::dynamic_pointer_cast<ODERatelawMassAction>(this->get_ratelaw());
         if(ratelaw_massaction == 0)
         {
-            return false
+            return false;
         }
         else
         {
