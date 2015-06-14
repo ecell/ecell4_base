@@ -42,16 +42,20 @@ public:
 public:
 
     ODEReactionRule()
-        : k_(0), reactants_(), products_()
+        : reactants_(), products_()
     {
-        ;
+        this->set_k(0.0);
     }
     ODEReactionRule(const ODEReactionRule &rr)
-        : k_(rr.k_), reactants_(rr.reactants_), products_(rr.products_)
+        : reactants_(rr.reactants_), products_(rr.products_)
     {
         if(rr.has_ratelaw())
         {
             this->set_ratelaw(rr.get_ratelaw());
+        }
+        else
+        {
+            this->set_k(0.0);
         }
     }
 
@@ -59,13 +63,12 @@ public:
         const reaction_leftside_container_type& reactants,
         const reaction_rightside_container_type& products,
         const Real &k = 0.0)
-        : k_(k), reactants_(reactants), products_(products)
+        : reactants_(reactants), products_(products)
     {
-        ;
+        this->set_k(k);
     }
 
     ODEReactionRule(const ecell4::ReactionRule& rr)
-        : k_(rr.k())
     {
         // This constructor is for compatibility with ReactionRule defined in core-module.
         for(reactant_container_type::const_iterator it(rr.reactants().begin()); 
@@ -78,13 +81,13 @@ public:
         {
             this->add_product(*it, 1.0);
         }
+        this->set_k( rr.k() );
     }
 
     ODEReactionRule(
         const reactant_container_type& reactants,
         const product_container_type& products,
         const Real& k = 0.0)
-        : k_(k)
     {
         // This constructor is for compatibility with ReactionRule defined in core-module.
         for(reactant_container_type::const_iterator it(reactants.begin()); 
@@ -97,11 +100,22 @@ public:
         {
             this->add_product(*it, 1.0);
         }
+        this->set_k(k);
     }
 
     Real k() const
     {
-        return k_;
+        if (!(this->has_ratelaw()))
+        {
+            throw IllegalState("ODERatelaw has not been set");
+        }
+        boost::shared_ptr<ODERatelawMassAction> ratelaw_massaction = 
+            boost::dynamic_pointer_cast<ODERatelawMassAction>(this->get_ratelaw());
+        if(ratelaw_massaction == 0)
+        {
+            throw ("Another type of ODERatelaw object has been set");
+        }
+        return ratelaw_massaction->get_k();
     }
 
     const reactant_container_type reactants() const
@@ -152,7 +166,8 @@ public:
         {
             throw std::invalid_argument("a kinetic rate must be positive.");
         }
-        k_ = k;
+        boost::shared_ptr<ODERatelawMassAction> ratelaw(new ODERatelawMassAction(k));
+        this->set_ratelaw(ratelaw);
     }
 
     void add_reactant(const Species& sp, Real coefficient = 1.0)
@@ -190,14 +205,26 @@ public:
 
     boost::shared_ptr<ODERatelaw> get_ratelaw() const
     {
-        return this->ratelaw_.lock();
+        return this->ratelaw_;
     }
 
     bool has_ratelaw() const
     {
-        return !(this->ratelaw_.expired());
+        return !(this->ratelaw_.use_count() == 0);
     }
-
+    bool is_massaction() const
+    {
+        boost::shared_ptr<ODERatelawMassAction> ratelaw_massaction = 
+            boost::dynamic_pointer_cast<ODERatelawMassAction>(this->get_ratelaw());
+        if(ratelaw_massaction == 0)
+        {
+            return false
+        }
+        else
+        {
+            return true;
+        }
+    }
     
 
 protected:
@@ -208,7 +235,7 @@ protected:
     reaction_leftside_container_type reactants_;
     reaction_rightside_container_type products_;
 
-    boost::weak_ptr<ODERatelaw> ratelaw_;
+    boost::shared_ptr<ODERatelaw> ratelaw_;
 };
 
 #if 0
