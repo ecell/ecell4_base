@@ -6,13 +6,14 @@
 
 ## What is E-Cell System?
 
-E-Cell System, a software platform for modeling, simulation and analysis of complex, heterogeneous and multi-scale systems like the cell.
+E-Cell System is a software platform for modeling, simulation and analysis of complex, heterogeneous and multi-scale systems like the cell.
 
 E-Cell4 is a free and open-source software licensed under the GNU General Public License version 2.
 
 The source code is available on [GitHub](https://github.com/ecell/ecell4).
 
-See [Installation](installation.md) for how to install E-Cell4. Linux, Windows and Mac OSX are supported.
+For installation instructions, please see [Installation](installation.md).
+E-Cell4 runs on Ubuntu Linux, Windows and Mac OSX.
 
 
 ## 4.0.0 (the release date[WRITEME] 2015)
