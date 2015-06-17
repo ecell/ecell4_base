@@ -63,7 +63,8 @@ public:
 
     // reactants_state, products_state, volume
     typedef double (*ODERatelaw_Callback)(
-        state_container_type const &, state_container_type const &, double const);
+        state_container_type const &, state_container_type const &, 
+        double const volume, double const time, ODEReactionRule const &reaction);
 
 public:
 

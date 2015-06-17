@@ -22,7 +22,7 @@ Real ODERatelawCppCallback::deriv_func(
     {
         throw IllegalState("Callback Function has not been registerd");
     }
-    return this->func_(reactants_state_array, products_state_array, volume);
+    return this->func_(reactants_state_array, products_state_array, volume, t, rr);
 }
 
 Real ODERatelawMassAction::deriv_func(

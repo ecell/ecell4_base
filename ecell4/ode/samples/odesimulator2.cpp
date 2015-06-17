@@ -15,8 +15,15 @@
 #include <ecell4/ode/ODESimulator2.hpp>
 #include <boost/format.hpp>
 
+
 using namespace ecell4;
 using namespace ecell4::ode;
+
+double f(ODERatelaw::state_container_type const &reac, ODERatelaw::state_container_type const &prod, 
+        double const v, double const time, ODEReactionRule const &rr)
+{
+    return 0.0;
+}
 
 int main(int argc, char **argv)
 {
@@ -32,7 +39,9 @@ int main(int argc, char **argv)
     rr1.add_product(sp2, 1.0);
     rr1.add_product(sp3, 1.0);
     boost::shared_ptr<ODERatelawMassAction> ratelaw1(new ODERatelawMassAction(ka));
+    boost::shared_ptr<ODERatelawCppCallback> ratelawcb(new ODERatelawCppCallback(f) );
     rr1.set_ratelaw(ratelaw1);
+    std::cout << rr1.k() << std::endl;
 
     const Real kd(ka * volume * (1 - U) / (U * U * N));
     rr2.add_reactant(sp2, 1.0);
