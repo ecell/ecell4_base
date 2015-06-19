@@ -229,6 +229,93 @@ def plot_world(
     return color_scale.get_config()
 
 
+def plot_dense_array(arr, length=256, ranges=None, colors=["#a6cee3", "#fb9a99"], save_image=False, grid=False):
+    """ Volume renderer
+    Parameters
+    ----------
+    arr : list of numpy.array
+        i.e. [array([[1,2,3], [2,3,4]]), array([[1,2,3]])]
+    ranges : list of tuple
+        ranges for x, y, and z axis
+        i.e. [(-100, 100), (-100, 100), (-100, 100)]
+    colors: list of string
+        colors for species
+    length: int
+        length of the texture
+        256 or 64
+    """
+    import numpy
+    from PIL import Image
+    from base64 import b64encode
+    from tempfile import TemporaryFile
+    from math import sqrt
+    from IPython.core.display import display, HTML
+
+    # unfold 3d box into 2d grid
+    def unfold(arr, dtype=None):
+        dtype = arr.dtype if dtype is None else dtype
+        i = sqrt(arr.shape[2])
+        f_per_row, f_per_column = i, i
+        # single channel (luminance)
+        try:
+            depth, height, width = arr.shape[:]
+            arr = arr.reshape((depth*height, width))
+            new_arr = numpy.empty((height*f_per_column, width*f_per_row), dtype=dtype)
+        # multi channel (RGB)
+        except ValueError:
+            depth, height, width, channel = arr.shape
+            arr = arr.reshape((depth*height, width, channel))
+            new_arr = numpy.empty((height*f_per_column, width*f_per_row, channel), dtype=dtype)
+        for h in range(0, int(f_per_column)):
+            for w in range(0, int(f_per_row)):
+                val = arr[(f_per_row*h+w)*height : (f_per_row*h+w+1)*height]
+                new_arr[h*height : (h+1)*height, w*width : (w+1)*width] = val
+        return new_arr
+
+    def hist(arr, ranges, length, color):
+        # create sample
+        hist, bins = numpy.histogramdd(arr, bins=tuple([length]*3), range=tuple(ranges))
+        # standardize value
+        colors = [int(color[1:][i*2:(i+1)*2], 16) for i in range(0, 3)]
+        len1d = reduce(lambda val, memo: memo*val, hist.shape, 1)
+        arr = [((val/numpy.max(hist))*(hist.copy())).reshape(len1d) for val in colors]
+        # add blue and green
+        return numpy.array(arr, dtype=numpy.int8).transpose().reshape(tuple(list(hist.shape) + [3]))
+    ranges = ranges if ranges is not None else [(numpy.min(a), numpy.max(a)) for a in numpy.array(arr).reshape((sum(map(lambda a: len(a), arr)), 3)).transpose()]
+
+    hist_arr = [hist(a, ranges, length, colors[i]) for i, a in enumerate(arr)]
+    compressed = reduce(lambda p, n: p+n, hist_arr)
+
+    img = Image.fromarray(unfold(compressed), "RGB")
+    fp = TemporaryFile("r+b")
+    img.save(fp, "PNG")
+    fp.seek(0)
+    encoded_url = "data:image/png;base64," + b64encode(fp.read())
+    
+    model = {
+        'plots': [{
+            'type': 'Volume',
+            'data': encoded_url,
+            'options': {
+                'name': "",
+                'width': length,
+                'height': length,
+                'depth': length,
+                'f_per_row': sqrt(length),
+                'f_per_column': sqrt(length)
+            }
+        }],
+        'options': {
+            'grid': grid,
+            'save_image': save_image
+        }
+    }
+
+    model_id = '"viz' + str(uuid.uuid4()) + '"'
+    display(HTML(generate_html(
+        {'model': json.dumps(model), 'model_id': model_id},
+        '/templates/particles.tmpl')))
+
 def generate_html(keywords, tmpl_path):
     """Generate static html file from JSON model and its own id.
 
