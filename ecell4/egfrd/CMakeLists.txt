@@ -65,7 +65,7 @@ target_link_libraries(ecell4-egfrd ecell4-core ${BOOST_REGEX_LIBRARIES})
 add_subdirectory(samples)
 
 install(TARGETS ecell4-egfrd DESTINATION lib)
-add_dependencies(ecell4-egfrd BesselTables)
+# add_dependencies(ecell4-egfrd BesselTables)
 
 install(FILES ${HPP_FILES} "${PROJECT_BINARY_DIR}/ecell4/egfrd/config.h"
     "${PROJECT_BINARY_DIR}/ecell4/egfrd/SphericalBesselTable.hpp"
