@@ -59,7 +59,7 @@ cdef class LatticeWorld:
     def actual_volume(self):
         return self.thisptr.get().actual_volume()
 
-    def actual_lenghts(self):
+    def actual_lengths(self):
         cdef Cpp_Real3 lengths = self.thisptr.get().actual_lengths()
         return Real3_from_Cpp_Real3(address(lengths))
 

@@ -348,7 +348,7 @@ public:
     virtual Real3 actual_lengths() const
     {
         return Real3(
-            col_size_ * HCP_X, layer_size_ * HCP_Y, row_size_ * voxel_radius_);
+            col_size_ * HCP_X, layer_size_ * HCP_Y, row_size_ * voxel_radius_ * 2);
     }
 
     /**
