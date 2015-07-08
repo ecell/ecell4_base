@@ -70,6 +70,13 @@ public:
         return 4.0 * sqrt(2.0) * r * r * r;
     }
 
+    Real actual_volume() const
+    {
+        return size() * voxel_volume();
+    }
+
+    virtual Real3 actual_lengths() const = 0;
+
 #ifdef WITH_HDF5
     virtual void save(H5::Group* root) const
     {
@@ -336,6 +343,12 @@ public:
     virtual const Integer layer_size() const
     {
         return layer_size_ - 2;
+    }
+
+    virtual Real3 actual_lengths() const
+    {
+        return Real3(
+            col_size_ * HCP_X, layer_size_ * HCP_Y, row_size_ * voxel_radius_);
     }
 
     /**

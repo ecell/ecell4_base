@@ -53,6 +53,16 @@ cdef class LatticeWorld:
     def volume(self):
         return self.thisptr.get().volume()
 
+    def voxel_volume(self):
+        return self.thisptr.get().voxel_volume()
+
+    def actual_volume(self):
+        return self.thisptr.get().actual_volume()
+
+    def actual_lenghts(self):
+        cdef Cpp_Real3 lengths = self.thisptr.get().actual_lengths()
+        return Real3_from_Cpp_Real3(address(lengths))
+
     def new_particle(self, arg1, Real3 arg2=None):
         cdef pair[pair[Cpp_ParticleID, Cpp_Particle], bool] retval
 

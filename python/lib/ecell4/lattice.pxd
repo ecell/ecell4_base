@@ -24,6 +24,9 @@ cdef extern from "ecell4/lattice/LatticeWorld.hpp" namespace "ecell4::lattice":
         Real t()
         Cpp_Real3 edge_lengths()
         Real volume()
+        Real voxel_volume()
+        Cpp_Real3 actual_lengths()
+        Real actual_volume()
 
         pair[pair[Cpp_ParticleID, Cpp_Particle], bool] new_particle(Cpp_Particle& p)
         pair[pair[Cpp_ParticleID, Cpp_Particle], bool] new_particle(Cpp_Species& sp, Cpp_Real3& pos)
@@ -50,7 +53,6 @@ cdef extern from "ecell4/lattice/LatticeWorld.hpp" namespace "ecell4::lattice":
         # Cpp_Real3 apply_boundary(Cpp_Real3& pos)
         # Real distance_sq(Cpp_Real3& pos1, Cpp_Real3& pos2)
         # Real distance(Cpp_Real3& pos1, Cpp_Real3& pos2)
-        # Real volume()
         # # bool has_species(Cpp_Species& sp)
         Integer num_molecules()
         Integer num_molecules(Cpp_Species& sp)

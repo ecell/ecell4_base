@@ -317,6 +317,16 @@ public:
         return (*space_).voxel_volume();
     }
 
+    Real actual_volume() const
+    {
+        return (*space_).actual_volume();
+    }
+
+    Real3 actual_lengths() const
+    {
+        return (*space_).actual_lengths();
+    }
+
     boost::shared_ptr<RandomNumberGenerator> rng()
     {
         return rng_;
