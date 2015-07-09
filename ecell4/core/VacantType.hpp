@@ -70,7 +70,7 @@ private:
     VacantType()
         : base_type(Species("VACANT", "0", "0"), NULL, 0, 0)
     {
-        ;
+        set_dimension(Shape::THREE);
     }
 };
 

@@ -30,7 +30,7 @@ public:
         const Species& species, MolecularTypeBase* location,
         const Real& radius, const Real& D)
         : species_(species), location_(location),
-        radius_(radius), D_(D), dimension_(Shape::THREE)
+        radius_(radius), D_(D), dimension_(Shape::UNDEF)
     {
         ;
     }
@@ -82,7 +82,7 @@ public:
         dimension_ = dimension;
     }
 
-    const Shape::dimension_kind get_dimension() const
+    virtual const Shape::dimension_kind get_dimension() const
     {
         return dimension_;
     }

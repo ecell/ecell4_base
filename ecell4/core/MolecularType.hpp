@@ -53,6 +53,8 @@ public:
 
     const Shape::dimension_kind get_dimension() const
     {
+        if (dimension_ != Shape::UNDEF)
+            return dimension_;
         return location()->get_dimension();
     }
 
