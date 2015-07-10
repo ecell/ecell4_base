@@ -101,6 +101,10 @@ public:
     {
         this->ode_reaction_rules_.push_back(ode_rr);
     }
+    void add_reaction_rule(ReactionRule ode_rr)
+    {
+        this->ode_reaction_rules_.push_back(ODEReactionRule(ode_rr));
+    }
     void add_species_attribute(const Species &sp)
     {
         if (has_species_attribute(sp))

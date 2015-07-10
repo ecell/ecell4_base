@@ -447,8 +447,14 @@ cdef class ODENetworkModel:
         return retval
     def num_reaction_rules(self):
         return self.thisptr.get().num_reaction_rules()
-    def add_reaction_rule(self, ODEReactionRule rr):
-        self.thisptr.get().add_reaction_rule( deref(rr.thisptr) )
+
+    def add_reaction_rule(self, rr):
+        if isinstance(rr, ODEReactionRule):
+            self.thisptr.get().add_reaction_rule(deref((<ODEReactionRule>rr).thisptr))
+        elif isinstance(rr, ReactionRule):
+            self.thisptr.get().add_reaction_rule(deref((<ReactionRule>rr).thisptr))
+        else:
+            raise ValueError("invalid argument {}".format(repr(rr)))
 
     def list_species(self):
         cdef vector[Cpp_Species] species = self.thisptr.get().list_species()
