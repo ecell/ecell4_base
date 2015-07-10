@@ -40,6 +40,8 @@ def run_simulation(
         f = factory
     elif solver == 'ode':
         f = ecell4.ode.ODEFactory()
+    elif solver == 'ode2':
+        f = ecell4.ode.ODEFactory2()
     elif solver == 'gillespie':
         f = ecell4.gillespie.GillespieFactory()
     elif solver == 'lattice':
@@ -76,7 +78,8 @@ def run_simulation(
             sp.serial() for sp in model.expand(seeds).list_species()]
 
     obs = ecell4.TimingNumberObserver(t, species_list)
-    sim = f.create_simulator(w)
+    sim = f.create_simulator(model, w)
+    # sim = f.create_simulator(w)
     sim.run(t[-1], obs)
 
     if with_plot:

@@ -38,6 +38,7 @@ cdef extern from "ecell4/ode/ODEWorld.hpp" namespace "ecell4::ode":
         void reserve_species(Cpp_Species &)
         void release_species(Cpp_Species &)
         void bind_to(shared_ptr[Cpp_Model])
+        void bind_to(shared_ptr[Cpp_ODENetworkModel])
 
 ## ODEWorld
 #  a python wrapper for Cpp_ODEWorld
@@ -181,6 +182,8 @@ cdef extern from "ecell4/ode/ODENetworkModel.hpp" namespace "ecell4::ode":
 cdef class ODENetworkModel:
     cdef shared_ptr[Cpp_ODENetworkModel] *thisptr
 
+cdef ODENetworkModel ODENetworkModel_from_Cpp_ODENetworkModel(shared_ptr[Cpp_ODENetworkModel] m)
+
 ## Cpp_ODESimulator2
 cdef extern from "ecell4/ode/ODESimulator2.hpp" namespace "ecell4::ode":
     cdef cppclass Cpp_ODESimulator2 "ecell4::ode::ODESimulator2":
@@ -195,9 +198,30 @@ cdef extern from "ecell4/ode/ODESimulator2.hpp" namespace "ecell4::ode":
         void set_dt(Real)
         Integer num_steps()
 
+        shared_ptr[Cpp_ODENetworkModel] model()
+        shared_ptr[Cpp_ODEWorld] world()
+
         void run(Real)
         void run(Real, shared_ptr[Cpp_Observer])
         void run(Real, vector[shared_ptr[Cpp_Observer]])
 
 cdef class ODESimulator2:
     cdef Cpp_ODESimulator2 *thisptr
+
+cdef ODESimulator2 ODESimulator2_from_Cpp_ODESimulator2(Cpp_ODESimulator2* s)
+
+## Cpp_ODEFactory2
+#  ecell4::ode::ODEFactory2
+cdef extern from "ecell4/ode/ODEFactory2.hpp" namespace "ecell4::ode":
+    cdef cppclass Cpp_ODEFactory2 "ecell4::ode::ODEFactory2":
+        Cpp_ODEFactory2() except +
+        Cpp_ODEWorld* create_world(string)
+        Cpp_ODEWorld* create_world(Cpp_Real3&)
+        Cpp_ODESimulator2* create_simulator(shared_ptr[Cpp_ODENetworkModel], shared_ptr[Cpp_ODEWorld])
+        Cpp_ODESimulator2* create_simulator(shared_ptr[Cpp_ODEWorld])
+
+## ODEFactory2
+#  a python wrapper for Cpp_ODEFactory2
+cdef class ODEFactory2:
+    cdef Cpp_ODEFactory2* thisptr
+
