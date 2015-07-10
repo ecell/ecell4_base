@@ -73,9 +73,13 @@ def run_simulation(
             w.add_molecules(ecell4.Species(serial), n)
 
     if species_list is None:
-        seeds = [ecell4.Species(serial) for serial in y0.keys()]
-        species_list = [
-            sp.serial() for sp in model.expand(seeds).list_species()]
+        if isinstance(model, ecell4.ode.ODENetworkModel):
+            #XXX: A bit messy way
+            species_list = [sp.serial() for sp in model.list_species()]
+        else:
+            seeds = [ecell4.Species(serial) for serial in y0.keys()]
+            species_list = [
+                sp.serial() for sp in model.expand(seeds).list_species()]
 
     obs = ecell4.TimingNumberObserver(t, species_list)
     sim = f.create_simulator(model, w)

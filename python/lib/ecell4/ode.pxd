@@ -178,6 +178,7 @@ cdef extern from "ecell4/ode/ODENetworkModel.hpp" namespace "ecell4::ode":
         Integer num_reaction_rules()
         void dump_reactions()
         void add_reaction_rule(Cpp_ODEReactionRule)
+        vector[Cpp_Species] list_species()
 
 cdef class ODENetworkModel:
     cdef shared_ptr[Cpp_ODENetworkModel] *thisptr

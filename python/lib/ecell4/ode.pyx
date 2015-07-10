@@ -450,6 +450,16 @@ cdef class ODENetworkModel:
     def add_reaction_rule(self, ODEReactionRule rr):
         self.thisptr.get().add_reaction_rule( deref(rr.thisptr) )
 
+    def list_species(self):
+        cdef vector[Cpp_Species] species = self.thisptr.get().list_species()
+        retval = []
+        cdef vector[Cpp_Species].iterator it = species.begin()
+        while it != species.end():
+            retval.append(Species_from_Cpp_Species(
+                <Cpp_Species*>(address(deref(it)))))
+            inc(it)
+        return retval
+
 cdef ODENetworkModel ODENetworkModel_from_Cpp_ODENetworkModel(
     shared_ptr[Cpp_ODENetworkModel] m):
     r = ODENetworkModel()
