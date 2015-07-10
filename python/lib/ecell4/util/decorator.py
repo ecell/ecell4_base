@@ -9,7 +9,6 @@ from . import parseobj
 from .decorator_base import Callback, JustParseCallback, parse_decorator, ParseDecorator
 
 import ecell4.core
-import ecell4.ode
 
 
 PARAMETERS = []
@@ -45,12 +44,13 @@ def generate_ReactionRule(lhs, rhs, k=None):
     if k is None:
         raise RuntimeError('no parameter is specified')
     elif callable(k):
-        rr = ecell4.ode.ODEReactionRule()
+        from ecell4.ode import ODEReactionRule, ODERatelawCallback
+        rr = ODEReactionRule()
         for sp in lhs:
             rr.add_reactant(sp, 1)
         for sp in rhs:
             rr.add_product(sp, 1)
-        rr.set_ratelaw(ecell4.ode.ODERatelawCallback(k))
+        rr.set_ratelaw(ODERatelawCallback(k))
         return rr
     elif isinstance(params, numbers.Number):
         return ecell4.core.ReactionRule(lhs, rhs, k)
@@ -286,7 +286,10 @@ class ReactionRulesCallback(Callback):
             raise RuntimeError('an invalid object was given [%s]' % (repr(obj)))
 
 def get_model(is_netfree=False, without_reset=False, seeds=None):
-    if seeds is not None or is_netfree:
+    if any([not isinstance(rr, ecell4.core.ReactionRule) for rr in REACTION_RULES]):
+       from ecell4.ode import ODENetworkModel
+       m = ODENetworkModel()
+    elif seeds is not None or is_netfree:
         m = ecell4.core.NetfreeModel()
     else:
         m = ecell4.core.NetworkModel()

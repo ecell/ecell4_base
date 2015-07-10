@@ -151,6 +151,8 @@ cdef extern from "ecell4/ode/ODEReactionRule.hpp" namespace "ecell4::ode":
 
         void add_reactant(Cpp_Species, Real)
         void add_product(Cpp_Species, Real)
+        void add_reactant(Cpp_Species)
+        void add_product(Cpp_Species)
         void set_reactant_coefficient(int, Real)
         void set_product_coefficient(int, Real)
 

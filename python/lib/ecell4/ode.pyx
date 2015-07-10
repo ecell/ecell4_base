@@ -303,10 +303,19 @@ cdef class ODEReactionRule:
         return self.thisptr.k()
     def set_k(self, Real k):
         self.thisptr.set_k(k)
-    def add_reactant(self, Species sp, Real coeff):
-        self.thisptr.add_reactant(deref(sp.thisptr), coeff)
-    def add_product(self, Species sp, Real coeff):
-        self.thisptr.add_product(deref(sp.thisptr), coeff)
+
+    def add_reactant(self, Species sp, coeff=None):
+        if coeff is not None:
+            self.thisptr.add_reactant(deref(sp.thisptr), coeff)
+        else:
+            self.thisptr.add_reactant(deref(sp.thisptr))
+
+    def add_product(self, Species sp, coeff=None):
+        if coeff is not None:
+            self.thisptr.add_product(deref(sp.thisptr), coeff)
+        else:
+            self.thisptr.add_product(deref(sp.thisptr))
+
     def set_reactant_coefficient(self, Integer index, Real coeff):
         self.thisptr.set_reactant_coefficient(index, coeff)
     def set_product_coefficient(self, Integer index, Real coeff):
