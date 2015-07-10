@@ -162,7 +162,8 @@ cdef extern from "ecell4/ode/ODEReactionRule.hpp" namespace "ecell4::ode":
 
 cdef class ODEReactionRule:
     cdef Cpp_ODEReactionRule *thisptr
-        
+    cdef object ratelaw
+
 ## Cpp_ODENetworkModel
 cdef extern from "ecell4/ode/ODENetworkModel.hpp" namespace "ecell4::ode":
     cdef cppclass Cpp_ODENetworkModel "ecell4::ode::ODENetworkModel":

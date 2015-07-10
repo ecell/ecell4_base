@@ -9,6 +9,7 @@ from . import parseobj
 from .decorator_base import Callback, JustParseCallback, parse_decorator, ParseDecorator
 
 import ecell4.core
+import ecell4.ode
 
 
 PARAMETERS = []
@@ -41,34 +42,52 @@ def generate_Species(obj):
         raise RuntimeError('invalid expression; "%s" given' % str(obj))
 
 def generate_ReactionRule(lhs, rhs, k=None):
-    return ecell4.core.ReactionRule(lhs, rhs, k)
-    # if len(lhs) == 0:
-    #     if len(rhs) != 1:
-    #         raise RuntimeError(
-    #             "the number of products must be 1; %d given" % len(rhs))
-    #     return ecell4.core.create_synthesis_reaction_rule(rhs[0], k)
-    # elif len(lhs) == 1:
-    #     if len(rhs) == 0:
-    #         return ecell4.core.create_degradation_reaction_rule(lhs[0], k)
-    #     elif len(rhs) == 1:
-    #         return ecell4.core.create_unimolecular_reaction_rule(
-    #             lhs[0], rhs[0], k)
-    #     elif len(rhs) == 2:
-    #         return ecell4.core.create_unbinding_reaction_rule(
-    #             lhs[0], rhs[0], rhs[1], k)
-    #     else:
-    #         raise RuntimeError(
-    #             "the number of products must be less than 3; %d given"
-    #             % len(rhs))
-    # elif len(lhs) == 2:
-    #     if len(rhs) == 1:
-    #         return ecell4.core.create_binding_reaction_rule(
-    #             lhs[0], lhs[1], rhs[0], k)
-    #     else:
-    #         raise RuntimeError(
-    #             "the number of products must be 1; %d given" % len(rhs))
-    # raise RuntimeError(
-    #     "the number of reactants must be less than 3; %d given" % len(lhs))
+    if k is None:
+        raise RuntimeError('no parameter is specified')
+    elif callable(k):
+        rr = ecell4.ode.ODEReactionRule()
+        for sp in lhs:
+            rr.add_reactant(sp, 1)
+        for sp in rhs:
+            rr.add_product(sp, 1)
+        rr.set_ratelaw(ecell4.ode.ODERatelawCallback(k))
+        return rr
+    elif isinstance(params, numbers.Number):
+        return ecell4.core.ReactionRule(lhs, rhs, k)
+
+    raise RuntimeError(
+        'parameter must be given as a number; "%s" given'
+        % str(params))
+
+# def generate_ReactionRule(lhs, rhs, k=None):
+#     return ecell4.core.ReactionRule(lhs, rhs, k)
+#     # if len(lhs) == 0:
+#     #     if len(rhs) != 1:
+#     #         raise RuntimeError(
+#     #             "the number of products must be 1; %d given" % len(rhs))
+#     #     return ecell4.core.create_synthesis_reaction_rule(rhs[0], k)
+#     # elif len(lhs) == 1:
+#     #     if len(rhs) == 0:
+#     #         return ecell4.core.create_degradation_reaction_rule(lhs[0], k)
+#     #     elif len(rhs) == 1:
+#     #         return ecell4.core.create_unimolecular_reaction_rule(
+#     #             lhs[0], rhs[0], k)
+#     #     elif len(rhs) == 2:
+#     #         return ecell4.core.create_unbinding_reaction_rule(
+#     #             lhs[0], rhs[0], rhs[1], k)
+#     #     else:
+#     #         raise RuntimeError(
+#     #             "the number of products must be less than 3; %d given"
+#     #             % len(rhs))
+#     # elif len(lhs) == 2:
+#     #     if len(rhs) == 1:
+#     #         return ecell4.core.create_binding_reaction_rule(
+#     #             lhs[0], lhs[1], rhs[0], k)
+#     #     else:
+#     #         raise RuntimeError(
+#     #             "the number of products must be 1; %d given" % len(rhs))
+#     # raise RuntimeError(
+#     #     "the number of reactants must be less than 3; %d given" % len(lhs))
 
 class ParametersCallback(Callback):
 
@@ -259,21 +278,9 @@ class ReactionRulesCallback(Callback):
                 raise RuntimeError(
                     "parameter must be a list or tuple with length 2;"
                     + " length %d given" % len(params))
-            elif not (isinstance(params[0], numbers.Number)
-                and isinstance(params[1], numbers.Number)):
-                raise RuntimeError(
-                    'parameters must be given as a list or tuple of numbers;'
-                    + ' "%s" given' % str(params))
-
             self.comparisons.append(generate_ReactionRule(lhs, rhs, params[0]))
             self.comparisons.append(generate_ReactionRule(rhs, lhs, params[1]))
         elif isinstance(obj, parseobj.GtExp):
-            if params is None:
-                raise RuntimeError('no parameter is specified')
-            elif not isinstance(params, numbers.Number):
-                raise RuntimeError(
-                    'parameter must be given as a number; "%s" given'
-                    % str(params))
             self.comparisons.append(generate_ReactionRule(lhs, rhs, params))
         else:
             raise RuntimeError('an invalid object was given [%s]' % (repr(obj)))

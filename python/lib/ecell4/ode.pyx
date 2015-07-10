@@ -294,6 +294,7 @@ cdef class ODERatelawCallback:
 cdef class ODEReactionRule:
     def __cinit__(self):
         self.thisptr = new Cpp_ODEReactionRule()
+        self.ratelaw = None
 
     def __dealloc__(self):
         del self.thisptr
@@ -312,9 +313,11 @@ cdef class ODEReactionRule:
         self.thisptr.set_product_coefficient(index, coeff)
 
     def set_ratelaw(self, ratelaw_obj):
+        self.ratelaw = ratelaw_obj
         self.thisptr.set_ratelaw(deref( (<ODERatelaw>(ratelaw_obj.as_base())).thisptr )) 
 
     def set_ratelaw_massaction(self, ODERatelawMassAction ratelaw_obj):
+        self.ratelaw = ratelaw_obj
         self.thisptr.set_ratelaw( deref(ratelaw_obj.thisptr) )
 
     def has_ratelaw(self):
