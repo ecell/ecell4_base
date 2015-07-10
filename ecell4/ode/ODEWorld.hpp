@@ -13,6 +13,7 @@
 
 #include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
+#include <ecell4/ode/ODENetworkModel.hpp>
 
 namespace ecell4
 {
@@ -271,6 +272,11 @@ public:
         }
 
         this->model_ = model;
+    }
+
+    void bind_to(boost::shared_ptr<ODENetworkModel> model)
+    {
+        ; //XXX: do nothing, fixe me later
     }
 
     boost::shared_ptr<Model> lock_model() const

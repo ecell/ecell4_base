@@ -16,6 +16,8 @@
 #include <ecell4/core/types.hpp>
 #include <ecell4/core/get_mapper_mf.hpp>
 
+#include <ecell4/core/SimulatorBase.hpp>
+
 #include "ODEWorld.hpp"
 #include "ODEReactionRule.hpp"
 #include "ODENetworkModel.hpp"
@@ -26,14 +28,19 @@ namespace ode
 {
 
 class ODESimulator2
+    : public SimulatorBase<ODENetworkModel, ODEWorld>
 {
 public:
+
+    typedef SimulatorBase<ODENetworkModel, ODEWorld> base_type;
+
 public:
+
     typedef boost::numeric::ublas::vector<double> state_type;
     typedef boost::numeric::ublas::matrix<double> matrix_type;
     typedef std::vector<state_type::size_type> index_container_type;
     typedef std::vector<Real> coefficient_container_type;
-    
+
     typedef ODEReactionRule reacton_container_type;
 
     struct reaction_type
@@ -277,10 +284,12 @@ public:
         }
     };
 public:
+
     ODESimulator2(
         const boost::shared_ptr<ODENetworkModel> &model,
         const boost::shared_ptr<ODEWorld> &world)
-        : model_(model), world_(world), dt_(inf), num_steps_(0)
+        : base_type(model, world), dt_(inf)
+        // : model_(model), world_(world), dt_(inf), num_steps_(0)
     {
         initialize();
     }
@@ -304,10 +313,10 @@ public:
     }
     bool step(const Real &upto);
 
-    Real next_time() const
-    {
-        return this->t() + this->dt();
-    }
+    // Real next_time() const
+    // {
+    //     return this->t() + this->dt();
+    // }
     // SimulatorTraits
     
     Real t(void) const
@@ -330,17 +339,17 @@ public:
         }
         dt_ = dt;
     }
-    Integer num_steps() const
-    {
-        return this->num_steps_;
-    }
+    // Integer num_steps() const
+    // {
+    //     return this->num_steps_;
+    // }
 protected:
     std::pair<deriv_func, jacobi_func> generate_system() const;
 protected:
-    boost::shared_ptr<ODENetworkModel> model_;
-    boost::shared_ptr<ODEWorld> world_;
+    // boost::shared_ptr<ODENetworkModel> model_;
+    // boost::shared_ptr<ODEWorld> world_;
     Real dt_;
-    Integer num_steps_;
+    // Integer num_steps_;
 };
 
 } // ode

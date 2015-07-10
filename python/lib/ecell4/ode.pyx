@@ -472,3 +472,15 @@ cdef class ODESimulator2:
         self.thisptr.set_dt(dt_new)
     def num_steps(self):
         return self.thisptr.num_steps()
+    def run(self, Real duration, observers=None):
+        cdef vector[shared_ptr[Cpp_Observer]] tmp
+
+        if observers is None:
+            self.thisptr.run(duration)
+        elif isinstance(observers, collections.Iterable):
+            for obs in observers:
+                tmp.push_back(deref((<Observer>(obs.as_base())).thisptr))
+            self.thisptr.run(duration, tmp)
+        else:
+            self.thisptr.run(duration,
+                deref((<Observer>(observers.as_base())).thisptr))

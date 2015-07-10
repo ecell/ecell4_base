@@ -195,5 +195,9 @@ cdef extern from "ecell4/ode/ODESimulator2.hpp" namespace "ecell4::ode":
         void set_dt(Real)
         Integer num_steps()
 
+        void run(Real)
+        void run(Real, shared_ptr[Cpp_Observer])
+        void run(Real, vector[shared_ptr[Cpp_Observer]])
+
 cdef class ODESimulator2:
     cdef Cpp_ODESimulator2 *thisptr

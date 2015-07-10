@@ -36,7 +36,7 @@ def singlerun1():
     # rr1.set_ratelaw(rl_cb)
     # rl_cb = ODERatelawCallback(lambda r, p, V, t, rr: ka * r[0])
     # rr1.set_ratelaw(rl_cb)
-    rr1.set_ratelaw(ODERatelawCallback(lambda r, p, V, t, rr: ka * r[0]))
+    # rr1.set_ratelaw(ODERatelawCallback(lambda r, p, V, t, rr: ka * r[0]))
 
     rr2 = ODEReactionRule()
     rr2.add_reactant(sp2, 1.0)
@@ -49,7 +49,7 @@ def singlerun1():
     # rr2.set_ratelaw(rl_cb2)
     # rl_cb2 = ODERatelawCallback(lambda r, p, V, t, rr: kd / V * r[0] * r[1])
     # rr2.set_ratelaw(rl_cb2)
-    rr2.set_ratelaw(ODERatelawCallback(lambda r, p, V, t, rr: kd / V * r[0] * r[1]))
+    # rr2.set_ratelaw(ODERatelawCallback(lambda r, p, V, t, rr: kd / V * r[0] * r[1]))
 
     m = ODENetworkModel()
     m.add_reaction_rule(rr1)
@@ -87,28 +87,17 @@ def singlerun2():
         A == B + C | (lambda r, p, V, t, rr: ka * r[0],
                       lambda r, p, V, t, rr: kd / V * r[0] * r[1])
 
-    m = ODENetworkModel()
-    for rr in ecell4.util.decorator.REACTION_RULES:
-        m.add_reaction_rule(rr)
-    # reset_model()
+    m = get_model()
 
     w = ODEWorld(edge_length)
     w.add_molecules(Species("A"), N)
 
     sim = ODESimulator2(m, w)
+    obs = FixedIntervalNumberObserver(0.01, ["A", "B", "C"])
+    sim.run(20.0, obs)
 
-    # obs = FixedIntervalNumberObserver(0.01, ["A", "B", "C"])
-    # sim.run(10.0, obs)
-    # print(obs.data())
-
-    next_time, dt = 0.0, 0.01
-    print("{}\t{}\t{}\t{}".format(
-        sim.t(), w.get_value(Species("A")), w.get_value(Species("B")), w.get_value(Species("C"))))
-    for i in xrange(1000):
-        next_time += dt
-        sim.step(next_time)
-        print("{}\t{}\t{}\t{}".format(
-            sim.t(), w.get_value(Species("A")), w.get_value(Species("B")), w.get_value(Species("C"))))
+    for data in obs.data():
+        print("{}\t{}\t{}\t{}".format(*data))
 
 # singlerun1()
 singlerun2()
