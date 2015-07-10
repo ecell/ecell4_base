@@ -35,7 +35,7 @@ ODESimulator2::generate_system() const
         const ODEReactionRule::product_container_type products(i->products());
         reaction_type r;
         r.raw = &(*i);
-        r.k = i->k();
+        // r.k = i->k();
         r.reactants.reserve(reactants.size());
         r.products.reserve(products.size());
         if (i->has_ratelaw())

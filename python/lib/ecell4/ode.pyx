@@ -320,6 +320,9 @@ cdef class ODEReactionRule:
     def has_ratelaw(self):
         return self.thisptr.has_ratelaw()
 
+    def is_massaction(self):
+        return self.thisptr.is_massaction()
+
     def reactants(self):
         cdef vector[Cpp_Species] cpp_reactants = self.thisptr.reactants()
         retval = []
@@ -387,7 +390,10 @@ cdef class ODEReactionRule:
             s = "HAVE"
         else:
             s = "DON'T HAVE"
-        k_desc = "k = {:f}\t {} Ratelaw".format(self.k(), s)
+        if self.is_massaction():
+            k_desc = "k = {:f}\t {} Ratelaw".format(self.k(), s)
+        else:
+            k_desc = "\t {} Ratelaw".format(s)
         retval = "{} ---> {}\t{}".format(leftside, rightside, k_desc)
         return retval
 
