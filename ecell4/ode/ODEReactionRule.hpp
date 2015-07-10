@@ -113,7 +113,7 @@ public:
             boost::dynamic_pointer_cast<ODERatelawMassAction>(this->get_ratelaw());
         if(ratelaw_massaction == 0)
         {
-            throw ("Another type of ODERatelaw object has been set");
+            throw IllegalState("Another type of ODERatelaw object has been set");
         }
         return ratelaw_massaction->get_k();
     }
@@ -210,7 +210,8 @@ public:
 
     bool has_ratelaw() const
     {
-        return !(this->ratelaw_.use_count() == 0);
+        // return !(this->ratelaw_.use_count() == 0);
+        return ratelaw_;
     }
     bool is_massaction() const
     {
