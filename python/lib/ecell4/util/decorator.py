@@ -52,7 +52,7 @@ def generate_ReactionRule(lhs, rhs, k=None):
             rr.add_product(sp, 1)
         rr.set_ratelaw(ODERatelawCallback(k))
         return rr
-    elif isinstance(params, numbers.Number):
+    elif isinstance(k, numbers.Number):
         return ecell4.core.ReactionRule(lhs, rhs, k)
 
     raise RuntimeError(
