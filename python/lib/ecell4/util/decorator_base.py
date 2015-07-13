@@ -150,4 +150,5 @@ def parse_decorator(callback_class, func):
         return cache.get()
     return wrapped
 
-just_parse = functools.partial(parse_decorator, JustParseCallback)
+# just_parse = functools.partial(parse_decorator, JustParseCallback)
+just_parse = functools.partial(ParseDecorator, JustParseCallback)

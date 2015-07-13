@@ -6,7 +6,7 @@ import functools
 import itertools
 
 from . import parseobj
-from .decorator_base import Callback, JustParseCallback, parse_decorator, ParseDecorator
+from .decorator_base import Callback, JustParseCallback, ParseDecorator
 
 import ecell4.core
 
@@ -20,19 +20,27 @@ def generate_Species(obj):
         obj = obj._as_ParseObj()
 
     if isinstance(obj, parseobj.ParseObj):
-        return (ecell4.core.Species(str(obj)), )
-        # if len(elems) != 1:
-        #     raise NotImplementedError, (
-        #         'complex is not allowed yet; "%s"' % str(obj))
-        # if (elems[0].args is not None
-        #     or elems[0].kwargs is not None
-        #     or elems[0].key is not None
-        #     or elems[0].modification is not None):
-        #     raise NotImplementedError, (
-        #         'modification is not allowed yet; "%s"' % str(obj))
-        # return (ecell4.core.Species(elems[0].name), )
+        return ((ecell4.core.Species(str(obj)), None), )
     elif isinstance(obj, parseobj.InvExp):
         return (None, )
+    elif isinstance(obj, parseobj.MulExp):
+        subobjs = obj._elements()
+
+        retval, coef = None, 1
+        for subobj in subobjs:
+            if isinstance(subobj, numbers.Number):
+                coef *= subobj
+            elif retval is not None:
+                raise RuntimeError(
+                    'only a single species must be given; %s given'
+                    % (repr(obj)))
+            else:
+                retval = generate_Species(subobj)
+
+        return [(sp[0], coef if sp[1] is None else sp[1] * coef)
+                if sp is not None else None
+                    for sp in retval]
+
     elif isinstance(obj, parseobj.AddExp):
         subobjs = obj._elements()
         return tuple(itertools.chain(*[
@@ -43,51 +51,25 @@ def generate_Species(obj):
 def generate_ReactionRule(lhs, rhs, k=None):
     if k is None:
         raise RuntimeError('no parameter is specified')
-    elif callable(k):
+
+    if callable(k) or any([sp[1] is not None for sp in itertools.chain(lhs, rhs)]):
         from ecell4.ode import ODEReactionRule, ODERatelawCallback
         rr = ODEReactionRule()
         for sp in lhs:
-            rr.add_reactant(sp, 1)
+            rr.add_reactant(sp[0], 1 if sp[1] is None else sp[1])
         for sp in rhs:
-            rr.add_product(sp, 1)
-        rr.set_ratelaw(ODERatelawCallback(k))
+            rr.add_product(sp[0], 1 if sp[1] is None else sp[1])
+        if callable(k):
+            rr.set_ratelaw(ODERatelawCallback(k))
+        else:
+            rr.set_k(k)
         return rr
     elif isinstance(k, numbers.Number):
-        return ecell4.core.ReactionRule(lhs, rhs, k)
+        return ecell4.core.ReactionRule([sp[0] for sp in lhs], [sp[0] for sp in rhs], k)
 
     raise RuntimeError(
         'parameter must be given as a number; "%s" given'
         % str(params))
-
-# def generate_ReactionRule(lhs, rhs, k=None):
-#     return ecell4.core.ReactionRule(lhs, rhs, k)
-#     # if len(lhs) == 0:
-#     #     if len(rhs) != 1:
-#     #         raise RuntimeError(
-#     #             "the number of products must be 1; %d given" % len(rhs))
-#     #     return ecell4.core.create_synthesis_reaction_rule(rhs[0], k)
-#     # elif len(lhs) == 1:
-#     #     if len(rhs) == 0:
-#     #         return ecell4.core.create_degradation_reaction_rule(lhs[0], k)
-#     #     elif len(rhs) == 1:
-#     #         return ecell4.core.create_unimolecular_reaction_rule(
-#     #             lhs[0], rhs[0], k)
-#     #     elif len(rhs) == 2:
-#     #         return ecell4.core.create_unbinding_reaction_rule(
-#     #             lhs[0], rhs[0], rhs[1], k)
-#     #     else:
-#     #         raise RuntimeError(
-#     #             "the number of products must be less than 3; %d given"
-#     #             % len(rhs))
-#     # elif len(lhs) == 2:
-#     #     if len(rhs) == 1:
-#     #         return ecell4.core.create_binding_reaction_rule(
-#     #             lhs[0], lhs[1], rhs[0], k)
-#     #     else:
-#     #         raise RuntimeError(
-#     #             "the number of products must be 1; %d given" % len(rhs))
-#     # raise RuntimeError(
-#     #     "the number of reactants must be less than 3; %d given" % len(lhs))
 
 class ParametersCallback(Callback):
 
@@ -121,10 +103,13 @@ class ParametersCallback(Callback):
                 raise RuntimeError(
                     'only a single species must be given; %d given'
                     % len(species_list))
-
-            sp = species_list[0]
-            if sp is None:
+            elif species_list[0] is None:
                 raise RuntimeError("no species given [%s]" % (repr(obj)))
+            elif species_list[0][1] is not None:
+                raise RuntimeError(
+                    "stoichiometry is not available here [%s]" % (repr(obj)))
+
+            sp = species_list[0][0]
 
             if not isinstance(rhs, types.DictType):
                 raise RuntimeError(
@@ -185,10 +170,13 @@ class SpeciesAttributesCallback(Callback):
                 raise RuntimeError(
                     'only a single species must be given; %d given'
                     % len(species_list))
-
-            sp = species_list[0]
-            if sp is None:
+            elif species_list[0] is None:
                 raise RuntimeError("no species given [%s]" % (repr(obj)))
+            elif species_list[0][1] is not None:
+                raise RuntimeError(
+                    "stoichiometry is not available here [%s]" % (repr(obj)))
+
+            sp = species_list[0][0]
 
             if self.keys is None:
                 if not isinstance(rhs, dict):

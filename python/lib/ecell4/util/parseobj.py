@@ -152,6 +152,18 @@ class ExpBase(object):
         retval = AddExp(self.__root, self, rhs)
         return retval
 
+    def __radd__(self, lhs):
+        retval = AddExp(self.__root, lhs, self)
+        return retval
+
+    def __mul__(self, rhs):
+        retval = MulExp(self.__root, self, rhs)
+        return retval
+
+    def __rmul__(self, lhs):
+        retval = MulExp(self.__root, lhs, self)
+        return retval
+
     def __or__(self, rhs):
         retval = OrExp(self.__root, self, rhs)
         self.__root.notify_bitwise_operations(retval)
@@ -298,6 +310,29 @@ class AddExp(ExpBase):
 
     def __str__(self):
         return "(%s)" % ("+".join([str(obj) for obj in self.__elems]))
+
+class MulExp(ExpBase):
+
+    def __init__(self, root, lhs, rhs):
+        ExpBase.__init__(self, root)
+
+        self.__elems = []
+        self.__append(lhs)
+        self.__append(rhs)
+
+    def _elements(self):
+        return copy.copy(self.__elems)
+
+    def __append(self, obj):
+        if isinstance(obj, AnyCallable):
+            self.__elems.append(obj._as_ParseObj())
+        elif isinstance(obj, MulExp):
+            self.__elems.extend(obj._elements())
+        else:
+            self.__elems.append(obj)
+
+    def __str__(self):
+        return "(%s)" % ("*".join([str(obj) for obj in self.__elems]))
 
 class OrExp(ExpBase):
 
