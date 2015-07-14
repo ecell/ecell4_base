@@ -18,13 +18,13 @@ fi
 
 set -e
 
-if [ ! -f ecell4/egfrd/SphericalBesselTable.hpp -o ! -f ecell4/egfrd/CylindricalBesselTable.hpp ]; then
-    cd ecell4/egfrd/tablegen
-    cmake .
-    make
-    cp SphericalBesselTable.hpp CylindricalBesselTable.hpp ..
-    cd ../../..
-fi
+# if [ ! -f ecell4/egfrd/SphericalBesselTable.hpp -o ! -f ecell4/egfrd/CylindricalBesselTable.hpp ]; then
+#     cd ecell4/egfrd/tablegen
+#     cmake .
+#     make
+#     cp SphericalBesselTable.hpp CylindricalBesselTable.hpp ..
+#     cd ../../..
+# fi
 
 cmake -DCMAKE_INSTALL_PREFIX=${PREFIX} .
 make
