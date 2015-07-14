@@ -8,9 +8,8 @@ set(CPP_FILES
     CompartmentSpace.cpp Context.cpp Integer3.cpp Journal.cpp ReactionRule.cpp
     LatticeSpace.cpp Model.cpp NetworkModel.cpp NetfreeModel.cpp ParticleSpace.cpp
     Real3.cpp RandomNumberGenerator.cpp Species.cpp UnitSpecies.cpp
-    AABB.cpp Sphere.cpp Cylinder.cpp PlanarSurface.cpp Rod.cpp collision.cpp
-    SubvolumeSpace.cpp ParticleSpaceCellListImpl.cpp
-    LatticeSpaceCellListImpl.cpp)
+    Sphere.cpp Cylinder.cpp SubvolumeSpace.cpp ParticleSpaceCellListImpl.cpp
+    LatticeSpaceCellListImpl.cpp collision.cpp Rod.cpp AABB.cpp)
 
 set(HPP_FILES
     CompartmentSpace.hpp DynamicPriorityQueue.hpp LatticeSpace.hpp
