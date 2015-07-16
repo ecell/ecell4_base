@@ -576,7 +576,7 @@ std::pair<LatticeSpaceVectorImpl::coordinate_type, bool>
     LatticeSpaceVectorImpl::move_to_neighbor(
         private_coordinate_type coord, Integer nrand)
 {
-    const private_coordinate_type neighbor(get_neighbor(coord, nrand));
+    const private_coordinate_type neighbor(get_neighbor_private(coord, nrand));
     return move_(coord, neighbor);
 }
 
@@ -584,7 +584,7 @@ std::pair<LatticeSpaceVectorImpl::private_coordinate_type, bool>
     LatticeSpaceVectorImpl::move_to_neighbor(
         particle_info_type& info, Integer nrand)
 {
-    const coordinate_type neighbor(get_neighbor(info.first, nrand));
+    const coordinate_type neighbor(get_neighbor_private(info.first, nrand));
     return move_(info, neighbor);
 }
 
@@ -686,7 +686,7 @@ std::pair<LatticeSpaceVectorImpl::private_coordinate_type, bool>
         particle_info_type& info, const Integer nrand)
 {
     const private_coordinate_type private_from(info.first);
-    private_coordinate_type private_to(get_neighbor(private_from, nrand));
+    private_coordinate_type private_to(get_neighbor_private(private_from, nrand));
 
     //XXX: assert(private_from != private_to);
     //XXX: assert(from_mt == voxels_[private_from]);

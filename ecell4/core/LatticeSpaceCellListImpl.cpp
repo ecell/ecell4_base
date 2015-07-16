@@ -375,7 +375,7 @@ std::pair<LatticeSpaceCellListImpl::private_coordinate_type, bool>
         LatticeSpaceCellListImpl::particle_info_type& info, const Integer nrand)
 {
     const private_coordinate_type private_from(info.first);
-    private_coordinate_type private_to(get_neighbor(private_from, nrand));
+    private_coordinate_type private_to(get_neighbor_private(private_from, nrand));
 
     MolecularTypeBase* to_mt(get_molecular_type(private_to));
 
@@ -416,7 +416,7 @@ std::pair<LatticeSpaceCellListImpl::private_coordinate_type, bool>
     return std::make_pair(private_to, true);
 
     // const private_coordinate_type private_from(info.first);
-    // private_coordinate_type private_to(get_neighbor(private_from, nrand));
+    // private_coordinate_type private_to(get_neighbor_private(private_from, nrand));
     // MolecularTypeBase* to_mt(get_molecular_type(private_to));
     // if (to_mt != loc)
     // {

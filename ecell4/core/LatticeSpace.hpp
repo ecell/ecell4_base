@@ -154,8 +154,14 @@ public:
     virtual Real3 global2position(const Integer3& global) const = 0;
     virtual Integer3 position2global(const Real3& pos) const = 0;
 
-    virtual private_coordinate_type get_neighbor(
+    virtual private_coordinate_type get_neighbor_private(
         const private_coordinate_type& private_coord, const Integer& nrand) const = 0;
+
+    virtual coordinate_type get_neighbor(
+        const coordinate_type& coord, const Integer& nrand) const
+    {
+        return private2coord(get_neighbor_private(coord2private(coord), nrand));
+    }
 
     /**
       */
@@ -460,7 +466,7 @@ public:
         return global2coord(private_coord2global(private_coord));
     }
 
-    private_coordinate_type get_neighbor(
+    private_coordinate_type get_neighbor_private(
         const private_coordinate_type& private_coord, const Integer& nrand) const
     {
         const Integer NUM_COLROW(col_size_ * row_size_);

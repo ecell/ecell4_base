@@ -274,10 +274,15 @@ public:
         MolecularTypeBase* const& from_mt, MolecularTypeBase* const& loc,
         particle_info_type& info, const Integer nrand);
 
-    private_coordinate_type get_neighbor(
+    coordinate_type get_neighbor(coordinate_type coord, Integer nrand) const
+    {
+        return (*space_).get_neighbor(coord, nrand);
+    }
+
+    private_coordinate_type get_neighbor_private(
             private_coordinate_type private_coord, Integer nrand) const
     {
-        return (*space_).get_neighbor(private_coord, nrand);
+        return (*space_).get_neighbor_private(private_coord, nrand);
     }
 
     std::pair<private_coordinate_type, bool> check_neighbor_private(
