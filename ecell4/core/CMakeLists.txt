@@ -9,7 +9,8 @@ set(CPP_FILES
     LatticeSpace.cpp Model.cpp NetworkModel.cpp NetfreeModel.cpp ParticleSpace.cpp
     Real3.cpp RandomNumberGenerator.cpp Species.cpp UnitSpecies.cpp
     Sphere.cpp Cylinder.cpp SubvolumeSpace.cpp ParticleSpaceCellListImpl.cpp
-    LatticeSpaceCellListImpl.cpp collision.cpp Rod.cpp AABB.cpp PlanarSurface.cpp)
+    LatticeSpaceCellListImpl.cpp collision.cpp Rod.cpp AABB.cpp PlanarSurface.cpp
+    Mesh.cpp)
 
 set(HPP_FILES
     CompartmentSpace.hpp DynamicPriorityQueue.hpp LatticeSpace.hpp
@@ -25,7 +26,10 @@ set(HPP_FILES
     Shape.hpp Sphere.hpp Cylinder.hpp AABB.hpp StructureType.hpp
     ParticleSpaceCellListImpl.hpp LatticeSpaceCellListImpl.hpp
     PlanarSurface.hpp Rod.hpp collision.hpp
-    comparators.hpp SimulatorFactory.hpp)
+    comparators.hpp SimulatorFactory.hpp Mesh.hpp)
+
+find_package(VTK REQUIRED)
+include(${VTK_USE_FILE})
 
 find_package(HDF5 COMPONENTS C CXX HL REQUIRED)
 include_directories(${HDF5_INCLUDE_DIRS})
@@ -60,8 +64,15 @@ configure_file(
 
 add_library(ecell4-core SHARED
     ${CPP_FILES} ${HPP_FILES} "${PROJECT_BINARY_DIR}/ecell4/core/config.h")
-target_link_libraries(ecell4-core
-    ${HDF5_LIBRARIES} ${Boost_LIBRARIES} ${GSL_LIBRARIES} ${GSL_CBLAS_LIBRARIES})
+# target_link_libraries(ecell4-core
+#     ${HDF5_LIBRARIES} ${Boost_LIBRARIES} ${GSL_LIBRARIES} ${GSL_CBLAS_LIBRARIES})
+if(VTK_LIBRARIES)
+  target_link_libraries(ecell4-core
+      ${HDF5_LIBRARIES} ${Boost_LIBRARIES} ${GSL_LIBRARIES} ${GSL_CBLAS_LIBRARIES} ${VTK_LIBRARIES})
+else()
+  target_link_libraries(ecell4-core
+      ${HDF5_LIBRARIES} ${Boost_LIBRARIES} ${GSL_LIBRARIES} ${GSL_CBLAS_LIBRARIES} vtkHybrid vtkWidgets)
+endif()
 
 add_subdirectory(tests)
 

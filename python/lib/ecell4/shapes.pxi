@@ -174,6 +174,29 @@ cdef class RodSurface:
         retval.thisptr = new_obj
         return retval
 
+cdef class MeshSurface:
+
+    def __cinit__(self,string filename, Real3 edge_lengths):
+        self.thisptr = new shared_ptr[Cpp_MeshSurface](
+            new Cpp_MeshSurface(filename, deref(edge_lengths.thisptr)))
+
+    def __dealloc__(self):
+        del self.thisptr
+
+    def dimension(self):
+        return self.thisptr.get().dimension()
+
+    def is_inside(self, Real3 pos):
+        return self.thisptr.get().is_inside(deref(pos.thisptr))
+
+    def as_base(self):
+        cdef shared_ptr[Cpp_Shape] *new_obj = new shared_ptr[Cpp_Shape](
+            <Cpp_Shape*>(new Cpp_MeshSurface(<Cpp_MeshSurface> deref(self.thisptr.get()))))
+        retval = Shape()
+        del retval.thisptr
+        retval.thisptr = new_obj
+        return retval
+
 cdef class AABB:
 
     def __cinit__(self, Real3 lower, Real3 upper):

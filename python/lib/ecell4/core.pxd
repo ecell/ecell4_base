@@ -603,6 +603,15 @@ cdef extern from "ecell4/core/AABB.hpp" namespace "ecell4":
         Cpp_Real3 upper()
         Cpp_Real3 lower()
 
+## Cpp_MeshSurface
+# ecell4::MeshSurface
+cdef extern from "ecell4/core/Mesh.hpp" namespace "ecell4":
+    cdef cppclass Cpp_MeshSurface "ecell4::MeshSurface":
+        Cpp_MeshSurface(string, Cpp_Real3)
+        Cpp_MeshSurface(Cpp_MeshSurface)
+        Real is_inside(Cpp_Real3&)
+        Integer dimension()
+
 ## Shape
 #  a python wrapper for Cpp_Shape
 cdef class Shape:
@@ -633,6 +642,11 @@ cdef class Rod:
 cdef class RodSurface:
     cdef shared_ptr[Cpp_RodSurface]* thisptr
 
+
+## MeshSurface
+# a python wrapper for Cpp_MeshSurface
+cdef class MeshSurface:
+    cdef shared_ptr[Cpp_MeshSurface]* thisptr
 
 ## AABB
 #  a python wrapper for Cpp_AABB
