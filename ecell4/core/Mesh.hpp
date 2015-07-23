@@ -1,14 +1,19 @@
 #ifndef __ECELL4_MESH_HPP
 #define __ECELL4_MESH_HPP
 
+#include "config.h"
 #include "Shape.hpp"
 
+#ifdef HAVE_VTK
 #include <vtkSmartPointer.h>
 #include <vtkCellLocator.h>
 #include <vtkSTLReader.h>
 #include <vtkOBBTree.h>
 #include <vtkPolyData.h>
 #include <vtkSelectEnclosedPoints.h>
+#include <vtkPoints.h>
+#include <vtkTriangle.h>
+#endif
 
 namespace ecell4
 {
@@ -40,6 +45,7 @@ public:
     virtual Real3 draw_position(boost::shared_ptr<RandomNumberGenerator>& rng) const;
     virtual bool test_AABB(const Real3& l, const Real3& u) const;
 
+#ifdef HAVE_VTK
     virtual void bounding_box(
         const Real3& edge_lengths, Real3& lower, Real3& upper) const
     {
@@ -53,17 +59,19 @@ public:
         lower = Real3(0.0, 0.0, 0.0);
         upper = Real3(xlim, ylim, zlim);
     }
+#endif
 
 protected:
 
     std::string filename_;
     Real3 edge_lengths_;
-
     Real ratio_;
     Real3 shift_;
 
+#ifdef HAVE_VTK
     vtkSmartPointer<vtkSTLReader> reader_;
     // vtkSmartPointer<vtkOBBTree> tree_;
+#endif
 };
 
 } // ecell4

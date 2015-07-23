@@ -28,8 +28,11 @@ set(HPP_FILES
     PlanarSurface.hpp Rod.hpp collision.hpp
     comparators.hpp SimulatorFactory.hpp Mesh.hpp)
 
-find_package(VTK REQUIRED)
-include(${VTK_USE_FILE})
+find_package(VTK)
+if(VTK_FOUND)
+  include(${VTK_USE_FILE})
+  set(HAVE_VTK 1)
+endif()
 
 find_package(HDF5 COMPONENTS C CXX HL REQUIRED)
 include_directories(${HDF5_INCLUDE_DIRS})
@@ -64,14 +67,20 @@ configure_file(
 
 add_library(ecell4-core SHARED
     ${CPP_FILES} ${HPP_FILES} "${PROJECT_BINARY_DIR}/ecell4/core/config.h")
+
 # target_link_libraries(ecell4-core
 #     ${HDF5_LIBRARIES} ${Boost_LIBRARIES} ${GSL_LIBRARIES} ${GSL_CBLAS_LIBRARIES})
-if(VTK_LIBRARIES)
-  target_link_libraries(ecell4-core
-      ${HDF5_LIBRARIES} ${Boost_LIBRARIES} ${GSL_LIBRARIES} ${GSL_CBLAS_LIBRARIES} ${VTK_LIBRARIES})
+if(NOT VTK_FOUND)
+    target_link_libraries(ecell4-core
+        ${HDF5_LIBRARIES} ${Boost_LIBRARIES} ${GSL_LIBRARIES} ${GSL_CBLAS_LIBRARIES})
+elseif(VTK_LIBRARIES)
+    target_link_libraries(ecell4-core
+        ${HDF5_LIBRARIES} ${Boost_LIBRARIES} ${GSL_LIBRARIES} ${GSL_CBLAS_LIBRARIES}
+        ${VTK_LIBRARIES})
 else()
-  target_link_libraries(ecell4-core
-      ${HDF5_LIBRARIES} ${Boost_LIBRARIES} ${GSL_LIBRARIES} ${GSL_CBLAS_LIBRARIES} vtkHybrid vtkWidgets)
+    target_link_libraries(ecell4-core
+        ${HDF5_LIBRARIES} ${Boost_LIBRARIES} ${GSL_LIBRARIES} ${GSL_CBLAS_LIBRARIES}
+        vtkHybrid vtkWidgets)
 endif()
 
 add_subdirectory(tests)
