@@ -1,6 +1,8 @@
 #include "LatticeSimulator.hpp"
 
 //#include <set>
+#include <algorithm>
+#include <iterator>
 
 namespace ecell4
 {
@@ -891,49 +893,37 @@ void LatticeSimulator::walk(const Species& species, const Real& alpha)
     //     << " : alpha=" << alpha << " : walk." << std::endl;
 
     const boost::shared_ptr<RandomNumberGenerator>& rng(world_->rng());
-
-    MolecularTypeBase* mtype(world_->find_molecular_type(species));
-    MolecularTypeBase* loc(mtype->location());
-
-    Integer imax(rng->binomial(alpha, mtype->size()));
-    if (imax != mtype->size())
-    {
-        mtype->shuffle(*rng);
-    }
-    //XXX: mtype->shuffle(*rng);
+    const MolecularTypeBase* mtype(world_->find_molecular_type(species));
 
     if (!mtype->with_voxels())
     {
         throw NotSupported("MolecularType must be with voxels.");
     }
 
-    Integer i(0);
-    while (i < imax)
+    MolecularTypeBase::container_type voxels;
+    copy(mtype->begin(), mtype->end(), back_inserter(voxels));
+    for (MolecularTypeBase::container_type::iterator itr(voxels.begin());
+            itr != voxels.end(); ++itr)
     {
         const Integer rnd(rng->uniform_int(0, 11));
-        const std::pair<LatticeWorld::private_coordinate_type, bool>
-            neighbor(world_->move_to_neighbor(
-                mtype, loc, (*mtype)[i], rnd));
-        if (!neighbor.second)
+        const LatticeWorld::particle_info_type info(*itr);
+        if (world_->get_molecular_type_private(info.first) != mtype)
         {
-            const LatticeWorld::particle_info_type info((*mtype)[i]);
-            const LatticeWorld::private_coordinate_type to_coord(neighbor.first);
-
-            const std::pair<bool, reaction_type>
-                retval(attempt_reaction_(info, to_coord, alpha));
-            if (retval.first)
-            {
-                --i;
-                --imax;
-
-                if (imax > mtype->size())
-                {
-                    imax = mtype->size(); //XXX: for a dimerization
-                }
-            }
+            // should skip if a voxel is not the target species.
+            // when reaction has occured before, a voxel can be change.
+            continue;
         }
-
-        ++i;
+        const LatticeWorld::private_coordinate_type neighbor(
+                world_->get_neighbor_private(info.first, rnd));
+        if (world_->can_move(info.first, neighbor))
+        {
+            if (rng->uniform(0,1) <= alpha)
+                world_->move_private(info.first, neighbor);
+        }
+        else
+        {
+            attempt_reaction_(info, neighbor, alpha);
+        }
     }
 }
 

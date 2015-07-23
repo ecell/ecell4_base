@@ -81,7 +81,7 @@ protected:
         LatticeSimulator* sim_;
         Species species_;
         MolecularTypeBase* mt_;
-        Real alpha_;
+        const Real alpha_;
     };
 
     struct ZerothOrderReactionEvent : EventScheduler::Event
