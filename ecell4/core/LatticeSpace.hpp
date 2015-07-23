@@ -114,6 +114,7 @@ public:
     virtual bool remove_voxel(const ParticleID& pid) = 0;
     virtual bool remove_voxel_private(const private_coordinate_type& coord) = 0;
     virtual bool move(const coordinate_type& from, const coordinate_type& to) = 0;
+    virtual bool can_move(const private_coordinate_type& src, const private_coordinate_type& dest) const;
     virtual const Particle particle_at(const coordinate_type& coord) const = 0;
 
     virtual void add_structure(const Species& sp,
@@ -632,6 +633,7 @@ public:
     // bool update_molecule(private_coordinate_type coord, const Species& species);
     // bool add_molecule(const Species& sp, private_coordinate_type coord, const ParticleID& pid);
     virtual bool move(const coordinate_type& from, const coordinate_type& to);
+    virtual bool can_move(const private_coordinate_type& src, const private_coordinate_type& dest) const;
 
     virtual void add_structure(const Species& sp,
         const boost::shared_ptr<const Shape>& s, const std::string loc);

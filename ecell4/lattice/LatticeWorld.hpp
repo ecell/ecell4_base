@@ -266,6 +266,7 @@ public:
     // void remove_molecules_exact(const Species& sp, const Integer& num);
     bool remove_voxel_private(const private_coordinate_type coord);
     bool move(coordinate_type from, coordinate_type to);
+    bool can_move(const private_coordinate_type& src, const private_coordinate_type& dest) const;
     // std::pair<coordinate_type, bool> move_to_neighbor(coordinate_type coord, Integer nrand);
     // std::pair<coordinate_type, bool> move_to_neighbor(particle_info_type& info, Integer nrand);
     // std::pair<std::pair<particle_info_type, private_coordinate_type>, bool>

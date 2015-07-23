@@ -502,6 +502,12 @@ bool LatticeWorld::move(coordinate_type from, coordinate_type to)
     return (*space_).move(from, to);
 }
 
+bool LatticeWorld::can_move(const private_coordinate_type& src,
+        const private_coordinate_type& dest) const
+{
+    return (*space_).can_move(src, dest);
+}
+
 std::pair<LatticeWorld::private_coordinate_type, bool>
 LatticeWorld::move_to_neighbor(
     MolecularTypeBase* const& from_mt, MolecularTypeBase* const& loc,

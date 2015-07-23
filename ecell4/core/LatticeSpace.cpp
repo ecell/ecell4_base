@@ -27,6 +27,12 @@ double round(const double x)
 }
 #endif
 
+bool LatticeSpace::can_move(const private_coordinate_type& src,
+        const private_coordinate_type& dest) const
+{
+    return false;
+}
+
 void LatticeSpaceBase::set_lattice_properties()
 {
     //XXX: derived from SpatiocyteStepper::setLatticeProperties()
@@ -570,6 +576,27 @@ bool LatticeSpaceVectorImpl::move(const coordinate_type& from, const coordinate_
     const coordinate_type private_from(coord2private(from));
     const coordinate_type private_to(coord2private(to));
     return move_(private_from, private_to).second;
+}
+
+bool LatticeSpaceVectorImpl::can_move(const private_coordinate_type& src,
+        const private_coordinate_type& dest) const
+{
+    if (src == dest)
+        return false;
+
+    const MolecularTypeBase* src_mt(voxels_.at(src));
+    if (src_mt->is_vacant())
+        return false;
+
+    MolecularTypeBase* dest_mt(voxels_.at(dest));
+
+    if (dest_mt == border_)
+        return false;
+
+    if (dest_mt == periodic_)
+        dest_mt = voxels_.at(apply_boundary_(dest));
+
+    return (dest_mt == src_mt->location());
 }
 
 std::pair<LatticeSpaceVectorImpl::coordinate_type, bool>
