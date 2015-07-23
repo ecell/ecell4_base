@@ -238,11 +238,9 @@ std::pair<bool, LatticeSimulator::reaction_type> LatticeSimulator::attempt_react
         accp += P;
         if (accp > 1)
         {
-            /*
             std::cerr << "The total acceptance probability [" << accp
                 << "] exceeds 1 for '" << speciesA.serial()
                 << "' and '" << speciesB.serial() << "'." << std::endl;
-                */
         }
         if (accp >= rnd)
         {
