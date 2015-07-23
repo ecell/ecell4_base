@@ -578,6 +578,12 @@ bool LatticeSpaceVectorImpl::move(const coordinate_type& from, const coordinate_
     return move_(private_from, private_to).second;
 }
 
+bool LatticeSpaceVectorImpl::move_private(const private_coordinate_type& src,
+        const private_coordinate_type& dest)
+{
+    return move_(src, dest).second;
+}
+
 bool LatticeSpaceVectorImpl::can_move(const private_coordinate_type& src,
         const private_coordinate_type& dest) const
 {

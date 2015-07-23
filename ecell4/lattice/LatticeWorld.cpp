@@ -502,6 +502,12 @@ bool LatticeWorld::move(coordinate_type from, coordinate_type to)
     return (*space_).move(from, to);
 }
 
+bool LatticeWorld::move_private(const private_coordinate_type& src,
+        const private_coordinate_type& dest)
+{
+    return (*space_).move_private(src, dest);
+}
+
 bool LatticeWorld::can_move(const private_coordinate_type& src,
         const private_coordinate_type& dest) const
 {
