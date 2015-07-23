@@ -8,6 +8,7 @@
 #include <vtkSTLReader.h>
 #include <vtkOBBTree.h>
 #include <vtkPolyData.h>
+#include <vtkSelectEnclosedPoints.h>
 
 namespace ecell4
 {
@@ -39,15 +40,19 @@ public:
     virtual Real3 draw_position(boost::shared_ptr<RandomNumberGenerator>& rng) const;
     virtual bool test_AABB(const Real3& l, const Real3& u) const;
 
-    // virtual void bounding_box(
-    //     const Real3& edge_lengths, Real3& lower, Real3& upper) const
-    // {
-    //     double bounds[6];
-    //     reader_->GetOutput()->GetBounds(bounds);
+    virtual void bounding_box(
+        const Real3& edge_lengths, Real3& lower, Real3& upper) const
+    {
+        double bounds[6];
+        reader_->GetOutput()->GetBounds(bounds);
 
-    //     lower = Real3(std::max(0.0, bounds[0]), std::max(0.0, bounds[2]), std::max(0.0, bounds[4]));
-    //     upper = Real3(std::min(edge_lengths[0], bounds[1]), std::min(edge_lengths[1], bounds[3]), std::min(edge_lengths[2], bounds[5]));
-    // }
+        const Real xlim(ratio_ * (bounds[1] - bounds[0]));
+        const Real ylim(ratio_ * (bounds[3] - bounds[2]));
+        const Real zlim(ratio_ * (bounds[5] - bounds[4]));
+
+        lower = Real3(0.0, 0.0, 0.0);
+        upper = Real3(xlim, ylim, zlim);
+    }
 
 protected:
 
@@ -58,7 +63,7 @@ protected:
     Real3 shift_;
 
     vtkSmartPointer<vtkSTLReader> reader_;
-    vtkSmartPointer<vtkOBBTree> tree_;
+    // vtkSmartPointer<vtkOBBTree> tree_;
 };
 
 } // ecell4
