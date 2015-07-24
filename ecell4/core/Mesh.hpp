@@ -42,7 +42,8 @@ public:
     }
 
     virtual Real is_inside(const Real3& pos) const;
-    virtual Real3 draw_position(boost::shared_ptr<RandomNumberGenerator>& rng) const;
+    virtual Real3 draw_position(
+        boost::shared_ptr<RandomNumberGenerator>& rng) const;
     virtual bool test_AABB(const Real3& l, const Real3& u) const;
 
 #ifdef HAVE_VTK

@@ -180,7 +180,31 @@ Rod RodSurface::inside() const
 
 bool RodSurface::test_AABB(const Real3& lower, const Real3& upper) const
 {
-    throw NotImplemented("not implemented yet.");
+    // throw NotImplemented("not implemented yet.");
+
+    const Real3 axis(1.0, 0.0, 0.0); //XXX: DEFAULT
+    const Real3 d(axis * length_);
+    const Real3 p0(origin_ - axis * (length_ * 0.5));
+
+    Real t;
+    const AABB b(lower, upper);
+    const bool collide = collision::intersect_moving_sphere_AABB(
+        Sphere(p0, radius_), d, b, t);
+    if (collide)
+    {
+        for (int i(0); i < 8; ++i)
+        {
+            if (is_inside(b.corner(i)) > 0)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+    else
+    {
+        return false;
+    }
 }
 
 } // ecell4

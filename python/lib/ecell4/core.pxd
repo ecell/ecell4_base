@@ -557,6 +557,7 @@ cdef extern from "ecell4/core/PlanarSurface.hpp" namespace "ecell4":
         Cpp_PlanarSurface()
         Cpp_PlanarSurface(Cpp_Real3&, Cpp_Real3&, Cpp_Real3&)
         Cpp_PlanarSurface(Cpp_PlanarSurface)
+        # Real distance(Cpp_Real3&)
         Real is_inside(Cpp_Real3&)
         Integer dimension()
 
@@ -609,6 +610,7 @@ cdef extern from "ecell4/core/Mesh.hpp" namespace "ecell4":
     cdef cppclass Cpp_MeshSurface "ecell4::MeshSurface":
         Cpp_MeshSurface(string, Cpp_Real3)
         Cpp_MeshSurface(Cpp_MeshSurface)
+        # Real distance(Cpp_Real3&)
         Real is_inside(Cpp_Real3&)
         Integer dimension()
 
