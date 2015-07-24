@@ -28,10 +28,12 @@ set(HPP_FILES
     PlanarSurface.hpp Rod.hpp collision.hpp
     comparators.hpp SimulatorFactory.hpp Mesh.hpp)
 
-find_package(VTK)
-if(VTK_FOUND)
-  include(${VTK_USE_FILE})
-  set(HAVE_VTK 1)
+if(WITH_VTK)
+  find_package(VTK)
+  if(VTK_FOUND)
+    include(${VTK_USE_FILE})
+    set(HAVE_VTK 1)
+  endif()
 endif()
 
 find_package(HDF5 COMPONENTS C CXX HL REQUIRED)
