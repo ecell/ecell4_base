@@ -1,0 +1,54 @@
+<html>
+  <head>
+    <script type="text/javascript">
+     (function(){
+       if(window["THREE"] === undefined || window["d3"] === undefined){
+     require.config({
+       paths:{
+         d3: [
+           'https://cdnjs.cloudflare.com/ajax/libs/d3/3.4.4/d3.min',
+           'custom/d3.min'
+         ],
+         THREE: [
+           'https://cdnjs.cloudflare.com/ajax/libs/three.js/r66/three.min',
+           'custom/three.min'
+         ],
+         Nyaplot: [
+           'https://rawgit.com/domitry/Nyaplotjs/master/release/nyaplot',
+           'custom/nyaplot'
+         ]
+       },
+       shim:{
+         THREE: {
+           exports: 'THREE'
+         },
+         Nyaplot: {
+           deps: ['THREE'],
+           exports: 'Nyaplot'
+         }
+       }
+     });
+
+     require(["d3", "THREE"], function(d3){
+       window["d3"] = d3;
+
+       d3.select(document)
+         .on("contextmenu", function(){
+         d3.selectAll("canvas").style("z-index", 10);
+         d3.selectAll(".download_menu").style("z-index", 100);
+       });
+     });
+       }
+
+       require(["Nyaplot"], function(){
+     console.log("Begin rendering...");
+    var models = {{model}};
+     Nyaplot.core.parse(models, '#{{model_id}}');
+       });
+     })();
+    </script>
+  </head>
+  <body>
+    <div id="{{model_id}}"></div>
+  </body>
+</html>

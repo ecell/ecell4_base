@@ -490,6 +490,42 @@ def plot_number_observer(*args, **kwargs):
         ax.set_ylim(kwargs["ylim"])
     plt.show()
 
+def plot_number_observer_with_nya(obs, config={}, width=600, height=400):
+    from IPython.core.display import display, HTML
+    import numpy
+
+    config = {}
+    color_scale = ColorScale(config=config)
+
+    data1, data2 = [], []
+    data = numpy.array(obs.data())
+    for line in data:
+        tmp = {"x": line[0]}
+        for i in range(1, len(line)):
+            tmp["y{0}".format(i)] = line[i]
+        data1.append(tmp)
+    for i, sp in enumerate(obs.targets()):
+        label = sp.serial()
+        tmp = {"type": "line", "data": "data1",
+               "options": {"x": "x", "y": "y{0}".format(i + 1),
+                           "stroke_width": 2, "title": label,
+                           "color": color_scale.get_color(label)}}
+        data2.append(tmp)
+
+    xmin, xmax = data[0][0], data[-1][0]
+    ymin, ymax = data.T[1:].min(), data.T[1:].max()
+
+    model = {
+        "data": {"data1": data1},
+        "panes": [{"type": 'rectangular',
+                   "diagrams": data2,
+                   "options": {"width": width, "height": height, "xrange": [xmin, xmax],
+                               "yrange": [ymin, ymax], "legend": True, "zoom": True}}]}
+    model_id = 'viz{0:s}'.format(uuid.uuid4())
+    display(HTML(generate_html(
+        {'model': json.dumps(model), 'model_id': model_id},
+        '/templates/nya.tmpl')))
+    return color_scale.get_config()
 
 class ColorScale:
     """Color scale for species.

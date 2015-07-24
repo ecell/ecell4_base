@@ -90,6 +90,7 @@ def run_simulation(
 
     if with_plot:
         ecell4.viz.plot_number_observer(obs, with_legend=with_legend)
+        # ecell4.viz.plot_number_observer_with_nya(obs)
 
     if as_observer:
         return obs
