@@ -80,7 +80,8 @@ def run_simulation(
     sim.run(t[-1], obs)
 
     if with_plot:
-        ecell4.viz.plot_number_observer(obs)
+        ecell4.viz.plot_number_observer_with_nya(obs)
+        # ecell4.viz.plot_number_observer(obs)
 
     if as_observer:
         return obs
