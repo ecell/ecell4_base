@@ -196,7 +196,7 @@ cdef class PlanarSurface:
           e0 (Real3): The first vector along the plane.
           e1 (Real3): The second vector along the plane.
             e0 and e1 must not be parallel.
-            e0 and e1 is not needed to be an unit vector.
+            e0 and e1 are not needed to be an unit vector.
 
         """
         pass  # XXX: Only used for doc string
