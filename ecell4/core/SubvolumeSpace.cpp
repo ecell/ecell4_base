@@ -135,12 +135,20 @@ SubvolumeSpaceVectorImpl::coordinate_type SubvolumeSpaceVectorImpl::get_neighbor
 void SubvolumeSpaceVectorImpl::add_structure(
     const Species& sp, const boost::shared_ptr<const Shape>& shape)
 {
-    structure_container_type::const_iterator i(structures_.find(sp));
-    if (i != structures_.end())
+    // structure_container_type::const_iterator i(structures_.find(sp));
+    // if (i != structures_.end())
+    // {
+    //     throw NotSupported("not supported yet.");
+    // }
+    // structures_.insert(std::make_pair(sp, shape));
+
+    structure_matrix_type::const_iterator it(structure_matrix_.find(sp.serial()));
+    if (it != structure_matrix_.end())
     {
-        throw NotSupported("not supported yet.");
+        std::ostringstream message;
+        message << "The given structure [" << sp.serial() << "] is already defined.";
+        throw AlreadyExists(message.str());
     }
-    structures_.insert(std::make_pair(sp, shape));
 
     std::vector<Integer> overlap(num_subvolumes());
     const Real3 lengths(subvolume_edge_lengths());
@@ -165,6 +173,34 @@ bool SubvolumeSpaceVectorImpl::check_structure(
         return false;
     }
     return ((*i).second[coord] > 0);
+}
+
+void SubvolumeSpaceVectorImpl::update_structure(
+    const Species::serial_type& serial, const coordinate_type& coord,
+    const Integer& value)
+{
+    structure_matrix_type::iterator i(structure_matrix_.find(serial));
+    if (i == structure_matrix_.end())
+    {
+        std::vector<Integer> overlap(num_subvolumes());
+        overlap[coord] = value;
+        structure_matrix_.insert(std::make_pair(serial, overlap));
+    }
+    else
+    {
+        (*i).second[coord] = value;
+    }
+}
+
+std::vector<Species::serial_type> SubvolumeSpaceVectorImpl::list_structures() const
+{
+    std::vector<Species::serial_type> retval;
+    for (structure_matrix_type::const_iterator i(structure_matrix_.begin());
+        i != structure_matrix_.end(); ++i)
+    {
+        retval.push_back((*i).first);
+    }
+    return retval;
 }
 
 Real SubvolumeSpaceVectorImpl::get_volume(const Species& sp) const

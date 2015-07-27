@@ -118,6 +118,10 @@ public:
         const Species::serial_type& serial, const coordinate_type& coord) const = 0;
     virtual bool has_structure(const Species& sp) const = 0;
     virtual Real get_volume(const Species& sp) const = 0;
+    virtual std::vector<Species::serial_type> list_structures() const = 0;
+    virtual void update_structure(
+        const Species::serial_type& serial, const coordinate_type& coord,
+        const Integer& value) = 0;
 
     inline bool check_structure(const Species::serial_type& serial, const Integer3& g) const
     {
@@ -237,6 +241,10 @@ public:
     void add_structure(const Species& sp, const boost::shared_ptr<const Shape>& shape);
     bool check_structure(const Species::serial_type& serial, const coordinate_type& coord) const;
     Real get_volume(const Species& sp) const;
+    std::vector<Species::serial_type> list_structures() const;
+    void update_structure(
+        const Species::serial_type& serial, const coordinate_type& coord,
+        const Integer& value);
 
     bool has_structure(const Species& sp) const
     {
@@ -323,7 +331,7 @@ protected:
     matrix_type matrix_;
     std::vector<Species> species_;
 
-    structure_container_type structures_;
+    // structure_container_type structures_;
     structure_matrix_type structure_matrix_;
 };
 

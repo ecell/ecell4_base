@@ -42,6 +42,24 @@ struct SubvolumeSpaceHDF5Traits
         //     H5::PredType::STD_I64LE);
         return h5_species_comp_type;
     }
+
+    typedef struct h5_structures_struct {
+        uint32_t id;
+        char serial[32]; // structures' serial may exceed the limit
+        // double D;
+    } h5_structures_struct;
+
+    static H5::CompType get_structures_comp_type()
+    {
+        H5::CompType h5_structures_comp_type(sizeof(h5_structures_struct));
+        h5_structures_comp_type.insertMember(
+            std::string("id"), HOFFSET(h5_structures_struct, id),
+            H5::PredType::STD_I32LE);
+        h5_structures_comp_type.insertMember(
+            std::string("serial"), HOFFSET(h5_structures_struct, serial),
+            H5::StrType(H5::PredType::C_S1, 32));
+        return h5_structures_comp_type;
+    }
 };
 
 template<typename Tspace_>
@@ -50,6 +68,7 @@ void save_subvolume_space(const Tspace_& space, H5::Group* root)
     typedef SubvolumeSpaceHDF5Traits traits_type;
     typedef typename traits_type::h5_species_struct h5_species_struct;
     // typedef typename traits_type::h5_voxel_struct h5_voxel_struct;
+    typedef typename traits_type::h5_structures_struct h5_structures_struct;
 
     // typedef std::vector<std::pair<ParticleID, Voxel> >
     //     voxel_container_type;
@@ -73,6 +92,23 @@ void save_subvolume_space(const Tspace_& space, H5::Group* root)
         }
     }
 
+    const std::vector<Species::serial_type> structures(space.list_structures());
+    boost::multi_array<int64_t, 2>
+        h5_stcoordinate_table(boost::extents[structures.size()][num_subvolumes]);
+    boost::scoped_array<h5_structures_struct>
+        h5_structures_table(new h5_structures_struct[structures.size()]);
+    for (unsigned int i(0); i < structures.size(); ++i)
+    {
+        const unsigned int sid(i + 1);
+        h5_structures_table[i].id = sid;
+        std::strcpy(h5_structures_table[i].serial, structures[i].c_str());
+        for (unsigned int j(0); j < num_subvolumes; ++j)
+        {
+            const bool exist = space.check_structure(structures[i], j);
+            h5_stcoordinate_table[i][j] = (exist ? 1 : 0);
+        }
+    }
+
     const int RANK1 = 2;
     const int RANK2 = 1;
 
@@ -88,8 +124,22 @@ void save_subvolume_space(const Tspace_& space, H5::Group* root)
         root->createDataSet(
             "species", traits_type::get_species_comp_type(), dataspace2)));
 
+    hsize_t dim3[] = {structures.size(), num_subvolumes};
+    H5::DataSpace dataspace3(RANK1, dim3);
+    boost::scoped_ptr<H5::DataSet> dataset3(new H5::DataSet(
+        root->createDataSet(
+            "stcoordinates", H5::PredType::STD_I64LE, dataspace3)));
+
+    hsize_t dim4[] = {structures.size()};
+    H5::DataSpace dataspace4(RANK2, dim4);
+    boost::scoped_ptr<H5::DataSet> dataset4(new H5::DataSet(
+        root->createDataSet(
+            "structures", traits_type::get_structures_comp_type(), dataspace4)));
+
     dataset1->write(h5_num_table.data(), dataset1->getDataType());
     dataset2->write(h5_species_table.get(), dataset2->getDataType());
+    dataset3->write(h5_stcoordinate_table.data(), dataset3->getDataType());
+    dataset4->write(h5_structures_table.get(), dataset4->getDataType());
 
     const uint32_t space_type = static_cast<uint32_t>(Space::SUBVOLUME);
     H5::Attribute attr_space_type(
@@ -126,6 +176,7 @@ void load_subvolume_space(const H5::Group& root, Tspace_* space)
 {
     typedef SubvolumeSpaceHDF5Traits traits_type;
     typedef typename traits_type::h5_species_struct h5_species_struct;
+    typedef typename traits_type::h5_structures_struct h5_structures_struct;
     // typedef typename traits_type::h5_voxel_struct h5_voxel_struct;
 
     Real3 edge_lengths;
@@ -180,6 +231,46 @@ void load_subvolume_space(const H5::Group& root, Tspace_* space)
             for (unsigned int j(0); j < num_subvolumes; ++j)
             {
                 space->add_molecules(sp, h5_num_table[i][j], j);
+            }
+        }
+    }
+
+    {
+        H5::DataSet structures_dset(root.openDataSet("structures"));
+        const unsigned int num_structures(
+            structures_dset.getSpace().getSimpleExtentNpoints());
+        boost::scoped_array<h5_structures_struct> h5_structures_table(
+            new h5_structures_struct[num_structures]);
+        structures_dset.read(
+            h5_structures_table.get(), traits_type::get_structures_comp_type());
+        structures_dset.close();
+
+        H5::DataSet stcoordinate_dset(root.openDataSet("stcoordinates"));
+        hsize_t dims[2];
+        stcoordinate_dset.getSpace().getSimpleExtentDims(dims);
+        assert(num_structures == dims[0]);
+        const unsigned int num_subvolumes(dims[1]);
+        boost::multi_array<int64_t, 2>
+            h5_stcoordinate_table(boost::extents[num_structures][num_subvolumes]);
+        stcoordinate_dset.read(
+            h5_stcoordinate_table.data(), H5::PredType::STD_I64LE);
+        stcoordinate_dset.close();
+
+        typedef utils::get_mapper_mf<unsigned int, Species::serial_type>::type
+            structures_id_map_type;
+        structures_id_map_type structures_id_map;
+        for (unsigned int i(0); i < num_structures; ++i)
+        {
+            structures_id_map[h5_structures_table[i].id] = h5_structures_table[i].serial;
+        }
+
+        for (unsigned int i(0); i < num_structures; ++i)
+        {
+            const uint32_t sid(i + 1);
+            const Species::serial_type serial(structures_id_map[sid]);
+            for (unsigned int j(0); j < num_subvolumes; ++j)
+            {
+                space->update_structure(serial, j, h5_stcoordinate_table[i][j]);
             }
         }
     }
