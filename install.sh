@@ -3,6 +3,7 @@
 PYTHON_MAJOR_VERSION=$1
 VTK_INCLUDE_PATH=/usr/include/vtk-5.8
 WITH_VTK=0
+WITH_HDF5=0
 
 if [ "${PREFIX-UNDEF}" = "UNDEF" ]; then
     if [ "$PREFIX" = "" ]; then
@@ -15,12 +16,11 @@ if [ "${PREFIX-UNDEF}" = "UNDEF" ]; then
 fi
 
 # make clean; rm CMakeCache.txt
-# rm ecell4/egfrd/SphericalBesselTable.hpp ecell4/egfrd/CylindricalBesselTable.hpp
 # rm -rf ${PREFIX}/lib/libecell4-*.so ${PREFIX}/include/ecell4;
 
 set -e
 
-cmake -DCMAKE_INSTALL_PREFIX=${PREFIX} .
+cmake -DCMAKE_INSTALL_PREFIX=${PREFIX} -DWITH_HDF5=${WITH_HDF5} -DWITH_VTK=${WITH_VTK} .
 make
 # cmake -DCMAKE_INSTALL_PREFIX=${PREFIX} -DECELL4_ENABLE_PROFILING=1 .
 # make VERBOSE=1

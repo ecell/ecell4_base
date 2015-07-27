@@ -36,8 +36,11 @@ if(WITH_VTK)
   endif()
 endif()
 
+if(WITH_HDF5)
 find_package(HDF5 COMPONENTS C CXX HL REQUIRED)
 include_directories(${HDF5_INCLUDE_DIRS})
+set(WITH_HDF5 1)
+endif()
 
 # find_package(Boost COMPONENTS regex)
 find_package(Boost REQUIRED)
@@ -70,19 +73,14 @@ configure_file(
 add_library(ecell4-core SHARED
     ${CPP_FILES} ${HPP_FILES} "${PROJECT_BINARY_DIR}/ecell4/core/config.h")
 
-# target_link_libraries(ecell4-core
-#     ${HDF5_LIBRARIES} ${Boost_LIBRARIES} ${GSL_LIBRARIES} ${GSL_CBLAS_LIBRARIES})
-if(NOT VTK_FOUND)
-    target_link_libraries(ecell4-core
-        ${HDF5_LIBRARIES} ${Boost_LIBRARIES} ${GSL_LIBRARIES} ${GSL_CBLAS_LIBRARIES})
-elseif(VTK_LIBRARIES)
-    target_link_libraries(ecell4-core
-        ${HDF5_LIBRARIES} ${Boost_LIBRARIES} ${GSL_LIBRARIES} ${GSL_CBLAS_LIBRARIES}
-        ${VTK_LIBRARIES})
-else()
+if(WITH_VTK AND NOT VTK_LIBRARIES)
     target_link_libraries(ecell4-core
         ${HDF5_LIBRARIES} ${Boost_LIBRARIES} ${GSL_LIBRARIES} ${GSL_CBLAS_LIBRARIES}
         vtkHybrid vtkWidgets)
+else()
+    target_link_libraries(ecell4-core
+        ${HDF5_LIBRARIES} ${Boost_LIBRARIES} ${GSL_LIBRARIES} ${GSL_CBLAS_LIBRARIES}
+        ${VTK_LIBRARIES})
 endif()
 
 add_subdirectory(tests)
