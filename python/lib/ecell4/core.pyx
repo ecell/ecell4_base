@@ -41,3 +41,8 @@ cimport functions
 
 def cbrt(Real x):
     return functions.cbrt(x)
+
+cimport types
+
+N_A = types.N_A
+epsilon = types.epsilon

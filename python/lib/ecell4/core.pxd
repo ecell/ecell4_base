@@ -8,7 +8,7 @@ from libcpp.pair cimport pair
 from libcpp.vector cimport vector
 from libcpp.map cimport map
 
-from types cimport *
+from types cimport Real, Integer
 from multiset cimport multiset
 from shared_ptr cimport shared_ptr
 

@@ -14,6 +14,7 @@ typedef double Real;
 
 const double inf = HUGE_VAL; // infinity (double)
 const Real epsilon = std::numeric_limits<Real>::epsilon();
+const Real N_A = 6.022140857e+23;
 
 } // ecell4
 
