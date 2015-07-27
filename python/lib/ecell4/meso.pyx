@@ -240,13 +240,13 @@ cdef class MesoscopicSimulator:
         cdef vector[shared_ptr[Cpp_Observer]] tmp
 
         if observers is None:
-            self.thisptr.run(duration)
+            return self.thisptr.run(duration)
         elif isinstance(observers, collections.Iterable):
             for obs in observers:
                 tmp.push_back(deref((<Observer>(obs.as_base())).thisptr))
-            self.thisptr.run(duration, tmp)
+            return self.thisptr.run(duration, tmp)
         else:
-            self.thisptr.run(duration,
+            return self.thisptr.run(duration,
                 deref((<Observer>(observers.as_base())).thisptr))
 
 cdef MesoscopicSimulator MesoscopicSimulator_from_Cpp_MesoscopicSimulator(

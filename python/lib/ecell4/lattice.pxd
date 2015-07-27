@@ -127,9 +127,9 @@ cdef extern from "ecell4/lattice/LatticeSimulator.hpp" namespace "ecell4::lattic
         vector[Cpp_ReactionRule] last_reactions()
         shared_ptr[Cpp_Model] model()
         shared_ptr[Cpp_LatticeWorld] world()
-        void run(Real)
-        void run(Real, shared_ptr[Cpp_Observer])
-        void run(Real, vector[shared_ptr[Cpp_Observer]])
+        Real run(Real)
+        Real run(Real, shared_ptr[Cpp_Observer])
+        Real run(Real, vector[shared_ptr[Cpp_Observer]])
 
 ## LatticeSimulator
 #  a python wrapper for Cpp_LatticeSimulator

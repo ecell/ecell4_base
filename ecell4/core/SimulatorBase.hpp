@@ -1,6 +1,8 @@
 #ifndef __ECELL4_SIMULATOR_BASE_HPP
 #define __ECELL4_SIMULATOR_BASE_HPP
 
+#include <time.h>
+
 #include "Simulator.hpp"
 #include "EventScheduler.hpp"
 #include "observers.hpp"
@@ -119,24 +121,33 @@ public:
         std::cerr << "WARN: set_dt(const Real&) was just ignored." << std::endl;
     }
 
-    void run(const Real& duration)
+    Real run(const Real& duration)
     {
+        time_t t_start, t_end;
+        time(&t_start);
+
         const Real upto(t() + duration);
         while (step(upto))
         {
             ; // do nothing
         }
+
+        time(&t_end);
+        return difftime(t_end, t_start);
     }
 
-    void run(const Real& duration, const boost::shared_ptr<Observer>& observer)
+    Real run(const Real& duration, const boost::shared_ptr<Observer>& observer)
     {
         std::vector<boost::shared_ptr<Observer> > observers;
         observers.push_back(observer);
-        run(duration, observers);
+        return run(duration, observers);
     }
 
-    void run(const Real& duration, std::vector<boost::shared_ptr<Observer> > observers)
+    Real run(const Real& duration, std::vector<boost::shared_ptr<Observer> > observers)
     {
+        time_t t_start, t_end;
+        time(&t_start);
+
         const Real upto(t() + duration);
 
         std::vector<boost::shared_ptr<Observer> >::iterator
@@ -200,6 +211,9 @@ public:
         {
             (*i)->finalize(world_.get());
         }
+
+        time(&t_end);
+        return difftime(t_end, t_start);
     }
 
 protected:
