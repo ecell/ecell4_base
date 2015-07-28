@@ -31,21 +31,28 @@ All the members must start with '_'."""
         return "<%s.%s: %s>" % (
             self.__class__.__module__, self.__class__.__name__, str(self))
 
-    def __invert__(self):
-        return self.__inv__()
-
-    def __inv__(self):
-        retval = InvExp(self.__root, self)
-        self.__root.notify_unary_operations(retval)
-        return retval
-
-    # operators
-
     def __getitem__(self, key):
         return operator.getitem(self._as_ParseObj(), key)
 
     def __call__(self, *args, **kwargs):
         return self._as_ParseObj()(*args, **kwargs)
+
+    # operators
+
+    def __inv__(self):
+        # return operator.inv(self._as_ParseObj())
+        retval = InvExp(self.__root, self)
+        self.__root.notify_unary_operations(retval)
+        return retval
+
+    def __invert__(self):
+        return self.__inv__()
+
+    def __pos__(self):
+        return operator.pos(self._as_ParseObj())
+
+    def __neg__(self):
+        return operator.neg(self._as_ParseObj())
 
     def __xor__(self, rhs):
         return operator.xor(self._as_ParseObj(), rhs)
@@ -59,11 +66,46 @@ All the members must start with '_'."""
     def __ne__(self, rhs):
         return operator.ne(self._as_ParseObj(), rhs)
 
+    def __or__(self, rhs):
+        return operator.or_(self._as_ParseObj(), rhs)
+
+    # arithmatic operators
+
     def __add__(self, rhs):
         return operator.add(self._as_ParseObj(), rhs)
 
-    def __or__(self, rhs):
-        return operator.or_(self._as_ParseObj(), rhs)
+    def __radd__(self, lhs):
+        return operator.add(lhs, self._as_ParseObj())
+
+    def __sub__(self, rhs):
+        return operator.sub(self._as_ParseObj(), rhs)
+
+    def __rsub__(self, lhs):
+        return operator.sub(lhs, self._as_ParseObj())
+
+    def __div__(self, rhs):
+        return operator.div(self._as_ParseObj(), rhs)
+
+    def __rdiv__(self, lhs):
+        return operator.div(lhs, self._as_ParseObj())
+
+    def __truediv__(self, rhs):
+        return operator.truediv(self._as_ParseObj(), rhs)
+
+    def __rtruediv__(self, lhs):
+        return operator.truediv(lhs, self._as_ParseObj())
+
+    def __mul__(self, rhs):
+        return operator.mul(self._as_ParseObj(), rhs)
+
+    def __rmul__(self, lhs):
+        return operator.mul(lhs, self._as_ParseObj())
+
+    def __pow__(self, rhs):
+        return operator.pow(self._as_ParseObj(), rhs)
+
+    def __rpow__(self, lhs):
+        return operator.pow(lhs, self._as_ParseObj())
 
 class ParseElem:
 
@@ -125,13 +167,30 @@ class ExpBase(object):
         return "<%s.%s: %s>" % (
             self.__class__.__module__, self.__class__.__name__, str(self))
 
-    def __invert__(self):
-        return self.__inv__()
+    def __coerce__(self, other):
+        return None
+
+    # operators
 
     def __inv__(self):
         retval = InvExp(self.__root, self)
         self.__root.notify_unary_operations(retval)
         return retval
+
+    def __invert__(self):
+        return self.__inv__()
+
+    def __pos__(self):
+        retval = PosExp(self.__root, self)
+        self.__root.notify_unary_operations(retval)
+        return retval
+
+    def __neg__(self):
+        retval = NegExp(self.__root, self)
+        self.__root.notify_unary_operations(retval)
+        return retval
+
+    # def __xor__(self, rhs):
 
     def __gt__(self, rhs):
         retval = GtExp(self.__root, self, rhs)
@@ -148,12 +207,43 @@ class ExpBase(object):
         self.__root.notify_comparisons(retval)
         return retval
 
+    def __or__(self, rhs):
+        retval = OrExp(self.__root, self, rhs)
+        self.__root.notify_bitwise_operations(retval)
+        return retval
+
+    # operators
+
     def __add__(self, rhs):
         retval = AddExp(self.__root, self, rhs)
         return retval
 
     def __radd__(self, lhs):
         retval = AddExp(self.__root, lhs, self)
+        return retval
+
+    def __sub__(self, rhs):
+        retval = SubExp(self.__root, self, rhs)
+        return retval
+
+    def __rsub__(self, lhs):
+        retval = SubExp(self.__root, lhs, self)
+        return retval
+
+    def __div__(self, rhs):
+        retval = DivExp(self.__root, self, rhs)
+        return retval
+
+    def __rdiv__(self, lhs):
+        retval = DivExp(self.__root, lhs, self)
+        return retval
+
+    def __truediv__(self, rhs):
+        retval = DivExp(self.__root, self, rhs)
+        return retval
+
+    def __rtruediv__(self, lhs):
+        retval = DivExp(self.__root, lhs, self)
         return retval
 
     def __mul__(self, rhs):
@@ -164,13 +254,13 @@ class ExpBase(object):
         retval = MulExp(self.__root, lhs, self)
         return retval
 
-    def __or__(self, rhs):
-        retval = OrExp(self.__root, self, rhs)
-        self.__root.notify_bitwise_operations(retval)
+    def __pow__(self, rhs):
+        retval = PowExp(self.__root, self, rhs)
         return retval
 
-    def __coerce__(self, other):
-        return None
+    def __rpow__(self, lhs):
+        retval = PowExp(self.__root, lhs, self)
+        return retval
 
 class ParseObj(ExpBase):
     """All the members must start with '_'."""
@@ -288,6 +378,16 @@ class InvExp(UnaryExp):
     def __init__(self, root, target):
         UnaryExp.__init__(self, root, target, "~")
 
+class PosExp(UnaryExp):
+
+    def __init__(self, root, target):
+        UnaryExp.__init__(self, root, target, "+")
+
+class NegExp(UnaryExp):
+
+    def __init__(self, root, target):
+        UnaryExp.__init__(self, root, target, "-")
+
 class AddExp(ExpBase):
 
     def __init__(self, root, lhs, rhs):
@@ -311,6 +411,52 @@ class AddExp(ExpBase):
     def __str__(self):
         return "(%s)" % ("+".join([str(obj) for obj in self.__elems]))
 
+class SubExp(ExpBase):
+
+    def __init__(self, root, lhs, rhs):
+        ExpBase.__init__(self, root)
+
+        self.__elems = []
+        self.__append(lhs)
+        self.__append(rhs)
+
+    def _elements(self):
+        return copy.copy(self.__elems)
+
+    def __append(self, obj):
+        if isinstance(obj, AnyCallable):
+            self.__elems.append(obj._as_ParseObj())
+        elif len(self.__elems) > 0 and isinstance(obj, SubExp):
+            self.__elems.extend(obj._elements())
+        else:
+            self.__elems.append(obj)
+
+    def __str__(self):
+        return "(%s)" % ("-".join([str(obj) for obj in self.__elems]))
+
+class DivExp(ExpBase):
+
+    def __init__(self, root, lhs, rhs):
+        ExpBase.__init__(self, root)
+
+        self.__elems = []
+        self.__append(lhs)
+        self.__append(rhs)
+
+    def _elements(self):
+        return copy.copy(self.__elems)
+
+    def __append(self, obj):
+        if isinstance(obj, AnyCallable):
+            self.__elems.append(obj._as_ParseObj())
+        elif len(self.__elems) > 0 and isinstance(obj, DivExp):
+            self.__elems.extend(obj._elements())
+        else:
+            self.__elems.append(obj)
+
+    def __str__(self):
+        return "(%s)" % ("/".join([str(obj) for obj in self.__elems]))
+
 class MulExp(ExpBase):
 
     def __init__(self, root, lhs, rhs):
@@ -333,6 +479,24 @@ class MulExp(ExpBase):
 
     def __str__(self):
         return "(%s)" % ("*".join([str(obj) for obj in self.__elems]))
+
+class PowExp(ExpBase):
+
+    def __init__(self, root, lhs, rhs):
+        ExpBase.__init__(self, root)
+        self.__lhs = lhs
+        self.__rhs = rhs
+
+    @property
+    def _lhs(self):
+        return self.__lhs
+
+    @property
+    def _rhs(self):
+        return self.__rhs
+
+    def __str__(self):
+        return "(%s**%s)" % (self.__lhs, self.__rhs)
 
 class OrExp(ExpBase):
 
