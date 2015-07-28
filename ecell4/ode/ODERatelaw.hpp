@@ -133,19 +133,22 @@ public:
         Python_CallbackFunctype, 
         state_container_type, state_container_type, 
         Real volume, Real t, ODEReactionRule *rr);
-
+    typedef void (*OperateRef_Functype)(void *);
 public:
 
-    ODERatelawCythonCallback(Stepladder_Functype indirect_func, void* pyfunc)
-        : indirect_func_(indirect_func), python_func_(pyfunc), h_(1.0e-8)
+    ODERatelawCythonCallback(Stepladder_Functype indirect_func, void* pyfunc,
+            OperateRef_Functype inc_ref, OperateRef_Functype dec_ref)
+        : indirect_func_(indirect_func), python_func_(pyfunc), h_(1.0e-8), inc_ref_(inc_ref), dec_ref_(dec_ref)
     {
-        ;
+        this->inc_ref_(pyfunc);
     }
 
     ODERatelawCythonCallback()
         : indirect_func_(0), python_func_(0), h_(1.0e-8) {;}
 
-    virtual ~ODERatelawCythonCallback(){;}
+    virtual ~ODERatelawCythonCallback(){
+        this->dec_ref_(this->python_func_);
+    }
 
     virtual bool is_available() const
     {
@@ -164,7 +167,26 @@ public:
         {
             throw std::invalid_argument("ODERatelaw Callback must not be 0");
         }
+        this->dec_ref_(this->python_func_);
         this->python_func_ = new_func;
+        this->inc_ref_(this->python_func_);
+    }
+protected:
+    void inc_ref(Python_CallbackFunctype python_func)
+    {
+        if (this->inc_ref_ == NULL)
+        {
+            throw IllegalState("Functions to Operate python reference counts are not registered");
+        }
+        this->inc_ref_( (void*) python_func );
+    }
+    void dec_ref(Python_CallbackFunctype python_func)
+    {
+        if (this->dec_ref_ == NULL)
+        {
+            throw IllegalState("Functions to Operate python reference counts are not registered");
+        }
+        this->dec_ref_( (void*) python_func );
     }
 
 private:
@@ -172,6 +194,7 @@ private:
     Stepladder_Functype indirect_func_;
     Python_CallbackFunctype python_func_;
     Real h_;
+    OperateRef_Functype inc_ref_, dec_ref_;
 };
 
 class ODERatelawMassAction

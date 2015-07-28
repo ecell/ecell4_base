@@ -8,6 +8,8 @@ from ecell4.types cimport *
 from ecell4.shared_ptr cimport shared_ptr
 from ecell4.core cimport *
 
+from cpython cimport PyObject, Py_XINCREF, Py_XDECREF
+
 ## ODEWorld
 #  a python wrapper for Cpp_ODEWorld
 cdef class ODEWorld:
@@ -274,11 +276,18 @@ cdef double indirect_function(
     return (<object>func)(
             py_reactants, py_products, volume, t, ODEReactionRule_from_Cpp_ODEReactionRule(rr))
 
+cdef void inc_ref(void* func):
+    Py_XINCREF(<PyObject*>func)
+
+cdef void dec_ref(void* func):
+    Py_XDECREF(<PyObject*>func)
+
 cdef class ODERatelawCallback:
     def __cinit__(self, pyfunc):
         self.thisptr = new shared_ptr[Cpp_ODERatelawCythonCallback](
             <Cpp_ODERatelawCythonCallback*>(new Cpp_ODERatelawCythonCallback(
-                <Stepladder_Functype>indirect_function, <void*>pyfunc)))
+                <Stepladder_Functype>indirect_function, <void*>pyfunc, 
+                <OperateRef_Functype>inc_ref, <OperateRef_Functype>dec_ref)))
         self.pyfunc = pyfunc
 
     def __dealloc__(self):

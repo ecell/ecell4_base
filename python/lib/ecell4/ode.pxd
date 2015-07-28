@@ -5,6 +5,7 @@ from ecell4.types cimport *
 from ecell4.shared_ptr cimport shared_ptr
 from ecell4.core cimport *
 
+from cpython cimport PyObject
 
 ## Cpp_ODEWorld
 #  ecell4::ode::ODEWorld
@@ -125,11 +126,12 @@ ctypedef void* Python_CallbackFunctype
 ctypedef double (*Stepladder_Functype)(
     Python_CallbackFunctype pyfunc, vector[Real], vector[Real], 
     Real volume, Real t, Cpp_ODEReactionRule *)
+ctypedef void (*OperateRef_Functype)(void*)
 
 cdef extern from "ecell4/ode/ODERatelaw.hpp" namespace "ecell4::ode":
     cdef cppclass Cpp_ODERatelawCythonCallback " ecell4::ode::ODERatelawCythonCallback":
         Cpp_ODERatelawCythonCallback() except+
-        Cpp_ODERatelawCythonCallback(Stepladder_Functype, Python_CallbackFunctype) except+
+        Cpp_ODERatelawCythonCallback(Stepladder_Functype, Python_CallbackFunctype, OperateRef_Functype, OperateRef_Functype) except+
         bool is_available()
         void set_callback_pyfunc(Python_CallbackFunctype)
 
