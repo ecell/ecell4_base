@@ -10,6 +10,7 @@ from .decorator_base import Callback, JustParseCallback, ParseDecorator
 
 import ecell4.core
 
+SEAMLESS_RATELAW_SUPPORT = False
 
 PARAMETERS = []
 SPECIES_ATTRIBUTES = []
@@ -52,7 +53,9 @@ def generate_ReactionRule(lhs, rhs, k=None):
     if k is None:
         raise RuntimeError('no parameter is specified')
 
-    if callable(k) or any([sp[1] is not None for sp in itertools.chain(lhs, rhs)]):
+    if (callable(k)
+        or (SEAMLESS_RATELAW_SUPPORT and isinstance(k, parseobj.ExpBase))
+        or any([sp[1] is not None for sp in itertools.chain(lhs, rhs)])):
         from ecell4.ode import ODEReactionRule, ODERatelawCallback
         rr = ODEReactionRule()
         for sp in lhs:
@@ -61,6 +64,9 @@ def generate_ReactionRule(lhs, rhs, k=None):
             rr.add_product(sp[0], 1 if sp[1] is None else sp[1])
         if callable(k):
             rr.set_ratelaw(ODERatelawCallback(k))
+        elif SEAMLESS_RATELAW_SUPPORT and isinstance(k, parseobj.ExpBase):
+            func = generate_ratelaw(k, rr)
+            rr.set_ratelaw(ODERatelawCallback(func))
         else:
             rr.set_k(k)
         return rr
@@ -68,8 +74,53 @@ def generate_ReactionRule(lhs, rhs, k=None):
         return ecell4.core.ReactionRule([sp[0] for sp in lhs], [sp[0] for sp in rhs], k)
 
     raise RuntimeError(
-        'parameter must be given as a number; "%s" given'
-        % str(params))
+        'parameter must be given as a number; "%s" given' % str(k))
+
+def traverse_ParseObj(obj, keys):
+    if isinstance(obj, parseobj.ExpBase):
+        for i in range(len(obj._elems)):
+            subobj = obj._elems[i]
+            if isinstance(subobj, parseobj.ParseObj):
+                sp = generate_Species(subobj)
+                assert len(sp) == 1
+                serial = sp[0][0].serial()
+                if serial in keys:
+                    obj._elems[i] = "{{{0:d}}}".format(keys.index(serial))
+                else:
+                    obj._elems[i] =  "{{{0:d}}}".format(len(keys))
+                    keys.append(serial)
+            elif isinstance(subobj, parseobj.ExpBase):
+                traverse_ParseObj(subobj, keys)
+    elif isinstance(obj, parseobj.ParseObj):
+        sp = generate_Species(subobj)
+        assert len(sp) == 1
+        serial = sp[0][0].serial()
+        if serial in keys:
+            obj._elems[i] = "{{{0:d}}}".format(keys.index(serial))
+        else:
+            obj._elems[i] =  "{{{0:d}}}".format(len(keys))
+            keys.append(serial)
+    return obj
+
+def generate_ratelaw(obj, rr):
+    keys = []
+    exp = str(traverse_ParseObj(obj, keys))
+    aliases = {}
+    for i, sp in enumerate(rr.reactants()):
+        aliases[sp.serial()] = "r[{0:d}]".format(i)
+    for i, sp in enumerate(rr.products()):
+        aliases[sp.serial()] = "p[{0:d}]".format(i)
+    names = []
+    for key in keys:
+        if key in aliases.keys():
+            names.append(aliases[key])
+        else:
+            names.append("r[{0:d}]".format(len(rr.reactants())))
+            aliases[key] = names[-1]
+            rr.add_reactant(ecell4.core.Species(key), 1)
+            rr.add_product(ecell4.core.Species(key), 1)
+    exp = exp.format(*names)
+    return eval("lambda r, p, *args: {0}".format(exp))
 
 class ParametersCallback(Callback):
 

@@ -272,41 +272,41 @@ class ParseObj(ExpBase):
             raise RuntimeError("a name or elements must be given")
 
         if elems is None:
-            self.__elems = []
+            self._elems = []
         else:
-            self.__elems = copy.copy(elems)
+            self._elems = copy.copy(elems)
 
         if name is not None:
-            self.__elems += [ParseElem(name)]
+            self._elems += [ParseElem(name)]
 
     def _elements(self):
-        return copy.copy(self.__elems)
+        return copy.copy(self._elems)
 
     def _size(self):
-        return len(self.__elems)
+        return len(self._elems)
 
     def _last(self):
-        return self.__elems[-1]
+        return self._elems[-1]
 
     def _append(self, elem):
         if not isinstance(elem, ParseElem):
             raise RuntimeError("an invalid unit name was given [%s]" % (
                 str(elem)))
-        self.__elems.append(elem)
+        self._elems.append(elem)
 
     def _extend(self, elems):
         for elem in elems:
             if not isinstance(elem, ParseElem):
                 raise RuntimeError("an invalid unit name was given [%s]" % (
                     str(elem)))
-        self.__elems.extend(elems)
+        self._elems.extend(elems)
 
     def _eval_last(self, *args, **kwargs):
-        obj = self.__elems.pop()
+        obj = self._elems.pop()
         return obj(*args, **kwargs)
 
     def __deepcopy__(self, memo):
-        return ParseObj(self._root, elems=copy.deepcopy(self.__elems))
+        return ParseObj(self._root, elems=copy.deepcopy(self._elems))
 
     @log_call
     def __call__(self, *args, **kwargs):
@@ -356,22 +356,25 @@ class ParseObj(ExpBase):
         return retval
 
     def __str__(self):
-        labels = [str(elem) for elem in self.__elems]
+        labels = [str(elem) for elem in self._elems]
         return ".".join(labels)
 
 class UnaryExp(ExpBase):
 
     def __init__(self, root, target, opr=""):
         ExpBase.__init__(self, root)
-        self.__target = target
+        self._elems = [target]
         self.__opr = opr
+
+    def _elements(self):
+        return copy.copy(self.__elements)
 
     @property
     def _target(self):
-        return self.__target
+        return self._elems[0]
 
     def __str__(self):
-        return "%s%s" % (self.__opr, self.__target)
+        return "%s%s" % (self.__opr, self._elems[0])
 
 class InvExp(UnaryExp):
 
@@ -393,133 +396,135 @@ class AddExp(ExpBase):
     def __init__(self, root, lhs, rhs):
         ExpBase.__init__(self, root)
 
-        self.__elems = []
+        self._elems = []
         self.__append(lhs)
         self.__append(rhs)
 
     def _elements(self):
-        return copy.copy(self.__elems)
+        return copy.copy(self._elems)
 
     def __append(self, obj):
         if isinstance(obj, AnyCallable):
-            self.__elems.append(obj._as_ParseObj())
+            self._elems.append(obj._as_ParseObj())
         elif isinstance(obj, AddExp):
-            self.__elems.extend(obj._elements())
+            self._elems.extend(obj._elements())
         else:
-            self.__elems.append(obj)
+            self._elems.append(obj)
 
     def __str__(self):
-        return "(%s)" % ("+".join([str(obj) for obj in self.__elems]))
+        return "(%s)" % ("+".join([str(obj) for obj in self._elems]))
 
 class SubExp(ExpBase):
 
     def __init__(self, root, lhs, rhs):
         ExpBase.__init__(self, root)
 
-        self.__elems = []
+        self._elems = []
         self.__append(lhs)
         self.__append(rhs)
 
     def _elements(self):
-        return copy.copy(self.__elems)
+        return copy.copy(self._elems)
 
     def __append(self, obj):
         if isinstance(obj, AnyCallable):
-            self.__elems.append(obj._as_ParseObj())
-        elif len(self.__elems) > 0 and isinstance(obj, SubExp):
-            self.__elems.extend(obj._elements())
+            self._elems.append(obj._as_ParseObj())
+        elif len(self._elems) > 0 and isinstance(obj, SubExp):
+            self._elems.extend(obj._elements())
         else:
-            self.__elems.append(obj)
+            self._elems.append(obj)
 
     def __str__(self):
-        return "(%s)" % ("-".join([str(obj) for obj in self.__elems]))
+        return "(%s)" % ("-".join([str(obj) for obj in self._elems]))
 
 class DivExp(ExpBase):
 
     def __init__(self, root, lhs, rhs):
         ExpBase.__init__(self, root)
 
-        self.__elems = []
+        self._elems = []
         self.__append(lhs)
         self.__append(rhs)
 
     def _elements(self):
-        return copy.copy(self.__elems)
+        return copy.copy(self._elems)
 
     def __append(self, obj):
         if isinstance(obj, AnyCallable):
-            self.__elems.append(obj._as_ParseObj())
-        elif len(self.__elems) > 0 and isinstance(obj, DivExp):
-            self.__elems.extend(obj._elements())
+            self._elems.append(obj._as_ParseObj())
+        elif len(self._elems) > 0 and isinstance(obj, DivExp):
+            self._elems.extend(obj._elements())
         else:
-            self.__elems.append(obj)
+            self._elems.append(obj)
 
     def __str__(self):
-        return "(%s)" % ("/".join([str(obj) for obj in self.__elems]))
+        return "(%s)" % ("/".join([str(obj) for obj in self._elems]))
 
 class MulExp(ExpBase):
 
     def __init__(self, root, lhs, rhs):
         ExpBase.__init__(self, root)
 
-        self.__elems = []
+        self._elems = []
         self.__append(lhs)
         self.__append(rhs)
 
     def _elements(self):
-        return copy.copy(self.__elems)
+        return copy.copy(self._elems)
 
     def __append(self, obj):
         if isinstance(obj, AnyCallable):
-            self.__elems.append(obj._as_ParseObj())
+            self._elems.append(obj._as_ParseObj())
         elif isinstance(obj, MulExp):
-            self.__elems.extend(obj._elements())
+            self._elems.extend(obj._elements())
         else:
-            self.__elems.append(obj)
+            self._elems.append(obj)
 
     def __str__(self):
-        return "(%s)" % ("*".join([str(obj) for obj in self.__elems]))
+        return "(%s)" % ("*".join([str(obj) for obj in self._elems]))
 
 class PowExp(ExpBase):
 
     def __init__(self, root, lhs, rhs):
         ExpBase.__init__(self, root)
-        self.__lhs = lhs
-        self.__rhs = rhs
+        self._elems = [lhs, rhs]
 
     @property
     def _lhs(self):
-        return self.__lhs
+        return self._elems[0]
 
     @property
     def _rhs(self):
-        return self.__rhs
+        return self._elems[1]
+
+    def _elements(self):
+        return copy.copy(self._elems)
 
     def __str__(self):
-        return "(%s**%s)" % (self.__lhs, self.__rhs)
+        return "(%s**%s)" % (self._elems[0], self._elems[1])
 
 class OrExp(ExpBase):
 
     def __init__(self, root, lhs, rhs):
         ExpBase.__init__(self, root)
 
-        self.__elems = []
+        self._elems = []
         self.__append(lhs)
         self.__append(rhs)
 
     def _elements(self):
-        return copy.copy(self.__elems)
+        return copy.copy(self._elems)
 
     def __append(self, obj):
         if isinstance(obj, AnyCallable):
-            self.__elems.append(obj._as_ParseObj())
+            self._elems.append(obj._as_ParseObj())
         elif isinstance(obj, OrExp):
-            self.__elems.extend(obj._elements())
+            self._elems.extend(obj._elements())
         else:
-            self.__elems.append(obj)
+            self._elems.append(obj)
 
     def __str__(self):
-        return "|".join([str(obj) for obj in self.__elems])
+        return "|".join([str(obj) for obj in self._elems])
 
 class CmpExp(ExpBase):
 
