@@ -10,7 +10,7 @@ __all__ = [
 def run_simulation(
         t, y0={}, volume=1.0, model=None, with_plot=True, solver='ode',
         factory=None, is_netfree=False, species_list=None, as_observer=False,
-        without_reset=False):
+        without_reset=False, with_legend=True):
     """Run a simulation with the given model and plot the result on IPython
     notebook with matplotlib.
 
@@ -24,6 +24,8 @@ def run_simulation(
     model: Model, optional
     with_plot: bool, optional
         Whether to show the result as a plot.
+    with_legend: bool, optional
+        Whether to show a legend in a plot when plotting.
     solver: str, optional
         Solver type. Choose one from 'ode', 'gillespie', 'lattice', 'meso',
         'bd' and 'egfrd'.
@@ -87,7 +89,7 @@ def run_simulation(
     sim.run(t[-1], obs)
 
     if with_plot:
-        ecell4.viz.plot_number_observer(obs)
+        ecell4.viz.plot_number_observer(obs, with_legend=with_legend)
 
     if as_observer:
         return obs

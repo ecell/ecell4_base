@@ -428,7 +428,7 @@ def plot_number_observer(*args, **kwargs):
     import numpy
     import collections
 
-    special_keys = ("xlim", "ylim", "xlabel", "ylabel")
+    special_keys = ("xlim", "ylim", "xlabel", "ylabel", "with_legend")
     plot_opts = {key: value for key, value in kwargs.items()
                  if key not in special_keys}
 
@@ -474,7 +474,8 @@ def plot_number_observer(*args, **kwargs):
                             **plot_opts)
             is_first = False
 
-    ax.legend(*ax.get_legend_handles_labels(), loc="best", shadow=True)
+    if "with_legend" not in kwargs.keys() or kwargs["with_legend"]:
+        ax.legend(*ax.get_legend_handles_labels(), loc="best", shadow=True)
     if "xlabel" in kwargs.keys():
         ax.set_xlabel(kwargs["xlabel"])
     else:
