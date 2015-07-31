@@ -70,9 +70,13 @@ class ParseDecorator:
         try:
             vardict = copy.copy(self.__func.func_globals)
             func_code = self.__func.func_code
+            name = self.__func.func_name
+            defaults = self.__func.func_defaults
         except AttributeError:
             vardict = copy.copy(self.__func.__globals__)
             func_code = self.__func.__code__
+            name = self.__func.__name__
+            defaults = self.__func.__defaults__
 
         ignores = ("_", "__", "___", "_i", "_ii", "_iii",
             "_i1", "_i2", "_i3", "_dh", "_sh", "_oh")
@@ -83,7 +87,7 @@ class ParseDecorator:
             if (not k in vardict.keys()
                 and not k in keys_from_builtins(vardict)): # is this enough?
                 vardict[k] = parseobj.AnyCallable(cache, k)
-        g = types.FunctionType(func_code, vardict)
+        g = types.FunctionType(func_code, vardict, name=name, argdefs=defaults)
         with warnings.catch_warnings():
             # warnings.simplefilter("always")
             g(*args, **kwargs)
@@ -132,9 +136,13 @@ def parse_decorator(callback_class, func):
         try:
             vardict = copy.copy(self.__func.func_globals)
             func_code = func.func_code
+            name = self.__func.func_name
+            defaults = self.__func.func_defaults
         except AttributeError:
             vardict = copy.copy(self.__func.__globals__)
             func_code = func.__code__
+            name = self.__func.__name__
+            defaults = self.__func.__defaults__
         for ignore in ("_", "__", "___", "_i", "_ii", "_iii",
             "_i1", "_i2", "_i3", "_dh", "_sh", "_oh"):
             if ignore in vardict.keys():
@@ -143,7 +151,7 @@ def parse_decorator(callback_class, func):
             if (not k in vardict.keys()
                 and not k in keys_from_builtins(vardict)): # is this enough?
                 vardict[k] = parseobj.AnyCallable(cache, k)
-        g = types.FunctionType(func_code, vardict)
+        g = types.FunctionType(func_code, vardict, name=name, argdefs=defaults)
         with warnings.catch_warnings():
             # warnings.simplefilter("always")
             g(*args, **kwargs)
