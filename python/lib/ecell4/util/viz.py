@@ -405,7 +405,6 @@ def logo(x=1, y=None):
     h = HTML(template % tuple(base64s + [("<p>%s</p>" % (img_html * x)) * y]))
     display(h)
 
-
 def plot_number_observer(*args, **kwargs):
     """Generate a plot from NumberObservers and show it on IPython notebook
     with matplotlib.
@@ -428,56 +427,66 @@ def plot_number_observer(*args, **kwargs):
     import numpy
     import collections
 
-    special_keys = ("xlim", "ylim", "xlabel", "ylabel", "with_legend")
+    special_keys = ("xlim", "ylim", "xlabel", "ylabel", "with_legend", "x", "y")
     plot_opts = {key: value for key, value in kwargs.items()
                  if key not in special_keys}
+    color_cycle = plt.rcParams['axes.color_cycle']
 
     fig = plt.figure()
     ax = fig.add_subplot(111)
 
-    is_first = True
-    color_cycle = plt.rcParams['axes.color_cycle']
-    if len(args) != 1 and isinstance(args[1], str):
-        for obs, fmt in zip(args[:: 2], args[1:: 2]):
-            data = numpy.array(obs.data()).T
-            targets = list(enumerate(obs.targets()))
-            targets.sort(key=lambda x: x[1])
-            for i, (idx, sp) in enumerate(targets):
-                if is_first:
-                    label = sp.serial()
-                    if len(label) > 0 and label[0] == '_':
-                        label = '$\_$' + label[1:]  # XXX: lazy escaping for a special character
-                    ax.plot(data[0], data[idx + 1], fmt,
-                            color=color_cycle[i % len(color_cycle)],
-                            label=label, **plot_opts)
-                else:
-                    ax.plot(data[0], data[idx + 1], fmt,
-                            color=color_cycle[i % len(color_cycle)],
-                            **plot_opts)
-            is_first = False
+    if len(args) > 1 and isinstance(args[1], str):
+        if len(args) % 2 == 0:
+            observers = [(args[i], args[i + 1]) for i in range(0, len(args), 2)]
+        else:
+            observers = [(args[i], args[i + 1]) for i in range(0, len(args) - 1, 2)]
+            observers.append(args[-1], None)
     else:
-        for obs in args:
-            data = numpy.array(obs.data()).T
-            targets = list(enumerate(obs.targets()))
+        observers = [(obs, None) for obs in args]
+
+    color_map = {}
+    for obs, fmt in observers:
+        data = numpy.array(obs.data()).T
+
+        if "x" in kwargs.keys():
+            targets = [sp.serial() for sp in obs.targets()]
+            if kwargs["x"] not in targets:
+                raise ValueError("[{0}] given as 'x' was not found.".fomrat(kwargs["x"]))
+            xidx = targets.index(kwargs["x"]) + 1
+        else:
+            xidx = 0
+
+        if "y" in kwargs.keys():
+            targets = [sp.serial() for sp in obs.targets()]
+            targets = [(targets.index(serial), serial)
+                       for serial in kwargs["y"] if serial in targets]
+        else:
+            targets = [sp.serial() for sp in obs.targets()]
+            targets = list(enumerate(targets))
             targets.sort(key=lambda x: x[1])
-            for i, (idx, sp) in enumerate(targets):
-                if is_first:
-                    label = sp.serial()
-                    if len(label) > 0 and label[0] == '_':
-                        label = '$\_$' + label[1:]  # XXX: lazy escaping for a special character
-                    ax.plot(data[0], data[idx + 1],
-                            color=color_cycle[i % len(color_cycle)],
-                            label=label, **plot_opts)
-                else:
-                    ax.plot(data[0], data[idx + 1],
-                            color=color_cycle[i % len(color_cycle)],
-                            **plot_opts)
-            is_first = False
+
+        for idx, serial in targets:
+            opts = plot_opts.copy()
+
+            label = serial
+            if len(label) > 0 and label[0] == '_':
+                label = '$\_$' + label[1:]  # XXX: lazy escaping for a special character
+            if label not in color_map.keys():
+                color_map[label] = color_cycle[len(color_map) % len(color_cycle)]
+                opts["label"] = label
+            opts["color"] = color_map[label]
+
+            if fmt is None:
+                ax.plot(data[xidx], data[idx + 1], **opts)
+            else:
+                ax.plot(data[xidx], data[idx + 1], fmt, **opts)
 
     if "with_legend" not in kwargs.keys() or kwargs["with_legend"]:
         ax.legend(*ax.get_legend_handles_labels(), loc="best", shadow=True)
     if "xlabel" in kwargs.keys():
         ax.set_xlabel(kwargs["xlabel"])
+    elif "x" in kwargs.keys():
+        ax.set_xlabel("The Number of Molecules [{0}]".format(kwargs["x"]))
     else:
         ax.set_xlabel("Time")
     if "ylabel" in kwargs.keys():
