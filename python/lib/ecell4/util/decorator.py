@@ -62,11 +62,11 @@ def generate_ReactionRule(lhs, rhs, k=None):
             rr.add_reactant(sp[0], 1 if sp[1] is None else sp[1])
         for sp in rhs:
             rr.add_product(sp[0], 1 if sp[1] is None else sp[1])
-        if callable(k):
-            rr.set_ratelaw(ODERatelawCallback(k))
-        elif SEAMLESS_RATELAW_SUPPORT and isinstance(k, parseobj.ExpBase):
+        if SEAMLESS_RATELAW_SUPPORT and isinstance(k, parseobj.ExpBase):
             func = generate_ratelaw(k, rr)
             rr.set_ratelaw(ODERatelawCallback(func))
+        elif callable(k):
+            rr.set_ratelaw(ODERatelawCallback(k))
         else:
             rr.set_k(k)
         return rr
@@ -77,29 +77,37 @@ def generate_ReactionRule(lhs, rhs, k=None):
         'parameter must be given as a number; "%s" given' % str(k))
 
 def traverse_ParseObj(obj, keys):
-    if isinstance(obj, parseobj.ExpBase):
-        for i in range(len(obj._elems)):
-            subobj = obj._elems[i]
-            if isinstance(subobj, parseobj.ParseObj):
-                sp = generate_Species(subobj)
-                assert len(sp) == 1
-                serial = sp[0][0].serial()
-                if serial in keys:
-                    obj._elems[i] = "{{{0:d}}}".format(keys.index(serial))
-                else:
-                    obj._elems[i] =  "{{{0:d}}}".format(len(keys))
-                    keys.append(serial)
-            elif isinstance(subobj, parseobj.ExpBase):
-                traverse_ParseObj(subobj, keys)
-    elif isinstance(obj, parseobj.ParseObj):
-        sp = generate_Species(subobj)
-        assert len(sp) == 1
-        serial = sp[0][0].serial()
-        if serial in keys:
-            obj._elems[i] = "{{{0:d}}}".format(keys.index(serial))
+    reserved_vars = ['pi']
+    # reserved_vars = ['_t', 'pi']
+    reserved_funcs = ['exp', 'log', 'sin', 'cos', 'tan', 'asin', 'acos', 'atan']
+
+    if isinstance(obj, parseobj.AnyCallable):
+        obj = obj._as_ParseObj()
+
+    if isinstance(obj, parseobj.ParseObj):
+        if obj._size() == 1 and (
+                obj._elems[0].name in reserved_funcs or
+                obj._elems[0].name in reserved_vars):
+            subobj = obj._elems[0]
+            assert subobj.key is None
+            assert subobj.modification is None
+            if subobj.args is not None:
+                assert subobj.name not in reserved_vars
+                assert subobj.kwargs == {}
+                subobj.args = tuple([
+                    traverse_ParseObj(subobj.args[i], keys)
+                    for i in range(len(subobj.args))])
+            else:
+                assert subobj.kwargs is None
         else:
-            obj._elems[i] =  "{{{0:d}}}".format(len(keys))
+            serial = ecell4.core.Species(str(obj)).serial()
+            if serial in keys:
+                return "{{{0:d}}}".format(keys.index(serial))
             keys.append(serial)
+            return "{{{0:d}}}".format(len(keys) - 1)
+    elif isinstance(obj, parseobj.ExpBase):
+        for i in range(len(obj._elems)):
+            obj._elems[i] = traverse_ParseObj(obj._elems[i], keys)
     return obj
 
 def generate_ratelaw(obj, rr):
@@ -107,20 +115,32 @@ def generate_ratelaw(obj, rr):
     exp = str(traverse_ParseObj(obj, keys))
     aliases = {}
     for i, sp in enumerate(rr.reactants()):
-        aliases[sp.serial()] = "r[{0:d}]".format(i)
+        aliases[sp.serial()] = "_r[{0:d}]".format(i)
     for i, sp in enumerate(rr.products()):
-        aliases[sp.serial()] = "p[{0:d}]".format(i)
+        aliases[sp.serial()] = "_p[{0:d}]".format(i)
     names = []
     for key in keys:
         if key in aliases.keys():
             names.append(aliases[key])
         else:
-            names.append("r[{0:d}]".format(len(rr.reactants())))
+            names.append("_r[{0:d}]".format(len(rr.reactants())))
             aliases[key] = names[-1]
             rr.add_reactant(ecell4.core.Species(key), 1)
             rr.add_product(ecell4.core.Species(key), 1)
     exp = exp.format(*names)
-    return eval("lambda r, p, *args: {0}".format(exp))
+    import math
+    f = eval("lambda _r, _p, _v, _t, _rr: {0}".format(exp))
+    f.__globals__['exp'] = math.exp
+    f.__globals__['log'] = math.log
+    f.__globals__['sin'] = math.sin
+    f.__globals__['cos'] = math.cos
+    f.__globals__['tan'] = math.tan
+    f.__globals__['asin'] = math.asin
+    f.__globals__['acos'] = math.acos
+    f.__globals__['atan'] = math.atan
+    f.__globals__['pi'] = math.pi
+    return f
+    # return (lambda _r, _p, *args: eval(exp))
 
 class ParametersCallback(Callback):
 
