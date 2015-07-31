@@ -44,11 +44,13 @@ http://sourceforge.net/projects/numpy/files/NumPy/1.9.1/numpy-1.9.1-win32-superp
 ### Requirements
 
 - homebrew
+- gsl
 - hdf5
 - pip
 
 ```shell
 brew install homebrew/science/hdf5
+brew install gsl
 brew install wget
 wget https://bootstrap.pypa.io/get-pip.py
 sudo python get-pip.py
