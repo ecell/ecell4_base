@@ -201,6 +201,10 @@ cdef extern from "ecell4/ode/ODESimulator2.hpp" namespace "ecell4::ode":
         Real dt()
         void set_dt(Real)
         Integer num_steps()
+        Real absolute_tolerance() const
+        Real relative_tolerance() const
+        void set_absolute_tolerance(Real)
+        void set_relative_tolerance(Real)
 
         shared_ptr[Cpp_ODENetworkModel] model()
         shared_ptr[Cpp_ODEWorld] world()

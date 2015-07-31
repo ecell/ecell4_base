@@ -506,6 +506,14 @@ cdef class ODESimulator2:
         self.thisptr.set_dt(dt_new)
     def num_steps(self):
         return self.thisptr.num_steps()
+    def absolute_tolerance(self):
+        return self.thisptr.absolute_tolerance()
+    def set_absolute_tolerance(self, Real abs_tol):
+        self.thisptr.set_absolute_tolerance(abs_tol)
+    def relative_tolerance(self):
+        return self.thisptr.relative_tolerance()
+    def set_relative_tolerance(self, Real rel_tol):
+        self.thisptr.set_relative_tolerance(rel_tol)
     def run(self, Real duration, observers=None):
         cdef vector[shared_ptr[Cpp_Observer]] tmp
 

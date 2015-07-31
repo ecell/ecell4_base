@@ -97,8 +97,12 @@ bool ODESimulator2::step(const Real &upto)
     typedef odeint::rosenbrock4_controller<error_stepper_type>
         controlled_stepper_type;
 
-    const double abs_err(1e-10), rel_err(1e-6), a_x(1.0), a_dxdt(1.0);
-    controlled_stepper_type controlled_stepper(abs_err, rel_err);
+    // const double a_x(1.0), a_dxdt(1.0);
+    controlled_stepper_type controlled_stepper(abs_tol_, rel_tol_);
+    // const size_t steps(
+    //     odeint::integrate_adaptive(
+    //         controlled_stepper, system, x, t(), upto, dt_,
+    //         StateAndTimeBackInserter(x_vec, times)));
     const size_t steps(
         odeint::integrate_adaptive(
             controlled_stepper, system, x, t(), upto, dt,

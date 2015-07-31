@@ -288,7 +288,7 @@ public:
     ODESimulator2(
         const boost::shared_ptr<ODENetworkModel> &model,
         const boost::shared_ptr<ODEWorld> &world)
-        : base_type(model, world), dt_(inf)
+        : base_type(model, world), dt_(inf), abs_tol_(1e-10), rel_tol_(1e-6)
         // : model_(model), world_(world), dt_(inf), num_steps_(0)
     {
         initialize();
@@ -343,6 +343,35 @@ public:
     // {
     //     return this->num_steps_;
     // }
+    //
+
+    Real absolute_tolerance() const
+    {
+        return abs_tol_;
+    }
+
+    void set_absolute_tolerance(const Real abs_tol)
+    {
+        if (abs_tol < 0)
+        {
+            throw std::invalid_argument("A tolerance must be positive or zero.");
+        }
+        abs_tol_ = abs_tol;
+    }
+
+    Real relative_tolerance() const
+    {
+        return rel_tol_;
+    }
+
+    void set_relative_tolerance(const Real rel_tol)
+    {
+        if (rel_tol < 0)
+        {
+            throw std::invalid_argument("A tolerance must be positive or zero.");
+        }
+        rel_tol_ = rel_tol;
+    }
 protected:
     std::pair<deriv_func, jacobi_func> generate_system() const;
 protected:
@@ -350,6 +379,7 @@ protected:
     // boost::shared_ptr<ODEWorld> world_;
     Real dt_;
     // Integer num_steps_;
+    Real abs_tol_, rel_tol_;
 };
 
 } // ode
