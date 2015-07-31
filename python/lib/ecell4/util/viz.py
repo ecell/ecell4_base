@@ -432,6 +432,9 @@ def plot_number_observer(*args, **kwargs):
                  if key not in special_keys}
     color_cycle = plt.rcParams['axes.color_cycle']
 
+    if "y" in kwargs.keys() and isinstance(kwargs["y"], str):
+        kwargs["y"] = (kwargs["y"], )
+
     fig = plt.figure()
     ax = fig.add_subplot(111)
 
@@ -499,7 +502,7 @@ def plot_number_observer(*args, **kwargs):
         ax.set_ylim(kwargs["ylim"])
     plt.show()
 
-def plot_number_observer_with_nya(obs, config={}, width=600, height=400):
+def plot_number_observer_with_nya(obs, config={}, width=600, height=400, x=None, y=None):
     from IPython.core.display import display, HTML
     import numpy
 
@@ -508,21 +511,42 @@ def plot_number_observer_with_nya(obs, config={}, width=600, height=400):
 
     data1, data2 = [], []
     data = numpy.array(obs.data())
+
+    if x is None:
+        xidx = 0
+    else:
+        tmp = [sp.serial() for sp in obs.targets()]
+        if x not in tmp:
+            raise ValueError("[{0}] given as 'x' was not found.".fomrat(x))
+        xidx = tmp.index(x) + 1
+
+    if y is None:
+        targets = [sp.serial() for sp in obs.targets()]
+        targets = list(enumerate(targets))
+        targets.sort(key=lambda x: x[1])
+    else:
+        if isinstance(y, str):
+            y = (y, )
+        targets = [sp.serial() for sp in obs.targets()]
+        targets = [(targets.index(serial), serial)
+                   for serial in y if serial in targets]
+
     for line in data:
-        tmp = {"x": line[0]}
-        for i in range(1, len(line)):
-            tmp["y{0}".format(i)] = line[i]
+        tmp = {"x": line[xidx]}
+        for i, (idx, serial) in enumerate(targets):
+            tmp["y{0}".format(i + 1)] = line[idx + 1]
         data1.append(tmp)
-    for i, sp in enumerate(obs.targets()):
-        label = sp.serial()
+    for i, (idx, serial) in enumerate(targets):
+        label = serial
         tmp = {"type": "line", "data": "data1",
                "options": {"x": "x", "y": "y{0}".format(i + 1),
                            "stroke_width": 2, "title": label,
                            "color": color_scale.get_color(label)}}
         data2.append(tmp)
 
-    xmin, xmax = data[0][0], data[-1][0]
-    ymin, ymax = data.T[1:].min(), data.T[1:].max()
+    xmin, xmax = data.T[xidx].min(), data.T[xidx].max()
+    yview = data.T.take([idx + 1 for idx, serial in targets], axis=0)
+    ymin, ymax = yview.min(), yview.max()
 
     model = {
         "data": {"data1": data1},
