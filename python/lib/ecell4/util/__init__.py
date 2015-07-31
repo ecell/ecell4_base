@@ -10,7 +10,7 @@ __all__ = [
 def run_simulation(
         t, y0={}, volume=1.0, model=None, solver='ode',
         factory=None, is_netfree=False, species_list=None, as_observer=False,
-        without_reset=False, with_legend=True, plot_type='matplotlib'):
+        without_reset=False, plot_type='matplotlib', plot_args={}):
     """Run a simulation with the given model and plot the result on IPython
     notebook with matplotlib.
 
@@ -22,12 +22,11 @@ def run_simulation(
         Initial condition.
     volume: Real, optional
     model: Model, optional
-    with_legend: bool, optional
-        Whether to show a legend in a plot when plotting.
-        This option is only available for matplotlib.
     plot_type: str, optional
         Choose the way to plot from 'matplotlib' or 'nyaplot'.
         If None, show no plot.
+    plot_args: dict, optional
+        Arguments for plotting. If plot_type is None, just ignored.
     solver: str, optional
         Solver type. Choose one from 'ode', 'gillespie', 'lattice', 'meso',
         'bd' and 'egfrd'.
@@ -91,9 +90,9 @@ def run_simulation(
     sim.run(t[-1], obs)
 
     if plot_type == 'matplotlib':
-        ecell4.viz.plot_number_observer(obs, with_legend=with_legend)
+        ecell4.viz.plot_number_observer(obs, **plot_args)
     elif plot_type == 'nyaplot':
-        ecell4.viz.plot_number_observer_with_nya(obs)
+        ecell4.viz.plot_number_observer_with_nya(obs, **plot_args)
 
     if as_observer:
         return obs
