@@ -248,7 +248,7 @@ protected:
 
         void inc(const Species& sp, const coordinate_type& c, const Integer val = +1)
         {
-            const Species pttrn(rr_.reactants()[0]);
+            const Species& pttrn(rr_.reactants()[0]);
             const Integer coef(get_coef(pttrn, sp));
             if (coef > 0)
             {

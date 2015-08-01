@@ -614,6 +614,15 @@ cdef extern from "ecell4/core/Mesh.hpp" namespace "ecell4":
         Real is_inside(Cpp_Real3&)
         Integer dimension()
 
+## Cpp_Complement
+#  ecell4::Complement
+cdef extern from "ecell4/core/ShapeOperators.hpp" namespace "ecell4":
+    cdef cppclass Cpp_Complement "ecell4::Complement":
+        Cpp_Complement(shared_ptr[Cpp_Shape]&, shared_ptr[Cpp_Shape]&)
+        Cpp_Complement(Cpp_Complement&)
+        Real is_inside(Cpp_Real3&)
+        Integer dimension()
+
 ## Shape
 #  a python wrapper for Cpp_Shape
 cdef class Shape:
@@ -654,6 +663,11 @@ cdef class MeshSurface:
 #  a python wrapper for Cpp_AABB
 cdef class AABB:
     cdef shared_ptr[Cpp_AABB]* thisptr
+
+## Complement
+#  a python wrapper for Cpp_Complement
+cdef class Complement:
+    cdef shared_ptr[Cpp_Complement]* thisptr
 
 cdef Sphere Sphere_from_Cpp_Sphere(Cpp_Sphere* p)
 cdef SphericalSurface SphericalSurface_from_Cpp_SphericalSurface(Cpp_SphericalSurface* p)
