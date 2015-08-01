@@ -77,8 +77,7 @@ def generate_ReactionRule(lhs, rhs, k=None):
         'parameter must be given as a number; "%s" given' % str(k))
 
 def traverse_ParseObj(obj, keys):
-    reserved_vars = ['pi']
-    # reserved_vars = ['_t', 'pi']
+    reserved_vars = ['_t', 'pi']
     reserved_funcs = ['exp', 'log', 'sin', 'cos', 'tan', 'asin', 'acos', 'atan']
 
     if isinstance(obj, parseobj.AnyCallable):
@@ -128,6 +127,7 @@ def generate_ratelaw(obj, rr):
             rr.add_reactant(ecell4.core.Species(key), 1)
             rr.add_product(ecell4.core.Species(key), 1)
     exp = exp.format(*names)
+    # print(exp)
     import math
     f = eval("lambda _r, _p, _v, _t, _rr: {0}".format(exp))
     f.__globals__['exp'] = math.exp

@@ -137,6 +137,7 @@ public:
             std::fill(jacobi.data().begin(), jacobi.data().end(), 0.0);
 
             const Real h(1.0e-8);
+            const Real ht(1.0e-10);
 
             // calculate jacobian for each reaction and merge it.
             for(reaction_container_type::const_iterator i(reactions_.begin()); 
@@ -165,6 +166,26 @@ public:
                 {
                     boost::scoped_ptr<ODERatelaw> temporary_ratelaw_obj(new ODERatelawMassAction(i->k));
                     Real flux_0 = temporary_ratelaw_obj->deriv_func(reactants_states, products_states, volume_, t, *(i->raw) );
+                    // Differentiate by time
+                    {
+                        Real flux = temporary_ratelaw_obj->deriv_func(reactants_states, products_states, volume_, t + ht, *(i->raw) );
+                        Real flux_deriv = (flux - flux_0) / h;
+                        if (flux_deriv != 0.0)
+                        {
+                            for(std::size_t k(0); k < i->reactants.size(); k++)
+                            {
+                                matrix_type::size_type row = i->reactants[k];
+                                Real coeff = i->reactant_coefficients[k];
+                                dfdt[row] -= coeff * flux_deriv;
+                            }
+                            for(std::size_t k(0); k < i->products.size(); k++)
+                            {
+                                matrix_type::size_type row = i->products[k];
+                                Real coeff = i->product_coefficients[k];
+                                dfdt[row] += coeff * flux_deriv;
+                            }
+                        }
+                    }
                     // Differentiate by each Reactants
                     for(std::size_t j(0); j < reactants_states.size(); j++)
                     {
@@ -212,6 +233,26 @@ public:
                 {
                     boost::shared_ptr<ODERatelaw> ratelaw = i->ratelaw.lock();
                     Real flux_0 = ratelaw->deriv_func(reactants_states, products_states, volume_, t, *(i->raw) );
+                    // Differentiate by time
+                    {
+                        Real flux = ratelaw->deriv_func(reactants_states, products_states, volume_, t + ht, *(i->raw) );
+                        Real flux_deriv = (flux - flux_0) / h;
+                        if (flux_deriv != 0.0)
+                        {
+                            for(std::size_t k(0); k < i->reactants.size(); k++)
+                            {
+                                matrix_type::size_type row = i->reactants[k];
+                                Real coeff = i->reactant_coefficients[k];
+                                dfdt[row] -= coeff * flux_deriv;
+                            }
+                            for(std::size_t k(0); k < i->products.size(); k++)
+                            {
+                                matrix_type::size_type row = i->products[k];
+                                Real coeff = i->product_coefficients[k];
+                                dfdt[row] += coeff * flux_deriv;
+                            }
+                        }
+                    }
                     // Differentiate by each Reactants
                     for(std::size_t j(0); j < reactants_states.size(); j++)
                     {
