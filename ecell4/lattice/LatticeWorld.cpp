@@ -288,6 +288,9 @@ Integer LatticeWorld::add_structure(
         return add_structure3(sp, shape);
     case Shape::TWO:
         return add_structure2(sp, shape);
+    case Shape::ONE:
+    case Shape::UNDEF:
+        break;
     }
 
     throw NotSupported("The dimension of a shape must be two or three.");
