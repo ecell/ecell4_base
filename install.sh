@@ -38,8 +38,15 @@ cd python
 if [ "$PYTHON_MAJOR_VERSION" = "py2" ]; then
     # rm -rf build lib/ecell4/*.cpp
     mkdir -p ${PREFIX}/lib/python2.7/site-packages
+
+    if [ "$(uname)" == "Darwin" ]; then
+    LD_LIBRARY_PATH=${PREFIX}/lib PYTHONPATH=${PREFIX}/lib/python2.7/site-packages:/usr/local/lib/python2.7/dist-packages:${PYTHONPATH} python setup.py build_ext -L${PREFIX}/lib -I${PREFIX}/include install --prefix=${PREFIX}
+    PYTHONPATH=${PREFIX}/lib/python2.7/site-packages:/usr/local/lib/python2.7/dist-packages:${PYTHONPATH} LD_LIBRARY_PATH=${PREFIX}/lib python setup.py test
+    else
     LD_LIBRARY_PATH=${PREFIX}/lib PYTHONPATH=${PREFIX}/lib/python2.7/site-packages:/usr/local/lib/python2.7/dist-packages:${PYTHONPATH} python2 setup.py build_ext -L${PREFIX}/lib -I${PREFIX}/include install --prefix=${PREFIX}
     PYTHONPATH=${PREFIX}/lib/python2.7/site-packages:/usr/local/lib/python2.7/dist-packages:${PYTHONPATH} LD_LIBRARY_PATH=${PREFIX}/lib python2 setup.py test
+    fi
+    
 elif [ "$PYTHON_MAJOR_VERSION" = "py3" ]; then
     # rm -rf build lib/ecell4/*.cpp
     mkdir -p ${PREFIX}/lib/python3.4/site-packages
