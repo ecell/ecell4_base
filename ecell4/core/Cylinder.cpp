@@ -21,7 +21,7 @@ Cylinder::Cylinder(const Real3& center, const Real radius,
 
 Cylinder::Cylinder(const Cylinder& rhs)
     : center_(rhs.center()), radius_(rhs.radius()),
-    axis_(rhs.axis()), half_height_(rhs.half_height)
+    axis_(rhs.axis()), half_height_(rhs.half_height_)
 {
     ;
 }
@@ -80,7 +80,7 @@ CylindricalSurface::CylindricalSurface()
 
 CylindricalSurface::CylindricalSurface(const Real3& center, const Real radius,
     const Real3& axis, const Real half_height)
-    : center_(center), radius_(radius), axis_(axis), half_height_(half_height_)
+    : center_(center), radius_(radius), axis_(axis), half_height_(half_height)
 {
     ;
 }
