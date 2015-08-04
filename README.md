@@ -1,19 +1,30 @@
-# E-Cell System version 4 
+E-Cell System version 4 
+=======================
+
+[![Build Status](https://travis-ci.org/ecell/ecell4.svg?branch=develop)](https://travis-ci.org/ecell/ecell4)
 
 ## What is E-Cell System?
 
 E-Cell System, a software platform for modeling, simulation and analysis of complex, heterogeneous and multi-scale systems like the cell.
 
-## Installing E-Cell (Windows)
+- [Installation](#installation)
+    - [Windows](#windows-installation)
+    - [Mac OS X](#mac-os-x-installation)
+    - [Ubuntu vivid](#ubuntu-linux-vivid-vervet-installation)
+    - [Ubuntu trusty](#ubuntu-linux-trusty-tahr-installation)
 
-### Requirements
+Installation
+------------
+
+### Windows installation
+
+#### Requirements
 
 Please use 32bit Python, even if you use 64bit Windows.
 We don't support 64bit Python
 
 - Python 2.7.9(**32bit**) https://www.python.org/ftp/python/2.7.9/python-2.7.9.msi **or** Python 3.4.3(**32bit**) https://www.python.org/ftp/python/3.4.3/python-3.4.3.msi
 - HDF5-1.8.14 Pre-built Binary(**32-bit**) http://www.hdfgroup.org/ftp/HDF5/current/bin/windows/extra/hdf5-1.8.14-win32-vs2008-shared.zip
-
 
 Please add `C:\Python27`, `C:\Python27\Scripts` (or `C:\Python34`, `C:\Python34\Scripts`) and `C:\Program Files (x86)\HDF_Group\HDF5\1.8.14\bin` to your **PATH** enviromental variable.
 
@@ -22,7 +33,7 @@ And run following command with command prompt.
 pip install https://github.com/ecell/ecell4/releases/download/4.0.0-beta2/ecell4-4.0.0b2-cp27-none-win32.whl
 ```
 
-### IPython notebook
+#### IPython notebook
 We recommend you run E-Cell4 models from IPython notebook.
 Below is IPython notebook(and matplotlib) installation for Windows.
 
@@ -39,9 +50,9 @@ http://sourceforge.net/projects/numpy/files/NumPy/1.9.1/numpy-1.9.1-win32-superp
 
 
 
-## Installing E-Cell (Mac OS X)
+### Mac OS X installation
 
-### Requirements
+#### Requirements
 
 - homebrew
 - gsl
@@ -55,11 +66,11 @@ brew install wget
 wget https://bootstrap.pypa.io/get-pip.py
 sudo python get-pip.py
 pip install https://github.com/ecell/ecell4/releases/download/4.0.0-beta2/ecell4-4.0.0b2-cp27-none-macosx_10_10_intel.whl --user
-# if you are using Mountain Lion
+# For Mountain Lion
 # pip install https://github.com/ecell/ecell4/releases/download/4.0.0-beta2/ecell4-4.0.0b2-cp27-none-macosx_10_9_intel.whl --user
 ```
 
-### IPython notebook
+#### IPython notebook
 We recommend you run E-Cell4 models from IPython notebook.
 Below is IPython notebook(and matplotlib) installation for Mac.
 
@@ -72,8 +83,10 @@ PYTHONPATH=~/Library/Python/2.7/lib/python/site-packages/ ipython notebook
 
 now you can see IPython notebooks, please open index.ipynb to see E-Cell4 models.
 
-## Building and installing E-Cell (Ubuntu 15.04)
-### Python2 series
+
+### Ubuntu Linux Vivid Vervet installation
+#### Python2 series
+
 ```shell
 # dependent packages
 $ sudo apt-get install cmake libgsl0-dev libboost-dev libboost-regex-dev libhdf5-dev cython
@@ -85,7 +98,7 @@ $ cd ecell4-master
 $ PREFIX=$HOME/ecell4 ./install.sh py2
 ```
 
-### Python3 series
+#### Python3 series
 
 ```shell
 # dependent packages
@@ -98,7 +111,7 @@ $ cd ecell4-master
 $ PREFIX=$HOME/ecell4 ./install.sh py3
 ```
 
-## Building and installing E-Cell (Ubuntu 14.04)
+### Ubuntu Linux Trusty Tahr installation 
 
 ```shell
 # dependent packages
@@ -160,9 +173,6 @@ $ sudo docker run --rm -i -t -p 8888:8888 ecell/ecell4:develop
 ```
 
 Open localhost:8888 with your favorite browser.
-
-
-[![Build Status](https://travis-ci.org/ecell/ecell4.svg?branch=master)](https://travis-ci.org/ecell/ecell4)
 
 
 ## IPython notebooks (tutorials) for E-Cell4
