@@ -2,7 +2,6 @@ site_name: E-Cell4 documentation
 pages:
 - Home: 'index.md'
 - Installation: 'installation.md'
-- Tutorials:
-    - 'Meso': 'tutorial/Meso.md'
+- Tutorials: 'tutorials.md'
 - API:
     - 'core': 'api/core.md'
