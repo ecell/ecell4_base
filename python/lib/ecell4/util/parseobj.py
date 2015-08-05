@@ -66,6 +66,14 @@ All the members must start with '_'."""
     def __ne__(self, rhs):
         return operator.ne(self._as_ParseObj(), rhs)
 
+    # def __lshift__(self, rhs):
+    #     return operator.lshift(self._as_ParseObj(), rhs)
+
+    # def __rlshift__(self, lhs):
+    #     return operator.lshift(lhs, self._as_ParseObj())
+
+    # bitwise operations
+
     def __or__(self, rhs):
         return operator.or_(self._as_ParseObj(), rhs)
 
@@ -216,6 +224,16 @@ class ExpBase(object):
         self.__root.notify_comparisons(retval)
         return retval
 
+    # def __lshift__(self, rhs):
+    #     retval = LshiftExp(self.__root, self, rhs)
+    #     return retval
+
+    # def __rlshift__(self, lhs):
+    #     retval = LshiftExp(self.__root, lhs, self)
+    #     return retval
+
+    # bitwise operations
+
     def __or__(self, rhs):
         retval = OrExp(self.__root, self, rhs)
         self.__root.notify_bitwise_operations(retval)
@@ -228,12 +246,12 @@ class ExpBase(object):
 
     def __and__(self, rhs):
         retval = AndExp(self.__root, self, rhs)
-        # self.__root.notify_bitwise_operations(retval)
+        self.__root.notify_bitwise_operations(retval)
         return retval
 
     def __rand__(self, lhs):
         retval = AndExp(self.__root, lhs, self)
-        # self.__root.notify_bitwise_operations(retval)
+        self.__root.notify_bitwise_operations(retval)
         return retval
 
     # operators
@@ -506,6 +524,29 @@ class MulExp(ExpBase):
 
     def __str__(self):
         return "(%s)" % ("*".join([str(obj) for obj in self._elems]))
+
+# class LshiftExp(ExpBase):
+# 
+#     def __init__(self, root, lhs, rhs):
+#         ExpBase.__init__(self, root)
+# 
+#         self._elems = []
+#         self.__append(lhs)
+#         self.__append(rhs)
+# 
+#     def _elements(self):
+#         return copy.copy(self._elems)
+# 
+#     def __append(self, obj):
+#         if isinstance(obj, AnyCallable):
+#             self._elems.append(obj._as_ParseObj())
+#         elif isinstance(obj, LshiftExp):
+#             self._elems.extend(obj._elements())
+#         else:
+#             self._elems.append(obj)
+# 
+#     def __str__(self):
+#         return "(%s)" % ("<<".join([str(obj) for obj in self._elems]))
 
 class PowExp(ExpBase):
 
