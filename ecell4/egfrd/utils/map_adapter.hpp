@@ -2,7 +2,7 @@
 #define MAP_ADAPTER_HPP
 
 #include <utility>
-#include "utils.hpp"
+#include "../utils.hpp"
 #include <boost/range/size.hpp>
 #include <boost/range/begin.hpp>
 #include <boost/range/end.hpp>
