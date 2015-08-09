@@ -94,7 +94,8 @@ $ sudo apt-get install cmake libgsl0-dev libboost-regex-dev libhdf5-dev cython
 $ wget https://github.com/ecell/ecell4/archive/master.zip   
 $ unzip master.zip
 $ cd ecell4-master
-# in this case we install ecell4 to $HOME/ecell4
+# By default install.sh tries to install E-Cell4 into /usr/local, in this case you need to use sudo.
+# In the following command, we install E-Cell4 into $HOME/ecell4. In this case you do NOT need to use sudo.
 $ PREFIX=$HOME/ecell4 ./install.sh py2
 ```
 
@@ -107,7 +108,8 @@ $ sudo apt-get install cmake libgsl0-dev libboost-regex-dev libhdf5-dev cython3 
 $ wget https://github.com/ecell/ecell4/archive/master.zip   
 $ unzip master.zip
 $ cd ecell4-master
-# in this case we install ecell4 to $HOME/ecell4
+# By default install.sh tries to install E-Cell4 into /usr/local, in this case you need to use sudo.
+# In the following command, we install E-Cell4 into $HOME/ecell4. In this case you do NOT need to use sudo.
 $ PREFIX=$HOME/ecell4 ./install.sh py3
 ```
 
@@ -121,7 +123,8 @@ $ sudo pip install cython
 $ wget https://github.com/ecell/ecell4/archive/master.zip   
 $ unzip master.zip
 $ cd ecell4-master
-# in this case we install ecell4 to $HOME/ecell4
+# By default install.sh tries to install E-Cell4 into /usr/local, in this case you need to use sudo.
+# In the following command, we install E-Cell4 into $HOME/ecell4. In this case you do NOT need to use sudo.
 $ PREFIX=$HOME/ecell4 PYTHONPATH=/path/to/lib/python2.7/site-packages ./install.sh py2
 ```
 
