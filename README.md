@@ -89,7 +89,7 @@ now you can see IPython notebooks, please open index.ipynb to see E-Cell4 models
 
 ```shell
 # dependent packages
-$ sudo apt-get install cmake libgsl0-dev libboost-dev libboost-regex-dev libhdf5-dev cython
+$ sudo apt-get install cmake libgsl0-dev libboost-regex-dev libhdf5-dev cython
 
 $ wget https://github.com/ecell/ecell4/archive/master.zip   
 $ unzip master.zip
@@ -102,7 +102,7 @@ $ PREFIX=$HOME/ecell4 ./install.sh py2
 
 ```shell
 # dependent packages
-$ sudo apt-get install cmake libgsl0-dev libboost-dev libboost-regex-dev libhdf5-dev cython3 python3-pip
+$ sudo apt-get install cmake libgsl0-dev libboost-regex-dev libhdf5-dev cython3 python3-pip
 
 $ wget https://github.com/ecell/ecell4/archive/master.zip   
 $ unzip master.zip
@@ -115,7 +115,7 @@ $ PREFIX=$HOME/ecell4 ./install.sh py3
 
 ```shell
 # dependent packages
-$ sudo apt-get install cmake libgsl0-dev libboost-dev libboost-regex-dev libhdf5-dev libatlas-base-dev python-dev python-pip
+$ sudo apt-get install cmake libgsl0-dev libboost-regex-dev libhdf5-dev libatlas-base-dev python-dev python-pip
 $ sudo pip install cython
 
 $ wget https://github.com/ecell/ecell4/archive/master.zip   
