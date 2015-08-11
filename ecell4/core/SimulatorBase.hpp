@@ -27,7 +27,7 @@ protected:
     {
         ObserverEvent(
             SimulatorBase<model_type, world_type>* sim, Observer* obs, const Real& t)
-            : EventScheduler::Event(t), sim_(sim), obs_(obs)
+            : EventScheduler::Event(t), sim_(sim), obs_(obs), running_(true)
         {
             time_ = obs_->next_time();
         }
@@ -39,14 +39,20 @@ protected:
 
         virtual void fire()
         {
-            obs_->fire(sim_, sim_->world().get());
+            running_ = obs_->fire(sim_, sim_->world().get());
             time_ = obs_->next_time();
+        }
+
+        bool running() const
+        {
+            return running_;
         }
 
     protected:
 
         SimulatorBase<model_type, world_type>* sim_;
         Observer* obs_;
+        bool running_;
     };
 
     struct observer_every
@@ -143,6 +149,22 @@ public:
         return run(duration, observers);
     }
 
+    bool fire_observers(
+        const std::vector<boost::shared_ptr<Observer> >::iterator begin,
+        const std::vector<boost::shared_ptr<Observer> >::iterator end)
+    {
+        bool retval = true;
+        for (std::vector<boost::shared_ptr<Observer> >::iterator
+            i(begin); i != end; ++i)
+        {
+            if (!(*i)->fire(this, world_.get()))
+            {
+                retval = false;
+            }
+        }
+        return retval;
+    }
+
     Real run(const Real& duration, std::vector<boost::shared_ptr<Observer> > observers)
     {
         time_t t_start, t_end;
@@ -168,41 +190,46 @@ public:
                 new ObserverEvent(this, (*i).get(), t())));
         }
 
-        while (true)
+        bool running = true;
+
+        while (running)
         {
             while (next_time() < std::min(upto, scheduler.next_time()))
             {
                 step();
-                for (std::vector<boost::shared_ptr<Observer> >::iterator
-                    i(observers.begin()); i != offset; ++i)
+                if (!fire_observers(observers.begin(), offset))
                 {
-                    (*i)->fire(this, world_.get());
+                    running = false;
+                    break;
                 }
             }
 
-            if (upto >= scheduler.next_time())
+            if (!running)
+            {
+                break;
+            }
+            else if (upto >= scheduler.next_time())
             {
                 step(scheduler.next_time());
-                for (std::vector<boost::shared_ptr<Observer> >::iterator
-                    i(observers.begin()); i != offset; ++i)
+                if (!fire_observers(observers.begin(), offset))
                 {
-                    (*i)->fire(this, world_.get());
+                    running = false;
                 }
 
                 EventScheduler::value_type top(scheduler.pop());
                 top.second->fire();
+
+                if (!static_cast<ObserverEvent*>(top.second.get())->running())
+                {
+                    running = false;
+                }
                 scheduler.add(top.second);
             }
             else
             {
                 step(upto);
-                for (std::vector<boost::shared_ptr<Observer> >::iterator
-                    i(observers.begin()); i != offset; ++i)
-                {
-                    (*i)->fire(this, world_.get());
-                }
-
-                break;
+                fire_observers(observers.begin(), offset);
+                running = false;
             }
         }
 

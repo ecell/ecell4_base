@@ -496,6 +496,11 @@ cdef extern from "ecell4/core/observers.hpp" namespace "ecell4":
         vector[Cpp_Species] targets()
         void reset()
 
+    cdef cppclass Cpp_TimeoutObserver "ecell4::TimeoutObserver":
+        Cpp_TimeoutObserver(Real) except +
+        Real interval()
+        void reset()
+
 ## FixedIntervalNumberObserver
 #  a python wrapper for Cpp_FixedIntervalNumberObserver
 cdef class Observer:
@@ -518,6 +523,9 @@ cdef class FixedIntervalCSVObserver:
 
 cdef class FixedIntervalTrajectoryObserver:
     cdef shared_ptr[Cpp_FixedIntervalTrajectoryObserver]* thisptr
+
+cdef class TimeoutObserver:
+    cdef shared_ptr[Cpp_TimeoutObserver]* thisptr
 
 ## Cpp_Shape
 #  ecell4::Shape
@@ -571,10 +579,12 @@ cdef extern from "ecell4/core/Rod.hpp" namespace "ecell4":
         Cpp_Rod(Cpp_Rod&)
         Real distance(Cpp_Real3&)
         Real is_inside(Cpp_Real3&)
-        Cpp_Real3& origin()
         void shift(Cpp_Real3&)
         Cpp_RodSurface surface()
         Integer dimension()
+        Cpp_Real3& origin()
+        Real length()
+        Real radius()
 
 ## Cpp_RodSurface
 # ecell4::RodSurface
@@ -590,6 +600,8 @@ cdef extern from "ecell4/core/Rod.hpp" namespace "ecell4":
         void shift(Cpp_Real3&)
         Cpp_Rod inside()
         Integer dimension()
+        Real length()
+        Real radius()
 
 ## Cpp_AABB
 #  ecell4::AABB
