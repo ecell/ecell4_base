@@ -444,8 +444,8 @@ cdef class ODENetworkModel:
         del self.thisptr
     def update_model(self):
         self.thisptr.get().update_model()
-    def has_model(self):
-        return self.thisptr.get().has_model()
+    def has_network_model(self):
+        return self.thisptr.get().has_network_model()
     def ode_reaction_rules(self):
         cdef vector[Cpp_ODEReactionRule] cpp_rules = self.thisptr.get().ode_reaction_rules()
         retval = []
@@ -484,6 +484,9 @@ cdef ODENetworkModel ODENetworkModel_from_Cpp_ODENetworkModel(
 cdef class ODESimulator2:
     def __cinit__(self, ODENetworkModel m, ODEWorld w):
         self.thisptr = new Cpp_ODESimulator2(deref(m.thisptr), deref(w.thisptr)) 
+    def __cinit__(self, NetworkModel m, ODEWorld w):
+        self.thisptr = new Cpp_ODESimulator2(deref(m.thisptr), deref(w.thisptr)) 
+
     def __dealloc__(self):
         del self.thisptr
     def initialize(self):

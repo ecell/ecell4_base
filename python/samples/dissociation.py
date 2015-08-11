@@ -16,7 +16,7 @@ def singlerun():
     w = ODEWorld(Real3(L, L, L))
     w.add_molecules(sp1, 60)
 
-    target = ODESimulator(m, w)
+    target = ODESimulator2(m, w)
 
     next_time = 0.0
     dt = 0.01
