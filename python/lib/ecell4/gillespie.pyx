@@ -197,13 +197,13 @@ cdef class GillespieSimulator:
         cdef vector[shared_ptr[Cpp_Observer]] tmp
 
         if observers is None:
-            return self.thisptr.run(duration)
+            self.thisptr.run(duration)
         elif isinstance(observers, collections.Iterable):
             for obs in observers:
                 tmp.push_back(deref((<Observer>(obs.as_base())).thisptr))
-            return self.thisptr.run(duration, tmp)
+            self.thisptr.run(duration, tmp)
         else:
-            return self.thisptr.run(duration,
+            self.thisptr.run(duration,
                 deref((<Observer>(observers.as_base())).thisptr))
 
 cdef GillespieSimulator GillespieSimulator_from_Cpp_GillespieSimulator(Cpp_GillespieSimulator* s):

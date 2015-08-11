@@ -522,7 +522,7 @@ cdef class TimeoutObserver:
 
     """
 
-    def __init__(self, Real interval):
+    def __init__(self, interval=None):
         """Constructor.
 
         Args:
@@ -531,9 +531,13 @@ cdef class TimeoutObserver:
         """
         pass  # XXX: Only used for doc string
 
-    def __cinit__(self, Real interval):
-        self.thisptr = new shared_ptr[Cpp_TimeoutObserver](
-            new Cpp_TimeoutObserver(interval))
+    def __cinit__(self, interval=None):
+        if interval is None:
+            self.thisptr = new shared_ptr[Cpp_TimeoutObserver](
+                new Cpp_TimeoutObserver())
+        else:
+            self.thisptr = new shared_ptr[Cpp_TimeoutObserver](
+                new Cpp_TimeoutObserver(<Real>interval))
 
     def __dealloc__(self):
         del self.thisptr
@@ -541,6 +545,10 @@ cdef class TimeoutObserver:
     def interval(self):
         """Return the timeout in seconds."""
         return self.thisptr.get().interval()
+
+    def duration(self):
+        """Return the last time to be called."""
+        return self.thisptr.get().duration()
 
     def as_base(self):
         """Clone self as a base class. This function is for developers."""

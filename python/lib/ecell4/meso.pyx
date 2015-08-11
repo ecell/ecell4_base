@@ -105,6 +105,9 @@ cdef class MesoscopicWorld:
     def on_structure(self, Species sp, Integer3 g):
         return self.thisptr.get().on_structure(deref(sp.thisptr), deref(g.thisptr))
 
+    def check_structure(self, Species sp, Integer3 g):
+        return self.thisptr.get().check_structure(deref(sp.thisptr), deref(g.thisptr))
+
     def list_species(self):
         cdef vector[Cpp_Species] species = self.thisptr.get().list_species()
 
@@ -240,13 +243,13 @@ cdef class MesoscopicSimulator:
         cdef vector[shared_ptr[Cpp_Observer]] tmp
 
         if observers is None:
-            return self.thisptr.run(duration)
+            self.thisptr.run(duration)
         elif isinstance(observers, collections.Iterable):
             for obs in observers:
                 tmp.push_back(deref((<Observer>(obs.as_base())).thisptr))
-            return self.thisptr.run(duration, tmp)
+            self.thisptr.run(duration, tmp)
         else:
-            return self.thisptr.run(duration,
+            self.thisptr.run(duration,
                 deref((<Observer>(observers.as_base())).thisptr))
 
 cdef MesoscopicSimulator MesoscopicSimulator_from_Cpp_MesoscopicSimulator(

@@ -422,7 +422,13 @@ public:
 public:
 
     TimeoutObserver(const Real interval)
-        : base_type(true), interval_(interval)
+        : base_type(true), interval_(interval), duration_(0.0)
+    {
+        ;
+    }
+
+    TimeoutObserver()
+        : base_type(true), interval_(inf), duration_(0.0)
     {
         ;
     }
@@ -441,9 +447,15 @@ public:
         return interval_;
     }
 
+    const Real duration() const
+    {
+        return duration_;
+    }
+
 protected:
 
     Real interval_;
+    Real duration_;
     time_t tstart_;
 };
 

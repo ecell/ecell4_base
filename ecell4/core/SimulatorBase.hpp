@@ -127,26 +127,20 @@ public:
         std::cerr << "WARN: set_dt(const Real&) was just ignored." << std::endl;
     }
 
-    Real run(const Real& duration)
+    void run(const Real& duration)
     {
-        time_t t_start, t_end;
-        time(&t_start);
-
         const Real upto(t() + duration);
         while (step(upto))
         {
             ; // do nothing
         }
-
-        time(&t_end);
-        return difftime(t_end, t_start);
     }
 
-    Real run(const Real& duration, const boost::shared_ptr<Observer>& observer)
+    void run(const Real& duration, const boost::shared_ptr<Observer>& observer)
     {
         std::vector<boost::shared_ptr<Observer> > observers;
         observers.push_back(observer);
-        return run(duration, observers);
+        run(duration, observers);
     }
 
     bool fire_observers(
@@ -165,11 +159,8 @@ public:
         return retval;
     }
 
-    Real run(const Real& duration, std::vector<boost::shared_ptr<Observer> > observers)
+    void run(const Real& duration, std::vector<boost::shared_ptr<Observer> > observers)
     {
-        time_t t_start, t_end;
-        time(&t_start);
-
         const Real upto(t() + duration);
 
         std::vector<boost::shared_ptr<Observer> >::iterator
@@ -194,42 +185,41 @@ public:
 
         while (running)
         {
-            while (next_time() < std::min(upto, scheduler.next_time()))
+            while (true)
             {
+                if (next_time() >= scheduler.next_time())
+                {
+                    step(scheduler.next_time());
+                    if (!fire_observers(observers.begin(), offset))
+                    {
+                        running = false;
+                    }
+
+                    EventScheduler::value_type top(scheduler.pop());
+                    top.second->fire();
+
+                    if (!static_cast<ObserverEvent*>(top.second.get())->running())
+                    {
+                        running = false;
+                    }
+                    scheduler.add(top.second);
+                    break;
+                }
+                else if (next_time() >= upto)
+                {
+                    step(upto);
+                    fire_observers(observers.begin(), offset);
+                    running = false;
+                    break;
+                }
+
                 step();
+
                 if (!fire_observers(observers.begin(), offset))
                 {
                     running = false;
                     break;
                 }
-            }
-
-            if (!running)
-            {
-                break;
-            }
-            else if (upto >= scheduler.next_time())
-            {
-                step(scheduler.next_time());
-                if (!fire_observers(observers.begin(), offset))
-                {
-                    running = false;
-                }
-
-                EventScheduler::value_type top(scheduler.pop());
-                top.second->fire();
-
-                if (!static_cast<ObserverEvent*>(top.second.get())->running())
-                {
-                    running = false;
-                }
-                scheduler.add(top.second);
-            }
-            else
-            {
-                step(upto);
-                fire_observers(observers.begin(), offset);
-                running = false;
             }
         }
 
@@ -238,9 +228,6 @@ public:
         {
             (*i)->finalize(world_.get());
         }
-
-        time(&t_end);
-        return difftime(t_end, t_start);
     }
 
 protected:

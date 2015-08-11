@@ -67,9 +67,9 @@ cdef extern from "ecell4/ode/ODESimulator.hpp" namespace "ecell4::ode":
         vector[Cpp_ReactionRule] last_reactions()
         shared_ptr[Cpp_Model] model()
         shared_ptr[Cpp_ODEWorld] world()
-        Real run(Real)
-        Real run(Real, shared_ptr[Cpp_Observer])
-        Real run(Real, vector[shared_ptr[Cpp_Observer]])
+        void run(Real)
+        void run(Real, shared_ptr[Cpp_Observer])
+        void run(Real, vector[shared_ptr[Cpp_Observer]])
 
 ## ODESimulator
 #  a python wrapper for Cpp_ODESimulator
