@@ -341,7 +341,7 @@ public:
         : base_type( boost::shared_ptr<ODENetworkModel> (new ODENetworkModel(model)), world), 
         dt_(inf), abs_tol_(1e-10), rel_tol_(1e-6)
     {
-        this->network_model_ = model;
+        ;
     }
 
     void initialize()
@@ -360,7 +360,7 @@ public:
     void step(void)
     {
         step(next_time());
-        if ( this->is_set_networkmodel() )
+        if ( this->model_->has_network_model() )
         {
             this->model_->update_model();
         }
@@ -427,10 +427,6 @@ public:
         rel_tol_ = rel_tol;
     }
 
-    bool is_set_networkmodel() const
-    {
-        return this->network_model_.expired();
-    }
 protected:
     std::pair<deriv_func, jacobi_func> generate_system() const;
 protected:
@@ -439,7 +435,6 @@ protected:
     Real dt_;
     // Integer num_steps_;
     Real abs_tol_, rel_tol_;
-    boost::weak_ptr<NetworkModel> network_model_;
 };
 
 } // ode

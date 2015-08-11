@@ -22,7 +22,7 @@ ODENetworkModel::ODENetworkModel(const boost::shared_ptr<ecell4::NetworkModel> m
 
 void ODENetworkModel::update_model(void)
 {
-    if (this->has_model() == false)
+    if (this->has_network_model() == false)
     {
         throw IllegalState("ecell4::NetworkModel object has not been registered");
     }

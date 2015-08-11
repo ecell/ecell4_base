@@ -50,7 +50,7 @@ public:
     ~ODENetworkModel();
 
     void update_model();
-    bool has_model() const
+    bool has_network_model() const
     {
         return !(this->expanded_.expired());
     }
