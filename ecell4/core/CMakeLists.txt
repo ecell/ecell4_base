@@ -26,7 +26,7 @@ set(HPP_FILES
     Shape.hpp Sphere.hpp Cylinder.hpp AABB.hpp StructureType.hpp
     ParticleSpaceCellListImpl.hpp LatticeSpaceCellListImpl.hpp
     PlanarSurface.hpp Rod.hpp collision.hpp
-    comparators.hpp SimulatorFactory.hpp Mesh.hpp ShapeOperators.hpp)
+    comparators.hpp SimulatorFactory.hpp Mesh.hpp shape_operators.hpp)
 
 if(WITH_VTK)
   find_package(VTK)

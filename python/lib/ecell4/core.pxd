@@ -630,7 +630,7 @@ cdef extern from "ecell4/core/Mesh.hpp" namespace "ecell4":
 
 ## Cpp_Complement
 #  ecell4::Complement
-cdef extern from "ecell4/core/ShapeOperators.hpp" namespace "ecell4":
+cdef extern from "ecell4/core/shape_operators.hpp" namespace "ecell4":
     cdef cppclass Cpp_Complement "ecell4::Complement":
         Cpp_Complement(shared_ptr[Cpp_Shape]&, shared_ptr[Cpp_Shape]&)
         Cpp_Complement(Cpp_Complement&)
