@@ -9,7 +9,7 @@ __all__ = [
 
 def run_simulation(
         t, y0={}, volume=1.0, model=None, solver='ode',
-        factory=None, is_netfree=False, species_list=None, as_observer=False,
+        factory=None, is_netfree=False, species_list=None, return_type=None,
         without_reset=False, plot_type='matplotlib', plot_args={}):
     """Run a simulation with the given model and plot the result on IPython
     notebook with matplotlib.
@@ -22,20 +22,24 @@ def run_simulation(
         Initial condition.
     volume: Real, optional
     model: Model, optional
-    plot_type: str, optional
-        Choose the way to plot from 'matplotlib' or 'nyaplot'.
-        If None, show no plot.
-    plot_args: dict, optional
-        Arguments for plotting. If plot_type is None, just ignored.
     solver: str, optional
         Solver type. Choose one from 'ode', 'gillespie', 'lattice', 'meso',
-        'bd' and 'egfrd'.
+        'bd' and 'egfrd'. Default is 'ode'.
+    species_list: list of str, optional
+        A list of names of Species observed. If None, log all.
+        Default is None.
+    plot_type: str, optional
+        Choose the way to plot from 'matplotlib' or 'nyaplot'.
+        If None, show no plot. Default is 'matplotlib'.
+    plot_args: dict, optional
+        Arguments for plotting. If plot_type is None, just ignored.
+    return_type: str, optional
+        Choose a type of return value from 'array', 'observer' or None.
+        If None, return nothing. Default is None.
     factory: Factory, optional
     is_netfree: bool, optional
         Whether the model is netfree or not. When a model is given as an
-        argument, just ignored.
-    as_observer: bool, optional
-        Return an Observer, but not an array.
+        argument, just ignored. Default is False.
     """
     import ecell4
 
@@ -94,7 +98,7 @@ def run_simulation(
     elif plot_type == 'nyaplot':
         ecell4.viz.plot_number_observer_with_nya(obs, **plot_args)
 
-    if as_observer:
+    if return_type == 'observer':
         return obs
-
-    return obs.data()
+    elif return_type == 'array':
+        return obs.data()
