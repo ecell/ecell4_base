@@ -8,6 +8,8 @@ import json
 import base64
 import copy
 import random
+import types
+
 
 def __parse_world(
         world, radius=None, species_list=None, max_count=None,
@@ -448,7 +450,20 @@ def plot_number_observer(*args, **kwargs):
         observers = [(obs, None) for obs in args]
 
     color_map = {}
+    data, xidx = None, 0
     for obs, fmt in observers:
+        if isinstance(obs, types.FunctionType):
+            if data is None:
+                raise ValueError("A function must be given after an observer.")
+            y = [obs(xi) for xi in data[xidx]]
+            opts = plot_opts.copy()
+            opts["label"] = obs.__name__
+            if fmt is None:
+                ax.plot(data[xidx], y, **opts)
+            else:
+                ax.plot(data[xidx], y, fmt, **opts)
+            continue
+
         data = numpy.array(obs.data()).T
 
         if "x" in kwargs.keys():
