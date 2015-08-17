@@ -560,6 +560,30 @@ cdef extern from "ecell4/core/Sphere.hpp" namespace "ecell4":
         Cpp_Sphere inside()
         Integer dimension()
 
+## Cpp_Cylinder
+#  ecell4::Cylinder
+cdef extern from "ecell4/core/Cylinder.hpp" namespace "ecell4":
+    cdef cppclass Cpp_Cylinder "ecell4::Cylinder":
+        Cpp_Cylinder()
+        Cpp_Cylinder(Cpp_Real3&, Real, Cpp_Real3&, Real)
+        Cpp_Cylinder(Cpp_Cylinder&)
+        Real distance(Cpp_Real3&)
+        Real is_inside(Cpp_Real3&)
+        Cpp_CylindricalSurface surface()
+        Integer dimension()
+
+## Cpp_CylindricalSurface
+#  ecell4::CylindricalSurface
+cdef extern from "ecell4/core/Cylinder.hpp" namespace "ecell4":
+    cdef cppclass Cpp_CylindricalSurface "ecell4::CylindricalSurface":
+        Cpp_CylindricalSurface()
+        Cpp_CylindricalSurface(Cpp_Real3&, Real, Cpp_Real3&, Real)
+        Cpp_CylindricalSurface(Cpp_CylindricalSurface&)
+        Real distance(Cpp_Real3&)
+        Real is_inside(Cpp_Real3&)
+        Cpp_Cylinder inside()
+        Integer dimension()
+
 ## Cpp_PlanarSurface
 # ecell4::PlanarSurface
 cdef extern from "ecell4/core/PlanarSurface.hpp" namespace "ecell4":
@@ -631,6 +655,12 @@ cdef extern from "ecell4/core/Mesh.hpp" namespace "ecell4":
 ## Cpp_Complement
 #  ecell4::Complement
 cdef extern from "ecell4/core/shape_operators.hpp" namespace "ecell4":
+    cdef cppclass Cpp_Union "ecell4::Union":
+        Cpp_Union(shared_ptr[Cpp_Shape]&, shared_ptr[Cpp_Shape]&)
+        Cpp_Union(Cpp_Union&)
+        Real is_inside(Cpp_Real3&)
+        Integer dimension()
+
     cdef cppclass Cpp_Complement "ecell4::Complement":
         Cpp_Complement(shared_ptr[Cpp_Shape]&, shared_ptr[Cpp_Shape]&)
         Cpp_Complement(Cpp_Complement&)
@@ -651,6 +681,16 @@ cdef class Sphere:
 #  a python wrapper for Cpp_SphericalSurface
 cdef class SphericalSurface:
     cdef shared_ptr[Cpp_SphericalSurface]* thisptr
+
+## Cylinder
+#  a python wrapper for Cpp_Cylinder
+cdef class Cylinder:
+    cdef shared_ptr[Cpp_Cylinder]* thisptr
+
+## CylindricalSurface
+#  a python wrapper for Cpp_CylindricalSurface
+cdef class CylindricalSurface:
+    cdef shared_ptr[Cpp_CylindricalSurface]* thisptr
 
 ## PlanarSurface
 #  a python wrapper for Cpp_PlanarSurface
@@ -678,6 +718,11 @@ cdef class MeshSurface:
 cdef class AABB:
     cdef shared_ptr[Cpp_AABB]* thisptr
 
+## Union
+#  a python wrapper for Cpp_Union
+cdef class Union:
+    cdef shared_ptr[Cpp_Union]* thisptr
+
 ## Complement
 #  a python wrapper for Cpp_Complement
 cdef class Complement:
@@ -685,4 +730,6 @@ cdef class Complement:
 
 cdef Sphere Sphere_from_Cpp_Sphere(Cpp_Sphere* p)
 cdef SphericalSurface SphericalSurface_from_Cpp_SphericalSurface(Cpp_SphericalSurface* p)
+cdef Cylinder Cylinder_from_Cpp_Cylinder(Cpp_Cylinder* p)
+cdef CylindricalSurface CylindricalSurface_from_Cpp_CylindricalSurface(Cpp_CylindricalSurface* p)
 cdef AABB AABB_from_Cpp_AABB(Cpp_AABB* p)

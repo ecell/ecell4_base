@@ -70,7 +70,8 @@ Real distance_point_cylinder(const Real3& pos, const Cylinder& c)
         }
     }
 
-    if (dr > radius)
+    if (dr > 0)
+    // if (dr > radius)
     {
         // pos is somewhere 'parallel' to the cylinder.
         return dr;

@@ -54,6 +54,20 @@ void Rod::shift(const Real3& vec)
 
 Real Rod::is_inside(const Real3& pos) const
 {
+    // if (pos[0] < origin_[0] - length_ * 0.5)
+    // {
+    //     const Real3 edge(origin_[0] - length_ * 0.5, origin_[1], origin_[2]);
+    //     return ecell4::length(pos - edge) - radius_;
+    // }
+    // else if (pos[0] > origin_[0] + length_ * 0.5)
+    // {
+    //     const Real3 edge(origin_[0] + length_ * 0.5, origin_[1], origin_[2]);
+    //     return ecell4::length(pos - edge) - radius_;
+    // }
+    // else
+    // {
+    //     return sqrt(pow_2(pos[1] - origin_[1]) + pow_2(pos[2] - origin_[2])) - radius_;
+    // }
     return distance(pos);
 }
 

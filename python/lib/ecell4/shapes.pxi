@@ -17,7 +17,7 @@ cdef class Shape:
         del self.thisptr
 
     def is_inside(self, Real3 pos):
-        """"Return if the given point is inside or not.
+        """Return if the given point is inside or not.
 
         Args:
           pos (Real3): A position.
@@ -75,7 +75,7 @@ cdef class Sphere:
         return self.thisptr.get().distance(deref(pos.thisptr))
 
     def is_inside(self, Real3 pos):
-        """"Return if the given point is inside or not.
+        """Return if the given point is inside or not.
 
         Args:
           pos (Real3): A position.
@@ -149,7 +149,7 @@ cdef class SphericalSurface:
         return self.thisptr.get().distance(deref(pos.thisptr))
 
     def is_inside(self, Real3 pos):
-        """"Return if the given point is inside or not.
+        """Return if the given point is inside or not.
 
         Args:
           pos (Real3): A position.
@@ -175,6 +175,158 @@ cdef class SphericalSurface:
         cdef shared_ptr[Cpp_Shape] *new_obj = new shared_ptr[Cpp_Shape](
             <Cpp_Shape*>(new Cpp_SphericalSurface(
                 <Cpp_SphericalSurface> deref(self.thisptr.get()))))
+        retval = Shape()
+        del retval.thisptr
+        retval.thisptr = new_obj
+        return retval
+
+cdef class Cylinder:
+    """A class representing a cylinder shape, which is available to define
+    structures.
+
+    Cylinder(center, radius, axis, half_height)
+
+    """
+
+    def __init__(self, Real3 center, Real radius, Real3 axis, Real half_height):
+        """Constructor.
+
+        Args:
+          center (Real3): The center position of a sphere.
+          radius (float): The radius of a sphere.
+          axis (Real3): The unit axis vector.
+          half_height (float): The half of the length.
+
+        """
+        pass  # XXX: Only used for doc string
+
+    def __cinit__(self, Real3 center, Real radius, Real3 axis, Real half_height):
+        self.thisptr = new shared_ptr[Cpp_Cylinder](
+            new Cpp_Cylinder(deref(center.thisptr), radius, deref(axis.thisptr), half_height))
+
+    def __dealloc__(self):
+        del self.thisptr
+
+    def dimension(self):
+        """Return a dimension of this shape."""
+        return self.thisptr.get().dimension()
+
+    def distance(self, Real3 pos):
+        """Return a minimum distance from the given point to the surface.
+
+        Args:
+          pos (Real3): A position.
+
+        Returns:
+          distance (float): A minimum distance from the given point.
+            Negative if the given point is inside.
+
+        """
+        return self.thisptr.get().distance(deref(pos.thisptr))
+
+    def is_inside(self, Real3 pos):
+        """Return if the given point is inside or not.
+
+        Args:
+          pos (Real3): A position.
+
+        Returns:
+          value (float): Zero or negative if the given point is inside.
+
+        """
+        return self.thisptr.get().is_inside(deref(pos.thisptr))
+
+    def surface(self):
+        """Create and return a surface shape.
+
+        Returns:
+          shape (CylindricalSurface): The surface shape.
+
+        """
+        cdef Cpp_CylindricalSurface shape = self.thisptr.get().surface()
+        return CylindricalSurface_from_Cpp_CylindricalSurface(address(shape))
+
+    def as_base(self):
+        """Clone self as a base class. This function is for developers."""
+        cdef shared_ptr[Cpp_Shape] *new_obj = new shared_ptr[Cpp_Shape](
+            <Cpp_Shape*>(new Cpp_Cylinder(
+                <Cpp_Cylinder> deref(self.thisptr.get()))))
+        retval = Shape()
+        del retval.thisptr
+        retval.thisptr = new_obj
+        return retval
+
+cdef class CylindricalSurface:
+    """A class representing a hollow cylindrical surface, which is
+    available to define structures.
+
+    CylindricalSurface(center, radius, axis, half_height)
+
+    """
+
+    def __init__(self, Real3 center, Real radius, Real3 axis, Real half_height):
+        """Constructor.
+
+        Args:
+          center (Real3): The center position of a sphere.
+          radius (float): The radius of a sphere.
+          axis (Real3): The unit axis vector.
+          half_height (float): The half of the length.
+
+        """
+        pass  # XXX: Only used for doc string
+
+    def __init__(self, Real3 center, Real radius, Real3 axis, Real half_height):
+        self.thisptr = new shared_ptr[Cpp_CylindricalSurface](
+            new Cpp_CylindricalSurface(deref(center.thisptr), radius, deref(axis.thisptr), half_height))
+
+    def __dealloc__(self):
+        del self.thisptr
+
+    def dimension(self):
+        """Return a dimension of this shape."""
+        return self.thisptr.get().dimension()
+
+    def distance(self, Real3 pos):
+        """Return a minimum distance from the given point to the surface.
+
+        Args:
+          pos (Real3): A position.
+
+        Returns:
+          distance (float): A minimum distance from the given point.
+            Negative if the given point is inside.
+
+        """
+        return self.thisptr.get().distance(deref(pos.thisptr))
+
+    def is_inside(self, Real3 pos):
+        """Return if the given point is inside or not.
+
+        Args:
+          pos (Real3): A position.
+
+        Returns:
+          value (float): Zero or negative if the given point is inside.
+
+        """
+        return self.thisptr.get().is_inside(deref(pos.thisptr))
+
+    def inside(self):
+        """Create and return a volume shape.
+
+        Returns:
+          shape (Cylinder): The volume shape.
+
+        """
+        cdef Cpp_Cylinder shape = self.thisptr.get().inside()
+        return Cylinder_from_Cpp_Cylinder(address(shape))
+
+    def as_base(self):
+        """Clone self as a base class. This function is for developers."""
+        cdef shared_ptr[Cpp_Shape] *new_obj = new shared_ptr[Cpp_Shape](
+            <Cpp_Shape*>(new Cpp_CylindricalSurface(
+                <Cpp_CylindricalSurface> deref(self.thisptr.get()))))
         retval = Shape()
         del retval.thisptr
         retval.thisptr = new_obj
@@ -227,7 +379,7 @@ cdef class PlanarSurface:
         return self.thisptr.get().dimension()
 
     def is_inside(self, Real3 pos):
-        """"Return if the given point is inside or not.
+        """Return if the given point is inside or not.
 
         Args:
           pos (Real3): A position.
@@ -294,7 +446,7 @@ cdef class Rod:
         return self.thisptr.get().distance(deref(pos.thisptr))
 
     def is_inside(self, Real3 pos):
-        """"Return if the given point is inside or not.
+        """Return if the given point is inside or not.
 
         Args:
           pos (Real3): A position.
@@ -309,6 +461,14 @@ cdef class Rod:
         """Return a center position of mass"""
         cdef Cpp_Real3 origin = self.thisptr.get().origin()
         return Real3_from_Cpp_Real3(address(origin))
+
+    def length(self):
+        """Return a length of a cylinder part."""
+        return self.thisptr.get().length()
+
+    def radius(self):
+        """Return a radius of a cylinder."""
+        return self.thisptr.get().radius()
 
     def shift(self, Real3 vec):
         """Move the center toward the given displacement
@@ -385,7 +545,7 @@ cdef class RodSurface:
         return self.thisptr.get().distance(deref(pos.thisptr))
 
     def is_inside(self, Real3 pos):
-        """"Return if the given point is inside or not.
+        """Return if the given point is inside or not.
 
         Args:
           pos (Real3): A position.
@@ -400,6 +560,14 @@ cdef class RodSurface:
         """Return a center position of mass"""
         cdef Cpp_Real3 origin = self.thisptr.get().origin()
         return Real3_from_Cpp_Real3(address(origin))
+
+    def length(self):
+        """Return a length of a cylinder part."""
+        return self.thisptr.get().length()
+
+    def radius(self):
+        """Return a radius of a cylinder."""
+        return self.thisptr.get().radius()
 
     def shift(self, Real3 vec):
         """Move the center toward the given displacement
@@ -473,7 +641,7 @@ cdef class AABB:
         return self.thisptr.get().distance(deref(pos.thisptr))
 
     def is_inside(self, Real3 pos):
-        """"Return if the given point is inside or not.
+        """Return if the given point is inside or not.
 
         Args:
           pos (Real3): A position.
@@ -545,7 +713,7 @@ cdef class MeshSurface:
         return self.thisptr.get().dimension()
 
     def is_inside(self, Real3 pos):
-        """"Return if the given point is inside or not.
+        """Return if the given point is inside or not.
 
         Args:
           pos (Real3): A position.
@@ -566,14 +734,61 @@ cdef class MeshSurface:
         retval.thisptr = new_obj
         return retval
 
+cdef class Union:
+
+    def __init__(self, a, b):
+        """Constructor.
+
+        Args:
+          a (Shape): The first shape
+          b (Shape): The second shape
+
+        """
+        pass  # XXX: Only used for doc string
+
+    def __cinit__(self, a, b):
+        self.thisptr = new shared_ptr[Cpp_Union](
+            new Cpp_Union(
+                deref((<Shape>a.as_base()).thisptr),
+                deref((<Shape>b.as_base()).thisptr)))
+
+    def __dealloc__(self):
+        del self.thisptr
+
+    def dimension(self):
+        """Return a dimension of this shape."""
+        return self.thisptr.get().dimension()
+
+    def is_inside(self, Real3 pos):
+        """Return if the given point is inside or not.
+
+        Args:
+          pos (Real3): A position.
+
+        Returns:
+          value (float): Zero or negative if the given point is inside.
+
+        """
+        return self.thisptr.get().is_inside(deref(pos.thisptr))
+
+    def as_base(self):
+        """Clone self as a base class. This function is for developers."""
+        cdef shared_ptr[Cpp_Shape] *new_obj = new shared_ptr[Cpp_Shape](
+            <Cpp_Shape*>(new Cpp_Union(
+                <Cpp_Union> deref(self.thisptr.get()))))
+        retval = Shape()
+        del retval.thisptr
+        retval.thisptr = new_obj
+        return retval
+
 cdef class Complement:
 
     def __init__(self, a, b):
         """Constructor.
 
         Args:
-          center (Real3): The center position of a sphere.
-          radius (float): The radius of a sphere.
+          a (Shape): The first shape
+          b (Shape): The second shape
 
         """
         pass  # XXX: Only used for doc string
@@ -592,7 +807,7 @@ cdef class Complement:
         return self.thisptr.get().dimension()
 
     def is_inside(self, Real3 pos):
-        """"Return if the given point is inside or not.
+        """Return if the given point is inside or not.
 
         Args:
           pos (Real3): A position.
@@ -626,6 +841,23 @@ cdef SphericalSurface SphericalSurface_from_Cpp_SphericalSurface(
     cdef shared_ptr[Cpp_SphericalSurface] *new_obj = new shared_ptr[Cpp_SphericalSurface](
         new Cpp_SphericalSurface(<Cpp_SphericalSurface> deref(shape)))
     retval = SphericalSurface(Real3(0, 0, 0), 0)
+    del retval.thisptr
+    retval.thisptr = new_obj
+    return retval
+
+cdef Cylinder Cylinder_from_Cpp_Cylinder(Cpp_Cylinder* shape):
+    cdef shared_ptr[Cpp_Cylinder] *new_obj = new shared_ptr[Cpp_Cylinder](
+        new Cpp_Cylinder(<Cpp_Cylinder> deref(shape)))
+    retval = Cylinder(Real3(0, 0, 0), 0, Real3(0, 0, 0), 0)
+    del retval.thisptr
+    retval.thisptr = new_obj
+    return retval
+
+cdef CylindricalSurface CylindricalSurface_from_Cpp_CylindricalSurface(
+        Cpp_CylindricalSurface* shape):
+    cdef shared_ptr[Cpp_CylindricalSurface] *new_obj = new shared_ptr[Cpp_CylindricalSurface](
+        new Cpp_CylindricalSurface(<Cpp_CylindricalSurface> deref(shape)))
+    retval = CylindricalSurface(Real3(0, 0, 0), 0, Real3(0, 0, 0), 0)
     del retval.thisptr
     retval.thisptr = new_obj
     return retval
