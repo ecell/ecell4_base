@@ -181,38 +181,11 @@ public:
                 new ObserverEvent(this, (*i).get(), t())));
         }
 
-        bool running = true;
-
-        while (running)
+        while (true)
         {
-            while (true)
+            bool running = true;
+            while (next_time() < std::min(scheduler.next_time(), upto))
             {
-                if (next_time() >= scheduler.next_time())
-                {
-                    step(scheduler.next_time());
-                    if (!fire_observers(observers.begin(), offset))
-                    {
-                        running = false;
-                    }
-
-                    EventScheduler::value_type top(scheduler.pop());
-                    top.second->fire();
-
-                    if (!static_cast<ObserverEvent*>(top.second.get())->running())
-                    {
-                        running = false;
-                    }
-                    scheduler.add(top.second);
-                    break;
-                }
-                else if (next_time() >= upto)
-                {
-                    step(upto);
-                    fire_observers(observers.begin(), offset);
-                    running = false;
-                    break;
-                }
-
                 step();
 
                 if (!fire_observers(observers.begin(), offset))
@@ -220,6 +193,34 @@ public:
                     running = false;
                     break;
                 }
+            }
+
+            if (!running)
+            {
+                break;
+            }
+            else if (upto >= scheduler.next_time())
+            {
+                step(scheduler.next_time());
+                if (!fire_observers(observers.begin(), offset))
+                {
+                    running = false;
+                }
+                EventScheduler::value_type top(scheduler.pop());
+                top.second->fire();
+                running = (
+                    running && static_cast<ObserverEvent*>(top.second.get())->running());
+                scheduler.add(top.second);
+                if (!running)
+                {
+                    break;
+                }
+            }
+            else
+            {
+                step(upto);
+                fire_observers(observers.begin(), offset);
+                break;
             }
         }
 
