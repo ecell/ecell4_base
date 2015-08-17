@@ -128,6 +128,11 @@ public:
         return check_structure(serial, global2coord(g));
     }
 
+    inline bool check_structure(const Species& sp, const Integer3& g) const
+    {
+        return check_structure(sp.serial(), g);
+    }
+
     virtual void reset(const Real3& edge_lengths, const Integer3& matrix_sizes) = 0;
 
 #ifdef WITH_HDF5

@@ -281,6 +281,11 @@ public:
         return on_structure(sp, global2coord(g));
     }
 
+    bool check_structure(const Species& sp, const Integer3& g) const
+    {
+        return cs_->check_structure(sp, g);
+    }
+
     Real get_volume(const Species& sp) const;
 
     const std::vector<Species>& species() const;

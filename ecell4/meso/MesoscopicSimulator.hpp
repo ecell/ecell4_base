@@ -59,7 +59,8 @@ protected:
         }
 
         virtual void initialize() = 0;
-        virtual void inc(const Species& sp, const coordinate_type& c, const Integer val = +1) = 0;
+        virtual void inc(
+            const Species& sp, const coordinate_type& c, const Integer val = +1) = 0;
         virtual const Real propensity(const coordinate_type& c) const = 0;
 
         inline void dec(const Species& sp, const coordinate_type& c)

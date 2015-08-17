@@ -317,7 +317,8 @@ bool TimeoutObserver::fire(const Simulator* sim, const Space* space)
 {
     time_t tnow;
     time(&tnow);
-    if (difftime(tnow, tstart_) >= interval_)
+    duration_ = difftime(tnow, tstart_);
+    if (duration_ >= interval_)
     {
         return false;
     }
@@ -328,6 +329,7 @@ void TimeoutObserver::reset()
 {
     base_type::reset();
     time(&tstart_);
+    duration_ = 0.0;
 }
 
 } // ecell4
