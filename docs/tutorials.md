@@ -29,23 +29,7 @@ These three components are independent, but `World` is often dependent on a type
 - [Model Advanced](http://nbviewer.ipython.org/github/ecell/ecell4/blob/develop/ipynb/Tutorials/ModelAdvanced.ipynb)
 - [Simple equilibrium model](http://nbviewer.ipython.org/github/ecell/ecell4/blob/develop/ipynb/Tutorials/SimpleEquilibrium.ipynb)
 
-## Example
 
-Here is an extremely simple example with a reversible binding reaction:
-
-
-    %matplotlib inline
-    import numpy
-    from ecell4 import *
-    
-    with reaction_rules():
-        A + B == C | (0.01, 0.3)
-    
-    y = run_simulation(
-        numpy.linspace(0, 10, 100), {'A': 60, 'B': 60}, solver='ode')
-
-
-![png](output_7_0.png)
 
 
 More examples are available below:
