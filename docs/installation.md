@@ -150,18 +150,14 @@ Here is an extremely simple example with a reversible binding reaction:
 ![png](https://raw.githubusercontent.com/ecell/ecell4/develop/docs/output_7_0.png)
 
 
-## Running E-Cell4 with IPython notebook (by docker)
+## Dockerized E-Cell4 IPython notebooks
 
-We support docker images too.
 If you use docker, you can easily try E-Cell4.
 You can pull E-Cell4 container with `docker pull ecell/ecell4`
 
-### Docker (Linux)
-
 ```shell
-$ sudo docker pull ecell4/ecell4:develop
-$ sudo docker run --rm -i -t -p 8888:8888 ecell/ecell4:develop
+$ sudo docker pull ecell/ecell4
+$ sudo docker run -d -p 443:8888 -e "PASSWORD=MakeAPassword" ecell/ecell4
 ```
 
-Open localhost:8888 with your favorite browser.
-
+You'll now be able to E-Cell4 notebooks at https://THE_IP_RUNNING_DOCKER:443
