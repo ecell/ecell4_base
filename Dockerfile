@@ -1,4 +1,4 @@
-FROM jupyter/notebook
+FROM ipython/notebook
 
 MAINTAINER Kozo Nishida <knishida@riken.jp>
 
