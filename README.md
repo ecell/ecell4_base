@@ -162,27 +162,8 @@ Here is an extremely simple example with a reversible binding reaction:
 ## Running E-Cell4 with IPython notebook (by docker)
 
 We support docker images too.
-If you use docker, you can easily test E-Cell4.
-
-### boot2docker (Windows or Mac)
-
-The latest version of boot2docker sets up a host only network adaptor which provides access to the container's ports.
-
-```shell
-$ boot2docker ssh
-######## in boot2docker
-docker@boot2docker:~$ docker pull ecell/ecell4:develop
-docker@boot2docker:~$ docker run --rm -i -t -p 8888:8888 ecell/ecell4:develop
-```
-
-Then you should be able to access the E-Cell4 IPython notebook server using the IP address reported to you using:
-
-```shell
-$ boot2docker ip
-```
-
-Typically, it is 192.168.59.103, then please open 192.168.59.103:8888 with your favorite browser.
-(But it could get changed by Virtualbox's DHCP implementation.)
+If you use docker, you can easily try E-Cell4.
+You can pull E-Cell4 container with `docker pull ecell/ecell4`
 
 ### Docker (Linux)
 
@@ -193,7 +174,3 @@ $ sudo docker run --rm -i -t -p 8888:8888 ecell/ecell4:develop
 
 Open localhost:8888 with your favorite browser.
 
-
-## IPython notebooks (tutorials) for E-Cell4
-
-Please see http://nbviewer.ipython.org/github/ecell/ecell4/blob/develop/ipynb/index.ipynb
