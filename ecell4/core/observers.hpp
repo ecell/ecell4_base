@@ -28,25 +28,10 @@ public:
         ; // do nothing
     }
 
-    virtual const Real next_time() const
-    {
-        return inf;
-    }
-
-    virtual void initialize(const Space* space)
-    {
-        ;
-    }
-
-    virtual void finalize(const Space* space)
-    {
-        ;
-    }
-
-    virtual void reset()
-    {
-        ;
-    }
+    virtual const Real next_time() const;
+    virtual void initialize(const Space* space);
+    virtual void finalize(const Space* space);
+    virtual void reset();
 
     virtual bool fire(const Simulator* sim, const Space* space) = 0;
 
@@ -82,6 +67,7 @@ public:
 
     const Real next_time() const;
     const Integer num_steps() const;
+    const Integer count() const;
     virtual void initialize(const Space* space);
     virtual bool fire(const Simulator* sim, const Space* space);
     virtual void reset();
@@ -225,37 +211,16 @@ public:
         ;
     }
 
-    const Real next_time() const
-    {
-        if (count_ >= static_cast<Integer>(t_.size()))
-        {
-            return inf;
-        }
-        return t_[count_];
-    }
+    const Real next_time() const;
 
     const Integer num_steps() const
     {
         return num_steps_;
     }
 
-    virtual void initialize(const Space* space)
-    {
-        ;
-    }
-
-    virtual bool fire(const Simulator* sim, const Space* space)
-    {
-        ++num_steps_;
-        ++count_;
-        return true;
-    }
-
-    virtual void reset()
-    {
-        num_steps_ = 0;
-        count_ = 0;
-    }
+    virtual void initialize(const Space* space);
+    virtual bool fire(const Simulator* sim, const Space* space);
+    virtual void reset();
 
 protected:
 
@@ -428,7 +393,7 @@ public:
     }
 
     TimeoutObserver()
-        : base_type(true), interval_(inf), duration_(0.0)
+        : base_type(true), interval_(inf), duration_(0.0), acc_(0.0)
     {
         ;
     }
@@ -439,6 +404,7 @@ public:
     }
 
     virtual void initialize(const Space* space);
+    virtual void finalize(const Space* space);
     virtual bool fire(const Simulator* sim, const Space* space);
     virtual void reset();
 
@@ -452,10 +418,16 @@ public:
         return duration_;
     }
 
+    const Real accumulation() const
+    {
+        return acc_;
+    }
+
 protected:
 
     Real interval_;
     Real duration_;
+    Real acc_;
     time_t tstart_;
 };
 

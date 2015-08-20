@@ -550,6 +550,10 @@ cdef class TimeoutObserver:
         """Return the last time to be called."""
         return self.thisptr.get().duration()
 
+    def accumulation(self):
+        """Return the accumulation time."""
+        return self.thisptr.get().accumulation()
+
     def as_base(self):
         """Clone self as a base class. This function is for developers."""
         retval = Observer()

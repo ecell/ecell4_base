@@ -500,6 +500,7 @@ cdef extern from "ecell4/core/observers.hpp" namespace "ecell4":
         Cpp_TimeoutObserver() except +
         Cpp_TimeoutObserver(Real) except +
         Real duration()
+        Real accumulation()
         Real interval()
         void reset()
 

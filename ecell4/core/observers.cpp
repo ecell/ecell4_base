@@ -4,6 +4,26 @@
 namespace ecell4
 {
 
+const Real Observer::next_time() const
+{
+    return inf;
+}
+
+void Observer::initialize(const Space* space)
+{
+    ;
+}
+
+void Observer::finalize(const Space* space)
+{
+    ;
+}
+
+void Observer::reset()
+{
+    ;
+}
+
 const Real FixedIntervalObserver::next_time() const
 {
     return t0_ + dt_ * count_;
@@ -14,24 +34,38 @@ const Integer FixedIntervalObserver::num_steps() const
     return num_steps_;
 }
 
+const Integer FixedIntervalObserver::count() const
+{
+    return count_;
+}
+
 void FixedIntervalObserver::initialize(const Space* space)
 {
-    t0_ = space->t();
-    count_ = 0;
-    // num_steps_ = 0;
+    if (count_ == 0)
+    {
+        t0_ = space->t();
+    }
+    else
+    {
+        while (next_time() < space->t())
+        {
+            ++count_;
+        }
+    }
 }
 
 bool FixedIntervalObserver::fire(const Simulator* sim, const Space* space)
 {
-    // tnext_ += dt_;
-    ++count_;
     ++num_steps_;
+    ++count_;
     return true;
 }
 
 void FixedIntervalObserver::reset()
 {
     num_steps_ = 0;
+    count_ = 0;
+    t0_ = 0.0; //DUMMY
 }
 
 void FixedIntervalNumberObserver::initialize(const Space* space)
@@ -71,7 +105,10 @@ void NumberObserver::initialize(const Space* space)
 
 void NumberObserver::finalize(const Space* space)
 {
-    logger_.log(space);
+    if (logger_.data.size() == 0 || logger_.data.back()[0] != space->t())
+    {
+        logger_.log(space);
+    }
     base_type::finalize(space);
 }
 
@@ -105,6 +142,36 @@ NumberLogger::data_container_type NumberObserver::data() const
 NumberLogger::species_container_type NumberObserver::targets() const
 {
     return logger_.targets;
+}
+
+const Real TimingObserver::next_time() const
+{
+    if (count_ >= static_cast<Integer>(t_.size()))
+    {
+        return inf;
+    }
+    return t_[count_];
+}
+
+void TimingObserver::initialize(const Space* space)
+{
+    while (next_time() < space->t())
+    {
+        ++count_;
+    }
+}
+
+bool TimingObserver::fire(const Simulator* sim, const Space* space)
+{
+    ++num_steps_;
+    ++count_;
+    return true;
+}
+
+void TimingObserver::reset()
+{
+    num_steps_ = 0;
+    count_ = 0;
 }
 
 void TimingNumberObserver::initialize(const Space* space)
@@ -310,7 +377,14 @@ const std::vector<std::vector<Real3> >& FixedIntervalTrajectoryObserver::data() 
 void TimeoutObserver::initialize(const Space* space)
 {
     base_type::initialize(space);
-    reset();
+    duration_ = 0.0;
+    time(&tstart_);
+}
+
+void TimeoutObserver::finalize(const Space* space)
+{
+    base_type::finalize(space);
+    acc_ += duration_;
 }
 
 bool TimeoutObserver::fire(const Simulator* sim, const Space* space)
@@ -328,8 +402,9 @@ bool TimeoutObserver::fire(const Simulator* sim, const Space* space)
 void TimeoutObserver::reset()
 {
     base_type::reset();
-    time(&tstart_);
     duration_ = 0.0;
+    acc_ = 0.0;
+    time(&tstart_);
 }
 
 } // ecell4
