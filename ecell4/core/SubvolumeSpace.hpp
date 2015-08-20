@@ -235,6 +235,17 @@ public:
             static_cast<Integer>(floor(pos[2] * matrix_sizes_[2] / edge_lengths_[2])));
     }
 
+    Real3 coord2position(const coordinate_type& c) const
+    {
+        const Real3 lengths(subvolume_edge_lengths());
+        const Integer3 g(coord2global(c));
+        const Real3 center(
+            lengths[0] * (g[0] + 0.5),
+            lengths[1] * (g[1] + 0.5),
+            lengths[2] * (g[2] + 0.5));
+        return center;
+    }
+
     Integer num_molecules(const Species& sp) const;
     Integer num_molecules_exact(const Species& sp) const;
 
@@ -328,6 +339,10 @@ public:
 protected:
 
     void reserve_species(const Species& sp, const coordinate_type& c);
+
+    void add_structure3(const Species& sp, const boost::shared_ptr<const Shape>& shape);
+    void add_structure2(const Species& sp, const boost::shared_ptr<const Shape>& shape);
+    bool is_surface_subvolume(const coordinate_type& c, const boost::shared_ptr<const Shape>& shape);
 
 protected:
 

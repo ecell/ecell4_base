@@ -135,13 +135,6 @@ SubvolumeSpaceVectorImpl::coordinate_type SubvolumeSpaceVectorImpl::get_neighbor
 void SubvolumeSpaceVectorImpl::add_structure(
     const Species& sp, const boost::shared_ptr<const Shape>& shape)
 {
-    // structure_container_type::const_iterator i(structures_.find(sp));
-    // if (i != structures_.end())
-    // {
-    //     throw NotSupported("not supported yet.");
-    // }
-    // structures_.insert(std::make_pair(sp, shape));
-
     structure_matrix_type::const_iterator it(structure_matrix_.find(sp.serial()));
     if (it != structure_matrix_.end())
     {
@@ -150,22 +143,90 @@ void SubvolumeSpaceVectorImpl::add_structure(
         throw AlreadyExists(message.str());
     }
 
+    switch (shape->dimension())
+    {
+    case Shape::THREE:
+        add_structure3(sp, shape);
+        return;
+    case Shape::TWO:
+        add_structure2(sp, shape);
+        return;
+    case Shape::ONE:
+    case Shape::UNDEF:
+        break;
+    }
+
+    throw NotSupported("The dimension of a shape must be two or three.");
+}
+
+void SubvolumeSpaceVectorImpl::add_structure3(
+    const Species& sp, const boost::shared_ptr<const Shape>& shape)
+{
     std::vector<Integer> overlap(num_subvolumes());
-    const Real3 lengths(subvolume_edge_lengths());
     for (std::vector<Integer>::size_type i(0); i != overlap.size(); ++i)
     {
-        const Integer3 g(coord2global(i));
-        // const Real3 corner(
-        //     lengths[0] * g[0], lengths[1] * g[1], lengths[2] * g[2]);
-        // const bool is_overlap(shape->test_AABB(corner, corner + lengths));
-        const Real3 center(
-            lengths[0] * (g[0] + 0.5),
-            lengths[1] * (g[1] + 0.5),
-            lengths[2] * (g[2] + 0.5));
-        const bool is_overlap(shape->is_inside(center) <= 0);
-        overlap[i] = (is_overlap ? 1 : 0);
+        if (shape->is_inside(coord2position(i)) <= 0)
+        {
+            overlap[i] = 1;
+        }
+        else
+        {
+            overlap[i] = 0;
+        }
     }
     structure_matrix_.insert(std::make_pair(sp.serial(), overlap));
+}
+
+void SubvolumeSpaceVectorImpl::add_structure2(
+    const Species& sp, const boost::shared_ptr<const Shape>& shape)
+{
+    std::vector<Integer> overlap(num_subvolumes());
+    for (std::vector<Integer>::size_type i(0); i != overlap.size(); ++i)
+    {
+        if (is_surface_subvolume(i, shape))
+        {
+            overlap[i] = 1;
+        }
+        else
+        {
+            overlap[i] = 0;
+        }
+    }
+    structure_matrix_.insert(std::make_pair(sp.serial(), overlap));
+}
+
+bool SubvolumeSpaceVectorImpl::is_surface_subvolume(
+    const coordinate_type& c, const boost::shared_ptr<const Shape>& shape)
+{
+    const Real3 lengths(subvolume_edge_lengths());
+    const Real3 center(coord2position(c));
+
+    if (shape->is_inside(center) > 0)
+    {
+        return false;
+    }
+
+    for (unsigned int dim(0); dim < 3 * 3 * 3; ++dim)
+    {
+        const int x(static_cast<int>(dim / 9));
+        const int y(static_cast<int>((dim - x * 9) / 3));
+        const int z(dim - (x * 3 + y) * 3);
+
+        if ((x == 1 && y == 1 && z == 1)
+            || (x != 1 && y != 1 && z != 1))
+        {
+            continue;
+        }
+
+        const Real3 shift(
+            (x - 1) * lengths[0], (y - 1) * lengths[1], (z - 1) * lengths[2]);
+        const Real3 neighbor = center + shift;
+        if (shape->is_inside(neighbor) > 0)
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 bool SubvolumeSpaceVectorImpl::check_structure(
