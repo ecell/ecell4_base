@@ -1,8 +1,7 @@
 #!/bin/bash -x
 
 PYTHON_MAJOR_VERSION=$1
-VTK_INCLUDE_PATH=
-# VTK_INCLUDE_PATH=/usr/include/vtk-5.8
+VTK_INCLUDE_PATH=/usr/include/vtk-5.8
 WITH_VTK=0
 WITH_HDF5=0
 
