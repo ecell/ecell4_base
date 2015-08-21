@@ -116,11 +116,6 @@ protected:
         {
             const std::pair<ReactionRule::reactant_container_type, Integer>
                 retval(__draw(c));
-            if (retval.second == 0)
-            {
-                return std::make_pair(ReactionRule(), c);
-            }
-
             const std::vector<ReactionRule> reactions(generate(retval.first));
 
             assert(retval.second > 0);
@@ -298,7 +293,7 @@ protected:
 
         const Real propensity(const coordinate_type& c) const
         {
-            return rr_.k();
+            return rr_.k() * world().subvolume();
         }
     };
 
@@ -374,7 +369,7 @@ protected:
                 }
             }
 
-            return std::make_pair(ReactionRule::reactant_container_type(), 0);
+            throw IllegalState("Never reach here.");
         }
 
         const Real propensity(const coordinate_type& c) const
@@ -492,7 +487,7 @@ protected:
                 }
             }
 
-            return std::make_pair(ReactionRule::reactant_container_type(), 0);
+            throw IllegalState("Never reach here.");
         }
 
         const Real propensity(const coordinate_type& c) const
@@ -593,7 +588,7 @@ protected:
                     }
                 }
             }
-            return std::make_pair(ReactionRule::reactant_container_type(), 0);
+            throw IllegalState("Never reach here.");
         }
 
         const Real propensity(const coordinate_type& c) const
@@ -649,28 +644,14 @@ protected:
                     it(rr_.reactants().begin());
                     it != rr_.reactants().end(); ++it)
                 {
-                    if (sim_->world()->has_structure(*it))
-                    {
-                        ;  //XXX: inefficient
-                    }
-                    else
-                    {
-                        sim_->decrement_molecules(*it, coord_);
-                    }
+                    sim_->decrement_molecules(*it, coord_);
                 }
 
                 for (ReactionRule::product_container_type::const_iterator
                     it(rr_.products().begin());
                     it != rr_.products().end(); ++it)
                 {
-                    if (sim_->world()->has_structure(*it))
-                    {
-                        ;  //XXX: inefficient
-                    }
-                    else
-                    {
-                        sim_->increment_molecules(*it, tgt_);
-                    }
+                    sim_->increment_molecules(*it, tgt_);
                 }
             }
 

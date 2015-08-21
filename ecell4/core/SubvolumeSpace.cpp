@@ -81,6 +81,11 @@ void SubvolumeSpaceVectorImpl::add_molecules(
     matrix_type::iterator i(matrix_.find(sp));
     if (i == matrix_.end())
     {
+        if (has_structure(sp))
+        {
+            return;
+        }
+
         reserve_species(sp, c);
         i = matrix_.find(sp);
     }
@@ -93,6 +98,11 @@ void SubvolumeSpaceVectorImpl::remove_molecules(
     matrix_type::iterator i(matrix_.find(sp));
     if (i == matrix_.end())
     {
+        if (has_structure(sp))
+        {
+            return;
+        }
+
         std::ostringstream message;
         message << "Speices [" << sp.serial() << "] not found";
         throw NotFound(message.str());
