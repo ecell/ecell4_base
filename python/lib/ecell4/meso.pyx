@@ -23,16 +23,28 @@ cdef class MesoscopicWorld:
                 self.thisptr = new shared_ptr[Cpp_MesoscopicWorld](
                     new Cpp_MesoscopicWorld(filename))
         elif rng is None:
-            self.thisptr = new shared_ptr[Cpp_MesoscopicWorld](
-                new Cpp_MesoscopicWorld(
-                    deref((<Real3>edge_lengths).thisptr),
-                    deref((<Integer3>matrix_sizes).thisptr)))
+            if isinstance(matrix_sizes, Integer3):
+                self.thisptr = new shared_ptr[Cpp_MesoscopicWorld](
+                    new Cpp_MesoscopicWorld(
+                        deref((<Real3>edge_lengths).thisptr),
+                        deref((<Integer3>matrix_sizes).thisptr)))
+            else:
+                self.thisptr = new shared_ptr[Cpp_MesoscopicWorld](
+                    new Cpp_MesoscopicWorld(
+                        deref((<Real3>edge_lengths).thisptr),
+                        <Real>matrix_sizes))
         else:
-            # XXX: GSLRandomNumberGenerator -> RandomNumberGenerator
-            self.thisptr = new shared_ptr[Cpp_MesoscopicWorld](
-                new Cpp_MesoscopicWorld(
-                    deref((<Real3>edge_lengths).thisptr),
-                    deref((<Integer3>matrix_sizes).thisptr), deref(rng.thisptr)))
+            if isinstance(matrix_sizes, Integer3):
+                # XXX: GSLRandomNumberGenerator -> RandomNumberGenerator
+                self.thisptr = new shared_ptr[Cpp_MesoscopicWorld](
+                    new Cpp_MesoscopicWorld(
+                        deref((<Real3>edge_lengths).thisptr),
+                        deref((<Integer3>matrix_sizes).thisptr), deref(rng.thisptr)))
+            else:
+                self.thisptr = new shared_ptr[Cpp_MesoscopicWorld](
+                    new Cpp_MesoscopicWorld(
+                        deref((<Real3>edge_lengths).thisptr),
+                        <Real>matrix_sizes, deref(rng.thisptr)))
 
     def __dealloc__(self):
         # XXX: Here, we release shared pointer,
@@ -59,6 +71,16 @@ cdef class MesoscopicWorld:
 
     def subvolume(self):
         return self.thisptr.get().subvolume()
+
+    def num_subvolumes(self, sp = None):
+        if sp is None:
+            return self.thisptr.get().num_subvolumes()
+        else:
+            return self.thisptr.get().num_subvolumes(deref((<Species>sp).thisptr))
+
+    def subvolume_edge_lengths(self):
+        cdef Cpp_Real3 lengths = self.thisptr.get().subvolume_edge_lengths()
+        return Real3_from_Cpp_Real3(address(lengths))
 
     def num_molecules(self, Species sp, c = None):
         if c is None:
@@ -102,11 +124,21 @@ cdef class MesoscopicWorld:
     def get_volume(self, Species sp):
         return self.thisptr.get().get_volume(deref(sp.thisptr))
 
+    def has_structure(self, Species sp):
+        return self.thisptr.get().has_structure(deref(sp.thisptr))
+
     def on_structure(self, Species sp, Integer3 g):
         return self.thisptr.get().on_structure(deref(sp.thisptr), deref(g.thisptr))
 
     def check_structure(self, Species sp, Integer3 g):
         return self.thisptr.get().check_structure(deref(sp.thisptr), deref(g.thisptr))
+
+    def get_occupancy(self, Species sp, g):
+        if isinstance(g, Integer3):
+            return self.thisptr.get().get_occupancy(
+                deref(sp.thisptr), deref((<Integer3>g).thisptr))
+        else:
+            return self.thisptr.get().get_occupancy(deref(sp.thisptr), <Integer>g)
 
     def list_species(self):
         cdef vector[Cpp_Species] species = self.thisptr.get().list_species()

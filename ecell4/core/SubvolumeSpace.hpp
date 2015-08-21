@@ -75,6 +75,7 @@ public:
     virtual const Integer3 matrix_sizes() const = 0;
     virtual const Real3 subvolume_edge_lengths() const = 0;
     virtual const Integer num_subvolumes() const = 0;
+    virtual const Integer num_subvolumes(const Species& sp) const = 0;
     virtual const Real subvolume() const = 0;
 
     virtual coordinate_type global2coord(const Integer3& g) const = 0;
@@ -129,6 +130,11 @@ public:
     inline Real get_occupancy(const Species& sp, const coordinate_type& coord) const
     {
         return get_occupancy(sp.serial(), coord);
+    }
+
+    inline Real get_occupancy(const Species& sp, const Integer3& g) const
+    {
+        return get_occupancy(sp.serial(), global2coord(g));
     }
 
     // virtual Shape::dimension_kind get_dimension(const Species::serial_type& serial) const = 0;
@@ -222,6 +228,8 @@ public:
     {
         return matrix_sizes_[0] * matrix_sizes_[1] * matrix_sizes_[2];
     }
+
+    const Integer num_subvolumes(const Species& sp) const;
 
     const Real subvolume() const
     {
