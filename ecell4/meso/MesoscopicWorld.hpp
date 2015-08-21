@@ -276,6 +276,21 @@ public:
     void add_structure(const Species& sp, const boost::shared_ptr<const Shape>& shape);
     bool on_structure(const Species& sp, const coordinate_type& coord) const;
 
+    bool has_structure(const Species& sp) const
+    {
+        return cs_->has_structure(sp);
+    }
+
+    Real get_occupancy(const Species& sp, const coordinate_type& coord) const
+    {
+        return cs_->get_occupancy(sp, coord);
+    }
+
+    // Shape::dimension_kind get_dimension(const Species& sp) const
+    // {
+    //     return cs_->get_dimension(sp);
+    // }
+
     inline bool on_structure(const Species& sp, const Integer3& g) const
     {
         return on_structure(sp, global2coord(g));

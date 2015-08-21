@@ -162,36 +162,39 @@ void SubvolumeSpaceVectorImpl::add_structure(
 void SubvolumeSpaceVectorImpl::add_structure3(
     const Species& sp, const boost::shared_ptr<const Shape>& shape)
 {
-    std::vector<Integer> overlap(num_subvolumes());
-    for (std::vector<Integer>::size_type i(0); i != overlap.size(); ++i)
+    structure_cell_type overlap(num_subvolumes());
+    for (structure_cell_type::size_type i(0); i != overlap.size(); ++i)
     {
-        if (shape->is_inside(coord2position(i)) <= 0)
-        {
-            overlap[i] = 1;
-        }
-        else
+        if (shape->is_inside(coord2position(i)) > 0)
         {
             overlap[i] = 0;
         }
+        else
+        {
+            overlap[i] = 1;
+        }
     }
+    // structures_.insert(std::make_pair(sp.serial(), Shape::THREE));
     structure_matrix_.insert(std::make_pair(sp.serial(), overlap));
 }
 
 void SubvolumeSpaceVectorImpl::add_structure2(
     const Species& sp, const boost::shared_ptr<const Shape>& shape)
 {
-    std::vector<Integer> overlap(num_subvolumes());
-    for (std::vector<Integer>::size_type i(0); i != overlap.size(); ++i)
+    structure_cell_type overlap(num_subvolumes());
+    for (structure_cell_type::size_type i(0); i != overlap.size(); ++i)
     {
         if (is_surface_subvolume(i, shape))
         {
-            overlap[i] = 1;
+            // overlap[i] = 1;
+            overlap[i] = unit_area();
         }
         else
         {
             overlap[i] = 0;
         }
     }
+    // structures_.insert(std::make_pair(sp.serial(), Shape::TWO));
     structure_matrix_.insert(std::make_pair(sp.serial(), overlap));
 }
 
@@ -243,14 +246,15 @@ bool SubvolumeSpaceVectorImpl::check_structure(
 
 void SubvolumeSpaceVectorImpl::update_structure(
     const Species::serial_type& serial, const coordinate_type& coord,
-    const Integer& value)
+    const Real& value)
 {
     structure_matrix_type::iterator i(structure_matrix_.find(serial));
     if (i == structure_matrix_.end())
     {
-        std::vector<Integer> overlap(num_subvolumes());
+        structure_cell_type overlap(num_subvolumes());
         overlap[coord] = value;
         structure_matrix_.insert(std::make_pair(serial, overlap));
+        // structures_.insert(std::make_pair(serial, Shape::THREE));  //XXX: as a default
     }
     else
     {

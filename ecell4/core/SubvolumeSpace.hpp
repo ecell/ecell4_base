@@ -76,6 +76,7 @@ public:
     virtual const Real3 subvolume_edge_lengths() const = 0;
     virtual const Integer num_subvolumes() const = 0;
     virtual const Real subvolume() const = 0;
+
     virtual coordinate_type global2coord(const Integer3& g) const = 0;
     virtual Integer3 coord2global(const coordinate_type& c) const = 0;
     virtual Integer3 position2global(const Real3& pos) const = 0;
@@ -116,12 +117,28 @@ public:
         const Species& sp, const boost::shared_ptr<const Shape>& shape) = 0;
     virtual bool check_structure(
         const Species::serial_type& serial, const coordinate_type& coord) const = 0;
-    virtual bool has_structure(const Species& sp) const = 0;
     virtual Real get_volume(const Species& sp) const = 0;
     virtual std::vector<Species::serial_type> list_structures() const = 0;
     virtual void update_structure(
         const Species::serial_type& serial, const coordinate_type& coord,
-        const Integer& value) = 0;
+        const Real& value) = 0;
+    virtual bool has_structure(const Species& sp) const = 0;
+
+    virtual Real get_occupancy(const Species::serial_type& serial, const coordinate_type& coord) const = 0;
+
+    inline Real get_occupancy(const Species& sp, const coordinate_type& coord) const
+    {
+        return get_occupancy(sp.serial(), coord);
+    }
+
+    // virtual Shape::dimension_kind get_dimension(const Species::serial_type& serial) const = 0;
+    // inline Shape::dimension_kind get_dimension(const Species& sp) const
+    // {
+    //     return get_dimension(sp.serial());
+    // }
+
+    // virtual void set_dimension(
+    //     const Species::serial_type& serial, const Shape::dimension_kind& ndim);
 
     inline bool check_structure(const Species::serial_type& serial, const Integer3& g) const
     {
@@ -155,8 +172,10 @@ public:
 
     typedef std::vector<Integer> cell_type;
     typedef utils::get_mapper_mf<Species, cell_type>::type matrix_type;
-    typedef std::map<Species, boost::shared_ptr<const Shape> > structure_container_type;
-    typedef utils::get_mapper_mf<Species::serial_type, cell_type>::type structure_matrix_type; //XXX: just avoid to use std::vector<bool>
+
+    // typedef utils::get_mapper_mf<Species::serial_type, Shape::dimension_kind>::type structure_container_type;
+    typedef std::vector<Real> structure_cell_type;
+    typedef utils::get_mapper_mf<Species::serial_type, structure_cell_type>::type structure_matrix_type;
 
 public:
 
@@ -258,9 +277,10 @@ public:
     bool check_structure(const Species::serial_type& serial, const coordinate_type& coord) const;
     Real get_volume(const Species& sp) const;
     std::vector<Species::serial_type> list_structures() const;
+
     void update_structure(
         const Species::serial_type& serial, const coordinate_type& coord,
-        const Integer& value);
+        const Real& value);
 
     bool has_structure(const Species& sp) const
     {
@@ -269,7 +289,7 @@ public:
         {
             return false;
         }
-        for (std::vector<Integer>::const_iterator j((*i).second.begin());
+        for (structure_cell_type::const_iterator j((*i).second.begin());
             j != (*i).second.end(); ++j)
         {
             if ((*j) > 0)
@@ -279,6 +299,46 @@ public:
         }
         return false;
     }
+
+    inline Real unit_area() const
+    {
+        const Real3 l(subvolume_edge_lengths());
+        return (l[0] * l[1] + l[0] * l[2] + l[1] * l[2]) / (3 * l[0] * l[1] * l[2]);
+    }
+
+    Real get_occupancy(const Species::serial_type& serial, const coordinate_type& coord) const
+    {
+        structure_matrix_type::const_iterator i(structure_matrix_.find(serial));
+        if (i == structure_matrix_.end())
+        {
+            return 0.0;
+        }
+        return (*i).second[coord];
+    }
+
+    // Shape::dimension_kind get_dimension(const Species::serial_type& serial) const
+    // {
+    //     structure_container_type::const_iterator i(structures_.find(serial));
+    //     if (i == structures_.end())
+    //     {
+    //         throw NotFound("No correspoinding structure was found.");
+    //     }
+    //     return (*i).second;
+    // }
+
+    // void set_dimension(
+    //     const Species::serial_type& serial, const Shape::dimension_kind& ndim)
+    // {
+    //     structure_container_type::iterator i(structures_.find(serial));
+    //     if (i == structures_.end())
+    //     {
+    //         throw NotFound("No correspoinding structure was found.");
+    //     }
+    //     else
+    //     {
+    //         (*i).second = ndim;
+    //     }
+    // }
 
     coordinate_type get_neighbor(const coordinate_type& c, const Integer rnd) const;
 
