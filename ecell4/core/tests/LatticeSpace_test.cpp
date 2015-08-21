@@ -170,7 +170,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_coordinate_position_translation)
     for (Integer i(0); i < 12; ++i)
     {
         const Real3 neighbor(
-                space.private2position(space.get_neighbor(origin, i)));
+                space.private2position(space.get_neighbor_private(origin, i)));
         const LatticeSpace::private_coordinate_type coord(
                 space.position2private(origin_p * 0.7 + neighbor * 0.3));
         BOOST_CHECK_EQUAL(origin, coord);
@@ -333,7 +333,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_neighbor)
         for (int i(0); i < 12; ++i)
         {
             LatticeSpace::private_coordinate_type neighbor(
-                    space.get_neighbor(space.coord2private(coord), i));
+                    space.get_neighbor_private(space.coord2private(coord), i));
             if (!space.is_inside(neighbor))
                 continue;
             Real3 pos(space.coordinate2position(space.private2coord(neighbor)));

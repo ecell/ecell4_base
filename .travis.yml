@@ -1,19 +1,18 @@
 language: cpp
-script: sudo bash -c 'export PREFIX=/usr/local; export PYTHONPATH=/usr/local/lib/python2.7/site-packages:$PYTHONPATH; ./install.sh py2'
+script: sudo bash -c 'export PREFIX=/usr/local; export PYTHONPATH=/usr/local/lib/python2.7/site-packages:$PYTHONPATH;
+  ./install.sh py2'
 compiler:
- - gcc
- - clang
-
-#install: sudo pip install -r requirements.txt
-
+- gcc
+- clang
 before_install:
- - echo 'yes' | sudo add-apt-repository ppa:apokluda/boost1.53
- - sudo apt-get update -qq
-# - sudo apt-get install -qq libboost1.53-all-dev libgsl0-dev libhdf5-serial-dev python-dev python-pip
- - sudo apt-get install -qq libboost1.53-all-dev libgsl0-dev libhdf5-serial-dev python-dev python-setuptools python-numpy python-scipy
- - sudo easy_install cython
-
+- echo 'yes' | sudo add-apt-repository ppa:apokluda/boost1.53
+- sudo apt-get update -qq
+- sudo apt-get install -qq libboost1.53-all-dev libgsl0-dev libhdf5-serial-dev python-dev
+  python-setuptools python-numpy python-scipy
+- sudo easy_install cython
 notifications:
   webhooks:
     urls:
-      - http://dev.e-cell.org/ecell-bot/travis/notification
+    - http://dev.e-cell.org/ecell-bot/travis/notification
+  slack:
+    secure: kCN8PCrinRfaDFKn93TMrYY5LberBt8GHDHOtSbR7B1Zmo9Pr/uHxxqoXlu1g9XYxgs2lud/AKo0gKMu8n+QHWeAXaOwe8GSccEqBdilXDVp4fzO96jT2R82RYljQ2wAR5ug1YIACRq06mtFn6U7GRZRnpRI4VsEUFLJPljZ+UM=

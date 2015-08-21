@@ -288,6 +288,9 @@ Integer LatticeWorld::add_structure(
         return add_structure3(sp, shape);
     case Shape::TWO:
         return add_structure2(sp, shape);
+    case Shape::ONE:
+    case Shape::UNDEF:
+        break;
     }
 
     throw NotSupported("The dimension of a shape must be two or three.");
@@ -415,7 +418,7 @@ bool LatticeWorld::is_surface_voxel(
     for (Integer i(0); i < 12; ++i)
     {
         if (shape->is_inside(global2position((*space_).private_coord2global(
-            (*space_).get_neighbor(private_coord, i)))) > 0)
+            (*space_).get_neighbor_private(private_coord, i)))) > 0)
         {
             return true;
         }
@@ -431,7 +434,7 @@ Integer LatticeWorld::add_neighbors(const Species& sp,
     const LatticeWorld::molecule_info_type info(get_molecule_info(sp));
     for (Integer i(0); i < 12; ++i)
     {
-        const private_coordinate_type n((*space_).get_neighbor(center, i));
+        const private_coordinate_type n((*space_).get_neighbor_private(center, i));
         if (new_voxel_private(Voxel(sp, n, info.radius, info.D, info.loc)).second)
         {
             ++count;
@@ -516,7 +519,7 @@ LatticeWorld::check_neighbor_private(
     for (unsigned int rnd(0); rnd < 12; ++rnd)
     {
         const private_coordinate_type
-            neighbor((*space_).get_neighbor(coord, rnd));
+            neighbor((*space_).get_neighbor_private(coord, rnd));
         const MolecularTypeBase* mt(get_molecular_type_private(neighbor));
         const std::string
             serial(mt->is_vacant() ? "" : mt->species().serial());
@@ -535,7 +538,7 @@ LatticeWorld::check_neighbor_private(
         tmp[rng()->uniform_int(0, tmp.size() - 1)], true);
 
     // const Integer rnd(rng()->uniform_int(0, 11));
-    // const private_coordinate_type neighbor((*space_).get_neighbor(coord, rnd));
+    // const private_coordinate_type neighbor((*space_).get_neighbor_private(coord, rnd));
     // bool flg = get_molecular_type_private(neighbor)->is_vacant(); //XXX: loc
     // return std::make_pair(neighbor, flg);
 }

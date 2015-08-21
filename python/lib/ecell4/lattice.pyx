@@ -150,6 +150,9 @@ cdef class LatticeWorld:
     def get_neighbor(self, coord, nrand):
         return self.thisptr.get().get_neighbor(coord, nrand)
 
+    def get_neighbor_private(self, coord, nrand):
+        return self.thisptr.get().get_neighbor_private(coord, nrand)
+
     def has_particle(self, ParticleID pid):
         return self.thisptr.get().has_particle(deref(pid.thisptr))
 
