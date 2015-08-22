@@ -1,4 +1,9 @@
-import vtk
+try:
+    import vtk
+except ImportError:
+    raise RuntimeError(
+        'ecell4.extra.vtkview needs a python support for VTK. Install python-vtk.')
+
 import ecell4
 import os.path
 import argparse
