@@ -111,6 +111,10 @@ $ PREFIX=$HOME/ecell4 PYTHONPATH=/path/to/lib/python2.7/site-packages ./install.
 
 ## Running E-Cell4
 
+### Simple examples
+
+Here are two extremely simple examples, See http://ecell4.readthedocs.org/en/develop/tutorials/ for more details on running E-Cell4.
+
 ```
 # If you set PREFIX to $HOME/ecell4, make sure to append $HOME/ecell4/lib to LD_LIBRARY_PATH 
 $ LD_LIBRARY_PATH=$HOME/ecell4/lib:$LD_LIBRARY_PATH PYTHONPATH=$HOME/ecell4/lib/python2.7/site-packages python
@@ -124,9 +128,7 @@ A.B.C
 >>> 
 ```
 
-## Example
-
-Here is an extremely simple example with a reversible binding reaction:
+#### A reversible binding reaction
 
 
     %matplotlib inline
