@@ -8,9 +8,9 @@ set(CPP_FILES
     CompartmentSpace.cpp Context.cpp Integer3.cpp Journal.cpp ReactionRule.cpp
     LatticeSpace.cpp Model.cpp NetworkModel.cpp NetfreeModel.cpp ParticleSpace.cpp
     Real3.cpp RandomNumberGenerator.cpp Species.cpp UnitSpecies.cpp
-    AABB.cpp Sphere.cpp Cylinder.cpp PlanarSurface.cpp Rod.cpp collision.cpp
-    SubvolumeSpace.cpp ParticleSpaceCellListImpl.cpp
-    LatticeSpaceCellListImpl.cpp)
+    Sphere.cpp Cylinder.cpp SubvolumeSpace.cpp ParticleSpaceCellListImpl.cpp
+    LatticeSpaceCellListImpl.cpp collision.cpp Rod.cpp AABB.cpp PlanarSurface.cpp
+    Mesh.cpp observers.cpp)
 
 set(HPP_FILES
     CompartmentSpace.hpp DynamicPriorityQueue.hpp LatticeSpace.hpp
@@ -26,10 +26,21 @@ set(HPP_FILES
     Shape.hpp Sphere.hpp Cylinder.hpp AABB.hpp StructureType.hpp
     ParticleSpaceCellListImpl.hpp LatticeSpaceCellListImpl.hpp
     PlanarSurface.hpp Rod.hpp collision.hpp
-    comparators.hpp SimulatorFactory.hpp)
+    comparators.hpp SimulatorFactory.hpp Mesh.hpp shape_operators.hpp)
 
+if(WITH_VTK)
+  find_package(VTK)
+  if(VTK_FOUND)
+    include(${VTK_USE_FILE})
+    set(HAVE_VTK 1)
+  endif()
+endif()
+
+if(WITH_HDF5)
 find_package(HDF5 COMPONENTS C CXX HL REQUIRED)
 include_directories(${HDF5_INCLUDE_DIRS})
+set(WITH_HDF5 1)
+endif()
 
 # find_package(Boost COMPONENTS regex)
 find_package(Boost REQUIRED)
@@ -61,8 +72,16 @@ configure_file(
 
 add_library(ecell4-core SHARED
     ${CPP_FILES} ${HPP_FILES} "${PROJECT_BINARY_DIR}/ecell4/core/config.h")
-target_link_libraries(ecell4-core
-    ${HDF5_LIBRARIES} ${Boost_LIBRARIES} ${GSL_LIBRARIES} ${GSL_CBLAS_LIBRARIES})
+
+if(WITH_VTK AND NOT VTK_LIBRARIES)
+    target_link_libraries(ecell4-core
+        ${HDF5_LIBRARIES} ${Boost_LIBRARIES} ${GSL_LIBRARIES} ${GSL_CBLAS_LIBRARIES}
+        vtkHybrid vtkWidgets)
+else()
+    target_link_libraries(ecell4-core
+        ${HDF5_LIBRARIES} ${Boost_LIBRARIES} ${GSL_LIBRARIES} ${GSL_CBLAS_LIBRARIES}
+        ${VTK_LIBRARIES})
+endif()
 
 add_subdirectory(tests)
 

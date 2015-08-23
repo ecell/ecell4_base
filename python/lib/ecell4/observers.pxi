@@ -514,3 +514,54 @@ cdef class FixedIntervalTrajectoryObserver:
     def reset(self):
         """Reset the internal state."""
         self.thisptr.get().reset()
+
+cdef class TimeoutObserver:
+    """An ``Observer``class to stop simulation at the given calculation time.
+
+    TimeoutObserver(interval)
+
+    """
+
+    def __init__(self, interval=None):
+        """Constructor.
+
+        Args:
+            interval (float): timeout in seconds.
+
+        """
+        pass  # XXX: Only used for doc string
+
+    def __cinit__(self, interval=None):
+        if interval is None:
+            self.thisptr = new shared_ptr[Cpp_TimeoutObserver](
+                new Cpp_TimeoutObserver())
+        else:
+            self.thisptr = new shared_ptr[Cpp_TimeoutObserver](
+                new Cpp_TimeoutObserver(<Real>interval))
+
+    def __dealloc__(self):
+        del self.thisptr
+
+    def interval(self):
+        """Return the timeout in seconds."""
+        return self.thisptr.get().interval()
+
+    def duration(self):
+        """Return the last time to be called."""
+        return self.thisptr.get().duration()
+
+    def accumulation(self):
+        """Return the accumulation time."""
+        return self.thisptr.get().accumulation()
+
+    def as_base(self):
+        """Clone self as a base class. This function is for developers."""
+        retval = Observer()
+        del retval.thisptr
+        retval.thisptr = new shared_ptr[Cpp_Observer](
+            <shared_ptr[Cpp_Observer]>deref(self.thisptr))
+        return retval
+
+    def reset(self):
+        """Reset the internal state."""
+        self.thisptr.get().reset()

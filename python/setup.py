@@ -134,7 +134,7 @@ setup(
                   ('ecell4ipynb/Tutorials', glob.glob('../ipynb/Tutorials/*.ipynb'))],
     # packages = ["ecell4",
     #     "ecell4.util", "ecell4.util.legacy"],
-    packages = ["ecell4", "ecell4.util"],
+    packages = ["ecell4", "ecell4.util", "ecell4.extra"],
     cmdclass = {'build_ext': build_ext, 'test': run_tests},
     ext_modules = ext_modules
     )

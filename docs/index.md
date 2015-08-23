@@ -19,5 +19,7 @@ E-Cell4 runs on Ubuntu Linux, Windows and Mac OSX.
 ## 4.0.0 (the release date[WRITEME] 2015)
 the release note[WRITEME]
 
-- feature1[WRITEME]
-- feature2[WRITEME]
+- Spatiocyte and EGFRD simulator are ready
+- The Garuda backend
+- Python valid rule based model
+- IPython Notebook inline visualization

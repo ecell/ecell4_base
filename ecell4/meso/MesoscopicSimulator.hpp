@@ -59,7 +59,8 @@ protected:
         }
 
         virtual void initialize() = 0;
-        virtual void inc(const Species& sp, const coordinate_type& c, const Integer val = +1) = 0;
+        virtual void inc(
+            const Species& sp, const coordinate_type& c, const Integer val = +1) = 0;
         virtual const Real propensity(const coordinate_type& c) const = 0;
 
         inline void dec(const Species& sp, const coordinate_type& c)
@@ -115,11 +116,6 @@ protected:
         {
             const std::pair<ReactionRule::reactant_container_type, Integer>
                 retval(__draw(c));
-            if (retval.second == 0)
-            {
-                return std::make_pair(ReactionRule(), c);
-            }
-
             const std::vector<ReactionRule> reactions(generate(retval.first));
 
             assert(retval.second > 0);
@@ -131,7 +127,6 @@ protected:
             }
             else if (retval.second == 1)
             {
-                // assert(possibles.size() == 1);
                 return std::make_pair(reactions[0], c);
             }
             else
@@ -248,7 +243,7 @@ protected:
 
         void inc(const Species& sp, const coordinate_type& c, const Integer val = +1)
         {
-            const Species pttrn(rr_.reactants()[0]);
+            const Species& pttrn(rr_.reactants()[0]);
             const Integer coef(get_coef(pttrn, sp));
             if (coef > 0)
             {
@@ -298,7 +293,7 @@ protected:
 
         const Real propensity(const coordinate_type& c) const
         {
-            return rr_.k();
+            return rr_.k() * world().subvolume();
         }
     };
 
@@ -374,7 +369,7 @@ protected:
                 }
             }
 
-            return std::make_pair(ReactionRule::reactant_container_type(), 0);
+            throw IllegalState("Never reach here.");
         }
 
         const Real propensity(const coordinate_type& c) const
@@ -492,7 +487,7 @@ protected:
                 }
             }
 
-            return std::make_pair(ReactionRule::reactant_container_type(), 0);
+            throw IllegalState("Never reach here.");
         }
 
         const Real propensity(const coordinate_type& c) const
@@ -503,6 +498,109 @@ protected:
     protected:
 
         std::vector<Integer> num_tot1_, num_tot2_, num_tot12_;
+    };
+
+    class StructureSecondOrderReactionRuleProxy:
+        public ReactionRuleProxy
+    {
+    public:
+
+        typedef ReactionRuleProxy base_type;
+
+        StructureSecondOrderReactionRuleProxy()
+            : base_type(), num_tot_(0), stidx_(0), spidx_(0)
+        {
+            ;
+        }
+
+        StructureSecondOrderReactionRuleProxy(
+            MesoscopicSimulator* sim, const ReactionRule& rr,
+            const ReactionRule::reactant_container_type::size_type stidx)
+            : base_type(sim, rr), num_tot_(sim->world()->num_subvolumes()),
+              stidx_(stidx), spidx_(stidx == 0 ? 1 : 0)
+        {
+            ;
+        }
+
+        void inc(const Species& sp, const coordinate_type& c, const Integer val = +1)
+        {
+            const ReactionRule::reactant_container_type& reactants(rr_.reactants());
+            const Integer coef(get_coef(reactants[spidx_], sp));
+            if (coef > 0)
+            {
+                num_tot_[c] += coef * val;
+            }
+        }
+
+        void initialize()
+        {
+            const ReactionRule::reactant_container_type& reactants(rr_.reactants());
+
+            // if (world().get_dimension(reactants[stidx_]) != Shape::TWO)
+            // {
+            //     throw NotSupported(
+            //         "A second order reaction is only acceptable"
+            //         " with a structure with dimension two.");
+            // } else
+            if (world().has_structure(reactants[spidx_]))
+            {
+                throw NotSupported(
+                    "A second order reaction between structures has no mean.");
+            }
+
+            const std::vector<Species>& species(world().list_species());
+            std::fill(num_tot_.begin(), num_tot_.end(), 0);
+            for (std::vector<Species>::const_iterator i(species.begin());
+                i != species.end(); ++i)
+            {
+                const Integer coef(get_coef(reactants[spidx_], *i));
+                if (coef > 0)
+                {
+                    for (Integer j(0); j < world().num_subvolumes(); ++j)
+                    {
+                        num_tot_[j] += coef * world().num_molecules_exact(*i, j);
+                    }
+                }
+            }
+        }
+
+        std::pair<ReactionRule::reactant_container_type, Integer> __draw(const coordinate_type& c)
+        {
+            const std::vector<Species>& species(world().list_species());
+            const ReactionRule::reactant_container_type& reactants(rr_.reactants());
+
+            const Real rnd1(rng()->uniform(0.0, num_tot_[c]));
+
+            Integer tot(0);
+            for (std::vector<Species>::const_iterator i(species.begin());
+                i != species.end(); ++i)
+            {
+                const Integer coef(get_coef(reactants[spidx_], *i));
+                if (coef > 0)
+                {
+                    tot += coef * world().num_molecules_exact(*i, c);
+                    if (tot >= rnd1)
+                    {
+                        ReactionRule::reactant_container_type retval(2);
+                        retval[spidx_] = *i;
+                        retval[stidx_] = reactants[stidx_];
+                        return std::make_pair(retval, coef);
+                    }
+                }
+            }
+            throw IllegalState("Never reach here.");
+        }
+
+        const Real propensity(const coordinate_type& c) const
+        {
+            return (num_tot_[c] * rr_.k()
+                    * world().get_occupancy(rr_.reactants()[stidx_], c));
+        }
+
+    protected:
+
+        std::vector<Integer> num_tot_;
+        ReactionRule::reactant_container_type::size_type stidx_, spidx_;
     };
 
     struct SubvolumeEvent

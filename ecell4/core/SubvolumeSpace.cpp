@@ -81,6 +81,11 @@ void SubvolumeSpaceVectorImpl::add_molecules(
     matrix_type::iterator i(matrix_.find(sp));
     if (i == matrix_.end())
     {
+        if (has_structure(sp))
+        {
+            return;
+        }
+
         reserve_species(sp, c);
         i = matrix_.find(sp);
     }
@@ -93,6 +98,11 @@ void SubvolumeSpaceVectorImpl::remove_molecules(
     matrix_type::iterator i(matrix_.find(sp));
     if (i == matrix_.end())
     {
+        if (has_structure(sp))
+        {
+            return;
+        }
+
         std::ostringstream message;
         message << "Speices [" << sp.serial() << "] not found";
         throw NotFound(message.str());
@@ -135,24 +145,101 @@ SubvolumeSpaceVectorImpl::coordinate_type SubvolumeSpaceVectorImpl::get_neighbor
 void SubvolumeSpaceVectorImpl::add_structure(
     const Species& sp, const boost::shared_ptr<const Shape>& shape)
 {
-    structure_container_type::const_iterator i(structures_.find(sp));
-    if (i != structures_.end())
+    structure_matrix_type::const_iterator it(structure_matrix_.find(sp.serial()));
+    if (it != structure_matrix_.end())
     {
-        throw NotSupported("not supported yet.");
+        std::ostringstream message;
+        message << "The given structure [" << sp.serial() << "] is already defined.";
+        throw AlreadyExists(message.str());
     }
-    structures_.insert(std::make_pair(sp, shape));
 
-    std::vector<Integer> overlap(num_subvolumes());
-    const Real3 lengths(subvolume_edge_lengths());
-    for (std::vector<Integer>::size_type i(0); i != overlap.size(); ++i)
+    switch (shape->dimension())
     {
-        const Integer3 g(coord2global(i));
-        const Real3 corner(
-            lengths[0] * g[0], lengths[1] * g[1], lengths[2] * g[2]);
-        const bool is_overlap(shape->test_AABB(corner, corner + lengths));
-        overlap[i] = (is_overlap ? 1 : 0);
+    case Shape::THREE:
+        add_structure3(sp, shape);
+        return;
+    case Shape::TWO:
+        add_structure2(sp, shape);
+        return;
+    case Shape::ONE:
+    case Shape::UNDEF:
+        break;
     }
+
+    throw NotSupported("The dimension of a shape must be two or three.");
+}
+
+void SubvolumeSpaceVectorImpl::add_structure3(
+    const Species& sp, const boost::shared_ptr<const Shape>& shape)
+{
+    structure_cell_type overlap(num_subvolumes());
+    for (structure_cell_type::size_type i(0); i != overlap.size(); ++i)
+    {
+        if (shape->is_inside(coord2position(i)) > 0)
+        {
+            overlap[i] = 0;
+        }
+        else
+        {
+            overlap[i] = 1;
+        }
+    }
+    // structures_.insert(std::make_pair(sp.serial(), Shape::THREE));
     structure_matrix_.insert(std::make_pair(sp.serial(), overlap));
+}
+
+void SubvolumeSpaceVectorImpl::add_structure2(
+    const Species& sp, const boost::shared_ptr<const Shape>& shape)
+{
+    structure_cell_type overlap(num_subvolumes());
+    for (structure_cell_type::size_type i(0); i != overlap.size(); ++i)
+    {
+        if (is_surface_subvolume(i, shape))
+        {
+            // overlap[i] = 1;
+            overlap[i] = unit_area();
+        }
+        else
+        {
+            overlap[i] = 0;
+        }
+    }
+    // structures_.insert(std::make_pair(sp.serial(), Shape::TWO));
+    structure_matrix_.insert(std::make_pair(sp.serial(), overlap));
+}
+
+bool SubvolumeSpaceVectorImpl::is_surface_subvolume(
+    const coordinate_type& c, const boost::shared_ptr<const Shape>& shape)
+{
+    const Real3 lengths(subvolume_edge_lengths());
+    const Real3 center(coord2position(c));
+
+    if (shape->is_inside(center) > 0)
+    {
+        return false;
+    }
+
+    for (unsigned int dim(0); dim < 3 * 3 * 3; ++dim)
+    {
+        const int x(static_cast<int>(dim / 9));
+        const int y(static_cast<int>((dim - x * 9) / 3));
+        const int z(dim - (x * 3 + y) * 3);
+
+        if ((x == 1 && y == 1 && z == 1)
+            || (x != 1 && y != 1 && z != 1))
+        {
+            continue;
+        }
+
+        const Real3 shift(
+            (x - 1) * lengths[0], (y - 1) * lengths[1], (z - 1) * lengths[2]);
+        const Real3 neighbor = center + shift;
+        if (shape->is_inside(neighbor) > 0)
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 bool SubvolumeSpaceVectorImpl::check_structure(
@@ -167,6 +254,35 @@ bool SubvolumeSpaceVectorImpl::check_structure(
     return ((*i).second[coord] > 0);
 }
 
+void SubvolumeSpaceVectorImpl::update_structure(
+    const Species::serial_type& serial, const coordinate_type& coord,
+    const Real& value)
+{
+    structure_matrix_type::iterator i(structure_matrix_.find(serial));
+    if (i == structure_matrix_.end())
+    {
+        structure_cell_type overlap(num_subvolumes());
+        overlap[coord] = value;
+        structure_matrix_.insert(std::make_pair(serial, overlap));
+        // structures_.insert(std::make_pair(serial, Shape::THREE));  //XXX: as a default
+    }
+    else
+    {
+        (*i).second[coord] = value;
+    }
+}
+
+std::vector<Species::serial_type> SubvolumeSpaceVectorImpl::list_structures() const
+{
+    std::vector<Species::serial_type> retval;
+    for (structure_matrix_type::const_iterator i(structure_matrix_.begin());
+        i != structure_matrix_.end(); ++i)
+    {
+        retval.push_back((*i).first);
+    }
+    return retval;
+}
+
 Real SubvolumeSpaceVectorImpl::get_volume(const Species& sp) const
 {
     structure_matrix_type::const_iterator i(structure_matrix_.find(sp.serial()));
@@ -174,7 +290,29 @@ Real SubvolumeSpaceVectorImpl::get_volume(const Species& sp) const
     {
         return 0.0;
     }
-    return subvolume() * std::accumulate((*i).second.begin(), (*i).second.end(), 0);
+    const Real occupancy = std::accumulate((*i).second.begin(), (*i).second.end(), 0.0);
+    return subvolume() * occupancy;
+}
+
+const Integer SubvolumeSpaceVectorImpl::num_subvolumes(const Species& sp) const
+{
+    structure_matrix_type::const_iterator i(structure_matrix_.find(sp.serial()));
+    if (i == structure_matrix_.end())
+    {
+        return 0;
+    }
+
+    Integer num(0);
+    for (structure_cell_type::const_iterator j((*i).second.begin());
+        j != (*i).second.end(); ++j)
+    {
+        if (*j > 0)
+        {
+            ++num;
+        }
+    }
+    return num;
+    // return std::accumulate((*i).second.begin(), (*i).second.end(), 0);
 }
 
 } // ecell4

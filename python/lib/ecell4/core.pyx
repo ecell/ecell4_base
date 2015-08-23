@@ -21,7 +21,7 @@ include "Real3.pxi"
 include "Integer3.pxi"
 include "Particle.pxi"
 include "Voxel.pxi"
-include "Observer.pxi"
+include "observers.pxi"
 include "shapes.pxi"
 
 from cython.operator cimport dereference as deref
@@ -41,3 +41,8 @@ cimport functions
 
 def cbrt(Real x):
     return functions.cbrt(x)
+
+cimport types
+
+N_A = types.N_A
+epsilon = types.epsilon

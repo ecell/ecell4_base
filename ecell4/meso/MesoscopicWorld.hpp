@@ -49,6 +49,14 @@ public:
         (*rng_).seed();
     }
 
+    MesoscopicWorld(const Real3& edge_lengths, const Integer3& matrix_sizes)
+        : cs_(new SubvolumeSpaceVectorImpl(edge_lengths, matrix_sizes))
+    {
+        rng_ = boost::shared_ptr<RandomNumberGenerator>(
+            new GSLRandomNumberGenerator());
+        (*rng_).seed();
+    }
+
     MesoscopicWorld(const Real3& edge_lengths,
         const Integer3& matrix_sizes, boost::shared_ptr<RandomNumberGenerator> rng)
         : cs_(new SubvolumeSpaceVectorImpl(edge_lengths, matrix_sizes)), rng_(rng)
@@ -56,12 +64,20 @@ public:
         ;
     }
 
-    MesoscopicWorld(const Real3& edge_lengths, const Integer3& matrix_sizes)
-        : cs_(new SubvolumeSpaceVectorImpl(edge_lengths, matrix_sizes))
+    MesoscopicWorld(const Real3& edge_lengths, const Real subvolume_length)
+        : cs_(new SubvolumeSpaceVectorImpl(edge_lengths, Integer3(round(edge_lengths[0] / subvolume_length), round(edge_lengths[1] / subvolume_length), round(edge_lengths[2] / subvolume_length))))
     {
         rng_ = boost::shared_ptr<RandomNumberGenerator>(
             new GSLRandomNumberGenerator());
         (*rng_).seed();
+    }
+
+    MesoscopicWorld(
+        const Real3& edge_lengths, const Real subvolume_length,
+        boost::shared_ptr<RandomNumberGenerator> rng)
+        : cs_(new SubvolumeSpaceVectorImpl(edge_lengths, Integer3(round(edge_lengths[0] / subvolume_length), round(edge_lengths[1] / subvolume_length), round(edge_lengths[2] / subvolume_length)))), rng_(rng)
+    {
+        ;
     }
 
     virtual ~MesoscopicWorld()
@@ -129,6 +145,11 @@ public:
     const Real volume() const;
     const Real3 subvolume_edge_lengths() const;
     const Real3& edge_lengths() const;
+
+    const Integer num_subvolumes(const Species& sp) const
+    {
+        return cs_->num_subvolumes(sp);
+    }
 
     const Integer3 matrix_sizes() const
     {
@@ -276,9 +297,34 @@ public:
     void add_structure(const Species& sp, const boost::shared_ptr<const Shape>& shape);
     bool on_structure(const Species& sp, const coordinate_type& coord) const;
 
+    bool has_structure(const Species& sp) const
+    {
+        return cs_->has_structure(sp);
+    }
+
+    Real get_occupancy(const Species& sp, const coordinate_type& coord) const
+    {
+        return cs_->get_occupancy(sp, coord);
+    }
+
+    Real get_occupancy(const Species& sp, const Integer3& g) const
+    {
+        return cs_->get_occupancy(sp, g);
+    }
+
+    // Shape::dimension_kind get_dimension(const Species& sp) const
+    // {
+    //     return cs_->get_dimension(sp);
+    // }
+
     inline bool on_structure(const Species& sp, const Integer3& g) const
     {
         return on_structure(sp, global2coord(g));
+    }
+
+    bool check_structure(const Species& sp, const Integer3& g) const
+    {
+        return cs_->check_structure(sp, g);
     }
 
     Real get_volume(const Species& sp) const;
