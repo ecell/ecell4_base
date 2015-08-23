@@ -148,9 +148,18 @@ Here is an extremely simple example with a reversible binding reaction:
 If you use docker, you can easily try E-Cell4.
 You can pull E-Cell4 container with `docker pull ecell/ecell4`
 
+### Docker Toolbox for Windows and Mac
+
+1. Install [Docker Toolbox](https://www.docker.com/toolbox)
+2. Run Kitematic
+3. Search with **ecell4**, and create ecell4 container ![png](https://raw.githubusercontent.com/ecell/ecell4/develop/docs/kitematic1.png)
+4. Open the **ACCESS URL** in **IP & PORTS** with your web browser ![png](https://raw.githubusercontent.com/ecell/ecell4/develop/docs/kitematic2.png)
+
+### Docker for Linux
+
 ```shell
 $ sudo docker pull ecell/ecell4
-$ sudo docker run -d -p 443:8888 -e "PASSWORD=MakeAPassword" ecell/ecell4
+$ sudo docker run -d -p 443:8888 ecell/ecell4
 ```
 
 You'll now be able to E-Cell4 notebooks at https://THE_IP_RUNNING_DOCKER:443
