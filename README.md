@@ -12,6 +12,10 @@ E-Cell System, a software platform for modeling, simulation and analysis of comp
     - [Mac OS X](#mac-os-x-installation)
     - [Ubuntu vivid](#ubuntu-linux-vivid-vervet-installation)
     - [Ubuntu trusty](#ubuntu-linux-trusty-tahr-installation)
+- [Running E-Cell4](#running-e-cell4)
+- [Dockerized E-Cell4 IPython notebooks](#dockerized-e-cell4-ipython-notebooks)
+    - [For Windows and Mac](#for-windows-and-mac)
+    - [For Linux](#for-linux)
 
 Installation
 ------------
@@ -109,7 +113,8 @@ $ cd ecell4-master
 $ PREFIX=$HOME/ecell4 PYTHONPATH=/path/to/lib/python2.7/site-packages ./install.sh py2
 ```
 
-## Running E-Cell4
+Running E-Cell4
+---------------
 
 ### Simple examples
 
@@ -145,19 +150,20 @@ A.B.C
 ![png](https://raw.githubusercontent.com/ecell/ecell4/develop/docs/output_7_0.png)
 
 
-## Dockerized E-Cell4 IPython notebooks
+Dockerized E-Cell4 IPython notebooks
+------------------------------------
 
 If you use docker, you can easily try E-Cell4.
 You can pull E-Cell4 container with `docker pull ecell/ecell4`
 
-### Docker Toolbox for Windows and Mac
+### For Windows and Mac
 
 1. Install [Docker Toolbox](https://www.docker.com/toolbox)
 2. Run Kitematic
 3. Search with **ecell4**, and create ecell4 container ![png](https://raw.githubusercontent.com/ecell/ecell4/develop/docs/kitematic1.png)
 4. Open the **ACCESS URL** in **IP & PORTS** with your web browser ![png](https://raw.githubusercontent.com/ecell/ecell4/develop/docs/kitematic2.png)
 
-### Docker for Linux
+### For Linux
 
 ```shell
 $ sudo docker pull ecell/ecell4
