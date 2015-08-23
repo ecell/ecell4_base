@@ -49,22 +49,10 @@ matplotlib depends on numpy. It takes some time to build numpy, please be patien
 
 ### Mac OS X installation
 
-#### Requirements
-
-- homebrew
-- gsl
-- hdf5
-- pip
-
 ```shell
-brew install homebrew/science/hdf5
-brew install gsl
-brew install wget
-wget https://bootstrap.pypa.io/get-pip.py
-sudo python get-pip.py
-pip install https://github.com/ecell/ecell4/releases/download/4.0.0-beta2/ecell4-4.0.0b2-cp27-none-macosx_10_10_intel.whl --user
-# For Mountain Lion
-# pip install https://github.com/ecell/ecell4/releases/download/4.0.0-beta2/ecell4-4.0.0b2-cp27-none-macosx_10_9_intel.whl --user
+ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+brew tap ecell/ecell4
+brew install ecell4
 ```
 
 #### IPython notebook
@@ -72,14 +60,10 @@ We recommend you run E-Cell4 models from IPython notebook.
 Below is IPython notebook(and matplotlib) installation for Mac.
 
 ```shell
-pip install matplotlib --user
-pip install "ipython[notebook]" --user
-cd ~/Library/Python/2.7/ecell4ipynb
-PYTHONPATH=~/Library/Python/2.7/lib/python/site-packages/ ipython notebook
+sudo python get-pip.py
+sudo pip install -U matplotlib
+sudo pip install -U "ipython[notebook]"
 ```
-
-now you can see IPython notebooks, please open index.ipynb to see E-Cell4 models.
-
 
 ### Ubuntu Linux Vivid Vervet installation
 #### Python2 series
