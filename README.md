@@ -135,17 +135,17 @@ A.B.C
 
 #### A reversible binding reaction
 
+```python
+%matplotlib inline
+import numpy
+from ecell4 import *
 
-    %matplotlib inline
-    import numpy
-    from ecell4 import *
-    
-    with reaction_rules():
-        A + B == C | (0.01, 0.3)
-    
-    y = run_simulation(
-        numpy.linspace(0, 10, 100), {'A': 60, 'B': 60}, solver='ode')
+with reaction_rules():
+    A + B == C | (0.01, 0.3)
 
+y = run_simulation(
+    numpy.linspace(0, 10, 100), {'A': 60, 'B': 60}, solver='ode')
+```
 
 ![png](https://raw.githubusercontent.com/ecell/ecell4/develop/docs/output_7_0.png)
 
