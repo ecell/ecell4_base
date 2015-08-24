@@ -160,8 +160,13 @@ You can pull E-Cell4 container with `docker pull ecell/ecell4`
 
 1. Install [Docker Toolbox](https://www.docker.com/toolbox)
 2. Run Kitematic
-3. Search with **ecell4**, and create ecell4 container ![png](https://raw.githubusercontent.com/ecell/ecell4/develop/docs/kitematic1.png)
-4. Open the **ACCESS URL** in **IP & PORTS** with your web browser ![png](https://raw.githubusercontent.com/ecell/ecell4/develop/docs/kitematic2.png)
+3. Search with **ecell4**, and create ecell4 container
+
+  ![png](https://raw.githubusercontent.com/ecell/ecell4/develop/docs/kitematic1.png)
+
+4. Open the **ACCESS URL** in **IP & PORTS** with your web browser 
+
+  ![png](https://raw.githubusercontent.com/ecell/ecell4/develop/docs/kitematic2.png)
 
 ### For Linux
 
