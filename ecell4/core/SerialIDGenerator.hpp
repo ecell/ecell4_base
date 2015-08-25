@@ -323,9 +323,9 @@ public:
         return serial_advance(next_, 1);
     }
 
+#ifdef WITH_HDF5
     void save(H5::CommonFG* root) const
     {
-#ifdef WITH_HDF5
         using namespace H5;
 
         boost::scoped_ptr<DataType> optype(new DataType(H5T_OPAQUE, 1));
@@ -335,14 +335,10 @@ public:
         boost::scoped_ptr<DataSet> dataset(
             new DataSet(root->createDataSet("idgen", *optype, dataspace)));
         dataset->write((unsigned char*)(&next_), *optype);
-#else
-        throw NotSupported("HDF5 is not supported.");
-#endif
     }
 
     void load(const H5::CommonFG& root)
     {
-#ifdef WITH_HDF5
         using namespace H5;
 
         const DataSet dataset(DataSet(root.openDataSet("idgen")));
@@ -351,10 +347,8 @@ public:
         identifier_type state;
         dataset.read((unsigned char*)(&state), *optype);
         next_ = state;
-#else
-        throw NotSupported("HDF5 is not supported.");
-#endif
     }
+#endif
 
 private:
 

@@ -7,28 +7,24 @@ namespace ecell4
 namespace extras
 {
 
+#ifdef WITH_HDF5
 void save_version_information(H5::CommonFG* root, const std::string& version)
 {
-#ifdef WITH_HDF5
     using namespace H5;
     boost::scoped_ptr<DataSet> dataset(
         new DataSet(root->createDataSet("version", H5::StrType(H5::PredType::C_S1, 32), H5::DataSpace(H5S_SCALAR))));
     dataset->write(version.c_str(), dataset->getDataType());
-#endif
 }
 
 std::string load_version_information(const H5::CommonFG& root)
 {
-#ifdef WITH_HDF5
     using namespace H5;
     char buf[32];
     const DataSet dataset(DataSet(root.openDataSet("version")));
     dataset.read(buf, dataset.getDataType());
     return std::string(buf);
-#else
-    return "";
-#endif
 }
+#endif
 
 std::string load_version_information(const std::string& filename)
 {

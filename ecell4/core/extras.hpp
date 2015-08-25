@@ -122,8 +122,10 @@ typename Tfactory_::world_type* generate_world_from_model(
     return w;
 }
 
+#ifdef WITH_HDF5
 void save_version_information(H5::CommonFG* root, const std::string& version);
 std::string load_version_information(const H5::CommonFG& root);
+#endif
 std::string load_version_information(const std::string& filename);
 
 } // extras
