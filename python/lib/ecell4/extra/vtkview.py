@@ -62,7 +62,7 @@ class vtkTimerCallback():
         renWin.SetWindowName(filename)
         ren = renWin.GetRenderers().GetFirstRenderer()
         remove_all_actors_and_volumes(ren)
-        w = load_world(filename)
+        w = ecell4.util.load_world(filename)
         if self.volume:
             add_volume(w, ren)
         else:
@@ -107,8 +107,12 @@ def remove_all_actors_and_volumes(ren):
             break
         ren.RemoveVolume(volume)
 
-def load_world(filename):
-    return ecell4.meso.MesoscopicWorld(filename)
+def list_species(w):
+    #XXX: This would be a bit slow to list all species within a World
+    species_list = [p.species().serial() for pid, p in w.list_particles()]
+    species_list = sorted(set(species_list), key=species_list.index)  # XXX: pick unique ones
+    species_list = [ecell4.core.Species(serial) for serial in species_list]
+    return species_list
 
 def add_actors(w, ren, source):
     ren.SetBackground(0.2, 0.3, 0.4)
@@ -116,7 +120,7 @@ def add_actors(w, ren, source):
     L = max(w.edge_lengths())
     shift = w.edge_lengths() / L * 0.5
 
-    for cnt, sp in enumerate(w.list_species()):
+    for cnt, sp in enumerate(list_species(w)):
         particles = w.list_particles(sp)
         points = vtk.vtkPoints()
         points.SetNumberOfPoints(len(particles))
@@ -153,7 +157,7 @@ def add_volume(w, ren, N=50, c=(0, 1, 0)):
     shift = w.edge_lengths() / L * 0.5
 
     tmp = numpy.zeros([N, N, N], dtype=float)
-    for sp in w.list_species():
+    for sp in list_species(w):
     # for serial in ("MinD_M", "MinDE"):
     #     sp = ecell4.core.Species(serial)
         for pid, p in w.list_particles(sp):
