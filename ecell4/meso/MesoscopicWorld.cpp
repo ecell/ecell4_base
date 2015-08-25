@@ -1,11 +1,38 @@
 #include <ecell4/core/SerialIDGenerator.hpp>
 #include "MesoscopicWorld.hpp"
 
+#ifdef WIN32_MSC
+#include <boost/numeric/interval/detail/msvc_rounding_control.hpp>
+#endif
+
 namespace ecell4
 {
 
 namespace meso
 {
+
+#ifdef WIN32_MSC
+double round(const double x)
+{
+    return floor(x + 0.5);
+}
+#endif
+
+MesoscopicWorld::MesoscopicWorld(const Real3& edge_lengths, const Real subvolume_length)
+    : cs_(new SubvolumeSpaceVectorImpl(edge_lengths, Integer3(round(edge_lengths[0] / subvolume_length), round(edge_lengths[1] / subvolume_length), round(edge_lengths[2] / subvolume_length))))
+{
+    rng_ = boost::shared_ptr<RandomNumberGenerator>(
+        new GSLRandomNumberGenerator());
+    (*rng_).seed();
+}
+
+MesoscopicWorld::MesoscopicWorld(
+    const Real3& edge_lengths, const Real subvolume_length,
+    boost::shared_ptr<RandomNumberGenerator> rng)
+    : cs_(new SubvolumeSpaceVectorImpl(edge_lengths, Integer3(round(edge_lengths[0] / subvolume_length), round(edge_lengths[1] / subvolume_length), round(edge_lengths[2] / subvolume_length)))), rng_(rng)
+{
+    ;
+}
 
 MoleculeInfo MesoscopicWorld::get_molecule_info(const Species& sp) const
 {

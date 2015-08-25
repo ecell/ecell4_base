@@ -65,21 +65,10 @@ public:
         ;
     }
 
-    MesoscopicWorld(const Real3& edge_lengths, const Real subvolume_length)
-        : cs_(new SubvolumeSpaceVectorImpl(edge_lengths, Integer3(round(edge_lengths[0] / subvolume_length), round(edge_lengths[1] / subvolume_length), round(edge_lengths[2] / subvolume_length))))
-    {
-        rng_ = boost::shared_ptr<RandomNumberGenerator>(
-            new GSLRandomNumberGenerator());
-        (*rng_).seed();
-    }
-
+    MesoscopicWorld(const Real3& edge_lengths, const Real subvolume_length);
     MesoscopicWorld(
         const Real3& edge_lengths, const Real subvolume_length,
-        boost::shared_ptr<RandomNumberGenerator> rng)
-        : cs_(new SubvolumeSpaceVectorImpl(edge_lengths, Integer3(round(edge_lengths[0] / subvolume_length), round(edge_lengths[1] / subvolume_length), round(edge_lengths[2] / subvolume_length)))), rng_(rng)
-    {
-        ;
-    }
+        boost::shared_ptr<RandomNumberGenerator> rng);
 
     virtual ~MesoscopicWorld()
     {
