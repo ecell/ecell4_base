@@ -103,6 +103,8 @@ cdef extern from "ecell4/meso/MesoscopicFactory.hpp" namespace "ecell4::meso":
         Cpp_MesoscopicFactory() except +
         Cpp_MesoscopicFactory(Cpp_Integer3&) except +
         Cpp_MesoscopicFactory(Cpp_Integer3&, shared_ptr[Cpp_RandomNumberGenerator]) except +
+        Cpp_MesoscopicFactory(Real) except +
+        Cpp_MesoscopicFactory(Real, shared_ptr[Cpp_RandomNumberGenerator]) except +
         Cpp_MesoscopicWorld* create_world(string)
         Cpp_MesoscopicWorld* create_world(Cpp_Real3&)
         Cpp_MesoscopicWorld* create_world(shared_ptr[Cpp_Model])

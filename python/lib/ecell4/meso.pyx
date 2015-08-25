@@ -297,12 +297,19 @@ cdef MesoscopicSimulator MesoscopicSimulator_from_Cpp_MesoscopicSimulator(
 #  a python wrapper for Cpp_MesoscopicFactory
 cdef class MesoscopicFactory:
 
-    def __cinit__(self, Integer3 matrix_sizes=None, GSLRandomNumberGenerator rng=None):
+    def __cinit__(self, matrix_sizes=None, GSLRandomNumberGenerator rng=None):
         if rng is not None:
-            self.thisptr = new Cpp_MesoscopicFactory(
-                deref(matrix_sizes.thisptr), deref(rng.thisptr))
+            if isinstance(matrix_sizes, Integer3):
+                self.thisptr = new Cpp_MesoscopicFactory(
+                    deref((<Integer3>matrix_sizes).thisptr), deref(rng.thisptr))
+            else:
+                self.thisptr = new Cpp_MesoscopicFactory(<Real>matrix_sizes, deref(rng.thisptr))
         elif matrix_sizes is not None:
-            self.thisptr = new Cpp_MesoscopicFactory(deref(matrix_sizes.thisptr))
+            if isinstance(matrix_sizes, Integer3):
+                self.thisptr = new Cpp_MesoscopicFactory(
+                    deref((<Integer3>matrix_sizes).thisptr))
+            else:
+                self.thisptr = new Cpp_MesoscopicFactory(<Real>matrix_sizes)
         else:
             self.thisptr = new Cpp_MesoscopicFactory()
 
