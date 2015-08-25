@@ -13,6 +13,7 @@
 #include <ecell4/core/SerialIDGenerator.hpp>
 #include <ecell4/core/Model.hpp>
 #include <ecell4/core/Shape.hpp>
+#include <ecell4/core/extras.hpp>
 
 namespace ecell4
 {
@@ -492,6 +493,7 @@ public:
         boost::scoped_ptr<H5::Group>
             group(new H5::Group(fout->createGroup("LatticeSpace")));
         (*space_).save(group.get());
+        extras::save_version_information(fout.get(), "ecell4-lattice-0.0-1");
 #else
         throw NotSupported("not supported yet.");
 #endif

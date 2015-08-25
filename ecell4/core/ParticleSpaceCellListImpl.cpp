@@ -32,8 +32,8 @@ void ParticleSpaceCellListImpl::reset(const Real3& edge_lengths)
         }
     }
 
-    // edge_lengths_ = edge_lengths;
-    throw NotImplemented("Not implemented yet.");
+    edge_lengths_ = edge_lengths;
+    // throw NotImplemented("Not implemented yet.");
 }
 
 bool ParticleSpaceCellListImpl::update_particle(

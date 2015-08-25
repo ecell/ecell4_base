@@ -1,4 +1,5 @@
 #include "ODEWorld.hpp"
+#include <ecell4/core/extras.hpp>
 
 
 namespace ecell4
@@ -18,6 +19,8 @@ void ODEWorld::save(const std::string& filename) const
 
     const uint32_t space_type = static_cast<uint32_t>(Space::ELSE);
     group->openAttribute("type").write(H5::PredType::STD_I32LE, &space_type);
+
+    extras::save_version_information(fout.get(), "ecell4-ode-0.0-1");
 #else
     throw NotSupported("not supported yet.");
 #endif

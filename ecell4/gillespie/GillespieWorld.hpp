@@ -16,6 +16,7 @@
 #endif
 #include <ecell4/core/NetworkModel.hpp>
 #include <ecell4/core/Shape.hpp>
+#include <ecell4/core/extras.hpp>
 
 
 namespace ecell4
@@ -107,6 +108,7 @@ public:
         boost::scoped_ptr<H5::Group>
             group(new H5::Group(fout->createGroup("CompartmentSpace")));
         cs_->save(group.get());
+        extras::save_version_information(fout.get(), "ecell4-gillespie-0.0-1");
 #else
         throw NotSupported("not supported yet.");
 #endif
