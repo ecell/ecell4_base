@@ -114,38 +114,6 @@ cdef ODEWorld ODEWorld_from_Cpp_ODEWorld(
     r.thisptr.swap(w)
     return r
 
-## ODEFactory
-#  a python wrapper for Cpp_ODEFactory
-#cdef class ODEFactory:
-#
-#    def __cinit__(self):
-#        self.thisptr = new Cpp_ODEFactory()
-#
-#    def __dealloc__(self):
-#        del self.thisptr
-#
-#    def create_world(self, arg1):
-#        if isinstance(arg1, Real3):
-#            return ODEWorld_from_Cpp_ODEWorld(
-#                shared_ptr[Cpp_ODEWorld](
-#                    self.thisptr.create_world(deref((<Real3>arg1).thisptr))))
-#        elif isinstance(arg1, str):
-#            return ODEWorld_from_Cpp_ODEWorld(
-#                shared_ptr[Cpp_ODEWorld](self.thisptr.create_world(<string>(arg1))))
-#        else:
-#            return ODEWorld_from_Cpp_ODEWorld(
-#                shared_ptr[Cpp_ODEWorld](self.thisptr.create_world(
-#                    deref(Cpp_Model_from_Model(arg1)))))
-#
-#    def create_simulator(self, arg1, ODEWorld arg2=None):
-#        if arg2 is None:
-#            return ODESimulator_from_Cpp_ODESimulator(
-#                self.thisptr.create_simulator(deref((<ODEWorld>arg1).thisptr)))
-#        else:
-#            return ODESimulator_from_Cpp_ODESimulator(
-#                self.thisptr.create_simulator(
-#                    deref(Cpp_Model_from_Model(arg1)), deref(arg2.thisptr)))
-
 cdef class ODERatelaw:
     # Abstract ODERatelaw Type.
     def __cinit__(self):

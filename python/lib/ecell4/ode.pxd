@@ -48,55 +48,6 @@ cdef class ODEWorld:
 
 cdef ODEWorld ODEWorld_from_Cpp_ODEWorld(shared_ptr[Cpp_ODEWorld] m)
 
-## Cpp_ODESimulator
-#  ecell4::ode::ODESimulator
-#cdef extern from "ecell4/ode/ODESimulator.hpp" namespace "ecell4::ode":
-#    cdef cppclass Cpp_ODESimulator "ecell4::ode::ODESimulator":
-#        Cpp_ODESimulator(
-#            shared_ptr[Cpp_Model], shared_ptr[Cpp_ODEWorld]) except +
-#        Cpp_ODESimulator(
-#            shared_ptr[Cpp_ODEWorld]) except +
-#        void initialize()
-#        Real t()
-#        Integer num_steps()
-#        Real dt()
-#        Real next_time()
-#        void step()
-#        bool step(Real&)
-#        # Optional members
-#        void set_t(Real&)
-#        void set_dt(Real &)
-#        vector[Cpp_ReactionRule] last_reactions()
-#        shared_ptr[Cpp_Model] model()
-#        shared_ptr[Cpp_ODEWorld] world()
-#        void run(Real)
-#        void run(Real, shared_ptr[Cpp_Observer])
-#        void run(Real, vector[shared_ptr[Cpp_Observer]])
-
-## ODESimulator
-#  a python wrapper for Cpp_ODESimulator
-#cdef class ODESimulator:
-#    cdef Cpp_ODESimulator *thisptr
-#
-#cdef ODESimulator ODESimulator_from_Cpp_ODESimulator(Cpp_ODESimulator* s)
-
-## Cpp_ODEFactory
-#  ecell4::ode::ODEFactory
-#cdef extern from "ecell4/ode/ODEFactory.hpp" namespace "ecell4::ode":
-#    cdef cppclass Cpp_ODEFactory "ecell4::ode::ODEFactory":
-#        Cpp_ODEFactory() except +
-#        Cpp_ODEWorld* create_world(string)
-#        Cpp_ODEWorld* create_world(Cpp_Real3&)
-#        Cpp_ODEWorld* create_world(shared_ptr[Cpp_Model])
-#        Cpp_ODESimulator* create_simulator(shared_ptr[Cpp_Model], shared_ptr[Cpp_ODEWorld])
-#        Cpp_ODESimulator* create_simulator(shared_ptr[Cpp_ODEWorld])
-
-## ODEFactory
-#  a python wrapper for Cpp_ODEFactory
-#cdef class ODEFactory:
-#    cdef Cpp_ODEFactory* thisptr
-
-
 ## Following definitions are ODESimulator2 related.
 
 ## Cpp_ODERatelaw

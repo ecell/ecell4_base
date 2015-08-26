@@ -170,13 +170,6 @@ cdef class ReactionRule:
             inc(it1)
         return retval
 
-    def set_ratelaw(self, ratelaw):
-        """Warning: This member function will be deprecated."""
-        if (isinstance(ratelaw, RatelawMassAction)):
-            self.set_ratelaw_massaction(ratelaw)
-        else:
-            pass
-
     #def set_ratelaw_massaction(self, RatelawMassAction ratelaw):
     #    """Warning: This member function will be deprecated."""
     #    self.thisptr.set_ratelaw(deref(ratelaw.thisptr))

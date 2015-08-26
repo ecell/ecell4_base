@@ -9,7 +9,6 @@ cdef string tostring(ustr):
 include "RandomNumberGenerator.pxi"
 include "UnitSpecies.pxi"
 include "Species.pxi"
-include "Ratelaw.pxi"
 include "ReactionRule.pxi"
 include "Space.pxi"
 include "CompartmentSpace.pxi"

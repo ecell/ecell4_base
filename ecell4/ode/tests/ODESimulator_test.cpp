@@ -10,7 +10,7 @@
 #include <ecell4/core/Species.hpp>
 #include <ecell4/core/ReactionRule.hpp>
 #include <ecell4/core/NetworkModel.hpp>
-#include "../ODESimulator.hpp"
+#include "../ODESimulator2.hpp"
 
 using namespace ecell4;
 using namespace ecell4::ode;
@@ -24,7 +24,7 @@ BOOST_AUTO_TEST_CASE(ODESimulator_test_constructor)
     boost::shared_ptr<NetworkModel> model(new NetworkModel());
     boost::shared_ptr<ODEWorld> world(new ODEWorld(edge_lengths));
 
-    ODESimulator target(model, world);
+    ODESimulator2 target(model, world);
 }
 
 BOOST_AUTO_TEST_CASE(ODESimulator_test_step1)
@@ -35,7 +35,7 @@ BOOST_AUTO_TEST_CASE(ODESimulator_test_step1)
     boost::shared_ptr<NetworkModel> model(new NetworkModel());
     boost::shared_ptr<ODEWorld> world(new ODEWorld(edge_lengths));
 
-    ODESimulator target(model, world);
+    ODESimulator2 target(model, world);
     // target.step(1.0); //XXX: why not?
 }
 
@@ -61,7 +61,7 @@ BOOST_AUTO_TEST_CASE(ODESimulator_test_step2)
     world->reserve_species(sp1);
     world->set_value(sp1, 60);
 
-    ODESimulator target(model, world);
+    ODESimulator2 target(model, world);
 
     // std::cout << target.t() << ":" << world->num_molecules(sp1)
     //           << ":" << world->num_molecules(sp2) << std::endl;
