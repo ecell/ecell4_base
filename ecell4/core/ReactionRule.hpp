@@ -6,7 +6,7 @@
 
 #include "types.hpp"
 #include "Species.hpp"
-#include "Ratelaw.hpp"
+//#include "Ratelaw.hpp"
 
 
 namespace ecell4
@@ -91,7 +91,7 @@ public:
 
     /** Ratelaw related functions.
       */
-
+    /*
     void set_ratelaw(const boost::shared_ptr<Ratelaw> ratelaw)
     {
         this->ratelaw_ = ratelaw;
@@ -105,7 +105,7 @@ public:
     bool has_ratelaw() const
     {
         return !(this->ratelaw_.expired());
-    }
+    }*/
 
 protected:
 
@@ -113,7 +113,7 @@ protected:
     reactant_container_type reactants_;
     product_container_type products_;
 
-    boost::weak_ptr<Ratelaw> ratelaw_;
+    //boost::weak_ptr<Ratelaw> ratelaw_;
 };
 
 inline bool operator<(const ReactionRule& lhs, const ReactionRule& rhs)

@@ -7,6 +7,7 @@
 #include <set>
 #include <algorithm>
 #include <iterator>
+#include <boost/shared_ptr.hpp>
 
 #include "types.hpp"
 #include "Species.hpp"

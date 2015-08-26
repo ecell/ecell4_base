@@ -114,116 +114,37 @@ cdef ODEWorld ODEWorld_from_Cpp_ODEWorld(
     r.thisptr.swap(w)
     return r
 
-## ODESimulator
-#  a python wrapper for Cpp_ODESimulator
-cdef class ODESimulator:
-
-    def __cinit__(self, m, ODEWorld w=None):
-        if w is None:
-            self.thisptr = new Cpp_ODESimulator(
-                deref((<ODEWorld>m).thisptr))
-        else:
-            self.thisptr = new Cpp_ODESimulator(
-                deref(Cpp_Model_from_Model(m)), deref(w.thisptr))
-
-    def __dealloc__(self):
-        del self.thisptr
-
-    def num_steps(self):
-        return self.thisptr.num_steps()
-
-    def next_time(self):
-        return self.thisptr.next_time()
-
-    def dt(self):
-        return self.thisptr.dt()
-
-    def step(self, upto = None):
-        if upto is None:
-            self.thisptr.step()
-        else:
-            return self.thisptr.step(upto)
-
-    def t(self):
-        return self.thisptr.t()
-
-    def set_t(self, Real new_t):
-        self.thisptr.set_t(new_t)
-
-    def set_dt(self, Real dt):
-        self.thisptr.set_dt(dt)
-
-    def initialize(self):
-        self.thisptr.initialize()
-
-    def last_reactions(self):
-        cdef vector[Cpp_ReactionRule] reactions = self.thisptr.last_reactions()
-        cdef vector[Cpp_ReactionRule].iterator it = reactions.begin()
-        retval = []
-        while it != reactions.end():
-            retval.append(ReactionRule_from_Cpp_ReactionRule(
-                <Cpp_ReactionRule*>(address(deref(it)))))
-            inc(it)
-        return retval
-
-    def model(self):
-        return Model_from_Cpp_Model(self.thisptr.model())
-
-    def world(self):
-        return ODEWorld_from_Cpp_ODEWorld(self.thisptr.world())
-
-    def run(self, Real duration, observers=None):
-        cdef vector[shared_ptr[Cpp_Observer]] tmp
-
-        if observers is None:
-            self.thisptr.run(duration)
-        elif isinstance(observers, collections.Iterable):
-            for obs in observers:
-                tmp.push_back(deref((<Observer>(obs.as_base())).thisptr))
-            self.thisptr.run(duration, tmp)
-        else:
-            self.thisptr.run(duration,
-                deref((<Observer>(observers.as_base())).thisptr))
-
-cdef ODESimulator ODESimulator_from_Cpp_ODESimulator(Cpp_ODESimulator* s):
-    r = ODESimulator(
-        Model_from_Cpp_Model(s.model()),
-        ODEWorld_from_Cpp_ODEWorld(s.world()))
-    del r.thisptr
-    r.thisptr = s
-    return r
-
 ## ODEFactory
 #  a python wrapper for Cpp_ODEFactory
-cdef class ODEFactory:
-
-    def __cinit__(self):
-        self.thisptr = new Cpp_ODEFactory()
-
-    def __dealloc__(self):
-        del self.thisptr
-
-    def create_world(self, arg1):
-        if isinstance(arg1, Real3):
-            return ODEWorld_from_Cpp_ODEWorld(
-                shared_ptr[Cpp_ODEWorld](
-                    self.thisptr.create_world(deref((<Real3>arg1).thisptr))))
-        elif isinstance(arg1, str):
-            return ODEWorld_from_Cpp_ODEWorld(
-                shared_ptr[Cpp_ODEWorld](self.thisptr.create_world(<string>(arg1))))
-        else:
-            return ODEWorld_from_Cpp_ODEWorld(
-                shared_ptr[Cpp_ODEWorld](self.thisptr.create_world(
-                    deref(Cpp_Model_from_Model(arg1)))))
-
-    def create_simulator(self, arg1, ODEWorld arg2=None):
-        if arg2 is None:
-            return ODESimulator_from_Cpp_ODESimulator(
-                self.thisptr.create_simulator(deref((<ODEWorld>arg1).thisptr)))
-        else:
-            return ODESimulator_from_Cpp_ODESimulator(
-                self.thisptr.create_simulator(
-                    deref(Cpp_Model_from_Model(arg1)), deref(arg2.thisptr)))
+#cdef class ODEFactory:
+#
+#    def __cinit__(self):
+#        self.thisptr = new Cpp_ODEFactory()
+#
+#    def __dealloc__(self):
+#        del self.thisptr
+#
+#    def create_world(self, arg1):
+#        if isinstance(arg1, Real3):
+#            return ODEWorld_from_Cpp_ODEWorld(
+#                shared_ptr[Cpp_ODEWorld](
+#                    self.thisptr.create_world(deref((<Real3>arg1).thisptr))))
+#        elif isinstance(arg1, str):
+#            return ODEWorld_from_Cpp_ODEWorld(
+#                shared_ptr[Cpp_ODEWorld](self.thisptr.create_world(<string>(arg1))))
+#        else:
+#            return ODEWorld_from_Cpp_ODEWorld(
+#                shared_ptr[Cpp_ODEWorld](self.thisptr.create_world(
+#                    deref(Cpp_Model_from_Model(arg1)))))
+#
+#    def create_simulator(self, arg1, ODEWorld arg2=None):
+#        if arg2 is None:
+#            return ODESimulator_from_Cpp_ODESimulator(
+#                self.thisptr.create_simulator(deref((<ODEWorld>arg1).thisptr)))
+#        else:
+#            return ODESimulator_from_Cpp_ODESimulator(
+#                self.thisptr.create_simulator(
+#                    deref(Cpp_Model_from_Model(arg1)), deref(arg2.thisptr)))
 
 cdef class ODERatelaw:
     # Abstract ODERatelaw Type.
