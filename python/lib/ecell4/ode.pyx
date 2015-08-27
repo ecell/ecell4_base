@@ -371,10 +371,17 @@ cdef ODENetworkModel ODENetworkModel_from_Cpp_ODENetworkModel(
     return r
 
 cdef class ODESimulator2:
-    def __cinit__(self, ODENetworkModel m, ODEWorld w):
-        self.thisptr = new Cpp_ODESimulator2(deref(m.thisptr), deref(w.thisptr)) 
-    def __cinit__(self, NetworkModel m, ODEWorld w):
-        self.thisptr = new Cpp_ODESimulator2(deref(m.thisptr), deref(w.thisptr)) 
+    def __cinit__(self, m, ODEWorld w):
+        if isinstance(m, ODENetworkModel):
+            self.thisptr = new Cpp_ODESimulator2(
+                deref((<ODENetworkModel>m).thisptr), deref(w.thisptr))
+        elif isinstance(m, NetworkModel):
+            self.thisptr = new Cpp_ODESimulator2(
+                deref((<NetworkModel>m).thisptr), deref(w.thisptr))
+    # def __cinit__(self, ODENetworkModel m, ODEWorld w):
+    #     self.thisptr = new Cpp_ODESimulator2(deref(m.thisptr), deref(w.thisptr)) 
+    # def __cinit__(self, NetworkModel m, ODEWorld w):
+    #     self.thisptr = new Cpp_ODESimulator2(deref(m.thisptr), deref(w.thisptr)) 
 
     def __dealloc__(self):
         del self.thisptr
@@ -447,16 +454,16 @@ cdef class ODEFactory2:
                 shared_ptr[Cpp_ODEWorld](self.thisptr.create_world(<string>(arg1))))
         raise ValueError("invalid argument")
 
-    # def create_simulator(self, arg1, ODEWorld arg2=None):
-    #     if arg2 is None:
-    #         return ODESimulator2_from_Cpp_ODESimulator2(
-    #             self.thisptr.create_simulator(deref((<ODEWorld>arg1).thisptr)))
-    #     else:
-    #         return ODESimulator2_from_Cpp_ODESimulator2(
-    #             self.thisptr.create_simulator(
-    #                 deref((<ODENetworkModel>arg1).thisptr), deref(arg2.thisptr)))
+    def create_simulator(self, arg1, ODEWorld arg2=None):
+        if arg2 is None:
+            return ODESimulator2_from_Cpp_ODESimulator2(
+                self.thisptr.create_simulator(deref((<ODEWorld>arg1).thisptr)))
+        else:
+            return ODESimulator2_from_Cpp_ODESimulator2(
+                self.thisptr.create_simulator(
+                    deref((<ODENetworkModel>arg1).thisptr), deref(arg2.thisptr)))
 
-    def create_simulator(self, ODENetworkModel arg1, ODEWorld arg2):
-        return ODESimulator2_from_Cpp_ODESimulator2(
-            self.thisptr.create_simulator(deref(arg1.thisptr), deref(arg2.thisptr)))
+    # def create_simulator(self, ODENetworkModel arg1, ODEWorld arg2):
+    #     return ODESimulator2_from_Cpp_ODESimulator2(
+    #         self.thisptr.create_simulator(deref(arg1.thisptr), deref(arg2.thisptr)))
 
