@@ -6,7 +6,6 @@
 #include "Shape.hpp"
 #include "Identifier.hpp"
 #include "RandomNumberGenerator.hpp"
-#include "Identifier.hpp"
 // #include "LatticeSpace.hpp"
 
 
@@ -27,9 +26,9 @@ public:
 public:
 
     MolecularTypeBase(
-        const Species& species, MolecularTypeBase* location,
+        const Species& species, bool is_structure, MolecularTypeBase* location,
         const Real& radius, const Real& D)
-        : species_(species), location_(location),
+        : species_(species), is_structure_(is_structure), location_(location),
         radius_(radius), D_(D), dimension_(Shape::UNDEF)
     {
         ;
@@ -50,6 +49,11 @@ public:
     const Species& species() const
     {
         return species_;
+    }
+
+    bool is_structure() const
+    {
+        return is_structure_;
     }
 
     MolecularTypeBase* location() const
@@ -274,6 +278,7 @@ protected:
 protected:
 
     const Species species_;
+    const bool is_structure_;
     MolecularTypeBase* location_;
     Real radius_, D_;
     Shape::dimension_kind dimension_;
