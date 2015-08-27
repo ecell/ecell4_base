@@ -5,12 +5,12 @@
 #include <ecell4/core/Species.hpp>
 #include <ecell4/core/ReactionRule.hpp>
 #include <ecell4/core/NetworkModel.hpp>
-#include <ecell4/ode/ODESimulator.hpp>
+#include <ecell4/ode/ODESimulator2.hpp>
 
 #include <ecell4/ode/ODENetworkModel.hpp>
 #include <ecell4/ode/ODEReactionRule.hpp>
 
-#include <ecell4/core/Ratelaw.hpp>
+#include <ecell4/ode/ODERatelaw.hpp>
 
 #include <ecell4/ode/ODESimulator2.hpp>
 #include <boost/format.hpp>
@@ -59,6 +59,7 @@ int main(int argc, char **argv)
     world->add_molecules(sp1, N);
 
     ODESimulator2 sim2(model, world);
+    sim2.initialize();
     Real next_time(0.0), dt(0.01);
     std::cout << sim2.t() 
               << "\t" << world->num_molecules(sp1) 

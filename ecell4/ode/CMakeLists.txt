@@ -8,7 +8,7 @@ add_library(ecell4-ode SHARED ${CPP_FILES} ${HPP_FILES})
 target_link_libraries(ecell4-ode ecell4-core)
 
 add_subdirectory(tests)
-#add_subdirectory(samples)
+add_subdirectory(samples)
 
 install(TARGETS ecell4-ode DESTINATION lib)
 install(FILES ${HPP_FILES} DESTINATION "include/ecell4/ode")

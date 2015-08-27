@@ -4,9 +4,9 @@
 #include <ecell4/core/Species.hpp>
 #include <ecell4/core/ReactionRule.hpp>
 #include <ecell4/core/NetworkModel.hpp>
-#include <ecell4/ode/ODESimulator.hpp>
+#include <ecell4/ode/ODESimulator2.hpp>
 
-#include <ecell4/core/Ratelaw.hpp>
+//#include <ecell4/core/Ratelaw.hpp>
 
 using namespace ecell4;
 using namespace ecell4::ode;
@@ -25,8 +25,6 @@ int main(int argc, char** argv)
     rr1.add_reactant(sp1);
     rr1.add_product(sp2);
     rr1.add_product(sp3);
-    boost::shared_ptr<RatelawMassAction> ratelaw(new RatelawMassAction(1.0));
-    rr1.set_ratelaw(ratelaw);
 
     boost::shared_ptr<NetworkModel> model(new NetworkModel());
     model->add_species_attribute(sp1);
@@ -40,7 +38,8 @@ int main(int argc, char** argv)
 
     world->bind_to(model);
 
-    ODESimulator target(model, world);
+    ODESimulator2 target(model, world);
+    target.initialize();
 
     Real next_time(0.0), dt(0.01);
 
