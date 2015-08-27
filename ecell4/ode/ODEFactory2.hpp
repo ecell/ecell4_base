@@ -45,13 +45,6 @@ public:
         return new ODEWorld(edge_lengths);
     }
 
-    ODESimulator2* create_simulator(
-        const boost::shared_ptr<ODENetworkModel>& model,
-        const boost::shared_ptr<world_type>& world) const
-    {
-        return new ODESimulator2(model, world);
-    }
-
     virtual ODEWorld* create_world(const boost::shared_ptr<Model>& m) const
     {
         throw NotSupported("not supported.");
@@ -68,6 +61,20 @@ public:
         const boost::shared_ptr<world_type>& world) const
     {
         throw NotSupported("not supported.");
+    }
+
+    ODESimulator2* create_simulator(
+        const boost::shared_ptr<NetworkModel>& model,
+        const boost::shared_ptr<world_type>& world) const
+    {
+        return new ODESimulator2(model, world);
+    }
+
+    ODESimulator2* create_simulator(
+        const boost::shared_ptr<ODENetworkModel>& model,
+        const boost::shared_ptr<world_type>& world) const
+    {
+        return new ODESimulator2(model, world);
     }
 
 protected:

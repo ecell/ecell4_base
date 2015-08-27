@@ -175,10 +175,11 @@ cdef ODESimulator2 ODESimulator2_from_Cpp_ODESimulator2(Cpp_ODESimulator2* s)
 cdef extern from "ecell4/ode/ODEFactory2.hpp" namespace "ecell4::ode":
     cdef cppclass Cpp_ODEFactory2 "ecell4::ode::ODEFactory2":
         Cpp_ODEFactory2() except +
+        Cpp_ODEWorld* create_world()
         Cpp_ODEWorld* create_world(string)
         Cpp_ODEWorld* create_world(Cpp_Real3&)
+        Cpp_ODESimulator2* create_simulator(shared_ptr[Cpp_NetworkModel], shared_ptr[Cpp_ODEWorld])
         Cpp_ODESimulator2* create_simulator(shared_ptr[Cpp_ODENetworkModel], shared_ptr[Cpp_ODEWorld])
-        Cpp_ODESimulator2* create_simulator(shared_ptr[Cpp_ODEWorld])
 
 ## ODEFactory2
 #  a python wrapper for Cpp_ODEFactory2
