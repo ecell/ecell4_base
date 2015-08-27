@@ -42,11 +42,16 @@ protected:
                 minfo(sim_->world_->get_molecule_info(species));
             const Real R(minfo.radius);
             const Real D(minfo.D);
+            const MolecularTypeBase* mtype(sim_->world_->find_molecular_type(species));
             // const Real R(sim_->world_->voxel_radius());
             // Real D = boost::lexical_cast<Real>(species.get_attribute("D"));
             if (D <= 0)
             {
                 dt_ = inf;
+            } else if(mtype->get_dimension() == Shape::TWO) {
+                // TODO: Regular Lattice
+                dt_  = pow((2*sqrt(2)+4*sqrt(3)+3*sqrt(6)+sqrt(22))/
+                          (6*sqrt(2)+4*sqrt(3)+3*sqrt(6)), 2) * R * R / D * alpha_;
             } else {
                 dt_ = 2 * R * R / 3 / D * alpha_;
             }

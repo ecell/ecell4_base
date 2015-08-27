@@ -70,7 +70,13 @@ public:
         return 4.0 * sqrt(2.0) * r * r * r;
     }
 
-    Real actual_volume() const
+    Real unit_area() const
+    {
+        const Real r(voxel_radius_);
+        return 2.0 * sqrt(3.0) * r * r;
+    }
+
+    Real get_volume() const
     {
         return size() * voxel_volume();
     }

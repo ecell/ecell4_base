@@ -325,9 +325,14 @@ public:
         return (*space_).voxel_volume();
     }
 
-    Real actual_volume() const
+    Real unit_area() const
     {
-        return (*space_).actual_volume();
+        return (*space_).unit_area();
+    }
+
+    Real get_volume() const
+    {
+        return (*space_).get_volume();
     }
 
     Real3 actual_lengths() const

@@ -223,10 +223,18 @@ std::pair<bool, LatticeSimulator::reaction_type> LatticeSimulator::attempt_react
     else if (dimensionA == Shape::THREE && dimensionB == Shape::TWO)
     {
         factor = sqrt(2.0) / (3 * D_A * world_->voxel_radius());
+        if (to_mt->is_structure()) // B is Surface
+        {
+            factor *= world_->unit_area();
+        }
     }
     else if (dimensionA == Shape::TWO && dimensionB == Shape::THREE)
     {
         factor = sqrt(2.0) / (3 * D_B * world_->voxel_radius()); // 不要?
+        if (from_mt->is_structure()) // A is Surface
+        {
+            factor *= world_->unit_area();
+        }
     }
     else
         throw NotSupported("The dimension of a shape must be two or three.");
@@ -902,29 +910,68 @@ void LatticeSimulator::walk(const Species& species, const Real& alpha)
 
     MolecularTypeBase::container_type voxels;
     copy(mtype->begin(), mtype->end(), back_inserter(voxels));
-    for (MolecularTypeBase::container_type::iterator itr(voxels.begin());
-            itr != voxels.end(); ++itr)
-    {
-        const Integer rnd(rng->uniform_int(0, 11));
-        const LatticeWorld::particle_info_type info(*itr);
-        if (world_->get_molecular_type_private(info.first) != mtype)
+
+    if (mtype->get_dimension() == Shape::THREE) {
+        for (MolecularTypeBase::container_type::iterator itr(voxels.begin());
+                itr != voxels.end(); ++itr)
         {
-            // should skip if a voxel is not the target species.
-            // when reaction has occured before, a voxel can be change.
-            continue;
+            const Integer rnd(rng->uniform_int(0, 11));
+            const LatticeWorld::particle_info_type info(*itr);
+            if (world_->get_molecular_type_private(info.first) != mtype)
+            {
+                // should skip if a voxel is not the target species.
+                // when reaction has occured before, a voxel can be changed.
+                continue;
+            }
+            const LatticeWorld::private_coordinate_type neighbor(
+                    world_->get_neighbor_private(info.first, rnd));
+            if (world_->can_move(info.first, neighbor))
+            {
+                if (rng->uniform(0,1) <= alpha)
+                    world_->move_private(info.first, neighbor);
+            }
+            else
+            {
+                attempt_reaction_(info, neighbor, alpha);
+            }
         }
-        const LatticeWorld::private_coordinate_type neighbor(
-                world_->get_neighbor_private(info.first, rnd));
-        if (world_->can_move(info.first, neighbor))
+    } else { // dimension == TWO, etc.
+        std::vector<unsigned int> nids;
+        for (unsigned int i(0); i < 12; ++i)
+            nids.push_back(i);
+        const MolecularTypeBase* location(mtype->location());
+        for (MolecularTypeBase::container_type::iterator itr(voxels.begin());
+                itr != voxels.end(); ++itr)
         {
-            if (rng->uniform(0,1) <= alpha)
-                world_->move_private(info.first, neighbor);
-        }
-        else
-        {
-            attempt_reaction_(info, neighbor, alpha);
+            const LatticeWorld::particle_info_type info(*itr);
+            if (world_->get_molecular_type_private(info.first) != mtype)
+            {
+                // should skip if a voxel is not the target species.
+                // when reaction has occured before, a voxel can be changed.
+                continue;
+            }
+
+            ecell4::shuffle(*(rng.get()), nids);
+            for (int i(0); i < 12; ++i) {
+                const LatticeWorld::private_coordinate_type neighbor(
+                        world_->get_neighbor_private(info.first, nids.at(i)));
+                const MolecularTypeBase* target(world_->get_molecular_type_private(neighbor));
+                if (target == location || target->location() == location) {
+                    if (world_->can_move(info.first, neighbor))
+                    {
+                        if (rng->uniform(0,1) <= alpha)
+                            world_->move_private(info.first, neighbor);
+                    }
+                    else
+                    {
+                        attempt_reaction_(info, neighbor, alpha);
+                    }
+                    break;
+                }
+            }
         }
     }
+
 }
 
 } // lattice
