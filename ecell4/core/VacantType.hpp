@@ -41,6 +41,11 @@ public:
         return instance;
     }
 
+    const Shape::dimension_kind get_dimension() const
+    {
+        return Shape::THREE;
+    }
+
     virtual void add_voxel_without_checking(const coord_id_pair& info)
     {
         ; // do nothing
@@ -70,7 +75,6 @@ private:
     VacantType()
         : base_type(Species("VACANT", "0", "0"), false, NULL, 0, 0)
     {
-        set_dimension(Shape::THREE);
     }
 };
 

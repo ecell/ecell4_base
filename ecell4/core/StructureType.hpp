@@ -23,8 +23,9 @@ public:
 
     StructureType(
         const Species& species, MolecularTypeBase* location,
-        const Real& radius = 0.0)
-        : base_type(species, true, location, radius, 0)
+        const Real& radius = 0.0, const Shape::dimension_kind& dimension=Shape::UNDEF)
+        : base_type(species, true, location, radius, 0),
+        dimension_(std::min(dimension, location->get_dimension()))
         // : base_type(species, &(VacantType::getInstance()), radius, 0)
     {
         ;
@@ -43,6 +44,11 @@ public:
     bool with_voxels() const
     {
         return false;
+    }
+
+    const Shape::dimension_kind get_dimension() const
+    {
+        return dimension_;
     }
 
     virtual void add_voxel_without_checking(const coord_id_pair& info)
@@ -78,6 +84,10 @@ public:
     {
         return true;
     }
+
+private:
+    const Shape::dimension_kind dimension_;
+
 };
 
 } //ecell4

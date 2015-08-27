@@ -1036,8 +1036,7 @@ bool LatticeSpaceVectorImpl::make_structure_type(const Species& sp,
         }
     }
 
-    boost::shared_ptr<MolecularType> mt(new StructureType(sp, location, voxel_radius_));
-    mt->set_dimension(shape->dimension());
+    boost::shared_ptr<MolecularType> mt(new StructureType(sp, location, voxel_radius_, shape->dimension()));
     std::pair<spmap::iterator, bool>
         retval(spmap_.insert(std::make_pair(sp, mt)));
     return retval.second;

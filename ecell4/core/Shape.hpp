@@ -10,8 +10,9 @@ namespace ecell4
 
 struct Shape
 {
-    typedef enum {
-        UNDEF, ONE, TWO, THREE,
+    typedef enum
+    {
+        ONE, TWO, THREE, UNDEF,
     } dimension_kind;
 
     virtual ~Shape()

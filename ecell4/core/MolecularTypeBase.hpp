@@ -29,7 +29,7 @@ public:
         const Species& species, bool is_structure, MolecularTypeBase* location,
         const Real& radius, const Real& D)
         : species_(species), is_structure_(is_structure), location_(location),
-        radius_(radius), D_(D), dimension_(Shape::UNDEF)
+        radius_(radius), D_(D)
     {
         ;
     }
@@ -81,14 +81,9 @@ public:
         return D_;
     }
 
-    void set_dimension(const Shape::dimension_kind dimension)
-    {
-        dimension_ = dimension;
-    }
-
     virtual const Shape::dimension_kind get_dimension() const
     {
-        return dimension_;
+        return Shape::UNDEF;
     }
 
     virtual void add_voxel_without_checking(const coord_id_pair& info)
@@ -281,7 +276,6 @@ protected:
     const bool is_structure_;
     MolecularTypeBase* location_;
     Real radius_, D_;
-    Shape::dimension_kind dimension_;
 
     container_type voxels_;
 };
