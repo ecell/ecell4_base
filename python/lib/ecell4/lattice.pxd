@@ -26,7 +26,7 @@ cdef extern from "ecell4/lattice/LatticeWorld.hpp" namespace "ecell4::lattice":
         Real volume()
         Real voxel_volume()
         Cpp_Real3 actual_lengths()
-        Real actual_volume()
+        Real get_volume()
 
         pair[pair[Cpp_ParticleID, Cpp_Particle], bool] new_particle(Cpp_Particle& p)
         pair[pair[Cpp_ParticleID, Cpp_Particle], bool] new_particle(Cpp_Species& sp, Cpp_Real3& pos)

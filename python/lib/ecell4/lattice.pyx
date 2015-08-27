@@ -76,12 +76,12 @@ cdef class LatticeWorld:
         """
         return self.thisptr.get().voxel_volume()
 
-    def actual_volume(self):
+    def get_volume(self):
         """Return the actual volume of the world
         Returns:
             Real: the actual volume of the world
         """
-        return self.thisptr.get().actual_volume()
+        return self.thisptr.get().get_volume()
 
     def actual_lengths(self):
         """Return the actual edge lengths of the world
