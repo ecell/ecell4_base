@@ -73,7 +73,7 @@ def singlerun():
     w.set_value(Y, init_Y)
     w.set_value(Z, init_Z)
     
-    sim = ODESimulator2(m, w)
+    sim = ODESimulator(m, w)
     next_time, dt = 0.0, 0.01
     
     print "{:5f},{:e},{:e},{:e}".format(

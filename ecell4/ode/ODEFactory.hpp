@@ -1,5 +1,5 @@
-#ifndef __ECELL4_ODE_ODE_FACTORY_HPP
-#define __ECELL4_ODE_ODE_FACTORY_HPP
+#ifndef __ECELL4_ODE_ODE_FACTORY2_HPP
+#define __ECELL4_ODE_ODE_FACTORY2_HPP
 
 #include <ecell4/core/SimulatorFactory.hpp>
 #include <ecell4/core/extras.hpp>
@@ -47,35 +47,34 @@ public:
 
     virtual ODEWorld* create_world(const boost::shared_ptr<Model>& m) const
     {
-        ODEWorld* w(extras::__generate_world_from_model(*this, m));
-
-        for (Model::parameter_container_type::const_iterator
-            i(m->parameters().begin()); i != m->parameters().end(); ++i)
-        {
-            const Species& sp(*i);
-            if (sp.has_attribute("N"))
-            {
-                w->set_value(
-                    Species(sp.serial()),
-                    std::atof(sp.get_attribute("N").c_str())); //XXX: Real
-            }
-        }
-        return w;
+        throw NotSupported("not supported.");
     }
 
-    virtual ODESimulator* create_simulator(
+    ODESimulator* create_simulator(
         const boost::shared_ptr<Model>& model,
         const boost::shared_ptr<world_type>& world) const
     {
-        return new ODESimulator(model, world);
-        // return new ODESimulator(
-        //     boost::dynamic_pointer_cast<NetworkModel>(model), world); //XXX:
+        throw NotSupported("not supported.");
     }
 
     virtual ODESimulator* create_simulator(
         const boost::shared_ptr<world_type>& world) const
     {
-        return new ODESimulator(world);
+        throw NotSupported("not supported.");
+    }
+
+    ODESimulator* create_simulator(
+        const boost::shared_ptr<NetworkModel>& model,
+        const boost::shared_ptr<world_type>& world) const
+    {
+        return new ODESimulator(model, world);
+    }
+
+    ODESimulator* create_simulator(
+        const boost::shared_ptr<ODENetworkModel>& model,
+        const boost::shared_ptr<world_type>& world) const
+    {
+        return new ODESimulator(model, world);
     }
 
 protected:
@@ -85,4 +84,4 @@ protected:
 
 } // ecell4
 
-#endif /* __ECELL4_ODE_ODE_FACTORY_HPP */
+#endif /* __ECELL4_ODE_ODE_FACTORY2_HPP */

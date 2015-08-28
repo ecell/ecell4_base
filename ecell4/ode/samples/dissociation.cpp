@@ -4,7 +4,7 @@
 #include <ecell4/core/Species.hpp>
 #include <ecell4/core/ReactionRule.hpp>
 #include <ecell4/core/NetworkModel.hpp>
-#include <ecell4/ode/ODESimulator2.hpp>
+#include <ecell4/ode/ODESimulator.hpp>
 
 //#include <ecell4/core/Ratelaw.hpp>
 
@@ -38,7 +38,7 @@ int main(int argc, char** argv)
 
     world->bind_to(model);
 
-    ODESimulator2 target(model, world);
+    ODESimulator target(model, world);
     target.initialize();
 
     Real next_time(0.0), dt(0.01);

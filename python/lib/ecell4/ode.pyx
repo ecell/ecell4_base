@@ -370,22 +370,22 @@ cdef ODENetworkModel ODENetworkModel_from_Cpp_ODENetworkModel(
     r.thisptr.swap(m)
     return r
 
-cdef class ODESimulator2:
+cdef class ODESimulator:
     def __cinit__(self, m, ODEWorld w):
         if isinstance(m, ODENetworkModel):
-            self.thisptr = new Cpp_ODESimulator2(
+            self.thisptr = new Cpp_ODESimulator(
                 deref((<ODENetworkModel>m).thisptr), deref(w.thisptr))
         elif isinstance(m, NetworkModel):
-            self.thisptr = new Cpp_ODESimulator2(
+            self.thisptr = new Cpp_ODESimulator(
                 deref((<NetworkModel>m).thisptr), deref(w.thisptr))
         else:
             raise ValueError(
                 "invalid argument {}.".format(repr(m))
                 + " NetworkModel or ODENetworkModel is needed.")
     # def __cinit__(self, ODENetworkModel m, ODEWorld w):
-    #     self.thisptr = new Cpp_ODESimulator2(deref(m.thisptr), deref(w.thisptr)) 
+    #     self.thisptr = new Cpp_ODESimulator(deref(m.thisptr), deref(w.thisptr)) 
     # def __cinit__(self, NetworkModel m, ODEWorld w):
-    #     self.thisptr = new Cpp_ODESimulator2(deref(m.thisptr), deref(w.thisptr)) 
+    #     self.thisptr = new Cpp_ODESimulator(deref(m.thisptr), deref(w.thisptr)) 
 
     def __dealloc__(self):
         del self.thisptr
@@ -430,20 +430,20 @@ cdef class ODESimulator2:
             self.thisptr.run(duration,
                 deref((<Observer>(observers.as_base())).thisptr))
 
-cdef ODESimulator2 ODESimulator2_from_Cpp_ODESimulator2(Cpp_ODESimulator2* s):
-    r = ODESimulator2(
+cdef ODESimulator ODESimulator_from_Cpp_ODESimulator(Cpp_ODESimulator* s):
+    r = ODESimulator(
         ODENetworkModel_from_Cpp_ODENetworkModel(s.model()),
         ODEWorld_from_Cpp_ODEWorld(s.world()))
     del r.thisptr
     r.thisptr = s
     return r
 
-## ODEFactory2
-#  a python wrapper for Cpp_ODEFactory2
-cdef class ODEFactory2:
+## ODEFactory
+#  a python wrapper for Cpp_ODEFactory
+cdef class ODEFactory:
 
     def __cinit__(self):
-        self.thisptr = new Cpp_ODEFactory2()
+        self.thisptr = new Cpp_ODEFactory()
 
     def __dealloc__(self):
         del self.thisptr
@@ -463,19 +463,19 @@ cdef class ODEFactory2:
 
     # def create_simulator(self, arg1, ODEWorld arg2=None):
     #     if arg2 is None:
-    #         return ODESimulator2_from_Cpp_ODESimulator2(
+    #         return ODESimulator_from_Cpp_ODESimulator(
     #             self.thisptr.create_simulator(deref((<ODEWorld>arg1).thisptr)))
     #     else:
-    #         return ODESimulator2_from_Cpp_ODESimulator2(
+    #         return ODESimulator_from_Cpp_ODESimulator(
     #             self.thisptr.create_simulator(
     #                 deref((<ODENetworkModel>arg1).thisptr), deref(arg2.thisptr)))
 
     def create_simulator(self, arg1, ODEWorld arg2):
         if isinstance(arg1, ODENetworkModel):
-            return ODESimulator2_from_Cpp_ODESimulator2(
+            return ODESimulator_from_Cpp_ODESimulator(
                 self.thisptr.create_simulator(deref((<ODENetworkModel>arg1).thisptr), deref(arg2.thisptr)))
         elif isinstance(arg1, NetworkModel):
-            return ODESimulator2_from_Cpp_ODESimulator2(
+            return ODESimulator_from_Cpp_ODESimulator(
                 self.thisptr.create_simulator(deref((<NetworkModel>arg1).thisptr), deref(arg2.thisptr)))
         else:
             raise ValueError(

@@ -1,120 +1,121 @@
-#ifndef __ECELL4_ODE_ODE_SIMULATOR_HPP
-#define __ECELL4_ODE_ODE_SIMULATOR_HPP
+#ifndef __ECELL4_ODE_ODE_SIMULATOR2_HPP
+#define __ECELL4_ODE_ODE_SIMULATOR2_HPP
 
 #include <cstring>
 #include <vector>
+#include <numeric>
+#include <map>
 #include <boost/shared_ptr.hpp>
-
-#include <ecell4/core/exceptions.hpp>
-#include <ecell4/core/types.hpp>
-#include <ecell4/core/get_mapper_mf.hpp>
-#include <ecell4/core/NetworkModel.hpp>
-#include <ecell4/core/SimulatorBase.hpp>
-#include <ecell4/core/ModelWrapper.hpp>
-
-#include "ODEWorld.hpp"
-
 #include <boost/scoped_ptr.hpp>
 #include <boost/scoped_array.hpp>
 
 #include <boost/numeric/ublas/vector.hpp>
 #include <boost/numeric/ublas/matrix.hpp>
 
+#include <ecell4/core/exceptions.hpp>
+#include <ecell4/core/types.hpp>
+#include <ecell4/core/get_mapper_mf.hpp>
+
+#include <ecell4/core/SimulatorBase.hpp>
+
+#include "ODEWorld.hpp"
+#include "ODEReactionRule.hpp"
+#include "ODENetworkModel.hpp"
+
 namespace ecell4
 {
-
 namespace ode
 {
 
 class ODESimulator
-    : public SimulatorBase<Model, ODEWorld>
+    : public SimulatorBase<ODENetworkModel, ODEWorld>
 {
 public:
 
-    typedef SimulatorBase<Model, ODEWorld> base_type;
+    typedef SimulatorBase<ODENetworkModel, ODEWorld> base_type;
 
 public:
 
     typedef boost::numeric::ublas::vector<double> state_type;
     typedef boost::numeric::ublas::matrix<double> matrix_type;
     typedef std::vector<state_type::size_type> index_container_type;
+    typedef std::vector<Real> coefficient_container_type;
 
-    typedef struct
+    typedef ODEReactionRule reacton_container_type;
+
+    struct reaction_type
     {
         index_container_type reactants;
+        coefficient_container_type reactant_coefficients;
         index_container_type products;
+        coefficient_container_type product_coefficients;
         Real k;
-        boost::weak_ptr<Ratelaw> ratelaw;
-    } reaction_type;
-
+        boost::weak_ptr<ODERatelaw> ratelaw;
+        const ODEReactionRule *raw;
+    };
     typedef std::vector<reaction_type> reaction_container_type;
 
     class deriv_func
     {
     public:
-
-        deriv_func(const reaction_container_type& reactions, const Real& volume)
+        deriv_func(const reaction_container_type &reactions, const Real &volume)
             : reactions_(reactions), volume_(volume), vinv_(1.0 / volume)
         {
             ;
         }
 
-        void operator()(const state_type& x, state_type& dxdt, const double& t)
+        void operator()(const state_type &x, state_type &dxdt, const double &t)
         {
-            for (state_type::iterator i(dxdt.begin()); i != dxdt.end(); ++i)
+            std::fill(dxdt.begin(), dxdt.end(), 0.0);
+            for(reaction_container_type::const_iterator i(reactions_.begin());
+                i != reactions_.end(); i++)
             {
-                *i = 0.0;
-            }
-            // XXX
-            for (reaction_container_type::const_iterator
-                i(reactions_.begin()); i != reactions_.end(); i++)
-            {
-                // Prepare  state_array of reactants and products that contain amounts of each reactants.
-                Ratelaw::state_container_type reactants_states(i->reactants.size());
-                Ratelaw::state_container_type products_states(i->products.size());
-                Ratelaw::state_container_type::size_type cnt(0);
+                ODERatelaw::state_container_type reactants_states(i->reactants.size());
+                ODERatelaw::state_container_type products_states(i->products.size());
+                ODERatelaw::state_container_type::size_type cnt(0);
 
-                for (index_container_type::const_iterator
-                    j((*i).reactants.begin()); j != (*i).reactants.end(); ++j, cnt++)
+                for(index_container_type::const_iterator j(i->reactants.begin());
+                    j != i->reactants.end(); j++, cnt++)
                 {
                     reactants_states[cnt] = x[*j];
                 }
                 cnt = 0;
-                for (index_container_type::const_iterator
-                    j((*i).products.begin()); j != (*i).products.end(); ++j, cnt++)
+                for(index_container_type::const_iterator j(i->products.begin());
+                    j != i->products.end(); j++, cnt++)
                 {
                     products_states[cnt] = x[*j];
                 }
-
                 double flux;
-                // Get pointer of Ratelaw object and call it.
+                // Calculation! XXX
                 if (i->ratelaw.expired() || i->ratelaw.lock()->is_available() == false)
                 {
-                    boost::scoped_ptr<Ratelaw> temporary_ratelaw_obj(new RatelawMassAction(i->k));
-                    flux = temporary_ratelaw_obj->deriv_func(reactants_states, products_states, volume_);
+                    boost::scoped_ptr<ODERatelaw> temporary_ratelaw_obj(new ODERatelawMassAction(i->k));
+                    flux = temporary_ratelaw_obj->deriv_func(reactants_states, products_states, volume_, t, *(i->raw) );
                 }
                 else
                 {
-                    boost::shared_ptr<Ratelaw> ratelaw = (*i).ratelaw.lock();
-                    flux = (*ratelaw).deriv_func(reactants_states, products_states, volume_);
+                    boost::shared_ptr<ODERatelaw> ratelaw = i->ratelaw.lock();
+                    flux = ratelaw->deriv_func(reactants_states, products_states, volume_, t, *(i->raw) );
                 }
-
                 // Merge each reaction's flux into whole dxdt
-                for (index_container_type::const_iterator
-                    j((*i).reactants.begin()); j != (*i).reactants.end(); ++j)
+                std::size_t nth = 0;
+                for(index_container_type::const_iterator j(i->reactants.begin());
+                    j != i->reactants.end(); j++)
                 {
-                    dxdt[*j] -= flux;
+                    dxdt[*j] -= (flux * (double)i->reactant_coefficients[nth]);
+                    nth++;
                 }
-                for (index_container_type::const_iterator
-                    j((*i).products.begin()); j != (*i).products.end(); ++j)
+                nth = 0;
+                for(index_container_type::const_iterator j(i->products.begin()); 
+                    j != i->products.end(); j++)
                 {
-                    dxdt[*j] += flux;
+                    dxdt[*j] += (flux * (double)i->product_coefficients[nth]);
+                    nth++;
                 }
             }
+            return;
         }
-
     protected:
-
         const reaction_container_type reactions_;
         const Real volume_;
         const Real vinv_;
@@ -123,171 +124,268 @@ public:
     class jacobi_func
     {
     public:
-
-        jacobi_func(const reaction_container_type& reactions, const Real& volume)
+        jacobi_func(const reaction_container_type &reactions, const Real& volume)
             : reactions_(reactions), volume_(volume), vinv_(1.0 / volume)
         {
             ;
         }
-
         void operator()(
-            const state_type& x, matrix_type& jacobi, const double& t, state_type& dfdt) const
+                const state_type& x, matrix_type& jacobi, const double &t, state_type &dfdt) const
         {
-            // fill 0 into jacobi and dfdt
-            for (state_type::iterator i(dfdt.begin()); i != dfdt.end(); ++i)
-            {
-                *i = 0.0;
-            }
-            for (matrix_type::array_type::iterator i(jacobi.data().begin());
-                i != jacobi.data().end(); ++i)
-            {
-                *i = 0.0;
-            }
+            //fill 0 into jacobi and dfdt
+            std::fill(dfdt.begin(), dfdt.end(), 0.0);
+            std::fill(jacobi.data().begin(), jacobi.data().end(), 0.0);
 
-            // Calculate jacobian for each reaction and merge it.
-            for (reaction_container_type::const_iterator
-                i(reactions_.begin()); i != reactions_.end(); i++)
+            const Real h(1.0e-8);
+            const Real ht(1.0e-10);
+
+            // calculate jacobian for each reaction and merge it.
+            for(reaction_container_type::const_iterator i(reactions_.begin()); 
+                i != reactions_.end(); i++)
             {
-                // Calculate a reaction's jacobian.
-                // prepare state_array that contain amounts of reactants
+                // Calculate one reactions's jabobian
+                //  Prepare the state_array to pass ODERatelaw.
                 index_container_type::size_type reactants_size(i->reactants.size());
                 index_container_type::size_type products_size(i->products.size());
-                Ratelaw::state_container_type reactants_states(reactants_size);
-                Ratelaw::state_container_type products_states(products_size);
-                Ratelaw::state_container_type::size_type cnt(0);
-                for (index_container_type::const_iterator
-                    j((*i).reactants.begin()); j != (*i).reactants.end(); ++j, cnt++)
+                ODERatelaw::state_container_type reactants_states(reactants_size);
+                ODERatelaw::state_container_type products_states(products_size);
+                ODERatelaw::state_container_type::size_type cnt(0);
+                for(index_container_type::const_iterator j(i->reactants.begin());
+                    j != i->reactants.end(); j++, cnt++)
                 {
                     reactants_states[cnt] = x[*j];
                 }
                 cnt = 0;
-                for (index_container_type::const_iterator
-                    j((*i).products.begin()); j != (*i).products.end(); ++j, cnt++)
+                for(index_container_type::const_iterator j(i->products.begin());
+                    j != i->products.end(); j++, cnt++)
                 {
                     products_states[cnt] = x[*j];
                 }
-                // prepare matrix object that will be filled with numerical differentiate.
-                matrix_type::size_type row_length = reactants_size + products_size;
-                matrix_type::size_type col_length = row_length;
-                matrix_type mat(row_length, col_length);
-
-                // get the pointer of Ratelaw object and call it.
+                // Call the ODERatelaw object
                 if (i->ratelaw.expired() || i->ratelaw.lock()->is_available() == false)
                 {
-                    boost::scoped_ptr<Ratelaw> temporary_ratelaw_obj(new RatelawMassAction(i->k));
-                    temporary_ratelaw_obj->jacobi_func(mat, reactants_states, products_states, volume_);
+                    boost::scoped_ptr<ODERatelaw> temporary_ratelaw_obj(new ODERatelawMassAction(i->k));
+                    Real flux_0 = temporary_ratelaw_obj->deriv_func(reactants_states, products_states, volume_, t, *(i->raw) );
+                    // Differentiate by time
+                    {
+                        Real flux = temporary_ratelaw_obj->deriv_func(reactants_states, products_states, volume_, t + ht, *(i->raw) );
+                        Real flux_deriv = (flux - flux_0) / h;
+                        if (flux_deriv != 0.0)
+                        {
+                            for(std::size_t k(0); k < i->reactants.size(); k++)
+                            {
+                                matrix_type::size_type row = i->reactants[k];
+                                Real coeff = i->reactant_coefficients[k];
+                                dfdt[row] -= coeff * flux_deriv;
+                            }
+                            for(std::size_t k(0); k < i->products.size(); k++)
+                            {
+                                matrix_type::size_type row = i->products[k];
+                                Real coeff = i->product_coefficients[k];
+                                dfdt[row] += coeff * flux_deriv;
+                            }
+                        }
+                    }
+                    // Differentiate by each Reactants
+                    for(std::size_t j(0); j < reactants_states.size(); j++)
+                    {
+                        ODERatelaw::state_container_type h_shift(reactants_states);
+                        h_shift[j] += h;
+                        Real flux = temporary_ratelaw_obj->deriv_func(h_shift, products_states, volume_, t, *(i->raw) );
+                        Real flux_deriv = (flux - flux_0) / h;
+                        matrix_type::size_type col = i->reactants[j];
+                        for(std::size_t k(0); k < i->reactants.size(); k++)
+                        {
+                            matrix_type::size_type row = i->reactants[k];
+                            Real coeff = i->reactant_coefficients[k];
+                            jacobi(row, col) -= coeff * flux_deriv;
+                        }
+                        for(std::size_t k(0); k < i->products.size(); k++)
+                        {
+                            matrix_type::size_type row = i->products[k];
+                            Real coeff = i->product_coefficients[k];
+                            jacobi(row, col) += coeff * flux_deriv;
+                        }
+                    }
+                    // Differentiate by Products
+                    for(std::size_t j(0); j < products_states.size(); j++)
+                    {
+                        ODERatelaw::state_container_type h_shift(products_states);
+                        h_shift[j] += h;
+                        Real flux = temporary_ratelaw_obj->deriv_func(reactants_states, h_shift, volume_, t, *(i->raw));
+                        Real flux_deriv = (flux - flux_0) / h;
+                        matrix_type::size_type col = i->products[j];
+                        for(std::size_t k(0); k < i->reactants.size(); k++)
+                        {
+                            matrix_type::size_type row = i->reactants[k];
+                            Real coeff = i->reactant_coefficients[k];
+                            jacobi(row, col) -= coeff * flux_deriv;
+                        }
+                        for(std::size_t k(0); k < i->products.size(); k++)
+                        {
+                            matrix_type::size_type row = i->products[k];
+                            Real coeff = i->product_coefficients[k];
+                            jacobi(row, col) += coeff * flux_deriv;
+                        }
+                    }
                 }
                 else
                 {
-                    boost::shared_ptr<Ratelaw> ratelaw = (*i).ratelaw.lock();
-                    (*ratelaw).jacobi_func(mat, reactants_states, products_states, volume_);
-                }
-
-                //merge jacobian
-                for(matrix_type::size_type row(0); row < row_length; row++)
-                {
-                    matrix_type::size_type j_row(row < reactants_size ? (*i).reactants[row] : (*i).products[row - reactants_size]);
-                    for(matrix_type::size_type col(0); col < col_length; col++)
+                    boost::shared_ptr<ODERatelaw> ratelaw = i->ratelaw.lock();
+                    Real flux_0 = ratelaw->deriv_func(reactants_states, products_states, volume_, t, *(i->raw) );
+                    // Differentiate by time
                     {
-                        matrix_type::size_type j_col(col < reactants_size ? (*i).reactants[col] : (*i).products[col - reactants_size]);
-                        jacobi(j_row, j_col) += mat(row, col);
+                        Real flux = ratelaw->deriv_func(reactants_states, products_states, volume_, t + ht, *(i->raw) );
+                        Real flux_deriv = (flux - flux_0) / h;
+                        if (flux_deriv != 0.0)
+                        {
+                            for(std::size_t k(0); k < i->reactants.size(); k++)
+                            {
+                                matrix_type::size_type row = i->reactants[k];
+                                Real coeff = i->reactant_coefficients[k];
+                                dfdt[row] -= coeff * flux_deriv;
+                            }
+                            for(std::size_t k(0); k < i->products.size(); k++)
+                            {
+                                matrix_type::size_type row = i->products[k];
+                                Real coeff = i->product_coefficients[k];
+                                dfdt[row] += coeff * flux_deriv;
+                            }
+                        }
+                    }
+                    // Differentiate by each Reactants
+                    for(std::size_t j(0); j < reactants_states.size(); j++)
+                    {
+                        ODERatelaw::state_container_type h_shift(reactants_states);
+                        h_shift[j] += h;
+                        Real flux = ratelaw->deriv_func(h_shift, products_states, volume_, t, *(i->raw) );
+                        Real flux_deriv = (flux - flux_0) / h;
+                        matrix_type::size_type col = i->reactants[j];
+                        for(std::size_t k(0); k < i->reactants.size(); k++)
+                        {
+                            matrix_type::size_type row = i->reactants[k];
+                            Real coeff = i->reactant_coefficients[k];
+                            jacobi(row, col) -= coeff * flux_deriv;
+                        }
+                        for(std::size_t k(0); k < i->products.size(); k++)
+                        {
+                            matrix_type::size_type row = i->products[k];
+                            Real coeff = i->product_coefficients[k];
+                            jacobi(row, col) += coeff * flux_deriv;
+                        }
+                    }
+                    // Differentiate by Products
+                    for(std::size_t j(0); j < products_states.size(); j++)
+                    {
+                        ODERatelaw::state_container_type h_shift(products_states);
+                        h_shift[j] += h;
+                        Real flux = ratelaw->deriv_func(reactants_states, h_shift, volume_, t, *(i->raw));
+                        Real flux_deriv = (flux - flux_0) / h;
+                        matrix_type::size_type col = i->products[j];
+                        for(std::size_t k(0); k < i->reactants.size(); k++)
+                        {
+                            matrix_type::size_type row = i->reactants[k];
+                            Real coeff = i->reactant_coefficients[k];
+                            jacobi(row, col) -= coeff * flux_deriv;
+                        }
+                        for(std::size_t k(0); k < i->products.size(); k++)
+                        {
+                            matrix_type::size_type row = i->products[k];
+                            Real coeff = i->product_coefficients[k];
+                            jacobi(row, col) += coeff * flux_deriv;
+                        }
                     }
                 }
             }
         }
-
     protected:
-
         const reaction_container_type reactions_;
         const Real volume_;
         const Real vinv_;
     };
+
 
     struct StateAndTimeBackInserter
     {
         typedef std::vector<state_type> state_container_type;
         typedef std::vector<double> time_container_type;
 
-        state_container_type& m_states;
-        time_container_type& m_times;
-
+        state_container_type &m_states;
+        time_container_type &m_times;
         StateAndTimeBackInserter(
-            state_container_type& states, time_container_type& times)
+            state_container_type &states, time_container_type &times)
             : m_states(states), m_times(times)
         {
             ;
         }
-
-        void operator()(const state_type&x, double t)
+        void operator()(const state_type &x, double t)
         {
             m_states.push_back(x);
             m_times.push_back(t);
         }
     };
-
 public:
 
     ODESimulator(
-        const boost::shared_ptr<Model>& model,
-        const boost::shared_ptr<ODEWorld>& world)
-        : base_type(model, world), dt_(inf)
+        const boost::shared_ptr<ODENetworkModel> &model,
+        const boost::shared_ptr<ODEWorld> &world)
+        : base_type(model, world), dt_(inf), abs_tol_(1e-10), rel_tol_(1e-6)
+        // : model_(model), world_(world), dt_(inf), num_steps_(0)
     {
         initialize();
     }
 
-    ODESimulator(const boost::shared_ptr<ODEWorld>& world)
-        : base_type(world), dt_(inf)
+    ODESimulator(
+        const boost::shared_ptr<NetworkModel> &model,
+        const boost::shared_ptr<ODEWorld> &world)
+        : base_type( boost::shared_ptr<ODENetworkModel> (new ODENetworkModel(model)), world), 
+        dt_(inf), abs_tol_(1e-10), rel_tol_(1e-6)
     {
-        initialize();
+        ;
     }
 
     void initialize()
     {
-        boost::shared_ptr<Model> expanded(model_->expand(world_->list_species()));
-        if (!expanded)
+        const std::vector<Species> species(model_->list_species());
+        for(std::vector<Species>::const_iterator it = species.begin();
+                it != species.end(); it++)
         {
-            throw IllegalState("The model failed to be expanded.");
-        }
-        expanded_.swap(expanded); // use expanded_, but not model_
-
-        const std::vector<Species> species(expanded_->list_species());
-        for (std::vector<Species>::const_iterator
-            i(species.begin()); i != species.end(); ++i)
-        {
-            if (!(*world_).has_species(*i))
+            if (!(world_->has_species(*it)))
             {
-                (*world_).reserve_species(*i);
+                world_->reserve_species(*it);
             }
         }
-    }
-
-    // SimulatorTraits
-
-    Real t(void) const
-    {
-        return (*world_).t();
-    }
-
-    Real dt() const
-    {
-        return dt_;
     }
 
     void step(void)
     {
         step(next_time());
+        if ( this->model_->has_network_model() )
+        {
+            this->model_->update_model();
+        }
     }
+    bool step(const Real &upto);
 
-    bool step(const Real& upto);
-
-    // Optional members
-
-    void set_t(const Real& t)
+    // Real next_time() const
+    // {
+    //     return this->t() + this->dt();
+    // }
+    // SimulatorTraits
+    
+    Real t(void) const
     {
-        (*world_).set_t(t);
+        return world_->t();
     }
-
-    void set_dt(const Real& dt)
+    void set_t(const Real &t)
+    {
+        world_->set_t(t);
+    }
+    Real dt(void) const
+    {
+        return this->dt_;
+    }
+    void set_dt(const Real &dt)
     {
         if (dt <= 0)
         {
@@ -295,19 +393,52 @@ public:
         }
         dt_ = dt;
     }
+    // Integer num_steps() const
+    // {
+    //     return this->num_steps_;
+    // }
+    //
+
+    Real absolute_tolerance() const
+    {
+        return abs_tol_;
+    }
+
+    void set_absolute_tolerance(const Real abs_tol)
+    {
+        if (abs_tol < 0)
+        {
+            throw std::invalid_argument("A tolerance must be positive or zero.");
+        }
+        abs_tol_ = abs_tol;
+    }
+
+    Real relative_tolerance() const
+    {
+        return rel_tol_;
+    }
+
+    void set_relative_tolerance(const Real rel_tol)
+    {
+        if (rel_tol < 0)
+        {
+            throw std::invalid_argument("A tolerance must be positive or zero.");
+        }
+        rel_tol_ = rel_tol;
+    }
 
 protected:
-
     std::pair<deriv_func, jacobi_func> generate_system() const;
-
 protected:
-
+    // boost::shared_ptr<ODENetworkModel> model_;
+    // boost::shared_ptr<ODEWorld> world_;
     Real dt_;
-    boost::shared_ptr<Model> expanded_;
+    // Integer num_steps_;
+    Real abs_tol_, rel_tol_;
 };
 
 } // ode
 
 } // ecell4
 
-#endif /* __ECELL4_ODE_ODE_SIMULATOR_HPP */
+#endif  // __ECELL4_ODE_ODE_SIMULATOR2_HPP

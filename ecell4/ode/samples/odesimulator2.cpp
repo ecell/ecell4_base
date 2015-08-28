@@ -5,14 +5,10 @@
 #include <ecell4/core/Species.hpp>
 #include <ecell4/core/ReactionRule.hpp>
 #include <ecell4/core/NetworkModel.hpp>
-#include <ecell4/ode/ODESimulator2.hpp>
-
 #include <ecell4/ode/ODENetworkModel.hpp>
 #include <ecell4/ode/ODEReactionRule.hpp>
-
 #include <ecell4/ode/ODERatelaw.hpp>
-
-#include <ecell4/ode/ODESimulator2.hpp>
+#include <ecell4/ode/ODESimulator.hpp>
 #include <boost/format.hpp>
 
 
@@ -58,10 +54,10 @@ int main(int argc, char **argv)
     boost::shared_ptr<ODEWorld> world(new ODEWorld(edge_lengths));
     world->add_molecules(sp1, N);
 
-    ODESimulator2 sim2(model, world);
-    sim2.initialize();
+    ODESimulator sim(model, world);
+    sim.initialize();
     Real next_time(0.0), dt(0.01);
-    std::cout << sim2.t() 
+    std::cout << sim.t() 
               << "\t" << world->num_molecules(sp1) 
               << "\t" << world->num_molecules(sp2)
               << "\t" << world->num_molecules(sp3)
@@ -69,8 +65,8 @@ int main(int argc, char **argv)
     for(unsigned int i(0); i < 1000; i++)
     {
         next_time += dt;
-        sim2.step(next_time);
-        std::cout << sim2.t() 
+        sim.step(next_time);
+        std::cout << sim.t() 
                   << "\t" << world->num_molecules(sp1) 
                   << "\t" << world->num_molecules(sp2)
                   << "\t" << world->num_molecules(sp3)

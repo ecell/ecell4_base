@@ -4,7 +4,7 @@
 #include <ecell4/core/Species.hpp>
 #include <ecell4/core/ReactionRule.hpp>
 #include <ecell4/core/NetworkModel.hpp>
-#include <ecell4/ode/ODESimulator2.hpp>
+#include <ecell4/ode/ODESimulator.hpp>
 
 
 using namespace ecell4;
@@ -43,7 +43,7 @@ int main(int argc, char** argv)
     boost::shared_ptr<ODEWorld> world(new ODEWorld(edge_lengths));
     world->add_molecules(sp1, N);
 
-    ODESimulator2 target(model, world);
+    ODESimulator target(model, world);
     target.initialize();
 
     Real next_time(0.0), dt(0.01);
