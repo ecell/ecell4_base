@@ -47,8 +47,6 @@ def run_simulation(
         f = factory
     elif solver == 'ode':
         f = ecell4.ode.ODEFactory()
-    elif solver == 'ode2':
-        f = ecell4.ode.ODEFactory2()
     elif solver == 'gillespie':
         f = ecell4.gillespie.GillespieFactory()
     elif solver == 'lattice':
