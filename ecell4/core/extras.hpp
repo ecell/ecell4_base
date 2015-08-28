@@ -2,6 +2,12 @@
 #define __ECELL4_EXTRAS_HPP
 
 #include <boost/shared_ptr.hpp>
+#include <boost/scoped_ptr.hpp>
+
+#ifdef WITH_HDF5
+#include <hdf5.h>
+#include <H5Cpp.h>
+#endif
 
 #include "types.hpp"
 #include "Real3.hpp"
@@ -115,6 +121,12 @@ typename Tfactory_::world_type* generate_world_from_model(
     }
     return w;
 }
+
+#ifdef WITH_HDF5
+void save_version_information(H5::CommonFG* root, const std::string& version);
+std::string load_version_information(const H5::CommonFG& root);
+#endif
+std::string load_version_information(const std::string& filename);
 
 } // extras
 

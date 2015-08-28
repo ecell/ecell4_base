@@ -13,6 +13,7 @@
 #include <ecell4/core/SerialIDGenerator.hpp>
 #include <ecell4/core/Model.hpp>
 #include <ecell4/core/Shape.hpp>
+#include <ecell4/core/extras.hpp>
 
 namespace ecell4
 {
@@ -265,6 +266,8 @@ public:
     // void remove_molecules_exact(const Species& sp, const Integer& num);
     bool remove_voxel_private(const private_coordinate_type coord);
     bool move(coordinate_type from, coordinate_type to);
+    bool move_private(const private_coordinate_type& src, const private_coordinate_type& dest);
+    bool can_move(const private_coordinate_type& src, const private_coordinate_type& dest) const;
     // std::pair<coordinate_type, bool> move_to_neighbor(coordinate_type coord, Integer nrand);
     // std::pair<coordinate_type, bool> move_to_neighbor(particle_info_type& info, Integer nrand);
     // std::pair<std::pair<particle_info_type, private_coordinate_type>, bool>
@@ -274,10 +277,15 @@ public:
         MolecularTypeBase* const& from_mt, MolecularTypeBase* const& loc,
         particle_info_type& info, const Integer nrand);
 
-    private_coordinate_type get_neighbor(
+    coordinate_type get_neighbor(coordinate_type coord, Integer nrand) const
+    {
+        return (*space_).get_neighbor(coord, nrand);
+    }
+
+    private_coordinate_type get_neighbor_private(
             private_coordinate_type private_coord, Integer nrand) const
     {
-        return (*space_).get_neighbor(private_coord, nrand);
+        return (*space_).get_neighbor_private(private_coord, nrand);
     }
 
     std::pair<private_coordinate_type, bool> check_neighbor_private(
@@ -315,6 +323,21 @@ public:
     Real voxel_volume() const
     {
         return (*space_).voxel_volume();
+    }
+
+    Real unit_area() const
+    {
+        return (*space_).unit_area();
+    }
+
+    Real get_volume() const
+    {
+        return (*space_).get_volume();
+    }
+
+    Real3 actual_lengths() const
+    {
+        return (*space_).actual_lengths();
     }
 
     boost::shared_ptr<RandomNumberGenerator> rng()
@@ -477,6 +500,7 @@ public:
         boost::scoped_ptr<H5::Group>
             group(new H5::Group(fout->createGroup("LatticeSpace")));
         (*space_).save(group.get());
+        extras::save_version_information(fout.get(), "ecell4-lattice-0.0-1");
 #else
         throw NotSupported("not supported yet.");
 #endif

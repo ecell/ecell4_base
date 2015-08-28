@@ -2,10 +2,30 @@ from .decorator import reaction_rules, species_attributes, parameters, get_model
 from . import viz
 
 __all__ = [
-    'run_simulation', 'reaction_rules', 'species_attributes', 'parameters',
-    'get_model', 'reset_model',
+    'run_simulation', 'load_world',
+    'reaction_rules', 'species_attributes', 'parameters', 'get_model', 'reset_model',
     'viz']
 
+
+def load_world(filename):
+    import ecell4
+
+    vinfo = ecell4.core.load_version_information(filename)
+    if vinfo.startswith("ecell4-bd"):
+        return ecell4.bd.BDWorld(filename)
+    elif vinfo.startswith("ecell4-egfrd"):
+        return ecell4.egfrd.EGFRDWorld(filename)
+    elif vinfo.startswith("ecell4-meso"):
+        return ecell4.meso.MesoscopicWorld(filename)
+    elif vinfo.startswith("ecell4-ode"):
+        return ecell4.ode.ODEWorld(filename)
+    elif vinfo.startswith("ecell4-gillespie"):
+        return ecell4.gillespie.GillespieWorld(filename)
+    elif vinfo.startswith("ecell4-lattice"):
+        return ecell4.lattice.LatticeWorld(filename)
+    elif vinfo == "":
+        raise RuntimeError("No version information was found in [{0}]".format(filename))
+    raise RuntimeError("Unkown version information [{0}]".format(vinfo))
 
 def run_simulation(
         t, y0={}, volume=1.0, model=None, solver='ode',

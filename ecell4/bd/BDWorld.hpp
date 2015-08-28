@@ -339,8 +339,9 @@ public:
         boost::scoped_ptr<H5::Group>
             group(new H5::Group(fout->createGroup("ParticleSpace")));
         ps_->save(group.get());
+        extras::save_version_information(fout.get(), "ecell4-bd-0.0-1");
 #else
-        throw NotSupported("not supported yet.");
+        throw NotSupported("HDF5 is not supported.");
 #endif
     }
 
@@ -354,7 +355,7 @@ public:
         pidgen_.load(*fin);
         rng_->load(*fin);
 #else
-        throw NotSupported("not supported yet.");
+        throw NotSupported("HDF5 is not supported.");
 #endif
     }
 

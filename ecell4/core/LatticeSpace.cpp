@@ -27,6 +27,12 @@ double round(const double x)
 }
 #endif
 
+bool LatticeSpace::can_move(const private_coordinate_type& src,
+        const private_coordinate_type& dest) const
+{
+    return false;
+}
+
 void LatticeSpaceBase::set_lattice_properties()
 {
     //XXX: derived from SpatiocyteStepper::setLatticeProperties()
@@ -572,11 +578,38 @@ bool LatticeSpaceVectorImpl::move(const coordinate_type& from, const coordinate_
     return move_(private_from, private_to).second;
 }
 
+bool LatticeSpaceVectorImpl::move_private(const private_coordinate_type& src,
+        const private_coordinate_type& dest)
+{
+    return move_(src, dest).second;
+}
+
+bool LatticeSpaceVectorImpl::can_move(const private_coordinate_type& src,
+        const private_coordinate_type& dest) const
+{
+    if (src == dest)
+        return false;
+
+    const MolecularTypeBase* src_mt(voxels_.at(src));
+    if (src_mt->is_vacant())
+        return false;
+
+    MolecularTypeBase* dest_mt(voxels_.at(dest));
+
+    if (dest_mt == border_)
+        return false;
+
+    if (dest_mt == periodic_)
+        dest_mt = voxels_.at(apply_boundary_(dest));
+
+    return (dest_mt == src_mt->location());
+}
+
 std::pair<LatticeSpaceVectorImpl::coordinate_type, bool>
     LatticeSpaceVectorImpl::move_to_neighbor(
         private_coordinate_type coord, Integer nrand)
 {
-    const private_coordinate_type neighbor(get_neighbor(coord, nrand));
+    const private_coordinate_type neighbor(get_neighbor_private(coord, nrand));
     return move_(coord, neighbor);
 }
 
@@ -584,7 +617,7 @@ std::pair<LatticeSpaceVectorImpl::private_coordinate_type, bool>
     LatticeSpaceVectorImpl::move_to_neighbor(
         particle_info_type& info, Integer nrand)
 {
-    const coordinate_type neighbor(get_neighbor(info.first, nrand));
+    const coordinate_type neighbor(get_neighbor_private(info.first, nrand));
     return move_(info, neighbor);
 }
 
@@ -686,7 +719,7 @@ std::pair<LatticeSpaceVectorImpl::private_coordinate_type, bool>
         particle_info_type& info, const Integer nrand)
 {
     const private_coordinate_type private_from(info.first);
-    private_coordinate_type private_to(get_neighbor(private_from, nrand));
+    private_coordinate_type private_to(get_neighbor_private(private_from, nrand));
 
     //XXX: assert(private_from != private_to);
     //XXX: assert(from_mt == voxels_[private_from]);

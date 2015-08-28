@@ -68,9 +68,9 @@ public:
 private:
 
     VacantType()
-        : base_type(Species("VACANT", "0", "0"), NULL, 0, 0)
+        : base_type(Species("VACANT", "0", "0"), false, NULL, 0, 0)
     {
-        ;
+        set_dimension(Shape::THREE);
     }
 };
 

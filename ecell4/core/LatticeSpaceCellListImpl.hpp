@@ -461,46 +461,52 @@ public:
 
     virtual bool move(const coordinate_type& from, const coordinate_type& to)
     {
-        const private_coordinate_type private_from(coord2private(from));
-        private_coordinate_type private_to(coord2private(to));
+        const private_coordinate_type src(coord2private(from));
+        const private_coordinate_type dest(coord2private(to));
+        return move_private(src, dest);
+    }
 
-        if (private_from == private_to)
+    virtual bool move_private(const private_coordinate_type& src,
+            const private_coordinate_type& dest)
+    {
+        private_coordinate_type tmp_dest(dest);
+        if (src == tmp_dest)
         {
             return false;
         }
 
-        MolecularTypeBase* from_mt(get_molecular_type(private_from));
-        if (from_mt->is_vacant())
+        MolecularTypeBase* src_mt(get_molecular_type(src));
+        if (src_mt->is_vacant())
         {
             return true;
         }
 
-        MolecularTypeBase* to_mt(get_molecular_type(private_to));
-        if (to_mt == border_)
+        MolecularTypeBase* dest_mt(get_molecular_type(tmp_dest));
+        if (dest_mt == border_)
         {
             return false;
         }
-        else if (to_mt == periodic_)
+        else if (dest_mt == periodic_)
         {
-            private_to = periodic_transpose_private(private_to);
-            to_mt = get_molecular_type(private_to);
+            tmp_dest = periodic_transpose_private(tmp_dest);
+            dest_mt = get_molecular_type(tmp_dest);
         }
 
-        if (to_mt != from_mt->location())
+        if (dest_mt != src_mt->location())
         {
             return false;
         }
 
-        from_mt->replace_voxel(private_from, private_to);
-        to_mt->replace_voxel(private_to, private_from);
-        if (!to_mt->is_vacant())
+        src_mt->replace_voxel(src, tmp_dest);
+        dest_mt->replace_voxel(tmp_dest, src);
+        if (!dest_mt->is_vacant())
         {
-            update_matrix(private_from, to_mt);
-            update_matrix(private_to, from_mt);
+            update_matrix(src, dest_mt);
+            update_matrix(tmp_dest, src_mt);
         }
         else
         {
-            update_matrix(private_from, private_to, from_mt);
+            update_matrix(src, tmp_dest, src_mt);
         }
         return true;
     }

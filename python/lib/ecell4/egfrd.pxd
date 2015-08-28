@@ -91,6 +91,44 @@ cdef extern from "ecell4/egfrd/egfrd.hpp" namespace "ecell4::egfrd":
         Cpp_EGFRDSimulator* create_simulator(shared_ptr[Cpp_Model], shared_ptr[Cpp_EGFRDWorld])
         Cpp_EGFRDSimulator* create_simulator(shared_ptr[Cpp_EGFRDWorld])
 
+    cdef cppclass Cpp_BDFactory "ecell4::egfrd::BDFactory":
+        Cpp_BDFactory() except +
+        Cpp_BDFactory(Integer) except +
+        Cpp_BDFactory(Integer, Real) except +
+        Cpp_BDFactory(Cpp_Integer3&) except +
+        Cpp_BDFactory(Cpp_Integer3&, Integer) except +
+        Cpp_BDFactory(Cpp_Integer3&, Integer, Real) except +
+        Cpp_BDFactory(Cpp_Integer3&, shared_ptr[Cpp_RandomNumberGenerator]&) except +
+        Cpp_BDFactory(Cpp_Integer3&, shared_ptr[Cpp_RandomNumberGenerator]&, Integer) except +
+        Cpp_BDFactory(Cpp_Integer3&, shared_ptr[Cpp_RandomNumberGenerator]&, Integer, Real) except +
+        Cpp_EGFRDWorld* create_world(string)
+        Cpp_EGFRDWorld* create_world(Cpp_Real3&)
+        Cpp_EGFRDWorld* create_world(shared_ptr[Cpp_Model])
+        Cpp_BDSimulator* create_simulator(shared_ptr[Cpp_Model], shared_ptr[Cpp_EGFRDWorld])
+        Cpp_BDSimulator* create_simulator(shared_ptr[Cpp_EGFRDWorld])
+
+    cdef cppclass Cpp_BDSimulator "ecell4::egfrd::BDSimulator":
+        #XXX: be carefull about the order of arguments
+        Cpp_BDSimulator(
+            shared_ptr[Cpp_EGFRDWorld]&, shared_ptr[Cpp_Model]&) except +
+        # Cpp_BDSimulator(shared_ptr[Cpp_EGFRDWorld]&) except +
+        Integer num_steps()
+        void step()
+        bool step(Real)
+        Real t()
+        void set_t(Real)
+        void set_dt(Real)
+        Real dt()
+        Real next_time()
+        vector[Cpp_ReactionRule] last_reactions()
+        void initialize()
+        # Cpp_GSLRandomNumberGenerator& rng()
+        shared_ptr[Cpp_Model] model()
+        shared_ptr[Cpp_EGFRDWorld] world()
+        void run(Real)
+        void run(Real, shared_ptr[Cpp_Observer])
+        void run(Real, vector[shared_ptr[Cpp_Observer]])
+
 cdef class EGFRDWorld:
     cdef shared_ptr[Cpp_EGFRDWorld]* thisptr
 
@@ -100,8 +138,17 @@ cdef class EGFRDSimulator:
 cdef class EGFRDFactory:
     cdef Cpp_EGFRDFactory* thisptr
 
+cdef class BDSimulator:
+    cdef Cpp_BDSimulator* thisptr
+
+cdef class BDFactory:
+    cdef Cpp_BDFactory* thisptr
+
 cdef EGFRDWorld EGFRDWorld_from_Cpp_EGFRDWorld(
     shared_ptr[Cpp_EGFRDWorld] m)
 
 cdef EGFRDSimulator EGFRDSimulator_from_Cpp_EGFRDSimulator(
     Cpp_EGFRDSimulator* s)
+
+cdef BDSimulator BDSimulator_from_Cpp_BDSimulator(
+    Cpp_BDSimulator* s)

@@ -8,7 +8,7 @@ from libcpp.pair cimport pair
 from libcpp.vector cimport vector
 from libcpp.map cimport map
 
-from types cimport *
+from types cimport Real, Integer
 from multiset cimport multiset
 from shared_ptr cimport shared_ptr
 
@@ -482,6 +482,14 @@ cdef extern from "ecell4/core/observers.hpp" namespace "ecell4":
         vector[Cpp_Species] targets()
         void reset()
 
+    cdef cppclass Cpp_TimeoutObserver "ecell4::TimeoutObserver":
+        Cpp_TimeoutObserver() except +
+        Cpp_TimeoutObserver(Real) except +
+        Real duration()
+        Real accumulation()
+        Real interval()
+        void reset()
+
 ## FixedIntervalNumberObserver
 #  a python wrapper for Cpp_FixedIntervalNumberObserver
 cdef class Observer:
@@ -504,6 +512,9 @@ cdef class FixedIntervalCSVObserver:
 
 cdef class FixedIntervalTrajectoryObserver:
     cdef shared_ptr[Cpp_FixedIntervalTrajectoryObserver]* thisptr
+
+cdef class TimeoutObserver:
+    cdef shared_ptr[Cpp_TimeoutObserver]* thisptr
 
 ## Cpp_Shape
 #  ecell4::Shape
@@ -536,6 +547,30 @@ cdef extern from "ecell4/core/Sphere.hpp" namespace "ecell4":
         Cpp_Sphere inside()
         Integer dimension()
 
+## Cpp_Cylinder
+#  ecell4::Cylinder
+cdef extern from "ecell4/core/Cylinder.hpp" namespace "ecell4":
+    cdef cppclass Cpp_Cylinder "ecell4::Cylinder":
+        Cpp_Cylinder()
+        Cpp_Cylinder(Cpp_Real3&, Real, Cpp_Real3&, Real)
+        Cpp_Cylinder(Cpp_Cylinder&)
+        Real distance(Cpp_Real3&)
+        Real is_inside(Cpp_Real3&)
+        Cpp_CylindricalSurface surface()
+        Integer dimension()
+
+## Cpp_CylindricalSurface
+#  ecell4::CylindricalSurface
+cdef extern from "ecell4/core/Cylinder.hpp" namespace "ecell4":
+    cdef cppclass Cpp_CylindricalSurface "ecell4::CylindricalSurface":
+        Cpp_CylindricalSurface()
+        Cpp_CylindricalSurface(Cpp_Real3&, Real, Cpp_Real3&, Real)
+        Cpp_CylindricalSurface(Cpp_CylindricalSurface&)
+        Real distance(Cpp_Real3&)
+        Real is_inside(Cpp_Real3&)
+        Cpp_Cylinder inside()
+        Integer dimension()
+
 ## Cpp_PlanarSurface
 # ecell4::PlanarSurface
 cdef extern from "ecell4/core/PlanarSurface.hpp" namespace "ecell4":
@@ -543,6 +578,7 @@ cdef extern from "ecell4/core/PlanarSurface.hpp" namespace "ecell4":
         Cpp_PlanarSurface()
         Cpp_PlanarSurface(Cpp_Real3&, Cpp_Real3&, Cpp_Real3&)
         Cpp_PlanarSurface(Cpp_PlanarSurface)
+        # Real distance(Cpp_Real3&)
         Real is_inside(Cpp_Real3&)
         Integer dimension()
 
@@ -556,10 +592,12 @@ cdef extern from "ecell4/core/Rod.hpp" namespace "ecell4":
         Cpp_Rod(Cpp_Rod&)
         Real distance(Cpp_Real3&)
         Real is_inside(Cpp_Real3&)
-        Cpp_Real3& origin()
         void shift(Cpp_Real3&)
         Cpp_RodSurface surface()
         Integer dimension()
+        Cpp_Real3& origin()
+        Real length()
+        Real radius()
 
 ## Cpp_RodSurface
 # ecell4::RodSurface
@@ -575,6 +613,8 @@ cdef extern from "ecell4/core/Rod.hpp" namespace "ecell4":
         void shift(Cpp_Real3&)
         Cpp_Rod inside()
         Integer dimension()
+        Real length()
+        Real radius()
 
 ## Cpp_AABB
 #  ecell4::AABB
@@ -588,6 +628,31 @@ cdef extern from "ecell4/core/AABB.hpp" namespace "ecell4":
         Integer dimension()
         Cpp_Real3 upper()
         Cpp_Real3 lower()
+
+## Cpp_MeshSurface
+# ecell4::MeshSurface
+cdef extern from "ecell4/core/Mesh.hpp" namespace "ecell4":
+    cdef cppclass Cpp_MeshSurface "ecell4::MeshSurface":
+        Cpp_MeshSurface(string, Cpp_Real3)
+        Cpp_MeshSurface(Cpp_MeshSurface)
+        # Real distance(Cpp_Real3&)
+        Real is_inside(Cpp_Real3&)
+        Integer dimension()
+
+## Cpp_Complement
+#  ecell4::Complement
+cdef extern from "ecell4/core/shape_operators.hpp" namespace "ecell4":
+    cdef cppclass Cpp_Union "ecell4::Union":
+        Cpp_Union(shared_ptr[Cpp_Shape]&, shared_ptr[Cpp_Shape]&)
+        Cpp_Union(Cpp_Union&)
+        Real is_inside(Cpp_Real3&)
+        Integer dimension()
+
+    cdef cppclass Cpp_Complement "ecell4::Complement":
+        Cpp_Complement(shared_ptr[Cpp_Shape]&, shared_ptr[Cpp_Shape]&)
+        Cpp_Complement(Cpp_Complement&)
+        Real is_inside(Cpp_Real3&)
+        Integer dimension()
 
 ## Shape
 #  a python wrapper for Cpp_Shape
@@ -603,6 +668,16 @@ cdef class Sphere:
 #  a python wrapper for Cpp_SphericalSurface
 cdef class SphericalSurface:
     cdef shared_ptr[Cpp_SphericalSurface]* thisptr
+
+## Cylinder
+#  a python wrapper for Cpp_Cylinder
+cdef class Cylinder:
+    cdef shared_ptr[Cpp_Cylinder]* thisptr
+
+## CylindricalSurface
+#  a python wrapper for Cpp_CylindricalSurface
+cdef class CylindricalSurface:
+    cdef shared_ptr[Cpp_CylindricalSurface]* thisptr
 
 ## PlanarSurface
 #  a python wrapper for Cpp_PlanarSurface
@@ -620,11 +695,28 @@ cdef class RodSurface:
     cdef shared_ptr[Cpp_RodSurface]* thisptr
 
 
+## MeshSurface
+# a python wrapper for Cpp_MeshSurface
+cdef class MeshSurface:
+    cdef shared_ptr[Cpp_MeshSurface]* thisptr
+
 ## AABB
 #  a python wrapper for Cpp_AABB
 cdef class AABB:
     cdef shared_ptr[Cpp_AABB]* thisptr
 
+## Union
+#  a python wrapper for Cpp_Union
+cdef class Union:
+    cdef shared_ptr[Cpp_Union]* thisptr
+
+## Complement
+#  a python wrapper for Cpp_Complement
+cdef class Complement:
+    cdef shared_ptr[Cpp_Complement]* thisptr
+
 cdef Sphere Sphere_from_Cpp_Sphere(Cpp_Sphere* p)
 cdef SphericalSurface SphericalSurface_from_Cpp_SphericalSurface(Cpp_SphericalSurface* p)
+cdef Cylinder Cylinder_from_Cpp_Cylinder(Cpp_Cylinder* p)
+cdef CylindricalSurface CylindricalSurface_from_Cpp_CylindricalSurface(Cpp_CylindricalSurface* p)
 cdef AABB AABB_from_Cpp_AABB(Cpp_AABB* p)

@@ -172,7 +172,18 @@ void MesoscopicSimulator::initialize(void)
         }
         else if (rr.reactants().size() == 2)
         {
-            proxies_.push_back(new SecondOrderReactionRuleProxy(this, rr));
+            if (world_->has_structure(rr.reactants()[0]))
+            {
+                proxies_.push_back(new StructureSecondOrderReactionRuleProxy(this, rr, 0));
+            }
+            else if (world_->has_structure(rr.reactants()[1]))
+            {
+                proxies_.push_back(new StructureSecondOrderReactionRuleProxy(this, rr, 1));
+            }
+            else
+            {
+                proxies_.push_back(new SecondOrderReactionRuleProxy(this, rr));
+            }
         }
         else
         {

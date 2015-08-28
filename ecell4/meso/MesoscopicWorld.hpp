@@ -10,6 +10,7 @@
 #include <ecell4/core/SubvolumeSpace.hpp>
 #include <ecell4/core/Model.hpp>
 #include <ecell4/core/Shape.hpp>
+#include <ecell4/core/extras.hpp>
 
 namespace ecell4
 {
@@ -49,13 +50,6 @@ public:
         (*rng_).seed();
     }
 
-    MesoscopicWorld(const Real3& edge_lengths,
-        const Integer3& matrix_sizes, boost::shared_ptr<RandomNumberGenerator> rng)
-        : cs_(new SubvolumeSpaceVectorImpl(edge_lengths, matrix_sizes)), rng_(rng)
-    {
-        ;
-    }
-
     MesoscopicWorld(const Real3& edge_lengths, const Integer3& matrix_sizes)
         : cs_(new SubvolumeSpaceVectorImpl(edge_lengths, matrix_sizes))
     {
@@ -63,6 +57,18 @@ public:
             new GSLRandomNumberGenerator());
         (*rng_).seed();
     }
+
+    MesoscopicWorld(const Real3& edge_lengths,
+        const Integer3& matrix_sizes, boost::shared_ptr<RandomNumberGenerator> rng)
+        : cs_(new SubvolumeSpaceVectorImpl(edge_lengths, matrix_sizes)), rng_(rng)
+    {
+        ;
+    }
+
+    MesoscopicWorld(const Real3& edge_lengths, const Real subvolume_length);
+    MesoscopicWorld(
+        const Real3& edge_lengths, const Real subvolume_length,
+        boost::shared_ptr<RandomNumberGenerator> rng);
 
     virtual ~MesoscopicWorld()
     {
@@ -92,6 +98,7 @@ public:
         boost::scoped_ptr<H5::Group>
             group(new H5::Group(fout->createGroup("SubvolumeSpace")));
         cs_->save(group.get());
+        extras::save_version_information(fout.get(), "ecell4-meso-0.0-1");
 #else
         throw NotSupported("not supported yet.");
 #endif
@@ -129,6 +136,11 @@ public:
     const Real volume() const;
     const Real3 subvolume_edge_lengths() const;
     const Real3& edge_lengths() const;
+
+    const Integer num_subvolumes(const Species& sp) const
+    {
+        return cs_->num_subvolumes(sp);
+    }
 
     const Integer3 matrix_sizes() const
     {
@@ -276,9 +288,34 @@ public:
     void add_structure(const Species& sp, const boost::shared_ptr<const Shape>& shape);
     bool on_structure(const Species& sp, const coordinate_type& coord) const;
 
+    bool has_structure(const Species& sp) const
+    {
+        return cs_->has_structure(sp);
+    }
+
+    Real get_occupancy(const Species& sp, const coordinate_type& coord) const
+    {
+        return cs_->get_occupancy(sp, coord);
+    }
+
+    Real get_occupancy(const Species& sp, const Integer3& g) const
+    {
+        return cs_->get_occupancy(sp, g);
+    }
+
+    // Shape::dimension_kind get_dimension(const Species& sp) const
+    // {
+    //     return cs_->get_dimension(sp);
+    // }
+
     inline bool on_structure(const Species& sp, const Integer3& g) const
     {
         return on_structure(sp, global2coord(g));
+    }
+
+    bool check_structure(const Species& sp, const Integer3& g) const
+    {
+        return cs_->check_structure(sp, g);
     }
 
     Real get_volume(const Species& sp) const;

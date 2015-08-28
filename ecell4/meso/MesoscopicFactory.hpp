@@ -25,20 +25,33 @@ public:
 public:
 
     MesoscopicFactory()
-        : base_type(), matrix_sizes_(0, 0, 0), rng_()
+        : base_type(), matrix_sizes_(0, 0, 0), subvolume_length_(0.0), rng_()
     {
         ; // do nothing
     }
 
     MesoscopicFactory(const Integer3& matrix_sizes)
-        : base_type(), matrix_sizes_(matrix_sizes), rng_()
+        : base_type(), matrix_sizes_(matrix_sizes), subvolume_length_(0.0), rng_()
     {
         ; // do nothing
     }
 
     MesoscopicFactory(const Integer3& matrix_sizes,
         const boost::shared_ptr<RandomNumberGenerator>& rng)
-        : base_type(), matrix_sizes_(matrix_sizes), rng_(rng)
+        : base_type(), matrix_sizes_(matrix_sizes), subvolume_length_(0.0), rng_(rng)
+    {
+        ; // do nothing
+    }
+
+    MesoscopicFactory(const Real subvolume_length)
+        : base_type(), matrix_sizes_(), subvolume_length_(subvolume_length), rng_()
+    {
+        ; // do nothing
+    }
+
+    MesoscopicFactory(const Real subvolume_length,
+        const boost::shared_ptr<RandomNumberGenerator>& rng)
+        : base_type(), matrix_sizes_(), subvolume_length_(subvolume_length), rng_(rng)
     {
         ; // do nothing
     }
@@ -58,7 +71,18 @@ public:
     {
         if (rng_)
         {
-            return new MesoscopicWorld(edge_lengths, matrix_sizes_, rng_);
+            if (subvolume_length_ > 0)
+            {
+                return new MesoscopicWorld(edge_lengths, subvolume_length_, rng_);
+            }
+            else
+            {
+                return new MesoscopicWorld(edge_lengths, matrix_sizes_, rng_);
+            }
+        }
+        else if (subvolume_length_ > 0)
+        {
+            return new MesoscopicWorld(edge_lengths, subvolume_length_);
         }
         else if (matrix_sizes_[0] > 0 && matrix_sizes_[1] > 0 && matrix_sizes_[2] > 0)
         {
@@ -91,6 +115,7 @@ public:
 protected:
 
     Integer3 matrix_sizes_;
+    Real subvolume_length_;
     boost::shared_ptr<RandomNumberGenerator> rng_;
 };
 

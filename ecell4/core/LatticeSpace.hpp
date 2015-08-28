@@ -70,6 +70,19 @@ public:
         return 4.0 * sqrt(2.0) * r * r * r;
     }
 
+    Real unit_area() const
+    {
+        const Real r(voxel_radius_);
+        return 2.0 * sqrt(3.0) * r * r;
+    }
+
+    Real get_volume() const
+    {
+        return size() * voxel_volume();
+    }
+
+    virtual Real3 actual_lengths() const = 0;
+
 #ifdef WITH_HDF5
     virtual void save(H5::Group* root) const
     {
@@ -107,6 +120,8 @@ public:
     virtual bool remove_voxel(const ParticleID& pid) = 0;
     virtual bool remove_voxel_private(const private_coordinate_type& coord) = 0;
     virtual bool move(const coordinate_type& from, const coordinate_type& to) = 0;
+    virtual bool move_private(const private_coordinate_type& src, const private_coordinate_type& dest) = 0;
+    virtual bool can_move(const private_coordinate_type& src, const private_coordinate_type& dest) const;
     virtual const Particle particle_at(const coordinate_type& coord) const = 0;
 
     virtual void add_structure(const Species& sp,
@@ -147,8 +162,14 @@ public:
     virtual Real3 global2position(const Integer3& global) const = 0;
     virtual Integer3 position2global(const Real3& pos) const = 0;
 
-    virtual private_coordinate_type get_neighbor(
+    virtual private_coordinate_type get_neighbor_private(
         const private_coordinate_type& private_coord, const Integer& nrand) const = 0;
+
+    virtual coordinate_type get_neighbor(
+        const coordinate_type& coord, const Integer& nrand) const
+    {
+        return private2coord(get_neighbor_private(coord2private(coord), nrand));
+    }
 
     /**
       */
@@ -338,6 +359,20 @@ public:
         return layer_size_ - 2;
     }
 
+    virtual Real3 actual_lengths() const
+    {
+        // return Real3(
+        //     col_size() * HCP_X,
+        //     layer_size() * HCP_Y + (col_size() > 1 ? HCP_L: 0.0),
+        //     row_size() * voxel_radius() * 2
+        //         + (col_size() > 1 || layer_size() > 1 ? voxel_radius() : 0.0));
+        // return Real3(
+        //     col_size() * HCP_X, layer_size() * HCP_Y, row_size() * voxel_radius() * 2);
+        const Real sigma(voxel_radius() * 2);
+        return Real3(
+            (col_size() - 1) * HCP_X + sigma, (layer_size() - 1) * HCP_Y + sigma, row_size() * sigma);
+    }
+
     /**
      Coordinate transformations
      */
@@ -439,7 +474,7 @@ public:
         return global2coord(private_coord2global(private_coord));
     }
 
-    private_coordinate_type get_neighbor(
+    private_coordinate_type get_neighbor_private(
         const private_coordinate_type& private_coord, const Integer& nrand) const
     {
         const Integer NUM_COLROW(col_size_ * row_size_);
@@ -605,6 +640,8 @@ public:
     // bool update_molecule(private_coordinate_type coord, const Species& species);
     // bool add_molecule(const Species& sp, private_coordinate_type coord, const ParticleID& pid);
     virtual bool move(const coordinate_type& from, const coordinate_type& to);
+    virtual bool move_private(const private_coordinate_type& src, const private_coordinate_type& dest);
+    virtual bool can_move(const private_coordinate_type& src, const private_coordinate_type& dest) const;
 
     virtual void add_structure(const Species& sp,
         const boost::shared_ptr<const Shape>& s, const std::string loc);

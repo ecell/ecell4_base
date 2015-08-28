@@ -1,6 +1,8 @@
 #include "LatticeSimulator.hpp"
 
 //#include <set>
+#include <algorithm>
+#include <iterator>
 
 namespace ecell4
 {
@@ -221,10 +223,18 @@ std::pair<bool, LatticeSimulator::reaction_type> LatticeSimulator::attempt_react
     else if (dimensionA == Shape::THREE && dimensionB == Shape::TWO)
     {
         factor = sqrt(2.0) / (3 * D_A * world_->voxel_radius());
+        if (to_mt->is_structure()) // B is Surface
+        {
+            factor *= world_->unit_area();
+        }
     }
     else if (dimensionA == Shape::TWO && dimensionB == Shape::THREE)
     {
         factor = sqrt(2.0) / (3 * D_B * world_->voxel_radius()); // 不要?
+        if (from_mt->is_structure()) // A is Surface
+        {
+            factor *= world_->unit_area();
+        }
     }
     else
         throw NotSupported("The dimension of a shape must be two or three.");
@@ -238,11 +248,9 @@ std::pair<bool, LatticeSimulator::reaction_type> LatticeSimulator::attempt_react
         accp += P;
         if (accp > 1)
         {
-            /*
             std::cerr << "The total acceptance probability [" << accp
                 << "] exceeds 1 for '" << speciesA.serial()
                 << "' and '" << speciesB.serial() << "'." << std::endl;
-                */
         }
         if (accp >= rnd)
         {
@@ -893,50 +901,77 @@ void LatticeSimulator::walk(const Species& species, const Real& alpha)
     //     << " : alpha=" << alpha << " : walk." << std::endl;
 
     const boost::shared_ptr<RandomNumberGenerator>& rng(world_->rng());
-
-    MolecularTypeBase* mtype(world_->find_molecular_type(species));
-    MolecularTypeBase* loc(mtype->location());
-
-    Integer imax(rng->binomial(alpha, mtype->size()));
-    if (imax != mtype->size())
-    {
-        mtype->shuffle(*rng);
-    }
-    //XXX: mtype->shuffle(*rng);
+    const MolecularTypeBase* mtype(world_->find_molecular_type(species));
 
     if (!mtype->with_voxels())
     {
         throw NotSupported("MolecularType must be with voxels.");
     }
 
-    Integer i(0);
-    while (i < imax)
-    {
-        const Integer rnd(rng->uniform_int(0, 11));
-        const std::pair<LatticeWorld::private_coordinate_type, bool>
-            neighbor(world_->move_to_neighbor(
-                mtype, loc, (*mtype)[i], rnd));
-        if (!neighbor.second)
+    MolecularTypeBase::container_type voxels;
+    copy(mtype->begin(), mtype->end(), back_inserter(voxels));
+
+    if (mtype->get_dimension() == Shape::THREE) {
+        for (MolecularTypeBase::container_type::iterator itr(voxels.begin());
+                itr != voxels.end(); ++itr)
         {
-            const LatticeWorld::particle_info_type info((*mtype)[i]);
-            const LatticeWorld::private_coordinate_type to_coord(neighbor.first);
-
-            const std::pair<bool, reaction_type>
-                retval(attempt_reaction_(info, to_coord, alpha));
-            if (retval.first)
+            const Integer rnd(rng->uniform_int(0, 11));
+            const LatticeWorld::particle_info_type info(*itr);
+            if (world_->get_molecular_type_private(info.first) != mtype)
             {
-                --i;
-                --imax;
+                // should skip if a voxel is not the target species.
+                // when reaction has occured before, a voxel can be changed.
+                continue;
+            }
+            const LatticeWorld::private_coordinate_type neighbor(
+                    world_->get_neighbor_private(info.first, rnd));
+            if (world_->can_move(info.first, neighbor))
+            {
+                if (rng->uniform(0,1) <= alpha)
+                    world_->move_private(info.first, neighbor);
+            }
+            else
+            {
+                attempt_reaction_(info, neighbor, alpha);
+            }
+        }
+    } else { // dimension == TWO, etc.
+        std::vector<unsigned int> nids;
+        for (unsigned int i(0); i < 12; ++i)
+            nids.push_back(i);
+        const MolecularTypeBase* location(mtype->location());
+        for (MolecularTypeBase::container_type::iterator itr(voxels.begin());
+                itr != voxels.end(); ++itr)
+        {
+            const LatticeWorld::particle_info_type info(*itr);
+            if (world_->get_molecular_type_private(info.first) != mtype)
+            {
+                // should skip if a voxel is not the target species.
+                // when reaction has occured before, a voxel can be changed.
+                continue;
+            }
 
-                if (imax > mtype->size())
-                {
-                    imax = mtype->size(); //XXX: for a dimerization
+            ecell4::shuffle(*(rng.get()), nids);
+            for (int i(0); i < 12; ++i) {
+                const LatticeWorld::private_coordinate_type neighbor(
+                        world_->get_neighbor_private(info.first, nids.at(i)));
+                const MolecularTypeBase* target(world_->get_molecular_type_private(neighbor));
+                if (target == location || target->location() == location) {
+                    if (world_->can_move(info.first, neighbor))
+                    {
+                        if (rng->uniform(0,1) <= alpha)
+                            world_->move_private(info.first, neighbor);
+                    }
+                    else
+                    {
+                        attempt_reaction_(info, neighbor, alpha);
+                    }
+                    break;
                 }
             }
         }
-
-        ++i;
     }
+
 }
 
 } // lattice

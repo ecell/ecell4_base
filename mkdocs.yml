@@ -1,7 +1,7 @@
 site_name: E-Cell4 documentation
 pages:
-  - ['index.md', 'Home']
-  - ['license.md', 'License']
-  - ['installation.md', 'Installation']
-  - ['tutorials.md', 'Tutorials']
-  - ['api/core.md', 'API', 'core']
+- Home: 'index.md'
+- Installation: 'installation.md'
+- Tutorials: 'tutorials.md'
+- API:
+    - 'core': 'api/core.md'

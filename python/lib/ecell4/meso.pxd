@@ -14,14 +14,19 @@ cdef extern from "ecell4/meso/MesoscopicWorld.hpp" namespace "ecell4::meso":
         Cpp_MesoscopicWorld(Cpp_Real3&, Cpp_Integer3&) except +
         Cpp_MesoscopicWorld(Cpp_Real3&, Cpp_Integer3&,
             shared_ptr[Cpp_RandomNumberGenerator]) except +
+        Cpp_MesoscopicWorld(Cpp_Real3&, Real&) except +
+        Cpp_MesoscopicWorld(Cpp_Real3&, Real&,
+            shared_ptr[Cpp_RandomNumberGenerator]) except +
         void set_t(Real)
         Real t()
         Real volume()
         Real subvolume()
         Integer num_subvolumes()
+        Integer num_subvolumes(Cpp_Species&)
         void reset(Cpp_Real3&)
         Cpp_Real3 edge_lengths()
         Cpp_Integer3 matrix_sizes()
+        Cpp_Real3 subvolume_edge_lengths()
         Integer num_molecules(Cpp_Species &)
         Integer num_molecules_exact(Cpp_Species &)
         Integer num_molecules(Cpp_Species &, Integer)
@@ -37,7 +42,11 @@ cdef extern from "ecell4/meso/MesoscopicWorld.hpp" namespace "ecell4::meso":
         void add_molecules(Cpp_Species &sp, Integer &num, shared_ptr[Cpp_Shape])
         void add_structure(Cpp_Species&, shared_ptr[Cpp_Shape])
         Real get_volume(Cpp_Species&)
+        Real get_occupancy(Cpp_Species&, Integer&)
+        Real get_occupancy(Cpp_Species&, Cpp_Integer3&)
         bool on_structure(Cpp_Species&, Cpp_Integer3&)
+        bool check_structure(Cpp_Species&, Cpp_Integer3&)
+        bool has_structure(Cpp_Species&)
         void remove_molecules(Cpp_Species &sp, Integer &num)
         void save(string) except +
         void load(string)
@@ -94,6 +103,8 @@ cdef extern from "ecell4/meso/MesoscopicFactory.hpp" namespace "ecell4::meso":
         Cpp_MesoscopicFactory() except +
         Cpp_MesoscopicFactory(Cpp_Integer3&) except +
         Cpp_MesoscopicFactory(Cpp_Integer3&, shared_ptr[Cpp_RandomNumberGenerator]) except +
+        Cpp_MesoscopicFactory(Real) except +
+        Cpp_MesoscopicFactory(Real, shared_ptr[Cpp_RandomNumberGenerator]) except +
         Cpp_MesoscopicWorld* create_world(string)
         Cpp_MesoscopicWorld* create_world(Cpp_Real3&)
         Cpp_MesoscopicWorld* create_world(shared_ptr[Cpp_Model])

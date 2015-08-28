@@ -8,10 +8,14 @@ from ecell4.types cimport *
 from ecell4.shared_ptr cimport shared_ptr
 from ecell4.core cimport *
 
-
 ## LatticeWorld
 #  a python wrapper for Cpp_LatticeWorld
 cdef class LatticeWorld:
+    """A class containing the properties of the simulation world
+
+    LatticeWorld(edge_lengths=None, voxel_radius=None, GSLRandomNumberGenerator rng=None)
+
+    """
 
     def __cinit__(self, edge_lengths = None, voxel_radius = None,
         GSLRandomNumberGenerator rng = None):
@@ -45,15 +49,59 @@ cdef class LatticeWorld:
         del self.thisptr
 
     def set_t(self, Real t):
+        """Set the value of the time of the world
+        Args:
+            t (Real): the time of the world
+        """
         self.thisptr.get().set_t(t)
 
     def t(self):
+        """Return the time of the world
+        Returns:
+            Real: the time of the world
+        """
         return self.thisptr.get().t()
 
     def volume(self):
+        """Return the volume of the world
+        Returns:
+            Real: the volume of the world
+        """
         return self.thisptr.get().volume()
 
+    def voxel_volume(self):
+        """Return the volume of a voxel
+        Returns:
+            Real: the volume of a voxel
+        """
+        return self.thisptr.get().voxel_volume()
+
+    def get_volume(self):
+        """Return the actual volume of the world
+        Returns:
+            Real: the actual volume of the world
+        """
+        return self.thisptr.get().get_volume()
+
+    def actual_lengths(self):
+        """Return the actual edge lengths of the world
+        Returns:
+            Real3: the actual edge lengths of the world
+        """
+        cdef Cpp_Real3 lengths = self.thisptr.get().actual_lengths()
+        return Real3_from_Cpp_Real3(address(lengths))
+
     def new_particle(self, arg1, Real3 arg2=None):
+        """Create a new particle
+        Args:
+            arg1 (Particle): a particle container
+        or
+        Args:
+            arg1 (Species): a species of a particle
+            arg2 (Real3): a coordinate to place a particle
+        Returns:
+            tuple: a pair of ParticleID and Particle of a new particle
+        """
         cdef pair[pair[Cpp_ParticleID, Cpp_Particle], bool] retval
 
         if arg2 is None:
@@ -63,46 +111,100 @@ cdef class LatticeWorld:
         return ((ParticleID_from_Cpp_ParticleID(address(retval.first.first)), Particle_from_Cpp_Particle(address(retval.first.second))), retval.second)
 
     def get_particle(self, ParticleID pid):
+        """Return the particle associated a given ParticleID
+        Args:
+            pid (ParticleID): a id of the particle you want
+        Returns:
+            tuple: a pair of ParticleID and Particle
+        """
         cdef pair[Cpp_ParticleID, Cpp_Particle] \
             pid_particle_pair = self.thisptr.get().get_particle(deref(pid.thisptr))
         return (ParticleID_from_Cpp_ParticleID(address(pid_particle_pair.first)),
                 Particle_from_Cpp_Particle(address(pid_particle_pair.second)))
 
     def get_voxel(self, ParticleID pid):
+        """Return the voxel having a particle associated with a given ParticleID
+        Args:
+            pid (ParticleID): a id of the particle in the voxel you want
+        Returns:
+            tuple: a pair of ParticleID and Voxel
+        """
         cdef pair[Cpp_ParticleID, Cpp_Voxel] \
             pid_voxel_pair = self.thisptr.get().get_voxel(deref(pid.thisptr))
         return (ParticleID_from_Cpp_ParticleID(address(pid_voxel_pair.first)),
                 Voxel_from_Cpp_Voxel(address(pid_voxel_pair.second)))
 
     def remove_particle(self, ParticleID pid):
+        """Remove the particle associated with a given ParticleID
+        Args:
+            pid (ParticleID): a id of particle to remove
+        """
         self.thisptr.get().remove_particle(deref(pid.thisptr))
 
     def remove_voxel(self, ParticleID pid):
+        """Remove the particle associated with a given ParticleID
+        Args:
+            pid (ParticleID): a id of particle to remove
+        """
         self.thisptr.get().remove_voxel(deref(pid.thisptr))
 
     def edge_lengths(self):
+        """Return the edge lengths of the world
+        Returns:
+            Real3: the edge lengths of the world
+        """
         cdef Cpp_Real3 lengths = self.thisptr.get().edge_lengths()
         return Real3_from_Cpp_Real3(address(lengths))
 
     def num_particles(self, Species sp = None):
+        """Return the number of particles
+        Args:
+            sp (Species, optional): the species of particles to count
+        Returns:
+            Integer: the number of particles (of the given species)
+        """
         if sp is None:
             return self.thisptr.get().num_particles()
         else:
             return self.thisptr.get().num_particles(deref(sp.thisptr))
 
     def num_particles_exact(self, Species sp):
+        """Return the number of particles of a given species
+        Args:
+            sp (Species): the species of particles to count
+        Returns:
+            Integer: the number of particles of a given species
+        """
         return self.thisptr.get().num_particles_exact(deref(sp.thisptr))
 
     def num_voxels(self, Species sp = None):
+        """Return the number of voxels
+        Args:
+            sp (Species, optional): the species of particles to count
+        Returns:
+            Integer: the number of voxels (of the given species)
+        """
         if sp is None:
             return self.thisptr.get().num_voxels()
         else:
             return self.thisptr.get().num_voxels(deref(sp.thisptr))
 
     def num_voxels_exact(self, Species sp):
+        """Return the number of voxels of a given species
+        Args:
+            sp (Species): the species of particles to count
+        Returns:
+            Integer: the number of voxels of a given species
+        """
         return self.thisptr.get().num_voxels_exact(deref(sp.thisptr))
 
     def list_particles(self, Species sp = None):
+        """Return the list of particles
+        Args:
+            sp (Species, optional): the species of particles to list up
+        Returns:
+            list: the list of particles (of the given species)
+        """
         cdef vector[pair[Cpp_ParticleID, Cpp_Particle]] particles
         if sp is None:
             particles = self.thisptr.get().list_particles()
@@ -122,6 +224,12 @@ cdef class LatticeWorld:
         return retval
 
     def list_particles_exact(self, Species sp):
+        """Return the list of particles of a given species
+        Args:
+            sp (Species): the species of particles to list up
+        Returns:
+            list: the list of particles of a given species
+        """
         cdef vector[pair[Cpp_ParticleID, Cpp_Particle]] particles
         particles = self.thisptr.get().list_particles_exact(deref(sp.thisptr))
 
@@ -138,91 +246,70 @@ cdef class LatticeWorld:
         return retval
 
     def get_neighbor(self, coord, nrand):
+        """Return the neighbor voxel of a given voxel
+        Args:
+            coord (Integer): a coordinate of a voxel
+            nrand (Integer): a key in the range from 0 to 11 to assign a neighbor voxel
+        Returns:
+            Integer: the coordinate of the neighbor voxel
+        """
         return self.thisptr.get().get_neighbor(coord, nrand)
 
+    def get_neighbor_private(self, coord, nrand):
+        """Return the neighbor voxel of a given voxel
+        Args:
+            coord (Integer): a private coordinate of a voxel
+            nrand (Integer): a key in the range from 0 to 11 to assign a neighbor voxel
+        Returns:
+            Integer: the private coordinate of the neighbor voxel
+        """
+        return self.thisptr.get().get_neighbor_private(coord, nrand)
+
     def has_particle(self, ParticleID pid):
+        """Check if a particle associated with a given particle id exists
+        Args:
+            pid (ParticleID): a particle id to check
+        Returns:
+            bool: if a particle exists, this is true. Otherwise false
+        """
         return self.thisptr.get().has_particle(deref(pid.thisptr))
 
     def update_particle(self, ParticleID pid, Particle p):
+        """Update a particle
+        Args:
+            pid (ParticleID): a particle id of the particle to update
+            p (Particle): the information to update a particle
+        """
         return self.thisptr.get().update_particle(deref(pid.thisptr), deref(p.thisptr))
 
-    # def get_particle(self, ParticleID pid):
-    #     cdef pair[Cpp_ParticleID, Cpp_Particle] \
-    #         pid_particle_pair = self.thisptr.get().get_particle(deref(pid.thisptr))
-    #     return (ParticleID_from_Cpp_ParticleID(address(pid_particle_pair.first)),
-    #             Particle_from_Cpp_Particle(address(pid_particle_pair.second)))
-
-    # def remove_particle(self, ParticleID pid):
-    #     self.thisptr.get().remove_particle(deref(pid.thisptr))
-
-    # def list_particles_within_radius(
-    #     self, Real3 pos, Real radius,
-    #     ParticleID ignore1 = None, ParticleID ignore2 = None):
-    #     cdef vector[pair[pair[Cpp_ParticleID, Cpp_Particle], Real]] particles
-    #     if ignore1 is None and ignore2 is None:
-    #         particles = self.thisptr.get().list_particles_within_radius(
-    #             deref(pos.thisptr), radius)
-    #     elif ignore2 is None:
-    #         particles = self.thisptr.get().list_particles_within_radius(
-    #             deref(pos.thisptr), radius, deref(ignore1.thisptr))
-    #     else:
-    #         particles = self.thisptr.get().list_particles_within_radius(
-    #             deref(pos.thisptr), radius,
-    #             deref(ignore1.thisptr), deref(ignore2.thisptr))
-
-    #     retval = []
-    #     cdef vector[pair[pair[Cpp_ParticleID, Cpp_Particle], Real]].iterator \
-    #         it = particles.begin()
-    #     while it != particles.end():
-    #         retval.append(
-    #             ((ParticleID_from_Cpp_ParticleID(
-    #                   <Cpp_ParticleID*>(address(deref(it).first.first))),
-    #               Particle_from_Cpp_Particle(
-    #                   <Cpp_Particle*>(address(deref(it).first.second)))),
-    #              deref(it).second))
-    #         inc(it)
-    #     return retval
-
-    # def periodic_transpose(self, Real3 pos1, Real3 pos2):
-    #     cdef Cpp_Real3 newpos = self.thisptr.get().periodic_transpose(
-    #         deref(pos1.thisptr), deref(pos2.thisptr))
-    #     return Real3_from_Cpp_Real3(address(newpos))
-
-    # def apply_boundary(self, Real3 pos):
-    #     cdef Cpp_Real3 newpos = self.thisptr.get().apply_boundary(deref(pos.thisptr))
-    #     return Real3_from_Cpp_Real3(address(newpos))
-
-    # def distance_sq(self, Real3 pos1, Real3 pos2):
-    #     return self.thisptr.get().distance_sq(deref(pos1.thisptr), deref(pos2.thisptr))
-
-    # def distance(self, Real3 pos1, Real3 pos2):
-    #     return self.thisptr.get().distance(deref(pos1.thisptr), deref(pos2.thisptr))
-
-    # def volume(self):
-    #     return self.thisptr.get().volume()
-
-    # # def has_species(self, Species sp):
-    # #     return self.thisptr.get().has_species(deref(sp.thisptr))
-
-    # def num_molecules(self, Species sp):
-    #     return self.thisptr.get().num_molecules(deref(sp.thisptr))
-
     def num_molecules(self, Species sp = None):
+        """Return the number of molecules
+        Args:
+            sp (Species, optional): a species whose molecules you count
+        Returns:
+            Integer: the number of molecules (of a given species)
+        """
         if sp is None:
             return self.thisptr.get().num_molecules()
         else:
             return self.thisptr.get().num_molecules(deref(sp.thisptr))
 
     def num_molecules_exact(self, Species sp):
+        """Return the number of molecules of a given species
+        Args:
+            sp (Species): a species whose molecules you count
+        Returns:
+            Integer: the number of molecules of a given species
+        """
         return self.thisptr.get().num_molecules_exact(deref(sp.thisptr))
 
-    # # def add_species(self, Species sp):
-    # #     self.thisptr.get().add_species(deref(sp.thisptr))
-
-    # def add_molecules(self, Species sp, Integer num):
-    #     self.thisptr.get().add_molecules(deref(sp.thisptr), num)
-
     def add_molecules(self, Species sp, Integer num, shape=None):
+        """Add some molecules
+        Args:
+            sp (Species): a species of molecules to add
+            num (Integer): the number of molecules to add
+            shape (Shape, optional): a shape to add molecules on
+        """
         if shape is None:
             self.thisptr.get().add_molecules(deref(sp.thisptr), num)
         else:
@@ -230,15 +317,37 @@ cdef class LatticeWorld:
                 deref(sp.thisptr), num, deref((<Shape>(shape.as_base())).thisptr))
 
     def remove_molecules(self, Species sp, Integer num):
+        """Remove the molecules
+        Args:
+            sp (Species): a species whose molecules to remove
+        """
         self.thisptr.get().remove_molecules(deref(sp.thisptr), num)
 
     def save(self, filename):
+        """Save the world to a file
+        Args:
+            filename (str): a filename to save to
+        """
         self.thisptr.get().save(tostring(filename))
 
     def load(self, filename):
+        """Load the world from a file
+        Args:
+            filename (str): a filename to load from
+        """
         self.thisptr.get().load(tostring(filename))
 
     def new_voxel(self, arg1, arg2=None):
+        """Create a particle
+        Args:
+            arg1 (Voxel): the information to create
+        or
+        Args:
+            arg1 (Species): the Species of particles to create
+            arg2 (Integer): the number of particles(voxels)
+        Returns:
+            tuple: a pair of ParticleID and Voxel
+        """
         cdef pair[pair[Cpp_ParticleID, Cpp_Voxel], bool] retval
 
         if arg2 is None:
@@ -248,9 +357,22 @@ cdef class LatticeWorld:
         return ((ParticleID_from_Cpp_ParticleID(address(retval.first.first)), Voxel_from_Cpp_Voxel(address(retval.first.second))), retval.second)
 
     def update_voxel(self, ParticleID pid, Voxel v):
+        """Update a particle
+        Args:
+            pid (ParticleID): a particle id of the particle to update
+            v (Voxel): the information to update
+        Returns:
+            bool: whether to succeed to update the particle
+        """
         return self.thisptr.get().update_voxel(deref(pid.thisptr), deref(v.thisptr))
 
     def list_voxels(self, Species sp = None):
+        """Returns the list of voxels
+        Args:
+            sp (Species, optional): a species of particles to list up
+        Returns:
+            list: the list of the pair of ParticleID and Voxel
+        """
         cdef vector[pair[Cpp_ParticleID, Cpp_Voxel]] voxels
         if sp is None:
             voxels = self.thisptr.get().list_voxels()
@@ -286,31 +408,67 @@ cdef class LatticeWorld:
         return retval
 
     def has_voxel(self, ParticleID pid):
+        """Check if a particle exists
+        Args:
+            pid (ParticleID): a particle id of the particle to check
+        Returns:
+            bool: whether a particle associated with a given particle id exists
+        """
         return self.thisptr.get().has_voxel(deref(pid.thisptr))
 
     def voxel_radius(self):
+        """Return the voxel radius
+        Returns:
+            Real: the voxel radius
+        """
         return self.thisptr.get().voxel_radius()
 
     def col_size(self):
+        """Return the size of the column of the world
+        Returns:
+            Integer: the size of the column of the world
+        """
         return self.thisptr.get().col_size()
 
     def row_size(self):
+        """Return the size of row of the world
+        Returns:
+            Integer: the size of the row of the world
+        """
         return self.thisptr.get().row_size()
 
     def layer_size(self):
+        """Return the size of layer of the world
+        Returns:
+            Integer: the size of layer of the world
+        """
         return self.thisptr.get().layer_size()
 
     def size(self):
+        """Return the size of voxels
+        Returns:
+            Integer: the size of voxels
+        """
         return self.thisptr.get().size()
 
     def shape(self):
+        """Return the triplet of sizes of column, row and layer
+        Returns:
+            Integer3: the triplet of sizes of column, row and layer
+        """
         cdef Cpp_Integer3 sizes = self.thisptr.get().shape()
         return Integer3_from_Cpp_Integer3(address(sizes))
 
     def bind_to(self, m):
+        """Bind a model to the world
+        Args:
+            m (Model): a model to bind
+        """
         self.thisptr.get().bind_to(deref(Cpp_Model_from_Model(m)))
 
     def private2position(self, Integer coord):
+        """Transform private coordinate to position
+        """
         cdef Cpp_Real3 pos = self.thisptr.get().private2position(coord)
         return Real3_from_Cpp_Real3(address(pos))
 
@@ -390,6 +548,11 @@ def create_lattice_world_vector_impl(edge_lengths, voxel_radius, rng):
 ## LatticeSimulator
 #  a python wrapper for Cpp_LatticeSimulator
 cdef class LatticeSimulator:
+    """ A class running the simulation according to the lattice model.
+
+    LatticeSimulator(m, LatticeWorld w=None)
+
+    """
 
     def __cinit__(self, m, LatticeWorld w=None):
         if w is None:
@@ -403,30 +566,60 @@ cdef class LatticeSimulator:
         del self.thisptr
 
     def num_steps(self):
+        """Return the number of steps
+        Returns:
+            Integer: the number of steps
+        """
         return self.thisptr.num_steps()
 
     def step(self, upto = None):
+        """Step the simulation
+        Args:
+            upto (Real): the time which to step the simulation up to
+        """
         if upto is None:
             self.thisptr.step()
         else:
             return self.thisptr.step(upto)
 
     def t(self):
+        """Return the time
+        Returns:
+            Real: the time
+        """
         return self.thisptr.t()
 
     def dt(self):
+        """Return the interval of times
+        Returns:
+            Real: the interval of times
+        """
         return self.thisptr.dt()
 
     def next_time(self):
+        """Return the time of the next step
+        Returns:
+            Real: the time of the next step
+        """
         return self.thisptr.next_time()
 
     def set_dt(self, Real dt):
+        """Set the interval of times
+        Args:
+            dt (Real): the interval of times
+        """
         self.thisptr.set_dt(dt)
 
     def initialize(self):
+        """Initialize the simulator
+        """
         self.thisptr.initialize()
 
     def last_reactions(self):
+        """Return reactions occuring at the last step
+        Returns:
+            list: the list of reactions
+        """
         cdef vector[Cpp_ReactionRule] reactions = self.thisptr.last_reactions()
         cdef vector[Cpp_ReactionRule].iterator it = reactions.begin()
         retval = []
@@ -437,18 +630,39 @@ cdef class LatticeSimulator:
         return retval
 
     def set_alpha(self, Real alpha):
+        """Set the value of alpha
+        Args:
+            alpha (Real): the value of alpha
+        """
         self.thisptr.set_alpha(alpha)
 
     def get_alpha(self):
+        """Return the value of alpha
+        Returns:
+            Real: the value of alpha
+        """
         return self.thisptr.get_alpha()
 
     def model(self):
+        """Return the reaction model
+        Returns:
+            Model: the reaction model
+        """
         return Model_from_Cpp_Model(self.thisptr.model())
 
     def world(self):
+        """Return the world
+        Returns:
+            LatticeWorld: the world
+        """
         return LatticeWorld_from_Cpp_LatticeWorld(self.thisptr.world())
 
     def run(self, Real duration, observers=None):
+        """Run the simulation
+        Args:
+            duration (Real): the time in second
+            observers (list of Obeservers, optional): the observers
+        """
         cdef vector[shared_ptr[Cpp_Observer]] tmp
 
         if observers is None:
@@ -471,6 +685,11 @@ cdef LatticeSimulator LatticeSimulator_from_Cpp_LatticeSimulator(Cpp_LatticeSimu
 ## LatticeFactory
 #  a python wrapper for Cpp_LatticeFactory
 cdef class LatticeFactory:
+    """ A factory class creating a LatticeWorld instance and a LatticeSimulator instance.
+
+    LatticeFactory(voxel_radius=None, GSLRandomNumberGenerator rng=None)
+
+    """
 
     def __cinit__(self, voxel_radius=None, GSLRandomNumberGenerator rng=None):
         if rng is not None:
@@ -484,6 +703,15 @@ cdef class LatticeFactory:
         del self.thisptr
 
     def create_world(self, arg1):
+        """Return a LatticeWorld instance.
+        Args:
+            arg1 (Real3): The lengths of edges of a LatticeWorld created
+        or
+        Args:
+            arg1 (str): The path of a file of LatticeWorld
+        Returns:
+            LatticeWorld: the created world
+        """
         if isinstance(arg1, Real3):
             return LatticeWorld_from_Cpp_LatticeWorld(
                 shared_ptr[Cpp_LatticeWorld](
@@ -497,6 +725,16 @@ cdef class LatticeFactory:
                     deref(Cpp_Model_from_Model(arg1)))))
 
     def create_simulator(self, arg1, LatticeWorld arg2=None):
+        """Return a LatticeSimulator instance.
+        Args:
+            arg1 (LatticeWorld): a world in which the simulation runs
+        or
+        Args:
+            arg1 (Model): a simulation model
+            arg2 (LatticeWorld): a world in which the simulation runs
+        Returns:
+            LatticeSimulator: the created simulator
+        """
         if arg2 is None:
             return LatticeSimulator_from_Cpp_LatticeSimulator(
                 self.thisptr.create_simulator(deref((<LatticeWorld>arg1).thisptr)))

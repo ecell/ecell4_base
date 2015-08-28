@@ -75,7 +75,9 @@ public:
     virtual const Integer3 matrix_sizes() const = 0;
     virtual const Real3 subvolume_edge_lengths() const = 0;
     virtual const Integer num_subvolumes() const = 0;
+    virtual const Integer num_subvolumes(const Species& sp) const = 0;
     virtual const Real subvolume() const = 0;
+
     virtual coordinate_type global2coord(const Integer3& g) const = 0;
     virtual Integer3 coord2global(const coordinate_type& c) const = 0;
     virtual Integer3 position2global(const Real3& pos) const = 0;
@@ -116,12 +118,42 @@ public:
         const Species& sp, const boost::shared_ptr<const Shape>& shape) = 0;
     virtual bool check_structure(
         const Species::serial_type& serial, const coordinate_type& coord) const = 0;
-    virtual bool has_structure(const Species& sp) const = 0;
     virtual Real get_volume(const Species& sp) const = 0;
+    virtual std::vector<Species::serial_type> list_structures() const = 0;
+    virtual void update_structure(
+        const Species::serial_type& serial, const coordinate_type& coord,
+        const Real& value) = 0;
+    virtual bool has_structure(const Species& sp) const = 0;
+
+    virtual Real get_occupancy(const Species::serial_type& serial, const coordinate_type& coord) const = 0;
+
+    inline Real get_occupancy(const Species& sp, const coordinate_type& coord) const
+    {
+        return get_occupancy(sp.serial(), coord);
+    }
+
+    inline Real get_occupancy(const Species& sp, const Integer3& g) const
+    {
+        return get_occupancy(sp.serial(), global2coord(g));
+    }
+
+    // virtual Shape::dimension_kind get_dimension(const Species::serial_type& serial) const = 0;
+    // inline Shape::dimension_kind get_dimension(const Species& sp) const
+    // {
+    //     return get_dimension(sp.serial());
+    // }
+
+    // virtual void set_dimension(
+    //     const Species::serial_type& serial, const Shape::dimension_kind& ndim);
 
     inline bool check_structure(const Species::serial_type& serial, const Integer3& g) const
     {
         return check_structure(serial, global2coord(g));
+    }
+
+    inline bool check_structure(const Species& sp, const Integer3& g) const
+    {
+        return check_structure(sp.serial(), g);
     }
 
     virtual void reset(const Real3& edge_lengths, const Integer3& matrix_sizes) = 0;
@@ -146,8 +178,10 @@ public:
 
     typedef std::vector<Integer> cell_type;
     typedef utils::get_mapper_mf<Species, cell_type>::type matrix_type;
-    typedef std::map<Species, boost::shared_ptr<const Shape> > structure_container_type;
-    typedef utils::get_mapper_mf<Species::serial_type, cell_type>::type structure_matrix_type; //XXX: just avoid to use std::vector<bool>
+
+    // typedef utils::get_mapper_mf<Species::serial_type, Shape::dimension_kind>::type structure_container_type;
+    typedef std::vector<Real> structure_cell_type;
+    typedef utils::get_mapper_mf<Species::serial_type, structure_cell_type>::type structure_matrix_type;
 
 public:
 
@@ -195,6 +229,8 @@ public:
         return matrix_sizes_[0] * matrix_sizes_[1] * matrix_sizes_[2];
     }
 
+    const Integer num_subvolumes(const Species& sp) const;
+
     const Real subvolume() const
     {
         return volume() / num_subvolumes();
@@ -226,6 +262,17 @@ public:
             static_cast<Integer>(floor(pos[2] * matrix_sizes_[2] / edge_lengths_[2])));
     }
 
+    Real3 coord2position(const coordinate_type& c) const
+    {
+        const Real3 lengths(subvolume_edge_lengths());
+        const Integer3 g(coord2global(c));
+        const Real3 center(
+            lengths[0] * (g[0] + 0.5),
+            lengths[1] * (g[1] + 0.5),
+            lengths[2] * (g[2] + 0.5));
+        return center;
+    }
+
     Integer num_molecules(const Species& sp) const;
     Integer num_molecules_exact(const Species& sp) const;
 
@@ -237,6 +284,11 @@ public:
     void add_structure(const Species& sp, const boost::shared_ptr<const Shape>& shape);
     bool check_structure(const Species::serial_type& serial, const coordinate_type& coord) const;
     Real get_volume(const Species& sp) const;
+    std::vector<Species::serial_type> list_structures() const;
+
+    void update_structure(
+        const Species::serial_type& serial, const coordinate_type& coord,
+        const Real& value);
 
     bool has_structure(const Species& sp) const
     {
@@ -245,7 +297,7 @@ public:
         {
             return false;
         }
-        for (std::vector<Integer>::const_iterator j((*i).second.begin());
+        for (structure_cell_type::const_iterator j((*i).second.begin());
             j != (*i).second.end(); ++j)
         {
             if ((*j) > 0)
@@ -255,6 +307,46 @@ public:
         }
         return false;
     }
+
+    inline Real unit_area() const
+    {
+        const Real3 l(subvolume_edge_lengths());
+        return (l[0] * l[1] + l[0] * l[2] + l[1] * l[2]) / (3 * l[0] * l[1] * l[2]);
+    }
+
+    Real get_occupancy(const Species::serial_type& serial, const coordinate_type& coord) const
+    {
+        structure_matrix_type::const_iterator i(structure_matrix_.find(serial));
+        if (i == structure_matrix_.end())
+        {
+            return 0.0;
+        }
+        return (*i).second[coord];
+    }
+
+    // Shape::dimension_kind get_dimension(const Species::serial_type& serial) const
+    // {
+    //     structure_container_type::const_iterator i(structures_.find(serial));
+    //     if (i == structures_.end())
+    //     {
+    //         throw NotFound("No correspoinding structure was found.");
+    //     }
+    //     return (*i).second;
+    // }
+
+    // void set_dimension(
+    //     const Species::serial_type& serial, const Shape::dimension_kind& ndim)
+    // {
+    //     structure_container_type::iterator i(structures_.find(serial));
+    //     if (i == structures_.end())
+    //     {
+    //         throw NotFound("No correspoinding structure was found.");
+    //     }
+    //     else
+    //     {
+    //         (*i).second = ndim;
+    //     }
+    // }
 
     coordinate_type get_neighbor(const coordinate_type& c, const Integer rnd) const;
 
@@ -316,6 +408,10 @@ protected:
 
     void reserve_species(const Species& sp, const coordinate_type& c);
 
+    void add_structure3(const Species& sp, const boost::shared_ptr<const Shape>& shape);
+    void add_structure2(const Species& sp, const boost::shared_ptr<const Shape>& shape);
+    bool is_surface_subvolume(const coordinate_type& c, const boost::shared_ptr<const Shape>& shape);
+
 protected:
 
     Real3 edge_lengths_;
@@ -323,7 +419,7 @@ protected:
     matrix_type matrix_;
     std::vector<Species> species_;
 
-    structure_container_type structures_;
+    // structure_container_type structures_;
     structure_matrix_type structure_matrix_;
 };
 

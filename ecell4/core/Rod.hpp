@@ -34,6 +34,11 @@ public:
         return length_ * 0.5;
     }
 
+    inline const Real& length() const
+    {
+        return lengthX();
+    }
+
 protected:
 
     Real length_; // LengthX
@@ -63,6 +68,11 @@ public:
     dimension_kind dimension() const
     {
         return TWO;
+    }
+
+    inline const Real& length() const
+    {
+        return lengthX();
     }
 
 protected:
