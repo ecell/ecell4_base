@@ -341,7 +341,7 @@ public:
         : base_type( boost::shared_ptr<ODENetworkModel> (new ODENetworkModel(model)), world), 
         dt_(inf), abs_tol_(1e-10), rel_tol_(1e-6)
     {
-        ;
+        initialize();
     }
 
     void initialize()
