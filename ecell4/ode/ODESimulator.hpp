@@ -27,6 +27,11 @@ namespace ecell4
 namespace ode
 {
 
+enum ODESolverType {
+    Controlled_Runge_Kutta_Cash_Karp = 0,
+    Controlled_Rosenbrock = 1,
+};
+
 class ODESimulator
     : public SimulatorBase<ODENetworkModel, ODEWorld>
 {
@@ -328,8 +333,9 @@ public:
 
     ODESimulator(
         const boost::shared_ptr<ODENetworkModel> &model,
-        const boost::shared_ptr<ODEWorld> &world)
-        : base_type(model, world), dt_(inf), abs_tol_(1e-10), rel_tol_(1e-6)
+        const boost::shared_ptr<ODEWorld> &world, 
+        ODESolverType solver_type = Controlled_Runge_Kutta_Cash_Karp)
+        : base_type(model, world), dt_(inf), abs_tol_(1e-10), rel_tol_(1e-6), solver_type_(solver_type)
         // : model_(model), world_(world), dt_(inf), num_steps_(0)
     {
         initialize();
@@ -337,9 +343,10 @@ public:
 
     ODESimulator(
         const boost::shared_ptr<NetworkModel> &model,
-        const boost::shared_ptr<ODEWorld> &world)
+        const boost::shared_ptr<ODEWorld> &world,
+        ODESolverType solver_type = Controlled_Runge_Kutta_Cash_Karp)
         : base_type( boost::shared_ptr<ODENetworkModel> (new ODENetworkModel(model)), world), 
-        dt_(inf), abs_tol_(1e-10), rel_tol_(1e-6)
+        dt_(inf), abs_tol_(1e-10), rel_tol_(1e-6), solver_type_(solver_type)
     {
         initialize();
     }
@@ -435,6 +442,7 @@ protected:
     Real dt_;
     // Integer num_steps_;
     Real abs_tol_, rel_tol_;
+    ODESolverType solver_type_;
 };
 
 } // ode

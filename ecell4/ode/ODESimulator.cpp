@@ -70,6 +70,49 @@ ODESimulator::generate_system() const
             jacobi_func(reactions, world_->volume()));
 }
 
+// runge_kutta
+#if 0
+bool ODESimulator::step(const Real &upto)
+{
+    if (upto <= t())
+    {
+        return false;
+    }
+    const std::vector<Species> species(world_->list_species());
+
+    state_type x(species.size());
+    state_type::size_type i(0);
+    for (ODENetworkModel::species_container_type::const_iterator it(species.begin());
+            it != species.end(); it++)
+    {
+        x[i] = static_cast<double>(world_->get_value_exact(*it));
+        it++;
+    }
+    std::pair<deriv_func, jacobi_func> system(generate_system());
+    StateAndTimeBackInserter::state_container_type x_vec;
+    StateAndTimeBackInserter::time_container_type times;
+    typedef odeint::runge_kutta_cash_karp54<state_type> error_stepper_type;
+    typedef odeint::controlled_runge_kutta<error_stepper_type> controlled_stepper_type;
+    controlled_stepper_type controlled_stepper;
+    const size_t steps(
+            odeint::integrate_adaptive( 
+                controlled_stepper, system.first, x, this->t(), upto, dt_,
+                StateAndTimeBackInserter(x_vec, times) ) );
+    {
+        state_type::size_type i(0);
+        for(ODENetworkModel::species_container_type::const_iterator
+            it(species.begin()); it != species.end(); it++)
+        {
+            world_->set_value(*it, static_cast<Real>(x_vec[steps](i)));
+            i++;
+        }
+    }
+    set_t(upto);
+    num_steps_++;
+    return false;
+}
+#endif
+
 bool ODESimulator::step(const Real &upto)
 {
     if (upto <= t())
@@ -93,20 +136,38 @@ bool ODESimulator::step(const Real &upto)
     StateAndTimeBackInserter::state_container_type x_vec;
     StateAndTimeBackInserter::time_container_type times;
 
-    typedef odeint::rosenbrock4<state_type::value_type> error_stepper_type;
-    typedef odeint::rosenbrock4_controller<error_stepper_type>
-        controlled_stepper_type;
+    size_t steps;
+    switch (this->solver_type_) {
+        case Controlled_Runge_Kutta_Cash_Karp:
+            {
+                /* This solver doesn't need the jacobian */
+                typedef odeint::runge_kutta_cash_karp54<state_type> error_stepper_type;
+                typedef odeint::controlled_runge_kutta<error_stepper_type> controlled_stepper_type;
+                controlled_stepper_type controlled_stepper;
+                steps = (
+                    odeint::integrate_adaptive( 
+                        controlled_stepper, system.first, x, t(), upto, dt_, StateAndTimeBackInserter(x_vec, times)));
+            }
+            break;
+        case Controlled_Rosenbrock:
+            {
+                typedef odeint::rosenbrock4<state_type::value_type> error_stepper_type;
+                typedef odeint::rosenbrock4_controller<error_stepper_type> controlled_stepper_type;
+                controlled_stepper_type controlled_stepper(abs_tol_, rel_tol_);
+                steps = (
+                    odeint::integrate_adaptive(
+                        controlled_stepper, system, x, t(), upto, dt, StateAndTimeBackInserter(x_vec, times)));
+            }
+            break;
+        default:
+            throw IllegalState("Solver is not specified\n");
+    };
 
     // const double a_x(1.0), a_dxdt(1.0);
-    controlled_stepper_type controlled_stepper(abs_tol_, rel_tol_);
     // const size_t steps(
     //     odeint::integrate_adaptive(
     //         controlled_stepper, system, x, t(), upto, dt_,
     //         StateAndTimeBackInserter(x_vec, times)));
-    const size_t steps(
-        odeint::integrate_adaptive(
-            controlled_stepper, system, x, t(), upto, dt,
-            StateAndTimeBackInserter(x_vec, times)));
     {
         state_type::size_type i(0);
         for(ODENetworkModel::species_container_type::const_iterator
