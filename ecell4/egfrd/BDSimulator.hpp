@@ -53,7 +53,8 @@ public:
         int dissociation_retry_moves = 1)
         : base_type(world, ecell4_model),
           dt_factor_(bd_dt_factor),
-          num_retries_(dissociation_retry_moves)
+          num_retries_(dissociation_retry_moves),
+          R_(std::numeric_limits<typename world_type::length_type>::infinity())
     {
         calculate_dt();
     }
@@ -72,6 +73,16 @@ public:
     virtual void set_dt(const Real& dt)
     {
         base_type::dt_ = dt;
+    }
+
+    void set_R(const Real& R)
+    {
+        R_ = R;
+    }
+
+    const Real get_R() const
+    {
+        return R_;
     }
 
     virtual void step()
@@ -135,7 +146,8 @@ protected:
                 dt, num_retries_,
                 base_type::rrec_.get(), 0,
                 make_select_first_range(base_type::world_->
-                                        get_particles_range()));
+                                        get_particles_range()),
+                R_);
             while (propagator());
             LOG_DEBUG(("%d: t=%lg, dt=%lg", base_type::num_steps_,
                        base_type::t(), dt));
@@ -148,6 +160,7 @@ private:
 
     Real const dt_factor_;
     int const num_retries_;
+    Real R_;
     static Logger& log_;
 };
 

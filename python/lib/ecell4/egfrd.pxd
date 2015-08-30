@@ -118,6 +118,8 @@ cdef extern from "ecell4/egfrd/egfrd.hpp" namespace "ecell4::egfrd":
         Real t()
         void set_t(Real)
         void set_dt(Real)
+        void set_R(Real)
+        Real get_R()
         Real dt()
         Real next_time()
         vector[Cpp_ReactionRule] last_reactions()

@@ -406,6 +406,12 @@ cdef class BDSimulator:
             inc(it)
         return retval
 
+    def set_R(self, Real R):
+        self.thisptr.set_R(R)
+
+    def get_R(self):
+        return self.thisptr.get_R()
+
     def set_t(self, Real new_t):
         self.thisptr.set_t(new_t)
 

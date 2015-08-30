@@ -2,6 +2,7 @@
 #define BD_PROPAGATOR_HPP
 
 #include <algorithm>
+#include <limits>
 #include <boost/bind.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/range/size.hpp>
@@ -53,10 +54,10 @@ public:
         particle_container_type& tx, network_rules_type const& rules,
         rng_type& rng, time_type dt, int max_retry_count,
         reaction_recorder_type* rrec, volume_clearer_type* vc,
-        Trange_ const& particles)
+        Trange_ const& particles, Real const R=std::numeric_limits<length_type>::infinity())
         : tx_(tx), rules_(rules), rng_(rng), dt_(dt),
           max_retry_count_(max_retry_count), rrec_(rrec), vc_(vc),
-          queue_(), rejected_move_count_(0)
+          queue_(), rejected_move_count_(0), R_(R)
     {
         call_with_size_if_randomly_accessible(
             boost::bind(&particle_id_vector_type::reserve, &queue_, _1),
@@ -102,6 +103,8 @@ public:
         position_type const new_pos(
             tx_.apply_boundary(
                 add(pp.second.position(), displacement)));
+        if (length_sq(new_pos - multiply(tx_.edge_lengths(), 0.5)) > R_ * R_)
+            return true;
 
         particle_id_pair particle_to_update(
                 pp.first, particle_type(species_id,
@@ -435,6 +438,7 @@ private:
     volume_clearer_type* const vc_;
     particle_id_vector_type queue_;
     int rejected_move_count_;
+    Real const R_;
     static Logger& log_;
 };
 
