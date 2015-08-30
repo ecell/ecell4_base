@@ -30,6 +30,7 @@ namespace ode
 enum ODESolverType {
     Controlled_Runge_Kutta_Cash_Karp = 0,
     Controlled_Rosenbrock = 1,
+    Explicit_Euler = 2,
 };
 
 class ODESimulator
