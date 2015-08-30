@@ -316,6 +316,17 @@ void FixedIntervalCSVObserver::reset()
 void FixedIntervalTrajectoryObserver::initialize(const Space* space)
 {
     base_type::initialize(space);
+
+    if (pids_.size() == 0)
+    {
+        std::vector<std::pair<ParticleID, Particle> > const particles(space->list_particles());
+        for (std::vector<std::pair<ParticleID, Particle> >::const_iterator i = particles.begin(); i != particles.end(); ++i)
+        {
+            pids_.push_back((*i).first);
+        }
+        trajectories_.resize(pids_.size());
+        strides_.resize(pids_.size());
+    }
 }
 
 bool FixedIntervalTrajectoryObserver::fire(const Simulator* sim, const Space* space)

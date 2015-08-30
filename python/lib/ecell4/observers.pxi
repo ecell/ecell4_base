@@ -1,3 +1,5 @@
+import types
+
 cdef class Observer:
     """A wrapper for a base class of Observers.
 
@@ -440,7 +442,7 @@ cdef class FixedIntervalTrajectoryObserver:
 
     """
 
-    def __init__(self, Real dt, pids, resolve_boundary=None):
+    def __init__(self, Real dt, pids=None, resolve_boundary=None):
         """Constructor.
 
         Args:
@@ -455,13 +457,25 @@ cdef class FixedIntervalTrajectoryObserver:
         """
         pass  # XXX: Only used for doc string
 
-    def __cinit__(self, Real dt, pids, resolve_boundary=None):
+    def __cinit__(self, Real dt, pids=None, resolve_boundary=None):
         cdef vector[Cpp_ParticleID] tmp
-        for pid in pids:
-            tmp.push_back(deref((<ParticleID>pid).thisptr))
-        if resolve_boundary is None:
+        if pids is not None and not isinstance(pids, types.BooleanType):
+            for pid in pids:
+                if not isinstance(pid, ParticleID):
+                    raise ValueError(
+                        'invalid argument [{0}] was given.'.format(repr(pid))
+                        + ' ParticleID is expected.')
+                tmp.push_back(deref((<ParticleID>pid).thisptr))
+        if pids is None:
             self.thisptr = new shared_ptr[Cpp_FixedIntervalTrajectoryObserver](
-                new Cpp_FixedIntervalTrajectoryObserver(dt, tmp))
+                new Cpp_FixedIntervalTrajectoryObserver(dt))
+        elif resolve_boundary is None:
+            if isinstance(pids, types.BooleanType):
+                self.thisptr = new shared_ptr[Cpp_FixedIntervalTrajectoryObserver](
+                    new Cpp_FixedIntervalTrajectoryObserver(dt, <bool>pids))
+            else:
+                self.thisptr = new shared_ptr[Cpp_FixedIntervalTrajectoryObserver](
+                    new Cpp_FixedIntervalTrajectoryObserver(dt, tmp))
         else:
             self.thisptr = new shared_ptr[Cpp_FixedIntervalTrajectoryObserver](
                 new Cpp_FixedIntervalTrajectoryObserver(dt, tmp, <bool>resolve_boundary))

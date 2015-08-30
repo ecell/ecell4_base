@@ -358,6 +358,14 @@ public:
         ;
     }
 
+    FixedIntervalTrajectoryObserver(
+        const Real& dt, const bool& resolve_boundary = true)
+        : base_type(dt), pids_(), resolve_boundary_(resolve_boundary),
+        trajectories_(), strides_()
+    {
+        ;
+    }
+
     virtual ~FixedIntervalTrajectoryObserver()
     {
         ;
