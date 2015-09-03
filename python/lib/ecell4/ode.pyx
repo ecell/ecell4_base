@@ -371,9 +371,11 @@ cdef ODENetworkModel ODENetworkModel_from_Cpp_ODENetworkModel(
     return r
 
 # SolverType:
-RungeKutta_Cash_Karp = 1
-Rosenbrock = 2
-Explicit_Euler = 3
+( 
+    RungeKutta_Cash_Karp,
+    Rosenbrock,
+    Explicit_Euler
+) = (1, 2, 3)
 
 cdef Cpp_ODESolverType translate_solver_type(solvertype_constant):
     if solvertype_constant == RungeKutta_Cash_Karp:
