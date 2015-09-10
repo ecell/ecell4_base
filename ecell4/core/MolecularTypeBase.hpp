@@ -26,9 +26,9 @@ public:
 public:
 
     MolecularTypeBase(
-        const Species& species, bool is_structure, MolecularTypeBase* location,
+        const Species& species, MolecularTypeBase* location,
         const Real& radius, const Real& D)
-        : species_(species), is_structure_(is_structure), location_(location),
+        : species_(species), location_(location),
         radius_(radius), D_(D)
     {
         ;
@@ -51,9 +51,9 @@ public:
         return species_;
     }
 
-    bool is_structure() const
+    virtual bool is_structure() const
     {
-        return is_structure_;
+        return false;
     }
 
     MolecularTypeBase* location() const
@@ -273,7 +273,6 @@ protected:
 protected:
 
     const Species species_;
-    const bool is_structure_;
     MolecularTypeBase* location_;
     Real radius_, D_;
 

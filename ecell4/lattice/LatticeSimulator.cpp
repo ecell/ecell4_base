@@ -237,7 +237,7 @@ std::pair<bool, LatticeSimulator::reaction_type> LatticeSimulator::attempt_react
         }
     }
     else
-        throw NotSupported("The dimension of a shape must be two or three.");
+        throw NotSupported("The dimension of a structure must be two or three.");
 
     Real accp(0.0);
     for (std::vector<ReactionRule>::const_iterator itr(rules.begin());
