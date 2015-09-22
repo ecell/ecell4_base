@@ -466,7 +466,7 @@ public:
         const coordinate_type coord(private2coord(info.first));
 
         return std::make_pair<ParticleID, Voxel>(
-            info.second, Voxel(mt->species(), coord, mt->radius(), mt->D(), loc));
+            ParticleID(info.second()), Voxel(mt->species(), coord, mt->radius(), mt->D(), loc));
     }
 
     std::pair<ParticleID, Voxel> choice(const Species& sp)
