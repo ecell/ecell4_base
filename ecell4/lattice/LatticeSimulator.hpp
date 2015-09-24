@@ -50,8 +50,8 @@ protected:
                 dt_ = inf;
             } else if(mtype->get_dimension() == Shape::TWO) {
                 // TODO: Regular Lattice
-                dt_  = pow((2*sqrt(2)+4*sqrt(3)+3*sqrt(6)+sqrt(22))/
-                          (6*sqrt(2)+4*sqrt(3)+3*sqrt(6)), 2) * R * R / D * alpha_;
+                dt_  = pow((2*sqrt(2.0)+4*sqrt(3.0)+3*sqrt(6.0)+sqrt(22.0))/
+                          (6*sqrt(2.0)+4*sqrt(3.0)+3*sqrt(6.0)), 2) * R * R / D * alpha_;
             } else {
                 dt_ = 2 * R * R / 3 / D * alpha_;
             }
