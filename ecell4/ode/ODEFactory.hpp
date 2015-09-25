@@ -23,8 +23,8 @@ public:
 
 public:
 
-    ODEFactory()
-        : base_type()
+    ODEFactory(const ODESolverType solver_type = ROSENBROCK4, const Real dt = inf)
+        : base_type(), solver_type_(solver_type), dt_(dt)
     {
         ; // do nothing
     }
@@ -67,17 +67,24 @@ public:
         const boost::shared_ptr<NetworkModel>& model,
         const boost::shared_ptr<world_type>& world) const
     {
-        return new ODESimulator(model, world);
+        ODESimulator* sim = new ODESimulator(model, world, solver_type_);
+        sim->set_dt(dt_);
+        return sim;
     }
 
     ODESimulator* create_simulator(
         const boost::shared_ptr<ODENetworkModel>& model,
         const boost::shared_ptr<world_type>& world) const
     {
-        return new ODESimulator(model, world);
+        ODESimulator* sim = new ODESimulator(model, world, solver_type_);
+        sim->set_dt(dt_);
+        return sim;
     }
 
 protected:
+
+    ODESolverType solver_type_;
+    Real dt_;
 };
 
 } // ode

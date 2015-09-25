@@ -141,6 +141,7 @@ cdef ODENetworkModel ODENetworkModel_from_Cpp_ODENetworkModel(shared_ptr[Cpp_ODE
 
 cdef extern from "ecell4/ode/ODESimulator.hpp" namespace "ecell4::ode":
     cdef enum Cpp_ODESolverType "ecell4::ode::ODESolverType":
+        Cpp_UNDEF "ecell4::ode::UNDEF"
         Cpp_RUNGE_KUTA_CASH_KARP54 "ecell4::ode::RUNGE_KUTA_CASH_KARP54"
         Cpp_ROSENBROCK4 "ecell4::ode::ROSENBROCK4"
         Cpp_EULER "ecell4::ode::EULER"
@@ -183,6 +184,8 @@ cdef ODESimulator ODESimulator_from_Cpp_ODESimulator(Cpp_ODESimulator* s)
 cdef extern from "ecell4/ode/ODEFactory.hpp" namespace "ecell4::ode":
     cdef cppclass Cpp_ODEFactory "ecell4::ode::ODEFactory":
         Cpp_ODEFactory() except +
+        Cpp_ODEFactory(Cpp_ODESolverType) except +
+        Cpp_ODEFactory(Cpp_ODESolverType, Real) except +
         Cpp_ODEWorld* create_world()
         Cpp_ODEWorld* create_world(string)
         Cpp_ODEWorld* create_world(Cpp_Real3&)

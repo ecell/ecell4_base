@@ -375,7 +375,7 @@ cdef ODENetworkModel ODENetworkModel_from_Cpp_ODENetworkModel(
     RUNGE_KUTTA_CASH_KARP54,
     ROSENBROCK4,
     EULER,
-) = (1, 2, 3)
+) = (0, 1, 2)
 
 cdef Cpp_ODESolverType translate_solver_type(solvertype_constant):
     if solvertype_constant == RUNGE_KUTTA_CASH_KARP54:
@@ -474,8 +474,13 @@ cdef ODESimulator ODESimulator_from_Cpp_ODESimulator(Cpp_ODESimulator* s):
 #  a python wrapper for Cpp_ODEFactory
 cdef class ODEFactory:
 
-    def __cinit__(self):
-        self.thisptr = new Cpp_ODEFactory()
+    def __cinit__(self, solvertype = None, dt = None):
+        if solvertype is None:
+            self.thisptr = new Cpp_ODEFactory()
+        elif dt is None:
+            self.thisptr = new Cpp_ODEFactory(translate_solver_type(solvertype))
+        else:
+            self.thisptr = new Cpp_ODEFactory(translate_solver_type(solvertype), dt)
 
     def __dealloc__(self):
         del self.thisptr
