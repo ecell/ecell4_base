@@ -389,35 +389,80 @@ cdef Cpp_ODESolverType translate_solver_type(solvertype_constant):
             "invalid solver type was given [{0}]".format(repr(solvertype_constant)))
 
 cdef class ODESimulator:
-    def __cinit__(self, m, ODEWorld w, solvertype = None):
-        if solvertype is None:
-            if isinstance(m, ODENetworkModel):
-                self.thisptr = new Cpp_ODESimulator(
-                    deref((<ODENetworkModel>m).thisptr), deref(w.thisptr))
-            elif isinstance(m, NetworkModel):
-                self.thisptr = new Cpp_ODESimulator(
-                    deref((<NetworkModel>m).thisptr), deref(w.thisptr))
-            else:
-                raise ValueError(
-                    "invalid argument {}.".format(repr(m))
-                    + " NetworkModel or ODENetworkModel is needed.")
-        else:
-            cpp_solvertype = translate_solver_type(solvertype)
 
-            if isinstance(m, ODENetworkModel):
+    def __cinit__(self, arg1, arg2 = None, arg3 = None):
+        if arg2 is None:
+            self.thisptr = new Cpp_ODESimulator(deref((<ODEWorld>arg1).thisptr))
+        elif arg3 is None:
+            if isinstance(arg2, ODEWorld):
+                if isinstance(arg1, ODENetworkModel):
+                    self.thisptr = new Cpp_ODESimulator(
+                        deref((<ODENetworkModel>arg1).thisptr),
+                        deref((<ODEWorld>arg2).thisptr))
+                elif isinstance(arg1, NetworkModel):
+                    self.thisptr = new Cpp_ODESimulator(
+                        deref((<NetworkModel>arg1).thisptr),
+                        deref((<ODEWorld>arg2).thisptr))
+                else:
+                    raise ValueError(
+                        "An invalid value [{}] for the first argument.".format(repr(arg1))
+                        + " NetworkModel or ODENetworkModel is needed.")
+            elif isinstance(arg1, ODEWorld):
+                # arg2: ODESolverType
                 self.thisptr = new Cpp_ODESimulator(
-                    deref((<ODENetworkModel>m).thisptr), deref(w.thisptr), cpp_solvertype)
-            elif isinstance(m, NetworkModel):
-                self.thisptr = new Cpp_ODESimulator(
-                    deref((<NetworkModel>m).thisptr), deref(w.thisptr), cpp_solvertype)
+                    deref((<ODEWorld>arg1).thisptr), translate_solver_type(arg2))
             else:
                 raise ValueError(
-                    "invalid argument {}.".format(repr(m))
+                    "An invalid value [{}] for the first argument.".format(repr(arg1))
+                    + " ODEWorld is needed.")
+        else:
+            if not isinstance(arg2, ODEWorld):
+                raise ValueError(
+                    "An invalid argument [{}] for the second argument.".format(repr(arg2))
+                    + " ODEWorld is needed.")
+
+            cpp_solvertype = translate_solver_type(arg3)
+
+            if isinstance(arg1, ODENetworkModel):
+                self.thisptr = new Cpp_ODESimulator(
+                    deref((<ODENetworkModel>arg1).thisptr),
+                    deref((<ODEWorld>arg2).thisptr),
+                    cpp_solvertype)
+            elif isinstance(arg1, NetworkModel):
+                self.thisptr = new Cpp_ODESimulator(
+                    deref((<NetworkModel>arg1).thisptr),
+                    deref((<ODEWorld>arg2).thisptr),
+                    cpp_solvertype)
+            else:
+                raise ValueError(
+                    "An invalid value [{}] for the first argument.".format(repr(arg1))
                     + " NetworkModel or ODENetworkModel is needed.")
-    # def __cinit__(self, ODENetworkModel m, ODEWorld w):
-    #     self.thisptr = new Cpp_ODESimulator(deref(m.thisptr), deref(w.thisptr)) 
-    # def __cinit__(self, NetworkModel m, ODEWorld w):
-    #     self.thisptr = new Cpp_ODESimulator(deref(m.thisptr), deref(w.thisptr)) 
+
+    # def __cinit__(self, m, ODEWorld w, solvertype = None):
+    #     if solvertype is None:
+    #         if isinstance(m, ODENetworkModel):
+    #             self.thisptr = new Cpp_ODESimulator(
+    #                 deref((<ODENetworkModel>m).thisptr), deref(w.thisptr))
+    #         elif isinstance(m, NetworkModel):
+    #             self.thisptr = new Cpp_ODESimulator(
+    #                 deref((<NetworkModel>m).thisptr), deref(w.thisptr))
+    #         else:
+    #             raise ValueError(
+    #                 "invalid argument {}.".format(repr(m))
+    #                 + " NetworkModel or ODENetworkModel is needed.")
+    #     else:
+    #         cpp_solvertype = translate_solver_type(solvertype)
+
+    #         if isinstance(m, ODENetworkModel):
+    #             self.thisptr = new Cpp_ODESimulator(
+    #                 deref((<ODENetworkModel>m).thisptr), deref(w.thisptr), cpp_solvertype)
+    #         elif isinstance(m, NetworkModel):
+    #             self.thisptr = new Cpp_ODESimulator(
+    #                 deref((<NetworkModel>m).thisptr), deref(w.thisptr), cpp_solvertype)
+    #         else:
+    #             raise ValueError(
+    #                 "invalid argument {}.".format(repr(m))
+    #                 + " NetworkModel or ODENetworkModel is needed.")
 
     def __dealloc__(self):
         del self.thisptr
@@ -507,14 +552,28 @@ cdef class ODEFactory:
     #             self.thisptr.create_simulator(
     #                 deref((<ODENetworkModel>arg1).thisptr), deref(arg2.thisptr)))
 
-    def create_simulator(self, arg1, ODEWorld arg2):
-        if isinstance(arg1, ODENetworkModel):
-            return ODESimulator_from_Cpp_ODESimulator(
-                self.thisptr.create_simulator(deref((<ODENetworkModel>arg1).thisptr), deref(arg2.thisptr)))
-        elif isinstance(arg1, NetworkModel):
-            return ODESimulator_from_Cpp_ODESimulator(
-                self.thisptr.create_simulator(deref((<NetworkModel>arg1).thisptr), deref(arg2.thisptr)))
+    def create_simulator(self, arg1, arg2 = None):
+        if arg2 is None:
+            if isinstance(arg1, ODEWorld):
+                return ODESimulator_from_Cpp_ODESimulator(
+                    self.thisptr.create_simulator(
+                        deref((<ODEWorld>arg1).thisptr)))
+            else:
+                raise ValueError(
+                    "invalid argument {}.".format(repr(arg1))
+                    + " ODEWorld is needed.")
         else:
-            raise ValueError(
-                "invalid argument {}.".format(repr(arg1))
-                + " NetworkModel or ODENetworkModel is needed.")
+            if isinstance(arg1, ODENetworkModel):
+                return ODESimulator_from_Cpp_ODESimulator(
+                    self.thisptr.create_simulator(
+                        deref((<ODENetworkModel>arg1).thisptr),
+                        deref((<ODEWorld>arg2).thisptr)))
+            elif isinstance(arg1, NetworkModel):
+                return ODESimulator_from_Cpp_ODESimulator(
+                    self.thisptr.create_simulator(
+                        deref((<NetworkModel>arg1).thisptr),
+                        deref((<ODEWorld>arg2).thisptr)))
+            else:
+                raise ValueError(
+                    "invalid argument {}.".format(repr(arg1))
+                    + " NetworkModel or ODENetworkModel is needed.")

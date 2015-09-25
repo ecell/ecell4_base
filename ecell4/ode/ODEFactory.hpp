@@ -60,7 +60,9 @@ public:
     virtual ODESimulator* create_simulator(
         const boost::shared_ptr<world_type>& world) const
     {
-        throw NotSupported("not supported.");
+        ODESimulator* sim = new ODESimulator(world, solver_type_);
+        sim->set_dt(dt_);
+        return sim;
     }
 
     ODESimulator* create_simulator(

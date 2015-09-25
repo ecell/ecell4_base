@@ -333,21 +333,30 @@ public:
 public:
 
     ODESimulator(
-        const boost::shared_ptr<ODENetworkModel> &model,
-        const boost::shared_ptr<ODEWorld> &world, 
-        ODESolverType solver_type = ROSENBROCK4)
-        : base_type(model, world), dt_(inf), abs_tol_(1e-10), rel_tol_(1e-6), solver_type_(solver_type)
-        // : model_(model), world_(world), dt_(inf), num_steps_(0)
+        const boost::shared_ptr<ODENetworkModel>& model,
+        const boost::shared_ptr<ODEWorld>& world,
+        const ODESolverType solver_type = ROSENBROCK4)
+        : base_type(model, world), dt_(inf), abs_tol_(1e-10), rel_tol_(1e-6),
+          solver_type_(solver_type)
     {
         initialize();
     }
 
     ODESimulator(
-        const boost::shared_ptr<NetworkModel> &model,
-        const boost::shared_ptr<ODEWorld> &world,
-        ODESolverType solver_type = ROSENBROCK4)
-        : base_type( boost::shared_ptr<ODENetworkModel> (new ODENetworkModel(model)), world), 
-        dt_(inf), abs_tol_(1e-10), rel_tol_(1e-6), solver_type_(solver_type)
+        const boost::shared_ptr<ODEWorld>& world,
+        const ODESolverType solver_type = ROSENBROCK4)
+        : base_type(world), dt_(inf), abs_tol_(1e-10), rel_tol_(1e-6),
+          solver_type_(solver_type)
+    {
+        initialize();
+    }
+
+    ODESimulator(
+        const boost::shared_ptr<NetworkModel>& model,
+        const boost::shared_ptr<ODEWorld>& world,
+        const ODESolverType solver_type = ROSENBROCK4)
+        : base_type(boost::shared_ptr<ODENetworkModel>(new ODENetworkModel(model)), world),
+          dt_(inf), abs_tol_(1e-10), rel_tol_(1e-6), solver_type_(solver_type)
     {
         initialize();
     }

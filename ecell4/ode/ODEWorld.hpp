@@ -262,11 +262,16 @@ public:
 
     void bind_to(boost::shared_ptr<Model> model)
     {
-        if (boost::shared_ptr<Model> bound_model = lock_model())
+        throw NotImplemented("Not supported yet.");
+    }
+
+    void bind_to(boost::shared_ptr<ODENetworkModel> model)
+    {
+        if (boost::shared_ptr<ODENetworkModel> bound_model = lock_model())
         {
             if (bound_model.get() != model.get())
             {
-                std::cerr << "Warning: Model already bound to ODEWorld."
+                std::cerr << "Warning: ODENetworkModel already bound to ODEWorld."
                     << std::endl;
             }
         }
@@ -274,12 +279,7 @@ public:
         this->model_ = model;
     }
 
-    void bind_to(boost::shared_ptr<ODENetworkModel> model)
-    {
-        ; //XXX: do nothing, fixe me later
-    }
-
-    boost::shared_ptr<Model> lock_model() const
+    boost::shared_ptr<ODENetworkModel> lock_model() const
     {
         return model_.lock();
     }
@@ -300,8 +300,8 @@ protected:
     species_container_type species_;
     species_map_type index_map_;
 
-    boost::weak_ptr<Model> model_;
-    bool is_netfree_;
+    boost::weak_ptr<ODENetworkModel> model_;
+    // bool is_netfree_;
 };
 
 } // ode

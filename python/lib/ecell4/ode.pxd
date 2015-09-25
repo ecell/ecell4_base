@@ -38,7 +38,7 @@ cdef extern from "ecell4/ode/ODEWorld.hpp" namespace "ecell4::ode":
         bool has_species(Cpp_Species &)
         void reserve_species(Cpp_Species &)
         void release_species(Cpp_Species &)
-        void bind_to(shared_ptr[Cpp_Model])
+        void bind_to(shared_ptr[Cpp_Model]) except +
         void bind_to(shared_ptr[Cpp_ODENetworkModel])
 
 ## ODEWorld
@@ -153,6 +153,8 @@ cdef extern from "ecell4/ode/ODESimulator.hpp" namespace "ecell4::ode":
         Cpp_ODESimulator(shared_ptr[Cpp_NetworkModel], shared_ptr[Cpp_ODEWorld], Cpp_ODESolverType) except+
         Cpp_ODESimulator(shared_ptr[Cpp_ODENetworkModel], shared_ptr[Cpp_ODEWorld]) except+
         Cpp_ODESimulator(shared_ptr[Cpp_NetworkModel], shared_ptr[Cpp_ODEWorld]) except+
+        Cpp_ODESimulator(shared_ptr[Cpp_ODEWorld], Cpp_ODESolverType) except+
+        Cpp_ODESimulator(shared_ptr[Cpp_ODEWorld]) except+
         void initialize()
         void step()
         bool step(Real)
@@ -191,6 +193,7 @@ cdef extern from "ecell4/ode/ODEFactory.hpp" namespace "ecell4::ode":
         Cpp_ODEWorld* create_world(Cpp_Real3&)
         Cpp_ODESimulator* create_simulator(shared_ptr[Cpp_NetworkModel], shared_ptr[Cpp_ODEWorld])
         Cpp_ODESimulator* create_simulator(shared_ptr[Cpp_ODENetworkModel], shared_ptr[Cpp_ODEWorld])
+        Cpp_ODESimulator* create_simulator(shared_ptr[Cpp_ODEWorld])
 
 ## ODEFactory
 #  a python wrapper for Cpp_ODEFactory
