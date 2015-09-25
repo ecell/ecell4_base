@@ -28,9 +28,9 @@ namespace ode
 {
 
 enum ODESolverType {
-    Controlled_Runge_Kutta_Cash_Karp = 0,
-    Controlled_Rosenbrock = 1,
-    Explicit_Euler = 2,
+    RUNGE_KUTTA_CASH_KARP54 = 0,
+    ROSENBROCK4 = 1,
+    EULER = 2,
 };
 
 class ODESimulator
@@ -335,7 +335,7 @@ public:
     ODESimulator(
         const boost::shared_ptr<ODENetworkModel> &model,
         const boost::shared_ptr<ODEWorld> &world, 
-        ODESolverType solver_type = Controlled_Runge_Kutta_Cash_Karp)
+        ODESolverType solver_type = ROSENBROCK4)
         : base_type(model, world), dt_(inf), abs_tol_(1e-10), rel_tol_(1e-6), solver_type_(solver_type)
         // : model_(model), world_(world), dt_(inf), num_steps_(0)
     {
@@ -345,7 +345,7 @@ public:
     ODESimulator(
         const boost::shared_ptr<NetworkModel> &model,
         const boost::shared_ptr<ODEWorld> &world,
-        ODESolverType solver_type = Controlled_Runge_Kutta_Cash_Karp)
+        ODESolverType solver_type = ROSENBROCK4)
         : base_type( boost::shared_ptr<ODENetworkModel> (new ODENetworkModel(model)), world), 
         dt_(inf), abs_tol_(1e-10), rel_tol_(1e-6), solver_type_(solver_type)
     {

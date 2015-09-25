@@ -370,36 +370,50 @@ cdef ODENetworkModel ODENetworkModel_from_Cpp_ODENetworkModel(
     r.thisptr.swap(m)
     return r
 
-# SolverType:
-( 
-    RungeKutta_Cash_Karp,
-    Rosenbrock,
-    Explicit_Euler
+# ODESolverType:
+(
+    RUNGE_KUTTA_CASH_KARP54,
+    ROSENBROCK4,
+    EULER,
 ) = (1, 2, 3)
 
 cdef Cpp_ODESolverType translate_solver_type(solvertype_constant):
-    if solvertype_constant == RungeKutta_Cash_Karp:
-        return Cpp_Controlled_RungeKutta_Cash_Karp
-    elif solvertype_constant == Rosenbrock:
-        return Cpp_Controlled_Rosenbrock
-    elif solvertype_constant == Explicit_Euler:
-        return Cpp_Explicit_Euler
+    if solvertype_constant == RUNGE_KUTTA_CASH_KARP54:
+        return RUNGE_KUTTA_CASH_KARP54
+    elif solvertype_constant == ROSENBROCK4:
+        return Cpp_ROSENBROCK4
+    elif solvertype_constant == EULER:
+        return Cpp_EULER
     else:
-        raise -1
+        raise ValueError(
+            "invalid solver type was given [{0}]".format(repr(solvertype_constant)))
 
 cdef class ODESimulator:
-    def __cinit__(self, m, ODEWorld w, solvertype = RungeKutta_Cash_Karp):
-        cpp_solvertype = translate_solver_type(solvertype)
-        if isinstance(m, ODENetworkModel):
-            self.thisptr = new Cpp_ODESimulator(
-                deref((<ODENetworkModel>m).thisptr), deref(w.thisptr), cpp_solvertype)
-        elif isinstance(m, NetworkModel):
-            self.thisptr = new Cpp_ODESimulator(
-                deref((<NetworkModel>m).thisptr), deref(w.thisptr), cpp_solvertype)
+    def __cinit__(self, m, ODEWorld w, solvertype = None):
+        if solvertype is None:
+            if isinstance(m, ODENetworkModel):
+                self.thisptr = new Cpp_ODESimulator(
+                    deref((<ODENetworkModel>m).thisptr), deref(w.thisptr))
+            elif isinstance(m, NetworkModel):
+                self.thisptr = new Cpp_ODESimulator(
+                    deref((<NetworkModel>m).thisptr), deref(w.thisptr))
+            else:
+                raise ValueError(
+                    "invalid argument {}.".format(repr(m))
+                    + " NetworkModel or ODENetworkModel is needed.")
         else:
-            raise ValueError(
-                "invalid argument {}.".format(repr(m))
-                + " NetworkModel or ODENetworkModel is needed.")
+            cpp_solvertype = translate_solver_type(solvertype)
+
+            if isinstance(m, ODENetworkModel):
+                self.thisptr = new Cpp_ODESimulator(
+                    deref((<ODENetworkModel>m).thisptr), deref(w.thisptr), cpp_solvertype)
+            elif isinstance(m, NetworkModel):
+                self.thisptr = new Cpp_ODESimulator(
+                    deref((<NetworkModel>m).thisptr), deref(w.thisptr), cpp_solvertype)
+            else:
+                raise ValueError(
+                    "invalid argument {}.".format(repr(m))
+                    + " NetworkModel or ODENetworkModel is needed.")
     # def __cinit__(self, ODENetworkModel m, ODEWorld w):
     #     self.thisptr = new Cpp_ODESimulator(deref(m.thisptr), deref(w.thisptr)) 
     # def __cinit__(self, NetworkModel m, ODEWorld w):

@@ -141,15 +141,17 @@ cdef ODENetworkModel ODENetworkModel_from_Cpp_ODENetworkModel(shared_ptr[Cpp_ODE
 
 cdef extern from "ecell4/ode/ODESimulator.hpp" namespace "ecell4::ode":
     cdef enum Cpp_ODESolverType "ecell4::ode::ODESolverType":
-        Cpp_Controlled_RungeKutta_Cash_Karp "ecell4::ode::Controlled_Runge_Kutta_Cash_Karp"
-        Cpp_Controlled_Rosenbrock "ecell4::ode::Controlled_Rosenbrock"
-        Cpp_Explicit_Euler "ecell4::ode::Explicit_Euler"
+        Cpp_RUNGE_KUTA_CASH_KARP54 "ecell4::ode::RUNGE_KUTA_CASH_KARP54"
+        Cpp_ROSENBROCK4 "ecell4::ode::ROSENBROCK4"
+        Cpp_EULER "ecell4::ode::EULER"
 
 ## Cpp_ODESimulator
 cdef extern from "ecell4/ode/ODESimulator.hpp" namespace "ecell4::ode":
     cdef cppclass Cpp_ODESimulator "ecell4::ode::ODESimulator":
         Cpp_ODESimulator(shared_ptr[Cpp_ODENetworkModel], shared_ptr[Cpp_ODEWorld], Cpp_ODESolverType) except+
         Cpp_ODESimulator(shared_ptr[Cpp_NetworkModel], shared_ptr[Cpp_ODEWorld], Cpp_ODESolverType) except+
+        Cpp_ODESimulator(shared_ptr[Cpp_ODENetworkModel], shared_ptr[Cpp_ODEWorld]) except+
+        Cpp_ODESimulator(shared_ptr[Cpp_NetworkModel], shared_ptr[Cpp_ODEWorld]) except+
         void initialize()
         void step()
         bool step(Real)

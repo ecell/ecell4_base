@@ -138,7 +138,7 @@ bool ODESimulator::step(const Real &upto)
 
     size_t steps;
     switch (this->solver_type_) {
-        case Controlled_Runge_Kutta_Cash_Karp:
+        case ecell4::ode::RUNGE_KUTTA_CASH_KARP54:
             {
                 /* This solver doesn't need the jacobian */
                 typedef odeint::runge_kutta_cash_karp54<state_type> error_stepper_type;
@@ -149,7 +149,7 @@ bool ODESimulator::step(const Real &upto)
                         controlled_stepper, system.first, x, t(), upto, dt_, StateAndTimeBackInserter(x_vec, times)));
             }
             break;
-        case Controlled_Rosenbrock:
+        case ecell4::ode::ROSENBROCK4:
             {
                 typedef odeint::rosenbrock4<state_type::value_type> error_stepper_type;
                 typedef odeint::rosenbrock4_controller<error_stepper_type> controlled_stepper_type;
@@ -159,7 +159,7 @@ bool ODESimulator::step(const Real &upto)
                         controlled_stepper, system, x, t(), upto, dt_, StateAndTimeBackInserter(x_vec, times)));
             }
             break;
-        case Explicit_Euler:
+        case ecell4::ode::EULER:
             {
                 typedef odeint::euler<state_type> stepper_type;
                 stepper_type stepper;
