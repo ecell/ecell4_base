@@ -29,8 +29,8 @@ def load_world(filename):
 
 def run_simulation(
         t, y0={}, volume=1.0, model=None, solver='ode',
-        factory=None, is_netfree=False, species_list=None, return_type=None,
-        without_reset=False, plot_type='matplotlib', plot_args={}):
+        factory=None, is_netfree=False, species_list=None, without_reset=False,
+        return_type='matplotlib', plot_args={}):
     """Run a simulation with the given model and plot the result on IPython
     notebook with matplotlib.
 
@@ -48,14 +48,12 @@ def run_simulation(
     species_list: list of str, optional
         A list of names of Species observed. If None, log all.
         Default is None.
-    plot_type: str, optional
-        Choose the way to plot from 'matplotlib' or 'nyaplot'.
-        If None, show no plot. Default is 'matplotlib'.
+    return_type: str, optional
+        Choose a type of return value from 'array', 'observer',
+        'matplotlib', 'nyaplot' or None.
+        If None, return and plot nothing. Default is 'matplotlib'.
     plot_args: dict, optional
         Arguments for plotting. If plot_type is None, just ignored.
-    return_type: str, optional
-        Choose a type of return value from 'array', 'observer' or None.
-        If None, return nothing. Default is None.
     factory: Factory, optional
     is_netfree: bool, optional
         Whether the model is netfree or not. When a model is given as an
@@ -111,12 +109,11 @@ def run_simulation(
     # sim = f.create_simulator(w)
     sim.run(t[-1], obs)
 
-    if plot_type == 'matplotlib':
+    if return_type == 'matplotlib':
         ecell4.viz.plot_number_observer(obs, **plot_args)
-    elif plot_type == 'nyaplot':
+    elif return_type == 'nyaplot':
         ecell4.viz.plot_number_observer_with_nya(obs, **plot_args)
-
-    if return_type == 'observer':
+    elif return_type == 'observer':
         return obs
     elif return_type == 'array':
         return obs.data()
