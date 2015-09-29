@@ -7,9 +7,26 @@ from libcpp.string cimport string
 
 cdef class Voxel:
 
-    def __cinit__(self, Species sp, Integer coord, Real radius, Real D):
-        self.thisptr = new Cpp_Voxel(
-            deref(sp.thisptr), coord, radius, D)
+    def __init__(self, Species sp, Integer coord, Real radius, Real D, loc=None):
+        """Constructor.
+
+        Args:
+          sp (Species): The species.
+          coord (Integer): The coordinate given as an Integer.
+          radius (Real): The radius of a molecule.
+          D (Real): The diffusion rate of a molecule.
+          loc (str, optional): The location of a molecule.
+
+        """
+        pass  # XXX: Only used for doc string
+
+    def __cinit__(self, Species sp, Integer coord, Real radius, Real D, loc=None):
+        if loc is None:
+            self.thisptr = new Cpp_Voxel(
+                deref(sp.thisptr), coord, radius, D)
+        else:
+            self.thisptr = new Cpp_Voxel(
+                deref(sp.thisptr), coord, radius, D, tostring(loc))
 
     def __dealloc__(self):
         del self.thisptr

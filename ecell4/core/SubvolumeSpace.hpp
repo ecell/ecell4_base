@@ -81,6 +81,12 @@ public:
     virtual coordinate_type global2coord(const Integer3& g) const = 0;
     virtual Integer3 coord2global(const coordinate_type& c) const = 0;
     virtual Integer3 position2global(const Real3& pos) const = 0;
+
+    inline Integer position2coordinate(const Real3& pos) const
+    {
+        return global2coord(position2global(pos));
+    }
+
     virtual Integer num_molecules(
         const Species& sp, const coordinate_type& c) const = 0;
     virtual Integer num_molecules_exact(
@@ -113,6 +119,9 @@ public:
     {
         remove_molecules(sp, num, global2coord(g));
     }
+
+    virtual std::vector<coordinate_type> list_coordinates(const Species& sp) const = 0;
+    virtual std::vector<coordinate_type> list_coordinates_exact(const Species& sp) const = 0;
 
     virtual void add_structure(
         const Species& sp, const boost::shared_ptr<const Shape>& shape) = 0;
@@ -280,6 +289,9 @@ public:
     Integer num_molecules_exact(const Species& sp, const coordinate_type& c) const;
     void add_molecules(const Species& sp, const Integer& num, const coordinate_type& c);
     void remove_molecules(const Species& sp, const Integer& num, const coordinate_type& c);
+
+    std::vector<coordinate_type> list_coordinates(const Species& sp) const;
+    std::vector<coordinate_type> list_coordinates_exact(const Species& sp) const;
 
     void add_structure(const Species& sp, const boost::shared_ptr<const Shape>& shape);
     bool check_structure(const Species::serial_type& serial, const coordinate_type& coord) const;

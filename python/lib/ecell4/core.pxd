@@ -413,6 +413,7 @@ cdef extern from "ecell4/core/Voxel.hpp" namespace "ecell4":
     cdef cppclass Cpp_Voxel "ecell4::Voxel":
         Cpp_Voxel() except +
         Cpp_Voxel(Cpp_Species, Integer, Real radius, Real D) except +
+        Cpp_Voxel(Cpp_Species, Integer, Real radius, Real D, string loc) except +
         Cpp_Voxel(Cpp_Voxel &rhs) except+
         Integer coordinate()
         Real D()

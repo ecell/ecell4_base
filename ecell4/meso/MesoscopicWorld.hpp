@@ -150,6 +150,7 @@ public:
     coordinate_type global2coord(const Integer3& g) const;
     Integer3 coord2global(const coordinate_type& c) const;
     Integer3 position2global(const Real3& pos) const;
+    Integer position2coordinate(const Real3& pos) const;
 
     coordinate_type get_neighbor(const coordinate_type& c, const Integer rnd) const
     {
@@ -184,6 +185,9 @@ public:
     {
         cs_->remove_molecules(sp, num, g);
     }
+
+    std::vector<coordinate_type> list_coordinates(const Species& sp) const;
+    std::vector<coordinate_type> list_coordinates_exact(const Species& sp) const;
 
     void add_molecules(const Species& sp, const Integer& num)
     {

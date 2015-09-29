@@ -142,6 +142,49 @@ SubvolumeSpaceVectorImpl::coordinate_type SubvolumeSpaceVectorImpl::get_neighbor
     throw IllegalState("the number of neighbors is less than 6.");
 }
 
+std::vector<SubvolumeSpaceVectorImpl::coordinate_type>
+SubvolumeSpaceVectorImpl::list_coordinates(const Species& sp) const
+{
+    SpeciesExpressionMatcher sexp(sp);
+    std::vector<coordinate_type> retval;
+    for (matrix_type::const_iterator i(matrix_.begin());
+        i != matrix_.end(); ++i)
+    {
+        const Integer cnt(sexp.count((*i).first));
+        if (cnt > 0)
+        {
+            for (cell_type::size_type j(0); j < (*i).second.size(); ++j)
+            {
+                if ((*i).second[j] > 0)
+                {
+                    retval.resize(retval.size() + (*i).second[j] * cnt, j);
+                }
+            }
+        }
+    }
+    return retval;
+}
+
+std::vector<SubvolumeSpaceVectorImpl::coordinate_type>
+SubvolumeSpaceVectorImpl::list_coordinates_exact(const Species& sp) const
+{
+    std::vector<coordinate_type> retval;
+    matrix_type::const_iterator i(matrix_.find(sp));
+    if (i == matrix_.end())
+    {
+        return retval;
+    }
+
+    for (cell_type::size_type j(0); j < (*i).second.size(); ++j)
+    {
+        if ((*i).second[j] > 0)
+        {
+            retval.resize(retval.size() + (*i).second[j], j);
+        }
+    }
+    return retval;
+}
+
 void SubvolumeSpaceVectorImpl::add_structure(
     const Species& sp, const boost::shared_ptr<const Shape>& shape)
 {

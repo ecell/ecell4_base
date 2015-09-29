@@ -242,6 +242,11 @@ Integer3 MesoscopicWorld::position2global(const Real3& pos) const
     return cs_->position2global(pos);
 }
 
+Integer MesoscopicWorld::position2coordinate(const Real3& pos) const
+{
+    return cs_->position2coordinate(pos);
+}
+
 Integer MesoscopicWorld::num_molecules(const Species& sp) const
 {
     return cs_->num_molecules(sp);
@@ -274,6 +279,18 @@ void MesoscopicWorld::remove_molecules(
     const Species& sp, const Integer& num, const MesoscopicWorld::coordinate_type& c)
 {
     cs_->remove_molecules(sp, num, c);
+}
+
+std::vector<MesoscopicWorld::coordinate_type>
+MesoscopicWorld::list_coordinates(const Species& sp) const
+{
+    return cs_->list_coordinates(sp);  // std::move?
+}
+
+std::vector<MesoscopicWorld::coordinate_type>
+MesoscopicWorld::list_coordinates_exact(const Species& sp) const
+{
+    return cs_->list_coordinates_exact(sp);  // std::move?
 }
 
 const std::vector<Species>& MesoscopicWorld::species() const

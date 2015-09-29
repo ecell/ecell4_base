@@ -82,6 +82,20 @@ cdef class MesoscopicWorld:
         cdef Cpp_Real3 lengths = self.thisptr.get().subvolume_edge_lengths()
         return Real3_from_Cpp_Real3(address(lengths))
 
+    def global2coord(self, Integer3 g):
+        return self.thisptr.get().global2coord(deref(g.thisptr))
+
+    def coord2global(self, Integer c):
+        cdef Cpp_Integer3 g = self.thisptr.get().coord2global(c)
+        return Integer3_from_Cpp_Integer3(address(g))
+
+    def position2global(self, Real3 pos):
+        cdef Cpp_Integer3 g = self.thisptr.get().position2global(deref(pos.thisptr))
+        return Integer3_from_Cpp_Integer3(address(g))
+
+    def position2coordinate(self, Real3 pos):
+        return self.thisptr.get().position2coordinate(deref(pos.thisptr))
+
     def num_molecules(self, Species sp, c = None):
         if c is None:
             return self.thisptr.get().num_molecules(deref(sp.thisptr))
@@ -151,6 +165,12 @@ cdef class MesoscopicWorld:
                      <Cpp_Species*>(address(deref(it)))))
             inc(it)
         return retval
+
+    def list_coordinates(self, Species sp):
+        return self.thisptr.get().list_coordinates(deref(sp.thisptr))
+
+    def list_coordinates_exact(self, Species sp):
+        return self.thisptr.get().list_coordinates_exact(deref(sp.thisptr))
 
     def list_particles(self, Species sp = None):
         cdef vector[pair[Cpp_ParticleID, Cpp_Particle]] particles
