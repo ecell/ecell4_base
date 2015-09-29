@@ -7,11 +7,20 @@ from libcpp.string cimport string
 
 cdef class ParticleID:
 
-    def __cinit__(self, lot, serial):
+    def __cinit__(self, value = None):
         cdef pair[int, unsigned long long] val
-        val.first = lot
-        val.second = serial
-        self.thisptr = new Cpp_ParticleID(val)
+        if value is None:
+            self.thisptr = new Cpp_ParticleID()
+        else:
+            val.first = value[0]
+            val.second = value[1]
+            self.thisptr = new Cpp_ParticleID(val)
+
+    # def __cinit__(self, lot, serial):
+    #     cdef pair[int, unsigned long long] val
+    #     val.first = lot
+    #     val.second = serial
+    #     self.thisptr = new Cpp_ParticleID(val)
 
     def __dealloc__(self):
         del self.thisptr
@@ -47,7 +56,7 @@ cdef class Particle:
 
 cdef ParticleID ParticleID_from_Cpp_ParticleID(Cpp_ParticleID* p):
     cdef Cpp_ParticleID *new_obj = new Cpp_ParticleID(<Cpp_ParticleID> deref(p))
-    r = ParticleID(0, 0)
+    r = ParticleID((0, 0))
     del r.thisptr
     r.thisptr = new_obj
     return r

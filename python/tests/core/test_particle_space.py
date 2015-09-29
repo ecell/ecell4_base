@@ -22,7 +22,7 @@ class ParticleSpaceTest(unittest.TestCase):
         space = self.ParticleSpace(Real3(1e-6, 1e-6, 1e-6))
         self.assertEqual(len(space.list_particles()), 0)
         space.update_particle(
-            ParticleID(1, 2),
+            ParticleID((1, 2)),
             Particle(Species("A"), Real3(0, 0, 0), 2.5e-9, 0))
         self.assertEqual(len(space.list_particles()), 1)
         pid, p = space.list_particles()[0]
