@@ -142,11 +142,11 @@ bool MesoscopicSimulator::step(const Real &upto)
     }
     else
     {
-        // no reaction occurs
+        // nothing happens
         // set_dt(next_time() - upto);
         set_t(upto);
-        // last_reactions_.clear();
-        interrupt_all(upto);
+        last_reactions_.clear();
+        // interrupt_all(upto);  //XXX: Is this really needed?
         return false;
     }
 }
