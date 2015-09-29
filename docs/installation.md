@@ -91,7 +91,7 @@ $ PREFIX=$HOME/ecell4 ./install.sh py2
 
 ```shell
 # dependent packages
-$ sudo apt-get install cmake libgsl0-dev libboost-regex-dev libhdf5-dev cython3 python3-pip
+$ sudo apt-get install cmake libgsl0-dev libboost-regex-dev libhdf5-dev cython3
 
 $ wget https://github.com/ecell/ecell4/archive/master.zip   
 $ unzip master.zip
@@ -121,6 +121,9 @@ $ PREFIX=$HOME/ecell4 PYTHONPATH=/path/to/lib/python2.7/site-packages ./install.
 ```
 # If you set PREFIX to $HOME/ecell4, make sure to append $HOME/ecell4/lib to LD_LIBRARY_PATH 
 $ LD_LIBRARY_PATH=$HOME/ecell4/lib:$LD_LIBRARY_PATH PYTHONPATH=$HOME/ecell4/lib/python2.7/site-packages python
+# in case with Python3
+# LD_LIBRARY_PATH=$HOME/ecell4/lib:$LD_LIBRARY_PATH PYTHONPATH=$HOME/ecell4/lib/python3.4/site-packages python3
+
 Python 2.7.6 (default, Mar 22 2014, 22:59:56) 
 [GCC 4.8.2] on linux2
 Type "help", "copyright", "credits" or "license" for more information.
