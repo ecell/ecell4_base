@@ -13,7 +13,7 @@ E-Cell System, a software platform for modeling, simulation and analysis of comp
     - [Ubuntu vivid](#ubuntu-linux-vivid-vervet-installation)
     - [Ubuntu trusty](#ubuntu-linux-trusty-tahr-installation)
 - [Running E-Cell4](#running-e-cell4)
-- [Dockerized E-Cell4 IPython notebooks](#dockerized-e-cell4-ipython-notebooks)
+- [Dockerized E-Cell4 Jupyter notebooks](#dockerized-e-cell4-jupyter-notebooks)
     - [For Windows and Mac](#for-windows-and-mac)
     - [For Linux](#for-linux)
 
@@ -37,15 +37,15 @@ And run following command with command prompt.
 pip install https://github.com/ecell/ecell4/releases/download/4.0.0-beta2/ecell4-4.0.0b2-cp27-none-win32.whl
 ```
 
-#### IPython notebook
-We recommend you run E-Cell4 models from IPython notebook.
-Below is IPython notebook(and matplotlib) installation for Windows.
+#### Jupyter for Windows
+We recommend you run E-Cell4 models from Jupyter notebook.
+Below is Jupyter notebook(and matplotlib) installation for Windows.
 
 - Install [Visual C++ Compiler for Python 2.7](http://www.microsoft.com/en-us/download/details.aspx?id=44266)
-- Install IPython notebook and matplotlib
+- Install Jupyter notebook and matplotlib
 
     ```
-    pip install "ipython[notebook]"
+    pip install -U jupyter
     pip install matplotlib
     ```
 
@@ -56,17 +56,17 @@ matplotlib depends on numpy. It takes some time to build numpy, please be patien
 ```shell
 ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 brew tap ecell/ecell4
-brew install ecell4
+brew install ecell4 --HEAD
 ```
 
-#### IPython notebook
-We recommend you run E-Cell4 models from IPython notebook.
-Below is IPython notebook(and matplotlib) installation for Mac.
+#### Jupyter for Mac
+We recommend you run E-Cell4 models from Jupyter notebook.
+Below is Jupyter notebook(and matplotlib) installation for Mac.
 
 ```shell
 sudo python get-pip.py
 sudo pip install -U matplotlib
-sudo pip install -U "ipython[notebook]"
+sudo pip install -U jupyter
 ```
 
 ### Ubuntu Linux Vivid Vervet installation
@@ -153,7 +153,7 @@ y = run_simulation(
 ![png](https://raw.githubusercontent.com/ecell/ecell4/develop/docs/output_7_0.png)
 
 
-Dockerized E-Cell4 IPython notebooks
+Dockerized E-Cell4 Jupyter notebooks
 ------------------------------------
 
 If you use docker, you can easily try E-Cell4.
