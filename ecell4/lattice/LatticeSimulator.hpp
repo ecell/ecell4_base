@@ -247,6 +247,10 @@ protected:
     std::pair<bool, reaction_type> apply_first_order_reaction_(
         const ReactionRule& reaction_rule,
         const reaction_type::particle_type& p);
+    void apply_vanishment(
+        const LatticeWorld::particle_info_type from_info,
+        const LatticeWorld::particle_info_type to_info,
+        reaction_type& reaction);
     void apply_ab2c(
         const LatticeWorld::particle_info_type from_info,
         const LatticeWorld::particle_info_type to_info,

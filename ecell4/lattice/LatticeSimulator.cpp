@@ -285,6 +285,9 @@ std::pair<bool, LatticeSimulator::reaction_type> LatticeSimulator::apply_second_
 
     switch (products.size())
     {
+        case 0:
+            apply_vanishment(from_info, to_info, reaction);
+            break;
         case 1:
             apply_ab2c(from_info, to_info, *(products.begin()), reaction);
             break;
@@ -299,6 +302,17 @@ std::pair<bool, LatticeSimulator::reaction_type> LatticeSimulator::apply_second_
 
     reactions_.push_back(reaction_rule);
     return std::pair<bool, reaction_type>(true, reaction);
+}
+
+void LatticeSimulator::apply_vanishment(
+    const LatticeWorld::particle_info_type from_info,
+    const LatticeWorld::particle_info_type to_info,
+    reaction_type& reaction)
+{
+    register_reactant_species(from_info, reaction);
+    register_reactant_species(to_info, reaction);
+    world_->remove_voxel_private(from_info.first);
+    world_->remove_voxel_private(to_info.first);
 }
 
 void LatticeSimulator::apply_ab2c(
