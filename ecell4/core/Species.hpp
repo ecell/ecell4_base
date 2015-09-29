@@ -175,6 +175,12 @@ protected:
 
 Species format_species(const Species& sp);
 
+inline Species::serial_type unique_serial(const Species& sp)
+{
+    return format_species(sp).serial();
+}
+
+
 } // ecell4
 
 #if defined(HAVE_TR1_FUNCTIONAL)

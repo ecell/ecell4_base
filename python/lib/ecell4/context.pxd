@@ -1,9 +1,14 @@
 from libcpp cimport bool
 from libcpp.vector cimport vector
+from libcpp.string cimport string
 
 from types cimport Integer
 from core cimport Cpp_Species, Cpp_ReactionRule
 
+
+cdef extern from "ecell4/core/Species.hpp" namespace "ecell4":
+    Cpp_Species format_species(Cpp_Species&)
+    string unique_serial(Cpp_Species&)
 
 cdef extern from "ecell4/core/Context.hpp" namespace "ecell4":
     bool spmatch(Cpp_Species, Cpp_Species)

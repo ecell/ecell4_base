@@ -204,3 +204,10 @@ def count_spmatches(Species pttrn, Species sp):
 
     """
     return context.count_spmatches(deref(pttrn.thisptr), deref(sp.thisptr))
+
+def format_species(Species sp):
+    cdef Cpp_Species newsp = context.format_species(deref(sp.thisptr))
+    return Species_from_Cpp_Species(address(newsp))
+
+def unique_serial(Species sp):
+    return context.unique_serial(deref(sp.thisptr))
