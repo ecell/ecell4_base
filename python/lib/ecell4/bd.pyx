@@ -255,15 +255,18 @@ cdef class BDSimulator:
     def initialize(self):
         self.thisptr.initialize()
 
-    def last_reactions(self):
-        cdef vector[Cpp_ReactionRule] reactions = self.thisptr.last_reactions()
-        cdef vector[Cpp_ReactionRule].iterator it = reactions.begin()
-        retval = []
-        while it != reactions.end():
-            retval.append(ReactionRule_from_Cpp_ReactionRule(
-                <Cpp_ReactionRule*>(address(deref(it)))))
-            inc(it)
-        return retval
+    def check_reaction(self):
+        return self.thistptr.check_reaction()
+
+    # def last_reactions(self):
+    #     cdef vector[Cpp_ReactionRule] reactions = self.thisptr.last_reactions()
+    #     cdef vector[Cpp_ReactionRule].iterator it = reactions.begin()
+    #     retval = []
+    #     while it != reactions.end():
+    #         retval.append(ReactionRule_from_Cpp_ReactionRule(
+    #             <Cpp_ReactionRule*>(address(deref(it)))))
+    #         inc(it)
+    #     return retval
 
     def model(self):
         return Model_from_Cpp_Model(self.thisptr.model())

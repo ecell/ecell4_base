@@ -637,19 +637,22 @@ cdef class LatticeSimulator:
         """
         self.thisptr.initialize()
 
-    def last_reactions(self):
-        """Return reactions occuring at the last step
-        Returns:
-            list: the list of reactions
-        """
-        cdef vector[Cpp_ReactionRule] reactions = self.thisptr.last_reactions()
-        cdef vector[Cpp_ReactionRule].iterator it = reactions.begin()
-        retval = []
-        while it != reactions.end():
-            retval.append(ReactionRule_from_Cpp_ReactionRule(
-                <Cpp_ReactionRule*>(address(deref(it)))))
-            inc(it)
-        return retval
+    def check_reaction(self):
+        return self.thistptr.check_reaction()
+
+    # def last_reactions(self):
+    #     """Return reactions occuring at the last step
+    #     Returns:
+    #         list: the list of reactions
+    #     """
+    #     cdef vector[Cpp_ReactionRule] reactions = self.thisptr.last_reactions()
+    #     cdef vector[Cpp_ReactionRule].iterator it = reactions.begin()
+    #     retval = []
+    #     while it != reactions.end():
+    #         retval.append(ReactionRule_from_Cpp_ReactionRule(
+    #             <Cpp_ReactionRule*>(address(deref(it)))))
+    #         inc(it)
+    #     return retval
 
     def set_alpha(self, Real alpha):
         """Set the value of alpha

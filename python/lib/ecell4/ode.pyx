@@ -486,6 +486,8 @@ cdef class ODESimulator:
         self.thisptr.set_dt(dt_new)
     def num_steps(self):
         return self.thisptr.num_steps()
+    def check_reaction(self):
+        return self.thistptr.check_reaction()
     def absolute_tolerance(self):
         return self.thisptr.absolute_tolerance()
     def set_absolute_tolerance(self, Real abs_tol):
