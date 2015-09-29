@@ -44,9 +44,13 @@ void LatticeSpaceBase::set_lattice_properties()
     const Real lengthY = edge_lengths_[1];
     const Real lengthZ = edge_lengths_[2];
 
-    row_size_ = (Integer)rint((lengthZ / 2) / voxel_radius_) + 2;
-    layer_size_ = (Integer)rint(lengthY / HCP_Y) + 2;
-    col_size_ = (Integer)rint(lengthX / HCP_X) + 2;
+    col_size_ = (Integer)rint(lengthX / HCP_X) + 1;
+    layer_size_ = (Integer)rint(lengthY / HCP_Y) + 1;
+    row_size_ = (Integer)rint((lengthZ / 2) / voxel_radius_) + 1;
+
+    row_size_ += 2;
+    layer_size_ += 2;
+    col_size_ += 2;
 }
 
 Integer3 LatticeSpaceBase::position2global(const Real3& pos) const
