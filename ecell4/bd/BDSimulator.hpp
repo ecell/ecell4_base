@@ -83,6 +83,11 @@ public:
 
     // Optional members
 
+    virtual bool check_reaction() const
+    {
+        return last_reactions_.size() > 0;
+    }
+
     std::vector<ReactionRule> last_reactions() const
     {
         return last_reactions_;

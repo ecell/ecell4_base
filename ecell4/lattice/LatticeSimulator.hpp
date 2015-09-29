@@ -208,6 +208,11 @@ public:
     void walk(const Species& species);
     void walk(const Species& species, const Real& alpha);
 
+    virtual bool check_reaction() const
+    {
+        return reactions_.size() > 0;
+    }
+
     std::vector<ReactionRule> last_reactions() const
     {
         return reactions_;

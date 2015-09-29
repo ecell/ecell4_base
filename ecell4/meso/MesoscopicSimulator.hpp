@@ -731,6 +731,11 @@ public:
     bool step(const Real & upto);
 
     // Optional members
+    virtual bool check_reaction() const
+    {
+        return last_reactions_.size() > 0;
+    }
+
     std::vector<ReactionRule> last_reactions() const;
     void set_last_reaction(const ReactionRule& rr);
 

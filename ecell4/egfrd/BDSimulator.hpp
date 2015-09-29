@@ -123,6 +123,17 @@ public:
         return gsl_pow_2(radius_min * 2) / (D_max * 2);
     }
 
+    virtual bool check_reaction() const
+    {
+        return last_reactions().size() > 0;
+    }
+
+    std::vector<ecell4::ReactionRule> last_reactions() const
+    {
+        return (*dynamic_cast<ReactionRecorderWrapper<reaction_record_type>*>(
+            base_type::rrec_.get())).last_reactions();
+    }
+
 protected:
 
     void _step(time_type dt)

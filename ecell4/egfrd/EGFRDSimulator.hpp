@@ -1311,7 +1311,12 @@ public:
         return retval;
     }
 
-    virtual std::vector<ecell4::ReactionRule> last_reactions() const
+    virtual bool check_reaction() const
+    {
+        return last_reactions().size() > 0;
+    }
+
+    std::vector<ecell4::ReactionRule> last_reactions() const
     {
         return (*dynamic_cast<ReactionRecorderWrapper<reaction_record_type>*>(
             base_type::rrec_.get())).last_reactions();
