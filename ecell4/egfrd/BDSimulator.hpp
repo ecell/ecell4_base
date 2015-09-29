@@ -36,6 +36,7 @@ public:
     typedef typename traits_type::rate_type rate_type;
     typedef typename traits_type::reaction_record_type reaction_record_type;
     typedef typename traits_type::reaction_recorder_type reaction_recorder_type;
+    typedef typename ReactionRecorderWrapper<reaction_record_type>::reaction_info_type reaction_info_type;
 
 public:
 
@@ -128,7 +129,7 @@ public:
         return last_reactions().size() > 0;
     }
 
-    std::vector<ecell4::ReactionRule> last_reactions() const
+    std::vector<std::pair<ecell4::ReactionRule, reaction_info_type> > last_reactions() const
     {
         return (*dynamic_cast<ReactionRecorderWrapper<reaction_record_type>*>(
             base_type::rrec_.get())).last_reactions();

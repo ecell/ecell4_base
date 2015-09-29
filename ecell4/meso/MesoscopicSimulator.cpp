@@ -40,7 +40,7 @@ void MesoscopicSimulator::decrement_molecules(const Species& sp, const coordinat
     }
 }
 
-std::pair<Real, std::pair<ReactionRule, MesoscopicSimulator::coordinate_type> >
+std::pair<Real, MesoscopicSimulator::ReactionRuleProxyBase*>
 MesoscopicSimulator::draw_next_reaction(const coordinate_type& c)
 {
     std::vector<double> a(proxies_.size());
@@ -52,8 +52,7 @@ MesoscopicSimulator::draw_next_reaction(const coordinate_type& c)
     const double atot(std::accumulate(a.begin(), a.end(), double(0.0)));
     if (atot == 0.0)
     {
-        // Any reactions cannot occur.
-        return std::make_pair(inf, std::make_pair(ReactionRule(), c));
+        return std::make_pair(inf, (ReactionRuleProxyBase*)NULL);
     }
 
     const double rnd1(rng()->uniform(0, 1));
@@ -71,11 +70,10 @@ MesoscopicSimulator::draw_next_reaction(const coordinate_type& c)
 
     if (len_a == u)
     {
-        // Any reactions cannot occur.
-        return std::make_pair(inf, std::make_pair(ReactionRule(), c));
+        return std::make_pair(inf, (ReactionRuleProxyBase*)NULL);
     }
 
-    return std::make_pair(dt, proxies_[u].draw(c));
+    return std::make_pair(dt, &proxies_[u]);
 }
 
 void MesoscopicSimulator::interrupt_all(const Real& t)
@@ -220,17 +218,6 @@ Real MesoscopicSimulator::dt(void) const
 Real MesoscopicSimulator::next_time(void) const
 {
     return scheduler_.next_time();
-}
-
-std::vector<ReactionRule> MesoscopicSimulator::last_reactions() const
-{
-    return last_reactions_;
-}
-
-void MesoscopicSimulator::set_last_reaction(const ReactionRule& rr)
-{
-    last_reactions_.clear();
-    last_reactions_.push_back(rr);
 }
 
 } // meso

@@ -262,7 +262,6 @@ public:
     typedef typename world_type::particle_id_pair_and_distance particle_id_pair_and_distance;
     typedef typename world_type::particle_id_pair_and_distance_list particle_id_pair_and_distance_list;
 
-
     typedef std::pair<const shell_id_type, spherical_shell_type> spherical_shell_id_pair;
     typedef std::pair<const shell_id_type, cylindrical_shell_type> cylindrical_shell_id_pair;
 
@@ -276,6 +275,7 @@ public:
     // typedef typename world_type::traits_type::planar_surface_type planar_surface_type;
     typedef typename world_type::traits_type::cuboidal_region_type cuboidal_region_type;
 
+    typedef typename ReactionRecorderWrapper<reaction_record_type>::reaction_info_type reaction_info_type;
 
     typedef Single<traits_type> single_type;
     typedef Pair<traits_type> pair_type;
@@ -1316,7 +1316,7 @@ public:
         return last_reactions().size() > 0;
     }
 
-    std::vector<ecell4::ReactionRule> last_reactions() const
+    std::vector<std::pair<ecell4::ReactionRule, reaction_info_type> > last_reactions() const
     {
         return (*dynamic_cast<ReactionRecorderWrapper<reaction_record_type>*>(
             base_type::rrec_.get())).last_reactions();

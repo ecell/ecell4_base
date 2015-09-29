@@ -23,6 +23,7 @@ class BDSimulator
 public:
 
     typedef SimulatorBase<Model, BDWorld> base_type;
+    typedef BDPropagator::reaction_info_type reaction_info_type;
 
 public:
 
@@ -88,7 +89,8 @@ public:
         return last_reactions_.size() > 0;
     }
 
-    std::vector<ReactionRule> last_reactions() const
+    std::vector<std::pair<ReactionRule, reaction_info_type> >
+        last_reactions() const
     {
         return last_reactions_;
     }
@@ -115,7 +117,7 @@ protected:
      */
     Real dt_;
     const Real bd_dt_factor_;
-    std::vector<ReactionRule> last_reactions_;
+    std::vector<std::pair<ReactionRule, reaction_info_type> > last_reactions_;
 };
 
 } // bd

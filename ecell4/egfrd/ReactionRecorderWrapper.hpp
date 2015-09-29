@@ -22,6 +22,8 @@ public:
     typedef typename reaction_record_type::reactants_type reactants_type;
     typedef typename reaction_record_type::products_type products_type;
 
+    typedef reaction_record_type reaction_info_type;
+
 public:
 
     ReactionRecorderWrapper()
@@ -42,10 +44,11 @@ public:
             (*backend_)(rec);
         }
 
-        last_reactions_.push_back(rec.reaction_rule_id());
+        // last_reactions_.push_back(rec.reaction_rule_id());
+        last_reactions_.push_back(std::make_pair(rec.reaction_rule_id(), rec));
     }
 
-    const std::vector<ecell4::ReactionRule>& last_reactions() const
+    const std::vector<std::pair<ecell4::ReactionRule, reaction_info_type> >& last_reactions() const
     {
         return last_reactions_;
     }
@@ -67,7 +70,7 @@ public:
 
 protected:
 
-    std::vector<ecell4::ReactionRule> last_reactions_;
+    std::vector<std::pair<ecell4::ReactionRule, reaction_info_type> > last_reactions_;
     boost::shared_ptr<base_type> backend_;
 };
 

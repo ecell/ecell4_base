@@ -14,13 +14,64 @@ namespace ecell4
 namespace bd
 {
 
+class ReactionInfo
+{
+public:
+
+    typedef std::pair<ParticleID, Particle> particle_id_pair_type;
+    typedef std::vector<particle_id_pair_type> container_type;
+
+public:
+
+    ReactionInfo(
+        const Real t,
+        const container_type& reactants,
+        const container_type& products)
+        : t_(t), reactants_(reactants), products_(products)
+    {}
+
+    Real t() const
+    {
+        return t_;
+    }
+
+    const container_type& reactants() const
+    {
+        return reactants_;
+    }
+
+    void add_reactant(const particle_id_pair_type& pid_pair)
+    {
+        reactants_.push_back(pid_pair);
+    }
+
+    const container_type& products() const
+    {
+        return products_;
+    }
+
+    void add_product(const particle_id_pair_type& pid_pair)
+    {
+        products_.push_back(pid_pair);
+    }
+
+protected:
+
+    Real t_;
+    container_type reactants_, products_;
+};
+
 class BDPropagator
 {
 public:
 
+    typedef ReactionInfo reaction_info_type;
+
+public:
+
     BDPropagator(
         Model& model, BDWorld& world, RandomNumberGenerator& rng, const Real& dt,
-        std::vector<ReactionRule>& last_reactions)
+        std::vector<std::pair<ReactionRule, reaction_info_type> >& last_reactions)
         : model_(model), world_(world), rng_(rng), dt_(dt),
         last_reactions_(last_reactions), max_retry_count_(1)
     {
@@ -84,7 +135,7 @@ protected:
     BDWorld& world_;
     RandomNumberGenerator& rng_;
     Real dt_;
-    std::vector<ReactionRule>& last_reactions_;
+    std::vector<std::pair<ReactionRule, reaction_info_type> >& last_reactions_;
     Integer max_retry_count_;
 
     BDWorld::particle_container_type queue_;

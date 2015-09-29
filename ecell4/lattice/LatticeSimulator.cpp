@@ -166,7 +166,7 @@ std::pair<bool, LatticeSimulator::reaction_type>
             }
         }
     }
-    reactions_.push_back(reaction_rule);
+    last_reactions_.push_back(std::make_pair(reaction_rule, reaction_info_type(world_->t(), reaction.reactants, reaction.products)));
     return std::pair<bool, reaction_type>(true, reaction);
 }
 
@@ -297,7 +297,7 @@ std::pair<bool, LatticeSimulator::reaction_type> LatticeSimulator::apply_second_
             return std::pair<bool, reaction_type>(false, reaction);
     }
 
-    reactions_.push_back(reaction_rule);
+    last_reactions_.push_back(std::make_pair(reaction_rule, reaction_info_type(world_->t(), reaction.reactants, reaction.products)));
     return std::pair<bool, reaction_type>(true, reaction);
 }
 
@@ -586,7 +586,7 @@ std::pair<bool, LatticeSimulator::reaction_type>
             return std::pair<bool, reaction_type>(false, reaction);
     }
 
-    reactions_.push_back(reaction_rule);
+    last_reactions_.push_back(std::make_pair(reaction_rule, reaction_info_type(world_->t(), reaction.reactants, reaction.products)));
     return std::pair<bool, reaction_type>(true, reaction);
 }
 
@@ -842,7 +842,7 @@ bool LatticeSimulator::step(const Real& upto)
     }
 
     world_->set_t(upto); //XXX: TODO
-    reactions_.clear();
+    last_reactions_.clear();
     new_species_.clear();
     dt_ = scheduler_.next_time() - t();
     return false;
@@ -850,7 +850,7 @@ bool LatticeSimulator::step(const Real& upto)
 
 void LatticeSimulator::step_()
 {
-    reactions_.clear();
+    last_reactions_.clear();
     new_species_.clear();
 
     EventScheduler::value_type top(scheduler_.pop());
