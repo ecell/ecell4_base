@@ -34,6 +34,9 @@ cdef extern from "ecell4/lattice/LatticeWorld.hpp" namespace "ecell4::lattice":
         bool remove_voxel(Cpp_ParticleID& pid)
         pair[Cpp_ParticleID, Cpp_Particle] get_particle(Cpp_ParticleID& pid)
         pair[Cpp_ParticleID, Cpp_Voxel] get_voxel(Cpp_ParticleID& pid)
+        pair[Cpp_ParticleID, Cpp_Voxel] get_voxel(Integer)
+        # bool on_structure(Cpp_Voxel&)
+        bool on_structure(Cpp_Species&, Integer)
 
         Integer num_particles()
         Integer num_particles(Cpp_Species& sp)

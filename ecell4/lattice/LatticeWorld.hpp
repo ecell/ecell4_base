@@ -482,6 +482,14 @@ public:
         return make_pid_voxel_pair(mt, info);
     }
 
+    bool on_structure(const Species& sp, const coordinate_type& coord)
+    {
+        const private_coordinate_type private_coord(coord2private(coord));
+        const molecule_info_type minfo(get_molecule_info(sp));
+        return on_structure(
+            Voxel(sp, private_coord, minfo.radius, minfo.D, minfo.loc));
+    }
+
     bool on_structure(const Voxel& v)
     {
         return (*space_).on_structure(v);

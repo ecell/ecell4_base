@@ -190,6 +190,15 @@ LatticeWorld::new_voxel(const Species& sp, const coordinate_type& coord)
 }
 
 std::pair<std::pair<ParticleID, Voxel>, bool>
+LatticeWorld::new_voxel_private(
+        const Species& sp, const private_coordinate_type& coord)
+{
+    const molecule_info_type minfo(get_molecule_info(sp));
+    return new_voxel_private(
+        Voxel(sp, coord, minfo.radius, minfo.D, minfo.loc));
+}
+
+std::pair<std::pair<ParticleID, Voxel>, bool>
 LatticeWorld::new_voxel_private(const Voxel& v)
 {
     ParticleID pid(sidgen_());
@@ -198,15 +207,6 @@ LatticeWorld::new_voxel_private(const Voxel& v)
     return std::make_pair(
         std::make_pair(pid, Voxel(v.species(), coord, v.radius(), v.D(), v.loc())),
         is_succeeded);
-}
-
-std::pair<std::pair<ParticleID, Voxel>, bool>
-LatticeWorld::new_voxel_private(
-        const Species& sp, const private_coordinate_type& coord)
-{
-    const molecule_info_type minfo(get_molecule_info(sp));
-    return new_voxel_private(
-        Voxel(sp, coord, minfo.radius, minfo.D, minfo.loc));
 }
 
 std::pair<std::pair<ParticleID, Voxel>, bool>

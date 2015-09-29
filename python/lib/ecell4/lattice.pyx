@@ -122,17 +122,39 @@ cdef class LatticeWorld:
         return (ParticleID_from_Cpp_ParticleID(address(pid_particle_pair.first)),
                 Particle_from_Cpp_Particle(address(pid_particle_pair.second)))
 
-    def get_voxel(self, ParticleID pid):
-        """Return the voxel having a particle associated with a given ParticleID
+    def get_voxel(self, arg):
+        """Return the voxel having a particle associated with a given ParticleID or coordinate
         Args:
-            pid (ParticleID): a id of the particle in the voxel you want
+            arg (ParticleID or Integer): an id or coordiante of the particle in the voxel you want
         Returns:
             tuple: a pair of ParticleID and Voxel
         """
-        cdef pair[Cpp_ParticleID, Cpp_Voxel] \
-            pid_voxel_pair = self.thisptr.get().get_voxel(deref(pid.thisptr))
+        cdef pair[Cpp_ParticleID, Cpp_Voxel] pid_voxel_pair
+        if isinstance(arg, ParticleID):
+            pid_voxel_pair = self.thisptr.get().get_voxel(deref((<ParticleID>arg).thisptr))
+        else:
+            pid_voxel_pair = self.thisptr.get().get_voxel(<Integer>arg)
         return (ParticleID_from_Cpp_ParticleID(address(pid_voxel_pair.first)),
                 Voxel_from_Cpp_Voxel(address(pid_voxel_pair.second)))
+
+    # def on_structure(self, Voxel v):
+    #     """Check if the given voxel would be on the proper structure at the coordinate
+    #     Args:
+    #         v (Voxel): a voxel scheduled to be placed
+    #     Returns:
+    #         bool: if it is on the proper structure, or not
+    #     """
+    #     return self.thisptr.get().on_structure(deref((<Voxel>v).thisptr))
+
+    def on_structure(self, Species sp, Integer coord):
+        """Check if the given species would be on the proper structure at the coordinate
+        Args:
+            sp (Species): a species scheduled to be placed
+            coord (Integer): a coordinate to be occupied
+        Returns:
+            bool: if it is on the proper structure, or not
+        """
+        return self.thisptr.get().on_structure(deref(sp.thisptr), coord)
 
     def remove_particle(self, ParticleID pid):
         """Remove the particle associated with a given ParticleID
