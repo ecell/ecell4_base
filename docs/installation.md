@@ -3,6 +3,10 @@
     - [Mac OS X](#mac-os-x-installation)
     - [Ubuntu vivid](#ubuntu-linux-vivid-vervet-installation)
     - [Ubuntu trusty](#ubuntu-linux-trusty-tahr-installation)
+- [Running E-Cell4](#running-e-cell4)
+- [Dockerized E-Cell4 Jupyter notebooks](#dockerized-e-cell4-jupyter-notebooks)
+    - [For Windows and Mac](#for-windows-and-mac)
+    - [For Linux](#for-linux)
 
 Installation
 ------------
@@ -24,15 +28,15 @@ And run following command with command prompt.
 pip install https://github.com/ecell/ecell4/releases/download/4.0.0-beta2/ecell4-4.0.0b2-cp27-none-win32.whl
 ```
 
-#### IPython notebook
-We recommend you run E-Cell4 models from IPython notebook.
-Below is IPython notebook(and matplotlib) installation for Windows.
+#### Jupyter for Windows
+We recommend you run E-Cell4 models from Jupyter notebook.
+Below is Jupyter notebook(and matplotlib) installation for Windows.
 
 - Install [Visual C++ Compiler for Python 2.7](http://www.microsoft.com/en-us/download/details.aspx?id=44266)
-- Install IPython notebook and matplotlib
+- Install Jupyter notebook and matplotlib
 
     ```
-    pip install "ipython[notebook]"
+    pip install -U jupyter
     pip install matplotlib
     ```
 
@@ -40,37 +44,21 @@ matplotlib depends on numpy. It takes some time to build numpy, please be patien
 
 ### Mac OS X installation
 
-#### Requirements
+```shell
+ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+brew tap ecell/ecell4
+brew install ecell4 --HEAD
+```
 
-- homebrew
-- gsl
-- hdf5
-- pip
+#### Jupyter for Mac
+We recommend you run E-Cell4 models from Jupyter notebook.
+Below is Jupyter notebook(and matplotlib) installation for Mac.
 
 ```shell
-brew install homebrew/science/hdf5
-brew install gsl
-brew install wget
-wget https://bootstrap.pypa.io/get-pip.py
 sudo python get-pip.py
-pip install https://github.com/ecell/ecell4/releases/download/4.0.0-beta2/ecell4-4.0.0b2-cp27-none-macosx_10_10_intel.whl --user
-# For Mountain Lion
-# pip install https://github.com/ecell/ecell4/releases/download/4.0.0-beta2/ecell4-4.0.0b2-cp27-none-macosx_10_9_intel.whl --user
+sudo pip install -U matplotlib
+sudo pip install -U jupyter
 ```
-
-#### IPython notebook
-We recommend you run E-Cell4 models from IPython notebook.
-Below is IPython notebook(and matplotlib) installation for Mac.
-
-```shell
-pip install matplotlib --user
-pip install "ipython[notebook]" --user
-cd ~/Library/Python/2.7/ecell4ipynb
-PYTHONPATH=~/Library/Python/2.7/lib/python/site-packages/ ipython notebook
-```
-
-now you can see IPython notebooks, please open index.ipynb to see E-Cell4 models.
-
 
 ### Ubuntu Linux Vivid Vervet installation
 #### Python2 series
@@ -116,7 +104,12 @@ $ cd ecell4-master
 $ PREFIX=$HOME/ecell4 PYTHONPATH=/path/to/lib/python2.7/site-packages ./install.sh py2
 ```
 
-## Running E-Cell4
+Running E-Cell4
+---------------
+
+### Simple examples
+
+Here are two extremely simple examples, See http://ecell4.readthedocs.org/en/develop/tutorials/ for more details on running E-Cell4.
 
 ```
 # If you set PREFIX to $HOME/ecell4, make sure to append $HOME/ecell4/lib to LD_LIBRARY_PATH 
@@ -134,33 +127,46 @@ A.B.C
 >>> 
 ```
 
-## Example
+#### A reversible binding reaction
 
-Here is an extremely simple example with a reversible binding reaction:
+```python
+%matplotlib inline
+import numpy
+from ecell4 import *
 
+with reaction_rules():
+    A + B == C | (0.01, 0.3)
 
-    %matplotlib inline
-    import numpy
-    from ecell4 import *
-    
-    with reaction_rules():
-        A + B == C | (0.01, 0.3)
-    
-    y = run_simulation(
-        numpy.linspace(0, 10, 100), {'A': 60, 'B': 60}, solver='ode')
-
+y = run_simulation(
+    numpy.linspace(0, 10, 100), {'A': 60, 'B': 60}, solver='ode')
+```
 
 ![png](https://raw.githubusercontent.com/ecell/ecell4/develop/docs/output_7_0.png)
 
 
-## Dockerized E-Cell4 IPython notebooks
+Dockerized E-Cell4 Jupyter notebooks
+------------------------------------
 
 If you use docker, you can easily try E-Cell4.
 You can pull E-Cell4 container with `docker pull ecell/ecell4`
 
+### For Windows and Mac
+
+1. Install [Docker Toolbox](https://www.docker.com/toolbox)
+2. Run Kitematic
+3. Search with **ecell4**, and create ecell4 container
+
+  ![png](https://raw.githubusercontent.com/ecell/ecell4/develop/docs/kitematic1.png)
+
+4. Open the **ACCESS URL** in **IP & PORTS** with your web browser 
+
+  ![png](https://raw.githubusercontent.com/ecell/ecell4/develop/docs/kitematic2.png)
+
+### For Linux
+
 ```shell
 $ sudo docker pull ecell/ecell4
-$ sudo docker run -d -p 443:8888 -e "PASSWORD=MakeAPassword" ecell/ecell4
+$ sudo docker run -d -p 443:8888 ecell/ecell4
 ```
 
 You'll now be able to E-Cell4 notebooks at https://THE_IP_RUNNING_DOCKER:443
