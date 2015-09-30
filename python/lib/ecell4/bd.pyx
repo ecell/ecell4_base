@@ -9,6 +9,65 @@ from ecell4.shared_ptr cimport shared_ptr
 from ecell4.core cimport *
 
 
+## ReactionInfo
+cdef class ReactionInfo:
+
+    def __cinit__(self, Real t, reactants, products):
+        cdef vector[pair[Cpp_ParticleID, Cpp_Particle]] reactants_
+        cdef vector[pair[Cpp_ParticleID, Cpp_Particle]] products_
+
+        for pid, p in reactants:
+            reactants_.push_back(pair[Cpp_ParticleID, Cpp_Particle](deref((<ParticleID>pid).thisptr), deref((<Particle>p).thisptr)))
+        for pid, p in products:
+            products_.push_back(pair[Cpp_ParticleID, Cpp_Particle](deref((<ParticleID>pid).thisptr), deref((<Particle>p).thisptr)))
+
+        self.thisptr = new Cpp_ReactionInfo(t, reactants_, products_)
+
+    def __dealloc__(self):
+        del self.thisptr
+
+    def t(self):
+        return self.thisptr.t()
+
+    def reactants(self):
+        cdef vector[pair[Cpp_ParticleID, Cpp_Particle]] particles
+        particles = self.thisptr.reactants()
+
+        retval = []
+        cdef vector[pair[Cpp_ParticleID, Cpp_Particle]].iterator \
+            it = particles.begin()
+        while it != particles.end():
+            retval.append(
+                (ParticleID_from_Cpp_ParticleID(
+                     <Cpp_ParticleID*>(address(deref(it).first))),
+                 Particle_from_Cpp_Particle(
+                     <Cpp_Particle*>(address(deref(it).second)))))
+            inc(it)
+        return retval
+
+    def products(self):
+        cdef vector[pair[Cpp_ParticleID, Cpp_Particle]] particles
+        particles = self.thisptr.products()
+
+        retval = []
+        cdef vector[pair[Cpp_ParticleID, Cpp_Particle]].iterator \
+            it = particles.begin()
+        while it != particles.end():
+            retval.append(
+                (ParticleID_from_Cpp_ParticleID(
+                     <Cpp_ParticleID*>(address(deref(it).first))),
+                 Particle_from_Cpp_Particle(
+                     <Cpp_Particle*>(address(deref(it).second)))))
+            inc(it)
+        return retval
+
+cdef ReactionInfo ReactionInfo_from_Cpp_ReactionInfo(Cpp_ReactionInfo* ri):
+    cdef Cpp_ReactionInfo *new_obj = new Cpp_ReactionInfo(<Cpp_ReactionInfo> deref(ri))
+    r = ReactionInfo(0, [], [])
+    del r.thisptr
+    r.thisptr = new_obj
+    return r
+
 ## BDWorld
 #  a python wrapper for Cpp_BDWorld
 cdef class BDWorld:
@@ -258,15 +317,18 @@ cdef class BDSimulator:
     def check_reaction(self):
         return self.thistptr.check_reaction()
 
-    # def last_reactions(self):
-    #     cdef vector[Cpp_ReactionRule] reactions = self.thisptr.last_reactions()
-    #     cdef vector[Cpp_ReactionRule].iterator it = reactions.begin()
-    #     retval = []
-    #     while it != reactions.end():
-    #         retval.append(ReactionRule_from_Cpp_ReactionRule(
-    #             <Cpp_ReactionRule*>(address(deref(it)))))
-    #         inc(it)
-    #     return retval
+    def last_reactions(self):
+        cdef vector[pair[Cpp_ReactionRule, Cpp_ReactionInfo]] reactions = self.thisptr.last_reactions()
+        cdef vector[pair[Cpp_ReactionRule, Cpp_ReactionInfo]].iterator it = reactions.begin()
+        retval = []
+        while it != reactions.end():
+            retval.append((
+                ReactionRule_from_Cpp_ReactionRule(
+                    <Cpp_ReactionRule*>(address(deref(it).first))),
+                ReactionInfo_from_Cpp_ReactionInfo(
+                    <Cpp_ReactionInfo*>(address(deref(it).second)))))
+            inc(it)
+        return retval
 
     def model(self):
         return Model_from_Cpp_Model(self.thisptr.model())
