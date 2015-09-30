@@ -240,7 +240,7 @@ cdef class EGFRDSimulator:
         return self.thisptr.next_time()
 
     def check_reaction(self):
-        return self.thistptr.check_reaction()
+        return self.thisptr.check_reaction()
 
     # def last_reactions(self):
     #     cdef vector[Cpp_ReactionRule] reactions = self.thisptr.last_reactions()
@@ -400,7 +400,7 @@ cdef class BDSimulator:
         return self.thisptr.next_time()
 
     def check_reaction(self):
-        return self.thistptr.check_reaction()
+        return self.thisptr.check_reaction()
 
     # def last_reactions(self):
     #     cdef vector[Cpp_ReactionRule] reactions = self.thisptr.last_reactions()

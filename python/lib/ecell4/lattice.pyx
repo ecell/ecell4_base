@@ -638,7 +638,7 @@ cdef class LatticeSimulator:
         self.thisptr.initialize()
 
     def check_reaction(self):
-        return self.thistptr.check_reaction()
+        return self.thisptr.check_reaction()
 
     # def last_reactions(self):
     #     """Return reactions occuring at the last step

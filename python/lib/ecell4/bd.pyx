@@ -315,7 +315,7 @@ cdef class BDSimulator:
         self.thisptr.initialize()
 
     def check_reaction(self):
-        return self.thistptr.check_reaction()
+        return self.thisptr.check_reaction()
 
     def last_reactions(self):
         cdef vector[pair[Cpp_ReactionRule, Cpp_ReactionInfo]] reactions = self.thisptr.last_reactions()
