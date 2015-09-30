@@ -809,7 +809,7 @@ void LatticeSimulator::register_product_species(const Species& product_species)
 }
 
 void LatticeSimulator::register_reactant_species(
-        const LatticeWorld::particle_info_type pinfo, reaction_type reaction) const
+        const LatticeWorld::particle_info_type pinfo, reaction_type& reaction) const
 {
     const MolecularTypeBase* mtype(world_->get_molecular_type_private(pinfo.first));
     const std::string location(

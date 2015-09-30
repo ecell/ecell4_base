@@ -336,7 +336,7 @@ protected:
 
     void register_product_species(const Species& product_species);
     void register_reactant_species(
-        const LatticeWorld::particle_info_type pinfo, reaction_type reaction) const;
+        const LatticeWorld::particle_info_type pinfo, reaction_type& reaction) const;
 
     void step_();
     void register_events(const Species& species);
