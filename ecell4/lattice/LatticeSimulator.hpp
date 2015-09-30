@@ -37,6 +37,10 @@ public:
         : t_(t), reactants_(reactants), products_(products)
     {}
 
+    ReactionInfo(const ReactionInfo& another)
+        : t_(another.t()), reactants_(another.reactants()), products_(another.products())
+    {}
+
     Real t() const
     {
         return t_;
