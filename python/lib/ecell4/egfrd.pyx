@@ -4,6 +4,61 @@ from cython.operator cimport dereference as deref, preincrement as inc
 from ecell4.core cimport *
 
 
+## ReactionInfo
+cdef class ReactionInfo:
+
+    def __cinit__(self, Real t, reactants, products):
+        cdef vector[Cpp_ParticleID] reactants_
+        cdef vector[Cpp_ParticleID] products_
+
+        for pid in reactants:
+            reactants_.push_back(deref((<ParticleID>pid).thisptr))
+        for pid in products:
+            products_.push_back(deref((<ParticleID>pid).thisptr))
+
+        self.thisptr = new Cpp_ReactionInfo(t, reactants_, products_)
+
+    def __dealloc__(self):
+        del self.thisptr
+
+    def t(self):
+        return self.thisptr.t()
+
+    def reactants(self):
+        cdef vector[Cpp_ParticleID] particles
+        particles = self.thisptr.reactants()
+
+        retval = []
+        cdef vector[Cpp_ParticleID].iterator \
+            it = particles.begin()
+        while it != particles.end():
+            retval.append(
+                ParticleID_from_Cpp_ParticleID(
+                    <Cpp_ParticleID*>(address(deref(it)))))
+            inc(it)
+        return retval
+
+    def products(self):
+        cdef vector[Cpp_ParticleID] particles
+        particles = self.thisptr.products()
+
+        retval = []
+        cdef vector[Cpp_ParticleID].iterator \
+            it = particles.begin()
+        while it != particles.end():
+            retval.append(
+                ParticleID_from_Cpp_ParticleID(
+                    <Cpp_ParticleID*>(address(deref(it)))))
+            inc(it)
+        return retval
+
+cdef ReactionInfo ReactionInfo_from_Cpp_ReactionInfo(Cpp_ReactionInfo* ri):
+    cdef Cpp_ReactionInfo *new_obj = new Cpp_ReactionInfo(<Cpp_ReactionInfo> deref(ri))
+    r = ReactionInfo(0, [], [])
+    del r.thisptr
+    r.thisptr = new_obj
+    return r
+
 ## EGFRDWorld
 #  a python wrapper for Cpp_EGFRDWorld
 cdef class EGFRDWorld:
@@ -242,15 +297,19 @@ cdef class EGFRDSimulator:
     def check_reaction(self):
         return self.thisptr.check_reaction()
 
-    # def last_reactions(self):
-    #     cdef vector[Cpp_ReactionRule] reactions = self.thisptr.last_reactions()
-    #     cdef vector[Cpp_ReactionRule].iterator it = reactions.begin()
-    #     retval = []
-    #     while it != reactions.end():
-    #         retval.append(ReactionRule_from_Cpp_ReactionRule(
-    #             <Cpp_ReactionRule*>(address(deref(it)))))
-    #         inc(it)
-    #     return retval
+    def last_reactions(self):
+        cdef vector[pair[Cpp_ReactionRule, Cpp_ReactionInfo]] reactions = self.thisptr.last_reactions()
+        cdef vector[pair[Cpp_ReactionRule, Cpp_ReactionInfo]].iterator it = reactions.begin()
+        retval = []
+        while it != reactions.end():
+            retval.append((
+                ReactionRule_from_Cpp_ReactionRule(
+                    <Cpp_ReactionRule*>(address(deref(it).first))),
+                ReactionInfo_from_Cpp_ReactionInfo(
+                    <Cpp_ReactionInfo*>(address(deref(it).second)))))
+            inc(it)
+        return retval
+
 
     def set_t(self, Real new_t):
         self.thisptr.set_t(new_t)

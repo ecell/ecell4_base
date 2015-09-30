@@ -22,7 +22,59 @@ public:
     typedef typename reaction_record_type::reactants_type reactants_type;
     typedef typename reaction_record_type::products_type products_type;
 
-    typedef reaction_record_type reaction_info_type;
+public:
+
+    class ReactionInfo
+    {
+    public:
+
+        typedef particle_id_type element_type;
+        typedef std::vector<element_type> container_type;
+
+    public:
+
+        ReactionInfo(
+            const Real t, const container_type& reactants, const container_type& products)
+            : t_(t), reactants_(reactants), products_(products)
+        {}
+
+        ReactionInfo(const ReactionInfo& another)
+            : t_(another.t()), reactants_(another.reactants()), products_(another.products())
+        {}
+
+        Real t() const
+        {
+            return t_;
+        }
+
+        const container_type& reactants() const
+        {
+            return reactants_;
+        }
+
+        void add_reactant(const element_type& elem)
+        {
+            reactants_.push_back(elem);
+        }
+
+        const container_type& products() const
+        {
+            return products_;
+        }
+
+        void add_product(const element_type& elem)
+        {
+            products_.push_back(elem);
+        }
+
+    protected:
+
+        Real t_;
+        container_type reactants_, products_;
+    };
+
+    // typedef reaction_record_type reaction_info_type;
+    typedef ReactionInfo reaction_info_type;
 
 public:
 
@@ -45,7 +97,13 @@ public:
         }
 
         // last_reactions_.push_back(rec.reaction_rule_id());
-        last_reactions_.push_back(std::make_pair(rec.reaction_rule_id(), rec));
+        // last_reactions_.push_back(std::make_pair(rec.reaction_rule_id(), rec));
+        reaction_info_type ri(0.0, typename reaction_info_type::container_type(), rec.products());
+        for (typename reaction_record_type::reactants_type::const_iterator i(rec.reactants().begin()); i != rec.reactants().end(); ++i)
+        {
+            ri.add_reactant(*i);
+        }
+        last_reactions_.push_back(std::make_pair(rec.reaction_rule_id(), ri));
     }
 
     const std::vector<std::pair<ecell4::ReactionRule, reaction_info_type> >& last_reactions() const
