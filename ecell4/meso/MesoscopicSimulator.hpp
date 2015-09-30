@@ -34,6 +34,12 @@ public:
         : t_(t), reactants_(reactants), products_(products), coord_(coord)
     {}
 
+    ReactionInfo(
+        const ReactionInfo& another)
+        : t_(another.t()), reactants_(another.reactants()), products_(another.products()),
+          coord_(another.coordinate())
+    {}
+
     Real t() const
     {
         return t_;
@@ -59,7 +65,7 @@ public:
         products_.push_back(elem);
     }
 
-    coordinate_type coordiante() const
+    coordinate_type coordinate() const
     {
         return coord_;
     }
