@@ -1142,6 +1142,26 @@ public:
         dirty_ = false;
     }
 
+    /**
+     * override
+     * HERE
+     */
+
+    virtual Real next_time() const
+    {
+        return scheduler_.next_time();
+    }
+
+    virtual Real dt() const
+    {
+        return scheduler_.next_time() - base_type::t();
+    }
+
+    /**
+     * override
+     * THERE
+     */
+
     virtual void step()
     {
         if (dirty_)
@@ -1193,7 +1213,8 @@ public:
             return false;
         }
 
-        if (upto >= scheduler_.top().second->time())
+        // if (upto >= scheduler_.top().second->time())
+        if (upto >= scheduler_.next_time())
         {
             _step();
             return true;
@@ -3493,6 +3514,12 @@ protected:
 
         (*dynamic_cast<ReactionRecorderWrapper<reaction_record_type>*>(
             base_type::rrec_.get())).clear();
+
+        if (scheduler_.size() == 0)
+        {
+            this->set_t(scheduler_.next_time());
+            return;
+        }
 
         event_id_pair_type ev(scheduler_.pop());
         this->set_t(ev.second->time());
