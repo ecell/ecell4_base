@@ -30,7 +30,7 @@ def load_world(filename):
 def run_simulation(
         t, y0={}, volume=1.0, model=None, solver='ode',
         factory=None, is_netfree=False, species_list=None, without_reset=False,
-        return_type='matplotlib', plot_args={}):
+        return_type='matplotlib', plot_args=(), plot_kwargs={}):
     """Run a simulation with the given model and plot the result on IPython
     notebook with matplotlib.
 
@@ -52,8 +52,11 @@ def run_simulation(
         Choose a type of return value from 'array', 'observer',
         'matplotlib', 'nyaplot' or None.
         If None, return and plot nothing. Default is 'matplotlib'.
-    plot_args: dict, optional
-        Arguments for plotting. If plot_type is None, just ignored.
+    plot_args: list, tuple or dict, optional
+        Arguments for plotting. If return_type suggests no plotting, just ignored.
+    plot_kwargs: dict, optional
+        Arguments for plotting. If return_type suggests no plotting or
+        plot_args is a list or tuple, just ignored.
     factory: Factory, optional
     is_netfree: bool, optional
         Whether the model is netfree or not. When a model is given as an
@@ -110,9 +113,23 @@ def run_simulation(
     sim.run(t[-1], obs)
 
     if return_type == 'matplotlib':
-        ecell4.viz.plot_number_observer(obs, **plot_args)
+        if isinstance(plot_args, (list, tuple)):
+            ecell4.viz.plot_number_observer(obs, *plot_args, **plot_kwargs)
+        elif isinstance(plot_args, dict):
+            # plot_kwargs is ignored
+            ecell4.viz.plot_number_observer(obs, **plot_args)
+        else:
+            raise ValueError('plot_args [{}] must be list or dict.'.format(
+                repr(plot_args)))
     elif return_type == 'nyaplot':
-        ecell4.viz.plot_number_observer_with_nya(obs, **plot_args)
+        if isinstance(plot_args, list):
+            ecell4.viz.plot_number_observer_with_nya(obs, *plot_args, **plot_kwargs)
+        elif isinstance(plot_args, dict):
+            # plot_kwargs is ignored
+            ecell4.viz.plot_number_observer_with_nya(obs, **plot_args)
+        else:
+            raise ValueError('plot_args [{}] must be list or dict.'.format(
+                repr(plot_args)))
     elif return_type == 'observer':
         return obs
     elif return_type == 'array':
