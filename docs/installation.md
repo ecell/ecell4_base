@@ -35,10 +35,10 @@ Below is Jupyter notebook(and matplotlib) installation for Windows.
 - Install [Visual C++ Compiler for Python 2.7](http://www.microsoft.com/en-us/download/details.aspx?id=44266)
 - Install Jupyter notebook and matplotlib
 
-    ```
-    pip install -U jupyter
-    pip install matplotlib
-    ```
+  ```
+  pip install -U jupyter
+  pip install matplotlib
+  ```
 
 matplotlib depends on numpy. It takes some time to build numpy, please be patient.
 
@@ -89,7 +89,7 @@ $ cd ecell4-master
 $ PREFIX=$HOME/ecell4 ./install.sh py3
 ```
 
-### Ubuntu Linux Trusty Tahr installation 
+### Ubuntu Linux Trusty Tahr installation
 
 ```shell
 # dependent packages
@@ -107,24 +107,44 @@ $ PREFIX=$HOME/ecell4 PYTHONPATH=/path/to/lib/python2.7/site-packages ./install.
 Running E-Cell4
 ---------------
 
+### How to run Python for E-Cell4 (Windows)
+1. run command prompt
+2. run Python
+  ```
+  python
+  ```
+
+### How to run Python for E-Cell4 (Mac)
+1. run terminal
+2. run Python with PYTHONPATH
+  ```
+  PYTHONPATH=/usr/local/Cellar/ecell4/HEAD/libexec/lib/python2.7/site-packages python
+  ```
+
+### How to run Python for E-Cell4 (Ubuntu)
+
+If you set PREFIX to $HOME/ecell4, run Python with
+```
+LD_LIBRARY_PATH=$HOME/ecell4/lib:$LD_LIBRARY_PATH PYTHONPATH=$HOME/ecell4/lib/python2.7/site-packages python
+```
+in case with Python3
+```
+LD_LIBRARY_PATH=$HOME/ecell4/lib:$LD_LIBRARY_PATH PYTHONPATH=$HOME/ecell4/lib/python3.4/site-packages python3
+```
+
 ### Simple examples
 
-Here are two extremely simple examples, See http://ecell4.readthedocs.org/en/develop/tutorials/ for more details on running E-Cell4.
+Here are two extremely simple examples, See http://ecell4.readthedocs.org/en/latest/tutorials/ for more details on running E-Cell4.
 
 ```
-# If you set PREFIX to $HOME/ecell4, make sure to append $HOME/ecell4/lib to LD_LIBRARY_PATH 
-$ LD_LIBRARY_PATH=$HOME/ecell4/lib:$LD_LIBRARY_PATH PYTHONPATH=$HOME/ecell4/lib/python2.7/site-packages python
-# in case with Python3
-# LD_LIBRARY_PATH=$HOME/ecell4/lib:$LD_LIBRARY_PATH PYTHONPATH=$HOME/ecell4/lib/python3.4/site-packages python3
-
-Python 2.7.6 (default, Mar 22 2014, 22:59:56) 
+Python 2.7.6 (default, Mar 22 2014, 22:59:56)
 [GCC 4.8.2] on linux2
 Type "help", "copyright", "credits" or "license" for more information.
 >>> from ecell4.core import *
 >>> sp = Species("B.A.C")
 >>> print sp.serial()
 A.B.C
->>> 
+>>>
 ```
 
 #### A reversible binding reaction
@@ -141,7 +161,7 @@ y = run_simulation(
     numpy.linspace(0, 10, 100), {'A': 60, 'B': 60}, solver='ode')
 ```
 
-![png](https://raw.githubusercontent.com/ecell/ecell4/develop/docs/output_7_0.png)
+![png](https://raw.githubusercontent.com/ecell/ecell4/master/docs/output_7_0.png)
 
 
 Dockerized E-Cell4 Jupyter notebooks
@@ -156,11 +176,11 @@ You can pull E-Cell4 container with `docker pull ecell/ecell4`
 2. Run Kitematic
 3. Search with **ecell4**, and create ecell4 container
 
-  ![png](https://raw.githubusercontent.com/ecell/ecell4/develop/docs/kitematic1.png)
+  ![png](https://raw.githubusercontent.com/ecell/ecell4/master/docs/kitematic1.png)
 
-4. Open the **ACCESS URL** in **IP & PORTS** with your web browser 
+4. Open the **ACCESS URL** in **IP & PORTS** with your web browser
 
-  ![png](https://raw.githubusercontent.com/ecell/ecell4/develop/docs/kitematic2.png)
+  ![png](https://raw.githubusercontent.com/ecell/ecell4/master/docs/kitematic2.png)
 
 ### For Linux
 
