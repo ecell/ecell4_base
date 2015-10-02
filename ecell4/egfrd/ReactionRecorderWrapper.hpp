@@ -17,18 +17,22 @@ public:
     typedef ReactionRecorder<Trr_> base_type;
 
     typedef typename base_type::reaction_record_type reaction_record_type;
-    typedef typename reaction_record_type::particle_id_type particle_id_type;
+    typedef typename reaction_record_type::particle_id_pair particle_id_pair;
     typedef typename reaction_record_type::reaction_rule_id_type reaction_rule_id_type;
     typedef typename reaction_record_type::reactants_type reactants_type;
     typedef typename reaction_record_type::products_type products_type;
 
 public:
 
+    /**
+     * The following class is almost same with ReactionRecord now.
+     * This should be deprecated, or replaced with ReactionRecord.
+     */
     class ReactionInfo
     {
     public:
 
-        typedef particle_id_type element_type;
+        typedef particle_id_pair element_type;
         typedef std::vector<element_type> container_type;
 
     public:
@@ -96,15 +100,8 @@ public:
             (*backend_)(rec);
         }
 
-        // last_reactions_.push_back(rec.reaction_rule_id());
-        // last_reactions_.push_back(std::make_pair(rec.reaction_rule_id(), rec));
-        // reaction_info_type ri(0.0, typename reaction_info_type::container_type(), rec.products());
-        // for (typename reaction_record_type::reactants_type::const_iterator i(rec.reactants().begin()); i != rec.reactants().end(); ++i)
-        // {
-        //     ri.add_reactant(*i);
-        // }
-        reaction_info_type ri(0.0, rec.reactants(), rec.products());
-        last_reactions_.push_back(std::make_pair(rec.reaction_rule_id(), ri));
+        last_reactions_.push_back(std::make_pair(
+            rec.reaction_rule_id(), reaction_info_type(0.0, rec.reactants(), rec.products())));
     }
 
     const std::vector<std::pair<ecell4::ReactionRule, reaction_info_type> >& last_reactions() const
