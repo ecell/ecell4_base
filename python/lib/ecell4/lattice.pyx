@@ -10,15 +10,38 @@ from ecell4.core cimport *
 
 ## ReactionInfo
 cdef class ReactionInfo:
+    """A class stores detailed information about a reaction in lattice.
+
+    ReactionInfo(t, reactants, products)
+
+    """
+
+    def __init__(self, Real t, reactants, products):
+        """Constructor.
+
+        Args:
+          t (Real): A time when a reaction occurred
+          reactants (list): A list of reactants.
+            Reactants are given as a pair of ``ParticleID`` and ``Voxel``.
+          products (list): A list of products.
+            Products are given as a pair of ``ParticleID`` and ``Voxel``.
+
+        """
+        pass  #XXX: only used for doc string
+
 
     def __cinit__(self, Real t, reactants, products):
         cdef vector[pair[Cpp_ParticleID, Cpp_Voxel]] reactants_
         cdef vector[pair[Cpp_ParticleID, Cpp_Voxel]] products_
 
         for pid, p in reactants:
-            reactants_.push_back(pair[Cpp_ParticleID, Cpp_Voxel](deref((<ParticleID>pid).thisptr), deref((<Voxel>p).thisptr)))
+            reactants_.push_back(
+                pair[Cpp_ParticleID, Cpp_Voxel](
+                    deref((<ParticleID>pid).thisptr), deref((<Voxel>p).thisptr)))
         for pid, p in products:
-            products_.push_back(pair[Cpp_ParticleID, Cpp_Voxel](deref((<ParticleID>pid).thisptr), deref((<Voxel>p).thisptr)))
+            products_.push_back(
+                pair[Cpp_ParticleID, Cpp_Voxel](
+                    deref((<ParticleID>pid).thisptr), deref((<Voxel>p).thisptr)))
 
         self.thisptr = new Cpp_ReactionInfo(t, reactants_, products_)
 
@@ -26,9 +49,16 @@ cdef class ReactionInfo:
         del self.thisptr
 
     def t(self):
+        """Return a time when a reaction occurred."""
         return self.thisptr.t()
 
     def reactants(self):
+        """Return a list of reactants
+
+        Returns:
+            list: A list of pairs of ``ParticleID`` and ``Voxel``.
+
+        """
         cdef vector[pair[Cpp_ParticleID, Cpp_Voxel]] particles
         particles = self.thisptr.reactants()
 
@@ -45,6 +75,12 @@ cdef class ReactionInfo:
         return retval
 
     def products(self):
+        """Return a list of products
+
+        Returns:
+            list: A list of pairs of ``ParticleID`` and ``Voxel``.
+
+        """
         cdef vector[pair[Cpp_ParticleID, Cpp_Voxel]] particles
         particles = self.thisptr.products()
 
@@ -697,9 +733,16 @@ cdef class LatticeSimulator:
         self.thisptr.initialize()
 
     def check_reaction(self):
+        """Return if any reaction occurred at the last step, or not."""
         return self.thisptr.check_reaction()
 
     def last_reactions(self):
+        """Return a list of reactions, which occurred at the last step.
+
+        Returns:
+            list: A list of pairs of ``ReactionRule`` and ``ReactionInfo``.
+
+        """
         cdef vector[pair[Cpp_ReactionRule, Cpp_ReactionInfo]] reactions = self.thisptr.last_reactions()
         cdef vector[pair[Cpp_ReactionRule, Cpp_ReactionInfo]].iterator it = reactions.begin()
         retval = []

@@ -6,6 +6,24 @@ from ecell4.core cimport *
 
 ## ReactionInfo
 cdef class ReactionInfo:
+    """A class stores detailed information about a reaction in gillespie.
+
+    ReactionInfo(t, reactants, products)
+
+    """
+
+    def __init__(self, Real t, reactants, products):
+        """Constructor.
+
+        Args:
+          t (Real): A time when a reaction occurred
+          reactants (list): A list of reactants.
+            Reactants are given as a ``Species``.
+          products (list): A list of products.
+            Products are given as a ``Species``.
+
+        """
+        pass  #XXX: only used for doc string
 
     def __cinit__(self, Real t, reactants, products):
         cdef vector[Cpp_Species] reactants_
@@ -22,9 +40,16 @@ cdef class ReactionInfo:
         del self.thisptr
 
     def t(self):
+        """Return a time when a reaction occurred."""
         return self.thisptr.t()
 
     def reactants(self):
+        """Return a list of reactants
+
+        Returns:
+            list: A list of ``Species``.
+
+        """
         cdef vector[Cpp_Species] species = self.thisptr.reactants()
 
         retval = []
@@ -37,6 +62,12 @@ cdef class ReactionInfo:
         return retval
 
     def products(self):
+        """Return a list of products
+
+        Returns:
+            list: A list of ``Species``.
+
+        """
         cdef vector[Cpp_Species] species = self.thisptr.products()
 
         retval = []
@@ -220,9 +251,16 @@ cdef class GillespieSimulator:
         return self.thisptr.next_time()
 
     def check_reaction(self):
+        """Return if any reaction occurred at the last step, or not."""
         return self.thisptr.check_reaction()
 
     def last_reactions(self):
+        """Return a list of reactions, which occurred at the last step.
+
+        Returns:
+            list: A list of pairs of ``ReactionRule`` and ``ReactionInfo``.
+
+        """
         cdef vector[pair[Cpp_ReactionRule, Cpp_ReactionInfo]] reactions = self.thisptr.last_reactions()
         cdef vector[pair[Cpp_ReactionRule, Cpp_ReactionInfo]].iterator it = reactions.begin()
         retval = []

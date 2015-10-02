@@ -6,8 +6,28 @@ from ecell4.core cimport *
 
 ## ReactionInfo
 cdef class ReactionInfo:
+    """A class stores detailed information about a reaction in meso.
 
-    def __cinit__(self, Real t, reactants, products, Integer coordinate):
+    ReactionInfo(t, reactants, products, coord)
+
+    """
+
+    def __init__(self, Real t, reactants, products, coord):
+        """Constructor.
+
+        Args:
+          t (Real): A time when a reaction occurred.
+          reactants (list): A list of reactants.
+            Reactants are given as a ``Species``.
+          products (list): A list of products.
+            Products are given as a ``Species``.
+          coord (int): A coordinate where a reaction occurred.
+
+        """
+        pass  #XXX: only used for doc string
+
+
+    def __cinit__(self, Real t, reactants, products, Integer coord):
         cdef vector[Cpp_Species] reactants_
         cdef vector[Cpp_Species] products_
 
@@ -16,18 +36,26 @@ cdef class ReactionInfo:
         for sp in products:
             products_.push_back(deref((<Species>sp).thisptr))
 
-        self.thisptr = new Cpp_ReactionInfo(t, reactants_, products_, coordinate)
+        self.thisptr = new Cpp_ReactionInfo(t, reactants_, products_, coord)
 
     def __dealloc__(self):
         del self.thisptr
 
     def t(self):
+        """Return a time when a reaction occurred."""
         return self.thisptr.t()
 
     def coordinate(self):
+        """Return a coordinate where a reaction occurred."""
         return self.thisptr.coordinate()
 
     def reactants(self):
+        """Return a list of reactants
+
+        Returns:
+            list: A list of ``Species``.
+
+        """
         cdef vector[Cpp_Species] species = self.thisptr.reactants()
 
         retval = []
@@ -41,6 +69,12 @@ cdef class ReactionInfo:
 
     def products(self):
         cdef vector[Cpp_Species] species = self.thisptr.products()
+        """Return a list of products
+
+        Returns:
+            list: A list of ``Species``.
+
+        """
 
         retval = []
         cdef vector[Cpp_Species].iterator it = species.begin()
@@ -321,9 +355,16 @@ cdef class MesoscopicSimulator:
         return self.thisptr.next_time()
 
     def check_reaction(self):
+        """Return if any reaction occurred at the last step, or not."""
         return self.thisptr.check_reaction()
 
     def last_reactions(self):
+        """Return a list of reactions, which occurred at the last step.
+
+        Returns:
+            list: A list of pairs of ``ReactionRule`` and ``ReactionInfo``.
+
+        """
         cdef vector[pair[Cpp_ReactionRule, Cpp_ReactionInfo]] reactions = self.thisptr.last_reactions()
         cdef vector[pair[Cpp_ReactionRule, Cpp_ReactionInfo]].iterator it = reactions.begin()
         retval = []
