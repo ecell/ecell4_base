@@ -8,13 +8,13 @@ from ecell4.core cimport *
 cdef class ReactionInfo:
 
     def __cinit__(self, Real t, reactants, products):
-        cdef vector[Cpp_ParticleID] reactants_
-        cdef vector[Cpp_ParticleID] products_
+        cdef vector[pair[Cpp_ParticleID, Cpp_Particle]] reactants_
+        cdef vector[pair[Cpp_ParticleID, Cpp_Particle]] products_
 
-        for pid in reactants:
-            reactants_.push_back(deref((<ParticleID>pid).thisptr))
-        for pid in products:
-            products_.push_back(deref((<ParticleID>pid).thisptr))
+        for pid, p in reactants:
+            reactants_.push_back(pair[Cpp_ParticleID, Cpp_Particle](deref((<ParticleID>pid).thisptr), deref((<Particle>p).thisptr)))
+        for pid, p in products:
+            products_.push_back(pair[Cpp_ParticleID, Cpp_Particle](deref((<ParticleID>pid).thisptr), deref((<Particle>p).thisptr)))
 
         self.thisptr = new Cpp_ReactionInfo(t, reactants_, products_)
 
@@ -25,30 +25,34 @@ cdef class ReactionInfo:
         return self.thisptr.t()
 
     def reactants(self):
-        cdef vector[Cpp_ParticleID] particles
+        cdef vector[pair[Cpp_ParticleID, Cpp_Particle]] particles
         particles = self.thisptr.reactants()
 
         retval = []
-        cdef vector[Cpp_ParticleID].iterator \
+        cdef vector[pair[Cpp_ParticleID, Cpp_Particle]].iterator \
             it = particles.begin()
         while it != particles.end():
             retval.append(
-                ParticleID_from_Cpp_ParticleID(
-                    <Cpp_ParticleID*>(address(deref(it)))))
+                (ParticleID_from_Cpp_ParticleID(
+                     <Cpp_ParticleID*>(address(deref(it).first))),
+                 Particle_from_Cpp_Particle(
+                     <Cpp_Particle*>(address(deref(it).second)))))
             inc(it)
         return retval
 
     def products(self):
-        cdef vector[Cpp_ParticleID] particles
+        cdef vector[pair[Cpp_ParticleID, Cpp_Particle]] particles
         particles = self.thisptr.products()
 
         retval = []
-        cdef vector[Cpp_ParticleID].iterator \
+        cdef vector[pair[Cpp_ParticleID, Cpp_Particle]].iterator \
             it = particles.begin()
         while it != particles.end():
             retval.append(
-                ParticleID_from_Cpp_ParticleID(
-                    <Cpp_ParticleID*>(address(deref(it)))))
+                (ParticleID_from_Cpp_ParticleID(
+                     <Cpp_ParticleID*>(address(deref(it).first))),
+                 Particle_from_Cpp_Particle(
+                     <Cpp_Particle*>(address(deref(it).second)))))
             inc(it)
         return retval
 

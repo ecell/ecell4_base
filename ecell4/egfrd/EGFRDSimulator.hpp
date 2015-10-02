@@ -2220,8 +2220,10 @@ protected:
             (*base_type::world_).remove_particle(reactant.first);
             if (base_type::rrec_)
             {
+                // (*base_type::rrec_)(reaction_record_type(
+                //     r.id(), array_gen<particle_id_type>(), reactant.first));
                 (*base_type::rrec_)(reaction_record_type(
-                    r.id(), array_gen<particle_id_type>(), reactant.first));
+                    r.id(), array_gen<particle_id_pair>(), reactant));
             }
             break;
         case 1: 
@@ -2252,8 +2254,10 @@ protected:
                 add_event(*new_domain, SINGLE_EVENT_ESCAPE);
                 if (base_type::rrec_)
                 {
+                    // (*base_type::rrec_)(reaction_record_type(
+                    //     r.id(), array_gen(product.first), reactant.first));
                     (*base_type::rrec_)(reaction_record_type(
-                        r.id(), array_gen(product.first), reactant.first));
+                        r.id(), array_gen(product), reactant));
                 }
             }
             break;
@@ -2341,9 +2345,11 @@ protected:
 
                 if (base_type::rrec_)
                 {
+                    // (*base_type::rrec_)(reaction_record_type(
+                    //     r.id(), array_gen(pp[0].first, pp[1].first),
+                    //     reactant.first));
                     (*base_type::rrec_)(reaction_record_type(
-                        r.id(), array_gen(pp[0].first, pp[1].first),
-                        reactant.first));
+                        r.id(), array_gen(pp[0], pp[1]), reactant));
                 }
             }
             break;
@@ -3422,11 +3428,16 @@ protected:
 
                         if (base_type::rrec_)
                         {
+                            // (*base_type::rrec_)(reaction_record_type(
+                            //     r.id(),
+                            //     array_gen(new_particle.first),
+                            //     domain.particles()[0].first,
+                            //     domain.particles()[1].first));
                             (*base_type::rrec_)(reaction_record_type(
                                 r.id(),
-                                array_gen(new_particle.first),
-                                domain.particles()[0].first,
-                                domain.particles()[1].first));
+                                array_gen(new_particle),
+                                domain.particles()[0],
+                                domain.particles()[1]));
                         }
                     }
                     break;

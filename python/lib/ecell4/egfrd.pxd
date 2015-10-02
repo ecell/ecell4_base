@@ -7,11 +7,11 @@ from core cimport *
 ## Cpp_ReactionInfo
 cdef extern from "ecell4/egfrd/egfrd.hpp" namespace "ecell4::egfrd":
     cdef cppclass Cpp_ReactionInfo "ecell4::egfrd::ReactionInfo":
-        Cpp_ReactionInfo(Real, vector[Cpp_ParticleID], vector[Cpp_ParticleID])
+        Cpp_ReactionInfo(Real, vector[pair[Cpp_ParticleID, Cpp_Particle]], vector[pair[Cpp_ParticleID, Cpp_Particle]])
         Cpp_ReactionInfo(Cpp_ReactionInfo&)
         Real t()
-        vector[Cpp_ParticleID] reactants()
-        vector[Cpp_ParticleID] products()
+        vector[pair[Cpp_ParticleID, Cpp_Particle]] reactants()
+        vector[pair[Cpp_ParticleID, Cpp_Particle]] products()
 
 ## ReactionInfo
 #  a python wrapper for Cpp_ReactionInfo

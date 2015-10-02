@@ -123,4 +123,87 @@ operator<<(std::basic_ostream<Tchar, Ttraits>& out,
     return out;
 }
 
+template<typename Tpid_, typename Trid_>
+class ReactionRecord2
+{
+public:
+    typedef Tpid_ particle_id_type;
+    typedef Trid_ reaction_rule_id_type;
+    typedef std::vector<particle_id_type> container_type;
+    typedef container_type products_type;
+    typedef container_type reactants_type;
+
+public:
+    ReactionRecord2()
+        : reaction_rule_id_(), reactants_(), products_() {}
+
+    template<typename Tset>
+    ReactionRecord2(reaction_rule_id_type const& rid,
+                   Tset const& products,
+                   particle_id_type const& p1)
+        : reaction_rule_id_(rid), reactants_(1, p1),
+          products_(boost::begin(products), boost::end(products)) {}
+
+    template<typename Tset>
+    ReactionRecord2(reaction_rule_id_type const& rid,
+                   Tset const& products,
+                   particle_id_type const& p1, particle_id_type const& p2)
+        : reaction_rule_id_(rid), reactants_(),
+          products_(boost::begin(products), boost::end(products))
+    {
+        reactants_.push_back(p1);
+        reactants_.push_back(p2);
+    }
+
+    // HEADS UP: move constructor!
+    ReactionRecord2(ReactionRecord2 const& that)
+    {
+        swap(const_cast<ReactionRecord2&>(that));
+    }
+
+    reaction_rule_id_type const& reaction_rule_id() const
+    {
+        return reaction_rule_id_;
+    }
+
+    reactants_type const& reactants() const
+    {
+        return reactants_;
+    }
+
+    products_type const& products() const
+    {
+        return products_;
+    }
+
+    operator bool() const
+    {
+        return reactants_.size() != 0;
+    }
+
+    bool operator==(ReactionRecord2 const& rhs) const
+    {
+        return reaction_rule_id_ == rhs.reaction_rule_id() &&
+               memberwise_compare(reactants_, rhs.reactants_) == 0 &&
+               memberwise_compare(products_, rhs.products_) == 0;
+    }
+
+    bool operator!=(ReactionRecord2 const& rhs) const
+    {
+        return !operator==(rhs);
+    }
+
+    void swap(ReactionRecord2& that)
+    {
+        std::swap(reaction_rule_id_, that.reaction_rule_id_);
+        reactants_.swap(that.reactants_);
+        products_.swap(that.products_);
+    }
+
+protected:
+    reaction_rule_id_type reaction_rule_id_;
+    reactants_type reactants_;
+    products_type products_;
+};
+
 #endif /* REACTION_RECORD_HPP */

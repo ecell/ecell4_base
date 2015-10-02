@@ -98,11 +98,12 @@ public:
 
         // last_reactions_.push_back(rec.reaction_rule_id());
         // last_reactions_.push_back(std::make_pair(rec.reaction_rule_id(), rec));
-        reaction_info_type ri(0.0, typename reaction_info_type::container_type(), rec.products());
-        for (typename reaction_record_type::reactants_type::const_iterator i(rec.reactants().begin()); i != rec.reactants().end(); ++i)
-        {
-            ri.add_reactant(*i);
-        }
+        // reaction_info_type ri(0.0, typename reaction_info_type::container_type(), rec.products());
+        // for (typename reaction_record_type::reactants_type::const_iterator i(rec.reactants().begin()); i != rec.reactants().end(); ++i)
+        // {
+        //     ri.add_reactant(*i);
+        // }
+        reaction_info_type ri(0.0, rec.reactants(), rec.products());
         last_reactions_.push_back(std::make_pair(rec.reaction_rule_id(), ri));
     }
 
