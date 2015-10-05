@@ -3446,6 +3446,20 @@ protected:
 
                 switch (::size(r.get_products()))
                 {
+                case 0:
+                    {
+                        (*base_type::world_).remove_particle(domain.particles()[0].first);
+                        (*base_type::world_).remove_particle(domain.particles()[1].first);
+                        if (base_type::rrec_)
+                        {
+                            (*base_type::rrec_)(reaction_record_type(
+                                r.id(),
+                                array_gen<particle_id_pair>(),
+                                domain.particles()[0],
+                                domain.particles()[1]));
+                        }
+                    }
+                    break;
                 case 1:
                     {
                         species_id_type const& new_species_id(r.get_products()[0]);
