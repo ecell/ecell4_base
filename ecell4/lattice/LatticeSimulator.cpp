@@ -206,17 +206,19 @@ std::pair<bool, LatticeSimulator::reaction_type> LatticeSimulator::attempt_react
     Real factor(0);
     if (dimensionA == Shape::THREE && dimensionB == Shape::THREE)
     {
-        if (speciesA != speciesB)
-            factor = 1. / (6 * sqrt(2.0) * Dtot * world_->voxel_radius());
-        else
-            factor = 1. / (6 * sqrt(2.0) * D_A * world_->voxel_radius());
+        // if (speciesA != speciesB)
+        //     factor = 1. / (6 * sqrt(2.0) * Dtot * world_->voxel_radius());
+        // else
+        //     factor = 1. / (6 * sqrt(2.0) * D_A * world_->voxel_radius());
+        factor = 1. / (6 * sqrt(2.0) * Dtot * world_->voxel_radius());
     }
     else if (dimensionA == Shape::TWO && dimensionB == Shape::TWO)
     {
-        if (speciesA != speciesB)
-            factor = gamma / Dtot;
-        else
-            factor = gamma / D_A;
+        // if (speciesA != speciesB)
+        //     factor = gamma / Dtot;
+        // else
+        //     factor = gamma / D_A;
+        factor = gamma / Dtot;
     }
     else if (dimensionA == Shape::THREE && dimensionB == Shape::TWO)
     {
