@@ -36,6 +36,7 @@ public:
     typedef typename traits_type::rate_type rate_type;
     typedef typename traits_type::reaction_record_type reaction_record_type;
     typedef typename traits_type::reaction_recorder_type reaction_recorder_type;
+    typedef typename ReactionRecorderWrapper<reaction_record_type>::reaction_info_type reaction_info_type;
 
 public:
 
@@ -121,6 +122,17 @@ public:
             }
         }
         return gsl_pow_2(radius_min * 2) / (D_max * 2);
+    }
+
+    virtual bool check_reaction() const
+    {
+        return last_reactions().size() > 0;
+    }
+
+    std::vector<std::pair<ecell4::ReactionRule, reaction_info_type> > last_reactions() const
+    {
+        return (*dynamic_cast<ReactionRecorderWrapper<reaction_record_type>*>(
+            base_type::rrec_.get())).last_reactions();
     }
 
 protected:

@@ -164,6 +164,7 @@ cdef extern from "ecell4/ode/ODESimulator.hpp" namespace "ecell4::ode":
         Real dt()
         void set_dt(Real)
         Integer num_steps()
+        bool check_reaction()
         Real absolute_tolerance() const
         Real relative_tolerance() const
         void set_absolute_tolerance(Real)

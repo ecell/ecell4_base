@@ -9,10 +9,11 @@ template<typename Tpid_, typename Trid_>
 class ReactionRecord
 {
 public:
-    typedef Tpid_ particle_id_type;
+    typedef Tpid_ particle_id_pair;
     typedef Trid_ reaction_rule_id_type;
-    typedef std::vector<particle_id_type> products_type;
-    typedef twofold_container<particle_id_type> reactants_type;
+    typedef std::vector<particle_id_pair> container_type;
+    typedef container_type products_type;
+    typedef container_type reactants_type;
 
 public:
     ReactionRecord()
@@ -20,17 +21,21 @@ public:
 
     template<typename Tset>
     ReactionRecord(reaction_rule_id_type const& rid,
-                   Tset const& products, 
-                   particle_id_type const& p1)
-        : reaction_rule_id_(rid), reactants_(p1),
+                   Tset const& products,
+                   particle_id_pair const& p1)
+        : reaction_rule_id_(rid), reactants_(1, p1),
           products_(boost::begin(products), boost::end(products)) {}
 
     template<typename Tset>
     ReactionRecord(reaction_rule_id_type const& rid,
                    Tset const& products,
-                   particle_id_type const& p1, particle_id_type const& p2)
-        : reaction_rule_id_(rid), reactants_(p1, p2),
-          products_(boost::begin(products), boost::end(products)) {}
+                   particle_id_pair const& p1, particle_id_pair const& p2)
+        : reaction_rule_id_(rid), reactants_(),
+          products_(boost::begin(products), boost::end(products))
+    {
+        reactants_.push_back(p1);
+        reactants_.push_back(p2);
+    }
 
     // HEADS UP: move constructor!
     ReactionRecord(ReactionRecord const& that)
@@ -102,7 +107,7 @@ operator<<(std::basic_ostream<Tchar, Ttraits>& out,
         {
             out << ", ";
         }
-        out << *i;
+        out << (*i).first;
         first = false;
     }
     out << "}, products={";
@@ -116,7 +121,7 @@ operator<<(std::basic_ostream<Tchar, Ttraits>& out,
         {
             out << ", ";
         }
-        out << *i;
+        out << (*i).first;
         first = false;
     }
     out << "})";

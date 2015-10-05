@@ -4,6 +4,22 @@ from libcpp cimport bool
 from core cimport *
 
 
+## Cpp_ReactionInfo
+cdef extern from "ecell4/egfrd/egfrd.hpp" namespace "ecell4::egfrd":
+    cdef cppclass Cpp_ReactionInfo "ecell4::egfrd::ReactionInfo":
+        Cpp_ReactionInfo(Real, vector[pair[Cpp_ParticleID, Cpp_Particle]], vector[pair[Cpp_ParticleID, Cpp_Particle]])
+        Cpp_ReactionInfo(Cpp_ReactionInfo&)
+        Real t()
+        vector[pair[Cpp_ParticleID, Cpp_Particle]] reactants()
+        vector[pair[Cpp_ParticleID, Cpp_Particle]] products()
+
+## ReactionInfo
+#  a python wrapper for Cpp_ReactionInfo
+cdef class ReactionInfo:
+    cdef Cpp_ReactionInfo* thisptr
+
+cdef ReactionInfo ReactionInfo_from_Cpp_ReactionInfo(Cpp_ReactionInfo* ri)
+
 ## Cpp_EGFRDWorld
 #  ecell4::egfrd::EGFRDWorld
 cdef extern from "ecell4/egfrd/egfrd.hpp" namespace "ecell4::egfrd":
@@ -63,7 +79,8 @@ cdef extern from "ecell4/egfrd/egfrd.hpp" namespace "ecell4::egfrd":
         void set_dt(Real)
         Real dt()
         Real next_time()
-        vector[Cpp_ReactionRule] last_reactions()
+        vector[pair[Cpp_ReactionRule, Cpp_ReactionInfo]] last_reactions()
+        bool check_reaction()
         void initialize()
         # Cpp_GSLRandomNumberGenerator& rng()
         shared_ptr[Cpp_Model] model()
@@ -120,7 +137,8 @@ cdef extern from "ecell4/egfrd/egfrd.hpp" namespace "ecell4::egfrd":
         void set_dt(Real)
         Real dt()
         Real next_time()
-        vector[Cpp_ReactionRule] last_reactions()
+        vector[pair[Cpp_ReactionRule, Cpp_ReactionInfo]] last_reactions()
+        bool check_reaction()
         void initialize()
         # Cpp_GSLRandomNumberGenerator& rng()
         shared_ptr[Cpp_Model] model()

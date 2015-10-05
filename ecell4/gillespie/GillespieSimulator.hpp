@@ -18,12 +18,64 @@ namespace ecell4
 namespace gillespie
 {
 
+class ReactionInfo
+{
+public:
+
+    typedef std::vector<Species> container_type;
+
+public:
+
+    ReactionInfo(
+        const Real t,
+        const container_type& reactants,
+        const container_type& products)
+        : t_(t), reactants_(reactants), products_(products)
+    {}
+
+    ReactionInfo(
+        const ReactionInfo& another)
+        : t_(another.t()), reactants_(another.reactants()), products_(another.products())
+    {}
+
+    Real t() const
+    {
+        return t_;
+    }
+
+    const container_type& reactants() const
+    {
+        return reactants_;
+    }
+
+    void add_reactant(const Species& sp)
+    {
+        reactants_.push_back(sp);
+    }
+
+    const container_type& products() const
+    {
+        return products_;
+    }
+
+    void add_product(const Species& sp)
+    {
+        products_.push_back(sp);
+    }
+
+protected:
+
+    Real t_;
+    container_type reactants_, products_;
+};
+
 class GillespieSimulator
     : public SimulatorBase<Model, GillespieWorld>
 {
 public:
 
     typedef SimulatorBase<Model, GillespieWorld> base_type;
+    typedef ReactionInfo reaction_info_type;
 
 protected:
 
@@ -46,6 +98,11 @@ protected:
         virtual ~ReactionRuleEvent()
         {
             ;
+        }
+
+        const ReactionRule& reaction_rule() const
+        {
+            return rr_;
         }
 
         inline const Integer get_coef(const Species& pttrn, const Species& sp) const
@@ -387,7 +444,15 @@ public:
 
     // Optional members
 
-    std::vector<ReactionRule> last_reactions() const;
+    virtual bool check_reaction() const
+    {
+        return last_reactions_.size() > 0;
+    }
+
+    std::vector<std::pair<ReactionRule, reaction_info_type> > last_reactions() const
+    {
+        return last_reactions_;
+    }
 
     /**
      * recalculate reaction propensities and draw the next time.
@@ -409,8 +474,8 @@ protected:
 protected:
 
     Real dt_;
-    ReactionRule next_reaction_;
-    std::vector<ReactionRule> last_reactions_;
+    ReactionRule next_reaction_rule_, next_reaction_;
+    std::vector<std::pair<ReactionRule, reaction_info_type> > last_reactions_;
 
     boost::ptr_vector<ReactionRuleEvent> events_;
 };

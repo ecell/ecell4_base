@@ -21,6 +21,57 @@ namespace ecell4
 namespace lattice
 {
 
+class ReactionInfo
+{
+public:
+
+    typedef std::pair<ParticleID, Voxel> particle_id_pair_type;
+    typedef std::vector<particle_id_pair_type> container_type;
+
+public:
+
+    ReactionInfo(
+        const Real t,
+        const container_type& reactants,
+        const container_type& products)
+        : t_(t), reactants_(reactants), products_(products)
+    {}
+
+    ReactionInfo(const ReactionInfo& another)
+        : t_(another.t()), reactants_(another.reactants()), products_(another.products())
+    {}
+
+    Real t() const
+    {
+        return t_;
+    }
+
+    const container_type& reactants() const
+    {
+        return reactants_;
+    }
+
+    void add_reactant(const particle_id_pair_type& pid_pair)
+    {
+        reactants_.push_back(pid_pair);
+    }
+
+    const container_type& products() const
+    {
+        return products_;
+    }
+
+    void add_product(const particle_id_pair_type& pid_pair)
+    {
+        products_.push_back(pid_pair);
+    }
+
+protected:
+
+    Real t_;
+    container_type reactants_, products_;
+};
+
 class LatticeSimulator
     : public SimulatorBase<Model, LatticeWorld>
 {
@@ -28,6 +79,8 @@ public:
 
     typedef SimulatorBase<Model, LatticeWorld> base_type;
     typedef Reaction<Voxel> reaction_type;
+
+    typedef ReactionInfo reaction_info_type;
 
 protected:
 
@@ -208,9 +261,14 @@ public:
     void walk(const Species& species);
     void walk(const Species& species, const Real& alpha);
 
-    std::vector<ReactionRule> last_reactions() const
+    virtual bool check_reaction() const
     {
-        return reactions_;
+        return last_reactions_.size() > 0;
+    }
+
+    std::vector<std::pair<ReactionRule, reaction_info_type> > last_reactions() const
+    {
+        return last_reactions_;
     }
 
     void set_alpha(const Real alpha)
@@ -282,7 +340,7 @@ protected:
 
     void register_product_species(const Species& product_species);
     void register_reactant_species(
-        const LatticeWorld::particle_info_type pinfo, reaction_type reaction) const;
+        const LatticeWorld::particle_info_type pinfo, reaction_type& reaction) const;
 
     void step_();
     void register_events(const Species& species);
@@ -317,7 +375,7 @@ protected:
 protected:
 
     EventScheduler scheduler_;
-    std::vector<ReactionRule> reactions_;
+    std::vector<std::pair<ReactionRule, reaction_info_type> > last_reactions_;
     std::vector<Species> new_species_;
 
     Real dt_;

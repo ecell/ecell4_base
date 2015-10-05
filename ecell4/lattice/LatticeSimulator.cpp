@@ -159,14 +159,12 @@ std::pair<bool, LatticeSimulator::reaction_type>
             if (retval.second)
             {
                 reaction.products.push_back(
-                    reaction_type::particle_type(
-                        retval.first.first,
-                        this->private_voxel2voxel(retval.first.second)));
+                    reaction_type::particle_type(retval.first));
                 break;
             }
         }
     }
-    reactions_.push_back(reaction_rule);
+    last_reactions_.push_back(std::make_pair(reaction_rule, reaction_info_type(world_->t(), reaction.reactants, reaction.products)));
     return std::pair<bool, reaction_type>(true, reaction);
 }
 
@@ -300,7 +298,7 @@ std::pair<bool, LatticeSimulator::reaction_type> LatticeSimulator::apply_second_
             return std::pair<bool, reaction_type>(false, reaction);
     }
 
-    reactions_.push_back(reaction_rule);
+    last_reactions_.push_back(std::make_pair(reaction_rule, reaction_info_type(world_->t(), reaction.reactants, reaction.products)));
     return std::pair<bool, reaction_type>(true, reaction);
 }
 
@@ -346,9 +344,7 @@ void LatticeSimulator::apply_ab2c(
             world_->new_voxel_private(product_species, to_info.first));
 
         reaction.products.push_back(
-            reaction_type::particle_type(
-                new_mol.first.first,
-                this->private_voxel2voxel(new_mol.first.second)));
+            reaction_type::particle_type(new_mol.first));
     }
     else if (fserial == location || floc == location)
     {
@@ -368,9 +364,7 @@ void LatticeSimulator::apply_ab2c(
             world_->new_voxel_private(product_species, from_info.first));
 
         reaction.products.push_back(
-            reaction_type::particle_type(
-                new_mol.first.first,
-                this->private_voxel2voxel(new_mol.first.second)));
+            reaction_type::particle_type(new_mol.first));
     }
     else
     {
@@ -556,13 +550,9 @@ void LatticeSimulator::apply_ab2cd_in_order(
         }
 
         reaction.products.push_back(
-            reaction_type::particle_type(
-                new_mol0.first.first,
-                this->private_voxel2voxel(new_mol0.first.second)));
+            reaction_type::particle_type(new_mol0.first));
         reaction.products.push_back(
-            reaction_type::particle_type(
-                new_mol1.first.first,
-                this->private_voxel2voxel(new_mol1.first.second)));
+            reaction_type::particle_type(new_mol1.first));
 }
 
 /*
@@ -600,7 +590,7 @@ std::pair<bool, LatticeSimulator::reaction_type>
             return std::pair<bool, reaction_type>(false, reaction);
     }
 
-    reactions_.push_back(reaction_rule);
+    last_reactions_.push_back(std::make_pair(reaction_rule, reaction_info_type(world_->t(), reaction.reactants, reaction.products)));
     return std::pair<bool, reaction_type>(true, reaction);
 }
 
@@ -636,9 +626,7 @@ void LatticeSimulator::apply_a2b(
             std::pair<std::pair<ParticleID, Voxel>, bool> new_mol(
                 world_->new_voxel_private(product_species, coord));
             reaction.products.push_back(
-                reaction_type::particle_type(
-                    new_mol.first.first,
-                    this->private_voxel2voxel(new_mol.first.second)));
+                reaction_type::particle_type(new_mol.first));
         }
         else
         {
@@ -667,9 +655,7 @@ void LatticeSimulator::apply_a2b(
                 world_->new_voxel_private(product_species, neighbor.first));
 
             reaction.products.push_back(
-                reaction_type::particle_type(
-                    new_mol.first.first,
-                    this->private_voxel2voxel(new_mol.first.second)));
+                reaction_type::particle_type(new_mol.first));
         }
     }
 }
@@ -728,9 +714,7 @@ bool LatticeSimulator::apply_a2bc(
             std::pair<std::pair<ParticleID, Voxel>, bool> new_mol0(
                 world_->new_voxel_private(product_species0, coord));
             reaction.products.push_back(
-                reaction_type::particle_type(
-                    new_mol0.first.first,
-                    this->private_voxel2voxel(new_mol0.first.second)));
+                reaction_type::particle_type(new_mol0.first));
         }
         else
         {
@@ -744,9 +728,7 @@ bool LatticeSimulator::apply_a2bc(
         std::pair<std::pair<ParticleID, Voxel>, bool> new_mol1(
             world_->new_voxel_private(product_species1, neighbor.first));
         reaction.products.push_back(
-            reaction_type::particle_type(
-                new_mol1.first.first,
-                this->private_voxel2voxel(new_mol1.first.second)));
+            reaction_type::particle_type(new_mol1.first));
         return true;
     }
     else if (aserial == cloc || aloc == cloc || aloc == cserial)
@@ -783,9 +765,7 @@ bool LatticeSimulator::apply_a2bc(
         std::pair<std::pair<ParticleID, Voxel>, bool> new_mol0(
             world_->new_voxel_private(product_species0, neighbor.first));
         reaction.products.push_back(
-            reaction_type::particle_type(
-                new_mol0.first.first,
-                this->private_voxel2voxel(new_mol0.first.second)));
+            reaction_type::particle_type(new_mol0.first));
 
         if (aloc != cserial)
         {
@@ -793,9 +773,7 @@ bool LatticeSimulator::apply_a2bc(
             std::pair<std::pair<ParticleID, Voxel>, bool> new_mol1(
                 world_->new_voxel_private(product_species1, coord));
             reaction.products.push_back(
-                reaction_type::particle_type(
-                    new_mol1.first.first,
-                    this->private_voxel2voxel(new_mol1.first.second)));
+                reaction_type::particle_type(new_mol1.first));
         }
         else
         {
@@ -823,7 +801,7 @@ void LatticeSimulator::register_product_species(const Species& product_species)
 }
 
 void LatticeSimulator::register_reactant_species(
-        const LatticeWorld::particle_info_type pinfo, reaction_type reaction) const
+        const LatticeWorld::particle_info_type pinfo, reaction_type& reaction) const
 {
     const MolecularTypeBase* mtype(world_->get_molecular_type_private(pinfo.first));
     const std::string location(
@@ -856,7 +834,7 @@ bool LatticeSimulator::step(const Real& upto)
     }
 
     world_->set_t(upto); //XXX: TODO
-    reactions_.clear();
+    last_reactions_.clear();
     new_species_.clear();
     dt_ = scheduler_.next_time() - t();
     return false;
@@ -864,7 +842,7 @@ bool LatticeSimulator::step(const Real& upto)
 
 void LatticeSimulator::step_()
 {
-    reactions_.clear();
+    last_reactions_.clear();
     new_species_.clear();
 
     EventScheduler::value_type top(scheduler_.pop());

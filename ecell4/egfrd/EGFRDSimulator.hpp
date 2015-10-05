@@ -264,7 +264,6 @@ public:
     typedef typename world_type::particle_id_pair_and_distance particle_id_pair_and_distance;
     typedef typename world_type::particle_id_pair_and_distance_list particle_id_pair_and_distance_list;
 
-
     typedef std::pair<const shell_id_type, spherical_shell_type> spherical_shell_id_pair;
     typedef std::pair<const shell_id_type, cylindrical_shell_type> cylindrical_shell_id_pair;
 
@@ -278,6 +277,7 @@ public:
     // typedef typename world_type::traits_type::planar_surface_type planar_surface_type;
     typedef typename world_type::traits_type::cuboidal_region_type cuboidal_region_type;
 
+    typedef typename ReactionRecorderWrapper<reaction_record_type>::reaction_info_type reaction_info_type;
 
     typedef Single<traits_type> single_type;
     typedef Pair<traits_type> pair_type;
@@ -1173,6 +1173,26 @@ public:
         dirty_ = false;
     }
 
+    /**
+     * override
+     * HERE
+     */
+
+    virtual Real next_time() const
+    {
+        return scheduler_.next_time();
+    }
+
+    virtual Real dt() const
+    {
+        return scheduler_.next_time() - base_type::t();
+    }
+
+    /**
+     * override
+     * THERE
+     */
+
     virtual void step()
     {
         if (dirty_)
@@ -1235,7 +1255,8 @@ public:
             return false;
         }
 
-        if (upto >= scheduler_.top().second->time())
+        // if (upto >= scheduler_.top().second->time())
+        if (upto >= scheduler_.next_time())
         {
             _step();
             return true;
@@ -1353,7 +1374,12 @@ public:
         return retval;
     }
 
-    virtual std::vector<ecell4::ReactionRule> last_reactions() const
+    virtual bool check_reaction() const
+    {
+        return last_reactions().size() > 0;
+    }
+
+    std::vector<std::pair<ecell4::ReactionRule, reaction_info_type> > last_reactions() const
     {
         return (*dynamic_cast<ReactionRecorderWrapper<reaction_record_type>*>(
             base_type::rrec_.get())).last_reactions();
@@ -2236,8 +2262,10 @@ protected:
             (*base_type::world_).remove_particle(reactant.first);
             if (base_type::rrec_)
             {
+                // (*base_type::rrec_)(reaction_record_type(
+                //     r.id(), array_gen<particle_id_type>(), reactant.first));
                 (*base_type::rrec_)(reaction_record_type(
-                    r.id(), array_gen<particle_id_type>(), reactant.first));
+                    r.id(), array_gen<particle_id_pair>(), reactant));
             }
             break;
         case 1: 
@@ -2268,8 +2296,10 @@ protected:
                 add_event(*new_domain, SINGLE_EVENT_ESCAPE);
                 if (base_type::rrec_)
                 {
+                    // (*base_type::rrec_)(reaction_record_type(
+                    //     r.id(), array_gen(product.first), reactant.first));
                     (*base_type::rrec_)(reaction_record_type(
-                        r.id(), array_gen(product.first), reactant.first));
+                        r.id(), array_gen(product), reactant));
                 }
             }
             break;
@@ -2357,9 +2387,11 @@ protected:
 
                 if (base_type::rrec_)
                 {
+                    // (*base_type::rrec_)(reaction_record_type(
+                    //     r.id(), array_gen(pp[0].first, pp[1].first),
+                    //     reactant.first));
                     (*base_type::rrec_)(reaction_record_type(
-                        r.id(), array_gen(pp[0].first, pp[1].first),
-                        reactant.first));
+                        r.id(), array_gen(pp[0], pp[1]), reactant));
                 }
             }
             break;
@@ -3438,11 +3470,16 @@ protected:
 
                         if (base_type::rrec_)
                         {
+                            // (*base_type::rrec_)(reaction_record_type(
+                            //     r.id(),
+                            //     array_gen(new_particle.first),
+                            //     domain.particles()[0].first,
+                            //     domain.particles()[1].first));
                             (*base_type::rrec_)(reaction_record_type(
                                 r.id(),
-                                array_gen(new_particle.first),
-                                domain.particles()[0].first,
-                                domain.particles()[1].first));
+                                array_gen(new_particle),
+                                domain.particles()[0],
+                                domain.particles()[1]));
                         }
                     }
                     break;
@@ -3585,6 +3622,12 @@ protected:
 
         (*dynamic_cast<ReactionRecorderWrapper<reaction_record_type>*>(
             base_type::rrec_.get())).clear();
+
+        if (scheduler_.size() == 0)
+        {
+            this->set_t(scheduler_.next_time());
+            return;
+        }
 
         event_id_pair_type ev(scheduler_.pop());
         this->set_t(ev.second->time());
