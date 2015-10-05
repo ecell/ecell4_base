@@ -17,6 +17,8 @@
 #include <boost/none_t.hpp>
 #include <boost/variant.hpp>
 
+#include <gsl/gsl_sf_log.h>
+
 #include <ecell4/core/get_mapper_mf.hpp>
 #include <ecell4/core/Model.hpp>
 #include <ecell4/core/EventScheduler.hpp>
@@ -339,6 +341,26 @@ protected:
     typedef typename network_rules_type::reaction_rules reaction_rules;
     typedef typename network_rules_type::reaction_rule_type reaction_rule_type;
     typedef typename traits_type::rate_type rate_type;
+
+    class birth_event: public event_type
+    {
+    public:
+        birth_event(time_type time, const reaction_rule_type& rr)
+            : event_type(time), rr_(rr)
+        {
+            ;
+        }
+
+        virtual ~birth_event() {}
+
+        const reaction_rule_type& reaction_rule() const
+        {
+            return rr_;
+        }
+
+    protected:
+        reaction_rule_type rr_;
+    };
 
     struct domain_event_base: public event_type
     {
@@ -1139,6 +1161,15 @@ public:
             boost::shared_ptr<single_type> single(create_single(pp));
             add_event(*single, SINGLE_EVENT_ESCAPE);
         }
+
+        BOOST_FOREACH (reaction_rule_type const& rr,
+                       (*base_type::network_rules_).zeroth_order_reaction_rules())
+        {
+            const double rnd(this->rng().uniform(0, 1));
+            const double dt(gsl_sf_log(1.0 / rnd) / double(rr.k()));
+            boost::shared_ptr<event_type> new_event(new birth_event(this->t() + dt, rr));
+            scheduler_.add(new_event);
+        }
         dirty_ = false;
     }
 
@@ -1159,18 +1190,29 @@ public:
         // first burst all Singles.
         BOOST_FOREACH (event_id_pair_type const& event, scheduler_.events())
         {
-            single_event const* single_ev(
-                    dynamic_cast<single_event const*>(event.second.get()));
-            if (single_ev)
             {
-                burst(single_ev->domain());
+                single_event const* single_ev(
+                        dynamic_cast<single_event const*>(event.second.get()));
+                if (single_ev)
+                {
+                    burst(single_ev->domain());
+                    continue;
+                }
             }
-            else
+            {
+                birth_event const* birth_ev(
+                        dynamic_cast<birth_event const*>(event.second.get()));
+                if (birth_ev)
+                {
+                    continue;
+                }
+            }
             {
                 domain_event_base const* domain_ev(
                     dynamic_cast<domain_event_base const*>(event.second.get()));
                 BOOST_ASSERT(domain_ev);
                 non_singles.push_back(domain_ev->domain().id());
+                // continue;
             }
         }
 
@@ -3450,6 +3492,53 @@ protected:
         }
     }
 
+    void fire_event(birth_event& event)
+    {
+        const reaction_rule_type& rr(event.reaction_rule());
+        BOOST_ASSERT(::size(rr.get_products()));
+        species_id_type const& sp(rr.get_products()[0]);
+        LOG_DEBUG(("fire_birth: product=%s", boost::lexical_cast<std::string>(sp).c_str()));
+
+        try
+        {
+            molecule_info_type const& minfo(
+                (*base_type::world_).get_molecule_info(sp));
+
+            //XXX: A cuboidal region is expected here.
+            const position_type new_pos(
+                this->rng().uniform(0, (*base_type::world_).edge_lengths()[0]),
+                this->rng().uniform(0, (*base_type::world_).edge_lengths()[1]),
+                this->rng().uniform(0, (*base_type::world_).edge_lengths()[2]));
+
+            const particle_shape_type new_particle(new_pos, minfo.radius);
+
+            clear_volume(new_particle);
+
+            if (!(*base_type::world_).no_overlap(new_particle))
+            {
+                LOG_INFO(("no space for product particle."));
+                throw no_space();
+            }
+
+            particle_id_pair pp(
+                (*base_type::world_).new_particle(sp, new_pos));
+
+            boost::shared_ptr<single_type> single(create_single(pp));
+            add_event(*single, SINGLE_EVENT_ESCAPE);
+        }
+        catch (no_space const&)
+        {
+            LOG_DEBUG(("birth reaction rejected."));
+            ++rejected_moves_;
+        }
+
+        const double rnd(this->rng().uniform(0, 1));
+        const double dt(gsl_sf_log(1.0 / rnd) / double(rr.k()));
+        boost::shared_ptr<event_type> new_event(
+            new birth_event(this->t() + dt, rr));
+        scheduler_.add(new_event);
+    }
+
     void fire_event(event_type& event)
     {
         {
@@ -3470,6 +3559,14 @@ protected:
         }
         {
             multi_event* _event(dynamic_cast<multi_event*>(&event));
+            if (_event)
+            {
+                fire_event(*_event);
+                return;
+            }
+        }
+        {
+            birth_event* _event(dynamic_cast<birth_event*>(&event));
             if (_event)
             {
                 fire_event(*_event);
