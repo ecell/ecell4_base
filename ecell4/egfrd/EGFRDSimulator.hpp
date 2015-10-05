@@ -1165,10 +1165,7 @@ public:
         BOOST_FOREACH (reaction_rule_type const& rr,
                        (*base_type::network_rules_).zeroth_order_reaction_rules())
         {
-            const double rnd(this->rng().uniform(0, 1));
-            const double dt(gsl_sf_log(1.0 / rnd) / double(rr.k()));
-            boost::shared_ptr<event_type> new_event(new birth_event(this->t() + dt, rr));
-            scheduler_.add(new_event);
+            add_event(rr);
         }
         dirty_ = false;
     }
@@ -1593,6 +1590,17 @@ protected:
             new multi_event(this->t() + domain.dt(), domain));
         domain.event() = std::make_pair(scheduler_.add(new_event), new_event);
         LOG_DEBUG(("add_event: #%d - %s", domain.event().first, boost::lexical_cast<std::string>(domain).c_str()));
+    }
+
+    /**
+     * The following add_event function is for birth_event.
+     */
+    void add_event(reaction_rule_type const& rr)
+    {
+        const double rnd(this->rng().uniform(0, 1));
+        const double dt(gsl_sf_log(1.0 / rnd) / double(rr.k() * (*base_type::world_).volume()));
+        boost::shared_ptr<event_type> new_event(new birth_event(this->t() + dt, rr));
+        scheduler_.add(new_event);
     }
 
     void remove_event(event_id_type const& id)
@@ -3569,11 +3577,7 @@ protected:
             ++rejected_moves_;
         }
 
-        const double rnd(this->rng().uniform(0, 1));
-        const double dt(gsl_sf_log(1.0 / rnd) / double(rr.k()));
-        boost::shared_ptr<event_type> new_event(
-            new birth_event(this->t() + dt, rr));
-        scheduler_.add(new_event);
+        add_event(rr);
     }
 
     void fire_event(event_type& event)

@@ -218,7 +218,7 @@ protected:
 
         const Real propensity() const
         {
-            return rr_.k();
+            return rr_.k() * sim_->world()->volume();
         }
     };
 

@@ -169,7 +169,7 @@ protected:
         Real draw_dt()
         {
             const Real k(rule_.k());
-            const Real p = k;
+            const Real p = k * sim_->world()->volume();
             Real dt(inf);
             if (p != 0.)
             {
