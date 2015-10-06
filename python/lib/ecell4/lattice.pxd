@@ -123,6 +123,7 @@ cdef extern from "ecell4/lattice/LatticeSimulator.hpp" namespace "ecell4::lattic
         void step()
         bool step(Real& upto)
         Real t()
+        void set_t(Real)
         Real dt()
         void set_dt(Real)
         void initialize()
@@ -149,6 +150,7 @@ cdef extern from "ecell4/lattice/LatticeFactory.hpp" namespace "ecell4::lattice"
         Cpp_LatticeFactory() except +
         Cpp_LatticeFactory(Real) except +
         Cpp_LatticeFactory(Real, shared_ptr[Cpp_RandomNumberGenerator]&) except +
+        Cpp_LatticeWorld* create_world()
         Cpp_LatticeWorld* create_world(string)
         Cpp_LatticeWorld* create_world(Cpp_Real3&)
         Cpp_LatticeWorld* create_world(shared_ptr[Cpp_Model])

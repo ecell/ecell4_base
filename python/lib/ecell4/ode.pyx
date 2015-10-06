@@ -13,6 +13,20 @@ from cpython cimport PyObject, Py_XINCREF, Py_XDECREF
 ## ODEWorld
 #  a python wrapper for Cpp_ODEWorld
 cdef class ODEWorld:
+    """A class representing the World for ODE simulations.
+
+    ODEWorld(edge_lengths=None)
+
+    """
+
+    def __init__(self, edge_lengths = None):
+        """Constructor.
+
+        Args:
+            edge_lengths (Real3, optional): A size of the World.
+
+        """
+        pass  # XXX: Only used for doc string
 
     def __cinit__(self, edge_lengths = None):
         cdef string filename
@@ -33,25 +47,64 @@ cdef class ODEWorld:
         del self.thisptr
 
     def set_t(self, Real t):
+        """set_t(t)
+
+        Set the current time."""
         self.thisptr.get().set_t(t)
 
     def t(self):
+        """Return the current time."""
         return self.thisptr.get().t()
 
     def edge_lengths(self):
+        """edge_lengths() -> Real3
+
+        Return edge lengths for the space."""
         cdef Cpp_Real3 lengths = self.thisptr.get().edge_lengths()
         return Real3_from_Cpp_Real3(address(lengths))
 
+    def set_volume(self, Real vol):
+        """set_volume(volume)
+
+        Set a volume."""
+        self.thisptr.get().set_volume(vol)
+
     def volume(self):
+        """Return a volume."""
         return self.thisptr.get().volume()
 
     def num_molecules(self, Species sp):
+        """num_molecules(sp) -> Integer
+
+        Return the number of molecules. A value is rounded to an integer.
+        See set_value also.
+
+        Args:
+            sp (Species, optional): a species whose molecules you count
+
+        Returns:
+            Integer: the number of molecules (of a given species)
+
+        """
         return self.thisptr.get().num_molecules(deref(sp.thisptr))
 
     def num_molecules_exact(self, Species sp):
+        """num_molecules_exact(sp) -> Integer
+
+        Return the number of molecules of a given species.
+        A value is rounded to an integer. See get_value_exact also.
+
+        Args:
+            sp (Species): a species whose molecules you count
+
+        Returns:
+            Integer: the number of molecules of a given species
+
+        """
         return self.thisptr.get().num_molecules_exact(deref(sp.thisptr))
 
     def list_species(self):
+        """Return a list of species."""
         cdef vector[Cpp_Species] raw_list_species = self.thisptr.get().list_species()
         retval = []
         cdef vector[Cpp_Species].iterator it = raw_list_species.begin()
@@ -61,10 +114,18 @@ cdef class ODEWorld:
             inc(it)
         return retval
 
-    def set_volume(self, Real vol):
-        self.thisptr.get().set_volume(vol)
-
     def add_molecules(self, Species sp, Integer num, shape=None):
+        """add_molecules(sp, num, shape=None)
+
+        Add some molecules.
+
+        Args:
+            sp (Species): a species of molecules to add
+            num (Integer): the number of molecules to add
+            shape (Shape, optional): a shape to add molecules on
+                [not supported yet]
+
+        """
         if shape is None:
             self.thisptr.get().add_molecules(deref(sp.thisptr), num)
         else:
@@ -72,36 +133,132 @@ cdef class ODEWorld:
                 deref(sp.thisptr), num, deref((<Shape>(shape.as_base())).thisptr))
 
     def remove_molecules(self, Species sp, Integer num):
+        """remove_molecules(sp, num)
+
+        Remove molecules
+
+        Args:
+            sp (Species): a species whose molecules to remove
+            num (Integer): a number of molecules to be removed
+
+        """
         self.thisptr.get().remove_molecules(deref(sp.thisptr), num)
 
     def get_value(self, Species sp):
+        """get_value(sp) -> Real
+
+        Return the value matched to a given species.
+
+        Args:
+            sp (Species): a pattern whose value you get
+
+        Returns:
+            Real: the value matched to a given species
+
+        """
         return self.thisptr.get().get_value(deref(sp.thisptr))
 
-    def set_value(self, Species sp, Real num):
-        self.thisptr.get().set_value(deref(sp.thisptr), num)
+    def get_value_exact(self, Species sp):
+        """get_value_exact(sp) -> Real
+
+        Return the value connected to a given species.
+
+        Args:
+            sp (Species): a species whose value you get
+
+        Returns:
+            Real: the value connected to a given species
+
+        """
+        return self.thisptr.get().get_value(deref(sp.thisptr))
+
+    def set_value(self, Species sp, Real value):
+        """set_value(sp, value)
+
+        Set the value of the given species.
+
+        Args:
+            sp (Species): a species whose value you set
+            value (Real): a value set
+
+        """
+        self.thisptr.get().set_value(deref(sp.thisptr), value)
 
     def save(self, filename):
+        """save(filename)
+
+        Save the current state to a HDF5 file.
+
+        Args:
+            filename (str): a file name to be saved.
+
+        """
         self.thisptr.get().save(tostring(filename))
 
     def load(self, string filename):
+        """load(filename)
+
+        Load a HDF5 file to the current state.
+
+        Args:
+            filename (str): a file name to be loaded.
+
+        """
         self.thisptr.get().load(tostring(filename))
 
     def has_species(self, Species sp):
+        """has_species(sp) -> bool
+
+        Check if the given species is belonging to this.
+
+        Args:
+            sp (Species): a species to be checked.
+
+        Returns:
+            bool: True if the given species is contained.
+
+        """
         return self.thisptr.get().has_species(deref(sp.thisptr))
 
     def reserve_species(self, Species sp):
+        """reserve_species(sp)
+
+        Reserve a value for the given species. Use set_value.
+
+        Args:
+            sp (Species): a species to be reserved.
+
+        """
         self.thisptr.get().reserve_species(deref(sp.thisptr))
 
     def release_species(self, Species sp):
+        """release_species(sp)
+
+        Release a value for the given species.
+        This function is mainly for developers.
+
+        Args:
+            sp (Species): a species to be released.
+
+        """
         self.thisptr.get().release_species(deref(sp.thisptr))
 
     def bind_to(self, m):
+        """bind_to(m)
+
+        Bind a model.
+
+        Args:
+            m (ODENetworkModel or NetworkModel): a model to be bound
+
+        """
         if isinstance(m, ODENetworkModel):
             self.thisptr.get().bind_to(deref((<ODENetworkModel>m).thisptr))
         else:
             self.thisptr.get().bind_to(deref(Cpp_Model_from_Model(m)))
 
     def as_base(self):
+        """Return self as a base class. Only for developmental use."""
         retval = Space()
         del retval.thisptr
         retval.thisptr = new shared_ptr[Cpp_Space](
@@ -389,6 +546,23 @@ cdef Cpp_ODESolverType translate_solver_type(solvertype_constant):
             "invalid solver type was given [{0}]".format(repr(solvertype_constant)))
 
 cdef class ODESimulator:
+    """ A class running the simulation with the ode algorithm.
+
+    ODESimulator(m, w, solver_type)
+
+    """
+
+    def __init__(self, arg1, arg2 = None, arg3 = None):
+        """Constructor.
+
+        Args:
+            m (ODENetworkModel or NetworkModel): A model
+            w (LatticeWorld): A world
+            solver_type (int, optional): a type of the ode solver.
+                Choose one from RUNGE_KUTTA_CASH_KARP54, ROSENBROCK4 and EULER.
+
+        """
+        pass
 
     def __cinit__(self, arg1, arg2 = None, arg3 = None):
         if arg2 is None:
@@ -466,35 +640,108 @@ cdef class ODESimulator:
 
     def __dealloc__(self):
         del self.thisptr
+
     def initialize(self):
+        """Initialize the simulator."""
         self.thisptr.initialize()
+
     def step(self, upto = None):
-        if upto == None:
+        """step(upto=None) -> bool
+
+        Step the simulation.
+
+        Args:
+            upto (Real, optional): the time which to step the simulation up to
+
+        Returns:
+            bool: True if the simulation did not reach the given time.
+                When upto is not given, nothing will be returned.
+
+        """
+        if upto is None:
             self.thirptr.step()
         else:
             return self.thisptr.step(upto)
 
     def next_time(self):
+        """Return the scheduled time for the next step."""
         return self.thisptr.next_time()
+
     def t(self):
+        """Return the time."""
         return self.thisptr.t()
+
     def set_t(self, Real t_new):
+        """set_t(t)
+
+        Set the current time.
+
+        Args:
+            t (Real): a current time.
+
+        """
         self.thisptr.set_t(t_new)
+
     def dt(self):
+        """Return the step interval."""
         return self.thisptr.dt()
+
     def set_dt(self, dt_new):
+        """set_dt(dt)
+
+        Set a step interval.
+
+        Args:
+            dt (Real): a step interval
+
+        """
         self.thisptr.set_dt(dt_new)
+
     def num_steps(self):
+        """Return the number of steps."""
         return self.thisptr.num_steps()
+
     def absolute_tolerance(self):
+        """Return the absolute tolerance."""
         return self.thisptr.absolute_tolerance()
+
     def set_absolute_tolerance(self, Real abs_tol):
+        """set_absolute_tolerance(abs_tol)
+
+        Set the absolute tolerance.
+
+        Args:
+            abs_tol (Real): an absolute tolerance.
+
+        """
         self.thisptr.set_absolute_tolerance(abs_tol)
+
     def relative_tolerance(self):
+        """Return the relative tolerance."""
         return self.thisptr.relative_tolerance()
+
     def set_relative_tolerance(self, Real rel_tol):
+        """set_relative_tolerance(rel_tol)
+
+        Set the relative tolerance.
+
+        Args:
+            rel_tol (Real): an relative tolerance.
+
+        """
         self.thisptr.set_relative_tolerance(rel_tol)
+
     def run(self, Real duration, observers=None):
+        """run(duration, observers)
+
+        Run the simulation.
+
+        Args:
+            duration (Real): a duration for running a simulation.
+                A simulation is expected to be stopped at t() + duration.
+            observers (list of Obeservers, optional): observers
+
+        """
         cdef vector[shared_ptr[Cpp_Observer]] tmp
 
         if observers is None:
@@ -518,6 +765,21 @@ cdef ODESimulator ODESimulator_from_Cpp_ODESimulator(Cpp_ODESimulator* s):
 ## ODEFactory
 #  a python wrapper for Cpp_ODEFactory
 cdef class ODEFactory:
+    """ A factory class creating a ODEWorld instance and a ODESimulator instance.
+
+    ODEFactory(solvertype=None, dt=None)
+
+    """
+
+    def __init__(self, solvertype = None, dt = None):
+        """Constructor.
+
+        Args:
+            solvertype (int, optional): a type of the ode solver.
+                Choose one from RUNGE_KUTTA_CASH_KARP54, ROSENBROCK4 and EULER.
+            dt (Real, optional): a default step interval.
+        """
+        pass
 
     def __cinit__(self, solvertype = None, dt = None):
         if solvertype is None:
@@ -531,6 +793,21 @@ cdef class ODEFactory:
         del self.thisptr
 
     def create_world(self, arg1=None):
+        """create_world(arg1=None) -> ODEWorld
+
+        Return a ODEWorld instance.
+
+        Args:
+            arg1 (Real3): The lengths of edges of a ODEWorld created
+
+            or
+
+            arg1 (str): The path of a HDF5 file for ODEWorld
+
+        Returns:
+            ODEWorld: the created world
+
+        """
         if arg1 is None:
             return ODEWorld_from_Cpp_ODEWorld(
                 shared_ptr[Cpp_ODEWorld](self.thisptr.create_world()))
@@ -553,6 +830,22 @@ cdef class ODEFactory:
     #                 deref((<ODENetworkModel>arg1).thisptr), deref(arg2.thisptr)))
 
     def create_simulator(self, arg1, arg2 = None):
+        """create_simulator(arg1, arg2) -> ODESimulator
+
+        Return a ODESimulator instance.
+
+        Args:
+            arg1 (ODEWorld): a world in which the simulation runs
+
+            or
+
+            arg1 (ODENetworkModel or NetworkModel): a simulation model
+            arg2 (ODEWorld): a world in which the simulation runs
+
+        Returns:
+            ODESimulator: the created simulator
+
+        """
         if arg2 is None:
             if isinstance(arg1, ODEWorld):
                 return ODESimulator_from_Cpp_ODESimulator(

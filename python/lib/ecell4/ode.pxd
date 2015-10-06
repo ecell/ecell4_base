@@ -32,9 +32,10 @@ cdef extern from "ecell4/ode/ODEWorld.hpp" namespace "ecell4::ode":
         void remove_molecules(Cpp_Species &sp, Integer &num)
         # Optional members
         Real get_value(Cpp_Species &)
+        Real get_value_exact(Cpp_Species &)
         void set_value(Cpp_Species &sp, Real &num)
         void save(string) except +
-        void load(string)
+        void load(string) except +
         bool has_species(Cpp_Species &)
         void reserve_species(Cpp_Species &)
         void release_species(Cpp_Species &)
