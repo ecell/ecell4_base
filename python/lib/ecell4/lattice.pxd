@@ -57,7 +57,6 @@ cdef extern from "ecell4/lattice/LatticeWorld.hpp" namespace "ecell4::lattice":
         # Real distance_sq(Cpp_Real3& pos1, Cpp_Real3& pos2)
         # Real distance(Cpp_Real3& pos1, Cpp_Real3& pos2)
         # # bool has_species(Cpp_Species& sp)
-        Integer num_molecules()
         Integer num_molecules(Cpp_Species& sp)
         Integer num_molecules_exact(Cpp_Species& sp)
         void add_molecules(Cpp_Species& sp, Integer num)

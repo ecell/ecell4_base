@@ -78,11 +78,6 @@ void CompartmentSpaceVectorImpl::release_species(const Species& sp)
     index_map_.erase(sp);
 }
 
-Integer CompartmentSpaceVectorImpl::num_molecules() const
-{
-    return std::accumulate(num_molecules_.begin(), num_molecules_.end(), 0);
-}
-
 Integer CompartmentSpaceVectorImpl::num_molecules(const Species& sp) const
 {
     SpeciesExpressionMatcher sexp(sp);

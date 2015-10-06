@@ -550,11 +550,6 @@ public:
         MolecularTypeBase* const& from_mt, MolecularTypeBase* const& loc,
         particle_info_type& info, const Integer nrand);
 
-    virtual Integer num_molecules() const
-    {
-        return LatticeSpace::num_molecules();
-    }
-
     virtual Integer num_molecules(const Species& sp) const;
 
     /**

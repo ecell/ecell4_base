@@ -222,6 +222,7 @@ cdef class LatticeWorld:
 
         Args:
             sp (Species, optional): the species of particles to count
+                If no species is given, return the total number of particles.
 
         Returns:
             Integer: the number of particles (of the given species)
@@ -284,6 +285,7 @@ cdef class LatticeWorld:
 
         Args:
             sp (Species, optional): the species of particles to list up
+                If no species is given, return the whole list of particles.
 
         Returns:
             list: the list of particles (of the given species)
@@ -393,23 +395,23 @@ cdef class LatticeWorld:
         """
         return self.thisptr.get().update_particle(deref(pid.thisptr), deref(p.thisptr))
 
-    def num_molecules(self, Species sp = None):
-        """num_molecules(sp=None) -> Integer
+    def num_molecules(self, Species sp):
+        """num_molecules(sp) -> Integer
 
         Return the number of molecules.
 
         Args:
             sp (Species, optional): a species whose molecules you count
-                If no species is given, return the total number of molecules.
 
         Returns:
             Integer: the number of molecules (of a given species)
 
         """
-        if sp is None:
-            return self.thisptr.get().num_molecules()
-        else:
-            return self.thisptr.get().num_molecules(deref(sp.thisptr))
+        # if sp is None:
+        #     return self.thisptr.get().num_molecules()
+        # else:
+        #     return self.thisptr.get().num_molecules(deref(sp.thisptr))
+        return self.thisptr.get().num_molecules(deref(sp.thisptr))
 
     def num_molecules_exact(self, Species sp):
         """num_molecules_exact(sp) -> Integer

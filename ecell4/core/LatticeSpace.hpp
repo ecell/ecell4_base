@@ -174,11 +174,6 @@ public:
     /**
       */
 
-    virtual Integer num_molecules() const
-    {
-        return num_voxels();
-    }
-
     virtual Integer num_molecules(const Species& sp) const = 0; //XXX:
 
     virtual Integer num_molecules_exact(const Species& sp) const
@@ -619,11 +614,6 @@ public:
     virtual Integer num_voxels_exact(const Species& sp) const;
     virtual Integer num_voxels(const Species& sp) const;
     virtual Integer num_voxels() const;
-
-    virtual Integer num_molecules() const
-    {
-        return LatticeSpace::num_molecules();
-    }
 
     virtual Integer num_molecules(const Species& sp) const; //XXX:
 

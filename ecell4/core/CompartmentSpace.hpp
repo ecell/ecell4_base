@@ -75,7 +75,6 @@ public:
      * @param sp a species
      * @return a number of molecules Integer
      */
-    virtual Integer num_molecules() const = 0;
 
     virtual Integer num_molecules(const Species& sp) const
     {
@@ -194,7 +193,6 @@ public:
     // CompartmentSpaceTraits
 
     const Real volume() const;
-    Integer num_molecules() const;
     Integer num_molecules(const Species& sp) const;
     Integer num_molecules_exact(const Species& sp) const;
     bool has_species(const Species& sp) const;

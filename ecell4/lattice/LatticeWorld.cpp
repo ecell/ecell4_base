@@ -71,11 +71,6 @@ Integer LatticeWorld::num_molecules_exact(const Species& sp) const
     return (*space_).num_molecules_exact(sp);
 }
 
-Integer LatticeWorld::num_molecules() const
-{
-    return (*space_).num_molecules();
-}
-
 Integer LatticeWorld::num_particles(const Species& sp) const
 {
     return (*space_).num_particles(sp);
