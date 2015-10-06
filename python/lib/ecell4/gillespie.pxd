@@ -17,6 +17,7 @@ cdef extern from "ecell4/gillespie/GillespieWorld.hpp" namespace "ecell4::gilles
         Real volume()
         void reset(Cpp_Real3&)
         Cpp_Real3 edge_lengths()
+        Integer num_molecules()
         Integer num_molecules(Cpp_Species &)
         Integer num_molecules_exact(Cpp_Species &)
         vector[Cpp_Species] list_species()
@@ -77,6 +78,7 @@ cdef extern from "ecell4/gillespie/GillespieFactory.hpp" namespace "ecell4::gill
     cdef cppclass Cpp_GillespieFactory "ecell4::gillespie::GillespieFactory":
         Cpp_GillespieFactory() except +
         Cpp_GillespieFactory(shared_ptr[Cpp_RandomNumberGenerator]) except +
+        Cpp_GillespieWorld* create_world()
         Cpp_GillespieWorld* create_world(string)
         Cpp_GillespieWorld* create_world(Cpp_Real3&)
         Cpp_GillespieWorld* create_world(shared_ptr[Cpp_Model])

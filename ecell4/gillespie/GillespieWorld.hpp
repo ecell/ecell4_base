@@ -75,6 +75,7 @@ public:
         return cs_->volume();
     }
 
+    Integer num_molecules() const;
     Integer num_molecules(const Species& sp) const;
     Integer num_molecules_exact(const Species& sp) const;
     Real get_value(const Species& sp) const;

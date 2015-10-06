@@ -1022,12 +1022,12 @@ cdef class LatticeFactory:
         Return a LatticeSimulator instance.
 
         Args:
-            arg1 (LatticeWorld): a world in which the simulation runs
+            arg1 (LatticeWorld): a world
 
             or
 
             arg1 (Model): a simulation model
-            arg2 (LatticeWorld): a world in which the simulation runs
+            arg2 (LatticeWorld): a world
 
         Returns:
             LatticeSimulator: the created simulator

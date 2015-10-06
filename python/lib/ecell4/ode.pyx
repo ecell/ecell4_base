@@ -835,12 +835,12 @@ cdef class ODEFactory:
         Return a ODESimulator instance.
 
         Args:
-            arg1 (ODEWorld): a world in which the simulation runs
+            arg1 (ODEWorld): a world
 
             or
 
             arg1 (ODENetworkModel or NetworkModel): a simulation model
-            arg2 (ODEWorld): a world in which the simulation runs
+            arg2 (ODEWorld): a world
 
         Returns:
             ODESimulator: the created simulator

@@ -1,4 +1,5 @@
 #include <stdexcept>
+#include <numeric>
 
 #include "exceptions.hpp"
 #include "functions.hpp"
@@ -75,6 +76,11 @@ void CompartmentSpaceVectorImpl::release_species(const Species& sp)
     species_.pop_back();
     num_molecules_.pop_back();
     index_map_.erase(sp);
+}
+
+Integer CompartmentSpaceVectorImpl::num_molecules() const
+{
+    return std::accumulate(num_molecules_.begin(), num_molecules_.end(), 0);
 }
 
 Integer CompartmentSpaceVectorImpl::num_molecules(const Species& sp) const

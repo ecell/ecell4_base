@@ -30,6 +30,11 @@ std::vector<Species> GillespieWorld::list_species() const
     return this->cs_->list_species();
 }
 
+Integer GillespieWorld::num_molecules() const
+{
+    return this->cs_->num_molecules();
+}
+
 Integer GillespieWorld::num_molecules(const Species& sp) const
 {
     return this->cs_->num_molecules(sp);
