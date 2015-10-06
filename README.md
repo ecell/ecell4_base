@@ -149,11 +149,12 @@ Here are two extremely simple examples, See http://ecell4.readthedocs.org/en/lat
 Python 2.7.6 (default, Mar 22 2014, 22:59:56)
 [GCC 4.8.2] on linux2
 Type "help", "copyright", "credits" or "license" for more information.
->>> from ecell4.core import *
+>>> from ecell4 import *
 >>> sp = Species("B.A.C")
->>> print sp.serial()
+>>> print(sp.serial())
+B.A.C
+>>> print(unique_serial(sp))
 A.B.C
->>>
 ```
 
 #### A reversible binding reaction
@@ -166,7 +167,7 @@ from ecell4 import *
 with reaction_rules():
     A + B == C | (0.01, 0.3)
 
-y = run_simulation(
+run_simulation(
     numpy.linspace(0, 10, 100), {'A': 60, 'B': 60}, solver='ode')
 ```
 
