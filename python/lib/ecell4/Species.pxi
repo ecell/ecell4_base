@@ -210,4 +210,4 @@ def format_species(Species sp):
     return Species_from_Cpp_Species(address(newsp))
 
 def unique_serial(Species sp):
-    return context.unique_serial(deref(sp.thisptr))
+    return context.unique_serial(deref(sp.thisptr)).decode('UTF-8')
