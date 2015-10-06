@@ -387,6 +387,9 @@ cdef class LatticeWorld:
             pid (ParticleID): a particle id of the particle to update
             p (Particle): the information to update a particle
 
+        Returns:
+            bool: True if a new particle was created.
+
         """
         return self.thisptr.get().update_particle(deref(pid.thisptr), deref(p.thisptr))
 

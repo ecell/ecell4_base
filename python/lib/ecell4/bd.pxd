@@ -46,6 +46,7 @@ cdef extern from "ecell4/bd/BDWorld.hpp" namespace "ecell4::bd":
         Real distance(Cpp_Real3& pos1, Cpp_Real3& pos2)
         Real volume()
         # bool has_species(Cpp_Species& sp)
+        Integer num_molecules()
         Integer num_molecules(Cpp_Species& sp)
         Integer num_molecules_exact(Cpp_Species& sp)
         void add_molecules(Cpp_Species& sp, Integer num)
@@ -79,6 +80,7 @@ cdef extern from "ecell4/bd/BDSimulator.hpp" namespace "ecell4::bd":
         bool step(Real& upto)
         Real t()
         Real dt()
+        void set_t(Real& t)
         void set_dt(Real& dt)
         vector[Cpp_ReactionRule] last_reactions()
         Real next_time()
@@ -103,6 +105,7 @@ cdef extern from "ecell4/bd/BDFactory.hpp" namespace "ecell4::bd":
         Cpp_BDFactory() except +
         Cpp_BDFactory(Cpp_Integer3&) except +
         Cpp_BDFactory(Cpp_Integer3&, shared_ptr[Cpp_RandomNumberGenerator]) except +
+        Cpp_BDWorld* create_world()
         Cpp_BDWorld* create_world(string)
         Cpp_BDWorld* create_world(Cpp_Real3&)
         Cpp_BDWorld* create_world(shared_ptr[Cpp_Model])

@@ -384,6 +384,11 @@ public:
 
     // CompartmentSpaceTraits
 
+    Integer num_molecules() const
+    {
+        return num_particles();
+    }
+
     Integer num_molecules(const Species& sp) const;
     Integer num_molecules_exact(const Species& sp) const;
 
