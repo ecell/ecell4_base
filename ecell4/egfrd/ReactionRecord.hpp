@@ -21,6 +21,12 @@ public:
 
     template<typename Tset>
     ReactionRecord(reaction_rule_id_type const& rid,
+                   Tset const& products)
+        : reaction_rule_id_(rid), reactants_(),
+          products_(boost::begin(products), boost::end(products)) {}
+
+    template<typename Tset>
+    ReactionRecord(reaction_rule_id_type const& rid,
                    Tset const& products,
                    particle_id_pair const& p1)
         : reaction_rule_id_(rid), reactants_(1, p1),

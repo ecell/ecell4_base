@@ -3582,6 +3582,12 @@ protected:
             particle_id_pair pp(
                 (*base_type::world_).new_particle(sp, new_pos));
 
+            if (base_type::rrec_)
+            {
+                (*base_type::rrec_)(
+                    reaction_record_type(rr.id(), array_gen(pp)));
+            }
+
             boost::shared_ptr<single_type> single(create_single(pp));
             add_event(*single, SINGLE_EVENT_ESCAPE);
         }
