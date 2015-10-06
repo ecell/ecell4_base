@@ -103,6 +103,7 @@ cdef class BDWorld:
         """edge_lengths() -> Real3
 
         Return the edge lengths of the world.
+
         """
         cdef Cpp_Real3 lengths = self.thisptr.get().edge_lengths()
         return Real3_from_Cpp_Real3(address(lengths))
@@ -349,7 +350,7 @@ cdef class BDWorld:
         Return the number of molecules.
 
         Args:
-            sp (Species, optional): a species whose molecules you count
+            sp (Species): a species whose molecules you count
 
         Returns:
             Integer: the number of molecules (of a given species)

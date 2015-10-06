@@ -401,7 +401,7 @@ cdef class LatticeWorld:
         Return the number of molecules.
 
         Args:
-            sp (Species, optional): a species whose molecules you count
+            sp (Species): a species whose molecules you count
 
         Returns:
             Integer: the number of molecules (of a given species)
