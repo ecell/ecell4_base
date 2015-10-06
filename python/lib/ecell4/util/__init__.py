@@ -87,11 +87,13 @@ def run_simulation(
 
     edge_lengths = ecell4.Real3(L, L, L)
     w = f.create_world(edge_lengths)
-    w.bind_to(model)
+
     if isinstance(w, ecell4.ode.ODEWorld):
+        # w.bind_to(model)  # stop binding for ode
         for serial, n in y0.items():
             w.set_value(ecell4.Species(serial), n)
     else:
+        w.bind_to(model)
         for serial, n in y0.items():
             w.add_molecules(ecell4.Species(serial), n)
 
