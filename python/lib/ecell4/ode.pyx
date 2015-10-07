@@ -272,18 +272,43 @@ cdef ODEWorld ODEWorld_from_Cpp_ODEWorld(
     return r
 
 cdef class ODERatelaw:
-    # Abstract ODERatelaw Type.
+    """An abstract base class for ratelaws bound to ODEReactionRule.
+
+    ODERatelaw()
+
+    """
+
+    def __init__(self):
+        """Constructor."""
+        pass
+
     def __cinit__(self):
         self.thisptr = new shared_ptr[Cpp_ODERatelaw](
-                <Cpp_ODERatelaw*>(new Cpp_ODERatelawMassAction(0.0)) )  # Dummy
+                <Cpp_ODERatelaw*>(new Cpp_ODERatelawMassAction(0.0)))  # Dummy
 
     def __dealloc__(self):
         del self.thisptr
 
     def as_base(self):
+        """Return self as a base class. Only for developmental use."""
         return self
 
 cdef class ODERatelawMassAction:
+    """A class for mass action ratelaws.
+
+    ODERatelawMassAction(Real k)
+
+    """
+
+    def __init__(self, Real k):
+        """Constructor.
+
+        Args:
+            k (Real): A kinetic rate for the mass action.
+
+        """
+        pass
+
     def __cinit__(self, Real k):
         self.thisptr = new shared_ptr[Cpp_ODERatelawMassAction](
                 <Cpp_ODERatelawMassAction*>(new Cpp_ODERatelawMassAction(k)))
@@ -292,22 +317,35 @@ cdef class ODERatelawMassAction:
         del self.thisptr
 
     def is_available(self):
+        """Check if this ratelaw is available or not. Return True always."""
         return self.get().is_available
+
     def set_k(self, Real k):
+        """set_k(k)
+
+        Set a kinetic rate constant.
+
+        Args:
+            k (float): A kinetic rate constant.
+
+        """
         self.get().thisptr.set_k(k)
+
     def get_k(self):
+        """Return the kinetic rate constant as a float value."""
         return self.get().thisptr.get_k()
+
     def as_base(self):
+        """Return self as a base class. Only for developmental use."""
         base_type = ODERatelaw()
         del base_type.thisptr
         base_type.thisptr = new shared_ptr[Cpp_ODERatelaw](
-                <shared_ptr[Cpp_ODERatelaw]>(deref(self.thisptr))
-                )
+                <shared_ptr[Cpp_ODERatelaw]>(deref(self.thisptr)))
         return base_type
 
 
 cdef double indirect_function(
-    void *func, vector[Real] reactants, vector[Real] products, 
+    void *func, vector[Real] reactants, vector[Real] products,
     Real volume, Real t, Cpp_ODEReactionRule *rr):
     py_reactants = []
     cdef vector[Real].iterator it1 = reactants.begin()
@@ -320,7 +358,8 @@ cdef double indirect_function(
         py_products.append(deref(it2))
         inc(it2)
     return (<object>func)(
-            py_reactants, py_products, volume, t, ODEReactionRule_from_Cpp_ODEReactionRule(rr))
+            py_reactants, py_products, volume, t,
+            ODEReactionRule_from_Cpp_ODEReactionRule(rr))
 
 cdef void inc_ref(void* func):
     Py_XINCREF(<PyObject*>func)
@@ -329,10 +368,26 @@ cdef void dec_ref(void* func):
     Py_XDECREF(<PyObject*>func)
 
 cdef class ODERatelawCallback:
+    """A class for general ratelaws with a callback.
+
+    ODERatelawCallback(pyfunc)
+
+    """
+
+    def __init__(self, pyfunc):
+        """Constructor.
+
+        Args:
+            pyfunc: A Python function for the callback.
+                See set_callback function of this class for details.
+
+        """
+        pass
+
     def __cinit__(self, pyfunc):
         self.thisptr = new shared_ptr[Cpp_ODERatelawCythonCallback](
             <Cpp_ODERatelawCythonCallback*>(new Cpp_ODERatelawCythonCallback(
-                <Stepladder_Functype>indirect_function, <void*>pyfunc, 
+                <Stepladder_Functype>indirect_function, <void*>pyfunc,
                 <OperateRef_Functype>inc_ref, <OperateRef_Functype>dec_ref)))
         self.pyfunc = pyfunc
 
@@ -340,9 +395,30 @@ cdef class ODERatelawCallback:
         del self.thisptr
 
     def set_callback(self, pyfunc):
+        """set_callback(pyfunc)
+
+        Args:
+            pyfunc: A Python function for the callback
+                The function must accept five arguments, and return a velocity.
+                The number of reactants, the number of products, a volume,
+                the current time, and a ODEReactionRule are given as the
+                arguments in this order.
+
+        Example:
+            The following callback represents a simple Michaelis-Menten-like
+            equation:
+
+            >>> rl = ODERatelawCallback()
+            >>> rl.set_callback(lambda r, p, v, t, rr: 2.0 * r[0] * r[1] / (1.0 + r[1]))
+
+            Here, we expect that the first reactant is an enzyme,
+            and that the second one is a substrate.
+
+        """
         self.thisptr.get().set_callback_pyfunc(<Python_CallbackFunctype>pyfunc)
 
     def as_base(self):
+        """Return self as a base class. Only for developmental use."""
         retval = ODERatelaw()
         del retval.thisptr
         retval.thisptr = new shared_ptr[Cpp_ODERatelaw](
