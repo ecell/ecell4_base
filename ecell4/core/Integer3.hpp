@@ -3,10 +3,12 @@
 
 #include <ostream>
 #include <iomanip>
+#include <cmath>
 #include <vector>
 
 #include "types.hpp"
 #include "exceptions.hpp"
+#include "Real3.hpp"
 
 
 namespace ecell4
@@ -14,11 +16,12 @@ namespace ecell4
 
 struct Integer3
 {
+    typedef Integer value_type;
     typedef std::size_t size_type;
 
-    Integer col;
-    Integer row;
-    Integer layer;
+    value_type col;
+    value_type row;
+    value_type layer;
 
     Integer3()
     {
@@ -27,7 +30,7 @@ struct Integer3
         this->layer = 0;
     }
 
-    Integer3(Integer col, Integer row, Integer layer)
+    Integer3(value_type col, value_type row, value_type layer)
     {
         this->col = col;
         this->row = row;
@@ -48,7 +51,7 @@ struct Integer3
     Integer3 dorsal() const;
     Integer3 ventral() const;
 
-    Integer& operator[](size_type i)
+    value_type& operator[](size_type i)
     {
         switch (i)
         {
@@ -62,7 +65,7 @@ struct Integer3
         throw NotSupported("out of range");
     }
 
-    const Integer& operator[](size_type i) const
+    const value_type& operator[](size_type i) const
     {
         switch (i)
         {
@@ -92,6 +95,15 @@ inline Integer3 subtract(const Integer3& g1, const Integer3& g2)
     retval.col = g1.col - g2.col;
     retval.row = g1.row - g2.row;
     retval.layer = g1.layer - g2.layer;
+    return retval;
+}
+
+inline Integer3 abs(const Integer3& g1)
+{
+    Integer3 retval;
+    retval.col = std::abs(g1.col);
+    retval.row = std::abs(g1.row);
+    retval.layer = std::abs(g1.layer);
     return retval;
 }
 

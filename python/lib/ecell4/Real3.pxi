@@ -1,6 +1,6 @@
 from cython.operator cimport dereference as deref
 from cython cimport address
-cimport p3operator
+cimport real3operators
 
 
 cdef class Real3:
@@ -33,26 +33,29 @@ cdef class Real3:
         return deref(self.thisptr)[i]
 
     def __add__(Real3 self, Real3 other):
-        return add(self, other)
+        return real3_add(self, other)
 
     def __sub__(Real3 self, Real3 other):
-        return subtract(self, other)
+        return real3_subtract(self, other)
 
     def __div__(Real3 self, Real other):
-        return divide(self, other)
+        return real3_divide(self, other)
 
     def __truediv__(Real3 self, Real other):
-        return divide(self, other)
+        return real3_divide(self, other)
 
     def __mul__(self, other):
         if isinstance(self, Real3):
-            return multiply(<Real3>self, <Real>other)
+            return real3_multiply(<Real3>self, <Real>other)
         elif isinstance(other, Real3):
-            return multiply(<Real3>other, <Real>self)
+            return real3_multiply(<Real3>other, <Real>self)
         else:
             raise ValueError(
                 'invalid value was given: '
                 + repr(self) + ' : ' + repr(other))
+
+    def __abs__(self):
+        return real3_abs(self)
 
 
 cdef Real3 Real3_from_Cpp_Real3(Cpp_Real3 *p):
@@ -62,8 +65,8 @@ cdef Real3 Real3_from_Cpp_Real3(Cpp_Real3 *p):
     r.thisptr = new_obj
     return r
 
-def add(Real3 p1, Real3 p2):
-    """add(p1, p2) -> Real3
+def real3_add(Real3 p1, Real3 p2):
+    """real3_add(p1, p2) -> Real3
 
     Add two ``Real3``s, and returns the sum.
 
@@ -75,11 +78,11 @@ def add(Real3 p1, Real3 p2):
         Real3: The sum of two vectors, ``p1 + p2``.
 
     """
-    cdef Cpp_Real3 r = p3operator.add(deref(p1.thisptr), deref(p2.thisptr))
+    cdef Cpp_Real3 r = real3operators.add(deref(p1.thisptr), deref(p2.thisptr))
     return Real3_from_Cpp_Real3(address(r))
 
-def subtract(Real3 p1, Real3 p2):
-    """subtract(p1, p2) -> Real3
+def real3_subtract(Real3 p1, Real3 p2):
+    """real3_subtract(p1, p2) -> Real3
 
     Subtract p2 from p1.
 
@@ -91,11 +94,11 @@ def subtract(Real3 p1, Real3 p2):
         Real3: Its difference, ``p1 - p2``.
 
     """
-    cdef Cpp_Real3 r = p3operator.subtract(deref(p1.thisptr), deref(p2.thisptr))
+    cdef Cpp_Real3 r = real3operators.subtract(deref(p1.thisptr), deref(p2.thisptr))
     return Real3_from_Cpp_Real3(address(r))
 
-def divide(Real3 p1, Real p2):
-    """divide(p1, p2) -> Real3
+def real3_divide(Real3 p1, Real p2):
+    """real3_divide(p1, p2) -> Real3
 
     Divide p1 by p2.
 
@@ -107,11 +110,11 @@ def divide(Real3 p1, Real p2):
         Real3: The divided vector, ``p1 / p2``.
 
     """
-    cdef Cpp_Real3 r = p3operator.divide(deref(p1.thisptr), p2)
+    cdef Cpp_Real3 r = real3operators.divide(deref(p1.thisptr), p2)
     return Real3_from_Cpp_Real3(address(r))
 
-def multiply(Real3 p1, Real p2):
-    """multiply(p1, p2) -> Real3
+def real3_multiply(Real3 p1, Real p2):
+    """real3_multiply(p1, p2) -> Real3
 
     Multiply p1 by p2.
 
@@ -123,16 +126,16 @@ def multiply(Real3 p1, Real p2):
         Real3: The multipled vector, ``p1 * p2``.
 
     """
-    cdef Cpp_Real3 r = p3operator.multiply(deref(p1.thisptr), p2)
+    cdef Cpp_Real3 r = real3operators.multiply(deref(p1.thisptr), p2)
     return Real3_from_Cpp_Real3(address(r))
 
-# def modulo(Real3 p1, Real3 p2):
-#     cdef Cpp_Real3 r = p3operator.modulo(
+# def real3_modulo(Real3 p1, Real3 p2):
+#     cdef Cpp_Real3 r = real3operators.modulo(
 #         deref(p1.thisptr), <Real3>deref(p2.thisptr))
 #     return Real3_from_Cpp_Real3(address(r))
 
-def abs(Real3 p1):
-    """abs(p1) -> Real3
+def real3_abs(Real3 p1):
+    """real3_abs(p1) -> Real3
 
     Return an absolute vector of the given vector.
 
@@ -147,7 +150,7 @@ def abs(Real3 p1):
         This is NOT for taking the norm of a vector. See ``length`` also.
 
     """
-    cdef Cpp_Real3 r = p3operator.abs(deref(p1.thisptr))
+    cdef Cpp_Real3 r = real3operators.abs(deref(p1.thisptr))
     return Real3_from_Cpp_Real3(address(r))
 
 def dot_product(Real3 p1, Real3 p2):
@@ -156,7 +159,7 @@ def dot_product(Real3 p1, Real3 p2):
     Return a dot product between two vectors
 
     """
-    return p3operator.dot_product(deref(p1.thisptr), deref(p2.thisptr))
+    return real3operators.dot_product(deref(p1.thisptr), deref(p2.thisptr))
 
 def cross_product(Real3 p1, Real3 p2):
     """cross_product(p1, p2) -> Real3
@@ -164,7 +167,7 @@ def cross_product(Real3 p1, Real3 p2):
     Return a cross product between two vectors
 
     """
-    cdef Cpp_Real3 r = p3operator.cross_product(deref(p1.thisptr), deref(p2.thisptr))
+    cdef Cpp_Real3 r = real3operators.cross_product(deref(p1.thisptr), deref(p2.thisptr))
     return Real3_from_Cpp_Real3(address(r))
 
 def length_sq(Real3 p1):
@@ -173,7 +176,7 @@ def length_sq(Real3 p1):
     Return a square of a Euclidean norm of the given vector.
 
     """
-    return p3operator.length_sq(deref(p1.thisptr))
+    return real3operators.length_sq(deref(p1.thisptr))
 
 def length(Real3 p1):
     """length(p1) -> Real
@@ -182,4 +185,4 @@ def length(Real3 p1):
     This is almost equivalent to call ``sqrt(length_sq(p1))``
 
     """
-    return p3operator.length(deref(p1.thisptr))
+    return real3operators.length(deref(p1.thisptr))
