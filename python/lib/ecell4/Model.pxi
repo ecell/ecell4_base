@@ -5,6 +5,14 @@ from libcpp.vector cimport vector
 
 
 cdef class Model:
+    """A base class of a model
+
+    Model()
+    """
+
+    def __init__(self):
+        """Constructor"""
+        pass
 
     def __cinit__(self):
         # self.thisptr = new shared_ptr[Cpp_Model](
@@ -16,32 +24,81 @@ cdef class Model:
         del self.thisptr
 
     def add_species_attribute(self, Species sp):
+        """add_species_attribute(sp)
+
+        Add a species attribute to the bottom.
+
+        Args:
+            sp (Species): A new species with attributes.
+
+        """
         self.thisptr.get().add_species_attribute(deref(sp.thisptr))
 
     def has_species_attribute(self, Species sp):
+        """has_species_attribute(sp) -> bool
+
+        Return if the given species can be attributed or not.
+
+        """
         return self.thisptr.get().has_species_attribute(deref(sp.thisptr))
 
     def remove_species_attribute(self, Species sp):
+        """remove_species_attribute(sp)
+
+        Remove the species attribute.
+
+        """
         self.thisptr.get().remove_species_attribute(deref(sp.thisptr))
 
     def add_reaction_rule(self, ReactionRule rr):
+        """add_reaction_rule(rr)
+
+        Add a new reaction rule.
+
+        Args:
+            rr (ReactionRule): A new reaction rule.
+
+        """
         self.thisptr.get().add_reaction_rule(deref(rr.thisptr))
 
     def remove_reaction_rule(self, ReactionRule rr):
+        """remove_reaction_rule(rr)
+
+        Remove a reaction rule.
+
+        """
         self.thisptr.get().remove_reaction_rule(deref(rr.thisptr))
 
     def has_reaction_rule(self, ReactionRule rr):
+        """has_reaction_rule(rr) -> bool
+
+        Return if the given reaction rule is existing or not.
+
+        """
         return self.thisptr.get().has_reaction_rule(deref(rr.thisptr))
 
     def apply_species_attributes(self, Species sp):
+        """apply_species_attributes(sp) -> Species
+
+        Return a species with attributes.
+
+        Args:
+            sp (Species): An original species.
+
+        Returns:
+            Species: A new species attributed by species attributes in the model.
+
+        """
         cdef Cpp_Species retval = self.thisptr.get().apply_species_attributes(
             deref(sp.thisptr))
         return Species_from_Cpp_Species(address(retval))
 
     def num_reaction_rules(self):
+        """Return a number of reaction rules contained in the model."""
         return self.thisptr.get().num_reaction_rules()
 
     def reaction_rules(self):
+        """Return a list of reaction rules contained in the model."""
         cdef vector[Cpp_ReactionRule] c_rr_vector = self.thisptr.get().reaction_rules()
         retval = []
         cdef vector[Cpp_ReactionRule].iterator it = c_rr_vector.begin()
@@ -52,6 +109,7 @@ cdef class Model:
         return retval
 
     def species_attributes(self):
+        """Return a list of species attributes contained in the model."""
         cdef vector[Cpp_Species] species = self.thisptr.get().species_attributes()
         retval = []
         cdef vector[Cpp_Species].iterator it = species.begin()
@@ -62,6 +120,7 @@ cdef class Model:
         return retval
 
     def list_species(self):
+        """Return a list of species, contained in reaction rules in the model."""
         cdef vector[Cpp_Species] species = self.thisptr.get().list_species()
         retval = []
         cdef vector[Cpp_Species].iterator it = species.begin()
@@ -72,6 +131,20 @@ cdef class Model:
         return retval
 
     def query_reaction_rules(self, Species sp1, Species sp2 = None):
+        """query_reaction_rules(sp1, sp2=None) -> [ReactionRule]
+
+        Query and return a list of reaction rules, which have the given species
+        as their reactants.
+
+        Args:
+            sp1 (Species): The first reactant
+            sp2 (Species): The second reactant.
+                This is for querying second order reaction rules.
+
+        Returns:
+            list: A list of ``ReactionRule``s.
+
+        """
         cdef vector[Cpp_ReactionRule] rules
         if sp2 is None:
             rules = self.thisptr.get().query_reaction_rules(
@@ -88,18 +161,49 @@ cdef class Model:
         return retval
 
     def add_species_attributes(self, attrs):
+        """add_species_attributes(attrs)
+
+        Extend a list of species attributes to the bottom.
+
+        Args:
+            attrs (list): A list of new ``Species`` with attributes.
+
+        """
         cdef vector[Cpp_Species] species
         for sp in attrs:
             species.push_back(deref((<Species>sp).thisptr))
         self.thisptr.get().add_species_attributes(species)
 
     def add_reaction_rules(self, rrs):
+        """add_reaction_rules(rrs)
+
+        Add a list of new reaction rules.
+
+        Args:
+            rrs (list): A list of new ``ReactionRule``s.
+
+        """
         cdef vector[Cpp_ReactionRule] reaction_rules
         for rr in rrs:
             reaction_rules.push_back(deref((<ReactionRule>rr).thisptr))
         self.thisptr.get().add_reaction_rules(reaction_rules)
 
     def expand(self, seeds, max_itr=None, max_stoich=None):
+        """expand(seeds, max_itr=None, max_stoich=None) -> Model
+
+        Expand a rule-based model into a network model.
+
+        Args:
+            seeds (list): A list of ``Species`` which gives seeds.
+            max_itr (Integer): A maximum number of iterations to generate
+                new products.
+            max_stoich (Integer): A maximum stoichiometry of ``UnitSpecies``
+                in a ``Species``.
+
+        Returns:
+            Model: A network model.
+
+        """
         cdef vector[Cpp_Species] _seeds
         cdef map[Cpp_Species, Integer] _max_stoich
         for sp in seeds:

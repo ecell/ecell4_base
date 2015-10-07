@@ -588,35 +588,69 @@ cdef ODEReactionRule ODEReactionRule_from_Cpp_ODEReactionRule(Cpp_ODEReactionRul
     return ret
 
 cdef class ODENetworkModel:
-    #def __cinit__(self):
-    #    self.thisptr = new shared_ptr[Cpp_ODENetworkModel](
-    #        <Cpp_ODENetworkModel*>(new Cpp_ODENetworkModel()) )
+    """A network model class for ODE simulations.
+
+    ODENetworkModel(NetworkModel m=None)
+
+    """
+
+    def __init__(self, NetworkModel m = None):
+        """Constructor.
+
+        Args:
+            m (NetworkModel, optional): A network model.
+
+        """
+        pass
+
     def __cinit__(self, NetworkModel m = None):
+        # self.thisptr = new shared_ptr[Cpp_ODENetworkModel](
+        #     <Cpp_ODENetworkModel*>(new Cpp_ODENetworkModel()))
         if m == None:
             self.thisptr = new shared_ptr[Cpp_ODENetworkModel](
-                <Cpp_ODENetworkModel*>(new Cpp_ODENetworkModel()) )
+                <Cpp_ODENetworkModel*>(new Cpp_ODENetworkModel()))
         else:
             self.thisptr = new shared_ptr[Cpp_ODENetworkModel](
-                (<Cpp_ODENetworkModel*>(new Cpp_ODENetworkModel( deref(m.thisptr) ) )) )
+                (<Cpp_ODENetworkModel*>(new Cpp_ODENetworkModel(deref(m.thisptr)))))
 
     def __dealloc__(self):
         del self.thisptr
+
     def update_model(self):
+        """Update self to fit the given NetworkModel."""
         self.thisptr.get().update_model()
+
     def has_network_model(self):
+        """Return if this model is bound to a NetworkModel or not."""
         return self.thisptr.get().has_network_model()
+
     def ode_reaction_rules(self):
+        """ode_reaction_rules() -> [ODEReactionRule]
+
+        Return a list of ODE reaction rules.
+
+        """
         cdef vector[Cpp_ODEReactionRule] cpp_rules = self.thisptr.get().ode_reaction_rules()
         retval = []
         cdef vector[Cpp_ODEReactionRule].iterator it = cpp_rules.begin()
         while it != cpp_rules.end():
-            retval.append( ODEReactionRule_from_Cpp_ODEReactionRule(address(deref(it))) )
+            retval.append(ODEReactionRule_from_Cpp_ODEReactionRule(address(deref(it))))
             inc(it)
         return retval
+
     def num_reaction_rules(self):
+        """Return a number of reaction rules contained in the model."""
         return self.thisptr.get().num_reaction_rules()
 
     def add_reaction_rule(self, rr):
+        """add_reaction_rule(rr)
+
+        Add a new reaction rule.
+
+        Args:
+            rr (ReactionRule or ODEReactionRule): A new reaction rule.
+
+        """
         if isinstance(rr, ODEReactionRule):
             self.thisptr.get().add_reaction_rule(deref((<ODEReactionRule>rr).thisptr))
         elif isinstance(rr, ReactionRule):
@@ -625,6 +659,7 @@ cdef class ODENetworkModel:
             raise ValueError("invalid argument {}".format(repr(rr)))
 
     def list_species(self):
+        """Return a list of species, contained in reaction rules in the model."""
         cdef vector[Cpp_Species] species = self.thisptr.get().list_species()
         retval = []
         cdef vector[Cpp_Species].iterator it = species.begin()

@@ -11,8 +11,8 @@ include "UnitSpecies.pxi"
 include "Species.pxi"
 include "ReactionRule.pxi"
 include "Space.pxi"
-include "CompartmentSpace.pxi"
-include "ParticleSpace.pxi"
+include "CompartmentSpace.pxi"  #XXX
+include "ParticleSpace.pxi"  #XXX
 include "Model.pxi"
 include "NetworkModel.pxi"
 include "NetfreeModel.pxi"
