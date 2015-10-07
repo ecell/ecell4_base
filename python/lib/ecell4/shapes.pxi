@@ -9,6 +9,10 @@ cdef class Shape:
     Do not use this for your simulation.
     """
 
+    def __init__(self):
+        """Constructor."""
+        pass
+
     def __cinit__(self):
         self.thisptr = new shared_ptr[Cpp_Shape](
             <Cpp_Shape*>(new Cpp_Sphere())) #XXX: DUMMY
@@ -20,10 +24,10 @@ cdef class Shape:
         """Return if the given point is inside or not.
 
         Args:
-          pos (Real3): A position.
+            pos (Real3): A position.
 
         Returns:
-          value (float): Zero or negative if the given point is inside.
+            value (float): Zero or negative if the given point is inside.
 
         """
         return self.thisptr.get().is_inside(deref(pos.thisptr))
@@ -44,8 +48,8 @@ cdef class Sphere:
         """Constructor.
 
         Args:
-          center (Real3): The center position of a sphere.
-          radius (float): The radius of a sphere.
+            center (Real3): The center position of a sphere.
+            radius (float): The radius of a sphere.
 
         """
         pass  # XXX: Only used for doc string
@@ -65,11 +69,11 @@ cdef class Sphere:
         """Return a minimum distance from the given point to the surface.
 
         Args:
-          pos (Real3): A position.
+            pos (Real3): A position.
 
         Returns:
-          distance (float): A minimum distance from the given point.
-            Negative if the given point is inside.
+            distance (float): A minimum distance from the given point.
+              Negative if the given point is inside.
 
         """
         return self.thisptr.get().distance(deref(pos.thisptr))
@@ -78,10 +82,10 @@ cdef class Sphere:
         """Return if the given point is inside or not.
 
         Args:
-          pos (Real3): A position.
+            pos (Real3): A position.
 
         Returns:
-          value (float): Zero or negative if the given point is inside.
+            value (float): Zero or negative if the given point is inside.
 
         """
         return self.thisptr.get().is_inside(deref(pos.thisptr))
@@ -90,7 +94,7 @@ cdef class Sphere:
         """Create and return a surface shape.
 
         Returns:
-          shape (SphericalSurface): The surface shape.
+            shape (SphericalSurface): The surface shape.
 
         """
         cdef Cpp_SphericalSurface shape = self.thisptr.get().surface()
@@ -118,8 +122,8 @@ cdef class SphericalSurface:
         """Constructor.
 
         Args:
-          center (Real3): The center position of a sphere.
-          radius (float): The radius of a sphere.
+            center (Real3): The center position of a sphere.
+            radius (float): The radius of a sphere.
 
         """
         pass  # XXX: Only used for doc string
@@ -139,11 +143,11 @@ cdef class SphericalSurface:
         """Return a minimum distance from the given point to the surface.
 
         Args:
-          pos (Real3): A position.
+            pos (Real3): A position.
 
         Returns:
-          distance (float): A minimum distance from the given point.
-            Negative if the given point is inside.
+            distance (float): A minimum distance from the given point.
+                Negative if the given point is inside.
 
         """
         return self.thisptr.get().distance(deref(pos.thisptr))
@@ -152,10 +156,10 @@ cdef class SphericalSurface:
         """Return if the given point is inside or not.
 
         Args:
-          pos (Real3): A position.
+            pos (Real3): A position.
 
         Returns:
-          value (float): Zero or negative if the given point is inside.
+            value (float): Zero or negative if the given point is inside.
 
         """
         return self.thisptr.get().is_inside(deref(pos.thisptr))
@@ -164,7 +168,7 @@ cdef class SphericalSurface:
         """Create and return a volume shape.
 
         Returns:
-          shape (Sphere): The volume shape.
+            shape (Sphere): The volume shape.
 
         """
         cdef Cpp_Sphere shape = self.thisptr.get().inside()
@@ -192,10 +196,10 @@ cdef class Cylinder:
         """Constructor.
 
         Args:
-          center (Real3): The center position of a sphere.
-          radius (float): The radius of a sphere.
-          axis (Real3): The unit axis vector.
-          half_height (float): The half of the length.
+            center (Real3): The center position of a sphere.
+            radius (float): The radius of a sphere.
+            axis (Real3): The unit axis vector.
+            half_height (float): The half of the length.
 
         """
         pass  # XXX: Only used for doc string
@@ -215,11 +219,11 @@ cdef class Cylinder:
         """Return a minimum distance from the given point to the surface.
 
         Args:
-          pos (Real3): A position.
+            pos (Real3): A position.
 
         Returns:
-          distance (float): A minimum distance from the given point.
-            Negative if the given point is inside.
+            distance (float): A minimum distance from the given point.
+              Negative if the given point is inside.
 
         """
         return self.thisptr.get().distance(deref(pos.thisptr))
@@ -228,10 +232,10 @@ cdef class Cylinder:
         """Return if the given point is inside or not.
 
         Args:
-          pos (Real3): A position.
+            pos (Real3): A position.
 
         Returns:
-          value (float): Zero or negative if the given point is inside.
+            value (float): Zero or negative if the given point is inside.
 
         """
         return self.thisptr.get().is_inside(deref(pos.thisptr))
@@ -240,7 +244,7 @@ cdef class Cylinder:
         """Create and return a surface shape.
 
         Returns:
-          shape (CylindricalSurface): The surface shape.
+            shape (CylindricalSurface): The surface shape.
 
         """
         cdef Cpp_CylindricalSurface shape = self.thisptr.get().surface()
@@ -268,10 +272,10 @@ cdef class CylindricalSurface:
         """Constructor.
 
         Args:
-          center (Real3): The center position of a sphere.
-          radius (float): The radius of a sphere.
-          axis (Real3): The unit axis vector.
-          half_height (float): The half of the length.
+            center (Real3): The center position of a sphere.
+            radius (float): The radius of a sphere.
+            axis (Real3): The unit axis vector.
+            half_height (float): The half of the length.
 
         """
         pass  # XXX: Only used for doc string
@@ -291,11 +295,11 @@ cdef class CylindricalSurface:
         """Return a minimum distance from the given point to the surface.
 
         Args:
-          pos (Real3): A position.
+            pos (Real3): A position.
 
         Returns:
-          distance (float): A minimum distance from the given point.
-            Negative if the given point is inside.
+            distance (float): A minimum distance from the given point.
+                Negative if the given point is inside.
 
         """
         return self.thisptr.get().distance(deref(pos.thisptr))
@@ -304,10 +308,10 @@ cdef class CylindricalSurface:
         """Return if the given point is inside or not.
 
         Args:
-          pos (Real3): A position.
+            pos (Real3): A position.
 
         Returns:
-          value (float): Zero or negative if the given point is inside.
+            value (float): Zero or negative if the given point is inside.
 
         """
         return self.thisptr.get().is_inside(deref(pos.thisptr))
@@ -316,7 +320,7 @@ cdef class CylindricalSurface:
         """Create and return a volume shape.
 
         Returns:
-          shape (Cylinder): The volume shape.
+            shape (Cylinder): The volume shape.
 
         """
         cdef Cpp_Cylinder shape = self.thisptr.get().inside()
@@ -344,11 +348,11 @@ cdef class PlanarSurface:
         """Constructor.
 
         Args:
-          origin (Real3): A position on the plane.
-          e0 (Real3): The first vector along the plane.
-          e1 (Real3): The second vector along the plane.
-            e0 and e1 must not be parallel.
-            e0 and e1 are not needed to be an unit vector.
+            origin (Real3): A position on the plane.
+            e0 (Real3): The first vector along the plane.
+            e1 (Real3): The second vector along the plane.
+                e0 and e1 must not be parallel.
+                e0 and e1 are not needed to be an unit vector.
 
         """
         pass  # XXX: Only used for doc string
@@ -382,10 +386,10 @@ cdef class PlanarSurface:
         """Return if the given point is inside or not.
 
         Args:
-          pos (Real3): A position.
+            pos (Real3): A position.
 
         Returns:
-          value (float): Zero or negative if the given point is inside.
+            value (float): Zero or negative if the given point is inside.
 
         """
         return self.thisptr.get().is_inside(deref(pos.thisptr))
@@ -413,9 +417,9 @@ cdef class Rod:
         """Constructor.
 
         Args:
-          length (float): The length of a cylinder part of a rod.
-          radius (float): The radius of a cylinder and sphere caps.
-          origin (Real3, optional): The center position of a rod.
+            length (float): The length of a cylinder part of a rod.
+            radius (float): The radius of a cylinder and sphere caps.
+            origin (Real3, optional): The center position of a rod.
 
         """
         pass  # XXX: Only used for doc string
@@ -436,11 +440,11 @@ cdef class Rod:
         """Return a minimum distance from the given point to the surface.
 
         Args:
-          pos (Real3): A position.
+            pos (Real3): A position.
 
         Returns:
-          distance (float): A minimum distance from the given point.
-            Negative if the given point is inside.
+            distance (float): A minimum distance from the given point.
+                Negative if the given point is inside.
 
         """
         return self.thisptr.get().distance(deref(pos.thisptr))
@@ -449,10 +453,10 @@ cdef class Rod:
         """Return if the given point is inside or not.
 
         Args:
-          pos (Real3): A position.
+            pos (Real3): A position.
 
         Returns:
-          value (float): Zero or negative if the given point is inside.
+            value (float): Zero or negative if the given point is inside.
 
         """
         return self.thisptr.get().is_inside(deref(pos.thisptr))
@@ -474,7 +478,7 @@ cdef class Rod:
         """Move the center toward the given displacement
 
         Args:
-          vec (Real3): A displacement.
+            vec (Real3): A displacement.
 
         """
         self.thisptr.get().shift(deref(vec.thisptr))
@@ -483,7 +487,7 @@ cdef class Rod:
         """Create and return a surface shape.
 
         Returns:
-          shape (RodSurface): The surface shape.
+            shape (RodSurface): The surface shape.
 
         """
         cdef Cpp_RodSurface surface = self.thisptr.get().surface()
@@ -511,9 +515,9 @@ cdef class RodSurface:
         """Constructor.
 
         Args:
-          length (float): The length of a cylinder part of a rod.
-          radius (float): The radius of a cylinder and sphere caps.
-          origin (Real3, optional): The center position of a rod.
+            length (float): The length of a cylinder part of a rod.
+            radius (float): The radius of a cylinder and sphere caps.
+            origin (Real3, optional): The center position of a rod.
 
         """
         pass  # XXX: Only used for doc string
@@ -535,11 +539,11 @@ cdef class RodSurface:
         """Return a minimum distance from the given point to the surface.
 
         Args:
-          pos (Real3): A position.
+            pos (Real3): A position.
 
         Returns:
-          distance (float): A minimum distance from the given point.
-            Negative if the given point is inside.
+            distance (float): A minimum distance from the given point.
+                Negative if the given point is inside.
 
         """
         return self.thisptr.get().distance(deref(pos.thisptr))
@@ -548,10 +552,10 @@ cdef class RodSurface:
         """Return if the given point is inside or not.
 
         Args:
-          pos (Real3): A position.
+            pos (Real3): A position.
 
         Returns:
-          value (float): Zero or negative if the given point is inside.
+            value (float): Zero or negative if the given point is inside.
 
         """
         return self.thisptr.get().is_inside(deref(pos.thisptr))
@@ -573,7 +577,7 @@ cdef class RodSurface:
         """Move the center toward the given displacement
 
         Args:
-          vec (Real3): A displacement.
+            vec (Real3): A displacement.
 
         """
         self.thisptr.get().shift(deref(vec.thisptr))
@@ -582,7 +586,7 @@ cdef class RodSurface:
         """Create and return a volume shape.
 
         Returns:
-          shape (Rod): The volume shape.
+            shape (Rod): The volume shape.
 
         """
         cdef Cpp_Rod shape = self.thisptr.get().inside()
@@ -610,8 +614,8 @@ cdef class AABB:
         """Constructor.
 
         Args:
-          lower (Real3): A vertex suggesting the lower bounds.
-          upper (Real3): A vertex suggesting the upper bounds.
+            lower (Real3): A vertex suggesting the lower bounds.
+            upper (Real3): A vertex suggesting the upper bounds.
 
         """
         pass  # XXX: Only used for doc string
@@ -631,11 +635,11 @@ cdef class AABB:
         """Return a minimum distance from the given point to the surface.
 
         Args:
-          pos (Real3): A position.
+            pos (Real3): A position.
 
         Returns:
-          distance (float): A minimum distance from the given point.
-            Negative if the given point is inside.
+            distance (float): A minimum distance from the given point.
+                Negative if the given point is inside.
 
         """
         return self.thisptr.get().distance(deref(pos.thisptr))
@@ -644,10 +648,10 @@ cdef class AABB:
         """Return if the given point is inside or not.
 
         Args:
-          pos (Real3): A position.
+            pos (Real3): A position.
 
         Returns:
-          value (float): Zero or negative if the given point is inside.
+            value (float): Zero or negative if the given point is inside.
 
         """
         return self.thisptr.get().is_inside(deref(pos.thisptr))
@@ -682,10 +686,10 @@ cdef class MeshSurface:
         """Constructor.
 
         Args:
-          filename (str): An input file name given in STL format.
-          edge_lengths (Real3): Bounds.
-            The object is automatically resized to fit into the
-            given lengths.
+            filename (str): An input file name given in STL format.
+            edge_lengths (Real3): Bounds.
+                The object is automatically resized to fit into the
+                given lengths.
 
         """
     def __cinit__(self, string filename, Real3 edge_lengths):
@@ -716,10 +720,10 @@ cdef class MeshSurface:
         """Return if the given point is inside or not.
 
         Args:
-          pos (Real3): A position.
+            pos (Real3): A position.
 
         Returns:
-          value (float): Zero or negative if the given point is inside.
+            value (float): Zero or negative if the given point is inside.
 
         """
         return self.thisptr.get().is_inside(deref(pos.thisptr))
@@ -740,8 +744,8 @@ cdef class Union:
         """Constructor.
 
         Args:
-          a (Shape): The first shape
-          b (Shape): The second shape
+            a (Shape): The first shape
+            b (Shape): The second shape
 
         """
         pass  # XXX: Only used for doc string
@@ -763,10 +767,10 @@ cdef class Union:
         """Return if the given point is inside or not.
 
         Args:
-          pos (Real3): A position.
+            pos (Real3): A position.
 
         Returns:
-          value (float): Zero or negative if the given point is inside.
+            value (float): Zero or negative if the given point is inside.
 
         """
         return self.thisptr.get().is_inside(deref(pos.thisptr))
@@ -787,8 +791,8 @@ cdef class Complement:
         """Constructor.
 
         Args:
-          a (Shape): The first shape
-          b (Shape): The second shape
+            a (Shape): The first shape
+            b (Shape): The second shape
 
         """
         pass  # XXX: Only used for doc string
@@ -810,10 +814,10 @@ cdef class Complement:
         """Return if the given point is inside or not.
 
         Args:
-          pos (Real3): A position.
+            pos (Real3): A position.
 
         Returns:
-          value (float): Zero or negative if the given point is inside.
+            value (float): Zero or negative if the given point is inside.
 
         """
         return self.thisptr.get().is_inside(deref(pos.thisptr))
