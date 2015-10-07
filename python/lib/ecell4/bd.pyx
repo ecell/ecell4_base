@@ -32,7 +32,7 @@ cdef class BDWorld:
         pass
 
     def __cinit__(self, edge_lengths=None, Integer3 matrix_sizes=None,
-        GSLRandomNumberGenerator rng=None):
+                  GSLRandomNumberGenerator rng=None):
         cdef string filename
 
         if edge_lengths is None:
@@ -70,7 +70,7 @@ cdef class BDWorld:
             or
 
             arg1 (Species): A species of a particle
-            arg2 (Real3): A coordinate to place a particle
+            arg2 (Real3): A position to place a particle
 
         Returns:
             tuple: A pair of ParticleID and Particle of a new particle
@@ -342,6 +342,17 @@ cdef class BDWorld:
         return self.thisptr.get().volume()
 
     # def has_species(self, Species sp):
+    #     """has_species(sp) -> bool
+    #
+    #     Check if the given species is in the space or not.
+    #
+    #     Args:
+    #         sp (Species): A species to be found.
+    #
+    #     Returns:
+    #         bool: True if the species in the space.
+    #
+    #     """
     #     return self.thisptr.get().has_species(deref(sp.thisptr))
 
     def num_molecules(self, Species sp):
@@ -467,12 +478,11 @@ cdef BDWorld BDWorld_from_Cpp_BDWorld(
 ## BDSimulator
 #  a python wrapper for Cpp_BDSimulator
 cdef class BDSimulator:
-    """ A class running the simulation with the gillespie algorithm.
+    """ A class running the simulation with the bd algorithm.
 
-    GillespieSimulator(m, w)
+    BDSimulator(m, w)
 
     """
-
 
     def __init__(self, m, BDWorld w=None):
         """BDSimulator(m, w)
@@ -617,7 +627,6 @@ cdef BDSimulator BDSimulator_from_Cpp_BDSimulator(Cpp_BDSimulator* s):
 ## BDFactory
 #  a python wrapper for Cpp_BDFactory
 cdef class BDFactory:
-
     """ A factory class creating a BDWorld instance and a BDSimulator instance.
 
     BDFactory(Integer3 matrix_sizes=None, GSLRandomNumberGenerator rng=None)
@@ -630,7 +639,7 @@ cdef class BDFactory:
         Args:
             matrix_sizes (Integer3, optional): A size of a cell matrix.
                 The number of cells must be larger than 3, in principle.
-            rng (GSLRandomNumberGenerator, optional): a random number generator.
+            rng (GSLRandomNumberGenerator, optional): A random number generator.
 
         """
         pass
@@ -659,7 +668,7 @@ cdef class BDFactory:
             arg1 (str): The path of a HDF5 file for BDWorld
 
         Returns:
-            BDWorld: the created world
+            BDWorld: The created world
 
         """
         if arg1 is None:
@@ -683,15 +692,15 @@ cdef class BDFactory:
         Return a BDSimulator instance.
 
         Args:
-            arg1 (BDWorld): a world
+            arg1 (BDWorld): A world
 
             or
 
-            arg1 (Model): a simulation model
-            arg2 (BDWorld): a world
+            arg1 (Model): A simulation model
+            arg2 (BDWorld): A world
 
         Returns:
-            BDSimulator: the created simulator
+            BDSimulator: The created simulator
 
         """
         if arg2 is None:
