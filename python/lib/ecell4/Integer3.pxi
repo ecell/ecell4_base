@@ -3,6 +3,22 @@ from cython cimport address
 
 
 cdef class Integer3:
+    """A class representing a vector consisting of three integers.
+
+    Integer3(Integer p1, Integer p2, Integer p3)
+
+    """
+
+    def __init__(self, Integer p1, Integer p2, Integer p3):
+        """Constructor.
+
+        Args:
+            p1 (Integer): The first value in the vector.
+            p2 (Integer): The second value in the vector.
+            p3 (Integer): The third value in the vector.
+
+        """
+        pass
 
     def __cinit__(self, Integer col, Integer row, Integer layer):
         self.thisptr = new Cpp_Integer3(col, row, layer)
@@ -12,14 +28,17 @@ cdef class Integer3:
 
     @property
     def col(self):
+        """Return the first value."""
         return self.thisptr.col
 
     @property
     def row(self):
+        """Return the second value."""
         return self.thisptr.row
 
     @property
     def layer(self):
+        """Return the third value."""
         return self.thisptr.layer
 
     def __getitem__(self, Integer i):
