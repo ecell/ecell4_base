@@ -350,6 +350,17 @@ cdef class ODERatelawCallback:
         return retval
 
 cdef class ODEReactionRule:
+    """A class representing a reaction rule between ``Species``, which accepts at most
+    one rate law to calculate the flux.
+
+    ODEReactionRule()
+
+    """
+
+    def __init__(self):
+        """Constructor."""
+        pass
+
     def __cinit__(self):
         self.thisptr = new Cpp_ODEReactionRule()
         self.ratelaw = None
@@ -358,42 +369,113 @@ cdef class ODEReactionRule:
         del self.thisptr
 
     def k(self):
+        """Return the kinetic rate constant as a float value."""
         return self.thisptr.k()
+
     def set_k(self, Real k):
+        """set_k(k)
+
+        Set a kinetic rate constant.
+
+        Args:
+            k (float): A kinetic rate constant.
+
+        """
         self.thisptr.set_k(k)
 
     def add_reactant(self, Species sp, coeff=None):
+        """add_reactant(sp, coeff=None)
+
+        Append a reactant to the end.
+
+        Args:
+            sp (Species): A new reactant.
+            coeff (Integer): A stoichiometry coefficient.
+
+        """
         if coeff is not None:
             self.thisptr.add_reactant(deref(sp.thisptr), coeff)
         else:
             self.thisptr.add_reactant(deref(sp.thisptr))
 
     def add_product(self, Species sp, coeff=None):
+        """add_product(sp, coeff=None)
+
+        Append a product to the end.
+
+        Args:
+            sp (Species): A new product.
+            coeff (Integer): A stoichiometry coefficient.
+
+        """
         if coeff is not None:
             self.thisptr.add_product(deref(sp.thisptr), coeff)
         else:
             self.thisptr.add_product(deref(sp.thisptr))
 
     def set_reactant_coefficient(self, Integer index, Real coeff):
+        """set_reactant_coefficient(index, coeff)
+
+        Set a stoichiometry coefficient of a reactant at the given index.
+
+        Args:
+            index (Integer): An index pointing the target reactant.
+            coeff (Integer): A stoichiometry coefficient.
+
+        """
         self.thisptr.set_reactant_coefficient(index, coeff)
+
     def set_product_coefficient(self, Integer index, Real coeff):
+        """set_product_coefficient(index, coeff)
+
+        Set a stoichiometry coefficient of a product at the given index.
+
+        Args:
+            index (Integer): An index pointing the target product.
+            coeff (Integer): A stoichiometry coefficient.
+
+        """
         self.thisptr.set_product_coefficient(index, coeff)
 
     def set_ratelaw(self, ratelaw_obj):
+        """set_ratelaw(ratelaw_obj)
+
+        Bind a ratelaw.
+
+        Args:
+            ratelaw_obj (ODERatelaw): A ratelaw
+
+        """
         self.ratelaw = ratelaw_obj
-        self.thisptr.set_ratelaw(deref( (<ODERatelaw>(ratelaw_obj.as_base())).thisptr )) 
+        self.thisptr.set_ratelaw(deref((<ODERatelaw>(ratelaw_obj.as_base())).thisptr))
 
     def set_ratelaw_massaction(self, ODERatelawMassAction ratelaw_obj):
+        """set_ratelaw_massaction(ratelaw_obj)
+
+        Bind a mass action ratelaw. This will be deprecated soon.
+
+        Args:
+            ratelaw_obj (ODERatelawMassAction): A ratelaw
+
+        """
         self.ratelaw = ratelaw_obj
-        self.thisptr.set_ratelaw( deref(ratelaw_obj.thisptr) )
+        self.thisptr.set_ratelaw(deref(ratelaw_obj.thisptr))
 
     def has_ratelaw(self):
+        """Return if a ratelaw is bound or not."""
         return self.thisptr.has_ratelaw()
 
     def is_massaction(self):
+        """Return if a mass action ratelaw is bound or not."""
         return self.thisptr.is_massaction()
 
     def reactants(self):
+        """List all reactants.
+
+        Return:
+            list: A list of reactant ``Species``.
+
+        """
         cdef vector[Cpp_Species] cpp_reactants = self.thisptr.reactants()
         retval = []
         cdef vector[Cpp_Species].iterator it = cpp_reactants.begin()
@@ -404,15 +486,29 @@ cdef class ODEReactionRule:
         return retval
 
     def reactants_coefficients(self):
+        """reactants_coefficients() -> [Integer]
+
+        List all coefficients for reactants.
+
+        Return:
+            list: A list of reactant coefficients.
+
+        """
         cdef vector[Real] coefficients = self.thisptr.reactants_coefficients()
         retval = []
         cdef vector[Real].iterator it = coefficients.begin()
         while it != coefficients.end():
-            retval.append( deref(it) )
+            retval.append(deref(it))
             inc(it)
         return retval
 
     def products(self):
+        """List all products.
+
+        Return:
+            list: A list of product ``Species``.
+
+        """
         cdef vector[Cpp_Species] cpp_products = self.thisptr.products()
         retval = []
         cdef vector[Cpp_Species].iterator it = cpp_products.begin()
@@ -423,6 +519,14 @@ cdef class ODEReactionRule:
         return retval
 
     def products_coefficients(self):
+        """products_coefficients() -> [Integer]
+
+        List all coefficients for products.
+
+        Return:
+            list: A list of product coefficients.
+
+        """
         cdef vector[Real] coefficients = self.thisptr.products_coefficients()
         retval = []
         cdef vector[Real].iterator it = coefficients.begin()
@@ -432,40 +536,49 @@ cdef class ODEReactionRule:
         return retval
 
     def as_string(self):
-        reactants = self.reactants()
-        reactants_coeff = self.reactants_coefficients()
-        products = self.products()
-        products_coeff = self.products_coefficients()
-        leftside = ""
-        rightside = ""
-        retval = ""
-        first = True
-        for (sp, coeff) in zip(reactants, reactants_coeff):
-            s = "{0}({1})".format(coeff, sp.serial())
-            if first == True:
-                leftside = s
-                first = False
-            else:
-                leftside = "{} + {}".format(leftside, s)
-        first = True
-        for (sp, coeff) in zip(products, products_coeff):
-            s = "{0}({1})".format(coeff, sp.serial())
-            if first == True:
-                rightside += s
-                first = False
-            else:
-                rightside = "{} + {}".format(retval, s)
-        s = ""
-        if self.has_ratelaw():
-            s = "HAVE"
-        else:
-            s = "DON'T HAVE"
-        if self.is_massaction():
-            k_desc = "k = {:f}\t {} Ratelaw".format(self.k(), s)
-        else:
-            k_desc = "\t {} Ratelaw".format(s)
-        retval = "{} ---> {}\t{}".format(leftside, rightside, k_desc)
-        return retval
+        """as_string() -> str
+
+        Return an unicode string describing this object.
+
+        Returns:
+            str: An unicode string describing this object.
+
+        """
+        # reactants = self.reactants()
+        # reactants_coeff = self.reactants_coefficients()
+        # products = self.products()
+        # products_coeff = self.products_coefficients()
+        # leftside = ""
+        # rightside = ""
+        # retval = ""
+        # first = True
+        # for (sp, coeff) in zip(reactants, reactants_coeff):
+        #     s = "{0}({1})".format(coeff, sp.serial())
+        #     if first == True:
+        #         leftside = s
+        #         first = False
+        #     else:
+        #         leftside = "{} + {}".format(leftside, s)
+        # first = True
+        # for (sp, coeff) in zip(products, products_coeff):
+        #     s = "{0}({1})".format(coeff, sp.serial())
+        #     if first == True:
+        #         rightside += s
+        #         first = False
+        #     else:
+        #         rightside = "{} + {}".format(retval, s)
+        # s = ""
+        # if self.has_ratelaw():
+        #     s = "HAVE"
+        # else:
+        #     s = "DON'T HAVE"
+        # if self.is_massaction():
+        #     k_desc = "k = {:f}\t {} Ratelaw".format(self.k(), s)
+        # else:
+        #     k_desc = "\t {} Ratelaw".format(s)
+        # retval = "{} ---> {}\t{}".format(leftside, rightside, k_desc)
+        # return retval
+        return self.thisptr.as_string().decode('UTF-8')
 
 cdef ODEReactionRule ODEReactionRule_from_Cpp_ODEReactionRule(Cpp_ODEReactionRule *s):
     cdef Cpp_ODEReactionRule *new_obj = new Cpp_ODEReactionRule(deref(s))

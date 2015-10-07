@@ -116,6 +116,7 @@ cdef extern from "ecell4/ode/ODEReactionRule.hpp" namespace "ecell4::ode":
         shared_ptr[Cpp_ODERatelaw] get_ratelaw()
         bool has_ratelaw()
         bool is_massaction()
+        string as_string()
 
 cdef class ODEReactionRule:
     cdef Cpp_ODEReactionRule *thisptr
