@@ -6,6 +6,11 @@ from libcpp.string cimport string
 
 
 cdef class Voxel:
+    """A class representing a voxel in LatticeSpace.
+
+    Voxel(Species sp, Integer coord, Real radius, Real D, loc=None)
+
+    """
 
     def __init__(self, Species sp, Integer coord, Real radius, Real D, loc=None):
         """Constructor.
@@ -32,18 +37,31 @@ cdef class Voxel:
         del self.thisptr
 
     def coordinate(self):
+        """Return the coordinate."""
         return self.thisptr.coordinate()
 
     def D(self):
+        """Return the diffusion coefficient."""
         return self.thisptr.D()
 
     def radius(self):
+        """Return the radius."""
         return self.thisptr.radius()
 
     def species(self):
+        """species() -> Species
+
+        Return the species.
+
+        """
         return Species_from_Cpp_Species(address(self.thisptr.species()))
 
     def loc(self):
+        """loc() -> str
+
+        Return the location information as a string.
+
+        """
         return self.thisptr.loc().decode('UTF-8')
 
 cdef Voxel Voxel_from_Cpp_Voxel(Cpp_Voxel* p):
