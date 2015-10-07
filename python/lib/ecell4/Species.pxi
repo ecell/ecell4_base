@@ -17,12 +17,12 @@ cdef class Species:
         """Constructor.
 
         Args:
-          serial (str, optional): The serial name.
-          radius (str, optional): The radius of a molecule.
-            This must be given as a string.
-          D (str, optional): The diffusion rate of a molecule.
-            This must be given as a string.
-          location (str, optional): The location of a molecule.
+            serial (str, optional): The serial name.
+            radius (str, optional): The radius of a molecule.
+                This must be given as a string.
+            D (str, optional): The diffusion rate of a molecule.
+                This must be given as a string.
+            location (str, optional): The location of a molecule.
 
         """
         pass  # XXX: Only used for doc string
@@ -66,58 +66,68 @@ cdef class Species:
         return self.thisptr.serial().decode('UTF-8')
 
     def get_attribute(self, name):
-        """Return an attribute as an unicode string.
+        """get_attribute(name) -> str
+
+        Return an attribute as an unicode string.
         If no corresponding attribute is found, raise an error.
 
         Args:
-          name (str): The name of an attribute.
+            name (str): The name of an attribute.
 
         Returns:
-          value (str): The value of the attribute.
+            str: The value of the attribute.
 
         """
         return self.thisptr.get_attribute(
             tostring(name)).decode('UTF-8')
 
     def set_attribute(self, name, value):
-        """Set an attribute.
+        """set_attribute(name, value)
+
+        Set an attribute.
         If existing already, the attribute will be overwritten.
 
         Args:
-          name (str): The name of an attribute.
-          value (str): The value of an attribute.
+            name (str): The name of an attribute.
+            value (str): The value of an attribute.
 
         """
         self.thisptr.set_attribute(tostring(name), tostring(value))
 
     def remove_attribute(self, name):
-        """Remove an attribute.
+        """remove_attribute(name)
+
+        Remove an attribute.
         If no corresponding attribute is found, raise an error.
 
         Args:
-          name (str): The name of an attribute to be removed.
+            name (str): The name of an attribute to be removed.
 
         """
         self.thisptr.remove_attribute(tostring(name))
 
     def has_attribute(self, name):
-        """Return if the attribute exists or not.
+        """has_attribute(name) -> bool
+
+        Return if the attribute exists or not.
 
         Args:
-          name (str): The name of an attribute.
+            name (str): The name of an attribute.
 
         Returns:
-          bool: True if the attribute exists, False otherwise.
+            bool: True if the attribute exists, False otherwise.
 
         """
         return self.thisptr.has_attribute(tostring(name))
 
     def list_attributes(self):
-        """List all attributes.
+        """list_attributes() -> [(str, str)]
+
+        List all attributes.
 
         Returns:
-          list: A list of pairs of name and value.
-            ``name`` and ``value`` are given as unicode strings.
+            list: A list of pairs of name and value.
+                ``name`` and ``value`` are given as unicode strings.
 
         """
         retval = self.thisptr.list_attributes()
@@ -125,28 +135,36 @@ cdef class Species:
             for key, value in retval]
 
     def add_unit(self, UnitSpecies usp):
-        """Append an ``UnitSpecies`` to the end.
+        """add_unit(usp)
+
+        Append an ``UnitSpecies`` to the end.
 
         Args:
-          usp (UnitSpecies): An ``UnitSpecies`` to be added.
+            usp (UnitSpecies): An ``UnitSpecies`` to be added.
 
         """
         self.thisptr.add_unit(deref(usp.thisptr))
 
     def count(self, Species pttrn):
-        """Count the number of matches for a pattern given as a ``Species``.
+        """count(pttrn) -> Integer
+
+        Count the number of matches for a pattern given as a ``Species``.
 
         Args:
-          pttrn (Species): A pattern to be count.
+            pttrn (Species): A pattern to be count.
 
         Returns:
-          int: The number of matches.
+            Integer: The number of matches.
 
         """
         return self.thisptr.count(deref(pttrn.thisptr))
 
     def units(self):
-        """Return a list of all ``UnitSpecies``."""
+        """units() -> [UnitSpecies]
+
+        Return a list of all ``UnitSpecies`` contained.
+
+        """
         cdef vector[Cpp_UnitSpecies] usps = self.thisptr.units()
         retval = []
         cdef vector[Cpp_UnitSpecies].iterator it = usps.begin()
@@ -157,14 +175,20 @@ cdef class Species:
         return retval
 
     def num_units(self):
-        """Return the number of ``UnitSpecies``."""
+        """num_units() -> Integer
+
+        Return the number of ``UnitSpecies``.
+
+        """
         return self.thisptr.num_units()
 
     def deserialize(self, serial):
-        """Reset the serial. All attributes will be kept.
+        """deserialize(serial)
+
+        Reset the serial. All attributes will be kept.
 
         Args:
-          serial (string): A new serial as an unicode string.
+            serial (str): A new serial as an unicode string.
 
         """
         self.thisptr.deserialize(tostring(serial))
@@ -177,37 +201,52 @@ cdef Species Species_from_Cpp_Species(Cpp_Species *sp):
     return r
 
 def spmatch(Species pttrn, Species sp):
-    """Return if a pattern matches the target ``Species`` or not.
+    """spmatch(pttrn, sp) -> bool
+
+    Return if a pattern matches the target ``Species`` or not.
 
     Args:
-      pttrn (Species): A pattern.
-      sp (Species): A target.
+        pttrn (Species): A pattern.
+        sp (Species): A target.
 
     Return:
-      bool: True if ``pttrn`` matches ``sp`` at least one time, False otherwise.
+        bool: True if ``pttrn`` matches ``sp`` at least one time, False otherwise.
 
     """
     return context.spmatch(deref(pttrn.thisptr), deref(sp.thisptr))
 
 def count_spmatches(Species pttrn, Species sp):
-    """Count the number of matches for a pattern given as a ``Species``.
+    """count_spmatches(pttrn, sp) -> Integer
+
+    Count the number of matches for a pattern given as a ``Species``.
 
     Args:
-      pttrn (Species): A pattern.
-      sp (Species): A target.
+        pttrn (Species): A pattern.
+        sp (Species): A target.
 
     Return:
-      int: The number of matches.
+        Integer: The number of matches.
 
     Note:
-      Use ``Species.count``.
+        Rather use ``Species.count``.
 
     """
     return context.count_spmatches(deref(pttrn.thisptr), deref(sp.thisptr))
 
 def format_species(Species sp):
+    """format_species(sp) -> Species
+
+    Return a species uniquely reformatted.
+
+    """
     cdef Cpp_Species newsp = context.format_species(deref(sp.thisptr))
     return Species_from_Cpp_Species(address(newsp))
 
 def unique_serial(Species sp):
+    """unique_serial(sp) -> str
+
+    Return a serial of a species uniquely reformatted.
+    This is equivalent to call ``format_species(sp).serial()``
+
+    """
     return context.unique_serial(deref(sp.thisptr)).decode('UTF-8')

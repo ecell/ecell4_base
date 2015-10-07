@@ -91,7 +91,7 @@ cdef extern from "ecell4/core/Species.hpp" namespace "ecell4":
         string get_attribute(string)
         Integer count(Cpp_Species& sp)
         void set_attribute(string, string)
-        void remove_attribute(string)
+        void remove_attribute(string) except+
         bool has_attribute(string)
         vector[pair[string, string]] list_attributes()
         # Integer get_unit(Cpp_UnitSpecies)
