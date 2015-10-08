@@ -1,8 +1,8 @@
 #include "LatticeSimulator.hpp"
 
-//#include <set>
 #include <algorithm>
 #include <iterator>
+#include <ecell4/core/StructureType.hpp>
 
 namespace ecell4
 {
@@ -219,6 +219,64 @@ Real LatticeSimulator::calculate_dimensional_factor(
     else
         throw NotSupported("The dimension of a structure must be two or three.");
     return factor;
+}
+
+Real LatticeSimulator::calculate_alpha(const ReactionRule& rule) const
+{
+    const ReactionRule::reactant_container_type& reactants(rule.reactants());
+    if (reactants.size() != 2)
+        return 1.0;
+    const Species
+        sp0(reactants.at(0)),
+        sp1(reactants.at(1));
+    const MoleculeInfo
+        info0(world_->get_molecule_info(sp0)),
+        info1(world_->get_molecule_info(sp1));
+    MolecularTypeBase *mt0, *mt1;
+    bool new0(false), new1(false);
+    try
+    {
+        mt0 = world_->find_molecular_type(sp0);
+    }
+    catch(NotFound e)
+    {
+        MolecularTypeBase *location;
+        try
+        {
+            location = world_->find_molecular_type(Species(info0.loc));
+        }
+        catch(NotFound e)
+        {
+            location = &(VacantType::getInstance());
+        }
+        mt0 = new MolecularType(sp0, location, info0.radius, info0.D);
+        new0 = true;
+    }
+    try
+    {
+        mt1 = world_->find_molecular_type(sp1);
+    }
+    catch(NotFound e)
+    {
+        MolecularTypeBase *location;
+        try
+        {
+            location = world_->find_molecular_type(Species(info1.loc));
+        }
+        catch(NotFound e)
+        {
+            location = &(VacantType::getInstance());
+        }
+        mt1 = new MolecularType(sp1, location, info1.radius, info1.D);
+        new1 = true;
+    }
+    const Real factor(calculate_dimensional_factor(mt0, mt1));
+    if (new0)
+        delete mt0;
+    if (new1)
+        delete mt1;
+    const Real alpha(1.0 / (factor * rule.k()));
+    return alpha < 1.0 ? alpha : 1.0;
 }
 
 std::pair<bool, LatticeSimulator::reaction_type> LatticeSimulator::attempt_reaction_(

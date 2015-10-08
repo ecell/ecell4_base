@@ -207,6 +207,7 @@ public:
     // void run(const Real& duration);
     void walk(const Species& species);
     void walk(const Species& species, const Real& alpha);
+    Real calculate_alpha(const ReactionRule& rule) const;
 
     std::vector<ReactionRule> last_reactions() const
     {
