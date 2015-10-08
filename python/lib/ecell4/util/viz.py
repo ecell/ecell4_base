@@ -14,8 +14,10 @@ import types
 def __parse_world(
         world, radius=None, species_list=None, max_count=None,
         predicator=None):
-    """Private function to parse world. Return infomation about particles
+    """
+    Private function to parse world. Return infomation about particles
     (name, coordinates and particle size) for each species.
+
     """
     from ecell4 import Species
 
@@ -80,7 +82,8 @@ def __get_range_of_world(world):
 def plot_movie(
         worlds, radius=None, width=500, height=500, config={}, grid=False,
         species_list=None):
-    """Generate a movie from received instances of World and show them
+    """
+    Generate a movie from received instances of World and show them
     on IPython notebook.
 
     Parameters
@@ -100,6 +103,12 @@ def plot_movie(
         Colors included in config dict will never be used for other speices.
     species_list: array of string, default None
         If set, plot_movie will not search the list of species
+
+    Returns
+    -------
+    cfg : dict
+        The config data used in this plot.
+
     """
     from IPython.core.display import display, HTML
     from jinja2 import Template
@@ -145,8 +154,8 @@ def plot_world(
         world, radius=None, width=500, height=500, config={}, grid=True,
         save_image=False, wireframe=False, species_list=None, debug=None, max_count=1000,
         predicator=None):
-    """Generate a plot from received instance of World and show it
-    on IPython notebook.
+    """
+    Generate a plot from received instance of World and show it on IPython notebook.
     This method returns the instance of dict that indicates color setting
     for each speices. You can use the dict as the parameter of plot_world,
     in order to use the same colors in another plot.
@@ -180,6 +189,12 @@ def plot_world(
             plane: width, height
             sphere: radius
             cylinder: radius, height
+
+    Returns
+    -------
+    cfg : dict
+        The config data used in this plot.
+
     """
     from IPython.core.display import display, HTML
 
@@ -233,7 +248,9 @@ def plot_world(
 
 
 def plot_dense_array(arr, length=256, ranges=None, colors=["#a6cee3", "#fb9a99"], save_image=False, grid=False):
-    """ Volume renderer
+    """
+    Volume renderer
+
     Parameters
     ----------
     arr : list of numpy.array
@@ -246,6 +263,7 @@ def plot_dense_array(arr, length=256, ranges=None, colors=["#a6cee3", "#fb9a99"]
     length: int
         length of the texture
         256 or 64
+
     """
     import numpy
     from PIL import Image
@@ -320,7 +338,8 @@ def plot_dense_array(arr, length=256, ranges=None, colors=["#a6cee3", "#fb9a99"]
         '/templates/particles.tmpl')))
 
 def generate_html(keywords, tmpl_path):
-    """Generate static html file from JSON model and its own id.
+    """
+    Generate static html file from JSON model and its own id.
 
     Parameters
     ----------
@@ -328,6 +347,11 @@ def generate_html(keywords, tmpl_path):
         JSON model from which ecell4.viz generates a plot.
     model_id : string
         Unique id for the plot.
+
+    Returns
+    -------
+    html :
+        A HTML object
     """
     from jinja2 import Template
 
@@ -340,7 +364,8 @@ def generate_html(keywords, tmpl_path):
 def plot_trajectory(
         obs, width=500, height=500, config={}, grid=True, wireframe=False,
         max_count=10, save_image=False):
-    """Generate a plot from received instance of TrajectoryObserver and show it
+    """
+    Generate a plot from received instance of TrajectoryObserver and show it
     on IPython notebook.
 
     Parameters
@@ -355,6 +380,12 @@ def plot_trajectory(
         Dict for configure default colors. Its values are colors unique
         to each particle.
         Colors included in config dict will never be used for other particles.
+
+    Returns
+    -------
+    cfg : dict
+        The config data used in this plot.
+
     """
     from IPython.core.display import display, HTML
 
@@ -497,14 +528,15 @@ def logo(x=1, y=None):
     display(h)
 
 def plot_number_observer(*args, **kwargs):
-    """Generate a plot from NumberObservers and show it on IPython notebook
+    """
+    Generate a plot from NumberObservers and show it on IPython notebook
     with matplotlib.
 
     Parameters
     ----------
     obs : NumberObserver (e.g. FixedIntervalNumberObserver)
-    fmt : str
-    opt : dict
+    fmt : str, optional
+    opt : dict, optional
         matplotlib plot options.
 
     Examples
@@ -513,6 +545,7 @@ def plot_number_observer(*args, **kwargs):
     >>> plot_number_observer(obs1, 'o')
     >>> plot_number_observer(obs1, obs2, obs3, {'linewidth': 2})
     >>> plot_number_observer(obs1, 'k-', obs2, 'k--')
+
     """
     import matplotlib.pylab as plt
     import numpy
@@ -607,6 +640,28 @@ def plot_number_observer(*args, **kwargs):
     plt.show()
 
 def plot_number_observer_with_nya(obs, config={}, width=600, height=400, x=None, y=None):
+    """
+    Generate a plot from NumberObservers and show it on IPython notebook
+    with nyaplot.
+
+    Parameters
+    ----------
+    obs : NumberObserver (e.g. FixedIntervalNumberObserver)
+    config : dict, optional
+        A config data for coloring.
+    width : int, optional
+    height : int, optional
+    x : str, optional
+        A serial for x-axis. If None, x-axis corresponds time.
+    y : str or list of str
+        Serials for y axis.
+
+    Returns
+    -------
+    cfg : dict
+        The config data used in this plot.
+
+    """
     from IPython.core.display import display, HTML
     import numpy
 
@@ -665,7 +720,9 @@ def plot_number_observer_with_nya(obs, config={}, width=600, height=400, x=None,
     return color_scale.get_config()
 
 class ColorScale:
-    """Color scale for species.
+    """
+    Color scale for species.
+
     """
 
     COLORS = [
@@ -674,13 +731,15 @@ class ColorScale:
         "#fccde5", "#d9d9d9", "#bc80bd", "#ccebc5", "#ffed6f"]
 
     def __init__(self, config={}):
-        """Initialize a color scale
+        """
+        Initialize a color scale
 
         Parameters
         ----------
         config : dict, default {}
             Dict for configure default colors. Its values are colors unique
             to each key. Colors included in config will never be used.
+
         """
 
         self.config = config
@@ -691,7 +750,8 @@ class ColorScale:
                 self.buffer.remove(color)
 
     def get_color(self, name):
-        """Get color unique to the recieved name
+        """
+        Get color unique to the recieved name
 
         Parameters
         ----------
@@ -707,6 +767,5 @@ class ColorScale:
         return self.config[name]
 
     def get_config(self):
-        """Get an instance of dic as the config of colors.
-        """
+        """Get an instance of dic as the config of colors."""
         return self.config

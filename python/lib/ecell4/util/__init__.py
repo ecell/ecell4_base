@@ -8,6 +8,22 @@ __all__ = [
 
 
 def load_world(filename):
+    """
+    Load a world from the given HDF5 filename.
+    The return type is determined by ``ecell4.core.load_version_information``.
+
+    Parameters
+    ----------
+    filename : str
+        A HDF5 filename.
+
+    Returns
+    -------
+    w : World
+        Return one from ``BDWorld``, ``EGFRDWorld``, ``MesoscopicWorld``,
+        ``ODEWorld``, ``GillespieWorld`` and ``LatticeWorld``.
+
+    """
     import ecell4
 
     vinfo = ecell4.core.load_version_information(filename)
@@ -31,33 +47,43 @@ def run_simulation(
         t, y0={}, volume=1.0, model=None, solver='ode',
         factory=None, is_netfree=False, species_list=None, without_reset=False,
         return_type='matplotlib', plot_args={}):
-    """Run a simulation with the given model and plot the result on IPython
+    """
+    Run a simulation with the given model and plot the result on IPython
     notebook with matplotlib.
 
     Parameters
     ----------
-    t: array
+    t : array
         A sequence of time points for which to solve for 'm'.
-    y0: dict
+    y0 : dict
         Initial condition.
-    volume: Real, optional
-    model: Model, optional
-    solver: str, optional
+    volume : Real, optional
+    model : Model, optional
+    solver : str, optional
         Solver type. Choose one from 'ode', 'gillespie', 'lattice', 'meso',
         'bd' and 'egfrd'. Default is 'ode'.
-    species_list: list of str, optional
+    species_list : list of str, optional
         A list of names of Species observed. If None, log all.
         Default is None.
-    return_type: str, optional
+    return_type : str, optional
         Choose a type of return value from 'array', 'observer',
         'matplotlib', 'nyaplot' or None.
         If None, return and plot nothing. Default is 'matplotlib'.
-    plot_args: dict, optional
+    plot_args : dict, optional
         Arguments for plotting. If plot_type is None, just ignored.
-    factory: Factory, optional
-    is_netfree: bool, optional
+    factory : Factory, optional
+    is_netfree : bool, optional
         Whether the model is netfree or not. When a model is given as an
         argument, just ignored. Default is False.
+
+    Returns
+    -------
+    value : list, TimingNumberObserver, or None
+        Return a value suggested by ``return_type``.
+        When ``return_type`` is 'array', return a time course data.
+        When ``return_type`` is 'observer', return an observer.
+        Return nothing if else.
+
     """
     import ecell4
 
