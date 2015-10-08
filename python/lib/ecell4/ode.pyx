@@ -22,8 +22,10 @@ cdef class ODEWorld:
     def __init__(self, edge_lengths = None):
         """Constructor.
 
-        Args:
-            edge_lengths (Real3, optional): A size of the World.
+        Parameters
+        ----------
+        edge_lengths : Real3, optional
+            A size of the World.
 
         """
         pass  # XXX: Only used for doc string
@@ -79,11 +81,15 @@ cdef class ODEWorld:
         Return the number of molecules. A value is rounded to an integer.
         See set_value also.
 
-        Args:
-            sp (Species, optional): a species whose molecules you count
+        Parameters
+        ----------
+        sp : Species, optional
+            a species whose molecules you count
 
-        Returns:
-            Integer: the number of molecules (of a given species)
+        Returns
+        -------
+        Integer:
+            the number of molecules (of a given species)
 
         """
         return self.thisptr.get().num_molecules(deref(sp.thisptr))
@@ -94,11 +100,15 @@ cdef class ODEWorld:
         Return the number of molecules of a given species.
         A value is rounded to an integer. See get_value_exact also.
 
-        Args:
-            sp (Species): a species whose molecules you count
+        Parameters
+        ----------
+        sp : Species
+            a species whose molecules you count
 
-        Returns:
-            Integer: the number of molecules of a given species
+        Returns
+        -------
+        Integer:
+            the number of molecules of a given species
 
         """
         return self.thisptr.get().num_molecules_exact(deref(sp.thisptr))
@@ -119,11 +129,14 @@ cdef class ODEWorld:
 
         Add some molecules.
 
-        Args:
-            sp (Species): a species of molecules to add
-            num (Integer): the number of molecules to add
-            shape (Shape, optional): a shape to add molecules on
-                [not supported yet]
+        Parameters
+        ----------
+        sp : Species
+            a species of molecules to add
+        num : Integer
+            the number of molecules to add
+        shape : Shape, optional
+            a shape to add molecules on [not supported yet]
 
         """
         if shape is None:
@@ -137,9 +150,12 @@ cdef class ODEWorld:
 
         Remove molecules
 
-        Args:
-            sp (Species): a species whose molecules to remove
-            num (Integer): a number of molecules to be removed
+        Parameters
+        ----------
+        sp : Species
+            a species whose molecules to remove
+        num : Integer
+            a number of molecules to be removed
 
         """
         self.thisptr.get().remove_molecules(deref(sp.thisptr), num)
@@ -149,11 +165,15 @@ cdef class ODEWorld:
 
         Return the value matched to a given species.
 
-        Args:
-            sp (Species): a pattern whose value you get
+        Parameters
+        ----------
+        sp : Species
+            a pattern whose value you get
 
-        Returns:
-            Real: the value matched to a given species
+        Returns
+        -------
+        Real:
+            the value matched to a given species
 
         """
         return self.thisptr.get().get_value(deref(sp.thisptr))
@@ -163,11 +183,15 @@ cdef class ODEWorld:
 
         Return the value connected to a given species.
 
-        Args:
-            sp (Species): a species whose value you get
+        Parameters
+        ----------
+        sp : Species
+            a species whose value you get
 
-        Returns:
-            Real: the value connected to a given species
+        Returns
+        -------
+        Real:
+            the value connected to a given species
 
         """
         return self.thisptr.get().get_value(deref(sp.thisptr))
@@ -177,9 +201,12 @@ cdef class ODEWorld:
 
         Set the value of the given species.
 
-        Args:
-            sp (Species): a species whose value you set
-            value (Real): a value set
+        Parameters
+        ----------
+        sp : Species
+            a species whose value you set
+        value : Real
+            a value set
 
         """
         self.thisptr.get().set_value(deref(sp.thisptr), value)
@@ -189,8 +216,10 @@ cdef class ODEWorld:
 
         Save the current state to a HDF5 file.
 
-        Args:
-            filename (str): a file name to be saved.
+        Parameters
+        ----------
+        filename : str
+            a file name to be saved.
 
         """
         self.thisptr.get().save(tostring(filename))
@@ -200,8 +229,10 @@ cdef class ODEWorld:
 
         Load a HDF5 file to the current state.
 
-        Args:
-            filename (str): a file name to be loaded.
+        Parameters
+        ----------
+        filename : str
+            a file name to be loaded.
 
         """
         self.thisptr.get().load(tostring(filename))
@@ -211,11 +242,15 @@ cdef class ODEWorld:
 
         Check if the given species is belonging to this.
 
-        Args:
-            sp (Species): a species to be checked.
+        Parameters
+        ----------
+        sp : Species
+            a species to be checked.
 
-        Returns:
-            bool: True if the given species is contained.
+        Returns
+        -------
+        bool:
+            True if the given species is contained.
 
         """
         return self.thisptr.get().has_species(deref(sp.thisptr))
@@ -225,8 +260,10 @@ cdef class ODEWorld:
 
         Reserve a value for the given species. Use set_value.
 
-        Args:
-            sp (Species): a species to be reserved.
+        Parameters
+        ----------
+        sp : Species
+            a species to be reserved.
 
         """
         self.thisptr.get().reserve_species(deref(sp.thisptr))
@@ -237,8 +274,10 @@ cdef class ODEWorld:
         Release a value for the given species.
         This function is mainly for developers.
 
-        Args:
-            sp (Species): a species to be released.
+        Parameters
+        ----------
+        sp : Species
+            a species to be released.
 
         """
         self.thisptr.get().release_species(deref(sp.thisptr))
@@ -248,8 +287,10 @@ cdef class ODEWorld:
 
         Bind a model.
 
-        Args:
-            m (ODENetworkModel or NetworkModel): a model to be bound
+        Parameters
+        ----------
+        m : ODENetworkModel or NetworkModel
+            a model to be bound
 
         """
         if isinstance(m, ODENetworkModel):
@@ -303,8 +344,10 @@ cdef class ODERatelawMassAction:
     def __init__(self, Real k):
         """Constructor.
 
-        Args:
-            k (Real): A kinetic rate for the mass action.
+        Parameters
+        ----------
+        k : Real
+            A kinetic rate for the mass action.
 
         """
         pass
@@ -325,8 +368,10 @@ cdef class ODERatelawMassAction:
 
         Set a kinetic rate constant.
 
-        Args:
-            k (float): A kinetic rate constant.
+        Parameters
+        ----------
+        k : float
+            A kinetic rate constant.
 
         """
         self.get().thisptr.set_k(k)
@@ -377,9 +422,11 @@ cdef class ODERatelawCallback:
     def __init__(self, pyfunc):
         """Constructor.
 
-        Args:
-            pyfunc: A Python function for the callback.
-                See set_callback function of this class for details.
+        Parameters
+        ----------
+        pyfunc : function
+            A Python function for the callback.
+            See set_callback function of this class for details.
 
         """
         pass
@@ -397,22 +444,25 @@ cdef class ODERatelawCallback:
     def set_callback(self, pyfunc):
         """set_callback(pyfunc)
 
-        Args:
-            pyfunc: A Python function for the callback
-                The function must accept five arguments, and return a velocity.
-                The number of reactants, the number of products, a volume,
-                the current time, and a ODEReactionRule are given as the
-                arguments in this order.
+        Parameters
+        ----------
+        pyfunc : function
+            A Python function for the callback
+            The function must accept five arguments, and return a velocity.
+            The number of reactants, the number of products, a volume,
+            the current time, and a ODEReactionRule are given as the
+            arguments in this order.
 
-        Example:
-            The following callback represents a simple Michaelis-Menten-like
-            equation:
+        Examples
+        --------
+        The following callback represents a simple Michaelis-Menten-like
+        equation:
 
-            >>> rl = ODERatelawCallback()
-            >>> rl.set_callback(lambda r, p, v, t, rr: 2.0 * r[0] * r[1] / (1.0 + r[1]))
+        >>> rl = ODERatelawCallback()
+        >>> rl.set_callback(lambda r, p, v, t, rr: 2.0 * r[0] * r[1] / (1.0 + r[1]))
 
-            Here, we expect that the first reactant is an enzyme,
-            and that the second one is a substrate.
+        Here, we expect that the first reactant is an enzyme,
+        and that the second one is a substrate.
 
         """
         self.thisptr.get().set_callback_pyfunc(<Python_CallbackFunctype>pyfunc)
@@ -453,8 +503,10 @@ cdef class ODEReactionRule:
 
         Set a kinetic rate constant.
 
-        Args:
-            k (float): A kinetic rate constant.
+        Parameters
+        ----------
+        k : float
+            A kinetic rate constant.
 
         """
         self.thisptr.set_k(k)
@@ -464,9 +516,12 @@ cdef class ODEReactionRule:
 
         Append a reactant to the end.
 
-        Args:
-            sp (Species): A new reactant.
-            coeff (Integer): A stoichiometry coefficient.
+        Parameters
+        ----------
+        sp : Species
+            A new reactant.
+        coeff : Integer
+            A stoichiometry coefficient.
 
         """
         if coeff is not None:
@@ -479,9 +534,12 @@ cdef class ODEReactionRule:
 
         Append a product to the end.
 
-        Args:
-            sp (Species): A new product.
-            coeff (Integer): A stoichiometry coefficient.
+        Parameters
+        ----------
+        sp : Species
+            A new product.
+        coeff : Integer
+            A stoichiometry coefficient.
 
         """
         if coeff is not None:
@@ -494,9 +552,12 @@ cdef class ODEReactionRule:
 
         Set a stoichiometry coefficient of a reactant at the given index.
 
-        Args:
-            index (Integer): An index pointing the target reactant.
-            coeff (Integer): A stoichiometry coefficient.
+        Parameters
+        ----------
+        index : Integer
+            An index pointing the target reactant.
+        coeff : Integer
+            A stoichiometry coefficient.
 
         """
         self.thisptr.set_reactant_coefficient(index, coeff)
@@ -506,9 +567,12 @@ cdef class ODEReactionRule:
 
         Set a stoichiometry coefficient of a product at the given index.
 
-        Args:
-            index (Integer): An index pointing the target product.
-            coeff (Integer): A stoichiometry coefficient.
+        Parameters
+        ----------
+        index : Integer
+            An index pointing the target product.
+        coeff : Integer
+            A stoichiometry coefficient.
 
         """
         self.thisptr.set_product_coefficient(index, coeff)
@@ -518,8 +582,10 @@ cdef class ODEReactionRule:
 
         Bind a ratelaw.
 
-        Args:
-            ratelaw_obj (ODERatelaw): A ratelaw
+        Parameters
+        ----------
+        ratelaw_obj : ODERatelaw
+            A ratelaw
 
         """
         self.ratelaw = ratelaw_obj
@@ -530,8 +596,10 @@ cdef class ODEReactionRule:
 
         Bind a mass action ratelaw. This will be deprecated soon.
 
-        Args:
-            ratelaw_obj (ODERatelawMassAction): A ratelaw
+        Parameters
+        ----------
+        ratelaw_obj : ODERatelawMassAction
+            A ratelaw
 
         """
         self.ratelaw = ratelaw_obj
@@ -548,8 +616,10 @@ cdef class ODEReactionRule:
     def reactants(self):
         """List all reactants.
 
-        Return:
-            list: A list of reactant ``Species``.
+        Returns
+        -------
+        list:
+            A list of reactant ``Species``.
 
         """
         cdef vector[Cpp_Species] cpp_reactants = self.thisptr.reactants()
@@ -566,8 +636,10 @@ cdef class ODEReactionRule:
 
         List all coefficients for reactants.
 
-        Return:
-            list: A list of reactant coefficients.
+        Returns
+        -------
+        list:
+            A list of reactant coefficients.
 
         """
         cdef vector[Real] coefficients = self.thisptr.reactants_coefficients()
@@ -581,8 +653,10 @@ cdef class ODEReactionRule:
     def products(self):
         """List all products.
 
-        Return:
-            list: A list of product ``Species``.
+        Returns
+        -------
+        list:
+            A list of product ``Species``.
 
         """
         cdef vector[Cpp_Species] cpp_products = self.thisptr.products()
@@ -599,8 +673,10 @@ cdef class ODEReactionRule:
 
         List all coefficients for products.
 
-        Return:
-            list: A list of product coefficients.
+        Returns
+        -------
+        list:
+            A list of product coefficients.
 
         """
         cdef vector[Real] coefficients = self.thisptr.products_coefficients()
@@ -616,8 +692,10 @@ cdef class ODEReactionRule:
 
         Return an unicode string describing this object.
 
-        Returns:
-            str: An unicode string describing this object.
+        Returns
+        -------
+        str:
+            An unicode string describing this object.
 
         """
         # reactants = self.reactants()
@@ -673,8 +751,10 @@ cdef class ODENetworkModel:
     def __init__(self, NetworkModel m = None):
         """Constructor.
 
-        Args:
-            m (NetworkModel, optional): A network model.
+        Parameters
+        ----------
+        m : NetworkModel, optional
+            A network model.
 
         """
         pass
@@ -723,8 +803,10 @@ cdef class ODENetworkModel:
 
         Add a new reaction rule.
 
-        Args:
-            rr (ReactionRule or ODEReactionRule): A new reaction rule.
+        Parameters
+        ----------
+        rr : ReactionRule or ODEReactionRule
+            A new reaction rule.
 
         """
         if isinstance(rr, ODEReactionRule):
@@ -779,11 +861,15 @@ cdef class ODESimulator:
     def __init__(self, arg1, arg2 = None, arg3 = None):
         """Constructor.
 
-        Args:
-            m (ODENetworkModel or NetworkModel): A model
-            w (LatticeWorld): A world
-            solver_type (int, optional): a type of the ode solver.
-                Choose one from RUNGE_KUTTA_CASH_KARP54, ROSENBROCK4 and EULER.
+        Parameters
+        ----------
+        m : ODENetworkModel or NetworkModel
+            A model
+        w : LatticeWorld
+            A world
+        solver_type : int, optional
+            a type of the ode solver.
+            Choose one from RUNGE_KUTTA_CASH_KARP54, ROSENBROCK4 and EULER.
 
         """
         pass
@@ -874,12 +960,16 @@ cdef class ODESimulator:
 
         Step the simulation.
 
-        Args:
-            upto (Real, optional): the time which to step the simulation up to
+        Parameters
+        ----------
+        upto : Real, optional
+            the time which to step the simulation up to
 
-        Returns:
-            bool: True if the simulation did not reach the given time.
-                When upto is not given, nothing will be returned.
+        Returns
+        -------
+        bool:
+            True if the simulation did not reach the given time.
+            When upto is not given, nothing will be returned.
 
         """
         if upto is None:
@@ -900,8 +990,10 @@ cdef class ODESimulator:
 
         Set the current time.
 
-        Args:
-            t (Real): a current time.
+        Parameters
+        ----------
+        t : Real
+            a current time.
 
         """
         self.thisptr.set_t(t_new)
@@ -915,8 +1007,10 @@ cdef class ODESimulator:
 
         Set a step interval.
 
-        Args:
-            dt (Real): a step interval
+        Parameters
+        ----------
+        dt : Real
+            a step interval
 
         """
         self.thisptr.set_dt(dt_new)
@@ -934,8 +1028,10 @@ cdef class ODESimulator:
 
         Set the absolute tolerance.
 
-        Args:
-            abs_tol (Real): an absolute tolerance.
+        Parameters
+        ----------
+        abs_tol : Real
+            an absolute tolerance.
 
         """
         self.thisptr.set_absolute_tolerance(abs_tol)
@@ -949,8 +1045,10 @@ cdef class ODESimulator:
 
         Set the relative tolerance.
 
-        Args:
-            rel_tol (Real): an relative tolerance.
+        Parameters
+        ----------
+        rel_tol : Real
+            an relative tolerance.
 
         """
         self.thisptr.set_relative_tolerance(rel_tol)
@@ -960,10 +1058,13 @@ cdef class ODESimulator:
 
         Run the simulation.
 
-        Args:
-            duration (Real): a duration for running a simulation.
+        Parameters
+        ----------
+        duration : Real
+            a duration for running a simulation.
                 A simulation is expected to be stopped at t() + duration.
-            observers (list of Obeservers, optional): observers
+        observers : list of Obeservers, optional
+            observers
 
         """
         cdef vector[shared_ptr[Cpp_Observer]] tmp
@@ -998,10 +1099,14 @@ cdef class ODEFactory:
     def __init__(self, solvertype = None, dt = None):
         """Constructor.
 
-        Args:
-            solvertype (int, optional): a type of the ode solver.
-                Choose one from RUNGE_KUTTA_CASH_KARP54, ROSENBROCK4 and EULER.
-            dt (Real, optional): a default step interval.
+        Parameters
+        ----------
+        solvertype : int, optional
+            a type of the ode solver.
+            Choose one from RUNGE_KUTTA_CASH_KARP54, ROSENBROCK4 and EULER.
+        dt : Real, optional
+            a default step interval.
+
         """
         pass
 
@@ -1021,15 +1126,20 @@ cdef class ODEFactory:
 
         Return a ODEWorld instance.
 
-        Args:
-            arg1 (Real3): The lengths of edges of a ODEWorld created
+        Parameters
+        ----------
+        arg1 : Real3
+            The lengths of edges of a ODEWorld created
 
-            or
+        or
 
-            arg1 (str): The path of a HDF5 file for ODEWorld
+        arg1 : str
+            The path of a HDF5 file for ODEWorld
 
-        Returns:
-            ODEWorld: the created world
+        Returns
+        -------
+        ODEWorld:
+            the created world
 
         """
         if arg1 is None:
@@ -1058,16 +1168,22 @@ cdef class ODEFactory:
 
         Return a ODESimulator instance.
 
-        Args:
-            arg1 (ODEWorld): a world
+        Parameters
+        ----------
+        arg1 : ODEWorld
+            a world
 
-            or
+        or
 
-            arg1 (ODENetworkModel or NetworkModel): a simulation model
-            arg2 (ODEWorld): a world
+        arg1 : ODENetworkModel or NetworkModel
+            a simulation model
+        arg2 : ODEWorld
+            a world
 
-        Returns:
-            ODESimulator: the created simulator
+        Returns
+        -------
+        ODESimulator:
+            the created simulator
 
         """
         if arg2 is None:

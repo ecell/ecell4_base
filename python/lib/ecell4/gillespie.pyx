@@ -16,9 +16,12 @@ cdef class GillespieWorld:
     def __init__(self, edge_lengths = None, GSLRandomNumberGenerator rng = None):
         """Constructor.
 
-        Args:
-            edge_lengths (Real3, optional): A size of the World.
-            rng (GSLRandomNumberGenerator, optional): A random number generator.
+        Parameters
+        ----------
+        edge_lengths : Real3, optional
+            A size of the World.
+        rng : GSLRandomNumberGenerator, optional
+            A random number generator.
 
         """
         pass
@@ -53,8 +56,10 @@ cdef class GillespieWorld:
 
         Set the value of the time of the world.
 
-        Args:
-            t (Real): the time of the world
+        Parameters
+        ----------
+        t : Real
+            the time of the world
 
         """
         self.thisptr.get().set_t(t)
@@ -80,11 +85,15 @@ cdef class GillespieWorld:
 
         Return the number of molecules.
 
-        Args:
-            sp (Species): a species whose molecules you count
+        Parameters
+        ----------
+        sp : Species
+            a species whose molecules you count
 
-        Returns:
-            Integer: the number of molecules (of a given species)
+        Returns
+        -------
+        Integer:
+            the number of molecules (of a given species)
 
         """
         # if sp is None:
@@ -98,11 +107,15 @@ cdef class GillespieWorld:
 
         Return the number of molecules of a given species.
 
-        Args:
-            sp (Species): a species whose molecules you count
+        Parameters
+        ----------
+        sp : Species
+            a species whose molecules you count
 
-        Returns:
-            Integer: the number of molecules of a given species
+        Returns
+        -------
+        Integer:
+            the number of molecules of a given species
 
         """
         return self.thisptr.get().num_molecules_exact(deref(sp.thisptr))
@@ -112,11 +125,15 @@ cdef class GillespieWorld:
 
         Add some molecules.
 
-        Args:
-            sp (Species): a species of molecules to add
-            num (Integer): the number of molecules to add
-            shape (Shape, optional): a shape to add molecules on
-                [not supported yet]
+        Parameters
+        ----------
+        sp : Species
+            a species of molecules to add
+        num : Integer
+            the number of molecules to add
+        shape : Shape, optional
+            a shape to add molecules on [not supported yet]
+
         """
         if shape is None:
             self.thisptr.get().add_molecules(deref(sp.thisptr), num)
@@ -129,9 +146,12 @@ cdef class GillespieWorld:
 
         Remove the molecules.
 
-        Args:
-            sp (Species): a species whose molecules to remove
-            num (Integer): a number of molecules to be removed
+        Parameters
+        ----------
+        sp : Species
+            a species whose molecules to remove
+        num : Integer
+            a number of molecules to be removed
 
         """
         self.thisptr.get().remove_molecules(deref(sp.thisptr), num)
@@ -155,12 +175,16 @@ cdef class GillespieWorld:
         Return the list of particles.
         A position of each particle is randomly generated.
 
-        Args:
-            sp (Species, optional): the species of particles to list up
+        Parameters
+        ----------
+        sp : Species, optional
+            the species of particles to list up
                 If no species is given, return the whole list of particles.
 
-        Returns:
-            list: the list of particles (of the given species)
+        Returns
+        -------
+        list:
+            the list of particles (of the given species)
 
         """
         cdef vector[pair[Cpp_ParticleID, Cpp_Particle]] particles
@@ -187,11 +211,15 @@ cdef class GillespieWorld:
         Return the list of particles of a given species.
         A position of each particle is randomly generated.
 
-        Args:
-            sp (Species): the species of particles to list up
+        Parameters
+        ----------
+        sp : Species
+            the species of particles to list up
 
-        Returns:
-            list: the list of particles of a given species
+        Returns
+        -------
+        list:
+            the list of particles of a given species
 
         """
         cdef vector[pair[Cpp_ParticleID, Cpp_Particle]] particles
@@ -214,8 +242,10 @@ cdef class GillespieWorld:
 
         Save self to a HDF5 file.
 
-        Args:
-            filename (str): a filename
+        Parameters
+        ----------
+        filename : str
+            a filename
 
         """
         self.thisptr.get().save(tostring(filename))
@@ -225,8 +255,10 @@ cdef class GillespieWorld:
 
         Load self from a HDF5 file.
 
-        Args:
-            filename (str): a filename
+        Parameters
+        ----------
+        filename : str
+            a filename
 
         """
         self.thisptr.get().load(tostring(filename))
@@ -236,8 +268,10 @@ cdef class GillespieWorld:
 
         Bind a model to the world
 
-        Args:
-            m (Model): a model to bind
+        Parameters
+        ----------
+        m : Model
+            a model to bind
 
         """
         self.thisptr.get().bind_to(deref(Cpp_Model_from_Model(m)))
@@ -276,9 +310,12 @@ cdef class GillespieSimulator:
 
         Constructor.
 
-        Args:
-            m (Model): A model
-            w (GillespieWorld): A world
+        Parameters
+        ----------
+        m : Model
+            A model
+        w : GillespieWorld
+            A world
 
         """
         pass
@@ -303,12 +340,16 @@ cdef class GillespieSimulator:
 
         Step the simulation.
 
-        Args:
-            upto (Real, optional): the time which to step the simulation up to
+        Parameters
+        ----------
+        upto : Real, optional
+            the time which to step the simulation up to
 
-        Returns:
-            bool: True if the simulation did not reach the given time.
-                When upto is not given, nothing will be returned.
+        Returns
+        -------
+        bool:
+            True if the simulation did not reach the given time.
+            When upto is not given, nothing will be returned.
 
         """
         if upto is None:
@@ -333,8 +374,10 @@ cdef class GillespieSimulator:
 
         Return reactions occuring at the last step.
 
-        Returns:
-            list: the list of reaction rules and infos.
+        Returns
+        -------
+        list:
+            the list of reaction rules and infos.
 
         """
         cdef vector[Cpp_ReactionRule] reactions = self.thisptr.last_reactions()
@@ -351,8 +394,10 @@ cdef class GillespieSimulator:
 
         Set the current time.
 
-        Args:
-            t (Real): a current time.
+        Parameters
+        ----------
+        t : Real
+            a current time.
 
         """
         self.thisptr.set_t(new_t)
@@ -362,8 +407,10 @@ cdef class GillespieSimulator:
 
         Set a step interval.
 
-        Args:
-            dt (Real): a step interval
+        Parameters
+        ----------
+        dt : Real
+            a step interval
 
         """
         self.thisptr.set_dt(dt)
@@ -385,10 +432,13 @@ cdef class GillespieSimulator:
 
         Run the simulation.
 
-        Args:
-            duration (Real): a duration for running a simulation.
+        Parameters
+        ----------
+        duration : Real
+            a duration for running a simulation.
                 A simulation is expected to be stopped at t() + duration.
-            observers (list of Obeservers, optional): observers
+        observers : list of Obeservers, optional
+            observers
 
         """
         cdef vector[shared_ptr[Cpp_Observer]] tmp
@@ -422,8 +472,10 @@ cdef class GillespieFactory:
     def __init__(self, GSLRandomNumberGenerator rng=None):
         """Constructor.
 
-        Args:
-            rng (GSLRandomNumberGenerator, optional): a random number generator.
+        Parameters
+        ----------
+        rng : GSLRandomNumberGenerator, optional
+            a random number generator.
 
         """
         pass
@@ -442,15 +494,20 @@ cdef class GillespieFactory:
 
         Return a GillespieWorld instance.
 
-        Args:
-            arg1 (Real3): The lengths of edges of a GillespieWorld created
+        Parameters
+        ----------
+        arg1 : Real3
+            The lengths of edges of a GillespieWorld created
 
-            or
+        or
 
-            arg1 (str): The path of a HDF5 file for GillespieWorld
+        arg1 : str
+            The path of a HDF5 file for GillespieWorld
 
-        Returns:
-            GillespieWorld: the created world
+        Returns
+        -------
+        GillespieWorld:
+            the created world
 
         """
         if arg1 is None:
@@ -473,16 +530,22 @@ cdef class GillespieFactory:
 
         Return a GillespieSimulator instance.
 
-        Args:
-            arg1 (GillespieWorld): a world
+        Parameters
+        ----------
+        arg1 : GillespieWorld
+            a world
 
-            or
+        or
 
-            arg1 (Model): a simulation model
-            arg2 (GillespieWorld): a world
+        arg1 : Model
+            a simulation model
+        arg2 : GillespieWorld
+            a world
 
-        Returns:
-            GillespieSimulator: the created simulator
+        Returns
+        -------
+        GillespieSimulator:
+            the created simulator
 
         """
         if arg2 is None:

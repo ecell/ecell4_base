@@ -21,10 +21,14 @@ cdef class LatticeWorld:
                  GSLRandomNumberGenerator rng = None):
         """Constructor.
 
-        Args:
-            edge_lengths (Real3, optional): A size of the World.
-            voxel_radius (Real, optional): A radius of a voxel.
-            rng (GSLRandomNumberGenerator, optional): A random number generator.
+        Parameters
+        ----------
+        edge_lengths : Real3, optional
+            A size of the World.
+        voxel_radius : Real, optional
+            A radius of a voxel.
+        rng : GSLRandomNumberGenerator, optional
+            A random number generator.
 
         """
         pass
@@ -65,8 +69,10 @@ cdef class LatticeWorld:
 
         Set the value of the time of the world.
 
-        Args:
-            t (Real): the time of the world
+        Parameters
+        ----------
+        t : Real
+            The time of the world
 
         """
         self.thisptr.get().set_t(t)
@@ -90,8 +96,10 @@ cdef class LatticeWorld:
     def actual_lengths(self):
         """Return the actual edge lengths of the world.
 
-        Returns:
-            Real3: the actual edge lengths of the world
+        Returns
+        -------
+        Real3:
+            The actual edge lengths of the world
 
         """
         cdef Cpp_Real3 lengths = self.thisptr.get().actual_lengths()
@@ -102,16 +110,22 @@ cdef class LatticeWorld:
 
         Create a new particle.
 
-        Args:
-            arg1 (Particle): a particle to be placed.
+        Parameters
+        ----------
+        arg1 : Particle
+            A particle to be placed.
 
-            or
+        or
 
-            arg1 (Species): a species of a particle
-            arg2 (Real3): a coordinate to place a particle
+        arg1 : Species
+            A species of a particle
+        arg2 : Real3
+            A coordinate to place a particle
 
-        Returns:
-            tuple: a pair of ParticleID and Particle of a new particle
+        Returns
+        -------
+        tuple:
+            A pair of ParticleID and Particle of a new particle
 
         """
         cdef pair[pair[Cpp_ParticleID, Cpp_Particle], bool] retval
@@ -127,11 +141,15 @@ cdef class LatticeWorld:
 
         Return the particle associated a given ParticleID.
 
-        Args:
-            pid (ParticleID): a id of the particle you want
+        Parameters
+        ----------
+        pid : ParticleID
+            A id of the particle you want
 
-        Returns:
-            tuple: a pair of ParticleID and Particle
+        Returns
+        -------
+        tuple:
+            A pair of ParticleID and Particle
 
         """
         cdef pair[Cpp_ParticleID, Cpp_Particle] \
@@ -145,12 +163,15 @@ cdef class LatticeWorld:
         Return the voxel having a particle associated with a given ParticleID
         or coordinate.
 
-        Args:
-            arg (ParticleID or Integer):
-                an id or coordiante of the particle in the voxel you want
+        Parameters
+        ----------
+        arg : ParticleID or Integer
+            An id or coordiante of the particle in the voxel you want
 
-        Returns:
-            tuple: a pair of ParticleID and Voxel
+        Returns
+        -------
+        tuple:
+            A pair of ParticleID and Voxel
 
         """
         cdef pair[Cpp_ParticleID, Cpp_Voxel] pid_voxel_pair
@@ -175,12 +196,17 @@ cdef class LatticeWorld:
 
         Check if the given species would be on the proper structure at the coordinate.
 
-        Args:
-            sp (Species): a species scheduled to be placed
-            coord (Integer): a coordinate to be occupied
+        Parameters
+        ----------
+        sp : Species
+            A species scheduled to be placed
+        coord : Integer
+            A coordinate to be occupied
 
-        Returns:
-            bool: if it is on the proper structure, or not
+        Returns
+        -------
+        bool:
+            if it is on the proper structure, or not
 
         """
         return self.thisptr.get().on_structure(deref(sp.thisptr), coord)
@@ -190,8 +216,10 @@ cdef class LatticeWorld:
 
         Remove the particle associated with a given ParticleID.
 
-        Args:
-            pid (ParticleID): a id of particle to remove
+        Parameters
+        ----------
+        pid : ParticleID
+            A id of particle to remove
 
         """
         self.thisptr.get().remove_particle(deref(pid.thisptr))
@@ -201,8 +229,10 @@ cdef class LatticeWorld:
 
         Remove the particle associated with a given ParticleID.
 
-        Args:
-            pid (ParticleID): a id of particle to remove
+        Parameters
+        ----------
+        pid : ParticleID
+            A id of particle to remove
 
         """
         self.thisptr.get().remove_voxel(deref(pid.thisptr))
@@ -211,6 +241,7 @@ cdef class LatticeWorld:
         """edge_lengths() -> Real3
 
         Return the edge lengths of the world.
+
         """
         cdef Cpp_Real3 lengths = self.thisptr.get().edge_lengths()
         return Real3_from_Cpp_Real3(address(lengths))
@@ -220,12 +251,16 @@ cdef class LatticeWorld:
 
         Return the number of particles.
 
-        Args:
-            sp (Species, optional): the species of particles to count
-                If no species is given, return the total number of particles.
+        Parameters
+        ----------
+        sp : Species, optional
+            The species of particles to count
+            If no species is given, return the total number of particles.
 
-        Returns:
-            Integer: the number of particles (of the given species)
+        Returns
+        -------
+        Integer:
+            The number of particles (of the given species)
 
         """
         if sp is None:
@@ -238,11 +273,15 @@ cdef class LatticeWorld:
 
         Return the number of particles of a given species.
 
-        Args:
-            sp (Species): the species of particles to count
+        Parameters
+        ----------
+        sp : Species
+            The species of particles to count
 
-        Returns:
-            Integer: the number of particles of a given species
+        Returns
+        -------
+        Integer:
+            The number of particles of a given species
 
         """
         return self.thisptr.get().num_particles_exact(deref(sp.thisptr))
@@ -252,11 +291,15 @@ cdef class LatticeWorld:
 
         Return the number of voxels.
 
-        Args:
-            sp (Species, optional): the species of particles to count
+        Parameters
+        ----------
+        sp : Species, optional
+            The species of particles to count
 
-        Returns:
-            Integer: the number of voxels (of the given species)
+        Returns
+        -------
+        Integer:
+            The number of voxels (of the given species)
 
         """
         if sp is None:
@@ -269,11 +312,15 @@ cdef class LatticeWorld:
 
         Return the number of voxels of a given species.
 
-        Args:
-            sp (Species): the species of particles to count
+        Parameters
+        ----------
+        sp : Species
+            The species of particles to count
 
-        Returns:
-            Integer: the number of voxels of a given species
+        Returns
+        -------
+        Integer:
+            The number of voxels of a given species
 
         """
         return self.thisptr.get().num_voxels_exact(deref(sp.thisptr))
@@ -283,12 +330,16 @@ cdef class LatticeWorld:
 
         Return the list of particles.
 
-        Args:
-            sp (Species, optional): the species of particles to list up
-                If no species is given, return the whole list of particles.
+        Parameters
+        ----------
+        sp : Species, optional
+            The species of particles to list up
+            If no species is given, return the whole list of particles.
 
-        Returns:
-            list: the list of particles (of the given species)
+        Returns
+        -------
+        list:
+            The list of particles (of the given species)
 
         """
         cdef vector[pair[Cpp_ParticleID, Cpp_Particle]] particles
@@ -314,11 +365,15 @@ cdef class LatticeWorld:
 
         Return the list of particles of a given species.
 
-        Args:
-            sp (Species): the species of particles to list up
+        Parameters
+        ----------
+        sp : Species
+            The species of particles to list up
 
-        Returns:
-            list: the list of particles of a given species
+        Returns
+        -------
+        list:
+            The list of particles of a given species
 
         """
         cdef vector[pair[Cpp_ParticleID, Cpp_Particle]] particles
@@ -341,12 +396,17 @@ cdef class LatticeWorld:
 
         Return the neighbor coordinate of a given coordinate.
 
-        Args:
-            coord (Integer): a coordinate of a voxel
-            nrand (Integer): a key in the range from 0 to 11 to assign a neighbor voxel
+        Parameters
+        ----------
+        coord : Integer
+            A coordinate of a voxel
+        nrand : Integer
+            A key in the range from 0 to 11 to assign a neighbor voxel
 
-        Returns:
-            Integer: the coordinate of the neighbor voxel
+        Returns
+        -------
+        Integer:
+            The coordinate of the neighbor voxel
 
         """
         return self.thisptr.get().get_neighbor(coord, nrand)
@@ -356,12 +416,17 @@ cdef class LatticeWorld:
 
         Return the neighbor coordinate of a given coordinate in private.
 
-        Args:
-            coord (Integer): a private coordinate of a voxel
-            nrand (Integer): a key in the range from 0 to 11 to assign a neighbor voxel
+        Parameters
+        ----------
+        coord : Integer
+            A private coordinate of a voxel
+        nrand : Integer
+            A key in the range from 0 to 11 to assign a neighbor voxel
 
-        Returns:
-            Integer: the private coordinate of the neighbor voxel
+        Returns
+        -------
+        Integer:
+            The private coordinate of the neighbor voxel
 
         """
         return self.thisptr.get().get_neighbor_private(coord, nrand)
@@ -371,11 +436,15 @@ cdef class LatticeWorld:
 
         Check if a particle associated with a given particle id exists.
 
-        Args:
-            pid (ParticleID): a particle id to check
+        Parameters
+        ----------
+        pid : ParticleID
+            A particle id to check
 
-        Returns:
-            bool: if a particle exists, this is true. Otherwise false
+        Returns
+        -------
+        bool:
+            if a particle exists, this is true. Otherwise false
 
         """
         return self.thisptr.get().has_particle(deref(pid.thisptr))
@@ -385,12 +454,17 @@ cdef class LatticeWorld:
 
         Update a particle.
 
-        Args:
-            pid (ParticleID): a particle id of the particle to update
-            p (Particle): the information to update a particle
+        Parameters
+        ----------
+        pid : ParticleID
+            A particle id of the particle to update
+        p : Particle
+            The information to update a particle
 
-        Returns:
-            bool: True if a new particle was created.
+        Returns
+        -------
+        bool:
+            True if a new particle was created.
 
         """
         return self.thisptr.get().update_particle(deref(pid.thisptr), deref(p.thisptr))
@@ -400,11 +474,15 @@ cdef class LatticeWorld:
 
         Return the number of molecules.
 
-        Args:
-            sp (Species): a species whose molecules you count
+        Parameters
+        ----------
+        sp : Species
+            A species whose molecules you count
 
-        Returns:
-            Integer: the number of molecules (of a given species)
+        Returns
+        -------
+        Integer:
+            The number of molecules (of a given species)
 
         """
         # if sp is None:
@@ -418,11 +496,15 @@ cdef class LatticeWorld:
 
         Return the number of molecules of a given species.
 
-        Args:
-            sp (Species): a species whose molecules you count
+        Parameters
+        ----------
+        sp : Species
+            A species whose molecules you count
 
-        Returns:
-            Integer: the number of molecules of a given species
+        Returns
+        -------
+        Integer:
+            The number of molecules of a given species
 
         """
         return self.thisptr.get().num_molecules_exact(deref(sp.thisptr))
@@ -432,10 +514,14 @@ cdef class LatticeWorld:
 
         Add some molecules.
 
-        Args:
-            sp (Species): a species of molecules to add
-            num (Integer): the number of molecules to add
-            shape (Shape, optional): a shape to add molecules on
+        Parameters
+        ----------
+        sp : Species
+            A species of molecules to add
+        num : Integer
+            The number of molecules to add
+        shape : Shape, optional
+            A shape to add molecules on
 
         """
         if shape is None:
@@ -449,9 +535,12 @@ cdef class LatticeWorld:
 
         Remove the molecules.
 
-        Args:
-            sp (Species): a species whose molecules to remove
-            num (Integer): a number of molecules to be removed
+        Parameters
+        ----------
+        sp : Species
+            A species whose molecules to remove
+        num : Integer
+            A number of molecules to be removed
 
         """
         self.thisptr.get().remove_molecules(deref(sp.thisptr), num)
@@ -461,8 +550,10 @@ cdef class LatticeWorld:
 
         Save the world to a file.
 
-        Args:
-            filename (str): a filename to save to
+        Parameters
+        ----------
+        filename : str
+            A filename to save to
 
         """
         self.thisptr.get().save(tostring(filename))
@@ -472,8 +563,10 @@ cdef class LatticeWorld:
 
         Load the world from a file.
 
-        Args:
-            filename (str): a filename to load from
+        Parameters
+        ----------
+        filename : str
+            A filename to load from
 
         """
         self.thisptr.get().load(tostring(filename))
@@ -483,16 +576,22 @@ cdef class LatticeWorld:
 
         Create a particle.
 
-        Args:
-            arg1 (Voxel): the information to create
+        Parameters
+        ----------
+        arg1 : Voxel
+            The information to create
 
-            or
+        or
 
-            arg1 (Species): the Species of particles to create
-            arg2 (Integer): the number of particles(voxels)
+        arg1 : Species
+            The Species of particles to create
+        arg2 : Integer
+            The number of particles(voxels)
 
-        Returns:
-            tuple: a pair of ParticleID and Voxel
+        Returns
+        -------
+        tuple:
+            A pair of ParticleID and Voxel
 
         """
         cdef pair[pair[Cpp_ParticleID, Cpp_Voxel], bool] retval
@@ -508,12 +607,17 @@ cdef class LatticeWorld:
 
         Update a particle.
 
-        Args:
-            pid (ParticleID): a particle id of the particle to update
-            v (Voxel): the information to update
+        Parameters
+        ----------
+        pid : ParticleID
+            A particle id of the particle to update
+        v : Voxel
+            The information to update
 
-        Returns:
-            bool: whether to succeed to update the particle
+        Returns
+        -------
+        bool:
+            whether to succeed to update the particle
 
         """
         return self.thisptr.get().update_voxel(deref(pid.thisptr), deref(v.thisptr))
@@ -523,12 +627,16 @@ cdef class LatticeWorld:
 
         Returns the list of voxels.
 
-        Args:
-            sp (Species, optional): a species of particles to list up.
-                If no species is given, return a list of all voxels.
+        Parameters
+        ----------
+        sp : Species, optional
+            A species of particles to list up.
+            If no species is given, return a list of all voxels.
 
-        Returns:
-            list: the list of the pair of ParticleID and Voxel
+        Returns
+        -------
+        list:
+            The list of the pair of ParticleID and Voxel
 
         """
         cdef vector[pair[Cpp_ParticleID, Cpp_Voxel]] voxels
@@ -554,12 +662,16 @@ cdef class LatticeWorld:
 
         Returns the list of voxels.
 
-        Args:
-            sp (Species, optional): a species of particles to list up.
-                If no species is given, return a list of all voxels.
+        Parameters
+        ----------
+        sp : Species, optional
+            A species of particles to list up.
+            If no species is given, return a list of all voxels.
 
-        Returns:
-            list: the list of the pair of ParticleID and Voxel
+        Returns
+        -------
+        list:
+            The list of the pair of ParticleID and Voxel
 
         """
         cdef vector[pair[Cpp_ParticleID, Cpp_Voxel]] voxels
@@ -582,11 +694,15 @@ cdef class LatticeWorld:
 
         Check if a particle exists.
 
-        Args:
-            pid (ParticleID): a particle id of the particle to check
+        Parameters
+        ----------
+        pid : ParticleID
+            A particle id of the particle to check
 
-        Returns:
-            bool: whether a particle associated with a given particle id exists
+        Returns
+        -------
+        bool:
+            whether a particle associated with a given particle id exists
 
         """
         return self.thisptr.get().has_voxel(deref(pid.thisptr))
@@ -625,8 +741,10 @@ cdef class LatticeWorld:
 
         Bind a model to the world
 
-        Args:
-            m (Model): a model to bind
+        Parameters
+        ----------
+        m : Model
+            A model to bind
 
         """
         self.thisptr.get().bind_to(deref(Cpp_Model_from_Model(m)))
@@ -654,11 +772,15 @@ cdef class LatticeWorld:
 
         Transform a position to a coordinate.
 
-        Args:
-            pos (Real3): a position
+        Parameters
+        ----------
+        pos : Real3
+            A position
 
-        Returns:
-            Integer: a coordinate
+        Returns
+        -------
+        Integer:
+            A coordinate
 
         """
         return self.thisptr.get().position2coordinate(
@@ -677,11 +799,15 @@ cdef class LatticeWorld:
 
         Transform a global coordinate to a coordinate.
 
-        Args:
-            g (Integer3): a global coordinate
+        Parameters
+        ----------
+        g : Integer3
+            A global coordinate
 
-        Returns:
-            Integer: a coordinate
+        Returns
+        -------
+        Integer:
+            A coordinate
 
         """
         return self.thisptr.get().global2coord(deref(g.thisptr))
@@ -700,11 +826,15 @@ cdef class LatticeWorld:
 
         Transform a global coordinate to a private coordinate.
 
-        Args:
-            g (Integer3): a global coordinate
+        Parameters
+        ----------
+        g : Integer3
+            A global coordinate
 
-        Returns:
-            Integer: a private coordinate
+        Returns
+        -------
+        Integer:
+            A private coordinate
 
         """
         return self.thisptr.get().global2private(deref(coord.thisptr))
@@ -723,11 +853,15 @@ cdef class LatticeWorld:
 
         Transform a global coordinate to a position.
 
-        Args:
-            g (Integer3): a global coordinate
+        Parameters
+        ----------
+        g : Integer3
+            A global coordinate
 
-        Returns:
-            Real3: a position
+        Returns
+        -------
+        Real3:
+            A position
 
         """
         cdef Cpp_Real3 pos = self.thisptr.get().global2position(deref(g.thisptr))
@@ -738,11 +872,15 @@ cdef class LatticeWorld:
 
         Transform a position to a global coordinate.
 
-        Args:
-            pos (Real3): a position
+        Parameters
+        ----------
+        pos : Real3
+            A position
 
-        Returns:
-            Integer3: a global coordinate
+        Returns
+        -------
+        Integer3:
+            A global coordinate
 
         """
         cdef Cpp_Integer3 g = self.thisptr.get().position2global(deref(pos.thisptr))
@@ -753,9 +891,12 @@ cdef class LatticeWorld:
 
         Add a structure.
 
-        Args:
-            sp (Species): a species suggesting the shape.
-            shape (Shape): a shape of the structure.
+        Parameters
+        ----------
+        sp : Species
+            A species suggesting the shape.
+        shape : Shape
+            A shape of the structure.
 
         """
         return self.thisptr.get().add_structure(
@@ -811,9 +952,12 @@ cdef class LatticeSimulator:
 
         Constructor.
 
-        Args:
-            m (Model): A model
-            w (LatticeWorld): A world
+        Parameters
+        ----------
+        m : Model
+            A model
+        w : LatticeWorld
+            A world
 
         """
         pass
@@ -838,12 +982,16 @@ cdef class LatticeSimulator:
 
         Step the simulation.
 
-        Args:
-            upto (Real, optional): the time which to step the simulation up to
+        Parameters
+        ----------
+        upto : Real, optional
+            The time which to step the simulation up to
 
-        Returns:
-            bool: True if the simulation did not reach the given time.
-                When upto is not given, nothing will be returned.
+        Returns
+        -------
+        bool:
+            True if the simulation did not reach the given time.
+            When upto is not given, nothing will be returned.
 
         """
         if upto is None:
@@ -860,8 +1008,10 @@ cdef class LatticeSimulator:
 
         Set the current time.
 
-        Args:
-            t (Real): a current time.
+        Parameters
+        ----------
+        t : Real
+            A current time.
 
         """
         self.thisptr.set_t(t_new)
@@ -879,8 +1029,10 @@ cdef class LatticeSimulator:
 
         Set a step interval.
 
-        Args:
-            dt (Real): a step interval
+        Parameters
+        ----------
+        dt : Real
+            A step interval
 
         """
         self.thisptr.set_dt(dt)
@@ -894,8 +1046,10 @@ cdef class LatticeSimulator:
 
         Return reactions occuring at the last step.
 
-        Returns:
-            list: the list of reaction rules and infos.
+        Returns
+        -------
+        list:
+            The list of reaction rules and infos.
 
         """
         cdef vector[Cpp_ReactionRule] reactions = self.thisptr.last_reactions()
@@ -912,8 +1066,10 @@ cdef class LatticeSimulator:
 
         Set the value of alpha.
 
-        Args:
-            alpha (Real): the value of alpha
+        Parameters
+        ----------
+        alpha : Real
+            The value of alpha
 
         """
         self.thisptr.set_alpha(alpha)
@@ -935,10 +1091,13 @@ cdef class LatticeSimulator:
 
         Run the simulation.
 
-        Args:
-            duration (Real): a duration for running a simulation.
-                A simulation is expected to be stopped at t() + duration.
-            observers (list of Obeservers, optional): observers
+        Parameters
+        ----------
+        duration : Real
+            A duration for running a simulation.
+            A simulation is expected to be stopped at t() + duration.
+        observers : list of Obeservers, optional
+            observers
 
         """
         cdef vector[shared_ptr[Cpp_Observer]] tmp
@@ -972,9 +1131,12 @@ cdef class LatticeFactory:
     def __init__(self, voxel_radius=None, GSLRandomNumberGenerator rng=None):
         """Constructor.
 
-        Args:
-            voxel_radius (Real, optional): a radius of a voxel.
-            rng (GSLRandomNumberGenerator, optional): a random number generator.
+        Parameters
+        ----------
+        voxel_radius : Real, optional
+            A radius of a voxel.
+        rng : GSLRandomNumberGenerator, optional
+            A random number generator.
 
         """
         pass
@@ -995,15 +1157,20 @@ cdef class LatticeFactory:
 
         Return a LatticeWorld instance.
 
-        Args:
-            arg1 (Real3): The lengths of edges of a LatticeWorld created
+        Parameters
+        ----------
+        arg1 : Real3
+            The lengths of edges of a LatticeWorld created
 
-            or
+        or
 
-            arg1 (str): The path of a HDF5 file for LatticeWorld
+        arg1 : str
+            The path of a HDF5 file for LatticeWorld
 
-        Returns:
-            LatticeWorld: the created world
+        Returns
+        -------
+        LatticeWorld:
+            The created world
 
         """
         if arg1 is None:
@@ -1026,16 +1193,22 @@ cdef class LatticeFactory:
 
         Return a LatticeSimulator instance.
 
-        Args:
-            arg1 (LatticeWorld): a world
+        Parameters
+        ----------
+        arg1 : LatticeWorld
+            A world
 
-            or
+        or
 
-            arg1 (Model): a simulation model
-            arg2 (LatticeWorld): a world
+        arg1 : Model
+            A simulation model
+        arg2 : LatticeWorld
+            A world
 
-        Returns:
-            LatticeSimulator: the created simulator
+        Returns
+        -------
+        LatticeSimulator:
+            The created simulator
 
         """
         if arg2 is None:

@@ -22,11 +22,15 @@ cdef class BDWorld:
                  GSLRandomNumberGenerator rng = None):
         """Constructor.
 
-        Args:
-            edge_lengths (Real3, optional): A size of the World.
-            matrix_sizes (Integer3, optional): A size of a cell matrix.
+        Parameters
+        ----------
+        edge_lengths : Real3, optional
+            A size of the World.
+        matrix_sizes : Integer3, optional
+            A size of a cell matrix.
                 The number of cells must be larger than 3, in principle.
-            rng (GSLRandomNumberGenerator, optional): A random number generator.
+        rng : GSLRandomNumberGenerator, optional
+            A random number generator.
 
         """
         pass
@@ -64,16 +68,22 @@ cdef class BDWorld:
 
         Create a new particle.
 
-        Args:
-            arg1 (Particle): A particle to be placed.
+        Parameters
+        ----------
+        arg1 : Particle
+            A particle to be placed.
 
-            or
+        or
 
-            arg1 (Species): A species of a particle
-            arg2 (Real3): A position to place a particle
+        arg1 : Species
+            A species of a particle
+        arg2 : Real3
+            A position to place a particle
 
-        Returns:
-            tuple: A pair of ParticleID and Particle of a new particle
+        Returns
+        -------
+        tuple:
+            A pair of ParticleID and Particle of a new particle
 
         """
         cdef pair[pair[Cpp_ParticleID, Cpp_Particle], bool] retval
@@ -89,8 +99,10 @@ cdef class BDWorld:
 
         Set the value of the time of the world.
 
-        Args:
-            t (Real): The time of the world
+        Parameters
+        ----------
+        t : Real
+            The time of the world
 
         """
         self.thisptr.get().set_t(t)
@@ -113,12 +125,16 @@ cdef class BDWorld:
 
         Return the number of particles.
 
-        Args:
-            sp (Species, optional): The species of particles to count
-                If no species is given, return the total number of particles.
+        Parameters
+        ----------
+        sp : Species, optional
+            The species of particles to count
+            If no species is given, return the total number of particles.
 
-        Returns:
-            Integer: The number of particles (of the given species)
+        Returns
+        -------
+        Integer:
+            The number of particles (of the given species)
 
         """
         if sp is None:
@@ -131,11 +147,15 @@ cdef class BDWorld:
 
         Return the number of particles of a given species.
 
-        Args:
-            sp (Species): The species of particles to count
+        Parameters
+        ----------
+        sp : Species
+            The species of particles to count
 
-        Returns:
-            Integer: The number of particles of a given species
+        Returns
+        -------
+        Integer:
+            The number of particles of a given species
 
         """
         return self.thisptr.get().num_particles_exact(deref(sp.thisptr))
@@ -145,12 +165,16 @@ cdef class BDWorld:
 
         Return the list of particles.
 
-        Args:
-            sp (Species, optional): The species of particles to list up
-                If no species is given, return the whole list of particles.
+        Parameters
+        ----------
+        sp : Species, optional
+            The species of particles to list up
+            If no species is given, return the whole list of particles.
 
-        Returns:
-            list: The list of particles (of the given species)
+        Returns
+        -------
+        list:
+            The list of particles (of the given species)
 
         """
         cdef vector[pair[Cpp_ParticleID, Cpp_Particle]] particles
@@ -176,11 +200,15 @@ cdef class BDWorld:
 
         Return the list of particles of a given species.
 
-        Args:
-            sp (Species): The species of particles to list up
+        Parameters
+        ----------
+        sp : Species
+            The species of particles to list up
 
-        Returns:
-            list: The list of particles of a given species
+        Returns
+        -------
+        list:
+            The list of particles of a given species
 
         """
         cdef vector[pair[Cpp_ParticleID, Cpp_Particle]] particles
@@ -203,11 +231,15 @@ cdef class BDWorld:
 
         Check if a particle associated with a given particle id exists.
 
-        Args:
-            pid (ParticleID): A particle id to check
+        Parameters
+        ----------
+        pid : ParticleID
+            A particle id to check
 
-        Returns:
-            bool: If a particle exists, return True. Otherwise return False
+        Returns
+        -------
+        bool:
+            If a particle exists, return True. Otherwise return False
 
         """
         return self.thisptr.get().has_particle(deref(pid.thisptr))
@@ -217,12 +249,17 @@ cdef class BDWorld:
 
         Update a particle.
 
-        Args:
-            pid (ParticleID): A particle id of the particle to update
-            p (Particle): The information to update a particle
+        Parameters
+        ----------
+        pid : ParticleID
+            A particle id of the particle to update
+        p : Particle
+            The information to update a particle
 
-        Returns:
-            bool: True if a new particle was created.
+        Returns
+        -------
+        bool:
+            True if a new particle was created.
 
         """
         return self.thisptr.get().update_particle(deref(pid.thisptr), deref(p.thisptr))
@@ -232,11 +269,15 @@ cdef class BDWorld:
 
         Return the particle associated a given ParticleID.
 
-        Args:
-            pid (ParticleID): An id of the particle you want
+        Parameters
+        ----------
+        pid : ParticleID
+            An id of the particle you want
 
-        Returns:
-            tuple: A pair of ParticleID and Particle
+        Returns
+        -------
+        tuple:
+            A pair of ParticleID and Particle
 
         """
         cdef pair[Cpp_ParticleID, Cpp_Particle] \
@@ -249,8 +290,10 @@ cdef class BDWorld:
 
         Remove the particle associated with a given ParticleID.
 
-        Args:
-            pid (ParticleID): An id of particle to remove
+        Parameters
+        ----------
+        pid : ParticleID
+            An id of particle to remove
 
         """
         self.thisptr.get().remove_particle(deref(pid.thisptr))
@@ -265,15 +308,21 @@ cdef class BDWorld:
         The region is specified with a center position and radius.
         ignore1 and ignore2 will be removed from the list.
 
-        Args:
-            pos (Real3): A center position.
-            radius (Real): A radius.
-            ignore1 (ParticleID, optional): An id ignored.
-            ignore2 (ParticleID, optional): An id ignored.
+        Parameters
+        ----------
+        pos : Real3
+            A center position.
+        radius : Real
+            A radius.
+        ignore1 : ParticleID, optional
+            An id ignored.
+        ignore2 : ParticleID, optional
+            An id ignored.
 
-        Returns:
-            list: A list of pairs of a particle and its distance
-                from the center position.
+        Returns
+        -------
+        list:
+            A list of pairs of a particle and its distance from the center position.
 
         """
         cdef vector[pair[pair[Cpp_ParticleID, Cpp_Particle], Real]] particles
@@ -360,11 +409,15 @@ cdef class BDWorld:
 
         Return the number of molecules.
 
-        Args:
-            sp (Species): a species whose molecules you count
+        Parameters
+        ----------
+        sp : Species
+            A species whose molecules you count
 
-        Returns:
-            Integer: the number of molecules (of a given species)
+        Returns
+        -------
+        Integer:
+            The number of molecules (of a given species)
 
         """
         # if sp is None:
@@ -378,11 +431,15 @@ cdef class BDWorld:
 
         Return the number of molecules of a given species.
 
-        Args:
-            sp (Species): a species whose molecules you count
+        Parameters
+        ----------
+        sp : Species
+            A species whose molecules you count
 
-        Returns:
-            Integer: the number of molecules of a given species
+        Returns
+        -------
+        Integer:
+            The number of molecules of a given species
 
         """
         return self.thisptr.get().num_molecules_exact(deref(sp.thisptr))
@@ -398,11 +455,14 @@ cdef class BDWorld:
 
         Add some molecules.
 
-        Args:
-            sp (Species): a species of molecules to add
-            num (Integer): the number of molecules to add
-            shape (Shape, optional): a shape to add molecules on
-                [not supported yet]
+        Parameters
+        ----------
+        sp : Species
+            a species of molecules to add
+        num : Integer
+            the number of molecules to add
+        shape : Shape, optional
+            a shape to add molecules on [not supported yet]
 
         """
         if shape is None:
@@ -416,9 +476,12 @@ cdef class BDWorld:
 
         Remove the molecules.
 
-        Args:
-            sp (Species): a species whose molecules to remove
-            num (Integer): a number of molecules to be removed
+        Parameters
+        ----------
+        sp : Species
+            a species whose molecules to remove
+        num : Integer
+            a number of molecules to be removed
 
         """
         self.thisptr.get().remove_molecules(deref(sp.thisptr), num)
@@ -428,8 +491,10 @@ cdef class BDWorld:
 
         Save the world to a file.
 
-        Args:
-            filename (str): a filename to save to
+        Parameters
+        ----------
+        filename : str
+            a filename to save to
 
         """
         self.thisptr.get().save(tostring(filename))
@@ -439,8 +504,10 @@ cdef class BDWorld:
 
         Load the world from a file.
 
-        Args:
-            filename (str): a filename to load from
+        Parameters
+        ----------
+        filename : str
+            a filename to load from
 
         """
         self.thisptr.get().load(tostring(filename))
@@ -450,8 +517,10 @@ cdef class BDWorld:
 
         Bind a model to the world
 
-        Args:
-            m (Model): a model to bind
+        Parameters
+        ----------
+        m : Model
+            a model to bind
 
         """
         self.thisptr.get().bind_to(deref(Cpp_Model_from_Model(m)))
@@ -490,9 +559,12 @@ cdef class BDSimulator:
 
         Constructor.
 
-        Args:
-            m (Model): A model
-            w (BDWorld): A world
+        Parameters
+        ----------
+        m : Model
+            A model
+        w : BDWorld
+            A world
 
         """
         pass
@@ -517,12 +589,16 @@ cdef class BDSimulator:
 
         Step the simulation.
 
-        Args:
-            upto (Real, optional): the time which to step the simulation up to
+        Parameters
+        ----------
+        upto : Real, optional
+            the time which to step the simulation up to
 
-        Returns:
-            bool: True if the simulation did not reach the given time.
-                When upto is not given, nothing will be returned.
+        Returns
+        -------
+        bool:
+            True if the simulation did not reach the given time.
+            When upto is not given, nothing will be returned.
 
         """
         if upto is None:
@@ -539,8 +615,10 @@ cdef class BDSimulator:
 
         Set the current time.
 
-        Args:
-            t (Real): a current time.
+        Parameters
+        ----------
+        t : Real
+            a current time.
 
         """
         self.thisptr.set_t(t_new)
@@ -554,8 +632,10 @@ cdef class BDSimulator:
 
         Set a step interval.
 
-        Args:
-            dt (Real): a step interval
+        Parameters
+        ----------
+        dt : Real
+            a step interval
 
         """
         self.thisptr.set_dt(dt)
@@ -573,8 +653,10 @@ cdef class BDSimulator:
 
         Return reactions occuring at the last step.
 
-        Returns:
-            list: the list of reaction rules and infos.
+        Returns
+        -------
+        list:
+            the list of reaction rules and infos.
 
         """
         cdef vector[Cpp_ReactionRule] reactions = self.thisptr.last_reactions()
@@ -599,10 +681,13 @@ cdef class BDSimulator:
 
         Run the simulation.
 
-        Args:
-            duration (Real): a duration for running a simulation.
-                A simulation is expected to be stopped at t() + duration.
-            observers (list of Obeservers, optional): observers
+        Parameters
+        ----------
+        duration : Real
+            a duration for running a simulation.
+            A simulation is expected to be stopped at ``t() + duration``.
+        observers : list of Obeservers, optional
+            observers
 
         """
         cdef vector[shared_ptr[Cpp_Observer]] tmp
@@ -636,10 +721,13 @@ cdef class BDFactory:
     def __init__(self, Integer3 matrix_sizes=None, GSLRandomNumberGenerator rng=None):
         """Constructor.
 
-        Args:
-            matrix_sizes (Integer3, optional): A size of a cell matrix.
-                The number of cells must be larger than 3, in principle.
-            rng (GSLRandomNumberGenerator, optional): A random number generator.
+        Parameters
+        ----------
+        matrix_sizes : Integer3, optional
+            A size of a cell matrix.
+            The number of cells must be larger than 3, in principle.
+        rng : GSLRandomNumberGenerator, optional
+            A random number generator.
 
         """
         pass
@@ -658,17 +746,22 @@ cdef class BDFactory:
     def create_world(self, arg1):
         """create_world(arg1=None) -> BDWorld
 
-        Return a BDWorld instance.
+        Return a ``BDWorld`` instance.
 
-        Args:
-            arg1 (Real3): The lengths of edges of a BDWorld created
+        Parameters
+        ----------
+        arg1 : Real3
+            The lengths of edges of a ``BDWorld`` created
 
-            or
+        or
 
-            arg1 (str): The path of a HDF5 file for BDWorld
+        arg1 : str
+            The path of a HDF5 file for ``BDWorld``
 
-        Returns:
-            BDWorld: The created world
+        Returns
+        -------
+        BDWorld:
+            The created world
 
         """
         if arg1 is None:
@@ -687,20 +780,26 @@ cdef class BDFactory:
                     deref(Cpp_Model_from_Model(arg1)))))
 
     def create_simulator(self, arg1, BDWorld arg2=None):
-        """create_simulator(arg1, arg2) -> BDSimulator
+        """create_simulator(arg1, arg2=None) -> BDSimulator
 
-        Return a BDSimulator instance.
+        Return a ``BDSimulator`` instance.
 
-        Args:
-            arg1 (BDWorld): A world
+        Parameters
+        ----------
+        arg1 : BDWorld
+            A world
 
-            or
+        or
 
-            arg1 (Model): A simulation model
-            arg2 (BDWorld): A world
+        arg1 : Model
+            A simulation model
+        arg2 : BDWorld
+            A world
 
-        Returns:
-            BDSimulator: The created simulator
+        Returns
+        -------
+        BDSimulator:
+            The created simulator
 
         """
         if arg2 is None:

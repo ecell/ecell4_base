@@ -17,12 +17,16 @@ cdef class MesoscopicWorld:
                  GSLRandomNumberGenerator rng = None):
         """Constructor.
 
-        Args:
-            edge_lengths (Real3, optional): A size of the World.
-            matrix_sizes (Integer3 or Real, optional): A cell size of the space.
-                The number of cells must be larger than 3, in principle.
-                When given as a value, it is assumed to be a edge length of a cell.
-            rng (GSLRandomNumberGenerator, optional): A random number generator.
+        Parameters
+        ----------
+        edge_lengths : Real3, optional
+            A size of the World.
+        matrix_sizes : Integer3 or Real, optional
+            A cell size of the space.
+            The number of cells must be larger than 3, in principle.
+            When given as a value, it is assumed to be a edge length of a cell.
+        rng : GSLRandomNumberGenerator, optional
+            A random number generator.
 
         """
         pass
@@ -76,8 +80,10 @@ cdef class MesoscopicWorld:
 
         Set the value of the time of the world.
 
-        Args:
-            t (Real): The time of the world
+        Parameters
+        ----------
+        t : Real
+            The time of the world
 
         """
         self.thisptr.get().set_t(t)
@@ -117,12 +123,16 @@ cdef class MesoscopicWorld:
 
         Return the number of subvolumes.
 
-        Args:
-            sp (Species, optional): A species specifying a structure.
-                When no species is given, return the total number of subvolumes.
+        Parameters
+        ----------
+        sp : Species, optional
+            A species specifying a structure.
+            When no species is given, return the total number of subvolumes.
 
-        Returns:
-            Integer: The number of subvolumes.
+        Returns
+        -------
+        Integer:
+            The number of subvolumes.
 
         """
         if sp is None:
@@ -140,11 +150,15 @@ cdef class MesoscopicWorld:
 
         Transform a global coordinate to a coordinate.
 
-        Args:
-            g (Integer3): a global coordinate
+        Parameters
+        ----------
+        g : Integer3
+            a global coordinate
 
-        Returns:
-            Integer: A coordinate
+        Returns
+        -------
+        Integer:
+            A coordinate
 
         """
         return self.thisptr.get().global2coord(deref(g.thisptr))
@@ -163,11 +177,15 @@ cdef class MesoscopicWorld:
 
         Transform a position to a global coordinate.
 
-        Args:
-            pos (Real3): A position
+        Parameters
+        ----------
+        pos : Real3
+            A position
 
-        Returns:
-            Integer3: A global coordinate
+        Returns
+        -------
+        Integer3:
+            A global coordinate
 
         """
         cdef Cpp_Integer3 g = self.thisptr.get().position2global(deref(pos.thisptr))
@@ -178,11 +196,15 @@ cdef class MesoscopicWorld:
 
         Transform a position to a coordinate.
 
-        Args:
-            pos (Real3): A position
+        Parameters
+        ----------
+        pos : Real3
+            A position
 
-        Returns:
-            Integer: A coordinate
+        Returns
+        -------
+        Integer:
+            A coordinate
 
         """
         return self.thisptr.get().position2coordinate(deref(pos.thisptr))
@@ -192,12 +214,17 @@ cdef class MesoscopicWorld:
 
         Return the number of molecules within the suggested subvolume.
 
-        Args:
-            sp (Species): A species whose molecules you count
-            c (Integer, optional): A coordinate.
+        Parameters
+        ----------
+        sp : Species
+            A species whose molecules you count
+        c : Integer, optional
+            A coordinate.
 
-        Returns:
-            Integer: The number of molecules (of a given species)
+        Returns
+        -------
+        Integer:
+            The number of molecules (of a given species)
 
         """
         if c is None:
@@ -212,12 +239,17 @@ cdef class MesoscopicWorld:
 
         Return the number of molecules within the suggested subvolume.
 
-        Args:
-            sp (Species): The species of molecules to count
-            c (Integer, optional): A coordinate.
+        Parameters
+        ----------
+        sp : Species
+            The species of molecules to count
+        c : Integer, optional
+            A coordinate.
 
-        Returns:
-            Integer: The number of molecules of a given species
+        Returns
+        -------
+        Integer:
+            The number of molecules of a given species
 
         """
         if c is None:
@@ -232,10 +264,14 @@ cdef class MesoscopicWorld:
 
         Add some molecules.
 
-        Args:
-            sp (Species): a species of molecules to add
-            num (Integer): the number of molecules to add
-            c (Integer or Shape, optional): a coordinate or shape to add molecules on
+        Parameters
+        ----------
+        sp : Species
+            a species of molecules to add
+        num : Integer
+            the number of molecules to add
+        c : Integer or Shape, optional
+            a coordinate or shape to add molecules on
 
         """
         if c is None:
@@ -253,10 +289,14 @@ cdef class MesoscopicWorld:
 
         Remove the molecules.
 
-        Args:
-            sp (Species): a species whose molecules to remove
-            num (Integer): a number of molecules to be removed
-            c (Integer, optional): A coordinate.
+        Parameters
+        ----------
+        sp : Species
+            a species whose molecules to remove
+        num : Integer
+            a number of molecules to be removed
+        c : Integer, optional
+            A coordinate.
 
         """
         if c is None:
@@ -271,9 +311,12 @@ cdef class MesoscopicWorld:
 
         Add a structure.
 
-        Args:
-            sp (Species): a species suggesting the shape.
-            shape (Shape): a shape of the structure.
+        Parameters
+        ----------
+        sp : Species
+            a species suggesting the shape.
+        shape : Shape
+            a shape of the structure.
 
         """
         self.thisptr.get().add_structure(
@@ -284,11 +327,15 @@ cdef class MesoscopicWorld:
 
         Return a volume of the given structure.
 
-        Args:
-            sp (Species): A species for the target structure.
+        Parameters
+        ----------
+        sp : Species
+            A species for the target structure.
 
-        Returns:
-            Real: A total volume of subvolumes belonging to the structure.
+        Returns
+        -------
+        Real:
+            A total volume of subvolumes belonging to the structure.
 
         """
         return self.thisptr.get().get_volume(deref(sp.thisptr))
@@ -298,11 +345,15 @@ cdef class MesoscopicWorld:
 
         Return if the given structure is in the space or not.
 
-        Args:
-            sp (Species): A species for the target structure.
+        Parameters
+        ----------
+        sp : Species
+            A species for the target structure.
 
-        Returns:
-            bool: True if the given structure is in self.
+        Returns
+        -------
+        bool:
+            True if the given structure is in self.
 
         """
         return self.thisptr.get().has_structure(deref(sp.thisptr))
@@ -312,12 +363,17 @@ cdef class MesoscopicWorld:
 
         Check if the given species would be on the proper structure at the coordinate.
 
-        Args:
-            sp (Species): a species scheduled to be placed
-            g (Integer3): a global coordinate pointing a subvolume
+        Parameters
+        ----------
+        sp : Species
+            a species scheduled to be placed
+        g : Integer3
+            a global coordinate pointing a subvolume
 
-        Returns:
-            bool: True if it is on the proper structure.
+        Returns
+        -------
+        bool:
+            True if it is on the proper structure.
 
         """
         return self.thisptr.get().on_structure(deref(sp.thisptr), deref(g.thisptr))
@@ -327,12 +383,17 @@ cdef class MesoscopicWorld:
 
         Check if the given subvolume is belonging to the structure.
 
-        Args:
-            sp (Species): A species for the target structure.
-            g (Integer3): a global coordinate pointing a subvolume
+        Parameters
+        ----------
+        sp : Species
+            A species for the target structure.
+        g : Integer3
+            a global coordinate pointing a subvolume
 
-        Returns:
-            bool: True if the subvolume is belonging to the structure.
+        Returns
+        -------
+        bool:
+            True if the subvolume is belonging to the structure.
 
         """
         return self.thisptr.get().check_structure(deref(sp.thisptr), deref(g.thisptr))
@@ -342,14 +403,19 @@ cdef class MesoscopicWorld:
 
         Return the occupancy of the structure in the subvolume.
 
-        Args:
-            sp (Species): A species for the target structure.
-            g (Integer3): a global coordinate pointing a subvolume
+        Parameters
+        ----------
+        sp : Species
+            A species for the target structure.
+        g : Integer3
+            a global coordinate pointing a subvolume
 
-        Returns:
-            Real: The occupancy of the structure.
-                As a default, return 1 if the subvolume overlaps with the structure,
-                and return 0 otherwise.
+        Returns
+        -------
+        Real:
+            The occupancy of the structure.
+            As a default, return 1 if the subvolume overlaps with the structure,
+            and return 0 otherwise.
 
         """
         if isinstance(g, Integer3):
@@ -376,11 +442,15 @@ cdef class MesoscopicWorld:
 
         Return a list of coordinates of molecules belonging to the given species.
 
-        Args:
-            sp (Species): A species of molecules.
+        Parameters
+        ----------
+        sp : Species
+            A species of molecules.
 
-        Returns:
-            list: A list of coordinates.
+        Returns
+        -------
+        list:
+            A list of coordinates.
 
         """
         return self.thisptr.get().list_coordinates(deref(sp.thisptr))
@@ -390,11 +460,15 @@ cdef class MesoscopicWorld:
 
         Return a list of coordinates of molecules belonging to the given species.
 
-        Args:
-            sp (Species): A species of molecules.
+        Parameters
+        ----------
+        sp : Species
+            A species of molecules.
 
-        Returns:
-            list: A list of coordinates.
+        Returns
+        -------
+        list:
+            A list of coordinates.
 
         """
         return self.thisptr.get().list_coordinates_exact(deref(sp.thisptr))
@@ -404,12 +478,16 @@ cdef class MesoscopicWorld:
 
         Return the list of particles.
 
-        Args:
-            sp (Species, optional): The species of particles to list up
-                If no species is given, return the whole list of particles.
+        Parameters
+        ----------
+        sp : Species, optional
+            The species of particles to list up
+            If no species is given, return the whole list of particles.
 
-        Returns:
-            list: The list of particles (of the given species)
+        Returns
+        -------
+        list:
+            The list of particles (of the given species)
 
         """
         cdef vector[pair[Cpp_ParticleID, Cpp_Particle]] particles
@@ -435,11 +513,15 @@ cdef class MesoscopicWorld:
 
         Return the list of particles of a given species.
 
-        Args:
-            sp (Species): The species of particles to list up
+        Parameters
+        ----------
+        sp : Species
+            The species of particles to list up
 
-        Returns:
-            list: The list of particles of a given species
+        Returns
+        -------
+        list:
+            The list of particles of a given species
 
         """
         cdef vector[pair[Cpp_ParticleID, Cpp_Particle]] particles
@@ -462,8 +544,10 @@ cdef class MesoscopicWorld:
 
         Save the world to a file.
 
-        Args:
-            filename (str): a filename to save to
+        Parameters
+        ----------
+        filename : str
+            a filename to save to
 
         """
         self.thisptr.get().save(tostring(filename))
@@ -473,8 +557,10 @@ cdef class MesoscopicWorld:
 
         Load the world from a file.
 
-        Args:
-            filename (str): a filename to load from
+        Parameters
+        ----------
+        filename : str
+            a filename to load from
 
         """
         self.thisptr.get().load(tostring(filename))
@@ -484,8 +570,10 @@ cdef class MesoscopicWorld:
 
         Bind a model to the world
 
-        Args:
-            m (Model): a model to bind
+        Parameters
+        ----------
+        m : Model
+            a model to bind
 
         """
         self.thisptr.get().bind_to(deref(Cpp_Model_from_Model(m)))
@@ -524,9 +612,12 @@ cdef class MesoscopicSimulator:
 
         Constructor.
 
-        Args:
-            m (Model): A model
-            w (MesoscopicWorld): A world
+        Parameters
+        ----------
+        m : Model
+            A model
+        w : MesoscopicWorld
+            A world
 
         """
         pass
@@ -551,12 +642,16 @@ cdef class MesoscopicSimulator:
 
         Step the simulation.
 
-        Args:
-            upto (Real, optional): The time which to step the simulation up to
+        Parameters
+        ----------
+        upto : Real, optional
+            The time which to step the simulation up to
 
-        Returns:
-            bool: True if the simulation did not reach the given time.
-                When upto is not given, nothing will be returned.
+        Returns
+        -------
+        bool:
+            True if the simulation did not reach the given time.
+            When upto is not given, nothing will be returned.
 
         """
         if upto is None:
@@ -581,8 +676,10 @@ cdef class MesoscopicSimulator:
 
         Return reactions occuring at the last step.
 
-        Returns:
-            list: The list of reaction rules and infos.
+        Returns
+        -------
+        list:
+            The list of reaction rules and infos.
 
         """
         cdef vector[Cpp_ReactionRule] reactions = self.thisptr.last_reactions()
@@ -599,8 +696,10 @@ cdef class MesoscopicSimulator:
 
         Set the current time.
 
-        Args:
-            t (Real): A current time.
+        Parameters
+        ----------
+        t : Real
+            A current time.
 
         """
         self.thisptr.set_t(new_t)
@@ -610,8 +709,10 @@ cdef class MesoscopicSimulator:
 
         Set a step interval.
 
-        Args:
-            dt (Real): A step interval
+        Parameters
+        ----------
+        dt : Real
+            A step interval
 
         """
         self.thisptr.set_dt(dt)
@@ -633,10 +734,13 @@ cdef class MesoscopicSimulator:
 
         Run the simulation.
 
-        Args:
-            duration (Real): A duration for running a simulation.
-                A simulation is expected to be stopped at t() + duration.
-            observers (list of Obeservers, optional): Observers
+        Parameters
+        ----------
+        duration : Real
+            A duration for running a simulation.
+            A simulation is expected to be stopped at t() + duration.
+        observers : list of Obeservers, optional
+            Observers
 
         """
         cdef vector[shared_ptr[Cpp_Observer]] tmp
@@ -672,11 +776,14 @@ cdef class MesoscopicFactory:
     def __init__(self, matrix_sizes=None, GSLRandomNumberGenerator rng=None):
         """Constructor.
 
-        Args:
-            matrix_sizes (Integer3 or Real, optional): A cell size of the space.
-                The number of cells must be larger than 3, in principle.
-                When given as a value, it is assumed to be a edge length of a cell.
-            rng (GSLRandomNumberGenerator, optional): a random number generator.
+        Parameters
+        ----------
+        matrix_sizes : Integer3 or Real, optional
+            A cell size of the space.
+            The number of cells must be larger than 3, in principle.
+            When given as a value, it is assumed to be a edge length of a cell.
+        rng : GSLRandomNumberGenerator, optional
+            A random number generator.
 
         """
         pass
@@ -705,15 +812,20 @@ cdef class MesoscopicFactory:
 
         Return a MesoscopicWorld instance.
 
-        Args:
-            arg1 (Real3): The lengths of edges of a MesoscopicWorld created
+        Parameters
+        ----------
+        arg1 : Real3
+            The lengths of edges of a MesoscopicWorld created
 
-            or
+        or
 
-            arg1 (str): The path of a HDF5 file for MesoscopicWorld
+        arg1 : str
+            The path of a HDF5 file for MesoscopicWorld
 
-        Returns:
-            MesoscopicWorld: the created world
+        Returns
+        -------
+        MesoscopicWorld:
+            the created world
 
         """
         if arg1 is None:
@@ -737,16 +849,22 @@ cdef class MesoscopicFactory:
 
         Return a MesoscopicSimulator instance.
 
-        Args:
-            arg1 (MesoscopicWorld): a world
+        Parameters
+        ----------
+        arg1 : MesoscopicWorld
+            a world
 
-            or
+        or
 
-            arg1 (Model): a simulation model
-            arg2 (MesoscopicWorld): a world
+        arg1 : Model
+            a simulation model
+        arg2 : MesoscopicWorld
+            a world
 
-        Returns:
-            MesoscopicSimulator: the created simulator
+        Returns
+        -------
+        MesoscopicSimulator:
+            the created simulator
 
         """
         if arg2 is None:
