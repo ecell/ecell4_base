@@ -12,10 +12,14 @@ cdef class Integer3:
     def __init__(self, Integer p1, Integer p2, Integer p3):
         """Constructor.
 
-        Args:
-            p1 (Integer): The first value in the vector.
-            p2 (Integer): The second value in the vector.
-            p3 (Integer): The third value in the vector.
+        Parameters
+        ----------
+        p1 : Integer
+            The first value in the vector.
+        p2 : Integer
+            The second value in the vector.
+        p3 : Integer
+            The third value in the vector.
 
         """
         pass
@@ -83,12 +87,17 @@ def integer3_add(Integer3 p1, Integer3 p2):
 
     Add two ``Integer3``s, and returns the sum.
 
-    Args:
-        p1 (Integer3): The first vector.
-        p2 (Integer3): The second vector.
+    Parameters
+    ----------
+    p1 : Integer3
+        The first vector.
+    p2 : Integer3
+        The second vector.
 
-    Returns:
-        Integer3: The sum of two vectors, ``p1 + p2``.
+    Returns
+    -------
+    Integer3:
+        The sum of two vectors, ``p1 + p2``.
 
     """
     cdef Cpp_Integer3 r = integer3operators.add(deref(p1.thisptr), deref(p2.thisptr))
@@ -99,12 +108,17 @@ def integer3_subtract(Integer3 p1, Integer3 p2):
 
     Subtract p2 from p1.
 
-    Args:
-        p1 (Integer3): The left-hand-side vector.
-        p2 (Integer3): The right-hand-side vector.
+    Parameters
+    ----------
+    p1 : Integer3
+        The left-hand-side vector.
+    p2 : Integer3
+        The right-hand-side vector.
 
-    Returns:
-        Integer3: Its difference, ``p1 - p2``.
+    Returns
+    -------
+    Integer3:
+        Its difference, ``p1 - p2``.
 
     """
     cdef Cpp_Integer3 r = integer3operators.subtract(deref(p1.thisptr), deref(p2.thisptr))
@@ -115,15 +129,24 @@ def integer3_abs(Integer3 p1):
 
     Return an absolute vector of the given vector.
 
-    Args:
-        p1 (Integer3): A vector.
+    Parameters
+    ----------
+    p1 : Integer3
+        A vector.
 
-    Returns:
-        Integer3: The absolute vector, which consists of absolute value
-            of the given vector.
+    Returns
+    -------
+    Integer3:
+        The absolute vector, which consists of absolute value
+        of the given vector.
 
-    Note:
-        This is NOT for taking the norm of a vector. See ``length`` also.
+    Notes
+    -----
+    This is NOT for taking the norm of a vector.
+
+    See Also
+    --------
+    length
 
     """
     cdef Cpp_Integer3 r = integer3operators.abs(deref(p1.thisptr))

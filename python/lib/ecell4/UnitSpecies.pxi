@@ -8,13 +8,19 @@ cdef class UnitSpecies:
 
     UnitSpecies(name=None)
 
+    See Also
+    --------
+    Species
+
     """
 
     def __init__(self, name=None):
         """Constructor.
 
-        Args:
-            name (str, optional): A name.
+        Parameters
+        ----------
+        name : str, optional
+            A name.
 
         """
         pass
@@ -54,10 +60,14 @@ cdef class UnitSpecies:
 
         Add a new site.
 
-        Args:
-            name (str): A name of the site
-            state (str): A state name of the site
-            bond (str): A bond of the site.
+        Parameters
+        ----------
+        name : str
+            A name of the site
+        state : str
+            A state name of the site
+        bond : str
+            A bond of the site.
 
         """
         return self.thisptr.add_site(tostring(name), tostring(state), tostring(bond))
@@ -67,8 +77,10 @@ cdef class UnitSpecies:
 
         Deserialize the given serial, and load it.
 
-        Args:
-            serial (str): A serial
+        Parameters
+        ----------
+        serial : str
+            A serial
 
         """
         self.thisptr.deserialize(tostring(serial))

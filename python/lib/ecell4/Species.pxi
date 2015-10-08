@@ -16,13 +16,18 @@ cdef class Species:
     def __init__(self, serial=None, radius=None, D=None, location=None):
         """Constructor.
 
-        Args:
-            serial (str, optional): The serial name.
-            radius (str, optional): The radius of a molecule.
-                This must be given as a string.
-            D (str, optional): The diffusion rate of a molecule.
-                This must be given as a string.
-            location (str, optional): The location of a molecule.
+        Parameters
+        ----------
+        serial : str, optional
+            The serial name.
+        radius : str, optional
+            The radius of a molecule.
+            This must be given as a string.
+        D : str, optional
+            The diffusion rate of a molecule.
+            This must be given as a string.
+        location : str, optional
+            The location of a molecule.
 
         """
         pass  # XXX: Only used for doc string
@@ -71,11 +76,15 @@ cdef class Species:
         Return an attribute as an unicode string.
         If no corresponding attribute is found, raise an error.
 
-        Args:
-            name (str): The name of an attribute.
+        Parameters
+        ----------
+        name : str
+            The name of an attribute.
 
-        Returns:
-            str: The value of the attribute.
+        Returns
+        -------
+        str:
+            The value of the attribute.
 
         """
         return self.thisptr.get_attribute(
@@ -87,9 +96,12 @@ cdef class Species:
         Set an attribute.
         If existing already, the attribute will be overwritten.
 
-        Args:
-            name (str): The name of an attribute.
-            value (str): The value of an attribute.
+        Parameters
+        ----------
+        name : str
+            The name of an attribute.
+        value : str
+            The value of an attribute.
 
         """
         self.thisptr.set_attribute(tostring(name), tostring(value))
@@ -100,8 +112,10 @@ cdef class Species:
         Remove an attribute.
         If no corresponding attribute is found, raise an error.
 
-        Args:
-            name (str): The name of an attribute to be removed.
+        Parameters
+        ----------
+        name : str
+            The name of an attribute to be removed.
 
         """
         self.thisptr.remove_attribute(tostring(name))
@@ -111,11 +125,15 @@ cdef class Species:
 
         Return if the attribute exists or not.
 
-        Args:
-            name (str): The name of an attribute.
+        Parameters
+        ----------
+        name : str
+            The name of an attribute.
 
-        Returns:
-            bool: True if the attribute exists, False otherwise.
+        Returns
+        -------
+        bool:
+            True if the attribute exists, False otherwise.
 
         """
         return self.thisptr.has_attribute(tostring(name))
@@ -125,9 +143,11 @@ cdef class Species:
 
         List all attributes.
 
-        Returns:
-            list: A list of pairs of name and value.
-                ``name`` and ``value`` are given as unicode strings.
+        Returns
+        -------
+        list:
+            A list of pairs of name and value.
+            ``name`` and ``value`` are given as unicode strings.
 
         """
         retval = self.thisptr.list_attributes()
@@ -139,8 +159,10 @@ cdef class Species:
 
         Append an ``UnitSpecies`` to the end.
 
-        Args:
-            usp (UnitSpecies): An ``UnitSpecies`` to be added.
+        Parameters
+        ----------
+        usp : UnitSpecies
+            An ``UnitSpecies`` to be added.
 
         """
         self.thisptr.add_unit(deref(usp.thisptr))
@@ -150,11 +172,15 @@ cdef class Species:
 
         Count the number of matches for a pattern given as a ``Species``.
 
-        Args:
-            pttrn (Species): A pattern to be count.
+        Parameters
+        ----------
+        pttrn : Species
+            A pattern to be count.
 
-        Returns:
-            Integer: The number of matches.
+        Returns
+        -------
+        Integer:
+            The number of matches.
 
         """
         return self.thisptr.count(deref(pttrn.thisptr))
@@ -187,8 +213,10 @@ cdef class Species:
 
         Reset the serial. All attributes will be kept.
 
-        Args:
-            serial (str): A new serial as an unicode string.
+        Parameters
+        ----------
+        serial : str
+            A new serial as an unicode string.
 
         """
         self.thisptr.deserialize(tostring(serial))
@@ -205,12 +233,17 @@ def spmatch(Species pttrn, Species sp):
 
     Return if a pattern matches the target ``Species`` or not.
 
-    Args:
-        pttrn (Species): A pattern.
-        sp (Species): A target.
+    Parameters
+    ----------
+    pttrn : Species
+        A pattern.
+    sp : Species
+        A target.
 
-    Return:
-        bool: True if ``pttrn`` matches ``sp`` at least one time, False otherwise.
+    Returns
+    -------
+    bool:
+        True if ``pttrn`` matches ``sp`` at least one time, False otherwise.
 
     """
     return context.spmatch(deref(pttrn.thisptr), deref(sp.thisptr))
@@ -220,15 +253,21 @@ def count_spmatches(Species pttrn, Species sp):
 
     Count the number of matches for a pattern given as a ``Species``.
 
-    Args:
-        pttrn (Species): A pattern.
-        sp (Species): A target.
+    Parameters
+    ----------
+    pttrn : Species
+        A pattern.
+    sp : Species
+        A target.
 
-    Return:
-        Integer: The number of matches.
+    Returns
+    -------
+    Integer:
+        The number of matches.
 
-    Note:
-        Rather use ``Species.count``.
+    Notes
+    -----
+    Rather use ``Species.count``.
 
     """
     return context.count_spmatches(deref(pttrn.thisptr), deref(sp.thisptr))

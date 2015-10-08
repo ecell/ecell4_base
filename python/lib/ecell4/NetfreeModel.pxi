@@ -29,8 +29,10 @@ cdef class NetfreeModel:
 
         Add a species attribute to the bottom.
 
-        Args:
-            sp (Species): A new species with attributes.
+        Parameters
+        ----------
+        sp : Species
+            A new species with attributes.
 
         """
         self.thisptr.get().add_species_attribute(deref(sp.thisptr))
@@ -56,8 +58,10 @@ cdef class NetfreeModel:
 
         Add a new reaction rule.
 
-        Args:
-            rr (ReactionRule): A new reaction rule.
+        Parameters
+        ----------
+        rr : ReactionRule
+            A new reaction rule.
 
         """
         self.thisptr.get().add_reaction_rule(deref(rr.thisptr))
@@ -87,11 +91,15 @@ cdef class NetfreeModel:
 
         Return a species with attributes.
 
-        Args:
-            sp (Species): An original species.
+        Parameters
+        ----------
+        sp : Species
+            An original species.
 
-        Returns:
-            Species: A new species attributed by species attributes in the model.
+        Returns
+        -------
+        Species:
+            A new species attributed by species attributes in the model.
 
         """
         cdef Cpp_Species retval = self.thisptr.get().apply_species_attributes(
@@ -141,13 +149,17 @@ cdef class NetfreeModel:
         Query and return a list of reaction rules, which have the given species
         as their reactants.
 
-        Args:
-            sp1 (Species): The first reactant
-            sp2 (Species): The second reactant.
-                This is for querying second order reaction rules.
+        Parameters
+        ----------
+        sp1 : Species
+            The first reactant
+        sp2 : Species
+            The second reactant. This is for querying second order reaction rules.
 
-        Returns:
-            list: A list of ``ReactionRule``s.
+        Returns
+        -------
+        list:
+            A list of ``ReactionRule``s.
 
         """
         cdef vector[Cpp_ReactionRule] rules
@@ -170,8 +182,10 @@ cdef class NetfreeModel:
 
         Extend a list of species attributes to the bottom.
 
-        Args:
-            attrs (list): A list of new ``Species`` with attributes.
+        Parameters
+        ----------
+        attrs : list
+            A list of new ``Species`` with attributes.
 
         """
         cdef vector[Cpp_Species] species
@@ -184,8 +198,10 @@ cdef class NetfreeModel:
 
         Add a list of new reaction rules.
 
-        Args:
-            rrs (list): A list of new ``ReactionRule``s.
+        Parameters
+        ----------
+        rrs : list
+            A list of new ``ReactionRule``s.
 
         """
         cdef vector[Cpp_ReactionRule] reaction_rules
@@ -198,15 +214,19 @@ cdef class NetfreeModel:
 
         Expand a rule-based model into a network model.
 
-        Args:
-            seeds (list): A list of ``Species`` which gives seeds.
-            max_itr (Integer): A maximum number of iterations to generate
-                new products.
-            max_stoich (Integer): A maximum stoichiometry of ``UnitSpecies``
-                in a ``Species``.
+        Parameters
+        ----------
+        seeds : list
+            A list of ``Species`` which gives seeds.
+        max_itr : Integer
+            A maximum number of iterations to generate new products.
+        max_stoich : Integer
+            A maximum stoichiometry of ``UnitSpecies`` in a ``Species``.
 
-        Returns:
-            Model: A network model.
+        Returns
+        -------
+        Model:
+            A network model.
 
         """
         cdef vector[Cpp_Species] _seeds

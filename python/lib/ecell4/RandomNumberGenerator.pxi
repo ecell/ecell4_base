@@ -23,12 +23,17 @@ cdef class GSLRandomNumberGenerator:
 
         Return a uniform random number within the given range.
 
-        Args:
-            min (Real): The minimum value in the range.
-            max (Real): The maximum value in the range.
+        Parameters
+        ----------
+        min : Real
+            The minimum value in the range.
+        max : Real
+            The maximum value in the range.
 
-        Returns:
-            Real: A random number uniformly distributed in the range [min, max).
+        Returns
+        -------
+        Real:
+            A random number uniformly distributed in the range [min, max).
 
         """
         return self.thisptr.get().uniform(min, max)
@@ -38,12 +43,17 @@ cdef class GSLRandomNumberGenerator:
 
         Return a uniform random number within the given range.
 
-        Args:
-            min (Real): The minimum value in the range.
-            max (Real): The maximum value in the range.
+        Parameters
+        ----------
+        min : Real
+            The minimum value in the range.
+        max : Real
+            The maximum value in the range.
 
-        Returns:
-            Integer: A random integer uniformly distributed in the range [min, max].
+        Returns
+        -------
+        Integer:
+            A random integer uniformly distributed in the range [min, max].
 
         """
         return self.thisptr.get().uniform_int(min, max)
@@ -53,12 +63,17 @@ cdef class GSLRandomNumberGenerator:
 
         Return a Gaussian variate with the given mean and standard deviation.
 
-        Args:
-            mean (Real): The mean value.
-            sigma (Real): The standard deviation.
+        Parameters
+        ----------
+        mean : Real
+            The mean value.
+        sigma : Real
+            The standard deviation.
 
-        Returns:
-            Real: A random number from a Gaussian distribution.
+        Returns
+        -------
+        Real:
+            A random number from a Gaussian distribution.
 
         """
         return self.thisptr.get().gaussian(mean, sigma)
@@ -69,12 +84,17 @@ cdef class GSLRandomNumberGenerator:
         Return a random integer from the binomial distribution,
         the number of successes in n independent trials with probability p.
 
-        Args:
-            p (Real): A probability.
-            n (Integer): The number of trials.
+        Parameters
+        ----------
+        p : Real
+            A probability.
+        n : Integer
+            The number of trials.
 
-        Returns:
-            Integer: A random integer from a binomial distribution.
+        Returns
+        -------
+        Integer:
+            A random integer from a binomial distribution.
 
         """
         return self.thisptr.get().binomial(p, n)
@@ -84,9 +104,10 @@ cdef class GSLRandomNumberGenerator:
 
         Reset the random number seed.
 
-        Args:
-            val (Integer, optional): A new seed.
-                If no seed is given, reset the seed by the current time.
+        Parameters
+        ----------
+        val : Integer, optional
+            A new seed. If no seed is given, reset the seed by the current time.
 
         """
         if val is None:

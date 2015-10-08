@@ -13,10 +13,14 @@ cdef class Real3:
     def __init__(self, Real p1, Real p2, Real p3):
         """Constructor.
 
-        Args:
-            p1 (Real): The first value in the vector.
-            p2 (Real): The second value in the vector.
-            p3 (Real): The third value in the vector.
+        Parameters
+        ----------
+        p1 : Real
+            The first value in the vector.
+        p2 : Real
+            The second value in the vector.
+        p3 : Real
+            The third value in the vector.
 
         """
         pass
@@ -70,12 +74,17 @@ def real3_add(Real3 p1, Real3 p2):
 
     Add two ``Real3``s, and returns the sum.
 
-    Args:
-        p1 (Real3): The first vector.
-        p2 (Real3): The second vector.
+    Parameters
+    ----------
+    p1 : Real3
+        The first vector.
+    p2 : Real3
+        The second vector.
 
-    Returns:
-        Real3: The sum of two vectors, ``p1 + p2``.
+    Returns
+    -------
+    Real3:
+        The sum of two vectors, ``p1 + p2``.
 
     """
     cdef Cpp_Real3 r = real3operators.add(deref(p1.thisptr), deref(p2.thisptr))
@@ -86,12 +95,17 @@ def real3_subtract(Real3 p1, Real3 p2):
 
     Subtract p2 from p1.
 
-    Args:
-        p1 (Real3): The left-hand-side vector.
-        p2 (Real3): The right-hand-side vector.
+    Parameters
+    ----------
+    p1 : Real3
+        The left-hand-side vector.
+    p2 : Real3
+        The right-hand-side vector.
 
-    Returns:
-        Real3: Its difference, ``p1 - p2``.
+    Returns
+    -------
+    Real3:
+        Its difference, ``p1 - p2``.
 
     """
     cdef Cpp_Real3 r = real3operators.subtract(deref(p1.thisptr), deref(p2.thisptr))
@@ -102,12 +116,17 @@ def real3_divide(Real3 p1, Real p2):
 
     Divide p1 by p2.
 
-    Args:
-        p1 (Real3): The numerator.
-        p2 (Real): The denominator.
+    Parameters
+    ----------
+    p1 : Real3
+        The numerator.
+    p2 : Real
+        The denominator.
 
-    Returns:
-        Real3: The divided vector, ``p1 / p2``.
+    Returns
+    -------
+    Real3:
+        The divided vector, ``p1 / p2``.
 
     """
     cdef Cpp_Real3 r = real3operators.divide(deref(p1.thisptr), p2)
@@ -118,12 +137,17 @@ def real3_multiply(Real3 p1, Real p2):
 
     Multiply p1 by p2.
 
-    Args:
-        p1 (Real3): A vector.
-        p2 (Real): A factor.
+    Parameters
+    ----------
+    p1 : Real3
+        A vector.
+    p2 : Real
+        A factor.
 
-    Returns:
-        Real3: The multipled vector, ``p1 * p2``.
+    Returns
+    -------
+    Real3:
+        The multipled vector, ``p1 * p2``.
 
     """
     cdef Cpp_Real3 r = real3operators.multiply(deref(p1.thisptr), p2)
@@ -139,15 +163,23 @@ def real3_abs(Real3 p1):
 
     Return an absolute vector of the given vector.
 
-    Args:
-        p1 (Real3): A vector.
+    Parameters
+    ----------
+    p1 : Real3
+        A vector.
 
-    Returns:
-        Real3: The absolute vector, which consists of absolute value
-            of the given vector.
+    Returns
+    -------
+    Real3:
+        The absolute vector, which consists of absolute value of the given vector.
 
-    Note:
-        This is NOT for taking the norm of a vector. See ``length`` also.
+    Notes
+    -----
+    This is NOT for taking the norm of a vector.
+
+    See Also
+    --------
+    length
 
     """
     cdef Cpp_Real3 r = real3operators.abs(deref(p1.thisptr))

@@ -15,8 +15,10 @@ cdef class ParticleID:
     def __init__(self, value = None):
         """Constructor.
 
-        Args:
-            value (tuple): A pair of integers, lot and serial.
+        Parameters
+        ----------
+        value : tuple
+            A pair of integers, lot and serial.
 
         """
         pass
@@ -58,11 +60,16 @@ cdef class Particle:
     def __init__(self, Species sp, Real3 pos, Real radius, Real D):
         """Constructor.
 
-        Args:
-            sp (Species): A species, which the particle belongs to.
-            pos (Real3): A position of the particle.
-            radius (Real): A radius of the particle. This must be positive.
-            D (Real): A diffusion constant. This must be positive.
+        Parameters
+        ----------
+        sp : Species
+            A species, which the particle belongs to.
+        pos : Real3
+            A position of the particle.
+        radius : Real
+            A radius of the particle. This must be positive.
+        D : Real
+            A diffusion constant. This must be positive.
 
         """
         pass

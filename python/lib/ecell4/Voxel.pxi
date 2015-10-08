@@ -15,12 +15,18 @@ cdef class Voxel:
     def __init__(self, Species sp, Integer coord, Real radius, Real D, loc=None):
         """Constructor.
 
-        Args:
-          sp (Species): The species.
-          coord (Integer): The coordinate given as an Integer.
-          radius (Real): The radius of a molecule.
-          D (Real): The diffusion rate of a molecule.
-          loc (str, optional): The location of a molecule.
+        Parameters
+        ----------
+        sp : Species
+            The species.
+        coord : Integer
+            The coordinate given as an Integer.
+        radius : Real
+            The radius of a molecule.
+        D : Real
+            The diffusion rate of a molecule.
+        loc : str, optional
+            The location of a molecule.
 
         """
         pass  # XXX: Only used for doc string
