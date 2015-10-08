@@ -235,7 +235,7 @@ cdef class MesoscopicWorld:
             return self.thisptr.get().num_molecules(deref(sp.thisptr), <Integer>c)
 
     def num_molecules_exact(self, Species sp, c = None):
-        """num_particles_exact(sp, c=None) -> Integer
+        """num_molecules_exact(sp, c=None) -> Integer
 
         Return the number of molecules within the suggested subvolume.
 
