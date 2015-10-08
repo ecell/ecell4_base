@@ -3,7 +3,6 @@
 
 #include <ostream>
 #include <iomanip>
-#include <cmath>
 #include <vector>
 
 #include "types.hpp"
@@ -101,9 +100,9 @@ inline Integer3 subtract(const Integer3& g1, const Integer3& g2)
 inline Integer3 abs(const Integer3& g1)
 {
     Integer3 retval;
-    retval.col = std::abs(g1.col);
-    retval.row = std::abs(g1.row);
-    retval.layer = std::abs(g1.layer);
+    retval.col = abs(g1.col);
+    retval.row = abs(g1.row);
+    retval.layer = abs(g1.layer);
     return retval;
 }
 
