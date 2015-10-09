@@ -12,3 +12,4 @@ pages:
     - 'bd': 'api/bd.md'
     - 'egfrd': 'api/egfrd.md'
     - 'util': 'api/util.md'
+    - 'util.decorator': 'api/util.decorator.md'
