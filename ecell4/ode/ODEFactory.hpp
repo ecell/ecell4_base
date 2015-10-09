@@ -23,7 +23,8 @@ public:
 
 public:
 
-    ODEFactory(const ODESolverType solver_type = ROSENBROCK4, const Real dt = inf)
+    ODEFactory(const ODESolverType solver_type = ROSENBROCK4_CONTROLLER,
+               const Real dt = inf)
         : base_type(), solver_type_(solver_type), dt_(dt)
     {
         ; // do nothing

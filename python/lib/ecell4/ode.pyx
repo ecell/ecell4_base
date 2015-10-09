@@ -836,15 +836,15 @@ cdef ODENetworkModel ODENetworkModel_from_Cpp_ODENetworkModel(
 # ODESolverType:
 (
     RUNGE_KUTTA_CASH_KARP54,
-    ROSENBROCK4,
+    ROSENBROCK4_CONTROLLER,
     EULER,
 ) = (0, 1, 2)
 
 cdef Cpp_ODESolverType translate_solver_type(solvertype_constant):
     if solvertype_constant == RUNGE_KUTTA_CASH_KARP54:
         return RUNGE_KUTTA_CASH_KARP54
-    elif solvertype_constant == ROSENBROCK4:
-        return Cpp_ROSENBROCK4
+    elif solvertype_constant == ROSENBROCK4_CONTROLLER:
+        return Cpp_ROSENBROCK4_CONTROLLER
     elif solvertype_constant == EULER:
         return Cpp_EULER
     else:
@@ -869,7 +869,7 @@ cdef class ODESimulator:
             A world
         solver_type : int, optional
             a type of the ode solver.
-            Choose one from RUNGE_KUTTA_CASH_KARP54, ROSENBROCK4 and EULER.
+            Choose one from RUNGE_KUTTA_CASH_KARP54, ROSENBROCK4_CONTROLLER and EULER.
 
         """
         pass
@@ -1103,7 +1103,7 @@ cdef class ODEFactory:
         ----------
         solvertype : int, optional
             a type of the ode solver.
-            Choose one from RUNGE_KUTTA_CASH_KARP54, ROSENBROCK4 and EULER.
+            Choose one from RUNGE_KUTTA_CASH_KARP54, ROSENBROCK4_CONTROLLER and EULER.
         dt : Real, optional
             a default step interval.
 

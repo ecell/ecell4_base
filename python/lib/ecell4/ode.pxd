@@ -145,7 +145,7 @@ cdef extern from "ecell4/ode/ODESimulator.hpp" namespace "ecell4::ode":
     cdef enum Cpp_ODESolverType "ecell4::ode::ODESolverType":
         Cpp_UNDEF "ecell4::ode::UNDEF"
         Cpp_RUNGE_KUTA_CASH_KARP54 "ecell4::ode::RUNGE_KUTA_CASH_KARP54"
-        Cpp_ROSENBROCK4 "ecell4::ode::ROSENBROCK4"
+        Cpp_ROSENBROCK4_CONTROLLER "ecell4::ode::ROSENBROCK4_CONTROLLER"
         Cpp_EULER "ecell4::ode::EULER"
 
 ## Cpp_ODESimulator
