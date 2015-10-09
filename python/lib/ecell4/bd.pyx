@@ -301,8 +301,7 @@ cdef class BDWorld:
     def list_particles_within_radius(
         self, Real3 pos, Real radius,
         ParticleID ignore1 = None, ParticleID ignore2 = None):
-        """list_particles_within_radius(pos, radius, ignore1=None, ignore2=None)
-            -> [((ParticleID, Particle), Real)]
+        """list_particles_within_radius(pos, radius, ignore1=None, ignore2=None) -> [((ParticleID, Particle), Real)]
 
         Returns a list of pairs of a particle and distance within the given sphere.
         The region is specified with a center position and radius.

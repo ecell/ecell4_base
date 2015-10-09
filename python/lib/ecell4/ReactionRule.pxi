@@ -257,7 +257,7 @@ def create_synthesis_reaction_rule(Species product1, Real k):
     return ReactionRule_from_Cpp_ReactionRule(address(rr))
 
 def create_unimolecular_reaction_rule(Species reactant1, Species product1, Real k):
-    """create_synthesis_reaction_rule(reactant1, product1, k) -> ReactionRule
+    """create_unimolecular_reaction_rule(reactant1, product1, k) -> ReactionRule
 
     Create an unimolecular ``ReactionRule``.
 

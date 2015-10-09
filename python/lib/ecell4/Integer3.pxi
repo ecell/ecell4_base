@@ -83,7 +83,7 @@ cdef Integer3 Integer3_from_Cpp_Integer3(Cpp_Integer3 *p):
     return r
 
 def integer3_add(Integer3 p1, Integer3 p2):
-    """add(p1, p2) -> Integer3
+    """integer3_add(p1, p2) -> Integer3
 
     Add two ``Integer3``s, and returns the sum.
 
@@ -104,7 +104,7 @@ def integer3_add(Integer3 p1, Integer3 p2):
     return Integer3_from_Cpp_Integer3(address(r))
 
 def integer3_subtract(Integer3 p1, Integer3 p2):
-    """subtract(p1, p2) -> Integer3
+    """integer3_subtract(p1, p2) -> Integer3
 
     Subtract p2 from p1.
 
@@ -125,7 +125,7 @@ def integer3_subtract(Integer3 p1, Integer3 p2):
     return Integer3_from_Cpp_Integer3(address(r))
 
 def integer3_abs(Integer3 p1):
-    """real3_abs(p1) -> Integer3
+    """integer3_abs(p1) -> Integer3
 
     Return an absolute vector of the given vector.
 

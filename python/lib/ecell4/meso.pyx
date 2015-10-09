@@ -379,7 +379,7 @@ cdef class MesoscopicWorld:
         return self.thisptr.get().on_structure(deref(sp.thisptr), deref(g.thisptr))
 
     def check_structure(self, Species sp, Integer3 g):
-        """on_structure(sp, g) -> bool
+        """check_structure(sp, g) -> bool
 
         Check if the given subvolume is belonging to the structure.
 
@@ -456,7 +456,7 @@ cdef class MesoscopicWorld:
         return self.thisptr.get().list_coordinates(deref(sp.thisptr))
 
     def list_coordinates_exact(self, Species sp):
-        """list_coordinates(sp) -> [Integer]
+        """list_coordinates_exact(sp) -> [Integer]
 
         Return a list of coordinates of molecules belonging to the given species.
 
@@ -852,14 +852,14 @@ cdef class MesoscopicFactory:
         Parameters
         ----------
         arg1 : MesoscopicWorld
-            a world
+            A world
 
         or
 
         arg1 : Model
-            a simulation model
+            A simulation model
         arg2 : MesoscopicWorld
-            a world
+            A world
 
         Returns
         -------
