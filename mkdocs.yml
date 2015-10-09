@@ -10,3 +10,4 @@ pages:
     - 'meso': 'api/meso.md'
     - 'lattice': 'api/lattice.md'
     - 'bd': 'api/bd.md'
+    - 'egfrd': 'api/egfrd'
