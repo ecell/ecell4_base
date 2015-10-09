@@ -13,3 +13,4 @@ pages:
     - 'egfrd': 'api/egfrd.md'
     - 'util': 'api/util.md'
     - 'util.decorator': 'api/util.decorator.md'
+    - 'util.viz': 'api/util.viz.md'
