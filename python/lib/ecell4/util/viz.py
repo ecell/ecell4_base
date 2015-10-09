@@ -93,15 +93,15 @@ def plot_movie(
     radius : float, default None
         If this value is set, all particles in the world will be rendered
         as if their radius are the same.
-    width: float, default 500
+    width : float, default 500
         Width of the plotting area.
-    height: float, default 500
+    height : float, default 500
         Height of the plotting area.
-    config: dict, default {}
+    config : dict, default {}
         Dict for configure default colors. Its values are colors unique
         to each speices.
         Colors included in config dict will never be used for other speices.
-    species_list: array of string, default None
+    species_list : array of string, default None
         If set, plot_movie will not search the list of species
 
     Returns
@@ -167,21 +167,20 @@ def plot_world(
     radius : float, default None
         If this value is set, all particles in the world will be rendered
         as if their radius are the same.
-    width: float, default 500
+    width : float, default 500
         Width of the plotting area.
-    height: float, default 500
+    height : float, default 500
         Height of the plotting area.
-    config: dict, default {}
+    config : dict, default {}
         Dict for configure default colors. Its values are colors unique
         to each speices.
         Colors included in config dict will never be used for other speices.
-    species_list: array of string, default None
+    species_list : array of string, default None
         If set, plot_world will not search the list of species.
-    debug: array of dict, default []
+    debug : array of dict, default []
         *** EXPERIMENTAL IMPRIMENTATION ***
-        example:
-          [{'type': 'box', 'x': 10, 'y': 10, 'z': 10,
-            'options': {'width': 1, 'height': 1}}]
+        Example:
+        >> [{'type': 'box', 'x': 10, 'y': 10, 'z': 10, 'options': {'width': 1, 'height': 1}}]
         type: 'box', 'plane', 'sphere', and 'cylinder'
         x, y, z: float
         options:
@@ -258,9 +257,9 @@ def plot_dense_array(arr, length=256, ranges=None, colors=["#a6cee3", "#fb9a99"]
     ranges : list of tuple
         ranges for x, y, and z axis
         i.e. [(-100, 100), (-100, 100), (-100, 100)]
-    colors: list of string
+    colors : list of string
         colors for species
-    length: int
+    length : int
         length of the texture
         256 or 64
 
@@ -372,11 +371,11 @@ def plot_trajectory(
     ----------
     obs : TrajectoryObserver
         TrajectoryObserver to render.
-    width: float, default 500
+    width : float, default 500
         Width of the plotting area.
-    height: float, default 500
+    height : float, default 500
         Height of the plotting area.
-    config: dict, default {}
+    config : dict, default {}
         Dict for configure default colors. Its values are colors unique
         to each particle.
         Colors included in config dict will never be used for other particles.
