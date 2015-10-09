@@ -5,4 +5,5 @@ pages:
 - Tutorials: 'tutorials.md'
 - API:
     - 'core': 'api/core.md'
+    - 'ode': 'api/ode.md'
     - 'meso': 'api/meso.md'
