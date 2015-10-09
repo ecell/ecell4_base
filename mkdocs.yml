@@ -9,3 +9,4 @@ pages:
     - 'ode': 'api/ode.md'
     - 'meso': 'api/meso.md'
     - 'lattice': 'api/lattice.md'
+    - 'bd': 'api/bd.md'
