@@ -4,6 +4,20 @@
 <dd><p>A factory class creating a LatticeWorld instance and a LatticeSimulator instance.</p>
 <p>LatticeFactory(Real voxel_radius=None, GSLRandomNumberGenerator rng=None)</p>
 <p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.lattice.LatticeFactory.create_simulator" title="ecell4.lattice.LatticeFactory.create_simulator"><code class="xref py py-obj docutils literal"><span class="pre">create_simulator</span></code></a>((arg1,&nbsp;...)</td>
+<td>Return a LatticeSimulator instance.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.lattice.LatticeFactory.create_world" title="ecell4.lattice.LatticeFactory.create_world"><code class="xref py py-obj docutils literal"><span class="pre">create_world</span></code></a>((arg1=None)&nbsp;-&gt;&nbsp;LatticeWorld)</td>
+<td>Return a LatticeWorld instance.</td>
+</tr>
+</tbody>
+</table>
 <dl class="method">
 <dt id="ecell4.lattice.LatticeFactory.create_simulator">
 <code class="descname">create_simulator</code><span class="sig-paren">(</span><em>arg1</em>, <em>arg2</em><span class="sig-paren">)</span> &rarr; LatticeSimulator<a class="headerlink" href="#ecell4.lattice.LatticeFactory.create_simulator" title="Permalink to this definition">¶</a></dt>
@@ -74,6 +88,56 @@
 <dd><p>A class running the simulation with the lattice algorithm.</p>
 <p>LatticeSimulator(m, w)</p>
 <p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.lattice.LatticeSimulator.dt" title="ecell4.lattice.LatticeSimulator.dt"><code class="xref py py-obj docutils literal"><span class="pre">dt</span></code></a></td>
+<td>Return the step interval.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.lattice.LatticeSimulator.get_alpha" title="ecell4.lattice.LatticeSimulator.get_alpha"><code class="xref py py-obj docutils literal"><span class="pre">get_alpha</span></code></a></td>
+<td>Return the value of alpha.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.lattice.LatticeSimulator.initialize" title="ecell4.lattice.LatticeSimulator.initialize"><code class="xref py py-obj docutils literal"><span class="pre">initialize</span></code></a></td>
+<td>Initialize the simulator.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.lattice.LatticeSimulator.last_reactions" title="ecell4.lattice.LatticeSimulator.last_reactions"><code class="xref py py-obj docutils literal"><span class="pre">last_reactions</span></code></a>(()&nbsp;-&gt;&nbsp;[(ReactionRule,&nbsp;...)</td>
+<td>Return reactions occuring at the last step.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.lattice.LatticeSimulator.model" title="ecell4.lattice.LatticeSimulator.model"><code class="xref py py-obj docutils literal"><span class="pre">model</span></code></a></td>
+<td>Return the model bound.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.lattice.LatticeSimulator.next_time" title="ecell4.lattice.LatticeSimulator.next_time"><code class="xref py py-obj docutils literal"><span class="pre">next_time</span></code></a></td>
+<td>Return the scheduled time for the next step.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.lattice.LatticeSimulator.num_steps" title="ecell4.lattice.LatticeSimulator.num_steps"><code class="xref py py-obj docutils literal"><span class="pre">num_steps</span></code></a></td>
+<td>Return the number of steps.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.lattice.LatticeSimulator.run" title="ecell4.lattice.LatticeSimulator.run"><code class="xref py py-obj docutils literal"><span class="pre">run</span></code></a>(duration,&nbsp;observers)</td>
+<td>Run the simulation.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.lattice.LatticeSimulator.set_alpha" title="ecell4.lattice.LatticeSimulator.set_alpha"><code class="xref py py-obj docutils literal"><span class="pre">set_alpha</span></code></a>(alpha)</td>
+<td>Set the value of alpha.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.lattice.LatticeSimulator.set_dt" title="ecell4.lattice.LatticeSimulator.set_dt"><code class="xref py py-obj docutils literal"><span class="pre">set_dt</span></code></a>(dt)</td>
+<td>Set a step interval.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.lattice.LatticeSimulator.set_t" title="ecell4.lattice.LatticeSimulator.set_t"><code class="xref py py-obj docutils literal"><span class="pre">set_t</span></code></a>(t)</td>
+<td>Set the current time.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.lattice.LatticeSimulator.step" title="ecell4.lattice.LatticeSimulator.step"><code class="xref py py-obj docutils literal"><span class="pre">step</span></code></a>((upto=None)&nbsp;-&gt;&nbsp;bool)</td>
+<td>Step the simulation.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.lattice.LatticeSimulator.t" title="ecell4.lattice.LatticeSimulator.t"><code class="xref py py-obj docutils literal"><span class="pre">t</span></code></a></td>
+<td>Return the time.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.lattice.LatticeSimulator.world" title="ecell4.lattice.LatticeSimulator.world"><code class="xref py py-obj docutils literal"><span class="pre">world</span></code></a></td>
+<td>Return the world bound.</td>
+</tr>
+</tbody>
+</table>
 <dl class="method">
 <dt id="ecell4.lattice.LatticeSimulator.dt">
 <code class="descname">dt</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ecell4.lattice.LatticeSimulator.dt" title="Permalink to this definition">¶</a></dt>
@@ -250,6 +314,179 @@ When upto is not given, nothing will be returned.</p>
 <dd><p>A class containing the properties of the lattice world.</p>
 <p>LatticeWorld(edge_lengths=None, voxel_radius=None, GSLRandomNumberGenerator rng=None)</p>
 <p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.lattice.LatticeWorld.actual_lengths" title="ecell4.lattice.LatticeWorld.actual_lengths"><code class="xref py py-obj docutils literal"><span class="pre">actual_lengths</span></code></a></td>
+<td>Return the actual edge lengths of the world.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.lattice.LatticeWorld.add_molecules" title="ecell4.lattice.LatticeWorld.add_molecules"><code class="xref py py-obj docutils literal"><span class="pre">add_molecules</span></code></a>(sp,&nbsp;num[,&nbsp;shape])</td>
+<td>Add some molecules.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.lattice.LatticeWorld.add_structure" title="ecell4.lattice.LatticeWorld.add_structure"><code class="xref py py-obj docutils literal"><span class="pre">add_structure</span></code></a>(sp,&nbsp;shape)</td>
+<td>Add a structure.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.lattice.LatticeWorld.as_base" title="ecell4.lattice.LatticeWorld.as_base"><code class="xref py py-obj docutils literal"><span class="pre">as_base</span></code></a></td>
+<td>Return self as a base class.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.lattice.LatticeWorld.bind_to" title="ecell4.lattice.LatticeWorld.bind_to"><code class="xref py py-obj docutils literal"><span class="pre">bind_to</span></code></a>(m)</td>
+<td>Bind a model to the world</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.lattice.LatticeWorld.col_size" title="ecell4.lattice.LatticeWorld.col_size"><code class="xref py py-obj docutils literal"><span class="pre">col_size</span></code></a></td>
+<td>Return the size of the column of the world.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.lattice.LatticeWorld.coord2global" title="ecell4.lattice.LatticeWorld.coord2global"><code class="xref py py-obj docutils literal"><span class="pre">coord2global</span></code></a>((coord)&nbsp;-&gt;&nbsp;Integer3)</td>
+<td>Transform a coordinate to a global coordinate.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.lattice.LatticeWorld.coord2private" title="ecell4.lattice.LatticeWorld.coord2private"><code class="xref py py-obj docutils literal"><span class="pre">coord2private</span></code></a></td>
+<td>Transform a coordinate to a private coordinate.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.lattice.LatticeWorld.coordinate2position" title="ecell4.lattice.LatticeWorld.coordinate2position"><code class="xref py py-obj docutils literal"><span class="pre">coordinate2position</span></code></a>((coord)&nbsp;-&gt;&nbsp;Real3)</td>
+<td>Transform a coordinate to a position.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.lattice.LatticeWorld.edge_lengths" title="ecell4.lattice.LatticeWorld.edge_lengths"><code class="xref py py-obj docutils literal"><span class="pre">edge_lengths</span></code></a>(()&nbsp;-&gt;&nbsp;Real3)</td>
+<td>Return the edge lengths of the world.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.lattice.LatticeWorld.get_neighbor" title="ecell4.lattice.LatticeWorld.get_neighbor"><code class="xref py py-obj docutils literal"><span class="pre">get_neighbor</span></code></a>((coord,&nbsp;nrand)&nbsp;-&gt;&nbsp;Integer)</td>
+<td>Return the neighbor coordinate of a given coordinate.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.lattice.LatticeWorld.get_neighbor_private" title="ecell4.lattice.LatticeWorld.get_neighbor_private"><code class="xref py py-obj docutils literal"><span class="pre">get_neighbor_private</span></code></a>((coord,&nbsp;nrand)&nbsp;-&gt;&nbsp;Integer)</td>
+<td>Return the neighbor coordinate of a given coordinate in private.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.lattice.LatticeWorld.get_particle" title="ecell4.lattice.LatticeWorld.get_particle"><code class="xref py py-obj docutils literal"><span class="pre">get_particle</span></code></a>(pid)&nbsp;-&gt;&nbsp;(ParticleID,&nbsp;Particle)</td>
+<td>Return the particle associated a given ParticleID.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.lattice.LatticeWorld.get_volume" title="ecell4.lattice.LatticeWorld.get_volume"><code class="xref py py-obj docutils literal"><span class="pre">get_volume</span></code></a></td>
+<td>Return the actual volume of the world.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.lattice.LatticeWorld.get_voxel" title="ecell4.lattice.LatticeWorld.get_voxel"><code class="xref py py-obj docutils literal"><span class="pre">get_voxel</span></code></a>(arg)&nbsp;-&gt;&nbsp;(ParticleID,&nbsp;Voxle)</td>
+<td>Return the voxel having a particle associated with a given ParticleID or coordinate.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.lattice.LatticeWorld.global2coord" title="ecell4.lattice.LatticeWorld.global2coord"><code class="xref py py-obj docutils literal"><span class="pre">global2coord</span></code></a>((g)&nbsp;-&gt;&nbsp;Integer)</td>
+<td>Transform a global coordinate to a coordinate.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.lattice.LatticeWorld.global2position" title="ecell4.lattice.LatticeWorld.global2position"><code class="xref py py-obj docutils literal"><span class="pre">global2position</span></code></a>((g)&nbsp;-&gt;&nbsp;Real3)</td>
+<td>Transform a global coordinate to a position.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.lattice.LatticeWorld.global2private" title="ecell4.lattice.LatticeWorld.global2private"><code class="xref py py-obj docutils literal"><span class="pre">global2private</span></code></a>((g)&nbsp;-&gt;&nbsp;Integer)</td>
+<td>Transform a global coordinate to a private coordinate.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.lattice.LatticeWorld.has_particle" title="ecell4.lattice.LatticeWorld.has_particle"><code class="xref py py-obj docutils literal"><span class="pre">has_particle</span></code></a>((pid)&nbsp;-&gt;&nbsp;bool)</td>
+<td>Check if a particle associated with a given particle id exists.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.lattice.LatticeWorld.has_voxel" title="ecell4.lattice.LatticeWorld.has_voxel"><code class="xref py py-obj docutils literal"><span class="pre">has_voxel</span></code></a>((pid)&nbsp;-&gt;&nbsp;bool)</td>
+<td>Check if a particle exists.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.lattice.LatticeWorld.layer_size" title="ecell4.lattice.LatticeWorld.layer_size"><code class="xref py py-obj docutils literal"><span class="pre">layer_size</span></code></a></td>
+<td>Return the size of layer of the world.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.lattice.LatticeWorld.list_particles" title="ecell4.lattice.LatticeWorld.list_particles"><code class="xref py py-obj docutils literal"><span class="pre">list_particles</span></code></a>((sp)&nbsp;-&gt;&nbsp;[(ParticleID,&nbsp;Particle)])</td>
+<td>Return the list of particles.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.lattice.LatticeWorld.list_particles_exact" title="ecell4.lattice.LatticeWorld.list_particles_exact"><code class="xref py py-obj docutils literal"><span class="pre">list_particles_exact</span></code></a>((sp)&nbsp;-&gt;&nbsp;[(ParticleID,&nbsp;...)</td>
+<td>Return the list of particles of a given species.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.lattice.LatticeWorld.list_voxels" title="ecell4.lattice.LatticeWorld.list_voxels"><code class="xref py py-obj docutils literal"><span class="pre">list_voxels</span></code></a>((sp=None)&nbsp;-&gt;&nbsp;[ParitcleID,&nbsp;Voxel])</td>
+<td>Returns the list of voxels.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.lattice.LatticeWorld.list_voxels_exact" title="ecell4.lattice.LatticeWorld.list_voxels_exact"><code class="xref py py-obj docutils literal"><span class="pre">list_voxels_exact</span></code></a>((sp)&nbsp;-&gt;&nbsp;[ParitcleID,&nbsp;Voxel])</td>
+<td>Returns the list of voxels.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.lattice.LatticeWorld.load" title="ecell4.lattice.LatticeWorld.load"><code class="xref py py-obj docutils literal"><span class="pre">load</span></code></a>(filename)</td>
+<td>Load the world from a file.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.lattice.LatticeWorld.new_particle" title="ecell4.lattice.LatticeWorld.new_particle"><code class="xref py py-obj docutils literal"><span class="pre">new_particle</span></code></a>(arg1[,&nbsp;arg2])</td>
+<td>Create a new particle.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.lattice.LatticeWorld.new_voxel" title="ecell4.lattice.LatticeWorld.new_voxel"><code class="xref py py-obj docutils literal"><span class="pre">new_voxel</span></code></a>(arg1,&nbsp;arg2)&nbsp;-&gt;&nbsp;(ParticleID,&nbsp;Voxel)</td>
+<td>Create a particle.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.lattice.LatticeWorld.num_molecules" title="ecell4.lattice.LatticeWorld.num_molecules"><code class="xref py py-obj docutils literal"><span class="pre">num_molecules</span></code></a>((sp)&nbsp;-&gt;&nbsp;Integer)</td>
+<td>Return the number of molecules.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.lattice.LatticeWorld.num_molecules_exact" title="ecell4.lattice.LatticeWorld.num_molecules_exact"><code class="xref py py-obj docutils literal"><span class="pre">num_molecules_exact</span></code></a>((sp)&nbsp;-&gt;&nbsp;Integer)</td>
+<td>Return the number of molecules of a given species.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.lattice.LatticeWorld.num_particles" title="ecell4.lattice.LatticeWorld.num_particles"><code class="xref py py-obj docutils literal"><span class="pre">num_particles</span></code></a>((sp=None)&nbsp;-&gt;&nbsp;Integer)</td>
+<td>Return the number of particles.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.lattice.LatticeWorld.num_particles_exact" title="ecell4.lattice.LatticeWorld.num_particles_exact"><code class="xref py py-obj docutils literal"><span class="pre">num_particles_exact</span></code></a>((sp)&nbsp;-&gt;&nbsp;Integer)</td>
+<td>Return the number of particles of a given species.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.lattice.LatticeWorld.num_voxels" title="ecell4.lattice.LatticeWorld.num_voxels"><code class="xref py py-obj docutils literal"><span class="pre">num_voxels</span></code></a>((sp=None)&nbsp;-&gt;&nbsp;Integer)</td>
+<td>Return the number of voxels.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.lattice.LatticeWorld.num_voxels_exact" title="ecell4.lattice.LatticeWorld.num_voxels_exact"><code class="xref py py-obj docutils literal"><span class="pre">num_voxels_exact</span></code></a>((sp)&nbsp;-&gt;&nbsp;Integer)</td>
+<td>Return the number of voxels of a given species.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.lattice.LatticeWorld.on_structure" title="ecell4.lattice.LatticeWorld.on_structure"><code class="xref py py-obj docutils literal"><span class="pre">on_structure</span></code></a>((sp,&nbsp;coord)&nbsp;-&gt;&nbsp;bool)</td>
+<td>Check if the given species would be on the proper structure at the coordinate.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.lattice.LatticeWorld.position2coordinate" title="ecell4.lattice.LatticeWorld.position2coordinate"><code class="xref py py-obj docutils literal"><span class="pre">position2coordinate</span></code></a>((pos)&nbsp;-&gt;&nbsp;Integer)</td>
+<td>Transform a position to a coordinate.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.lattice.LatticeWorld.position2global" title="ecell4.lattice.LatticeWorld.position2global"><code class="xref py py-obj docutils literal"><span class="pre">position2global</span></code></a>((pos)&nbsp;-&gt;&nbsp;Integer3)</td>
+<td>Transform a position to a global coordinate.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.lattice.LatticeWorld.private2coord" title="ecell4.lattice.LatticeWorld.private2coord"><code class="xref py py-obj docutils literal"><span class="pre">private2coord</span></code></a></td>
+<td>Transform a private coordinate to a coordinate.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.lattice.LatticeWorld.private2global" title="ecell4.lattice.LatticeWorld.private2global"><code class="xref py py-obj docutils literal"><span class="pre">private2global</span></code></a>((coord)&nbsp;-&gt;&nbsp;Integer3)</td>
+<td>Transform a private coordinate to a global coordinate.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.lattice.LatticeWorld.private2position" title="ecell4.lattice.LatticeWorld.private2position"><code class="xref py py-obj docutils literal"><span class="pre">private2position</span></code></a>((coord)&nbsp;-&gt;&nbsp;Real3)</td>
+<td>Transform a private coordinate to a position.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.lattice.LatticeWorld.remove_molecules" title="ecell4.lattice.LatticeWorld.remove_molecules"><code class="xref py py-obj docutils literal"><span class="pre">remove_molecules</span></code></a>(sp,&nbsp;num)</td>
+<td>Remove the molecules.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.lattice.LatticeWorld.remove_particle" title="ecell4.lattice.LatticeWorld.remove_particle"><code class="xref py py-obj docutils literal"><span class="pre">remove_particle</span></code></a>(pid)</td>
+<td>Remove the particle associated with a given ParticleID.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.lattice.LatticeWorld.remove_voxel" title="ecell4.lattice.LatticeWorld.remove_voxel"><code class="xref py py-obj docutils literal"><span class="pre">remove_voxel</span></code></a>(pid)</td>
+<td>Remove the particle associated with a given ParticleID.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.lattice.LatticeWorld.rng" title="ecell4.lattice.LatticeWorld.rng"><code class="xref py py-obj docutils literal"><span class="pre">rng</span></code></a></td>
+<td>Return a random number generator object.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.lattice.LatticeWorld.row_size" title="ecell4.lattice.LatticeWorld.row_size"><code class="xref py py-obj docutils literal"><span class="pre">row_size</span></code></a></td>
+<td>Return the size of row of the world.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.lattice.LatticeWorld.save" title="ecell4.lattice.LatticeWorld.save"><code class="xref py py-obj docutils literal"><span class="pre">save</span></code></a>(filename)</td>
+<td>Save the world to a file.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.lattice.LatticeWorld.set_t" title="ecell4.lattice.LatticeWorld.set_t"><code class="xref py py-obj docutils literal"><span class="pre">set_t</span></code></a>(t)</td>
+<td>Set the value of the time of the world.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.lattice.LatticeWorld.shape" title="ecell4.lattice.LatticeWorld.shape"><code class="xref py py-obj docutils literal"><span class="pre">shape</span></code></a>(()&nbsp;-&gt;&nbsp;Integer3)</td>
+<td>Return the triplet of sizes of column, row and layer.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.lattice.LatticeWorld.size" title="ecell4.lattice.LatticeWorld.size"><code class="xref py py-obj docutils literal"><span class="pre">size</span></code></a></td>
+<td>Return the size of voxels.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.lattice.LatticeWorld.t" title="ecell4.lattice.LatticeWorld.t"><code class="xref py py-obj docutils literal"><span class="pre">t</span></code></a></td>
+<td>Return the time of the world.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.lattice.LatticeWorld.update_particle" title="ecell4.lattice.LatticeWorld.update_particle"><code class="xref py py-obj docutils literal"><span class="pre">update_particle</span></code></a>(pid,&nbsp;p)</td>
+<td>Update a particle.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.lattice.LatticeWorld.update_voxel" title="ecell4.lattice.LatticeWorld.update_voxel"><code class="xref py py-obj docutils literal"><span class="pre">update_voxel</span></code></a>((pid,&nbsp;v)&nbsp;-&gt;&nbsp;bool)</td>
+<td>Update a particle.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.lattice.LatticeWorld.volume" title="ecell4.lattice.LatticeWorld.volume"><code class="xref py py-obj docutils literal"><span class="pre">volume</span></code></a></td>
+<td>Return the volume of the world.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.lattice.LatticeWorld.voxel_radius" title="ecell4.lattice.LatticeWorld.voxel_radius"><code class="xref py py-obj docutils literal"><span class="pre">voxel_radius</span></code></a></td>
+<td>Return the voxel radius.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.lattice.LatticeWorld.voxel_volume" title="ecell4.lattice.LatticeWorld.voxel_volume"><code class="xref py py-obj docutils literal"><span class="pre">voxel_volume</span></code></a></td>
+<td>Return the volume of a voxel.</td>
+</tr>
+</tbody>
+</table>
 <dl class="method">
 <dt id="ecell4.lattice.LatticeWorld.actual_lengths">
 <code class="descname">actual_lengths</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ecell4.lattice.LatticeWorld.actual_lengths" title="Permalink to this definition">¶</a></dt>
