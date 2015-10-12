@@ -5,6 +5,20 @@ and Elegans.</p>
 <em class="property">class </em><code class="descclassname">ecell4.util.viz.</code><code class="descname">ColorScale</code><span class="sig-paren">(</span><em>config={}</em><span class="sig-paren">)</span><a class="headerlink" href="#ecell4.util.viz.ColorScale" title="Permalink to this definition">¶</a></dt>
 <dd><p>Color scale for species.</p>
 <p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.util.viz.ColorScale.get_color" title="ecell4.util.viz.ColorScale.get_color"><code class="xref py py-obj docutils literal"><span class="pre">get_color</span></code></a>(name)</td>
+<td>Get color unique to the recieved name</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.util.viz.ColorScale.get_config" title="ecell4.util.viz.ColorScale.get_config"><code class="xref py py-obj docutils literal"><span class="pre">get_config</span></code></a>()</td>
+<td>Get an instance of dic as the config of colors.</td>
+</tr>
+</tbody>
+</table>
 <dl class="method">
 <dt id="ecell4.util.viz.ColorScale.get_color">
 <code class="descname">get_color</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#ecell4.util.viz.ColorScale.get_color" title="Permalink to this definition">¶</a></dt>
@@ -76,11 +90,11 @@ and Elegans.</p>
 <div><p>ranges for x, y, and z axis
 i.e. [(-100, 100), (-100, 100), (-100, 100)]</p>
 </div></blockquote>
-<p><strong>colors: list of string</strong></p>
+<p><strong>colors</strong> : list of string</p>
 <blockquote>
 <div><p>colors for species</p>
 </div></blockquote>
-<p><strong>length: int</strong></p>
+<p><strong>length</strong> : int</p>
 <blockquote class="last">
 <div><p>length of the texture
 256 or 64</p>
@@ -109,21 +123,21 @@ on IPython notebook.</p>
 <div><p>If this value is set, all particles in the world will be rendered
 as if their radius are the same.</p>
 </div></blockquote>
-<p><strong>width: float, default 500</strong></p>
+<p><strong>width</strong> : float, default 500</p>
 <blockquote>
 <div><p>Width of the plotting area.</p>
 </div></blockquote>
-<p><strong>height: float, default 500</strong></p>
+<p><strong>height</strong> : float, default 500</p>
 <blockquote>
 <div><p>Height of the plotting area.</p>
 </div></blockquote>
-<p><strong>config: dict, default {}</strong></p>
+<p><strong>config</strong> : dict, default {}</p>
 <blockquote>
 <div><p>Dict for configure default colors. Its values are colors unique
 to each speices.
 Colors included in config dict will never be used for other speices.</p>
 </div></blockquote>
-<p><strong>species_list: array of string, default None</strong></p>
+<p><strong>species_list</strong> : array of string, default None</p>
 <blockquote>
 <div><p>If set, plot_movie will not search the list of species</p>
 </div></blockquote>
@@ -216,15 +230,15 @@ on IPython notebook.</p>
 <blockquote>
 <div><p>TrajectoryObserver to render.</p>
 </div></blockquote>
-<p><strong>width: float, default 500</strong></p>
+<p><strong>width</strong> : float, default 500</p>
 <blockquote>
 <div><p>Width of the plotting area.</p>
 </div></blockquote>
-<p><strong>height: float, default 500</strong></p>
+<p><strong>height</strong> : float, default 500</p>
 <blockquote>
 <div><p>Height of the plotting area.</p>
 </div></blockquote>
-<p><strong>config: dict, default {}</strong></p>
+<p><strong>config</strong> : dict, default {}</p>
 <blockquote>
 <div><p>Dict for configure default colors. Its values are colors unique
 to each particle.
@@ -262,36 +276,30 @@ in order to use the same colors in another plot.</p>
 <div><p>If this value is set, all particles in the world will be rendered
 as if their radius are the same.</p>
 </div></blockquote>
-<p><strong>width: float, default 500</strong></p>
+<p><strong>width</strong> : float, default 500</p>
 <blockquote>
 <div><p>Width of the plotting area.</p>
 </div></blockquote>
-<p><strong>height: float, default 500</strong></p>
+<p><strong>height</strong> : float, default 500</p>
 <blockquote>
 <div><p>Height of the plotting area.</p>
 </div></blockquote>
-<p><strong>config: dict, default {}</strong></p>
+<p><strong>config</strong> : dict, default {}</p>
 <blockquote>
 <div><p>Dict for configure default colors. Its values are colors unique
 to each speices.
 Colors included in config dict will never be used for other speices.</p>
 </div></blockquote>
-<p><strong>species_list: array of string, default None</strong></p>
+<p><strong>species_list</strong> : array of string, default None</p>
 <blockquote>
 <div><p>If set, plot_world will not search the list of species.</p>
 </div></blockquote>
-<p><strong>debug: array of dict, default []</strong></p>
+<p><strong>debug</strong> : array of dict, default []</p>
 <blockquote>
 <div><p><strong>* EXPERIMENTAL IMPRIMENTATION *</strong>
-example:</p>
-<blockquote>
-<div><dl class="docutils">
-<dt>[{&#8216;type&#8217;: &#8216;box&#8217;, &#8216;x&#8217;: 10, &#8216;y&#8217;: 10, &#8216;z&#8217;: 10,</dt>
-<dd><p class="first last">&#8216;options&#8217;: {&#8216;width&#8217;: 1, &#8216;height&#8217;: 1}}]</p>
-</dd>
-</dl>
-</div></blockquote>
-<p>type: &#8216;box&#8217;, &#8216;plane&#8217;, &#8216;sphere&#8217;, and &#8216;cylinder&#8217;
+Example:
+&gt;&gt; [{&#8216;type&#8217;: &#8216;box&#8217;, &#8216;x&#8217;: 10, &#8216;y&#8217;: 10, &#8216;z&#8217;: 10, &#8216;options&#8217;: {&#8216;width&#8217;: 1, &#8216;height&#8217;: 1}}]
+type: &#8216;box&#8217;, &#8216;plane&#8217;, &#8216;sphere&#8217;, and &#8216;cylinder&#8217;
 x, y, z: float
 options:</p>
 <blockquote>
