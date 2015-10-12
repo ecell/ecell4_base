@@ -7,6 +7,20 @@
 <dd>bd_dt_factor=None)</dd>
 </dl>
 <p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.egfrd.BDFactory.create_simulator" title="ecell4.egfrd.BDFactory.create_simulator"><code class="xref py py-obj docutils literal"><span class="pre">create_simulator</span></code></a>((arg1,&nbsp;arg2)&nbsp;-&gt;&nbsp;BDSimulator)</td>
+<td>Return a BDSimulator instance.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.egfrd.BDFactory.create_world" title="ecell4.egfrd.BDFactory.create_world"><code class="xref py py-obj docutils literal"><span class="pre">create_world</span></code></a>((arg1=None)&nbsp;-&gt;&nbsp;EGFRDWorld)</td>
+<td>Return a EGFRDWorld instance.</td>
+</tr>
+</tbody>
+</table>
 <dl class="method">
 <dt id="ecell4.egfrd.BDFactory.create_simulator">
 <code class="descname">create_simulator</code><span class="sig-paren">(</span><em>arg1</em>, <em>arg2</em><span class="sig-paren">)</span> &rarr; BDSimulator<a class="headerlink" href="#ecell4.egfrd.BDFactory.create_simulator" title="Permalink to this definition">¶</a></dt>
@@ -77,6 +91,50 @@
 <dd><p>A class running the simulation with the bd algorithm.</p>
 <p>BDSimulator(m, w)</p>
 <p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.egfrd.BDSimulator.dt" title="ecell4.egfrd.BDSimulator.dt"><code class="xref py py-obj docutils literal"><span class="pre">dt</span></code></a></td>
+<td>Return the step interval.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.egfrd.BDSimulator.initialize" title="ecell4.egfrd.BDSimulator.initialize"><code class="xref py py-obj docutils literal"><span class="pre">initialize</span></code></a></td>
+<td>Initialize the simulator.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.egfrd.BDSimulator.last_reactions" title="ecell4.egfrd.BDSimulator.last_reactions"><code class="xref py py-obj docutils literal"><span class="pre">last_reactions</span></code></a>(()&nbsp;-&gt;&nbsp;[(ReactionRule,&nbsp;...)</td>
+<td>Return reactions occuring at the last step.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.egfrd.BDSimulator.model" title="ecell4.egfrd.BDSimulator.model"><code class="xref py py-obj docutils literal"><span class="pre">model</span></code></a></td>
+<td>Return the model bound.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.egfrd.BDSimulator.next_time" title="ecell4.egfrd.BDSimulator.next_time"><code class="xref py py-obj docutils literal"><span class="pre">next_time</span></code></a></td>
+<td>Return the scheduled time for the next step.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.egfrd.BDSimulator.num_steps" title="ecell4.egfrd.BDSimulator.num_steps"><code class="xref py py-obj docutils literal"><span class="pre">num_steps</span></code></a></td>
+<td>Return the number of steps.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.egfrd.BDSimulator.run" title="ecell4.egfrd.BDSimulator.run"><code class="xref py py-obj docutils literal"><span class="pre">run</span></code></a>(duration,&nbsp;observers)</td>
+<td>Run the simulation.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.egfrd.BDSimulator.set_dt" title="ecell4.egfrd.BDSimulator.set_dt"><code class="xref py py-obj docutils literal"><span class="pre">set_dt</span></code></a>(dt)</td>
+<td>Set a step interval.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.egfrd.BDSimulator.set_t" title="ecell4.egfrd.BDSimulator.set_t"><code class="xref py py-obj docutils literal"><span class="pre">set_t</span></code></a>(t)</td>
+<td>Set the current time.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.egfrd.BDSimulator.step" title="ecell4.egfrd.BDSimulator.step"><code class="xref py py-obj docutils literal"><span class="pre">step</span></code></a>((upto=None)&nbsp;-&gt;&nbsp;bool)</td>
+<td>Step the simulation.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.egfrd.BDSimulator.t" title="ecell4.egfrd.BDSimulator.t"><code class="xref py py-obj docutils literal"><span class="pre">t</span></code></a></td>
+<td>Return the time.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.egfrd.BDSimulator.world" title="ecell4.egfrd.BDSimulator.world"><code class="xref py py-obj docutils literal"><span class="pre">world</span></code></a></td>
+<td>Return the world bound.</td>
+</tr>
+</tbody>
+</table>
 <dl class="method">
 <dt id="ecell4.egfrd.BDSimulator.dt">
 <code class="descname">dt</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ecell4.egfrd.BDSimulator.dt" title="Permalink to this definition">¶</a></dt>
@@ -232,6 +290,20 @@ When upto is not given, nothing will be returned.</p>
 <dd>bd_dt_factor, user_max_shell_size)</dd>
 </dl>
 <p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.egfrd.EGFRDFactory.create_simulator" title="ecell4.egfrd.EGFRDFactory.create_simulator"><code class="xref py py-obj docutils literal"><span class="pre">create_simulator</span></code></a>((arg1,&nbsp;arg2)&nbsp;-&gt;&nbsp;EGFRDSimulator)</td>
+<td>Return a EGFRDSimulator instance.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.egfrd.EGFRDFactory.create_world" title="ecell4.egfrd.EGFRDFactory.create_world"><code class="xref py py-obj docutils literal"><span class="pre">create_world</span></code></a>((arg1=None)&nbsp;-&gt;&nbsp;EGFRDWorld)</td>
+<td>Return a EGFRDWorld instance.</td>
+</tr>
+</tbody>
+</table>
 <dl class="method">
 <dt id="ecell4.egfrd.EGFRDFactory.create_simulator">
 <code class="descname">create_simulator</code><span class="sig-paren">(</span><em>arg1</em>, <em>arg2</em><span class="sig-paren">)</span> &rarr; EGFRDSimulator<a class="headerlink" href="#ecell4.egfrd.EGFRDFactory.create_simulator" title="Permalink to this definition">¶</a></dt>
@@ -302,6 +374,50 @@ When upto is not given, nothing will be returned.</p>
 <dd><p>A class running the simulation with the egfrd algorithm.</p>
 <p>EGFRDSimulator(m, w)</p>
 <p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.egfrd.EGFRDSimulator.dt" title="ecell4.egfrd.EGFRDSimulator.dt"><code class="xref py py-obj docutils literal"><span class="pre">dt</span></code></a></td>
+<td>Return the step interval.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.egfrd.EGFRDSimulator.initialize" title="ecell4.egfrd.EGFRDSimulator.initialize"><code class="xref py py-obj docutils literal"><span class="pre">initialize</span></code></a></td>
+<td>Initialize the simulator.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.egfrd.EGFRDSimulator.last_reactions" title="ecell4.egfrd.EGFRDSimulator.last_reactions"><code class="xref py py-obj docutils literal"><span class="pre">last_reactions</span></code></a>(()&nbsp;-&gt;&nbsp;[(ReactionRule,&nbsp;...)</td>
+<td>Return reactions occuring at the last step.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.egfrd.EGFRDSimulator.model" title="ecell4.egfrd.EGFRDSimulator.model"><code class="xref py py-obj docutils literal"><span class="pre">model</span></code></a></td>
+<td>Return the model bound.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.egfrd.EGFRDSimulator.next_time" title="ecell4.egfrd.EGFRDSimulator.next_time"><code class="xref py py-obj docutils literal"><span class="pre">next_time</span></code></a></td>
+<td>Return the scheduled time for the next step.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.egfrd.EGFRDSimulator.num_steps" title="ecell4.egfrd.EGFRDSimulator.num_steps"><code class="xref py py-obj docutils literal"><span class="pre">num_steps</span></code></a></td>
+<td>Return the number of steps.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.egfrd.EGFRDSimulator.run" title="ecell4.egfrd.EGFRDSimulator.run"><code class="xref py py-obj docutils literal"><span class="pre">run</span></code></a>(duration,&nbsp;observers)</td>
+<td>Run the simulation.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.egfrd.EGFRDSimulator.set_dt" title="ecell4.egfrd.EGFRDSimulator.set_dt"><code class="xref py py-obj docutils literal"><span class="pre">set_dt</span></code></a>(dt)</td>
+<td>Set a step interval.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.egfrd.EGFRDSimulator.set_t" title="ecell4.egfrd.EGFRDSimulator.set_t"><code class="xref py py-obj docutils literal"><span class="pre">set_t</span></code></a>(t)</td>
+<td>Set the current time.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.egfrd.EGFRDSimulator.step" title="ecell4.egfrd.EGFRDSimulator.step"><code class="xref py py-obj docutils literal"><span class="pre">step</span></code></a>((upto=None)&nbsp;-&gt;&nbsp;bool)</td>
+<td>Step the simulation.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.egfrd.EGFRDSimulator.t" title="ecell4.egfrd.EGFRDSimulator.t"><code class="xref py py-obj docutils literal"><span class="pre">t</span></code></a></td>
+<td>Return the time.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.egfrd.EGFRDSimulator.world" title="ecell4.egfrd.EGFRDSimulator.world"><code class="xref py py-obj docutils literal"><span class="pre">world</span></code></a></td>
+<td>Return the world bound.</td>
+</tr>
+</tbody>
+</table>
 <dl class="method">
 <dt id="ecell4.egfrd.EGFRDSimulator.dt">
 <code class="descname">dt</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ecell4.egfrd.EGFRDSimulator.dt" title="Permalink to this definition">¶</a></dt>
@@ -454,6 +570,89 @@ When upto is not given, nothing will be returned.</p>
 <dd><p>A class containing the properties of the egfrd world.</p>
 <p>EGFRDWorld(edge_lengths=None, matrix_sizes=None, GSLRandomNumberGenerator rng=None)</p>
 <p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.egfrd.EGFRDWorld.add_molecules" title="ecell4.egfrd.EGFRDWorld.add_molecules"><code class="xref py py-obj docutils literal"><span class="pre">add_molecules</span></code></a>(sp,&nbsp;num[,&nbsp;shape])</td>
+<td>Add some molecules.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.egfrd.EGFRDWorld.apply_boundary" title="ecell4.egfrd.EGFRDWorld.apply_boundary"><code class="xref py py-obj docutils literal"><span class="pre">apply_boundary</span></code></a>((Real3&nbsp;pos)&nbsp;-&gt;&nbsp;Real3)</td>
+<td>Return a position within the world by applying periodic boundaries to the given position.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.egfrd.EGFRDWorld.bind_to" title="ecell4.egfrd.EGFRDWorld.bind_to"><code class="xref py py-obj docutils literal"><span class="pre">bind_to</span></code></a>(m)</td>
+<td>Bind a model to the world</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.egfrd.EGFRDWorld.distance" title="ecell4.egfrd.EGFRDWorld.distance"><code class="xref py py-obj docutils literal"><span class="pre">distance</span></code></a>((Real3&nbsp;pos1,&nbsp;Real3&nbsp;pos2)&nbsp;-&gt;&nbsp;Real)</td>
+<td>Return the closest distance between the given positions.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.egfrd.EGFRDWorld.edge_lengths" title="ecell4.egfrd.EGFRDWorld.edge_lengths"><code class="xref py py-obj docutils literal"><span class="pre">edge_lengths</span></code></a>(()&nbsp;-&gt;&nbsp;Real3)</td>
+<td>Return the edge lengths of the world.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.egfrd.EGFRDWorld.get_particle" title="ecell4.egfrd.EGFRDWorld.get_particle"><code class="xref py py-obj docutils literal"><span class="pre">get_particle</span></code></a>(pid)&nbsp;-&gt;&nbsp;(ParticleID,&nbsp;Particle)</td>
+<td>Return the particle associated a given ParticleID.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.egfrd.EGFRDWorld.has_particle" title="ecell4.egfrd.EGFRDWorld.has_particle"><code class="xref py py-obj docutils literal"><span class="pre">has_particle</span></code></a>((pid)&nbsp;-&gt;&nbsp;bool)</td>
+<td>Check if a particle associated with a given particle id exists.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.egfrd.EGFRDWorld.has_species" title="ecell4.egfrd.EGFRDWorld.has_species"><code class="xref py py-obj docutils literal"><span class="pre">has_species</span></code></a>((sp)&nbsp;-&gt;&nbsp;bool)</td>
+<td>Check if the given species is in the space or not.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.egfrd.EGFRDWorld.list_particles" title="ecell4.egfrd.EGFRDWorld.list_particles"><code class="xref py py-obj docutils literal"><span class="pre">list_particles</span></code></a>((sp)&nbsp;-&gt;&nbsp;[(ParticleID,&nbsp;Particle)])</td>
+<td>Return the list of particles.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.egfrd.EGFRDWorld.list_particles_exact" title="ecell4.egfrd.EGFRDWorld.list_particles_exact"><code class="xref py py-obj docutils literal"><span class="pre">list_particles_exact</span></code></a>((sp)&nbsp;-&gt;&nbsp;[(ParticleID,&nbsp;...)</td>
+<td>Return the list of particles of a given species.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.egfrd.EGFRDWorld.list_particles_within_radius" title="ecell4.egfrd.EGFRDWorld.list_particles_within_radius"><code class="xref py py-obj docutils literal"><span class="pre">list_particles_within_radius</span></code></a>((pos,&nbsp;radius[,&nbsp;...])</td>
+<td>Returns a list of pairs of a particle and distance within the given sphere.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.egfrd.EGFRDWorld.load" title="ecell4.egfrd.EGFRDWorld.load"><code class="xref py py-obj docutils literal"><span class="pre">load</span></code></a>(filename)</td>
+<td>Load the world from a file.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.egfrd.EGFRDWorld.new_particle" title="ecell4.egfrd.EGFRDWorld.new_particle"><code class="xref py py-obj docutils literal"><span class="pre">new_particle</span></code></a>(arg1[,&nbsp;arg2])</td>
+<td>Create a new particle.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.egfrd.EGFRDWorld.num_molecules" title="ecell4.egfrd.EGFRDWorld.num_molecules"><code class="xref py py-obj docutils literal"><span class="pre">num_molecules</span></code></a>((sp)&nbsp;-&gt;&nbsp;Integer)</td>
+<td>Return the number of molecules.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.egfrd.EGFRDWorld.num_molecules_exact" title="ecell4.egfrd.EGFRDWorld.num_molecules_exact"><code class="xref py py-obj docutils literal"><span class="pre">num_molecules_exact</span></code></a>((sp)&nbsp;-&gt;&nbsp;Integer)</td>
+<td>Return the number of molecules of a given species.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.egfrd.EGFRDWorld.num_particles" title="ecell4.egfrd.EGFRDWorld.num_particles"><code class="xref py py-obj docutils literal"><span class="pre">num_particles</span></code></a>((sp=None)&nbsp;-&gt;&nbsp;Integer)</td>
+<td>Return the number of particles.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.egfrd.EGFRDWorld.num_particles_exact" title="ecell4.egfrd.EGFRDWorld.num_particles_exact"><code class="xref py py-obj docutils literal"><span class="pre">num_particles_exact</span></code></a>((sp)&nbsp;-&gt;&nbsp;Integer)</td>
+<td>Return the number of particles of a given species.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.egfrd.EGFRDWorld.remove_molecules" title="ecell4.egfrd.EGFRDWorld.remove_molecules"><code class="xref py py-obj docutils literal"><span class="pre">remove_molecules</span></code></a>(sp,&nbsp;num)</td>
+<td>Remove the molecules.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.egfrd.EGFRDWorld.remove_particle" title="ecell4.egfrd.EGFRDWorld.remove_particle"><code class="xref py py-obj docutils literal"><span class="pre">remove_particle</span></code></a>(pid)</td>
+<td>Remove the particle associated with a given ParticleID.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.egfrd.EGFRDWorld.rng" title="ecell4.egfrd.EGFRDWorld.rng"><code class="xref py py-obj docutils literal"><span class="pre">rng</span></code></a></td>
+<td>Return a random number generator object.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.egfrd.EGFRDWorld.save" title="ecell4.egfrd.EGFRDWorld.save"><code class="xref py py-obj docutils literal"><span class="pre">save</span></code></a>(filename)</td>
+<td>Save the world to a file.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.egfrd.EGFRDWorld.set_t" title="ecell4.egfrd.EGFRDWorld.set_t"><code class="xref py py-obj docutils literal"><span class="pre">set_t</span></code></a>(t)</td>
+<td>Set the value of the time of the world.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.egfrd.EGFRDWorld.t" title="ecell4.egfrd.EGFRDWorld.t"><code class="xref py py-obj docutils literal"><span class="pre">t</span></code></a></td>
+<td>Return the time of the world.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.egfrd.EGFRDWorld.update_particle" title="ecell4.egfrd.EGFRDWorld.update_particle"><code class="xref py py-obj docutils literal"><span class="pre">update_particle</span></code></a>((pid,&nbsp;p)&nbsp;-&gt;&nbsp;bool)</td>
+<td>Update a particle.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.egfrd.EGFRDWorld.volume" title="ecell4.egfrd.EGFRDWorld.volume"><code class="xref py py-obj docutils literal"><span class="pre">volume</span></code></a></td>
+<td>Return the volume of the world.</td>
+</tr>
+</tbody>
+</table>
 <dl class="method">
 <dt id="ecell4.egfrd.EGFRDWorld.add_molecules">
 <code class="descname">add_molecules</code><span class="sig-paren">(</span><em>sp</em>, <em>num</em>, <em>shape=None</em><span class="sig-paren">)</span><a class="headerlink" href="#ecell4.egfrd.EGFRDWorld.add_molecules" title="Permalink to this definition">¶</a></dt>
@@ -640,9 +839,8 @@ If no species is given, return the whole list of particles.</p>
 
 <dl class="method">
 <dt id="ecell4.egfrd.EGFRDWorld.list_particles_within_radius">
-<code class="descname">list_particles_within_radius</code><span class="sig-paren">(</span><em>pos</em>, <em>radius</em>, <em>ignore1=None</em>, <em>ignore2=None</em><span class="sig-paren">)</span><a class="headerlink" href="#ecell4.egfrd.EGFRDWorld.list_particles_within_radius" title="Permalink to this definition">¶</a></dt>
-<dd><p>-&gt; [((ParticleID, Particle), Real)]</p>
-<p>Returns a list of pairs of a particle and distance within the given sphere.
+<code class="descname">list_particles_within_radius</code><span class="sig-paren">(</span><em>pos</em>, <em>radius</em>, <em>ignore1=None</em>, <em>ignore2=None</em><span class="sig-paren">)</span> &rarr; [((ParticleID, Particle), Real)]<a class="headerlink" href="#ecell4.egfrd.EGFRDWorld.list_particles_within_radius" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of pairs of a particle and distance within the given sphere.
 The region is specified with a center position and radius.
 ignore1 and ignore2 will be removed from the list.</p>
 <table class="docutils field-list" frame="void" rules="none">
