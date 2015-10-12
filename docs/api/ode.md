@@ -4,6 +4,20 @@
 <dd><p>A factory class creating a ODEWorld instance and a ODESimulator instance.</p>
 <p>ODEFactory(solvertype=None, dt=None)</p>
 <p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.ode.ODEFactory.create_simulator" title="ecell4.ode.ODEFactory.create_simulator"><code class="xref py py-obj docutils literal"><span class="pre">create_simulator</span></code></a>((arg1,&nbsp;arg2)&nbsp;-&gt;&nbsp;ODESimulator)</td>
+<td>Return a ODESimulator instance.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.ode.ODEFactory.create_world" title="ecell4.ode.ODEFactory.create_world"><code class="xref py py-obj docutils literal"><span class="pre">create_world</span></code></a>((arg1=None)&nbsp;-&gt;&nbsp;ODEWorld)</td>
+<td>Return a ODEWorld instance.</td>
+</tr>
+</tbody>
+</table>
 <dl class="method">
 <dt id="ecell4.ode.ODEFactory.create_simulator">
 <code class="descname">create_simulator</code><span class="sig-paren">(</span><em>arg1</em>, <em>arg2</em><span class="sig-paren">)</span> &rarr; ODESimulator<a class="headerlink" href="#ecell4.ode.ODEFactory.create_simulator" title="Permalink to this definition">¶</a></dt>
@@ -74,6 +88,32 @@
 <dd><p>A network model class for ODE simulations.</p>
 <p>ODENetworkModel(NetworkModel m=None)</p>
 <p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.ode.ODENetworkModel.add_reaction_rule" title="ecell4.ode.ODENetworkModel.add_reaction_rule"><code class="xref py py-obj docutils literal"><span class="pre">add_reaction_rule</span></code></a>(rr)</td>
+<td>Add a new reaction rule.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.ode.ODENetworkModel.has_network_model" title="ecell4.ode.ODENetworkModel.has_network_model"><code class="xref py py-obj docutils literal"><span class="pre">has_network_model</span></code></a></td>
+<td>Return if this model is bound to a NetworkModel or not.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.ode.ODENetworkModel.list_species" title="ecell4.ode.ODENetworkModel.list_species"><code class="xref py py-obj docutils literal"><span class="pre">list_species</span></code></a></td>
+<td>Return a list of species, contained in reaction rules in the model.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.ode.ODENetworkModel.num_reaction_rules" title="ecell4.ode.ODENetworkModel.num_reaction_rules"><code class="xref py py-obj docutils literal"><span class="pre">num_reaction_rules</span></code></a></td>
+<td>Return a number of reaction rules contained in the model.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.ode.ODENetworkModel.ode_reaction_rules" title="ecell4.ode.ODENetworkModel.ode_reaction_rules"><code class="xref py py-obj docutils literal"><span class="pre">ode_reaction_rules</span></code></a>(()&nbsp;-&gt;&nbsp;[ODEReactionRule])</td>
+<td>Return a list of ODE reaction rules.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.ode.ODENetworkModel.update_model" title="ecell4.ode.ODENetworkModel.update_model"><code class="xref py py-obj docutils literal"><span class="pre">update_model</span></code></a></td>
+<td>Update self to fit the given NetworkModel.</td>
+</tr>
+</tbody>
+</table>
 <dl class="method">
 <dt id="ecell4.ode.ODENetworkModel.add_reaction_rule">
 <code class="descname">add_reaction_rule</code><span class="sig-paren">(</span><em>rr</em><span class="sig-paren">)</span><a class="headerlink" href="#ecell4.ode.ODENetworkModel.add_reaction_rule" title="Permalink to this definition">¶</a></dt>
@@ -130,6 +170,17 @@
 <dd><p>An abstract base class for ratelaws bound to ODEReactionRule.</p>
 <p>ODERatelaw()</p>
 <p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.ode.ODERatelaw.as_base" title="ecell4.ode.ODERatelaw.as_base"><code class="xref py py-obj docutils literal"><span class="pre">as_base</span></code></a></td>
+<td>Return self as a base class.</td>
+</tr>
+</tbody>
+</table>
 <dl class="method">
 <dt id="ecell4.ode.ODERatelaw.as_base">
 <code class="descname">as_base</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ecell4.ode.ODERatelaw.as_base" title="Permalink to this definition">¶</a></dt>
@@ -144,6 +195,28 @@
 <dd><p>A class for general ratelaws with a callback.</p>
 <p>ODERatelawCallback(pyfunc)</p>
 <p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.ode.ODERatelawCallback.as_base" title="ecell4.ode.ODERatelawCallback.as_base"><code class="xref py py-obj docutils literal"><span class="pre">as_base</span></code></a></td>
+<td>Return self as a base class.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.ode.ODERatelawCallback.set_callback" title="ecell4.ode.ODERatelawCallback.set_callback"><code class="xref py py-obj docutils literal"><span class="pre">set_callback</span></code></a>(pyfunc)</td>
+<td><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
 <dl class="method">
 <dt id="ecell4.ode.ODERatelawCallback.as_base">
 <code class="descname">as_base</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ecell4.ode.ODERatelawCallback.as_base" title="Permalink to this definition">¶</a></dt>
@@ -188,6 +261,26 @@ and that the second one is a substrate.</p>
 <dd><p>A class for mass action ratelaws.</p>
 <p>ODERatelawMassAction(Real k)</p>
 <p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.ode.ODERatelawMassAction.as_base" title="ecell4.ode.ODERatelawMassAction.as_base"><code class="xref py py-obj docutils literal"><span class="pre">as_base</span></code></a></td>
+<td>Return self as a base class.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.ode.ODERatelawMassAction.get_k" title="ecell4.ode.ODERatelawMassAction.get_k"><code class="xref py py-obj docutils literal"><span class="pre">get_k</span></code></a></td>
+<td>Return the kinetic rate constant as a float value.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.ode.ODERatelawMassAction.is_available" title="ecell4.ode.ODERatelawMassAction.is_available"><code class="xref py py-obj docutils literal"><span class="pre">is_available</span></code></a></td>
+<td>Check if this ratelaw is available or not.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.ode.ODERatelawMassAction.set_k" title="ecell4.ode.ODERatelawMassAction.set_k"><code class="xref py py-obj docutils literal"><span class="pre">set_k</span></code></a>(k)</td>
+<td>Set a kinetic rate constant.</td>
+</tr>
+</tbody>
+</table>
 <dl class="method">
 <dt id="ecell4.ode.ODERatelawMassAction.as_base">
 <code class="descname">as_base</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ecell4.ode.ODERatelawMassAction.as_base" title="Permalink to this definition">¶</a></dt>
@@ -233,6 +326,59 @@ and that the second one is a substrate.</p>
 one rate law to calculate the flux.</p>
 <p>ODEReactionRule()</p>
 <p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.ode.ODEReactionRule.add_product" title="ecell4.ode.ODEReactionRule.add_product"><code class="xref py py-obj docutils literal"><span class="pre">add_product</span></code></a>(sp[,&nbsp;coeff])</td>
+<td>Append a product to the end.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.ode.ODEReactionRule.add_reactant" title="ecell4.ode.ODEReactionRule.add_reactant"><code class="xref py py-obj docutils literal"><span class="pre">add_reactant</span></code></a>(sp[,&nbsp;coeff])</td>
+<td>Append a reactant to the end.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.ode.ODEReactionRule.as_string" title="ecell4.ode.ODEReactionRule.as_string"><code class="xref py py-obj docutils literal"><span class="pre">as_string</span></code></a>(()&nbsp;-&gt;&nbsp;str)</td>
+<td>Return an unicode string describing this object.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.ode.ODEReactionRule.has_ratelaw" title="ecell4.ode.ODEReactionRule.has_ratelaw"><code class="xref py py-obj docutils literal"><span class="pre">has_ratelaw</span></code></a></td>
+<td>Return if a ratelaw is bound or not.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.ode.ODEReactionRule.is_massaction" title="ecell4.ode.ODEReactionRule.is_massaction"><code class="xref py py-obj docutils literal"><span class="pre">is_massaction</span></code></a></td>
+<td>Return if a mass action ratelaw is bound or not.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.ode.ODEReactionRule.k" title="ecell4.ode.ODEReactionRule.k"><code class="xref py py-obj docutils literal"><span class="pre">k</span></code></a></td>
+<td>Return the kinetic rate constant as a float value.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.ode.ODEReactionRule.products" title="ecell4.ode.ODEReactionRule.products"><code class="xref py py-obj docutils literal"><span class="pre">products</span></code></a></td>
+<td>List all products.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.ode.ODEReactionRule.products_coefficients" title="ecell4.ode.ODEReactionRule.products_coefficients"><code class="xref py py-obj docutils literal"><span class="pre">products_coefficients</span></code></a>(()&nbsp;-&gt;&nbsp;[Integer])</td>
+<td>List all coefficients for products.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.ode.ODEReactionRule.reactants" title="ecell4.ode.ODEReactionRule.reactants"><code class="xref py py-obj docutils literal"><span class="pre">reactants</span></code></a></td>
+<td>List all reactants.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.ode.ODEReactionRule.reactants_coefficients" title="ecell4.ode.ODEReactionRule.reactants_coefficients"><code class="xref py py-obj docutils literal"><span class="pre">reactants_coefficients</span></code></a>(()&nbsp;-&gt;&nbsp;[Integer])</td>
+<td>List all coefficients for reactants.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.ode.ODEReactionRule.set_k" title="ecell4.ode.ODEReactionRule.set_k"><code class="xref py py-obj docutils literal"><span class="pre">set_k</span></code></a>(k)</td>
+<td>Set a kinetic rate constant.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.ode.ODEReactionRule.set_product_coefficient" title="ecell4.ode.ODEReactionRule.set_product_coefficient"><code class="xref py py-obj docutils literal"><span class="pre">set_product_coefficient</span></code></a>(index,&nbsp;coeff)</td>
+<td>Set a stoichiometry coefficient of a product at the given index.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.ode.ODEReactionRule.set_ratelaw" title="ecell4.ode.ODEReactionRule.set_ratelaw"><code class="xref py py-obj docutils literal"><span class="pre">set_ratelaw</span></code></a>(ratelaw_obj)</td>
+<td>Bind a ratelaw.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.ode.ODEReactionRule.set_ratelaw_massaction" title="ecell4.ode.ODEReactionRule.set_ratelaw_massaction"><code class="xref py py-obj docutils literal"><span class="pre">set_ratelaw_massaction</span></code></a>(ratelaw_obj)</td>
+<td>Bind a mass action ratelaw.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.ode.ODEReactionRule.set_reactant_coefficient" title="ecell4.ode.ODEReactionRule.set_reactant_coefficient"><code class="xref py py-obj docutils literal"><span class="pre">set_reactant_coefficient</span></code></a>(index,&nbsp;coeff)</td>
+<td>Set a stoichiometry coefficient of a reactant at the given index.</td>
+</tr>
+</tbody>
+</table>
 <dl class="method">
 <dt id="ecell4.ode.ODEReactionRule.add_product">
 <code class="descname">add_product</code><span class="sig-paren">(</span><em>sp</em>, <em>coeff=None</em><span class="sig-paren">)</span><a class="headerlink" href="#ecell4.ode.ODEReactionRule.add_product" title="Permalink to this definition">¶</a></dt>
@@ -491,6 +637,53 @@ one rate law to calculate the flux.</p>
 <dd><p>A class running the simulation with the ode algorithm.</p>
 <p>ODESimulator(m, w, solver_type)</p>
 <p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.ode.ODESimulator.absolute_tolerance" title="ecell4.ode.ODESimulator.absolute_tolerance"><code class="xref py py-obj docutils literal"><span class="pre">absolute_tolerance</span></code></a></td>
+<td>Return the absolute tolerance.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.ode.ODESimulator.dt" title="ecell4.ode.ODESimulator.dt"><code class="xref py py-obj docutils literal"><span class="pre">dt</span></code></a></td>
+<td>Return the step interval.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.ode.ODESimulator.initialize" title="ecell4.ode.ODESimulator.initialize"><code class="xref py py-obj docutils literal"><span class="pre">initialize</span></code></a></td>
+<td>Initialize the simulator.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.ode.ODESimulator.next_time" title="ecell4.ode.ODESimulator.next_time"><code class="xref py py-obj docutils literal"><span class="pre">next_time</span></code></a></td>
+<td>Return the scheduled time for the next step.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.ode.ODESimulator.num_steps" title="ecell4.ode.ODESimulator.num_steps"><code class="xref py py-obj docutils literal"><span class="pre">num_steps</span></code></a></td>
+<td>Return the number of steps.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.ode.ODESimulator.relative_tolerance" title="ecell4.ode.ODESimulator.relative_tolerance"><code class="xref py py-obj docutils literal"><span class="pre">relative_tolerance</span></code></a></td>
+<td>Return the relative tolerance.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.ode.ODESimulator.run" title="ecell4.ode.ODESimulator.run"><code class="xref py py-obj docutils literal"><span class="pre">run</span></code></a>(duration,&nbsp;observers)</td>
+<td>Run the simulation.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.ode.ODESimulator.set_absolute_tolerance" title="ecell4.ode.ODESimulator.set_absolute_tolerance"><code class="xref py py-obj docutils literal"><span class="pre">set_absolute_tolerance</span></code></a>(abs_tol)</td>
+<td>Set the absolute tolerance.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.ode.ODESimulator.set_dt" title="ecell4.ode.ODESimulator.set_dt"><code class="xref py py-obj docutils literal"><span class="pre">set_dt</span></code></a>(dt)</td>
+<td>Set a step interval.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.ode.ODESimulator.set_relative_tolerance" title="ecell4.ode.ODESimulator.set_relative_tolerance"><code class="xref py py-obj docutils literal"><span class="pre">set_relative_tolerance</span></code></a>(rel_tol)</td>
+<td>Set the relative tolerance.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.ode.ODESimulator.set_t" title="ecell4.ode.ODESimulator.set_t"><code class="xref py py-obj docutils literal"><span class="pre">set_t</span></code></a>(t)</td>
+<td>Set the current time.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.ode.ODESimulator.step" title="ecell4.ode.ODESimulator.step"><code class="xref py py-obj docutils literal"><span class="pre">step</span></code></a>((upto=None)&nbsp;-&gt;&nbsp;bool)</td>
+<td>Step the simulation.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.ode.ODESimulator.t" title="ecell4.ode.ODESimulator.t"><code class="xref py py-obj docutils literal"><span class="pre">t</span></code></a></td>
+<td>Return the time.</td>
+</tr>
+</tbody>
+</table>
 <dl class="method">
 <dt id="ecell4.ode.ODESimulator.absolute_tolerance">
 <code class="descname">absolute_tolerance</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ecell4.ode.ODESimulator.absolute_tolerance" title="Permalink to this definition">¶</a></dt>
@@ -664,6 +857,74 @@ When upto is not given, nothing will be returned.</p>
 <dd><p>A class representing the World for ODE simulations.</p>
 <p>ODEWorld(edge_lengths=None)</p>
 <p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.ode.ODEWorld.add_molecules" title="ecell4.ode.ODEWorld.add_molecules"><code class="xref py py-obj docutils literal"><span class="pre">add_molecules</span></code></a>(sp,&nbsp;num[,&nbsp;shape])</td>
+<td>Add some molecules.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.ode.ODEWorld.as_base" title="ecell4.ode.ODEWorld.as_base"><code class="xref py py-obj docutils literal"><span class="pre">as_base</span></code></a></td>
+<td>Return self as a base class.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.ode.ODEWorld.bind_to" title="ecell4.ode.ODEWorld.bind_to"><code class="xref py py-obj docutils literal"><span class="pre">bind_to</span></code></a>(m)</td>
+<td>Bind a model.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.ode.ODEWorld.edge_lengths" title="ecell4.ode.ODEWorld.edge_lengths"><code class="xref py py-obj docutils literal"><span class="pre">edge_lengths</span></code></a>(()&nbsp;-&gt;&nbsp;Real3)</td>
+<td>Return edge lengths for the space.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.ode.ODEWorld.get_value" title="ecell4.ode.ODEWorld.get_value"><code class="xref py py-obj docutils literal"><span class="pre">get_value</span></code></a>((sp)&nbsp;-&gt;&nbsp;Real)</td>
+<td>Return the value matched to a given species.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.ode.ODEWorld.get_value_exact" title="ecell4.ode.ODEWorld.get_value_exact"><code class="xref py py-obj docutils literal"><span class="pre">get_value_exact</span></code></a>((sp)&nbsp;-&gt;&nbsp;Real)</td>
+<td>Return the value connected to a given species.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.ode.ODEWorld.has_species" title="ecell4.ode.ODEWorld.has_species"><code class="xref py py-obj docutils literal"><span class="pre">has_species</span></code></a>((sp)&nbsp;-&gt;&nbsp;bool)</td>
+<td>Check if the given species is belonging to this.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.ode.ODEWorld.list_species" title="ecell4.ode.ODEWorld.list_species"><code class="xref py py-obj docutils literal"><span class="pre">list_species</span></code></a></td>
+<td>Return a list of species.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.ode.ODEWorld.load" title="ecell4.ode.ODEWorld.load"><code class="xref py py-obj docutils literal"><span class="pre">load</span></code></a>(filename)</td>
+<td>Load a HDF5 file to the current state.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.ode.ODEWorld.num_molecules" title="ecell4.ode.ODEWorld.num_molecules"><code class="xref py py-obj docutils literal"><span class="pre">num_molecules</span></code></a>((sp)&nbsp;-&gt;&nbsp;Integer)</td>
+<td>Return the number of molecules.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.ode.ODEWorld.num_molecules_exact" title="ecell4.ode.ODEWorld.num_molecules_exact"><code class="xref py py-obj docutils literal"><span class="pre">num_molecules_exact</span></code></a>((sp)&nbsp;-&gt;&nbsp;Integer)</td>
+<td>Return the number of molecules of a given species.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.ode.ODEWorld.release_species" title="ecell4.ode.ODEWorld.release_species"><code class="xref py py-obj docutils literal"><span class="pre">release_species</span></code></a>(sp)</td>
+<td>Release a value for the given species.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.ode.ODEWorld.remove_molecules" title="ecell4.ode.ODEWorld.remove_molecules"><code class="xref py py-obj docutils literal"><span class="pre">remove_molecules</span></code></a>(sp,&nbsp;num)</td>
+<td>Remove molecules</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.ode.ODEWorld.reserve_species" title="ecell4.ode.ODEWorld.reserve_species"><code class="xref py py-obj docutils literal"><span class="pre">reserve_species</span></code></a>(sp)</td>
+<td>Reserve a value for the given species.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.ode.ODEWorld.save" title="ecell4.ode.ODEWorld.save"><code class="xref py py-obj docutils literal"><span class="pre">save</span></code></a>(filename)</td>
+<td>Save the current state to a HDF5 file.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.ode.ODEWorld.set_t" title="ecell4.ode.ODEWorld.set_t"><code class="xref py py-obj docutils literal"><span class="pre">set_t</span></code></a>(t)</td>
+<td>Set the current time.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.ode.ODEWorld.set_value" title="ecell4.ode.ODEWorld.set_value"><code class="xref py py-obj docutils literal"><span class="pre">set_value</span></code></a>(sp,&nbsp;value)</td>
+<td>Set the value of the given species.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.ode.ODEWorld.set_volume" title="ecell4.ode.ODEWorld.set_volume"><code class="xref py py-obj docutils literal"><span class="pre">set_volume</span></code></a>(volume)</td>
+<td>Set a volume.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.ode.ODEWorld.t" title="ecell4.ode.ODEWorld.t"><code class="xref py py-obj docutils literal"><span class="pre">t</span></code></a></td>
+<td>Return the current time.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.ode.ODEWorld.volume" title="ecell4.ode.ODEWorld.volume"><code class="xref py py-obj docutils literal"><span class="pre">volume</span></code></a></td>
+<td>Return a volume.</td>
+</tr>
+</tbody>
+</table>
 <dl class="method">
 <dt id="ecell4.ode.ODEWorld.add_molecules">
 <code class="descname">add_molecules</code><span class="sig-paren">(</span><em>sp</em>, <em>num</em>, <em>shape=None</em><span class="sig-paren">)</span><a class="headerlink" href="#ecell4.ode.ODEWorld.add_molecules" title="Permalink to this definition">¶</a></dt>
