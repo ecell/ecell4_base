@@ -4,6 +4,20 @@
 <dd><p>A factory class creating a BDWorld instance and a BDSimulator instance.</p>
 <p>BDFactory(Integer3 matrix_sizes=None, GSLRandomNumberGenerator rng=None)</p>
 <p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.bd.BDFactory.create_simulator" title="ecell4.bd.BDFactory.create_simulator"><code class="xref py py-obj docutils literal"><span class="pre">create_simulator</span></code></a>((arg1[,&nbsp;arg2])</td>
+<td>Return a <code class="docutils literal"><span class="pre">BDSimulator</span></code> instance.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.bd.BDFactory.create_world" title="ecell4.bd.BDFactory.create_world"><code class="xref py py-obj docutils literal"><span class="pre">create_world</span></code></a>((arg1=None)&nbsp;-&gt;&nbsp;BDWorld)</td>
+<td>Return a <code class="docutils literal"><span class="pre">BDWorld</span></code> instance.</td>
+</tr>
+</tbody>
+</table>
 <dl class="method">
 <dt id="ecell4.bd.BDFactory.create_simulator">
 <code class="descname">create_simulator</code><span class="sig-paren">(</span><em>arg1</em>, <em>arg2=None</em><span class="sig-paren">)</span> &rarr; BDSimulator<a class="headerlink" href="#ecell4.bd.BDFactory.create_simulator" title="Permalink to this definition">¶</a></dt>
@@ -74,6 +88,50 @@
 <dd><p>A class running the simulation with the bd algorithm.</p>
 <p>BDSimulator(m, w)</p>
 <p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.bd.BDSimulator.dt" title="ecell4.bd.BDSimulator.dt"><code class="xref py py-obj docutils literal"><span class="pre">dt</span></code></a></td>
+<td>Return the step interval.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.bd.BDSimulator.initialize" title="ecell4.bd.BDSimulator.initialize"><code class="xref py py-obj docutils literal"><span class="pre">initialize</span></code></a></td>
+<td>Initialize the simulator.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.bd.BDSimulator.last_reactions" title="ecell4.bd.BDSimulator.last_reactions"><code class="xref py py-obj docutils literal"><span class="pre">last_reactions</span></code></a>(()&nbsp;-&gt;&nbsp;[(ReactionRule,&nbsp;...)</td>
+<td>Return reactions occuring at the last step.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.bd.BDSimulator.model" title="ecell4.bd.BDSimulator.model"><code class="xref py py-obj docutils literal"><span class="pre">model</span></code></a></td>
+<td>Return the model bound.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.bd.BDSimulator.next_time" title="ecell4.bd.BDSimulator.next_time"><code class="xref py py-obj docutils literal"><span class="pre">next_time</span></code></a></td>
+<td>Return the scheduled time for the next step.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.bd.BDSimulator.num_steps" title="ecell4.bd.BDSimulator.num_steps"><code class="xref py py-obj docutils literal"><span class="pre">num_steps</span></code></a></td>
+<td>Return the number of steps.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.bd.BDSimulator.run" title="ecell4.bd.BDSimulator.run"><code class="xref py py-obj docutils literal"><span class="pre">run</span></code></a>(duration,&nbsp;observers)</td>
+<td>Run the simulation.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.bd.BDSimulator.set_dt" title="ecell4.bd.BDSimulator.set_dt"><code class="xref py py-obj docutils literal"><span class="pre">set_dt</span></code></a>(dt)</td>
+<td>Set a step interval.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.bd.BDSimulator.set_t" title="ecell4.bd.BDSimulator.set_t"><code class="xref py py-obj docutils literal"><span class="pre">set_t</span></code></a>(t)</td>
+<td>Set the current time.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.bd.BDSimulator.step" title="ecell4.bd.BDSimulator.step"><code class="xref py py-obj docutils literal"><span class="pre">step</span></code></a>((upto=None)&nbsp;-&gt;&nbsp;bool)</td>
+<td>Step the simulation.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.bd.BDSimulator.t" title="ecell4.bd.BDSimulator.t"><code class="xref py py-obj docutils literal"><span class="pre">t</span></code></a></td>
+<td>Return the time.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.bd.BDSimulator.world" title="ecell4.bd.BDSimulator.world"><code class="xref py py-obj docutils literal"><span class="pre">world</span></code></a></td>
+<td>Return the world bound.</td>
+</tr>
+</tbody>
+</table>
 <dl class="method">
 <dt id="ecell4.bd.BDSimulator.dt">
 <code class="descname">dt</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ecell4.bd.BDSimulator.dt" title="Permalink to this definition">¶</a></dt>
@@ -226,6 +284,95 @@ When upto is not given, nothing will be returned.</p>
 <dd><p>A class containing the properties of the bd world.</p>
 <p>BDWorld(edge_lengths=None, matrix_sizes=None, GSLRandomNumberGenerator rng=None)</p>
 <p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.bd.BDWorld.add_molecules" title="ecell4.bd.BDWorld.add_molecules"><code class="xref py py-obj docutils literal"><span class="pre">add_molecules</span></code></a>(sp,&nbsp;num[,&nbsp;shape])</td>
+<td>Add some molecules.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.bd.BDWorld.apply_boundary" title="ecell4.bd.BDWorld.apply_boundary"><code class="xref py py-obj docutils literal"><span class="pre">apply_boundary</span></code></a>((Real3&nbsp;pos)&nbsp;-&gt;&nbsp;Real3)</td>
+<td>Return a position within the world by applying periodic boundaries to the given position.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.bd.BDWorld.as_base" title="ecell4.bd.BDWorld.as_base"><code class="xref py py-obj docutils literal"><span class="pre">as_base</span></code></a></td>
+<td>Return self as a base class.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.bd.BDWorld.bind_to" title="ecell4.bd.BDWorld.bind_to"><code class="xref py py-obj docutils literal"><span class="pre">bind_to</span></code></a>(m)</td>
+<td>Bind a model to the world</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.bd.BDWorld.distance" title="ecell4.bd.BDWorld.distance"><code class="xref py py-obj docutils literal"><span class="pre">distance</span></code></a>((Real3&nbsp;pos1,&nbsp;Real3&nbsp;pos2)&nbsp;-&gt;&nbsp;Real)</td>
+<td>Return the closest distance between the given positions.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.bd.BDWorld.distance_sq" title="ecell4.bd.BDWorld.distance_sq"><code class="xref py py-obj docutils literal"><span class="pre">distance_sq</span></code></a>((Real3&nbsp;pos1,&nbsp;Real3&nbsp;pos2)&nbsp;-&gt;&nbsp;Real)</td>
+<td>Return a square of the closest distance between the given positions.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.bd.BDWorld.edge_lengths" title="ecell4.bd.BDWorld.edge_lengths"><code class="xref py py-obj docutils literal"><span class="pre">edge_lengths</span></code></a>(()&nbsp;-&gt;&nbsp;Real3)</td>
+<td>Return the edge lengths of the world.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.bd.BDWorld.get_particle" title="ecell4.bd.BDWorld.get_particle"><code class="xref py py-obj docutils literal"><span class="pre">get_particle</span></code></a>(pid)&nbsp;-&gt;&nbsp;(ParticleID,&nbsp;Particle)</td>
+<td>Return the particle associated a given ParticleID.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.bd.BDWorld.has_particle" title="ecell4.bd.BDWorld.has_particle"><code class="xref py py-obj docutils literal"><span class="pre">has_particle</span></code></a>((pid)&nbsp;-&gt;&nbsp;bool)</td>
+<td>Check if a particle associated with a given particle id exists.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.bd.BDWorld.list_particles" title="ecell4.bd.BDWorld.list_particles"><code class="xref py py-obj docutils literal"><span class="pre">list_particles</span></code></a>((sp)&nbsp;-&gt;&nbsp;[(ParticleID,&nbsp;Particle)])</td>
+<td>Return the list of particles.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.bd.BDWorld.list_particles_exact" title="ecell4.bd.BDWorld.list_particles_exact"><code class="xref py py-obj docutils literal"><span class="pre">list_particles_exact</span></code></a>((sp)&nbsp;-&gt;&nbsp;[(ParticleID,&nbsp;...)</td>
+<td>Return the list of particles of a given species.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.bd.BDWorld.list_particles_within_radius" title="ecell4.bd.BDWorld.list_particles_within_radius"><code class="xref py py-obj docutils literal"><span class="pre">list_particles_within_radius</span></code></a>((pos,&nbsp;radius[,&nbsp;...])</td>
+<td>Returns a list of pairs of a particle and distance within the given sphere.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.bd.BDWorld.load" title="ecell4.bd.BDWorld.load"><code class="xref py py-obj docutils literal"><span class="pre">load</span></code></a>(filename)</td>
+<td>Load the world from a file.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.bd.BDWorld.new_particle" title="ecell4.bd.BDWorld.new_particle"><code class="xref py py-obj docutils literal"><span class="pre">new_particle</span></code></a>(arg1[,&nbsp;arg2])</td>
+<td>Create a new particle.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.bd.BDWorld.num_molecules" title="ecell4.bd.BDWorld.num_molecules"><code class="xref py py-obj docutils literal"><span class="pre">num_molecules</span></code></a>((sp)&nbsp;-&gt;&nbsp;Integer)</td>
+<td>Return the number of molecules.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.bd.BDWorld.num_molecules_exact" title="ecell4.bd.BDWorld.num_molecules_exact"><code class="xref py py-obj docutils literal"><span class="pre">num_molecules_exact</span></code></a>((sp)&nbsp;-&gt;&nbsp;Integer)</td>
+<td>Return the number of molecules of a given species.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.bd.BDWorld.num_particles" title="ecell4.bd.BDWorld.num_particles"><code class="xref py py-obj docutils literal"><span class="pre">num_particles</span></code></a>((sp=None)&nbsp;-&gt;&nbsp;Integer)</td>
+<td>Return the number of particles.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.bd.BDWorld.num_particles_exact" title="ecell4.bd.BDWorld.num_particles_exact"><code class="xref py py-obj docutils literal"><span class="pre">num_particles_exact</span></code></a>((sp)&nbsp;-&gt;&nbsp;Integer)</td>
+<td>Return the number of particles of a given species.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.bd.BDWorld.periodic_transpose" title="ecell4.bd.BDWorld.periodic_transpose"><code class="xref py py-obj docutils literal"><span class="pre">periodic_transpose</span></code></a>((Real3&nbsp;pos1,&nbsp;...)</td>
+<td>Return a closest image of pos1 relative to the given position (pos2).</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.bd.BDWorld.remove_molecules" title="ecell4.bd.BDWorld.remove_molecules"><code class="xref py py-obj docutils literal"><span class="pre">remove_molecules</span></code></a>(sp,&nbsp;num)</td>
+<td>Remove the molecules.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.bd.BDWorld.remove_particle" title="ecell4.bd.BDWorld.remove_particle"><code class="xref py py-obj docutils literal"><span class="pre">remove_particle</span></code></a>(pid)</td>
+<td>Remove the particle associated with a given ParticleID.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.bd.BDWorld.rng" title="ecell4.bd.BDWorld.rng"><code class="xref py py-obj docutils literal"><span class="pre">rng</span></code></a></td>
+<td>Return a random number generator object.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.bd.BDWorld.save" title="ecell4.bd.BDWorld.save"><code class="xref py py-obj docutils literal"><span class="pre">save</span></code></a>(filename)</td>
+<td>Save the world to a file.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.bd.BDWorld.set_t" title="ecell4.bd.BDWorld.set_t"><code class="xref py py-obj docutils literal"><span class="pre">set_t</span></code></a>(t)</td>
+<td>Set the value of the time of the world.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.bd.BDWorld.t" title="ecell4.bd.BDWorld.t"><code class="xref py py-obj docutils literal"><span class="pre">t</span></code></a></td>
+<td>Return the time of the world.</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#ecell4.bd.BDWorld.update_particle" title="ecell4.bd.BDWorld.update_particle"><code class="xref py py-obj docutils literal"><span class="pre">update_particle</span></code></a>((pid,&nbsp;p)&nbsp;-&gt;&nbsp;bool)</td>
+<td>Update a particle.</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#ecell4.bd.BDWorld.volume" title="ecell4.bd.BDWorld.volume"><code class="xref py py-obj docutils literal"><span class="pre">volume</span></code></a></td>
+<td>Return the volume of the world.</td>
+</tr>
+</tbody>
+</table>
 <dl class="method">
 <dt id="ecell4.bd.BDWorld.add_molecules">
 <code class="descname">add_molecules</code><span class="sig-paren">(</span><em>sp</em>, <em>num</em>, <em>shape=None</em><span class="sig-paren">)</span><a class="headerlink" href="#ecell4.bd.BDWorld.add_molecules" title="Permalink to this definition">¶</a></dt>
@@ -400,9 +547,8 @@ If no species is given, return the whole list of particles.</p>
 
 <dl class="method">
 <dt id="ecell4.bd.BDWorld.list_particles_within_radius">
-<code class="descname">list_particles_within_radius</code><span class="sig-paren">(</span><em>pos</em>, <em>radius</em>, <em>ignore1=None</em>, <em>ignore2=None</em><span class="sig-paren">)</span><a class="headerlink" href="#ecell4.bd.BDWorld.list_particles_within_radius" title="Permalink to this definition">¶</a></dt>
-<dd><p>-&gt; [((ParticleID, Particle), Real)]</p>
-<p>Returns a list of pairs of a particle and distance within the given sphere.
+<code class="descname">list_particles_within_radius</code><span class="sig-paren">(</span><em>pos</em>, <em>radius</em>, <em>ignore1=None</em>, <em>ignore2=None</em><span class="sig-paren">)</span> &rarr; [((ParticleID, Particle), Real)]<a class="headerlink" href="#ecell4.bd.BDWorld.list_particles_within_radius" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of pairs of a particle and distance within the given sphere.
 The region is specified with a center position and radius.
 ignore1 and ignore2 will be removed from the list.</p>
 <table class="docutils field-list" frame="void" rules="none">
