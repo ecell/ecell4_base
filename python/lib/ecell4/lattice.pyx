@@ -1078,6 +1078,15 @@ cdef class LatticeSimulator:
         """Return the value of alpha."""
         return self.thisptr.get_alpha()
 
+    def calculate_alpha(self, ReactionRule rule):
+        """Return the recommended value of alpha
+        Args:
+            rule (ReactionRule): the reaction rule
+        Returns:
+            Real: the recommneded value of alpha
+        """
+        return self.thisptr.calculate_alpha(deref(rule.thisptr))
+
     def model(self):
         """Return the model bound."""
         return Model_from_Cpp_Model(self.thisptr.model())

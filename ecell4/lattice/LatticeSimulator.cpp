@@ -1,8 +1,8 @@
 #include "LatticeSimulator.hpp"
 
-//#include <set>
 #include <algorithm>
 #include <iterator>
+#include <ecell4/core/StructureType.hpp>
 
 namespace ecell4
 {
@@ -170,6 +170,115 @@ std::pair<bool, LatticeSimulator::reaction_type>
     return std::pair<bool, reaction_type>(true, reaction);
 }
 
+Real LatticeSimulator::calculate_dimensional_factor(
+    const MolecularTypeBase* mt0, const MolecularTypeBase* mt1) const
+{
+    const Species
+        speciesA(mt0->species()),
+        speciesB(mt1->species());
+    const Real
+        D_A(mt0->D()),
+        D_B(mt1->D());
+    const Shape::dimension_kind
+        dimensionA(mt0->get_dimension()),
+        dimensionB(mt1->get_dimension());
+    const Real Dtot(D_A + D_B);
+    const Real gamma(pow(2 * sqrt(2.0) + 4 * sqrt(3.0) + 3 * sqrt(6.0) + sqrt(22.0), 2) /
+        (72 * (6 * sqrt(2.0) + 4 * sqrt(3.0) + 3 * sqrt(6.0))));
+    Real factor(0);
+    if (dimensionA == Shape::THREE && dimensionB == Shape::THREE)
+    {
+        if (speciesA != speciesB)
+            factor = 1. / (6 * sqrt(2.0) * Dtot * world_->voxel_radius());
+        else
+            factor = 1. / (6 * sqrt(2.0) * D_A * world_->voxel_radius());
+    }
+    else if (dimensionA == Shape::TWO && dimensionB == Shape::TWO)
+    {
+        if (speciesA != speciesB)
+            factor = gamma / Dtot;
+        else
+            factor = gamma / D_A;
+    }
+    else if (dimensionA == Shape::THREE && dimensionB == Shape::TWO)
+    {
+        factor = sqrt(2.0) / (3 * D_A * world_->voxel_radius());
+        if (mt1->is_structure()) // B is Surface
+        {
+            factor *= world_->unit_area();
+        }
+    }
+    else if (dimensionA == Shape::TWO && dimensionB == Shape::THREE)
+    {
+        factor = sqrt(2.0) / (3 * D_B * world_->voxel_radius()); // 不要?
+        if (mt0->is_structure()) // A is Surface
+        {
+            factor *= world_->unit_area();
+        }
+    }
+    else
+        throw NotSupported("The dimension of a structure must be two or three.");
+    return factor;
+}
+
+Real LatticeSimulator::calculate_alpha(const ReactionRule& rule) const
+{
+    const ReactionRule::reactant_container_type& reactants(rule.reactants());
+    if (reactants.size() != 2)
+        return 1.0;
+    const Species
+        sp0(reactants.at(0)),
+        sp1(reactants.at(1));
+    const MoleculeInfo
+        info0(world_->get_molecule_info(sp0)),
+        info1(world_->get_molecule_info(sp1));
+    MolecularTypeBase *mt0, *mt1;
+    bool new0(false), new1(false);
+    try
+    {
+        mt0 = world_->find_molecular_type(sp0);
+    }
+    catch(NotFound e)
+    {
+        MolecularTypeBase *location;
+        try
+        {
+            location = world_->find_molecular_type(Species(info0.loc));
+        }
+        catch(NotFound e)
+        {
+            location = &(VacantType::getInstance());
+        }
+        mt0 = new MolecularType(sp0, location, info0.radius, info0.D);
+        new0 = true;
+    }
+    try
+    {
+        mt1 = world_->find_molecular_type(sp1);
+    }
+    catch(NotFound e)
+    {
+        MolecularTypeBase *location;
+        try
+        {
+            location = world_->find_molecular_type(Species(info1.loc));
+        }
+        catch(NotFound e)
+        {
+            location = &(VacantType::getInstance());
+        }
+        mt1 = new MolecularType(sp1, location, info1.radius, info1.D);
+        new1 = true;
+    }
+    const Real factor(calculate_dimensional_factor(mt0, mt1));
+    if (new0)
+        delete mt0;
+    if (new1)
+        delete mt1;
+    const Real alpha(1.0 / (factor * rule.k()));
+    return alpha < 1.0 ? alpha : 1.0;
+}
+
 std::pair<bool, LatticeSimulator::reaction_type> LatticeSimulator::attempt_reaction_(
     const LatticeWorld::particle_info_type info, LatticeWorld::coordinate_type to_coord,
     const Real& alpha)
@@ -196,49 +305,9 @@ std::pair<bool, LatticeSimulator::reaction_type> LatticeSimulator::attempt_react
         return std::pair<bool, reaction_type>(false, reaction_type());
     }
 
-    const Real D_A(from_mt->D());
-    const Real D_B(to_mt->D());
-    const Shape::dimension_kind dimensionA(from_mt->get_dimension());
-    const Shape::dimension_kind dimensionB(to_mt->get_dimension());
+    const Real factor(calculate_dimensional_factor(from_mt, to_mt));
 
-    const Real Dtot(D_A + D_B);
     const Real rnd(world_->rng()->uniform(0,1));
-    const Real gamma(pow(2 * sqrt(2.0) + 4 * sqrt(3.0) + 3 * sqrt(6.0) + sqrt(22.0), 2) /
-        (72 * (6 * sqrt(2.0) + 4 * sqrt(3.0) + 3 * sqrt(6.0))));
-    Real factor(0);
-    if (dimensionA == Shape::THREE && dimensionB == Shape::THREE)
-    {
-        if (speciesA != speciesB)
-            factor = 1. / (6 * sqrt(2.0) * Dtot * world_->voxel_radius());
-        else
-            factor = 1. / (6 * sqrt(2.0) * D_A * world_->voxel_radius());
-    }
-    else if (dimensionA == Shape::TWO && dimensionB == Shape::TWO)
-    {
-        if (speciesA != speciesB)
-            factor = gamma / Dtot;
-        else
-            factor = gamma / D_A;
-    }
-    else if (dimensionA == Shape::THREE && dimensionB == Shape::TWO)
-    {
-        factor = sqrt(2.0) / (3 * D_A * world_->voxel_radius());
-        if (to_mt->is_structure()) // B is Surface
-        {
-            factor *= world_->unit_area();
-        }
-    }
-    else if (dimensionA == Shape::TWO && dimensionB == Shape::THREE)
-    {
-        factor = sqrt(2.0) / (3 * D_B * world_->voxel_radius()); // 不要?
-        if (from_mt->is_structure()) // A is Surface
-        {
-            factor *= world_->unit_area();
-        }
-    }
-    else
-        throw NotSupported("The dimension of a structure must be two or three.");
-
     Real accp(0.0);
     for (std::vector<ReactionRule>::const_iterator itr(rules.begin());
         itr != rules.end(); ++itr)

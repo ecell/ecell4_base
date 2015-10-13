@@ -207,6 +207,7 @@ public:
     // void run(const Real& duration);
     void walk(const Species& species);
     void walk(const Species& species, const Real& alpha);
+    Real calculate_alpha(const ReactionRule& rule) const;
 
     std::vector<ReactionRule> last_reactions() const
     {
@@ -237,6 +238,8 @@ protected:
         const ReactionRule& reaction_rule, const Real& t);
     boost::shared_ptr<EventScheduler::Event> create_first_order_reaction_event(
         const ReactionRule& reaction_rule, const Real& t);
+    Real calculate_dimensional_factor(
+        const MolecularTypeBase* mt0, const MolecularTypeBase* mt1) const;
     std::pair<bool, reaction_type> attempt_reaction_(
         const LatticeWorld::particle_info_type info,
         LatticeWorld::coordinate_type to_coord, const Real& alpha);
