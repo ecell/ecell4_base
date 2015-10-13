@@ -196,11 +196,11 @@ cdef class ParticleSpaceVectorImpl:
 cdef extern from "ecell4/core/Model.hpp" namespace "ecell4":
     cdef cppclass Cpp_Model "ecell4::Model":
         Cpp_Model() except +
-        void add_species_attribute(Cpp_Species sp)
+        void add_species_attribute(Cpp_Species sp) except +
         bool has_species_attribute(Cpp_Species sp)
-        void remove_species_attribute(Cpp_Species sp)
-        void add_reaction_rule(Cpp_ReactionRule)
-        void remove_reaction_rule(Cpp_ReactionRule)
+        void remove_species_attribute(Cpp_Species sp) except +
+        void add_reaction_rule(Cpp_ReactionRule) except +
+        void remove_reaction_rule(Cpp_ReactionRule) except +
         bool has_reaction_rule(Cpp_ReactionRule)
         Cpp_Species apply_species_attributes(Cpp_Species& sp)
         vector[Cpp_ReactionRule] query_reaction_rules(Cpp_Species sp)
@@ -212,8 +212,8 @@ cdef extern from "ecell4/core/Model.hpp" namespace "ecell4":
         vector[Cpp_Species] species_attributes()
         vector[Cpp_ReactionRule] reaction_rules()
 
-        void add_species_attributes(vector[Cpp_Species])
-        void add_reaction_rules(vector[Cpp_ReactionRule])
+        void add_species_attributes(vector[Cpp_Species]) except +
+        void add_reaction_rules(vector[Cpp_ReactionRule]) except +
 
         shared_ptr[Cpp_Model] expand(vector[Cpp_Species])
         shared_ptr[Cpp_Model] expand(vector[Cpp_Species], Integer)
@@ -236,11 +236,11 @@ cdef Model Model_from_Cpp_Model(shared_ptr[Cpp_Model] m)
 cdef extern from "ecell4/core/NetworkModel.hpp" namespace "ecell4":
     cdef cppclass Cpp_NetworkModel "ecell4::NetworkModel":
         Cpp_NetworkModel() except +
-        void add_species_attribute(Cpp_Species sp)
+        void add_species_attribute(Cpp_Species sp) except +
         bool has_species_attribute(Cpp_Species sp)
-        void remove_species_attribute(Cpp_Species sp)
-        void add_reaction_rule(Cpp_ReactionRule)
-        void remove_reaction_rule(Cpp_ReactionRule)
+        void remove_species_attribute(Cpp_Species sp) except +
+        void add_reaction_rule(Cpp_ReactionRule) except +
+        void remove_reaction_rule(Cpp_ReactionRule) except +
         bool has_reaction_rule(Cpp_ReactionRule)
         Integer num_reaction_rules()
         Cpp_Species apply_species_attributes(Cpp_Species& sp)
@@ -251,8 +251,8 @@ cdef extern from "ecell4/core/NetworkModel.hpp" namespace "ecell4":
             Cpp_Species sp, Cpp_Species sp)
         vector[Cpp_ReactionRule] reaction_rules()
         vector[Cpp_Species] species_attributes()
-        void add_species_attributes(vector[Cpp_Species])
-        void add_reaction_rules(vector[Cpp_ReactionRule])
+        void add_species_attributes(vector[Cpp_Species]) except +
+        void add_reaction_rules(vector[Cpp_ReactionRule]) except +
 
         shared_ptr[Cpp_Model] expand(vector[Cpp_Species])
         shared_ptr[Cpp_Model] expand(vector[Cpp_Species], Integer)
@@ -276,11 +276,11 @@ cdef NetworkModel NetworkModel_from_Cpp_NetworkModel(
 cdef extern from "ecell4/core/NetfreeModel.hpp" namespace "ecell4":
     cdef cppclass Cpp_NetfreeModel "ecell4::NetfreeModel":
         Cpp_NetfreeModel() except +
-        void add_species_attribute(Cpp_Species sp)
+        void add_species_attribute(Cpp_Species sp) except +
         bool has_species_attribute(Cpp_Species sp)
-        void remove_species_attribute(Cpp_Species sp)
-        void add_reaction_rule(Cpp_ReactionRule)
-        void remove_reaction_rule(Cpp_ReactionRule)
+        void remove_species_attribute(Cpp_Species sp) except +
+        void add_reaction_rule(Cpp_ReactionRule) except +
+        void remove_reaction_rule(Cpp_ReactionRule) except +
         bool has_reaction_rule(Cpp_ReactionRule)
         Integer num_reaction_rules()
         Cpp_Species apply_species_attributes(Cpp_Species& sp)
@@ -291,8 +291,8 @@ cdef extern from "ecell4/core/NetfreeModel.hpp" namespace "ecell4":
             Cpp_Species sp, Cpp_Species sp)
         vector[Cpp_ReactionRule] reaction_rules()
         vector[Cpp_Species] species_attributes()
-        void add_species_attributes(vector[Cpp_Species])
-        void add_reaction_rules(vector[Cpp_ReactionRule])
+        void add_species_attributes(vector[Cpp_Species]) except +
+        void add_reaction_rules(vector[Cpp_ReactionRule]) except +
 
         shared_ptr[Cpp_Model] expand(vector[Cpp_Species])
         shared_ptr[Cpp_Model] expand(vector[Cpp_Species], Integer)
