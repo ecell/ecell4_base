@@ -24,21 +24,22 @@ public:
 
 public:
 
-    LatticeFactory()
-        : base_type(), voxel_radius_(0.0), rng_()
-    {
-        ; // do nothing
-    }
-
-    LatticeFactory(const Real voxel_radius)
-        : base_type(), voxel_radius_(voxel_radius), rng_()
+    LatticeFactory(const Real voxel_radius=0.0, const Real alpha=1.0)
+        : base_type(), voxel_radius_(voxel_radius), alpha_(alpha), rng_()
     {
         ; // do nothing
     }
 
     LatticeFactory(const Real voxel_radius,
         const boost::shared_ptr<RandomNumberGenerator>& rng)
-        : base_type(), voxel_radius_(voxel_radius), rng_(rng)
+        : base_type(), voxel_radius_(voxel_radius), alpha_(1.0), rng_(rng)
+    {
+        ; // do nothing
+    }
+
+    LatticeFactory(const Real voxel_radius, const Real alpha,
+        const boost::shared_ptr<RandomNumberGenerator>& rng)
+        : base_type(), voxel_radius_(voxel_radius), alpha_(alpha), rng_(rng)
     {
         ; // do nothing
     }
@@ -79,18 +80,19 @@ public:
         const boost::shared_ptr<Model>& model,
         const boost::shared_ptr<world_type>& world) const
     {
-        return new LatticeSimulator(model, world);
+        return new LatticeSimulator(model, world, alpha_);
     }
 
     virtual LatticeSimulator* create_simulator(
         const boost::shared_ptr<world_type>& world) const
     {
-        return new LatticeSimulator(world);
+        return new LatticeSimulator(world, alpha_);
     }
 
 protected:
 
     Real voxel_radius_;
+    Real alpha_;
     boost::shared_ptr<RandomNumberGenerator> rng_;
 };
 

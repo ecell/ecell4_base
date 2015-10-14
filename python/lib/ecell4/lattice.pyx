@@ -1037,13 +1037,13 @@ def create_lattice_world_vector_impl(edge_lengths, voxel_radius, rng):
 cdef class LatticeSimulator:
     """ A class running the simulation with the lattice algorithm.
 
-    LatticeSimulator(m, w)
+    LatticeSimulator(m, w, alpha)
 
     """
 
-    def __init__(self, m, LatticeWorld w=None):
-        """LatticeSimulator(m, w)
-        LatticeSimulator(w)
+    def __init__(self, m, w=None, alpha=None):
+        """LatticeSimulator(m, w, alpha=None)
+        LatticeSimulator(w, alpha=None)
 
         Constructor.
 
@@ -1053,17 +1053,31 @@ cdef class LatticeSimulator:
             A model
         w : LatticeWorld
             A world
+        alpha : Real, optional
 
         """
         pass
 
-    def __cinit__(self, m, LatticeWorld w=None):
+    def __cinit__(self, m, w=None, alpha=None):
         if w is None:
+            # Cpp_LatticeSimulator(shared_ptr[Cpp_LatticeWorld])
             self.thisptr = new Cpp_LatticeSimulator(
                 deref((<LatticeWorld>m).thisptr))
+        elif alpha is None:
+            if isinstance(w, LatticeWorld):
+                # Cpp_LatticeSimulator(shared_ptr[Cpp_Model], shared_ptr[Cpp_LatticeWorld])
+                self.thisptr = new Cpp_LatticeSimulator(
+                    deref(Cpp_Model_from_Model(m)), deref((<LatticeWorld>w).thisptr))
+            else:
+                # Cpp_LatticeSimulator(shared_ptr[Cpp_LatticeWorld], Real)
+                self.thisptr = new Cpp_LatticeSimulator(
+                    deref((<LatticeWorld>m).thisptr), <Real>w)
         else:
+            # Cpp_LatticeSimulator(
+            #     shared_ptr[Cpp_Model], shared_ptr[Cpp_LatticeWorld], Real)
             self.thisptr = new Cpp_LatticeSimulator(
-                deref(Cpp_Model_from_Model(m)), deref(w.thisptr))
+                deref(Cpp_Model_from_Model(m)), deref((<LatticeWorld>w).thisptr),
+                <Real>alpha)
 
     def __dealloc__(self):
         del self.thisptr
@@ -1244,30 +1258,44 @@ cdef LatticeSimulator LatticeSimulator_from_Cpp_LatticeSimulator(Cpp_LatticeSimu
 cdef class LatticeFactory:
     """ A factory class creating a LatticeWorld instance and a LatticeSimulator instance.
 
-    LatticeFactory(Real voxel_radius=None, GSLRandomNumberGenerator rng=None)
+    LatticeFactory(voxel_radius, alpha, rng)
 
     """
 
-    def __init__(self, voxel_radius=None, GSLRandomNumberGenerator rng=None):
-        """Constructor.
+    def __init__(self, voxel_radius=None, arg1=None, arg2=None):
+        """LatticeFactory(Real voxel_radius=None, Real alpha=None, GSLRandomNumberGenerator rng=None)
+        LatticeFactory(Real voxel_radius=None, GSLRandomNumberGenerator rng=None)
+
+        Constructor.
 
         Parameters
         ----------
         voxel_radius : Real, optional
             A radius of a voxel.
+        alpha : Real, optional
+            Alpha value for LatticeSimulator.
         rng : GSLRandomNumberGenerator, optional
             A random number generator.
 
         """
         pass
 
-    def __cinit__(self, voxel_radius=None, GSLRandomNumberGenerator rng=None):
-        if rng is not None:
-            self.thisptr = new Cpp_LatticeFactory(<Real>voxel_radius, deref(rng.thisptr))
-        elif voxel_radius is not None:
-            self.thisptr = new Cpp_LatticeFactory(<Real>voxel_radius)
-        else:
+    def __cinit__(self, voxel_radius=None, arg1=None, arg2=None):
+        if voxel_radius is None:
             self.thisptr = new Cpp_LatticeFactory()
+        elif arg1 is None:
+            self.thisptr = new Cpp_LatticeFactory(<Real>voxel_radius)
+        elif arg2 is None:
+            if isinstance(arg1, GSLRandomNumberGenerator):
+                self.thisptr = new Cpp_LatticeFactory(
+                    <Real>voxel_radius, deref((<GSLRandomNumberGenerator>arg1).thisptr))
+            else:
+                self.thisptr = new Cpp_LatticeFactory(
+                    <Real>voxel_radius, <Real>arg1)
+        else:
+            self.thisptr = new Cpp_LatticeFactory(
+                <Real>voxel_radius, <Real>arg1,
+                deref((<GSLRandomNumberGenerator>arg2).thisptr))
 
     def __dealloc__(self):
         del self.thisptr

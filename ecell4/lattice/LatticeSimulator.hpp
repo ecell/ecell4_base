@@ -236,14 +236,17 @@ public:
 
     LatticeSimulator(
             boost::shared_ptr<Model> model,
-            boost::shared_ptr<LatticeWorld> world)
-        : base_type(model, world), alpha_(1.0)
+            boost::shared_ptr<LatticeWorld> world,
+            const Real alpha = 1.0)
+        : base_type(model, world), alpha_(alpha)
     {
         initialize();
     }
 
-    LatticeSimulator(boost::shared_ptr<LatticeWorld> world)
-        : base_type(world), alpha_(1.0)
+    LatticeSimulator(
+            boost::shared_ptr<LatticeWorld> world,
+            const Real alpha = 1.0)
+        : base_type(world), alpha_(alpha)
     {
         initialize();
     }
