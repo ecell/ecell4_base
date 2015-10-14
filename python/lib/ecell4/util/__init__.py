@@ -46,7 +46,8 @@ def load_world(filename):
 def run_simulation(
         t, y0={}, volume=1.0, model=None, solver='ode',
         factory=None, is_netfree=False, species_list=None, without_reset=False,
-        return_type='matplotlib', plot_args=(), plot_kwargs={}):
+        return_type='matplotlib', plot_args=(), plot_kwargs={},
+        structures={}, observers=()):
     """Run a simulation with the given model and plot the result on IPython
     notebook with matplotlib.
 
@@ -56,7 +57,8 @@ def run_simulation(
         A sequence of time points for which to solve for 'm'.
     y0 : dict
         Initial condition.
-    volume : Real, optional
+    volume : Real or Real3, optional
+        A size of the simulation volume.
     model : Model, optional
     solver : str, optional
         Solver type. Choose one from 'ode', 'gillespie', 'lattice', 'meso',
@@ -66,7 +68,7 @@ def run_simulation(
         Default is None.
     return_type : str, optional
         Choose a type of return value from 'array', 'observer',
-        'matplotlib', 'nyaplot' or None.
+        'matplotlib', 'nyaplot', 'world' or None.
         If None, return and plot nothing. Default is 'matplotlib'.
     plot_args: list, tuple or dict, optional
         Arguments for plotting. If return_type suggests no plotting, just ignored.
@@ -78,13 +80,19 @@ def run_simulation(
     is_netfree: bool, optional
         Whether the model is netfree or not. When a model is given as an
         argument, just ignored. Default is False.
+    structures : dict, optional
+        A dictionary which gives pairs of a name and shape of structures.
+        Not fully supported yet.
+    observers : list, optional
+        A list of extra observer references.
 
     Returns
     -------
-    value : list, TimingNumberObserver, or None
+    value : list, TimingNumberObserver, World or None
         Return a value suggested by ``return_type``.
         When ``return_type`` is 'array', return a time course data.
         When ``return_type`` is 'observer', return an observer.
+        When ``return_type`` is 'world', return the last state of ``World``.
         Return nothing if else.
 
     """
@@ -109,13 +117,19 @@ def run_simulation(
             'unknown solver name was given: ' + repr(solver)
             + '. use ode, gillespie, lattice, meso, bd or egfrd')
 
-    L = ecell4.cbrt(volume)
-
     if model is None:
         model = ecell4.util.decorator.get_model(is_netfree, without_reset)
 
-    edge_lengths = ecell4.Real3(L, L, L)
+    if isinstance(volume, ecell4.Real3):
+        edge_lengths = volume
+    else:
+        L = ecell4.cbrt(volume)
+        edge_lengths = ecell4.Real3(L, L, L)
+
     w = f.create_world(edge_lengths)
+
+    for (name, shape) in structures.items():
+        w.add_structure(ecell4.Species(name), shape)
 
     if isinstance(w, ecell4.ode.ODEWorld):
         # w.bind_to(model)  # stop binding for ode
@@ -138,7 +152,7 @@ def run_simulation(
     obs = ecell4.TimingNumberObserver(t, species_list)
     sim = f.create_simulator(model, w)
     # sim = f.create_simulator(w)
-    sim.run(t[-1], obs)
+    sim.run(t[-1], (obs, ) + tuple(observers))
 
     if return_type == 'matplotlib':
         if isinstance(plot_args, (list, tuple)):
@@ -162,6 +176,8 @@ def run_simulation(
         return obs
     elif return_type == 'array':
         return obs.data()
+    elif return_type == 'world':
+        return sim.world()
 
 def ensemble_simulations(N=1, *args, **kwargs):
     """Run simulations with the given model and take the ensemble.
@@ -191,6 +207,9 @@ def ensemble_simulations(N=1, *args, **kwargs):
     import ecell4
 
     return_type = kwargs.get('return_type', 'matplotlib')
+    if return_type == 'world':
+        raise ValueError('return_type "world" is not supported in ensemble_simulations.')
+
     plot_args = kwargs.get('plot_args', ())
     plot_kwargs = kwargs.get('plot_kwargs', {})
     kwargs.update({'return_type': 'observer'})
