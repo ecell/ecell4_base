@@ -1,7 +1,7 @@
 #!/bin/bash -x
 
 usage_exit() {
-    echo "Usage: $0 [--without-python2] [--with-python3] [--with-no-python] [--with-no-test] [--with-vtk] [--with-hdf5] [--prefix=PREFIX] [-h] [--help] [py2|py3]" 1>&2
+    echo "Usage: $0 [--without-python2] [--with-python3] [--with-no-python] [--with-no-test] [--with-vtk] [--with-hdf5] [--clean] [--prefix=PREFIX] [-h] [--help] [py2|py3]" 1>&2
     exit 1
 }
 
@@ -11,6 +11,7 @@ WITH_TEST=1
 VTK_INCLUDE_PATH=/usr/include/vtk-5.8
 WITH_VTK=0
 WITH_HDF5=0
+CLEANUP=0
 
 if [ "${PREFIX-UNDEF}" = "UNDEF" ]; then
     if [ "$PREFIX" = "" ]; then
@@ -37,6 +38,7 @@ do
                 with-vtk) WITH_VTK=1;;
                 with-hdf5) WITH_HDF5=1;;
                 prefix=*) PREFIX=${OPTARG#*=};;
+                clean) CLEANUP=1;;
                 help) usage_exit;;
                 *) usage_exit;;
             esac;;
@@ -60,8 +62,10 @@ else
     echo "No Python major version was specified: WITH_PYTHON2=${WITH_PYTHON2} WITH_PYTHON3=${WITH_PYTHON3}"
 fi
 
-# make clean; rm CMakeCache.txt
-# rm -rf ${PREFIX}/lib/libecell4-*.so ${PREFIX}/include/ecell4;
+if [ $CLEANUP != 0 ]; then
+    make clean; rm CMakeCache.txt
+    rm -rf ${PREFIX}/lib/libecell4-*.so ${PREFIX}/include/ecell4;
+fi
 
 set -e
 
@@ -77,7 +81,9 @@ make install
 cd python
 
 if [ $WITH_PYTHON2 != 0 ]; then
-    # rm -rf build lib/ecell4/*.cpp
+    if [ $CLEANUP != 0 ]; then
+        rm -rf build lib/ecell4/*.cpp
+    fi
     mkdir -p ${PREFIX}/lib/python2.7/site-packages
     if [ "$(uname)" == "Darwin" ]; then
         LD_LIBRARY_PATH=${PREFIX}/lib PYTHONPATH=${PREFIX}/lib/python2.7/site-packages:/usr/local/lib/python2.7/dist-packages:${PYTHONPATH} python setup.py build_ext -L${PREFIX}/lib -I${PREFIX}/include:${VTK_INCLUDE_PATH} install --prefix=${PREFIX}
@@ -89,7 +95,9 @@ if [ $WITH_PYTHON2 != 0 ]; then
 fi
 
 if [ $WITH_PYTHON3 != 0 ]; then
-    # rm -rf build lib/ecell4/*.cpp
+    if [ $CLEANUP != 0 -o $WITH_PYTHON2 != 0 ]; then
+        rm -rf build lib/ecell4/*.cpp
+    fi
     mkdir -p ${PREFIX}/lib/python3.4/site-packages
     LD_LIBRARY_PATH=${PREFIX}/lib PYTHONPATH=${PREFIX}/lib/python3.4/site-packages:/usr/local/lib/python3.4/dist-packages:${PYTHONPATH} python3 setup.py build_ext -L${PREFIX}/lib -I${PREFIX}/include:${VTK_INCLUDE_PATH} install --prefix=${PREFIX}
     PYTHONPATH=${PREFIX}/lib/python3.4/site-packages:/usr/local/lib/python3.4/dist-packages:${PYTHONPATH} LD_LIBRARY_PATH=${PREFIX}/lib python3 setup.py test
