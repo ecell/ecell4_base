@@ -4,6 +4,22 @@ from libcpp cimport bool
 from core cimport *
 
 
+## Cpp_ReactionInfo
+cdef extern from "ecell4/gillespie/GillespieSimulator.hpp" namespace "ecell4::gillespie":
+    cdef cppclass Cpp_ReactionInfo "ecell4::gillespie::ReactionInfo":
+        Cpp_ReactionInfo(Real, vector[Cpp_Species], vector[Cpp_Species])
+        Cpp_ReactionInfo(Cpp_ReactionInfo&)
+        Real t()
+        vector[Cpp_Species] reactants()
+        vector[Cpp_Species] products()
+
+## ReactionInfo
+#  a python wrapper for Cpp_ReactionInfo
+cdef class ReactionInfo:
+    cdef Cpp_ReactionInfo* thisptr
+
+cdef ReactionInfo ReactionInfo_from_Cpp_ReactionInfo(Cpp_ReactionInfo* ri)
+
 ## Cpp_GillespieWorld
 #  ecell4::gillespie::GillespieWorld
 cdef extern from "ecell4/gillespie/GillespieWorld.hpp" namespace "ecell4::gillespie":
@@ -55,7 +71,8 @@ cdef extern from "ecell4/gillespie/GillespieSimulator.hpp" namespace "ecell4::gi
         void set_dt(Real)
         Real dt()
         Real next_time()
-        vector[Cpp_ReactionRule] last_reactions()
+        bool check_reaction()
+        vector[pair[Cpp_ReactionRule, Cpp_ReactionInfo]] last_reactions()
         void initialize()
         # Cpp_GSLRandomNumberGenerator& rng()
         shared_ptr[Cpp_Model] model()

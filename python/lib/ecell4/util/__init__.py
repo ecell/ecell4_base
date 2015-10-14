@@ -2,7 +2,7 @@ from .decorator import reaction_rules, species_attributes, parameters, get_model
 from . import viz
 
 __all__ = [
-    'run_simulation', 'load_world',
+    'run_simulation', 'ensemble_simulations', 'load_world',
     'reaction_rules', 'species_attributes', 'parameters', 'get_model', 'reset_model',
     'viz']
 
@@ -46,9 +46,8 @@ def load_world(filename):
 def run_simulation(
         t, y0={}, volume=1.0, model=None, solver='ode',
         factory=None, is_netfree=False, species_list=None, without_reset=False,
-        return_type='matplotlib', plot_args={}):
-    """
-    Run a simulation with the given model and plot the result on IPython
+        return_type='matplotlib', plot_args=(), plot_kwargs={}):
+    """Run a simulation with the given model and plot the result on IPython
     notebook with matplotlib.
 
     Parameters
@@ -69,10 +68,14 @@ def run_simulation(
         Choose a type of return value from 'array', 'observer',
         'matplotlib', 'nyaplot' or None.
         If None, return and plot nothing. Default is 'matplotlib'.
-    plot_args : dict, optional
-        Arguments for plotting. If plot_type is None, just ignored.
-    factory : Factory, optional
-    is_netfree : bool, optional
+    plot_args: list, tuple or dict, optional
+        Arguments for plotting. If return_type suggests no plotting, just ignored.
+    plot_kwargs: dict, optional
+        Arguments for plotting. If return_type suggests no plotting or
+        plot_args is a list or tuple, just ignored.
+        i.e.) viz.plot_number_observer(obs, *plot_args, **plot_kwargs)
+    factory: Factory, optional
+    is_netfree: bool, optional
         Whether the model is netfree or not. When a model is given as an
         argument, just ignored. Default is False.
 
@@ -138,9 +141,80 @@ def run_simulation(
     sim.run(t[-1], obs)
 
     if return_type == 'matplotlib':
-        ecell4.viz.plot_number_observer(obs, **plot_args)
+        if isinstance(plot_args, (list, tuple)):
+            ecell4.viz.plot_number_observer(obs, *plot_args, **plot_kwargs)
+        elif isinstance(plot_args, dict):
+            # plot_kwargs is ignored
+            ecell4.viz.plot_number_observer(obs, **plot_args)
+        else:
+            raise ValueError('plot_args [{}] must be list or dict.'.format(
+                repr(plot_args)))
     elif return_type == 'nyaplot':
-        ecell4.viz.plot_number_observer_with_nya(obs, **plot_args)
+        if isinstance(plot_args, list):
+            ecell4.viz.plot_number_observer_with_nya(obs, *plot_args, **plot_kwargs)
+        elif isinstance(plot_args, dict):
+            # plot_kwargs is ignored
+            ecell4.viz.plot_number_observer_with_nya(obs, **plot_args)
+        else:
+            raise ValueError('plot_args [{}] must be list or dict.'.format(
+                repr(plot_args)))
+    elif return_type == 'observer':
+        return obs
+    elif return_type == 'array':
+        return obs.data()
+
+def ensemble_simulations(N=1, *args, **kwargs):
+    import ecell4
+
+    return_type = kwargs.get('return_type', 'matplotlib')
+    plot_args = kwargs.get('plot_args', ())
+    plot_kwargs = kwargs.get('plot_kwargs', {})
+    kwargs.update({'return_type': 'observer'})
+
+    import numpy
+
+    class DummyObserver(object):
+
+        def __init__(self, targets, data, func=lambda x: numpy.asarray(x)):
+            self.__targets = targets
+            self.__func = func
+            self.__data = self.__func(data)
+
+        def targets(self):
+            return self.__targets
+
+        def data(self):
+            return self.__data.copy()
+
+        def append(self, data):
+            self.__data += self.__func(data)
+
+    tmp = ecell4.util.run_simulation(*args, **kwargs)
+    obs = DummyObserver(tmp.targets(), tmp.data(), lambda x: numpy.array(x, numpy.float64) / N)
+    # import time
+    for i in range(N - 1):
+        # time.sleep(1)  #XXX: This is a missy way to vary random number seeds.
+        tmp = ecell4.util.run_simulation(*args, **kwargs)
+        obs.append(tmp.data())
+
+    if return_type == 'matplotlib':
+        if isinstance(plot_args, (list, tuple)):
+            ecell4.viz.plot_number_observer(obs, *plot_args, **plot_kwargs)
+        elif isinstance(plot_args, dict):
+            # plot_kwargs is ignored
+            ecell4.viz.plot_number_observer(obs, **plot_args)
+        else:
+            raise ValueError('plot_args [{}] must be list or dict.'.format(
+                repr(plot_args)))
+    elif return_type == 'nyaplot':
+        if isinstance(plot_args, list):
+            ecell4.viz.plot_number_observer_with_nya(obs, *plot_args, **plot_kwargs)
+        elif isinstance(plot_args, dict):
+            # plot_kwargs is ignored
+            ecell4.viz.plot_number_observer_with_nya(obs, **plot_args)
+        else:
+            raise ValueError('plot_args [{}] must be list or dict.'.format(
+                repr(plot_args)))
     elif return_type == 'observer':
         return obs
     elif return_type == 'array':

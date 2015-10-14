@@ -4,6 +4,100 @@ from cython.operator cimport dereference as deref, preincrement as inc
 from ecell4.core cimport *
 
 
+## ReactionInfo
+cdef class ReactionInfo:
+    """A class stores detailed information about a reaction in egfrd.
+
+    ReactionInfo(t, reactants, products)
+
+    """
+
+    def __init__(self, Real t, reactants, products):
+        """Constructor.
+
+        Args:
+          t (Real): A time when a reaction occurs
+          reactants (list): A list of reactants.
+            Reactants are given as a pair of ``ParticleID`` and ``Particle``.
+          products (list): A list of products.
+            Products are given as a pair of ``ParticleID`` and ``Particle``.
+
+        """
+        pass  #XXX: only used for doc string
+
+    def __cinit__(self, Real t, reactants, products):
+        cdef vector[pair[Cpp_ParticleID, Cpp_Particle]] reactants_
+        cdef vector[pair[Cpp_ParticleID, Cpp_Particle]] products_
+
+        for pid, p in reactants:
+            reactants_.push_back(
+                pair[Cpp_ParticleID, Cpp_Particle](
+                    deref((<ParticleID>pid).thisptr), deref((<Particle>p).thisptr)))
+        for pid, p in products:
+            products_.push_back(
+                pair[Cpp_ParticleID, Cpp_Particle](
+                    deref((<ParticleID>pid).thisptr), deref((<Particle>p).thisptr)))
+
+        self.thisptr = new Cpp_ReactionInfo(t, reactants_, products_)
+
+    def __dealloc__(self):
+        del self.thisptr
+
+    def t(self):
+        """Return a time when a reaction occurred."""
+        return self.thisptr.t()
+
+    def reactants(self):
+        """Return a list of reactants
+
+        Returns:
+            list: A list of pairs of ``ParticleID`` and ``Particle``.
+
+        """
+        cdef vector[pair[Cpp_ParticleID, Cpp_Particle]] particles
+        particles = self.thisptr.reactants()
+
+        retval = []
+        cdef vector[pair[Cpp_ParticleID, Cpp_Particle]].iterator \
+            it = particles.begin()
+        while it != particles.end():
+            retval.append(
+                (ParticleID_from_Cpp_ParticleID(
+                     <Cpp_ParticleID*>(address(deref(it).first))),
+                 Particle_from_Cpp_Particle(
+                     <Cpp_Particle*>(address(deref(it).second)))))
+            inc(it)
+        return retval
+
+    def products(self):
+        """Return a list of products
+
+        Returns:
+            list: A list of pairs of ``ParticleID`` and ``Particle``.
+
+        """
+        cdef vector[pair[Cpp_ParticleID, Cpp_Particle]] particles
+        particles = self.thisptr.products()
+
+        retval = []
+        cdef vector[pair[Cpp_ParticleID, Cpp_Particle]].iterator \
+            it = particles.begin()
+        while it != particles.end():
+            retval.append(
+                (ParticleID_from_Cpp_ParticleID(
+                     <Cpp_ParticleID*>(address(deref(it).first))),
+                 Particle_from_Cpp_Particle(
+                     <Cpp_Particle*>(address(deref(it).second)))))
+            inc(it)
+        return retval
+
+cdef ReactionInfo ReactionInfo_from_Cpp_ReactionInfo(Cpp_ReactionInfo* ri):
+    cdef Cpp_ReactionInfo *new_obj = new Cpp_ReactionInfo(<Cpp_ReactionInfo> deref(ri))
+    r = ReactionInfo(0, [], [])
+    del r.thisptr
+    r.thisptr = new_obj
+    return r
+
 ## EGFRDWorld
 #  a python wrapper for Cpp_EGFRDWorld
 cdef class EGFRDWorld:
@@ -603,6 +697,10 @@ cdef class EGFRDSimulator:
         """Return the scheduled time for the next step."""
         return self.thisptr.next_time()
 
+    def check_reaction(self):
+        """Return if any reaction occurred at the last step, or not."""
+        return self.thisptr.check_reaction()
+
     def last_reactions(self):
         """last_reactions() -> [(ReactionRule, ReactionInfo)]
 
@@ -614,14 +712,18 @@ cdef class EGFRDSimulator:
             the list of reaction rules and infos.
 
         """
-        cdef vector[Cpp_ReactionRule] reactions = self.thisptr.last_reactions()
-        cdef vector[Cpp_ReactionRule].iterator it = reactions.begin()
+        cdef vector[pair[Cpp_ReactionRule, Cpp_ReactionInfo]] reactions = self.thisptr.last_reactions()
+        cdef vector[pair[Cpp_ReactionRule, Cpp_ReactionInfo]].iterator it = reactions.begin()
         retval = []
         while it != reactions.end():
-            retval.append(ReactionRule_from_Cpp_ReactionRule(
-                <Cpp_ReactionRule*>(address(deref(it)))))
+            retval.append((
+                ReactionRule_from_Cpp_ReactionRule(
+                    <Cpp_ReactionRule*>(address(deref(it).first))),
+                ReactionInfo_from_Cpp_ReactionInfo(
+                    <Cpp_ReactionInfo*>(address(deref(it).second)))))
             inc(it)
         return retval
+
 
     def set_t(self, Real new_t):
         """set_t(t)
@@ -926,6 +1028,10 @@ cdef class BDSimulator:
         """Return the scheduled time for the next step."""
         return self.thisptr.next_time()
 
+    def check_reaction(self):
+        """Return if any reaction occurred at the last step, or not."""
+        return self.thisptr.check_reaction()
+
     def last_reactions(self):
         """last_reactions() -> [(ReactionRule, ReactionInfo)]
 
@@ -937,12 +1043,15 @@ cdef class BDSimulator:
             The list of reaction rules and infos.
 
         """
-        cdef vector[Cpp_ReactionRule] reactions = self.thisptr.last_reactions()
-        cdef vector[Cpp_ReactionRule].iterator it = reactions.begin()
+        cdef vector[pair[Cpp_ReactionRule, Cpp_ReactionInfo]] reactions = self.thisptr.last_reactions()
+        cdef vector[pair[Cpp_ReactionRule, Cpp_ReactionInfo]].iterator it = reactions.begin()
         retval = []
         while it != reactions.end():
-            retval.append(ReactionRule_from_Cpp_ReactionRule(
-                <Cpp_ReactionRule*>(address(deref(it)))))
+            retval.append((
+                ReactionRule_from_Cpp_ReactionRule(
+                    <Cpp_ReactionRule*>(address(deref(it).first))),
+                ReactionInfo_from_Cpp_ReactionInfo(
+                    <Cpp_ReactionInfo*>(address(deref(it).second)))))
             inc(it)
         return retval
 

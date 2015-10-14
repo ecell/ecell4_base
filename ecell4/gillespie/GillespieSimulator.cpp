@@ -77,6 +77,7 @@ bool GillespieSimulator::__draw_next_reaction(void)
         return true;
     }
 
+    next_reaction_rule_ = events_[u].reaction_rule();
     next_reaction_ = events_[u].draw();
     if (next_reaction_.k() <= 0.0)
     {
@@ -135,11 +136,11 @@ void GillespieSimulator::step(void)
         increment_molecules(*it);
     }
 
-    last_reactions_.clear();
-    last_reactions_.push_back(next_reaction_);
-
     this->set_t(t0 + dt0);
     num_steps_++;
+
+    last_reactions_.clear();
+    last_reactions_.push_back(std::make_pair(next_reaction_rule_, reaction_info_type(t(), next_reaction_.reactants(), next_reaction_.products())));
 
     this->draw_next_reaction();
 }
@@ -204,11 +205,6 @@ void GillespieSimulator::initialize(void)
 Real GillespieSimulator::dt(void) const
 {
     return this->dt_;
-}
-
-std::vector<ReactionRule> GillespieSimulator::last_reactions() const
-{
-    return last_reactions_;
 }
 
 } // gillespie

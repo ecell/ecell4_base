@@ -1019,6 +1019,11 @@ cdef class ODESimulator:
         """Return the number of steps."""
         return self.thisptr.num_steps()
 
+    def check_reaction(self):
+        """Return if any reaction occurred at the last step, or not.
+        This function always returns False."""
+        return self.thisptr.check_reaction()
+
     def absolute_tolerance(self):
         """Return the absolute tolerance."""
         return self.thisptr.absolute_tolerance()

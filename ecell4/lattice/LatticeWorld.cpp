@@ -221,9 +221,9 @@ bool LatticeWorld::add_molecules(const Species& sp, const Integer& num)
         throw std::invalid_argument("The number of molecules must be positive.");
     }
 
-    std::cerr << "[DEBUG]" << std::endl; // DEBUG
+    // std::cerr << "[DEBUG]" << std::endl; // DEBUG
     const LatticeWorld::molecule_info_type info(get_molecule_info(sp));
-    std::cerr << "  info.D = " << info.D << std::endl; // DEBUG
+    // std::cerr << "  info.D = " << info.D << std::endl; // DEBUG
 
     Integer count(0);
     while (count < num)

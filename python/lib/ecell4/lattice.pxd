@@ -7,6 +7,22 @@ from ecell4.shared_ptr cimport shared_ptr
 from ecell4.core cimport *
 
 
+## Cpp_ReactionInfo
+cdef extern from "ecell4/lattice/LatticeSimulator.hpp" namespace "ecell4::lattice":
+    cdef cppclass Cpp_ReactionInfo "ecell4::lattice::ReactionInfo":
+        Cpp_ReactionInfo(Real, vector[pair[Cpp_ParticleID, Cpp_Voxel]], vector[pair[Cpp_ParticleID, Cpp_Voxel]])
+        Cpp_ReactionInfo(Cpp_ReactionInfo&)
+        Real t()
+        vector[pair[Cpp_ParticleID, Cpp_Voxel]] reactants()
+        vector[pair[Cpp_ParticleID, Cpp_Voxel]] products()
+
+## ReactionInfo
+#  a python wrapper for Cpp_ReactionInfo
+cdef class ReactionInfo:
+    cdef Cpp_ReactionInfo* thisptr
+
+cdef ReactionInfo ReactionInfo_from_Cpp_ReactionInfo(Cpp_ReactionInfo* ri)
+
 ## Cpp_LatticeWorld
 #  ecell4::lattice::LatticeWorld
 cdef extern from "ecell4/lattice/LatticeWorld.hpp" namespace "ecell4::lattice":
@@ -129,7 +145,8 @@ cdef extern from "ecell4/lattice/LatticeSimulator.hpp" namespace "ecell4::lattic
         void set_alpha(Real)
         Real get_alpha()
         Real calculate_alpha(Cpp_ReactionRule)
-        vector[Cpp_ReactionRule] last_reactions()
+        bool check_reaction()
+        vector[pair[Cpp_ReactionRule, Cpp_ReactionInfo]] last_reactions()
         shared_ptr[Cpp_Model] model()
         shared_ptr[Cpp_LatticeWorld] world()
         void run(Real)

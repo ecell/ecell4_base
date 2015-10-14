@@ -4,6 +4,88 @@ from cython.operator cimport dereference as deref, preincrement as inc
 from ecell4.core cimport *
 
 
+## ReactionInfo
+cdef class ReactionInfo:
+    """A class stores detailed information about a reaction in gillespie.
+
+    ReactionInfo(t, reactants, products)
+
+    """
+
+    def __init__(self, Real t, reactants, products):
+        """Constructor.
+
+        Args:
+          t (Real): A time when a reaction occurred
+          reactants (list): A list of reactants.
+            Reactants are given as a ``Species``.
+          products (list): A list of products.
+            Products are given as a ``Species``.
+
+        """
+        pass  #XXX: only used for doc string
+
+    def __cinit__(self, Real t, reactants, products):
+        cdef vector[Cpp_Species] reactants_
+        cdef vector[Cpp_Species] products_
+
+        for sp in reactants:
+            reactants_.push_back(deref((<Species>sp).thisptr))
+        for sp in products:
+            products_.push_back(deref((<Species>sp).thisptr))
+
+        self.thisptr = new Cpp_ReactionInfo(t, reactants_, products_)
+
+    def __dealloc__(self):
+        del self.thisptr
+
+    def t(self):
+        """Return a time when a reaction occurred."""
+        return self.thisptr.t()
+
+    def reactants(self):
+        """Return a list of reactants
+
+        Returns:
+            list: A list of ``Species``.
+
+        """
+        cdef vector[Cpp_Species] species = self.thisptr.reactants()
+
+        retval = []
+        cdef vector[Cpp_Species].iterator it = species.begin()
+        while it != species.end():
+            retval.append(
+                 Species_from_Cpp_Species(
+                     <Cpp_Species*>(address(deref(it)))))
+            inc(it)
+        return retval
+
+    def products(self):
+        """Return a list of products
+
+        Returns:
+            list: A list of ``Species``.
+
+        """
+        cdef vector[Cpp_Species] species = self.thisptr.products()
+
+        retval = []
+        cdef vector[Cpp_Species].iterator it = species.begin()
+        while it != species.end():
+            retval.append(
+                 Species_from_Cpp_Species(
+                     <Cpp_Species*>(address(deref(it)))))
+            inc(it)
+        return retval
+
+cdef ReactionInfo ReactionInfo_from_Cpp_ReactionInfo(Cpp_ReactionInfo* ri):
+    cdef Cpp_ReactionInfo *new_obj = new Cpp_ReactionInfo(<Cpp_ReactionInfo> deref(ri))
+    r = ReactionInfo(0, [], [])
+    del r.thisptr
+    r.thisptr = new_obj
+    return r
+
 ## GillespieWorld
 #  a python wrapper for Cpp_GillespieWorld
 cdef class GillespieWorld:
@@ -369,6 +451,10 @@ cdef class GillespieSimulator:
         """Return the scheduled time for the next step."""
         return self.thisptr.next_time()
 
+    def check_reaction(self):
+        """Return if any reaction occurred at the last step, or not."""
+        return self.thisptr.check_reaction()
+
     def last_reactions(self):
         """last_reactions() -> [(ReactionRule, ReactionInfo)]
 
@@ -380,12 +466,15 @@ cdef class GillespieSimulator:
             the list of reaction rules and infos.
 
         """
-        cdef vector[Cpp_ReactionRule] reactions = self.thisptr.last_reactions()
-        cdef vector[Cpp_ReactionRule].iterator it = reactions.begin()
+        cdef vector[pair[Cpp_ReactionRule, Cpp_ReactionInfo]] reactions = self.thisptr.last_reactions()
+        cdef vector[pair[Cpp_ReactionRule, Cpp_ReactionInfo]].iterator it = reactions.begin()
         retval = []
         while it != reactions.end():
-            retval.append(ReactionRule_from_Cpp_ReactionRule(
-                <Cpp_ReactionRule*>(address(deref(it)))))
+            retval.append((
+                ReactionRule_from_Cpp_ReactionRule(
+                    <Cpp_ReactionRule*>(address(deref(it).first))),
+                ReactionInfo_from_Cpp_ReactionInfo(
+                    <Cpp_ReactionInfo*>(address(deref(it).second)))))
             inc(it)
         return retval
 

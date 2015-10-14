@@ -3,6 +3,7 @@ from cython cimport address, declare
 from libcpp.vector cimport vector
 from libcpp.pair cimport pair
 from libcpp.string cimport string
+cimport util
 
 
 cdef class ParticleID:
@@ -34,6 +35,16 @@ cdef class ParticleID:
 
     def __dealloc__(self):
         del self.thisptr
+
+    def __richcmp__(ParticleID self, ParticleID rhs, int op):
+        cdef int compare
+        if deref(self.thisptr) > deref(rhs.thisptr):
+            compare = 1
+        elif deref(self.thisptr) < deref(rhs.thisptr):
+            compare = -1
+        else: # self == rhs
+            compare = 0
+        return util.richcmp_helper(compare, op)
 
     def lot(self):
         """Return the first value."""
