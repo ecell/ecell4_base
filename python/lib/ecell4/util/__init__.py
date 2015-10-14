@@ -164,6 +164,30 @@ def run_simulation(
         return obs.data()
 
 def ensemble_simulations(N=1, *args, **kwargs):
+    """Run simulations with the given model and take the ensemble.
+
+    Parameters
+    ----------
+    N : int
+        A number of samples.
+    args : list
+    kwargs : dict
+        Arguments for ``run_simulation``.
+        See the help of ``run_simulation`` for details.
+
+    Returns
+    -------
+    value : list, DummyObserver, or None
+        Return a value suggested by ``return_type``.
+        When ``return_type`` is 'array', return a time course data.
+        When ``return_type`` is 'observer', return an observer.
+        Return nothing if else.
+
+    See Also
+    --------
+    run_simulation
+
+    """
     import ecell4
 
     return_type = kwargs.get('return_type', 'matplotlib')
