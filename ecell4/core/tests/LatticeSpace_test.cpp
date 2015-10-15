@@ -1,4 +1,4 @@
-#define BOOST_TEST_MODULE "ReactionRule_test"
+#define BOOST_TEST_MODULE "LatticeSpace_test"
 
 #ifdef UNITTEST_FRAMEWORK_LIBRARY_EXIST
 #   include <boost/test/unit_test.hpp>
@@ -275,6 +275,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_update_voxel)
     }
 }
 
+#ifdef WITH_HDF5
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_save_and_load)
 {
     const ParticleID pid(sidgen());
@@ -307,6 +308,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_save_and_load)
         BOOST_CHECK_EQUAL(D, pair.second.D());
     }
 }
+#endif
 
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_lattice_structure)
 {
@@ -318,11 +320,6 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_lattice_structure)
         BOOST_CHECK(space.update_voxel_private(
             pid, Voxel(sp, private_coord, radius, D)));
     }
-
-    H5::H5File fout("data_structure.h5", H5F_ACC_TRUNC);
-    boost::scoped_ptr<H5::Group>
-        group(new H5::Group(fout.createGroup("LatticeSpace")));
-    space.save(group.get());
 }
 
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_neighbor)
@@ -372,8 +369,6 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_periodic_col)
     const int col_size(space.col_size()),
               row_size(space.row_size()),
               layer_size(space.layer_size());
-    H5::H5File fout;
-    H5::Group group;
     for (int i(0); i < row_size; ++i)
         for (int j(0); j < layer_size; ++j)
         {
@@ -382,9 +377,6 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_periodic_col)
             BOOST_CHECK(space.update_voxel_private(
                 sidgen(), Voxel(sp, private_coord, radius, D)));
         }
-    fout = H5::H5File("periodic_col_0.h5", H5F_ACC_TRUNC);
-    group = fout.createGroup("LatticeSpace");
-    space.save(&group);
 
     // from 0 to col_size-1
     for (int i(0); i < row_size; ++i)
@@ -399,9 +391,6 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_periodic_col)
             BOOST_CHECK_EQUAL(space.private_coord2global(retval.first).col,
                     col_size-1);
         }
-    fout = H5::H5File("periodic_col_1.h5", H5F_ACC_TRUNC);
-    group = fout.createGroup("LatticeSpace");
-    space.save(&group);
 
     // from col_size-1 to 0
     for (int i(0); i < row_size; ++i)
@@ -415,9 +404,6 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_periodic_col)
             BOOST_CHECK(retval.second);
             BOOST_CHECK_EQUAL(space.private_coord2global(retval.first).col, 0);
         }
-    fout = H5::H5File("periodic_col_2.h5", H5F_ACC_TRUNC);
-    group = fout.createGroup("LatticeSpace");
-    space.save(&group);
 }
 
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_periodic_row)
@@ -425,8 +411,6 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_periodic_row)
     const int col_size(space.col_size()),
               row_size(space.row_size()),
               layer_size(space.layer_size());
-    H5::H5File fout;
-    H5::Group group;
     for (int layer(0); layer < layer_size; ++layer)
         for (int col(0); col < col_size; ++col)
         {
@@ -435,9 +419,6 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_periodic_row)
             BOOST_CHECK(space.update_voxel_private(
                 sidgen(), Voxel(sp, private_coord, radius, D)));
         }
-    fout = H5::H5File("periodic_row_0.h5", H5F_ACC_TRUNC);
-    group = fout.createGroup("LatticeSpace");
-    space.save(&group);
     // from 0 to row_size-1
     int row(0);
     for (int layer(0); layer < layer_size; ++layer)
@@ -452,9 +433,6 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_periodic_row)
             BOOST_CHECK_EQUAL(space.private_coord2global(retval.first).row,
                     row_size-1);
         }
-    fout = H5::H5File("periodic_row_1.h5", H5F_ACC_TRUNC);
-    group = fout.createGroup("LatticeSpace");
-    space.save(&group);
     // from row_size-1 to 0
     row = row_size - 1;
     for (int layer(0); layer < layer_size; ++layer)
@@ -468,9 +446,6 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_periodic_row)
             BOOST_CHECK(retval.second);
             BOOST_CHECK_EQUAL(space.private_coord2global(retval.first).row, 0);
         }
-    fout = H5::H5File("periodic_row_2.h5", H5F_ACC_TRUNC);
-    group = fout.createGroup("LatticeSpace");
-    space.save(&group);
 }
 
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_periodic_layer)
@@ -478,8 +453,6 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_periodic_layer)
     const int col_size(space.col_size()),
               row_size(space.row_size()),
               layer_size(space.layer_size());
-    H5::H5File fout;
-    H5::Group group;
     int layer(0);
     for (int row(0); row < row_size; ++row)
         for (int col(0); col < col_size; ++col)
@@ -489,9 +462,6 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_periodic_layer)
             BOOST_CHECK(space.update_voxel_private(
                 sidgen(), Voxel(sp, private_coord, radius, D)));
         }
-    fout = H5::H5File("periodic_layer_0.h5", H5F_ACC_TRUNC);
-    group = fout.createGroup("LatticeSpace");
-    space.save(&group);
     // from 0 to layer_size-1
     for (int row(0); row < row_size; ++row)
         for (int col(0); col < col_size; ++col)
@@ -505,9 +475,6 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_periodic_layer)
             BOOST_CHECK_EQUAL(space.private_coord2global(retval.first).layer,
                     layer_size-1);
         }
-    fout = H5::H5File("periodic_layer_1.h5", H5F_ACC_TRUNC);
-    group = fout.createGroup("LatticeSpace");
-    space.save(&group);
     // from layer_size-1 to 0
     layer = layer_size - 1;
     for (int row(0); row < row_size; ++row)
@@ -521,9 +488,6 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_periodic_layer)
             BOOST_CHECK(retval.second);
             BOOST_CHECK_EQUAL(space.private_coord2global(retval.first).layer, 0);
         }
-    fout = H5::H5File("periodic_layer_2.h5", H5F_ACC_TRUNC);
-    group = fout.createGroup("LatticeSpace");
-    space.save(&group);
 }
 
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_coordinates2)
