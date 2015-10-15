@@ -124,14 +124,11 @@ public:
     virtual bool can_move(const private_coordinate_type& src, const private_coordinate_type& dest) const;
     virtual const Particle particle_at(const coordinate_type& coord) const = 0;
 
-    virtual void add_structure(const Species& sp,
-        const boost::shared_ptr<const Shape>& s, const std::string loc) = 0;
-    virtual const boost::shared_ptr<const Shape>& get_structure(const Species& sp) const = 0;
-    virtual const Shape::dimension_kind get_structure_dimension(const Species& sp) const = 0;
-
     virtual MolecularTypeBase* find_molecular_type(const Species& sp) = 0;
     virtual MolecularTypeBase* get_molecular_type(
         const private_coordinate_type& coord) = 0;
+    virtual bool make_structure_type(const Species& sp,
+        Shape::dimension_kind dimension, const std::string loc);
 
     virtual bool on_structure(const Voxel& v) = 0;
 
@@ -561,7 +558,6 @@ public:
 
     typedef std::map<Species, boost::shared_ptr<MolecularType> > spmap;
     typedef std::vector<MolecularTypeBase*> voxel_container;
-    typedef std::map<Species, boost::shared_ptr<const Shape> > structure_container_type;
 
 public:
 
@@ -633,11 +629,6 @@ public:
     virtual bool move_private(const private_coordinate_type& src, const private_coordinate_type& dest);
     virtual bool can_move(const private_coordinate_type& src, const private_coordinate_type& dest) const;
 
-    virtual void add_structure(const Species& sp,
-        const boost::shared_ptr<const Shape>& s, const std::string loc);
-    virtual const boost::shared_ptr<const Shape>& get_structure(const Species& sp) const;
-    virtual const Shape::dimension_kind get_structure_dimension(const Species& sp) const;
-
     std::pair<private_coordinate_type, bool> move_to_neighbor(
         private_coordinate_type coord, Integer nrand);
     std::pair<private_coordinate_type, bool> move_to_neighbor(
@@ -687,6 +678,9 @@ public:
         return periodic_transpose_private(private_coord);
     }
 
+    virtual bool make_structure_type(const Species& sp,
+        Shape::dimension_kind dimension, const std::string loc);
+
     virtual bool on_structure(const Voxel& v);
 
 protected:
@@ -703,8 +697,6 @@ protected:
     private_coordinate_type get_coord(const ParticleID& pid) const;
     const Particle particle_at_private(private_coordinate_type coord) const;
 
-    bool make_structure_type(const Species& sp,
-            const boost::shared_ptr<const Shape>& shape, const std::string loc);
     Integer count_voxels(const boost::shared_ptr<MolecularType>& mt) const;
 
 protected:
@@ -713,7 +705,6 @@ protected:
 
     spmap spmap_;
     voxel_container voxels_;
-    structure_container_type structures_;
 
     MolecularTypeBase* vacant_;
     MolecularTypeBase* border_;

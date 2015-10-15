@@ -33,6 +33,12 @@ bool LatticeSpace::can_move(const private_coordinate_type& src,
     return false;
 }
 
+bool LatticeSpace::make_structure_type(const Species& sp,
+    Shape::dimension_kind dimension, const std::string loc)
+{
+    return false;
+}
+
 void LatticeSpaceBase::set_lattice_properties()
 {
     //XXX: derived from SpatiocyteStepper::setLatticeProperties()
@@ -993,7 +999,7 @@ bool LatticeSpaceVectorImpl::update_voxel_private(const ParticleID& pid, const V
 }
 
 bool LatticeSpaceVectorImpl::make_structure_type(const Species& sp,
-        const boost::shared_ptr<const Shape>& shape, const std::string loc)
+    Shape::dimension_kind dimension, const std::string loc)
 {
     spmap::iterator itr(spmap_.find(sp));
     if (itr != spmap_.end())
@@ -1036,45 +1042,9 @@ bool LatticeSpaceVectorImpl::make_structure_type(const Species& sp,
         }
     }
 
-    boost::shared_ptr<MolecularType> mt(new StructureType(sp, location, voxel_radius_, shape->dimension()));
-    std::pair<spmap::iterator, bool>
-        retval(spmap_.insert(std::make_pair(sp, mt)));
+    boost::shared_ptr<MolecularType> mt(new StructureType(sp, location, voxel_radius_, dimension));
+    std::pair<spmap::iterator, bool> retval(spmap_.insert(std::make_pair(sp, mt)));
     return retval.second;
-}
-
-void LatticeSpaceVectorImpl::add_structure(const Species& sp,
-    const boost::shared_ptr<const Shape>& s, const std::string loc)
-{
-    make_structure_type(sp, s, loc); // Use StructureType
-
-    structure_container_type::const_iterator i(structures_.find(sp));
-    if (i != structures_.end())
-    {
-        throw NotSupported("not supported yet.");
-    }
-    structures_.insert(std::make_pair(sp, s));
-}
-
-const boost::shared_ptr<const Shape>& LatticeSpaceVectorImpl::get_structure(
-    const Species& sp) const
-{
-    structure_container_type::const_iterator i(structures_.find(sp));
-    if (i == structures_.end())
-    {
-        throw NotFound("not found.");
-    }
-    return (*i).second;
-}
-
-const Shape::dimension_kind LatticeSpaceVectorImpl::get_structure_dimension(
-    const Species& sp) const
-{
-    structure_container_type::const_iterator i(structures_.find(sp));
-    if (i == structures_.end())
-    {
-        return Shape::THREE; // Default value (ex. for VACANT type)
-    }
-    return (*i).second->dimension();
 }
 
 Integer LatticeSpaceVectorImpl::count_voxels(
