@@ -14,7 +14,7 @@ before_install:
 script:
 - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo bash -c 'export PREFIX=/usr/local; export PYTHONPATH=/usr/local/lib/python2.7/site-packages:$PYTHONPATH; ./install.sh py2'; fi
 - if [ "$TRAVIS_OS_NAME" == "osx" ] && [ "$CC" = "gcc" ]; then export CC=gcc-4.8; fi
-- if [ "$TRAVIS_OS_NAME" == "osx" ] && [ "$CC" = "gcc" ]; then export CXX=gcc-4.8; fi
+- if [ "$TRAVIS_OS_NAME" == "osx" ] && [ "$CC" = "gcc" ]; then export CXX=g++-4.8; fi
 - if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew tap ecell/ecell4; fi
 - if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew install ecell4 --HEAD; fi
 notifications:
