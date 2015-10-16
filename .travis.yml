@@ -19,7 +19,7 @@ script:
 - if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew install ecell4 --HEAD; fi
 after_script:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then python -c "from ecell4 import *"; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then python -c "from ecell4 import *"; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then PYTHONPATH=/usr/local/Cellar/ecell4/HEAD/libexec/lib/python2.7/site-packages python -c "from ecell4 import *"; fi
 notifications:
   webhooks:
     urls:
