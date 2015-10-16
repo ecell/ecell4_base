@@ -17,6 +17,9 @@ script:
 - if [ "$TRAVIS_OS_NAME" == "osx" ] && [ "$CC" = "gcc" ]; then export CXX=g++-4.8; fi
 - if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew tap ecell/ecell4; fi
 - if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew install ecell4 --HEAD; fi
+after_script:
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then python -c "from ecell4 import *"; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then python -c "from ecell4 import *"; fi
 notifications:
   webhooks:
     urls:
