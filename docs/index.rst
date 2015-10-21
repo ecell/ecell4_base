@@ -48,3 +48,5 @@ Tutorials:
    :glob:
 
    Introduction
+   WorldSimBasics
+   Meso
