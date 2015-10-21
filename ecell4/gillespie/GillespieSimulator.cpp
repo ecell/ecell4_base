@@ -107,6 +107,8 @@ void GillespieSimulator::draw_next_reaction(void)
 
 void GillespieSimulator::step(void)
 {
+    last_reactions_.clear();
+
     if (this->dt_ == inf)
     {
         // Any reactions cannot occur.
@@ -139,7 +141,6 @@ void GillespieSimulator::step(void)
     this->set_t(t0 + dt0);
     num_steps_++;
 
-    last_reactions_.clear();
     last_reactions_.push_back(std::make_pair(next_reaction_rule_, reaction_info_type(t(), next_reaction_.reactants(), next_reaction_.products())));
 
     this->draw_next_reaction();
@@ -162,7 +163,7 @@ bool GillespieSimulator::step(const Real &upto)
         // no reaction occurs
         // set_dt(next_time() - upto);
         set_t(upto);
-        // last_reactions_.clear();
+        last_reactions_.clear();
         draw_next_reaction();
         return false;
     }
