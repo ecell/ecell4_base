@@ -41,4 +41,10 @@ Table of Contents:
    :glob:
 
    installation
-   tutorials
+
+Tutorials:
+
+.. toctree::
+   :glob:
+
+   Introduction
