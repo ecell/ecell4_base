@@ -35,7 +35,7 @@ the release note[WRITEME]
 -  Python valid rule based model
 -  IPython Notebook inline visualization
 
-Table of Contents:
+Getting Started:
 
 .. toctree::
    :glob:

@@ -70,7 +70,7 @@ print(A.get_attribute("D"))  # will return '1'
 
     A
     1
-    
+
 
 ## ReactionRule
 ReactionRule describes the transition of the molecule types from **Reactants** to **Products**. ReactionRule requires at least a kinetic rate attribute, this has to be number.
@@ -113,7 +113,7 @@ print(rr3.as_string())  # will return 'C+A>B|1.5'
 ```
 
     C+A>B|1.5
-    
+
 
 ## NetworkModel
 
@@ -156,7 +156,7 @@ m.num_reaction_rules()
 
     [<ecell4.core.Species object at 0x1165b3a68>, <ecell4.core.Species object at 0x1165b3ac8>, <ecell4.core.Species object at 0x1165b3ae0>]
     [<ecell4.core.ReactionRule object at 0x1165b3a68>, <ecell4.core.ReactionRule object at 0x1165b3ac8>]
-    
+
 
 
 
@@ -187,7 +187,7 @@ y = run_simulation(t, {'C': 60}, volume=1.0, model=m)
 ```
 
 
-![png](output_28_0.png)
+![png](intro_28_0.png)
 
 
 **run_simulation** records the number of molecules for time **t** and plots the time-series simulation result.
@@ -203,7 +203,7 @@ y = run_simulation(t, {'C': 60}, volume=1.0, model=m, solver='gillespie')
 ```
 
 
-![png](output_31_0.png)
+![png](intro_31_0.png)
 
 
 You can simalate a model with different methods like this.
@@ -257,7 +257,7 @@ y = run_simulation(numpy.linspace(0, 10, 100), {'C': 60}, volume=1.0)
 ```
 
 
-![png](output_37_0.png)
+![png](intro_37_0.png)
 
 
 $$\frac{\mathrm{d[A]}}{\mathrm{d}t}=\frac{\mathrm{d[B]}}{\mathrm{d}t}=-0.01\mathrm{[A][B]}+0.3\mathrm{[C]}\\
