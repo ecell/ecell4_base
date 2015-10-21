@@ -55,7 +55,7 @@ y = run_simulation(numpy.linspace(0, 10, 100), {'C': 60}, solver='meso')
 ```
 
 
-![png](output_7_0.png)
+![png](meso_7_0.png)
 
 
 $$
@@ -90,7 +90,7 @@ viz.plot_number_observer(obs)
 ```
 
 
-![png](output_10_0.png)
+![png](meso_10_0.png)
 
 
 This is nothing out of the ordinary one except **MesoscopicWorld** and  **MesoscopicSimulator**, but you can see some new elements.
@@ -126,7 +126,7 @@ viz.plot_number_observer(obs)
 ```
 
 
-![png](output_12_0.png)
+![png](meso_12_0.png)
 
 
 You should have the different plot.  
@@ -169,7 +169,7 @@ Now you should have the almost same result with **gillespie** (the simulation wi
 
 How did the molecular diffusion work for the problem?  
 Think about free diffusion (the diffusion coefficient of a Species is $D$) in 3D space.  
-The unit of diffusion coefficient is the square of length divided by time like 
+The unit of diffusion coefficient is the square of length divided by time like
 $\mathrm{\mu m}^2/s$ or $\mathrm{nm}^2/\mu s$ .
 
 It is known that the average of the square of point distance from time $0$ to $t$ is equal to $6Dt$.  
@@ -208,7 +208,7 @@ print(w.num_molecules(Species('B'), Integer3(1, 1, 1)))  # will print 120
     120
     0
     120
-    
+
 
 Furthermore, if you have IPython Notebook environment, you can visualize the molecular localization with **ecell4.viz** module.
 
@@ -390,7 +390,7 @@ viz.plot_number_observer(obs1)
 ```
 
 
-![png](output_32_0.png)
+![png](meso_32_0.png)
 
 
 
@@ -406,7 +406,7 @@ viz.plot_number_observer(obs1, "-", obs2, "--")
 ```
 
 
-![png](output_33_0.png)
+![png](meso_33_0.png)
 
 
 Do you have this plot?  
@@ -417,4 +417,3 @@ The biased reaction is obviously slow.
 And you may notice that the time-series is different between the solid line and dash line.  
 This is because it takes the molecule **A** and **B** some time to bound.  
 Actually it takes $4^2/2(D_\mathrm{A}+D_\mathrm{B})=4$ seconds to move the initial distance between **A** and **B** (about 4).
-

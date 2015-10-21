@@ -50,3 +50,4 @@ Tutorials:
    Introduction
    WorldSimBasics
    Meso
+   Spatiocyte
