@@ -13,12 +13,12 @@
 #include <ecell4/core/RandomNumberGenerator.hpp>
 #include <ecell4/core/EventScheduler.hpp>
 
-#include "LatticeWorld.hpp"
+#include "SpatiocyteWorld.hpp"
 
 namespace ecell4
 {
 
-namespace lattice
+namespace spatiocyte
 {
 
 class ReactionInfo
@@ -72,12 +72,12 @@ protected:
     container_type reactants_, products_;
 };
 
-class LatticeSimulator
-    : public SimulatorBase<Model, LatticeWorld>
+class SpatiocyteSimulator
+    : public SimulatorBase<Model, SpatiocyteWorld>
 {
 public:
 
-    typedef SimulatorBase<Model, LatticeWorld> base_type;
+    typedef SimulatorBase<Model, SpatiocyteWorld> base_type;
     typedef Reaction<Voxel> reaction_type;
 
     typedef ReactionInfo reaction_info_type;
@@ -87,11 +87,11 @@ protected:
     struct StepEvent : EventScheduler::Event
     {
         StepEvent(
-            LatticeSimulator* sim, const Species& species, const Real& t,
+            SpatiocyteSimulator* sim, const Species& species, const Real& t,
             const Real alpha=1.0)
             : EventScheduler::Event(t), sim_(sim), species_(species), alpha_(alpha)
         {
-            const LatticeWorld::molecule_info_type
+            const SpatiocyteWorld::molecule_info_type
                 minfo(sim_->world_->get_molecule_info(species));
             const Real R(minfo.radius);
             const Real D(minfo.D);
@@ -136,7 +136,7 @@ protected:
 
     protected:
 
-        LatticeSimulator* sim_;
+        SpatiocyteSimulator* sim_;
         Species species_;
         MolecularTypeBase* mt_;
         const Real alpha_;
@@ -145,7 +145,7 @@ protected:
     struct ZerothOrderReactionEvent : EventScheduler::Event
     {
         ZerothOrderReactionEvent(
-            LatticeSimulator* sim, const ReactionRule& rule, const Real& t)
+            SpatiocyteSimulator* sim, const ReactionRule& rule, const Real& t)
             : EventScheduler::Event(t), sim_(sim), rule_(rule)
         {
             time_ = t + draw_dt();
@@ -181,14 +181,14 @@ protected:
 
     protected:
 
-        LatticeSimulator* sim_;
+        SpatiocyteSimulator* sim_;
         ReactionRule rule_;
     };
 
     struct FirstOrderReactionEvent : EventScheduler::Event
     {
         FirstOrderReactionEvent(
-            LatticeSimulator* sim, const ReactionRule& rule, const Real& t)
+            SpatiocyteSimulator* sim, const ReactionRule& rule, const Real& t)
             : EventScheduler::Event(t), sim_(sim), rule_(rule)
         {
             //assert(rule_.reactants().size() == 1);
@@ -228,23 +228,23 @@ protected:
 
     protected:
 
-        LatticeSimulator* sim_;
+        SpatiocyteSimulator* sim_;
         ReactionRule rule_;
     };
 
 public:
 
-    LatticeSimulator(
+    SpatiocyteSimulator(
             boost::shared_ptr<Model> model,
-            boost::shared_ptr<LatticeWorld> world,
+            boost::shared_ptr<SpatiocyteWorld> world,
             const Real alpha = 1.0)
         : base_type(model, world), alpha_(alpha)
     {
         initialize();
     }
 
-    LatticeSimulator(
-            boost::shared_ptr<LatticeWorld> world,
+    SpatiocyteSimulator(
+            boost::shared_ptr<SpatiocyteWorld> world,
             const Real alpha = 1.0)
         : base_type(world), alpha_(alpha)
     {
@@ -302,8 +302,8 @@ protected:
     Real calculate_dimensional_factor(
         const MolecularTypeBase* mt0, const MolecularTypeBase* mt1) const;
     std::pair<bool, reaction_type> attempt_reaction_(
-        const LatticeWorld::particle_info_type info,
-        LatticeWorld::coordinate_type to_coord, const Real& alpha);
+        const SpatiocyteWorld::particle_info_type info,
+        SpatiocyteWorld::coordinate_type to_coord, const Real& alpha);
     std::pair<bool, reaction_type> apply_second_order_reaction_(
         const ReactionRule& reaction_rule,
         const reaction_type::particle_type& p0,
@@ -312,32 +312,32 @@ protected:
         const ReactionRule& reaction_rule,
         const reaction_type::particle_type& p);
     void apply_vanishment(
-        const LatticeWorld::particle_info_type from_info,
-        const LatticeWorld::particle_info_type to_info,
+        const SpatiocyteWorld::particle_info_type from_info,
+        const SpatiocyteWorld::particle_info_type to_info,
         reaction_type& reaction);
     void apply_ab2c(
-        const LatticeWorld::particle_info_type from_info,
-        const LatticeWorld::particle_info_type to_info,
+        const SpatiocyteWorld::particle_info_type from_info,
+        const SpatiocyteWorld::particle_info_type to_info,
         const Species& product_species,
         reaction_type& reaction);
     void apply_ab2cd(
-        const LatticeWorld::particle_info_type from_info,
-        const LatticeWorld::particle_info_type to_info,
+        const SpatiocyteWorld::particle_info_type from_info,
+        const SpatiocyteWorld::particle_info_type to_info,
         const Species& product_species0,
         const Species& product_species1,
         reaction_type& reaction);
     void apply_ab2cd_in_order(
-        const LatticeWorld::private_coordinate_type coord0,
+        const SpatiocyteWorld::private_coordinate_type coord0,
         const Species& product_species0,
-        const LatticeWorld::private_coordinate_type coord1,
+        const SpatiocyteWorld::private_coordinate_type coord1,
         const Species& product_species1,
         reaction_type& reaction);
     void apply_a2b(
-        const LatticeWorld::particle_info_type pinfo,
+        const SpatiocyteWorld::particle_info_type pinfo,
         const Species& product_species,
         reaction_type& reaction);
     bool apply_a2bc(
-        const LatticeWorld::particle_info_type pinfo,
+        const SpatiocyteWorld::particle_info_type pinfo,
         const Species& product_species0,
         const Species& product_species1,
         reaction_type& reaction);
@@ -346,7 +346,7 @@ protected:
 
     void register_product_species(const Species& product_species);
     void register_reactant_species(
-        const LatticeWorld::particle_info_type pinfo, reaction_type& reaction) const;
+        const SpatiocyteWorld::particle_info_type pinfo, reaction_type& reaction) const;
 
     void step_();
     void register_events(const Species& species);
@@ -354,20 +354,20 @@ protected:
 
     inline Voxel private_voxel2voxel(const Voxel& v) const
     {
-        const LatticeWorld::coordinate_type
+        const SpatiocyteWorld::coordinate_type
             coord(world_->private2coord(v.coordinate()));
         return Voxel(v.species(), coord, v.radius(), v.D(), v.loc());
     }
 
     const std::string get_serial(
-        const LatticeWorld::private_coordinate_type coord) const
+        const SpatiocyteWorld::private_coordinate_type coord) const
     {
         const MolecularTypeBase* mtype(world_->get_molecular_type_private(coord));
         return mtype->is_vacant() ? "" : mtype->species().serial();
     }
 
     const std::string get_location(
-        const LatticeWorld::private_coordinate_type coord) const
+        const SpatiocyteWorld::private_coordinate_type coord) const
     {
         const MolecularTypeBase* mtype(world_->get_molecular_type_private(coord));
         if (mtype->is_vacant())
@@ -388,7 +388,7 @@ protected:
     Real alpha_;
 };
 
-} // lattice
+} // spatiocyte
 
 } // ecell4
 

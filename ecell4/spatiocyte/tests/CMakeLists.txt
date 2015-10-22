@@ -1,6 +1,6 @@
 set(TEST_NAMES
-    LatticeSimulator_test LatticeWorld_test
-    LatticeSimulator_profile)
+    SpatiocyteSimulator_test SpatiocyteWorld_test
+    SpatiocyteSimulator_profile)
 
 set(test_library_dependencies)
 find_library(BOOST_UNITTEST_FRAMEWORK_LIBRARY boost_unit_test_framework)
@@ -12,6 +12,6 @@ endif()
 
 foreach(TEST_NAME ${TEST_NAMES})
     add_executable(${TEST_NAME} ${TEST_NAME}.cpp)
-    target_link_libraries(${TEST_NAME} ecell4-lattice ${test_library_dependencies})
+    target_link_libraries(${TEST_NAME} ecell4-spatiocyte ${test_library_dependencies})
     add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME})
 endforeach(TEST_NAME)

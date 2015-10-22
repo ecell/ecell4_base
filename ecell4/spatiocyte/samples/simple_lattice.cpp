@@ -5,9 +5,9 @@
 #include <ecell4/core/Real3.hpp>
 #include <ecell4/core/RandomNumberGenerator.hpp>
 
-#include <ecell4/lattice/LatticeSimulator.hpp>
-typedef ecell4::lattice::LatticeWorld world_type;
-typedef ecell4::lattice::LatticeSimulator simulator_type;
+#include <ecell4/spatiocyte/SpatiocyteSimulator.hpp>
+typedef ecell4::spatiocyte::SpatiocyteWorld world_type;
+typedef ecell4::spatiocyte::SpatiocyteSimulator simulator_type;
 
 namespace ecell4
 {

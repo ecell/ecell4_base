@@ -18,7 +18,7 @@
 namespace ecell4
 {
 
-namespace lattice
+namespace spatiocyte
 {
 
 struct MoleculeInfo
@@ -28,7 +28,7 @@ struct MoleculeInfo
     const std::string loc;
 };
 
-class LatticeWorld
+class SpatiocyteWorld
     : public Space
 {
 public:
@@ -44,14 +44,14 @@ public:
 
 public:
 
-    LatticeWorld(const Real3& edge_lengths, const Real& voxel_radius,
+    SpatiocyteWorld(const Real3& edge_lengths, const Real& voxel_radius,
         const boost::shared_ptr<RandomNumberGenerator>& rng)
         : space_(new default_space_type(edge_lengths, voxel_radius)), rng_(rng)
     {
         ; // do nothing
     }
 
-    LatticeWorld(const Real3& edge_lengths, const Real& voxel_radius)
+    SpatiocyteWorld(const Real3& edge_lengths, const Real& voxel_radius)
         : space_(new default_space_type(edge_lengths, voxel_radius))
     {
         rng_ = boost::shared_ptr<RandomNumberGenerator>(
@@ -59,7 +59,7 @@ public:
         (*rng_).seed();
     }
 
-    LatticeWorld(const Real3& edge_lengths = Real3(1, 1, 1))
+    SpatiocyteWorld(const Real3& edge_lengths = Real3(1, 1, 1))
         : space_(new default_space_type(edge_lengths, edge_lengths[0] / 100)) //XXX: sloppy default
     {
         rng_ = boost::shared_ptr<RandomNumberGenerator>(
@@ -67,7 +67,7 @@ public:
         (*rng_).seed();
     }
 
-    LatticeWorld(const std::string filename)
+    SpatiocyteWorld(const std::string filename)
         : space_(new default_space_type(Real3(1, 1, 1), 1 / 100)) //XXX: sloppy default
     {
         rng_ = boost::shared_ptr<RandomNumberGenerator>(
@@ -75,7 +75,7 @@ public:
         this->load(filename);
     }
 
-    LatticeWorld(LatticeSpace* space,
+    SpatiocyteWorld(LatticeSpace* space,
         const boost::shared_ptr<RandomNumberGenerator>& rng)
         : space_(space), rng_(rng)
     {
@@ -533,7 +533,7 @@ public:
         {
             if (bound_model.get() != model.get())
             {
-                std::cerr << "Warning: Model already bound to LatticeWorld"
+                std::cerr << "Warning: Model already bound to SpatiocyteWorld"
                     << std::endl;
             }
         }
@@ -561,11 +561,11 @@ protected:
     boost::weak_ptr<Model> model_;
 };
 
-LatticeWorld* create_lattice_world_cell_list_impl(
+SpatiocyteWorld* create_spatiocyte_world_cell_list_impl(
     const Real3& edge_lengths, const Real& voxel_radius,
     const Integer3& matrix_sizes,
     const boost::shared_ptr<RandomNumberGenerator>& rng);
-LatticeWorld* create_lattice_world_vector_impl(
+SpatiocyteWorld* create_spatiocyte_world_vector_impl(
     const Real3& edge_lengths, const Real& voxel_radius,
     const boost::shared_ptr<RandomNumberGenerator>& rng);
 
@@ -573,23 +573,23 @@ LatticeWorld* create_lattice_world_vector_impl(
  * Alias functions for Cython
  */
 
-inline LatticeWorld* create_lattice_world_cell_list_impl_alias(
+inline SpatiocyteWorld* create_spatiocyte_world_cell_list_impl_alias(
     const Real3& edge_lengths, const Real& voxel_radius,
     const Integer3& matrix_sizes,
     const boost::shared_ptr<RandomNumberGenerator>& rng)
 {
-    return create_lattice_world_cell_list_impl(
+    return create_spatiocyte_world_cell_list_impl(
         edge_lengths, voxel_radius, matrix_sizes, rng);
 }
 
-inline LatticeWorld* create_lattice_world_vector_impl_alias(
+inline SpatiocyteWorld* create_spatiocyte_world_vector_impl_alias(
     const Real3& edge_lengths, const Real& voxel_radius,
     const boost::shared_ptr<RandomNumberGenerator>& rng)
 {
-    return create_lattice_world_vector_impl(edge_lengths, voxel_radius, rng);
+    return create_spatiocyte_world_vector_impl(edge_lengths, voxel_radius, rng);
 }
 
-} // lattice
+} // spatiocyte
 
 } // ecell4
 

@@ -1,174 +1,174 @@
 #include <stdexcept>
 #include <fstream>
 
-#include "LatticeWorld.hpp"
+#include "SpatiocyteWorld.hpp"
 
 namespace ecell4
 {
 
-namespace lattice
+namespace spatiocyte
 {
 
-LatticeWorld* create_lattice_world_cell_list_impl(
+SpatiocyteWorld* create_spatiocyte_world_cell_list_impl(
     const Real3& edge_lengths, const Real& voxel_radius,
     const Integer3& matrix_sizes,
     const boost::shared_ptr<RandomNumberGenerator>& rng)
 {
-    return new LatticeWorld(
+    return new SpatiocyteWorld(
         new LatticeSpaceCellListImpl(edge_lengths, voxel_radius, matrix_sizes), rng);
 }
 
-LatticeWorld* create_lattice_world_vector_impl(
+SpatiocyteWorld* create_spatiocyte_world_vector_impl(
     const Real3& edge_lengths, const Real& voxel_radius,
     const boost::shared_ptr<RandomNumberGenerator>& rng)
 {
-    return new LatticeWorld(
+    return new SpatiocyteWorld(
         new LatticeSpaceVectorImpl(edge_lengths, voxel_radius), rng);
 }
 
-const Real& LatticeWorld::t() const
+const Real& SpatiocyteWorld::t() const
 {
     return (*space_).t();
 }
 
-void LatticeWorld::set_t(const Real& t)
+void SpatiocyteWorld::set_t(const Real& t)
 {
     (*space_).set_t(t);
 }
 
-const Real3& LatticeWorld::edge_lengths() const
+const Real3& SpatiocyteWorld::edge_lengths() const
 {
     return (*space_).edge_lengths();
 }
 
-const Real LatticeWorld::volume() const
+const Real SpatiocyteWorld::volume() const
 {
     return (*space_).volume();
 }
 
-Integer LatticeWorld::num_species() const
+Integer SpatiocyteWorld::num_species() const
 {
     return (*space_).num_species();
 }
 
-bool LatticeWorld::has_species(const Species &sp) const
+bool SpatiocyteWorld::has_species(const Species &sp) const
 {
     return (*space_).has_species(sp);
 }
 
-// bool LatticeWorld::has_species_exact(const Species &sp) const
+// bool SpatiocyteWorld::has_species_exact(const Species &sp) const
 // {
 //     return (*space_).has_species_exact(sp);
 // }
 
-Integer LatticeWorld::num_molecules(const Species& sp) const
+Integer SpatiocyteWorld::num_molecules(const Species& sp) const
 {
     return (*space_).num_molecules(sp);
 }
 
-Integer LatticeWorld::num_molecules_exact(const Species& sp) const
+Integer SpatiocyteWorld::num_molecules_exact(const Species& sp) const
 {
     return (*space_).num_molecules_exact(sp);
 }
 
-Integer LatticeWorld::num_particles(const Species& sp) const
+Integer SpatiocyteWorld::num_particles(const Species& sp) const
 {
     return (*space_).num_particles(sp);
 }
 
-Integer LatticeWorld::num_particles_exact(const Species& sp) const
+Integer SpatiocyteWorld::num_particles_exact(const Species& sp) const
 {
     return (*space_).num_particles_exact(sp);
 }
 
-Integer LatticeWorld::num_particles() const
+Integer SpatiocyteWorld::num_particles() const
 {
     return (*space_).num_particles();
 }
 
-Integer LatticeWorld::num_voxels() const
+Integer SpatiocyteWorld::num_voxels() const
 {
     return (*space_).num_voxels();
 }
 
-Integer LatticeWorld::num_voxels(const Species& sp) const
+Integer SpatiocyteWorld::num_voxels(const Species& sp) const
 {
     return (*space_).num_voxels(sp);
 }
 
-Integer LatticeWorld::num_voxels_exact(const Species& sp) const
+Integer SpatiocyteWorld::num_voxels_exact(const Species& sp) const
 {
     return (*space_).num_voxels_exact(sp);
 }
 
-bool LatticeWorld::has_particle(const ParticleID& pid) const
+bool SpatiocyteWorld::has_particle(const ParticleID& pid) const
 {
     return (*space_).has_particle(pid);
 }
 
-bool LatticeWorld::has_voxel(const ParticleID& pid) const
+bool SpatiocyteWorld::has_voxel(const ParticleID& pid) const
 {
     return (*space_).has_voxel(pid);
 }
 
 std::vector<std::pair<ParticleID, Particle> >
-LatticeWorld::list_particles() const
+SpatiocyteWorld::list_particles() const
 {
     return (*space_).list_particles();
 }
 
 std::vector<std::pair<ParticleID, Particle> >
-LatticeWorld::list_particles(const Species& sp) const
+SpatiocyteWorld::list_particles(const Species& sp) const
 {
     return (*space_).list_particles(sp);
 }
 
 std::vector<std::pair<ParticleID, Particle> >
-LatticeWorld::list_particles_exact(const Species& sp) const
+SpatiocyteWorld::list_particles_exact(const Species& sp) const
 {
     return (*space_).list_particles_exact(sp);
 }
 
-bool LatticeWorld::update_particle(const ParticleID& pid, const Particle& p)
+bool SpatiocyteWorld::update_particle(const ParticleID& pid, const Particle& p)
 {
     return (*space_).update_particle(pid, p);
 }
 
-std::vector<Species> LatticeWorld::list_species() const
+std::vector<Species> SpatiocyteWorld::list_species() const
 {
     return (*space_).list_species();
 }
 
-std::vector<std::pair<ParticleID, Voxel> > LatticeWorld::list_voxels() const
+std::vector<std::pair<ParticleID, Voxel> > SpatiocyteWorld::list_voxels() const
 {
     return (*space_).list_voxels();
 }
 
 std::vector<std::pair<ParticleID, Voxel> >
-    LatticeWorld::list_voxels(const Species& sp) const
+    SpatiocyteWorld::list_voxels(const Species& sp) const
 {
     return (*space_).list_voxels(sp);
 }
 
 std::vector<std::pair<ParticleID, Voxel> >
-    LatticeWorld::list_voxels_exact(const Species& sp) const
+    SpatiocyteWorld::list_voxels_exact(const Species& sp) const
 {
     return (*space_).list_voxels_exact(sp);
 }
 
-MolecularTypeBase* LatticeWorld::find_molecular_type(const Species& species)
+MolecularTypeBase* SpatiocyteWorld::find_molecular_type(const Species& species)
 {
     return (*space_).find_molecular_type(species);
 }
 
-MolecularTypeBase* LatticeWorld::get_molecular_type_private(
+MolecularTypeBase* SpatiocyteWorld::get_molecular_type_private(
         const private_coordinate_type& coord)
 {
     return (*space_).get_molecular_type(coord);
 }
 
 std::pair<std::pair<ParticleID, Voxel>, bool>
-LatticeWorld::new_voxel(const Voxel& v)
+SpatiocyteWorld::new_voxel(const Voxel& v)
 {
     const private_coordinate_type private_coord(coord2private(v.coordinate()));
     return new_voxel_private(
@@ -176,7 +176,7 @@ LatticeWorld::new_voxel(const Voxel& v)
 }
 
 std::pair<std::pair<ParticleID, Voxel>, bool>
-LatticeWorld::new_voxel(const Species& sp, const coordinate_type& coord)
+SpatiocyteWorld::new_voxel(const Species& sp, const coordinate_type& coord)
 {
     const private_coordinate_type private_coord(coord2private(coord));
     const molecule_info_type minfo(get_molecule_info(sp));
@@ -185,7 +185,7 @@ LatticeWorld::new_voxel(const Species& sp, const coordinate_type& coord)
 }
 
 std::pair<std::pair<ParticleID, Voxel>, bool>
-LatticeWorld::new_voxel_private(
+SpatiocyteWorld::new_voxel_private(
         const Species& sp, const private_coordinate_type& coord)
 {
     const molecule_info_type minfo(get_molecule_info(sp));
@@ -194,7 +194,7 @@ LatticeWorld::new_voxel_private(
 }
 
 std::pair<std::pair<ParticleID, Voxel>, bool>
-LatticeWorld::new_voxel_private(const Voxel& v)
+SpatiocyteWorld::new_voxel_private(const Voxel& v)
 {
     ParticleID pid(sidgen_());
     const bool is_succeeded((*space_).update_voxel_private(pid, v));
@@ -205,7 +205,7 @@ LatticeWorld::new_voxel_private(const Voxel& v)
 }
 
 std::pair<std::pair<ParticleID, Voxel>, bool>
-LatticeWorld::new_voxel_structure(const Voxel& v)
+SpatiocyteWorld::new_voxel_structure(const Voxel& v)
 {
     const bool is_succeeded((*space_).update_voxel_private(ParticleID(), v));
     const coordinate_type coord(private2coord(v.coordinate()));
@@ -214,7 +214,7 @@ LatticeWorld::new_voxel_structure(const Voxel& v)
         is_succeeded);
 }
 
-bool LatticeWorld::add_molecules(const Species& sp, const Integer& num)
+bool SpatiocyteWorld::add_molecules(const Species& sp, const Integer& num)
 {
     if (num < 0)
     {
@@ -222,7 +222,7 @@ bool LatticeWorld::add_molecules(const Species& sp, const Integer& num)
     }
 
     // std::cerr << "[DEBUG]" << std::endl; // DEBUG
-    const LatticeWorld::molecule_info_type info(get_molecule_info(sp));
+    const SpatiocyteWorld::molecule_info_type info(get_molecule_info(sp));
     // std::cerr << "  info.D = " << info.D << std::endl; // DEBUG
 
     Integer count(0);
@@ -243,7 +243,7 @@ bool LatticeWorld::add_molecules(const Species& sp, const Integer& num)
     return true;
 }
 
-bool LatticeWorld::add_molecules(
+bool SpatiocyteWorld::add_molecules(
     const Species& sp, const Integer& num, const boost::shared_ptr<const Shape> shape)
 {
     if (num < 0)
@@ -251,7 +251,7 @@ bool LatticeWorld::add_molecules(
         throw std::invalid_argument("The number of molecules must be positive.");
     }
 
-    const LatticeWorld::molecule_info_type info(get_molecule_info(sp));
+    const SpatiocyteWorld::molecule_info_type info(get_molecule_info(sp));
 
     Integer count(0);
     while (count < num)
@@ -271,11 +271,11 @@ bool LatticeWorld::add_molecules(
     return true;
 }
 
-Integer LatticeWorld::add_structure(
+Integer SpatiocyteWorld::add_structure(
     const Species& sp, const boost::shared_ptr<const Shape> shape)
 {
     std::cerr << "shape->dimension() : " << shape->dimension() << std::endl; // XXX
-    const LatticeWorld::molecule_info_type info(get_molecule_info(sp));
+    const SpatiocyteWorld::molecule_info_type info(get_molecule_info(sp));
     (*space_).add_structure(sp, shape, info.loc);
 
     switch (shape->dimension())
@@ -292,7 +292,7 @@ Integer LatticeWorld::add_structure(
     throw NotSupported("The dimension of a shape must be two or three.");
 }
 
-Integer LatticeWorld::add_structure3(const Species& sp, const boost::shared_ptr<const Shape> shape)
+Integer SpatiocyteWorld::add_structure3(const Species& sp, const boost::shared_ptr<const Shape> shape)
 {
     // Real3 l, u;
     // shape->bounding_box(edge_lengths(), l, u);
@@ -305,7 +305,7 @@ Integer LatticeWorld::add_structure3(const Species& sp, const boost::shared_ptr<
     // }
     // const Integer3 lower(position2global(l)), upper(position2global(u));
 
-    const LatticeWorld::molecule_info_type info(get_molecule_info(sp));
+    const SpatiocyteWorld::molecule_info_type info(get_molecule_info(sp));
     Integer count(0);
     for (Integer col(0); col < col_size(); ++col)
     {
@@ -338,7 +338,7 @@ Integer LatticeWorld::add_structure3(const Species& sp, const boost::shared_ptr<
     return count;
 }
 
-Integer LatticeWorld::add_structure2(const Species& sp, const boost::shared_ptr<const Shape> shape)
+Integer SpatiocyteWorld::add_structure2(const Species& sp, const boost::shared_ptr<const Shape> shape)
 {
     // std::ofstream fout("shape.csv");
     // fout << "# " << sp.serial() << std::endl;
@@ -368,7 +368,7 @@ Integer LatticeWorld::add_structure2(const Species& sp, const boost::shared_ptr<
     // }
     // const Integer3 lower(position2global(l)), upper(position2global(u));
 
-    const LatticeWorld::molecule_info_type info(get_molecule_info(sp));
+    const SpatiocyteWorld::molecule_info_type info(get_molecule_info(sp));
     Integer count(0);
     for (Integer col(0); col < col_size(); ++col)
     {
@@ -400,7 +400,7 @@ Integer LatticeWorld::add_structure2(const Species& sp, const boost::shared_ptr<
     return count;
 }
 
-bool LatticeWorld::is_surface_voxel(
+bool SpatiocyteWorld::is_surface_voxel(
     const Integer3& g, const boost::shared_ptr<const Shape> shape) const
 {
     const Real L(shape->is_inside(global2position(g)));
@@ -409,7 +409,7 @@ bool LatticeWorld::is_surface_voxel(
         return false;
     }
 
-    const LatticeWorld::private_coordinate_type
+    const SpatiocyteWorld::private_coordinate_type
         private_coord((*space_).global2private_coord(g));
     for (Integer i(0); i < 12; ++i)
     {
@@ -423,11 +423,11 @@ bool LatticeWorld::is_surface_voxel(
 }
 
 // TODO
-Integer LatticeWorld::add_neighbors(const Species& sp,
-    const LatticeWorld::private_coordinate_type center)
+Integer SpatiocyteWorld::add_neighbors(const Species& sp,
+    const SpatiocyteWorld::private_coordinate_type center)
 {
     Integer count(0);
-    const LatticeWorld::molecule_info_type info(get_molecule_info(sp));
+    const SpatiocyteWorld::molecule_info_type info(get_molecule_info(sp));
     for (Integer i(0); i < 12; ++i)
     {
         const private_coordinate_type n((*space_).get_neighbor_private(center, i));
@@ -443,10 +443,10 @@ Integer LatticeWorld::add_neighbors(const Species& sp,
     return count;
 
     // Integer count(0);
-    // const LatticeWorld::molecule_info_type info(get_molecule_info(sp));
-    // std::vector<LatticeWorld::private_coordinate_type> neighbors(
+    // const SpatiocyteWorld::molecule_info_type info(get_molecule_info(sp));
+    // std::vector<SpatiocyteWorld::private_coordinate_type> neighbors(
     //         (*space_).get_neighbors(center));
-    // for (std::vector<LatticeWorld::private_coordinate_type>::iterator itr(
+    // for (std::vector<SpatiocyteWorld::private_coordinate_type>::iterator itr(
     //             neighbors.begin()); itr != neighbors.end(); itr++)
     // {
     //     if (new_voxel_private(Voxel(sp, *itr, info.radius, info.D, info.loc)).second)
@@ -458,7 +458,7 @@ Integer LatticeWorld::add_neighbors(const Species& sp,
 }
 // TODO
 
-void LatticeWorld::remove_molecules(const Species& sp, const Integer& num)
+void SpatiocyteWorld::remove_molecules(const Species& sp, const Integer& num)
 {
     if (num < 0)
     {
@@ -488,38 +488,38 @@ void LatticeWorld::remove_molecules(const Species& sp, const Integer& num)
     }
 }
 
-bool LatticeWorld::remove_voxel_private(const private_coordinate_type coord)
+bool SpatiocyteWorld::remove_voxel_private(const private_coordinate_type coord)
 {
     return (*space_).remove_voxel_private(coord);
 }
 
-bool LatticeWorld::move(coordinate_type from, coordinate_type to)
+bool SpatiocyteWorld::move(coordinate_type from, coordinate_type to)
 {
     return (*space_).move(from, to);
 }
 
-bool LatticeWorld::move_private(const private_coordinate_type& src,
+bool SpatiocyteWorld::move_private(const private_coordinate_type& src,
         const private_coordinate_type& dest)
 {
     return (*space_).move_private(src, dest);
 }
 
-bool LatticeWorld::can_move(const private_coordinate_type& src,
+bool SpatiocyteWorld::can_move(const private_coordinate_type& src,
         const private_coordinate_type& dest) const
 {
     return (*space_).can_move(src, dest);
 }
 
-std::pair<LatticeWorld::private_coordinate_type, bool>
-LatticeWorld::move_to_neighbor(
+std::pair<SpatiocyteWorld::private_coordinate_type, bool>
+SpatiocyteWorld::move_to_neighbor(
     MolecularTypeBase* const& from_mt, MolecularTypeBase* const& loc,
     particle_info_type& info, const Integer nrand)
 {
     return (*space_).move_to_neighbor(from_mt, loc, info, nrand);
 }
 
-std::pair<LatticeWorld::private_coordinate_type, bool>
-LatticeWorld::check_neighbor_private(
+std::pair<SpatiocyteWorld::private_coordinate_type, bool>
+SpatiocyteWorld::check_neighbor_private(
     const private_coordinate_type coord, const std::string& loc)
 {
     std::vector<private_coordinate_type> tmp;
@@ -551,7 +551,7 @@ LatticeWorld::check_neighbor_private(
     // return std::make_pair(neighbor, flg);
 }
 
-Shape::dimension_kind LatticeWorld::get_dimension_kind(const std::string& name) const
+Shape::dimension_kind SpatiocyteWorld::get_dimension_kind(const std::string& name) const
 {
     if (name == "")
     {
@@ -560,6 +560,6 @@ Shape::dimension_kind LatticeWorld::get_dimension_kind(const std::string& name) 
     return (*space_).get_structure_dimension(Species(name));
 }
 
-} // lattice
+} // spatiocyte
 
 } // ecell4

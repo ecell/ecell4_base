@@ -5,88 +5,88 @@
 #include <ecell4/core/RandomNumberGenerator.hpp>
 
 #include <ecell4/core/extras.hpp>
-#include "LatticeWorld.hpp"
-#include "LatticeSimulator.hpp"
+#include "SpatiocyteWorld.hpp"
+#include "SpatiocyteSimulator.hpp"
 
 
 namespace ecell4
 {
 
-namespace lattice
+namespace spatiocyte
 {
 
-class LatticeFactory:
-    public SimulatorFactory<LatticeWorld, LatticeSimulator>
+class SpatiocyteFactory:
+    public SimulatorFactory<SpatiocyteWorld, SpatiocyteSimulator>
 {
 public:
 
-    typedef SimulatorFactory<LatticeWorld, LatticeSimulator> base_type;
+    typedef SimulatorFactory<SpatiocyteWorld, SpatiocyteSimulator> base_type;
 
 public:
 
-    LatticeFactory(const Real voxel_radius=0.0, const Real alpha=1.0)
+    SpatiocyteFactory(const Real voxel_radius=0.0, const Real alpha=1.0)
         : base_type(), voxel_radius_(voxel_radius), alpha_(alpha), rng_()
     {
         ; // do nothing
     }
 
-    LatticeFactory(const Real voxel_radius,
+    SpatiocyteFactory(const Real voxel_radius,
         const boost::shared_ptr<RandomNumberGenerator>& rng)
         : base_type(), voxel_radius_(voxel_radius), alpha_(1.0), rng_(rng)
     {
         ; // do nothing
     }
 
-    LatticeFactory(const Real voxel_radius, const Real alpha,
+    SpatiocyteFactory(const Real voxel_radius, const Real alpha,
         const boost::shared_ptr<RandomNumberGenerator>& rng)
         : base_type(), voxel_radius_(voxel_radius), alpha_(alpha), rng_(rng)
     {
         ; // do nothing
     }
 
-    virtual ~LatticeFactory()
+    virtual ~SpatiocyteFactory()
     {
         ; // do nothing
     }
 
-    virtual LatticeWorld* create_world(const std::string filename) const
+    virtual SpatiocyteWorld* create_world(const std::string filename) const
     {
-        return new LatticeWorld(filename);
+        return new SpatiocyteWorld(filename);
     }
 
-    virtual LatticeWorld* create_world(
+    virtual SpatiocyteWorld* create_world(
         const Real3& edge_lengths = Real3(1, 1, 1)) const
     {
         if (rng_)
         {
-            return new LatticeWorld(edge_lengths, voxel_radius_, rng_);
+            return new SpatiocyteWorld(edge_lengths, voxel_radius_, rng_);
         }
         else if (voxel_radius_ > 0)
         {
-            return new LatticeWorld(edge_lengths, voxel_radius_);
+            return new SpatiocyteWorld(edge_lengths, voxel_radius_);
         }
         else
         {
-            return new LatticeWorld(edge_lengths);
+            return new SpatiocyteWorld(edge_lengths);
         }
     }
 
-    virtual LatticeWorld* create_world(const boost::shared_ptr<Model>& m) const
+    virtual SpatiocyteWorld* create_world(const boost::shared_ptr<Model>& m) const
     {
         return extras::generate_world_from_model(*this, m);
     }
 
-    virtual LatticeSimulator* create_simulator(
+    virtual SpatiocyteSimulator* create_simulator(
         const boost::shared_ptr<Model>& model,
         const boost::shared_ptr<world_type>& world) const
     {
-        return new LatticeSimulator(model, world, alpha_);
+        return new SpatiocyteSimulator(model, world, alpha_);
     }
 
-    virtual LatticeSimulator* create_simulator(
+    virtual SpatiocyteSimulator* create_simulator(
         const boost::shared_ptr<world_type>& world) const
     {
-        return new LatticeSimulator(world, alpha_);
+        return new SpatiocyteSimulator(world, alpha_);
     }
 
 protected:
@@ -96,7 +96,7 @@ protected:
     boost::shared_ptr<RandomNumberGenerator> rng_;
 };
 
-} // lattice
+} // spatiocyte
 
 } // ecell4
 
