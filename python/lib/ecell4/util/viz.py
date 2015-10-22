@@ -550,7 +550,7 @@ def plot_number_observer(*args, **kwargs):
     import numpy
     import collections
 
-    special_keys = ("xlim", "ylim", "xlabel", "ylabel", "with_legend", "x", "y")
+    special_keys = ("xlim", "ylim", "xlabel", "ylabel", "legend", "x", "y")
     plot_opts = {key: value for key, value in kwargs.items()
                  if key not in special_keys}
     color_cycle = plt.rcParams['axes.color_cycle']
@@ -587,6 +587,11 @@ def plot_number_observer(*args, **kwargs):
 
         data = numpy.array(obs.data()).T
 
+        try:
+            err = obs.error().T
+        except AttributeError:
+            err = None
+
         if "x" in kwargs.keys():
             targets = [sp.serial() for sp in obs.targets()]
             if kwargs["x"] not in targets:
@@ -615,12 +620,22 @@ def plot_number_observer(*args, **kwargs):
                 opts["label"] = label
             opts["color"] = color_map[label]
 
-            if fmt is None:
-                ax.plot(data[xidx], data[idx + 1], **opts)
+            if err is None:
+                if fmt is None:
+                    ax.plot(data[xidx], data[idx + 1], **opts)
+                else:
+                    ax.plot(data[xidx], data[idx + 1], fmt, **opts)
             else:
-                ax.plot(data[xidx], data[idx + 1], fmt, **opts)
+                if fmt is None:
+                    ax.errorbar(data[xidx], data[idx + 1],
+                        xerr=(None if xidx == 0 else err[xidx]), yerr=err[idx + 1],
+                        **opts)
+                else:
+                    ax.errorbar(data[xidx], data[idx + 1],
+                        xerr=(None if xidx == 0 else err[xidx]), yerr=err[idx + 1],
+                        fmt=fmt, **opts)
 
-    if "with_legend" not in kwargs.keys() or kwargs["with_legend"]:
+    if "legend" not in kwargs.keys() or kwargs["legend"]:
         ax.legend(*ax.get_legend_handles_labels(), loc="best", shadow=True)
     if "xlabel" in kwargs.keys():
         ax.set_xlabel(kwargs["xlabel"])

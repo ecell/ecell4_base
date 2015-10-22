@@ -43,6 +43,26 @@ def load_world(filename):
         raise RuntimeError("No version information was found in [{0}]".format(filename))
     raise RuntimeError("Unkown version information [{0}]".format(vinfo))
 
+def get_factory(solver, *args):
+    import ecell4
+
+    if solver == 'ode':
+        return ecell4.ode.ODEFactory(*args)
+    elif solver == 'gillespie':
+        return ecell4.gillespie.GillespieFactory(*args)
+    elif solver == 'lattice':
+        return ecell4.lattice.LatticeFactory(*args)
+    elif solver == 'meso':
+        return ecell4.meso.MesoscopicFactory(*args)
+    elif solver == 'bd':
+        return ecell4.bd.BDFactory(*args)
+    elif solver == 'egfrd':
+        return ecell4.egfrd.EGFRDFactory(*args)
+    else:
+        raise ValueError(
+            'unknown solver name was given: ' + repr(solver)
+            + '. use ode, gillespie, lattice, meso, bd or egfrd')
+
 def run_simulation(
         t, y0={}, volume=1.0, model=None, solver='ode',
         factory=None, is_netfree=False, species_list=None, without_reset=False,
@@ -100,22 +120,8 @@ def run_simulation(
 
     if factory is not None:
         f = factory
-    elif solver == 'ode':
-        f = ecell4.ode.ODEFactory()
-    elif solver == 'gillespie':
-        f = ecell4.gillespie.GillespieFactory()
-    elif solver == 'lattice':
-        f = ecell4.lattice.LatticeFactory()
-    elif solver == 'meso':
-        f = ecell4.meso.MesoscopicFactory()
-    elif solver == 'bd':
-        f = ecell4.bd.BDFactory()
-    elif solver == 'egfrd':
-        f = ecell4.egfrd.EGFRDFactory()
     else:
-        raise ValueError(
-            'unknown solver name was given: ' + repr(solver)
-            + '. use ode, gillespie, lattice, meso, bd or egfrd')
+        f = get_factory(solver)
 
     if model is None:
         model = ecell4.util.decorator.get_model(is_netfree, without_reset)
@@ -206,37 +212,93 @@ def ensemble_simulations(N=1, *args, **kwargs):
     """
     import ecell4
 
-    return_type = kwargs.get('return_type', 'matplotlib')
+    # if (len(args) <= 5 or args[5] is None) and 'factory' not in kwargs.keys():
+    #     if len(args) <= 4 and 'solver' not in kwargs.keys():
+    #         kwargs['factory'] = ecell4.ode.ODEFactory()
+    #     else:
+    #         solver = kwargs['solver'] if len(args) <= 4 else args[4]
+    #         if solver == 'ode':
+    #             kwargs['factory'] = get_factory(solver)
+    #         else:
+    #             kwargs['factory'] = get_factory(
+    #                 solver, ecell4.core.GSLRandomNumberGenerator())
+    #         # 'solver' would be ignored in run_simulation
+
+    errorbar = kwargs.pop('errorbar', True)
+
+    return_type = kwargs.get('return_type', 'matplotlib') if len(args) <= 9 else args[9]
     if return_type == 'world':
         raise ValueError('return_type "world" is not supported in ensemble_simulations.')
+    if len(args) > 9:
+        args[9] = 'observer'
+    else:
+        kwargs.update({'return_type': 'observer'})
 
-    plot_args = kwargs.get('plot_args', ())
-    plot_kwargs = kwargs.get('plot_kwargs', {})
-    kwargs.update({'return_type': 'observer'})
+    plot_args = kwargs.get('plot_args', ()) if len(args) <= 10 else args[10]
+    plot_kwargs = kwargs.get('plot_kwargs', {}) if len(args) <= 11 else args[11]
 
     import numpy
 
     class DummyObserver(object):
 
-        def __init__(self, targets, data, func=lambda x: numpy.asarray(x)):
+        def __init__(self, targets, data):
             self.__targets = targets
-            self.__func = func
-            self.__data = self.__func(data)
+            self.__t = numpy.array(data).T[0]
+            self.__tot = self.trancate(data)
+            self.__counts = 1
 
         def targets(self):
             return self.__targets
 
+        def t(self):
+            return self.__t
+
+        def counts(self):
+            return self.__counts
+
+        def trancate(self, data):
+            return numpy.array(data, numpy.float64).T[1: ]
+
+        def average_(self):
+            return self.__tot / self.__counts
+
+        def average(self):
+            return numpy.vstack([self.__t, self.average_()]).T
+
         def data(self):
-            return self.__data.copy()
+            return self.average()
 
         def append(self, data):
-            self.__data += self.__func(data)
+            self.__tot += self.trancate(data)
+            self.__counts += 1
+
+    class DummyObserverWithError(DummyObserver):
+
+        def __init__(self, targets, data):
+            DummyObserver.__init__(self, targets, data)
+            self.__sqtot = self.trancate(data) ** 2
+
+        def std_(self):
+            return self.__sqtot / self.counts() - self.average_() ** 2
+
+        def error_(self):
+            return self.std_() / numpy.sqrt(self.counts())
+
+        def error(self):
+            return numpy.vstack([self.t(), self.error_()]).T
+
+        def append(self, data):
+            DummyObserver.append(self, data)
+            self.__sqtot += self.trancate(data) ** 2
 
     tmp = ecell4.util.run_simulation(*args, **kwargs)
-    obs = DummyObserver(tmp.targets(), tmp.data(), lambda x: numpy.array(x, numpy.float64) / N)
-    # import time
+
+    if errorbar:
+        obs = DummyObserverWithError(tmp.targets(), tmp.data())
+    else:
+        obs = DummyObserver(tmp.targets(), tmp.data())
+
     for i in range(N - 1):
-        # time.sleep(1)  #XXX: This is a missy way to vary random number seeds.
         tmp = ecell4.util.run_simulation(*args, **kwargs)
         obs.append(tmp.data())
 
