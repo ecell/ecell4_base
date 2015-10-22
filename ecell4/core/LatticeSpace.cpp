@@ -488,6 +488,16 @@ MolecularTypeBase* LatticeSpaceVectorImpl::find_molecular_type(const Species& sp
     return (*itr).second.get(); //XXX: Raw pointer was thrown.
 }
 
+const MolecularTypeBase* LatticeSpaceVectorImpl::find_molecular_type(const Species& sp) const
+{
+    LatticeSpaceVectorImpl::spmap::const_iterator itr(spmap_.find(sp));
+    if (itr == spmap_.end())
+    {
+        throw NotFound("MolecularType not found.");
+    }
+    return (*itr).second.get(); //XXX: Raw pointer was thrown.
+}
+
 MolecularTypeBase* LatticeSpaceVectorImpl::get_molecular_type(const Voxel& v)
 {
     return (*(__get_molecular_type(v).first)).second.get(); //XXX: Raw pointer was thrown.
@@ -996,6 +1006,46 @@ bool LatticeSpaceVectorImpl::update_voxel_private(const ParticleID& pid, const V
     // (*to_itr) = new_mt;
     // dest_mt->remove_voxel_if_exists(to_coord);
     // return true;
+}
+
+bool LatticeSpaceVectorImpl::update_voxel_private_without_checking(const ParticleID& pid, const Voxel& v)
+{
+    const LatticeSpaceVectorImpl::private_coordinate_type& to_coord(v.coordinate());
+    if (!is_in_range_private(to_coord))
+    {
+        throw NotSupported("Out of bounds");
+    }
+
+    MolecularTypeBase* new_mt(get_molecular_type(v)); //XXX: need MoleculeInfo
+    MolecularTypeBase* dest_mt(get_molecular_type(to_coord));
+
+    const LatticeSpaceVectorImpl::private_coordinate_type
+        from_coord(pid != ParticleID() ? get_coord(pid) : -1);
+    if (from_coord != -1)
+    {
+        // move
+        MolecularTypeBase* src_mt(voxels_.at(from_coord));
+        src_mt->remove_voxel_if_exists(from_coord);
+
+        //XXX: use location?
+        dest_mt->replace_voxel(to_coord, from_coord);
+        voxel_container::iterator from_itr(voxels_.begin() + from_coord);
+        (*from_itr) = dest_mt;
+
+        new_mt->add_voxel_without_checking(particle_info_type(to_coord, pid));
+        voxel_container::iterator to_itr(voxels_.begin() + to_coord);
+        (*to_itr) = new_mt;
+        return false;
+    }
+
+    // new
+    dest_mt->remove_voxel_if_exists(to_coord);
+
+    new_mt->add_voxel_without_checking(particle_info_type(to_coord, pid));
+    voxel_container::iterator to_itr(voxels_.begin() + to_coord);
+    (*to_itr) = new_mt;
+    return true;
+
 }
 
 bool LatticeSpaceVectorImpl::make_structure_type(const Species& sp,

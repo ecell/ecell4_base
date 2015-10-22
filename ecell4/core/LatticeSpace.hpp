@@ -115,6 +115,7 @@ public:
 
     virtual void update_voxel_private(const Voxel& v) = 0;
     virtual bool update_voxel_private(const ParticleID& pid, const Voxel& v) = 0;
+    virtual bool update_voxel_private_without_checking(const ParticleID& pid, const Voxel& v) = 0;
     virtual std::pair<ParticleID, Voxel> get_voxel(const ParticleID& pid) const = 0;
     virtual std::pair<ParticleID, Voxel> get_voxel(const coordinate_type& coord) const = 0;
     virtual bool remove_voxel(const ParticleID& pid) = 0;
@@ -125,6 +126,7 @@ public:
     virtual const Particle particle_at(const coordinate_type& coord) const = 0;
 
     virtual MolecularTypeBase* find_molecular_type(const Species& sp) = 0;
+    virtual const MolecularTypeBase* find_molecular_type(const Species& sp) const = 0;
     virtual MolecularTypeBase* get_molecular_type(
         const private_coordinate_type& coord) = 0;
     virtual bool make_structure_type(const Species& sp,
@@ -252,6 +254,13 @@ public:
     virtual bool update_voxel(const ParticleID& pid, const Voxel& v)
     {
         return update_voxel_private(pid,
+            Voxel(v.species(), coord2private(v.coordinate()),
+                v.radius(), v.D(), v.loc()));
+    }
+
+    virtual bool update_voxel_without_checking(const ParticleID& pid, const Voxel& v)
+    {
+        return update_voxel_private_without_checking(pid,
             Voxel(v.species(), coord2private(v.coordinate()),
                 v.radius(), v.D(), v.loc()));
     }
@@ -615,12 +624,14 @@ public:
 
     virtual void update_voxel_private(const Voxel& v);
     virtual bool update_voxel_private(const ParticleID& pid, const Voxel& v);
+    virtual bool update_voxel_private_without_checking(const ParticleID& pid, const Voxel& v);
 
     std::vector<Species> list_species() const;
     const Species& find_species(std::string name) const;
     std::vector<coordinate_type> list_coords(const Species& sp) const;
     std::vector<coordinate_type> list_coords_exact(const Species& sp) const;
     virtual MolecularTypeBase* find_molecular_type(const Species& sp);
+    virtual const MolecularTypeBase* find_molecular_type(const Species& sp) const;
     // MolecularTypeBase* find_molecular_type(const std::string name);
     virtual MolecularTypeBase* get_molecular_type(const private_coordinate_type& coord);
     // bool update_molecule(private_coordinate_type coord, const Species& species);
