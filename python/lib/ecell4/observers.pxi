@@ -469,18 +469,18 @@ cdef class FixedIntervalTrajectoryObserver:
     This ``Observer`` logs at the current time first, and then keeps logging
     every after the interval.
 
-    FixedIntervalTrajectoryObserver(dt, pids, resolve_boundary=None)
+    FixedIntervalTrajectoryObserver(dt[, pids], resolve_boundary=None)
 
     """
 
-    def __init__(self, Real dt, pids, resolve_boundary=None):
+    def __cinit__(self, Real dt, *args):
         """Constructor.
 
         Parameters
         ----------
         dt : float
             A step interval for logging.
-        pids : list
+        pids : list, optional
             A list of ``ParticleID``s.
         resolve_boundary : bool, optional
             If True, this ``Observer`` automatically resolves the effect
@@ -491,16 +491,25 @@ cdef class FixedIntervalTrajectoryObserver:
         """
         pass  # XXX: Only used for doc string
 
-    def __cinit__(self, Real dt, pids, resolve_boundary=None):
+    def __cinit__(self, Real dt, *args):
         cdef vector[Cpp_ParticleID] tmp
-        for pid in pids:
-            tmp.push_back(deref((<ParticleID>pid).thisptr))
-        if resolve_boundary is None:
+        if len(args) == 0:
             self.thisptr = new shared_ptr[Cpp_FixedIntervalTrajectoryObserver](
-                new Cpp_FixedIntervalTrajectoryObserver(dt, tmp))
-        else:
+                new Cpp_FixedIntervalTrajectoryObserver(dt))
+        elif len(args) == 1:
+            if isinstance(args, (tuple, list, set)):
+                for pid in args[0]:
+                    tmp.push_back(deref((<ParticleID>pid).thisptr))
+                self.thisptr = new shared_ptr[Cpp_FixedIntervalTrajectoryObserver](
+                    new Cpp_FixedIntervalTrajectoryObserver(dt, tmp))
+            else:
+                self.thisptr = new shared_ptr[Cpp_FixedIntervalTrajectoryObserver](
+                    new Cpp_FixedIntervalTrajectoryObserver(dt, <bool>args[0]))
+        elif len(args) == 2:
+            for pid in args[0]:
+                tmp.push_back(deref((<ParticleID>pid).thisptr))
             self.thisptr = new shared_ptr[Cpp_FixedIntervalTrajectoryObserver](
-                new Cpp_FixedIntervalTrajectoryObserver(dt, tmp, <bool>resolve_boundary))
+                new Cpp_FixedIntervalTrajectoryObserver(dt, tmp, <bool>args[1]))
 
     def __dealloc__(self):
         del self.thisptr
@@ -512,6 +521,14 @@ cdef class FixedIntervalTrajectoryObserver:
     def num_steps(self):
         """Return the number of steps."""
         return self.thisptr.get().num_steps()
+
+    def num_tracers(self):
+        """Return the number of tracer molecules."""
+        return self.thisptr.get().num_tracers()
+
+    def t(self):
+        """Return time points at logging as a list."""
+        return self.thisptr.get().t()
 
     def data(self):
         """Return a list of trajectories for each particles.

@@ -353,7 +353,15 @@ public:
         const Real& dt, const std::vector<ParticleID>& pids,
         const bool& resolve_boundary = true)
         : base_type(dt), pids_(pids), resolve_boundary_(resolve_boundary),
-        trajectories_(pids.size()), strides_(pids.size())
+        trajectories_(pids.size()), strides_(pids.size()), t_()
+    {
+        ;
+    }
+
+    FixedIntervalTrajectoryObserver(
+        const Real& dt, const bool resolve_boundary = true)
+        : base_type(dt), pids_(), resolve_boundary_(resolve_boundary),
+        trajectories_(), strides_(), t_()
     {
         ;
     }
@@ -366,7 +374,10 @@ public:
     virtual void initialize(const Space* space);
     virtual bool fire(const Simulator* sim, const Space* space);
     virtual void reset();
+
     const std::vector<std::vector<Real3> >& data() const;
+    const Integer num_tracers() const;
+    const std::vector<Real>& t() const;
 
 protected:
 
@@ -374,6 +385,7 @@ protected:
     bool resolve_boundary_;
     std::vector<std::vector<Real3> > trajectories_;
     std::vector<Real3> strides_;
+    std::vector<Real> t_;
 };
 
 

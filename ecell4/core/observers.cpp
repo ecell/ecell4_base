@@ -316,11 +316,27 @@ void FixedIntervalCSVObserver::reset()
 void FixedIntervalTrajectoryObserver::initialize(const Space* space)
 {
     base_type::initialize(space);
+
+    typedef std::vector<std::pair<ParticleID, Particle> > particle_id_pairs;
+    if (pids_.size() == 0)
+    {
+        particle_id_pairs const particles(space->list_particles());
+        pids_.reserve(particles.size());
+        trajectories_.resize(particles.size());
+        strides_.resize(particles.size());
+        for (particle_id_pairs::const_iterator i(particles.begin());
+            i != particles.end(); ++i)
+        {
+            pids_.push_back((*i).first);
+        }
+        assert(pids_.size() == particles.size());
+    }
 }
 
 bool FixedIntervalTrajectoryObserver::fire(const Simulator* sim, const Space* space)
 {
     const bool retval = base_type::fire(sim, space);
+    t_.push_back(space->t());
 
     const Real3 edge_lengths(space->edge_lengths());
     std::vector<std::vector<Real3> >::iterator j(trajectories_.begin());
@@ -363,15 +379,27 @@ bool FixedIntervalTrajectoryObserver::fire(const Simulator* sim, const Space* sp
 void FixedIntervalTrajectoryObserver::reset()
 {
     base_type::reset();
+
     trajectories_.clear();
     trajectories_.resize(pids_.size(), std::vector<Real3>());
     strides_.clear();
     strides_.resize(pids_.size(), Real3(0, 0, 0));
+    t_.clear();
 }
 
 const std::vector<std::vector<Real3> >& FixedIntervalTrajectoryObserver::data() const
 {
     return trajectories_;
+}
+
+const Integer FixedIntervalTrajectoryObserver::num_tracers() const
+{
+    return pids_.size();
+}
+
+const std::vector<Real>& FixedIntervalTrajectoryObserver::t() const
+{
+    return t_;
 }
 
 void TimeoutObserver::initialize(const Space* space)
