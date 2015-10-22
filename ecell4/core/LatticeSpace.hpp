@@ -303,10 +303,10 @@ public:
 public:
 
     LatticeSpaceBase(
-        const Real3& edge_lengths, const Real& voxel_radius)
+        const Real3& edge_lengths, const Real& voxel_radius, const bool is_periodic)
         : base_type(voxel_radius), edge_lengths_(edge_lengths)
     {
-        set_lattice_properties();
+        set_lattice_properties(is_periodic);
     }
 
     virtual ~LatticeSpaceBase()
@@ -320,10 +320,10 @@ public:
         edge_lengths_ = edge_lengths;
         voxel_radius_ = voxel_radius;
 
-        set_lattice_properties();
+        set_lattice_properties(is_periodic);
     }
 
-    void set_lattice_properties();
+    void set_lattice_properties(const bool is_periodic);
 
     /**
      * Primitives

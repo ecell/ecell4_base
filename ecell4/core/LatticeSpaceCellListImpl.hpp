@@ -40,7 +40,7 @@ public:
     LatticeSpaceCellListImpl(
         const Real3& edge_lengths, const Real& voxel_radius,
         const Integer3& matrix_sizes, const bool is_periodic = true)
-        : base_type(edge_lengths, voxel_radius), is_periodic_(is_periodic),
+        : base_type(edge_lengths, voxel_radius, is_periodic), is_periodic_(is_periodic),
         matrix_sizes_(matrix_sizes),
         matrix_(matrix_sizes_[0] * matrix_sizes_[1] * matrix_sizes_[2])
     {
