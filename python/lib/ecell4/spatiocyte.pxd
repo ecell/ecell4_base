@@ -8,8 +8,8 @@ from ecell4.core cimport *
 
 
 ## Cpp_ReactionInfo
-cdef extern from "ecell4/lattice/LatticeSimulator.hpp" namespace "ecell4::lattice":
-    cdef cppclass Cpp_ReactionInfo "ecell4::lattice::ReactionInfo":
+cdef extern from "ecell4/spatiocyte/SpatiocyteSimulator.hpp" namespace "ecell4::spatiocyte":
+    cdef cppclass Cpp_ReactionInfo "ecell4::spatiocyte::ReactionInfo":
         Cpp_ReactionInfo(Real, vector[pair[Cpp_ParticleID, Cpp_Voxel]], vector[pair[Cpp_ParticleID, Cpp_Voxel]])
         Cpp_ReactionInfo(Cpp_ReactionInfo&)
         Real t()
@@ -23,18 +23,18 @@ cdef class ReactionInfo:
 
 cdef ReactionInfo ReactionInfo_from_Cpp_ReactionInfo(Cpp_ReactionInfo* ri)
 
-## Cpp_LatticeWorld
-#  ecell4::lattice::LatticeWorld
-cdef extern from "ecell4/lattice/LatticeWorld.hpp" namespace "ecell4::lattice":
-    cdef cppclass Cpp_LatticeWorld "ecell4::lattice::LatticeWorld":
-        Cpp_LatticeWorld(
+## Cpp_SpatiocyteWorld
+#  ecell4::spatiocyte::SpatiocyteWorld
+cdef extern from "ecell4/spatiocyte/SpatiocyteWorld.hpp" namespace "ecell4::spatiocyte":
+    cdef cppclass Cpp_SpatiocyteWorld "ecell4::spatiocyte::SpatiocyteWorld":
+        Cpp_SpatiocyteWorld(
             Cpp_Real3& edge_lengths, const Real& voxel_radius,
             shared_ptr[Cpp_RandomNumberGenerator] rng) except +
-        Cpp_LatticeWorld(
+        Cpp_SpatiocyteWorld(
             Cpp_Real3& edge_lengths, const Real& voxel_radius) except +
-        Cpp_LatticeWorld(Cpp_Real3& edge_lengths) except +
-        Cpp_LatticeWorld(string&) except +
-        Cpp_LatticeWorld() except +
+        Cpp_SpatiocyteWorld(Cpp_Real3& edge_lengths) except +
+        Cpp_SpatiocyteWorld(string&) except +
+        Cpp_SpatiocyteWorld() except +
 
         void set_t(Real t)
         Real t()
@@ -112,31 +112,31 @@ cdef extern from "ecell4/lattice/LatticeWorld.hpp" namespace "ecell4::lattice":
         Integer add_structure(Cpp_Species&, shared_ptr[Cpp_Shape])
         void add_molecules(Cpp_Species& sp, Integer num, shared_ptr[Cpp_Shape])
 
-    cdef Cpp_LatticeWorld* create_lattice_world_cell_list_impl_alias(
+    cdef Cpp_SpatiocyteWorld* create_spatiocyte_world_cell_list_impl_alias(
         Cpp_Real3&, Real, Cpp_Integer3&, shared_ptr[Cpp_RandomNumberGenerator]&)
-    cdef Cpp_LatticeWorld* create_lattice_world_vector_impl_alias(
+    cdef Cpp_SpatiocyteWorld* create_spatiocyte_world_vector_impl_alias(
         Cpp_Real3&, Real, shared_ptr[Cpp_RandomNumberGenerator]&)
 
-## LatticeWorld
-#  a python wrapper for Cpp_LatticeWorld
-cdef class LatticeWorld:
-    cdef shared_ptr[Cpp_LatticeWorld]* thisptr
+## SpatiocyteWorld
+#  a python wrapper for Cpp_SpatiocyteWorld
+cdef class SpatiocyteWorld:
+    cdef shared_ptr[Cpp_SpatiocyteWorld]* thisptr
 
-cdef LatticeWorld LatticeWorld_from_Cpp_LatticeWorld(
-    shared_ptr[Cpp_LatticeWorld] m)
+cdef SpatiocyteWorld SpatiocyteWorld_from_Cpp_SpatiocyteWorld(
+    shared_ptr[Cpp_SpatiocyteWorld] m)
 
-## Cpp_LatticeSimulator
-#  ecell4::lattice::LatticeSimulator
-cdef extern from "ecell4/lattice/LatticeSimulator.hpp" namespace "ecell4::lattice":
-    cdef cppclass Cpp_LatticeSimulator "ecell4::lattice::LatticeSimulator":
-        Cpp_LatticeSimulator(
-            shared_ptr[Cpp_Model], shared_ptr[Cpp_LatticeWorld]) except +
-        Cpp_LatticeSimulator(
-            shared_ptr[Cpp_LatticeWorld]) except +
-        Cpp_LatticeSimulator(
-            shared_ptr[Cpp_Model], shared_ptr[Cpp_LatticeWorld], Real) except +
-        Cpp_LatticeSimulator(
-            shared_ptr[Cpp_LatticeWorld], Real) except +
+## Cpp_SpatiocyteSimulator
+#  ecell4::spatiocyte::SpatiocyteSimulator
+cdef extern from "ecell4/spatiocyte/SpatiocyteSimulator.hpp" namespace "ecell4::spatiocyte":
+    cdef cppclass Cpp_SpatiocyteSimulator "ecell4::spatiocyte::SpatiocyteSimulator":
+        Cpp_SpatiocyteSimulator(
+            shared_ptr[Cpp_Model], shared_ptr[Cpp_SpatiocyteWorld]) except +
+        Cpp_SpatiocyteSimulator(
+            shared_ptr[Cpp_SpatiocyteWorld]) except +
+        Cpp_SpatiocyteSimulator(
+            shared_ptr[Cpp_Model], shared_ptr[Cpp_SpatiocyteWorld], Real) except +
+        Cpp_SpatiocyteSimulator(
+            shared_ptr[Cpp_SpatiocyteWorld], Real) except +
         Integer num_steps()
         Real next_time()
         void step()
@@ -152,35 +152,35 @@ cdef extern from "ecell4/lattice/LatticeSimulator.hpp" namespace "ecell4::lattic
         bool check_reaction()
         vector[pair[Cpp_ReactionRule, Cpp_ReactionInfo]] last_reactions()
         shared_ptr[Cpp_Model] model()
-        shared_ptr[Cpp_LatticeWorld] world()
+        shared_ptr[Cpp_SpatiocyteWorld] world()
         void run(Real)
         void run(Real, shared_ptr[Cpp_Observer])
         void run(Real, vector[shared_ptr[Cpp_Observer]])
 
-## LatticeSimulator
-#  a python wrapper for Cpp_LatticeSimulator
-cdef class LatticeSimulator:
-    cdef Cpp_LatticeSimulator* thisptr
+## SpatiocyteSimulator
+#  a python wrapper for Cpp_SpatiocyteSimulator
+cdef class SpatiocyteSimulator:
+    cdef Cpp_SpatiocyteSimulator* thisptr
 
-cdef LatticeSimulator LatticeSimulator_from_Cpp_LatticeSimulator(Cpp_LatticeSimulator* s)
+cdef SpatiocyteSimulator SpatiocyteSimulator_from_Cpp_SpatiocyteSimulator(Cpp_SpatiocyteSimulator* s)
 
-## Cpp_LatticeFactory
-#  ecell4::lattice::LatticeFactory
-cdef extern from "ecell4/lattice/LatticeFactory.hpp" namespace "ecell4::lattice":
-    cdef cppclass Cpp_LatticeFactory "ecell4::lattice::LatticeFactory":
-        Cpp_LatticeFactory() except +
-        Cpp_LatticeFactory(Real) except +
-        Cpp_LatticeFactory(Real, shared_ptr[Cpp_RandomNumberGenerator]&) except +
-        Cpp_LatticeFactory(Real, Real) except +
-        Cpp_LatticeFactory(Real, Real, shared_ptr[Cpp_RandomNumberGenerator]&) except +
-        Cpp_LatticeWorld* create_world()
-        Cpp_LatticeWorld* create_world(string)
-        Cpp_LatticeWorld* create_world(Cpp_Real3&)
-        Cpp_LatticeWorld* create_world(shared_ptr[Cpp_Model])
-        Cpp_LatticeSimulator* create_simulator(shared_ptr[Cpp_Model], shared_ptr[Cpp_LatticeWorld])
-        Cpp_LatticeSimulator* create_simulator(shared_ptr[Cpp_LatticeWorld])
+## Cpp_SpatiocyteFactory
+#  ecell4::spatiocyte::SpatiocyteFactory
+cdef extern from "ecell4/spatiocyte/SpatiocyteFactory.hpp" namespace "ecell4::spatiocyte":
+    cdef cppclass Cpp_SpatiocyteFactory "ecell4::spatiocyte::SpatiocyteFactory":
+        Cpp_SpatiocyteFactory() except +
+        Cpp_SpatiocyteFactory(Real) except +
+        Cpp_SpatiocyteFactory(Real, shared_ptr[Cpp_RandomNumberGenerator]&) except +
+        Cpp_SpatiocyteFactory(Real, Real) except +
+        Cpp_SpatiocyteFactory(Real, Real, shared_ptr[Cpp_RandomNumberGenerator]&) except +
+        Cpp_SpatiocyteWorld* create_world()
+        Cpp_SpatiocyteWorld* create_world(string)
+        Cpp_SpatiocyteWorld* create_world(Cpp_Real3&)
+        Cpp_SpatiocyteWorld* create_world(shared_ptr[Cpp_Model])
+        Cpp_SpatiocyteSimulator* create_simulator(shared_ptr[Cpp_Model], shared_ptr[Cpp_SpatiocyteWorld])
+        Cpp_SpatiocyteSimulator* create_simulator(shared_ptr[Cpp_SpatiocyteWorld])
 
-## LatticeFactory
-#  a python wrapper for Cpp_LatticeFactory
-cdef class LatticeFactory:
-    cdef Cpp_LatticeFactory* thisptr
+## SpatiocyteFactory
+#  a python wrapper for Cpp_SpatiocyteFactory
+cdef class SpatiocyteFactory:
+    cdef Cpp_SpatiocyteFactory* thisptr

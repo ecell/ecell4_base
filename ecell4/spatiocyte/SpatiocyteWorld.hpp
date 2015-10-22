@@ -507,7 +507,7 @@ public:
         boost::scoped_ptr<H5::Group>
             group(new H5::Group(fout->createGroup("LatticeSpace")));
         (*space_).save(group.get());
-        extras::save_version_information(fout.get(), "ecell4-lattice-0.0-1");
+        extras::save_version_information(fout.get(), "ecell4-spatiocyte-0.0-1");
 #else
         throw NotSupported("not supported yet.");
 #endif

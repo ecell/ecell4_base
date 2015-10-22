@@ -33,7 +33,7 @@ class run_tests(Command):
         # suite.addTest(load_tests("gillespie"))
         # suite.addTest(load_tests("bd"))
         # suite.addTest(load_tests("ode"))
-        # suite.addTest(load_tests("lattice"))
+        # suite.addTest(load_tests("spatiocyte"))
         suite.addTest(load_tests("util"))
         test_runner = unittest.TextTestRunner()
         test_runner.run(suite)
@@ -72,8 +72,8 @@ if with_cpp_shared_libraries:
         Extension("ecell4.ode", sources=["lib/ecell4/ode.pyx"],
             include_dirs=["."], libraries=["ecell4-core", "ecell4-ode"],
             language="c++"),
-        Extension("ecell4.lattice", sources=["lib/ecell4/lattice.pyx"],
-            include_dirs=["."], libraries=["ecell4-core", "ecell4-lattice"],
+        Extension("ecell4.spatiocyte", sources=["lib/ecell4/spatiocyte.pyx"],
+            include_dirs=["."], libraries=["ecell4-core", "ecell4-spatiocyte"],
             language="c++"),
         Extension("ecell4.meso", sources=["lib/ecell4/meso.pyx"],
             include_dirs=["."], libraries=["ecell4-core", "ecell4-meso"],
@@ -111,9 +111,9 @@ else:
                 + glob.glob("../ecell4/ode/*.cpp") + core_src,
             extra_compile_args=extra_compile_args,
             libraries=dependent_libs, include_dirs=[".", ".."], language="c++"),
-        Extension("ecell4.lattice",
-            sources=["lib/ecell4/lattice.pyx"]
-                + glob.glob("../ecell4/lattice/*.cpp") + core_src,
+        Extension("ecell4.spatiocyte",
+            sources=["lib/ecell4/spatiocyte.pyx"]
+                + glob.glob("../ecell4/spatiocyte/*.cpp") + core_src,
             extra_compile_args=extra_compile_args,
             libraries=dependent_libs, include_dirs=[".", ".."], language="c++"),
         Extension("ecell4.meso",

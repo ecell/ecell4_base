@@ -10,7 +10,7 @@ from ecell4.core cimport *
 
 ## ReactionInfo
 cdef class ReactionInfo:
-    """A class stores detailed information about a reaction in lattice.
+    """A class stores detailed information about a reaction in spatiocyte.
 
     ReactionInfo(t, reactants, products)
 
@@ -103,12 +103,12 @@ cdef ReactionInfo ReactionInfo_from_Cpp_ReactionInfo(Cpp_ReactionInfo* ri):
     r.thisptr = new_obj
     return r
 
-## LatticeWorld
-#  a python wrapper for Cpp_LatticeWorld
-cdef class LatticeWorld:
-    """A class containing the properties of the lattice world.
+## SpatiocyteWorld
+#  a python wrapper for Cpp_SpatiocyteWorld
+cdef class SpatiocyteWorld:
+    """A class containing the properties of the spatiocyte world.
 
-    LatticeWorld(edge_lengths=None, voxel_radius=None, GSLRandomNumberGenerator rng=None)
+    SpatiocyteWorld(edge_lengths=None, voxel_radius=None, GSLRandomNumberGenerator rng=None)
 
     """
 
@@ -133,29 +133,29 @@ cdef class LatticeWorld:
         cdef string filename
 
         if edge_lengths is None:
-            self.thisptr = new shared_ptr[Cpp_LatticeWorld](new Cpp_LatticeWorld())
+            self.thisptr = new shared_ptr[Cpp_SpatiocyteWorld](new Cpp_SpatiocyteWorld())
         elif voxel_radius is None:
             if isinstance(edge_lengths, Real3):
-                self.thisptr = new shared_ptr[Cpp_LatticeWorld](
-                    new Cpp_LatticeWorld(
+                self.thisptr = new shared_ptr[Cpp_SpatiocyteWorld](
+                    new Cpp_SpatiocyteWorld(
                         deref((<Real3>edge_lengths).thisptr)))
             else:
                 filename = tostring(edge_lengths)
-                self.thisptr = new shared_ptr[Cpp_LatticeWorld](
-                    new Cpp_LatticeWorld(filename))
+                self.thisptr = new shared_ptr[Cpp_SpatiocyteWorld](
+                    new Cpp_SpatiocyteWorld(filename))
         elif rng is None:
-            self.thisptr = new shared_ptr[Cpp_LatticeWorld](
-                new Cpp_LatticeWorld(
+            self.thisptr = new shared_ptr[Cpp_SpatiocyteWorld](
+                new Cpp_SpatiocyteWorld(
                     deref((<Real3>edge_lengths).thisptr), <Real>voxel_radius))
         else:
-            self.thisptr = new shared_ptr[Cpp_LatticeWorld](
-                new Cpp_LatticeWorld(
+            self.thisptr = new shared_ptr[Cpp_SpatiocyteWorld](
+                new Cpp_SpatiocyteWorld(
                     deref((<Real3>edge_lengths).thisptr), <Real>voxel_radius,
                     deref(rng.thisptr)))
 
     def __dealloc__(self):
         # XXX: Here, we release shared pointer,
-        #      and if reference count to the LatticeWorld object,
+        #      and if reference count to the SpatiocyteWorld object,
         #      it will be released automatically.
         del self.thisptr
 
@@ -1010,40 +1010,40 @@ cdef class LatticeWorld:
             <shared_ptr[Cpp_Space]>deref(self.thisptr))
         return retval
 
-cdef LatticeWorld LatticeWorld_from_Cpp_LatticeWorld(
-    shared_ptr[Cpp_LatticeWorld] w):
-    r = LatticeWorld(Real3(1, 1, 1))
+cdef SpatiocyteWorld SpatiocyteWorld_from_Cpp_SpatiocyteWorld(
+    shared_ptr[Cpp_SpatiocyteWorld] w):
+    r = SpatiocyteWorld(Real3(1, 1, 1))
     r.thisptr.swap(w)
     return r
 
-def create_lattice_world_cell_list_impl(
+def create_spatiocyte_world_cell_list_impl(
     edge_lengths, voxel_radius, matrix_sizes, rng):
-    cdef shared_ptr[Cpp_LatticeWorld]* w = new shared_ptr[Cpp_LatticeWorld](
-        create_lattice_world_cell_list_impl_alias(
+    cdef shared_ptr[Cpp_SpatiocyteWorld]* w = new shared_ptr[Cpp_SpatiocyteWorld](
+        create_spatiocyte_world_cell_list_impl_alias(
             deref((<Real3>edge_lengths).thisptr), <Real>voxel_radius,
             deref((<Integer3>matrix_sizes).thisptr),
             deref((<GSLRandomNumberGenerator>rng).thisptr)))
-    return LatticeWorld_from_Cpp_LatticeWorld(deref(w))
+    return SpatiocyteWorld_from_Cpp_SpatiocyteWorld(deref(w))
 
-def create_lattice_world_vector_impl(edge_lengths, voxel_radius, rng):
-    cdef shared_ptr[Cpp_LatticeWorld]* w = new shared_ptr[Cpp_LatticeWorld](
-        create_lattice_world_vector_impl_alias(
+def create_spatiocyte_world_vector_impl(edge_lengths, voxel_radius, rng):
+    cdef shared_ptr[Cpp_SpatiocyteWorld]* w = new shared_ptr[Cpp_SpatiocyteWorld](
+        create_spatiocyte_world_vector_impl_alias(
             deref((<Real3>edge_lengths).thisptr), <Real>voxel_radius,
             deref((<GSLRandomNumberGenerator>rng).thisptr)))
-    return LatticeWorld_from_Cpp_LatticeWorld(deref(w))
+    return SpatiocyteWorld_from_Cpp_SpatiocyteWorld(deref(w))
 
-## LatticeSimulator
-#  a python wrapper for Cpp_LatticeSimulator
-cdef class LatticeSimulator:
-    """ A class running the simulation with the lattice algorithm.
+## SpatiocyteSimulator
+#  a python wrapper for Cpp_SpatiocyteSimulator
+cdef class SpatiocyteSimulator:
+    """ A class running the simulation with the spatiocyte algorithm.
 
-    LatticeSimulator(m, w, alpha)
+    SpatiocyteSimulator(m, w, alpha)
 
     """
 
     def __init__(self, m, w=None, alpha=None):
-        """LatticeSimulator(m, w, alpha=None)
-        LatticeSimulator(w, alpha=None)
+        """SpatiocyteSimulator(m, w, alpha=None)
+        SpatiocyteSimulator(w, alpha=None)
 
         Constructor.
 
@@ -1051,7 +1051,7 @@ cdef class LatticeSimulator:
         ----------
         m : Model
             A model
-        w : LatticeWorld
+        w : SpatiocyteWorld
             A world
         alpha : Real, optional
 
@@ -1060,23 +1060,23 @@ cdef class LatticeSimulator:
 
     def __cinit__(self, m, w=None, alpha=None):
         if w is None:
-            # Cpp_LatticeSimulator(shared_ptr[Cpp_LatticeWorld])
-            self.thisptr = new Cpp_LatticeSimulator(
-                deref((<LatticeWorld>m).thisptr))
+            # Cpp_SpatiocyteSimulator(shared_ptr[Cpp_SpatiocyteWorld])
+            self.thisptr = new Cpp_SpatiocyteSimulator(
+                deref((<SpatiocyteWorld>m).thisptr))
         elif alpha is None:
-            if isinstance(w, LatticeWorld):
-                # Cpp_LatticeSimulator(shared_ptr[Cpp_Model], shared_ptr[Cpp_LatticeWorld])
-                self.thisptr = new Cpp_LatticeSimulator(
-                    deref(Cpp_Model_from_Model(m)), deref((<LatticeWorld>w).thisptr))
+            if isinstance(w, SpatiocyteWorld):
+                # Cpp_SpatiocyteSimulator(shared_ptr[Cpp_Model], shared_ptr[Cpp_SpatiocyteWorld])
+                self.thisptr = new Cpp_SpatiocyteSimulator(
+                    deref(Cpp_Model_from_Model(m)), deref((<SpatiocyteWorld>w).thisptr))
             else:
-                # Cpp_LatticeSimulator(shared_ptr[Cpp_LatticeWorld], Real)
-                self.thisptr = new Cpp_LatticeSimulator(
-                    deref((<LatticeWorld>m).thisptr), <Real>w)
+                # Cpp_SpatiocyteSimulator(shared_ptr[Cpp_SpatiocyteWorld], Real)
+                self.thisptr = new Cpp_SpatiocyteSimulator(
+                    deref((<SpatiocyteWorld>m).thisptr), <Real>w)
         else:
-            # Cpp_LatticeSimulator(
-            #     shared_ptr[Cpp_Model], shared_ptr[Cpp_LatticeWorld], Real)
-            self.thisptr = new Cpp_LatticeSimulator(
-                deref(Cpp_Model_from_Model(m)), deref((<LatticeWorld>w).thisptr),
+            # Cpp_SpatiocyteSimulator(
+            #     shared_ptr[Cpp_Model], shared_ptr[Cpp_SpatiocyteWorld], Real)
+            self.thisptr = new Cpp_SpatiocyteSimulator(
+                deref(Cpp_Model_from_Model(m)), deref((<SpatiocyteWorld>w).thisptr),
                 <Real>alpha)
 
     def __dealloc__(self):
@@ -1218,7 +1218,7 @@ cdef class LatticeSimulator:
 
     def world(self):
         """Return the world bound."""
-        return LatticeWorld_from_Cpp_LatticeWorld(self.thisptr.world())
+        return SpatiocyteWorld_from_Cpp_SpatiocyteWorld(self.thisptr.world())
 
     def run(self, Real duration, observers=None):
         """run(duration, observers)
@@ -1246,25 +1246,25 @@ cdef class LatticeSimulator:
             self.thisptr.run(duration,
                 deref((<Observer>(observers.as_base())).thisptr))
 
-cdef LatticeSimulator LatticeSimulator_from_Cpp_LatticeSimulator(Cpp_LatticeSimulator* s):
-    r = LatticeSimulator(
-        Model_from_Cpp_Model(s.model()), LatticeWorld_from_Cpp_LatticeWorld(s.world()))
+cdef SpatiocyteSimulator SpatiocyteSimulator_from_Cpp_SpatiocyteSimulator(Cpp_SpatiocyteSimulator* s):
+    r = SpatiocyteSimulator(
+        Model_from_Cpp_Model(s.model()), SpatiocyteWorld_from_Cpp_SpatiocyteWorld(s.world()))
     del r.thisptr
     r.thisptr = s
     return r
 
-## LatticeFactory
-#  a python wrapper for Cpp_LatticeFactory
-cdef class LatticeFactory:
-    """ A factory class creating a LatticeWorld instance and a LatticeSimulator instance.
+## SpatiocyteFactory
+#  a python wrapper for Cpp_SpatiocyteFactory
+cdef class SpatiocyteFactory:
+    """ A factory class creating a SpatiocyteWorld instance and a SpatiocyteSimulator instance.
 
-    LatticeFactory(voxel_radius, alpha, rng)
+    SpatiocyteFactory(voxel_radius, alpha, rng)
 
     """
 
     def __init__(self, voxel_radius=None, arg1=None, arg2=None):
-        """LatticeFactory(Real voxel_radius=None, Real alpha=None, GSLRandomNumberGenerator rng=None)
-        LatticeFactory(Real voxel_radius=None, GSLRandomNumberGenerator rng=None)
+        """SpatiocyteFactory(Real voxel_radius=None, Real alpha=None, GSLRandomNumberGenerator rng=None)
+        SpatiocyteFactory(Real voxel_radius=None, GSLRandomNumberGenerator rng=None)
 
         Constructor.
 
@@ -1273,7 +1273,7 @@ cdef class LatticeFactory:
         voxel_radius : Real, optional
             A radius of a voxel.
         alpha : Real, optional
-            Alpha value for LatticeSimulator.
+            Alpha value for SpatiocyteSimulator.
         rng : GSLRandomNumberGenerator, optional
             A random number generator.
 
@@ -1282,18 +1282,18 @@ cdef class LatticeFactory:
 
     def __cinit__(self, voxel_radius=None, arg1=None, arg2=None):
         if voxel_radius is None:
-            self.thisptr = new Cpp_LatticeFactory()
+            self.thisptr = new Cpp_SpatiocyteFactory()
         elif arg1 is None:
-            self.thisptr = new Cpp_LatticeFactory(<Real>voxel_radius)
+            self.thisptr = new Cpp_SpatiocyteFactory(<Real>voxel_radius)
         elif arg2 is None:
             if isinstance(arg1, GSLRandomNumberGenerator):
-                self.thisptr = new Cpp_LatticeFactory(
+                self.thisptr = new Cpp_SpatiocyteFactory(
                     <Real>voxel_radius, deref((<GSLRandomNumberGenerator>arg1).thisptr))
             else:
-                self.thisptr = new Cpp_LatticeFactory(
+                self.thisptr = new Cpp_SpatiocyteFactory(
                     <Real>voxel_radius, <Real>arg1)
         else:
-            self.thisptr = new Cpp_LatticeFactory(
+            self.thisptr = new Cpp_SpatiocyteFactory(
                 <Real>voxel_radius, <Real>arg1,
                 deref((<GSLRandomNumberGenerator>arg2).thisptr))
 
@@ -1301,68 +1301,68 @@ cdef class LatticeFactory:
         del self.thisptr
 
     def create_world(self, arg1=None):
-        """create_world(arg1=None) -> LatticeWorld
+        """create_world(arg1=None) -> SpatiocyteWorld
 
-        Return a LatticeWorld instance.
+        Return a SpatiocyteWorld instance.
 
         Parameters
         ----------
         arg1 : Real3
-            The lengths of edges of a LatticeWorld created
+            The lengths of edges of a SpatiocyteWorld created
 
         or
 
         arg1 : str
-            The path of a HDF5 file for LatticeWorld
+            The path of a HDF5 file for SpatiocyteWorld
 
         Returns
         -------
-        LatticeWorld:
+        SpatiocyteWorld:
             The created world
 
         """
         if arg1 is None:
-            return LatticeWorld_from_Cpp_LatticeWorld(
-                shared_ptr[Cpp_LatticeWorld](self.thisptr.create_world()))
+            return SpatiocyteWorld_from_Cpp_SpatiocyteWorld(
+                shared_ptr[Cpp_SpatiocyteWorld](self.thisptr.create_world()))
         elif isinstance(arg1, Real3):
-            return LatticeWorld_from_Cpp_LatticeWorld(
-                shared_ptr[Cpp_LatticeWorld](
+            return SpatiocyteWorld_from_Cpp_SpatiocyteWorld(
+                shared_ptr[Cpp_SpatiocyteWorld](
                     self.thisptr.create_world(deref((<Real3>arg1).thisptr))))
         elif isinstance(arg1, str):
-            return LatticeWorld_from_Cpp_LatticeWorld(
-                shared_ptr[Cpp_LatticeWorld](self.thisptr.create_world(<string>(arg1))))
+            return SpatiocyteWorld_from_Cpp_SpatiocyteWorld(
+                shared_ptr[Cpp_SpatiocyteWorld](self.thisptr.create_world(<string>(arg1))))
         else:
-            return LatticeWorld_from_Cpp_LatticeWorld(
-                shared_ptr[Cpp_LatticeWorld](self.thisptr.create_world(
+            return SpatiocyteWorld_from_Cpp_SpatiocyteWorld(
+                shared_ptr[Cpp_SpatiocyteWorld](self.thisptr.create_world(
                     deref(Cpp_Model_from_Model(arg1)))))
 
-    def create_simulator(self, arg1, LatticeWorld arg2=None):
-        """create_simulator(arg1, arg2) -> LatticeSimulator
+    def create_simulator(self, arg1, SpatiocyteWorld arg2=None):
+        """create_simulator(arg1, arg2) -> SpatiocyteSimulator
 
-        Return a LatticeSimulator instance.
+        Return a SpatiocyteSimulator instance.
 
         Parameters
         ----------
-        arg1 : LatticeWorld
+        arg1 : SpatiocyteWorld
             A world
 
         or
 
         arg1 : Model
             A simulation model
-        arg2 : LatticeWorld
+        arg2 : SpatiocyteWorld
             A world
 
         Returns
         -------
-        LatticeSimulator:
+        SpatiocyteSimulator:
             The created simulator
 
         """
         if arg2 is None:
-            return LatticeSimulator_from_Cpp_LatticeSimulator(
-                self.thisptr.create_simulator(deref((<LatticeWorld>arg1).thisptr)))
+            return SpatiocyteSimulator_from_Cpp_SpatiocyteSimulator(
+                self.thisptr.create_simulator(deref((<SpatiocyteWorld>arg1).thisptr)))
         else:
-            return LatticeSimulator_from_Cpp_LatticeSimulator(
+            return SpatiocyteSimulator_from_Cpp_SpatiocyteSimulator(
                 self.thisptr.create_simulator(
                     deref(Cpp_Model_from_Model(arg1)), deref(arg2.thisptr)))

@@ -21,7 +21,7 @@ def load_world(filename):
     -------
     w : World
         Return one from ``BDWorld``, ``EGFRDWorld``, ``MesoscopicWorld``,
-        ``ODEWorld``, ``GillespieWorld`` and ``LatticeWorld``.
+        ``ODEWorld``, ``GillespieWorld`` and ``SpatiocyteWorld``.
 
     """
     import ecell4
@@ -37,8 +37,8 @@ def load_world(filename):
         return ecell4.ode.ODEWorld(filename)
     elif vinfo.startswith("ecell4-gillespie"):
         return ecell4.gillespie.GillespieWorld(filename)
-    elif vinfo.startswith("ecell4-lattice"):
-        return ecell4.lattice.LatticeWorld(filename)
+    elif vinfo.startswith("ecell4-spatiocyte"):
+        return ecell4.spatiocyte.SpatiocyteWorld(filename)
     elif vinfo == "":
         raise RuntimeError("No version information was found in [{0}]".format(filename))
     raise RuntimeError("Unkown version information [{0}]".format(vinfo))
@@ -50,8 +50,8 @@ def get_factory(solver, *args):
         return ecell4.ode.ODEFactory(*args)
     elif solver == 'gillespie':
         return ecell4.gillespie.GillespieFactory(*args)
-    elif solver == 'lattice':
-        return ecell4.lattice.LatticeFactory(*args)
+    elif solver == 'spatiocyte':
+        return ecell4.spatiocyte.SpatiocyteFactory(*args)
     elif solver == 'meso':
         return ecell4.meso.MesoscopicFactory(*args)
     elif solver == 'bd':
@@ -61,7 +61,7 @@ def get_factory(solver, *args):
     else:
         raise ValueError(
             'unknown solver name was given: ' + repr(solver)
-            + '. use ode, gillespie, lattice, meso, bd or egfrd')
+            + '. use ode, gillespie, spatiocyte, meso, bd or egfrd')
 
 def run_simulation(
         t, y0={}, volume=1.0, model=None, solver='ode',
@@ -81,7 +81,7 @@ def run_simulation(
         A size of the simulation volume.
     model : Model, optional
     solver : str, optional
-        Solver type. Choose one from 'ode', 'gillespie', 'lattice', 'meso',
+        Solver type. Choose one from 'ode', 'gillespie', 'spatiocyte', 'meso',
         'bd' and 'egfrd'. Default is 'ode'.
     species_list : list of str, optional
         A list of names of Species observed. If None, log all.

@@ -865,7 +865,7 @@ cdef class ODESimulator:
         ----------
         m : ODENetworkModel or NetworkModel
             A model
-        w : LatticeWorld
+        w : ODEWorld
             A world
         solver_type : int, optional
             a type of the ode solver.
