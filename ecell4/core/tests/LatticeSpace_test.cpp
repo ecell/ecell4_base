@@ -275,41 +275,6 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_update_voxel)
     }
 }
 
-#ifdef WITH_HDF5
-BOOST_AUTO_TEST_CASE(LatticeSpace_test_save_and_load)
-{
-    const ParticleID pid(sidgen());
-    for (LatticeSpace::coordinate_type coord(0); coord < space.size(); ++coord)
-    {
-        const Real3 pos(space.coordinate2position(coord));
-        const bool succeeded(
-            space.update_voxel(pid, Voxel(sp, coord, radius, D)));
-        BOOST_CHECK(succeeded == (coord == 0));
-
-        H5::H5File fout("data.h5", H5F_ACC_TRUNC);
-        boost::scoped_ptr<H5::Group>
-            group(new H5::Group(fout.createGroup("LatticeSpace")));
-        space.save(group.get());
-        fout.close();
-
-        boost::scoped_ptr<H5::H5File>
-            fin(new H5::H5File("data.h5", H5F_ACC_RDONLY));
-        const H5::Group groupin(fin->openGroup("LatticeSpace"));
-        LatticeSpaceVectorImpl space2(Real3(3e-8, 3e-8, 3e-8), voxel_radius);
-        space2.load(groupin);
-        fin->close();
-
-        BOOST_CHECK_EQUAL(space.edge_lengths(), space2.edge_lengths());
-        BOOST_CHECK_EQUAL(space2.num_particles(), 1);
-        std::pair<ParticleID, Particle> pair(space2.list_particles()[0]);
-        BOOST_CHECK_EQUAL(pid, pair.first);
-        BOOST_CHECK_EQUAL(pos, pair.second.position());
-        BOOST_CHECK_EQUAL(radius, pair.second.radius());
-        BOOST_CHECK_EQUAL(D, pair.second.D());
-    }
-}
-#endif
-
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_lattice_structure)
 {
     for (LatticeSpace::coordinate_type coord(0); coord < space.size(); ++coord)
@@ -525,17 +490,15 @@ struct StructureFixture
     LatticeSpaceVectorImpl space;
     SerialIDGenerator<ParticleID> sidgen;
     const Real D, radius;
-    const Species structure;
-    Species sp;
+    const Species structure, sp;
     StructureFixture() :
         edge_lengths(2.5e-8, 2.5e-8, 2.5e-8),
         voxel_radius(2.5e-9),
         space(edge_lengths, voxel_radius, false),
         sidgen(), D(1e-12), radius(2.5e-9),
         structure("Structure", "2.5e-9", "0"),
-        sp("A", "2.5e-9", "1e-12")
+        sp("A", "2.5e-9", "1e-12", "Structure")
     {
-        sp.set_attribute("location", "Structure");
     }
 };
 
@@ -587,5 +550,71 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_structure_move)
     BOOST_CHECK_EQUAL(space.list_particles(structure).size(), 1);
     BOOST_CHECK_EQUAL(space.list_particles().size(), 2); // TODO -> 1
 }
+
+#ifdef WITH_HDF5
+BOOST_AUTO_TEST_CASE(LatticeSpace_test_save_and_load)
+{
+
+    space.make_structure_type(structure, Shape::TWO, "");
+    const Integer l(space.layer_size()/2);
+    for (int c(0); c < space.col_size(); ++c)
+        for (int r(0); r < space.row_size(); ++r)
+        {
+            const Real3 pos(space.global2position(Integer3(c, r, l)));
+            BOOST_ASSERT(space.update_structure(Particle(structure, pos, radius, D)));
+        }
+
+    const LatticeSpace::coordinate_type
+        center(space.global2coord(Integer3(space.col_size()/2, space.row_size()/2, l))),
+        point(space.global2coord(Integer3(space.col_size()/2, space.row_size()/2, l-2)));
+
+    BOOST_ASSERT(space.update_voxel(sidgen(), Voxel(sp, center, radius, D, structure.serial())));
+    // #XXX !!!Warning!!! Ideally, not necessary to give structure.serial() explicitly
+    BOOST_ASSERT(space.update_voxel(sidgen(), Voxel(
+            Species("B", "2.5e-9", "1e-12"), point, 2.5e-9, 1e-12)));
+
+    H5::H5File fout("data.h5", H5F_ACC_TRUNC);
+    boost::scoped_ptr<H5::Group>
+        group(new H5::Group(fout.createGroup("LatticeSpace")));
+    space.save(group.get());
+    fout.close();
+
+    LatticeSpaceVectorImpl space2(Real3(3e-8, 3e-8, 3e-8), voxel_radius);
+    H5::H5File fin("data.h5", H5F_ACC_RDONLY);
+    const H5::Group groupin(fin.openGroup("LatticeSpace"));
+    space2.load(groupin);
+    fin.close();
+
+    BOOST_CHECK_EQUAL(space.edge_lengths(), space2.edge_lengths());
+    BOOST_CHECK_EQUAL(space.voxel_radius(), space2.voxel_radius());
+    BOOST_CHECK_EQUAL(space.is_periodic(), space2.is_periodic());
+    BOOST_CHECK_EQUAL(space.t(), space2.t());
+    BOOST_CHECK_EQUAL(space.num_particles(), space2.num_particles());
+    BOOST_CHECK_EQUAL(space.num_species(), space2.num_species());
+    std::vector<Species> species(space.list_species());
+    for (std::vector<Species>::const_iterator itr(species.begin());
+            itr != species.end(); ++itr)
+    {
+        const Species species((*itr).serial());
+        const MolecularTypeBase *mtb1(space.find_molecular_type(species));
+        const MolecularTypeBase *mtb2(space2.find_molecular_type(species));
+        BOOST_CHECK_EQUAL(mtb1->radius(), mtb2->radius());
+        BOOST_CHECK_EQUAL(mtb1->D(), mtb2->D());
+        BOOST_CHECK_EQUAL(mtb1->get_dimension(), mtb2->get_dimension());
+
+        MolecularTypeBase::container_type voxels1, voxels2;
+        std::copy(mtb1->begin(), mtb1->end(), back_inserter(voxels1));
+        std::copy(mtb2->begin(), mtb2->end(), back_inserter(voxels2));
+        BOOST_ASSERT(voxels1.size() == voxels2.size());
+        std::sort(voxels1.begin(), voxels1.end());
+        std::sort(voxels2.begin(), voxels2.end());
+        for (int i(0); i < voxels1.size(); ++i)
+        {
+            BOOST_CHECK_EQUAL(voxels1.at(i).first, voxels2.at(i).first);
+            BOOST_CHECK_EQUAL(voxels1.at(i).second, voxels2.at(i).second);
+        }
+    }
+}
+#endif
 
 BOOST_AUTO_TEST_SUITE_END()
