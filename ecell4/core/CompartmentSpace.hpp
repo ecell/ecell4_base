@@ -75,6 +75,7 @@ public:
      * @param sp a species
      * @return a number of molecules Integer
      */
+
     virtual Integer num_molecules(const Species& sp) const
     {
         return num_molecules_exact(sp);

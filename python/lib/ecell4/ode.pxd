@@ -32,9 +32,10 @@ cdef extern from "ecell4/ode/ODEWorld.hpp" namespace "ecell4::ode":
         void remove_molecules(Cpp_Species &sp, Integer &num)
         # Optional members
         Real get_value(Cpp_Species &)
+        Real get_value_exact(Cpp_Species &)
         void set_value(Cpp_Species &sp, Real &num)
         void save(string) except +
-        void load(string)
+        void load(string) except +
         bool has_species(Cpp_Species &)
         void reserve_species(Cpp_Species &)
         void release_species(Cpp_Species &)
@@ -115,6 +116,7 @@ cdef extern from "ecell4/ode/ODEReactionRule.hpp" namespace "ecell4::ode":
         shared_ptr[Cpp_ODERatelaw] get_ratelaw()
         bool has_ratelaw()
         bool is_massaction()
+        string as_string()
 
 cdef class ODEReactionRule:
     cdef Cpp_ODEReactionRule *thisptr
@@ -143,7 +145,7 @@ cdef extern from "ecell4/ode/ODESimulator.hpp" namespace "ecell4::ode":
     cdef enum Cpp_ODESolverType "ecell4::ode::ODESolverType":
         Cpp_UNDEF "ecell4::ode::UNDEF"
         Cpp_RUNGE_KUTA_CASH_KARP54 "ecell4::ode::RUNGE_KUTA_CASH_KARP54"
-        Cpp_ROSENBROCK4 "ecell4::ode::ROSENBROCK4"
+        Cpp_ROSENBROCK4_CONTROLLER "ecell4::ode::ROSENBROCK4_CONTROLLER"
         Cpp_EULER "ecell4::ode::EULER"
 
 ## Cpp_ODESimulator
@@ -164,6 +166,7 @@ cdef extern from "ecell4/ode/ODESimulator.hpp" namespace "ecell4::ode":
         Real dt()
         void set_dt(Real)
         Integer num_steps()
+        bool check_reaction()
         Real absolute_tolerance() const
         Real relative_tolerance() const
         void set_absolute_tolerance(Real)

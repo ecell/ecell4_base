@@ -11,8 +11,8 @@ include "UnitSpecies.pxi"
 include "Species.pxi"
 include "ReactionRule.pxi"
 include "Space.pxi"
-include "CompartmentSpace.pxi"
-include "ParticleSpace.pxi"
+include "CompartmentSpace.pxi"  #XXX
+include "ParticleSpace.pxi"  #XXX
 include "Model.pxi"
 include "NetworkModel.pxi"
 include "NetfreeModel.pxi"
@@ -39,11 +39,17 @@ cdef shared_ptr[Cpp_Model]* Cpp_Model_from_Model(m):
 cimport extras
 
 def load_version_information(string filename):
+    """Return a version information of HDF5 as a string."""
     return extras.load_version_information(filename)
 
 cimport functions
 
 def cbrt(Real x):
+    """cbrt(x) -> Real
+
+    Return a cubic root of the given value.
+
+    """
     return functions.cbrt(x)
 
 cimport types

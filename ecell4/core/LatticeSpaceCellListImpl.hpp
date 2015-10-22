@@ -529,6 +529,16 @@ public:
         return (*itr).second.get(); //XXX: Raw pointer was thrown.
     }
 
+    virtual const MolecularTypeBase* find_molecular_type(const Species& sp) const
+    {
+        spmap::const_iterator itr(spmap_.find(sp));
+        if (itr == spmap_.end())
+        {
+            throw NotFound("MolecularType not found.");
+        }
+        return (*itr).second.get(); //XXX: Raw pointer was thrown.
+    }
+
     virtual MolecularTypeBase* get_molecular_type(
         const private_coordinate_type& coord);
     const MolecularTypeBase* get_molecular_type(
@@ -549,11 +559,6 @@ public:
     virtual std::pair<private_coordinate_type, bool> move_to_neighbor(
         MolecularTypeBase* const& from_mt, MolecularTypeBase* const& loc,
         particle_info_type& info, const Integer nrand);
-
-    virtual Integer num_molecules() const
-    {
-        return LatticeSpace::num_molecules();
-    }
 
     virtual Integer num_molecules(const Species& sp) const;
 

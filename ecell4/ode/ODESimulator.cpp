@@ -119,7 +119,7 @@ bool ODESimulator::step(const Real &upto)
     {
         return false;
     }
-    const Real dt(upto - t());
+    const Real dt(std::min(dt_, upto - t()));
 
     //initialize();
     const std::vector<Species> species(world_->list_species());
@@ -146,17 +146,17 @@ bool ODESimulator::step(const Real &upto)
                 controlled_stepper_type controlled_stepper;
                 steps = (
                     odeint::integrate_adaptive( 
-                        controlled_stepper, system.first, x, t(), upto, dt_, StateAndTimeBackInserter(x_vec, times)));
+                        controlled_stepper, system.first, x, t(), upto, dt, StateAndTimeBackInserter(x_vec, times)));
             }
             break;
-        case ecell4::ode::ROSENBROCK4:
+        case ecell4::ode::ROSENBROCK4_CONTROLLER:
             {
                 typedef odeint::rosenbrock4<state_type::value_type> error_stepper_type;
                 typedef odeint::rosenbrock4_controller<error_stepper_type> controlled_stepper_type;
                 controlled_stepper_type controlled_stepper(abs_tol_, rel_tol_);
                 steps = (
                     odeint::integrate_adaptive(
-                        controlled_stepper, system, x, t(), upto, dt_, StateAndTimeBackInserter(x_vec, times)));
+                        controlled_stepper, system, x, t(), upto, dt, StateAndTimeBackInserter(x_vec, times)));
             }
             break;
         case ecell4::ode::EULER:
@@ -165,7 +165,7 @@ bool ODESimulator::step(const Real &upto)
                 stepper_type stepper;
                 steps = (
                     odeint::integrate_const(
-                        stepper, system.first, x, t(), upto, dt_, StateAndTimeBackInserter(x_vec, times)));
+                        stepper, system.first, x, t(), upto, dt, StateAndTimeBackInserter(x_vec, times)));
             }
             break;
         default:

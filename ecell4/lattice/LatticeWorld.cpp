@@ -71,11 +71,6 @@ Integer LatticeWorld::num_molecules_exact(const Species& sp) const
     return (*space_).num_molecules_exact(sp);
 }
 
-Integer LatticeWorld::num_molecules() const
-{
-    return (*space_).num_molecules();
-}
-
 Integer LatticeWorld::num_particles(const Species& sp) const
 {
     return (*space_).num_particles(sp);
@@ -226,9 +221,9 @@ bool LatticeWorld::add_molecules(const Species& sp, const Integer& num)
         throw std::invalid_argument("The number of molecules must be positive.");
     }
 
-    std::cerr << "[DEBUG]" << std::endl; // DEBUG
+    // std::cerr << "[DEBUG]" << std::endl; // DEBUG
     const LatticeWorld::molecule_info_type info(get_molecule_info(sp));
-    std::cerr << "  info.D = " << info.D << std::endl; // DEBUG
+    // std::cerr << "  info.D = " << info.D << std::endl; // DEBUG
 
     Integer count(0);
     while (count < num)
@@ -281,7 +276,7 @@ Integer LatticeWorld::add_structure(
 {
     std::cerr << "shape->dimension() : " << shape->dimension() << std::endl; // XXX
     const LatticeWorld::molecule_info_type info(get_molecule_info(sp));
-    (*space_).add_structure(sp, shape, info.loc);
+    (*space_).make_structure_type(sp, shape->dimension(), info.loc);
 
     switch (shape->dimension())
     {
@@ -554,15 +549,6 @@ LatticeWorld::check_neighbor_private(
     // const private_coordinate_type neighbor((*space_).get_neighbor_private(coord, rnd));
     // bool flg = get_molecular_type_private(neighbor)->is_vacant(); //XXX: loc
     // return std::make_pair(neighbor, flg);
-}
-
-Shape::dimension_kind LatticeWorld::get_dimension_kind(const std::string& name) const
-{
-    if (name == "")
-    {
-        return Shape::THREE; // Default value for VACANT type.
-    }
-    return (*space_).get_structure_dimension(Species(name));
 }
 
 } // lattice

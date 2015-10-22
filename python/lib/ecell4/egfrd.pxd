@@ -4,6 +4,22 @@ from libcpp cimport bool
 from core cimport *
 
 
+## Cpp_ReactionInfo
+cdef extern from "ecell4/egfrd/egfrd.hpp" namespace "ecell4::egfrd":
+    cdef cppclass Cpp_ReactionInfo "ecell4::egfrd::ReactionInfo":
+        Cpp_ReactionInfo(Real, vector[pair[Cpp_ParticleID, Cpp_Particle]], vector[pair[Cpp_ParticleID, Cpp_Particle]])
+        Cpp_ReactionInfo(Cpp_ReactionInfo&)
+        Real t()
+        vector[pair[Cpp_ParticleID, Cpp_Particle]] reactants()
+        vector[pair[Cpp_ParticleID, Cpp_Particle]] products()
+
+## ReactionInfo
+#  a python wrapper for Cpp_ReactionInfo
+cdef class ReactionInfo:
+    cdef Cpp_ReactionInfo* thisptr
+
+cdef ReactionInfo ReactionInfo_from_Cpp_ReactionInfo(Cpp_ReactionInfo* ri)
+
 ## Cpp_EGFRDWorld
 #  ecell4::egfrd::EGFRDWorld
 cdef extern from "ecell4/egfrd/egfrd.hpp" namespace "ecell4::egfrd":
@@ -46,7 +62,7 @@ cdef extern from "ecell4/egfrd/egfrd.hpp" namespace "ecell4::egfrd":
         void add_molecules(Cpp_Species& sp, Integer num, shared_ptr[Cpp_Shape])
         void remove_molecules(Cpp_Species& sp, Integer num)
         void save(string filename) except +
-        void load(string filename)
+        void load(string filename) except +
         void bind_to(shared_ptr[Cpp_Model])
         shared_ptr[Cpp_RandomNumberGenerator] rng()
 
@@ -63,7 +79,8 @@ cdef extern from "ecell4/egfrd/egfrd.hpp" namespace "ecell4::egfrd":
         void set_dt(Real)
         Real dt()
         Real next_time()
-        vector[Cpp_ReactionRule] last_reactions()
+        vector[pair[Cpp_ReactionRule, Cpp_ReactionInfo]] last_reactions()
+        bool check_reaction()
         void initialize()
         # Cpp_GSLRandomNumberGenerator& rng()
         shared_ptr[Cpp_Model] model()
@@ -85,6 +102,7 @@ cdef extern from "ecell4/egfrd/egfrd.hpp" namespace "ecell4::egfrd":
         Cpp_EGFRDFactory(Cpp_Integer3&, shared_ptr[Cpp_RandomNumberGenerator]&, Integer) except +
         Cpp_EGFRDFactory(Cpp_Integer3&, shared_ptr[Cpp_RandomNumberGenerator]&, Integer, Real) except +
         Cpp_EGFRDFactory(Cpp_Integer3&, shared_ptr[Cpp_RandomNumberGenerator]&, Integer, Real, Real) except +
+        Cpp_EGFRDWorld* create_world()
         Cpp_EGFRDWorld* create_world(string)
         Cpp_EGFRDWorld* create_world(Cpp_Real3&)
         Cpp_EGFRDWorld* create_world(shared_ptr[Cpp_Model])
@@ -101,6 +119,7 @@ cdef extern from "ecell4/egfrd/egfrd.hpp" namespace "ecell4::egfrd":
         Cpp_BDFactory(Cpp_Integer3&, shared_ptr[Cpp_RandomNumberGenerator]&) except +
         Cpp_BDFactory(Cpp_Integer3&, shared_ptr[Cpp_RandomNumberGenerator]&, Integer) except +
         Cpp_BDFactory(Cpp_Integer3&, shared_ptr[Cpp_RandomNumberGenerator]&, Integer, Real) except +
+        Cpp_EGFRDWorld* create_world()
         Cpp_EGFRDWorld* create_world(string)
         Cpp_EGFRDWorld* create_world(Cpp_Real3&)
         Cpp_EGFRDWorld* create_world(shared_ptr[Cpp_Model])
@@ -120,7 +139,8 @@ cdef extern from "ecell4/egfrd/egfrd.hpp" namespace "ecell4::egfrd":
         void set_dt(Real)
         Real dt()
         Real next_time()
-        vector[Cpp_ReactionRule] last_reactions()
+        vector[pair[Cpp_ReactionRule, Cpp_ReactionInfo]] last_reactions()
+        bool check_reaction()
         void initialize()
         # Cpp_GSLRandomNumberGenerator& rng()
         shared_ptr[Cpp_Model] model()

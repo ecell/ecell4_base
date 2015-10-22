@@ -1,8 +1,8 @@
 #include "LatticeSimulator.hpp"
 
-//#include <set>
 #include <algorithm>
 #include <iterator>
+#include <ecell4/core/StructureType.hpp>
 
 namespace ecell4
 {
@@ -159,15 +159,124 @@ std::pair<bool, LatticeSimulator::reaction_type>
             if (retval.second)
             {
                 reaction.products.push_back(
-                    reaction_type::particle_type(
-                        retval.first.first,
-                        this->private_voxel2voxel(retval.first.second)));
+                    reaction_type::particle_type(retval.first));
                 break;
             }
         }
     }
-    reactions_.push_back(reaction_rule);
+    last_reactions_.push_back(std::make_pair(reaction_rule, reaction_info_type(world_->t(), reaction.reactants, reaction.products)));
     return std::pair<bool, reaction_type>(true, reaction);
+}
+
+Real LatticeSimulator::calculate_dimensional_factor(
+    const MolecularTypeBase* mt0, const MolecularTypeBase* mt1) const
+{
+    const Species
+        speciesA(mt0->species()),
+        speciesB(mt1->species());
+    const Real
+        D_A(mt0->D()),
+        D_B(mt1->D());
+    const Shape::dimension_kind
+        dimensionA(mt0->get_dimension()),
+        dimensionB(mt1->get_dimension());
+    const Real Dtot(D_A + D_B);
+    const Real gamma(pow(2 * sqrt(2.0) + 4 * sqrt(3.0) + 3 * sqrt(6.0) + sqrt(22.0), 2) /
+        (72 * (6 * sqrt(2.0) + 4 * sqrt(3.0) + 3 * sqrt(6.0))));
+    Real factor(0);
+    if (dimensionA == Shape::THREE && dimensionB == Shape::THREE)
+    {
+        // if (speciesA != speciesB)
+        //     factor = 1. / (6 * sqrt(2.0) * Dtot * world_->voxel_radius());
+        // else
+        //     factor = 1. / (6 * sqrt(2.0) * D_A * world_->voxel_radius());
+        factor = 1. / (6 * sqrt(2.0) * Dtot * world_->voxel_radius());
+    }
+    else if (dimensionA == Shape::TWO && dimensionB == Shape::TWO)
+    {
+        // if (speciesA != speciesB)
+        //     factor = gamma / Dtot;
+        // else
+        //     factor = gamma / D_A;
+        factor = gamma / Dtot;
+    }
+    else if (dimensionA == Shape::THREE && dimensionB == Shape::TWO)
+    {
+        factor = sqrt(2.0) / (3 * D_A * world_->voxel_radius());
+        if (mt1->is_structure()) // B is Surface
+        {
+            factor *= world_->unit_area();
+        }
+    }
+    else if (dimensionA == Shape::TWO && dimensionB == Shape::THREE)
+    {
+        factor = sqrt(2.0) / (3 * D_B * world_->voxel_radius()); // 不要?
+        if (mt0->is_structure()) // A is Surface
+        {
+            factor *= world_->unit_area();
+        }
+    }
+    else
+        throw NotSupported("The dimension of a structure must be two or three.");
+    return factor;
+}
+
+Real LatticeSimulator::calculate_alpha(const ReactionRule& rule) const
+{
+    const ReactionRule::reactant_container_type& reactants(rule.reactants());
+    if (reactants.size() != 2)
+        return 1.0;
+    const Species
+        sp0(reactants.at(0)),
+        sp1(reactants.at(1));
+    const MoleculeInfo
+        info0(world_->get_molecule_info(sp0)),
+        info1(world_->get_molecule_info(sp1));
+    MolecularTypeBase *mt0, *mt1;
+    bool new0(false), new1(false);
+    try
+    {
+        mt0 = world_->find_molecular_type(sp0);
+    }
+    catch(NotFound e)
+    {
+        MolecularTypeBase *location;
+        try
+        {
+            location = world_->find_molecular_type(Species(info0.loc));
+        }
+        catch(NotFound e)
+        {
+            location = &(VacantType::getInstance());
+        }
+        mt0 = new MolecularType(sp0, location, info0.radius, info0.D);
+        new0 = true;
+    }
+    try
+    {
+        mt1 = world_->find_molecular_type(sp1);
+    }
+    catch(NotFound e)
+    {
+        MolecularTypeBase *location;
+        try
+        {
+            location = world_->find_molecular_type(Species(info1.loc));
+        }
+        catch(NotFound e)
+        {
+            location = &(VacantType::getInstance());
+        }
+        mt1 = new MolecularType(sp1, location, info1.radius, info1.D);
+        new1 = true;
+    }
+    const Real factor(calculate_dimensional_factor(mt0, mt1));
+    if (new0)
+        delete mt0;
+    if (new1)
+        delete mt1;
+    const Real alpha(1.0 / (factor * rule.k()));
+    return alpha < 1.0 ? alpha : 1.0;
 }
 
 std::pair<bool, LatticeSimulator::reaction_type> LatticeSimulator::attempt_reaction_(
@@ -196,49 +305,9 @@ std::pair<bool, LatticeSimulator::reaction_type> LatticeSimulator::attempt_react
         return std::pair<bool, reaction_type>(false, reaction_type());
     }
 
-    const Real D_A(from_mt->D());
-    const Real D_B(to_mt->D());
-    const Shape::dimension_kind dimensionA(from_mt->get_dimension());
-    const Shape::dimension_kind dimensionB(to_mt->get_dimension());
+    const Real factor(calculate_dimensional_factor(from_mt, to_mt));
 
-    const Real Dtot(D_A + D_B);
     const Real rnd(world_->rng()->uniform(0,1));
-    const Real gamma(pow(2 * sqrt(2.0) + 4 * sqrt(3.0) + 3 * sqrt(6.0) + sqrt(22.0), 2) /
-        (72 * (6 * sqrt(2.0) + 4 * sqrt(3.0) + 3 * sqrt(6.0))));
-    Real factor(0);
-    if (dimensionA == Shape::THREE && dimensionB == Shape::THREE)
-    {
-        if (speciesA != speciesB)
-            factor = 1. / (6 * sqrt(2.0) * Dtot * world_->voxel_radius());
-        else
-            factor = 1. / (6 * sqrt(2.0) * D_A * world_->voxel_radius());
-    }
-    else if (dimensionA == Shape::TWO && dimensionB == Shape::TWO)
-    {
-        if (speciesA != speciesB)
-            factor = gamma / Dtot;
-        else
-            factor = gamma / D_A;
-    }
-    else if (dimensionA == Shape::THREE && dimensionB == Shape::TWO)
-    {
-        factor = sqrt(2.0) / (3 * D_A * world_->voxel_radius());
-        if (to_mt->is_structure()) // B is Surface
-        {
-            factor *= world_->unit_area();
-        }
-    }
-    else if (dimensionA == Shape::TWO && dimensionB == Shape::THREE)
-    {
-        factor = sqrt(2.0) / (3 * D_B * world_->voxel_radius()); // 不要?
-        if (from_mt->is_structure()) // A is Surface
-        {
-            factor *= world_->unit_area();
-        }
-    }
-    else
-        throw NotSupported("The dimension of a structure must be two or three.");
-
     Real accp(0.0);
     for (std::vector<ReactionRule>::const_iterator itr(rules.begin());
         itr != rules.end(); ++itr)
@@ -300,7 +369,7 @@ std::pair<bool, LatticeSimulator::reaction_type> LatticeSimulator::apply_second_
             return std::pair<bool, reaction_type>(false, reaction);
     }
 
-    reactions_.push_back(reaction_rule);
+    last_reactions_.push_back(std::make_pair(reaction_rule, reaction_info_type(world_->t(), reaction.reactants, reaction.products)));
     return std::pair<bool, reaction_type>(true, reaction);
 }
 
@@ -346,9 +415,7 @@ void LatticeSimulator::apply_ab2c(
             world_->new_voxel_private(product_species, to_info.first));
 
         reaction.products.push_back(
-            reaction_type::particle_type(
-                new_mol.first.first,
-                this->private_voxel2voxel(new_mol.first.second)));
+            reaction_type::particle_type(new_mol.first));
     }
     else if (fserial == location || floc == location)
     {
@@ -368,9 +435,7 @@ void LatticeSimulator::apply_ab2c(
             world_->new_voxel_private(product_species, from_info.first));
 
         reaction.products.push_back(
-            reaction_type::particle_type(
-                new_mol.first.first,
-                this->private_voxel2voxel(new_mol.first.second)));
+            reaction_type::particle_type(new_mol.first));
     }
     else
     {
@@ -556,13 +621,9 @@ void LatticeSimulator::apply_ab2cd_in_order(
         }
 
         reaction.products.push_back(
-            reaction_type::particle_type(
-                new_mol0.first.first,
-                this->private_voxel2voxel(new_mol0.first.second)));
+            reaction_type::particle_type(new_mol0.first));
         reaction.products.push_back(
-            reaction_type::particle_type(
-                new_mol1.first.first,
-                this->private_voxel2voxel(new_mol1.first.second)));
+            reaction_type::particle_type(new_mol1.first));
 }
 
 /*
@@ -600,7 +661,7 @@ std::pair<bool, LatticeSimulator::reaction_type>
             return std::pair<bool, reaction_type>(false, reaction);
     }
 
-    reactions_.push_back(reaction_rule);
+    last_reactions_.push_back(std::make_pair(reaction_rule, reaction_info_type(world_->t(), reaction.reactants, reaction.products)));
     return std::pair<bool, reaction_type>(true, reaction);
 }
 
@@ -636,9 +697,7 @@ void LatticeSimulator::apply_a2b(
             std::pair<std::pair<ParticleID, Voxel>, bool> new_mol(
                 world_->new_voxel_private(product_species, coord));
             reaction.products.push_back(
-                reaction_type::particle_type(
-                    new_mol.first.first,
-                    this->private_voxel2voxel(new_mol.first.second)));
+                reaction_type::particle_type(new_mol.first));
         }
         else
         {
@@ -667,9 +726,7 @@ void LatticeSimulator::apply_a2b(
                 world_->new_voxel_private(product_species, neighbor.first));
 
             reaction.products.push_back(
-                reaction_type::particle_type(
-                    new_mol.first.first,
-                    this->private_voxel2voxel(new_mol.first.second)));
+                reaction_type::particle_type(new_mol.first));
         }
     }
 }
@@ -728,9 +785,7 @@ bool LatticeSimulator::apply_a2bc(
             std::pair<std::pair<ParticleID, Voxel>, bool> new_mol0(
                 world_->new_voxel_private(product_species0, coord));
             reaction.products.push_back(
-                reaction_type::particle_type(
-                    new_mol0.first.first,
-                    this->private_voxel2voxel(new_mol0.first.second)));
+                reaction_type::particle_type(new_mol0.first));
         }
         else
         {
@@ -744,9 +799,7 @@ bool LatticeSimulator::apply_a2bc(
         std::pair<std::pair<ParticleID, Voxel>, bool> new_mol1(
             world_->new_voxel_private(product_species1, neighbor.first));
         reaction.products.push_back(
-            reaction_type::particle_type(
-                new_mol1.first.first,
-                this->private_voxel2voxel(new_mol1.first.second)));
+            reaction_type::particle_type(new_mol1.first));
         return true;
     }
     else if (aserial == cloc || aloc == cloc || aloc == cserial)
@@ -783,9 +836,7 @@ bool LatticeSimulator::apply_a2bc(
         std::pair<std::pair<ParticleID, Voxel>, bool> new_mol0(
             world_->new_voxel_private(product_species0, neighbor.first));
         reaction.products.push_back(
-            reaction_type::particle_type(
-                new_mol0.first.first,
-                this->private_voxel2voxel(new_mol0.first.second)));
+            reaction_type::particle_type(new_mol0.first));
 
         if (aloc != cserial)
         {
@@ -793,9 +844,7 @@ bool LatticeSimulator::apply_a2bc(
             std::pair<std::pair<ParticleID, Voxel>, bool> new_mol1(
                 world_->new_voxel_private(product_species1, coord));
             reaction.products.push_back(
-                reaction_type::particle_type(
-                    new_mol1.first.first,
-                    this->private_voxel2voxel(new_mol1.first.second)));
+                reaction_type::particle_type(new_mol1.first));
         }
         else
         {
@@ -823,7 +872,7 @@ void LatticeSimulator::register_product_species(const Species& product_species)
 }
 
 void LatticeSimulator::register_reactant_species(
-        const LatticeWorld::particle_info_type pinfo, reaction_type reaction) const
+        const LatticeWorld::particle_info_type pinfo, reaction_type& reaction) const
 {
     const MolecularTypeBase* mtype(world_->get_molecular_type_private(pinfo.first));
     const std::string location(
@@ -856,7 +905,7 @@ bool LatticeSimulator::step(const Real& upto)
     }
 
     world_->set_t(upto); //XXX: TODO
-    reactions_.clear();
+    last_reactions_.clear();
     new_species_.clear();
     dt_ = scheduler_.next_time() - t();
     return false;
@@ -864,7 +913,7 @@ bool LatticeSimulator::step(const Real& upto)
 
 void LatticeSimulator::step_()
 {
-    reactions_.clear();
+    last_reactions_.clear();
     new_species_.clear();
 
     EventScheduler::value_type top(scheduler_.pop());

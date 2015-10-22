@@ -4,6 +4,23 @@ from libcpp cimport bool
 from core cimport *
 
 
+## Cpp_ReactionInfo
+cdef extern from "ecell4/meso/MesoscopicSimulator.hpp" namespace "ecell4::meso":
+    cdef cppclass Cpp_ReactionInfo "ecell4::meso::ReactionInfo":
+        Cpp_ReactionInfo(Real, vector[Cpp_Species], vector[Cpp_Species], Integer)
+        Cpp_ReactionInfo(Cpp_ReactionInfo&)
+        Real t()
+        vector[Cpp_Species] reactants()
+        vector[Cpp_Species] products()
+        Integer coordinate()
+
+## ReactionInfo
+#  a python wrapper for Cpp_ReactionInfo
+cdef class ReactionInfo:
+    cdef Cpp_ReactionInfo* thisptr
+
+cdef ReactionInfo ReactionInfo_from_Cpp_ReactionInfo(Cpp_ReactionInfo* ri)
+
 ## Cpp_MesoscopicWorld
 #  ecell4::meso::MesoscopicWorld
 cdef extern from "ecell4/meso/MesoscopicWorld.hpp" namespace "ecell4::meso":
@@ -55,7 +72,7 @@ cdef extern from "ecell4/meso/MesoscopicWorld.hpp" namespace "ecell4::meso":
         bool has_structure(Cpp_Species&)
         void remove_molecules(Cpp_Species &sp, Integer &num)
         void save(string) except +
-        void load(string)
+        void load(string) except +
         void bind_to(shared_ptr[Cpp_Model])
         shared_ptr[Cpp_RandomNumberGenerator] rng()
         vector[pair[Cpp_ParticleID, Cpp_Particle]] list_particles()
@@ -86,7 +103,8 @@ cdef extern from "ecell4/meso/MesoscopicSimulator.hpp" namespace "ecell4::meso":
         void set_dt(Real)
         Real dt()
         Real next_time()
-        vector[Cpp_ReactionRule] last_reactions()
+        bool check_reaction()
+        vector[pair[Cpp_ReactionRule, Cpp_ReactionInfo]] last_reactions()
         void initialize()
         # Cpp_GSLRandomNumberGenerator& rng()
         shared_ptr[Cpp_Model] model()
@@ -111,6 +129,7 @@ cdef extern from "ecell4/meso/MesoscopicFactory.hpp" namespace "ecell4::meso":
         Cpp_MesoscopicFactory(Cpp_Integer3&, shared_ptr[Cpp_RandomNumberGenerator]) except +
         Cpp_MesoscopicFactory(Real) except +
         Cpp_MesoscopicFactory(Real, shared_ptr[Cpp_RandomNumberGenerator]) except +
+        Cpp_MesoscopicWorld* create_world()
         Cpp_MesoscopicWorld* create_world(string)
         Cpp_MesoscopicWorld* create_world(Cpp_Real3&)
         Cpp_MesoscopicWorld* create_world(shared_ptr[Cpp_Model])

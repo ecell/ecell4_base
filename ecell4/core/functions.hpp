@@ -31,9 +31,14 @@ inline double modulo(const double& p1, const double& p2)
     return r;
 }
 
-inline double abs(const double& p1)
+inline int64_t abs(const int64_t& x)
 {
-    return std::fabs(p1);
+    return (x > 0 ? x : -x);
+}
+
+inline double abs(const double& x)
+{
+    return std::fabs(x);
 }
 
 #ifndef WIN32_MSC

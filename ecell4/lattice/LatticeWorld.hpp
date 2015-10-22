@@ -157,7 +157,6 @@ public:
 
     Integer num_molecules(const Species& sp) const;
     Integer num_molecules_exact(const Species& sp) const;
-    Integer num_molecules() const;
     Integer num_particles() const;
     Integer num_particles(const Species& sp) const;
     Integer num_particles_exact(const Species& sp) const;
@@ -431,8 +430,6 @@ public:
     {
         return (*space_).private_coord2global(coord);
     }
-
-    Shape::dimension_kind get_dimension_kind(const std::string& name) const;
 
     /**
      * temp

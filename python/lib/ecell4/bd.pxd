@@ -7,6 +7,22 @@ from ecell4.shared_ptr cimport shared_ptr
 from ecell4.core cimport *
 
 
+## Cpp_ReactionInfo
+cdef extern from "ecell4/bd/BDPropagator.hpp" namespace "ecell4::bd":
+    cdef cppclass Cpp_ReactionInfo "ecell4::bd::ReactionInfo":
+        Cpp_ReactionInfo(Real, vector[pair[Cpp_ParticleID, Cpp_Particle]], vector[pair[Cpp_ParticleID, Cpp_Particle]])
+        Cpp_ReactionInfo(Cpp_ReactionInfo&)
+        Real t()
+        vector[pair[Cpp_ParticleID, Cpp_Particle]] reactants()
+        vector[pair[Cpp_ParticleID, Cpp_Particle]] products()
+
+## ReactionInfo
+#  a python wrapper for Cpp_ReactionInfo
+cdef class ReactionInfo:
+    cdef Cpp_ReactionInfo* thisptr
+
+cdef ReactionInfo ReactionInfo_from_Cpp_ReactionInfo(Cpp_ReactionInfo* ri)
+
 ## Cpp_BDWorld
 #  ecell4::bd::BDWorld
 cdef extern from "ecell4/bd/BDWorld.hpp" namespace "ecell4::bd":
@@ -79,8 +95,10 @@ cdef extern from "ecell4/bd/BDSimulator.hpp" namespace "ecell4::bd":
         bool step(Real& upto)
         Real t()
         Real dt()
+        void set_t(Real& t)
         void set_dt(Real& dt)
-        vector[Cpp_ReactionRule] last_reactions()
+        vector[pair[Cpp_ReactionRule, Cpp_ReactionInfo]] last_reactions()
+        bool check_reaction()
         Real next_time()
         void initialize()
         shared_ptr[Cpp_Model] model()
@@ -103,6 +121,7 @@ cdef extern from "ecell4/bd/BDFactory.hpp" namespace "ecell4::bd":
         Cpp_BDFactory() except +
         Cpp_BDFactory(Cpp_Integer3&) except +
         Cpp_BDFactory(Cpp_Integer3&, shared_ptr[Cpp_RandomNumberGenerator]) except +
+        Cpp_BDWorld* create_world()
         Cpp_BDWorld* create_world(string)
         Cpp_BDWorld* create_world(Cpp_Real3&)
         Cpp_BDWorld* create_world(shared_ptr[Cpp_Model])

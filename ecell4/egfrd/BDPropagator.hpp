@@ -219,9 +219,11 @@ private:
 
                         if (rrec_)
                         {
+                            // (*rrec_)(
+                            //     reaction_record_type(
+                            //         r.id(), array_gen(new_p.first), pp.first));
                             (*rrec_)(
-                                reaction_record_type(
-                                    r.id(), array_gen(new_p.first), pp.first));
+                                reaction_record_type(r.id(), array_gen(new_p), pp));
                         }
                     }
                     break;
@@ -289,11 +291,12 @@ private:
 
                         if (rrec_)
                         {
-                            (*rrec_)(
-                                reaction_record_type(
-                                    r.id(),
-                                    array_gen(npp0.first, npp1.first),
-                                    pp.first));
+                            // (*rrec_)(
+                            //     reaction_record_type(
+                            //         r.id(),
+                            //         array_gen(npp0.first, npp1.first),
+                            //         pp.first));
+                            (*rrec_)(reaction_record_type(r.id(), array_gen(npp0, npp1), pp));
                         }
                     }
                     break;
@@ -387,9 +390,10 @@ private:
                         particle_id_pair npp(tx_.new_particle(product, new_pos));
                         if (rrec_)
                         {
-                            (*rrec_)(
-                                reaction_record_type(
-                                    r.id(), array_gen(npp.first), pp0.first, pp1.first));
+                            // (*rrec_)(
+                            //     reaction_record_type(
+                            //         r.id(), array_gen(npp.first), pp0.first, pp1.first));
+                            (*rrec_)(reaction_record_type(r.id(), array_gen(npp), pp0, pp1));
                         }
                         break;
                     }

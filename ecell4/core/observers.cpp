@@ -114,7 +114,7 @@ void NumberObserver::finalize(const Space* space)
 
 bool NumberObserver::fire(const Simulator* sim, const Space* space)
 {
-    if (sim->last_reactions().size() > 0)
+    if (sim->check_reaction())
     {
         logger_.log(space);
         ++num_steps_;

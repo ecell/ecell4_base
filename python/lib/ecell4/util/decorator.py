@@ -345,6 +345,29 @@ class ReactionRulesCallback(Callback):
             raise RuntimeError('an invalid object was given [%s]' % (repr(obj)))
 
 def get_model(is_netfree=False, without_reset=False, seeds=None):
+    """
+    Generate a model with parameters in the global scope, ``SPECIES_ATTRIBUTES``
+    and ``REACTIONRULES``.
+
+    Parameters
+    ----------
+    is_netfree : bool, optional
+        Return ``NetfreeModel`` if True, and ``NetworkModel`` if else.
+        Default is False.
+    without_reset : bool, optional
+        Do not reset the global variables after the generation if True.
+        Default is False.
+    seeds : list, optional
+        A list of seed ``Species`` for expanding the model.
+        If this is not None, generate a ``NetfreeModel`` once, and return a
+        ``NetworkModel``, which is an expanded form of that with the given seeds.
+        Default is None.
+
+    Returns
+    -------
+    model : NetworkModel, NetfreeModel, or ODENetworkModel
+
+    """
     if any([not isinstance(rr, ecell4.core.ReactionRule) for rr in REACTION_RULES]):
        from ecell4.ode import ODENetworkModel
        m = ODENetworkModel()
@@ -369,6 +392,11 @@ def get_model(is_netfree=False, without_reset=False, seeds=None):
     return m
 
 def reset_model():
+    """
+    Reset all values, ``SPECIES_ATTRIBUTES`` and ``REACTIONRULES``,
+    in the global scope.
+
+    """
     global PARAMETERS
     global SPECIES_ATTRIBUTES
     global REACTION_RULES

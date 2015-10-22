@@ -7,6 +7,22 @@ from ecell4.shared_ptr cimport shared_ptr
 from ecell4.core cimport *
 
 
+## Cpp_ReactionInfo
+cdef extern from "ecell4/lattice/LatticeSimulator.hpp" namespace "ecell4::lattice":
+    cdef cppclass Cpp_ReactionInfo "ecell4::lattice::ReactionInfo":
+        Cpp_ReactionInfo(Real, vector[pair[Cpp_ParticleID, Cpp_Voxel]], vector[pair[Cpp_ParticleID, Cpp_Voxel]])
+        Cpp_ReactionInfo(Cpp_ReactionInfo&)
+        Real t()
+        vector[pair[Cpp_ParticleID, Cpp_Voxel]] reactants()
+        vector[pair[Cpp_ParticleID, Cpp_Voxel]] products()
+
+## ReactionInfo
+#  a python wrapper for Cpp_ReactionInfo
+cdef class ReactionInfo:
+    cdef Cpp_ReactionInfo* thisptr
+
+cdef ReactionInfo ReactionInfo_from_Cpp_ReactionInfo(Cpp_ReactionInfo* ri)
+
 ## Cpp_LatticeWorld
 #  ecell4::lattice::LatticeWorld
 cdef extern from "ecell4/lattice/LatticeWorld.hpp" namespace "ecell4::lattice":
@@ -57,7 +73,6 @@ cdef extern from "ecell4/lattice/LatticeWorld.hpp" namespace "ecell4::lattice":
         # Real distance_sq(Cpp_Real3& pos1, Cpp_Real3& pos2)
         # Real distance(Cpp_Real3& pos1, Cpp_Real3& pos2)
         # # bool has_species(Cpp_Species& sp)
-        Integer num_molecules()
         Integer num_molecules(Cpp_Species& sp)
         Integer num_molecules_exact(Cpp_Species& sp)
         void add_molecules(Cpp_Species& sp, Integer num)
@@ -123,12 +138,15 @@ cdef extern from "ecell4/lattice/LatticeSimulator.hpp" namespace "ecell4::lattic
         void step()
         bool step(Real& upto)
         Real t()
+        void set_t(Real)
         Real dt()
         void set_dt(Real)
         void initialize()
         void set_alpha(Real)
         Real get_alpha()
-        vector[Cpp_ReactionRule] last_reactions()
+        Real calculate_alpha(Cpp_ReactionRule)
+        bool check_reaction()
+        vector[pair[Cpp_ReactionRule, Cpp_ReactionInfo]] last_reactions()
         shared_ptr[Cpp_Model] model()
         shared_ptr[Cpp_LatticeWorld] world()
         void run(Real)
@@ -149,6 +167,7 @@ cdef extern from "ecell4/lattice/LatticeFactory.hpp" namespace "ecell4::lattice"
         Cpp_LatticeFactory() except +
         Cpp_LatticeFactory(Real) except +
         Cpp_LatticeFactory(Real, shared_ptr[Cpp_RandomNumberGenerator]&) except +
+        Cpp_LatticeWorld* create_world()
         Cpp_LatticeWorld* create_world(string)
         Cpp_LatticeWorld* create_world(Cpp_Real3&)
         Cpp_LatticeWorld* create_world(shared_ptr[Cpp_Model])
