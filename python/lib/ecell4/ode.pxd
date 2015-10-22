@@ -18,7 +18,8 @@ cdef extern from "ecell4/ode/ODEWorld.hpp" namespace "ecell4::ode":
         Real& t()
         void set_t(Real&)
         void reset(Cpp_Real3&)
-        Cpp_Real3 edge_lengths()
+        Cpp_Real3& edge_lengths()
+        Cpp_Real3 actual_lengths()
         # CompartmentSpaceTraits
         Real &volume()
         Integer num_molecules(Cpp_Species &)

@@ -338,7 +338,8 @@ bool FixedIntervalTrajectoryObserver::fire(const Simulator* sim, const Space* sp
     const bool retval = base_type::fire(sim, space);
     t_.push_back(space->t());
 
-    const Real3 edge_lengths(space->edge_lengths());
+    // const Real3 edge_lengths(space->edge_lengths());
+    const Real3 edge_lengths(space->actual_lengths());
     std::vector<std::vector<Real3> >::iterator j(trajectories_.begin());
     std::vector<Real3>::iterator k(strides_.begin());
     for (std::vector<ParticleID>::const_iterator i(pids_.begin());
