@@ -12,7 +12,10 @@ struct Shape
 {
     typedef enum
     {
-        ONE, TWO, THREE, UNDEF,
+        ONE = 1,
+        TWO = 2,
+        THREE = 3,
+        UNDEF = 4,
     } dimension_kind;
 
     virtual ~Shape()

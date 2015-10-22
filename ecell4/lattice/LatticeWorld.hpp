@@ -431,8 +431,6 @@ public:
         return (*space_).private_coord2global(coord);
     }
 
-    Shape::dimension_kind get_dimension_kind(const std::string& name) const;
-
     /**
      * temp
      */
