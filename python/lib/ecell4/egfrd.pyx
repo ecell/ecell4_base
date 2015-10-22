@@ -631,8 +631,9 @@ cdef class EGFRDSimulator:
 
     """
 
-    def __init__(self, m, EGFRDWorld w):
-        """EGFRDSimulator(m, w)
+    def __init__(self, *args):
+        """EGFRDSimulator(m, w, dissociation_retry_moves, bd_dt_factor, user_max_shell_size)
+        EGFRDSimulator(w, dissociation_retry_moves, bd_dt_factor, user_max_shell_size)
 
         Constructor.
 
@@ -642,19 +643,53 @@ cdef class EGFRDSimulator:
             A model
         w : EGFRDWorld
             A world
+        dissociation_retry_moves : Integer
+        bd_dt_factor : Real
+        user_max_shell_size : Real
 
         """
         pass
 
-    def __cinit__(self, m, EGFRDWorld w):
-        self.thisptr = new Cpp_EGFRDSimulator(
-            deref(w.thisptr), deref(Cpp_Model_from_Model(m)))
-        # if w is None:
-        #     self.thisptr = new Cpp_EGFRDSimulator(
-        #         deref((<EGFRDWorld>m).thisptr))
-        # else:
-        #     self.thisptr = new Cpp_EGFRDSimulator(
-        #         deref(w.thisptr), deref(Cpp_Model_from_Model(m)))
+    def __cinit__(self, *args):
+        if len(args) == 1:
+            self.thisptr = new Cpp_EGFRDSimulator(deref((<EGFRDWorld>args[0]).thisptr))
+        elif len(args) == 2:
+            if isinstance(args[1], EGFRDWorld):
+                self.thisptr = new Cpp_EGFRDSimulator(
+                    deref((<EGFRDWorld>args[1]).thisptr),
+                    deref(Cpp_Model_from_Model(args[0])))
+            else:
+                self.thisptr = new Cpp_EGFRDSimulator(
+                    deref((<EGFRDWorld>args[0]).thisptr),
+                    <Integer>args[1])
+        elif len(args) == 3:
+            if isinstance(args[1], EGFRDWorld):
+                self.thisptr = new Cpp_EGFRDSimulator(
+                    deref((<EGFRDWorld>args[1]).thisptr),
+                    deref(Cpp_Model_from_Model(args[0])),
+                    <Integer>args[2])
+            else:
+                self.thisptr = new Cpp_EGFRDSimulator(
+                    deref((<EGFRDWorld>args[0]).thisptr),
+                    <Integer>args[1], <Real>args[2])
+        elif len(args) == 4:
+            if isinstance(args[1], EGFRDWorld):
+                self.thisptr = new Cpp_EGFRDSimulator(
+                    deref((<EGFRDWorld>args[1]).thisptr),
+                    deref(Cpp_Model_from_Model(args[0])),
+                    <Integer>args[2], <Real>args[3])
+            else:
+                self.thisptr = new Cpp_EGFRDSimulator(
+                    deref((<EGFRDWorld>args[0]).thisptr),
+                    <Integer>args[1], <Real>args[2], <Real>args[3])
+        elif len(args) == 5:
+            self.thisptr = new Cpp_EGFRDSimulator(
+                deref((<EGFRDWorld>args[1]).thisptr),
+                deref(Cpp_Model_from_Model(args[0])),
+                <Integer>args[2], <Real>args[3], <Real>args[4])
+        else:
+            raise ValueError(
+                "The invalid number of arguments was given [{}].".format(len(args)))
 
     def __dealloc__(self):
         del self.thisptr
@@ -962,8 +997,9 @@ cdef class BDSimulator:
 
     """
 
-    def __init__(self, m, EGFRDWorld w):
-        """BDSimulator(m, w)
+    def __init__(self, *args):
+        """BDSimulator(m, w, bd_dt_factor, dissociation_retry_moves)
+        BDSimulator(w, bd_dt_factor, dissociation_retry_moves)
 
         Constructor.
 
@@ -973,19 +1009,42 @@ cdef class BDSimulator:
             A model
         w : EGFRDWorld
             A world
+        bd_dt_factor : Real
+        dissociation_retry_moves : Integer
 
         """
         pass
 
-    def __cinit__(self, m, EGFRDWorld w):
-        self.thisptr = new Cpp_BDSimulator(
-            deref(w.thisptr), deref(Cpp_Model_from_Model(m)))
-        # if w is None:
-        #     self.thisptr = new Cpp_BDSimulator(
-        #         deref((<EGFRDWorld>m).thisptr))
-        # else:
-        #     self.thisptr = new Cpp_BDSimulator(
-        #         deref(w.thisptr), deref(Cpp_Model_from_Model(m)))
+    def __cinit__(self, *args):
+        if len(args) == 1:
+            self.thisptr = new Cpp_BDSimulator(deref((<EGFRDWorld>args[0]).thisptr))
+        elif len(args) == 2:
+            if isinstance(args[1], EGFRDWorld):
+                self.thisptr = new Cpp_BDSimulator(
+                    deref((<EGFRDWorld>args[1]).thisptr),
+                    deref(Cpp_Model_from_Model(args[0])))
+            else:
+                self.thisptr = new Cpp_BDSimulator(
+                    deref((<EGFRDWorld>args[0]).thisptr),
+                    <Real>args[1])
+        elif len(args) == 3:
+            if isinstance(args[1], EGFRDWorld):
+                self.thisptr = new Cpp_BDSimulator(
+                    deref((<EGFRDWorld>args[1]).thisptr),
+                    deref(Cpp_Model_from_Model(args[0])),
+                    <Real>args[2])
+            else:
+                self.thisptr = new Cpp_BDSimulator(
+                    deref((<EGFRDWorld>args[0]).thisptr),
+                    <Real>args[1], <Integer>args[2])
+        elif len(args) == 4:
+            self.thisptr = new Cpp_BDSimulator(
+                deref((<EGFRDWorld>args[1]).thisptr),
+                deref(Cpp_Model_from_Model(args[0])),
+                <Real>args[2], <Integer>args[3])
+        else:
+            raise ValueError(
+                "The invalid number of arguments was given [{}].".format(len(args)))
 
     def __dealloc__(self):
         del self.thisptr

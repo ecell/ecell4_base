@@ -131,6 +131,16 @@ public:
         ;
     }
 
+    ParticleSimulator(
+        const boost::shared_ptr<world_type>& world)
+        : base_type(world),
+        network_rules_(new network_rules_type(this->model())),
+        rrec_(new ReactionRecorderWrapper<reaction_record_type>()),
+        dt_(0.), paranoiac_(false)
+    {
+        ;
+    }
+
     boost::shared_ptr<network_rules_type const> const& network_rules() const
     {
         return network_rules_;

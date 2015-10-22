@@ -62,6 +62,17 @@ public:
         calculate_dt();
     }
 
+    BDSimulator(
+        const boost::shared_ptr<world_type>& world,
+        Real bd_dt_factor = 1.0,
+        int dissociation_retry_moves = 1)
+        : base_type(world),
+          dt_factor_(bd_dt_factor),
+          num_retries_(dissociation_retry_moves)
+    {
+        calculate_dt();
+    }
+
     virtual void initialize()
     {
         ;

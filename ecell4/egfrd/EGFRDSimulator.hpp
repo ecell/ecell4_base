@@ -1016,6 +1016,30 @@ public:
         std::fill(multi_step_count_.begin(), multi_step_count_.end(), 0);
     }
 
+    EGFRDSimulator(
+        const boost::shared_ptr<world_type>& world,
+        int dissociation_retry_moves = 1, Real bd_dt_factor = 1e-5,
+        length_type user_max_shell_size = std::numeric_limits<length_type>::infinity())
+        : base_type(world),
+          num_retries_(dissociation_retry_moves),
+          bd_dt_factor_(bd_dt_factor),
+          user_max_shell_size_(user_max_shell_size),
+          ssmat_(new spherical_shell_matrix_type((*world).edge_lengths(), (*world).matrix_sizes())),
+          csmat_(new cylindrical_shell_matrix_type((*world).edge_lengths(), (*world).matrix_sizes())),
+          smatm_(boost::fusion::pair<spherical_shell_type,
+                                     spherical_shell_matrix_type*>(ssmat_.get()),
+                 boost::fusion::pair<cylindrical_shell_type,
+                                     cylindrical_shell_matrix_type*>(csmat_.get())),
+          single_shell_factor_(.1),
+          multi_shell_factor_(.05),
+          rejected_moves_(0), zero_step_count_(0), dirty_(true)
+    {
+        std::fill(domain_count_per_type_.begin(), domain_count_per_type_.end(), 0);
+        std::fill(single_step_count_.begin(), single_step_count_.end(), 0);
+        std::fill(pair_step_count_.begin(), pair_step_count_.end(), 0);
+        std::fill(multi_step_count_.begin(), multi_step_count_.end(), 0);
+    }
+
     length_type user_max_shell_size() const
     {
         return user_max_shell_size_;

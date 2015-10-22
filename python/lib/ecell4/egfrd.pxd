@@ -70,7 +70,23 @@ cdef extern from "ecell4/egfrd/egfrd.hpp" namespace "ecell4::egfrd":
         #XXX: be carefull about the order of arguments
         Cpp_EGFRDSimulator(
             shared_ptr[Cpp_EGFRDWorld]&, shared_ptr[Cpp_Model]&) except +
-        # Cpp_EGFRDSimulator(shared_ptr[Cpp_EGFRDWorld]&) except +
+        Cpp_EGFRDSimulator(
+            shared_ptr[Cpp_EGFRDWorld]&, shared_ptr[Cpp_Model]&,
+            Integer) except +
+        Cpp_EGFRDSimulator(
+            shared_ptr[Cpp_EGFRDWorld]&, shared_ptr[Cpp_Model]&,
+            Integer, Real) except +
+        Cpp_EGFRDSimulator(
+            shared_ptr[Cpp_EGFRDWorld]&, shared_ptr[Cpp_Model]&,
+            Integer, Real, Real) except +
+        Cpp_EGFRDSimulator(
+            shared_ptr[Cpp_EGFRDWorld]&) except +
+        Cpp_EGFRDSimulator(
+            shared_ptr[Cpp_EGFRDWorld]&, Integer) except +
+        Cpp_EGFRDSimulator(
+            shared_ptr[Cpp_EGFRDWorld]&, Integer, Real) except +
+        Cpp_EGFRDSimulator(
+            shared_ptr[Cpp_EGFRDWorld]&, Integer, Real, Real) except +
         Integer num_steps()
         void step()
         bool step(Real)
@@ -130,7 +146,15 @@ cdef extern from "ecell4/egfrd/egfrd.hpp" namespace "ecell4::egfrd":
         #XXX: be carefull about the order of arguments
         Cpp_BDSimulator(
             shared_ptr[Cpp_EGFRDWorld]&, shared_ptr[Cpp_Model]&) except +
-        # Cpp_BDSimulator(shared_ptr[Cpp_EGFRDWorld]&) except +
+        Cpp_BDSimulator(
+            shared_ptr[Cpp_EGFRDWorld]&, shared_ptr[Cpp_Model]&,
+            Real) except +
+        Cpp_BDSimulator(
+            shared_ptr[Cpp_EGFRDWorld]&, shared_ptr[Cpp_Model]&,
+            Real, Integer) except +
+        Cpp_BDSimulator(shared_ptr[Cpp_EGFRDWorld]&) except +
+        Cpp_BDSimulator(shared_ptr[Cpp_EGFRDWorld]&, Real) except +
+        Cpp_BDSimulator(shared_ptr[Cpp_EGFRDWorld]&, Real, Integer) except +
         Integer num_steps()
         void step()
         bool step(Real)
