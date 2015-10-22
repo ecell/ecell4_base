@@ -473,7 +473,7 @@ cdef class FixedIntervalTrajectoryObserver:
 
     """
 
-    def __cinit__(self, Real dt, *args):
+    def __init__(self, Real dt, *args):
         """Constructor.
 
         Parameters
@@ -497,7 +497,7 @@ cdef class FixedIntervalTrajectoryObserver:
             self.thisptr = new shared_ptr[Cpp_FixedIntervalTrajectoryObserver](
                 new Cpp_FixedIntervalTrajectoryObserver(dt))
         elif len(args) == 1:
-            if isinstance(args, (tuple, list, set)):
+            if isinstance(args[0], (tuple, list, set)):
                 for pid in args[0]:
                     tmp.push_back(deref((<ParticleID>pid).thisptr))
                 self.thisptr = new shared_ptr[Cpp_FixedIntervalTrajectoryObserver](
