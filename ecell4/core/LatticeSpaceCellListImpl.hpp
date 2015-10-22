@@ -529,6 +529,16 @@ public:
         return (*itr).second.get(); //XXX: Raw pointer was thrown.
     }
 
+    virtual const MolecularTypeBase* find_molecular_type(const Species& sp) const
+    {
+        spmap::const_iterator itr(spmap_.find(sp));
+        if (itr == spmap_.end())
+        {
+            throw NotFound("MolecularType not found.");
+        }
+        return (*itr).second.get(); //XXX: Raw pointer was thrown.
+    }
+
     virtual MolecularTypeBase* get_molecular_type(
         const private_coordinate_type& coord);
     const MolecularTypeBase* get_molecular_type(

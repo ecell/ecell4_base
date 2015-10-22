@@ -115,7 +115,11 @@ public:
 
     virtual void update_voxel_private(const Voxel& v) = 0;
     virtual bool update_voxel_private(const ParticleID& pid, const Voxel& v) = 0;
-    virtual bool update_voxel_private_without_checking(const ParticleID& pid, const Voxel& v) = 0;
+    virtual bool update_voxel_private_without_checking(const ParticleID& pid, const Voxel& v)
+    {
+        throw NotSupported(
+            "update_voxel_private_without_chekcing(const ParticleID&, const Voxel&) is not supported by this space class");
+    }
     virtual std::pair<ParticleID, Voxel> get_voxel(const ParticleID& pid) const = 0;
     virtual std::pair<ParticleID, Voxel> get_voxel(const coordinate_type& coord) const = 0;
     virtual bool remove_voxel(const ParticleID& pid) = 0;
