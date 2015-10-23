@@ -14,6 +14,7 @@
 #include "types.hpp"
 #include "Species.hpp"
 #include "Voxel.hpp"
+#include "MolecularTypeBase.hpp"
 
 
 namespace ecell4
