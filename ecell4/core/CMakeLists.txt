@@ -63,7 +63,10 @@ check_include_file_cxx("boost/unordered_map.hpp" HAVE_BOOST_UNORDERED_MAP_HPP)
 check_cxx_source_compiles("#include <tr1/functional>
 int main() { std::tr1::hash<int>(); return 0; }"
     HAVE_TR1_FUNCTIONAL)
-check_include_file_cxx(functional HAVE_STD_HASH)
+# check_include_file_cxx(functional HAVE_STD_HASH)
+check_cxx_source_compiles("#include <functional>
+int main() { std::hash<int>(); return 0; }"
+    HAVE_STD_HASH)
 check_include_file_cxx("boost/functional/hash.hpp" HAVE_BOOST_FUNCTIONAL_HASH_HPP)
 
 configure_file(
