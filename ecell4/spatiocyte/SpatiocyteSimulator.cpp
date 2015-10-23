@@ -1017,7 +1017,7 @@ void SpatiocyteSimulator::walk(const Species& species, const Real& alpha)
             ecell4::shuffle(*(rng.get()), nids);
             for (int i(0); i < 12; ++i) {
                 const SpatiocyteWorld::private_coordinate_type neighbor(
-                        world_->get_neighbor_private(info.first, nids.at(i)));
+                        world_->get_neighbor_private_boundary(info.first, nids.at(i)));
                 const MolecularTypeBase* target(world_->get_molecular_type_private(neighbor));
                 if (target == location || target->location() == location) {
                     if (world_->can_move(info.first, neighbor))

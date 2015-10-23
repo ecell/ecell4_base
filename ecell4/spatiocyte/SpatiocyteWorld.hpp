@@ -287,6 +287,12 @@ public:
         return (*space_).get_neighbor_private(private_coord, nrand);
     }
 
+    private_coordinate_type get_neighbor_private_boundary(
+            private_coordinate_type private_coord, Integer nrand) const
+    {
+        return (*space_).get_neighbor_private_boundary(private_coord, nrand);
+    }
+
     std::pair<private_coordinate_type, bool> check_neighbor_private(
             const private_coordinate_type coord, const std::string& loc);
     // bool update_molecule(coordinate_type at, Species species);

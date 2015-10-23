@@ -164,6 +164,8 @@ public:
 
     virtual private_coordinate_type get_neighbor_private(
         const private_coordinate_type& private_coord, const Integer& nrand) const = 0;
+    virtual private_coordinate_type get_neighbor_private_boundary(
+        const private_coordinate_type& private_coord, const Integer& nrand) const = 0;
 
     virtual coordinate_type get_neighbor(
         const coordinate_type& coord, const Integer& nrand) const
@@ -645,6 +647,14 @@ public:
     std::pair<private_coordinate_type, bool> move_to_neighbor(
         MolecularTypeBase* const& from_mt, MolecularTypeBase* const& loc,
         particle_info_type& info, const Integer nrand);
+
+    private_coordinate_type get_neighbor_private_boundary(
+        const private_coordinate_type& coord, const Integer& nrand) const
+    {
+        private_coordinate_type const dest = get_neighbor_private(coord, nrand);
+        MolecularTypeBase* dest_mt(voxels_.at(dest));
+        return (dest_mt != periodic_ ? dest : periodic_transpose_private(dest));
+    }
 
     inline bool is_periodic() const
     {

@@ -541,6 +541,13 @@ public:
             != get_molecular_type(v)->location()); //XXX: == ???
     }
 
+    private_coordinate_type get_neighbor_private_boundary(
+        const private_coordinate_type& coord, const Integer& nrand) const
+    {
+        private_coordinate_type const dest = get_neighbor_private(coord, nrand);
+        return (!is_periodic_ || is_inside(dest) ? dest : periodic_transpose_private(dest));
+    }
+
     virtual void add_structure(const Species& sp,
         const boost::shared_ptr<const Shape>& s, const std::string loc);
     virtual const boost::shared_ptr<const Shape>& get_structure(const Species& sp) const;
