@@ -23,9 +23,7 @@ install:
   - curl -O curl -O http://ftp.vector.co.jp/43/28/2114/stdint-20070624.zip
   - unzip stdint-20070624.zip
   - move stdint-20070624 stdint
-  - ECHO "pwd:"
-  - chdir
-  - "python setup.py build_ext -IC:/Libraries/boost;C:/projects/ecell4/stdint"
+  - "python setup.py build_ext -IC:\\Libraries\\boost;C:\\projects\\ecell4\\stdint"
 
 build: false
 
