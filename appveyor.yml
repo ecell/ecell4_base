@@ -1,10 +1,13 @@
-os: Visual Studio 2015
+#os: Visual Studio 2015
+os: Visual Studio 2008
 
 environment:
 
   matrix:
-    - PYTHON: "C:\\Python35"
-      PYTHON_VERSION: "3.5.0"
+    - PYTHON: "C:\\Python27"
+      PYTHON_VERSION: "2.7.9"
+#    - PYTHON: "C:\\Python35"
+#      PYTHON_VERSION: "3.5.0"
       PYTHON_ARCH: "32"
 
 init:
