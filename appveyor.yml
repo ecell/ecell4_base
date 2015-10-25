@@ -18,7 +18,7 @@ init:
 install:
   - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
   - "python --version"
-  - curl.exe -O https://bootstrap.pypa.io/get-pip.py
+  - "curl -O https://bootstrap.pypa.io/get-pip.py"
   - "python get-pip.py
   - "pip install cython"
   - cd python
