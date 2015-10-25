@@ -18,6 +18,10 @@ install:
   # install gsl
   - curl -O http://r2d3.geldreich.net/downloads/gsl-1.13-windows-binaries.zip
   - unzip gsl-1.13-windows-binaries.zip
+  # config.h
+  - cd ecell4/core
+  - move config.h.win32 config.h
+  - cd ../..
   # go into ecell4/python
   - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
   - "python --version"
