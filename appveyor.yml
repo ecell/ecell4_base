@@ -1,16 +1,12 @@
 #os: Visual Studio 2015
 
 environment:
-
+  PYTHON: "C:\\Python27"
+  PYTHON_VERSION: "2.7.9"
+  PYTHON_ARCH: "32"
   matrix:
-    - GENERATOR: "Visual Studio 9 2008"
-      ARCH: 32
-
-    - PYTHON: "C:\\Python27"
-      PYTHON_VERSION: "2.7.9"
-#    - PYTHON: "C:\\Python35"
-#      PYTHON_VERSION: "3.5.0"
-      PYTHON_ARCH: "32"
+  - GENERATOR: "Visual Studio 9 2008"
+    ARCH: 32
 
 init:
   - cmd: cmake --version
@@ -24,7 +20,9 @@ install:
   - cd python
   - ECHO "ls boost:"
   - ps: "ls \"C:/Libraries/boost\""
-  - "python setup.py build_ext -IC:/Libraries/boost"
+  - curl -O curl -O http://ftp.vector.co.jp/43/28/2114/stdint-20070624.zip
+  - unzip stdint-20070624.zip
+  - "python setup.py build_ext -IC:/Libraries/boost;C:/projects/ecell4/stdint-20070624"
 
 build: false
 
