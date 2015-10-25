@@ -13,9 +13,12 @@ init:
 
 install:
   # install stdint
-  - curl -O curl -O http://ftp.vector.co.jp/43/28/2114/stdint-20070624.zip
+  - curl -O http://ftp.vector.co.jp/43/28/2114/stdint-20070624.zip
   - unzip stdint-20070624.zip
-  #- move stdint-20070624 stdint
+  # install gsl
+  - curl -O http://r2d3.geldreich.net/downloads/gsl-1.13-windows-binaries.zip
+  - unzip gsl-1.13-windows-binaries.zip
+  # go into ecell4/python
   - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
   - "python --version"
   - curl -O https://bootstrap.pypa.io/get-pip.py
@@ -25,7 +28,7 @@ install:
   - ECHO "ls boost:"
   - ps: "ls \"C:/Libraries/boost\""
   - echo %CD%
-  - "python setup.py build_ext -IC:/Libraries/boost;C:/projects/ecell4/stdint-20070624"
+  - "python setup.py build_ext -IC:/Libraries/boost;C:/projects/ecell4/stdint-20070624;C:/projects/ecell4/gsl/include"
 
 build: false
 
