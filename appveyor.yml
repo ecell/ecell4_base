@@ -1,13 +1,8 @@
 os: Visual Studio 2015
 
 environment:
-  BOOST_ROOT: C:\Libraries\boost
-  BOOST_LIBRARYDIR: C:\Libraries\boost\stage\lib
-  BUILD_EXAMPLES: OFF  # don't build examples to not exceed allowed build time (40 min)
-  BUILD_TUTORIALS: OFF  # don't build tutorials to not exceed allowed build time (40 min)
+
   matrix:
-    - BUILD_CORE_ONLY: ON
-    - BUILD_CORE_ONLY: OFF
     - PYTHON: "C:\\Python35"
       PYTHON_VERSION: "3.5.0"
       PYTHON_ARCH: "32"
@@ -22,7 +17,11 @@ install:
   - ECHO "Where am I?:"
   - ps: "echo %cd%"
   - cd python
-  - "python setup.py build_ext"
+  - ECHO "ls boost:"
+  - ps: "ls \"C:/Libraries/boost\""
+  - "python setup.py build_ext -IC:\Libraries\boost;"
+
+build: false
 
 branches:
   only:
