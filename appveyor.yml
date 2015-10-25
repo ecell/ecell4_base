@@ -1,11 +1,21 @@
+os: Visual Studio 2015
+
 environment:
+  BOOST_ROOT: C:\Libraries\boost_1_59_0
+  # BOOST_LIBRARYDIR: C:\Libraries\boost_1_59_0\stage\lib
+  BUILD_EXAMPLES: OFF  # don't build examples to not exceed allowed build time (40 min)
+  BUILD_TUTORIALS: OFF  # don't build tutorials to not exceed allowed build time (40 min)
 
   matrix:
     - PYTHON: "C:\\Python35"
       PYTHON_VERSION: "3.5.0"
       PYTHON_ARCH: "32"
 
+init:
+  - cmd: cmake --version
+
 install:
+  - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
   - "python --version"
   - "pip install cython"
   - ECHO "Where am I?:"
