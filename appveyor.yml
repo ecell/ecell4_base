@@ -1,0 +1,18 @@
+environment:
+
+  matrix:
+    - PYTHON: "C:\\Python35"
+      PYTHON_VERSION: "3.5.0"
+      PYTHON_ARCH: "32"
+
+install:
+  - "python --version"
+  - "pip install cython"
+  - ECHO "Where am I?:"
+  - ps: "echo $cd%"
+
+build: false
+
+branches:
+  only:
+    - appveyor
