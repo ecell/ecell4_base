@@ -32,7 +32,7 @@ install:
   - ECHO "ls boost:"
   - ps: "ls \"C:/Libraries/boost\""
   - echo %CD%
-  - "python setup.py build_ext -IC:/Libraries/boost;C:/projects/ecell4/stdint-20070624;C:/projects/ecell4/gsl/include"
+  - "python setup.py build_ext -IC:/Libraries/boost;C:/projects/ecell4/stdint-20070624;C:/projects/ecell4/gsl/include -LC:/projects/ecell4/gsl/lib"
 
 build: false
 
