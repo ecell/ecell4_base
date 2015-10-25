@@ -14,12 +14,10 @@ install:
   - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
   - "python --version"
   - "pip install cython"
-  - ECHO "Where am I?:"
-  - ps: "echo %cd%"
   - cd python
   - ECHO "ls boost:"
   - ps: "ls \"C:/Libraries/boost\""
-  - "python setup.py build_ext -IC:\Libraries\boost;"
+  - "python setup.py build_ext -IC:/Libraries/boost"
 
 build: false
 
