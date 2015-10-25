@@ -19,7 +19,9 @@ install:
   - "python --version"
   - "pip install cython"
   - ECHO "Where am I?:"
-  - ps: "echo $cd%"
+  - ps: "echo %cd%"
+  - cd python
+  - "python setup.py build_ext"
 
 build: false
 
