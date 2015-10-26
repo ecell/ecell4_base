@@ -41,6 +41,12 @@ const Integer FixedIntervalObserver::count() const
 
 void FixedIntervalObserver::initialize(const Space* space)
 {
+    if (dt_ <= 0.0)
+    {
+        throw std::invalid_argument(
+            "A step interval of FixedIntervalObserver must be positive.");
+    }
+
     if (count_ == 0)
     {
         t0_ = space->t();

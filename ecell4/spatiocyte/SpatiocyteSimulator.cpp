@@ -987,7 +987,7 @@ void SpatiocyteSimulator::walk(const Species& species, const Real& alpha)
                 continue;
             }
             const SpatiocyteWorld::private_coordinate_type neighbor(
-                    world_->get_neighbor_private(info.first, rnd));
+                    world_->get_neighbor_private_boundary(info.first, rnd));
             if (world_->can_move(info.first, neighbor))
             {
                 if (rng->uniform(0,1) <= alpha)

@@ -363,11 +363,11 @@ public:
         //     layer_size() * HCP_Y + (col_size() > 1 ? HCP_L: 0.0),
         //     row_size() * voxel_radius() * 2
         //         + (col_size() > 1 || layer_size() > 1 ? voxel_radius() : 0.0));
-        // return Real3(
-        //     col_size() * HCP_X, layer_size() * HCP_Y, row_size() * voxel_radius() * 2);
-        const Real sigma(voxel_radius() * 2);
         return Real3(
-            (col_size() - 1) * HCP_X + sigma, (layer_size() - 1) * HCP_Y + sigma, row_size() * sigma);
+            col_size() * HCP_X, layer_size() * HCP_Y, row_size() * voxel_radius() * 2);
+        // const Real sigma(voxel_radius() * 2);
+        // return Real3(
+        //     (col_size() - 1) * HCP_X + sigma, (layer_size() - 1) * HCP_Y + sigma, row_size() * sigma);
     }
 
     /**
