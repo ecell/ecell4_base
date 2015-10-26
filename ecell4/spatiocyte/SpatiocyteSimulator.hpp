@@ -108,7 +108,6 @@ protected:
                 // dt_  = pow((2*sqrt(2.0)+4*sqrt(3.0)+3*sqrt(6.0)+sqrt(22.0))/
                 //           (6*sqrt(2.0)+4*sqrt(3.0)+3*sqrt(6.0)), 2) * R * R / D * alpha_;
                 dt_ = R * R / D * alpha_;
-            }
             } else if(mtype->get_dimension() == Shape::ONE) {
                 dt_ = 2 * R * R / D * alpha_;
             }
