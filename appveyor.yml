@@ -2,7 +2,7 @@
 
 environment:
   global:
-    HDF_DIR: C:/Program Files (x86)/HDF_Group/HDF5/1.8.15/lib
+    HDF_DIR: "C:/Program Files (x86)/HDF_Group/HDF5/1.8.15/lib"
   PYTHON: "C:\\Python27"
   PYTHON_VERSION: "2.7.9"
   PYTHON_ARCH: "32"
@@ -21,12 +21,15 @@ install:
   - curl -O http://r2d3.geldreich.net/downloads/gsl-1.13-windows-binaries.zip
   - unzip gsl-1.13-windows-binaries.zip
   # install hdf5
+  - mkdir hdf5lib
   - curl -O http://www.hdfgroup.org/ftp/HDF5/current/bin/windows/extra/hdf5-1.8.15-patch1-win32-vs2012-shared.zip
   - unzip hdf5-1.8.15-patch1-win32-vs2012-shared.zip
   - cd hdf5
   - msiexec /i HDF5-1.8.15-win32.msi /quiet /qn /norestart /log install.log
   - type install.log
-  - cd ..
+  - cd %HDF_DIR%
+  - xcopy *.lib C:/projects/ecell4/hdf5lib/
+  - cd C:/projects/ecell4
   # config.h
   - cd ecell4/core
   - move config.h.win32 config.h
@@ -41,7 +44,7 @@ install:
   - ECHO "ls boost:"
   - ps: "ls \"C:/Libraries/boost\""
   - echo %CD%
-  - "python setup.py build_ext -IC:/Libraries/boost;C:/projects/ecell4/stdint-20070624;C:/projects/ecell4/gsl/include -LC:/projects/ecell4/gsl/lib;%HDF_DIR%"
+  - "python setup.py build_ext -IC:/Libraries/boost;C:/projects/ecell4/stdint-20070624;C:/projects/ecell4/gsl/include -LC:/projects/ecell4/gsl/lib;C:/projects/ecell4/hdf5lib"
 
 build: false
 
