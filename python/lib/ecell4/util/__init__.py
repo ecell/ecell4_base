@@ -1,3 +1,5 @@
+import collections
+
 from .decorator import reaction_rules, species_attributes, parameters, get_model, reset_model
 from . import viz
 
@@ -73,7 +75,7 @@ def run_simulation(
 
     Parameters
     ----------
-    t : array
+    t : array or Real
         A sequence of time points for which to solve for 'm'.
     y0 : dict
         Initial condition.
@@ -103,7 +105,7 @@ def run_simulation(
     structures : dict, optional
         A dictionary which gives pairs of a name and shape of structures.
         Not fully supported yet.
-    observers : list, optional
+    observers : Observer or list, optional
         A list of extra observer references.
 
     Returns
@@ -154,11 +156,18 @@ def run_simulation(
             seeds = [ecell4.Species(serial) for serial in y0.keys()]
             species_list = [
                 sp.serial() for sp in model.expand(seeds).list_species()]
+            species_list = sorted(set(y0.keys() + species_list))
 
+    if not isinstance(t, collections.Iterable):
+        t = [float(t) * i / 100 for i in range(101)]
     obs = ecell4.TimingNumberObserver(t, species_list)
     sim = f.create_simulator(model, w)
     # sim = f.create_simulator(w)
-    sim.run(t[-1], (obs, ) + tuple(observers))
+    if isinstance(observers, collections.Iterable):
+        observers = (obs, ) + tuple(observers)
+    else:
+        observers = (obs, observers)
+    sim.run(t[-1], observers)
 
     if return_type == 'matplotlib':
         if isinstance(plot_args, (list, tuple)):
