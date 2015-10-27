@@ -488,17 +488,29 @@ cdef class ODEReactionRule:
     """A class representing a reaction rule between ``Species``, which accepts at most
     one rate law to calculate the flux.
 
-    ODEReactionRule()
+    ODEReactionRule(rr)
 
     """
 
-    def __init__(self):
-        """Constructor."""
+    def __init__(self, *args):
+        """Constructor.
+
+        Parameters
+        ----------
+        rr : ReactionRule
+
+        """
         pass
 
-    def __cinit__(self):
-        self.thisptr = new Cpp_ODEReactionRule()
-        self.ratelaw = None
+    def __cinit__(self, *args):
+        if len(args) == 0:
+            self.thisptr = new Cpp_ODEReactionRule()
+            self.ratelaw = None
+        elif len(args) == 1 and isinstance(args[0], ReactionRule):
+            self.thisptr = new Cpp_ODEReactionRule(deref((<ReactionRule>args[0]).thisptr))
+            self.ratelaw = None
+        else:
+            raise ValueError("The invalid arguments are given.")
 
     def __dealloc__(self):
         del self.thisptr
