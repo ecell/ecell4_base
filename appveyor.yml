@@ -1,6 +1,8 @@
 #os: Visual Studio 2015
 
 environment:
+  global:
+    HDF_DIR: C:/Program Files (x86)/HDF_Group/HDF5/1.8.15/lib
   PYTHON: "C:\\Python27"
   PYTHON_VERSION: "2.7.9"
   PYTHON_ARCH: "32"
@@ -39,7 +41,7 @@ install:
   - ECHO "ls boost:"
   - ps: "ls \"C:/Libraries/boost\""
   - echo %CD%
-  - "python setup.py build_ext -IC:/Libraries/boost;C:/projects/ecell4/stdint-20070624;C:/projects/ecell4/gsl/include -LC:/projects/ecell4/gsl/lib"
+  - "python setup.py build_ext -IC:/Libraries/boost;C:/projects/ecell4/stdint-20070624;C:/projects/ecell4/gsl/include -LC:/projects/ecell4/gsl/lib;%HDF_DIR"
 
 build: false
 
