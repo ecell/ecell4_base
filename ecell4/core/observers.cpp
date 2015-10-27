@@ -328,14 +328,16 @@ void FixedIntervalTrajectoryObserver::initialize(const Space* space)
     {
         particle_id_pairs const particles(space->list_particles());
         pids_.reserve(particles.size());
-        trajectories_.resize(particles.size());
-        strides_.resize(particles.size());
         for (particle_id_pairs::const_iterator i(particles.begin());
             i != particles.end(); ++i)
         {
-            pids_.push_back((*i).first);
+            if ((*i).second.D() > 0)
+            {
+                pids_.push_back((*i).first);
+            }
         }
-        assert(pids_.size() == particles.size());
+        trajectories_.resize(pids_.size());
+        strides_.resize(pids_.size());
     }
 }
 
