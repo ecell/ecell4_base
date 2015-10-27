@@ -33,6 +33,8 @@ install:
   # config.h
   - cd ecell4/core
   - move config.h.win32 config.h
+  - cd ../egfrd
+  - move config.h.win32 config.h
   - cd ../..
   # go into ecell4/python
   - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
