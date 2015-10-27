@@ -27,9 +27,8 @@ install:
   - cd hdf5
   - msiexec /i HDF5-1.8.15-win32.msi /quiet /qn /norestart /log install.log
   - type install.log
-  - cd %HDF_DIR%
-  - xcopy *.lib C:/projects/ecell4/hdf5lib/
-  - cd C:/projects/ecell4
+  - xcopy %HDF_DIR% C:/projects/ecell4/hdf5lib
+  - cd ..
   # config.h
   - cd ecell4/core
   - move config.h.win32 config.h
