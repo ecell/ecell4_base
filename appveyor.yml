@@ -18,6 +18,13 @@ install:
   # install gsl
   - curl -O http://r2d3.geldreich.net/downloads/gsl-1.13-windows-binaries.zip
   - unzip gsl-1.13-windows-binaries.zip
+  # install hdf5
+  - curl -O http://www.hdfgroup.org/ftp/HDF5/current/bin/windows/extra/hdf5-1.8.15-patch1-win32-vs2012-shared.zip
+  - unzip hdf5-1.8.15-patch1-win32-vs2012-shared.zip
+  - cd hdf5
+  - msiexec /i HDF5-1.8.15-win32.msi /quiet /qn /norestart /log install.log
+  - type install.log
+  - cd ..
   # config.h
   - cd ecell4/core
   - move config.h.win32 config.h
