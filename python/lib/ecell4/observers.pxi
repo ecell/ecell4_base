@@ -434,7 +434,7 @@ cdef class FixedIntervalCSVObserver:
         This is an easy way to save a ``World`` in CSV format without
         running a simulation.
 
-        >>> w = lattice.LatticeWorld(Real3(1, 1, 1), 0.005)
+        >>> w = spatiocyte.SpatiocyteWorld(Real3(1, 1, 1), 0.005)
         >>> w.bind_to(NetworkModel())
         >>> w.add_molecules(Species("A"), 3)
         >>> FixedIntervalCSVObserver(1, "test.csv").log(w)
