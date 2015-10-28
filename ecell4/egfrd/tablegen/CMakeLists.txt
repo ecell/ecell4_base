@@ -2,13 +2,12 @@
 # INCLUDE(CheckCXXSourceCompiles)
 
 FIND_PACKAGE(Boost)
-
-INCLUDE_DIRECTORIES(${INCLUDE_DIRECTORIES} ${Boost_INCLUDE_DIRS})
-
 find_path( GSL_INCLUDE_DIR
     NAMES gsl/gsl_sf_bessel.h
     )
-    
+
+INCLUDE_DIRECTORIES(${INCLUDE_DIRECTORIES} ${Boost_INCLUDE_DIRS} ${GSL_INCLUDE_DIR})
+
 add_executable(make_sjy_table make_sjy_table.cpp)
 add_executable(make_cjy_table make_cjy_table.cpp)
 target_link_libraries(make_sjy_table gsl gslcblas)

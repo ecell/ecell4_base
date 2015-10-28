@@ -25,7 +25,7 @@ install:
 #  - call "C:\Program Files (x86)\Common Files\Microsoft\Visual C++ for Python\9.0\vcvarsall.bat" x86
 #  - cmake -G "NMake Makefiles" -DBOOST_REGEX_LIBRARIES=C:/Libraries/boost/libs -DBoost_INCLUDE_DIR=C:/Libraries/boost -DGSL_CBLAS_LIBRARIES=C:/projects/ecell4/gsl/lib -DGSL_LIBRARIES=C:/projects/ecell4/gsl/lib .
 #  - nmake BesselTables
-  - cmake -G "Visual Studio 10" -D CMAKE_CXX_FLAGS_RELEASE="/MT" -D CMAKE_CXX_FLAGS_DEBUG="/MTd" -DBOOST_REGEX_LIBRARIES=C:/Libraries/boost/libs -DBoost_INCLUDE_DIR=C:/Libraries/boost -DGSL_CBLAS_LIBRARIES=C:/projects/ecell4/gsl/lib -DGSL_LIBRARIES=C:/projects/ecell4/gsl/lib .
+  - cmake -G "Visual Studio 10" -D CMAKE_CXX_FLAGS_RELEASE="/MT" -D CMAKE_CXX_FLAGS_DEBUG="/MTd" -DBOOST_REGEX_LIBRARIES=C:/Libraries/boost/libs -DBoost_INCLUDE_DIR=C:/Libraries/boost -DGSL_INCLUDE_DIR=C:/projects/ecell4/gsl/include -DGSL_CBLAS_LIBRARIES=C:/projects/ecell4/gsl/lib -DGSL_LIBRARIES=C:/projects/ecell4/gsl/lib .
   - cmake --build . --target BesselTables
   # install hdf5
   - mkdir hdf5lib
