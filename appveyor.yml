@@ -14,6 +14,7 @@ init:
   - cmd: cmake --version
 
 install:
+  - cmake .
   # install stdint
   - curl -O http://ftp.vector.co.jp/43/28/2114/stdint-20070624.zip
   - unzip stdint-20070624.zip
