@@ -21,9 +21,11 @@ install:
   - curl -O http://r2d3.geldreich.net/downloads/gsl-1.13-windows-binaries.zip
   - unzip gsl-1.13-windows-binaries.zip
   # cmake
-  - call "C:\Program Files (x86)\Common Files\Microsoft\Visual C++ for Python\9.0\vcvarsall.bat" x86
-  - cmake -G "NMake Makefiles" -DBOOST_REGEX_LIBRARIES=C:/Libraries/boost/libs -DBoost_INCLUDE_DIR=C:/Libraries/boost -DGSL_CBLAS_LIBRARIES=C:/projects/ecell4/gsl/lib -DGSL_LIBRARIES=C:/projects/ecell4/gsl/lib .
-  - cmake --build .
+#  - call "C:\Program Files (x86)\Common Files\Microsoft\Visual C++ for Python\9.0\vcvarsall.bat" x86
+#  - cmake -G "NMake Makefiles" -DBOOST_REGEX_LIBRARIES=C:/Libraries/boost/libs -DBoost_INCLUDE_DIR=C:/Libraries/boost -DGSL_CBLAS_LIBRARIES=C:/projects/ecell4/gsl/lib -DGSL_LIBRARIES=C:/projects/ecell4/gsl/lib .
+#  - nmake BesselTables
+  - cmake -G "Visual Studio 10" -DBOOST_REGEX_LIBRARIES=C:/Libraries/boost/libs -DBoost_INCLUDE_DIR=C:/Libraries/boost -DGSL_CBLAS_LIBRARIES=C:/projects/ecell4/gsl/lib -DGSL_LIBRARIES=C:/projects/ecell4/gsl/lib .
+  - cmake --build . --target BesselTables
   # install hdf5
   - mkdir hdf5lib
   - curl -O http://www.hdfgroup.org/ftp/HDF5/current/bin/windows/extra/hdf5-1.8.15-patch1-win32-vs2012-shared.zip
