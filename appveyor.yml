@@ -22,7 +22,7 @@ install:
   - unzip gsl-1.13-windows-binaries.zip
   # cmake
   - cmake -DBOOST_REGEX_LIBRARIES=C:/Libraries/boost/libs -DBoost_INCLUDE_DIR=C:/Libraries/boost -DGSL_CBLAS_LIBRARIES=C:/projects/ecell4/gsl/lib -DGSL_LIBRARIES=C:/projects/ecell4/gsl/lib .
-  - nmake BesselTables
+  - make BesselTables
   # install hdf5
   - mkdir hdf5lib
   - curl -O http://www.hdfgroup.org/ftp/HDF5/current/bin/windows/extra/hdf5-1.8.15-patch1-win32-vs2012-shared.zip
