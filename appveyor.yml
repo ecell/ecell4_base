@@ -25,8 +25,8 @@ install:
 #  - call "C:\Program Files (x86)\Common Files\Microsoft\Visual C++ for Python\9.0\vcvarsall.bat" x86
 #  - cmake -G "NMake Makefiles" -DBOOST_REGEX_LIBRARIES=C:/Libraries/boost/libs -DBoost_INCLUDE_DIR=C:/Libraries/boost -DGSL_CBLAS_LIBRARIES=C:/projects/ecell4/gsl/lib -DGSL_LIBRARIES=C:/projects/ecell4/gsl/lib .
 #  - nmake BesselTables
-  - cmake -G "Visual Studio 10" -D CMAKE_CXX_FLAGS_RELEASE="/MT" -D CMAKE_CXX_FLAGS_DEBUG="/MTd" -DCMAKE_INCLUDE_PATH="%CMAKE_INCLUDE_PATH%" -DBOOST_REGEX_LIBRARIES=C:/Libraries/boost/libs -DBoost_INCLUDE_DIR=C:/Libraries/boost -DGSL_CBLAS_LIBRARIES=C:/projects/ecell4/gsl/lib -DGSL_LIBRARIES=C:/projects/ecell4/gsl/lib .
-  - cmake --build . --target BesselTables
+  - cmake -G "Visual Studio 10" -D CMAKE_CXX_FLAGS_RELEASE="/MT" -D CMAKE_CXX_FLAGS_DEBUG="/MTd" -DBOOST_REGEX_LIBRARIES=C:/Libraries/boost/libs -DBoost_INCLUDE_DIR=C:/Libraries/boost -DGSL_CBLAS_LIBRARIES=C:/projects/ecell4/gsl/lib -DGSL_LIBRARIES=C:/projects/ecell4/gsl/lib .
+  - cmake -DCMAKE_INCLUDE_PATH="%CMAKE_INCLUDE_PATH%" --build . --target BesselTables
   # install hdf5
   - mkdir hdf5lib
   - curl -O http://www.hdfgroup.org/ftp/HDF5/current/bin/windows/extra/hdf5-1.8.15-patch1-win32-vs2012-shared.zip
