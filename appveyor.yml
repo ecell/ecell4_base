@@ -3,7 +3,7 @@
 environment:
   global:
     HDF_DIR: "C:/Program Files (x86)/HDF_Group/HDF5/1.8.15/lib"
-    CMAKE_INCLUDE_PATH: C:\Libraries\boost
+    BOOST_ROOT: C:\Libraries\boost
   PYTHON: "C:\\Python27"
   PYTHON_VERSION: "2.7.9"
   PYTHON_ARCH: "32"
