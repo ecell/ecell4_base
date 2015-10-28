@@ -262,26 +262,61 @@ public:
 
     void bind_to(boost::shared_ptr<Model> model)
     {
-        throw NotImplemented("Not supported yet.");
+        if (boost::shared_ptr<NetworkModel> network_model
+                = boost::dynamic_pointer_cast<NetworkModel>(model))
+        {
+            if (generated_)
+            {
+                std::cerr << "Warning: NetworkModel is already bound to ODEWorld."
+                    << std::endl;
+            }
+            else if (model_.expired())
+            {
+                std::cerr << "Warning: ODENetworkModel is already bound to ODEWorld."
+                    << std::endl;
+            }
+
+            boost::shared_ptr<ODENetworkModel> tmp(new ODENetworkModel(network_model));
+            generated_.swap(tmp);
+            model_.reset();
+        }
+        else
+        {
+            throw NotSupported(
+                "Not supported yet. Either ODENetworkModel or NetworkModel must be given.");
+        }
     }
 
     void bind_to(boost::shared_ptr<ODENetworkModel> model)
     {
-        if (boost::shared_ptr<ODENetworkModel> bound_model = lock_model())
+        if (boost::shared_ptr<ODENetworkModel> bound_model = model_.lock())
         {
             if (bound_model.get() != model.get())
             {
-                std::cerr << "Warning: ODENetworkModel already bound to ODEWorld."
+                std::cerr << "Warning: ODENetworkModel is already bound to ODEWorld."
                     << std::endl;
             }
         }
+        else if (generated_)
+        {
+            std::cerr << "Warning: NetworkModel is already bound to ODEWorld."
+                << std::endl;
+        }
 
         this->model_ = model;
+        generated_.reset();
     }
 
     boost::shared_ptr<ODENetworkModel> lock_model() const
     {
-        return model_.lock();
+        if (generated_)
+        {
+            return generated_;
+        }
+        else
+        {
+            return model_.lock();
+        }
     }
 
     void add_molecules(const Species& sp, const Integer& num,
@@ -301,6 +336,7 @@ protected:
     species_map_type index_map_;
 
     boost::weak_ptr<ODENetworkModel> model_;
+    boost::shared_ptr<ODENetworkModel> generated_;
     // bool is_netfree_;
 };
 
