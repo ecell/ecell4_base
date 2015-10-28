@@ -5,8 +5,12 @@ FIND_PACKAGE(Boost)
 find_path( GSL_INCLUDE_DIR
     NAMES gsl/gsl_sf_bessel.h
     )
+find_library( GSL_LIBRARIES
+          NAMES gsl
+        )
 
 INCLUDE_DIRECTORIES(${INCLUDE_DIRECTORIES} ${Boost_INCLUDE_DIRS} ${GSL_INCLUDE_DIR})
+LINK_DIRECTORIES(${LINK_DIRECTORIES} ${GSL_LIBRARIES})
 
 add_executable(make_sjy_table make_sjy_table.cpp)
 add_executable(make_cjy_table make_cjy_table.cpp)
