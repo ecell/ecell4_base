@@ -152,9 +152,9 @@ def plot_movie(
 
 
 def plot_world(
-        world, radius=None, width=500, height=500, config={}, grid=True,
+        world, radius=None, width=350, height=350, config={}, grid=True,
         save_image=False, wireframe=False, species_list=None, debug=None, max_count=1000,
-        camera_position=(-30, 31, 42), camera_rotation=(-0.6, 0.5, 0.6),
+        camera_position=(-22, 23, 32), camera_rotation=(-0.6, 0.5, 0.6),
         predicator=None):
     """
     Generate a plot from received instance of World and show it on IPython notebook.
@@ -169,9 +169,9 @@ def plot_world(
     radius : float, default None
         If this value is set, all particles in the world will be rendered
         as if their radius are the same.
-    width : float, default 500
+    width : float, default 350
         Width of the plotting area.
-    height : float, default 500
+    height : float, default 350
         Height of the plotting area.
     config : dict, default {}
         Dict for configure default colors. Its values are colors unique
@@ -192,7 +192,7 @@ def plot_world(
             plane: width, height
             sphere: radius
             cylinder: radius, height
-    camera_position : tuple, default (-30, 31, 42)
+    camera_position : tuple, default (-22, 23, 32)
     camera_rotaiton : tuple, default (-0.6, 0.5, 0.6)
         Initial position and rotation of camera.
 
@@ -256,7 +256,7 @@ def plot_world(
 
 
 def plot_dense_array(
-        arr, length=256, ranges=None, colors=["#a6cee3", "#fb9a99"], save_image=False, grid=False, camera_position=(-30, 31, 42), camera_rotation=(-0.6, 0.5, 0.6)):
+        arr, length=256, ranges=None, colors=["#a6cee3", "#fb9a99"], save_image=False, grid=False, camera_position=(-22, 23, 32), camera_rotation=(-0.6, 0.5, 0.6)):
     """
     Volume renderer
 
@@ -272,7 +272,7 @@ def plot_dense_array(
     length : int
         length of the texture
         256 or 64
-    camera_position : tuple, default (-30, 31, 42)
+    camera_position : tuple, default (-22, 23, 32)
     camera_rotaiton : tuple, default (-0.6, 0.5, 0.6)
         Initial position and rotation of camera.
 
@@ -376,9 +376,9 @@ def generate_html(keywords, tmpl_path):
 
 
 def plot_trajectory(
-        obs, width=500, height=500, config={}, grid=True, wireframe=False,
+        obs, width=350, height=350, config={}, grid=True, wireframe=False,
         max_count=10, save_image=False,
-        camera_position=(-30, 31, 42), camera_rotation=(-0.6, 0.5, 0.6)):
+        camera_position=(-22, 23, 32), camera_rotation=(-0.6, 0.5, 0.6)):
     """
     Generate a plot from received instance of TrajectoryObserver and show it
     on IPython notebook.
@@ -387,9 +387,9 @@ def plot_trajectory(
     ----------
     obs : TrajectoryObserver
         TrajectoryObserver to render.
-    width : float, default 500
+    width : float, default 350
         Width of the plotting area.
-    height : float, default 500
+    height : float, default 350
         Height of the plotting area.
     config : dict, default {}
         Dict for configure default colors. Its values are colors unique
