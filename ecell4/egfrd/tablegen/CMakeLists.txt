@@ -1,6 +1,9 @@
 # cmake_minimum_required(VERSION 2.8)
 # INCLUDE(CheckCXXSourceCompiles)
 
+set(CMAKE_CXX_FLAGS_RELEASE "/MT")
+set(CMAKE_CXX_FLAGS_DEBUG "/MTd")
+
 FIND_PACKAGE(Boost)
 find_path( GSL_INCLUDE_DIR
     NAMES gsl/gsl_sf_bessel.h
