@@ -154,6 +154,7 @@ def plot_movie(
 def plot_world(
         world, radius=None, width=500, height=500, config={}, grid=True,
         save_image=False, wireframe=False, species_list=None, debug=None, max_count=1000,
+        camera_position=(-30, 31, 42), camera_rotation=(-0.6, 0.5, 0.6),
         predicator=None):
     """
     Generate a plot from received instance of World and show it on IPython notebook.
@@ -191,6 +192,9 @@ def plot_world(
             plane: width, height
             sphere: radius
             cylinder: radius, height
+    camera_position : tuple, default (-30, 31, 42)
+    camera_rotaiton : tuple, default (-0.6, 0.5, 0.6)
+        Initial position and rotation of camera.
 
     Returns
     -------
@@ -230,8 +234,8 @@ def plot_world(
     model = {
         'plots': plots,
         'options': {
-            'width': width,
-            'height': height,
+            'world_width': width,
+            'world_height': height,
             'range': __get_range_of_world(world),
             'autorange': False,
             'grid': grid,
@@ -244,12 +248,15 @@ def plot_world(
 
     model_id = '"viz' + str(uuid.uuid4()) + '"'
     display(HTML(generate_html(
-        {'model': json.dumps(model), 'model_id': model_id},
+        {'model': json.dumps(model), 'model_id': model_id,
+        'px': camera_position[0], 'py': camera_position[1], 'pz': camera_position[2],
+        'rx': camera_rotation[0], 'ry': camera_rotation[1], 'rz': camera_rotation[2]},
         '/templates/particles.tmpl')))
     return color_scale.get_config()
 
 
-def plot_dense_array(arr, length=256, ranges=None, colors=["#a6cee3", "#fb9a99"], save_image=False, grid=False):
+def plot_dense_array(
+        arr, length=256, ranges=None, colors=["#a6cee3", "#fb9a99"], save_image=False, grid=False, camera_position=(-30, 31, 42), camera_rotation=(-0.6, 0.5, 0.6)):
     """
     Volume renderer
 
@@ -265,6 +272,9 @@ def plot_dense_array(arr, length=256, ranges=None, colors=["#a6cee3", "#fb9a99"]
     length : int
         length of the texture
         256 or 64
+    camera_position : tuple, default (-30, 31, 42)
+    camera_rotaiton : tuple, default (-0.6, 0.5, 0.6)
+        Initial position and rotation of camera.
 
     """
     import numpy
@@ -336,7 +346,9 @@ def plot_dense_array(arr, length=256, ranges=None, colors=["#a6cee3", "#fb9a99"]
 
     model_id = '"viz' + str(uuid.uuid4()) + '"'
     display(HTML(generate_html(
-        {'model': json.dumps(model), 'model_id': model_id},
+        {'model': json.dumps(model), 'model_id': model_id,
+        'px': camera_position[0], 'py': camera_position[1], 'pz': camera_position[2],
+        'rx': camera_rotation[0], 'ry': camera_rotation[1], 'rz': camera_rotation[2]},
         '/templates/particles.tmpl')))
 
 def generate_html(keywords, tmpl_path):
@@ -365,7 +377,8 @@ def generate_html(keywords, tmpl_path):
 
 def plot_trajectory(
         obs, width=500, height=500, config={}, grid=True, wireframe=False,
-        max_count=10, save_image=False):
+        max_count=10, save_image=False,
+        camera_position=(-30, 31, 42), camera_rotation=(-0.6, 0.5, 0.6)):
     """
     Generate a plot from received instance of TrajectoryObserver and show it
     on IPython notebook.
@@ -382,6 +395,9 @@ def plot_trajectory(
         Dict for configure default colors. Its values are colors unique
         to each particle.
         Colors included in config dict will never be used for other particles.
+    camera_position : tuple, default (-30, 31, 42)
+    camera_rotaiton : tuple, default (-0.6, 0.5, 0.6)
+        Initial position and rotation of camera.
 
     Returns
     -------
@@ -442,8 +458,8 @@ def plot_trajectory(
     model = {
         'plots': plots,
         'options': {
-            'width': width,
-            'height': height,
+            'world_width': width,
+            'world_height': height,
             'range': {'x': rangex, 'y': rangey, 'z': rangez},
             'autorange': False,
             'grid': grid,
@@ -456,7 +472,9 @@ def plot_trajectory(
 
     model_id = '"viz' + str(uuid.uuid4()) + '"'
     display(HTML(generate_html(
-        {'model': json.dumps(model), 'model_id': model_id},
+        {'model': json.dumps(model), 'model_id': model_id,
+        'px': camera_position[0], 'py': camera_position[1], 'pz': camera_position[2],
+        'rx': camera_rotation[0], 'ry': camera_rotation[1], 'rz': camera_rotation[2]},
         '/templates/particles.tmpl')))
     return color_scale.get_config()
 
