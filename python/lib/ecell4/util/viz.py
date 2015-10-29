@@ -788,7 +788,7 @@ class ColorScale:
         return self.config
 
 def __prepare_mplot3d_with_maplotlib(
-        world, figsize, grid, wireframe):
+        world, figsize, grid, wireframe, angle):
     from mpl_toolkits.mplot3d import Axes3D
     import matplotlib.pyplot as plt
 
@@ -808,6 +808,9 @@ def __prepare_mplot3d_with_maplotlib(
     ax.set_xlabel('X')
     ax.set_ylabel('Y')
     ax.set_zlabel('Z')
+
+    if angle is not None:
+        ax.azim, ax.elev, ax.dist = angle
 
     return (fig, ax)
 
@@ -836,7 +839,7 @@ def __scatter_world_with_matplotlib(
 
 def plot_world_with_matplotlib(
         world, marker_size=3, figsize=6, grid=True,
-        wireframe=False, species_list=None, max_count=None,
+        wireframe=False, species_list=None, max_count=None, angle=None,
         legend=True, **kwargs):
     """
     Generate a plot from received instance of World and show it on IPython notebook.
@@ -855,6 +858,9 @@ def plot_world_with_matplotlib(
     max_count : Integer, default None
         The maximum number of particles to show for each species.
         None means no limitation.
+    angle : tuple, default None
+        A tuple of view angle which is given as (azim, elev, dist).
+        If None, use default assumed to be (-60, 30, 10).
     legend : bool, default True
 
     """
@@ -866,7 +872,7 @@ def plot_world_with_matplotlib(
             set(species_list), key=species_list.index)  # XXX: pick unique ones
 
     fig, ax = __prepare_mplot3d_with_maplotlib(
-        world, figsize, grid, wireframe)
+        world, figsize, grid, wireframe, angle)
     __scatter_world_with_matplotlib(
         world, ax, species_list, marker_size, max_count, **kwargs)
 
@@ -874,24 +880,29 @@ def plot_world_with_matplotlib(
         ax.legend(loc='best', shadow=True)
     plt.show()
 
-def anim_to_html(anim):
+def anim_to_html(anim, filename=None):
     VIDEO_TAG = """<video controls>
      <source src="data:video/x-webm;base64,{0}" type="video/webm">
      Your browser does not support the video tag.
     </video>"""
 
     if not hasattr(anim, '_encoded_video'):
-        with NamedTemporaryFile(suffix='.webm') as f:
-            anim.save(f.name, fps=6, extra_args=['-vcodec', 'libvpx'])
-            video = open(f.name, "rb").read()
+        if filename is None:
+            with NamedTemporaryFile(suffix='.webm') as f:
+                anim.save(f.name, fps=6, extra_args=['-vcodec', 'libvpx'])
+                video = open(f.name, "rb").read()
+        else:
+            with open(filename, 'w') as f:
+                anim.save(f.name, fps=6, extra_args=['-vcodec', 'libvpx'])
+                video = open(f.name, "rb").read()
         anim._encoded_video = video.encode("base64")
     return VIDEO_TAG.format(anim._encoded_video)
 
 def plot_movie_with_matplotlib(
         worlds, marker_size=3, figsize=6, grid=True,
-        wireframe=False, species_list=None, max_count=None,
+        wireframe=False, species_list=None, max_count=None, angle=None,
         interval=50, repeat_delay=3000,
-        legend=True, **kwargs):
+        legend=True, output=None, **kwargs):
     """
     Generate a move from the received list of instances of World,
     and show it on IPython notebook. This function may require ffmpeg.
@@ -910,9 +921,13 @@ def plot_movie_with_matplotlib(
     max_count : Integer, default None
         The maximum number of particles to show for each species.
         None means no limitation.
+    angle : tuple, default None
+        A tuple of view angle which is given as (azim, elev, dist).
+        If None, use default assumed to be (-60, 30, 10).
     interval : Integer, default 50
         Parameters for matplotlib.animation.ArtistAnimation.
     legend : bool, default True
+    output : str, default None
 
     """
     import matplotlib.pyplot as plt
@@ -931,7 +946,7 @@ def plot_movie_with_matplotlib(
     print("Start preparing mplot3d ...")
 
     fig, ax = __prepare_mplot3d_with_maplotlib(
-        worlds[0], figsize, grid, wireframe)
+        worlds[0], figsize, grid, wireframe, angle)
 
     from ecell4 import Species
     from mpl_toolkits.mplot3d.art3d import juggle_axes
@@ -968,4 +983,4 @@ def plot_movie_with_matplotlib(
 
     plt.close(ani._fig)
     print("Start generating a movie ...")
-    return HTML(anim_to_html(ani))
+    return HTML(anim_to_html(ani, output))
