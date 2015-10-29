@@ -9,7 +9,7 @@ find_library( GSL_LIBRARIES
     NAMES gsl
     )
 find_library( GSL_CBLAS_LIBRARIES
-    NAMES gslcblas
+    NAMES cblas
     )
 
 INCLUDE_DIRECTORIES(${INCLUDE_DIRECTORIES} ${Boost_INCLUDE_DIRS} ${GSL_INCLUDE_DIR})
@@ -17,8 +17,8 @@ LINK_DIRECTORIES(${LINK_DIRECTORIES} ${GSL_LIBRARIES})
 
 add_executable(make_sjy_table make_sjy_table.cpp)
 add_executable(make_cjy_table make_cjy_table.cpp)
-target_link_libraries(make_sjy_table gsl gslcblas)
-target_link_libraries(make_cjy_table gsl gslcblas)
+target_link_libraries(make_sjy_table gsl cblas)
+target_link_libraries(make_cjy_table gsl cblas)
 # add_custom_command(
 #     OUTPUT SphericalBesselTable.hpp
 #     COMMAND make_sjy_table ${PROJECT_BINARY_DIR}/SphericalBesselTable.hpp
