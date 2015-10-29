@@ -68,7 +68,7 @@ def get_factory(solver, *args):
 def run_simulation(
         t, y0={}, volume=1.0, model=None, solver='ode',
         factory=None, is_netfree=False, species_list=None, without_reset=False,
-        return_type='matplotlib', plot_args=(), plot_kwargs={},
+        return_type='matplotlib', opt_args=(), opt_kwargs={},
         structures={}, observers=()):
     """Run a simulation with the given model and plot the result on IPython
     notebook with matplotlib.
@@ -92,12 +92,12 @@ def run_simulation(
         Choose a type of return value from 'array', 'observer',
         'matplotlib', 'nyaplot', 'world' or None.
         If None, return and plot nothing. Default is 'matplotlib'.
-    plot_args: list, tuple or dict, optional
+    opt_args: list, tuple or dict, optional
         Arguments for plotting. If return_type suggests no plotting, just ignored.
-    plot_kwargs: dict, optional
+    opt_kwargs: dict, optional
         Arguments for plotting. If return_type suggests no plotting or
-        plot_args is a list or tuple, just ignored.
-        i.e.) viz.plot_number_observer(obs, *plot_args, **plot_kwargs)
+        opt_args is a list or tuple, just ignored.
+        i.e.) viz.plot_number_observer(obs, *opt_args, **opt_kwargs)
     factory: Factory, optional
     is_netfree: bool, optional
         Whether the model is netfree or not. When a model is given as an
@@ -170,27 +170,35 @@ def run_simulation(
     sim.run(t[-1], observers)
 
     if return_type == 'matplotlib':
-        if isinstance(plot_args, (list, tuple)):
-            ecell4.viz.plot_number_observer(obs, *plot_args, **plot_kwargs)
-        elif isinstance(plot_args, dict):
-            # plot_kwargs is ignored
-            ecell4.viz.plot_number_observer(obs, **plot_args)
+        if isinstance(opt_args, (list, tuple)):
+            ecell4.viz.plot_number_observer(obs, *opt_args, **opt_kwargs)
+        elif isinstance(opt_args, dict):
+            # opt_kwargs is ignored
+            ecell4.viz.plot_number_observer(obs, **opt_args)
         else:
-            raise ValueError('plot_args [{}] must be list or dict.'.format(
-                repr(plot_args)))
+            raise ValueError('opt_args [{}] must be list or dict.'.format(
+                repr(opt_args)))
     elif return_type == 'nyaplot':
-        if isinstance(plot_args, list):
-            ecell4.viz.plot_number_observer_with_nya(obs, *plot_args, **plot_kwargs)
-        elif isinstance(plot_args, dict):
-            # plot_kwargs is ignored
-            ecell4.viz.plot_number_observer_with_nya(obs, **plot_args)
+        if isinstance(opt_args, list):
+            ecell4.viz.plot_number_observer_with_nya(obs, *opt_args, **opt_kwargs)
+        elif isinstance(opt_args, dict):
+            # opt_kwargs is ignored
+            ecell4.viz.plot_number_observer_with_nya(obs, **opt_args)
         else:
-            raise ValueError('plot_args [{}] must be list or dict.'.format(
-                repr(plot_args)))
+            raise ValueError('opt_args [{}] must be list or dict.'.format(
+                repr(opt_args)))
     elif return_type == 'observer':
         return obs
     elif return_type == 'array':
         return obs.data()
+    elif return_type == 'dataframe':
+        import pandas
+        import numpy
+        data = numpy.array(obs.data()).T
+        return pandas.concat([
+            pandas.DataFrame(dict(Time=data[0], Value=data[i + 1],
+                                  Species=sp.serial(), **opt_kwargs))
+            for i, sp in enumerate(obs.targets())])
     elif return_type == 'world':
         return sim.world()
 
@@ -243,8 +251,8 @@ def ensemble_simulations(N=1, *args, **kwargs):
     else:
         kwargs.update({'return_type': 'observer'})
 
-    plot_args = kwargs.get('plot_args', ()) if len(args) <= 10 else args[10]
-    plot_kwargs = kwargs.get('plot_kwargs', {}) if len(args) <= 11 else args[11]
+    opt_args = kwargs.get('opt_args', ()) if len(args) <= 10 else args[10]
+    opt_kwargs = kwargs.get('opt_kwargs', {}) if len(args) <= 11 else args[11]
 
     import numpy
 
@@ -312,23 +320,23 @@ def ensemble_simulations(N=1, *args, **kwargs):
         obs.append(tmp.data())
 
     if return_type == 'matplotlib':
-        if isinstance(plot_args, (list, tuple)):
-            ecell4.viz.plot_number_observer(obs, *plot_args, **plot_kwargs)
-        elif isinstance(plot_args, dict):
-            # plot_kwargs is ignored
-            ecell4.viz.plot_number_observer(obs, **plot_args)
+        if isinstance(opt_args, (list, tuple)):
+            ecell4.viz.plot_number_observer(obs, *opt_args, **opt_kwargs)
+        elif isinstance(opt_args, dict):
+            # opt_kwargs is ignored
+            ecell4.viz.plot_number_observer(obs, **opt_args)
         else:
-            raise ValueError('plot_args [{}] must be list or dict.'.format(
-                repr(plot_args)))
+            raise ValueError('opt_args [{}] must be list or dict.'.format(
+                repr(opt_args)))
     elif return_type == 'nyaplot':
-        if isinstance(plot_args, list):
-            ecell4.viz.plot_number_observer_with_nya(obs, *plot_args, **plot_kwargs)
-        elif isinstance(plot_args, dict):
-            # plot_kwargs is ignored
-            ecell4.viz.plot_number_observer_with_nya(obs, **plot_args)
+        if isinstance(opt_args, list):
+            ecell4.viz.plot_number_observer_with_nya(obs, *opt_args, **opt_kwargs)
+        elif isinstance(opt_args, dict):
+            # opt_kwargs is ignored
+            ecell4.viz.plot_number_observer_with_nya(obs, **opt_args)
         else:
-            raise ValueError('plot_args [{}] must be list or dict.'.format(
-                repr(plot_args)))
+            raise ValueError('opt_args [{}] must be list or dict.'.format(
+                repr(opt_args)))
     elif return_type == 'observer':
         return obs
     elif return_type == 'array':
