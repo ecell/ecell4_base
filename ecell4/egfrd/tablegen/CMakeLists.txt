@@ -6,8 +6,11 @@ find_path( GSL_INCLUDE_DIR
     NAMES gsl/gsl_sf_bessel.h
     )
 find_library( GSL_LIBRARIES
-          NAMES gsl
-        )
+    NAMES gsl
+    )
+find_library( GSL_CBLAS_LIBRARIES
+    NAMES gslcblas
+    )
 
 INCLUDE_DIRECTORIES(${INCLUDE_DIRECTORIES} ${Boost_INCLUDE_DIRS} ${GSL_INCLUDE_DIR})
 LINK_DIRECTORIES(${LINK_DIRECTORIES} ${GSL_LIBRARIES})

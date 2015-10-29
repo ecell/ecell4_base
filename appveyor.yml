@@ -18,14 +18,19 @@ install:
   # install stdint
   - curl -O http://ftp.vector.co.jp/43/28/2114/stdint-20070624.zip
   - unzip stdint-20070624.zip
-  # install gsl
+  # install gsl for build_ext
   - curl -O http://r2d3.geldreich.net/downloads/gsl-1.13-windows-binaries.zip
   - unzip gsl-1.13-windows-binaries.zip
+  # install gsl for BesselTables
+  - cd ..
+  - curl -O http://www.icub.org/download/packages/windows/msvc10/gsl-1.14-bin-msvc10.zip
+  - unzip gsl-1.14-bin-msvc10.zip
+  - cd ecell4
   # cmake
 #  - call "C:\Program Files (x86)\Common Files\Microsoft\Visual C++ for Python\9.0\vcvarsall.bat" x86
 #  - cmake -G "NMake Makefiles" -DBOOST_REGEX_LIBRARIES=C:/Libraries/boost/libs -DBoost_INCLUDE_DIR=C:/Libraries/boost -DGSL_CBLAS_LIBRARIES=C:/projects/ecell4/gsl/lib -DGSL_LIBRARIES=C:/projects/ecell4/gsl/lib .
 #  - nmake BesselTables
-  - cmake -G "Visual Studio 10" -D CMAKE_CXX_FLAGS_RELEASE="/MT" -D CMAKE_CXX_FLAGS_DEBUG="/MTd" -DBOOST_REGEX_LIBRARIES=C:/Libraries/boost/libs -DBoost_INCLUDE_DIR=C:/Libraries/boost -DGSL_INCLUDE_DIR=C:/projects/ecell4/gsl/include -DGSL_CBLAS_LIBRARIES=C:/projects/ecell4/gsl/lib -DGSL_LIBRARIES=C:/projects/ecell4/gsl/lib .
+  - cmake -G "Visual Studio 10" -D CMAKE_CXX_FLAGS_RELEASE="/MT" -D CMAKE_CXX_FLAGS_DEBUG="/MTd" -DBOOST_REGEX_LIBRARIES=C:/Libraries/boost/libs -DBoost_INCLUDE_DIR=C:/Libraries/boost -DGSL_INCLUDE_DIR=C:/projects/gsl-1.14/include -DGSL_CBLAS_LIBRARIES=C:/projects/gsl-1.14/lib -DGSL_LIBRARIES=C:/projects/gsl-1.14/lib .
   - cmake --build . --target BesselTables
   # install hdf5
   - mkdir hdf5lib
