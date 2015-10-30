@@ -100,15 +100,10 @@ def plot_movie(
         Height of the plotting area.
     config : dict, default {}
         Dict for configure default colors. Its values are colors unique
-        to each speices.
+        to each speices. The dictionary will be updated during this plot.
         Colors included in config dict will never be used for other speices.
     species_list : array of string, default None
         If set, plot_movie will not search the list of species
-
-    Returns
-    -------
-    cfg : dict
-        The config data used in this plot.
 
     """
     from IPython.core.display import display, HTML
@@ -148,12 +143,9 @@ def plot_movie(
         'options': json.dumps(options)
     }, '/templates/movie.tmpl')))
 
-    return color_scale.get_config()
-
-
 def plot_world(
         world, radius=None, width=350, height=350, config={}, grid=True,
-        save_image=False, wireframe=False, species_list=None, debug=None, max_count=1000,
+        wireframe=False, species_list=None, debug=None, max_count=1000,
         camera_position=(-22, 23, 32), camera_rotation=(-0.6, 0.5, 0.6),
         predicator=None):
     """
@@ -175,7 +167,7 @@ def plot_world(
         Height of the plotting area.
     config : dict, default {}
         Dict for configure default colors. Its values are colors unique
-        to each speices.
+        to each speices. The dictionary will be updated during this plot.
         Colors included in config dict will never be used for other speices.
     species_list : array of string, default None
         If set, plot_world will not search the list of species.
@@ -195,11 +187,6 @@ def plot_world(
     camera_position : tuple, default (-22, 23, 32)
     camera_rotaiton : tuple, default (-0.6, 0.5, 0.6)
         Initial position and rotation of camera.
-
-    Returns
-    -------
-    cfg : dict
-        The config data used in this plot.
 
     """
     from IPython.core.display import display, HTML
@@ -239,7 +226,7 @@ def plot_world(
             'range': __get_range_of_world(world),
             'autorange': False,
             'grid': grid,
-            'save_image': save_image
+            'save_image': True
         }
     }
 
@@ -252,11 +239,9 @@ def plot_world(
         'px': camera_position[0], 'py': camera_position[1], 'pz': camera_position[2],
         'rx': camera_rotation[0], 'ry': camera_rotation[1], 'rz': camera_rotation[2]},
         '/templates/particles.tmpl')))
-    return color_scale.get_config()
-
 
 def plot_dense_array(
-        arr, length=256, ranges=None, colors=["#a6cee3", "#fb9a99"], save_image=False, grid=False, camera_position=(-22, 23, 32), camera_rotation=(-0.6, 0.5, 0.6)):
+        arr, length=256, ranges=None, colors=["#a6cee3", "#fb9a99"], grid=False, camera_position=(-22, 23, 32), camera_rotation=(-0.6, 0.5, 0.6)):
     """
     Volume renderer
 
@@ -340,7 +325,7 @@ def plot_dense_array(
         }],
         'options': {
             'grid': grid,
-            'save_image': save_image
+            'save_image': True
         }
     }
 
@@ -377,8 +362,7 @@ def generate_html(keywords, tmpl_path):
 
 def plot_trajectory(
         obs, width=350, height=350, config={}, grid=True, wireframe=False,
-        max_count=10, save_image=False,
-        camera_position=(-22, 23, 32), camera_rotation=(-0.6, 0.5, 0.6)):
+        max_count=10, camera_position=(-22, 23, 32), camera_rotation=(-0.6, 0.5, 0.6)):
     """
     Generate a plot from received instance of TrajectoryObserver and show it
     on IPython notebook.
@@ -393,16 +377,11 @@ def plot_trajectory(
         Height of the plotting area.
     config : dict, default {}
         Dict for configure default colors. Its values are colors unique
-        to each particle.
+        to each particle. The dictionary will be updated during this plot.
         Colors included in config dict will never be used for other particles.
     camera_position : tuple, default (-30, 31, 42)
     camera_rotaiton : tuple, default (-0.6, 0.5, 0.6)
         Initial position and rotation of camera.
-
-    Returns
-    -------
-    cfg : dict
-        The config data used in this plot.
 
     """
     from IPython.core.display import display, HTML
@@ -463,7 +442,7 @@ def plot_trajectory(
             'range': {'x': rangex, 'y': rangey, 'z': rangez},
             'autorange': False,
             'grid': grid,
-            'save_image': save_image
+            'save_image': True
         }
     }
 
@@ -476,8 +455,6 @@ def plot_trajectory(
         'px': camera_position[0], 'py': camera_position[1], 'pz': camera_position[2],
         'rx': camera_rotation[0], 'ry': camera_rotation[1], 'rz': camera_rotation[2]},
         '/templates/particles.tmpl')))
-    return color_scale.get_config()
-
 
 def logo(x=1, y=None):
     if not isinstance(x, int):
@@ -683,18 +660,13 @@ def plot_number_observer_with_nya(obs, config={}, width=600, height=400, x=None,
     ----------
     obs : NumberObserver (e.g. FixedIntervalNumberObserver)
     config : dict, optional
-        A config data for coloring.
+        A config data for coloring. The dictionary will be updated during this plot.
     width : int, optional
     height : int, optional
     x : str, optional
         A serial for x-axis. If None, x-axis corresponds time.
     y : str or list of str
         Serials for y axis.
-
-    Returns
-    -------
-    cfg : dict
-        The config data used in this plot.
 
     """
     from IPython.core.display import display, HTML
@@ -752,7 +724,6 @@ def plot_number_observer_with_nya(obs, config={}, width=600, height=400, x=None,
     display(HTML(generate_html(
         {'model': json.dumps(model), 'model_id': model_id},
         '/templates/nya.tmpl')))
-    return color_scale.get_config()
 
 class ColorScale:
     """
