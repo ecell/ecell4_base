@@ -576,7 +576,12 @@ def plot_number_observer(*args, **kwargs):
                 raise ValueError("A function must be given after an observer.")
             y = [obs(xi) for xi in data[xidx]]
             opts = plot_opts.copy()
-            opts["label"] = obs.__name__
+            label = obs.__name__
+            opts["label"] = label
+            if label not in color_map.keys():
+                color_map[label] = color_cycle[len(color_map) % len(color_cycle)]
+                opts["label"] = label
+            opts["color"] = color_map[label]
             if fmt is None:
                 ax.plot(data[xidx], y, **opts)
             else:
