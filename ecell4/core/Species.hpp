@@ -158,7 +158,7 @@ public:
     bool operator<(const Species& rhs) const;
     bool operator>(const Species& rhs) const;
 
-    Integer count(const Species& pttrn) const;
+    Integer count(const Species& sp) const;
 
     /** for epdp
      */
