@@ -539,12 +539,16 @@ std::vector<Species> ReactionRuleExpressionMatcher::generate()
 
     int bond_stride = 0;
     std::vector<UnitSpecies> units;
-    for (ReactionRule::reactant_container_type::const_iterator
-        i(target_.begin()); i != target_.end(); ++i)
+    // for (ReactionRule::reactant_container_type::const_iterator
+    //     i(target_.begin()); i != target_.end(); ++i)
+    // {
+    //     bond_stride += concatenate_units(units, *i, bond_stride);
+    // }
+    for (std::vector<reactant_container_type::size_type>::const_iterator
+        i(permutation_.begin()); i != permutation_.end(); ++i)
     {
-        bond_stride += concatenate_units(units, *i, bond_stride);
+        bond_stride += concatenate_units(units, target_[*i], bond_stride);
     }
-
     // for (context_type::iterator_container_type::const_iterator
     //     i(ctx.iterators.begin()); i != ctx.iterators.end(); ++i)
     // {

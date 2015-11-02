@@ -30,6 +30,72 @@ std::vector<ReactionRule> NetfreeModel::query_reaction_rules(
     return retval;
 }
 
+struct reaction_rule_product_unary_predicator
+{
+    typedef ReactionRule element_type;
+
+    reaction_rule_product_unary_predicator(const element_type& target)
+        : target_(target)
+    {
+        ; // do nothing
+    }
+
+    bool operator()(const element_type& v)
+    {
+        return v.products() == target_.products();
+    }
+
+protected:
+
+    element_type target_;
+};
+
+std::vector<ReactionRule> generate_reaction_rules(
+    const ReactionRule& org, const Species& sp1, const Species& sp2)
+{
+    std::vector<ReactionRule> retval;
+    ReactionRuleExpressionMatcher rrexp(org);
+    if (rrexp.match(sp1, sp2))
+    {
+        do
+        {
+            const ReactionRule rr(rrexp.reactants(), rrexp.generate(), org.k());
+            std::vector<ReactionRule>::const_iterator
+                i(std::find_if(retval.begin(), retval.end(), reaction_rule_product_unary_predicator(rr)));
+            if (i != retval.end())
+            {
+                ;
+            }
+            else
+            {
+                retval.push_back(rr);
+            }
+        }
+        while (rrexp.next());
+    }
+
+    if (rrexp.match_reversed(sp1, sp2))
+    {
+        do
+        {
+            const ReactionRule rr(rrexp.reactants(), rrexp.generate(), org.k());
+            std::vector<ReactionRule>::const_iterator
+                i(std::find_if(retval.begin(), retval.end(), reaction_rule_product_unary_predicator(rr)));
+            if (i != retval.end())
+            {
+                ;
+            }
+            else
+            {
+                retval.push_back(rr);
+            }
+        }
+        while (rrexp.next());
+    }
+
+    return retval;
+}
+
 std::vector<ReactionRule> NetfreeModel::query_reaction_rules(
     const Species& sp1, const Species& sp2) const
 {
@@ -37,34 +103,43 @@ std::vector<ReactionRule> NetfreeModel::query_reaction_rules(
     for (reaction_rule_container_type::const_iterator i(reaction_rules_.begin());
         i != reaction_rules_.end(); ++i)
     {
-        ReactionRuleExpressionMatcher rrexp(*i);
-
-        if (rrexp.match(sp1, sp2))
-        {
-            do
-            {
-                const std::vector<Species> products(rrexp.generate());
-                retval.push_back(ReactionRule(rrexp.reactants(), products, (*i).k()));
-            }
-            while (rrexp.next());
-        }
-
-        if (sp1 == sp2)
-        {
-            continue;
-        }
-
-        if (rrexp.match(sp2, sp1))
-        {
-            do
-            {
-                const std::vector<Species> products(rrexp.generate());
-                retval.push_back(ReactionRule(rrexp.reactants(), products, (*i).k()));
-            }
-            while (rrexp.next());
-        }
+        const std::vector<ReactionRule> generated = generate_reaction_rules(*i, sp1, sp2);
+        retval.insert(retval.end(), generated.begin(), generated.end());
     }
     return retval;
+
+    // std::vector<ReactionRule> retval;
+    // for (reaction_rule_container_type::const_iterator i(reaction_rules_.begin());
+    //     i != reaction_rules_.end(); ++i)
+    // {
+    //     ReactionRuleExpressionMatcher rrexp(*i);
+
+    //     if (rrexp.match(sp1, sp2))
+    //     {
+    //         do
+    //         {
+    //             const std::vector<Species> products(rrexp.generate());
+    //             retval.push_back(ReactionRule(rrexp.reactants(), products, (*i).k()));
+    //         }
+    //         while (rrexp.next());
+    //     }
+
+    //     if (sp1 == sp2)
+    //     {
+    //         continue;
+    //     }
+
+    //     if (rrexp.match(sp2, sp1))
+    //     {
+    //         do
+    //         {
+    //             const std::vector<Species> products(rrexp.generate());
+    //             retval.push_back(ReactionRule(rrexp.reactants(), products, (*i).k()));
+    //         }
+    //         while (rrexp.next());
+    //     }
+    // }
+    // return retval;
 
     // std::vector<ReactionRule> retval;
     // const std::pair<Species::serial_type, Species::serial_type>

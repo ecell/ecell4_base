@@ -231,7 +231,9 @@ public:
     {
         reactant_container_type reactants;
         reactants.push_back(sp);
-        return match(reactants);
+        permutation_.clear();
+        permutation_.push_back(0);
+        return __match(reactants);
     }
 
     bool match(const Species& sp1, const Species& sp2)
@@ -239,10 +241,43 @@ public:
         reactant_container_type reactants;
         reactants.push_back(sp1);
         reactants.push_back(sp2);
-        return match(reactants);
+        permutation_.clear();
+        permutation_.push_back(0);
+        permutation_.push_back(1);
+        return __match(reactants);
+    }
+
+    bool match_reversed(const Species& sp1, const Species& sp2)
+    {
+        reactant_container_type reactants;
+        reactants.push_back(sp2);
+        reactants.push_back(sp1);
+        permutation_.clear();
+        permutation_.push_back(1);
+        permutation_.push_back(0);
+        return __match(reactants);
+    }
+
+    bool match(const reactant_container_type& reactants,
+               const std::vector<reactant_container_type::size_type>& permutation)
+    {
+        permutation_ = permutation;
+        return __match(reactants);
     }
 
     bool match(const reactant_container_type& reactants)
+    {
+        permutation_.clear();
+        permutation_.reserve(reactants.size());
+        for (std::vector<reactant_container_type::size_type>::size_type i(0);
+            i != reactants.size(); ++i)
+        {
+            permutation_.push_back(i);
+        }
+        return __match(reactants);
+    }
+
+    bool __match(const reactant_container_type& reactants)
     {
         if (pttrn_.reactants().size() != reactants.size())
         {
@@ -259,10 +294,10 @@ public:
         target_ = reactants; //XXX: copy?
         itr_ = matchers_.begin();
         context_type::variable_container_type globals;
-        return __match(globals);
+        return __submatch(globals);
     }
 
-    bool __match(const context_type::variable_container_type& globals)
+    bool __submatch(const context_type::variable_container_type& globals)
     {
         if (itr_ == matchers_.end())
         {
@@ -277,7 +312,7 @@ public:
             const context_type::variable_container_type&
                 globals_prev((*itr_).context().globals);
             ++itr_;
-            const bool succeeded(__match(globals_prev));
+            const bool succeeded(__submatch(globals_prev));
             if (succeeded)
             {
                 return true;
@@ -308,7 +343,7 @@ public:
                 const context_type::variable_container_type&
                     globals_prev((*itr_).context().globals);
                 ++itr_;
-                const bool succeeded(__match(globals_prev));
+                const bool succeeded(__submatch(globals_prev));
                 if (succeeded)
                 {
                     return true;
@@ -358,17 +393,38 @@ public:
         }
 
         ctx.globals = matchers_.back().context().globals;
-        Species::container_type::difference_type stride(0);
+        // Species::container_type::difference_type stride(0);
+        // for (std::vector<SpeciesExpressionMatcher>::const_iterator
+        //     i(matchers_.begin()); i != matchers_.end(); ++i)
+        // {
+        //     for (context_type::iterator_container_type::const_iterator
+        //         j((*i).context().iterators.begin());
+        //         j != (*i).context().iterators.end(); ++j)
+        //     {
+        //         ctx.iterators.push_back((*j) + stride);
+        //     }
+        //     stride += target_[std::distance(matchers_.begin(), i)].num_units();
+        // }
+        Species::container_type::difference_type totstride(0);
+        std::vector<Species::container_type::difference_type> strides(matchers_.size());
+        for (std::vector<reactant_container_type::size_type>::const_iterator
+            i(permutation_.begin()); i != permutation_.end(); ++i)
+        {
+            strides[(*i)] = totstride;
+            totstride += target_[(*i)].num_units();
+        }
+
         for (std::vector<SpeciesExpressionMatcher>::const_iterator
             i(matchers_.begin()); i != matchers_.end(); ++i)
         {
+            const Species::container_type::difference_type stride
+                = strides[std::distance(matchers_.begin(), i)];
             for (context_type::iterator_container_type::const_iterator
                 j((*i).context().iterators.begin());
                 j != (*i).context().iterators.end(); ++j)
             {
                 ctx.iterators.push_back((*j) + stride);
             }
-            stride += target_[std::distance(matchers_.begin(), i)].num_units();
         }
         return ctx;
     }
@@ -384,6 +440,7 @@ protected:
 
     const ReactionRule pttrn_;
     reactant_container_type target_;
+    std::vector<reactant_container_type::size_type> permutation_;
     std::vector<SpeciesExpressionMatcher> matchers_;
     std::vector<SpeciesExpressionMatcher>::iterator itr_;
 };

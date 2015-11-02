@@ -51,6 +51,13 @@ public:
         ;
     }
 
+    ReactionRule(
+        const ReactionRule& rr)
+        : k_(rr.k()), reactants_(rr.reactants()), products_(rr.products())
+    {
+        ;
+    }
+
     Real k() const
     {
         return k_;
