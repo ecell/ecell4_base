@@ -75,12 +75,12 @@ Integer count_spmatches(
     const Species& pttrn, const Species& sp,
     const MatchObject::context_type::variable_container_type& globals);
 
-bool rrmatch(const ReactionRule& rr,
-    const ReactionRule::reactant_container_type& reactants);
-Integer count_rrmatches(const ReactionRule& rr,
-    const ReactionRule::reactant_container_type& reactants);
-std::vector<std::vector<Species> > rrgenerate(const ReactionRule& rr,
-    const ReactionRule::reactant_container_type& reactants);
+// bool rrmatch(const ReactionRule& rr,
+//     const ReactionRule::reactant_container_type& reactants);
+// Integer count_rrmatches(const ReactionRule& rr,
+//     const ReactionRule::reactant_container_type& reactants);
+// std::vector<std::vector<Species> > rrgenerate(const ReactionRule& rr,
+//     const ReactionRule::reactant_container_type& reactants);
 
 class SpeciesExpressionMatcher
 {

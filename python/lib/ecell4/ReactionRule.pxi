@@ -333,89 +333,89 @@ def create_unbinding_reaction_rule(
         deref(product1.thisptr), deref(product2.thisptr), k)
     return ReactionRule_from_Cpp_ReactionRule(address(rr))
 
-def rrmatch(ReactionRule pttrn, reactants):
-    """rrmatch(pttrn, reactants) -> bool
-
-    Return if a pattern matches the reactants or not.
-
-    Parameters
-    ----------
-    pttrn : ReactionRule
-        A pattern.
-    reactants : list
-        A list of reactants, ``Species``. The order of reactants is respected.
-
-    Returns
-    -------
-    bool:
-        True if ``pttrn`` matches ``reactants`` at least one time,
-        False otherwise.
-
-    """
-    cdef vector[Cpp_Species] cpp_reactants
-    for sp in reactants:
-        cpp_reactants.push_back(deref((<Species> sp).thisptr))
-    return context.rrmatch(deref(pttrn.thisptr), cpp_reactants)
-
-def count_rrmatches(ReactionRule pttrn, reactants):
-    """count_rrmatches(pttrn, reactants) -> Integer
-
-    Count the number of matches for a pattern given as a ``ReactionRule``.
-
-    Parameters
-    ----------
-    pttrn : ReactionRule
-        A pattern.
-    reactants : list
-        A list of reactants, ``Species``. The order of reactants is respected.
-
-    Returns
-    -------
-    Integer:
-        The number of matches.
-
-    """
-    cdef vector[Cpp_Species] cpp_reactants
-    for sp in reactants:
-        cpp_reactants.push_back(deref((<Species> sp).thisptr))
-    return context.count_rrmatches(deref(pttrn.thisptr), cpp_reactants)
-
-def rrgenerate(ReactionRule pttrn, reactants):
-    """rrgenerate(pttrn, reactants) -> [Species]
-
-    Generate a list of products from the given list of reactants.
-
-    Parameters
-    ----------
-    pttrn : ReactionRule
-        A pattern.
-    reactants : list
-        A list of ``Species``. The order of ``reactants`` is respected.
-
-    Returns
-    -------
-    list:
-        A list of products. The size of the list is equal to the number of matches.
-        Each element of the list is a list of ``Species``.
-
-    Notes
-    -----
-    Rather use ``ReactionRule.generate``.
-
-    """
-    cdef vector[Cpp_Species] cpp_reactants
-    for sp in reactants:
-        cpp_reactants.push_back(deref((<Species> sp).thisptr))
-    cdef vector[vector[Cpp_Species]] cpp_products_list = \
-        context.rrgenerate(deref(pttrn.thisptr), cpp_reactants)
-    cdef vector[vector[Cpp_Species]].iterator it1 = cpp_products_list.begin()
-    cdef vector[Cpp_Species].iterator it2
-    retval = []
-    while it1 != cpp_products_list.end():
-        retval.append([])
-        it2 = deref(it1).begin()
-        while it2 != deref(it1).end():
-            retval[-1].append(Species_from_Cpp_Species(address(deref(it2))))
-            inc(it2)
-        inc(it1)
-    return retval
+# def rrmatch(ReactionRule pttrn, reactants):
+#     """rrmatch(pttrn, reactants) -> bool
+# 
+#     Return if a pattern matches the reactants or not.
+# 
+#     Parameters
+#     ----------
+#     pttrn : ReactionRule
+#         A pattern.
+#     reactants : list
+#         A list of reactants, ``Species``. The order of reactants is respected.
+# 
+#     Returns
+#     -------
+#     bool:
+#         True if ``pttrn`` matches ``reactants`` at least one time,
+#         False otherwise.
+# 
+#     """
+#     cdef vector[Cpp_Species] cpp_reactants
+#     for sp in reactants:
+#         cpp_reactants.push_back(deref((<Species> sp).thisptr))
+#     return context.rrmatch(deref(pttrn.thisptr), cpp_reactants)
+# 
+# def count_rrmatches(ReactionRule pttrn, reactants):
+#     """count_rrmatches(pttrn, reactants) -> Integer
+# 
+#     Count the number of matches for a pattern given as a ``ReactionRule``.
+# 
+#     Parameters
+#     ----------
+#     pttrn : ReactionRule
+#         A pattern.
+#     reactants : list
+#         A list of reactants, ``Species``. The order of reactants is respected.
+# 
+#     Returns
+#     -------
+#     Integer:
+#         The number of matches.
+# 
+#     """
+#     cdef vector[Cpp_Species] cpp_reactants
+#     for sp in reactants:
+#         cpp_reactants.push_back(deref((<Species> sp).thisptr))
+#     return context.count_rrmatches(deref(pttrn.thisptr), cpp_reactants)
+# 
+# def rrgenerate(ReactionRule pttrn, reactants):
+#     """rrgenerate(pttrn, reactants) -> [Species]
+# 
+#     Generate a list of products from the given list of reactants.
+# 
+#     Parameters
+#     ----------
+#     pttrn : ReactionRule
+#         A pattern.
+#     reactants : list
+#         A list of ``Species``. The order of ``reactants`` is respected.
+# 
+#     Returns
+#     -------
+#     list:
+#         A list of products. The size of the list is equal to the number of matches.
+#         Each element of the list is a list of ``Species``.
+# 
+#     Notes
+#     -----
+#     Rather use ``ReactionRule.generate``.
+# 
+#     """
+#     cdef vector[Cpp_Species] cpp_reactants
+#     for sp in reactants:
+#         cpp_reactants.push_back(deref((<Species> sp).thisptr))
+#     cdef vector[vector[Cpp_Species]] cpp_products_list = \
+#         context.rrgenerate(deref(pttrn.thisptr), cpp_reactants)
+#     cdef vector[vector[Cpp_Species]].iterator it1 = cpp_products_list.begin()
+#     cdef vector[Cpp_Species].iterator it2
+#     retval = []
+#     while it1 != cpp_products_list.end():
+#         retval.append([])
+#         it2 = deref(it1).begin()
+#         while it2 != deref(it1).end():
+#             retval[-1].append(Species_from_Cpp_Species(address(deref(it2))))
+#             inc(it2)
+#         inc(it1)
+#     return retval

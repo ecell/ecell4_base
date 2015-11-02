@@ -10,6 +10,7 @@
 #include <boost/test/floating_point_comparison.hpp>
 
 #include <ecell4/core/Species.hpp>
+#include <ecell4/core/Context.hpp>
 #include <ecell4/core/ReactionRule.hpp>
 
 using namespace ecell4;
@@ -108,4 +109,84 @@ BOOST_AUTO_TEST_CASE(ReactionRule_test_generate1)
 
     BOOST_CHECK_EQUAL(retval.size(), 1);
     BOOST_CHECK(retval[0] == rr1);
+}
+
+BOOST_AUTO_TEST_CASE(ReactionRule_test_generate2)
+{
+    ReactionRule rr1;
+    rr1.add_reactant(Species("_1(b)"));
+    rr1.add_reactant(Species("_1(b)"));
+    rr1.add_product(Species("_1(b^1)._1(b^1)"));
+
+    ReactionRule::reactant_container_type reactants1;
+    reactants1.push_back(Species("A(a^1,b).B(a^1,b)"));
+    reactants1.push_back(Species("B(a,b)"));
+
+    BOOST_CHECK_EQUAL(rr1.count(reactants1), 1);
+
+    std::vector<ReactionRule> retval;
+    retval = rr1.generate(reactants1);
+    BOOST_CHECK_EQUAL(retval.size(), 1);
+    BOOST_CHECK_EQUAL(retval[0].products().size(), 1);
+    BOOST_CHECK_EQUAL(retval[0].products()[0].num_units(), 3);
+
+    ReactionRule rr2;
+    rr2.add_reactant(Species("A(b)"));
+    rr2.add_reactant(Species("B(b)"));
+    rr2.add_product(Species("A(b^1).A(b^1)"));
+    ReactionRule::reactant_container_type reactants2;
+    reactants2.push_back(Species("A(a^1,b).A(a^1,b)"));
+    reactants2.push_back(Species("B(a^1,b).B(a^1,b^2).B(a^2,b)"));
+
+    BOOST_CHECK_EQUAL(rr2.count(reactants2), 4);
+
+    ReactionRule rr3;
+    rr3.add_reactant(Species("A"));
+    rr3.add_product(Species("B"));
+    ReactionRule::reactant_container_type reactants3;
+    reactants3.push_back(Species("A"));
+    retval = rr3.generate(reactants3);
+    BOOST_CHECK_EQUAL(retval.size(), 1);
+    BOOST_CHECK_EQUAL(retval[0].products().size(), 1);
+    BOOST_CHECK_EQUAL(retval[0].products()[0].serial(), "B");
+
+    ReactionRule rr4;
+    rr4.add_reactant(Species("A(b^1).B(b^1)"));
+    rr4.add_product(Species("A(b)"));
+    rr4.add_product(Species("B(b)"));
+    ReactionRule::reactant_container_type reactants4;
+    reactants4.push_back(
+        Species("A(a^1,b^5).A(a^1,b^4).B(a^2,b).B(a^2,b^3).B(a^3,b^4).B(a,b^5)"));
+    retval = rr4.generate(reactants4);
+    BOOST_CHECK_EQUAL(retval.size(), 2);
+    BOOST_CHECK_EQUAL(retval[0].products().size(), 2);
+    BOOST_CHECK_EQUAL(retval[1].products().size(), 2);
+    BOOST_CHECK_EQUAL(retval[0].products()[0].num_units() + retval[0].products()[1].num_units(), 6);
+    BOOST_CHECK_EQUAL(retval[1].products()[0].num_units() + retval[1].products()[1].num_units(), 6);
+}
+
+BOOST_AUTO_TEST_CASE(NetfreeModel_reaction_rule_test1)
+{
+    ReactionRule rr1;
+    rr1.add_reactant(Species("X(r^1).X(l^1)"));
+    rr1.add_product(Species("X(r)"));
+    rr1.add_product(Species("X(l)"));
+    rr1.set_k(1.0);
+    const Species sp1("X(l,r^1).X(l^1,r^2).X(l^2,r^3).X(l^3,r^4).X(l^4,r)");
+
+    ReactionRuleExpressionMatcher rrexp(rr1);
+    BOOST_CHECK(rrexp.match(sp1));
+
+    unsigned int i(0);
+    do {
+        ++i;
+        std::vector<Species> products(rrexp.generate());
+        // const ReactionRule tmp(rrexp.reactants(), products, rr1.k());
+        // std::cerr << "GEN: " << tmp.as_string() << std::endl;
+    } while (rrexp.next());
+
+    BOOST_CHECK_EQUAL(i, 4);
+
+    std::vector<ReactionRule> retval(rr1.generate(rrexp.reactants()));
+    BOOST_CHECK_EQUAL(retval.size(), 4);
 }
