@@ -486,23 +486,26 @@ void __generate_recurse(
                 for (std::vector<Species>::const_iterator
                     k(start); k != seeds2.end(); ++k)
                 {
-                    ReactionRule::reactant_container_type reactants(2);
-                    reactants[0] = *j;
-                    reactants[1] = *k;
-                    const std::vector<ReactionRule>
-                        retval1(rr.generate(reactants));
                     __add_reaction_rules(
-                        retval1, reactions, newseeds, seeds2, max_stoich);
+                        generate_reaction_rules(rr, *j, *k),
+                        reactions, newseeds, seeds2, max_stoich);
+                    // ReactionRule::reactant_container_type reactants(2);
+                    // reactants[0] = *j;
+                    // reactants[1] = *k;
+                    // const std::vector<ReactionRule>
+                    //     retval1(rr.generate(reactants));
+                    // __add_reaction_rules(
+                    //     retval1, reactions, newseeds, seeds2, max_stoich);
 
-                    if (*j != *k)
-                    {
-                        reactants[0] = *k;
-                        reactants[1] = *j;
-                        std::vector<ReactionRule>
-                            retval2(rr.generate(reactants));
-                        __add_reaction_rules(
-                            retval2, reactions, newseeds, seeds2, max_stoich);
-                    }
+                    // if (*j != *k)
+                    // {
+                    //     reactants[0] = *k;
+                    //     reactants[1] = *j;
+                    //     std::vector<ReactionRule>
+                    //         retval2(rr.generate(reactants));
+                    //     __add_reaction_rules(
+                    //         retval2, reactions, newseeds, seeds2, max_stoich);
+                    // }
                 }
             }
             break;
