@@ -10,22 +10,25 @@ namespace ecell4
 std::vector<ReactionRule> NetfreeModel::query_reaction_rules(
     const Species& sp) const
 {
+    ReactionRule::reactant_container_type reactants(1, sp);
     std::vector<ReactionRule> retval;
     for (reaction_rule_container_type::const_iterator i(reaction_rules_.begin());
         i != reaction_rules_.end(); ++i)
     {
-        ReactionRuleExpressionMatcher rrexp(*i);
-        if (!rrexp.match(sp))
-        {
-            continue;
-        }
+        const std::vector<ReactionRule> generated = (*i).generate(reactants);
+        retval.insert(retval.end(), generated.begin(), generated.end());
+        // ReactionRuleExpressionMatcher rrexp(*i);
+        // if (!rrexp.match(sp))
+        // {
+        //     continue;
+        // }
 
-        do
-        {
-            const std::vector<Species> products(rrexp.generate());
-            retval.push_back(ReactionRule(rrexp.reactants(), products, (*i).k()));
-        }
-        while (rrexp.next());
+        // do
+        // {
+        //     const std::vector<Species> products(rrexp.generate());
+        //     retval.push_back(ReactionRule(rrexp.reactants(), products, (*i).k()));
+        // }
+        // while (rrexp.next());
     }
     return retval;
 }
