@@ -82,6 +82,15 @@ Integer count_spmatches(
 // std::vector<std::vector<Species> > rrgenerate(const ReactionRule& rr,
 //     const ReactionRule::reactant_container_type& reactants);
 
+ReactionRule create_reaction_rule_formatted(
+    const ReactionRule::reactant_container_type& reactants,
+    const ReactionRule::product_container_type& products, const Real k);
+
+inline ReactionRule create_reaction_rule_formatted(const ReactionRule& rr)
+{
+    return create_reaction_rule_formatted(rr.reactants(), rr.products(), rr.k());
+}
+
 class SpeciesExpressionMatcher
 {
 public:
