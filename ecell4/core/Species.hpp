@@ -180,6 +180,14 @@ inline Species::serial_type unique_serial(const Species& sp)
     return format_species(sp).serial();
 }
 
+template<typename Tstrm_, typename Ttraits_>
+inline std::basic_ostream<Tstrm_, Ttraits_>& operator<<(
+    std::basic_ostream<Tstrm_, Ttraits_>& strm,
+    const ecell4::Species& sp)
+{
+    strm << sp.serial();
+    return strm;
+}
 
 } // ecell4
 
