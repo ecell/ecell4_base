@@ -16,12 +16,14 @@ std::vector<ReactionRule> NetfreeModel::query_reaction_rules(
         i != reaction_rules_.end(); ++i)
     {
         const std::vector<ReactionRule> generated = (*i).generate(reactants);
+        // retval.insert(retval.end(), generated.begin(), generated.end());
         retval.reserve(retval.size() + generated.size());
         for (std::vector<ReactionRule>::const_iterator j(generated.begin());
             j != generated.end(); ++j)
         {
             const ReactionRule rr = create_reaction_rule_formatted(*j);
-            std::vector<ReactionRule>::iterator it = std::find(retval.begin(), retval.end(), rr);
+            std::vector<ReactionRule>::iterator
+                it = std::find(retval.begin(), retval.end(), rr);
             if (it == retval.end())
             {
                 retval.push_back(rr);
@@ -69,7 +71,8 @@ std::vector<ReactionRule> generate_reaction_rules(
         {
             const ReactionRule rr(reactants, rrexp.generate(), org.k());
             std::vector<ReactionRule>::const_iterator
-                i(std::find_if(retval.begin(), retval.end(), reaction_rule_product_unary_predicator(rr)));
+                i(std::find_if(retval.begin(), retval.end(),
+                               reaction_rule_product_unary_predicator(rr)));
             if (i != retval.end())
             {
                 ;
@@ -88,7 +91,8 @@ std::vector<ReactionRule> generate_reaction_rules(
         {
             const ReactionRule rr(reactants, rrexp.generate(), org.k());
             std::vector<ReactionRule>::const_iterator
-                i(std::find_if(retval.begin(), retval.end(), reaction_rule_product_unary_predicator(rr)));
+                i(std::find_if(retval.begin(), retval.end(),
+                               reaction_rule_product_unary_predicator(rr)));
             if (i != retval.end())
             {
                 ;
@@ -118,7 +122,8 @@ std::vector<ReactionRule> NetfreeModel::query_reaction_rules(
             j != generated.end(); ++j)
         {
             const ReactionRule rr = create_reaction_rule_formatted(*j);
-            std::vector<ReactionRule>::iterator it = std::find(retval.begin(), retval.end(), rr);
+            std::vector<ReactionRule>::iterator
+                it = std::find(retval.begin(), retval.end(), rr);
             if (it == retval.end())
             {
                 retval.push_back(rr);
@@ -453,7 +458,9 @@ void __generate_recurse(
                 j != seeds1.end(); ++j)
             {
                 const std::vector<Species>::const_iterator start(
-                    seeds2.begin() + std::distance<std::vector<Species>::const_iterator>(seeds1.begin(), j));
+                    seeds2.begin()
+                    + std::distance<std::vector<Species>::const_iterator>(
+                        seeds1.begin(), j));
                 for (std::vector<Species>::const_iterator
                     k(start); k != seeds2.end(); ++k)
                 {
