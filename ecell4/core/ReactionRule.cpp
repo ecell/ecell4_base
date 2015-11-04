@@ -64,37 +64,9 @@ std::vector<ReactionRule> ReactionRule::generate(const reactant_container_type& 
         {
             retval.push_back(rr);
         }
-        // if (i != retval.end())
-        // {
-        //     (*i).set_k((*i).k() + rr.k());
-        // }
-        // else
-        // {
-        //     retval.push_back(rr);
-        // }
     }
     while (rrexp.next());
     return retval;
-
-    // const std::vector<std::vector<Species> > possibles(rrgenerate(*this, reactants));
-    // std::vector<ReactionRule> retval;
-    // retval.reserve(possibles.size());
-    // for (std::vector<std::vector<Species> >::const_iterator i(possibles.begin());
-    //     i != possibles.end(); ++i)
-    // {
-    //     const ReactionRule rr(reactants, *i, this->k());
-    //     std::vector<ReactionRule>::iterator
-    //         j(std::find(retval.begin(), retval.end(), rr));
-    //     if (j != retval.end())
-    //     {
-    //         (*j).set_k((*j).k() + rr.k());
-    //     }
-    //     else
-    //     {
-    //         retval.push_back(rr);
-    //     }
-    // }
-    // return retval;
 }
 
 }// ecell4
