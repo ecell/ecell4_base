@@ -57,6 +57,7 @@ cdef extern from "ecell4/ode/ODERatelaw.hpp" namespace "ecell4::ode":
     cdef cppclass Cpp_ODERatelaw "ecell4::ode::ODERatelaw":
         Cpp_ODERatelaw() except +
         bool is_available()
+        string as_string()
 
 ## ODERatelaw
 cdef class ODERatelaw:
@@ -70,6 +71,7 @@ cdef extern from "ecell4/ode/ODERatelaw.hpp" namespace "ecell4::ode":
         bool is_available()
         void set_k(Real)
         Real get_k()
+        string as_string()
 
 cdef class ODERatelawMassAction:
     #cdef Cpp_ODERatelawMassAction *thisptr
@@ -85,8 +87,11 @@ cdef extern from "ecell4/ode/ODERatelaw.hpp" namespace "ecell4::ode":
     cdef cppclass Cpp_ODERatelawCythonCallback " ecell4::ode::ODERatelawCythonCallback":
         Cpp_ODERatelawCythonCallback() except+
         Cpp_ODERatelawCythonCallback(Stepladder_Functype, Python_CallbackFunctype, OperateRef_Functype, OperateRef_Functype) except+
+        Cpp_ODERatelawCythonCallback(Stepladder_Functype, Python_CallbackFunctype, OperateRef_Functype, OperateRef_Functype, string name) except+
         bool is_available()
         void set_callback_pyfunc(Python_CallbackFunctype)
+        string as_string()
+        void set_name(string)
 
 cdef class ODERatelawCallback:
     cdef shared_ptr[Cpp_ODERatelawCythonCallback] *thisptr
@@ -131,6 +136,7 @@ cdef extern from "ecell4/ode/ODENetworkModel.hpp" namespace "ecell4::ode":
         void update_model()
         bool has_network_model()
         vector[Cpp_ODEReactionRule] ode_reaction_rules()
+        vector[Cpp_ODEReactionRule] reaction_rules()
         Integer num_reaction_rules()
         void dump_reactions()
         void add_reaction_rule(Cpp_ODEReactionRule)

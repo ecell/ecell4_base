@@ -11,7 +11,7 @@ namespace ode
 
 const std::string ODEReactionRule::as_string() const
 {
-    std::stringstream ss_left_side, ss_right_side;
+    std::stringstream ss_left_side, ss_right_side, ss_k_side;
 
     bool first = true;
     for (reaction_leftside_container_type::const_iterator it(reactants_.begin());
@@ -59,7 +59,15 @@ const std::string ODEReactionRule::as_string() const
         }
     }
 
-    return (boost::format("%s>%s|%g") % ss_left_side.str() % ss_right_side.str() % k()).str();
+    if (!this->has_ratelaw())
+    {
+        ss_k_side << "nan";
+    }
+    else
+    {
+        ss_k_side << this->ratelaw_->as_string();
+    }
+    return (boost::format("%s>%s|%g") % ss_left_side.str() % ss_right_side.str() % ss_k_side.str()).str();
 }
 
 }   // ode

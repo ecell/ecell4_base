@@ -80,6 +80,10 @@ public:
     {
         return ode_reaction_rules_;
     }
+    inline const ode_reaction_rule_container_type& reaction_rules() const
+    {
+        return ode_reaction_rules();
+    }
     const species_container_type& species_attributes() const
     {
         return species_attributes_;

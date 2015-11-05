@@ -63,8 +63,9 @@ def generate_ReactionRule(lhs, rhs, k=None):
         for sp in rhs:
             rr.add_product(sp[0], 1 if sp[1] is None else sp[1])
         if SEAMLESS_RATELAW_SUPPORT and isinstance(k, parseobj.ExpBase):
+            name = str(k)
             func = generate_ratelaw(k, rr)
-            rr.set_ratelaw(ODERatelawCallback(func))
+            rr.set_ratelaw(ODERatelawCallback(func, name))
         elif callable(k):
             rr.set_ratelaw(ODERatelawCallback(k))
         else:

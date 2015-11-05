@@ -339,6 +339,10 @@ cdef class ODERatelaw:
     def __dealloc__(self):
         del self.thisptr
 
+    def as_string(self):
+        """"Return a name of the function"""
+        return self.thisptr.get().as_string()
+
     def as_base(self):
         """Return self as a base class. Only for developmental use."""
         return self
@@ -389,6 +393,10 @@ cdef class ODERatelawMassAction:
         """Return the kinetic rate constant as a float value."""
         return self.get().thisptr.get_k()
 
+    def as_string(self):
+        """"Return a name of the function"""
+        return self.thisptr.get().as_string()
+
     def as_base(self):
         """Return self as a base class. Only for developmental use."""
         base_type = ODERatelaw()
@@ -424,11 +432,11 @@ cdef void dec_ref(void* func):
 cdef class ODERatelawCallback:
     """A class for general ratelaws with a callback.
 
-    ODERatelawCallback(pyfunc)
+    ODERatelawCallback(pyfunc, name)
 
     """
 
-    def __init__(self, pyfunc):
+    def __init__(self, pyfunc, name = None):
         """Constructor.
 
         Parameters
@@ -436,15 +444,25 @@ cdef class ODERatelawCallback:
         pyfunc : function
             A Python function for the callback.
             See set_callback function of this class for details.
+        name : string, optional
+            A name of the function
 
         """
         pass
 
-    def __cinit__(self, pyfunc):
-        self.thisptr = new shared_ptr[Cpp_ODERatelawCythonCallback](
-            <Cpp_ODERatelawCythonCallback*>(new Cpp_ODERatelawCythonCallback(
-                <Stepladder_Functype>indirect_function, <void*>pyfunc,
-                <OperateRef_Functype>inc_ref, <OperateRef_Functype>dec_ref)))
+    def __cinit__(self, pyfunc, name = None):
+        if name is None:
+            self.thisptr = new shared_ptr[Cpp_ODERatelawCythonCallback](
+                <Cpp_ODERatelawCythonCallback*>(new Cpp_ODERatelawCythonCallback(
+                    <Stepladder_Functype>indirect_function, <void*>pyfunc,
+                    <OperateRef_Functype>inc_ref, <OperateRef_Functype>dec_ref,
+                    <string>pyfunc.__name__)))
+        else:
+            self.thisptr = new shared_ptr[Cpp_ODERatelawCythonCallback](
+                <Cpp_ODERatelawCythonCallback*>(new Cpp_ODERatelawCythonCallback(
+                    <Stepladder_Functype>indirect_function, <void*>pyfunc,
+                    <OperateRef_Functype>inc_ref, <OperateRef_Functype>dec_ref,
+                    <string>name)))
         self.pyfunc = pyfunc
 
     def __dealloc__(self):
@@ -475,6 +493,14 @@ cdef class ODERatelawCallback:
 
         """
         self.thisptr.get().set_callback_pyfunc(<Python_CallbackFunctype>pyfunc)
+
+    def set_name(self, string name):
+        """"Set the name of a function"""
+        self.thisptr.get().set_name(name)
+
+    def as_string(self):
+        """"Return a name of the function"""
+        return self.thisptr.get().as_string()
 
     def as_base(self):
         """Return self as a base class. Only for developmental use."""
@@ -808,6 +834,20 @@ cdef class ODENetworkModel:
 
         """
         cdef vector[Cpp_ODEReactionRule] cpp_rules = self.thisptr.get().ode_reaction_rules()
+        retval = []
+        cdef vector[Cpp_ODEReactionRule].iterator it = cpp_rules.begin()
+        while it != cpp_rules.end():
+            retval.append(ODEReactionRule_from_Cpp_ODEReactionRule(address(deref(it))))
+            inc(it)
+        return retval
+
+    def reaction_rules(self):
+        """reaction_rules() -> [ODEReactionRule]
+
+        Return a list of ODE reaction rules.
+
+        """
+        cdef vector[Cpp_ODEReactionRule] cpp_rules = self.thisptr.get().reaction_rules()
         retval = []
         cdef vector[Cpp_ODEReactionRule].iterator it = cpp_rules.begin()
         while it != cpp_rules.end():
