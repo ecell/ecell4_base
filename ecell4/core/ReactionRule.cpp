@@ -27,21 +27,6 @@ const std::string ReactionRule::as_string() const
     return oss.str();
 }
 
-Integer ReactionRule::count(const reactant_container_type& reactants) const
-{
-    ReactionRuleExpressionMatcher rrexp(*this);
-    if (!rrexp.match(reactants))
-    {
-        return 0;
-    }
-    Integer n(1);
-    while (rrexp.next())
-    {
-        ++n;
-    }
-    return n;
-}
-
 std::vector<ReactionRule> ReactionRule::generate(const reactant_container_type& reactants) const
 {
     ReactionRuleExpressionMatcher rrexp(*this);

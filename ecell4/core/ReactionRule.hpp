@@ -93,7 +93,12 @@ public:
     }
 
     const std::string as_string() const;
-    Integer count(const reactant_container_type& reactants) const;
+
+    inline Integer count(const reactant_container_type& reactants) const
+    {
+        return this->generate(reactants).size();
+    }
+
     std::vector<ReactionRule> generate(const reactant_container_type& reactants) const;
 
     /** Ratelaw related functions.
