@@ -183,7 +183,7 @@ def run_simulation(
             raise ValueError('opt_args [{}] must be list or dict.'.format(
                 repr(opt_args)))
     elif return_type == 'nyaplot':
-        if isinstance(opt_args, list):
+        if isinstance(opt_args, (list, tuple)):
             ecell4.viz.plot_number_observer_with_nya(obs, *opt_args, **opt_kwargs)
         elif isinstance(opt_args, dict):
             # opt_kwargs is ignored
