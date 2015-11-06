@@ -1119,6 +1119,10 @@ cdef class ODESimulator:
         """
         self.thisptr.set_relative_tolerance(rel_tol)
 
+    def world(self):
+        """Return the world bound."""
+        return ODEWorld_from_Cpp_ODEWorld(self.thisptr.world())
+
     def run(self, Real duration, observers=None):
         """run(duration, observers)
 

@@ -38,6 +38,8 @@ cdef extern from "ecell4/egfrd/egfrd.hpp" namespace "ecell4::egfrd":
         Real t()
         Cpp_Real3& edge_lengths()
         Cpp_Real3 actual_lengths()
+        Real get_value(Cpp_Species&)
+        Real get_value_exact(Cpp_Species&)
         Integer num_particles()
         Integer num_particles(Cpp_Species& sp)
         Integer num_particles_exact(Cpp_Species& sp)

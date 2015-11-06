@@ -34,6 +34,8 @@ cdef extern from "ecell4/gillespie/GillespieWorld.hpp" namespace "ecell4::gilles
         void reset(Cpp_Real3&)
         Cpp_Real3& edge_lengths()
         Cpp_Real3 actual_lengths()
+        Real get_value(Cpp_Species&)
+        Real get_value_exact(Cpp_Species&)
         Integer num_molecules(Cpp_Species &)
         Integer num_molecules_exact(Cpp_Species &)
         vector[Cpp_Species] list_species()

@@ -54,6 +54,8 @@ cdef extern from "ecell4/spatiocyte/SpatiocyteWorld.hpp" namespace "ecell4::spat
         # bool on_structure(Cpp_Voxel&)
         bool on_structure(Cpp_Species&, Integer)
 
+        Real get_value(Cpp_Species&)
+        Real get_value_exact(Cpp_Species&)
         Integer num_particles()
         Integer num_particles(Cpp_Species& sp)
         Integer num_particles_exact(Cpp_Species& sp)

@@ -171,6 +171,42 @@ cdef class GillespieWorld:
         """Return the volume of the world."""
         return self.thisptr.get().volume()
 
+    def get_value(self, Species sp):
+        """get_value(sp) -> Real
+
+        Return the value (number) corresponding the given Species.
+
+        Parameters
+        ----------
+        sp : Species
+            a species whose value you require
+
+        Returns
+        -------
+        Real:
+            the value
+
+        """
+        return self.thisptr.get().get_value(deref(sp.thisptr))
+
+    def get_value_exact(self, Species sp):
+        """get_value_exact(sp) -> Real
+
+        Return the value (number) corresponding the given Species.
+
+        Parameters
+        ----------
+        sp : Species
+            a species whose value you require
+
+        Returns
+        -------
+        Real:
+            the value
+
+        """
+        return self.thisptr.get().get_value_exact(deref(sp.thisptr))
+
     def num_molecules(self, Species sp):
         """num_molecules(sp) -> Integer
 
