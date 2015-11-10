@@ -276,7 +276,7 @@ Integer SpatiocyteWorld::add_structure(
 {
     std::cerr << "shape->dimension() : " << shape->dimension() << std::endl; // XXX
     const SpatiocyteWorld::molecule_info_type info(get_molecule_info(sp));
-    (*space_).add_structure(sp, shape, info.loc);
+    (*space_).make_structure_type(sp, shape->dimension(), info.loc);
 
     switch (shape->dimension())
     {
@@ -549,15 +549,6 @@ SpatiocyteWorld::check_neighbor_private(
     // const private_coordinate_type neighbor((*space_).get_neighbor_private(coord, rnd));
     // bool flg = get_molecular_type_private(neighbor)->is_vacant(); //XXX: loc
     // return std::make_pair(neighbor, flg);
-}
-
-Shape::dimension_kind SpatiocyteWorld::get_dimension_kind(const std::string& name) const
-{
-    if (name == "")
-    {
-        return Shape::THREE; // Default value for VACANT type.
-    }
-    return (*space_).get_structure_dimension(Species(name));
 }
 
 } // spatiocyte
