@@ -188,13 +188,18 @@ public:
     std::pair<std::pair<ParticleID, Particle>, bool>
     new_particle(const Particle& p)
     {
-        ParticleID pid(sidgen_());
-        // if (has_particle(pid))
-        // {
-        //     throw AlreadyExists("particle already exists");
-        // }
-        const bool is_succeeded((*space_).update_particle(pid, p));
-        return std::make_pair(get_particle(pid), is_succeeded);
+        // ParticleID pid(sidgen_());
+        // const bool is_succeeded((*space_).update_particle(pid, p));
+        // return std::make_pair(get_particle(pid), is_succeeded);
+        const molecule_info_type minfo(get_molecule_info(p.species()));
+        const Voxel v(
+            p.species(), position2private(p.position()), p.radius(), p.D(), minfo.loc);
+        if ((*space_).on_structure(v))
+        {
+            return std::make_pair(std::make_pair(ParticleID(), p), false);
+        }
+        const std::pair<std::pair<ParticleID, Voxel>, bool> retval = new_voxel_private(v);
+        return std::make_pair(std::make_pair(retval.first.first, p), retval.second);
     }
 
     std::pair<std::pair<ParticleID, Particle>, bool>

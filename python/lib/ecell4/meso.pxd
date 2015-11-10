@@ -78,6 +78,8 @@ cdef extern from "ecell4/meso/MesoscopicWorld.hpp" namespace "ecell4::meso":
         void load(string) except +
         void bind_to(shared_ptr[Cpp_Model])
         shared_ptr[Cpp_RandomNumberGenerator] rng()
+        pair[pair[Cpp_ParticleID, Cpp_Particle], bool] new_particle(Cpp_Particle& p)
+        pair[pair[Cpp_ParticleID, Cpp_Particle], bool] new_particle(Cpp_Species& sp, Cpp_Real3& pos)
         vector[pair[Cpp_ParticleID, Cpp_Particle]] list_particles()
         vector[pair[Cpp_ParticleID, Cpp_Particle]] list_particles(Cpp_Species& sp)
         vector[pair[Cpp_ParticleID, Cpp_Particle]] list_particles_exact(Cpp_Species& sp)

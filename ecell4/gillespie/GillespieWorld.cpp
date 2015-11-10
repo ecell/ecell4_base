@@ -50,6 +50,11 @@ Real GillespieWorld::get_value_exact(const Species& sp) const
     return this->cs_->get_value_exact(sp);
 }
 
+void GillespieWorld::set_value(const Species& sp, const Real value)
+{
+    this->cs_->set_value(sp, value);
+}
+
 void GillespieWorld::add_molecules(const Species& sp, const Integer& num)
 {
     this->cs_->add_molecules(sp, num);

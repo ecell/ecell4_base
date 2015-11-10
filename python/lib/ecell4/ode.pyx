@@ -133,6 +133,37 @@ cdef class ODEWorld:
             inc(it)
         return retval
 
+    def new_particle(self, arg1, Real3 arg2=None):
+        """new_particle(arg1, arg2=None) -> (ParticleID, Particle)
+
+        Create a new particle.
+
+        Parameters
+        ----------
+        arg1 : Particle
+            A particle to be placed.
+
+        or
+
+        arg1 : Species
+            A species of a particle
+        arg2 : Real3
+            A position to place a particle
+
+        Returns
+        -------
+        tuple:
+            A pair of ParticleID and Particle of a new particle
+
+        """
+        cdef pair[pair[Cpp_ParticleID, Cpp_Particle], bool] retval
+
+        if arg2 is None:
+            retval = self.thisptr.get().new_particle(deref((<Particle> arg1).thisptr))
+        else:
+            retval = self.thisptr.get().new_particle(deref((<Species> arg1).thisptr), deref(arg2.thisptr))
+        return ((ParticleID_from_Cpp_ParticleID(address(retval.first.first)), Particle_from_Cpp_Particle(address(retval.first.second))), retval.second)
+
     def add_molecules(self, Species sp, Integer num, shape=None):
         """add_molecules(sp, num, shape=None)
 

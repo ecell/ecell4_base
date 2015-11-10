@@ -136,6 +136,20 @@ public:
      */
     virtual void remove_molecules(const Species& sp, const Integer& num) = 0;
 
+    virtual void set_value(const Species& sp, const Real value)
+    {
+        const Integer num1 = static_cast<Integer>(value);
+        const Integer num2 = num_molecules_exact(sp);
+        if (num1 > num2)
+        {
+            add_molecules(sp, num1 - num2);
+        }
+        else if (num1 < num2)
+        {
+            remove_molecules(sp, num2 - num1);
+        }
+    }
+
 #ifdef WITH_HDF5
     // Optional members
 

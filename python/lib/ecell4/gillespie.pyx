@@ -229,6 +229,21 @@ cdef class GillespieWorld:
         #     return self.thisptr.get().num_molecules(deref(sp.thisptr))
         return self.thisptr.get().num_molecules(deref(sp.thisptr))
 
+    def set_value(self, Species sp, Real value):
+        """set_value(sp, value)
+
+        Set the value of the given species.
+
+        Parameters
+        ----------
+        sp : Species
+            a species whose value you set
+        value : Real
+            a value set
+
+        """
+        self.thisptr.get().set_value(deref(sp.thisptr), value)
+
     def num_molecules_exact(self, Species sp):
         """num_molecules_exact(sp) -> Integer
 
@@ -295,6 +310,37 @@ cdef class GillespieWorld:
                      <Cpp_Species*>(address(deref(it)))))
             inc(it)
         return retval
+
+    def new_particle(self, arg1, Real3 arg2=None):
+        """new_particle(arg1, arg2=None) -> (ParticleID, Particle)
+
+        Create a new particle.
+
+        Parameters
+        ----------
+        arg1 : Particle
+            A particle to be placed.
+
+        or
+
+        arg1 : Species
+            A species of a particle
+        arg2 : Real3
+            A position to place a particle
+
+        Returns
+        -------
+        tuple:
+            A pair of ParticleID and Particle of a new particle
+
+        """
+        cdef pair[pair[Cpp_ParticleID, Cpp_Particle], bool] retval
+
+        if arg2 is None:
+            retval = self.thisptr.get().new_particle(deref((<Particle> arg1).thisptr))
+        else:
+            retval = self.thisptr.get().new_particle(deref((<Species> arg1).thisptr), deref(arg2.thisptr))
+        return ((ParticleID_from_Cpp_ParticleID(address(retval.first.first)), Particle_from_Cpp_Particle(address(retval.first.second))), retval.second)
 
     def list_particles(self, Species sp = None):
         """list_particles(sp) -> [(ParticleID, Particle)]

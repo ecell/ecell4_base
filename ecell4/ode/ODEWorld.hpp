@@ -325,6 +325,20 @@ public:
         add_molecules(sp, num);
     }
 
+    std::pair<std::pair<ParticleID, Particle>, bool> new_particle(const Particle& p)
+    {
+        add_molecules(p.species(), 1);
+        return std::make_pair(std::make_pair(ParticleID(), p), true);
+    }
+
+    std::pair<std::pair<ParticleID, Particle>, bool> new_particle(
+        const Species& sp, const Real3& pos)
+    {
+        add_molecules(sp, 1);
+        return std::make_pair(
+            std::make_pair(ParticleID(), Particle(sp, pos, 0.0, 0.0)), true);
+    }
+
 protected:
 
     Real3 edge_lengths_;

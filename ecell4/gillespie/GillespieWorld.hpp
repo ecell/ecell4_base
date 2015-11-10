@@ -79,6 +79,7 @@ public:
     Integer num_molecules_exact(const Species& sp) const;
     Real get_value(const Species& sp) const;
     Real get_value_exact(const Species& sp) const;
+    void set_value(const Species& sp, const Real value);
     std::vector<Species> list_species() const;
     bool has_species(const Species& sp) const;
 
@@ -149,6 +150,20 @@ public:
     void add_molecules(const Species& sp, const Integer& num, const boost::shared_ptr<Shape> shape)
     {
         add_molecules(sp, num);
+    }
+
+    std::pair<std::pair<ParticleID, Particle>, bool> new_particle(const Particle& p)
+    {
+        add_molecules(p.species(), 1);
+        return std::make_pair(std::make_pair(ParticleID(), p), true);
+    }
+
+    std::pair<std::pair<ParticleID, Particle>, bool> new_particle(
+        const Species& sp, const Real3& pos)
+    {
+        add_molecules(sp, 1);
+        return std::make_pair(
+            std::make_pair(ParticleID(), Particle(sp, pos, 0.0, 0.0)), true);
     }
 
     std::vector<std::pair<ParticleID, Particle> > list_particles() const;
