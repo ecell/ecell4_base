@@ -4,6 +4,7 @@
 #include <cstring>
 #include <iostream>
 #include <sstream>
+#include <map>
 #include <boost/scoped_ptr.hpp>
 #include <boost/scoped_array.hpp>
 #include <boost/lexical_cast.hpp>
@@ -15,6 +16,7 @@
 #include "Species.hpp"
 #include "Voxel.hpp"
 #include "MolecularTypeBase.hpp"
+#include "VacantType.hpp"
 
 
 namespace ecell4
@@ -107,6 +109,22 @@ struct LatticeSpaceHDF5Traits
         dset->write(h5_voxel_array.get(), dset->getDataType());
     }
 
+    template<typename Tspace_>
+    static void save_molecular_type_recursively(const Species& location,
+            std::multimap<Species, const MolecularTypeBase*>& location_map,
+            Tspace_& space, H5::Group* root)
+    {
+        std::multimap<Species, const MolecularTypeBase*>::iterator itr;
+        while ((itr = location_map.find(location)) != location_map.end())
+        {
+            const MolecularTypeBase* mtb((*itr).second);
+            const Species species(mtb->species());
+            save_molecular_type(mtb, space.list_voxels(species), root);
+            save_molecular_type_recursively(species, location_map, space, root);
+            location_map.erase(itr);
+        }
+    }
+
 };
 
 template<typename Tspace_>
@@ -117,15 +135,16 @@ void save_lattice_space(const Tspace_& space, H5::Group* root)
     boost::scoped_ptr<H5::Group> spgroup(new H5::Group(root->createGroup("species")));
 
     const std::vector<Species> species(space.list_species());
-    /*
-     * TODO sort species with location
-     */
+    std::multimap<Species, const MolecularTypeBase*> location_map;
     for (std::vector<Species>::const_iterator itr(species.begin());
             itr != species.end(); ++itr)
     {
         const MolecularTypeBase *mtb(space.find_molecular_type(*itr));
-        traits_type::save_molecular_type(mtb, space.list_voxels(*itr), spgroup.get());
+        Species location(mtb->location()->species());
+        location_map.insert(std::make_pair(location, mtb));
     }
+    traits_type::save_molecular_type_recursively(VacantType::getInstance().species(),
+            location_map, space, spgroup.get());
 
 #define CREATE_ATTRIBUTE(attribute, type) \
     root->createAttribute(#attribute, type,\
