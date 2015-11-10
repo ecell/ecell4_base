@@ -1097,6 +1097,41 @@ bool LatticeSpaceVectorImpl::make_structure_type(const Species& sp,
     return retval.second;
 }
 
+bool LatticeSpaceVectorImpl::make_molecular_type(const Species& sp, Real radius, Real D, const std::string loc)
+{
+    spmap::iterator itr(spmap_.find(sp));
+    if (itr != spmap_.end())
+        return false;
+    std::pair<spmap::iterator, bool> retval(__get_molecular_type(Voxel(sp, 0, radius, D, loc)));
+    return retval.second;
+}
+
+bool LatticeSpaceVectorImpl::add_voxels(const Species sp, std::vector<std::pair<ParticleID, coordinate_type> > voxels)
+{
+    // this function doesn't check location.
+    MolecularTypeBase *mtb;
+    try
+    {
+        mtb = find_molecular_type(sp);
+    }
+    catch (NotFound &e)
+    {
+        return false;
+    }
+    for (std::vector<std::pair<ParticleID, coordinate_type> >::iterator itr(voxels.begin());
+            itr != voxels.end(); ++itr)
+    {
+        const ParticleID pid((*itr).first);
+        const private_coordinate_type coord(coord2private((*itr).second));
+        MolecularTypeBase* src_mt(get_molecular_type(coord));
+        src_mt->remove_voxel_if_exists(coord);
+        mtb->add_voxel_without_checking(particle_info_type(coord, pid));
+        voxel_container::iterator vitr(voxels_.begin() + coord);
+        (*vitr) = mtb;
+    }
+    return true;
+}
+
 Integer LatticeSpaceVectorImpl::count_voxels(
     const boost::shared_ptr<MolecularType>& mt) const
 {

@@ -16,6 +16,7 @@
 #include "Species.hpp"
 #include "Voxel.hpp"
 #include "MolecularTypeBase.hpp"
+#include "StructureType.hpp"
 #include "VacantType.hpp"
 
 
@@ -82,7 +83,7 @@ struct LatticeSpaceHDF5Traits
         else
             std::strcpy(property.location, loc->species().serial().c_str());
         property.is_structure = mtb->is_structure() ? 1 : 0;
-        property.dimension = loc->is_vacant() ? mtb->get_dimension() : Shape::UNDEF;
+        property.dimension = mtb->get_dimension();
 
         H5::CompType property_comp_type(get_property_comp());
         mtgroup->createAttribute("property", property_comp_type,
@@ -125,6 +126,19 @@ struct LatticeSpaceHDF5Traits
         }
     }
 
+    static void sort_by_location(std::multimap<std::string, Species> location_map,
+            std::vector<Species>& species, const std::string location="")
+    {
+        std::multimap<std::string, Species>::iterator itr;
+        while ((itr = location_map.find(location)) != location_map.end())
+        {
+            const Species sp((*itr).second);
+            species.push_back(sp);
+            sort_by_location(location_map, species, sp.serial());
+            location_map.erase(itr);
+        }
+    }
+
 };
 
 template<typename Tspace_>
@@ -146,10 +160,6 @@ void save_lattice_space(const Tspace_& space, H5::Group* root)
     traits_type::save_molecular_type_recursively(VacantType::getInstance().species(),
             location_map, space, spgroup.get());
 
-#define CREATE_ATTRIBUTE(attribute, type) \
-    root->createAttribute(#attribute, type,\
-        H5::DataSpace(H5S_SCALAR)).write(type, &attribute)
-
     const hsize_t dims[] = {3};
     const H5::ArrayType lengths_type(H5::PredType::NATIVE_DOUBLE, 1, dims);
     const Real3 lengths(space.edge_lengths());
@@ -159,6 +169,10 @@ void save_lattice_space(const Tspace_& space, H5::Group* root)
     const double voxel_radius(space.voxel_radius());
     const uint32_t is_periodic(space.is_periodic()? 1 : 0);
     double edge_lengths[] = {lengths[0], lengths[1], lengths[2]};
+
+#define CREATE_ATTRIBUTE(attribute, type) \
+    root->createAttribute(#attribute, type,\
+        H5::DataSpace(H5S_SCALAR)).write(type, &attribute)
 
     CREATE_ATTRIBUTE(space_type, H5::PredType::STD_I32LE);
     CREATE_ATTRIBUTE(t, H5::PredType::IEEE_F64LE);
@@ -175,36 +189,46 @@ void load_lattice_space(const H5::Group& root, Tspace_* space)
 {
     typedef LatticeSpaceHDF5Traits traits_type;
 
+    uint32_t space_type; // not use
     double t;
-    root.openAttribute("t").read(H5::PredType::IEEE_F64LE, &t);
-    space->set_t(t);
-
     double voxel_radius;
-    root.openAttribute("voxel_radius").read(H5::PredType::IEEE_F64LE, &voxel_radius);
-
     Real3 edge_lengths;
     const hsize_t dims[] = {3};
-    const H5::ArrayType lengths_type(H5::PredType::NATIVE_DOUBLE, 1, dims);
-    root.openAttribute("edge_lengths").read(lengths_type, &edge_lengths);
-
     uint32_t is_periodic;
-    root.openAttribute("is_periodic").read(
-        H5::PredType::STD_I32LE, &is_periodic);
 
+#define OPEN_ATTRIBUTE(attribute, type) \
+    root.openAttribute(#attribute).read(type, &attribute)
+
+    OPEN_ATTRIBUTE(space_type, H5::PredType::STD_I32LE);
+    OPEN_ATTRIBUTE(t, H5::PredType::IEEE_F64LE);
+    OPEN_ATTRIBUTE(voxel_radius, H5::PredType::IEEE_F64LE);
+    OPEN_ATTRIBUTE(edge_lengths, H5::ArrayType(H5::PredType::NATIVE_DOUBLE, 1, dims));
+    OPEN_ATTRIBUTE(is_periodic, H5::PredType::STD_I32LE);
+
+#undef OPEN_ATTRIBUTE
+
+    space->set_t(t);
     space->reset(edge_lengths, voxel_radius, (is_periodic != 0));
+
+    std::map<Species, traits_type::h5_species_struct> struct_map;
+    std::map<Species, std::vector<std::pair<ParticleID, Integer> > > voxels_map;
+    std::multimap<std::string, Species> location_map;
+
+    std::map<Species, std::pair<traits_type::h5_species_struct,
+            std::vector<std::pair<ParticleID, Integer> > > > tmp_map;
 
     H5::Group spgroup(root.openGroup("species"));
     for (hsize_t idx(0); idx < spgroup.getNumObjs(); ++idx)
     {
         std::string serial(spgroup.getObjnameByIdx(idx));
         H5::Group group(spgroup.openGroup(serial));
+        Species species(serial);
+
         traits_type::h5_species_struct property;
         group.openAttribute("property").read(
                 traits_type::get_property_comp(), &property);
-        /*
-        Species species(serial, property.radius, property.D,
-                std::string(property.location));
-                */
+        struct_map.insert(std::make_pair(species, property));
+        location_map.insert(std::make_pair(property.location, species));
 
         H5::DataSet voxel_dset(group.openDataSet("voxels"));
         const unsigned int num_voxels(
@@ -214,6 +238,7 @@ void load_lattice_space(const H5::Group& root, Tspace_* space)
         voxel_dset.read(
                 h5_voxel_array.get(), traits_type::get_voxel_comp());
         voxel_dset.close();
+        group.close();
 
         std::vector<std::pair<ParticleID, Integer> > voxels;
         for (unsigned int idx(0); idx < num_voxels; ++idx)
@@ -222,10 +247,24 @@ void load_lattice_space(const H5::Group& root, Tspace_* space)
                         ParticleID(std::make_pair(h5_voxel_array[idx].lot, h5_voxel_array[idx].serial)),
                         h5_voxel_array[idx].coordinate));
         }
-
-        group.close();
+        voxels_map.insert(std::make_pair(species, voxels));
     }
+    spgroup.close();
 
+    std::vector<Species> sp_list;
+    traits_type::sort_by_location(location_map, sp_list);
+    for (std::vector<Species>::iterator itr(sp_list.begin());
+            itr != sp_list.end(); ++itr)
+    {
+        Species species(*itr);
+        traits_type::h5_species_struct property((*struct_map.find(species)).second);
+        std::vector<std::pair<ParticleID, Integer> > voxels((*voxels_map.find(species)).second);
+        if (property.is_structure == 0)
+            space->make_molecular_type(species, property.radius, property.D, property.location);
+        else
+            space->make_structure_type(species, static_cast<Shape::dimension_kind>(property.dimension), property.location);
+        space->add_voxels(species, voxels);
+    }
 }
 
 } // ecell4

@@ -630,6 +630,8 @@ public:
     virtual bool update_voxel_private(const ParticleID& pid, const Voxel& v);
     virtual bool update_voxel_private_without_checking(const ParticleID& pid, const Voxel& v);
 
+    bool add_voxels(const Species species, std::vector<std::pair<ParticleID, coordinate_type> > voxels);
+
     std::vector<Species> list_species() const;
     const Species& find_species(std::string name) const;
     std::vector<coordinate_type> list_coords(const Species& sp) const;
@@ -695,6 +697,8 @@ public:
 
     virtual bool make_structure_type(const Species& sp,
         Shape::dimension_kind dimension, const std::string loc);
+    bool make_molecular_type(const Species& sp,
+        Real radius, Real D, const std::string loc);
 
     virtual bool on_structure(const Voxel& v);
 
