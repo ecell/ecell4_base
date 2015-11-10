@@ -129,10 +129,10 @@ SpatiocyteWorld::list_particles_exact(const Species& sp) const
     return (*space_).list_particles_exact(sp);
 }
 
-bool SpatiocyteWorld::update_particle(const ParticleID& pid, const Particle& p)
-{
-    return (*space_).update_particle(pid, p);
-}
+// bool SpatiocyteWorld::update_particle(const ParticleID& pid, const Particle& p)
+// {
+//     return (*space_).update_particle(pid, p);
+// }
 
 std::vector<Species> SpatiocyteWorld::list_species() const
 {

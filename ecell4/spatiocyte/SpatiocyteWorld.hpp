@@ -189,7 +189,7 @@ public:
     new_particle(const Particle& p)
     {
         // ParticleID pid(sidgen_());
-        // const bool is_succeeded((*space_).update_particle(pid, p));
+        // const bool is_succeeded(update_particle(pid, p));
         // return std::make_pair(get_particle(pid), is_succeeded);
         const molecule_info_type minfo(get_molecule_info(p.species()));
         const Voxel v(
@@ -243,7 +243,12 @@ public:
     std::vector<std::pair<ParticleID, Particle> >
         list_particles_exact(const Species& sp) const;
 
-    bool update_particle(const ParticleID& pid, const Particle& p);
+    bool update_particle(const ParticleID& pid, const Particle& p)
+    {
+        const molecule_info_type minfo(get_molecule_info(p.species()));
+        return update_voxel_private(pid, Voxel(p.species(),
+            position2private(p.position()), p.radius(), p.D(), minfo.loc));
+    }
 
     std::vector<std::pair<ParticleID, Voxel> >
         list_voxels() const;

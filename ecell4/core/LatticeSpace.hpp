@@ -271,11 +271,11 @@ public:
                 v.radius(), v.D(), v.loc()));
     }
 
-    virtual bool update_particle(const ParticleID& pid, const Particle& p)
-    {
-        return update_voxel_private(pid, Voxel(p.species(),
-            position2private(p.position()), p.radius(), p.D()));
-    }
+    // virtual bool update_particle(const ParticleID& pid, const Particle& p)
+    // {
+    //     return update_voxel_private(pid, Voxel(p.species(),
+    //         position2private(p.position()), p.radius(), p.D(), minfo.loc));
+    // }
 
     virtual std::pair<ParticleID, Particle> get_particle(const ParticleID& pid) const
     {

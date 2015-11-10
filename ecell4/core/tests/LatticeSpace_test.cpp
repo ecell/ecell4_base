@@ -58,9 +58,11 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_update_particle)
     Real3 pos(2e-8, 1.7e-8, 1.5e-8);
     Real r(1.0);
     Real d(2.3);
-    Particle particle(sp, pos, r, d);
+    // Particle particle(sp, pos, r, d);
+    Voxel v(sp, space.position2coordinate(pos), r, D);
 
-    BOOST_CHECK(space.update_particle(id, particle));
+    // BOOST_CHECK(space.update_particle(id, particle));
+    BOOST_CHECK(space.update_voxel(id, v));
     BOOST_CHECK(space.has_species(sp));
 }
 
@@ -69,17 +71,21 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_num_particles)
     ParticleID id(sidgen());
     Real3 pos(2e-8, 1.7e-8, 1.5e-8);
     Real r(1.0), d(2.3);
-    Particle particle(sp, pos, r, d);
+    // Particle particle(sp, pos, r, d);
+    Voxel v(sp, space.position2coordinate(pos), r, D);
 
     ParticleID a_id(sidgen());
     Species a(std::string("ANOTHER"));
     Real3 pos1(1e-8, 2e-8, 1e-9);
     Real r1(1.1);
     Real d1(4.3);
-    Particle another(a, pos1, r1, d1);
+    // Particle another(a, pos1, r1, d1);
+    Voxel another(a, space.position2coordinate(pos1), r1, d1);
 
-    BOOST_CHECK(space.update_particle(id, particle));
-    BOOST_CHECK(space.update_particle(a_id, another));
+    BOOST_CHECK(space.update_voxel(id, v));
+    BOOST_CHECK(space.update_voxel(a_id, another));
+    // BOOST_CHECK(space.update_particle(id, particle));
+    // BOOST_CHECK(space.update_particle(a_id, another));
     BOOST_CHECK_EQUAL(space.num_particles(sp), 1);
     BOOST_CHECK_EQUAL(space.num_particles(), 2);
 }
@@ -89,17 +95,21 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_list_particles)
     ParticleID id(sidgen());
     Real3 pos(2e-8, 1.7e-8, 1.5e-8);
     Real r(1.0), d(2.3);
-    Particle particle(sp, pos, r, d);
+    // Particle particle(sp, pos, r, d);
+    Voxel v(sp, space.position2coordinate(pos), r, D);
 
     ParticleID a_id(sidgen());
     Species a(std::string("ANOTHER"));
     Real3 pos1(1e-8, 2e-8, 1e-9);
     Real r1(1.1);
     Real d1(4.3);
-    Particle another(a, pos1, r1, d1);
+    // Particle another(a, pos1, r1, d1);
+    Voxel another(a, space.position2coordinate(pos1), r1, d1);
 
-    BOOST_CHECK(space.update_particle(id, particle));
-    BOOST_CHECK(space.update_particle(a_id, another));
+    BOOST_CHECK(space.update_voxel(id, v));
+    BOOST_CHECK(space.update_voxel(a_id, another));
+    // BOOST_CHECK(space.update_particle(id, particle));
+    // BOOST_CHECK(space.update_particle(a_id, another));
 
     typedef std::vector<std::pair<ParticleID, Particle> > vector;
 
@@ -522,8 +532,11 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_structure_update)
 
     Species sp2("B", "2.5e-9", "1e-12");
     BOOST_CHECK_THROW(
-        space.update_particle(sidgen(), Particle(sp2, pos, radius, D)),
+        space.update_voxel(sidgen(), Voxel(sp2, space.position2coordinate(pos), radius, D)),
         NotSupported);
+    // BOOST_CHECK_THROW(
+    //     space.update_particle(sidgen(), Particle(sp2, pos, radius, D)),
+    //     NotSupported);
 }
 
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_structure_move)

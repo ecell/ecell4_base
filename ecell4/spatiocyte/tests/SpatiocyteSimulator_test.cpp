@@ -543,7 +543,9 @@ BOOST_AUTO_TEST_CASE(SpatiocyteSimulator_test_shape)
     boost::shared_ptr<const Sphere> sphere(new Sphere(Real3(L/2, L/2, L/2), L*1/3));
 
     BOOST_CHECK(world->add_structure(membrane, sphere) > 0);
-    BOOST_CHECK(world->new_particle(Particle(sp, Real3(L/2, L/2, L*5/6),
+    BOOST_CHECK(!world->new_particle(Particle(sp, Real3(L/2, L/2, L*5/6),
+                    2.5e-9, 1e-12)).second);  // This should fail
+    BOOST_CHECK(world->new_particle(Particle(sp, Real3(L/2, L/2, L*5/6 - voxel_radius),
                     2.5e-9, 1e-12)).second);
 
     sim.initialize();
