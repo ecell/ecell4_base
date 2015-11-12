@@ -43,7 +43,11 @@
        require(["Elegans"], function(){
 	 console.log("Begin rendering...");
 	 var model = {{ model }};
-	 Elegans.Embed.parse("#"+{{model_id}},model).render();
+	 // Elegans.Embed.parse("#"+{{model_id}},model).render();
+	 var stage = Elegans.Embed.parse("#"+{{model_id}},model);
+     stage.world.camera.position.set({{px}}, {{py}}, {{pz}});
+     stage.world.camera.rotation.set({{rx}}, {{ry}}, {{rz}});
+	 stage.render();
        });
      })();
     </script>

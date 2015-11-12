@@ -189,6 +189,15 @@ cdef class MesoscopicWorld:
         cdef Cpp_Real3 lengths = self.thisptr.get().edge_lengths()
         return Real3_from_Cpp_Real3(address(lengths))
 
+    def actual_lengths(self):
+        """actual_lengths() -> Real3
+
+        Return the actual edge lengths of the world.
+        Same as ``edge_lengths``.
+        """
+        cdef Cpp_Real3 lengths = self.thisptr.get().actual_lengths()
+        return Real3_from_Cpp_Real3(address(lengths))
+
     def matrix_sizes(self):
         """matrix_sizes() -> Integer3
 
@@ -205,6 +214,42 @@ cdef class MesoscopicWorld:
     def subvolume(self):
         """Return the subvolume of each cell."""
         return self.thisptr.get().subvolume()
+
+    def get_value(self, Species sp):
+        """get_value(sp) -> Real
+
+        Return the value (number) corresponding the given Species.
+
+        Parameters
+        ----------
+        sp : Species
+            a species whose value you require
+
+        Returns
+        -------
+        Real:
+            the value
+
+        """
+        return self.thisptr.get().get_value(deref(sp.thisptr))
+
+    def get_value_exact(self, Species sp):
+        """get_value_exact(sp) -> Real
+
+        Return the value (number) corresponding the given Species.
+
+        Parameters
+        ----------
+        sp : Species
+            a species whose value you require
+
+        Returns
+        -------
+        Real:
+            the value
+
+        """
+        return self.thisptr.get().get_value_exact(deref(sp.thisptr))
 
     def num_subvolumes(self, sp = None):
         """num_subvolumes(sp=None) -> Integer
@@ -560,6 +605,37 @@ cdef class MesoscopicWorld:
 
         """
         return self.thisptr.get().list_coordinates_exact(deref(sp.thisptr))
+
+    def new_particle(self, arg1, Real3 arg2=None):
+        """new_particle(arg1, arg2=None) -> (ParticleID, Particle)
+
+        Create a new particle.
+
+        Parameters
+        ----------
+        arg1 : Particle
+            A particle to be placed.
+
+        or
+
+        arg1 : Species
+            A species of a particle
+        arg2 : Real3
+            A position to place a particle
+
+        Returns
+        -------
+        tuple:
+            A pair of ParticleID and Particle of a new particle
+
+        """
+        cdef pair[pair[Cpp_ParticleID, Cpp_Particle], bool] retval
+
+        if arg2 is None:
+            retval = self.thisptr.get().new_particle(deref((<Particle> arg1).thisptr))
+        else:
+            retval = self.thisptr.get().new_particle(deref((<Species> arg1).thisptr), deref(arg2.thisptr))
+        return ((ParticleID_from_Cpp_ParticleID(address(retval.first.first)), Particle_from_Cpp_Particle(address(retval.first.second))), retval.second)
 
     def list_particles(self, Species sp = None):
         """list_particles(sp) -> [(ParticleID, Particle)]

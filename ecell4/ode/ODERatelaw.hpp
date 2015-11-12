@@ -3,10 +3,12 @@
 
 #include <ecell4/core/types.hpp>
 #include <ecell4/core/exceptions.hpp>
+#include <boost/format.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
 #include <boost/variant.hpp>
 #include <vector>
+#include <sstream>
 #include <algorithm>
 #include <numeric>
 #include <cmath>
@@ -51,6 +53,11 @@ public:
         state_container_type const &products_state_array, 
         Real const volume, Real const t,
         ODEReactionRule const &reaction) = 0;
+
+    virtual std::string as_string() const
+    {
+        return "nan";
+    }
 };
 
 class ODERatelawCppCallback
@@ -137,14 +144,15 @@ public:
 public:
 
     ODERatelawCythonCallback(Stepladder_Functype indirect_func, void* pyfunc,
-            OperateRef_Functype inc_ref, OperateRef_Functype dec_ref)
-        : indirect_func_(indirect_func), python_func_(pyfunc), h_(1.0e-8), inc_ref_(inc_ref), dec_ref_(dec_ref)
+            OperateRef_Functype inc_ref, OperateRef_Functype dec_ref,
+            const std::string name = "nan")
+        : indirect_func_(indirect_func), python_func_(pyfunc), h_(1.0e-8), inc_ref_(inc_ref), dec_ref_(dec_ref), funcname_(name)
     {
         this->inc_ref_(pyfunc);
     }
 
     ODERatelawCythonCallback()
-        : indirect_func_(0), python_func_(0), h_(1.0e-8) {;}
+        : indirect_func_(0), python_func_(0), h_(1.0e-8), funcname_("nan") {;}
 
     virtual ~ODERatelawCythonCallback(){
         this->dec_ref_(this->python_func_);
@@ -171,6 +179,17 @@ public:
         this->python_func_ = new_func;
         this->inc_ref_(this->python_func_);
     }
+
+    void set_name(const std::string& name)
+    {
+        funcname_ = name;
+    }
+
+    virtual std::string as_string() const
+    {
+        return funcname_;
+    }
+
 protected:
     void inc_ref(Python_CallbackFunctype python_func)
     {
@@ -195,6 +214,7 @@ private:
     Python_CallbackFunctype python_func_;
     Real h_;
     OperateRef_Functype inc_ref_, dec_ref_;
+    std::string funcname_;
 };
 
 class ODERatelawMassAction
@@ -231,6 +251,11 @@ public:
     Real get_k() const
     {
         return this->k_;
+    }
+
+    virtual std::string as_string() const
+    {
+        return (boost::format("%g") % this->k_).str();
     }
 
 private:

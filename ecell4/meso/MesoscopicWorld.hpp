@@ -289,6 +289,21 @@ public:
         }
     }
 
+    std::pair<std::pair<ParticleID, Particle>, bool> new_particle(const Particle& p)
+    {
+        add_molecules(p.species(), 1, position2coordinate(p.position()));
+        return std::make_pair(std::make_pair(ParticleID(), p), true);
+    }
+
+    std::pair<std::pair<ParticleID, Particle>, bool> new_particle(
+        const Species& sp, const Real3& pos)
+    {
+        add_molecules(sp, 1, position2coordinate(pos));
+        const MoleculeInfo info(get_molecule_info(sp));
+        return std::make_pair(
+            std::make_pair(ParticleID(), Particle(sp, pos, 0.0, info.D)), true);
+    }
+
     void add_structure(const Species& sp, const boost::shared_ptr<const Shape>& shape);
     bool on_structure(const Species& sp, const coordinate_type& coord) const;
 

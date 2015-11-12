@@ -1,5 +1,5 @@
 #include <ecell4/core/NetworkModel.hpp>
-#include "../LatticeSimulator.hpp"
+#include "../SpatiocyteSimulator.hpp"
 #include <ecell4/core/Rod.hpp>
 
 using namespace ecell4;
@@ -22,8 +22,8 @@ int main()
 
     boost::shared_ptr<GSLRandomNumberGenerator>
         rng(new GSLRandomNumberGenerator());
-    boost::shared_ptr<lattice::LatticeWorld> world(
-            new lattice::LatticeWorld(Real3(4.6e-6, 1.1e-6, 1.1e-6), 1e-8, rng));
+    boost::shared_ptr<spatiocyte::SpatiocyteWorld> world(
+            new spatiocyte::SpatiocyteWorld(Real3(4.6e-6, 1.1e-6, 1.1e-6), 1e-8, rng));
 
     boost::shared_ptr<const Rod> rod(
             new Rod(3.5e-6, 0.5e-6, Real3(2.3e-6, 0.55e-6, 0.55e-6)));
@@ -36,7 +36,7 @@ int main()
     world->add_molecules(minDadp, 1300);
     world->add_molecules(minDEE, 700);
 
-    lattice::LatticeSimulator sim(model, world);
+    spatiocyte::SpatiocyteSimulator sim(model, world);
 
     sim.run(1e-1);
 }

@@ -1,7 +1,7 @@
 #!/bin/bash -x
 
 usage_exit() {
-    echo "Usage: $0 [--without-python2] [--with-python3] [--with-no-python] [--with-no-test] [--with-vtk] [--with-hdf5] [--clean] [--prefix=PREFIX] [-h] [--help] [py2|py3]" 1>&2
+    echo "Usage: $0 [--[no]python2] [--[no]python3] [--nopython] [--[no]test] [--[no]vtk] [--[no]hdf5] [--clean] [--prefix=PREFIX] [-h] [--help] [py2|py3]" 1>&2
     exit 1
 }
 
@@ -28,15 +28,20 @@ do
     case $OPT in
         -)
             case "$OPTARG" in
-                without-python2) WITH_PYTHON2=0;;
-                with-python3) WITH_PYTHON3=1;;
-                with-no-python)
-                    WITH_PYTHON2=0
-                    WITH_PYTHON3=0
+                python2) WITH_PYTHON2=1;;
+                python3) WITH_PYTHON3=1;;
+                nopython2) WITH_PYTHON2=0;;
+                nopython3) WITH_PYTHON3=0;;
+                nopython)
+                    WITH_PYTHON2=0;
+                    WITH_PYTHON3=0;
                     ;;
-                with-no-test) WITH_TEST=0;;
-                with-vtk) WITH_VTK=1;;
-                with-hdf5) WITH_HDF5=1;;
+                test) WITH_TEST=1;;
+                notest) WITH_TEST=0;;
+                vtk) WITH_VTK=1;;
+                novtk) WITH_VTK=0;;
+                hdf5) WITH_HDF5=1;;
+                nohdf5) WITH_HDF5=0;;
                 prefix=*) PREFIX=${OPTARG#*=};;
                 clean) CLEANUP=1;;
                 help) usage_exit;;

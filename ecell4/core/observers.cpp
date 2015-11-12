@@ -41,6 +41,12 @@ const Integer FixedIntervalObserver::count() const
 
 void FixedIntervalObserver::initialize(const Space* space)
 {
+    if (dt_ <= 0.0)
+    {
+        throw std::invalid_argument(
+            "A step interval of FixedIntervalObserver must be positive.");
+    }
+
     if (count_ == 0)
     {
         t0_ = space->t();
@@ -316,13 +322,32 @@ void FixedIntervalCSVObserver::reset()
 void FixedIntervalTrajectoryObserver::initialize(const Space* space)
 {
     base_type::initialize(space);
+
+    typedef std::vector<std::pair<ParticleID, Particle> > particle_id_pairs;
+    if (pids_.size() == 0)
+    {
+        particle_id_pairs const particles(space->list_particles());
+        pids_.reserve(particles.size());
+        for (particle_id_pairs::const_iterator i(particles.begin());
+            i != particles.end(); ++i)
+        {
+            if ((*i).second.D() > 0)
+            {
+                pids_.push_back((*i).first);
+            }
+        }
+        trajectories_.resize(pids_.size());
+        strides_.resize(pids_.size());
+    }
 }
 
 bool FixedIntervalTrajectoryObserver::fire(const Simulator* sim, const Space* space)
 {
     const bool retval = base_type::fire(sim, space);
+    t_.push_back(space->t());
 
-    const Real3 edge_lengths(space->edge_lengths());
+    // const Real3 edge_lengths(space->edge_lengths());
+    const Real3 edge_lengths(space->actual_lengths());
     std::vector<std::vector<Real3> >::iterator j(trajectories_.begin());
     std::vector<Real3>::iterator k(strides_.begin());
     for (std::vector<ParticleID>::const_iterator i(pids_.begin());
@@ -363,15 +388,27 @@ bool FixedIntervalTrajectoryObserver::fire(const Simulator* sim, const Space* sp
 void FixedIntervalTrajectoryObserver::reset()
 {
     base_type::reset();
+
     trajectories_.clear();
     trajectories_.resize(pids_.size(), std::vector<Real3>());
     strides_.clear();
     strides_.resize(pids_.size(), Real3(0, 0, 0));
+    t_.clear();
 }
 
 const std::vector<std::vector<Real3> >& FixedIntervalTrajectoryObserver::data() const
 {
     return trajectories_;
+}
+
+const Integer FixedIntervalTrajectoryObserver::num_tracers() const
+{
+    return pids_.size();
+}
+
+const std::vector<Real>& FixedIntervalTrajectoryObserver::t() const
+{
+    return t_;
 }
 
 void TimeoutObserver::initialize(const Space* space)

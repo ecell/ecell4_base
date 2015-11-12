@@ -50,6 +50,15 @@ public:
     std::vector<ReactionRule> query_reaction_rules(
         const Species& sp1, const Species& sp2) const;
 
+    std::vector<ReactionRule> query_reaction_rules(
+        const std::vector<Species>& splist, const std::vector<Species>::size_type n) const;
+
+    inline std::vector<ReactionRule> query_reaction_rules(
+        const std::vector<Species>& reactants) const
+    {
+        return this->query_reaction_rules(reactants, reactants.size());
+    }
+
     Integer apply(const Species& pttrn, const Species& sp) const;
     std::vector<ReactionRule> apply(
         const ReactionRule& rr,

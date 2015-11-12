@@ -214,6 +214,15 @@ cdef class BDWorld:
         cdef Cpp_Real3 lengths = self.thisptr.get().edge_lengths()
         return Real3_from_Cpp_Real3(address(lengths))
 
+    def actual_lengths(self):
+        """actual_lengths() -> Real3
+
+        Return the actual edge lengths of the world.
+        Same as ``edge_lengths``.
+        """
+        cdef Cpp_Real3 lengths = self.thisptr.get().actual_lengths()
+        return Real3_from_Cpp_Real3(address(lengths))
+
     def num_particles(self, Species sp = None):
         """num_particles(sp=None) -> Integer
 
@@ -496,6 +505,42 @@ cdef class BDWorld:
     #
     #     """
     #     return self.thisptr.get().has_species(deref(sp.thisptr))
+
+    def get_value(self, Species sp):
+        """get_value(sp) -> Real
+
+        Return the value (number) corresponding the given Species.
+
+        Parameters
+        ----------
+        sp : Species
+            a species whose value you require
+
+        Returns
+        -------
+        Real:
+            the value
+
+        """
+        return self.thisptr.get().get_value(deref(sp.thisptr))
+
+    def get_value_exact(self, Species sp):
+        """get_value_exact(sp) -> Real
+
+        Return the value (number) corresponding the given Species.
+
+        Parameters
+        ----------
+        sp : Species
+            a species whose value you require
+
+        Returns
+        -------
+        Real:
+            the value
+
+        """
+        return self.thisptr.get().get_value_exact(deref(sp.thisptr))
 
     def num_molecules(self, Species sp):
         """num_molecules(sp) -> Integer

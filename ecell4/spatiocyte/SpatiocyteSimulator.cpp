@@ -1,4 +1,4 @@
-#include "LatticeSimulator.hpp"
+#include "SpatiocyteSimulator.hpp"
 
 #include <algorithm>
 #include <iterator>
@@ -7,10 +7,10 @@
 namespace ecell4
 {
 
-namespace lattice
+namespace spatiocyte
 {
 
-void LatticeSimulator::initialize()
+void SpatiocyteSimulator::initialize()
 {
     scheduler_.clear();
     std::vector<Species> species(world_->list_species());
@@ -54,7 +54,7 @@ void LatticeSimulator::initialize()
     dt_ = scheduler_.next_time() - t();
 }
 
-void LatticeSimulator::register_events(const Species& sp)
+void SpatiocyteSimulator::register_events(const Species& sp)
 {
     if (world_->find_molecular_type(sp)->with_voxels())
     {
@@ -76,7 +76,7 @@ void LatticeSimulator::register_events(const Species& sp)
     }
 }
 
-boost::shared_ptr<EventScheduler::Event> LatticeSimulator::create_step_event(
+boost::shared_ptr<EventScheduler::Event> SpatiocyteSimulator::create_step_event(
         const Species& species, const Real& t)
 {
     boost::shared_ptr<EventScheduler::Event> event(
@@ -85,7 +85,7 @@ boost::shared_ptr<EventScheduler::Event> LatticeSimulator::create_step_event(
 }
 
 boost::shared_ptr<EventScheduler::Event>
-LatticeSimulator::create_zeroth_order_reaction_event(
+SpatiocyteSimulator::create_zeroth_order_reaction_event(
     const ReactionRule& reaction_rule, const Real& t)
 {
     boost::shared_ptr<EventScheduler::Event> event(new ZerothOrderReactionEvent(
@@ -94,7 +94,7 @@ LatticeSimulator::create_zeroth_order_reaction_event(
 }
 
 boost::shared_ptr<EventScheduler::Event>
-LatticeSimulator::create_first_order_reaction_event(
+SpatiocyteSimulator::create_first_order_reaction_event(
     const ReactionRule& reaction_rule, const Real& t)
 {
     boost::shared_ptr<EventScheduler::Event> event(new FirstOrderReactionEvent(
@@ -102,7 +102,7 @@ LatticeSimulator::create_first_order_reaction_event(
     return event;
 }
 
-void LatticeSimulator::finalize()
+void SpatiocyteSimulator::finalize()
 {
     EventScheduler::events_range events(scheduler_.events());
     for (EventScheduler::events_range::iterator itr(events.begin());
@@ -122,8 +122,8 @@ void LatticeSimulator::finalize()
 /*
  * the Zeroth Order Reaction
  */
-std::pair<bool, LatticeSimulator::reaction_type>
-    LatticeSimulator::apply_zeroth_order_reaction_(
+std::pair<bool, SpatiocyteSimulator::reaction_type>
+    SpatiocyteSimulator::apply_zeroth_order_reaction_(
         const ReactionRule& reaction_rule)
 {
     const ReactionRule::product_container_type&
@@ -137,13 +137,13 @@ std::pair<bool, LatticeSimulator::reaction_type>
         i != reaction_rule.products().end(); ++i)
     {
         const Species& sp(*i);
-        const LatticeWorld::molecule_info_type
+        const SpatiocyteWorld::molecule_info_type
             info(world_->get_molecule_info(sp));
         register_product_species(sp);
 
         while (true) //TODO: Avoid an inifinite loop
         {
-            const LatticeWorld::coordinate_type
+            const SpatiocyteWorld::coordinate_type
                 coord(world_->rng()->uniform_int(0, world_->size() - 1));
             const Voxel v(
                 sp, world_->coord2private(coord),
@@ -168,7 +168,7 @@ std::pair<bool, LatticeSimulator::reaction_type>
     return std::pair<bool, reaction_type>(true, reaction);
 }
 
-Real LatticeSimulator::calculate_dimensional_factor(
+Real SpatiocyteSimulator::calculate_dimensional_factor(
     const MolecularTypeBase* mt0, const MolecularTypeBase* mt1) const
 {
     const Species
@@ -221,7 +221,7 @@ Real LatticeSimulator::calculate_dimensional_factor(
     return factor;
 }
 
-Real LatticeSimulator::calculate_alpha(const ReactionRule& rule) const
+Real SpatiocyteSimulator::calculate_alpha(const ReactionRule& rule) const
 {
     const ReactionRule::reactant_container_type& reactants(rule.reactants());
     if (reactants.size() != 2)
@@ -279,8 +279,8 @@ Real LatticeSimulator::calculate_alpha(const ReactionRule& rule) const
     return alpha < 1.0 ? alpha : 1.0;
 }
 
-std::pair<bool, LatticeSimulator::reaction_type> LatticeSimulator::attempt_reaction_(
-    const LatticeWorld::particle_info_type info, LatticeWorld::coordinate_type to_coord,
+std::pair<bool, SpatiocyteSimulator::reaction_type> SpatiocyteSimulator::attempt_reaction_(
+    const SpatiocyteWorld::particle_info_type info, SpatiocyteWorld::coordinate_type to_coord,
     const Real& alpha)
 {
     const MolecularTypeBase* from_mt(
@@ -334,23 +334,23 @@ std::pair<bool, LatticeSimulator::reaction_type> LatticeSimulator::attempt_react
 /*
  * the Reaction between two molecules
  */
-std::pair<bool, LatticeSimulator::reaction_type> LatticeSimulator::apply_second_order_reaction_(
+std::pair<bool, SpatiocyteSimulator::reaction_type> SpatiocyteSimulator::apply_second_order_reaction_(
     const ReactionRule& reaction_rule,
-    const LatticeSimulator::reaction_type::particle_type& p0,
-    const LatticeSimulator::reaction_type::particle_type& p1)
+    const SpatiocyteSimulator::reaction_type::particle_type& p0,
+    const SpatiocyteSimulator::reaction_type::particle_type& p1)
 {
     const ReactionRule::product_container_type&
         products(reaction_rule.products());
     reaction_type reaction;
     reaction.rule = reaction_rule;
 
-    const LatticeWorld::private_coordinate_type from_coord(
+    const SpatiocyteWorld::private_coordinate_type from_coord(
         world_->coord2private(p0.second.coordinate()));
-    const LatticeWorld::private_coordinate_type to_coord(
+    const SpatiocyteWorld::private_coordinate_type to_coord(
         world_->coord2private(p1.second.coordinate()));
 
-    const LatticeWorld::particle_info_type from_info(from_coord, p0.first);
-    const LatticeWorld::particle_info_type to_info(to_coord, p1.first);
+    const SpatiocyteWorld::particle_info_type from_info(from_coord, p0.first);
+    const SpatiocyteWorld::particle_info_type to_info(to_coord, p1.first);
 
     switch (products.size())
     {
@@ -373,9 +373,9 @@ std::pair<bool, LatticeSimulator::reaction_type> LatticeSimulator::apply_second_
     return std::pair<bool, reaction_type>(true, reaction);
 }
 
-void LatticeSimulator::apply_vanishment(
-    const LatticeWorld::particle_info_type from_info,
-    const LatticeWorld::particle_info_type to_info,
+void SpatiocyteSimulator::apply_vanishment(
+    const SpatiocyteWorld::particle_info_type from_info,
+    const SpatiocyteWorld::particle_info_type to_info,
     reaction_type& reaction)
 {
     register_reactant_species(from_info, reaction);
@@ -384,9 +384,9 @@ void LatticeSimulator::apply_vanishment(
     world_->remove_voxel_private(to_info.first);
 }
 
-void LatticeSimulator::apply_ab2c(
-    const LatticeWorld::particle_info_type from_info,
-    const LatticeWorld::particle_info_type to_info,
+void SpatiocyteSimulator::apply_ab2c(
+    const SpatiocyteWorld::particle_info_type from_info,
+    const SpatiocyteWorld::particle_info_type to_info,
     const Species& product_species,
     reaction_type& reaction)
 {
@@ -444,15 +444,15 @@ void LatticeSimulator::apply_ab2c(
 }
 
 // Not tested yet
-void LatticeSimulator::apply_ab2cd(
-    const LatticeWorld::particle_info_type from_info,
-    const LatticeWorld::particle_info_type to_info,
+void SpatiocyteSimulator::apply_ab2cd(
+    const SpatiocyteWorld::particle_info_type from_info,
+    const SpatiocyteWorld::particle_info_type to_info,
     const Species& product_species0,
     const Species& product_species1,
     reaction_type& reaction)
 {
-    const LatticeWorld::private_coordinate_type from_coord(from_info.first);
-    const LatticeWorld::private_coordinate_type to_coord(to_info.first);
+    const SpatiocyteWorld::private_coordinate_type from_coord(from_info.first);
+    const SpatiocyteWorld::private_coordinate_type to_coord(to_info.first);
     const std::string aserial(get_serial(from_coord));
     const std::string aloc(get_location(from_coord));
     const std::string bserial(get_serial(to_coord));
@@ -484,7 +484,7 @@ void LatticeSimulator::apply_ab2cd(
         }
         else
         {
-            std::pair<LatticeWorld::private_coordinate_type, bool>
+            std::pair<SpatiocyteWorld::private_coordinate_type, bool>
                 neighbor(world_->check_neighbor_private(to_coord, dloc));
 
             if (neighbor.second)
@@ -529,7 +529,7 @@ void LatticeSimulator::apply_ab2cd(
         }
         else
         {
-            std::pair<LatticeWorld::private_coordinate_type, bool>
+            std::pair<SpatiocyteWorld::private_coordinate_type, bool>
                 neighbor(world_->check_neighbor_private(to_coord, cloc));
 
             if (neighbor.second)
@@ -552,7 +552,7 @@ void LatticeSimulator::apply_ab2cd(
     }
     else if (bserial == cloc || bloc == cloc)
     {
-        std::pair<LatticeWorld::private_coordinate_type, bool>
+        std::pair<SpatiocyteWorld::private_coordinate_type, bool>
             neighbor(world_->check_neighbor_private(to_coord, dloc));
 
         if (neighbor.second)
@@ -574,7 +574,7 @@ void LatticeSimulator::apply_ab2cd(
     }
     else if (bserial == dloc || bloc == dloc)
     {
-        std::pair<LatticeWorld::private_coordinate_type, bool>
+        std::pair<SpatiocyteWorld::private_coordinate_type, bool>
             neighbor(world_->check_neighbor_private(to_coord, dloc));
 
         if (neighbor.second)
@@ -600,10 +600,10 @@ void LatticeSimulator::apply_ab2cd(
     }
 }
 
-void LatticeSimulator::apply_ab2cd_in_order(
-    const LatticeWorld::private_coordinate_type coord0,
+void SpatiocyteSimulator::apply_ab2cd_in_order(
+    const SpatiocyteWorld::private_coordinate_type coord0,
     const Species& product_species0,
-    const LatticeWorld::private_coordinate_type coord1,
+    const SpatiocyteWorld::private_coordinate_type coord1,
     const Species& product_species1,
     reaction_type& reaction)
 {
@@ -629,18 +629,18 @@ void LatticeSimulator::apply_ab2cd_in_order(
 /*
  * the First Order Reaction
  */
-std::pair<bool, LatticeSimulator::reaction_type>
-    LatticeSimulator::apply_first_order_reaction_(
+std::pair<bool, SpatiocyteSimulator::reaction_type>
+    SpatiocyteSimulator::apply_first_order_reaction_(
         const ReactionRule& reaction_rule,
-        const LatticeSimulator::reaction_type::particle_type& p)
+        const SpatiocyteSimulator::reaction_type::particle_type& p)
 {
     const ReactionRule::product_container_type& products(reaction_rule.products());
     reaction_type reaction;
     reaction.rule = reaction_rule;
 
-    const LatticeWorld::private_coordinate_type coord(
+    const SpatiocyteWorld::private_coordinate_type coord(
         world_->coord2private(p.second.coordinate()));
-    const LatticeWorld::particle_info_type info(coord, p.first);
+    const SpatiocyteWorld::particle_info_type info(coord, p.first);
 
     switch (products.size())
     {
@@ -665,13 +665,13 @@ std::pair<bool, LatticeSimulator::reaction_type>
     return std::pair<bool, reaction_type>(true, reaction);
 }
 
-void LatticeSimulator::apply_a2b(
-    const LatticeWorld::particle_info_type pinfo,
+void SpatiocyteSimulator::apply_a2b(
+    const SpatiocyteWorld::particle_info_type pinfo,
     const Species& product_species,
     reaction_type& reaction)
 {
     // A (pinfo) becomes B (product_species)
-    const LatticeWorld::private_coordinate_type coord(pinfo.first);
+    const SpatiocyteWorld::private_coordinate_type coord(pinfo.first);
     const std::string bloc(world_->get_molecule_info(product_species).loc);
     const std::string aserial(get_serial(coord));
     const std::string aloc(get_location(coord));
@@ -711,7 +711,7 @@ void LatticeSimulator::apply_a2b(
     {
         // A is NOT on the location of B.
         // B must be released into a neighbor, which is the location of B
-        std::pair<LatticeWorld::private_coordinate_type, bool>
+        std::pair<SpatiocyteWorld::private_coordinate_type, bool>
             neighbor(world_->check_neighbor_private(coord, bloc));
 
         if (neighbor.second)
@@ -731,15 +731,15 @@ void LatticeSimulator::apply_a2b(
     }
 }
 
-bool LatticeSimulator::apply_a2bc(
-    const LatticeWorld::particle_info_type pinfo,
+bool SpatiocyteSimulator::apply_a2bc(
+    const SpatiocyteWorld::particle_info_type pinfo,
     const Species& product_species0,
     const Species& product_species1,
     reaction_type& reaction)
 {
     // A (pinfo) becomes B and C (product_species0 and product_species1)
     // At least, one of A and B must be placed at the neighbor.
-    const LatticeWorld::private_coordinate_type coord(pinfo.first);
+    const SpatiocyteWorld::private_coordinate_type coord(pinfo.first);
     const std::string
         bserial(product_species0.serial()),
         cserial(product_species1.serial()),
@@ -755,7 +755,7 @@ bool LatticeSimulator::apply_a2bc(
         // or B is the location of A
         // C must be placed at the neighbor
 
-        std::pair<LatticeWorld::private_coordinate_type, bool>
+        std::pair<SpatiocyteWorld::private_coordinate_type, bool>
             neighbor(world_->check_neighbor_private(coord, cloc));
         const std::string nserial(get_serial(neighbor.first));
         const std::string nloc(get_location(neighbor.first));
@@ -808,7 +808,7 @@ bool LatticeSimulator::apply_a2bc(
         // or A is on the location of C,
         // or C is the location of A
         // B must be placed at the neighbor
-        std::pair<LatticeWorld::private_coordinate_type, bool>
+        std::pair<SpatiocyteWorld::private_coordinate_type, bool>
             neighbor(world_->check_neighbor_private(coord, bloc));
         const std::string nserial(get_serial(neighbor.first));
         const std::string nloc(get_location(neighbor.first));
@@ -863,7 +863,7 @@ bool LatticeSimulator::apply_a2bc(
     return false;
 }
 
-void LatticeSimulator::register_product_species(const Species& product_species)
+void SpatiocyteSimulator::register_product_species(const Species& product_species)
 {
     if (!world_->has_species(product_species))
     {
@@ -871,8 +871,8 @@ void LatticeSimulator::register_product_species(const Species& product_species)
     }
 }
 
-void LatticeSimulator::register_reactant_species(
-        const LatticeWorld::particle_info_type pinfo, reaction_type& reaction) const
+void SpatiocyteSimulator::register_reactant_species(
+        const SpatiocyteWorld::particle_info_type pinfo, reaction_type& reaction) const
 {
     const MolecularTypeBase* mtype(world_->get_molecular_type_private(pinfo.first));
     const std::string location(
@@ -884,13 +884,13 @@ void LatticeSimulator::register_reactant_species(
                 mtype->radius(), mtype->D(), location)));
 }
 
-void LatticeSimulator::step()
+void SpatiocyteSimulator::step()
 {
     step_();
     dt_ = scheduler_.next_time() - t();
 }
 
-bool LatticeSimulator::step(const Real& upto)
+bool SpatiocyteSimulator::step(const Real& upto)
 {
     if (upto < t())
     {
@@ -911,7 +911,7 @@ bool LatticeSimulator::step(const Real& upto)
     return false;
 }
 
-void LatticeSimulator::step_()
+void SpatiocyteSimulator::step_()
 {
     last_reactions_.clear();
     new_species_.clear();
@@ -939,7 +939,7 @@ void LatticeSimulator::step_()
     num_steps_++;
 }
 
-// void LatticeSimulator::run(const Real& duration)
+// void SpatiocyteSimulator::run(const Real& duration)
 // {
 //     initialize();
 //     const Real upto(t() + duration);
@@ -948,12 +948,12 @@ void LatticeSimulator::step_()
 //     finalize();
 // }
 
-void LatticeSimulator::walk(const Species& species)
+void SpatiocyteSimulator::walk(const Species& species)
 {
     walk(species, 1.0);
 }
 
-void LatticeSimulator::walk(const Species& species, const Real& alpha)
+void SpatiocyteSimulator::walk(const Species& species, const Real& alpha)
 {
     if (alpha < 0 || alpha > 1)
     {
@@ -979,15 +979,15 @@ void LatticeSimulator::walk(const Species& species, const Real& alpha)
                 itr != voxels.end(); ++itr)
         {
             const Integer rnd(rng->uniform_int(0, 11));
-            const LatticeWorld::particle_info_type info(*itr);
+            const SpatiocyteWorld::particle_info_type info(*itr);
             if (world_->get_molecular_type_private(info.first) != mtype)
             {
                 // should skip if a voxel is not the target species.
                 // when reaction has occured before, a voxel can be changed.
                 continue;
             }
-            const LatticeWorld::private_coordinate_type neighbor(
-                    world_->get_neighbor_private(info.first, rnd));
+            const SpatiocyteWorld::private_coordinate_type neighbor(
+                    world_->get_neighbor_private_boundary(info.first, rnd));
             if (world_->can_move(info.first, neighbor))
             {
                 if (rng->uniform(0,1) <= alpha)
@@ -1006,7 +1006,7 @@ void LatticeSimulator::walk(const Species& species, const Real& alpha)
         for (MolecularTypeBase::container_type::iterator itr(voxels.begin());
                 itr != voxels.end(); ++itr)
         {
-            const LatticeWorld::particle_info_type info(*itr);
+            const SpatiocyteWorld::particle_info_type info(*itr);
             if (world_->get_molecular_type_private(info.first) != mtype)
             {
                 // should skip if a voxel is not the target species.
@@ -1016,8 +1016,8 @@ void LatticeSimulator::walk(const Species& species, const Real& alpha)
 
             ecell4::shuffle(*(rng.get()), nids);
             for (int i(0); i < 12; ++i) {
-                const LatticeWorld::private_coordinate_type neighbor(
-                        world_->get_neighbor_private(info.first, nids.at(i)));
+                const SpatiocyteWorld::private_coordinate_type neighbor(
+                        world_->get_neighbor_private_boundary(info.first, nids.at(i)));
                 const MolecularTypeBase* target(world_->get_molecular_type_private(neighbor));
                 if (target == location || target->location() == location) {
                     if (world_->can_move(info.first, neighbor))
@@ -1037,6 +1037,6 @@ void LatticeSimulator::walk(const Species& species, const Real& alpha)
 
 }
 
-} // lattice
+} // spatiocyte
 
 } // ecell4

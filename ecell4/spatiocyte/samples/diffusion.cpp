@@ -5,10 +5,10 @@
 #include <ecell4/core/Real3.hpp>
 #include <ecell4/core/RandomNumberGenerator.hpp>
 
-#include <ecell4/lattice/LatticeWorld.hpp>
-#include <ecell4/lattice/LatticeSimulator.hpp>
-typedef ecell4::lattice::LatticeWorld world_type;
-typedef ecell4::lattice::LatticeSimulator simulator_type;
+#include <ecell4/spatiocyte/SpatiocyteWorld.hpp>
+#include <ecell4/spatiocyte/SpatiocyteSimulator.hpp>
+typedef ecell4::spatiocyte::SpatiocyteWorld world_type;
+typedef ecell4::spatiocyte::SpatiocyteSimulator simulator_type;
 
 namespace ecell4
 {
@@ -34,9 +34,9 @@ void run()
     // boost::shared_ptr<world_type> world(
     //     new world_type(edge_lengths, voxel_radius, rng));
     // boost::shared_ptr<world_type> world(
-    //     create_lattice_world_vector_impl(edge_lengths, voxel_radius, rng));
+    //     create_spatiocyte_world_vector_impl(edge_lengths, voxel_radius, rng));
     boost::shared_ptr<world_type> world(
-        ecell4::lattice::create_lattice_world_cell_list_impl(
+        ecell4::spatiocyte::create_spatiocyte_world_cell_list_impl(
             edge_lengths, voxel_radius, Integer3(5, 5, 5), rng));
 
     std::cout << "col size = " << world->col_size()

@@ -167,6 +167,8 @@ public:
 
     virtual private_coordinate_type get_neighbor_private(
         const private_coordinate_type& private_coord, const Integer& nrand) const = 0;
+    virtual private_coordinate_type get_neighbor_private_boundary(
+        const private_coordinate_type& private_coord, const Integer& nrand) const = 0;
 
     virtual coordinate_type get_neighbor(
         const coordinate_type& coord, const Integer& nrand) const
@@ -269,11 +271,11 @@ public:
                 v.radius(), v.D(), v.loc()));
     }
 
-    virtual bool update_particle(const ParticleID& pid, const Particle& p)
-    {
-        return update_voxel_private(pid, Voxel(p.species(),
-            position2private(p.position()), p.radius(), p.D()));
-    }
+    // virtual bool update_particle(const ParticleID& pid, const Particle& p)
+    // {
+    //     return update_voxel_private(pid, Voxel(p.species(),
+    //         position2private(p.position()), p.radius(), p.D(), minfo.loc));
+    // }
 
     virtual std::pair<ParticleID, Particle> get_particle(const ParticleID& pid) const
     {
@@ -313,10 +315,10 @@ public:
 public:
 
     LatticeSpaceBase(
-        const Real3& edge_lengths, const Real& voxel_radius)
+        const Real3& edge_lengths, const Real& voxel_radius, const bool is_periodic)
         : base_type(voxel_radius), edge_lengths_(edge_lengths)
     {
-        set_lattice_properties();
+        set_lattice_properties(is_periodic);
     }
 
     virtual ~LatticeSpaceBase()
@@ -330,10 +332,10 @@ public:
         edge_lengths_ = edge_lengths;
         voxel_radius_ = voxel_radius;
 
-        set_lattice_properties();
+        set_lattice_properties(is_periodic);
     }
 
-    void set_lattice_properties();
+    void set_lattice_properties(const bool is_periodic);
 
     /**
      * Primitives
@@ -371,11 +373,11 @@ public:
         //     layer_size() * HCP_Y + (col_size() > 1 ? HCP_L: 0.0),
         //     row_size() * voxel_radius() * 2
         //         + (col_size() > 1 || layer_size() > 1 ? voxel_radius() : 0.0));
-        // return Real3(
-        //     col_size() * HCP_X, layer_size() * HCP_Y, row_size() * voxel_radius() * 2);
-        const Real sigma(voxel_radius() * 2);
         return Real3(
-            (col_size() - 1) * HCP_X + sigma, (layer_size() - 1) * HCP_Y + sigma, row_size() * sigma);
+            col_size() * HCP_X, layer_size() * HCP_Y, row_size() * voxel_radius() * 2);
+        // const Real sigma(voxel_radius() * 2);
+        // return Real3(
+        //     (col_size() - 1) * HCP_X + sigma, (layer_size() - 1) * HCP_Y + sigma, row_size() * sigma);
     }
 
     /**
@@ -653,6 +655,14 @@ public:
     std::pair<private_coordinate_type, bool> move_to_neighbor(
         MolecularTypeBase* const& from_mt, MolecularTypeBase* const& loc,
         particle_info_type& info, const Integer nrand);
+
+    private_coordinate_type get_neighbor_private_boundary(
+        const private_coordinate_type& coord, const Integer& nrand) const
+    {
+        private_coordinate_type const dest = get_neighbor_private(coord, nrand);
+        MolecularTypeBase* dest_mt(voxels_.at(dest));
+        return (dest_mt != periodic_ ? dest : periodic_transpose_private(dest));
+    }
 
     inline bool is_periodic() const
     {

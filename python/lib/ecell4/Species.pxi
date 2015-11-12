@@ -167,15 +167,15 @@ cdef class Species:
         """
         self.thisptr.add_unit(deref(usp.thisptr))
 
-    def count(self, Species pttrn):
-        """count(pttrn) -> Integer
+    def count(self, Species sp):
+        """count(sp) -> Integer
 
-        Count the number of matches for a pattern given as a ``Species``.
+        Count the number of matches for a target given as a ``Species``.
 
         Parameters
         ----------
-        pttrn : Species
-            A pattern to be count.
+        sp : Species
+            A target to be count.
 
         Returns
         -------
@@ -183,7 +183,7 @@ cdef class Species:
             The number of matches.
 
         """
-        return self.thisptr.count(deref(pttrn.thisptr))
+        return self.thisptr.count(deref(sp.thisptr))
 
     def units(self):
         """units() -> [UnitSpecies]

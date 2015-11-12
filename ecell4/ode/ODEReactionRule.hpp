@@ -107,13 +107,17 @@ public:
     {
         if (!(this->has_ratelaw()))
         {
-            throw IllegalState("ODERatelaw has not been set");
+            // throw IllegalState("ODERatelaw has not been set");
+            std::cerr << "WARN: no ODERatelaw is bound." << std::endl;
+            return 0.0;
         }
         boost::shared_ptr<ODERatelawMassAction> ratelaw_massaction = 
             boost::dynamic_pointer_cast<ODERatelawMassAction>(this->get_ratelaw());
         if(ratelaw_massaction == 0)
         {
-            throw IllegalState("Another type of ODERatelaw object has been set");
+            // throw IllegalState("Another type of ODERatelaw object has been set");
+            std::cerr << "WARN: ODERatelaw bound cannot provide k." << std::endl;
+            return 0.0;
         }
         return ratelaw_massaction->get_k();
     }

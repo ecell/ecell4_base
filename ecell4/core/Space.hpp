@@ -138,6 +138,19 @@ public:
     }
 
     /**
+     * get the actual axes lengths of a cuboidal region.
+     * this function is a part of the trait of ParticleSpace.
+     * return edge lengths as a default.
+     * overload this function if the actual size is not equal to
+     * edge lengths.
+     * @return actual edge lengths Real3
+     */
+    virtual Real3 actual_lengths() const
+    {
+        return edge_lengths();
+    }
+
+    /**
      * get the number of particles.
      * this function is a part of the trait of ParticleSpace.
      * @return a number of particles Integer

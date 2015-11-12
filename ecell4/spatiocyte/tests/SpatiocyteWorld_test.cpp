@@ -1,4 +1,4 @@
-#define BOOST_TEST_MODULE "LatticeWorld_test"
+#define BOOST_TEST_MODULE "SpatiocyteWorld_test"
 
 #ifdef UNITTEST_FRAMEWORK_LIBRARY_EXIST
 #   include <boost/test/unit_test.hpp>
@@ -9,77 +9,77 @@
 
 #include <boost/test/floating_point_comparison.hpp>
 
-#include "../LatticeWorld.hpp"
+#include "../SpatiocyteWorld.hpp"
 #include "../../core/Sphere.hpp"
 //#include <ecell4/core/Sphere.hpp>
 #include <fstream>
 
 using namespace ecell4;
-using namespace ecell4::lattice;
+using namespace ecell4::spatiocyte;
 
 const Real DEFAULT_VOXEL_RADIUS = 1e-8;
 
-BOOST_AUTO_TEST_CASE(LatticeWorld_test_constructor)
+BOOST_AUTO_TEST_CASE(SpatiocyteWorld_test_constructor)
 {
     boost::shared_ptr<GSLRandomNumberGenerator>
         rng(new GSLRandomNumberGenerator());
     const Real3 edge_lengths(1e-6, 1e-6, 1e-6);
     const Real voxel_radius(DEFAULT_VOXEL_RADIUS);
-    LatticeWorld world(edge_lengths, voxel_radius, rng);
+    SpatiocyteWorld world(edge_lengths, voxel_radius, rng);
 }
 
-BOOST_AUTO_TEST_CASE(LatticeWorld_test_t)
+BOOST_AUTO_TEST_CASE(SpatiocyteWorld_test_t)
 {
     boost::shared_ptr<GSLRandomNumberGenerator>
         rng(new GSLRandomNumberGenerator());
     const Real3 edge_lengths(1e-6, 1e-6, 1e-6);
     const Real voxel_radius(DEFAULT_VOXEL_RADIUS);
-    LatticeWorld world(edge_lengths, voxel_radius, rng);
+    SpatiocyteWorld world(edge_lengths, voxel_radius, rng);
     BOOST_CHECK_EQUAL(world.t(), 0);
     world.set_t(23.4);
     BOOST_CHECK_EQUAL(world.t(), 23.4);
 }
 
-BOOST_AUTO_TEST_CASE(LatticeWorld_test_num_species)
+BOOST_AUTO_TEST_CASE(SpatiocyteWorld_test_num_species)
 {
     boost::shared_ptr<GSLRandomNumberGenerator>
         rng(new GSLRandomNumberGenerator());
     const Real3 edge_lengths(1e-6, 1e-6, 1e-6);
     const Real voxel_radius(DEFAULT_VOXEL_RADIUS);
-    LatticeWorld world(edge_lengths, voxel_radius, rng);
+    SpatiocyteWorld world(edge_lengths, voxel_radius, rng);
     BOOST_CHECK_EQUAL(world.num_species(), 0);
 }
 
-BOOST_AUTO_TEST_CASE(LatticeWorld_test_has_species)
+BOOST_AUTO_TEST_CASE(SpatiocyteWorld_test_has_species)
 {
     boost::shared_ptr<GSLRandomNumberGenerator>
         rng(new GSLRandomNumberGenerator());
     const Real3 edge_lengths(1e-6, 1e-6, 1e-6);
     const Real voxel_radius(DEFAULT_VOXEL_RADIUS);
-    LatticeWorld world(edge_lengths, voxel_radius, rng);
+    SpatiocyteWorld world(edge_lengths, voxel_radius, rng);
     Species sp(std::string("Species"));
     BOOST_CHECK(!world.has_species(sp));
 }
 
-BOOST_AUTO_TEST_CASE(LatticeWorld_test_list_particles)
+BOOST_AUTO_TEST_CASE(SpatiocyteWorld_test_list_particles)
 {
     boost::shared_ptr<GSLRandomNumberGenerator>
         rng(new GSLRandomNumberGenerator());
     const Real3 edge_lengths(1e-6, 1e-6, 1e-6);
     const Real voxel_radius(DEFAULT_VOXEL_RADIUS);
-    LatticeWorld world(edge_lengths, voxel_radius, rng);
+    SpatiocyteWorld world(edge_lengths, voxel_radius, rng);
     std::vector<std::pair<ParticleID, Particle> > particles(world.list_particles());
     BOOST_CHECK_EQUAL(particles.size(), 0);
 }
 
-BOOST_AUTO_TEST_CASE(LatticeWorld_test_update_particles)
+BOOST_AUTO_TEST_CASE(SpatiocyteWorld_test_update_particles)
 {
     boost::shared_ptr<GSLRandomNumberGenerator>
         rng(new GSLRandomNumberGenerator());
     SerialIDGenerator<ParticleID> sidgen;
     const Real3 edge_lengths(1e-6, 1e-6, 1e-6);
     const Real voxel_radius(DEFAULT_VOXEL_RADIUS);
-    LatticeWorld world(edge_lengths, voxel_radius, rng);
+    SpatiocyteWorld world(edge_lengths, voxel_radius, rng);
 
     ParticleID pid(sidgen());
     Species sp(std::string("A"));
@@ -96,13 +96,13 @@ BOOST_AUTO_TEST_CASE(LatticeWorld_test_update_particles)
     BOOST_CHECK_EQUAL(world.list_particles(sp).size(), 1);
 }
 
-// BOOST_AUTO_TEST_CASE(LatticeWorld_test_register_species)
+// BOOST_AUTO_TEST_CASE(SpatiocyteWorld_test_register_species)
 // {
 //     const Real3 edge_lengths(1e-6,1e-6,1e-6);
 //     const Real voxel_radius(DEFAULT_VOXEL_RADIUS);
 //     boost::shared_ptr<GSLRandomNumberGenerator>
 //         rng(new GSLRandomNumberGenerator());
-//     LatticeWorld world(edge_lengths, voxel_radius, rng);
+//     SpatiocyteWorld world(edge_lengths, voxel_radius, rng);
 // 
 //     Species sp(std::string("TEST"));
 // 
@@ -115,19 +115,19 @@ BOOST_AUTO_TEST_CASE(LatticeWorld_test_update_particles)
 //     BOOST_CHECK(list == world.list_species());
 // }
 
-BOOST_AUTO_TEST_CASE(LatticeWorld_test_add_molecule)
+BOOST_AUTO_TEST_CASE(SpatiocyteWorld_test_add_molecule)
 {
     const Real3 edge_lengths(1e-6,1e-6,1e-6);
     const Real voxel_radius(2.5e-9);
     boost::shared_ptr<GSLRandomNumberGenerator>
         rng(new GSLRandomNumberGenerator());
-    LatticeWorld world(edge_lengths, voxel_radius, rng);
+    SpatiocyteWorld world(edge_lengths, voxel_radius, rng);
 
     Species sp(std::string("TEST"));
     sp.set_attribute("radius", "2.5e-9");
     sp.set_attribute("D", "1e-12");
 
-    LatticeWorld::private_coordinate_type coord(486420);
+    SpatiocyteWorld::private_coordinate_type coord(486420);
     // BOOST_CHECK(world.place_voxel_private(sp, coord).second);
     BOOST_CHECK(world.new_voxel(sp, world.private2coord(coord)).second);
     BOOST_CHECK_EQUAL(world.num_particles(sp), 1);
@@ -136,13 +136,13 @@ BOOST_AUTO_TEST_CASE(LatticeWorld_test_add_molecule)
     BOOST_CHECK(!mt->is_vacant());
 }
 
-BOOST_AUTO_TEST_CASE(LatticeWorld_test_add_molecules)
+BOOST_AUTO_TEST_CASE(SpatiocyteWorld_test_add_molecules)
 {
     const Real3 edge_lengths(1e-6,1e-6,1e-6);
     const Real voxel_radius(DEFAULT_VOXEL_RADIUS);
     boost::shared_ptr<GSLRandomNumberGenerator>
         rng(new GSLRandomNumberGenerator());
-    LatticeWorld world(edge_lengths, voxel_radius, rng);
+    SpatiocyteWorld world(edge_lengths, voxel_radius, rng);
 
     Species sp(std::string("TEST"));
     sp.set_attribute("radius", "2.5e-9");
@@ -153,17 +153,17 @@ BOOST_AUTO_TEST_CASE(LatticeWorld_test_add_molecules)
     BOOST_CHECK_EQUAL(world.num_particles(sp), N);
 }
 
-BOOST_AUTO_TEST_CASE(LatticeWorld_test_neighbor)
+BOOST_AUTO_TEST_CASE(SpatiocyteWorld_test_neighbor)
 {
     const Real3 edge_lengths(1e-6,1e-6,1e-6);
     const Real voxel_radius(DEFAULT_VOXEL_RADIUS);
     boost::shared_ptr<GSLRandomNumberGenerator>
         rng(new GSLRandomNumberGenerator());
-    LatticeWorld world(edge_lengths, voxel_radius, rng);
+    SpatiocyteWorld world(edge_lengths, voxel_radius, rng);
 
     const Integer3 center(
             world.col_size()/2, world.row_size()/2, world.layer_size()/2);
-    const LatticeWorld::private_coordinate_type cc(
+    const SpatiocyteWorld::private_coordinate_type cc(
             world.coord2private(world.global2coord(center)));
     const Real3 cp(world.coordinate2position(
                 world.global2coord(center)));
@@ -183,7 +183,7 @@ BOOST_AUTO_TEST_CASE(LatticeWorld_test_neighbor)
     {
         Real3 pos((*itr).second.position());
         BOOST_ASSERT(length(pos-cp) < voxel_radius*2.1);
-        const LatticeWorld::coordinate_type coord(world.position2coordinate(pos));
+        const SpatiocyteWorld::coordinate_type coord(world.position2coordinate(pos));
         //pos /= voxel_radius * 2;
         ofs << "(" << pos[0] << "," << pos[1] << "," << pos[2] << ") "
             << coord << std::endl;
@@ -195,13 +195,13 @@ BOOST_AUTO_TEST_CASE(LatticeWorld_test_neighbor)
 #endif
 }
 
-BOOST_AUTO_TEST_CASE(LatticeWorld_test_add_shape)
+BOOST_AUTO_TEST_CASE(SpatiocyteWorld_test_add_shape)
 {
     const Real3 edge_lengths(1e-6,1e-6,1e-6);
     const Real voxel_radius(DEFAULT_VOXEL_RADIUS);
     boost::shared_ptr<GSLRandomNumberGenerator>
         rng(new GSLRandomNumberGenerator());
-    LatticeWorld world(edge_lengths, voxel_radius, rng);
+    SpatiocyteWorld world(edge_lengths, voxel_radius, rng);
 
     Species sp(std::string("TEST"));
     sp.set_attribute("radius", "2.5e-9");
@@ -218,25 +218,25 @@ BOOST_AUTO_TEST_CASE(LatticeWorld_test_add_shape)
 #endif
 }
 
-BOOST_AUTO_TEST_CASE(LatticeWorld_test_move)
+BOOST_AUTO_TEST_CASE(SpatiocyteWorld_test_move)
 {
     const Real3 edge_lengths(1e-6,1e-6,1e-6);
     const Real voxel_radius(2.5e-9);
     boost::shared_ptr<GSLRandomNumberGenerator>
         rng(new GSLRandomNumberGenerator());
-    LatticeWorld world(edge_lengths, voxel_radius, rng);
+    SpatiocyteWorld world(edge_lengths, voxel_radius, rng);
 
     Species sp(std::string("TEST"));
     sp.set_attribute("radius", "2.5e-9");
     sp.set_attribute("D", "1e-12");
 
-    LatticeWorld::coordinate_type from(1034), to(786420);
+    SpatiocyteWorld::coordinate_type from(1034), to(786420);
 
-    // LatticeWorld::private_coordinate_type private_from(
+    // SpatiocyteWorld::private_coordinate_type private_from(
     //         world.coord2private(from));
     // BOOST_CHECK(world.place_voxel(sp, private_from).second);
 
-    LatticeWorld::private_coordinate_type private_to(
+    SpatiocyteWorld::private_coordinate_type private_to(
             world.coord2private(to));
     // BOOST_CHECK(world.move(from, to));
 
@@ -249,13 +249,13 @@ BOOST_AUTO_TEST_CASE(LatticeWorld_test_move)
     BOOST_CHECK(world.move(from, to));
 }
 
-BOOST_AUTO_TEST_CASE(LatticeWorld_test_structure)
+BOOST_AUTO_TEST_CASE(SpatiocyteWorld_test_structure)
 {
     const Real3 edge_lengths(5e-7, 5e-7, 5e-7);
     const Real voxel_radius(DEFAULT_VOXEL_RADIUS);
     boost::shared_ptr<GSLRandomNumberGenerator>
         rng(new GSLRandomNumberGenerator());
-    LatticeWorld world(edge_lengths, voxel_radius, rng);
+    SpatiocyteWorld world(edge_lengths, voxel_radius, rng);
 
     Species membrane("Membrane", "2.5e-9", "0");
 

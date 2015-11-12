@@ -166,25 +166,91 @@ BOOST_AUTO_TEST_CASE(NetfreeModel_generation2)
     BOOST_CHECK_EQUAL((*nwm).reaction_rules().size(), 13);
 }
 
-BOOST_AUTO_TEST_CASE(NetfreeModel_reaction_rule_test1)
+// BOOST_AUTO_TEST_CASE(NetfreeModel_query_reaction_rules3)
+// {
+// }
+
+BOOST_AUTO_TEST_CASE(NetfreeModel_generation3)
 {
-    const ReactionRule rr1(create_unbinding_reaction_rule(
-        Species("X(r^1).X(l^1)"), Species("X(r)"), Species("X(l)"), 1.0));
-    const Species sp1("X(l,r^1).X(l^1,r^2).X(l^2,r^3).X(l^3,r^4).X(l^4,r)");
+    NetfreeModel m1;
+    m1.add_reaction_rule(
+        create_binding_reaction_rule(
+            Species("A(r)"), Species("A(l)"), Species("A(r^1).A(l^1)"), 1.0));
 
-    ReactionRuleExpressionMatcher rrexp(rr1);
-    BOOST_CHECK(rrexp.match(sp1));
+    std::vector<ReactionRule> const retval1 = m1.query_reaction_rules(Species("A(l, r)"), Species("A(l, r)"));
+    BOOST_CHECK_EQUAL(retval1.size(), 1);
+    BOOST_CHECK_EQUAL(retval1[0].k(), 2.0);
+    BOOST_CHECK_EQUAL(retval1[0].reactants().size(), 2);
+    BOOST_CHECK_EQUAL(retval1[0].reactants()[0], Species("A(l,r)"));
+    BOOST_CHECK_EQUAL(retval1[0].reactants()[1], Species("A(l,r)"));
+    BOOST_CHECK_EQUAL(retval1[0].products().size(), 1);
+    BOOST_CHECK_EQUAL(retval1[0].products()[0], Species("A(l,r^1).A(l^1,r)"));
 
-    unsigned int i(0);
-    do {
-        ++i;
-        std::vector<Species> products(rrexp.generate());
-        // const ReactionRule tmp(rrexp.reactants(), products, rr1.k());
-        // std::cerr << "GEN: " << tmp.as_string() << std::endl;
-    } while (rrexp.next());
+    std::vector<Species> seeds1(1, Species("A(l, r)"));
+    std::map<Species, Integer> max_stoich;
+    max_stoich[Species("A")] = 4;
+    boost::shared_ptr<Model> m2(m1.expand(seeds1, 100, max_stoich));
+    std::vector<ReactionRule> const& reaction_rules1 = m2->reaction_rules();
+    BOOST_CHECK_EQUAL(reaction_rules1.size(), 4);
+    BOOST_CHECK_EQUAL(reaction_rules1[0].k(), 2.0);
+    BOOST_CHECK_EQUAL(reaction_rules1[1].k(), 2.0);
+    BOOST_CHECK_EQUAL(reaction_rules1[2].k(), 2.0);
+    BOOST_CHECK_EQUAL(reaction_rules1[3].k(), 2.0);
 
-    BOOST_CHECK_EQUAL(i, 4);
+    NetfreeModel m3;
+    m3.add_reaction_rule(
+        create_binding_reaction_rule(
+            Species("A(r)"), Species("A(r)"), Species("A(r^1).A(r^1)"), 1.0));
 
-    std::vector<ReactionRule> retval(rr1.generate(rrexp.reactants()));
-    BOOST_CHECK_EQUAL(retval.size(), 4);
+    std::vector<ReactionRule> const retval2 = m3.query_reaction_rules(Species("A(r)"), Species("A(r)"));
+    BOOST_CHECK_EQUAL(retval2.size(), 1);
+    BOOST_CHECK_EQUAL(retval2[0].k(), 1.0);
+    BOOST_CHECK_EQUAL(retval2[0].reactants().size(), 2);
+    BOOST_CHECK_EQUAL(retval2[0].reactants()[0], Species("A(r)"));
+    BOOST_CHECK_EQUAL(retval2[0].reactants()[1], Species("A(r)"));
+    BOOST_CHECK_EQUAL(retval2[0].products().size(), 1);
+    BOOST_CHECK_EQUAL(retval2[0].products()[0], Species("A(r^1).A(r^1)"));
+
+    std::vector<ReactionRule> const retval3 = m3.query_reaction_rules(Species("A(r=u)"), Species("A(r=p)"));
+    BOOST_CHECK_EQUAL(retval3.size(), 1);
+    BOOST_CHECK_EQUAL(retval3[0].k(), 1.0);
+    BOOST_CHECK_EQUAL(retval3[0].reactants().size(), 2);
+    BOOST_CHECK_EQUAL(retval3[0].reactants()[0], Species("A(r=u)"));
+    BOOST_CHECK_EQUAL(retval3[0].reactants()[1], Species("A(r=p)"));
+    BOOST_CHECK_EQUAL(retval3[0].products().size(), 1);
+    BOOST_CHECK_EQUAL(retval3[0].products()[0], Species("A(r=p^1).A(r=u^1)"));
+
+    NetfreeModel m4;
+    m4.add_reaction_rule(
+        create_binding_reaction_rule(
+            Species("_(b)"), Species("_(b)"), Species("_(b^1)._(b^1)"), 1.0));
+    m4.add_reaction_rule(
+        create_unbinding_reaction_rule(
+            Species("_(b^1)._(b^1)"), Species("_(b)"), Species("_(b)"), 1.0));
+
+    std::vector<ReactionRule> const retval4 = m4.query_reaction_rules(Species("A(b^1).A(b^1)"));
+    BOOST_CHECK_EQUAL(retval4.size(), 1);
+    BOOST_CHECK_EQUAL(retval4[0].k(), 1.0);
+    BOOST_CHECK_EQUAL(retval4[0].reactants().size(), 1);
+    BOOST_CHECK_EQUAL(retval4[0].reactants()[0], Species("A(b^1).A(b^1)"));
+    BOOST_CHECK_EQUAL(retval4[0].products().size(), 2);
+    BOOST_CHECK_EQUAL(retval4[0].products()[0], Species("A(b)"));
+    BOOST_CHECK_EQUAL(retval4[0].products()[1], Species("A(b)"));
+
+    std::vector<Species> seeds2(1, Species("A(b)"));
+    boost::shared_ptr<Model> m5(m4.expand(seeds2));
+    std::vector<ReactionRule> const& reaction_rules2 = m5->reaction_rules();
+    BOOST_CHECK_EQUAL(reaction_rules2.size(), 2);
+
+    std::vector<Species> seeds3(2);
+    seeds3[0] = Species("A(b)");
+    seeds3[1] = Species("B(b)");
+    boost::shared_ptr<Model> m6(m4.expand(seeds3));
+    std::vector<ReactionRule> const& reaction_rules3 = m6->reaction_rules();
+    BOOST_CHECK_EQUAL(reaction_rules3.size(), 6);
+    for (std::vector<ReactionRule>::const_iterator i(reaction_rules3.begin());
+        i != reaction_rules3.end(); ++i)
+    {
+        BOOST_CHECK_EQUAL((*i).k(), 1.0);
+    }
 }

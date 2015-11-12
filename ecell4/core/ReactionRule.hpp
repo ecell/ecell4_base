@@ -51,6 +51,13 @@ public:
         ;
     }
 
+    ReactionRule(
+        const ReactionRule& rr)
+        : k_(rr.k()), reactants_(rr.reactants()), products_(rr.products())
+    {
+        ;
+    }
+
     Real k() const
     {
         return k_;
@@ -86,7 +93,12 @@ public:
     }
 
     const std::string as_string() const;
-    Integer count(const reactant_container_type& reactants) const;
+
+    inline Integer count(const reactant_container_type& reactants) const
+    {
+        return this->generate(reactants).size();
+    }
+
     std::vector<ReactionRule> generate(const reactant_container_type& reactants) const;
 
     /** Ratelaw related functions.

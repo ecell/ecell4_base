@@ -18,7 +18,7 @@
 namespace ecell4
 {
 
-namespace lattice
+namespace spatiocyte
 {
 
 struct MoleculeInfo
@@ -28,7 +28,7 @@ struct MoleculeInfo
     const std::string loc;
 };
 
-class LatticeWorld
+class SpatiocyteWorld
     : public Space
 {
 public:
@@ -44,14 +44,14 @@ public:
 
 public:
 
-    LatticeWorld(const Real3& edge_lengths, const Real& voxel_radius,
+    SpatiocyteWorld(const Real3& edge_lengths, const Real& voxel_radius,
         const boost::shared_ptr<RandomNumberGenerator>& rng)
         : space_(new default_space_type(edge_lengths, voxel_radius)), rng_(rng)
     {
         ; // do nothing
     }
 
-    LatticeWorld(const Real3& edge_lengths, const Real& voxel_radius)
+    SpatiocyteWorld(const Real3& edge_lengths, const Real& voxel_radius)
         : space_(new default_space_type(edge_lengths, voxel_radius))
     {
         rng_ = boost::shared_ptr<RandomNumberGenerator>(
@@ -59,7 +59,7 @@ public:
         (*rng_).seed();
     }
 
-    LatticeWorld(const Real3& edge_lengths = Real3(1, 1, 1))
+    SpatiocyteWorld(const Real3& edge_lengths = Real3(1, 1, 1))
         : space_(new default_space_type(edge_lengths, edge_lengths[0] / 100)) //XXX: sloppy default
     {
         rng_ = boost::shared_ptr<RandomNumberGenerator>(
@@ -67,7 +67,7 @@ public:
         (*rng_).seed();
     }
 
-    LatticeWorld(const std::string filename)
+    SpatiocyteWorld(const std::string filename)
         : space_(new default_space_type(Real3(1, 1, 1), 1 / 100)) //XXX: sloppy default
     {
         rng_ = boost::shared_ptr<RandomNumberGenerator>(
@@ -75,7 +75,7 @@ public:
         this->load(filename);
     }
 
-    LatticeWorld(LatticeSpace* space,
+    SpatiocyteWorld(LatticeSpace* space,
         const boost::shared_ptr<RandomNumberGenerator>& rng)
         : space_(space), rng_(rng)
     {
@@ -188,13 +188,18 @@ public:
     std::pair<std::pair<ParticleID, Particle>, bool>
     new_particle(const Particle& p)
     {
-        ParticleID pid(sidgen_());
-        // if (has_particle(pid))
-        // {
-        //     throw AlreadyExists("particle already exists");
-        // }
-        const bool is_succeeded((*space_).update_particle(pid, p));
-        return std::make_pair(get_particle(pid), is_succeeded);
+        // ParticleID pid(sidgen_());
+        // const bool is_succeeded(update_particle(pid, p));
+        // return std::make_pair(get_particle(pid), is_succeeded);
+        const molecule_info_type minfo(get_molecule_info(p.species()));
+        const Voxel v(
+            p.species(), position2private(p.position()), p.radius(), p.D(), minfo.loc);
+        if ((*space_).on_structure(v))
+        {
+            return std::make_pair(std::make_pair(ParticleID(), p), false);
+        }
+        const std::pair<std::pair<ParticleID, Voxel>, bool> retval = new_voxel_private(v);
+        return std::make_pair(std::make_pair(retval.first.first, p), retval.second);
     }
 
     std::pair<std::pair<ParticleID, Particle>, bool>
@@ -238,7 +243,12 @@ public:
     std::vector<std::pair<ParticleID, Particle> >
         list_particles_exact(const Species& sp) const;
 
-    bool update_particle(const ParticleID& pid, const Particle& p);
+    bool update_particle(const ParticleID& pid, const Particle& p)
+    {
+        const molecule_info_type minfo(get_molecule_info(p.species()));
+        return update_voxel_private(pid, Voxel(p.species(),
+            position2private(p.position()), p.radius(), p.D(), minfo.loc));
+    }
 
     std::vector<std::pair<ParticleID, Voxel> >
         list_voxels() const;
@@ -285,6 +295,12 @@ public:
             private_coordinate_type private_coord, Integer nrand) const
     {
         return (*space_).get_neighbor_private(private_coord, nrand);
+    }
+
+    private_coordinate_type get_neighbor_private_boundary(
+            private_coordinate_type private_coord, Integer nrand) const
+    {
+        return (*space_).get_neighbor_private_boundary(private_coord, nrand);
     }
 
     std::pair<private_coordinate_type, bool> check_neighbor_private(
@@ -505,7 +521,7 @@ public:
         boost::scoped_ptr<H5::Group>
             group(new H5::Group(fout->createGroup("LatticeSpace")));
         (*space_).save(group.get());
-        extras::save_version_information(fout.get(), "ecell4-lattice-0.0-1");
+        extras::save_version_information(fout.get(), "ecell4-spatiocyte-0.0-1");
 #else
         throw NotSupported("not supported yet.");
 #endif
@@ -531,7 +547,7 @@ public:
         {
             if (bound_model.get() != model.get())
             {
-                std::cerr << "Warning: Model already bound to LatticeWorld"
+                std::cerr << "Warning: Model already bound to SpatiocyteWorld"
                     << std::endl;
             }
         }
@@ -559,11 +575,11 @@ protected:
     boost::weak_ptr<Model> model_;
 };
 
-LatticeWorld* create_lattice_world_cell_list_impl(
+SpatiocyteWorld* create_spatiocyte_world_cell_list_impl(
     const Real3& edge_lengths, const Real& voxel_radius,
     const Integer3& matrix_sizes,
     const boost::shared_ptr<RandomNumberGenerator>& rng);
-LatticeWorld* create_lattice_world_vector_impl(
+SpatiocyteWorld* create_spatiocyte_world_vector_impl(
     const Real3& edge_lengths, const Real& voxel_radius,
     const boost::shared_ptr<RandomNumberGenerator>& rng);
 
@@ -571,23 +587,23 @@ LatticeWorld* create_lattice_world_vector_impl(
  * Alias functions for Cython
  */
 
-inline LatticeWorld* create_lattice_world_cell_list_impl_alias(
+inline SpatiocyteWorld* create_spatiocyte_world_cell_list_impl_alias(
     const Real3& edge_lengths, const Real& voxel_radius,
     const Integer3& matrix_sizes,
     const boost::shared_ptr<RandomNumberGenerator>& rng)
 {
-    return create_lattice_world_cell_list_impl(
+    return create_spatiocyte_world_cell_list_impl(
         edge_lengths, voxel_radius, matrix_sizes, rng);
 }
 
-inline LatticeWorld* create_lattice_world_vector_impl_alias(
+inline SpatiocyteWorld* create_spatiocyte_world_vector_impl_alias(
     const Real3& edge_lengths, const Real& voxel_radius,
     const boost::shared_ptr<RandomNumberGenerator>& rng)
 {
-    return create_lattice_world_vector_impl(edge_lengths, voxel_radius, rng);
+    return create_spatiocyte_world_vector_impl(edge_lengths, voxel_radius, rng);
 }
 
-} // lattice
+} // spatiocyte
 
 } // ecell4
 

@@ -65,6 +65,15 @@ cdef class ODEWorld:
         cdef Cpp_Real3 lengths = self.thisptr.get().edge_lengths()
         return Real3_from_Cpp_Real3(address(lengths))
 
+    def actual_lengths(self):
+        """actual_lengths() -> Real3
+
+        Return the actual edge lengths of the world.
+        Same as ``edge_lengths``.
+        """
+        cdef Cpp_Real3 lengths = self.thisptr.get().actual_lengths()
+        return Real3_from_Cpp_Real3(address(lengths))
+
     def set_volume(self, Real vol):
         """set_volume(volume)
 
@@ -123,6 +132,37 @@ cdef class ODEWorld:
                 Species_from_Cpp_Species(<Cpp_Species*> (address(deref(it)))))
             inc(it)
         return retval
+
+    def new_particle(self, arg1, Real3 arg2=None):
+        """new_particle(arg1, arg2=None) -> (ParticleID, Particle)
+
+        Create a new particle.
+
+        Parameters
+        ----------
+        arg1 : Particle
+            A particle to be placed.
+
+        or
+
+        arg1 : Species
+            A species of a particle
+        arg2 : Real3
+            A position to place a particle
+
+        Returns
+        -------
+        tuple:
+            A pair of ParticleID and Particle of a new particle
+
+        """
+        cdef pair[pair[Cpp_ParticleID, Cpp_Particle], bool] retval
+
+        if arg2 is None:
+            retval = self.thisptr.get().new_particle(deref((<Particle> arg1).thisptr))
+        else:
+            retval = self.thisptr.get().new_particle(deref((<Species> arg1).thisptr), deref(arg2.thisptr))
+        return ((ParticleID_from_Cpp_ParticleID(address(retval.first.first)), Particle_from_Cpp_Particle(address(retval.first.second))), retval.second)
 
     def add_molecules(self, Species sp, Integer num, shape=None):
         """add_molecules(sp, num, shape=None)
@@ -330,6 +370,10 @@ cdef class ODERatelaw:
     def __dealloc__(self):
         del self.thisptr
 
+    def as_string(self):
+        """"Return a name of the function"""
+        return self.thisptr.get().as_string()
+
     def as_base(self):
         """Return self as a base class. Only for developmental use."""
         return self
@@ -380,6 +424,10 @@ cdef class ODERatelawMassAction:
         """Return the kinetic rate constant as a float value."""
         return self.get().thisptr.get_k()
 
+    def as_string(self):
+        """"Return a name of the function"""
+        return self.thisptr.get().as_string()
+
     def as_base(self):
         """Return self as a base class. Only for developmental use."""
         base_type = ODERatelaw()
@@ -415,11 +463,11 @@ cdef void dec_ref(void* func):
 cdef class ODERatelawCallback:
     """A class for general ratelaws with a callback.
 
-    ODERatelawCallback(pyfunc)
+    ODERatelawCallback(pyfunc, name)
 
     """
 
-    def __init__(self, pyfunc):
+    def __init__(self, pyfunc, name = None):
         """Constructor.
 
         Parameters
@@ -427,15 +475,25 @@ cdef class ODERatelawCallback:
         pyfunc : function
             A Python function for the callback.
             See set_callback function of this class for details.
+        name : string, optional
+            A name of the function
 
         """
         pass
 
-    def __cinit__(self, pyfunc):
-        self.thisptr = new shared_ptr[Cpp_ODERatelawCythonCallback](
-            <Cpp_ODERatelawCythonCallback*>(new Cpp_ODERatelawCythonCallback(
-                <Stepladder_Functype>indirect_function, <void*>pyfunc,
-                <OperateRef_Functype>inc_ref, <OperateRef_Functype>dec_ref)))
+    def __cinit__(self, pyfunc, name = None):
+        if name is None:
+            self.thisptr = new shared_ptr[Cpp_ODERatelawCythonCallback](
+                <Cpp_ODERatelawCythonCallback*>(new Cpp_ODERatelawCythonCallback(
+                    <Stepladder_Functype>indirect_function, <void*>pyfunc,
+                    <OperateRef_Functype>inc_ref, <OperateRef_Functype>dec_ref,
+                    <string>pyfunc.__name__)))
+        else:
+            self.thisptr = new shared_ptr[Cpp_ODERatelawCythonCallback](
+                <Cpp_ODERatelawCythonCallback*>(new Cpp_ODERatelawCythonCallback(
+                    <Stepladder_Functype>indirect_function, <void*>pyfunc,
+                    <OperateRef_Functype>inc_ref, <OperateRef_Functype>dec_ref,
+                    <string>name)))
         self.pyfunc = pyfunc
 
     def __dealloc__(self):
@@ -467,6 +525,14 @@ cdef class ODERatelawCallback:
         """
         self.thisptr.get().set_callback_pyfunc(<Python_CallbackFunctype>pyfunc)
 
+    def set_name(self, string name):
+        """"Set the name of a function"""
+        self.thisptr.get().set_name(name)
+
+    def as_string(self):
+        """"Return a name of the function"""
+        return self.thisptr.get().as_string()
+
     def as_base(self):
         """Return self as a base class. Only for developmental use."""
         retval = ODERatelaw()
@@ -479,17 +545,29 @@ cdef class ODEReactionRule:
     """A class representing a reaction rule between ``Species``, which accepts at most
     one rate law to calculate the flux.
 
-    ODEReactionRule()
+    ODEReactionRule(rr)
 
     """
 
-    def __init__(self):
-        """Constructor."""
+    def __init__(self, *args):
+        """Constructor.
+
+        Parameters
+        ----------
+        rr : ReactionRule
+
+        """
         pass
 
-    def __cinit__(self):
-        self.thisptr = new Cpp_ODEReactionRule()
-        self.ratelaw = None
+    def __cinit__(self, *args):
+        if len(args) == 0:
+            self.thisptr = new Cpp_ODEReactionRule()
+            self.ratelaw = None
+        elif len(args) == 1 and isinstance(args[0], ReactionRule):
+            self.thisptr = new Cpp_ODEReactionRule(deref((<ReactionRule>args[0]).thisptr))
+            self.ratelaw = None
+        else:
+            raise ValueError("The invalid arguments are given.")
 
     def __dealloc__(self):
         del self.thisptr
@@ -794,6 +872,20 @@ cdef class ODENetworkModel:
             inc(it)
         return retval
 
+    def reaction_rules(self):
+        """reaction_rules() -> [ODEReactionRule]
+
+        Return a list of ODE reaction rules.
+
+        """
+        cdef vector[Cpp_ODEReactionRule] cpp_rules = self.thisptr.get().reaction_rules()
+        retval = []
+        cdef vector[Cpp_ODEReactionRule].iterator it = cpp_rules.begin()
+        while it != cpp_rules.end():
+            retval.append(ODEReactionRule_from_Cpp_ODEReactionRule(address(deref(it))))
+            inc(it)
+        return retval
+
     def num_reaction_rules(self):
         """Return a number of reaction rules contained in the model."""
         return self.thisptr.get().num_reaction_rules()
@@ -865,7 +957,7 @@ cdef class ODESimulator:
         ----------
         m : ODENetworkModel or NetworkModel
             A model
-        w : LatticeWorld
+        w : ODEWorld
             A world
         solver_type : int, optional
             a type of the ode solver.
@@ -1057,6 +1149,10 @@ cdef class ODESimulator:
 
         """
         self.thisptr.set_relative_tolerance(rel_tol)
+
+    def world(self):
+        """Return the world bound."""
+        return ODEWorld_from_Cpp_ODEWorld(self.thisptr.world())
 
     def run(self, Real duration, observers=None):
         """run(duration, observers)

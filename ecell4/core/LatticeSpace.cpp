@@ -39,7 +39,7 @@ bool LatticeSpace::make_structure_type(const Species& sp,
     return false;
 }
 
-void LatticeSpaceBase::set_lattice_properties()
+void LatticeSpaceBase::set_lattice_properties(const bool is_periodic)
 {
     //XXX: derived from SpatiocyteStepper::setLatticeProperties()
     HCP_L = voxel_radius_ / sqrt(3.0);
@@ -53,6 +53,14 @@ void LatticeSpaceBase::set_lattice_properties()
     col_size_ = (Integer)rint(lengthX / HCP_X) + 1;
     layer_size_ = (Integer)rint(lengthY / HCP_Y) + 1;
     row_size_ = (Integer)rint((lengthZ / 2) / voxel_radius_) + 1;
+
+    if (is_periodic)
+    {
+        // The number of voxels in each axis must be even for a periodic boundary.
+        col_size_ = (col_size_ % 2 == 0 ? col_size_ : col_size_ + 1);
+        layer_size_ = (layer_size_ % 2 == 0 ? layer_size_ : layer_size_ + 1);
+        row_size_ = (row_size_ % 2 == 0 ? row_size_ : row_size_ + 1);
+    }
 
     row_size_ += 2;
     layer_size_ += 2;
@@ -72,7 +80,7 @@ Integer3 LatticeSpaceBase::position2global(const Real3& pos) const
 LatticeSpaceVectorImpl::LatticeSpaceVectorImpl(
     const Real3& edge_lengths, const Real& voxel_radius,
     const bool is_periodic) :
-    base_type(edge_lengths, voxel_radius), is_periodic_(is_periodic)
+    base_type(edge_lengths, voxel_radius, is_periodic), is_periodic_(is_periodic)
 {
     vacant_ = &(VacantType::getInstance());
     std::stringstream ss;

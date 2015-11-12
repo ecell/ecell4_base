@@ -9,6 +9,7 @@ import base64
 import copy
 import random
 import types
+from tempfile import NamedTemporaryFile
 
 
 def __parse_world(
@@ -99,15 +100,10 @@ def plot_movie(
         Height of the plotting area.
     config : dict, default {}
         Dict for configure default colors. Its values are colors unique
-        to each speices.
+        to each speices. The dictionary will be updated during this plot.
         Colors included in config dict will never be used for other speices.
     species_list : array of string, default None
         If set, plot_movie will not search the list of species
-
-    Returns
-    -------
-    cfg : dict
-        The config data used in this plot.
 
     """
     from IPython.core.display import display, HTML
@@ -147,12 +143,10 @@ def plot_movie(
         'options': json.dumps(options)
     }, '/templates/movie.tmpl')))
 
-    return color_scale.get_config()
-
-
 def plot_world(
-        world, radius=None, width=500, height=500, config={}, grid=True,
-        save_image=False, wireframe=False, species_list=None, debug=None, max_count=1000,
+        world, radius=None, width=350, height=350, config={}, grid=True,
+        wireframe=False, species_list=None, debug=None, max_count=1000,
+        camera_position=(-22, 23, 32), camera_rotation=(-0.6, 0.5, 0.6),
         predicator=None):
     """
     Generate a plot from received instance of World and show it on IPython notebook.
@@ -167,16 +161,18 @@ def plot_world(
     radius : float, default None
         If this value is set, all particles in the world will be rendered
         as if their radius are the same.
-    width : float, default 500
+    width : float, default 350
         Width of the plotting area.
-    height : float, default 500
+    height : float, default 350
         Height of the plotting area.
     config : dict, default {}
         Dict for configure default colors. Its values are colors unique
-        to each speices.
+        to each speices. The dictionary will be updated during this plot.
         Colors included in config dict will never be used for other speices.
     species_list : array of string, default None
         If set, plot_world will not search the list of species.
+    max_count : Integer, default 1000
+        The maximum number of particles to show for each species.
     debug : array of dict, default []
         *** EXPERIMENTAL IMPRIMENTATION ***
         Example:
@@ -188,11 +184,9 @@ def plot_world(
             plane: width, height
             sphere: radius
             cylinder: radius, height
-
-    Returns
-    -------
-    cfg : dict
-        The config data used in this plot.
+    camera_position : tuple, default (-22, 23, 32)
+    camera_rotaiton : tuple, default (-0.6, 0.5, 0.6)
+        Initial position and rotation of camera.
 
     """
     from IPython.core.display import display, HTML
@@ -227,12 +221,12 @@ def plot_world(
     model = {
         'plots': plots,
         'options': {
-            'width': width,
-            'height': height,
+            'world_width': width,
+            'world_height': height,
             'range': __get_range_of_world(world),
             'autorange': False,
             'grid': grid,
-            'save_image': save_image
+            'save_image': True
         }
     }
 
@@ -241,12 +235,13 @@ def plot_world(
 
     model_id = '"viz' + str(uuid.uuid4()) + '"'
     display(HTML(generate_html(
-        {'model': json.dumps(model), 'model_id': model_id},
+        {'model': json.dumps(model), 'model_id': model_id,
+        'px': camera_position[0], 'py': camera_position[1], 'pz': camera_position[2],
+        'rx': camera_rotation[0], 'ry': camera_rotation[1], 'rz': camera_rotation[2]},
         '/templates/particles.tmpl')))
-    return color_scale.get_config()
 
-
-def plot_dense_array(arr, length=256, ranges=None, colors=["#a6cee3", "#fb9a99"], save_image=False, grid=False):
+def plot_dense_array(
+        arr, length=256, ranges=None, colors=["#a6cee3", "#fb9a99"], grid=False, camera_position=(-22, 23, 32), camera_rotation=(-0.6, 0.5, 0.6)):
     """
     Volume renderer
 
@@ -262,6 +257,9 @@ def plot_dense_array(arr, length=256, ranges=None, colors=["#a6cee3", "#fb9a99"]
     length : int
         length of the texture
         256 or 64
+    camera_position : tuple, default (-22, 23, 32)
+    camera_rotaiton : tuple, default (-0.6, 0.5, 0.6)
+        Initial position and rotation of camera.
 
     """
     import numpy
@@ -327,13 +325,15 @@ def plot_dense_array(arr, length=256, ranges=None, colors=["#a6cee3", "#fb9a99"]
         }],
         'options': {
             'grid': grid,
-            'save_image': save_image
+            'save_image': True
         }
     }
 
     model_id = '"viz' + str(uuid.uuid4()) + '"'
     display(HTML(generate_html(
-        {'model': json.dumps(model), 'model_id': model_id},
+        {'model': json.dumps(model), 'model_id': model_id,
+        'px': camera_position[0], 'py': camera_position[1], 'pz': camera_position[2],
+        'rx': camera_rotation[0], 'ry': camera_rotation[1], 'rz': camera_rotation[2]},
         '/templates/particles.tmpl')))
 
 def generate_html(keywords, tmpl_path):
@@ -361,8 +361,8 @@ def generate_html(keywords, tmpl_path):
 
 
 def plot_trajectory(
-        obs, width=500, height=500, config={}, grid=True, wireframe=False,
-        max_count=10, save_image=False):
+        obs, width=350, height=350, config={}, grid=True, wireframe=False,
+        max_count=10, camera_position=(-22, 23, 32), camera_rotation=(-0.6, 0.5, 0.6)):
     """
     Generate a plot from received instance of TrajectoryObserver and show it
     on IPython notebook.
@@ -371,19 +371,17 @@ def plot_trajectory(
     ----------
     obs : TrajectoryObserver
         TrajectoryObserver to render.
-    width : float, default 500
+    width : float, default 350
         Width of the plotting area.
-    height : float, default 500
+    height : float, default 350
         Height of the plotting area.
     config : dict, default {}
         Dict for configure default colors. Its values are colors unique
-        to each particle.
+        to each particle. The dictionary will be updated during this plot.
         Colors included in config dict will never be used for other particles.
-
-    Returns
-    -------
-    cfg : dict
-        The config data used in this plot.
+    camera_position : tuple, default (-30, 31, 42)
+    camera_rotaiton : tuple, default (-0.6, 0.5, 0.6)
+        Initial position and rotation of camera.
 
     """
     from IPython.core.display import display, HTML
@@ -439,12 +437,12 @@ def plot_trajectory(
     model = {
         'plots': plots,
         'options': {
-            'width': width,
-            'height': height,
+            'world_width': width,
+            'world_height': height,
             'range': {'x': rangex, 'y': rangey, 'z': rangez},
             'autorange': False,
             'grid': grid,
-            'save_image': save_image
+            'save_image': True
         }
     }
 
@@ -453,10 +451,10 @@ def plot_trajectory(
 
     model_id = '"viz' + str(uuid.uuid4()) + '"'
     display(HTML(generate_html(
-        {'model': json.dumps(model), 'model_id': model_id},
+        {'model': json.dumps(model), 'model_id': model_id,
+        'px': camera_position[0], 'py': camera_position[1], 'pz': camera_position[2],
+        'rx': camera_rotation[0], 'ry': camera_rotation[1], 'rz': camera_rotation[2]},
         '/templates/particles.tmpl')))
-    return color_scale.get_config()
-
 
 def logo(x=1, y=None):
     if not isinstance(x, int):
@@ -578,7 +576,12 @@ def plot_number_observer(*args, **kwargs):
                 raise ValueError("A function must be given after an observer.")
             y = [obs(xi) for xi in data[xidx]]
             opts = plot_opts.copy()
-            opts["label"] = obs.__name__
+            label = obs.__name__
+            opts["label"] = label
+            if label not in color_map.keys():
+                color_map[label] = color_cycle[len(color_map) % len(color_cycle)]
+                opts["label"] = label
+            opts["color"] = color_map[label]
             if fmt is None:
                 ax.plot(data[xidx], y, **opts)
             else:
@@ -662,18 +665,13 @@ def plot_number_observer_with_nya(obs, config={}, width=600, height=400, x=None,
     ----------
     obs : NumberObserver (e.g. FixedIntervalNumberObserver)
     config : dict, optional
-        A config data for coloring.
+        A config data for coloring. The dictionary will be updated during this plot.
     width : int, optional
     height : int, optional
     x : str, optional
         A serial for x-axis. If None, x-axis corresponds time.
     y : str or list of str
         Serials for y axis.
-
-    Returns
-    -------
-    cfg : dict
-        The config data used in this plot.
 
     """
     from IPython.core.display import display, HTML
@@ -731,7 +729,6 @@ def plot_number_observer_with_nya(obs, config={}, width=600, height=400, x=None,
     display(HTML(generate_html(
         {'model': json.dumps(model), 'model_id': model_id},
         '/templates/nya.tmpl')))
-    return color_scale.get_config()
 
 class ColorScale:
     """
@@ -783,3 +780,201 @@ class ColorScale:
     def get_config(self):
         """Get an instance of dic as the config of colors."""
         return self.config
+
+def __prepare_mplot3d_with_maplotlib(
+        world, figsize, grid, wireframe, angle):
+    from mpl_toolkits.mplot3d import Axes3D
+    import matplotlib.pyplot as plt
+
+    fig = plt.figure(figsize=(figsize, figsize))
+    ax = fig.gca(projection='3d')
+    ax.set_aspect('equal')
+
+    if wireframe:
+        ax.w_xaxis.set_pane_color((0, 0, 0, 0))
+        ax.w_yaxis.set_pane_color((0, 0, 0, 0))
+        ax.w_zaxis.set_pane_color((0, 0, 0, 0))
+    ax.grid(grid)
+    wrange = __get_range_of_world(world)
+    ax.set_xlim(*wrange['x'])
+    ax.set_ylim(*wrange['y'])
+    ax.set_zlim(*wrange['z'])
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.set_zlabel('Z')
+
+    if angle is not None:
+        ax.azim, ax.elev, ax.dist = angle
+
+    return (fig, ax)
+
+def __scatter_world_with_matplotlib(
+        world, ax, species_list, marker_size, max_count, **kwargs):
+    from ecell4 import Species
+    cmap = ('b', 'g', 'r', 'c', 'm', 'y', 'k')
+
+    scatters = []
+    for i, name in enumerate(species_list):
+        xs, ys, zs = [], [], []
+        particles = world.list_particles_exact(Species(name))
+        if max_count is not None and len(particles) > max_count:
+            particles = random.sample(particles, max_count)
+        for pid, p in particles:
+            pos = p.position()
+            xs.append(pos[0])
+            ys.append(pos[1])
+            zs.append(pos[2])
+        scatters.append(
+            ax.scatter(
+                xs, ys, zs,
+                marker='o', s=(2 ** marker_size), lw=0, c=cmap[i % len(cmap)],
+                label=name, **kwargs))
+    return scatters
+
+def plot_world_with_matplotlib(
+        world, marker_size=3, figsize=6, grid=True,
+        wireframe=False, species_list=None, max_count=None, angle=None,
+        legend=True, **kwargs):
+    """
+    Generate a plot from received instance of World and show it on IPython notebook.
+
+    Parameters
+    ----------
+    world : World or str
+        World to render. A HDF5 filename is also acceptable.
+    marker_size : float, default 3
+        Marker size for all species. Size is passed to scatter function
+        as argument, s=(2 ** marker_size).
+    figsize : float, default 6
+        Size of the plotting area. Given in inch.
+    species_list : array of string, default None
+        If set, plot_world will not search the list of species.
+    max_count : Integer, default None
+        The maximum number of particles to show for each species.
+        None means no limitation.
+    angle : tuple, default None
+        A tuple of view angle which is given as (azim, elev, dist).
+        If None, use default assumed to be (-60, 30, 10).
+    legend : bool, default True
+
+    """
+    import matplotlib.pyplot as plt
+
+    if species_list is None:
+        species_list = [p.species().serial() for pid, p in world.list_particles()]
+        species_list = sorted(
+            set(species_list), key=species_list.index)  # XXX: pick unique ones
+
+    fig, ax = __prepare_mplot3d_with_maplotlib(
+        world, figsize, grid, wireframe, angle)
+    __scatter_world_with_matplotlib(
+        world, ax, species_list, marker_size, max_count, **kwargs)
+
+    if legend:
+        ax.legend(loc='best', shadow=True)
+    plt.show()
+
+def anim_to_html(anim, filename=None):
+    VIDEO_TAG = """<video controls>
+     <source src="data:video/x-webm;base64,{0}" type="video/webm">
+     Your browser does not support the video tag.
+    </video>"""
+
+    if not hasattr(anim, '_encoded_video'):
+        if filename is None:
+            with NamedTemporaryFile(suffix='.webm') as f:
+                anim.save(f.name, fps=6, extra_args=['-vcodec', 'libvpx'])
+                video = open(f.name, "rb").read()
+        else:
+            with open(filename, 'w') as f:
+                anim.save(f.name, fps=6, extra_args=['-vcodec', 'libvpx'])
+                video = open(f.name, "rb").read()
+        anim._encoded_video = video.encode("base64")
+    return VIDEO_TAG.format(anim._encoded_video)
+
+def plot_movie_with_matplotlib(
+        worlds, marker_size=3, figsize=6, grid=True,
+        wireframe=False, species_list=None, max_count=None, angle=None,
+        interval=50, repeat_delay=3000,
+        legend=True, output=None, **kwargs):
+    """
+    Generate a move from the received list of instances of World,
+    and show it on IPython notebook. This function may require ffmpeg.
+
+    Parameters
+    ----------
+    worlds : list
+        A list of Worlds to render.
+    marker_size : float, default 3
+        Marker size for all species. Size is passed to scatter function
+        as argument, s=(2 ** marker_size).
+    figsize : float, default 6
+        Size of the plotting area. Given in inch.
+    species_list : array of string, default None
+        If set, plot_world will not search the list of species.
+    max_count : Integer, default None
+        The maximum number of particles to show for each species.
+        None means no limitation.
+    angle : tuple, default None
+        A tuple of view angle which is given as (azim, elev, dist).
+        If None, use default assumed to be (-60, 30, 10).
+    interval : Integer, default 50
+        Parameters for matplotlib.animation.ArtistAnimation.
+    legend : bool, default True
+    output : str, default None
+
+    """
+    import matplotlib.pyplot as plt
+    import matplotlib.animation as animation
+    from IPython.display import HTML
+
+    print("Start generating species_list ...")
+    if species_list is None:
+        species_list = []
+        for world in worlds:
+            species_list.extend(
+                [p.species().serial() for pid, p in world.list_particles()])
+            species_list = sorted(
+                set(species_list), key=species_list.index)  # XXX: pick unique ones
+
+    print("Start preparing mplot3d ...")
+
+    fig, ax = __prepare_mplot3d_with_maplotlib(
+        worlds[0], figsize, grid, wireframe, angle)
+
+    from ecell4 import Species
+    from mpl_toolkits.mplot3d.art3d import juggle_axes
+
+    def _update_plot(i, scatters, worlds, species_list):
+        world = worlds[i]
+        for i, name in enumerate(species_list):
+            xs, ys, zs = [], [], []
+            particles = world.list_particles_exact(Species(name))
+            if max_count is not None and len(particles) > max_count:
+                particles = random.sample(particles, max_count)
+            for pid, p in particles:
+                pos = p.position()
+                xs.append(pos[0])
+                ys.append(pos[1])
+                zs.append(pos[2])
+            scatters[i]._offsets3d = juggle_axes(xs, ys, zs, 'z')
+
+    print("Start making animation ...")
+
+    cmap = ('b', 'g', 'r', 'c', 'm', 'y', 'k')
+    scatters = []
+    for i, name in enumerate(species_list):
+        scatters.append(
+            ax.scatter([], [], [], marker='o', s=(2 ** marker_size),
+                       lw=0, c=cmap[i % len(cmap)], label=name))
+
+    if legend:
+        ax.legend(loc='best', shadow=True)
+
+    ani = animation.FuncAnimation(
+        fig, _update_plot, fargs=(scatters, worlds, species_list),
+        frames=len(worlds), interval=interval, blit=True)
+
+    plt.close(ani._fig)
+    print("Start generating a movie ...")
+    return HTML(anim_to_html(ani, output))

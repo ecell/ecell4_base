@@ -220,8 +220,9 @@ cdef class NetfreeModel:
             A list of ``Species`` which gives seeds.
         max_itr : Integer
             A maximum number of iterations to generate new products.
-        max_stoich : Integer
-            A maximum stoichiometry of ``UnitSpecies`` in a ``Species``.
+        max_stoich : dict
+            A maximum stoichiometry of each ``UnitSpecies`` in a ``Species``.
+            Given as a set of pairs of ``Species`` and the stoichiometry.
 
         Returns
         -------
