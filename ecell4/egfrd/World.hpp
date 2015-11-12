@@ -574,6 +574,20 @@ public:
         return retval;
     }
 
+    void set_value(const ecell4::Species& sp, const ecell4::Real value)
+    {
+        const ecell4::Integer num1 = static_cast<ecell4::Integer>(value);
+        const ecell4::Integer num2 = num_molecules_exact(sp);
+        if (num1 > num2)
+        {
+            add_molecules(sp, num1 - num2);
+        }
+        else if (num1 < num2)
+        {
+            remove_molecules(sp, num2 - num1);
+        }
+    }
+
     virtual ecell4::Real get_value(const ecell4::Species& sp) const
     {
         return static_cast<ecell4::Real>(num_molecules(sp));

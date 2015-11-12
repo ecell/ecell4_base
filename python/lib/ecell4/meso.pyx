@@ -251,6 +251,21 @@ cdef class MesoscopicWorld:
         """
         return self.thisptr.get().get_value_exact(deref(sp.thisptr))
 
+    def set_value(self, Species sp, Real value):
+        """set_value(sp, value)
+
+        Set the value of the given species.
+
+        Parameters
+        ----------
+        sp : Species
+            a species whose value you set
+        value : Real
+            a value set
+
+        """
+        self.thisptr.get().set_value(deref(sp.thisptr), value)
+
     def num_subvolumes(self, sp = None):
         """num_subvolumes(sp=None) -> Integer
 

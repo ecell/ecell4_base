@@ -220,6 +220,21 @@ cdef class EGFRDWorld:
         cdef Cpp_Real3 lengths = self.thisptr.get().actual_lengths()
         return Real3_from_Cpp_Real3(address(lengths))
 
+    def set_value(self, Species sp, Real value):
+        """set_value(sp, value)
+
+        Set the value of the given species.
+
+        Parameters
+        ----------
+        sp : Species
+            a species whose value you set
+        value : Real
+            a value set
+
+        """
+        self.thisptr.get().set_value(deref(sp.thisptr), value)
+
     def get_value(self, Species sp):
         """get_value(sp) -> Real
 

@@ -157,6 +157,7 @@ public:
         return cs_->get_neighbor(c, rnd);
     }
 
+    void set_value(const Species& sp, const Real value);
     Real get_value(const Species& sp) const;
     Real get_value_exact(const Species& sp) const;
     Integer num_molecules(const Species& sp) const;

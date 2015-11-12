@@ -202,6 +202,20 @@ void MesoscopicWorld::set_t(const Real& t)
     cs_->set_t(t);
 }
 
+void MesoscopicWorld::set_value(const Species& sp, const Real value)
+{
+    const Integer num1 = static_cast<Integer>(value);
+    const Integer num2 = num_molecules_exact(sp);
+    if (num1 > num2)
+    {
+        add_molecules(sp, num1 - num2);
+    }
+    else if (num1 < num2)
+    {
+        remove_molecules(sp, num2 - num1);
+    }
+}
+
 Real MesoscopicWorld::get_value(const Species& sp) const
 {
     return cs_->get_value(sp);

@@ -164,6 +164,8 @@ public:
     Integer num_voxels(const Species& sp) const;
     Integer num_voxels_exact(const Species& sp) const;
 
+    void set_value(const Species& sp, const Real value);
+
     Real get_value(const Species& sp) const
     {
         return (*space_).get_value(sp);
