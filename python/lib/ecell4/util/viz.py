@@ -903,7 +903,7 @@ def plot_movie_with_matplotlib(
 
     Parameters
     ----------
-    worlds : list
+    worlds : list or FixedIntervalHDF5Observer
         A list of Worlds to render.
     marker_size : float, default 3
         Marker size for all species. Size is passed to scatter function
@@ -927,8 +927,21 @@ def plot_movie_with_matplotlib(
     import matplotlib.pyplot as plt
     import matplotlib.animation as animation
     from IPython.display import HTML
+    from ecell4 import Species, FixedIntervalHDF5Observer
+    from .simulation import load_world
 
     print("Start generating species_list ...")
+
+    if isinstance(worlds, FixedIntervalHDF5Observer):
+        obs = worlds
+        worlds = []
+        for i in range(obs.num_steps()):
+            filename = obs.filename(i)
+            if os.path.isfile(filename):
+                worlds.append(load_world(filename))
+            elif len(worlds) >0:
+                worlds.append(worlds[-1])
+
     if species_list is None:
         species_list = []
         for world in worlds:
@@ -942,7 +955,6 @@ def plot_movie_with_matplotlib(
     fig, ax = __prepare_mplot3d_with_maplotlib(
         worlds[0], figsize, grid, wireframe, angle)
 
-    from ecell4 import Species
     from mpl_toolkits.mplot3d.art3d import juggle_axes
 
     def _update_plot(i, scatters, worlds, species_list):

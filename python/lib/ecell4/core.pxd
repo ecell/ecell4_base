@@ -456,6 +456,8 @@ cdef extern from "ecell4/core/observers.hpp" namespace "ecell4":
         Real next_time()
         Integer num_steps()
         string filename()
+        string filename(Integer)
+        string prefix()
         void reset()
 
     cdef cppclass Cpp_FixedIntervalCSVObserver "ecell4::FixedIntervalCSVObserver":

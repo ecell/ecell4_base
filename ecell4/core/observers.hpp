@@ -283,7 +283,18 @@ public:
 
     virtual void initialize(const Space* space);
     virtual bool fire(const Simulator* sim, const Space* space);
-    const std::string filename() const;
+
+    inline const std::string filename() const
+    {
+        return filename(num_steps());
+    }
+
+    const std::string filename(const Integer idx) const;
+
+    const std::string& prefix() const
+    {
+        return prefix_;
+    }
 
 protected:
 

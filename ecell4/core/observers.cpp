@@ -220,7 +220,7 @@ bool FixedIntervalHDF5Observer::fire(const Simulator* sim, const Space* space)
     return base_type::fire(sim, space);
 }
 
-const std::string FixedIntervalHDF5Observer::filename() const
+const std::string FixedIntervalHDF5Observer::filename(const Integer idx) const
 {
     boost::format fmt(prefix_);
 
@@ -230,7 +230,7 @@ const std::string FixedIntervalHDF5Observer::filename() const
     }
     else
     {
-        return (fmt % num_steps()).str();
+        return (fmt % idx).str();
     }
 }
 

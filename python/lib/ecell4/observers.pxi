@@ -351,9 +351,16 @@ cdef class FixedIntervalHDF5Observer:
         """Return the number of steps."""
         return self.thisptr.get().num_steps()
 
-    def filename(self):
+    def prefix(self):
+        """Return a prefix of a file name given at the construction"""
+        return self.thisptr.get().prefix().decode('UTF-8')
+
+    def filename(self, idx=None):
         """Return a file name to be saved at the next time"""
-        return self.thisptr.get().filename().decode('UTF-8')
+        if idx is None:
+            return self.thisptr.get().filename().decode('UTF-8')
+        else:
+            return self.thisptr.get().filename(<Integer>idx).decode('UTF-8')
 
     def as_base(self):
         """Clone self as a base class. This function is for developers."""
