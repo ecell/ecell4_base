@@ -152,7 +152,7 @@ def run_simulation(
             seeds = [ecell4.Species(serial) for serial in y0.keys()]
             species_list = [
                 sp.serial() for sp in model.expand(seeds).list_species()]
-            species_list = sorted(set(y0.keys() + species_list))
+            species_list = sorted(set(list(y0.keys()) + species_list))
 
     if not isinstance(t, collections.Iterable):
         t = [float(t) * i / 100 for i in range(101)]
