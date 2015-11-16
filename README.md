@@ -60,6 +60,8 @@ brew tap ecell/ecell4
 brew install ecell4 --HEAD
 ```
 
+https://github.com/ecell/homebrew-ecell4
+
 #### Jupyter for Mac
 We recommend you run E-Cell4 models from Jupyter notebook.
 Below is Jupyter notebook(and matplotlib) installation for Mac.
