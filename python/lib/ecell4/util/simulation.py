@@ -161,11 +161,6 @@ def run_simulation(
     sim = f.create_simulator(model, w)
     # sim = f.create_simulator(w)
 
-    if isinstance(observers, collections.Iterable):
-        observers = (obs, ) + tuple(observers)
-    else:
-        observers = (obs, observers)
-
     if not isinstance(observers, collections.Iterable):
         observers = (observers, )
     if return_type not in ('world', None):
