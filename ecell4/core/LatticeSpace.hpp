@@ -125,7 +125,8 @@ public:
     virtual bool remove_voxel(const ParticleID& pid) = 0;
     virtual bool remove_voxel_private(const private_coordinate_type& coord) = 0;
     virtual bool move(const coordinate_type& from, const coordinate_type& to) = 0;
-    virtual bool move_private(const private_coordinate_type& src, const private_coordinate_type& dest) = 0;
+    virtual bool move_private(const private_coordinate_type& src,
+            const private_coordinate_type& dest, const std::size_t candidate=0) = 0;
     virtual bool can_move(const private_coordinate_type& src, const private_coordinate_type& dest) const;
     virtual const Particle particle_at(const coordinate_type& coord) const = 0;
 
@@ -645,7 +646,8 @@ public:
     // bool update_molecule(private_coordinate_type coord, const Species& species);
     // bool add_molecule(const Species& sp, private_coordinate_type coord, const ParticleID& pid);
     virtual bool move(const coordinate_type& from, const coordinate_type& to);
-    virtual bool move_private(const private_coordinate_type& src, const private_coordinate_type& dest);
+    virtual bool move_private(const private_coordinate_type& src,
+            const private_coordinate_type& dest, const std::size_t candidate=0);
     virtual bool can_move(const private_coordinate_type& src, const private_coordinate_type& dest) const;
 
     std::pair<private_coordinate_type, bool> move_to_neighbor(
@@ -720,7 +722,8 @@ protected:
     void initialize_voxels(const bool is_periodic);
 
     std::pair<private_coordinate_type, bool> move_(
-            private_coordinate_type private_from, private_coordinate_type private_to);
+            private_coordinate_type private_from, private_coordinate_type private_to,
+            const std::size_t candidate=0);
     std::pair<private_coordinate_type, bool> move_(
             particle_info_type& info, private_coordinate_type private_to);
     private_coordinate_type get_coord(const ParticleID& pid) const;
