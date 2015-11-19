@@ -106,24 +106,12 @@ public:
 
     virtual void replace_voxel(
         const coordinate_type& from_coord,
-        const coordinate_type& to_coord)
-    {
-        container_type::iterator itr(find(from_coord));
-        if (itr == voxels_.end())
-        {
-            throw NotFound("no corresponding coordinate was found.");
-        }
-
-        (*itr).first = to_coord;
-    }
-
-    virtual void replace_voxel(
-        const coordinate_type& from_coord,
-        const coordinate_type& to_coord, const std::size_t candidate)
+        const coordinate_type& to_coord, const std::size_t candidate=0)
     {
         container_type::iterator itr(find(from_coord, candidate));
         if (itr == voxels_.end())
         {
+            std::cerr << "from_coord = " << from_coord << std::endl;
             throw NotFound("no corresponding coordinate was found.");
         }
 
