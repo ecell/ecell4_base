@@ -156,8 +156,8 @@ def plot_world(
 
     Parameters
     ----------
-    world : World
-        World to render.
+    world : World or str
+        World or a HDF5 filename to render.
     radius : float, default None
         If this value is set, all particles in the world will be rendered
         as if their radius are the same.
@@ -190,6 +190,10 @@ def plot_world(
 
     """
     from IPython.core.display import display, HTML
+    from .simulation import load_world
+
+    if isinstance(world, str):
+        world = load_world(world)
 
     species = __parse_world(world, radius, species_list, max_count, predicator)
     color_scale = ColorScale(config=config)
