@@ -45,6 +45,11 @@ cdef class Integer3:
         """Return the third value."""
         return self.thisptr.layer
 
+    def __setitem__(self, Integer i, Integer val):
+        if i > 2:
+            raise IndexError("index out of bounds")
+        deref(self.thisptr)[i] = val
+
     def __getitem__(self, Integer i):
         if i > 2:
             raise IndexError("index out of bounds")

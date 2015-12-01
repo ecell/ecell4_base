@@ -320,7 +320,6 @@ cdef extern from "ecell4/core/Real3.hpp" namespace "ecell4":
         Cpp_Real3() except +
         Cpp_Real3(Real, Real, Real) except +
         Cpp_Real3(Cpp_Real3 &rhs) except+
-
         Real& operator[](Integer)
         Cpp_Real3 operator+(Cpp_Real3, Cpp_Real3)
         Cpp_Real3 operator-(Cpp_Real3, Cpp_Real3)
@@ -344,7 +343,6 @@ cdef extern from "ecell4/core/Integer3.hpp" namespace "ecell4":
         Integer col
         Integer row
         Integer layer
-
         Integer& operator[](Integer)
 
 cdef class Integer3:
