@@ -94,7 +94,7 @@ if [ $WITH_PYTHON2 != 0 ]; then
         LD_LIBRARY_PATH=${PREFIX}/lib PYTHONPATH=${PREFIX}/lib/python2.7/site-packages:/usr/local/lib/python2.7/dist-packages:${PYTHONPATH} python setup.py build_ext -L${PREFIX}/lib -I${PREFIX}/include:${VTK_INCLUDE_PATH} install --prefix=${PREFIX}
         PYTHONPATH=${PREFIX}/lib/python2.7/site-packages:/usr/local/lib/python2.7/dist-packages:${PYTHONPATH} LD_LIBRARY_PATH=${PREFIX}/lib python setup.py test
     else
-        LD_LIBRARY_PATH=${PREFIX}/lib PYTHONPATH=${PREFIX}/lib/python2.7/site-packages:/usr/local/lib/python2.7/dist-packages:${PYTHONPATH} python2 setup.py build_ext -L${PREFIX}/lib -I${PREFIX}/include:${VTK_INCLUDE_PATH} install --prefix=${PREFIX}
+        LD_LIBRARY_PATH=${PREFIX}/lib PYTHONPATH=${PREFIX}/lib/python2.7/site-packages:/usr/local/lib/python2.7/dist-packages:${PYTHONPATH} python2 setup.py build_ext -L${PREFIX}/lib -I${PREFIX}/include:${VTK_INCLUDE_PATH} install --prefix=${PREFIX} --prefer-shared
         PYTHONPATH=${PREFIX}/lib/python2.7/site-packages:/usr/local/lib/python2.7/dist-packages:${PYTHONPATH} LD_LIBRARY_PATH=${PREFIX}/lib python2 setup.py test
     fi
 fi
@@ -104,6 +104,6 @@ if [ $WITH_PYTHON3 != 0 ]; then
         rm -rf build lib/ecell4/*.cpp
     fi
     mkdir -p ${PREFIX}/lib/python3.4/site-packages
-    LD_LIBRARY_PATH=${PREFIX}/lib PYTHONPATH=${PREFIX}/lib/python3.4/site-packages:/usr/local/lib/python3.4/dist-packages:${PYTHONPATH} python3 setup.py build_ext -L${PREFIX}/lib -I${PREFIX}/include:${VTK_INCLUDE_PATH} install --prefix=${PREFIX}
+    LD_LIBRARY_PATH=${PREFIX}/lib PYTHONPATH=${PREFIX}/lib/python3.4/site-packages:/usr/local/lib/python3.4/dist-packages:${PYTHONPATH} python3 setup.py build_ext -L${PREFIX}/lib -I${PREFIX}/include:${VTK_INCLUDE_PATH} install --prefix=${PREFIX} --prefer-shared
     PYTHONPATH=${PREFIX}/lib/python3.4/site-packages:/usr/local/lib/python3.4/dist-packages:${PYTHONPATH} LD_LIBRARY_PATH=${PREFIX}/lib python3 setup.py test
 fi

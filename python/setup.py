@@ -38,23 +38,24 @@ class run_tests(Command):
         test_runner = unittest.TextTestRunner()
         test_runner.run(suite)
 
+with_cpp_shared_libraries = False
+if "--prefer-shared" in sys.argv:
+    #XXX: This might be not a proper way to give a user defined parameter
+    with_cpp_shared_libraries = True
+    sys.argv.remove("--prefer-shared")
+
 if sys.platform == "win32":
     if sys.version_info.major == 2:
         dependent_libs = ['gsl', 'cblas', 'hdf5_cpp', 'hdf5']
     elif sys.version_info.major == 3:
         dependent_libs = ['gsl', 'gslcblas', 'hdf5_cpp', 'hdf5']
     extra_compile_args = ["/EHsc", "/w", "-DHAVE_CONFIG_H", "-DHAVE_INLINE"]
-    with_cpp_shared_libraries = False
 elif sys.platform == "darwin":
     dependent_libs = ['gsl', 'gslcblas', 'm', 'hdf5_cpp', 'hdf5']
     extra_compile_args = []
-    with_cpp_shared_libraries = False
-    # with_cpp_shared_libraries = True
-else:
+else: # for linux
     dependent_libs = ['gsl', 'gslcblas', 'm', 'hdf5_cpp', 'hdf5']
     extra_compile_args = []
-    with_cpp_shared_libraries = False
-    # with_cpp_shared_libraries = True
 
 if with_cpp_shared_libraries:
     ext_modules = [
@@ -132,8 +133,6 @@ setup(
         "templates/*.tmpl", "templates/ecelllogo/*.png"]},
     data_files = [('ecell4ipynb', ['../ipynb/index.ipynb']),
                   ('ecell4ipynb/Tutorials', glob.glob('../ipynb/Tutorials/*.ipynb'))],
-    # packages = ["ecell4",
-    #     "ecell4.util", "ecell4.util.legacy"],
     packages = ["ecell4", "ecell4.util", "ecell4.extra"],
     cmdclass = {'build_ext': build_ext, 'test': run_tests},
     ext_modules = ext_modules
