@@ -60,7 +60,8 @@ public:
 
     virtual void replace_voxel(
         const coordinate_type& from_coord,
-        const coordinate_type& to_coord)
+        const coordinate_type& to_coord,
+        const std::size_t candidate=0)
     {
         ; // do nothing
     }

@@ -607,9 +607,9 @@ bool LatticeSpaceVectorImpl::move(const coordinate_type& from, const coordinate_
 }
 
 bool LatticeSpaceVectorImpl::move_private(const private_coordinate_type& src,
-        const private_coordinate_type& dest)
+        const private_coordinate_type& dest, const std::size_t candidate)
 {
-    return move_(src, dest).second;
+    return move_(src, dest, candidate).second;
 }
 
 bool LatticeSpaceVectorImpl::can_move(const private_coordinate_type& src,
@@ -651,7 +651,8 @@ std::pair<LatticeSpaceVectorImpl::private_coordinate_type, bool>
 
 std::pair<LatticeSpaceVectorImpl::private_coordinate_type, bool>
     LatticeSpaceVectorImpl::move_(
-        private_coordinate_type private_from, private_coordinate_type private_to)
+        private_coordinate_type private_from, private_coordinate_type private_to,
+        const std::size_t candidate)
 {
     if (private_from == private_to)
     {
@@ -684,7 +685,7 @@ std::pair<LatticeSpaceVectorImpl::private_coordinate_type, bool>
         return std::pair<private_coordinate_type, bool>(private_to, false);
     }
 
-    from_mt->replace_voxel(private_from, private_to);
+    from_mt->replace_voxel(private_from, private_to, candidate);
     voxel_container::iterator from_itr(voxels_.begin() + private_from);
     (*from_itr) = to_mt;
 
