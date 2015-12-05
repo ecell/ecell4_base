@@ -59,6 +59,8 @@ install:
   - ps: "ls \"C:/Libraries/boost\""
   - echo %CD%
   - "python setup.py build_ext -IC:/Libraries/boost;C:/projects/ecell4/stdint-20070624;C:/projects/ecell4/gsl/include -LC:/projects/ecell4/gsl/lib;C:/projects/ecell4/hdf5lib"
+  - "pip install wheel"
+  - "python setup.py bdist_wheel"
 
 build: false
 
