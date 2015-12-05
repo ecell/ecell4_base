@@ -5,7 +5,7 @@ environment:
     HDF_DIR: "C:/Program Files (x86)/HDF_Group/HDF5/1.8.15/lib"
     BOOST_ROOT: C:\Libraries\boost
   PYTHON: "C:\\Python27"
-  PYTHON_VERSION: "2.7.9"
+  PYTHON_VERSION: "2.7.10"
   PYTHON_ARCH: "32"
   matrix:
   - GENERATOR: "Visual Studio 9 2008"
@@ -65,3 +65,7 @@ build: false
 branches:
   only:
     - appveyor
+
+artifacts:
+  # bdist_wheel puts your built wheel in the dist directory
+  - path: dist\*
