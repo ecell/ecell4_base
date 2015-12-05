@@ -70,4 +70,4 @@ branches:
 
 artifacts:
   # bdist_wheel puts your built wheel in the dist directory
-  - path: dist\*
+  - path: python/dist/*
