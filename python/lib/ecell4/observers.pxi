@@ -384,7 +384,7 @@ cdef class FixedIntervalCSVObserver:
 
     """
 
-    def __init__(self, Real dt, filename):
+    def __init__(self, Real dt, filename, species=None):
         """Constructor.
 
         Parameters
@@ -401,6 +401,9 @@ cdef class FixedIntervalCSVObserver:
             The first line in a file represents labels for each row.
             Each column contains a position, a radius, and a serial id
             for the ``Species``.
+        species : list
+            A list of strings, but not of ``Species``.
+            The strings suggest serials of ``Species`` to be observed.
 
         """
         pass  # XXX: Only used for doc string
