@@ -285,6 +285,15 @@ cdef class NetworkModel:
             inc(it)
         return retval
 
+    def __reduce__(self):
+        return (__rebuild_network_model, (self.species_attributes(), self.reaction_rules()))
+
+cdef __rebuild_network_model(attrs, rrs):
+    m = NetworkModel()
+    m.add_species_attributes(attrs)
+    m.add_reaction_rules(rrs)
+    return m
+
 cdef NetworkModel NetworkModel_from_Cpp_NetworkModel(
     shared_ptr[Cpp_NetworkModel] m):
     r = NetworkModel()

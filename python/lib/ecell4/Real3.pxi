@@ -61,6 +61,8 @@ cdef class Real3:
     def __abs__(self):
         return real3_abs(self)
 
+    def __reduce__(self):
+        return (Real3, tuple(self))
 
 cdef Real3 Real3_from_Cpp_Real3(Cpp_Real3 *p):
     cdef Cpp_Real3 *new_obj = new Cpp_Real3(<Cpp_Real3> deref(p))

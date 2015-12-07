@@ -75,6 +75,9 @@ cdef class Integer3:
     #             'invalid value was given: '
     #             + repr(self) + ' : ' + repr(other))
 
+    def __reduce__(self):
+        return (Integer3, tuple(self))
+
 cdef Integer3 Integer3_from_Cpp_Integer3(Cpp_Integer3 *p):
     cdef Cpp_Integer3 *new_obj = new Cpp_Integer3(<Cpp_Integer3> deref(p))
     r = Integer3(0.0, 0.0, 0.0)
