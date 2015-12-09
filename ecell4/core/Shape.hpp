@@ -4,6 +4,7 @@
 #include "Real3.hpp"
 #include "RandomNumberGenerator.hpp"
 
+#include "exceptions.hpp"
 
 namespace ecell4
 {
@@ -38,6 +39,19 @@ struct Shape
     {
         lower = Real3(0.0, 0.0, 0.0);
         upper = edge_lengths;
+    }
+
+    virtual Real3 reflection(const Real3& from, const Real3& displacement) const
+    {
+        throw IllegalState("Not Implemented");
+    }
+    virtual bool cross(const Real3& from, const Real3& displacement) const
+    {
+        throw IllegalState("Not Implemented");
+    }
+    virtual Real3 intrusion(const Real3& from, const Real3 displacement) const 
+    {
+        throw IllegalState("Not Implemented");
     }
 };
 

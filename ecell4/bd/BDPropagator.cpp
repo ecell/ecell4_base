@@ -4,6 +4,7 @@
 #include <ecell4/core/Species.hpp>
 
 #include "BDPropagator.hpp"
+#include <ecell4/core/PlanarSurface.hpp>
 
 
 namespace ecell4
@@ -34,9 +35,50 @@ bool BDPropagator::operator()()
         return true;
     }
 
+    // Provisional Surface(Hard Code) XXX
+    Real3 surface_origin(0., 0., 0.5e-6);
+    Real3 bas_x(1.0, 0.0, 0.0);
+    Real3 bas_y(0.0, 1.0, 0.0);
+    PlanarSurface surface(surface_origin, bas_x, bas_y);
+    
+    Real3 newpos;
+    const Real3 displacement(draw_displacement(particle));
+
+    if (surface.cross(particle.position(), displacement) )
+    {
+        std::cout << " Refrection " << std::endl;
+        newpos = world_.apply_boundary(
+                surface.reflection(particle.position(), displacement) );
+    } else {
+        newpos = world_.apply_boundary(
+                particle.position() + displacement);
+    }
+    /*
+    bool bound = false;
+    for(std::vector<boost::shared_ptr<Shape> >::const_iterator 
+            it = world_.get_structure_vector().begin(); 
+            it != world_.get_structure_vector().end(); it++)
+    {
+        // search 
+        if ((*it).cross( particle.position(), displacement )) {
+            newpos = world_.apply_boundary(
+                    surface.reflection(particle.position(), displacement));
+        }
+        bound = true;
+        break;
+    }
+    if (bound == false)
+    {
+        std::cout << "refrection\n";
+        newpos = world_.apply_boundary(
+                surface.reflection(particle.position(), displacement));
+    } */
+
+    /*
     const Real3 newpos(
         world_.apply_boundary(
             particle.position() + draw_displacement(particle)));
+    */
     Particle particle_to_update(
         particle.species(), newpos, particle.radius(), particle.D());
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >

@@ -50,7 +50,7 @@ int main(int argc, char** argv)
     const Particle p1(
         sp1, Real3(0, 0, 0), info1.radius, info1.D);
     const ParticleID pid1((*world).new_particle(p1).first.first);
-    world->save("test_bd.h5");
+    //world->save("test_bd.h5");
 
     /// instatiate BDSimulator
     BDSimulator sim(model, world);

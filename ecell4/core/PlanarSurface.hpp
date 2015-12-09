@@ -3,6 +3,8 @@
 
 #include "Shape.hpp"
 
+#include "exceptions.hpp"
+
 namespace ecell4
 {
 
@@ -43,6 +45,62 @@ struct PlanarSurface
     dimension_kind dimension() const
     {
         return TWO;
+    }
+
+    Real3 reflection(const Real3& from, const Real3& displacement) const
+    {
+        Real3 provisional(from + displacement);
+        Real3 new_pos;
+        Real is_inside_from(this->is_inside(from));
+        Real is_inside_provisional(this->is_inside(provisional));
+
+        if ( (0 < is_inside_from && 0 < is_inside_provisional) || 
+                (is_inside_from < 0 && is_inside_provisional < 0) )
+        {
+            // The same signs means No refrection
+            new_pos = provisional;
+        }
+        else if( 0 < is_inside_from  )
+        {
+            // inside -> (Refrection) -> inside
+            ecell4::Real distance_from_surface(std::abs(is_inside_provisional));
+            new_pos = provisional + multiply(this->normal(), (-2.0) * distance_from_surface);
+        } else if ( is_inside_from < 0 )
+        {
+            // outside -> (Refrection) -> outside
+            ecell4::Real distance_from_surface(std::abs(is_inside_provisional));
+            new_pos = provisional + multiply(this->normal(), 2.0 * distance_from_surface);
+        }
+        return new_pos;
+    }
+
+    bool cross(const Real3 &from, const Real3& displacement) const
+    {
+        Real is_inside = this->is_inside(from);
+        Real is_inside_dest = this->is_inside(from + displacement);
+        if (0. < (is_inside * is_inside_dest))
+        {
+            // Same signs means the same side between from and after
+            return false;
+        }
+        else
+        {
+            return true;
+        }
+    }
+    Real3 intrusion(const Real3& from, const Real3& displacement) const
+    {
+        Real is_inside = this->is_inside(from);
+        Real is_inside_dest = this->is_inside(from + displacement);
+        if (0. < (is_inside * is_inside_dest))
+        {
+            throw IllegalState("No Intrusion");
+        }
+        else
+        {
+            Real ratio(std::abs(is_inside) / (std::abs(is_inside) + std::abs(is_inside_dest)));
+            return from + multiply(displacement, ratio);
+        }
     }
 
 protected:
