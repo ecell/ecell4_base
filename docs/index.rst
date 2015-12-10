@@ -42,13 +42,16 @@ Getting Started:
 
    installation
 
+
 Examples:
 
 .. toctree::
    :glob:
    
-   minde-meso
-   minde-spatiocyte
+   dualPhosphoCycle
+   mindeMeso
+   mindeSpatiocyte
+
 
 New Tutorials:
 
