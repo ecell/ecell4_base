@@ -44,7 +44,7 @@ Getting Started:
 
 Examples:
 
-.. toctree:
+.. toctree::
    :glob:
    
    minde-meso
