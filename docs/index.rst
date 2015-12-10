@@ -42,6 +42,13 @@ Getting Started:
 
    installation
 
+Examples:
+
+.. toctree:
+   :glob:
+   
+   minde-meso
+
 New Tutorials:
 
 .. toctree::
