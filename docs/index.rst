@@ -48,6 +48,7 @@ Examples:
    :glob:
    
    minde-meso
+   minde-spatiocyte
 
 New Tutorials:
 
