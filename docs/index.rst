@@ -42,7 +42,14 @@ Getting Started:
 
    installation
 
-Tutorials:
+New Tutorials:
+
+.. toctree::
+   :glob:
+   
+   tutorial3
+
+Old Tutorials:
 
 .. toctree::
    :glob:
