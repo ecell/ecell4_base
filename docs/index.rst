@@ -60,6 +60,7 @@ New Tutorials:
    :glob:
    
    tutorial1
+   tutorial2
 
 Old Tutorials:
 
