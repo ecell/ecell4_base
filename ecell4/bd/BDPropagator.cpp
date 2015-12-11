@@ -7,8 +7,39 @@
 #include <ecell4/core/PlanarSurface.hpp>
 
 
+#include <boost/tuple/tuple.hpp>
+#include <boost/tuple/tuple_io.hpp>
+
+
 namespace ecell4
 {
+
+boost::tuple<bool, Real3, Real3> refrection(const PlanarSurface& surface, const Real3& from, const Real3& displacement) 
+{
+    // return value:
+    //  tuple(is_cross, intrusion_point, rest_displacement)
+    Real3 temporary_destination(from + displacement);
+    Real is_inside_from( surface.is_inside(from) );
+    Real is_inside_dest( surface.is_inside(displacement) );
+    if (0 < is_inside_from * is_inside_dest) {
+        return boost::make_tuple(false, from , displacement);
+    }
+    else if (0 < is_inside_from && is_inside_dest < 0) {
+        // Inside -> refrection -> Inside
+        Real distance_from_surface(std::abs(is_inside_dest));
+        Real3 new_pos = temporary_destination + multiply(surface.normal(), (-2.0) * distance_from_surface);
+        Real ratio( std::abs(is_inside_from) / (std::abs(is_inside_from) + std::abs(is_inside_dest)) );
+        Real3 intrusion_point( from + multiply(displacement, ratio) );
+        return boost::make_tuple(true, intrusion_point, new_pos - intrusion_point);
+    } 
+    else if (is_inside_from < 0 && 0 < is_inside_dest) {
+        Real distance_from_surface(std::abs(is_inside_dest));
+        Real3 new_pos = temporary_destination + multiply(surface.normal(), (2.0) * distance_from_surface);
+        Real ratio( std::abs(is_inside_from) / (std::abs(is_inside_from) + std::abs(is_inside_dest)) );
+        Real3 intrusion_point( from + multiply(displacement, ratio) );
+        return boost::make_tuple(true, intrusion_point, new_pos - intrusion_point);
+    }
+}
 
 namespace bd
 {
@@ -40,39 +71,55 @@ bool BDPropagator::operator()()
     Real3 bas_x(1.0, 0.0, 0.0);
     Real3 bas_y(0.0, 1.0, 0.0);
     PlanarSurface surface(surface_origin, bas_x, bas_y);
-    
-    Real3 newpos;
-    const Real3 displacement(draw_displacement(particle));
 
-    if (surface.cross(particle.position(), displacement) )
-    {
-        std::cout << " Refrection " << std::endl;
-        newpos = world_.apply_boundary(
-                surface.reflection(particle.position(), displacement) );
-    } else {
-        newpos = world_.apply_boundary(
-                particle.position() + displacement);
-    }
-    /*
-    bool bound = false;
-    for(std::vector<boost::shared_ptr<Shape> >::const_iterator 
-            it = world_.get_structure_vector().begin(); 
-            it != world_.get_structure_vector().end(); it++)
-    {
-        // search 
-        if ((*it).cross( particle.position(), displacement )) {
-            newpos = world_.apply_boundary(
-                    surface.reflection(particle.position(), displacement));
+    Real3 surface_origin2(0., 0., 1.0e-6);
+    PlanarSurface surface2(surface_origin2, bas_x, bas_y);
+    
+    std::vector<PlanarSurface> surface_vector;
+    surface_vector.push_back(surface);
+    surface_vector.push_back(surface2);
+
+    Real3 from = particle.position();
+    Real3 displacement(draw_displacement(particle));
+    std::size_t bound_surface = -1;
+
+    bool refrection_occurance = false;
+    do {
+        refrection_occurance = false;
+        std::cout << "<Loop> start: " << from << " disp: " << displacement << std::endl;
+        // search the nearest intrusion point
+        boost::tuple<bool, Real3, Real3> nearest;
+        std::size_t nearest_surface = -1;
+        for(std::size_t i =  0; i != surface_vector.size(); i++) {
+            if (i != bound_surface) {
+                boost::tuple<bool, Real3, Real3> t = refrection(surface_vector[i], particle.position(), displacement);
+                if (t.get<0>() == true) {
+                    if (false == refrection_occurance) {
+                        refrection_occurance = true;
+                        nearest = t;
+                        nearest_surface = i;
+                    } else {
+                        // compare the intrusion point
+                        if (length(from - t.get<1>() ) < length(from - nearest.get<1>() )) {
+                            nearest = t;
+                            nearest_surface = i;
+                        }
+                    }
+                }
+            }
         }
-        bound = true;
-        break;
-    }
-    if (bound == false)
-    {
-        std::cout << "refrection\n";
-        newpos = world_.apply_boundary(
-                surface.reflection(particle.position(), displacement));
-    } */
+        // update or escape from the loop
+        if (refrection_occurance == false) {
+            break;
+        } else {
+            from = nearest.get<1>() ;
+            displacement = nearest.get<2>();
+            bound_surface = nearest_surface;
+            std::cout << "bound surface ( " << bound_surface << ") at " << from << std::endl;
+        }
+    } while(true);
+    Real3 newpos = from + displacement;
+    std::cout << "displacement done. " << newpos << std::endl;
 
     /*
     const Real3 newpos(

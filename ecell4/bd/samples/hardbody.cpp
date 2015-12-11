@@ -48,7 +48,7 @@ int main(int argc, char** argv)
     /// create a Particle, and inject it into BDWorld
     BDWorld::molecule_info_type info1((*world).get_molecule_info(Species("A")));
     const Particle p1(
-        sp1, Real3(0, 0, 0), info1.radius, info1.D);
+        sp1, Real3(1.0e-5, 1.0e-5, 0.75e-6), info1.radius, info1.D);
     const ParticleID pid1((*world).new_particle(p1).first.first);
     //world->save("test_bd.h5");
 
