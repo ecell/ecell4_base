@@ -1150,6 +1150,10 @@ cdef class ODESimulator:
         """
         self.thisptr.set_relative_tolerance(rel_tol)
 
+    def model(self):
+        """Return the model bound."""
+        return ODENetworkModel_from_Cpp_ODENetworkModel(self.thisptr.model())
+
     def world(self):
         """Return the world bound."""
         return ODEWorld_from_Cpp_ODEWorld(self.thisptr.world())
