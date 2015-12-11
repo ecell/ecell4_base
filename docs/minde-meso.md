@@ -1,4 +1,6 @@
 
+# MinDE System with Mesoscopic Simulator
+
 Fange D, Elf J (2006) Noise-Induced Min Phenotypes in E. coli. PLoS Comput Biol 2(6): e80. doi:10.1371/journal.pcbi.0020080
 
 

@@ -49,8 +49,8 @@ Examples:
    :glob:
    
    dualPhosphoCycle
-   mindeMeso
-   mindeSpatiocyte
+   minde-meso
+   minde-spatiocyte
 
 
 New Tutorials:
