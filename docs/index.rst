@@ -59,7 +59,7 @@ New Tutorials:
 .. toctree::
    :glob:
    
-   tutorial3
+   tutorial1
 
 Old Tutorials:
 
