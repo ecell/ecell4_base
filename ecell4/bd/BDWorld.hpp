@@ -12,6 +12,8 @@
 #include <ecell4/core/ParticleSpaceCellListImpl.hpp>
 #include <ecell4/core/Model.hpp>
 
+#include <ecell4/core/PlanarSurface.hpp>
+
 #include <vector>
 
 namespace ecell4
@@ -379,11 +381,11 @@ public:
         return model_.lock();
     }
 
-    void add_structure(boost::shared_ptr<Shape> surface)
+    void add_surface(PlanarSurface& surface)
     {
         this->surfaces_.push_back(surface);
     }
-    const std::vector<boost::shared_ptr<Shape> > &get_structure_vector(void) const
+    const std::vector<PlanarSurface> &get_surface_container(void) const
     {
         return this->surfaces_;
     }
@@ -391,7 +393,7 @@ public:
 
 protected:
 
-    std::vector<boost::shared_ptr<Shape> > surfaces_;
+    std::vector<PlanarSurface> surfaces_;
 
     boost::scoped_ptr<ParticleSpace> ps_;
     boost::shared_ptr<RandomNumberGenerator> rng_;

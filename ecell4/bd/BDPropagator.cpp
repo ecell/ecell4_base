@@ -66,18 +66,8 @@ bool BDPropagator::operator()()
         return true;
     }
 
-    // Provisional Surface(Hard Code) XXX
-    Real3 surface_origin(0., 0., 0.5e-6);
-    Real3 bas_x(1.0, 0.0, 0.0);
-    Real3 bas_y(0.0, 1.0, 0.0);
-    PlanarSurface surface(surface_origin, bas_x, bas_y);
-
-    Real3 surface_origin2(0., 0., 1.0e-6);
-    PlanarSurface surface2(surface_origin2, bas_x, bas_y);
     
-    std::vector<PlanarSurface> surface_vector;
-    surface_vector.push_back(surface);
-    surface_vector.push_back(surface2);
+    const std::vector<PlanarSurface> surface_vector = world_.get_surface_container();
 
     Real3 from = particle.position();
     Real3 displacement(draw_displacement(particle));
