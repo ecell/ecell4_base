@@ -1065,7 +1065,7 @@ cdef class ODESimulator:
 
         """
         if upto is None:
-            self.thirptr.step()
+            self.thisptr.step()
         else:
             return self.thisptr.step(upto)
 
