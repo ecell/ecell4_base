@@ -47,7 +47,6 @@ Examples:
 .. toctree::
    :glob:
    
-   dual-phospho-cycle
    dpcrest
    minde-meso
    minde-spatiocyte
