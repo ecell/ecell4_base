@@ -20,14 +20,14 @@ Dual Phosphorylation Cycle
         Kp_KK | {"radius": radius, "D": D}
         Kpp_PP | {"radius": radius, "D": D}
         Kp_PP | {"radius": radius, "D": D}
-    
+
     @reaction_rules
     def rulegen(kon1, koff1, kcat1, kon2, koff2, kcat2):
         (K + KK == K_KK | (kon1, koff1)
             > Kp + KK | kcat1
             == Kp_KK | (kon2, koff2)
             > Kpp + KK | kcat2)
-    
+
         (Kpp + PP == Kpp_PP | (kon1, koff1)
             > Kp + PP | kcat1
             == Kp_PP | (kon2, koff2)
@@ -61,7 +61,7 @@ Dual Phosphorylation Cycle
 
     ka1, kd1, kcat1 = 0.04483455086786913, 1.35, 1.5
     ka2, kd2, kcat2 = 0.09299017957780264, 1.73, 15.0
-    
+
     for i, rr in enumerate(rulegen(ka1, kd2, kcat1, ka2, kd2, kcat2)):
         reactants, products, k = rr.reactants(), rr.products(), rr.k()
         print(i, rr.as_string())
@@ -88,7 +88,7 @@ Dual Phosphorylation Cycle
 
     from ecell4.gillespie import GillespieWorld as world_type, GillespieSimulator as simulator_type
     # from ecell4.ode import ODEWorld as world_type, ODESimulator as simulator_type
-    
+
     w = world_type(Real3(1, 1, 1))
     # w.bind_to(m)
     w.add_molecules(Species("K"), 120)
@@ -106,7 +106,7 @@ Dual Phosphorylation Cycle
     %matplotlib inline
     import matplotlib.pylab as plt
     from numpy import array
-    
+
     data = array(obs.data()).T
     plt.plot(data[0], data[1] + data[2], "r-", label="K")
     plt.plot(data[0], data[3] + data[4] + data[5], "g--", label="Kp")
@@ -119,5 +119,4 @@ Dual Phosphorylation Cycle
 
 
 
-.. image:: dpcrest.png
-
+.. image:: ./dpcrest.png
