@@ -119,4 +119,4 @@ Dual Phosphorylation Cycle
 
 
 
-.. image:: ./dpcrest.png
+.. image:: ./images/dpcrest.png
