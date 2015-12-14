@@ -31,7 +31,6 @@ Windows and Mac OSX.
 the release note[WRITEME]
 
 -  Spatiocyte and EGFRD simulator are ready
--  The Garuda backend
 -  Python valid rule based model
 -  IPython Notebook inline visualization
 
