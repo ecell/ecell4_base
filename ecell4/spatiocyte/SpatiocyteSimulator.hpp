@@ -360,6 +360,9 @@ protected:
     void register_events(const Species& species);
     // void register_step_event(const Species& species);
 
+    void walk_in_space_(const MolecularTypeBase* mtype, const Real& alpha);
+    void walk_on_surface_(const MolecularTypeBase* mtype, const Real& alpha);
+
     inline Voxel private_voxel2voxel(const Voxel& v) const
     {
         const SpatiocyteWorld::coordinate_type
