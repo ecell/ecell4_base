@@ -391,6 +391,7 @@ protected:
     EventScheduler scheduler_;
     std::vector<std::pair<ReactionRule, reaction_info_type> > last_reactions_;
     std::vector<Species> new_species_;
+    std::vector<unsigned int> nids_; // neighbor indexes
 
     Real dt_;
     Real alpha_;

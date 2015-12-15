@@ -51,6 +51,10 @@ void SpatiocyteSimulator::initialize()
     //     }
     // }
 
+    nids_.clear();
+    for (unsigned int i(0); i < 12; ++i)
+        nids_.push_back(i);
+
     dt_ = scheduler_.next_time() - t();
 }
 
@@ -1001,9 +1005,6 @@ void SpatiocyteSimulator::walk(const Species& species, const Real& alpha)
             ++idx;
         }
     } else { // dimension == TWO, etc.
-        std::vector<unsigned int> nids;
-        for (unsigned int i(0); i < 12; ++i)
-            nids.push_back(i);
         const MolecularTypeBase* location(mtype->location());
         std::size_t idx(0);
         for (MolecularTypeBase::container_type::iterator itr(voxels.begin());
@@ -1017,10 +1018,12 @@ void SpatiocyteSimulator::walk(const Species& species, const Real& alpha)
                 continue;
             }
 
-            ecell4::shuffle(*(rng.get()), nids);
-            for (int i(0); i < 12; ++i) {
+            ecell4::shuffle(*(rng.get()), nids_);
+            for (std::vector<unsigned int>::const_iterator itr(nids_.begin());
+                    itr != nids_.end(); ++itr)
+            {
                 const SpatiocyteWorld::private_coordinate_type neighbor(
-                        world_->get_neighbor_private_boundary(info.first, nids.at(i)));
+                        world_->get_neighbor_private_boundary(info.first, *itr));
                 const MolecularTypeBase* target(world_->get_molecular_type_private(neighbor));
                 if (target == location || target->location() == location) {
                     if (world_->can_move(info.first, neighbor))
