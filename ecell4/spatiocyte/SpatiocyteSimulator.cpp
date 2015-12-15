@@ -978,70 +978,86 @@ void SpatiocyteSimulator::walk(const Species& species, const Real& alpha)
     MolecularTypeBase::container_type voxels;
     copy(mtype->begin(), mtype->end(), back_inserter(voxels));
 
-    if (mtype->get_dimension() == Shape::THREE) {
-        std::size_t idx(0);
-        for (MolecularTypeBase::container_type::iterator itr(voxels.begin());
-                itr != voxels.end(); ++itr)
-        {
-            const Integer rnd(rng->uniform_int(0, 11));
-            const SpatiocyteWorld::particle_info_type info(*itr);
-            if (world_->get_molecular_type_private(info.first) != mtype)
-            {
-                // should skip if a voxel is not the target species.
-                // when reaction has occured before, a voxel can be changed.
-                continue;
-            }
-            const SpatiocyteWorld::private_coordinate_type neighbor(
-                    world_->get_neighbor_private_boundary(info.first, rnd));
-            if (world_->can_move(info.first, neighbor))
-            {
-                if (rng->uniform(0,1) <= alpha)
-                    world_->move_private(info.first, neighbor, /*candidate=*/idx);
-            }
-            else
-            {
-                attempt_reaction_(info, neighbor, alpha);
-            }
-            ++idx;
-        }
-    } else { // dimension == TWO, etc.
-        const MolecularTypeBase* location(mtype->location());
-        std::size_t idx(0);
-        for (MolecularTypeBase::container_type::iterator itr(voxels.begin());
-                itr != voxels.end(); ++itr)
-        {
-            const SpatiocyteWorld::particle_info_type info(*itr);
-            if (world_->get_molecular_type_private(info.first) != mtype)
-            {
-                // should skip if a voxel is not the target species.
-                // when reaction has occured before, a voxel can be changed.
-                continue;
-            }
+    if (mtype->get_dimension() == Shape::THREE)
+        walk_in_space_(mtype, alpha);
+    else // dimension == TWO, etc.
+        walk_on_surface_(mtype, alpha);
+}
 
-            ecell4::shuffle(*(rng.get()), nids_);
-            for (std::vector<unsigned int>::const_iterator itr(nids_.begin());
-                    itr != nids_.end(); ++itr)
-            {
-                const SpatiocyteWorld::private_coordinate_type neighbor(
-                        world_->get_neighbor_private_boundary(info.first, *itr));
-                const MolecularTypeBase* target(world_->get_molecular_type_private(neighbor));
-                if (target == location || target->location() == location) {
-                    if (world_->can_move(info.first, neighbor))
-                    {
-                        if (rng->uniform(0,1) <= alpha)
-                            world_->move_private(info.first, neighbor, /*candidate=*/idx);
-                    }
-                    else
-                    {
-                        attempt_reaction_(info, neighbor, alpha);
-                    }
-                    break;
-                }
-            }
-            ++idx;
+void SpatiocyteSimulator::walk_in_space_(const MolecularTypeBase* mtype, const Real& alpha)
+{
+    const boost::shared_ptr<RandomNumberGenerator>& rng(world_->rng());
+    MolecularTypeBase::container_type voxels;
+    copy(mtype->begin(), mtype->end(), back_inserter(voxels));
+
+    std::size_t idx(0);
+    for (MolecularTypeBase::container_type::iterator itr(voxels.begin());
+            itr != voxels.end(); ++itr)
+    {
+        const Integer rnd(rng->uniform_int(0, 11));
+        const SpatiocyteWorld::particle_info_type info(*itr);
+        if (world_->get_molecular_type_private(info.first) != mtype)
+        {
+            // should skip if a voxel is not the target species.
+            // when reaction has occured before, a voxel can be changed.
+            continue;
         }
+        const SpatiocyteWorld::private_coordinate_type neighbor(
+                world_->get_neighbor_private_boundary(info.first, rnd));
+        if (world_->can_move(info.first, neighbor))
+        {
+            if (rng->uniform(0,1) <= alpha)
+                world_->move_private(info.first, neighbor, /*candidate=*/idx);
+        }
+        else
+        {
+            attempt_reaction_(info, neighbor, alpha);
+        }
+        ++idx;
     }
+}
 
+void SpatiocyteSimulator::walk_on_surface_(const MolecularTypeBase* mtype, const Real& alpha)
+{
+    const boost::shared_ptr<RandomNumberGenerator>& rng(world_->rng());
+    MolecularTypeBase::container_type voxels;
+    copy(mtype->begin(), mtype->end(), back_inserter(voxels));
+
+    const MolecularTypeBase* location(mtype->location());
+    std::size_t idx(0);
+    for (MolecularTypeBase::container_type::iterator itr(voxels.begin());
+            itr != voxels.end(); ++itr)
+    {
+        const SpatiocyteWorld::particle_info_type info(*itr);
+        if (world_->get_molecular_type_private(info.first) != mtype)
+        {
+            // should skip if a voxel is not the target species.
+            // when reaction has occured before, a voxel can be changed.
+            continue;
+        }
+
+        ecell4::shuffle(*(rng.get()), nids_);
+        for (std::vector<unsigned int>::const_iterator itr(nids_.begin());
+                itr != nids_.end(); ++itr)
+        {
+            const SpatiocyteWorld::private_coordinate_type neighbor(
+                    world_->get_neighbor_private_boundary(info.first, *itr));
+            const MolecularTypeBase* target(world_->get_molecular_type_private(neighbor));
+            if (target == location || target->location() == location) {
+                if (world_->can_move(info.first, neighbor))
+                {
+                    if (rng->uniform(0,1) <= alpha)
+                        world_->move_private(info.first, neighbor, /*candidate=*/idx);
+                }
+                else
+                {
+                    attempt_reaction_(info, neighbor, alpha);
+                }
+                break;
+            }
+        }
+        ++idx;
+    }
 }
 
 } // spatiocyte
