@@ -28,14 +28,14 @@ public:
 public:
 
     BDSimulator(boost::shared_ptr<Model> model,
-        boost::shared_ptr<BDWorld> world)
-        : base_type(model, world), dt_(0), bd_dt_factor_(1e-5)
+        boost::shared_ptr<BDWorld> world, Real bd_dt_factor = 1e-5)
+        : base_type(model, world), dt_(0), bd_dt_factor_(bd_dt_factor)
     {
         initialize();
     }
 
-    BDSimulator(boost::shared_ptr<BDWorld> world)
-        : base_type(world), dt_(0), bd_dt_factor_(1e-5)
+    BDSimulator(boost::shared_ptr<BDWorld> world, Real bd_dt_factor = 1e-5)
+        : base_type(world), dt_(0), bd_dt_factor_(bd_dt_factor)
     {
         initialize();
     }

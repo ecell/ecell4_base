@@ -23,21 +23,21 @@ public:
 
 public:
 
-    BDFactory()
-        : base_type(), matrix_sizes_(3, 3, 3), rng_()
+    BDFactory(Real bd_dt_factor = -1)
+        : base_type(), matrix_sizes_(3, 3, 3), rng_(), bd_dt_factor_(bd_dt_factor)
     {
         ; // do nothing
     }
 
-    BDFactory(const Integer3& matrix_sizes)
-        : base_type(), matrix_sizes_(matrix_sizes), rng_()
+    BDFactory(const Integer3& matrix_sizes, Real bd_dt_factor = -1)
+        : base_type(), matrix_sizes_(matrix_sizes), rng_(), bd_dt_factor_(bd_dt_factor)
     {
         ; // do nothing
     }
 
     BDFactory(const Integer3& matrix_sizes,
-        const boost::shared_ptr<RandomNumberGenerator>& rng)
-        : base_type(), matrix_sizes_(matrix_sizes), rng_(rng)
+        const boost::shared_ptr<RandomNumberGenerator>& rng, Real bd_dt_factor = -1)
+        : base_type(), matrix_sizes_(matrix_sizes), rng_(rng), bd_dt_factor_(bd_dt_factor)
     {
         ; // do nothing
     }
@@ -74,19 +74,34 @@ public:
         const boost::shared_ptr<Model>& model,
         const boost::shared_ptr<world_type>& world) const
     {
-        return new BDSimulator(model, world);
+        if (bd_dt_factor_ > 0)
+        {
+            return new BDSimulator(model, world, bd_dt_factor_);
+        }
+        else
+        {
+            return new BDSimulator(model, world);
+        }
     }
 
     virtual BDSimulator* create_simulator(
         const boost::shared_ptr<world_type>& world) const
     {
-        return new BDSimulator(world);
+        if (bd_dt_factor_ > 0)
+        {
+            return new BDSimulator(world, bd_dt_factor_);
+        }
+        else
+        {
+            return new BDSimulator(world);
+        }
     }
 
 protected:
 
     Integer3 matrix_sizes_;
     boost::shared_ptr<RandomNumberGenerator> rng_;
+    Real bd_dt_factor_;
 };
 
 } // bd

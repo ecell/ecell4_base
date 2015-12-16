@@ -894,7 +894,7 @@ cdef EGFRDSimulator EGFRDSimulator_from_Cpp_EGFRDSimulator(Cpp_EGFRDSimulator* s
 ## EGFRDFactory
 #  a python wrapper for Cpp_EGFRDFactory
 cdef class EGFRDFactory:
-    """ A factory class creating a BDWorld instance and a BDSimulator instance.
+    """ A factory class creating a EGFRDWorld instance and a EGFRDSimulator instance.
 
     EGFRDFactory(matrix_sizes=None, rng=None, dissociation_retry_moves,
                  bd_dt_factor, user_max_shell_size)
