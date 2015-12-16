@@ -47,6 +47,7 @@ Examples:
 .. toctree::
    :glob:
    
+   DrosophilaCircadianClock
    dpc
    
 
