@@ -128,7 +128,7 @@ Running E-Cell4
 1. run terminal
 2. run Python with PYTHONPATH
   ```
-  PYTHONPATH=/usr/local/Cellar/ecell4/HEAD/libexec/lib/python2.7/site-packages python
+  PYTHONPATH=`brew --prefix`/Cellar/ecell4/develop/libexec/lib/python2.7/site-packages python
   ```
 
 ### How to run Python for E-Cell4 (Ubuntu)
