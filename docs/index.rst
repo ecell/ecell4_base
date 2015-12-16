@@ -47,11 +47,8 @@ Examples:
 .. toctree::
    :glob:
    
-   Attractors
-   dpcrest
-   minde-meso
-   minde-spatiocyte
-
+   dpc
+   
 
 New Tutorials:
 
