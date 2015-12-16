@@ -207,6 +207,9 @@ cdef class ReactionRule:
             inc(it1)
         return retval
 
+    def __reduce__(self):
+        return (ReactionRule, (self.reactants(), self.products(), self.k()))
+
 cdef ReactionRule ReactionRule_from_Cpp_ReactionRule(Cpp_ReactionRule *rr):
     cdef Cpp_ReactionRule *new_obj = new Cpp_ReactionRule(deref(rr))
     r = ReactionRule()

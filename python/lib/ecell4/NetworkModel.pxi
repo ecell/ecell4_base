@@ -288,7 +288,7 @@ cdef class NetworkModel:
     def __reduce__(self):
         return (__rebuild_network_model, (self.species_attributes(), self.reaction_rules()))
 
-cdef __rebuild_network_model(attrs, rrs):
+def __rebuild_network_model(attrs, rrs):
     m = NetworkModel()
     m.add_species_attributes(attrs)
     m.add_reaction_rules(rrs)
