@@ -226,7 +226,7 @@ def plot_world(
             'range': __get_range_of_world(world),
             'autorange': False,
             'grid': grid,
-            'save_image': True
+            'save_image': False
         }
     }
 
@@ -239,6 +239,24 @@ def plot_world(
         'px': camera_position[0], 'py': camera_position[1], 'pz': camera_position[2],
         'rx': camera_rotation[0], 'ry': camera_rotation[1], 'rz': camera_rotation[2]},
         '/templates/particles.tmpl')))
+    return model_id
+
+def to_png(plot_id):
+    from IPython.display import display, HTML
+
+    js = """
+    <script>
+    var div = d3.select("#" + %s);
+    var canvas = div.select("canvas").node();
+    var context = canvas.getContext("experimental-webgl", {preserveDrawingBuffer: true});
+    var uri = canvas.toDataURL('image/png');
+    d3.select("#vis").append("img").attr("src", uri);
+    </script>
+    <div id='vis'></div>
+    """%plot_id
+    
+    display(HTML(js))
+
 
 def plot_dense_array(
         arr, length=256, ranges=None, colors=["#a6cee3", "#fb9a99"], grid=False, camera_position=(-22, 23, 32), camera_rotation=(-0.6, 0.5, 0.6)):
