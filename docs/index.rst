@@ -50,6 +50,7 @@ Examples:
    Attractors
    DrosophilaCircadianClock
    dpc
+   HumanErythrocytes
    
 
 New Tutorials:
