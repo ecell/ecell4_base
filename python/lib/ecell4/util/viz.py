@@ -243,18 +243,56 @@ def plot_world(
 
 def to_png(plot_id):
     from IPython.display import display, HTML
+    my_uuid = "\"png" + str(uuid.uuid4()) + "\""
 
     js = """
-    <script>
-    var div = d3.select("#" + %s);
-    var canvas = div.select("canvas").node();
-    var context = canvas.getContext("experimental-webgl", {preserveDrawingBuffer: true});
-    var uri = canvas.toDataURL('image/png');
-    d3.select("#vis").append("img").attr("src", uri);
-    </script>
-    <div id='vis'></div>
-    """%plot_id
-    
+<script>
+ function searchCell(uuid){
+   var n = IPython.notebook.ncells();
+   for(var i=0; i<n; i++){
+     var cell = IPython.notebook.get_cell(i);
+     if(typeof cell.output_area != "undefined"){
+       var outputs = cell.output_area.outputs.filter(function(out){
+console.log("Hi!");
+         var html = out.data["text/html"];
+         if(typeof html == "undefined")return false;
+         if(html.includes(uuid))return true;
+         return false;
+       });
+       if(outputs.length>0)return cell;
+     }
+   }
+   return null;
+ }
+
+ var vis_id = %s;
+ var my_uuid = %s;
+ var vis_div = d3.select("#" + vis_id);
+ var my_div =  d3.select("#" + my_uuid);
+
+ var canvas = vis_div.select("canvas").node();
+ var context = canvas.getContext("experimental-webgl", {preserveDrawingBuffer: true});
+ var uri = canvas.toDataURL('image/png');
+
+ my_div.append("img").attr("src", uri);
+
+ window.setTimeout(function(){
+ if(typeof window.IPython != "undefined"){
+   try{
+     var html = my_div.node().outerHTML;
+     var cell = searchCell(my_uuid);
+     if(cell == null)throw new Error("The cell whose id is " + my_uuid + " not found.");
+     cell.output_area.outputs[0].data["text/html"] = html;
+   }
+   catch(e){
+     console.warn("Maybe the front-end API of Jupyter has changed. message:" + e.message);
+   }
+ }
+}, 0);
+ 
+</script>
+<div id=%s></div>
+    """%(plot_id, my_uuid, my_uuid)
     display(HTML(js))
 
 
