@@ -288,7 +288,6 @@ bool SpatiocyteWorld::add_molecules(
 Integer SpatiocyteWorld::add_structure(
     const Species& sp, const boost::shared_ptr<const Shape> shape)
 {
-    std::cerr << "shape->dimension() : " << shape->dimension() << std::endl; // XXX
     const SpatiocyteWorld::molecule_info_type info(get_molecule_info(sp));
     (*space_).make_structure_type(sp, shape->dimension(), info.loc);
 
