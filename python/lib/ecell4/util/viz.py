@@ -656,7 +656,7 @@ def plot_number_observer(*args, **kwargs):
         ax.set_ylim(kwargs["ylim"])
     plt.show()
 
-def plot_number_observer_with_nya(obs, config={}, width=600, height=400, x=None, y=None):
+def plot_number_observer_with_nya(obs, config={}, width=600, height=400, x=None, y=None, to_png=False):
     """
     Generate a plot from NumberObservers and show it on IPython notebook
     with nyaplot.
@@ -727,7 +727,7 @@ def plot_number_observer_with_nya(obs, config={}, width=600, height=400, x=None,
                                "yrange": [ymin, ymax], "legend": True, "zoom": True}}]}
     model_id = 'viz{0:s}'.format(uuid.uuid4())
     display(HTML(generate_html(
-        {'model': json.dumps(model), 'model_id': model_id},
+        {'model': json.dumps(model), 'model_id': model_id, 'to_png': json.dumps(to_png)},
         '/templates/nya.tmpl')))
 
 class ColorScale:
