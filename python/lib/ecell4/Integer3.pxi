@@ -59,6 +59,16 @@ cdef class Integer3:
     def __abs__(Integer3 self):
         return integer3_abs(self)
 
+    def __mul__(self, other):
+        if isinstance(self, Integer3):
+            return integer3_multiply(<Integer3>self, <Integer>other)
+        elif isinstance(other, Integer3):
+            return integer3_multiply(<Integer3>other, <Integer>self)
+        else:
+            raise ValueError(
+                'invalid value was given: '
+                + repr(self) + ' : ' + repr(other))
+
     # def __div__(Integer3 self, Integer other):
     #     return integer3_divide(self, other)
 
@@ -126,6 +136,52 @@ def integer3_subtract(Integer3 p1, Integer3 p2):
     """
     cdef Cpp_Integer3 r = integer3operators.subtract(deref(p1.thisptr), deref(p2.thisptr))
     return Integer3_from_Cpp_Integer3(address(r))
+
+def integer3_multiply(Integer3 p1, Integer p2):
+    """integer3_multiply(p1, p2) -> Integer3
+
+    Multiply p1 by p2.
+
+    Parameters
+    ----------
+    p1 : Integer3
+        A vector.
+    p2 : Integer
+        A factor.
+
+    Returns
+    -------
+    Integer3:
+        The multipled vector, ``p1 * p2``.
+
+    """
+    cdef Cpp_Integer3 r = integer3operators.multiply(deref(p1.thisptr), p2)
+    return Integer3_from_Cpp_Integer3(address(r))
+
+def integer3_length_sq(Integer3 p1):
+    """integer3_length_sq(p1) -> Integer
+
+    Return a square of a Euclidean norm of the given vector.
+
+    """
+    return integer3operators.length_sq(deref(p1.thisptr))
+
+def integer3_length(Integer3 p1):
+    """integer3_length(p1) -> Real
+
+    Return a Euclidean norm of the given vector.
+    This is almost equivalent to call ``sqrt(length_sq(p1))``
+
+    """
+    return integer3operators.length(deref(p1.thisptr))
+
+def integer3_dot_product(Integer3 p1, Integer3 p2):
+    """integer3_dot_product(p1, p2) -> Integer
+
+    Return a dot product between two vectors
+
+    """
+    return integer3operators.dot_product(deref(p1.thisptr), deref(p2.thisptr))
 
 def integer3_abs(Integer3 p1):
     """integer3_abs(p1) -> Integer3

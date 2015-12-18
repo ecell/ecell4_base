@@ -23,6 +23,46 @@ include "Voxel.pxi"
 include "observers.pxi"
 include "shapes.pxi"
 
+def length_sq(p):
+    """length_sq(p1) -> Real or Integer
+
+    Return a square of a Euclidean norm of the given vector.
+
+    """
+    if isinstance(p, Real3):
+        return real3_length_sq(<Real3>p)
+    elif isinstance(p, Integer3):
+        return integer3_length_sq(<Integer3>p)
+    else:
+        raise TypeError('Not implemented for this type')
+
+def length(p):
+    """length(p1) -> Real
+
+    Return a Euclidean norm of the given vector.
+    This is almost equivalent to call ``sqrt(length_sq(p1))``
+
+    """
+    if isinstance(p, Real3):
+        return real3_length(<Real3>p)
+    elif isinstance(p, Integer3):
+        return integer3_length(<Integer3>p)
+    else:
+        raise TypeError('Not implemented for this type')
+
+def dot_product(p1, p2):
+    """dot_product(p1, p2) -> Real or Integer
+
+    Return a dot product between two vectors
+
+    """
+    if isinstance(p1, Real3) and isinstance(p2, Real3):
+        return real3_dot_product(<Real3>p1, <Real3>p2)
+    elif isinstance(p1, Integer3) and isinstance(p2, Integer3):
+        return integer3_dot_product(<Integer3>p1, <Integer3>p2)
+    else:
+        raise TypeError('Not implemented for this type')
+
 from cython.operator cimport dereference as deref
 
 cdef shared_ptr[Cpp_Model]* Cpp_Model_from_Model(m):
