@@ -11,8 +11,8 @@ E-Cell System, a software platform for modeling, simulation and analysis of comp
 - [Installation](#installation)
     - [Windows](#windows-installation)
     - [Mac OS X](#mac-os-x-installation)
-    - [Ubuntu vivid](#ubuntu-linux-vivid-vervet-installation)
-    - [Ubuntu trusty](#ubuntu-linux-trusty-tahr-installation)
+    - [Ubuntu](#ubuntu-linux-installation)
+    - [CentOS](#centos-linux-installation)
 - [Running E-Cell4](#running-e-cell4)
 - [Dockerized E-Cell4 Jupyter notebooks](#dockerized-e-cell4-jupyter-notebooks)
     - [For Windows and Mac](#for-windows-and-mac)
@@ -57,7 +57,7 @@ matplotlib depends on numpy. It takes some time to build numpy, please be patien
 ```shell
 ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 brew tap ecell/ecell4
-brew install ecell4 --HEAD
+brew install ecell4
 ```
 
 #### Jupyter for Mac
@@ -70,48 +70,29 @@ sudo pip install -U matplotlib
 sudo pip install -U jupyter
 ```
 
-### Ubuntu Linux Vivid Vervet installation
-#### Python2 series
+### Ubuntu Linux installation
 
 ```shell
-# dependent packages
-$ sudo apt-get install cmake libgsl0-dev libboost-regex-dev libhdf5-dev cython
-
-$ wget https://github.com/ecell/ecell4/archive/master.zip   
-$ unzip master.zip
-$ cd ecell4-master
-# By default install.sh tries to install E-Cell4 into /usr/local, in this case you need to use sudo.
-# In the following command, we install E-Cell4 into $HOME/ecell4. In this case you do NOT need to use sudo.
-$ PREFIX=$HOME/ecell4 ./install.sh py2
+$ sudo apt-get install build-essential curl git m4 ruby texinfo libbz2-dev libcurl4-openssl-dev libexpat-dev libncurses-dev zlib1g-dev python-dev python-setuptools
+$ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/linuxbrew/go/install)"
+$ echo 'export PATH="$HOME/.linuxbrew/bin:$PATH"' >> ~/.bash_profile
+$ source ~/.bash_profile
+$ brew tap ecell/ecell4
+$ brew install ecell4 --HEAD
 ```
 
-#### Python3 series
+### CentOS Linux installation
 
 ```shell
-# dependent packages
-$ sudo apt-get install cmake libgsl0-dev libboost-regex-dev libhdf5-dev cython3
-
-$ wget https://github.com/ecell/ecell4/archive/master.zip   
-$ unzip master.zip
-$ cd ecell4-master
-# By default install.sh tries to install E-Cell4 into /usr/local, in this case you need to use sudo.
-# In the following command, we install E-Cell4 into $HOME/ecell4. In this case you do NOT need to use sudo.
-$ PREFIX=$HOME/ecell4 ./install.sh py3
-```
-
-### Ubuntu Linux Trusty Tahr installation
-
-```shell
-# dependent packages
-$ sudo apt-get install cmake libgsl0-dev libboost-regex-dev libhdf5-dev libatlas-base-dev python-dev python-pip
-$ sudo pip install cython
-
-$ wget https://github.com/ecell/ecell4/archive/master.zip   
-$ unzip master.zip
-$ cd ecell4-master
-# By default install.sh tries to install E-Cell4 into /usr/local, in this case you need to use sudo.
-# In the following command, we install E-Cell4 into $HOME/ecell4. In this case you do NOT need to use sudo.
-$ PREFIX=$HOME/ecell4 PYTHONPATH=/path/to/lib/python2.7/site-packages ./install.sh py2
+$ sudo yum groupinstall 'Development Tools'
+$ sudo yum install curl git m4 ruby texinfo bzip2-devel curl-devel expat-devel ncurses-devel zlib-devel python-devel python-setuptools
+$ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/linuxbrew/go/install)"
+$ echo 'export PATH="$HOME/.linuxbrew/bin:$PATH"' >> ~/.bash_profile
+$ source ~/.bash_profile
+$ ln -s `which gcc` `brew --prefix`/bin/gcc-4.8
+$ ln -s `which g++` `brew --prefix`/bin/g++-4.8
+$ brew tap ecell/ecell4
+$ brew install ecell4 --HEAD
 ```
 
 Running E-Cell4
