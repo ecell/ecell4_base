@@ -29,6 +29,7 @@ cdef extern from "ecell4/core/RandomNumberGenerator.hpp" namespace "ecell4":
         Real uniform(Real, Real)
         Integer uniform_int(Integer, Integer)
         Real gaussian(Real, Real)
+        Real gaussian(Real)
         Integer binomial(Real, Integer)
         void seed(Integer)
         void seed()
@@ -39,6 +40,7 @@ cdef extern from "ecell4/core/RandomNumberGenerator.hpp" namespace "ecell4":
         Real uniform(Real, Real)
         Integer uniform_int(Integer, Integer)
         Real gaussian(Real, Real)
+        Real gaussian(Real)
         void seed(Integer)
         void seed()
 

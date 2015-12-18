@@ -58,17 +58,17 @@ cdef class GSLRandomNumberGenerator:
         """
         return self.thisptr.get().uniform_int(min, max)
 
-    def gaussian(self, Real mean, Real sigma):
-        """gaussian(mean, sigma) -> Real
+    def gaussian(self, Real sigma, mean = None):
+        """gaussian(sigma, mean = None) -> Real
 
         Return a Gaussian variate with the given mean and standard deviation.
 
         Parameters
         ----------
-        mean : Real
-            The mean value.
         sigma : Real
             The standard deviation.
+        mean : Real
+            The mean value.
 
         Returns
         -------
@@ -76,7 +76,10 @@ cdef class GSLRandomNumberGenerator:
             A random number from a Gaussian distribution.
 
         """
-        return self.thisptr.get().gaussian(mean, sigma)
+        if mean is None:
+            return self.thisptr.get().gaussian(sigma)
+        else:
+            return self.thisptr.get().gaussian(sigma, <Real>mean)
 
     def binomial(self, Real p, Integer n):
         """binomial(p, n) -> Integer
