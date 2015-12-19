@@ -14,7 +14,7 @@ E-Cell System, a software platform for modeling, simulation and analysis of comp
 
 - [Native binary installation](#native-binary-installation)
     - [Windows](#windows)
-    - [Mac or Linux](#mac-and-linux)
+    - [Mac or Linux](#mac-or-linux)
 
 - [Simple examples](#simple-examples)
 
