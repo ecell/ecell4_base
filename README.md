@@ -9,13 +9,12 @@ E-Cell System version 4
 E-Cell System, a software platform for modeling, simulation and analysis of complex, heterogeneous and multi-scale systems like the cell.
 
 - [Dockerized E-Cell4 Jupyter notebooks](#dockerized-e-cell4-jupyter-notebooks)
-    - [For Windows and Mac](#for-windows-and-mac)
+    - [For Windows or Mac](#for-windows-or-mac)
     - [For Linux](#for-linux)
 
 - [Native binary installation](#native-binary-installation)
     - [Windows](#windows)
-    - [Mac OS X](#mac-os-x)
-    - [Linux](#linux)
+    - [Mac or Linux](#mac-and-linux)
 
 - [Simple examples](#simple-examples)
 
@@ -25,7 +24,7 @@ Dockerized E-Cell4 Jupyter notebooks
 If you have docker environment, you can try E-Cell4 easily.
 You can pull E-Cell4 container with `docker pull ecell/ecell4`
 
-### For Windows and Mac
+### For Windows or Mac
 
 1. Install [Docker Toolbox](https://www.docker.com/toolbox)
 2. Run Kitematic
@@ -75,34 +74,25 @@ Below is Jupyter notebook(and matplotlib) installation for Windows.
 - Install Jupyter notebook and matplotlib
 
   ```
-  pip install -U jupyter
+  pip install jupyter
   pip install matplotlib
   ```
 
 matplotlib depends on numpy. It takes some time to build numpy, please be patient.
 
-### Mac OS X
+### Mac or Linux
 
 Please use [homebrew-ecell4](https://github.com/ecell/homebrew-ecell4)
 
-#### Jupyter for Mac
+#### Jupyter for Mac or Linux
 We recommend you run E-Cell4 models from Jupyter notebook.
-Below is Jupyter notebook(and matplotlib) installation for Mac.
+Below is Jupyter notebook(and matplotlib) installation for Mac or Linux.
 
 ```shell
 sudo python get-pip.py
-sudo pip install -U matplotlib
-sudo pip install -U jupyter
+sudo pip install matplotlib
+sudo pip install jupyter
 ```
-
-### Linux
-
-#### linuxbrew
-
-Please use [linuxbrew and the ecell4 tap](https://github.com/ecell/homebrew-ecell4)
-
-#### self build
-Please see .travis.yml or Dockerfile in this repository.
 
 
 Simple examples
