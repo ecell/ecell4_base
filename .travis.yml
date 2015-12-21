@@ -4,6 +4,12 @@ script: sudo bash -c 'export PREFIX=/usr/local; export PYTHONPATH=/usr/local/lib
 compiler:
 - gcc
 - clang
+addons:
+  apt:
+    sources:
+    - ubuntu-toolchain-r-test
+    packages:
+    - clang
 before_install:
 - echo 'yes' | sudo add-apt-repository ppa:apokluda/boost1.53
 - sudo apt-get update -qq
