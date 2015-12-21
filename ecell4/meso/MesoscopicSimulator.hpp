@@ -93,13 +93,13 @@ protected:
     public:
 
         ReactionRuleProxyBase()
-            : sim_(), rr_()
+            : sim_()
         {
             ;
         }
 
-        ReactionRuleProxyBase(MesoscopicSimulator* sim, const ReactionRule& rr)
-            : sim_(sim), rr_(rr)
+        ReactionRuleProxyBase(MesoscopicSimulator* sim)
+            : sim_(sim)
         {
             ;
         }
@@ -109,33 +109,22 @@ protected:
             ;
         }
 
-        const ReactionRule& reaction_rule() const
-        {
-            return rr_;
-        }
-
         inline const Integer get_coef(const Species& pttrn, const Species& sp) const
         {
             return sim_->model()->apply(pttrn, sp);
         }
 
-        inline const std::vector<ReactionRule> generate(
-            const ReactionRule::reactant_container_type& reactants) const
-        {
-            return sim_->model()->apply(rr_, reactants);
-        }
-
         virtual void initialize() = 0;
+        virtual const Real propensity(const coordinate_type& c) const = 0;
+        virtual void fire(const Real t, const coordinate_type& src) = 0;
+
         virtual void inc(
             const Species& sp, const coordinate_type& c, const Integer val = +1) = 0;
-        virtual const Real propensity(const coordinate_type& c) const = 0;
 
         inline void dec(const Species& sp, const coordinate_type& c)
         {
             inc(sp, c, -1);
         }
-
-        virtual std::pair<ReactionRule, coordinate_type> draw(const coordinate_type& c) = 0;
 
     protected:
 
@@ -152,7 +141,6 @@ protected:
     protected:
 
         MesoscopicSimulator* sim_;
-        ReactionRule rr_;
     };
 
     class ReactionRuleProxy
@@ -169,7 +157,7 @@ protected:
         }
 
         ReactionRuleProxy(MesoscopicSimulator* sim, const ReactionRule& rr)
-            : base_type(sim, rr)
+            : base_type(sim), rr_(rr)
         {
             ;
         }
@@ -177,6 +165,17 @@ protected:
         virtual ~ReactionRuleProxy()
         {
             ;
+        }
+
+        const ReactionRule& reaction_rule() const
+        {
+            return rr_;
+        }
+
+        inline const std::vector<ReactionRule> generate(
+            const ReactionRule::reactant_container_type& reactants) const
+        {
+            return sim_->model()->apply(rr_, reactants);
         }
 
         std::pair<ReactionRule, coordinate_type> draw(const coordinate_type& c)
@@ -209,10 +208,54 @@ protected:
             }
         }
 
+        virtual void fire(const Real t, const coordinate_type& src)
+        {
+            const std::pair<ReactionRule, coordinate_type>
+                retval = this->draw(src);
+
+            const ReactionRule& nextr = retval.first;
+            const coordinate_type& dst = retval.second;
+            const ReactionRule::reactant_container_type& reactants(nextr.reactants());
+            const ReactionRule::product_container_type& products(nextr.products());
+
+            assert(dst == src);
+
+            for (ReactionRule::product_container_type::const_iterator
+                    it(products.begin()); it != products.end(); ++it)
+            {
+                const Species& sp(*it);
+
+                if (!sim_->world()->on_structure(sp, src))
+                {
+                    ; // do nothing except for update()
+                    return;
+                }
+            }
+
+            for (ReactionRule::reactant_container_type::const_iterator
+                    it(reactants.begin()); it != reactants.end(); ++it)
+            {
+                sim_->decrement_molecules(*it, src);
+            }
+
+            for (ReactionRule::product_container_type::const_iterator
+                    it(products.begin()); it != products.end(); ++it)
+            {
+                sim_->increment_molecules(*it, src);
+            }
+
+            sim_->add_last_reaction(
+                nextr, reaction_info_type(t, reactants, products, src));
+        }
+
     protected:
 
         virtual std::pair<ReactionRule::reactant_container_type, Integer>
             __draw(const coordinate_type& c) = 0;
+
+    protected:
+
+        ReactionRule rr_;
     };
 
     class DiffusionProxy
@@ -223,13 +266,13 @@ protected:
         typedef ReactionRuleProxyBase base_type;
 
         DiffusionProxy()
-            : base_type(), num_tot_()
+            : base_type(), sp_(), num_tot_()
         {
             ;
         }
 
         DiffusionProxy(MesoscopicSimulator* sim, const Species& sp)
-            : base_type(sim, create_unimolecular_reaction_rule(sp, sp, 0.0)),
+            : base_type(sim), sp_(sp),
             num_tot_(sim->world()->num_subvolumes())
         {
             ;
@@ -240,8 +283,10 @@ protected:
             ;
         }
 
-        std::pair<ReactionRule, coordinate_type> draw(const coordinate_type& c)
+        coordinate_type draw(const coordinate_type& c)
         {
+            //XXX: Draw one Species from candidates
+
             const Real3 lengths(sim_->world()->subvolume_edge_lengths());
             const Real px(1.0 / (lengths[0] * lengths[0])),
                 py(1.0 / (lengths[1] * lengths[1])),
@@ -252,35 +297,30 @@ protected:
             coordinate_type tgt;
             if (rnd1 < px * 0.5)
             {
-                tgt = sim_->world()->get_neighbor(c, 0);
+                return sim_->world()->get_neighbor(c, 0);
             }
             else if (rnd1 < px)
             {
-                tgt = sim_->world()->get_neighbor(c, 1);
+                return sim_->world()->get_neighbor(c, 1);
             }
             else if (rnd1 < px + py * 0.5)
             {
-                tgt = sim_->world()->get_neighbor(c, 2);
+                return sim_->world()->get_neighbor(c, 2);
             }
             else if (rnd1 < px + py)
             {
-                tgt = sim_->world()->get_neighbor(c, 3);
+                return sim_->world()->get_neighbor(c, 3);
             }
             else if (rnd1 < px + py + pz * 0.5)
             {
-                tgt = sim_->world()->get_neighbor(c, 4);
+                return sim_->world()->get_neighbor(c, 4);
             }
-            else
-            {
-                tgt = sim_->world()->get_neighbor(c, 5);
-            }
-            return std::make_pair(rr_, tgt);
+            return sim_->world()->get_neighbor(c, 5);
         }
 
         void initialize()
         {
-            const Species sp(rr_.reactants()[0]);
-            const Real D(sim_->world()->get_molecule_info(sp).D);
+            const Real D(sim_->world()->get_molecule_info(sp_).D);
             const Real3 lengths(sim_->world()->subvolume_edge_lengths());
             const Real px(1.0 / (lengths[0] * lengths[0])),
                 py(1.0 / (lengths[1] * lengths[1])),
@@ -292,7 +332,7 @@ protected:
             for (std::vector<Species>::const_iterator i(species.begin());
                 i != species.end(); ++i)
             {
-                const Integer coef(get_coef(sp, *i));
+                const Integer coef(get_coef(sp_, *i));
                 if (coef > 0)
                 {
                     for (Integer j(0); j < sim_->world()->num_subvolumes(); ++j)
@@ -310,16 +350,39 @@ protected:
 
         void inc(const Species& sp, const coordinate_type& c, const Integer val = +1)
         {
-            const Species& pttrn(rr_.reactants()[0]);
-            const Integer coef(get_coef(pttrn, sp));
+            const Integer coef(get_coef(sp_, sp));
             if (coef > 0)
             {
                 num_tot_[c] += coef * val;
             }
         }
 
+        virtual void fire(const Real t, const coordinate_type& src)
+        {
+            const coordinate_type dst = this->draw(src);
+
+            if (dst == src)
+            {
+                ; // do nothing except for update()
+                return;
+            }
+
+            const boost::shared_ptr<MesoscopicWorld::PoolBase>&
+                pool = sim_->world()->get_pool(sp_);
+            if (!sim_->world()->check_structure(pool->loc(), dst))
+            {
+                ; // do nothing except for update()
+                return;
+            }
+
+            sim_->decrement(pool, src);
+            sim_->increment(pool, dst);
+            sim_->interrupt(dst);
+        }
+
     protected:
 
+        Species sp_;
         std::vector<Real> num_tot_;
         Real k_;
     };
@@ -688,51 +751,9 @@ protected:
 
         virtual void fire()
         {
-            const ReactionRule::reactant_container_type& reactants(next_reaction_.reactants());
-            const ReactionRule::product_container_type& products(next_reaction_.products());
-
-            if (!(reactants.size() == 1 && products.size() == 1
-                && reactants[0] == products[0] && coord_ == tgt_coord_))
-            {
-                for (ReactionRule::product_container_type::const_iterator
-                    it(next_reaction_.products().begin());
-                    it != next_reaction_.products().end(); ++it)
-                {
-                    const Species& sp(*it);
-                    if (!sim_->world()->on_structure(sp, tgt_coord_))
-                    {
-                        // sim_->set_last_reaction(next_reaction_);
-                        update();
-                        return; // XXX: do finalize
-                    }
-                }
-
-                for (ReactionRule::reactant_container_type::const_iterator
-                    it(next_reaction_.reactants().begin());
-                    it != next_reaction_.reactants().end(); ++it)
-                {
-                    sim_->decrement_molecules(*it, coord_);
-                }
-
-                for (ReactionRule::product_container_type::const_iterator
-                    it(next_reaction_.products().begin());
-                    it != next_reaction_.products().end(); ++it)
-                {
-                    sim_->increment_molecules(*it, tgt_coord_);
-                }
-            }
-
-            if (coord_ != tgt_coord_)
-            {
-                sim_->interrupt(tgt_coord_);
-                sim_->reset_last_reactions();
-            }
-            else
-            {
-                sim_->reset_last_reactions();
-                sim_->add_last_reaction(next_reaction_rule_, reaction_info_type(time_, next_reaction_.reactants(), next_reaction_.products(), coordinate()));
-            }
-
+            assert(proxy_ != NULL);
+            sim_->reset_last_reactions();
+            proxy_->fire(time_, coord_);
             update();
         }
 
@@ -742,49 +763,20 @@ protected:
             update();
         }
 
-        coordinate_type coordinate() const
-        {
-            return coord_;
-        }
-
         void update()
         {
-            dt_ = 0.0;
-            while (true)
-            {
-                const std::pair<Real, ReactionRuleProxyBase*>
-                    retval(sim_->draw_next_reaction(coord_));
-
-                dt_ += retval.first;
-                if (retval.first == inf)
-                {
-                    // no reaction occurs
-                    next_reaction_rule_ = ReactionRule();
-                    next_reaction_ = ReactionRule();
-                    tgt_coord_ = coord_;
-                    break;
-                }
-
-                assert(retval.second != NULL);
-                const std::pair<ReactionRule, coordinate_type> reaction = retval.second->draw(coord_);
-                if (reaction.first.k() > 0.0 || reaction.second != coord_)
-                {
-                    next_reaction_rule_ = retval.second->reaction_rule();
-                    next_reaction_ = reaction.first;
-                    tgt_coord_ = reaction.second;
-                    break;
-                }
-            }
-
-            time_ += dt_;
+            const std::pair<Real, ReactionRuleProxyBase*>
+                retval = sim_->draw_next_reaction(coord_);
+            time_ += retval.first;
+            proxy_ = retval.second;
         }
 
     protected:
 
         MesoscopicSimulator* sim_;
-        coordinate_type coord_, tgt_coord_;
-        Real dt_;
-        ReactionRule next_reaction_rule_, next_reaction_;
+        coordinate_type coord_;
+
+        ReactionRuleProxyBase* proxy_;
     };
 
 public:
@@ -851,8 +843,11 @@ protected:
     void interrupt_all(const Real& t);
     std::pair<Real, ReactionRuleProxyBase*>
         draw_next_reaction(const coordinate_type& c);
+
     void increment_molecules(const Species& sp, const coordinate_type& c);
     void decrement_molecules(const Species& sp, const coordinate_type& c);
+    void increment(const boost::shared_ptr<MesoscopicWorld::PoolBase>& pool, const coordinate_type& c);
+    void decrement(const boost::shared_ptr<MesoscopicWorld::PoolBase>& pool, const coordinate_type& c);
 
 protected:
 

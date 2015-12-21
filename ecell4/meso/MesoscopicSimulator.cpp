@@ -18,26 +18,36 @@ namespace ecell4
 namespace meso
 {
 
-void MesoscopicSimulator::increment_molecules(const Species& sp, const coordinate_type& c)
+void MesoscopicSimulator::increment(const boost::shared_ptr<MesoscopicWorld::PoolBase>& pool, const coordinate_type& c)
 {
-    world_->add_molecules(sp, 1, c);
+    pool->add_molecules(1, c);
 
     for (boost::ptr_vector<ReactionRuleProxyBase>::iterator i(proxies_.begin());
         i != proxies_.end(); ++i)
     {
-        (*i).inc(sp, c);
+        (*i).inc(pool->species(), c);
     }
+}
+
+void MesoscopicSimulator::decrement(const boost::shared_ptr<MesoscopicWorld::PoolBase>& pool, const coordinate_type& c)
+{
+    pool->remove_molecules(1, c);
+
+    for (boost::ptr_vector<ReactionRuleProxyBase>::iterator i(proxies_.begin());
+        i != proxies_.end(); ++i)
+    {
+        (*i).dec(pool->species(), c);
+    }
+}
+
+void MesoscopicSimulator::increment_molecules(const Species& sp, const coordinate_type& c)
+{
+    increment(world_->get_pool(sp), c);
 }
 
 void MesoscopicSimulator::decrement_molecules(const Species& sp, const coordinate_type& c)
 {
-    world_->remove_molecules(sp, 1, c);
-
-    for (boost::ptr_vector<ReactionRuleProxyBase>::iterator i(proxies_.begin());
-        i != proxies_.end(); ++i)
-    {
-        (*i).dec(sp, c);
-    }
+    decrement(world_->get_pool(sp), c);
 }
 
 std::pair<Real, MesoscopicSimulator::ReactionRuleProxyBase*>
