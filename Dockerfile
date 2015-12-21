@@ -5,7 +5,5 @@ RUN pip install jupyter
 ADD . /usr/src/ecell4
 RUN cd /usr/src/ecell4; ./install.sh py2
 
-VOLUME /ipynb
-WORKDIR /ipynb
 EXPOSE 8888
-CMD LD_LIBRARY_PATH=/usr/local/lib jupyter-notebook --notebook-dir='/ipynb' --no-browser --ip='*' --port 8888
+CMD LD_LIBRARY_PATH=/usr/local/lib jupyter-notebook --notebook-dir='/usr/src/ecell4/ipynb' --no-browser --ip='*' --port 8888
