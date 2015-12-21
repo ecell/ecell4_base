@@ -43,7 +43,7 @@ $ sudo docker pull ecell/ecell4
 $ sudo docker run -d -p 443:8888 ecell/ecell4
 ```
 
-You'll be able to E-Cell4 notebooks at https://THE_IP_RUNNING_DOCKER:443
+You'll be able to E-Cell4 notebooks at http://THE_IP_RUNNING_DOCKER:443
 
 
 Native binary installation
