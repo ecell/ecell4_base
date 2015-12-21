@@ -272,6 +272,11 @@ Integer MesoscopicWorld::num_molecules_exact(
 void MesoscopicWorld::add_molecules(
     const Species& sp, const Integer& num, const MesoscopicWorld::coordinate_type& c)
 {
+    if (!cs_->has_species(sp))
+    {
+        const molecule_info_type minfo(get_molecule_info(sp));
+        cs_->reserve_pool(sp, minfo.D, minfo.loc);
+    }
     cs_->add_molecules(sp, num, c);
 }
 
