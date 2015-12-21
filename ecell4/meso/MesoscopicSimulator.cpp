@@ -206,6 +206,11 @@ void MesoscopicSimulator::initialize(void)
     for (std::vector<Species>::const_iterator i(species.begin());
         i != species.end(); ++i)
     {
+        if (!world_->has_species(*i))
+        {
+            world_->reserve_pool(*i); //XXX: This must be deprecated.
+        }
+
         proxies_.push_back(new DiffusionProxy(this, *i));
         proxies_.back().initialize();
     }
