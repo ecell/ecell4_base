@@ -1,7 +1,7 @@
-FROM ubuntu:15.10
+FROM ubuntu:14.04
 RUN apt-get update
-RUN apt-get install -y cython git cmake g++ libboost-dev libgsl0-dev libhdf5-dev libboost-regex-dev python python-numpy python-scipy python-pip python-zmq python-matplotlib
-RUN pip install jupyter
+RUN apt-get install -y cmake g++ libboost-dev libgsl0-dev libhdf5-serial-dev libboost-regex-dev python python-numpy python-scipy python-pip python-zmq python-matplotlib
+RUN pip install cython jupyter
 ADD . /usr/src/ecell4
 
 RUN cd /usr/src/ecell4; export PREFIX=/usr/local; export PYTHONPATH=/usr/local/lib/python2.7/site-packages:$PYTHONPATH; ./install.sh --python2 --hdf5
