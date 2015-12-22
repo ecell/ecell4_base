@@ -28,13 +28,15 @@ You can pull E-Cell4 container with `docker pull ecell/ecell4`
 
 1. Install [Docker Toolbox](https://www.docker.com/toolbox)
 2. Run Kitematic
-3. Search with **ecell4**, and create ecell4 container
+3. Search container with **ecell4**, and create ecell4 container
 
   ![png](https://raw.githubusercontent.com/ecell/ecell4/master/docs/kitematic1.png)
 
-4. Open the **ACCESS URL** in **IP & PORTS** with your web browser
+4. Click **WEB PREVIEW** button in **HOME** tab
 
-  ![png](https://raw.githubusercontent.com/ecell/ecell4/master/docs/kitematic2.png)
+  ![png](https://raw.githubusercontent.com/ecell/ecell4/develop/docs/kitematic2.png)
+  
+5. You should see Jupyter Notebook up and running (and E-Cell4 tutorials) in your default browser.
 
 ### For Linux
 
