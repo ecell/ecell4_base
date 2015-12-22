@@ -44,6 +44,11 @@ void MesoscopicSimulator::increment_molecules(const Species& sp, const coordinat
 {
     if (!world_->has_species(sp))
     {
+        if (world_->has_structure(sp))
+        {
+            return; // do nothing
+        }
+
         const boost::shared_ptr<MesoscopicWorld::PoolBase> pool = world_->reserve_pool(sp);
         proxies_.push_back(create_diffusion_proxy(sp));
         increment(pool, c);
@@ -56,7 +61,14 @@ void MesoscopicSimulator::increment_molecules(const Species& sp, const coordinat
 
 void MesoscopicSimulator::decrement_molecules(const Species& sp, const coordinate_type& c)
 {
-    decrement(world_->get_pool(sp), c);
+    if (world_->has_species(sp))
+    {
+        decrement(world_->get_pool(sp), c);
+    }
+    else
+    {
+        assert(world_->has_structure(sp));  // do nothing
+    }
 }
 
 std::pair<Real, MesoscopicSimulator::ReactionRuleProxyBase*>

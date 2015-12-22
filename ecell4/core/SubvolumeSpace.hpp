@@ -8,6 +8,7 @@
 #include "Space.hpp"
 #include "Integer3.hpp"
 #include "Shape.hpp"
+#include <numeric>
 
 #ifdef WITH_HDF5
 #include "SubvolumeSpaceHDF5Writer.hpp"
