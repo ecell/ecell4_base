@@ -42,7 +42,16 @@ void MesoscopicSimulator::decrement(const boost::shared_ptr<MesoscopicWorld::Poo
 
 void MesoscopicSimulator::increment_molecules(const Species& sp, const coordinate_type& c)
 {
-    increment(world_->get_pool(sp), c);
+    if (!world_->has_species(sp))
+    {
+        const boost::shared_ptr<MesoscopicWorld::PoolBase> pool = world_->reserve_pool(sp);
+        proxies_.push_back(create_diffusion_proxy(sp));
+        increment(pool, c);
+    }
+    else
+    {
+        increment(world_->get_pool(sp), c);
+    }
 }
 
 void MesoscopicSimulator::decrement_molecules(const Species& sp, const coordinate_type& c)
@@ -159,6 +168,20 @@ bool MesoscopicSimulator::step(const Real &upto)
     }
 }
 
+MesoscopicSimulator::DiffusionProxy*
+MesoscopicSimulator::create_diffusion_proxy(const Species& sp)
+{
+    DiffusionProxy* proxy = new DiffusionProxy(this, sp);
+    proxy->initialize();
+    for (boost::ptr_vector<ReactionRuleProxyBase>::size_type i = 0;
+         i < diffusion_proxy_offset_; ++i)
+    {
+        proxy->set_dependency(
+            dynamic_cast<ReactionRuleProxy*>(&proxies_[i]));
+    }
+    return proxy;
+}
+
 void MesoscopicSimulator::initialize(void)
 {
     const Model::reaction_rule_container_type&
@@ -200,9 +223,10 @@ void MesoscopicSimulator::initialize(void)
 
         proxies_.back().initialize();
     }
+    diffusion_proxy_offset_ = proxies_.size();
 
-    const std::vector<Species>& species(model_->species_attributes());
-    // const std::vector<Species>& species(world_->species());
+    // const std::vector<Species>& species(model_->species_attributes());
+    const std::vector<Species>& species(world_->species());
     for (std::vector<Species>::const_iterator i(species.begin());
         i != species.end(); ++i)
     {
@@ -211,8 +235,7 @@ void MesoscopicSimulator::initialize(void)
             world_->reserve_pool(*i); //XXX: This must be deprecated.
         }
 
-        proxies_.push_back(new DiffusionProxy(this, *i));
-        proxies_.back().initialize();
+        proxies_.push_back(create_diffusion_proxy(*i));
     }
 
     scheduler_.clear();
