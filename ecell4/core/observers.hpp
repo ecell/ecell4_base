@@ -2,6 +2,7 @@
 #define __ECELL4_OBSERVER_HPP
 
 #include "types.hpp"
+#include "functions.hpp"
 #include "Space.hpp"
 #include "Simulator.hpp"
 

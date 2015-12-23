@@ -975,6 +975,7 @@ void SpatiocyteSimulator::walk(const Species& species, const Real& alpha)
     copy(mtype->begin(), mtype->end(), back_inserter(voxels));
 
     if (mtype->get_dimension() == Shape::THREE) {
+        std::size_t idx(0);
         for (MolecularTypeBase::container_type::iterator itr(voxels.begin());
                 itr != voxels.end(); ++itr)
         {
@@ -991,18 +992,20 @@ void SpatiocyteSimulator::walk(const Species& species, const Real& alpha)
             if (world_->can_move(info.first, neighbor))
             {
                 if (rng->uniform(0,1) <= alpha)
-                    world_->move_private(info.first, neighbor);
+                    world_->move_private(info.first, neighbor, /*candidate=*/idx);
             }
             else
             {
                 attempt_reaction_(info, neighbor, alpha);
             }
+            ++idx;
         }
     } else { // dimension == TWO, etc.
         std::vector<unsigned int> nids;
         for (unsigned int i(0); i < 12; ++i)
             nids.push_back(i);
         const MolecularTypeBase* location(mtype->location());
+        std::size_t idx(0);
         for (MolecularTypeBase::container_type::iterator itr(voxels.begin());
                 itr != voxels.end(); ++itr)
         {
@@ -1023,7 +1026,7 @@ void SpatiocyteSimulator::walk(const Species& species, const Real& alpha)
                     if (world_->can_move(info.first, neighbor))
                     {
                         if (rng->uniform(0,1) <= alpha)
-                            world_->move_private(info.first, neighbor);
+                            world_->move_private(info.first, neighbor, /*candidate=*/idx);
                     }
                     else
                     {
@@ -1032,6 +1035,7 @@ void SpatiocyteSimulator::walk(const Species& species, const Real& alpha)
                     break;
                 }
             }
+            ++idx;
         }
     }
 

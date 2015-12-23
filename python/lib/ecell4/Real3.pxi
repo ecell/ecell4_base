@@ -31,6 +31,11 @@ cdef class Real3:
     def __dealloc__(self):
         del self.thisptr
 
+    def __setitem__(self, Integer i, Real val):
+        if i > 2:
+            raise IndexError("index out of bounds")
+        deref(self.thisptr)[i] = val
+
     def __getitem__(self, Integer i):
         if i > 2:
             raise IndexError("index out of bounds")

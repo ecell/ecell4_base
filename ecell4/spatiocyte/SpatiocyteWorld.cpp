@@ -513,9 +513,9 @@ bool SpatiocyteWorld::move(coordinate_type from, coordinate_type to)
 }
 
 bool SpatiocyteWorld::move_private(const private_coordinate_type& src,
-        const private_coordinate_type& dest)
+        const private_coordinate_type& dest, const std::size_t candidate)
 {
-    return (*space_).move_private(src, dest);
+    return (*space_).move_private(src, dest, candidate);
 }
 
 bool SpatiocyteWorld::can_move(const private_coordinate_type& src,

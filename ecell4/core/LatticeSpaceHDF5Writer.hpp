@@ -120,7 +120,7 @@ struct LatticeSpaceHDF5Traits
         {
             const MolecularTypeBase* mtb((*itr).second);
             const Species species(mtb->species());
-            save_molecular_type(mtb, space.list_voxels(species), root);
+            save_molecular_type(mtb, space.list_voxels_exact(species), root);
             save_molecular_type_recursively(species, location_map, space, root);
             location_map.erase(itr);
         }

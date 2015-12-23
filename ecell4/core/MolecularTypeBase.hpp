@@ -106,11 +106,12 @@ public:
 
     virtual void replace_voxel(
         const coordinate_type& from_coord,
-        const coordinate_type& to_coord)
+        const coordinate_type& to_coord, const std::size_t candidate=0)
     {
-        container_type::iterator itr(find(from_coord));
+        container_type::iterator itr(find(from_coord, candidate));
         if (itr == voxels_.end())
         {
+            std::cerr << "from_coord = " << from_coord << std::endl;
             throw NotFound("no corresponding coordinate was found.");
         }
 
@@ -244,9 +245,16 @@ public:
 
 protected:
 
-    container_type::iterator find(coordinate_type coord)
+    container_type::iterator find(coordinate_type coord,
+            const std::size_t candidate=0)
     {
         container_type::iterator itr;
+        if (candidate < voxels_.size())
+        {
+            itr = voxels_.begin() + candidate;
+            if ((*itr).first == coord)
+                return itr;
+        }
         for (itr = voxels_.begin(); itr != voxels_.end(); ++itr)
         {
             if ((*itr).first == coord)
@@ -257,9 +265,16 @@ protected:
         return itr;
     }
 
-    container_type::const_iterator find(coordinate_type coord) const
+    container_type::const_iterator find(coordinate_type coord,
+            const std::size_t candidate=0) const
     {
         container_type::const_iterator itr;
+        if (candidate < voxels_.size())
+        {
+            itr = voxels_.begin() + candidate;
+            if ((*itr).first == coord)
+                return itr;
+        }
         for (itr = voxels_.begin(); itr != voxels_.end(); ++itr)
         {
             if ((*itr).first == coord)

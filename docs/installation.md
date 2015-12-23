@@ -1,8 +1,8 @@
 - [Installation](#installation)
     - [Windows](#windows-installation)
     - [Mac OS X](#mac-os-x-installation)
-    - [Ubuntu vivid](#ubuntu-linux-vivid-vervet-installation)
-    - [Ubuntu trusty](#ubuntu-linux-trusty-tahr-installation)
+    - [Ubuntu](#ubuntu-linux-installation)
+    - [CentOS](#centos-linux-installation)
 - [Running E-Cell4](#running-e-cell4)
 - [Dockerized E-Cell4 Jupyter notebooks](#dockerized-e-cell4-jupyter-notebooks)
     - [For Windows and Mac](#for-windows-and-mac)
@@ -19,9 +19,9 @@ Please use 32bit Python, even if you use 64bit Windows.
 We don't support 64bit Python
 
 - Python 2.7.10(**32bit**) https://www.python.org/ftp/python/2.7.10/python-2.7.10.msi
-- HDF5-1.8.14 Pre-built Binary(**32-bit**) http://www.hdfgroup.org/ftp/HDF5/current/bin/windows/extra/hdf5-1.8.14-win32-vs2008-shared.zip
+- HDF5-1.8.16 Pre-built Binary(**32-bit**) https://www.hdfgroup.org/ftp/HDF5/current/bin/windows/extra/hdf5-1.8.16-win32-vs2012-shared.zip
 
-Please add `C:\Python27`, `C:\Python27\Scripts` and `C:\Program Files (x86)\HDF_Group\HDF5\1.8.14\bin` to your **PATH** enviromental variable.
+Please add `C:\Python27`, `C:\Python27\Scripts` and `C:\Program Files (x86)\HDF_Group\HDF5\1.8.16\bin` to your **PATH** enviromental variable.
 
 And run following command with command prompt.
 ```
@@ -60,48 +60,29 @@ sudo pip install -U matplotlib
 sudo pip install -U jupyter
 ```
 
-### Ubuntu Linux Vivid Vervet installation
-#### Python2 series
+### Ubuntu Linux installation
 
 ```shell
-# dependent packages
-$ sudo apt-get install cmake libgsl0-dev libboost-regex-dev libhdf5-dev cython
-
-$ wget https://github.com/ecell/ecell4/archive/master.zip   
-$ unzip master.zip
-$ cd ecell4-master
-# By default install.sh tries to install E-Cell4 into /usr/local, in this case you need to use sudo.
-# In the following command, we install E-Cell4 into $HOME/ecell4. In this case you do NOT need to use sudo.
-$ PREFIX=$HOME/ecell4 ./install.sh py2
+$ sudo apt-get install build-essential curl git m4 ruby texinfo libbz2-dev libcurl4-openssl-dev libexpat-dev libncurses-dev zlib1g-dev python-dev python-setuptools
+$ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/linuxbrew/go/install)"
+$ echo 'export PATH="$HOME/.linuxbrew/bin:$PATH"' >> ~/.bash_profile
+$ source ~/.bash_profile
+$ brew tap ecell/ecell4
+$ brew install ecell4 --HEAD
 ```
 
-#### Python3 series
+### CentOS Linux installation
 
 ```shell
-# dependent packages
-$ sudo apt-get install cmake libgsl0-dev libboost-regex-dev libhdf5-dev cython3
-
-$ wget https://github.com/ecell/ecell4/archive/master.zip   
-$ unzip master.zip
-$ cd ecell4-master
-# By default install.sh tries to install E-Cell4 into /usr/local, in this case you need to use sudo.
-# In the following command, we install E-Cell4 into $HOME/ecell4. In this case you do NOT need to use sudo.
-$ PREFIX=$HOME/ecell4 ./install.sh py3
-```
-
-### Ubuntu Linux Trusty Tahr installation
-
-```shell
-# dependent packages
-$ sudo apt-get install cmake libgsl0-dev libboost-regex-dev libhdf5-dev libatlas-base-dev python-dev python-pip
-$ sudo pip install cython
-
-$ wget https://github.com/ecell/ecell4/archive/master.zip   
-$ unzip master.zip
-$ cd ecell4-master
-# By default install.sh tries to install E-Cell4 into /usr/local, in this case you need to use sudo.
-# In the following command, we install E-Cell4 into $HOME/ecell4. In this case you do NOT need to use sudo.
-$ PREFIX=$HOME/ecell4 PYTHONPATH=/path/to/lib/python2.7/site-packages ./install.sh py2
+$ sudo yum groupinstall 'Development Tools'
+$ sudo yum install curl git m4 ruby texinfo bzip2-devel curl-devel expat-devel ncurses-devel zlib-devel python-devel python-setuptools
+$ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/linuxbrew/go/install)"
+$ echo 'export PATH="$HOME/.linuxbrew/bin:$PATH"' >> ~/.bash_profile
+$ source ~/.bash_profile
+$ ln -s `which gcc` `brew --prefix`/bin/gcc-4.8
+$ ln -s `which g++` `brew --prefix`/bin/g++-4.8
+$ brew tap ecell/ecell4
+$ brew install ecell4 --HEAD
 ```
 
 Running E-Cell4

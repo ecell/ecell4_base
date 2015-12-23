@@ -467,7 +467,7 @@ public:
     }
 
     virtual bool move_private(const private_coordinate_type& src,
-            const private_coordinate_type& dest)
+            const private_coordinate_type& dest, const std::size_t candidate=0)
     {
         private_coordinate_type tmp_dest(dest);
         if (src == tmp_dest)
