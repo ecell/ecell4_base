@@ -215,6 +215,11 @@ void FixedIntervalHDF5Observer::initialize(const Space* space)
 
 bool FixedIntervalHDF5Observer::fire(const Simulator* sim, const Space* space)
 {
+    if (!is_directory(filename()))
+    {
+        throw NotFound("The output path does not exists.");
+    }
+
     space->save(filename());
 
     return base_type::fire(sim, space);
@@ -276,6 +281,11 @@ void FixedIntervalCSVObserver::write_particles(
 
 void FixedIntervalCSVObserver::log(const Space* space)
 {
+    if (!is_directory(filename()))
+    {
+        throw NotFound("The output path does not exists.");
+    }
+
     std::ofstream ofs(filename().c_str(), std::ios::out);
     ofs << std::setprecision(17);
     ofs << "x,y,z,r,sid" << std::endl;
