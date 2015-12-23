@@ -1,6 +1,6 @@
 FROM ubuntu:14.04
 RUN apt-get update
-RUN apt-get install -y cmake g++ libboost-dev libgsl0-dev libhdf5-serial-dev libboost-regex-dev python python-numpy python-scipy python-pip python-zmq python-matplotlib
+RUN apt-get install -y pandoc cmake g++ libboost-dev libgsl0-dev libhdf5-serial-dev libboost-regex-dev python python-numpy python-scipy python-pip python-zmq python-matplotlib
 RUN pip install cython jupyter
 ADD . /usr/src/ecell4
 
