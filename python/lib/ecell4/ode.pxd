@@ -184,9 +184,9 @@ cdef extern from "ecell4/ode/ODESimulator.hpp" namespace "ecell4::ode":
         shared_ptr[Cpp_ODENetworkModel] model()
         shared_ptr[Cpp_ODEWorld] world()
 
-        void run(Real)
-        void run(Real, shared_ptr[Cpp_Observer])
-        void run(Real, vector[shared_ptr[Cpp_Observer]])
+        void run(Real) except +
+        void run(Real, shared_ptr[Cpp_Observer]) except +
+        void run(Real, vector[shared_ptr[Cpp_Observer]]) except +
 
 cdef class ODESimulator:
     cdef Cpp_ODESimulator *thisptr
