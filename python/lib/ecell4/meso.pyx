@@ -1020,7 +1020,7 @@ cdef class MesoscopicFactory:
         if arg1 is None:
             return MesoscopicWorld_from_Cpp_MesoscopicWorld(
                 shared_ptr[Cpp_MesoscopicWorld](
-                    self.thisptr.create_world(deref((<Real3>arg1).thisptr))))
+                    self.thisptr.create_world()))
         elif isinstance(arg1, Real3):
             return MesoscopicWorld_from_Cpp_MesoscopicWorld(
                 shared_ptr[Cpp_MesoscopicWorld](

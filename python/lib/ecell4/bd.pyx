@@ -913,7 +913,7 @@ cdef class BDFactory:
     def __dealloc__(self):
         del self.thisptr
 
-    def create_world(self, arg1):
+    def create_world(self, arg1=None):
         """create_world(arg1=None) -> BDWorld
 
         Return a ``BDWorld`` instance.
