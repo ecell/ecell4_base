@@ -54,6 +54,9 @@ cdef class ParticleID:
         """Return the second value."""
         return self.thisptr.serial()
 
+    def __reduce__(self):
+        return (ParticleID, ((self.lot(), self.serial()), ))
+
 cdef ParticleID ParticleID_from_Cpp_ParticleID(Cpp_ParticleID* p):
     cdef Cpp_ParticleID *new_obj = new Cpp_ParticleID(<Cpp_ParticleID> deref(p))
     r = ParticleID((0, 0))
@@ -117,6 +120,9 @@ cdef class Particle:
         """
         cdef Cpp_Species sp = self.thisptr.species()
         return Species_from_Cpp_Species(address(sp))
+
+    def __reduce__(self):
+        return (Particle, (self.species(), self.position(), self.radius(), self.D()))
 
 cdef Particle Particle_from_Cpp_Particle(Cpp_Particle* p):
     cdef Cpp_Particle *new_obj = new Cpp_Particle(<Cpp_Particle> deref(p))

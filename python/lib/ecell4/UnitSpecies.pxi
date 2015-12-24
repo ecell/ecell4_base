@@ -85,6 +85,14 @@ cdef class UnitSpecies:
         """
         self.thisptr.deserialize(tostring(serial))
 
+    def __reduce__(self):
+        return (__rebuild_unit_species, (self.serial(), ))
+
+def __rebuild_unit_species(serial):
+    usp = UnitSpecies()
+    usp.deserialize(serial)
+    return usp
+
 cdef UnitSpecies UnitSpecies_from_Cpp_UnitSpecies(Cpp_UnitSpecies *sp):
     cdef Cpp_UnitSpecies *new_obj = new Cpp_UnitSpecies(deref(sp))
     r = UnitSpecies('')
