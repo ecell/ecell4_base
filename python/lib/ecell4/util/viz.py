@@ -230,7 +230,7 @@ def plot_world(
             'range': __get_range_of_world(world),
             'autorange': False,
             'grid': grid,
-            'save_image': True
+            'save_image': False
         }
     }
 
@@ -243,6 +243,62 @@ def plot_world(
         'px': camera_position[0], 'py': camera_position[1], 'pz': camera_position[2],
         'rx': camera_rotation[0], 'ry': camera_rotation[1], 'rz': camera_rotation[2]},
         '/templates/particles.tmpl')))
+    return model_id
+
+def to_png(plot_id):
+    from IPython.display import display, HTML
+    my_uuid = "\"png" + str(uuid.uuid4()) + "\""
+
+    js = """
+<script>
+ function searchCell(uuid){
+   var n = IPython.notebook.ncells();
+   for(var i=0; i<n; i++){
+     var cell = IPython.notebook.get_cell(i);
+     if(typeof cell.output_area != "undefined"){
+       var outputs = cell.output_area.outputs.filter(function(out){
+console.log("Hi!");
+         var html = out.data["text/html"];
+         if(typeof html == "undefined")return false;
+         if(html.includes(uuid))return true;
+         return false;
+       });
+       if(outputs.length>0)return cell;
+     }
+   }
+   return null;
+ }
+
+ var vis_id = %s;
+ var my_uuid = %s;
+ var vis_div = d3.select("#" + vis_id);
+ var my_div =  d3.select("#" + my_uuid);
+
+ var canvas = vis_div.select("canvas").node();
+ var context = canvas.getContext("experimental-webgl", {preserveDrawingBuffer: true});
+ var uri = canvas.toDataURL('image/png');
+
+ my_div.append("img").attr("src", uri);
+
+ window.setTimeout(function(){
+ if(typeof window.IPython != "undefined"){
+   try{
+     var html = my_div.node().outerHTML;
+     var cell = searchCell(my_uuid);
+     if(cell == null)throw new Error("The cell whose id is " + my_uuid + " not found.");
+     cell.output_area.outputs[0].data["text/html"] = html;
+   }
+   catch(e){
+     console.warn("Maybe the front-end API of Jupyter has changed. message:" + e.message);
+   }
+ }
+}, 0);
+ 
+</script>
+<div id=%s></div>
+    """%(plot_id, my_uuid, my_uuid)
+    display(HTML(js))
+
 
 def plot_dense_array(
         arr, length=256, ranges=None, colors=["#a6cee3", "#fb9a99"], grid=False, camera_position=(-22, 23, 32), camera_rotation=(-0.6, 0.5, 0.6)):
@@ -660,7 +716,7 @@ def plot_number_observer(*args, **kwargs):
         ax.set_ylim(kwargs["ylim"])
     plt.show()
 
-def plot_number_observer_with_nya(obs, config={}, width=600, height=400, x=None, y=None):
+def plot_number_observer_with_nya(obs, config={}, width=600, height=400, x=None, y=None, to_png=False):
     """
     Generate a plot from NumberObservers and show it on IPython notebook
     with nyaplot.
@@ -731,7 +787,7 @@ def plot_number_observer_with_nya(obs, config={}, width=600, height=400, x=None,
                                "yrange": [ymin, ymax], "legend": True, "zoom": True}}]}
     model_id = 'viz{0:s}'.format(uuid.uuid4())
     display(HTML(generate_html(
-        {'model': json.dumps(model), 'model_id': model_id},
+        {'model': json.dumps(model), 'model_id': model_id, 'to_png': json.dumps(to_png)},
         '/templates/nya.tmpl')))
 
 class ColorScale:
