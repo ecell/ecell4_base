@@ -62,6 +62,7 @@ New Tutorials:
    tutorial2
    tutorial3
    tutorial4
+   tutorial6
    OdeWithRatelaw
    rulebase
 
