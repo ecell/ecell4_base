@@ -64,6 +64,7 @@ New Tutorials:
    tutorial4
    tutorial6
    tutorial7
+   tutorial8
 
 Old Tutorials:
 
