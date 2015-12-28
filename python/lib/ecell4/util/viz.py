@@ -516,6 +516,95 @@ def plot_trajectory(
         'rx': camera_rotation[0], 'ry': camera_rotation[1], 'rz': camera_rotation[2]},
         '/templates/particles.tmpl')))
 
+def plot_trajectory_with_matplotlib(
+        obs, max_count=10, figsize=6, legend=True, angle=None,
+        wireframe=False, grid=True, **kwargs):
+    """
+    Generate a plot from received instance of TrajectoryObserver and show it
+    on IPython notebook.
+
+    Parameters
+    ----------
+    obs : TrajectoryObserver
+        TrajectoryObserver to render.
+    max_count : Integer, default 10
+        The maximum number of particles to show. If None, show all.
+    figsize : float, default 6
+        Size of the plotting area. Given in inch.
+    angle : tuple, default None
+        A tuple of view angle which is given as (azim, elev, dist).
+        If None, use default assumed to be (-60, 30, 10).
+    legend : bool, default True
+
+    """
+    xmin, xmax, ymin, ymax, zmin, zmax = None, None, None, None, None, None
+
+    data = obs.data()
+    if max_count is not None and len(data) > max_count:
+        data = random.sample(data, max_count)
+
+    lines = []
+    for i, y in enumerate(data):
+        xarr, yarr, zarr = [], [], []
+        for pos in y:
+            xarr.append(pos[0])
+            yarr.append(pos[1])
+            zarr.append(pos[2])
+
+        if xmin is None:
+            if len(y) > 0:
+                xmin, xmax = min(xarr), max(xarr)
+                ymin, ymax = min(yarr), max(yarr)
+                zmin, zmax = min(zarr), max(zarr)
+        else:
+            xmin, xmax = min([xmin] + xarr), max([xmax] + xarr)
+            ymin, ymax = min([ymin] + yarr), max([ymax] + yarr)
+            zmin, zmax = min([zmin] + zarr), max([zmax] + zarr)
+
+        lines.append((xarr, yarr, zarr))
+
+    if xmin is None:
+        xmin, xmax, ymin, ymax, zmin, zmax = 0, 1, 0, 1, 0, 1
+
+    max_length = max(xmax - xmin, ymax - ymin, zmax - zmin)
+    rangex = [(xmin + xmax - max_length) * 0.5,
+              (xmin + xmax + max_length) * 0.5]
+    rangey = [(ymin + ymax - max_length) * 0.5,
+              (ymin + ymax + max_length) * 0.5]
+    rangez = [(zmin + zmax - max_length) * 0.5,
+              (zmin + zmax + max_length) * 0.5]
+
+    import matplotlib.pyplot as plt
+    from mpl_toolkits.mplot3d import Axes3D
+
+    fig = plt.figure(figsize=(figsize, figsize))
+    ax = fig.gca(projection='3d')
+    ax.set_aspect('equal')
+
+    if wireframe:
+        ax.w_xaxis.set_pane_color((0, 0, 0, 0))
+        ax.w_yaxis.set_pane_color((0, 0, 0, 0))
+        ax.w_zaxis.set_pane_color((0, 0, 0, 0))
+    ax.grid(grid)
+
+    ax.set_xlim(*rangex)
+    ax.set_ylim(*rangey)
+    ax.set_zlim(*rangez)
+
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.set_zlabel('Z')
+
+    if angle is not None:
+        ax.azim, ax.elev, ax.dist = angle
+
+    for i, line in enumerate(lines):
+        ax.plot(line[0], line[1], line[2], label=i, **kwargs)
+
+    if legend:
+        ax.legend(loc='best', shadow=True)
+    plt.show()
+
 def logo(x=1, y=None):
     if not isinstance(x, int):
         x = 1
