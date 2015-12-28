@@ -121,14 +121,12 @@ A.B.C
 
 ```python
 %matplotlib inline
-import numpy
 from ecell4 import *
 
 with reaction_rules():
     A + B == C | (0.01, 0.3)
 
-run_simulation(
-    numpy.linspace(0, 10, 100), {'A': 60, 'B': 60}, solver='ode')
+run_simulation(10, {'A': 60, 'B': 60}, solver='ode')
 ```
 
 ![png](https://raw.githubusercontent.com/ecell/ecell4/master/docs/output_7_0.png)
