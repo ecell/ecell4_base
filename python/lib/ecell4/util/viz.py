@@ -447,7 +447,7 @@ def plot_world_with_elegans(
         world, radius=None, width=350, height=350, config={}, grid=True,
         wireframe=False, species_list=None, debug=None, max_count=1000,
         camera_position=(-22, 23, 32), camera_rotation=(-0.6, 0.5, 0.6),
-        predicator=None):
+        return_id=False, predicator=None):
     """
     Generate a plot from received instance of World and show it on IPython notebook.
     This method returns the instance of dict that indicates color setting
@@ -487,6 +487,8 @@ def plot_world_with_elegans(
     camera_position : tuple, default (-22, 23, 32)
     camera_rotaiton : tuple, default (-0.6, 0.5, 0.6)
         Initial position and rotation of camera.
+    return_id : bool, default False
+        If True, return a model id, which is required for `to_png` function.
 
     """
     from IPython.core.display import display, HTML
@@ -543,7 +545,9 @@ def plot_world_with_elegans(
         'px': camera_position[0], 'py': camera_position[1], 'pz': camera_position[2],
         'rx': camera_rotation[0], 'ry': camera_rotation[1], 'rz': camera_rotation[2]},
         '/templates/particles.tmpl')))
-    return model_id
+
+    if return_id:
+        return model_id
 
 def to_png(plot_id):
     from IPython.display import display, HTML
