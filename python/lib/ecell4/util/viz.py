@@ -12,6 +12,17 @@ import types
 from tempfile import NamedTemporaryFile
 
 
+def __on_ipython_notebook():
+    try:
+        import IPython.terminal.interactiveshell
+        if isinstance(get_ipython(), IPython.terminal.interactiveshell.TerminalInteractiveShell):
+            return False
+    except ImportError:
+        return False
+    except NameError:
+        return False
+    return True
+
 def plot_number_observer(*args, **kwargs):
     """
     Generate a plot from NumberObservers and show it.
@@ -33,6 +44,9 @@ def plot_number_observer(*args, **kwargs):
     interactive = kwargs.pop('interactive', False)
     if interactive:
         plot_number_observer_with_nya(*args, **kwargs)
+    # elif __on_ipython_notebook():
+    #     kwargs['to_png'] = True
+    #     plot_number_observer_with_nya(*args, **kwargs)
     else:
         plot_number_observer_with_matplotlib(*args, **kwargs)
 
