@@ -12,6 +12,306 @@ import types
 from tempfile import NamedTemporaryFile
 
 
+def plot_number_observer(*args, **kwargs):
+    """
+    Generate a plot from NumberObservers and show it.
+    See plot_number_observer_with_matplotlib and _with_nya for details.
+
+    Parameters
+    ----------
+    obs : NumberObserver (e.g. FixedIntervalNumberObserver)
+    interactive : bool, default False
+        Choose a visualizer. If False, show the plot with matplotlib.
+        If True (only available on IPython Notebook), show it with nyaplot.
+
+    Examples
+    --------
+    >>> plot_number_observer(obs1)
+    >>> plot_number_observer(obs1, interactive=True)
+
+    """
+    interactive = kwargs.pop('interactive', False)
+    if interactive:
+        plot_number_observer_with_nya(*args, **kwargs)
+    else:
+        plot_number_observer_with_matplotlib(*args, **kwargs)
+
+def plot_world(*args, **kwargs):
+    """
+    Generate a plot from received instance of World and show it.
+    See also plot_world_with_elegans and plot_world_with_matplotlib.
+
+    Parameters
+    ----------
+    world : World or str
+        World or a HDF5 filename to render.
+    interactive : bool, default True
+        Choose a visualizer. If False, show the plot with matplotlib.
+        If True (only available on IPython Notebook), show it with elegans.
+
+    Examples
+    --------
+    >>> plot_world(w)
+    >>> plot_world(w, interactive=False)
+
+    """
+    interactive = kwargs.pop('interactive', True)
+    if interactive:
+        plot_world_with_elegans(*args, **kwargs)
+    else:
+        plot_world_with_matplotlib(*args, **kwargs)
+
+def plot_movie(*args, **kwargs):
+    """
+    Generate a movie from received instances of World and show them.
+    See also plot_movie_with_elegans and plot_movie_with_matplotlib.
+
+    Parameters
+    ----------
+    worlds : list of World
+        Worlds to render.
+    interactive : bool, default True
+        Choose a visualizer. If False, show the plot with matplotlib.
+        If True (only available on IPython Notebook), show it with elegans.
+
+    """
+    interactive = kwargs.pop('interactive', False)
+    if interactive:
+        plot_movie_with_elegans(*args, **kwargs)
+    else:
+        plot_movie_with_matplotlib(*args, **kwargs)
+
+def plot_trajectory(*args, **kwargs):
+    """
+    Generate a plot from received instance of TrajectoryObserver and show it
+    See also plot_trajectory_with_elegans and plot_trajectory_with_matplotlib.
+
+    Parameters
+    ----------
+    obs : TrajectoryObserver
+        TrajectoryObserver to render.
+    interactive : bool, default True
+        Choose a visualizer. If False, show the plot with matplotlib.
+        If True (only available on IPython Notebook), show it with elegans.
+
+    Examples
+    --------
+    >>> plot_trajectory(obs)
+    >>> plot_trajectory(obs, interactive=False)
+
+    """
+    interactive = kwargs.pop('interactive', True)
+    if interactive:
+        plot_trajectory_with_elegans(*args, **kwargs)
+    else:
+        plot_trajectory_with_matplotlib(*args, **kwargs)
+
+def plot_number_observer_with_matplotlib(*args, **kwargs):
+    """
+    Generate a plot from NumberObservers and show it on IPython notebook
+    with matplotlib.
+
+    Parameters
+    ----------
+    obs : NumberObserver (e.g. FixedIntervalNumberObserver)
+    fmt : str, optional
+    opt : dict, optional
+        matplotlib plot options.
+
+    Examples
+    --------
+    >>> plot_number_observer(obs1)
+    >>> plot_number_observer(obs1, 'o')
+    >>> plot_number_observer(obs1, obs2, obs3, {'linewidth': 2})
+    >>> plot_number_observer(obs1, 'k-', obs2, 'k--')
+
+    """
+    import matplotlib.pylab as plt
+    import numpy
+    import collections
+
+    special_keys = ("xlim", "ylim", "xlabel", "ylabel", "legend", "x", "y")
+    plot_opts = {key: value for key, value in kwargs.items()
+                 if key not in special_keys}
+    color_cycle = plt.rcParams['axes.color_cycle']
+
+    if "y" in kwargs.keys() and isinstance(kwargs["y"], str):
+        kwargs["y"] = (kwargs["y"], )
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+
+    if len(args) > 1 and isinstance(args[1], str):
+        if len(args) % 2 == 0:
+            observers = [(args[i], args[i + 1]) for i in range(0, len(args), 2)]
+        else:
+            observers = [(args[i], args[i + 1]) for i in range(0, len(args) - 1, 2)]
+            observers.append(args[-1], None)
+    else:
+        observers = [(obs, None) for obs in args]
+
+    color_map = {}
+    data, xidx = None, 0
+    for obs, fmt in observers:
+        if isinstance(obs, types.FunctionType):
+            if data is None:
+                raise ValueError("A function must be given after an observer.")
+            y = [obs(xi) for xi in data[xidx]]
+            opts = plot_opts.copy()
+            label = obs.__name__
+            opts["label"] = label
+            if label not in color_map.keys():
+                color_map[label] = color_cycle[len(color_map) % len(color_cycle)]
+                opts["label"] = label
+            opts["color"] = color_map[label]
+            if fmt is None:
+                ax.plot(data[xidx], y, **opts)
+            else:
+                ax.plot(data[xidx], y, fmt, **opts)
+            continue
+
+        data = numpy.array(obs.data()).T
+
+        try:
+            err = obs.error().T
+        except AttributeError:
+            err = None
+
+        if "x" in kwargs.keys():
+            targets = [sp.serial() for sp in obs.targets()]
+            if kwargs["x"] not in targets:
+                raise ValueError("[{0}] given as 'x' was not found.".fomrat(kwargs["x"]))
+            xidx = targets.index(kwargs["x"]) + 1
+        else:
+            xidx = 0
+
+        if "y" in kwargs.keys():
+            targets = [sp.serial() for sp in obs.targets()]
+            targets = [(targets.index(serial), serial)
+                       for serial in kwargs["y"] if serial in targets]
+        else:
+            targets = [sp.serial() for sp in obs.targets()]
+            targets = list(enumerate(targets))
+            targets.sort(key=lambda x: x[1])
+
+        for idx, serial in targets:
+            opts = plot_opts.copy()
+
+            label = serial
+            if len(label) > 0 and label[0] == '_':
+                label = '$\_$' + label[1:]  # XXX: lazy escaping for a special character
+            if label not in color_map.keys():
+                color_map[label] = color_cycle[len(color_map) % len(color_cycle)]
+                opts["label"] = label
+            opts["color"] = color_map[label]
+
+            if err is None:
+                if fmt is None:
+                    ax.plot(data[xidx], data[idx + 1], **opts)
+                else:
+                    ax.plot(data[xidx], data[idx + 1], fmt, **opts)
+            else:
+                if fmt is None:
+                    ax.errorbar(data[xidx], data[idx + 1],
+                        xerr=(None if xidx == 0 else err[xidx]), yerr=err[idx + 1],
+                        **opts)
+                else:
+                    ax.errorbar(data[xidx], data[idx + 1],
+                        xerr=(None if xidx == 0 else err[xidx]), yerr=err[idx + 1],
+                        fmt=fmt, **opts)
+
+    if "legend" not in kwargs.keys() or kwargs["legend"]:
+        ax.legend(*ax.get_legend_handles_labels(), loc="best", shadow=True)
+    if "xlabel" in kwargs.keys():
+        ax.set_xlabel(kwargs["xlabel"])
+    elif "x" in kwargs.keys():
+        ax.set_xlabel("The Number of Molecules [{0}]".format(kwargs["x"]))
+    else:
+        ax.set_xlabel("Time")
+    if "ylabel" in kwargs.keys():
+        ax.set_ylabel(kwargs["ylabel"])
+    else:
+        ax.set_ylabel("The Number of Molecules")
+    if "xlim" in kwargs.keys():
+        ax.set_xlim(kwargs["xlim"])
+    if "ylim" in kwargs.keys():
+        ax.set_ylim(kwargs["ylim"])
+    plt.show()
+
+def plot_number_observer_with_nya(obs, config={}, width=600, height=400, x=None, y=None, to_png=False):
+    """
+    Generate a plot from NumberObservers and show it on IPython notebook
+    with nyaplot.
+
+    Parameters
+    ----------
+    obs : NumberObserver (e.g. FixedIntervalNumberObserver)
+    config : dict, optional
+        A config data for coloring. The dictionary will be updated during this plot.
+    width : int, optional
+    height : int, optional
+    x : str, optional
+        A serial for x-axis. If None, x-axis corresponds time.
+    y : str or list of str
+        Serials for y axis.
+
+    """
+    from IPython.core.display import display, HTML
+    import numpy
+
+    config = {}
+    color_scale = ColorScale(config=config)
+
+    data1, data2 = [], []
+    data = numpy.array(obs.data())
+
+    if x is None:
+        xidx = 0
+    else:
+        tmp = [sp.serial() for sp in obs.targets()]
+        if x not in tmp:
+            raise ValueError("[{0}] given as 'x' was not found.".fomrat(x))
+        xidx = tmp.index(x) + 1
+
+    if y is None:
+        targets = [sp.serial() for sp in obs.targets()]
+        targets = list(enumerate(targets))
+        targets.sort(key=lambda x: x[1])
+    else:
+        if isinstance(y, str):
+            y = (y, )
+        targets = [sp.serial() for sp in obs.targets()]
+        targets = [(targets.index(serial), serial)
+                   for serial in y if serial in targets]
+
+    for line in data:
+        tmp = {"x": line[xidx]}
+        for i, (idx, serial) in enumerate(targets):
+            tmp["y{0}".format(i + 1)] = line[idx + 1]
+        data1.append(tmp)
+    for i, (idx, serial) in enumerate(targets):
+        label = serial
+        tmp = {"type": "line", "data": "data1",
+               "options": {"x": "x", "y": "y{0}".format(i + 1),
+                           "stroke_width": 2, "title": label,
+                           "color": color_scale.get_color(label)}}
+        data2.append(tmp)
+
+    xmin, xmax = data.T[xidx].min(), data.T[xidx].max()
+    yview = data.T.take([idx + 1 for idx, serial in targets], axis=0)
+    ymin, ymax = yview.min(), yview.max()
+
+    model = {
+        "data": {"data1": data1},
+        "panes": [{"type": 'rectangular',
+                   "diagrams": data2,
+                   "options": {"width": width, "height": height, "xrange": [xmin, xmax],
+                               "yrange": [ymin, ymax], "legend": True, "zoom": True}}]}
+    model_id = 'viz{0:s}'.format(uuid.uuid4())
+    display(HTML(generate_html(
+        {'model': json.dumps(model), 'model_id': model_id, 'to_png': json.dumps(to_png)},
+        '/templates/nya.tmpl')))
+
 def __parse_world(
         world, radius=None, species_list=None, max_count=None,
         predicator=None):
@@ -80,7 +380,7 @@ def __get_range_of_world(world):
     return {'x': rangex, 'y': rangey, 'z': rangez}
 
 
-def plot_movie(
+def plot_movie_with_elegans(
         worlds, radius=None, width=500, height=500, config={}, grid=False,
         species_list=None):
     """
@@ -143,7 +443,7 @@ def plot_movie(
         'options': json.dumps(options)
     }, '/templates/movie.tmpl')))
 
-def plot_world(
+def plot_world_with_elegans(
         world, radius=None, width=350, height=350, config={}, grid=True,
         wireframe=False, species_list=None, debug=None, max_count=1000,
         camera_position=(-22, 23, 32), camera_rotation=(-0.6, 0.5, 0.6),
@@ -420,7 +720,7 @@ def generate_html(keywords, tmpl_path):
     return html
 
 
-def plot_trajectory(
+def plot_trajectory_with_elegans(
         obs, width=350, height=350, config={}, grid=True, wireframe=False,
         max_count=10, camera_position=(-22, 23, 32), camera_rotation=(-0.6, 0.5, 0.6)):
     """
@@ -673,212 +973,6 @@ def logo(x=1, y=None):
     h = HTML(template % tuple(base64s + [("<p>%s</p>" % (img_html * x)) * y]))
     display(h)
 
-def plot_number_observer(*args, **kwargs):
-    """
-    Generate a plot from NumberObservers and show it on IPython notebook
-    with matplotlib.
-
-    Parameters
-    ----------
-    obs : NumberObserver (e.g. FixedIntervalNumberObserver)
-    fmt : str, optional
-    opt : dict, optional
-        matplotlib plot options.
-
-    Examples
-    --------
-    >>> plot_number_observer(obs1)
-    >>> plot_number_observer(obs1, 'o')
-    >>> plot_number_observer(obs1, obs2, obs3, {'linewidth': 2})
-    >>> plot_number_observer(obs1, 'k-', obs2, 'k--')
-
-    """
-    import matplotlib.pylab as plt
-    import numpy
-    import collections
-
-    special_keys = ("xlim", "ylim", "xlabel", "ylabel", "legend", "x", "y")
-    plot_opts = {key: value for key, value in kwargs.items()
-                 if key not in special_keys}
-    color_cycle = plt.rcParams['axes.color_cycle']
-
-    if "y" in kwargs.keys() and isinstance(kwargs["y"], str):
-        kwargs["y"] = (kwargs["y"], )
-
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-
-    if len(args) > 1 and isinstance(args[1], str):
-        if len(args) % 2 == 0:
-            observers = [(args[i], args[i + 1]) for i in range(0, len(args), 2)]
-        else:
-            observers = [(args[i], args[i + 1]) for i in range(0, len(args) - 1, 2)]
-            observers.append(args[-1], None)
-    else:
-        observers = [(obs, None) for obs in args]
-
-    color_map = {}
-    data, xidx = None, 0
-    for obs, fmt in observers:
-        if isinstance(obs, types.FunctionType):
-            if data is None:
-                raise ValueError("A function must be given after an observer.")
-            y = [obs(xi) for xi in data[xidx]]
-            opts = plot_opts.copy()
-            label = obs.__name__
-            opts["label"] = label
-            if label not in color_map.keys():
-                color_map[label] = color_cycle[len(color_map) % len(color_cycle)]
-                opts["label"] = label
-            opts["color"] = color_map[label]
-            if fmt is None:
-                ax.plot(data[xidx], y, **opts)
-            else:
-                ax.plot(data[xidx], y, fmt, **opts)
-            continue
-
-        data = numpy.array(obs.data()).T
-
-        try:
-            err = obs.error().T
-        except AttributeError:
-            err = None
-
-        if "x" in kwargs.keys():
-            targets = [sp.serial() for sp in obs.targets()]
-            if kwargs["x"] not in targets:
-                raise ValueError("[{0}] given as 'x' was not found.".fomrat(kwargs["x"]))
-            xidx = targets.index(kwargs["x"]) + 1
-        else:
-            xidx = 0
-
-        if "y" in kwargs.keys():
-            targets = [sp.serial() for sp in obs.targets()]
-            targets = [(targets.index(serial), serial)
-                       for serial in kwargs["y"] if serial in targets]
-        else:
-            targets = [sp.serial() for sp in obs.targets()]
-            targets = list(enumerate(targets))
-            targets.sort(key=lambda x: x[1])
-
-        for idx, serial in targets:
-            opts = plot_opts.copy()
-
-            label = serial
-            if len(label) > 0 and label[0] == '_':
-                label = '$\_$' + label[1:]  # XXX: lazy escaping for a special character
-            if label not in color_map.keys():
-                color_map[label] = color_cycle[len(color_map) % len(color_cycle)]
-                opts["label"] = label
-            opts["color"] = color_map[label]
-
-            if err is None:
-                if fmt is None:
-                    ax.plot(data[xidx], data[idx + 1], **opts)
-                else:
-                    ax.plot(data[xidx], data[idx + 1], fmt, **opts)
-            else:
-                if fmt is None:
-                    ax.errorbar(data[xidx], data[idx + 1],
-                        xerr=(None if xidx == 0 else err[xidx]), yerr=err[idx + 1],
-                        **opts)
-                else:
-                    ax.errorbar(data[xidx], data[idx + 1],
-                        xerr=(None if xidx == 0 else err[xidx]), yerr=err[idx + 1],
-                        fmt=fmt, **opts)
-
-    if "legend" not in kwargs.keys() or kwargs["legend"]:
-        ax.legend(*ax.get_legend_handles_labels(), loc="best", shadow=True)
-    if "xlabel" in kwargs.keys():
-        ax.set_xlabel(kwargs["xlabel"])
-    elif "x" in kwargs.keys():
-        ax.set_xlabel("The Number of Molecules [{0}]".format(kwargs["x"]))
-    else:
-        ax.set_xlabel("Time")
-    if "ylabel" in kwargs.keys():
-        ax.set_ylabel(kwargs["ylabel"])
-    else:
-        ax.set_ylabel("The Number of Molecules")
-    if "xlim" in kwargs.keys():
-        ax.set_xlim(kwargs["xlim"])
-    if "ylim" in kwargs.keys():
-        ax.set_ylim(kwargs["ylim"])
-    plt.show()
-
-def plot_number_observer_with_nya(obs, config={}, width=600, height=400, x=None, y=None, to_png=False):
-    """
-    Generate a plot from NumberObservers and show it on IPython notebook
-    with nyaplot.
-
-    Parameters
-    ----------
-    obs : NumberObserver (e.g. FixedIntervalNumberObserver)
-    config : dict, optional
-        A config data for coloring. The dictionary will be updated during this plot.
-    width : int, optional
-    height : int, optional
-    x : str, optional
-        A serial for x-axis. If None, x-axis corresponds time.
-    y : str or list of str
-        Serials for y axis.
-
-    """
-    from IPython.core.display import display, HTML
-    import numpy
-
-    config = {}
-    color_scale = ColorScale(config=config)
-
-    data1, data2 = [], []
-    data = numpy.array(obs.data())
-
-    if x is None:
-        xidx = 0
-    else:
-        tmp = [sp.serial() for sp in obs.targets()]
-        if x not in tmp:
-            raise ValueError("[{0}] given as 'x' was not found.".fomrat(x))
-        xidx = tmp.index(x) + 1
-
-    if y is None:
-        targets = [sp.serial() for sp in obs.targets()]
-        targets = list(enumerate(targets))
-        targets.sort(key=lambda x: x[1])
-    else:
-        if isinstance(y, str):
-            y = (y, )
-        targets = [sp.serial() for sp in obs.targets()]
-        targets = [(targets.index(serial), serial)
-                   for serial in y if serial in targets]
-
-    for line in data:
-        tmp = {"x": line[xidx]}
-        for i, (idx, serial) in enumerate(targets):
-            tmp["y{0}".format(i + 1)] = line[idx + 1]
-        data1.append(tmp)
-    for i, (idx, serial) in enumerate(targets):
-        label = serial
-        tmp = {"type": "line", "data": "data1",
-               "options": {"x": "x", "y": "y{0}".format(i + 1),
-                           "stroke_width": 2, "title": label,
-                           "color": color_scale.get_color(label)}}
-        data2.append(tmp)
-
-    xmin, xmax = data.T[xidx].min(), data.T[xidx].max()
-    yview = data.T.take([idx + 1 for idx, serial in targets], axis=0)
-    ymin, ymax = yview.min(), yview.max()
-
-    model = {
-        "data": {"data1": data1},
-        "panes": [{"type": 'rectangular',
-                   "diagrams": data2,
-                   "options": {"width": width, "height": height, "xrange": [xmin, xmax],
-                               "yrange": [ymin, ymax], "legend": True, "zoom": True}}]}
-    model_id = 'viz{0:s}'.format(uuid.uuid4())
-    display(HTML(generate_html(
-        {'model': json.dumps(model), 'model_id': model_id, 'to_png': json.dumps(to_png)},
-        '/templates/nya.tmpl')))
-
 class ColorScale:
     """
     Color scale for species.
@@ -982,7 +1076,7 @@ def __scatter_world_with_matplotlib(
 
 def plot_world_with_matplotlib(
         world, marker_size=3, figsize=6, grid=True,
-        wireframe=False, species_list=None, max_count=None, angle=None,
+        wireframe=False, species_list=None, max_count=1000, angle=None,
         legend=True, **kwargs):
     """
     Generate a plot from received instance of World and show it on IPython notebook.
@@ -998,7 +1092,7 @@ def plot_world_with_matplotlib(
         Size of the plotting area. Given in inch.
     species_list : array of string, default None
         If set, plot_world will not search the list of species.
-    max_count : Integer, default None
+    max_count : Integer, default 1000
         The maximum number of particles to show for each species.
         None means no limitation.
     angle : tuple, default None
