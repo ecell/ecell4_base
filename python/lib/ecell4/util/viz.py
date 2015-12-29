@@ -1187,7 +1187,7 @@ def plot_movie_with_matplotlib(
     """
     import matplotlib.pyplot as plt
     import matplotlib.animation as animation
-    from IPython.display import HTML
+    from IPython.display import display, HTML
     from ecell4 import Species, FixedIntervalHDF5Observer
     from .simulation import load_world
 
@@ -1250,4 +1250,4 @@ def plot_movie_with_matplotlib(
 
     plt.close(ani._fig)
     print("Start generating a movie ...")
-    return HTML(anim_to_html(ani, output))
+    display(HTML(anim_to_html(ani, output)))
