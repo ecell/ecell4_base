@@ -18,7 +18,7 @@ set(UTILS_HPP_FILES
 # CPP_FILES BasicNetworkRulesImpl.cpp NetworkRules.cpp SpeciesType.cpp StructureType.cpp
 # HPP_FILES StructureUtils.hpp EGFRDSimulatorFactory.hpp ParticleSimulatorFactory.hpp Model.hpp ParticleModel.hpp BasicNetworkRulesImpl.hpp NetworkRules.hpp ReactionRule.hpp SpeciesInfo.hpp BDSimulator.hpp SpeciesTypeID.hpp SpeciesType.hpp ParticleID.hpp StructureType.hpp bessel.hpp PyEventScheduler.hpp NetworkRulesWrapper.hpp BasicReactionRecorderImpl.hpp DynamicPriorityQueue.hpp EventScheduler.hpp SerialIDGenerator.hpp Surface.hpp SphericalSurface.hpp Structure.hpp CylindricalSurface.hpp PlanarSurface.hpp CuboidalRegion.hpp ParticleSimulationStructure.hpp Region.hpp Box.hpp Plane.hpp Cylinder.hpp Shape.hpp Sphere.hpp Point.hpp Vector3.hpp Identifier.hpp
 
-find_library(BOOST_REGEX_LIBRARIES boost_regex)
+# find_library(BOOST_REGEX_LIBRARIES boost_regex)
 
 check_cxx_source_compiles("#include <math.h>
 int main() { double a = INFINITY; return (int)a * 0; }"
@@ -40,12 +40,14 @@ add_subdirectory(tablegen)
 
 include_directories(${PROJECT_SOURCE_DIR}/ecell4/egfrd ${PROJECT_BINARY_DIR}/ecell4/egfrd)
 
-add_definitions(-DHAVE_CONFIG_H -DHAVE_INLINE)
+# add_definitions(-DHAVE_CONFIG_H -DHAVE_INLINE)
+add_definitions(-DHAVE_CONFIG_H)
 
 add_library(ecell4-egfrd SHARED
     ${CPP_FILES} ${HPP_FILES} ${UTILS_HPP_FILES}
     "${PROJECT_BINARY_DIR}/ecell4/egfrd/config.h")
-target_link_libraries(ecell4-egfrd ecell4-core ${BOOST_REGEX_LIBRARIES})
+target_link_libraries(ecell4-egfrd ecell4-core)
+# target_link_libraries(ecell4-egfrd ecell4-core ${BOOST_REGEX_LIBRARIES})
 
 # add_subdirectory(tests)
 add_subdirectory(samples)
