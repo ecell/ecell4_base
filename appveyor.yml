@@ -87,7 +87,7 @@ build: false
 
 branches:
   only:
-    - appveyor
+    - tutorials
 
 artifacts:
   # bdist_wheel puts your built wheel in the dist directory
