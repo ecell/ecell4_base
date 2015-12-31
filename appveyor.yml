@@ -35,10 +35,12 @@ install:
   # - msbuild GSL.sln /p:Configuration=Release /v:d
 
   # BesselTables
-  - if "%PYTHON_VERSION%" == "2.7.11" cd ecell4/egfrd/tablegen
-  - if "%PYTHON_VERSION%" == "2.7.11" del CMakeLists.txt
+  - cd ecell4/egfrd/tablegen
+  - del CMakeLists.txt
   - if "%PYTHON_VERSION%" == "2.7.11" move cmlwinpy27.txt CMakeLists.txt
-  - if "%PYTHON_VERSION%" == "2.7.11" cd ../../..
+  - if "%PYTHON_VERSION%" == "3.5.1" move cmlwinpy35.txt CMakeLists.txt
+  - cd ../../..
+  
   - if "%PYTHON_VERSION%" == "2.7.11" cmake -G "Visual Studio 9 2008" -D CMAKE_CXX_FLAGS_RELEASE="/MT" -D CMAKE_CXX_FLAGS_DEBUG="/MTd" -DBOOST_REGEX_LIBRARIES=C:/Libraries/boost/libs -DBoost_INCLUDE_DIR=C:/Libraries/boost -DGSL_INCLUDE_DIR=C:/projects/ecell4/gsl/include -DGSL_CBLAS_LIBRARIES=C:/projects/ecell4/gsl/lib -DGSL_LIBRARIES=C:/projects/ecell4/gsl/lib .
   - if "%PYTHON_VERSION%" == "2.7.11" cmake --build . --target BesselTables
   # - if "%PYTHON_VERSION%" == "2.7.11" cmake -G "Visual Studio 9 2008" -D CMAKE_CXX_FLAGS_RELEASE="/MD" -D CMAKE_CXX_FLAGS_DEBUG="/MDd" -D CMAKE_C_FLAGS_DEBUG="/MDd" -DBoost_INCLUDE_DIR=C:/Libraries/boost -DGSL_INCLUDE_DIR=C:/projects/ecell4/gsl -DGSL_CBLAS_LIBRARIES=C:/projects/ecell4/gsl/Release -DGSL_LIBRARIES=C:/projects/ecell4/gsl/Release .
