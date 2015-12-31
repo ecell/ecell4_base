@@ -32,7 +32,7 @@ pip install https://ci.appveyor.com/api/buildjobs/aju5rykh88bb88ns/artifacts/pyt
 We recommend you run E-Cell4 models from Jupyter notebook.
 Below is Jupyter notebook(and matplotlib) installation for Windows.
 
-- Install [Visual C++ Compiler for Python 2.7](http://www.microsoft.com/en-us/download/details.aspx?id=44266)
+- Install [Visual C++ Compiler for Python 2.7](http://aka.ms/vcpython27)
 - Install Jupyter notebook and matplotlib
 
   ```
