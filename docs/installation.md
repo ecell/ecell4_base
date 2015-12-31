@@ -19,7 +19,7 @@ Please use 32bit Python, even if you use 64bit Windows.
 We have NOT supported 64bit Python yet.
 
 - [Python 2.7.11(**32bit**)](https://www.python.org/ftp/python/2.7.11/python-2.7.11.msi)
-- HDF5-1.8.16 Pre-built Binary(**32-bit**) https://www.hdfgroup.org/ftp/HDF5/current/bin/windows/extra/hdf5-1.8.16-win32-vs2012-shared.zip
+- HDF5-1.8.16 Pre-built Binary(**32-bit**) http://www.hdfgroup.org/ftp/HDF5/current/bin/windows/extra/hdf5-1.8.16-win32-vs2015-shared.zip
 
 Please add `C:\Python27`, `C:\Python27\Scripts` and `C:\Program Files (x86)\HDF_Group\HDF5\1.8.16\bin` to your **PATH** enviromental variable.
 
