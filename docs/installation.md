@@ -25,7 +25,7 @@ Please add `C:\Python27`, `C:\Python27\Scripts` and `C:\Program Files (x86)\HDF_
 
 And run following command with command prompt.
 ```
-pip install https://github.com/ecell/ecell4/releases/download/4.0.0-beta2/ecell4-4.0.0b2-cp27-none-win32.whl
+pip install https://ci.appveyor.com/api/buildjobs/aju5rykh88bb88ns/artifacts/python/dist/ecell4-4.0.0b2-cp27-none-win32.whl
 ```
 
 #### Jupyter for Windows
