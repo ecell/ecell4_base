@@ -1,7 +1,7 @@
 import sys
 import os
 
-extensions = []
+extensions = ['sphinx.ext.autodoc']
 
 templates_path = ['_templates']
 

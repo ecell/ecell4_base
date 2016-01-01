@@ -39,18 +39,6 @@ Getting Started:
 
    installation
 
-
-Examples:
-
-.. toctree::
-   :glob:
-   
-   Attractors
-   DrosophilaCircadianClock
-   dpc
-   HumanErythrocytes
-   
-
 New Tutorials:
 
 .. toctree::
@@ -64,6 +52,32 @@ New Tutorials:
    tutorial7
    tutorial8
 
+API:
+
+.. toctree::
+   :glob:
+
+   api/core
+   api/gillespie
+   api/ode
+   api/meso
+   api/spatiocyte
+   api/bd
+   api/egfrd
+   api/util
+   api/util.viz
+   api/util.decorator
+
+Examples:
+
+.. toctree::
+   :glob:
+   
+   Attractors
+   DrosophilaCircadianClock
+   dpc
+   HumanErythrocytes
+   
 Old Tutorials:
 
 .. toctree::
