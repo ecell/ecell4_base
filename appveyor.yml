@@ -58,6 +58,7 @@ install:
   - msiexec /i HDF5-1.8.16-win32.msi /quiet /qn /norestart /log install.log
   - type install.log
   - xcopy "C:\Program Files (x86)\HDF_Group\HDF5\1.8.16\lib" c:\projects\ecell4\hdf5lib /I
+  - xcopy "C:\Program Files (x86)\HDF_Group\HDF5\1.8.16\include" c:\projects\ecell4\hdf5include /I
   - cd ..
 
   # config.h
@@ -79,10 +80,9 @@ install:
   - cd python
   - ECHO "ls boost:"
   - ps: "ls \"C:/Libraries/boost\""
-  - dir c:\projects\ecell4\hdf5lib
   - echo %CD%
-  - if "%PYTHON_VERSION%" == "2.7.11" python setup.py build_ext -IC:/Libraries/boost;C:/projects/ecell4;C:/projects/ecell4/stdint-20070624;C:/projects/ecell4/gsl/include -LC:/projects/ecell4/gsl/lib;C:/projects/ecell4/hdf5lib
-  - if "%PYTHON_VERSION%" == "3.5.1" python setup.py build_ext -IC:/Libraries/boost;C:/projects/ecell4/gsl -LC:/projects/ecell4/gsl/Release;C:/projects/ecell4/hdf5lib
+  - if "%PYTHON_VERSION%" == "2.7.11" python setup.py build_ext -IC:/projects/ecell4/hdf5include;C:/Libraries/boost;C:/projects/ecell4;C:/projects/ecell4/stdint-20070624;C:/projects/ecell4/gsl/include -LC:/projects/ecell4/gsl/lib;C:/projects/ecell4/hdf5lib
+  - if "%PYTHON_VERSION%" == "3.5.1" python setup.py build_ext -IC:/projects/ecell4/hdf5include;C:/Libraries/boost;C:/projects/ecell4/gsl -LC:/projects/ecell4/gsl/Release;C:/projects/ecell4/hdf5lib
   - "pip install wheel"
   - "python setup.py bdist_wheel"
 
