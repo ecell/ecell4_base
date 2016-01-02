@@ -49,7 +49,7 @@ if sys.platform == "win32":
         dependent_libs = ['gsl', 'cblas', 'hdf5_cpp', 'hdf5']
     elif sys.version_info.major == 3:
         dependent_libs = ['gsl', 'gslcblas', 'hdf5_cpp', 'hdf5']
-    extra_compile_args = ["/EHsc", "/w", "-DHAVE_CONFIG_H", "-DHAVE_INLINE"]
+    extra_compile_args = ["/EHsc", "/w", "-DHAVE_CONFIG_H", "-DHAVE_INLINE", "-DWITH_HDF5"]
 elif sys.platform == "darwin":
     dependent_libs = ['gsl', 'gslcblas', 'm', 'hdf5_cpp', 'hdf5']
     extra_compile_args = ["-DWITH_HDF5"]
