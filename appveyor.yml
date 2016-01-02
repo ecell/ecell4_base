@@ -79,6 +79,7 @@ install:
   - cd python
   - ECHO "ls boost:"
   - ps: "ls \"C:/Libraries/boost\""
+  - ps: "ls \"C:/projects\ecell4\hdf5lib\""
   - echo %CD%
   - if "%PYTHON_VERSION%" == "2.7.11" python setup.py build_ext -IC:/Libraries/boost;C:/projects/ecell4;C:/projects/ecell4/stdint-20070624;C:/projects/ecell4/gsl/include -LC:/projects/ecell4/gsl/lib;C:/projects/ecell4/hdf5lib
   - if "%PYTHON_VERSION%" == "3.5.1" python setup.py build_ext -IC:/Libraries/boost;C:/projects/ecell4/gsl -LC:/projects/ecell4/gsl/Release;C:/projects/ecell4/hdf5lib
