@@ -52,13 +52,14 @@ install:
 
   # install hdf5
   - mkdir hdf5lib
-  - curl -O http://www.hdfgroup.org/ftp/HDF5/current/bin/windows/extra/hdf5-1.8.16-win32-vs2015-shared.zip
-  - unzip hdf5-1.8.16-win32-vs2015-shared.zip
+  - if "%PYTHON_VERSION%" == "2.7.11" curl -O https://www.hdfgroup.org/ftp/HDF5/current/bin/windows/extra/hdf5-1.8.16-win32-vs2012-shared.zip
+  - if "%PYTHON_VERSION%" == "3.5.1" curl -O http://www.hdfgroup.org/ftp/HDF5/current/bin/windows/extra/hdf5-1.8.16-win32-vs2015-shared.zip
+  - if "%PYTHON_VERSION%" == "2.7.11" unzip hdf5-1.8.16-win32-vs2012-shared.zip
   - cd hdf5
   - msiexec /i HDF5-1.8.16-win32.msi /quiet /qn /norestart /log install.log
   - type install.log
-  - xcopy "C:\Program Files (x86)\HDF_Group\HDF5\1.8.16\lib" c:\projects\ecell4\hdf5lib /I
-  - xcopy "C:\Program Files (x86)\HDF_Group\HDF5\1.8.16\include" c:\projects\ecell4\hdf5include /I
+#   - xcopy "C:\Program Files (x86)\HDF_Group\HDF5\1.8.16\lib" c:\projects\ecell4\hdf5lib /I
+#   - xcopy "C:\Program Files (x86)\HDF_Group\HDF5\1.8.16\include" c:\projects\ecell4\hdf5include /I
   - cd ..
 
   # config.h
@@ -81,7 +82,7 @@ install:
   - ECHO "ls boost:"
   - ps: "ls \"C:/Libraries/boost\""
   - echo %CD%
-  - if "%PYTHON_VERSION%" == "2.7.11" python setup.py build_ext -I"C:\Program Files (x86)\Windows Kits\10\Include\10.0.10240.0\ucrt";"C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include";C:/projects/ecell4/hdf5include;C:/Libraries/boost;C:/projects/ecell4;C:/projects/ecell4/stdint-20070624;C:/projects/ecell4/gsl/include -LC:/projects/ecell4/gsl/lib;C:/projects/ecell4/hdf5lib
+  - if "%PYTHON_VERSION%" == "2.7.11" python setup.py build_ext -I"C:\Program Files (x86)\HDF_Group\HDF5\1.8.16\include";C:/Libraries/boost;C:/projects/ecell4;C:/projects/ecell4/stdint-20070624;C:/projects/ecell4/gsl/include -LC:/projects/ecell4/gsl/lib;"C:\Program Files (x86)\HDF_Group\HDF5\1.8.16\lib"
   - if "%PYTHON_VERSION%" == "3.5.1" python setup.py build_ext -IC:/projects/ecell4/hdf5include;C:/Libraries/boost;C:/projects/ecell4/gsl -LC:/projects/ecell4/gsl/Release;C:/projects/ecell4/hdf5lib
   - "pip install wheel"
   - "python setup.py bdist_wheel"
