@@ -68,7 +68,7 @@ And run following command with command prompt.
 pip install https://ci.appveyor.com/api/buildjobs/aju5rykh88bb88ns/artifacts/python/dist/ecell4-4.0.0b2-cp27-none-win32.whl
 ```
 
-#### Jupyter for Windows
+#### Jupyter and matplotlib for Windows
 We recommend you run E-Cell4 models from Jupyter notebook.
 Below is Jupyter notebook(and matplotlib) installation for Windows.
 
@@ -88,10 +88,16 @@ Please use [homebrew-ecell4](https://github.com/ecell/homebrew-ecell4)
 
 https://github.com/ecell/homebrew-ecell4
 
-#### Jupyter for Mac or Linux
+#### Jupyter and matplotlib for Mac
 
-We recommend you run E-Cell4 models from Jupyter notebook.
-Below is Jupyter notebook(and matplotlib) installation for Mac or Linux.
+```shell
+sudo python get-pip.py
+# you can NOT install latest matplotlib into System directory, so you need to install it into USER directory
+pip install -U matplotlib --user
+pip install jupyter --user
+```
+
+#### Jupyter and matplotlib for Linux
 
 ```shell
 sudo python get-pip.py
@@ -105,6 +111,18 @@ Simple examples
 Here are two extremely simple examples.
 Please see http://ecell4.readthedocs.org for more details.
 
+You need to add PYTHONPATH to import latest matplotlib only on Mac OSX.
+
+### Running Python shell and E-Cell4
+
+```shell
+# on Windows or Linux
+python
+
+# on Mac
+PYTHONPATH=~/Library/Python/2.7/lib/python/site-packages/ python
+```
+
 ```
 Python 2.7.6 (default, Mar 22 2014, 22:59:56)
 [GCC 4.8.2] on linux2
@@ -117,7 +135,7 @@ B.A.C
 A.B.C
 ```
 
-#### A reversible binding reaction
+### A reversible binding reaction
 
 ```python
 %matplotlib inline
@@ -130,5 +148,3 @@ run_simulation(10, {'A': 60, 'B': 60}, solver='ode')
 ```
 
 ![png](https://raw.githubusercontent.com/ecell/ecell4/master/docs/output_7_0.png)
-
-
