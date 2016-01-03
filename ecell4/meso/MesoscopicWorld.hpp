@@ -32,6 +32,8 @@ public:
     typedef SubvolumeSpace::coordinate_type coordinate_type;
     typedef MoleculeInfo molecule_info_type;
 
+    typedef SubvolumeSpace::PoolBase PoolBase;
+
 public:
 
     MesoscopicWorld(const std::string& filename)
@@ -179,12 +181,12 @@ public:
 
     void add_molecules(const Species& sp, const Integer& num, const Integer3& g)
     {
-        cs_->add_molecules(sp, num, g);
+        add_molecules(sp, num, global2coord(g));
     }
 
     void remove_molecules(const Species& sp, const Integer& num, const Integer3& g)
     {
-        cs_->remove_molecules(sp, num, g);
+        remove_molecules(sp, num, global2coord(g));
     }
 
     std::vector<coordinate_type> list_coordinates(const Species& sp) const;
@@ -192,17 +194,23 @@ public:
 
     void add_molecules(const Species& sp, const Integer& num)
     {
-        const molecule_info_type minfo(get_molecule_info(sp));
-        if (minfo.loc == "")
+        if (!cs_->has_species(sp))
+        {
+            reserve_pool(sp);
+        }
+
+        const boost::shared_ptr<PoolBase>& pool = get_pool(sp);
+        if (pool->loc() == "")
         {
             for (Integer i(0); i < num; ++i)
             {
-                cs_->add_molecules(sp, 1, rng_->uniform_int(0, num_subvolumes() - 1));
+                pool->add_molecules(1, rng_->uniform_int(0, num_subvolumes() - 1));
             }
+
             return;
         }
 
-        const Species st(minfo.loc);
+        const Species st(pool->loc());
         if (!cs_->has_structure(st))
         {
             throw NotFound("no space to throw-in.");
@@ -212,9 +220,9 @@ public:
         while (i < num)
         {
             const coordinate_type j(rng_->uniform_int(0, num_subvolumes() - 1));
-            if (cs_->check_structure(minfo.loc, j))
+            if (cs_->check_structure(pool->loc(), j))
             {
-                cs_->add_molecules(sp, 1, j);
+                pool->add_molecules(1, j);
                 i++;
             }
         }
@@ -223,20 +231,27 @@ public:
     void add_molecules(const Species& sp, const Integer& num,
         const boost::shared_ptr<Shape> shape)
     {
-        const molecule_info_type minfo(get_molecule_info(sp));
-        if (minfo.loc == "")
+        if (!cs_->has_species(sp))
+        {
+            reserve_pool(sp);
+        }
+
+        const boost::shared_ptr<PoolBase>& pool = get_pool(sp);
+
+        if (pool->loc() == "")
         {
             for (Integer i(0); i < num; ++i)
             {
                 const Real3 pos(shape->draw_position(rng_));
                 const coordinate_type& coord(
                     cs_->global2coord(cs_->position2global(pos)));
-                cs_->add_molecules(sp, 1, coord);
+                pool->add_molecules(1, coord);
             }
+
             return;
         }
 
-        const Species st(minfo.loc);
+        const Species st(pool->loc());
         if (!cs_->has_structure(st))
         {
             throw NotFound("no space to throw-in.");
@@ -248,9 +263,9 @@ public:
             const Real3 pos(shape->draw_position(rng_));
             const Integer3 g(cs_->position2global(pos));
             const coordinate_type j(cs_->global2coord(g));
-            if (cs_->check_structure(minfo.loc, j))
+            if (cs_->check_structure(pool->loc(), j))
             {
-                cs_->add_molecules(sp, 1, j);
+                pool->add_molecules(1, j);
                 i++;
             }
         }
@@ -281,7 +296,7 @@ public:
                 acct += a[c];
                 if (acct > rnd1)
                 {
-                    cs_->remove_molecules(sp, 1, c);
+                    remove_molecules(sp, 1, c);
                     a[c] -= 1;
                     --num_tot;
                     break;
@@ -300,9 +315,9 @@ public:
         const Species& sp, const Real3& pos)
     {
         add_molecules(sp, 1, position2coordinate(pos));
-        const MoleculeInfo info(get_molecule_info(sp));
+        const boost::shared_ptr<PoolBase>& pool = get_pool(sp);
         return std::make_pair(
-            std::make_pair(ParticleID(), Particle(sp, pos, 0.0, info.D)), true);
+            std::make_pair(ParticleID(), Particle(sp, pos, 0.0, pool->D())), true);
     }
 
     void add_structure(const Species& sp, const boost::shared_ptr<const Shape>& shape);
@@ -338,7 +353,17 @@ public:
         return cs_->check_structure(sp, g);
     }
 
+    bool check_structure(const Species::serial_type& serial, const coordinate_type& coord) const
+    {
+        return cs_->check_structure(serial, coord);
+    }
+
     Real get_volume(const Species& sp) const;
+
+    bool has_species(const Species& sp) const
+    {
+        return cs_->has_species(sp);
+    }
 
     const std::vector<Species>& species() const;
     std::vector<Species> list_species() const;
@@ -346,6 +371,17 @@ public:
     std::vector<std::pair<ParticleID, Particle> > list_particles() const;
     std::vector<std::pair<ParticleID, Particle> > list_particles_exact(const Species& sp) const;
     std::vector<std::pair<ParticleID, Particle> > list_particles(const Species& sp) const;
+
+    const boost::shared_ptr<PoolBase>& get_pool(const Species& sp) const
+    {
+        return cs_->get_pool(sp);
+    }
+
+    const boost::shared_ptr<PoolBase> reserve_pool(const Species& sp)
+    {
+        const molecule_info_type minfo(get_molecule_info(sp));
+        return cs_->reserve_pool(sp, minfo.D, minfo.loc);
+    }
 
 private:
 
