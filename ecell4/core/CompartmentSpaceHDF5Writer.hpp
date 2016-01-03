@@ -48,15 +48,15 @@ struct CompartmentSpaceHDF5TraitsBase
         char serial[32]; // species' serial may exceed the limit
     } species_id_table_struct;
 
-    // static H5::CompType get_species_id_table_struct_memtype()
-    inline H5::CompType get_species_id_table_struct_memtype()
+    static H5::CompType get_species_id_table_struct_memtype()
     {
         H5::CompType mtype_id_table_struct(sizeof(species_id_table_struct));
-        const H5std_string name1("sid");
+        // const H5std_string name1("sid");
         const H5std_string name2("serial");
-        mtype_id_table_struct.insertMember(
-            name1, HOFFSET(species_id_table_struct, sid),
-            H5::PredType::STD_I32LE);
+        // mtype_id_table_struct.insertMember(
+        //     name1, HOFFSET(species_id_table_struct, sid),
+        //     H5::PredType::STD_I32LE);
+        H5Tinsert(mtype_id_table_struct.getId(), "sid", HOFFSET(species_id_table_struct, sid), H5T_STD_I32LE);
         mtype_id_table_struct.insertMember(
             name2, HOFFSET(species_id_table_struct, serial),
             H5::StrType(H5::PredType::C_S1, 32));
@@ -68,8 +68,7 @@ struct CompartmentSpaceHDF5TraitsBase
         num_molecules_type num_molecules;
     } species_num_struct;
 
-    // static H5::CompType get_species_num_struct_memtype()
-    inline H5::CompType get_species_num_struct_memtype()
+    static H5::CompType get_species_num_struct_memtype()
     {
         H5::CompType mtype_num_struct(sizeof(species_num_struct));
         const H5std_string name1("sid");
@@ -162,11 +161,11 @@ void save_compartment_space(const typename Ttraits_::space_type& space, H5::Grou
 
     boost::scoped_ptr<H5::DataSet> dataset_id_table(new H5::DataSet(
         root->createDataSet(
-            "species", traits_type().get_species_id_table_struct_memtype(),
+            "species", traits_type::get_species_id_table_struct_memtype(),
             dataspace)));
     boost::scoped_ptr<H5::DataSet> dataset_num_table(new H5::DataSet(
         root->createDataSet(
-            "num_molecules", traits_type().get_species_num_struct_memtype(),
+            "num_molecules", traits_type::get_species_num_struct_memtype(),
             dataspace)));
     dataset_id_table->write(
         species_id_table.get(), dataset_id_table->getDataType());
@@ -211,7 +210,7 @@ void load_compartment_space(const H5::Group& root, typename Ttraits_::space_type
             new species_id_table_struct[num_species]);
         species_dset.read(
             species_id_table.get(),
-            traits_type().get_species_id_table_struct_memtype());
+            traits_type::get_species_id_table_struct_memtype());
         species_dset.close();
 
         H5::DataSet num_dset(root.openDataSet("num_molecules"));
@@ -219,7 +218,7 @@ void load_compartment_space(const H5::Group& root, typename Ttraits_::space_type
             new species_num_struct[num_species]);
         num_dset.read(
             species_num_table.get(),
-            traits_type().get_species_num_struct_memtype());
+            traits_type::get_species_num_struct_memtype());
         num_dset.close();
 
         typename utils::get_mapper_mf<uint32_t, num_molecules_type>::type
