@@ -51,6 +51,20 @@ Integer SpatiocyteWorld::num_species() const
     return (*space_).num_species();
 }
 
+void SpatiocyteWorld::set_value(const Species& sp, const Real value)
+{
+    const Integer num1 = static_cast<Integer>(value);
+    const Integer num2 = num_molecules_exact(sp);
+    if (num1 > num2)
+    {
+        add_molecules(sp, num1 - num2);
+    }
+    else if (num1 < num2)
+    {
+        remove_molecules(sp, num2 - num1);
+    }
+}
+
 bool SpatiocyteWorld::has_species(const Species &sp) const
 {
     return (*space_).has_species(sp);

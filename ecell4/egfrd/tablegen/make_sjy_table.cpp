@@ -4,7 +4,7 @@
 #include <sstream>
 #include <iomanip>
 #include <algorithm>
-#if (_MSC_VER >= 1600)
+#if (_MSC_VER >= 1500)
 #define _USE_MATH_DEFINES
 #endif
 #include <math.h>

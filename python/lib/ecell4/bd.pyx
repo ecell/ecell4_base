@@ -96,6 +96,9 @@ cdef class ReactionInfo:
             inc(it)
         return retval
 
+    def __reduce__(self):
+        return (ReactionInfo, (self.t(), self.reactants(), self.products()))
+
 cdef ReactionInfo ReactionInfo_from_Cpp_ReactionInfo(Cpp_ReactionInfo* ri):
     cdef Cpp_ReactionInfo *new_obj = new Cpp_ReactionInfo(<Cpp_ReactionInfo> deref(ri))
     r = ReactionInfo(0, [], [])
@@ -687,13 +690,13 @@ cdef BDWorld BDWorld_from_Cpp_BDWorld(
 cdef class BDSimulator:
     """ A class running the simulation with the bd algorithm.
 
-    BDSimulator(m, w)
+    BDSimulator(m, w, bd_dt_factor)
 
     """
 
-    def __init__(self, m, BDWorld w=None):
-        """BDSimulator(m, w)
-        BDSimulator(w)
+    def __init__(self, m, BDWorld w=None, bd_dt_factor=None):
+        """BDSimulator(m, w, bd_dt_factor)
+        BDSimulator(w, bd_dt_factor)
 
         Constructor.
 
@@ -703,17 +706,27 @@ cdef class BDSimulator:
             A model
         w : BDWorld
             A world
+        bd_dt_factor : Real
 
         """
         pass
 
-    def __cinit__(self, m, BDWorld w=None):
+    def __cinit__(self, m, BDWorld w=None, bd_dt_factor=None):
         if w is None:
-            self.thisptr = new Cpp_BDSimulator(
-                deref((<BDWorld>m).thisptr))
+            if bd_dt_factor is None:
+                self.thisptr = new Cpp_BDSimulator(
+                    deref((<BDWorld>m).thisptr))
+            else:
+                self.thisptr = new Cpp_BDSimulator(
+                    deref((<BDWorld>m).thisptr), <Real>bd_dt_factor)
         else:
-            self.thisptr = new Cpp_BDSimulator(
-                deref(Cpp_Model_from_Model(m)), deref(w.thisptr))
+            if bd_dt_factor is None:
+                self.thisptr = new Cpp_BDSimulator(
+                    deref(Cpp_Model_from_Model(m)), deref(w.thisptr))
+            else:
+                self.thisptr = new Cpp_BDSimulator(
+                    deref(Cpp_Model_from_Model(m)), deref(w.thisptr),
+                    <Real>bd_dt_factor)
 
     def __dealloc__(self):
         del self.thisptr
@@ -859,11 +872,12 @@ cdef BDSimulator BDSimulator_from_Cpp_BDSimulator(Cpp_BDSimulator* s):
 cdef class BDFactory:
     """ A factory class creating a BDWorld instance and a BDSimulator instance.
 
-    BDFactory(Integer3 matrix_sizes=None, GSLRandomNumberGenerator rng=None)
+    BDFactory(Integer3 matrix_sizes=None, GSLRandomNumberGenerator rng=None, Real bd_dt_factor=None)
 
     """
 
-    def __init__(self, Integer3 matrix_sizes=None, GSLRandomNumberGenerator rng=None):
+    def __init__(self, Integer3 matrix_sizes=None, GSLRandomNumberGenerator rng=None,
+                 bd_dt_factor=None):
         """Constructor.
 
         Parameters
@@ -873,22 +887,33 @@ cdef class BDFactory:
             The number of cells must be larger than 3, in principle.
         rng : GSLRandomNumberGenerator, optional
             A random number generator.
+        bd_dt_factor : Real
 
         """
         pass
 
-    def __cinit__(self, Integer3 matrix_sizes=None, GSLRandomNumberGenerator rng=None):
+    def __cinit__(self, Integer3 matrix_sizes=None, GSLRandomNumberGenerator rng=None,
+                  bd_dt_factor=None):
         if matrix_sizes is None:
-            self.thisptr = new Cpp_BDFactory()
+            if bd_dt_factor is None:
+                self.thisptr = new Cpp_BDFactory()
+            else:
+                self.thisptr = new Cpp_BDFactory(<Real>bd_dt_factor)
         elif rng is None:
-            self.thisptr = new Cpp_BDFactory(deref(matrix_sizes.thisptr))
+            if bd_dt_factor is None:
+                self.thisptr = new Cpp_BDFactory(deref(matrix_sizes.thisptr))
+            else:
+                self.thisptr = new Cpp_BDFactory(deref(matrix_sizes.thisptr), <Real>bd_dt_factor)
         else:
-            self.thisptr = new Cpp_BDFactory(deref(matrix_sizes.thisptr), deref(rng.thisptr))
+            if bd_dt_factor is None:
+                self.thisptr = new Cpp_BDFactory(deref(matrix_sizes.thisptr), deref(rng.thisptr))
+            else:
+                self.thisptr = new Cpp_BDFactory(deref(matrix_sizes.thisptr), deref(rng.thisptr), <Real>bd_dt_factor)
 
     def __dealloc__(self):
         del self.thisptr
 
-    def create_world(self, arg1):
+    def create_world(self, arg1=None):
         """create_world(arg1=None) -> BDWorld
 
         Return a ``BDWorld`` instance.

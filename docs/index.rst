@@ -21,9 +21,7 @@ General Public License version 2.
 The source code is available on
 `GitHub <https://github.com/ecell/ecell4>`__.
 
-For installation instructions, please see
-`Installation <installation.md>`__. E-Cell4 runs on Ubuntu Linux,
-Windows and Mac OSX.
+For installation instructions, please see :doc:`installation`. E-Cell4 runs on Windows, Mac OSX and Linux.
 
 4.0.0 (the release date[WRITEME] 2015)
 --------------------------------------
@@ -41,6 +39,34 @@ Getting Started:
 
    installation
 
+New Tutorials:
+
+.. toctree::
+   :glob:
+   
+   tutorial1
+   tutorial2
+   tutorial3
+   tutorial4
+   tutorial6
+   tutorial7
+   tutorial8
+
+API:
+
+.. toctree::
+   :glob:
+
+   api/core
+   api/gillespie
+   api/ode
+   api/meso
+   api/spatiocyte
+   api/bd
+   api/egfrd
+   api/util
+   api/util.viz
+   api/util.decorator
 
 Examples:
 
@@ -52,18 +78,6 @@ Examples:
    dpc
    HumanErythrocytes
    
-
-New Tutorials:
-
-.. toctree::
-   :glob:
-   
-   tutorial1
-   tutorial2
-   tutorial3
-   OdeWithRatelaw
-   rulebase
-
 Old Tutorials:
 
 .. toctree::

@@ -379,29 +379,6 @@ public:
         return true;
     }
 
-    virtual molecule_info_type const& get_molecule_info(species_id_type const& sid)
-    {
-        typename molecule_info_map::const_iterator i(molecule_info_map_.find(sid));
-        if (molecule_info_map_.end() == i)
-        {
-            return this->register_species(sid);
-            // throw not_found(std::string("Unknown species (id=")
-            //     + boost::lexical_cast<std::string>(sid) + ")");
-        }
-        return (*i).second;
-    }
-
-    virtual molecule_info_type const& find_molecule_info(species_id_type const& sid) const
-    {
-        typename molecule_info_map::const_iterator i(molecule_info_map_.find(sid));
-        if (molecule_info_map_.end() == i)
-        {
-            throw not_found(std::string("Unknown species (id=")
-                + boost::lexical_cast<std::string>(sid) + ")");
-        }
-        return (*i).second;
-    }
-
     molecule_info_range get_molecule_info_range() const
     {
         return molecule_info_range(
@@ -597,6 +574,20 @@ public:
         return retval;
     }
 
+    void set_value(const ecell4::Species& sp, const ecell4::Real value)
+    {
+        const ecell4::Integer num1 = static_cast<ecell4::Integer>(value);
+        const ecell4::Integer num2 = num_molecules_exact(sp);
+        if (num1 > num2)
+        {
+            add_molecules(sp, num1 - num2);
+        }
+        else if (num1 < num2)
+        {
+            remove_molecules(sp, num2 - num1);
+        }
+    }
+
     virtual ecell4::Real get_value(const ecell4::Species& sp) const
     {
         return static_cast<ecell4::Real>(num_molecules(sp));
@@ -776,7 +767,9 @@ public:
     new_particle(const ecell4::Species& sp, const position_type& pos)
     {
         const species_id_type sid(sp.serial());
-        molecule_info_type const& minfo(get_molecule_info(sid));
+        typename molecule_info_map::const_iterator i(molecule_info_map_.find(sid));
+        molecule_info_type const& minfo(
+            i != molecule_info_map_.end() ? (*i).second : get_molecule_info(sp));
         return new_particle(particle_type(sid, pos, minfo.radius, minfo.D));
     }
 
@@ -893,6 +886,29 @@ public:
 
         molecule_info_type info = {radius, D, structure_id};
         return info;
+    }
+
+    virtual molecule_info_type const& get_molecule_info(species_id_type const& sid)
+    {
+        typename molecule_info_map::const_iterator i(molecule_info_map_.find(sid));
+        if (molecule_info_map_.end() == i)
+        {
+            return this->register_species(sid);
+            // throw not_found(std::string("Unknown species (id=")
+            //     + boost::lexical_cast<std::string>(sid) + ")");
+        }
+        return (*i).second;
+    }
+
+    virtual molecule_info_type const& find_molecule_info(species_id_type const& sid) const
+    {
+        typename molecule_info_map::const_iterator i(molecule_info_map_.find(sid));
+        if (molecule_info_map_.end() == i)
+        {
+            throw not_found(std::string("Unknown species (id=")
+                + boost::lexical_cast<std::string>(sid) + ")");
+        }
+        return (*i).second;
     }
 
 protected:

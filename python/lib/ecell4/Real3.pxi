@@ -66,6 +66,8 @@ cdef class Real3:
     def __abs__(self):
         return real3_abs(self)
 
+    def __reduce__(self):
+        return (Real3, tuple(self))
 
 cdef Real3 Real3_from_Cpp_Real3(Cpp_Real3 *p):
     cdef Cpp_Real3 *new_obj = new Cpp_Real3(<Cpp_Real3> deref(p))
@@ -190,8 +192,8 @@ def real3_abs(Real3 p1):
     cdef Cpp_Real3 r = real3operators.abs(deref(p1.thisptr))
     return Real3_from_Cpp_Real3(address(r))
 
-def dot_product(Real3 p1, Real3 p2):
-    """dot_product(p1, p2) -> Real
+def real3_dot_product(Real3 p1, Real3 p2):
+    """real3_dot_product(p1, p2) -> Real
 
     Return a dot product between two vectors
 
@@ -207,16 +209,16 @@ def cross_product(Real3 p1, Real3 p2):
     cdef Cpp_Real3 r = real3operators.cross_product(deref(p1.thisptr), deref(p2.thisptr))
     return Real3_from_Cpp_Real3(address(r))
 
-def length_sq(Real3 p1):
-    """length_sq(p1) -> Real
+def real3_length_sq(Real3 p1):
+    """real3_length_sq(p1) -> Real
 
     Return a square of a Euclidean norm of the given vector.
 
     """
     return real3operators.length_sq(deref(p1.thisptr))
 
-def length(Real3 p1):
-    """length(p1) -> Real
+def real3_length(Real3 p1):
+    """real3_length(p1) -> Real
 
     Return a Euclidean norm of the given vector.
     This is almost equivalent to call ``sqrt(length_sq(p1))``

@@ -91,6 +91,9 @@ cdef class ReactionInfo:
             inc(it)
         return retval
 
+    def __reduce__(self):
+        return (ReactionInfo, (self.t(), self.reactants(), self.products()))
+
 cdef ReactionInfo ReactionInfo_from_Cpp_ReactionInfo(Cpp_ReactionInfo* ri):
     cdef Cpp_ReactionInfo *new_obj = new Cpp_ReactionInfo(<Cpp_ReactionInfo> deref(ri))
     r = ReactionInfo(0, [], [])
@@ -219,6 +222,21 @@ cdef class EGFRDWorld:
         """
         cdef Cpp_Real3 lengths = self.thisptr.get().actual_lengths()
         return Real3_from_Cpp_Real3(address(lengths))
+
+    def set_value(self, Species sp, Real value):
+        """set_value(sp, value)
+
+        Set the value of the given species.
+
+        Parameters
+        ----------
+        sp : Species
+            a species whose value you set
+        value : Real
+            a value set
+
+        """
+        self.thisptr.get().set_value(deref(sp.thisptr), value)
 
     def get_value(self, Species sp):
         """get_value(sp) -> Real
@@ -879,7 +897,7 @@ cdef EGFRDSimulator EGFRDSimulator_from_Cpp_EGFRDSimulator(Cpp_EGFRDSimulator* s
 ## EGFRDFactory
 #  a python wrapper for Cpp_EGFRDFactory
 cdef class EGFRDFactory:
-    """ A factory class creating a BDWorld instance and a BDSimulator instance.
+    """ A factory class creating a EGFRDWorld instance and a EGFRDSimulator instance.
 
     EGFRDFactory(matrix_sizes=None, rng=None, dissociation_retry_moves,
                  bd_dt_factor, user_max_shell_size)

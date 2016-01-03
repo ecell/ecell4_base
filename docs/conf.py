@@ -1,18 +1,18 @@
 import sys
 import os
 
-extensions = []
+extensions = ['sphinx.ext.autodoc']
 
 templates_path = ['_templates']
 
 master_doc = 'index'
 
-project = u'Test'
-copyright = u'2015, Test'
-author = u'Test'
+project = u'E-Cell'
+copyright = u'2015, E-Cell project'
+author = u'Kazunari Kaizu'
 
-version = 'test'
-release = 'test'
+version = '4.0.0'
+release = '4.0.0'
 
 language = None
 

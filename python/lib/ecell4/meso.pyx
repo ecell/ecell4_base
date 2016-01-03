@@ -85,6 +85,9 @@ cdef class ReactionInfo:
             inc(it)
         return retval
 
+    def __reduce__(self):
+        return (ReactionInfo, (self.t(), self.reactants(), self.products(), self.coordinate()))
+
 cdef ReactionInfo ReactionInfo_from_Cpp_ReactionInfo(Cpp_ReactionInfo* ri):
     cdef Cpp_ReactionInfo *new_obj = new Cpp_ReactionInfo(<Cpp_ReactionInfo> deref(ri))
     r = ReactionInfo(0, [], [], 0)
@@ -250,6 +253,21 @@ cdef class MesoscopicWorld:
 
         """
         return self.thisptr.get().get_value_exact(deref(sp.thisptr))
+
+    def set_value(self, Species sp, Real value):
+        """set_value(sp, value)
+
+        Set the value of the given species.
+
+        Parameters
+        ----------
+        sp : Species
+            a species whose value you set
+        value : Real
+            a value set
+
+        """
+        self.thisptr.get().set_value(deref(sp.thisptr), value)
 
     def num_subvolumes(self, sp = None):
         """num_subvolumes(sp=None) -> Integer
@@ -1002,7 +1020,7 @@ cdef class MesoscopicFactory:
         if arg1 is None:
             return MesoscopicWorld_from_Cpp_MesoscopicWorld(
                 shared_ptr[Cpp_MesoscopicWorld](
-                    self.thisptr.create_world(deref((<Real3>arg1).thisptr))))
+                    self.thisptr.create_world()))
         elif isinstance(arg1, Real3):
             return MesoscopicWorld_from_Cpp_MesoscopicWorld(
                 shared_ptr[Cpp_MesoscopicWorld](

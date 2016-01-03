@@ -70,6 +70,9 @@ cdef class Voxel:
         """
         return self.thisptr.loc().decode('UTF-8')
 
+    def __reduce__(self):
+        return (Voxel, (self.species(), self.coordinate(), self.radius(), self.D(), self.loc()))
+
 cdef Voxel Voxel_from_Cpp_Voxel(Cpp_Voxel* p):
     cdef Cpp_Voxel *new_obj = new Cpp_Voxel(<Cpp_Voxel> deref(p))
     r = Voxel(Species(), 0, 0, 0)

@@ -25,7 +25,8 @@ struct SubvolumeSpaceHDF5Traits
     typedef struct h5_species_struct {
         uint32_t id;
         char serial[32]; // species' serial may exceed the limit
-        // double D;
+        double D;
+        char loc[32]; // species' loc may exceed the limit
     } h5_species_struct;
 
     static H5::CompType get_species_comp_type()
@@ -37,9 +38,12 @@ struct SubvolumeSpaceHDF5Traits
         h5_species_comp_type.insertMember(
             std::string("serial"), HOFFSET(h5_species_struct, serial),
             H5::StrType(H5::PredType::C_S1, 32));
-        // h5_species_comp_type.insertMember(
-        //     std::string("D"), HOFFSET(h5_species_struct, D),
-        //     H5::PredType::STD_I64LE);
+        h5_species_comp_type.insertMember(
+            std::string("D"), HOFFSET(h5_species_struct, D),
+            H5::PredType::STD_I64LE);
+        h5_species_comp_type.insertMember(
+            std::string("loc"), HOFFSET(h5_species_struct, loc),
+            H5::StrType(H5::PredType::C_S1, 32));
         return h5_species_comp_type;
     }
 
@@ -88,7 +92,11 @@ void save_subvolume_space(const Tspace_& space, H5::Group* root)
         const unsigned int sid(i + 1);
         h5_species_table[i].id = sid;
         std::strcpy(h5_species_table[i].serial, species[i].serial().c_str());
-        // h5_species_table[i].D = 0.0;
+        const boost::shared_ptr<typename Tspace_::PoolBase>&
+            pool = space.get_pool(species[i]);
+        h5_species_table[i].D = pool->D();
+        std::strcpy(h5_species_table[i].loc, pool->loc().c_str());
+
         for (unsigned int j(0); j < num_subvolumes; ++j)
         {
             h5_num_table[i][j] = space.num_molecules_exact(species[i], j);
@@ -221,18 +229,27 @@ void load_subvolume_space(const H5::Group& root, Tspace_* space)
             h5_num_table.data(), H5::PredType::STD_I64LE);
         num_dset.close();
 
-        typedef utils::get_mapper_mf<unsigned int, Species::serial_type>::type
+        typedef utils::get_mapper_mf<unsigned int, unsigned int>::type
             species_id_map_type;
         species_id_map_type species_id_map;
         for (unsigned int i(0); i < num_species; ++i)
         {
-            species_id_map[h5_species_table[i].id] = h5_species_table[i].serial;
+            // species_id_map[h5_species_table[i].id] = h5_species_table[i].serial;
+            species_id_map[h5_species_table[i].id] = i;
         }
 
         for (unsigned int i(0); i < num_species; ++i)
         {
             const uint32_t sid(i + 1);
-            const Species sp(species_id_map[sid]);
+            const unsigned int k(species_id_map[sid]);
+
+            const Species sp(h5_species_table[k].serial);
+            const Real D(h5_species_table[k].D);
+            const Species::serial_type loc(h5_species_table[k].loc);
+            space->reserve_pool(sp, D, loc);
+
+            std::cout << "1 => " << sp.serial() << ", " << D << ", " << loc << std::endl;
+
             for (unsigned int j(0); j < num_subvolumes; ++j)
             {
                 space->add_molecules(sp, h5_num_table[i][j], j);
@@ -273,6 +290,7 @@ void load_subvolume_space(const H5::Group& root, Tspace_* space)
         {
             const uint32_t sid(i + 1);
             const Species::serial_type serial(structures_id_map[sid]);
+            std::cout << "2 => " << serial << std::endl;
             for (unsigned int j(0); j < num_subvolumes; ++j)
             {
                 space->update_structure(serial, j, h5_stcoordinate_table[i][j]);

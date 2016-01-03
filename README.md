@@ -56,27 +56,27 @@ Native binary installation
 #### Requirements
 
 Please use 32bit Python, even if you use 64bit Windows.
-We don't support 64bit Python.
+We have NOT supported 64bit Python yet.
 
-- Python 2.7.10(**32bit**) https://www.python.org/ftp/python/2.7.10/python-2.7.10.msi
-- HDF5-1.8.14 Pre-built Binary(**32-bit**) http://www.hdfgroup.org/ftp/HDF5/current/bin/windows/extra/hdf5-1.8.14-win32-vs2008-shared.zip
+- [Python 2.7.11(**32bit**)](https://www.python.org/ftp/python/2.7.11/python-2.7.11.msi)
+- HDF5-1.8.16 Pre-built Binary(**32-bit**) http://www.hdfgroup.org/ftp/HDF5/current/bin/windows/extra/hdf5-1.8.16-win32-vs2015-shared.zip
 
-Please add `C:\Python27`, `C:\Python27\Scripts` and `C:\Program Files (x86)\HDF_Group\HDF5\1.8.14\bin` to your **PATH** enviromental variable.
+Please add `C:\Python27`, `C:\Python27\Scripts` and `C:\Program Files (x86)\HDF_Group\HDF5\1.8.16\bin` to your **PATH** enviromental variable.
 
 And run following command with command prompt.
 ```
-pip install https://github.com/ecell/ecell4/releases/download/4.0.0-beta2/ecell4-4.0.0b2-cp27-none-win32.whl
+pip install https://ci.appveyor.com/api/buildjobs/aju5rykh88bb88ns/artifacts/python/dist/ecell4-4.0.0b2-cp27-none-win32.whl
 ```
 
-#### Jupyter for Windows
+#### Jupyter and matplotlib for Windows
 We recommend you run E-Cell4 models from Jupyter notebook.
 Below is Jupyter notebook(and matplotlib) installation for Windows.
 
-- Install [Visual C++ Compiler for Python 2.7](http://www.microsoft.com/en-us/download/details.aspx?id=44266)
+- Install [Visual C++ Compiler for Python 2.7](http://aka.ms/vcpython27)
 - Install Jupyter notebook and matplotlib
 
   ```
-  pip install jupyter
+  pip install -U jupyter
   pip install matplotlib
   ```
 
@@ -86,9 +86,18 @@ matplotlib depends on numpy. It takes some time to build numpy, please be patien
 
 Please use [homebrew-ecell4](https://github.com/ecell/homebrew-ecell4)
 
-#### Jupyter for Mac or Linux
-We recommend you run E-Cell4 models from Jupyter notebook.
-Below is Jupyter notebook(and matplotlib) installation for Mac or Linux.
+https://github.com/ecell/homebrew-ecell4
+
+#### Jupyter and matplotlib for Mac
+
+```shell
+sudo python get-pip.py
+# you can NOT install latest matplotlib into System directory, so you need to install it into USER directory
+pip install -U matplotlib --user
+pip install jupyter --user
+```
+
+#### Jupyter and matplotlib for Linux
 
 ```shell
 sudo python get-pip.py
@@ -96,12 +105,23 @@ sudo pip install matplotlib
 sudo pip install jupyter
 ```
 
-
 Simple examples
 ---------------
 
 Here are two extremely simple examples.
 Please see http://ecell4.readthedocs.org for more details.
+
+You need to add PYTHONPATH to import latest matplotlib only on Mac OSX.
+
+### Running Python shell and E-Cell4
+
+```shell
+# on Windows or Linux
+python
+
+# on Mac
+PYTHONPATH=~/Library/Python/2.7/lib/python/site-packages/ python
+```
 
 ```
 Python 2.7.6 (default, Mar 22 2014, 22:59:56)
@@ -115,20 +135,16 @@ B.A.C
 A.B.C
 ```
 
-#### A reversible binding reaction
+### A reversible binding reaction
 
 ```python
 %matplotlib inline
-import numpy
 from ecell4 import *
 
 with reaction_rules():
     A + B == C | (0.01, 0.3)
 
-run_simulation(
-    numpy.linspace(0, 10, 100), {'A': 60, 'B': 60}, solver='ode')
+run_simulation(10, {'A': 60, 'B': 60}, solver='ode')
 ```
 
 ![png](https://raw.githubusercontent.com/ecell/ecell4/master/docs/output_7_0.png)
-
-

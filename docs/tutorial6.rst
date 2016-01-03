@@ -1,5 +1,5 @@
 
-X. How to Solve ODEs with Rate Law Functions
+6. How to Solve ODEs with Rate Law Functions
 ============================================
 
 Although the ``ode`` solver accepts ``NetworkModel``,
@@ -23,7 +23,7 @@ activated as follows:
 
     util.decorator.ENABLE_RATELAW = True
 
-X.1. ode.ODEReactionRule
+6.1. ode.ODEReactionRule
 ------------------------
 
 ``ode.ODEReactionRule`` has almost same members with ``ReactionRule``.
@@ -102,7 +102,7 @@ You can also access to the coefficients as follows:
     [2.5]
 
 
-X.2. ode.ODERatelaw
+6.2. ode.ODERatelaw
 -------------------
 
 ``ode.ODEReactionRule`` can be bound to a ``ode.ODERatelaw``.
@@ -169,7 +169,7 @@ A ``lambda`` function is available too.
     A+B>C|<lambda>
 
 
-X.3. ode.ODENetworkModel
+6.3. ode.ODENetworkModel
 ------------------------
 
 ``ode.ODENetworkModel`` accepts both ``ReactionRule`` and
@@ -207,7 +207,7 @@ follows:
 
 
 
-.. image:: ./images/OdeWithRatelaw_22_0.png
+.. image:: ./images/tutorial6_22_0.png
 
 
 Modeling with Python decorators is also available by specifying a
@@ -258,7 +258,7 @@ lists.
 
 
 
-.. image:: ./images/OdeWithRatelaw_30_0.png
+.. image:: ./images/tutorial6_30_0.png
 
 
 Please be careful about typo in ``Species``' name. When you make a typo,
@@ -322,10 +322,10 @@ follows:
 
 
 
-.. image:: ./images/OdeWithRatelaw_36_0.png
+.. image:: ./images/tutorial6_36_0.png
 
 
-X.4. References in a Rate Law
+6.4. References in a Rate Law
 -----------------------------
 
 Here, we exlain the details in the rate law definition.
@@ -352,7 +352,7 @@ available there even if you declare the function outside the block.
 
 
 This is because ``erf`` is tried to be evaluated agaist ``S / 30.0``
-first, but it is no a floating number. In contrast, the following case
+first, but it is not a floating number. In contrast, the following case
 is acceptable:
 
 .. code:: python
@@ -418,7 +418,7 @@ it can hold a reference to variables outside.
 
 
 
-.. image:: ./images/OdeWithRatelaw_44_0.png
+.. image:: ./images/tutorial6_44_0.png
 
 
 However, in this case, it is better to make a new model for each set of
@@ -436,7 +436,7 @@ parameters.
     obs2 = run_simulation(2, model=create_model(k=2.0), y0={"S": 60}, return_type='observer')
     # viz.plot_number_observer(obs1, '-', obs2, '--')
 
-X.5. More about ode
+6.5. More about ode
 -------------------
 
 In ``ode.ODEWorld``, a value for each ``Species`` is a floating number.
@@ -499,7 +499,7 @@ interval.
 
 
 
-.. image:: ./images/OdeWithRatelaw_54_0.png
+.. image:: ./images/tutorial6_54_0.png
 
 
 See also examples listed below:

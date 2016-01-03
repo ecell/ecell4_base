@@ -1,5 +1,5 @@
 
-X. Introduction of Rule-based Modeling
+7. Introduction of Rule-based Modeling
 ======================================
 
 E-Cell4 provides the rule-based modeling environment.
@@ -9,7 +9,7 @@ E-Cell4 provides the rule-based modeling environment.
     %matplotlib inline
     from ecell4 import *
 
-X.1. Species.count
+7.1. Species.count
 ------------------
 
 First, ``Species`` provides a function ``count``. ``Species.count``
@@ -124,7 +124,7 @@ does **not** mean the number of dimers.
     2
 
 
-X.2. ReactionRule.count and generate
+7.2. ReactionRule.count and generate
 ------------------------------------
 
 ``ReactionRule`` also has a function to count matches agaist the given
@@ -317,7 +317,7 @@ Named wildcard is consistent even between ``UnitSpecies``' and
     [u'A(b=B)+B(b)>A(b=B^1).B(b^1)|1']
 
 
-X.3. NetfreeModel
+7.3. NetfreeModel
 -----------------
 
 ``NetfreeModel`` is a ``Model`` class for the rule-based modeling. The
@@ -359,7 +359,7 @@ get a model as ``NetfreeModel``, set ``is_netfree`` ``True`` in
 
 .. parsed-literal::
 
-    <ecell4.core.NetfreeModel object at 0x10804aaf8>
+    <ecell4.core.NetfreeModel object at 0x7f44bd1c9b10>
 
 
 ``Model.query_reaction_rules`` returns a list of ``ReactionRule``\ s
@@ -449,7 +449,7 @@ number of iterations and of ``UnitSpecies`` in a ``Species``.
     [u'A(l,r)+A(l,r)>A(l,r^1).A(l^1,r)|2', u'A(l,r^1).A(l^1,r)+A(l,r^1).A(l^1,r)>A(l,r^1).A(l^1,r^2).A(l^2,r^3).A(l^3,r)|2', u'A(l,r)+A(l,r^1).A(l^1,r)>A(l,r^1).A(l^1,r^2).A(l^2,r)|2', u'A(l,r)+A(l,r^1).A(l^1,r^2).A(l^2,r)>A(l,r^1).A(l^1,r^2).A(l^2,r^3).A(l^3,r)|2']
 
 
-X.4. Differences between Species, ReactionRule and NetfreeModel
+7.4. Differences between Species, ReactionRule and NetfreeModel
 ---------------------------------------------------------------
 
 The functions explained above is similar, but there are some differences
