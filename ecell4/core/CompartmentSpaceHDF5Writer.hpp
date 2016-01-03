@@ -51,11 +51,13 @@ struct CompartmentSpaceHDF5TraitsBase
     static H5::CompType get_species_id_table_struct_memtype()
     {
         H5::CompType mtype_id_table_struct(sizeof(species_id_table_struct));
+        const H5std_string name1("sid");
+        const H5std_string name2("serial");
         mtype_id_table_struct.insertMember(
-            H5std_string("sid"), HOFFSET(species_id_table_struct, sid),
+            name1, HOFFSET(species_id_table_struct, sid),
             H5::PredType::STD_I32LE);
         mtype_id_table_struct.insertMember(
-            H5std_string("serial"), HOFFSET(species_id_table_struct, serial),
+            name2, HOFFSET(species_id_table_struct, serial),
             H5::StrType(H5::PredType::C_S1, 32));
         return mtype_id_table_struct;
     }
@@ -68,11 +70,13 @@ struct CompartmentSpaceHDF5TraitsBase
     static H5::CompType get_species_num_struct_memtype()
     {
         H5::CompType mtype_num_struct(sizeof(species_num_struct));
+        const H5std_string name1("sid");
+        const H5std_string name2("num_molecules");
         mtype_num_struct.insertMember(
-            H5std_string("sid"), HOFFSET(species_num_struct, sid),
+            name1, HOFFSET(species_num_struct, sid),
             H5::PredType::STD_I32LE);
         mtype_num_struct.insertMember(
-            H5std_string("num_molecules"),
+            name2,
             HOFFSET(species_num_struct, num_molecules),
             num_molecules_traits_type::get());
         return mtype_num_struct;
