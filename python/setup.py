@@ -47,7 +47,7 @@ if "--prefer-shared" in sys.argv:
 if sys.platform == "win32":
     if sys.version_info.major == 2:
         dependent_libs = ['gsl', 'cblas', 'hdf5_cpp', 'hdf5']
-        extra_compile_args = ["/EHsc", "/w", "-DHAVE_CONFIG_H", "-DHAVE_INLINE", "-DWITH_HDF5", "-D_HDF5USEDLL_", "-DHDF5CPP_USEDLL"]
+        extra_compile_args = ["/EHsc", "/w", "-DHAVE_CONFIG_H", "-DHAVE_INLINE", "-DWITH_HDF5", "-D_HDF5USEDLL_", "-DHDF5CPP_USEDLL", "-DH5_BUILT_AS_DYNAMIC_LIB"]
     elif sys.version_info.major == 3:
         dependent_libs = ['gsl', 'gslcblas', 'hdf5_cpp', 'hdf5']
         extra_compile_args = ["/EHsc", "/w", "-DHAVE_CONFIG_H", "-DHAVE_INLINE", "-DWITH_HDF5"]
