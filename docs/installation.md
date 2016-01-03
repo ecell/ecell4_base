@@ -47,7 +47,7 @@ matplotlib depends on numpy. It takes some time to build numpy, please be patien
 ```shell
 ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 brew tap ecell/ecell4
-brew install ecell4 --HEAD
+brew install ecell4
 ```
 
 #### Jupyter for Mac
