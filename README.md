@@ -8,18 +8,20 @@ E-Cell System version 4
 
 E-Cell System, a software platform for modeling, simulation and analysis of complex, heterogeneous and multi-scale systems like the cell.
 
-- [Dockerized E-Cell4 Jupyter notebooks](#dockerized-e-cell4-jupyter-notebooks)
+- [Docker users](#docker-users)
     - [For Windows or Mac](#for-windows-or-mac)
     - [For Linux](#for-linux)
 
-- [Native binary installation](#native-binary-installation)
+- [Pip users](#pip-users)
     - [Windows](#windows)
-    - [Mac or Linux](#mac-or-linux)
+    - [Mac](#mac)
+
+- [Homebrew or Linuxbrew users](#homebrew-or-linuxbrew-users)
 
 - [Simple examples](#simple-examples)
 
-Dockerized E-Cell4 Jupyter notebooks
-------------------------------------
+Docker users
+------------
 
 If you have docker environment, you can try E-Cell4 easily.
 You can pull E-Cell4 container with `docker pull ecell/ecell4`.
@@ -45,12 +47,12 @@ You can pull E-Cell4 container with `docker pull ecell/ecell4`.
 3. Open **localhost:443** with your favorite web browser.
 
 
-Native binary installation
---------------------------
+Pip users
+---------
 
 ### Windows
 
-#### Requirements
+#### Requirements and installation
 
 Please use 32bit Python, even if you use 64bit Windows.
 We have NOT supported 64bit Python yet.
@@ -61,7 +63,7 @@ We have NOT supported 64bit Python yet.
 Please add `C:\Python27`, `C:\Python27\Scripts` and `C:\Program Files (x86)\HDF_Group\HDF5\1.8.16\bin` to your **PATH** enviromental variable.
 
 And run following command with command prompt.
-```
+```shell
 pip install https://ci.appveyor.com/api/buildjobs/aju5rykh88bb88ns/artifacts/python/dist/ecell4-4.0.0b2-cp27-none-win32.whl
 ```
 
@@ -72,18 +74,20 @@ Below is Jupyter notebook(and matplotlib) installation for Windows.
 - Install [Visual C++ Compiler for Python 2.7](http://aka.ms/vcpython27)
 - Install Jupyter notebook and matplotlib
 
-  ```
+  ```shell
   pip install -U jupyter
   pip install matplotlib
   ```
 
 matplotlib depends on numpy. It takes some time to build numpy, please be patient.
 
-### Mac or Linux
+### Mac
 
-Please use [homebrew-ecell4](https://github.com/ecell/homebrew-ecell4)
+#### Installation
 
-https://github.com/ecell/homebrew-ecell4
+```shell
+pip install https://bintray.com/artifact/download/kozo2/generic/dist/ecell4-4.0.0b2-cp27-none-macosx_10_6_intel.macosx_10_9_intel.macosx_10_9_x86_64.macosx_10_10_intel.macosx_10_10_x86_64.whl
+```
 
 #### Jupyter and matplotlib for Mac
 
@@ -94,13 +98,14 @@ pip install -U matplotlib --user
 pip install jupyter --user
 ```
 
-#### Jupyter and matplotlib for Linux
 
-```shell
-sudo python get-pip.py
-sudo pip install matplotlib
-sudo pip install jupyter
-```
+Homebrew or Linuxbrew users
+---------------------------
+
+Please use [homebrew-ecell4](https://github.com/ecell/homebrew-ecell4)
+
+https://github.com/ecell/homebrew-ecell4
+
 
 Simple examples
 ---------------
