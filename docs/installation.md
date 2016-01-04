@@ -1,19 +1,51 @@
-- [Installation](#installation)
-    - [Windows](#windows-installation)
-    - [Mac OS X](#mac-os-x-installation)
-    - [Ubuntu](#ubuntu-linux-installation)
-    - [CentOS](#centos-linux-installation)
-- [Running E-Cell4](#running-e-cell4)
-- [Dockerized E-Cell4 Jupyter notebooks](#dockerized-e-cell4-jupyter-notebooks)
-    - [For Windows and Mac](#for-windows-and-mac)
+Installation
+============
+
+- [Docker users](#docker-users)
+    - [For Windows or Mac](#for-windows-or-mac)
     - [For Linux](#for-linux)
 
-Installation
+- [Pip users](#pip-users)
+    - [Windows](#windows)
+    - [Mac](#mac)
+
+- [Homebrew or Linuxbrew users](#homebrew-or-linuxbrew-users)
+
+- [Simple examples](#simple-examples)
+
+Docker users
 ------------
 
-### Windows installation
+If you have docker environment, you can try E-Cell4 easily.
+You can pull E-Cell4 container with `docker pull ecell/ecell4`.
 
-#### Requirements
+### For Windows or Mac
+
+1. Install [Docker Toolbox](https://www.docker.com/toolbox).
+2. Run **Docker Quickstart Terminal**.
+3. Run `docker run -d -p 443:8888 ecell/ecell4` in the terminal.
+4. Open **192.168.99.100:443** with your favorite web browser.  
+5. You should see Jupyter Notebook up and running (and E-Cell4 tutorials) in your web browser.
+
+### For Linux
+
+1. Install docker.
+2. Run the following command.
+
+    ```shell
+    $ sudo docker pull ecell/ecell4
+    $ sudo docker run -d -p 443:8888 ecell/ecell4
+    ```
+
+3. Open **localhost:443** with your favorite web browser.
+
+
+Pip users
+---------
+
+### Windows
+
+#### Requirements and installation
 
 Please use 32bit Python, even if you use 64bit Windows.
 We have NOT supported 64bit Python yet.
@@ -24,96 +56,52 @@ We have NOT supported 64bit Python yet.
 Please add `C:\Python27`, `C:\Python27\Scripts` and `C:\Program Files (x86)\HDF_Group\HDF5\1.8.16\bin` to your **PATH** enviromental variable.
 
 And run following command with command prompt.
-```
+```shell
 pip install https://ci.appveyor.com/api/buildjobs/aju5rykh88bb88ns/artifacts/python/dist/ecell4-4.0.0b2-cp27-none-win32.whl
 ```
 
-#### Jupyter for Windows
+#### Jupyter and matplotlib for Windows
 We recommend you run E-Cell4 models from Jupyter notebook.
 Below is Jupyter notebook(and matplotlib) installation for Windows.
 
 - Install [Visual C++ Compiler for Python 2.7](http://aka.ms/vcpython27)
 - Install Jupyter notebook and matplotlib
 
-  ```
+  ```shell
   pip install -U jupyter
   pip install matplotlib
   ```
 
 matplotlib depends on numpy. It takes some time to build numpy, please be patient.
 
-### Mac OS X installation
+### Mac
+
+#### Installation
 
 ```shell
-ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-brew tap ecell/ecell4
-brew install ecell4
+pip install https://bintray.com/artifact/download/kozo2/generic/dist/ecell4-4.0.0b2-cp27-none-macosx_10_6_intel.macosx_10_9_intel.macosx_10_9_x86_64.macosx_10_10_intel.macosx_10_10_x86_64.whl
 ```
 
-#### Jupyter for Mac
-We recommend you run E-Cell4 models from Jupyter notebook.
-Below is Jupyter notebook(and matplotlib) installation for Mac.
+#### Jupyter and matplotlib for Mac
 
 ```shell
 sudo python get-pip.py
-sudo pip install -U matplotlib
-sudo pip install -U jupyter
+# you can NOT install latest matplotlib into System directory, so you need to install it into USER directory
+pip install -U matplotlib --user
+pip install jupyter --user
 ```
 
-### Ubuntu Linux installation
 
-```shell
-$ sudo apt-get install build-essential curl git m4 ruby texinfo libbz2-dev libcurl4-openssl-dev libexpat-dev libncurses-dev zlib1g-dev python-dev python-setuptools
-$ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/linuxbrew/go/install)"
-$ echo 'export PATH="$HOME/.linuxbrew/bin:$PATH"' >> ~/.bash_profile
-$ source ~/.bash_profile
-$ brew tap ecell/ecell4
-$ brew install ecell4 --HEAD
-```
+Homebrew or Linuxbrew users
+---------------------------
 
-### CentOS Linux installation
+Please use [homebrew-ecell4](https://github.com/ecell/homebrew-ecell4)
 
-```shell
-$ sudo yum groupinstall 'Development Tools'
-$ sudo yum install curl git m4 ruby texinfo bzip2-devel curl-devel expat-devel ncurses-devel zlib-devel python-devel python-setuptools
-$ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/linuxbrew/go/install)"
-$ echo 'export PATH="$HOME/.linuxbrew/bin:$PATH"' >> ~/.bash_profile
-$ source ~/.bash_profile
-$ ln -s `which gcc` `brew --prefix`/bin/gcc-4.8
-$ ln -s `which g++` `brew --prefix`/bin/g++-4.8
-$ brew tap ecell/ecell4
-$ brew install ecell4 --HEAD
-```
+https://github.com/ecell/homebrew-ecell4
 
-Running E-Cell4
+
+Simple examples
 ---------------
-
-### How to run Python for E-Cell4 (Windows)
-1. run command prompt
-2. run Python
-  ```
-  python
-  ```
-
-### How to run Python for E-Cell4 (Mac)
-1. run terminal
-2. run Python with PYTHONPATH
-  ```
-  PYTHONPATH=/usr/local/Cellar/ecell4/HEAD/libexec/lib/python2.7/site-packages python
-  ```
-
-### How to run Python for E-Cell4 (Ubuntu)
-
-If you set PREFIX to $HOME/ecell4, run Python with
-```
-LD_LIBRARY_PATH=$HOME/ecell4/lib:$LD_LIBRARY_PATH PYTHONPATH=$HOME/ecell4/lib/python2.7/site-packages python
-```
-in case with Python3
-```
-LD_LIBRARY_PATH=$HOME/ecell4/lib:$LD_LIBRARY_PATH PYTHONPATH=$HOME/ecell4/lib/python3.4/site-packages python3
-```
-
-### Simple examples
 
 Here are two extremely simple examples, See http://ecell4.readthedocs.org/en/latest/tutorials/ for more details on running E-Cell4.
 
@@ -128,7 +116,7 @@ A.B.C
 >>>
 ```
 
-#### A reversible binding reaction
+### A reversible binding reaction
 
 ```python
 %matplotlib inline
@@ -143,31 +131,3 @@ y = run_simulation(
 ```
 
 ![png](https://raw.githubusercontent.com/ecell/ecell4/master/docs/output_7_0.png)
-
-
-Dockerized E-Cell4 Jupyter notebooks
-------------------------------------
-
-If you use docker, you can easily try E-Cell4.
-You can pull E-Cell4 container with `docker pull ecell/ecell4`
-
-### For Windows and Mac
-
-1. Install [Docker Toolbox](https://www.docker.com/toolbox)
-2. Run Kitematic
-3. Search with **ecell4**, and create ecell4 container
-
-  ![png](https://raw.githubusercontent.com/ecell/ecell4/master/docs/kitematic1.png)
-
-4. Open the **ACCESS URL** in **IP & PORTS** with your web browser
-
-  ![png](https://raw.githubusercontent.com/ecell/ecell4/master/docs/kitematic2.png)
-
-### For Linux
-
-```shell
-$ sudo docker pull ecell/ecell4
-$ sudo docker run -d -p 443:8888 ecell/ecell4
-```
-
-You'll now be able to E-Cell4 notebooks at https://THE_IP_RUNNING_DOCKER:443
