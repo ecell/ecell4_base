@@ -226,15 +226,18 @@ void load_lattice_space(const H5::Group& root, Tspace_* space)
     H5::Group spgroup(root.openGroup("species"));
     for (hsize_t idx(0); idx < spgroup.getNumObjs(); ++idx)
     {
-        std::string serial(spgroup.getObjnameByIdx(idx));
-        H5::Group group(spgroup.openGroup(serial.c_str()));
-        Species species(serial);
+        std::cout << "=> " << idx << std::endl;
+        const H5std_string serial(spgroup.getObjnameByIdx(idx));
+        H5::Group group(spgroup.openGroup(serial));
+        Species species(std::string(serial.c_str()));
+        std::cout << "=> " << species.serial() << std::endl;
 
         traits_type::h5_species_struct property;
         group.openAttribute("property").read(
                 traits_type::get_property_comp(), &property);
         struct_map.insert(std::make_pair(species, property));
         location_map.insert(std::make_pair(property.location, species));
+        std::cout << "properties are read." << std::endl;
 
         H5::DataSet voxel_dset(group.openDataSet("voxels"));
         const unsigned int num_voxels(
@@ -245,6 +248,7 @@ void load_lattice_space(const H5::Group& root, Tspace_* space)
                 h5_voxel_array.get(), traits_type::get_voxel_comp());
         voxel_dset.close();
         group.close();
+        std::cout << "voxels are read." << std::endl;
 
         std::vector<std::pair<ParticleID, Integer> > voxels;
         for (unsigned int idx(0); idx < num_voxels; ++idx)
@@ -254,6 +258,7 @@ void load_lattice_space(const H5::Group& root, Tspace_* space)
                         h5_voxel_array[idx].coordinate));
         }
         voxels_map.insert(std::make_pair(species, voxels));
+        std::cout << "done." << std::endl;
     }
     spgroup.close();
 
