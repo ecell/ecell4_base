@@ -263,8 +263,6 @@ void load_subvolume_space(const H5::Group& root, Tspace_* space)
             const Species::serial_type loc(h5_species_table[k].loc);
             space->reserve_pool(sp, D, loc);
 
-            std::cout << "1 => " << sp.serial() << ", " << D << ", " << loc << std::endl;
-
             for (unsigned int j(0); j < num_subvolumes; ++j)
             {
                 space->add_molecules(sp, h5_num_table[i][j], j);
@@ -305,7 +303,6 @@ void load_subvolume_space(const H5::Group& root, Tspace_* space)
         {
             const uint32_t sid(i + 1);
             const Species::serial_type serial(structures_id_map[sid]);
-            std::cout << "2 => " << serial << std::endl;
             for (unsigned int j(0); j < num_subvolumes; ++j)
             {
                 space->update_structure(serial, j, h5_stcoordinate_table[i][j]);
