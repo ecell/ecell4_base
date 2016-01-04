@@ -32,18 +32,26 @@ struct SubvolumeSpaceHDF5Traits
     static H5::CompType get_species_comp_type()
     {
         H5::CompType h5_species_comp_type(sizeof(h5_species_struct));
-        h5_species_comp_type.insertMember(
-            std::string("id"), HOFFSET(h5_species_struct, id),
-            H5::PredType::STD_I32LE);
-        h5_species_comp_type.insertMember(
-            std::string("serial"), HOFFSET(h5_species_struct, serial),
-            H5::StrType(H5::PredType::C_S1, 32));
-        h5_species_comp_type.insertMember(
-            std::string("D"), HOFFSET(h5_species_struct, D),
-            H5::PredType::STD_I64LE);
-        h5_species_comp_type.insertMember(
-            std::string("loc"), HOFFSET(h5_species_struct, loc),
-            H5::StrType(H5::PredType::C_S1, 32));
+#define INSERT_MEMBER(member, type) \
+        H5Tinsert(h5_species_comp_type.getId(), #member,\
+                HOFFSET(h5_species_struct, member), type.getId())
+        INSERT_MEMBER(id, H5::PredType::STD_I32LE);
+        INSERT_MEMBER(serial, H5::StrType(H5::PredType::C_S1, 32));
+        INSERT_MEMBER(D, H5::PredType::NATIVE_DOUBLE);
+        INSERT_MEMBER(loc, H5::StrType(H5::PredType::C_S1, 32));
+#undef INSERT_MEMBER
+        // h5_species_comp_type.insertMember(
+        //     std::string("id"), HOFFSET(h5_species_struct, id),
+        //     H5::PredType::STD_I32LE);
+        // h5_species_comp_type.insertMember(
+        //     std::string("serial"), HOFFSET(h5_species_struct, serial),
+        //     H5::StrType(H5::PredType::C_S1, 32));
+        // h5_species_comp_type.insertMember(
+        //     std::string("D"), HOFFSET(h5_species_struct, D),
+        //     H5::PredType::STD_I64LE);  //XXX: -> NATIVE_DOUBLE?
+        // h5_species_comp_type.insertMember(
+        //     std::string("loc"), HOFFSET(h5_species_struct, loc),
+        //     H5::StrType(H5::PredType::C_S1, 32));
         return h5_species_comp_type;
     }
 
@@ -56,15 +64,22 @@ struct SubvolumeSpaceHDF5Traits
     static H5::CompType get_structures_comp_type()
     {
         H5::CompType h5_structures_comp_type(sizeof(h5_structures_struct));
-        h5_structures_comp_type.insertMember(
-            std::string("id"), HOFFSET(h5_structures_struct, id),
-            H5::PredType::STD_I32LE);
-        h5_structures_comp_type.insertMember(
-            std::string("serial"), HOFFSET(h5_structures_struct, serial),
-            H5::StrType(H5::PredType::C_S1, 32));
-        // h5_species_comp_type.insertMember(
-        //     std::string("dimension"), HOFFSET(h5_structure_struct, dimension),
+#define INSERT_MEMBER(member, type) \
+        H5Tinsert(h5_structures_comp_type.getId(), #member,\
+                HOFFSET(h5_structures_struct, member), type.getId())
+        INSERT_MEMBER(id, H5::PredType::STD_I32LE);
+        INSERT_MEMBER(serial, H5::StrType(H5::PredType::C_S1, 32));
+        // INSERT_MEMBER(dimension, H5::PredType::STD_I32LE);
+#undef INSERT_MEMBER
+        // h5_structures_comp_type.insertMember(
+        //     std::string("id"), HOFFSET(h5_structures_struct, id),
         //     H5::PredType::STD_I32LE);
+        // h5_structures_comp_type.insertMember(
+        //     std::string("serial"), HOFFSET(h5_structures_struct, serial),
+        //     H5::StrType(H5::PredType::C_S1, 32));
+        // // h5_species_comp_type.insertMember(
+        // //     std::string("dimension"), HOFFSET(h5_structure_struct, dimension),
+        // //     H5::PredType::STD_I32LE);
         return h5_structures_comp_type;
     }
 };

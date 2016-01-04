@@ -39,42 +39,60 @@ struct ParticleSpaceHDF5Traits
     static H5::CompType get_particle_comp_type()
     {
         H5::CompType h5_particle_comp_type(sizeof(h5_particle_struct));
-        h5_particle_comp_type.insertMember(
-            std::string("lot"), HOFFSET(h5_particle_struct, lot),
-            H5::PredType::NATIVE_INT);
-        h5_particle_comp_type.insertMember(
-            std::string("serial"), HOFFSET(h5_particle_struct, serial),
-            H5::PredType::NATIVE_INT);
-        h5_particle_comp_type.insertMember(
-            std::string("sid"), HOFFSET(h5_particle_struct, sid),
-            H5::PredType::STD_I32LE);
-        h5_particle_comp_type.insertMember(
-            std::string("posx"), HOFFSET(h5_particle_struct, posx),
-            H5::PredType::NATIVE_DOUBLE);
-        h5_particle_comp_type.insertMember(
-            std::string("posy"), HOFFSET(h5_particle_struct, posy),
-            H5::PredType::NATIVE_DOUBLE);
-        h5_particle_comp_type.insertMember(
-            std::string("posz"), HOFFSET(h5_particle_struct, posz),
-            H5::PredType::NATIVE_DOUBLE);
-        h5_particle_comp_type.insertMember(
-            std::string("radius"), HOFFSET(h5_particle_struct, radius),
-            H5::PredType::NATIVE_DOUBLE);
-        h5_particle_comp_type.insertMember(
-            std::string("D"), HOFFSET(h5_particle_struct, D),
-            H5::PredType::NATIVE_DOUBLE);
+#define INSERT_MEMBER(member, type) \
+        H5Tinsert(h5_particle_comp_type.getId(), #member,\
+                HOFFSET(h5_particle_struct, member), type.getId())
+        INSERT_MEMBER(lot, H5::PredType::NATIVE_INT);
+        INSERT_MEMBER(serial, H5::PredType::NATIVE_INT);
+        INSERT_MEMBER(sid, H5::PredType::STD_I32LE);
+        INSERT_MEMBER(posx, H5::PredType::NATIVE_DOUBLE);
+        INSERT_MEMBER(posy, H5::PredType::NATIVE_DOUBLE);
+        INSERT_MEMBER(posz, H5::PredType::NATIVE_DOUBLE);
+        INSERT_MEMBER(radius, H5::PredType::NATIVE_DOUBLE);
+        INSERT_MEMBER(D, H5::PredType::NATIVE_DOUBLE);
+#undef INSERT_MEMBER
+        // h5_particle_comp_type.insertMember(
+        //     std::string("lot"), HOFFSET(h5_particle_struct, lot),
+        //     H5::PredType::NATIVE_INT);
+        // h5_particle_comp_type.insertMember(
+        //     std::string("serial"), HOFFSET(h5_particle_struct, serial),
+        //     H5::PredType::NATIVE_INT);
+        // h5_particle_comp_type.insertMember(
+        //     std::string("sid"), HOFFSET(h5_particle_struct, sid),
+        //     H5::PredType::STD_I32LE);
+        // h5_particle_comp_type.insertMember(
+        //     std::string("posx"), HOFFSET(h5_particle_struct, posx),
+        //     H5::PredType::NATIVE_DOUBLE);
+        // h5_particle_comp_type.insertMember(
+        //     std::string("posy"), HOFFSET(h5_particle_struct, posy),
+        //     H5::PredType::NATIVE_DOUBLE);
+        // h5_particle_comp_type.insertMember(
+        //     std::string("posz"), HOFFSET(h5_particle_struct, posz),
+        //     H5::PredType::NATIVE_DOUBLE);
+        // h5_particle_comp_type.insertMember(
+        //     std::string("radius"), HOFFSET(h5_particle_struct, radius),
+        //     H5::PredType::NATIVE_DOUBLE);
+        // h5_particle_comp_type.insertMember(
+        //     std::string("D"), HOFFSET(h5_particle_struct, D),
+        //     H5::PredType::NATIVE_DOUBLE);
         return h5_particle_comp_type;
     }
 
     static H5::CompType get_species_comp_type()
     {
         H5::CompType h5_species_comp_type(sizeof(h5_species_struct));
-        h5_species_comp_type.insertMember(
-            std::string("id"), HOFFSET(h5_species_struct, id),
-            H5::PredType::STD_I32LE);
-        h5_species_comp_type.insertMember(
-            std::string("serial"), HOFFSET(h5_species_struct, serial),
-            H5::StrType(H5::PredType::C_S1, 32));
+#define INSERT_MEMBER(member, type) \
+        H5Tinsert(h5_species_comp_type.getId(), #member,\
+                HOFFSET(h5_species_struct, member), type.getId())
+        INSERT_MEMBER(id, H5::PredType::STD_I32LE);
+        INSERT_MEMBER(serial, H5::StrType(H5::PredType::C_S1, 32));
+#undef INSERT_MEMBER
+        // h5_species_comp_type.insertMember(
+        //     std::string("id"), HOFFSET(h5_species_struct, id),
+        //     H5::PredType::STD_I32LE);
+        // h5_species_comp_type.insertMember(
+        //     std::string("serial"), HOFFSET(h5_species_struct, serial),
+        //     H5::StrType(H5::PredType::C_S1, 32));
         return h5_species_comp_type;
     }
 };

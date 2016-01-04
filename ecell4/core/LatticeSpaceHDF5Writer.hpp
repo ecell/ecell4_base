@@ -42,9 +42,12 @@ struct LatticeSpaceHDF5Traits
     static H5::CompType get_property_comp()
     {
         H5::CompType property_comp_type(sizeof(h5_species_struct));
+// #define INSERT_MEMBER(member, type) \
+//         property_comp_type.insertMember(#member,\
+//                 HOFFSET(h5_species_struct, member), type)
 #define INSERT_MEMBER(member, type) \
-        property_comp_type.insertMember(#member,\
-                HOFFSET(h5_species_struct, member), type)
+        H5Tinsert(property_comp_type.getId(), #member,\
+                HOFFSET(h5_species_struct, member), type.getId())
         INSERT_MEMBER(radius, H5::PredType::IEEE_F64LE);
         INSERT_MEMBER(D, H5::PredType::IEEE_F64LE);
         INSERT_MEMBER(location, H5::StrType(H5::PredType::C_S1, 32));
@@ -57,9 +60,12 @@ struct LatticeSpaceHDF5Traits
     static H5::CompType get_voxel_comp()
     {
         H5::CompType voxel_comp_type(sizeof(h5_voxel_struct));
+// #define INSERT_MEMBER(member, type) \
+//         voxel_comp_type.insertMember(std::string(#member),\
+//             HOFFSET(h5_voxel_struct, member), type)
 #define INSERT_MEMBER(member, type) \
-        voxel_comp_type.insertMember(std::string(#member),\
-            HOFFSET(h5_voxel_struct, member), type)
+        H5Tinsert(voxel_comp_type.getId(), #member,\
+                HOFFSET(h5_voxel_struct, member), type.getId())
         INSERT_MEMBER(lot, H5::PredType::NATIVE_INT);
         INSERT_MEMBER(serial, H5::PredType::NATIVE_INT);
         INSERT_MEMBER(coordinate, H5::PredType::STD_I64LE);
