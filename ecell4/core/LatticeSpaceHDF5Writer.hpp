@@ -78,7 +78,7 @@ struct LatticeSpaceHDF5Traits
     {
         const Species species(mtb->species());
         boost::scoped_ptr<H5::Group> mtgroup(
-                new H5::Group(group->createGroup(species.serial())));
+                new H5::Group(group->createGroup(species.serial().c_str())));
 
         h5_species_struct property;
         property.radius = mtb->radius();
