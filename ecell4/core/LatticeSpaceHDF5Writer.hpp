@@ -224,15 +224,26 @@ void load_lattice_space(const H5::Group& root, Tspace_* space)
             std::vector<std::pair<ParticleID, Integer> > > > tmp_map;
 
     H5::Group spgroup(root.openGroup("species"));
+    char name_C[32 + 1];
     for (hsize_t idx(0); idx < spgroup.getNumObjs(); ++idx)
     {
         std::cout << "=> " << idx << std::endl;
-        const H5std_string serial = spgroup.getObjnameByIdx(idx);
-        std::cout << "=> " << serial.c_str() << std::endl;
-        H5::Group group(spgroup.openGroup(serial.c_str()));
+
+        memset(name_C, 0, 32 + 1); // clear buffer
+        H5Lget_name_by_idx(spgroup.getLocId(), ".", H5_INDEX_NAME, H5_ITER_INC, idx, name_C, 32, H5P_DEFAULT);
+        std::cout << "=> " << name_C << std::endl;
+        H5::Group group(spgroup.openGroup(name_C));
         std::cout << "A group was opened." << std::endl;
-        Species species(std::string(serial.c_str()));
+        const std::string name_S(name_C);
+        Species species(name_S);
         std::cout << "=> " << species.serial() << std::endl;
+
+        // const H5std_string serial = spgroup.getObjnameByIdx(idx);
+        // std::cout << "=> " << serial.c_str() << std::endl;
+        // H5::Group group(spgroup.openGroup(serial.c_str()));
+        // std::cout << "A group was opened." << std::endl;
+        // Species species(std::string(serial.c_str()));
+        // std::cout << "=> " << species.serial() << std::endl;
 
         traits_type::h5_species_struct property;
         group.openAttribute("property").read(
