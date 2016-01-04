@@ -22,30 +22,27 @@ Dockerized E-Cell4 Jupyter notebooks
 ------------------------------------
 
 If you have docker environment, you can try E-Cell4 easily.
-You can pull E-Cell4 container with `docker pull ecell/ecell4`
+You can pull E-Cell4 container with `docker pull ecell/ecell4`.
 
 ### For Windows or Mac
 
-1. Install [Docker Toolbox](https://www.docker.com/toolbox)
-2. Run Kitematic
-3. Search container with **ecell4**, and create ecell4 container
-
-  ![png](https://raw.githubusercontent.com/ecell/ecell4/master/docs/kitematic1.png)
-
-4. Click **WEB PREVIEW** button in **HOME** tab
-
-  ![png](https://raw.githubusercontent.com/ecell/ecell4/develop/docs/images/kitematic2.png)
-  
-5. You should see Jupyter Notebook up and running (and E-Cell4 tutorials) in your default browser.
+1. Install [Docker Toolbox](https://www.docker.com/toolbox).
+2. Run **Docker Quickstart Terminal**.
+3. Run `docker run -d -p 443:8888 ecell/ecell4` in the terminal.
+4. Open **192.168.99.100:443** with your favorite web browser.  
+5. You should see Jupyter Notebook up and running (and E-Cell4 tutorials) in your web browser.
 
 ### For Linux
 
-```shell
-$ sudo docker pull ecell/ecell4
-$ sudo docker run -d -p 443:8888 ecell/ecell4
-```
+1. Install docker.
+2. Run the following command.
 
-You'll be able to E-Cell4 notebooks at http://THE_IP_RUNNING_DOCKER:443
+    ```shell
+    $ sudo docker pull ecell/ecell4
+    $ sudo docker run -d -p 443:8888 ecell/ecell4
+    ```
+
+3. Open **localhost:443** with your favorite web browser.
 
 
 Native binary installation
