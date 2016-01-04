@@ -121,7 +121,7 @@ You need to add PYTHONPATH to import latest matplotlib only on Mac OSX.
 # on Windows or Linux
 python
 
-# on Mac
+# on Mac (set PYTHONPATH to import latest matplotlib in USER directory)
 PYTHONPATH=~/Library/Python/2.7/lib/python/site-packages/ python
 ```
 
