@@ -110,7 +110,7 @@ inline bool is_directory(const std::string& filename)
     std::cout << "_stat => " << ret << std::endl;
 
     char full[_MAX_PATH];
-    _fullpath(full, filename, _MAX_PATH);
+    _fullpath(full, filename.c_str(), _MAX_PATH);
     std::cout << "_fullpath => " << full << std::endl;
     std::cout << "_splitpath <= " << full << std::endl;
     _splitpath(full, drive, dir, NULL, NULL);
