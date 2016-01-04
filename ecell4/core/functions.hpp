@@ -98,13 +98,27 @@ inline bool is_directory(const std::string& filename)
     const int ret = stat(dirname(strdup(filename.c_str())), &buf);
     return (ret == 0);
 #else
-    // //XXX: The code below is not tested yet on Windows.
-    // char drive[_MAX_DRIVE + 1], dir[_MAX_DIR + 1], path_dir[_MAX_PATH + 1];
-    // _splitpath(filename.c_str(), drive, dir, NULL, NULL);
-    // _makepath(path_dir, drive, dir, NULL, NULL);
+    char drive[_MAX_DRIVE + 1], dir[_MAX_DIR + 1], path_dir[_MAX_PATH + 1];
+    std::cout << "_splitpath <= " << filename << std::endl;
+    _splitpath(filename.c_str(), drive, dir, NULL, NULL);
+    std::cout << "_splitpath => " << drive << ", " << dir << std::endl;
+    _makepath(path_dir, drive, dir, NULL, NULL);
+    std::cout << "_makepath => " << path_dir << std::endl;
 
-    // struct _stat buf;
-    // const int ret = _stat(path_dir, &buf);
+    struct _stat buf;
+    const int ret = _stat(path_dir, &buf);
+    std::cout << "_stat => " << ret << std::endl;
+
+    char full[_MAX_PATH];
+    _fullpath(full, filename, _MAX_PATH);
+    std::cout << "_fullpath => " << full << std::endl;
+    std::cout << "_splitpath <= " << full << std::endl;
+    _splitpath(full, drive, dir, NULL, NULL);
+    std::cout << "_splitpath => " << drive << ", " << dir << std::endl;
+    _makepath(path_dir, drive, dir, NULL, NULL);
+    std::cout << "_makepath => " << path_dir << std::endl;
+    std::cout << "_stat => " << _stat(path_dir, &buf) << std::endl;
+
     // return (ret == 0);
     return true;
 #endif
