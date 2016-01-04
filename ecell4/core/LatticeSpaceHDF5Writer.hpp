@@ -227,8 +227,10 @@ void load_lattice_space(const H5::Group& root, Tspace_* space)
     for (hsize_t idx(0); idx < spgroup.getNumObjs(); ++idx)
     {
         std::cout << "=> " << idx << std::endl;
-        const H5std_string serial(spgroup.getObjnameByIdx(idx));
-        H5::Group group(spgroup.openGroup(serial));
+        const H5std_string serial = spgroup.getObjnameByIdx(idx);
+        std::cout << "=> " << serial.c_str() << std::endl;
+        H5::Group group(spgroup.openGroup(serial.c_str()));
+        std::cout << "A group was opened." << std::endl;
         Species species(std::string(serial.c_str()));
         std::cout << "=> " << species.serial() << std::endl;
 
