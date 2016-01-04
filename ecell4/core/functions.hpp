@@ -14,6 +14,7 @@
 #include <string.h>
 #include <libgen.h>
 #else
+#include <io.h>
 #include <stdlib.h>
 #endif
 
