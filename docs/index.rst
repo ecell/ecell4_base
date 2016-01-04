@@ -44,7 +44,7 @@ New Tutorials:
 .. toctree::
    :glob:
    
-   tutorial1
+   tutorial1/tutorial1
    tutorial2
    tutorial3
    tutorial4
