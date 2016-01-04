@@ -227,7 +227,7 @@ void load_lattice_space(const H5::Group& root, Tspace_* space)
     for (hsize_t idx(0); idx < spgroup.getNumObjs(); ++idx)
     {
         std::string serial(spgroup.getObjnameByIdx(idx));
-        H5::Group group(spgroup.openGroup(serial));
+        H5::Group group(spgroup.openGroup(serial.c_str()));
         Species species(serial);
 
         traits_type::h5_species_struct property;
