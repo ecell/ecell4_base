@@ -1011,7 +1011,7 @@ def __plot_trajectory_with_matplotlib(lines, ax, upto=None, **kwargs):
     for i, line in enumerate(lines):
         plots.append(
             ax.plot(line[0][: upto], line[1][: upto], line[2][: upto],
-                label=i, color=color_scale.get_color(i), **kwargs))
+                label=i, color=color_scale.get_color(i), **kwargs)[0])
     return plots
 
 def plot_world_with_matplotlib(
@@ -1197,6 +1197,91 @@ def plot_movie_with_matplotlib(
     ani = animation.FuncAnimation(
         fig, _update_plot, fargs=(scatters, worlds, species_list),
         frames=len(worlds), interval=interval, blit=True)
+
+    plt.close(ani._fig)
+    print("Start generating a movie ...")
+    display(HTML(anim_to_html(ani, output)))
+
+def plot_movie_for_trajectory_with_matplotlib(
+        obs, figsize=6, grid=True,
+        wireframe=False, max_count=None, angle=None, noaxis=False,
+        interval=50, repeat_delay=3000, stride=1,
+        legend=True, output=None, **kwargs):
+    """
+    Generate a move from the received list of instances of World,
+    and show it on IPython notebook. This function may require ffmpeg.
+
+    Parameters
+    ----------
+    worlds : list or FixedIntervalHDF5Observer
+        A list of Worlds to render.
+    marker_size : float, default 3
+        Marker size for all species. Size is passed to scatter function
+        as argument, s=(2 ** marker_size).
+    figsize : float, default 6
+        Size of the plotting area. Given in inch.
+    max_count : Integer, default None
+        The maximum number of particles to show for each species.
+        None means no limitation.
+    angle : tuple, default None
+        A tuple of view angle which is given as (azim, elev, dist).
+        If None, use default assumed to be (-60, 30, 10).
+    interval : Integer, default 50
+        Parameters for matplotlib.animation.ArtistAnimation.
+    stride : Integer, default 1
+        Stride per frame.
+    legend : bool, default True
+    output : str, default None
+
+    """
+    import matplotlib.pyplot as plt
+    import matplotlib.animation as animation
+    from IPython.display import display, HTML
+    from ecell4 import Species, FixedIntervalHDF5Observer
+    from .simulation import load_world
+    import math
+
+    print("Taking all data ...")
+
+    data = obs.data()
+    if max_count is not None and len(data) > max_count:
+        data = random.sample(data, max_count)
+
+    lines = []
+    num_frames = 0
+    for i, y in enumerate(data):
+        xarr, yarr, zarr = [], [], []
+        for pos in y:
+            xarr.append(pos[0])
+            yarr.append(pos[1])
+            zarr.append(pos[2])
+
+        lines.append((xarr, yarr, zarr))
+        num_frames = max(num_frames, len(y))
+    num_frames = int(math.ceil(float(num_frames) / stride))
+
+    print("Start preparing mplot3d ...")
+
+    fig, ax = __prepare_mplot3d_with_maplotlib(
+        __get_range_of_trajectories(data), figsize, grid, wireframe, angle, noaxis)
+
+    def _update_plot(i, plots, lines):
+        upto = i * stride
+        for plot, line in zip(plots, lines):
+            plot.set_data(line[0][: upto], line[1][: upto])
+            plot.set_3d_properties(line[2][: upto])
+        fig.canvas.draw()
+
+    print("Start making animation ...")
+
+    plots = __plot_trajectory_with_matplotlib(lines, ax, 0, **kwargs)
+
+    if legend:
+        ax.legend(loc='best', shadow=True)
+
+    ani = animation.FuncAnimation(
+        fig, _update_plot, fargs=(plots, lines),
+        frames=num_frames, interval=interval, blit=True)
 
     plt.close(ani._fig)
     print("Start generating a movie ...")
