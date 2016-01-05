@@ -52,6 +52,6 @@ elegans_color_scale = periodic_color_scale(
          "#ffffb3", "#bebada", "#fb8072", "#80b1d3", "#fdb462", "#b3de69",
          "#fccde5", "#d9d9d9", "#bc80bd", "#ccebc5", "#ffed6f"])
 matplotlib_color_scale = periodic_color_scale(
-        ["#0000ff", "#00ff00", "#ff0000", "#ff00ff", "#ffff00", "#00ffff",
+        ["#0000ff", "#008800", "#ff0000", "#ff00ff", "#ffff00", "#00ffff",
          "#000000"])
 default_color_scale = elegans_color_scale
