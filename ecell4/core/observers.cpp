@@ -74,6 +74,29 @@ void FixedIntervalObserver::reset()
     t0_ = 0.0; //DUMMY
 }
 
+void NumberLogger::log(const Space* space)
+{
+    data_container_type::value_type tmp;
+    tmp.push_back(space->t());
+    for (species_container_type::const_iterator i(targets.begin());
+        i != targets.end(); ++i)
+    {
+        tmp.push_back(space->get_value(*i));
+        // tmp.push_back(space->num_molecules(*i));
+    }
+
+    std::cout << "t => " << space->t() << std::endl;
+    std::cout << "=>";
+    for (data_container_type::value_type::const_iterator i(tmp.begin());
+         i != tmp.end(); ++i)
+    {
+        std::cout << " " << (*i);
+    }
+    std::cout << std::endl;
+
+    data.push_back(tmp);
+}
+
 void FixedIntervalNumberObserver::initialize(const Space* space)
 {
     base_type::initialize(space);

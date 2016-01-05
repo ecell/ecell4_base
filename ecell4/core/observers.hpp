@@ -110,18 +110,7 @@ struct NumberLogger
         data.clear();
     }
 
-    void log(const Space* space)
-    {
-        data_container_type::value_type tmp;
-        tmp.push_back(space->t());
-        for (species_container_type::const_iterator i(targets.begin());
-            i != targets.end(); ++i)
-        {
-            tmp.push_back(space->get_value(*i));
-            // tmp.push_back(space->num_molecules(*i));
-        }
-        data.push_back(tmp);
-    }
+    void log(const Space* space);
 
     data_container_type data;
     species_container_type targets;
