@@ -6,8 +6,8 @@ environment:
     BOOST_ROOT: C:\Libraries\boost
 
   matrix:
-    # - PYTHON: "C:\\Python27"
-    #   PYTHON_VERSION: "2.7.11"
+    - PYTHON: "C:\\Python27"
+      PYTHON_VERSION: "2.7.11"
     - PYTHON: "C:\\Python35"
       PYTHON_VERSION: "3.5.1"
 
