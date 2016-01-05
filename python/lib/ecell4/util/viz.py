@@ -935,7 +935,7 @@ def logo(x=1, y=None):
     h = HTML(template % tuple(base64s + [("<p>%s</p>" % (img_html * x)) * y]))
     display(h)
 
-def anim_to_html(anim, filename=None):
+def anim_to_html(anim, filename=None, fps=6):
     VIDEO_TAG = """<video controls>
      <source src="data:video/x-webm;base64,{0}" type="video/webm">
      Your browser does not support the video tag.
@@ -944,11 +944,11 @@ def anim_to_html(anim, filename=None):
     if not hasattr(anim, '_encoded_video'):
         if filename is None:
             with NamedTemporaryFile(suffix='.webm') as f:
-                anim.save(f.name, fps=6, extra_args=['-vcodec', 'libvpx'])
+                anim.save(f.name, fps=fps, extra_args=['-vcodec', 'libvpx'])
                 video = open(f.name, "rb").read()
         else:
             with open(filename, 'w') as f:
-                anim.save(f.name, fps=6, extra_args=['-vcodec', 'libvpx'])
+                anim.save(f.name, fps=fps, extra_args=['-vcodec', 'libvpx'])
                 video = open(f.name, "rb").read()
         anim._encoded_video = video.encode("base64")
     return VIDEO_TAG.format(anim._encoded_video)
@@ -966,6 +966,7 @@ def __prepare_mplot3d_with_maplotlib(
         ax.w_xaxis.set_pane_color((0, 0, 0, 0))
         ax.w_yaxis.set_pane_color((0, 0, 0, 0))
         ax.w_zaxis.set_pane_color((0, 0, 0, 0))
+
     ax.grid(grid)
     ax.set_xlim(*wrange['x'])
     ax.set_ylim(*wrange['y'])
@@ -1106,7 +1107,7 @@ def plot_trajectory_with_matplotlib(
 def plot_movie_with_matplotlib(
         worlds, marker_size=3, figsize=6, grid=True,
         wireframe=False, species_list=None, max_count=None, angle=None, noaxis=False,
-        interval=50, repeat_delay=3000,
+        interval=0.16, repeat_delay=3000, stride=1, rotate=None,
         legend=True, output=None, **kwargs):
     """
     Generate a move from the received list of instances of World,
@@ -1129,8 +1130,13 @@ def plot_movie_with_matplotlib(
     angle : tuple, default None
         A tuple of view angle which is given as (azim, elev, dist).
         If None, use default assumed to be (-60, 30, 10).
-    interval : Integer, default 50
+    interval : Integer, default 0.16
         Parameters for matplotlib.animation.ArtistAnimation.
+    stride : Integer, default 1
+        Stride per frame.
+    rotate : tuple, default None
+        A pair of rotation angles, elev and azim, for animation.
+        None means no rotation, same as (0, 0).
     legend : bool, default True
     output : str, default None
 
@@ -1141,17 +1147,19 @@ def plot_movie_with_matplotlib(
     from ecell4 import Species, FixedIntervalHDF5Observer
     from .simulation import load_world
 
-    print("Start generating species_list ...")
+    # print("Start generating species_list ...")
 
     if isinstance(worlds, FixedIntervalHDF5Observer):
         obs = worlds
         worlds = []
-        for i in range(obs.num_steps()):
+        for i in range(0, obs.num_steps(), stride):
             filename = obs.filename(i)
             if os.path.isfile(filename):
                 worlds.append(load_world(filename))
             elif len(worlds) >0:
                 worlds.append(worlds[-1])
+    else:
+        worlds = worlds[:: stride]
 
     if species_list is None:
         species_list = []
@@ -1161,7 +1169,7 @@ def plot_movie_with_matplotlib(
             species_list = sorted(
                 set(species_list), key=species_list.index)  # XXX: pick unique ones
 
-    print("Start preparing mplot3d ...")
+    # print("Start preparing mplot3d ...")
 
     fig, ax = __prepare_mplot3d_with_maplotlib(
         __get_range_of_world(worlds[0]), figsize, grid, wireframe, angle, noaxis)
@@ -1182,7 +1190,13 @@ def plot_movie_with_matplotlib(
                 zs.append(pos[2])
             scatters[i]._offsets3d = juggle_axes(xs, ys, zs, 'z')
 
-    print("Start making animation ...")
+        if rotate is not None:
+            ax.elev += rotate[0]
+            ax.azim += rotate[1]
+
+        fig.canvas.draw()
+
+    # print("Start making animation ...")
 
     cmap = ('b', 'g', 'r', 'c', 'm', 'y', 'k')
     scatters = []
@@ -1199,13 +1213,13 @@ def plot_movie_with_matplotlib(
         frames=len(worlds), interval=interval, blit=True)
 
     plt.close(ani._fig)
-    print("Start generating a movie ...")
-    display(HTML(anim_to_html(ani, output)))
+    # print("Start generating a movie ...")
+    display(HTML(anim_to_html(ani, output, fps=1.0 / interval)))
 
 def plot_movie_for_trajectory_with_matplotlib(
         obs, figsize=6, grid=True,
         wireframe=False, max_count=None, angle=None, noaxis=False,
-        interval=50, repeat_delay=3000, stride=1,
+        interval=0.16, repeat_delay=3000, stride=1, rotate=None,
         legend=True, output=None, **kwargs):
     """
     Generate a move from the received list of instances of World,
@@ -1226,10 +1240,13 @@ def plot_movie_for_trajectory_with_matplotlib(
     angle : tuple, default None
         A tuple of view angle which is given as (azim, elev, dist).
         If None, use default assumed to be (-60, 30, 10).
-    interval : Integer, default 50
+    interval : Integer, default 0.16
         Parameters for matplotlib.animation.ArtistAnimation.
     stride : Integer, default 1
         Stride per frame.
+    rotate : tuple, default None
+        A pair of rotation angles, elev and azim, for animation.
+        None means no rotation, same as (0, 0).
     legend : bool, default True
     output : str, default None
 
@@ -1241,7 +1258,7 @@ def plot_movie_for_trajectory_with_matplotlib(
     from .simulation import load_world
     import math
 
-    print("Taking all data ...")
+    # print("Taking all data ...")
 
     data = obs.data()
     if max_count is not None and len(data) > max_count:
@@ -1260,7 +1277,7 @@ def plot_movie_for_trajectory_with_matplotlib(
         num_frames = max(num_frames, len(y))
     num_frames = int(math.ceil(float(num_frames) / stride))
 
-    print("Start preparing mplot3d ...")
+    # print("Start preparing mplot3d ...")
 
     fig, ax = __prepare_mplot3d_with_maplotlib(
         __get_range_of_trajectories(data), figsize, grid, wireframe, angle, noaxis)
@@ -1270,9 +1287,14 @@ def plot_movie_for_trajectory_with_matplotlib(
         for plot, line in zip(plots, lines):
             plot.set_data(line[0][: upto], line[1][: upto])
             plot.set_3d_properties(line[2][: upto])
+
+        if rotate is not None:
+            ax.elev += rotate[0]
+            ax.azim += rotate[1]
+
         fig.canvas.draw()
 
-    print("Start making animation ...")
+    # print("Start making animation ...")
 
     plots = __plot_trajectory_with_matplotlib(lines, ax, 0, **kwargs)
 
@@ -1284,5 +1306,5 @@ def plot_movie_for_trajectory_with_matplotlib(
         frames=num_frames, interval=interval, blit=True)
 
     plt.close(ani._fig)
-    print("Start generating a movie ...")
-    display(HTML(anim_to_html(ani, output)))
+    # print("Start generating a movie ...")
+    display(HTML(anim_to_html(ani, output, fps=1.0 / interval)))
