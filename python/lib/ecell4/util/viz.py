@@ -11,6 +11,8 @@ import random
 import types
 from tempfile import NamedTemporaryFile
 
+from .vizstyles import default_color_scale
+
 
 def __on_ipython_notebook():
     try:
@@ -274,7 +276,7 @@ def plot_number_observer_with_nya(obs, config={}, width=600, height=400, x=None,
     import numpy
 
     config = {}
-    color_scale = ColorScale(config=config)
+    color_scale = default_color_scale(config=config)
 
     data1, data2 = [], []
     data = numpy.array(obs.data())
@@ -445,7 +447,7 @@ def plot_movie_with_elegans(
     }
 
     model_id = '"movie' + str(uuid.uuid4()) + '"'
-    color_scale = ColorScale(config=config)
+    color_scale = default_color_scale(config=config)
 
     display(HTML(generate_html({
         'model_id': model_id,
@@ -512,7 +514,7 @@ def plot_world_with_elegans(
         world = load_world(world)
 
     species = __parse_world(world, radius, species_list, max_count, predicator)
-    color_scale = ColorScale(config=config)
+    color_scale = default_color_scale(config=config)
     plots = []
 
     for species_info in species:
@@ -764,7 +766,7 @@ def plot_trajectory_with_elegans(
     """
     from IPython.core.display import display, HTML
 
-    color_scale = ColorScale(config=config)
+    color_scale = default_color_scale(config=config)
     plots = []
 
     xmin, xmax, ymin, ymax, zmin, zmax = None, None, None, None, None, None
@@ -916,8 +918,14 @@ def plot_trajectory_with_matplotlib(
     if angle is not None:
         ax.azim, ax.elev, ax.dist = angle
 
+    color_scale = default_color_scale()
+    # ax.w_xaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
+    # ax.w_yaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
+    # ax.w_zaxis.set_pane_color((1.0, 1.0, 1.0, 1.0))
+
     for i, line in enumerate(lines):
-        ax.plot(line[0], line[1], line[2], label=i, **kwargs)
+        ax.plot(line[0], line[1], line[2],
+                label=i, color=color_scale.get_color(i), **kwargs)
 
     if legend:
         ax.legend(loc='best', shadow=True)
@@ -990,57 +998,6 @@ def logo(x=1, y=None):
                 + ' onClick="action();" />')
     h = HTML(template % tuple(base64s + [("<p>%s</p>" % (img_html * x)) * y]))
     display(h)
-
-class ColorScale:
-    """
-    Color scale for species.
-
-    """
-
-    COLORS = [
-        "#a6cee3", "#1f78b4", "#b2df8a", "#33a02c", "#e31a1c", "#8dd3c7",
-        "#ffffb3", "#bebada", "#fb8072", "#80b1d3", "#fdb462", "#b3de69",
-        "#fccde5", "#d9d9d9", "#bc80bd", "#ccebc5", "#ffed6f"]
-
-    def __init__(self, config={}):
-        """
-        Initialize a color scale
-
-        Parameters
-        ----------
-        config : dict, default {}
-            Dict for configure default colors. Its values are colors unique
-            to each key. Colors included in config will never be used.
-
-        """
-
-        self.config = config
-        self.buffer = ColorScale.COLORS[:]
-
-        for color in self.config.values():
-            if color in self.buffer:
-                self.buffer.remove(color)
-
-    def get_color(self, name):
-        """
-        Get color unique to the recieved name
-
-        Parameters
-        ----------
-        name : string
-            This method returns one color unique to this parameter.
-        """
-
-        if self.config.get(name) is None:
-            self.config[name] = self.buffer.pop(0)
-            if len(self.buffer) == 0:
-                self.buffer = ColorScale.COLORS[:]
-
-        return self.config[name]
-
-    def get_config(self):
-        """Get an instance of dic as the config of colors."""
-        return self.config
 
 def __prepare_mplot3d_with_maplotlib(
         world, figsize, grid, wireframe, angle):
