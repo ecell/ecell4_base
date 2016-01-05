@@ -1216,7 +1216,7 @@ def plot_movie_with_matplotlib(
     # print("Start generating a movie ...")
     display(HTML(anim_to_html(ani, output, fps=1.0 / interval)))
 
-def plot_movie_for_trajectory_with_matplotlib(
+def plot_movie_of_trajectory_with_matplotlib(
         obs, figsize=6, grid=True,
         wireframe=False, max_count=None, angle=None, noaxis=False,
         interval=0.16, repeat_delay=3000, stride=1, rotate=None,
@@ -1308,3 +1308,5 @@ def plot_movie_for_trajectory_with_matplotlib(
     plt.close(ani._fig)
     # print("Start generating a movie ...")
     display(HTML(anim_to_html(ani, output, fps=1.0 / interval)))
+
+plot_movie_of_trajectory = plot_movie_of_trajectory_with_matplotlib  # default
