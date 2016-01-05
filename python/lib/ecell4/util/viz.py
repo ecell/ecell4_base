@@ -11,7 +11,7 @@ import random
 import types
 from tempfile import NamedTemporaryFile
 
-from .vizstyles import default_color_scale
+from .vizstyles import default_color_scale, matplotlib_color_scale, elegans_color_scale
 
 
 def __on_ipython_notebook():
@@ -986,7 +986,7 @@ def __prepare_mplot3d_with_maplotlib(
 def __scatter_world_with_matplotlib(
         world, ax, species_list, marker_size, max_count, **kwargs):
     from ecell4 import Species
-    cmap = ('b', 'g', 'r', 'c', 'm', 'y', 'k')
+    color_scale = matplotlib_color_scale()
 
     scatters = []
     for i, name in enumerate(species_list):
@@ -1002,7 +1002,7 @@ def __scatter_world_with_matplotlib(
         scatters.append(
             ax.scatter(
                 xs, ys, zs,
-                marker='o', s=(2 ** marker_size), lw=0, c=cmap[i % len(cmap)],
+                marker='o', s=(2 ** marker_size), lw=0, c=color_scale.get_color(name),
                 label=name, **kwargs))
     return scatters
 
@@ -1198,12 +1198,12 @@ def plot_movie_with_matplotlib(
 
     # print("Start making animation ...")
 
-    cmap = ('b', 'g', 'r', 'c', 'm', 'y', 'k')
+    color_scale = matplotlib_color_scale()
     scatters = []
     for i, name in enumerate(species_list):
         scatters.append(
             ax.scatter([], [], [], marker='o', s=(2 ** marker_size),
-                       lw=0, c=cmap[i % len(cmap)], label=name))
+                       lw=0, c=color_scale.get_color(name), label=name))
 
     if legend:
         ax.legend(loc='best', shadow=True)
