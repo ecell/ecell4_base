@@ -22,7 +22,8 @@ void ODEWorld::save(const std::string& filename) const
 
     extras::save_version_information(fout.get(), "ecell4-ode-0.0-1");
 #else
-    throw NotSupported("not supported yet.");
+    throw NotSupported(
+        "This method requires HDF5. The HDF5 support is turned off.");
 #endif
 }
 
@@ -34,7 +35,8 @@ void ODEWorld::load(const std::string& filename)
     const H5::Group group(fin->openGroup("CompartmentSpace"));
     load_compartment_space<ODEWorldHDF5Traits<ODEWorld> >(group, this);
 #else
-    throw NotSupported("not supported yet.");
+    throw NotSupported(
+        "This method requires HDF5. The HDF5 support is turned off.");
 #endif
 }
 

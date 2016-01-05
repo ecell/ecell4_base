@@ -111,7 +111,8 @@ public:
         cs_->save(group.get());
         extras::save_version_information(fout.get(), "ecell4-gillespie-0.0-1");
 #else
-        throw NotSupported("not supported yet.");
+        throw NotSupported(
+            "This method requires HDF5. The HDF5 support is turned off.");
 #endif
     }
 
@@ -124,7 +125,8 @@ public:
         const H5::Group group(fin->openGroup("CompartmentSpace"));
         cs_->load(group);
 #else
-        throw NotSupported("not supported yes.");
+        throw NotSupported(
+            "This method requires HDF5. The HDF5 support is turned off.");
 #endif
     }
 

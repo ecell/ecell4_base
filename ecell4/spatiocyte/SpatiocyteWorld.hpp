@@ -526,7 +526,8 @@ public:
         (*space_).save(group.get());
         extras::save_version_information(fout.get(), "ecell4-spatiocyte-0.0-1");
 #else
-        throw NotSupported("not supported yet.");
+        throw NotSupported(
+            "This method requires HDF5. The HDF5 support is turned off.");
 #endif
     }
 
@@ -540,7 +541,8 @@ public:
         sidgen_.load(*fin);
         rng_->load(*fin);
 #else
-        throw NotSupported("not supported yet.");
+        throw NotSupported(
+            "This method requires HDF5. The HDF5 support is turned off.");
 #endif
     }
 

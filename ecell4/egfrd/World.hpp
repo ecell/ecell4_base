@@ -460,7 +460,8 @@ public:
 
         ecell4::extras::save_version_information(fout.get(), "ecell4-egfrd-0.0-1");
 #else
-        throw ecell4::NotSupported("not supported yet.");
+        throw ecell4::NotSupported(
+            "This method requires HDF5. The HDF5 support is turned off.");
 #endif
     }
 
@@ -491,7 +492,8 @@ public:
         pidgen_.load(*fin);
         rng_->load(*fin);
 #else
-        throw ecell4::NotSupported("not supported yet.");
+        throw ecell4::NotSupported(
+            "This method requires HDF5. The HDF5 support is turned off.");
 #endif
     }
 

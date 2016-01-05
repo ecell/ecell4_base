@@ -341,7 +341,8 @@ public:
         ps_->save(group.get());
         extras::save_version_information(fout.get(), "ecell4-bd-0.0-1");
 #else
-        throw NotSupported("HDF5 is not supported.");
+        throw NotSupported(
+            "This method requires HDF5. The HDF5 support is turned off.");
 #endif
     }
 
@@ -355,7 +356,8 @@ public:
         pidgen_.load(*fin);
         rng_->load(*fin);
 #else
-        throw NotSupported("HDF5 is not supported.");
+        throw NotSupported(
+            "This method requires HDF5. The HDF5 support is turned off.");
 #endif
     }
 
