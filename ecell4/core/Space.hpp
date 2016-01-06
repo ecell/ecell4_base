@@ -41,7 +41,12 @@ public:
 
     // SpaceTraits
 
-    virtual const Real t() const = 0;
+    // virtual const Real t() const = 0;
+    virtual const Real t() const
+    {
+        return 0.0;  //XXX: Just for debugging
+    }
+
     virtual void set_t(const Real& t) = 0;
 
     virtual void save(const std::string& filename) const

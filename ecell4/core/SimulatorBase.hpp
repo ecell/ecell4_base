@@ -39,6 +39,8 @@ protected:
 
         virtual void fire()
         {
+            std::cout << "sim_->world()->t() => " << sim_->world()->t() << std::endl;
+            std::cout << "=> " << static_cast<const Space*>(sim_->world().get())->t() << std::endl;
             running_ = obs_->fire(sim_, sim_->world());
             // running_ = obs_->fire(sim_, static_cast<const Space*>(sim_->world().get()));
             time_ = obs_->next_time();
