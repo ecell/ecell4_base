@@ -17,7 +17,7 @@ namespace ecell4
 boost::tuple<bool, Real3, Real3> refrection(const PlanarSurface& surface, const Real3& from, const Real3& displacement) 
 {
     // return value:
-    //  tuple(is_cross, intrusion_point, rest_displacement)
+    //  tuple(is_cross, intrusion_point, remaining_displacement_from_intrusion_point)
     Real3 temporary_destination(from + displacement);
     Real is_inside_from( surface.is_inside(from) );
     Real is_inside_dest( surface.is_inside(displacement) );
@@ -67,17 +67,31 @@ bool BDPropagator::operator()()
     }
 
     
-    const std::vector<PlanarSurface> surface_vector = world_.get_surface_container();
+    //const std::vector<PlanarSurface> surface_vector = world_.get_surface_container();
+    std::vector<PlanarSurface> surface_vector;
+
+    Real3 origin1(0., 0., 0.5e-6);
+    Real3 bas_x(1.0, 0.0, 0.0);
+    Real3 bas_y(0.0, 1.0, 0.0);
+    PlanarSurface surface1(origin1, bas_x, bas_y);
+    Real3 origin2(0., 0., 1.0e-6);
+    PlanarSurface surface2(origin2, bas_x, bas_y);
+    //surface_vector.push_back(surface1);
+    //surface_vector.push_back(surface2);
 
     Real3 from = particle.position();
     Real3 displacement(draw_displacement(particle));
     std::size_t bound_surface = -1;
+    std::vector<bool> save_isinside(surface_vector.size());    // std::vector<bool> is specialized by default!
+    for(std::size_t i = 0; i != surface_vector.size(); i++) {
+        save_isinside[i] = 0 < surface_vector[i].is_inside(from) ? true : false;
+    }
 
     bool refrection_occurance = false;
     do {
         refrection_occurance = false;
-        std::cout << "<Loop> start: " << from << " disp: " << displacement << std::endl;
-        // search the nearest intrusion point
+        //std::cout << "<Loop> start: " << from << " disp: " << displacement << std::endl;
+        // determine the surface by search the nearest intrusion point
         boost::tuple<bool, Real3, Real3> nearest;
         std::size_t nearest_surface = -1;
         for(std::size_t i =  0; i != surface_vector.size(); i++) {
@@ -108,8 +122,8 @@ bool BDPropagator::operator()()
             std::cout << "bound surface ( " << bound_surface << ") at " << from << std::endl;
         }
     } while(true);
-    Real3 newpos = from + displacement;
-    std::cout << "displacement done. " << newpos << std::endl;
+    Real3 newpos(world_.apply_boundary(from + displacement));
+    //std::cout << "displacement done. " << newpos << std::endl;
 
     /*
     const Real3 newpos(
