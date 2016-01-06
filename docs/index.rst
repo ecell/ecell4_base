@@ -47,7 +47,7 @@ New Tutorials:
    tutorial1/tutorial1
    tutorial2/tutorial2
    tutorial3/tutorial3
-   tutorial4
+   tutorial4/tutorial4
    tutorial6
    tutorial7
    tutorial8

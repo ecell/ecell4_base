@@ -104,12 +104,12 @@ drawn from ``Simulator`` in the way below:
 
 .. parsed-literal::
 
-    (<ecell4.core.Model object at 0x7fbfab588bd0>, <ecell4.gillespie.GillespieWorld object at 0x7fbfab588b58>)
-    (<ecell4.ode.ODENetworkModel object at 0x7fbfab588bd0>, <ecell4.ode.ODEWorld object at 0x7fbfab588bb8>)
-    (<ecell4.core.Model object at 0x7fbfab588bd0>, <ecell4.spatiocyte.SpatiocyteWorld object at 0x7fbfab588b58>)
-    (<ecell4.core.Model object at 0x7fbfab588bd0>, <ecell4.bd.BDWorld object at 0x7fbfab588bb8>)
-    (<ecell4.core.Model object at 0x7fbfab588bd0>, <ecell4.meso.MesoscopicWorld object at 0x7fbfab588ae0>)
-    (<ecell4.core.Model object at 0x7fbfab588bd0>, <ecell4.egfrd.EGFRDWorld object at 0x7fbfab588bb8>)
+    (<ecell4.core.Model object at 0x7fb7197c9bd0>, <ecell4.gillespie.GillespieWorld object at 0x7fb7197c9b58>)
+    (<ecell4.ode.ODENetworkModel object at 0x7fb7197c9bd0>, <ecell4.ode.ODEWorld object at 0x7fb7197c9bb8>)
+    (<ecell4.core.Model object at 0x7fb7197c9bd0>, <ecell4.spatiocyte.SpatiocyteWorld object at 0x7fb7197c9b58>)
+    (<ecell4.core.Model object at 0x7fb7197c9bd0>, <ecell4.bd.BDWorld object at 0x7fb7197c9bb8>)
+    (<ecell4.core.Model object at 0x7fb7197c9bd0>, <ecell4.meso.MesoscopicWorld object at 0x7fb7197c9ae0>)
+    (<ecell4.core.Model object at 0x7fb7197c9bd0>, <ecell4.egfrd.EGFRDWorld object at 0x7fb7197c9bb8>)
 
 
 After updating the ``World`` by yourself, you must initialize the
@@ -161,11 +161,11 @@ expects, ``next_time()``.
 
 .. parsed-literal::
 
-    (0.0, 0.05434691793855134, 0.05434691793855134)
+    (0.0, 0.013012847696983692, 0.013012847696983692)
     (0.0, 1e-06, 1e-06)
     (0.0, 1.6666666666666667e-05, 1.6666666666666667e-05)
     (0.0, 1e-06, 1e-06)
-    (0.0, 0.0076458326846357075, 0.0076458326846357075)
+    (0.0, 0.0045567279714810015, 0.0045567279714810015)
     (0.0, 0.0, 0.0)
 
 
@@ -190,11 +190,11 @@ expects, ``next_time()``.
 
 .. parsed-literal::
 
-    0.0543469179386
+    0.013012847697
     1e-06
     1.66666666667e-05
     1e-06
-    0.00764583268464
+    0.00455672797148
     0.0
 
 
@@ -215,10 +215,10 @@ own implementation of ``ReactionInfo``. See
 
 .. parsed-literal::
 
-    [(<ecell4.core.ReactionRule object at 0x7fbfab588bd0>, <ecell4.gillespie.ReactionInfo object at 0x7fbfab588ae0>)]
+    [(<ecell4.core.ReactionRule object at 0x7fb7197c9bd0>, <ecell4.gillespie.ReactionInfo object at 0x7fb7197c9ae0>)]
     []
     []
-    [(<ecell4.core.ReactionRule object at 0x7fbfab588bd0>, <ecell4.meso.ReactionInfo object at 0x7fbfab588ae0>)]
+    []
     []
 
 
@@ -238,11 +238,11 @@ whether the time does **NOT** reach the limit, ``upto``.
 
 .. parsed-literal::
 
-    (True, 0.05436951644570664)
+    (True, 0.05959787878069947)
     (True, 2e-06)
     (True, 3.3333333333333335e-05)
     (True, 2e-06)
-    (True, 0.04818004141123101)
+    (True, 0.00646251309677119)
     (True, 0.0)
 
 
@@ -324,12 +324,12 @@ This is just what ``run`` does. ``run(tau)`` advances a simulation upto
 
 .. parsed-literal::
 
-    32
+    39
     2001
     120
     2001
-    28
-    591
+    998
+    532
 
 
 4.3. Capsulizing Algorithm into a Factory Class
@@ -388,8 +388,8 @@ algorithm.
     (0.01, 59)
     (0.01, 60)
     (0.01, 60)
-    (0.01, 58)
     (0.01, 60)
+    (0.01, 59)
 
 
 When you need to provide several parameters to initialize ``World`` or
@@ -411,7 +411,7 @@ When you need to provide several parameters to initialize ``World`` or
 
     [0.01, 0.0, 0.0, 60.0]
     [0.01, 0.17972919304001073, 0.17972919304001067, 59.82027080696036]
-    [0.01, 1.0, 1.0, 59.0]
+    [0.01, 0.0, 0.0, 60.0]
     [0.01, 0.0, 0.0, 60.0]
     [0.01, 0.0, 0.0, 60.0]
     [0.01, 0.0, 0.0, 60.0]
