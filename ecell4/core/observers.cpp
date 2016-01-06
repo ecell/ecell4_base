@@ -24,6 +24,11 @@ void Observer::reset()
     ;
 }
 
+bool Observer::fire(const Simulator* sim, boost::shared_ptr<Space> space)
+{
+    return true;
+}
+
 const Real FixedIntervalObserver::next_time() const
 {
     return t0_ + dt_ * count_;

@@ -34,7 +34,8 @@ public:
     virtual void finalize(boost::shared_ptr<Space> space);
     virtual void reset();
 
-    virtual bool fire(const Simulator* sim, boost::shared_ptr<Space> space) = 0;
+    virtual bool fire(const Simulator* sim, boost::shared_ptr<Space> space);
+    // virtual bool fire(const Simulator* sim, boost::shared_ptr<Space> space) = 0;
 
     bool every()
     {
