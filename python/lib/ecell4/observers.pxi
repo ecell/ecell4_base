@@ -80,23 +80,11 @@ cdef class FixedIntervalNumberObserver:
             time and the number of molecules specified at the construction.
 
         """
-        # cdef vector[vector[Real]] d = self.thisptr.get().data()
-        # retval = []
-        # cdef vector[vector[Real]].iterator it = d.begin()
-        # while it != d.end():
-        #     retval.append(deref(it))
-        #     inc(it)
-        # return retval
         cdef vector[vector[Real]] d = self.thisptr.get().data()
         retval = []
         cdef vector[vector[Real]].iterator it = d.begin()
-        cdef vector[Real].iterator it2
         while it != d.end():
-            retval.append([])
-            it2 = deref(it).begin()
-            while it2 != deref(it).end():
-                retval[-1].append(deref(it2))
-                inc(it2)
+            retval.append(deref(it))
             inc(it)
         return retval
 
