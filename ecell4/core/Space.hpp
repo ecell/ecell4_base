@@ -41,7 +41,7 @@ public:
 
     // SpaceTraits
 
-    virtual const Real& t() const = 0;
+    virtual const Real t() const = 0;
     virtual void set_t(const Real& t) = 0;
 
     virtual void save(const std::string& filename) const

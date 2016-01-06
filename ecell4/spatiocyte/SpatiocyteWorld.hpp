@@ -146,7 +146,7 @@ public:
         return info;
     }
 
-    const Real& t() const;
+    const Real t() const;
     void set_t(const Real& t);
 
     const Real3& edge_lengths() const;

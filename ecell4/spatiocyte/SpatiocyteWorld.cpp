@@ -26,7 +26,7 @@ SpatiocyteWorld* create_spatiocyte_world_vector_impl(
         new LatticeSpaceVectorImpl(edge_lengths, voxel_radius), rng);
 }
 
-const Real& SpatiocyteWorld::t() const
+const Real SpatiocyteWorld::t() const
 {
     return (*space_).t();
 }

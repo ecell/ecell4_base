@@ -126,7 +126,7 @@ public:
 
     // SpaceTraits
 
-    const Real& t() const
+    const Real t() const
     {
         return (*ps_).t();
     }

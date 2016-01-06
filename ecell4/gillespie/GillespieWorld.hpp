@@ -55,7 +55,7 @@ public:
 
     // SpaceTraits
 
-    const Real& t(void) const;
+    const Real t() const;
     void set_t(const Real& t);
 
     const Real3& edge_lengths() const

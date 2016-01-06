@@ -131,7 +131,7 @@ public:
 
     MoleculeInfo get_molecule_info(const Species& sp) const;
 
-    const Real& t() const;
+    const Real t() const;
     void set_t(const Real& t);
     const Integer num_subvolumes() const;
     const Real subvolume() const;

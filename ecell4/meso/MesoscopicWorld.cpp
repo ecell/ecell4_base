@@ -192,7 +192,7 @@ const Real3 MesoscopicWorld::subvolume_edge_lengths() const
     return cs_->subvolume_edge_lengths();
 }
 
-const Real& MesoscopicWorld::t() const
+const Real MesoscopicWorld::t() const
 {
     return cs_->t();
 }
