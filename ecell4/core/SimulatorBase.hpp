@@ -39,7 +39,8 @@ protected:
 
         virtual void fire()
         {
-            running_ = obs_->fire(sim_, static_cast<const Space*>(sim_->world().get()));
+            running_ = obs_->fire(sim_, sim_->world());
+            // running_ = obs_->fire(sim_, static_cast<const Space*>(sim_->world().get()));
             time_ = obs_->next_time();
         }
 
@@ -151,7 +152,8 @@ public:
         for (std::vector<boost::shared_ptr<Observer> >::iterator
             i(begin); i != end; ++i)
         {
-            if (!(*i)->fire(this, static_cast<const Space*>(world_.get())))
+            // if (!(*i)->fire(this, static_cast<const Space*>(world_.get())))
+            if (!(*i)->fire(this, world_))
             {
                 retval = false;
             }
@@ -170,7 +172,8 @@ public:
         for (std::vector<boost::shared_ptr<Observer> >::iterator i(observers.begin());
             i != observers.end(); ++i)
         {
-            (*i)->initialize(world_.get());
+            // (*i)->initialize(world_.get());
+            (*i)->initialize(world_);
         }
 
         EventScheduler scheduler;
@@ -227,7 +230,8 @@ public:
         for (std::vector<boost::shared_ptr<Observer> >::iterator i(observers.begin());
             i != observers.end(); ++i)
         {
-            (*i)->finalize(world_.get());
+            // (*i)->finalize(world_.get());
+            (*i)->finalize(world_);
         }
     }
 

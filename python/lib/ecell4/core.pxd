@@ -466,7 +466,8 @@ cdef extern from "ecell4/core/observers.hpp" namespace "ecell4":
         Real next_time()
         Integer num_steps()
         string filename()
-        void log(Cpp_Space*)
+        # void log(Cpp_Space*)
+        void log(shared_ptr[Cpp_Space]&)
         void reset()
 
     cdef cppclass Cpp_FixedIntervalTrajectoryObserver "ecell4::FixedIntervalTrajectoryObserver":
