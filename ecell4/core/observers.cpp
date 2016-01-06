@@ -107,6 +107,7 @@ void FixedIntervalNumberObserver::initialize(const boost::shared_ptr<Space>& spa
 bool FixedIntervalNumberObserver::fire(const Simulator* sim, const boost::shared_ptr<Space>& space)
 {
     std::cout << "sim->t() => " << sim->t() << std::endl;
+    std::cout << "space->t() => " << space->t() << std::endl;
     logger_.log(space);
     return base_type::fire(sim, space);
 }

@@ -136,9 +136,9 @@ public:
         ;
     }
 
-    virtual void initialize(const boost::shared_ptr<Space>& space);
-    virtual bool fire(const Simulator* sim, const boost::shared_ptr<Space>& space);
-    virtual void reset();
+    void initialize(const boost::shared_ptr<Space>& space);
+    bool fire(const Simulator* sim, const boost::shared_ptr<Space>& space);
+    void reset();
     NumberLogger::data_container_type data() const;
     NumberLogger::species_container_type targets() const;
 
