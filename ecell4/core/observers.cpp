@@ -85,7 +85,7 @@ void NumberLogger::log(const Space* space)
         // tmp.push_back(space->num_molecules(*i));
     }
 
-    std::cout << "t => " << space->t() << std::endl;
+    std::cout << "space->t() => " << space->t() << std::endl;
     std::cout << "=>";
     for (data_container_type::value_type::const_iterator i(tmp.begin());
          i != tmp.end(); ++i)
@@ -105,6 +105,7 @@ void FixedIntervalNumberObserver::initialize(const Space* space)
 
 bool FixedIntervalNumberObserver::fire(const Simulator* sim, const Space* space)
 {
+    std::cout << "sim->t() => " << sim->t() << std::endl;
     logger_.log(space);
     return base_type::fire(sim, space);
 }
