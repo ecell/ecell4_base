@@ -42,6 +42,7 @@ protected:
             std::cout << "sim_->world()->t() => " << sim_->world()->t() << std::endl;
             std::cout << "=> " << static_cast<const Space*>(sim_->world().get())->t() << std::endl;
             const boost::shared_ptr<Space> space = sim_->world();
+            std::cout << "=> " << space->t() << std::endl;
             running_ = obs_->fire(sim_, space);
             // running_ = obs_->fire(sim_, sim_->world());
             // running_ = obs_->fire(sim_, static_cast<const Space*>(sim_->world().get()));
