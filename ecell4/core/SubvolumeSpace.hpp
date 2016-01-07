@@ -206,6 +206,12 @@ public:
 
     virtual void reset(const Real3& edge_lengths, const Integer3& matrix_sizes) = 0;
 
+    virtual void save(const std::string& filename) const
+    {
+        throw NotSupported(
+            "save(const std::string) is not supported by this space class");
+    }
+
 #ifdef WITH_HDF5
     virtual void save(H5::Group* root) const = 0;
     virtual void load(const H5::Group& root) = 0;
