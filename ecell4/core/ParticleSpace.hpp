@@ -394,6 +394,12 @@ public:
         return particles_;
     }
 
+    virtual void save(const std::string& filename) const
+    {
+        throw NotSupported(
+            "save(const std::string) is not supported by this space class");
+    }
+
 #ifdef WITH_HDF5
     void save(H5::Group* root) const
     {
