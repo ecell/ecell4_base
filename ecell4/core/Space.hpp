@@ -49,11 +49,12 @@ public:
 
     virtual void set_t(const Real& t) = 0;
 
-    virtual void save(const std::string& filename) const
-    {
-        throw NotSupported(
-            "save(const std::string) is not supported by this space class");
-    }
+    virtual void save(const std::string& filename) const = 0;
+    // virtual void save(const std::string& filename) const
+    // {
+    //     throw NotSupported(
+    //         "save(const std::string) is not supported by this space class");
+    // }
 
     virtual void load(const std::string& filename)
     {
