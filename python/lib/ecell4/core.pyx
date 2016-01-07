@@ -78,9 +78,10 @@ cdef shared_ptr[Cpp_Model]* Cpp_Model_from_Model(m):
 
 cimport extras
 
-def load_version_information(string filename):
+def load_version_information(filename):
     """Return a version information of HDF5 as a string."""
-    return extras.load_version_information(tostring(filename)).decode('UTF-8')
+    cdef string cpp_filename = tostring(filename)
+    return extras.load_version_information(cpp_filename).decode('UTF-8')
 
 cimport functions
 
