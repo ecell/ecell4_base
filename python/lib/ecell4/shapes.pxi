@@ -793,7 +793,7 @@ cdef class MeshSurface:
     This object needs VTK support.
     """
 
-    def __init__(self, string filename, Real3 edge_lengths):
+    def __init__(self, filename, Real3 edge_lengths):
         """Constructor.
 
         Parameters
@@ -805,9 +805,9 @@ cdef class MeshSurface:
             given lengths.
 
         """
-    def __cinit__(self, string filename, Real3 edge_lengths):
+    def __cinit__(self, filename, Real3 edge_lengths):
         self.thisptr = new shared_ptr[Cpp_MeshSurface](
-            new Cpp_MeshSurface(filename, deref(edge_lengths.thisptr)))
+            new Cpp_MeshSurface(tostring(filename), deref(edge_lengths.thisptr)))
 
     def __dealloc__(self):
         del self.thisptr

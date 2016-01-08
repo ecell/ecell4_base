@@ -264,7 +264,7 @@ cdef class ODEWorld:
         """
         self.thisptr.get().save(tostring(filename))
 
-    def load(self, string filename):
+    def load(self, filename):
         """load(filename)
 
         Load a HDF5 file to the current state.
@@ -372,7 +372,7 @@ cdef class ODERatelaw:
 
     def as_string(self):
         """"Return a name of the function"""
-        return self.thisptr.get().as_string()
+        return self.thisptr.get().as_string().decode('UTF-8')
 
     def as_base(self):
         """Return self as a base class. Only for developmental use."""
@@ -426,7 +426,7 @@ cdef class ODERatelawMassAction:
 
     def as_string(self):
         """"Return a name of the function"""
-        return self.thisptr.get().as_string()
+        return self.thisptr.get().as_string().decode('UTF-8')
 
     def as_base(self):
         """Return self as a base class. Only for developmental use."""
@@ -525,13 +525,13 @@ cdef class ODERatelawCallback:
         """
         self.thisptr.get().set_callback_pyfunc(<Python_CallbackFunctype>pyfunc)
 
-    def set_name(self, string name):
+    def set_name(self, name):
         """"Set the name of a function"""
-        self.thisptr.get().set_name(name)
+        self.thisptr.get().set_name(tostring(name))
 
     def as_string(self):
         """"Return a name of the function"""
-        return self.thisptr.get().as_string()
+        return self.thisptr.get().as_string().decode('UTF-8')
 
     def as_base(self):
         """Return self as a base class. Only for developmental use."""
