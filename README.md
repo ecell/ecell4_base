@@ -21,7 +21,11 @@ Installation
   - [Python2 series](#python2-series)
   - [Python3 series](#python3-series)
   
-- [Mac or Linux](#mac-or-linux)
+- [Mac](#mac)
+  - [pip users](#pip-users)
+  - [homebrew users](#homebrew-users)
+
+- [Linux](#Linux)
 
 - [Using E-Cell4 with jupyter](#using-e-cell4-with-jupyter)
 
@@ -94,22 +98,28 @@ pip install matplotlib-1.5.0-cp35-none-win32.whl
 pip -U jupyter
 ```
 
-Mac or Linux
-------------
+Mac
+---
 
-Please use [homebrew-ecell4](https://github.com/ecell/homebrew-ecell4)
+### pip users
 
-https://github.com/ecell/homebrew-ecell4
+1. Download [get-pip.py](https://bootstrap.pypa.io/get-pip.py)
+2. Run the following commands
+    ```shell
+    sudo python get-pip.py
+    # please select appropriate whl file for your Python version
+    sudo pip install THEWHEELURL.whl
+    # Mac default matplotlib is too old, you need to add these options to the pip command.
+    pip install -U matplotlib --user
+    sudo pip install -U jupyter
+    ```
 
-### Note about Jupyter and matplotlib for Mac
+### homebrew users
+Please see [homebrew-ecell4](https://github.com/ecell/homebrew-ecell4)
 
-```shell
-sudo python get-pip.py
-# Mac default matplotlib is too old, so you need to add these options to the pip command.
-# These commands can be used not only for Mac but also for Linux.
-pip install -U matplotlib --user
-sudo pip install jupyter
-```
+Linux
+-----
+Please use linuxbrew, see [homebrew-ecell4](https://github.com/ecell/homebrew-ecell4)
 
 Using E-Cell4 with jupyter 
 --------------------------
