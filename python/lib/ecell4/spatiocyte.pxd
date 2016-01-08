@@ -112,7 +112,7 @@ cdef extern from "ecell4/spatiocyte/SpatiocyteWorld.hpp" namespace "ecell4::spat
         Integer global2private(Cpp_Integer3)
         Cpp_Real3 global2position(Cpp_Integer3)
         Cpp_Integer3 position2global(Cpp_Real3)
-        Integer add_structure(Cpp_Species&, shared_ptr[Cpp_Shape])
+        Integer add_structure(Cpp_Species&, shared_ptr[Cpp_Shape]) +except
         void add_molecules(Cpp_Species& sp, Integer num, shared_ptr[Cpp_Shape])
 
     cdef Cpp_SpatiocyteWorld* create_spatiocyte_world_cell_list_impl_alias(
