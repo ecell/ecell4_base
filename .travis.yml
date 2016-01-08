@@ -31,6 +31,7 @@ script:
 - if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew tap ecell/ecell4; fi
 - if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew install ecell4; fi
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH PYTHONPATH=/usr/local/lib/python2.7/site-packages python -c "from ecell4 import *"; fi
+- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH PYTHONPATH=/usr/local/lib/python2.7/site-packages python -c "from ecell4 import *; ode.ODEWorld().bind_to(ode.ODENetworkModel()); ode.ODEWorld().bind_to(NetworkModel())"; fi
 - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then PYTHONPATH=/usr/local/lib/python2.7/site-packages python -c "from ecell4 import *"; fi
 - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then PYTHONPATH=/usr/local/lib/python2.7/site-packages python -c "from ecell4 import *; ode.ODEWorld().bind_to(ode.ODENetworkModel()); ode.ODEWorld().bind_to(NetworkModel())"; fi
 notifications:
