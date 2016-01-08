@@ -1,9 +1,11 @@
 import sys
 import glob
-# from distutils.core import setup, Command
-from setuptools import setup
-from distutils.core import Command
-from distutils.extension import Extension
+# # from distutils.core import setup, Command
+# from setuptools import setup
+# from distutils.core import Command
+# from distutils.extension import Extension
+from distutils.core import Command, setup, Extension
+from Cython.Build import cythonize
 import unittest
 
 try:
@@ -136,5 +138,5 @@ setup(
                   ('ecell4ipynb/Tutorials', glob.glob('../ipynb/Tutorials/*.ipynb'))],
     packages = ["ecell4", "ecell4.util", "ecell4.extra"],
     cmdclass = {'build_ext': build_ext, 'test': run_tests},
-    ext_modules = ext_modules
+    ext_modules = cythonize(ext_modules)
     )
