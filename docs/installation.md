@@ -6,6 +6,9 @@ Installation
   - [Linux](#linux)
 
 - [Windows](#windows)
+  - [Python2 series](#python2-series)
+  - [Python3 series](#python3-series)
+  
 - [Mac or Linux](#mac-or-linux)
 
 - [Using E-Cell4 with jupyter](#using-e-cell4-with-jupyter)
@@ -45,11 +48,13 @@ Windows
 Please use 32bit Python, even if you use 64bit Windows.
 We have NOT supported 64bit Python yet.
 
+### Python2 series
+
 - [Python 2.7.11(**32bit**)](https://www.python.org/ftp/python/2.7.11/python-2.7.11.msi)
-- [HDF5-1.8.16 Pre-built Binary(**32-bit**)](http://www.hdfgroup.org/ftp/HDF5/current/bin/windows/extra/hdf5-1.8.16-win32-vs2012-shared.zip)
+- [HDF5-1.8.16(**32-bit built with VS2012**)](http://www.hdfgroup.org/ftp/HDF5/current/bin/windows/extra/hdf5-1.8.16-win32-vs2012-shared.zip)
 - [Visual C++ Compiler for Python 2.7](http://aka.ms/vcpython27)
 
-Please add `C:\Python27`, `C:\Python27\Scripts` and `C:\Program Files (x86)\HDF_Group\HDF5\1.8.16\bin` to your **PATH** enviromental variable.
+Please add python.exe, pip.exe path and `C:\Program Files (x86)\HDF_Group\HDF5\1.8.16\bin` to your **USER** PATH enviromental variable.
 
 And run the following commands with command prompt.
 matplotlib depends on numpy. It takes some time to build numpy, please be patient.
@@ -57,10 +62,25 @@ Although jupyter is optional, we strongly recommend that you run E-Cell4 with ju
 
 ```shell
 pip install https://ci.appveyor.com/api/buildjobs/aju5rykh88bb88ns/artifacts/python/dist/ecell4-4.0.0b2-cp27-none-win32.whl
-pip install matplotlib
-pip install jupyter
+pip install -U matplotlib
+pip install -U jupyter
 ```
 
+### Python3 series
+
+- [Python 3.5.1(**32bit**)](https://www.python.org/ftp/python/3.5.1/python-3.5.1.msi)
+- [HDF5-1.8.16(**32-bit built with VS2015**)](http://www.hdfgroup.org/ftp/HDF5/current/bin/windows/extra/hdf5-1.8.16-win32-vs2015-shared.zip)
+
+Please add python.exe, pip.exe path and `C:\Program Files (x86)\HDF_Group\HDF5\1.8.16\bin` to your **USER** PATH enviromental variable.
+Next download numpy-1.10.4+vanilla-cp35-none-win32.whl and matplotlib-1.5.0-cp35-none-win32.whl from http://www.lfd.uci.edu/~gohlke/pythonlibs/
+And run the following commands with command prompt.
+
+```
+pip install UPCOMING-WHEEL.whl
+pip install numpy-1.10.4+vanilla-cp35-none-win32.whl
+pip install matplotlib-1.5.0-cp35-none-win32.whl
+pip -U jupyter
+```
 
 Mac or Linux
 ------------
