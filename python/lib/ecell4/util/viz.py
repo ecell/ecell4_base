@@ -149,7 +149,11 @@ def plot_number_observer_with_matplotlib(*args, **kwargs):
     special_keys = ("xlim", "ylim", "xlabel", "ylabel", "legend", "x", "y")
     plot_opts = {key: value for key, value in kwargs.items()
                  if key not in special_keys}
-    color_cycle = plt.rcParams['axes.color_cycle']
+
+    if 'axes.prop_cycle' in plt.rcParams.keys():
+        color_cycle = [prop['color'] for prop in plt.rcParams['axes.prop_cycle']]
+    else:
+        color_cycle = plt.rcParams['axes.color_cycle']
 
     if "y" in kwargs.keys() and isinstance(kwargs["y"], str):
         kwargs["y"] = (kwargs["y"], )
