@@ -41,7 +41,7 @@ public:
 
     // SpaceTraits
 
-    // virtual const Real t() const = 0;
+    // virtual const Real t() const = 0;  //XXX: This doesn't work with Python35 MSVC2015
     virtual const Real t() const
     {
         return 0.0;  //XXX: Just for debugging
@@ -50,6 +50,7 @@ public:
     virtual void set_t(const Real& t) = 0;
 
     virtual void save(const std::string& filename) const = 0;
+    //XXX: This doesn't work with Python35 MSVC2015
     // virtual void save(const std::string& filename) const
     // {
     //     throw NotSupported(

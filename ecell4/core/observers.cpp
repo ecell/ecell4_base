@@ -89,17 +89,6 @@ void NumberLogger::log(const boost::shared_ptr<Space>& space)
         tmp.push_back(space->get_value(*i));
         // tmp.push_back(space->num_molecules(*i));
     }
-
-    std::cout << "space->t() => " << space->t() << std::endl;
-    std::cout << "space->edge_lengths() => " << space->edge_lengths()[0] << ", " << space->edge_lengths()[1] << ", " << space->edge_lengths()[2] << std::endl;
-    std::cout << "=>";
-    for (data_container_type::value_type::const_iterator i(tmp.begin());
-         i != tmp.end(); ++i)
-    {
-        std::cout << " " << (*i);
-    }
-    std::cout << std::endl;
-
     data.push_back(tmp);
 }
 
@@ -111,8 +100,6 @@ void FixedIntervalNumberObserver::initialize(const boost::shared_ptr<Space>& spa
 
 bool FixedIntervalNumberObserver::fire(const Simulator* sim, const boost::shared_ptr<Space>& space)
 {
-    std::cout << "sim->t() => " << sim->t() << std::endl;
-    std::cout << "space->t() => " << space->t() << std::endl;
     logger_.log(space);
     return base_type::fire(sim, space);
 }
