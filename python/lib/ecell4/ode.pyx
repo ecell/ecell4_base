@@ -337,16 +337,17 @@ cdef class ODEWorld:
             self.thisptr.get().bind_to(deref((<ODENetworkModel>m).thisptr))
         else:
             # self.thisptr.get().bind_to(deref(Cpp_Model_from_Model(m)))
+            self.thisptr.get().bind_to(Cpp_Model_from_Model(m))
 
-            if isinstance(m, Model):
-                self.thisptr.get().bind_to(deref((<Model>m).thisptr))
-            elif isinstance(m, NetworkModel):
-                self.thisptr.get().bind_to(<shared_ptr[Cpp_Model]>(deref((<NetworkModel>m).thisptr)))
-            elif isinstance(m, NetfreeModel):
-                self.thisptr.get().bind_to(<shared_ptr[Cpp_Model]>(deref((<NetfreeModel>m).thisptr)))
-            else:
-                raise ValueError, ("a wrong argument was given [%s]." % (type(m))
-                    + " the first argument must be Model, NetworkModel or NetfreeModel")
+            # if isinstance(m, Model):
+            #     self.thisptr.get().bind_to(deref((<Model>m).thisptr))
+            # elif isinstance(m, NetworkModel):
+            #     self.thisptr.get().bind_to(<shared_ptr[Cpp_Model]>(deref((<NetworkModel>m).thisptr)))
+            # elif isinstance(m, NetfreeModel):
+            #     self.thisptr.get().bind_to(<shared_ptr[Cpp_Model]>(deref((<NetfreeModel>m).thisptr)))
+            # else:
+            #     raise ValueError, ("a wrong argument was given [%s]." % (type(m))
+            #         + " the first argument must be Model, NetworkModel or NetfreeModel")
 
     def as_base(self):
         """Return self as a base class. Only for developmental use."""
@@ -854,8 +855,10 @@ cdef class ODENetworkModel:
             self.thisptr = new shared_ptr[Cpp_ODENetworkModel](
                 <Cpp_ODENetworkModel*>(new Cpp_ODENetworkModel()))
         else:
+            # self.thisptr = new shared_ptr[Cpp_ODENetworkModel](
+            #     (<Cpp_ODENetworkModel*>(new Cpp_ODENetworkModel(deref(m.thisptr)))))
             self.thisptr = new shared_ptr[Cpp_ODENetworkModel](
-                (<Cpp_ODENetworkModel*>(new Cpp_ODENetworkModel(deref(m.thisptr)))))
+                (<Cpp_ODENetworkModel*>(new Cpp_ODENetworkModel(m.thisptr))))
 
     def __dealloc__(self):
         del self.thisptr
@@ -987,7 +990,7 @@ cdef class ODESimulator:
                         deref((<ODEWorld>arg2).thisptr))
                 elif isinstance(arg1, NetworkModel):
                     self.thisptr = new Cpp_ODESimulator(
-                        deref((<NetworkModel>arg1).thisptr),
+                        (<NetworkModel>arg1).thisptr,
                         deref((<ODEWorld>arg2).thisptr))
                 else:
                     raise ValueError(
@@ -1016,7 +1019,7 @@ cdef class ODESimulator:
                     cpp_solvertype)
             elif isinstance(arg1, NetworkModel):
                 self.thisptr = new Cpp_ODESimulator(
-                    deref((<NetworkModel>arg1).thisptr),
+                    (<NetworkModel>arg1).thisptr,
                     deref((<ODEWorld>arg2).thisptr),
                     cpp_solvertype)
             else:
@@ -1319,7 +1322,7 @@ cdef class ODEFactory:
             elif isinstance(arg1, NetworkModel):
                 return ODESimulator_from_Cpp_ODESimulator(
                     self.thisptr.create_simulator(
-                        deref((<NetworkModel>arg1).thisptr),
+                        (<NetworkModel>arg1).thisptr,
                         deref((<ODEWorld>arg2).thisptr)))
             else:
                 raise ValueError(

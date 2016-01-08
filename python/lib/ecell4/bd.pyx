@@ -664,7 +664,7 @@ cdef class BDWorld:
             a model to bind
 
         """
-        self.thisptr.get().bind_to(deref(Cpp_Model_from_Model(m)))
+        self.thisptr.get().bind_to(Cpp_Model_from_Model(m))
 
     def rng(self):
         """Return a random number generator object."""
@@ -722,10 +722,10 @@ cdef class BDSimulator:
         else:
             if bd_dt_factor is None:
                 self.thisptr = new Cpp_BDSimulator(
-                    deref(Cpp_Model_from_Model(m)), deref(w.thisptr))
+                    Cpp_Model_from_Model(m), deref(w.thisptr))
             else:
                 self.thisptr = new Cpp_BDSimulator(
-                    deref(Cpp_Model_from_Model(m)), deref(w.thisptr),
+                    Cpp_Model_from_Model(m), deref(w.thisptr),
                     <Real>bd_dt_factor)
 
     def __dealloc__(self):
@@ -947,7 +947,7 @@ cdef class BDFactory:
         else:
             return BDWorld_from_Cpp_BDWorld(
                 shared_ptr[Cpp_BDWorld](self.thisptr.create_world(
-                    deref(Cpp_Model_from_Model(arg1)))))
+                    Cpp_Model_from_Model(arg1))))
 
     def create_simulator(self, arg1, BDWorld arg2=None):
         """create_simulator(arg1, arg2=None) -> BDSimulator
@@ -978,4 +978,4 @@ cdef class BDFactory:
         else:
             return BDSimulator_from_Cpp_BDSimulator(
                 self.thisptr.create_simulator(
-                    deref(Cpp_Model_from_Model(arg1)), deref(arg2.thisptr)))
+                    Cpp_Model_from_Model(arg1), deref(arg2.thisptr)))

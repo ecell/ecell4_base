@@ -17,10 +17,11 @@ cdef class NetworkModel:
 
     def __cinit__(self):
         # self.thisptr = new NetworkModel()
-        self.thisptr = new shared_ptr[Cpp_NetworkModel](new Cpp_NetworkModel())
+        # self.thisptr = new shared_ptr[Cpp_NetworkModel](new Cpp_NetworkModel())
+        self.thisptr = shared_ptr[Cpp_NetworkModel](new Cpp_NetworkModel())
 
-    def __dealloc__(self):
-        del self.thisptr
+    # def __dealloc__(self):
+    #     del self.thisptr
 
     def add_species_attribute(self, Species sp):
         """add_species_attribute(sp)

@@ -758,7 +758,7 @@ cdef class MesoscopicWorld:
             a model to bind
 
         """
-        self.thisptr.get().bind_to(deref(Cpp_Model_from_Model(m)))
+        self.thisptr.get().bind_to(Cpp_Model_from_Model(m))
 
     def rng(self):
         """Return a random number generator object."""
@@ -810,7 +810,7 @@ cdef class MesoscopicSimulator:
                 deref((<MesoscopicWorld>m).thisptr))
         else:
             self.thisptr = new Cpp_MesoscopicSimulator(
-                deref(Cpp_Model_from_Model(m)), deref(w.thisptr))
+                Cpp_Model_from_Model(m), deref(w.thisptr))
 
     def __dealloc__(self):
         del self.thisptr
@@ -1031,7 +1031,7 @@ cdef class MesoscopicFactory:
         else:
             return MesoscopicWorld_from_Cpp_MesoscopicWorld(
                 shared_ptr[Cpp_MesoscopicWorld](self.thisptr.create_world(
-                    deref(Cpp_Model_from_Model(arg1)))))
+                    Cpp_Model_from_Model(arg1))))
 
     def create_simulator(self, arg1, MesoscopicWorld arg2=None):
         """create_simulator(arg1, arg2) -> MesoscopicSimulator
@@ -1062,4 +1062,4 @@ cdef class MesoscopicFactory:
         else:
             return MesoscopicSimulator_from_Cpp_MesoscopicSimulator(
                 self.thisptr.create_simulator(
-                    deref(Cpp_Model_from_Model(arg1)), deref(arg2.thisptr)))
+                    Cpp_Model_from_Model(arg1), deref(arg2.thisptr)))
