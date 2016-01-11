@@ -1,19 +1,20 @@
 import sys
 import glob
-# # from distutils.core import setup, Command
-# from setuptools import setup
-# from distutils.core import Command
-# from distutils.extension import Extension
-from distutils.core import Command, setup, Extension
-from Cython.Build import cythonize
 import unittest
 
+# from setuptools import setup
+# from distutils.core import Command, Extension
+from distutils.core import setup, Command, Extension
+
 try:
+    from Cython.Build import cythonize
     from Cython.Distutils import build_ext
 except ImportError:
     print("You don't seem to have Cython installed. Please get a")
     print("copy from www.cython.org and install it")
     sys.exit(1)
+
+sys.path.append("./lib")
 
 class run_tests(Command):
     user_options = []
@@ -83,14 +84,23 @@ if with_cpp_shared_libraries:
             include_dirs=["."], libraries=["ecell4-core", "ecell4-meso"],
             language="c++"),
         ]
+    ext_modules = cythonize(ext_modules)
 else:
-    import subprocess
-    import os.path
-    path_to_egfrd = os.path.join(os.path.abspath(".."), "ecell4", "egfrd")
-    sjy_table_path = os.path.join(path_to_egfrd, "SphericalBesselTable.hpp")
-    cjy_table_path = os.path.join(path_to_egfrd, "CylindricalBesselTable.hpp")
+    # import subprocess
+    # import os.path
+    # path_to_egfrd = os.path.join(os.path.abspath(".."), "ecell4", "egfrd")
+    # sjy_table_path = os.path.join(path_to_egfrd, "SphericalBesselTable.hpp")
+    # cjy_table_path = os.path.join(path_to_egfrd, "CylindricalBesselTable.hpp")
+
+    # ext_modules = cythonize(
+    #         glob.glob("lib/ecell4/*.pyx"),
+    #         sources=glob.glob("../ecell4/*/*.cpp"),  #XXX: Not safe
+    #         include_path=[".", ".."],
+    #         extra_compile_args=extra_compile_args,
+    #         libraries=dependent_libs, language="c++", setup_requires=["Cython"])
 
     core_src = glob.glob("../ecell4/core/*.cpp")
+
     ext_modules = [
         Extension("ecell4.core", sources=["lib/ecell4/core.pyx"] + core_src,
             extra_compile_args=extra_compile_args,
@@ -126,6 +136,7 @@ else:
             extra_compile_args=extra_compile_args,
             libraries=dependent_libs, include_dirs=[".", ".."], language="c++"),
         ]
+    ext_modules = cythonize(ext_modules)
 
 setup(
     name = "ecell4",
@@ -138,5 +149,5 @@ setup(
                   ('ecell4ipynb/Tutorials', glob.glob('../ipynb/Tutorials/*.ipynb'))],
     packages = ["ecell4", "ecell4.util", "ecell4.extra"],
     cmdclass = {'build_ext': build_ext, 'test': run_tests},
-    ext_modules = cythonize(ext_modules)
+    ext_modules = ext_modules
     )

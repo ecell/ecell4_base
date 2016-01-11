@@ -13,11 +13,11 @@ void ParticleSpaceCellListImpl::reset(const Real3& edge_lengths)
     rmap_.clear();
     particle_pool_.clear();
 
-    for (int i(0); i < matrix_.shape()[0]; ++i)
+    for (matrix_type::size_type i(0); i < matrix_.shape()[0]; ++i)
     {
-        for (int j(0); j < matrix_.shape()[1]; ++j)
+        for (matrix_type::size_type j(0); j < matrix_.shape()[1]; ++j)
         {
-            for (int k(0); k < matrix_.shape()[2]; ++k)
+            for (matrix_type::size_type k(0); k < matrix_.shape()[2]; ++k)
             {
                 matrix_[i][j][k].clear();
             }
@@ -50,8 +50,11 @@ bool ParticleSpaceCellListImpl::update_particle(
         this->update(i, std::make_pair(pid, p));
         return false;
     }
-    const bool succeeded(this->update(std::make_pair(pid, p)).second);
+
+    this->update(std::make_pair(pid, p));
+    // const bool succeeded(this->update(std::make_pair(pid, p)).second);
     // BOOST_ASSERT(succeeded);
+
     particle_pool_[p.species_serial()].insert(pid);
     return true;
 }
