@@ -478,7 +478,7 @@ cdef class ODERatelawCallback:
 
     """
 
-    def __init__(self, pyfunc, name = None):
+    def __init__(self, pyfunc, name=None):
         """Constructor.
 
         Parameters
@@ -492,19 +492,19 @@ cdef class ODERatelawCallback:
         """
         pass
 
-    def __cinit__(self, pyfunc, name = None):
+    def __cinit__(self, pyfunc, name=None):
         if name is None:
             self.thisptr = new shared_ptr[Cpp_ODERatelawCythonCallback](
                 <Cpp_ODERatelawCythonCallback*>(new Cpp_ODERatelawCythonCallback(
                     <Stepladder_Functype>indirect_function, <void*>pyfunc,
                     <OperateRef_Functype>inc_ref, <OperateRef_Functype>dec_ref,
-                    <string>pyfunc.__name__)))
+                    tostring(pyfunc.__name__))))
         else:
             self.thisptr = new shared_ptr[Cpp_ODERatelawCythonCallback](
                 <Cpp_ODERatelawCythonCallback*>(new Cpp_ODERatelawCythonCallback(
                     <Stepladder_Functype>indirect_function, <void*>pyfunc,
                     <OperateRef_Functype>inc_ref, <OperateRef_Functype>dec_ref,
-                    <string>name)))
+                    tostring(name))))
         self.pyfunc = pyfunc
 
     def __dealloc__(self):
@@ -1269,7 +1269,7 @@ cdef class ODEFactory:
                     self.thisptr.create_world(deref((<Real3>arg1).thisptr))))
         elif isinstance(arg1, str):
             return ODEWorld_from_Cpp_ODEWorld(
-                shared_ptr[Cpp_ODEWorld](self.thisptr.create_world(<string>(arg1))))
+                shared_ptr[Cpp_ODEWorld](self.thisptr.create_world(tostring(arg1))))
         raise ValueError("invalid argument")
 
     # def create_simulator(self, arg1, ODEWorld arg2=None):
