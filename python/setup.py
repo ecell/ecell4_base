@@ -2,9 +2,9 @@ import sys
 import glob
 import unittest
 
-# from setuptools import setup
-# from distutils.core import Command, Extension
-from distutils.core import setup, Command, Extension
+from setuptools import setup
+from distutils.core import Command, Extension
+# from distutils.core import setup, Command, Extension
 
 try:
     from Cython.Build import cythonize
