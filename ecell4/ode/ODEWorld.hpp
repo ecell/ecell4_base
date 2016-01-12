@@ -6,6 +6,9 @@
 #include <ecell4/core/Real3.hpp>
 #include <ecell4/core/Space.hpp>
 #include <ecell4/core/Model.hpp>
+#include <ecell4/core/NetworkModel.hpp>
+#include <ecell4/core/NetfreeModel.hpp>
+
 #ifdef WITH_HDF5
 #include <ecell4/core/CompartmentSpaceHDF5Writer.hpp>
 #endif
