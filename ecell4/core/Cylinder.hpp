@@ -67,6 +67,11 @@ public:
         return std::make_pair(r, z);
     }
 
+    dimension_kind dimension() const
+    {
+        return THREE;
+    }
+
 protected:
 
     Real3 center_;
