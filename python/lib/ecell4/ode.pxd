@@ -7,6 +7,8 @@ from ecell4.core cimport *
 
 from cpython cimport PyObject
 
+cdef shared_ptr[Cpp_Model] my_Cpp_Model_from_Model(m)
+
 ## Cpp_ODEWorld
 #  ecell4::ode::ODEWorld
 cdef extern from "ecell4/ode/ODEWorld.hpp" namespace "ecell4::ode":
