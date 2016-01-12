@@ -323,7 +323,7 @@ def plot_number_observer_with_nya(obs, config={}, width=600, height=400, x=None,
                    "diagrams": data2,
                    "options": {"width": width, "height": height, "xrange": [xmin, xmax],
                                "yrange": [ymin, ymax], "legend": True, "zoom": True}}]}
-    model_id = 'viz{0:s}'.format(uuid.uuid4())
+    model_id = 'viz{0:s}'.format(str(uuid.uuid4()))
     display(HTML(generate_html(
         {'model': json.dumps(model), 'model_id': model_id, 'to_png': json.dumps(to_png)},
         '/templates/nya.tmpl')))
