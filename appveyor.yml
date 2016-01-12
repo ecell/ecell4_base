@@ -4,6 +4,7 @@ environment:
   global:
     HDF_DIR: "C:/Program Files (x86)/HDF_Group/HDF5/1.8.16/lib"
     BOOST_ROOT: C:\Libraries\boost
+    PATH: "C:\Program Files (x86)\HDF_Group\HDF5\1.8.16\bin"
 
   matrix:
     #- PYTHON: "C:\\Python27"
