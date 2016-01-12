@@ -86,7 +86,9 @@ install:
   - "pip install wheel"
   - "python setup.py bdist_wheel"
   - "pip install dist/ecell4-4.0.0b2-cp35-none-win32.whl"
-  - "python setup.py test"
+
+test:
+  - "python python/setup.py test"
 
 build: false
 
