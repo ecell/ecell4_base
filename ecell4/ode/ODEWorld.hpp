@@ -283,7 +283,7 @@ public:
             generated_.swap(tmp);
             model_.reset();
         }
-        else if (boost::shared_ptr<NetworkModel> netfree_model
+        else if (boost::shared_ptr<NetfreeModel> netfree_model
                 = boost::dynamic_pointer_cast<NetfreeModel>(model))
         {
             throw NotSupported(
