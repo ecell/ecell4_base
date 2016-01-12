@@ -85,6 +85,8 @@ install:
   - if "%PYTHON_VERSION%" == "3.5.1" python setup.py build_ext -I"C:\Program Files (x86)\HDF_Group\HDF5\1.8.16\include";C:/Libraries/boost;C:/projects/ecell4/gsl -LC:/projects/ecell4/gsl/Release;"C:\Program Files (x86)\HDF_Group\HDF5\1.8.16\lib"
   - "pip install wheel"
   - "python setup.py bdist_wheel"
+  - "pip install dist/ecell4-4.0.0b2-cp35-none-win32.whl"
+  - "python setup.py test"
 
 build: false
 
