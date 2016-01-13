@@ -8,26 +8,26 @@ namespace ecell4
 namespace ode
 {
 
-void ODEWorld::bind_to(boost::shared_ptr<Model> model)
-{
-    if (boost::shared_ptr<NetworkModel> network_model
-            = boost::dynamic_pointer_cast<NetworkModel>(model))
-    {
-        this->bind_to(network_model);
-    }
-    else if (boost::shared_ptr<NetfreeModel> netfree_model
-            = boost::dynamic_pointer_cast<NetfreeModel>(model))
-    {
-        throw NotSupported(
-            "Not supported yet. NetfreeModel was given.");
-    }
-    else
-    {
-        //XXX: Never reach here
-        throw NotSupported(
-            "Not supported yet. Either ODENetworkModel or NetworkModel must be given.");
-    }
-}
+// void ODEWorld::bind_to(boost::shared_ptr<Model> model)
+// {
+//     if (boost::shared_ptr<NetworkModel> network_model
+//             = boost::dynamic_pointer_cast<NetworkModel>(model))
+//     {
+//         this->bind_to(network_model);
+//     }
+//     else if (boost::shared_ptr<NetfreeModel> netfree_model
+//             = boost::dynamic_pointer_cast<NetfreeModel>(model))
+//     {
+//         throw NotSupported(
+//             "Not supported yet. NetfreeModel was given.");
+//     }
+//     else
+//     {
+//         //XXX: Never reach here
+//         throw NotSupported(
+//             "Not supported yet. Either ODENetworkModel or NetworkModel must be given.");
+//     }
+// }
 
 void ODEWorld::bind_to(boost::shared_ptr<NetworkModel> model)
 {
