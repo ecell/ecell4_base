@@ -4,7 +4,7 @@ python:
   - "3.5"
 language: cpp
 os:
-- linux
+#- linux
 - osx
 
 compiler:
@@ -23,7 +23,7 @@ before_install:
 - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo apt-get update -qq; fi
 - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo apt-get install -qq libboost1.53-all-dev libgsl0-dev libhdf5-serial-dev python-dev python-setuptools python-numpy python-scipy; fi
 - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo easy_install cython; fi
-- if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew install gsl cmake boost; brew install homebrew/science/hdf5; fi
+- if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew update; brew upgrade; brew install gsl; brew install homebrew/science/hdf5; fi
 - if [ "$TRAVIS_OS_NAME" == "osx" ]; then curl -O https://bootstrap.pypa.io/get-pip.py; python get-pip.py; pip install cython; fi
 script:
 - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo bash -c 'export PREFIX=/usr/local; export PYTHONPATH=/usr/local/lib/python2.7/site-packages:$PYTHONPATH; ./install.sh py2'; fi
