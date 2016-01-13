@@ -13,20 +13,7 @@ void ODEWorld::bind_to(boost::shared_ptr<Model> model)
     if (boost::shared_ptr<NetworkModel> network_model
             = boost::dynamic_pointer_cast<NetworkModel>(model))
     {
-        if (generated_)
-        {
-            std::cerr << "Warning: NetworkModel is already bound to ODEWorld."
-                << std::endl;
-        }
-        else if (model_.expired())
-        {
-            std::cerr << "Warning: ODENetworkModel is already bound to ODEWorld."
-                << std::endl;
-        }
-
-        boost::shared_ptr<ODENetworkModel> tmp(new ODENetworkModel(network_model));
-        generated_.swap(tmp);
-        model_.reset();
+        this->bind_to(network_model);
     }
     else if (boost::shared_ptr<NetfreeModel> netfree_model
             = boost::dynamic_pointer_cast<NetfreeModel>(model))
@@ -36,9 +23,28 @@ void ODEWorld::bind_to(boost::shared_ptr<Model> model)
     }
     else
     {
+        //XXX: Never reach here
         throw NotSupported(
             "Not supported yet. Either ODENetworkModel or NetworkModel must be given.");
     }
+}
+
+void ODEWorld::bind_to(boost::shared_ptr<NetworkModel> model)
+{
+    if (generated_)
+    {
+        std::cerr << "Warning: NetworkModel is already bound to ODEWorld."
+            << std::endl;
+    }
+    else if (model_.expired())
+    {
+        std::cerr << "Warning: ODENetworkModel is already bound to ODEWorld."
+            << std::endl;
+    }
+
+    boost::shared_ptr<ODENetworkModel> tmp(new ODENetworkModel(model));
+    generated_.swap(tmp);
+    model_.reset();
 }
 
 void ODEWorld::bind_to(boost::shared_ptr<ODENetworkModel> model)

@@ -346,8 +346,10 @@ cdef class ODEWorld:
         """
         if isinstance(m, ODENetworkModel):
             self.thisptr.get().bind_to(deref((<ODENetworkModel>m).thisptr))
+        elif isinstance(m, NetworkModel):
+            #XXX: This is needed because the pointer cast doesn't work properly on osx
+            self.thisptr.get().bind_to(deref((<NetworkModel>m).thisptr))
         else:
-            # self.thisptr.get().bind_to(deref(Cpp_Model_from_Model(m)))
             self.thisptr.get().bind_to(my_Cpp_Model_from_Model(m))
 
             # if isinstance(m, Model):
