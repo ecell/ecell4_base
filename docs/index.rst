@@ -74,7 +74,7 @@ Examples:
    :glob:
    
    Attractors
-   DrosophilaCircadianClock
+   Drosophila/Drosophila
    dpc
    HumanErythrocytes
    

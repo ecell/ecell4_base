@@ -34,19 +34,21 @@ model is based on the model introduced in the following publication.
 
 .. code:: python
 
+    # viz.plot_number_observer(obs, interactive=True)
     viz.plot_number_observer(obs)
 
 
 
-.. image:: ./images/drosophila_4_0.png
+.. image:: output_4_0.png
 
 
 .. code:: python
 
+    # viz.plot_number_observer(obs, x="Pn", y=("M", "P0", "P1", "P2"), interactive=True)
     viz.plot_number_observer(obs, x="Pn", y=("M", "P0", "P1", "P2"))
 
 
 
-.. image:: ./images/drosophila_5_0.png
+.. image:: output_5_0.png
 
 
