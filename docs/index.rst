@@ -75,7 +75,7 @@ Examples:
    
    Attractors
    Drosophila/Drosophila
-   dpc
+   DualPhospho/DualPhospho
    HumanErythrocytes
    
 Old Tutorials:

@@ -46,16 +46,16 @@ Dual Phosphorylation Cycle
 
 .. parsed-literal::
 
-    (0, u'K', u'0.0025', u'1')
-    (1, u'Kp', u'0.0025', u'1')
-    (2, u'Kpp', u'0.0025', u'1')
-    (3, u'KK', u'0.0025', u'1')
-    (4, u'PP', u'0.0025', u'1')
-    (5, u'K_KK', u'0.0025', u'1')
-    (6, u'Kp_KK', u'0.0025', u'1')
-    (7, u'Kpp_PP', u'0.0025', u'1')
-    (8, u'Kp_PP', u'0.0025', u'1')
-
+    0 K 0.0025 1
+    1 Kp 0.0025 1
+    2 Kpp 0.0025 1
+    3 KK 0.0025 1
+    4 PP 0.0025 1
+    5 K_KK 0.0025 1
+    6 Kp_KK 0.0025 1
+    7 Kpp_PP 0.0025 1
+    8 Kp_PP 0.0025 1
+    
 
 .. code:: python
 
@@ -70,19 +70,19 @@ Dual Phosphorylation Cycle
 
 .. parsed-literal::
 
-    (0, u'K+KK>K_KK|0.0448346')
-    (1, u'K_KK>K+KK|1.73')
-    (2, u'K_KK>Kp+KK|1.5')
-    (3, u'Kp+KK>Kp_KK|0.0929902')
-    (4, u'Kp_KK>Kp+KK|1.73')
-    (5, u'Kp_KK>Kpp+KK|15')
-    (6, u'Kpp+PP>Kpp_PP|0.0448346')
-    (7, u'Kpp_PP>Kpp+PP|1.73')
-    (8, u'Kpp_PP>Kp+PP|1.5')
-    (9, u'Kp+PP>Kp_PP|0.0929902')
-    (10, u'Kp_PP>Kp+PP|1.73')
-    (11, u'Kp_PP>K+PP|15')
-
+    0 K+KK>K_KK|0.0448346
+    1 K_KK>K+KK|1.73
+    2 K_KK>Kp+KK|1.5
+    3 Kp+KK>Kp_KK|0.0929902
+    4 Kp_KK>Kp+KK|1.73
+    5 Kp_KK>Kpp+KK|15
+    6 Kpp+PP>Kpp_PP|0.0448346
+    7 Kpp_PP>Kpp+PP|1.73
+    8 Kpp_PP>Kp+PP|1.5
+    9 Kp+PP>Kp_PP|0.0929902
+    10 Kp_PP>Kp+PP|1.73
+    11 Kp_PP>K+PP|15
+    
 
 .. code:: python
 
@@ -119,6 +119,6 @@ Dual Phosphorylation Cycle
 
 
 
-.. image:: ./images/dpc_8_0.png
+.. image:: output_8_0.png
 
 
