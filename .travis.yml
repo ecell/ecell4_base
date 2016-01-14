@@ -1,58 +1,48 @@
 language: python
-
 python:
   - "2.7"
   - "3.5"
-
 language: cpp
-
 os:
-  # - linux
-  - osx
+#- linux
+- osx
 
 compiler:
-  - gcc
-  - clang
-
-# matrix:
-#   exclude:
-#     # Only check clang on OS X
-#     - os: osx
-#       compiler: gcc
+- gcc
+- clang
 
 addons:
   apt:
     sources:
-      - ubuntu-toolchain-r-test
+    - ubuntu-toolchain-r-test
     packages:
-      - clang
+    - clang
 
 before_install:
-  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then echo 'yes' | sudo add-apt-repository ppa:apokluda/boost1.53; fi
-  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo apt-get update -qq; fi
-  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo apt-get install -qq libboost1.53-all-dev libgsl0-dev libhdf5-serial-dev python-dev python-setuptools python-numpy python-scipy; fi
-  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo easy_install cython; fi
-  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew update; brew upgrade; brew install gsl python3; brew install homebrew/science/hdf5; fi
-  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then curl -O https://bootstrap.pypa.io/get-pip.py; sudo python3 get-pip.py; sudo pip3 install cython; fi
-  script:
-  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo bash -c 'export PREFIX=/usr/local; export PYTHONPATH=/usr/local/lib/python2.7/site-packages:$PYTHONPATH; ./install.sh py2'; fi
-  - if [ "$TRAVIS_OS_NAME" == "osx" ] && [ "$CC" = "gcc" ]; then export CC=gcc-4.8; fi
-  - if [ "$TRAVIS_OS_NAME" == "osx" ] && [ "$CC" = "gcc" ]; then export CXX=g++-4.8; fi
+- if [ "$TRAVIS_OS_NAME" == "linux" ]; then echo 'yes' | sudo add-apt-repository ppa:apokluda/boost1.53; fi
+- if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo apt-get update -qq; fi
+- if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo apt-get install -qq libboost1.53-all-dev libgsl0-dev libhdf5-serial-dev python-dev python-setuptools python-numpy python-scipy; fi
+- if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo easy_install cython; fi
+- if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew update; brew upgrade; brew install gsl python3; brew install homebrew/science/hdf5; fi
+- if [ "$TRAVIS_OS_NAME" == "osx" ]; then curl -O https://bootstrap.pypa.io/get-pip.py; sudo python3 get-pip.py; sudo pip3 install cython; fi
+script:
+- if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo bash -c 'export PREFIX=/usr/local; export PYTHONPATH=/usr/local/lib/python2.7/site-packages:$PYTHONPATH; ./install.sh py2'; fi
+- if [ "$TRAVIS_OS_NAME" == "osx" ] && [ "$CC" = "gcc" ]; then export CC=gcc-4.8; fi
+- if [ "$TRAVIS_OS_NAME" == "osx" ] && [ "$CC" = "gcc" ]; then export CXX=g++-4.8; fi
 
-  # - if [ "$TRAVIS_OS_NAME" == "osx" ]; then ./install.sh py3; fi
-  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then cmake -DCMAKE_INSTALL_PREFIX=/usr/local -DWITH_HDF5=0 -DWITH_VTK=0 .; make BesselTables; fi
-  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then cd python; fi
-  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then PYTHONPATH=/usr/local/lib/python3.5/site-packages:/usr/local/lib/python3.5/dist-packages:$PYTHONPATH python3 setup.py build_ext  /Users/travis/build/ecell/ecell4/Users/travis/build/ecell/ecell4 install --prefix=/usr/local; fi
-  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then PYTHONPATH=/usr/local/lib/python3.5/site-packages:/usr/local/lib/python3.5/dist-packages:$PYTHONPATH python3 test; fi
+# - if [ "$TRAVIS_OS_NAME" == "osx" ]; then ./install.sh py3; fi
+- if [ "$TRAVIS_OS_NAME" == "osx" ]; then cmake -DCMAKE_INSTALL_PREFIX=/usr/local -DWITH_HDF5=0 -DWITH_VTK=0 .; make BesselTables; fi
+- if [ "$TRAVIS_OS_NAME" == "osx" ]; then cd python; fi
+- if [ "$TRAVIS_OS_NAME" == "osx" ]; then PYTHONPATH=/usr/local/lib/python3.5/site-packages:/usr/local/lib/python3.5/dist-packages:$PYTHONPATH python3 setup.py build_ext -I.. install --prefix=/usr/local; fi
+- if [ "$TRAVIS_OS_NAME" == "osx" ]; then PYTHONPATH=/usr/local/lib/python3.5/site-packages:/usr/local/lib/python3.5/dist-packages:$PYTHONPATH python3 test; fi
 
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH PYTHONPATH=/usr/local/lib/python2.7/site-packages python -c "from ecell4 import *"; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH PYTHONPATH=/usr/local/lib/python2.7/site-packages python -c "from ecell4 import *; ode.ODEWorld().bind_to(NetworkModel())"; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then PYTHONPATH=/usr/local/lib/python3.5/site-packages python3 -c "from ecell4 import *"; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then PYTHONPATH=/usr/local/lib/python3.5/site-packages python3 -c "from ecell4 import *; ode.ODEWorld().bind_to(NetworkModel())"; fi
-
+- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH PYTHONPATH=/usr/local/lib/python2.7/site-packages python -c "from ecell4 import *"; fi
+- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH PYTHONPATH=/usr/local/lib/python2.7/site-packages python -c "from ecell4 import *; ode.ODEWorld().bind_to(NetworkModel())"; fi
+- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then PYTHONPATH=/usr/local/lib/python3.5/site-packages python3 -c "from ecell4 import *"; fi
+- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then PYTHONPATH=/usr/local/lib/python3.5/site-packages python3 -c "from ecell4 import *; ode.ODEWorld().bind_to(NetworkModel())"; fi
 notifications:
   webhooks:
     urls:
-      - http://dev.e-cell.org/ecell-bot/travis/notification
+    - http://dev.e-cell.org/ecell-bot/travis/notification
   slack:
     secure: kCN8PCrinRfaDFKn93TMrYY5LberBt8GHDHOtSbR7B1Zmo9Pr/uHxxqoXlu1g9XYxgs2lud/AKo0gKMu8n+QHWeAXaOwe8GSccEqBdilXDVp4fzO96jT2R82RYljQ2wAR5ug1YIACRq06mtFn6U7GRZRnpRI4VsEUFLJPljZ+UM=
