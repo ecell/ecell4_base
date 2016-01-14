@@ -14,11 +14,11 @@ compiler:
   - gcc
   - clang
 
-matrix:
-  exclude:
-    # Only check clang on OS X
-    - os: osx
-      compiler: gcc
+# matrix:
+#   exclude:
+#     # Only check clang on OS X
+#     - os: osx
+#       compiler: gcc
 
 addons:
   apt:
