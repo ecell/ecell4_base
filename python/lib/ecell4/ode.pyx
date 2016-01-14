@@ -347,8 +347,9 @@ cdef class ODEWorld:
         if isinstance(m, ODENetworkModel):
             self.thisptr.get().bind_to(deref((<ODENetworkModel>m).thisptr))
         elif isinstance(m, NetworkModel):
-            #XXX: This is needed because the pointer cast doesn't work properly on osx
-            self.thisptr.get().bind_to((<NetworkModel>m).thisptr)
+            # #XXX: This is needed because the pointer cast doesn't work properly on osx
+            # self.thisptr.get().bind_to((<NetworkModel>m).thisptr)
+            self.thisptr.get().bind_to(my_Cpp_Model_from_Model(m))
         else:
             # self.thisptr.get().bind_to(my_Cpp_Model_from_Model(m))
             raise ValueError, ("a wrong argument was given [%s]." % (type(m))
