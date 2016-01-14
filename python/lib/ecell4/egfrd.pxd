@@ -67,21 +67,21 @@ cdef extern from "ecell4/egfrd/egfrd.hpp" namespace "ecell4::egfrd":
         void remove_molecules(Cpp_Species& sp, Integer num)
         void save(string filename) except +
         void load(string filename) except +
-        void bind_to(shared_ptr[Cpp_Model])
+        void bind_to(shared_ptr_Cpp_Model)
         shared_ptr[Cpp_RandomNumberGenerator] rng()
 
     cdef cppclass Cpp_EGFRDSimulator "ecell4::egfrd::EGFRDSimulator":
         #XXX: be carefull about the order of arguments
         Cpp_EGFRDSimulator(
-            shared_ptr[Cpp_EGFRDWorld]&, shared_ptr[Cpp_Model]&) except +
+            shared_ptr[Cpp_EGFRDWorld]&, shared_ptr_Cpp_Model&) except +
         Cpp_EGFRDSimulator(
-            shared_ptr[Cpp_EGFRDWorld]&, shared_ptr[Cpp_Model]&,
+            shared_ptr[Cpp_EGFRDWorld]&, shared_ptr_Cpp_Model&,
             Integer) except +
         Cpp_EGFRDSimulator(
-            shared_ptr[Cpp_EGFRDWorld]&, shared_ptr[Cpp_Model]&,
+            shared_ptr[Cpp_EGFRDWorld]&, shared_ptr_Cpp_Model&,
             Integer, Real) except +
         Cpp_EGFRDSimulator(
-            shared_ptr[Cpp_EGFRDWorld]&, shared_ptr[Cpp_Model]&,
+            shared_ptr[Cpp_EGFRDWorld]&, shared_ptr_Cpp_Model&,
             Integer, Real, Real) except +
         Cpp_EGFRDSimulator(
             shared_ptr[Cpp_EGFRDWorld]&) except +
@@ -103,7 +103,7 @@ cdef extern from "ecell4/egfrd/egfrd.hpp" namespace "ecell4::egfrd":
         bool check_reaction()
         void initialize()
         # Cpp_GSLRandomNumberGenerator& rng()
-        shared_ptr[Cpp_Model] model()
+        shared_ptr_Cpp_Model model()
         shared_ptr[Cpp_EGFRDWorld] world()
         void run(Real) except +
         void run(Real, shared_ptr[Cpp_Observer]) except +
@@ -125,8 +125,8 @@ cdef extern from "ecell4/egfrd/egfrd.hpp" namespace "ecell4::egfrd":
         Cpp_EGFRDWorld* create_world()
         Cpp_EGFRDWorld* create_world(string)
         Cpp_EGFRDWorld* create_world(Cpp_Real3&)
-        Cpp_EGFRDWorld* create_world(shared_ptr[Cpp_Model])
-        Cpp_EGFRDSimulator* create_simulator(shared_ptr[Cpp_Model], shared_ptr[Cpp_EGFRDWorld])
+        Cpp_EGFRDWorld* create_world(shared_ptr_Cpp_Model)
+        Cpp_EGFRDSimulator* create_simulator(shared_ptr_Cpp_Model, shared_ptr[Cpp_EGFRDWorld])
         Cpp_EGFRDSimulator* create_simulator(shared_ptr[Cpp_EGFRDWorld])
 
     cdef cppclass Cpp_BDFactory "ecell4::egfrd::BDFactory":
@@ -142,19 +142,19 @@ cdef extern from "ecell4/egfrd/egfrd.hpp" namespace "ecell4::egfrd":
         Cpp_EGFRDWorld* create_world()
         Cpp_EGFRDWorld* create_world(string)
         Cpp_EGFRDWorld* create_world(Cpp_Real3&)
-        Cpp_EGFRDWorld* create_world(shared_ptr[Cpp_Model])
-        Cpp_BDSimulator* create_simulator(shared_ptr[Cpp_Model], shared_ptr[Cpp_EGFRDWorld])
+        Cpp_EGFRDWorld* create_world(shared_ptr_Cpp_Model)
+        Cpp_BDSimulator* create_simulator(shared_ptr_Cpp_Model, shared_ptr[Cpp_EGFRDWorld])
         Cpp_BDSimulator* create_simulator(shared_ptr[Cpp_EGFRDWorld])
 
     cdef cppclass Cpp_BDSimulator "ecell4::egfrd::BDSimulator":
         #XXX: be carefull about the order of arguments
         Cpp_BDSimulator(
-            shared_ptr[Cpp_EGFRDWorld]&, shared_ptr[Cpp_Model]&) except +
+            shared_ptr[Cpp_EGFRDWorld]&, shared_ptr_Cpp_Model&) except +
         Cpp_BDSimulator(
-            shared_ptr[Cpp_EGFRDWorld]&, shared_ptr[Cpp_Model]&,
+            shared_ptr[Cpp_EGFRDWorld]&, shared_ptr_Cpp_Model&,
             Real) except +
         Cpp_BDSimulator(
-            shared_ptr[Cpp_EGFRDWorld]&, shared_ptr[Cpp_Model]&,
+            shared_ptr[Cpp_EGFRDWorld]&, shared_ptr_Cpp_Model&,
             Real, Integer) except +
         Cpp_BDSimulator(shared_ptr[Cpp_EGFRDWorld]&) except +
         Cpp_BDSimulator(shared_ptr[Cpp_EGFRDWorld]&, Real) except +
@@ -171,7 +171,7 @@ cdef extern from "ecell4/egfrd/egfrd.hpp" namespace "ecell4::egfrd":
         bool check_reaction()
         void initialize()
         # Cpp_GSLRandomNumberGenerator& rng()
-        shared_ptr[Cpp_Model] model()
+        shared_ptr_Cpp_Model model()
         shared_ptr[Cpp_EGFRDWorld] world()
         void run(Real) except +
         void run(Real, shared_ptr[Cpp_Observer]) except +

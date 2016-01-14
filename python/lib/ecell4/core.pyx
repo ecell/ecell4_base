@@ -65,13 +65,16 @@ def dot_product(p1, p2):
 
 from cython.operator cimport dereference as deref
 
-cdef shared_ptr[Cpp_Model] Cpp_Model_from_Model(m):
+# cdef shared_ptr[Cpp_Model] Cpp_Model_from_Model(m):
+cdef shared_ptr_Cpp_Model Cpp_Model_from_Model(m):
     if isinstance(m, Model):
         return (<Model>m).thisptr
     elif isinstance(m, NetworkModel):
-        return <shared_ptr[Cpp_Model]>((<NetworkModel>m).thisptr)
+        # return <shared_ptr[Cpp_Model]>((<NetworkModel>m).thisptr)
+        return shared_ptr_Cpp_Model((<NetworkModel>m).thisptr)
     elif isinstance(m, NetfreeModel):
-        return <shared_ptr[Cpp_Model]>((<NetfreeModel>m).thisptr)
+        # return <shared_ptr[Cpp_Model]>((<NetfreeModel>m).thisptr)
+        return shared_ptr_Cpp_Model((<NetfreeModel>m).thisptr)
     else:
         raise ValueError, ("a wrong argument was given [%s]." % (type(m))
             + " the first argument must be Model, NetworkModel or NetfreeModel")

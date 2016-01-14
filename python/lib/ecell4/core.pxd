@@ -217,22 +217,13 @@ cdef extern from "ecell4/core/Model.hpp" namespace "ecell4":
         void add_species_attributes(vector[Cpp_Species]) except +
         void add_reaction_rules(vector[Cpp_ReactionRule]) except +
 
-        shared_ptr[Cpp_Model] expand(vector[Cpp_Species])
-        shared_ptr[Cpp_Model] expand(vector[Cpp_Species], Integer)
-        shared_ptr[Cpp_Model] expand(vector[Cpp_Species], Integer, map[Cpp_Species, Integer])
+        shared_ptr_Cpp_Model expand(vector[Cpp_Species])
+        shared_ptr_Cpp_Model expand(vector[Cpp_Species], Integer)
+        shared_ptr_Cpp_Model expand(vector[Cpp_Species], Integer, map[Cpp_Species, Integer])
 
         void add_parameter(Cpp_Species sp)
         vector[Cpp_Species] parameters()
         void add_parameters(vector[Cpp_Species])
-
-## Model
-#  a python wrapper for Cpp_Model, but wrapped by shared_ptr
-cdef class Model:
-    # cdef Cpp_Model* thisptr
-    # cdef shared_ptr[Cpp_Model]* thisptr
-    cdef shared_ptr[Cpp_Model] thisptr
-
-cdef Model Model_from_Cpp_Model(shared_ptr[Cpp_Model] m)
 
 ## Cpp_NetworkModel
 #  ecell4::NetworkModel
@@ -257,23 +248,13 @@ cdef extern from "ecell4/core/NetworkModel.hpp" namespace "ecell4":
         void add_species_attributes(vector[Cpp_Species]) except +
         void add_reaction_rules(vector[Cpp_ReactionRule]) except +
 
-        shared_ptr[Cpp_Model] expand(vector[Cpp_Species])
-        shared_ptr[Cpp_Model] expand(vector[Cpp_Species], Integer)
-        shared_ptr[Cpp_Model] expand(vector[Cpp_Species], Integer, map[Cpp_Species, Integer])
+        shared_ptr_Cpp_Model expand(vector[Cpp_Species])
+        shared_ptr_Cpp_Model expand(vector[Cpp_Species], Integer)
+        shared_ptr_Cpp_Model expand(vector[Cpp_Species], Integer, map[Cpp_Species, Integer])
 
         void add_parameter(Cpp_Species sp)
         vector[Cpp_Species] parameters()
         void add_parameters(vector[Cpp_Species])
-
-## NetworkModel
-#  a python wrapper for Cpp_NetowrkModel, but wrapped by shared_ptr
-cdef class NetworkModel:
-    # cdef Cpp_NetworkModel* thisptr
-    # cdef shared_ptr[Cpp_NetworkModel]* thisptr
-    cdef shared_ptr[Cpp_NetworkModel] thisptr
-
-cdef NetworkModel NetworkModel_from_Cpp_NetworkModel(
-    shared_ptr[Cpp_NetworkModel] m)
 
 ## Cpp_NetfreeModel
 #  ecell4::NetfreeModel
@@ -298,13 +279,46 @@ cdef extern from "ecell4/core/NetfreeModel.hpp" namespace "ecell4":
         void add_species_attributes(vector[Cpp_Species]) except +
         void add_reaction_rules(vector[Cpp_ReactionRule]) except +
 
-        shared_ptr[Cpp_Model] expand(vector[Cpp_Species])
-        shared_ptr[Cpp_Model] expand(vector[Cpp_Species], Integer)
-        shared_ptr[Cpp_Model] expand(vector[Cpp_Species], Integer, map[Cpp_Species, Integer])
+        shared_ptr_Cpp_Model expand(vector[Cpp_Species])
+        shared_ptr_Cpp_Model expand(vector[Cpp_Species], Integer)
+        shared_ptr_Cpp_Model expand(vector[Cpp_Species], Integer, map[Cpp_Species, Integer])
 
         void add_parameter(Cpp_Species sp)
         vector[Cpp_Species] parameters()
         void add_parameters(vector[Cpp_Species])
+
+cdef extern from "<boost/shared_ptr.hpp>" namespace "boost":
+    cdef cppclass shared_ptr_Cpp_Model "boost::shared_ptr<ecell4::Model>":
+        shared_ptr_Cpp_Model()
+        shared_ptr_Cpp_Model(Cpp_Model*)
+        shared_ptr_Cpp_Model(Cpp_NetworkModel*)
+        shared_ptr_Cpp_Model(Cpp_NetfreeModel*)
+        shared_ptr_Cpp_Model(shared_ptr_Cpp_Model&)
+        shared_ptr_Cpp_Model(shared_ptr[Cpp_NetworkModel])
+        shared_ptr_Cpp_Model(shared_ptr[Cpp_NetfreeModel])
+        Cpp_Model* get()
+        void swap(shared_ptr_Cpp_Model&)
+
+## Model
+#  a python wrapper for Cpp_Model, but wrapped by shared_ptr
+cdef class Model:
+    # cdef Cpp_Model* thisptr
+    # cdef shared_ptr_Cpp_Model* thisptr
+    # cdef shared_ptr_Cpp_Model thisptr
+    cdef shared_ptr_Cpp_Model thisptr
+
+# cdef Model Model_from_Cpp_Model(shared_ptr_Cpp_Model m)
+cdef Model Model_from_Cpp_Model(shared_ptr_Cpp_Model m)
+
+## NetworkModel
+#  a python wrapper for Cpp_NetowrkModel, but wrapped by shared_ptr
+cdef class NetworkModel:
+    # cdef Cpp_NetworkModel* thisptr
+    # cdef shared_ptr[Cpp_NetworkModel]* thisptr
+    cdef shared_ptr[Cpp_NetworkModel] thisptr
+
+cdef NetworkModel NetworkModel_from_Cpp_NetworkModel(
+    shared_ptr[Cpp_NetworkModel] m)
 
 ## NetfreeModel
 #  a python wrapper for Cpp_NetfreeModel, but wrapped by shared_ptr
@@ -316,8 +330,9 @@ cdef class NetfreeModel:
 cdef NetfreeModel NetfreeModel_from_Cpp_NetfreeModel(
     shared_ptr[Cpp_NetfreeModel] m)
 
-# cdef shared_ptr[Cpp_Model]* Cpp_Model_from_Model(m)
-cdef shared_ptr[Cpp_Model] Cpp_Model_from_Model(m)
+# cdef shared_ptr_Cpp_Model* Cpp_Model_from_Model(m)
+# cdef shared_ptr_Cpp_Model Cpp_Model_from_Model(m)
+cdef shared_ptr_Cpp_Model Cpp_Model_from_Model(m)
 
 ## Cpp_Real3
 #  ecell4::Real3

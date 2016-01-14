@@ -77,7 +77,7 @@ cdef extern from "ecell4/meso/MesoscopicWorld.hpp" namespace "ecell4::meso":
         void remove_molecules(Cpp_Species &sp, Integer &num)
         void save(string) except +
         void load(string) except +
-        void bind_to(shared_ptr[Cpp_Model])
+        void bind_to(shared_ptr_Cpp_Model)
         shared_ptr[Cpp_RandomNumberGenerator] rng()
         pair[pair[Cpp_ParticleID, Cpp_Particle], bool] new_particle(Cpp_Particle& p)
         pair[pair[Cpp_ParticleID, Cpp_Particle], bool] new_particle(Cpp_Species& sp, Cpp_Real3& pos)
@@ -98,7 +98,7 @@ cdef MesoscopicWorld MesoscopicWorld_from_Cpp_MesoscopicWorld(
 cdef extern from "ecell4/meso/MesoscopicSimulator.hpp" namespace "ecell4::meso":
     cdef cppclass Cpp_MesoscopicSimulator "ecell4::meso::MesoscopicSimulator":
         Cpp_MesoscopicSimulator(
-            shared_ptr[Cpp_Model], shared_ptr[Cpp_MesoscopicWorld]) except +
+            shared_ptr_Cpp_Model, shared_ptr[Cpp_MesoscopicWorld]) except +
         Cpp_MesoscopicSimulator(
             shared_ptr[Cpp_MesoscopicWorld]) except +
         Integer num_steps()
@@ -113,7 +113,7 @@ cdef extern from "ecell4/meso/MesoscopicSimulator.hpp" namespace "ecell4::meso":
         vector[pair[Cpp_ReactionRule, Cpp_ReactionInfo]] last_reactions()
         void initialize()
         # Cpp_GSLRandomNumberGenerator& rng()
-        shared_ptr[Cpp_Model] model()
+        shared_ptr_Cpp_Model model()
         shared_ptr[Cpp_MesoscopicWorld] world()
         void run(Real) except +
         void run(Real, shared_ptr[Cpp_Observer]) except +
@@ -138,8 +138,8 @@ cdef extern from "ecell4/meso/MesoscopicFactory.hpp" namespace "ecell4::meso":
         Cpp_MesoscopicWorld* create_world()
         Cpp_MesoscopicWorld* create_world(string)
         Cpp_MesoscopicWorld* create_world(Cpp_Real3&)
-        Cpp_MesoscopicWorld* create_world(shared_ptr[Cpp_Model])
-        Cpp_MesoscopicSimulator* create_simulator(shared_ptr[Cpp_Model], shared_ptr[Cpp_MesoscopicWorld])
+        Cpp_MesoscopicWorld* create_world(shared_ptr_Cpp_Model)
+        Cpp_MesoscopicSimulator* create_simulator(shared_ptr_Cpp_Model, shared_ptr[Cpp_MesoscopicWorld])
         Cpp_MesoscopicSimulator* create_simulator(shared_ptr[Cpp_MesoscopicWorld])
 
 ## MesoscopicFactory

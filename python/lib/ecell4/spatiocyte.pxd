@@ -98,7 +98,7 @@ cdef extern from "ecell4/spatiocyte/SpatiocyteWorld.hpp" namespace "ecell4::spat
         Integer layer_size()
         Integer size()
         Cpp_Integer3 shape()
-        void bind_to(shared_ptr[Cpp_Model])
+        void bind_to(shared_ptr_Cpp_Model)
         Cpp_Real3 coordinate2position(Integer)
         Integer position2coordinate(Cpp_Real3)
         shared_ptr[Cpp_RandomNumberGenerator] rng()
@@ -133,11 +133,11 @@ cdef SpatiocyteWorld SpatiocyteWorld_from_Cpp_SpatiocyteWorld(
 cdef extern from "ecell4/spatiocyte/SpatiocyteSimulator.hpp" namespace "ecell4::spatiocyte":
     cdef cppclass Cpp_SpatiocyteSimulator "ecell4::spatiocyte::SpatiocyteSimulator":
         Cpp_SpatiocyteSimulator(
-            shared_ptr[Cpp_Model], shared_ptr[Cpp_SpatiocyteWorld]) except +
+            shared_ptr_Cpp_Model, shared_ptr[Cpp_SpatiocyteWorld]) except +
         Cpp_SpatiocyteSimulator(
             shared_ptr[Cpp_SpatiocyteWorld]) except +
         Cpp_SpatiocyteSimulator(
-            shared_ptr[Cpp_Model], shared_ptr[Cpp_SpatiocyteWorld], Real) except +
+            shared_ptr_Cpp_Model, shared_ptr[Cpp_SpatiocyteWorld], Real) except +
         Cpp_SpatiocyteSimulator(
             shared_ptr[Cpp_SpatiocyteWorld], Real) except +
         Integer num_steps()
@@ -154,7 +154,7 @@ cdef extern from "ecell4/spatiocyte/SpatiocyteSimulator.hpp" namespace "ecell4::
         Real calculate_alpha(Cpp_ReactionRule)
         bool check_reaction()
         vector[pair[Cpp_ReactionRule, Cpp_ReactionInfo]] last_reactions()
-        shared_ptr[Cpp_Model] model()
+        shared_ptr_Cpp_Model model()
         shared_ptr[Cpp_SpatiocyteWorld] world()
         void run(Real) except +
         void run(Real, shared_ptr[Cpp_Observer]) except +
@@ -179,8 +179,8 @@ cdef extern from "ecell4/spatiocyte/SpatiocyteFactory.hpp" namespace "ecell4::sp
         Cpp_SpatiocyteWorld* create_world()
         Cpp_SpatiocyteWorld* create_world(string)
         Cpp_SpatiocyteWorld* create_world(Cpp_Real3&)
-        Cpp_SpatiocyteWorld* create_world(shared_ptr[Cpp_Model])
-        Cpp_SpatiocyteSimulator* create_simulator(shared_ptr[Cpp_Model], shared_ptr[Cpp_SpatiocyteWorld])
+        Cpp_SpatiocyteWorld* create_world(shared_ptr_Cpp_Model)
+        Cpp_SpatiocyteSimulator* create_simulator(shared_ptr_Cpp_Model, shared_ptr[Cpp_SpatiocyteWorld])
         Cpp_SpatiocyteSimulator* create_simulator(shared_ptr[Cpp_SpatiocyteWorld])
 
 ## SpatiocyteFactory
