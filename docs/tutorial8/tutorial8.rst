@@ -20,7 +20,7 @@ NOT difficult to use ``World`` and ``Simulator``. ``volume`` and
 
 
 
-.. image:: ./images/tutorial8_1_0.png
+.. image:: output_1_0.png
 
 
 Here we give you a breakdown for ``run_simulation``. ``run_simulation``
@@ -76,7 +76,7 @@ Before the detail of ``Simulator``, we explaing more about ``Real3``.
 
 .. parsed-literal::
 
-    <ecell4.core.Real3 object at 0x7f09f607eb28>
+    <ecell4.core.Real3 object at 0x10062fb88>
     (1.0, 2.0, 3.0)
 
 
@@ -215,7 +215,7 @@ result with ``data`` method, but there is a shortcut for this.
 
 
 
-.. image:: ./images/tutorial8_25_0.png
+.. image:: output_25_0.png
 
 
 This plots the time-series result easily.
@@ -253,9 +253,8 @@ showed ``run_simulation``.
 
 
 
-.. image:: ./images/tutorial8_28_0.png
+.. image:: output_28_0.png
 
 
 ``World`` and ``Simulator`` never change the ``Model`` itself, so you
 can switch several ``Simulator``\ s for 1 ``Model``.
-

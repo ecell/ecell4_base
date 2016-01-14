@@ -47,6 +47,7 @@ script:
 - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then PYTHONPATH=/usr/local/lib/python3.5/site-packages python3 -c "from ecell4 import *; ode.ODEWorld().bind_to(NetworkModel())"; fi
 # - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then PYTHONPATH=/usr/local/lib/python3.5/site-packages python3 -c "from ecell4 import *; ode.ODEWorld().bind_to(gillespie.GillespieSimulator(NetworkModel(), gillespie.GillespieWorld()).model())"; fi
 # - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then PYTHONPATH=/usr/local/lib/python3.5/site-packages python3 -c "from ecell4 import *; ode.ODEWorld().bind_to(Model())"; fi
+# - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then PYTHONPATH=/usr/local/lib/python2.7/site-packages python scripts/odeworld.py; fi
 notifications:
   webhooks:
     urls:
