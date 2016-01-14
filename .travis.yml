@@ -29,11 +29,17 @@ script:
 - if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo bash -c 'export PREFIX=/usr/local; export PYTHONPATH=/usr/local/lib/python2.7/site-packages:$PYTHONPATH; ./install.sh py2'; fi
 - if [ "$TRAVIS_OS_NAME" == "osx" ] && [ "$CC" = "gcc" ]; then export CC=gcc-4.8; fi
 - if [ "$TRAVIS_OS_NAME" == "osx" ] && [ "$CC" = "gcc" ]; then export CXX=g++-4.8; fi
-- if [ "$TRAVIS_OS_NAME" == "osx" ]; then ./install.sh py3; fi
+
+# - if [ "$TRAVIS_OS_NAME" == "osx" ]; then ./install.sh py3; fi
+- if [ "$TRAVIS_OS_NAME" == "osx" ]; then cmake -DCMAKE_INSTALL_PREFIX=/usr/local -DWITH_HDF5=0 -DWITH_VTK=0 .; make BesselTables; fi
+- if [ "$TRAVIS_OS_NAME" == "osx" ]; then cd python; fi
+- if [ "$TRAVIS_OS_NAME" == "osx" ]; then PYTHONPATH=/usr/local/lib/python3.5/site-packages:/usr/local/lib/python3.5/dist-packages:$PYTHONPATH python3 setup.py build_ext -I.. install --prefix=/usr/local
+- if [ "$TRAVIS_OS_NAME" == "osx" ]; then PYTHONPATH=/usr/local/lib/python3.5/site-packages:/usr/local/lib/python3.5/dist-packages:$PYTHONPATH python3 test
+
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH PYTHONPATH=/usr/local/lib/python2.7/site-packages python -c "from ecell4 import *"; fi
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH PYTHONPATH=/usr/local/lib/python2.7/site-packages python -c "from ecell4 import *; ode.ODEWorld().bind_to(NetworkModel())"; fi
-- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then PYTHONPATH=/usr/local/lib/python2.7/site-packages python -c "from ecell4 import *"; fi
-- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then PYTHONPATH=/usr/local/lib/python2.7/site-packages python -c "from ecell4 import *; ode.ODEWorld().bind_to(NetworkModel())"; fi
+- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then PYTHONPATH=/usr/local/lib/python3.5/site-packages python3 -c "from ecell4 import *"; fi
+- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then PYTHONPATH=/usr/local/lib/python3.5/site-packages python3 -c "from ecell4 import *; ode.ODEWorld().bind_to(NetworkModel())"; fi
 notifications:
   webhooks:
     urls:
