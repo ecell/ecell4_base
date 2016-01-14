@@ -45,7 +45,7 @@ cdef extern from "ecell4/gillespie/GillespieWorld.hpp" namespace "ecell4::gilles
         void remove_molecules(Cpp_Species &sp, Integer &num)
         void save(string) except +
         void load(string)
-        void bind_to(shared_ptr_Cpp_Model)
+        void bind_to(shared_ptr[Cpp_Model])
         shared_ptr[Cpp_RandomNumberGenerator] rng()
         pair[pair[Cpp_ParticleID, Cpp_Particle], bool] new_particle(Cpp_Particle& p)
         pair[pair[Cpp_ParticleID, Cpp_Particle], bool] new_particle(Cpp_Species& sp, Cpp_Real3& pos)
@@ -66,7 +66,7 @@ cdef GillespieWorld GillespieWorld_from_Cpp_GillespieWorld(
 cdef extern from "ecell4/gillespie/GillespieSimulator.hpp" namespace "ecell4::gillespie":
     cdef cppclass Cpp_GillespieSimulator "ecell4::gillespie::GillespieSimulator":
         Cpp_GillespieSimulator(
-            shared_ptr_Cpp_Model, shared_ptr[Cpp_GillespieWorld]) except +
+            shared_ptr[Cpp_Model], shared_ptr[Cpp_GillespieWorld]) except +
         Cpp_GillespieSimulator(
             shared_ptr[Cpp_GillespieWorld]) except +
         Integer num_steps()
@@ -81,7 +81,7 @@ cdef extern from "ecell4/gillespie/GillespieSimulator.hpp" namespace "ecell4::gi
         vector[pair[Cpp_ReactionRule, Cpp_ReactionInfo]] last_reactions()
         void initialize()
         # Cpp_GSLRandomNumberGenerator& rng()
-        shared_ptr_Cpp_Model model()
+        shared_ptr[Cpp_Model] model()
         shared_ptr[Cpp_GillespieWorld] world()
         void run(Real) except +
         void run(Real, shared_ptr[Cpp_Observer]) except +
@@ -103,8 +103,8 @@ cdef extern from "ecell4/gillespie/GillespieFactory.hpp" namespace "ecell4::gill
         Cpp_GillespieWorld* create_world()
         Cpp_GillespieWorld* create_world(string)
         Cpp_GillespieWorld* create_world(Cpp_Real3&)
-        Cpp_GillespieWorld* create_world(shared_ptr_Cpp_Model)
-        Cpp_GillespieSimulator* create_simulator(shared_ptr_Cpp_Model, shared_ptr[Cpp_GillespieWorld])
+        Cpp_GillespieWorld* create_world(shared_ptr[Cpp_Model])
+        Cpp_GillespieSimulator* create_simulator(shared_ptr[Cpp_Model], shared_ptr[Cpp_GillespieWorld])
         Cpp_GillespieSimulator* create_simulator(shared_ptr[Cpp_GillespieWorld])
 
 ## GillespieFactory

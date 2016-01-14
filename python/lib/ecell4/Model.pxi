@@ -19,8 +19,7 @@ cdef class Model:
         #     new Cpp_Model()) # cannot allocate an object of abstract type
         # self.thisptr = new shared_ptr[Cpp_Model](
         #     <Cpp_Model*>(new Cpp_NetworkModel()))
-        # self.thisptr = <shared_ptr[Cpp_Model]>(shared_ptr[Cpp_NetworkModel](new Cpp_NetworkModel()))
-        self.thisptr = shared_ptr_Cpp_Model(new Cpp_NetworkModel())
+        self.thisptr = <shared_ptr[Cpp_Model]>(shared_ptr[Cpp_NetworkModel](new Cpp_NetworkModel()))
 
     # def __dealloc__(self):
     #     del self.thisptr
@@ -248,8 +247,7 @@ cdef class Model:
             return Model_from_Cpp_Model(
                 self.thisptr.get().expand(_seeds))
 
-# cdef Model Model_from_Cpp_Model(shared_ptr[Cpp_Model] m):
-cdef Model Model_from_Cpp_Model(shared_ptr_Cpp_Model m):
+cdef Model Model_from_Cpp_Model(shared_ptr[Cpp_Model] m):
     r = Model()
     r.thisptr.swap(m)
     return r

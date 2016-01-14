@@ -72,7 +72,7 @@ cdef extern from "ecell4/bd/BDWorld.hpp" namespace "ecell4::bd":
         void remove_molecules(Cpp_Species& sp, Integer num)
         void save(string filename) except +
         void load(string filename)
-        void bind_to(shared_ptr_Cpp_Model)
+        void bind_to(shared_ptr[Cpp_Model])
         shared_ptr[Cpp_RandomNumberGenerator] rng()
 
 ## BDWorld
@@ -90,11 +90,11 @@ cdef extern from "ecell4/bd/BDSimulator.hpp" namespace "ecell4::bd":
         #     shared_ptr[Cpp_NetworkModel], shared_ptr[Cpp_BDWorld],
         #     Integer dissociation_retry_moves) except +
         Cpp_BDSimulator(
-            shared_ptr_Cpp_Model, shared_ptr[Cpp_BDWorld]) except +
+            shared_ptr[Cpp_Model], shared_ptr[Cpp_BDWorld]) except +
         Cpp_BDSimulator(
             shared_ptr[Cpp_BDWorld]) except +
         Cpp_BDSimulator(
-            shared_ptr_Cpp_Model, shared_ptr[Cpp_BDWorld], Real) except +
+            shared_ptr[Cpp_Model], shared_ptr[Cpp_BDWorld], Real) except +
         Cpp_BDSimulator(
             shared_ptr[Cpp_BDWorld], Real) except +
         Integer num_steps()
@@ -108,7 +108,7 @@ cdef extern from "ecell4/bd/BDSimulator.hpp" namespace "ecell4::bd":
         bool check_reaction()
         Real next_time()
         void initialize()
-        shared_ptr_Cpp_Model model()
+        shared_ptr[Cpp_Model] model()
         shared_ptr[Cpp_BDWorld] world()
         void run(Real) except +
         void run(Real, shared_ptr[Cpp_Observer]) except +
@@ -134,8 +134,8 @@ cdef extern from "ecell4/bd/BDFactory.hpp" namespace "ecell4::bd":
         Cpp_BDWorld* create_world()
         Cpp_BDWorld* create_world(string)
         Cpp_BDWorld* create_world(Cpp_Real3&)
-        Cpp_BDWorld* create_world(shared_ptr_Cpp_Model)
-        Cpp_BDSimulator* create_simulator(shared_ptr_Cpp_Model, shared_ptr[Cpp_BDWorld])
+        Cpp_BDWorld* create_world(shared_ptr[Cpp_Model])
+        Cpp_BDSimulator* create_simulator(shared_ptr[Cpp_Model], shared_ptr[Cpp_BDWorld])
         Cpp_BDSimulator* create_simulator(shared_ptr[Cpp_BDWorld])
 
 ## BDFactory
