@@ -37,10 +37,10 @@ model introduced in the following publication.
 
 .. code:: python
 
-    run_simulation(100, y0=y0, return_type='matplotlib')
+    run_simulation(100, y0=y0)
 
 
 
-.. image:: ./images/HumanErythrocytes_4_0.png
+.. image:: output_4_0.png
 
 

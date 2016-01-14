@@ -76,7 +76,7 @@ Examples:
    Attractors
    Drosophila/Drosophila
    DualPhospho/DualPhospho
-   HumanErythrocytes
+   Glycolysis/Glycolysis
    
 Old Tutorials:
 
