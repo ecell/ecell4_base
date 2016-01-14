@@ -13,7 +13,8 @@ namespace spatiocyte
 void SpatiocyteSimulator::initialize()
 {
     scheduler_.clear();
-    std::vector<Species> species(world_->list_species());
+    update_alpha_map();
+    const std::vector<Species> species(world_->list_species());
     for (std::vector<Species>::const_iterator itr(species.begin());
         itr != species.end(); ++itr)
     {
@@ -36,26 +37,37 @@ void SpatiocyteSimulator::initialize()
         scheduler_.add(zeroth_order_reaction_event);
     }
 
-    // Model::reaction_rule_container_type rules(model_->reaction_rules());
-    // for (Model::reaction_rule_container_type::iterator itr(rules.begin());
-    //         itr != rules.end(); ++itr)
-    // std::vector<ReactionRule> rules(model_->list_reaction_rules());
-    // for (std::vector<ReactionRule>::iterator itr(rules.begin());
-    //     itr != rules.end(); ++itr)
-    // {
-    //     if ((*itr).reactants().size() == 1)
-    //     {
-    //         const boost::shared_ptr<EventScheduler::Event> event(
-    //                 create_first_order_reaction_event(*itr));
-    //         scheduler_.add(event);
-    //     }
-    // }
-
     nids_.clear();
     for (unsigned int i(0); i < 12; ++i)
         nids_.push_back(i);
 
     dt_ = scheduler_.next_time() - t();
+}
+
+void SpatiocyteSimulator::update_alpha_map()
+{
+    boost::shared_ptr<Model> model_(model());
+    if (!model_)
+        return;
+
+    const Model::reaction_rule_container_type reaction_rules(model_->reaction_rules());
+    for (Model::reaction_rule_container_type::const_iterator itr(reaction_rules.begin());
+            itr != reaction_rules.end(); ++itr)
+    {
+        const ReactionRule::reactant_container_type& reactants((*itr).reactants());
+        if (reactants.size() != 2)
+            continue;
+
+        const Real alpha(calculate_alpha(*itr));
+        for (int i(0); i < 2; ++i) {
+            const Species sp(reactants.at(i));
+            alpha_map_type::iterator map_itr(alpha_map_.find(sp));
+            if (map_itr == alpha_map_.end())
+                alpha_map_.insert(alpha_map_type::value_type(sp, alpha));
+            else if ((*map_itr).second > alpha)
+                (*map_itr).second = alpha;
+        }
+    }
 }
 
 void SpatiocyteSimulator::register_events(const Species& sp)
@@ -83,8 +95,13 @@ void SpatiocyteSimulator::register_events(const Species& sp)
 boost::shared_ptr<EventScheduler::Event> SpatiocyteSimulator::create_step_event(
         const Species& species, const Real& t)
 {
+    double alpha(alpha_);
+    alpha_map_type::const_iterator itr(alpha_map_.find(species));
+    if (itr != alpha_map_.end() && (*itr).second < alpha)
+        alpha = (*itr).second;
+
     boost::shared_ptr<EventScheduler::Event> event(
-        new StepEvent(this, species, t, alpha_));
+        new StepEvent(this, species, t, alpha));
     return event;
 }
 
@@ -214,7 +231,7 @@ Real SpatiocyteSimulator::calculate_dimensional_factor(
     }
     else if (dimensionA == Shape::TWO && dimensionB == Shape::THREE)
     {
-        factor = sqrt(2.0) / (3 * D_B * world_->voxel_radius()); // 不要?
+        factor = sqrt(2.0) / (3 * D_B * world_->voxel_radius());
         if (mt0->is_structure()) // A is Surface
         {
             factor *= world_->unit_area();
@@ -230,55 +247,40 @@ Real SpatiocyteSimulator::calculate_alpha(const ReactionRule& rule) const
     const ReactionRule::reactant_container_type& reactants(rule.reactants());
     if (reactants.size() != 2)
         return 1.0;
-    const Species
-        sp0(reactants.at(0)),
-        sp1(reactants.at(1));
-    const MoleculeInfo
-        info0(world_->get_molecule_info(sp0)),
-        info1(world_->get_molecule_info(sp1));
-    MolecularTypeBase *mt0, *mt1;
-    bool new0(false), new1(false);
-    try
-    {
-        mt0 = world_->find_molecular_type(sp0);
-    }
-    catch(NotFound e)
-    {
-        MolecularTypeBase *location;
+
+    const Species species[2] = {reactants.at(0), reactants.at(1)};
+    const MoleculeInfo info[2] = {
+        world_->get_molecule_info(species[0]),
+        world_->get_molecule_info(species[1])
+    };
+    MolecularTypeBase* mt[2];
+    bool is_created[2] = {false, false};
+    for (int i(0); i < 2; ++i) {
         try
         {
-            location = world_->find_molecular_type(Species(info0.loc));
+            mt[i] = world_->find_molecular_type(species[i]);
         }
         catch(NotFound e)
         {
-            location = &(VacantType::getInstance());
+            MolecularTypeBase *location(&(VacantType::getInstance()));
+            if (info[i].loc != "") {
+                try
+                {
+                    location = world_->find_molecular_type(Species(info[i].loc));
+                }
+                catch(NotFound e)
+                {
+                    ;
+                }
+            }
+            mt[i] = new MolecularType(species[i], location, info[i].radius, info[i].D);
+            is_created[i] = true;
         }
-        mt0 = new MolecularType(sp0, location, info0.radius, info0.D);
-        new0 = true;
     }
-    try
-    {
-        mt1 = world_->find_molecular_type(sp1);
-    }
-    catch(NotFound e)
-    {
-        MolecularTypeBase *location;
-        try
-        {
-            location = world_->find_molecular_type(Species(info1.loc));
-        }
-        catch(NotFound e)
-        {
-            location = &(VacantType::getInstance());
-        }
-        mt1 = new MolecularType(sp1, location, info1.radius, info1.D);
-        new1 = true;
-    }
-    const Real factor(calculate_dimensional_factor(mt0, mt1));
-    if (new0)
-        delete mt0;
-    if (new1)
-        delete mt1;
+    const Real factor(calculate_dimensional_factor(mt[0], mt[1]));
+    for (int i(0); i < 2; ++i)
+        if (is_created[i])
+            delete mt[i];
     const Real alpha(1.0 / (factor * rule.k()));
     return alpha < 1.0 ? alpha : 1.0;
 }
@@ -934,6 +936,7 @@ void SpatiocyteSimulator::step_()
     }
     scheduler_.add(top.second);
 
+    // update_alpha_map(); // may be performance cost
     for (std::vector<Species>::const_iterator itr(new_species_.begin());
         itr != new_species_.end(); ++itr)
     {
@@ -942,15 +945,6 @@ void SpatiocyteSimulator::step_()
 
     num_steps_++;
 }
-
-// void SpatiocyteSimulator::run(const Real& duration)
-// {
-//     initialize();
-//     const Real upto(t() + duration);
-//     while (step(upto))
-//         ;
-//     finalize();
-// }
 
 void SpatiocyteSimulator::walk(const Species& species)
 {
@@ -963,9 +957,6 @@ void SpatiocyteSimulator::walk(const Species& species, const Real& alpha)
     {
         return; // INVALID ALPHA VALUE
     }
-
-    // std::cout << "[" << num_steps_ << "] sp=" << species.serial() << " : t=" << t()
-    //     << " : alpha=" << alpha << " : walk." << std::endl;
 
     const boost::shared_ptr<RandomNumberGenerator>& rng(world_->rng());
     const MolecularTypeBase* mtype(world_->find_molecular_type(species));
