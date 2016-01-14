@@ -191,7 +191,7 @@ void NetfreeModel::add_reaction_rule(const ReactionRule& rr)
         throw AlreadyExists("reaction rule already exists");
     }
 
-    const reaction_rule_container_type::size_type idx(reaction_rules_.size());
+    // const reaction_rule_container_type::size_type idx(reaction_rules_.size());
     reaction_rules_.push_back(rr);
 
     // if (rr.reactants().size() == 1)

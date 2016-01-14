@@ -99,7 +99,7 @@ public:
         rng_->save(fout.get());
         boost::scoped_ptr<H5::Group>
             group(new H5::Group(fout->createGroup("SubvolumeSpace")));
-        cs_->save(group.get());
+        cs_->save_hdf5(group.get());
         extras::save_version_information(fout.get(), "ecell4-meso-0.0-1");
 #else
         throw NotSupported("not supported yet.");
@@ -113,7 +113,7 @@ public:
             fin(new H5::H5File(filename.c_str(), H5F_ACC_RDONLY));
         rng_->load(*fin);
         const H5::Group group(fin->openGroup("SubvolumeSpace"));
-        cs_->load(group);
+        cs_->load_hdf5(group);
 #else
         throw NotSupported("not supported yet.");
 #endif

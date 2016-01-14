@@ -213,8 +213,8 @@ public:
     }
 
 #ifdef WITH_HDF5
-    virtual void save(H5::Group* root) const = 0;
-    virtual void load(const H5::Group& root) = 0;
+    virtual void save_hdf5(H5::Group* root) const = 0;
+    virtual void load_hdf5(const H5::Group& root) = 0;
 #endif
 
     virtual const boost::shared_ptr<PoolBase>& get_pool(const Species& sp) const = 0;
@@ -499,12 +499,12 @@ public:
     }
 
 #ifdef WITH_HDF5
-    void save(H5::Group* root) const
+    void save_hdf5(H5::Group* root) const
     {
         save_subvolume_space(*this, root);
     }
 
-    void load(const H5::Group& root)
+    void load_hdf5(const H5::Group& root)
     {
         load_subvolume_space(root, this);
     }

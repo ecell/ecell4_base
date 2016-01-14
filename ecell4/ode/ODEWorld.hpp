@@ -217,7 +217,7 @@ public:
     void save(const std::string& filename) const;
     void load(const std::string& filename);
 
-    bool has_species(const Species& sp)
+    bool has_species(const Species& sp) const
     {
         species_map_type::const_iterator i(index_map_.find(sp));
         return (i != index_map_.end());

@@ -338,7 +338,7 @@ public:
         pidgen_.save(fout.get());
         boost::scoped_ptr<H5::Group>
             group(new H5::Group(fout->createGroup("ParticleSpace")));
-        ps_->save(group.get());
+        ps_->save_hdf5(group.get());
         extras::save_version_information(fout.get(), "ecell4-bd-0.0-1");
 #else
         throw NotSupported("HDF5 is not supported.");
@@ -351,7 +351,7 @@ public:
         boost::scoped_ptr<H5::H5File>
             fin(new H5::H5File(filename.c_str(), H5F_ACC_RDONLY));
         const H5::Group group(fin->openGroup("ParticleSpace"));
-        ps_->load(group);
+        ps_->load_hdf5(group);
         pidgen_.load(*fin);
         rng_->load(*fin);
 #else

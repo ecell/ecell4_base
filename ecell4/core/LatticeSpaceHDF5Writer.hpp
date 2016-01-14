@@ -228,7 +228,7 @@ void load_lattice_space(const H5::Group& root, Tspace_* space)
     for (hsize_t idx(0); idx < spgroup.getNumObjs(); ++idx)
     {
         memset(name_C, 0, 32 + 1);  // clear buffer
-        const ssize_t name_len = H5Lget_name_by_idx(spgroup.getLocId(), ".", H5_INDEX_NAME, H5_ITER_INC, idx, name_C, 32, H5P_DEFAULT);
+        // const ssize_t name_len = H5Lget_name_by_idx(spgroup.getLocId(), ".", H5_INDEX_NAME, H5_ITER_INC, idx, name_C, 32, H5P_DEFAULT);
         H5::Group group(spgroup.openGroup(name_C));
         const std::string name_S(name_C);
         Species species(name_S);

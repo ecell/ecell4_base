@@ -595,7 +595,8 @@ protected:
     std::pair<const MolecularTypeBase*, private_coordinate_type>
         __get_coordinate(const ParticleID& pid) const;
 
-    bool make_structure_type(const Species& sp, const std::string loc);
+    bool make_structure_type(
+        const Species& sp, Shape::dimension_kind dimension, const std::string loc);
 
 protected:
 
