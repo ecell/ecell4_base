@@ -12,6 +12,7 @@
 #include <ecell4/core/SimulatorBase.hpp>
 #include <ecell4/core/RandomNumberGenerator.hpp>
 #include <ecell4/core/EventScheduler.hpp>
+#include <ecell4/core/get_mapper_mf.hpp>
 
 #include "SpatiocyteWorld.hpp"
 
@@ -81,6 +82,7 @@ public:
     typedef Reaction<Voxel> reaction_type;
 
     typedef ReactionInfo reaction_info_type;
+    typedef utils::get_mapper_mf<Species, Real>::type alpha_map_type;
 
 protected:
 
@@ -268,7 +270,6 @@ public:
     void finalize();
     void step();
     bool step(const Real& upto);
-    // void run(const Real& duration);
     void walk(const Species& species);
     void walk(const Species& species, const Real& alpha);
     Real calculate_alpha(const ReactionRule& rule) const;
@@ -359,6 +360,10 @@ protected:
     void step_();
     void register_events(const Species& species);
     // void register_step_event(const Species& species);
+    void update_alpha_map();
+
+    void walk_in_space_(const MolecularTypeBase* mtype, const Real& alpha);
+    void walk_on_surface_(const MolecularTypeBase* mtype, const Real& alpha);
 
     inline Voxel private_voxel2voxel(const Voxel& v) const
     {
@@ -391,6 +396,9 @@ protected:
     EventScheduler scheduler_;
     std::vector<std::pair<ReactionRule, reaction_info_type> > last_reactions_;
     std::vector<Species> new_species_;
+    std::vector<unsigned int> nids_; // neighbor indexes
+    alpha_map_type alpha_map_;
+    //map<Species> alpha_map_;
 
     Real dt_;
     Real alpha_;
