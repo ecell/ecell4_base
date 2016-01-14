@@ -348,22 +348,12 @@ cdef class ODEWorld:
             self.thisptr.get().bind_to(deref((<ODENetworkModel>m).thisptr))
         elif isinstance(m, NetworkModel):
             # #XXX: This is needed because the pointer cast doesn't work properly on osx
-            # self.thisptr.get().bind_to((<NetworkModel>m).thisptr)
-            self.thisptr.get().bind_to(my_Cpp_Model_from_Model(m))
-        else:
+            self.thisptr.get().bind_to((<NetworkModel>m).thisptr)
             # self.thisptr.get().bind_to(my_Cpp_Model_from_Model(m))
-            raise ValueError, ("a wrong argument was given [%s]." % (type(m))
-                + " the first argument must be ODENetworkModel or NetworkModel")
-
-            # if isinstance(m, Model):
-            #     self.thisptr.get().bind_to(deref((<Model>m).thisptr))
-            # elif isinstance(m, NetworkModel):
-            #     self.thisptr.get().bind_to(<shared_ptr[Cpp_Model]>(deref((<NetworkModel>m).thisptr)))
-            # elif isinstance(m, NetfreeModel):
-            #     self.thisptr.get().bind_to(<shared_ptr[Cpp_Model]>(deref((<NetfreeModel>m).thisptr)))
-            # else:
-            #     raise ValueError, ("a wrong argument was given [%s]." % (type(m))
-            #         + " the first argument must be Model, NetworkModel or NetfreeModel")
+        else:
+            self.thisptr.get().bind_to(my_Cpp_Model_from_Model(m))
+            # raise ValueError, ("a wrong argument was given [%s]." % (type(m))
+            #     + " the first argument must be ODENetworkModel or NetworkModel")
 
     def as_base(self):
         """Return self as a base class. Only for developmental use."""
