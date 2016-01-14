@@ -10,16 +10,6 @@ from ecell4.core cimport *
 
 from cpython cimport PyObject, Py_XINCREF, Py_XDECREF
 
-cdef shared_ptr[Cpp_Model] my_Cpp_Model_from_Model(m):
-    if isinstance(m, Model):
-        return (<Model>m).thisptr
-    elif isinstance(m, NetworkModel):
-        return <shared_ptr[Cpp_Model]>((<NetworkModel>m).thisptr)
-    elif isinstance(m, NetfreeModel):
-        return <shared_ptr[Cpp_Model]>((<NetfreeModel>m).thisptr)
-    else:
-        raise ValueError, ("a wrong argument was given [%s]." % (type(m))
-            + " the first argument must be Model, NetworkModel or NetfreeModel")
 
 ## ODEWorld
 #  a python wrapper for Cpp_ODEWorld
@@ -349,9 +339,11 @@ cdef class ODEWorld:
         elif isinstance(m, NetworkModel):
             # #XXX: This is needed because the pointer cast doesn't work properly on osx
             self.thisptr.get().bind_to((<NetworkModel>m).thisptr)
-            # self.thisptr.get().bind_to(my_Cpp_Model_from_Model(m))
+            # self.thisptr.get().bind_to(Cpp_Model_from_Model(m))
+        elif isinstance(m, Model):
+            self.thisptr.get().bind_to((<Model>m).thisptr)
         else:
-            self.thisptr.get().bind_to(my_Cpp_Model_from_Model(m))
+            self.thisptr.get().bind_to(Cpp_Model_from_Model(m))
             # raise ValueError, ("a wrong argument was given [%s]." % (type(m))
             #     + " the first argument must be ODENetworkModel or NetworkModel")
 
