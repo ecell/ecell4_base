@@ -42,7 +42,7 @@ Getting Started:
 Tutorials:
 
 We assume that you run the following tutorials from Jupyter Notebook.
-Please note that magic functions like ``%matplotlib`` works only on Jupyter Notebook.
+Please note that magic functions like ``%matplotlib`` work only on Jupyter Notebook.
 
 .. toctree::
    :glob:
