@@ -25,13 +25,14 @@ Docker users
 If you have docker environment, you can try E-Cell4 easily.
 You can pull E-Cell4 container with `docker pull ecell/ecell4`.
 
+After the following steps, you should see Jupyter Notebook up and running (and E-Cell4 tutorials) in your web browser.
+
 ### Windows or Mac
 
 1. Install [Docker Toolbox](https://www.docker.com/toolbox).
 2. Run **Docker Quickstart Terminal**.
 3. Run `docker run -d -p 443:8888 ecell/ecell4` in the terminal.
-4. Open **192.168.99.100:443** with your favorite web browser.  
-5. You should see Jupyter Notebook up and running (and E-Cell4 tutorials) in your web browser.
+4. Open **192.168.99.100:443** with your favorite web browser.
 
 ### Linux
 
@@ -65,7 +66,7 @@ matplotlib depends on numpy. It takes some time to build numpy, please be patien
 Although jupyter is optional, we strongly recommend that you run E-Cell4 with jupyter.
 
 ```shell
-pip install https://ci.appveyor.com/api/buildjobs/aju5rykh88bb88ns/artifacts/python/dist/ecell4-4.0.0b2-cp27-none-win32.whl
+pip install https://ci.appveyor.com/api/buildjobs/59qrnnjpqgwdrot5/artifacts/python/dist/ecell4-4.0.0b2-cp27-none-win32.whl
 pip install -U matplotlib
 pip install -U jupyter
 ```
@@ -80,10 +81,10 @@ Next download numpy-1.10.4+vanilla-cp35-none-win32.whl and matplotlib-1.5.0-cp35
 And run the following commands with command prompt.
 
 ```
-pip install UPCOMING-WHEEL.whl
+pip install https://ci.appveyor.com/api/buildjobs/jpyueyasgwsannch/artifacts/python/dist/ecell4-4.0.0b2-cp35-none-win32.whl
 pip install numpy-1.10.4+vanilla-cp35-none-win32.whl
 pip install matplotlib-1.5.0-cp35-none-win32.whl
-pip -U jupyter
+pip install -U jupyter
 ```
 
 Mac
@@ -120,7 +121,7 @@ jupyter-notebook
 
 ### Mac
 
-You need to add PYTHONPATH to import latest matplotlib (instead of default matplotlib)
+You need to add user local Python site-package path to your PYTHONPATH to import latest matplotlib (instead of default matplotlib)
 ```
 PYTHONPATH=~/Library/Python/2.7/lib/python/site-packages/ jupyter-notebook
 ```
