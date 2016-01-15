@@ -50,6 +50,11 @@ def plot_number_observer(*args, **kwargs):
     #     kwargs['to_png'] = True
     #     plot_number_observer_with_nya(*args, **kwargs)
     else:
+        if kwargs.pop('to_png', None) is not None:
+            #XXX: Remove an option available only on nyaplot for the consistency
+            import warnings
+            warnings.warn(
+                "An option 'to_png' is not available with matplotlib. Just ignored.")
         plot_number_observer_with_matplotlib(*args, **kwargs)
 
 def plot_world(*args, **kwargs):
