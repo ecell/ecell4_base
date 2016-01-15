@@ -158,3 +158,25 @@ y = run_simulation(
 ```
 
 ![png](https://raw.githubusercontent.com/ecell/ecell4/master/docs/output_7_0.png)
+
+### Molecular diffusion visualization
+
+```python
+%matplotlib inline
+from ecell4 import *
+
+with species_attributes():
+    A | {'D': '1', 'location': 'M'}
+
+m = get_model()
+surface = Sphere(Real3(0.5, 0.5, 0.5), 0.48).surface()
+obs = FixedIntervalTrajectoryObserver(1e-4)
+factory = spatiocyte.SpatiocyteFactory(voxel_radius=0.005)
+run_simulation(0.3, model=m, y0={'A': 10}, structures={'M': surface},
+               factory=factory, observers=obs, return_type=None)
+viz.plot_movie_for_trajectory_with_matplotlib(
+    obs, legend=False, noaxis=True, angle=(-60, 30, 6), figsize=5,
+    stride=60, rotate=(0, 1.5))
+```
+
+![png](https://raw.githubusercontent.com/ecell/ecell4/appveyor2/docs/images/hairball.png)
