@@ -3,8 +3,6 @@
 ====================================
 
 First of all, you have to load the E-Cell4 library:
-We assume that you run the following codes from Jupyter Notebook.
-Please note that magic functions like ``%matplotlib`` works only on Jupyter Notebook.
 
 .. code:: python
 
