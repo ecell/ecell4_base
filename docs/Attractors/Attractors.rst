@@ -23,12 +23,12 @@ Rössler attractor
 
 .. code:: python
 
-    run_simulation(numpy.linspace(0, 200, 4001), y0={'x': 1.0},
-                   return_type='matplotlib', opt_args={'x': 'x', 'y': ('y', 'z')})
+    run_simulation(numpy.linspace(0, 200, 4001), y0={'x': 1.0}, return_type='matplotlib',
+                   opt_args={'x': 'x', 'y': ('y', 'z')})
 
 
 
-.. image:: ./images/Attractors_4_0.png
+.. image:: output_4_0.png
 
 
 Modified Chua chaotic attractor
@@ -48,12 +48,12 @@ Modified Chua chaotic attractor
 .. code:: python
 
     run_simulation(numpy.linspace(0, 250, 5001),
-                   y0={'x': 0, 'y': 0.49899, 'z': 0.2},
-                   return_type='matplotlib', opt_args={'x': 'x', 'y': 'y'})
+                   y0={'x': 0, 'y': 0.49899, 'z': 0.2}, return_type='matplotlib',
+                   opt_args={'x': 'x', 'y': 'y'})
 
 
 
-.. image:: ./images/Attractors_7_0.png
+.. image:: output_7_0.png
 
 
 Lorenz system
@@ -71,12 +71,12 @@ Lorenz system
 .. code:: python
 
     run_simulation(numpy.linspace(0, 25, 2501),
-                   y0={'x': 10, 'y': 1, 'z': 1},
-                   return_type='matplotlib', opt_args={'x': 'x', 'y': ('y', 'z')})
+                   y0={'x': 10, 'y': 1, 'z': 1}, return_type='matplotlib',
+                   opt_args={'x': 'x', 'y': ('y', 'z')})
 
 
 
-.. image:: ./images/Attractors_10_0.png
+.. image:: output_10_0.png
 
 
 Tamari attractor
@@ -102,12 +102,12 @@ Tamari attractor
 .. code:: python
 
     run_simulation(numpy.linspace(0, 800, 8001),
-                   y0={'x': 0.9, 'y': 1, 'z': 1},
-                   return_type='matplotlib', opt_args={'x': 'x', 'y': ('y', 'z')})
+                   y0={'x': 0.9, 'y': 1, 'z': 1}, return_type='matplotlib',
+                   opt_args={'x': 'x', 'y': ('y', 'z')})
 
 
 
-.. image:: ./images/Attractors_13_0.png
+.. image:: output_13_0.png
 
 
 Moore-Spiegel attractor
@@ -124,11 +124,11 @@ Moore-Spiegel attractor
 .. code:: python
 
     run_simulation(numpy.linspace(0, 100, 5001),
-                   y0={'x': 1, 'y': 0, 'z': 0},
-                   return_type='matplotlib', opt_args={'x': 'x', 'y': 'y'})
+                   y0={'x': 1, 'y': 0, 'z': 0}, return_type='matplotlib',
+                   opt_args={'x': 'x', 'y': 'y'})
 
 
 
-.. image:: ./images/Attractors_16_0.png
+.. image:: output_16_0.png
 
 

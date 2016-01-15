@@ -73,7 +73,7 @@ Examples:
 .. toctree::
    :glob:
    
-   Attractors
+   Attractors/Attractors
    Drosophila/Drosophila
    DualPhospho/DualPhospho
    Glycolysis/Glycolysis
