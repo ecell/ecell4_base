@@ -3,6 +3,8 @@
 ====================================
 
 First of all, you have to load the E-Cell4 library:
+We assume that you run the following codes from Jupyter Notebook.
+Please note that magic functions like ``%matplotlib`` works only on Jupyter Notebook.
 
 .. code:: python
 
@@ -69,13 +71,6 @@ and duration of time:
 .. code:: python
 
     run_simulation(10.0, model=m1, y0={'A': 60, 'B': 60}, volume=1.0)
-
-
-.. parsed-literal::
-
-    /Users/knishida/Library/Python/2.7/lib/python/site-packages/matplotlib/__init__.py:892: UserWarning: axes.color_cycle is deprecated and replaced with axes.prop_cycle; please use the latter.
-      warnings.warn(self.msg_depr % (key, alt_key))
-
 
 
 .. image:: output_6_1.png
