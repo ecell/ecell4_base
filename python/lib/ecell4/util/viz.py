@@ -1008,11 +1008,13 @@ def __scatter_world_with_matplotlib(
             xs.append(pos[0])
             ys.append(pos[1])
             zs.append(pos[2])
+        c = color_scale.get_color(name)
         scatters.append(
             ax.scatter(
                 xs, ys, zs,
-                marker='o', s=(2 ** marker_size), lw=0, c=color_scale.get_color(name),
+                marker='o', s=(2 ** marker_size), lw=0, c=c,
                 label=name, **kwargs))
+        ax.plot([], [], 'o', c=c, label=name)  #XXX: A dirty hack to show the legends with keeping the 3d transparency effect on scatter
     return scatters
 
 def __plot_trajectory_with_matplotlib(lines, ax, upto=None, **kwargs):
@@ -1060,7 +1062,7 @@ def plot_world_with_matplotlib(
 
     fig, ax = __prepare_mplot3d_with_maplotlib(
         __get_range_of_world(world), figsize, grid, wireframe, angle, noaxis)
-    __scatter_world_with_matplotlib(
+    scatters = __scatter_world_with_matplotlib(
         world, ax, species_list, marker_size, max_count, **kwargs)
 
     if legend:
