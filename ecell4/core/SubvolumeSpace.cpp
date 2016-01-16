@@ -323,6 +323,12 @@ bool SubvolumeSpaceVectorImpl::check_structure(
     const Species::serial_type& serial,
     const SubvolumeSpaceVectorImpl::coordinate_type& coord) const
 {
+    if (serial == "")
+    {
+        ; // This is for default structure.
+        return true;
+    }
+
     structure_matrix_type::const_iterator i(structure_matrix_.find(serial));
     if (i == structure_matrix_.end())
     {
