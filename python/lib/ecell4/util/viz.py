@@ -1,5 +1,5 @@
 """ecell4.util.viz: Visualizer of particles based on D3.js, THREE.js
-and Elegans.
+and Elegans.1
 """
 
 import os
@@ -359,6 +359,23 @@ def generate_html(keywords, tmpl_path):
     html = template.render(**keywords)
     return html
 
+plot_range_flag = False
+plot_range = [0., 0., 0., 0., 0., 0.,]
+
+def set_plot_range(x_min, x_max, y_min, y_max, z_min, z_max):
+    global plot_range_flag
+    global plot_range
+    plot_range_flag = True
+    plot_range[0] = x_min
+    plot_range[1] = x_max
+    plot_range[2] = y_min
+    plot_range[3] = y_max
+    plot_range[4] = z_min
+    plot_range[5] = z_max
+    
+def unset_plot_range():
+    global plot_range_flag
+    plot_range_flag = False
 
 def plot_trajectory(
         obs, width=350, height=350, config={}, grid=True, wireframe=False,
@@ -433,6 +450,11 @@ def plot_trajectory(
               (ymin + ymax + max_length) * 0.5]
     rangez = [(zmin + zmax - max_length) * 0.5,
               (zmin + zmax + max_length) * 0.5]
+    if plot_range_flag == True:
+        print "set specified range ", plot_range
+        rangex = [plot_range[0], plot_range[1]]
+        rangey = [plot_range[2], plot_range[3]]
+        rangez = [plot_range[4], plot_range[5]]
 
     model = {
         'plots': plots,
