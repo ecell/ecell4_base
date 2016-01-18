@@ -381,11 +381,11 @@ public:
         return model_.lock();
     }
 
-    void add_surface(PlanarSurface& surface)
+    void add_surface(boost::shared_ptr<PlanarSurface> surface)
     {
         this->surfaces_.push_back(surface);
     }
-    const std::vector<PlanarSurface> &get_surface_container(void) const
+    const std::vector<boost::shared_ptr<PlanarSurface> > &get_surface_container(void) const
     {
         return this->surfaces_;
     }
@@ -393,7 +393,7 @@ public:
 
 protected:
 
-    std::vector<PlanarSurface> surfaces_;
+    std::vector<boost::shared_ptr<PlanarSurface> > surfaces_;
 
     boost::scoped_ptr<ParticleSpace> ps_;
     boost::shared_ptr<RandomNumberGenerator> rng_;

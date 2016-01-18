@@ -55,11 +55,12 @@ int main(int argc, char** argv)
     Real3 surface_origin(0., 0., 0.5e-6);
     Real3 bas_x(1.0, 0.0, 0.0);
     Real3 bas_y(0.0, 1.0, 0.0);
-    PlanarSurface surface(surface_origin, bas_x, bas_y);
+    boost::shared_ptr<PlanarSurface> surface(new PlanarSurface(surface_origin, bas_x, bas_y));
 
     Real3 surface_origin2(0., 0., 1.0e-6);
-    PlanarSurface surface2(surface_origin2, bas_x, bas_y);
-    //world->add_surface(surface);
+    //PlanarSurface surface2(surface_origin2, bas_x, bas_y);
+    boost::shared_ptr<PlanarSurface> surface2(new PlanarSurface(surface_origin2, bas_x, bas_y));
+    world->add_surface(surface);
     //world->add_surface(surface2);
 
     /// instatiate BDSimulator

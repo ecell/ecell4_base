@@ -73,6 +73,8 @@ cdef extern from "ecell4/bd/BDWorld.hpp" namespace "ecell4::bd":
         void save(string filename) except +
         void load(string filename)
         void bind_to(shared_ptr[Cpp_Model])
+        void add_surface(shared_ptr[Cpp_PlanarSurface])
+        vector[shared_ptr[Cpp_PlanarSurface] ] get_surface_container()
         shared_ptr[Cpp_RandomNumberGenerator] rng()
 
 ## BDWorld
