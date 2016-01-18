@@ -949,6 +949,7 @@ def anim_to_html(anim, filename=None, fps=6):
      <source src="data:video/x-webm;base64,{0}" type="video/webm">
      Your browser does not support the video tag.
     </video>"""
+    import base64
 
     if not hasattr(anim, '_encoded_video'):
         if filename is None:
@@ -959,7 +960,8 @@ def anim_to_html(anim, filename=None, fps=6):
             with open(filename, 'w') as f:
                 anim.save(f.name, fps=fps, extra_args=['-vcodec', 'libvpx'])
                 video = open(f.name, "rb").read()
-        anim._encoded_video = video.encode("base64")
+        # anim._encoded_video = video.encode("base64")
+        anim._encoded_video = base64.encodestring(video).decode('utf-8')
     return VIDEO_TAG.format(anim._encoded_video)
 
 def __prepare_mplot3d_with_maplotlib(
@@ -1221,7 +1223,7 @@ def plot_movie_with_matplotlib(
 
     ani = animation.FuncAnimation(
         fig, _update_plot, fargs=(scatters, worlds, species_list),
-        frames=len(worlds), interval=interval, blit=True)
+        frames=len(worlds), interval=interval, blit=False)
 
     plt.close(ani._fig)
     # print("Start generating a movie ...")
@@ -1314,7 +1316,7 @@ def plot_movie_of_trajectory_with_matplotlib(
 
     ani = animation.FuncAnimation(
         fig, _update_plot, fargs=(plots, lines),
-        frames=num_frames, interval=interval, blit=True)
+        frames=num_frames, interval=interval, blit=False)
 
     plt.close(ani._fig)
     # print("Start generating a movie ...")
