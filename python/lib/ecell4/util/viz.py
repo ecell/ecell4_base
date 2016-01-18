@@ -953,9 +953,15 @@ def anim_to_html(anim, filename=None, fps=6):
 
     if not hasattr(anim, '_encoded_video'):
         if filename is None:
-            with NamedTemporaryFile(suffix='.webm') as f:
-                anim.save(f.name, fps=fps, extra_args=['-vcodec', 'libvpx'])
-                video = open(f.name, "rb").read()
+            f = NamedTemporaryFile(suffix='.webm', delete=False)
+            filename = f.name
+            f.close()
+            anim.save(filename, fps=fps, extra_args=['-vcodec', 'libvpx'])
+            video = open(filename, "rb").read()
+            os.remove(filename)
+            # with NamedTemporaryFile(suffix='.webm') as f:
+            #     anim.save(f.name, fps=fps, extra_args=['-vcodec', 'libvpx'])
+            #     video = open(f.name, "rb").read()
         else:
             with open(filename, 'w') as f:
                 anim.save(f.name, fps=fps, extra_args=['-vcodec', 'libvpx'])
