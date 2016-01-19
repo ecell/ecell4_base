@@ -1005,7 +1005,7 @@ def __scatter_world_with_matplotlib(
     from ecell4 import Species
     color_scale = matplotlib_color_scale()
 
-    scatters = []
+    scatters, plots = [], []
     for i, name in enumerate(species_list):
         xs, ys, zs = [], [], []
         particles = world.list_particles_exact(Species(name))
@@ -1022,8 +1022,8 @@ def __scatter_world_with_matplotlib(
                 xs, ys, zs,
                 marker='o', s=(2 ** marker_size), lw=0, c=c,
                 label=name, **kwargs))
-        ax.plot([], [], 'o', c=c, label=name)  #XXX: A dirty hack to show the legends with keeping the 3d transparency effect on scatter
-    return scatters
+        plots.extend(ax.plot([], [], 'o', c=c, label=name))  #XXX: A dirty hack to show the legends with keeping the 3d transparency effect on scatter
+    return scatters, plots
 
 def __plot_trajectory_with_matplotlib(lines, ax, upto=None, **kwargs):
     color_scale = default_color_scale()
@@ -1070,11 +1070,11 @@ def plot_world_with_matplotlib(
 
     fig, ax = __prepare_mplot3d_with_maplotlib(
         __get_range_of_world(world), figsize, grid, wireframe, angle, noaxis)
-    scatters = __scatter_world_with_matplotlib(
+    scatters, plots = __scatter_world_with_matplotlib(
         world, ax, species_list, marker_size, max_count, **kwargs)
 
     if legend:
-        ax.legend(loc='best', shadow=True)
+        ax.legend(handles=plots, labels=species_list, loc='best', shadow=True)
     plt.show()
 
 def plot_trajectory_with_matplotlib(
