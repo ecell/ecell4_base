@@ -956,7 +956,9 @@ def anim_to_html(anim, filename=None, fps=6):
             f = NamedTemporaryFile(suffix='.webm', delete=False)
             filename = f.name
             f.close()
-            anim.save(filename, fps=fps, extra_args=['-vcodec', 'libvpx'])
+            # anim.save(filename, fps=fps, extra_args=['-vcodec', 'libvpx'])
+            anim.save(filename, fps=fps, codec='libvpx')
+            # anim.save(filename, writer='mencoder', fps=fps, extra_args=['-lavcopts', 'vcodec=libvpx'])
             video = open(filename, "rb").read()
             os.remove(filename)
             # with NamedTemporaryFile(suffix='.webm') as f:
