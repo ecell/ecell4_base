@@ -84,7 +84,7 @@ class ParseDecorator:
             if ignore in vardict.keys():
                 del vardict[ignore]
         for k in func_code.co_names:
-            if k == 'evaluate':
+            if k == '_eval':
                 vardict[k] = self.__evaluate
             elif (not k in vardict.keys()
                 and not k in keys_from_builtins(vardict)): # is this enough?
@@ -103,7 +103,7 @@ class ParseDecorator:
         ignores = ("_", "__", "___", "_i", "_ii", "_iii",
             "_i1", "_i2", "_i3", "_dh", "_sh", "_oh")
         for k in calling_frame.f_code.co_names:
-            if k == 'evaluate':
+            if k == '_eval':
                 calling_frame.f_globals[k] = self.__evaluate
                 self.__newvars[k] = None
             elif k in ignores:
@@ -134,7 +134,7 @@ class ParseDecorator:
                     calling_frame.f_globals[k] = v
                     # print "WARNING: '%s' was recovered to be '%s'." % (k, v)
 
-    def __evaluate(self, expr):
+    def __evaluate(self, expr, params={}):
         class AnyCallableLocals:
 
             def __init__(self, callback, locals):
@@ -145,7 +145,9 @@ class ParseDecorator:
                 if key in self.locals.keys():
                     return self.locals[key]
                 return parseobj.AnyCallable(self.callback, key)
-        return eval(expr, globals(), AnyCallableLocals(self.__callback, locals()))
+        l = locals()
+        l.update(params)
+        return eval(expr, globals(), AnyCallableLocals(self.__callback, l))
 
 def parse_decorator(callback_class, func):
     @functools.wraps(func)
