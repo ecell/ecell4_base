@@ -66,7 +66,7 @@ class ParseDecorator:
             self.__func = lambda *args, **kwargs: []
 
     def __call__(self, *args, **kwargs):
-        cache = self.__callback_class()
+        self.__callback = self.__callback_class()
         try:
             vardict = copy.copy(self.__func.func_globals)
             func_code = self.__func.func_code
@@ -84,14 +84,16 @@ class ParseDecorator:
             if ignore in vardict.keys():
                 del vardict[ignore]
         for k in func_code.co_names:
-            if (not k in vardict.keys()
+            if k == 'evaluate':
+                vardict[k] = self.__evaluate
+            elif (not k in vardict.keys()
                 and not k in keys_from_builtins(vardict)): # is this enough?
-                vardict[k] = parseobj.AnyCallable(cache, k)
+                vardict[k] = parseobj.AnyCallable(self.__callback, k)
         g = types.FunctionType(func_code, vardict, name=name, argdefs=defaults)
         with warnings.catch_warnings():
             # warnings.simplefilter("always")
             g(*args, **kwargs)
-        return cache.get()
+        return self.__callback.get()
 
     def __enter__(self):
         # print "ParseDecorator#__enter__"
@@ -101,7 +103,10 @@ class ParseDecorator:
         ignores = ("_", "__", "___", "_i", "_ii", "_iii",
             "_i1", "_i2", "_i3", "_dh", "_sh", "_oh")
         for k in calling_frame.f_code.co_names:
-            if k in ignores:
+            if k == 'evaluate':
+                calling_frame.f_globals[k] = self.__evaluate
+                self.__newvars[k] = None
+            elif k in ignores:
                 # print "WARNING: '%s' was overridden." % k
                 calling_frame.f_globals[k] = parseobj.AnyCallable(self.__callback, k)
                 self.__newvars[k] = vardict.get(k)
@@ -128,6 +133,19 @@ class ParseDecorator:
                 else:
                     calling_frame.f_globals[k] = v
                     # print "WARNING: '%s' was recovered to be '%s'." % (k, v)
+
+    def __evaluate(self, expr):
+        class AnyCallableLocals:
+
+            def __init__(self, callback, locals):
+                self.callback = callback
+                self.locals = locals
+
+            def __getitem__(self, key):
+                if key in self.locals.keys():
+                    return self.locals[key]
+                return parseobj.AnyCallable(self.callback, key)
+        return eval(expr, globals(), AnyCallableLocals(self.__callback, locals()))
 
 def parse_decorator(callback_class, func):
     @functools.wraps(func)
