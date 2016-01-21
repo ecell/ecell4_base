@@ -55,7 +55,7 @@ public:
 
     // SpaceTraits
 
-    const Real& t(void) const;
+    const Real t() const;
     void set_t(const Real& t);
 
     const Real3& edge_lengths() const
@@ -79,6 +79,7 @@ public:
     Integer num_molecules_exact(const Species& sp) const;
     Real get_value(const Species& sp) const;
     Real get_value_exact(const Species& sp) const;
+    void set_value(const Species& sp, const Real value);
     std::vector<Species> list_species() const;
     bool has_species(const Species& sp) const;
 
@@ -107,10 +108,11 @@ public:
         rng_->save(fout.get());
         boost::scoped_ptr<H5::Group>
             group(new H5::Group(fout->createGroup("CompartmentSpace")));
-        cs_->save(group.get());
+        cs_->save_hdf5(group.get());
         extras::save_version_information(fout.get(), "ecell4-gillespie-0.0-1");
 #else
-        throw NotSupported("not supported yet.");
+        throw NotSupported(
+            "This method requires HDF5. The HDF5 support is turned off.");
 #endif
     }
 
@@ -121,9 +123,10 @@ public:
             fin(new H5::H5File(filename.c_str(), H5F_ACC_RDONLY));
         rng_->load(*fin);
         const H5::Group group(fin->openGroup("CompartmentSpace"));
-        cs_->load(group);
+        cs_->load_hdf5(group);
 #else
-        throw NotSupported("not supported yes.");
+        throw NotSupported(
+            "This method requires HDF5. The HDF5 support is turned off.");
 #endif
     }
 
@@ -149,6 +152,20 @@ public:
     void add_molecules(const Species& sp, const Integer& num, const boost::shared_ptr<Shape> shape)
     {
         add_molecules(sp, num);
+    }
+
+    std::pair<std::pair<ParticleID, Particle>, bool> new_particle(const Particle& p)
+    {
+        add_molecules(p.species(), 1);
+        return std::make_pair(std::make_pair(ParticleID(), p), true);
+    }
+
+    std::pair<std::pair<ParticleID, Particle>, bool> new_particle(
+        const Species& sp, const Real3& pos)
+    {
+        add_molecules(sp, 1);
+        return std::make_pair(
+            std::make_pair(ParticleID(), Particle(sp, pos, 0.0, 0.0)), true);
     }
 
     std::vector<std::pair<ParticleID, Particle> > list_particles() const;

@@ -2,6 +2,24 @@
 
 namespace ecell4 {
 
+Integer3& Integer3::operator+=(const Integer3& rhs)
+{
+    *this = add(*this, rhs);
+    return *this;
+}
+
+Integer3& Integer3::operator-=(const Integer3& rhs)
+{
+    *this = subtract(*this, rhs);
+    return *this;
+}
+
+Integer3& Integer3::operator*=(const Integer3::value_type& rhs)
+{
+    *this = multiply(*this, rhs);
+    return *this;
+}
+
 Integer3 Integer3::east() const
 {
     Integer3 retval(*this);

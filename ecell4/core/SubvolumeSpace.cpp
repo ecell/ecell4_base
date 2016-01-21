@@ -16,7 +16,8 @@ Integer SubvolumeSpaceVectorImpl::num_molecules(const Species& sp) const
         {
             do
             {
-                retval += std::accumulate((*i).second.begin(), (*i).second.end(), 0);
+                // retval += std::accumulate((*i).second.begin(), (*i).second.end(), 0);
+                retval += (*i).second->num_molecules();
             } while (sexp.next());
         }
     }
@@ -30,7 +31,8 @@ Integer SubvolumeSpaceVectorImpl::num_molecules_exact(const Species& sp) const
     {
         return 0;
     }
-    return std::accumulate((*i).second.begin(), (*i).second.end(), 0);
+    // return std::accumulate((*i).second.begin(), (*i).second.end(), 0);
+    return (*i).second->num_molecules();
 }
 
 Integer SubvolumeSpaceVectorImpl::num_molecules(
@@ -45,7 +47,8 @@ Integer SubvolumeSpaceVectorImpl::num_molecules(
         {
             do
             {
-                retval += (*i).second[c];
+                // retval += (*i).second[c];
+                retval += (*i).second->num_molecules(c);
             } while (sexp.next());
         }
     }
@@ -60,19 +63,38 @@ Integer SubvolumeSpaceVectorImpl::num_molecules_exact(
     {
         return 0;
     }
-    return (*i).second[c];
+    // return (*i).second[c];
+    return (*i).second->num_molecules(c);
 }
 
-void SubvolumeSpaceVectorImpl::reserve_species(
-    const Species& sp, const coordinate_type& c)
+const boost::shared_ptr<SubvolumeSpaceVectorImpl::PoolBase>&
+SubvolumeSpaceVectorImpl::get_pool(const Species& sp) const
+{
+    matrix_type::const_iterator i(matrix_.find(sp));
+    if (i == matrix_.end())
+    {
+        std::ostringstream message;
+        message << "Speices [" << sp.serial() << "] not found";
+        throw NotFound(message.str());
+        // return boost::shared_ptr<PoolBase>();
+    }
+    return (*i).second;
+}
+
+const boost::shared_ptr<SubvolumeSpaceVectorImpl::PoolBase>
+SubvolumeSpaceVectorImpl::reserve_pool(
+    const Species& sp, const Real D, const Species::serial_type& loc)
 {
     matrix_type::const_iterator i(matrix_.find(sp));
     if (i != matrix_.end())
     {
         throw AlreadyExists("Species already exists");
     }
-    matrix_.insert(std::make_pair(sp, std::vector<Integer>(num_subvolumes())));
+    // matrix_.insert(std::make_pair(sp, std::vector<Integer>(num_subvolumes())));
+    const boost::shared_ptr<PoolBase> pool(new Pool(sp, D, loc, num_subvolumes()));
+    matrix_.insert(std::make_pair(sp, pool));
     species_.push_back(sp);
+    return pool;
 }
 
 void SubvolumeSpaceVectorImpl::add_molecules(
@@ -86,10 +108,14 @@ void SubvolumeSpaceVectorImpl::add_molecules(
             return;
         }
 
-        reserve_species(sp, c);
-        i = matrix_.find(sp);
+        // reserve_species(sp, c);
+        // i = matrix_.find(sp);
+        std::ostringstream message;
+        message << "Speices [" << sp.serial() << "] not found";
+        throw NotFound(message.str());
     }
-    (*i).second[c] += num;
+    // (*i).second[c] += num;
+    (*i).second->add_molecules(num, c);
 }
 
 void SubvolumeSpaceVectorImpl::remove_molecules(
@@ -108,14 +134,16 @@ void SubvolumeSpaceVectorImpl::remove_molecules(
         throw NotFound(message.str());
     }
 
-    if ((*i).second[c] < num)
+    // if ((*i).second[c] < num)
+    if ((*i).second->num_molecules(c) < num)
     {
         std::ostringstream message;
         message << "The number of molecules cannot be negative. [" << sp.serial() << "]";
         throw std::invalid_argument(message.str());
     }
 
-    (*i).second[c] -= num;
+    // (*i).second[c] -= num;
+    (*i).second->remove_molecules(num, c);
 }
 
 SubvolumeSpaceVectorImpl::coordinate_type SubvolumeSpaceVectorImpl::get_neighbor(
@@ -150,16 +178,21 @@ SubvolumeSpaceVectorImpl::list_coordinates(const Species& sp) const
     for (matrix_type::const_iterator i(matrix_.begin());
         i != matrix_.end(); ++i)
     {
-        const Integer cnt(sexp.count((*i).first));
+        Integer cnt(sexp.count((*i).first));
         if (cnt > 0)
         {
-            for (cell_type::size_type j(0); j < (*i).second.size(); ++j)
+            const std::vector<coordinate_type> coords = (*i).second->list_coordinates();
+            for (; cnt > 0; --cnt)
             {
-                if ((*i).second[j] > 0)
-                {
-                    retval.resize(retval.size() + (*i).second[j] * cnt, j);
-                }
+                retval.insert(retval.end(), coords.begin(), coords.end());
             }
+            // for (cell_type::size_type j(0); j < (*i).second.size(); ++j)
+            // {
+            //     if ((*i).second[j] > 0)
+            //     {
+            //         retval.resize(retval.size() + (*i).second[j] * cnt, j);
+            //     }
+            // }
         }
     }
     return retval;
@@ -174,15 +207,16 @@ SubvolumeSpaceVectorImpl::list_coordinates_exact(const Species& sp) const
     {
         return retval;
     }
+    return (*i).second->list_coordinates();
 
-    for (cell_type::size_type j(0); j < (*i).second.size(); ++j)
-    {
-        if ((*i).second[j] > 0)
-        {
-            retval.resize(retval.size() + (*i).second[j], j);
-        }
-    }
-    return retval;
+    // for (cell_type::size_type j(0); j < (*i).second.size(); ++j)
+    // {
+    //     if ((*i).second[j] > 0)
+    //     {
+    //         retval.resize(retval.size() + (*i).second[j], j);
+    //     }
+    // }
+    // return retval;
 }
 
 void SubvolumeSpaceVectorImpl::add_structure(
@@ -289,6 +323,12 @@ bool SubvolumeSpaceVectorImpl::check_structure(
     const Species::serial_type& serial,
     const SubvolumeSpaceVectorImpl::coordinate_type& coord) const
 {
+    if (serial == "")
+    {
+        ; // This is for default structure.
+        return true;
+    }
+
     structure_matrix_type::const_iterator i(structure_matrix_.find(serial));
     if (i == structure_matrix_.end())
     {

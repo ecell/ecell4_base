@@ -116,6 +116,13 @@ public:
 
     // virtual length_type cyclic_transpose(
     //     length_type const& p0, length_type const& p1) const = 0;
+
+    virtual void save(const std::string& filename) const
+    {
+        throw ecell4::NotSupported(
+            "save(const std::string) is not supported by this space class");
+    }
+
 };
 
 

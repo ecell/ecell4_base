@@ -69,9 +69,12 @@ public:
         return t() + dt();
     }
 
-    virtual std::vector<ReactionRule> last_reactions() const
+    /**
+     * @return if any reaction occurs at the last step or not
+     */
+    virtual bool check_reaction() const
     {
-        return std::vector<ReactionRule>();
+        return false;
     }
 };
 

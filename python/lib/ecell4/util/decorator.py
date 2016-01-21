@@ -10,7 +10,9 @@ from .decorator_base import Callback, JustParseCallback, ParseDecorator
 
 import ecell4.core
 
-SEAMLESS_RATELAW_SUPPORT = False
+SEAMLESS_RATELAW_SUPPORT = False  #XXX: deprecated. use ENABLE_RATELAW
+ENABLE_RATELAW = True
+ENABLE_IMPLICIT_DECLARATION = True
 
 PARAMETERS = []
 SPECIES_ATTRIBUTES = []
@@ -54,7 +56,7 @@ def generate_ReactionRule(lhs, rhs, k=None):
         raise RuntimeError('no parameter is specified')
 
     if (callable(k)
-        or (SEAMLESS_RATELAW_SUPPORT and isinstance(k, parseobj.ExpBase))
+        or ((SEAMLESS_RATELAW_SUPPORT or ENABLE_RATELAW) and isinstance(k, parseobj.ExpBase))
         or any([sp[1] is not None for sp in itertools.chain(lhs, rhs)])):
         from ecell4.ode import ODEReactionRule, ODERatelawCallback
         rr = ODEReactionRule()
@@ -62,9 +64,10 @@ def generate_ReactionRule(lhs, rhs, k=None):
             rr.add_reactant(sp[0], 1 if sp[1] is None else sp[1])
         for sp in rhs:
             rr.add_product(sp[0], 1 if sp[1] is None else sp[1])
-        if SEAMLESS_RATELAW_SUPPORT and isinstance(k, parseobj.ExpBase):
+        if (SEAMLESS_RATELAW_SUPPORT or ENABLE_RATELAW) and isinstance(k, parseobj.ExpBase):
+            name = str(k)
             func = generate_ratelaw(k, rr)
-            rr.set_ratelaw(ODERatelawCallback(func))
+            rr.set_ratelaw(ODERatelawCallback(func, name))
         elif callable(k):
             rr.set_ratelaw(ODERatelawCallback(k))
         else:
@@ -121,11 +124,14 @@ def generate_ratelaw(obj, rr):
     for key in keys:
         if key in aliases.keys():
             names.append(aliases[key])
-        else:
+        elif ENABLE_IMPLICIT_DECLARATION:
             names.append("_r[{0:d}]".format(len(rr.reactants())))
             aliases[key] = names[-1]
             rr.add_reactant(ecell4.core.Species(key), 1)
             rr.add_product(ecell4.core.Species(key), 1)
+        else:
+            raise RuntimeError(
+                'unknown variable [{}] was used.'.format(key))
     exp = exp.format(*names)
     # print(exp)
     import math
@@ -345,6 +351,29 @@ class ReactionRulesCallback(Callback):
             raise RuntimeError('an invalid object was given [%s]' % (repr(obj)))
 
 def get_model(is_netfree=False, without_reset=False, seeds=None):
+    """
+    Generate a model with parameters in the global scope, ``SPECIES_ATTRIBUTES``
+    and ``REACTIONRULES``.
+
+    Parameters
+    ----------
+    is_netfree : bool, optional
+        Return ``NetfreeModel`` if True, and ``NetworkModel`` if else.
+        Default is False.
+    without_reset : bool, optional
+        Do not reset the global variables after the generation if True.
+        Default is False.
+    seeds : list, optional
+        A list of seed ``Species`` for expanding the model.
+        If this is not None, generate a ``NetfreeModel`` once, and return a
+        ``NetworkModel``, which is an expanded form of that with the given seeds.
+        Default is None.
+
+    Returns
+    -------
+    model : NetworkModel, NetfreeModel, or ODENetworkModel
+
+    """
     if any([not isinstance(rr, ecell4.core.ReactionRule) for rr in REACTION_RULES]):
        from ecell4.ode import ODENetworkModel
        m = ODENetworkModel()
@@ -369,6 +398,11 @@ def get_model(is_netfree=False, without_reset=False, seeds=None):
     return m
 
 def reset_model():
+    """
+    Reset all values, ``SPECIES_ATTRIBUTES`` and ``REACTIONRULES``,
+    in the global scope.
+
+    """
     global PARAMETERS
     global SPECIES_ATTRIBUTES
     global REACTION_RULES

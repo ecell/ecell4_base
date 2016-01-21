@@ -27,9 +27,9 @@ bool Species::operator>(const Species& rhs) const
     return (serial() > rhs.serial());
 }
 
-Integer Species::count(const Species& pttrn) const
+Integer Species::count(const Species& sp) const
 {
-    return count_spmatches(pttrn, *this);
+    return count_spmatches(*this, sp);
 }
 
 void Species::deserialize(const Species::serial_type& serial)

@@ -32,7 +32,7 @@ public:
 
     // SpaceTraits
 
-    const Real& t() const
+    const Real t() const
     {
         return t_;
     }
@@ -75,6 +75,7 @@ public:
      * @param sp a species
      * @return a number of molecules Integer
      */
+
     virtual Integer num_molecules(const Species& sp) const
     {
         return num_molecules_exact(sp);
@@ -135,11 +136,25 @@ public:
      */
     virtual void remove_molecules(const Species& sp, const Integer& num) = 0;
 
+    virtual void set_value(const Species& sp, const Real value)
+    {
+        const Integer num1 = static_cast<Integer>(value);
+        const Integer num2 = num_molecules_exact(sp);
+        if (num1 > num2)
+        {
+            add_molecules(sp, num1 - num2);
+        }
+        else if (num1 < num2)
+        {
+            remove_molecules(sp, num2 - num1);
+        }
+    }
+
 #ifdef WITH_HDF5
     // Optional members
 
-    virtual void save(H5::Group* root) const = 0;
-    virtual void load(const H5::Group& root) = 0;
+    virtual void save_hdf5(H5::Group* root) const = 0;
+    virtual void load_hdf5(const H5::Group& root) = 0;
 #endif
 
 protected:
@@ -206,14 +221,20 @@ public:
 
     std::vector<Species> list_species() const;
 
+    virtual void save(const std::string& filename) const
+    {
+        throw NotSupported(
+            "save(const std::string) is not supported by this space class");
+    }
+
 #ifdef WITH_HDF5
-    void save(H5::Group* root) const
+    void save_hdf5(H5::Group* root) const
     {
         typedef CompartmentSpaceHDF5Traits<CompartmentSpaceVectorImpl> traits_type;
         save_compartment_space<traits_type>(*this, root);
     }
 
-    void load(const H5::Group& root)
+    void load_hdf5(const H5::Group& root)
     {
         typedef CompartmentSpaceHDF5Traits<CompartmentSpaceVectorImpl> traits_type;
         load_compartment_space<traits_type>(root, this);

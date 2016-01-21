@@ -17,10 +17,68 @@ public:
     typedef ReactionRecorder<Trr_> base_type;
 
     typedef typename base_type::reaction_record_type reaction_record_type;
-    typedef typename reaction_record_type::particle_id_type particle_id_type;
+    typedef typename reaction_record_type::particle_id_pair particle_id_pair;
     typedef typename reaction_record_type::reaction_rule_id_type reaction_rule_id_type;
     typedef typename reaction_record_type::reactants_type reactants_type;
     typedef typename reaction_record_type::products_type products_type;
+
+public:
+
+    /**
+     * The following class is almost same with ReactionRecord now.
+     * This should be deprecated, or replaced with ReactionRecord.
+     */
+    class ReactionInfo
+    {
+    public:
+
+        typedef particle_id_pair element_type;
+        typedef std::vector<element_type> container_type;
+
+    public:
+
+        ReactionInfo(
+            const Real t, const container_type& reactants, const container_type& products)
+            : t_(t), reactants_(reactants), products_(products)
+        {}
+
+        ReactionInfo(const ReactionInfo& another)
+            : t_(another.t()), reactants_(another.reactants()), products_(another.products())
+        {}
+
+        Real t() const
+        {
+            return t_;
+        }
+
+        const container_type& reactants() const
+        {
+            return reactants_;
+        }
+
+        void add_reactant(const element_type& elem)
+        {
+            reactants_.push_back(elem);
+        }
+
+        const container_type& products() const
+        {
+            return products_;
+        }
+
+        void add_product(const element_type& elem)
+        {
+            products_.push_back(elem);
+        }
+
+    protected:
+
+        Real t_;
+        container_type reactants_, products_;
+    };
+
+    // typedef reaction_record_type reaction_info_type;
+    typedef ReactionInfo reaction_info_type;
 
 public:
 
@@ -42,10 +100,11 @@ public:
             (*backend_)(rec);
         }
 
-        last_reactions_.push_back(rec.reaction_rule_id());
+        last_reactions_.push_back(std::make_pair(
+            rec.reaction_rule_id(), reaction_info_type(0.0, rec.reactants(), rec.products())));
     }
 
-    const std::vector<ecell4::ReactionRule>& last_reactions() const
+    const std::vector<std::pair<ecell4::ReactionRule, reaction_info_type> >& last_reactions() const
     {
         return last_reactions_;
     }
@@ -67,7 +126,7 @@ public:
 
 protected:
 
-    std::vector<ecell4::ReactionRule> last_reactions_;
+    std::vector<std::pair<ecell4::ReactionRule, reaction_info_type> > last_reactions_;
     boost::shared_ptr<base_type> backend_;
 };
 

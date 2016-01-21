@@ -88,13 +88,19 @@ public:
     std::vector<std::pair<ParticleID, Particle> >
         list_particles_exact(const Species& sp) const;
 
+    virtual void save(const std::string& filename) const
+    {
+        throw NotSupported(
+            "save(const std::string) is not supported by this space class");
+    }
+
 #ifdef WITH_HDF5
-    void save(H5::Group* root) const
+    void save_hdf5(H5::Group* root) const
     {
         save_particle_space(*this, root);
     }
 
-    void load(const H5::Group& root)
+    void load_hdf5(const H5::Group& root)
     {
         load_particle_space(root, this);
     }

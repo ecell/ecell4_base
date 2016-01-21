@@ -33,7 +33,9 @@ struct ParticleSimulatorTraitsBase
     //typedef NetworkRulesWrapper<NetworkRules,
     //                           reaction_rule_type> network_rules_type;
     typedef NetworkRulesAdapter<reaction_rule_type> network_rules_type;
-    typedef ReactionRecord<typename world_type::particle_id_type,
+    // typedef ReactionRecord<typename world_type::particle_id_type,
+    //                        reaction_rule_id_type> reaction_record_type;
+    typedef ReactionRecord<typename world_type::particle_id_pair,
                            reaction_rule_id_type> reaction_record_type;
     typedef ReactionRecorder<reaction_record_type> reaction_recorder_type;
     typedef VolumeClearer<typename world_type::particle_shape_type, typename world_type::particle_id_type> volume_clearer_type;
@@ -123,6 +125,16 @@ public:
         const boost::shared_ptr<model_type>& model)
         : base_type(model, world),
         network_rules_(new network_rules_type(model)),
+        rrec_(new ReactionRecorderWrapper<reaction_record_type>()),
+        dt_(0.), paranoiac_(false)
+    {
+        ;
+    }
+
+    ParticleSimulator(
+        const boost::shared_ptr<world_type>& world)
+        : base_type(world),
+        network_rules_(new network_rules_type(this->model())),
         rrec_(new ReactionRecorderWrapper<reaction_record_type>()),
         dt_(0.), paranoiac_(false)
     {

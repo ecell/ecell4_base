@@ -40,7 +40,7 @@ public:
     LatticeSpaceCellListImpl(
         const Real3& edge_lengths, const Real& voxel_radius,
         const Integer3& matrix_sizes, const bool is_periodic = true)
-        : base_type(edge_lengths, voxel_radius), is_periodic_(is_periodic),
+        : base_type(edge_lengths, voxel_radius, is_periodic), is_periodic_(is_periodic),
         matrix_sizes_(matrix_sizes),
         matrix_(matrix_sizes_[0] * matrix_sizes_[1] * matrix_sizes_[2])
     {
@@ -467,7 +467,7 @@ public:
     }
 
     virtual bool move_private(const private_coordinate_type& src,
-            const private_coordinate_type& dest)
+            const private_coordinate_type& dest, const std::size_t candidate=0)
     {
         private_coordinate_type tmp_dest(dest);
         if (src == tmp_dest)
@@ -529,6 +529,16 @@ public:
         return (*itr).second.get(); //XXX: Raw pointer was thrown.
     }
 
+    virtual const MolecularTypeBase* find_molecular_type(const Species& sp) const
+    {
+        spmap::const_iterator itr(spmap_.find(sp));
+        if (itr == spmap_.end())
+        {
+            throw NotFound("MolecularType not found.");
+        }
+        return (*itr).second.get(); //XXX: Raw pointer was thrown.
+    }
+
     virtual MolecularTypeBase* get_molecular_type(
         const private_coordinate_type& coord);
     const MolecularTypeBase* get_molecular_type(
@@ -541,6 +551,13 @@ public:
             != get_molecular_type(v)->location()); //XXX: == ???
     }
 
+    private_coordinate_type get_neighbor_private_boundary(
+        const private_coordinate_type& coord, const Integer& nrand) const
+    {
+        private_coordinate_type const dest = get_neighbor_private(coord, nrand);
+        return (!is_periodic_ || is_inside(dest) ? dest : periodic_transpose_private(dest));
+    }
+
     virtual void add_structure(const Species& sp,
         const boost::shared_ptr<const Shape>& s, const std::string loc);
     virtual const boost::shared_ptr<const Shape>& get_structure(const Species& sp) const;
@@ -549,11 +566,6 @@ public:
     virtual std::pair<private_coordinate_type, bool> move_to_neighbor(
         MolecularTypeBase* const& from_mt, MolecularTypeBase* const& loc,
         particle_info_type& info, const Integer nrand);
-
-    virtual Integer num_molecules() const
-    {
-        return LatticeSpace::num_molecules();
-    }
 
     virtual Integer num_molecules(const Species& sp) const;
 
@@ -583,7 +595,8 @@ protected:
     std::pair<const MolecularTypeBase*, private_coordinate_type>
         __get_coordinate(const ParticleID& pid) const;
 
-    bool make_structure_type(const Species& sp, const std::string loc);
+    bool make_structure_type(
+        const Species& sp, Shape::dimension_kind dimension, const std::string loc);
 
 protected:
 

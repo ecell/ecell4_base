@@ -105,6 +105,25 @@ public:
         return i->second;
     }
 
+    reaction_rule_vector const zeroth_order_reaction_rules() const
+    {
+        const ecell4::Model::reaction_rule_container_type&
+            rrs((*model_).reaction_rules());
+        reaction_rule_vector retval;
+        for (ecell4::Model::reaction_rule_container_type::const_iterator
+                i(rrs.begin()); i != rrs.end(); ++i)
+        {
+            if ((*i).reactants().size() > 0)
+            {
+                continue;
+            }
+
+            BOOST_ASSERT((*i).products().size() == 1);
+            retval.push_back(convert_reaction_rule_type(*i));
+        }
+        return retval;
+    }
+
     NetworkRulesAdapter(boost::shared_ptr<ecell4::Model> model)
         : model_(model)
     {
@@ -149,6 +168,11 @@ protected:
             r(rr.reactants().begin());
         switch (rr.reactants().size())
         {
+        case 0:
+            {
+                ; // with no cache
+                return reaction_rule_type(rr, rate, reactants, products);
+            }
         case 1:
             {
                 const species_id_type sid1(r->name());

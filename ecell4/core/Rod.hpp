@@ -39,6 +39,11 @@ public:
         return lengthX();
     }
 
+    dimension_kind dimension() const
+    {
+        return THREE;
+    }
+
 protected:
 
     Real length_; // LengthX

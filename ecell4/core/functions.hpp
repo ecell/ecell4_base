@@ -7,6 +7,20 @@
 #include "config.h"
 #include "types.hpp"
 
+#include <sys/types.h>
+#include <sys/stat.h>
+
+#ifndef WIN32_MSC
+#include <string.h>
+#include <libgen.h>
+#else
+#include <io.h>
+#include <stdlib.h>
+#endif
+
+#include <iostream>
+#include <string>
+
 
 namespace ecell4
 {
@@ -31,9 +45,14 @@ inline double modulo(const double& p1, const double& p2)
     return r;
 }
 
-inline double abs(const double& p1)
+inline int64_t abs(const int64_t& x)
 {
-    return std::fabs(p1);
+    return (x > 0 ? x : -x);
+}
+
+inline double abs(const double& x)
+{
+    return std::fabs(x);
 }
 
 #ifndef WIN32_MSC
@@ -67,6 +86,29 @@ inline double cbrt(const double x)
     return pow(x, 1.0 / 3.0);
 }
 #endif
+
+/**
+ * Return if the root path of the given filename exists or not.
+ * boost::filesystem::is_directory might be better
+ * though it requires building.
+ */
+inline bool is_directory(const std::string& filename)
+{
+#ifndef WIN32_MSC
+    struct stat buf;
+    const int ret = stat(dirname(strdup(filename.c_str())), &buf);
+    return (ret == 0);
+#else
+    char drive[_MAX_DRIVE + 1], dir[_MAX_DIR + 1], path_dir[_MAX_PATH + 1], full[_MAX_PATH];
+    // struct _stat buf;
+    _fullpath(full, filename.c_str(), _MAX_PATH);
+    _splitpath(full, drive, dir, NULL, NULL);
+    _makepath(path_dir, drive, dir, NULL, NULL);
+    // const int ret = _stat(path_dir, &buf);
+    const int ret = _access(path_dir, 0);
+    return (ret == 0);
+#endif
+}
 
 }
 

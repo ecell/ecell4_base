@@ -20,7 +20,7 @@ void GillespieWorld::set_t(const Real& t)
     this->cs_->set_t(t);
 }
 
-const Real& GillespieWorld::t(void) const
+const Real GillespieWorld::t() const
 {
     return this->cs_->t();
 }
@@ -48,6 +48,11 @@ Real GillespieWorld::get_value(const Species& sp) const
 Real GillespieWorld::get_value_exact(const Species& sp) const
 {
     return this->cs_->get_value_exact(sp);
+}
+
+void GillespieWorld::set_value(const Species& sp, const Real value)
+{
+    this->cs_->set_value(sp, value);
 }
 
 void GillespieWorld::add_molecules(const Species& sp, const Integer& num)

@@ -3,7 +3,12 @@ cdef class Observer:
 
     Warning: This is mainly for developers.
     Do not use this for your simulation.
+
     """
+
+    def __init__(self):
+        """Constructor."""
+        pass
 
     def __cinit__(self):
         self.thisptr = new shared_ptr[Cpp_Observer](
@@ -34,10 +39,13 @@ cdef class FixedIntervalNumberObserver:
     def __init__(self, Real dt, species):
         """Constructor.
 
-        Args:
-            dt (float): A step interval for logging.
-            species (list): A list of strings, but not of ``Species``.
-              The strings suggest serials of ``Species`` to be observed.
+        Parameters
+        ----------
+        dt : float
+            A step interval for logging.
+        species : list
+            A list of strings, but not of ``Species``.
+            The strings suggest serials of ``Species`` to be observed.
 
         """
         pass  # XXX: Only used for doc string
@@ -63,8 +71,10 @@ cdef class FixedIntervalNumberObserver:
     def data(self):
         """Return a list of the number of molecules you specified.
 
-        Returns:
-          list: A list of lists of the numbers of molecules.
+        Returns
+        -------
+        list:
+            A list of lists of the numbers of molecules.
             The size of a return value is equal to ``num_steps``.
             Each element of a return value is a list consisting of
             time and the number of molecules specified at the construction.
@@ -81,8 +91,10 @@ cdef class FixedIntervalNumberObserver:
     def targets(self):
         """Return a list of ``Species``, which this ``Observer`` observes
 
-        Returns:
-          list: A list of ``Species``. This is generated from arguments
+        Returns
+        -------
+        list:
+            A list of ``Species``. This is generated from arguments
             you gave at the construction.
 
         """
@@ -122,9 +134,11 @@ cdef class NumberObserver:
     def __init__(self, species):
         """Constructor.
 
-        Args:
-            species (list): A list of strings, but not of ``Species``.
-              The strings suggest serials of ``Species`` to be observed.
+        Parameters
+        ----------
+        species : list
+            A list of strings, but not of ``Species``.
+            The strings suggest serials of ``Species`` to be observed.
 
         """
         pass  # XXX: Only used for doc string
@@ -150,8 +164,10 @@ cdef class NumberObserver:
     def data(self):
         """Return a list of the numbers of molecules you specified.
 
-        Returns:
-          list: A list of lists of the number of molecules.
+        Returns
+        -------
+        list:
+            A list of lists of the number of molecules.
             The size of a return value is equal to ``num_steps``.
             Each element of a return value is a list consisting of
             time and the number of molecules specified at the construction.
@@ -168,8 +184,10 @@ cdef class NumberObserver:
     def targets(self):
         """Return a list of ``Species``, which this ``Observer`` observes
 
-        Returns:
-          list: A list of ``Species``. This is generated from arguments
+        Returns
+        -------
+        list:
+            A list of ``Species``. This is generated from arguments
             you gave at the construction.
 
         """
@@ -207,11 +225,14 @@ cdef class TimingNumberObserver:
     def __init__(self, vector[double] t, species):  #XXX: vector[Real]
         """Constructor.
 
-        Args:
-            t (list): A list of times for logging. A time prior to the current
-              time will be ignored.
-            species (list): A list of strings, but not of ``Species``.
-              The strings suggest serials of ``Species`` to be observed.
+        Parameters
+        ----------
+        t : list
+            A list of times for logging. A time prior to the current
+            time will be ignored.
+        species : list
+            A list of strings, but not of ``Species``.
+            The strings suggest serials of ``Species`` to be observed.
 
         """
         pass  # XXX: Only used for doc string
@@ -237,8 +258,10 @@ cdef class TimingNumberObserver:
     def data(self):
         """Return a list of the numbers of molecules you specified.
 
-        Returns:
-          list: A list of lists of the number of molecules.
+        Returns
+        -------
+        list:
+            A list of lists of the number of molecules.
             The size of a return value is equal to ``num_steps``.
             Each element of a return value is a list consisting of
             time and the number of molecules specified at the construction.
@@ -255,8 +278,10 @@ cdef class TimingNumberObserver:
     def targets(self):
         """Return a list of ``Species``, which this ``Observer`` observes
 
-        Returns:
-          list: A list of ``Species``. This is generated from arguments
+        Returns
+        -------
+        list:
+            A list of ``Species``. This is generated from arguments
             you gave at the construction.
 
         """
@@ -296,14 +321,17 @@ cdef class FixedIntervalHDF5Observer:
     def __init__(self, Real dt, filename):
         """Constructor.
 
-        Args:
-            dt (float): A step interval for logging.
-            filename (str): A file name to be saved. Data are saved in
-              HDF5 format. The extension name is recommended to be `.h5`.
-              The file name can contain at most one formatting string like
-              `%02d`, which will be replaced with the number of steps.
-              When the file name contains no formmating string, data will
-              be overwritten in a single file at every steps.
+        Parameters
+        ----------
+        dt : float
+            A step interval for logging.
+        filename : str
+            A file name to be saved. Data are saved in HDF5 format.
+            The extension name is recommended to be `.h5`.
+            The file name can contain at most one formatting string like
+            `%02d`, which will be replaced with the number of steps.
+            When the file name contains no formmating string, data will
+            be overwritten in a single file at every steps.
 
         """
         pass  # XXX: Only used for doc string
@@ -323,9 +351,16 @@ cdef class FixedIntervalHDF5Observer:
         """Return the number of steps."""
         return self.thisptr.get().num_steps()
 
-    def filename(self):
+    def prefix(self):
+        """Return a prefix of a file name given at the construction"""
+        return self.thisptr.get().prefix().decode('UTF-8')
+
+    def filename(self, idx=None):
         """Return a file name to be saved at the next time"""
-        return self.thisptr.get().filename().decode('UTF-8')
+        if idx is None:
+            return self.thisptr.get().filename().decode('UTF-8')
+        else:
+            return self.thisptr.get().filename(<Integer>idx).decode('UTF-8')
 
     def as_base(self):
         """Clone self as a base class. This function is for developers."""
@@ -349,21 +384,26 @@ cdef class FixedIntervalCSVObserver:
 
     """
 
-    def __init__(self, Real dt, filename):
+    def __init__(self, Real dt, filename, species=None):
         """Constructor.
 
-        Args:
-            dt (float): A step interval for logging.
-            filename (str): A file name to be saved. Data are saved in
-              CSV format. The extension name is recommended to be `.csv`
-              or `.txt`.
-              The file name can contain at most one formatting string like
-              `%02d`, which will be replaced with the number of steps.
-              When the file name contains no formmating string, data will
-              be overwritten in a single file at every steps.
-              The first line in a file represents labels for each row.
-              Each column contains a position, a radius, and a serial id
-              for the ``Species``.
+        Parameters
+        ----------
+        dt : float
+            A step interval for logging.
+        filename : str
+            A file name to be saved. Data are saved in CSV format.
+            The extension name is recommended to be `.csv` or `.txt`.
+            The file name can contain at most one formatting string like
+            `%02d`, which will be replaced with the number of steps.
+            When the file name contains no formmating string, data will
+            be overwritten in a single file at every steps.
+            The first line in a file represents labels for each row.
+            Each column contains a position, a radius, and a serial id
+            for the ``Species``.
+        species : list
+            A list of strings, but not of ``Species``.
+            The strings suggest serials of ``Species`` to be observed.
 
         """
         pass  # XXX: Only used for doc string
@@ -394,25 +434,29 @@ cdef class FixedIntervalCSVObserver:
     def log(self, w):
         """Force to log the given ``World`` to a file.
 
-        Args:
-          w (Space): A ``Space`` (``World``) to be logged.
+        Parameters
+        ----------
+        w : Space
+            A ``Space`` (``World``) to be logged.
 
-        Example:
-          This is an easy way to save a ``World`` in CSV format without
-          running a simulation.
+        Examples
+        --------
+        This is an easy way to save a ``World`` in CSV format without
+        running a simulation.
 
-          >>> w = lattice.LatticeWorld(Real3(1, 1, 1), 0.005)
-          >>> w.bind_to(NetworkModel())
-          >>> w.add_molecules(Species("A"), 3)
-          >>> FixedIntervalCSVObserver(1, "test.csv").log(w)
-          >>> print(open("test.csv").read())
-          x,y,z,r,sid
-          0.10614455552060439,0.66106605822212161,0.81500000000000006,0.0050000000000000001,0
-          0.38375339303603129,0.37527767497325676,0.23999999999999999,0.0050000000000000001,0
-          0.25311394008759508,0.05484827557301445,0.495,0.0050000000000000001,0
+        >>> w = spatiocyte.SpatiocyteWorld(Real3(1, 1, 1), 0.005)
+        >>> w.bind_to(NetworkModel())
+        >>> w.add_molecules(Species("A"), 3)
+        >>> FixedIntervalCSVObserver(1, "test.csv").log(w)
+        >>> print(open("test.csv").read())
+        x,y,z,r,sid
+        0.10614455552060439,0.66106605822212161,0.81500000000000006,0.0050000000000000001,0
+        0.38375339303603129,0.37527767497325676,0.23999999999999999,0.0050000000000000001,0
+        0.25311394008759508,0.05484827557301445,0.495,0.0050000000000000001,0
         """
         cdef Space space = w.as_base()
-        self.thisptr.get().log(space.thisptr.get())
+        # self.thisptr.get().log(space.thisptr.get())
+        self.thisptr.get().log(deref(space.thisptr))
 
     def filename(self):
         """Return a file name to be saved at the next time"""
@@ -436,35 +480,47 @@ cdef class FixedIntervalTrajectoryObserver:
     This ``Observer`` logs at the current time first, and then keeps logging
     every after the interval.
 
-    FixedIntervalTrajectoryObserver(dt, pids, resolve_boundary=None)
+    FixedIntervalTrajectoryObserver(dt[, pids], resolve_boundary=None)
 
     """
 
-    def __init__(self, Real dt, pids, resolve_boundary=None):
+    def __init__(self, Real dt, *args):
         """Constructor.
 
-        Args:
-            dt (float): A step interval for logging.
-            pids (list): A list of ``ParticleID``s.
-            resolve_boundary (bool, optional): If True, this ``Observer``
-              automatically resolves the effect of periodic boundary contidions
-              by keeping shifts for each particles. Otherwise, this just
-              logs positions within the size of ``World`` with no care about
-              boundary conditions.
+        Parameters
+        ----------
+        dt : float
+            A step interval for logging.
+        pids : list, optional
+            A list of ``ParticleID``s.
+        resolve_boundary : bool, optional
+            If True, this ``Observer`` automatically resolves the effect
+            of periodic boundary contidions by keeping shifts for each particles.
+            Otherwise, this just logs positions within the size of ``World``
+            with no care about boundary conditions.
 
         """
         pass  # XXX: Only used for doc string
 
-    def __cinit__(self, Real dt, pids, resolve_boundary=None):
+    def __cinit__(self, Real dt, *args):
         cdef vector[Cpp_ParticleID] tmp
-        for pid in pids:
-            tmp.push_back(deref((<ParticleID>pid).thisptr))
-        if resolve_boundary is None:
+        if len(args) == 0:
             self.thisptr = new shared_ptr[Cpp_FixedIntervalTrajectoryObserver](
-                new Cpp_FixedIntervalTrajectoryObserver(dt, tmp))
-        else:
+                new Cpp_FixedIntervalTrajectoryObserver(dt))
+        elif len(args) == 1:
+            if isinstance(args[0], (tuple, list, set)):
+                for pid in args[0]:
+                    tmp.push_back(deref((<ParticleID>pid).thisptr))
+                self.thisptr = new shared_ptr[Cpp_FixedIntervalTrajectoryObserver](
+                    new Cpp_FixedIntervalTrajectoryObserver(dt, tmp))
+            else:
+                self.thisptr = new shared_ptr[Cpp_FixedIntervalTrajectoryObserver](
+                    new Cpp_FixedIntervalTrajectoryObserver(dt, <bool>args[0]))
+        elif len(args) == 2:
+            for pid in args[0]:
+                tmp.push_back(deref((<ParticleID>pid).thisptr))
             self.thisptr = new shared_ptr[Cpp_FixedIntervalTrajectoryObserver](
-                new Cpp_FixedIntervalTrajectoryObserver(dt, tmp, <bool>resolve_boundary))
+                new Cpp_FixedIntervalTrajectoryObserver(dt, tmp, <bool>args[1]))
 
     def __dealloc__(self):
         del self.thisptr
@@ -477,11 +533,21 @@ cdef class FixedIntervalTrajectoryObserver:
         """Return the number of steps."""
         return self.thisptr.get().num_steps()
 
+    def num_tracers(self):
+        """Return the number of tracer molecules."""
+        return self.thisptr.get().num_tracers()
+
+    def t(self):
+        """Return time points at logging as a list."""
+        return self.thisptr.get().t()
+
     def data(self):
         """Return a list of trajectories for each particles.
 
-        Returns:
-          list: A list of lists of ``Real3``. An element of a return value
+        Returns
+        -------
+        list:
+            A list of lists of ``Real3``. An element of a return value
             is corresponding the trajectory of each particle. Thus, the size
             of a return value is the same with that of ``pids`` you gave
             at the construction.
@@ -525,8 +591,10 @@ cdef class TimeoutObserver:
     def __init__(self, interval=None):
         """Constructor.
 
-        Args:
-            interval (float): timeout in seconds.
+        Parameters
+        ----------
+        interval : float
+            timeout in seconds.
 
         """
         pass  # XXX: Only used for doc string
