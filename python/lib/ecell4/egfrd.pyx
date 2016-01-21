@@ -672,7 +672,7 @@ cdef class EGFRDWorld:
             a model to bind
 
         """
-        self.thisptr.get().bind_to(deref(Cpp_Model_from_Model(m)))
+        self.thisptr.get().bind_to(Cpp_Model_from_Model(m))
 
     def rng(self):
         """Return a random number generator object."""
@@ -720,7 +720,7 @@ cdef class EGFRDSimulator:
             if isinstance(args[1], EGFRDWorld):
                 self.thisptr = new Cpp_EGFRDSimulator(
                     deref((<EGFRDWorld>args[1]).thisptr),
-                    deref(Cpp_Model_from_Model(args[0])))
+                    Cpp_Model_from_Model(args[0]))
             else:
                 self.thisptr = new Cpp_EGFRDSimulator(
                     deref((<EGFRDWorld>args[0]).thisptr),
@@ -729,7 +729,7 @@ cdef class EGFRDSimulator:
             if isinstance(args[1], EGFRDWorld):
                 self.thisptr = new Cpp_EGFRDSimulator(
                     deref((<EGFRDWorld>args[1]).thisptr),
-                    deref(Cpp_Model_from_Model(args[0])),
+                    Cpp_Model_from_Model(args[0]),
                     <Integer>args[2])
             else:
                 self.thisptr = new Cpp_EGFRDSimulator(
@@ -739,7 +739,7 @@ cdef class EGFRDSimulator:
             if isinstance(args[1], EGFRDWorld):
                 self.thisptr = new Cpp_EGFRDSimulator(
                     deref((<EGFRDWorld>args[1]).thisptr),
-                    deref(Cpp_Model_from_Model(args[0])),
+                    Cpp_Model_from_Model(args[0]),
                     <Integer>args[2], <Real>args[3])
             else:
                 self.thisptr = new Cpp_EGFRDSimulator(
@@ -748,7 +748,7 @@ cdef class EGFRDSimulator:
         elif len(args) == 5:
             self.thisptr = new Cpp_EGFRDSimulator(
                 deref((<EGFRDWorld>args[1]).thisptr),
-                deref(Cpp_Model_from_Model(args[0])),
+                Cpp_Model_from_Model(args[0]),
                 <Integer>args[2], <Real>args[3], <Real>args[4])
         else:
             raise ValueError(
@@ -1018,7 +1018,7 @@ cdef class EGFRDFactory:
         else:
             return EGFRDWorld_from_Cpp_EGFRDWorld(
                 shared_ptr[Cpp_EGFRDWorld](self.thisptr.create_world(
-                    deref(Cpp_Model_from_Model(arg1)))))
+                    Cpp_Model_from_Model(arg1))))
 
     def create_simulator(self, arg1, EGFRDWorld arg2=None):
         """create_simulator(arg1, arg2) -> EGFRDSimulator
@@ -1049,7 +1049,7 @@ cdef class EGFRDFactory:
         else:
             return EGFRDSimulator_from_Cpp_EGFRDSimulator(
                 self.thisptr.create_simulator(
-                    deref(Cpp_Model_from_Model(arg1)), deref(arg2.thisptr)))
+                    Cpp_Model_from_Model(arg1), deref(arg2.thisptr)))
 
 ## BDSimulator
 #  a python wrapper for Cpp_BDSimulator
@@ -1085,7 +1085,7 @@ cdef class BDSimulator:
             if isinstance(args[1], EGFRDWorld):
                 self.thisptr = new Cpp_BDSimulator(
                     deref((<EGFRDWorld>args[1]).thisptr),
-                    deref(Cpp_Model_from_Model(args[0])))
+                    Cpp_Model_from_Model(args[0]))
             else:
                 self.thisptr = new Cpp_BDSimulator(
                     deref((<EGFRDWorld>args[0]).thisptr),
@@ -1094,7 +1094,7 @@ cdef class BDSimulator:
             if isinstance(args[1], EGFRDWorld):
                 self.thisptr = new Cpp_BDSimulator(
                     deref((<EGFRDWorld>args[1]).thisptr),
-                    deref(Cpp_Model_from_Model(args[0])),
+                    Cpp_Model_from_Model(args[0]),
                     <Real>args[2])
             else:
                 self.thisptr = new Cpp_BDSimulator(
@@ -1103,7 +1103,7 @@ cdef class BDSimulator:
         elif len(args) == 4:
             self.thisptr = new Cpp_BDSimulator(
                 deref((<EGFRDWorld>args[1]).thisptr),
-                deref(Cpp_Model_from_Model(args[0])),
+                Cpp_Model_from_Model(args[0]),
                 <Real>args[2], <Integer>args[3])
         else:
             raise ValueError(
@@ -1356,7 +1356,7 @@ cdef class BDFactory:
         else:
             return EGFRDWorld_from_Cpp_EGFRDWorld(
                 shared_ptr[Cpp_EGFRDWorld](self.thisptr.create_world(
-                    deref(Cpp_Model_from_Model(arg1)))))
+                    Cpp_Model_from_Model(arg1))))
 
     def create_simulator(self, arg1, EGFRDWorld arg2=None):
         """create_simulator(arg1, arg2) -> BDSimulator
@@ -1387,4 +1387,4 @@ cdef class BDFactory:
         else:
             return BDSimulator_from_Cpp_BDSimulator(
                 self.thisptr.create_simulator(
-                    deref(Cpp_Model_from_Model(arg1)), deref(arg2.thisptr)))
+                    Cpp_Model_from_Model(arg1), deref(arg2.thisptr)))

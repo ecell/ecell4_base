@@ -451,7 +451,7 @@ cdef class GillespieWorld:
             a model to bind
 
         """
-        self.thisptr.get().bind_to(deref(Cpp_Model_from_Model(m)))
+        self.thisptr.get().bind_to(Cpp_Model_from_Model(m))
 
     def rng(self):
         """Return a random number generator object."""
@@ -503,7 +503,7 @@ cdef class GillespieSimulator:
                 deref((<GillespieWorld>m).thisptr))
         else:
             self.thisptr = new Cpp_GillespieSimulator(
-                deref(Cpp_Model_from_Model(m)), deref(w.thisptr))
+                Cpp_Model_from_Model(m), deref(w.thisptr))
 
     def __dealloc__(self):
         del self.thisptr
@@ -707,7 +707,7 @@ cdef class GillespieFactory:
         else:
             return GillespieWorld_from_Cpp_GillespieWorld(
                 shared_ptr[Cpp_GillespieWorld](self.thisptr.create_world(
-                    deref(Cpp_Model_from_Model(arg1)))))
+                    Cpp_Model_from_Model(arg1))))
 
     def create_simulator(self, arg1, GillespieWorld arg2=None):
         """create_simulator(arg1, arg2) -> GillespieSimulator
@@ -738,4 +738,4 @@ cdef class GillespieFactory:
         else:
             return GillespieSimulator_from_Cpp_GillespieSimulator(
                 self.thisptr.create_simulator(
-                    deref(Cpp_Model_from_Model(arg1)), deref(arg2.thisptr)))
+                    Cpp_Model_from_Model(arg1), deref(arg2.thisptr)))

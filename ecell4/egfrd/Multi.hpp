@@ -228,7 +228,8 @@ public:
 
     /** ecell4::Space
      */
-    virtual const time_type& t() const
+    // virtual const time_type& t() const
+    virtual const time_type t() const
     {
         return world_.t();
     }

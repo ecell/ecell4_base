@@ -183,7 +183,7 @@ protected:
             return coefs;
         }
 
-        virtual void inc(const std::vector<Integer>& coefs,
+        virtual void inc_with_coefs(const std::vector<Integer>& coefs,
                          const coordinate_type& c, const Integer val = +1) = 0;
 
         inline const std::vector<ReactionRule> generate(
@@ -291,7 +291,7 @@ protected:
             ;
         }
 
-        void inc(const std::vector<Integer>& coefs,
+        void inc_with_coefs(const std::vector<Integer>& coefs,
                  const coordinate_type& c, const Integer val = +1)
         {
             ; // do nothing
@@ -337,7 +337,7 @@ protected:
             ;
         }
 
-        void inc(const std::vector<Integer>& coefs,
+        void inc_with_coefs(const std::vector<Integer>& coefs,
                  const coordinate_type& c, const Integer val = +1)
         {
             num_tot1_[c] += coefs[0] * val;
@@ -428,7 +428,7 @@ protected:
             ;
         }
 
-        void inc(const std::vector<Integer>& coefs,
+        void inc_with_coefs(const std::vector<Integer>& coefs,
                  const coordinate_type& c, const Integer val = +1)
         {
             num_tot1_[c] += coefs[0] * val;
@@ -557,7 +557,7 @@ protected:
             ;
         }
 
-        void inc(const std::vector<Integer>& coefs,
+        void inc_with_coefs(const std::vector<Integer>& coefs,
                  const coordinate_type& c, const Integer val = +1)
         {
             num_tot_[c] += coefs[spidx_] * val;
@@ -685,7 +685,6 @@ protected:
 
             const Real rnd1(sim_->world()->rng()->uniform(0.0, px + py + pz));
 
-            coordinate_type tgt;
             if (rnd1 < px * 0.5)
             {
                 return sim_->world()->get_neighbor(c, 0);
@@ -755,8 +754,8 @@ protected:
                 for (dependency_container_type::const_iterator i(dependencies_.begin());
                      i != dependencies_.end(); ++i)
                 {
-                    (*i).first->inc((*i).second, src, -1);
-                    (*i).first->inc((*i).second, dst, +1);
+                    (*i).first->inc_with_coefs((*i).second, src, -1);
+                    (*i).first->inc_with_coefs((*i).second, dst, +1);
                 }
             }
 

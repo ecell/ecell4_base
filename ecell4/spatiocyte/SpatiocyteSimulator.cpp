@@ -126,8 +126,8 @@ std::pair<bool, SpatiocyteSimulator::reaction_type>
     SpatiocyteSimulator::apply_zeroth_order_reaction_(
         const ReactionRule& reaction_rule)
 {
-    const ReactionRule::product_container_type&
-        products(reaction_rule.products());
+    // const ReactionRule::product_container_type&
+    //     products(reaction_rule.products());
     reaction_type reaction;
     reaction.rule = reaction_rule;
     // return std::pair<bool, reaction_type>(false, reaction);

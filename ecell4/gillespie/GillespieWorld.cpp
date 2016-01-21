@@ -20,7 +20,7 @@ void GillespieWorld::set_t(const Real& t)
     this->cs_->set_t(t);
 }
 
-const Real& GillespieWorld::t(void) const
+const Real GillespieWorld::t() const
 {
     return this->cs_->t();
 }

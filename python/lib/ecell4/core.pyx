@@ -65,22 +65,23 @@ def dot_product(p1, p2):
 
 from cython.operator cimport dereference as deref
 
-cdef shared_ptr[Cpp_Model]* Cpp_Model_from_Model(m):
+cdef shared_ptr[Cpp_Model] Cpp_Model_from_Model(m):
     if isinstance(m, Model):
         return (<Model>m).thisptr
     elif isinstance(m, NetworkModel):
-        return address(<shared_ptr[Cpp_Model]&>(deref((<NetworkModel>m).thisptr)))
+        return <shared_ptr[Cpp_Model]>((<NetworkModel>m).thisptr)
     elif isinstance(m, NetfreeModel):
-        return address(<shared_ptr[Cpp_Model]&>(deref((<NetfreeModel>m).thisptr)))
+        return <shared_ptr[Cpp_Model]>((<NetfreeModel>m).thisptr)
     else:
         raise ValueError, ("a wrong argument was given [%s]." % (type(m))
             + " the first argument must be Model, NetworkModel or NetfreeModel")
 
 cimport extras
 
-def load_version_information(string filename):
+def load_version_information(filename):
     """Return a version information of HDF5 as a string."""
-    return extras.load_version_information(filename)
+    cdef string cpp_filename = tostring(filename)
+    return extras.load_version_information(cpp_filename).decode('UTF-8')
 
 cimport functions
 

@@ -455,7 +455,8 @@ cdef class FixedIntervalCSVObserver:
         0.25311394008759508,0.05484827557301445,0.495,0.0050000000000000001,0
         """
         cdef Space space = w.as_base()
-        self.thisptr.get().log(space.thisptr.get())
+        # self.thisptr.get().log(space.thisptr.get())
+        self.thisptr.get().log(deref(space.thisptr))
 
     def filename(self):
         """Return a file name to be saved at the next time"""

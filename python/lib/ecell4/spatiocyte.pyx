@@ -896,7 +896,7 @@ cdef class SpatiocyteWorld:
             A model to bind
 
         """
-        self.thisptr.get().bind_to(deref(Cpp_Model_from_Model(m)))
+        self.thisptr.get().bind_to(Cpp_Model_from_Model(m))
 
     def private2position(self, Integer coord):
         """private2position(coord) -> Real3
@@ -1121,7 +1121,7 @@ cdef class SpatiocyteSimulator:
             if isinstance(w, SpatiocyteWorld):
                 # Cpp_SpatiocyteSimulator(shared_ptr[Cpp_Model], shared_ptr[Cpp_SpatiocyteWorld])
                 self.thisptr = new Cpp_SpatiocyteSimulator(
-                    deref(Cpp_Model_from_Model(m)), deref((<SpatiocyteWorld>w).thisptr))
+                    Cpp_Model_from_Model(m), deref((<SpatiocyteWorld>w).thisptr))
             else:
                 # Cpp_SpatiocyteSimulator(shared_ptr[Cpp_SpatiocyteWorld], Real)
                 self.thisptr = new Cpp_SpatiocyteSimulator(
@@ -1130,7 +1130,7 @@ cdef class SpatiocyteSimulator:
             # Cpp_SpatiocyteSimulator(
             #     shared_ptr[Cpp_Model], shared_ptr[Cpp_SpatiocyteWorld], Real)
             self.thisptr = new Cpp_SpatiocyteSimulator(
-                deref(Cpp_Model_from_Model(m)), deref((<SpatiocyteWorld>w).thisptr),
+                Cpp_Model_from_Model(m), deref((<SpatiocyteWorld>w).thisptr),
                 <Real>alpha)
 
     def __dealloc__(self):
@@ -1388,7 +1388,7 @@ cdef class SpatiocyteFactory:
         else:
             return SpatiocyteWorld_from_Cpp_SpatiocyteWorld(
                 shared_ptr[Cpp_SpatiocyteWorld](self.thisptr.create_world(
-                    deref(Cpp_Model_from_Model(arg1)))))
+                    Cpp_Model_from_Model(arg1))))
 
     def create_simulator(self, arg1, SpatiocyteWorld arg2=None):
         """create_simulator(arg1, arg2) -> SpatiocyteSimulator
@@ -1419,4 +1419,4 @@ cdef class SpatiocyteFactory:
         else:
             return SpatiocyteSimulator_from_Cpp_SpatiocyteSimulator(
                 self.thisptr.create_simulator(
-                    deref(Cpp_Model_from_Model(arg1)), deref(arg2.thisptr)))
+                    Cpp_Model_from_Model(arg1), deref(arg2.thisptr)))

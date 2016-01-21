@@ -14,6 +14,7 @@
 #include <string.h>
 #include <libgen.h>
 #else
+#include <io.h>
 #include <stdlib.h>
 #endif
 
@@ -96,17 +97,17 @@ inline bool is_directory(const std::string& filename)
 #ifndef WIN32_MSC
     struct stat buf;
     const int ret = stat(dirname(strdup(filename.c_str())), &buf);
-#else
-    //XXX: The code below is not tested yet on Windows.
-    char drive[_MAX_DRIVE + 1], dir[_MAX_DIR + 1], path_dir[_MAX_PATH + 1];
-    _splitpath(filename.c_str(), drive, dir, NULL, NULL);
-    _makepath(path_dir, drive, dir, NULL, NULL);
-
-    struct _stat buf;
-    const int ret = _stat(path_dir, &buf);
-#endif
-
     return (ret == 0);
+#else
+    char drive[_MAX_DRIVE + 1], dir[_MAX_DIR + 1], path_dir[_MAX_PATH + 1], full[_MAX_PATH];
+    // struct _stat buf;
+    _fullpath(full, filename.c_str(), _MAX_PATH);
+    _splitpath(full, drive, dir, NULL, NULL);
+    _makepath(path_dir, drive, dir, NULL, NULL);
+    // const int ret = _stat(path_dir, &buf);
+    const int ret = _access(path_dir, 0);
+    return (ret == 0);
+#endif
 }
 
 }

@@ -26,7 +26,7 @@ SpatiocyteWorld* create_spatiocyte_world_vector_impl(
         new LatticeSpaceVectorImpl(edge_lengths, voxel_radius), rng);
 }
 
-const Real& SpatiocyteWorld::t() const
+const Real SpatiocyteWorld::t() const
 {
     return (*space_).t();
 }
@@ -288,7 +288,7 @@ bool SpatiocyteWorld::add_molecules(
 Integer SpatiocyteWorld::add_structure(
     const Species& sp, const boost::shared_ptr<const Shape> shape)
 {
-    std::cerr << "shape->dimension() : " << shape->dimension() << std::endl; // XXX
+    // std::cerr << "shape->dimension() : " << shape->dimension() << std::endl; // XXX
     const SpatiocyteWorld::molecule_info_type info(get_molecule_info(sp));
     (*space_).make_structure_type(sp, shape->dimension(), info.loc);
 

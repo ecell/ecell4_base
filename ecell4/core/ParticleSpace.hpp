@@ -42,7 +42,7 @@ public:
 
     // SpaceTraits
 
-    const Real& t() const
+    const Real t() const
     {
         return t_;
     }
@@ -152,8 +152,8 @@ public:
     }
 
 #ifdef WITH_HDF5
-    virtual void save(H5::Group* root) const = 0;
-    virtual void load(const H5::Group& root) = 0;
+    virtual void save_hdf5(H5::Group* root) const = 0;
+    virtual void load_hdf5(const H5::Group& root) = 0;
 #endif
 
     // ParticleSpace member functions
@@ -394,13 +394,19 @@ public:
         return particles_;
     }
 
+    virtual void save(const std::string& filename) const
+    {
+        throw NotSupported(
+            "save(const std::string) is not supported by this space class");
+    }
+
 #ifdef WITH_HDF5
-    void save(H5::Group* root) const
+    void save_hdf5(H5::Group* root) const
     {
         save_particle_space(*this, root);
     }
 
-    void load(const H5::Group& root)
+    void load_hdf5(const H5::Group& root)
     {
         load_particle_space(root, this);
     }

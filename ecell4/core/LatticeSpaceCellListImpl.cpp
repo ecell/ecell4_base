@@ -454,7 +454,7 @@ std::pair<LatticeSpaceCellListImpl::private_coordinate_type, bool>
 }
 
 bool LatticeSpaceCellListImpl::make_structure_type(
-    const Species& sp, const std::string loc)
+    const Species& sp, Shape::dimension_kind dimension, const std::string loc)
 {
     spmap::iterator itr(spmap_.find(sp));
     if (itr != spmap_.end())
@@ -497,7 +497,7 @@ bool LatticeSpaceCellListImpl::make_structure_type(
         }
     }
 
-    boost::shared_ptr<MolecularType> mt(new StructureType(sp, location, voxel_radius_));
+    boost::shared_ptr<MolecularType> mt(new StructureType(sp, location, voxel_radius_, dimension));
     std::pair<spmap::iterator, bool>
         retval(spmap_.insert(std::make_pair(sp, mt)));
     return retval.second;
@@ -506,7 +506,7 @@ bool LatticeSpaceCellListImpl::make_structure_type(
 void LatticeSpaceCellListImpl::add_structure(const Species& sp,
     const boost::shared_ptr<const Shape>& s, const std::string loc)
 {
-    make_structure_type(sp, loc);
+    make_structure_type(sp, s->dimension(), loc);
 
     structure_container_type::const_iterator i(structures_.find(sp));
     if (i != structures_.end())

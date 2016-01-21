@@ -11,6 +11,8 @@ import random
 import types
 from tempfile import NamedTemporaryFile
 
+from .vizstyles import default_color_scale, matplotlib_color_scale, elegans_color_scale
+
 
 def __on_ipython_notebook():
     try:
@@ -48,6 +50,11 @@ def plot_number_observer(*args, **kwargs):
     #     kwargs['to_png'] = True
     #     plot_number_observer_with_nya(*args, **kwargs)
     else:
+        if kwargs.pop('to_png', None) is not None:
+            #XXX: Remove an option available only on nyaplot for the consistency
+            import warnings
+            warnings.warn(
+                "An option 'to_png' is not available with matplotlib. Just ignored.")
         plot_number_observer_with_matplotlib(*args, **kwargs)
 
 def plot_world(*args, **kwargs):
@@ -147,7 +154,11 @@ def plot_number_observer_with_matplotlib(*args, **kwargs):
     special_keys = ("xlim", "ylim", "xlabel", "ylabel", "legend", "x", "y")
     plot_opts = {key: value for key, value in kwargs.items()
                  if key not in special_keys}
-    color_cycle = plt.rcParams['axes.color_cycle']
+
+    if 'axes.prop_cycle' in plt.rcParams.keys():
+        color_cycle = [prop['color'] for prop in plt.rcParams['axes.prop_cycle']]
+    else:
+        color_cycle = plt.rcParams['axes.color_cycle']
 
     if "y" in kwargs.keys() and isinstance(kwargs["y"], str):
         kwargs["y"] = (kwargs["y"], )
@@ -274,7 +285,7 @@ def plot_number_observer_with_nya(obs, config={}, width=600, height=400, x=None,
     import numpy
 
     config = {}
-    color_scale = ColorScale(config=config)
+    color_scale = default_color_scale(config=config)
 
     data1, data2 = [], []
     data = numpy.array(obs.data())
@@ -321,7 +332,7 @@ def plot_number_observer_with_nya(obs, config={}, width=600, height=400, x=None,
                    "diagrams": data2,
                    "options": {"width": width, "height": height, "xrange": [xmin, xmax],
                                "yrange": [ymin, ymax], "legend": True, "zoom": True}}]}
-    model_id = 'viz{0:s}'.format(uuid.uuid4())
+    model_id = 'viz{0:s}'.format(str(uuid.uuid4()))
     display(HTML(generate_html(
         {'model': json.dumps(model), 'model_id': model_id, 'to_png': json.dumps(to_png)},
         '/templates/nya.tmpl')))
@@ -379,7 +390,6 @@ def __parse_world(
 
     return species
 
-
 def __get_range_of_world(world):
     edge_lengths = world.edge_lengths()
     max_length = max(tuple(edge_lengths))
@@ -393,6 +403,38 @@ def __get_range_of_world(world):
 
     return {'x': rangex, 'y': rangey, 'z': rangez}
 
+def __get_range_of_trajectories(data):
+    if len(data) == 0:
+        xmin, xmax, ymin, ymax, zmin, zmax = 0, 1, 0, 1, 0, 1
+    else:
+        xmin, xmax, ymin, ymax, zmin, zmax = None, None, None, None, None, None
+
+        for i, traj in enumerate(data):
+            xarr, yarr, zarr = [], [], []
+            for pos in traj:
+                xarr.append(pos[0])
+                yarr.append(pos[1])
+                zarr.append(pos[2])
+
+            if xmin is None:
+                if len(traj) > 0:
+                    xmin, xmax = min(xarr), max(xarr)
+                    ymin, ymax = min(yarr), max(yarr)
+                    zmin, zmax = min(zarr), max(zarr)
+            else:
+                xmin, xmax = min([xmin] + xarr), max([xmax] + xarr)
+                ymin, ymax = min([ymin] + yarr), max([ymax] + yarr)
+                zmin, zmax = min([zmin] + zarr), max([zmax] + zarr)
+
+    max_length = max(xmax - xmin, ymax - ymin, zmax - zmin)
+    rangex = [(xmin + xmax - max_length) * 0.5,
+              (xmin + xmax + max_length) * 0.5]
+    rangey = [(ymin + ymax - max_length) * 0.5,
+              (ymin + ymax + max_length) * 0.5]
+    rangez = [(zmin + zmax - max_length) * 0.5,
+              (zmin + zmax + max_length) * 0.5]
+
+    return {'x': rangex, 'y': rangey, 'z': rangez}
 
 def plot_movie_with_elegans(
         worlds, radius=None, width=500, height=500, config={}, grid=False,
@@ -445,7 +487,7 @@ def plot_movie_with_elegans(
     }
 
     model_id = '"movie' + str(uuid.uuid4()) + '"'
-    color_scale = ColorScale(config=config)
+    color_scale = default_color_scale(config=config)
 
     display(HTML(generate_html({
         'model_id': model_id,
@@ -512,7 +554,7 @@ def plot_world_with_elegans(
         world = load_world(world)
 
     species = __parse_world(world, radius, species_list, max_count, predicator)
-    color_scale = ColorScale(config=config)
+    color_scale = default_color_scale(config=config)
     plots = []
 
     for species_info in species:
@@ -764,7 +806,7 @@ def plot_trajectory_with_elegans(
     """
     from IPython.core.display import display, HTML
 
-    color_scale = ColorScale(config=config)
+    color_scale = default_color_scale(config=config)
     plots = []
 
     xmin, xmax, ymin, ymax, zmin, zmax = None, None, None, None, None, None
@@ -834,95 +876,6 @@ def plot_trajectory_with_elegans(
         'rx': camera_rotation[0], 'ry': camera_rotation[1], 'rz': camera_rotation[2]},
         '/templates/particles.tmpl')))
 
-def plot_trajectory_with_matplotlib(
-        obs, max_count=10, figsize=6, legend=True, angle=None,
-        wireframe=False, grid=True, **kwargs):
-    """
-    Generate a plot from received instance of TrajectoryObserver and show it
-    on IPython notebook.
-
-    Parameters
-    ----------
-    obs : TrajectoryObserver
-        TrajectoryObserver to render.
-    max_count : Integer, default 10
-        The maximum number of particles to show. If None, show all.
-    figsize : float, default 6
-        Size of the plotting area. Given in inch.
-    angle : tuple, default None
-        A tuple of view angle which is given as (azim, elev, dist).
-        If None, use default assumed to be (-60, 30, 10).
-    legend : bool, default True
-
-    """
-    xmin, xmax, ymin, ymax, zmin, zmax = None, None, None, None, None, None
-
-    data = obs.data()
-    if max_count is not None and len(data) > max_count:
-        data = random.sample(data, max_count)
-
-    lines = []
-    for i, y in enumerate(data):
-        xarr, yarr, zarr = [], [], []
-        for pos in y:
-            xarr.append(pos[0])
-            yarr.append(pos[1])
-            zarr.append(pos[2])
-
-        if xmin is None:
-            if len(y) > 0:
-                xmin, xmax = min(xarr), max(xarr)
-                ymin, ymax = min(yarr), max(yarr)
-                zmin, zmax = min(zarr), max(zarr)
-        else:
-            xmin, xmax = min([xmin] + xarr), max([xmax] + xarr)
-            ymin, ymax = min([ymin] + yarr), max([ymax] + yarr)
-            zmin, zmax = min([zmin] + zarr), max([zmax] + zarr)
-
-        lines.append((xarr, yarr, zarr))
-
-    if xmin is None:
-        xmin, xmax, ymin, ymax, zmin, zmax = 0, 1, 0, 1, 0, 1
-
-    max_length = max(xmax - xmin, ymax - ymin, zmax - zmin)
-    rangex = [(xmin + xmax - max_length) * 0.5,
-              (xmin + xmax + max_length) * 0.5]
-    rangey = [(ymin + ymax - max_length) * 0.5,
-              (ymin + ymax + max_length) * 0.5]
-    rangez = [(zmin + zmax - max_length) * 0.5,
-              (zmin + zmax + max_length) * 0.5]
-
-    import matplotlib.pyplot as plt
-    from mpl_toolkits.mplot3d import Axes3D
-
-    fig = plt.figure(figsize=(figsize, figsize))
-    ax = fig.gca(projection='3d')
-    ax.set_aspect('equal')
-
-    if wireframe:
-        ax.w_xaxis.set_pane_color((0, 0, 0, 0))
-        ax.w_yaxis.set_pane_color((0, 0, 0, 0))
-        ax.w_zaxis.set_pane_color((0, 0, 0, 0))
-    ax.grid(grid)
-
-    ax.set_xlim(*rangex)
-    ax.set_ylim(*rangey)
-    ax.set_zlim(*rangez)
-
-    ax.set_xlabel('X')
-    ax.set_ylabel('Y')
-    ax.set_zlabel('Z')
-
-    if angle is not None:
-        ax.azim, ax.elev, ax.dist = angle
-
-    for i, line in enumerate(lines):
-        ax.plot(line[0], line[1], line[2], label=i, **kwargs)
-
-    if legend:
-        ax.legend(loc='best', shadow=True)
-    plt.show()
-
 def logo(x=1, y=None):
     if not isinstance(x, int):
         x = 1
@@ -991,59 +944,36 @@ def logo(x=1, y=None):
     h = HTML(template % tuple(base64s + [("<p>%s</p>" % (img_html * x)) * y]))
     display(h)
 
-class ColorScale:
-    """
-    Color scale for species.
+def anim_to_html(anim, filename=None, fps=6):
+    VIDEO_TAG = """<video controls>
+     <source src="data:video/x-webm;base64,{0}" type="video/webm">
+     Your browser does not support the video tag.
+    </video>"""
+    import base64
 
-    """
-
-    COLORS = [
-        "#a6cee3", "#1f78b4", "#b2df8a", "#33a02c", "#e31a1c", "#8dd3c7",
-        "#ffffb3", "#bebada", "#fb8072", "#80b1d3", "#fdb462", "#b3de69",
-        "#fccde5", "#d9d9d9", "#bc80bd", "#ccebc5", "#ffed6f"]
-
-    def __init__(self, config={}):
-        """
-        Initialize a color scale
-
-        Parameters
-        ----------
-        config : dict, default {}
-            Dict for configure default colors. Its values are colors unique
-            to each key. Colors included in config will never be used.
-
-        """
-
-        self.config = config
-        self.buffer = ColorScale.COLORS[:]
-
-        for color in self.config.values():
-            if color in self.buffer:
-                self.buffer.remove(color)
-
-    def get_color(self, name):
-        """
-        Get color unique to the recieved name
-
-        Parameters
-        ----------
-        name : string
-            This method returns one color unique to this parameter.
-        """
-
-        if self.config.get(name) is None:
-            self.config[name] = self.buffer.pop(0)
-            if len(self.buffer) == 0:
-                self.buffer = ColorScale.COLORS[:]
-
-        return self.config[name]
-
-    def get_config(self):
-        """Get an instance of dic as the config of colors."""
-        return self.config
+    if not hasattr(anim, '_encoded_video'):
+        if filename is None:
+            f = NamedTemporaryFile(suffix='.webm', delete=False)
+            filename = f.name
+            f.close()
+            # anim.save(filename, fps=fps, extra_args=['-vcodec', 'libvpx'])
+            anim.save(filename, fps=fps, codec='libvpx')
+            # anim.save(filename, writer='mencoder', fps=fps, extra_args=['-lavcopts', 'vcodec=libvpx'])
+            video = open(filename, "rb").read()
+            os.remove(filename)
+            # with NamedTemporaryFile(suffix='.webm') as f:
+            #     anim.save(f.name, fps=fps, extra_args=['-vcodec', 'libvpx'])
+            #     video = open(f.name, "rb").read()
+        else:
+            with open(filename, 'w') as f:
+                anim.save(f.name, fps=fps, extra_args=['-vcodec', 'libvpx'])
+                video = open(f.name, "rb").read()
+        # anim._encoded_video = video.encode("base64")
+        anim._encoded_video = base64.encodestring(video).decode('utf-8')
+    return VIDEO_TAG.format(anim._encoded_video)
 
 def __prepare_mplot3d_with_maplotlib(
-        world, figsize, grid, wireframe, angle):
+        wrange, figsize, grid, wireframe, angle, noaxis):
     from mpl_toolkits.mplot3d import Axes3D
     import matplotlib.pyplot as plt
 
@@ -1055,14 +985,17 @@ def __prepare_mplot3d_with_maplotlib(
         ax.w_xaxis.set_pane_color((0, 0, 0, 0))
         ax.w_yaxis.set_pane_color((0, 0, 0, 0))
         ax.w_zaxis.set_pane_color((0, 0, 0, 0))
+
     ax.grid(grid)
-    wrange = __get_range_of_world(world)
     ax.set_xlim(*wrange['x'])
     ax.set_ylim(*wrange['y'])
     ax.set_zlim(*wrange['z'])
     ax.set_xlabel('X')
     ax.set_ylabel('Y')
     ax.set_zlabel('Z')
+
+    if noaxis:
+        ax.set_axis_off()
 
     if angle is not None:
         ax.azim, ax.elev, ax.dist = angle
@@ -1072,9 +1005,9 @@ def __prepare_mplot3d_with_maplotlib(
 def __scatter_world_with_matplotlib(
         world, ax, species_list, marker_size, max_count, **kwargs):
     from ecell4 import Species
-    cmap = ('b', 'g', 'r', 'c', 'm', 'y', 'k')
+    color_scale = matplotlib_color_scale()
 
-    scatters = []
+    scatters, plots = [], []
     for i, name in enumerate(species_list):
         xs, ys, zs = [], [], []
         particles = world.list_particles_exact(Species(name))
@@ -1085,17 +1018,28 @@ def __scatter_world_with_matplotlib(
             xs.append(pos[0])
             ys.append(pos[1])
             zs.append(pos[2])
+        c = color_scale.get_color(name)
         scatters.append(
             ax.scatter(
                 xs, ys, zs,
-                marker='o', s=(2 ** marker_size), lw=0, c=cmap[i % len(cmap)],
+                marker='o', s=(2 ** marker_size), lw=0, c=c,
                 label=name, **kwargs))
-    return scatters
+        plots.extend(ax.plot([], [], 'o', c=c, label=name))  #XXX: A dirty hack to show the legends with keeping the 3d transparency effect on scatter
+    return scatters, plots
+
+def __plot_trajectory_with_matplotlib(lines, ax, upto=None, **kwargs):
+    color_scale = default_color_scale()
+    plots = []
+    for i, line in enumerate(lines):
+        plots.append(
+            ax.plot(line[0][: upto], line[1][: upto], line[2][: upto],
+                label=i, color=color_scale.get_color(i), **kwargs)[0])
+    return plots
 
 def plot_world_with_matplotlib(
         world, marker_size=3, figsize=6, grid=True,
         wireframe=False, species_list=None, max_count=1000, angle=None,
-        legend=True, **kwargs):
+        legend=True, noaxis=False, **kwargs):
     """
     Generate a plot from received instance of World and show it on IPython notebook.
 
@@ -1127,36 +1071,64 @@ def plot_world_with_matplotlib(
             set(species_list), key=species_list.index)  # XXX: pick unique ones
 
     fig, ax = __prepare_mplot3d_with_maplotlib(
-        world, figsize, grid, wireframe, angle)
-    __scatter_world_with_matplotlib(
+        __get_range_of_world(world), figsize, grid, wireframe, angle, noaxis)
+    scatters, plots = __scatter_world_with_matplotlib(
         world, ax, species_list, marker_size, max_count, **kwargs)
+
+    if legend:
+        ax.legend(handles=plots, labels=species_list, loc='best', shadow=True)
+    plt.show()
+
+def plot_trajectory_with_matplotlib(
+        obs, max_count=10, figsize=6, legend=True, angle=None,
+        wireframe=False, grid=True, noaxis=False, **kwargs):
+    """
+    Generate a plot from received instance of TrajectoryObserver and show it
+    on IPython notebook.
+
+    Parameters
+    ----------
+    obs : TrajectoryObserver
+        TrajectoryObserver to render.
+    max_count : Integer, default 10
+        The maximum number of particles to show. If None, show all.
+    figsize : float, default 6
+        Size of the plotting area. Given in inch.
+    angle : tuple, default None
+        A tuple of view angle which is given as (azim, elev, dist).
+        If None, use default assumed to be (-60, 30, 10).
+    legend : bool, default True
+
+    """
+    import matplotlib.pyplot as plt
+
+    data = obs.data()
+    if max_count is not None and len(data) > max_count:
+        data = random.sample(data, max_count)
+
+    fig, ax = __prepare_mplot3d_with_maplotlib(
+        __get_range_of_trajectories(data), figsize, grid, wireframe, angle, noaxis)
+
+    lines = []
+    for i, y in enumerate(data):
+        xarr, yarr, zarr = [], [], []
+        for pos in y:
+            xarr.append(pos[0])
+            yarr.append(pos[1])
+            zarr.append(pos[2])
+
+        lines.append((xarr, yarr, zarr))
+
+    __plot_trajectory_with_matplotlib(lines, ax, **kwargs)
 
     if legend:
         ax.legend(loc='best', shadow=True)
     plt.show()
 
-def anim_to_html(anim, filename=None):
-    VIDEO_TAG = """<video controls>
-     <source src="data:video/x-webm;base64,{0}" type="video/webm">
-     Your browser does not support the video tag.
-    </video>"""
-
-    if not hasattr(anim, '_encoded_video'):
-        if filename is None:
-            with NamedTemporaryFile(suffix='.webm') as f:
-                anim.save(f.name, fps=6, extra_args=['-vcodec', 'libvpx'])
-                video = open(f.name, "rb").read()
-        else:
-            with open(filename, 'w') as f:
-                anim.save(f.name, fps=6, extra_args=['-vcodec', 'libvpx'])
-                video = open(f.name, "rb").read()
-        anim._encoded_video = video.encode("base64")
-    return VIDEO_TAG.format(anim._encoded_video)
-
 def plot_movie_with_matplotlib(
         worlds, marker_size=3, figsize=6, grid=True,
-        wireframe=False, species_list=None, max_count=None, angle=None,
-        interval=50, repeat_delay=3000,
+        wireframe=False, species_list=None, max_count=None, angle=None, noaxis=False,
+        interval=0.16, repeat_delay=3000, stride=1, rotate=None,
         legend=True, output=None, **kwargs):
     """
     Generate a move from the received list of instances of World,
@@ -1179,8 +1151,13 @@ def plot_movie_with_matplotlib(
     angle : tuple, default None
         A tuple of view angle which is given as (azim, elev, dist).
         If None, use default assumed to be (-60, 30, 10).
-    interval : Integer, default 50
+    interval : Integer, default 0.16
         Parameters for matplotlib.animation.ArtistAnimation.
+    stride : Integer, default 1
+        Stride per frame.
+    rotate : tuple, default None
+        A pair of rotation angles, elev and azim, for animation.
+        None means no rotation, same as (0, 0).
     legend : bool, default True
     output : str, default None
 
@@ -1191,17 +1168,19 @@ def plot_movie_with_matplotlib(
     from ecell4 import Species, FixedIntervalHDF5Observer
     from .simulation import load_world
 
-    print("Start generating species_list ...")
+    # print("Start generating species_list ...")
 
     if isinstance(worlds, FixedIntervalHDF5Observer):
         obs = worlds
         worlds = []
-        for i in range(obs.num_steps()):
+        for i in range(0, obs.num_steps(), stride):
             filename = obs.filename(i)
             if os.path.isfile(filename):
                 worlds.append(load_world(filename))
             elif len(worlds) >0:
                 worlds.append(worlds[-1])
+    else:
+        worlds = worlds[:: stride]
 
     if species_list is None:
         species_list = []
@@ -1211,10 +1190,10 @@ def plot_movie_with_matplotlib(
             species_list = sorted(
                 set(species_list), key=species_list.index)  # XXX: pick unique ones
 
-    print("Start preparing mplot3d ...")
+    # print("Start preparing mplot3d ...")
 
     fig, ax = __prepare_mplot3d_with_maplotlib(
-        worlds[0], figsize, grid, wireframe, angle)
+        __get_range_of_world(worlds[0]), figsize, grid, wireframe, angle, noaxis)
 
     from mpl_toolkits.mplot3d.art3d import juggle_axes
 
@@ -1232,22 +1211,123 @@ def plot_movie_with_matplotlib(
                 zs.append(pos[2])
             scatters[i]._offsets3d = juggle_axes(xs, ys, zs, 'z')
 
-    print("Start making animation ...")
+        if rotate is not None:
+            ax.elev += rotate[0]
+            ax.azim += rotate[1]
 
-    cmap = ('b', 'g', 'r', 'c', 'm', 'y', 'k')
+        fig.canvas.draw()
+
+    # print("Start making animation ...")
+
+    color_scale = matplotlib_color_scale()
     scatters = []
     for i, name in enumerate(species_list):
         scatters.append(
             ax.scatter([], [], [], marker='o', s=(2 ** marker_size),
-                       lw=0, c=cmap[i % len(cmap)], label=name))
+                       lw=0, c=color_scale.get_color(name), label=name))
 
     if legend:
         ax.legend(loc='best', shadow=True)
 
     ani = animation.FuncAnimation(
         fig, _update_plot, fargs=(scatters, worlds, species_list),
-        frames=len(worlds), interval=interval, blit=True)
+        frames=len(worlds), interval=interval, blit=False)
 
     plt.close(ani._fig)
-    print("Start generating a movie ...")
-    display(HTML(anim_to_html(ani, output)))
+    # print("Start generating a movie ...")
+    display(HTML(anim_to_html(ani, output, fps=1.0 / interval)))
+
+def plot_movie_of_trajectory_with_matplotlib(
+        obs, figsize=6, grid=True,
+        wireframe=False, max_count=None, angle=None, noaxis=False,
+        interval=0.16, repeat_delay=3000, stride=1, rotate=None,
+        legend=True, output=None, **kwargs):
+    """
+    Generate a move from the received list of instances of World,
+    and show it on IPython notebook. This function may require ffmpeg.
+
+    Parameters
+    ----------
+    worlds : list or FixedIntervalHDF5Observer
+        A list of Worlds to render.
+    marker_size : float, default 3
+        Marker size for all species. Size is passed to scatter function
+        as argument, s=(2 ** marker_size).
+    figsize : float, default 6
+        Size of the plotting area. Given in inch.
+    max_count : Integer, default None
+        The maximum number of particles to show for each species.
+        None means no limitation.
+    angle : tuple, default None
+        A tuple of view angle which is given as (azim, elev, dist).
+        If None, use default assumed to be (-60, 30, 10).
+    interval : Integer, default 0.16
+        Parameters for matplotlib.animation.ArtistAnimation.
+    stride : Integer, default 1
+        Stride per frame.
+    rotate : tuple, default None
+        A pair of rotation angles, elev and azim, for animation.
+        None means no rotation, same as (0, 0).
+    legend : bool, default True
+    output : str, default None
+
+    """
+    import matplotlib.pyplot as plt
+    import matplotlib.animation as animation
+    from IPython.display import display, HTML
+    from ecell4 import Species, FixedIntervalHDF5Observer
+    from .simulation import load_world
+    import math
+
+    # print("Taking all data ...")
+
+    data = obs.data()
+    if max_count is not None and len(data) > max_count:
+        data = random.sample(data, max_count)
+
+    lines = []
+    num_frames = 0
+    for i, y in enumerate(data):
+        xarr, yarr, zarr = [], [], []
+        for pos in y:
+            xarr.append(pos[0])
+            yarr.append(pos[1])
+            zarr.append(pos[2])
+
+        lines.append((xarr, yarr, zarr))
+        num_frames = max(num_frames, len(y))
+    num_frames = int(math.ceil(float(num_frames) / stride))
+
+    # print("Start preparing mplot3d ...")
+
+    fig, ax = __prepare_mplot3d_with_maplotlib(
+        __get_range_of_trajectories(data), figsize, grid, wireframe, angle, noaxis)
+
+    def _update_plot(i, plots, lines):
+        upto = i * stride
+        for plot, line in zip(plots, lines):
+            plot.set_data(line[0][: upto], line[1][: upto])
+            plot.set_3d_properties(line[2][: upto])
+
+        if rotate is not None:
+            ax.elev += rotate[0]
+            ax.azim += rotate[1]
+
+        fig.canvas.draw()
+
+    # print("Start making animation ...")
+
+    plots = __plot_trajectory_with_matplotlib(lines, ax, 0, **kwargs)
+
+    if legend:
+        ax.legend(loc='best', shadow=True)
+
+    ani = animation.FuncAnimation(
+        fig, _update_plot, fargs=(plots, lines),
+        frames=num_frames, interval=interval, blit=False)
+
+    plt.close(ani._fig)
+    # print("Start generating a movie ...")
+    display(HTML(anim_to_html(ani, output, fps=1.0 / interval)))
+
+plot_movie_of_trajectory = plot_movie_of_trajectory_with_matplotlib  # default

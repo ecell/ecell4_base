@@ -229,7 +229,8 @@ cdef extern from "ecell4/core/Model.hpp" namespace "ecell4":
 #  a python wrapper for Cpp_Model, but wrapped by shared_ptr
 cdef class Model:
     # cdef Cpp_Model* thisptr
-    cdef shared_ptr[Cpp_Model]* thisptr
+    # cdef shared_ptr[Cpp_Model]* thisptr
+    cdef shared_ptr[Cpp_Model] thisptr
 
 cdef Model Model_from_Cpp_Model(shared_ptr[Cpp_Model] m)
 
@@ -268,7 +269,8 @@ cdef extern from "ecell4/core/NetworkModel.hpp" namespace "ecell4":
 #  a python wrapper for Cpp_NetowrkModel, but wrapped by shared_ptr
 cdef class NetworkModel:
     # cdef Cpp_NetworkModel* thisptr
-    cdef shared_ptr[Cpp_NetworkModel]* thisptr
+    # cdef shared_ptr[Cpp_NetworkModel]* thisptr
+    cdef shared_ptr[Cpp_NetworkModel] thisptr
 
 cdef NetworkModel NetworkModel_from_Cpp_NetworkModel(
     shared_ptr[Cpp_NetworkModel] m)
@@ -308,12 +310,14 @@ cdef extern from "ecell4/core/NetfreeModel.hpp" namespace "ecell4":
 #  a python wrapper for Cpp_NetfreeModel, but wrapped by shared_ptr
 cdef class NetfreeModel:
     # cdef Cpp_NetfreeModel* thisptr
-    cdef shared_ptr[Cpp_NetfreeModel]* thisptr
+    # cdef shared_ptr[Cpp_NetfreeModel]* thisptr
+    cdef shared_ptr[Cpp_NetfreeModel] thisptr
 
 cdef NetfreeModel NetfreeModel_from_Cpp_NetfreeModel(
     shared_ptr[Cpp_NetfreeModel] m)
 
-cdef shared_ptr[Cpp_Model]* Cpp_Model_from_Model(m)
+# cdef shared_ptr[Cpp_Model]* Cpp_Model_from_Model(m)
+cdef shared_ptr[Cpp_Model] Cpp_Model_from_Model(m)
 
 ## Cpp_Real3
 #  ecell4::Real3
@@ -466,7 +470,8 @@ cdef extern from "ecell4/core/observers.hpp" namespace "ecell4":
         Real next_time()
         Integer num_steps()
         string filename()
-        void log(Cpp_Space*)
+        # void log(Cpp_Space*)
+        void log(shared_ptr[Cpp_Space]&)
         void reset()
 
     cdef cppclass Cpp_FixedIntervalTrajectoryObserver "ecell4::FixedIntervalTrajectoryObserver":
