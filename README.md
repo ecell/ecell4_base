@@ -192,4 +192,4 @@ viz.plot_movie_of_trajectory(
     stride=60, rotate=(0, 1.5))
 ```
 
-![png](https://raw.githubusercontent.com/ecell/ecell4/appveyor2/docs/images/hairball.png)
+![png](https://raw.githubusercontent.com/ecell/ecell4/master/docs/images/hairball.png)
