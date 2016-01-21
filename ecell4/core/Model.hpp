@@ -73,6 +73,11 @@ public:
 
     // NetworkModelTraits
 
+    virtual bool is_static() const
+    {
+        return false;
+    }
+
     /**
      * add attributes of species to the model.
      * this function is a part of the trait of Model.

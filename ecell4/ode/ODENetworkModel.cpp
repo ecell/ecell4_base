@@ -14,7 +14,7 @@ ODENetworkModel::ODENetworkModel()
     ;
 }
 
-ODENetworkModel::ODENetworkModel(const boost::shared_ptr<ecell4::NetworkModel> model)
+ODENetworkModel::ODENetworkModel(const boost::shared_ptr<ecell4::Model> model)
     :expanded_(model)
 {
     this->convert_from_networkmodel(model);
@@ -24,13 +24,17 @@ void ODENetworkModel::update_model(void)
 {
     if (this->has_network_model() == false)
     {
-        throw IllegalState("ecell4::NetworkModel object has not been registered");
+        throw IllegalState("ecell4::Model object has not been registered");
     }
     this->convert_from_networkmodel(this->get_networkmodel());
 }
 
-bool ODENetworkModel::convert_from_networkmodel(const boost::shared_ptr<ecell4::NetworkModel> model)
+bool ODENetworkModel::convert_from_networkmodel(const boost::shared_ptr<ecell4::Model> model)
 {
+    if (!model->is_static())
+    {
+        throw NotSupported("Not supported yet. NetworkModel must be given.");
+    }
     this->species_attributes_.clear();
     this->species_attributes_.reserve(model->species_attributes().size());
     std::copy(

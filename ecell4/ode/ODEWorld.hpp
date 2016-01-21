@@ -264,7 +264,6 @@ public:
     }
 
     void bind_to(boost::shared_ptr<Model> model);
-    void bind_to(boost::shared_ptr<NetworkModel> model);
     void bind_to(boost::shared_ptr<ODENetworkModel> model);
 
     boost::shared_ptr<ODENetworkModel> lock_model() const
