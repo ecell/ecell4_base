@@ -43,7 +43,6 @@ cdef extern from "ecell4/ode/ODEWorld.hpp" namespace "ecell4::ode":
         void reserve_species(Cpp_Species &)
         void release_species(Cpp_Species &)
         void bind_to(shared_ptr[Cpp_Model]) except +
-        void bind_to(shared_ptr[Cpp_NetworkModel]) except +  #XXX: This is redundant
         void bind_to(shared_ptr[Cpp_ODENetworkModel])
 
 ## ODEWorld
@@ -135,7 +134,7 @@ cdef class ODEReactionRule:
 cdef extern from "ecell4/ode/ODENetworkModel.hpp" namespace "ecell4::ode":
     cdef cppclass Cpp_ODENetworkModel "ecell4::ode::ODENetworkModel":
         Cpp_ODENetworkModel() except +
-        Cpp_ODENetworkModel( shared_ptr[Cpp_NetworkModel] ) except +
+        Cpp_ODENetworkModel( shared_ptr[Cpp_Model] ) except +
         void update_model()
         bool has_network_model()
         vector[Cpp_ODEReactionRule] ode_reaction_rules()

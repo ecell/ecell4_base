@@ -99,6 +99,11 @@ public:
 
     // NetworkModelTraits
 
+    bool is_static() const
+    {
+        return true;
+    }
+
     void add_species_attribute(const Species& sp);
     bool has_species_attribute(const Species& sp) const;
     void remove_species_attribute(const Species& sp);
