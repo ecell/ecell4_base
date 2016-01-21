@@ -168,7 +168,7 @@ y = run_simulation(
     numpy.linspace(0, 10, 100), {'A': 60, 'B': 60}, solver='ode')
 ```
 
-![png](https://raw.githubusercontent.com/ecell/ecell4/master/docs/output_7_0.png)
+![png](https://raw.githubusercontent.com/ecell/ecell4/master/docs/images/output_7_0.png)
 
 ### Molecular diffusion visualization
 
