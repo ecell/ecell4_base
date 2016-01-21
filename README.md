@@ -181,13 +181,15 @@ with species_attributes():
     A | {'D': '1', 'location': 'M'}
 
 m = get_model()
+
 surface = Sphere(Real3(0.5, 0.5, 0.5), 0.48).surface()
 obs = FixedIntervalTrajectoryObserver(1e-4)
 factory = spatiocyte.SpatiocyteFactory(voxel_radius=0.005)
 run_simulation(0.3, model=m, y0={'A': 10}, structures={'M': surface},
                factory=factory, observers=obs, return_type=None)
-viz.plot_movie_for_trajectory_with_matplotlib(
-    obs, legend=False, noaxis=True, angle=(-60, 30, 6), figsize=5,
+
+viz.plot_movie_of_trajectory(
+    obs, legend=False, noaxis=True, angle=(-60, 30, 6),
     stride=60, rotate=(0, 1.5))
 ```
 
