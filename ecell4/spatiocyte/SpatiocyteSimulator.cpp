@@ -47,7 +47,7 @@ void SpatiocyteSimulator::initialize()
 void SpatiocyteSimulator::update_alpha_map()
 {
     boost::shared_ptr<Model> model_(model());
-    if (!model_)
+    if (!model_ || !model_->is_static())
         return;
 
     const Model::reaction_rule_container_type reaction_rules(model_->reaction_rules());
