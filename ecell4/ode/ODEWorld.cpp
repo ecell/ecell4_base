@@ -10,27 +10,6 @@ namespace ode
 
 void ODEWorld::bind_to(boost::shared_ptr<Model> model)
 {
-    if (boost::shared_ptr<NetworkModel> network_model
-            = boost::dynamic_pointer_cast<NetworkModel>(model))
-    {
-        this->bind_to(network_model);
-    }
-    else if (boost::shared_ptr<NetfreeModel> netfree_model
-            = boost::dynamic_pointer_cast<NetfreeModel>(model))
-    {
-        throw NotSupported(
-            "Not supported yet. NetfreeModel was given.");
-    }
-    else
-    {
-        //XXX: Never reach here
-        throw NotSupported(
-            "Not supported yet. Either ODENetworkModel or NetworkModel must be given.");
-    }
-}
-
-void ODEWorld::bind_to(boost::shared_ptr<NetworkModel> model)
-{
     if (generated_)
     {
         std::cerr << "Warning: NetworkModel is already bound to ODEWorld."
@@ -42,9 +21,17 @@ void ODEWorld::bind_to(boost::shared_ptr<NetworkModel> model)
             << std::endl;
     }
 
-    boost::shared_ptr<ODENetworkModel> tmp(new ODENetworkModel(model));
-    generated_.swap(tmp);
-    model_.reset();
+    try
+    {
+        boost::shared_ptr<ODENetworkModel> tmp(new ODENetworkModel(model));
+        generated_.swap(tmp);
+        model_.reset();
+    }
+    catch (NotSupported e)
+    {
+        throw NotSupported(
+            "Not supported yet. Either ODENetworkModel or NetworkModel must be given.");
+    }
 }
 
 void ODEWorld::bind_to(boost::shared_ptr<ODENetworkModel> model)

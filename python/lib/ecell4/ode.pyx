@@ -336,14 +336,8 @@ cdef class ODEWorld:
         """
         if isinstance(m, ODENetworkModel):
             self.thisptr.get().bind_to(deref((<ODENetworkModel>m).thisptr))
-        elif isinstance(m, NetworkModel):
-            # #XXX: This is needed because the pointer cast doesn't work properly on osx
-            self.thisptr.get().bind_to((<NetworkModel>m).thisptr)
-            # self.thisptr.get().bind_to(Cpp_Model_from_Model(m))
         else:
             self.thisptr.get().bind_to(Cpp_Model_from_Model(m))
-            # raise ValueError, ("a wrong argument was given [%s]." % (type(m))
-            #     + " the first argument must be ODENetworkModel or NetworkModel")
 
     def as_base(self):
         """Return self as a base class. Only for developmental use."""
@@ -833,18 +827,18 @@ cdef class ODENetworkModel:
 
     """
 
-    def __init__(self, NetworkModel m = None):
+    def __init__(self, Model m = None):
         """Constructor.
 
         Parameters
         ----------
-        m : NetworkModel, optional
+        m : Model, optional
             A network model.
 
         """
         pass
 
-    def __cinit__(self, NetworkModel m = None):
+    def __cinit__(self, Model m = None):
         # self.thisptr = new shared_ptr[Cpp_ODENetworkModel](
         #     <Cpp_ODENetworkModel*>(new Cpp_ODENetworkModel()))
         if m == None:
@@ -860,11 +854,11 @@ cdef class ODENetworkModel:
         del self.thisptr
 
     def update_model(self):
-        """Update self to fit the given NetworkModel."""
+        """Update self to fit the given Model."""
         self.thisptr.get().update_model()
 
     def has_network_model(self):
-        """Return if this model is bound to a NetworkModel or not."""
+        """Return if this model is bound to a Model or not."""
         return self.thisptr.get().has_network_model()
 
     def ode_reaction_rules(self):
@@ -964,7 +958,7 @@ cdef class ODESimulator:
 
         Parameters
         ----------
-        m : ODENetworkModel or NetworkModel
+        m : ODENetworkModel or Model
             A model
         w : ODEWorld
             A world
