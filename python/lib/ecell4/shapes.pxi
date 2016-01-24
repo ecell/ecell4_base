@@ -980,6 +980,14 @@ cdef SphericalSurface SphericalSurface_from_Cpp_SphericalSurface(
     retval.thisptr = new_obj
     return retval
 
+cdef PlanarSurface PlanarSurface_from_Cpp_PlanarSurface(Cpp_PlanarSurface* shape):
+    cdef shared_ptr[Cpp_PlanarSurface] *new_obj = new shared_ptr[Cpp_PlanarSurface](
+        new Cpp_PlanarSurface(<Cpp_PlanarSurface> deref(shape)))
+    retval = PlanarSurface(Real3(0, 0, 0), Real3(1., 0., 0.), Real3(0., 1., 0.))
+    del retval.thisptr
+    retval.thisptr = new_obj
+    return retval
+
 cdef Cylinder Cylinder_from_Cpp_Cylinder(Cpp_Cylinder* shape):
     cdef shared_ptr[Cpp_Cylinder] *new_obj = new shared_ptr[Cpp_Cylinder](
         new Cpp_Cylinder(<Cpp_Cylinder> deref(shape)))
