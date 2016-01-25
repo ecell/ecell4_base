@@ -181,17 +181,13 @@ from ecell4 import *
 with species_attributes():
     A | {'D': '1', 'location': 'M'}
 
-m = get_model()
-
-surface = Sphere(Real3(0.5, 0.5, 0.5), 0.48).surface()
+surface = Sphere(ones() * 0.5, 0.5).surface()
 obs = FixedIntervalTrajectoryObserver(1e-4)
-factory = spatiocyte.SpatiocyteFactory(voxel_radius=0.005)
-run_simulation(0.3, model=m, y0={'A': 10}, structures={'M': surface},
-               factory=factory, observers=obs, return_type=None)
+run_simulation(
+    0.4, y0={'A': 10}, structures={'M': surface},
+    solver='spatiocyte', observers=obs, return_type=None)
 
-viz.plot_movie_of_trajectory(
-    obs, legend=False, noaxis=True, angle=(-60, 30, 6),
-    stride=60, rotate=(0, 1.5))
+viz.plot_trajectory(obs, interactive=False)
 ```
 
 ![png](https://raw.githubusercontent.com/ecell/ecell4/master/docs/images/hairball.png)
