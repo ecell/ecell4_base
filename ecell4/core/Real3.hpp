@@ -195,6 +195,26 @@ inline std::basic_ostream<Tstrm_, Ttraits_>& operator<<(
     return strm;
 }
 
+inline Real3 ones()
+{
+    return Real3(1.0, 1.0, 1.0);
+}
+
+inline Real3 unitx()
+{
+    return Real3(1.0, 0.0, 0.0);
+}
+
+inline Real3 unity()
+{
+    return Real3(0.0, 1.0, 0.0);
+}
+
+inline Real3 unitz()
+{
+    return Real3(0.0, 0.0, 1.0);
+}
+
 } // ecell4
 
 #if defined(HAVE_TR1_FUNCTIONAL)

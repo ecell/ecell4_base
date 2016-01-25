@@ -225,3 +225,23 @@ def real3_length(Real3 p1):
 
     """
     return real3operators.length(deref(p1.thisptr))
+
+def ones():
+    """Return Real3(1.0, 1.0, 1.0)."""
+    cdef Cpp_Real3 retval = real3operators.ones()
+    return Real3_from_Cpp_Real3(address(retval))
+
+def unitx():
+    """Return Real3(1.0, 0.0, 0.0)."""
+    cdef Cpp_Real3 retval = real3operators.unitx()
+    return Real3_from_Cpp_Real3(address(retval))
+
+def unity():
+    """Return Real3(0.0, 1.0, 0.0)."""
+    cdef Cpp_Real3 retval = real3operators.unity()
+    return Real3_from_Cpp_Real3(address(retval))
+
+def unitz():
+    """Return Real3(0.0, 0.0, 1.0)."""
+    cdef Cpp_Real3 retval = real3operators.unitz()
+    return Real3_from_Cpp_Real3(address(retval))
