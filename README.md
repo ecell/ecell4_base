@@ -30,6 +30,8 @@ Installation
 - [Using E-Cell4 with jupyter](#using-e-cell4-with-jupyter)
 
 - [Simple examples](#simple-examples)
+- [Licensing terms](#licensing-terms)
+
 
 Docker users
 ------------
