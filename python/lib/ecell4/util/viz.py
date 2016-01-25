@@ -403,38 +403,63 @@ def __get_range_of_world(world):
 
     return {'x': rangex, 'y': rangey, 'z': rangez}
 
-def __get_range_of_trajectories(data):
-    if len(data) == 0:
-        xmin, xmax, ymin, ymax, zmin, zmax = 0, 1, 0, 1, 0, 1
+def __get_range_of_trajectories(data, plot_range=None):
+    from ecell4 import Real3
+
+    if plot_range is None:
+        if len(data) == 0:
+            xmin, xmax, ymin, ymax, zmin, zmax = 0, 1, 0, 1, 0, 1
+        else:
+            xmin, xmax, ymin, ymax, zmin, zmax = None, None, None, None, None, None
+
+            for i, traj in enumerate(data):
+                xarr, yarr, zarr = [], [], []
+                for pos in traj:
+                    xarr.append(pos[0])
+                    yarr.append(pos[1])
+                    zarr.append(pos[2])
+
+                if xmin is None:
+                    if len(traj) > 0:
+                        xmin, xmax = min(xarr), max(xarr)
+                        ymin, ymax = min(yarr), max(yarr)
+                        zmin, zmax = min(zarr), max(zarr)
+                else:
+                    xmin, xmax = min([xmin] + xarr), max([xmax] + xarr)
+                    ymin, ymax = min([ymin] + yarr), max([ymax] + yarr)
+                    zmin, zmax = min([zmin] + zarr), max([zmax] + zarr)
+
+        max_length = max(xmax - xmin, ymax - ymin, zmax - zmin)
+        rangex = [(xmin + xmax - max_length) * 0.5,
+                  (xmin + xmax + max_length) * 0.5]
+        rangey = [(ymin + ymax - max_length) * 0.5,
+                  (ymin + ymax + max_length) * 0.5]
+        rangez = [(zmin + zmax - max_length) * 0.5,
+                  (zmin + zmax + max_length) * 0.5]
+
+        return {'x': rangex, 'y': rangey, 'z': rangez}
+    elif isinstance(plot_range, dict):
+        return plot_range
+    elif isinstance(plot_range, (list, tuple)):
+        if len(plot_range) != 3:
+            raise ValueError(
+                'The size of plot_range [{}] must be 3.'.format(len(plot_range)))
+        elif (isinstance(plot_range[0], (list, tuple)) and
+                isinstance(plot_range[1], (list, tuple)) and
+                isinstance(plot_range[2], (list, tuple))):
+            return {'x': plot_range[0], 'y': plot_range[1], 'z': plot_range[2]}
+        else:
+            return {'x': (0, plot_range[0]),
+                    'y': (0, plot_range[1]),
+                    'z': (0, plot_range[2])}
+    elif isinstance(plot_range, Real3):
+        return {'x': (0, plot_range[0]),
+                'y': (0, plot_range[1]),
+                'z': (0, plot_range[2])}
     else:
-        xmin, xmax, ymin, ymax, zmin, zmax = None, None, None, None, None, None
-
-        for i, traj in enumerate(data):
-            xarr, yarr, zarr = [], [], []
-            for pos in traj:
-                xarr.append(pos[0])
-                yarr.append(pos[1])
-                zarr.append(pos[2])
-
-            if xmin is None:
-                if len(traj) > 0:
-                    xmin, xmax = min(xarr), max(xarr)
-                    ymin, ymax = min(yarr), max(yarr)
-                    zmin, zmax = min(zarr), max(zarr)
-            else:
-                xmin, xmax = min([xmin] + xarr), max([xmax] + xarr)
-                ymin, ymax = min([ymin] + yarr), max([ymax] + yarr)
-                zmin, zmax = min([zmin] + zarr), max([zmax] + zarr)
-
-    max_length = max(xmax - xmin, ymax - ymin, zmax - zmin)
-    rangex = [(xmin + xmax - max_length) * 0.5,
-              (xmin + xmax + max_length) * 0.5]
-    rangey = [(ymin + ymax - max_length) * 0.5,
-              (ymin + ymax + max_length) * 0.5]
-    rangez = [(zmin + zmax - max_length) * 0.5,
-              (zmin + zmax + max_length) * 0.5]
-
-    return {'x': rangex, 'y': rangey, 'z': rangez}
+        raise ValueError(
+            'plot_range must be list, tuple or dict. [{}] was given.'.format(
+                repr(plot_range)))
 
 def plot_movie_with_elegans(
         worlds, radius=None, width=500, height=500, config={}, grid=False,
@@ -782,7 +807,8 @@ def generate_html(keywords, tmpl_path):
 
 def plot_trajectory_with_elegans(
         obs, width=350, height=350, config={}, grid=True, wireframe=False,
-        max_count=10, camera_position=(-22, 23, 32), camera_rotation=(-0.6, 0.5, 0.6)):
+        max_count=10, camera_position=(-22, 23, 32), camera_rotation=(-0.6, 0.5, 0.6),
+        plot_range=None):
     """
     Generate a plot from received instance of TrajectoryObserver and show it
     on IPython notebook.
@@ -802,6 +828,9 @@ def plot_trajectory_with_elegans(
     camera_position : tuple, default (-30, 31, 42)
     camera_rotaiton : tuple, default (-0.6, 0.5, 0.6)
         Initial position and rotation of camera.
+    plot_range : tuple, default None
+        Range for plotting. A triplet of pairs suggesting (rangex, rangey, rangez).
+        If None, the minimum volume containing all the trajectories is used.
 
     """
     from IPython.core.display import display, HTML
@@ -843,16 +872,19 @@ def plot_trajectory_with_elegans(
                 'colors': [c, c]}
         })
 
-    if xmin is None:
-        xmin, xmax, ymin, ymax, zmin, zmax = 0, 1, 0, 1, 0, 1
+    if plot_range is None:
+        if xmin is None:
+            xmin, xmax, ymin, ymax, zmin, zmax = 0, 1, 0, 1, 0, 1
 
-    max_length = max(xmax - xmin, ymax - ymin, zmax - zmin)
-    rangex = [(xmin + xmax - max_length) * 0.5,
-              (xmin + xmax + max_length) * 0.5]
-    rangey = [(ymin + ymax - max_length) * 0.5,
-              (ymin + ymax + max_length) * 0.5]
-    rangez = [(zmin + zmax - max_length) * 0.5,
-              (zmin + zmax + max_length) * 0.5]
+        max_length = max(xmax - xmin, ymax - ymin, zmax - zmin)
+        rangex = [(xmin + xmax - max_length) * 0.5,
+                  (xmin + xmax + max_length) * 0.5]
+        rangey = [(ymin + ymax - max_length) * 0.5,
+                  (ymin + ymax + max_length) * 0.5]
+        rangez = [(zmin + zmax - max_length) * 0.5,
+                  (zmin + zmax + max_length) * 0.5]
+    else:
+        rangex, rangey, rangez = plot_range
 
     model = {
         'plots': plots,
@@ -1081,7 +1113,7 @@ def plot_world_with_matplotlib(
 
 def plot_trajectory_with_matplotlib(
         obs, max_count=10, figsize=6, legend=True, angle=None,
-        wireframe=False, grid=True, noaxis=False, **kwargs):
+        wireframe=False, grid=True, noaxis=False, plot_range=None, **kwargs):
     """
     Generate a plot from received instance of TrajectoryObserver and show it
     on IPython notebook.
@@ -1098,6 +1130,9 @@ def plot_trajectory_with_matplotlib(
         A tuple of view angle which is given as (azim, elev, dist).
         If None, use default assumed to be (-60, 30, 10).
     legend : bool, default True
+    plot_range : tuple, default None
+        Range for plotting. A triplet of pairs suggesting (rangex, rangey, rangez).
+        If None, the minimum volume containing all the trajectories is used.
 
     """
     import matplotlib.pyplot as plt
@@ -1107,7 +1142,8 @@ def plot_trajectory_with_matplotlib(
         data = random.sample(data, max_count)
 
     fig, ax = __prepare_mplot3d_with_maplotlib(
-        __get_range_of_trajectories(data), figsize, grid, wireframe, angle, noaxis)
+        __get_range_of_trajectories(data, plot_range),
+        figsize, grid, wireframe, angle, noaxis)
 
     lines = []
     for i, y in enumerate(data):
@@ -1241,7 +1277,7 @@ def plot_movie_of_trajectory_with_matplotlib(
         obs, figsize=6, grid=True,
         wireframe=False, max_count=None, angle=None, noaxis=False,
         interval=0.16, repeat_delay=3000, stride=1, rotate=None,
-        legend=True, output=None, **kwargs):
+        legend=True, output=None, plot_range=None, **kwargs):
     """
     Generate a move from the received list of instances of World,
     and show it on IPython notebook. This function may require ffmpeg.
@@ -1270,6 +1306,9 @@ def plot_movie_of_trajectory_with_matplotlib(
         None means no rotation, same as (0, 0).
     legend : bool, default True
     output : str, default None
+    plot_range : tuple, default None
+        Range for plotting. A triplet of pairs suggesting (rangex, rangey, rangez).
+        If None, the minimum volume containing all the trajectories is used.
 
     """
     import matplotlib.pyplot as plt
@@ -1301,7 +1340,8 @@ def plot_movie_of_trajectory_with_matplotlib(
     # print("Start preparing mplot3d ...")
 
     fig, ax = __prepare_mplot3d_with_maplotlib(
-        __get_range_of_trajectories(data), figsize, grid, wireframe, angle, noaxis)
+        __get_range_of_trajectories(data, plot_range),
+        figsize, grid, wireframe, angle, noaxis)
 
     def _update_plot(i, plots, lines):
         upto = i * stride
