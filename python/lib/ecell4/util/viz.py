@@ -883,15 +883,16 @@ def plot_trajectory_with_elegans(
                   (ymin + ymax + max_length) * 0.5]
         rangez = [(zmin + zmax - max_length) * 0.5,
                   (zmin + zmax + max_length) * 0.5]
+        wrange = {'x': rangex, 'y': rangey, 'z': rangez}
     else:
-        rangex, rangey, rangez = plot_range
+        wrange = __get_range_of_trajectories(None, plot_range)
 
     model = {
         'plots': plots,
         'options': {
             'world_width': width,
             'world_height': height,
-            'range': {'x': rangex, 'y': rangey, 'z': rangez},
+            'range': wrange,
             'autorange': False,
             'grid': grid,
             'save_image': True
