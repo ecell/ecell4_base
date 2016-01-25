@@ -24,8 +24,6 @@ signed int extract_sign(const T &number)
     return T(0) < number ? 1 : -1;
 } 
 
-
-
 boost::tuple<bool, Real3, Real3> refrection(const boost::shared_ptr<PlanarSurface> surface, const Real3& from, const Real3& displacement) 
 {
     // return value:
@@ -46,38 +44,6 @@ boost::tuple<bool, Real3, Real3> refrection(const boost::shared_ptr<PlanarSurfac
         return boost::make_tuple(true, intrusion_point, new_pos - intrusion_point);
     } 
     else if (is_inside_from < 0 && 0 < is_inside_dest) {
-        Real distance_from_surface(std::abs(is_inside_dest));
-        Real3 new_pos = temporary_destination + multiply(surface->normal(), (2.0) * distance_from_surface);
-        Real ratio( std::abs(is_inside_from) / (std::abs(is_inside_from) + std::abs(is_inside_dest)) );
-        Real3 intrusion_point( from + multiply(displacement, ratio) );
-        return boost::make_tuple(true, intrusion_point, new_pos - intrusion_point);
-    }
-}
-
-boost::tuple<bool, Real3, Real3> judge_reflection(const boost::shared_ptr<PlanarSurface> surface, 
-        const Real3& from, const Real3& displacement, const signed int sign_of_is_inside)
-{
-    // return value:
-    //  tuple(is_cross, intrusion_point, remaining_displacement_from_intrusion_point)
-    //
-    // the 4th argument may not be neccessarily needed. 
-    // But when the abs of is_inside is quite small, particle sometimes move to opposite side of the surface without sign information.
-    Real3 temporary_destination(from + displacement);
-    Real is_inside_from(surface->is_inside(from));
-    Real is_inside_dest(surface->is_inside(temporary_destination));
-    const signed int sign_of_dest_is_inside(extract_sign(is_inside_dest));
-
-    if (0 < sign_of_is_inside * sign_of_dest_is_inside) {
-        return boost::make_tuple(false, from, displacement);
-    }
-    else if (0 < sign_of_is_inside && sign_of_dest_is_inside < 0) {
-        Real distance_from_surface(std::abs(is_inside_dest));
-        Real3 new_pos = temporary_destination + multiply(surface->normal(), (-2.0) * distance_from_surface);
-        Real ratio(std::abs(is_inside_from) / (std::abs(is_inside_from) + std::abs(is_inside_dest)) );
-        Real3 intrusion_point(from + multiply(displacement, ratio) );
-        return boost::make_tuple(true, intrusion_point, new_pos - intrusion_point);
-    }
-    else if (sign_of_is_inside < 0 && 0 < sign_of_dest_is_inside) {
         Real distance_from_surface(std::abs(is_inside_dest));
         Real3 new_pos = temporary_destination + multiply(surface->normal(), (2.0) * distance_from_surface);
         Real ratio( std::abs(is_inside_from) / (std::abs(is_inside_from) + std::abs(is_inside_dest)) );
@@ -118,7 +84,6 @@ bool BDPropagator::operator()()
         // the inside or outside status must not be changed by definition.
         save_isinside[i] = extract_sign( surface_vector[i]->is_inside(from) );
     }
-
     bool refrection_occurance = false;
     do {
         refrection_occurance = false;
@@ -127,7 +92,6 @@ bool BDPropagator::operator()()
         for(std::size_t i = 0; i != surface_vector.size(); i++) {
             if (i != bound_surface) {
                 boost::tuple<bool, Real3, Real3> t = refrection(surface_vector[i], from, displacement);
-                //boost::tuple<bool, Real3, Real3> t = judge_reflection(surface_vector[i], from, displacement, save_isinside[i]);
                 if (t.get<0>() == true) {
                     if (false == refrection_occurance) {
                         refrection_occurance = true;
@@ -158,14 +122,10 @@ bool BDPropagator::operator()()
 
     // Check for debugging
     for(std::size_t i = 0; i != surface_vector.size(); i++) {
-        // the inside or outside status must not be changed by definition.
+        // the inside or outside status must not be changed before and after moving.
         signed int is_inside = extract_sign( surface_vector[i]->is_inside(from + displacement) );
         if (save_isinside[i] != is_inside) {
-            std::cout << "ERROR!\n" << std::endl;
-            std::cout << "Surface: " << i << std::endl;
-            std::cout << "Start:   " << from << std::endl;
-            std::cout << "End:     " << from + displacement << std::endl;
-            throw NotSupported("HDF5 is not supported.");
+            throw IllegalState("Particle moved to the opposite side of the surface");
         }
     }
 
