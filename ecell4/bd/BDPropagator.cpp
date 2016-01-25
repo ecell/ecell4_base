@@ -20,7 +20,7 @@ boost::tuple<bool, Real3, Real3> refrection(const boost::shared_ptr<PlanarSurfac
     //  tuple(is_cross, intrusion_point, remaining_displacement_from_intrusion_point)
     Real3 temporary_destination(from + displacement);
     Real is_inside_from( surface->is_inside(from) );
-    Real is_inside_dest( surface->is_inside(displacement) );
+    Real is_inside_dest( surface->is_inside(temporary_destination) );
     if (0 < is_inside_from * is_inside_dest) {
         return boost::make_tuple(false, from , displacement);
     }
@@ -66,27 +66,15 @@ bool BDPropagator::operator()()
         return true;
     }
 
-    
     const std::vector<boost::shared_ptr<PlanarSurface> > surface_vector = world_.get_surface_container();
-    //std::vector<PlanarSurface> surface_vector;
-
-    /*
-    Real3 origin1(0., 0., 5.0e-4);
-    Real3 bas_x(1.0, 0.0, 0.0);
-    Real3 bas_y(0.0, 1.0, 0.0);
-    PlanarSurface surface1(origin1, bas_x, bas_y);
-    Real3 origin2(0., 0., 1.0e-6);
-    PlanarSurface surface2(origin2, bas_x, bas_y);
-    surface_vector.push_back(surface1);
-    surface_vector.push_back(surface2);
-    */
 
     Real3 from = particle.position();
     Real3 displacement(draw_displacement(particle));
     std::size_t bound_surface = -1;
-    std::vector<bool> save_isinside(surface_vector.size());    // std::vector<bool> is specialized by default!
+    std::vector<bool> save_isinside(surface_vector.size());    // std::vector<bool> is specialized in the default!
     for(std::size_t i = 0; i != surface_vector.size(); i++) {
         save_isinside[i] = 0 < surface_vector[i]->is_inside(from) ? true : false;
+        // the inside or outside status must not be changed by definition.
     }
 
     bool refrection_occurance = false;

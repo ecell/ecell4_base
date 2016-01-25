@@ -862,6 +862,11 @@ cdef class BDSimulator:
             self.thisptr.run(duration,
                 deref((<Observer>(observers.as_base())).thisptr))
 
+    def insert_line(self):
+        self.thisptr.insert_line()
+
+
+
 cdef BDSimulator BDSimulator_from_Cpp_BDSimulator(Cpp_BDSimulator* s):
     r = BDSimulator(
         Model_from_Cpp_Model(s.model()), BDWorld_from_Cpp_BDWorld(s.world()))

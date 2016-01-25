@@ -109,6 +109,11 @@ public:
         return (*world_).rng();
     }
 
+    void insert_line(void) const 
+    {
+        std::cout << "=========================================================" << std::endl;
+    }
+
 protected:
 
     /**
