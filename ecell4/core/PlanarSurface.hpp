@@ -51,6 +51,21 @@ protected:
     Real d_;
 };
 
+inline PlanarSurface create_x_plane(const Real v)
+{
+    return PlanarSurface(Real3(v, 0.0, 0.0), Real3(0.0, 1.0, 0.0), Real3(0.0, 0.0, 1.0));
+}
+
+inline PlanarSurface create_y_plane(const Real v)
+{
+    return PlanarSurface(Real3(0.0, v, 0.0), Real3(1.0, 0.0, 0.0), Real3(0.0, 0.0, 1.0));
+}
+
+inline PlanarSurface create_z_plane(const Real v)
+{
+    return PlanarSurface(Real3(0.0, 0.0, v), Real3(1.0, 0.0, 0.0), Real3(0.0, 1.0, 0.0));
+}
+
 }
 
 #endif /* __ECELL4_PLANAR_SURFACE_HPP */

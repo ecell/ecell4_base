@@ -1,5 +1,6 @@
 from cython.operator cimport dereference as deref
 from cython cimport address
+cimport shape_functions
 
 
 cdef class Shape:
@@ -471,6 +472,21 @@ cdef class PlanarSurface:
         del retval.thisptr
         retval.thisptr = new_obj
         return retval
+
+def create_x_plane(Real x):
+    """Return PlanarSurface(Real3(x, 0, 0), Real3(0, 1, 0), Real3(0, 0, 1))."""
+    cdef Cpp_PlanarSurface surf = shape_functions.create_x_plane(x)
+    return PlanarSurface_from_Cpp_PlanarSurface(address(surf))
+
+def create_y_plane(Real y):
+    """Return PlanarSurface(Real3(0, y, 0), Real3(1, 0, 0), Real3(0, 0, 1))."""
+    cdef Cpp_PlanarSurface surf = shape_functions.create_y_plane(y)
+    return PlanarSurface_from_Cpp_PlanarSurface(address(surf))
+
+def create_z_plane(Real z):
+    """Return PlanarSurface(Real3(0, 0, z), Real3(1, 0, 0), Real3(0, 1, 0))."""
+    cdef Cpp_PlanarSurface surf = shape_functions.create_z_plane(z)
+    return PlanarSurface_from_Cpp_PlanarSurface(address(surf))
 
 cdef class Rod:
     """A class representing a Rod shape, which is available to define
@@ -1021,3 +1037,10 @@ cdef AABB AABB_from_Cpp_AABB(Cpp_AABB* shape):
     retval.thisptr = new_obj
     return retval
 
+cdef PlanarSurface PlanarSurface_from_Cpp_PlanarSurface(Cpp_PlanarSurface* shape):
+    cdef shared_ptr[Cpp_PlanarSurface] *new_obj = new shared_ptr[Cpp_PlanarSurface](
+        new Cpp_PlanarSurface(<Cpp_PlanarSurface> deref(shape)))
+    retval = PlanarSurface(Real3(0, 0, 0), Real3(1, 0, 0), Real3(0, 1, 0))
+    del retval.thisptr
+    retval.thisptr = new_obj
+    return retval
