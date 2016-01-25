@@ -18,25 +18,56 @@ namespace ecell4
 namespace meso
 {
 
-void MesoscopicSimulator::increment_molecules(const Species& sp, const coordinate_type& c)
+void MesoscopicSimulator::increment(const boost::shared_ptr<MesoscopicWorld::PoolBase>& pool, const coordinate_type& c)
 {
-    world_->add_molecules(sp, 1, c);
+    pool->add_molecules(1, c);
 
     for (boost::ptr_vector<ReactionRuleProxyBase>::iterator i(proxies_.begin());
         i != proxies_.end(); ++i)
     {
-        (*i).inc(sp, c);
+        (*i).inc(pool->species(), c);
+    }
+}
+
+void MesoscopicSimulator::decrement(const boost::shared_ptr<MesoscopicWorld::PoolBase>& pool, const coordinate_type& c)
+{
+    pool->remove_molecules(1, c);
+
+    for (boost::ptr_vector<ReactionRuleProxyBase>::iterator i(proxies_.begin());
+        i != proxies_.end(); ++i)
+    {
+        (*i).dec(pool->species(), c);
+    }
+}
+
+void MesoscopicSimulator::increment_molecules(const Species& sp, const coordinate_type& c)
+{
+    if (!world_->has_species(sp))
+    {
+        if (world_->has_structure(sp))
+        {
+            return; // do nothing
+        }
+
+        const boost::shared_ptr<MesoscopicWorld::PoolBase> pool = world_->reserve_pool(sp);
+        proxies_.push_back(create_diffusion_proxy(sp));
+        increment(pool, c);
+    }
+    else
+    {
+        increment(world_->get_pool(sp), c);
     }
 }
 
 void MesoscopicSimulator::decrement_molecules(const Species& sp, const coordinate_type& c)
 {
-    world_->remove_molecules(sp, 1, c);
-
-    for (boost::ptr_vector<ReactionRuleProxyBase>::iterator i(proxies_.begin());
-        i != proxies_.end(); ++i)
+    if (world_->has_species(sp))
     {
-        (*i).dec(sp, c);
+        decrement(world_->get_pool(sp), c);
+    }
+    else
+    {
+        assert(world_->has_structure(sp));  // do nothing
     }
 }
 
@@ -149,6 +180,20 @@ bool MesoscopicSimulator::step(const Real &upto)
     }
 }
 
+MesoscopicSimulator::DiffusionProxy*
+MesoscopicSimulator::create_diffusion_proxy(const Species& sp)
+{
+    DiffusionProxy* proxy = new DiffusionProxy(this, sp);
+    proxy->initialize();
+    for (boost::ptr_vector<ReactionRuleProxyBase>::size_type i = 0;
+         i < diffusion_proxy_offset_; ++i)
+    {
+        proxy->set_dependency(
+            dynamic_cast<ReactionRuleProxy*>(&proxies_[i]));
+    }
+    return proxy;
+}
+
 void MesoscopicSimulator::initialize(void)
 {
     const Model::reaction_rule_container_type&
@@ -190,14 +235,19 @@ void MesoscopicSimulator::initialize(void)
 
         proxies_.back().initialize();
     }
+    diffusion_proxy_offset_ = proxies_.size();
 
-    const std::vector<Species>& species(model_->species_attributes());
-    // const std::vector<Species>& species(world_->species());
+    // const std::vector<Species>& species(model_->species_attributes());
+    const std::vector<Species>& species(world_->species());
     for (std::vector<Species>::const_iterator i(species.begin());
         i != species.end(); ++i)
     {
-        proxies_.push_back(new DiffusionProxy(this, *i));
-        proxies_.back().initialize();
+        if (!world_->has_species(*i))
+        {
+            world_->reserve_pool(*i); //XXX: This must be deprecated.
+        }
+
+        proxies_.push_back(create_diffusion_proxy(*i));
     }
 
     scheduler_.clear();

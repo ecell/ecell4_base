@@ -45,7 +45,7 @@ public:
 
     // SpaceTraits
 
-    const Real& t() const
+    const Real t() const
     {
         return t_;
     }
@@ -83,14 +83,20 @@ public:
 
     virtual Real3 actual_lengths() const = 0;
 
+    virtual void save(const std::string& filename) const
+    {
+        throw NotSupported(
+            "save(const std::string) is not supported by this space class");
+    }
+
 #ifdef WITH_HDF5
-    virtual void save(H5::Group* root) const
+    virtual void save_hdf5(H5::Group* root) const
     {
         throw NotSupported(
             "load(H5::Group* root) is not supported by this space class");
     }
 
-    virtual void load(const H5::Group& root)
+    virtual void load_hdf5(const H5::Group& root)
     {
         throw NotSupported(
             "load(const H5::Group& root) is not supported by this space class");
@@ -676,12 +682,12 @@ public:
     /*
      * HDF5 Save
      */
-    void save(H5::Group* root) const
+    void save_hdf5(H5::Group* root) const
     {
         save_lattice_space(*this, root);
     }
 
-    void load(const H5::Group& root)
+    void load_hdf5(const H5::Group& root)
     {
         load_lattice_space(root, this);
     }

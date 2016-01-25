@@ -6,7 +6,7 @@
      require.config({
        paths:{
          d3: [
-           'https://cdnjs.cloudflare.com/ajax/libs/d3/3.4.4/d3.min',
+           'https://d3js.org/d3.v3.min',
            'custom/d3.min'
          ],
          THREE: [
@@ -16,7 +16,8 @@
          Nyaplot: [
            'https://rawgit.com/domitry/Nyaplotjs/master/release/nyaplot',
            'custom/nyaplot'
-         ]
+         ],
+         svg2png: 'https://cdn.rawgit.com/domitry/svg2png/850731291ef598b201687ed5b1e215df248d8aeb/src/main'
        },
        shim:{
          THREE: {
@@ -29,21 +30,35 @@
        }
      });
 
-     require(["d3", "THREE"], function(d3){
-       window["d3"] = d3;
+         require(["d3", "THREE"], function(d3){
+           window["d3"] = d3;
 
-       d3.select(document)
-         .on("contextmenu", function(){
-         d3.selectAll("canvas").style("z-index", 10);
-         d3.selectAll(".download_menu").style("z-index", 100);
-       });
-     });
+           d3.select(document)
+             .on("contextmenu", function(){
+               d3.selectAll("canvas").style("z-index", 10);
+               d3.selectAll(".download_menu").style("z-index", 100);
+             });
+         });
        }
 
-       require(["Nyaplot"], function(){
-     console.log("Begin rendering...");
-    var models = {{model}};
-     Nyaplot.core.parse(models, '#{{model_id}}');
+       require(["svg2png", "Nyaplot"], function(util){
+         console.log("Begin rendering...");
+         var models = {{model}};
+         Nyaplot.core.parse(models, '#{{model_id}}');
+
+         var div = d3.select('#{{model_id}}');
+         var svg = div.select('svg');
+
+         if({{to_png}}){
+           util.svg2uri(svg)
+               .then(function(uri){
+                 svg.remove();
+                 div
+                   .append("img")
+                   .attr("src", uri);
+               });
+         }
+     
        });
      })();
     </script>

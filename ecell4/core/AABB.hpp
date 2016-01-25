@@ -75,6 +75,11 @@ struct AABB
         return p;
     }
 
+    dimension_kind dimension() const
+    {
+        return THREE;
+    }
+
 protected:
 
     Real3 lower_, upper_;

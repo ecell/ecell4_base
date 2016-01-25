@@ -10,6 +10,7 @@ from ecell4.core cimport *
 
 from cpython cimport PyObject, Py_XINCREF, Py_XDECREF
 
+
 ## ODEWorld
 #  a python wrapper for Cpp_ODEWorld
 cdef class ODEWorld:
@@ -264,7 +265,7 @@ cdef class ODEWorld:
         """
         self.thisptr.get().save(tostring(filename))
 
-    def load(self, string filename):
+    def load(self, filename):
         """load(filename)
 
         Load a HDF5 file to the current state.
@@ -336,7 +337,7 @@ cdef class ODEWorld:
         if isinstance(m, ODENetworkModel):
             self.thisptr.get().bind_to(deref((<ODENetworkModel>m).thisptr))
         else:
-            self.thisptr.get().bind_to(deref(Cpp_Model_from_Model(m)))
+            self.thisptr.get().bind_to(Cpp_Model_from_Model(m))
 
     def as_base(self):
         """Return self as a base class. Only for developmental use."""
@@ -372,7 +373,7 @@ cdef class ODERatelaw:
 
     def as_string(self):
         """"Return a name of the function"""
-        return self.thisptr.get().as_string()
+        return self.thisptr.get().as_string().decode('UTF-8')
 
     def as_base(self):
         """Return self as a base class. Only for developmental use."""
@@ -426,7 +427,7 @@ cdef class ODERatelawMassAction:
 
     def as_string(self):
         """"Return a name of the function"""
-        return self.thisptr.get().as_string()
+        return self.thisptr.get().as_string().decode('UTF-8')
 
     def as_base(self):
         """Return self as a base class. Only for developmental use."""
@@ -467,7 +468,7 @@ cdef class ODERatelawCallback:
 
     """
 
-    def __init__(self, pyfunc, name = None):
+    def __init__(self, pyfunc, name=None):
         """Constructor.
 
         Parameters
@@ -481,19 +482,19 @@ cdef class ODERatelawCallback:
         """
         pass
 
-    def __cinit__(self, pyfunc, name = None):
+    def __cinit__(self, pyfunc, name=None):
         if name is None:
             self.thisptr = new shared_ptr[Cpp_ODERatelawCythonCallback](
                 <Cpp_ODERatelawCythonCallback*>(new Cpp_ODERatelawCythonCallback(
                     <Stepladder_Functype>indirect_function, <void*>pyfunc,
                     <OperateRef_Functype>inc_ref, <OperateRef_Functype>dec_ref,
-                    <string>pyfunc.__name__)))
+                    tostring(pyfunc.__name__))))
         else:
             self.thisptr = new shared_ptr[Cpp_ODERatelawCythonCallback](
                 <Cpp_ODERatelawCythonCallback*>(new Cpp_ODERatelawCythonCallback(
                     <Stepladder_Functype>indirect_function, <void*>pyfunc,
                     <OperateRef_Functype>inc_ref, <OperateRef_Functype>dec_ref,
-                    <string>name)))
+                    tostring(name))))
         self.pyfunc = pyfunc
 
     def __dealloc__(self):
@@ -525,13 +526,13 @@ cdef class ODERatelawCallback:
         """
         self.thisptr.get().set_callback_pyfunc(<Python_CallbackFunctype>pyfunc)
 
-    def set_name(self, string name):
+    def set_name(self, name):
         """"Set the name of a function"""
-        self.thisptr.get().set_name(name)
+        self.thisptr.get().set_name(tostring(name))
 
     def as_string(self):
         """"Return a name of the function"""
-        return self.thisptr.get().as_string()
+        return self.thisptr.get().as_string().decode('UTF-8')
 
     def as_base(self):
         """Return self as a base class. Only for developmental use."""
@@ -826,36 +827,38 @@ cdef class ODENetworkModel:
 
     """
 
-    def __init__(self, NetworkModel m = None):
+    def __init__(self, Model m = None):
         """Constructor.
 
         Parameters
         ----------
-        m : NetworkModel, optional
+        m : Model, optional
             A network model.
 
         """
         pass
 
-    def __cinit__(self, NetworkModel m = None):
+    def __cinit__(self, Model m = None):
         # self.thisptr = new shared_ptr[Cpp_ODENetworkModel](
         #     <Cpp_ODENetworkModel*>(new Cpp_ODENetworkModel()))
         if m == None:
             self.thisptr = new shared_ptr[Cpp_ODENetworkModel](
                 <Cpp_ODENetworkModel*>(new Cpp_ODENetworkModel()))
         else:
+            # self.thisptr = new shared_ptr[Cpp_ODENetworkModel](
+            #     (<Cpp_ODENetworkModel*>(new Cpp_ODENetworkModel(deref(m.thisptr)))))
             self.thisptr = new shared_ptr[Cpp_ODENetworkModel](
-                (<Cpp_ODENetworkModel*>(new Cpp_ODENetworkModel(deref(m.thisptr)))))
+                (<Cpp_ODENetworkModel*>(new Cpp_ODENetworkModel(m.thisptr))))
 
     def __dealloc__(self):
         del self.thisptr
 
     def update_model(self):
-        """Update self to fit the given NetworkModel."""
+        """Update self to fit the given Model."""
         self.thisptr.get().update_model()
 
     def has_network_model(self):
-        """Return if this model is bound to a NetworkModel or not."""
+        """Return if this model is bound to a Model or not."""
         return self.thisptr.get().has_network_model()
 
     def ode_reaction_rules(self):
@@ -955,7 +958,7 @@ cdef class ODESimulator:
 
         Parameters
         ----------
-        m : ODENetworkModel or NetworkModel
+        m : ODENetworkModel or Model
             A model
         w : ODEWorld
             A world
@@ -977,7 +980,7 @@ cdef class ODESimulator:
                         deref((<ODEWorld>arg2).thisptr))
                 elif isinstance(arg1, NetworkModel):
                     self.thisptr = new Cpp_ODESimulator(
-                        deref((<NetworkModel>arg1).thisptr),
+                        (<NetworkModel>arg1).thisptr,
                         deref((<ODEWorld>arg2).thisptr))
                 else:
                     raise ValueError(
@@ -1006,7 +1009,7 @@ cdef class ODESimulator:
                     cpp_solvertype)
             elif isinstance(arg1, NetworkModel):
                 self.thisptr = new Cpp_ODESimulator(
-                    deref((<NetworkModel>arg1).thisptr),
+                    (<NetworkModel>arg1).thisptr,
                     deref((<ODEWorld>arg2).thisptr),
                     cpp_solvertype)
             else:
@@ -1065,7 +1068,7 @@ cdef class ODESimulator:
 
         """
         if upto is None:
-            self.thirptr.step()
+            self.thisptr.step()
         else:
             return self.thisptr.step(upto)
 
@@ -1149,6 +1152,10 @@ cdef class ODESimulator:
 
         """
         self.thisptr.set_relative_tolerance(rel_tol)
+
+    def model(self):
+        """Return the model bound."""
+        return ODENetworkModel_from_Cpp_ODENetworkModel(self.thisptr.model())
 
     def world(self):
         """Return the world bound."""
@@ -1252,7 +1259,7 @@ cdef class ODEFactory:
                     self.thisptr.create_world(deref((<Real3>arg1).thisptr))))
         elif isinstance(arg1, str):
             return ODEWorld_from_Cpp_ODEWorld(
-                shared_ptr[Cpp_ODEWorld](self.thisptr.create_world(<string>(arg1))))
+                shared_ptr[Cpp_ODEWorld](self.thisptr.create_world(tostring(arg1))))
         raise ValueError("invalid argument")
 
     # def create_simulator(self, arg1, ODEWorld arg2=None):
@@ -1305,7 +1312,7 @@ cdef class ODEFactory:
             elif isinstance(arg1, NetworkModel):
                 return ODESimulator_from_Cpp_ODESimulator(
                     self.thisptr.create_simulator(
-                        deref((<NetworkModel>arg1).thisptr),
+                        (<NetworkModel>arg1).thisptr,
                         deref((<ODEWorld>arg2).thisptr)))
             else:
                 raise ValueError(

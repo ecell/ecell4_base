@@ -215,7 +215,7 @@ public:
     bool has_ratelaw() const
     {
         // return !(this->ratelaw_.use_count() == 0);
-        return ratelaw_;
+        return (ratelaw_.get() != 0);
     }
     bool is_massaction() const
     {

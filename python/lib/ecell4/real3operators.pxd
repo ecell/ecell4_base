@@ -16,3 +16,8 @@ cdef extern from "ecell4/core/Real3.hpp" namespace "ecell4":
     Cpp_Real3 cross_product(Cpp_Real3, Cpp_Real3)
     Real length_sq(Cpp_Real3)
     Real length(Cpp_Real3)
+
+    Cpp_Real3 ones()
+    Cpp_Real3 unitx()
+    Cpp_Real3 unity()
+    Cpp_Real3 unitz()

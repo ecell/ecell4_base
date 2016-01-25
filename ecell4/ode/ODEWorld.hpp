@@ -6,6 +6,9 @@
 #include <ecell4/core/Real3.hpp>
 #include <ecell4/core/Space.hpp>
 #include <ecell4/core/Model.hpp>
+#include <ecell4/core/NetworkModel.hpp>
+#include <ecell4/core/NetfreeModel.hpp>
+
 #ifdef WITH_HDF5
 #include <ecell4/core/CompartmentSpaceHDF5Writer.hpp>
 #endif
@@ -70,7 +73,7 @@ public:
 
     // SpaceTraits
 
-    const Real& t() const
+    const Real t() const
     {
         return t_;
     }
@@ -214,7 +217,7 @@ public:
     void save(const std::string& filename) const;
     void load(const std::string& filename);
 
-    bool has_species(const Species& sp)
+    bool has_species(const Species& sp) const
     {
         species_map_type::const_iterator i(index_map_.find(sp));
         return (i != index_map_.end());
@@ -260,52 +263,8 @@ public:
         index_map_.erase(sp);
     }
 
-    void bind_to(boost::shared_ptr<Model> model)
-    {
-        if (boost::shared_ptr<NetworkModel> network_model
-                = boost::dynamic_pointer_cast<NetworkModel>(model))
-        {
-            if (generated_)
-            {
-                std::cerr << "Warning: NetworkModel is already bound to ODEWorld."
-                    << std::endl;
-            }
-            else if (model_.expired())
-            {
-                std::cerr << "Warning: ODENetworkModel is already bound to ODEWorld."
-                    << std::endl;
-            }
-
-            boost::shared_ptr<ODENetworkModel> tmp(new ODENetworkModel(network_model));
-            generated_.swap(tmp);
-            model_.reset();
-        }
-        else
-        {
-            throw NotSupported(
-                "Not supported yet. Either ODENetworkModel or NetworkModel must be given.");
-        }
-    }
-
-    void bind_to(boost::shared_ptr<ODENetworkModel> model)
-    {
-        if (boost::shared_ptr<ODENetworkModel> bound_model = model_.lock())
-        {
-            if (bound_model.get() != model.get())
-            {
-                std::cerr << "Warning: ODENetworkModel is already bound to ODEWorld."
-                    << std::endl;
-            }
-        }
-        else if (generated_)
-        {
-            std::cerr << "Warning: NetworkModel is already bound to ODEWorld."
-                << std::endl;
-        }
-
-        this->model_ = model;
-        generated_.reset();
-    }
+    void bind_to(boost::shared_ptr<Model> model);
+    void bind_to(boost::shared_ptr<ODENetworkModel> model);
 
     boost::shared_ptr<ODENetworkModel> lock_model() const
     {

@@ -42,7 +42,7 @@ void GillespieSimulator::decrement_molecules(const Species& sp)
 bool GillespieSimulator::__draw_next_reaction(void)
 {
     std::vector<double> a(events_.size());
-    const Real V(world_->volume());
+    // const Real V(world_->volume());
     for (unsigned int idx(0); idx < events_.size(); ++idx)
     {
         // events_[idx].initialize(world_.get());

@@ -19,10 +19,11 @@ cdef class NetfreeModel:
 
     def __cinit__(self):
         # self.thisptr = new NetfreeModel()
-        self.thisptr = new shared_ptr[Cpp_NetfreeModel](new Cpp_NetfreeModel())
+        # self.thisptr = new shared_ptr[Cpp_NetfreeModel](new Cpp_NetfreeModel())
+        self.thisptr = shared_ptr[Cpp_NetfreeModel](new Cpp_NetfreeModel())
 
-    def __dealloc__(self):
-        del self.thisptr
+    # def __dealloc__(self):
+    #     del self.thisptr
 
     def add_species_attribute(self, Species sp):
         """add_species_attribute(sp)
@@ -287,6 +288,15 @@ cdef class NetfreeModel:
                 <Cpp_Species*>(address(deref(it)))))
             inc(it)
         return retval
+
+    def __reduce__(self):
+        return (__rebuild_netfree_model, (self.species_attributes(), self.reaction_rules()))
+
+cdef __rebuild_netfree_model(attrs, rrs):
+    m = NetfreeModel()
+    m.add_species_attributes(attrs)
+    m.add_reaction_rules(rrs)
+    return m
 
 cdef NetfreeModel NetfreeModel_from_Cpp_NetfreeModel(
     shared_ptr[Cpp_NetfreeModel] m):

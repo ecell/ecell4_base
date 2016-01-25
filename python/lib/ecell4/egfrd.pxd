@@ -38,6 +38,7 @@ cdef extern from "ecell4/egfrd/egfrd.hpp" namespace "ecell4::egfrd":
         Real t()
         Cpp_Real3& edge_lengths()
         Cpp_Real3 actual_lengths()
+        void set_value(Cpp_Species&, Real)
         Real get_value(Cpp_Species&)
         Real get_value_exact(Cpp_Species&)
         Integer num_particles()
@@ -104,9 +105,9 @@ cdef extern from "ecell4/egfrd/egfrd.hpp" namespace "ecell4::egfrd":
         # Cpp_GSLRandomNumberGenerator& rng()
         shared_ptr[Cpp_Model] model()
         shared_ptr[Cpp_EGFRDWorld] world()
-        void run(Real)
-        void run(Real, shared_ptr[Cpp_Observer])
-        void run(Real, vector[shared_ptr[Cpp_Observer]])
+        void run(Real) except +
+        void run(Real, shared_ptr[Cpp_Observer]) except +
+        void run(Real, vector[shared_ptr[Cpp_Observer]]) except +
 
     cdef cppclass Cpp_EGFRDFactory "ecell4::egfrd::EGFRDFactory":
         Cpp_EGFRDFactory() except +
@@ -172,9 +173,9 @@ cdef extern from "ecell4/egfrd/egfrd.hpp" namespace "ecell4::egfrd":
         # Cpp_GSLRandomNumberGenerator& rng()
         shared_ptr[Cpp_Model] model()
         shared_ptr[Cpp_EGFRDWorld] world()
-        void run(Real)
-        void run(Real, shared_ptr[Cpp_Observer])
-        void run(Real, vector[shared_ptr[Cpp_Observer]])
+        void run(Real) except +
+        void run(Real, shared_ptr[Cpp_Observer]) except +
+        void run(Real, vector[shared_ptr[Cpp_Observer]]) except +
 
 cdef class EGFRDWorld:
     cdef shared_ptr[Cpp_EGFRDWorld]* thisptr

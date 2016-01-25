@@ -26,7 +26,7 @@ SpatiocyteWorld* create_spatiocyte_world_vector_impl(
         new LatticeSpaceVectorImpl(edge_lengths, voxel_radius), rng);
 }
 
-const Real& SpatiocyteWorld::t() const
+const Real SpatiocyteWorld::t() const
 {
     return (*space_).t();
 }
@@ -49,6 +49,20 @@ const Real SpatiocyteWorld::volume() const
 Integer SpatiocyteWorld::num_species() const
 {
     return (*space_).num_species();
+}
+
+void SpatiocyteWorld::set_value(const Species& sp, const Real value)
+{
+    const Integer num1 = static_cast<Integer>(value);
+    const Integer num2 = num_molecules_exact(sp);
+    if (num1 > num2)
+    {
+        add_molecules(sp, num1 - num2);
+    }
+    else if (num1 < num2)
+    {
+        remove_molecules(sp, num2 - num1);
+    }
 }
 
 bool SpatiocyteWorld::has_species(const Species &sp) const
@@ -221,9 +235,7 @@ bool SpatiocyteWorld::add_molecules(const Species& sp, const Integer& num)
         throw std::invalid_argument("The number of molecules must be positive.");
     }
 
-    // std::cerr << "[DEBUG]" << std::endl; // DEBUG
     const SpatiocyteWorld::molecule_info_type info(get_molecule_info(sp));
-    // std::cerr << "  info.D = " << info.D << std::endl; // DEBUG
 
     Integer count(0);
     while (count < num)
@@ -274,7 +286,6 @@ bool SpatiocyteWorld::add_molecules(
 Integer SpatiocyteWorld::add_structure(
     const Species& sp, const boost::shared_ptr<const Shape> shape)
 {
-    std::cerr << "shape->dimension() : " << shape->dimension() << std::endl; // XXX
     const SpatiocyteWorld::molecule_info_type info(get_molecule_info(sp));
     (*space_).make_structure_type(sp, shape->dimension(), info.loc);
 

@@ -7,7 +7,7 @@
 
 #include "types.hpp"
 #include "exceptions.hpp"
-#include "Real3.hpp"
+#include "functions.hpp"
 
 
 namespace ecell4
@@ -49,6 +49,10 @@ struct Integer3
     Integer3 north() const;
     Integer3 dorsal() const;
     Integer3 ventral() const;
+
+    Integer3& operator+=(const Integer3& rhs);
+    Integer3& operator-=(const Integer3& rhs);
+    Integer3& operator*=(const Integer3::value_type& rhs);
 
     value_type& operator[](size_type i)
     {
@@ -104,6 +108,31 @@ inline Integer3 abs(const Integer3& g1)
     retval.row = abs(g1.row);
     retval.layer = abs(g1.layer);
     return retval;
+}
+
+inline Integer3 multiply(const Integer3& p1, const Integer3::value_type& p2)
+{
+    Integer3 retval;
+    retval[0] = p1[0] * p2;
+    retval[1] = p1[1] * p2;
+    retval[2] = p1[2] * p2;
+    return retval;
+}
+
+inline Integer3::value_type length_sq(const Integer3& r)
+{
+    return pow_2(r[0]) + pow_2(r[1]) + pow_2(r[2]);
+}
+
+inline Real length(const Integer3& r)
+{
+    return std::sqrt(static_cast<Real>(length_sq(r)));
+}
+
+inline Integer3::value_type dot_product(
+    const Integer3& p1, const Integer3& p2)
+{
+    return p1[0] * p2[0] + p1[1] * p2[1] + p1[2] * p2[2];
 }
 
 inline Integer3 operator+(const Integer3& lhs, const Integer3& rhs)

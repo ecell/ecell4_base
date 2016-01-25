@@ -38,7 +38,7 @@ void throw_in_particles(
         throw std::invalid_argument("the number of particles must be positive.");
     }
 
-    const Real3 edge_lengths(world.edge_lengths());
+    // const Real3 edge_lengths(world.edge_lengths());
     const molecule_info_type info(world.get_molecule_info(sp));
 
     for (int i(0); i < N; ++i)

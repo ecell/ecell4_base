@@ -54,6 +54,7 @@ cdef extern from "ecell4/spatiocyte/SpatiocyteWorld.hpp" namespace "ecell4::spat
         # bool on_structure(Cpp_Voxel&)
         bool on_structure(Cpp_Species&, Integer)
 
+        void set_value(Cpp_Species&, Real)
         Real get_value(Cpp_Species&)
         Real get_value_exact(Cpp_Species&)
         Integer num_particles()
@@ -111,7 +112,7 @@ cdef extern from "ecell4/spatiocyte/SpatiocyteWorld.hpp" namespace "ecell4::spat
         Integer global2private(Cpp_Integer3)
         Cpp_Real3 global2position(Cpp_Integer3)
         Cpp_Integer3 position2global(Cpp_Real3)
-        Integer add_structure(Cpp_Species&, shared_ptr[Cpp_Shape])
+        Integer add_structure(Cpp_Species&, shared_ptr[Cpp_Shape]) except +
         void add_molecules(Cpp_Species& sp, Integer num, shared_ptr[Cpp_Shape])
 
     cdef Cpp_SpatiocyteWorld* create_spatiocyte_world_cell_list_impl_alias(
@@ -155,9 +156,9 @@ cdef extern from "ecell4/spatiocyte/SpatiocyteSimulator.hpp" namespace "ecell4::
         vector[pair[Cpp_ReactionRule, Cpp_ReactionInfo]] last_reactions()
         shared_ptr[Cpp_Model] model()
         shared_ptr[Cpp_SpatiocyteWorld] world()
-        void run(Real)
-        void run(Real, shared_ptr[Cpp_Observer])
-        void run(Real, vector[shared_ptr[Cpp_Observer]])
+        void run(Real) except +
+        void run(Real, shared_ptr[Cpp_Observer]) except +
+        void run(Real, vector[shared_ptr[Cpp_Observer]]) except +
 
 ## SpatiocyteSimulator
 #  a python wrapper for Cpp_SpatiocyteSimulator

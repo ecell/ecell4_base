@@ -91,6 +91,9 @@ cdef class ReactionInfo:
             inc(it)
         return retval
 
+    def __reduce__(self):
+        return (ReactionInfo, (self.t(), self.reactants(), self.products()))
+
 cdef ReactionInfo ReactionInfo_from_Cpp_ReactionInfo(Cpp_ReactionInfo* ri):
     cdef Cpp_ReactionInfo *new_obj = new Cpp_ReactionInfo(<Cpp_ReactionInfo> deref(ri))
     r = ReactionInfo(0, [], [])
@@ -219,6 +222,21 @@ cdef class EGFRDWorld:
         """
         cdef Cpp_Real3 lengths = self.thisptr.get().actual_lengths()
         return Real3_from_Cpp_Real3(address(lengths))
+
+    def set_value(self, Species sp, Real value):
+        """set_value(sp, value)
+
+        Set the value of the given species.
+
+        Parameters
+        ----------
+        sp : Species
+            a species whose value you set
+        value : Real
+            a value set
+
+        """
+        self.thisptr.get().set_value(deref(sp.thisptr), value)
 
     def get_value(self, Species sp):
         """get_value(sp) -> Real
@@ -654,7 +672,7 @@ cdef class EGFRDWorld:
             a model to bind
 
         """
-        self.thisptr.get().bind_to(deref(Cpp_Model_from_Model(m)))
+        self.thisptr.get().bind_to(Cpp_Model_from_Model(m))
 
     def rng(self):
         """Return a random number generator object."""
@@ -702,7 +720,7 @@ cdef class EGFRDSimulator:
             if isinstance(args[1], EGFRDWorld):
                 self.thisptr = new Cpp_EGFRDSimulator(
                     deref((<EGFRDWorld>args[1]).thisptr),
-                    deref(Cpp_Model_from_Model(args[0])))
+                    Cpp_Model_from_Model(args[0]))
             else:
                 self.thisptr = new Cpp_EGFRDSimulator(
                     deref((<EGFRDWorld>args[0]).thisptr),
@@ -711,7 +729,7 @@ cdef class EGFRDSimulator:
             if isinstance(args[1], EGFRDWorld):
                 self.thisptr = new Cpp_EGFRDSimulator(
                     deref((<EGFRDWorld>args[1]).thisptr),
-                    deref(Cpp_Model_from_Model(args[0])),
+                    Cpp_Model_from_Model(args[0]),
                     <Integer>args[2])
             else:
                 self.thisptr = new Cpp_EGFRDSimulator(
@@ -721,7 +739,7 @@ cdef class EGFRDSimulator:
             if isinstance(args[1], EGFRDWorld):
                 self.thisptr = new Cpp_EGFRDSimulator(
                     deref((<EGFRDWorld>args[1]).thisptr),
-                    deref(Cpp_Model_from_Model(args[0])),
+                    Cpp_Model_from_Model(args[0]),
                     <Integer>args[2], <Real>args[3])
             else:
                 self.thisptr = new Cpp_EGFRDSimulator(
@@ -730,7 +748,7 @@ cdef class EGFRDSimulator:
         elif len(args) == 5:
             self.thisptr = new Cpp_EGFRDSimulator(
                 deref((<EGFRDWorld>args[1]).thisptr),
-                deref(Cpp_Model_from_Model(args[0])),
+                Cpp_Model_from_Model(args[0]),
                 <Integer>args[2], <Real>args[3], <Real>args[4])
         else:
             raise ValueError(
@@ -879,7 +897,7 @@ cdef EGFRDSimulator EGFRDSimulator_from_Cpp_EGFRDSimulator(Cpp_EGFRDSimulator* s
 ## EGFRDFactory
 #  a python wrapper for Cpp_EGFRDFactory
 cdef class EGFRDFactory:
-    """ A factory class creating a BDWorld instance and a BDSimulator instance.
+    """ A factory class creating a EGFRDWorld instance and a EGFRDSimulator instance.
 
     EGFRDFactory(matrix_sizes=None, rng=None, dissociation_retry_moves,
                  bd_dt_factor, user_max_shell_size)
@@ -1000,7 +1018,7 @@ cdef class EGFRDFactory:
         else:
             return EGFRDWorld_from_Cpp_EGFRDWorld(
                 shared_ptr[Cpp_EGFRDWorld](self.thisptr.create_world(
-                    deref(Cpp_Model_from_Model(arg1)))))
+                    Cpp_Model_from_Model(arg1))))
 
     def create_simulator(self, arg1, EGFRDWorld arg2=None):
         """create_simulator(arg1, arg2) -> EGFRDSimulator
@@ -1031,7 +1049,7 @@ cdef class EGFRDFactory:
         else:
             return EGFRDSimulator_from_Cpp_EGFRDSimulator(
                 self.thisptr.create_simulator(
-                    deref(Cpp_Model_from_Model(arg1)), deref(arg2.thisptr)))
+                    Cpp_Model_from_Model(arg1), deref(arg2.thisptr)))
 
 ## BDSimulator
 #  a python wrapper for Cpp_BDSimulator
@@ -1067,7 +1085,7 @@ cdef class BDSimulator:
             if isinstance(args[1], EGFRDWorld):
                 self.thisptr = new Cpp_BDSimulator(
                     deref((<EGFRDWorld>args[1]).thisptr),
-                    deref(Cpp_Model_from_Model(args[0])))
+                    Cpp_Model_from_Model(args[0]))
             else:
                 self.thisptr = new Cpp_BDSimulator(
                     deref((<EGFRDWorld>args[0]).thisptr),
@@ -1076,7 +1094,7 @@ cdef class BDSimulator:
             if isinstance(args[1], EGFRDWorld):
                 self.thisptr = new Cpp_BDSimulator(
                     deref((<EGFRDWorld>args[1]).thisptr),
-                    deref(Cpp_Model_from_Model(args[0])),
+                    Cpp_Model_from_Model(args[0]),
                     <Real>args[2])
             else:
                 self.thisptr = new Cpp_BDSimulator(
@@ -1085,7 +1103,7 @@ cdef class BDSimulator:
         elif len(args) == 4:
             self.thisptr = new Cpp_BDSimulator(
                 deref((<EGFRDWorld>args[1]).thisptr),
-                deref(Cpp_Model_from_Model(args[0])),
+                Cpp_Model_from_Model(args[0]),
                 <Real>args[2], <Integer>args[3])
         else:
             raise ValueError(
@@ -1338,7 +1356,7 @@ cdef class BDFactory:
         else:
             return EGFRDWorld_from_Cpp_EGFRDWorld(
                 shared_ptr[Cpp_EGFRDWorld](self.thisptr.create_world(
-                    deref(Cpp_Model_from_Model(arg1)))))
+                    Cpp_Model_from_Model(arg1))))
 
     def create_simulator(self, arg1, EGFRDWorld arg2=None):
         """create_simulator(arg1, arg2) -> BDSimulator
@@ -1369,4 +1387,4 @@ cdef class BDFactory:
         else:
             return BDSimulator_from_Cpp_BDSimulator(
                 self.thisptr.create_simulator(
-                    deref(Cpp_Model_from_Model(arg1)), deref(arg2.thisptr)))
+                    Cpp_Model_from_Model(arg1), deref(arg2.thisptr)))

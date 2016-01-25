@@ -52,7 +52,13 @@ Real GSLRandomNumberGenerator::uniform(Real min, Real max)
 
 Integer GSLRandomNumberGenerator::uniform_int(Integer min, Integer max)
 {
-    const Integer n(max - min + 1);
+    if (max < min)
+    {
+        throw std::invalid_argument(
+            "the max value must be larger than the min value.");
+    }
+
+    const unsigned long int n(max - min + 1);
     const unsigned long int range(rng_->type->max - rng_->type->min);
 
     if (n <= range)

@@ -49,6 +49,7 @@ cdef extern from "ecell4/meso/MesoscopicWorld.hpp" namespace "ecell4::meso":
         Cpp_Real3 actual_lengths()
         Cpp_Integer3 matrix_sizes()
         Cpp_Real3 subvolume_edge_lengths()
+        void set_value(Cpp_Species&, Real)
         Real get_value(Cpp_Species&)
         Real get_value_exact(Cpp_Species&)
         Integer num_molecules(Cpp_Species &)
@@ -66,7 +67,7 @@ cdef extern from "ecell4/meso/MesoscopicWorld.hpp" namespace "ecell4::meso":
         void remove_molecules(Cpp_Species &sp, Integer &num, Cpp_Integer3)
         void add_molecules(Cpp_Species &sp, Integer &num)
         void add_molecules(Cpp_Species &sp, Integer &num, shared_ptr[Cpp_Shape])
-        void add_structure(Cpp_Species&, shared_ptr[Cpp_Shape])
+        void add_structure(Cpp_Species&, shared_ptr[Cpp_Shape]) except+
         Real get_volume(Cpp_Species&)
         Real get_occupancy(Cpp_Species&, Integer&)
         Real get_occupancy(Cpp_Species&, Cpp_Integer3&)
@@ -114,9 +115,9 @@ cdef extern from "ecell4/meso/MesoscopicSimulator.hpp" namespace "ecell4::meso":
         # Cpp_GSLRandomNumberGenerator& rng()
         shared_ptr[Cpp_Model] model()
         shared_ptr[Cpp_MesoscopicWorld] world()
-        void run(Real)
-        void run(Real, shared_ptr[Cpp_Observer])
-        void run(Real, vector[shared_ptr[Cpp_Observer]])
+        void run(Real) except +
+        void run(Real, shared_ptr[Cpp_Observer]) except +
+        void run(Real, vector[shared_ptr[Cpp_Observer]]) except +
 
 ## MesoscopicSimulator
 #  a python wrapper for Cpp_MesoscopicSimulator

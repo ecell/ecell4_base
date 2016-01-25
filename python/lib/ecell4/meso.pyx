@@ -85,6 +85,9 @@ cdef class ReactionInfo:
             inc(it)
         return retval
 
+    def __reduce__(self):
+        return (ReactionInfo, (self.t(), self.reactants(), self.products(), self.coordinate()))
+
 cdef ReactionInfo ReactionInfo_from_Cpp_ReactionInfo(Cpp_ReactionInfo* ri):
     cdef Cpp_ReactionInfo *new_obj = new Cpp_ReactionInfo(<Cpp_ReactionInfo> deref(ri))
     r = ReactionInfo(0, [], [], 0)
@@ -250,6 +253,21 @@ cdef class MesoscopicWorld:
 
         """
         return self.thisptr.get().get_value_exact(deref(sp.thisptr))
+
+    def set_value(self, Species sp, Real value):
+        """set_value(sp, value)
+
+        Set the value of the given species.
+
+        Parameters
+        ----------
+        sp : Species
+            a species whose value you set
+        value : Real
+            a value set
+
+        """
+        self.thisptr.get().set_value(deref(sp.thisptr), value)
 
     def num_subvolumes(self, sp = None):
         """num_subvolumes(sp=None) -> Integer
@@ -740,7 +758,7 @@ cdef class MesoscopicWorld:
             a model to bind
 
         """
-        self.thisptr.get().bind_to(deref(Cpp_Model_from_Model(m)))
+        self.thisptr.get().bind_to(Cpp_Model_from_Model(m))
 
     def rng(self):
         """Return a random number generator object."""
@@ -792,7 +810,7 @@ cdef class MesoscopicSimulator:
                 deref((<MesoscopicWorld>m).thisptr))
         else:
             self.thisptr = new Cpp_MesoscopicSimulator(
-                deref(Cpp_Model_from_Model(m)), deref(w.thisptr))
+                Cpp_Model_from_Model(m), deref(w.thisptr))
 
     def __dealloc__(self):
         del self.thisptr
@@ -1002,7 +1020,7 @@ cdef class MesoscopicFactory:
         if arg1 is None:
             return MesoscopicWorld_from_Cpp_MesoscopicWorld(
                 shared_ptr[Cpp_MesoscopicWorld](
-                    self.thisptr.create_world(deref((<Real3>arg1).thisptr))))
+                    self.thisptr.create_world()))
         elif isinstance(arg1, Real3):
             return MesoscopicWorld_from_Cpp_MesoscopicWorld(
                 shared_ptr[Cpp_MesoscopicWorld](
@@ -1013,7 +1031,7 @@ cdef class MesoscopicFactory:
         else:
             return MesoscopicWorld_from_Cpp_MesoscopicWorld(
                 shared_ptr[Cpp_MesoscopicWorld](self.thisptr.create_world(
-                    deref(Cpp_Model_from_Model(arg1)))))
+                    Cpp_Model_from_Model(arg1))))
 
     def create_simulator(self, arg1, MesoscopicWorld arg2=None):
         """create_simulator(arg1, arg2) -> MesoscopicSimulator
@@ -1044,4 +1062,4 @@ cdef class MesoscopicFactory:
         else:
             return MesoscopicSimulator_from_Cpp_MesoscopicSimulator(
                 self.thisptr.create_simulator(
-                    deref(Cpp_Model_from_Model(arg1)), deref(arg2.thisptr)))
+                    Cpp_Model_from_Model(arg1), deref(arg2.thisptr)))

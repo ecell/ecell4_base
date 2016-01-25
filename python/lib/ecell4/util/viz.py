@@ -1,5 +1,5 @@
 """ecell4.util.viz: Visualizer of particles based on D3.js, THREE.js
-and Elegans.1
+and Elegans.
 """
 
 import os
@@ -11,6 +11,331 @@ import random
 import types
 from tempfile import NamedTemporaryFile
 
+from .vizstyles import default_color_scale, matplotlib_color_scale, elegans_color_scale
+
+
+def __on_ipython_notebook():
+    try:
+        import IPython.terminal.interactiveshell
+        if isinstance(get_ipython(), IPython.terminal.interactiveshell.TerminalInteractiveShell):
+            return False
+    except ImportError:
+        return False
+    except NameError:
+        return False
+    return True
+
+def plot_number_observer(*args, **kwargs):
+    """
+    Generate a plot from NumberObservers and show it.
+    See plot_number_observer_with_matplotlib and _with_nya for details.
+
+    Parameters
+    ----------
+    obs : NumberObserver (e.g. FixedIntervalNumberObserver)
+    interactive : bool, default False
+        Choose a visualizer. If False, show the plot with matplotlib.
+        If True (only available on IPython Notebook), show it with nyaplot.
+
+    Examples
+    --------
+    >>> plot_number_observer(obs1)
+    >>> plot_number_observer(obs1, interactive=True)
+
+    """
+    interactive = kwargs.pop('interactive', False)
+    if interactive:
+        plot_number_observer_with_nya(*args, **kwargs)
+    # elif __on_ipython_notebook():
+    #     kwargs['to_png'] = True
+    #     plot_number_observer_with_nya(*args, **kwargs)
+    else:
+        if kwargs.pop('to_png', None) is not None:
+            #XXX: Remove an option available only on nyaplot for the consistency
+            import warnings
+            warnings.warn(
+                "An option 'to_png' is not available with matplotlib. Just ignored.")
+        plot_number_observer_with_matplotlib(*args, **kwargs)
+
+def plot_world(*args, **kwargs):
+    """
+    Generate a plot from received instance of World and show it.
+    See also plot_world_with_elegans and plot_world_with_matplotlib.
+
+    Parameters
+    ----------
+    world : World or str
+        World or a HDF5 filename to render.
+    interactive : bool, default True
+        Choose a visualizer. If False, show the plot with matplotlib.
+        If True (only available on IPython Notebook), show it with elegans.
+
+    Examples
+    --------
+    >>> plot_world(w)
+    >>> plot_world(w, interactive=False)
+
+    """
+    interactive = kwargs.pop('interactive', True)
+    if interactive:
+        plot_world_with_elegans(*args, **kwargs)
+    else:
+        plot_world_with_matplotlib(*args, **kwargs)
+
+def plot_movie(*args, **kwargs):
+    """
+    Generate a movie from received instances of World and show them.
+    See also plot_movie_with_elegans and plot_movie_with_matplotlib.
+
+    Parameters
+    ----------
+    worlds : list of World
+        Worlds to render.
+    interactive : bool, default True
+        Choose a visualizer. If False, show the plot with matplotlib.
+        If True (only available on IPython Notebook), show it with elegans.
+
+    """
+    interactive = kwargs.pop('interactive', False)
+    if interactive:
+        plot_movie_with_elegans(*args, **kwargs)
+    else:
+        plot_movie_with_matplotlib(*args, **kwargs)
+
+def plot_trajectory(*args, **kwargs):
+    """
+    Generate a plot from received instance of TrajectoryObserver and show it
+    See also plot_trajectory_with_elegans and plot_trajectory_with_matplotlib.
+
+    Parameters
+    ----------
+    obs : TrajectoryObserver
+        TrajectoryObserver to render.
+    interactive : bool, default True
+        Choose a visualizer. If False, show the plot with matplotlib.
+        If True (only available on IPython Notebook), show it with elegans.
+
+    Examples
+    --------
+    >>> plot_trajectory(obs)
+    >>> plot_trajectory(obs, interactive=False)
+
+    """
+    interactive = kwargs.pop('interactive', True)
+    if interactive:
+        plot_trajectory_with_elegans(*args, **kwargs)
+    else:
+        plot_trajectory_with_matplotlib(*args, **kwargs)
+
+def plot_number_observer_with_matplotlib(*args, **kwargs):
+    """
+    Generate a plot from NumberObservers and show it on IPython notebook
+    with matplotlib.
+
+    Parameters
+    ----------
+    obs : NumberObserver (e.g. FixedIntervalNumberObserver)
+    fmt : str, optional
+    opt : dict, optional
+        matplotlib plot options.
+
+    Examples
+    --------
+    >>> plot_number_observer(obs1)
+    >>> plot_number_observer(obs1, 'o')
+    >>> plot_number_observer(obs1, obs2, obs3, {'linewidth': 2})
+    >>> plot_number_observer(obs1, 'k-', obs2, 'k--')
+
+    """
+    import matplotlib.pylab as plt
+    import numpy
+    import collections
+
+    special_keys = ("xlim", "ylim", "xlabel", "ylabel", "legend", "x", "y")
+    plot_opts = {key: value for key, value in kwargs.items()
+                 if key not in special_keys}
+
+    if 'axes.prop_cycle' in plt.rcParams.keys():
+        color_cycle = [prop['color'] for prop in plt.rcParams['axes.prop_cycle']]
+    else:
+        color_cycle = plt.rcParams['axes.color_cycle']
+
+    if "y" in kwargs.keys() and isinstance(kwargs["y"], str):
+        kwargs["y"] = (kwargs["y"], )
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+
+    if len(args) > 1 and isinstance(args[1], str):
+        if len(args) % 2 == 0:
+            observers = [(args[i], args[i + 1]) for i in range(0, len(args), 2)]
+        else:
+            observers = [(args[i], args[i + 1]) for i in range(0, len(args) - 1, 2)]
+            observers.append(args[-1], None)
+    else:
+        observers = [(obs, None) for obs in args]
+
+    color_map = {}
+    data, xidx = None, 0
+    for obs, fmt in observers:
+        if isinstance(obs, types.FunctionType):
+            if data is None:
+                raise ValueError("A function must be given after an observer.")
+            y = [obs(xi) for xi in data[xidx]]
+            opts = plot_opts.copy()
+            label = obs.__name__
+            opts["label"] = label
+            if label not in color_map.keys():
+                color_map[label] = color_cycle[len(color_map) % len(color_cycle)]
+                opts["label"] = label
+            opts["color"] = color_map[label]
+            if fmt is None:
+                ax.plot(data[xidx], y, **opts)
+            else:
+                ax.plot(data[xidx], y, fmt, **opts)
+            continue
+
+        data = numpy.array(obs.data()).T
+
+        try:
+            err = obs.error().T
+        except AttributeError:
+            err = None
+
+        if "x" in kwargs.keys():
+            targets = [sp.serial() for sp in obs.targets()]
+            if kwargs["x"] not in targets:
+                raise ValueError("[{0}] given as 'x' was not found.".fomrat(kwargs["x"]))
+            xidx = targets.index(kwargs["x"]) + 1
+        else:
+            xidx = 0
+
+        if "y" in kwargs.keys():
+            targets = [sp.serial() for sp in obs.targets()]
+            targets = [(targets.index(serial), serial)
+                       for serial in kwargs["y"] if serial in targets]
+        else:
+            targets = [sp.serial() for sp in obs.targets()]
+            targets = list(enumerate(targets))
+            targets.sort(key=lambda x: x[1])
+
+        for idx, serial in targets:
+            opts = plot_opts.copy()
+
+            label = serial
+            if len(label) > 0 and label[0] == '_':
+                label = '$\_$' + label[1:]  # XXX: lazy escaping for a special character
+            if label not in color_map.keys():
+                color_map[label] = color_cycle[len(color_map) % len(color_cycle)]
+                opts["label"] = label
+            opts["color"] = color_map[label]
+
+            if err is None:
+                if fmt is None:
+                    ax.plot(data[xidx], data[idx + 1], **opts)
+                else:
+                    ax.plot(data[xidx], data[idx + 1], fmt, **opts)
+            else:
+                if fmt is None:
+                    ax.errorbar(data[xidx], data[idx + 1],
+                        xerr=(None if xidx == 0 else err[xidx]), yerr=err[idx + 1],
+                        **opts)
+                else:
+                    ax.errorbar(data[xidx], data[idx + 1],
+                        xerr=(None if xidx == 0 else err[xidx]), yerr=err[idx + 1],
+                        fmt=fmt, **opts)
+
+    if "legend" not in kwargs.keys() or kwargs["legend"]:
+        ax.legend(*ax.get_legend_handles_labels(), loc="best", shadow=True)
+    if "xlabel" in kwargs.keys():
+        ax.set_xlabel(kwargs["xlabel"])
+    elif "x" in kwargs.keys():
+        ax.set_xlabel("The Number of Molecules [{0}]".format(kwargs["x"]))
+    else:
+        ax.set_xlabel("Time")
+    if "ylabel" in kwargs.keys():
+        ax.set_ylabel(kwargs["ylabel"])
+    else:
+        ax.set_ylabel("The Number of Molecules")
+    if "xlim" in kwargs.keys():
+        ax.set_xlim(kwargs["xlim"])
+    if "ylim" in kwargs.keys():
+        ax.set_ylim(kwargs["ylim"])
+    plt.show()
+
+def plot_number_observer_with_nya(obs, config={}, width=600, height=400, x=None, y=None, to_png=False):
+    """
+    Generate a plot from NumberObservers and show it on IPython notebook
+    with nyaplot.
+
+    Parameters
+    ----------
+    obs : NumberObserver (e.g. FixedIntervalNumberObserver)
+    config : dict, optional
+        A config data for coloring. The dictionary will be updated during this plot.
+    width : int, optional
+    height : int, optional
+    x : str, optional
+        A serial for x-axis. If None, x-axis corresponds time.
+    y : str or list of str
+        Serials for y axis.
+
+    """
+    from IPython.core.display import display, HTML
+    import numpy
+
+    config = {}
+    color_scale = default_color_scale(config=config)
+
+    data1, data2 = [], []
+    data = numpy.array(obs.data())
+
+    if x is None:
+        xidx = 0
+    else:
+        tmp = [sp.serial() for sp in obs.targets()]
+        if x not in tmp:
+            raise ValueError("[{0}] given as 'x' was not found.".fomrat(x))
+        xidx = tmp.index(x) + 1
+
+    if y is None:
+        targets = [sp.serial() for sp in obs.targets()]
+        targets = list(enumerate(targets))
+        targets.sort(key=lambda x: x[1])
+    else:
+        if isinstance(y, str):
+            y = (y, )
+        targets = [sp.serial() for sp in obs.targets()]
+        targets = [(targets.index(serial), serial)
+                   for serial in y if serial in targets]
+
+    for line in data:
+        tmp = {"x": line[xidx]}
+        for i, (idx, serial) in enumerate(targets):
+            tmp["y{0}".format(i + 1)] = line[idx + 1]
+        data1.append(tmp)
+    for i, (idx, serial) in enumerate(targets):
+        label = serial
+        tmp = {"type": "line", "data": "data1",
+               "options": {"x": "x", "y": "y{0}".format(i + 1),
+                           "stroke_width": 2, "title": label,
+                           "color": color_scale.get_color(label)}}
+        data2.append(tmp)
+
+    xmin, xmax = data.T[xidx].min(), data.T[xidx].max()
+    yview = data.T.take([idx + 1 for idx, serial in targets], axis=0)
+    ymin, ymax = yview.min(), yview.max()
+
+    model = {
+        "data": {"data1": data1},
+        "panes": [{"type": 'rectangular',
+                   "diagrams": data2,
+                   "options": {"width": width, "height": height, "xrange": [xmin, xmax],
+                               "yrange": [ymin, ymax], "legend": True, "zoom": True}}]}
+    model_id = 'viz{0:s}'.format(str(uuid.uuid4()))
+    display(HTML(generate_html(
+        {'model': json.dumps(model), 'model_id': model_id, 'to_png': json.dumps(to_png)},
+        '/templates/nya.tmpl')))
 
 def __parse_world(
         world, radius=None, species_list=None, max_count=None,
@@ -65,7 +390,6 @@ def __parse_world(
 
     return species
 
-
 def __get_range_of_world(world):
     edge_lengths = world.edge_lengths()
     max_length = max(tuple(edge_lengths))
@@ -79,8 +403,65 @@ def __get_range_of_world(world):
 
     return {'x': rangex, 'y': rangey, 'z': rangez}
 
+def __get_range_of_trajectories(data, plot_range=None):
+    from ecell4 import Real3
 
-def plot_movie(
+    if plot_range is None:
+        if len(data) == 0:
+            xmin, xmax, ymin, ymax, zmin, zmax = 0, 1, 0, 1, 0, 1
+        else:
+            xmin, xmax, ymin, ymax, zmin, zmax = None, None, None, None, None, None
+
+            for i, traj in enumerate(data):
+                xarr, yarr, zarr = [], [], []
+                for pos in traj:
+                    xarr.append(pos[0])
+                    yarr.append(pos[1])
+                    zarr.append(pos[2])
+
+                if xmin is None:
+                    if len(traj) > 0:
+                        xmin, xmax = min(xarr), max(xarr)
+                        ymin, ymax = min(yarr), max(yarr)
+                        zmin, zmax = min(zarr), max(zarr)
+                else:
+                    xmin, xmax = min([xmin] + xarr), max([xmax] + xarr)
+                    ymin, ymax = min([ymin] + yarr), max([ymax] + yarr)
+                    zmin, zmax = min([zmin] + zarr), max([zmax] + zarr)
+
+        max_length = max(xmax - xmin, ymax - ymin, zmax - zmin)
+        rangex = [(xmin + xmax - max_length) * 0.5,
+                  (xmin + xmax + max_length) * 0.5]
+        rangey = [(ymin + ymax - max_length) * 0.5,
+                  (ymin + ymax + max_length) * 0.5]
+        rangez = [(zmin + zmax - max_length) * 0.5,
+                  (zmin + zmax + max_length) * 0.5]
+
+        return {'x': rangex, 'y': rangey, 'z': rangez}
+    elif isinstance(plot_range, dict):
+        return plot_range
+    elif isinstance(plot_range, (list, tuple)):
+        if len(plot_range) != 3:
+            raise ValueError(
+                'The size of plot_range [{}] must be 3.'.format(len(plot_range)))
+        elif (isinstance(plot_range[0], (list, tuple)) and
+                isinstance(plot_range[1], (list, tuple)) and
+                isinstance(plot_range[2], (list, tuple))):
+            return {'x': plot_range[0], 'y': plot_range[1], 'z': plot_range[2]}
+        else:
+            return {'x': (0, plot_range[0]),
+                    'y': (0, plot_range[1]),
+                    'z': (0, plot_range[2])}
+    elif isinstance(plot_range, Real3):
+        return {'x': (0, plot_range[0]),
+                'y': (0, plot_range[1]),
+                'z': (0, plot_range[2])}
+    else:
+        raise ValueError(
+            'plot_range must be list, tuple or dict. [{}] was given.'.format(
+                repr(plot_range)))
+
+def plot_movie_with_elegans(
         worlds, radius=None, width=500, height=500, config={}, grid=False,
         species_list=None):
     """
@@ -131,7 +512,7 @@ def plot_movie(
     }
 
     model_id = '"movie' + str(uuid.uuid4()) + '"'
-    color_scale = ColorScale(config=config)
+    color_scale = default_color_scale(config=config)
 
     display(HTML(generate_html({
         'model_id': model_id,
@@ -143,11 +524,11 @@ def plot_movie(
         'options': json.dumps(options)
     }, '/templates/movie.tmpl')))
 
-def plot_world(
+def plot_world_with_elegans(
         world, radius=None, width=350, height=350, config={}, grid=True,
         wireframe=False, species_list=None, debug=None, max_count=1000,
         camera_position=(-22, 23, 32), camera_rotation=(-0.6, 0.5, 0.6),
-        predicator=None):
+        return_id=False, predicator=None):
     """
     Generate a plot from received instance of World and show it on IPython notebook.
     This method returns the instance of dict that indicates color setting
@@ -156,8 +537,8 @@ def plot_world(
 
     Parameters
     ----------
-    world : World
-        World to render.
+    world : World or str
+        World or a HDF5 filename to render.
     radius : float, default None
         If this value is set, all particles in the world will be rendered
         as if their radius are the same.
@@ -187,12 +568,18 @@ def plot_world(
     camera_position : tuple, default (-22, 23, 32)
     camera_rotaiton : tuple, default (-0.6, 0.5, 0.6)
         Initial position and rotation of camera.
+    return_id : bool, default False
+        If True, return a model id, which is required for `to_png` function.
 
     """
     from IPython.core.display import display, HTML
+    from .simulation import load_world
+
+    if isinstance(world, str):
+        world = load_world(world)
 
     species = __parse_world(world, radius, species_list, max_count, predicator)
-    color_scale = ColorScale(config=config)
+    color_scale = default_color_scale(config=config)
     plots = []
 
     for species_info in species:
@@ -226,7 +613,7 @@ def plot_world(
             'range': __get_range_of_world(world),
             'autorange': False,
             'grid': grid,
-            'save_image': True
+            'save_image': False
         }
     }
 
@@ -239,6 +626,64 @@ def plot_world(
         'px': camera_position[0], 'py': camera_position[1], 'pz': camera_position[2],
         'rx': camera_rotation[0], 'ry': camera_rotation[1], 'rz': camera_rotation[2]},
         '/templates/particles.tmpl')))
+
+    if return_id:
+        return model_id
+
+def to_png(plot_id):
+    from IPython.display import display, HTML
+    my_uuid = "\"png" + str(uuid.uuid4()) + "\""
+
+    js = """
+<script>
+ function searchCell(uuid){
+   var n = IPython.notebook.ncells();
+   for(var i=0; i<n; i++){
+     var cell = IPython.notebook.get_cell(i);
+     if(typeof cell.output_area != "undefined"){
+       var outputs = cell.output_area.outputs.filter(function(out){
+console.log("Hi!");
+         var html = out.data["text/html"];
+         if(typeof html == "undefined")return false;
+         if(html.includes(uuid))return true;
+         return false;
+       });
+       if(outputs.length>0)return cell;
+     }
+   }
+   return null;
+ }
+
+ var vis_id = %s;
+ var my_uuid = %s;
+ var vis_div = d3.select("#" + vis_id);
+ var my_div =  d3.select("#" + my_uuid);
+
+ var canvas = vis_div.select("canvas").node();
+ var context = canvas.getContext("experimental-webgl", {preserveDrawingBuffer: true});
+ var uri = canvas.toDataURL('image/png');
+
+ my_div.append("img").attr("src", uri);
+
+ window.setTimeout(function(){
+ if(typeof window.IPython != "undefined"){
+   try{
+     var html = my_div.node().outerHTML;
+     var cell = searchCell(my_uuid);
+     if(cell == null)throw new Error("The cell whose id is " + my_uuid + " not found.");
+     cell.output_area.outputs[0].data["text/html"] = html;
+   }
+   catch(e){
+     console.warn("Maybe the front-end API of Jupyter has changed. message:" + e.message);
+   }
+ }
+}, 0);
+ 
+</script>
+<div id=%s></div>
+    """%(plot_id, my_uuid, my_uuid)
+    display(HTML(js))
+
 
 def plot_dense_array(
         arr, length=256, ranges=None, colors=["#a6cee3", "#fb9a99"], grid=False, camera_position=(-22, 23, 32), camera_rotation=(-0.6, 0.5, 0.6)):
@@ -359,27 +804,11 @@ def generate_html(keywords, tmpl_path):
     html = template.render(**keywords)
     return html
 
-plot_range_flag = False
-plot_range = [0., 0., 0., 0., 0., 0.,]
 
-def set_plot_range(x_min, x_max, y_min, y_max, z_min, z_max):
-    global plot_range_flag
-    global plot_range
-    plot_range_flag = True
-    plot_range[0] = x_min
-    plot_range[1] = x_max
-    plot_range[2] = y_min
-    plot_range[3] = y_max
-    plot_range[4] = z_min
-    plot_range[5] = z_max
-    
-def unset_plot_range():
-    global plot_range_flag
-    plot_range_flag = False
-
-def plot_trajectory(
+def plot_trajectory_with_elegans(
         obs, width=350, height=350, config={}, grid=True, wireframe=False,
-        max_count=10, camera_position=(-22, 23, 32), camera_rotation=(-0.6, 0.5, 0.6)):
+        max_count=10, camera_position=(-22, 23, 32), camera_rotation=(-0.6, 0.5, 0.6),
+        plot_range=None):
     """
     Generate a plot from received instance of TrajectoryObserver and show it
     on IPython notebook.
@@ -399,11 +828,14 @@ def plot_trajectory(
     camera_position : tuple, default (-30, 31, 42)
     camera_rotaiton : tuple, default (-0.6, 0.5, 0.6)
         Initial position and rotation of camera.
+    plot_range : tuple, default None
+        Range for plotting. A triplet of pairs suggesting (rangex, rangey, rangez).
+        If None, the minimum volume containing all the trajectories is used.
 
     """
     from IPython.core.display import display, HTML
 
-    color_scale = ColorScale(config=config)
+    color_scale = default_color_scale(config=config)
     plots = []
 
     xmin, xmax, ymin, ymax, zmin, zmax = None, None, None, None, None, None
@@ -440,28 +872,27 @@ def plot_trajectory(
                 'colors': [c, c]}
         })
 
-    if xmin is None:
-        xmin, xmax, ymin, ymax, zmin, zmax = 0, 1, 0, 1, 0, 1
+    if plot_range is None:
+        if xmin is None:
+            xmin, xmax, ymin, ymax, zmin, zmax = 0, 1, 0, 1, 0, 1
 
-    max_length = max(xmax - xmin, ymax - ymin, zmax - zmin)
-    rangex = [(xmin + xmax - max_length) * 0.5,
-              (xmin + xmax + max_length) * 0.5]
-    rangey = [(ymin + ymax - max_length) * 0.5,
-              (ymin + ymax + max_length) * 0.5]
-    rangez = [(zmin + zmax - max_length) * 0.5,
-              (zmin + zmax + max_length) * 0.5]
-    if plot_range_flag == True:
-        print "set specified range ", plot_range
-        rangex = [plot_range[0], plot_range[1]]
-        rangey = [plot_range[2], plot_range[3]]
-        rangez = [plot_range[4], plot_range[5]]
+        max_length = max(xmax - xmin, ymax - ymin, zmax - zmin)
+        rangex = [(xmin + xmax - max_length) * 0.5,
+                  (xmin + xmax + max_length) * 0.5]
+        rangey = [(ymin + ymax - max_length) * 0.5,
+                  (ymin + ymax + max_length) * 0.5]
+        rangez = [(zmin + zmax - max_length) * 0.5,
+                  (zmin + zmax + max_length) * 0.5]
+        wrange = {'x': rangex, 'y': rangey, 'z': rangez}
+    else:
+        wrange = __get_range_of_trajectories(None, plot_range)
 
     model = {
         'plots': plots,
         'options': {
             'world_width': width,
             'world_height': height,
-            'range': {'x': rangex, 'y': rangey, 'z': rangez},
+            'range': wrange,
             'autorange': False,
             'grid': grid,
             'save_image': True
@@ -546,265 +977,36 @@ def logo(x=1, y=None):
     h = HTML(template % tuple(base64s + [("<p>%s</p>" % (img_html * x)) * y]))
     display(h)
 
-def plot_number_observer(*args, **kwargs):
-    """
-    Generate a plot from NumberObservers and show it on IPython notebook
-    with matplotlib.
+def anim_to_html(anim, filename=None, fps=6):
+    VIDEO_TAG = """<video controls>
+     <source src="data:video/x-webm;base64,{0}" type="video/webm">
+     Your browser does not support the video tag.
+    </video>"""
+    import base64
 
-    Parameters
-    ----------
-    obs : NumberObserver (e.g. FixedIntervalNumberObserver)
-    fmt : str, optional
-    opt : dict, optional
-        matplotlib plot options.
-
-    Examples
-    --------
-    >>> plot_number_observer(obs1)
-    >>> plot_number_observer(obs1, 'o')
-    >>> plot_number_observer(obs1, obs2, obs3, {'linewidth': 2})
-    >>> plot_number_observer(obs1, 'k-', obs2, 'k--')
-
-    """
-    import matplotlib.pylab as plt
-    import numpy
-    import collections
-
-    special_keys = ("xlim", "ylim", "xlabel", "ylabel", "legend", "x", "y")
-    plot_opts = {key: value for key, value in kwargs.items()
-                 if key not in special_keys}
-    color_cycle = plt.rcParams['axes.color_cycle']
-
-    if "y" in kwargs.keys() and isinstance(kwargs["y"], str):
-        kwargs["y"] = (kwargs["y"], )
-
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-
-    if len(args) > 1 and isinstance(args[1], str):
-        if len(args) % 2 == 0:
-            observers = [(args[i], args[i + 1]) for i in range(0, len(args), 2)]
+    if not hasattr(anim, '_encoded_video'):
+        if filename is None:
+            f = NamedTemporaryFile(suffix='.webm', delete=False)
+            filename = f.name
+            f.close()
+            # anim.save(filename, fps=fps, extra_args=['-vcodec', 'libvpx'])
+            anim.save(filename, fps=fps, codec='libvpx')
+            # anim.save(filename, writer='mencoder', fps=fps, extra_args=['-lavcopts', 'vcodec=libvpx'])
+            video = open(filename, "rb").read()
+            os.remove(filename)
+            # with NamedTemporaryFile(suffix='.webm') as f:
+            #     anim.save(f.name, fps=fps, extra_args=['-vcodec', 'libvpx'])
+            #     video = open(f.name, "rb").read()
         else:
-            observers = [(args[i], args[i + 1]) for i in range(0, len(args) - 1, 2)]
-            observers.append(args[-1], None)
-    else:
-        observers = [(obs, None) for obs in args]
-
-    color_map = {}
-    data, xidx = None, 0
-    for obs, fmt in observers:
-        if isinstance(obs, types.FunctionType):
-            if data is None:
-                raise ValueError("A function must be given after an observer.")
-            y = [obs(xi) for xi in data[xidx]]
-            opts = plot_opts.copy()
-            label = obs.__name__
-            opts["label"] = label
-            if label not in color_map.keys():
-                color_map[label] = color_cycle[len(color_map) % len(color_cycle)]
-                opts["label"] = label
-            opts["color"] = color_map[label]
-            if fmt is None:
-                ax.plot(data[xidx], y, **opts)
-            else:
-                ax.plot(data[xidx], y, fmt, **opts)
-            continue
-
-        data = numpy.array(obs.data()).T
-
-        try:
-            err = obs.error().T
-        except AttributeError:
-            err = None
-
-        if "x" in kwargs.keys():
-            targets = [sp.serial() for sp in obs.targets()]
-            if kwargs["x"] not in targets:
-                raise ValueError("[{0}] given as 'x' was not found.".fomrat(kwargs["x"]))
-            xidx = targets.index(kwargs["x"]) + 1
-        else:
-            xidx = 0
-
-        if "y" in kwargs.keys():
-            targets = [sp.serial() for sp in obs.targets()]
-            targets = [(targets.index(serial), serial)
-                       for serial in kwargs["y"] if serial in targets]
-        else:
-            targets = [sp.serial() for sp in obs.targets()]
-            targets = list(enumerate(targets))
-            targets.sort(key=lambda x: x[1])
-
-        for idx, serial in targets:
-            opts = plot_opts.copy()
-
-            label = serial
-            if len(label) > 0 and label[0] == '_':
-                label = '$\_$' + label[1:]  # XXX: lazy escaping for a special character
-            if label not in color_map.keys():
-                color_map[label] = color_cycle[len(color_map) % len(color_cycle)]
-                opts["label"] = label
-            opts["color"] = color_map[label]
-
-            if err is None:
-                if fmt is None:
-                    ax.plot(data[xidx], data[idx + 1], **opts)
-                else:
-                    ax.plot(data[xidx], data[idx + 1], fmt, **opts)
-            else:
-                if fmt is None:
-                    ax.errorbar(data[xidx], data[idx + 1],
-                        xerr=(None if xidx == 0 else err[xidx]), yerr=err[idx + 1],
-                        **opts)
-                else:
-                    ax.errorbar(data[xidx], data[idx + 1],
-                        xerr=(None if xidx == 0 else err[xidx]), yerr=err[idx + 1],
-                        fmt=fmt, **opts)
-
-    if "legend" not in kwargs.keys() or kwargs["legend"]:
-        ax.legend(*ax.get_legend_handles_labels(), loc="best", shadow=True)
-    if "xlabel" in kwargs.keys():
-        ax.set_xlabel(kwargs["xlabel"])
-    elif "x" in kwargs.keys():
-        ax.set_xlabel("The Number of Molecules [{0}]".format(kwargs["x"]))
-    else:
-        ax.set_xlabel("Time")
-    if "ylabel" in kwargs.keys():
-        ax.set_ylabel(kwargs["ylabel"])
-    else:
-        ax.set_ylabel("The Number of Molecules")
-    if "xlim" in kwargs.keys():
-        ax.set_xlim(kwargs["xlim"])
-    if "ylim" in kwargs.keys():
-        ax.set_ylim(kwargs["ylim"])
-    plt.show()
-
-def plot_number_observer_with_nya(obs, config={}, width=600, height=400, x=None, y=None):
-    """
-    Generate a plot from NumberObservers and show it on IPython notebook
-    with nyaplot.
-
-    Parameters
-    ----------
-    obs : NumberObserver (e.g. FixedIntervalNumberObserver)
-    config : dict, optional
-        A config data for coloring. The dictionary will be updated during this plot.
-    width : int, optional
-    height : int, optional
-    x : str, optional
-        A serial for x-axis. If None, x-axis corresponds time.
-    y : str or list of str
-        Serials for y axis.
-
-    """
-    from IPython.core.display import display, HTML
-    import numpy
-
-    config = {}
-    color_scale = ColorScale(config=config)
-
-    data1, data2 = [], []
-    data = numpy.array(obs.data())
-
-    if x is None:
-        xidx = 0
-    else:
-        tmp = [sp.serial() for sp in obs.targets()]
-        if x not in tmp:
-            raise ValueError("[{0}] given as 'x' was not found.".fomrat(x))
-        xidx = tmp.index(x) + 1
-
-    if y is None:
-        targets = [sp.serial() for sp in obs.targets()]
-        targets = list(enumerate(targets))
-        targets.sort(key=lambda x: x[1])
-    else:
-        if isinstance(y, str):
-            y = (y, )
-        targets = [sp.serial() for sp in obs.targets()]
-        targets = [(targets.index(serial), serial)
-                   for serial in y if serial in targets]
-
-    for line in data:
-        tmp = {"x": line[xidx]}
-        for i, (idx, serial) in enumerate(targets):
-            tmp["y{0}".format(i + 1)] = line[idx + 1]
-        data1.append(tmp)
-    for i, (idx, serial) in enumerate(targets):
-        label = serial
-        tmp = {"type": "line", "data": "data1",
-               "options": {"x": "x", "y": "y{0}".format(i + 1),
-                           "stroke_width": 2, "title": label,
-                           "color": color_scale.get_color(label)}}
-        data2.append(tmp)
-
-    xmin, xmax = data.T[xidx].min(), data.T[xidx].max()
-    yview = data.T.take([idx + 1 for idx, serial in targets], axis=0)
-    ymin, ymax = yview.min(), yview.max()
-
-    model = {
-        "data": {"data1": data1},
-        "panes": [{"type": 'rectangular',
-                   "diagrams": data2,
-                   "options": {"width": width, "height": height, "xrange": [xmin, xmax],
-                               "yrange": [ymin, ymax], "legend": True, "zoom": True}}]}
-    model_id = 'viz{0:s}'.format(uuid.uuid4())
-    display(HTML(generate_html(
-        {'model': json.dumps(model), 'model_id': model_id},
-        '/templates/nya.tmpl')))
-
-class ColorScale:
-    """
-    Color scale for species.
-
-    """
-
-    COLORS = [
-        "#a6cee3", "#1f78b4", "#b2df8a", "#33a02c", "#e31a1c", "#8dd3c7",
-        "#ffffb3", "#bebada", "#fb8072", "#80b1d3", "#fdb462", "#b3de69",
-        "#fccde5", "#d9d9d9", "#bc80bd", "#ccebc5", "#ffed6f"]
-
-    def __init__(self, config={}):
-        """
-        Initialize a color scale
-
-        Parameters
-        ----------
-        config : dict, default {}
-            Dict for configure default colors. Its values are colors unique
-            to each key. Colors included in config will never be used.
-
-        """
-
-        self.config = config
-        self.buffer = ColorScale.COLORS[:]
-
-        for color in self.config.values():
-            if color in self.buffer:
-                self.buffer.remove(color)
-
-    def get_color(self, name):
-        """
-        Get color unique to the recieved name
-
-        Parameters
-        ----------
-        name : string
-            This method returns one color unique to this parameter.
-        """
-
-        if self.config.get(name) is None:
-            self.config[name] = self.buffer.pop(0)
-            if len(self.buffer) == 0:
-                self.buffer = ColorScale.COLORS[:]
-
-        return self.config[name]
-
-    def get_config(self):
-        """Get an instance of dic as the config of colors."""
-        return self.config
+            with open(filename, 'w') as f:
+                anim.save(f.name, fps=fps, extra_args=['-vcodec', 'libvpx'])
+                video = open(f.name, "rb").read()
+        # anim._encoded_video = video.encode("base64")
+        anim._encoded_video = base64.encodestring(video).decode('utf-8')
+    return VIDEO_TAG.format(anim._encoded_video)
 
 def __prepare_mplot3d_with_maplotlib(
-        world, figsize, grid, wireframe, angle):
+        wrange, figsize, grid, wireframe, angle, noaxis):
     from mpl_toolkits.mplot3d import Axes3D
     import matplotlib.pyplot as plt
 
@@ -816,14 +1018,17 @@ def __prepare_mplot3d_with_maplotlib(
         ax.w_xaxis.set_pane_color((0, 0, 0, 0))
         ax.w_yaxis.set_pane_color((0, 0, 0, 0))
         ax.w_zaxis.set_pane_color((0, 0, 0, 0))
+
     ax.grid(grid)
-    wrange = __get_range_of_world(world)
     ax.set_xlim(*wrange['x'])
     ax.set_ylim(*wrange['y'])
     ax.set_zlim(*wrange['z'])
     ax.set_xlabel('X')
     ax.set_ylabel('Y')
     ax.set_zlabel('Z')
+
+    if noaxis:
+        ax.set_axis_off()
 
     if angle is not None:
         ax.azim, ax.elev, ax.dist = angle
@@ -833,9 +1038,9 @@ def __prepare_mplot3d_with_maplotlib(
 def __scatter_world_with_matplotlib(
         world, ax, species_list, marker_size, max_count, **kwargs):
     from ecell4 import Species
-    cmap = ('b', 'g', 'r', 'c', 'm', 'y', 'k')
+    color_scale = matplotlib_color_scale()
 
-    scatters = []
+    scatters, plots = [], []
     for i, name in enumerate(species_list):
         xs, ys, zs = [], [], []
         particles = world.list_particles_exact(Species(name))
@@ -846,17 +1051,28 @@ def __scatter_world_with_matplotlib(
             xs.append(pos[0])
             ys.append(pos[1])
             zs.append(pos[2])
+        c = color_scale.get_color(name)
         scatters.append(
             ax.scatter(
                 xs, ys, zs,
-                marker='o', s=(2 ** marker_size), lw=0, c=cmap[i % len(cmap)],
+                marker='o', s=(2 ** marker_size), lw=0, c=c,
                 label=name, **kwargs))
-    return scatters
+        plots.extend(ax.plot([], [], 'o', c=c, label=name))  #XXX: A dirty hack to show the legends with keeping the 3d transparency effect on scatter
+    return scatters, plots
+
+def __plot_trajectory_with_matplotlib(lines, ax, upto=None, **kwargs):
+    color_scale = default_color_scale()
+    plots = []
+    for i, line in enumerate(lines):
+        plots.append(
+            ax.plot(line[0][: upto], line[1][: upto], line[2][: upto],
+                label=i, color=color_scale.get_color(i), **kwargs)[0])
+    return plots
 
 def plot_world_with_matplotlib(
         world, marker_size=3, figsize=6, grid=True,
-        wireframe=False, species_list=None, max_count=None, angle=None,
-        legend=True, **kwargs):
+        wireframe=False, species_list=None, max_count=1000, angle=None,
+        legend=True, noaxis=False, **kwargs):
     """
     Generate a plot from received instance of World and show it on IPython notebook.
 
@@ -871,7 +1087,7 @@ def plot_world_with_matplotlib(
         Size of the plotting area. Given in inch.
     species_list : array of string, default None
         If set, plot_world will not search the list of species.
-    max_count : Integer, default None
+    max_count : Integer, default 1000
         The maximum number of particles to show for each species.
         None means no limitation.
     angle : tuple, default None
@@ -888,36 +1104,68 @@ def plot_world_with_matplotlib(
             set(species_list), key=species_list.index)  # XXX: pick unique ones
 
     fig, ax = __prepare_mplot3d_with_maplotlib(
-        world, figsize, grid, wireframe, angle)
-    __scatter_world_with_matplotlib(
+        __get_range_of_world(world), figsize, grid, wireframe, angle, noaxis)
+    scatters, plots = __scatter_world_with_matplotlib(
         world, ax, species_list, marker_size, max_count, **kwargs)
+
+    if legend:
+        ax.legend(handles=plots, labels=species_list, loc='best', shadow=True)
+    plt.show()
+
+def plot_trajectory_with_matplotlib(
+        obs, max_count=10, figsize=6, legend=True, angle=None,
+        wireframe=False, grid=True, noaxis=False, plot_range=None, **kwargs):
+    """
+    Generate a plot from received instance of TrajectoryObserver and show it
+    on IPython notebook.
+
+    Parameters
+    ----------
+    obs : TrajectoryObserver
+        TrajectoryObserver to render.
+    max_count : Integer, default 10
+        The maximum number of particles to show. If None, show all.
+    figsize : float, default 6
+        Size of the plotting area. Given in inch.
+    angle : tuple, default None
+        A tuple of view angle which is given as (azim, elev, dist).
+        If None, use default assumed to be (-60, 30, 10).
+    legend : bool, default True
+    plot_range : tuple, default None
+        Range for plotting. A triplet of pairs suggesting (rangex, rangey, rangez).
+        If None, the minimum volume containing all the trajectories is used.
+
+    """
+    import matplotlib.pyplot as plt
+
+    data = obs.data()
+    if max_count is not None and len(data) > max_count:
+        data = random.sample(data, max_count)
+
+    fig, ax = __prepare_mplot3d_with_maplotlib(
+        __get_range_of_trajectories(data, plot_range),
+        figsize, grid, wireframe, angle, noaxis)
+
+    lines = []
+    for i, y in enumerate(data):
+        xarr, yarr, zarr = [], [], []
+        for pos in y:
+            xarr.append(pos[0])
+            yarr.append(pos[1])
+            zarr.append(pos[2])
+
+        lines.append((xarr, yarr, zarr))
+
+    __plot_trajectory_with_matplotlib(lines, ax, **kwargs)
 
     if legend:
         ax.legend(loc='best', shadow=True)
     plt.show()
 
-def anim_to_html(anim, filename=None):
-    VIDEO_TAG = """<video controls>
-     <source src="data:video/x-webm;base64,{0}" type="video/webm">
-     Your browser does not support the video tag.
-    </video>"""
-
-    if not hasattr(anim, '_encoded_video'):
-        if filename is None:
-            with NamedTemporaryFile(suffix='.webm') as f:
-                anim.save(f.name, fps=6, extra_args=['-vcodec', 'libvpx'])
-                video = open(f.name, "rb").read()
-        else:
-            with open(filename, 'w') as f:
-                anim.save(f.name, fps=6, extra_args=['-vcodec', 'libvpx'])
-                video = open(f.name, "rb").read()
-        anim._encoded_video = video.encode("base64")
-    return VIDEO_TAG.format(anim._encoded_video)
-
 def plot_movie_with_matplotlib(
         worlds, marker_size=3, figsize=6, grid=True,
-        wireframe=False, species_list=None, max_count=None, angle=None,
-        interval=50, repeat_delay=3000,
+        wireframe=False, species_list=None, max_count=None, angle=None, noaxis=False,
+        interval=0.16, repeat_delay=3000, stride=1, rotate=None,
         legend=True, output=None, **kwargs):
     """
     Generate a move from the received list of instances of World,
@@ -925,7 +1173,7 @@ def plot_movie_with_matplotlib(
 
     Parameters
     ----------
-    worlds : list
+    worlds : list or FixedIntervalHDF5Observer
         A list of Worlds to render.
     marker_size : float, default 3
         Marker size for all species. Size is passed to scatter function
@@ -940,17 +1188,37 @@ def plot_movie_with_matplotlib(
     angle : tuple, default None
         A tuple of view angle which is given as (azim, elev, dist).
         If None, use default assumed to be (-60, 30, 10).
-    interval : Integer, default 50
+    interval : Integer, default 0.16
         Parameters for matplotlib.animation.ArtistAnimation.
+    stride : Integer, default 1
+        Stride per frame.
+    rotate : tuple, default None
+        A pair of rotation angles, elev and azim, for animation.
+        None means no rotation, same as (0, 0).
     legend : bool, default True
     output : str, default None
 
     """
     import matplotlib.pyplot as plt
     import matplotlib.animation as animation
-    from IPython.display import HTML
+    from IPython.display import display, HTML
+    from ecell4 import Species, FixedIntervalHDF5Observer
+    from .simulation import load_world
 
-    print("Start generating species_list ...")
+    # print("Start generating species_list ...")
+
+    if isinstance(worlds, FixedIntervalHDF5Observer):
+        obs = worlds
+        worlds = []
+        for i in range(0, obs.num_steps(), stride):
+            filename = obs.filename(i)
+            if os.path.isfile(filename):
+                worlds.append(load_world(filename))
+            elif len(worlds) >0:
+                worlds.append(worlds[-1])
+    else:
+        worlds = worlds[:: stride]
+
     if species_list is None:
         species_list = []
         for world in worlds:
@@ -959,12 +1227,11 @@ def plot_movie_with_matplotlib(
             species_list = sorted(
                 set(species_list), key=species_list.index)  # XXX: pick unique ones
 
-    print("Start preparing mplot3d ...")
+    # print("Start preparing mplot3d ...")
 
     fig, ax = __prepare_mplot3d_with_maplotlib(
-        worlds[0], figsize, grid, wireframe, angle)
+        __get_range_of_world(worlds[0]), figsize, grid, wireframe, angle, noaxis)
 
-    from ecell4 import Species
     from mpl_toolkits.mplot3d.art3d import juggle_axes
 
     def _update_plot(i, scatters, worlds, species_list):
@@ -981,22 +1248,127 @@ def plot_movie_with_matplotlib(
                 zs.append(pos[2])
             scatters[i]._offsets3d = juggle_axes(xs, ys, zs, 'z')
 
-    print("Start making animation ...")
+        if rotate is not None:
+            ax.elev += rotate[0]
+            ax.azim += rotate[1]
 
-    cmap = ('b', 'g', 'r', 'c', 'm', 'y', 'k')
+        fig.canvas.draw()
+
+    # print("Start making animation ...")
+
+    color_scale = matplotlib_color_scale()
     scatters = []
     for i, name in enumerate(species_list):
         scatters.append(
             ax.scatter([], [], [], marker='o', s=(2 ** marker_size),
-                       lw=0, c=cmap[i % len(cmap)], label=name))
+                       lw=0, c=color_scale.get_color(name), label=name))
 
     if legend:
         ax.legend(loc='best', shadow=True)
 
     ani = animation.FuncAnimation(
         fig, _update_plot, fargs=(scatters, worlds, species_list),
-        frames=len(worlds), interval=interval, blit=True)
+        frames=len(worlds), interval=interval, blit=False)
 
     plt.close(ani._fig)
-    print("Start generating a movie ...")
-    return HTML(anim_to_html(ani, output))
+    # print("Start generating a movie ...")
+    display(HTML(anim_to_html(ani, output, fps=1.0 / interval)))
+
+def plot_movie_of_trajectory_with_matplotlib(
+        obs, figsize=6, grid=True,
+        wireframe=False, max_count=None, angle=None, noaxis=False,
+        interval=0.16, repeat_delay=3000, stride=1, rotate=None,
+        legend=True, output=None, plot_range=None, **kwargs):
+    """
+    Generate a move from the received list of instances of World,
+    and show it on IPython notebook. This function may require ffmpeg.
+
+    Parameters
+    ----------
+    worlds : list or FixedIntervalHDF5Observer
+        A list of Worlds to render.
+    marker_size : float, default 3
+        Marker size for all species. Size is passed to scatter function
+        as argument, s=(2 ** marker_size).
+    figsize : float, default 6
+        Size of the plotting area. Given in inch.
+    max_count : Integer, default None
+        The maximum number of particles to show for each species.
+        None means no limitation.
+    angle : tuple, default None
+        A tuple of view angle which is given as (azim, elev, dist).
+        If None, use default assumed to be (-60, 30, 10).
+    interval : Integer, default 0.16
+        Parameters for matplotlib.animation.ArtistAnimation.
+    stride : Integer, default 1
+        Stride per frame.
+    rotate : tuple, default None
+        A pair of rotation angles, elev and azim, for animation.
+        None means no rotation, same as (0, 0).
+    legend : bool, default True
+    output : str, default None
+    plot_range : tuple, default None
+        Range for plotting. A triplet of pairs suggesting (rangex, rangey, rangez).
+        If None, the minimum volume containing all the trajectories is used.
+
+    """
+    import matplotlib.pyplot as plt
+    import matplotlib.animation as animation
+    from IPython.display import display, HTML
+    from ecell4 import Species, FixedIntervalHDF5Observer
+    from .simulation import load_world
+    import math
+
+    # print("Taking all data ...")
+
+    data = obs.data()
+    if max_count is not None and len(data) > max_count:
+        data = random.sample(data, max_count)
+
+    lines = []
+    num_frames = 0
+    for i, y in enumerate(data):
+        xarr, yarr, zarr = [], [], []
+        for pos in y:
+            xarr.append(pos[0])
+            yarr.append(pos[1])
+            zarr.append(pos[2])
+
+        lines.append((xarr, yarr, zarr))
+        num_frames = max(num_frames, len(y))
+    num_frames = int(math.ceil(float(num_frames) / stride))
+
+    # print("Start preparing mplot3d ...")
+
+    fig, ax = __prepare_mplot3d_with_maplotlib(
+        __get_range_of_trajectories(data, plot_range),
+        figsize, grid, wireframe, angle, noaxis)
+
+    def _update_plot(i, plots, lines):
+        upto = i * stride
+        for plot, line in zip(plots, lines):
+            plot.set_data(line[0][: upto], line[1][: upto])
+            plot.set_3d_properties(line[2][: upto])
+
+        if rotate is not None:
+            ax.elev += rotate[0]
+            ax.azim += rotate[1]
+
+        fig.canvas.draw()
+
+    # print("Start making animation ...")
+
+    plots = __plot_trajectory_with_matplotlib(lines, ax, 0, **kwargs)
+
+    if legend:
+        ax.legend(loc='best', shadow=True)
+
+    ani = animation.FuncAnimation(
+        fig, _update_plot, fargs=(plots, lines),
+        frames=num_frames, interval=interval, blit=False)
+
+    plt.close(ani._fig)
+    # print("Start generating a movie ...")
+    display(HTML(anim_to_html(ani, output, fps=1.0 / interval)))
+
+plot_movie_of_trajectory = plot_movie_of_trajectory_with_matplotlib  # default

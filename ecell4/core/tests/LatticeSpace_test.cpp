@@ -589,13 +589,13 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_save_and_load)
     H5::H5File fout("data.h5", H5F_ACC_TRUNC);
     boost::scoped_ptr<H5::Group>
         group(new H5::Group(fout.createGroup("LatticeSpace")));
-    space.save(group.get());
+    space.save_hdf5(group.get());
     fout.close();
 
     LatticeSpaceVectorImpl space2(Real3(3e-8, 3e-8, 3e-8), voxel_radius);
     H5::H5File fin("data.h5", H5F_ACC_RDONLY);
     const H5::Group groupin(fin.openGroup("LatticeSpace"));
-    space2.load(groupin);
+    space2.load_hdf5(groupin);
     fin.close();
 
     BOOST_CHECK_EQUAL(space.edge_lengths(), space2.edge_lengths());

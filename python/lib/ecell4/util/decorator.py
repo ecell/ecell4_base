@@ -81,7 +81,7 @@ def generate_ReactionRule(lhs, rhs, k=None):
 
 def traverse_ParseObj(obj, keys):
     reserved_vars = ['_t', 'pi']
-    reserved_funcs = ['exp', 'log', 'sin', 'cos', 'tan', 'asin', 'acos', 'atan']
+    reserved_funcs = ['exp', 'log', 'sin', 'cos', 'tan', 'asin', 'acos', 'atan', 'pow']
 
     if isinstance(obj, parseobj.AnyCallable):
         obj = obj._as_ParseObj()
@@ -145,6 +145,7 @@ def generate_ratelaw(obj, rr):
     f.__globals__['acos'] = math.acos
     f.__globals__['atan'] = math.atan
     f.__globals__['pi'] = math.pi
+    f.__globals__['pow'] = pow
     return f
     # return (lambda _r, _p, *args: eval(exp))
 

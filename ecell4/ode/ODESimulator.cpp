@@ -121,6 +121,8 @@ bool ODESimulator::step(const Real &upto)
     }
     const Real dt(std::min(dt_, upto - t()));
 
+    const Real ntime(std::min(upto, t() + dt_));
+
     //initialize();
     const std::vector<Species> species(world_->list_species());
     
@@ -145,8 +147,8 @@ bool ODESimulator::step(const Real &upto)
                 typedef odeint::controlled_runge_kutta<error_stepper_type> controlled_stepper_type;
                 controlled_stepper_type controlled_stepper;
                 steps = (
-                    odeint::integrate_adaptive( 
-                        controlled_stepper, system.first, x, t(), upto, dt, StateAndTimeBackInserter(x_vec, times)));
+                    odeint::integrate_adaptive(
+                        controlled_stepper, system.first, x, t(), ntime, dt, StateAndTimeBackInserter(x_vec, times)));
             }
             break;
         case ecell4::ode::ROSENBROCK4_CONTROLLER:
@@ -156,7 +158,7 @@ bool ODESimulator::step(const Real &upto)
                 controlled_stepper_type controlled_stepper(abs_tol_, rel_tol_);
                 steps = (
                     odeint::integrate_adaptive(
-                        controlled_stepper, system, x, t(), upto, dt, StateAndTimeBackInserter(x_vec, times)));
+                        controlled_stepper, system, x, t(), ntime, dt, StateAndTimeBackInserter(x_vec, times)));
             }
             break;
         case ecell4::ode::EULER:
@@ -165,7 +167,7 @@ bool ODESimulator::step(const Real &upto)
                 stepper_type stepper;
                 steps = (
                     odeint::integrate_const(
-                        stepper, system.first, x, t(), upto, dt, StateAndTimeBackInserter(x_vec, times)));
+                        stepper, system.first, x, t(), ntime, dt, StateAndTimeBackInserter(x_vec, times)));
             }
             break;
         default:
@@ -186,9 +188,9 @@ bool ODESimulator::step(const Real &upto)
             i++;
         }
     }
-    set_t(upto);
+    set_t(ntime);
     num_steps_++;
-    return false;
+    return (ntime < upto);
 }
 
 } // ode

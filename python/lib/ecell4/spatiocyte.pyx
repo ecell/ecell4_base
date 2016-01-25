@@ -96,6 +96,9 @@ cdef class ReactionInfo:
             inc(it)
         return retval
 
+    def __reduce__(self):
+        return (ReactionInfo, (self.t(), self.reactants(), self.products()))
+
 cdef ReactionInfo ReactionInfo_from_Cpp_ReactionInfo(Cpp_ReactionInfo* ri):
     cdef Cpp_ReactionInfo *new_obj = new Cpp_ReactionInfo(<Cpp_ReactionInfo> deref(ri))
     r = ReactionInfo(0, [], [])
@@ -340,6 +343,21 @@ cdef class SpatiocyteWorld:
         """
         cdef Cpp_Real3 lengths = self.thisptr.get().edge_lengths()
         return Real3_from_Cpp_Real3(address(lengths))
+
+    def set_value(self, Species sp, Real value):
+        """set_value(sp, value)
+
+        Set the value of the given species.
+
+        Parameters
+        ----------
+        sp : Species
+            a species whose value you set
+        value : Real
+            a value set
+
+        """
+        self.thisptr.get().set_value(deref(sp.thisptr), value)
 
     def get_value(self, Species sp):
         """get_value(sp) -> Real
@@ -878,7 +896,7 @@ cdef class SpatiocyteWorld:
             A model to bind
 
         """
-        self.thisptr.get().bind_to(deref(Cpp_Model_from_Model(m)))
+        self.thisptr.get().bind_to(Cpp_Model_from_Model(m))
 
     def private2position(self, Integer coord):
         """private2position(coord) -> Real3
@@ -1103,7 +1121,7 @@ cdef class SpatiocyteSimulator:
             if isinstance(w, SpatiocyteWorld):
                 # Cpp_SpatiocyteSimulator(shared_ptr[Cpp_Model], shared_ptr[Cpp_SpatiocyteWorld])
                 self.thisptr = new Cpp_SpatiocyteSimulator(
-                    deref(Cpp_Model_from_Model(m)), deref((<SpatiocyteWorld>w).thisptr))
+                    Cpp_Model_from_Model(m), deref((<SpatiocyteWorld>w).thisptr))
             else:
                 # Cpp_SpatiocyteSimulator(shared_ptr[Cpp_SpatiocyteWorld], Real)
                 self.thisptr = new Cpp_SpatiocyteSimulator(
@@ -1112,7 +1130,7 @@ cdef class SpatiocyteSimulator:
             # Cpp_SpatiocyteSimulator(
             #     shared_ptr[Cpp_Model], shared_ptr[Cpp_SpatiocyteWorld], Real)
             self.thisptr = new Cpp_SpatiocyteSimulator(
-                deref(Cpp_Model_from_Model(m)), deref((<SpatiocyteWorld>w).thisptr),
+                Cpp_Model_from_Model(m), deref((<SpatiocyteWorld>w).thisptr),
                 <Real>alpha)
 
     def __dealloc__(self):
@@ -1370,7 +1388,7 @@ cdef class SpatiocyteFactory:
         else:
             return SpatiocyteWorld_from_Cpp_SpatiocyteWorld(
                 shared_ptr[Cpp_SpatiocyteWorld](self.thisptr.create_world(
-                    deref(Cpp_Model_from_Model(arg1)))))
+                    Cpp_Model_from_Model(arg1))))
 
     def create_simulator(self, arg1, SpatiocyteWorld arg2=None):
         """create_simulator(arg1, arg2) -> SpatiocyteSimulator
@@ -1401,4 +1419,4 @@ cdef class SpatiocyteFactory:
         else:
             return SpatiocyteSimulator_from_Cpp_SpatiocyteSimulator(
                 self.thisptr.create_simulator(
-                    deref(Cpp_Model_from_Model(arg1)), deref(arg2.thisptr)))
+                    Cpp_Model_from_Model(arg1), deref(arg2.thisptr)))

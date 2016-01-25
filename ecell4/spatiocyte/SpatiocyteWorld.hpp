@@ -146,7 +146,7 @@ public:
         return info;
     }
 
-    const Real& t() const;
+    const Real t() const;
     void set_t(const Real& t);
 
     const Real3& edge_lengths() const;
@@ -163,6 +163,8 @@ public:
     Integer num_voxels() const;
     Integer num_voxels(const Species& sp) const;
     Integer num_voxels_exact(const Species& sp) const;
+
+    void set_value(const Species& sp, const Real value);
 
     Real get_value(const Species& sp) const
     {
@@ -521,10 +523,11 @@ public:
         sidgen_.save(fout.get());
         boost::scoped_ptr<H5::Group>
             group(new H5::Group(fout->createGroup("LatticeSpace")));
-        (*space_).save(group.get());
+        (*space_).save_hdf5(group.get());
         extras::save_version_information(fout.get(), "ecell4-spatiocyte-0.0-1");
 #else
-        throw NotSupported("not supported yet.");
+        throw NotSupported(
+            "This method requires HDF5. The HDF5 support is turned off.");
 #endif
     }
 
@@ -534,11 +537,12 @@ public:
         boost::scoped_ptr<H5::H5File>
             fin(new H5::H5File(filename.c_str(), H5F_ACC_RDONLY));
         const H5::Group group(fin->openGroup("LatticeSpace"));
-        (*space_).load(group);
+        (*space_).load_hdf5(group);
         sidgen_.load(*fin);
         rng_->load(*fin);
 #else
-        throw NotSupported("not supported yet.");
+        throw NotSupported(
+            "This method requires HDF5. The HDF5 support is turned off.");
 #endif
     }
 

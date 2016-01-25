@@ -134,7 +134,7 @@ cdef class ODEReactionRule:
 cdef extern from "ecell4/ode/ODENetworkModel.hpp" namespace "ecell4::ode":
     cdef cppclass Cpp_ODENetworkModel "ecell4::ode::ODENetworkModel":
         Cpp_ODENetworkModel() except +
-        Cpp_ODENetworkModel( shared_ptr[Cpp_NetworkModel] ) except +
+        Cpp_ODENetworkModel( shared_ptr[Cpp_Model] ) except +
         void update_model()
         bool has_network_model()
         vector[Cpp_ODEReactionRule] ode_reaction_rules()
@@ -184,9 +184,9 @@ cdef extern from "ecell4/ode/ODESimulator.hpp" namespace "ecell4::ode":
         shared_ptr[Cpp_ODENetworkModel] model()
         shared_ptr[Cpp_ODEWorld] world()
 
-        void run(Real)
-        void run(Real, shared_ptr[Cpp_Observer])
-        void run(Real, vector[shared_ptr[Cpp_Observer]])
+        void run(Real) except +
+        void run(Real, shared_ptr[Cpp_Observer]) except +
+        void run(Real, vector[shared_ptr[Cpp_Observer]]) except +
 
 cdef class ODESimulator:
     cdef Cpp_ODESimulator *thisptr

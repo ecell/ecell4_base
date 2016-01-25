@@ -24,10 +24,11 @@ struct Shape
         ; // do nothing
     }
 
-    virtual dimension_kind dimension() const
-    {
-        return THREE;
-    }
+    virtual dimension_kind dimension() const = 0;
+    // virtual dimension_kind dimension() const
+    // {
+    //     return THREE;
+    // }
 
     virtual Real is_inside(const Real3& coord) const = 0;
     virtual Real3 draw_position(

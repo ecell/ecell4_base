@@ -351,9 +351,16 @@ cdef class FixedIntervalHDF5Observer:
         """Return the number of steps."""
         return self.thisptr.get().num_steps()
 
-    def filename(self):
+    def prefix(self):
+        """Return a prefix of a file name given at the construction"""
+        return self.thisptr.get().prefix().decode('UTF-8')
+
+    def filename(self, idx=None):
         """Return a file name to be saved at the next time"""
-        return self.thisptr.get().filename().decode('UTF-8')
+        if idx is None:
+            return self.thisptr.get().filename().decode('UTF-8')
+        else:
+            return self.thisptr.get().filename(<Integer>idx).decode('UTF-8')
 
     def as_base(self):
         """Clone self as a base class. This function is for developers."""
@@ -377,7 +384,7 @@ cdef class FixedIntervalCSVObserver:
 
     """
 
-    def __init__(self, Real dt, filename):
+    def __init__(self, Real dt, filename, species=None):
         """Constructor.
 
         Parameters
@@ -394,6 +401,9 @@ cdef class FixedIntervalCSVObserver:
             The first line in a file represents labels for each row.
             Each column contains a position, a radius, and a serial id
             for the ``Species``.
+        species : list
+            A list of strings, but not of ``Species``.
+            The strings suggest serials of ``Species`` to be observed.
 
         """
         pass  # XXX: Only used for doc string
@@ -445,7 +455,8 @@ cdef class FixedIntervalCSVObserver:
         0.25311394008759508,0.05484827557301445,0.495,0.0050000000000000001,0
         """
         cdef Space space = w.as_base()
-        self.thisptr.get().log(space.thisptr.get())
+        # self.thisptr.get().log(space.thisptr.get())
+        self.thisptr.get().log(deref(space.thisptr))
 
     def filename(self):
         """Return a file name to be saved at the next time"""

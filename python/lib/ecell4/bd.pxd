@@ -95,6 +95,10 @@ cdef extern from "ecell4/bd/BDSimulator.hpp" namespace "ecell4::bd":
             shared_ptr[Cpp_Model], shared_ptr[Cpp_BDWorld]) except +
         Cpp_BDSimulator(
             shared_ptr[Cpp_BDWorld]) except +
+        Cpp_BDSimulator(
+            shared_ptr[Cpp_Model], shared_ptr[Cpp_BDWorld], Real) except +
+        Cpp_BDSimulator(
+            shared_ptr[Cpp_BDWorld], Real) except +
         Integer num_steps()
         void step()
         bool step(Real& upto)
@@ -108,9 +112,9 @@ cdef extern from "ecell4/bd/BDSimulator.hpp" namespace "ecell4::bd":
         void initialize()
         shared_ptr[Cpp_Model] model()
         shared_ptr[Cpp_BDWorld] world()
-        void run(Real)
-        void run(Real, shared_ptr[Cpp_Observer])
-        void run(Real, vector[shared_ptr[Cpp_Observer]])
+        void run(Real) except +
+        void run(Real, shared_ptr[Cpp_Observer]) except +
+        void run(Real, vector[shared_ptr[Cpp_Observer]]) except +
 
 ## BDSimulator
 #  a python wrapper for Cpp_BDSimulator
@@ -126,6 +130,9 @@ cdef extern from "ecell4/bd/BDFactory.hpp" namespace "ecell4::bd":
         Cpp_BDFactory() except +
         Cpp_BDFactory(Cpp_Integer3&) except +
         Cpp_BDFactory(Cpp_Integer3&, shared_ptr[Cpp_RandomNumberGenerator]) except +
+        Cpp_BDFactory(Real) except +
+        Cpp_BDFactory(Cpp_Integer3&, Real) except +
+        Cpp_BDFactory(Cpp_Integer3&, shared_ptr[Cpp_RandomNumberGenerator], Real) except +
         Cpp_BDWorld* create_world()
         Cpp_BDWorld* create_world(string)
         Cpp_BDWorld* create_world(Cpp_Real3&)

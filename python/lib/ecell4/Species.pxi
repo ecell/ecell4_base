@@ -221,6 +221,15 @@ cdef class Species:
         """
         self.thisptr.deserialize(tostring(serial))
 
+    def __reduce__(self):
+        return (__rebuild_species, (self.serial(), self.list_attributes()))
+
+def __rebuild_species(serial, attrs):
+    sp = Species(serial)
+    for key, val in attrs:
+        sp.set_attribute(key, val)
+    return sp
+
 cdef Species Species_from_Cpp_Species(Cpp_Species *sp):
     cdef Cpp_Species *new_obj = new Cpp_Species(deref(sp))
     r = Species()

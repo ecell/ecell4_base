@@ -9,12 +9,12 @@ const Real Observer::next_time() const
     return inf;
 }
 
-void Observer::initialize(const Space* space)
+void Observer::initialize(const boost::shared_ptr<Space>& space)
 {
     ;
 }
 
-void Observer::finalize(const Space* space)
+void Observer::finalize(const boost::shared_ptr<Space>& space)
 {
     ;
 }
@@ -22,6 +22,11 @@ void Observer::finalize(const Space* space)
 void Observer::reset()
 {
     ;
+}
+
+bool Observer::fire(const Simulator* sim, const boost::shared_ptr<Space>& space)
+{
+    return true;
 }
 
 const Real FixedIntervalObserver::next_time() const
@@ -39,7 +44,7 @@ const Integer FixedIntervalObserver::count() const
     return count_;
 }
 
-void FixedIntervalObserver::initialize(const Space* space)
+void FixedIntervalObserver::initialize(const boost::shared_ptr<Space>& space)
 {
     if (dt_ <= 0.0)
     {
@@ -60,7 +65,7 @@ void FixedIntervalObserver::initialize(const Space* space)
     }
 }
 
-bool FixedIntervalObserver::fire(const Simulator* sim, const Space* space)
+bool FixedIntervalObserver::fire(const Simulator* sim, const boost::shared_ptr<Space>& space)
 {
     ++num_steps_;
     ++count_;
@@ -74,13 +79,26 @@ void FixedIntervalObserver::reset()
     t0_ = 0.0; //DUMMY
 }
 
-void FixedIntervalNumberObserver::initialize(const Space* space)
+void NumberLogger::log(const boost::shared_ptr<Space>& space)
+{
+    data_container_type::value_type tmp;
+    tmp.push_back(space->t());
+    for (species_container_type::const_iterator i(targets.begin());
+        i != targets.end(); ++i)
+    {
+        tmp.push_back(space->get_value(*i));
+        // tmp.push_back(space->num_molecules(*i));
+    }
+    data.push_back(tmp);
+}
+
+void FixedIntervalNumberObserver::initialize(const boost::shared_ptr<Space>& space)
 {
     base_type::initialize(space);
     logger_.initialize();
 }
 
-bool FixedIntervalNumberObserver::fire(const Simulator* sim, const Space* space)
+bool FixedIntervalNumberObserver::fire(const Simulator* sim, const boost::shared_ptr<Space>& space)
 {
     logger_.log(space);
     return base_type::fire(sim, space);
@@ -102,14 +120,14 @@ NumberLogger::species_container_type FixedIntervalNumberObserver::targets() cons
     return logger_.targets;
 }
 
-void NumberObserver::initialize(const Space* space)
+void NumberObserver::initialize(const boost::shared_ptr<Space>& space)
 {
     base_type::initialize(space);
     logger_.initialize();
     logger_.log(space);
 }
 
-void NumberObserver::finalize(const Space* space)
+void NumberObserver::finalize(const boost::shared_ptr<Space>& space)
 {
     if (logger_.data.size() == 0 || logger_.data.back()[0] != space->t())
     {
@@ -118,7 +136,7 @@ void NumberObserver::finalize(const Space* space)
     base_type::finalize(space);
 }
 
-bool NumberObserver::fire(const Simulator* sim, const Space* space)
+bool NumberObserver::fire(const Simulator* sim, const boost::shared_ptr<Space>& space)
 {
     if (sim->check_reaction())
     {
@@ -159,7 +177,7 @@ const Real TimingObserver::next_time() const
     return t_[count_];
 }
 
-void TimingObserver::initialize(const Space* space)
+void TimingObserver::initialize(const boost::shared_ptr<Space>& space)
 {
     while (next_time() < space->t())
     {
@@ -167,7 +185,7 @@ void TimingObserver::initialize(const Space* space)
     }
 }
 
-bool TimingObserver::fire(const Simulator* sim, const Space* space)
+bool TimingObserver::fire(const Simulator* sim, const boost::shared_ptr<Space>& space)
 {
     ++num_steps_;
     ++count_;
@@ -180,13 +198,13 @@ void TimingObserver::reset()
     count_ = 0;
 }
 
-void TimingNumberObserver::initialize(const Space* space)
+void TimingNumberObserver::initialize(const boost::shared_ptr<Space>& space)
 {
     base_type::initialize(space);
     logger_.initialize();
 }
 
-bool TimingNumberObserver::fire(const Simulator* sim, const Space* space)
+bool TimingNumberObserver::fire(const Simulator* sim, const boost::shared_ptr<Space>& space)
 {
     logger_.log(space);
     return base_type::fire(sim, space);
@@ -208,19 +226,24 @@ NumberLogger::species_container_type TimingNumberObserver::targets() const
     return logger_.targets;
 }
 
-void FixedIntervalHDF5Observer::initialize(const Space* space)
+void FixedIntervalHDF5Observer::initialize(const boost::shared_ptr<Space>& space)
 {
     base_type::initialize(space);
 }
 
-bool FixedIntervalHDF5Observer::fire(const Simulator* sim, const Space* space)
+bool FixedIntervalHDF5Observer::fire(const Simulator* sim, const boost::shared_ptr<Space>& space)
 {
+    if (!is_directory(filename()))
+    {
+        throw NotFound("The output path does not exists.");
+    }
+
     space->save(filename());
 
     return base_type::fire(sim, space);
 }
 
-const std::string FixedIntervalHDF5Observer::filename() const
+const std::string FixedIntervalHDF5Observer::filename(const Integer idx) const
 {
     boost::format fmt(prefix_);
 
@@ -230,16 +253,16 @@ const std::string FixedIntervalHDF5Observer::filename() const
     }
     else
     {
-        return (fmt % num_steps()).str();
+        return (fmt % idx).str();
     }
 }
 
-void FixedIntervalCSVObserver::initialize(const Space* space)
+void FixedIntervalCSVObserver::initialize(const boost::shared_ptr<Space>& space)
 {
     base_type::initialize(space);
 }
 
-bool FixedIntervalCSVObserver::fire(const Simulator* sim, const Space* space)
+bool FixedIntervalCSVObserver::fire(const Simulator* sim, const boost::shared_ptr<Space>& space)
 {
     log(space);
     return base_type::fire(sim, space);
@@ -274,8 +297,13 @@ void FixedIntervalCSVObserver::write_particles(
     }
 }
 
-void FixedIntervalCSVObserver::log(const Space* space)
+void FixedIntervalCSVObserver::log(const boost::shared_ptr<Space>& space)
 {
+    if (!is_directory(filename()))
+    {
+        throw NotFound("The output path does not exists.");
+    }
+
     std::ofstream ofs(filename().c_str(), std::ios::out);
     ofs << std::setprecision(17);
     ofs << "x,y,z,r,sid" << std::endl;
@@ -319,7 +347,7 @@ void FixedIntervalCSVObserver::reset()
     base_type::reset();
 }
 
-void FixedIntervalTrajectoryObserver::initialize(const Space* space)
+void FixedIntervalTrajectoryObserver::initialize(const boost::shared_ptr<Space>& space)
 {
     base_type::initialize(space);
 
@@ -341,7 +369,7 @@ void FixedIntervalTrajectoryObserver::initialize(const Space* space)
     }
 }
 
-bool FixedIntervalTrajectoryObserver::fire(const Simulator* sim, const Space* space)
+bool FixedIntervalTrajectoryObserver::fire(const Simulator* sim, const boost::shared_ptr<Space>& space)
 {
     const bool retval = base_type::fire(sim, space);
     t_.push_back(space->t());
@@ -411,20 +439,20 @@ const std::vector<Real>& FixedIntervalTrajectoryObserver::t() const
     return t_;
 }
 
-void TimeoutObserver::initialize(const Space* space)
+void TimeoutObserver::initialize(const boost::shared_ptr<Space>& space)
 {
     base_type::initialize(space);
     duration_ = 0.0;
     time(&tstart_);
 }
 
-void TimeoutObserver::finalize(const Space* space)
+void TimeoutObserver::finalize(const boost::shared_ptr<Space>& space)
 {
     base_type::finalize(space);
     acc_ += duration_;
 }
 
-bool TimeoutObserver::fire(const Simulator* sim, const Space* space)
+bool TimeoutObserver::fire(const Simulator* sim, const boost::shared_ptr<Space>& space)
 {
     time_t tnow;
     time(&tnow);
