@@ -193,3 +193,12 @@ viz.plot_movie_of_trajectory(
 ```
 
 ![png](https://raw.githubusercontent.com/ecell/ecell4/master/docs/images/hairball.png)
+
+# Licensing terms
+
+This project is licensed under the terms of the GNU General Public License v2
+as the LICENSE file in this repository:
+
+- Copyright (c) 2010-, RIKEN
+
+All rights reserved.
