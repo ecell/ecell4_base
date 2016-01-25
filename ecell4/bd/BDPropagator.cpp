@@ -115,7 +115,7 @@ bool BDPropagator::operator()()
             displacement = nearest.get<2>();
             bound_surface = nearest_surface;
             // For Debugging
-            std::cout << "bound surface ( " << bound_surface << ") at " << from << std::endl;
+            //std::cout << "bound surface ( " << bound_surface << ") at " << from << std::endl;
         }
     } while(true);
     Real3 newpos(world_.apply_boundary(from + displacement));
@@ -128,7 +128,6 @@ bool BDPropagator::operator()()
             throw IllegalState("Particle moved to the opposite side of the surface");
         }
     }
-
     /*
     const Real3 newpos(
         world_.apply_boundary(
