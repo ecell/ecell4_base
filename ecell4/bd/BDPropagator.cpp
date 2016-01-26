@@ -17,12 +17,11 @@ namespace ecell4
 namespace bd
 {
 
-template <typename T>
+template <typename T> 
 inline
-signed int extract_sign(const T &number)
-{
-    return T(0) < number ? 1 : -1;
-} 
+int sgn(T val) {
+    return (T(0) < val) - (val < T(0));
+}
 
 boost::tuple<bool, Real3, Real3> refrection(const boost::shared_ptr<PlanarSurface> surface, const Real3& from, const Real3& displacement) 
 {
@@ -82,7 +81,7 @@ bool BDPropagator::operator()()
     std::vector<signed int> save_isinside(surface_vector.size());
     for(std::size_t i = 0; i != surface_vector.size(); i++) {
         // the inside or outside status must not be changed by definition.
-        save_isinside[i] = extract_sign( surface_vector[i]->is_inside(from) );
+        save_isinside[i] = sgn( surface_vector[i]->is_inside(from) );
     }
     bool refrection_occurance = false;
     do {
@@ -123,7 +122,7 @@ bool BDPropagator::operator()()
     // Check for debugging
     for(std::size_t i = 0; i != surface_vector.size(); i++) {
         // the inside or outside status must not be changed before and after moving.
-        signed int is_inside = extract_sign( surface_vector[i]->is_inside(from + displacement) );
+        signed int is_inside = sgn( surface_vector[i]->is_inside(from + displacement) );
         if (save_isinside[i] != is_inside) {
             throw IllegalState("Particle moved to the opposite side of the surface");
         }
