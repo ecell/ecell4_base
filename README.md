@@ -51,11 +51,11 @@ After the following steps, you should see Jupyter Notebook up and running (and E
 ### Linux
 
 1. Install docker.
-2. Run the following commands.
+2. Run the following commands in your terminal.
 
     ```shell
-    $ sudo docker pull ecell/ecell4
-    $ sudo docker run -d -p 443:8888 ecell/ecell4
+    sudo docker pull ecell/ecell4
+    sudo docker run -d -p 443:8888 ecell/ecell4
     ```
 
 3. Open **localhost:443** with your favorite web browser.
