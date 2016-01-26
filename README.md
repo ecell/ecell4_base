@@ -45,13 +45,13 @@ After the following steps, you should see Jupyter Notebook up and running (and E
 
 1. Install [Docker Toolbox](https://www.docker.com/toolbox).
 2. Run **Docker Quickstart Terminal**.
-3. Run `docker run -d -p 443:8888 ecell/ecell4` in the terminal.
+3. Run `docker run -d -p 443:8888 ecell/ecell4` in your command prompt or terminal.
 4. Open **192.168.99.100:443** with your favorite web browser.
 
 ### Linux
 
 1. Install docker.
-2. Run the following command.
+2. Run the following commands.
 
     ```shell
     $ sudo docker pull ecell/ecell4
