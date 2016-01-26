@@ -32,14 +32,16 @@ the release note[WRITEME]
 -  Python valid rule based model
 -  IPython Notebook inline visualization
 
-Getting Started:
+Getting Started
+---------------
 
 .. toctree::
    :glob:
 
    installation
 
-Tutorials:
+Tutorials
+---------
 
 We assume that you run the following tutorials from Jupyter Notebook.
 Please note that magic functions like ``%matplotlib`` work only on Jupyter Notebook.
@@ -55,7 +57,8 @@ Please note that magic functions like ``%matplotlib`` work only on Jupyter Noteb
    tutorial7/tutorial7
    tutorial8/tutorial8
 
-API:
+API
+---
 
 .. toctree::
    :glob:
@@ -71,7 +74,8 @@ API:
    api/util.viz
    api/util.decorator
 
-Examples:
+Examples
+--------
 
 .. toctree::
    :glob:
@@ -80,13 +84,3 @@ Examples:
    Drosophila/Drosophila
    DualPhospho/DualPhospho
    Glycolysis/Glycolysis
-   
-Old Tutorials:
-
-.. toctree::
-   :glob:
-
-   Introduction
-   WorldSimBasics
-   Meso
-   Spatiocyte
