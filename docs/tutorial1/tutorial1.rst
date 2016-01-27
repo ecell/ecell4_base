@@ -48,7 +48,7 @@ the simplest way using the ``with`` statement with ``reaction_rules``:
 
 
 Please remember to write parentheses ``()`` after ``reaction_rules``.
-Here, a ``Model`` with two ``ReactionRule``\ s named ``m`` was built.
+Here, a ``Model`` with two ``ReactionRule``\ s named ``m1`` was built.
 Lines in the ``with`` block describe ``ReactionRule``\ s, a binding and
 unbinding reaction respectively. A kinetic rate for the mass action
 reaction is defined after a separator ``|``, i.e. ``0.01`` or ``0.3``.
