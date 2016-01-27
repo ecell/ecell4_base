@@ -33,7 +33,7 @@
 
 A name of ``Species`` (called ``serial``) has a number of naming rules.
 It requires attention to use special symbols (e.g. parenthesis ``()``,
-dot ``.``, underbar ``_``, numbers and brank.
+dot ``.``, underbar ``_``), numbers and brank.
 
 ``Species`` has a set of APIs for handling its attributes:
 
