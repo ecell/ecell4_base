@@ -189,5 +189,4 @@ plots trajectories in the interactive way:
 .. image:: output_24_0.png
 
 
-For more details, see `5. How to Log and Visualize
-Simulations <5.%20How%20to%20Log%20and%20Visualize%20Simulations.ipynb>`__.
+For more details, see :doc:`../tutorial5/tutorial5`
