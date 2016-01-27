@@ -9,8 +9,8 @@ First of all, you have to load the E-Cell4 library:
     %matplotlib inline
     from ecell4 import *
 
-1.1. Quick Demostration
------------------------
+1.1. Quick Demo
+---------------
 
 There are three fundamental components consisting of E-Cell System
 version 4, which are ``Model``, ``World``, and ``Simulator``. These
