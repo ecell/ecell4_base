@@ -161,7 +161,7 @@ Then, ``run_simulation`` accepts structures and observers as arguments
                    solver='spatiocyte', observers=(obs1, obs2), return_type=None)
 
 E-Cell4 also provides visualizations including an interactive
-visualization on IPython Notebook like ``viz.plot_world``.
+visualization on Jupyter Notebook like ``viz.plot_world``.
 ``viz.plot_world`` plots positions of molecules in 3D. In addition, by
 using ``load_world``, you can easily restore the state of ``World`` from
 a HDF5 file:
