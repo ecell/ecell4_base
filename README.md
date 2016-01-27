@@ -91,7 +91,7 @@ pip install -U jupyter
 
 Please add python.exe, pip.exe path and `C:\Program Files (x86)\HDF_Group\HDF5\1.8.16\bin` to your **USER** PATH enviromental variable.
 Next download numpy-1.10.4+vanilla-cp35-none-win32.whl and matplotlib-1.5.0-cp35-none-win32.whl from http://www.lfd.uci.edu/~gohlke/pythonlibs/
-And run the following commands with command prompt.
+and run the following commands with command prompt.
 
 ```
 pip install https://ci.appveyor.com/api/buildjobs/jpyueyasgwsannch/artifacts/python/dist/ecell4-4.0.0b2-cp35-none-win32.whl
@@ -107,6 +107,7 @@ Mac
 
 1. Download [get-pip.py](https://bootstrap.pypa.io/get-pip.py)
 2. Run the following commands
+
     ```shell
     sudo python get-pip.py
     # please select appropriate whl file for your Python version
@@ -121,7 +122,7 @@ Please see [homebrew-ecell4](https://github.com/ecell/homebrew-ecell4)
 
 Linux
 -----
-Please use linuxbrew, see [homebrew-ecell4](https://github.com/ecell/homebrew-ecell4)
+Please use linuxbrew. See [homebrew-ecell4](https://github.com/ecell/homebrew-ecell4)
 
 Using E-Cell4 with jupyter 
 --------------------------
@@ -172,7 +173,7 @@ y = run_simulation(
 
 ![png](https://raw.githubusercontent.com/ecell/ecell4/master/docs/images/output_7_0.png)
 
-### Molecular diffusion visualization
+### Particle tracking on a spherical surface
 
 ```python
 %matplotlib inline
