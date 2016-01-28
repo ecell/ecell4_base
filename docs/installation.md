@@ -5,13 +5,18 @@ Installation
   - [Windows or Mac](#windows-or-mac)
   - [Linux](#linux)
 
+- [Requirements](#requirements)
+  - [Minimum requirements](#minimum-requirements)
+  - [Optional requirements](#optional-requirements)
+  - [Build requirements](#build-requirements)
+
 - [Windows](#windows)
   - [Python2 series](#python2-series)
   - [Python3 series](#python3-series)
   
 - [Mac](#mac)
-  - [pip users](#pip-users)
   - [homebrew users](#homebrew-users)
+  - [pip users](#pip-users)
 
 - [Linux](#Linux)
 
@@ -19,13 +24,14 @@ Installation
 
 - [Simple examples](#simple-examples)
 
+
 Docker users
 ------------
 
-If you have docker environment, you can try E-Cell4 easily.
+If you have docker environment, you can easily try E-Cell4.
 You can pull E-Cell4 container with `docker pull ecell/ecell4`.
 
-After the following steps, you should see Jupyter Notebook up and running (and E-Cell4 tutorials) in your web browser.
+After the following steps, you should see [Jupyter Notebook](http://jupyter.org/) up and running (and E-Cell4 tutorials) in your web browser.
 
 ### Windows or Mac
 
@@ -46,6 +52,25 @@ After the following steps, you should see Jupyter Notebook up and running (and E
 
 3. Open **localhost:443** with your favorite web browser.
 
+Requirements
+------------
+### Minimum requirements
+- Python 2.7 series or Python 3.5 series
+- pip
+
+### Optional requirements
+We strongly recommend that you run E-Cell4 from [Jupyter Notebook](http://jupyter.org/).
+And some E-Cell4 functions (for datastore, visualization) depend on
+  - HDF5
+  - matplotlib **1.5.1** and later
+  - ffmpeg or avconv
+
+### Build requirements
+If you build E-Cell4 from source code, these packages are needed.
+- cmake
+- boost
+- gsl
+- hdf5
 
 Windows
 -------
@@ -78,7 +103,7 @@ pip install -U jupyter
 
 Please add python.exe, pip.exe path and `C:\Program Files (x86)\HDF_Group\HDF5\1.8.16\bin` to your **USER** PATH enviromental variable.
 Next download numpy-1.10.4+vanilla-cp35-none-win32.whl and matplotlib-1.5.0-cp35-none-win32.whl from http://www.lfd.uci.edu/~gohlke/pythonlibs/
-And run the following commands with command prompt.
+and run the following commands with command prompt.
 
 ```
 pip install https://ci.appveyor.com/api/buildjobs/jpyueyasgwsannch/artifacts/python/dist/ecell4-4.0.0b2-cp35-none-win32.whl
@@ -90,25 +115,25 @@ pip install -U jupyter
 Mac
 ---
 
-### pip users
-
-1. Download [get-pip.py](https://bootstrap.pypa.io/get-pip.py)
-2. Run the following commands
-    ```shell
-    sudo python get-pip.py
-    # please select appropriate whl file for your Python version
-    sudo pip install THEWHEELURL.whl
-    # Mac default matplotlib is too old, you need to add these options to the pip command.
-    pip install -U matplotlib --user
-    sudo pip install -U jupyter
-    ```
-
 ### homebrew users
-Please see [homebrew-ecell4](https://github.com/ecell/homebrew-ecell4)
+First, we recommend that you start E-Cell4 with homebrew.
+See [homebrew-ecell4](https://github.com/ecell/homebrew-ecell4)
+
+### pip users
+We also have Python wheel files for E-Cell4.
+But the wheel distribution does NOT include ffmpeg (needed by E-Cell4 animation generator).
+
+    ```shell
+    # please select appropriate whl file for your Python version
+    pip install THEWHEELURL.whl --user
+    # Mac default matplotlib is too old for E-Cell4, you need to update it with the following options.
+    pip install -U matplotlib --user
+    pip install -U jupyter --user
+    ```
 
 Linux
 -----
-Please use linuxbrew, see [homebrew-ecell4](https://github.com/ecell/homebrew-ecell4)
+Please use linuxbrew. See [homebrew-ecell4](https://github.com/ecell/homebrew-ecell4)
 
 Using E-Cell4 with jupyter 
 --------------------------
@@ -157,9 +182,9 @@ y = run_simulation(
     numpy.linspace(0, 10, 100), {'A': 60, 'B': 60}, solver='ode')
 ```
 
-![png](https://raw.githubusercontent.com/ecell/ecell4/master/docs/output_7_0.png)
+![png](https://raw.githubusercontent.com/ecell/ecell4/master/docs/images/output_7_0.png)
 
-### Molecular diffusion visualization
+### Particle tracking on a spherical surface
 
 ```python
 %matplotlib inline
@@ -168,15 +193,13 @@ from ecell4 import *
 with species_attributes():
     A | {'D': '1', 'location': 'M'}
 
-m = get_model()
-surface = Sphere(Real3(0.5, 0.5, 0.5), 0.48).surface()
+surface = Sphere(Real3(0.5, 0.5, 0.5), 0.5).surface()
 obs = FixedIntervalTrajectoryObserver(1e-4)
-factory = spatiocyte.SpatiocyteFactory(voxel_radius=0.005)
-run_simulation(0.3, model=m, y0={'A': 10}, structures={'M': surface},
-               factory=factory, observers=obs, return_type=None)
-viz.plot_movie_for_trajectory_with_matplotlib(
-    obs, legend=False, noaxis=True, angle=(-60, 30, 6), figsize=5,
-    stride=60, rotate=(0, 1.5))
+run_simulation(
+    0.4, y0={'A': 10}, structures={'M': surface},
+    solver='spatiocyte', observers=obs, return_type=None)
+
+viz.plot_trajectory(obs, interactive=False)
 ```
 
-![png](https://raw.githubusercontent.com/ecell/ecell4/appveyor2/docs/images/hairball.png)
+![png](https://raw.githubusercontent.com/ecell/ecell4/master/docs/images/hairball.png)

@@ -17,13 +17,18 @@ Installation
   - [Windows or Mac](#windows-or-mac)
   - [Linux](#linux)
 
+- [Requirements](#requirements)
+  - [Minimum requirements](#minimum-requirements)
+  - [Optional requirements](#optional-requirements)
+  - [Build requirements](#build-requirements)
+
 - [Windows](#windows)
   - [Python2 series](#python2-series)
   - [Python3 series](#python3-series)
   
 - [Mac](#mac)
-  - [pip users](#pip-users)
   - [homebrew users](#homebrew-users)
+  - [pip users](#pip-users)
 
 - [Linux](#Linux)
 
@@ -36,10 +41,10 @@ Installation
 Docker users
 ------------
 
-If you have docker environment, you can try E-Cell4 easily.
+If you have docker environment, you can easily try E-Cell4.
 You can pull E-Cell4 container with `docker pull ecell/ecell4`.
 
-After the following steps, you should see Jupyter Notebook up and running (and E-Cell4 tutorials) in your web browser.
+After the following steps, you should see [Jupyter Notebook](http://jupyter.org/) up and running (and E-Cell4 tutorials) in your web browser.
 
 ### Windows or Mac
 
@@ -59,6 +64,26 @@ After the following steps, you should see Jupyter Notebook up and running (and E
     ```
 
 3. Open **localhost:443** with your favorite web browser.
+
+Requirements
+------------
+### Minimum requirements
+- Python 2.7 series or Python 3.5 series
+- pip
+
+### Optional requirements
+We strongly recommend that you run E-Cell4 from [Jupyter Notebook](http://jupyter.org/).
+And some E-Cell4 functions (for datastore, visualization) depend on
+  - HDF5
+  - matplotlib **1.5.1** and later
+  - ffmpeg or avconv
+
+### Build requirements
+If you build E-Cell4 from source code, these packages are needed.
+- cmake
+- boost
+- gsl
+- hdf5
 
 Windows
 -------
@@ -103,22 +128,21 @@ pip install -U jupyter
 Mac
 ---
 
-### pip users
+### homebrew users
+First, we recommend that you start E-Cell4 with homebrew.
+See [homebrew-ecell4](https://github.com/ecell/homebrew-ecell4)
 
-1. Download [get-pip.py](https://bootstrap.pypa.io/get-pip.py)
-2. Run the following commands
+### pip users
+We also have Python wheel files for E-Cell4.
+But the wheel distribution does NOT include ffmpeg (needed by E-Cell4 animation generator).
 
     ```shell
-    sudo python get-pip.py
     # please select appropriate whl file for your Python version
-    sudo pip install THEWHEELURL.whl
-    # Mac default matplotlib is too old, you need to add these options to the pip command.
+    pip install THEWHEELURL.whl --user
+    # Mac default matplotlib is too old for E-Cell4, you need to update it with the following options.
     pip install -U matplotlib --user
-    sudo pip install -U jupyter
+    pip install -U jupyter --user
     ```
-
-### homebrew users
-Please see [homebrew-ecell4](https://github.com/ecell/homebrew-ecell4)
 
 Linux
 -----
@@ -195,8 +219,8 @@ viz.plot_trajectory(obs, interactive=False)
 
 # Licensing terms
 
-This project is licensed under the terms of the GNU General Public License v2
-as the LICENSE file in this repository:
+This project is licensed under the terms of the GNU General Public License v2.
+See [LICENSE](https://github.com/ecell/ecell4/blob/master/LICENSE) for the project license.
 
 - Copyright (c) 2010-, RIKEN
 
