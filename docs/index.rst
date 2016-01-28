@@ -87,3 +87,5 @@ Examples
    Drosophila/Drosophila
    DualPhospho/DualPhospho
    Glycolysis/Glycolysis
+   HodgkinHuxley/HodgkinHuxley
+   
