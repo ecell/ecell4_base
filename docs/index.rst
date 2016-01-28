@@ -57,6 +57,7 @@ Please note that magic functions like ``%matplotlib`` work only on Jupyter Noteb
    tutorial6/tutorial6
    tutorial7/tutorial7
    tutorial8/tutorial8
+   tutorial9/tutorial9
 
 API
 ---
