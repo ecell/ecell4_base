@@ -116,8 +116,17 @@ Mac
 ---
 
 ### homebrew users
-First, we recommend that you start E-Cell4 with homebrew.
-See [homebrew-ecell4](https://github.com/ecell/homebrew-ecell4)
+First, we recommend that you start E-Cell4 with [homebrew-ecell4](https://github.com/ecell/homebrew-ecell4).
+This homebrew formula includes HDF5 and ffmpeg but does NOT include the latest matplotlib and jupyter.
+Please run the following commands in your terminal.
+
+    ```shell
+    brew tap ecell/ecell4
+    brew install ecell4
+    # Mac default matplotlib is too old for E-Cell4, you need to update it with the following options.
+    pip install -U matplotlib --user
+    pip install -U jupyter --user
+    ```
 
 ### pip users
 We also have Python wheel files for E-Cell4.
