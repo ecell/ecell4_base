@@ -115,6 +115,8 @@ pip install -U matplotlib
 pip install -U jupyter
 ```
 
+If you use animated visualization for E-Cell4, please install [ffmpeg windows build](http://ffmpeg.zeranoe.com/builds/) and add its path to your **USER** PATH enviromental variable too.
+
 ### Python3 series
 
 - [Python 3.5.1(**32bit**)](https://www.python.org/ftp/python/3.5.1/python-3.5.1.msi)
@@ -127,9 +129,11 @@ and run the following commands with command prompt.
 ```shell
 pip install https://ci.appveyor.com/api/buildjobs/jpyueyasgwsannch/artifacts/python/dist/ecell4-4.0.0b2-cp35-none-win32.whl
 pip install numpy-1.10.4+vanilla-cp35-none-win32.whl
-pip install matplotlib-1.5.0-cp35-none-win32.whl
+pip install matplotlib-1.5.1-cp35-none-win32.whl
 pip install -U jupyter
 ```
+
+If you use animated visualization for E-Cell4, please install [ffmpeg windows build](http://ffmpeg.zeranoe.com/builds/) and add its path to your **USER** PATH enviromental variable too.
 
 Mac
 ---
