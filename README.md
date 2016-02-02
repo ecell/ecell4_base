@@ -25,14 +25,10 @@ Installation
 - [Windows](#windows)
   - [Python2 series](#python2-series)
   - [Python3 series](#python3-series)
-  
 - [Mac](#mac)
   - [homebrew users](#homebrew-users)
   - [pip users](#pip-users)
-
 - [Linux](#Linux)
-
-- [Using E-Cell4 with jupyter](#using-e-cell4-with-jupyter)
 
 - [Simple examples](#simple-examples)
 - [Licensing terms](#licensing-terms)
@@ -73,13 +69,14 @@ Requirements
 
 ### Optional requirements
 We strongly recommend that you run E-Cell4 from [Jupyter Notebook](http://jupyter.org/).
-And some E-Cell4 functions (for datastore, visualization) depend on
-  - HDF5
+And some E-Cell4 functions (for datastore, visualization) optionaly depend on
+  - hdf5
   - matplotlib **1.5.1** and later
   - ffmpeg or avconv
+  - pandas
 
 ### Build requirements
-If you build E-Cell4 from source code, these packages are needed.
+If you build E-Cell4 from source code, you need to install these software.
 - cmake
 - boost
 - gsl
@@ -139,6 +136,13 @@ Please run the following commands in your terminal.
     # Mac default matplotlib is too old for E-Cell4, you need to update it with the following options.
     pip install -U matplotlib --user
     pip install -U jupyter --user
+    # path config for homebrew-ecell4
+    mkdir -p ~/Library/Python/2.7/lib/python/site-packages
+    echo '/usr/local/lib/python2.7/site-packages' >> ~/Library/Python/2.7/lib/python/site-packages/homebrew.pth
+    # path config for --user installed Python packages
+    echo 'export PYTHONPATH=~/Library/Python/2.7/lib/python/site-packages:$PYTHONPATH' >> ~/.bashrc
+    echo 'export PATH=~/Library/Python/2.7/bin:$PATH' >> ~/.bashrc
+    source ~/.bashrc
     ```
 
 ### pip users
@@ -151,27 +155,15 @@ But the wheel distribution does NOT include ffmpeg (needed by E-Cell4 animation 
     # Mac default matplotlib is too old for E-Cell4, you need to update it with the following options.
     pip install -U matplotlib --user
     pip install -U jupyter --user
+    # path config for --user installed Python packages
+    echo 'export PYTHONPATH=~/Library/Python/2.7/lib/python/site-packages:$PYTHONPATH' >> ~/.bashrc
+    echo 'export PATH=~/Library/Python/2.7/bin:$PATH' >> ~/.bashrc
+    source ~/.bashrc
     ```
 
 Linux
 -----
 Please use linuxbrew. See [homebrew-ecell4](https://github.com/ecell/homebrew-ecell4)
-
-Using E-Cell4 with jupyter 
---------------------------
-
-### Windows or Linux
-
-```
-jupyter-notebook
-```
-
-### Mac
-
-You need to add user local Python site-package path to your PYTHONPATH to import latest matplotlib (instead of default matplotlib)
-```
-PYTHONPATH=~/Library/Python/2.7/lib/python/site-packages/ jupyter-notebook
-```
 
 
 Simple examples
