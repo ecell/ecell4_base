@@ -100,7 +100,8 @@ int main(int argc, char **argv)
 
     // Random Number Generator (Instanciate and Initialize)
     // {{{
-    boost::shared_ptr<ecell4::GSLRandomNumberGenerator>
+    // boost::shared_ptr<ecell4::GSLRandomNumberGenerator>
+    boost::shared_ptr<ecell4::RandomNumberGenerator>
         rng(new ecell4::GSLRandomNumberGenerator());
     rng->seed((unsigned long int)0);
     // rng->seed(time(NULL));
