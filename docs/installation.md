@@ -95,7 +95,7 @@ matplotlib depends on numpy. It takes some time to build numpy, please be patien
 Although jupyter is optional, we strongly recommend that you run E-Cell4 with jupyter.
 
 ```shell
-pip install https://ci.appveyor.com/api/buildjobs/59qrnnjpqgwdrot5/artifacts/python/dist/ecell4-4.0.0b2-cp27-none-win32.whl
+pip install https://github.com/ecell/ecell4/releases/download/4.0.0/ecell-4.0.0-cp27-none-win32.whl
 pip install -U matplotlib
 pip install -U jupyter
 ```
@@ -112,7 +112,8 @@ Next download numpy-1.10.4+vanilla-cp35-none-win32.whl and matplotlib-1.5.0-cp35
 and run the following commands with command prompt.
 
 ```shell
-pip install https://ci.appveyor.com/api/buildjobs/jpyueyasgwsannch/artifacts/python/dist/ecell4-4.0.0b2-cp35-none-win32.whl
+
+pip install https://github.com/ecell/ecell4/releases/download/4.0.0/ecell-4.0.0-cp35-none-win32.whl
 pip install numpy-1.10.4+vanilla-cp35-none-win32.whl
 pip install matplotlib-1.5.1-cp35-none-win32.whl
 pip install -U jupyter
@@ -132,8 +133,8 @@ Please run the following commands in your terminal.
 brew tap ecell/ecell4
 brew install ecell4
 # Mac default matplotlib is too old for E-Cell4, you need to update it with the following options.
-pip install -U matplotlib --user
-pip install -U jupyter --user
+pip install -U --user matplotlib
+pip install -U --user jupyter
 # path config for homebrew-ecell4
 mkdir -p ~/Library/Python/2.7/lib/python/site-packages
 echo '/usr/local/lib/python2.7/site-packages' >> ~/Library/Python/2.7/lib/python/site-packages/homebrew.pth
@@ -148,11 +149,11 @@ We also have Python wheel files for E-Cell4.
 But the wheel distribution does NOT include ffmpeg.
 
 ```shell
-# please select appropriate whl file for your Python version
-pip install THEWHEELURL.whl --user
+# Please download E-Cell4 whl file for your Python version from https://github.com/ecell/ecell4/releases , here we downloaded a whl for Python27
+pip install  --user ecell-4.0.0-cp27-none-macosx_10_6_intel.macosx_10_9_intel.macosx_10_9_x86_64.macosx_10_10_intel.macosx_10_10_x86_64.whl
 # Mac default matplotlib is too old for E-Cell4, you need to update it with the following options.
-pip install -U matplotlib --user
-pip install -U jupyter --user
+pip install -U --user matplotlib
+pip install -U --user jupyter
 # path config for --user installed Python packages
 echo 'export PYTHONPATH=~/Library/Python/2.7/lib/python/site-packages:$PYTHONPATH' >> ~/.bashrc
 echo 'export PATH=~/Library/Python/2.7/bin:$PATH' >> ~/.bashrc

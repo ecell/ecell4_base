@@ -23,14 +23,18 @@ The source code is available on
 
 For installation instructions, please see :doc:`installation`. E-Cell4 runs on Windows, Mac OSX and Linux.
 
-4.0.0 (the release date[WRITEME] 2015)
+
+4.0.0 (released Feb ??, 2016)
 --------------------------------------
 
-the release note[WRITEME]
+Features added
+~~~~~~~~~~~~~~
 
--  Spatiocyte and EGFRD simulator are ready
--  Python valid rule based model
--  IPython Notebook inline visualization
+- Spatial Gillespie simulator
+- Spatiocyte simulator
+- EGFRD simulator
+- Python valid rule based model
+- IPython Notebook inline visualization
 
 Getting Started
 ---------------
