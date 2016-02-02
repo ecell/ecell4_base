@@ -60,13 +60,14 @@ Requirements
 
 ### Optional requirements
 We strongly recommend that you run E-Cell4 from [Jupyter Notebook](http://jupyter.org/).
-And some E-Cell4 functions (for datastore, visualization) depend on
+And some E-Cell4 functions (for datastore, visualization) optionaly depend on
   - HDF5
   - matplotlib **1.5.1** and later
   - ffmpeg or avconv
+  - pandas
 
 ### Build requirements
-If you build E-Cell4 from source code, these packages are needed.
+If you build E-Cell4 from source code, you need to install these software.
 - cmake
 - boost
 - gsl
