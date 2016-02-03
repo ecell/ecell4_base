@@ -208,7 +208,7 @@ public:
 
     inline const matrix_sizes_type matrix_sizes() const
     {
-        const size_type* sizes(matrix_.shape());
+        const matrix_type::size_type* sizes(matrix_.shape());
         return matrix_sizes_type(sizes[0], sizes[1], sizes[2]);
     }
 
