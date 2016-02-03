@@ -1,1 +1,3 @@
+recommonmark
+numpydoc
 https://github.com/ecell/ecell4/releases/download/untagged-a33217aec4d377fc19b3/ecell-4.0.0-cp27-none-linux_x86_64.whl
