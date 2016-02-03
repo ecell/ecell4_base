@@ -92,4 +92,5 @@ Examples
    DualPhospho/DualPhospho
    Glycolysis/Glycolysis
    HodgkinHuxley/HodgkinHuxley
+   SimpleEquilibrium/SimpleEquilibrium
    

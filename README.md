@@ -52,7 +52,7 @@ After the following steps, you should see [Jupyter Notebook](http://jupyter.org/
 
 1. Install [Docker Toolbox](https://www.docker.com/toolbox).
 2. Run **Docker Quickstart Terminal**.
-3. Run `docker run -d -p 443:8888 ecell/ecell4` in your command prompt or terminal.
+3. Run `docker run -d -p 443:8888 ecell/ecell4` in the terminal.
 4. Open **192.168.99.100:443** with your favorite web browser.
 
 ### Linux
