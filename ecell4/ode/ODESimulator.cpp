@@ -125,7 +125,7 @@ bool ODESimulator::step(const Real &upto)
 
     //initialize();
     const std::vector<Species> species(world_->list_species());
-    
+
     state_type x(species.size());
     state_type::size_type i(0);
     for(ODENetworkModel::species_container_type::const_iterator it(species.begin());
@@ -144,30 +144,30 @@ bool ODESimulator::step(const Real &upto)
             {
                 /* This solver doesn't need the jacobian */
                 typedef odeint::runge_kutta_cash_karp54<state_type> error_stepper_type;
-                typedef odeint::controlled_runge_kutta<error_stepper_type> controlled_stepper_type;
-                controlled_stepper_type controlled_stepper;
                 steps = (
                     odeint::integrate_adaptive(
-                        controlled_stepper, system.first, x, t(), ntime, dt, StateAndTimeBackInserter(x_vec, times)));
+                        odeint::make_controlled<error_stepper_type>(abs_tol_, rel_tol_),
+                        system.first, x, t(), ntime, dt,
+                        StateAndTimeBackInserter(x_vec, times)));
             }
             break;
         case ecell4::ode::ROSENBROCK4_CONTROLLER:
             {
                 typedef odeint::rosenbrock4<state_type::value_type> error_stepper_type;
-                typedef odeint::rosenbrock4_controller<error_stepper_type> controlled_stepper_type;
-                controlled_stepper_type controlled_stepper(abs_tol_, rel_tol_);
                 steps = (
                     odeint::integrate_adaptive(
-                        controlled_stepper, system, x, t(), ntime, dt, StateAndTimeBackInserter(x_vec, times)));
+                        odeint::make_controlled<error_stepper_type>(abs_tol_, rel_tol_),
+                        system, x, t(), ntime, dt,
+                        StateAndTimeBackInserter(x_vec, times)));
             }
             break;
         case ecell4::ode::EULER:
             {
                 typedef odeint::euler<state_type> stepper_type;
-                stepper_type stepper;
                 steps = (
                     odeint::integrate_const(
-                        stepper, system.first, x, t(), ntime, dt, StateAndTimeBackInserter(x_vec, times)));
+                        stepper_type(), system.first, x, t(), ntime, dt,
+                        StateAndTimeBackInserter(x_vec, times)));
             }
             break;
         default:
