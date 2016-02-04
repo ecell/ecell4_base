@@ -151,7 +151,11 @@ setup(
         "templates/init_ipynb.js", "templates/init_cyjs.js", "templates/template.html",
         "templates/*.tmpl", "templates/ecelllogo/*.png"]},
     data_files = [('ecell4ipynb', ['../ipynb/index.ipynb']),
-                  ('ecell4ipynb/Tutorials', glob.glob('../ipynb/Tutorials/*.ipynb'))],
+                  ('ecell4ipynb/Tutorials', glob.glob('../ipynb/Tutorials/*.ipynb')),
+                  ('ecell4ipynb/Examples', glob.glob('../ipynb/Examples/*.ipynb')),
+                  ('ecell4ipynb/Tests', glob.glob('../ipynb/Tests/*.ipynb')),
+                  ('ecell4ipynb/Sandbox', glob.glob('../ipynb/Sandbox/*.ipynb')),
+                  ],
     packages = ["ecell4", "ecell4.util", "ecell4.extra"],
     cmdclass = {'build_ext': build_ext, 'test': run_tests},
     ext_modules = ext_modules
