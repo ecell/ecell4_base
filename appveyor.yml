@@ -17,16 +17,13 @@ init:
 install:
   # install hdf5
   - mkdir hdf5lib
+  - cd hdf5lib
   - if "%PYTHON_VERSION%" == "2.7.11" curl -O https://www.hdfgroup.org/ftp/HDF5/current/bin/windows/extra/hdf5-1.8.16-win32-vs2012-shared.zip
-  # - if "%PYTHON_VERSION%" == "3.5.1" curl -O https://www.hdfgroup.org/ftp/HDF5/current/bin/windows/extra/hdf5-1.8.16-win32-vs2015-shared.zip
   - if "%PYTHON_VERSION%" == "2.7.11" unzip hdf5-1.8.16-win32-vs2012-shared.zip
-  # - if "%PYTHON_VERSION%" == "3.5.1" unzip hdf5-1.8.16-win32-vs2015-shared.zip
-  # - cd hdf5
-  # - msiexec /i HDF5-1.8.16-win32.msi /quiet /qn /norestart /log install.log
-  # - type install.log
   - if "%PYTHON_VERSION%" == "2.7.11" cd hdf5
   - if "%PYTHON_VERSION%" == "2.7.11" msiexec /i HDF5-1.8.16-win32.msi /quiet /qn /norestart /log install.log
   - if "%PYTHON_VERSION%" == "2.7.11" type install.log
+  - if "%PYTHON_VERSION%" == "2.7.11" cd ..
   - if "%PYTHON_VERSION%" == "3.5.1" curl -O http://repo.continuum.io/pkgs/free/win-32/hdf5-1.8.15.1-vc14_4.tar.bz2
   - if "%PYTHON_VERSION%" == "3.5.1" 7z x -y hdf5-1.8.15.1-vc14_4.tar.bz2
   - if "%PYTHON_VERSION%" == "3.5.1" 7z x -y hdf5-1.8.15.1-vc14_4.tar
