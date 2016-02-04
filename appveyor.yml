@@ -6,8 +6,8 @@ environment:
     BOOST_ROOT: C:\Libraries\boost
 
   matrix:
-    - PYTHON: "C:\\Python27"
-      PYTHON_VERSION: "2.7.11"
+    # - PYTHON: "C:\\Python27"
+    #   PYTHON_VERSION: "2.7.11"
     - PYTHON: "C:\\Python35"
       PYTHON_VERSION: "3.5.1"
 
@@ -53,12 +53,20 @@ install:
   # install hdf5
   - mkdir hdf5lib
   - if "%PYTHON_VERSION%" == "2.7.11" curl -O https://www.hdfgroup.org/ftp/HDF5/current/bin/windows/extra/hdf5-1.8.16-win32-vs2012-shared.zip
-  - if "%PYTHON_VERSION%" == "3.5.1" curl -O https://www.hdfgroup.org/ftp/HDF5/current/bin/windows/extra/hdf5-1.8.16-win32-vs2015-shared.zip
+  # - if "%PYTHON_VERSION%" == "3.5.1" curl -O https://www.hdfgroup.org/ftp/HDF5/current/bin/windows/extra/hdf5-1.8.16-win32-vs2015-shared.zip
   - if "%PYTHON_VERSION%" == "2.7.11" unzip hdf5-1.8.16-win32-vs2012-shared.zip
-  - if "%PYTHON_VERSION%" == "3.5.1" unzip hdf5-1.8.16-win32-vs2015-shared.zip
-  - cd hdf5
-  - msiexec /i HDF5-1.8.16-win32.msi /quiet /qn /norestart /log install.log
-  - type install.log
+  # - if "%PYTHON_VERSION%" == "3.5.1" unzip hdf5-1.8.16-win32-vs2015-shared.zip
+  # - cd hdf5
+  # - msiexec /i HDF5-1.8.16-win32.msi /quiet /qn /norestart /log install.log
+  # - type install.log
+  - if "%PYTHON_VERSION%" == "2.7.11" cd hdf5
+  - if "%PYTHON_VERSION%" == "2.7.11" msiexec /i HDF5-1.8.16-win32.msi /quiet /qn /norestart /log install.log
+  - if "%PYTHON_VERSION%" == "2.7.11" type install.log
+  - if "%PYTHON_VERSION%" == "3.5.1" curl -O https://anaconda.org/anaconda/hdf5/1.8.15.1/download/win-32/hdf5-1.8.15.1-vc14_4.tar.bz2
+  - if "%PYTHON_VERSION%" == "3.5.1" 7z x -y hdf5-1.8.15.1-vc14_4.tar.bz2
+  - if "%PYTHON_VERSION%" == "3.5.1" 7z x -y hdf5-1.8.15.1-vc14_4.tar
+  - if "%PYTHON_VERSION%" == "3.5.1" mkdir "C:/Program Files (x86)/HDF_Group/HDF5/1.8.16"
+  - if "%PYTHON_VERSION%" == "3.5.1" xcopy Library "C:/Program Files (x86)/HDF_Group/HDF5/1.8.16" /s /e /y
   - cd ..
 
   # config.h
@@ -96,6 +104,7 @@ branches:
   only:
     - master
     - develop
+    - appveyor2
 
 artifacts:
   # bdist_wheel puts your built wheel in the dist directory
