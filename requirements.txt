@@ -1,4 +1,4 @@
 recommonmark
 numpydoc
 requests[security]
-http://dev.e-cell.org/downloads/ecell-4.0.0-cp27-none-linux_x86_64.whl
+https://github.com/ecell/ecell4/releases/download/4.0.0/ecell-4.0.0-cp27-none-linux_x86_64.whl
