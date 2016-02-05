@@ -96,47 +96,20 @@ If you build E-Cell4 from source code, you need to install these software.
 Windows
 -------
 
-Please use 32bit Python, even if you use 64bit Windows.
+Please use 32bit Python2.7 or 3.5, even if you use 64bit Windows.
 We have NOT supported 64bit Python yet.
 
-### Python2 series
+- Install **32bit** Miniconda for Windows from http://conda.pydata.org/miniconda.html
+- Run the follwing commands on command prompt (if you use Python3.5, please replace the target of ```pip install``` to the whl for 3.5)
 
-- [Python 2.7.11(**32bit**)](https://www.python.org/ftp/python/2.7.11/python-2.7.11.msi)
-- [HDF5-1.8.16(**32-bit built with VS2012**)](http://www.hdfgroup.org/ftp/HDF5/current/bin/windows/extra/hdf5-1.8.16-win32-vs2012-shared.zip)
-- [Visual C++ Compiler for Python 2.7](http://aka.ms/vcpython27)
+    ```shell
+    conda update pip
+    conda install hdf5 jupyter matplotlib
+    pip install https://github.com/ecell/ecell4/releases/download/untagged-b0dc335666fed3b9cba6/ecell-4.0.0-cp27-none-win32.whl
+    ``` 
 
-Please add python.exe, pip.exe path and `C:\Program Files (x86)\HDF_Group\HDF5\1.8.16\bin` to your **USER** PATH enviromental variable.
-
-And run the following commands with command prompt.
-matplotlib depends on numpy. It takes some time to build numpy, please be patient.
 Although jupyter is optional, we strongly recommend that you run E-Cell4 with jupyter.
-
-```shell
-pip install https://github.com/ecell/ecell4/releases/download/4.0.0/ecell-4.0.0-cp27-none-win32.whl
-pip install -U matplotlib
-pip install -U jupyter
-```
-
-If you use animated visualization for E-Cell4, please install [ffmpeg windows build](http://ffmpeg.zeranoe.com/builds/) and add its path to your **USER** PATH enviromental variable too.
-
-### Python3 series
-
-- [Python 3.5.1(**32bit**)](https://www.python.org/ftp/python/3.5.1/python-3.5.1.msi)
-- [HDF5-1.8.16(**32-bit built with VS2015**)](http://www.hdfgroup.org/ftp/HDF5/current/bin/windows/extra/hdf5-1.8.16-win32-vs2015-shared.zip)
-
-Please add python.exe, pip.exe path and `C:\Program Files (x86)\HDF_Group\HDF5\1.8.16\bin` to your **USER** PATH enviromental variable.
-Next download numpy-1.10.4+vanilla-cp35-none-win32.whl and matplotlib-1.5.0-cp35-none-win32.whl from http://www.lfd.uci.edu/~gohlke/pythonlibs/
-and run the following commands with command prompt.
-
-```shell
-
-pip install https://github.com/ecell/ecell4/releases/download/4.0.0/ecell-4.0.0-cp35-none-win32.whl
-pip install numpy-1.10.4+vanilla-cp35-none-win32.whl
-pip install matplotlib-1.5.1-cp35-none-win32.whl
-pip install -U jupyter
-```
-
-If you use animated visualization for E-Cell4, please install [ffmpeg windows build](http://ffmpeg.zeranoe.com/builds/) and add its path to your **USER** PATH enviromental variable too.
+If you use animated visualization for E-Cell4, please install [ffmpeg windows build](http://ffmpeg.zeranoe.com/builds/) and add its path to your **USER** PATH enviromental variable.
 
 Mac
 ---
