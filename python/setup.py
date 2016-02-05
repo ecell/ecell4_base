@@ -47,24 +47,36 @@ if "--prefer-shared" in sys.argv:
     with_cpp_shared_libraries = True
     sys.argv.remove("--prefer-shared")
 
-if sys.platform == "win32":
-    if sys.version_info.major == 2:
-        dependent_libs = ['gsl', 'cblas', 'hdf5_cpp', 'hdf5']
-        # extra_compile_args = ["/EHsc", "/w", "-DHAVE_CONFIG_H", "-DHAVE_INLINE", "-DWITH_HDF5", "-D_HDF5USEDLL_", "-DHDF5CPP_USEDLL", "-DH5_BUILT_AS_DYNAMIC_LIB"]
-        extra_compile_args = ["/EHsc", "-DHAVE_CONFIG_H", "-DHAVE_INLINE", "-DWITH_HDF5", "-D_HDF5USEDLL_", "-DHDF5CPP_USEDLL", "-DH5_BUILT_AS_DYNAMIC_LIB"]
-    elif sys.version_info.major == 3:
-        #dependent_libs = ['gsl', 'gslcblas']
-        dependent_libs = ['gsl', 'gslcblas', 'hdf5_cpp', 'hdf5']
-        #extra_compile_args = ["/EHsc", "-DHAVE_CONFIG_H"]
-        #extra_compile_args = ["/EHsc", "/w", "-DHAVE_CONFIG_H"]
-        extra_compile_args = ["/EHsc", "/w", "-DHAVE_CONFIG_H", "-DWITH_HDF5", "-D_HDF5USEDLL_", "-DHDF5CPP_USEDLL", "-DH5_BUILT_AS_DYNAMIC_LIB"]  # "-DHAVE_INLINE"
+with_hdf5 = False
+if "--hdf5" in sys.argv:
+    #XXX: This might be not a proper way to give a user defined parameter
+    with_hdf5 = True
+    sys.argv.remove("--hdf5")
 
+if sys.platform == "win32":
+    with_hdf5 = True  #XXX: forced
+    if sys.version_info.major == 2:
+        dependent_libs = ['gsl', 'cblas']
+        extra_compile_args = ["/EHsc", "-DHAVE_CONFIG_H", "-DHAVE_INLINE"]
+    elif sys.version_info.major == 3:
+        dependent_libs = ['gsl', 'gslcblas']
+        extra_compile_args = ["/EHsc", "/w", "-DHAVE_CONFIG_H"]  # "-DHAVE_INLINE"
 elif sys.platform == "darwin":
-    dependent_libs = ['gsl', 'gslcblas', 'm', 'hdf5_cpp', 'hdf5']
-    extra_compile_args = ["-DWITH_HDF5"]
+    with_hdf5 = True  #XXX: forced
+    dependent_libs = ['gsl', 'gslcblas', 'm']
+    extra_compile_args = []
 else: # for linux
-    dependent_libs = ['gsl', 'gslcblas', 'm', 'hdf5_cpp', 'hdf5']
-    extra_compile_args = ["-DWITH_HDF5"]
+    if not with_cpp_shared_libraries:
+        with_hdf5 = True  #XXX: forced
+    dependent_libs = ['gsl', 'gslcblas', 'm']
+    extra_compile_args = []
+
+if with_hdf5:
+    dependent_libs.extend(['hdf5_cpp', 'hdf5'])
+    extra_compile_args.append("-DWITH_HDF5")
+    if sys.platform == "win32":
+        extra_compile_args.extend(
+            ["-D_HDF5USEDLL_", "-DHDF5CPP_USEDLL", "-DH5_BUILT_AS_DYNAMIC_LIB"])
 
 if with_cpp_shared_libraries:
     ext_modules = [
@@ -91,12 +103,6 @@ if with_cpp_shared_libraries:
         ]
     ext_modules = cythonize(ext_modules)
 else:
-    # import subprocess
-    # import os.path
-    # path_to_egfrd = os.path.join(os.path.abspath(".."), "ecell4", "egfrd")
-    # sjy_table_path = os.path.join(path_to_egfrd, "SphericalBesselTable.hpp")
-    # cjy_table_path = os.path.join(path_to_egfrd, "CylindricalBesselTable.hpp")
-
     # ext_modules = cythonize(
     #         glob.glob("lib/ecell4/*.pyx"),
     #         sources=glob.glob("../ecell4/*/*.cpp"),  #XXX: Not safe
