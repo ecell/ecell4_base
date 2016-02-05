@@ -1266,24 +1266,15 @@ def plot_movie_of_trajectory2d_with_matplotlib(
         A list of Worlds to render.
     plane : str, default 'xy'
         'xy', 'yz', 'zx'.
-    marker_size : float, default 3
-        Marker size for all species. Size is passed to scatter function
-        as argument, s=(2 ** marker_size).
     figsize : float, default 6
         Size of the plotting area. Given in inch.
     max_count : Integer, default None
         The maximum number of particles to show for each species.
         None means no limitation.
-    angle : tuple, default None
-        A tuple of view angle which is given as (azim, elev, dist).
-        If None, use default assumed to be (-60, 30, 10).
     interval : Integer, default 0.16
         Parameters for matplotlib.animation.ArtistAnimation.
     stride : Integer, default 1
         Stride per frame.
-    rotate : tuple, default None
-        A pair of rotation angles, elev and azim, for animation.
-        None means no rotation, same as (0, 0).
     legend : bool, default True
     output : str, default None
     plot_range : tuple, default None
@@ -1335,10 +1326,6 @@ def plot_movie_of_trajectory2d_with_matplotlib(
         for plot, line in zip(plots, lines):
             plot.set_xdata(line[0][: upto])
             plot.set_ydata(line[1][: upto])
-
-        if rotate is not None:
-            ax.elev += rotate[0]
-            ax.azim += rotate[1]
 
         fig.canvas.draw()
 
