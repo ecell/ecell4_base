@@ -24,7 +24,7 @@ The source code is available on
 For installation instructions, please see :doc:`installation`. E-Cell4 runs on Windows, Mac OSX and Linux.
 
 
-4.0.0 (released Feb ??, 2016)
+4.0.0 (released Feb 5, 2016)
 --------------------------------------
 
 Features added
