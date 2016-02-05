@@ -504,8 +504,6 @@ interval.
 
 See also examples listed below:
 
--  `Glycolysis of Human
-   Erythrocytes <../Examples/Glycolysis%20of%20Human%20Erythrocytes.ipynb>`__
--  `Drosophila Circadian
-   Clock <../Examples/Drosophila%20Circadian%20Clock.ipynb>`__
--  `Attractors <../Examples/Attractors.ipynb>`__
+-  :doc:`../Glycolysis/Glycolysis`
+-  :doc:`../Drosophila/Drosophila`
+-  :doc:`../Attractors/Attractors`

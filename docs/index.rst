@@ -23,23 +23,29 @@ The source code is available on
 
 For installation instructions, please see :doc:`installation`. E-Cell4 runs on Windows, Mac OSX and Linux.
 
-4.0.0 (the release date[WRITEME] 2015)
+
+4.0.0 (released Feb ??, 2016)
 --------------------------------------
 
-the release note[WRITEME]
+Features added
+~~~~~~~~~~~~~~
 
--  Spatiocyte and EGFRD simulator are ready
--  Python valid rule based model
--  IPython Notebook inline visualization
+- Spatial Gillespie simulator
+- Spatiocyte simulator
+- EGFRD simulator
+- Python valid rule based model
+- IPython Notebook inline visualization
 
-Getting Started:
+Getting Started
+---------------
 
 .. toctree::
    :glob:
 
    installation
 
-Tutorials:
+Tutorials
+---------
 
 We assume that you run the following tutorials from Jupyter Notebook.
 Please note that magic functions like ``%matplotlib`` work only on Jupyter Notebook.
@@ -51,11 +57,15 @@ Please note that magic functions like ``%matplotlib`` work only on Jupyter Noteb
    tutorial2/tutorial2
    tutorial3/tutorial3
    tutorial4/tutorial4
+   tutorial5/tutorial5
    tutorial6/tutorial6
    tutorial7/tutorial7
    tutorial8/tutorial8
+   tutorial9/tutorial9
+   tutorial10/tutorial10
 
-API:
+API
+---
 
 .. toctree::
    :glob:
@@ -71,7 +81,8 @@ API:
    api/util.viz
    api/util.decorator
 
-Examples:
+Examples
+--------
 
 .. toctree::
    :glob:
@@ -80,13 +91,6 @@ Examples:
    Drosophila/Drosophila
    DualPhospho/DualPhospho
    Glycolysis/Glycolysis
+   HodgkinHuxley/HodgkinHuxley
+   SimpleEquilibrium/SimpleEquilibrium
    
-Old Tutorials:
-
-.. toctree::
-   :glob:
-
-   Introduction
-   WorldSimBasics
-   Meso
-   Spatiocyte

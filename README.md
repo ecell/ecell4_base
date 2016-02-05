@@ -10,138 +10,189 @@ What is E-Cell System?
 
 E-Cell System, a software platform for modeling, simulation and analysis of complex, heterogeneous and multi-scale systems like the cell.
 
-Installation
-============
+Table of contents
+=================
 
-- [Docker users](#docker-users)
+- [Docker container for E-Cell System version4](#docker-container-for-e-cell-system-version4)
   - [Windows or Mac](#windows-or-mac)
   - [Linux](#linux)
 
-- [Windows](#windows)
-  - [Python2 series](#python2-series)
-  - [Python3 series](#python3-series)
-  
-- [Mac](#mac)
-  - [pip users](#pip-users)
-  - [homebrew users](#homebrew-users)
+- [Installation and usage](#installation-and-usage)
+  - [Requirements](#requirements)
+    - [Minimum requirements](#minimum-requirements)
+    - [Optional requirements](#optional-requirements)
+    - [Build requirements](#build-requirements)
 
-- [Linux](#Linux)
+  - [Windows](#windows)
+    - [Python2 series](#python2-series)
+    - [Python3 series](#python3-series)
+  - [Mac](#mac)
+    - [Homebrew users](#homebrew-users)
+    - [Pip users](#pip-users)
+  - [Linux](#Linux)
+    - [Ubuntu Linux](#ubuntu-linux)
+    - [Linuxbrew](#linuxbrew)
 
-- [Using E-Cell4 with jupyter](#using-e-cell4-with-jupyter)
+  - [Simple examples](#simple-examples)
 
-- [Simple examples](#simple-examples)
+- [Licensing terms](#licensing-terms)
 
-Docker users
-------------
 
-If you have docker environment, you can try E-Cell4 easily.
+Docker container for E-Cell System version4
+===========================================
+
+If you have docker environment, you can easily try E-Cell4.
 You can pull E-Cell4 container with `docker pull ecell/ecell4`.
 
-After the following steps, you should see Jupyter Notebook up and running (and E-Cell4 tutorials) in your web browser.
+After the following steps, you should see [Jupyter Notebook](http://jupyter.org/) up and running (and E-Cell4 tutorials) in your web browser.
 
-### Windows or Mac
+Windows or Mac
+--------------
 
 1. Install [Docker Toolbox](https://www.docker.com/toolbox).
 2. Run **Docker Quickstart Terminal**.
 3. Run `docker run -d -p 443:8888 ecell/ecell4` in the terminal.
-4. Open **192.168.99.100:443** with your favorite web browser.
+4. Open **192.168.99.100:443** with your web browser.
 
-### Linux
+Linux
+-----
 
-1. Install docker.
-2. Run the following command.
+1. Install Docker.
+2. Run the following commands in your terminal.
 
     ```shell
-    $ sudo docker pull ecell/ecell4
-    $ sudo docker run -d -p 443:8888 ecell/ecell4
+    sudo docker pull ecell/ecell4
+    sudo docker run -d -p 443:8888 ecell/ecell4
     ```
 
-3. Open **localhost:443** with your favorite web browser.
+3. Open **localhost:443** with your web browser.
+
+
+Installation and usage
+======================
+
+Requirements
+------------
+
+### Minimum requirements
+- Python 2.7 or 3.4(on Linux) 3.5(on Windows, Mac) 
+- pip
+
+### Optional requirements
+We strongly recommend that you run E-Cell4 from [Jupyter Notebook](http://jupyter.org/).
+And some E-Cell4 functions (for visualization, datastore) optionaly depend on
+- matplotlib (**1.5.1** and later)
+- ffmpeg or avconv
+- hdf5
+- pandas
+
+### Build requirements
+If you build E-Cell4 from source code, you need to install these software.
+- boost (**1.59** and earlier)
+- cmake
+- gsl
+- hdf5
 
 Windows
 -------
 
-Please use 32bit Python, even if you use 64bit Windows.
+Please use 32bit Python2.7 or 3.5, even if you use 64bit Windows.
 We have NOT supported 64bit Python yet.
 
-### Python2 series
+- Install **32bit** Miniconda for Windows from http://conda.pydata.org/miniconda.html
+- Run the follwing commands on command prompt (if you use Python3.5, please replace the target of ```pip install``` to the whl for 3.5)
 
-- [Python 2.7.11(**32bit**)](https://www.python.org/ftp/python/2.7.11/python-2.7.11.msi)
-- [HDF5-1.8.16(**32-bit built with VS2012**)](http://www.hdfgroup.org/ftp/HDF5/current/bin/windows/extra/hdf5-1.8.16-win32-vs2012-shared.zip)
-- [Visual C++ Compiler for Python 2.7](http://aka.ms/vcpython27)
+    ```shell
+    conda update pip
+    conda install hdf5 jupyter matplotlib
+    pip install https://github.com/ecell/ecell4/releases/download/4.0.0/ecell-4.0.0-cp27-none-win32.whl
+    ``` 
 
-Please add python.exe, pip.exe path and `C:\Program Files (x86)\HDF_Group\HDF5\1.8.16\bin` to your **USER** PATH enviromental variable.
-
-And run the following commands with command prompt.
-matplotlib depends on numpy. It takes some time to build numpy, please be patient.
 Although jupyter is optional, we strongly recommend that you run E-Cell4 with jupyter.
-
-```shell
-pip install https://ci.appveyor.com/api/buildjobs/59qrnnjpqgwdrot5/artifacts/python/dist/ecell4-4.0.0b2-cp27-none-win32.whl
-pip install -U matplotlib
-pip install -U jupyter
-```
-
-### Python3 series
-
-- [Python 3.5.1(**32bit**)](https://www.python.org/ftp/python/3.5.1/python-3.5.1.msi)
-- [HDF5-1.8.16(**32-bit built with VS2015**)](http://www.hdfgroup.org/ftp/HDF5/current/bin/windows/extra/hdf5-1.8.16-win32-vs2015-shared.zip)
-
-Please add python.exe, pip.exe path and `C:\Program Files (x86)\HDF_Group\HDF5\1.8.16\bin` to your **USER** PATH enviromental variable.
-Next download numpy-1.10.4+vanilla-cp35-none-win32.whl and matplotlib-1.5.0-cp35-none-win32.whl from http://www.lfd.uci.edu/~gohlke/pythonlibs/
-And run the following commands with command prompt.
-
-```
-pip install https://ci.appveyor.com/api/buildjobs/jpyueyasgwsannch/artifacts/python/dist/ecell4-4.0.0b2-cp35-none-win32.whl
-pip install numpy-1.10.4+vanilla-cp35-none-win32.whl
-pip install matplotlib-1.5.0-cp35-none-win32.whl
-pip install -U jupyter
-```
+If you use animated visualization for E-Cell4, please install [ffmpeg windows build](http://ffmpeg.zeranoe.com/builds/) and add its path to your **USER** PATH enviromental variable.
 
 Mac
 ---
 
-### pip users
-
-1. Download [get-pip.py](https://bootstrap.pypa.io/get-pip.py)
-2. Run the following commands
-    ```shell
-    sudo python get-pip.py
-    # please select appropriate whl file for your Python version
-    sudo pip install THEWHEELURL.whl
-    # Mac default matplotlib is too old, you need to add these options to the pip command.
-    pip install -U matplotlib --user
-    sudo pip install -U jupyter
-    ```
-
 ### homebrew users
-Please see [homebrew-ecell4](https://github.com/ecell/homebrew-ecell4)
+We have homebrew formula for E-Cell4 [homebrew-ecell4](https://github.com/ecell/homebrew-ecell4).
+This homebrew formula includes ffmpeg (for animated visualization).
+Please run the following commands in your terminal.
+
+```shell
+brew tap ecell/ecell4
+brew install ecell4
+
+# Mac default matplotlib is too old for E-Cell4, you need to update it with the following options.
+pip install -U --user matplotlib
+pip install -U --user jupyter
+
+# path config for homebrew-ecell4
+mkdir -p ~/Library/Python/2.7/lib/python/site-packages
+echo 'import site; site.addsitedir("/usr/local/lib/python2.7/site-packages")' >> ~/Library/Python/2.7/lib/python/site-packages/homebrew.pth
+
+# path config for --user installed Python packages
+echo 'export PYTHONPATH=~/Library/Python/2.7/lib/python/site-packages:$PYTHONPATH' >> ~/.bashrc
+echo 'export PATH=~/Library/Python/2.7/bin:$PATH' >> ~/.bashrc
+source ~/.bashrc
+```
+
+### pip users
+We also have Python wheel files for E-Cell4.
+But the wheel distribution does NOT include ffmpeg.
+If you need animation visualization, please install it yourself. 
+
+```shell
+# Please download E-Cell4 whl file for your Python version from https://github.com/ecell/ecell4/releases , here we downloaded a whl for Python27
+pip install  --user ecell-4.0.0-cp27-none-macosx_10_6_intel.macosx_10_9_intel.macosx_10_9_x86_64.macosx_10_10_intel.macosx_10_10_x86_64.whl
+
+# Mac default matplotlib is too old for E-Cell4, you need to update it with the following options.
+pip install -U --user matplotlib
+pip install -U --user jupyter
+
+# path config for --user installed Python packages
+echo 'export PYTHONPATH=~/Library/Python/2.7/lib/python/site-packages:$PYTHONPATH' >> ~/.bashrc
+echo 'export PATH=~/Library/Python/2.7/bin:$PATH' >> ~/.bashrc
+source ~/.bashrc
+```
 
 Linux
 -----
-Please use linuxbrew, see [homebrew-ecell4](https://github.com/ecell/homebrew-ecell4)
 
-Using E-Cell4 with jupyter 
---------------------------
+### Ubuntu Linux
+We have tested the release files on Ubuntu Linux 14.04 and 15.10.
+If you use Ubuntu please run the following commands.
 
-### Windows or Linux
+```shell
+# If you use Python3 please replace python-pip to python3-pip
+sudo apt-get install libboost-dev libgsl0-dev libhdf5-dev python-pip
+# If you use Python3 please replace the whl for Python3
+pip install --user https://github.com/ecell/ecell4/releases/download/4.0.0/ecell-4.0.0-cp27-none-linux_x86_64.whl
 
+# The latest matplotlib and jupyter
+sudo apt-get install libfreetype6-dev libpng-dev pkg-config python-numpy pandoc
+pip install --user matplotlib jupyter
+
+# Optional requirement (animation visualization) for 14.04
+sudo apt-get install libav-tools
+# If you use 15.10 you can use ffmpeg deb package
+#sudo apt-get install -y ffmpeg
+
+# path config for --user installed Python packages
+echo 'export PYTHONPATH=~/.local/lib/python2.7/site-packages:$PYTHONPATH' >> ~/.bashrc
+echo 'export PATH=~/.local/bin:$PATH' >> ~/.bashrc
+source ~/.bashrc
 ```
-jupyter-notebook
-```
 
-### Mac
+### Linuxbrew
 
-You need to add user local Python site-package path to your PYTHONPATH to import latest matplotlib (instead of default matplotlib)
-```
-PYTHONPATH=~/Library/Python/2.7/lib/python/site-packages/ jupyter-notebook
-```
-
+[E-Cell4 homebrew formula](https://github.com/ecell/homebrew-ecell4) also can be used for [Linuxbrew](http://linuxbrew.sh/).
+If you do NOT use Ubuntu, please try Linuxbrew instead.
 
 Simple examples
 ---------------
 
-Here are two extremely simple examples, See http://ecell4.readthedocs.org/en/latest/tutorials/ for more details on running E-Cell4.
+Here are two extremely simple examples, See http://ecell4.readthedocs.org for more details on running E-Cell4.
 
 ```
 Python 2.7.6 (default, Mar 22 2014, 22:59:56)
@@ -170,7 +221,7 @@ y = run_simulation(
 
 ![png](https://raw.githubusercontent.com/ecell/ecell4/master/docs/images/output_7_0.png)
 
-### Molecular diffusion visualization
+### Particle tracking on a spherical surface
 
 ```python
 %matplotlib inline
@@ -189,3 +240,12 @@ viz.plot_trajectory(obs, interactive=False)
 ```
 
 ![png](https://raw.githubusercontent.com/ecell/ecell4/master/docs/images/hairball.png)
+
+# Licensing terms
+
+This project is licensed under the terms of the GNU General Public License v2.
+See [LICENSE](https://github.com/ecell/ecell4/blob/master/LICENSE) for the project license.
+
+- Copyright (c) 2010-, RIKEN
+
+All rights reserved.

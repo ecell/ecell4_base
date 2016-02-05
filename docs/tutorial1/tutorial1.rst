@@ -9,8 +9,8 @@ First of all, you have to load the E-Cell4 library:
     %matplotlib inline
     from ecell4 import *
 
-1.1. Quick Demostration
------------------------
+1.1. Quick Demo
+---------------
 
 There are three fundamental components consisting of E-Cell System
 version 4, which are ``Model``, ``World``, and ``Simulator``. These
@@ -48,7 +48,7 @@ the simplest way using the ``with`` statement with ``reaction_rules``:
 
 
 Please remember to write parentheses ``()`` after ``reaction_rules``.
-Here, a ``Model`` with two ``ReactionRule``\ s named ``m`` was built.
+Here, a ``Model`` with two ``ReactionRule``\ s named ``m1`` was built.
 Lines in the ``with`` block describe ``ReactionRule``\ s, a binding and
 unbinding reaction respectively. A kinetic rate for the mass action
 reaction is defined after a separator ``|``, i.e. ``0.01`` or ``0.3``.
@@ -161,7 +161,7 @@ Then, ``run_simulation`` accepts structures and observers as arguments
                    solver='spatiocyte', observers=(obs1, obs2), return_type=None)
 
 E-Cell4 also provides visualizations including an interactive
-visualization on IPython Notebook like ``viz.plot_world``.
+visualization on Jupyter Notebook like ``viz.plot_world``.
 ``viz.plot_world`` plots positions of molecules in 3D. In addition, by
 using ``load_world``, you can easily restore the state of ``World`` from
 a HDF5 file:
@@ -189,5 +189,4 @@ plots trajectories in the interactive way:
 .. image:: output_24_0.png
 
 
-For more details, see `5. How to Log and Visualize
-Simulations <5.%20How%20to%20Log%20and%20Visualize%20Simulations.ipynb>`__.
+For more details, see :doc:`../tutorial5/tutorial5`

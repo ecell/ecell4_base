@@ -77,7 +77,8 @@ struct WorldTraitsBase
     typedef ecell4::Species::serial_type species_id_type; // std::string
     typedef ecell4::Particle particle_type;
     typedef ecell4::Real3 position_type;
-    typedef ecell4::GSLRandomNumberGenerator rng_type;
+    // typedef ecell4::GSLRandomNumberGenerator rng_type;
+    typedef ecell4::RandomNumberGenerator rng_type;
     typedef ecell4::Model model_type;
 
     struct MoleculeInfo
@@ -285,7 +286,8 @@ public:
         const matrix_sizes_type& sizes = matrix_sizes_type(3, 3, 3))
         : base_type(edge_lengths, sizes)
     {
-        rng_ = boost::shared_ptr<rng_type>(new rng_type());
+        // rng_ = boost::shared_ptr<rng_type>(new rng_type());
+        rng_ = boost::shared_ptr<rng_type>(new ecell4::GSLRandomNumberGenerator());
         (*rng_).seed();
 
         add_world_structure();
@@ -299,19 +301,20 @@ public:
         add_world_structure();
     }
 
-    World(
-        const position_type& edge_lengths, const matrix_sizes_type& sizes,
-        const boost::shared_ptr<ecell4::RandomNumberGenerator>& rng)
-        : base_type(edge_lengths, sizes),
-        rng_(boost::dynamic_pointer_cast<rng_type>(rng))
-    {
-        add_world_structure();
-    }
+    // World(
+    //     const position_type& edge_lengths, const matrix_sizes_type& sizes,
+    //     const boost::shared_ptr<ecell4::RandomNumberGenerator>& rng)
+    //     : base_type(edge_lengths, sizes),
+    //     rng_(boost::dynamic_pointer_cast<rng_type>(rng))
+    // {
+    //     add_world_structure();
+    // }
 
     World(const std::string filename)
         : base_type(position_type(1, 1, 1), matrix_sizes_type(3, 3, 3)), rng_()
     {
-        rng_ = boost::shared_ptr<rng_type>(new rng_type());
+        rng_ = boost::shared_ptr<rng_type>(new ecell4::GSLRandomNumberGenerator());
+        // rng_ = boost::shared_ptr<rng_type>(new rng_type());
         this->load(filename);
     }
 

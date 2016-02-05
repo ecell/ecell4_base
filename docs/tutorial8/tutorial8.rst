@@ -2,8 +2,7 @@
 8. More about 1. Brief Tour of E-Cell4 Simulations
 ==================================================
 
-Once you read through `1. Brief Tour of E-Cell4
-Simulations <1.%20Brief%20Tour%20of%20E-Cell4%20Simulations>`__, it is
+Once you read through :doc:`../tutorial1/tutorial1`, it is
 NOT difficult to use ``World`` and ``Simulator``. ``volume`` and
 ``{'C': 60}`` is equivalent of the ``World`` and solver is the
 ``Simulator`` below.
