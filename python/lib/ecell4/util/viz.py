@@ -754,7 +754,7 @@ def plot_dense_array(
     img.save(fp, "PNG")
     fp.seek(0)
     encoded_url = "data:image/png;base64," + b64encode(fp.read())
-    
+
     model = {
         'plots': [{
             'type': 'Volume',
@@ -1161,6 +1161,201 @@ def plot_trajectory_with_matplotlib(
     if legend:
         ax.legend(loc='best', shadow=True)
     plt.show()
+
+def __prepare_plot_with_maplotlib(
+        wrange, figsize, grid, wireframe, noaxis):
+    import matplotlib.pyplot as plt
+
+    fig = plt.figure(figsize=(figsize, figsize))
+    ax = fig.gca()
+    ax.set_aspect('equal')
+
+    # if wireframe:
+    #     ax.w_xaxis.set_pane_color((0, 0, 0, 0))
+    #     ax.w_yaxis.set_pane_color((0, 0, 0, 0))
+    #     ax.w_zaxis.set_pane_color((0, 0, 0, 0))
+
+    ax.grid(grid)
+    ax.set_xlim(*wrange['x'])
+    ax.set_ylim(*wrange['y'])
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+
+    if noaxis:
+        ax.set_axis_off()
+
+    return (fig, ax)
+
+def __plot_trajectory2d_with_matplotlib(lines, ax, upto=None, **kwargs):
+    color_scale = default_color_scale()
+    plots = []
+    for i, line in enumerate(lines):
+        plots.append(
+            ax.plot(line[0][: upto], line[1][: upto],
+                label=i, color=color_scale.get_color(i), **kwargs)[0])
+    return plots
+
+def plot_trajectory2d_with_matplotlib(
+        obs, plane='xy', max_count=10, figsize=6, legend=True,
+        wireframe=False, grid=True, noaxis=False, plot_range=None, **kwargs):
+    """
+    Make a 2D plot from received instance of TrajectoryObserver and show it
+    on IPython notebook.
+
+    Parameters
+    ----------
+    obs : TrajectoryObserver
+        TrajectoryObserver to render.
+    plane : str, default 'xy'
+        'xy', 'yz', 'zx'.
+    max_count : Integer, default 10
+        The maximum number of particles to show. If None, show all.
+    figsize : float, default 6
+        Size of the plotting area. Given in inch.
+    legend : bool, default True
+    plot_range : tuple, default None
+        Range for plotting. A triplet of pairs suggesting (rangex, rangey, rangez).
+        If None, the minimum volume containing all the trajectories is used.
+
+    """
+    import matplotlib.pyplot as plt
+
+    plane = plane.lower()
+    if len(plane) != 2 or plane[0] not in ('x', 'y', 'z') or plane[1] not in ('x', 'y', 'z'):
+        raise ValueError("invalid 'plane' argument [{}] was given.".format(repr(plane)))
+    xidx = 0 if plane[0] == 'x' else (1 if plane[0] == 'y' else 2)
+    yidx = 0 if plane[1] == 'x' else (1 if plane[1] == 'y' else 2)
+
+    data = obs.data()
+    if max_count is not None and len(data) > max_count:
+        data = random.sample(data, max_count)
+
+    wrange = __get_range_of_trajectories(data, plot_range)
+    wrange = (wrange['x'], wrange['y'], wrange['z'])
+    wrange = {'x': wrange[xidx], 'y': wrange[yidx]}
+    fig, ax = __prepare_plot_with_maplotlib(
+        wrange, figsize, grid, wireframe, noaxis)
+
+    lines = []
+    for i, y in enumerate(data):
+        xarr, yarr, zarr = [], [], []
+        for pos in y:
+            xarr.append(pos[xidx])
+            yarr.append(pos[yidx])
+
+        lines.append((xarr, yarr))
+
+    __plot_trajectory2d_with_matplotlib(lines, ax, **kwargs)
+
+    if legend:
+        ax.legend(loc='best', shadow=True)
+    plt.show()
+
+def plot_movie_of_trajectory2d_with_matplotlib(
+        obs, plane='xy', figsize=6, grid=True,
+        wireframe=False, max_count=None, angle=None, noaxis=False,
+        interval=0.16, repeat_delay=3000, stride=1, rotate=None,
+        legend=True, output=None, plot_range=None, **kwargs):
+    """
+    Generate a move from the received list of instances of World,
+    and show it on IPython notebook. This function may require ffmpeg.
+
+    Parameters
+    ----------
+    worlds : list or FixedIntervalHDF5Observer
+        A list of Worlds to render.
+    plane : str, default 'xy'
+        'xy', 'yz', 'zx'.
+    marker_size : float, default 3
+        Marker size for all species. Size is passed to scatter function
+        as argument, s=(2 ** marker_size).
+    figsize : float, default 6
+        Size of the plotting area. Given in inch.
+    max_count : Integer, default None
+        The maximum number of particles to show for each species.
+        None means no limitation.
+    angle : tuple, default None
+        A tuple of view angle which is given as (azim, elev, dist).
+        If None, use default assumed to be (-60, 30, 10).
+    interval : Integer, default 0.16
+        Parameters for matplotlib.animation.ArtistAnimation.
+    stride : Integer, default 1
+        Stride per frame.
+    rotate : tuple, default None
+        A pair of rotation angles, elev and azim, for animation.
+        None means no rotation, same as (0, 0).
+    legend : bool, default True
+    output : str, default None
+    plot_range : tuple, default None
+        Range for plotting. A triplet of pairs suggesting (rangex, rangey, rangez).
+        If None, the minimum volume containing all the trajectories is used.
+
+    """
+    import matplotlib.pyplot as plt
+    import matplotlib.animation as animation
+    from IPython.display import display, HTML
+    from ecell4 import Species, FixedIntervalHDF5Observer
+    from .simulation import load_world
+    import math
+
+    # print("Taking all data ...")
+
+    plane = plane.lower()
+    if len(plane) != 2 or plane[0] not in ('x', 'y', 'z') or plane[1] not in ('x', 'y', 'z'):
+        raise ValueError("invalid 'plane' argument [{}] was given.".format(repr(plane)))
+    xidx = 0 if plane[0] == 'x' else (1 if plane[0] == 'y' else 2)
+    yidx = 0 if plane[1] == 'x' else (1 if plane[1] == 'y' else 2)
+
+    data = obs.data()
+    if max_count is not None and len(data) > max_count:
+        data = random.sample(data, max_count)
+
+    lines = []
+    num_frames = 0
+    for i, y in enumerate(data):
+        xarr, yarr, zarr = [], [], []
+        for pos in y:
+            xarr.append(pos[xidx])
+            yarr.append(pos[yidx])
+
+        lines.append((xarr, yarr))
+        num_frames = max(num_frames, len(y))
+    num_frames = int(math.ceil(float(num_frames) / stride))
+
+    # print("Start preparing mplot3d ...")
+
+    wrange = __get_range_of_trajectories(data, plot_range)
+    wrange = (wrange['x'], wrange['y'], wrange['z'])
+    wrange = {'x': wrange[xidx], 'y': wrange[yidx]}
+    fig, ax = __prepare_plot_with_maplotlib(
+        wrange, figsize, grid, wireframe, noaxis)
+
+    def _update_plot(i, plots, lines):
+        upto = i * stride
+        for plot, line in zip(plots, lines):
+            plot.set_xdata(line[0][: upto])
+            plot.set_ydata(line[1][: upto])
+
+        if rotate is not None:
+            ax.elev += rotate[0]
+            ax.azim += rotate[1]
+
+        fig.canvas.draw()
+
+    # print("Start making animation ...")
+
+    plots = __plot_trajectory2d_with_matplotlib(lines, ax, 0, **kwargs)
+
+    if legend:
+        ax.legend(loc='best', shadow=True)
+
+    ani = animation.FuncAnimation(
+        fig, _update_plot, fargs=(plots, lines),
+        frames=num_frames, interval=interval, blit=False)
+
+    plt.close(ani._fig)
+    # print("Start generating a movie ...")
+    display(HTML(anim_to_html(ani, output, fps=1.0 / interval)))
 
 def plot_movie_with_matplotlib(
         worlds, marker_size=3, figsize=6, grid=True,
