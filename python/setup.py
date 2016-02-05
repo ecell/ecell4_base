@@ -64,7 +64,7 @@ elif sys.platform == "darwin":
     extra_compile_args = ["-DWITH_HDF5"]
 else: # for linux
     dependent_libs = ['gsl', 'gslcblas', 'm', 'hdf5_cpp', 'hdf5']
-    extra_compile_args = []
+    extra_compile_args = ["-DWITH_HDF5"]
 
 if with_cpp_shared_libraries:
     ext_modules = [
