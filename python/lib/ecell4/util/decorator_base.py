@@ -44,6 +44,26 @@ class JustParseCallback(Callback):
                           DeprecationWarning)
         self.comparisons.append(obj)
 
+class TransparentCallback(object):
+
+    def __init__(self):
+        Callback.__init__(self)
+
+    def set(self):
+        pass
+
+    def get(self):
+        return None
+
+    def notify_unary_operations(self, obj):
+        pass
+
+    def notify_bitwise_operations(self, obj):
+        pass
+
+    def notify_comparisons(self, obj):
+        pass
+
 def keys_from_builtins(vardict):
     b = vardict['__builtins__']
     if isinstance(b, types.ModuleType):
@@ -65,8 +85,10 @@ class ParseDecorator:
         else:
             self.__func = lambda *args, **kwargs: []
 
-    def __call__(self, *args, **kwargs):
-        self.__callback = self.__callback_class()
+    def set_callback(self, callback):
+        self.__callback = callback
+
+    def wrapper(self, *args, **kwargs):
         try:
             vardict = copy.copy(self.__func.func_globals)
             func_code = self.__func.func_code
@@ -83,10 +105,16 @@ class ParseDecorator:
         for ignore in ignores:
             if ignore in vardict.keys():
                 del vardict[ignore]
+
+        if "_eval" not in vardict.keys():
+            vardict["_eval"] = self.__evaluate
+        if "_callback" not in vardict.keys():
+            vardict["_callback"] = self.__callback
+        else:
+            pass  #XXX: raise an exception?
+
         for k in func_code.co_names:
-            if k == '_eval':
-                vardict[k] = self.__evaluate
-            elif (not k in vardict.keys()
+            if (not k in vardict.keys()
                 and not k in keys_from_builtins(vardict)): # is this enough?
                 vardict[k] = parseobj.AnyCallable(self.__callback, k)
         g = types.FunctionType(func_code, vardict, name=name, argdefs=defaults)
@@ -95,17 +123,32 @@ class ParseDecorator:
             g(*args, **kwargs)
         return self.__callback.get()
 
+    def __call__(self, *args, **kwargs):
+        self.set_callback(self.__callback_class())
+        retval = self.wrapper(*args, **kwargs)
+        self.__callback = None
+        return retval
+
     def __enter__(self):
         # print "ParseDecorator#__enter__"
-        self.__callback = self.__callback_class()
+        self.set_callback(self.__callback_class())
         calling_frame = inspect.currentframe().f_back
         vardict = copy.copy(calling_frame.f_globals)
         ignores = ("_", "__", "___", "_i", "_ii", "_iii",
             "_i1", "_i2", "_i3", "_dh", "_sh", "_oh")
+
+        if "_eval" not in calling_frame.f_globals.keys():
+            calling_frame.f_globals["_eval"] = self.__evaluate
+            self.__newvars["_eval"] = None
+        if "_callback" not in calling_frame.f_globals.keys():
+            calling_frame.f_globals["_callback"] = self.__callback
+            self.__newvars["_callback"] = None
+        else:
+            pass  #XXX: raise an exception?
+
         for k in calling_frame.f_code.co_names:
-            if k == '_eval':
-                calling_frame.f_globals[k] = self.__evaluate
-                self.__newvars[k] = None
+            if k in ('_eval', '_callback'):
+                pass
             elif k in ignores:
                 # print "WARNING: '%s' was overridden." % k
                 calling_frame.f_globals[k] = parseobj.AnyCallable(self.__callback, k)
@@ -149,33 +192,46 @@ class ParseDecorator:
         l.update(params)
         return eval(expr, globals(), AnyCallableLocals(self.__callback, l))
 
-def parse_decorator(callback_class, func):
+# def parse_decorator(callback_class, func):
+#     @functools.wraps(func)
+#     def wrapped(*args, **kwargs):
+#         cache = callback_class()
+#         try:
+#             vardict = copy.copy(self.__func.func_globals)
+#             func_code = func.func_code
+#             name = self.__func.func_name
+#             defaults = self.__func.func_defaults
+#         except AttributeError:
+#             vardict = copy.copy(self.__func.__globals__)
+#             func_code = func.__code__
+#             name = self.__func.__name__
+#             defaults = self.__func.__defaults__
+#         for ignore in ("_", "__", "___", "_i", "_ii", "_iii",
+#             "_i1", "_i2", "_i3", "_dh", "_sh", "_oh"):
+#             if ignore in vardict.keys():
+#                 del vardict[ignore]
+#         for k in func_code.co_names:
+#             if (not k in vardict.keys()
+#                 and not k in keys_from_builtins(vardict)): # is this enough?
+#                 vardict[k] = parseobj.AnyCallable(cache, k)
+#         g = types.FunctionType(func_code, vardict, name=name, argdefs=defaults)
+#         with warnings.catch_warnings():
+#             # warnings.simplefilter("always")
+#             g(*args, **kwargs)
+#         return cache.get()
+#     return wrapped
+
+def transparent(func):
     @functools.wraps(func)
     def wrapped(*args, **kwargs):
-        cache = callback_class()
-        try:
-            vardict = copy.copy(self.__func.func_globals)
-            func_code = func.func_code
-            name = self.__func.func_name
-            defaults = self.__func.func_defaults
-        except AttributeError:
-            vardict = copy.copy(self.__func.__globals__)
-            func_code = func.__code__
-            name = self.__func.__name__
-            defaults = self.__func.__defaults__
-        for ignore in ("_", "__", "___", "_i", "_ii", "_iii",
-            "_i1", "_i2", "_i3", "_dh", "_sh", "_oh"):
-            if ignore in vardict.keys():
-                del vardict[ignore]
-        for k in func_code.co_names:
-            if (not k in vardict.keys()
-                and not k in keys_from_builtins(vardict)): # is this enough?
-                vardict[k] = parseobj.AnyCallable(cache, k)
-        g = types.FunctionType(func_code, vardict, name=name, argdefs=defaults)
-        with warnings.catch_warnings():
-            # warnings.simplefilter("always")
-            g(*args, **kwargs)
-        return cache.get()
+        calling_frame = inspect.currentframe().f_back
+        if '_callback' not in calling_frame.f_globals.keys():
+            raise RuntimeError(
+                'transparent functions are only callable in the parse_decorater scope')
+        cache = calling_frame.f_globals["_callback"]  # callback_class()
+        decorator = ParseDecorator(None, func)
+        decorator.set_callback(cache)
+        return decorator.wrapper(*args, **kwargs)
     return wrapped
 
 # just_parse = functools.partial(parse_decorator, JustParseCallback)
