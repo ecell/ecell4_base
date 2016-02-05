@@ -1,48 +1,49 @@
 Installation
 =================
 
-Quick start with docker
 - [Docker container for E-Cell System version4](#docker-container-for-e-cell-system-version4)
   - [Windows or Mac](#windows-or-mac)
   - [Linux](#linux)
 
-Installation and usage
-- [Requirements](#requirements)
-  - [Minimum requirements](#minimum-requirements)
-  - [Optional requirements](#optional-requirements)
-  - [Build requirements](#build-requirements)
+- [Installation and usage](#installation-and-usage)
+  - [Requirements](#requirements)
+    - [Minimum requirements](#minimum-requirements)
+    - [Optional requirements](#optional-requirements)
+    - [Build requirements](#build-requirements)
 
-- [Windows](#windows)
-  - [Python2 series](#python2-series)
-  - [Python3 series](#python3-series)
-- [Mac](#mac)
-  - [Homebrew users](#homebrew-users)
-  - [Pip users](#pip-users)
-- [Linux](#Linux)
-  - [Custom shell script for Ubuntu](#custom-shell-script-for-ubuntu)
-  - [Linuxbrew](#linuxbrew)
+  - [Windows](#windows)
+    - [Python2 series](#python2-series)
+    - [Python3 series](#python3-series)
+  - [Mac](#mac)
+    - [Homebrew users](#homebrew-users)
+    - [Pip users](#pip-users)
+  - [Linux](#Linux)
+    - [Custom shell script for Ubuntu](#custom-shell-script-for-ubuntu)
+    - [Linuxbrew](#linuxbrew)
 
-- [Simple examples](#simple-examples)
+  - [Simple examples](#simple-examples)
 
 
 Docker container for E-Cell System version4
--------------------------------------------
+===========================================
 
 If you have docker environment, you can easily try E-Cell4.
 You can pull E-Cell4 container with `docker pull ecell/ecell4`.
 
 After the following steps, you should see [Jupyter Notebook](http://jupyter.org/) up and running (and E-Cell4 tutorials) in your web browser.
 
-### Windows or Mac
+Windows or Mac
+--------------
 
 1. Install [Docker Toolbox](https://www.docker.com/toolbox).
 2. Run **Docker Quickstart Terminal**.
 3. Run `docker run -d -p 443:8888 ecell/ecell4` in the terminal.
-4. Open **192.168.99.100:443** with your favorite web browser.
+4. Open **192.168.99.100:443** with your web browser.
 
-### Linux
+Linux
+-----
 
-1. Install docker.
+1. Install Docker.
 2. Run the following commands in your terminal.
 
     ```shell
@@ -50,29 +51,31 @@ After the following steps, you should see [Jupyter Notebook](http://jupyter.org/
     sudo docker run -d -p 443:8888 ecell/ecell4
     ```
 
-3. Open **localhost:443** with your favorite web browser.
+3. Open **localhost:443** with your web browser.
 
 
 Installation and usage
 ======================
+
 Requirements
 ------------
+
 ### Minimum requirements
-- Python 2.7 series or Python 3.5 series
+- Python 2.7 or 3.4(on Linux) 3.5(on Windows, Mac) 
 - pip
 
 ### Optional requirements
 We strongly recommend that you run E-Cell4 from [Jupyter Notebook](http://jupyter.org/).
-And some E-Cell4 functions (for datastore, visualization) optionaly depend on
-- hdf5
-- matplotlib **1.5.1** and later
+And some E-Cell4 functions (for visualization, datastore) optionaly depend on
+- matplotlib (**1.5.1** and later)
 - ffmpeg or avconv
+- hdf5
 - pandas
 
 ### Build requirements
 If you build E-Cell4 from source code, you need to install these software.
+- boost (**1.59** and earlier)
 - cmake
-- boost
 - gsl
 - hdf5
 
