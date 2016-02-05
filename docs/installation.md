@@ -101,19 +101,22 @@ Mac
 ---
 
 ### homebrew users
-First, we recommend that Mac users start E-Cell4 with [homebrew-ecell4](https://github.com/ecell/homebrew-ecell4).
+We have homebrew formula for E-Cell4 [homebrew-ecell4](https://github.com/ecell/homebrew-ecell4).
 This homebrew formula includes ffmpeg (for animated visualization).
 Please run the following commands in your terminal.
 
 ```shell
 brew tap ecell/ecell4
 brew install ecell4
+
 # Mac default matplotlib is too old for E-Cell4, you need to update it with the following options.
 pip install -U --user matplotlib
 pip install -U --user jupyter
+
 # path config for homebrew-ecell4
 mkdir -p ~/Library/Python/2.7/lib/python/site-packages
-echo '/usr/local/lib/python2.7/site-packages' >> ~/Library/Python/2.7/lib/python/site-packages/homebrew.pth
+echo 'import site; site.addsitedir("/usr/local/lib/python2.7/site-packages")' >> ~/Library/Python/2.7/lib/python/site-packages/homebrew.pth
+
 # path config for --user installed Python packages
 echo 'export PYTHONPATH=~/Library/Python/2.7/lib/python/site-packages:$PYTHONPATH' >> ~/.bashrc
 echo 'export PATH=~/Library/Python/2.7/bin:$PATH' >> ~/.bashrc
@@ -123,13 +126,16 @@ source ~/.bashrc
 ### pip users
 We also have Python wheel files for E-Cell4.
 But the wheel distribution does NOT include ffmpeg.
+If you need animation visualization, please install it yourself. 
 
 ```shell
 # Please download E-Cell4 whl file for your Python version from https://github.com/ecell/ecell4/releases , here we downloaded a whl for Python27
 pip install  --user ecell-4.0.0-cp27-none-macosx_10_6_intel.macosx_10_9_intel.macosx_10_9_x86_64.macosx_10_10_intel.macosx_10_10_x86_64.whl
+
 # Mac default matplotlib is too old for E-Cell4, you need to update it with the following options.
 pip install -U --user matplotlib
 pip install -U --user jupyter
+
 # path config for --user installed Python packages
 echo 'export PYTHONPATH=~/Library/Python/2.7/lib/python/site-packages:$PYTHONPATH' >> ~/.bashrc
 echo 'export PATH=~/Library/Python/2.7/bin:$PATH' >> ~/.bashrc
