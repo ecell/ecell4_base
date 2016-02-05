@@ -91,7 +91,7 @@ We have NOT supported 64bit Python yet.
     ```shell
     conda update pip
     conda install hdf5 jupyter matplotlib
-    pip install https://github.com/ecell/ecell4/releases/download/untagged-b0dc335666fed3b9cba6/ecell-4.0.0-cp27-none-win32.whl
+    pip install https://github.com/ecell/ecell4/releases/download/4.0.0/ecell-4.0.0-cp27-none-win32.whl
     ``` 
 
 Although jupyter is optional, we strongly recommend that you run E-Cell4 with jupyter.
