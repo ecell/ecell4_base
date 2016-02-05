@@ -145,30 +145,40 @@ source ~/.bashrc
 Linux
 -----
 
-### Custom shell script for Ubuntu
-First, we recommend that Ubuntu(14.04 LTS) users start E-Cell4 with our custom shell script named **install.sh**.
-Please run the following commands in your terminal.
-(In these commands, we assume that you are **root* user.)
+### Ubuntu Linux
+We have tested the release files on Ubuntu Linux 14.04 and 15.10.
+If you use Ubuntu please run the following commands.
 
 ```shell
-apt-get install -y software-properties-common libav-tools python-dev libfreetype6-dev libpng-dev pkg-config pandoc wget cmake g++ libboost-dev libgsl0-dev libhdf5-serial-dev libboost-regex-dev python python-numpy python-scipy python-pip python-zmq
-add-apt-repository ppa:mc3man/trusty-media -y; apt-get update; apt-get install -y ffmpeg
+# If you use Python3 please replace python-pip to python3-pip
+sudo apt-get install libboost-dev libgsl0-dev libhdf5-dev python-pip
+# If you use Python3 please replace the whl for Python3
+pip install --user https://github.com/ecell/ecell4/releases/download/4.0.0/ecell-4.0.0-cp27-none-linux_x86_64.whl
 
-pip install cython jupyter matplotlib
+# The latest matplotlib and jupyter
+sudo apt-get install libfreetype6-dev libpng-dev pkg-config python-numpy pandoc
+pip install --user matplotlib jupyter
 
-wget THE_RELEASE_URL.tar.gz
-tar xf THE_RELEASE_URL.tar.gz
-cd ecell4; export PREFIX=/usr/local; export PYTHONPATH=/usr/local/lib/python2.7/site-packages:$PYTHONPATH; ./install.sh --python2 --hdf5
+# Optional requirement (animation visualization) for 14.04
+sudo apt-get install libav-tools
+# If you use 15.10 you can use ffmpeg deb package
+#sudo apt-get install -y ffmpeg
+
+# path config for --user installed Python packages
+echo 'export PYTHONPATH=~/.local/lib/python2.7/site-packages:$PYTHONPATH' >> ~/.bashrc
+echo 'export PATH=~/.local/bin:$PATH' >> ~/.bashrc
+source ~/.bashrc
 ```
 
 ### Linuxbrew
+
 [E-Cell4 homebrew formula](https://github.com/ecell/homebrew-ecell4) also can be used for [Linuxbrew](http://linuxbrew.sh/).
-If you do NOT use Ubuntu, please try Linuxbrew instead of **install.sh**.
+If you do NOT use Ubuntu, please try Linuxbrew instead.
 
 Simple examples
 ---------------
 
-Here are two extremely simple examples, See http://ecell.github.io/ecell4/ for more details on running E-Cell4.
+Here are two extremely simple examples, See http://ecell4.readthedocs.org for more details on running E-Cell4.
 
 ```
 Python 2.7.6 (default, Mar 22 2014, 22:59:56)
