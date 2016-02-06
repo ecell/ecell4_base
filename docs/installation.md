@@ -21,7 +21,9 @@ Installation and usage
     - [Ubuntu Linux](#ubuntu-linux)
     - [Linuxbrew](#linuxbrew)
 
-  - [Simple examples](#simple-examples)
+- [Simple examples](#simple-examples)
+  - [A reversible binding reaction](#a-reversible-binding-reaction)
+  - [Particle tracking on a spherical surface](#particle-tracking-on-a-spherical-surface)
 
 Docker container for E-Cell System version4
 -------------------------------------------
@@ -168,7 +170,8 @@ source ~/.bashrc
 [E-Cell4 homebrew formula](https://github.com/ecell/homebrew-ecell4) also can be used for [Linuxbrew](http://linuxbrew.sh/).
 If you do NOT use Ubuntu, please try Linuxbrew instead.
 
-### Simple examples
+Simple examples
+---------------
 
 Here are two extremely simple examples, See http://ecell4.readthedocs.org for more details on running E-Cell4.
 
@@ -183,7 +186,7 @@ A.B.C
 >>>
 ```
 
-#### A reversible binding reaction
+### A reversible binding reaction
 
 ```python
 %matplotlib inline
@@ -199,7 +202,7 @@ y = run_simulation(
 
 ![png](https://raw.githubusercontent.com/ecell/ecell4/master/docs/images/output_7_0.png)
 
-#### Particle tracking on a spherical surface
+### Particle tracking on a spherical surface
 
 ```python
 %matplotlib inline
