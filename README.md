@@ -10,14 +10,14 @@ What is E-Cell System?
 
 E-Cell System, a software platform for modeling, simulation and analysis of complex, heterogeneous and multi-scale systems like the cell.
 
-Table of contents
-=================
+Installation and usage
+======================
 
 - [Docker container for E-Cell System version4](#docker-container-for-e-cell-system-version4)
   - [Windows or Mac](#windows-or-mac)
   - [Linux](#linux)
 
-- [Installation and usage](#installation-and-usage)
+- [Installation](#installation)
   - [Requirements](#requirements)
     - [Minimum requirements](#minimum-requirements)
     - [Optional requirements](#optional-requirements)
@@ -35,27 +35,22 @@ Table of contents
 
   - [Simple examples](#simple-examples)
 
-- [Licensing terms](#licensing-terms)
-
-
 Docker container for E-Cell System version4
-===========================================
+-------------------------------------------
 
 If you have docker environment, you can easily try E-Cell4.
 You can pull E-Cell4 container with `docker pull ecell/ecell4`.
 
 After the following steps, you should see [Jupyter Notebook](http://jupyter.org/) up and running (and E-Cell4 tutorials) in your web browser.
 
-Windows or Mac
---------------
+### Windows or Mac
 
 1. Install [Docker Toolbox](https://www.docker.com/toolbox).
 2. Run **Docker Quickstart Terminal**.
 3. Run `docker run -d -p 443:8888 ecell/ecell4` in the terminal.
 4. Open **192.168.99.100:443** with your web browser.
 
-Linux
------
+### Linux
 
 1. Install Docker.
 2. Run the following commands in your terminal.
@@ -68,18 +63,17 @@ Linux
 3. Open **localhost:443** with your web browser.
 
 
-Installation and usage
-======================
-
-Requirements
+Installation
 ------------
 
-### Minimum requirements
+### Requirements
+
+#### Minimum requirements
 - Python 2.7 or 3.4(on Linux) 3.5(on Windows, Mac) 
 - pip
 
-### Optional requirements
-We strongly recommend that you run E-Cell4 from [Jupyter Notebook](http://jupyter.org/).
+#### Optional requirements
+We strongly recommend that you run E-Cell4 with [Jupyter Notebook](http://jupyter.org/).
 And some E-Cell4 functions (for visualization, datastore) optionaly depend on
 - matplotlib (**1.5.1** and later)
 - ffmpeg or avconv
@@ -93,8 +87,7 @@ If you build E-Cell4 from source code, you need to install these software.
 - gsl
 - hdf5
 
-Windows
--------
+### Windows
 
 Please use 32bit Python2.7 or 3.5, even if you use 64bit Windows.
 We have NOT supported 64bit Python yet.
@@ -111,10 +104,9 @@ We have NOT supported 64bit Python yet.
 Although jupyter is optional, we strongly recommend that you run E-Cell4 with jupyter.
 If you use animated visualization for E-Cell4, please install [ffmpeg windows build](http://ffmpeg.zeranoe.com/builds/) and add its path to your **USER** PATH enviromental variable.
 
-Mac
----
+### Mac
 
-### homebrew users
+#### homebrew users
 We have homebrew formula for E-Cell4 [homebrew-ecell4](https://github.com/ecell/homebrew-ecell4).
 This homebrew formula includes ffmpeg (for animated visualization).
 Please run the following commands in your terminal.
@@ -137,7 +129,7 @@ echo 'export PATH=~/Library/Python/2.7/bin:$PATH' >> ~/.bashrc
 source ~/.bashrc
 ```
 
-### pip users
+#### pip users
 We also have Python wheel files for E-Cell4.
 But the wheel distribution does NOT include ffmpeg.
 If you need animation visualization, please install it yourself. 
@@ -156,10 +148,9 @@ echo 'export PATH=~/Library/Python/2.7/bin:$PATH' >> ~/.bashrc
 source ~/.bashrc
 ```
 
-Linux
------
+### Linux
 
-### Ubuntu Linux
+#### Ubuntu Linux
 We have tested the release files on Ubuntu Linux 14.04 and 15.10.
 If you use Ubuntu please run the following commands.
 
@@ -184,13 +175,12 @@ echo 'export PATH=~/.local/bin:$PATH' >> ~/.bashrc
 source ~/.bashrc
 ```
 
-### Linuxbrew
+#### Linuxbrew
 
 [E-Cell4 homebrew formula](https://github.com/ecell/homebrew-ecell4) also can be used for [Linuxbrew](http://linuxbrew.sh/).
 If you do NOT use Ubuntu, please try Linuxbrew instead.
 
-Simple examples
----------------
+### Simple examples
 
 Here are two extremely simple examples, See http://ecell4.readthedocs.org for more details on running E-Cell4.
 
@@ -205,7 +195,7 @@ A.B.C
 >>>
 ```
 
-### A reversible binding reaction
+#### A reversible binding reaction
 
 ```python
 %matplotlib inline
@@ -221,7 +211,7 @@ y = run_simulation(
 
 ![png](https://raw.githubusercontent.com/ecell/ecell4/master/docs/images/output_7_0.png)
 
-### Particle tracking on a spherical surface
+#### Particle tracking on a spherical surface
 
 ```python
 %matplotlib inline
@@ -241,7 +231,8 @@ viz.plot_trajectory(obs, interactive=False)
 
 ![png](https://raw.githubusercontent.com/ecell/ecell4/master/docs/images/hairball.png)
 
-# Licensing terms
+Licensing terms
+===============
 
 This project is licensed under the terms of the GNU General Public License v2.
 See [LICENSE](https://github.com/ecell/ecell4/blob/master/LICENSE) for the project license.
