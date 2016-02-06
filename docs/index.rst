@@ -34,7 +34,7 @@ Features added
 - Spatiocyte simulator
 - EGFRD simulator
 - Python valid rule based model
-- IPython Notebook inline visualization
+- Jupyter Notebook inline visualization
 
 Getting Started
 ---------------
