@@ -124,7 +124,12 @@ class ParseDecorator:
         return self.__callback.get()
 
     def __call__(self, *args, **kwargs):
-        self.set_callback(self.__callback_class())
+        calling_frame = inspect.currentframe().f_back
+        if ('_callback' in calling_frame.f_globals.keys()
+            and isinstance(calling_frame.f_globals['_callback'], self.__callback_class)):
+            self.set_callback(calling_frame.f_globals["_callback"])
+        else:
+            self.set_callback(self.__callback_class())
         retval = self.wrapper(*args, **kwargs)
         self.__callback = None
         return retval
@@ -221,18 +226,18 @@ class ParseDecorator:
 #         return cache.get()
 #     return wrapped
 
-def transparent(func):
-    @functools.wraps(func)
-    def wrapped(*args, **kwargs):
-        calling_frame = inspect.currentframe().f_back
-        if '_callback' not in calling_frame.f_globals.keys():
-            raise RuntimeError(
-                'transparent functions are only callable in the parse_decorater scope')
-        cache = calling_frame.f_globals["_callback"]  # callback_class()
-        decorator = ParseDecorator(None, func)
-        decorator.set_callback(cache)
-        return decorator.wrapper(*args, **kwargs)
-    return wrapped
+# def transparent(func):
+#     @functools.wraps(func)
+#     def wrapped(*args, **kwargs):
+#         calling_frame = inspect.currentframe().f_back
+#         if '_callback' not in calling_frame.f_globals.keys():
+#             raise RuntimeError(
+#                 'transparent functions are only callable in the parse_decorater scope')
+#         cache = calling_frame.f_globals["_callback"]  # callback_class()
+#         decorator = ParseDecorator(None, func)
+#         decorator.set_callback(cache)
+#         return decorator.wrapper(*args, **kwargs)
+#     return wrapped
 
 # just_parse = functools.partial(parse_decorator, JustParseCallback)
 just_parse = functools.partial(ParseDecorator, JustParseCallback)
