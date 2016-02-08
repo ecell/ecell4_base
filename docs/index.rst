@@ -32,7 +32,7 @@ Features added
 
 - Spatial Gillespie simulator
 - Spatiocyte simulator
-- EGFRD simulator
+- eGFRD simulator
 - Python valid rule based model
 - Jupyter Notebook inline visualization
 
