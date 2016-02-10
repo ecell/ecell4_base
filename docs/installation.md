@@ -20,6 +20,8 @@ Installation and usage
   - [Linux](#Linux)
     - [Ubuntu Linux](#ubuntu-linux)
     - [Linuxbrew](#linuxbrew)
+    
+- [How to open E-Cell4 Jupyter notebooks](#how-to-open-e-cell4-jupyter-notebooks]
 
 - [Simple examples](#simple-examples)
   - [A reversible binding reaction](#a-reversible-binding-reaction)
@@ -96,7 +98,7 @@ If you use animated visualization for E-Cell4, please install [ffmpeg windows bu
 
 ### Mac
 
-#### pip users
+#### Pip users
 
 Please run the following commands in your terminal.
 
@@ -117,7 +119,7 @@ source ~/.bashrc
 brew install ffmpeg
 ```
 
-#### homebrew users
+#### Homebrew users
 We have homebrew formula for E-Cell4 [homebrew-ecell4](https://github.com/ecell/homebrew-ecell4).
 This homebrew formula includes ffmpeg (for animated visualization).
 Please run the following commands in your terminal.
@@ -171,6 +173,39 @@ source ~/.bashrc
 
 [E-Cell4 homebrew formula](https://github.com/ecell/homebrew-ecell4) also can be used for [Linuxbrew](http://linuxbrew.sh/).
 If you do NOT use Ubuntu, please try Linuxbrew instead.
+
+How to open E-Cell4 Jupyter notebooks
+-------------------------------------
+
+### Windows
+Please replace the CONDA_INSTALL_FOLDER with the folder you installed Miniconda.
+For example **C:¥Miniconda27**.
+
+```shell
+cd the CONDA_INSTALL_FOLDER
+cd ecell4ipynb
+jupyter-notebook
+```
+
+### Mac
+#### Pip users
+```shell
+### in the case of Python27
+~/Library/Python/2.7/ecell4ipynb
+jupyter-notebook
+```
+
+#### Homebrew users
+```shell
+cd /usr/local/Cellar/ecell4/4.0.0/ecell4ipynb
+jupyter-notebook
+```
+
+### Linux
+```shell
+cd ~/.local/ecell4ipynb
+jupyter-notebook
+```
 
 Simple examples
 ---------------
