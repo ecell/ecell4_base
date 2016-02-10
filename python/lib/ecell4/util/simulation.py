@@ -307,6 +307,10 @@ def ensemble_simulations(N=1, *args, **kwargs):
             DummyObserver.append(self, data)
             self.__sqtot += self.trancate(data) ** 2
 
+    if 'model' not in kwargs:
+        kwargs['model'] = ecell4.util.decorator.get_model(
+                kwargs.get('is_netfree', False), kwargs.get('without_reset', False))
+
     tmp = ecell4.util.run_simulation(*args, **kwargs)
 
     if errorbar:
