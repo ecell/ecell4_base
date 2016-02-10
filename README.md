@@ -36,7 +36,7 @@ Installation and usage
     - [Ubuntu Linux](#ubuntu-linux)
     - [Linuxbrew](#linuxbrew)
 
-- [How to open E-Cell4 Jupyter notebooks](#how-to-open-e-cell4-jupyter-notebooks]
+- [How to open E-Cell4 Jupyter notebooks](#how-to-open-e-cell4-jupyter-notebooks)
 
 - [Simple examples](#simple-examples)
   - [A reversible binding reaction](#a-reversible-binding-reaction)
