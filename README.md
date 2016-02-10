@@ -2,9 +2,11 @@ E-Cell System version 4
 =======================
 
 [![Build Status](https://travis-ci.org/ecell/ecell4.svg?branch=develop)](https://travis-ci.org/ecell/ecell4)
-[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/ecell/ecell4?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 [![Build status](https://ci.appveyor.com/api/projects/status/github/ecell/ecell4?svg=true)](https://ci.appveyor.com/project/kaizu/ecell4)
 [![Documentation Status](https://readthedocs.org/projects/ecell4/badge/?version=latest)](http://ecell4.readthedocs.org/en/latest/?badge=latest)
+[![GitHub release](https://img.shields.io/github/release/ecell/ecell4.svg)](https://github.com/ecell/ecell4/releases)
+[![GitHub license](https://img.shields.io/github/license/ecell/ecell4.svg)](https://github.com/ecell/ecell4/LICNESE)
+[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/ecell/ecell4?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 What is E-Cell System?
 ----------------------
