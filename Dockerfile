@@ -10,8 +10,9 @@ RUN apt-get install -y libfreetype6-dev libpng-dev pkg-config python-numpy pando
 RUN pip install matplotlib jupyter
 
 # ffmpeg and avconv
-RUN apt-get install -y software-properties-common #libav-tools
-RUN add-apt-repository ppa:mc3man/trusty-media -y; apt-get update; apt-get install -y ffmpeg
+#RUN apt-get install -y software-properties-common #libav-tools
+#RUN add-apt-repository ppa:mc3man/trusty-media -y; apt-get update; apt-get install -y ffmpeg
+RUN apt-get install -y libav-tools
 
 # install with install.sh
 #RUN cd /usr/src/ecell4; export PREFIX=/usr/local; export PYTHONPATH=/usr/local/lib/python2.7/site-packages:$PYTHONPATH; ./install.sh --python2 --hdf5
