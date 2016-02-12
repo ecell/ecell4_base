@@ -33,7 +33,7 @@ Installation and usage
     - [Pip users](#pip-users)
     - [Homebrew users](#homebrew-users)
   - [Linux](#Linux)
-    - [Ubuntu Linux 14.04](#ubuntu-linux-14.04)
+    - [Ubuntu Linux 14.04](#ubuntu-linux-1404)
     - [Linuxbrew](#linuxbrew)
 
 - [How to open E-Cell4 Jupyter notebooks](#how-to-open-e-cell4-jupyter-notebooks)
