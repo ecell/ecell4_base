@@ -18,7 +18,7 @@ Installation and usage
     - [Pip users](#pip-users)
     - [Homebrew users](#homebrew-users)
   - [Linux](#Linux)
-    - [Ubuntu Linux](#ubuntu-linux)
+    - [Ubuntu Linux 14.04](#ubuntu-linux-14.04)
     - [Linuxbrew](#linuxbrew)
     
 - [How to open E-Cell4 Jupyter notebooks](#how-to-open-e-cell4-jupyter-notebooks)
@@ -144,24 +144,21 @@ source ~/.bashrc
 
 ### Linux
 
-#### Ubuntu Linux
-We have tested the release files on Ubuntu Linux 14.04 and 15.10.
-If you use Ubuntu please run the following commands.
+#### Ubuntu Linux 14.04
+We have tested the release whl files on Ubuntu Linux **14.04**.
 
 ```shell
-# If you use Python3 please replace python-pip to python3-pip
-sudo apt-get install libboost-dev libgsl0-dev libhdf5-dev python-pip
+# If you use Python3, replace python-pip to python3-pip
+sudo apt-get install libgsl0-dev libhdf5-dev python-pip
 # If you use Python3 please replace the whl for Python3
 pip install --user https://github.com/ecell/ecell4/releases/download/4.0.0/ecell-4.0.0-cp27-none-linux_x86_64.whl
 
 # The latest matplotlib and jupyter
-sudo apt-get install libfreetype6-dev libpng-dev pkg-config python-numpy pandoc
+sudo apt-get install python-dev libfreetype6-dev libpng-dev pkg-config python-numpy pandoc
 pip install --user matplotlib jupyter
 
-# Optional requirement (animation visualization) for 14.04
+# Optional requirement (animation visualization)
 sudo apt-get install libav-tools
-# If you use 15.10 you can use ffmpeg deb package
-#sudo apt-get install -y ffmpeg
 
 # path config for --user installed Python packages
 echo 'export PYTHONPATH=~/.local/lib/python2.7/site-packages:$PYTHONPATH' >> ~/.bashrc
