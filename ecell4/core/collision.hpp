@@ -10,6 +10,8 @@
 #include "Sphere.hpp"
 #include "Rod.hpp"
 
+#include <boost/tuple/tuple.hpp>
+#include <boost/tuple/tuple_io.hpp>
 
 namespace ecell4
 {
@@ -97,6 +99,10 @@ bool intersect_segment_capsule(
 
 bool intersect_moving_sphere_AABB(
     const Sphere& s, const Real3& d, const AABB& b, Real& t);
+
+boost::tuple<bool, Real3, Real3> refrection_PlanarSurface(
+        const boost::shared_ptr<PlanarSurface> surface,
+        const Real3& from, const Real3& displacement);
 
 } // collision
 
