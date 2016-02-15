@@ -9,6 +9,11 @@
 
 #include <ecell4/core/types.hpp>
 #include <ecell4/core/Space.hpp>
+#include <ecell4/core/collision.hpp>
+#include <ecell4/core/PlanarSurface.hpp>
+
+#include <boost/tuple/tuple.hpp>
+#include <boost/tuple/tuple_io.hpp>
 
 template<typename Ttraits_>
 class Transaction;
@@ -122,7 +127,61 @@ public:
         throw ecell4::NotSupported(
             "save(const std::string) is not supported by this space class");
     }
+    
+    position_type apply_reflection(
+            position_type const &start, 
+            position_type const &initial_displacement) const
+    {
+        using namespace ecell4;
+        //const std::vector<boost::shared_ptr<PlanarSurface> > surface_vector = world_.get_surface_container();
+        std::vector<boost::shared_ptr<ecell4::PlanarSurface> > surface_vector;
+        position_type from(start);
+        position_type displacement(initial_displacement);
 
+        std::size_t bound_surface = -1;
+        std::vector<signed int> save_isinside(surface_vector.size());
+        for(std::size_t i = 0; i < surface_vector.size(); i++) {
+            save_isinside[i] = ecell4::collision::sgn(surface_vector[i]->is_inside(from) );
+        }
+
+        bool refrection_occurance = false;
+        do {
+            refrection_occurance = false;
+            boost::tuple<bool, Real3, Real3> nearest;
+            std::size_t nearest_surface = -1;
+            for(std::size_t i = 0; i != surface_vector.size(); i++) {
+                if (i != bound_surface) {
+                    //boost::tuple<bool, Real3, Real3> t = refrection(surface_vector[i], from, displacement);
+                    boost::tuple<bool, Real3, Real3> t = ecell4::collision::refrection_PlanarSurface(surface_vector[i], from, displacement);
+                    if (t.get<0>() == true) {
+                        if (false == refrection_occurance) {
+                            refrection_occurance = true;
+                            nearest = t;
+                            nearest_surface = i;
+                        } else {
+                            // compare the intrusion point
+                            if (length(from - t.get<1>() ) < length(from - nearest.get<1>() )) {
+                                nearest = t;
+                                nearest_surface = i;
+                            }
+                        }
+                    }
+                }
+            }
+            // update or escape from the loop
+            if (refrection_occurance == false) {
+                break;
+            } else {
+                from = nearest.get<1>() ;
+                displacement = nearest.get<2>();
+                bound_surface = nearest_surface;
+                // For Debugging
+                //std::cout << "bound surface ( " << bound_surface << ") at " << from << std::endl;
+            }
+        } while(true);
+        return Real3(from + displacement);
+        //Real3 newpos(world_.apply_boundary(from + displacement));
+    }
 };
 
 

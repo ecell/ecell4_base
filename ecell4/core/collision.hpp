@@ -100,6 +100,12 @@ bool intersect_segment_capsule(
 bool intersect_moving_sphere_AABB(
     const Sphere& s, const Real3& d, const AABB& b, Real& t);
 
+template <typename T>
+inline
+int sgn(T val) {
+    return (T(0) < val) - (val < T(0));
+}
+
 boost::tuple<bool, Real3, Real3> refrection_PlanarSurface(
         const boost::shared_ptr<PlanarSurface> surface,
         const Real3& from, const Real3& displacement);
