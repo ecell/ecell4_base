@@ -110,20 +110,23 @@ std::vector<std::pair<ParticleID, Particle> >
     const Real3 lengths(subvolume_edge_lengths());
 
     std::vector<std::pair<ParticleID, Particle> > retval;
-    const boost::shared_ptr<PoolBase>& pool = get_pool(sp);
-    for (coordinate_type j(0); j < num_subvolumes(); ++j)
+    if (has_species(sp))
     {
-        const Integer num(pool->num_molecules(j));
-        const Integer3 g(coord2global(j));
-
-        for (Integer k(0); k < num; ++k)
+        const boost::shared_ptr<PoolBase>& pool = get_pool(sp);
+        for (coordinate_type j(0); j < num_subvolumes(); ++j)
         {
-            const Real3 pos(
-                rng_->uniform(g.col * lengths[0], (g.col + 1) * lengths[0]),
-                rng_->uniform(g.row * lengths[1], (g.row + 1) * lengths[1]),
-                rng_->uniform(g.layer * lengths[2], (g.layer + 1) * lengths[2]));
-            retval.push_back(
-                std::make_pair(pidgen(), Particle(sp, pos, 0.0, pool->D())));
+            const Integer num(pool->num_molecules(j));
+            const Integer3 g(coord2global(j));
+
+            for (Integer k(0); k < num; ++k)
+            {
+                const Real3 pos(
+                    rng_->uniform(g.col * lengths[0], (g.col + 1) * lengths[0]),
+                    rng_->uniform(g.row * lengths[1], (g.row + 1) * lengths[1]),
+                    rng_->uniform(g.layer * lengths[2], (g.layer + 1) * lengths[2]));
+                retval.push_back(
+                    std::make_pair(pidgen(), Particle(sp, pos, 0.0, pool->D())));
+            }
         }
     }
     return retval;
