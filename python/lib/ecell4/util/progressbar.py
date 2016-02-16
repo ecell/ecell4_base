@@ -23,7 +23,13 @@ class ProgressBar:
         self.__last = (0.0, 0.0)
 
         self.update(0.0)
-        self.animate = self.animate_ipython
+
+        if have_ipython:
+            self.animate = self.animate_ipython
+            self.flush = self.flush_ipython
+        else:
+            self.animate = self.animate_noipython
+            self.flush = self.flush_noipython
 
     def format_eta(self, eta):
         eta = int(eta)
@@ -70,6 +76,19 @@ class ProgressBar:
         items = {'bar': bar, 'info': info}
         self.progressbar = self.bar_template.format(**items)
 
+    def flush_ipython(self):
+        try:
+            clear_output()
+        except Exception:
+            # terminal IPython has no clear_output
+            pass
+        print('\r', end='')
+        sys.stdout.flush()
+
+    def flush_noipython(self):
+        print('\r', end='')
+        sys.stdout.flush()
+
     def animate_ipython(self, *args, **kwargs):
         self.update(*args, **kwargs)
 
@@ -90,7 +109,7 @@ class ProgressBarSimulatorWrapper:
     """A wrapper class to show a progress bar for running a simulation
     """
 
-    def __init__(self, sim, timeout=10, **kwargs):
+    def __init__(self, sim, timeout=10, flush=False, **kwargs):
         """Constructor.
 
         Parameters
@@ -100,6 +119,9 @@ class ProgressBarSimulatorWrapper:
         timeout : float, optional
             An interval to update the progress bar. Given as seconds.
             Default is 10.
+        flush : bool, optional
+            Clear the output at finishing a simulation.
+            Default is False.
 
         See Also
         --------
@@ -108,6 +130,7 @@ class ProgressBarSimulatorWrapper:
         """
         self.__sim = sim
         self.__timeout = timeout
+        self.__flush = flush
         self.__kwargs = kwargs
 
     def run(self, duration, obs):
@@ -136,7 +159,10 @@ class ProgressBarSimulatorWrapper:
         while self.__sim.t() < upto:
             self.__sim.run(upto - self.__sim.t(), obs)
             p.animate((self.__sim.t() - tstart) / duration, timeout.accumulation())
-        print()
+        if self.__flush:
+            p.flush()
+        else:
+            print()
 
     def __getattr__(self, key):
         return getattr(self.__sim, key)

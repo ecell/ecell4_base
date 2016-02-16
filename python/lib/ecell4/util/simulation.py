@@ -172,7 +172,7 @@ def run_simulation(
 
     if progressbar > 0:
         from .progressbar import progressbar as pb
-        pb(sim, timeout=progressbar).run(t[-1], observers)
+        pb(sim, timeout=progressbar, flush=True).run(t[-1], observers)
     else:
         sim.run(t[-1], observers)
 
