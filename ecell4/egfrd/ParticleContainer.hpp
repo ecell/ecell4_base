@@ -135,6 +135,12 @@ public:
         using namespace ecell4;
         //const std::vector<boost::shared_ptr<PlanarSurface> > surface_vector = world_.get_surface_container();
         std::vector<boost::shared_ptr<ecell4::PlanarSurface> > surface_vector;
+        boost::shared_ptr<ecell4::PlanarSurface> surface1(new ecell4::PlanarSurface(ecell4::Real3(0., 0., 0.8e-2), ecell4::Real3(1., 0., 0.), ecell4::Real3(0., 1., 0.)));
+        boost::shared_ptr<ecell4::PlanarSurface> surface2(new ecell4::PlanarSurface(ecell4::Real3(0., 0., 0.2e-2), ecell4::Real3(1., 0., 0.), ecell4::Real3(0., 1., 0.)));
+        boost::shared_ptr<ecell4::PlanarSurface> surface3(new ecell4::PlanarSurface(ecell4::Real3(0., 0., 0.5e-2), ecell4::Real3(1., 0., 0.), ecell4::Real3(0., 1., 0.)));
+        surface_vector.push_back(surface1);
+        surface_vector.push_back(surface2);
+        surface_vector.push_back(surface3);
         position_type from(start);
         position_type displacement(initial_displacement);
 
@@ -176,12 +182,23 @@ public:
                 displacement = nearest.get<2>();
                 bound_surface = nearest_surface;
                 // For Debugging
-                //std::cout << "bound surface ( " << bound_surface << ") at " << from << std::endl;
+                std::cout << "bound surface ( " << bound_surface << ") at " << from << std::endl;
             }
         } while(true);
         return Real3(from + displacement);
         //Real3 newpos(world_.apply_boundary(from + displacement));
     }
+    void add_surface(boost::shared_ptr<ecell4::PlanarSurface> surface)
+    {
+        this->surfaces_.push_back(surface);
+    }
+    const std::vector<boost::shared_ptr<ecell4::PlanarSurface> > &get_surface_container(void) const
+    {
+        return this->surfaces_;
+    }
+private:
+    std::vector<boost::shared_ptr<ecell4::PlanarSurface> > surfaces_;
+
 };
 
 
