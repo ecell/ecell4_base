@@ -64,7 +64,7 @@ def run_simulation(
         t, y0={}, volume=1.0, model=None, solver='ode',
         factory=None, is_netfree=False, species_list=None, without_reset=False,
         return_type='matplotlib', opt_args=(), opt_kwargs={},
-        structures={}, observers=()):
+        structures={}, observers=(), progressbar=0):
     """Run a simulation with the given model and plot the result on IPython
     notebook with matplotlib.
 
@@ -103,6 +103,10 @@ def run_simulation(
         Not fully supported yet.
     observers : Observer or list, optional
         A list of extra observer references.
+    progressbar : float, optional
+        A timeout for a progress bar in seconds.
+        When the value is not more than 0, show nothing.
+        Default is 0.
 
     Returns
     -------
@@ -166,7 +170,11 @@ def run_simulation(
     if return_type not in ('world', None):
         observers = (obs, ) + tuple(observers)
 
-    sim.run(t[-1], observers)
+    if progressbar > 0:
+        from .progressbar import progressbar as pb
+        pb(sim, timeout=progressbar).run(t[-1], observers)
+    else:
+        sim.run(t[-1], observers)
 
     if return_type == 'matplotlib':
         if isinstance(opt_args, (list, tuple)):
