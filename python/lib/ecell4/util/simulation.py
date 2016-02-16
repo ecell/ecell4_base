@@ -77,9 +77,11 @@ def run_simulation(
     volume : Real or Real3, optional
         A size of the simulation volume.
     model : Model, optional
-    solver : str, optional
+    solver : str, tuple or Factory, optional
         Solver type. Choose one from 'ode', 'gillespie', 'spatiocyte', 'meso',
         'bd' and 'egfrd'. Default is 'ode'.
+        When tuple is given, the first value must be str as explained above.
+        All the rest is used as arguments for the corresponding factory class.
     species_list : list of str, optional
         A list of names of Species observed. If None, log all.
         Default is None.
@@ -121,9 +123,13 @@ def run_simulation(
     import ecell4
 
     if factory is not None:
-        f = factory
-    else:
+        f = factory  #XXX: will be deprecated in the future. just use solver
+    elif isinstance(solver, str):
         f = get_factory(solver)
+    elif isinstance(solver, collections.Iterable):
+        f = get_factory(*solver)
+    else:
+        f = solver
 
     if model is None:
         model = ecell4.util.decorator.get_model(is_netfree, without_reset)
