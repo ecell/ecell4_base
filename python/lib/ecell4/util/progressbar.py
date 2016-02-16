@@ -129,6 +129,9 @@ class ProgressBarSimulatorWrapper:
         ProgressBar
 
         """
+        if int(timeout) <= 0:
+            raise ValueError(
+                'timeout [{}] must be larger than 0.'.format(timeout))
         self.__sim = sim
         self.__timeout = timeout
         self.__flush = flush
