@@ -1,6 +1,6 @@
 recommonmark
 numpydoc
-requests[security]
+requests==2.5.3
 pip==8.0.2
 ndg-httpsclient
 pyopenssl
