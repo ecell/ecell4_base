@@ -559,6 +559,16 @@ cdef extern from "ecell4/core/shape_operators.hpp" namespace "ecell4":
         Integer dimension()
         Cpp_Surface surface()
 
+    cdef cppclass Cpp_AffineTransformation "ecell4::AffineTransformation":
+        Cpp_AffineTransformation()
+        Cpp_AffineTransformation(shared_ptr[Cpp_Shape]&)
+        Cpp_AffineTransformation(Cpp_AffineTransformation&)
+        Real is_inside(Cpp_Real3&)
+        Integer dimension()
+        Cpp_Surface surface()
+        void translate(Cpp_Real3&)
+        void rescale(Cpp_Real3&)
+
 ## Cpp_Sphere
 #  ecell4::Sphere
 cdef extern from "ecell4/core/Sphere.hpp" namespace "ecell4":
@@ -741,6 +751,11 @@ cdef class Union:
 #  a python wrapper for Cpp_Complement
 cdef class Complement:
     cdef shared_ptr[Cpp_Complement]* thisptr
+
+## AffineTransformation
+#  a python wrapper for Cpp_AffineTransformation
+cdef class AffineTransformation:
+    cdef shared_ptr[Cpp_AffineTransformation]* thisptr
 
 cdef Sphere Sphere_from_Cpp_Sphere(Cpp_Sphere* p)
 cdef SphericalSurface SphericalSurface_from_Cpp_SphericalSurface(Cpp_SphericalSurface* p)

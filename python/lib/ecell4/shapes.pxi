@@ -236,6 +236,100 @@ cdef class Complement:
         retval.thisptr = new_obj
         return retval
 
+cdef class AffineTransformation:
+    """
+    """
+
+    def __init__(self, root=None):
+        """Constructor.
+
+        Parameters
+        ----------
+        root : Shape
+            A volume shape
+
+        """
+        pass  # XXX: Only used for doc string
+
+    def __cinit__(self, root=None):
+        if root is None:
+            self.thisptr = new shared_ptr[Cpp_AffineTransformation](
+                    new Cpp_AffineTransformation())
+        else:
+            self.thisptr = new shared_ptr[Cpp_AffineTransformation](
+                new Cpp_AffineTransformation(deref((<Shape>root.as_base()).thisptr)))
+
+    def __dealloc__(self):
+        del self.thisptr
+
+    def dimension(self):
+        """Return a dimension of this shape."""
+        return self.thisptr.get().dimension()
+
+    def is_inside(self, Real3 pos):
+        """Return if the given point is inside or not.
+
+        Parameters
+        ----------
+        pos : Real3
+            A position.
+
+        Returns
+        -------
+        value : float
+            Zero or negative if the given point is inside.
+
+        """
+        return self.thisptr.get().is_inside(deref(pos.thisptr))
+
+    def translate(self, Real3 value):
+        """Translate the object.
+
+        Parameters
+        ----------
+        value : Real3
+            A shift
+
+        """
+        self.thisptr.get().translate(deref(value.thisptr))
+
+    def rescale(self, Real3 value):
+        """Rescale the object.
+
+        Parameters
+        ----------
+        value : Real3
+            A scaling factor
+
+        """
+        self.thisptr.get().rescale(deref(value.thisptr))
+
+    def surface(self):
+        """Create and return a surface shape.
+
+        Returns
+        -------
+        shape : Surface
+            The surface shape.
+
+        """
+        cdef shared_ptr[Cpp_Surface] *new_obj = new shared_ptr[Cpp_Surface](
+            new Cpp_Surface(self.thisptr.get().surface()))
+        retval = Surface()
+        del retval.thisptr
+        retval.thisptr = new_obj
+        return retval
+
+    def as_base(self):
+        """Clone self as a base class. This function is for developers."""
+        cdef shared_ptr[Cpp_Shape] *new_obj = new shared_ptr[Cpp_Shape](
+            <Cpp_Shape*>(new Cpp_AffineTransformation(
+                <Cpp_AffineTransformation> deref(self.thisptr.get()))))
+        retval = Shape()
+        del retval.thisptr
+        retval.thisptr = new_obj
+        return retval
+
 cdef class Sphere:
     """A class representing a sphere shape, which is available to define
     structures.
