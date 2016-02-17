@@ -3,4 +3,6 @@ numpydoc
 requests[security]
 pip==8.0.2
 ndg-httpsclient
+pyopenssl
+pyasn1
 https://github.com/ecell/ecell4/releases/download/4.0.0/ecell-4.0.0-cp27-none-linux_x86_64.whl
