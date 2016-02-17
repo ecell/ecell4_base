@@ -1,10 +1,70 @@
 #ifndef __ECELL4_SHAPE_OPERATORS
 #define __ECELL4_SHAPE_OPERATORS
 
+#include "exceptions.hpp"
 #include "Shape.hpp"
 
 namespace ecell4
 {
+
+struct Surface
+    : public Shape
+{
+public:
+
+    Surface()
+    {
+        ;
+    }
+
+    Surface(const boost::shared_ptr<const Shape>& root)
+        : root_(root)
+    {
+        ;
+    }
+
+    Surface(const Surface& other)
+        : root_(other.root_)
+    {
+        ;
+    }
+
+    ~Surface()
+    {
+        ; // do nothing
+    }
+
+    virtual dimension_kind dimension() const
+    {
+        return TWO;
+    }
+
+    virtual Real is_inside(const Real3& coord) const
+    {
+        return root_->is_inside(coord);
+    }
+
+    virtual Real3 draw_position(
+        boost::shared_ptr<RandomNumberGenerator>& rng) const
+    {
+        throw NotSupported("draw_position is not supported.");
+    }
+
+    virtual bool test_AABB(const Real3& l, const Real3& u) const
+    {
+        throw NotSupported("test_AABB is not supported.");
+    }
+
+    virtual void bounding_box(
+        const Real3& edge_lengths, Real3& lower, Real3& upper) const
+    {
+        root_->bounding_box(edge_lengths, lower, upper);
+    }
+
+protected:
+
+    const boost::shared_ptr<const Shape> root_;
+};
 
 struct Union
     : public Shape
@@ -64,6 +124,15 @@ public:
             lower[dim] = std::min(lower[dim], l[dim]);
             upper[dim] = std::max(upper[dim], u[dim]);
         }
+    }
+
+    Surface surface() const
+    {
+        if (dimension() == TWO)
+        {
+            throw NotSupported("This union object is two-dimensional");
+        }
+        return Surface(boost::shared_ptr<Shape>(new Union(*this)));
     }
 
 protected:
@@ -127,6 +196,15 @@ public:
         const Real3& edge_lengths, Real3& lower, Real3& upper) const
     {
         return a_->bounding_box(edge_lengths, lower, upper);
+    }
+
+    Surface surface() const
+    {
+        if (dimension() == TWO)
+        {
+            throw NotSupported("This complement object is two-dimensional");
+        }
+        return Surface(boost::shared_ptr<Shape>(new Complement(*this)));
     }
 
 protected:

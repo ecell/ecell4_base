@@ -535,6 +535,30 @@ cdef extern from "ecell4/core/Shape.hpp" namespace "ecell4":
         bool is_inside(Cpp_Real3&)
         Integer dimension()
 
+## Cpp_Complement
+#  ecell4::Complement
+cdef extern from "ecell4/core/shape_operators.hpp" namespace "ecell4":
+    cdef cppclass Cpp_Surface "ecell4::Surface":
+        Cpp_Surface()
+        Cpp_Surface(shared_ptr[Cpp_Shape]&)
+        Cpp_Surface(Cpp_Surface&)
+        Real is_inside(Cpp_Real3&)
+        Integer dimension()
+
+    cdef cppclass Cpp_Union "ecell4::Union":
+        Cpp_Union(shared_ptr[Cpp_Shape]&, shared_ptr[Cpp_Shape]&)
+        Cpp_Union(Cpp_Union&)
+        Real is_inside(Cpp_Real3&)
+        Integer dimension()
+        Cpp_Surface surface()
+
+    cdef cppclass Cpp_Complement "ecell4::Complement":
+        Cpp_Complement(shared_ptr[Cpp_Shape]&, shared_ptr[Cpp_Shape]&)
+        Cpp_Complement(Cpp_Complement&)
+        Real is_inside(Cpp_Real3&)
+        Integer dimension()
+        Cpp_Surface surface()
+
 ## Cpp_Sphere
 #  ecell4::Sphere
 cdef extern from "ecell4/core/Sphere.hpp" namespace "ecell4":
@@ -640,6 +664,7 @@ cdef extern from "ecell4/core/AABB.hpp" namespace "ecell4":
         Integer dimension()
         Cpp_Real3 upper()
         Cpp_Real3 lower()
+        Cpp_Surface surface()
 
 ## Cpp_MeshSurface
 # ecell4::MeshSurface
@@ -648,21 +673,6 @@ cdef extern from "ecell4/core/Mesh.hpp" namespace "ecell4":
         Cpp_MeshSurface(string, Cpp_Real3)
         Cpp_MeshSurface(Cpp_MeshSurface)
         # Real distance(Cpp_Real3&)
-        Real is_inside(Cpp_Real3&)
-        Integer dimension()
-
-## Cpp_Complement
-#  ecell4::Complement
-cdef extern from "ecell4/core/shape_operators.hpp" namespace "ecell4":
-    cdef cppclass Cpp_Union "ecell4::Union":
-        Cpp_Union(shared_ptr[Cpp_Shape]&, shared_ptr[Cpp_Shape]&)
-        Cpp_Union(Cpp_Union&)
-        Real is_inside(Cpp_Real3&)
-        Integer dimension()
-
-    cdef cppclass Cpp_Complement "ecell4::Complement":
-        Cpp_Complement(shared_ptr[Cpp_Shape]&, shared_ptr[Cpp_Shape]&)
-        Cpp_Complement(Cpp_Complement&)
         Real is_inside(Cpp_Real3&)
         Integer dimension()
 
@@ -716,6 +726,11 @@ cdef class MeshSurface:
 #  a python wrapper for Cpp_AABB
 cdef class AABB:
     cdef shared_ptr[Cpp_AABB]* thisptr
+
+## Surface
+#  a python wrapper for Cpp_Surface
+cdef class Surface:
+    cdef shared_ptr[Cpp_Surface]* thisptr
 
 ## Union
 #  a python wrapper for Cpp_Union

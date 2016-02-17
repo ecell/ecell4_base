@@ -41,6 +41,201 @@ cdef class Shape:
         """Return a dimension of this shape."""
         return self.thisptr.get().dimension()
 
+cdef class Surface:
+    """
+    """
+
+    def __init__(self, root=None):
+        """Constructor.
+
+        Parameters
+        ----------
+        root : Shape
+            A volume shape
+
+        """
+        pass  # XXX: Only used for doc string
+
+    def __cinit__(self, root=None):
+        if root is None:
+            self.thisptr = new shared_ptr[Cpp_Surface](new Cpp_Surface())
+        else:
+            self.thisptr = new shared_ptr[Cpp_Surface](
+                new Cpp_Surface(deref((<Shape>root.as_base()).thisptr)))
+
+    def __dealloc__(self):
+        del self.thisptr
+
+    def dimension(self):
+        """Return a dimension of this shape."""
+        return self.thisptr.get().dimension()
+
+    def is_inside(self, Real3 pos):
+        """Return if the given point is inside or not.
+
+        Parameters
+        ----------
+        pos : Real3
+            A position.
+
+        Returns
+        -------
+        value : float
+            Zero or negative if the given point is inside.
+
+        """
+        return self.thisptr.get().is_inside(deref(pos.thisptr))
+
+    def as_base(self):
+        """Clone self as a base class. This function is for developers."""
+        cdef shared_ptr[Cpp_Shape] *new_obj = new shared_ptr[Cpp_Shape](
+            <Cpp_Shape*>(new Cpp_Surface(
+                <Cpp_Surface> deref(self.thisptr.get()))))
+        retval = Shape()
+        del retval.thisptr
+        retval.thisptr = new_obj
+        return retval
+
+cdef class Union:
+
+    def __init__(self, a, b):
+        """Constructor.
+
+        Parameters
+        ----------
+        a : Shape
+            The first shape
+        b : Shape
+            The second shape
+
+        """
+        pass  # XXX: Only used for doc string
+
+    def __cinit__(self, a, b):
+        self.thisptr = new shared_ptr[Cpp_Union](
+            new Cpp_Union(
+                deref((<Shape>a.as_base()).thisptr),
+                deref((<Shape>b.as_base()).thisptr)))
+
+    def __dealloc__(self):
+        del self.thisptr
+
+    def dimension(self):
+        """Return a dimension of this shape."""
+        return self.thisptr.get().dimension()
+
+    def is_inside(self, Real3 pos):
+        """Return if the given point is inside or not.
+
+        Parameters
+        ----------
+        pos : Real3
+            A position.
+
+        Returns
+        -------
+        value : float
+            Zero or negative if the given point is inside.
+
+        """
+        return self.thisptr.get().is_inside(deref(pos.thisptr))
+
+    def surface(self):
+        """Create and return a surface shape.
+
+        Returns
+        -------
+        shape : Surface
+            The surface shape.
+
+        """
+        cdef shared_ptr[Cpp_Surface] *new_obj = new shared_ptr[Cpp_Surface](
+            new Cpp_Surface(self.thisptr.get().surface()))
+        retval = Surface()
+        del retval.thisptr
+        retval.thisptr = new_obj
+        return retval
+
+    def as_base(self):
+        """Clone self as a base class. This function is for developers."""
+        cdef shared_ptr[Cpp_Shape] *new_obj = new shared_ptr[Cpp_Shape](
+            <Cpp_Shape*>(new Cpp_Union(
+                <Cpp_Union> deref(self.thisptr.get()))))
+        retval = Shape()
+        del retval.thisptr
+        retval.thisptr = new_obj
+        return retval
+
+cdef class Complement:
+
+    def __init__(self, a, b):
+        """Constructor.
+
+        Parameters
+        ----------
+        a : Shape
+            The first shape
+        b : Shape
+            The second shape
+
+        """
+        pass  # XXX: Only used for doc string
+
+    def __cinit__(self, a, b):
+        self.thisptr = new shared_ptr[Cpp_Complement](
+            new Cpp_Complement(
+                deref((<Shape>a.as_base()).thisptr),
+                deref((<Shape>b.as_base()).thisptr)))
+
+    def __dealloc__(self):
+        del self.thisptr
+
+    def dimension(self):
+        """Return a dimension of this shape."""
+        return self.thisptr.get().dimension()
+
+    def is_inside(self, Real3 pos):
+        """Return if the given point is inside or not.
+
+        Parameters
+        ----------
+        pos : Real3
+            A position.
+
+        Returns
+        -------
+        value : float
+            Zero or negative if the given point is inside.
+
+        """
+        return self.thisptr.get().is_inside(deref(pos.thisptr))
+
+    def surface(self):
+        """Create and return a surface shape.
+
+        Returns
+        -------
+        shape : Surface
+            The surface shape.
+
+        """
+        cdef shared_ptr[Cpp_Surface] *new_obj = new shared_ptr[Cpp_Surface](
+            new Cpp_Surface(self.thisptr.get().surface()))
+        retval = Surface()
+        del retval.thisptr
+        retval.thisptr = new_obj
+        return retval
+
+    def as_base(self):
+        """Clone self as a base class. This function is for developers."""
+        cdef shared_ptr[Cpp_Shape] *new_obj = new shared_ptr[Cpp_Shape](
+            <Cpp_Shape*>(new Cpp_Complement(
+                <Cpp_Complement> deref(self.thisptr.get()))))
+        retval = Shape()
+        del retval.thisptr
+        retval.thisptr = new_obj
+        return retval
+
 cdef class Sphere:
     """A class representing a sphere shape, which is available to define
     structures.
@@ -793,6 +988,22 @@ cdef class AABB:
         cdef Cpp_Real3 pos = self.thisptr.get().lower()
         return Real3_from_Cpp_Real3(address(pos))
 
+    def surface(self):
+        """Create and return a surface shape.
+
+        Returns
+        -------
+        shape : Surface
+            The surface shape.
+
+        """
+        cdef shared_ptr[Cpp_Surface] *new_obj = new shared_ptr[Cpp_Surface](
+            new Cpp_Surface(self.thisptr.get().surface()))
+        retval = Surface()
+        del retval.thisptr
+        retval.thisptr = new_obj
+        return retval
+
     def as_base(self):
         """Clone self as a base class. This function is for developers."""
         cdef shared_ptr[Cpp_Shape] *new_obj = new shared_ptr[Cpp_Shape](
@@ -871,113 +1082,6 @@ cdef class MeshSurface:
         retval.thisptr = new_obj
         return retval
 
-cdef class Union:
-
-    def __init__(self, a, b):
-        """Constructor.
-
-        Parameters
-        ----------
-        a : Shape
-            The first shape
-        b : Shape
-            The second shape
-
-        """
-        pass  # XXX: Only used for doc string
-
-    def __cinit__(self, a, b):
-        self.thisptr = new shared_ptr[Cpp_Union](
-            new Cpp_Union(
-                deref((<Shape>a.as_base()).thisptr),
-                deref((<Shape>b.as_base()).thisptr)))
-
-    def __dealloc__(self):
-        del self.thisptr
-
-    def dimension(self):
-        """Return a dimension of this shape."""
-        return self.thisptr.get().dimension()
-
-    def is_inside(self, Real3 pos):
-        """Return if the given point is inside or not.
-
-        Parameters
-        ----------
-        pos : Real3
-            A position.
-
-        Returns
-        -------
-        value : float
-            Zero or negative if the given point is inside.
-
-        """
-        return self.thisptr.get().is_inside(deref(pos.thisptr))
-
-    def as_base(self):
-        """Clone self as a base class. This function is for developers."""
-        cdef shared_ptr[Cpp_Shape] *new_obj = new shared_ptr[Cpp_Shape](
-            <Cpp_Shape*>(new Cpp_Union(
-                <Cpp_Union> deref(self.thisptr.get()))))
-        retval = Shape()
-        del retval.thisptr
-        retval.thisptr = new_obj
-        return retval
-
-cdef class Complement:
-
-    def __init__(self, a, b):
-        """Constructor.
-
-        Parameters
-        ----------
-        a : Shape
-            The first shape
-        b : Shape
-            The second shape
-
-        """
-        pass  # XXX: Only used for doc string
-
-    def __cinit__(self, a, b):
-        self.thisptr = new shared_ptr[Cpp_Complement](
-            new Cpp_Complement(
-                deref((<Shape>a.as_base()).thisptr),
-                deref((<Shape>b.as_base()).thisptr)))
-
-    def __dealloc__(self):
-        del self.thisptr
-
-    def dimension(self):
-        """Return a dimension of this shape."""
-        return self.thisptr.get().dimension()
-
-    def is_inside(self, Real3 pos):
-        """Return if the given point is inside or not.
-
-        Parameters
-        ----------
-        pos : Real3
-            A position.
-
-        Returns
-        -------
-        value : float
-            Zero or negative if the given point is inside.
-
-        """
-        return self.thisptr.get().is_inside(deref(pos.thisptr))
-
-    def as_base(self):
-        """Clone self as a base class. This function is for developers."""
-        cdef shared_ptr[Cpp_Shape] *new_obj = new shared_ptr[Cpp_Shape](
-            <Cpp_Shape*>(new Cpp_Complement(
-                <Cpp_Complement> deref(self.thisptr.get()))))
-        retval = Shape()
-        del retval.thisptr
-        retval.thisptr = new_obj
-        return retval
 
 cdef Sphere Sphere_from_Cpp_Sphere(Cpp_Sphere* shape):
     cdef shared_ptr[Cpp_Sphere] *new_obj = new shared_ptr[Cpp_Sphere](
