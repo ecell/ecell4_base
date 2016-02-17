@@ -213,6 +213,126 @@ protected:
     const boost::shared_ptr<const Shape> b_;
 };
 
+struct AffineTransformation
+    : public Shape
+{
+public:
+
+    AffineTransformation()
+        : root_(), a_(1, 1, 1), b_()
+    {
+        ;
+    }
+
+    AffineTransformation(const boost::shared_ptr<const Shape>& root)
+        : root_(root), a_(1, 1, 1), b_()
+    {
+        ;
+    }
+
+    AffineTransformation(const AffineTransformation& other)
+        : root_(other.root_), a_(other.a_), b_(other.b_)
+    {
+        ;
+    }
+
+    ~AffineTransformation()
+    {
+        ; // do nothing
+    }
+
+    virtual dimension_kind dimension() const
+    {
+        return root_->dimension();
+    }
+
+    virtual Real is_inside(const Real3& pos) const
+    {
+        Real3 p(pos);
+        invmap(p);
+        return root_->is_inside(p);
+    }
+
+    virtual Real3 draw_position(
+        boost::shared_ptr<RandomNumberGenerator>& rng) const
+    {
+        Real3 pos = root_->draw_position(rng);
+        map(pos);
+        return pos;
+    }
+
+    virtual bool test_AABB(const Real3& l, const Real3& u) const
+    {
+        Real3 lower(l), upper(u);
+        invmap(lower);
+        invmap(upper);
+        return root_->test_AABB(lower, upper);
+    }
+
+    virtual void bounding_box(
+        const Real3& edge_lengths, Real3& lower, Real3& upper) const
+    {
+        root_->bounding_box(edge_lengths, lower, upper);
+        map(lower);
+        map(upper);
+    }
+
+    void translate(const Real3& b)
+    {
+        b_ += b;
+    }
+
+    void rescale(const Real3& a)
+    {
+        if (a[0] == 0 || a[1] == 0 || a[2] == 0)
+        {
+            throw std::invalid_argument(
+                "rescaling factors must be non-zero.");
+        }
+
+        a_[0] *= a[0];
+        a_[1] *= a[1];
+        a_[2] *= a[2];
+
+        b_[0] *= a[0];
+        b_[1] *= a[1];
+        b_[2] *= a[2];
+    }
+
+    Surface surface() const
+    {
+        if (dimension() == TWO)
+        {
+            throw NotSupported("This affine object is two-dimensional");
+        }
+        return Surface(
+            boost::shared_ptr<Shape>(new AffineTransformation(*this)));
+    }
+
+protected:
+
+    inline void map(Real3& p) const
+    {
+        p[0] = p[0] * a_[0] + b_[0];
+        p[1] = p[1] * a_[1] + b_[1];
+        p[2] = p[2] * a_[2] + b_[2];
+    }
+
+    inline void invmap(Real3& p) const
+    {
+        p[0] = (p[0] - b_[0]) / a_[0];
+        p[1] = (p[1] - b_[1]) / a_[1];
+        p[2] = (p[2] - b_[2]) / a_[2];
+    }
+
+protected:
+
+    const boost::shared_ptr<const Shape> root_;
+
+    Real3 a_;
+    Real3 b_;
+};
+
 }
 
 #endif /* __ECELL4_SHAPE_OPERATORS */
