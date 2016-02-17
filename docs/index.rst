@@ -93,4 +93,5 @@ Examples
    Glycolysis/Glycolysis
    HodgkinHuxley/HodgkinHuxley
    SimpleEquilibrium/SimpleEquilibrium
+   MinDESpatiocyte/MinDESpatiocyte
    
