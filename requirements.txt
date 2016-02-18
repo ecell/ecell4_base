@@ -5,4 +5,4 @@ pip==8.0.2
 ndg-httpsclient
 pyopenssl
 pyasn1
-http://dev.e-cell.org/downloads/ecell-4.0.0-cp27-cp27mu-linux_x86_64.whl
+http://dev.e-cell.org/downloads/ecell-4.0.0-cp27-none-linux_x86_64.whl
