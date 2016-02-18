@@ -1,4 +1,7 @@
 
+MinDE System with Mesoscopic Simulator
+======================================
+
 Fange D, Elf J (2006) Noise-Induced Min Phenotypes in E. coli. PLoS
 Comput Biol 2(6): e80. doi:10.1371/journal.pcbi.0020080
 
@@ -152,7 +155,7 @@ Plot a time course of the number of molecules:
 
 
 
-.. image:: output_17_0.png
+.. image:: output_18_0.png
 
 
 .. code:: python
