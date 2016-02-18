@@ -1,4 +1,7 @@
 
+MinDE System with Spatiocyte Simulator
+======================================
+
 .. code:: python
 
     %matplotlib inline
@@ -102,7 +105,7 @@ Run a simulation for 240 seconds.
 
 
 
-.. image:: output_17_0.png
+.. image:: output_18_0.png
 
 
 .. code:: python
