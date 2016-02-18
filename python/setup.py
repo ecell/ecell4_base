@@ -69,7 +69,7 @@ else: # for linux
     if not with_cpp_shared_libraries:
         with_hdf5 = True  #XXX: forced
     dependent_libs = ['gsl', 'gslcblas', 'm']
-    extra_compile_args = []
+    extra_compile_args = ["-DHAVE_CONFIG_H"]
 
 if with_hdf5:
     dependent_libs.extend(['hdf5_cpp', 'hdf5'])
