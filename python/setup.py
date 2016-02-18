@@ -64,7 +64,7 @@ if sys.platform == "win32":
 elif sys.platform == "darwin":
     with_hdf5 = True  #XXX: forced
     dependent_libs = ['gsl', 'gslcblas', 'm']
-    extra_compile_args = []
+    extra_compile_args = ["-DHAVE_CONFIG_H"]
 else: # for linux
     if not with_cpp_shared_libraries:
         with_hdf5 = True  #XXX: forced
@@ -81,25 +81,26 @@ if with_hdf5:
 if with_cpp_shared_libraries:
     ext_modules = [
         Extension("ecell4.core", sources=["lib/ecell4/core.pyx"],
-            include_dirs=["."], libraries=["ecell4-core"], language="c++"),
+            include_dirs=["."], libraries=["ecell4-core"], language="c++",
+            extra_compile_args=extra_compile_args),
         Extension("ecell4.egfrd", sources=["lib/ecell4/egfrd.pyx"],
             include_dirs=["."], libraries=["ecell4-core", "ecell4-egfrd"],
-            language="c++", extra_compile_args=["-w"]),
+            language="c++", extra_compile_args=extra_compile_args + ["-w"]),
         Extension("ecell4.gillespie", sources=["lib/ecell4/gillespie.pyx"],
             include_dirs=["."], libraries=["ecell4-core", "ecell4-gillespie"],
-            language="c++"),
+            language="c++", extra_compile_args=extra_compile_args),
         Extension("ecell4.bd", sources=["lib/ecell4/bd.pyx"],
             include_dirs=["."], libraries=["ecell4-core", "ecell4-bd"],
-            language="c++"),
+            language="c++", extra_compile_args=extra_compile_args),
         Extension("ecell4.ode", sources=["lib/ecell4/ode.pyx"],
             include_dirs=["."], libraries=["ecell4-core", "ecell4-ode"],
-            language="c++"),
+            language="c++", extra_compile_args=extra_compile_args),
         Extension("ecell4.spatiocyte", sources=["lib/ecell4/spatiocyte.pyx"],
             include_dirs=["."], libraries=["ecell4-core", "ecell4-spatiocyte"],
-            language="c++"),
+            language="c++", extra_compile_args=extra_compile_args),
         Extension("ecell4.meso", sources=["lib/ecell4/meso.pyx"],
             include_dirs=["."], libraries=["ecell4-core", "ecell4-meso"],
-            language="c++"),
+            language="c++", extra_compile_args=extra_compile_args),
         ]
     ext_modules = cythonize(ext_modules)
 else:
