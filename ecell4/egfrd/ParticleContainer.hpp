@@ -133,14 +133,7 @@ public:
             position_type const &initial_displacement) const
     {
         using namespace ecell4;
-        //const std::vector<boost::shared_ptr<PlanarSurface> > surface_vector = world_.get_surface_container();
-        std::vector<boost::shared_ptr<ecell4::PlanarSurface> > surface_vector;
-        boost::shared_ptr<ecell4::PlanarSurface> surface1(new ecell4::PlanarSurface(ecell4::Real3(0., 0., 0.8e-2), ecell4::Real3(1., 0., 0.), ecell4::Real3(0., 1., 0.)));
-        boost::shared_ptr<ecell4::PlanarSurface> surface2(new ecell4::PlanarSurface(ecell4::Real3(0., 0., 0.2e-2), ecell4::Real3(1., 0., 0.), ecell4::Real3(0., 1., 0.)));
-        boost::shared_ptr<ecell4::PlanarSurface> surface3(new ecell4::PlanarSurface(ecell4::Real3(0., 0., 0.5e-2), ecell4::Real3(1., 0., 0.), ecell4::Real3(0., 1., 0.)));
-        surface_vector.push_back(surface1);
-        surface_vector.push_back(surface2);
-        surface_vector.push_back(surface3);
+        const std::vector<boost::shared_ptr<PlanarSurface> > surface_vector = this->get_surface_container();
         position_type from(start);
         position_type displacement(initial_displacement);
 

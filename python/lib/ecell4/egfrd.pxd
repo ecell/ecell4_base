@@ -56,6 +56,7 @@ cdef extern from "ecell4/egfrd/egfrd.hpp" namespace "ecell4::egfrd":
         vector[pair[pair[Cpp_ParticleID, Cpp_Particle], Real]] list_particles_within_radius(Cpp_Real3& pos, Real& radius, Cpp_ParticleID& ignore1, Cpp_ParticleID& ignore2)
         # Cpp_Real3 periodic_transpose(Cpp_Real3& pos1, Cpp_Real3& pos2)
         Cpp_Real3 apply_boundary(Cpp_Real3& pos)
+
         # Real distance_sq(Cpp_Real3& pos1, Cpp_Real3& pos2)
         Real distance(Cpp_Real3& pos1, Cpp_Real3& pos2)
         Real volume()
@@ -69,6 +70,7 @@ cdef extern from "ecell4/egfrd/egfrd.hpp" namespace "ecell4::egfrd":
         void load(string filename) except +
         void bind_to(shared_ptr[Cpp_Model])
         shared_ptr[Cpp_RandomNumberGenerator] rng()
+        void add_surface(shared_ptr[Cpp_PlanarSurface])
 
     cdef cppclass Cpp_EGFRDSimulator "ecell4::egfrd::EGFRDSimulator":
         #XXX: be carefull about the order of arguments

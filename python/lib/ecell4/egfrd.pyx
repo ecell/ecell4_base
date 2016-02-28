@@ -1,7 +1,12 @@
 import collections
 from cython cimport address
 from cython.operator cimport dereference as deref, preincrement as inc
+from ecell4.shared_ptr cimport shared_ptr
 from ecell4.core cimport *
+
+cdef shared_ptr[Cpp_PlanarSurface]* Cpp_PlanarSurface_from_PlanarSurface(surface):
+    if isinstance(surface, PlanarSurface):
+        return (<PlanarSurface>surface).thisptr
 
 
 ## ReactionInfo
@@ -673,6 +678,18 @@ cdef class EGFRDWorld:
 
         """
         self.thisptr.get().bind_to(Cpp_Model_from_Model(m))
+
+    def add_surface(self, surface):
+        """add_surface(surface):
+
+        add PlanarSurface to the World
+        
+        Parameters
+        ----------
+        surface: PlanarSurface
+            a surface to add
+        """
+        self.thisptr.get().add_surface(deref(Cpp_PlanarSurface_from_PlanarSurface(surface)) )
 
     def rng(self):
         """Return a random number generator object."""
