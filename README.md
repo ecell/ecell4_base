@@ -30,8 +30,6 @@ Installation and usage
     - [Python2 series](#python2-series)
     - [Python3 series](#python3-series)
   - [Mac](#mac)
-    - [Pip users](#pip-users)
-    - [Homebrew users](#homebrew-users)
   - [Linux](#Linux)
     - [Ubuntu Linux 14.04](#ubuntu-linux-1404)
     - [Linuxbrew](#linuxbrew)
@@ -133,7 +131,7 @@ brew install ffmpeg
 ```
 
 We also have homebrew formula for E-Cell4 [homebrew-ecell4](https://github.com/ecell/homebrew-ecell4).
-If you have trouble in above installation please try this.
+If you have trouble in above installation please try this instead.
 
 ### Linux
 
