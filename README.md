@@ -113,8 +113,6 @@ If you use animated visualization for E-Cell4, please install [ffmpeg windows bu
 
 ### Mac
 
-#### Pip users
-
 Please run the following commands in your terminal.
 
 ```shell
@@ -134,28 +132,8 @@ source ~/.bashrc
 brew install ffmpeg
 ```
 
-#### Homebrew users
-We have homebrew formula for E-Cell4 [homebrew-ecell4](https://github.com/ecell/homebrew-ecell4).
-This homebrew formula includes ffmpeg (for animated visualization).
-Please run the following commands in your terminal.
-
-```shell
-brew tap ecell/ecell4
-brew install ecell4
-
-# Mac default matplotlib is too old for E-Cell4, you need to update it with the following options.
-pip install -U --user matplotlib
-pip install -U --user jupyter
-
-# path config for homebrew-ecell4
-mkdir -p ~/Library/Python/2.7/lib/python/site-packages
-echo 'import site; site.addsitedir("/usr/local/lib/python2.7/site-packages")' >> ~/Library/Python/2.7/lib/python/site-packages/homebrew.pth
-
-# path config for --user installed Python packages
-echo 'export PYTHONPATH=~/Library/Python/2.7/lib/python/site-packages:$PYTHONPATH' >> ~/.bashrc
-echo 'export PATH=~/Library/Python/2.7/bin:$PATH' >> ~/.bashrc
-source ~/.bashrc
-```
+We also have homebrew formula for E-Cell4 [homebrew-ecell4](https://github.com/ecell/homebrew-ecell4).
+If you have trouble in above installation please try this.
 
 ### Linux
 
