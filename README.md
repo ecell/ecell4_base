@@ -32,6 +32,7 @@ Installation and usage
   - [Mac](#mac)
   - [Linux](#Linux)
     - [Ubuntu Linux 14.04](#ubuntu-linux-1404)
+    - [Building whl on Ubuntu or Debian](#building-whl-on-ubuntu-or-debian)
     - [Linuxbrew](#linuxbrew)
 
 - [How to open E-Cell4 Jupyter notebooks](#how-to-open-e-cell4-jupyter-notebooks)
@@ -137,30 +138,48 @@ If you have trouble in above installation please try this instead.
 
 #### Ubuntu Linux 14.04
 We have tested the release whl files on Ubuntu Linux **14.04**.
+Please run the following commands with root privilege.
 
 ```shell
 # If you use Python3, replace python-pip to python3-pip
-sudo apt-get install libgsl0-dev libhdf5-dev python-pip
+apt-get install libgsl0-dev libhdf5-dev python-pip
 # If you use Python3 please replace the whl for Python3
-pip install --user https://github.com/ecell/ecell4/releases/download/4.0.0/ecell-4.0.0-cp27-none-linux_x86_64.whl
+pip install https://github.com/ecell/ecell4/releases/download/4.0.0/ecell-4.0.0-cp27-none-linux_x86_64.whl
 
 # The latest matplotlib and jupyter
-sudo apt-get install python-dev libfreetype6-dev libpng-dev pkg-config python-numpy pandoc
-pip install --user matplotlib jupyter
+apt-get install python-dev libfreetype6-dev libpng-dev pkg-config python-numpy pandoc
+pip install matplotlib jupyter
 
 # Optional requirement (animation visualization)
-sudo apt-get install libav-tools
+apt-get install libav-tools
+```
 
-# path config for --user installed Python packages
-echo 'export PYTHONPATH=~/.local/lib/python2.7/site-packages:$PYTHONPATH' >> ~/.bashrc
-echo 'export PATH=~/.local/bin:$PATH' >> ~/.bashrc
-source ~/.bashrc
+#### Building whl on Ubuntu or Debian
+If you do not use Ubuntu 14.04 (and use other Ubuntu version or Debian), please try this instead.
+Please run the following commands with root privilege.
+
+```shell
+apt-get install -y python python-dev cmake gcc g++ libboost-dev libgsl0-dev libhdf5-dev wget
+wget https://bootstrap.pypa.io/get-pip.py; python get-pip.py; pip install cython
+wget https://github.com/ecell/ecell4/archive/4.0.0.tar.gz; tar xf 4.0.0.tar.gz; cd ecell4-4.0.0
+cmake .; make BesselTables; cd python; python setup.py build_ext; python setup.py bdist_wheel; pip install dist/ecell-4.0.0-cp27-cp27mu-linux_x86_64.whl
+```
+
+and run commands for other requirements.
+
+```shell
+# The latest matplotlib and jupyter
+apt-get install python-dev libfreetype6-dev libpng-dev pkg-config python-numpy pandoc
+pip install matplotlib jupyter
+
+# Optional requirement (animation visualization)
+apt-get install libav-tools
 ```
 
 #### Linuxbrew
 
 [E-Cell4 homebrew formula](https://github.com/ecell/homebrew-ecell4) also can be used for [Linuxbrew](http://linuxbrew.sh/).
-If you do NOT use Ubuntu, please try Linuxbrew instead.
+If you do not use Ubuntu (or Debian) and not have root privilege, please try Linuxbrew instead.
 
 How to open E-Cell4 Jupyter notebooks
 -------------------------------------
