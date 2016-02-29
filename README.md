@@ -27,8 +27,6 @@ Installation and usage
     - [Build requirements](#build-requirements)
 
   - [Windows](#windows)
-    - [Python2 series](#python2-series)
-    - [Python3 series](#python3-series)
   - [Mac](#mac)
   - [Linux](#Linux)
     - [Ubuntu Linux 14.04](#ubuntu-linux-1404)
