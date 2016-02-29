@@ -193,22 +193,16 @@ jupyter-notebook
 ```
 
 ### Mac
-#### Pip users
+
 ```shell
 ### in the case of Python27
 ~/Library/Python/2.7/ecell4ipynb
 jupyter-notebook
 ```
 
-#### Homebrew users
-```shell
-cd /usr/local/Cellar/ecell4/4.0.0/ecell4ipynb
-jupyter-notebook
-```
-
 ### Linux
 ```shell
-cd ~/.local/ecell4ipynb
+cd /usr/local/ecell4ipynb
 jupyter-notebook
 ```
 
