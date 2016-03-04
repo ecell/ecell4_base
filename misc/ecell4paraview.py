@@ -1,3 +1,15 @@
+"""A macro for ParaView
+
+This is a macro for visualizing the E-Cell4 output with ParaView (http://www.paraview.org/).
+
+1. Save particles by using `FixedIntervalCSVObserver`.
+2. Launch ParaView ($PATH_TO_PARAVIEW/bin/paraview).
+3. Add this macro just at the first time (Macros -> Add new macro...).
+4. Open the output CSV files (File -> Open, or just Ctr+O).
+5. Run the macro (Macros -> ecell4paraview)
+
+"""
+
 from paraview.simple import *
 
 meso = GetActiveSource()
