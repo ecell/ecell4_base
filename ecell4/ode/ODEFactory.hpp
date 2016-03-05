@@ -55,7 +55,9 @@ public:
         const boost::shared_ptr<Model>& model,
         const boost::shared_ptr<world_type>& world) const
     {
-        throw NotSupported("not supported.");
+        ODESimulator* sim = new ODESimulator(model, world, solver_type_);
+        sim->set_dt(dt_);
+        return sim;
     }
 
     virtual ODESimulator* create_simulator(
@@ -66,14 +68,14 @@ public:
         return sim;
     }
 
-    ODESimulator* create_simulator(
-        const boost::shared_ptr<NetworkModel>& model,
-        const boost::shared_ptr<world_type>& world) const
-    {
-        ODESimulator* sim = new ODESimulator(model, world, solver_type_);
-        sim->set_dt(dt_);
-        return sim;
-    }
+    // ODESimulator* create_simulator(
+    //     const boost::shared_ptr<NetworkModel>& model,
+    //     const boost::shared_ptr<world_type>& world) const
+    // {
+    //     ODESimulator* sim = new ODESimulator(model, world, solver_type_);
+    //     sim->set_dt(dt_);
+    //     return sim;
+    // }
 
     ODESimulator* create_simulator(
         const boost::shared_ptr<ODENetworkModel>& model,
