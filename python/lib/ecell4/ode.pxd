@@ -161,9 +161,9 @@ cdef extern from "ecell4/ode/ODESimulator.hpp" namespace "ecell4::ode":
 cdef extern from "ecell4/ode/ODESimulator.hpp" namespace "ecell4::ode":
     cdef cppclass Cpp_ODESimulator "ecell4::ode::ODESimulator":
         Cpp_ODESimulator(shared_ptr[Cpp_ODENetworkModel], shared_ptr[Cpp_ODEWorld], Cpp_ODESolverType) except+
-        Cpp_ODESimulator(shared_ptr[Cpp_NetworkModel], shared_ptr[Cpp_ODEWorld], Cpp_ODESolverType) except+
+        Cpp_ODESimulator(shared_ptr[Cpp_Model], shared_ptr[Cpp_ODEWorld], Cpp_ODESolverType) except+
         Cpp_ODESimulator(shared_ptr[Cpp_ODENetworkModel], shared_ptr[Cpp_ODEWorld]) except+
-        Cpp_ODESimulator(shared_ptr[Cpp_NetworkModel], shared_ptr[Cpp_ODEWorld]) except+
+        Cpp_ODESimulator(shared_ptr[Cpp_Model], shared_ptr[Cpp_ODEWorld]) except+
         Cpp_ODESimulator(shared_ptr[Cpp_ODEWorld], Cpp_ODESolverType) except+
         Cpp_ODESimulator(shared_ptr[Cpp_ODEWorld]) except+
         void initialize()
@@ -203,7 +203,7 @@ cdef extern from "ecell4/ode/ODEFactory.hpp" namespace "ecell4::ode":
         Cpp_ODEWorld* create_world()
         Cpp_ODEWorld* create_world(string)
         Cpp_ODEWorld* create_world(Cpp_Real3&)
-        Cpp_ODESimulator* create_simulator(shared_ptr[Cpp_NetworkModel], shared_ptr[Cpp_ODEWorld])
+        Cpp_ODESimulator* create_simulator(shared_ptr[Cpp_Model], shared_ptr[Cpp_ODEWorld])
         Cpp_ODESimulator* create_simulator(shared_ptr[Cpp_ODENetworkModel], shared_ptr[Cpp_ODEWorld])
         Cpp_ODESimulator* create_simulator(shared_ptr[Cpp_ODEWorld])
 

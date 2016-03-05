@@ -352,7 +352,7 @@ public:
     }
 
     ODESimulator(
-        const boost::shared_ptr<NetworkModel>& model,
+        const boost::shared_ptr<Model>& model,
         const boost::shared_ptr<ODEWorld>& world,
         const ODESolverType solver_type = ROSENBROCK4_CONTROLLER)
         : base_type(boost::shared_ptr<ODENetworkModel>(new ODENetworkModel(model)), world),
