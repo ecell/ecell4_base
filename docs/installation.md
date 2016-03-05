@@ -1,11 +1,11 @@
-Table of contents
-=================
+Installation and usage
+======================
 
 - [Docker container for E-Cell System version4](#docker-container-for-e-cell-system-version4)
   - [Windows or Mac](#windows-or-mac)
   - [Linux](#linux)
 
-- [Installation and usage](#installation-and-usage)
+- [Installation](#installation)
   - [Requirements](#requirements)
     - [Minimum requirements](#minimum-requirements)
     - [Optional requirements](#optional-requirements)
@@ -15,33 +15,34 @@ Table of contents
     - [Python2 series](#python2-series)
     - [Python3 series](#python3-series)
   - [Mac](#mac)
-    - [Homebrew users](#homebrew-users)
     - [Pip users](#pip-users)
+    - [Homebrew users](#homebrew-users)
   - [Linux](#Linux)
-    - [Custom shell script for Ubuntu](#custom-shell-script-for-ubuntu)
+    - [Ubuntu Linux 14.04](#ubuntu-linux-1404)
     - [Linuxbrew](#linuxbrew)
+    
+- [How to open E-Cell4 Jupyter notebooks](#how-to-open-e-cell4-jupyter-notebooks)
 
-  - [Simple examples](#simple-examples)
-
+- [Simple examples](#simple-examples)
+  - [A reversible binding reaction](#a-reversible-binding-reaction)
+  - [Particle tracking on a spherical surface](#particle-tracking-on-a-spherical-surface)
 
 Docker container for E-Cell System version4
-===========================================
+-------------------------------------------
 
 If you have docker environment, you can easily try E-Cell4.
 You can pull E-Cell4 container with `docker pull ecell/ecell4`.
 
 After the following steps, you should see [Jupyter Notebook](http://jupyter.org/) up and running (and E-Cell4 tutorials) in your web browser.
 
-Windows or Mac
---------------
+### Windows or Mac
 
 1. Install [Docker Toolbox](https://www.docker.com/toolbox).
 2. Run **Docker Quickstart Terminal**.
 3. Run `docker run -d -p 443:8888 ecell/ecell4` in the terminal.
 4. Open **192.168.99.100:443** with your web browser.
 
-Linux
------
+### Linux
 
 1. Install Docker.
 2. Run the following commands in your terminal.
@@ -54,18 +55,17 @@ Linux
 3. Open **localhost:443** with your web browser.
 
 
-Installation and usage
-======================
-
-Requirements
+Installation
 ------------
 
-### Minimum requirements
+### Requirements
+
+#### Minimum requirements
 - Python 2.7 or 3.4(on Linux) 3.5(on Windows, Mac) 
 - pip
 
-### Optional requirements
-We strongly recommend that you run E-Cell4 from [Jupyter Notebook](http://jupyter.org/).
+#### Optional requirements
+We strongly recommend that you run E-Cell4 with [Jupyter Notebook](http://jupyter.org/).
 And some E-Cell4 functions (for visualization, datastore) optionaly depend on
 - matplotlib (**1.5.1** and later)
 - ffmpeg or avconv
@@ -79,8 +79,7 @@ If you build E-Cell4 from source code, you need to install these software.
 - gsl
 - hdf5
 
-Windows
--------
+### Windows
 
 Please use 32bit Python2.7 or 3.5, even if you use 64bit Windows.
 We have NOT supported 64bit Python yet.
@@ -97,10 +96,30 @@ We have NOT supported 64bit Python yet.
 Although jupyter is optional, we strongly recommend that you run E-Cell4 with jupyter.
 If you use animated visualization for E-Cell4, please install [ffmpeg windows build](http://ffmpeg.zeranoe.com/builds/) and add its path to your **USER** PATH enviromental variable.
 
-Mac
----
+### Mac
 
-### homebrew users
+#### Pip users
+
+Please run the following commands in your terminal.
+
+```shell
+# Please download E-Cell4 whl file for your Python version from https://github.com/ecell/ecell4/releases , here we downloaded a whl for Python27
+pip install  --user ecell-4.0.0-cp27-none-macosx_10_6_intel.macosx_10_9_intel.macosx_10_9_x86_64.macosx_10_10_intel.macosx_10_10_x86_64.whl
+
+# Mac default matplotlib is too old for E-Cell4, you need to update it with the following options.
+pip install -U --user matplotlib
+pip install -U --user jupyter
+
+# path config for --user installed Python packages
+echo 'export PYTHONPATH=~/Library/Python/2.7/lib/python/site-packages:$PYTHONPATH' >> ~/.bashrc
+echo 'export PATH=~/Library/Python/2.7/bin:$PATH' >> ~/.bashrc
+source ~/.bashrc
+
+# If you use animation support. (Install ffmpeg with homebrew)
+brew install ffmpeg
+```
+
+#### Homebrew users
 We have homebrew formula for E-Cell4 [homebrew-ecell4](https://github.com/ecell/homebrew-ecell4).
 This homebrew formula includes ffmpeg (for animated visualization).
 Please run the following commands in your terminal.
@@ -123,46 +142,23 @@ echo 'export PATH=~/Library/Python/2.7/bin:$PATH' >> ~/.bashrc
 source ~/.bashrc
 ```
 
-### pip users
-We also have Python wheel files for E-Cell4.
-But the wheel distribution does NOT include ffmpeg.
-If you need animation visualization, please install it yourself. 
+### Linux
+
+#### Ubuntu Linux 14.04
+We have tested the release whl files on Ubuntu Linux **14.04**.
 
 ```shell
-# Please download E-Cell4 whl file for your Python version from https://github.com/ecell/ecell4/releases , here we downloaded a whl for Python27
-pip install  --user ecell-4.0.0-cp27-none-macosx_10_6_intel.macosx_10_9_intel.macosx_10_9_x86_64.macosx_10_10_intel.macosx_10_10_x86_64.whl
-
-# Mac default matplotlib is too old for E-Cell4, you need to update it with the following options.
-pip install -U --user matplotlib
-pip install -U --user jupyter
-
-# path config for --user installed Python packages
-echo 'export PYTHONPATH=~/Library/Python/2.7/lib/python/site-packages:$PYTHONPATH' >> ~/.bashrc
-echo 'export PATH=~/Library/Python/2.7/bin:$PATH' >> ~/.bashrc
-source ~/.bashrc
-```
-
-Linux
------
-
-### Ubuntu Linux
-We have tested the release files on Ubuntu Linux 14.04 and 15.10.
-If you use Ubuntu please run the following commands.
-
-```shell
-# If you use Python3 please replace python-pip to python3-pip
-sudo apt-get install libboost-dev libgsl0-dev libhdf5-dev python-pip
+# If you use Python3, replace python-pip to python3-pip
+sudo apt-get install libgsl0-dev libhdf5-dev python-pip
 # If you use Python3 please replace the whl for Python3
 pip install --user https://github.com/ecell/ecell4/releases/download/4.0.0/ecell-4.0.0-cp27-none-linux_x86_64.whl
 
 # The latest matplotlib and jupyter
-sudo apt-get install libfreetype6-dev libpng-dev pkg-config python-numpy pandoc
+sudo apt-get install python-dev libfreetype6-dev libpng-dev pkg-config python-numpy pandoc
 pip install --user matplotlib jupyter
 
-# Optional requirement (animation visualization) for 14.04
+# Optional requirement (animation visualization)
 sudo apt-get install libav-tools
-# If you use 15.10 you can use ffmpeg deb package
-#sudo apt-get install -y ffmpeg
 
 # path config for --user installed Python packages
 echo 'export PYTHONPATH=~/.local/lib/python2.7/site-packages:$PYTHONPATH' >> ~/.bashrc
@@ -170,10 +166,43 @@ echo 'export PATH=~/.local/bin:$PATH' >> ~/.bashrc
 source ~/.bashrc
 ```
 
-### Linuxbrew
+#### Linuxbrew
 
 [E-Cell4 homebrew formula](https://github.com/ecell/homebrew-ecell4) also can be used for [Linuxbrew](http://linuxbrew.sh/).
 If you do NOT use Ubuntu, please try Linuxbrew instead.
+
+How to open E-Cell4 Jupyter notebooks
+-------------------------------------
+
+### Windows
+Please replace the CONDA_INSTALL_FOLDER with the folder you installed Miniconda.
+For example **C:¥Miniconda27**.
+
+```shell
+cd the CONDA_INSTALL_FOLDER
+cd ecell4ipynb
+jupyter-notebook
+```
+
+### Mac
+#### Pip users
+```shell
+### in the case of Python27
+~/Library/Python/2.7/ecell4ipynb
+jupyter-notebook
+```
+
+#### Homebrew users
+```shell
+cd /usr/local/Cellar/ecell4/4.0.0/ecell4ipynb
+jupyter-notebook
+```
+
+### Linux
+```shell
+cd ~/.local/ecell4ipynb
+jupyter-notebook
+```
 
 Simple examples
 ---------------
