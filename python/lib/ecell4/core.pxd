@@ -568,6 +568,9 @@ cdef extern from "ecell4/core/shape_operators.hpp" namespace "ecell4":
         Cpp_Surface surface()
         void translate(Cpp_Real3&)
         void rescale(Cpp_Real3&)
+        void xroll(Real&)
+        void yroll(Real&)
+        void zroll(Real&)
 
 ## Cpp_Sphere
 #  ecell4::Sphere

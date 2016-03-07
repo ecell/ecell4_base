@@ -219,19 +219,20 @@ struct AffineTransformation
 public:
 
     AffineTransformation()
-        : root_(), a_(1, 1, 1), b_()
+        : root_(), a0_(1, 0, 0), a1_(0, 1, 0), a2_(0, 0, 1), b_()
     {
         ;
     }
 
     AffineTransformation(const boost::shared_ptr<const Shape>& root)
-        : root_(root), a_(1, 1, 1), b_()
+        : root_(root), a0_(1, 0, 0), a1_(0, 1, 0), a2_(0, 0, 1), b_()
     {
         ;
     }
 
     AffineTransformation(const AffineTransformation& other)
-        : root_(other.root_), a_(other.a_), b_(other.b_)
+        : root_(other.root_),
+        a0_(other.a0_), a1_(other.a1_), a2_(other.a2_), b_(other.b_)
     {
         ;
     }
@@ -290,13 +291,90 @@ public:
                 "rescaling factors must be non-zero.");
         }
 
-        a_[0] *= a[0];
-        a_[1] *= a[1];
-        a_[2] *= a[2];
-
+        a0_[0] *= a[0];
+        a0_[1] *= a[1];
+        a0_[2] *= a[2];
+        a1_[0] *= a[0];
+        a1_[1] *= a[1];
+        a1_[2] *= a[2];
+        a2_[0] *= a[0];
+        a2_[1] *= a[1];
+        a2_[2] *= a[2];
         b_[0] *= a[0];
         b_[1] *= a[1];
         b_[2] *= a[2];
+    }
+
+    void xroll(const Real& theta)
+    {
+        const double c = cos(theta);
+        const double s = sin(theta);
+
+        double tmp;
+
+        tmp = a1_[0] * c - a2_[0] * s;
+        a2_[0] = a1_[0] * s + a2_[0] * c;
+        a1_[0] = tmp;
+
+        tmp = a1_[1] * c - a2_[1] * s;
+        a2_[1] = a1_[1] * s + a2_[1] * c;
+        a1_[1] = tmp;
+
+        tmp = a1_[2] * c - a2_[2] * s;
+        a2_[2] = a1_[2] * s + a2_[2] * c;
+        a1_[2] = tmp;
+
+        tmp = b_[1] * c - b_[2] * s;
+        b_[2] = b_[1] * s + b_[2] * c;
+        b_[1] = tmp;
+    }
+
+    void yroll(const Real& theta)
+    {
+        const double c = cos(theta);
+        const double s = sin(theta);
+
+        double tmp;
+
+        tmp = a0_[0] * c + a2_[0] * s;
+        a2_[0] = a0_[0] * -s + a2_[0] * c;
+        a0_[0] = tmp;
+
+        tmp = a0_[1] * c + a2_[1] * s;
+        a2_[1] = a0_[1] * -s + a2_[1] * c;
+        a0_[1] = tmp;
+
+        tmp = a0_[2] * c + a2_[2] * s;
+        a2_[2] = a0_[2] * -s + a2_[2] * c;
+        a0_[2] = tmp;
+
+        tmp = b_[0] * c + b_[2] * s;
+        b_[2] = b_[0] * -s + b_[2] * c;
+        b_[0] = tmp;
+    }
+
+    void zroll(const Real& theta)
+    {
+        const double c = cos(theta);
+        const double s = sin(theta);
+
+        double tmp;
+
+        tmp = a0_[0] * c - a1_[0] * s;
+        a1_[0] = a0_[0] * s + a1_[0] * c;
+        a0_[0] = tmp;
+
+        tmp = a0_[1] * c - a1_[1] * s;
+        a1_[1] = a0_[1] * s + a1_[1] * c;
+        a0_[1] = tmp;
+
+        tmp = a0_[2] * c - a1_[2] * s;
+        a1_[2] = a0_[2] * s + a1_[2] * c;
+        a0_[2] = tmp;
+
+        tmp = b_[0] * c - b_[1] * s;
+        b_[1] = b_[0] * s + b_[1] * c;
+        b_[0] = tmp;
     }
 
     Surface surface() const
@@ -313,23 +391,48 @@ protected:
 
     inline void map(Real3& p) const
     {
-        p[0] = p[0] * a_[0] + b_[0];
-        p[1] = p[1] * a_[1] + b_[1];
-        p[2] = p[2] * a_[2] + b_[2];
+        p[0] = dot_product(p, a0_) + b_[0];
+        p[1] = dot_product(p, a1_) + b_[1];
+        p[2] = dot_product(p, a2_) + b_[2];
     }
 
     inline void invmap(Real3& p) const
     {
-        p[0] = (p[0] - b_[0]) / a_[0];
-        p[1] = (p[1] - b_[1]) / a_[1];
-        p[2] = (p[2] - b_[2]) / a_[2];
+        double det = 0.0;
+        det += a0_[0] * a1_[1] * a2_[2];
+        det += a1_[0] * a2_[1] * a0_[2];
+        det += a2_[0] * a0_[1] * a1_[2];
+        det -= a2_[0] * a1_[1] * a0_[2];
+        det -= a1_[0] * a0_[1] * a2_[2];
+        det -= a0_[0] * a2_[1] * a1_[2];
+
+        if (det == 0)
+        {
+            throw IllegalState(
+                "The determinant of an Affine matrix is equal to zero.");
+        }
+
+        const Real3 inva0(a1_[1] * a2_[2] - a1_[2] * a2_[1],
+                          a0_[2] * a2_[1] - a0_[1] * a2_[2],
+                          a0_[1] * a1_[2] - a0_[2] * a1_[1]);
+        const Real3 inva1(a1_[2] * a2_[0] - a1_[0] * a2_[2],
+                          a0_[0] * a2_[2] - a0_[2] * a2_[0],
+                          a0_[2] * a1_[0] - a0_[0] * a1_[2]);
+        const Real3 inva2(a1_[0] * a2_[1] - a1_[1] * a2_[0],
+                          a0_[1] * a2_[0] - a0_[0] * a2_[1],
+                          a0_[0] * a1_[1] - a0_[1] * a1_[0]);
+
+        Real3 tmp = p - b_;
+        p[0] = dot_product(tmp, inva0) / det;
+        p[1] = dot_product(tmp, inva1) / det;
+        p[2] = dot_product(tmp, inva2) / det;
     }
 
 protected:
 
     const boost::shared_ptr<const Shape> root_;
 
-    Real3 a_;
+    Real3 a0_, a1_, a2_;
     Real3 b_;
 };
 
