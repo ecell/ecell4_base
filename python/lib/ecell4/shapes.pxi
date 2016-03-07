@@ -304,6 +304,39 @@ cdef class AffineTransformation:
         """
         self.thisptr.get().rescale(deref(value.thisptr))
 
+    def xroll(self, Real value):
+        """Roll the object around x-axis.
+
+        Parameters
+        ----------
+        value : Real
+            A rotation angle
+
+        """
+        self.thisptr.get().xroll(value)
+
+    def yroll(self, Real value):
+        """Roll the object around y-axis.
+
+        Parameters
+        ----------
+        value : Real
+            A rotation angle
+
+        """
+        self.thisptr.get().yroll(value)
+
+    def zroll(self, Real value):
+        """Roll the object around z-axis.
+
+        Parameters
+        ----------
+        value : Real
+            A rotation angle
+
+        """
+        self.thisptr.get().zroll(value)
+
     def surface(self):
         """Create and return a surface shape.
 
