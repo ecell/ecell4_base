@@ -152,28 +152,6 @@ pip install matplotlib jupyter
 apt-get install libav-tools
 ```
 
-#### Building whl on Ubuntu or Debian
-If you do not use Ubuntu 14.04 (and use other Ubuntu version or Debian), please try this instead.
-Please run the following commands with root privilege.
-
-```shell
-apt-get install -y python python-dev cmake gcc g++ libboost-dev libgsl0-dev libhdf5-dev wget
-wget https://bootstrap.pypa.io/get-pip.py; python get-pip.py; pip install cython
-wget https://github.com/ecell/ecell4/archive/4.0.0.tar.gz; tar xf 4.0.0.tar.gz; cd ecell4-4.0.0
-cmake .; make BesselTables; cd python; python setup.py build_ext; python setup.py bdist_wheel; pip install dist/ecell-4.0.0-cp27-cp27mu-linux_x86_64.whl
-```
-
-and run commands for other requirements.
-
-```shell
-# The latest matplotlib and jupyter
-apt-get install python-dev libfreetype6-dev libpng-dev pkg-config python-numpy pandoc
-pip install matplotlib jupyter
-
-# Optional requirement (animation visualization)
-apt-get install libav-tools
-```
-
 #### Linuxbrew
 
 [E-Cell4 homebrew formula](https://github.com/ecell/homebrew-ecell4) also can be used for [Linuxbrew](http://linuxbrew.sh/).
