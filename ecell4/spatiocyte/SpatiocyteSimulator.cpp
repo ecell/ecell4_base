@@ -445,7 +445,8 @@ void SpatiocyteSimulator::apply_ab2c(
     }
     else
     {
-        throw IllegalState("no place for the product.");
+        throw IllegalState(
+            "no place for the product [" + product_species.serial() + "].");
     }
 }
 
@@ -863,7 +864,9 @@ bool SpatiocyteSimulator::apply_a2bc(
     }
     else
     {
-        throw IllegalState("no place for the products.");
+        throw IllegalState(
+            "no place for the products ["
+            + product_species0.serial() + ", " + product_species1.serial() + "].");
     }
 
     return false;
