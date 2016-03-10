@@ -613,7 +613,8 @@ def plot_world_with_elegans(
             'range': __get_range_of_world(world),
             'autorange': False,
             'grid': grid,
-            'save_image': False
+            'save_image': True
+            # 'save_image': False
         }
     }
 
