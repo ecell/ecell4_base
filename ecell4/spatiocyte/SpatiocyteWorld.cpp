@@ -143,6 +143,62 @@ SpatiocyteWorld::list_particles_exact(const Species& sp) const
     return (*space_).list_particles_exact(sp);
 }
 
+std::vector<std::pair<ParticleID, Particle> >
+SpatiocyteWorld::list_strucutre_particles() const
+{
+    const std::vector<Species> structure_species(list_structure_species());
+
+    typedef std::vector<std::vector<std::pair<ParticleID, Particle> > > tmp_type;
+    tmp_type tmp_vector(structure_species.size());
+    Integer num_elements;
+
+    for (std::vector<Species>::const_iterator itr(structure_species.begin());
+            itr != structure_species.end(); ++itr)
+    {
+        std::vector<std::pair<ParticleID, Particle> > tmp(list_particles(*itr));
+        tmp_vector.push_back(tmp);
+        num_elements += tmp.size();
+    }
+
+    std::vector<std::pair<ParticleID, Particle> > retval;
+    retval.reserve(num_elements);
+    for (tmp_type::const_iterator itr(tmp_vector.begin());
+            itr != tmp_vector.end(); ++itr)
+    {
+        retval.insert(retval.end(), (*itr).begin(), (*itr).end());
+    }
+
+    return retval;
+}
+
+std::vector<std::pair<ParticleID, Particle> >
+SpatiocyteWorld::list_non_structure_particles() const
+{
+    const std::vector<Species> non_structure_species(list_non_structure_species());
+
+    typedef std::vector<std::vector<std::pair<ParticleID, Particle> > > tmp_type;
+    tmp_type tmp_vector(non_structure_species.size());
+    Integer num_elements;
+
+    for (std::vector<Species>::const_iterator itr(non_structure_species.begin());
+            itr != non_structure_species.end(); ++itr)
+    {
+        std::vector<std::pair<ParticleID, Particle> > tmp(list_particles(*itr));
+        tmp_vector.push_back(tmp);
+        num_elements += tmp.size();
+    }
+
+    std::vector<std::pair<ParticleID, Particle> > retval;
+    retval.reserve(num_elements);
+    for (tmp_type::const_iterator itr(tmp_vector.begin());
+            itr != tmp_vector.end(); ++itr)
+    {
+        retval.insert(retval.end(), (*itr).begin(), (*itr).end());
+    }
+
+    return retval;
+}
+
 // bool SpatiocyteWorld::update_particle(const ParticleID& pid, const Particle& p)
 // {
 //     return (*space_).update_particle(pid, p);
@@ -153,7 +209,7 @@ std::vector<Species> SpatiocyteWorld::list_species() const
     return (*space_).list_species();
 }
 
-std::vector<Species> SpatiocyteWorld::list_exact_species() const
+std::vector<Species> SpatiocyteWorld::list_non_structure_species() const
 {
     const std::vector<Species> species(list_species());
     std::vector<Species> retval;

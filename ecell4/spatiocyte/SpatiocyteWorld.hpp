@@ -244,6 +244,8 @@ public:
         list_particles(const Species& sp) const;
     std::vector<std::pair<ParticleID, Particle> >
         list_particles_exact(const Species& sp) const;
+    std::vector<std::pair<ParticleID, Particle> > list_strucutre_particles() const;
+    std::vector<std::pair<ParticleID, Particle> > list_non_structure_particles() const;
 
     bool update_particle(const ParticleID& pid, const Particle& p)
     {
@@ -260,7 +262,7 @@ public:
         list_voxels_exact(const Species& sp) const;
 
     std::vector<Species> list_species() const;
-    std::vector<Species> list_exact_species() const;
+    std::vector<Species> list_non_structure_species() const;
     std::vector<Species> list_structure_species() const;
     // std::vector<coordinate_type> list_coords(const Species& sp) const;
     MolecularTypeBase* find_molecular_type(const Species& species);
