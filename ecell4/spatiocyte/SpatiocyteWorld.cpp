@@ -153,6 +153,32 @@ std::vector<Species> SpatiocyteWorld::list_species() const
     return (*space_).list_species();
 }
 
+std::vector<Species> SpatiocyteWorld::list_exact_species() const
+{
+    const std::vector<Species> species(list_species());
+    std::vector<Species> retval;
+    for (std::vector<Species>::const_iterator itr(species.begin());
+            itr != species.end(); ++itr)
+    {
+        if (!find_molecular_type(*itr)->is_structure())
+            retval.push_back(*itr);
+    }
+    return retval;
+}
+
+std::vector<Species> SpatiocyteWorld::list_structure_species() const
+{
+    const std::vector<Species> species(list_species());
+    std::vector<Species> retval;
+    for (std::vector<Species>::const_iterator itr(species.begin());
+            itr != species.end(); ++itr)
+    {
+        if (find_molecular_type(*itr)->is_structure())
+            retval.push_back(*itr);
+    }
+    return retval;
+}
+
 std::vector<std::pair<ParticleID, Voxel> > SpatiocyteWorld::list_voxels() const
 {
     return (*space_).list_voxels();
@@ -171,6 +197,11 @@ std::vector<std::pair<ParticleID, Voxel> >
 }
 
 MolecularTypeBase* SpatiocyteWorld::find_molecular_type(const Species& species)
+{
+    return (*space_).find_molecular_type(species);
+}
+
+const MolecularTypeBase* SpatiocyteWorld::find_molecular_type(const Species& species) const
 {
     return (*space_).find_molecular_type(species);
 }
