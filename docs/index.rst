@@ -1,6 +1,6 @@
 .. raw:: html
 
-   <img src="http://dev.e-cell.org/ecell-logo-with-title.png">
+   <img src="https://raw.githubusercontent.com/ecell/ecell4/master/docs/images/ecell-logo-with-title.png">
 
 .. raw:: html
 
