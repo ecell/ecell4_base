@@ -42,6 +42,11 @@ class run_tests(Command):
         test_runner.run(suite)
 
 with_cpp_shared_libraries = False
+with_egfrd = True
+if "--disable-egfrd" in sys.argv:
+    with_egfrd = False
+    sys.argv.remove("--disable-egfrd")
+
 if "--prefer-shared" in sys.argv:
     #XXX: This might be not a proper way to give a user defined parameter
     with_cpp_shared_libraries = True
@@ -117,11 +122,6 @@ else:
         Extension("ecell4.core", sources=["lib/ecell4/core.pyx"] + core_src,
             extra_compile_args=extra_compile_args,
             include_dirs=[".", ".."], libraries=dependent_libs, language="c++"),
-        Extension("ecell4.egfrd",
-            sources=["lib/ecell4/egfrd.pyx"]
-                + glob.glob("../ecell4/egfrd/*.cpp") + core_src,
-            extra_compile_args=extra_compile_args,
-            libraries=dependent_libs, include_dirs=[".", ".."], language="c++"),
         Extension("ecell4.gillespie",
             sources=["lib/ecell4/gillespie.pyx"]
                 + glob.glob("../ecell4/gillespie/*.cpp") + core_src,
@@ -148,6 +148,13 @@ else:
             extra_compile_args=extra_compile_args,
             libraries=dependent_libs, include_dirs=[".", ".."], language="c++"),
         ]
+    if with_egfrd:
+        ext_modules.append(Extension("ecell4.egfrd",
+            sources=["lib/ecell4/egfrd.pyx"]
+                + glob.glob("../ecell4/egfrd/*.cpp") + core_src,
+            extra_compile_args=extra_compile_args,
+            libraries=dependent_libs, include_dirs=[".", ".."], language="c++"))
+    
     ext_modules = cythonize(ext_modules)
 
 setup(
