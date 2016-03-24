@@ -14,6 +14,8 @@ RUN apt-get install -y software-properties-common
 RUN add-apt-repository ppa:mc3man/trusty-media -y; apt-get update; apt-get install -y ffmpeg
 #RUN apt-get install -y libav-tools
 
+# python-libsbml
+RUN pip install python-libsbml
 # install with install.sh
 #RUN cd /usr/src/ecell4; export PREFIX=/usr/local; export PYTHONPATH=/usr/local/lib/python2.7/site-packages:$PYTHONPATH; ./install.sh --python2 --hdf5
 
