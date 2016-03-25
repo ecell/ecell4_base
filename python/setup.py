@@ -46,6 +46,13 @@ with_egfrd = True
 if "--disable-egfrd" in sys.argv:
     with_egfrd = False
     sys.argv.remove("--disable-egfrd")
+    f = open('lib/ecell4/__init__.py', 'r+')
+    contents = f.read()
+    replaced_contents = contents.replace('from ecell4 import bd, ode, gillespie, egfrd, spatiocyte, meso', 'from ecell4 import bd, ode, gillespie, spatiocyte, meso')
+    f.seek(0)
+    f.write(replaced_contents)
+    f.truncate()
+    f.close()
 
 if "--prefer-shared" in sys.argv:
     #XXX: This might be not a proper way to give a user defined parameter
