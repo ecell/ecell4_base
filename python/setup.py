@@ -76,6 +76,10 @@ else: # for linux
     dependent_libs = ['gsl', 'gslcblas', 'm']
     extra_compile_args = ["-DHAVE_CONFIG_H"]
 
+if "--disable-hdf5" in sys.argv:
+    with_hdf5 = False
+    sys.argv.remove("--disable-hdf5")
+
 if with_hdf5:
     dependent_libs.extend(['hdf5_cpp', 'hdf5'])
     extra_compile_args.append("-DWITH_HDF5")
