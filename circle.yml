@@ -4,7 +4,7 @@ general:
 
 dependencies:
   pre:
-    - sudo apt-get update; sudo apt-get install python python-dev cmake gcc g++ libboost-dev libgsl0-dev libhdf5-serial-dev wget
+    - sudo apt-get update; sudo apt-get install python python-dev cmake gcc g++ libboost-dev libgsl0-dev wget
     - wget https://bootstrap.pypa.io/get-pip.py; python get-pip.py; pip install cython
   override:
     - cmake .; cd python; python setup.py build_ext --disable-egfrd --disable-hdf5; python setup.py bdist_wheel --disable-egfrd --disable-hdf5
