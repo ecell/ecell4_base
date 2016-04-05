@@ -189,6 +189,20 @@ public:
     {
         return this->surfaces_;
     }
+    Real distance_to_closest_surface(position_type const& pos)
+    {
+        using namespace ecell4;
+        const std::vector<boost::shared_ptr<PlanarSurface> > surface_vector = this->get_surface_container();
+        Real ret = std::abs(surface_vector[0]->is_inside(pos));
+        for(std::vector<boost::shared_ptr<PlanarSurface> >::const_iterator it = surface_vector.begin();
+                it != surface_vector.end(); it++) {
+            Real distance_temp( std::abs( (*it)->is_inside(pos)) );
+            if(distance_temp < ret) {
+                ret = distance_temp;
+            }
+        }
+        return ret;
+    }
 private:
     std::vector<boost::shared_ptr<ecell4::PlanarSurface> > surfaces_;
 
