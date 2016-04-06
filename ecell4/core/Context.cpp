@@ -290,46 +290,9 @@ unsigned int __tag_units(
 }
 
 std::pair<std::vector<unsigned int>, unsigned int> tag_units(
-    const std::vector<UnitSpecies>& units)
+    const std::vector<UnitSpecies>& units,
+    const std::vector<std::vector<std::vector<UnitSpecies>::size_type> >& adj)
 {
-    utils::get_mapper_mf<std::string, unsigned int>::type tmp;
-    std::vector<std::vector<std::vector<UnitSpecies>::size_type> > adj;
-    adj.resize(units.size());
-
-    for (std::vector<UnitSpecies>::const_iterator i(units.begin());
-        i != units.end(); ++i)
-    {
-        const unsigned int idx(std::distance(units.begin(), i));
-
-        for (UnitSpecies::container_type::const_iterator j((*i).begin());
-            j != (*i).end(); ++j)
-        {
-            const std::string bond((*j).second.second);
-            if (bond == "" || is_wildcard(bond))
-            {
-                continue;
-            }
-
-            utils::get_mapper_mf<std::string, unsigned int>::type::iterator
-                itr(tmp.find(bond));
-            if (itr == tmp.end())
-            {
-                tmp[bond] = idx;
-            }
-            else
-            {
-                if (tmp[bond] == units.size())
-                {
-                    ; //WARN: a duplicated bond found
-                }
-
-                adj[idx].push_back((*itr).second);
-                adj[(*itr).second].push_back(idx);
-                tmp[bond] = units.size();
-            }
-        }
-    }
-
     std::pair<std::vector<unsigned int>, unsigned int> retval;
     retval.first.resize(units.size(), units.size());
     retval.second = 0;
@@ -433,8 +396,69 @@ int concatenate_units(std::vector<UnitSpecies>& units, const Species& sp, const 
 
 std::vector<Species> group_units(const std::vector<UnitSpecies>& units)
 {
+    const unsigned int maxidx = units.size();
+    utils::get_mapper_mf<std::string, std::pair<std::string, unsigned int> >::type tmp;
+    std::vector<std::vector<std::vector<UnitSpecies>::size_type> > adj;
+    adj.resize(maxidx);
+
+    for (std::vector<UnitSpecies>::const_iterator i(units.begin());
+        i != units.end(); ++i)
+    {
+        const unsigned int idx(std::distance(units.begin(), i));
+
+        for (UnitSpecies::container_type::const_iterator j((*i).begin());
+            j != (*i).end(); ++j)
+        {
+            const std::string bond((*j).second.second);
+            if (bond == "" || is_wildcard(bond))
+            {
+                continue;
+            }
+
+            utils::get_mapper_mf<std::string, std::pair<std::string, unsigned int> >::type::iterator
+                itr(tmp.find(bond));
+            if (itr == tmp.end())
+            {
+                tmp[bond] = std::make_pair((*j).first, idx);
+            }
+            else
+            {
+                if (tmp[bond].second == maxidx)
+                {
+                    ; //WARN: a duplicated bond found
+                }
+
+                adj[idx].push_back((*itr).second.second);
+                adj[(*itr).second.second].push_back(idx);
+                tmp[bond].second = units.size();  // This means the bond is already assigned.
+            }
+        }
+    }
+
+    for (utils::get_mapper_mf<std::string, std::pair<std::string, unsigned int> >::type::const_iterator
+        i(tmp.begin()); i != tmp.end(); ++i)
+    {
+        if ((*i).second.second != maxidx)
+        {
+            throw IllegalState("A bond is not resolved.");
+        }
+    }
+
     std::pair<std::vector<unsigned int>, unsigned int>
-        group_ids_pair(tag_units(units));
+        group_ids_pair(tag_units(units, adj));
+
+    // std::vector<unsigned int> removed;
+    // for (utils::get_mapper_mf<std::string, std::pair<std::string, unsigned int> >::type::const_iterator
+    //     i(tmp.begin()); i != tmp.end(); ++i)
+    // {
+    //     if ((*i).second.second != maxidx)
+    //     {
+    //         removed.push_back(group_ids_pair.first[(*i).second.second]);
+    //     }
+    // }
+    // std::sort(removed.begin(), removed.end());
+    // removed.erase(std::unique(removed.begin(), removed.end()), removed.end());
+
     std::vector<Species> products;
     products.resize(group_ids_pair.second);
     // for (std::vector<UnitSpecies>::iterator i(units.begin());
@@ -467,18 +491,26 @@ std::vector<Species> group_units(const std::vector<UnitSpecies>& units)
                 {
                     continue;
                 }
-                utils::get_mapper_mf<std::string, std::string>::type::const_iterator
-                    itr(new_bonds.find(bond));
-                if (itr == new_bonds.end())
+
+                // if (tmp[bond].second != maxidx)
+                // {
+                //     site.second.second = "";
+                // }
+                // else
                 {
-                    const std::string new_bond(itos(stride));
-                    ++stride;
-                    new_bonds[bond] = new_bond;
-                    site.second.second = new_bond;
-                }
-                else
-                {
-                    site.second.second = (*itr).second;
+                    utils::get_mapper_mf<std::string, std::string>::type::const_iterator
+                        itr(new_bonds.find(bond));
+                    if (itr == new_bonds.end())
+                    {
+                        const std::string new_bond(itos(stride));
+                        ++stride;
+                        new_bonds[bond] = new_bond;
+                        site.second.second = new_bond;
+                    }
+                    else
+                    {
+                        site.second.second = (*itr).second;
+                    }
                 }
             }
 
@@ -487,6 +519,13 @@ std::vector<Species> group_units(const std::vector<UnitSpecies>& units)
 
         // products[idx] = format_species(products[idx]);
     }
+
+    // for (std::vector<unsigned int>::const_reverse_iterator
+    //     i(removed.rbegin()); i != removed.rend(); ++i)
+    // {
+    //     products.erase(products.begin() + *i);
+    // }
+
     return products;
 }
 
