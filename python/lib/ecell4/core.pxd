@@ -217,9 +217,9 @@ cdef extern from "ecell4/core/Model.hpp" namespace "ecell4":
         void add_species_attributes(vector[Cpp_Species]) except +
         void add_reaction_rules(vector[Cpp_ReactionRule]) except +
 
-        shared_ptr[Cpp_Model] expand(vector[Cpp_Species])
-        shared_ptr[Cpp_Model] expand(vector[Cpp_Species], Integer)
-        shared_ptr[Cpp_Model] expand(vector[Cpp_Species], Integer, map[Cpp_Species, Integer])
+        shared_ptr[Cpp_Model] expand(vector[Cpp_Species]) except +
+        shared_ptr[Cpp_Model] expand(vector[Cpp_Species], Integer) except +
+        shared_ptr[Cpp_Model] expand(vector[Cpp_Species], Integer, map[Cpp_Species, Integer]) except +
 
         void add_parameter(Cpp_Species sp)
         vector[Cpp_Species] parameters()
@@ -257,9 +257,9 @@ cdef extern from "ecell4/core/NetworkModel.hpp" namespace "ecell4":
         void add_species_attributes(vector[Cpp_Species]) except +
         void add_reaction_rules(vector[Cpp_ReactionRule]) except +
 
-        shared_ptr[Cpp_Model] expand(vector[Cpp_Species])
-        shared_ptr[Cpp_Model] expand(vector[Cpp_Species], Integer)
-        shared_ptr[Cpp_Model] expand(vector[Cpp_Species], Integer, map[Cpp_Species, Integer])
+        shared_ptr[Cpp_Model] expand(vector[Cpp_Species]) except +
+        shared_ptr[Cpp_Model] expand(vector[Cpp_Species], Integer) except +
+        shared_ptr[Cpp_Model] expand(vector[Cpp_Species], Integer, map[Cpp_Species, Integer]) except +
 
         void add_parameter(Cpp_Species sp)
         vector[Cpp_Species] parameters()
@@ -298,9 +298,9 @@ cdef extern from "ecell4/core/NetfreeModel.hpp" namespace "ecell4":
         void add_species_attributes(vector[Cpp_Species]) except +
         void add_reaction_rules(vector[Cpp_ReactionRule]) except +
 
-        shared_ptr[Cpp_Model] expand(vector[Cpp_Species])
-        shared_ptr[Cpp_Model] expand(vector[Cpp_Species], Integer)
-        shared_ptr[Cpp_Model] expand(vector[Cpp_Species], Integer, map[Cpp_Species, Integer])
+        shared_ptr[Cpp_Model] expand(vector[Cpp_Species]) except +
+        shared_ptr[Cpp_Model] expand(vector[Cpp_Species], Integer) except +
+        shared_ptr[Cpp_Model] expand(vector[Cpp_Species], Integer, map[Cpp_Species, Integer]) except +
 
         void add_parameter(Cpp_Species sp)
         vector[Cpp_Species] parameters()
