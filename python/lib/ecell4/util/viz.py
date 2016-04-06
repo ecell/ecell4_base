@@ -245,8 +245,14 @@ def plot_number_observer_with_matplotlib(*args, **kwargs):
                         xerr=(None if xidx == 0 else err[xidx]), yerr=err[idx + 1],
                         fmt=fmt, **opts)
 
-    if "legend" not in kwargs.keys() or kwargs["legend"]:
-        ax.legend(*ax.get_legend_handles_labels(), loc="best", shadow=True)
+    # if "legend" not in kwargs.keys() or kwargs["legend"]:
+    #     ax.legend(*ax.get_legend_handles_labels(), loc="best", shadow=True)
+    if "legend" not in kwargs.keys() or (kwargs["legend"] is not None and kwargs["legend"] is not False):
+        legend_opts = {"loc": "best", "shadow": True}
+        if "legend" in kwargs and isinstance(kwargs["legend"], dict):
+            legend_opts.update(kwargs["legend"])
+        ax.legend(*ax.get_legend_handles_labels(), **legend_opts)
+
     if "xlabel" in kwargs.keys():
         ax.set_xlabel(kwargs["xlabel"])
     elif "x" in kwargs.keys():
@@ -1109,8 +1115,14 @@ def plot_world_with_matplotlib(
     scatters, plots = __scatter_world_with_matplotlib(
         world, ax, species_list, marker_size, max_count, **kwargs)
 
-    if legend:
-        ax.legend(handles=plots, labels=species_list, loc='best', shadow=True)
+    # if legend:
+    #     ax.legend(handles=plots, labels=species_list, loc='best', shadow=True)
+    if legend is not None and legend is not False:
+        legend_opts = {"loc": "best", "shadow": True}
+        if isinstance(legend, dict):
+            legend_opts.update(legend)
+        ax.legend(handles=plots, labels=species_list,  **legend_opts)
+
     plt.show()
 
 def plot_trajectory_with_matplotlib(
@@ -1159,8 +1171,13 @@ def plot_trajectory_with_matplotlib(
 
     __plot_trajectory_with_matplotlib(lines, ax, **kwargs)
 
-    if legend:
-        ax.legend(loc='best', shadow=True)
+    # if legend:
+    #     ax.legend(loc='best', shadow=True)
+    if legend is not None and legend is not False:
+        legend_opts = {"loc": "best", "shadow": True}
+        if isinstance(legend, dict):
+            legend_opts.update(legend)
+        ax.legend(**legend_opts)
     plt.show()
 
 def __prepare_plot_with_maplotlib(
@@ -1248,8 +1265,13 @@ def plot_trajectory2d_with_matplotlib(
 
     __plot_trajectory2d_with_matplotlib(lines, ax, **kwargs)
 
-    if legend:
-        ax.legend(loc='best', shadow=True)
+    # if legend:
+    #     ax.legend(loc='best', shadow=True)
+    if legend is not None and legend is not False:
+        legend_opts = {"loc": "best", "shadow": True}
+        if isinstance(legend, dict):
+            legend_opts.update(legend)
+        ax.legend(**legend_opts)
     plt.show()
 
 def plot_movie_of_trajectory2d_with_matplotlib(
@@ -1334,8 +1356,13 @@ def plot_movie_of_trajectory2d_with_matplotlib(
 
     plots = __plot_trajectory2d_with_matplotlib(lines, ax, 0, **kwargs)
 
-    if legend:
-        ax.legend(loc='best', shadow=True)
+    # if legend:
+    #     ax.legend(loc='best', shadow=True)
+    if legend is not None and legend is not False:
+        legend_opts = {"loc": "best", "shadow": True}
+        if isinstance(legend, dict):
+            legend_opts.update(legend)
+        ax.legend(**legend_opts)
 
     ani = animation.FuncAnimation(
         fig, _update_plot, fargs=(plots, lines),
@@ -1446,8 +1473,13 @@ def plot_movie_with_matplotlib(
             ax.scatter([], [], [], marker='o', s=(2 ** marker_size),
                        lw=0, c=color_scale.get_color(name), label=name))
 
-    if legend:
-        ax.legend(loc='best', shadow=True)
+    # if legend:
+    #     ax.legend(loc='best', shadow=True)
+    if legend is not None and legend is not False:
+        legend_opts = {"loc": "best", "shadow": True}
+        if isinstance(legend, dict):
+            legend_opts.update(legend)
+        ax.legend(**legend_opts)
 
     ani = animation.FuncAnimation(
         fig, _update_plot, fargs=(scatters, worlds, species_list),
@@ -1543,8 +1575,13 @@ def plot_movie_of_trajectory_with_matplotlib(
 
     plots = __plot_trajectory_with_matplotlib(lines, ax, 0, **kwargs)
 
-    if legend:
-        ax.legend(loc='best', shadow=True)
+    # if legend:
+    #     ax.legend(loc='best', shadow=True)
+    if legend is not None and legend is not False:
+        legend_opts = {"loc": "best", "shadow": True}
+        if isinstance(legend, dict):
+            legend_opts.update(legend)
+        ax.legend(**legend_opts)
 
     ani = animation.FuncAnimation(
         fig, _update_plot, fargs=(plots, lines),
