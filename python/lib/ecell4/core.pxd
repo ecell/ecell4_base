@@ -91,9 +91,9 @@ cdef extern from "ecell4/core/Species.hpp" namespace "ecell4":
         bool operator>(Cpp_Species& rhs)
         string serial() # string == serial_type
         string get_attribute(string)
-        Integer count(Cpp_Species& sp)
+        Integer count(Cpp_Species& sp) except +
         void set_attribute(string, string)
-        void remove_attribute(string) except+
+        void remove_attribute(string) except +
         bool has_attribute(string)
         vector[pair[string, string]] list_attributes()
         # Integer get_unit(Cpp_UnitSpecies)
@@ -126,8 +126,8 @@ cdef extern from "ecell4/core/ReactionRule.hpp" namespace "ecell4":
         void add_reactant(Cpp_Species)
         void add_product(Cpp_Species)
         string as_string()
-        Integer count(vector[Cpp_Species])
-        vector[Cpp_ReactionRule] generate(vector[Cpp_Species])
+        Integer count(vector[Cpp_Species]) except +
+        vector[Cpp_ReactionRule] generate(vector[Cpp_Species]) except +
 
 ## ReactionRule
 #  a python wrapper for Cpp_ReactionRule

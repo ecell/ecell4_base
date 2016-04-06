@@ -61,6 +61,7 @@ protected:
 bool is_wildcard(const std::string& name);
 bool is_unnamed_wildcard(const std::string& name);
 bool is_named_wildcard(const std::string& name);
+bool is_pass_wildcard(const std::string& name);
 
 std::pair<bool, MatchObject::context_type>
 uspmatch(const UnitSpecies& pttrn, const UnitSpecies& sp,

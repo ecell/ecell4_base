@@ -17,13 +17,13 @@ bool is_unnamed_wildcard(const std::string& name)
 
 bool is_named_wildcard(const std::string& name)
 {
-    return (name.size() > 1 && name[0] == '_');
+    return (name.size() > 1 && name[0] == '_' && !is_pass_wildcard(name));
 }
 
-// bool is_freebond(const std::string& name)
-// {
-//     return name == "_free";
-// }
+bool is_pass_wildcard(const std::string& name)
+{
+    return name == "_0";
+}
 
 std::pair<bool, MatchObject::context_type> uspmatch(
     const UnitSpecies& pttrn, const UnitSpecies& usp,
@@ -35,7 +35,12 @@ std::pair<bool, MatchObject::context_type> uspmatch(
 
     if (is_wildcard(pttrn.name()))
     {
-        if (is_named_wildcard(pttrn.name()))
+        if (is_pass_wildcard(pttrn.name()))
+        {
+            throw NotSupported(
+                "A pass wildcard '_0' is not allowed to be a name of Species.");
+        }
+        else if (is_named_wildcard(pttrn.name()))
         {
             MatchObject::context_type::variable_container_type::const_iterator
                 itr(ctx.globals.find(pttrn.name()));
@@ -67,6 +72,11 @@ std::pair<bool, MatchObject::context_type> uspmatch(
                 {
                     return retval;
                 }
+                else if (is_pass_wildcard((*j).second.first))
+                {
+                    throw NotSupported(
+                        "A pass wildcard '_0' is not allowed to be a state.");
+                }
                 else if (is_unnamed_wildcard((*j).second.first))
                 {
                     ; // do nothing
@@ -90,12 +100,11 @@ std::pair<bool, MatchObject::context_type> uspmatch(
                 }
             }
 
-            // if (is_freebond((*j).second.second))
-            // {
-            //     ; // just skip checking
-            // }
-            // else
-            if ((*j).second.second == "")
+            if (is_pass_wildcard((*j).second.second))
+            {
+                ; // just skip checking
+            }
+            else if ((*j).second.second == "")
             {
                 if (site.second != "")
                 {
@@ -607,6 +616,7 @@ std::vector<Species> ReactionRuleExpressionMatcher::generate()
                 if ((*i).second.second.size() != 1)
                 {
                     ; //XXX: no named wildcard is allowed here
+                    ; //XXX: how about the pass wildcard?
                 }
 
                 ; // do nothing
