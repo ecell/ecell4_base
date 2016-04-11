@@ -2762,6 +2762,26 @@ protected:
         }
         return retval;
     }
+    position_type position_wrapper_for_multi(multi_type const& domain, position_type const& pos) const
+    {
+        length_type closest_distance(std::numeric_limits<length_type>::infinity());
+        position_type closest_position(
+                std::numeric_limits<length_type>::infinity(),
+                std::numeric_limits<length_type>::infinity(),
+                std::numeric_limits<length_type>::infinity() );
+        BOOST_FOREACH (spherical_shell_id_pair const& shell,
+                       domain.get_shells())
+        {
+            length_type const dist((*base_type::world_).distance(
+                    shape(shell.second), pos));
+            if (closest_distance > dist)
+            {
+                closest_distance = dist;
+                closest_position = (shape(shell.second)).position();
+            }
+        }
+        return closest_position;
+    }
 
     length_type distance(domain_type const& domain, position_type const& pos) const
     {
@@ -2806,6 +2826,49 @@ protected:
         };
 
         domain.accept(distance_visitor(*this, pos, retval));
+        return retval;
+    }
+
+    // XXX 
+    position_type position_wrapper(domain_type const& domain, position_type const &pos) const
+    {
+        position_type retval;
+        struct position_wrapper_visitor: ImmutativeDomainVisitor<traits_type>
+        {
+            virtual ~position_wrapper_visitor() {}
+
+            virtual void operator()(multi_type const& domain) const
+            {
+                retval = outer.position_wrapper_for_multi(domain, pos);
+            }
+            virtual void operator()(spherical_single_type const& domain) const
+            {
+                retval = domain.position();
+            }
+
+            virtual void operator()(cylindrical_single_type const& domain) const
+            {
+                retval = domain.position();
+            }
+
+            virtual void operator()(spherical_pair_type const& domain) const
+            {
+                retval = domain.position();
+            }
+
+            virtual void operator()(cylindrical_pair_type const& domain) const
+            {
+                retval = domain.position();
+            }
+
+            position_wrapper_visitor(EGFRDSimulator const &outer, position_type const&pos,
+                    position_type& retval)
+                : outer(outer), pos(pos), retval(retval) {}
+            EGFRDSimulator const& outer;
+            position_type const& pos;
+            position_type &retval;
+        };
+        domain.accept(position_wrapper_visitor(*this, pos, retval));
         return retval;
     }
 
@@ -3217,10 +3280,16 @@ protected:
         domain_type* possible_partner(0);
         length_type length_to_possible_partner(
                 std::numeric_limits<length_type>::infinity());
+        //Real dist_to_closest_surface( (*base_type::world_).distance_to_closest_surface(domain.position()));
+        //Real dist_to_closest_surface( (*base_type::world_).distance_to_closest_surface(domain.position()));
+
         BOOST_FOREACH (boost::shared_ptr<domain_type> neighbor, neighbors)
         {
             length_type const dist(distance(*neighbor, domain.position()));
-            if (dist < length_to_possible_partner)
+            position_type const pos_neighbor_represent(position_wrapper(*neighbor, domain.position()));
+            bool exist_same_side( (*base_type::world_).exist_same_side(pos_neighbor_represent , domain.position()) );
+            //position_type const pos_temp(position_wrapper(*neighbor, domain.position()));
+            if (dist < length_to_possible_partner && exist_same_side == true)
             {
                 possible_partner = neighbor.get();
                 length_to_possible_partner = dist;

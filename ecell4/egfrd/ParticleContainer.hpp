@@ -127,7 +127,8 @@ public:
         throw ecell4::NotSupported(
             "save(const std::string) is not supported by this space class");
     }
-    
+
+    // About Surface
     position_type apply_reflection(
             position_type const &start, 
             position_type const &initial_displacement) const
@@ -193,15 +194,32 @@ public:
     {
         using namespace ecell4;
         const std::vector<boost::shared_ptr<PlanarSurface> > surface_vector = this->get_surface_container();
-        Real ret = std::abs(surface_vector[0]->is_inside(pos));
+        Real ret = std::numeric_limits<Real>::infinity();
         for(std::vector<boost::shared_ptr<PlanarSurface> >::const_iterator it = surface_vector.begin();
                 it != surface_vector.end(); it++) {
-            Real distance_temp( std::abs( (*it)->is_inside(pos)) );
-            if(distance_temp < ret) {
-                ret = distance_temp;
+            Real dist( std::abs( (*it)->is_inside(pos)) );
+            if(dist < ret) {
+                ret = dist;
             }
         }
         return ret;
+    }
+    bool exist_same_side(position_type const &pos1, position_type const &pos2)
+    {
+        using namespace ecell4;
+        const std::vector<boost::shared_ptr<PlanarSurface> > surface_vector = this->get_surface_container();
+        for(std::vector<boost::shared_ptr<PlanarSurface> >::const_iterator it = surface_vector.begin();
+                it != surface_vector.end(); it++) {
+            Real prod((*it)->is_inside(pos1) * (*it)->is_inside(pos2) );
+            if (prod < 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+    std::size_t num_of_surface() const
+    {
+        return this->get_surface_container.size();
     }
 private:
     std::vector<boost::shared_ptr<ecell4::PlanarSurface> > surfaces_;

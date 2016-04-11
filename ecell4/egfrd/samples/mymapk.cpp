@@ -33,6 +33,8 @@
 #include <ecell4/core/Species.hpp>
 #include <ecell4/core/ReactionRule.hpp>
 
+#include <ecell4/core/PlanarSurface.hpp>
+
 #include <ecell4/egfrd/egfrd.hpp>
 
 
@@ -135,6 +137,20 @@ int main(int argc, char **argv)
     }
     // }}}
 
+    boost::shared_ptr<ecell4::PlanarSurface> surface1(new ecell4::PlanarSurface(
+                ecell4::create_x_plane(L * 1.0 / 3.0)) );
+    boost::shared_ptr<ecell4::PlanarSurface> surface2(new ecell4::PlanarSurface(
+                ecell4::create_x_plane(L * 2.0 / 3.0)) );
+    boost::shared_ptr<ecell4::PlanarSurface> surface3(new ecell4::PlanarSurface(
+                ecell4::create_y_plane(L * 1.0 / 3.0)) );
+    boost::shared_ptr<ecell4::PlanarSurface> surface4(new ecell4::PlanarSurface(
+                ecell4::create_y_plane(L * 2.0 / 3.0)) );
+
+    world->add_surface(surface1);
+    world->add_surface(surface2);
+    world->add_surface(surface3);
+    world->add_surface(surface4);
+
     // Logger Settings
     // {{{
     boost::shared_ptr< ::LoggerManager> logger_mng(
@@ -182,6 +198,7 @@ int main(int argc, char **argv)
     // }}}
 
     // world->save("test.h5");
+    std::cout << "num of domains: " << sim->num_domains() << std::endl;
 
     // Statistics
     // {{{
