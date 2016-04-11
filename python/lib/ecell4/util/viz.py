@@ -1664,7 +1664,7 @@ def __prepare_mplot3d_with_attractive_mpl(
 
     for axis in (ax.xaxis, ax.yaxis, ax.zaxis):
         if wireframe:
-            axis._axinfo['grid']['color'] = (0.848, 0.848, 0.848, 1)
+            axis._axinfo['grid']['color'] = (0.9176470588235294, 0.9176470588235294, 0.9490196078431372, 1)
             axis._axinfo['grid']['linewidth'] = 0.6
         else:
             axis._axinfo['grid']['color'] = (1, 1, 1, 1)
@@ -1682,7 +1682,7 @@ def __prepare_mplot3d_with_attractive_mpl(
 
     for axis in (ax.w_xaxis, ax.w_yaxis, ax.w_zaxis):
         axis.line.set_color("white")
-        axis.set_pane_color((0.848, 0.848, 0.848, 0 if wireframe else 1))
+        axis.set_pane_color((0.9176470588235294, 0.9176470588235294, 0.9490196078431372, 0 if wireframe else 1))
 
     for line in itertools.chain(ax.get_xticklines(),
                                 ax.get_yticklines(),
