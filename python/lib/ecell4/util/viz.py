@@ -396,8 +396,8 @@ def __parse_world(
 
     return species
 
-def __get_range_of_world(world):
-    edge_lengths = world.edge_lengths()
+def __get_range_of_world(world, scale=1.0):
+    edge_lengths = world.edge_lengths() * scale
     max_length = max(tuple(edge_lengths))
 
     rangex = [(edge_lengths[0] - max_length) * 0.5,
@@ -984,7 +984,7 @@ def logo(x=1, y=None):
     h = HTML(template % tuple(base64s + [("<p>%s</p>" % (img_html * x)) * y]))
     display(h)
 
-def anim_to_html(anim, filename=None, fps=6):
+def anim_to_html(anim, filename=None, fps=6, crf=10, bitrate='1M'):
     VIDEO_TAG = """<video controls>
      <source src="data:video/x-webm;base64,{0}" type="video/webm">
      Your browser does not support the video tag.
@@ -997,7 +997,7 @@ def anim_to_html(anim, filename=None, fps=6):
             filename = f.name
             f.close()
             # anim.save(filename, fps=fps, extra_args=['-vcodec', 'libvpx'])
-            anim.save(filename, fps=fps, codec='libvpx')
+            anim.save(filename, fps=fps, codec='libvpx', extra_args=['-crf', str(crf), '-b:v', bitrate])
             # anim.save(filename, writer='mencoder', fps=fps, extra_args=['-lavcopts', 'vcodec=libvpx'])
             video = open(filename, "rb").read()
             os.remove(filename)
@@ -1596,7 +1596,7 @@ plot_movie_of_trajectory = plot_movie_of_trajectory_with_matplotlib  # default
 def plot_world_with_attractive_mpl(
         world, marker_size=6, figsize=6, grid=True,
         wireframe=False, species_list=None, max_count=1000, angle=None,
-        legend=True, noaxis=False, whratio=1.33, **kwargs):
+        legend=True, noaxis=False, whratio=1.33, scale=1.0, **kwargs):
     """
     Generate a plot from received instance of World and show it on IPython notebook.
 
@@ -1621,6 +1621,8 @@ def plot_world_with_attractive_mpl(
     whratio : float, default 1.33
         A ratio between figure width and height.
         Customize this to keep a legend within the figure.
+    scale : float, default 1
+        A length-scaling factor
 
     """
     import matplotlib.pyplot as plt
@@ -1631,9 +1633,10 @@ def plot_world_with_attractive_mpl(
             set(species_list), key=species_list.index)  # XXX: pick unique ones
 
     fig, ax = __prepare_mplot3d_with_attractive_mpl(
-        __get_range_of_world(world), figsize, grid, wireframe, angle, noaxis, whratio)
+        __get_range_of_world(world, scale), figsize, grid, wireframe, angle,
+        noaxis, whratio)
     scatters, plots = __scatter_world_with_attractive_mpl(
-        world, ax, species_list, marker_size, max_count, **kwargs)
+        world, ax, species_list, marker_size, max_count, scale, **kwargs)
 
     # if legend:
     #     ax.legend(handles=plots, labels=species_list, loc='best', shadow=True)
@@ -1698,7 +1701,7 @@ def __prepare_mplot3d_with_attractive_mpl(
     return (fig, ax)
 
 def __scatter_world_with_attractive_mpl(
-        world, ax, species_list, marker_size, max_count, **kwargs):
+        world, ax, species_list, marker_size, max_count, scale, **kwargs):
     from ecell4 import Species
     color_scale = attractive_mpl_color_scale({})
 
@@ -1709,16 +1712,15 @@ def __scatter_world_with_attractive_mpl(
         if max_count is not None and len(particles) > max_count:
             particles = random.sample(particles, max_count)
         for pid, p in particles:
-            pos = p.position()
+            pos = p.position() * scale
             xs.append(pos[0])
             ys.append(pos[1])
             zs.append(pos[2])
         c = color_scale.get_color(name)
+        opts = dict(marker='o', s=(2 ** marker_size), edgecolors='white', alpha=0.7)
+        opts.update(kwargs)
         scatters.append(
-            ax.scatter(
-                xs, ys, zs,
-                marker='o', s=(2 ** marker_size), edgecolors='white', alpha=0.7,
-                c=c, label=name, **kwargs))
+            ax.scatter(xs, ys, zs, c=c, label=name, **opts))
         # plots.extend(ax.plot([], [], 'o', c=c, markeredgecolor='white', label=name))  #XXX: A dirty hack to show the legends with keeping the 3d transparency effect on scatter
     return scatters, plots
 
@@ -1726,7 +1728,7 @@ def plot_movie_with_attractive_mpl(
         worlds, marker_size=6, figsize=6, grid=True,
         wireframe=False, species_list=None, max_count=None, angle=None, noaxis=False,
         interval=0.16, repeat_delay=3000, stride=1, rotate=None,
-        legend=True, whratio=1.33, output=None, **kwargs):
+        legend=True, whratio=1.33, scale=1, output=None, crf=10, bitrate='1M', **kwargs):
     """
     Generate a move from the received list of instances of World,
     and show it on IPython notebook. This function may require ffmpeg.
@@ -1759,6 +1761,12 @@ def plot_movie_with_attractive_mpl(
     whratio : float, default 1.33
         A ratio between figure width and height.
         Customize this to keep a legend within the figure.
+    scale : float, default 1
+        A length-scaling factor
+    crf : int, default 10
+        The CRF value can be from 4-63. Lower values mean better quality.
+    bitrate : str, default '1M'
+        Target bitrate
     output : str, default None
 
     """
@@ -1793,7 +1801,7 @@ def plot_movie_with_attractive_mpl(
     # print("Start preparing mplot3d ...")
 
     fig, ax = __prepare_mplot3d_with_attractive_mpl(
-        __get_range_of_world(worlds[0]), figsize, grid, wireframe, angle,
+        __get_range_of_world(worlds[0], scale), figsize, grid, wireframe, angle,
         noaxis, whratio)
 
     from mpl_toolkits.mplot3d.art3d import juggle_axes
@@ -1806,7 +1814,7 @@ def plot_movie_with_attractive_mpl(
             if max_count is not None and len(particles) > max_count:
                 particles = random.sample(particles, max_count)
             for pid, p in particles:
-                pos = p.position()
+                pos = p.position() * scale
                 xs.append(pos[0])
                 ys.append(pos[1])
                 zs.append(pos[2])
@@ -1823,11 +1831,11 @@ def plot_movie_with_attractive_mpl(
     color_scale = attractive_mpl_color_scale({})
     scatters = []
     for i, name in enumerate(species_list):
+        opts = dict(marker='o', s=(2 ** marker_size), edgecolors='white', alpha=0.7)
+        opts.update(kwargs)
         scatters.append(
             ax.scatter(
-                [], [], [],
-                marker='o', s=(2 ** marker_size), edgecolors='white', alpha=0.7,
-                c=color_scale.get_color(name), label=name, **kwargs))
+                [], [], [], c=color_scale.get_color(name), label=name, **opts))
 
     # if legend:
     #     ax.legend(loc='best', shadow=True)
@@ -1845,4 +1853,4 @@ def plot_movie_with_attractive_mpl(
 
     plt.close(ani._fig)
     # print("Start generating a movie ...")
-    display(HTML(anim_to_html(ani, output, fps=1.0 / interval)))
+    display(HTML(anim_to_html(ani, output, fps=1.0 / interval, crf=crf, bitrate=bitrate)))
