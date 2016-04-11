@@ -1594,9 +1594,9 @@ def plot_movie_of_trajectory_with_matplotlib(
 plot_movie_of_trajectory = plot_movie_of_trajectory_with_matplotlib  # default
 
 def plot_world_with_attractive_mpl(
-        world, marker_size=6, figsize=8, grid=True,
+        world, marker_size=6, figsize=6, grid=True,
         wireframe=False, species_list=None, max_count=1000, angle=None,
-        legend=True, noaxis=False, **kwargs):
+        legend=True, noaxis=False, whratio=1.33, **kwargs):
     """
     Generate a plot from received instance of World and show it on IPython notebook.
 
@@ -1618,6 +1618,9 @@ def plot_world_with_attractive_mpl(
         A tuple of view angle which is given as (azim, elev, dist).
         If None, use default assumed to be (-60, 30, 10).
     legend : bool, default True
+    whratio : float, default 1.33
+        A ratio between figure width and height.
+        Customize this to keep a legend within the figure.
 
     """
     import matplotlib.pyplot as plt
@@ -1628,14 +1631,14 @@ def plot_world_with_attractive_mpl(
             set(species_list), key=species_list.index)  # XXX: pick unique ones
 
     fig, ax = __prepare_mplot3d_with_attractive_mpl(
-        __get_range_of_world(world), figsize, grid, wireframe, angle, noaxis)
+        __get_range_of_world(world), figsize, grid, wireframe, angle, noaxis, whratio)
     scatters, plots = __scatter_world_with_attractive_mpl(
         world, ax, species_list, marker_size, max_count, **kwargs)
 
     # if legend:
     #     ax.legend(handles=plots, labels=species_list, loc='best', shadow=True)
     if legend is not None and legend is not False:
-        legend_opts = {'loc': 'center right', 'bbox_to_anchor': (1.2, 0.5),
+        legend_opts = {'loc': 'center left', 'bbox_to_anchor': (1.0, 0.5),
                        'shadow': False, 'frameon': False, 'fontsize': 'x-large',
                        'scatterpoints': 1}
         if isinstance(legend, dict):
@@ -1646,53 +1649,26 @@ def plot_world_with_attractive_mpl(
     plt.show()
 
 def __prepare_mplot3d_with_attractive_mpl(
-        wrange, figsize, grid, wireframe, angle, noaxis):
-    # from mpl_toolkits.mplot3d import Axes3D
-    # import matplotlib.pyplot as plt
-
-    # fig = plt.figure(figsize=(figsize, figsize))
-    # ax = fig.gca(projection='3d')
-    # ax.set_aspect('equal')
-
-    # if wireframe:
-    #     ax.w_xaxis.set_pane_color((0, 0, 0, 0))
-    #     ax.w_yaxis.set_pane_color((0, 0, 0, 0))
-    #     ax.w_zaxis.set_pane_color((0, 0, 0, 0))
-
-    # ax.grid(grid)
-    # ax.set_xlim(*wrange['x'])
-    # ax.set_ylim(*wrange['y'])
-    # ax.set_zlim(*wrange['z'])
-    # ax.set_xlabel('X')
-    # ax.set_ylabel('Y')
-    # ax.set_zlabel('Z')
-
-    # if noaxis:
-    #     ax.set_axis_off()
-
-    # if angle is not None:
-    #     ax.azim, ax.elev, ax.dist = angle
-
-    # return (fig, ax)
-
+        wrange, figsize, grid, wireframe, angle, noaxis, whratio):
     from mpl_toolkits.mplot3d import Axes3D
     from mpl_toolkits.mplot3d.axis3d import Axis
     import matplotlib.pyplot as plt
-    import numpy as np
-    import matplotlib as mpl
-    from matplotlib import cm
     import itertools
 
-    fig = plt.figure(figsize=(figsize, figsize))
+    fig = plt.figure(figsize=(figsize * whratio, figsize))
     ax = plt.subplot(111, projection='3d')
-    ax.set_axis_bgcolor('white')  # background color
+    ax.set_axis_bgcolor('white')
 
     for axis in (ax.xaxis, ax.yaxis, ax.zaxis):
-        axis._axinfo['grid']['color'] = (1, 1, 1, 1)
-        axis._axinfo['grid']['linewidth'] = 1.0
+        if wireframe:
+            axis._axinfo['grid']['color'] = (0.848, 0.848, 0.848, 1)
+            axis._axinfo['grid']['linewidth'] = 0.6
+        else:
+            axis._axinfo['grid']['color'] = (1, 1, 1, 1)
+            axis._axinfo['grid']['linewidth'] = 1.0
 
         for tick in axis.get_major_ticks():
-            tick.label.set_fontsize(14)  # 12 as a default
+            tick.label.set_fontsize(14)
 
     ax.set_xlim(*wrange['x'])
     ax.set_ylim(*wrange['y'])
@@ -1703,20 +1679,28 @@ def __prepare_mplot3d_with_attractive_mpl(
 
     for axis in (ax.w_xaxis, ax.w_yaxis, ax.w_zaxis):
         axis.line.set_color("white")
-        axis.set_pane_color((0.848, 0.848, 0.848, 1))
+        axis.set_pane_color((0.848, 0.848, 0.848, 0 if wireframe else 1))
 
-    # make all ticks lines invisible
     for line in itertools.chain(ax.get_xticklines(),
                                 ax.get_yticklines(),
                                 ax.get_zticklines()):
         line.set_visible(False)
 
+    ax.grid(grid)
+
+    if noaxis:
+        ax.set_axis_off()
+
+    if angle is not None:
+        ax.azim, ax.elev, ax.dist = angle
+
+    plt.subplots_adjust(left=0.0, right=1.0 / whratio, top=1.02, bottom=0.02)
     return (fig, ax)
 
 def __scatter_world_with_attractive_mpl(
         world, ax, species_list, marker_size, max_count, **kwargs):
     from ecell4 import Species
-    color_scale = attractive_mpl_color_scale()
+    color_scale = attractive_mpl_color_scale({})
 
     scatters, plots = [], []
     for i, name in enumerate(species_list):
@@ -1737,3 +1721,128 @@ def __scatter_world_with_attractive_mpl(
                 c=c, label=name, **kwargs))
         # plots.extend(ax.plot([], [], 'o', c=c, markeredgecolor='white', label=name))  #XXX: A dirty hack to show the legends with keeping the 3d transparency effect on scatter
     return scatters, plots
+
+def plot_movie_with_attractive_mpl(
+        worlds, marker_size=6, figsize=6, grid=True,
+        wireframe=False, species_list=None, max_count=None, angle=None, noaxis=False,
+        interval=0.16, repeat_delay=3000, stride=1, rotate=None,
+        legend=True, whratio=1.33, output=None, **kwargs):
+    """
+    Generate a move from the received list of instances of World,
+    and show it on IPython notebook. This function may require ffmpeg.
+
+    Parameters
+    ----------
+    worlds : list or FixedIntervalHDF5Observer
+        A list of Worlds to render.
+    marker_size : float, default 3
+        Marker size for all species. Size is passed to scatter function
+        as argument, s=(2 ** marker_size).
+    figsize : float, default 6
+        Size of the plotting area. Given in inch.
+    species_list : array of string, default None
+        If set, plot_world will not search the list of species.
+    max_count : Integer, default None
+        The maximum number of particles to show for each species.
+        None means no limitation.
+    angle : tuple, default None
+        A tuple of view angle which is given as (azim, elev, dist).
+        If None, use default assumed to be (-60, 30, 10).
+    interval : Integer, default 0.16
+        Parameters for matplotlib.animation.ArtistAnimation.
+    stride : Integer, default 1
+        Stride per frame.
+    rotate : tuple, default None
+        A pair of rotation angles, elev and azim, for animation.
+        None means no rotation, same as (0, 0).
+    legend : bool, default True
+    whratio : float, default 1.33
+        A ratio between figure width and height.
+        Customize this to keep a legend within the figure.
+    output : str, default None
+
+    """
+    import matplotlib.pyplot as plt
+    import matplotlib.animation as animation
+    from IPython.display import display, HTML
+    from ecell4 import Species, FixedIntervalHDF5Observer
+    from .simulation import load_world
+
+    # print("Start generating species_list ...")
+
+    if isinstance(worlds, FixedIntervalHDF5Observer):
+        obs = worlds
+        worlds = []
+        for i in range(0, obs.num_steps(), stride):
+            filename = obs.filename(i)
+            if os.path.isfile(filename):
+                worlds.append(load_world(filename))
+            elif len(worlds) >0:
+                worlds.append(worlds[-1])
+    else:
+        worlds = worlds[:: stride]
+
+    if species_list is None:
+        species_list = []
+        for world in worlds:
+            species_list.extend(
+                [p.species().serial() for pid, p in world.list_particles()])
+            species_list = sorted(
+                set(species_list), key=species_list.index)  # XXX: pick unique ones
+
+    # print("Start preparing mplot3d ...")
+
+    fig, ax = __prepare_mplot3d_with_attractive_mpl(
+        __get_range_of_world(worlds[0]), figsize, grid, wireframe, angle,
+        noaxis, whratio)
+
+    from mpl_toolkits.mplot3d.art3d import juggle_axes
+
+    def _update_plot(i, scatters, worlds, species_list):
+        world = worlds[i]
+        for i, name in enumerate(species_list):
+            xs, ys, zs = [], [], []
+            particles = world.list_particles_exact(Species(name))
+            if max_count is not None and len(particles) > max_count:
+                particles = random.sample(particles, max_count)
+            for pid, p in particles:
+                pos = p.position()
+                xs.append(pos[0])
+                ys.append(pos[1])
+                zs.append(pos[2])
+            scatters[i]._offsets3d = juggle_axes(xs, ys, zs, 'z')
+
+        if rotate is not None:
+            ax.elev += rotate[0]
+            ax.azim += rotate[1]
+
+        fig.canvas.draw()
+
+    # print("Start making animation ...")
+
+    color_scale = attractive_mpl_color_scale({})
+    scatters = []
+    for i, name in enumerate(species_list):
+        scatters.append(
+            ax.scatter(
+                [], [], [],
+                marker='o', s=(2 ** marker_size), edgecolors='white', alpha=0.7,
+                c=color_scale.get_color(name), label=name, **kwargs))
+
+    # if legend:
+    #     ax.legend(loc='best', shadow=True)
+    if legend is not None and legend is not False:
+        legend_opts = {'loc': 'center left', 'bbox_to_anchor': (1.0, 0.5),
+                       'shadow': False, 'frameon': False, 'fontsize': 'x-large',
+                       'scatterpoints': 1}
+        if isinstance(legend, dict):
+            legend_opts.update(legend)
+        ax.legend(**legend_opts)
+
+    ani = animation.FuncAnimation(
+        fig, _update_plot, fargs=(scatters, worlds, species_list),
+        frames=len(worlds), interval=interval, blit=False)
+
+    plt.close(ani._fig)
+    # print("Start generating a movie ...")
+    display(HTML(anim_to_html(ani, output, fps=1.0 / interval)))
