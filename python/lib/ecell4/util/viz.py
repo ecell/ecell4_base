@@ -11,7 +11,7 @@ import random
 import types
 from tempfile import NamedTemporaryFile
 
-from .vizstyles import default_color_scale, matplotlib_color_scale, elegans_color_scale
+from .vizstyles import default_color_scale, matplotlib_color_scale, elegans_color_scale, attractive_mpl_color_scale
 
 
 def __on_ipython_notebook():
@@ -1012,7 +1012,7 @@ def anim_to_html(anim, filename=None, fps=6):
         anim._encoded_video = base64.encodestring(video).decode('utf-8')
     return VIDEO_TAG.format(anim._encoded_video)
 
-def __prepare_mplot3d_with_maplotlib(
+def __prepare_mplot3d_with_matplotlib(
         wrange, figsize, grid, wireframe, angle, noaxis):
     from mpl_toolkits.mplot3d import Axes3D
     import matplotlib.pyplot as plt
@@ -1110,7 +1110,7 @@ def plot_world_with_matplotlib(
         species_list = sorted(
             set(species_list), key=species_list.index)  # XXX: pick unique ones
 
-    fig, ax = __prepare_mplot3d_with_maplotlib(
+    fig, ax = __prepare_mplot3d_with_matplotlib(
         __get_range_of_world(world), figsize, grid, wireframe, angle, noaxis)
     scatters, plots = __scatter_world_with_matplotlib(
         world, ax, species_list, marker_size, max_count, **kwargs)
@@ -1155,7 +1155,7 @@ def plot_trajectory_with_matplotlib(
     if max_count is not None and len(data) > max_count:
         data = random.sample(data, max_count)
 
-    fig, ax = __prepare_mplot3d_with_maplotlib(
+    fig, ax = __prepare_mplot3d_with_matplotlib(
         __get_range_of_trajectories(data, plot_range),
         figsize, grid, wireframe, angle, noaxis)
 
@@ -1180,7 +1180,7 @@ def plot_trajectory_with_matplotlib(
         ax.legend(**legend_opts)
     plt.show()
 
-def __prepare_plot_with_maplotlib(
+def __prepare_plot_with_matplotlib(
         wrange, figsize, grid, wireframe, noaxis):
     import matplotlib.pyplot as plt
 
@@ -1251,7 +1251,7 @@ def plot_trajectory2d_with_matplotlib(
     wrange = __get_range_of_trajectories(data, plot_range)
     wrange = (wrange['x'], wrange['y'], wrange['z'])
     wrange = {'x': wrange[xidx], 'y': wrange[yidx]}
-    fig, ax = __prepare_plot_with_maplotlib(
+    fig, ax = __prepare_plot_with_matplotlib(
         wrange, figsize, grid, wireframe, noaxis)
 
     lines = []
@@ -1341,7 +1341,7 @@ def plot_movie_of_trajectory2d_with_matplotlib(
     wrange = __get_range_of_trajectories(data, plot_range)
     wrange = (wrange['x'], wrange['y'], wrange['z'])
     wrange = {'x': wrange[xidx], 'y': wrange[yidx]}
-    fig, ax = __prepare_plot_with_maplotlib(
+    fig, ax = __prepare_plot_with_matplotlib(
         wrange, figsize, grid, wireframe, noaxis)
 
     def _update_plot(i, plots, lines):
@@ -1439,7 +1439,7 @@ def plot_movie_with_matplotlib(
 
     # print("Start preparing mplot3d ...")
 
-    fig, ax = __prepare_mplot3d_with_maplotlib(
+    fig, ax = __prepare_mplot3d_with_matplotlib(
         __get_range_of_world(worlds[0]), figsize, grid, wireframe, angle, noaxis)
 
     from mpl_toolkits.mplot3d.art3d import juggle_axes
@@ -1555,7 +1555,7 @@ def plot_movie_of_trajectory_with_matplotlib(
 
     # print("Start preparing mplot3d ...")
 
-    fig, ax = __prepare_mplot3d_with_maplotlib(
+    fig, ax = __prepare_mplot3d_with_matplotlib(
         __get_range_of_trajectories(data, plot_range),
         figsize, grid, wireframe, angle, noaxis)
 
@@ -1592,3 +1592,148 @@ def plot_movie_of_trajectory_with_matplotlib(
     display(HTML(anim_to_html(ani, output, fps=1.0 / interval)))
 
 plot_movie_of_trajectory = plot_movie_of_trajectory_with_matplotlib  # default
+
+def plot_world_with_attractive_mpl(
+        world, marker_size=6, figsize=8, grid=True,
+        wireframe=False, species_list=None, max_count=1000, angle=None,
+        legend=True, noaxis=False, **kwargs):
+    """
+    Generate a plot from received instance of World and show it on IPython notebook.
+
+    Parameters
+    ----------
+    world : World or str
+        World to render. A HDF5 filename is also acceptable.
+    marker_size : float, default 3
+        Marker size for all species. Size is passed to scatter function
+        as argument, s=(2 ** marker_size).
+    figsize : float, default 6
+        Size of the plotting area. Given in inch.
+    species_list : array of string, default None
+        If set, plot_world will not search the list of species.
+    max_count : Integer, default 1000
+        The maximum number of particles to show for each species.
+        None means no limitation.
+    angle : tuple, default None
+        A tuple of view angle which is given as (azim, elev, dist).
+        If None, use default assumed to be (-60, 30, 10).
+    legend : bool, default True
+
+    """
+    import matplotlib.pyplot as plt
+
+    if species_list is None:
+        species_list = [p.species().serial() for pid, p in world.list_particles()]
+        species_list = sorted(
+            set(species_list), key=species_list.index)  # XXX: pick unique ones
+
+    fig, ax = __prepare_mplot3d_with_attractive_mpl(
+        __get_range_of_world(world), figsize, grid, wireframe, angle, noaxis)
+    scatters, plots = __scatter_world_with_attractive_mpl(
+        world, ax, species_list, marker_size, max_count, **kwargs)
+
+    # if legend:
+    #     ax.legend(handles=plots, labels=species_list, loc='best', shadow=True)
+    if legend is not None and legend is not False:
+        legend_opts = {'loc': 'center right', 'bbox_to_anchor': (1.2, 0.5),
+                       'shadow': False, 'frameon': False, 'fontsize': 'x-large',
+                       'scatterpoints': 1}
+        if isinstance(legend, dict):
+            legend_opts.update(legend)
+        ax.legend(**legend_opts)
+        # ax.legend(handles=plots, labels=species_list,  **legend_opts)
+
+    plt.show()
+
+def __prepare_mplot3d_with_attractive_mpl(
+        wrange, figsize, grid, wireframe, angle, noaxis):
+    # from mpl_toolkits.mplot3d import Axes3D
+    # import matplotlib.pyplot as plt
+
+    # fig = plt.figure(figsize=(figsize, figsize))
+    # ax = fig.gca(projection='3d')
+    # ax.set_aspect('equal')
+
+    # if wireframe:
+    #     ax.w_xaxis.set_pane_color((0, 0, 0, 0))
+    #     ax.w_yaxis.set_pane_color((0, 0, 0, 0))
+    #     ax.w_zaxis.set_pane_color((0, 0, 0, 0))
+
+    # ax.grid(grid)
+    # ax.set_xlim(*wrange['x'])
+    # ax.set_ylim(*wrange['y'])
+    # ax.set_zlim(*wrange['z'])
+    # ax.set_xlabel('X')
+    # ax.set_ylabel('Y')
+    # ax.set_zlabel('Z')
+
+    # if noaxis:
+    #     ax.set_axis_off()
+
+    # if angle is not None:
+    #     ax.azim, ax.elev, ax.dist = angle
+
+    # return (fig, ax)
+
+    from mpl_toolkits.mplot3d import Axes3D
+    from mpl_toolkits.mplot3d.axis3d import Axis
+    import matplotlib.pyplot as plt
+    import numpy as np
+    import matplotlib as mpl
+    from matplotlib import cm
+    import itertools
+
+    fig = plt.figure(figsize=(figsize, figsize))
+    ax = plt.subplot(111, projection='3d')
+    ax.set_axis_bgcolor('white')  # background color
+
+    for axis in (ax.xaxis, ax.yaxis, ax.zaxis):
+        axis._axinfo['grid']['color'] = (1, 1, 1, 1)
+        axis._axinfo['grid']['linewidth'] = 1.0
+
+        for tick in axis.get_major_ticks():
+            tick.label.set_fontsize(14)  # 12 as a default
+
+    ax.set_xlim(*wrange['x'])
+    ax.set_ylim(*wrange['y'])
+    ax.set_zlim(*wrange['z'])
+    ax.set_xlabel('X', fontsize=20, labelpad=12)
+    ax.set_ylabel('Y', fontsize=20, labelpad=12)
+    ax.set_zlabel('Z', fontsize=20, labelpad=12)
+
+    for axis in (ax.w_xaxis, ax.w_yaxis, ax.w_zaxis):
+        axis.line.set_color("white")
+        axis.set_pane_color((0.848, 0.848, 0.848, 1))
+
+    # make all ticks lines invisible
+    for line in itertools.chain(ax.get_xticklines(),
+                                ax.get_yticklines(),
+                                ax.get_zticklines()):
+        line.set_visible(False)
+
+    return (fig, ax)
+
+def __scatter_world_with_attractive_mpl(
+        world, ax, species_list, marker_size, max_count, **kwargs):
+    from ecell4 import Species
+    color_scale = attractive_mpl_color_scale()
+
+    scatters, plots = [], []
+    for i, name in enumerate(species_list):
+        xs, ys, zs = [], [], []
+        particles = world.list_particles_exact(Species(name))
+        if max_count is not None and len(particles) > max_count:
+            particles = random.sample(particles, max_count)
+        for pid, p in particles:
+            pos = p.position()
+            xs.append(pos[0])
+            ys.append(pos[1])
+            zs.append(pos[2])
+        c = color_scale.get_color(name)
+        scatters.append(
+            ax.scatter(
+                xs, ys, zs,
+                marker='o', s=(2 ** marker_size), edgecolors='white', alpha=0.7,
+                c=c, label=name, **kwargs))
+        # plots.extend(ax.plot([], [], 'o', c=c, markeredgecolor='white', label=name))  #XXX: A dirty hack to show the legends with keeping the 3d transparency effect on scatter
+    return scatters, plots
