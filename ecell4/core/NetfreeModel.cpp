@@ -491,35 +491,6 @@ void __generate_recurse(
     seeds1.swap(newseeds);
 }
 
-ReactionRule format_reaction_rule(const ReactionRule& rr)
-{
-    ReactionRule::reactant_container_type reactants;
-    reactants.reserve(rr.reactants().size());
-    for (ReactionRule::reactant_container_type::const_iterator i(rr.reactants().begin());
-        i != rr.reactants().end(); ++i)
-    {
-        reactants.push_back(format_species(*i));
-    }
-
-    ReactionRule::product_container_type products;
-    products.reserve(rr.products().size());
-    for (ReactionRule::product_container_type::const_iterator i(rr.products().begin());
-        i != rr.products().end(); ++i)
-    {
-        products.push_back(format_species(*i));
-    }
-
-    std::sort(reactants.begin(), reactants.end());
-    std::sort(products.begin(), products.end());
-    return ReactionRule(reactants, products, rr.k());
-    // ReactionRule::reactant_container_type reactants(rr.reactants());
-    // ReactionRule::product_container_type products(rr.products());
-    // std::sort(reactants.begin(), reactants.end());
-    // std::sort(products.begin(), products.end());
-    // return ReactionRule(reactants, products, rr.k());
-    // return rr;
-}
-
 std::pair<boost::shared_ptr<NetworkModel>, bool> generate_network_from_netfree_model(
     const NetfreeModel& nfm, const std::vector<Species>& seeds, const Integer max_itr,
     const std::map<Species, Integer>& max_stoich)

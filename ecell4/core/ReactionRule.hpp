@@ -152,6 +152,8 @@ inline bool operator!=(const ReactionRule& lhs, const ReactionRule& rhs)
     return !(lhs == rhs);
 }
 
+ReactionRule format_reaction_rule(const ReactionRule& rr);
+
 } // ecell4
 
 #endif /* __ECELL4_REACTION_RULE_HPP */
