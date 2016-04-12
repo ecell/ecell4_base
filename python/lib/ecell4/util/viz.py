@@ -403,38 +403,63 @@ def __get_range_of_world(world):
 
     return {'x': rangex, 'y': rangey, 'z': rangez}
 
-def __get_range_of_trajectories(data):
-    if len(data) == 0:
-        xmin, xmax, ymin, ymax, zmin, zmax = 0, 1, 0, 1, 0, 1
+def __get_range_of_trajectories(data, plot_range=None):
+    from ecell4 import Real3
+
+    if plot_range is None:
+        if len(data) == 0:
+            xmin, xmax, ymin, ymax, zmin, zmax = 0, 1, 0, 1, 0, 1
+        else:
+            xmin, xmax, ymin, ymax, zmin, zmax = None, None, None, None, None, None
+
+            for i, traj in enumerate(data):
+                xarr, yarr, zarr = [], [], []
+                for pos in traj:
+                    xarr.append(pos[0])
+                    yarr.append(pos[1])
+                    zarr.append(pos[2])
+
+                if xmin is None:
+                    if len(traj) > 0:
+                        xmin, xmax = min(xarr), max(xarr)
+                        ymin, ymax = min(yarr), max(yarr)
+                        zmin, zmax = min(zarr), max(zarr)
+                else:
+                    xmin, xmax = min([xmin] + xarr), max([xmax] + xarr)
+                    ymin, ymax = min([ymin] + yarr), max([ymax] + yarr)
+                    zmin, zmax = min([zmin] + zarr), max([zmax] + zarr)
+
+        max_length = max(xmax - xmin, ymax - ymin, zmax - zmin)
+        rangex = [(xmin + xmax - max_length) * 0.5,
+                  (xmin + xmax + max_length) * 0.5]
+        rangey = [(ymin + ymax - max_length) * 0.5,
+                  (ymin + ymax + max_length) * 0.5]
+        rangez = [(zmin + zmax - max_length) * 0.5,
+                  (zmin + zmax + max_length) * 0.5]
+
+        return {'x': rangex, 'y': rangey, 'z': rangez}
+    elif isinstance(plot_range, dict):
+        return plot_range
+    elif isinstance(plot_range, (list, tuple)):
+        if len(plot_range) != 3:
+            raise ValueError(
+                'The size of plot_range [{}] must be 3.'.format(len(plot_range)))
+        elif (isinstance(plot_range[0], (list, tuple)) and
+                isinstance(plot_range[1], (list, tuple)) and
+                isinstance(plot_range[2], (list, tuple))):
+            return {'x': plot_range[0], 'y': plot_range[1], 'z': plot_range[2]}
+        else:
+            return {'x': (0, plot_range[0]),
+                    'y': (0, plot_range[1]),
+                    'z': (0, plot_range[2])}
+    elif isinstance(plot_range, Real3):
+        return {'x': (0, plot_range[0]),
+                'y': (0, plot_range[1]),
+                'z': (0, plot_range[2])}
     else:
-        xmin, xmax, ymin, ymax, zmin, zmax = None, None, None, None, None, None
-
-        for i, traj in enumerate(data):
-            xarr, yarr, zarr = [], [], []
-            for pos in traj:
-                xarr.append(pos[0])
-                yarr.append(pos[1])
-                zarr.append(pos[2])
-
-            if xmin is None:
-                if len(traj) > 0:
-                    xmin, xmax = min(xarr), max(xarr)
-                    ymin, ymax = min(yarr), max(yarr)
-                    zmin, zmax = min(zarr), max(zarr)
-            else:
-                xmin, xmax = min([xmin] + xarr), max([xmax] + xarr)
-                ymin, ymax = min([ymin] + yarr), max([ymax] + yarr)
-                zmin, zmax = min([zmin] + zarr), max([zmax] + zarr)
-
-    max_length = max(xmax - xmin, ymax - ymin, zmax - zmin)
-    rangex = [(xmin + xmax - max_length) * 0.5,
-              (xmin + xmax + max_length) * 0.5]
-    rangey = [(ymin + ymax - max_length) * 0.5,
-              (ymin + ymax + max_length) * 0.5]
-    rangez = [(zmin + zmax - max_length) * 0.5,
-              (zmin + zmax + max_length) * 0.5]
-
-    return {'x': rangex, 'y': rangey, 'z': rangez}
+        raise ValueError(
+            'plot_range must be list, tuple or dict. [{}] was given.'.format(
+                repr(plot_range)))
 
 def plot_movie_with_elegans(
         worlds, radius=None, width=500, height=500, config={}, grid=False,
@@ -588,7 +613,8 @@ def plot_world_with_elegans(
             'range': __get_range_of_world(world),
             'autorange': False,
             'grid': grid,
-            'save_image': False
+            'save_image': True
+            # 'save_image': False
         }
     }
 
@@ -729,7 +755,7 @@ def plot_dense_array(
     img.save(fp, "PNG")
     fp.seek(0)
     encoded_url = "data:image/png;base64," + b64encode(fp.read())
-    
+
     model = {
         'plots': [{
             'type': 'Volume',
@@ -782,7 +808,8 @@ def generate_html(keywords, tmpl_path):
 
 def plot_trajectory_with_elegans(
         obs, width=350, height=350, config={}, grid=True, wireframe=False,
-        max_count=10, camera_position=(-22, 23, 32), camera_rotation=(-0.6, 0.5, 0.6)):
+        max_count=10, camera_position=(-22, 23, 32), camera_rotation=(-0.6, 0.5, 0.6),
+        plot_range=None):
     """
     Generate a plot from received instance of TrajectoryObserver and show it
     on IPython notebook.
@@ -802,6 +829,9 @@ def plot_trajectory_with_elegans(
     camera_position : tuple, default (-30, 31, 42)
     camera_rotaiton : tuple, default (-0.6, 0.5, 0.6)
         Initial position and rotation of camera.
+    plot_range : tuple, default None
+        Range for plotting. A triplet of pairs suggesting (rangex, rangey, rangez).
+        If None, the minimum volume containing all the trajectories is used.
 
     """
     from IPython.core.display import display, HTML
@@ -843,23 +873,27 @@ def plot_trajectory_with_elegans(
                 'colors': [c, c]}
         })
 
-    if xmin is None:
-        xmin, xmax, ymin, ymax, zmin, zmax = 0, 1, 0, 1, 0, 1
+    if plot_range is None:
+        if xmin is None:
+            xmin, xmax, ymin, ymax, zmin, zmax = 0, 1, 0, 1, 0, 1
 
-    max_length = max(xmax - xmin, ymax - ymin, zmax - zmin)
-    rangex = [(xmin + xmax - max_length) * 0.5,
-              (xmin + xmax + max_length) * 0.5]
-    rangey = [(ymin + ymax - max_length) * 0.5,
-              (ymin + ymax + max_length) * 0.5]
-    rangez = [(zmin + zmax - max_length) * 0.5,
-              (zmin + zmax + max_length) * 0.5]
+        max_length = max(xmax - xmin, ymax - ymin, zmax - zmin)
+        rangex = [(xmin + xmax - max_length) * 0.5,
+                  (xmin + xmax + max_length) * 0.5]
+        rangey = [(ymin + ymax - max_length) * 0.5,
+                  (ymin + ymax + max_length) * 0.5]
+        rangez = [(zmin + zmax - max_length) * 0.5,
+                  (zmin + zmax + max_length) * 0.5]
+        wrange = {'x': rangex, 'y': rangey, 'z': rangez}
+    else:
+        wrange = __get_range_of_trajectories(None, plot_range)
 
     model = {
         'plots': plots,
         'options': {
             'world_width': width,
             'world_height': height,
-            'range': {'x': rangex, 'y': rangey, 'z': rangez},
+            'range': wrange,
             'autorange': False,
             'grid': grid,
             'save_image': True
@@ -1081,7 +1115,7 @@ def plot_world_with_matplotlib(
 
 def plot_trajectory_with_matplotlib(
         obs, max_count=10, figsize=6, legend=True, angle=None,
-        wireframe=False, grid=True, noaxis=False, **kwargs):
+        wireframe=False, grid=True, noaxis=False, plot_range=None, **kwargs):
     """
     Generate a plot from received instance of TrajectoryObserver and show it
     on IPython notebook.
@@ -1098,6 +1132,9 @@ def plot_trajectory_with_matplotlib(
         A tuple of view angle which is given as (azim, elev, dist).
         If None, use default assumed to be (-60, 30, 10).
     legend : bool, default True
+    plot_range : tuple, default None
+        Range for plotting. A triplet of pairs suggesting (rangex, rangey, rangez).
+        If None, the minimum volume containing all the trajectories is used.
 
     """
     import matplotlib.pyplot as plt
@@ -1107,7 +1144,8 @@ def plot_trajectory_with_matplotlib(
         data = random.sample(data, max_count)
 
     fig, ax = __prepare_mplot3d_with_maplotlib(
-        __get_range_of_trajectories(data), figsize, grid, wireframe, angle, noaxis)
+        __get_range_of_trajectories(data, plot_range),
+        figsize, grid, wireframe, angle, noaxis)
 
     lines = []
     for i, y in enumerate(data):
@@ -1124,6 +1162,188 @@ def plot_trajectory_with_matplotlib(
     if legend:
         ax.legend(loc='best', shadow=True)
     plt.show()
+
+def __prepare_plot_with_maplotlib(
+        wrange, figsize, grid, wireframe, noaxis):
+    import matplotlib.pyplot as plt
+
+    fig = plt.figure(figsize=(figsize, figsize))
+    ax = fig.gca()
+    ax.set_aspect('equal')
+
+    # if wireframe:
+    #     ax.w_xaxis.set_pane_color((0, 0, 0, 0))
+    #     ax.w_yaxis.set_pane_color((0, 0, 0, 0))
+    #     ax.w_zaxis.set_pane_color((0, 0, 0, 0))
+
+    ax.grid(grid)
+    ax.set_xlim(*wrange['x'])
+    ax.set_ylim(*wrange['y'])
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+
+    if noaxis:
+        ax.set_axis_off()
+
+    return (fig, ax)
+
+def __plot_trajectory2d_with_matplotlib(lines, ax, upto=None, **kwargs):
+    color_scale = default_color_scale()
+    plots = []
+    for i, line in enumerate(lines):
+        plots.append(
+            ax.plot(line[0][: upto], line[1][: upto],
+                label=i, color=color_scale.get_color(i), **kwargs)[0])
+    return plots
+
+def plot_trajectory2d_with_matplotlib(
+        obs, plane='xy', max_count=10, figsize=6, legend=True,
+        wireframe=False, grid=True, noaxis=False, plot_range=None, **kwargs):
+    """
+    Make a 2D plot from received instance of TrajectoryObserver and show it
+    on IPython notebook.
+
+    Parameters
+    ----------
+    obs : TrajectoryObserver
+        TrajectoryObserver to render.
+    plane : str, default 'xy'
+        'xy', 'yz', 'zx'.
+    max_count : Integer, default 10
+        The maximum number of particles to show. If None, show all.
+    figsize : float, default 6
+        Size of the plotting area. Given in inch.
+    legend : bool, default True
+    plot_range : tuple, default None
+        Range for plotting. A triplet of pairs suggesting (rangex, rangey, rangez).
+        If None, the minimum volume containing all the trajectories is used.
+
+    """
+    import matplotlib.pyplot as plt
+
+    plane = plane.lower()
+    if len(plane) != 2 or plane[0] not in ('x', 'y', 'z') or plane[1] not in ('x', 'y', 'z'):
+        raise ValueError("invalid 'plane' argument [{}] was given.".format(repr(plane)))
+    xidx = 0 if plane[0] == 'x' else (1 if plane[0] == 'y' else 2)
+    yidx = 0 if plane[1] == 'x' else (1 if plane[1] == 'y' else 2)
+
+    data = obs.data()
+    if max_count is not None and len(data) > max_count:
+        data = random.sample(data, max_count)
+
+    wrange = __get_range_of_trajectories(data, plot_range)
+    wrange = (wrange['x'], wrange['y'], wrange['z'])
+    wrange = {'x': wrange[xidx], 'y': wrange[yidx]}
+    fig, ax = __prepare_plot_with_maplotlib(
+        wrange, figsize, grid, wireframe, noaxis)
+
+    lines = []
+    for i, y in enumerate(data):
+        xarr, yarr, zarr = [], [], []
+        for pos in y:
+            xarr.append(pos[xidx])
+            yarr.append(pos[yidx])
+
+        lines.append((xarr, yarr))
+
+    __plot_trajectory2d_with_matplotlib(lines, ax, **kwargs)
+
+    if legend:
+        ax.legend(loc='best', shadow=True)
+    plt.show()
+
+def plot_movie_of_trajectory2d_with_matplotlib(
+        obs, plane='xy', figsize=6, grid=True,
+        wireframe=False, max_count=None, angle=None, noaxis=False,
+        interval=0.16, repeat_delay=3000, stride=1, rotate=None,
+        legend=True, output=None, plot_range=None, **kwargs):
+    """
+    Generate a move from the received list of instances of World,
+    and show it on IPython notebook. This function may require ffmpeg.
+
+    Parameters
+    ----------
+    worlds : list or FixedIntervalHDF5Observer
+        A list of Worlds to render.
+    plane : str, default 'xy'
+        'xy', 'yz', 'zx'.
+    figsize : float, default 6
+        Size of the plotting area. Given in inch.
+    max_count : Integer, default None
+        The maximum number of particles to show for each species.
+        None means no limitation.
+    interval : Integer, default 0.16
+        Parameters for matplotlib.animation.ArtistAnimation.
+    stride : Integer, default 1
+        Stride per frame.
+    legend : bool, default True
+    output : str, default None
+    plot_range : tuple, default None
+        Range for plotting. A triplet of pairs suggesting (rangex, rangey, rangez).
+        If None, the minimum volume containing all the trajectories is used.
+
+    """
+    import matplotlib.pyplot as plt
+    import matplotlib.animation as animation
+    from IPython.display import display, HTML
+    from ecell4 import Species, FixedIntervalHDF5Observer
+    from .simulation import load_world
+    import math
+
+    # print("Taking all data ...")
+
+    plane = plane.lower()
+    if len(plane) != 2 or plane[0] not in ('x', 'y', 'z') or plane[1] not in ('x', 'y', 'z'):
+        raise ValueError("invalid 'plane' argument [{}] was given.".format(repr(plane)))
+    xidx = 0 if plane[0] == 'x' else (1 if plane[0] == 'y' else 2)
+    yidx = 0 if plane[1] == 'x' else (1 if plane[1] == 'y' else 2)
+
+    data = obs.data()
+    if max_count is not None and len(data) > max_count:
+        data = random.sample(data, max_count)
+
+    lines = []
+    num_frames = 0
+    for i, y in enumerate(data):
+        xarr, yarr, zarr = [], [], []
+        for pos in y:
+            xarr.append(pos[xidx])
+            yarr.append(pos[yidx])
+
+        lines.append((xarr, yarr))
+        num_frames = max(num_frames, len(y))
+    num_frames = int(math.ceil(float(num_frames) / stride))
+
+    # print("Start preparing mplot3d ...")
+
+    wrange = __get_range_of_trajectories(data, plot_range)
+    wrange = (wrange['x'], wrange['y'], wrange['z'])
+    wrange = {'x': wrange[xidx], 'y': wrange[yidx]}
+    fig, ax = __prepare_plot_with_maplotlib(
+        wrange, figsize, grid, wireframe, noaxis)
+
+    def _update_plot(i, plots, lines):
+        upto = i * stride
+        for plot, line in zip(plots, lines):
+            plot.set_xdata(line[0][: upto])
+            plot.set_ydata(line[1][: upto])
+
+        fig.canvas.draw()
+
+    # print("Start making animation ...")
+
+    plots = __plot_trajectory2d_with_matplotlib(lines, ax, 0, **kwargs)
+
+    if legend:
+        ax.legend(loc='best', shadow=True)
+
+    ani = animation.FuncAnimation(
+        fig, _update_plot, fargs=(plots, lines),
+        frames=num_frames, interval=interval, blit=False)
+
+    plt.close(ani._fig)
+    # print("Start generating a movie ...")
+    display(HTML(anim_to_html(ani, output, fps=1.0 / interval)))
 
 def plot_movie_with_matplotlib(
         worlds, marker_size=3, figsize=6, grid=True,
@@ -1241,7 +1461,7 @@ def plot_movie_of_trajectory_with_matplotlib(
         obs, figsize=6, grid=True,
         wireframe=False, max_count=None, angle=None, noaxis=False,
         interval=0.16, repeat_delay=3000, stride=1, rotate=None,
-        legend=True, output=None, **kwargs):
+        legend=True, output=None, plot_range=None, **kwargs):
     """
     Generate a move from the received list of instances of World,
     and show it on IPython notebook. This function may require ffmpeg.
@@ -1270,6 +1490,9 @@ def plot_movie_of_trajectory_with_matplotlib(
         None means no rotation, same as (0, 0).
     legend : bool, default True
     output : str, default None
+    plot_range : tuple, default None
+        Range for plotting. A triplet of pairs suggesting (rangex, rangey, rangez).
+        If None, the minimum volume containing all the trajectories is used.
 
     """
     import matplotlib.pyplot as plt
@@ -1301,7 +1524,8 @@ def plot_movie_of_trajectory_with_matplotlib(
     # print("Start preparing mplot3d ...")
 
     fig, ax = __prepare_mplot3d_with_maplotlib(
-        __get_range_of_trajectories(data), figsize, grid, wireframe, angle, noaxis)
+        __get_range_of_trajectories(data, plot_range),
+        figsize, grid, wireframe, angle, noaxis)
 
     def _update_plot(i, plots, lines):
         upto = i * stride

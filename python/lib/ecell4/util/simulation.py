@@ -64,7 +64,7 @@ def run_simulation(
         t, y0={}, volume=1.0, model=None, solver='ode',
         factory=None, is_netfree=False, species_list=None, without_reset=False,
         return_type='matplotlib', opt_args=(), opt_kwargs={},
-        structures={}, observers=()):
+        structures={}, observers=(), progressbar=0):
     """Run a simulation with the given model and plot the result on IPython
     notebook with matplotlib.
 
@@ -77,9 +77,11 @@ def run_simulation(
     volume : Real or Real3, optional
         A size of the simulation volume.
     model : Model, optional
-    solver : str, optional
+    solver : str, tuple or Factory, optional
         Solver type. Choose one from 'ode', 'gillespie', 'spatiocyte', 'meso',
         'bd' and 'egfrd'. Default is 'ode'.
+        When tuple is given, the first value must be str as explained above.
+        All the rest is used as arguments for the corresponding factory class.
     species_list : list of str, optional
         A list of names of Species observed. If None, log all.
         Default is None.
@@ -103,6 +105,10 @@ def run_simulation(
         Not fully supported yet.
     observers : Observer or list, optional
         A list of extra observer references.
+    progressbar : float, optional
+        A timeout for a progress bar in seconds.
+        When the value is not more than 0, show nothing.
+        Default is 0.
 
     Returns
     -------
@@ -117,9 +123,13 @@ def run_simulation(
     import ecell4
 
     if factory is not None:
-        f = factory
-    else:
+        f = factory  #XXX: will be deprecated in the future. just use solver
+    elif isinstance(solver, str):
         f = get_factory(solver)
+    elif isinstance(solver, collections.Iterable):
+        f = get_factory(*solver)
+    else:
+        f = solver
 
     if model is None:
         model = ecell4.util.decorator.get_model(is_netfree, without_reset)
@@ -166,7 +176,11 @@ def run_simulation(
     if return_type not in ('world', None):
         observers = (obs, ) + tuple(observers)
 
-    sim.run(t[-1], observers)
+    if progressbar > 0:
+        from .progressbar import progressbar as pb
+        pb(sim, timeout=progressbar, flush=True).run(t[-1], observers)
+    else:
+        sim.run(t[-1], observers)
 
     if return_type == 'matplotlib':
         if isinstance(opt_args, (list, tuple)):
@@ -306,6 +320,10 @@ def ensemble_simulations(N=1, *args, **kwargs):
         def append(self, data):
             DummyObserver.append(self, data)
             self.__sqtot += self.trancate(data) ** 2
+
+    if 'model' not in kwargs:
+        kwargs['model'] = ecell4.util.decorator.get_model(
+                kwargs.get('is_netfree', False), kwargs.get('without_reset', False))
 
     tmp = ecell4.util.run_simulation(*args, **kwargs)
 
