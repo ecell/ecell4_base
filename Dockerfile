@@ -5,6 +5,9 @@ RUN apt-get update; apt-get install -y python python-dev python3 python3-dev cma
 ADD . /usr/src/ecell4
 RUN cd /usr/src/ecell4; cmake .; make BesselTables; cd python; python2 setup.py build_ext; python2 setup.py bdist_wheel; python3 setup.py build_ext; python3 setup.py bdist_wheel; pip2 install dist/ecell-4.0.0-cp27-cp27mu-linux_x86_64.whl; pip3 install dist/ecell-4.0.0-cp34-cp34m-linux_x86_64.whl
 
+# dev stuff
+RUN pip3 install python-libsbml ptpython; apt-get install -y git ranger libncurses5-dev; cd /usr/src; git clone git://github.com/vim/vim; cd vim; ./configure; make; make install
+
 # matplotlib and jupyter
 #RUN apt-get install -y libfreetype6-dev libpng-dev pkg-config python-numpy python3-numpy pandoc
 #RUN pip2 install matplotlib jupyter; pip3 install matplotlib jupyter; python2 -m ipykernel install
