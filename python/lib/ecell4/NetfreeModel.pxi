@@ -252,6 +252,28 @@ cdef class NetfreeModel:
             return Model_from_Cpp_Model(
                 self.thisptr.get().expand(_seeds))
 
+    def set_effective(self, effective):
+        """set_effective(effective)
+
+        Set if this model uses effective or intrinsic kinetic rates.
+
+        Parameters
+        ----------
+        effective : bool
+            Whether this model is based on the effective reaction rates or not.
+            If True, this model automatically halve the rate of homodimerization
+            reactions.
+
+        """
+        self.thisptr.get().set_effective(effective)
+
+    def effective(self):
+        """effective()
+
+        Return if this model uses effective or intrinsic kinetic rates.
+        """
+        return self.thisptr.get().effective()
+
     def add_parameter(self, Species sp):
         """add_parameter(sp)
 

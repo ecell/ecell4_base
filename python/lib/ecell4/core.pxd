@@ -302,6 +302,9 @@ cdef extern from "ecell4/core/NetfreeModel.hpp" namespace "ecell4":
         shared_ptr[Cpp_Model] expand(vector[Cpp_Species], Integer) except +
         shared_ptr[Cpp_Model] expand(vector[Cpp_Species], Integer, map[Cpp_Species, Integer]) except +
 
+        void set_effective(bool)
+        bool effective()
+
         void add_parameter(Cpp_Species sp)
         vector[Cpp_Species] parameters()
         void add_parameters(vector[Cpp_Species])
