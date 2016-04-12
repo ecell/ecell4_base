@@ -11,6 +11,10 @@ cdef class ReactionRule:
 
     """
 
+    STRICT = Cpp_STRICT
+    IMPLICIT = Cpp_IMPLICIT
+    DESTROY = Cpp_DESTROY
+
     def __init__(self, reactants=None, products=None, k=None):
         """Constructor.
 

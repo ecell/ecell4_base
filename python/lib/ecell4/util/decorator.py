@@ -264,11 +264,35 @@ class ReactionRulesCallback(Callback):
             raise RuntimeError('an invalid object was given'
                 + ' as a right-hand-side [%s].' % (repr(rhs))
                 + ' OrExp must be given')
-        elif len(rhs._elements()) != 2:
+
+        elements = rhs._elements()
+
+        mode = None
+        if len(elements) > 2:
+            for i in range(len(elements) - 1, 0, -1):
+                elem = elements[i]
+                if (isinstance(elem, parseobj.ParseObj) and len(elem._elems) > 0
+                    and elem._elems[0].name == '_reaction_rule_mode_type'):
+                    mode_type = elem._elems[0]
+                    if len(elem._elems) != 1:
+                        raise RuntimeError(
+                            '_reaction_rule_mode_type only accepts one argument; '
+                            + ' [{}] given'.format(len(elem._elems)))
+                    elif mode_type.args is None or len(mode_type.args) != 1 or (mode_type.kwargs is not None and len(mode_type.kwargs) > 0) or mode_type.key is not None or mode_type.modification is not None:
+                        raise RuntimeError(
+                            '_reaction_rule_mode_type is not well-formed [{}]'.format(
+                                str(mode_type)))
+                    if mode is None:
+                        mode = mode_type.args[0]
+                    else:
+                        mode |= mode_type.args[0]
+                    elements.pop(i)
+
+        if len(elements) != 2:
             raise RuntimeError('only one attribute is allowed. [%d] given' % (
                 len(rhs._elements())))
 
-        rhs, params = rhs._elements()
+        rhs, params = elements
         lhs, rhs = generate_Species(lhs), generate_Species(rhs)
         lhs = tuple(sp for sp in lhs if sp is not None)
         rhs = tuple(sp for sp in rhs if sp is not None)
@@ -282,10 +306,22 @@ class ReactionRulesCallback(Callback):
                 raise RuntimeError(
                     "parameter must be a list or tuple with length 2;"
                     + " length %d given" % len(params))
-            self.comparisons.append(generate_ReactionRule(lhs, rhs, params[0]))
-            self.comparisons.append(generate_ReactionRule(rhs, lhs, params[1]))
+            # self.comparisons.append(generate_ReactionRule(lhs, rhs, params[0]))
+            # self.comparisons.append(generate_ReactionRule(rhs, lhs, params[1]))
+            rr = generate_ReactionRule(lhs, rhs, params[0])
+            if mode is not None:
+                rr.set_mode(mode)
+            self.comparisons.append(rr)
+            rr = generate_ReactionRule(rhs, lhs, params[1])
+            if mode is not None:
+                rr.set_mode(mode)
+            self.comparisons.append(rr)
         elif isinstance(obj, parseobj.GtExp):
-            self.comparisons.append(generate_ReactionRule(lhs, rhs, params))
+            # self.comparisons.append(generate_ReactionRule(lhs, rhs, params))
+            rr = generate_ReactionRule(lhs, rhs, params)
+            if mode is not None:
+                rr.set_mode(mode)
+            self.comparisons.append(rr)
         else:
             raise RuntimeError('an invalid object was given [%s]' % (repr(obj)))
 
