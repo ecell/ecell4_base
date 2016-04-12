@@ -10,7 +10,6 @@ from .decorator_base import Callback, JustParseCallback, ParseDecorator
 
 import ecell4.core
 
-SEAMLESS_RATELAW_SUPPORT = False  #XXX: deprecated. use ENABLE_RATELAW
 ENABLE_RATELAW = True
 ENABLE_IMPLICIT_DECLARATION = True
 
@@ -55,7 +54,7 @@ def generate_ReactionRule(lhs, rhs, k=None):
         raise RuntimeError('no parameter is specified')
 
     if (callable(k)
-        or ((SEAMLESS_RATELAW_SUPPORT or ENABLE_RATELAW) and isinstance(k, parseobj.ExpBase))
+        or (ENABLE_RATELAW and isinstance(k, parseobj.ExpBase))
         or any([sp[1] is not None for sp in itertools.chain(lhs, rhs)])):
         from ecell4.ode import ODEReactionRule, ODERatelawCallback
         rr = ODEReactionRule()
@@ -63,7 +62,7 @@ def generate_ReactionRule(lhs, rhs, k=None):
             rr.add_reactant(sp[0], 1 if sp[1] is None else sp[1])
         for sp in rhs:
             rr.add_product(sp[0], 1 if sp[1] is None else sp[1])
-        if (SEAMLESS_RATELAW_SUPPORT or ENABLE_RATELAW) and isinstance(k, parseobj.ExpBase):
+        if ENABLE_RATELAW and isinstance(k, parseobj.ExpBase):
             name = str(k)
             func = generate_ratelaw(k, rr)
             rr.set_ratelaw(ODERatelawCallback(func, name))
