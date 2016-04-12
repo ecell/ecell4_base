@@ -274,43 +274,6 @@ cdef class NetfreeModel:
         """
         return self.thisptr.get().effective()
 
-    def add_parameter(self, Species sp):
-        """add_parameter(sp)
-
-        This is for the tentative implementation of parameters.
-        This might be deprecated.
-
-        """
-        self.thisptr.get().add_parameter(deref(sp.thisptr))
-
-    def add_parameters(self, attrs):
-        """add_parameters(attrs)
-
-        This is for the tentative implementation of parameters.
-        This might be deprecated.
-
-        """
-        cdef vector[Cpp_Species] species
-        for sp in attrs:
-            species.push_back(deref((<Species>sp).thisptr))
-        self.thisptr.get().add_parameters(species)
-
-    def parameters(self):
-        """parameters()
-
-        This is for the tentative implementation of parameters.
-        This might be deprecated.
-
-        """
-        cdef vector[Cpp_Species] species = self.thisptr.get().parameters()
-        retval = []
-        cdef vector[Cpp_Species].iterator it = species.begin()
-        while it != species.end():
-            retval.append(Species_from_Cpp_Species(
-                <Cpp_Species*>(address(deref(it)))))
-            inc(it)
-        return retval
-
     def __reduce__(self):
         return (__rebuild_netfree_model, (self.species_attributes(), self.reaction_rules()))
 

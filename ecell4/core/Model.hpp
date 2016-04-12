@@ -36,7 +36,6 @@ public:
 
     typedef std::vector<Species> species_container_type;
     typedef std::vector<ReactionRule> reaction_rule_container_type;
-    typedef std::vector<Species> parameter_container_type;
 
 public:
 
@@ -179,22 +178,6 @@ public:
     virtual boost::shared_ptr<Model> expand(
         const std::vector<Species>& sp) const = 0;
 
-    /**
-     * add the initial setting to the model.
-     * this function is a part of the trait of Model.
-     * @param species a new Species
-     */
-    virtual void add_parameter(const Species& sp)
-    {
-        throw NotSupported(
-            "add_parameter is not supported in this model class");
-    }
-
-    virtual bool has_parameter(const Species::serial_type& name) const = 0;
-    virtual const Species& get_parameter(
-        const Species::serial_type& name) const = 0;
-    virtual const parameter_container_type& parameters() const = 0;
-
     const std::vector<Species> list_species() const
     {
         std::vector<Species> retval;
@@ -232,15 +215,6 @@ public:
             i != rrs.end(); ++i)
         {
             add_reaction_rule(*i);
-        }
-    }
-
-    void add_parameters(const std::vector<Species>& params)
-    {
-        for (std::vector<Species>::const_iterator i(params.begin());
-            i != params.end(); ++i)
-        {
-            add_parameter(*i);
         }
     }
 };
