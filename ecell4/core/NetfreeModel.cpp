@@ -22,7 +22,7 @@ std::vector<ReactionRule> NetfreeModel::query_reaction_rules(
             j != generated.end(); ++j)
         {
             // const ReactionRule rr = create_reaction_rule_formatted(*j);
-            const ReactionRule rr = format_reaction_rule(*j);
+            const ReactionRule rr = format_reaction_rule_with_nosort(*j);
             std::vector<ReactionRule>::iterator
                 it = std::find(retval.begin(), retval.end(), rr);
             if (it == retval.end())
@@ -123,7 +123,7 @@ std::vector<ReactionRule> NetfreeModel::query_reaction_rules(
             j != generated.end(); ++j)
         {
             // const ReactionRule rr = create_reaction_rule_formatted(*j);
-            const ReactionRule rr = format_reaction_rule(*j);
+            const ReactionRule rr = format_reaction_rule_with_nosort(*j);
             std::vector<ReactionRule>::iterator
                 it = std::find(retval.begin(), retval.end(), rr);
             if (it == retval.end())

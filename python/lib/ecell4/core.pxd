@@ -112,6 +112,12 @@ cdef Species Species_from_Cpp_Species(Cpp_Species *sp)
 ## Cpp_ReactionRule
 #  ecell4::ReactionRule
 cdef extern from "ecell4/core/ReactionRule.hpp" namespace "ecell4":
+    cdef enum Cpp_ReactionRuleModeType "ecell4::ReactionRule::mode_type":
+        Cpp_STRICT "ecell4::ReactionRule::STRICT"
+        Cpp_IMPLICIT "ecell4::ReactionRule::IMPLICIT"
+        Cpp_DESTROY "ecell4::ReactionRule::DESTROY"
+
+cdef extern from "ecell4/core/ReactionRule.hpp" namespace "ecell4":
     cdef cppclass Cpp_ReactionRule "ecell4::ReactionRule":
         Cpp_ReactionRule() except +
         Cpp_ReactionRule(vector[Cpp_Species]&, vector[Cpp_Species]&)
@@ -126,6 +132,8 @@ cdef extern from "ecell4/core/ReactionRule.hpp" namespace "ecell4":
         void add_reactant(Cpp_Species)
         void add_product(Cpp_Species)
         string as_string()
+        Cpp_ReactionRuleModeType mode()
+        void set_mode(Cpp_ReactionRuleModeType)
         Integer count(vector[Cpp_Species]) except +
         vector[Cpp_ReactionRule] generate(vector[Cpp_Species]) except +
 

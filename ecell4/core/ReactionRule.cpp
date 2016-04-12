@@ -54,6 +54,27 @@ std::vector<ReactionRule> ReactionRule::generate(const reactant_container_type& 
     return retval;
 }
 
+ReactionRule format_reaction_rule_with_nosort(const ReactionRule& rr)
+{
+    ReactionRule::reactant_container_type reactants;
+    reactants.reserve(rr.reactants().size());
+    for (ReactionRule::reactant_container_type::const_iterator i(rr.reactants().begin());
+        i != rr.reactants().end(); ++i)
+    {
+        reactants.push_back(format_species(*i));
+    }
+
+    ReactionRule::product_container_type products;
+    products.reserve(rr.products().size());
+    for (ReactionRule::product_container_type::const_iterator i(rr.products().begin());
+        i != rr.products().end(); ++i)
+    {
+        products.push_back(format_species(*i));
+    }
+
+    return ReactionRule(reactants, products, rr.k());
+}
+
 ReactionRule format_reaction_rule(const ReactionRule& rr)
 {
     ReactionRule::reactant_container_type reactants;

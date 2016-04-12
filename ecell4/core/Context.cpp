@@ -394,7 +394,8 @@ int concatenate_units(std::vector<UnitSpecies>& units, const Species& sp, const 
     return bond_ministride;
 }
 
-std::vector<Species> group_units(const std::vector<UnitSpecies>& units)
+std::vector<Species> group_units(
+    const std::vector<UnitSpecies>& units, const ReactionRule::mode_type& mode)
 {
     const unsigned int maxidx = units.size();
     utils::get_mapper_mf<std::string, std::pair<std::string, unsigned int> >::type tmp;
@@ -435,29 +436,20 @@ std::vector<Species> group_units(const std::vector<UnitSpecies>& units)
         }
     }
 
-    // for (utils::get_mapper_mf<std::string, std::pair<std::string, unsigned int> >::type::const_iterator
-    //     i(tmp.begin()); i != tmp.end(); ++i)
-    // {
-    //     if ((*i).second.second != maxidx)
-    //     {
-    //         throw IllegalState("A bond is not resolved.");
-    //     }
-    // }
+    if (mode & ReactionRule::STRICT)
+    {
+        for (utils::get_mapper_mf<std::string, std::pair<std::string, unsigned int> >::type::const_iterator
+            i(tmp.begin()); i != tmp.end(); ++i)
+        {
+            if ((*i).second.second != maxidx)
+            {
+                throw IllegalState("A bond is not resolved.");
+            }
+        }
+    }
 
     std::pair<std::vector<unsigned int>, unsigned int>
         group_ids_pair(tag_units(units, adj));
-
-    std::vector<unsigned int> removed;
-    for (utils::get_mapper_mf<std::string, std::pair<std::string, unsigned int> >::type::const_iterator
-        i(tmp.begin()); i != tmp.end(); ++i)
-    {
-        if ((*i).second.second != maxidx)
-        {
-            removed.push_back(group_ids_pair.first[(*i).second.second]);
-        }
-    }
-    std::sort(removed.begin(), removed.end());
-    removed.erase(std::unique(removed.begin(), removed.end()), removed.end());
 
     std::vector<Species> products;
     products.resize(group_ids_pair.second);
@@ -492,11 +484,11 @@ std::vector<Species> group_units(const std::vector<UnitSpecies>& units)
                     continue;
                 }
 
-                // if (tmp[bond].second != maxidx)
-                // {
-                //     site.second.second = "";
-                // }
-                // else
+                if ((mode & ReactionRule::IMPLICIT) && tmp[bond].second != maxidx)
+                {
+                    site.second.second = "";
+                }
+                else
                 {
                     utils::get_mapper_mf<std::string, std::string>::type::const_iterator
                         itr(new_bonds.find(bond));
@@ -520,10 +512,25 @@ std::vector<Species> group_units(const std::vector<UnitSpecies>& units)
         // products[idx] = format_species(products[idx]);
     }
 
-    for (std::vector<unsigned int>::const_reverse_iterator
-        i(removed.rbegin()); i != removed.rend(); ++i)
+    if (mode & ReactionRule::DESTROY)
     {
-        products.erase(products.begin() + *i);
+        std::vector<unsigned int> removed;
+        for (utils::get_mapper_mf<std::string, std::pair<std::string, unsigned int> >::type::const_iterator
+            i(tmp.begin()); i != tmp.end(); ++i)
+        {
+            if ((*i).second.second != maxidx)
+            {
+                removed.push_back(group_ids_pair.first[(*i).second.second]);
+            }
+        }
+        std::sort(removed.begin(), removed.end());
+        removed.erase(std::unique(removed.begin(), removed.end()), removed.end());
+
+        for (std::vector<unsigned int>::const_reverse_iterator
+            i(removed.rbegin()); i != removed.rend(); ++i)
+        {
+            products.erase(products.begin() + *i);
+        }
     }
 
     return products;
@@ -707,7 +714,7 @@ std::vector<Species> ReactionRuleExpressionMatcher::generate()
         units.erase(units.begin() + *i);
     }
 
-    return group_units(units);
+    return group_units(units, pttrn_.mode());
     // std::cout << std::endl << "before: ";
     // for (ReactionRule::reactant_container_type::const_iterator i(target_.begin());
     //     i != target_.end(); ++i)

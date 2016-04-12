@@ -28,8 +28,17 @@ public:
 
 public:
 
+    enum mode_type
+    {
+        STRICT = 1L << 0,
+        IMPLICIT = 1L << 1,
+        DESTROY = 1L << 2
+    };
+
+public:
+
     ReactionRule()
-        : k_(0), reactants_(), products_()
+        : k_(0), reactants_(), products_(), mode_(STRICT)
     {
         ;
     }
@@ -37,7 +46,7 @@ public:
     ReactionRule(
         const reactant_container_type& reactants,
         const product_container_type& products)
-        : k_(0), reactants_(reactants), products_(products)
+        : k_(0), reactants_(reactants), products_(products), mode_(STRICT)
     {
         ;
     }
@@ -46,14 +55,14 @@ public:
         const reactant_container_type& reactants,
         const product_container_type& products,
         const Real& k)
-        : k_(k), reactants_(reactants), products_(products)
+        : k_(k), reactants_(reactants), products_(products), mode_(STRICT)
     {
         ;
     }
 
     ReactionRule(
         const ReactionRule& rr)
-        : k_(rr.k()), reactants_(rr.reactants()), products_(rr.products())
+        : k_(rr.k()), reactants_(rr.reactants()), products_(rr.products()), mode_(rr.mode())
     {
         ;
     }
@@ -92,6 +101,16 @@ public:
         products_.push_back(sp);
     }
 
+    const mode_type mode() const
+    {
+        return mode_;
+    }
+
+    void set_mode(const mode_type mode)
+    {
+        mode_ = mode;
+    }
+
     const std::string as_string() const;
 
     inline Integer count(const reactant_container_type& reactants) const
@@ -125,6 +144,7 @@ protected:
     reactant_container_type reactants_;
     product_container_type products_;
 
+    mode_type mode_;
     //boost::weak_ptr<Ratelaw> ratelaw_;
 };
 
@@ -152,6 +172,7 @@ inline bool operator!=(const ReactionRule& lhs, const ReactionRule& rhs)
     return !(lhs == rhs);
 }
 
+ReactionRule format_reaction_rule_with_nosort(const ReactionRule& rr);
 ReactionRule format_reaction_rule(const ReactionRule& rr);
 
 } // ecell4
