@@ -764,17 +764,17 @@ std::pair<bool, MatchObject::context_type> MatchObject::next()
     return std::make_pair(false, MatchObject::context_type());
 }
 
-ReactionRule create_reaction_rule_formatted(
-    const ReactionRule::reactant_container_type& reactants,
-    const ReactionRule::product_container_type& products, const Real k)
-{
-    ReactionRule rr(reactants, ReactionRule::product_container_type(), k);
-    for (ReactionRule::product_container_type::const_iterator i(products.begin());
-        i != products.end(); ++i)
-    {
-        rr.add_product(format_species(*i));
-    }
-    return rr;
-}
+// ReactionRule create_reaction_rule_formatted(
+//     const ReactionRule::reactant_container_type& reactants,
+//     const ReactionRule::product_container_type& products, const Real k)
+// {
+//     ReactionRule rr(reactants, ReactionRule::product_container_type(), k);
+//     for (ReactionRule::product_container_type::const_iterator i(products.begin());
+//         i != products.end(); ++i)
+//     {
+//         rr.add_product(format_species(*i));
+//     }
+//     return rr;
+// }
 
 } // ecell4
