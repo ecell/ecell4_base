@@ -134,6 +134,18 @@ std::vector<ReactionRule> NetfreeModel::query_reaction_rules(
             }
         }
     }
+
+    if (effective_)
+    {
+        for (std::vector<ReactionRule>::iterator i(retval.begin()); i != retval.end(); ++i)
+        {
+            const ReactionRule& rr(*i);
+            if (rr.reactants()[0] == rr.reactants()[1])
+            {
+                (*i).set_k(rr.k() * 0.5);
+            }
+        }
+    }
     return retval;
 }
 
@@ -560,11 +572,27 @@ std::pair<boost::shared_ptr<NetworkModel>, bool> generate_network_from_netfree_m
     {
         (*nwm).add_species_attribute(nfm.apply_species_attributes(*i));
     }
-    for (std::vector<ReactionRule>::const_iterator i(reactions.begin());
-        i != reactions.end(); ++i)
+    if (nfm.effective())
     {
-        const ReactionRule rr(format_reaction_rule(*i));
-        (*nwm).add_reaction_rule(rr);
+        for (std::vector<ReactionRule>::const_iterator i(reactions.begin());
+            i != reactions.end(); ++i)
+        {
+            ReactionRule rr(format_reaction_rule(*i));
+            if (rr.reactants().size() == 2 && rr.reactants()[0] == rr.reactants()[1])
+            {
+                rr.set_k(rr.k() * 0.5);
+            }
+
+            (*nwm).add_reaction_rule(rr);
+        }
+    }
+    else
+    {
+        for (std::vector<ReactionRule>::const_iterator i(reactions.begin());
+            i != reactions.end(); ++i)
+        {
+            (*nwm).add_reaction_rule(format_reaction_rule(*i));
+        }
     }
     return std::make_pair(nwm, is_completed);
 }

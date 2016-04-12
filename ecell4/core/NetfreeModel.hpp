@@ -34,7 +34,7 @@ public:
 public:
 
     NetfreeModel()
-        : base_type(), species_attributes_(), reaction_rules_()
+        : base_type(), species_attributes_(), reaction_rules_(), effective_(false)
     {
         ;
     }
@@ -109,6 +109,16 @@ public:
         const std::vector<Species>& sp, const Integer max_itr) const;
     boost::shared_ptr<Model> expand(const std::vector<Species>& sp) const;
 
+    void set_effective(const bool effective)
+    {
+        effective_ = effective;
+    }
+
+    const bool effective() const
+    {
+        return effective_;
+    }
+
     bool has_parameter(const Species::serial_type& name) const
     {
         parameter_container_type::const_iterator i(
@@ -152,6 +162,8 @@ protected:
     species_container_type species_attributes_;
     reaction_rule_container_type reaction_rules_;
     parameter_container_type parameters_;
+
+    bool effective_;
 };
 
 namespace extras

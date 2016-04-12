@@ -435,29 +435,29 @@ std::vector<Species> group_units(const std::vector<UnitSpecies>& units)
         }
     }
 
-    for (utils::get_mapper_mf<std::string, std::pair<std::string, unsigned int> >::type::const_iterator
-        i(tmp.begin()); i != tmp.end(); ++i)
-    {
-        if ((*i).second.second != maxidx)
-        {
-            throw IllegalState("A bond is not resolved.");
-        }
-    }
-
-    std::pair<std::vector<unsigned int>, unsigned int>
-        group_ids_pair(tag_units(units, adj));
-
-    // std::vector<unsigned int> removed;
     // for (utils::get_mapper_mf<std::string, std::pair<std::string, unsigned int> >::type::const_iterator
     //     i(tmp.begin()); i != tmp.end(); ++i)
     // {
     //     if ((*i).second.second != maxidx)
     //     {
-    //         removed.push_back(group_ids_pair.first[(*i).second.second]);
+    //         throw IllegalState("A bond is not resolved.");
     //     }
     // }
-    // std::sort(removed.begin(), removed.end());
-    // removed.erase(std::unique(removed.begin(), removed.end()), removed.end());
+
+    std::pair<std::vector<unsigned int>, unsigned int>
+        group_ids_pair(tag_units(units, adj));
+
+    std::vector<unsigned int> removed;
+    for (utils::get_mapper_mf<std::string, std::pair<std::string, unsigned int> >::type::const_iterator
+        i(tmp.begin()); i != tmp.end(); ++i)
+    {
+        if ((*i).second.second != maxidx)
+        {
+            removed.push_back(group_ids_pair.first[(*i).second.second]);
+        }
+    }
+    std::sort(removed.begin(), removed.end());
+    removed.erase(std::unique(removed.begin(), removed.end()), removed.end());
 
     std::vector<Species> products;
     products.resize(group_ids_pair.second);
@@ -520,11 +520,11 @@ std::vector<Species> group_units(const std::vector<UnitSpecies>& units)
         // products[idx] = format_species(products[idx]);
     }
 
-    // for (std::vector<unsigned int>::const_reverse_iterator
-    //     i(removed.rbegin()); i != removed.rend(); ++i)
-    // {
-    //     products.erase(products.begin() + *i);
-    // }
+    for (std::vector<unsigned int>::const_reverse_iterator
+        i(removed.rbegin()); i != removed.rend(); ++i)
+    {
+        products.erase(products.begin() + *i);
+    }
 
     return products;
 }
