@@ -436,7 +436,7 @@ std::vector<Species> group_units(
         }
     }
 
-    if (policy & ReactionRule::STRICT)
+    if ((policy & ReactionRule::STRICT) && !(policy & (ReactionRule::DESTROY | ReactionRule::IMPLICIT)))
     {
         for (utils::get_mapper_mf<std::string, std::pair<std::string, unsigned int> >::type::const_iterator
             i(tmp.begin()); i != tmp.end(); ++i)
