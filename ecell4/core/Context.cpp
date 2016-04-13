@@ -395,7 +395,7 @@ int concatenate_units(std::vector<UnitSpecies>& units, const Species& sp, const 
 }
 
 std::vector<Species> group_units(
-    const std::vector<UnitSpecies>& units, const ReactionRule::mode_type& mode)
+    const std::vector<UnitSpecies>& units, const ReactionRule::policy_type& policy)
 {
     const unsigned int maxidx = units.size();
     utils::get_mapper_mf<std::string, std::pair<std::string, unsigned int> >::type tmp;
@@ -436,7 +436,7 @@ std::vector<Species> group_units(
         }
     }
 
-    if (mode & ReactionRule::STRICT)
+    if (policy & ReactionRule::STRICT)
     {
         for (utils::get_mapper_mf<std::string, std::pair<std::string, unsigned int> >::type::const_iterator
             i(tmp.begin()); i != tmp.end(); ++i)
@@ -484,7 +484,7 @@ std::vector<Species> group_units(
                     continue;
                 }
 
-                if ((mode & ReactionRule::IMPLICIT) && tmp[bond].second != maxidx)
+                if ((policy & ReactionRule::IMPLICIT) && tmp[bond].second != maxidx)
                 {
                     site.second.second = "";
                 }
@@ -512,7 +512,7 @@ std::vector<Species> group_units(
         // products[idx] = format_species(products[idx]);
     }
 
-    if (mode & ReactionRule::DESTROY)
+    if (policy & ReactionRule::DESTROY)
     {
         std::vector<unsigned int> removed;
         for (utils::get_mapper_mf<std::string, std::pair<std::string, unsigned int> >::type::const_iterator
@@ -714,7 +714,7 @@ std::vector<Species> ReactionRuleExpressionMatcher::generate()
         units.erase(units.begin() + *i);
     }
 
-    return group_units(units, pttrn_.mode());
+    return group_units(units, pttrn_.policy());
     // std::cout << std::endl << "before: ";
     // for (ReactionRule::reactant_container_type::const_iterator i(target_.begin());
     //     i != target_.end(); ++i)

@@ -147,6 +147,44 @@ def generate_ratelaw(obj, rr):
     return f
     # return (lambda _r, _p, *args: eval(exp))
 
+def parse_ReactionRule_options(elements):
+    opts = {}
+
+    if len(elements) == 0:
+        raise RuntimeError(
+            'only one attribute is allowed. [{:d}] given'.format(len(elements)))
+    elif len(elements) == 1:
+        opts['k'] = elements[0]
+        return opts
+
+    for elem in elements:
+        if (isinstance(elem, parseobj.ParseObj) and len(elem._elems) > 0
+            and elem._elems[0].name == '_reaction_rule_policy_type'):
+            policy_type = elem._elems[0]
+            if len(elem._elems) != 1:
+                raise RuntimeError(
+                    '_reaction_rule_policy_type only accepts one argument; '
+                    + ' [{}] given'.format(len(elem._elems)))
+            elif policy_type.args is None or len(policy_type.args) != 1 or (policy_type.kwargs is not None and len(policy_type.kwargs) > 0) or policy_type.key is not None or policy_type.modification is not None:
+                raise RuntimeError(
+                    '_reaction_rule_policy_type is not well-formed [{}]'.format(
+                        str(policy_type)))
+
+            if 'policy' not in opts.keys():
+                opts['policy'] = policy_type.args[0]
+            else:
+                opts['policy'] |= policy_type.args[0]
+        else:
+            if 'k' in opts.keys():
+                raise RuntimeError('only one attribute is allowed. [%d] given' % (
+                    len(elements)))
+            opts['k'] = elem
+
+    if 'k' not in opts.keys():
+        raise RuntimeError('no kinetic rate or law is given.')
+
+    return opts
+
 class SpeciesAttributesCallback(Callback):
 
     def __init__(self, *args):
@@ -265,34 +303,13 @@ class ReactionRulesCallback(Callback):
                 + ' as a right-hand-side [%s].' % (repr(rhs))
                 + ' OrExp must be given')
 
-        elements = rhs._elements()
+        if len(rhs._elements()) == 0:
+            raise RuntimeError('no product is given')
 
-        mode = None
-        if len(elements) > 2:
-            for i in range(len(elements) - 1, 0, -1):
-                elem = elements[i]
-                if (isinstance(elem, parseobj.ParseObj) and len(elem._elems) > 0
-                    and elem._elems[0].name == '_reaction_rule_mode_type'):
-                    mode_type = elem._elems[0]
-                    if len(elem._elems) != 1:
-                        raise RuntimeError(
-                            '_reaction_rule_mode_type only accepts one argument; '
-                            + ' [{}] given'.format(len(elem._elems)))
-                    elif mode_type.args is None or len(mode_type.args) != 1 or (mode_type.kwargs is not None and len(mode_type.kwargs) > 0) or mode_type.key is not None or mode_type.modification is not None:
-                        raise RuntimeError(
-                            '_reaction_rule_mode_type is not well-formed [{}]'.format(
-                                str(mode_type)))
-                    if mode is None:
-                        mode = mode_type.args[0]
-                    else:
-                        mode |= mode_type.args[0]
-                    elements.pop(i)
+        opts = parse_ReactionRule_options(rhs._elements()[1: ])
+        rhs = rhs._elements()[0]
+        params = opts['k']
 
-        if len(elements) != 2:
-            raise RuntimeError('only one attribute is allowed. [%d] given' % (
-                len(rhs._elements())))
-
-        rhs, params = elements
         lhs, rhs = generate_Species(lhs), generate_Species(rhs)
         lhs = tuple(sp for sp in lhs if sp is not None)
         rhs = tuple(sp for sp in rhs if sp is not None)
@@ -309,18 +326,18 @@ class ReactionRulesCallback(Callback):
             # self.comparisons.append(generate_ReactionRule(lhs, rhs, params[0]))
             # self.comparisons.append(generate_ReactionRule(rhs, lhs, params[1]))
             rr = generate_ReactionRule(lhs, rhs, params[0])
-            if mode is not None:
-                rr.set_mode(mode)
+            if 'policy' in opts.keys():
+                rr.set_policy(opts['policy'])
             self.comparisons.append(rr)
             rr = generate_ReactionRule(rhs, lhs, params[1])
-            if mode is not None:
-                rr.set_mode(mode)
+            if 'policy' in opts.keys():
+                rr.set_policy(opts['policy'])
             self.comparisons.append(rr)
         elif isinstance(obj, parseobj.GtExp):
             # self.comparisons.append(generate_ReactionRule(lhs, rhs, params))
             rr = generate_ReactionRule(lhs, rhs, params)
-            if mode is not None:
-                rr.set_mode(mode)
+            if 'policy' in opts.keys():
+                rr.set_policy(opts['policy'])
             self.comparisons.append(rr)
         else:
             raise RuntimeError('an invalid object was given [%s]' % (repr(obj)))

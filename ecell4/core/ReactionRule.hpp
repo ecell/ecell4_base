@@ -28,7 +28,7 @@ public:
 
 public:
 
-    enum mode_type
+    enum policy_type
     {
         STRICT = 1L << 0,
         IMPLICIT = 1L << 1,
@@ -38,7 +38,7 @@ public:
 public:
 
     ReactionRule()
-        : k_(0), reactants_(), products_(), mode_(STRICT)
+        : k_(0), reactants_(), products_(), policy_(STRICT)
     {
         ;
     }
@@ -46,7 +46,7 @@ public:
     ReactionRule(
         const reactant_container_type& reactants,
         const product_container_type& products)
-        : k_(0), reactants_(reactants), products_(products), mode_(STRICT)
+        : k_(0), reactants_(reactants), products_(products), policy_(STRICT)
     {
         ;
     }
@@ -55,14 +55,14 @@ public:
         const reactant_container_type& reactants,
         const product_container_type& products,
         const Real& k)
-        : k_(k), reactants_(reactants), products_(products), mode_(STRICT)
+        : k_(k), reactants_(reactants), products_(products), policy_(STRICT)
     {
         ;
     }
 
     ReactionRule(
         const ReactionRule& rr)
-        : k_(rr.k()), reactants_(rr.reactants()), products_(rr.products()), mode_(rr.mode())
+        : k_(rr.k()), reactants_(rr.reactants()), products_(rr.products()), policy_(rr.policy())
     {
         ;
     }
@@ -101,14 +101,14 @@ public:
         products_.push_back(sp);
     }
 
-    const mode_type mode() const
+    const policy_type policy() const
     {
-        return mode_;
+        return policy_;
     }
 
-    void set_mode(const mode_type mode)
+    void set_policy(const policy_type policy)
     {
-        mode_ = mode;
+        policy_ = policy;
     }
 
     const std::string as_string() const;
@@ -144,7 +144,7 @@ protected:
     reactant_container_type reactants_;
     product_container_type products_;
 
-    mode_type mode_;
+    policy_type policy_;
     //boost::weak_ptr<Ratelaw> ratelaw_;
 };
 

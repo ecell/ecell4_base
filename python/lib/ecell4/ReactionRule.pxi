@@ -150,11 +150,11 @@ cdef class ReactionRule:
         """
         return self.thisptr.as_string().decode('UTF-8')
 
-    def mode(self):
-        return self.thisptr.mode()
+    def policy(self):
+        return self.thisptr.policy()
 
-    def set_mode(self, mode):
-        self.thisptr.set_mode(mode)
+    def set_policy(self, policy):
+        self.thisptr.set_policy(policy)
 
     def count(self, reactants):
         """count(reactants) -> Integer
