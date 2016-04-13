@@ -61,6 +61,11 @@ class SBMLDataSource(object):
         for p in self.model.parameters:
             yield (p.id, p.value)
 
+    def constants(self):
+        for sp in self.model.species:
+            if sp.getConstant():
+                yield (sp.id)
+
     def assignment_rules(self, evalfunc=None, kwargs={}):
         for rule in self.model.rules:
             if rule.isAssignment():
