@@ -159,21 +159,21 @@ def parse_ReactionRule_options(elements):
 
     for elem in elements:
         if (isinstance(elem, parseobj.ParseObj) and len(elem._elems) > 0
-            and elem._elems[0].name == '_reaction_rule_policy_type'):
-            policy_type = elem._elems[0]
+            and elem._elems[0].name == '_policy'):
+            policy = elem._elems[0]
             if len(elem._elems) != 1:
                 raise RuntimeError(
-                    '_reaction_rule_policy_type only accepts one argument; '
+                    '_policy only accepts one argument; '
                     + ' [{}] given'.format(len(elem._elems)))
-            elif policy_type.args is None or len(policy_type.args) != 1 or (policy_type.kwargs is not None and len(policy_type.kwargs) > 0) or policy_type.key is not None or policy_type.modification is not None:
+            elif policy.args is None or len(policy.args) != 1 or (policy.kwargs is not None and len(policy.kwargs) > 0) or policy.key is not None or policy.modification is not None:
                 raise RuntimeError(
-                    '_reaction_rule_policy_type is not well-formed [{}]'.format(
-                        str(policy_type)))
+                    '_policy is not well-formed [{}]'.format(
+                        str(policy)))
 
             if 'policy' not in opts.keys():
-                opts['policy'] = policy_type.args[0]
+                opts['policy'] = policy.args[0]
             else:
-                opts['policy'] |= policy_type.args[0]
+                opts['policy'] |= policy.args[0]
         else:
             if 'k' in opts.keys():
                 raise RuntimeError('only one attribute is allowed. [%d] given' % (
