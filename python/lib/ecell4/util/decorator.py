@@ -342,7 +342,7 @@ class ReactionRulesCallback(Callback):
         else:
             raise RuntimeError('an invalid object was given [%s]' % (repr(obj)))
 
-def get_model(is_netfree=False, without_reset=False, seeds=None, explicit=False):
+def get_model(is_netfree=False, without_reset=False, seeds=None, effective=False):
     """
     Generate a model with parameters in the global scope, ``SPECIES_ATTRIBUTES``
     and ``REACTIONRULES``.
@@ -360,8 +360,8 @@ def get_model(is_netfree=False, without_reset=False, seeds=None, explicit=False)
         If this is not None, generate a ``NetfreeModel`` once, and return a
         ``NetworkModel``, which is an expanded form of that with the given seeds.
         Default is None.
-    explicit : bool, optional
-        See ``NetfreeModel.explicit`` and ``Netfree.set_explicit``.
+    effective : bool, optional
+        See ``NetfreeModel.effective`` and ``Netfree.set_effective``.
         Only meaningfull with option ``is_netfree=True``.
         Default is False
 
@@ -390,7 +390,7 @@ def get_model(is_netfree=False, without_reset=False, seeds=None, explicit=False)
         return m.expand(seeds)
 
     if isinstance(m, ecell4.core.NetfreeModel):
-        m.set_explicit(explicit)
+        m.set_effective(effective)
 
     return m
 
