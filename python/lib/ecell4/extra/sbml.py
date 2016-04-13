@@ -5,11 +5,30 @@ try:
 except ImportError:
     from urllib.request import Request, urlopen
 
+class LambdaFunction(object):
+
+    def __init__(self, args, formula, evalfunc):
+        self.args = args
+        self.formula = formula
+        self.evalfunc = evalfunc
+
+    def __call__(self, *args):
+        return self.evalfunc(self.formula, dict(zip(self.args, args)))
+
 class SBMLDataSource(object):
 
     def __init__(self, filename=None):
         if filename is not None:
             self.read(filename)
+
+    def function_definitions(self, evalfunc=None, kwargs={}):
+        for func in self.model.function_definitions:
+            args = [func.getArgument(i).getName() for i in range(func.getNumArguments())]
+            formula = libsbml.formulaToString(func.getBody())
+            if evalfunc is None:
+                yield (func.id, (args, formula))
+            else:
+                yield (func.id, LambdaFunction(args, formula, evalfunc))
 
     def read(self, filename):
         self.data = libsbml.SBMLReader().readSBML(filename)
@@ -110,6 +129,7 @@ if __name__ == '__main__':
     with reaction_rules():
         params['EmptySet'] = ~EmptySet  #XXX: Just ignore EmptySet
         params.update(dict(biomodels(mid).assignment_rules(_eval, params)))
+        params.update(dict(biomodels(mid).function_definitions(_eval, params)))
 
         for reactants, products, formula in biomodels(mid).reactions(_eval, params):
             reactants > products | formula
