@@ -174,6 +174,22 @@ def parse_ReactionRule_options(elements):
                 opts['policy'] = policy.args[0]
             else:
                 opts['policy'] |= policy.args[0]
+        # elif (isinstance(elem, parseobj.ParseObj) and len(elem._elems) > 0
+        #     and elem._elems[0].name == '_tag'):
+        #     tag = elem._elems[0]
+        #     if len(elem._elems) != 1:
+        #         raise RuntimeError(
+        #             '_tag only accepts one argument; '
+        #             + ' [{}] given'.format(len(elem._elems)))
+        #     elif tag.args is None or len(tag.args) == 0 or (tag.kwargs is not None and len(tag.kwargs) > 0) or tag.key is not None or tag.modification is not None:
+        #         raise RuntimeError(
+        #             '_tag is not well-formed [{}]'.format(
+        #                 str(tag)))
+
+        #     if 'tag' not in opts.keys():
+        #         opts['tag'] = copy.copy(tag.args)
+        #     else:
+        #         opts['tag'].extend(tag.args)
         else:
             if 'k' in opts.keys():
                 raise RuntimeError('only one attribute is allowed. [%d] given' % (
