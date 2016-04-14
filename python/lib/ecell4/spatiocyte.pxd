@@ -66,6 +66,8 @@ cdef extern from "ecell4/spatiocyte/SpatiocyteWorld.hpp" namespace "ecell4::spat
         vector[pair[Cpp_ParticleID, Cpp_Particle]] list_particles()
         vector[pair[Cpp_ParticleID, Cpp_Particle]] list_particles(Cpp_Species& sp)
         vector[pair[Cpp_ParticleID, Cpp_Particle]] list_particles_exact(Cpp_Species& sp)
+        vector[pair[Cpp_ParticleID, Cpp_Particle]] list_structure_particles()
+        vector[pair[Cpp_ParticleID, Cpp_Particle]] list_non_structure_particles()
         bool has_particle(Cpp_ParticleID& pid)
         bool update_particle(Cpp_ParticleID& pid, Cpp_Particle& p)
         # vector[pair[pair[Cpp_ParticleID, Cpp_Particle], Real]] list_particles_within_radius(Cpp_Real3& pos, Real& radius)

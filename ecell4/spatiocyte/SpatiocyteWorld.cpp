@@ -144,7 +144,7 @@ SpatiocyteWorld::list_particles_exact(const Species& sp) const
 }
 
 std::vector<std::pair<ParticleID, Particle> >
-SpatiocyteWorld::list_strucutre_particles() const
+SpatiocyteWorld::list_structure_particles() const
 {
     const std::vector<Species> structure_species(list_structure_species());
 

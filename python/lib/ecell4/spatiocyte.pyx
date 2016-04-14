@@ -540,6 +540,56 @@ cdef class SpatiocyteWorld:
             inc(it)
         return retval
 
+    def list_structure_particles(self):
+        """list_strucutre_particles() -> [(ParticleID, Particle)]
+
+        Return the list of structure particles
+
+        Returns
+        -------
+        list:
+            The list of particles constructing a structure
+        """
+        cdef vector[pair[Cpp_ParticleID, Cpp_Particle]] particles
+        particles = self.thisptr.get().list_structure_particles()
+
+        retval = []
+        cdef vector[pair[Cpp_ParticleID, Cpp_Particle]].iterator \
+            it = particles.begin()
+        while it != particles.end():
+            retval.append(
+                (ParticleID_from_Cpp_ParticleID(
+                     <Cpp_ParticleID*>(address(deref(it).first))),
+                 Particle_from_Cpp_Particle(
+                     <Cpp_Particle*>(address(deref(it).second)))))
+            inc(it)
+        return retval
+
+    def list_non_structure_particles(self):
+        """list_strucutre_particles() -> [(ParticleID, Particle)]
+
+        Return the list of non-structure particles
+
+        Returns
+        -------
+        list:
+            The list of particles not constructing a structure
+        """
+        cdef vector[pair[Cpp_ParticleID, Cpp_Particle]] particles
+        particles = self.thisptr.get().list_non_structure_particles()
+
+        retval = []
+        cdef vector[pair[Cpp_ParticleID, Cpp_Particle]].iterator \
+            it = particles.begin()
+        while it != particles.end():
+            retval.append(
+                (ParticleID_from_Cpp_ParticleID(
+                     <Cpp_ParticleID*>(address(deref(it).first))),
+                 Particle_from_Cpp_Particle(
+                     <Cpp_Particle*>(address(deref(it).second)))))
+            inc(it)
+        return retval
+
     def get_neighbor(self, coord, nrand):
         """get_neighbor(coord, nrand) -> Integer
 

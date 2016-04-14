@@ -244,7 +244,7 @@ public:
         list_particles(const Species& sp) const;
     std::vector<std::pair<ParticleID, Particle> >
         list_particles_exact(const Species& sp) const;
-    std::vector<std::pair<ParticleID, Particle> > list_strucutre_particles() const;
+    std::vector<std::pair<ParticleID, Particle> > list_structure_particles() const;
     std::vector<std::pair<ParticleID, Particle> > list_non_structure_particles() const;
 
     bool update_particle(const ParticleID& pid, const Particle& p)
