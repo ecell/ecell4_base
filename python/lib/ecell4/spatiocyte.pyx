@@ -395,6 +395,66 @@ cdef class SpatiocyteWorld:
         """
         return self.thisptr.get().get_value_exact(deref(sp.thisptr))
 
+    def list_species(self):
+        """list_species() -> [Species]
+
+        Return the list of species.
+
+        Returns
+        -------
+        list:
+            The list of species
+        """
+        cdef vector[Cpp_Species] species = self.thisptr.get().list_species()
+        retval = []
+        cdef vector[Cpp_Species].iterator it = species.begin()
+        while it != species.end():
+            retval.append(
+                 Species_from_Cpp_Species(
+                     <Cpp_Species*>(address(deref(it)))))
+            inc(it)
+        return retval
+
+    def list_structure_species(self):
+        """list_structure_species() -> [Species]
+
+        Return the list of structure species.
+
+        Returns
+        -------
+        list:
+            The list of species constructing structure
+        """
+        cdef vector[Cpp_Species] species = self.thisptr.get().list_structure_species()
+        retval = []
+        cdef vector[Cpp_Species].iterator it = species.begin()
+        while it != species.end():
+            retval.append(
+                 Species_from_Cpp_Species(
+                     <Cpp_Species*>(address(deref(it)))))
+            inc(it)
+        return retval
+
+    def list_non_structure_species(self):
+        """list_non_structure_species() -> [Species]
+
+        Return the list of non-structure species.
+
+        Returns
+        -------
+        list:
+            The list of species not constructing structure
+        """
+        cdef vector[Cpp_Species] species = self.thisptr.get().list_non_structure_species()
+        retval = []
+        cdef vector[Cpp_Species].iterator it = species.begin()
+        while it != species.end():
+            retval.append(
+                 Species_from_Cpp_Species(
+                     <Cpp_Species*>(address(deref(it)))))
+            inc(it)
+        return retval
+
     def num_particles(self, Species sp = None):
         """num_particles(sp=None) -> Integer
 
