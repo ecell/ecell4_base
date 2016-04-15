@@ -46,6 +46,7 @@ cdef extern from "ecell4/bd/BDWorld.hpp" namespace "ecell4::bd":
         Cpp_Real3 actual_lengths()
         Real get_value(Cpp_Species&)
         Real get_value_exact(Cpp_Species&)
+        vector[Cpp_Species] list_species()
         Integer num_particles()
         Integer num_particles(Cpp_Species& sp)
         Integer num_particles_exact(Cpp_Species& sp)
