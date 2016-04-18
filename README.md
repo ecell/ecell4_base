@@ -29,9 +29,6 @@ Installation and usage
   - [Windows](#windows)
   - [Mac](#mac)
   - [Linux](#Linux)
-    - [Ubuntu Linux 14.04](#ubuntu-linux-1404)
-    - [Building whl on Ubuntu or Debian](#building-whl-on-ubuntu-or-debian)
-    - [Linuxbrew](#linuxbrew)
 
 - [How to open E-Cell4 Jupyter notebooks](#how-to-open-e-cell4-jupyter-notebooks)
 
@@ -134,17 +131,17 @@ If you have trouble in above installation please try this instead.
 
 ### Linux
 
-#### Ubuntu Linux 14.04
-We have tested the release whl files on Ubuntu Linux **14.04**.
 Please run the following commands with root privilege.
 
 ```shell
-# If you use Python3, replace python-pip to python3-pip
-apt-get install libgsl0-dev libhdf5-dev python-pip
-# If you use Python3 please replace the whl for Python3
-pip install https://github.com/ecell/ecell4/releases/download/4.0.0/ecell-4.0.0-cp27-none-linux_x86_64.whl
+apt-get install libgsl0-dev libhdf5-dev wget
+wget https://bootstrap.pypa.io/get-pip.py
+# If you use Python3, replace python to python3
+python get-pip.py
+# If you use Python3.*, replace the whl for Python3.*
+pip install https://github.com/ecell/ecell4/releases/download/4.0.0/ecell-4.0.0-cp27-cp27mu-manylinux1_x86_64.whl
 
-# The latest matplotlib and jupyter
+# The latest matplotlib and jupyter. If you use Python3, replace those for Python3.
 apt-get install python-dev libfreetype6-dev libpng-dev pkg-config python-numpy pandoc
 pip install matplotlib jupyter
 
@@ -152,10 +149,6 @@ pip install matplotlib jupyter
 apt-get install libav-tools
 ```
 
-#### Linuxbrew
-
-[E-Cell4 homebrew formula](https://github.com/ecell/homebrew-ecell4) also can be used for [Linuxbrew](http://linuxbrew.sh/).
-If you do not use Ubuntu (or Debian) and not have root privilege, please try Linuxbrew instead.
 
 How to open E-Cell4 Jupyter notebooks
 -------------------------------------
