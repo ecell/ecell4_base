@@ -1,2 +1,4 @@
 include lib/ecell4/*.pyx
 include lib/ecell4/*.pxi
+
+graft ecell4
