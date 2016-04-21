@@ -221,6 +221,25 @@ public:
     {
         return this->get_surface_container.size();
     }
+    std::vector<boost::shared_ptr<ecell4::PlanarSurface> > get_surfaces_in_shell(
+            position_type const &pos, length_type const &radius) const
+    {
+        std::vector<boost::shared_ptr<ecell4::PlanarSurface> > ret_container;
+        if (radius < 0.)
+        {
+            // radius must be positive value.
+            return ret_container;
+        }
+        const std::vector<boost::shared_ptr<ecell4::PlanarSurface> > surface_vector(
+                this->get_surface_container());
+        for(std::vector<boost::shared_ptr<ecell4::PlanarSurface> >::const_iterator it(surface_vector.begin());
+                it != surface_vector.end(); it++) {
+            if (std::abs( (*it)->is_inside(pos) ) < radius) {
+                ret_container.push_back(*it);
+            }
+        }
+        return ret_container;
+    }
 private:
     std::vector<boost::shared_ptr<ecell4::PlanarSurface> > surfaces_;
 

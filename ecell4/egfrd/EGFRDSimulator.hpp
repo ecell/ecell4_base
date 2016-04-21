@@ -1947,7 +1947,10 @@ protected:
             // length_type const scale(domain.particle().second.radius());
             // BOOST_ASSERT(feq(length(displacement), std::abs(r), scale));
         }
-        return (*base_type::world_).apply_boundary(add(domain.particle().second.position(), displacement));
+        // _newpos is applyed reflection, but not applied boundary condition
+        position_type const _newpos((*base_type::world_).apply_reflection(domain.particle().second.position(), displacement) );
+        return (*base_type::world_).apply_boundary(_newpos);
+        //return (*base_type::world_).apply_boundary(add(domain.particle().second.position(), displacement));
     }
 
     position_type draw_new_position(single_type& domain, time_type dt)
@@ -1987,7 +1990,9 @@ protected:
             // length_type const scale(domain.particle().second.radius());
             // BOOST_ASSERT(feq(length(displacement), std::abs(domain.mobility_radius()), scale));
         }
-        return (*base_type::world_).apply_boundary(add(domain.particle().second.position(), displacement));
+        position_type const _newpos((*base_type::world_).apply_reflection(domain.particle().second.position(), displacement));
+        return (*base_type::world_).apply_boundary(_newpos);
+        //return (*base_type::world_).apply_boundary(add(domain.particle().second.position(), displacement));
     }
 
     position_type draw_escape_position(single_type& domain)
@@ -2019,9 +2024,16 @@ protected:
         position_type const new_iv(d.draw_iv(domain, dt, domain.iv()));
         D_type const D0(domain.particles()[0].second.D());
         D_type const D1(domain.particles()[1].second.D());
+        //return array_gen(
+        //    (*base_type::world_).apply_boundary(subtract(new_com, multiply(new_iv, D0 / (D0 + D1)))),
+        //    (*base_type::world_).apply_boundary(add(new_com, multiply(new_iv, D1 / (D0 + D1)))));
+        // XXX ABOUT REFLECTION
+        // For now, Pair would not be formed.
+        position_type const reflect1( (*base_type::world_).apply_reflection(new_com, multiply((multiply(new_iv, D0/(D0+D1))), -1) ));
+        position_type const reflect2( (*base_type::world_).apply_reflection(new_com, multiply(new_iv,  D0/(D0+D1))));
         return array_gen(
-            (*base_type::world_).apply_boundary(subtract(new_com, multiply(new_iv, D0 / (D0 + D1)))),
-            (*base_type::world_).apply_boundary(add(new_com, multiply(new_iv, D1 / (D0 + D1)))));
+            (*base_type::world_).apply_boundary(reflect1),
+            (*base_type::world_).apply_boundary(reflect2));
     }
     // }}}
 
@@ -2369,14 +2381,26 @@ protected:
                     // this way, species with D=0 doesn't move.
                     // FIXME: what if D1 == D2 == 0?
                     for (;;) {
+                        //new_particles[0] = particle_shape_type(
+                        //    (*base_type::world_).apply_boundary(
+                        //        add(reactant.second.position(),
+                        //            multiply(vector, D0 / D01))),
+                        //    radius0);
+                        //new_particles[1] = particle_shape_type(
+                        //    (*base_type::world_).apply_boundary(
+                        //        add(reactant.second.position(),
+                        //            multiply(vector, -D1 / D01))),
+                        //    radius1);
                         new_particles[0] = particle_shape_type(
                             (*base_type::world_).apply_boundary(
-                                add(reactant.second.position(),
+                                (*base_type::world_).apply_reflection(
+                                    reactant.second.position(),
                                     multiply(vector, D0 / D01))),
                             radius0);
                         new_particles[1] = particle_shape_type(
                             (*base_type::world_).apply_boundary(
-                                add(reactant.second.position(),
+                                (*base_type::world_).apply_reflection(
+                                    reactant.second.position(),
                                     multiply(vector, -D1 / D01))),
                             radius1);
 
@@ -2691,6 +2715,16 @@ protected:
             BOOST_ASSERT(check_overlap(
                 particle_shape_type(domain.position(), new_shell_size),
                 domain.particle().first));
+        }
+
+        // XXX
+        // Surface Reflection
+        //  The number of surfaces in shell always must keep less than 2.
+        if( (*base_type::world_).get_surfaces_in_shell(domain.position(), new_shell_size).size() > 2)
+        {
+            length_type temp = new_shell_size;
+            new_shell_size = (*base_type::world_).distance_to_closest_surface(domain.position() );
+            std::cout << "Shell size update: " << temp << " ==> " << new_shell_size << std::endl;
         }
         domain.size() = new_shell_size;
         update_shell_matrix(domain);
@@ -3280,16 +3314,11 @@ protected:
         domain_type* possible_partner(0);
         length_type length_to_possible_partner(
                 std::numeric_limits<length_type>::infinity());
-        //Real dist_to_closest_surface( (*base_type::world_).distance_to_closest_surface(domain.position()));
-        //Real dist_to_closest_surface( (*base_type::world_).distance_to_closest_surface(domain.position()));
 
         BOOST_FOREACH (boost::shared_ptr<domain_type> neighbor, neighbors)
         {
             length_type const dist(distance(*neighbor, domain.position()));
-            position_type const pos_neighbor_represent(position_wrapper(*neighbor, domain.position()));
-            bool exist_same_side( (*base_type::world_).exist_same_side(pos_neighbor_represent , domain.position()) );
-            //position_type const pos_temp(position_wrapper(*neighbor, domain.position()));
-            if (dist < length_to_possible_partner && exist_same_side == true)
+            if (dist < length_to_possible_partner)
             {
                 possible_partner = neighbor.get();
                 length_to_possible_partner = dist;
@@ -3297,19 +3326,20 @@ protected:
         }
 
         // First, try forming a Pair.
-        {
-            single_type* const _possible_partner(
-                    dynamic_cast<single_type*>(possible_partner));
-            if (_possible_partner)
-            {
-                boost::optional<pair_type&> new_pair(
-                    form_pair(domain, *_possible_partner, neighbors));
-                if (new_pair)
-                {
-                    return new_pair.get();
-                }
-            }
-        }
+        // XXX Temporary: Never form pair. always form single or multi
+        //{
+        //    single_type* const _possible_partner(
+        //            dynamic_cast<single_type*>(possible_partner));
+        //    if (_possible_partner)
+        //    {
+        //        boost::optional<pair_type&> new_pair(
+        //            form_pair(domain, *_possible_partner, neighbors));
+        //        if (new_pair)
+        //        {
+        //            return new_pair.get();
+        //        }
+        //    }
+        //}
 
         // If a Pair is not formed, then try forming a Multi.
         {
