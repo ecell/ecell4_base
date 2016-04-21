@@ -2,7 +2,7 @@
 
 environment:
   global:
-    HDF_DIR: "C:/Program Files (x86)/HDF_Group/HDF5/1.8.15.1/lib"
+    HDF_DIR: "C:/Program Files (x86)/HDF_Group/HDF5/1.8.16/lib"
     BOOST_ROOT: C:\Libraries\boost
 
   matrix:
@@ -18,14 +18,14 @@ install:
   # install hdf5
   - mkdir hdf5lib
   - cd hdf5lib
-  - if "%PYTHON_VERSION%" == "2.7.11" curl -O http://repo.continuum.io/pkgs/free/win-32/hdf5-1.8.15.1-vc9_4.tar.bz2
-  - if "%PYTHON_VERSION%" == "2.7.11" 7z x -y hdf5-1.8.15.1-vc9_4.tar.bz2
-  - if "%PYTHON_VERSION%" == "2.7.11" 7z x -y hdf5-1.8.15.1-vc9_4.tar
-  - if "%PYTHON_VERSION%" == "3.5.1" curl -O http://repo.continuum.io/pkgs/free/win-32/hdf5-1.8.15.1-vc14_4.tar.bz2
-  - if "%PYTHON_VERSION%" == "3.5.1" 7z x -y hdf5-1.8.15.1-vc14_4.tar.bz2
-  - if "%PYTHON_VERSION%" == "3.5.1" 7z x -y hdf5-1.8.15.1-vc14_4.tar
-  - mkdir "C:/Program Files (x86)/HDF_Group/HDF5/1.8.15.1"
-  - xcopy Library "C:/Program Files (x86)/HDF_Group/HDF5/1.8.15.1" /s /e /y
+  - if "%PYTHON_VERSION%" == "2.7.11" curl -O http://repo.continuum.io/pkgs/free/win-32/hdf5-1.8.16-vc9_0.tar.bz2
+  - if "%PYTHON_VERSION%" == "2.7.11" 7z x -y hdf5-1.8.16-vc9_0.tar.bz2
+  - if "%PYTHON_VERSION%" == "2.7.11" 7z x -y hdf5-1.8.16-vc9_0.tar
+  - if "%PYTHON_VERSION%" == "3.5.1" curl -O http://repo.continuum.io/pkgs/free/win-32/hdf5-1.8.16-vc14_0.tar.bz2
+  - if "%PYTHON_VERSION%" == "3.5.1" 7z x -y hdf5-1.8.16-vc14_0.tar.bz2
+  - if "%PYTHON_VERSION%" == "3.5.1" 7z x -y hdf5-1.8.16-vc14_0.tar
+  - mkdir "C:/Program Files (x86)/HDF_Group/HDF5/1.8.16"
+  - xcopy Library "C:/Program Files (x86)/HDF_Group/HDF5/1.8.16" /s /e /y
   - cd ..
 
   # install stdint
@@ -83,8 +83,8 @@ install:
   - ECHO "ls boost:"
   - ps: "ls \"C:/Libraries/boost\""
   - echo %CD%
-  - if "%PYTHON_VERSION%" == "2.7.11" python setup.py build_ext -I"C:\Program Files (x86)\HDF_Group\HDF5\1.8.15.1\include";C:/Libraries/boost;C:/projects/ecell4;C:/projects/ecell4/stdint-20070624;C:/projects/ecell4/gsl/include -LC:/projects/ecell4/gsl/lib;"C:\Program Files (x86)\HDF_Group\HDF5\1.8.15.1\lib"
-  - if "%PYTHON_VERSION%" == "3.5.1" python setup.py build_ext -I"C:\Program Files (x86)\HDF_Group\HDF5\1.8.15.1\include";C:/Libraries/boost;C:/projects/ecell4/gsl -LC:/projects/ecell4/gsl/Release;"C:\Program Files (x86)\HDF_Group\HDF5\1.8.15.1\lib"
+  - if "%PYTHON_VERSION%" == "2.7.11" python setup.py build_ext -I"C:\Program Files (x86)\HDF_Group\HDF5\1.8.16\include";C:/Libraries/boost;C:/projects/ecell4;C:/projects/ecell4/stdint-20070624;C:/projects/ecell4/gsl/include -LC:/projects/ecell4/gsl/lib;"C:\Program Files (x86)\HDF_Group\HDF5\1.8.16\lib"
+  - if "%PYTHON_VERSION%" == "3.5.1" python setup.py build_ext -I"C:\Program Files (x86)\HDF_Group\HDF5\1.8.16\include";C:/Libraries/boost;C:/projects/ecell4/gsl -LC:/projects/ecell4/gsl/Release;"C:\Program Files (x86)\HDF_Group\HDF5\1.8.16\lib"
   - "pip install wheel"
   - "python setup.py bdist_wheel"
   # - "pip install dist/ecell4-4.0.0b2-cp35-none-win32.whl"
