@@ -122,8 +122,6 @@ source ~/.bashrc
 brew install ffmpeg
 ```
 
-We also have homebrew formula for E-Cell4 [homebrew-ecell4](https://github.com/ecell/homebrew-ecell4).
-If you have trouble in above installation please try this instead.
 
 ### Linux
 
