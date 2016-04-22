@@ -24,7 +24,6 @@ Installation and usage
   - [Requirements](#requirements)
     - [Minimum requirements](#minimum-requirements)
     - [Optional requirements](#optional-requirements)
-    - [Build requirements](#build-requirements)
 
   - [Windows](#windows)
   - [Mac](#mac)
@@ -48,7 +47,7 @@ After the following steps, you should see [Jupyter Notebook](http://jupyter.org/
 
 1. Install [Docker Toolbox](https://www.docker.com/toolbox).
 2. Run **Docker Quickstart Terminal**.
-3. Run `docker run -d -p 443:8888 ecell/ecell4` in the terminal.
+3. Run `docker run -dp 443:8888 ecell/ecell4` in the terminal.
 4. Open **192.168.99.100:443** with your web browser.
 
 ### Linux
@@ -58,7 +57,7 @@ After the following steps, you should see [Jupyter Notebook](http://jupyter.org/
 
     ```shell
     sudo docker pull ecell/ecell4
-    sudo docker run -d -p 443:8888 ecell/ecell4
+    sudo docker run -dp 443:8888 ecell/ecell4
     ```
 
 3. Open **localhost:443** with your web browser.
@@ -70,39 +69,33 @@ Installation
 ### Requirements
 
 #### Minimum requirements
-- Python 2.7 or 3.4(on Linux) 3.5(on Windows, Mac) 
+- Python or **32bit** Miniconda for Windows (2.7, 3.* both versions are supported)
 - pip
+- hdf5 (version 1.8.16 is needed on Windows)
 
 #### Optional requirements
 We strongly recommend that you run E-Cell4 with [Jupyter Notebook](http://jupyter.org/).
 And some E-Cell4 functions (for visualization, datastore) optionaly depend on
 - matplotlib (**1.5.1** and later)
-- ffmpeg or avconv
-- hdf5
+- ffmpeg
 - pandas
-
-### Build requirements
-If you build E-Cell4 from source code, you need to install these software.
-- boost (**1.59** and earlier)
-- cmake
-- gsl
-- hdf5
 
 ### Windows
 
-Please use 32bit Python2.7 or 3.5, even if you use 64bit Windows.
+Please use **32bit** [Miniconda](http://conda.pydata.org/miniconda.html), even if you use 64bit Windows.
 We have NOT supported 64bit Python yet.
+Python 2.7, 3.5 both are supported.
 
 - Install **32bit** Miniconda for Windows from http://conda.pydata.org/miniconda.html
 - Run the follwing commands on command prompt (if you use Python3.5, please replace the target of ```pip install``` to the whl for 3.5)
+- (**Importtant**) E-Cell4 for Windows works only for hdf5 version **1.8.16**. Please check the version of hdf5, even if you installed hdf5 before with conda.
 
     ```shell
-    conda update pip
-    conda install hdf5 jupyter matplotlib
+    conda install hdf5 notebook matplotlib
     pip install https://github.com/ecell/ecell4/releases/download/4.0.0/ecell-4.0.0-cp27-none-win32.whl
-    ``` 
+    ```
 
-Although jupyter is optional, we strongly recommend that you run E-Cell4 with jupyter.
+Although Jupyter Notebook is optional, we strongly recommend that you run E-Cell4 with jupyter.
 If you use animated visualization for E-Cell4, please install [ffmpeg windows build](http://ffmpeg.zeranoe.com/builds/) and add its path to your **USER** PATH enviromental variable.
 
 ### Mac
