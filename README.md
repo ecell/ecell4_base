@@ -22,9 +22,6 @@ Installation and usage
 
 - [Installation](#installation)
   - [Requirements](#requirements)
-    - [Minimum requirements](#minimum-requirements)
-    - [Optional requirements](#optional-requirements)
-
   - [Windows](#windows)
   - [Mac](#mac)
   - [Linux](#linux-1)
