@@ -27,7 +27,7 @@ Installation and usage
 
   - [Windows](#windows)
   - [Mac](#mac)
-  - [Linux](#Linux)
+  - [Linux](#linux-1)
 
 - [How to open E-Cell4 Jupyter notebooks](#how-to-open-e-cell4-jupyter-notebooks)
 
@@ -47,7 +47,13 @@ After the following steps, you should see [Jupyter Notebook](http://jupyter.org/
 
 1. Install [Docker Toolbox](https://www.docker.com/toolbox).
 2. Run **Docker Quickstart Terminal**.
-3. Run `docker run -dp 443:8888 ecell/ecell4` in the terminal.
+3. Run the following commands
+
+    ```shell
+    docker pull ecell/ecell4
+    docker run -dp 443:8888 ecell/ecell4
+    ```
+
 4. Open **192.168.99.100:443** with your web browser.
 
 ### Linux
@@ -71,7 +77,7 @@ Installation
 #### Minimum requirements
 - Python or **32bit** Miniconda for Windows (2.7, 3.* both versions are supported)
 - pip
-- hdf5 (version 1.8.16 is needed on Windows)
+- hdf5 (E-Cell4 **for Windows** works only for version 1.8.16)
 
 #### Optional requirements
 We strongly recommend that you run E-Cell4 with [Jupyter Notebook](http://jupyter.org/).
@@ -88,7 +94,7 @@ Python 2.7, 3.5 both are supported.
 
 - Install **32bit** Miniconda for Windows from http://conda.pydata.org/miniconda.html
 - Run the follwing commands on command prompt (if you use Python3.5, please replace the target of ```pip install``` to the whl for 3.5)
-- (**Importtant**) E-Cell4 for Windows works only for hdf5 version **1.8.16**. Please check the version of hdf5, even if you installed hdf5 before with conda.
+- (**Important**) E-Cell4 for Windows works only for hdf5 version **1.8.16**. Please check the version of hdf5, even if you installed hdf5 before with conda.
 
     ```shell
     conda install hdf5 notebook matplotlib
