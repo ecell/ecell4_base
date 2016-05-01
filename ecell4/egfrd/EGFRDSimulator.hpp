@@ -2722,7 +2722,7 @@ protected:
         //  The number of surfaces in shell must keep less than 2.
         std::vector<std::pair<boost::shared_ptr<ecell4::PlanarSurface>, length_type> > 
             surface_distance_pair_container( (*base_type::world_).get_surfaces_in_shell(domain.position(), new_shell_size) );
-        if( surface_distance_pair_container.size() > 2)
+        if(2 <= surface_distance_pair_container.size())
         {
             length_type temp = new_shell_size;
             // HERE, WE assume that surface_distance_pair_container have been sorted.
@@ -3406,8 +3406,24 @@ protected:
                 // Heads up: shell matrix will be updated later in restore_domain().
                 // propagate(domain, draw_new_position(domain, domain.dt()), false);
                 propagate(domain, draw_escape_position(domain), false);
-            length_type const min_shell_radius(domain.particle().second.radius() * (1. + single_shell_factor_));
+
+            length_type min_shell_radius_without_surface(domain.particle().second.radius() * (1. + single_shell_factor_));
+            length_type distance_to_2nd_closest_surface = std::numeric_limits<length_type>::infinity();
+            // XXX considering Surfaces.
             {
+                //  Before checking intruders, 
+                //   we have to determine the range to search the intruders.
+                //    we will take smaller one among min_shell_radius or distance to the 2nd-closest surface.
+                std::vector<std::pair<boost::shared_ptr<ecell4::PlanarSurface>, length_type> > 
+                    surface_distance_pair_container( (*base_type::world_).get_surfaces_in_shell(domain.position(), min_shell_radius_without_surface) );
+                // we assume surface_distance_pair_container have been sorted.
+                if (2 <= surface_distance_pair_container.size()) {
+                    distance_to_2nd_closest_surface = surface_distance_pair_container[1].second;
+                }
+            }
+            length_type const min_shell_radius = std::min(min_shell_radius_without_surface, distance_to_2nd_closest_surface);
+            {
+
                 std::vector<domain_id_type>* intruders;
                 std::pair<domain_id_type, length_type> closest;
 
@@ -3433,6 +3449,7 @@ protected:
                         "(none)",
                     boost::lexical_cast<std::string>(closest.first).c_str(),
                     closest.second));
+
                 if (intruders)
                 {
                     std::vector<boost::shared_ptr<domain_type> > bursted;
