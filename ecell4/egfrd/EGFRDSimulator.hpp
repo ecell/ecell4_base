@@ -2719,11 +2719,17 @@ protected:
 
         // XXX
         // Surface Reflection
-        //  The number of surfaces in shell always must keep less than 2.
-        if( (*base_type::world_).get_surfaces_in_shell(domain.position(), new_shell_size).size() > 2)
+        //  The number of surfaces in shell must keep less than 2.
+        std::vector<std::pair<boost::shared_ptr<ecell4::PlanarSurface>, length_type> > 
+            surface_distance_pair_container( (*base_type::world_).get_surfaces_in_shell(domain.position(), new_shell_size) );
+        if( surface_distance_pair_container.size() > 2)
         {
             length_type temp = new_shell_size;
-            new_shell_size = (*base_type::world_).distance_to_closest_surface(domain.position() );
+            // HERE, WE assume that surface_distance_pair_container have been sorted.
+            //std::sort(surface_distance_pair_container.begin(), surface_distance_pair_container.end(), 
+            //        compare_second<std::pair<boost::shared_ptr<ecell4::PlanarSurface>, length_type> >());
+            //
+            new_shell_size = surface_distance_pair_container[1].second ;
             std::cout << "Shell size update: " << temp << " ==> " << new_shell_size << std::endl;
         }
         domain.size() = new_shell_size;

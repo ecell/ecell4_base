@@ -14,6 +14,14 @@
 #include "./range.hpp"
 
 template < typename T_ >
+struct compare_second {
+    bool operator() (const T_ &lhs, const T_ &rhs) const 
+    {
+        return lhs.second < rhs.second;
+    }
+};
+
+template < typename T_ >
 struct select_first
 {
     typedef T_ argument_type;
