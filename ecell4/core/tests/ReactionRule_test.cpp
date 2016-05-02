@@ -133,7 +133,7 @@ BOOST_AUTO_TEST_CASE(ReactionRule_test_generate2)
     ReactionRule rr2;
     rr2.add_reactant(Species("A(b)"));
     rr2.add_reactant(Species("B(b)"));
-    rr2.add_product(Species("A(b^1).A(b^1)"));
+    rr2.add_product(Species("A(b^1).B(b^1)"));
     ReactionRule::reactant_container_type reactants2;
     reactants2.push_back(Species("A(a^1,b).A(a^1,b)"));
     reactants2.push_back(Species("B(a^1,b).B(a^1,b^2).B(a^2,b)"));

@@ -91,9 +91,9 @@ cdef extern from "ecell4/core/Species.hpp" namespace "ecell4":
         bool operator>(Cpp_Species& rhs)
         string serial() # string == serial_type
         string get_attribute(string)
-        Integer count(Cpp_Species& sp)
+        Integer count(Cpp_Species& sp) except +
         void set_attribute(string, string)
-        void remove_attribute(string) except+
+        void remove_attribute(string) except +
         bool has_attribute(string)
         vector[pair[string, string]] list_attributes()
         # Integer get_unit(Cpp_UnitSpecies)
@@ -112,6 +112,12 @@ cdef Species Species_from_Cpp_Species(Cpp_Species *sp)
 ## Cpp_ReactionRule
 #  ecell4::ReactionRule
 cdef extern from "ecell4/core/ReactionRule.hpp" namespace "ecell4":
+    cdef enum Cpp_ReactionRulePolicyType "ecell4::ReactionRule::policy_type":
+        Cpp_STRICT "ecell4::ReactionRule::STRICT"
+        Cpp_IMPLICIT "ecell4::ReactionRule::IMPLICIT"
+        Cpp_DESTROY "ecell4::ReactionRule::DESTROY"
+
+cdef extern from "ecell4/core/ReactionRule.hpp" namespace "ecell4":
     cdef cppclass Cpp_ReactionRule "ecell4::ReactionRule":
         Cpp_ReactionRule() except +
         Cpp_ReactionRule(vector[Cpp_Species]&, vector[Cpp_Species]&)
@@ -126,8 +132,10 @@ cdef extern from "ecell4/core/ReactionRule.hpp" namespace "ecell4":
         void add_reactant(Cpp_Species)
         void add_product(Cpp_Species)
         string as_string()
-        Integer count(vector[Cpp_Species])
-        vector[Cpp_ReactionRule] generate(vector[Cpp_Species])
+        Cpp_ReactionRulePolicyType policy()
+        void set_policy(Cpp_ReactionRulePolicyType)
+        Integer count(vector[Cpp_Species]) except +
+        vector[Cpp_ReactionRule] generate(vector[Cpp_Species]) except +
 
 ## ReactionRule
 #  a python wrapper for Cpp_ReactionRule
@@ -221,10 +229,6 @@ cdef extern from "ecell4/core/Model.hpp" namespace "ecell4":
         shared_ptr[Cpp_Model] expand(vector[Cpp_Species], Integer) except +
         shared_ptr[Cpp_Model] expand(vector[Cpp_Species], Integer, map[Cpp_Species, Integer]) except +
 
-        void add_parameter(Cpp_Species sp)
-        vector[Cpp_Species] parameters()
-        void add_parameters(vector[Cpp_Species])
-
 ## Model
 #  a python wrapper for Cpp_Model, but wrapped by shared_ptr
 cdef class Model:
@@ -260,10 +264,6 @@ cdef extern from "ecell4/core/NetworkModel.hpp" namespace "ecell4":
         shared_ptr[Cpp_Model] expand(vector[Cpp_Species]) except +
         shared_ptr[Cpp_Model] expand(vector[Cpp_Species], Integer) except +
         shared_ptr[Cpp_Model] expand(vector[Cpp_Species], Integer, map[Cpp_Species, Integer]) except +
-
-        void add_parameter(Cpp_Species sp)
-        vector[Cpp_Species] parameters()
-        void add_parameters(vector[Cpp_Species])
 
 ## NetworkModel
 #  a python wrapper for Cpp_NetowrkModel, but wrapped by shared_ptr
@@ -302,9 +302,8 @@ cdef extern from "ecell4/core/NetfreeModel.hpp" namespace "ecell4":
         shared_ptr[Cpp_Model] expand(vector[Cpp_Species], Integer) except +
         shared_ptr[Cpp_Model] expand(vector[Cpp_Species], Integer, map[Cpp_Species, Integer]) except +
 
-        void add_parameter(Cpp_Species sp)
-        vector[Cpp_Species] parameters()
-        void add_parameters(vector[Cpp_Species])
+        void set_effective(bool)
+        bool effective()
 
 ## NetfreeModel
 #  a python wrapper for Cpp_NetfreeModel, but wrapped by shared_ptr

@@ -61,6 +61,7 @@ protected:
 bool is_wildcard(const std::string& name);
 bool is_unnamed_wildcard(const std::string& name);
 bool is_named_wildcard(const std::string& name);
+bool is_pass_wildcard(const std::string& name);
 
 std::pair<bool, MatchObject::context_type>
 uspmatch(const UnitSpecies& pttrn, const UnitSpecies& sp,
@@ -75,14 +76,14 @@ Integer count_spmatches(
     const Species& pttrn, const Species& sp,
     const MatchObject::context_type::variable_container_type& globals);
 
-ReactionRule create_reaction_rule_formatted(
-    const ReactionRule::reactant_container_type& reactants,
-    const ReactionRule::product_container_type& products, const Real k);
+// ReactionRule create_reaction_rule_formatted(
+//     const ReactionRule::reactant_container_type& reactants,
+//     const ReactionRule::product_container_type& products, const Real k);
 
-inline ReactionRule create_reaction_rule_formatted(const ReactionRule& rr)
-{
-    return create_reaction_rule_formatted(rr.reactants(), rr.products(), rr.k());
-}
+// inline ReactionRule create_reaction_rule_formatted(const ReactionRule& rr)
+// {
+//     return create_reaction_rule_formatted(rr.reactants(), rr.products(), rr.k());
+// }
 
 class SpeciesExpressionMatcher
 {
