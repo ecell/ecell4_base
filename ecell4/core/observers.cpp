@@ -92,6 +92,40 @@ void NumberLogger::log(const boost::shared_ptr<Space>& space)
     data.push_back(tmp);
 }
 
+void NumberLogger::save(const std::string& filename) const
+{
+    if (!is_directory(filename))
+    {
+        throw NotFound("The output path does not exists.");
+    }
+
+    std::ofstream ofs(filename.c_str(), std::ios::out);
+    ofs << std::setprecision(17);
+
+    for (species_container_type::const_iterator i(targets.begin());
+         i != targets.end(); ++i)
+    {
+        ofs << ",\"" << (*i).serial() << "\"";
+    }
+    ofs << std::endl;
+
+    for (data_container_type::const_iterator i(data.begin());
+         i != data.end(); ++i)
+    {
+        std::vector<Real>::const_iterator j((*i).begin());
+        ofs << (*j);
+        ++j;
+
+        for (; j != (*i).end(); ++j)
+        {
+            ofs << "," << (*j);
+        }
+        ofs << std::endl;
+    }
+
+    ofs.close();
+}
+
 void FixedIntervalNumberObserver::initialize(const boost::shared_ptr<Space>& space)
 {
     base_type::initialize(space);

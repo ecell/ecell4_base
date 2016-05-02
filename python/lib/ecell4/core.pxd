@@ -446,6 +446,7 @@ cdef extern from "ecell4/core/observers.hpp" namespace "ecell4":
         vector[vector[Real]] data()
         vector[Cpp_Species] targets()
         void reset()
+        void save(string)
 
     cdef cppclass Cpp_NumberObserver "ecell4::NumberObserver":
         Cpp_NumberObserver(vector[string]) except +
@@ -454,6 +455,7 @@ cdef extern from "ecell4/core/observers.hpp" namespace "ecell4":
         vector[vector[Real]] data()
         vector[Cpp_Species] targets()
         void reset()
+        void save(string)
 
     cdef cppclass Cpp_FixedIntervalHDF5Observer "ecell4::FixedIntervalHDF5Observer":
         Cpp_FixedIntervalHDF5Observer(Real, string) except +
@@ -493,6 +495,7 @@ cdef extern from "ecell4/core/observers.hpp" namespace "ecell4":
         vector[vector[Real]] data()
         vector[Cpp_Species] targets()
         void reset()
+        void save(string)
 
     cdef cppclass Cpp_TimeoutObserver "ecell4::TimeoutObserver":
         Cpp_TimeoutObserver() except +

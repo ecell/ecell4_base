@@ -109,6 +109,10 @@ cdef class FixedIntervalNumberObserver:
             inc(it)
         return retval
 
+    def save(self, filename):
+        """Save data to an output with the given filename."""
+        self.thisptr.get().save(tostring(filename))
+
     def as_base(self):
         """Clone self as a base class. This function is for developers."""
         retval = Observer()
@@ -201,6 +205,10 @@ cdef class NumberObserver:
                      <Cpp_Species*>(address(deref(it)))))
             inc(it)
         return retval
+
+    def save(self, filename):
+        """Save data to an output with the given filename."""
+        self.thisptr.get().save(tostring(filename))
 
     def as_base(self):
         """Clone self as a base class. This function is for developers."""
@@ -295,6 +303,10 @@ cdef class TimingNumberObserver:
                      <Cpp_Species*>(address(deref(it)))))
             inc(it)
         return retval
+
+    def save(self, filename):
+        """Save data to an output with the given filename."""
+        self.thisptr.get().save(tostring(filename))
 
     def as_base(self):
         """Clone self as a base class. This function is for developers."""

@@ -112,6 +112,7 @@ struct NumberLogger
     }
 
     void log(const boost::shared_ptr<Space>& space);
+    void save(const std::string& filename) const;
 
     data_container_type data;
     species_container_type targets;
@@ -142,6 +143,11 @@ public:
     virtual void reset();
     NumberLogger::data_container_type data() const;
     NumberLogger::species_container_type targets() const;
+
+    void save(const std::string& filename) const
+    {
+        logger_.save(filename);
+    }
 
 protected:
 
@@ -175,6 +181,11 @@ public:
     const Integer num_steps() const;
     NumberLogger::data_container_type data() const;
     NumberLogger::species_container_type targets() const;
+
+    void save(const std::string& filename) const
+    {
+        logger_.save(filename);
+    }
 
 protected:
 
@@ -246,6 +257,11 @@ public:
     virtual void reset();
     NumberLogger::data_container_type data() const;
     NumberLogger::species_container_type targets() const;
+
+    void save(const std::string& filename) const
+    {
+        logger_.save(filename);
+    }
 
 protected:
 
