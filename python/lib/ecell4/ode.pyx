@@ -970,70 +970,44 @@ cdef class ODESimulator:
         pass
 
     def __cinit__(self, arg1, arg2 = None, arg3 = None):
-        if arg2 is None:
-            self.thisptr = new Cpp_ODESimulator(deref((<ODEWorld>arg1).thisptr))
-        elif arg3 is None:
-            if isinstance(arg2, ODEWorld):
-                if isinstance(arg1, ODENetworkModel):
-                    self.thisptr = new Cpp_ODESimulator(
-                        deref((<ODENetworkModel>arg1).thisptr),
-                        deref((<ODEWorld>arg2).thisptr))
-                else: # lif isinstance(arg1, NetworkModel):
-                    self.thisptr = new Cpp_ODESimulator(
-                        Cpp_Model_from_Model(arg1), # (<NetworkModel>arg1).thisptr,
-                        deref((<ODEWorld>arg2).thisptr))
-            elif isinstance(arg1, ODEWorld):
-                # arg2: ODESolverType
-                self.thisptr = new Cpp_ODESimulator(
-                    deref((<ODEWorld>arg1).thisptr), translate_solver_type(arg2))
-            else:
+        if arg2 is None or not isinstance(arg2, ODEWorld):
+            if not isinstance(arg1, ODEWorld):
                 raise ValueError(
                     "An invalid value [{}] for the first argument.".format(repr(arg1))
                     + " ODEWorld is needed.")
+
+            if arg2 is None:
+                self.thisptr = new Cpp_ODESimulator(
+                    deref((<ODEWorld>arg1).thisptr))
+            else:
+                self.thisptr = new Cpp_ODESimulator(
+                    deref((<ODEWorld>arg1).thisptr),
+                    translate_solver_type(arg2))
         else:
-            if not isinstance(arg2, ODEWorld):
-                raise ValueError(
-                    "An invalid argument [{}] for the second argument.".format(repr(arg2))
-                    + " ODEWorld is needed.")
-
-            cpp_solvertype = translate_solver_type(arg3)
-
             if isinstance(arg1, ODENetworkModel):
-                self.thisptr = new Cpp_ODESimulator(
-                    deref((<ODENetworkModel>arg1).thisptr),
-                    deref((<ODEWorld>arg2).thisptr),
-                    cpp_solvertype)
-            else: # if isinstance(arg1, NetworkModel):
-                self.thisptr = new Cpp_ODESimulator(
-                    Cpp_Model_from_Model(arg1), # (<NetworkModel>arg1).thisptr,
-                    deref((<ODEWorld>arg2).thisptr),
-                    cpp_solvertype)
-
-    # def __cinit__(self, m, ODEWorld w, solvertype = None):
-    #     if solvertype is None:
-    #         if isinstance(m, ODENetworkModel):
-    #             self.thisptr = new Cpp_ODESimulator(
-    #                 deref((<ODENetworkModel>m).thisptr), deref(w.thisptr))
-    #         elif isinstance(m, NetworkModel):
-    #             self.thisptr = new Cpp_ODESimulator(
-    #                 deref((<NetworkModel>m).thisptr), deref(w.thisptr))
-    #         else:
-    #             raise ValueError(
-    #                 "invalid argument {}.".format(repr(m))
-    #                 + " NetworkModel or ODENetworkModel is needed.")
-    #     else:
-    #         cpp_solvertype = translate_solver_type(solvertype)
-
-    #         if isinstance(m, ODENetworkModel):
-    #             self.thisptr = new Cpp_ODESimulator(
-    #                 deref((<ODENetworkModel>m).thisptr), deref(w.thisptr), cpp_solvertype)
-    #         elif isinstance(m, NetworkModel):
-    #             self.thisptr = new Cpp_ODESimulator(
-    #                 deref((<NetworkModel>m).thisptr), deref(w.thisptr), cpp_solvertype)
-    #         else:
-    #             raise ValueError(
-    #                 "invalid argument {}.".format(repr(m))
-    #                 + " NetworkModel or ODENetworkModel is needed.")
+                if arg3 is None:
+                    self.thisptr = new Cpp_ODESimulator(
+                        deref((<ODENetworkModel>arg1).thisptr),
+                        deref((<ODEWorld>arg2).thisptr))
+                else:
+                    self.thisptr = new Cpp_ODESimulator(
+                        deref((<ODENetworkModel>arg1).thisptr),
+                        deref((<ODEWorld>arg2).thisptr),
+                        translate_solver_type(arg3))
+            elif isinstance(arg1, Model):
+                if arg3 is None:
+                    self.thisptr = new Cpp_ODESimulator(
+                        Cpp_Model_from_Model(arg1),
+                        deref((<ODEWorld>arg2).thisptr))
+                else:
+                    self.thisptr = new Cpp_ODESimulator(
+                        Cpp_Model_from_Model(arg1),
+                        deref((<ODEWorld>arg2).thisptr),
+                        translate_solver_type(arg3))
+            else:
+                raise ValueError(
+                    "An invalid value [{}] for the first argument.".format(repr(arg1))
+                    + " ODENetworkModel or Model is needed.")
 
     def __dealloc__(self):
         del self.thisptr
@@ -1192,11 +1166,11 @@ cdef ODESimulator ODESimulator_from_Cpp_ODESimulator(Cpp_ODESimulator* s):
 cdef class ODEFactory:
     """ A factory class creating a ODEWorld instance and a ODESimulator instance.
 
-    ODEFactory(solvertype=None, dt=None)
+    ODEFactory(solvertype=None, dt=None, abs_tol=None, rel_tol=None)
 
     """
 
-    def __init__(self, solvertype = None, dt = None):
+    def __init__(self, solvertype = None, dt = None, abs_tol = None, rel_tol = None):
         """Constructor.
 
         Parameters
@@ -1206,17 +1180,27 @@ cdef class ODEFactory:
             Choose one from RUNGE_KUTTA_CASH_KARP54, ROSENBROCK4_CONTROLLER and EULER.
         dt : Real, optional
             a default step interval.
+        abs_tol : Real, optional
+            absolute tolerance.
+        rel_tol : Real, optional
+            relative tolerance.
 
         """
         pass
 
-    def __cinit__(self, solvertype = None, dt = None):
+    def __cinit__(self, solvertype = None, dt = None, abs_tol = None, rel_tol = None):
         if solvertype is None:
             self.thisptr = new Cpp_ODEFactory()
         elif dt is None:
             self.thisptr = new Cpp_ODEFactory(translate_solver_type(solvertype))
+        elif abs_tol is None:
+            self.thisptr = new Cpp_ODEFactory(translate_solver_type(solvertype), <Real>dt)
+        elif rel_tol is None:
+            self.thisptr = new Cpp_ODEFactory(
+                translate_solver_type(solvertype), <Real>dt, <Real>abs_tol)
         else:
-            self.thisptr = new Cpp_ODEFactory(translate_solver_type(solvertype), dt)
+            self.thisptr = new Cpp_ODEFactory(
+                translate_solver_type(solvertype), <Real>dt, <Real>abs_tol, <Real>rel_tol)
 
     def __dealloc__(self):
         del self.thisptr

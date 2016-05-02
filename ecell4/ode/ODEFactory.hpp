@@ -24,8 +24,9 @@ public:
 public:
 
     ODEFactory(const ODESolverType solver_type = ROSENBROCK4_CONTROLLER,
-               const Real dt = inf)
-        : base_type(), solver_type_(solver_type), dt_(dt)
+               const Real dt = inf, const Real abs_tol = 0, const Real rel_tol = 0)
+        : base_type(), solver_type_(solver_type),
+        dt_(dt), abs_tol_(abs_tol), rel_tol_(rel_tol)
     {
         ; // do nothing
     }
@@ -57,6 +58,16 @@ public:
     {
         ODESimulator* sim = new ODESimulator(model, world, solver_type_);
         sim->set_dt(dt_);
+
+        if (abs_tol_ > 0)
+        {
+            sim->set_absolute_tolerance(abs_tol_);
+        }
+
+        if (rel_tol_ > 0)
+        {
+            sim->set_relative_tolerance(rel_tol_);
+        }
         return sim;
     }
 
@@ -65,6 +76,16 @@ public:
     {
         ODESimulator* sim = new ODESimulator(world, solver_type_);
         sim->set_dt(dt_);
+
+        if (abs_tol_ > 0)
+        {
+            sim->set_absolute_tolerance(abs_tol_);
+        }
+
+        if (rel_tol_ > 0)
+        {
+            sim->set_relative_tolerance(rel_tol_);
+        }
         return sim;
     }
 
@@ -83,13 +104,23 @@ public:
     {
         ODESimulator* sim = new ODESimulator(model, world, solver_type_);
         sim->set_dt(dt_);
+
+        if (abs_tol_ > 0)
+        {
+            sim->set_absolute_tolerance(abs_tol_);
+        }
+
+        if (rel_tol_ > 0)
+        {
+            sim->set_relative_tolerance(rel_tol_);
+        }
         return sim;
     }
 
 protected:
 
     ODESolverType solver_type_;
-    Real dt_;
+    Real dt_, abs_tol_, rel_tol_;
 };
 
 } // ode

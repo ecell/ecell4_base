@@ -161,11 +161,14 @@ cdef extern from "ecell4/ode/ODESimulator.hpp" namespace "ecell4::ode":
 cdef extern from "ecell4/ode/ODESimulator.hpp" namespace "ecell4::ode":
     cdef cppclass Cpp_ODESimulator "ecell4::ode::ODESimulator":
         Cpp_ODESimulator(shared_ptr[Cpp_ODENetworkModel], shared_ptr[Cpp_ODEWorld], Cpp_ODESolverType) except+
-        Cpp_ODESimulator(shared_ptr[Cpp_Model], shared_ptr[Cpp_ODEWorld], Cpp_ODESolverType) except+
         Cpp_ODESimulator(shared_ptr[Cpp_ODENetworkModel], shared_ptr[Cpp_ODEWorld]) except+
+
+        Cpp_ODESimulator(shared_ptr[Cpp_Model], shared_ptr[Cpp_ODEWorld], Cpp_ODESolverType) except+
         Cpp_ODESimulator(shared_ptr[Cpp_Model], shared_ptr[Cpp_ODEWorld]) except+
+
         Cpp_ODESimulator(shared_ptr[Cpp_ODEWorld], Cpp_ODESolverType) except+
         Cpp_ODESimulator(shared_ptr[Cpp_ODEWorld]) except+
+
         void initialize()
         void step()
         bool step(Real)
@@ -200,6 +203,8 @@ cdef extern from "ecell4/ode/ODEFactory.hpp" namespace "ecell4::ode":
         Cpp_ODEFactory() except +
         Cpp_ODEFactory(Cpp_ODESolverType) except +
         Cpp_ODEFactory(Cpp_ODESolverType, Real) except +
+        Cpp_ODEFactory(Cpp_ODESolverType, Real, Real) except +
+        Cpp_ODEFactory(Cpp_ODESolverType, Real, Real, Real) except +
         Cpp_ODEWorld* create_world()
         Cpp_ODEWorld* create_world(string)
         Cpp_ODEWorld* create_world(Cpp_Real3&)
