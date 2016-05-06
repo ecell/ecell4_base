@@ -1854,3 +1854,95 @@ def plot_movie_with_attractive_mpl(
     plt.close(ani._fig)
     # print("Start generating a movie ...")
     display(HTML(anim_to_html(ani, output, fps=1.0 / interval, crf=crf, bitrate=bitrate)))
+
+def plot_world2d_with_matplotlib(
+        world, plane='xy', marker_size=6, figsize=6, grid=True,
+        wireframe=False, species_list=None, max_count=1000, angle=None,
+        legend=True, noaxis=False, whratio=1.33, scale=1.0, **kwargs):
+    """
+    Make a 2D plot from received instance of World and show it on IPython notebook.
+
+    Parameters
+    ----------
+    world : World or str
+        World to render. A HDF5 filename is also acceptable.
+    plane : str, default 'xy'
+        'xy', 'yz', 'zx'.
+    marker_size : float, default 3
+        Marker size for all species. Size is passed to scatter function
+        as argument, s=(2 ** marker_size).
+    figsize : float, default 6
+        Size of the plotting area. Given in inch.
+    species_list : array of string, default None
+        If set, plot_world will not search the list of species.
+    max_count : Integer, default 1000
+        The maximum number of particles to show for each species.
+        None means no limitation.
+    angle : tuple, default None
+        A tuple of view angle which is given as (azim, elev, dist).
+        If None, use default assumed to be (-60, 30, 10).
+    legend : bool, default True
+    whratio : float, default 1.33
+        A ratio between figure width and height.
+        Customize this to keep a legend within the figure.
+    scale : float, default 1
+        A length-scaling factor
+
+    """
+    import matplotlib.pyplot as plt
+
+    plane = plane.lower()
+    if len(plane) != 2 or plane[0] not in ('x', 'y', 'z') or plane[1] not in ('x', 'y', 'z'):
+        raise ValueError("invalid 'plane' argument [{}] was given.".format(repr(plane)))
+    xidx = 0 if plane[0] == 'x' else (1 if plane[0] == 'y' else 2)
+    yidx = 0 if plane[1] == 'x' else (1 if plane[1] == 'y' else 2)
+
+    if species_list is None:
+        species_list = [p.species().serial() for pid, p in world.list_particles()]
+        species_list = sorted(
+            set(species_list), key=species_list.index)  # XXX: pick unique ones
+
+    wrange = __get_range_of_world(world, scale)
+    wrange = (wrange['x'], wrange['y'], wrange['z'])
+    wrange = {'x': wrange[xidx], 'y': wrange[yidx]}
+
+    fig, ax = __prepare_plot_with_matplotlib(
+        wrange, figsize, grid, wireframe, noaxis)
+    scatters, plots = __scatter_world2d_with_matplotlib(
+        world, (xidx, yidx), ax, species_list, marker_size, max_count, **kwargs)
+
+    # if legend:
+    #     ax.legend(handles=plots, labels=species_list, loc='best', shadow=True)
+    if legend is not None and legend is not False:
+        legend_opts = {'loc': 'center left', 'bbox_to_anchor': (1.0, 0.5),
+                       'shadow': False, 'frameon': False, 'fontsize': 'x-large',
+                       'scatterpoints': 1}
+        if isinstance(legend, dict):
+            legend_opts.update(legend)
+        ax.legend(**legend_opts)
+        # ax.legend(handles=plots, labels=species_list,  **legend_opts)
+
+    plt.show()
+
+def __scatter_world2d_with_matplotlib(
+        world, indices, ax, species_list, marker_size, max_count, **kwargs):
+    from ecell4 import Species
+    color_scale = matplotlib_color_scale()
+
+    scatters, plots = [], []
+    for i, name in enumerate(species_list):
+        xs, ys = [], []
+        particles = world.list_particles_exact(Species(name))
+        if max_count is not None and len(particles) > max_count:
+            particles = random.sample(particles, max_count)
+        for pid, p in particles:
+            pos = p.position()
+            xs.append(pos[indices[0]])
+            ys.append(pos[indices[1]])
+        c = color_scale.get_color(name)
+        scatters.append(
+            ax.scatter(
+                xs, ys,
+                marker='o', s=(2 ** marker_size), lw=0, c=c,
+                label=name, **kwargs))
+    return scatters, plots
