@@ -1378,7 +1378,7 @@ def plot_movie_with_matplotlib(
         interval=0.16, repeat_delay=3000, stride=1, rotate=None,
         legend=True, output=None, **kwargs):
     """
-    Generate a move from the received list of instances of World,
+    Generate a movie from the received list of instances of World,
     and show it on IPython notebook. This function may require ffmpeg.
 
     Parameters
@@ -1856,9 +1856,9 @@ def plot_movie_with_attractive_mpl(
     display(HTML(anim_to_html(ani, output, fps=1.0 / interval, crf=crf, bitrate=bitrate)))
 
 def plot_world2d_with_matplotlib(
-        world, plane='xy', marker_size=6, figsize=6, grid=True,
+        world, plane='xy', marker_size=3, figsize=6, grid=True,
         wireframe=False, species_list=None, max_count=1000, angle=None,
-        legend=True, noaxis=False, whratio=1.33, scale=1.0, **kwargs):
+        legend=True, noaxis=False, scale=1.0, **kwargs):
     """
     Make a 2D plot from received instance of World and show it on IPython notebook.
 
@@ -1882,9 +1882,6 @@ def plot_world2d_with_matplotlib(
         A tuple of view angle which is given as (azim, elev, dist).
         If None, use default assumed to be (-60, 30, 10).
     legend : bool, default True
-    whratio : float, default 1.33
-        A ratio between figure width and height.
-        Customize this to keep a legend within the figure.
     scale : float, default 1
         A length-scaling factor
 
@@ -1909,7 +1906,7 @@ def plot_world2d_with_matplotlib(
     fig, ax = __prepare_plot_with_matplotlib(
         wrange, figsize, grid, wireframe, noaxis)
     scatters, plots = __scatter_world2d_with_matplotlib(
-        world, (xidx, yidx), ax, species_list, marker_size, max_count, **kwargs)
+        world, (xidx, yidx), ax, species_list, marker_size, max_count, scale, **kwargs)
 
     # if legend:
     #     ax.legend(handles=plots, labels=species_list, loc='best', shadow=True)
@@ -1925,7 +1922,7 @@ def plot_world2d_with_matplotlib(
     plt.show()
 
 def __scatter_world2d_with_matplotlib(
-        world, indices, ax, species_list, marker_size, max_count, **kwargs):
+        world, indices, ax, species_list, marker_size, max_count, scale, **kwargs):
     from ecell4 import Species
     color_scale = matplotlib_color_scale()
 
@@ -1936,7 +1933,7 @@ def __scatter_world2d_with_matplotlib(
         if max_count is not None and len(particles) > max_count:
             particles = random.sample(particles, max_count)
         for pid, p in particles:
-            pos = p.position()
+            pos = p.position() * scale
             xs.append(pos[indices[0]])
             ys.append(pos[indices[1]])
         c = color_scale.get_color(name)
@@ -1946,3 +1943,131 @@ def __scatter_world2d_with_matplotlib(
                 marker='o', s=(2 ** marker_size), lw=0, c=c,
                 label=name, **kwargs))
     return scatters, plots
+
+def plot_movie2d_with_matplotlib(
+        worlds, plane='xy', marker_size=3, figsize=6, grid=True,
+        wireframe=False, species_list=None, max_count=None, angle=None, noaxis=False,
+        interval=0.16, repeat_delay=3000, stride=1, rotate=None,
+        legend=True, scale=1, output=None, **kwargs):
+    """
+    Generate a movie projected on the given plane from the received list
+    of instances of World, and show it on IPython notebook.
+    This function may require ffmpeg.
+
+    Parameters
+    ----------
+    worlds : list or FixedIntervalHDF5Observer
+        A list of Worlds to render.
+    plane : str, default 'xy'
+        'xy', 'yz', 'zx'.
+    marker_size : float, default 3
+        Marker size for all species. Size is passed to scatter function
+        as argument, s=(2 ** marker_size).
+    figsize : float, default 6
+        Size of the plotting area. Given in inch.
+    species_list : array of string, default None
+        If set, plot_world will not search the list of species.
+    max_count : Integer, default None
+        The maximum number of particles to show for each species.
+        None means no limitation.
+    angle : tuple, default None
+        A tuple of view angle which is given as (azim, elev, dist).
+        If None, use default assumed to be (-60, 30, 10).
+    interval : Integer, default 0.16
+        Parameters for matplotlib.animation.ArtistAnimation.
+    stride : Integer, default 1
+        Stride per frame.
+    rotate : tuple, default None
+        A pair of rotation angles, elev and azim, for animation.
+        None means no rotation, same as (0, 0).
+    legend : bool, default True
+    scale : float, default 1
+        A length-scaling factor
+    output : str, default None
+
+    """
+    import matplotlib.pyplot as plt
+    import matplotlib.animation as animation
+    from IPython.display import display, HTML
+    from ecell4 import Species, FixedIntervalHDF5Observer
+    from .simulation import load_world
+
+    # print("Start generating species_list ...")
+
+    plane = plane.lower()
+    if len(plane) != 2 or plane[0] not in ('x', 'y', 'z') or plane[1] not in ('x', 'y', 'z'):
+        raise ValueError("invalid 'plane' argument [{}] was given.".format(repr(plane)))
+    xidx = 0 if plane[0] == 'x' else (1 if plane[0] == 'y' else 2)
+    yidx = 0 if plane[1] == 'x' else (1 if plane[1] == 'y' else 2)
+
+    if isinstance(worlds, FixedIntervalHDF5Observer):
+        obs = worlds
+        worlds = []
+        for i in range(0, obs.num_steps(), stride):
+            filename = obs.filename(i)
+            if os.path.isfile(filename):
+                worlds.append(load_world(filename))
+            elif len(worlds) >0:
+                worlds.append(worlds[-1])
+    else:
+        worlds = worlds[:: stride]
+
+    if species_list is None:
+        species_list = []
+        for world in worlds:
+            species_list.extend(
+                [p.species().serial() for pid, p in world.list_particles()])
+            species_list = sorted(
+                set(species_list), key=species_list.index)  # XXX: pick unique ones
+
+    # print("Start preparing mplot3d ...")
+
+    # fig, ax = __prepare_mplot3d_with_matplotlib(
+    #     __get_range_of_world(worlds[0]), figsize, grid, wireframe, angle, noaxis)
+    wrange = __get_range_of_world(worlds[0], scale)
+    wrange = (wrange['x'], wrange['y'], wrange['z'])
+    wrange = {'x': wrange[xidx], 'y': wrange[yidx]}
+
+    fig, ax = __prepare_plot_with_matplotlib(
+        wrange, figsize, grid, wireframe, noaxis)
+
+    from mpl_toolkits.mplot3d.art3d import juggle_axes
+
+    def _update_plot(i, scatters, worlds, species_list):
+        world = worlds[i]
+        for i, name in enumerate(species_list):
+            offsets = []
+            particles = world.list_particles_exact(Species(name))
+            if max_count is not None and len(particles) > max_count:
+                particles = random.sample(particles, max_count)
+            for pid, p in particles:
+                pos = p.position() * scale
+                offsets.append((pos[xidx], pos[yidx]))
+            scatters[i].set_offsets(offsets)
+
+        fig.canvas.draw()
+
+    # print("Start making animation ...")
+
+    color_scale = matplotlib_color_scale()
+    scatters = []
+    for i, name in enumerate(species_list):
+        scatters.append(
+            ax.scatter([], [], marker='o', s=(2 ** marker_size),
+                       lw=0, c=color_scale.get_color(name), label=name))
+
+    # if legend:
+    #     ax.legend(loc='best', shadow=True)
+    if legend is not None and legend is not False:
+        legend_opts = {"loc": "best", "shadow": True}
+        if isinstance(legend, dict):
+            legend_opts.update(legend)
+        ax.legend(**legend_opts)
+
+    ani = animation.FuncAnimation(
+        fig, _update_plot, fargs=(scatters, worlds, species_list),
+        frames=len(worlds), interval=interval, blit=False)
+
+    plt.close(ani._fig)
+    # print("Start generating a movie ...")
+    display(HTML(anim_to_html(ani, output, fps=1.0 / interval)))
