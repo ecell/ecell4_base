@@ -542,24 +542,6 @@ cdef class FixedIntervalTrajectoryObserver:
                     new Cpp_FixedIntervalTrajectoryObserver(
                         dt, tmp, <bool>args[1], <Real>args[2]))
 
-        # if len(args) == 0:
-        #     self.thisptr = new shared_ptr[Cpp_FixedIntervalTrajectoryObserver](
-        #         new Cpp_FixedIntervalTrajectoryObserver(dt))
-        # elif len(args) == 1:
-        #     if isinstance(args[0], (tuple, list, set)):
-        #         for pid in args[0]:
-        #             tmp.push_back(deref((<ParticleID>pid).thisptr))
-        #         self.thisptr = new shared_ptr[Cpp_FixedIntervalTrajectoryObserver](
-        #             new Cpp_FixedIntervalTrajectoryObserver(dt, tmp))
-        #     else:
-        #         self.thisptr = new shared_ptr[Cpp_FixedIntervalTrajectoryObserver](
-        #             new Cpp_FixedIntervalTrajectoryObserver(dt, <bool>args[0]))
-        # elif len(args) == 2:
-        #     for pid in args[0]:
-        #         tmp.push_back(deref((<ParticleID>pid).thisptr))
-        #     self.thisptr = new shared_ptr[Cpp_FixedIntervalTrajectoryObserver](
-        #         new Cpp_FixedIntervalTrajectoryObserver(dt, tmp, <bool>args[1]))
-
     def __dealloc__(self):
         del self.thisptr
 
