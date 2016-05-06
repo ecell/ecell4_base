@@ -22,28 +22,6 @@ body {
 
 function render(){
 $('#{{uuid}}').cytoscape({
-  style: cytoscape.stylesheet()
-    .selector('node')
-      .css({
-        'shape': 'data(faveShape)',
-        'background-color': 'data(faveColor)',
-        'content': 'data(name)'
-      })
-    .selector('edge')
-      .css({
-        'target-arrow-shape': 'triangle',
-        'width': 4,
-        'line-color': '#ddd',
-        'target-arrow-color': '#ddd'
-      })
-    .selector('.highlighted')
-      .css({
-        'background-color': '#61bffc',
-        'line-color': '#61bffc',
-        'target-arrow-color': '#61bffc',
-        'transition-property': 'background-color, line-color, target-arrow-color',
-        'transition-duration': '0.5s'
-      }),
 
   elements: {
       nodes: {{nodes}},
@@ -51,31 +29,10 @@ $('#{{uuid}}').cytoscape({
       edges: {{edges}}
     },
 
-  layout: {
-    name: 'breadthfirst',
-    directed: true,
-    roots: '#a',
-    padding: 10
-  },
-
   ready: function(){
     window.cy = this;
-
-    var bfs = cy.elements().bfs('#a', function(){}, true);
-
-    var i = 0;
-    var highlightNextEle = function(){
-      bfs.path[i].addClass('highlighted');
-
-      if( i < bfs.path.length ){
-        i++;
-        setTimeout(highlightNextEle, 1000);
-      }
-    };
-
-    // kick off first highlight
-    highlightNextEle();
   }
+  
 });
 };
 
