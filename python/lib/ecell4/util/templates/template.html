@@ -31,6 +31,9 @@ $('#{{uuid}}').cytoscape({
 
   ready: function(){
     window.cy = this;
+    
+    var cyjson = "text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(cy.json()));
+    $('<a href="data:' + cyjson + '" download="data.json">download JSON</a>').appendTo('#{{uuid}}');
   }
   
 });
