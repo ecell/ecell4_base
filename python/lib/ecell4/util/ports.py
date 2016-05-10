@@ -18,6 +18,9 @@ def export_sbml(model, y0={}, volume=1.0):
     import libsbml
 
     document = libsbml.SBMLDocument(3, 1)
+    ns = libsbml.XMLNamespaces()
+    ns.add("http://www.ecell.org/ns/ecell4", "ecell4")  #XXX: DUMMY URI
+    document.setNamespaces(ns)
     m = document.createModel()
 
     comp1 = m.createCompartment()
@@ -49,6 +52,8 @@ def export_sbml(model, y0={}, volume=1.0):
         s1.setBoundaryCondition(False)
         s1.setHasOnlySubstanceUnits(False)
 
+        s1.appendAnnotation('<annotation><ecell4:extension><ecell4:species serial="{:s}"/></ecell4:extension></annotation>'.format(sp.serial()))
+
     if isinstance(model, (ecell4.NetworkModel, ecell4.Model)):
         for cnt, rr in enumerate(model.reaction_rules()):
             r1 = m.createReaction()
@@ -57,8 +62,10 @@ def export_sbml(model, y0={}, volume=1.0):
             r1.setFast(False)
 
             kinetic_law = r1.createKineticLaw()
-            p1 = kinetic_law.createLocalParameter()
-            p1.setId("k")
+            # p1 = kinetic_law.createLocalParameter()
+            # p1.setId("k")
+            p1 = m.createParameter()
+            p1.setId("k{:d}".format(cnt))
             p1.setConstant(True)
             p1.setValue(rr.k())
 
@@ -69,7 +76,8 @@ def export_sbml(model, y0={}, volume=1.0):
                 else:
                     species_coef_map[sp] += 1
 
-            math_exp = "k"
+            # math_exp = "k"
+            math_exp = "k{:d}".format(cnt)
             for sp, coef in species_coef_map.items():
                 s1 = r1.createReactant()
                 s1.setSpecies(sp.serial())
@@ -113,11 +121,14 @@ def export_sbml(model, y0={}, volume=1.0):
                     species_coef_map[sp] += coef
 
             if rr.is_massaction():
-                p1 = kinetic_law.createLocalParameter()
-                p1.setId("k")
+                p1 = m.createParameter()
+                p1.setId("k{:d}".format(cnt))
+                # p1 = kinetic_law.createLocalParameter()
+                # p1.setId("k")
                 p1.setConstant(True)
                 p1.setValue(rr.k())
-                math_exp = "k"
+                # math_exp = "k"
+                math_exp = "k{:d}".format(cnt)
                 for sp, coef in species_coef_map.items():
                     if coef == 1.0:
                         math_exp += "*{:s}".format(sp.serial())
@@ -183,8 +194,9 @@ def save_sbml(filename, model, y0={}, volume=1.0):
 
     # with open(filename, 'w') as fout:
     #     fout.write(libsbml.writeSBMLToString(document))
-    writer = libsbml.SBMLWriter()
-    writer.writeSBML(document, filename)
+    # writer = libsbml.SBMLWriter()
+    # writer.writeSBML(document, filename)
+    libsbml.writeSBML(document, filename)
 
     # reader = libsbml.SBMLReader()
     # document = reader.readSBML(filename)
