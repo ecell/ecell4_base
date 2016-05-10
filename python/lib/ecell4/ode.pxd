@@ -21,6 +21,8 @@ cdef class ODERatelaw:
     #cdef Cpp_ODERatelaw *thisptr
     cdef shared_ptr[Cpp_ODERatelaw] *thisptr
 
+cdef ODERatelaw ODERatelaw_from_Cpp_ODERatelaw(shared_ptr[Cpp_ODERatelaw])
+
 ## Cpp_ODERatelawMassAction
 cdef extern from "ecell4/ode/ODERatelaw.hpp" namespace "ecell4::ode":
     cdef cppclass Cpp_ODERatelawMassAction "ecell4::ode::ODERatelawMassAction":

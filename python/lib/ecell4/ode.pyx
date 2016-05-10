@@ -388,6 +388,11 @@ cdef class ODERatelaw:
         """Return self as a base class. Only for developmental use."""
         return self
 
+cdef ODERatelaw ODERatelaw_from_Cpp_ODERatelaw(shared_ptr[Cpp_ODERatelaw] s):
+    r = ODERatelaw()
+    r.thisptr.swap(s)
+    return r
+
 cdef class ODERatelawMassAction:
     """A class for mass action ratelaws.
 
@@ -696,6 +701,10 @@ cdef class ODEReactionRule:
     def has_ratelaw(self):
         """Return if a ratelaw is bound or not."""
         return self.thisptr.has_ratelaw()
+
+    def get_ratelaw(self):
+        """Return a ratelaw"""
+        return ODERatelaw_from_Cpp_ODERatelaw(self.thisptr.get_ratelaw())
 
     def is_massaction(self):
         """Return if a mass action ratelaw is bound or not."""
