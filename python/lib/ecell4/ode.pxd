@@ -7,51 +7,6 @@ from ecell4.core cimport *
 
 from cpython cimport PyObject
 
-## Cpp_ODEWorld
-#  ecell4::ode::ODEWorld
-cdef extern from "ecell4/ode/ODEWorld.hpp" namespace "ecell4::ode":
-    cdef cppclass Cpp_ODEWorld "ecell4::ode::ODEWorld":
-        Cpp_ODEWorld() except +
-        Cpp_ODEWorld(Cpp_Real3&) except +
-        Cpp_ODEWorld(string&) except +
-        # SpaceTraits
-        Real& t()
-        void set_t(Real&)
-        void reset(Cpp_Real3&)
-        Cpp_Real3& edge_lengths()
-        Cpp_Real3 actual_lengths()
-        # CompartmentSpaceTraits
-        Real &volume()
-        Integer num_molecules(Cpp_Species &)
-        Integer num_molecules_exact(Cpp_Species &)
-        vector[Cpp_Species] list_species()
-
-        # CompartmentSpace member functions
-        void set_volume(Real &)
-        pair[pair[Cpp_ParticleID, Cpp_Particle], bool] new_particle(Cpp_Particle& p)
-        pair[pair[Cpp_ParticleID, Cpp_Particle], bool] new_particle(Cpp_Species& sp, Cpp_Real3& pos)
-        void add_molecules(Cpp_Species &sp, Integer &num)
-        void add_molecules(Cpp_Species &sp, Integer &num, shared_ptr[Cpp_Shape])
-        void remove_molecules(Cpp_Species &sp, Integer &num)
-        # Optional members
-        Real get_value(Cpp_Species &)
-        Real get_value_exact(Cpp_Species &)
-        void set_value(Cpp_Species &sp, Real &num)
-        void save(string) except +
-        void load(string) except +
-        bool has_species(Cpp_Species &)
-        void reserve_species(Cpp_Species &)
-        void release_species(Cpp_Species &)
-        void bind_to(shared_ptr[Cpp_Model]) except +
-        void bind_to(shared_ptr[Cpp_ODENetworkModel])
-
-## ODEWorld
-#  a python wrapper for Cpp_ODEWorld
-cdef class ODEWorld:
-    cdef shared_ptr[Cpp_ODEWorld]* thisptr
-
-cdef ODEWorld ODEWorld_from_Cpp_ODEWorld(shared_ptr[Cpp_ODEWorld] m)
-
 ## Following definitions are ODESimulator related.
 
 ## Cpp_ODERatelaw
@@ -156,6 +111,52 @@ cdef extern from "ecell4/ode/ODESimulator.hpp" namespace "ecell4::ode":
         Cpp_RUNGE_KUTA_CASH_KARP54 "ecell4::ode::RUNGE_KUTA_CASH_KARP54"
         Cpp_ROSENBROCK4_CONTROLLER "ecell4::ode::ROSENBROCK4_CONTROLLER"
         Cpp_EULER "ecell4::ode::EULER"
+
+## Cpp_ODEWorld
+#  ecell4::ode::ODEWorld
+cdef extern from "ecell4/ode/ODEWorld.hpp" namespace "ecell4::ode":
+    cdef cppclass Cpp_ODEWorld "ecell4::ode::ODEWorld":
+        Cpp_ODEWorld() except +
+        Cpp_ODEWorld(Cpp_Real3&) except +
+        Cpp_ODEWorld(string&) except +
+        # SpaceTraits
+        Real& t()
+        void set_t(Real&)
+        void reset(Cpp_Real3&)
+        Cpp_Real3& edge_lengths()
+        Cpp_Real3 actual_lengths()
+        # CompartmentSpaceTraits
+        Real &volume()
+        Integer num_molecules(Cpp_Species &)
+        Integer num_molecules_exact(Cpp_Species &)
+        vector[Cpp_Species] list_species()
+
+        # CompartmentSpace member functions
+        void set_volume(Real &)
+        pair[pair[Cpp_ParticleID, Cpp_Particle], bool] new_particle(Cpp_Particle& p)
+        pair[pair[Cpp_ParticleID, Cpp_Particle], bool] new_particle(Cpp_Species& sp, Cpp_Real3& pos)
+        void add_molecules(Cpp_Species &sp, Integer &num)
+        void add_molecules(Cpp_Species &sp, Integer &num, shared_ptr[Cpp_Shape])
+        void remove_molecules(Cpp_Species &sp, Integer &num)
+        # Optional members
+        Real get_value(Cpp_Species &)
+        Real get_value_exact(Cpp_Species &)
+        void set_value(Cpp_Species &sp, Real &num)
+        void save(string) except +
+        void load(string) except +
+        bool has_species(Cpp_Species &)
+        void reserve_species(Cpp_Species &)
+        void release_species(Cpp_Species &)
+        void bind_to(shared_ptr[Cpp_Model]) except +
+        void bind_to(shared_ptr[Cpp_ODENetworkModel])
+        Real evaluate(Cpp_ODEReactionRule &) except +
+
+## ODEWorld
+#  a python wrapper for Cpp_ODEWorld
+cdef class ODEWorld:
+    cdef shared_ptr[Cpp_ODEWorld]* thisptr
+
+cdef ODEWorld ODEWorld_from_Cpp_ODEWorld(shared_ptr[Cpp_ODEWorld] m)
 
 ## Cpp_ODESimulator
 cdef extern from "ecell4/ode/ODESimulator.hpp" namespace "ecell4::ode":

@@ -4,6 +4,8 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/scoped_ptr.hpp>
 
+#include "config.h"
+
 #ifdef WITH_HDF5
 #include <hdf5.h>
 #include <H5Cpp.h>

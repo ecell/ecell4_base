@@ -298,6 +298,8 @@ public:
             std::make_pair(ParticleID(), Particle(sp, pos, 0.0, 0.0)), true);
     }
 
+    Real evaluate(ODEReactionRule& rr);
+
 protected:
 
     Real3 edge_lengths_;
