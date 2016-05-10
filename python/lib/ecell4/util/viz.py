@@ -1435,7 +1435,6 @@ def plot_movie_with_matplotlib(
     """
     import matplotlib.pyplot as plt
     import matplotlib.animation as animation
-    from IPython.display import display, HTML
     from ecell4 import Species, FixedIntervalHDF5Observer
     from .simulation import load_world
 
@@ -1559,7 +1558,6 @@ def plot_movie_of_trajectory_with_matplotlib(
     """
     import matplotlib.pyplot as plt
     import matplotlib.animation as animation
-    from IPython.display import display, HTML
     from ecell4 import Species, FixedIntervalHDF5Observer
     from .simulation import load_world
     import math
@@ -2027,7 +2025,6 @@ def plot_movie2d_with_matplotlib(
     """
     import matplotlib.pyplot as plt
     import matplotlib.animation as animation
-    from IPython.display import display, HTML
     from ecell4 import Species, FixedIntervalHDF5Observer
     from .simulation import load_world
 
