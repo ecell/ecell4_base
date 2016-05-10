@@ -1772,11 +1772,15 @@ def plot_movie_with_attractive_mpl(
     """
     import matplotlib.pyplot as plt
     import matplotlib.animation as animation
-    from IPython.display import display, HTML
     from ecell4 import Species, FixedIntervalHDF5Observer
     from .simulation import load_world
+    import os.path
 
     # print("Start generating species_list ...")
+
+    if output is not None and os.path.splitext(output)[1] not in ('.webm', '.mp4'):
+        raise ValueError(
+            "An output filename is only accepted with extension '.webm' or 'mp4'.")
 
     if isinstance(worlds, FixedIntervalHDF5Observer):
         obs = worlds
@@ -1852,8 +1856,15 @@ def plot_movie_with_attractive_mpl(
         frames=len(worlds), interval=interval, blit=False)
 
     plt.close(ani._fig)
+
     # print("Start generating a movie ...")
-    display(HTML(anim_to_html(ani, output, fps=1.0 / interval, crf=crf, bitrate=bitrate)))
+    if output is None:
+        from IPython.display import display, HTML
+        display(HTML(anim_to_html(ani, output, fps=1.0 / interval)))
+    elif os.path.splitext(output)[1] == '.webm':
+        ani.save(output, fps=1.0 / interval, codec='libvpx', extra_args=['-crf', str(crf), '-b:v', bitrate])
+    elif os.path.splitext(output)[1] == '.mp4':
+        ani.save(output, fps=1.0 / interval, codec='mpeg4', extra_args=['-crf', str(crf), '-b:v', bitrate])
 
 def plot_world2d_with_matplotlib(
         world, plane='xy', marker_size=3, figsize=6, grid=True,
