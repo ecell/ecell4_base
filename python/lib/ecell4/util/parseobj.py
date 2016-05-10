@@ -566,7 +566,8 @@ class PowExp(ExpBase):
         return copy.copy(self._elems)
 
     def __str__(self):
-        return "(%s**%s)" % (self._elems[0], self._elems[1])
+        return "pow(%s,%s)" % (self._elems[0], self._elems[1])
+        # return "(%s**%s)" % (self._elems[0], self._elems[1])
 
 class OrExp(ExpBase):
 
