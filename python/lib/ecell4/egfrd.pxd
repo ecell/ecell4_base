@@ -60,6 +60,7 @@ cdef extern from "ecell4/egfrd/egfrd.hpp" namespace "ecell4::egfrd":
         Real distance(Cpp_Real3& pos1, Cpp_Real3& pos2)
         Real volume()
         bool has_species(Cpp_Species& sp)
+        vector[Cpp_Species] list_species()
         Integer num_molecules(Cpp_Species& sp)
         Integer num_molecules_exact(Cpp_Species& sp)
         void add_molecules(Cpp_Species& sp, Integer num)
