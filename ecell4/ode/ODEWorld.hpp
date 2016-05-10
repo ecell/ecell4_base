@@ -298,7 +298,13 @@ public:
             std::make_pair(ParticleID(), Particle(sp, pos, 0.0, 0.0)), true);
     }
 
-    Real evaluate(ODEReactionRule& rr);
+    Real evaluate(const ReactionRule& rr) const
+    {
+        ODEReactionRule oderr(rr);
+        return evaluate(oderr);
+    }
+
+    Real evaluate(ODEReactionRule& rr) const;
 
 protected:
 

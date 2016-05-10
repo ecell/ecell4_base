@@ -149,6 +149,7 @@ cdef extern from "ecell4/ode/ODEWorld.hpp" namespace "ecell4::ode":
         void release_species(Cpp_Species &)
         void bind_to(shared_ptr[Cpp_Model]) except +
         void bind_to(shared_ptr[Cpp_ODENetworkModel])
+        Real evaluate(Cpp_ReactionRule &) except +
         Real evaluate(Cpp_ODEReactionRule &) except +
 
 ## ODEWorld

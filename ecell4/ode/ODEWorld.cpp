@@ -86,7 +86,7 @@ void ODEWorld::load(const std::string& filename)
 #endif
 }
 
-Real ODEWorld::evaluate(ODEReactionRule& rr)
+Real ODEWorld::evaluate(ODEReactionRule& rr) const
 {
     //XXX: rr cannot be const because ratelaw.deriv_func is not const.
     ODERatelaw::state_container_type::size_type cnt(0);

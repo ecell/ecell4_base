@@ -340,7 +340,13 @@ cdef class ODEWorld:
             self.thisptr.get().bind_to(Cpp_Model_from_Model(m))
 
     def evaluate(self, rr):
-        return self.thisptr.get().evaluate(deref((<ODEReactionRule>rr).thisptr))
+        if isinstance(rr, ReactionRule):
+            return self.thisptr.get().evaluate(deref((<ReactionRule>rr).thisptr))
+        elif isinstance(rr, ODEReactionRule):
+            return self.thisptr.get().evaluate(deref((<ODEReactionRule>rr).thisptr))
+        else:
+            raise ValueError(
+                "A ReactionRule or ODEReactionRule must be given [{}].".format(repr(rr)))
 
     def as_base(self):
         """Return self as a base class. Only for developmental use."""
