@@ -1012,6 +1012,18 @@ def anim_to_html(anim, filename=None, fps=6, crf=10, bitrate='1M'):
         anim._encoded_video = base64.encodestring(video).decode('utf-8')
     return VIDEO_TAG.format(anim._encoded_video)
 
+def display_anim(ani, output=None, fps=6, crf=10, bitrate='1M'):
+    if output is None:
+        from IPython.display import display, HTML
+        display(HTML(anim_to_html(ani, output, fps=fps, crf=crf, bitrate=bitrate)))
+    elif os.path.splitext(output.lower())[1] == '.webm':
+        ani.save(output, fps=fps, codec='libvpx', extra_args=['-crf', str(crf), '-b:v', bitrate])
+    elif os.path.splitext(output.lower())[1] == '.mp4':
+        ani.save(output, fps=fps, codec='mpeg4', extra_args=['-crf', str(crf), '-b:v', bitrate])
+    else:
+        raise ValueError(
+            "An output filename is only accepted with extension '.webm' or 'mp4'.")
+
 def __prepare_mplot3d_with_matplotlib(
         wrange, figsize, grid, wireframe, angle, noaxis):
     from mpl_toolkits.mplot3d import Axes3D
@@ -1278,7 +1290,7 @@ def plot_movie_of_trajectory2d_with_matplotlib(
         obs, plane='xy', figsize=6, grid=True,
         wireframe=False, max_count=None, angle=None, noaxis=False,
         interval=0.16, repeat_delay=3000, stride=1, rotate=None,
-        legend=True, output=None, plot_range=None, **kwargs):
+        legend=True, output=None, crf=10, bitrate='1M', plot_range=None, **kwargs):
     """
     Generate a move from the received list of instances of World,
     and show it on IPython notebook. This function may require ffmpeg.
@@ -1300,6 +1312,12 @@ def plot_movie_of_trajectory2d_with_matplotlib(
         Stride per frame.
     legend : bool, default True
     output : str, default None
+        An output filename. '.webm' or '.mp4' is only accepted.
+        If None, display a movie on IPython Notebook.
+    crf : int, default 10
+        The CRF value can be from 4-63. Lower values mean better quality.
+    bitrate : str, default '1M'
+        Target bitrate
     plot_range : tuple, default None
         Range for plotting. A triplet of pairs suggesting (rangex, rangey, rangez).
         If None, the minimum volume containing all the trajectories is used.
@@ -1370,13 +1388,13 @@ def plot_movie_of_trajectory2d_with_matplotlib(
 
     plt.close(ani._fig)
     # print("Start generating a movie ...")
-    display(HTML(anim_to_html(ani, output, fps=1.0 / interval)))
+    display_anim(ani, output, fps=1.0 / interval, crf=crf, bitrate=bitrate)
 
 def plot_movie_with_matplotlib(
         worlds, marker_size=3, figsize=6, grid=True,
         wireframe=False, species_list=None, max_count=None, angle=None, noaxis=False,
         interval=0.16, repeat_delay=3000, stride=1, rotate=None,
-        legend=True, output=None, **kwargs):
+        legend=True, output=None, crf=10, bitrate='1M', **kwargs):
     """
     Generate a movie from the received list of instances of World,
     and show it on IPython notebook. This function may require ffmpeg.
@@ -1407,6 +1425,12 @@ def plot_movie_with_matplotlib(
         None means no rotation, same as (0, 0).
     legend : bool, default True
     output : str, default None
+        An output filename. '.webm' or '.mp4' is only accepted.
+        If None, display a movie on IPython Notebook.
+    crf : int, default 10
+        The CRF value can be from 4-63. Lower values mean better quality.
+    bitrate : str, default '1M'
+        Target bitrate
 
     """
     import matplotlib.pyplot as plt
@@ -1487,13 +1511,13 @@ def plot_movie_with_matplotlib(
 
     plt.close(ani._fig)
     # print("Start generating a movie ...")
-    display(HTML(anim_to_html(ani, output, fps=1.0 / interval)))
+    display_anim(ani, output, fps=1.0 / interval, crf=crf, bitrate=bitrate)
 
 def plot_movie_of_trajectory_with_matplotlib(
         obs, figsize=6, grid=True,
         wireframe=False, max_count=None, angle=None, noaxis=False,
         interval=0.16, repeat_delay=3000, stride=1, rotate=None,
-        legend=True, output=None, plot_range=None, **kwargs):
+        legend=True, output=None, crf=10, bitrate='1M', plot_range=None, **kwargs):
     """
     Generate a move from the received list of instances of World,
     and show it on IPython notebook. This function may require ffmpeg.
@@ -1522,6 +1546,12 @@ def plot_movie_of_trajectory_with_matplotlib(
         None means no rotation, same as (0, 0).
     legend : bool, default True
     output : str, default None
+        An output filename. '.webm' or '.mp4' is only accepted.
+        If None, display a movie on IPython Notebook.
+    crf : int, default 10
+        The CRF value can be from 4-63. Lower values mean better quality.
+    bitrate : str, default '1M'
+        Target bitrate
     plot_range : tuple, default None
         Range for plotting. A triplet of pairs suggesting (rangex, rangey, rangez).
         If None, the minimum volume containing all the trajectories is used.
@@ -1589,7 +1619,7 @@ def plot_movie_of_trajectory_with_matplotlib(
 
     plt.close(ani._fig)
     # print("Start generating a movie ...")
-    display(HTML(anim_to_html(ani, output, fps=1.0 / interval)))
+    display_anim(ani, output, fps=1.0 / interval, crf=crf, bitrate=bitrate)
 
 plot_movie_of_trajectory = plot_movie_of_trajectory_with_matplotlib  # default
 
@@ -1768,6 +1798,8 @@ def plot_movie_with_attractive_mpl(
     bitrate : str, default '1M'
         Target bitrate
     output : str, default None
+        An output filename. '.webm' or '.mp4' is only accepted.
+        If None, display a movie on IPython Notebook.
 
     """
     import matplotlib.pyplot as plt
@@ -1777,10 +1809,6 @@ def plot_movie_with_attractive_mpl(
     import os.path
 
     # print("Start generating species_list ...")
-
-    if output is not None and os.path.splitext(output)[1] not in ('.webm', '.mp4'):
-        raise ValueError(
-            "An output filename is only accepted with extension '.webm' or 'mp4'.")
 
     if isinstance(worlds, FixedIntervalHDF5Observer):
         obs = worlds
@@ -1858,13 +1886,7 @@ def plot_movie_with_attractive_mpl(
     plt.close(ani._fig)
 
     # print("Start generating a movie ...")
-    if output is None:
-        from IPython.display import display, HTML
-        display(HTML(anim_to_html(ani, output, fps=1.0 / interval)))
-    elif os.path.splitext(output)[1] == '.webm':
-        ani.save(output, fps=1.0 / interval, codec='libvpx', extra_args=['-crf', str(crf), '-b:v', bitrate])
-    elif os.path.splitext(output)[1] == '.mp4':
-        ani.save(output, fps=1.0 / interval, codec='mpeg4', extra_args=['-crf', str(crf), '-b:v', bitrate])
+    display_anim(ani, output, fps=1.0 / interval, crf=crf, bitrate=bitrate)
 
 def plot_world2d_with_matplotlib(
         world, plane='xy', marker_size=3, figsize=6, grid=True,
@@ -1959,7 +1981,7 @@ def plot_movie2d_with_matplotlib(
         worlds, plane='xy', marker_size=3, figsize=6, grid=True,
         wireframe=False, species_list=None, max_count=None, angle=None, noaxis=False,
         interval=0.16, repeat_delay=3000, stride=1, rotate=None,
-        legend=True, scale=1, output=None, **kwargs):
+        legend=True, scale=1, output=None, crf=10, bitrate='1M', **kwargs):
     """
     Generate a movie projected on the given plane from the received list
     of instances of World, and show it on IPython notebook.
@@ -1995,6 +2017,12 @@ def plot_movie2d_with_matplotlib(
     scale : float, default 1
         A length-scaling factor
     output : str, default None
+        An output filename. '.webm' or '.mp4' is only accepted.
+        If None, display a movie on IPython Notebook.
+    crf : int, default 10
+        The CRF value can be from 4-63. Lower values mean better quality.
+    bitrate : str, default '1M'
+        Target bitrate
 
     """
     import matplotlib.pyplot as plt
@@ -2081,4 +2109,4 @@ def plot_movie2d_with_matplotlib(
 
     plt.close(ani._fig)
     # print("Start generating a movie ...")
-    display(HTML(anim_to_html(ani, output, fps=1.0 / interval)))
+    display_anim(ani, output, fps=1.0 / interval, crf=crf, bitrate=bitrate)
