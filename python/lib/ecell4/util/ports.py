@@ -166,6 +166,10 @@ def export_sbml(model, y0={}, volume=1.0):
                         math_exp += "*pow({:s},{:g})".format(sid, coef)
             else:
                 math_exp = rr.get_ratelaw().as_string()
+                if math_exp in ('', '<lambda>'):
+                    warnings.warn(
+                        "The given ODEReactionRule [{:s}] might be invalid.".format(
+                            rr.as_string()))
                 math_exp = replace_parseobj(math_exp, sid_map)
 
             for sp, coef in species_coef_map.items():
@@ -191,6 +195,11 @@ def export_sbml(model, y0={}, volume=1.0):
 
             math_ast = libsbml.parseL3Formula(math_exp)
             kinetic_law.setMath(math_ast)
+
+    else:
+        raise ValueError(
+            "The invalid type of a Model was given [{:s}].".format(str(model))
+            + " NetworkModel or ODENetworkModel must be given.")
 
     document.validateSBML()
     num_errors = (document.getNumErrors(libsbml.LIBSBML_SEV_ERROR)
