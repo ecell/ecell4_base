@@ -64,7 +64,7 @@ def generate_ReactionRule(lhs, rhs, k=None):
             rr.add_product(sp[0], 1 if sp[1] is None else sp[1])
         if ENABLE_RATELAW and isinstance(k, parseobj.ExpBase):
             name = str(k)
-            func = generate_ratelaw(k, rr)
+            func = generate_ratelaw(k, rr, ENABLE_IMPLICIT_DECLARATION)
             rr.set_ratelaw(ODERatelawCallback(func, name))
         elif callable(k):
             rr.set_ratelaw(ODERatelawCallback(k))
@@ -110,7 +110,7 @@ def traverse_ParseObj(obj, keys):
             obj._elems[i] = traverse_ParseObj(obj._elems[i], keys)
     return obj
 
-def generate_ratelaw(obj, rr):
+def generate_ratelaw(obj, rr, implicit=False):
     keys = []
     exp = str(traverse_ParseObj(copy.deepcopy(obj), keys))
     aliases = {}
@@ -122,7 +122,7 @@ def generate_ratelaw(obj, rr):
     for key in keys:
         if key in aliases.keys():
             names.append(aliases[key])
-        elif ENABLE_IMPLICIT_DECLARATION:
+        elif implicit:
             names.append("_r[{0:d}]".format(len(rr.reactants())))
             aliases[key] = names[-1]
             rr.add_reactant(ecell4.core.Species(key), 1)

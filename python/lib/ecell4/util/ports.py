@@ -1,5 +1,7 @@
 import itertools
 import copy
+import warnings
+import re
 
 import ecell4
 
@@ -255,6 +257,13 @@ def import_sbml(document):
 
     m = document.getModel()
 
+    if m.getNumCompartments() == 0:
+        raise RuntimeError("No compartment was found.")
+    elif m.getNumCompartments() > 1:
+        warnings.warn(
+            "[{:d}] compartments were found.".format(m.getNumCompartments())
+            + " The second or later ones would be omitted.")
+
     comp1 = m.getCompartment(0)
     volume = comp1.getVolume()
 
@@ -271,6 +280,9 @@ def import_sbml(document):
     kmap = {}
     for p1 in m.getListOfParameters():
         pid = p1.getId()
+        if not re.match("^k[0-9]+$", pid):
+            warnings.warn(
+                "Parameter [{:s}] was just ommited.".format(pid))
         rid = "r{:s}".format(pid[1: ])
         kmap[rid] = p1.getValue()
 
@@ -293,6 +305,9 @@ def import_sbml(document):
         #XXX: The order of reactants is not consistent
         for s1 in r1.getListOfReactants():
             sid = s1.getSpecies()
+            if sid not in sid_map:
+                raise RuntimeError(
+                    "Unknown Species' Id [{:s}] was given".format(sid))
             serial = sid_map[sid]
             coef = s1.getStoichiometry()
             reactants.append((serial, coef))
@@ -300,6 +315,9 @@ def import_sbml(document):
         #XXX: The order of products is not consistent
         for s1 in r1.getListOfProducts():
             sid = s1.getSpecies()
+            if sid not in sid_map:
+                raise RuntimeError(
+                    "Unknown Species' Id [{:s}] was given".format(sid))
             serial = sid_map[sid]
             coef = s1.getStoichiometry()
             products.append((serial, coef))
