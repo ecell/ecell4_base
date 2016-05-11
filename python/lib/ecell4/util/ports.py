@@ -233,3 +233,148 @@ def save_sbml(filename, model, y0={}, volume=1.0):
     # document = reader.readSBML(filename)
     # if document.getNumErrors() > 0:
     #     document.printErrors()
+
+def import_sbml(document):
+    """
+    Import a model from a SBMLDocument.
+
+    Parameters
+    ----------
+    document : SBMLDocument
+
+    Returns
+    -------
+    model : NetworkModel or ODENetworkModel
+    y0 : dict
+        Initial condition.
+    volume : Real or Real3, optional
+        A size of the simulation volume.
+
+    """
+    from ecell4.util.decorator import generate_ratelaw
+
+    m = document.getModel()
+
+    comp1 = m.getCompartment(0)
+    volume = comp1.getVolume()
+
+    y0 = {}
+    sid_map = {}
+    for s1 in m.getListOfSpecies():
+        sid = s1.getId()
+        serial = s1.getName()
+        sid_map[sid] = serial
+        value = s1.getInitialAmount()
+        if value != 0:
+            y0[serial] = value
+
+    kmap = {}
+    for p1 in m.getListOfParameters():
+        pid = p1.getId()
+        rid = "r{:s}".format(pid[1: ])
+        kmap[rid] = p1.getValue()
+
+    is_ode = False
+    rrs = []
+
+    for r1 in m.getListOfReactions():
+        rid = r1.getId()
+
+        is_massaction = (rid in kmap.keys())
+        if is_massaction:
+            k = kmap[rid]
+        else:
+            kinetic_law = r1.getKineticLaw()
+            formula = kinetic_law.getFormula()
+            k = replace_parseobj(formula, sid_map)
+
+        reactants, products = [], []
+
+        #XXX: The order of reactants is not consistent
+        for s1 in r1.getListOfReactants():
+            sid = s1.getSpecies()
+            serial = sid_map[sid]
+            coef = s1.getStoichiometry()
+            reactants.append((serial, coef))
+
+        #XXX: The order of products is not consistent
+        for s1 in r1.getListOfProducts():
+            sid = s1.getSpecies()
+            serial = sid_map[sid]
+            coef = s1.getStoichiometry()
+            products.append((serial, coef))
+
+        if (not is_massaction
+            or len(reactants) > 2
+            or any([coef not in (1, 2) for sp, coef in reactants])
+            or any([not coef.is_integer() for sp, coef in products])
+            or (len(reactants) == 2 and (reactants[0][1] == 2 or reactants[1][1] == 2))):
+            is_ode = True
+            rr = ecell4.ode.ODEReactionRule()
+
+            for serial, coef in reactants:
+                rr.add_reactant(ecell4.Species(serial), coef)
+            for serial, coef in products:
+                rr.add_product(ecell4.Species(serial), coef)
+
+            if is_massaction:
+                rr.set_k(k)
+            else:
+                func = generate_ratelaw(k, rr)
+                rr.set_ratelaw(ecell4.ode.ODERatelawCallback(func, k))
+        else:
+            if len(reactants) == 1 and reactants[0][1] == 2:
+                reactants[0] = (reactants[0][0], 1)
+                reactants.append(reactants[0])
+
+            rr = ecell4.ReactionRule()
+            for serial, coef in reactants:
+                rr.add_reactant(ecell4.Species(serial))
+            for serial, coef in products:
+                for _ in range(int(coef)):
+                    rr.add_product(ecell4.Species(serial))
+            rr.set_k(k)
+
+        rrs.append(rr)
+
+    m = ecell4.ode.ODENetworkModel() if is_ode else ecell4.NetworkModel()
+    for rr in rrs:
+        m.add_reaction_rule(rr)
+
+    return m, y0, volume
+
+def load_sbml(filename):
+    """
+    Load a model from a SBML file.
+
+    Parameters
+    ----------
+    filename : str
+        The input SBML filename.
+
+    Returns
+    -------
+    model : NetworkModel or ODENetworkModel
+    y0 : dict
+        Initial condition.
+    volume : Real or Real3, optional
+        A size of the simulation volume.
+
+    """
+    import libsbml
+
+    document = libsbml.readSBML(filename)
+    document.validateSBML()
+    num_errors = (document.getNumErrors(libsbml.LIBSBML_SEV_ERROR)
+                  + document.getNumErrors(libsbml.LIBSBML_SEV_FATAL))
+    if num_errors > 0:
+        messages = "The generated document is not valid."
+        messages += " {} errors were found:\n".format(num_errors)
+        for i in range(document.getNumErrors(libsbml.LIBSBML_SEV_ERROR)):
+            err = document.getErrorWithSeverity(i, libsbml.LIBSBML_SEV_ERROR)
+            messages += "{}: {}\n".format(err.getSeverityAsString(), err.getShortMessage())
+        for i in range(document.getNumErrors(libsbml.LIBSBML_SEV_FATAL)):
+            err = document.getErrorWithSeverity(i, libsbml.LIBSBML_SEV_FATAL)
+            messages += "{}: {}\n".format(err.getSeverityAsString(), err.getShortMessage())
+        raise RuntimeError(messages)
+    return import_sbml(document)
