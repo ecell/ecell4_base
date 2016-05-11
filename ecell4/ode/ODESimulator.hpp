@@ -389,7 +389,7 @@ public:
     //     return this->t() + this->dt();
     // }
     // SimulatorTraits
-    
+
     Real t(void) const
     {
         return world_->t();

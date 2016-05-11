@@ -226,6 +226,19 @@ cdef class BDWorld:
         cdef Cpp_Real3 lengths = self.thisptr.get().actual_lengths()
         return Real3_from_Cpp_Real3(address(lengths))
 
+    def list_species(self):
+        """Return a list of species."""
+        cdef vector[Cpp_Species] species = self.thisptr.get().list_species()
+
+        retval = []
+        cdef vector[Cpp_Species].iterator it = species.begin()
+        while it != species.end():
+            retval.append(
+                 Species_from_Cpp_Species(
+                     <Cpp_Species*>(address(deref(it)))))
+            inc(it)
+        return retval
+
     def num_particles(self, Species sp = None):
         """num_particles(sp=None) -> Integer
 

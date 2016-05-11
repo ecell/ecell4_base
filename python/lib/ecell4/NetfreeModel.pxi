@@ -252,42 +252,27 @@ cdef class NetfreeModel:
             return Model_from_Cpp_Model(
                 self.thisptr.get().expand(_seeds))
 
-    def add_parameter(self, Species sp):
-        """add_parameter(sp)
+    def set_effective(self, effective):
+        """set_effective(effective)
 
-        This is for the tentative implementation of parameters.
-        This might be deprecated.
+        Set if this model uses effective or intrinsic kinetic rates.
 
-        """
-        self.thisptr.get().add_parameter(deref(sp.thisptr))
-
-    def add_parameters(self, attrs):
-        """add_parameters(attrs)
-
-        This is for the tentative implementation of parameters.
-        This might be deprecated.
+        Parameters
+        ----------
+        effective : bool
+            Whether this model is based on the effective reaction rates or not.
+            If True, this model automatically halve the rate of homodimerization
+            reactions.
 
         """
-        cdef vector[Cpp_Species] species
-        for sp in attrs:
-            species.push_back(deref((<Species>sp).thisptr))
-        self.thisptr.get().add_parameters(species)
+        self.thisptr.get().set_effective(effective)
 
-    def parameters(self):
-        """parameters()
+    def effective(self):
+        """effective()
 
-        This is for the tentative implementation of parameters.
-        This might be deprecated.
-
+        Return if this model uses effective or intrinsic kinetic rates.
         """
-        cdef vector[Cpp_Species] species = self.thisptr.get().parameters()
-        retval = []
-        cdef vector[Cpp_Species].iterator it = species.begin()
-        while it != species.end():
-            retval.append(Species_from_Cpp_Species(
-                <Cpp_Species*>(address(deref(it)))))
-            inc(it)
-        return retval
+        return self.thisptr.get().effective()
 
     def __reduce__(self):
         return (__rebuild_netfree_model, (self.species_attributes(), self.reaction_rules()))

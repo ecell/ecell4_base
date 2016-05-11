@@ -109,6 +109,10 @@ cdef class FixedIntervalNumberObserver:
             inc(it)
         return retval
 
+    def save(self, filename):
+        """Save data to an output with the given filename."""
+        self.thisptr.get().save(tostring(filename))
+
     def as_base(self):
         """Clone self as a base class. This function is for developers."""
         retval = Observer()
@@ -201,6 +205,10 @@ cdef class NumberObserver:
                      <Cpp_Species*>(address(deref(it)))))
             inc(it)
         return retval
+
+    def save(self, filename):
+        """Save data to an output with the given filename."""
+        self.thisptr.get().save(tostring(filename))
 
     def as_base(self):
         """Clone self as a base class. This function is for developers."""
@@ -295,6 +303,10 @@ cdef class TimingNumberObserver:
                      <Cpp_Species*>(address(deref(it)))))
             inc(it)
         return retval
+
+    def save(self, filename):
+        """Save data to an output with the given filename."""
+        self.thisptr.get().save(tostring(filename))
 
     def as_base(self):
         """Clone self as a base class. This function is for developers."""
@@ -504,23 +516,31 @@ cdef class FixedIntervalTrajectoryObserver:
 
     def __cinit__(self, Real dt, *args):
         cdef vector[Cpp_ParticleID] tmp
-        if len(args) == 0:
-            self.thisptr = new shared_ptr[Cpp_FixedIntervalTrajectoryObserver](
-                new Cpp_FixedIntervalTrajectoryObserver(dt))
-        elif len(args) == 1:
-            if isinstance(args[0], (tuple, list, set)):
-                for pid in args[0]:
-                    tmp.push_back(deref((<ParticleID>pid).thisptr))
+
+        if len(args) == 0 or not isinstance(args[0], (tuple, list, set)):
+            if len(args) == 0:
                 self.thisptr = new shared_ptr[Cpp_FixedIntervalTrajectoryObserver](
-                    new Cpp_FixedIntervalTrajectoryObserver(dt, tmp))
-            else:
+                    new Cpp_FixedIntervalTrajectoryObserver(dt))
+            elif len(args) == 1:
                 self.thisptr = new shared_ptr[Cpp_FixedIntervalTrajectoryObserver](
                     new Cpp_FixedIntervalTrajectoryObserver(dt, <bool>args[0]))
-        elif len(args) == 2:
+            elif len(args) == 2:
+                self.thisptr = new shared_ptr[Cpp_FixedIntervalTrajectoryObserver](
+                    new Cpp_FixedIntervalTrajectoryObserver(
+                        dt, <bool>args[0], <Real>args[1]))
+        else:
             for pid in args[0]:
                 tmp.push_back(deref((<ParticleID>pid).thisptr))
-            self.thisptr = new shared_ptr[Cpp_FixedIntervalTrajectoryObserver](
-                new Cpp_FixedIntervalTrajectoryObserver(dt, tmp, <bool>args[1]))
+            if len(args) == 1:
+                self.thisptr = new shared_ptr[Cpp_FixedIntervalTrajectoryObserver](
+                    new Cpp_FixedIntervalTrajectoryObserver(dt, tmp))
+            elif len(args) == 2:
+                self.thisptr = new shared_ptr[Cpp_FixedIntervalTrajectoryObserver](
+                    new Cpp_FixedIntervalTrajectoryObserver(dt, tmp, <bool>args[1]))
+            elif len(args) == 3:
+                self.thisptr = new shared_ptr[Cpp_FixedIntervalTrajectoryObserver](
+                    new Cpp_FixedIntervalTrajectoryObserver(
+                        dt, tmp, <bool>args[1], <Real>args[2]))
 
     def __dealloc__(self):
         del self.thisptr

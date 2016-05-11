@@ -112,6 +112,7 @@ struct NumberLogger
     }
 
     void log(const boost::shared_ptr<Space>& space);
+    void save(const std::string& filename) const;
 
     data_container_type data;
     species_container_type targets;
@@ -142,6 +143,11 @@ public:
     virtual void reset();
     NumberLogger::data_container_type data() const;
     NumberLogger::species_container_type targets() const;
+
+    void save(const std::string& filename) const
+    {
+        logger_.save(filename);
+    }
 
 protected:
 
@@ -175,6 +181,11 @@ public:
     const Integer num_steps() const;
     NumberLogger::data_container_type data() const;
     NumberLogger::species_container_type targets() const;
+
+    void save(const std::string& filename) const
+    {
+        logger_.save(filename);
+    }
 
 protected:
 
@@ -246,6 +257,11 @@ public:
     virtual void reset();
     NumberLogger::data_container_type data() const;
     NumberLogger::species_container_type targets() const;
+
+    void save(const std::string& filename) const
+    {
+        logger_.save(filename);
+    }
 
 protected:
 
@@ -342,27 +358,88 @@ protected:
     serial_map_type serials_;
 };
 
+struct FixedIntervalEvent
+{
+    FixedIntervalEvent(const Real& dt)
+        : t0(0.0), dt(dt), num_steps(0), count(0)
+    {
+        ;
+    }
+
+    virtual ~FixedIntervalEvent()
+    {
+        ;
+    }
+
+    const Real next_time() const
+    {
+        return t0 + dt * count;
+    }
+
+    void reset()
+    {
+        num_steps = 0;
+        count = 0;
+        t0 = 0; //DUMMY
+    }
+
+    void initialize(const Real t)
+    {
+        if (dt <= 0.0)
+        {
+            throw std::invalid_argument(
+                "A step interval must be positive.");
+        }
+
+        if (count == 0)
+        {
+            t0 = t;
+        }
+        else
+        {
+            while (next_time() < t)
+            {
+                ++count;
+            }
+        }
+    }
+
+    void fire()
+    {
+        ++num_steps;
+        ++count;
+    }
+
+public:
+
+    Real t0, dt;
+    Integer num_steps;
+    Integer count;
+};
+
 class FixedIntervalTrajectoryObserver
-    : public FixedIntervalObserver
+    : public Observer
 {
 public:
 
-    typedef FixedIntervalObserver base_type;
+    typedef Observer base_type;
 
 public:
 
     FixedIntervalTrajectoryObserver(
         const Real& dt, const std::vector<ParticleID>& pids,
-        const bool& resolve_boundary = true)
-        : base_type(dt), pids_(pids), resolve_boundary_(resolve_boundary),
+        const bool& resolve_boundary = true, const Real subdt = 0)
+        : base_type(false), event_(dt), subevent_(subdt > 0 ? subdt : dt),
+        pids_(pids), resolve_boundary_(resolve_boundary), prev_positions_(),
         trajectories_(pids.size()), strides_(pids.size()), t_()
     {
         ;
     }
 
     FixedIntervalTrajectoryObserver(
-        const Real& dt, const bool resolve_boundary = true)
-        : base_type(dt), pids_(), resolve_boundary_(resolve_boundary),
+        const Real& dt, const bool resolve_boundary = true, const Real subdt = 0)
+        : base_type(false), event_(dt), subevent_(subdt > 0 ? subdt : dt),
+        pids_(), resolve_boundary_(resolve_boundary), prev_positions_(),
         trajectories_(), strides_(), t_()
     {
         ;
@@ -373,6 +450,9 @@ public:
         ;
     }
 
+    const Real next_time() const;
+    const Integer num_steps() const;
+    const Integer count() const;
     virtual void initialize(const boost::shared_ptr<Space>& space);
     virtual bool fire(const Simulator* sim, const boost::shared_ptr<Space>& space);
     virtual void reset();
@@ -383,8 +463,11 @@ public:
 
 protected:
 
+    FixedIntervalEvent event_, subevent_;
+
     std::vector<ParticleID> pids_;
     bool resolve_boundary_;
+    std::vector<Real3> prev_positions_;
     std::vector<std::vector<Real3> > trajectories_;
     std::vector<Real3> strides_;
     std::vector<Real> t_;

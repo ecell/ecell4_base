@@ -17,13 +17,13 @@ bool is_unnamed_wildcard(const std::string& name)
 
 bool is_named_wildcard(const std::string& name)
 {
-    return (name.size() > 1 && name[0] == '_');
+    return (name.size() > 1 && name[0] == '_' && !is_pass_wildcard(name));
 }
 
-// bool is_freebond(const std::string& name)
-// {
-//     return name == "_free";
-// }
+bool is_pass_wildcard(const std::string& name)
+{
+    return name == "_0";
+}
 
 std::pair<bool, MatchObject::context_type> uspmatch(
     const UnitSpecies& pttrn, const UnitSpecies& usp,
@@ -35,7 +35,12 @@ std::pair<bool, MatchObject::context_type> uspmatch(
 
     if (is_wildcard(pttrn.name()))
     {
-        if (is_named_wildcard(pttrn.name()))
+        if (is_pass_wildcard(pttrn.name()))
+        {
+            throw NotSupported(
+                "A pass wildcard '_0' is not allowed to be a name of Species.");
+        }
+        else if (is_named_wildcard(pttrn.name()))
         {
             MatchObject::context_type::variable_container_type::const_iterator
                 itr(ctx.globals.find(pttrn.name()));
@@ -67,6 +72,11 @@ std::pair<bool, MatchObject::context_type> uspmatch(
                 {
                     return retval;
                 }
+                else if (is_pass_wildcard((*j).second.first))
+                {
+                    throw NotSupported(
+                        "A pass wildcard '_0' is not allowed to be a state.");
+                }
                 else if (is_unnamed_wildcard((*j).second.first))
                 {
                     ; // do nothing
@@ -90,12 +100,11 @@ std::pair<bool, MatchObject::context_type> uspmatch(
                 }
             }
 
-            // if (is_freebond((*j).second.second))
-            // {
-            //     ; // just skip checking
-            // }
-            // else
-            if ((*j).second.second == "")
+            if (is_pass_wildcard((*j).second.second))
+            {
+                ; // just skip checking
+            }
+            else if ((*j).second.second == "")
             {
                 if (site.second != "")
                 {
@@ -281,46 +290,9 @@ unsigned int __tag_units(
 }
 
 std::pair<std::vector<unsigned int>, unsigned int> tag_units(
-    const std::vector<UnitSpecies>& units)
+    const std::vector<UnitSpecies>& units,
+    const std::vector<std::vector<std::vector<UnitSpecies>::size_type> >& adj)
 {
-    utils::get_mapper_mf<std::string, unsigned int>::type tmp;
-    std::vector<std::vector<std::vector<UnitSpecies>::size_type> > adj;
-    adj.resize(units.size());
-
-    for (std::vector<UnitSpecies>::const_iterator i(units.begin());
-        i != units.end(); ++i)
-    {
-        const unsigned int idx(std::distance(units.begin(), i));
-
-        for (UnitSpecies::container_type::const_iterator j((*i).begin());
-            j != (*i).end(); ++j)
-        {
-            const std::string bond((*j).second.second);
-            if (bond == "" || is_wildcard(bond))
-            {
-                continue;
-            }
-
-            utils::get_mapper_mf<std::string, unsigned int>::type::iterator
-                itr(tmp.find(bond));
-            if (itr == tmp.end())
-            {
-                tmp[bond] = idx;
-            }
-            else
-            {
-                if (tmp[bond] == units.size())
-                {
-                    ; //WARN: a duplicated bond found
-                }
-
-                adj[idx].push_back((*itr).second);
-                adj[(*itr).second].push_back(idx);
-                tmp[bond] = units.size();
-            }
-        }
-    }
-
     std::pair<std::vector<unsigned int>, unsigned int> retval;
     retval.first.resize(units.size(), units.size());
     retval.second = 0;
@@ -422,10 +394,63 @@ int concatenate_units(std::vector<UnitSpecies>& units, const Species& sp, const 
     return bond_ministride;
 }
 
-std::vector<Species> group_units(const std::vector<UnitSpecies>& units)
+std::vector<Species> group_units(
+    const std::vector<UnitSpecies>& units, const ReactionRule::policy_type& policy)
 {
+    const unsigned int maxidx = units.size();
+    utils::get_mapper_mf<std::string, std::pair<std::string, unsigned int> >::type tmp;
+    std::vector<std::vector<std::vector<UnitSpecies>::size_type> > adj;
+    adj.resize(maxidx);
+
+    for (std::vector<UnitSpecies>::const_iterator i(units.begin());
+        i != units.end(); ++i)
+    {
+        const unsigned int idx(std::distance(units.begin(), i));
+
+        for (UnitSpecies::container_type::const_iterator j((*i).begin());
+            j != (*i).end(); ++j)
+        {
+            const std::string bond((*j).second.second);
+            if (bond == "" || is_wildcard(bond))
+            {
+                continue;
+            }
+
+            utils::get_mapper_mf<std::string, std::pair<std::string, unsigned int> >::type::iterator
+                itr(tmp.find(bond));
+            if (itr == tmp.end())
+            {
+                tmp[bond] = std::make_pair((*j).first, idx);
+            }
+            else
+            {
+                if (tmp[bond].second == maxidx)
+                {
+                    ; //WARN: a duplicated bond found
+                }
+
+                adj[idx].push_back((*itr).second.second);
+                adj[(*itr).second.second].push_back(idx);
+                tmp[bond].second = units.size();  // This means the bond is already assigned.
+            }
+        }
+    }
+
+    if ((policy & ReactionRule::STRICT) && !(policy & (ReactionRule::DESTROY | ReactionRule::IMPLICIT)))
+    {
+        for (utils::get_mapper_mf<std::string, std::pair<std::string, unsigned int> >::type::const_iterator
+            i(tmp.begin()); i != tmp.end(); ++i)
+        {
+            if ((*i).second.second != maxidx)
+            {
+                throw IllegalState("A bond is not resolved.");
+            }
+        }
+    }
+
     std::pair<std::vector<unsigned int>, unsigned int>
-        group_ids_pair(tag_units(units));
+        group_ids_pair(tag_units(units, adj));
+
     std::vector<Species> products;
     products.resize(group_ids_pair.second);
     // for (std::vector<UnitSpecies>::iterator i(units.begin());
@@ -458,18 +483,26 @@ std::vector<Species> group_units(const std::vector<UnitSpecies>& units)
                 {
                     continue;
                 }
-                utils::get_mapper_mf<std::string, std::string>::type::const_iterator
-                    itr(new_bonds.find(bond));
-                if (itr == new_bonds.end())
+
+                if ((policy & ReactionRule::IMPLICIT) && tmp[bond].second != maxidx)
                 {
-                    const std::string new_bond(itos(stride));
-                    ++stride;
-                    new_bonds[bond] = new_bond;
-                    site.second.second = new_bond;
+                    site.second.second = "";
                 }
                 else
                 {
-                    site.second.second = (*itr).second;
+                    utils::get_mapper_mf<std::string, std::string>::type::const_iterator
+                        itr(new_bonds.find(bond));
+                    if (itr == new_bonds.end())
+                    {
+                        const std::string new_bond(itos(stride));
+                        ++stride;
+                        new_bonds[bond] = new_bond;
+                        site.second.second = new_bond;
+                    }
+                    else
+                    {
+                        site.second.second = (*itr).second;
+                    }
                 }
             }
 
@@ -478,6 +511,28 @@ std::vector<Species> group_units(const std::vector<UnitSpecies>& units)
 
         // products[idx] = format_species(products[idx]);
     }
+
+    if (policy & ReactionRule::DESTROY)
+    {
+        std::vector<unsigned int> removed;
+        for (utils::get_mapper_mf<std::string, std::pair<std::string, unsigned int> >::type::const_iterator
+            i(tmp.begin()); i != tmp.end(); ++i)
+        {
+            if ((*i).second.second != maxidx)
+            {
+                removed.push_back(group_ids_pair.first[(*i).second.second]);
+            }
+        }
+        std::sort(removed.begin(), removed.end());
+        removed.erase(std::unique(removed.begin(), removed.end()), removed.end());
+
+        for (std::vector<unsigned int>::const_reverse_iterator
+            i(removed.rbegin()); i != removed.rend(); ++i)
+        {
+            products.erase(products.begin() + *i);
+        }
+    }
+
     return products;
 }
 
@@ -607,6 +662,7 @@ std::vector<Species> ReactionRuleExpressionMatcher::generate()
                 if ((*i).second.second.size() != 1)
                 {
                     ; //XXX: no named wildcard is allowed here
+                    ; //XXX: how about the pass wildcard?
                 }
 
                 ; // do nothing
@@ -658,7 +714,7 @@ std::vector<Species> ReactionRuleExpressionMatcher::generate()
         units.erase(units.begin() + *i);
     }
 
-    return group_units(units);
+    return group_units(units, pttrn_.policy());
     // std::cout << std::endl << "before: ";
     // for (ReactionRule::reactant_container_type::const_iterator i(target_.begin());
     //     i != target_.end(); ++i)
@@ -715,17 +771,17 @@ std::pair<bool, MatchObject::context_type> MatchObject::next()
     return std::make_pair(false, MatchObject::context_type());
 }
 
-ReactionRule create_reaction_rule_formatted(
-    const ReactionRule::reactant_container_type& reactants,
-    const ReactionRule::product_container_type& products, const Real k)
-{
-    ReactionRule rr(reactants, ReactionRule::product_container_type(), k);
-    for (ReactionRule::product_container_type::const_iterator i(products.begin());
-        i != products.end(); ++i)
-    {
-        rr.add_product(format_species(*i));
-    }
-    return rr;
-}
+// ReactionRule create_reaction_rule_formatted(
+//     const ReactionRule::reactant_container_type& reactants,
+//     const ReactionRule::product_container_type& products, const Real k)
+// {
+//     ReactionRule rr(reactants, ReactionRule::product_container_type(), k);
+//     for (ReactionRule::product_container_type::const_iterator i(products.begin());
+//         i != products.end(); ++i)
+//     {
+//         rr.add_product(format_species(*i));
+//     }
+//     return rr;
+// }
 
 } // ecell4

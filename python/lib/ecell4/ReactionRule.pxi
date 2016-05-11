@@ -11,6 +11,10 @@ cdef class ReactionRule:
 
     """
 
+    STRICT = Cpp_STRICT
+    IMPLICIT = Cpp_IMPLICIT
+    DESTROY = Cpp_DESTROY
+
     def __init__(self, reactants=None, products=None, k=None):
         """Constructor.
 
@@ -145,6 +149,28 @@ cdef class ReactionRule:
         u'A+B>C|1'
         """
         return self.thisptr.as_string().decode('UTF-8')
+
+    def policy(self):
+        """policy() -> int
+
+        Return a policy for the rule-based modeling.
+
+        """
+        return self.thisptr.policy()
+
+    def set_policy(self, policy):
+        """set_policy(policy)
+
+        Set a policy for the rule-based modeling.
+
+        Examples
+        --------
+
+        >>> rr = ReactionRule()
+        >>> rr.set_policy(ReactionRule.STRICT | ReactionRule.DESTROY)
+
+        """
+        self.thisptr.set_policy(policy)
 
     def count(self, reactants):
         """count(reactants) -> Integer

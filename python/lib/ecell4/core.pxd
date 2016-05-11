@@ -91,9 +91,9 @@ cdef extern from "ecell4/core/Species.hpp" namespace "ecell4":
         bool operator>(Cpp_Species& rhs)
         string serial() # string == serial_type
         string get_attribute(string)
-        Integer count(Cpp_Species& sp)
+        Integer count(Cpp_Species& sp) except +
         void set_attribute(string, string)
-        void remove_attribute(string) except+
+        void remove_attribute(string) except +
         bool has_attribute(string)
         vector[pair[string, string]] list_attributes()
         # Integer get_unit(Cpp_UnitSpecies)
@@ -112,6 +112,12 @@ cdef Species Species_from_Cpp_Species(Cpp_Species *sp)
 ## Cpp_ReactionRule
 #  ecell4::ReactionRule
 cdef extern from "ecell4/core/ReactionRule.hpp" namespace "ecell4":
+    cdef enum Cpp_ReactionRulePolicyType "ecell4::ReactionRule::policy_type":
+        Cpp_STRICT "ecell4::ReactionRule::STRICT"
+        Cpp_IMPLICIT "ecell4::ReactionRule::IMPLICIT"
+        Cpp_DESTROY "ecell4::ReactionRule::DESTROY"
+
+cdef extern from "ecell4/core/ReactionRule.hpp" namespace "ecell4":
     cdef cppclass Cpp_ReactionRule "ecell4::ReactionRule":
         Cpp_ReactionRule() except +
         Cpp_ReactionRule(vector[Cpp_Species]&, vector[Cpp_Species]&)
@@ -126,8 +132,10 @@ cdef extern from "ecell4/core/ReactionRule.hpp" namespace "ecell4":
         void add_reactant(Cpp_Species)
         void add_product(Cpp_Species)
         string as_string()
-        Integer count(vector[Cpp_Species])
-        vector[Cpp_ReactionRule] generate(vector[Cpp_Species])
+        Cpp_ReactionRulePolicyType policy()
+        void set_policy(Cpp_ReactionRulePolicyType)
+        Integer count(vector[Cpp_Species]) except +
+        vector[Cpp_ReactionRule] generate(vector[Cpp_Species]) except +
 
 ## ReactionRule
 #  a python wrapper for Cpp_ReactionRule
@@ -217,13 +225,9 @@ cdef extern from "ecell4/core/Model.hpp" namespace "ecell4":
         void add_species_attributes(vector[Cpp_Species]) except +
         void add_reaction_rules(vector[Cpp_ReactionRule]) except +
 
-        shared_ptr[Cpp_Model] expand(vector[Cpp_Species])
-        shared_ptr[Cpp_Model] expand(vector[Cpp_Species], Integer)
-        shared_ptr[Cpp_Model] expand(vector[Cpp_Species], Integer, map[Cpp_Species, Integer])
-
-        void add_parameter(Cpp_Species sp)
-        vector[Cpp_Species] parameters()
-        void add_parameters(vector[Cpp_Species])
+        shared_ptr[Cpp_Model] expand(vector[Cpp_Species]) except +
+        shared_ptr[Cpp_Model] expand(vector[Cpp_Species], Integer) except +
+        shared_ptr[Cpp_Model] expand(vector[Cpp_Species], Integer, map[Cpp_Species, Integer]) except +
 
 ## Model
 #  a python wrapper for Cpp_Model, but wrapped by shared_ptr
@@ -257,13 +261,9 @@ cdef extern from "ecell4/core/NetworkModel.hpp" namespace "ecell4":
         void add_species_attributes(vector[Cpp_Species]) except +
         void add_reaction_rules(vector[Cpp_ReactionRule]) except +
 
-        shared_ptr[Cpp_Model] expand(vector[Cpp_Species])
-        shared_ptr[Cpp_Model] expand(vector[Cpp_Species], Integer)
-        shared_ptr[Cpp_Model] expand(vector[Cpp_Species], Integer, map[Cpp_Species, Integer])
-
-        void add_parameter(Cpp_Species sp)
-        vector[Cpp_Species] parameters()
-        void add_parameters(vector[Cpp_Species])
+        shared_ptr[Cpp_Model] expand(vector[Cpp_Species]) except +
+        shared_ptr[Cpp_Model] expand(vector[Cpp_Species], Integer) except +
+        shared_ptr[Cpp_Model] expand(vector[Cpp_Species], Integer, map[Cpp_Species, Integer]) except +
 
 ## NetworkModel
 #  a python wrapper for Cpp_NetowrkModel, but wrapped by shared_ptr
@@ -298,13 +298,12 @@ cdef extern from "ecell4/core/NetfreeModel.hpp" namespace "ecell4":
         void add_species_attributes(vector[Cpp_Species]) except +
         void add_reaction_rules(vector[Cpp_ReactionRule]) except +
 
-        shared_ptr[Cpp_Model] expand(vector[Cpp_Species])
-        shared_ptr[Cpp_Model] expand(vector[Cpp_Species], Integer)
-        shared_ptr[Cpp_Model] expand(vector[Cpp_Species], Integer, map[Cpp_Species, Integer])
+        shared_ptr[Cpp_Model] expand(vector[Cpp_Species]) except +
+        shared_ptr[Cpp_Model] expand(vector[Cpp_Species], Integer) except +
+        shared_ptr[Cpp_Model] expand(vector[Cpp_Species], Integer, map[Cpp_Species, Integer]) except +
 
-        void add_parameter(Cpp_Species sp)
-        vector[Cpp_Species] parameters()
-        void add_parameters(vector[Cpp_Species])
+        void set_effective(bool)
+        bool effective()
 
 ## NetfreeModel
 #  a python wrapper for Cpp_NetfreeModel, but wrapped by shared_ptr
@@ -446,6 +445,7 @@ cdef extern from "ecell4/core/observers.hpp" namespace "ecell4":
         vector[vector[Real]] data()
         vector[Cpp_Species] targets()
         void reset()
+        void save(string)
 
     cdef cppclass Cpp_NumberObserver "ecell4::NumberObserver":
         Cpp_NumberObserver(vector[string]) except +
@@ -454,6 +454,7 @@ cdef extern from "ecell4/core/observers.hpp" namespace "ecell4":
         vector[vector[Real]] data()
         vector[Cpp_Species] targets()
         void reset()
+        void save(string)
 
     cdef cppclass Cpp_FixedIntervalHDF5Observer "ecell4::FixedIntervalHDF5Observer":
         Cpp_FixedIntervalHDF5Observer(Real, string) except +
@@ -477,8 +478,10 @@ cdef extern from "ecell4/core/observers.hpp" namespace "ecell4":
     cdef cppclass Cpp_FixedIntervalTrajectoryObserver "ecell4::FixedIntervalTrajectoryObserver":
         Cpp_FixedIntervalTrajectoryObserver(Real, vector[Cpp_ParticleID]) except +
         Cpp_FixedIntervalTrajectoryObserver(Real, vector[Cpp_ParticleID], bool) except +
+        Cpp_FixedIntervalTrajectoryObserver(Real, vector[Cpp_ParticleID], bool, Real) except +
         Cpp_FixedIntervalTrajectoryObserver(Real) except +
         Cpp_FixedIntervalTrajectoryObserver(Real, bool) except +
+        Cpp_FixedIntervalTrajectoryObserver(Real, bool, Real) except +
         Real next_time()
         Integer num_steps()
         Integer num_tracers()
@@ -493,6 +496,7 @@ cdef extern from "ecell4/core/observers.hpp" namespace "ecell4":
         vector[vector[Real]] data()
         vector[Cpp_Species] targets()
         void reset()
+        void save(string)
 
     cdef cppclass Cpp_TimeoutObserver "ecell4::TimeoutObserver":
         Cpp_TimeoutObserver() except +

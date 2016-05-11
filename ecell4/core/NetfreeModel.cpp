@@ -21,7 +21,8 @@ std::vector<ReactionRule> NetfreeModel::query_reaction_rules(
         for (std::vector<ReactionRule>::const_iterator j(generated.begin());
             j != generated.end(); ++j)
         {
-            const ReactionRule rr = create_reaction_rule_formatted(*j);
+            // const ReactionRule rr = create_reaction_rule_formatted(*j);
+            const ReactionRule rr = format_reaction_rule_with_nosort(*j);
             std::vector<ReactionRule>::iterator
                 it = std::find(retval.begin(), retval.end(), rr);
             if (it == retval.end())
@@ -121,7 +122,8 @@ std::vector<ReactionRule> NetfreeModel::query_reaction_rules(
         for (std::vector<ReactionRule>::const_iterator j(generated.begin());
             j != generated.end(); ++j)
         {
-            const ReactionRule rr = create_reaction_rule_formatted(*j);
+            // const ReactionRule rr = create_reaction_rule_formatted(*j);
+            const ReactionRule rr = format_reaction_rule_with_nosort(*j);
             std::vector<ReactionRule>::iterator
                 it = std::find(retval.begin(), retval.end(), rr);
             if (it == retval.end())
@@ -131,6 +133,18 @@ std::vector<ReactionRule> NetfreeModel::query_reaction_rules(
             else
             {
                 (*it).set_k((*it).k() + rr.k());
+            }
+        }
+    }
+
+    if (effective_)
+    {
+        for (std::vector<ReactionRule>::iterator i(retval.begin()); i != retval.end(); ++i)
+        {
+            const ReactionRule& rr(*i);
+            if (rr.reactants()[0] == rr.reactants()[1])
+            {
+                (*i).set_k(rr.k() * 0.5);
             }
         }
     }
@@ -479,35 +493,6 @@ void __generate_recurse(
     seeds1.swap(newseeds);
 }
 
-ReactionRule format_reaction_rule(const ReactionRule& rr)
-{
-    ReactionRule::reactant_container_type reactants;
-    reactants.reserve(rr.reactants().size());
-    for (ReactionRule::reactant_container_type::const_iterator i(rr.reactants().begin());
-        i != rr.reactants().end(); ++i)
-    {
-        reactants.push_back(format_species(*i));
-    }
-
-    ReactionRule::product_container_type products;
-    products.reserve(rr.products().size());
-    for (ReactionRule::product_container_type::const_iterator i(rr.products().begin());
-        i != rr.products().end(); ++i)
-    {
-        products.push_back(format_species(*i));
-    }
-
-    std::sort(reactants.begin(), reactants.end());
-    std::sort(products.begin(), products.end());
-    return ReactionRule(reactants, products, rr.k());
-    // ReactionRule::reactant_container_type reactants(rr.reactants());
-    // ReactionRule::product_container_type products(rr.products());
-    // std::sort(reactants.begin(), reactants.end());
-    // std::sort(products.begin(), products.end());
-    // return ReactionRule(reactants, products, rr.k());
-    // return rr;
-}
-
 std::pair<boost::shared_ptr<NetworkModel>, bool> generate_network_from_netfree_model(
     const NetfreeModel& nfm, const std::vector<Species>& seeds, const Integer max_itr,
     const std::map<Species, Integer>& max_stoich)
@@ -560,11 +545,27 @@ std::pair<boost::shared_ptr<NetworkModel>, bool> generate_network_from_netfree_m
     {
         (*nwm).add_species_attribute(nfm.apply_species_attributes(*i));
     }
-    for (std::vector<ReactionRule>::const_iterator i(reactions.begin());
-        i != reactions.end(); ++i)
+    if (nfm.effective())
     {
-        const ReactionRule rr(format_reaction_rule(*i));
-        (*nwm).add_reaction_rule(rr);
+        for (std::vector<ReactionRule>::const_iterator i(reactions.begin());
+            i != reactions.end(); ++i)
+        {
+            ReactionRule rr(format_reaction_rule(*i));
+            if (rr.reactants().size() == 2 && rr.reactants()[0] == rr.reactants()[1])
+            {
+                rr.set_k(rr.k() * 0.5);
+            }
+
+            (*nwm).add_reaction_rule(rr);
+        }
+    }
+    else
+    {
+        for (std::vector<ReactionRule>::const_iterator i(reactions.begin());
+            i != reactions.end(); ++i)
+        {
+            (*nwm).add_reaction_rule(format_reaction_rule(*i));
+        }
     }
     return std::make_pair(nwm, is_completed);
 }

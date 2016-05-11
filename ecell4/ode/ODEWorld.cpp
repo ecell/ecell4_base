@@ -1,6 +1,6 @@
 #include "ODEWorld.hpp"
 #include <ecell4/core/extras.hpp>
-
+#include <ecell4/core/exceptions.hpp>
 
 namespace ecell4
 {
@@ -84,6 +84,43 @@ void ODEWorld::load(const std::string& filename)
     throw NotSupported(
         "This method requires HDF5. The HDF5 support is turned off.");
 #endif
+}
+
+Real ODEWorld::evaluate(ODEReactionRule& rr) const
+{
+    //XXX: rr cannot be const because ratelaw.deriv_func is not const.
+    ODERatelaw::state_container_type::size_type cnt(0);
+    const ODEReactionRule::reactant_container_type reactants(rr.reactants()); //XXX: ODEReactionRule should return the const reference of reactants, but not yet.
+    ODERatelaw::state_container_type rvalues(reactants.size());
+    for (ODEReactionRule::reactant_container_type::const_iterator
+         i(reactants.begin()); i != reactants.end(); i++, cnt++)
+    {
+        rvalues[cnt] = get_value_exact(*i);
+    }
+
+    cnt = 0;
+    const ODEReactionRule::product_container_type products(rr.products()); //XXX: ODEReactionRule should return the const reference of products, but not yet.
+    ODERatelaw::state_container_type pvalues(products.size());
+    for (ODEReactionRule::product_container_type::const_iterator
+         i(products.begin()); i != products.end(); i++, cnt++)
+    {
+        pvalues[cnt] = get_value_exact(*i);
+    }
+
+    if (rr.has_ratelaw())
+    {
+        boost::shared_ptr<ODERatelaw> ratelaw(rr.get_ratelaw());
+        if (!ratelaw->is_available())
+        {
+            throw IllegalState("The given rate law is not available.");
+        }
+        return ratelaw->deriv_func(rvalues, pvalues, volume(), t(), rr);
+    }
+    else
+    {
+        return ODERatelawMassAction(rr.k()).deriv_func(
+            rvalues, pvalues, volume(), t(), rr);
+    }
 }
 
 } // ode

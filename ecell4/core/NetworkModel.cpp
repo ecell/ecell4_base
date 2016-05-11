@@ -112,7 +112,7 @@ void NetworkModel::add_reaction_rule(const ReactionRule& rr)
         // throw AlreadyExists("reaction rule already exists");
         // std::cerr << "WARN: reaction rule ["
         //     << rr.as_string() << "] already exists." << std::endl;
-        (*i) = ReactionRule((*i).reactants(), (*i).products(), (*i).k() + rr.k());
+        (*i).set_k((*i).k() + rr.k());
         return;
     }
 

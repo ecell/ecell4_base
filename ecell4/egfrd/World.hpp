@@ -684,6 +684,22 @@ public:
         return retval;
     }
 
+    std::vector<ecell4::Species> list_species() const
+    {
+        std::vector<ecell4::Species> retval;
+        BOOST_FOREACH(particle_id_pair p, this->get_particles_range())
+        {
+            // ecell4::Species::serial_type == species_id_type
+            const ecell4::Species& sp(p.second.species());
+            if (std::find(retval.begin(), retval.end(), sp)
+                == retval.end())
+            {
+                retval.push_back(sp);
+            }
+        }
+        return retval;
+    }
+
     std::vector<std::pair<std::pair<particle_id_type, particle_type>, length_type> >
     list_particles_within_radius(
         const position_type& pos, const length_type& radius) const

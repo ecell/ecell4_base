@@ -1,4 +1,5 @@
 import sys
+import os.path
 import glob
 import unittest
 
@@ -13,6 +14,17 @@ except ImportError:
     print("You don't seem to have Cython installed. Please get a")
     print("copy from www.cython.org and install it")
     sys.exit(1)
+
+#XXX: $ cmake .
+#XXX: $ make BesselTables
+#XXX: $ cd python
+#XXX: $ mkdir src
+#XXX: $ cp ../ecell4 src/.
+#XXX: $ cp ../ipynb src/.
+#XXX: $ python setup.py sdict
+#XXX: $ pip install dist/ecell-4.0.0.tar.gz
+# STATIC_BUILD = True
+STATIC_BUILD = False
 
 sys.path.append("./lib")
 
@@ -94,6 +106,22 @@ if with_hdf5:
         extra_compile_args.extend(
             ["-D_HDF5USEDLL_", "-DHDF5CPP_USEDLL", "-DH5_BUILT_AS_DYNAMIC_LIB"])
 
+src_path = ".."
+
+if STATIC_BUILD:
+    src_path = "./src"
+    with_cpp_shared_libraries = False
+    if not (os.path.isdir(os.path.join(src_path, "ecell4"))
+            and os.path.isdir(os.path.join(src_path, "ipynb"))):
+        raise IOError(
+            ("The source directory '{0}/ecell4' or '{0}/ipynb' was not found."
+             + "Do as follows: cp -r ../ecell4 {0}/.").format(src_path))
+    elif (os.path.islink(os.path.join(src_path, "ecell4"))
+            or os.path.islink(os.path.join(src_path, "ipynb"))):
+        raise UserWarning(
+            ("The source directory '{0}/ecell4' or '{0}/ipynb' is a symbolic link."
+             + "It might fail to be scanned properly."))
+
 if with_cpp_shared_libraries:
     ext_modules = [
         Extension("ecell4.core", sources=["lib/ecell4/core.pyx"],
@@ -120,52 +148,45 @@ if with_cpp_shared_libraries:
         ]
     ext_modules = cythonize(ext_modules)
 else:
-    # ext_modules = cythonize(
-    #         glob.glob("lib/ecell4/*.pyx"),
-    #         sources=glob.glob("../ecell4/*/*.cpp"),  #XXX: Not safe
-    #         include_path=[".", ".."],
-    #         extra_compile_args=extra_compile_args,
-    #         libraries=dependent_libs, language="c++", setup_requires=["Cython"])
-
-    core_src = glob.glob("../ecell4/core/*.cpp")
+    core_src = glob.glob(os.path.join(src_path, "ecell4/core/*.cpp"))
 
     ext_modules = [
         Extension("ecell4.core", sources=["lib/ecell4/core.pyx"] + core_src,
             extra_compile_args=extra_compile_args,
-            include_dirs=[".", ".."], libraries=dependent_libs, language="c++"),
+            include_dirs=[src_path], libraries=dependent_libs, language="c++"),
         Extension("ecell4.gillespie",
             sources=["lib/ecell4/gillespie.pyx"]
-                + glob.glob("../ecell4/gillespie/*.cpp") + core_src,
+                + glob.glob(os.path.join(src_path, "ecell4/gillespie/*.cpp")) + core_src,
             extra_compile_args=extra_compile_args,
-            libraries=dependent_libs, include_dirs=[".", ".."], language="c++"),
+            libraries=dependent_libs, include_dirs=[src_path], language="c++"),
         Extension("ecell4.bd",
             sources=["lib/ecell4/bd.pyx"]
-                + glob.glob("../ecell4/bd/*.cpp") + core_src,
+                + glob.glob(os.path.join(src_path, "ecell4/bd/*.cpp")) + core_src,
             extra_compile_args=extra_compile_args,
-            libraries=dependent_libs, include_dirs=[".", ".."], language="c++"),
+            libraries=dependent_libs, include_dirs=[src_path], language="c++"),
         Extension("ecell4.ode",
             sources=["lib/ecell4/ode.pyx"]
-                + glob.glob("../ecell4/ode/*.cpp") + core_src,
+                + glob.glob(os.path.join(src_path, "ecell4/ode/*.cpp")) + core_src,
             extra_compile_args=extra_compile_args,
-            libraries=dependent_libs, include_dirs=[".", ".."], language="c++"),
+            libraries=dependent_libs, include_dirs=[src_path], language="c++"),
         Extension("ecell4.spatiocyte",
             sources=["lib/ecell4/spatiocyte.pyx"]
-                + glob.glob("../ecell4/spatiocyte/*.cpp") + core_src,
+                + glob.glob(os.path.join(src_path, "ecell4/spatiocyte/*.cpp")) + core_src,
             extra_compile_args=extra_compile_args,
-            libraries=dependent_libs, include_dirs=[".", ".."], language="c++"),
+            libraries=dependent_libs, include_dirs=[src_path], language="c++"),
         Extension("ecell4.meso",
             sources=["lib/ecell4/meso.pyx"]
-                + glob.glob("../ecell4/meso/*.cpp") + core_src,
+                + glob.glob(os.path.join(src_path, "ecell4/meso/*.cpp")) + core_src,
             extra_compile_args=extra_compile_args,
-            libraries=dependent_libs, include_dirs=[".", ".."], language="c++"),
+            libraries=dependent_libs, include_dirs=[src_path], language="c++"),
         ]
     if with_egfrd:
         ext_modules.append(Extension("ecell4.egfrd",
             sources=["lib/ecell4/egfrd.pyx"]
-                + glob.glob("../ecell4/egfrd/*.cpp") + core_src,
+                + glob.glob(os.path.join(src_path, "ecell4/egfrd/*.cpp")) + core_src,
             extra_compile_args=extra_compile_args,
-            libraries=dependent_libs, include_dirs=[".", ".."], language="c++"))
-    
+            libraries=dependent_libs, include_dirs=[src_path], language="c++"))
+
     ext_modules = cythonize(ext_modules)
 
 setup(
@@ -175,13 +196,17 @@ setup(
     package_data = {"ecell4.util": [
         "templates/init_ipynb.js", "templates/init_cyjs.js", "templates/template.html",
         "templates/*.tmpl", "templates/ecelllogo/*.png"]},
-    data_files = [('ecell4ipynb', ['../ipynb/index.ipynb']),
-                  ('ecell4ipynb/Tutorials', glob.glob('../ipynb/Tutorials/*.ipynb')),
-                  ('ecell4ipynb/Examples', glob.glob('../ipynb/Examples/*.ipynb')),
-                  ('ecell4ipynb/Tests', glob.glob('../ipynb/Tests/*.ipynb')),
-                  ('ecell4ipynb/Sandbox', glob.glob('../ipynb/Sandbox/*.ipynb')),
+    data_files = [('ecell4ipynb', [os.path.join(src_path, 'ipynb/index.ipynb')]),
+                  ('ecell4ipynb/Tutorials', glob.glob(os.path.join(src_path, 'ipynb/Tutorials/*.ipynb'))),
+                  ('ecell4ipynb/Examples', glob.glob(os.path.join(src_path, 'ipynb/Examples/*.ipynb'))),
+                  ('ecell4ipynb/Tests', glob.glob(os.path.join(src_path, 'ipynb/Tests/*.ipynb'))),
+                  ('ecell4ipynb/Sandbox', glob.glob(os.path.join(src_path, 'ipynb/Sandbox/*.ipynb'))),
                   ],
     packages = ["ecell4", "ecell4.util", "ecell4.extra"],
     cmdclass = {'build_ext': build_ext, 'test': run_tests},
+    license = "the GNU General Public License v2",
+    author = "Kazunari Kaizu",
+    author_email = "kaizu@riken.jp",
+    url = "https://github.com/ecell/ecell4",
     ext_modules = ext_modules
     )

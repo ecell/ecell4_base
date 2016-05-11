@@ -395,6 +395,66 @@ cdef class SpatiocyteWorld:
         """
         return self.thisptr.get().get_value_exact(deref(sp.thisptr))
 
+    def list_species(self):
+        """list_species() -> [Species]
+
+        Return the list of species.
+
+        Returns
+        -------
+        list:
+            The list of species
+        """
+        cdef vector[Cpp_Species] species = self.thisptr.get().list_species()
+        retval = []
+        cdef vector[Cpp_Species].iterator it = species.begin()
+        while it != species.end():
+            retval.append(
+                 Species_from_Cpp_Species(
+                     <Cpp_Species*>(address(deref(it)))))
+            inc(it)
+        return retval
+
+    def list_structure_species(self):
+        """list_structure_species() -> [Species]
+
+        Return the list of structure species.
+
+        Returns
+        -------
+        list:
+            The list of species constructing structure
+        """
+        cdef vector[Cpp_Species] species = self.thisptr.get().list_structure_species()
+        retval = []
+        cdef vector[Cpp_Species].iterator it = species.begin()
+        while it != species.end():
+            retval.append(
+                 Species_from_Cpp_Species(
+                     <Cpp_Species*>(address(deref(it)))))
+            inc(it)
+        return retval
+
+    def list_non_structure_species(self):
+        """list_non_structure_species() -> [Species]
+
+        Return the list of non-structure species.
+
+        Returns
+        -------
+        list:
+            The list of species not constructing structure
+        """
+        cdef vector[Cpp_Species] species = self.thisptr.get().list_non_structure_species()
+        retval = []
+        cdef vector[Cpp_Species].iterator it = species.begin()
+        while it != species.end():
+            retval.append(
+                 Species_from_Cpp_Species(
+                     <Cpp_Species*>(address(deref(it)))))
+            inc(it)
+        return retval
+
     def num_particles(self, Species sp = None):
         """num_particles(sp=None) -> Integer
 
@@ -527,6 +587,56 @@ cdef class SpatiocyteWorld:
         """
         cdef vector[pair[Cpp_ParticleID, Cpp_Particle]] particles
         particles = self.thisptr.get().list_particles_exact(deref(sp.thisptr))
+
+        retval = []
+        cdef vector[pair[Cpp_ParticleID, Cpp_Particle]].iterator \
+            it = particles.begin()
+        while it != particles.end():
+            retval.append(
+                (ParticleID_from_Cpp_ParticleID(
+                     <Cpp_ParticleID*>(address(deref(it).first))),
+                 Particle_from_Cpp_Particle(
+                     <Cpp_Particle*>(address(deref(it).second)))))
+            inc(it)
+        return retval
+
+    def list_structure_particles(self):
+        """list_strucutre_particles() -> [(ParticleID, Particle)]
+
+        Return the list of structure particles
+
+        Returns
+        -------
+        list:
+            The list of particles constructing a structure
+        """
+        cdef vector[pair[Cpp_ParticleID, Cpp_Particle]] particles
+        particles = self.thisptr.get().list_structure_particles()
+
+        retval = []
+        cdef vector[pair[Cpp_ParticleID, Cpp_Particle]].iterator \
+            it = particles.begin()
+        while it != particles.end():
+            retval.append(
+                (ParticleID_from_Cpp_ParticleID(
+                     <Cpp_ParticleID*>(address(deref(it).first))),
+                 Particle_from_Cpp_Particle(
+                     <Cpp_Particle*>(address(deref(it).second)))))
+            inc(it)
+        return retval
+
+    def list_non_structure_particles(self):
+        """list_strucutre_particles() -> [(ParticleID, Particle)]
+
+        Return the list of non-structure particles
+
+        Returns
+        -------
+        list:
+            The list of particles not constructing a structure
+        """
+        cdef vector[pair[Cpp_ParticleID, Cpp_Particle]] particles
+        particles = self.thisptr.get().list_non_structure_particles()
 
         retval = []
         cdef vector[pair[Cpp_ParticleID, Cpp_Particle]].iterator \
