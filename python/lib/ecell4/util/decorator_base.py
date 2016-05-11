@@ -107,7 +107,7 @@ class ParseDecorator:
                 del vardict[ignore]
 
         if "_eval" not in vardict.keys():
-            vardict["_eval"] = self.__evaluate
+            vardict["_eval"] = self.evaluate
         if "_callback" not in vardict.keys():
             vardict["_callback"] = self.__callback
         else:
@@ -143,7 +143,7 @@ class ParseDecorator:
             "_i1", "_i2", "_i3", "_dh", "_sh", "_oh")
 
         if "_eval" not in calling_frame.f_globals.keys():
-            calling_frame.f_globals["_eval"] = self.__evaluate
+            calling_frame.f_globals["_eval"] = self.evaluate
             self.__newvars["_eval"] = None
         if "_callback" not in calling_frame.f_globals.keys():
             calling_frame.f_globals["_callback"] = self.__callback
@@ -182,7 +182,7 @@ class ParseDecorator:
                     calling_frame.f_globals[k] = v
                     # print "WARNING: '%s' was recovered to be '%s'." % (k, v)
 
-    def __evaluate(self, expr, params={}):
+    def evaluate(self, expr, params={}):
         class AnyCallableLocals:
 
             def __init__(self, callback, locals):
@@ -193,6 +193,7 @@ class ParseDecorator:
                 if key in self.locals.keys():
                     return self.locals[key]
                 return parseobj.AnyCallable(self.callback, key)
+
         l = locals()
         l.update(params)
         return eval(expr, globals(), AnyCallableLocals(self.__callback, l))
