@@ -1,6 +1,23 @@
 import itertools
+import copy
+
 import ecell4
 
+def replace_parseobj(expr, substitutes={}):
+    import ecell4.util.decorator_base
+    obj = ecell4.util.decorator_base.just_parse().evaluate(expr)
+
+    from ecell4.util.decorator import traverse_ParseObj
+    keys = []
+    newexpr = str(traverse_ParseObj(copy.deepcopy(obj), keys))
+    names = []
+    for key in keys:
+        if key in substitutes.keys():
+            names.append(substitutes[key])
+        else:
+            raise RuntimeError(
+                'unknown variable [{}] was used.'.format(key))
+    return newexpr.format(*names)
 
 def export_sbml(model, y0={}, volume=1.0):
     """
@@ -18,9 +35,11 @@ def export_sbml(model, y0={}, volume=1.0):
     import libsbml
 
     document = libsbml.SBMLDocument(3, 1)
-    ns = libsbml.XMLNamespaces()
-    ns.add("http://www.ecell.org/ns/ecell4", "ecell4")  #XXX: DUMMY URI
-    document.setNamespaces(ns)
+
+    # ns = libsbml.XMLNamespaces()
+    # ns.add("http://www.ecell.org/ns/ecell4", "ecell4")  #XXX: DUMMY URI
+    # document.setNamespaces(ns)
+
     m = document.createModel()
 
     comp1 = m.createCompartment()
@@ -39,9 +58,15 @@ def export_sbml(model, y0={}, volume=1.0):
     species_list = list(set(species_list))
     species_list.sort()
 
+    sid_map = {}
+    for cnt, sp in enumerate(species_list):
+        sid_map[sp.serial()] = "s{:d}".format(cnt)
+
     for sp in species_list:
+        sid = sid_map[sp.serial()]
         s1 = m.createSpecies()
-        s1.setId(sp.serial())
+        s1.setId(sid)
+        s1.setName(sp.serial())
         s1.setCompartment('world')
         s1.setConstant(False)
         if sp.serial() in y0.keys():
@@ -52,7 +77,7 @@ def export_sbml(model, y0={}, volume=1.0):
         s1.setBoundaryCondition(False)
         s1.setHasOnlySubstanceUnits(False)
 
-        s1.appendAnnotation('<annotation><ecell4:extension><ecell4:species serial="{:s}"/></ecell4:extension></annotation>'.format(sp.serial()))
+        # s1.appendAnnotation('<annotation><ecell4:extension><ecell4:species serial="{:s}"/></ecell4:extension></annotation>'.format(sp.serial()))
 
     if isinstance(model, (ecell4.NetworkModel, ecell4.Model)):
         for cnt, rr in enumerate(model.reaction_rules()):
@@ -79,14 +104,15 @@ def export_sbml(model, y0={}, volume=1.0):
             # math_exp = "k"
             math_exp = "k{:d}".format(cnt)
             for sp, coef in species_coef_map.items():
+                sid = sid_map[sp.serial()]
                 s1 = r1.createReactant()
-                s1.setSpecies(sp.serial())
+                s1.setSpecies(sid)
                 s1.setConstant(False)
                 s1.setStoichiometry(coef)
                 if coef == 1:
-                    math_exp += "*{:s}".format(sp.serial())
+                    math_exp += "*{:s}".format(sid)
                 else:
-                    math_exp += "*pow({:s},{:g})".format(sp.serial(), coef)
+                    math_exp += "*pow({:s},{:g})".format(sid, coef)
 
             species_coef_map = {}
             for sp in rr.products():
@@ -96,8 +122,9 @@ def export_sbml(model, y0={}, volume=1.0):
                     species_coef_map[sp] += 1
 
             for sp, coef in species_coef_map.items():
+                sid = sid_map[sp.serial()]
                 s1 = r1.createProduct()
-                s1.setSpecies(sp.serial())
+                s1.setSpecies(sid)
                 s1.setConstant(False)
                 s1.setStoichiometry(coef)
 
@@ -130,16 +157,19 @@ def export_sbml(model, y0={}, volume=1.0):
                 # math_exp = "k"
                 math_exp = "k{:d}".format(cnt)
                 for sp, coef in species_coef_map.items():
+                    sid = sid_map[sp.serial()]
                     if coef == 1.0:
-                        math_exp += "*{:s}".format(sp.serial())
+                        math_exp += "*{:s}".format(sid)
                     else:
-                        math_exp += "*pow({:s},{:g})".format(sp.serial(), coef)
+                        math_exp += "*pow({:s},{:g})".format(sid, coef)
             else:
                 math_exp = rr.get_ratelaw().as_string()
+                math_exp = replace_parseobj(math_exp, sid_map)
 
             for sp, coef in species_coef_map.items():
+                sid = sid_map[sp.serial()]
                 s1 = r1.createReactant()
-                s1.setSpecies(sp.serial())
+                s1.setSpecies(sid)
                 s1.setConstant(False)
                 s1.setStoichiometry(coef)
 
@@ -151,8 +181,9 @@ def export_sbml(model, y0={}, volume=1.0):
                     species_coef_map[sp] += 1
 
             for sp, coef in species_coef_map.items():
+                sid = sid_map[sp.serial()]
                 s1 = r1.createProduct()
-                s1.setSpecies(sp.serial())
+                s1.setSpecies(sid)
                 s1.setConstant(False)
                 s1.setStoichiometry(coef)
 
