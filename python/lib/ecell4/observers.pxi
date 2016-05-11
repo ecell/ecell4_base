@@ -492,7 +492,7 @@ cdef class FixedIntervalTrajectoryObserver:
     This ``Observer`` logs at the current time first, and then keeps logging
     every after the interval.
 
-    FixedIntervalTrajectoryObserver(dt[, pids], resolve_boundary=None)
+    FixedIntervalTrajectoryObserver(dt[, pids], resolve_boundary=None, subdt=None)
 
     """
 
@@ -510,6 +510,9 @@ cdef class FixedIntervalTrajectoryObserver:
             of periodic boundary contidions by keeping shifts for each particles.
             Otherwise, this just logs positions within the size of ``World``
             with no care about boundary conditions.
+        subdt : float, optional
+            A step interval to check the periodic boundary.
+            If None, use dt. This only has meaning when resolve_boundary is True.
 
         """
         pass  # XXX: Only used for doc string
