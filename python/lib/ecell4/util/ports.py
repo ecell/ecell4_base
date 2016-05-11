@@ -174,11 +174,11 @@ def export_sbml(model, y0={}, volume=1.0):
                 s1.setStoichiometry(coef)
 
             species_coef_map = {}
-            for sp in rr.products():
+            for sp, coef in zip(rr.products(), rr.products_coefficients()):
                 if sp not in species_coef_map.keys():
-                    species_coef_map[sp] = 1
+                    species_coef_map[sp] = coef
                 else:
-                    species_coef_map[sp] += 1
+                    species_coef_map[sp] += coef
 
             for sp, coef in species_coef_map.items():
                 sid = sid_map[sp.serial()]
