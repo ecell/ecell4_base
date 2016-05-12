@@ -179,8 +179,10 @@ public:
         }
 
         EventScheduler scheduler;
+        // for (std::vector<boost::shared_ptr<Observer> >::const_iterator
+        //     i(offset); i != observers.end(); ++i)
         for (std::vector<boost::shared_ptr<Observer> >::const_iterator
-            i(offset); i != observers.end(); ++i)
+            i(observers.begin()); i != observers.end(); ++i)
         {
             scheduler.add(boost::shared_ptr<EventScheduler::Event>(
                 new ObserverEvent(this, (*i).get(), t())));
