@@ -76,10 +76,11 @@ API
    api/meso
    api/spatiocyte
    api/bd
-
+   api/egfrd
    api/util
    api/util.viz
    api/util.decorator
+
 
 Examples
 --------
