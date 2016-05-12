@@ -1265,6 +1265,8 @@ def plot_trajectory2d_with_matplotlib(
     wrange = {'x': wrange[xidx], 'y': wrange[yidx]}
     fig, ax = __prepare_plot_with_matplotlib(
         wrange, figsize, grid, wireframe, noaxis)
+    ax.set_xlabel(plane[0].upper())
+    ax.set_ylabel(plane[1].upper())
 
     lines = []
     for i, y in enumerate(data):
@@ -1361,6 +1363,8 @@ def plot_movie_of_trajectory2d_with_matplotlib(
     wrange = {'x': wrange[xidx], 'y': wrange[yidx]}
     fig, ax = __prepare_plot_with_matplotlib(
         wrange, figsize, grid, wireframe, noaxis)
+    ax.set_xlabel(plane[0].upper())
+    ax.set_ylabel(plane[1].upper())
 
     def _update_plot(i, plots, lines):
         upto = i * stride
@@ -1938,6 +1942,8 @@ def plot_world2d_with_matplotlib(
         wrange, figsize, grid, wireframe, noaxis)
     scatters, plots = __scatter_world2d_with_matplotlib(
         world, (xidx, yidx), ax, species_list, marker_size, max_count, scale, **kwargs)
+    ax.set_xlabel(plane[0].upper())
+    ax.set_ylabel(plane[1].upper())
 
     # if legend:
     #     ax.legend(handles=plots, labels=species_list, loc='best', shadow=True)
@@ -2066,6 +2072,8 @@ def plot_movie2d_with_matplotlib(
 
     fig, ax = __prepare_plot_with_matplotlib(
         wrange, figsize, grid, wireframe, noaxis)
+    ax.set_xlabel(plane[0].upper())
+    ax.set_ylabel(plane[1].upper())
 
     from mpl_toolkits.mplot3d.art3d import juggle_axes
 
