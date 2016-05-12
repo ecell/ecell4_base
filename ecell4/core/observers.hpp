@@ -478,7 +478,6 @@ protected:
     std::vector<Real> t_;
 };
 
-
 class TimeoutObserver
     : public Observer
 {
@@ -531,6 +530,94 @@ protected:
     Real duration_;
     Real acc_;
     time_t tstart_;
+};
+
+class FixedIntervalTrackingObserver
+    : public Observer
+{
+public:
+
+    typedef Observer base_type;
+
+public:
+
+    FixedIntervalTrackingObserver(
+        const Real& dt, const std::vector<Species>& species_list,
+        const bool& resolve_boundary = true, const Real subdt = 0,
+        const Real threshold = inf)
+        : base_type(false), event_(dt), subevent_(subdt > 0 ? subdt : dt),
+        species_list_(species_list), resolve_boundary_(resolve_boundary),
+        threshold_(threshold),
+        pids_(), prev_positions_(), strides_(), trajectories_(), t_()
+    {
+        ;
+    }
+
+    virtual ~FixedIntervalTrackingObserver()
+    {
+        ;
+    }
+
+    const Real next_time() const;
+    const Integer num_steps() const;
+    const Integer count() const;
+    const Integer num_tracers() const;
+    virtual void initialize(const boost::shared_ptr<Space>& space);
+    virtual bool fire(const Simulator* sim, const boost::shared_ptr<Space>& space);
+    virtual void reset();
+
+    const std::vector<std::vector<Real3> >& data() const;
+    const std::vector<Real>& t() const;
+
+    Real distance_sq(
+        const Real3& pos1, const Real3& pos2, const Real3& edge_lengths) const
+    {
+        Real retval(0);
+        for (Real3::size_type dim(0); dim < 3; ++dim)
+        {
+            const Real edge_length(edge_lengths[dim]);
+            const Real diff(pos2[dim] - pos1[dim]), half(edge_length * 0.5);
+
+            if (diff > half)
+            {
+                retval += pow_2(diff - edge_length);
+            }
+            else if (diff < -half)
+            {
+                retval += pow_2(diff + edge_length);
+            }
+            else
+            {
+                retval += pow_2(diff);
+            }
+        }
+        return retval;
+    }
+
+    inline Real distance(const Real3& pos1, const Real3& pos2, const Real3& edge_lengths) const
+    {
+        return std::sqrt(distance_sq(pos1, pos2, edge_lengths));
+    }
+
+protected:
+
+    void fire_event(const Simulator* sim, const boost::shared_ptr<Space>& space);
+    void fire_subevent(const Simulator* sim, const boost::shared_ptr<Space>& space);
+
+protected:
+
+    FixedIntervalEvent event_, subevent_;
+
+    std::vector<Species> species_list_;
+    bool resolve_boundary_;
+    Real threshold_;
+
+    std::vector<Real3> prev_positions_;
+    std::vector<Real3> strides_;
+
+    std::vector<ParticleID> pids_;
+    std::vector<std::vector<Real3> > trajectories_;
+    std::vector<Real> t_;
 };
 
 } // ecell4

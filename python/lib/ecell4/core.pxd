@@ -506,6 +506,18 @@ cdef extern from "ecell4/core/observers.hpp" namespace "ecell4":
         Real interval()
         void reset()
 
+    cdef cppclass Cpp_FixedIntervalTrackingObserver "ecell4::FixedIntervalTrackingObserver":
+        Cpp_FixedIntervalTrackingObserver(Real, vector[Cpp_Species]) except +
+        Cpp_FixedIntervalTrackingObserver(Real, vector[Cpp_Species], bool) except +
+        Cpp_FixedIntervalTrackingObserver(Real, vector[Cpp_Species], bool, Real) except +
+        Cpp_FixedIntervalTrackingObserver(Real, vector[Cpp_Species], bool, Real, Real) except +
+        Real next_time()
+        Integer num_steps()
+        Integer num_tracers()
+        vector[Real]& t()
+        vector[vector[Cpp_Real3]] data()
+        void reset()
+
 ## FixedIntervalNumberObserver
 #  a python wrapper for Cpp_FixedIntervalNumberObserver
 cdef class Observer:
@@ -531,6 +543,9 @@ cdef class FixedIntervalTrajectoryObserver:
 
 cdef class TimeoutObserver:
     cdef shared_ptr[Cpp_TimeoutObserver]* thisptr
+
+cdef class FixedIntervalTrackingObserver:
+    cdef shared_ptr[Cpp_FixedIntervalTrackingObserver]* thisptr
 
 ## Cpp_Shape
 #  ecell4::Shape

@@ -585,4 +585,220 @@ void TimeoutObserver::reset()
     time(&tstart_);
 }
 
+const Real FixedIntervalTrackingObserver::next_time() const
+{
+    return std::min(event_.next_time(), subevent_.next_time());
+}
+
+const Integer FixedIntervalTrackingObserver::num_steps() const
+{
+    return event_.num_steps + subevent_.num_steps;
+}
+
+const Integer FixedIntervalTrackingObserver::count() const
+{
+    return event_.count;
+}
+
+void FixedIntervalTrackingObserver::initialize(const boost::shared_ptr<Space>& space)
+{
+    event_.initialize(space->t());
+    subevent_.initialize(space->t());
+
+    if (pids_.size() == 0)
+    {
+        typedef std::vector<std::pair<ParticleID, Particle> > particle_id_pairs;
+        for (std::vector<Species>::const_iterator i(species_list_.begin());
+             i != species_list_.end(); ++i)
+        {
+            const Species& sp(*i);
+            particle_id_pairs const particles(space->list_particles_exact(sp));
+            pids_.reserve(pids_.size() + particles.size());
+            for (particle_id_pairs::const_iterator j(particles.begin());
+                j != particles.end(); ++j)
+            {
+                pids_.push_back((*j).first);
+            }
+        }
+
+        prev_positions_.clear();
+        prev_positions_.resize(pids_.size(), Real3(0, 0, 0));
+        trajectories_.clear();
+        trajectories_.resize(pids_.size(), std::vector<Real3>());
+        strides_.clear();
+        strides_.resize(pids_.size(), Real3(0, 0, 0));
+        t_.clear();
+    }
+}
+
+bool FixedIntervalTrackingObserver::fire(
+    const Simulator* sim, const boost::shared_ptr<Space>& space)
+{
+    if (subevent_.next_time() <= event_.next_time())
+    {
+        fire_subevent(sim, space);
+    }
+    else
+    {
+        fire_event(sim, space);
+    }
+    return true;
+}
+
+void FixedIntervalTrackingObserver::fire_subevent(
+    const Simulator* sim, const boost::shared_ptr<Space>& space)
+{
+    typedef std::vector<std::pair<ParticleID, Particle> > particle_id_pairs;
+
+    const Real3& edge_lengths(space->edge_lengths());
+
+    std::vector<Real3>::iterator j(prev_positions_.begin());
+    std::vector<Real3>::iterator k(strides_.begin());
+    for (std::vector<ParticleID>::iterator i(pids_.begin());
+        i != pids_.end(); ++i, ++j, ++k)
+    {
+        if ((*i) == ParticleID() || space->has_particle(*i))
+        {
+            continue;
+        }
+
+        const Real3 pos((*j) - (*k));
+        Real Lmin(threshold_);
+        ParticleID newpid;
+
+        for (std::vector<Species>::const_iterator l(species_list_.begin());
+             l != species_list_.end(); ++l)
+        {
+            const Species& sp(*l);
+            particle_id_pairs const particles(space->list_particles_exact(sp));
+            for (particle_id_pairs::const_iterator m(particles.begin());
+                m != particles.end(); ++m)
+            {
+                if (std::find(pids_.begin(), pids_.end(), (*m).first) == pids_.end())
+                {
+                    const Real L(distance(pos, (*m).second.position(), edge_lengths));
+                    if (L < Lmin)
+                    {
+                        Lmin = L;
+                        newpid = (*m).first;
+                    }
+                }
+            }
+        }
+
+        (*i) = newpid;
+    }
+
+    if (resolve_boundary_)
+    {
+        const Real3 edge_lengths(space->actual_lengths());
+        std::vector<Real3>::iterator j(prev_positions_.begin());
+        std::vector<Real3>::iterator k(strides_.begin());
+        for (std::vector<ParticleID>::const_iterator i(pids_.begin());
+            i != pids_.end(); ++i, ++j, ++k)
+        {
+            if ((*i) != ParticleID() && space->has_particle(*i))
+            {
+                Real3& stride(*k);
+                Real3 pos(stride + space->get_particle(*i).second.position());
+                if (subevent_.num_steps > 0)
+                {
+                    const Real3& prev(*j);
+                    for (unsigned int dim(0); dim != 3; ++dim)
+                    {
+                        const Real L(edge_lengths[dim]);
+                        if (pos[dim] - prev[dim] >= L * 0.5)
+                        {
+                            stride[dim] -= L;
+                            pos[dim] -= L;
+                        }
+                        else if (pos[dim] - prev[dim] <= L * -0.5)
+                        {
+                            stride[dim] += L;
+                            pos[dim] += L;
+                        }
+                    }
+                }
+                (*j) = pos;
+            }
+        }
+    }
+
+    subevent_.fire();
+}
+
+void FixedIntervalTrackingObserver::fire_event(
+    const Simulator* sim, const boost::shared_ptr<Space>& space)
+{
+    t_.push_back(space->t());
+
+    const Real3 edge_lengths(space->actual_lengths());
+    std::vector<Real3>::const_iterator j(prev_positions_.begin());
+    std::vector<Real3>::const_iterator k(strides_.begin());
+    std::vector<std::vector<Real3> >::iterator l(trajectories_.begin());
+    for (std::vector<ParticleID>::const_iterator i(pids_.begin());
+        i != pids_.end(); ++i)
+    {
+        if (space->has_particle(*i))
+        {
+            const Real3& stride(*k);
+            Real3 pos(stride + space->get_particle(*i).second.position());
+
+            if (resolve_boundary_ && subevent_.num_steps > 0)
+            {
+                const Real3& prev(*j);
+
+                for (unsigned int dim(0); dim != 3; ++dim)
+                {
+                    const Real L(edge_lengths[dim]);
+                    if (pos[dim] - prev[dim] >= L * 0.5)
+                    {
+                        pos[dim] -= L;
+                    }
+                    else if (pos[dim] - prev[dim] <= L * -0.5)
+                    {
+                        pos[dim] += L;
+                    }
+                }
+            }
+
+            (*l).push_back(pos);
+        }
+        ++j;
+        ++k;
+        ++l;
+    }
+
+    event_.fire();
+}
+
+void FixedIntervalTrackingObserver::reset()
+{
+    event_.reset();
+    subevent_.reset();
+
+    prev_positions_.clear();
+    prev_positions_.resize(pids_.size(), Real3(0, 0, 0));
+    trajectories_.clear();
+    trajectories_.resize(pids_.size(), std::vector<Real3>());
+    strides_.clear();
+    strides_.resize(pids_.size(), Real3(0, 0, 0));
+    t_.clear();
+}
+
+const std::vector<std::vector<Real3> >& FixedIntervalTrackingObserver::data() const
+{
+    return trajectories_;
+}
+
+const Integer FixedIntervalTrackingObserver::num_tracers() const
+{
+    return pids_.size();
+}
+
+const std::vector<Real>& FixedIntervalTrackingObserver::t() const
+{
+    return t_;
+}
+
 } // ecell4
