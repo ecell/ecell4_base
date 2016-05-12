@@ -1,7 +1,7 @@
 import sys
 import os
 
-extensions = ['sphinx.ext.imgmath', 'sphinx.ext.autodoc', 'sphinx.ext.autosummary', 'numpydoc']
+extensions = ['sphinx.ext.pngmath', 'sphinx.ext.autodoc', 'sphinx.ext.autosummary', 'numpydoc']
 
 templates_path = ['_templates']
 
