@@ -103,22 +103,17 @@ If you use animated visualization for E-Cell4, please install [ffmpeg windows bu
 
 ### Mac
 
-Please run the following commands in your terminal.
+We recommend that you install [Miniconda](http://conda.pydata.org/miniconda.html) to manage Python packages.
+After installing Miniconda, run the following commands in your terminal.
 
 ```shell
-# Please download E-Cell4 whl file for your Python version from https://github.com/ecell/ecell4/releases , here we downloaded a whl for Python27
-pip install  --user ecell-4.0.0-cp27-none-macosx_10_6_intel.macosx_10_9_intel.macosx_10_9_x86_64.macosx_10_10_intel.macosx_10_10_x86_64.whl
+# After installing Miniconda2 or Miniconda3 (Here we assume that you installed Miniconda2).
+~/miniconda2/bin/conda install matplotlib jupyter
 
-# Mac default matplotlib is too old for E-Cell4, you need to update it with the following options.
-pip install -U --user matplotlib
-pip install -U --user jupyter
+# Download E-Cell4 whl file for your Python version from https://github.com/ecell/ecell4/releases before running this command.
+~/miniconda2/bin/pip install ecell-4.0.0-cp27-none-macosx_10_6_intel.macosx_10_9_intel.macosx_10_9_x86_64.macosx_10_10_intel.macosx_10_10_x86_64.whl
 
-# path config for --user installed Python packages
-echo 'export PYTHONPATH=~/Library/Python/2.7/lib/python/site-packages:$PYTHONPATH' >> ~/.bashrc
-echo 'export PATH=~/Library/Python/2.7/bin:$PATH' >> ~/.bashrc
-source ~/.bashrc
-
-# If you use animation support. (Install ffmpeg with homebrew)
+# If you want animation support, install ffmpeg with homebrew
 brew install ffmpeg
 ```
 
@@ -148,21 +143,19 @@ How to open E-Cell4 Jupyter notebooks
 -------------------------------------
 
 ### Windows
-Please replace the CONDA_INSTALL_FOLDER with the folder you installed Miniconda.
-For example **C:¥Miniconda27**.
+Here we assume that you installed Miniconda(Python2.7) to C:¥Miniconda2
 
 ```shell
-cd the CONDA_INSTALL_FOLDER
-cd ecell4ipynb
+cd C:¥Miniconda2¥ecell4ipynb
 jupyter-notebook
 ```
 
 ### Mac
+Here we assume that you installed Miniconda(Python2.7) to ~/miniconda2
 
 ```shell
-### in the case of Python27
-~/Library/Python/2.7/ecell4ipynb
-jupyter-notebook
+cd ~/miniconda2/bin
+./jupyter-notebook --notebook-dir="../ecell4ipynb"
 ```
 
 ### Linux
