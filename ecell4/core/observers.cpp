@@ -420,94 +420,108 @@ void FixedIntervalTrajectoryObserver::initialize(const boost::shared_ptr<Space>&
     }
 }
 
-bool FixedIntervalTrajectoryObserver::fire(const Simulator* sim, const boost::shared_ptr<Space>& space)
+bool FixedIntervalTrajectoryObserver::fire(
+    const Simulator* sim, const boost::shared_ptr<Space>& space)
 {
     if (subevent_.next_time() <= event_.next_time())
     {
-        if (resolve_boundary_)
-        {
-            const Real3 edge_lengths(space->actual_lengths());
-            std::vector<Real3>::iterator j(prev_positions_.begin());
-            std::vector<Real3>::iterator k(strides_.begin());
-            for (std::vector<ParticleID>::const_iterator i(pids_.begin());
-                i != pids_.end(); ++i)
-            {
-                if (space->has_particle(*i))
-                {
-                    Real3& stride(*k);
-                    Real3 pos(stride + space->get_particle(*i).second.position());
-                    if (subevent_.num_steps > 0)
-                    {
-                        const Real3& prev(*j);
-                        for (unsigned int dim(0); dim != 3; ++dim)
-                        {
-                            const Real L(edge_lengths[dim]);
-                            if (pos[dim] - prev[dim] >= L * 0.5)
-                            {
-                                stride[dim] -= L;
-                                pos[dim] -= L;
-                            }
-                            else if (pos[dim] - prev[dim] <= L * -0.5)
-                            {
-                                stride[dim] += L;
-                                pos[dim] += L;
-                            }
-                        }
-                    }
-                    (*j) = pos;
-                }
-                ++j;
-                ++k;
-            }
-        }
-
-        subevent_.fire();
+        fire_subevent(sim, space);
     }
     else
     {
-        t_.push_back(space->t());
+        fire_event(sim, space);
+    }
+    return true;
+}
 
+void FixedIntervalTrajectoryObserver::fire_subevent(
+    const Simulator* sim, const boost::shared_ptr<Space>& space)
+{
+    if (resolve_boundary_)
+    {
         const Real3 edge_lengths(space->actual_lengths());
-        std::vector<Real3>::const_iterator j(prev_positions_.begin());
-        std::vector<Real3>::const_iterator k(strides_.begin());
-        std::vector<std::vector<Real3> >::iterator l(trajectories_.begin());
+        std::vector<Real3>::iterator j(prev_positions_.begin());
+        std::vector<Real3>::iterator k(strides_.begin());
         for (std::vector<ParticleID>::const_iterator i(pids_.begin());
             i != pids_.end(); ++i)
         {
             if (space->has_particle(*i))
             {
-                const Real3& stride(*k);
+                Real3& stride(*k);
                 Real3 pos(stride + space->get_particle(*i).second.position());
-
-                if (resolve_boundary_ && subevent_.num_steps > 0)
+                if (subevent_.num_steps > 0)
                 {
                     const Real3& prev(*j);
-
                     for (unsigned int dim(0); dim != 3; ++dim)
                     {
                         const Real L(edge_lengths[dim]);
                         if (pos[dim] - prev[dim] >= L * 0.5)
                         {
+                            stride[dim] -= L;
                             pos[dim] -= L;
                         }
                         else if (pos[dim] - prev[dim] <= L * -0.5)
                         {
+                            stride[dim] += L;
                             pos[dim] += L;
                         }
                     }
                 }
-
-                (*l).push_back(pos);
+                (*j) = pos;
             }
             ++j;
             ++k;
-            ++l;
         }
-
-        event_.fire();
     }
-    return true;
+
+    subevent_.fire();
 }
+
+void FixedIntervalTrajectoryObserver::fire_event(
+    const Simulator* sim, const boost::shared_ptr<Space>& space)
+{
+    t_.push_back(space->t());
+
+    const Real3 edge_lengths(space->actual_lengths());
+    std::vector<Real3>::const_iterator j(prev_positions_.begin());
+    std::vector<Real3>::const_iterator k(strides_.begin());
+    std::vector<std::vector<Real3> >::iterator l(trajectories_.begin());
+    for (std::vector<ParticleID>::const_iterator i(pids_.begin());
+        i != pids_.end(); ++i)
+    {
+        if (space->has_particle(*i))
+        {
+            const Real3& stride(*k);
+            Real3 pos(stride + space->get_particle(*i).second.position());
+
+            if (resolve_boundary_ && subevent_.num_steps > 0)
+            {
+                const Real3& prev(*j);
+
+                for (unsigned int dim(0); dim != 3; ++dim)
+                {
+                    const Real L(edge_lengths[dim]);
+                    if (pos[dim] - prev[dim] >= L * 0.5)
+                    {
+                        pos[dim] -= L;
+                    }
+                    else if (pos[dim] - prev[dim] <= L * -0.5)
+                    {
+                        pos[dim] += L;
+                    }
+                }
+            }
+
+            (*l).push_back(pos);
+        }
+        ++j;
+        ++k;
+        ++l;
+    }
+
+    event_.fire();
+}
+
 
 void FixedIntervalTrajectoryObserver::reset()
 {

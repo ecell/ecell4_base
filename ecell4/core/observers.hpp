@@ -463,6 +463,11 @@ public:
 
 protected:
 
+    void fire_event(const Simulator* sim, const boost::shared_ptr<Space>& space);
+    void fire_subevent(const Simulator* sim, const boost::shared_ptr<Space>& space);
+
+protected:
+
     FixedIntervalEvent event_, subevent_;
 
     std::vector<ParticleID> pids_;
