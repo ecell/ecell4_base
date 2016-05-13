@@ -2115,3 +2115,51 @@ def plot_movie2d_with_matplotlib(
     plt.close(ani._fig)
     # print("Start generating a movie ...")
     display_anim(ani, output, fps=1.0 / interval, crf=crf, bitrate=bitrate)
+
+def plot_world_with_plotly(world, species_list=None, max_count=1000):
+    """
+    Plot a World on IPython Notebook
+    """
+    if isinstance(world, str):
+        from .simulation import load_world
+        world = load_world(world)
+
+    if species_list is None:
+        species_list = [sp.serial() for sp in world.list_species()]
+        species_list.sort()
+
+    import random
+    from ecell4 import Species
+
+    positions = {}
+    for serial in species_list:
+        x, y, z = [], [], []
+        particles = world.list_particles_exact(Species(serial))
+        if max_count is not None and len(particles) > max_count:
+            particles = random.sample(particles, max_count)
+        for pid, p in particles:
+            pos = p.position()
+            x.append(pos[0])
+            y.append(pos[1])
+            z.append(pos[2])
+
+        positions[serial] = (x, y, z)
+
+    import plotly
+    import plotly.graph_objs as go
+
+    plotly.offline.init_notebook_mode()
+
+    marker = dict(size=6, line=dict(color='rgb(204, 204, 204)', width=1),
+                  opacity=0.9, symbol='circle')
+
+    data = []
+    for serial, (x, y, z) in positions.items():
+        trace = go.Scatter3d(
+            x=x, y=y, z=z, mode='markers',
+            marker=marker, name=serial)
+        data.append(trace)
+
+    layout = go.Layout(margin=dict(l=0, r=0, b=0, t=0))
+    fig = go.Figure(data=data, layout=layout)
+    plotly.offline.iplot(fig)
