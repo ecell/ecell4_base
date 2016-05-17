@@ -132,14 +132,14 @@ cdef extern from "ecell4/egfrd/egfrd.hpp" namespace "ecell4::egfrd":
 
     cdef cppclass Cpp_BDFactory "ecell4::egfrd::BDFactory":
         Cpp_BDFactory() except +
-        Cpp_BDFactory(Integer) except +
-        Cpp_BDFactory(Integer, Real) except +
+        Cpp_BDFactory(Real) except +
+        Cpp_BDFactory(Real, Integer) except +
         Cpp_BDFactory(Cpp_Integer3&) except +
-        Cpp_BDFactory(Cpp_Integer3&, Integer) except +
-        Cpp_BDFactory(Cpp_Integer3&, Integer, Real) except +
+        Cpp_BDFactory(Cpp_Integer3&, Real) except +
+        Cpp_BDFactory(Cpp_Integer3&, Real, Integer) except +
         Cpp_BDFactory(Cpp_Integer3&, shared_ptr[Cpp_RandomNumberGenerator]&) except +
-        Cpp_BDFactory(Cpp_Integer3&, shared_ptr[Cpp_RandomNumberGenerator]&, Integer) except +
-        Cpp_BDFactory(Cpp_Integer3&, shared_ptr[Cpp_RandomNumberGenerator]&, Integer, Real) except +
+        Cpp_BDFactory(Cpp_Integer3&, shared_ptr[Cpp_RandomNumberGenerator]&, Real) except +
+        Cpp_BDFactory(Cpp_Integer3&, shared_ptr[Cpp_RandomNumberGenerator]&, Real, Integer) except +
         Cpp_EGFRDWorld* create_world()
         Cpp_EGFRDWorld* create_world(string)
         Cpp_EGFRDWorld* create_world(Cpp_Real3&)
@@ -177,6 +177,7 @@ cdef extern from "ecell4/egfrd/egfrd.hpp" namespace "ecell4::egfrd":
         void run(Real) except +
         void run(Real, shared_ptr[Cpp_Observer]) except +
         void run(Real, vector[shared_ptr[Cpp_Observer]]) except +
+        Real dt_factor()
 
 cdef class EGFRDWorld:
     cdef shared_ptr[Cpp_EGFRDWorld]* thisptr

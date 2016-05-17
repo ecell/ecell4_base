@@ -1254,6 +1254,10 @@ cdef class BDSimulator:
             self.thisptr.run(duration,
                 deref((<Observer>(observers.as_base())).thisptr))
 
+    def dt_factor(self):
+        return self.thisptr.dt_factor()
+
+
 cdef BDSimulator BDSimulator_from_Cpp_BDSimulator(Cpp_BDSimulator* s):
     r = BDSimulator(
         Model_from_Cpp_Model(s.model()), EGFRDWorld_from_Cpp_EGFRDWorld(s.world()))
@@ -1266,17 +1270,17 @@ cdef BDSimulator BDSimulator_from_Cpp_BDSimulator(Cpp_BDSimulator* s):
 cdef class BDFactory:
     """ A factory class creating a BDWorld instance and a BDSimulator instance.
 
-    BDFactory(matrix_sizes=None, rng=None, dissociation_retry_moves=None,
-              bd_dt_factor=None)
+    BDFactory(matrix_sizes=None, rng=None, bd_dt_factor=None,
+              dissociation_retry_moves=None)
 
     """
 
     def __init__(self, arg1=None, arg2=None, arg3=None, arg4=None):
-        """BDFactory(matrix_sizes=None, rng=None, dissociation_retry_moves=None,
-                  bd_dt_factor=None)
-        BDFactory(matrix_sizes=None, dissociation_retry_moves=None,
-                  bd_dt_factor=None)
-        BDFactory(dissociation_retry_moves=None, bd_dt_factor=None,)
+        """BDFactory(matrix_sizes=None, rng=None, bd_dt_factor=None,
+                  dissociation_retry_moves=None)
+        BDFactory(matrix_sizes=None, bd_dt_factor=None,
+                  dissociation_retry_moves=None)
+        BDFactory(bd_dt_factor=None, dissociation_retry_moves=None)
 
         Constructor.
 
@@ -1287,12 +1291,12 @@ cdef class BDFactory:
             The number of cells must be larger than 3, in principle.
         rng : GSLRandomNumberGenerator, optional
             A random number generator.
-        dissociation_retry_moves : Integer, optional
-            A number of trials for placing a new product when it's failed
-            because of the overlap.
         bd_dt_factor : Real, optioanl
             A rescaling factor for the step interval
             of BD propagation in a Multi domain.
+        dissociation_retry_moves : Integer, optional
+            A number of trials for placing a new product when it's failed
+            because of the overlap.
 
         """
         pass
@@ -1308,12 +1312,12 @@ cdef class BDFactory:
                 elif arg4 is None:
                     self.thisptr = new Cpp_BDFactory(
                         deref((<Integer3>arg1).thisptr),
-                        deref((<GSLRandomNumberGenerator>arg2).thisptr), <Integer>arg3)
+                        deref((<GSLRandomNumberGenerator>arg2).thisptr), <Real>arg3)
                 else:
                     self.thisptr = new Cpp_BDFactory(
                         deref((<Integer3>arg1).thisptr),
                         deref((<GSLRandomNumberGenerator>arg2).thisptr),
-                        <Integer>arg3, <Real>arg4)
+                        <Real>arg3, <Integer>arg4)
             else:
                 if arg4 is not None:
                     raise RuntimeError, "too many arguments were given."
@@ -1321,19 +1325,19 @@ cdef class BDFactory:
                     self.thisptr = new Cpp_BDFactory(deref((<Integer3>arg1).thisptr))
                 elif arg3 is None:
                     self.thisptr = new Cpp_BDFactory(
-                        deref((<Integer3>arg1).thisptr), <Integer>arg2)
+                        deref((<Integer3>arg1).thisptr), <Real>arg2)
                 else:
                     self.thisptr = new Cpp_BDFactory(
-                        deref((<Integer3>arg1).thisptr), <Integer>arg2, <Real>arg3)
+                        deref((<Integer3>arg1).thisptr), <Real>arg2, <Integer>arg3)
         else:
             if arg3 is not None or arg4 is not None:
                 raise RuntimeError, "too many arguments were given."
             elif arg1 is None:
                 self.thisptr = new Cpp_BDFactory()
             elif arg2 is None:
-                self.thisptr = new Cpp_BDFactory(<Integer>arg1)
+                self.thisptr = new Cpp_BDFactory(<Real>arg1)
             else:
-                self.thisptr = new Cpp_BDFactory(<Integer>arg1, <Real>arg2)
+                self.thisptr = new Cpp_BDFactory(<Real>arg1, <Integer>arg2)
 
     def __dealloc__(self):
         del self.thisptr
