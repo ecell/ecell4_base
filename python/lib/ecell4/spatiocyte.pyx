@@ -861,6 +861,29 @@ cdef class SpatiocyteWorld:
             retval = self.thisptr.get().new_voxel(deref((<Species> arg1).thisptr), <Integer> arg2)
         return ((ParticleID_from_Cpp_ParticleID(address(retval.first.first)), Voxel_from_Cpp_Voxel(address(retval.first.second))), retval.second)
 
+    def new_voxel_structure(self, arg1, arg2):
+        """new_voxel_structure(arg1, arg2) -> (ParticleID, Voxel)
+
+        Create a particle.
+
+        Parameters
+        ----------
+        arg1 : Species
+            The Species of particles to create
+        arg2 : Integer
+            The number of particles(voxels)
+
+        Returns
+        -------
+        tuple:
+            A pair of ParticleID and Voxel
+
+        """
+        cdef pair[pair[Cpp_ParticleID, Cpp_Voxel], bool] retval
+
+        retval = self.thisptr.get().new_voxel_structure(deref((<Species> arg1).thisptr), <Integer> arg2)
+        return ((ParticleID_from_Cpp_ParticleID(address(retval.first.first)), Voxel_from_Cpp_Voxel(address(retval.first.second))), retval.second)
+
     def update_voxel(self, ParticleID pid, Voxel v):
         """update_voxel(pid, v) -> bool
 

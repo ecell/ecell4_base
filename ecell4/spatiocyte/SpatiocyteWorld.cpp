@@ -306,7 +306,16 @@ SpatiocyteWorld::new_voxel_private(const Voxel& v)
 }
 
 std::pair<std::pair<ParticleID, Voxel>, bool>
-SpatiocyteWorld::new_voxel_structure(const Voxel& v)
+SpatiocyteWorld::new_voxel_structure(const Species& sp, const coordinate_type& coord)
+{
+    const private_coordinate_type private_coord(coord2private(coord));
+    const molecule_info_type minfo(get_molecule_info(sp));
+    return new_voxel_structure_private(
+        Voxel(sp, private_coord, minfo.radius, minfo.D, minfo.loc));
+}
+
+std::pair<std::pair<ParticleID, Voxel>, bool>
+SpatiocyteWorld::new_voxel_structure_private(const Voxel& v)
 {
     const bool is_succeeded((*space_).update_voxel_private(ParticleID(), v));
     const coordinate_type coord(private2coord(v.coordinate()));
@@ -426,7 +435,7 @@ Integer SpatiocyteWorld::add_structure3(const Species& sp, const boost::shared_p
 
                 const Voxel v(sp, (*space_).global2private_coord(g),
                     info.radius, info.D, info.loc);
-                if (new_voxel_structure(v).second)
+                if (new_voxel_structure_private(v).second)
                 {
                     ++count;
                 }
@@ -488,7 +497,7 @@ Integer SpatiocyteWorld::add_structure2(const Species& sp, const boost::shared_p
 
                 const Voxel v(sp, (*space_).global2private_coord(g),
                     info.radius, info.D, info.loc);
-                if (new_voxel_structure(v).second)
+                if (new_voxel_structure_private(v).second)
                 {
                     ++count;
                 }

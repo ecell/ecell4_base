@@ -272,7 +272,9 @@ public:
     std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel(const Species& sp, const coordinate_type& coord);
     std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel_private(const Voxel& v);
     std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel_private(const Species& sp, const private_coordinate_type& coord);
-    std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel_structure(const Voxel& v);
+
+    std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel_structure(const Species& sp, const coordinate_type& coord);
+    std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel_structure_private(const Voxel& v);
     bool add_molecules(const Species& sp, const Integer& num);
     bool add_molecules(const Species& sp, const Integer& num, const boost::shared_ptr<const Shape> shape);
     Integer add_structure(const Species& sp, const boost::shared_ptr<const Shape> shape);
