@@ -285,7 +285,7 @@ Real SpatiocyteSimulator::calculate_alpha(const ReactionRule& rule) const
     return alpha < 1.0 ? alpha : 1.0;
 }
 
-std::pair<bool, SpatiocyteSimulator::reaction_type> SpatiocyteSimulator::attempt_reaction_(
+std::pair<SpatiocyteSimulator::attempt_reaction_result_type, SpatiocyteSimulator::reaction_type> SpatiocyteSimulator::attempt_reaction_(
     const SpatiocyteWorld::particle_info_type info, SpatiocyteWorld::coordinate_type to_coord,
     const Real& alpha)
 {
@@ -296,7 +296,7 @@ std::pair<bool, SpatiocyteSimulator::reaction_type> SpatiocyteSimulator::attempt
 
     if (to_mt->is_vacant())
     {
-        return std::pair<bool, reaction_type>(false, reaction_type());
+        return std::pair<attempt_reaction_result_type, reaction_type>(NO_REACTION, reaction_type());
     }
 
     const Species
@@ -308,7 +308,7 @@ std::pair<bool, SpatiocyteSimulator::reaction_type> SpatiocyteSimulator::attempt
 
     if (rules.empty())
     {
-        return std::pair<bool, reaction_type>(false, reaction_type());
+        return std::pair<attempt_reaction_result_type, reaction_type>(NO_REACTION, reaction_type());
     }
 
     const Real factor(calculate_dimensional_factor(from_mt, to_mt));
@@ -329,12 +329,22 @@ std::pair<bool, SpatiocyteSimulator::reaction_type> SpatiocyteSimulator::attempt
         }
         if (accp >= rnd)
         {
-            return apply_second_order_reaction_(*itr,
-                world_->make_pid_voxel_pair(from_mt, info),
-                world_->make_pid_voxel_pair(to_mt, to_coord));
+            std::pair<bool, SpatiocyteSimulator::reaction_type>
+                retval = apply_second_order_reaction_(
+                    *itr,
+                    world_->make_pid_voxel_pair(from_mt, info),
+                    world_->make_pid_voxel_pair(to_mt, to_coord));
+            if (retval.first)
+            {
+                return std::pair<attempt_reaction_result_type, reaction_type>(REACTION_SUCCEEDED, retval.second);
+            }
+            else
+            {
+                return std::pair<attempt_reaction_result_type, reaction_type>(REACTION_FAILED, reaction_type());
+            }
         }
     }
-    return std::pair<bool, reaction_type>(false, reaction_type());
+    return std::pair<attempt_reaction_result_type, reaction_type>(REACTION_FAILED, reaction_type());
 }
 
 /*
@@ -364,12 +374,18 @@ std::pair<bool, SpatiocyteSimulator::reaction_type> SpatiocyteSimulator::apply_s
             apply_vanishment(from_info, to_info, reaction);
             break;
         case 1:
-            apply_ab2c(from_info, to_info, *(products.begin()), reaction);
+            if (!apply_ab2c(from_info, to_info, *(products.begin()), reaction))
+            {
+                return std::pair<bool, reaction_type>(false, reaction);
+            }
             break;
         case 2:
-            apply_ab2cd(
-                from_info, to_info,
-                *(products.begin()), *(++(products.begin())), reaction);
+            if (!apply_ab2cd(
+                    from_info, to_info,
+                    *(products.begin()), *(++(products.begin())), reaction))
+            {
+                return std::pair<bool, reaction_type>(false, reaction);
+            }
             break;
         default:
             return std::pair<bool, reaction_type>(false, reaction);
@@ -390,7 +406,7 @@ void SpatiocyteSimulator::apply_vanishment(
     world_->remove_voxel_private(to_info.first);
 }
 
-void SpatiocyteSimulator::apply_ab2c(
+bool SpatiocyteSimulator::apply_ab2c(
     const SpatiocyteWorld::particle_info_type from_info,
     const SpatiocyteWorld::particle_info_type to_info,
     const Species& product_species,
@@ -445,13 +461,15 @@ void SpatiocyteSimulator::apply_ab2c(
     }
     else
     {
-        throw IllegalState(
-            "no place for the product [" + product_species.serial() + "].");
+        return false;
+        // throw IllegalState(
+        //     "no place for the product [" + product_species.serial() + "].");
     }
+    return true;
 }
 
 // Not tested yet
-void SpatiocyteSimulator::apply_ab2cd(
+bool SpatiocyteSimulator::apply_ab2cd(
     const SpatiocyteWorld::particle_info_type from_info,
     const SpatiocyteWorld::particle_info_type to_info,
     const Species& product_species0,
@@ -488,6 +506,7 @@ void SpatiocyteSimulator::apply_ab2cd(
             }
             apply_ab2cd_in_order(from_coord, product_species0,
                     to_coord, product_species1, reaction);
+            return true;
         }
         else
         {
@@ -509,6 +528,7 @@ void SpatiocyteSimulator::apply_ab2cd(
                 }
                 apply_ab2cd_in_order(from_coord, product_species0,
                         neighbor.first, product_species1, reaction);
+                return true;
             }
         }
     }
@@ -533,6 +553,7 @@ void SpatiocyteSimulator::apply_ab2cd(
             }
             apply_ab2cd_in_order(to_coord, product_species0,
                     from_coord, product_species1, reaction);
+            return true;
         }
         else
         {
@@ -554,6 +575,7 @@ void SpatiocyteSimulator::apply_ab2cd(
                 }
                 apply_ab2cd_in_order(neighbor.first, product_species0,
                         from_coord, product_species1, reaction);
+                return true;
             }
         }
     }
@@ -577,6 +599,7 @@ void SpatiocyteSimulator::apply_ab2cd(
             }
             apply_ab2cd_in_order(to_coord, product_species0,
                     neighbor.first, product_species1, reaction);
+            return true;
         }
     }
     else if (bserial == dloc || bloc == dloc)
@@ -599,12 +622,14 @@ void SpatiocyteSimulator::apply_ab2cd(
             }
             apply_ab2cd_in_order(neighbor.first, product_species0,
                     to_coord, product_species1, reaction);
+            return true;
         }
     }
-    else
-    {
-        throw IllegalState("Not Supported.");
-    }
+    // else
+    // {
+    //     throw IllegalState("Not Supported.");
+    // }
+    return false;
 }
 
 void SpatiocyteSimulator::apply_ab2cd_in_order(
@@ -1037,17 +1062,17 @@ void SpatiocyteSimulator::walk_on_surface_(const MolecularTypeBase* mtype, const
             const SpatiocyteWorld::private_coordinate_type neighbor(
                     world_->get_neighbor_private_boundary(info.first, *itr));
             const MolecularTypeBase* target(world_->get_molecular_type_private(neighbor));
-            if (target == location || target->location() == location) {
-                if (world_->can_move(info.first, neighbor))
-                {
-                    if (rng->uniform(0,1) <= alpha)
-                        world_->move_private(info.first, neighbor, /*candidate=*/idx);
-                }
-                else
-                {
-                    attempt_reaction_(info, neighbor, alpha);
-                }
+
+            if (world_->can_move(info.first, neighbor))
+            {
+                if (rng->uniform(0,1) <= alpha)
+                    world_->move_private(info.first, neighbor, /*candidate=*/idx);
                 break;
+            }
+            else
+            {
+                if (attempt_reaction_(info, neighbor, alpha).first != NO_REACTION)
+                    break;
             }
         }
         ++idx;

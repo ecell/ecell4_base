@@ -310,9 +310,18 @@ protected:
         const ReactionRule& reaction_rule, const Real& t);
     Real calculate_dimensional_factor(
         const MolecularTypeBase* mt0, const MolecularTypeBase* mt1) const;
-    std::pair<bool, reaction_type> attempt_reaction_(
+
+    typedef enum
+    {
+        NO_REACTION = 0,
+        REACTION_FAILED = 1,
+        REACTION_SUCCEEDED = 2
+    } attempt_reaction_result_type;
+
+    std::pair<attempt_reaction_result_type, reaction_type> attempt_reaction_(
         const SpatiocyteWorld::particle_info_type info,
         SpatiocyteWorld::coordinate_type to_coord, const Real& alpha);
+
     std::pair<bool, reaction_type> apply_second_order_reaction_(
         const ReactionRule& reaction_rule,
         const reaction_type::particle_type& p0,
@@ -324,12 +333,12 @@ protected:
         const SpatiocyteWorld::particle_info_type from_info,
         const SpatiocyteWorld::particle_info_type to_info,
         reaction_type& reaction);
-    void apply_ab2c(
+    bool apply_ab2c(
         const SpatiocyteWorld::particle_info_type from_info,
         const SpatiocyteWorld::particle_info_type to_info,
         const Species& product_species,
         reaction_type& reaction);
-    void apply_ab2cd(
+    bool apply_ab2cd(
         const SpatiocyteWorld::particle_info_type from_info,
         const SpatiocyteWorld::particle_info_type to_info,
         const Species& product_species0,
