@@ -2648,6 +2648,23 @@ protected:
         return std::make_pair(col.intruders.container().get(), col.closest);
     }
     // }}}
+    // get_intruder_surfaces
+    std::pair< std::vector<std::pair<boost::shared_ptr<ecell4::PlanarSurface>, length_type> >,
+               std::pair<boost::shared_ptr<ecell4::PlanarSurface>, length_type> >
+    get_intruder_surfaces(particle_shape_type const &p) const
+    {
+        std::vector<std::pair<boost::shared_ptr<ecell4::PlanarSurface>, length_type> > 
+                    surface_distance_pair_container( (*base_type::world_).surface_collector(p.position()));
+        std::vector<std::pair<boost::shared_ptr<ecell4::PlanarSurface>, length_type> > ret_container;
+        // it is attempt that surface_distance_pair_container to be sorted.
+        for(std::size_t i = 0;  i < surface_distance_pair_container.size(); i++) {
+            if (surface_distance_pair_container[i].second < p.radius() ) {
+                ret_container.push_back(surface_distance_pair_container[i]);
+            }
+        }
+        return std::make_pair(ret_container, surface_distance_pair_container[0]);
+    }
+    // }}}
 
     template<typename TdidSet>
     std::pair<domain_id_type, length_type>
@@ -3407,21 +3424,18 @@ protected:
                 // propagate(domain, draw_new_position(domain, domain.dt()), false);
                 propagate(domain, draw_escape_position(domain), false);
 
-            length_type min_shell_radius_without_surface(domain.particle().second.radius() * (1. + single_shell_factor_));
-            length_type distance_to_2nd_closest_surface = std::numeric_limits<length_type>::infinity();
+            length_type min_shell_radius(domain.particle().second.radius() * (1. + single_shell_factor_));
+            const std::pair< std::vector<std::pair<boost::shared_ptr<ecell4::PlanarSurface>, length_type> >,
+                std::pair<boost::shared_ptr<ecell4::PlanarSurface>, length_type> > surfaces_within_min_radius(this->get_intruder_surfaces(particle_shape_type(domain.position(), min_shell_radius)));
             // XXX considering Surfaces.
             {
-                //  Before checking intruders, 
-                //   we have to determine the range to search the intruders.
-                //    we will take smaller one among min_shell_radius or distance to the 2nd-closest surface.
-                std::vector<std::pair<boost::shared_ptr<ecell4::PlanarSurface>, length_type> > 
-                    surface_distance_pair_container( (*base_type::world_).get_surfaces_in_shell(domain.position(), min_shell_radius_without_surface) );
+                //std::vector<std::pair<boost::shared_ptr<ecell4::PlanarSurface>, length_type> > 
+                //    surface_distance_pair_container( (*base_type::world_).get_surfaces_in_shell(domain.position(), min_shell_radius) );
                 // we assume surface_distance_pair_container have been sorted.
-                if (2 <= surface_distance_pair_container.size()) {
-                    distance_to_2nd_closest_surface = surface_distance_pair_container[1].second;
+                if (2 <= surfaces_within_min_radius.first.size()) {
+                    throw not_implemented("distance_to_2nd_closest_surface < min_shell_radius");
                 }
             }
-            length_type const min_shell_radius = std::min(min_shell_radius_without_surface, distance_to_2nd_closest_surface);
             {
 
                 std::vector<domain_id_type>* intruders;

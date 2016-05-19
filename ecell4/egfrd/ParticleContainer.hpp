@@ -12,6 +12,8 @@
 #include <ecell4/core/Space.hpp>
 #include <ecell4/core/collision.hpp>
 #include <ecell4/core/PlanarSurface.hpp>
+#include <ecell4/core/ShapeContainer.hpp>
+#include <ecell4/core/SerialIDGenerator.hpp>
 
 #include <boost/tuple/tuple.hpp>
 #include <boost/tuple/tuple_io.hpp>
@@ -46,6 +48,9 @@ public:
     typedef typename traits_type::particle_id_pair_and_distance_list
         particle_id_pair_and_distance_list;
     typedef Transaction<traits_type> transaction_type;
+
+    typedef ecell4::ShapeID shape_id_type;
+    typedef ecell4::ShapeContainer shape_container_type;
 
 public:
 
@@ -183,9 +188,12 @@ public:
         return Real3(from + displacement);
         //Real3 newpos(world_.apply_boundary(from + displacement));
     }
-    void add_surface(boost::shared_ptr<ecell4::PlanarSurface> surface)
+    void add_surface(const boost::shared_ptr<ecell4::PlanarSurface> surface)
     {
         this->surfaces_.push_back(surface);
+
+        shape_id_type shapeid(shape_idgen_());
+        //shape_container_.update_shape(shapeid, surface);
     }
     const std::vector<boost::shared_ptr<ecell4::PlanarSurface> > &get_surface_container(void) const
     {
@@ -222,6 +230,22 @@ public:
     {
         return this->get_surface_container.size();
     }
+    std::vector< std::pair<boost::shared_ptr<ecell4::PlanarSurface>, length_type> > surface_collector(
+            position_type const &pos)
+    {
+        typedef std::pair<boost::shared_ptr<ecell4::PlanarSurface>, length_type> surface_distance_pair;
+
+        std::vector< std::pair<boost::shared_ptr<ecell4::PlanarSurface>, length_type> > ret_container;
+        std::vector<boost::shared_ptr<ecell4::PlanarSurface> > const &surface_vector = this->get_surface_container();
+
+        for(std::vector<boost::shared_ptr<ecell4::PlanarSurface> >::const_iterator it(surface_vector.begin());
+                it != surface_vector.end(); it++) {
+            length_type distance_to_surface = std::abs( (*it)->is_inside(pos) );
+            ret_container.push_back(std::make_pair(*it,distance_to_surface) );
+        }
+        std::sort(ret_container.begin(), ret_container.end(), compare_second<surface_distance_pair>() );
+        return ret_container;
+    }
     std::vector< std::pair<boost::shared_ptr<ecell4::PlanarSurface>, length_type> > get_surfaces_in_shell(
             position_type const &pos, length_type const &radius) const
     {
@@ -250,6 +274,8 @@ public:
 private:
     std::vector<boost::shared_ptr<ecell4::PlanarSurface> > surfaces_;
 
+    ecell4::SerialIDGenerator<ecell4::ShapeID> shape_idgen_;
+    shape_container_type shape_container_;
 };
 
 
