@@ -1063,6 +1063,11 @@ void SpatiocyteSimulator::walk_on_surface_(const MolecularTypeBase* mtype, const
                     world_->get_neighbor_private_boundary(info.first, *itr));
             const MolecularTypeBase* target(world_->get_molecular_type_private(neighbor));
 
+            if (target->get_dimension() > mtype->get_dimension())
+            {
+                continue;
+            }
+
             if (world_->can_move(info.first, neighbor))
             {
                 if (rng->uniform(0,1) <= alpha)
