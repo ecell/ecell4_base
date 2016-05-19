@@ -77,21 +77,21 @@ cdef extern from "ecell4/egfrd/egfrd.hpp" namespace "ecell4::egfrd":
             shared_ptr[Cpp_EGFRDWorld]&, shared_ptr[Cpp_Model]&) except +
         Cpp_EGFRDSimulator(
             shared_ptr[Cpp_EGFRDWorld]&, shared_ptr[Cpp_Model]&,
-            Integer) except +
+            Real) except +
         Cpp_EGFRDSimulator(
             shared_ptr[Cpp_EGFRDWorld]&, shared_ptr[Cpp_Model]&,
-            Integer, Real) except +
+            Real, Integer) except +
         Cpp_EGFRDSimulator(
             shared_ptr[Cpp_EGFRDWorld]&, shared_ptr[Cpp_Model]&,
-            Integer, Real, Real) except +
+            Real, Integer, Real) except +
         Cpp_EGFRDSimulator(
             shared_ptr[Cpp_EGFRDWorld]&) except +
         Cpp_EGFRDSimulator(
-            shared_ptr[Cpp_EGFRDWorld]&, Integer) except +
+            shared_ptr[Cpp_EGFRDWorld]&, Real) except +
         Cpp_EGFRDSimulator(
-            shared_ptr[Cpp_EGFRDWorld]&, Integer, Real) except +
+            shared_ptr[Cpp_EGFRDWorld]&, Real, Integer) except +
         Cpp_EGFRDSimulator(
-            shared_ptr[Cpp_EGFRDWorld]&, Integer, Real, Real) except +
+            shared_ptr[Cpp_EGFRDWorld]&, Real, Integer, Real) except +
         Integer num_steps()
         void step()
         bool step(Real)

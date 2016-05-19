@@ -708,8 +708,8 @@ cdef class EGFRDSimulator:
     """
 
     def __init__(self, *args):
-        """EGFRDSimulator(m, w, dissociation_retry_moves, bd_dt_factor, user_max_shell_size)
-        EGFRDSimulator(w, dissociation_retry_moves, bd_dt_factor, user_max_shell_size)
+        """EGFRDSimulator(m, w, bd_dt_factor, dissociation_retry_moves, user_max_shell_size)
+        EGFRDSimulator(w, bd_dt_factor, dissociation_retry_moves, user_max_shell_size)
 
         Constructor.
 
@@ -719,8 +719,8 @@ cdef class EGFRDSimulator:
             A model
         w : EGFRDWorld
             A world
-        dissociation_retry_moves : Integer
         bd_dt_factor : Real
+        dissociation_retry_moves : Integer
         user_max_shell_size : Real
 
         """
@@ -737,32 +737,32 @@ cdef class EGFRDSimulator:
             else:
                 self.thisptr = new Cpp_EGFRDSimulator(
                     deref((<EGFRDWorld>args[0]).thisptr),
-                    <Integer>args[1])
+                    <Real>args[1])
         elif len(args) == 3:
             if isinstance(args[1], EGFRDWorld):
                 self.thisptr = new Cpp_EGFRDSimulator(
                     deref((<EGFRDWorld>args[1]).thisptr),
                     Cpp_Model_from_Model(args[0]),
-                    <Integer>args[2])
+                    <Real>args[2])
             else:
                 self.thisptr = new Cpp_EGFRDSimulator(
                     deref((<EGFRDWorld>args[0]).thisptr),
-                    <Integer>args[1], <Real>args[2])
+                    <Real>args[1], <Integer>args[2])
         elif len(args) == 4:
             if isinstance(args[1], EGFRDWorld):
                 self.thisptr = new Cpp_EGFRDSimulator(
                     deref((<EGFRDWorld>args[1]).thisptr),
                     Cpp_Model_from_Model(args[0]),
-                    <Integer>args[2], <Real>args[3])
+                    <Real>args[2], <Integer>args[3])
             else:
                 self.thisptr = new Cpp_EGFRDSimulator(
                     deref((<EGFRDWorld>args[0]).thisptr),
-                    <Integer>args[1], <Real>args[2], <Real>args[3])
+                    <Real>args[1], <Integer>args[2], <Real>args[3])
         elif len(args) == 5:
             self.thisptr = new Cpp_EGFRDSimulator(
                 deref((<EGFRDWorld>args[1]).thisptr),
                 Cpp_Model_from_Model(args[0]),
-                <Integer>args[2], <Real>args[3], <Real>args[4])
+                <Real>args[2], <Integer>args[3], <Real>args[4])
         else:
             raise ValueError(
                 "The invalid number of arguments was given [{}].".format(len(args)))
