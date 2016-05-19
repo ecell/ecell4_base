@@ -9,7 +9,7 @@ set(CPP_FILES
     LatticeSpace.cpp Model.cpp NetworkModel.cpp NetfreeModel.cpp ParticleSpace.cpp
     Real3.cpp RandomNumberGenerator.cpp Species.cpp UnitSpecies.cpp
     Sphere.cpp Cylinder.cpp SubvolumeSpace.cpp ParticleSpaceCellListImpl.cpp
-    LatticeSpaceCellListImpl.cpp collision.cpp Rod.cpp AABB.cpp PlanarSurface.cpp
+	LatticeSpaceCellListImpl.cpp collision.cpp Rod.cpp AABB.cpp PlanarSurface.cpp ShapeContainer.cpp
     Mesh.cpp observers.cpp extras.cpp)
 
 set(HPP_FILES
@@ -25,7 +25,7 @@ set(HPP_FILES
     UnitSpecies.hpp observers.hpp exceptions.hpp get_mapper_mf.hpp types.hpp
     Shape.hpp Sphere.hpp Cylinder.hpp AABB.hpp StructureType.hpp
     ParticleSpaceCellListImpl.hpp LatticeSpaceCellListImpl.hpp
-    PlanarSurface.hpp Rod.hpp collision.hpp
+	PlanarSurface.hpp Rod.hpp collision.hpp ShapeContainer.hpp
     comparators.hpp SimulatorFactory.hpp Mesh.hpp shape_operators.hpp)
 
 if(WITH_VTK)
