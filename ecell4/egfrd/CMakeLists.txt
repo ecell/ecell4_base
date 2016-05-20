@@ -46,10 +46,10 @@ add_definitions(-DHAVE_CONFIG_H)
 add_library(ecell4-egfrd SHARED
     ${CPP_FILES} ${HPP_FILES} ${UTILS_HPP_FILES}
     "${PROJECT_BINARY_DIR}/ecell4/egfrd/config.h")
-target_link_libraries(ecell4-egfrd ecell4-core)
+target_link_libraries(ecell4-egfrd ${GSL_LIBRARIES} ${GSL_CBLAS_LIBRARIES} ecell4-core)
 # target_link_libraries(ecell4-egfrd ecell4-core ${BOOST_REGEX_LIBRARIES})
 
-# add_subdirectory(tests)
+add_subdirectory(tests)
 add_subdirectory(samples)
 
 install(TARGETS ecell4-egfrd DESTINATION lib)
