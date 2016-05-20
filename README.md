@@ -219,8 +219,8 @@ viz.plot_trajectory(obs, interactive=False)
 Licensing terms
 ===============
 
-This product is licensed under the terms of the [GNU General Public License v2](https://github.com/ecell/ecell4/blob/master/LICENSE).
-See [NOTICE](https://github.com/ecell/ecell4/blob/master/NOTICE.txt) for the software included in this product.
+This product is licensed under the terms of the [GNU General Public License v2](https://github.com/ecell/ecell4/blob/master/licenses/LICENSE),
+See [NOTICE](https://github.com/ecell/ecell4/blob/master/licenses/NOTICE.txt) for the software included in this product.
 
 - Copyright (c) 2010-, RIKEN
 
