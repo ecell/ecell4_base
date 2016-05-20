@@ -196,7 +196,8 @@ setup(
     package_data = {"ecell4.util": [
         "templates/init_ipynb.js", "templates/init_cyjs.js", "templates/template.html",
         "templates/*.tmpl", "templates/ecelllogo/*.png"]},
-    data_files = [('ecell4ipynb', [os.path.join(src_path, 'ipynb/index.ipynb')]),
+    data_files = [('ecell4ipynb/Licenses', glob.glob(os.path.join(src_path, 'licenses/*'))),
+                  ('ecell4ipynb', [os.path.join(src_path, 'ipynb/index.ipynb')]),
                   ('ecell4ipynb/Tutorials', glob.glob(os.path.join(src_path, 'ipynb/Tutorials/*.ipynb'))),
                   ('ecell4ipynb/Examples', glob.glob(os.path.join(src_path, 'ipynb/Examples/*.ipynb'))),
                   ('ecell4ipynb/Tests', glob.glob(os.path.join(src_path, 'ipynb/Tests/*.ipynb'))),
