@@ -148,8 +148,8 @@ cdef extern from "ecell4/spatiocyte/SpatiocyteSimulator.hpp" namespace "ecell4::
             shared_ptr[Cpp_SpatiocyteWorld], Real) except +
         Integer num_steps()
         Real next_time()
-        void step()
-        bool step(Real& upto)
+        void step() except +
+        bool step(Real& upto) except +
         Real t()
         void set_t(Real)
         Real dt()

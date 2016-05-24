@@ -102,8 +102,8 @@ cdef extern from "ecell4/meso/MesoscopicSimulator.hpp" namespace "ecell4::meso":
         Cpp_MesoscopicSimulator(
             shared_ptr[Cpp_MesoscopicWorld]) except +
         Integer num_steps()
-        void step()
-        bool step(Real)
+        void step() except +
+        bool step(Real) except +
         Real t()
         void set_t(Real)
         void set_dt(Real)

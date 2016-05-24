@@ -174,8 +174,8 @@ cdef extern from "ecell4/ode/ODESimulator.hpp" namespace "ecell4::ode":
         Cpp_ODESimulator(shared_ptr[Cpp_ODEWorld]) except+
 
         void initialize()
-        void step()
-        bool step(Real)
+        void step() except +
+        bool step(Real) except +
         Real next_time()
         Real t()
         void set_t(Real)

@@ -99,8 +99,8 @@ cdef extern from "ecell4/bd/BDSimulator.hpp" namespace "ecell4::bd":
         Cpp_BDSimulator(
             shared_ptr[Cpp_BDWorld], Real) except +
         Integer num_steps()
-        void step()
-        bool step(Real& upto)
+        void step() except +
+        bool step(Real& upto) except +
         Real t()
         Real dt()
         void set_t(Real& t)

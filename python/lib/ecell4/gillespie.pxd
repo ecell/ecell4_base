@@ -70,8 +70,8 @@ cdef extern from "ecell4/gillespie/GillespieSimulator.hpp" namespace "ecell4::gi
         Cpp_GillespieSimulator(
             shared_ptr[Cpp_GillespieWorld]) except +
         Integer num_steps()
-        void step()
-        bool step(Real)
+        void step() except +
+        bool step(Real) except +
         Real t()
         void set_t(Real)
         void set_dt(Real)

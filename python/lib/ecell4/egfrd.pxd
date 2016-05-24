@@ -93,8 +93,8 @@ cdef extern from "ecell4/egfrd/egfrd.hpp" namespace "ecell4::egfrd":
         Cpp_EGFRDSimulator(
             shared_ptr[Cpp_EGFRDWorld]&, Integer, Real, Real) except +
         Integer num_steps()
-        void step()
-        bool step(Real)
+        void step() except +
+        bool step(Real) except +
         Real t()
         void set_t(Real)
         void set_dt(Real)
@@ -161,8 +161,8 @@ cdef extern from "ecell4/egfrd/egfrd.hpp" namespace "ecell4::egfrd":
         Cpp_BDSimulator(shared_ptr[Cpp_EGFRDWorld]&, Real) except +
         Cpp_BDSimulator(shared_ptr[Cpp_EGFRDWorld]&, Real, Integer) except +
         Integer num_steps()
-        void step()
-        bool step(Real)
+        void step() except +
+        bool step(Real) except +
         Real t()
         void set_t(Real)
         void set_dt(Real)
