@@ -9,8 +9,6 @@
 
 #include "../GreensFunction3DRadInf.hpp"
 
-using namespace ecell4;
-
 
 BOOST_AUTO_TEST_CASE(GreensFunction3DRadInf_test_constructor)
 {

@@ -447,6 +447,13 @@ Real GreensFunction3DRadInf::drawR(Real rnd, Real t) const
     return r;
 }
 
+void my_gsl_error_handler(const char* reason, const char* filename, int line, int gsl_errno)
+{
+    std::ostringstream ss;
+    // ss << "gsl: " << filename << ":" << line << ": " << gsl_strerror(gsl_errno) << ": " << reason << std::endl;
+    ss << "gsl: " << filename << ":" << line << ": ERROR: " << reason << std::endl;
+    throw std::runtime_error(ss.str());
+}
 
 Real 
 GreensFunction3DRadInf::Rn(unsigned int n, Real r, Real t,
@@ -465,12 +472,15 @@ GreensFunction3DRadInf::Rn(unsigned int n, Real r, Real t,
 
     const Real umax(sqrt(40.0 / (this->getD() * t))); 
 
+    gsl_error_handler_t* old_handler = gsl_set_error_handler(&my_gsl_error_handler);
+    // gsl_error_handler_t* old_handler = gsl_set_error_handler_off();
     gsl_integration_qag(&F, 0.0,
-                         umax,
-                         tol,
-                         THETA_TOLERANCE,
-                         2000, GSL_INTEG_GAUSS61,
-                         workspace, &integral, &error);
+                        umax,
+                        tol,
+                        THETA_TOLERANCE,
+                        2000, GSL_INTEG_GAUSS61,
+                        workspace, &integral, &error);
+    gsl_set_error_handler(old_handler);
 
     return integral;
 }
