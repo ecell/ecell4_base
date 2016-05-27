@@ -234,9 +234,9 @@ public:
 
 protected:
 
-    Real k_;
-    //reactant_container_type reactants_;
-    //product_container_type products_;
+    // Real k_;
+    // reactant_container_type reactants_;
+    // product_container_type products_;
     reaction_leftside_container_type reactants_;
     reaction_rightside_container_type products_;
 
