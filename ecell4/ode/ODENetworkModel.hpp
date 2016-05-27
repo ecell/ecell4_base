@@ -109,6 +109,25 @@ public:
     {
         this->ode_reaction_rules_.push_back(ODEReactionRule(ode_rr));
     }
+
+    void add_reaction_rules(const std::vector<ODEReactionRule>& rrs)
+    {
+        for (std::vector<ODEReactionRule>::const_iterator i(rrs.begin());
+            i != rrs.end(); ++i)
+        {
+            add_reaction_rule(*i);
+        }
+    }
+
+    void add_reaction_rules(const std::vector<ReactionRule>& rrs)
+    {
+        for (std::vector<ReactionRule>::const_iterator i(rrs.begin());
+            i != rrs.end(); ++i)
+        {
+            add_reaction_rule(*i);
+        }
+    }
+
     void add_species_attribute(const Species &sp)
     {
         if (has_species_attribute(sp))

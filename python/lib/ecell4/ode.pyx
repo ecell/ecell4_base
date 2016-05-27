@@ -795,41 +795,26 @@ cdef class ODEReactionRule:
             An unicode string describing this object.
 
         """
-        # reactants = self.reactants()
-        # reactants_coeff = self.reactants_coefficients()
-        # products = self.products()
-        # products_coeff = self.products_coefficients()
-        # leftside = ""
-        # rightside = ""
-        # retval = ""
-        # first = True
-        # for (sp, coeff) in zip(reactants, reactants_coeff):
-        #     s = "{0}({1})".format(coeff, sp.serial())
-        #     if first == True:
-        #         leftside = s
-        #         first = False
-        #     else:
-        #         leftside = "{} + {}".format(leftside, s)
-        # first = True
-        # for (sp, coeff) in zip(products, products_coeff):
-        #     s = "{0}({1})".format(coeff, sp.serial())
-        #     if first == True:
-        #         rightside += s
-        #         first = False
-        #     else:
-        #         rightside = "{} + {}".format(retval, s)
-        # s = ""
-        # if self.has_ratelaw():
-        #     s = "HAVE"
-        # else:
-        #     s = "DON'T HAVE"
-        # if self.is_massaction():
-        #     k_desc = "k = {:f}\t {} Ratelaw".format(self.k(), s)
-        # else:
-        #     k_desc = "\t {} Ratelaw".format(s)
-        # retval = "{} ---> {}\t{}".format(leftside, rightside, k_desc)
-        # return retval
         return self.thisptr.as_string().decode('UTF-8')
+
+    def __reduce__(self):
+        if self.has_ratelaw():
+            self.ratelaw = self.ratelaw()
+        else:
+            ratelaw = None
+        return (__rebuild_ode_reaction_rule, (self.reactants(), self.products(), self.reactants_coefficients(), self.products_coefficients(), ratelaw))
+
+def __rebuild_ode_reaction_rule(reactants, products, reactants_coefficients, products_coefficients, ratelaw):
+    rr = ODEReactionRule()
+    for sp, coef in zip(reactants, reactants_coefficients):
+        rr.add_reactant(sp, coef)
+    for sp, coef in zip(products, products_coefficients):
+        rr.add_product(sp, coef)
+
+    if ratelaw is None:
+        pass
+    else:
+        rr.set_ratelaw(ratelaw)
 
 cdef ODEReactionRule ODEReactionRule_from_Cpp_ODEReactionRule(Cpp_ODEReactionRule *s):
     cdef Cpp_ODEReactionRule *new_obj = new Cpp_ODEReactionRule(deref(s))
@@ -939,6 +924,14 @@ cdef class ODENetworkModel:
                 <Cpp_Species*>(address(deref(it)))))
             inc(it)
         return retval
+
+    def __reduce__(self):
+        return (__rebuild_ode_network_model, (self.reaction_rules(), ))
+
+def __rebuild_ode_network_model(rrs):
+    m = ODENetworkModel()
+    m.add_reaction_rules(rrs)
+    return m
 
 cdef ODENetworkModel ODENetworkModel_from_Cpp_ODENetworkModel(
     shared_ptr[Cpp_ODENetworkModel] m):

@@ -100,6 +100,8 @@ cdef extern from "ecell4/ode/ODENetworkModel.hpp" namespace "ecell4::ode":
         void dump_reactions()
         void add_reaction_rule(Cpp_ODEReactionRule)
         void add_reaction_rule(Cpp_ReactionRule)
+        void add_reaction_rules(vector[Cpp_ODEReactionRule])
+        void add_reaction_rules(vector[Cpp_ReactionRule])
         vector[Cpp_Species] list_species()
 
 cdef class ODENetworkModel:
