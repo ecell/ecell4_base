@@ -23,18 +23,35 @@ The source code is available on
 
 For installation instructions, please see :doc:`installation`. E-Cell4 runs on Windows, Mac OSX and Linux.
 
+4.0.1 (Released May 20, 2016)
+-----------------------------------
 
-4.0.0 (released Feb 5, 2016)
---------------------------------------
-
-Features added
+Enhancement
 ~~~~~~~~~~~~~~
 
-- Spatial Gillespie simulator
-- Spatiocyte simulator
-- eGFRD simulator
-- Python valid rule based model
-- Jupyter Notebook inline visualization
+- Progressbar on Jupyter Notebook
+- Better styles for visualization especially for matplotlib
+- A member function to distinguish Species for molecules and structures
+- Enable user-defined macros for Python decorators
+- Enable to save a movie as mp4
+- Enable to set tolerances for ODE through a Factory class
+- 2D visualization of 3D world for animation
+- getVelocity for ODE simulation
+- Implicit dissolution of bindings in the rule-based modeling
+- Higher resolution for plot_movie
+- Enable to save time course data of NumberObservers
+- FixedIntervalTrajectoryObserver should have its small interval to check the periodic boundary effect separately from logging interval
+- Convenient functions for declaring fundamental objects
+- Enable to set ranges to show trajectories on viz.plot_trajectory
+
+Bug fix
+~~~~~~~~~
+
+- Fixed kernel death that would occur when there is no species in the viz.plot_movie_with_matplotlib(..., species_list)
+- Implement egfrd::World::list_species()
+- Spatiocyte doesn't accept the second-order reaction with translocation
+- Wrong absorption rate for mesoscopic simulations
+
 
 Getting Started
 ---------------
