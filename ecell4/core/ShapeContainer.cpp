@@ -4,9 +4,11 @@
 namespace ecell4
 {
 
-ShapeContainer::ShapeContainer(void)
+PlanarSurfaceContainer::PlanarSurfaceContainer(void)
 {
     ;
 }
 
 }
+
+

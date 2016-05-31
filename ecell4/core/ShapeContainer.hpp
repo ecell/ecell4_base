@@ -20,11 +20,50 @@
 #include "Real3.hpp"
 #include "Identifier.hpp"
 #include "Shape.hpp"
+#include "Species.hpp"
+#include "PlanarSurface.hpp"
 
 #include <boost/shared_ptr.hpp>
 
 #include <vector>
 #include <map>
+
+#if defined(HAVE_TR1_FUNCTIONAL)
+namespace std
+{
+
+namespace tr1
+{
+#elif defined(HAVE_STD_HASH)
+namespace std
+{
+#elif defined(HAVE_BOOST_FUNCTIONAL_HASH_HPP)
+namespace boost
+{
+#endif
+
+template<>
+struct hash<ecell4::PlanarSurface>
+{
+    typedef ecell4::PlanarSurface argument_type;
+    std::size_t operator()(const ecell4::PlanarSurface &val) const
+    {
+        return hash<ecell4::Real3>()(val.origin()) ^ 
+            hash<ecell4::Real3>()(val.e0()) ^
+            hash<ecell4::Real3>()(val.e1());
+    }
+};
+
+#if defined(HAVE_TR1_FUNCTIONAL)
+} // tr1
+
+} // std
+#elif defined(HAVE_STD_HASH)
+} // std
+#elif defined(HAVE_BOOST_FUNCTIONAL_HASH_HPP)
+} // boost
+#endif
+
 
 namespace ecell4
 {
@@ -35,91 +74,110 @@ struct ShapeID:
     typedef Identifier<ShapeID, unsigned long long, int> base_type;
     ShapeID(const value_type& value = value_type(0, 0))
         :base_type(value)
+    {   
+        ;
+    }
+};
+
+struct PlanarSurfaceID:
+    public Identifier<PlanarSurfaceID, unsigned long long, int>
+{
+    typedef Identifier<PlanarSurfaceID, unsigned long long, int> base_type;
+    PlanarSurfaceID(const value_type& value=value_type(0, 0)): base_type(value)
     {
         ;
     }
 };
 
-class ShapeContainer 
+class PlanarSurfaceContainer
 {
 public:
-    typedef std::vector<std::pair<ShapeID, boost::shared_ptr<Shape> > >
-        shape_container_type;
+    typedef PlanarSurfaceID surface_id_type;
+    typedef PlanarSurface    surface_type;
+    typedef Species          species_type;
+
+    typedef std::pair<species_type, surface_type> species_surface_pair;
+    typedef std::vector<std::pair<surface_id_type, species_surface_pair> > surface_container_type;
+    
+    typedef std::pair<surface_id_type, Real> id_distance_pair;
 
 protected:
+    // ID -> index of surface
     typedef utils::get_mapper_mf<
-        ShapeID, shape_container_type::size_type>::type shape_map_type;
+        surface_id_type, surface_container_type::size_type>::type surface_map_type;
+
+
 public:
-    // Constructor
-    ShapeContainer(void);
-
-    Integer num_shape(void) const
+    PlanarSurfaceContainer(void);
+    Integer num_surfaces(void) const
     {
-        return shapes_.size();
+        return surfaces_.size();
     }
-    Integer num_shape(Shape::dimension_kind &dim) const
+    surface_container_type list_surfaces() const
     {
-        Integer ret = 0;
-        for(shape_container_type::const_iterator it = shapes_.begin(); it != shapes_.end(); it++)
+        return surfaces_;
+    }
+    surface_container_type list_surfaces(species_type const &sp) const 
+    {
+        surface_container_type retval;
+        for(surface_container_type::const_iterator it = surfaces_.begin(); it != surfaces_.end(); it++) 
         {
-            if (it->second->dimension() == dim) {
-                ret++;
+            if (it->second.first == sp)
+            {
+                retval.push_back(*it);
             }
         }
-        return ret;
+        return retval;
     }
-
-    std::pair<ShapeID, boost::shared_ptr<Shape> > get_shape(const ShapeID& shape_id) const
+    species_surface_pair get_surface(surface_id_type const &id) const
     {
-        shape_map_type::const_iterator i(index_map_.find(shape_id));
-        if (i != index_map_.end())
+        surface_map_type::const_iterator i(index_map_.find(id));
+        if (i != index_map_.end()) 
         {
-            throw NotFound("shape not found");
+            return surfaces_[(*i).second].second;
         }
-        return shapes_[(*i).second];
-    }
-
-    shape_container_type list_shapes() const
-    {
-        return shapes_;
-    }
-
-    shape_container_type list_shapes(Shape::dimension_kind const &dim) const 
-    {
-        shape_container_type ret;
-        for(shape_container_type::const_iterator it = shapes_.begin(); it != shapes_.end(); it++)
+        else
         {
-            if (it->second->dimension() == dim) {
-                ret.push_back(*it);
-            }
+            throw NotFound("Surface not found");
         }
-        return ret;
     }
-    bool has_shape(ShapeID const &shape_id) const
+
+    bool has_surface(surface_id_type const &id)
     {
-        shape_map_type::const_iterator i(index_map_.find(shape_id));
+        surface_map_type::const_iterator i(index_map_.find(id));
         return (i != index_map_.end());
     }
-
-    bool update_shape(const ShapeID& shape_id, const boost::shared_ptr<Shape> s)
+    bool update_particle(const surface_id_type &id, const species_type &sp, const surface_type &surface)
     {
-        shape_map_type::const_iterator i(index_map_.find(shape_id));
+        surface_map_type::const_iterator i(index_map_.find(id));
         if (i == index_map_.end())
         {
-            shape_container_type::size_type idx(shapes_.size());
-            index_map_[shape_id] = idx;
-            shapes_.push_back(std::make_pair(shape_id, s));
+            surface_container_type::size_type idx(surfaces_.size());
+            index_map_[id] = idx;
+            surfaces_.push_back(std::make_pair(id, std::make_pair(sp, surface)));
             return true;
         }
         else
         {
-            shapes_[(*i).second] = std::make_pair(shape_id, s);
+            surfaces_[(*i).second] = std::make_pair(id, std::make_pair(sp, surface));
             return false;
         }
     }
+
+    std::vector<id_distance_pair> get_distance(const Real3 &pos) const
+    {
+        std::vector<id_distance_pair> ret;
+        for(surface_container_type::const_iterator it = surfaces_.begin(); it != surfaces_.end(); it++)
+        {
+            Real dist = std::abs(it->second.second.is_inside(pos));
+            ret.push_back( std::make_pair(it->first, dist) );
+        }
+        return ret;
+    }
+
 protected:
-    shape_container_type shapes_;
-    shape_map_type index_map_;
+    surface_container_type surfaces_;
+    surface_map_type index_map_;
 };
 
 }   //ecell4
