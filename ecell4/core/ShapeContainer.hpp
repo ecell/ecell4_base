@@ -129,7 +129,7 @@ public:
         }
         return retval;
     }
-    species_surface_pair get_surface(surface_id_type const &id) const
+    const species_surface_pair &get_surface(surface_id_type const &id) const
     {
         surface_map_type::const_iterator i(index_map_.find(id));
         if (i != index_map_.end()) 
@@ -142,12 +142,12 @@ public:
         }
     }
 
-    bool has_surface(surface_id_type const &id)
+    bool has_surface(surface_id_type const &id) const
     {
         surface_map_type::const_iterator i(index_map_.find(id));
         return (i != index_map_.end());
     }
-    bool update_particle(const surface_id_type &id, const species_type &sp, const surface_type &surface)
+    bool update_surface(const surface_id_type &id, const species_type &sp, const surface_type &surface)
     {
         surface_map_type::const_iterator i(index_map_.find(id));
         if (i == index_map_.end())
@@ -164,7 +164,7 @@ public:
         }
     }
 
-    std::vector<id_distance_pair> get_distance(const Real3 &pos) const
+    std::vector<id_distance_pair> list_id_distance_pair(const Real3 &pos) const
     {
         std::vector<id_distance_pair> ret;
         for(surface_container_type::const_iterator it = surfaces_.begin(); it != surfaces_.end(); it++)
