@@ -6,5 +6,11 @@ class EcocycDataSource(object):
         self.pgdb = pythoncyc.select_organism('eco')
         
 if __name__ == '__main__':
-    eco = EcocycDataSource()
-    print(eco.pgdb.all_pathways())
+    from ecell4 import *
+    pgdb = EcocycDataSource().pgdb
+#    for p in pgdb.all_pathways():
+    p = pgdb.all_pathways()[3]
+    with reaction_rules():
+        for g in pgdb.genes_of_pathway(p):
+            for p in pgdb.all_products_of_gene(g):
+                ~_eval(g.replace("|", "").replace("-", "")) > _eval(p.replace("|", "").replace("-", "")) | 3
