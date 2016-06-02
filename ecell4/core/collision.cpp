@@ -1,6 +1,5 @@
 #include "collision.hpp"
 
-
 namespace ecell4
 {
 
@@ -381,6 +380,36 @@ bool intersect_moving_sphere_AABB(
 
     return intersect_segment_capsule(
         p0, p1, b.corner(u^7), b.corner(v), radius, t);
+}
+
+boost::tuple<bool, Real3, Real3> refrection_PlanarSurface(
+        const boost::shared_ptr<PlanarSurface> surface,
+        const Real3& from, const Real3& displacement)
+{
+    // return value:
+    //  tuple(is_cross, intrusion_point, remaining_displacement_from_intrusion_point)
+    Real3 temporary_destination(from + displacement);
+    Real is_inside_from( surface->is_inside(from) );
+    Real is_inside_dest( surface->is_inside(temporary_destination) );
+    bool sign_of_dest_is_inside = 0. < is_inside_dest ? true : false;
+    if (0 < is_inside_from * is_inside_dest) {
+        return boost::make_tuple(false, from , displacement);
+    }
+    else if (0 < is_inside_from && is_inside_dest < 0) {
+        // Inside -> refrection -> Inside
+        Real distance_from_surface(std::abs(is_inside_dest));
+        Real3 new_pos = temporary_destination + multiply(surface->normal(), (-2.0) * distance_from_surface);
+        Real ratio( std::abs(is_inside_from) / (std::abs(is_inside_from) + std::abs(is_inside_dest)) );
+        Real3 intrusion_point( from + multiply(displacement, ratio) );
+        return boost::make_tuple(true, intrusion_point, new_pos - intrusion_point);
+    } 
+    else if (is_inside_from < 0 && 0 < is_inside_dest) {
+        Real distance_from_surface(std::abs(is_inside_dest));
+        Real3 new_pos = temporary_destination + multiply(surface->normal(), (2.0) * distance_from_surface);
+        Real ratio( std::abs(is_inside_from) / (std::abs(is_inside_from) + std::abs(is_inside_dest)) );
+        Real3 intrusion_point( from + multiply(displacement, ratio) );
+        return boost::make_tuple(true, intrusion_point, new_pos - intrusion_point);
+    }
 }
 
 } // collision
