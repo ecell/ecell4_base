@@ -195,6 +195,15 @@ class ParseDecorator:
                 return parseobj.AnyCallable(self.callback, key)
         l = locals()
         l.update(params)
+
+        if "-" in expr:
+            print(expr, "NOTICE: - can not be used in Species descriptor, we replaced it with _")
+            expr = expr.replace("-", "_")
+
+        if "|" in expr:
+            print(expr, "NOTICE: | can not be used in Species descriptor, we remove it")
+            expr = expr.replace("|", "")
+
         return eval(expr, globals(), AnyCallableLocals(self.__callback, l))
 
 # def parse_decorator(callback_class, func):
