@@ -3,6 +3,7 @@ import types
 import warnings
 import functools
 import inspect
+import re
 
 from . import parseobj
 
@@ -203,6 +204,11 @@ class ParseDecorator:
         if "|" in expr:
             print(expr, "NOTICE: | can not be used in Species descriptor, we remove it")
             expr = expr.replace("|", "")
+
+        prog = re.compile("^[0-9]")
+        if prog.match(expr):
+            print(expr, "NOTICE: Species name that begins with numbers is not allowed, we put x to the head")
+            expr = "x" + expr
 
         return eval(expr, globals(), AnyCallableLocals(self.__callback, l))
 
