@@ -11,6 +11,7 @@
 #include <ecell4/core/ParticleSpace.hpp>
 #include <ecell4/core/ParticleSpaceCellListImpl.hpp>
 #include <ecell4/core/Model.hpp>
+#include <ecell4/core/ShapeContainer.hpp>
 
 
 namespace ecell4
@@ -34,6 +35,11 @@ public:
     typedef ParticleSpaceCellListImpl particle_space_type;
     // typedef ParticleSpaceVectorImpl particle_space_type;
     typedef particle_space_type::particle_container_type particle_container_type;
+
+    // Surface-related type definitions
+    typedef PlanarSurfaceContainer surface_container_type;
+    typedef surface_container_type::surface_type surface_type;
+    typedef surface_container_type::surface_id_type surface_id_type;
 
 public:
 
@@ -380,6 +386,24 @@ public:
         return model_.lock();
     }
 
+    std::pair<std::pair<surface_id_type, surface_type>, bool>
+    new_surface(const Species &sp, const surface_type &surface)
+    {
+        PlanarSurfaceID psid(psidgen_());
+        surfaces_.update_surface(psid, sp, surface);
+        return std::make_pair( std::make_pair(psid, surface), true);
+    }
+
+    Integer num_surfaces(void) const
+    {
+        return surfaces_.num_surfaces();
+    }
+
+    Real3 apply_reflection(Real3 const &from, Real3 const &displacement) const 
+    {
+        return this->surfaces_.apply_reflection(from, displacement);
+    }
+
 protected:
 
     boost::scoped_ptr<ParticleSpace> ps_;
@@ -387,6 +411,8 @@ protected:
     SerialIDGenerator<ParticleID> pidgen_;
 
     boost::weak_ptr<Model> model_;
+    surface_container_type surfaces_;
+    SerialIDGenerator<PlanarSurfaceID> psidgen_;
 };
 
 } // bd
