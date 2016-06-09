@@ -10,9 +10,9 @@
 #include <math.h>
 #include <vector>
 #include <boost/numeric/ublas/matrix.hpp>
-#include <gsl/gsl_sf_bessel.h>
 #include <gsl/gsl_nan.h>
 #include "make_table_util.hpp"
+#include "sph_bessel.hpp"
 
 using namespace boost::numeric;
 
@@ -91,31 +91,23 @@ matrix zeros(const int length0, const int length1)
 void calculate_jns(const int n, const double z,
         double j[], double jdot[])
 {
-    double *jp = new double[n+2];
-    gsl_sf_bessel_jl_array(n+1, z, jp);
-    j[0] = jp[0];
-    jdot[0] = -jp[1];
-    for (int l(1); l < n+1; ++l)
+    values jp(sphj_array(n, z));
+    for (int k(0); k <= n; ++k)
     {
-        j[l] = jp[l];
-        jdot[l] = (l*jp[l-1] - (l+1)*jp[l+1])/(2*l+1);
+        j[k] = jp.first[k];
+        jdot[k] = jp.second[k];
     }
-    delete[] jp;
 }
 
 void calculate_yns(const int n, const double z,
         double y[], double ydot[])
 {
-    double *yp = new double[n+2];
-    gsl_sf_bessel_yl_array(n+1, z, yp);
-    y[0] = yp[0];
-    ydot[0] = -yp[1];
-    for (int l(1); l < n+1; ++l)
+    values yp(sphy_array(n, z));
+    for (int k(0); k <= n; ++k)
     {
-        y[l] = yp[l];
-        ydot[l] = (n*yp[l-1] - (n+1)*yp[l])/(2*n+1);
+        y[k] = yp.first[k];
+        ydot[k] = yp.second[k];
     }
-    delete[] yp;
 }
 
 void set_matrix(matrix& mat, const int i, const double array[], const int n)
