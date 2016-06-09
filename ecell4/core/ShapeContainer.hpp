@@ -28,43 +28,6 @@
 #include <vector>
 #include <map>
 
-#if defined(HAVE_TR1_FUNCTIONAL)
-namespace std
-{
-
-namespace tr1
-{
-#elif defined(HAVE_STD_HASH)
-namespace std
-{
-#elif defined(HAVE_BOOST_FUNCTIONAL_HASH_HPP)
-namespace boost
-{
-#endif
-
-template<>
-struct hash<ecell4::PlanarSurface>
-{
-    typedef ecell4::PlanarSurface argument_type;
-    std::size_t operator()(const ecell4::PlanarSurface &val) const
-    {
-        return hash<ecell4::Real3>()(val.origin()) ^ 
-            hash<ecell4::Real3>()(val.e0()) ^
-            hash<ecell4::Real3>()(val.e1());
-    }
-};
-
-#if defined(HAVE_TR1_FUNCTIONAL)
-} // tr1
-
-} // std
-#elif defined(HAVE_STD_HASH)
-} // std
-#elif defined(HAVE_BOOST_FUNCTIONAL_HASH_HPP)
-} // boost
-#endif
-
-
 namespace ecell4
 {
 

@@ -22,6 +22,7 @@ include "Particle.pxi"
 include "Voxel.pxi"
 include "observers.pxi"
 include "shapes.pxi"
+include "ShapeContainer.pxi"
 
 def length_sq(p):
     """length_sq(p1) -> Real or Integer

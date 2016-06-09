@@ -355,6 +355,40 @@ cdef class Integer3:
 
 cdef Integer3 Integer3_from_Cpp_Integer3(Cpp_Integer3 *g)
 
+cdef extern from "ecell4/core/ShapeContainer.hpp" namespace "ecell4":
+    ctypedef int lot_type
+    ctypedef unsigned long long serial_type
+    ctypedef pair[int, unsigned long long] value_type
+
+    cdef cppclass Cpp_PlanarSurfaceID "ecell4::PlanarSurfaceID":
+        Cpp_PlanarSurfaceID() except+
+        Cpp_PlanarSurfaceID(value_type) except+
+        Cpp_PlanarSurfaceID(Cpp_PlanarSurfaceID &rhs) except+
+        Cpp_PlanarSurfaceID log_add(lot_type& rhs)
+        Cpp_PlanarSurfaceID log_subtract(lot_type &rhs)
+        Cpp_PlanarSurfaceID& lot_advance(lot_type& rhs)
+        Cpp_PlanarSurfaceID& lot_retraace(lot_type& rhs)
+        Cpp_PlanarSurfaceID serial_add(serial_type& rhs)
+        Cpp_PlanarSurfaceID serial_subtract(serial_type& rhs)
+        Cpp_PlanarSurfaceID& serial_advance(serial_type& rhs)
+        Cpp_PlanarSurfaceID& serial_retrace(serial_type& rhs)
+        # Cpp_PlanarSurfaceID &operator=(Cpp_PlanarSurfaceID& rhs) # XXX not yet suppoted
+        bool operator==(Cpp_PlanarSurfaceID& rhs)
+        bool operator!=(Cpp_PlanarSurfaceID& rhs)
+        bool operator<(Cpp_PlanarSurfaceID& rhs)
+        bool operator>=(Cpp_PlanarSurfaceID& rhs)
+        bool operator>(Cpp_PlanarSurfaceID& rhs)
+        bool operator<=(Cpp_PlanarSurfaceID& rhs)
+        # operator value_type()
+        value_type& operator() ()
+        int& lot()
+        unsigned long long& serial()
+
+cdef class PlanarSurfaceID:
+    cdef Cpp_PlanarSurfaceID* thisptr
+
+cdef PlanarSurfaceID PlanarSurfaceID_from_Cpp_PlanarSurfaceID(Cpp_PlanarSurfaceID *p)
+
 ## Cpp_ParticleID
 #  ecell4::ParticleID
 cdef extern from "ecell4/core/Identifier.hpp" namespace "ecell4":
