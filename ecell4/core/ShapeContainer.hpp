@@ -24,6 +24,8 @@
 #include "PlanarSurface.hpp"
 
 #include <boost/shared_ptr.hpp>
+#include <boost/tuple/tuple.hpp>
+#include <boost/tuple/tuple_io.hpp>
 
 #include <vector>
 #include <map>
@@ -76,11 +78,11 @@ public:
     {
         return surfaces_.size();
     }
-    surface_container_type list_surfaces() const
+    const surface_container_type list_surfaces() const
     {
         return surfaces_;
     }
-    surface_container_type list_surfaces(species_type const &sp) const 
+    const surface_container_type list_surfaces(species_type const &sp) const 
     {
         surface_container_type retval;
         for(surface_container_type::const_iterator it = surfaces_.begin(); it != surfaces_.end(); it++) 
@@ -137,6 +139,8 @@ public:
         }
         return ret;
     }
+
+    Real3 apply_reflection(const Real3 &from, const Real3 &displacement) const;
 
 protected:
     surface_container_type surfaces_;
