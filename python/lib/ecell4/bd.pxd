@@ -75,6 +75,8 @@ cdef extern from "ecell4/bd/BDWorld.hpp" namespace "ecell4::bd":
         void load(string filename)
         void bind_to(shared_ptr[Cpp_Model])
         shared_ptr[Cpp_RandomNumberGenerator] rng()
+        Integer num_surfaces()
+        pair[pair[Cpp_PlanarSurfaceID, Cpp_PlanarSurface], bool] new_surface(Cpp_Species &sp, Cpp_PlanarSurface sur)
 
 ## BDWorld
 #  a python wrapper for Cpp_BDWorld
