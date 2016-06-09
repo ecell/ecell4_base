@@ -1,5 +1,58 @@
 #include <cmath>
+#include <cstdlib>
 #include "sph_bessel.hpp"
+
+inline double envj(const int n, const double x) {
+    return (0.5*log10(6.28*n)-n*log10(1.36*x/n));
+}
+
+inline int nn(int n0, int n1, double f0, double f1, int obj, double x) {
+    int nn;
+    double f;
+    for (int k(0); k < 20; ++k) {
+        nn = int(n1 - (n1-n0)/(1-f0/f1));
+        f = envj(nn,x)-obj;
+        if (abs(nn-n1) < 1)
+            break;
+        n0 = n1;
+        f0 = f1;
+        n1 = nn;
+        f1 = f;
+    }
+    return nn;
+}
+
+int msta1(const double x, const unsigned int mp) {
+    const double abs(fabs(x));
+    int n0(int(1.1*abs)+1),
+        n1(n0+5);
+    double f0(envj(n0,abs)-mp),
+           f1(envj(n1,abs)-mp);
+
+    return nn(n0, n1, f0, f1, mp, abs);
+}
+
+int msta2(const double x, const unsigned int n, const unsigned int mp) {
+    const double abs(fabs(x));
+    const double hmp(0.5*mp);
+    const double ejn(envj(n,abs));
+
+    double obj;
+    int n0;
+    if (ejn <= hmp) {
+        obj = mp;
+        n0 = int(1.1*abs)+1;
+    } else {
+        obj = hmp + ejn;
+        n0 = n;
+    }
+
+    double f0(envj(n0,abs)-obj);
+    int n1(n0+5);
+    double f1(envj(n1,abs)-obj);
+
+    return nn(n0, n1, f0, f1, obj, abs)+10;
+}
 
 std::pair<std::vector<double>, std::vector<double> > sphj_array(const unsigned int n, const double x) {
     std::vector<double> js(n+1, 0.0), dots(n+1, 0.0);
@@ -19,8 +72,37 @@ std::pair<std::vector<double>, std::vector<double> > sphj_array(const unsigned i
 
     js[1] = (js[0]-cos(x))/x;
 
-    for (int k(2); k <= n; ++k)
-        js[k] = (2*k-1)*js[k-1]/x - js[k-2];
+    if (n > 2) {
+        const double j0(js[0]), j1(js[1]);
+        int maxn(n);
+        //int m(maxn);
+        int m(msta1(x, 200));
+        if (m < maxn)
+            maxn = m;
+        else
+            m = msta2(x, maxn, 15);
+        js.resize(m, 0.0);
+
+        double f(0.0), f0(0.0), f1(1.0e-100);
+        for (int k(m); k >= 0; --k) {
+            f = (2*k+3)*f1/x - f0;
+            if (k <= maxn)
+                js[k] = f;
+            f0 = f1;
+            f1 = f;
+        }
+
+        double c;
+        if (fabs(j0) > fabs(j1))
+            c = j0/f;
+        else
+            c = j1/f0;
+
+        for (int k(0); k < maxn; ++k) {
+            js[k] = c * js[k];
+        }
+    }
+
     for (int k(1); k <= n; ++k)
         dots[k] = js[k-1] - (k+1)*js[k]/x;
 
