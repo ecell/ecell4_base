@@ -41,14 +41,21 @@ public:
 
     // SpaceTraits
 
-    virtual const Real& t() const = 0;
+    // virtual const Real t() const = 0;  //XXX: This doesn't work with Python35 MSVC2015
+    virtual const Real t() const
+    {
+        return 0.0;  //XXX: Just for debugging
+    }
+
     virtual void set_t(const Real& t) = 0;
 
-    virtual void save(const std::string& filename) const
-    {
-        throw NotSupported(
-            "save(const std::string) is not supported by this space class");
-    }
+    virtual void save(const std::string& filename) const = 0;
+    //XXX: This doesn't work with Python35 MSVC2015
+    // virtual void save(const std::string& filename) const
+    // {
+    //     throw NotSupported(
+    //         "save(const std::string) is not supported by this space class");
+    // }
 
     virtual void load(const std::string& filename)
     {
@@ -135,6 +142,19 @@ public:
     {
         throw NotSupported(
             "edge_lengths() is not supported by this space class");
+    }
+
+    /**
+     * get the actual axes lengths of a cuboidal region.
+     * this function is a part of the trait of ParticleSpace.
+     * return edge lengths as a default.
+     * overload this function if the actual size is not equal to
+     * edge lengths.
+     * @return actual edge lengths Real3
+     */
+    virtual Real3 actual_lengths() const
+    {
+        return edge_lengths();
     }
 
     /**

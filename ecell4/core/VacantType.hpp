@@ -41,6 +41,11 @@ public:
         return instance;
     }
 
+    const Shape::dimension_kind get_dimension() const
+    {
+        return Shape::THREE;
+    }
+
     virtual void add_voxel_without_checking(const coord_id_pair& info)
     {
         ; // do nothing
@@ -55,7 +60,8 @@ public:
 
     virtual void replace_voxel(
         const coordinate_type& from_coord,
-        const coordinate_type& to_coord)
+        const coordinate_type& to_coord,
+        const std::size_t candidate=0)
     {
         ; // do nothing
     }
@@ -68,9 +74,8 @@ public:
 private:
 
     VacantType()
-        : base_type(Species("VACANT", "0", "0"), false, NULL, 0, 0)
+        : base_type(Species("VACANT", "0", "0"), NULL, 0, 0)
     {
-        set_dimension(Shape::THREE);
     }
 };
 

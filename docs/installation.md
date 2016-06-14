@@ -1,163 +1,202 @@
+Installation and usage
+======================
+
+- [Docker container for E-Cell System version4](#docker-container-for-e-cell-system-version4)
+  - [Windows or Mac](#windows-or-mac)
+  - [Linux](#linux)
+
 - [Installation](#installation)
-    - [Windows](#windows-installation)
-    - [Mac OS X](#mac-os-x-installation)
-    - [Ubuntu vivid](#ubuntu-linux-vivid-vervet-installation)
-    - [Ubuntu trusty](#ubuntu-linux-trusty-tahr-installation)
+  - [Requirements](#requirements)
+  - [Windows](#windows)
+  - [Mac](#mac)
+  - [Linux](#linux-1)
+
+- [How to open E-Cell4 Jupyter notebooks](#how-to-open-e-cell4-jupyter-notebooks)
+
+- [Simple examples](#simple-examples)
+  - [A reversible binding reaction](#a-reversible-binding-reaction)
+  - [Particle tracking on a spherical surface](#particle-tracking-on-a-spherical-surface)
+
+Docker container for E-Cell System version4
+-------------------------------------------
+
+If you have docker environment, you can easily try E-Cell4.
+You can pull E-Cell4 container with `docker pull ecell/ecell4`.
+
+After the following steps, you should see [Jupyter Notebook](http://jupyter.org/) up and running (and E-Cell4 tutorials) in your web browser.
+
+### Windows or Mac
+
+1. Install [Docker Toolbox](https://www.docker.com/toolbox).
+2. Run **Docker Quickstart Terminal**.
+3. Run the following commands
+
+    ```shell
+    docker pull ecell/ecell4
+    docker run -dp 443:8888 ecell/ecell4
+    ```
+
+4. Open **192.168.99.100:443** with your web browser.
+
+### Linux
+
+1. Install Docker.
+2. Run the following commands in your terminal.
+
+    ```shell
+    sudo docker pull ecell/ecell4
+    sudo docker run -dp 443:8888 ecell/ecell4
+    ```
+
+3. Open **localhost:443** with your web browser.
+
 
 Installation
 ------------
 
-### Windows installation
+### Requirements
 
-#### Requirements
-
-Please use 32bit Python, even if you use 64bit Windows.
-We don't support 64bit Python
-
-- Python 2.7.10(**32bit**) https://www.python.org/ftp/python/2.7.10/python-2.7.10.msi
-- HDF5-1.8.14 Pre-built Binary(**32-bit**) http://www.hdfgroup.org/ftp/HDF5/current/bin/windows/extra/hdf5-1.8.14-win32-vs2008-shared.zip
-
-Please add `C:\Python27`, `C:\Python27\Scripts` and `C:\Program Files (x86)\HDF_Group\HDF5\1.8.14\bin` to your **PATH** enviromental variable.
-
-And run following command with command prompt.
-```
-pip install https://github.com/ecell/ecell4/releases/download/4.0.0-beta2/ecell4-4.0.0b2-cp27-none-win32.whl
-```
-
-#### IPython notebook
-We recommend you run E-Cell4 models from IPython notebook.
-Below is IPython notebook(and matplotlib) installation for Windows.
-
-- Install [Visual C++ Compiler for Python 2.7](http://www.microsoft.com/en-us/download/details.aspx?id=44266)
-- Install IPython notebook and matplotlib
-
-    ```
-    pip install "ipython[notebook]"
-    pip install matplotlib
-    ```
-
-matplotlib depends on numpy. It takes some time to build numpy, please be patient.
-
-### Mac OS X installation
-
-#### Requirements
-
-- homebrew
-- gsl
-- hdf5
+#### Minimum requirements
+- Python or **32bit** Miniconda for Windows (2.7, 3.* both versions are supported)
 - pip
+- hdf5 (E-Cell4 **for Windows** works only for version 1.8.16)
+
+#### Optional requirements
+We strongly recommend that you run E-Cell4 with [Jupyter Notebook](http://jupyter.org/).
+And some E-Cell4 functions (for visualization, datastore) optionaly depend on
+- matplotlib (**1.5.1** and later)
+- ffmpeg
+- pandas
+
+### Windows
+
+Please use **32bit** [Miniconda](http://conda.pydata.org/miniconda.html), even if you use 64bit Windows.
+We have NOT supported 64bit Python yet.
+Python 2.7, 3.5 both are supported.
+
+- Install **32bit** Miniconda for Windows from http://conda.pydata.org/miniconda.html
+- Run the follwing commands on command prompt (if you use Python3.5, please replace the target of ```pip install``` to the whl for 3.5)
+- (**Important**) E-Cell4 for Windows works only for hdf5 version **1.8.16**. Please check the version of hdf5, even if you installed hdf5 before with conda.
+
+    ```shell
+    conda install hdf5 notebook matplotlib
+    pip install https://github.com/ecell/ecell4/releases/download/4.0.0/ecell-4.0.0-cp27-none-win32.whl
+    ```
+
+Although Jupyter Notebook is optional, we strongly recommend that you run E-Cell4 with jupyter.
+If you use animated visualization for E-Cell4, please install [ffmpeg windows build](http://ffmpeg.zeranoe.com/builds/) and add its path to your **USER** PATH enviromental variable.
+
+### Mac
+
+We recommend that you install [Miniconda](http://conda.pydata.org/miniconda.html) to manage Python packages.
+After installing Miniconda, run the following commands in your terminal.
 
 ```shell
-brew install homebrew/science/hdf5
-brew install gsl
-brew install wget
+# After installing Miniconda2 or Miniconda3 (Here we assume that you installed Miniconda2).
+~/miniconda2/bin/conda install matplotlib jupyter
+
+# Download E-Cell4 whl file for your Python version from https://github.com/ecell/ecell4/releases before running this command.
+~/miniconda2/bin/pip install ecell-4.0.0-cp27-none-macosx_10_6_intel.macosx_10_9_intel.macosx_10_9_x86_64.macosx_10_10_intel.macosx_10_10_x86_64.whl
+
+# If you want animation support, install ffmpeg with homebrew
+brew install ffmpeg
+```
+
+
+### Linux
+
+Please run the following commands with root privilege.
+
+```shell
+apt-get install libgsl0-dev libhdf5-dev wget
 wget https://bootstrap.pypa.io/get-pip.py
-sudo python get-pip.py
-pip install https://github.com/ecell/ecell4/releases/download/4.0.0-beta2/ecell4-4.0.0b2-cp27-none-macosx_10_10_intel.whl --user
-# For Mountain Lion
-# pip install https://github.com/ecell/ecell4/releases/download/4.0.0-beta2/ecell4-4.0.0b2-cp27-none-macosx_10_9_intel.whl --user
+# If you use Python3, replace python to python3
+python get-pip.py
+# If you use Python3.*, replace the whl for Python3.*
+pip install https://github.com/ecell/ecell4/releases/download/4.0.0/ecell-4.0.0-cp27-cp27mu-manylinux1_x86_64.whl
+
+# The latest matplotlib and jupyter. If you use Python3, replace those for Python3.
+apt-get install python-dev libfreetype6-dev libpng-dev pkg-config python-numpy pandoc
+pip install matplotlib jupyter
+
+# Optional requirement (animation visualization)
+apt-get install libav-tools
 ```
 
-#### IPython notebook
-We recommend you run E-Cell4 models from IPython notebook.
-Below is IPython notebook(and matplotlib) installation for Mac.
+
+How to open E-Cell4 Jupyter notebooks
+-------------------------------------
+
+### Windows
+Here we assume that you installed Miniconda(Python2.7) to C:¥Miniconda2
 
 ```shell
-pip install matplotlib --user
-pip install "ipython[notebook]" --user
-cd ~/Library/Python/2.7/ecell4ipynb
-PYTHONPATH=~/Library/Python/2.7/lib/python/site-packages/ ipython notebook
+cd C:¥Miniconda2¥ecell4ipynb
+jupyter-notebook
 ```
 
-now you can see IPython notebooks, please open index.ipynb to see E-Cell4 models.
-
-
-### Ubuntu Linux Vivid Vervet installation
-#### Python2 series
+### Mac
+Here we assume that you installed Miniconda(Python2.7) to ~/miniconda2
 
 ```shell
-# dependent packages
-$ sudo apt-get install cmake libgsl0-dev libboost-regex-dev libhdf5-dev cython
-
-$ wget https://github.com/ecell/ecell4/archive/master.zip   
-$ unzip master.zip
-$ cd ecell4-master
-# By default install.sh tries to install E-Cell4 into /usr/local, in this case you need to use sudo.
-# In the following command, we install E-Cell4 into $HOME/ecell4. In this case you do NOT need to use sudo.
-$ PREFIX=$HOME/ecell4 ./install.sh py2
+cd ~/miniconda2/bin
+./jupyter-notebook --notebook-dir="../ecell4ipynb"
 ```
 
-#### Python3 series
-
+### Linux
 ```shell
-# dependent packages
-$ sudo apt-get install cmake libgsl0-dev libboost-regex-dev libhdf5-dev cython3 python3-pip
-
-$ wget https://github.com/ecell/ecell4/archive/master.zip   
-$ unzip master.zip
-$ cd ecell4-master
-# By default install.sh tries to install E-Cell4 into /usr/local, in this case you need to use sudo.
-# In the following command, we install E-Cell4 into $HOME/ecell4. In this case you do NOT need to use sudo.
-$ PREFIX=$HOME/ecell4 ./install.sh py3
+cd /usr/local/ecell4ipynb
+jupyter-notebook
 ```
 
-### Ubuntu Linux Trusty Tahr installation 
+Simple examples
+---------------
 
-```shell
-# dependent packages
-$ sudo apt-get install cmake libgsl0-dev libboost-regex-dev libhdf5-dev libatlas-base-dev python-dev python-pip
-$ sudo pip install cython
-
-$ wget https://github.com/ecell/ecell4/archive/master.zip   
-$ unzip master.zip
-$ cd ecell4-master
-# By default install.sh tries to install E-Cell4 into /usr/local, in this case you need to use sudo.
-# In the following command, we install E-Cell4 into $HOME/ecell4. In this case you do NOT need to use sudo.
-$ PREFIX=$HOME/ecell4 PYTHONPATH=/path/to/lib/python2.7/site-packages ./install.sh py2
-```
-
-## Running E-Cell4
+Here are two extremely simple examples, See http://ecell4.readthedocs.org for more details on running E-Cell4.
 
 ```
-# If you set PREFIX to $HOME/ecell4, make sure to append $HOME/ecell4/lib to LD_LIBRARY_PATH 
-$ LD_LIBRARY_PATH=$HOME/ecell4/lib:$LD_LIBRARY_PATH PYTHONPATH=$HOME/ecell4/lib/python2.7/site-packages python
-Python 2.7.6 (default, Mar 22 2014, 22:59:56) 
+Python 2.7.6 (default, Mar 22 2014, 22:59:56)
 [GCC 4.8.2] on linux2
 Type "help", "copyright", "credits" or "license" for more information.
 >>> from ecell4.core import *
 >>> sp = Species("B.A.C")
 >>> print sp.serial()
 A.B.C
->>> 
+>>>
 ```
 
-## Example
+### A reversible binding reaction
 
-Here is an extremely simple example with a reversible binding reaction:
+```python
+%matplotlib inline
+import numpy
+from ecell4 import *
 
+with reaction_rules():
+    A + B == C | (0.01, 0.3)
 
-    %matplotlib inline
-    import numpy
-    from ecell4 import *
-    
-    with reaction_rules():
-        A + B == C | (0.01, 0.3)
-    
-    y = run_simulation(
-        numpy.linspace(0, 10, 100), {'A': 60, 'B': 60}, solver='ode')
-
-
-![png](https://raw.githubusercontent.com/ecell/ecell4/develop/docs/output_7_0.png)
-
-
-## Dockerized E-Cell4 IPython notebooks
-
-If you use docker, you can easily try E-Cell4.
-You can pull E-Cell4 container with `docker pull ecell/ecell4`
-
-```shell
-$ sudo docker pull ecell/ecell4
-$ sudo docker run -d -p 443:8888 -e "PASSWORD=MakeAPassword" ecell/ecell4
+y = run_simulation(
+    numpy.linspace(0, 10, 100), {'A': 60, 'B': 60}, solver='ode')
 ```
 
-You'll now be able to E-Cell4 notebooks at https://THE_IP_RUNNING_DOCKER:443
+![png](https://raw.githubusercontent.com/ecell/ecell4/master/docs/images/output_7_0.png)
+
+### Particle tracking on a spherical surface
+
+```python
+%matplotlib inline
+from ecell4 import *
+
+with species_attributes():
+    A | {'D': '1', 'location': 'M'}
+
+surface = Sphere(ones() * 0.5, 0.5).surface()
+obs = FixedIntervalTrajectoryObserver(1e-4)
+run_simulation(
+    0.4, y0={'A': 10}, structures={'M': surface},
+    solver='spatiocyte', observers=obs, return_type=None)
+
+viz.plot_trajectory(obs, interactive=False)
+```
+
+![png](https://raw.githubusercontent.com/ecell/ecell4/master/docs/images/hairball.png)

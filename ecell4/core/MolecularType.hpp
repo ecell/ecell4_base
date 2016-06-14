@@ -22,32 +22,24 @@ public:
 public:
 
     MolecularType(const std::string& name = "")
-        : base_type(Species(name), false, &(VacantType::getInstance()), 0, 0)
+        : base_type(Species(name), &(VacantType::getInstance()), 0, 0)
     {
         ;
     }
 
     MolecularType(const Species& species, const Real& radius = 0.0,
             const Real& D = 0.0)
-        : base_type(species, false, &(VacantType::getInstance()), radius, D)
+        : base_type(species, &(VacantType::getInstance()), radius, D)
     {
         ;
     }
 
     MolecularType(const Species& species, MolecularTypeBase* location,
             const Real& radius = 0.0, const Real& D = 0.0)
-        : base_type(species, false,  location, radius, D)
+        : base_type(species, location, radius, D)
     {
         ;
     }
-
-    MolecularType(const Species& species, bool is_structure,  MolecularTypeBase* location,
-            const Real& radius = 0.0, const Real& D = 0.0)
-        : base_type(species, is_structure,  location, radius, D)
-    {
-        ;
-    }
-
 
     ~MolecularType()
     {
@@ -59,10 +51,8 @@ public:
         return false;
     }
 
-    const Shape::dimension_kind get_dimension() const
+    virtual const Shape::dimension_kind get_dimension() const
     {
-        if (dimension_ != Shape::UNDEF)
-            return dimension_;
         return location()->get_dimension();
     }
 

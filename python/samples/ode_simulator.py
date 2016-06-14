@@ -92,7 +92,7 @@ def singlerun2():
     w = ODEWorld(edge_length)
     w.add_molecules(Species("A"), N)
 
-    sim = ODESimulator(m, w)
+    sim = ODESimulator(m, w, Explicit_Euler)
     obs = FixedIntervalNumberObserver(0.01, ["A", "B", "C"])
     sim.run(20.0, obs)
 

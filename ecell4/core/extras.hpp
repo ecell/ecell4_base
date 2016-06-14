@@ -4,6 +4,8 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/scoped_ptr.hpp>
 
+#include "config.h"
+
 #ifdef WITH_HDF5
 #include <hdf5.h>
 #include <H5Cpp.h>
@@ -38,7 +40,7 @@ void throw_in_particles(
         throw std::invalid_argument("the number of particles must be positive.");
     }
 
-    const Real3 edge_lengths(world.edge_lengths());
+    // const Real3 edge_lengths(world.edge_lengths());
     const molecule_info_type info(world.get_molecule_info(sp));
 
     for (int i(0); i < N; ++i)
@@ -73,52 +75,11 @@ void throw_in_particles(
 }
 
 template<typename Tfactory_>
-typename Tfactory_::world_type* __generate_world_from_model(
-    const Tfactory_& f, const boost::shared_ptr<Model>& m)
-{
-    Real3 edge_lengths(1, 1, 1);
-    if (m->has_parameter("edge_lengths"))
-    {
-        const Species& sp(m->get_parameter("edge_lengths"));
-
-        if (sp.has_attribute("x"))
-        {
-            edge_lengths[0] = std::atof(sp.get_attribute("x").c_str());
-        }
-
-        if (sp.has_attribute("y"))
-        {
-            edge_lengths[1] = std::atof(sp.get_attribute("y").c_str());
-        }
-
-        if (sp.has_attribute("z"))
-        {
-            edge_lengths[2] = std::atof(sp.get_attribute("z").c_str());
-        }
-    }
-
-    typename Tfactory_::world_type* w(f.create_world(edge_lengths));
-    w->bind_to(m);
-    return w;
-}
-
-template<typename Tfactory_>
 typename Tfactory_::world_type* generate_world_from_model(
     const Tfactory_& f, const boost::shared_ptr<Model>& m)
 {
-    typename Tfactory_::world_type* w(__generate_world_from_model(f, m));
-
-    for (Model::parameter_container_type::const_iterator
-        i(m->parameters().begin()); i != m->parameters().end(); ++i)
-    {
-        const Species& sp(*i);
-        if (sp.has_attribute("N"))
-        {
-            w->add_molecules(
-                Species(sp.serial()),
-                std::atoi(sp.get_attribute("N").c_str()));
-        }
-    }
+    typename Tfactory_::world_type* w = f.create_world();
+    w->bind_to(m);
     return w;
 }
 

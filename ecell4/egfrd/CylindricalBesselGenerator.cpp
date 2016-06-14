@@ -5,7 +5,24 @@
 #include <cassert>
 
 #include "compat.h"
+
+#ifndef NO_BESSEL_TABLE
 #include "CylindricalBesselTable.hpp"
+#else
+#include <ecell4/core/exceptions.hpp>
+
+namespace cb_table
+{
+    struct Table
+    {
+        const unsigned int N;
+        const double x_start;
+        const double delta_x;
+        const double* const y;
+    };
+} // cb_table
+#endif
+
 #include "CylindricalBesselGenerator.hpp"
 
 
@@ -54,6 +71,7 @@ CylindricalBesselGenerator const& CylindricalBesselGenerator::instance()
 
 
 
+#ifndef NO_BESSEL_TABLE
 UnsignedInteger CylindricalBesselGenerator::getMinNJ()
 {
     return cb_table::cj_table_min;
@@ -84,6 +102,38 @@ static cb_table::Table const* getCYTable(UnsignedInteger n)
 {
     return cb_table::cy_table[n];
 }
+#else
+UnsignedInteger CylindricalBesselGenerator::getMinNJ()
+{
+    return 0;
+}
+
+UnsignedInteger CylindricalBesselGenerator::getMinNY()
+{
+    return 0;
+}
+
+UnsignedInteger CylindricalBesselGenerator::getMaxNJ()
+{
+    return 0;
+}
+
+UnsignedInteger CylindricalBesselGenerator::getMaxNY()
+{
+    return 0;
+}
+
+static cb_table::Table const* getCJTable(UnsignedInteger n)
+{
+    throw ecell4::NotSupported("No Bessel table is available");
+}
+
+
+static cb_table::Table const* getCYTable(UnsignedInteger n)
+{
+    throw ecell4::NotSupported("No Bessel table is available");
+}
+#endif
 
 static inline Real _J_table(UnsignedInteger n, Real z)
 {

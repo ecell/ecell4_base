@@ -2,6 +2,7 @@
 #define __ECELL4_OBSERVER_HPP
 
 #include "types.hpp"
+#include "functions.hpp"
 #include "Space.hpp"
 #include "Simulator.hpp"
 
@@ -29,11 +30,12 @@ public:
     }
 
     virtual const Real next_time() const;
-    virtual void initialize(const Space* space);
-    virtual void finalize(const Space* space);
+    virtual void initialize(const boost::shared_ptr<Space>& space);
+    virtual void finalize(const boost::shared_ptr<Space>& space);
     virtual void reset();
 
-    virtual bool fire(const Simulator* sim, const Space* space) = 0;
+    virtual bool fire(const Simulator* sim, const boost::shared_ptr<Space>& space);
+    // virtual bool fire(const Simulator* sim, const boost::shared_ptr<Space>& space) = 0;
 
     bool every()
     {
@@ -68,8 +70,8 @@ public:
     const Real next_time() const;
     const Integer num_steps() const;
     const Integer count() const;
-    virtual void initialize(const Space* space);
-    virtual bool fire(const Simulator* sim, const Space* space);
+    virtual void initialize(const boost::shared_ptr<Space>& space);
+    virtual bool fire(const Simulator* sim, const boost::shared_ptr<Space>& space);
     virtual void reset();
 
 protected:
@@ -109,18 +111,8 @@ struct NumberLogger
         data.clear();
     }
 
-    void log(const Space* space)
-    {
-        data_container_type::value_type tmp;
-        tmp.push_back(space->t());
-        for (species_container_type::const_iterator i(targets.begin());
-            i != targets.end(); ++i)
-        {
-            tmp.push_back(space->get_value(*i));
-            // tmp.push_back(space->num_molecules(*i));
-        }
-        data.push_back(tmp);
-    }
+    void log(const boost::shared_ptr<Space>& space);
+    void save(const std::string& filename) const;
 
     data_container_type data;
     species_container_type targets;
@@ -146,11 +138,16 @@ public:
         ;
     }
 
-    virtual void initialize(const Space* space);
-    virtual bool fire(const Simulator* sim, const Space* space);
+    virtual void initialize(const boost::shared_ptr<Space>& space);
+    virtual bool fire(const Simulator* sim, const boost::shared_ptr<Space>& space);
     virtual void reset();
     NumberLogger::data_container_type data() const;
     NumberLogger::species_container_type targets() const;
+
+    void save(const std::string& filename) const
+    {
+        logger_.save(filename);
+    }
 
 protected:
 
@@ -177,13 +174,18 @@ public:
         ;
     }
 
-    virtual void initialize(const Space* space);
-    virtual void finalize(const Space* space);
-    virtual bool fire(const Simulator* sim, const Space* space);
+    virtual void initialize(const boost::shared_ptr<Space>& space);
+    virtual void finalize(const boost::shared_ptr<Space>& space);
+    virtual bool fire(const Simulator* sim, const boost::shared_ptr<Space>& space);
     virtual void reset();
     const Integer num_steps() const;
     NumberLogger::data_container_type data() const;
     NumberLogger::species_container_type targets() const;
+
+    void save(const std::string& filename) const
+    {
+        logger_.save(filename);
+    }
 
 protected:
 
@@ -218,8 +220,8 @@ public:
         return num_steps_;
     }
 
-    virtual void initialize(const Space* space);
-    virtual bool fire(const Simulator* sim, const Space* space);
+    virtual void initialize(const boost::shared_ptr<Space>& space);
+    virtual bool fire(const Simulator* sim, const boost::shared_ptr<Space>& space);
     virtual void reset();
 
 protected:
@@ -250,11 +252,16 @@ public:
         ;
     }
 
-    virtual void initialize(const Space* space);
-    virtual bool fire(const Simulator* sim, const Space* space);
+    virtual void initialize(const boost::shared_ptr<Space>& space);
+    virtual bool fire(const Simulator* sim, const boost::shared_ptr<Space>& space);
     virtual void reset();
     NumberLogger::data_container_type data() const;
     NumberLogger::species_container_type targets() const;
+
+    void save(const std::string& filename) const
+    {
+        logger_.save(filename);
+    }
 
 protected:
 
@@ -281,9 +288,20 @@ public:
         ;
     }
 
-    virtual void initialize(const Space* space);
-    virtual bool fire(const Simulator* sim, const Space* space);
-    const std::string filename() const;
+    virtual void initialize(const boost::shared_ptr<Space>& space);
+    virtual bool fire(const Simulator* sim, const boost::shared_ptr<Space>& space);
+
+    inline const std::string filename() const
+    {
+        return filename(num_steps());
+    }
+
+    const std::string filename(const Integer idx) const;
+
+    const std::string& prefix() const
+    {
+        return prefix_;
+    }
 
 protected:
 
@@ -324,12 +342,12 @@ public:
         ;
     }
 
-    virtual void initialize(const Space* space);
-    virtual bool fire(const Simulator* sim, const Space* space);
+    virtual void initialize(const boost::shared_ptr<Space>& space);
+    virtual bool fire(const Simulator* sim, const boost::shared_ptr<Space>& space);
     void write_particles(
         std::ofstream& ofs, const particle_container_type& particles,
         const Species::serial_type label = "");
-    void log(const Space* space);
+    void log(const boost::shared_ptr<Space>& space);
     const std::string filename() const;
     virtual void reset();
 
@@ -340,20 +358,89 @@ protected:
     serial_map_type serials_;
 };
 
+struct FixedIntervalEvent
+{
+    FixedIntervalEvent(const Real& dt)
+        : t0(0.0), dt(dt), num_steps(0), count(0)
+    {
+        ;
+    }
+
+    virtual ~FixedIntervalEvent()
+    {
+        ;
+    }
+
+    const Real next_time() const
+    {
+        return t0 + dt * count;
+    }
+
+    void reset()
+    {
+        num_steps = 0;
+        count = 0;
+        t0 = 0; //DUMMY
+    }
+
+    void initialize(const Real t)
+    {
+        if (dt <= 0.0)
+        {
+            throw std::invalid_argument(
+                "A step interval must be positive.");
+        }
+
+        if (count == 0)
+        {
+            t0 = t;
+        }
+        else
+        {
+            while (next_time() < t)
+            {
+                ++count;
+            }
+        }
+    }
+
+    void fire()
+    {
+        ++num_steps;
+        ++count;
+    }
+
+public:
+
+    Real t0, dt;
+    Integer num_steps;
+    Integer count;
+};
+
 class FixedIntervalTrajectoryObserver
-    : public FixedIntervalObserver
+    : public Observer
 {
 public:
 
-    typedef FixedIntervalObserver base_type;
+    typedef Observer base_type;
 
 public:
 
     FixedIntervalTrajectoryObserver(
         const Real& dt, const std::vector<ParticleID>& pids,
-        const bool& resolve_boundary = true)
-        : base_type(dt), pids_(pids), resolve_boundary_(resolve_boundary),
-        trajectories_(pids.size()), strides_(pids.size())
+        const bool& resolve_boundary = true, const Real subdt = 0)
+        : base_type(false), event_(dt), subevent_(subdt > 0 ? subdt : dt),
+        pids_(pids), resolve_boundary_(resolve_boundary), prev_positions_(),
+        trajectories_(pids.size()), strides_(pids.size()), t_()
+    {
+        ;
+    }
+
+    FixedIntervalTrajectoryObserver(
+        const Real& dt, const bool resolve_boundary = true, const Real subdt = 0)
+        : base_type(false), event_(dt), subevent_(subdt > 0 ? subdt : dt),
+        pids_(), resolve_boundary_(resolve_boundary), prev_positions_(),
+        trajectories_(), strides_(), t_()
     {
         ;
     }
@@ -371,19 +458,33 @@ public:
         ;
     }
 
-    virtual void initialize(const Space* space);
-    virtual bool fire(const Simulator* sim, const Space* space);
+    const Real next_time() const;
+    const Integer num_steps() const;
+    const Integer count() const;
+    virtual void initialize(const boost::shared_ptr<Space>& space);
+    virtual bool fire(const Simulator* sim, const boost::shared_ptr<Space>& space);
     virtual void reset();
+
     const std::vector<std::vector<Real3> >& data() const;
+    const Integer num_tracers() const;
+    const std::vector<Real>& t() const;
 
 protected:
 
+    void fire_event(const Simulator* sim, const boost::shared_ptr<Space>& space);
+    void fire_subevent(const Simulator* sim, const boost::shared_ptr<Space>& space);
+
+protected:
+
+    FixedIntervalEvent event_, subevent_;
+
     std::vector<ParticleID> pids_;
     bool resolve_boundary_;
+    std::vector<Real3> prev_positions_;
     std::vector<std::vector<Real3> > trajectories_;
     std::vector<Real3> strides_;
+    std::vector<Real> t_;
 };
-
 
 class TimeoutObserver
     : public Observer
@@ -411,9 +512,9 @@ public:
         ;
     }
 
-    virtual void initialize(const Space* space);
-    virtual void finalize(const Space* space);
-    virtual bool fire(const Simulator* sim, const Space* space);
+    virtual void initialize(const boost::shared_ptr<Space>& space);
+    virtual void finalize(const boost::shared_ptr<Space>& space);
+    virtual bool fire(const Simulator* sim, const boost::shared_ptr<Space>& space);
     virtual void reset();
 
     const Real interval() const
@@ -437,6 +538,94 @@ protected:
     Real duration_;
     Real acc_;
     time_t tstart_;
+};
+
+class FixedIntervalTrackingObserver
+    : public Observer
+{
+public:
+
+    typedef Observer base_type;
+
+public:
+
+    FixedIntervalTrackingObserver(
+        const Real& dt, const std::vector<Species>& species_list,
+        const bool& resolve_boundary = true, const Real subdt = 0,
+        const Real threshold = inf)
+        : base_type(false), event_(dt), subevent_(subdt > 0 ? subdt : dt),
+        species_list_(species_list), resolve_boundary_(resolve_boundary),
+        threshold_(threshold),
+        pids_(), prev_positions_(), strides_(), trajectories_(), t_()
+    {
+        ;
+    }
+
+    virtual ~FixedIntervalTrackingObserver()
+    {
+        ;
+    }
+
+    const Real next_time() const;
+    const Integer num_steps() const;
+    const Integer count() const;
+    const Integer num_tracers() const;
+    virtual void initialize(const boost::shared_ptr<Space>& space);
+    virtual bool fire(const Simulator* sim, const boost::shared_ptr<Space>& space);
+    virtual void reset();
+
+    const std::vector<std::vector<Real3> >& data() const;
+    const std::vector<Real>& t() const;
+
+    Real distance_sq(
+        const Real3& pos1, const Real3& pos2, const Real3& edge_lengths) const
+    {
+        Real retval(0);
+        for (Real3::size_type dim(0); dim < 3; ++dim)
+        {
+            const Real edge_length(edge_lengths[dim]);
+            const Real diff(pos2[dim] - pos1[dim]), half(edge_length * 0.5);
+
+            if (diff > half)
+            {
+                retval += pow_2(diff - edge_length);
+            }
+            else if (diff < -half)
+            {
+                retval += pow_2(diff + edge_length);
+            }
+            else
+            {
+                retval += pow_2(diff);
+            }
+        }
+        return retval;
+    }
+
+    inline Real distance(const Real3& pos1, const Real3& pos2, const Real3& edge_lengths) const
+    {
+        return std::sqrt(distance_sq(pos1, pos2, edge_lengths));
+    }
+
+protected:
+
+    void fire_event(const Simulator* sim, const boost::shared_ptr<Space>& space);
+    void fire_subevent(const Simulator* sim, const boost::shared_ptr<Space>& space);
+
+protected:
+
+    FixedIntervalEvent event_, subevent_;
+
+    std::vector<Species> species_list_;
+    bool resolve_boundary_;
+    Real threshold_;
+
+    std::vector<Real3> prev_positions_;
+    std::vector<Real3> strides_;
+
+    std::vector<ParticleID> pids_;
+    std::vector<std::vector<Real3> > trajectories_;
+    std::vector<Real> t_;
 };
 
 } // ecell4

@@ -1,0 +1,10 @@
+E-Cell system version 4
+
+This product includes software developed by
+E-Cell project (http://www.e-cell.org)
+
+This product includes HDF5 software library. We reproduce the copyright
+notice, the list of conditions, and the disclaimer in hdf5.txt.
+
+This product includes the GNU Scientific Library (GSL).
+It is free software under the GNU General Public License.

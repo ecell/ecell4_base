@@ -27,6 +27,12 @@ namespace ecell4
 namespace ode
 {
 
+enum ODESolverType {
+    RUNGE_KUTTA_CASH_KARP54 = 0,
+    ROSENBROCK4_CONTROLLER = 1,
+    EULER = 2,
+};
+
 class ODESimulator
     : public SimulatorBase<ODENetworkModel, ODEWorld>
 {
@@ -327,19 +333,30 @@ public:
 public:
 
     ODESimulator(
-        const boost::shared_ptr<ODENetworkModel> &model,
-        const boost::shared_ptr<ODEWorld> &world)
-        : base_type(model, world), dt_(inf), abs_tol_(1e-10), rel_tol_(1e-6)
-        // : model_(model), world_(world), dt_(inf), num_steps_(0)
+        const boost::shared_ptr<ODENetworkModel>& model,
+        const boost::shared_ptr<ODEWorld>& world,
+        const ODESolverType solver_type = ROSENBROCK4_CONTROLLER)
+        : base_type(model, world), dt_(inf), abs_tol_(1e-6), rel_tol_(1e-6),
+          solver_type_(solver_type)
     {
         initialize();
     }
 
     ODESimulator(
-        const boost::shared_ptr<NetworkModel> &model,
-        const boost::shared_ptr<ODEWorld> &world)
-        : base_type( boost::shared_ptr<ODENetworkModel> (new ODENetworkModel(model)), world), 
-        dt_(inf), abs_tol_(1e-10), rel_tol_(1e-6)
+        const boost::shared_ptr<ODEWorld>& world,
+        const ODESolverType solver_type = ROSENBROCK4_CONTROLLER)
+        : base_type(world), dt_(inf), abs_tol_(1e-6), rel_tol_(1e-6),
+          solver_type_(solver_type)
+    {
+        initialize();
+    }
+
+    ODESimulator(
+        const boost::shared_ptr<Model>& model,
+        const boost::shared_ptr<ODEWorld>& world,
+        const ODESolverType solver_type = ROSENBROCK4_CONTROLLER)
+        : base_type(boost::shared_ptr<ODENetworkModel>(new ODENetworkModel(model)), world),
+          dt_(inf), abs_tol_(1e-6), rel_tol_(1e-6), solver_type_(solver_type)
     {
         initialize();
     }
@@ -372,7 +389,7 @@ public:
     //     return this->t() + this->dt();
     // }
     // SimulatorTraits
-    
+
     Real t(void) const
     {
         return world_->t();
@@ -435,6 +452,7 @@ protected:
     Real dt_;
     // Integer num_steps_;
     Real abs_tol_, rel_tol_;
+    ODESolverType solver_type_;
 };
 
 } // ode

@@ -8,6 +8,7 @@
 #include "Space.hpp"
 #include "Integer3.hpp"
 #include "Shape.hpp"
+#include <numeric>
 
 #ifdef WITH_HDF5
 #include "SubvolumeSpaceHDF5Writer.hpp"
@@ -26,6 +27,52 @@ public:
 
 public:
 
+    class PoolBase
+    {
+    public:
+
+        PoolBase(const Species& sp, const Real D, const Species::serial_type& loc)
+            : sp_(sp), D_(D), loc_(loc)
+        {
+            ;
+        }
+
+        virtual ~PoolBase()
+        {
+            ;
+        }
+
+        const Species& species() const
+        {
+            return sp_;
+        }
+
+        const Real D() const
+        {
+            return D_;
+        }
+
+        const Species::serial_type& loc() const
+        {
+            return loc_;
+        }
+
+        virtual coordinate_type size() const = 0;
+        virtual Integer num_molecules(const coordinate_type& i) const = 0;
+        virtual Integer num_molecules() const = 0;
+        virtual void add_molecules(const Integer num, const coordinate_type& i) = 0;
+        virtual void remove_molecules(const Integer num, const coordinate_type& i) = 0;
+        virtual std::vector<coordinate_type> list_coordinates() const = 0;
+
+    protected:
+
+        Species sp_;
+        Real D_;
+        Species::serial_type loc_;
+    };
+
+public:
+
     SubvolumeSpace()
         : t_(0.0)
     {
@@ -38,7 +85,7 @@ public:
 
     // SpaceTraits
 
-    const Real& t() const
+    const Real t() const
     {
         return t_;
     }
@@ -81,6 +128,12 @@ public:
     virtual coordinate_type global2coord(const Integer3& g) const = 0;
     virtual Integer3 coord2global(const coordinate_type& c) const = 0;
     virtual Integer3 position2global(const Real3& pos) const = 0;
+
+    inline Integer position2coordinate(const Real3& pos) const
+    {
+        return global2coord(position2global(pos));
+    }
+
     virtual Integer num_molecules(
         const Species& sp, const coordinate_type& c) const = 0;
     virtual Integer num_molecules_exact(
@@ -89,6 +142,8 @@ public:
         const Species& sp, const Integer& num, const coordinate_type& c) = 0;
     virtual void remove_molecules(
         const Species& sp, const Integer& num, const coordinate_type& c) = 0;
+
+    virtual bool has_species(const Species& sp) const = 0;
     virtual const std::vector<Species>& species() const = 0;
     virtual std::vector<Species> list_species() const = 0;
     virtual coordinate_type get_neighbor(
@@ -104,15 +159,8 @@ public:
         return num_molecules_exact(sp, global2coord(g));
     }
 
-    virtual void add_molecules(const Species& sp, const Integer& num, const Integer3& g)
-    {
-        add_molecules(sp, num, global2coord(g));
-    }
-
-    virtual void remove_molecules(const Species& sp, const Integer& num, const Integer3& g)
-    {
-        remove_molecules(sp, num, global2coord(g));
-    }
+    virtual std::vector<coordinate_type> list_coordinates(const Species& sp) const = 0;
+    virtual std::vector<coordinate_type> list_coordinates_exact(const Species& sp) const = 0;
 
     virtual void add_structure(
         const Species& sp, const boost::shared_ptr<const Shape>& shape) = 0;
@@ -158,10 +206,19 @@ public:
 
     virtual void reset(const Real3& edge_lengths, const Integer3& matrix_sizes) = 0;
 
+    virtual void save(const std::string& filename) const
+    {
+        throw NotSupported(
+            "save(const std::string) is not supported by this space class");
+    }
+
 #ifdef WITH_HDF5
-    virtual void save(H5::Group* root) const = 0;
-    virtual void load(const H5::Group& root) = 0;
+    virtual void save_hdf5(H5::Group* root) const = 0;
+    virtual void load_hdf5(const H5::Group& root) = 0;
 #endif
+
+    virtual const boost::shared_ptr<PoolBase>& get_pool(const Species& sp) const = 0;
+    virtual const boost::shared_ptr<PoolBase> reserve_pool(const Species& sp, const Real D, const Species::serial_type& loc) = 0;
 
 protected:
 
@@ -176,8 +233,75 @@ public:
     typedef SubvolumeSpace base_type;
     typedef base_type::coordinate_type coordinate_type;
 
-    typedef std::vector<Integer> cell_type;
-    typedef utils::get_mapper_mf<Species, cell_type>::type matrix_type;
+public:
+
+    typedef base_type::PoolBase PoolBase;
+
+    class Pool
+        : public PoolBase
+    {
+    public:
+
+        typedef PoolBase base_type;
+        typedef std::vector<Integer> container_type;
+
+    public:
+
+        Pool(const Species& sp, const Real D, const Species::serial_type& loc,
+             const container_type::size_type n)
+            : base_type(sp, D, loc), data_(n, 0)
+        {
+            ;
+        }
+
+        coordinate_type size() const
+        {
+            return data_.size();
+        }
+
+        Integer num_molecules() const
+        {
+            return std::accumulate(data_.begin(), data_.end(), 0);
+        }
+
+        Integer num_molecules(const coordinate_type& i) const
+        {
+            return data_.at(i);
+        }
+
+        void add_molecules(const Integer num, const coordinate_type& i)
+        {
+            data_[i] += num;
+        }
+
+        void remove_molecules(const Integer num, const coordinate_type& i)
+        {
+            data_[i] -= num;
+        }
+
+        std::vector<coordinate_type> list_coordinates() const
+        {
+            std::vector<coordinate_type> coords;
+            for (container_type::size_type i(0); i < data_.size(); ++i)
+            {
+                if (data_[i] > 0)
+                {
+                    coords.resize(coords.size() + data_[i], i);
+                }
+            }
+            return coords;
+        }
+
+    protected:
+
+        container_type data_;
+    };
+
+public:
+
+    // typedef std::vector<Integer> cell_type;
+    // typedef utils::get_mapper_mf<Species, cell_type>::type matrix_type;
+    typedef utils::get_mapper_mf<Species, boost::shared_ptr<PoolBase> >::type matrix_type;
 
     // typedef utils::get_mapper_mf<Species::serial_type, Shape::dimension_kind>::type structure_container_type;
     typedef std::vector<Real> structure_cell_type;
@@ -281,6 +405,9 @@ public:
     void add_molecules(const Species& sp, const Integer& num, const coordinate_type& c);
     void remove_molecules(const Species& sp, const Integer& num, const coordinate_type& c);
 
+    std::vector<coordinate_type> list_coordinates(const Species& sp) const;
+    std::vector<coordinate_type> list_coordinates_exact(const Species& sp) const;
+
     void add_structure(const Species& sp, const boost::shared_ptr<const Shape>& shape);
     bool check_structure(const Species::serial_type& serial, const coordinate_type& coord) const;
     Real get_volume(const Species& sp) const;
@@ -350,6 +477,11 @@ public:
 
     coordinate_type get_neighbor(const coordinate_type& c, const Integer rnd) const;
 
+    virtual bool has_species(const Species& sp) const
+    {
+        return matrix_.find(sp) != matrix_.end();
+    }
+
     const std::vector<Species>& species() const
     {
         return species_;
@@ -367,12 +499,12 @@ public:
     }
 
 #ifdef WITH_HDF5
-    void save(H5::Group* root) const
+    void save_hdf5(H5::Group* root) const
     {
         save_subvolume_space(*this, root);
     }
 
-    void load(const H5::Group& root)
+    void load_hdf5(const H5::Group& root)
     {
         load_subvolume_space(root, this);
     }
@@ -404,9 +536,11 @@ public:
         matrix_sizes_[2] = matrix_sizes.layer;
     }
 
-protected:
+    const boost::shared_ptr<PoolBase>& get_pool(const Species& sp) const;
+    const boost::shared_ptr<PoolBase> reserve_pool(
+        const Species& sp, const Real D, const Species::serial_type& loc);
 
-    void reserve_species(const Species& sp, const coordinate_type& c);
+protected:
 
     void add_structure3(const Species& sp, const boost::shared_ptr<const Shape>& shape);
     void add_structure2(const Species& sp, const boost::shared_ptr<const Shape>& shape);

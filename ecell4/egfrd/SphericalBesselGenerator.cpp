@@ -5,7 +5,24 @@
 #include <cassert>
 
 #include "compat.h"
+
+#ifndef NO_BESSEL_TABLE
 #include "SphericalBesselTable.hpp"
+#else
+#include <ecell4/core/exceptions.hpp>
+
+namespace sb_table
+{
+    struct Table
+    {
+        const unsigned int N;
+        const double x_start;
+        const double delta_x;
+        const double* const y;
+    };
+} // sb_table
+#endif
+
 #include "SphericalBesselGenerator.hpp"
 
 
@@ -53,7 +70,7 @@ SphericalBesselGenerator const& SphericalBesselGenerator::instance()
 }
 
 
-
+#ifndef NO_BESSEL_TABLE
 UnsignedInteger SphericalBesselGenerator::getMinNJ()
 {
     return sb_table::sj_table_min;
@@ -84,6 +101,38 @@ static sb_table::Table const* getSYTable(UnsignedInteger n)
 {
     return sb_table::sy_table[n];
 }
+#else
+UnsignedInteger SphericalBesselGenerator::getMinNJ()
+{
+    return 0;
+}
+
+UnsignedInteger SphericalBesselGenerator::getMinNY()
+{
+    return 0;
+}
+
+UnsignedInteger SphericalBesselGenerator::getMaxNJ()
+{
+    return 0;
+}
+
+UnsignedInteger SphericalBesselGenerator::getMaxNY()
+{
+    return 0;
+}
+
+static sb_table::Table const* getSJTable(UnsignedInteger n)
+{
+    throw ecell4::NotSupported("No Bessel table is available");
+}
+
+
+static sb_table::Table const* getSYTable(UnsignedInteger n)
+{
+    throw ecell4::NotSupported("No Bessel table is available");
+}
+#endif
 
 static inline Real _j_table(UnsignedInteger n, Real z)
 {

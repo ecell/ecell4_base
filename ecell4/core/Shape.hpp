@@ -10,8 +10,12 @@ namespace ecell4
 
 struct Shape
 {
-    typedef enum {
-        UNDEF, ONE, TWO, THREE,
+    typedef enum
+    {
+        ONE = 1,
+        TWO = 2,
+        THREE = 3,
+        UNDEF = 4,
     } dimension_kind;
 
     virtual ~Shape()
@@ -19,10 +23,11 @@ struct Shape
         ; // do nothing
     }
 
-    virtual dimension_kind dimension() const
-    {
-        return THREE;
-    }
+    virtual dimension_kind dimension() const = 0;
+    // virtual dimension_kind dimension() const
+    // {
+    //     return THREE;
+    // }
 
     virtual Real is_inside(const Real3& coord) const = 0;
     virtual Real3 draw_position(

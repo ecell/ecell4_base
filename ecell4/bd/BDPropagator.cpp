@@ -84,11 +84,13 @@ bool BDPropagator::attempt_reaction(
         if (prob > rnd)
         {
             const ReactionRule::product_container_type& products(rr.products());
+            reaction_info_type ri(world_.t() + dt_, reaction_info_type::container_type(1, std::make_pair(pid, particle)), reaction_info_type::container_type());
+
             switch (products.size())
             {
             case 0:
                 remove_particle(pid);
-                last_reactions_.push_back(rr);
+                last_reactions_.push_back(std::make_pair(rr, ri));
                 break;
             case 1:
                 {
@@ -111,7 +113,9 @@ bool BDPropagator::attempt_reaction(
                     Particle particle_to_update(
                         species_new, particle.position(), radius_new, D_new);
                     world_.update_particle(pid, particle_to_update);
-                    last_reactions_.push_back(rr);
+
+                    ri.add_product(std::make_pair(pid, particle_to_update));
+                    last_reactions_.push_back(std::make_pair(rr, ri));
                 }
                 break;
             case 2:
@@ -167,8 +171,11 @@ bool BDPropagator::attempt_reaction(
                     Particle particle_to_update2(
                         species_new2, newpos2, radius2, D2);
                     world_.update_particle(pid, particle_to_update1);
-                    world_.new_particle(particle_to_update2);
-                    last_reactions_.push_back(rr);
+                    std::pair<std::pair<ParticleID, Particle>, bool> retval = world_.new_particle(particle_to_update2);
+
+                    ri.add_product(std::make_pair(pid, particle_to_update1));
+                    ri.add_product(retval.first);
+                    last_reactions_.push_back(std::make_pair(rr, ri));
                 }
                 break;
             default:
@@ -219,12 +226,16 @@ bool BDPropagator::attempt_reaction(
         if (prob > rnd)
         {
             const ReactionRule::product_container_type& products(rr.products());
+            reaction_info_type ri(world_.t() + dt_, reaction_info_type::container_type(1, std::make_pair(pid1, particle1)), reaction_info_type::container_type());
+            ri.add_reactant(std::make_pair(pid2, particle2));
+
             switch (products.size())
             {
             case 0:
                 remove_particle(pid1);
                 remove_particle(pid2);
-                last_reactions_.push_back(rr);
+
+                last_reactions_.push_back(std::make_pair(rr, ri));
                 break;
             case 1:
                 {
@@ -256,8 +267,10 @@ bool BDPropagator::attempt_reaction(
                     remove_particle(pid2);
                     // world_.update_particle(pid1, particle_to_update);
                     remove_particle(pid1);
-                    world_.new_particle(particle_to_update);
-                    last_reactions_.push_back(rr);
+                    std::pair<std::pair<ParticleID, Particle>, bool> retval = world_.new_particle(particle_to_update);
+
+                    ri.add_product(retval.first);
+                    last_reactions_.push_back(std::make_pair(rr, ri));
                 }
                 break;
             default:

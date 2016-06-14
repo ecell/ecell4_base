@@ -23,18 +23,19 @@ class BDSimulator
 public:
 
     typedef SimulatorBase<Model, BDWorld> base_type;
+    typedef BDPropagator::reaction_info_type reaction_info_type;
 
 public:
 
     BDSimulator(boost::shared_ptr<Model> model,
-        boost::shared_ptr<BDWorld> world)
-        : base_type(model, world), dt_(0), bd_dt_factor_(1e-5)
+        boost::shared_ptr<BDWorld> world, Real bd_dt_factor = 1e-5)
+        : base_type(model, world), dt_(0), bd_dt_factor_(bd_dt_factor)
     {
         initialize();
     }
 
-    BDSimulator(boost::shared_ptr<BDWorld> world)
-        : base_type(world), dt_(0), bd_dt_factor_(1e-5)
+    BDSimulator(boost::shared_ptr<BDWorld> world, Real bd_dt_factor = 1e-5)
+        : base_type(world), dt_(0), bd_dt_factor_(bd_dt_factor)
     {
         initialize();
     }
@@ -83,7 +84,13 @@ public:
 
     // Optional members
 
-    std::vector<ReactionRule> last_reactions() const
+    virtual bool check_reaction() const
+    {
+        return last_reactions_.size() > 0;
+    }
+
+    std::vector<std::pair<ReactionRule, reaction_info_type> >
+        last_reactions() const
     {
         return last_reactions_;
     }
@@ -110,7 +117,7 @@ protected:
      */
     Real dt_;
     const Real bd_dt_factor_;
-    std::vector<ReactionRule> last_reactions_;
+    std::vector<std::pair<ReactionRule, reaction_info_type> > last_reactions_;
 };
 
 } // bd

@@ -76,11 +76,13 @@ bool ODESimulator::step(const Real &upto)
     {
         return false;
     }
-    const Real dt(upto - t());
+    const Real dt(std::min(dt_, upto - t()));
+
+    const Real ntime(std::min(upto, t() + dt_));
 
     //initialize();
     const std::vector<Species> species(world_->list_species());
-    
+
     state_type x(species.size());
     state_type::size_type i(0);
     for(ODENetworkModel::species_container_type::const_iterator it(species.begin());
@@ -93,20 +95,47 @@ bool ODESimulator::step(const Real &upto)
     StateAndTimeBackInserter::state_container_type x_vec;
     StateAndTimeBackInserter::time_container_type times;
 
-    typedef odeint::rosenbrock4<state_type::value_type> error_stepper_type;
-    typedef odeint::rosenbrock4_controller<error_stepper_type>
-        controlled_stepper_type;
+    size_t steps;
+    switch (this->solver_type_) {
+        case ecell4::ode::RUNGE_KUTTA_CASH_KARP54:
+            {
+                /* This solver doesn't need the jacobian */
+                typedef odeint::runge_kutta_cash_karp54<state_type> error_stepper_type;
+                steps = (
+                    odeint::integrate_adaptive(
+                        odeint::make_controlled<error_stepper_type>(abs_tol_, rel_tol_),
+                        system.first, x, t(), ntime, dt,
+                        StateAndTimeBackInserter(x_vec, times)));
+            }
+            break;
+        case ecell4::ode::ROSENBROCK4_CONTROLLER:
+            {
+                typedef odeint::rosenbrock4<state_type::value_type> error_stepper_type;
+                steps = (
+                    odeint::integrate_adaptive(
+                        odeint::make_controlled<error_stepper_type>(abs_tol_, rel_tol_),
+                        system, x, t(), ntime, dt,
+                        StateAndTimeBackInserter(x_vec, times)));
+            }
+            break;
+        case ecell4::ode::EULER:
+            {
+                typedef odeint::euler<state_type> stepper_type;
+                steps = (
+                    odeint::integrate_const(
+                        stepper_type(), system.first, x, t(), ntime, dt,
+                        StateAndTimeBackInserter(x_vec, times)));
+            }
+            break;
+        default:
+            throw IllegalState("Solver is not specified\n");
+    };
 
     // const double a_x(1.0), a_dxdt(1.0);
-    controlled_stepper_type controlled_stepper(abs_tol_, rel_tol_);
     // const size_t steps(
     //     odeint::integrate_adaptive(
     //         controlled_stepper, system, x, t(), upto, dt_,
     //         StateAndTimeBackInserter(x_vec, times)));
-    const size_t steps(
-        odeint::integrate_adaptive(
-            controlled_stepper, system, x, t(), upto, dt,
-            StateAndTimeBackInserter(x_vec, times)));
     {
         state_type::size_type i(0);
         for(ODENetworkModel::species_container_type::const_iterator
@@ -116,9 +145,9 @@ bool ODESimulator::step(const Real &upto)
             i++;
         }
     }
-    set_t(upto);
+    set_t(ntime);
     num_steps_++;
-    return false;
+    return (ntime < upto);
 }
 
 } // ode

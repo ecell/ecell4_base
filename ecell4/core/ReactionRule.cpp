@@ -27,32 +27,81 @@ const std::string ReactionRule::as_string() const
     return oss.str();
 }
 
-Integer ReactionRule::count(const reactant_container_type& reactants) const
-{
-    return count_rrmatches(*this, reactants);
-}
-
 std::vector<ReactionRule> ReactionRule::generate(const reactant_container_type& reactants) const
 {
-    const std::vector<std::vector<Species> > possibles(rrgenerate(*this, reactants));
+    ReactionRuleExpressionMatcher rrexp(*this);
     std::vector<ReactionRule> retval;
-    retval.reserve(possibles.size());
-    for (std::vector<std::vector<Species> >::const_iterator i(possibles.begin());
-        i != possibles.end(); ++i)
+    if (!rrexp.match(reactants))
     {
-        const ReactionRule rr(reactants, *i, this->k());
+        return retval;
+    }
+
+    do
+    {
+        const ReactionRule rr(reactants, rrexp.generate(), this->k());
         std::vector<ReactionRule>::iterator
-            j(std::find(retval.begin(), retval.end(), rr));
-        if (j != retval.end())
+            i(std::find(retval.begin(), retval.end(), rr));
+        if (i != retval.end())
         {
-            (*j).set_k((*j).k() + rr.k());
+            ;
         }
         else
         {
             retval.push_back(rr);
         }
     }
+    while (rrexp.next());
     return retval;
+}
+
+ReactionRule format_reaction_rule_with_nosort(const ReactionRule& rr)
+{
+    ReactionRule::reactant_container_type reactants;
+    reactants.reserve(rr.reactants().size());
+    for (ReactionRule::reactant_container_type::const_iterator i(rr.reactants().begin());
+        i != rr.reactants().end(); ++i)
+    {
+        reactants.push_back(format_species(*i));
+    }
+
+    ReactionRule::product_container_type products;
+    products.reserve(rr.products().size());
+    for (ReactionRule::product_container_type::const_iterator i(rr.products().begin());
+        i != rr.products().end(); ++i)
+    {
+        products.push_back(format_species(*i));
+    }
+
+    return ReactionRule(reactants, products, rr.k());
+}
+
+ReactionRule format_reaction_rule(const ReactionRule& rr)
+{
+    ReactionRule::reactant_container_type reactants;
+    reactants.reserve(rr.reactants().size());
+    for (ReactionRule::reactant_container_type::const_iterator i(rr.reactants().begin());
+        i != rr.reactants().end(); ++i)
+    {
+        reactants.push_back(format_species(*i));
+    }
+
+    ReactionRule::product_container_type products;
+    products.reserve(rr.products().size());
+    for (ReactionRule::product_container_type::const_iterator i(rr.products().begin());
+        i != rr.products().end(); ++i)
+    {
+        products.push_back(format_species(*i));
+    }
+
+    std::sort(reactants.begin(), reactants.end());
+    std::sort(products.begin(), products.end());
+    return ReactionRule(reactants, products, rr.k());
+    // ReactionRule::reactant_container_type reactants(rr.reactants());
+    // ReactionRule::product_container_type products(rr.products());
+    // std::sort(reactants.begin(), reactants.end());
+    // std::sort(products.begin(), products.end());
+    // return ReactionRule(reactants, products, rr.k());
+    // return rr;
 }
 
 }// ecell4

@@ -18,6 +18,9 @@ typedef EGFRDWorld::molecule_info_type MoleculeInfo;
 typedef ::EGFRDSimulator< ::EGFRDSimulatorTraitsBase<EGFRDWorld> > EGFRDSimulator;
 typedef ::BDSimulator< ::BDSimulatorTraitsBase<EGFRDWorld> > BDSimulator;
 
+typedef EGFRDSimulator::reaction_info_type ReactionInfo;
+// typedef BDSimulator::reaction_info_type ReactionInfo;
+
 class EGFRDFactory
     : public SimulatorFactory<EGFRDWorld, EGFRDSimulator>
 {

@@ -10,9 +10,9 @@ from .decorator_base import Callback, JustParseCallback, ParseDecorator
 
 import ecell4.core
 
-SEAMLESS_RATELAW_SUPPORT = False
+ENABLE_RATELAW = True
+ENABLE_IMPLICIT_DECLARATION = True
 
-PARAMETERS = []
 SPECIES_ATTRIBUTES = []
 REACTION_RULES = []
 
@@ -54,7 +54,7 @@ def generate_ReactionRule(lhs, rhs, k=None):
         raise RuntimeError('no parameter is specified')
 
     if (callable(k)
-        or (SEAMLESS_RATELAW_SUPPORT and isinstance(k, parseobj.ExpBase))
+        or (ENABLE_RATELAW and isinstance(k, parseobj.ExpBase))
         or any([sp[1] is not None for sp in itertools.chain(lhs, rhs)])):
         from ecell4.ode import ODEReactionRule, ODERatelawCallback
         rr = ODEReactionRule()
@@ -62,9 +62,10 @@ def generate_ReactionRule(lhs, rhs, k=None):
             rr.add_reactant(sp[0], 1 if sp[1] is None else sp[1])
         for sp in rhs:
             rr.add_product(sp[0], 1 if sp[1] is None else sp[1])
-        if SEAMLESS_RATELAW_SUPPORT and isinstance(k, parseobj.ExpBase):
-            func = generate_ratelaw(k, rr)
-            rr.set_ratelaw(ODERatelawCallback(func))
+        if ENABLE_RATELAW and isinstance(k, parseobj.ExpBase):
+            name = str(k)
+            func = generate_ratelaw(k, rr, ENABLE_IMPLICIT_DECLARATION)
+            rr.set_ratelaw(ODERatelawCallback(func, name))
         elif callable(k):
             rr.set_ratelaw(ODERatelawCallback(k))
         else:
@@ -78,7 +79,7 @@ def generate_ReactionRule(lhs, rhs, k=None):
 
 def traverse_ParseObj(obj, keys):
     reserved_vars = ['_t', 'pi']
-    reserved_funcs = ['exp', 'log', 'sin', 'cos', 'tan', 'asin', 'acos', 'atan']
+    reserved_funcs = ['exp', 'log', 'sin', 'cos', 'tan', 'asin', 'acos', 'atan', 'pow']
 
     if isinstance(obj, parseobj.AnyCallable):
         obj = obj._as_ParseObj()
@@ -109,7 +110,7 @@ def traverse_ParseObj(obj, keys):
             obj._elems[i] = traverse_ParseObj(obj._elems[i], keys)
     return obj
 
-def generate_ratelaw(obj, rr):
+def generate_ratelaw(obj, rr, implicit=False):
     keys = []
     exp = str(traverse_ParseObj(copy.deepcopy(obj), keys))
     aliases = {}
@@ -121,11 +122,14 @@ def generate_ratelaw(obj, rr):
     for key in keys:
         if key in aliases.keys():
             names.append(aliases[key])
-        else:
+        elif implicit:
             names.append("_r[{0:d}]".format(len(rr.reactants())))
             aliases[key] = names[-1]
             rr.add_reactant(ecell4.core.Species(key), 1)
             rr.add_product(ecell4.core.Species(key), 1)
+        else:
+            raise RuntimeError(
+                'unknown variable [{}] was used.'.format(key))
     exp = exp.format(*names)
     # print(exp)
     import math
@@ -139,68 +143,63 @@ def generate_ratelaw(obj, rr):
     f.__globals__['acos'] = math.acos
     f.__globals__['atan'] = math.atan
     f.__globals__['pi'] = math.pi
+    f.__globals__['pow'] = pow
     return f
     # return (lambda _r, _p, *args: eval(exp))
 
-class ParametersCallback(Callback):
+def parse_ReactionRule_options(elements):
+    opts = {}
 
-    def __init__(self, *args):
-        Callback.__init__(self)
-
-        self.bitwise_operations = []
-
-    def get(self):
-        return copy.copy(self.bitwise_operations)
-
-    def set(self):
-        global PARAMETERS
-        PARAMETERS.extend(self.bitwise_operations)
-
-    def notify_bitwise_operations(self, obj):
-        if not isinstance(obj, parseobj.OrExp):
-            raise RuntimeError('an invalid object was given [%s]' % (repr(obj)))
-        # elif len(obj._elements()) != 2:
-        #     raise RuntimeError, 'only one attribute is allowed. [%d] given' % (
-        #         len(obj._elements()))
-
-        elems = obj._elements()
-        rhs = elems[-1]
-        if isinstance(rhs, parseobj.ExpBase):
-            return
-
-        for lhs in elems[: -1]:
-            species_list = generate_Species(lhs)
-            if len(species_list) != 1:
-                raise RuntimeError(
-                    'only a single species must be given; %d given'
-                    % len(species_list))
-            elif species_list[0] is None:
-                raise RuntimeError("no species given [%s]" % (repr(obj)))
-            elif species_list[0][1] is not None:
-                raise RuntimeError(
-                    "stoichiometry is not available here [%s]" % (repr(obj)))
-
-            sp = species_list[0][0]
-
-            if not isinstance(rhs, types.DictType):
-                raise RuntimeError(
-                    'parameter must be given as a dict; "%s" given'
-                    % str(rhs))
-            for key, value in rhs.items():
-                if not (isinstance(key, types.StringType)
-                    and isinstance(value, types.StringType)):
-                    raise RuntimeError(
-                        'attributes must be given as a pair of strings;'
-                        + ' "%s" and "%s" given'
-                        % (str(key), str(value)))
-                sp.set_attribute(key, value)
-
-            self.bitwise_operations.append(sp)
-
-    def notify_comparisons(self, obj):
+    if len(elements) == 0:
         raise RuntimeError(
-            'ReactionRule definitions are not allowed'
-            + ' in "world_inits"')
+            'only one attribute is allowed. [{:d}] given'.format(len(elements)))
+    elif len(elements) == 1:
+        opts['k'] = elements[0]
+        return opts
+
+    for elem in elements:
+        if (isinstance(elem, parseobj.ParseObj) and len(elem._elems) > 0
+            and elem._elems[0].name == '_policy'):
+            policy = elem._elems[0]
+            if len(elem._elems) != 1:
+                raise RuntimeError(
+                    '_policy only accepts one argument; '
+                    + ' [{}] given'.format(len(elem._elems)))
+            elif policy.args is None or len(policy.args) != 1 or (policy.kwargs is not None and len(policy.kwargs) > 0) or policy.key is not None or policy.modification is not None:
+                raise RuntimeError(
+                    '_policy is not well-formed [{}]'.format(
+                        str(policy)))
+
+            if 'policy' not in opts.keys():
+                opts['policy'] = policy.args[0]
+            else:
+                opts['policy'] |= policy.args[0]
+        # elif (isinstance(elem, parseobj.ParseObj) and len(elem._elems) > 0
+        #     and elem._elems[0].name == '_tag'):
+        #     tag = elem._elems[0]
+        #     if len(elem._elems) != 1:
+        #         raise RuntimeError(
+        #             '_tag only accepts one argument; '
+        #             + ' [{}] given'.format(len(elem._elems)))
+        #     elif tag.args is None or len(tag.args) == 0 or (tag.kwargs is not None and len(tag.kwargs) > 0) or tag.key is not None or tag.modification is not None:
+        #         raise RuntimeError(
+        #             '_tag is not well-formed [{}]'.format(
+        #                 str(tag)))
+
+        #     if 'tag' not in opts.keys():
+        #         opts['tag'] = copy.copy(tag.args)
+        #     else:
+        #         opts['tag'].extend(tag.args)
+        else:
+            if 'k' in opts.keys():
+                raise RuntimeError('only one attribute is allowed. [%d] given' % (
+                    len(elements)))
+            opts['k'] = elem
+
+    if 'k' not in opts.keys():
+        raise RuntimeError('no kinetic rate or law is given.')
+
+    return opts
 
 class SpeciesAttributesCallback(Callback):
 
@@ -319,11 +318,14 @@ class ReactionRulesCallback(Callback):
             raise RuntimeError('an invalid object was given'
                 + ' as a right-hand-side [%s].' % (repr(rhs))
                 + ' OrExp must be given')
-        elif len(rhs._elements()) != 2:
-            raise RuntimeError('only one attribute is allowed. [%d] given' % (
-                len(rhs._elements())))
 
-        rhs, params = rhs._elements()
+        if len(rhs._elements()) == 0:
+            raise RuntimeError('no product is given')
+
+        opts = parse_ReactionRule_options(rhs._elements()[1: ])
+        rhs = rhs._elements()[0]
+        params = opts['k']
+
         lhs, rhs = generate_Species(lhs), generate_Species(rhs)
         lhs = tuple(sp for sp in lhs if sp is not None)
         rhs = tuple(sp for sp in rhs if sp is not None)
@@ -337,14 +339,53 @@ class ReactionRulesCallback(Callback):
                 raise RuntimeError(
                     "parameter must be a list or tuple with length 2;"
                     + " length %d given" % len(params))
-            self.comparisons.append(generate_ReactionRule(lhs, rhs, params[0]))
-            self.comparisons.append(generate_ReactionRule(rhs, lhs, params[1]))
+            # self.comparisons.append(generate_ReactionRule(lhs, rhs, params[0]))
+            # self.comparisons.append(generate_ReactionRule(rhs, lhs, params[1]))
+            rr = generate_ReactionRule(lhs, rhs, params[0])
+            if 'policy' in opts.keys():
+                rr.set_policy(opts['policy'])
+            self.comparisons.append(rr)
+            rr = generate_ReactionRule(rhs, lhs, params[1])
+            if 'policy' in opts.keys():
+                rr.set_policy(opts['policy'])
+            self.comparisons.append(rr)
         elif isinstance(obj, parseobj.GtExp):
-            self.comparisons.append(generate_ReactionRule(lhs, rhs, params))
+            # self.comparisons.append(generate_ReactionRule(lhs, rhs, params))
+            rr = generate_ReactionRule(lhs, rhs, params)
+            if 'policy' in opts.keys():
+                rr.set_policy(opts['policy'])
+            self.comparisons.append(rr)
         else:
             raise RuntimeError('an invalid object was given [%s]' % (repr(obj)))
 
-def get_model(is_netfree=False, without_reset=False, seeds=None):
+def get_model(is_netfree=False, without_reset=False, seeds=None, effective=False):
+    """
+    Generate a model with parameters in the global scope, ``SPECIES_ATTRIBUTES``
+    and ``REACTIONRULES``.
+
+    Parameters
+    ----------
+    is_netfree : bool, optional
+        Return ``NetfreeModel`` if True, and ``NetworkModel`` if else.
+        Default is False.
+    without_reset : bool, optional
+        Do not reset the global variables after the generation if True.
+        Default is False.
+    seeds : list, optional
+        A list of seed ``Species`` for expanding the model.
+        If this is not None, generate a ``NetfreeModel`` once, and return a
+        ``NetworkModel``, which is an expanded form of that with the given seeds.
+        Default is None.
+    effective : bool, optional
+        See ``NetfreeModel.effective`` and ``Netfree.set_effective``.
+        Only meaningfull with option ``is_netfree=True``.
+        Default is False
+
+    Returns
+    -------
+    model : NetworkModel, NetfreeModel, or ODENetworkModel
+
+    """
     if any([not isinstance(rr, ecell4.core.ReactionRule) for rr in REACTION_RULES]):
        from ecell4.ode import ODENetworkModel
        m = ODENetworkModel()
@@ -357,8 +398,6 @@ def get_model(is_netfree=False, without_reset=False, seeds=None):
         m.add_species_attribute(sp)
     for rr in REACTION_RULES:
         m.add_reaction_rule(rr)
-    for param in PARAMETERS:
-        m.add_parameter(param)
 
     if not without_reset:
         reset_model()
@@ -366,17 +405,22 @@ def get_model(is_netfree=False, without_reset=False, seeds=None):
     if seeds is not None:
         return m.expand(seeds)
 
+    if isinstance(m, ecell4.core.NetfreeModel):
+        m.set_effective(effective)
+
     return m
 
 def reset_model():
-    global PARAMETERS
+    """
+    Reset all values, ``SPECIES_ATTRIBUTES`` and ``REACTIONRULES``,
+    in the global scope.
+
+    """
     global SPECIES_ATTRIBUTES
     global REACTION_RULES
 
-    PARAMETERS = []
     SPECIES_ATTRIBUTES = []
     REACTION_RULES = []
 
 reaction_rules = functools.partial(ParseDecorator, ReactionRulesCallback)
 species_attributes = functools.partial(ParseDecorator, SpeciesAttributesCallback)
-parameters = functools.partial(ParseDecorator, ParametersCallback)

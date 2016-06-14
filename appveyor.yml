@@ -1,0 +1,110 @@
+#os: Visual Studio 2015
+
+environment:
+  global:
+    HDF_DIR: "C:/Program Files (x86)/HDF_Group/HDF5/1.8.16/lib"
+    BOOST_ROOT: C:\Libraries\boost
+
+  matrix:
+    - PYTHON: "C:\\Python27"
+      PYTHON_VERSION: "2.7.11"
+    - PYTHON: "C:\\Python35"
+      PYTHON_VERSION: "3.5.1"
+
+init:
+  - cmd: cmake --version
+
+install:
+  # install hdf5
+  - mkdir hdf5lib
+  - cd hdf5lib
+  - if "%PYTHON_VERSION%" == "2.7.11" curl -O http://repo.continuum.io/pkgs/free/win-32/hdf5-1.8.16-vc9_0.tar.bz2
+  - if "%PYTHON_VERSION%" == "2.7.11" 7z x -y hdf5-1.8.16-vc9_0.tar.bz2
+  - if "%PYTHON_VERSION%" == "2.7.11" 7z x -y hdf5-1.8.16-vc9_0.tar
+  - if "%PYTHON_VERSION%" == "3.5.1" curl -O http://repo.continuum.io/pkgs/free/win-32/hdf5-1.8.16-vc14_0.tar.bz2
+  - if "%PYTHON_VERSION%" == "3.5.1" 7z x -y hdf5-1.8.16-vc14_0.tar.bz2
+  - if "%PYTHON_VERSION%" == "3.5.1" 7z x -y hdf5-1.8.16-vc14_0.tar
+  - mkdir "C:/Program Files (x86)/HDF_Group/HDF5/1.8.16"
+  - xcopy Library "C:/Program Files (x86)/HDF_Group/HDF5/1.8.16" /s /e /y
+  - cd ..
+
+  # install stdint
+  - if "%PYTHON_VERSION%" == "2.7.11" curl -O http://ftp.vector.co.jp/43/28/2114/stdint-20070624.zip
+  - if "%PYTHON_VERSION%" == "2.7.11" unzip stdint-20070624.zip
+
+  # install gsl for build_ext
+
+  - if "%PYTHON_VERSION%" == "2.7.11" curl -O http://r2d3.geldreich.net/downloads/gsl-1.13-windows-binaries.zip
+  - if "%PYTHON_VERSION%" == "2.7.11" unzip gsl-1.13-windows-binaries.zip
+  # - if "%PYTHON_VERSION%" == "2.7.11" cmake -G "Visual Studio 9 2008" -D CMAKE_CXX_FLAGS_RELEASE="/MD" -D CMAKE_CXX_FLAGS_DEBUG="/MDd" -D CMAKE_C_FLAGS_RELEASE="/MD" -D CMAKE_C_FLAGS_DEBUG="/MDd" .
+  # - if "%PYTHON_VERSION%" == "2.7.11" msbuild GSL.sln /p:Configuration=Release /toolsversion:3.5
+
+  - if "%PYTHON_VERSION%" == "3.5.1" git clone git://github.com/ampl/gsl.git
+  - if "%PYTHON_VERSION%" == "3.5.1" cd gsl
+  - if "%PYTHON_VERSION%" == "3.5.1" cmake -G "Visual Studio 14 2015" -D CMAKE_CXX_FLAGS_RELEASE="/MD" -D CMAKE_CXX_FLAGS_DEBUG="/MDd" -D CMAKE_C_FLAGS_RELEASE="/MD" -D CMAKE_C_FLAGS_DEBUG="/MDd" .
+  - if "%PYTHON_VERSION%" == "3.5.1" msbuild GSL.sln /p:Configuration=Release
+  - if "%PYTHON_VERSION%" == "3.5.1" cd ..
+
+  # - msbuild GSL.sln /p:Configuration=Release /v:d
+
+  # BesselTables
+  - cd ecell4/egfrd/tablegen
+  - del CMakeLists.txt
+  - if "%PYTHON_VERSION%" == "2.7.11" move cmlwinpy27.txt CMakeLists.txt
+  - if "%PYTHON_VERSION%" == "3.5.1" move cmlwinpy35.txt CMakeLists.txt
+  - cd ../../..
+
+  - if "%PYTHON_VERSION%" == "2.7.11" cmake -G "Visual Studio 9 2008" -D CMAKE_CXX_FLAGS_RELEASE="/MT" -D CMAKE_CXX_FLAGS_DEBUG="/MTd" -DBOOST_REGEX_LIBRARIES=C:/Libraries/boost/libs -DBoost_INCLUDE_DIR=C:/Libraries/boost -DGSL_INCLUDE_DIR=C:/projects/ecell4/gsl/include -DGSL_CBLAS_LIBRARIES=C:/projects/ecell4/gsl/lib -DGSL_LIBRARIES=C:/projects/ecell4/gsl/lib .
+  - if "%PYTHON_VERSION%" == "2.7.11" cmake --build . --target BesselTables
+  # - if "%PYTHON_VERSION%" == "2.7.11" cmake -G "Visual Studio 9 2008" -D CMAKE_CXX_FLAGS_RELEASE="/MD" -D CMAKE_CXX_FLAGS_DEBUG="/MDd" -D CMAKE_C_FLAGS_DEBUG="/MDd" -DBoost_INCLUDE_DIR=C:/Libraries/boost -DGSL_INCLUDE_DIR=C:/projects/ecell4/gsl -DGSL_CBLAS_LIBRARIES=C:/projects/ecell4/gsl/Release -DGSL_LIBRARIES=C:/projects/ecell4/gsl/Release .
+
+  - if "%PYTHON_VERSION%" == "3.5.1" cmake -G "Visual Studio 14 2015" -D CMAKE_CXX_FLAGS_RELEASE="/MD" -D CMAKE_CXX_FLAGS_DEBUG="/MDd" -D CMAKE_C_FLAGS_DEBUG="/MDd" -DBoost_INCLUDE_DIR=C:/Libraries/boost -DGSL_INCLUDE_DIR=C:/projects/ecell4/gsl -DGSL_CBLAS_LIBRARIES=C:/projects/ecell4/gsl/Release -DGSL_LIBRARIES=C:/projects/ecell4/gsl/Release .
+
+  - if "%PYTHON_VERSION%" == "3.5.1" cmake --build . --target BesselTables --config Release
+  # - cmake --build . --target BesselTables --config Release -- /v:d
+
+  # config.h
+  - cd ecell4/core
+  - move config.h.win32 config.h
+  - type config.h
+  - cd ../egfrd
+  - move config.h.win32 config.h
+  - type config.h
+  - cd ../..
+
+  # go into ecell4/python
+  - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
+  - "python --version"
+  - curl -O https://bootstrap.pypa.io/get-pip.py
+  - "python get-pip.py"
+  - if "%PYTHON_VERSION%" == "2.7.11" python -m pip install cython
+  - if "%PYTHON_VERSION%" == "3.5.1" python -m pip install https://pypi.python.org/packages/cp35/C/Cython/Cython-0.23.4-cp35-none-win32.whl
+  - cd python
+  - ECHO "ls boost:"
+  - ps: "ls \"C:/Libraries/boost\""
+  - echo %CD%
+  - if "%PYTHON_VERSION%" == "2.7.11" python setup.py build_ext -I"C:\Program Files (x86)\HDF_Group\HDF5\1.8.16\include";C:/Libraries/boost;C:/projects/ecell4;C:/projects/ecell4/stdint-20070624;C:/projects/ecell4/gsl/include -LC:/projects/ecell4/gsl/lib;"C:\Program Files (x86)\HDF_Group\HDF5\1.8.16\lib"
+  - if "%PYTHON_VERSION%" == "3.5.1" python setup.py build_ext -I"C:\Program Files (x86)\HDF_Group\HDF5\1.8.16\include";C:/Libraries/boost;C:/projects/ecell4/gsl -LC:/projects/ecell4/gsl/Release;"C:\Program Files (x86)\HDF_Group\HDF5\1.8.16\lib"
+  - "pip install wheel"
+  - "python setup.py bdist_wheel"
+  # - "pip install dist/ecell4-4.0.0b2-cp35-none-win32.whl"
+
+# test_script:
+#   - "build.cmd %PYTHON%\\python.exe setup.py test"
+
+build: false
+
+branches:
+  only:
+    - master
+    - develop
+
+artifacts:
+  # bdist_wheel puts your built wheel in the dist directory
+  - path: python/dist/*
+
+notifications:
+  - provider: Slack
+    auth_token:
+      secure: 9s8jg4JncTvwSy0zHKuyW7W3A1PuSiSM4l52w4sCVLVh/dObYoaRFlDLJIN+sPvQI1ArpzteKZEXQq8St0PVug==
+    channel: '#github'

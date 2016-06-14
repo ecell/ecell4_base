@@ -54,7 +54,7 @@ int main(int argc, char **argv)
     boost::shared_ptr<ODEWorld> world(new ODEWorld(edge_lengths));
     world->add_molecules(sp1, N);
 
-    ODESimulator sim(model, world);
+    ODESimulator sim(model, world, ROSENBROCK4_CONTROLLER);
     sim.initialize();
     Real next_time(0.0), dt(0.01);
     std::cout << sim.t() 
@@ -62,7 +62,7 @@ int main(int argc, char **argv)
               << "\t" << world->num_molecules(sp2)
               << "\t" << world->num_molecules(sp3)
               << std::endl;
-    for(unsigned int i(0); i < 1000; i++)
+    for(unsigned int i(0); i < 100000; i++)
     {
         next_time += dt;
         sim.step(next_time);

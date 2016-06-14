@@ -45,7 +45,7 @@ public:
 
     // SpaceTraits
 
-    const Real& t() const
+    const Real t() const
     {
         return t_;
     }
@@ -83,14 +83,20 @@ public:
 
     virtual Real3 actual_lengths() const = 0;
 
+    virtual void save(const std::string& filename) const
+    {
+        throw NotSupported(
+            "save(const std::string) is not supported by this space class");
+    }
+
 #ifdef WITH_HDF5
-    virtual void save(H5::Group* root) const
+    virtual void save_hdf5(H5::Group* root) const
     {
         throw NotSupported(
             "load(H5::Group* root) is not supported by this space class");
     }
 
-    virtual void load(const H5::Group& root)
+    virtual void load_hdf5(const H5::Group& root)
     {
         throw NotSupported(
             "load(const H5::Group& root) is not supported by this space class");
@@ -115,23 +121,27 @@ public:
 
     virtual void update_voxel_private(const Voxel& v) = 0;
     virtual bool update_voxel_private(const ParticleID& pid, const Voxel& v) = 0;
+    virtual bool update_voxel_private_without_checking(const ParticleID& pid, const Voxel& v)
+    {
+        throw NotSupported(
+            "update_voxel_private_without_chekcing(const ParticleID&, const Voxel&) is not supported by this space class");
+    }
     virtual std::pair<ParticleID, Voxel> get_voxel(const ParticleID& pid) const = 0;
     virtual std::pair<ParticleID, Voxel> get_voxel(const coordinate_type& coord) const = 0;
     virtual bool remove_voxel(const ParticleID& pid) = 0;
     virtual bool remove_voxel_private(const private_coordinate_type& coord) = 0;
     virtual bool move(const coordinate_type& from, const coordinate_type& to) = 0;
-    virtual bool move_private(const private_coordinate_type& src, const private_coordinate_type& dest) = 0;
+    virtual bool move_private(const private_coordinate_type& src,
+            const private_coordinate_type& dest, const std::size_t candidate=0) = 0;
     virtual bool can_move(const private_coordinate_type& src, const private_coordinate_type& dest) const;
     virtual const Particle particle_at(const coordinate_type& coord) const = 0;
 
-    virtual void add_structure(const Species& sp,
-        const boost::shared_ptr<const Shape>& s, const std::string loc) = 0;
-    virtual const boost::shared_ptr<const Shape>& get_structure(const Species& sp) const = 0;
-    virtual const Shape::dimension_kind get_structure_dimension(const Species& sp) const = 0;
-
     virtual MolecularTypeBase* find_molecular_type(const Species& sp) = 0;
+    virtual const MolecularTypeBase* find_molecular_type(const Species& sp) const = 0;
     virtual MolecularTypeBase* get_molecular_type(
         const private_coordinate_type& coord) = 0;
+    virtual bool make_structure_type(const Species& sp,
+        Shape::dimension_kind dimension, const std::string loc);
 
     virtual bool on_structure(const Voxel& v) = 0;
 
@@ -164,6 +174,8 @@ public:
 
     virtual private_coordinate_type get_neighbor_private(
         const private_coordinate_type& private_coord, const Integer& nrand) const = 0;
+    virtual private_coordinate_type get_neighbor_private_boundary(
+        const private_coordinate_type& private_coord, const Integer& nrand) const = 0;
 
     virtual coordinate_type get_neighbor(
         const coordinate_type& coord, const Integer& nrand) const
@@ -173,11 +185,6 @@ public:
 
     /**
       */
-
-    virtual Integer num_molecules() const
-    {
-        return num_voxels();
-    }
 
     virtual Integer num_molecules(const Species& sp) const = 0; //XXX:
 
@@ -264,11 +271,18 @@ public:
                 v.radius(), v.D(), v.loc()));
     }
 
-    virtual bool update_particle(const ParticleID& pid, const Particle& p)
+    virtual bool update_voxel_without_checking(const ParticleID& pid, const Voxel& v)
     {
-        return update_voxel_private(pid, Voxel(p.species(),
-            position2private(p.position()), p.radius(), p.D()));
+        return update_voxel_private_without_checking(pid,
+            Voxel(v.species(), coord2private(v.coordinate()),
+                v.radius(), v.D(), v.loc()));
     }
+
+    // virtual bool update_particle(const ParticleID& pid, const Particle& p)
+    // {
+    //     return update_voxel_private(pid, Voxel(p.species(),
+    //         position2private(p.position()), p.radius(), p.D(), minfo.loc));
+    // }
 
     virtual std::pair<ParticleID, Particle> get_particle(const ParticleID& pid) const
     {
@@ -308,10 +322,10 @@ public:
 public:
 
     LatticeSpaceBase(
-        const Real3& edge_lengths, const Real& voxel_radius)
+        const Real3& edge_lengths, const Real& voxel_radius, const bool is_periodic)
         : base_type(voxel_radius), edge_lengths_(edge_lengths)
     {
-        set_lattice_properties();
+        set_lattice_properties(is_periodic);
     }
 
     virtual ~LatticeSpaceBase()
@@ -325,10 +339,10 @@ public:
         edge_lengths_ = edge_lengths;
         voxel_radius_ = voxel_radius;
 
-        set_lattice_properties();
+        set_lattice_properties(is_periodic);
     }
 
-    void set_lattice_properties();
+    void set_lattice_properties(const bool is_periodic);
 
     /**
      * Primitives
@@ -366,11 +380,11 @@ public:
         //     layer_size() * HCP_Y + (col_size() > 1 ? HCP_L: 0.0),
         //     row_size() * voxel_radius() * 2
         //         + (col_size() > 1 || layer_size() > 1 ? voxel_radius() : 0.0));
-        // return Real3(
-        //     col_size() * HCP_X, layer_size() * HCP_Y, row_size() * voxel_radius() * 2);
-        const Real sigma(voxel_radius() * 2);
         return Real3(
-            (col_size() - 1) * HCP_X + sigma, (layer_size() - 1) * HCP_Y + sigma, row_size() * sigma);
+            col_size() * HCP_X, layer_size() * HCP_Y, row_size() * voxel_radius() * 2);
+        // const Real sigma(voxel_radius() * 2);
+        // return Real3(
+        //     (col_size() - 1) * HCP_X + sigma, (layer_size() - 1) * HCP_Y + sigma, row_size() * sigma);
     }
 
     /**
@@ -566,7 +580,6 @@ public:
 
     typedef std::map<Species, boost::shared_ptr<MolecularType> > spmap;
     typedef std::vector<MolecularTypeBase*> voxel_container;
-    typedef std::map<Species, boost::shared_ptr<const Shape> > structure_container_type;
 
 public:
 
@@ -620,33 +633,28 @@ public:
     virtual Integer num_voxels(const Species& sp) const;
     virtual Integer num_voxels() const;
 
-    virtual Integer num_molecules() const
-    {
-        return LatticeSpace::num_molecules();
-    }
-
     virtual Integer num_molecules(const Species& sp) const; //XXX:
 
     virtual void update_voxel_private(const Voxel& v);
     virtual bool update_voxel_private(const ParticleID& pid, const Voxel& v);
+    virtual bool update_voxel_private_without_checking(const ParticleID& pid, const Voxel& v);
+
+    bool add_voxels(const Species species, std::vector<std::pair<ParticleID, coordinate_type> > voxels);
 
     std::vector<Species> list_species() const;
     const Species& find_species(std::string name) const;
     std::vector<coordinate_type> list_coords(const Species& sp) const;
     std::vector<coordinate_type> list_coords_exact(const Species& sp) const;
     virtual MolecularTypeBase* find_molecular_type(const Species& sp);
+    virtual const MolecularTypeBase* find_molecular_type(const Species& sp) const;
     // MolecularTypeBase* find_molecular_type(const std::string name);
     virtual MolecularTypeBase* get_molecular_type(const private_coordinate_type& coord);
     // bool update_molecule(private_coordinate_type coord, const Species& species);
     // bool add_molecule(const Species& sp, private_coordinate_type coord, const ParticleID& pid);
     virtual bool move(const coordinate_type& from, const coordinate_type& to);
-    virtual bool move_private(const private_coordinate_type& src, const private_coordinate_type& dest);
+    virtual bool move_private(const private_coordinate_type& src,
+            const private_coordinate_type& dest, const std::size_t candidate=0);
     virtual bool can_move(const private_coordinate_type& src, const private_coordinate_type& dest) const;
-
-    virtual void add_structure(const Species& sp,
-        const boost::shared_ptr<const Shape>& s, const std::string loc);
-    virtual const boost::shared_ptr<const Shape>& get_structure(const Species& sp) const;
-    virtual const Shape::dimension_kind get_structure_dimension(const Species& sp) const;
 
     std::pair<private_coordinate_type, bool> move_to_neighbor(
         private_coordinate_type coord, Integer nrand);
@@ -655,6 +663,14 @@ public:
     std::pair<private_coordinate_type, bool> move_to_neighbor(
         MolecularTypeBase* const& from_mt, MolecularTypeBase* const& loc,
         particle_info_type& info, const Integer nrand);
+
+    private_coordinate_type get_neighbor_private_boundary(
+        const private_coordinate_type& coord, const Integer& nrand) const
+    {
+        private_coordinate_type const dest = get_neighbor_private(coord, nrand);
+        MolecularTypeBase* dest_mt(voxels_.at(dest));
+        return (dest_mt != periodic_ ? dest : periodic_transpose_private(dest));
+    }
 
     inline bool is_periodic() const
     {
@@ -666,12 +682,12 @@ public:
     /*
      * HDF5 Save
      */
-    void save(H5::Group* root) const
+    void save_hdf5(H5::Group* root) const
     {
         save_lattice_space(*this, root);
     }
 
-    void load(const H5::Group& root)
+    void load_hdf5(const H5::Group& root)
     {
         load_lattice_space(root, this);
     }
@@ -697,6 +713,11 @@ public:
         return periodic_transpose_private(private_coord);
     }
 
+    virtual bool make_structure_type(const Species& sp,
+        Shape::dimension_kind dimension, const std::string loc);
+    bool make_molecular_type(const Species& sp,
+        Real radius, Real D, const std::string loc);
+
     virtual bool on_structure(const Voxel& v);
 
 protected:
@@ -707,14 +728,13 @@ protected:
     void initialize_voxels(const bool is_periodic);
 
     std::pair<private_coordinate_type, bool> move_(
-            private_coordinate_type private_from, private_coordinate_type private_to);
+            private_coordinate_type private_from, private_coordinate_type private_to,
+            const std::size_t candidate=0);
     std::pair<private_coordinate_type, bool> move_(
             particle_info_type& info, private_coordinate_type private_to);
     private_coordinate_type get_coord(const ParticleID& pid) const;
     const Particle particle_at_private(private_coordinate_type coord) const;
 
-    bool make_structure_type(const Species& sp,
-            const boost::shared_ptr<const Shape>& shape, const std::string loc);
     Integer count_voxels(const boost::shared_ptr<MolecularType>& mt) const;
 
 protected:
@@ -723,7 +743,6 @@ protected:
 
     spmap spmap_;
     voxel_container voxels_;
-    structure_container_type structures_;
 
     MolecularTypeBase* vacant_;
     MolecularTypeBase* border_;

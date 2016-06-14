@@ -46,7 +46,7 @@ protected:
         second_order_reaction_rules_map_type;
 public:
     ODENetworkModel();
-    ODENetworkModel(const boost::shared_ptr<ecell4::NetworkModel> model);
+    ODENetworkModel(const boost::shared_ptr<ecell4::Model> model);
     ~ODENetworkModel();
 
     void update_model();
@@ -71,7 +71,7 @@ public:
         retval.erase(std::unique(retval.begin(), retval.end()), retval.end());
         return retval;
     }
-    boost::shared_ptr<NetworkModel> get_networkmodel() const
+    boost::shared_ptr<Model> get_networkmodel() const
     {
         return this->expanded_.lock();
     }
@@ -79,6 +79,10 @@ public:
     const ode_reaction_rule_container_type& ode_reaction_rules() const
     {
         return ode_reaction_rules_;
+    }
+    inline const ode_reaction_rule_container_type& reaction_rules() const
+    {
+        return ode_reaction_rules();
     }
     const species_container_type& species_attributes() const
     {
@@ -105,6 +109,25 @@ public:
     {
         this->ode_reaction_rules_.push_back(ODEReactionRule(ode_rr));
     }
+
+    void add_reaction_rules(const std::vector<ODEReactionRule>& rrs)
+    {
+        for (std::vector<ODEReactionRule>::const_iterator i(rrs.begin());
+            i != rrs.end(); ++i)
+        {
+            add_reaction_rule(*i);
+        }
+    }
+
+    void add_reaction_rules(const std::vector<ReactionRule>& rrs)
+    {
+        for (std::vector<ReactionRule>::const_iterator i(rrs.begin());
+            i != rrs.end(); ++i)
+        {
+            add_reaction_rule(*i);
+        }
+    }
+
     void add_species_attribute(const Species &sp)
     {
         if (has_species_attribute(sp))
@@ -121,7 +144,7 @@ public:
         return (i != species_attributes_.end());
     }
 private:
-    bool convert_from_networkmodel(const boost::shared_ptr<ecell4::NetworkModel> model);
+    bool convert_from_networkmodel(const boost::shared_ptr<ecell4::Model> model);
 
 protected:
     species_container_type species_attributes_;
@@ -130,7 +153,7 @@ protected:
     first_order_reaction_rules_map_type first_order_reaction_rules_map_;
     second_order_reaction_rules_map_type second_order_reaction_rules_map_;
 
-    boost::weak_ptr<NetworkModel> expanded_;
+    boost::weak_ptr<Model> expanded_;
 };
 
 }   // ode

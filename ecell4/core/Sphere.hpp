@@ -54,6 +54,11 @@ public:
         return radius_;
     }
 
+    dimension_kind dimension() const
+    {
+        return THREE;
+    }
+
 protected:
 
     Real3 center_;

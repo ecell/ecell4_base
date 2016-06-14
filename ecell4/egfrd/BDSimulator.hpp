@@ -30,12 +30,16 @@ public:
     typedef typename world_type::species_id_type species_id_type;
     // typedef typename world_type::species_type species_type;
     typedef typename world_type::molecule_info_type molecule_info_type;
+    typedef typename world_type::particle_shape_type particle_shape_type;
+    typedef typename world_type::particle_id_pair particle_id_pair;
+    typedef typename world_type::traits_type::position_type position_type;
     typedef typename traits_type::time_type time_type;
     typedef typename traits_type::network_rules_type network_rules_type;
     typedef typename traits_type::reaction_rule_type reaction_rule_type;
     typedef typename traits_type::rate_type rate_type;
     typedef typename traits_type::reaction_record_type reaction_record_type;
     typedef typename traits_type::reaction_recorder_type reaction_recorder_type;
+    typedef typename ReactionRecorderWrapper<reaction_record_type>::reaction_info_type reaction_info_type;
 
 public:
 
@@ -59,6 +63,17 @@ public:
         calculate_dt();
     }
 
+    BDSimulator(
+        const boost::shared_ptr<world_type>& world,
+        Real bd_dt_factor = 1.0,
+        int dissociation_retry_moves = 1)
+        : base_type(world),
+          dt_factor_(bd_dt_factor),
+          num_retries_(dissociation_retry_moves)
+    {
+        calculate_dt();
+    }
+
     virtual void initialize()
     {
         ;
@@ -66,7 +81,7 @@ public:
 
     virtual void calculate_dt()
     {
-        set_dt(dt_factor_ * determine_dt(*base_type::world_));
+        set_dt(dt_factor_ * determine_dt());
         LOG_DEBUG(("dt=%f", base_type::dt_));
     }
 
@@ -109,18 +124,25 @@ public:
         return true;
     }
 
-    Real determine_dt(world_type const& world)
+    Real determine_dt()
     {
+        Real prob = 0.0;
+        BOOST_FOREACH(reaction_rule_type const& rr,
+                      (*base_type::network_rules_).zeroth_order_reaction_rules())
+        {
+            prob += rr.k();
+        }
+        prob *= (*base_type::world_).volume();
+
+        if (prob == 0.0 && (*base_type::world_).num_particles() == 0)
+        {
+            return std::numeric_limits<Real>::infinity();
+        }
+
         Real D_max(0.0), radius_min(std::numeric_limits<Real>::max());
 
-        // BOOST_FOREACH(species_type s, world.get_species())
-        // {
-        //     if (D_max < s.D())
-        //         D_max = s.D();
-        //     if (radius_min > s.radius())
-        //         radius_min = s.radius();
-        // }
-        BOOST_FOREACH(molecule_info_type info, (*base_type::world_).get_molecule_info_range())
+        BOOST_FOREACH(molecule_info_type info,
+                      (*base_type::world_).get_molecule_info_range())
         {
             if (D_max < info.D)
             {
@@ -131,7 +153,19 @@ public:
                 radius_min = info.radius;
             }
         }
-        return gsl_pow_2(radius_min * 2) / (D_max * 2);
+        const Real dt(gsl_pow_2(radius_min * 2) / (D_max * 2));
+        return (prob == 0.0 ? dt : std::min(dt, 1.0 / prob));
+    }
+
+    virtual bool check_reaction() const
+    {
+        return last_reactions().size() > 0;
+    }
+
+    std::vector<std::pair<ecell4::ReactionRule, reaction_info_type> > last_reactions() const
+    {
+        return (*dynamic_cast<ReactionRecorderWrapper<reaction_record_type>*>(
+            base_type::rrec_.get())).last_reactions();
     }
 
 protected:
@@ -149,11 +183,73 @@ protected:
                                         get_particles_range()),
                 R_);
             while (propagator());
-            LOG_DEBUG(("%d: t=%lg, dt=%lg", base_type::num_steps_,
-                       base_type::t(), dt));
         }
+
+        try
+        {
+            attempt_zeroth_order_reaction(dt);
+        }
+        catch (no_space const&)
+        {
+            LOG_DEBUG(("birth reaction rejected."));
+            // ++rejected_moves_;
+        }
+
+        LOG_DEBUG(("%d: t=%lg, dt=%lg", base_type::num_steps_,
+                   base_type::t(), dt));
+
         ++base_type::num_steps_;
         base_type::set_t(base_type::t() + dt);
+    }
+
+    bool attempt_zeroth_order_reaction(time_type const dt)
+    {
+        typename network_rules_type::reaction_rules const
+            rules((*base_type::network_rules_).zeroth_order_reaction_rules());
+        if (::size(rules) == 0)
+            return false;
+
+        const Real rnd(
+            base_type::rng().random() / (dt * (*base_type::world_).volume()));
+        Real prob = 0.0;
+
+        BOOST_FOREACH(reaction_rule_type const& rr, rules)
+        {
+            prob += rr.k();
+            if (prob > rnd)
+            {
+                typename reaction_rule_type::species_id_range products(
+                        rr.get_products());
+                BOOST_ASSERT(::size(products) == 1);
+                const molecule_info_type minfo(
+                    (*base_type::world_).get_molecule_info(products[0]));
+
+                //XXX: A cuboidal region is expected here.
+                const position_type& edge_lengths((*base_type::world_).edge_lengths());
+                const position_type new_pos(
+                    base_type::rng().uniform(0, edge_lengths[0]),
+                    base_type::rng().uniform(0, edge_lengths[1]),
+                    base_type::rng().uniform(0, edge_lengths[2]));
+
+                const particle_shape_type new_particle(new_pos, minfo.radius);
+                if (!(*base_type::world_).no_overlap(new_particle))
+                {
+                    LOG_INFO(("no space for product particle."));
+                    throw no_space();
+                }
+
+                particle_id_pair pp(
+                    (*base_type::world_).new_particle(products[0], new_pos));
+
+                if (base_type::rrec_)
+                {
+                    (*base_type::rrec_)(
+                        reaction_record_type(rr.id(), array_gen(pp)));
+                }
+                return true;
+            }
+        }
+        return false;
     }
 
 private:

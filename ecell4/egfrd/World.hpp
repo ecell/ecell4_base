@@ -77,7 +77,8 @@ struct WorldTraitsBase
     typedef ecell4::Species::serial_type species_id_type; // std::string
     typedef ecell4::Particle particle_type;
     typedef ecell4::Real3 position_type;
-    typedef ecell4::GSLRandomNumberGenerator rng_type;
+    // typedef ecell4::GSLRandomNumberGenerator rng_type;
+    typedef ecell4::RandomNumberGenerator rng_type;
     typedef ecell4::Model model_type;
 
     struct MoleculeInfo
@@ -285,7 +286,8 @@ public:
         const matrix_sizes_type& sizes = matrix_sizes_type(3, 3, 3))
         : base_type(edge_lengths, sizes)
     {
-        rng_ = boost::shared_ptr<rng_type>(new rng_type());
+        // rng_ = boost::shared_ptr<rng_type>(new rng_type());
+        rng_ = boost::shared_ptr<rng_type>(new ecell4::GSLRandomNumberGenerator());
         (*rng_).seed();
 
         add_world_structure();
@@ -299,19 +301,20 @@ public:
         add_world_structure();
     }
 
-    World(
-        const position_type& edge_lengths, const matrix_sizes_type& sizes,
-        const boost::shared_ptr<ecell4::RandomNumberGenerator>& rng)
-        : base_type(edge_lengths, sizes),
-        rng_(boost::dynamic_pointer_cast<rng_type>(rng))
-    {
-        add_world_structure();
-    }
+    // World(
+    //     const position_type& edge_lengths, const matrix_sizes_type& sizes,
+    //     const boost::shared_ptr<ecell4::RandomNumberGenerator>& rng)
+    //     : base_type(edge_lengths, sizes),
+    //     rng_(boost::dynamic_pointer_cast<rng_type>(rng))
+    // {
+    //     add_world_structure();
+    // }
 
     World(const std::string filename)
         : base_type(position_type(1, 1, 1), matrix_sizes_type(3, 3, 3)), rng_()
     {
-        rng_ = boost::shared_ptr<rng_type>(new rng_type());
+        rng_ = boost::shared_ptr<rng_type>(new ecell4::GSLRandomNumberGenerator());
+        // rng_ = boost::shared_ptr<rng_type>(new rng_type());
         this->load(filename);
     }
 
@@ -377,29 +380,6 @@ public:
         particle_pool_[pp.second.sid()].erase(id);
         base_type::remove_particle(id);
         return true;
-    }
-
-    virtual molecule_info_type const& get_molecule_info(species_id_type const& sid)
-    {
-        typename molecule_info_map::const_iterator i(molecule_info_map_.find(sid));
-        if (molecule_info_map_.end() == i)
-        {
-            return this->register_species(sid);
-            // throw not_found(std::string("Unknown species (id=")
-            //     + boost::lexical_cast<std::string>(sid) + ")");
-        }
-        return (*i).second;
-    }
-
-    virtual molecule_info_type const& find_molecule_info(species_id_type const& sid) const
-    {
-        typename molecule_info_map::const_iterator i(molecule_info_map_.find(sid));
-        if (molecule_info_map_.end() == i)
-        {
-            throw not_found(std::string("Unknown species (id=")
-                + boost::lexical_cast<std::string>(sid) + ")");
-        }
-        return (*i).second;
     }
 
     molecule_info_range get_molecule_info_range() const
@@ -483,7 +463,8 @@ public:
 
         ecell4::extras::save_version_information(fout.get(), "ecell4-egfrd-0.0-1");
 #else
-        throw ecell4::NotSupported("not supported yet.");
+        throw ecell4::NotSupported(
+            "This method requires HDF5. The HDF5 support is turned off.");
 #endif
     }
 
@@ -514,7 +495,8 @@ public:
         pidgen_.load(*fin);
         rng_->load(*fin);
 #else
-        throw ecell4::NotSupported("not supported yet.");
+        throw ecell4::NotSupported(
+            "This method requires HDF5. The HDF5 support is turned off.");
 #endif
     }
 
@@ -595,6 +577,20 @@ public:
             }
         }
         return retval;
+    }
+
+    void set_value(const ecell4::Species& sp, const ecell4::Real value)
+    {
+        const ecell4::Integer num1 = static_cast<ecell4::Integer>(value);
+        const ecell4::Integer num2 = num_molecules_exact(sp);
+        if (num1 > num2)
+        {
+            add_molecules(sp, num1 - num2);
+        }
+        else if (num1 < num2)
+        {
+            remove_molecules(sp, num2 - num1);
+        }
     }
 
     virtual ecell4::Real get_value(const ecell4::Species& sp) const
@@ -688,6 +684,22 @@ public:
         return retval;
     }
 
+    std::vector<ecell4::Species> list_species() const
+    {
+        std::vector<ecell4::Species> retval;
+        BOOST_FOREACH(particle_id_pair p, this->get_particles_range())
+        {
+            // ecell4::Species::serial_type == species_id_type
+            const ecell4::Species& sp(p.second.species());
+            if (std::find(retval.begin(), retval.end(), sp)
+                == retval.end())
+            {
+                retval.push_back(sp);
+            }
+        }
+        return retval;
+    }
+
     std::vector<std::pair<std::pair<particle_id_type, particle_type>, length_type> >
     list_particles_within_radius(
         const position_type& pos, const length_type& radius) const
@@ -776,7 +788,9 @@ public:
     new_particle(const ecell4::Species& sp, const position_type& pos)
     {
         const species_id_type sid(sp.serial());
-        molecule_info_type const& minfo(get_molecule_info(sid));
+        typename molecule_info_map::const_iterator i(molecule_info_map_.find(sid));
+        molecule_info_type const& minfo(
+            i != molecule_info_map_.end() ? (*i).second : get_molecule_info(sp));
         return new_particle(particle_type(sid, pos, minfo.radius, minfo.D));
     }
 
@@ -893,6 +907,29 @@ public:
 
         molecule_info_type info = {radius, D, structure_id};
         return info;
+    }
+
+    virtual molecule_info_type const& get_molecule_info(species_id_type const& sid)
+    {
+        typename molecule_info_map::const_iterator i(molecule_info_map_.find(sid));
+        if (molecule_info_map_.end() == i)
+        {
+            return this->register_species(sid);
+            // throw not_found(std::string("Unknown species (id=")
+            //     + boost::lexical_cast<std::string>(sid) + ")");
+        }
+        return (*i).second;
+    }
+
+    virtual molecule_info_type const& find_molecule_info(species_id_type const& sid) const
+    {
+        typename molecule_info_map::const_iterator i(molecule_info_map_.find(sid));
+        if (molecule_info_map_.end() == i)
+        {
+            throw not_found(std::string("Unknown species (id=")
+                + boost::lexical_cast<std::string>(sid) + ")");
+        }
+        return (*i).second;
     }
 
 protected:

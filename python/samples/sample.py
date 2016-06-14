@@ -2,8 +2,8 @@ import numpy
 import time
 from ecell4.core import *
 
-# from ecell4.lattice import (
-#     LatticeWorld as world_type, LatticeSimulator as simulator_type)
+# from ecell4.spatiocyte import (
+#     SpatiocyteWorld as world_type, SpatiocyteSimulator as simulator_type)
 from ecell4.gillespie import (
     GillespieWorld as world_type, GillespieSimulator as simulator_type)
 # from ecell4.ode import (
@@ -37,7 +37,7 @@ def singlerun(seed):
     rng = GSLRandomNumberGenerator()
     rng.seed(seed)
 
-    # w = world_type(Real3(L, L, L), voxel_radius, rng) # lattice
+    # w = world_type(Real3(L, L, L), voxel_radius, rng) # spatiocyte
     w = world_type(Real3(L, L, L), rng) # gillespie
     # w = world_type(Real3(L, L, L)) # ode
     w.add_molecules(sp1, N)

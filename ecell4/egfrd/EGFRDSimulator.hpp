@@ -17,6 +17,8 @@
 #include <boost/none_t.hpp>
 #include <boost/variant.hpp>
 
+#include <gsl/gsl_sf_log.h>
+
 #include <ecell4/core/get_mapper_mf.hpp>
 #include <ecell4/core/Model.hpp>
 #include <ecell4/core/EventScheduler.hpp>
@@ -262,7 +264,6 @@ public:
     typedef typename world_type::particle_id_pair_and_distance particle_id_pair_and_distance;
     typedef typename world_type::particle_id_pair_and_distance_list particle_id_pair_and_distance_list;
 
-
     typedef std::pair<const shell_id_type, spherical_shell_type> spherical_shell_id_pair;
     typedef std::pair<const shell_id_type, cylindrical_shell_type> cylindrical_shell_id_pair;
 
@@ -276,6 +277,7 @@ public:
     // typedef typename world_type::traits_type::planar_surface_type planar_surface_type;
     typedef typename world_type::traits_type::cuboidal_region_type cuboidal_region_type;
 
+    typedef typename ReactionRecorderWrapper<reaction_record_type>::reaction_info_type reaction_info_type;
 
     typedef Single<traits_type> single_type;
     typedef Pair<traits_type> pair_type;
@@ -339,6 +341,26 @@ protected:
     typedef typename network_rules_type::reaction_rules reaction_rules;
     typedef typename network_rules_type::reaction_rule_type reaction_rule_type;
     typedef typename traits_type::rate_type rate_type;
+
+    class birth_event: public event_type
+    {
+    public:
+        birth_event(time_type time, const reaction_rule_type& rr)
+            : event_type(time), rr_(rr)
+        {
+            ;
+        }
+
+        virtual ~birth_event() {}
+
+        const reaction_rule_type& reaction_rule() const
+        {
+            return rr_;
+        }
+
+    protected:
+        reaction_rule_type rr_;
+    };
 
     struct domain_event_base: public event_type
     {
@@ -994,6 +1016,30 @@ public:
         std::fill(multi_step_count_.begin(), multi_step_count_.end(), 0);
     }
 
+    EGFRDSimulator(
+        const boost::shared_ptr<world_type>& world,
+        int dissociation_retry_moves = 1, Real bd_dt_factor = 1e-5,
+        length_type user_max_shell_size = std::numeric_limits<length_type>::infinity())
+        : base_type(world),
+          num_retries_(dissociation_retry_moves),
+          bd_dt_factor_(bd_dt_factor),
+          user_max_shell_size_(user_max_shell_size),
+          ssmat_(new spherical_shell_matrix_type((*world).edge_lengths(), (*world).matrix_sizes())),
+          csmat_(new cylindrical_shell_matrix_type((*world).edge_lengths(), (*world).matrix_sizes())),
+          smatm_(boost::fusion::pair<spherical_shell_type,
+                                     spherical_shell_matrix_type*>(ssmat_.get()),
+                 boost::fusion::pair<cylindrical_shell_type,
+                                     cylindrical_shell_matrix_type*>(csmat_.get())),
+          single_shell_factor_(.1),
+          multi_shell_factor_(.05),
+          rejected_moves_(0), zero_step_count_(0), dirty_(true)
+    {
+        std::fill(domain_count_per_type_.begin(), domain_count_per_type_.end(), 0);
+        std::fill(single_step_count_.begin(), single_step_count_.end(), 0);
+        std::fill(pair_step_count_.begin(), pair_step_count_.end(), 0);
+        std::fill(multi_step_count_.begin(), multi_step_count_.end(), 0);
+    }
+
     length_type user_max_shell_size() const
     {
         return user_max_shell_size_;
@@ -1139,8 +1185,34 @@ public:
             boost::shared_ptr<single_type> single(create_single(pp));
             add_event(*single, SINGLE_EVENT_ESCAPE);
         }
+
+        BOOST_FOREACH (reaction_rule_type const& rr,
+                       (*base_type::network_rules_).zeroth_order_reaction_rules())
+        {
+            add_event(rr);
+        }
         dirty_ = false;
     }
+
+    /**
+     * override
+     * HERE
+     */
+
+    virtual Real next_time() const
+    {
+        return scheduler_.next_time();
+    }
+
+    virtual Real dt() const
+    {
+        return scheduler_.next_time() - base_type::t();
+    }
+
+    /**
+     * override
+     * THERE
+     */
 
     virtual void step()
     {
@@ -1159,18 +1231,29 @@ public:
         // first burst all Singles.
         BOOST_FOREACH (event_id_pair_type const& event, scheduler_.events())
         {
-            single_event const* single_ev(
-                    dynamic_cast<single_event const*>(event.second.get()));
-            if (single_ev)
             {
-                burst(single_ev->domain());
+                single_event const* single_ev(
+                        dynamic_cast<single_event const*>(event.second.get()));
+                if (single_ev)
+                {
+                    burst(single_ev->domain());
+                    continue;
+                }
             }
-            else
+            {
+                birth_event const* birth_ev(
+                        dynamic_cast<birth_event const*>(event.second.get()));
+                if (birth_ev)
+                {
+                    continue;
+                }
+            }
             {
                 domain_event_base const* domain_ev(
                     dynamic_cast<domain_event_base const*>(event.second.get()));
                 BOOST_ASSERT(domain_ev);
                 non_singles.push_back(domain_ev->domain().id());
+                // continue;
             }
         }
 
@@ -1193,7 +1276,8 @@ public:
             return false;
         }
 
-        if (upto >= scheduler_.top().second->time())
+        // if (upto >= scheduler_.top().second->time())
+        if (upto >= scheduler_.next_time())
         {
             _step();
             return true;
@@ -1311,7 +1395,12 @@ public:
         return retval;
     }
 
-    virtual std::vector<ecell4::ReactionRule> last_reactions() const
+    virtual bool check_reaction() const
+    {
+        return last_reactions().size() > 0;
+    }
+
+    std::vector<std::pair<ecell4::ReactionRule, reaction_info_type> > last_reactions() const
     {
         return (*dynamic_cast<ReactionRecorderWrapper<reaction_record_type>*>(
             base_type::rrec_.get())).last_reactions();
@@ -1525,6 +1614,17 @@ protected:
             new multi_event(this->t() + domain.dt(), domain));
         domain.event() = std::make_pair(scheduler_.add(new_event), new_event);
         LOG_DEBUG(("add_event: #%d - %s", domain.event().first, boost::lexical_cast<std::string>(domain).c_str()));
+    }
+
+    /**
+     * The following add_event function is for birth_event.
+     */
+    void add_event(reaction_rule_type const& rr)
+    {
+        const double rnd(this->rng().uniform(0, 1));
+        const double dt(gsl_sf_log(1.0 / rnd) / double(rr.k() * (*base_type::world_).volume()));
+        boost::shared_ptr<event_type> new_event(new birth_event(this->t() + dt, rr));
+        scheduler_.add(new_event);
     }
 
     void remove_event(event_id_type const& id)
@@ -2194,8 +2294,10 @@ protected:
             (*base_type::world_).remove_particle(reactant.first);
             if (base_type::rrec_)
             {
+                // (*base_type::rrec_)(reaction_record_type(
+                //     r.id(), array_gen<particle_id_type>(), reactant.first));
                 (*base_type::rrec_)(reaction_record_type(
-                    r.id(), array_gen<particle_id_type>(), reactant.first));
+                    r.id(), array_gen<particle_id_pair>(), reactant));
             }
             break;
         case 1: 
@@ -2226,8 +2328,10 @@ protected:
                 add_event(*new_domain, SINGLE_EVENT_ESCAPE);
                 if (base_type::rrec_)
                 {
+                    // (*base_type::rrec_)(reaction_record_type(
+                    //     r.id(), array_gen(product.first), reactant.first));
                     (*base_type::rrec_)(reaction_record_type(
-                        r.id(), array_gen(product.first), reactant.first));
+                        r.id(), array_gen(product), reactant));
                 }
             }
             break;
@@ -2315,9 +2419,11 @@ protected:
 
                 if (base_type::rrec_)
                 {
+                    // (*base_type::rrec_)(reaction_record_type(
+                    //     r.id(), array_gen(pp[0].first, pp[1].first),
+                    //     reactant.first));
                     (*base_type::rrec_)(reaction_record_type(
-                        r.id(), array_gen(pp[0].first, pp[1].first),
-                        reactant.first));
+                        r.id(), array_gen(pp[0], pp[1]), reactant));
                 }
             }
             break;
@@ -3364,6 +3470,20 @@ protected:
 
                 switch (::size(r.get_products()))
                 {
+                case 0:
+                    {
+                        (*base_type::world_).remove_particle(domain.particles()[0].first);
+                        (*base_type::world_).remove_particle(domain.particles()[1].first);
+                        if (base_type::rrec_)
+                        {
+                            (*base_type::rrec_)(reaction_record_type(
+                                r.id(),
+                                array_gen<particle_id_pair>(),
+                                domain.particles()[0],
+                                domain.particles()[1]));
+                        }
+                    }
+                    break;
                 case 1:
                     {
                         species_id_type const& new_species_id(r.get_products()[0]);
@@ -3396,11 +3516,16 @@ protected:
 
                         if (base_type::rrec_)
                         {
+                            // (*base_type::rrec_)(reaction_record_type(
+                            //     r.id(),
+                            //     array_gen(new_particle.first),
+                            //     domain.particles()[0].first,
+                            //     domain.particles()[1].first));
                             (*base_type::rrec_)(reaction_record_type(
                                 r.id(),
-                                array_gen(new_particle.first),
-                                domain.particles()[0].first,
-                                domain.particles()[1].first));
+                                array_gen(new_particle),
+                                domain.particles()[0],
+                                domain.particles()[1]));
                         }
                     }
                     break;
@@ -3450,6 +3575,55 @@ protected:
         }
     }
 
+    void fire_event(birth_event& event)
+    {
+        const reaction_rule_type& rr(event.reaction_rule());
+        BOOST_ASSERT(::size(rr.get_products()));
+        species_id_type const& sp(rr.get_products()[0]);
+        LOG_DEBUG(("fire_birth: product=%s", boost::lexical_cast<std::string>(sp).c_str()));
+
+        try
+        {
+            molecule_info_type const& minfo(
+                (*base_type::world_).get_molecule_info(sp));
+
+            //XXX: A cuboidal region is expected here.
+            const position_type new_pos(
+                this->rng().uniform(0, (*base_type::world_).edge_lengths()[0]),
+                this->rng().uniform(0, (*base_type::world_).edge_lengths()[1]),
+                this->rng().uniform(0, (*base_type::world_).edge_lengths()[2]));
+
+            const particle_shape_type new_particle(new_pos, minfo.radius);
+
+            clear_volume(new_particle);
+
+            if (!(*base_type::world_).no_overlap(new_particle))
+            {
+                LOG_INFO(("no space for product particle."));
+                throw no_space();
+            }
+
+            particle_id_pair pp(
+                (*base_type::world_).new_particle(sp, new_pos));
+
+            if (base_type::rrec_)
+            {
+                (*base_type::rrec_)(
+                    reaction_record_type(rr.id(), array_gen(pp)));
+            }
+
+            boost::shared_ptr<single_type> single(create_single(pp));
+            add_event(*single, SINGLE_EVENT_ESCAPE);
+        }
+        catch (no_space const&)
+        {
+            LOG_DEBUG(("birth reaction rejected."));
+            ++rejected_moves_;
+        }
+
+        add_event(rr);
+    }
+
     void fire_event(event_type& event)
     {
         {
@@ -3476,6 +3650,14 @@ protected:
                 return;
             }
         }
+        {
+            birth_event* _event(dynamic_cast<birth_event*>(&event));
+            if (_event)
+            {
+                fire_event(*_event);
+                return;
+            }
+        }
         throw not_implemented(std::string("unsupported domain type"));
     }
 
@@ -3488,6 +3670,12 @@ protected:
 
         (*dynamic_cast<ReactionRecorderWrapper<reaction_record_type>*>(
             base_type::rrec_.get())).clear();
+
+        if (scheduler_.size() == 0)
+        {
+            this->set_t(scheduler_.next_time());
+            return;
+        }
 
         event_id_pair_type ev(scheduler_.pop());
         this->set_t(ev.second->time());

@@ -29,12 +29,11 @@ public:
     typedef Model base_type;
     typedef base_type::species_container_type species_container_type;
     typedef base_type::reaction_rule_container_type reaction_rule_container_type;
-    typedef base_type::parameter_container_type parameter_container_type;
 
 public:
 
     NetfreeModel()
-        : base_type(), species_attributes_(), reaction_rules_()
+        : base_type(), species_attributes_(), reaction_rules_(), effective_(false)
     {
         ;
     }
@@ -49,6 +48,15 @@ public:
     std::vector<ReactionRule> query_reaction_rules(const Species& sp) const;
     std::vector<ReactionRule> query_reaction_rules(
         const Species& sp1, const Species& sp2) const;
+
+    std::vector<ReactionRule> query_reaction_rules(
+        const std::vector<Species>& splist, const std::vector<Species>::size_type n) const;
+
+    inline std::vector<ReactionRule> query_reaction_rules(
+        const std::vector<Species>& reactants) const
+    {
+        return this->query_reaction_rules(reactants, reactants.size());
+    }
 
     Integer apply(const Species& pttrn, const Species& sp) const;
     std::vector<ReactionRule> apply(
@@ -100,49 +108,22 @@ public:
         const std::vector<Species>& sp, const Integer max_itr) const;
     boost::shared_ptr<Model> expand(const std::vector<Species>& sp) const;
 
-    bool has_parameter(const Species::serial_type& name) const
+    void set_effective(const bool effective)
     {
-        parameter_container_type::const_iterator i(
-            std::find(parameters_.begin(), parameters_.end(), Species(name)));
-        return (i != parameters_.end());
+        effective_ = effective;
     }
 
-    const Species& get_parameter(const Species::serial_type& name) const
+    const bool effective() const
     {
-        parameter_container_type::const_iterator i(
-            std::find(parameters_.begin(), parameters_.end(), Species(name)));
-        if (i != parameters_.end())
-        {
-            return (*i);
-        }
-
-        throw NotFound("Parameter not found.");
-    }
-
-    void add_parameter(const Species& sp)
-    {
-        parameter_container_type::iterator i(
-            std::find(parameters_.begin(), parameters_.end(), sp));
-        if (i != parameters_.end())
-        {
-            (*i).overwrite_attributes(sp);
-        }
-        else
-        {
-            parameters_.push_back(sp);
-        }
-    }
-
-    const parameter_container_type& parameters() const
-    {
-        return parameters_;
+        return effective_;
     }
 
 protected:
 
     species_container_type species_attributes_;
     reaction_rule_container_type reaction_rules_;
-    parameter_container_type parameters_;
+
+    bool effective_;
 };
 
 namespace extras

@@ -50,9 +50,11 @@ void SubvolumeSpace_test_num_molecules_template()
     const Species sp1("A"), sp2("B");
     BOOST_CHECK_EQUAL(target.num_molecules_exact(sp1, 0), 0);
     BOOST_CHECK_EQUAL(target.num_molecules_exact(sp1, 23), 0);
+    target.reserve_pool(sp1, 0.0, "");
     target.add_molecules(sp1, 60, 0);
     target.remove_molecules(sp1, 30, 0);
     target.add_molecules(sp1, 60, 23);
+    target.reserve_pool(sp2, 0.0, "");
     target.add_molecules(sp2, 60, 23);
     BOOST_CHECK_EQUAL(target.num_molecules_exact(sp1, 0), 30);
     BOOST_CHECK_EQUAL(target.num_molecules_exact(sp2, 0), 0);

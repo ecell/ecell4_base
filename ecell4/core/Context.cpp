@@ -17,13 +17,13 @@ bool is_unnamed_wildcard(const std::string& name)
 
 bool is_named_wildcard(const std::string& name)
 {
-    return (name.size() > 1 && name[0] == '_');
+    return (name.size() > 1 && name[0] == '_' && !is_pass_wildcard(name));
 }
 
-// bool is_freebond(const std::string& name)
-// {
-//     return name == "_free";
-// }
+bool is_pass_wildcard(const std::string& name)
+{
+    return name == "_0";
+}
 
 std::pair<bool, MatchObject::context_type> uspmatch(
     const UnitSpecies& pttrn, const UnitSpecies& usp,
@@ -35,7 +35,12 @@ std::pair<bool, MatchObject::context_type> uspmatch(
 
     if (is_wildcard(pttrn.name()))
     {
-        if (is_named_wildcard(pttrn.name()))
+        if (is_pass_wildcard(pttrn.name()))
+        {
+            throw NotSupported(
+                "A pass wildcard '_0' is not allowed to be a name of Species.");
+        }
+        else if (is_named_wildcard(pttrn.name()))
         {
             MatchObject::context_type::variable_container_type::const_iterator
                 itr(ctx.globals.find(pttrn.name()));
@@ -67,6 +72,11 @@ std::pair<bool, MatchObject::context_type> uspmatch(
                 {
                     return retval;
                 }
+                else if (is_pass_wildcard((*j).second.first))
+                {
+                    throw NotSupported(
+                        "A pass wildcard '_0' is not allowed to be a state.");
+                }
                 else if (is_unnamed_wildcard((*j).second.first))
                 {
                     ; // do nothing
@@ -90,12 +100,11 @@ std::pair<bool, MatchObject::context_type> uspmatch(
                 }
             }
 
-            // if (is_freebond((*j).second.second))
-            // {
-            //     ; // just skip checking
-            // }
-            // else
-            if ((*j).second.second == "")
+            if (is_pass_wildcard((*j).second.second))
+            {
+                ; // just skip checking
+            }
+            else if ((*j).second.second == "")
             {
                 if (site.second != "")
                 {
@@ -230,30 +239,6 @@ std::pair<bool, MatchObject::context_type> __rrmatch(
     return std::make_pair(false, MatchObject::context_type());
 }
 
-bool rrmatch(const ReactionRule& rr,
-    const ReactionRule::reactant_container_type& reactants)
-{
-
-    ReactionRuleExpressionMatcher rrexp(rr);
-    return rrexp.match(reactants);
-}
-
-Integer count_rrmatches(const ReactionRule& rr,
-    const ReactionRule::reactant_container_type& reactants)
-{
-    ReactionRuleExpressionMatcher rrexp(rr);
-    if (!rrexp.match(reactants))
-    {
-        return 0;
-    }
-    Integer n(1);
-    while (rrexp.next())
-    {
-        ++n;
-    }
-    return n;
-}
-
 bool is_correspondent(const UnitSpecies& usp1, const UnitSpecies& usp2)
 {
     if (usp1.name() != usp2.name() || usp1.num_sites() != usp2.num_sites())
@@ -282,7 +267,7 @@ std::string itos(unsigned int val)
     return ss.str();
 }
 
-unsigned int __group_units(
+unsigned int __tag_units(
     std::vector<unsigned int>& retval,
     const unsigned int& group_id, const unsigned int& idx,
     const std::vector<UnitSpecies>& units,
@@ -290,7 +275,7 @@ unsigned int __group_units(
 {
     if (retval[idx] != units.size())
     {
-        // assert(retval[idx] == group_id);
+        // assert(retval[idx] < group_id);
         return group_id;
     }
 
@@ -298,53 +283,16 @@ unsigned int __group_units(
     for (std::vector<std::vector<UnitSpecies>::size_type>::const_iterator
         i(adj[idx].begin()); i != adj[idx].end(); ++i)
     {
-        __group_units(retval, group_id, *i, units, adj);
+        __tag_units(retval, group_id, *i, units, adj);
     }
 
     return group_id + 1;
 }
 
-std::pair<std::vector<unsigned int>, unsigned int> group_units(
-    const std::vector<UnitSpecies>& units)
+std::pair<std::vector<unsigned int>, unsigned int> tag_units(
+    const std::vector<UnitSpecies>& units,
+    const std::vector<std::vector<std::vector<UnitSpecies>::size_type> >& adj)
 {
-    utils::get_mapper_mf<std::string, unsigned int>::type tmp;
-    std::vector<std::vector<std::vector<UnitSpecies>::size_type> > adj;
-    adj.resize(units.size());
-
-    for (std::vector<UnitSpecies>::const_iterator i(units.begin());
-        i != units.end(); ++i)
-    {
-        const unsigned int idx(std::distance(units.begin(), i));
-
-        for (UnitSpecies::container_type::const_iterator j((*i).begin());
-            j != (*i).end(); ++j)
-        {
-            const std::string bond((*j).second.second);
-            if (bond == "" || is_wildcard(bond))
-            {
-                continue;
-            }
-
-            utils::get_mapper_mf<std::string, unsigned int>::type::iterator
-                itr(tmp.find(bond));
-            if (itr == tmp.end())
-            {
-                tmp[bond] = idx;
-            }
-            else
-            {
-                if (tmp[bond] == units.size())
-                {
-                    ; //WARN: a duplicated bond found
-                }
-
-                adj[idx].push_back((*itr).second);
-                adj[(*itr).second].push_back(idx);
-                tmp[bond] = units.size();
-            }
-        }
-    }
-
     std::pair<std::vector<unsigned int>, unsigned int> retval;
     retval.first.resize(units.size(), units.size());
     retval.second = 0;
@@ -358,7 +306,7 @@ std::pair<std::vector<unsigned int>, unsigned int> group_units(
         // }
         // std::cout << std::endl;
 
-        retval.second = __group_units(
+        retval.second = __tag_units(
             retval.first, retval.second, idx, units, adj);
     }
 
@@ -419,6 +367,175 @@ void check_correspondences(
     }
 }
 
+int concatenate_units(std::vector<UnitSpecies>& units, const Species& sp, const int bond_stride)
+{
+    units.reserve(units.size() + sp.num_units());
+
+    int bond_ministride = 0;
+    for (Species::container_type::const_iterator j(sp.begin());
+        j != sp.end(); ++j)
+    {
+        units.push_back(*j);
+
+        for (UnitSpecies::container_type::const_iterator
+            k((*j).begin()); k != (*j).end(); ++k)
+        {
+            const std::string& bond((*k).second.second);
+            if (bond != "" && !is_wildcard(bond))
+            {
+                const int bondi = atoi(bond.c_str());
+                // assert(bondi > 0);
+                const std::string newbond = itos(bondi + bond_stride);
+                units.back().at(std::distance((*j).begin(), k)).second.second = newbond;
+                bond_ministride = std::max(bond_ministride, bondi);
+            }
+        }
+    }
+    return bond_ministride;
+}
+
+std::vector<Species> group_units(
+    const std::vector<UnitSpecies>& units, const ReactionRule::policy_type& policy)
+{
+    const unsigned int maxidx = units.size();
+    utils::get_mapper_mf<std::string, std::pair<std::string, unsigned int> >::type tmp;
+    std::vector<std::vector<std::vector<UnitSpecies>::size_type> > adj;
+    adj.resize(maxidx);
+
+    for (std::vector<UnitSpecies>::const_iterator i(units.begin());
+        i != units.end(); ++i)
+    {
+        const unsigned int idx(std::distance(units.begin(), i));
+
+        for (UnitSpecies::container_type::const_iterator j((*i).begin());
+            j != (*i).end(); ++j)
+        {
+            const std::string bond((*j).second.second);
+            if (bond == "" || is_wildcard(bond))
+            {
+                continue;
+            }
+
+            utils::get_mapper_mf<std::string, std::pair<std::string, unsigned int> >::type::iterator
+                itr(tmp.find(bond));
+            if (itr == tmp.end())
+            {
+                tmp[bond] = std::make_pair((*j).first, idx);
+            }
+            else
+            {
+                if (tmp[bond].second == maxidx)
+                {
+                    ; //WARN: a duplicated bond found
+                }
+
+                adj[idx].push_back((*itr).second.second);
+                adj[(*itr).second.second].push_back(idx);
+                tmp[bond].second = units.size();  // This means the bond is already assigned.
+            }
+        }
+    }
+
+    if ((policy & ReactionRule::STRICT) && !(policy & (ReactionRule::DESTROY | ReactionRule::IMPLICIT)))
+    {
+        for (utils::get_mapper_mf<std::string, std::pair<std::string, unsigned int> >::type::const_iterator
+            i(tmp.begin()); i != tmp.end(); ++i)
+        {
+            if ((*i).second.second != maxidx)
+            {
+                throw IllegalState("A bond is not resolved.");
+            }
+        }
+    }
+
+    std::pair<std::vector<unsigned int>, unsigned int>
+        group_ids_pair(tag_units(units, adj));
+
+    std::vector<Species> products;
+    products.resize(group_ids_pair.second);
+    // for (std::vector<UnitSpecies>::iterator i(units.begin());
+    //     i != units.end(); ++i)
+    // {
+    //     products[group_ids_pair.first[std::distance(units.begin(), i)]].add_unit(*i);
+    // }
+    for (unsigned int idx(0); idx != group_ids_pair.second; ++idx)
+    {
+        utils::get_mapper_mf<std::string, std::string>::type new_bonds;
+        unsigned int stride(1);
+
+        for (std::vector<unsigned int>::iterator
+            i(group_ids_pair.first.begin()); i != group_ids_pair.first.end(); ++i)
+        {
+            if (idx != *i)
+            {
+                continue;
+            }
+
+            UnitSpecies usp(
+                units[std::distance(group_ids_pair.first.begin(), i)]); //XXX: copy
+            for (UnitSpecies::container_type::size_type j(0);
+                j != usp.num_sites(); ++j)
+            {
+                UnitSpecies::container_type::value_type&
+                    site(usp.at(j));
+                const std::string bond(site.second.second);
+                if (bond == "" || is_wildcard(bond))
+                {
+                    continue;
+                }
+
+                if ((policy & ReactionRule::IMPLICIT) && tmp[bond].second != maxidx)
+                {
+                    site.second.second = "";
+                }
+                else
+                {
+                    utils::get_mapper_mf<std::string, std::string>::type::const_iterator
+                        itr(new_bonds.find(bond));
+                    if (itr == new_bonds.end())
+                    {
+                        const std::string new_bond(itos(stride));
+                        ++stride;
+                        new_bonds[bond] = new_bond;
+                        site.second.second = new_bond;
+                    }
+                    else
+                    {
+                        site.second.second = (*itr).second;
+                    }
+                }
+            }
+
+            products[idx].add_unit(usp);
+        }
+
+        // products[idx] = format_species(products[idx]);
+    }
+
+    if (policy & ReactionRule::DESTROY)
+    {
+        std::vector<unsigned int> removed;
+        for (utils::get_mapper_mf<std::string, std::pair<std::string, unsigned int> >::type::const_iterator
+            i(tmp.begin()); i != tmp.end(); ++i)
+        {
+            if ((*i).second.second != maxidx)
+            {
+                removed.push_back(group_ids_pair.first[(*i).second.second]);
+            }
+        }
+        std::sort(removed.begin(), removed.end());
+        removed.erase(std::unique(removed.begin(), removed.end()), removed.end());
+
+        for (std::vector<unsigned int>::const_reverse_iterator
+            i(removed.rbegin()); i != removed.rend(); ++i)
+        {
+            products.erase(products.begin() + *i);
+        }
+    }
+
+    return products;
+}
+
 std::vector<Species> ReactionRuleExpressionMatcher::generate()
 {
     if (itr_ != matchers_.end())
@@ -451,34 +568,18 @@ std::vector<Species> ReactionRuleExpressionMatcher::generate()
     std::vector<std::vector<UnitSpecies>::size_type> correspo, removed;
     check_correspondences(reactant_units, product_units, correspo, removed);
 
-    int bond_stride1(0), bond_stride2(0);
+    int bond_stride = 0;
     std::vector<UnitSpecies> units;
-    for (ReactionRule::reactant_container_type::const_iterator
-        i(target_.begin()); i != target_.end(); ++i)
+    // for (ReactionRule::reactant_container_type::const_iterator
+    //     i(target_.begin()); i != target_.end(); ++i)
+    // {
+    //     bond_stride += concatenate_units(units, *i, bond_stride);
+    // }
+    for (std::vector<reactant_container_type::size_type>::const_iterator
+        i(permutation_.begin()); i != permutation_.end(); ++i)
     {
-        units.reserve(units.size() + (*i).num_units());
-        // std::copy((*i).begin(), (*i).end(), std::back_inserter(units));
-
-        for (Species::container_type::const_iterator j((*i).begin());
-            j != (*i).end(); ++j)
-        {
-            units.push_back(*j);
-            for (UnitSpecies::container_type::const_iterator
-                k((*j).begin()); k != (*j).end(); ++k)
-            {
-                const std::string bond((*k).second.second);
-                if (bond != "" && !is_wildcard(bond))
-                {
-                    units.back().at(std::distance((*j).begin(), k)).second.second = itos(atoi(bond.c_str()) + bond_stride1);
-                    bond_stride2 = std::max(bond_stride2, atoi(bond.c_str()));
-                }
-            }
-        }
-
-        bond_stride1 += bond_stride2;
-        bond_stride2 = 0;
+        bond_stride += concatenate_units(units, target_[*i], bond_stride);
     }
-
     // for (context_type::iterator_container_type::const_iterator
     //     i(ctx.iterators.begin()); i != ctx.iterators.end(); ++i)
     // {
@@ -561,6 +662,7 @@ std::vector<Species> ReactionRuleExpressionMatcher::generate()
                 if ((*i).second.second.size() != 1)
                 {
                     ; //XXX: no named wildcard is allowed here
+                    ; //XXX: how about the pass wildcard?
                 }
 
                 ; // do nothing
@@ -574,7 +676,8 @@ std::vector<Species> ReactionRuleExpressionMatcher::generate()
                     stride += (*j).num_units();
                     if (stride > idx1)
                     {
-                        label = atoi((*i).second.second.c_str()) * pttrn_.products().size() + std::distance(pttrn_.products().begin(), j);
+                        label = atoi((*i).second.second.c_str()) * pttrn_.products().size()
+                            + std::distance(pttrn_.products().begin(), j);
                         break;
                     }
                 }
@@ -587,8 +690,8 @@ std::vector<Species> ReactionRuleExpressionMatcher::generate()
                 }
                 else
                 {
-                    ++bond_stride1;
-                    site.second.second = itos(bond_stride1);
+                    ++bond_stride;
+                    site.second.second = itos(bond_stride);
                     bond_cache[label] = site.second.second;
                 }
             }
@@ -598,70 +701,20 @@ std::vector<Species> ReactionRuleExpressionMatcher::generate()
     }
 
     std::vector<std::vector<UnitSpecies>::size_type> removed_new;
-    for (std::vector<std::vector<UnitSpecies>::size_type>::const_iterator i(removed.begin()); i != removed.end(); ++i)
+    for (std::vector<std::vector<UnitSpecies>::size_type>::const_iterator
+        i(removed.begin()); i != removed.end(); ++i)
     {
         removed_new.push_back(ctx.iterators[(*i)]);
     }
     std::sort(removed_new.begin(), removed_new.end());
-    for (std::vector<std::vector<UnitSpecies>::size_type>::const_reverse_iterator i(removed_new.rbegin()); i != removed_new.rend(); ++i)
+
+    for (std::vector<std::vector<UnitSpecies>::size_type>::const_reverse_iterator
+        i(removed_new.rbegin()); i != removed_new.rend(); ++i)
     {
         units.erase(units.begin() + *i);
     }
 
-    std::pair<std::vector<unsigned int>, unsigned int>
-        group_ids_pair(group_units(units));
-    std::vector<Species> products;
-    products.resize(group_ids_pair.second);
-    // for (std::vector<UnitSpecies>::iterator i(units.begin());
-    //     i != units.end(); ++i)
-    // {
-    //     products[group_ids_pair.first[std::distance(units.begin(), i)]].add_unit(*i);
-    // }
-    for (unsigned int idx(0); idx != group_ids_pair.second; ++idx)
-    {
-        utils::get_mapper_mf<std::string, std::string>::type new_bonds;
-        unsigned int stride(1);
-
-        for (std::vector<unsigned int>::iterator
-            i(group_ids_pair.first.begin()); i != group_ids_pair.first.end(); ++i)
-        {
-            if (idx != *i)
-            {
-                continue;
-            }
-
-            UnitSpecies& usp(
-                units[std::distance(group_ids_pair.first.begin(), i)]);
-            for (UnitSpecies::container_type::size_type j(0);
-                j != usp.num_sites(); ++j)
-            {
-                UnitSpecies::container_type::value_type&
-                    site(usp.at(j));
-                const std::string bond(site.second.second);
-                if (bond == "" || is_wildcard(bond))
-                {
-                    continue;
-                }
-                utils::get_mapper_mf<std::string, std::string>::type::const_iterator itr(new_bonds.find(bond));
-                if (itr == new_bonds.end())
-                {
-                    const std::string new_bond(itos(stride));
-                    ++stride;
-                    new_bonds[bond] = new_bond;
-                    site.second.second = new_bond;
-                }
-                else
-                {
-                    site.second.second = (*itr).second;
-                }
-            }
-
-            products[idx].add_unit(usp);
-        }
-
-        products[idx] = format_species(products[idx]);
-    }
-
+    return group_units(units, pttrn_.policy());
     // std::cout << std::endl << "before: ";
     // for (ReactionRule::reactant_container_type::const_iterator i(target_.begin());
     //     i != target_.end(); ++i)
@@ -690,26 +743,7 @@ std::vector<Species> ReactionRuleExpressionMatcher::generate()
     //     std::cout << (*i).serial() << ", ";
     // }
     // std::cout << std::endl;
-    return products;
-}
-
-std::vector<std::vector<Species> > rrgenerate(const ReactionRule& rr,
-    const ReactionRule::reactant_container_type& reactants)
-{
-    std::vector<std::vector<Species> > retval;
-    ReactionRuleExpressionMatcher rrexp(rr);
-
-    if (!rrexp.match(reactants))
-    {
-        return retval;
-    }
-
-    do
-    {
-        retval.push_back(rrexp.generate());
-    }
-    while (rrexp.next());
-    return retval;
+    // return products;
 }
 
 std::pair<bool, MatchObject::context_type> MatchObject::next()
@@ -736,5 +770,18 @@ std::pair<bool, MatchObject::context_type> MatchObject::next()
     }
     return std::make_pair(false, MatchObject::context_type());
 }
+
+// ReactionRule create_reaction_rule_formatted(
+//     const ReactionRule::reactant_container_type& reactants,
+//     const ReactionRule::product_container_type& products, const Real k)
+// {
+//     ReactionRule rr(reactants, ReactionRule::product_container_type(), k);
+//     for (ReactionRule::product_container_type::const_iterator i(products.begin());
+//         i != products.end(); ++i)
+//     {
+//         rr.add_product(format_species(*i));
+//     }
+//     return rr;
+// }
 
 } // ecell4

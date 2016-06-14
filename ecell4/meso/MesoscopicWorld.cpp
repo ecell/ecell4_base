@@ -83,10 +83,10 @@ std::vector<std::pair<ParticleID, Particle> >
     for (std::vector<Species>::const_iterator i(species_list.begin());
         i != species_list.end(); ++i)
     {
-        MoleculeInfo info(get_molecule_info(*i));
+        const boost::shared_ptr<PoolBase>& pool = get_pool(*i);
         for (coordinate_type j(0); j < num_subvolumes(); ++j)
         {
-            const Integer num(num_molecules_exact(*i, j));
+            const Integer num(pool->num_molecules(j));
             const Integer3 g(coord2global(j));
 
             for (Integer k(0); k < num; ++k)
@@ -96,7 +96,7 @@ std::vector<std::pair<ParticleID, Particle> >
                     rng_->uniform(g.row * lengths[1], (g.row + 1) * lengths[1]),
                     rng_->uniform(g.layer * lengths[2], (g.layer + 1) * lengths[2]));
                 retval.push_back(
-                    std::make_pair(pidgen(), Particle(*i, pos, 0.0, info.D)));
+                    std::make_pair(pidgen(), Particle(*i, pos, 0.0, pool->D())));
             }
         }
     }
@@ -110,20 +110,23 @@ std::vector<std::pair<ParticleID, Particle> >
     const Real3 lengths(subvolume_edge_lengths());
 
     std::vector<std::pair<ParticleID, Particle> > retval;
-    MoleculeInfo info(get_molecule_info(sp));
-    for (coordinate_type j(0); j < num_subvolumes(); ++j)
+    if (has_species(sp))
     {
-        const Integer num(num_molecules_exact(sp, j));
-        const Integer3 g(coord2global(j));
-
-        for (Integer k(0); k < num; ++k)
+        const boost::shared_ptr<PoolBase>& pool = get_pool(sp);
+        for (coordinate_type j(0); j < num_subvolumes(); ++j)
         {
-            const Real3 pos(
-                rng_->uniform(g.col * lengths[0], (g.col + 1) * lengths[0]),
-                rng_->uniform(g.row * lengths[1], (g.row + 1) * lengths[1]),
-                rng_->uniform(g.layer * lengths[2], (g.layer + 1) * lengths[2]));
-            retval.push_back(
-                std::make_pair(pidgen(), Particle(sp, pos, 0.0, info.D)));
+            const Integer num(pool->num_molecules(j));
+            const Integer3 g(coord2global(j));
+
+            for (Integer k(0); k < num; ++k)
+            {
+                const Real3 pos(
+                    rng_->uniform(g.col * lengths[0], (g.col + 1) * lengths[0]),
+                    rng_->uniform(g.row * lengths[1], (g.row + 1) * lengths[1]),
+                    rng_->uniform(g.layer * lengths[2], (g.layer + 1) * lengths[2]));
+                retval.push_back(
+                    std::make_pair(pidgen(), Particle(sp, pos, 0.0, pool->D())));
+            }
         }
     }
     return retval;
@@ -162,10 +165,10 @@ std::vector<std::pair<ParticleID, Particle> >
             continue;
         }
 
-        MoleculeInfo info(get_molecule_info(*i));
+        const boost::shared_ptr<PoolBase>& pool = get_pool(*i);
         for (coordinate_type j(0); j < num_subvolumes(); ++j)
         {
-            const Integer num(coef * num_molecules_exact(*i, j));
+            const Integer num(coef * pool->num_molecules(j));
             const Integer3 g(coord2global(j));
 
             for (Integer k(0); k < num; ++k)
@@ -175,7 +178,7 @@ std::vector<std::pair<ParticleID, Particle> >
                     rng_->uniform(g.row * lengths[1], (g.row + 1) * lengths[1]),
                     rng_->uniform(g.layer * lengths[2], (g.layer + 1) * lengths[2]));
                 retval.push_back(
-                    std::make_pair(pidgen(), Particle(*i, pos, 0.0, info.D)));
+                    std::make_pair(pidgen(), Particle(*i, pos, 0.0, pool->D())));
             }
         }
     }
@@ -192,7 +195,7 @@ const Real3 MesoscopicWorld::subvolume_edge_lengths() const
     return cs_->subvolume_edge_lengths();
 }
 
-const Real& MesoscopicWorld::t() const
+const Real MesoscopicWorld::t() const
 {
     return cs_->t();
 }
@@ -200,6 +203,20 @@ const Real& MesoscopicWorld::t() const
 void MesoscopicWorld::set_t(const Real& t)
 {
     cs_->set_t(t);
+}
+
+void MesoscopicWorld::set_value(const Species& sp, const Real value)
+{
+    const Integer num1 = static_cast<Integer>(value);
+    const Integer num2 = num_molecules_exact(sp);
+    if (num1 > num2)
+    {
+        add_molecules(sp, num1 - num2);
+    }
+    else if (num1 < num2)
+    {
+        remove_molecules(sp, num2 - num1);
+    }
 }
 
 Real MesoscopicWorld::get_value(const Species& sp) const
@@ -242,6 +259,11 @@ Integer3 MesoscopicWorld::position2global(const Real3& pos) const
     return cs_->position2global(pos);
 }
 
+Integer MesoscopicWorld::position2coordinate(const Real3& pos) const
+{
+    return cs_->position2coordinate(pos);
+}
+
 Integer MesoscopicWorld::num_molecules(const Species& sp) const
 {
     return cs_->num_molecules(sp);
@@ -267,6 +289,10 @@ Integer MesoscopicWorld::num_molecules_exact(
 void MesoscopicWorld::add_molecules(
     const Species& sp, const Integer& num, const MesoscopicWorld::coordinate_type& c)
 {
+    if (!cs_->has_species(sp))
+    {
+        this->reserve_pool(sp);
+    }
     cs_->add_molecules(sp, num, c);
 }
 
@@ -274,6 +300,18 @@ void MesoscopicWorld::remove_molecules(
     const Species& sp, const Integer& num, const MesoscopicWorld::coordinate_type& c)
 {
     cs_->remove_molecules(sp, num, c);
+}
+
+std::vector<MesoscopicWorld::coordinate_type>
+MesoscopicWorld::list_coordinates(const Species& sp) const
+{
+    return cs_->list_coordinates(sp);  // std::move?
+}
+
+std::vector<MesoscopicWorld::coordinate_type>
+MesoscopicWorld::list_coordinates_exact(const Species& sp) const
+{
+    return cs_->list_coordinates_exact(sp);  // std::move?
 }
 
 const std::vector<Species>& MesoscopicWorld::species() const
@@ -295,13 +333,14 @@ void MesoscopicWorld::add_structure(
 bool MesoscopicWorld::on_structure(
     const Species& sp, const coordinate_type& coord) const
 {
-    const molecule_info_type minfo(get_molecule_info(sp));
-    if (minfo.loc == "")
+    if (has_species(sp))
     {
-        return true;
+        const boost::shared_ptr<PoolBase>& pool = get_pool(sp);
+        return (pool->loc() == "" || cs_->check_structure(pool->loc(), coord));
     }
-    // return cs_->check_structure(Species(minfo.loc), coord);
-    return cs_->check_structure(minfo.loc, coord);
+
+    const molecule_info_type minfo(get_molecule_info(sp));
+    return (minfo.loc == "" || cs_->check_structure(minfo.loc, coord));
 }
 
 Real MesoscopicWorld::get_volume(const Species& sp) const

@@ -1,0 +1,18 @@
+include setup.py
+include MANIFEST.in
+
+graft lib
+graft src
+
+global-exclude *.so
+global-exclude *.pyc
+global-exclude *.pyo
+global-exclude *~
+global-exclude *.swp
+global-exclude \#*
+global-exclude .git*
+global-exclude .DS_Store
+global-exclude *.cmake
+global-exclude Makefile
+global-exclude CMakeFiles
+

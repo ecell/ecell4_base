@@ -5,7 +5,12 @@ cdef class Observer:
 
     Warning: This is mainly for developers.
     Do not use this for your simulation.
+
     """
+
+    def __init__(self):
+        """Constructor."""
+        pass
 
     def __cinit__(self):
         self.thisptr = new shared_ptr[Cpp_Observer](
@@ -36,10 +41,13 @@ cdef class FixedIntervalNumberObserver:
     def __init__(self, Real dt, species):
         """Constructor.
 
-        Args:
-            dt (float): A step interval for logging.
-            species (list): A list of strings, but not of ``Species``.
-              The strings suggest serials of ``Species`` to be observed.
+        Parameters
+        ----------
+        dt : float
+            A step interval for logging.
+        species : list
+            A list of strings, but not of ``Species``.
+            The strings suggest serials of ``Species`` to be observed.
 
         """
         pass  # XXX: Only used for doc string
@@ -65,8 +73,10 @@ cdef class FixedIntervalNumberObserver:
     def data(self):
         """Return a list of the number of molecules you specified.
 
-        Returns:
-          list: A list of lists of the numbers of molecules.
+        Returns
+        -------
+        list:
+            A list of lists of the numbers of molecules.
             The size of a return value is equal to ``num_steps``.
             Each element of a return value is a list consisting of
             time and the number of molecules specified at the construction.
@@ -83,8 +93,10 @@ cdef class FixedIntervalNumberObserver:
     def targets(self):
         """Return a list of ``Species``, which this ``Observer`` observes
 
-        Returns:
-          list: A list of ``Species``. This is generated from arguments
+        Returns
+        -------
+        list:
+            A list of ``Species``. This is generated from arguments
             you gave at the construction.
 
         """
@@ -98,6 +110,10 @@ cdef class FixedIntervalNumberObserver:
                      <Cpp_Species*>(address(deref(it)))))
             inc(it)
         return retval
+
+    def save(self, filename):
+        """Save data to an output with the given filename."""
+        self.thisptr.get().save(tostring(filename))
 
     def as_base(self):
         """Clone self as a base class. This function is for developers."""
@@ -124,9 +140,11 @@ cdef class NumberObserver:
     def __init__(self, species):
         """Constructor.
 
-        Args:
-            species (list): A list of strings, but not of ``Species``.
-              The strings suggest serials of ``Species`` to be observed.
+        Parameters
+        ----------
+        species : list
+            A list of strings, but not of ``Species``.
+            The strings suggest serials of ``Species`` to be observed.
 
         """
         pass  # XXX: Only used for doc string
@@ -152,8 +170,10 @@ cdef class NumberObserver:
     def data(self):
         """Return a list of the numbers of molecules you specified.
 
-        Returns:
-          list: A list of lists of the number of molecules.
+        Returns
+        -------
+        list:
+            A list of lists of the number of molecules.
             The size of a return value is equal to ``num_steps``.
             Each element of a return value is a list consisting of
             time and the number of molecules specified at the construction.
@@ -170,8 +190,10 @@ cdef class NumberObserver:
     def targets(self):
         """Return a list of ``Species``, which this ``Observer`` observes
 
-        Returns:
-          list: A list of ``Species``. This is generated from arguments
+        Returns
+        -------
+        list:
+            A list of ``Species``. This is generated from arguments
             you gave at the construction.
 
         """
@@ -185,6 +207,10 @@ cdef class NumberObserver:
                      <Cpp_Species*>(address(deref(it)))))
             inc(it)
         return retval
+
+    def save(self, filename):
+        """Save data to an output with the given filename."""
+        self.thisptr.get().save(tostring(filename))
 
     def as_base(self):
         """Clone self as a base class. This function is for developers."""
@@ -209,11 +235,14 @@ cdef class TimingNumberObserver:
     def __init__(self, vector[double] t, species):  #XXX: vector[Real]
         """Constructor.
 
-        Args:
-            t (list): A list of times for logging. A time prior to the current
-              time will be ignored.
-            species (list): A list of strings, but not of ``Species``.
-              The strings suggest serials of ``Species`` to be observed.
+        Parameters
+        ----------
+        t : list
+            A list of times for logging. A time prior to the current
+            time will be ignored.
+        species : list
+            A list of strings, but not of ``Species``.
+            The strings suggest serials of ``Species`` to be observed.
 
         """
         pass  # XXX: Only used for doc string
@@ -239,8 +268,10 @@ cdef class TimingNumberObserver:
     def data(self):
         """Return a list of the numbers of molecules you specified.
 
-        Returns:
-          list: A list of lists of the number of molecules.
+        Returns
+        -------
+        list:
+            A list of lists of the number of molecules.
             The size of a return value is equal to ``num_steps``.
             Each element of a return value is a list consisting of
             time and the number of molecules specified at the construction.
@@ -257,8 +288,10 @@ cdef class TimingNumberObserver:
     def targets(self):
         """Return a list of ``Species``, which this ``Observer`` observes
 
-        Returns:
-          list: A list of ``Species``. This is generated from arguments
+        Returns
+        -------
+        list:
+            A list of ``Species``. This is generated from arguments
             you gave at the construction.
 
         """
@@ -272,6 +305,10 @@ cdef class TimingNumberObserver:
                      <Cpp_Species*>(address(deref(it)))))
             inc(it)
         return retval
+
+    def save(self, filename):
+        """Save data to an output with the given filename."""
+        self.thisptr.get().save(tostring(filename))
 
     def as_base(self):
         """Clone self as a base class. This function is for developers."""
@@ -298,14 +335,17 @@ cdef class FixedIntervalHDF5Observer:
     def __init__(self, Real dt, filename):
         """Constructor.
 
-        Args:
-            dt (float): A step interval for logging.
-            filename (str): A file name to be saved. Data are saved in
-              HDF5 format. The extension name is recommended to be `.h5`.
-              The file name can contain at most one formatting string like
-              `%02d`, which will be replaced with the number of steps.
-              When the file name contains no formmating string, data will
-              be overwritten in a single file at every steps.
+        Parameters
+        ----------
+        dt : float
+            A step interval for logging.
+        filename : str
+            A file name to be saved. Data are saved in HDF5 format.
+            The extension name is recommended to be `.h5`.
+            The file name can contain at most one formatting string like
+            `%02d`, which will be replaced with the number of steps.
+            When the file name contains no formmating string, data will
+            be overwritten in a single file at every steps.
 
         """
         pass  # XXX: Only used for doc string
@@ -325,9 +365,16 @@ cdef class FixedIntervalHDF5Observer:
         """Return the number of steps."""
         return self.thisptr.get().num_steps()
 
-    def filename(self):
+    def prefix(self):
+        """Return a prefix of a file name given at the construction"""
+        return self.thisptr.get().prefix().decode('UTF-8')
+
+    def filename(self, idx=None):
         """Return a file name to be saved at the next time"""
-        return self.thisptr.get().filename().decode('UTF-8')
+        if idx is None:
+            return self.thisptr.get().filename().decode('UTF-8')
+        else:
+            return self.thisptr.get().filename(<Integer>idx).decode('UTF-8')
 
     def as_base(self):
         """Clone self as a base class. This function is for developers."""
@@ -351,21 +398,26 @@ cdef class FixedIntervalCSVObserver:
 
     """
 
-    def __init__(self, Real dt, filename):
+    def __init__(self, Real dt, filename, species=None):
         """Constructor.
 
-        Args:
-            dt (float): A step interval for logging.
-            filename (str): A file name to be saved. Data are saved in
-              CSV format. The extension name is recommended to be `.csv`
-              or `.txt`.
-              The file name can contain at most one formatting string like
-              `%02d`, which will be replaced with the number of steps.
-              When the file name contains no formmating string, data will
-              be overwritten in a single file at every steps.
-              The first line in a file represents labels for each row.
-              Each column contains a position, a radius, and a serial id
-              for the ``Species``.
+        Parameters
+        ----------
+        dt : float
+            A step interval for logging.
+        filename : str
+            A file name to be saved. Data are saved in CSV format.
+            The extension name is recommended to be `.csv` or `.txt`.
+            The file name can contain at most one formatting string like
+            `%02d`, which will be replaced with the number of steps.
+            When the file name contains no formmating string, data will
+            be overwritten in a single file at every steps.
+            The first line in a file represents labels for each row.
+            Each column contains a position, a radius, and a serial id
+            for the ``Species``.
+        species : list
+            A list of strings, but not of ``Species``.
+            The strings suggest serials of ``Species`` to be observed.
 
         """
         pass  # XXX: Only used for doc string
@@ -396,25 +448,29 @@ cdef class FixedIntervalCSVObserver:
     def log(self, w):
         """Force to log the given ``World`` to a file.
 
-        Args:
-          w (Space): A ``Space`` (``World``) to be logged.
+        Parameters
+        ----------
+        w : Space
+            A ``Space`` (``World``) to be logged.
 
-        Example:
-          This is an easy way to save a ``World`` in CSV format without
-          running a simulation.
+        Examples
+        --------
+        This is an easy way to save a ``World`` in CSV format without
+        running a simulation.
 
-          >>> w = lattice.LatticeWorld(Real3(1, 1, 1), 0.005)
-          >>> w.bind_to(NetworkModel())
-          >>> w.add_molecules(Species("A"), 3)
-          >>> FixedIntervalCSVObserver(1, "test.csv").log(w)
-          >>> print(open("test.csv").read())
-          x,y,z,r,sid
-          0.10614455552060439,0.66106605822212161,0.81500000000000006,0.0050000000000000001,0
-          0.38375339303603129,0.37527767497325676,0.23999999999999999,0.0050000000000000001,0
-          0.25311394008759508,0.05484827557301445,0.495,0.0050000000000000001,0
+        >>> w = spatiocyte.SpatiocyteWorld(Real3(1, 1, 1), 0.005)
+        >>> w.bind_to(NetworkModel())
+        >>> w.add_molecules(Species("A"), 3)
+        >>> FixedIntervalCSVObserver(1, "test.csv").log(w)
+        >>> print(open("test.csv").read())
+        x,y,z,r,sid
+        0.10614455552060439,0.66106605822212161,0.81500000000000006,0.0050000000000000001,0
+        0.38375339303603129,0.37527767497325676,0.23999999999999999,0.0050000000000000001,0
+        0.25311394008759508,0.05484827557301445,0.495,0.0050000000000000001,0
         """
         cdef Space space = w.as_base()
-        self.thisptr.get().log(space.thisptr.get())
+        # self.thisptr.get().log(space.thisptr.get())
+        self.thisptr.get().log(deref(space.thisptr))
 
     def filename(self):
         """Return a file name to be saved at the next time"""
@@ -438,47 +494,58 @@ cdef class FixedIntervalTrajectoryObserver:
     This ``Observer`` logs at the current time first, and then keeps logging
     every after the interval.
 
-    FixedIntervalTrajectoryObserver(dt, pids, resolve_boundary=None)
+    FixedIntervalTrajectoryObserver(dt[, pids], resolve_boundary=None, subdt=None)
 
     """
 
-    def __init__(self, Real dt, pids=None, resolve_boundary=None):
+    def __init__(self, Real dt, *args):
         """Constructor.
 
-        Args:
-            dt (float): A step interval for logging.
-            pids (list): A list of ``ParticleID``s.
-            resolve_boundary (bool, optional): If True, this ``Observer``
-              automatically resolves the effect of periodic boundary contidions
-              by keeping shifts for each particles. Otherwise, this just
-              logs positions within the size of ``World`` with no care about
-              boundary conditions.
+        Parameters
+        ----------
+        dt : float
+            A step interval for logging.
+        pids : list, optional
+            A list of ``ParticleID``s.
+        resolve_boundary : bool, optional
+            If True, this ``Observer`` automatically resolves the effect
+            of periodic boundary contidions by keeping shifts for each particles.
+            Otherwise, this just logs positions within the size of ``World``
+            with no care about boundary conditions.
+        subdt : float, optional
+            A step interval to check the periodic boundary.
+            If None, use dt. This only has meaning when resolve_boundary is True.
 
         """
         pass  # XXX: Only used for doc string
 
-    def __cinit__(self, Real dt, pids=None, resolve_boundary=None):
+    def __cinit__(self, Real dt, *args):
         cdef vector[Cpp_ParticleID] tmp
-        if pids is not None and not isinstance(pids, types.BooleanType):
-            for pid in pids:
-                if not isinstance(pid, ParticleID):
-                    raise ValueError(
-                        'invalid argument [{0}] was given.'.format(repr(pid))
-                        + ' ParticleID is expected.')
-                tmp.push_back(deref((<ParticleID>pid).thisptr))
-        if pids is None:
-            self.thisptr = new shared_ptr[Cpp_FixedIntervalTrajectoryObserver](
-                new Cpp_FixedIntervalTrajectoryObserver(dt))
-        elif resolve_boundary is None:
-            if isinstance(pids, types.BooleanType):
+
+        if len(args) == 0 or not isinstance(args[0], (tuple, list, set)):
+            if len(args) == 0:
                 self.thisptr = new shared_ptr[Cpp_FixedIntervalTrajectoryObserver](
-                    new Cpp_FixedIntervalTrajectoryObserver(dt, <bool>pids))
-            else:
+                    new Cpp_FixedIntervalTrajectoryObserver(dt))
+            elif len(args) == 1:
+                self.thisptr = new shared_ptr[Cpp_FixedIntervalTrajectoryObserver](
+                    new Cpp_FixedIntervalTrajectoryObserver(dt, <bool>args[0]))
+            elif len(args) == 2:
+                self.thisptr = new shared_ptr[Cpp_FixedIntervalTrajectoryObserver](
+                    new Cpp_FixedIntervalTrajectoryObserver(
+                        dt, <bool>args[0], <Real>args[1]))
+        else:
+            for pid in args[0]:
+                tmp.push_back(deref((<ParticleID>pid).thisptr))
+            if len(args) == 1:
                 self.thisptr = new shared_ptr[Cpp_FixedIntervalTrajectoryObserver](
                     new Cpp_FixedIntervalTrajectoryObserver(dt, tmp))
-        else:
-            self.thisptr = new shared_ptr[Cpp_FixedIntervalTrajectoryObserver](
-                new Cpp_FixedIntervalTrajectoryObserver(dt, tmp, <bool>resolve_boundary))
+            elif len(args) == 2:
+                self.thisptr = new shared_ptr[Cpp_FixedIntervalTrajectoryObserver](
+                    new Cpp_FixedIntervalTrajectoryObserver(dt, tmp, <bool>args[1]))
+            elif len(args) == 3:
+                self.thisptr = new shared_ptr[Cpp_FixedIntervalTrajectoryObserver](
+                    new Cpp_FixedIntervalTrajectoryObserver(
+                        dt, tmp, <bool>args[1], <Real>args[2]))
 
     def __dealloc__(self):
         del self.thisptr
@@ -491,11 +558,21 @@ cdef class FixedIntervalTrajectoryObserver:
         """Return the number of steps."""
         return self.thisptr.get().num_steps()
 
+    def num_tracers(self):
+        """Return the number of tracer molecules."""
+        return self.thisptr.get().num_tracers()
+
+    def t(self):
+        """Return time points at logging as a list."""
+        return self.thisptr.get().t()
+
     def data(self):
         """Return a list of trajectories for each particles.
 
-        Returns:
-          list: A list of lists of ``Real3``. An element of a return value
+        Returns
+        -------
+        list:
+            A list of lists of ``Real3``. An element of a return value
             is corresponding the trajectory of each particle. Thus, the size
             of a return value is the same with that of ``pids`` you gave
             at the construction.
@@ -539,8 +616,10 @@ cdef class TimeoutObserver:
     def __init__(self, interval=None):
         """Constructor.
 
-        Args:
-            interval (float): timeout in seconds.
+        Parameters
+        ----------
+        interval : float
+            timeout in seconds.
 
         """
         pass  # XXX: Only used for doc string
@@ -579,3 +658,117 @@ cdef class TimeoutObserver:
     def reset(self):
         """Reset the internal state."""
         self.thisptr.get().reset()
+
+cdef class FixedIntervalTrackingObserver:
+    """An ``Observer`` class to trace and log trajectories of diffusing
+    particles in a ``World`` with the fixed step interval.
+    This ``Observer`` logs at the current time first, and then keeps logging
+    every after the interval.
+
+    FixedIntervalTrackingObserver(dt, species_list, resolve_boundary=None, subdt=None, threshold=None)
+
+    """
+
+    def __init__(self, Real dt, *args):
+        """Constructor.
+
+        Parameters
+        ----------
+        dt : float
+            A step interval for logging.
+        species_list : list
+            A list of ``Species``.
+        resolve_boundary : bool, optional
+            If True, this ``Observer`` automatically resolves the effect
+            of periodic boundary contidions by keeping shifts for each particles.
+            Otherwise, this just logs positions within the size of ``World``
+            with no care about boundary conditions.
+        subdt : float, optional
+            A step interval to check the periodic boundary.
+            If None, use dt. This only has meaning when resolve_boundary is True.
+        threshold : float, optional
+            A maximum length to assume two particles are the same.
+            If None, no threshold is used.
+
+        """
+        pass  # XXX: Only used for doc string
+
+    def __cinit__(self, Real dt, *args):
+        cdef vector[Cpp_Species] tmp
+
+        for sp in args[0]:
+            tmp.push_back(deref((<Species>sp).thisptr))
+        if len(args) == 1:
+            self.thisptr = new shared_ptr[Cpp_FixedIntervalTrackingObserver](
+                new Cpp_FixedIntervalTrackingObserver(dt, tmp))
+        elif len(args) == 2:
+            self.thisptr = new shared_ptr[Cpp_FixedIntervalTrackingObserver](
+                new Cpp_FixedIntervalTrackingObserver(dt, tmp, <bool>args[1]))
+        elif len(args) == 3:
+            self.thisptr = new shared_ptr[Cpp_FixedIntervalTrackingObserver](
+                new Cpp_FixedIntervalTrackingObserver(
+                    dt, tmp, <bool>args[1], <Real>args[2]))
+        elif len(args) == 4:
+            self.thisptr = new shared_ptr[Cpp_FixedIntervalTrackingObserver](
+                new Cpp_FixedIntervalTrackingObserver(
+                    dt, tmp, <bool>args[1], <Real>args[2], <Real>args[3]))
+
+    def __dealloc__(self):
+        del self.thisptr
+
+    def next_time(self):
+        """Return the next time for logging."""
+        return self.thisptr.get().next_time()
+
+    def num_steps(self):
+        """Return the number of steps."""
+        return self.thisptr.get().num_steps()
+
+    def num_tracers(self):
+        """Return the number of tracer molecules."""
+        return self.thisptr.get().num_tracers()
+
+    def t(self):
+        """Return time points at logging as a list."""
+        return self.thisptr.get().t()
+
+    def data(self):
+        """Return a list of trajectories for each particles.
+
+        Returns
+        -------
+        list:
+            A list of lists of ``Real3``. An element of a return value
+            is corresponding the trajectory of each particle. Thus, the size
+            of a return value is the same with that of ``pids`` you gave
+            at the construction.
+            If a particle corresponding to the given ``ParticleID`` is missing,
+            i.e. for a reaction, this ``Observer`` just skips to log the
+            position. Therefore, lengths of the trajectories can be diverse.
+
+        """
+        cdef vector[vector[Cpp_Real3]] d = self.thisptr.get().data()
+        retval = []
+        cdef vector[vector[Cpp_Real3]].iterator it = d.begin()
+        cdef vector[Cpp_Real3].iterator it2
+        while it != d.end():
+            it2 = deref(it).begin()
+            retval.append([])
+            while it2 != deref(it).end():
+                retval[-1].append(Real3_from_Cpp_Real3(address(deref(it2))))
+                inc(it2)
+            inc(it)
+        return retval
+
+    def as_base(self):
+        """Clone self as a base class. This function is for developers."""
+        retval = Observer()
+        del retval.thisptr
+        retval.thisptr = new shared_ptr[Cpp_Observer](
+            <shared_ptr[Cpp_Observer]>deref(self.thisptr))
+        return retval
+
+    def reset(self):
+        """Reset the internal state."""
+        self.thisptr.get().reset()
+

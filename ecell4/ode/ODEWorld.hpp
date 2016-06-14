@@ -6,6 +6,9 @@
 #include <ecell4/core/Real3.hpp>
 #include <ecell4/core/Space.hpp>
 #include <ecell4/core/Model.hpp>
+#include <ecell4/core/NetworkModel.hpp>
+#include <ecell4/core/NetfreeModel.hpp>
+
 #ifdef WITH_HDF5
 #include <ecell4/core/CompartmentSpaceHDF5Writer.hpp>
 #endif
@@ -70,7 +73,7 @@ public:
 
     // SpaceTraits
 
-    const Real& t() const
+    const Real t() const
     {
         return t_;
     }
@@ -214,7 +217,7 @@ public:
     void save(const std::string& filename) const;
     void load(const std::string& filename);
 
-    bool has_species(const Species& sp)
+    bool has_species(const Species& sp) const
     {
         species_map_type::const_iterator i(index_map_.find(sp));
         return (i != index_map_.end());
@@ -260,28 +263,19 @@ public:
         index_map_.erase(sp);
     }
 
-    void bind_to(boost::shared_ptr<Model> model)
+    void bind_to(boost::shared_ptr<Model> model);
+    void bind_to(boost::shared_ptr<ODENetworkModel> model);
+
+    boost::shared_ptr<ODENetworkModel> lock_model() const
     {
-        if (boost::shared_ptr<Model> bound_model = lock_model())
+        if (generated_)
         {
-            if (bound_model.get() != model.get())
-            {
-                std::cerr << "Warning: Model already bound to ODEWorld."
-                    << std::endl;
-            }
+            return generated_;
         }
-
-        this->model_ = model;
-    }
-
-    void bind_to(boost::shared_ptr<ODENetworkModel> model)
-    {
-        ; //XXX: do nothing, fixe me later
-    }
-
-    boost::shared_ptr<Model> lock_model() const
-    {
-        return model_.lock();
+        else
+        {
+            return model_.lock();
+        }
     }
 
     void add_molecules(const Species& sp, const Integer& num,
@@ -289,6 +283,28 @@ public:
     {
         add_molecules(sp, num);
     }
+
+    std::pair<std::pair<ParticleID, Particle>, bool> new_particle(const Particle& p)
+    {
+        add_molecules(p.species(), 1);
+        return std::make_pair(std::make_pair(ParticleID(), p), true);
+    }
+
+    std::pair<std::pair<ParticleID, Particle>, bool> new_particle(
+        const Species& sp, const Real3& pos)
+    {
+        add_molecules(sp, 1);
+        return std::make_pair(
+            std::make_pair(ParticleID(), Particle(sp, pos, 0.0, 0.0)), true);
+    }
+
+    Real evaluate(const ReactionRule& rr) const
+    {
+        ODEReactionRule oderr(rr);
+        return evaluate(oderr);
+    }
+
+    Real evaluate(ODEReactionRule& rr) const;
 
 protected:
 
@@ -300,8 +316,9 @@ protected:
     species_container_type species_;
     species_map_type index_map_;
 
-    boost::weak_ptr<Model> model_;
-    bool is_netfree_;
+    boost::weak_ptr<ODENetworkModel> model_;
+    boost::shared_ptr<ODENetworkModel> generated_;
+    // bool is_netfree_;
 };
 
 } // ode

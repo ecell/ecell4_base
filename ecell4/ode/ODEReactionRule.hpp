@@ -107,13 +107,17 @@ public:
     {
         if (!(this->has_ratelaw()))
         {
-            throw IllegalState("ODERatelaw has not been set");
+            // throw IllegalState("ODERatelaw has not been set");
+            std::cerr << "WARN: no ODERatelaw is bound." << std::endl;
+            return 0.0;
         }
         boost::shared_ptr<ODERatelawMassAction> ratelaw_massaction = 
             boost::dynamic_pointer_cast<ODERatelawMassAction>(this->get_ratelaw());
         if(ratelaw_massaction == 0)
         {
-            throw IllegalState("Another type of ODERatelaw object has been set");
+            // throw IllegalState("Another type of ODERatelaw object has been set");
+            std::cerr << "WARN: ODERatelaw bound cannot provide k." << std::endl;
+            return 0.0;
         }
         return ratelaw_massaction->get_k();
     }
@@ -211,7 +215,7 @@ public:
     bool has_ratelaw() const
     {
         // return !(this->ratelaw_.use_count() == 0);
-        return ratelaw_;
+        return (ratelaw_.get() != 0);
     }
     bool is_massaction() const
     {
@@ -230,9 +234,9 @@ public:
 
 protected:
 
-    Real k_;
-    //reactant_container_type reactants_;
-    //product_container_type products_;
+    // Real k_;
+    // reactant_container_type reactants_;
+    // product_container_type products_;
     reaction_leftside_container_type reactants_;
     reaction_rightside_container_type products_;
 

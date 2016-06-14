@@ -1,4 +1,5 @@
 #include <stdexcept>
+#include <numeric>
 
 #include "exceptions.hpp"
 #include "functions.hpp"

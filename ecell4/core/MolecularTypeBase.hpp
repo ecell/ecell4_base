@@ -26,10 +26,10 @@ public:
 public:
 
     MolecularTypeBase(
-        const Species& species, bool is_structure, MolecularTypeBase* location,
+        const Species& species, MolecularTypeBase* location,
         const Real& radius, const Real& D)
-        : species_(species), is_structure_(is_structure), location_(location),
-        radius_(radius), D_(D), dimension_(Shape::UNDEF)
+        : species_(species), location_(location),
+        radius_(radius), D_(D)
     {
         ;
     }
@@ -51,9 +51,9 @@ public:
         return species_;
     }
 
-    bool is_structure() const
+    virtual bool is_structure() const
     {
-        return is_structure_;
+        return false;
     }
 
     MolecularTypeBase* location() const
@@ -81,14 +81,9 @@ public:
         return D_;
     }
 
-    void set_dimension(const Shape::dimension_kind dimension)
-    {
-        dimension_ = dimension;
-    }
-
     virtual const Shape::dimension_kind get_dimension() const
     {
-        return dimension_;
+        return Shape::UNDEF;
     }
 
     virtual void add_voxel_without_checking(const coord_id_pair& info)
@@ -111,11 +106,12 @@ public:
 
     virtual void replace_voxel(
         const coordinate_type& from_coord,
-        const coordinate_type& to_coord)
+        const coordinate_type& to_coord, const std::size_t candidate=0)
     {
-        container_type::iterator itr(find(from_coord));
+        container_type::iterator itr(find(from_coord, candidate));
         if (itr == voxels_.end())
         {
+            std::cerr << "from_coord = " << from_coord << std::endl;
             throw NotFound("no corresponding coordinate was found.");
         }
 
@@ -249,9 +245,16 @@ public:
 
 protected:
 
-    container_type::iterator find(coordinate_type coord)
+    container_type::iterator find(coordinate_type coord,
+            const std::size_t candidate=0)
     {
         container_type::iterator itr;
+        if (candidate < voxels_.size())
+        {
+            itr = voxels_.begin() + candidate;
+            if ((*itr).first == coord)
+                return itr;
+        }
         for (itr = voxels_.begin(); itr != voxels_.end(); ++itr)
         {
             if ((*itr).first == coord)
@@ -262,9 +265,16 @@ protected:
         return itr;
     }
 
-    container_type::const_iterator find(coordinate_type coord) const
+    container_type::const_iterator find(coordinate_type coord,
+            const std::size_t candidate=0) const
     {
         container_type::const_iterator itr;
+        if (candidate < voxels_.size())
+        {
+            itr = voxels_.begin() + candidate;
+            if ((*itr).first == coord)
+                return itr;
+        }
         for (itr = voxels_.begin(); itr != voxels_.end(); ++itr)
         {
             if ((*itr).first == coord)
@@ -278,10 +288,8 @@ protected:
 protected:
 
     const Species species_;
-    const bool is_structure_;
     MolecularTypeBase* location_;
     Real radius_, D_;
-    Shape::dimension_kind dimension_;
 
     container_type voxels_;
 };

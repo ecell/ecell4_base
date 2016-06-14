@@ -2,6 +2,7 @@
 #define __ECELL4_AABB_HPP
 
 #include "Shape.hpp"
+#include "shape_operators.hpp"
 
 namespace ecell4
 {
@@ -73,6 +74,16 @@ struct AABB
             ((n & 2) ? upper_[1] : lower_[1]),
             ((n & 4) ? upper_[2] : lower_[2]));
         return p;
+    }
+
+    dimension_kind dimension() const
+    {
+        return THREE;
+    }
+
+    Surface surface() const
+    {
+        return Surface(boost::shared_ptr<Shape>(new AABB(*this)));
     }
 
 protected:

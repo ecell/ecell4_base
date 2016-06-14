@@ -31,6 +31,7 @@ public:
             return time_;
         }
 
+        //XXX: deprecate me
         Real const& dt() const
         {
             return dt_;
@@ -41,6 +42,7 @@ public:
     protected:
 
         Real time_;
+        //XXX: deprecate me
         Real dt_;
     };
 
