@@ -26,9 +26,10 @@ class UniprotDataSource(object):
         results = self.sparql.query().convert()
         
         for s in results['results']['bindings']:
-            uniprot_id = s['protein']['value']
-            print(uniprot_id)
-            #model.add_species_attribute(Species(uniprot_id))
+            uniprot_uri = s['protein']['value']
+            uniprot_id = uniprot_uri.split("/")[-1]
+            #print(uniprot_id)
+            model.add_species_attribute(Species(uniprot_id))
 
 if __name__ == '__main__':
     from ecell4 import *
