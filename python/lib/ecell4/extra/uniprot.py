@@ -29,7 +29,9 @@ class UniprotDataSource(object):
             uniprot_uri = s['protein']['value']
             uniprot_id = uniprot_uri.split("/")[-1]
             #print(uniprot_id)
-            model.add_species_attribute(Species(uniprot_id))
+            s = Species(uniprot_id)
+            s.set_attribute("identifiers.org", "uniprot")
+            model.add_species_attribute(s)
 
 if __name__ == '__main__':
     from ecell4 import *
