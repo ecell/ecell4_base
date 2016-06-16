@@ -48,14 +48,14 @@ WHERE
                 try:
                     rr.add_reactant(Species(l.split("/")[-1]))
                 except:
-                    print(r)
+                    pass
             for r in set(rights[r]):
                 #print(r.split("/")[-1])
                 try:
                     rr.add_product(Species(r.split("/")[-1]))
                 except:
-                    print(r)
-#        model.add_reation_rule(rr)
+                    pass
+        model.add_reaction_rule(rr)
 
 class UniprotDataSource(object):
     def __init__(self):
@@ -98,8 +98,8 @@ WHERE
 if __name__ == '__main__':
     from ecell4 import *
     m1 = NetworkModel()
-#    upds = UniprotDataSource()
-#    upds.create_species('4932', m1)
+    upds = UniprotDataSource()
+    upds.create_species('4932', m1)
     rtds = ReactomeDataSource()
     rtds.create_reactions('4932', m1)
 
