@@ -10,6 +10,9 @@
 #include "ParticleSimulator.hpp"
 #include "utils/pair.hpp"
 
+#include <ecell4/core/get_mapper_mf.hpp>
+#include <ecell4/core/Species.hpp>
+
 template<typename Tworld_>
 struct BDSimulatorTraitsBase: public ParticleSimulatorTraitsBase<Tworld_>
 {
@@ -32,6 +35,8 @@ public:
     typedef typename world_type::molecule_info_type molecule_info_type;
     typedef typename world_type::particle_shape_type particle_shape_type;
     typedef typename world_type::particle_id_pair particle_id_pair;
+    typedef typename world_type::particle_type particle_type;
+    typedef typename world_type::particle_id_type particle_id_type;
     typedef typename world_type::traits_type::position_type position_type;
     typedef typename traits_type::time_type time_type;
     typedef typename traits_type::network_rules_type network_rules_type;
@@ -40,6 +45,8 @@ public:
     typedef typename traits_type::reaction_record_type reaction_record_type;
     typedef typename traits_type::reaction_recorder_type reaction_recorder_type;
     typedef typename ReactionRecorderWrapper<reaction_record_type>::reaction_info_type reaction_info_type;
+
+    typedef typename ecell4::utils::get_mapper_mf<particle_id_type, position_type>::type particle_id_position_map_type;
 
 public:
 
@@ -76,7 +83,14 @@ public:
 
     virtual void initialize()
     {
-        ;
+        if ((*base_type::world_).num_particles(ecell4::Species("B")) != original_positions_.size())
+        {
+            typename std::vector<std::pair<particle_id_type, particle_type> > const particles((*base_type::world_).list_particles(ecell4::Species("B")));
+            for (typename std::vector<std::pair<particle_id_type, particle_type> >::const_iterator i(particles.begin()); i != particles.end(); ++i)
+            {
+                original_positions_[(*i).first] = (*i).second.position();
+            }
+        }
     }
 
     virtual void calculate_dt()
@@ -181,7 +195,7 @@ protected:
                 base_type::rrec_.get(), 0,
                 make_select_first_range(base_type::world_->
                                         get_particles_range()),
-                R_);
+                R_, original_positions_);
             while (propagator());
         }
 
@@ -258,6 +272,8 @@ private:
     int const num_retries_;
     Real R_;
     static Logger& log_;
+
+    particle_id_position_map_type original_positions_;
 };
 
 template<typename Ttraits_>

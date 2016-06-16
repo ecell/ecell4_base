@@ -20,6 +20,8 @@
 #include "utils/get_default_impl.hpp"
 #include "Logger.hpp"
 
+#include <ecell4/core/get_mapper_mf.hpp>
+
 template<typename Ttraits_>
 class BDPropagator
 {
@@ -48,16 +50,19 @@ public:
     typedef typename traits_type::reaction_recorder_type reaction_recorder_type;
     typedef typename traits_type::volume_clearer_type volume_clearer_type;
 
+    typedef typename ecell4::utils::get_mapper_mf<particle_id_type, position_type>::type particle_id_position_map_type;
+
 public:
     template<typename Trange_>
     BDPropagator(
         particle_container_type& tx, network_rules_type const& rules,
         rng_type& rng, time_type dt, int max_retry_count,
         reaction_recorder_type* rrec, volume_clearer_type* vc,
-        Trange_ const& particles, Real const R=std::numeric_limits<length_type>::infinity())
+        Trange_ const& particles, Real const R=std::numeric_limits<length_type>::infinity(),
+        particle_id_position_map_type const& original_positions = particle_id_position_map_type())
         : tx_(tx), rules_(rules), rng_(rng), dt_(dt),
           max_retry_count_(max_retry_count), rrec_(rrec), vc_(vc),
-          queue_(), rejected_move_count_(0), R_(R)
+          queue_(), rejected_move_count_(0), R_(R), original_positions_(original_positions)
     {
         call_with_size_if_randomly_accessible(
             boost::bind(&particle_id_vector_type::reserve, &queue_, _1),
@@ -103,7 +108,8 @@ public:
         position_type const new_pos(
             tx_.apply_boundary(
                 add(pp.second.position(), displacement)));
-        if (length_sq(new_pos - multiply(tx_.edge_lengths(), 0.5)) > R_ * R_)
+        typename particle_id_position_map_type::const_iterator it = original_positions_.find(pp.first);
+        if (it != original_positions_.end() && tx_.distance(new_pos, (*it).second) > R_)
             return true;
 
         particle_id_pair particle_to_update(
@@ -443,6 +449,7 @@ private:
     particle_id_vector_type queue_;
     int rejected_move_count_;
     Real const R_;
+    particle_id_position_map_type original_positions_;
     static Logger& log_;
 };
 
