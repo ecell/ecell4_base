@@ -430,7 +430,7 @@ public:
         const Real& dt, const std::vector<ParticleID>& pids,
         const bool& resolve_boundary = true, const Real subdt = 0)
         : base_type(false), event_(dt), subevent_(subdt > 0 ? subdt : dt),
-        pids_(pids), resolve_boundary_(resolve_boundary), prev_positions_(),
+        pids_(pids), resolve_boundary_(resolve_boundary), prev_positions_(pids.size()),
         trajectories_(pids.size()), strides_(pids.size()), t_()
     {
         ;
@@ -441,14 +441,6 @@ public:
         : base_type(false), event_(dt), subevent_(subdt > 0 ? subdt : dt),
         pids_(), resolve_boundary_(resolve_boundary), prev_positions_(),
         trajectories_(), strides_(), t_()
-    {
-        ;
-    }
-
-    FixedIntervalTrajectoryObserver(
-        const Real& dt, const bool& resolve_boundary = true)
-        : base_type(dt), pids_(), resolve_boundary_(resolve_boundary),
-        trajectories_(), strides_()
     {
         ;
     }

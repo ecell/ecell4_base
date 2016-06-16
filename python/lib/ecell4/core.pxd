@@ -476,8 +476,6 @@ cdef extern from "ecell4/core/observers.hpp" namespace "ecell4":
         void reset()
 
     cdef cppclass Cpp_FixedIntervalTrajectoryObserver "ecell4::FixedIntervalTrajectoryObserver":
-        Cpp_FixedIntervalTrajectoryObserver(Real) except +
-        Cpp_FixedIntervalTrajectoryObserver(Real, bool) except +
         Cpp_FixedIntervalTrajectoryObserver(Real, vector[Cpp_ParticleID]) except +
         Cpp_FixedIntervalTrajectoryObserver(Real, vector[Cpp_ParticleID], bool) except +
         Cpp_FixedIntervalTrajectoryObserver(Real, vector[Cpp_ParticleID], bool, Real) except +
