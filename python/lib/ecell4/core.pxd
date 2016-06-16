@@ -90,7 +90,7 @@ cdef extern from "ecell4/core/Species.hpp" namespace "ecell4":
         bool operator<(Cpp_Species& rhs)
         bool operator>(Cpp_Species& rhs)
         string serial() # string == serial_type
-        string get_attribute(string)
+        string get_attribute(string) except +
         Integer count(Cpp_Species& sp)
         void set_attribute(string, string)
         void remove_attribute(string) except+
