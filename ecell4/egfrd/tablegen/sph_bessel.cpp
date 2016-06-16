@@ -22,7 +22,7 @@ inline int nn(int n0, int n1, double f0, double f1, int obj, double x) {
     return nn;
 }
 
-int msta1(const double x, const unsigned int mp) {
+int msta1(const double x, const int mp) {
     const double abs(fabs(x));
     int n0(int(1.1*abs)+1),
         n1(n0+5);
@@ -32,7 +32,7 @@ int msta1(const double x, const unsigned int mp) {
     return nn(n0, n1, f0, f1, mp, abs);
 }
 
-int msta2(const double x, const unsigned int n, const unsigned int mp) {
+int msta2(const double x, const int n, const int mp) {
     const double abs(fabs(x));
     const double hmp(0.5*mp);
     const double ejn(envj(n,abs));
@@ -54,7 +54,7 @@ int msta2(const double x, const unsigned int n, const unsigned int mp) {
     return nn(n0, n1, f0, f1, obj, abs)+10;
 }
 
-std::pair<std::vector<double>, std::vector<double> > sphj_array(const unsigned int n, const double x) {
+std::pair<std::vector<double>, std::vector<double> > sphj_array(const int n, const double x) {
     std::vector<double> js(n+1, 0.0), dots(n+1, 0.0);
 
     if (x == 0) {
@@ -65,25 +65,26 @@ std::pair<std::vector<double>, std::vector<double> > sphj_array(const unsigned i
     }
 
     js[0] = sin(x)/x;
-    dots[0] = cos(x)-js[0]/x;
+    dots[0] = (cos(x)-js[0])/x;
 
     if (n == 0)
         return std::make_pair(js, dots);
 
     js[1] = (js[0]-cos(x))/x;
 
-    if (n > 2) {
+    int maxn(n);
+    if (n >= 2) {
         const double j0(js[0]), j1(js[1]);
-        int maxn(n);
-        //int m(maxn);
         int m(msta1(x, 200));
         if (m < maxn)
             maxn = m;
         else
             m = msta2(x, maxn, 15);
-        js.resize(m, 0.0);
 
-        double f(0.0), f0(0.0), f1(1.0e-100);
+        if (maxn != n)
+            throw "sphj_array precision error";
+
+        double f(0.0), f0(0.0), f1(1.0e0-100);
         for (int k(m); k >= 0; --k) {
             f = (2*k+3)*f1/x - f0;
             if (k <= maxn)
@@ -98,18 +99,18 @@ std::pair<std::vector<double>, std::vector<double> > sphj_array(const unsigned i
         else
             c = j1/f0;
 
-        for (int k(0); k < maxn; ++k) {
+        for (int k(0); k <= maxn; ++k) {
             js[k] = c * js[k];
         }
     }
 
-    for (int k(1); k <= n; ++k)
+    for (int k(1); k <= maxn; ++k)
         dots[k] = js[k-1] - (k+1)*js[k]/x;
 
     return std::make_pair(js, dots);
 }
 
-std::pair<std::vector<double>, std::vector<double> > sphy_array(const unsigned int n, const double x) {
+std::pair<std::vector<double>, std::vector<double> > sphy_array(const int n, const double x) {
     std::vector<double> ys(n+1, -inf), dots(n+1, inf);
 
     if (x == 0) {
