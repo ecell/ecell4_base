@@ -41,8 +41,8 @@ WHERE
             lefts[r['rea']['value']].append(r['lid']['value'])
             rights[r['rea']['value']].append(r['rid']['value'])
 
-        rr = ReactionRule()
         for r in lefts.keys():
+            rr = ReactionRule()
             for l in set(lefts[r]):
                 #print(l.split("/")[-1])
                 try:
@@ -55,7 +55,7 @@ WHERE
                     rr.add_product(Species(r.split("/")[-1]))
                 except:
                     pass
-        model.add_reaction_rule(rr)
+            model.add_reaction_rule(rr)
 
 class UniprotDataSource(object):
     def __init__(self):
@@ -102,5 +102,4 @@ if __name__ == '__main__':
     upds.create_species('4932', m1)
     rtds = ReactomeDataSource()
     rtds.create_reactions('4932', m1)
-
 
