@@ -6,6 +6,7 @@
 
 #include "compat.h"
 
+#define NO_BESSEL_TABLE
 #ifndef NO_BESSEL_TABLE
 #include "CylindricalBesselTable.hpp"
 #else
