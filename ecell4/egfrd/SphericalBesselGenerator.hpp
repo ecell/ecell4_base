@@ -8,6 +8,10 @@
 #include <gsl/gsl_sf_bessel.h>
 
 #include "Defs.hpp"
+
+#define NO_BESSEL_TABLE
+
+#ifdef NO_BESSEL_TABLE
 #include "tablegen/sjy_table.hpp"
 
 namespace sb_table
@@ -28,6 +32,7 @@ const unsigned int sy_table_max = 40;
 const unsigned int sjy_table_resolution = 35;
 
 } // sb_table
+#endif
 
 class SphericalBesselGenerator
 {
@@ -38,6 +43,7 @@ public:
 
     SphericalBesselGenerator()
     {
+#ifdef NO_BESSEL_TABLE
         std::cout << "SphericalBesselGenerator::SphericalBesselGenerator() was called."<< std::endl;
 
         sjy_table table = jnyn(std::max(sb_table::sj_table_max, sb_table::sy_table_max), sb_table::sjy_table_resolution);
@@ -65,6 +71,7 @@ public:
         }
 
         std::cout << "SphericalBesselGenerator::SphericalBesselGenerator() was done."<< std::endl;
+#endif
     }
 
     ~SphericalBesselGenerator()
@@ -83,6 +90,7 @@ public:
 
     static SphericalBesselGenerator const& instance();
 
+#ifdef NO_BESSEL_TABLE
     Real _j_table(UnsignedInteger n, Real z) const;
     Real _y_table(UnsignedInteger n, Real z) const;
     sb_table::Table const* getSJTable(UnsignedInteger n) const;
@@ -92,6 +100,7 @@ private:
 
     std::vector<sb_table::Table> sj_table_;
     std::vector<sb_table::Table> sy_table_;
+#endif
 };
 
 
