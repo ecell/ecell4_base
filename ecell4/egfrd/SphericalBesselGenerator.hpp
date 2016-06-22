@@ -44,8 +44,7 @@ public:
     SphericalBesselGenerator()
     {
 #ifdef NO_BESSEL_TABLE
-        std::cout << "SphericalBesselGenerator::SphericalBesselGenerator() was called."<< std::endl;
-
+        // std::cout << "SphericalBesselGenerator::SphericalBesselGenerator() was called."<< std::endl;
         sjy_table table = jnyn(std::max(sb_table::sj_table_max, sb_table::sy_table_max), sb_table::sjy_table_resolution);
 
         for (unsigned int n(sb_table::sj_table_min); n<= sb_table::sj_table_max; ++n)
@@ -69,8 +68,7 @@ public:
             const sb_table::Table sy_table_n = {end - start, z_start, table.delta, ys};
             sy_table_.push_back(sy_table_n);
         }
-
-        std::cout << "SphericalBesselGenerator::SphericalBesselGenerator() was done."<< std::endl;
+        // std::cout << "SphericalBesselGenerator::SphericalBesselGenerator() was done."<< std::endl;
 #endif
     }
 
