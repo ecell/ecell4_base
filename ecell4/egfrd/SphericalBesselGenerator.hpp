@@ -47,6 +47,7 @@ public:
         // std::cout << "SphericalBesselGenerator::SphericalBesselGenerator() was called."<< std::endl;
         sjy_table table = jnyn(std::max(sb_table::sj_table_max, sb_table::sy_table_max), sb_table::sjy_table_resolution);
 
+        sj_table_.reserve(sb_table::sj_table_max - sb_table::sj_table_min + 1);
         for (unsigned int n(sb_table::sj_table_min); n<= sb_table::sj_table_max; ++n)
         {
             const int start(searchsorted(table.z, minz_j(n)));
@@ -58,6 +59,7 @@ public:
             sj_table_.push_back(sj_table_n);
         }
 
+        sj_table_.reserve(sb_table::sy_table_max - sb_table::sy_table_min + 1);
         for (unsigned int n(sb_table::sy_table_min); n<= sb_table::sy_table_max; ++n)
         {
             const int start(searchsorted(table.z, minz_y(n)));
