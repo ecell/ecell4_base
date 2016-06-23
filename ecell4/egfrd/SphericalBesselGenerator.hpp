@@ -47,7 +47,7 @@ public:
         // std::cout << "SphericalBesselGenerator::SphericalBesselGenerator() was called."<< std::endl;
         sjy_table table = jnyn(std::max(sb_table::sj_table_max, sb_table::sy_table_max), sb_table::sjy_table_resolution);
 
-        sj_table_.reserve(sb_table::sj_table_max - sb_table::sj_table_min + 1);
+        sj_table_.resize(sb_table::sj_table_max + 1);
         for (unsigned int n(sb_table::sj_table_min); n<= sb_table::sj_table_max; ++n)
         {
             const int start(searchsorted(table.z, minz_j(n)));
@@ -56,10 +56,10 @@ public:
             const std::vector<double> js(get_sub_sequence_from_matrix2(table.j, table.jdot, n, start, end));
 
             const sb_table::Table sj_table_n = {end - start, z_start, table.delta, js};
-            sj_table_.push_back(sj_table_n);
+            sj_table_[n] = sj_table_n;
         }
 
-        sj_table_.reserve(sb_table::sy_table_max - sb_table::sy_table_min + 1);
+        sy_table_.resize(sb_table::sy_table_max + 1);
         for (unsigned int n(sb_table::sy_table_min); n<= sb_table::sy_table_max; ++n)
         {
             const int start(searchsorted(table.z, minz_y(n)));
@@ -68,7 +68,7 @@ public:
             const std::vector<double> ys(get_sub_sequence_from_matrix2(table.y, table.ydot, n, start, end));
 
             const sb_table::Table sy_table_n = {end - start, z_start, table.delta, ys};
-            sy_table_.push_back(sy_table_n);
+            sy_table_[n] = sy_table_n;
         }
         // std::cout << "SphericalBesselGenerator::SphericalBesselGenerator() was done."<< std::endl;
 #endif
