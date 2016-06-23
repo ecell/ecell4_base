@@ -12,6 +12,7 @@ VTK_INCLUDE_PATH=/usr/include/vtk-5.8
 WITH_VTK=0
 WITH_HDF5=0
 CLEANUP=0
+NO_BESSEL_TABLE=0
 
 if [ "${PREFIX-UNDEF}" = "UNDEF" ]; then
     if [ "$PREFIX" = "" ]; then
@@ -43,6 +44,7 @@ do
                 hdf5) WITH_HDF5=1;;
                 nohdf5) WITH_HDF5=0;;
                 prefix=*) PREFIX=${OPTARG#*=};;
+                nobessel) NO_BESSEL_TABLE=1;;
                 clean) CLEANUP=1;;
                 help) usage_exit;;
                 *) usage_exit;;
@@ -74,7 +76,7 @@ fi
 
 set -e
 
-cmake -DCMAKE_INSTALL_PREFIX=${PREFIX} -DWITH_HDF5=${WITH_HDF5} -DWITH_VTK=${WITH_VTK} .
+cmake -DCMAKE_INSTALL_PREFIX=${PREFIX} -DWITH_HDF5=${WITH_HDF5} -DWITH_VTK=${WITH_VTK} -DNO_BESSEL_TABLE=${NO_BESSEL_TABLE} .
 make
 # cmake -DCMAKE_INSTALL_PREFIX=${PREFIX} -DECELL4_ENABLE_PROFILING=1 .
 # make VERBOSE=1

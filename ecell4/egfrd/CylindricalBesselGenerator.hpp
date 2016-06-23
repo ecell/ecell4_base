@@ -8,7 +8,7 @@
 
 #include "Defs.hpp"
 
-#define NO_BESSEL_TABLE
+// #define NO_BESSEL_TABLE
 
 #ifdef NO_BESSEL_TABLE
 #include "tablegen/cjy_table.hpp"

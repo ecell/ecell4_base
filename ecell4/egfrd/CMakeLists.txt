@@ -36,7 +36,9 @@ configure_file(
 
 execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/ecell4/egfrd)
 
+if (NOT NO_BESSEL_TABLE)
 add_subdirectory(tablegen)
+endif()
 
 include_directories(${PROJECT_SOURCE_DIR}/ecell4/egfrd ${PROJECT_BINARY_DIR}/ecell4/egfrd)
 
@@ -53,10 +55,17 @@ add_subdirectory(tests)
 add_subdirectory(samples)
 
 install(TARGETS ecell4-egfrd DESTINATION lib)
-add_dependencies(ecell4-egfrd BesselTables)
 
 install(FILES ${HPP_FILES} "${PROJECT_BINARY_DIR}/ecell4/egfrd/config.h"
+    DESTINATION "include/ecell4/egfrd")
+
+if (NOT NO_BESSEL_TABLE)
+add_dependencies(ecell4-egfrd BesselTables)
+
+install(FILES ${HPP_FILES}
     "${PROJECT_BINARY_DIR}/ecell4/egfrd/SphericalBesselTable.hpp"
     "${PROJECT_BINARY_DIR}/ecell4/egfrd/CylindricalBesselTable.hpp"
     DESTINATION "include/ecell4/egfrd")
+endif()
+
 install(FILES ${UTILS_HPP_FILES} DESTINATION "include/ecell4/egfrd/utils")

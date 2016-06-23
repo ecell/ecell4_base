@@ -6,5 +6,6 @@
 #cmakedefine HAVE_ISFINITE 1
 #cmakedefine HAVE_SINCOS 1
 // #define NO_BESSEL_TABLE 1
+#cmakedefine NO_BESSEL_TABLE 1
 
 #endif /* __ECELL4_EPDP_CONFIG_H */
