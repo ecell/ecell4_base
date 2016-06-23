@@ -4,7 +4,7 @@ set(CPP_FILES
     PairGreensFunction.cpp GreensFunction3D.cpp GreensFunction3DAbs.cpp
     GreensFunction3DAbsSym.cpp GreensFunction3DRadAbsBase.cpp
     GreensFunction3DRadAbs.cpp GreensFunction3DRadInf.cpp
-    GreensFunction3DSym.cpp SphericalBesselGenerator.cpp)
+    GreensFunction3DSym.cpp SphericalBesselGenerator.cpp CylindricalBesselGenerator.cpp)
 
 set(HPP_FILES
     Multi.hpp ReactionRecord.hpp sorted_list.hpp factorial.hpp ParticleContainerBase.hpp NetworkRulesAdapter.hpp Logger.hpp MatrixSpace.hpp DomainFactory.hpp abstract_set.hpp twofold_container.hpp ParticleTraits.hpp DomainID.hpp geometry.hpp generator.hpp ReactionRecorder.hpp AnalyticalPair.hpp utils.hpp DomainUtils.hpp EGFRDSimulator.hpp BDSimulator.hpp freeFunctions.hpp Real3Type.hpp ReactionRuleInfo.hpp BDPropagator.hpp VolumeClearer.hpp funcSum.hpp World.hpp OldDefs.hpp AnalyticalSingle.hpp ShapedDomain.hpp ParticleContainer.hpp ParticleSimulator.hpp Defs.hpp Pair.hpp Domain.hpp filters.hpp ShellID.hpp Shell.hpp findRoot.hpp ConsoleAppender.hpp Single.hpp Transaction.hpp linear_algebra.hpp exceptions.hpp ReactionRecorderWrapper.hpp
