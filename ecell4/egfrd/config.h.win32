@@ -5,5 +5,6 @@
 #define HAVE_DECL_INFINITY 0
 // #define HAVE_ISFINITE
 // #define HAVE_SINCOS
+#define NO_BESSEL_TABLE
 
 #endif /* __ECELL4_EPDP_CONFIG_H */

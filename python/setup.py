@@ -85,6 +85,7 @@ if sys.platform == "win32":
     elif sys.version_info.major == 3:
         dependent_libs = ['gsl', 'gslcblas']
         extra_compile_args = ["/EHsc", "/w", "-DHAVE_CONFIG_H"]  # "-DHAVE_INLINE"
+    # extra_compile_args.append('-DNO_BESSEL_TABLE')
 elif sys.platform == "darwin":
     with_hdf5 = True  #XXX: forced
     dependent_libs = ['gsl', 'gslcblas', 'm']
