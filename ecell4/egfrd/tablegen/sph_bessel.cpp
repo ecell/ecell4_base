@@ -2,14 +2,17 @@
 #include <cstdlib>
 #include "sph_bessel.hpp"
 
-inline double envj(const int n, const double x) {
+inline double envj(const int n, const double x)
+{
     return (0.5*log10(6.28*n)-n*log10(1.36*x/n));
 }
 
-inline int nn(int n0, int n1, double f0, double f1, int obj, double x) {
+inline int nn(int n0, int n1, double f0, double f1, int obj, double x)
+{
     int nn;
     double f;
-    for (int k(0); k < 20; ++k) {
+    for (int k(0); k < 20; ++k)
+    {
         nn = int(n1 - (n1-n0)/(1-f0/f1));
         f = envj(nn,x)-obj;
         if (abs(nn-n1) < 1)
@@ -22,7 +25,8 @@ inline int nn(int n0, int n1, double f0, double f1, int obj, double x) {
     return nn;
 }
 
-int msta1(const double x, const int mp) {
+int msta1(const double x, const int mp)
+{
     const double abs(fabs(x));
     int n0(int(1.1*abs)+1),
         n1(n0+5);
@@ -32,17 +36,21 @@ int msta1(const double x, const int mp) {
     return nn(n0, n1, f0, f1, mp, abs);
 }
 
-int msta2(const double x, const int n, const int mp) {
+int msta2(const double x, const int n, const int mp)
+{
     const double abs(fabs(x));
     const double hmp(0.5*mp);
     const double ejn(envj(n,abs));
 
     double obj;
     int n0;
-    if (ejn <= hmp) {
+    if (ejn <= hmp)
+    {
         obj = mp;
         n0 = int(1.1*abs)+1;
-    } else {
+    }
+    else
+    {
         obj = hmp + ejn;
         n0 = n;
     }
@@ -54,10 +62,12 @@ int msta2(const double x, const int n, const int mp) {
     return nn(n0, n1, f0, f1, obj, abs)+10;
 }
 
-std::pair<std::vector<double>, std::vector<double> > sphj_array(const int n, const double x) {
+std::pair<std::vector<double>, std::vector<double> > sphj_array(const int n, const double x)
+{
     std::vector<double> js(n+1, 0.0), dots(n+1, 0.0);
 
-    if (x == 0) {
+    if (x == 0)
+    {
         js[0] = 1.0;
         if (n > 0)
             dots[1] = 1.0/3.0;
@@ -73,7 +83,8 @@ std::pair<std::vector<double>, std::vector<double> > sphj_array(const int n, con
     js[1] = (js[0]-cos(x))/x;
 
     int maxn(n);
-    if (n >= 2) {
+    if (n >= 2)
+    {
         const double j0(js[0]), j1(js[1]);
         int m(msta1(x, 200));
         if (m < maxn)
@@ -85,7 +96,8 @@ std::pair<std::vector<double>, std::vector<double> > sphj_array(const int n, con
             throw "sphj_array precision error";
 
         double f(0.0), f0(0.0), f1(1.0e0-100);
-        for (int k(m); k >= 0; --k) {
+        for (int k(m); k >= 0; --k)
+        {
             f = (2*k+3)*f1/x - f0;
             if (k <= maxn)
                 js[k] = f;
@@ -99,9 +111,8 @@ std::pair<std::vector<double>, std::vector<double> > sphj_array(const int n, con
         else
             c = j1/f0;
 
-        for (int k(0); k <= maxn; ++k) {
+        for (int k(0); k <= maxn; ++k)
             js[k] = c * js[k];
-        }
     }
 
     for (int k(1); k <= maxn; ++k)
@@ -110,12 +121,12 @@ std::pair<std::vector<double>, std::vector<double> > sphj_array(const int n, con
     return std::make_pair(js, dots);
 }
 
-std::pair<std::vector<double>, std::vector<double> > sphy_array(const int n, const double x) {
+std::pair<std::vector<double>, std::vector<double> > sphy_array(const int n, const double x)
+{
     std::vector<double> ys(n+1, -inf), dots(n+1, inf);
 
-    if (x == 0) {
+    if (x == 0)
         return std::make_pair(ys, dots);
-    }
 
     ys[0] = -cos(x)/x;
     dots[0] = (sin(x)-ys[0])/x;
