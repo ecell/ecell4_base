@@ -9,6 +9,7 @@
 
 #include <ecell4/core/types.hpp>
 #include <ecell4/core/Space.hpp>
+#include <ecell4/core/ShapeContainer.hpp>
 
 template<typename Ttraits_>
 class Transaction;
@@ -40,6 +41,11 @@ public:
     typedef typename traits_type::particle_id_pair_and_distance_list
         particle_id_pair_and_distance_list;
     typedef Transaction<traits_type> transaction_type;
+
+    // Surface-related type definitions
+    typedef ecell4::PlanarSurfaceContainer surface_container_type;
+    typedef surface_container_type::surface_type surface_type;
+    typedef surface_container_type::surface_id_type surface_id_type;
 
 public:
 
@@ -123,6 +129,27 @@ public:
             "save(const std::string) is not supported by this space class");
     }
 
+    std::pair<std::pair<surface_id_type, surface_type>, bool>
+    //new_surface(const Species &sp, const surface_type &surface)
+    new_surface(const ecell4::Species &sp, const surface_type &surface)
+    {
+        ecell4::PlanarSurfaceID psid(psidgen_());
+        surfaces_.update_surface(psid, sp, surface);
+        return std::make_pair( std::make_pair(psid, surface), true);
+    }
+    Integer num_surfaces(void) const
+    {
+        return surfaces_.num_surfaces();
+    }
+
+    position_type apply_reflection(position_type const &from, position_type const &displacement) const 
+    {
+        return this->surfaces_.apply_reflection(from, displacement);
+    }
+    
+private:
+    surface_container_type surfaces_;
+    ecell4::SerialIDGenerator<ecell4::PlanarSurfaceID> psidgen_;
 };
 
 
