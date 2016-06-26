@@ -105,6 +105,8 @@ inline
 int sgn(T val) {
     return (T(0) < val) - (val < T(0));
 }
+bool check_PlanarSurface_reflection(
+        const PlanarSurface &surface, const Real3 &from , const Real3 &remain);
 
 boost::tuple<bool, Real3, Real3> reflect_PlanarSurface(
         const PlanarSurface &surface,

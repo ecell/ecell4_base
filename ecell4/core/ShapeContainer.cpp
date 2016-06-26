@@ -33,13 +33,13 @@ PlanarSurfaceContainer::apply_reflection(const Real3 &from, const Real3 &displac
         for(std::size_t i = 0; i < this->num_surfaces(); i++) {
             if (i != bound_surface) {
                 boost::tuple<bool, Real3, Real3> t = collision::reflect_PlanarSurface(
-                        surfaces[i].second.second, from, remaining_displacement);
+                        surfaces[i].second.second, current_pos, remaining_displacement);
                 if (t.get<0>() == true) {
                     if (false == reflection_happen) {
                         reflection_happen = true;
                         closest = t;
                         closest_surface = i;
-                    } else if (length(from - t.get<1>() ) < length(from - closest.get<1>())) {
+                    } else if (length(current_pos - t.get<1>() ) < length(current_pos - closest.get<1>())) {
                         // update
                         closest = t;
                         closest_surface = i;
@@ -50,15 +50,26 @@ PlanarSurfaceContainer::apply_reflection(const Real3 &from, const Real3 &displac
         if (reflection_happen == false) {
             break;
         } else {
+            Real3 prev_pos = current_pos;   // for check
             current_pos = closest.get<1>();
             remaining_displacement = closest.get<2>();
             bound_surface = closest_surface;
+            //debugging
+            //if (collision::check_PlanarSurface_reflection(
+            //            surfaces[bound_surface].second.second, 
+            //            prev_pos, current_pos + remaining_displacement) == false) {
+            //    throw IllegalState("Particle moved to beyond the PlanarSurface");
+            //}
             //std::cout << "bound_surface (" << bound_surface << ") at " << from << std::endl;
         }
     } while(true);
     Real3 final_pos = current_pos + remaining_displacement;
     for(std::size_t i = 0; i < this->num_surfaces(); i++) {
         if( save_isinside[i] != collision::sgn(surfaces[i].second.second.is_inside(final_pos)) ){
+            //std::cerr << "from: " << from << std::endl;
+            //std::cerr << "to:   " << final_pos << std::endl;
+            //std::cerr << "is_inside(from): " << surfaces[i].second.second.is_inside(from) << std::endl;
+            //std::cerr << "is_inside(to)  : " << surfaces[i].second.second.is_inside(final_pos) << std::endl;
             throw IllegalState("Particle moved to beyond the PlanarSurface");
         }
     }
