@@ -89,12 +89,12 @@ if sys.platform == "win32":
 elif sys.platform == "darwin":
     with_hdf5 = True  #XXX: forced
     dependent_libs = ['gsl', 'gslcblas', 'm']
-    extra_compile_args = ["-DHAVE_CONFIG_H"]
+    extra_compile_args = ["-DNO_BESSEL_TABLE", "-DHAVE_CONFIG_H"]
 else: # for linux
     if not with_cpp_shared_libraries:
         with_hdf5 = True  #XXX: forced
     dependent_libs = ['gsl', 'gslcblas', 'm']
-    extra_compile_args = ["-DHAVE_CONFIG_H"]
+    extra_compile_args = ["-DNO_BESSEL_TABLE", "-DHAVE_CONFIG_H"]
 
 if "--disable-hdf5" in sys.argv:
     with_hdf5 = False
