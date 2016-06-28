@@ -23,7 +23,7 @@ set(HPP_FILES
     Context.hpp Integer3.hpp Journal.hpp Model.hpp NetworkModel.hpp NetfreeModel.hpp
     ParticleSpaceHDF5Writer.hpp Reaction.hpp Simulator.hpp SimulatorBase.hpp
     UnitSpecies.hpp observers.hpp exceptions.hpp get_mapper_mf.hpp types.hpp
-    Shape.hpp Sphere.hpp Cylinder.hpp AABB.hpp StructureType.hpp
+    Shape.hpp Sphere.hpp Cylinder.hpp AABB.hpp StructureType.hpp InterfaceType.hpp
     ParticleSpaceCellListImpl.hpp LatticeSpaceCellListImpl.hpp
     PlanarSurface.hpp Rod.hpp collision.hpp
     comparators.hpp SimulatorFactory.hpp Mesh.hpp shape_operators.hpp)

@@ -121,6 +121,9 @@ cdef extern from "ecell4/spatiocyte/SpatiocyteWorld.hpp" namespace "ecell4::spat
         Integer add_structure(Cpp_Species&, shared_ptr[Cpp_Shape]) except +
         void add_molecules(Cpp_Species& sp, Integer num, shared_ptr[Cpp_Shape])
 
+        pair[pair[Cpp_ParticleID, Cpp_Voxel], bool] new_voxel_interface(Cpp_Species& sp, Integer pos)
+        Integer add_interface(Cpp_Species&) except +
+
     cdef Cpp_SpatiocyteWorld* create_spatiocyte_world_cell_list_impl_alias(
         Cpp_Real3&, Real, Cpp_Integer3&, shared_ptr[Cpp_RandomNumberGenerator]&)
     cdef Cpp_SpatiocyteWorld* create_spatiocyte_world_vector_impl_alias(

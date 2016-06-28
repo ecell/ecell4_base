@@ -1184,6 +1184,42 @@ cdef class SpatiocyteWorld:
         return self.thisptr.get().add_structure(
             deref(sp.thisptr), deref((<Shape>(shape.as_base())).thisptr))
 
+    def add_interface(self, Species sp):
+        """add_interface(sp, shape)
+
+        Add a interface.
+
+        Parameters
+        ----------
+        sp : Species
+            A species suggesting the shape.
+
+        """
+        return self.thisptr.get().add_interface(deref(sp.thisptr))
+
+    def new_voxel_interface(self, arg1, arg2):
+        """new_voxel_interface(arg1, arg2) -> (ParticleID, Voxel)
+
+        Create a particle.
+
+        Parameters
+        ----------
+        arg1 : Species
+            The Species of particles to create
+        arg2 : Integer
+            The number of particles(voxels)
+
+        Returns
+        -------
+        tuple:
+            A pair of ParticleID and Voxel
+
+        """
+        cdef pair[pair[Cpp_ParticleID, Cpp_Voxel], bool] retval
+
+        retval = self.thisptr.get().new_voxel_interface(deref((<Species> arg1).thisptr), <Integer> arg2)
+        return ((ParticleID_from_Cpp_ParticleID(address(retval.first.first)), Voxel_from_Cpp_Voxel(address(retval.first.second))), retval.second)
+
     def rng(self):
         """Return a random number generator object."""
         return GSLRandomNumberGenerator_from_Cpp_RandomNumberGenerator(

@@ -17,6 +17,7 @@ public:
     typedef base_type::container_type container_type;
     typedef base_type::iterator iterator;
     typedef base_type::const_iterator const_iterator;
+    typedef base_type::voxel_type_type voxel_type_type;
 
 public:
 
@@ -25,10 +26,15 @@ public:
         ; // do nothing
     }
 
-    bool is_vacant() const
+    virtual voxel_type_type const voxel_type() const
     {
-        return true;
+        return VACANT;
     }
+
+    // bool is_vacant() const
+    // {
+    //     return true;
+    // }
 
     bool with_voxels() const
     {

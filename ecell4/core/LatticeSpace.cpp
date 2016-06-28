@@ -2,6 +2,7 @@
 #include "MolecularType.hpp"
 #include "VacantType.hpp"
 #include "StructureType.hpp"
+#include "InterfaceType.hpp"
 #include "LatticeSpace.hpp"
 #include <cmath>
 #include <sstream>
@@ -34,6 +35,12 @@ bool LatticeSpace::can_move(const private_coordinate_type& src,
 }
 
 bool LatticeSpace::make_structure_type(const Species& sp,
+    Shape::dimension_kind dimension, const std::string loc)
+{
+    return false;
+}
+
+bool LatticeSpace::make_interface_type(const Species& sp,
     Shape::dimension_kind dimension, const std::string loc)
 {
     return false;
@@ -1102,6 +1109,55 @@ bool LatticeSpaceVectorImpl::make_structure_type(const Species& sp,
     }
 
     boost::shared_ptr<MolecularType> mt(new StructureType(sp, location, voxel_radius_, dimension));
+    std::pair<spmap::iterator, bool> retval(spmap_.insert(std::make_pair(sp, mt)));
+    return retval.second;
+}
+
+bool LatticeSpaceVectorImpl::make_interface_type(const Species& sp,
+    Shape::dimension_kind dimension, const std::string loc)
+{
+    spmap::iterator itr(spmap_.find(sp));
+    if (itr != spmap_.end())
+    {
+        return false;
+    }
+
+    MolecularTypeBase* location;
+    if (loc == "")
+    {
+        location = vacant_;
+    }
+    else
+    {
+        const Species locsp(loc);
+        try
+        {
+            location = find_molecular_type(locsp);
+        }
+        catch (const NotFound& err)
+        {
+            // XXX: A MolecularTypeBase for the structure (location) must be allocated
+            // XXX: before the allocation of a Species on the structure.
+            // XXX: The MolecularTypeBase cannot be automatically allocated at the time
+            // XXX: because its MoleculeInfo is unknown.
+            // XXX: LatticeSpaceVectorImpl::load will raise a problem about this issue.
+            // XXX: In this implementation, the MolecularTypeBase for a structure is
+            // XXX: created with default arguments.
+            boost::shared_ptr<MolecularType>
+                locmt(new MolecularType(locsp, vacant_, voxel_radius_, 0));
+            std::pair<LatticeSpaceVectorImpl::spmap::iterator, bool> locval(
+                spmap_.insert(LatticeSpaceVectorImpl::spmap::value_type(locsp, locmt)));
+            if (!locval.second)
+            {
+                throw AlreadyExists(
+                    "never reach here. find_molecular_type seems wrong.");
+            }
+
+            location = (*locval.first).second.get();
+        }
+    }
+
+    boost::shared_ptr<MolecularType> mt(new InterfaceType(sp, location, voxel_radius_, dimension));
     std::pair<spmap::iterator, bool> retval(spmap_.insert(std::make_pair(sp, mt)));
     return retval.second;
 }

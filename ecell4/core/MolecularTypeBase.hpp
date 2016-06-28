@@ -25,6 +25,16 @@ public:
 
 public:
 
+    typedef enum
+    {
+        DEFAULT,
+        VACANT,
+        STRUCTURE,
+        INTERFACE
+    } voxel_type_type;
+
+public:
+
     MolecularTypeBase(
         const Species& species, MolecularTypeBase* location,
         const Real& radius, const Real& D)
@@ -39,7 +49,24 @@ public:
         ;
     }
 
-    virtual bool is_vacant() const = 0;
+    virtual voxel_type_type const voxel_type() const = 0;
+
+    bool is_vacant() const
+    {
+        return voxel_type() == VACANT;
+    }
+
+    bool is_structure() const
+    {
+        return voxel_type() == STRUCTURE;
+    }
+
+    bool is_interface() const
+    {
+        return voxel_type() == INTERFACE;
+    }
+
+    // virtual bool is_vacant() const = 0;
 
     virtual bool with_voxels() const
     {
@@ -49,11 +76,6 @@ public:
     const Species& species() const
     {
         return species_;
-    }
-
-    virtual bool is_structure() const
-    {
-        return false;
     }
 
     MolecularTypeBase* location() const

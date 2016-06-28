@@ -142,6 +142,8 @@ public:
         const private_coordinate_type& coord) = 0;
     virtual bool make_structure_type(const Species& sp,
         Shape::dimension_kind dimension, const std::string loc);
+    virtual bool make_interface_type(const Species& sp,
+        Shape::dimension_kind dimension, const std::string loc);
 
     virtual bool on_structure(const Voxel& v) = 0;
 
@@ -714,6 +716,8 @@ public:
     }
 
     virtual bool make_structure_type(const Species& sp,
+        Shape::dimension_kind dimension, const std::string loc);
+    virtual bool make_interface_type(const Species& sp,
         Shape::dimension_kind dimension, const std::string loc);
     bool make_molecular_type(const Species& sp,
         Real radius, Real D, const std::string loc);
