@@ -871,7 +871,7 @@ cdef class SpatiocyteWorld:
         arg1 : Species
             The Species of particles to create
         arg2 : Integer
-            The number of particles(voxels)
+            A coordinate to place the structure
 
         Returns
         -------
@@ -1192,7 +1192,7 @@ cdef class SpatiocyteWorld:
         Parameters
         ----------
         sp : Species
-            A species suggesting the shape.
+            A species suggesting the interface.
 
         """
         return self.thisptr.get().add_interface(deref(sp.thisptr))
@@ -1207,7 +1207,7 @@ cdef class SpatiocyteWorld:
         arg1 : Species
             The Species of particles to create
         arg2 : Integer
-            The number of particles(voxels)
+            A coordinate to place the structure
 
         Returns
         -------
