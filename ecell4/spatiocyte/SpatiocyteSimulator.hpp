@@ -7,7 +7,7 @@
 
 #include <ecell4/core/Model.hpp>
 #include <ecell4/core/ReactionRule.hpp>
-#include <ecell4/core/Reaction.hpp>
+// #include <ecell4/core/Reaction.hpp>
 #include <ecell4/core/MolecularTypeBase.hpp>
 #include <ecell4/core/SimulatorBase.hpp>
 #include <ecell4/core/RandomNumberGenerator.hpp>
@@ -21,6 +21,16 @@ namespace ecell4
 
 namespace spatiocyte
 {
+
+template <typename T>
+struct Reaction
+{
+    typedef std::pair<ParticleID, T> particle_type;
+
+    std::vector<particle_type> reactants;
+    std::vector<particle_type> products;
+    ReactionRule rule;
+};
 
 class ReactionInfo
 {
