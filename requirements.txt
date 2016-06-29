@@ -1,4 +1,4 @@
 recommonmark
 numpydoc
 pip
-https://circle-artifacts.com/gh/ecell/ecell4/648/artifacts/0/home/ubuntu/ecell4/python/dist/ecell-4.0.1-cp27-none-linux_x86_64.whl
+ecell
