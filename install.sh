@@ -76,7 +76,11 @@ fi
 
 set -e
 
-cmake -DCMAKE_INSTALL_PREFIX=${PREFIX} -DWITH_HDF5=${WITH_HDF5} -DWITH_VTK=${WITH_VTK} -DNO_BESSEL_TABLE=${NO_BESSEL_TABLE} .
+cmake \
+  -DCMAKE_INSTALL_PREFIX=${PREFIX} \
+  -DWITH_HDF5=${WITH_HDF5} \
+  -DWITH_VTK=${WITH_VTK} \
+  -DNO_BESSEL_TABLE=${NO_BESSEL_TABLE} .
 make
 # cmake -DCMAKE_INSTALL_PREFIX=${PREFIX} -DECELL4_ENABLE_PROFILING=1 .
 # make VERBOSE=1
@@ -87,25 +91,43 @@ make install
 
 cd python
 
+PYTHON=python
+INCLUDE_PATH=${PREFIX}/include:${VTK_INCLUDE_PATH}
+
 if [ $WITH_PYTHON2 != 0 ]; then
     if [ $CLEANUP != 0 ]; then
         rm -rf build lib/ecell4/*.cpp
     fi
-    mkdir -p ${PREFIX}/lib/python2.7/site-packages
-    if [ "$(uname)" == "Darwin" ]; then
-        LD_LIBRARY_PATH=${PREFIX}/lib PYTHONPATH=${PREFIX}/lib/python2.7/site-packages:/usr/local/lib/python2.7/dist-packages:${PYTHONPATH} python setup.py build_ext -L${PREFIX}/lib -I${PREFIX}/include:${VTK_INCLUDE_PATH} install --prefix=${PREFIX}
-        PYTHONPATH=${PREFIX}/lib/python2.7/site-packages:/usr/local/lib/python2.7/dist-packages:${PYTHONPATH} LD_LIBRARY_PATH=${PREFIX}/lib python setup.py test
-    else
-        LD_LIBRARY_PATH=${PREFIX}/lib PYTHONPATH=${PREFIX}/lib/python2.7/site-packages:/usr/local/lib/python2.7/dist-packages:${PYTHONPATH} python2 setup.py build_ext -L${PREFIX}/lib -I/usr/include/hdf5/serial/:${PREFIX}/include:${VTK_INCLUDE_PATH} install --prefix=${PREFIX} --prefer-shared
-        PYTHONPATH=${PREFIX}/lib/python2.7/site-packages:/usr/local/lib/python2.7/dist-packages:${PYTHONPATH} LD_LIBRARY_PATH=${PREFIX}/lib python2 setup.py test
-    fi
-fi
 
-if [ $WITH_PYTHON3 != 0 ]; then
-    if [ $CLEANUP != 0 -o $WITH_PYTHON2 != 0 ]; then
+    if [ "$(uname)" != "Darwin" ]; then
+        PYTHON=python2
+        if [ $WITH_HDF5 != 0 ]; then
+          INCLUDE_PATH=/usr/include/hdf5/serial/:${INCLUDE_PATH}
+        fi
+        INSTALL_OPT="--prefer-shared"
+    fi
+elif [ $WITH_PYTHON3 != 0 ]; then
+    if [ $CLEANUP != 0 ]; then
         rm -rf build lib/ecell4/*.cpp
     fi
-    mkdir -p ${PREFIX}/lib/python3.4/site-packages
-    LD_LIBRARY_PATH=${PREFIX}/lib PYTHONPATH=${PREFIX}/lib/python3.4/site-packages:/usr/local/lib/python3.4/dist-packages:${PYTHONPATH} python3 setup.py build_ext -L${PREFIX}/lib -I${PREFIX}/include:${VTK_INCLUDE_PATH} install --prefix=${PREFIX} --prefer-shared
-    PYTHONPATH=${PREFIX}/lib/python3.4/site-packages:/usr/local/lib/python3.4/dist-packages:${PYTHONPATH} LD_LIBRARY_PATH=${PREFIX}/lib python3 setup.py test
+
+    PYTHON=python3
+    INSTALL_OPT="--prefer-shared"
+else
+    exit 0
 fi
+
+python_ver() {
+    $1 --version | awk '{print $2;}' | cut -d'.' -f 1,2
+}
+
+PYTHON_VERSION=$(python_ver ${PYTHON})
+DEST_DIR=${PREFIX}/lib/python${PYTHON_VERSION}/site-packages
+mkdir -p ${DEST_DIR}
+
+export PYTHONPATH=${DEST_DIR}:/usr/local/lib/python${PYTHON_VERSION}/dist-packages:${PYTHONPATH}
+export LD_LIBRARY_PATH=${PREFIX}/lib:${LD_LIBRARY_PATH}
+
+${PYTHON} setup.py build_ext -L${PREFIX}/lib -I${INCLUDE_PATH}
+${PYTHON} setup.py test
+${PYTHON} setup.py install --prefix=${PREFIX} ${INSTALL_OPT}
