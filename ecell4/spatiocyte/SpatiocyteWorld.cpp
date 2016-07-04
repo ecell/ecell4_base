@@ -237,19 +237,19 @@ std::vector<Species> SpatiocyteWorld::list_structure_species() const
 
 std::vector<std::pair<ParticleID, Voxel> > SpatiocyteWorld::list_voxels() const
 {
-    return (*space_).list_voxels_private();
+    return (*space_).list_voxels();
 }
 
 std::vector<std::pair<ParticleID, Voxel> >
     SpatiocyteWorld::list_voxels(const Species& sp) const
 {
-    return (*space_).list_voxels_private(sp);
+    return (*space_).list_voxels(sp);
 }
 
 std::vector<std::pair<ParticleID, Voxel> >
     SpatiocyteWorld::list_voxels_exact(const Species& sp) const
 {
-    return (*space_).list_voxels_exact_private(sp);
+    return (*space_).list_voxels_exact(sp);
 }
 
 MolecularTypeBase* SpatiocyteWorld::find_molecular_type(const Species& species)
@@ -281,7 +281,7 @@ std::pair<std::pair<ParticleID, Voxel>, bool>
 SpatiocyteWorld::new_voxel(const Voxel& v)
 {
     ParticleID pid(sidgen_());
-    const bool is_succeeded((*space_).update_voxel_private(pid, v));
+    const bool is_succeeded((*space_).update_voxel(pid, v));
     return std::make_pair(std::make_pair(pid, v), is_succeeded);
 }
 
@@ -296,7 +296,7 @@ SpatiocyteWorld::new_voxel_structure(const Species& sp, const coordinate_type& p
 std::pair<std::pair<ParticleID, Voxel>, bool>
 SpatiocyteWorld::new_voxel_structure(const Voxel& v)
 {
-    const bool is_succeeded((*space_).update_voxel_private(ParticleID(), v));
+    const bool is_succeeded((*space_).update_voxel(ParticleID(), v));
     return std::make_pair(std::make_pair(ParticleID(), v), is_succeeded);
 }
 
@@ -311,7 +311,7 @@ SpatiocyteWorld::new_voxel_interface(const Species& sp, const coordinate_type& p
 std::pair<std::pair<ParticleID, Voxel>, bool>
 SpatiocyteWorld::new_voxel_interface(const Voxel& v)
 {
-    const bool is_succeeded((*space_).update_voxel_private(ParticleID(), v));
+    const bool is_succeeded((*space_).update_voxel(ParticleID(), v));
     return std::make_pair(std::make_pair(ParticleID(), v), is_succeeded);
 }
 
@@ -522,7 +522,7 @@ bool SpatiocyteWorld::is_surface_voxel(
     for (Integer i(0); i < 12; ++i)
     {
         if (shape->is_inside(global2position((*space_).private2global(
-            (*space_).get_neighbor_private(private_coord, i)))) > 0)
+            (*space_).get_neighbor(private_coord, i)))) > 0)
         {
             return true;
         }
@@ -538,7 +538,7 @@ Integer SpatiocyteWorld::add_neighbors(const Species& sp,
     const SpatiocyteWorld::molecule_info_type info(get_molecule_info(sp));
     for (Integer i(0); i < 12; ++i)
     {
-        const coordinate_type n((*space_).get_neighbor_private(center, i));
+        const coordinate_type n((*space_).get_neighbor(center, i));
         if (new_voxel(Voxel(sp, n, info.radius, info.D, info.loc)).second)
         {
             ++count;
@@ -598,7 +598,7 @@ void SpatiocyteWorld::remove_molecules(const Species& sp, const Integer& num)
 
 bool SpatiocyteWorld::remove_voxel(const coordinate_type coord)
 {
-    return (*space_).remove_voxel_private(coord);
+    return (*space_).remove_voxel(coord);
 }
 
 // bool SpatiocyteWorld::move(coordinate_type from, coordinate_type to)
@@ -609,7 +609,7 @@ bool SpatiocyteWorld::remove_voxel(const coordinate_type coord)
 bool SpatiocyteWorld::move(
     const coordinate_type& src, const coordinate_type& dest, const std::size_t candidate)
 {
-    return (*space_).move_private(src, dest, candidate);
+    return (*space_).move(src, dest, candidate);
 }
 
 bool SpatiocyteWorld::can_move(const coordinate_type& src,
@@ -635,7 +635,7 @@ SpatiocyteWorld::check_neighbor(
     for (unsigned int rnd(0); rnd < 12; ++rnd)
     {
         const coordinate_type
-            neighbor((*space_).get_neighbor_private(coord, rnd));
+            neighbor((*space_).get_neighbor(coord, rnd));
         const MolecularTypeBase* mt(get_molecular_type(neighbor));
         const std::string
             serial(mt->is_vacant() ? "" : mt->species().serial());
@@ -654,7 +654,7 @@ SpatiocyteWorld::check_neighbor(
         tmp[rng()->uniform_int(0, tmp.size() - 1)], true);
 
     // const Integer rnd(rng()->uniform_int(0, 11));
-    // const coordinate_type neighbor((*space_).get_neighbor_private(coord, rnd));
+    // const coordinate_type neighbor((*space_).get_neighbor(coord, rnd));
     // bool flg = get_molecular_type(neighbor)->is_vacant(); //XXX: loc
     // return std::make_pair(neighbor, flg);
 }

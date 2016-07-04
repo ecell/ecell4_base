@@ -212,12 +212,12 @@ public:
 
     std::pair<ParticleID, Voxel> get_voxel(const ParticleID& pid) const
     {
-        return (*space_).get_voxel_private_private(pid);
+        return (*space_).get_voxel(pid);
     }
 
     std::pair<ParticleID, Voxel> get_voxel(const coordinate_type& coord) const
     {
-        return (*space_).get_voxel_private_private(coord);
+        return (*space_).get_voxel(coord);
     }
 
     bool remove_particle(const ParticleID& pid)
@@ -296,13 +296,13 @@ public:
     coordinate_type get_neighbor(
             coordinate_type private_coord, Integer nrand) const
     {
-        return (*space_).get_neighbor_private(private_coord, nrand);
+        return (*space_).get_neighbor(private_coord, nrand);
     }
 
     coordinate_type get_neighbor_boundary(
             coordinate_type private_coord, Integer nrand) const
     {
-        return (*space_).get_neighbor_private_boundary(private_coord, nrand);
+        return (*space_).get_neighbor_boundary(private_coord, nrand);
     }
 
     std::pair<coordinate_type, bool> check_neighbor(
@@ -324,12 +324,12 @@ public:
 
     void update_voxel(const Voxel& v)
     {
-        (*space_).update_voxel_private(v);
+        (*space_).update_voxel(v);
     }
 
     bool update_voxel(const ParticleID& pid, const Voxel& v)
     {
-        return (*space_).update_voxel_private(pid, v);
+        return (*space_).update_voxel(pid, v);
     }
 
     Real voxel_radius() const

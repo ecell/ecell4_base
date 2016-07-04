@@ -126,8 +126,7 @@ struct LatticeSpaceHDF5Traits
         {
             const MolecularTypeBase* mtb((*itr).second);
             const Species species(mtb->species());
-            save_molecular_type(mtb, space.list_voxels_exact_private(species), root);
-            // save_molecular_type(mtb, space.list_voxels_exact(species), root);
+            save_molecular_type(mtb, space.list_voxels_exact(species), root);
             save_molecular_type_recursively(species, location_map, space, root);
             location_map.erase(itr);
         }
@@ -277,8 +276,7 @@ void load_lattice_space(const H5::Group& root, Tspace_* space)
             space->make_molecular_type(species, property.radius, property.D, property.location);
         else
             space->make_structure_type(species, static_cast<Shape::dimension_kind>(property.dimension), property.location);
-        space->add_voxels_private(species, voxels);
-        // space->add_voxels(species, voxels);
+        space->add_voxels(species, voxels);
     }
 }
 

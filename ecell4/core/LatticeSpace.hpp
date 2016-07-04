@@ -139,33 +139,33 @@ public:
     //     list_voxels(const Species& sp) const = 0;
     // virtual std::vector<std::pair<ParticleID, Voxel> >
     //     list_voxels_exact(const Species& sp) const = 0;
-    virtual std::vector<std::pair<ParticleID, Voxel> > list_voxels_private() const = 0;
+    virtual std::vector<std::pair<ParticleID, Voxel> > list_voxels() const = 0;
     virtual std::vector<std::pair<ParticleID, Voxel> >
-        list_voxels_private(const Species& sp) const = 0;
+        list_voxels(const Species& sp) const = 0;
     virtual std::vector<std::pair<ParticleID, Voxel> >
-        list_voxels_exact_private(const Species& sp) const = 0;
+        list_voxels_exact(const Species& sp) const = 0;
 
-    virtual void update_voxel_private(const Voxel& v) = 0;
-    virtual bool update_voxel_private(const ParticleID& pid, const Voxel& v) = 0;
-    virtual bool update_voxel_private_without_checking(const ParticleID& pid, const Voxel& v)
+    virtual void update_voxel(const Voxel& v) = 0;
+    virtual bool update_voxel(const ParticleID& pid, const Voxel& v) = 0;
+    virtual bool update_voxel_without_checking(const ParticleID& pid, const Voxel& v)
     {
         throw NotSupported(
-            "update_voxel_private_without_chekcing(const ParticleID&, const Voxel&) is not supported by this space class");
+            "update_voxel_without_chekcing(const ParticleID&, const Voxel&) is not supported by this space class");
     }
     // virtual std::pair<ParticleID, Voxel> get_voxel(const ParticleID& pid) const = 0;
     // virtual std::pair<ParticleID, Voxel> get_voxel(const coordinate_type& coord) const = 0;
-    virtual std::pair<ParticleID, Voxel> get_voxel_private_private(const ParticleID& pid) const = 0;
-    virtual std::pair<ParticleID, Voxel> get_voxel_private_private(const coordinate_type& private_coord) const = 0;
+    virtual std::pair<ParticleID, Voxel> get_voxel(const ParticleID& pid) const = 0;
+    virtual std::pair<ParticleID, Voxel> get_voxel(const coordinate_type& private_coord) const = 0;
     // virtual std::pair<ParticleID, Voxel> get_voxel_private(const coordinate_type& private_coord) const = 0;
     // virtual std::pair<ParticleID, Voxel> get_voxel(const coordinate_type& coord) const = 0;
     virtual bool remove_voxel(const ParticleID& pid) = 0;
-    virtual bool remove_voxel_private(const coordinate_type& coord) = 0;
+    virtual bool remove_voxel(const coordinate_type& coord) = 0;
     // virtual bool move(const coordinate_type& from, const coordinate_type& to) = 0;
-    virtual bool move_private(const coordinate_type& src,
+    virtual bool move(const coordinate_type& src,
             const coordinate_type& dest, const std::size_t candidate=0) = 0;
     virtual bool can_move(const coordinate_type& src, const coordinate_type& dest) const;
     // virtual const Particle particle_at(const coordinate_type& coord) const = 0;
-    virtual const Particle particle_at_private(const coordinate_type& coord) const = 0;
+    virtual const Particle particle_at(const coordinate_type& coord) const = 0;
 
     virtual MolecularTypeBase* find_molecular_type(const Species& sp) = 0;
     virtual const MolecularTypeBase* find_molecular_type(const Species& sp) const = 0;
@@ -206,9 +206,9 @@ public:
     virtual Real3 global2position(const Integer3& global) const = 0;
     virtual Integer3 position2global(const Real3& pos) const = 0;
 
-    virtual coordinate_type get_neighbor_private(
+    virtual coordinate_type get_neighbor(
         const coordinate_type& private_coord, const Integer& nrand) const = 0;
-    virtual coordinate_type get_neighbor_private_boundary(
+    virtual coordinate_type get_neighbor_boundary(
         const coordinate_type& private_coord, const Integer& nrand) const = 0;
 
     // virtual coordinate_type get_neighbor(
@@ -249,7 +249,7 @@ public:
 
     virtual std::vector<std::pair<ParticleID, Particle> > list_particles() const
     {
-        const std::vector<std::pair<ParticleID, Voxel> > voxels(list_voxels_private());
+        const std::vector<std::pair<ParticleID, Voxel> > voxels(list_voxels());
 
         std::vector<std::pair<ParticleID, Particle> > retval;
         retval.reserve(voxels.size());
@@ -257,7 +257,7 @@ public:
             i(voxels.begin()); i != voxels.end(); ++i)
         {
             const ParticleID& pid((*i).first);
-            const Particle p(particle_at_private((*i).second.coordinate()));
+            const Particle p(particle_at((*i).second.coordinate()));
             retval.push_back(std::make_pair(pid, p));
         }
         return retval;
@@ -266,7 +266,7 @@ public:
     virtual std::vector<std::pair<ParticleID, Particle> >
         list_particles(const Species& sp) const
     {
-        const std::vector<std::pair<ParticleID, Voxel> > voxels(list_voxels_private(sp));
+        const std::vector<std::pair<ParticleID, Voxel> > voxels(list_voxels(sp));
 
         std::vector<std::pair<ParticleID, Particle> > retval;
         retval.reserve(voxels.size());
@@ -274,7 +274,7 @@ public:
             i(voxels.begin()); i != voxels.end(); ++i)
         {
             const ParticleID& pid((*i).first);
-            const Particle p(particle_at_private((*i).second.coordinate()));
+            const Particle p(particle_at((*i).second.coordinate()));
             retval.push_back(std::make_pair(pid, p));
         }
         return retval;
@@ -284,7 +284,7 @@ public:
         list_particles_exact(const Species& sp) const
     {
         const std::vector<std::pair<ParticleID, Voxel> >
-            voxels(list_voxels_exact_private(sp));
+            voxels(list_voxels_exact(sp));
 
         std::vector<std::pair<ParticleID, Particle> > retval;
         retval.reserve(voxels.size());
@@ -292,7 +292,7 @@ public:
             i(voxels.begin()); i != voxels.end(); ++i)
         {
             const ParticleID& pid((*i).first);
-            const Particle p(particle_at_private((*i).second.coordinate()));
+            const Particle p(particle_at((*i).second.coordinate()));
             retval.push_back(std::make_pair(pid, p));
         }
         return retval;
@@ -323,7 +323,7 @@ public:
         // const Voxel v(get_voxel(pid).second);
         // return std::make_pair(pid, Particle(
         //     v.species(), coordinate2position(v.coordinate()), v.radius(), v.D()));
-        const Voxel v(get_voxel_private_private(pid).second);
+        const Voxel v(get_voxel(pid).second);
         return std::make_pair(pid, Particle(
             v.species(), private2position(v.coordinate()), v.radius(), v.D()));
     }
@@ -530,7 +530,7 @@ public:
     //     return global2coord(private2global(private_coord));
     // }
 
-    coordinate_type get_neighbor_private(
+    coordinate_type get_neighbor(
         const coordinate_type& private_coord, const Integer& nrand) const
     {
         const Integer NUM_COLROW(col_size_ * row_size_);
@@ -566,7 +566,7 @@ public:
         return private_coord - 1; // nrand == 0
     }
 
-    coordinate_type periodic_transpose_private(
+    coordinate_type periodic_transpose(
         const coordinate_type& private_coord) const
     {
         Integer3 global(private2global(private_coord));
@@ -589,7 +589,7 @@ public:
     //     return coord >= 0 && coord < row_size() * layer_size() * col_size();
     // }
 
-    bool is_in_range_private(const coordinate_type& coord) const
+    bool is_in_range(const coordinate_type& coord) const
     {
         return coord >= 0 && coord < row_size_ * col_size_ * layer_size_;
     }
@@ -658,7 +658,7 @@ public:
     virtual bool has_voxel(const ParticleID& pid) const;
 
     virtual bool remove_voxel(const ParticleID& pid);
-    virtual bool remove_voxel_private(const coordinate_type& coord);
+    virtual bool remove_voxel(const coordinate_type& coord);
 
     bool update_structure(const Particle& p);
 
@@ -668,11 +668,11 @@ public:
      * using Species and coordinate_type
      */
     std::vector<std::pair<ParticleID, Voxel> >
-        list_voxels_private() const;
+        list_voxels() const;
     std::vector<std::pair<ParticleID, Voxel> >
-        list_voxels_private(const Species& sp) const;
+        list_voxels(const Species& sp) const;
     std::vector<std::pair<ParticleID, Voxel> >
-        list_voxels_exact_private(const Species& sp) const;
+        list_voxels_exact(const Species& sp) const;
     // std::vector<std::pair<ParticleID, Voxel> >
     //     list_voxels() const;
     // std::vector<std::pair<ParticleID, Voxel> >
@@ -682,8 +682,8 @@ public:
     // virtual std::pair<ParticleID, Voxel> get_voxel(const ParticleID& pid) const;
     // virtual std::pair<ParticleID, Voxel> get_voxel(const coordinate_type& coord) const;
     // virtual std::pair<ParticleID, Voxel> get_voxel_private(const coordinate_type& private_coord) const;
-    virtual std::pair<ParticleID, Voxel> get_voxel_private_private(const ParticleID& pid) const;
-    virtual std::pair<ParticleID, Voxel> get_voxel_private_private(const coordinate_type& private_coord) const;
+    virtual std::pair<ParticleID, Voxel> get_voxel(const ParticleID& pid) const;
+    virtual std::pair<ParticleID, Voxel> get_voxel(const coordinate_type& private_coord) const;
 
     virtual Integer num_voxels_exact(const Species& sp) const;
     virtual Integer num_voxels(const Species& sp) const;
@@ -691,17 +691,17 @@ public:
 
     virtual Integer num_molecules(const Species& sp) const; //XXX:
 
-    virtual void update_voxel_private(const Voxel& v);
-    virtual bool update_voxel_private(const ParticleID& pid, const Voxel& v);
-    virtual bool update_voxel_private_without_checking(const ParticleID& pid, const Voxel& v);
+    virtual void update_voxel(const Voxel& v);
+    virtual bool update_voxel(const ParticleID& pid, const Voxel& v);
+    virtual bool update_voxel_without_checking(const ParticleID& pid, const Voxel& v);
 
     // bool add_voxels(const Species species, std::vector<std::pair<ParticleID, coordinate_type> > voxels);
-    bool add_voxels_private(const Species species, std::vector<std::pair<ParticleID, coordinate_type> > voxels);
+    bool add_voxels(const Species species, std::vector<std::pair<ParticleID, coordinate_type> > voxels);
 
     std::vector<Species> list_species() const;
     const Species& find_species(std::string name) const;
-    std::vector<coordinate_type> list_coords_private(const Species& sp) const;
-    std::vector<coordinate_type> list_coords_exact_private(const Species& sp) const;
+    std::vector<coordinate_type> list_coords(const Species& sp) const;
+    std::vector<coordinate_type> list_coords_exact(const Species& sp) const;
     // std::vector<coordinate_type> list_coords(const Species& sp) const;
     // std::vector<coordinate_type> list_coords_exact(const Species& sp) const;
     virtual MolecularTypeBase* find_molecular_type(const Species& sp);
@@ -711,7 +711,7 @@ public:
     // bool update_molecule(coordinate_type coord, const Species& species);
     // bool add_molecule(const Species& sp, coordinate_type coord, const ParticleID& pid);
     // virtual bool move(const coordinate_type& from, const coordinate_type& to);
-    virtual bool move_private(const coordinate_type& src,
+    virtual bool move(const coordinate_type& src,
             const coordinate_type& dest, const std::size_t candidate=0);
     virtual bool can_move(const coordinate_type& src, const coordinate_type& dest) const;
 
@@ -723,12 +723,12 @@ public:
         MolecularTypeBase* const& from_mt, MolecularTypeBase* const& loc,
         particle_info_type& info, const Integer nrand);
 
-    coordinate_type get_neighbor_private_boundary(
+    coordinate_type get_neighbor_boundary(
         const coordinate_type& coord, const Integer& nrand) const
     {
-        coordinate_type const dest = get_neighbor_private(coord, nrand);
+        coordinate_type const dest = get_neighbor(coord, nrand);
         MolecularTypeBase* dest_mt(voxels_.at(dest));
-        return (dest_mt != periodic_ ? dest : periodic_transpose_private(dest));
+        return (dest_mt != periodic_ ? dest : periodic_transpose(dest));
     }
 
     inline bool is_periodic() const
@@ -766,12 +766,12 @@ public:
     //     return particle_at_private(coord2private(coord));
     // }
 
-    virtual const Particle particle_at_private(const coordinate_type& coord) const;
+    virtual const Particle particle_at(const coordinate_type& coord) const;
 
     coordinate_type apply_boundary_(
         const coordinate_type& private_coord) const
     {
-        return periodic_transpose_private(private_coord);
+        return periodic_transpose(private_coord);
     }
 
     virtual bool make_structure_type(const Species& sp,

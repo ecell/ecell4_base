@@ -34,10 +34,10 @@ Integer LatticeSpaceCellListImpl::num_molecules(const Species& sp) const
  * v.species() and v.coordinate() respectively and return false.
  * If no Voxel with pid is found, create a new Voxel at v.coordiante() and return ture.
  */
-bool LatticeSpaceCellListImpl::update_voxel_private(const ParticleID& pid, const Voxel& v)
+bool LatticeSpaceCellListImpl::update_voxel(const ParticleID& pid, const Voxel& v)
 {
     const coordinate_type& to_coord(v.coordinate());
-    if (!is_in_range_private(to_coord))
+    if (!is_in_range(to_coord))
     {
         throw NotSupported("Out of bounds");
     }
@@ -87,7 +87,7 @@ bool LatticeSpaceCellListImpl::update_voxel_private(const ParticleID& pid, const
     return true;
 
     // const coordinate_type& to_coord(v.coordinate());
-    // if (!is_in_range_private(to_coord))
+    // if (!is_in_range(to_coord))
     // {
     //     return false;
     // }
@@ -262,7 +262,7 @@ MolecularTypeBase* LatticeSpaceCellListImpl::get_molecular_type(
     /**
      XXX: This may not work
      */
-    if (!is_in_range_private(coord))
+    if (!is_in_range(coord))
     {
         throw NotSupported("Out of bounds");
     }
@@ -316,7 +316,7 @@ const MolecularTypeBase* LatticeSpaceCellListImpl::get_molecular_type(
     /**
      XXX: This may not work
      */
-    if (!is_in_range_private(coord))
+    if (!is_in_range(coord))
     {
         throw NotSupported("Out of bounds");
     }
@@ -375,7 +375,7 @@ std::pair<LatticeSpaceCellListImpl::coordinate_type, bool>
         LatticeSpaceCellListImpl::particle_info_type& info, const Integer nrand)
 {
     const coordinate_type private_from(info.first);
-    coordinate_type private_to(get_neighbor_private(private_from, nrand));
+    coordinate_type private_to(get_neighbor(private_from, nrand));
 
     MolecularTypeBase* to_mt(get_molecular_type(private_to));
 
@@ -391,7 +391,7 @@ std::pair<LatticeSpaceCellListImpl::coordinate_type, bool>
         }
 
         // to_mt == periodic_
-        private_to = periodic_transpose_private(private_to);
+        private_to = periodic_transpose(private_to);
         to_mt = get_molecular_type(private_to);
 
         if (to_mt != loc)
@@ -416,7 +416,7 @@ std::pair<LatticeSpaceCellListImpl::coordinate_type, bool>
     return std::make_pair(private_to, true);
 
     // const coordinate_type private_from(info.first);
-    // coordinate_type private_to(get_neighbor_private(private_from, nrand));
+    // coordinate_type private_to(get_neighbor(private_from, nrand));
     // MolecularTypeBase* to_mt(get_molecular_type(private_to));
     // if (to_mt != loc)
     // {
@@ -430,7 +430,7 @@ std::pair<LatticeSpaceCellListImpl::coordinate_type, bool>
     //     }
 
     //     // to_mt == periodic_
-    //     private_to = periodic_transpose_private(private_to);
+    //     private_to = periodic_transpose(private_to);
     //     to_mt = get_molecular_type(private_to);
     //     if (to_mt != loc)
     //     {

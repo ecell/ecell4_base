@@ -64,7 +64,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_update_particle)
 
     // BOOST_CHECK(space.update_particle(id, particle));
     // BOOST_CHECK(space.update_voxel(id, v));
-    BOOST_CHECK(space.update_voxel_private(id, v));
+    BOOST_CHECK(space.update_voxel(id, v));
     BOOST_CHECK(space.has_species(sp));
 }
 
@@ -88,8 +88,8 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_num_particles)
 
     // BOOST_CHECK(space.update_voxel(id, v));
     // BOOST_CHECK(space.update_voxel(a_id, another));
-    BOOST_CHECK(space.update_voxel_private(id, v));
-    BOOST_CHECK(space.update_voxel_private(a_id, another));
+    BOOST_CHECK(space.update_voxel(id, v));
+    BOOST_CHECK(space.update_voxel(a_id, another));
     // BOOST_CHECK(space.update_particle(id, particle));
     // BOOST_CHECK(space.update_particle(a_id, another));
     BOOST_CHECK_EQUAL(space.num_particles(sp), 1);
@@ -114,8 +114,8 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_list_particles)
     // Voxel another(a, space.position2coordinate(pos1), r1, d1);
     Voxel another(a, space.position2private(pos1), r1, d1);
 
-    BOOST_CHECK(space.update_voxel_private(id, v));
-    BOOST_CHECK(space.update_voxel_private(a_id, another));
+    BOOST_CHECK(space.update_voxel(id, v));
+    BOOST_CHECK(space.update_voxel(a_id, another));
     // BOOST_CHECK(space.update_particle(id, particle));
     // BOOST_CHECK(space.update_particle(a_id, another));
 
@@ -192,7 +192,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_coordinate_position_translation)
     for (Integer i(0); i < 12; ++i)
     {
         const Real3 neighbor(
-                space.private2position(space.get_neighbor_private(origin, i)));
+                space.private2position(space.get_neighbor(origin, i)));
         const LatticeSpace::coordinate_type coord(
                 space.position2private(origin_p * 0.7 + neighbor * 0.3));
         BOOST_CHECK_EQUAL(origin, coord);
@@ -215,14 +215,14 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_add_remove_molecule)
     const LatticeSpace::coordinate_type private_coord(
             space.global2private(Integer3(3,4,5)));
     ParticleID pid(sidgen());
-    BOOST_CHECK(space.update_voxel_private(
+    BOOST_CHECK(space.update_voxel(
         pid, Voxel(sp, private_coord, radius, D)));
     BOOST_CHECK_EQUAL(space.num_particles(sp), 1);
 
     const MolecularTypeBase* mt(space.get_molecular_type(private_coord));
     BOOST_CHECK(!mt->is_vacant());
 
-    BOOST_CHECK(space.remove_voxel_private(private_coord));
+    BOOST_CHECK(space.remove_voxel(private_coord));
     const MolecularTypeBase* vacant(space.get_molecular_type(private_coord));
     BOOST_CHECK(vacant->is_vacant());
 }
@@ -236,7 +236,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_move)
     //         space.global2coord(global0));
 
     ParticleID pid(sidgen());
-    BOOST_CHECK(space.update_voxel_private(
+    BOOST_CHECK(space.update_voxel(
         pid, Voxel(sp, private_coord, radius, D)));
 
     MolecularTypeBase* from_mt(space.get_molecular_type(private_coord));
@@ -249,15 +249,15 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_move)
     //         space.global2coord(global1));
 
     // BOOST_CHECK(space.move(coord, to_coord));
-    BOOST_CHECK(space.move_private(private_coord, private_to_coord));
+    BOOST_CHECK(space.move(private_coord, private_to_coord));
 
     MolecularTypeBase* mt(space.get_molecular_type(private_to_coord));
     BOOST_CHECK(!mt->is_vacant());
 
-    BOOST_CHECK(space.update_voxel_private(
+    BOOST_CHECK(space.update_voxel(
         sidgen(), Voxel(sp, private_coord, radius, D)));
     // BOOST_CHECK(!space.move(coord, to_coord));
-    BOOST_CHECK(!space.move_private(private_coord, private_to_coord));
+    BOOST_CHECK(!space.move(private_coord, private_to_coord));
 }
 
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_update_molecule)
@@ -270,9 +270,9 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_update_molecule)
             space.global2private(global));
 
     ParticleID pid(sidgen());
-    BOOST_CHECK(space.update_voxel_private(
+    BOOST_CHECK(space.update_voxel(
         pid, Voxel(reactant, private_coord, radius, D)));
-    space.update_voxel_private(
+    space.update_voxel(
         Voxel(product, private_coord, radius, D));
 
     const MolecularTypeBase* mt(space.get_molecular_type(private_coord));
@@ -291,7 +291,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_update_voxel)
             private_coord(coord2private(space, coord));
         const Real3 pos(space.private2position(private_coord));
         const bool succeeded(
-            space.update_voxel_private(pid, Voxel(sp, private_coord, radius, D)));
+            space.update_voxel(pid, Voxel(sp, private_coord, radius, D)));
         BOOST_CHECK(succeeded == (coord == 0));
         BOOST_CHECK_EQUAL(space.num_particles(), 1);
         std::pair<ParticleID, Particle> pair(space.list_particles()[0]);
@@ -313,7 +313,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_lattice_structure)
         //         space.coord2private(coord));
         const LatticeSpace::coordinate_type private_coord(
                 coord2private(space, coord));
-        BOOST_CHECK(space.update_voxel_private(
+        BOOST_CHECK(space.update_voxel(
             pid, Voxel(sp, private_coord, radius, D)));
     }
 }
@@ -327,9 +327,9 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_neighbor)
         for (int i(0); i < 12; ++i)
         {
             // LatticeSpace::coordinate_type neighbor(
-            //         space.get_neighbor_private(space.coord2private(coord), i));
+            //         space.get_neighbor(space.coord2private(coord), i));
             LatticeSpace::coordinate_type neighbor(
-                    space.get_neighbor_private(coord2private(space, coord), i));
+                    space.get_neighbor(coord2private(space, coord), i));
             if (!space.is_inside(neighbor))
                 continue;
             // Real3 pos(space.coordinate2position(space.private2coord(neighbor)));
@@ -374,7 +374,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_periodic_col)
         {
             const LatticeSpace::coordinate_type private_coord(
                     space.global2private(Integer3(0, i, j)));
-            BOOST_CHECK(space.update_voxel_private(
+            BOOST_CHECK(space.update_voxel(
                 sidgen(), Voxel(sp, private_coord, radius, D)));
         }
 
@@ -416,7 +416,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_periodic_row)
         {
             const LatticeSpace::coordinate_type private_coord(
                     space.global2private(Integer3(col, 0, layer)));
-            BOOST_CHECK(space.update_voxel_private(
+            BOOST_CHECK(space.update_voxel(
                 sidgen(), Voxel(sp, private_coord, radius, D)));
         }
     // from 0 to row_size-1
@@ -459,7 +459,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_periodic_layer)
         {
             const LatticeSpace::coordinate_type private_coord(
                     space.global2private(Integer3(col, row, layer)));
-            BOOST_CHECK(space.update_voxel_private(
+            BOOST_CHECK(space.update_voxel(
                 sidgen(), Voxel(sp, private_coord, radius, D)));
         }
     // from 0 to layer_size-1
@@ -552,7 +552,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_structure_update)
     //XXX: BOOST_CHECK(space.update_particle(pid, Particle(sp, pos, radius, D)));
     // BOOST_CHECK(space.update_voxel(
     //     pid, Voxel(sp, space.position2coordinate(pos), radius, D, structure.serial())));
-    BOOST_CHECK(space.update_voxel_private(
+    BOOST_CHECK(space.update_voxel(
         pid, Voxel(sp, space.position2private(pos), radius, D, structure.serial())));
     BOOST_CHECK_EQUAL(space.list_particles().size(), 1);
     BOOST_CHECK_EQUAL(space.list_particles(sp).size(), 1);
@@ -563,7 +563,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_structure_update)
     Species sp2("B", "2.5e-9", "1e-12");
     BOOST_CHECK_THROW(
         // space.update_voxel(sidgen(), Voxel(sp2, space.position2coordinate(pos), radius, D)),
-        space.update_voxel_private(sidgen(), Voxel(sp2, space.position2private(pos), radius, D)),
+        space.update_voxel(sidgen(), Voxel(sp2, space.position2private(pos), radius, D)),
         NotSupported);
     // BOOST_CHECK_THROW(
     //     space.update_particle(sidgen(), Particle(sp2, pos, radius, D)),
@@ -583,7 +583,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_structure_move)
     //XXX: BOOST_CHECK(space.update_particle(pid, Particle(sp, pos1, radius, D)));
     // BOOST_CHECK(space.update_voxel(
     //     pid, Voxel(sp, space.position2coordinate(pos1), radius, D, structure.serial())));
-    BOOST_CHECK(space.update_voxel_private(
+    BOOST_CHECK(space.update_voxel(
         pid, Voxel(sp, space.position2private(pos1), radius, D, structure.serial())));
     BOOST_CHECK_EQUAL(space.list_particles(sp).size(), 1);
     BOOST_CHECK_EQUAL(space.list_particles(structure).size(), 1);
@@ -595,7 +595,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_structure_move)
     const LatticeSpace::coordinate_type
         private_coord1(space.position2private(pos1)),
         private_coord2(space.position2private(pos2));
-    BOOST_CHECK(space.move_private(private_coord1, private_coord2));
+    BOOST_CHECK(space.move(private_coord1, private_coord2));
     BOOST_CHECK_EQUAL(space.list_particles(sp).size(), 1);
     BOOST_CHECK_EQUAL(space.list_particles(structure).size(), 1);
     BOOST_CHECK_EQUAL(space.list_particles().size(), 2); // TODO -> 1
@@ -621,9 +621,9 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_save_and_load)
     const LatticeSpace::coordinate_type
         center(space.global2private(Integer3(space.col_size()/2, space.row_size()/2, l))),
         point(space.global2private(Integer3(space.col_size()/2, space.row_size()/2, l-2)));
-    BOOST_ASSERT(space.update_voxel_private(sidgen(), Voxel(sp, center, radius, D, structure.serial())));
+    BOOST_ASSERT(space.update_voxel(sidgen(), Voxel(sp, center, radius, D, structure.serial())));
     // #XXX !!!Warning!!! Ideally, not necessary to give structure.serial() explicitly
-    BOOST_ASSERT(space.update_voxel_private(sidgen(), Voxel(
+    BOOST_ASSERT(space.update_voxel(sidgen(), Voxel(
             Species("B", "2.5e-9", "1e-12"), point, 2.5e-9, 1e-12)));
 
     H5::H5File fout("data.h5", H5F_ACC_TRUNC);

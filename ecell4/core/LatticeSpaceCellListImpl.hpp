@@ -347,7 +347,7 @@ public:
     //     return retval;
     // }
 
-    virtual std::vector<std::pair<ParticleID, Voxel> > list_voxels_private() const
+    virtual std::vector<std::pair<ParticleID, Voxel> > list_voxels() const
     {
         std::vector<std::pair<ParticleID, Voxel> > retval;
 
@@ -369,7 +369,7 @@ public:
     }
 
     virtual std::vector<std::pair<ParticleID, Voxel> >
-        list_voxels_private(const Species& sp) const
+        list_voxels(const Species& sp) const
     {
         SpeciesExpressionMatcher sexp(sp);
         std::vector<std::pair<ParticleID, Voxel> > retval;
@@ -396,7 +396,7 @@ public:
     }
 
     virtual std::vector<std::pair<ParticleID, Voxel> >
-        list_voxels_exact_private(const Species& sp) const
+        list_voxels_exact(const Species& sp) const
     {
         std::vector<std::pair<ParticleID, Voxel> > retval;
         spmap::const_iterator itr(spmap_.find(sp));
@@ -422,7 +422,7 @@ public:
      * Change the Species at v.coordinate() to v.species.
      * The ParticleID must be kept after this update.
      */
-    virtual void update_voxel_private(const Voxel& v)
+    virtual void update_voxel(const Voxel& v)
     {
         const coordinate_type coord(v.coordinate());
         MolecularTypeBase* src_mt(get_molecular_type(coord));
@@ -455,7 +455,7 @@ public:
         // return true;
     }
 
-    virtual bool update_voxel_private(const ParticleID& pid, const Voxel& v);
+    virtual bool update_voxel(const ParticleID& pid, const Voxel& v);
 
     // virtual std::pair<ParticleID, Voxel> get_voxel(const ParticleID& pid) const
     // {
@@ -492,7 +492,7 @@ public:
     //     }
     // }
 
-    // virtual std::pair<ParticleID, Voxel> get_voxel_private(const coordinate_type& private_coord) const
+    // virtual std::pair<ParticleID, Voxel> get_voxel(const coordinate_type& private_coord) const
     // {
     //     const MolecularTypeBase* mt(get_molecular_type(private_coord));
     //     const std::string loc((mt->location()->is_vacant())
@@ -509,7 +509,7 @@ public:
     //     }
     // }
 
-    virtual std::pair<ParticleID, Voxel> get_voxel_private_private(const ParticleID& pid) const
+    virtual std::pair<ParticleID, Voxel> get_voxel(const ParticleID& pid) const
     {
         const std::pair<const MolecularTypeBase*, coordinate_type>
             target(__get_coordinate(pid));
@@ -525,7 +525,7 @@ public:
             pid, Voxel(mt->species(), target.second, mt->radius(), mt->D(), loc));
     }
 
-    virtual std::pair<ParticleID, Voxel> get_voxel_private_private(const coordinate_type& private_coord) const
+    virtual std::pair<ParticleID, Voxel> get_voxel(const coordinate_type& private_coord) const
     {
         const MolecularTypeBase* mt(get_molecular_type(private_coord));
         const std::string loc((mt->location()->is_vacant())
@@ -563,7 +563,7 @@ public:
         return false;
     }
 
-    virtual bool remove_voxel_private(const coordinate_type& coord)
+    virtual bool remove_voxel(const coordinate_type& coord)
     {
         MolecularTypeBase* mt(get_molecular_type(coord));
         if (mt->is_vacant())
@@ -587,7 +587,7 @@ public:
     //     return move_private(src, dest);
     // }
 
-    virtual bool move_private(const coordinate_type& src,
+    virtual bool move(const coordinate_type& src,
             const coordinate_type& dest, const std::size_t candidate=0)
     {
         coordinate_type tmp_dest(dest);
@@ -609,7 +609,7 @@ public:
         }
         else if (dest_mt == periodic_)
         {
-            tmp_dest = periodic_transpose_private(tmp_dest);
+            tmp_dest = periodic_transpose(tmp_dest);
             dest_mt = get_molecular_type(tmp_dest);
         }
 
@@ -632,7 +632,7 @@ public:
         return true;
     }
 
-    virtual const Particle particle_at_private(const coordinate_type& private_coord) const
+    virtual const Particle particle_at(const coordinate_type& private_coord) const
     {
         const MolecularTypeBase* mt(get_molecular_type(private_coord));
         return Particle(
@@ -671,11 +671,11 @@ public:
             != get_molecular_type(v)->location()); //XXX: == ???
     }
 
-    coordinate_type get_neighbor_private_boundary(
+    coordinate_type get_neighbor_boundary(
         const coordinate_type& coord, const Integer& nrand) const
     {
-        coordinate_type const dest = get_neighbor_private(coord, nrand);
-        return (!is_periodic_ || is_inside(dest) ? dest : periodic_transpose_private(dest));
+        coordinate_type const dest = get_neighbor(coord, nrand);
+        return (!is_periodic_ || is_inside(dest) ? dest : periodic_transpose(dest));
     }
 
     virtual void add_structure(const Species& sp,
