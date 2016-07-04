@@ -45,9 +45,11 @@ class LatticeSpace
 {
 public:
 
+    typedef Voxel::coordinate_type private_coordinate_type;
+    // typedef MolecularTypeBase::private_coordinate_type private_coordinate_type;
     typedef MolecularTypeBase::coord_id_pair particle_info_type;
     // typedef MolecularTypeBase::coordinate_type coordinate_type;
-    typedef MolecularTypeBase::private_coordinate_type private_coordinate_type;
+    // typedef MolecularTypeBase::private_coordinate_type private_coordinate_type;
 
 public:
 

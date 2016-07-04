@@ -27,7 +27,7 @@ public:
 
     typedef base_type::particle_info_type particle_info_type;
     typedef base_type::private_coordinate_type private_coordinate_type;
-    typedef base_type::private_coordinate_type coordinate_type;
+    // typedef base_type::coordinate_type coordinate_type;
 
     typedef std::map<Species, boost::shared_ptr<MolecularType> > spmap;
     typedef std::vector<std::pair<MolecularTypeBase*, private_coordinate_type> >
@@ -525,7 +525,7 @@ public:
             pid, Voxel(mt->species(), target.second, mt->radius(), mt->D(), loc));
     }
 
-    virtual std::pair<ParticleID, Voxel> get_voxel_private_private(const coordinate_type& private_coord) const
+    virtual std::pair<ParticleID, Voxel> get_voxel_private_private(const private_coordinate_type& private_coord) const
     {
         const MolecularTypeBase* mt(get_molecular_type(private_coord));
         const std::string loc((mt->location()->is_vacant())

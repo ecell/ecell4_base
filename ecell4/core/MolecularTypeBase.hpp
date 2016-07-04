@@ -6,7 +6,7 @@
 #include "Shape.hpp"
 #include "Identifier.hpp"
 #include "RandomNumberGenerator.hpp"
-// #include "LatticeSpace.hpp"
+#include "Voxel.hpp"
 
 
 namespace ecell4
@@ -16,7 +16,7 @@ class MolecularTypeBase
 {
 public:
 
-    typedef Integer private_coordinate_type;
+    typedef Voxel::coordinate_type private_coordinate_type;
     typedef std::pair<private_coordinate_type, ParticleID> coord_id_pair;
 
     typedef std::vector<coord_id_pair> container_type;
