@@ -221,7 +221,7 @@ protected:
         virtual void fire()
         {
             const Species reactant(*(rule_.reactants().begin()));
-            sim_->apply_first_order_reaction_(rule_, sim_->world_->choice_private(reactant));
+            sim_->apply_first_order_reaction_(rule_, sim_->world_->choice(reactant));
             time_ += draw_dt();
         }
 
@@ -400,14 +400,14 @@ protected:
     const std::string get_serial(
         const SpatiocyteWorld::coordinate_type coord) const
     {
-        const MolecularTypeBase* mtype(world_->get_molecular_type_private(coord));
+        const MolecularTypeBase* mtype(world_->get_molecular_type(coord));
         return mtype->is_vacant() ? "" : mtype->species().serial();
     }
 
     const std::string get_location(
         const SpatiocyteWorld::coordinate_type coord) const
     {
-        const MolecularTypeBase* mtype(world_->get_molecular_type_private(coord));
+        const MolecularTypeBase* mtype(world_->get_molecular_type(coord));
         if (mtype->is_vacant())
         {
             return "";
