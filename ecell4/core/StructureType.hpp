@@ -89,7 +89,7 @@ public:
 
     virtual coordinate_id_pair_type pop(const coordinate_type& coord)
     {
-        return coordinate_id_pair_type(coord, ParticleID());
+        return coordinate_id_pair_type(ParticleID(), coord);
     }
 
     virtual bool remove_voxel_if_exists(const coordinate_type& coord)

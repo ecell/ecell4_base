@@ -443,7 +443,7 @@ public:
             mt->with_voxels()
                 ? mt->find_particle_id(coord)
                 : ParticleID());
-        const coordinate_id_pair_type info(coord, pid);
+        const coordinate_id_pair_type info(pid, coord);
         return make_pid_voxel_pair(mt, info);
     }
 

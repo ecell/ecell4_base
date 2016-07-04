@@ -64,7 +64,7 @@ bool LatticeSpaceCellListImpl::update_voxel(const ParticleID& pid, const Voxel& 
             //XXX: use location?
             dest_mt->replace_voxel(to_coord, from_coord);
 
-            new_mt->add_voxel_without_checking(coordinate_id_pair_type(to_coord, pid));
+            new_mt->add_voxel_without_checking(coordinate_id_pair_type(pid, to_coord));
 
             if (!dest_mt->is_vacant())
             {
@@ -82,7 +82,7 @@ bool LatticeSpaceCellListImpl::update_voxel(const ParticleID& pid, const Voxel& 
     // new
     dest_mt->remove_voxel_if_exists(to_coord);
 
-    new_mt->add_voxel_without_checking(coordinate_id_pair_type(to_coord, pid));
+    new_mt->add_voxel_without_checking(coordinate_id_pair_type(pid, to_coord));
     update_matrix(to_coord, new_mt);
     return true;
 
@@ -137,8 +137,8 @@ bool LatticeSpaceCellListImpl::update_voxel(const ParticleID& pid, const Voxel& 
     //     {
     //         MolecularTypeBase* src_mt(target.first);
     //         src_mt->remove_voxel_if_exists(from_coord);
-    //         dest_mt->replace_voxel(to_coord, coordinate_id_pair_type(from_coord, ParticleID()));
-    //         new_mt->add_voxel_without_checking(coordinate_id_pair_type(to_coord, pid));
+    //         dest_mt->replace_voxel(to_coord, coordinate_id_pair_type(ParticleID(), from_coord));
+    //         new_mt->add_voxel_without_checking(coordinate_id_pair_type(pid, to_coord));
 
     //         if (!dest_mt->is_vacant())
     //         {
@@ -153,7 +153,7 @@ bool LatticeSpaceCellListImpl::update_voxel(const ParticleID& pid, const Voxel& 
     //     }
     // }
 
-    // new_mt->add_voxel_without_checking(coordinate_id_pair_type(to_coord, pid));
+    // new_mt->add_voxel_without_checking(coordinate_id_pair_type(pid, to_coord));
     // dest_mt->remove_voxel_if_exists(to_coord);
     // update_matrix(to_coord, new_mt);
     // return true;
@@ -442,7 +442,7 @@ std::pair<LatticeSpaceCellListImpl::coordinate_type, bool>
     // if (to_mt != vacant_) // (!to_mt->is_vacant())
     // {
     //     to_mt->replace_voxel(
-    //         to, coordinate_id_pair_type(from, ParticleID()));
+    //         to, coordinate_id_pair_type(ParticleID(), from));
     //     update_matrix(from, to_mt);
     //     update_matrix(to, from_mt);
     // }

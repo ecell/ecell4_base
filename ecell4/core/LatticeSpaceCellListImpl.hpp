@@ -432,7 +432,7 @@ public:
             }
 
             mt->location()->add_voxel_without_checking(
-                coordinate_id_pair_type(coord, ParticleID()));
+                coordinate_id_pair_type(ParticleID(), coord));
             update_matrix(coord, mt->location());
             return true;
         }

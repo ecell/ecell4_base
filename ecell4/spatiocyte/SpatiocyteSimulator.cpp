@@ -359,8 +359,8 @@ std::pair<bool, SpatiocyteSimulator::reaction_type> SpatiocyteSimulator::apply_s
     const SpatiocyteWorld::coordinate_type from_coord(p0.second.coordinate());
     const SpatiocyteWorld::coordinate_type to_coord(p1.second.coordinate());
 
-    const SpatiocyteWorld::coordinate_id_pair_type from_info(from_coord, p0.first);
-    const SpatiocyteWorld::coordinate_id_pair_type to_info(to_coord, p1.first);
+    const SpatiocyteWorld::coordinate_id_pair_type from_info(p0.first, from_coord);
+    const SpatiocyteWorld::coordinate_id_pair_type to_info(p1.first, to_coord);
 
     std::pair<bool, reaction_type> retval;
 
@@ -639,7 +639,7 @@ std::pair<bool, SpatiocyteSimulator::reaction_type>
     const ReactionRule::product_container_type& products(reaction_rule.products());
 
     const SpatiocyteWorld::coordinate_type coord(p.second.coordinate());
-    const SpatiocyteWorld::coordinate_id_pair_type info(coord, p.first);
+    const SpatiocyteWorld::coordinate_id_pair_type info(p.first, coord);
 
     std::pair<bool, reaction_type> retval;
 

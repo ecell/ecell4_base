@@ -20,7 +20,10 @@ public:
 
     // typedef std::pair<coordinate_type, ParticleID> coordinate_id_pair_type;
     typedef struct coordinate_id_pair_type {
-        coordinate_id_pair_type(coordinate_type const& coordinate, ParticleID const& pid)
+        // coordinate_id_pair_type(coordinate_type const& coordinate, ParticleID const& pid)
+        //     : coordinate(coordinate), pid(pid)
+        // {}
+        coordinate_id_pair_type(ParticleID const& pid, coordinate_type const& coordinate)
             : coordinate(coordinate), pid(pid)
         {}
 
