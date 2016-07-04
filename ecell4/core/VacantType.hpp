@@ -31,11 +31,6 @@ public:
         return VACANT;
     }
 
-    // bool is_vacant() const
-    // {
-    //     return true;
-    // }
-
     bool with_voxels() const
     {
         return false;
@@ -72,9 +67,19 @@ public:
         ; // do nothing
     }
 
-    bool remove_voxel_if_exists(const coordinate_type& coord)
+    virtual bool remove_voxel_if_exists(const coordinate_type& coord)
     {
         return true; // just return true
+    }
+
+    virtual coordinate_id_pair_type pop(const coordinate_type& coord)
+    {
+        return coordinate_id_pair_type(ParticleID(), coord);
+    }
+
+    virtual const ParticleID get_particle_id(const coordinate_type& coord) const
+    {
+        return ParticleID();
     }
 
 private:

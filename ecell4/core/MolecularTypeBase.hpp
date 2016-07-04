@@ -102,6 +102,15 @@ public:
 
     virtual voxel_type_type const voxel_type() const = 0;
 
+    virtual bool with_voxels() const = 0;
+
+    virtual const Shape::dimension_kind get_dimension() const
+    {
+        return Shape::UNDEF;
+    }
+
+public:
+
     bool is_vacant() const
     {
         return voxel_type() == VACANT;
@@ -116,15 +125,6 @@ public:
     {
         return voxel_type() == INTERFACE;
     }
-
-    virtual bool with_voxels() const = 0;
-
-    virtual const Shape::dimension_kind get_dimension() const
-    {
-        return Shape::UNDEF;
-    }
-
-public:
 
     const Species& species() const
     {
@@ -158,15 +158,40 @@ public:
 
 public:
 
-    virtual void add_voxel_without_checking(const coordinate_id_pair_type& info) = 0;
-    // virtual void replace_voxel(
-    //     const coordinate_type& from_coord, const coordinate_id_pair_type& to_info) = 0;
+    virtual void add_voxel_without_checking(const coordinate_id_pair_type& info)
+    {
+        if (info.pid != ParticleID())
+        {
+            throw NotSupported("No ParticleID is allowed.");
+        }
+
+        ; // do nothing
+    }
+
     virtual void replace_voxel(
         const coordinate_type& from_coord, const coordinate_type& to_coord,
-        const std::size_t candidate = 0) = 0;
-    virtual coordinate_id_pair_type pop(const coordinate_type& coord) = 0;
-    virtual bool remove_voxel_if_exists(const coordinate_type& coord) = 0;
-    virtual const ParticleID find_particle_id(const coordinate_type& coord) const = 0;
+        const std::size_t candidate = 0)
+    {
+        ; // do nothing
+    }
+
+    virtual coordinate_id_pair_type pop(const coordinate_type& coord)
+    {
+        return coordinate_id_pair_type(ParticleID(), coord);
+    }
+
+    virtual bool remove_voxel_if_exists(const coordinate_type& coord)
+    {
+        return true;
+    }
+
+    virtual const ParticleID get_particle_id(const coordinate_type& coord) const
+    {
+        return ParticleID();
+    }
+
+    // virtual void replace_voxel(
+    //     const coordinate_type& from_coord, const coordinate_id_pair_type& to_info) = 0;
     // virtual void remove_voxel(const container_type::iterator& position) = 0;
     // virtual void swap(const container_type::iterator& a, const container_type::iterator& b) = 0;
     // virtual void shuffle(RandomNumberGenerator& rng) = 0;
@@ -343,7 +368,7 @@ public:
         return voxels_.end();
     }
 
-    const ParticleID find_particle_id(const coordinate_type& coord) const
+    virtual const ParticleID get_particle_id(const coordinate_type& coord) const
     {
         container_type::const_iterator i(this->find(coord));
         if (i == voxels_.end())

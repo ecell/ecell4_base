@@ -108,7 +108,7 @@ bool LatticeSpaceCellListImpl::update_voxel(const ParticleID& pid, const Voxel& 
     //         throw NotSupported("The coordinate points a boundary.");
     //     }
 
-    //     const ParticleID to_pid(dest_mt->find_particle_id(to_coord));
+    //     const ParticleID to_pid(dest_mt->get_particle_id(to_coord));
     //     if (pid == ParticleID() || to_pid != pid)
     //     {
     //         return false; // collision

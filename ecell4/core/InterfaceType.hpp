@@ -38,11 +38,6 @@ public:
         ; // do nothing
     }
 
-    // bool is_vacant() const
-    // {
-    //     return false;
-    // }
-
     voxel_type_type const voxel_type() const
     {
         return INTERFACE;
@@ -50,13 +45,8 @@ public:
 
     bool with_voxels() const
     {
-        return false;  //XXX: What is this for?
+        return false;
     }
-
-    // bool is_structure() const
-    // {
-    //     return true;
-    // }
 
     const Shape::dimension_kind get_dimension() const
     {
@@ -89,11 +79,17 @@ public:
         // const coordinate_id_pair_type info(*position);
         // this->remove_voxel(position);
         // return info;
+        return coordinate_id_pair_type(ParticleID(), coord);
     }
 
     bool remove_voxel_if_exists(const coordinate_type& coord)
     {
         return true; // just return true
+    }
+
+    virtual const ParticleID get_particle_id(const coordinate_type& coord) const
+    {
+        return ParticleID();
     }
 
 private:

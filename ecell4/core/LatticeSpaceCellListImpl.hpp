@@ -406,16 +406,9 @@ public:
         const VoxelPool* mt(get_molecular_type(coord));
         const std::string loc((mt->location()->is_vacant())
             ? "" : mt->location()->species().serial());
-        if (mt->with_voxels())
-        {
-            return std::make_pair(mt->find_particle_id(coord),
-                Voxel(mt->species(), coord, mt->radius(), mt->D(), loc));
-        }
-        else
-        {
-            return std::make_pair(ParticleID(),
-                Voxel(mt->species(), coord, mt->radius(), mt->D(), loc));
-        }
+        return std::make_pair(
+            mt->get_particle_id(coord),
+            Voxel(mt->species(), coord, mt->radius(), mt->D(), loc));
     }
 
     virtual bool remove_voxel(const ParticleID& pid)

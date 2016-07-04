@@ -439,10 +439,7 @@ public:
     std::pair<ParticleID, Voxel> make_pid_voxel_pair(
         const VoxelPool* mt, const coordinate_type& coord) const
     {
-        const ParticleID pid(
-            mt->with_voxels()
-                ? mt->find_particle_id(coord)
-                : ParticleID());
+        const ParticleID pid(mt->get_particle_id(coord));
         const coordinate_id_pair_type info(pid, coord);
         return make_pid_voxel_pair(mt, info);
     }

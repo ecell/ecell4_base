@@ -205,16 +205,9 @@ LatticeSpaceVectorImpl::get_voxel(const coordinate_type& coord) const
     const VoxelPool* mt(voxels_[coord]);
     const std::string loc((mt->location()->is_vacant())
         ? "" : mt->location()->species().serial());
-    if (mt->with_voxels())
-    {
-        return std::make_pair(mt->find_particle_id(coord),
-            Voxel(mt->species(), coord, mt->radius(), mt->D(), loc));
-    }
-    else
-    {
-        return std::make_pair(ParticleID(),
-            Voxel(mt->species(), coord, mt->radius(), mt->D(), loc));
-    }
+    return std::make_pair(
+        mt->get_particle_id(coord),
+        Voxel(mt->species(), coord, mt->radius(), mt->D(), loc));
 }
 
 bool LatticeSpaceVectorImpl::update_structure(const Particle& p)
@@ -967,7 +960,7 @@ bool LatticeSpaceVectorImpl::update_voxel(const ParticleID& pid, const Voxel& v)
     //         throw NotSupported("The coordinate points a boundary.");
     //     }
 
-    //     const ParticleID to_pid(dest_mt->find_particle_id(to_coord));
+    //     const ParticleID to_pid(dest_mt->get_particle_id(to_coord));
     //     if (pid == ParticleID() || to_pid != pid)
     //     {
     //         return false; // collision

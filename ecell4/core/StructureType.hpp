@@ -26,8 +26,7 @@ public:
         const Species& species, VoxelPool* location,
         const Real& radius = 0.0, const Shape::dimension_kind& dimension=Shape::UNDEF)
         : base_type(species, location, radius, 0),
-        dimension_(std::min(dimension, location->get_dimension()))
-        // : base_type(species, &(VacantType::getInstance()), radius, 0)
+          dimension_(std::min(dimension, location->get_dimension()))
     {
         ;
     }
@@ -42,20 +41,10 @@ public:
         return STRUCTURE;
     }
 
-    // bool is_vacant() const
-    // {
-    //     return false;
-    // }
-
     bool with_voxels() const
     {
         return false;
     }
-
-    // bool is_structure() const
-    // {
-    //     return true;
-    // }
 
     const Shape::dimension_kind get_dimension() const
     {
@@ -95,6 +84,11 @@ public:
     virtual bool remove_voxel_if_exists(const coordinate_type& coord)
     {
         return true;
+    }
+
+    virtual const ParticleID get_particle_id(const coordinate_type& coord) const
+    {
+        return ParticleID();
     }
 
 private:
