@@ -162,9 +162,9 @@ std::pair<bool, SpatiocyteSimulator::reaction_type>
 
         while (true) //TODO: Avoid an inifinite loop
         {
-            // const SpatiocyteWorld::private_coordinate_type
+            // const SpatiocyteWorld::coordinate_type
             //     coord(world_->rng()->uniform_int(0, world_->size_private() - 1));
-            const SpatiocyteWorld::private_coordinate_type
+            const SpatiocyteWorld::coordinate_type
                 coord(coord2private(*world_, world_->rng()->uniform_int(0, world_->size() - 1)));
             const Voxel v(sp, coord, info.radius, info.D, info.loc);
 
@@ -284,7 +284,7 @@ Real SpatiocyteSimulator::calculate_alpha(const ReactionRule& rule) const
 }
 
 std::pair<SpatiocyteSimulator::attempt_reaction_result_type, SpatiocyteSimulator::reaction_type> SpatiocyteSimulator::attempt_reaction_(
-    const SpatiocyteWorld::particle_info_type info, SpatiocyteWorld::private_coordinate_type to_coord,
+    const SpatiocyteWorld::particle_info_type info, SpatiocyteWorld::coordinate_type to_coord,
     const Real& alpha)
 {
     const MolecularTypeBase* from_mt(
@@ -356,12 +356,12 @@ std::pair<bool, SpatiocyteSimulator::reaction_type> SpatiocyteSimulator::apply_s
     const ReactionRule::product_container_type&
         products(reaction_rule.products());
 
-    // const SpatiocyteWorld::private_coordinate_type from_coord(
+    // const SpatiocyteWorld::coordinate_type from_coord(
     //     world_->coord2private(p0.second.coordinate()));
-    // const SpatiocyteWorld::private_coordinate_type to_coord(
+    // const SpatiocyteWorld::coordinate_type to_coord(
     //     world_->coord2private(p1.second.coordinate()));
-    const SpatiocyteWorld::private_coordinate_type from_coord(p0.second.coordinate());
-    const SpatiocyteWorld::private_coordinate_type to_coord(p1.second.coordinate());
+    const SpatiocyteWorld::coordinate_type from_coord(p0.second.coordinate());
+    const SpatiocyteWorld::coordinate_type to_coord(p1.second.coordinate());
 
     const SpatiocyteWorld::particle_info_type from_info(from_coord, p0.first);
     const SpatiocyteWorld::particle_info_type to_info(to_coord, p1.first);
@@ -478,8 +478,8 @@ std::pair<bool, SpatiocyteSimulator::reaction_type> SpatiocyteSimulator::apply_a
     const Species& product_species1,
     const ReactionRule& reaction_rule)
 {
-    const SpatiocyteWorld::private_coordinate_type from_coord(from_info.first);
-    const SpatiocyteWorld::private_coordinate_type to_coord(to_info.first);
+    const SpatiocyteWorld::coordinate_type from_coord(from_info.first);
+    const SpatiocyteWorld::coordinate_type to_coord(to_info.first);
     const std::string aserial(get_serial(from_coord));
     const std::string aloc(get_location(from_coord));
     const std::string bserial(get_serial(to_coord));
@@ -506,7 +506,7 @@ std::pair<bool, SpatiocyteSimulator::reaction_type> SpatiocyteSimulator::apply_a
         }
         else
         {
-            std::pair<SpatiocyteWorld::private_coordinate_type, bool>
+            std::pair<SpatiocyteWorld::coordinate_type, bool>
                 neighbor(world_->check_neighbor_private(to_coord, dloc));
 
             if (neighbor.second)
@@ -541,7 +541,7 @@ std::pair<bool, SpatiocyteSimulator::reaction_type> SpatiocyteSimulator::apply_a
         }
         else
         {
-            std::pair<SpatiocyteWorld::private_coordinate_type, bool>
+            std::pair<SpatiocyteWorld::coordinate_type, bool>
                 neighbor(world_->check_neighbor_private(to_coord, cloc));
 
             if (neighbor.second)
@@ -559,7 +559,7 @@ std::pair<bool, SpatiocyteSimulator::reaction_type> SpatiocyteSimulator::apply_a
     }
     else if (bserial == cloc || bloc == cloc)
     {
-        std::pair<SpatiocyteWorld::private_coordinate_type, bool>
+        std::pair<SpatiocyteWorld::coordinate_type, bool>
             neighbor(world_->check_neighbor_private(to_coord, dloc));
 
         if (neighbor.second)
@@ -576,7 +576,7 @@ std::pair<bool, SpatiocyteSimulator::reaction_type> SpatiocyteSimulator::apply_a
     }
     else if (bserial == dloc || bloc == dloc)
     {
-        std::pair<SpatiocyteWorld::private_coordinate_type, bool>
+        std::pair<SpatiocyteWorld::coordinate_type, bool>
             neighbor(world_->check_neighbor_private(to_coord, dloc));
 
         if (neighbor.second)
@@ -601,9 +601,9 @@ std::pair<bool, SpatiocyteSimulator::reaction_type> SpatiocyteSimulator::apply_a
 std::pair<bool, SpatiocyteSimulator::reaction_type> SpatiocyteSimulator::apply_ab2cd_in_order(
     const SpatiocyteWorld::particle_info_type from_info,
     const SpatiocyteWorld::particle_info_type to_info,
-    const SpatiocyteWorld::private_coordinate_type coord0,
+    const SpatiocyteWorld::coordinate_type coord0,
     const Species& product_species0,
-    const SpatiocyteWorld::private_coordinate_type coord1,
+    const SpatiocyteWorld::coordinate_type coord1,
     const Species& product_species1,
     const ReactionRule& reaction_rule)
 {
@@ -642,9 +642,9 @@ std::pair<bool, SpatiocyteSimulator::reaction_type>
 {
     const ReactionRule::product_container_type& products(reaction_rule.products());
 
-    // const SpatiocyteWorld::private_coordinate_type coord(
+    // const SpatiocyteWorld::coordinate_type coord(
     //     world_->coord2private(p.second.coordinate()));
-    const SpatiocyteWorld::private_coordinate_type coord(p.second.coordinate());
+    const SpatiocyteWorld::coordinate_type coord(p.second.coordinate());
     const SpatiocyteWorld::particle_info_type info(coord, p.first);
 
     std::pair<bool, reaction_type> retval;
@@ -685,7 +685,7 @@ SpatiocyteSimulator::apply_a2b(
     const ReactionRule& reaction_rule)
 {
     // A (pinfo) becomes B (product_species)
-    const SpatiocyteWorld::private_coordinate_type coord(pinfo.first);
+    const SpatiocyteWorld::coordinate_type coord(pinfo.first);
     const std::string bloc(world_->get_molecule_info(product_species).loc);
     const std::string aserial(get_serial(coord));
     const std::string aloc(get_location(coord));
@@ -726,7 +726,7 @@ SpatiocyteSimulator::apply_a2b(
     {
         // A is NOT on the location of B.
         // B must be released into a neighbor, which is the location of B
-        std::pair<SpatiocyteWorld::private_coordinate_type, bool>
+        std::pair<SpatiocyteWorld::coordinate_type, bool>
             neighbor(world_->check_neighbor_private(coord, bloc));
 
         if (neighbor.second)
@@ -754,7 +754,7 @@ std::pair<bool, SpatiocyteSimulator::reaction_type> SpatiocyteSimulator::apply_a
 {
     // A (pinfo) becomes B and C (product_species0 and product_species1)
     // At least, one of A and B must be placed at the neighbor.
-    const SpatiocyteWorld::private_coordinate_type coord(pinfo.first);
+    const SpatiocyteWorld::coordinate_type coord(pinfo.first);
     const std::string
         bserial(product_species0.serial()),
         cserial(product_species1.serial()),
@@ -770,7 +770,7 @@ std::pair<bool, SpatiocyteSimulator::reaction_type> SpatiocyteSimulator::apply_a
         // or B is the location of A
         // C must be placed at the neighbor
 
-        std::pair<SpatiocyteWorld::private_coordinate_type, bool>
+        std::pair<SpatiocyteWorld::coordinate_type, bool>
             neighbor(world_->check_neighbor_private(coord, cloc));
         const std::string nserial(get_serial(neighbor.first));
         const std::string nloc(get_location(neighbor.first));
@@ -822,7 +822,7 @@ std::pair<bool, SpatiocyteSimulator::reaction_type> SpatiocyteSimulator::apply_a
         // or A is on the location of C,
         // or C is the location of A
         // B must be placed at the neighbor
-        std::pair<SpatiocyteWorld::private_coordinate_type, bool>
+        std::pair<SpatiocyteWorld::coordinate_type, bool>
             neighbor(world_->check_neighbor_private(coord, bloc));
         const std::string nserial(get_serial(neighbor.first));
         const std::string nloc(get_location(neighbor.first));
@@ -1015,7 +1015,7 @@ void SpatiocyteSimulator::walk_in_space_(const MolecularTypeBase* mtype, const R
             // when reaction has occured before, a voxel can be changed.
             continue;
         }
-        const SpatiocyteWorld::private_coordinate_type neighbor(
+        const SpatiocyteWorld::coordinate_type neighbor(
                 world_->get_neighbor_private_boundary(info.first, rnd));
         if (world_->can_move(info.first, neighbor))
         {
@@ -1053,7 +1053,7 @@ void SpatiocyteSimulator::walk_on_surface_(const MolecularTypeBase* mtype, const
         for (std::vector<unsigned int>::const_iterator itr(nids_.begin());
                 itr != nids_.end(); ++itr)
         {
-            const SpatiocyteWorld::private_coordinate_type neighbor(
+            const SpatiocyteWorld::coordinate_type neighbor(
                     world_->get_neighbor_private_boundary(info.first, *itr));
             const MolecularTypeBase* target(world_->get_molecular_type_private(neighbor));
 

@@ -13,7 +13,7 @@ public:
 
     typedef MolecularTypeBase base_type;
     typedef base_type::coord_id_pair coord_id_pair;
-    typedef base_type::private_coordinate_type private_coordinate_type;
+    typedef base_type::coordinate_type coordinate_type;
     typedef base_type::container_type container_type;
     typedef base_type::iterator iterator;
     typedef base_type::const_iterator const_iterator;
@@ -58,21 +58,21 @@ public:
     }
 
     virtual void replace_voxel(
-        const private_coordinate_type& from_coord,
+        const coordinate_type& from_coord,
         const coord_id_pair& to_info)
     {
         ; // do nothing
     }
 
     virtual void replace_voxel(
-        const private_coordinate_type& from_coord,
-        const private_coordinate_type& to_coord,
+        const coordinate_type& from_coord,
+        const coordinate_type& to_coord,
         const std::size_t candidate=0)
     {
         ; // do nothing
     }
 
-    bool remove_voxel_if_exists(const private_coordinate_type& coord)
+    bool remove_voxel_if_exists(const coordinate_type& coord)
     {
         return true; // just return true
     }

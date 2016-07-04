@@ -329,7 +329,7 @@ protected:
 
     std::pair<attempt_reaction_result_type, reaction_type> attempt_reaction_(
         const SpatiocyteWorld::particle_info_type info,
-        SpatiocyteWorld::private_coordinate_type to_coord, const Real& alpha);
+        SpatiocyteWorld::coordinate_type to_coord, const Real& alpha);
 
     std::pair<bool, reaction_type> apply_zeroth_order_reaction_(
         const ReactionRule& reaction_rule);
@@ -369,9 +369,9 @@ protected:
     std::pair<bool, reaction_type> apply_ab2cd_in_order(
         const SpatiocyteWorld::particle_info_type from_info,
         const SpatiocyteWorld::particle_info_type to_info,
-        const SpatiocyteWorld::private_coordinate_type coord0,
+        const SpatiocyteWorld::coordinate_type coord0,
         const Species& product_species0,
-        const SpatiocyteWorld::private_coordinate_type coord1,
+        const SpatiocyteWorld::coordinate_type coord1,
         const Species& product_species1,
         const ReactionRule& reaction_rule);
 
@@ -398,14 +398,14 @@ protected:
     // }
 
     const std::string get_serial(
-        const SpatiocyteWorld::private_coordinate_type coord) const
+        const SpatiocyteWorld::coordinate_type coord) const
     {
         const MolecularTypeBase* mtype(world_->get_molecular_type_private(coord));
         return mtype->is_vacant() ? "" : mtype->species().serial();
     }
 
     const std::string get_location(
-        const SpatiocyteWorld::private_coordinate_type coord) const
+        const SpatiocyteWorld::coordinate_type coord) const
     {
         const MolecularTypeBase* mtype(world_->get_molecular_type_private(coord));
         if (mtype->is_vacant())

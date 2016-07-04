@@ -39,8 +39,7 @@ public:
     typedef MoleculeInfo molecule_info_type;
 
     typedef LatticeSpace::particle_info_type particle_info_type;
-    // typedef LatticeSpace::coordinate_type coordinate_type;
-    typedef LatticeSpace::private_coordinate_type private_coordinate_type;
+    typedef LatticeSpace::coordinate_type coordinate_type;
 
 public:
 
@@ -231,7 +230,7 @@ public:
         return (*space_).get_voxel_private_private(pid);
     }
 
-    std::pair<ParticleID, Voxel> get_voxel_private_private(const private_coordinate_type& coord) const
+    std::pair<ParticleID, Voxel> get_voxel_private_private(const coordinate_type& coord) const
     {
         return (*space_).get_voxel_private_private(coord);
     }
@@ -283,41 +282,41 @@ public:
     // std::vector<coordinate_type> list_coords(const Species& sp) const;
     MolecularTypeBase* find_molecular_type(const Species& species);
     const MolecularTypeBase* find_molecular_type(const Species& species) const;
-    MolecularTypeBase* get_molecular_type_private(const private_coordinate_type& coord);
+    MolecularTypeBase* get_molecular_type_private(const coordinate_type& coord);
     // std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel(const Voxel& v);
     // std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel(const Species& sp, const coordinate_type& coord);
     // std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel_private(const Voxel& v);
-    // std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel_private(const Species& sp, const private_coordinate_type& coord);
+    // std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel_private(const Species& sp, const coordinate_type& coord);
     std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel_private_private(const Voxel& v);
-    std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel_private_private(const Species& sp, const private_coordinate_type& private_coord);
+    std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel_private_private(const Species& sp, const coordinate_type& private_coord);
 
     // std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel_structure(const Species& sp, const coordinate_type& coord);
     // std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel_structure_private(const Voxel& v);
     // std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel_interface(const Species& sp, const coordinate_type& coord);
     // std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel_interface_private(const Voxel& v);
-    std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel_structure_private_private(const Species& sp, const private_coordinate_type& private_coord);
+    std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel_structure_private_private(const Species& sp, const coordinate_type& private_coord);
     std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel_structure_private_private(const Voxel& v);
-    std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel_interface_private_private(const Species& sp, const private_coordinate_type& private_coord);
+    std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel_interface_private_private(const Species& sp, const coordinate_type& private_coord);
     std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel_interface_private_private(const Voxel& v);
     bool add_molecules(const Species& sp, const Integer& num);
     bool add_molecules(const Species& sp, const Integer& num, const boost::shared_ptr<const Shape> shape);
     Integer add_structure(const Species& sp, const boost::shared_ptr<const Shape> shape);
     Integer add_interface(const Species& sp);
     Integer add_neighbors(const Species& sp,
-            const private_coordinate_type center); // TODO
+            const coordinate_type center); // TODO
     void remove_molecules(const Species& sp, const Integer& num);
     // void remove_molecules_exact(const Species& sp, const Integer& num);
-    bool remove_voxel_private(const private_coordinate_type coord);
+    bool remove_voxel_private(const coordinate_type coord);
     // bool move(coordinate_type from, coordinate_type to);
-    bool move_private(const private_coordinate_type& src,
-            const private_coordinate_type& dest, const std::size_t candidate=0);
-    bool can_move(const private_coordinate_type& src, const private_coordinate_type& dest) const;
+    bool move_private(const coordinate_type& src,
+            const coordinate_type& dest, const std::size_t candidate=0);
+    bool can_move(const coordinate_type& src, const coordinate_type& dest) const;
     // std::pair<coordinate_type, bool> move_to_neighbor(coordinate_type coord, Integer nrand);
     // std::pair<coordinate_type, bool> move_to_neighbor(particle_info_type& info, Integer nrand);
-    // std::pair<std::pair<particle_info_type, private_coordinate_type>, bool>
+    // std::pair<std::pair<particle_info_type, coordinate_type>, bool>
     //     move_to_neighbor(MolecularTypeBase* mtype, Integer index);
 
-    std::pair<private_coordinate_type, bool> move_to_neighbor(
+    std::pair<coordinate_type, bool> move_to_neighbor(
         MolecularTypeBase* const& from_mt, MolecularTypeBase* const& loc,
         particle_info_type& info, const Integer nrand);
 
@@ -326,25 +325,25 @@ public:
     //     return (*space_).get_neighbor(coord, nrand);
     // }
 
-    private_coordinate_type get_neighbor_private(
-            private_coordinate_type private_coord, Integer nrand) const
+    coordinate_type get_neighbor_private(
+            coordinate_type private_coord, Integer nrand) const
     {
         return (*space_).get_neighbor_private(private_coord, nrand);
     }
 
-    private_coordinate_type get_neighbor_private_boundary(
-            private_coordinate_type private_coord, Integer nrand) const
+    coordinate_type get_neighbor_private_boundary(
+            coordinate_type private_coord, Integer nrand) const
     {
         return (*space_).get_neighbor_private_boundary(private_coord, nrand);
     }
 
-    std::pair<private_coordinate_type, bool> check_neighbor_private(
-            const private_coordinate_type coord, const std::string& loc);
+    std::pair<coordinate_type, bool> check_neighbor_private(
+            const coordinate_type coord, const std::string& loc);
     // bool update_molecule(coordinate_type at, Species species);
 
     const Species& draw_species(const Species& pttrn) const;
 
-    // std::pair<std::pair<ParticleID, Voxel>, bool> place_voxel_private(const Species& sp, const private_coordinate_type& coord)
+    // std::pair<std::pair<ParticleID, Voxel>, bool> place_voxel_private(const Species& sp, const coordinate_type& coord)
     // {
     //     const molecule_info_type& info(get_molecule_info(sp));
     //     return new_voxel_private(ecell4::Voxel(sp, coord, info.radius, info.D));
@@ -435,23 +434,23 @@ public:
     //     return (*space_).coordinate2position(coord);
     // }
 
-    private_coordinate_type position2private(const Real3& pos) const
+    coordinate_type position2private(const Real3& pos) const
     {
         return (*space_).position2private(pos);
     }
 
-    const Real3 private2position(const private_coordinate_type& coord) const
+    const Real3 private2position(const coordinate_type& coord) const
     {
         return (*space_).private2position(coord);
     }
 
     // coordinate_type private2coord(
-    //     const private_coordinate_type& private_coord) const
+    //     const coordinate_type& private_coord) const
     // {
     //     return (*space_).private2coord(private_coord);
     // }
 
-    // private_coordinate_type coord2private(
+    // coordinate_type coord2private(
     //     const coordinate_type& coord) const
     // {
     //     return (*space_).coord2private(coord);
@@ -477,12 +476,12 @@ public:
     //     return (*space_).coord2global(coord);
     // }
 
-    private_coordinate_type global2private(const Integer3& global) const
+    coordinate_type global2private(const Integer3& global) const
     {
         return (*space_).global2private(global);
     }
 
-    const Integer3 private2global(private_coordinate_type coord) const
+    const Integer3 private2global(coordinate_type coord) const
     {
         return (*space_).private2global(coord);
     }
@@ -500,7 +499,7 @@ public:
     }
 
     std::pair<ParticleID, Voxel> make_pid_voxel_pair_private(
-        const MolecularTypeBase* mt, const private_coordinate_type& private_coord) const
+        const MolecularTypeBase* mt, const coordinate_type& private_coord) const
     {
         const ParticleID pid(
             mt->with_voxels()
@@ -535,7 +534,7 @@ public:
 
     // bool on_structure(const Species& sp, const coordinate_type& coord)
     // {
-    //     const private_coordinate_type private_coord(coord2private(coord));
+    //     const coordinate_type private_coord(coord2private(coord));
     //     const molecule_info_type minfo(get_molecule_info(sp));
     //     return on_structure(
     //         Voxel(sp, private_coord, minfo.radius, minfo.D, minfo.loc));

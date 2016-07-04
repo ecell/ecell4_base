@@ -86,10 +86,6 @@ BOOST_AUTO_TEST_CASE(SpatiocyteSimulator_test_step_with_single_particle)
     boost::shared_ptr<SpatiocyteWorld> world(
             new SpatiocyteWorld(edge_lengths, voxel_radius, rng));
 
-    // SpatiocyteWorld::private_coordinate_type private_coord(
-    //         world->coord2private(36));
-    // BOOST_CHECK(world->place_voxel_private(sp, private_coord).second);
-    // BOOST_CHECK(world->new_voxel(sp, 36).second);
     BOOST_CHECK(world->new_voxel_private_private(sp, coord2private(*world, 36)).second);
 
     SpatiocyteSimulator sim(model, world);
@@ -426,17 +422,7 @@ BOOST_AUTO_TEST_CASE(LattiecSimulator_test_scheduler)
     boost::shared_ptr<SpatiocyteWorld> world(
             new SpatiocyteWorld(edge_lengths, voxel_radius, rng));
 
-    // SpatiocyteWorld::coordinate_type c1(world->global2coord(Integer3(40,34,56))),
-    //       c2(world->global2coord(Integer3(32,50,24))),
-    //       c3(world->global2coord(Integer3(60,36,89)));
-    // BOOST_CHECK(world->place_voxel_private(sp1, c1).second);
-    // BOOST_CHECK(world->place_voxel_private(sp2, c2).second);
-    // BOOST_CHECK(world->place_voxel_private(sp3, c3).second);
-    // BOOST_CHECK(world->new_voxel(sp1, c1).second);
-    // BOOST_CHECK(world->new_voxel(sp2, c2).second);
-    // BOOST_CHECK(world->new_voxel(sp3, c3).second);
-
-    SpatiocyteWorld::private_coordinate_type c1(world->global2private(Integer3(40,34,56))),
+    SpatiocyteWorld::coordinate_type c1(world->global2private(Integer3(40,34,56))),
           c2(world->global2private(Integer3(32,50,24))),
           c3(world->global2private(Integer3(60,36,89)));
     BOOST_CHECK(world->new_voxel_private_private(sp1, c1).second);
@@ -451,7 +437,7 @@ BOOST_AUTO_TEST_CASE(LattiecSimulator_test_scheduler)
         *mt1(world->find_molecular_type(sp1)),
         *mt2(world->find_molecular_type(sp2)),
         *mt3(world->find_molecular_type(sp3));
-    std::vector<std::pair<SpatiocyteWorld::private_coordinate_type, ParticleID> >::const_iterator
+    std::vector<std::pair<SpatiocyteWorld::coordinate_type, ParticleID> >::const_iterator
         itr1(mt1->begin()),
         itr2(mt2->begin()),
         itr3(mt3->begin());

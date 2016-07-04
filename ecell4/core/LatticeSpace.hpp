@@ -45,7 +45,7 @@ class LatticeSpace
 {
 public:
 
-    typedef Voxel::coordinate_type private_coordinate_type;
+    typedef Voxel::coordinate_type coordinate_type;
     // typedef MolecularTypeBase::private_coordinate_type private_coordinate_type;
     typedef MolecularTypeBase::coord_id_pair particle_info_type;
     // typedef MolecularTypeBase::coordinate_type coordinate_type;
@@ -155,22 +155,22 @@ public:
     // virtual std::pair<ParticleID, Voxel> get_voxel(const ParticleID& pid) const = 0;
     // virtual std::pair<ParticleID, Voxel> get_voxel(const coordinate_type& coord) const = 0;
     virtual std::pair<ParticleID, Voxel> get_voxel_private_private(const ParticleID& pid) const = 0;
-    virtual std::pair<ParticleID, Voxel> get_voxel_private_private(const private_coordinate_type& private_coord) const = 0;
-    // virtual std::pair<ParticleID, Voxel> get_voxel_private(const private_coordinate_type& private_coord) const = 0;
+    virtual std::pair<ParticleID, Voxel> get_voxel_private_private(const coordinate_type& private_coord) const = 0;
+    // virtual std::pair<ParticleID, Voxel> get_voxel_private(const coordinate_type& private_coord) const = 0;
     // virtual std::pair<ParticleID, Voxel> get_voxel(const coordinate_type& coord) const = 0;
     virtual bool remove_voxel(const ParticleID& pid) = 0;
-    virtual bool remove_voxel_private(const private_coordinate_type& coord) = 0;
+    virtual bool remove_voxel_private(const coordinate_type& coord) = 0;
     // virtual bool move(const coordinate_type& from, const coordinate_type& to) = 0;
-    virtual bool move_private(const private_coordinate_type& src,
-            const private_coordinate_type& dest, const std::size_t candidate=0) = 0;
-    virtual bool can_move(const private_coordinate_type& src, const private_coordinate_type& dest) const;
+    virtual bool move_private(const coordinate_type& src,
+            const coordinate_type& dest, const std::size_t candidate=0) = 0;
+    virtual bool can_move(const coordinate_type& src, const coordinate_type& dest) const;
     // virtual const Particle particle_at(const coordinate_type& coord) const = 0;
-    virtual const Particle particle_at_private(const private_coordinate_type& coord) const = 0;
+    virtual const Particle particle_at_private(const coordinate_type& coord) const = 0;
 
     virtual MolecularTypeBase* find_molecular_type(const Species& sp) = 0;
     virtual const MolecularTypeBase* find_molecular_type(const Species& sp) const = 0;
     virtual MolecularTypeBase* get_molecular_type(
-        const private_coordinate_type& coord) = 0;
+        const coordinate_type& coord) = 0;
     virtual bool make_structure_type(const Species& sp,
         Shape::dimension_kind dimension, const std::string loc);
     virtual bool make_interface_type(const Species& sp,
@@ -178,7 +178,7 @@ public:
 
     virtual bool on_structure(const Voxel& v) = 0;
 
-    virtual std::pair<private_coordinate_type, bool> move_to_neighbor(
+    virtual std::pair<coordinate_type, bool> move_to_neighbor(
         MolecularTypeBase* const& from_mt, MolecularTypeBase* const& loc,
         particle_info_type& info, const Integer nrand) = 0;
 
@@ -193,23 +193,23 @@ public:
     // virtual coordinate_type global2coord(const Integer3& global) const = 0;
     // virtual Real3 coordinate2position(const coordinate_type& coord) const = 0;
     // virtual coordinate_type position2coordinate(const Real3& pos) const = 0;
-    // virtual private_coordinate_type coord2private(const coordinate_type& cood) const = 0;
+    // virtual coordinate_type coord2private(const coordinate_type& cood) const = 0;
     // virtual coordinate_type private2coord(
-    //     const private_coordinate_type& private_coord) const = 0;
+    //     const coordinate_type& private_coord) const = 0;
     // virtual Integer3 coord2global(coordinate_type coord) const = 0;
 
-    virtual private_coordinate_type global2private(const Integer3& global) const = 0;
-    virtual Integer3 private2global(const private_coordinate_type& coord) const = 0;
+    virtual coordinate_type global2private(const Integer3& global) const = 0;
+    virtual Integer3 private2global(const coordinate_type& coord) const = 0;
     virtual Real3 private2position(
-        const private_coordinate_type& private_coord) const = 0;
-    virtual private_coordinate_type position2private(const Real3& pos) const = 0;
+        const coordinate_type& private_coord) const = 0;
+    virtual coordinate_type position2private(const Real3& pos) const = 0;
     virtual Real3 global2position(const Integer3& global) const = 0;
     virtual Integer3 position2global(const Real3& pos) const = 0;
 
-    virtual private_coordinate_type get_neighbor_private(
-        const private_coordinate_type& private_coord, const Integer& nrand) const = 0;
-    virtual private_coordinate_type get_neighbor_private_boundary(
-        const private_coordinate_type& private_coord, const Integer& nrand) const = 0;
+    virtual coordinate_type get_neighbor_private(
+        const coordinate_type& private_coord, const Integer& nrand) const = 0;
+    virtual coordinate_type get_neighbor_private_boundary(
+        const coordinate_type& private_coord, const Integer& nrand) const = 0;
 
     // virtual coordinate_type get_neighbor(
     //     const coordinate_type& coord, const Integer& nrand) const
@@ -459,7 +459,7 @@ public:
     //     return __global2coord(global, col_size(), row_size(), layer_size());
     // }
 
-    private_coordinate_type global2private(const Integer3& global) const
+    coordinate_type global2private(const Integer3& global) const
     {
         const Integer3 g(global.col + 1, global.row + 1, global.layer + 1);
         return __global2coord(g, col_size_, row_size_, layer_size_);
@@ -483,7 +483,7 @@ public:
     //     return __coord2global(coord, col_size(), row_size(), layer_size());
     // }
 
-    Integer3 private2global(const private_coordinate_type& coord) const
+    Integer3 private2global(const coordinate_type& coord) const
     {
         const Integer3 private_global(
             __coord2global(coord, col_size_, row_size_, layer_size_));
@@ -503,18 +503,18 @@ public:
     //     return global2position(coord2global(coord));
     // }
 
-    // private_coordinate_type coord2private(const coordinate_type& coord) const
+    // coordinate_type coord2private(const coordinate_type& coord) const
     // {
     //     return global2private(coord2global(coord));
     // }
 
     Real3 private2position(
-        const private_coordinate_type& private_coord) const
+        const coordinate_type& private_coord) const
     {
         return global2position(private2global(private_coord));
     }
 
-    private_coordinate_type position2private(const Real3& pos) const
+    coordinate_type position2private(const Real3& pos) const
     {
         return global2private(position2global(pos));
     }
@@ -525,13 +525,13 @@ public:
     // }
 
     // coordinate_type private2coord(
-    //     const private_coordinate_type& private_coord) const
+    //     const coordinate_type& private_coord) const
     // {
     //     return global2coord(private2global(private_coord));
     // }
 
-    private_coordinate_type get_neighbor_private(
-        const private_coordinate_type& private_coord, const Integer& nrand) const
+    coordinate_type get_neighbor_private(
+        const coordinate_type& private_coord, const Integer& nrand) const
     {
         const Integer NUM_COLROW(col_size_ * row_size_);
         const Integer NUM_ROW(row_size_);
@@ -566,8 +566,8 @@ public:
         return private_coord - 1; // nrand == 0
     }
 
-    private_coordinate_type periodic_transpose_private(
-        const private_coordinate_type& private_coord) const
+    coordinate_type periodic_transpose_private(
+        const coordinate_type& private_coord) const
     {
         Integer3 global(private2global(private_coord));
 
@@ -589,12 +589,12 @@ public:
     //     return coord >= 0 && coord < row_size() * layer_size() * col_size();
     // }
 
-    bool is_in_range_private(const private_coordinate_type& coord) const
+    bool is_in_range_private(const coordinate_type& coord) const
     {
         return coord >= 0 && coord < row_size_ * col_size_ * layer_size_;
     }
 
-    bool is_inside(const private_coordinate_type& coord) const
+    bool is_inside(const coordinate_type& coord) const
     {
         const Integer3 global(private2global(coord));
         return global.col >= 0 && global.col < col_size()
@@ -623,7 +623,7 @@ public:
 
     typedef base_type::particle_info_type particle_info_type;
     // typedef base_type::coordinate_type coordinate_type;
-    typedef base_type::private_coordinate_type private_coordinate_type;
+    typedef base_type::coordinate_type coordinate_type;
 
     typedef std::map<Species, boost::shared_ptr<MolecularType> > spmap;
     typedef std::vector<MolecularTypeBase*> voxel_container;
@@ -658,7 +658,7 @@ public:
     virtual bool has_voxel(const ParticleID& pid) const;
 
     virtual bool remove_voxel(const ParticleID& pid);
-    virtual bool remove_voxel_private(const private_coordinate_type& coord);
+    virtual bool remove_voxel_private(const coordinate_type& coord);
 
     bool update_structure(const Particle& p);
 
@@ -681,9 +681,9 @@ public:
     //     list_voxels_exact(const Species& sp) const;
     // virtual std::pair<ParticleID, Voxel> get_voxel(const ParticleID& pid) const;
     // virtual std::pair<ParticleID, Voxel> get_voxel(const coordinate_type& coord) const;
-    // virtual std::pair<ParticleID, Voxel> get_voxel_private(const private_coordinate_type& private_coord) const;
+    // virtual std::pair<ParticleID, Voxel> get_voxel_private(const coordinate_type& private_coord) const;
     virtual std::pair<ParticleID, Voxel> get_voxel_private_private(const ParticleID& pid) const;
-    virtual std::pair<ParticleID, Voxel> get_voxel_private_private(const private_coordinate_type& private_coord) const;
+    virtual std::pair<ParticleID, Voxel> get_voxel_private_private(const coordinate_type& private_coord) const;
 
     virtual Integer num_voxels_exact(const Species& sp) const;
     virtual Integer num_voxels(const Species& sp) const;
@@ -696,37 +696,37 @@ public:
     virtual bool update_voxel_private_without_checking(const ParticleID& pid, const Voxel& v);
 
     // bool add_voxels(const Species species, std::vector<std::pair<ParticleID, coordinate_type> > voxels);
-    bool add_voxels_private(const Species species, std::vector<std::pair<ParticleID, private_coordinate_type> > voxels);
+    bool add_voxels_private(const Species species, std::vector<std::pair<ParticleID, coordinate_type> > voxels);
 
     std::vector<Species> list_species() const;
     const Species& find_species(std::string name) const;
-    std::vector<private_coordinate_type> list_coords_private(const Species& sp) const;
-    std::vector<private_coordinate_type> list_coords_exact_private(const Species& sp) const;
+    std::vector<coordinate_type> list_coords_private(const Species& sp) const;
+    std::vector<coordinate_type> list_coords_exact_private(const Species& sp) const;
     // std::vector<coordinate_type> list_coords(const Species& sp) const;
     // std::vector<coordinate_type> list_coords_exact(const Species& sp) const;
     virtual MolecularTypeBase* find_molecular_type(const Species& sp);
     virtual const MolecularTypeBase* find_molecular_type(const Species& sp) const;
     // MolecularTypeBase* find_molecular_type(const std::string name);
-    virtual MolecularTypeBase* get_molecular_type(const private_coordinate_type& coord);
-    // bool update_molecule(private_coordinate_type coord, const Species& species);
-    // bool add_molecule(const Species& sp, private_coordinate_type coord, const ParticleID& pid);
+    virtual MolecularTypeBase* get_molecular_type(const coordinate_type& coord);
+    // bool update_molecule(coordinate_type coord, const Species& species);
+    // bool add_molecule(const Species& sp, coordinate_type coord, const ParticleID& pid);
     // virtual bool move(const coordinate_type& from, const coordinate_type& to);
-    virtual bool move_private(const private_coordinate_type& src,
-            const private_coordinate_type& dest, const std::size_t candidate=0);
-    virtual bool can_move(const private_coordinate_type& src, const private_coordinate_type& dest) const;
+    virtual bool move_private(const coordinate_type& src,
+            const coordinate_type& dest, const std::size_t candidate=0);
+    virtual bool can_move(const coordinate_type& src, const coordinate_type& dest) const;
 
-    std::pair<private_coordinate_type, bool> move_to_neighbor(
-        private_coordinate_type coord, Integer nrand);
-    std::pair<private_coordinate_type, bool> move_to_neighbor(
+    std::pair<coordinate_type, bool> move_to_neighbor(
+        coordinate_type coord, Integer nrand);
+    std::pair<coordinate_type, bool> move_to_neighbor(
         particle_info_type& info, Integer nrand);
-    std::pair<private_coordinate_type, bool> move_to_neighbor(
+    std::pair<coordinate_type, bool> move_to_neighbor(
         MolecularTypeBase* const& from_mt, MolecularTypeBase* const& loc,
         particle_info_type& info, const Integer nrand);
 
-    private_coordinate_type get_neighbor_private_boundary(
-        const private_coordinate_type& coord, const Integer& nrand) const
+    coordinate_type get_neighbor_private_boundary(
+        const coordinate_type& coord, const Integer& nrand) const
     {
-        private_coordinate_type const dest = get_neighbor_private(coord, nrand);
+        coordinate_type const dest = get_neighbor_private(coord, nrand);
         MolecularTypeBase* dest_mt(voxels_.at(dest));
         return (dest_mt != periodic_ ? dest : periodic_transpose_private(dest));
     }
@@ -766,10 +766,10 @@ public:
     //     return particle_at_private(coord2private(coord));
     // }
 
-    virtual const Particle particle_at_private(const private_coordinate_type& coord) const;
+    virtual const Particle particle_at_private(const coordinate_type& coord) const;
 
-    private_coordinate_type apply_boundary_(
-        const private_coordinate_type& private_coord) const
+    coordinate_type apply_boundary_(
+        const coordinate_type& private_coord) const
     {
         return periodic_transpose_private(private_coord);
     }
@@ -790,12 +790,12 @@ protected:
 
     void initialize_voxels(const bool is_periodic);
 
-    std::pair<private_coordinate_type, bool> move_(
-            private_coordinate_type private_from, private_coordinate_type private_to,
+    std::pair<coordinate_type, bool> move_(
+            coordinate_type private_from, coordinate_type private_to,
             const std::size_t candidate=0);
-    std::pair<private_coordinate_type, bool> move_(
-            particle_info_type& info, private_coordinate_type private_to);
-    private_coordinate_type get_coord(const ParticleID& pid) const;
+    std::pair<coordinate_type, bool> move_(
+            particle_info_type& info, coordinate_type private_to);
+    coordinate_type get_coord(const ParticleID& pid) const;
 
     Integer count_voxels(const boost::shared_ptr<MolecularType>& mt) const;
 

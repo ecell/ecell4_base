@@ -127,7 +127,7 @@ BOOST_AUTO_TEST_CASE(SpatiocyteWorld_test_add_molecule)
     sp.set_attribute("radius", "2.5e-9");
     sp.set_attribute("D", "1e-12");
 
-    SpatiocyteWorld::private_coordinate_type coord(486420);
+    SpatiocyteWorld::coordinate_type coord(486420);
     // BOOST_CHECK(world.place_voxel_private(sp, coord).second);
     // BOOST_CHECK(world.new_voxel(sp, world.private2coord(coord)).second);
     BOOST_CHECK(world.new_voxel_private_private(sp, coord).second);
@@ -164,11 +164,7 @@ BOOST_AUTO_TEST_CASE(SpatiocyteWorld_test_neighbor)
 
     const Integer3 center(
             world.col_size()/2, world.row_size()/2, world.layer_size()/2);
-    const SpatiocyteWorld::private_coordinate_type cc(world.global2private(center));
-    // const SpatiocyteWorld::private_coordinate_type cc(
-    //         world.coord2private(world.global2coord(center)));
-    // const Real3 cp(world.coordinate2position(
-    //             world.global2coord(center)));
+    const SpatiocyteWorld::coordinate_type cc(world.global2private(center));
     const Real3 cp(world.global2position(center));
 
     Species sp(std::string("TEST"));
@@ -187,8 +183,7 @@ BOOST_AUTO_TEST_CASE(SpatiocyteWorld_test_neighbor)
     {
         Real3 pos((*itr).second.position());
         BOOST_ASSERT(length(pos-cp) < voxel_radius*2.1);
-        // const SpatiocyteWorld::coordinate_type coord(world.position2coordinate(pos));
-        const SpatiocyteWorld::private_coordinate_type coord(world.position2private(pos));
+        const SpatiocyteWorld::coordinate_type coord(world.position2private(pos));
         //pos /= voxel_radius * 2;
         ofs << "(" << pos[0] << "," << pos[1] << "," << pos[2] << ") "
             << coord << std::endl;
@@ -235,22 +230,9 @@ BOOST_AUTO_TEST_CASE(SpatiocyteWorld_test_move)
     sp.set_attribute("radius", "2.5e-9");
     sp.set_attribute("D", "1e-12");
 
-    // SpatiocyteWorld::coordinate_type from(1034), to(786420);
-
-    // SpatiocyteWorld::private_coordinate_type private_from(
-    //         world.coord2private(from));
-    // BOOST_CHECK(world.place_voxel(sp, private_from).second);
-
-    // SpatiocyteWorld::private_coordinate_type private_to(
-    //         world.coord2private(to));
-    // BOOST_CHECK(world.move(from, to));
-
-    // BOOST_CHECK(world.new_voxel(sp, from).second);
-    // BOOST_CHECK(world.move(from, to));
-
-    SpatiocyteWorld::private_coordinate_type private_from(
+    SpatiocyteWorld::coordinate_type private_from(
             coord2private(world, 1034));
-    SpatiocyteWorld::private_coordinate_type private_to(
+    SpatiocyteWorld::coordinate_type private_to(
             coord2private(world, 786420));
 
     BOOST_CHECK(world.new_voxel_private_private(sp, private_from).second);
