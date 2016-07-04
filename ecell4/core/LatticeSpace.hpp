@@ -128,6 +128,8 @@ public:
     }
     virtual std::pair<ParticleID, Voxel> get_voxel(const ParticleID& pid) const = 0;
     virtual std::pair<ParticleID, Voxel> get_voxel(const coordinate_type& coord) const = 0;
+    virtual std::pair<ParticleID, Voxel> get_voxel_private(const private_coordinate_type& private_coord) const = 0;
+    // virtual std::pair<ParticleID, Voxel> get_voxel(const coordinate_type& coord) const = 0;
     virtual bool remove_voxel(const ParticleID& pid) = 0;
     virtual bool remove_voxel_private(const private_coordinate_type& coord) = 0;
     virtual bool move(const coordinate_type& from, const coordinate_type& to) = 0;
@@ -296,6 +298,11 @@ public:
     virtual bool remove_particle(const ParticleID& pid)
     {
         return remove_voxel(pid);
+    }
+
+    inline Integer size_private() const
+    {
+        return size();
     }
 
     inline Integer size() const
@@ -562,6 +569,11 @@ public:
             && global.layer >= 0 && global.layer < layer_size();
     }
 
+    Integer size_private() const
+    {
+        return row_size_ * col_size_ * layer_size_;
+    }
+
 protected:
 
     Real3 edge_lengths_;
@@ -630,6 +642,7 @@ public:
         list_voxels_exact(const Species& sp) const;
     virtual std::pair<ParticleID, Voxel> get_voxel(const ParticleID& pid) const;
     virtual std::pair<ParticleID, Voxel> get_voxel(const coordinate_type& coord) const;
+    virtual std::pair<ParticleID, Voxel> get_voxel_private(const private_coordinate_type& private_coord) const;
 
     virtual Integer num_voxels_exact(const Species& sp) const;
     virtual Integer num_voxels(const Species& sp) const;

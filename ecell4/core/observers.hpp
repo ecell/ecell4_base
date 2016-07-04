@@ -548,7 +548,7 @@ public:
         : base_type(false), event_(dt), subevent_(subdt > 0 ? subdt : dt),
         species_list_(species_list), resolve_boundary_(resolve_boundary),
         threshold_(threshold),
-        pids_(), prev_positions_(), strides_(), trajectories_(), t_()
+        prev_positions_(), strides_(), pids_(), trajectories_(), t_()
     {
         ;
     }

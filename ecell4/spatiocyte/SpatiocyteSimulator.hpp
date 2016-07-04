@@ -221,7 +221,7 @@ protected:
         virtual void fire()
         {
             const Species reactant(*(rule_.reactants().begin()));
-            sim_->apply_first_order_reaction_(rule_, sim_->world_->choice(reactant));
+            sim_->apply_first_order_reaction_(rule_, sim_->world_->choice_private(reactant));
             time_ += draw_dt();
         }
 
@@ -329,7 +329,7 @@ protected:
 
     std::pair<attempt_reaction_result_type, reaction_type> attempt_reaction_(
         const SpatiocyteWorld::particle_info_type info,
-        SpatiocyteWorld::coordinate_type to_coord, const Real& alpha);
+        SpatiocyteWorld::private_coordinate_type to_coord, const Real& alpha);
 
     std::pair<bool, reaction_type> apply_zeroth_order_reaction_(
         const ReactionRule& reaction_rule);
@@ -390,12 +390,12 @@ protected:
     void walk_in_space_(const MolecularTypeBase* mtype, const Real& alpha);
     void walk_on_surface_(const MolecularTypeBase* mtype, const Real& alpha);
 
-    inline Voxel private_voxel2voxel(const Voxel& v) const
-    {
-        const SpatiocyteWorld::coordinate_type
-            coord(world_->private2coord(v.coordinate()));
-        return Voxel(v.species(), coord, v.radius(), v.D(), v.loc());
-    }
+    // inline Voxel private_voxel2voxel(const Voxel& v) const
+    // {
+    //     const SpatiocyteWorld::coordinate_type
+    //         coord(world_->private2coord(v.coordinate()));
+    //     return Voxel(v.species(), coord, v.radius(), v.D(), v.loc());
+    // }
 
     const std::string get_serial(
         const SpatiocyteWorld::private_coordinate_type coord) const

@@ -276,7 +276,8 @@ cdef class SpatiocyteWorld:
         if isinstance(arg, ParticleID):
             pid_voxel_pair = self.thisptr.get().get_voxel(deref((<ParticleID>arg).thisptr))
         else:
-            pid_voxel_pair = self.thisptr.get().get_voxel(<Integer>arg)
+            # pid_voxel_pair = self.thisptr.get().get_voxel(<Integer>arg)
+            pid_voxel_pair = self.thisptr.get().get_voxel_private(<Integer>arg)
         return (ParticleID_from_Cpp_ParticleID(address(pid_voxel_pair.first)),
                 Voxel_from_Cpp_Voxel(address(pid_voxel_pair.second)))
 
@@ -289,25 +290,25 @@ cdef class SpatiocyteWorld:
     #     """
     #     return self.thisptr.get().on_structure(deref((<Voxel>v).thisptr))
 
-    def on_structure(self, Species sp, Integer coord):
-        """on_structure(sp, coord) -> bool
+    # def on_structure(self, Species sp, Integer coord):
+    #     """on_structure(sp, coord) -> bool
 
-        Check if the given species would be on the proper structure at the coordinate.
+    #     Check if the given species would be on the proper structure at the coordinate.
 
-        Parameters
-        ----------
-        sp : Species
-            A species scheduled to be placed
-        coord : Integer
-            A coordinate to be occupied
+    #     Parameters
+    #     ----------
+    #     sp : Species
+    #         A species scheduled to be placed
+    #     coord : Integer
+    #         A coordinate to be occupied
 
-        Returns
-        -------
-        bool:
-            if it is on the proper structure, or not
+    #     Returns
+    #     -------
+    #     bool:
+    #         if it is on the proper structure, or not
 
-        """
-        return self.thisptr.get().on_structure(deref(sp.thisptr), coord)
+    #     """
+    #     return self.thisptr.get().on_structure(deref(sp.thisptr), coord)
 
     def remove_particle(self, ParticleID pid):
         """remove_particle(pid)
@@ -650,25 +651,25 @@ cdef class SpatiocyteWorld:
             inc(it)
         return retval
 
-    def get_neighbor(self, coord, nrand):
-        """get_neighbor(coord, nrand) -> Integer
+    # def get_neighbor(self, coord, nrand):
+    #     """get_neighbor(coord, nrand) -> Integer
 
-        Return the neighbor coordinate of a given coordinate.
+    #     Return the neighbor coordinate of a given coordinate.
 
-        Parameters
-        ----------
-        coord : Integer
-            A coordinate of a voxel
-        nrand : Integer
-            A key in the range from 0 to 11 to assign a neighbor voxel
+    #     Parameters
+    #     ----------
+    #     coord : Integer
+    #         A coordinate of a voxel
+    #     nrand : Integer
+    #         A key in the range from 0 to 11 to assign a neighbor voxel
 
-        Returns
-        -------
-        Integer:
-            The coordinate of the neighbor voxel
+    #     Returns
+    #     -------
+    #     Integer:
+    #         The coordinate of the neighbor voxel
 
-        """
-        return self.thisptr.get().get_neighbor(coord, nrand)
+    #     """
+    #     return self.thisptr.get().get_neighbor(coord, nrand)
 
     def get_neighbor_private(self, coord, nrand):
         """get_neighbor_private(coord, nrand) -> Integer
@@ -856,9 +857,9 @@ cdef class SpatiocyteWorld:
         cdef pair[pair[Cpp_ParticleID, Cpp_Voxel], bool] retval
 
         if arg2 is None:
-            retval = self.thisptr.get().new_voxel(deref((<Voxel> arg1).thisptr))
+            retval = self.thisptr.get().new_voxel_private_private(deref((<Voxel> arg1).thisptr))
         else:
-            retval = self.thisptr.get().new_voxel(deref((<Species> arg1).thisptr), <Integer> arg2)
+            retval = self.thisptr.get().new_voxel_private_private(deref((<Species> arg1).thisptr), <Integer> arg2)
         return ((ParticleID_from_Cpp_ParticleID(address(retval.first.first)), Voxel_from_Cpp_Voxel(address(retval.first.second))), retval.second)
 
     def new_voxel_structure(self, arg1, arg2):
@@ -881,7 +882,7 @@ cdef class SpatiocyteWorld:
         """
         cdef pair[pair[Cpp_ParticleID, Cpp_Voxel], bool] retval
 
-        retval = self.thisptr.get().new_voxel_structure(deref((<Species> arg1).thisptr), <Integer> arg2)
+        retval = self.thisptr.get().new_voxel_structure_private_private(deref((<Species> arg1).thisptr), <Integer> arg2)
         return ((ParticleID_from_Cpp_ParticleID(address(retval.first.first)), Voxel_from_Cpp_Voxel(address(retval.first.second))), retval.second)
 
     def update_voxel(self, ParticleID pid, Voxel v):
@@ -1040,68 +1041,68 @@ cdef class SpatiocyteWorld:
         cdef Cpp_Real3 pos = self.thisptr.get().private2position(coord)
         return Real3_from_Cpp_Real3(address(pos))
 
-    def coordinate2position(self, Integer coord):
-        """coordinate2position(coord) -> Real3
+    # def coordinate2position(self, Integer coord):
+    #     """coordinate2position(coord) -> Real3
 
-        Transform a coordinate to a position.
+    #     Transform a coordinate to a position.
 
-        """
-        cdef Cpp_Real3 pos = self.thisptr.get().coordinate2position(coord)
-        return Real3_from_Cpp_Real3(address(pos))
+    #     """
+    #     cdef Cpp_Real3 pos = self.thisptr.get().coordinate2position(coord)
+    #     return Real3_from_Cpp_Real3(address(pos))
 
-    def position2coordinate(self, Real3 pos):
-        """position2coordinate(pos) -> Integer
+    # def position2coordinate(self, Real3 pos):
+    #     """position2coordinate(pos) -> Integer
 
-        Transform a position to a coordinate.
+    #     Transform a position to a coordinate.
 
-        Parameters
-        ----------
-        pos : Real3
-            A position
+    #     Parameters
+    #     ----------
+    #     pos : Real3
+    #         A position
 
-        Returns
-        -------
-        Integer:
-            A coordinate
+    #     Returns
+    #     -------
+    #     Integer:
+    #         A coordinate
 
-        """
-        return self.thisptr.get().position2coordinate(
-            deref(pos.thisptr))
+    #     """
+    #     return self.thisptr.get().position2coordinate(
+    #         deref(pos.thisptr))
 
-    def private2coord(self, Integer coord):
-        """Transform a private coordinate to a coordinate."""
-        return self.thisptr.get().private2coord(coord)
+    # def private2coord(self, Integer coord):
+    #     """Transform a private coordinate to a coordinate."""
+    #     return self.thisptr.get().private2coord(coord)
 
-    def coord2private(self, Integer coord):
-        """Transform a coordinate to a private coordinate."""
-        return self.thisptr.get().coord2private(coord)
+    # def coord2private(self, Integer coord):
+    #     """Transform a coordinate to a private coordinate."""
+    #     return self.thisptr.get().coord2private(coord)
 
-    def global2coord(self, Integer3 g):
-        """global2coord(g) -> Integer
+    # def global2coord(self, Integer3 g):
+    #     """global2coord(g) -> Integer
 
-        Transform a global coordinate to a coordinate.
+    #     Transform a global coordinate to a coordinate.
 
-        Parameters
-        ----------
-        g : Integer3
-            A global coordinate
+    #     Parameters
+    #     ----------
+    #     g : Integer3
+    #         A global coordinate
 
-        Returns
-        -------
-        Integer:
-            A coordinate
+    #     Returns
+    #     -------
+    #     Integer:
+    #         A coordinate
 
-        """
-        return self.thisptr.get().global2coord(deref(g.thisptr))
+    #     """
+    #     return self.thisptr.get().global2coord(deref(g.thisptr))
 
-    def coord2global(self, Integer coord):
-        """coord2global(coord) -> Integer3
+    # def coord2global(self, Integer coord):
+    #     """coord2global(coord) -> Integer3
 
-        Transform a coordinate to a global coordinate.
+    #     Transform a coordinate to a global coordinate.
 
-        """
-        cdef Cpp_Integer3 g = self.thisptr.get().coord2global(coord)
-        return Integer3_from_Cpp_Integer3(address(g))
+    #     """
+    #     cdef Cpp_Integer3 g = self.thisptr.get().coord2global(coord)
+    #     return Integer3_from_Cpp_Integer3(address(g))
 
     def global2private(self, Integer3 coord):
         """global2private(g) -> Integer
@@ -1217,7 +1218,7 @@ cdef class SpatiocyteWorld:
         """
         cdef pair[pair[Cpp_ParticleID, Cpp_Voxel], bool] retval
 
-        retval = self.thisptr.get().new_voxel_interface(deref((<Species> arg1).thisptr), <Integer> arg2)
+        retval = self.thisptr.get().new_voxel_interface_private_private(deref((<Species> arg1).thisptr), <Integer> arg2)
         return ((ParticleID_from_Cpp_ParticleID(address(retval.first.first)), Voxel_from_Cpp_Voxel(address(retval.first.second))), retval.second)
 
     def rng(self):

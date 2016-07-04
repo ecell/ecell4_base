@@ -268,79 +268,110 @@ MolecularTypeBase* SpatiocyteWorld::get_molecular_type_private(
     return (*space_).get_molecular_type(coord);
 }
 
-std::pair<std::pair<ParticleID, Voxel>, bool>
-SpatiocyteWorld::new_voxel(const Voxel& v)
-{
-    const private_coordinate_type private_coord(coord2private(v.coordinate()));
-    return new_voxel_private(
-        Voxel(v.species(), private_coord, v.radius(), v.D(), v.loc()));
-}
+// std::pair<std::pair<ParticleID, Voxel>, bool>
+// SpatiocyteWorld::new_voxel(const Voxel& v)
+// {
+//     const private_coordinate_type private_coord(coord2private(v.coordinate()));
+//     return new_voxel_private(
+//         Voxel(v.species(), private_coord, v.radius(), v.D(), v.loc()));
+// }
+
+// std::pair<std::pair<ParticleID, Voxel>, bool>
+// SpatiocyteWorld::new_voxel(const Species& sp, const coordinate_type& coord)
+// {
+//     const private_coordinate_type private_coord(coord2private(coord));
+//     const molecule_info_type minfo(get_molecule_info(sp));
+//     return new_voxel_private(
+//         Voxel(sp, private_coord, minfo.radius, minfo.D, minfo.loc));
+// }
 
 std::pair<std::pair<ParticleID, Voxel>, bool>
-SpatiocyteWorld::new_voxel(const Species& sp, const coordinate_type& coord)
+SpatiocyteWorld::new_voxel_private_private(
+        const Species& sp, const private_coordinate_type& private_coord)
 {
-    const private_coordinate_type private_coord(coord2private(coord));
     const molecule_info_type minfo(get_molecule_info(sp));
-    return new_voxel_private(
+    return new_voxel_private_private(
         Voxel(sp, private_coord, minfo.radius, minfo.D, minfo.loc));
 }
 
 std::pair<std::pair<ParticleID, Voxel>, bool>
-SpatiocyteWorld::new_voxel_private(
-        const Species& sp, const private_coordinate_type& coord)
-{
-    const molecule_info_type minfo(get_molecule_info(sp));
-    return new_voxel_private(
-        Voxel(sp, coord, minfo.radius, minfo.D, minfo.loc));
-}
-
-std::pair<std::pair<ParticleID, Voxel>, bool>
-SpatiocyteWorld::new_voxel_private(const Voxel& v)
+SpatiocyteWorld::new_voxel_private_private(const Voxel& v)
 {
     ParticleID pid(sidgen_());
     const bool is_succeeded((*space_).update_voxel_private(pid, v));
-    const coordinate_type coord(private2coord(v.coordinate()));
-    return std::make_pair(
-        std::make_pair(pid, Voxel(v.species(), coord, v.radius(), v.D(), v.loc())),
-        is_succeeded);
+    return std::make_pair(std::make_pair(pid, v), is_succeeded);
+    // const coordinate_type coord(private2coord(v.coordinate()));
+    // return std::make_pair(
+    //     std::make_pair(pid, Voxel(v.species(), coord, v.radius(), v.D(), v.loc())),
+    //     is_succeeded);
 }
 
+// std::pair<std::pair<ParticleID, Voxel>, bool>
+// SpatiocyteWorld::new_voxel_structure(const Species& sp, const coordinate_type& coord)
+// {
+//     const private_coordinate_type private_coord(coord2private(coord));
+//     const molecule_info_type minfo(get_molecule_info(sp));
+//     return new_voxel_structure_private(
+//         Voxel(sp, private_coord, minfo.radius, minfo.D, minfo.loc));
+// }
+
+// std::pair<std::pair<ParticleID, Voxel>, bool>
+// SpatiocyteWorld::new_voxel_structure_private(const Voxel& v)
+// {
+//     const bool is_succeeded((*space_).update_voxel_private(ParticleID(), v));
+//     const coordinate_type coord(private2coord(v.coordinate()));
+//     return std::make_pair(std::make_pair(ParticleID(),
+//                 Voxel(v.species(), coord, v.radius(), v.D(), v.loc())),
+//         is_succeeded);
+// }
+
+// std::pair<std::pair<ParticleID, Voxel>, bool>
+// SpatiocyteWorld::new_voxel_interface(const Species& sp, const coordinate_type& coord)
+// {
+//     const private_coordinate_type private_coord(coord2private(coord));
+//     const molecule_info_type minfo(get_molecule_info(sp));
+//     return new_voxel_interface_private(
+//         Voxel(sp, private_coord, minfo.radius, minfo.D, minfo.loc));
+// }
+
+// std::pair<std::pair<ParticleID, Voxel>, bool>
+// SpatiocyteWorld::new_voxel_interface_private(const Voxel& v)
+// {
+//     const bool is_succeeded((*space_).update_voxel_private(ParticleID(), v));
+//     const coordinate_type coord(private2coord(v.coordinate()));
+//     return std::make_pair(std::make_pair(ParticleID(),
+//                 Voxel(v.species(), coord, v.radius(), v.D(), v.loc())),
+//         is_succeeded);
+// }
+
 std::pair<std::pair<ParticleID, Voxel>, bool>
-SpatiocyteWorld::new_voxel_structure(const Species& sp, const coordinate_type& coord)
+SpatiocyteWorld::new_voxel_structure_private_private(const Species& sp, const private_coordinate_type& private_coord)
 {
-    const private_coordinate_type private_coord(coord2private(coord));
     const molecule_info_type minfo(get_molecule_info(sp));
-    return new_voxel_structure_private(
+    return new_voxel_structure_private_private(
         Voxel(sp, private_coord, minfo.radius, minfo.D, minfo.loc));
 }
 
 std::pair<std::pair<ParticleID, Voxel>, bool>
-SpatiocyteWorld::new_voxel_structure_private(const Voxel& v)
+SpatiocyteWorld::new_voxel_structure_private_private(const Voxel& v)
 {
     const bool is_succeeded((*space_).update_voxel_private(ParticleID(), v));
-    const coordinate_type coord(private2coord(v.coordinate()));
-    return std::make_pair(std::make_pair(ParticleID(),
-                Voxel(v.species(), coord, v.radius(), v.D(), v.loc())),
-        is_succeeded);
+    return std::make_pair(std::make_pair(ParticleID(), v), is_succeeded);
 }
 
 std::pair<std::pair<ParticleID, Voxel>, bool>
-SpatiocyteWorld::new_voxel_interface(const Species& sp, const coordinate_type& coord)
+SpatiocyteWorld::new_voxel_interface_private_private(const Species& sp, const private_coordinate_type& private_coord)
 {
-    const private_coordinate_type private_coord(coord2private(coord));
     const molecule_info_type minfo(get_molecule_info(sp));
-    return new_voxel_interface_private(
+    return new_voxel_interface_private_private(
         Voxel(sp, private_coord, minfo.radius, minfo.D, minfo.loc));
 }
 
 std::pair<std::pair<ParticleID, Voxel>, bool>
-SpatiocyteWorld::new_voxel_interface_private(const Voxel& v)
+SpatiocyteWorld::new_voxel_interface_private_private(const Voxel& v)
 {
     const bool is_succeeded((*space_).update_voxel_private(ParticleID(), v));
-    const coordinate_type coord(private2coord(v.coordinate()));
-    return std::make_pair(std::make_pair(ParticleID(),
-                Voxel(v.species(), coord, v.radius(), v.D(), v.loc())),
-        is_succeeded);
+    return std::make_pair(std::make_pair(ParticleID(), v), is_succeeded);
 }
 
 bool SpatiocyteWorld::add_molecules(const Species& sp, const Integer& num)
@@ -355,14 +386,18 @@ bool SpatiocyteWorld::add_molecules(const Species& sp, const Integer& num)
     Integer count(0);
     while (count < num)
     {
-        const coordinate_type coord(rng()->uniform_int(0, (*space_).size() - 1));
-        const Voxel v(sp, coord2private(coord), info.radius, info.D, info.loc);
+        // const coordinate_type coord(rng()->uniform_int(0, (*space_).size() - 1));
+        // const Voxel v(sp, coord2private(coord), info.radius, info.D, info.loc);
+        const private_coordinate_type coord(coord2private(*this, rng()->uniform_int(0, (*space_).size() - 1)));  //XXX: just for consistency. rather use below
+        // const private_coordinate_type coord(rng()->uniform_int(0, (*space_).size_private() - 1));
+
+        const Voxel v(sp, coord, info.radius, info.D, info.loc);
 
         if ((*space_).on_structure(v))
         {
             continue;
         }
-        else if (new_voxel_private(v).second)
+        else if (new_voxel_private_private(v).second)
         {
             ++count;
         }
@@ -390,7 +425,7 @@ bool SpatiocyteWorld::add_molecules(
         {
             continue;
         }
-        else if (new_voxel_private(v).second)
+        else if (new_voxel_private_private(v).second)
         {
             ++count;
         }
@@ -454,7 +489,7 @@ Integer SpatiocyteWorld::add_structure3(const Species& sp, const boost::shared_p
 
                 const Voxel v(sp, (*space_).global2private_coord(g),
                     info.radius, info.D, info.loc);
-                if (new_voxel_structure_private(v).second)
+                if (new_voxel_structure_private_private(v).second)
                 {
                     ++count;
                 }
@@ -516,7 +551,7 @@ Integer SpatiocyteWorld::add_structure2(const Species& sp, const boost::shared_p
 
                 const Voxel v(sp, (*space_).global2private_coord(g),
                     info.radius, info.D, info.loc);
-                if (new_voxel_structure_private(v).second)
+                if (new_voxel_structure_private_private(v).second)
                 {
                     ++count;
                 }
@@ -563,7 +598,7 @@ Integer SpatiocyteWorld::add_neighbors(const Species& sp,
     for (Integer i(0); i < 12; ++i)
     {
         const private_coordinate_type n((*space_).get_neighbor_private(center, i));
-        if (new_voxel_private(Voxel(sp, n, info.radius, info.D, info.loc)).second)
+        if (new_voxel_private_private(Voxel(sp, n, info.radius, info.D, info.loc)).second)
         {
             ++count;
         }
@@ -625,10 +660,10 @@ bool SpatiocyteWorld::remove_voxel_private(const private_coordinate_type coord)
     return (*space_).remove_voxel_private(coord);
 }
 
-bool SpatiocyteWorld::move(coordinate_type from, coordinate_type to)
-{
-    return (*space_).move(from, to);
-}
+// bool SpatiocyteWorld::move(coordinate_type from, coordinate_type to)
+// {
+//     return (*space_).move(from, to);
+// }
 
 bool SpatiocyteWorld::move_private(const private_coordinate_type& src,
         const private_coordinate_type& dest, const std::size_t candidate)
@@ -681,6 +716,21 @@ SpatiocyteWorld::check_neighbor_private(
     // const private_coordinate_type neighbor((*space_).get_neighbor_private(coord, rnd));
     // bool flg = get_molecular_type_private(neighbor)->is_vacant(); //XXX: loc
     // return std::make_pair(neighbor, flg);
+}
+
+Integer coord2private(const SpatiocyteWorld& w, const Integer coord)
+{
+    const Integer num_row(w.row_size());
+    const Integer num_col(w.col_size());
+    const Integer num_layer(w.layer_size());
+
+    const Integer NUM_COLROW(num_row * num_col);
+    const Integer LAYER(coord / NUM_COLROW);
+    const Integer SURPLUS(coord - LAYER * NUM_COLROW);
+    const Integer COL(SURPLUS / num_row);
+    const Integer3 g(COL, SURPLUS - COL * num_row, LAYER);
+
+    return w.global2private(g);
 }
 
 } // spatiocyte

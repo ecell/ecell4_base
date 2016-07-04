@@ -162,11 +162,11 @@ std::pair<bool, SpatiocyteSimulator::reaction_type>
 
         while (true) //TODO: Avoid an inifinite loop
         {
-            const SpatiocyteWorld::coordinate_type
-                coord(world_->rng()->uniform_int(0, world_->size() - 1));
-            const Voxel v(
-                sp, world_->coord2private(coord),
-                info.radius, info.D, info.loc);
+            // const SpatiocyteWorld::private_coordinate_type
+            //     coord(world_->rng()->uniform_int(0, world_->size_private() - 1));
+            const SpatiocyteWorld::private_coordinate_type
+                coord(coord2private(*world_, world_->rng()->uniform_int(0, world_->size() - 1)));
+            const Voxel v(sp, coord, info.radius, info.D, info.loc);
 
             if (world_->on_structure(v))
             {
@@ -174,7 +174,7 @@ std::pair<bool, SpatiocyteSimulator::reaction_type>
             }
 
             const std::pair<std::pair<ParticleID, Voxel>, bool>
-                retval(world_->new_voxel_private(v));
+                retval(world_->new_voxel_private_private(v));
             if (retval.second)
             {
                 rinfo.add_product(retval.first);
@@ -284,7 +284,7 @@ Real SpatiocyteSimulator::calculate_alpha(const ReactionRule& rule) const
 }
 
 std::pair<SpatiocyteSimulator::attempt_reaction_result_type, SpatiocyteSimulator::reaction_type> SpatiocyteSimulator::attempt_reaction_(
-    const SpatiocyteWorld::particle_info_type info, SpatiocyteWorld::coordinate_type to_coord,
+    const SpatiocyteWorld::particle_info_type info, SpatiocyteWorld::private_coordinate_type to_coord,
     const Real& alpha)
 {
     const MolecularTypeBase* from_mt(
@@ -330,8 +330,8 @@ std::pair<SpatiocyteSimulator::attempt_reaction_result_type, SpatiocyteSimulator
             std::pair<bool, SpatiocyteSimulator::reaction_type>
                 retval = apply_second_order_reaction_(
                     *itr,
-                    world_->make_pid_voxel_pair(from_mt, info),
-                    world_->make_pid_voxel_pair(to_mt, to_coord));
+                    world_->make_pid_voxel_pair_private(from_mt, info),
+                    world_->make_pid_voxel_pair_private(to_mt, to_coord));
             if (retval.first)
             {
                 return std::make_pair(REACTION_SUCCEEDED, retval.second);
@@ -356,10 +356,12 @@ std::pair<bool, SpatiocyteSimulator::reaction_type> SpatiocyteSimulator::apply_s
     const ReactionRule::product_container_type&
         products(reaction_rule.products());
 
-    const SpatiocyteWorld::private_coordinate_type from_coord(
-        world_->coord2private(p0.second.coordinate()));
-    const SpatiocyteWorld::private_coordinate_type to_coord(
-        world_->coord2private(p1.second.coordinate()));
+    // const SpatiocyteWorld::private_coordinate_type from_coord(
+    //     world_->coord2private(p0.second.coordinate()));
+    // const SpatiocyteWorld::private_coordinate_type to_coord(
+    //     world_->coord2private(p1.second.coordinate()));
+    const SpatiocyteWorld::private_coordinate_type from_coord(p0.second.coordinate());
+    const SpatiocyteWorld::private_coordinate_type to_coord(p1.second.coordinate());
 
     const SpatiocyteWorld::particle_info_type from_info(from_coord, p0.first);
     const SpatiocyteWorld::particle_info_type to_info(to_coord, p1.first);
@@ -436,7 +438,7 @@ std::pair<bool, SpatiocyteSimulator::reaction_type> SpatiocyteSimulator::apply_a
 
         world_->remove_voxel_private(from_info.first);
         std::pair<std::pair<ParticleID, Voxel>, bool> new_mol(
-            world_->new_voxel_private(product_species, to_info.first));
+            world_->new_voxel_private_private(product_species, to_info.first));
 
         rinfo.add_product(new_mol.first);
     }
@@ -455,7 +457,7 @@ std::pair<bool, SpatiocyteSimulator::reaction_type> SpatiocyteSimulator::apply_a
 
         world_->remove_voxel_private(to_info.first);
         std::pair<std::pair<ParticleID, Voxel>, bool> new_mol(
-            world_->new_voxel_private(product_species, from_info.first));
+            world_->new_voxel_private_private(product_species, from_info.first));
 
         rinfo.add_product(new_mol.first);
     }
@@ -613,13 +615,13 @@ std::pair<bool, SpatiocyteSimulator::reaction_type> SpatiocyteSimulator::apply_a
     register_product_species(product_species1);
 
     std::pair<std::pair<ParticleID, Voxel>, bool> new_mol0(
-        world_->new_voxel_private(product_species0, coord0));
+        world_->new_voxel_private_private(product_species0, coord0));
     if (!new_mol0.second)
     {
         throw IllegalState("no place for " + product_species0.serial());
     }
     std::pair<std::pair<ParticleID, Voxel>, bool> new_mol1(
-        world_->new_voxel_private(product_species1, coord1));
+        world_->new_voxel_private_private(product_species1, coord1));
     if (!new_mol1.second)
     {
         throw IllegalState("no place for " + product_species1.serial());
@@ -640,8 +642,9 @@ std::pair<bool, SpatiocyteSimulator::reaction_type>
 {
     const ReactionRule::product_container_type& products(reaction_rule.products());
 
-    const SpatiocyteWorld::private_coordinate_type coord(
-        world_->coord2private(p.second.coordinate()));
+    // const SpatiocyteWorld::private_coordinate_type coord(
+    //     world_->coord2private(p.second.coordinate()));
+    const SpatiocyteWorld::private_coordinate_type coord(p.second.coordinate());
     const SpatiocyteWorld::particle_info_type info(coord, p.first);
 
     std::pair<bool, reaction_type> retval;
@@ -708,14 +711,15 @@ SpatiocyteSimulator::apply_a2b(
         {
             // Place a new B-molecule at the position of A
             std::pair<std::pair<ParticleID, Voxel>, bool> new_mol(
-                world_->new_voxel_private(product_species, coord));
+                world_->new_voxel_private_private(product_species, coord));
             rinfo.add_product(new_mol.first);
         }
         else
         {
             // When B is the location of A, it's enough to remove A
-            rinfo.add_product(
-                world_->get_voxel(world_->private2coord(coord)));
+            // rinfo.add_product(
+            //     world_->get_voxel(world_->private2coord(coord)));
+            rinfo.add_product(world_->get_voxel_private(coord));
         }
     }
     else
@@ -734,7 +738,7 @@ SpatiocyteSimulator::apply_a2b(
 
             world_->remove_voxel_private(pinfo.first);
             std::pair<std::pair<ParticleID, Voxel>, bool> new_mol(
-                world_->new_voxel_private(product_species, neighbor.first));
+                world_->new_voxel_private_private(product_species, neighbor.first));
 
             rinfo.add_product(new_mol.first);
         }
@@ -796,18 +800,19 @@ std::pair<bool, SpatiocyteSimulator::reaction_type> SpatiocyteSimulator::apply_a
         {
             // Place a new B-molecule at the position of A
             std::pair<std::pair<ParticleID, Voxel>, bool> new_mol0(
-                world_->new_voxel_private(product_species0, coord));
+                world_->new_voxel_private_private(product_species0, coord));
             rinfo.add_product(new_mol0.first);
         }
         else
         {
             // When B is the location of A, it's enough to remove A
-            rinfo.add_product(world_->get_voxel(world_->private2coord(coord)));
+            // rinfo.add_product(world_->get_voxel(world_->private2coord(coord)));
+            rinfo.add_product(world_->get_voxel_private(coord));
         }
 
         // Place a new C-molecule at the neighbor
         std::pair<std::pair<ParticleID, Voxel>, bool> new_mol1(
-            world_->new_voxel_private(product_species1, neighbor.first));
+            world_->new_voxel_private_private(product_species1, neighbor.first));
         rinfo.add_product(new_mol1.first);
         return std::make_pair(true, std::make_pair(reaction_rule, rinfo));
     }
@@ -845,20 +850,21 @@ std::pair<bool, SpatiocyteSimulator::reaction_type> SpatiocyteSimulator::apply_a
 
         // Place a new B-molecule at the neighbor
         std::pair<std::pair<ParticleID, Voxel>, bool> new_mol0(
-            world_->new_voxel_private(product_species0, neighbor.first));
+            world_->new_voxel_private_private(product_species0, neighbor.first));
         rinfo.add_product(new_mol0.first);
 
         if (aloc != cserial)
         {
             // Place a new C-molecule at the position of A
             std::pair<std::pair<ParticleID, Voxel>, bool> new_mol1(
-                world_->new_voxel_private(product_species1, coord));
+                world_->new_voxel_private_private(product_species1, coord));
             rinfo.add_product(new_mol1.first);
         }
         else
         {
             // When C is the location of A, it's enough to remove A
-            rinfo.add_product(world_->get_voxel(world_->private2coord(coord)));
+            // rinfo.add_product(world_->get_voxel(world_->private2coord(coord)));
+            rinfo.add_product(world_->get_voxel_private(coord));
         }
         return std::make_pair(true, std::make_pair(reaction_rule, rinfo));
     }
@@ -901,8 +907,9 @@ SpatiocyteSimulator::create_particle_id_pair(
             mtype->location()->is_vacant() ? "" : mtype->location()->species().serial());
     return std::make_pair(
         pinfo.second,
-        Voxel(mtype->species(), world_->private2coord(pinfo.first),
-              mtype->radius(), mtype->D(), location));
+        Voxel(mtype->species(), pinfo.first,  mtype->radius(), mtype->D(), location));
+        // Voxel(mtype->species(), world_->private2coord(pinfo.first),
+        //       mtype->radius(), mtype->D(), location));
 }
 
 void SpatiocyteSimulator::step()
