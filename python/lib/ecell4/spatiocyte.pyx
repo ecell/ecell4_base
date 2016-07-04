@@ -255,8 +255,8 @@ cdef class SpatiocyteWorld:
         return (ParticleID_from_Cpp_ParticleID(address(pid_particle_pair.first)),
                 Particle_from_Cpp_Particle(address(pid_particle_pair.second)))
 
-    def get_voxel(self, arg):
-        """get_voxel(arg) -> (ParticleID, Voxle)
+    def get_voxel_private_private(self, arg):
+        """get_voxel_private_private(arg) -> (ParticleID, Voxle)
 
         Return the voxel having a particle associated with a given ParticleID
         or coordinate.
@@ -274,10 +274,10 @@ cdef class SpatiocyteWorld:
         """
         cdef pair[Cpp_ParticleID, Cpp_Voxel] pid_voxel_pair
         if isinstance(arg, ParticleID):
-            pid_voxel_pair = self.thisptr.get().get_voxel(deref((<ParticleID>arg).thisptr))
+            pid_voxel_pair = self.thisptr.get().get_voxel_private_private(deref((<ParticleID>arg).thisptr))
         else:
             # pid_voxel_pair = self.thisptr.get().get_voxel(<Integer>arg)
-            pid_voxel_pair = self.thisptr.get().get_voxel_private(<Integer>arg)
+            pid_voxel_pair = self.thisptr.get().get_voxel_private_private(<Integer>arg)
         return (ParticleID_from_Cpp_ParticleID(address(pid_voxel_pair.first)),
                 Voxel_from_Cpp_Voxel(address(pid_voxel_pair.second)))
 
@@ -905,8 +905,8 @@ cdef class SpatiocyteWorld:
         """
         return self.thisptr.get().update_voxel(deref(pid.thisptr), deref(v.thisptr))
 
-    def list_voxels(self, Species sp = None):
-        """list_voxels(sp=None) -> [ParitcleID, Voxel]
+    def list_voxels_private(self, Species sp = None):
+        """list_voxels_private(sp=None) -> [ParitcleID, Voxel]
 
         Returns the list of voxels.
 
@@ -924,9 +924,9 @@ cdef class SpatiocyteWorld:
         """
         cdef vector[pair[Cpp_ParticleID, Cpp_Voxel]] voxels
         if sp is None:
-            voxels = self.thisptr.get().list_voxels()
+            voxels = self.thisptr.get().list_voxels_private()
         else:
-            voxels = self.thisptr.get().list_voxels(deref(sp.thisptr))
+            voxels = self.thisptr.get().list_voxels_private(deref(sp.thisptr))
 
         retval = []
         cdef vector[pair[Cpp_ParticleID, Cpp_Voxel]].iterator \
@@ -940,8 +940,8 @@ cdef class SpatiocyteWorld:
             inc(it)
         return retval
 
-    def list_voxels_exact(self, Species sp):
-        """list_voxels_exact(sp) -> [ParitcleID, Voxel]
+    def list_voxels_exact_private(self, Species sp):
+        """list_voxels_exact_private(sp) -> [ParitcleID, Voxel]
 
         Returns the list of voxels.
 
@@ -958,7 +958,7 @@ cdef class SpatiocyteWorld:
 
         """
         cdef vector[pair[Cpp_ParticleID, Cpp_Voxel]] voxels
-        voxels = self.thisptr.get().list_voxels_exact(deref(sp.thisptr))
+        voxels = self.thisptr.get().list_voxels_exact_private(deref(sp.thisptr))
 
         retval = []
         cdef vector[pair[Cpp_ParticleID, Cpp_Voxel]].iterator \

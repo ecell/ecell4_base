@@ -220,8 +220,8 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_move)
     const Integer3 global0(3,4,5);
     const LatticeSpace::private_coordinate_type private_coord(
             space.global2private_coord(global0));
-    const LatticeSpace::coordinate_type coord(
-            space.global2coord(global0));
+    // const LatticeSpace::coordinate_type coord(
+    //         space.global2coord(global0));
 
     ParticleID pid(sidgen());
     BOOST_CHECK(space.update_voxel_private(
@@ -233,17 +233,19 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_move)
     const Integer3 global1(3,5,5);
     const LatticeSpace::private_coordinate_type private_to_coord(
             space.global2private_coord(global1));
-    const LatticeSpace::coordinate_type to_coord(
-            space.global2coord(global1));
+    // const LatticeSpace::coordinate_type to_coord(
+    //         space.global2coord(global1));
 
-    BOOST_CHECK(space.move(coord, to_coord));
+    // BOOST_CHECK(space.move(coord, to_coord));
+    BOOST_CHECK(space.move_private(private_coord, private_to_coord));
 
     MolecularTypeBase* mt(space.get_molecular_type(private_to_coord));
     BOOST_CHECK(!mt->is_vacant());
 
     BOOST_CHECK(space.update_voxel_private(
         sidgen(), Voxel(sp, private_coord, radius, D)));
-    BOOST_CHECK(!space.move(coord, to_coord));
+    // BOOST_CHECK(!space.move(coord, to_coord));
+    BOOST_CHECK(!space.move_private(private_coord, private_to_coord));
 }
 
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_update_molecule)
@@ -555,10 +557,14 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_structure_move)
     BOOST_CHECK_EQUAL(space.list_particles(sp).size(), 1);
     BOOST_CHECK_EQUAL(space.list_particles(structure).size(), 1);
     BOOST_CHECK_EQUAL(space.list_particles().size(), 2); // TODO -> 1
-    const LatticeSpace::coordinate_type
-        coord1(space.position2coordinate(pos1)),
-        coord2(space.position2coordinate(pos2));
-    BOOST_CHECK(space.move(coord1, coord2));
+    // const LatticeSpace::coordinate_type
+    //     coord1(space.position2coordinate(pos1)),
+    //     coord2(space.position2coordinate(pos2));
+    // BOOST_CHECK(space.move(coord1, coord2));
+    const LatticeSpace::private_coordinate_type
+        private_coord1(space.position2private(pos1)),
+        private_coord2(space.position2private(pos2));
+    BOOST_CHECK(space.move_private(private_coord1, private_coord2));
     BOOST_CHECK_EQUAL(space.list_particles(sp).size(), 1);
     BOOST_CHECK_EQUAL(space.list_particles(structure).size(), 1);
     BOOST_CHECK_EQUAL(space.list_particles().size(), 2); // TODO -> 1

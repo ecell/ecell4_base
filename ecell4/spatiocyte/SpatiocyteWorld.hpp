@@ -265,11 +265,17 @@ public:
     }
 
     std::vector<std::pair<ParticleID, Voxel> >
-        list_voxels() const;
+        list_voxels_private() const;
     std::vector<std::pair<ParticleID, Voxel> >
-        list_voxels(const Species& sp) const;
+        list_voxels_private(const Species& sp) const;
     std::vector<std::pair<ParticleID, Voxel> >
-        list_voxels_exact(const Species& sp) const;
+        list_voxels_exact_private(const Species& sp) const;
+    // std::vector<std::pair<ParticleID, Voxel> >
+    //     list_voxels() const;
+    // std::vector<std::pair<ParticleID, Voxel> >
+    //     list_voxels(const Species& sp) const;
+    // std::vector<std::pair<ParticleID, Voxel> >
+    //     list_voxels_exact(const Species& sp) const;
 
     std::vector<Species> list_species() const;
     std::vector<Species> list_non_structure_species() const;

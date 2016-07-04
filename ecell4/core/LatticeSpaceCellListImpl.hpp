@@ -276,7 +276,78 @@ public:
         return false;
     }
 
-    virtual std::vector<std::pair<ParticleID, Voxel> > list_voxels() const
+    // virtual std::vector<std::pair<ParticleID, Voxel> > list_voxels() const
+    // {
+    //     std::vector<std::pair<ParticleID, Voxel> > retval;
+
+    //     for (spmap::const_iterator itr(spmap_.begin()); itr != spmap_.end(); ++itr)
+    //     {
+    //         const boost::shared_ptr<MolecularType>& mt((*itr).second);
+    //         const std::string loc((mt->location()->is_vacant())
+    //             ? "" : mt->location()->species().serial());
+    //         const Species& sp(mt->species());
+    //         for (MolecularType::const_iterator itr(mt->begin());
+    //             itr != mt->end(); ++itr)
+    //         {
+    //             retval.push_back(std::make_pair(
+    //                 (*itr).second,
+    //                 Voxel(sp, private2coord((*itr).first), mt->radius(), mt->D(), loc)));
+    //         }
+    //     }
+    //     return retval;
+    // }
+
+    // virtual std::vector<std::pair<ParticleID, Voxel> >
+    //     list_voxels(const Species& sp) const
+    // {
+    //     SpeciesExpressionMatcher sexp(sp);
+    //     std::vector<std::pair<ParticleID, Voxel> > retval;
+    //     for (spmap::const_iterator itr(spmap_.begin());
+    //             itr != spmap_.end(); ++itr)
+    //     {
+    //         if (!sexp.match((*itr).first))
+    //         {
+    //             continue;
+    //         }
+
+    //         const boost::shared_ptr<MolecularType>& mt((*itr).second);
+    //         const std::string loc((mt->location()->is_vacant())
+    //             ? "" : mt->location()->species().serial());
+    //         for (MolecularType::const_iterator i(mt->begin());
+    //             i != mt->end(); ++i)
+    //         {
+    //             retval.push_back(std::make_pair(
+    //                 (*i).second,
+    //                 Voxel(sp, private2coord((*i).first), mt->radius(), mt->D(), loc)));
+    //         }
+    //     }
+    //     return retval;
+    // }
+
+    // virtual std::vector<std::pair<ParticleID, Voxel> >
+    //     list_voxels_exact(const Species& sp) const
+    // {
+    //     std::vector<std::pair<ParticleID, Voxel> > retval;
+    //     spmap::const_iterator itr(spmap_.find(sp));
+    //     if (itr == spmap_.end())
+    //     {
+    //         return retval;
+    //     }
+
+    //     const boost::shared_ptr<MolecularType>& mt((*itr).second);
+    //     const std::string loc((mt->location()->is_vacant())
+    //         ? "" : mt->location()->species().serial());
+    //     for (MolecularType::const_iterator i(mt->begin());
+    //         i != mt->end(); ++i)
+    //     {
+    //         retval.push_back(std::make_pair(
+    //             (*i).second,
+    //             Voxel(sp, private2coord((*i).first), mt->radius(), mt->D(), loc)));
+    //     }
+    //     return retval;
+    // }
+
+    virtual std::vector<std::pair<ParticleID, Voxel> > list_voxels_private() const
     {
         std::vector<std::pair<ParticleID, Voxel> > retval;
 
@@ -291,14 +362,14 @@ public:
             {
                 retval.push_back(std::make_pair(
                     (*itr).second,
-                    Voxel(sp, private2coord((*itr).first), mt->radius(), mt->D(), loc)));
+                    Voxel(sp, (*itr).first, mt->radius(), mt->D(), loc)));
             }
         }
         return retval;
     }
 
     virtual std::vector<std::pair<ParticleID, Voxel> >
-        list_voxels(const Species& sp) const
+        list_voxels_private(const Species& sp) const
     {
         SpeciesExpressionMatcher sexp(sp);
         std::vector<std::pair<ParticleID, Voxel> > retval;
@@ -318,14 +389,14 @@ public:
             {
                 retval.push_back(std::make_pair(
                     (*i).second,
-                    Voxel(sp, private2coord((*i).first), mt->radius(), mt->D(), loc)));
+                    Voxel(sp, (*i).first, mt->radius(), mt->D(), loc)));
             }
         }
         return retval;
     }
 
     virtual std::vector<std::pair<ParticleID, Voxel> >
-        list_voxels_exact(const Species& sp) const
+        list_voxels_exact_private(const Species& sp) const
     {
         std::vector<std::pair<ParticleID, Voxel> > retval;
         spmap::const_iterator itr(spmap_.find(sp));
@@ -342,7 +413,7 @@ public:
         {
             retval.push_back(std::make_pair(
                 (*i).second,
-                Voxel(sp, private2coord((*i).first), mt->radius(), mt->D(), loc)));
+                Voxel(sp, (*i).first, mt->radius(), mt->D(), loc)));
         }
         return retval;
     }
@@ -509,12 +580,12 @@ public:
         return true;
     }
 
-    virtual bool move(const coordinate_type& from, const coordinate_type& to)
-    {
-        const private_coordinate_type src(coord2private(from));
-        const private_coordinate_type dest(coord2private(to));
-        return move_private(src, dest);
-    }
+    // virtual bool move(const coordinate_type& from, const coordinate_type& to)
+    // {
+    //     const private_coordinate_type src(coord2private(from));
+    //     const private_coordinate_type dest(coord2private(to));
+    //     return move_private(src, dest);
+    // }
 
     virtual bool move_private(const private_coordinate_type& src,
             const private_coordinate_type& dest, const std::size_t candidate=0)
@@ -561,12 +632,11 @@ public:
         return true;
     }
 
-    virtual const Particle particle_at(const coordinate_type& coord) const
+    virtual const Particle particle_at_private(const private_coordinate_type& private_coord) const
     {
-        const private_coordinate_type private_coord(coord2private(coord));
         const MolecularTypeBase* mt(get_molecular_type(private_coord));
         return Particle(
-            mt->species(), coordinate2position(coord), mt->radius(), mt->D());
+            mt->species(), private2position(private_coord), mt->radius(), mt->D());
     }
 
     virtual MolecularTypeBase* find_molecular_type(const Species& sp)
