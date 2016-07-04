@@ -487,7 +487,7 @@ Integer SpatiocyteWorld::add_structure3(const Species& sp, const boost::shared_p
                     continue;
                 }
 
-                const Voxel v(sp, (*space_).global2private_coord(g),
+                const Voxel v(sp, (*space_).global2private(g),
                     info.radius, info.D, info.loc);
                 if (new_voxel_structure_private_private(v).second)
                 {
@@ -549,7 +549,7 @@ Integer SpatiocyteWorld::add_structure2(const Species& sp, const boost::shared_p
                     continue;
                 }
 
-                const Voxel v(sp, (*space_).global2private_coord(g),
+                const Voxel v(sp, (*space_).global2private(g),
                     info.radius, info.D, info.loc);
                 if (new_voxel_structure_private_private(v).second)
                 {
@@ -577,10 +577,10 @@ bool SpatiocyteWorld::is_surface_voxel(
     }
 
     const SpatiocyteWorld::private_coordinate_type
-        private_coord((*space_).global2private_coord(g));
+        private_coord((*space_).global2private(g));
     for (Integer i(0); i < 12; ++i)
     {
-        if (shape->is_inside(global2position((*space_).private_coord2global(
+        if (shape->is_inside(global2position((*space_).private2global(
             (*space_).get_neighbor_private(private_coord, i)))) > 0)
         {
             return true;
@@ -716,21 +716,6 @@ SpatiocyteWorld::check_neighbor_private(
     // const private_coordinate_type neighbor((*space_).get_neighbor_private(coord, rnd));
     // bool flg = get_molecular_type_private(neighbor)->is_vacant(); //XXX: loc
     // return std::make_pair(neighbor, flg);
-}
-
-Integer coord2private(const SpatiocyteWorld& w, const Integer coord)
-{
-    const Integer num_row(w.row_size());
-    const Integer num_col(w.col_size());
-    const Integer num_layer(w.layer_size());
-
-    const Integer NUM_COLROW(num_row * num_col);
-    const Integer LAYER(coord / NUM_COLROW);
-    const Integer SURPLUS(coord - LAYER * NUM_COLROW);
-    const Integer COL(SURPLUS / num_row);
-    const Integer3 g(COL, SURPLUS - COL * num_row, LAYER);
-
-    return w.global2private(g);
 }
 
 } // spatiocyte

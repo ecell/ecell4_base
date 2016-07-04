@@ -350,10 +350,10 @@ public:
     //     return new_voxel_private(ecell4::Voxel(sp, coord, info.radius, info.D));
     // }
 
-    bool update_voxel(const ParticleID& pid, const Voxel& v)
-    {
-        return (*space_).update_voxel(pid, v);
-    }
+    // bool update_voxel(const ParticleID& pid, const Voxel& v)
+    // {
+    //     return (*space_).update_voxel(pid, v);
+    // }
 
     void update_voxel_private(const Voxel& v)
     {
@@ -479,12 +479,12 @@ public:
 
     private_coordinate_type global2private(const Integer3& global) const
     {
-        return (*space_).global2private_coord(global);
+        return (*space_).global2private(global);
     }
 
     const Integer3 private2global(private_coordinate_type coord) const
     {
-        return (*space_).private_coord2global(coord);
+        return (*space_).private2global(coord);
     }
 
     /**
@@ -642,11 +642,6 @@ inline SpatiocyteWorld* create_spatiocyte_world_vector_impl_alias(
 {
     return create_spatiocyte_world_vector_impl(edge_lengths, voxel_radius, rng);
 }
-
-/**
-  * XXX: Just for the temporal use
-  */
-Integer coord2private(const SpatiocyteWorld& w, const Integer coord);
 
 } // spatiocyte
 

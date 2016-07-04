@@ -1032,7 +1032,7 @@ const Particle LatticeSpaceVectorImpl::particle_at_private(
     const MolecularTypeBase* mt(voxels_.at(coord));
     return Particle(
         mt->species(),
-        coordinate2position(private2coord(coord)),
+        private2position(coord),
         mt->radius(), mt->D());
 }
 

@@ -21,6 +21,25 @@
 namespace ecell4
 {
 
+/**
+  * XXX: Just for the temporal use
+  */
+template <typename Tspace_>
+Integer coord2private(const Tspace_& w, const Integer coord)
+{
+    const Integer num_row(w.row_size());
+    const Integer num_col(w.col_size());
+    const Integer num_layer(w.layer_size());
+
+    const Integer NUM_COLROW(num_row * num_col);
+    const Integer LAYER(coord / NUM_COLROW);
+    const Integer SURPLUS(coord - LAYER * NUM_COLROW);
+    const Integer COL(SURPLUS / num_row);
+    const Integer3 g(COL, SURPLUS - COL * num_row, LAYER);
+
+    return w.global2private(g);
+}
+
 class LatticeSpace
     : public Space
 {
@@ -169,18 +188,19 @@ public:
     virtual const Integer row_size() const = 0;
     virtual const Integer layer_size() const = 0;
 
-    virtual coordinate_type global2coord(const Integer3& global) const = 0;
-    virtual coordinate_type global2private_coord(const Integer3& global) const = 0;
-    virtual Integer3 private_coord2global(const private_coordinate_type& coord) const = 0;
+    // virtual coordinate_type global2coord(const Integer3& global) const = 0;
+    // virtual Real3 coordinate2position(const coordinate_type& coord) const = 0;
+    // virtual coordinate_type position2coordinate(const Real3& pos) const = 0;
+    // virtual private_coordinate_type coord2private(const coordinate_type& cood) const = 0;
+    // virtual coordinate_type private2coord(
+    //     const private_coordinate_type& private_coord) const = 0;
+    // virtual Integer3 coord2global(coordinate_type coord) const = 0;
+
+    virtual private_coordinate_type global2private(const Integer3& global) const = 0;
+    virtual Integer3 private2global(const private_coordinate_type& coord) const = 0;
     virtual Real3 private2position(
         const private_coordinate_type& private_coord) const = 0;
     virtual private_coordinate_type position2private(const Real3& pos) const = 0;
-    virtual Real3 coordinate2position(const coordinate_type& coord) const = 0;
-    virtual coordinate_type position2coordinate(const Real3& pos) const = 0;
-    virtual private_coordinate_type coord2private(const coordinate_type& cood) const = 0;
-    virtual coordinate_type private2coord(
-        const private_coordinate_type& private_coord) const = 0;
-    virtual Integer3 coord2global(coordinate_type coord) const = 0;
     virtual Real3 global2position(const Integer3& global) const = 0;
     virtual Integer3 position2global(const Real3& pos) const = 0;
 
@@ -276,19 +296,19 @@ public:
         return retval;
     }
 
-    virtual bool update_voxel(const ParticleID& pid, const Voxel& v)
-    {
-        return update_voxel_private(pid,
-            Voxel(v.species(), coord2private(v.coordinate()),
-                v.radius(), v.D(), v.loc()));
-    }
+    // virtual bool update_voxel(const ParticleID& pid, const Voxel& v)
+    // {
+    //     return update_voxel_private(pid,
+    //         Voxel(v.species(), coord2private(v.coordinate()),
+    //             v.radius(), v.D(), v.loc()));
+    // }
 
-    virtual bool update_voxel_without_checking(const ParticleID& pid, const Voxel& v)
-    {
-        return update_voxel_private_without_checking(pid,
-            Voxel(v.species(), coord2private(v.coordinate()),
-                v.radius(), v.D(), v.loc()));
-    }
+    // virtual bool update_voxel_without_checking(const ParticleID& pid, const Voxel& v)
+    // {
+    //     return update_voxel_private_without_checking(pid,
+    //         Voxel(v.species(), coord2private(v.coordinate()),
+    //             v.radius(), v.D(), v.loc()));
+    // }
 
     // virtual bool update_particle(const ParticleID& pid, const Particle& p)
     // {
@@ -432,12 +452,12 @@ public:
 
     /** global -> */
 
-    coordinate_type global2coord(const Integer3& global) const
-    {
-        return __global2coord(global, col_size(), row_size(), layer_size());
-    }
+    // coordinate_type global2coord(const Integer3& global) const
+    // {
+    //     return __global2coord(global, col_size(), row_size(), layer_size());
+    // }
 
-    coordinate_type global2private_coord(const Integer3& global) const
+    coordinate_type global2private(const Integer3& global) const
     {
         const Integer3 g(global.col + 1, global.row + 1, global.layer + 1);
         return __global2coord(g, col_size_, row_size_, layer_size_);
@@ -456,12 +476,12 @@ public:
 
     /** -> global */
 
-    Integer3 coord2global(coordinate_type coord) const
-    {
-        return __coord2global(coord, col_size(), row_size(), layer_size());
-    }
+    // Integer3 coord2global(coordinate_type coord) const
+    // {
+    //     return __coord2global(coord, col_size(), row_size(), layer_size());
+    // }
 
-    Integer3 private_coord2global(const private_coordinate_type& coord) const
+    Integer3 private2global(const private_coordinate_type& coord) const
     {
         const Integer3 private_global(
             __coord2global(coord, col_size_, row_size_, layer_size_));
@@ -474,39 +494,39 @@ public:
 
     /** others */
 
-    Real3 coordinate2position(const coordinate_type& coord) const
-    {
-        // return global2position(private_coord2global(
-        //     global2private_coord(coord2global(coord))));
-        return global2position(coord2global(coord));
-    }
+    // Real3 coordinate2position(const coordinate_type& coord) const
+    // {
+    //     // return global2position(private2global(
+    //     //     global2private(coord2global(coord))));
+    //     return global2position(coord2global(coord));
+    // }
 
-    private_coordinate_type coord2private(const coordinate_type& coord) const
-    {
-        return global2private_coord(coord2global(coord));
-    }
+    // private_coordinate_type coord2private(const coordinate_type& coord) const
+    // {
+    //     return global2private(coord2global(coord));
+    // }
 
     Real3 private2position(
         const private_coordinate_type& private_coord) const
     {
-        return global2position(private_coord2global(private_coord));
+        return global2position(private2global(private_coord));
     }
 
     private_coordinate_type position2private(const Real3& pos) const
     {
-        return global2private_coord(position2global(pos));
+        return global2private(position2global(pos));
     }
 
-    coordinate_type position2coordinate(const Real3& pos) const
-    {
-        return global2coord(position2global(pos));
-    }
+    // coordinate_type position2coordinate(const Real3& pos) const
+    // {
+    //     return global2coord(position2global(pos));
+    // }
 
-    coordinate_type private2coord(
-        const private_coordinate_type& private_coord) const
-    {
-        return global2coord(private_coord2global(private_coord));
-    }
+    // coordinate_type private2coord(
+    //     const private_coordinate_type& private_coord) const
+    // {
+    //     return global2coord(private2global(private_coord));
+    // }
 
     private_coordinate_type get_neighbor_private(
         const private_coordinate_type& private_coord, const Integer& nrand) const
@@ -547,7 +567,7 @@ public:
     private_coordinate_type periodic_transpose_private(
         const private_coordinate_type& private_coord) const
     {
-        Integer3 global(private_coord2global(private_coord));
+        Integer3 global(private2global(private_coord));
 
         global.col = global.col % col_size();
         global.row = global.row % row_size();
@@ -557,7 +577,7 @@ public:
         global.row = global.row < 0 ? global.row + row_size() : global.row;
         global.layer = global.layer < 0 ? global.layer + layer_size() : global.layer;
 
-        return global2private_coord(global);
+        return global2private(global);
     }
 
 public:
@@ -574,7 +594,7 @@ public:
 
     bool is_inside(const private_coordinate_type& coord) const
     {
-        const Integer3 global(private_coord2global(coord));
+        const Integer3 global(private2global(coord));
         return global.col >= 0 && global.col < col_size()
             && global.row >= 0 && global.row < row_size()
             && global.layer >= 0 && global.layer < layer_size();

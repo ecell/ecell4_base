@@ -885,8 +885,28 @@ cdef class SpatiocyteWorld:
         retval = self.thisptr.get().new_voxel_structure_private_private(deref((<Species> arg1).thisptr), <Integer> arg2)
         return ((ParticleID_from_Cpp_ParticleID(address(retval.first.first)), Voxel_from_Cpp_Voxel(address(retval.first.second))), retval.second)
 
-    def update_voxel(self, ParticleID pid, Voxel v):
-        """update_voxel(pid, v) -> bool
+    # def update_voxel(self, ParticleID pid, Voxel v):
+    #     """update_voxel(pid, v) -> bool
+
+    #     Update a particle.
+
+    #     Parameters
+    #     ----------
+    #     pid : ParticleID
+    #         A particle id of the particle to update
+    #     v : Voxel
+    #         The information to update
+
+    #     Returns
+    #     -------
+    #     bool:
+    #         whether to succeed to update the particle
+
+    #     """
+    #     return self.thisptr.get().update_voxel(deref(pid.thisptr), deref(v.thisptr))
+
+    def update_voxel_private(self, ParticleID pid, Voxel v):
+        """update_voxel_private(pid, v) -> bool
 
         Update a particle.
 
@@ -903,7 +923,7 @@ cdef class SpatiocyteWorld:
             whether to succeed to update the particle
 
         """
-        return self.thisptr.get().update_voxel(deref(pid.thisptr), deref(v.thisptr))
+        return self.thisptr.get().update_voxel_private(deref(pid.thisptr), deref(v.thisptr))
 
     def list_voxels_private(self, Species sp = None):
         """list_voxels_private(sp=None) -> [ParitcleID, Voxel]

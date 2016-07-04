@@ -66,7 +66,7 @@ public:
 
     inline matrix_type::size_type coord2index(const private_coordinate_type& coord) const
     {
-        return global2index(private_coord2global(coord));
+        return global2index(private2global(coord));
     }
 
     inline matrix_type::size_type global2index(const Integer3& g) const
