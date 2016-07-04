@@ -163,9 +163,9 @@ std::pair<bool, SpatiocyteSimulator::reaction_type>
         while (true) //TODO: Avoid an inifinite loop
         {
             // const SpatiocyteWorld::coordinate_type
-            //     coord(world_->rng()->uniform_int(0, world_->size_private() - 1));
+            //     coord(world_->rng()->uniform_int(0, world_->size() - 1));
             const SpatiocyteWorld::coordinate_type
-                coord(coord2private(*world_, world_->rng()->uniform_int(0, world_->inner_size() - 1)));
+                coord(inner2coordinate(*world_, world_->rng()->uniform_int(0, world_->inner_size() - 1)));
             const Voxel v(sp, coord, info.radius, info.D, info.loc);
 
             if (world_->on_structure(v))

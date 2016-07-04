@@ -86,7 +86,7 @@ BOOST_AUTO_TEST_CASE(SpatiocyteSimulator_test_step_with_single_particle)
     boost::shared_ptr<SpatiocyteWorld> world(
             new SpatiocyteWorld(edge_lengths, voxel_radius, rng));
 
-    BOOST_CHECK(world->new_voxel(sp, coord2private(*world, 36)).second);
+    BOOST_CHECK(world->new_voxel(sp, inner2coordinate(*world, 36)).second);
 
     SpatiocyteSimulator sim(model, world);
 

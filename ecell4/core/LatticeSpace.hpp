@@ -25,7 +25,7 @@ namespace ecell4
   * XXX: Just for the temporal use
   */
 template <typename Tspace_>
-Integer coord2private(const Tspace_& w, const Integer coord)
+Integer inner2coordinate(const Tspace_& w, const Integer coord)
 {
     const Integer num_row(w.row_size());
     const Integer num_col(w.col_size());

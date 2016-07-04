@@ -322,8 +322,8 @@ bool SpatiocyteWorld::add_molecules(const Species& sp, const Integer& num)
     Integer count(0);
     while (count < num)
     {
-        const coordinate_type coord(coord2private(*this, rng()->uniform_int(0, inner_size() - 1)));  //XXX: just for consistency. rather use below
-        // const coordinate_type coord(rng()->uniform_int(0, size_private() - 1));
+        const coordinate_type coord(inner2coordinate(*this, rng()->uniform_int(0, inner_size() - 1)));  //XXX: just for consistency. rather use below
+        // const coordinate_type coord(rng()->uniform_int(0, size() - 1));
 
         const Voxel v(sp, coord, info.radius, info.D, info.loc);
 
