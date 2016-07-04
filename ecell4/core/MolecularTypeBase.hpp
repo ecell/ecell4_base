@@ -12,64 +12,62 @@
 namespace ecell4
 {
 
-class MolecularTypeBase
+class VoxelPool
 {
 public:
 
     typedef Voxel::coordinate_type coordinate_type;
 
     // typedef std::pair<coordinate_type, ParticleID> coordinate_id_pair_type;
-    typedef struct coordinate_id_pair_type {
-        // coordinate_id_pair_type(coordinate_type const& coordinate, ParticleID const& pid)
-        //     : coordinate(coordinate), pid(pid)
-        // {}
-        coordinate_id_pair_type(ParticleID const& pid, coordinate_type const& coordinate)
-            : coordinate(coordinate), pid(pid)
-        {}
-
-        coordinate_type coordinate;
-        ParticleID pid;
-
-        bool operator==(const coordinate_id_pair_type& rhs) const
+    typedef struct coordinate_id_pair_type
         {
-            return pid == rhs.pid &&
-                coordinate == rhs.coordinate;
-        }
+            coordinate_id_pair_type(ParticleID const& pid, coordinate_type const& coordinate)
+                : coordinate(coordinate), pid(pid)
+            {}
 
-        bool operator!=(const coordinate_id_pair_type& rhs) const
-        {
-            return pid != rhs.pid
-                || coordinate != rhs.coordinate;
-        }
+            coordinate_type coordinate;
+            ParticleID pid;
 
-        bool operator<(const coordinate_id_pair_type& rhs) const
-        {
-            return coordinate < rhs.coordinate
-                || (coordinate == rhs.coordinate &&
-                    pid < rhs.pid);
-        }
+            bool operator==(const coordinate_id_pair_type& rhs) const
+            {
+                return pid == rhs.pid &&
+                    coordinate == rhs.coordinate;
+            }
 
-        bool operator>=(const coordinate_id_pair_type& rhs) const
-        {
-            return coordinate > rhs.coordinate
-                || (coordinate == rhs.coordinate &&
-                    pid >= rhs.pid);
-        }
+            bool operator!=(const coordinate_id_pair_type& rhs) const
+            {
+                return pid != rhs.pid
+                    || coordinate != rhs.coordinate;
+            }
 
-        bool operator>(const coordinate_id_pair_type& rhs) const
-        {
-            return coordinate > rhs.coordinate
-                || (coordinate == rhs.coordinate &&
-                    pid > rhs.pid);
-        }
+            bool operator<(const coordinate_id_pair_type& rhs) const
+            {
+                return coordinate < rhs.coordinate
+                    || (coordinate == rhs.coordinate &&
+                        pid < rhs.pid);
+            }
 
-        bool operator<=(const coordinate_id_pair_type& rhs) const
-        {
-            return coordinate < rhs.coordinate
-                || (coordinate == rhs.coordinate &&
-                    pid <= rhs.pid);
-        }
-    } coordinate_id_pair_type;
+            bool operator>=(const coordinate_id_pair_type& rhs) const
+            {
+                return coordinate > rhs.coordinate
+                    || (coordinate == rhs.coordinate &&
+                        pid >= rhs.pid);
+            }
+
+            bool operator>(const coordinate_id_pair_type& rhs) const
+            {
+                return coordinate > rhs.coordinate
+                    || (coordinate == rhs.coordinate &&
+                        pid > rhs.pid);
+            }
+
+            bool operator<=(const coordinate_id_pair_type& rhs) const
+            {
+                return coordinate < rhs.coordinate
+                    || (coordinate == rhs.coordinate &&
+                        pid <= rhs.pid);
+            }
+        } coordinate_id_pair_type;
 
     typedef std::vector<coordinate_id_pair_type> container_type;
     typedef container_type::const_iterator const_iterator;
@@ -87,16 +85,12 @@ public:
 
 public:
 
-    MolecularTypeBase(
-        const Species& species, MolecularTypeBase* location,
-        const Real& radius, const Real& D)
-        : species_(species), location_(location),
-        radius_(radius), D_(D)
+    VoxelPool()
     {
         ;
     }
 
-    virtual ~MolecularTypeBase()
+    virtual ~VoxelPool()
     {
         ;
     }
@@ -118,7 +112,42 @@ public:
         return voxel_type() == INTERFACE;
     }
 
-    // virtual bool is_vacant() const = 0;
+    virtual bool with_voxels() const = 0;
+
+    virtual const Shape::dimension_kind get_dimension() const
+    {
+        return Shape::UNDEF;
+    }
+};
+
+class MolecularTypeBase
+    : public VoxelPool
+{
+public:
+
+    typedef VoxelPool base_type;
+    typedef base_type::coordinate_type coordinate_type;
+    typedef base_type::coordinate_id_pair_type coordinate_id_pair_type;
+    typedef base_type::container_type container_type;
+    typedef base_type::const_iterator const_iterator;
+    typedef base_type::iterator iterator;
+    typedef base_type::voxel_type_type voxel_type_type;
+
+public:
+
+    MolecularTypeBase(
+        const Species& species, MolecularTypeBase* location,
+        const Real& radius, const Real& D)
+        : base_type(), species_(species), location_(location),
+        radius_(radius), D_(D)
+    {
+        ;
+    }
+
+    virtual ~MolecularTypeBase()
+    {
+        ;
+    }
 
     virtual bool with_voxels() const
     {
@@ -155,11 +184,6 @@ public:
         return D_;
     }
 
-    virtual const Shape::dimension_kind get_dimension() const
-    {
-        return Shape::UNDEF;
-    }
-
     virtual void add_voxel_without_checking(const coordinate_id_pair_type& info)
     {
         voxels_.push_back(info);
@@ -179,8 +203,8 @@ public:
     }
 
     virtual void replace_voxel(
-        const coordinate_type& from_coord,
-        const coordinate_type& to_coord, const std::size_t candidate=0)
+        const coordinate_type& from_coord, const coordinate_type& to_coord,
+        const std::size_t candidate = 0)
     {
         container_type::iterator itr(find(from_coord, candidate));
         if (itr == voxels_.end())
@@ -319,8 +343,8 @@ public:
 
 protected:
 
-    container_type::iterator find(coordinate_type coord,
-            const std::size_t candidate=0)
+    container_type::iterator find(
+        coordinate_type coord, const std::size_t candidate = 0)
     {
         container_type::iterator itr;
         if (candidate < voxels_.size())
