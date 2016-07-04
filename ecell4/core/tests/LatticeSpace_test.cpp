@@ -132,7 +132,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_list_particles)
 
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_coordinate_global_translation)
 {
-    for (Integer coord(0); coord < space.size_private(); ++coord)
+    for (Integer coord(0); coord < space.size(); ++coord)
     {
         const Integer3 global(space.coordinate2global(coord));
         LatticeSpace::coordinate_type created_coord(space.global2coordinate(global));
@@ -241,7 +241,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_update_molecule)
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_update_voxel)
 {
     const ParticleID pid(sidgen());
-    for (Integer inner_coord(0); inner_coord < space.size(); ++inner_coord)
+    for (Integer inner_coord(0); inner_coord < space.inner_size(); ++inner_coord)
     {
         const LatticeSpace::coordinate_type
             coord(coord2private(space, inner_coord));
@@ -262,7 +262,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_update_voxel)
 
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_lattice_structure)
 {
-    for (Integer inner_coord(0); inner_coord < space.size(); ++inner_coord)
+    for (Integer inner_coord(0); inner_coord < space.inner_size(); ++inner_coord)
     {
         ParticleID pid(sidgen());
         const LatticeSpace::coordinate_type coord(
@@ -274,7 +274,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_lattice_structure)
 
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_neighbor)
 {
-    for (Integer inner_coord(0); inner_coord < space.size(); ++inner_coord)
+    for (Integer inner_coord(0); inner_coord < space.inner_size(); ++inner_coord)
     {
         Real3 center(space.coordinate2position(coord2private(space, inner_coord)));
         for (int i(0); i < 12; ++i)

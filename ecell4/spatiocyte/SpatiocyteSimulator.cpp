@@ -165,7 +165,7 @@ std::pair<bool, SpatiocyteSimulator::reaction_type>
             // const SpatiocyteWorld::coordinate_type
             //     coord(world_->rng()->uniform_int(0, world_->size_private() - 1));
             const SpatiocyteWorld::coordinate_type
-                coord(coord2private(*world_, world_->rng()->uniform_int(0, world_->size() - 1)));
+                coord(coord2private(*world_, world_->rng()->uniform_int(0, world_->inner_size() - 1)));
             const Voxel v(sp, coord, info.radius, info.D, info.loc);
 
             if (world_->on_structure(v))
@@ -711,8 +711,6 @@ SpatiocyteSimulator::apply_a2b(
         else
         {
             // When B is the location of A, it's enough to remove A
-            // rinfo.add_product(
-            //     world_->get_voxel(world_->private2coord(coord)));
             rinfo.add_product(world_->get_voxel(coord));
         }
     }
@@ -800,7 +798,6 @@ std::pair<bool, SpatiocyteSimulator::reaction_type> SpatiocyteSimulator::apply_a
         else
         {
             // When B is the location of A, it's enough to remove A
-            // rinfo.add_product(world_->get_voxel(world_->private2coord(coord)));
             rinfo.add_product(world_->get_voxel(coord));
         }
 
@@ -857,7 +854,6 @@ std::pair<bool, SpatiocyteSimulator::reaction_type> SpatiocyteSimulator::apply_a
         else
         {
             // When C is the location of A, it's enough to remove A
-            // rinfo.add_product(world_->get_voxel(world_->private2coord(coord)));
             rinfo.add_product(world_->get_voxel(coord));
         }
         return std::make_pair(true, std::make_pair(reaction_rule, rinfo));

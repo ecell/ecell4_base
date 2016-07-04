@@ -374,11 +374,6 @@ public:
         return (*space_).layer_size();
     }
 
-    const Integer size_private() const
-    {
-        return (*space_).size_private();
-    }
-
     const Integer size() const
     {
         return (*space_).size();
@@ -387,6 +382,16 @@ public:
     const Integer3 shape() const
     {
         return (*space_).shape();
+    }
+
+    const Integer inner_size() const
+    {
+        return (*space_).inner_size();
+    }
+
+    const Integer3 inner_shape() const
+    {
+        return (*space_).inner_shape();
     }
 
     coordinate_type position2coordinate(const Real3& pos) const

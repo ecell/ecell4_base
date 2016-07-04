@@ -96,7 +96,7 @@ public:
 
     Real get_volume() const
     {
-        return size() * voxel_volume();
+        return inner_size() * voxel_volume();
     }
 
     virtual Real3 actual_lengths() const = 0;
@@ -284,17 +284,15 @@ public:
         return remove_voxel(pid);
     }
 
-    inline Integer size_private() const
-    {
-        return size();
-    }
+    virtual Integer size() const = 0;
+    virtual Integer3 shape() const = 0;
 
-    inline Integer size() const
+    inline Integer inner_size() const
     {
         return col_size() * row_size() * layer_size();
     }
 
-    inline Integer3 shape() const
+    inline Integer3 inner_shape() const
     {
         return Integer3(col_size(), row_size(), layer_size());
     }
@@ -497,9 +495,14 @@ public:
             && global.layer >= 0 && global.layer < layer_size();
     }
 
-    Integer size_private() const
+    virtual Integer size() const
     {
         return row_size_ * col_size_ * layer_size_;
+    }
+
+    virtual Integer3 shape() const
+    {
+        return Integer3(col_size_, row_size_, layer_size_);
     }
 
 protected:

@@ -42,7 +42,7 @@ void run()
     std::cout << "col size = " << world->col_size()
         << ", row size = " << world->row_size()
         << ", layer size = " << world->layer_size() << std::endl;
-    std::cout << "total size = " << world->size() << std::endl;
+    std::cout << "total size = " << world->inner_size() << std::endl;
 
     world->add_molecules(sp, N);
 

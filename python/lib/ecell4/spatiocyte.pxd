@@ -102,8 +102,12 @@ cdef extern from "ecell4/spatiocyte/SpatiocyteWorld.hpp" namespace "ecell4::spat
         Integer col_size()
         Integer row_size()
         Integer layer_size()
+
         Integer size()
         Cpp_Integer3 shape()
+        Integer inner_size()
+        Cpp_Integer3 inner_shape()
+
         void bind_to(shared_ptr[Cpp_Model])
         # Cpp_Real3 coordinate2position(Integer)
         # Integer position2coordinate(Cpp_Real3)

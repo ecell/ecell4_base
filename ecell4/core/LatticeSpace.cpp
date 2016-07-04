@@ -873,7 +873,7 @@ void LatticeSpaceVectorImpl::update_voxel(const Voxel& v)
     // // if (src_mt->is_vacant())
     // if (!src_mt->with_voxels())
     // {
-    //     return false; // has no ParticleID. Call update_voxel_private with a ParticleID.
+    //     return false; // has no ParticleID. Call update_voxel with a ParticleID.
     // }
 
     // MolecularTypeBase* new_mt(get_molecular_type(v)); //XXX: need MoleculeInfo
@@ -947,7 +947,7 @@ bool LatticeSpaceVectorImpl::update_voxel(const ParticleID& pid, const Voxel& v)
     return true;
 
     // const LatticeSpaceVectorImpl::coordinate_type& to_coord(v.coordinate());
-    // if (!is_in_range_private(to_coord))
+    // if (!is_in_range(to_coord))
     // {
     //     return false;
     // }
