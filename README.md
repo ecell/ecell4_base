@@ -18,8 +18,6 @@ Installation and usage
 ======================
 
 - [Docker container for E-Cell System version4](#docker-container-for-e-cell-system-version4)
-  - [Windows or Mac](#windows-or-mac)
-  - [Linux](#linux)
 
 - [Installation](#installation)
   - [Requirements](#requirements)
@@ -41,30 +39,24 @@ You can pull E-Cell4 container with `docker pull ecell/ecell4`.
 
 After the following steps, you should see [Jupyter Notebook](http://jupyter.org/) up and running (and E-Cell4 tutorials) in your web browser.
 
-### Windows or Mac
-
-1. Install [Docker Toolbox](https://www.docker.com/toolbox).
-2. Run **Docker Quickstart Terminal**.
+1. Install [Docker](https://www.docker.com/products/docker).
+2. Run Docker.
 3. Run the following commands
 
     ```shell
     docker pull ecell/ecell4
-    docker run -dp 443:8888 ecell/ecell4
+    docker run -dP ecell/ecell4
     ```
 
-4. Open **192.168.99.100:443** with your web browser.
-
-### Linux
-
-1. Install Docker.
-2. Run the following commands in your terminal.
+4. Check which port is used by E-Cell4 docker with `docker ps` command.
 
     ```shell
-    sudo docker pull ecell/ecell4
-    sudo docker run -dp 443:8888 ecell/ecell4
+    docker ps
+    CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                     NAMES
+    82b90db240f5        ecell/ecell4        "/bin/sh -c 'jupyter-"   7 seconds ago       Up 6 seconds        0.0.0.0:32768->8888/tcp   clever_raman
     ```
 
-3. Open **localhost:443** with your web browser.
+5. Open the PORT in `docker ps` command with your web browser. In the case of the above example, you will open `0.0.0.0:32768`
 
 
 Installation
