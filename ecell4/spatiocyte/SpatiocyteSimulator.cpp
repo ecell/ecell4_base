@@ -969,12 +969,17 @@ void SpatiocyteSimulator::walk(const Species& species, const Real& alpha)
     }
 
     const boost::shared_ptr<RandomNumberGenerator>& rng(world_->rng());
-    const VoxelPool* mtype(world_->find_molecular_type(species));
 
-    if (!mtype->with_voxels())
+    const MolecularType* mtype(dynamic_cast<const MolecularType*>(world_->find_molecular_type(species)));
+    if (!mtype)
     {
         throw NotSupported("MolecularType must be with voxels.");
     }
+    // const VoxelPool* mtype(world_->find_molecular_type(species));
+    // if (!mtype->with_voxels())
+    // {
+    //     throw NotSupported("MolecularType must be with voxels.");
+    // }
 
     VoxelPool::container_type voxels;
     copy(mtype->begin(), mtype->end(), back_inserter(voxels));
@@ -985,7 +990,7 @@ void SpatiocyteSimulator::walk(const Species& species, const Real& alpha)
         walk_on_surface_(mtype, alpha);
 }
 
-void SpatiocyteSimulator::walk_in_space_(const VoxelPool* mtype, const Real& alpha)
+void SpatiocyteSimulator::walk_in_space_(const MolecularType* mtype, const Real& alpha)
 {
     const boost::shared_ptr<RandomNumberGenerator>& rng(world_->rng());
     VoxelPool::container_type voxels;
@@ -1018,7 +1023,7 @@ void SpatiocyteSimulator::walk_in_space_(const VoxelPool* mtype, const Real& alp
     }
 }
 
-void SpatiocyteSimulator::walk_on_surface_(const VoxelPool* mtype, const Real& alpha)
+void SpatiocyteSimulator::walk_on_surface_(const MolecularType* mtype, const Real& alpha)
 {
     const boost::shared_ptr<RandomNumberGenerator>& rng(world_->rng());
     VoxelPool::container_type voxels;

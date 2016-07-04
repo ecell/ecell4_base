@@ -159,29 +159,28 @@ public:
 public:
 
     virtual void add_voxel_without_checking(const coordinate_id_pair_type& info) = 0;
-    virtual void replace_voxel(
-        const coordinate_type& from_coord,
-        const coordinate_id_pair_type& to_info) = 0;
+    // virtual void replace_voxel(
+    //     const coordinate_type& from_coord, const coordinate_id_pair_type& to_info) = 0;
     virtual void replace_voxel(
         const coordinate_type& from_coord, const coordinate_type& to_coord,
         const std::size_t candidate = 0) = 0;
     virtual coordinate_id_pair_type pop(const coordinate_type& coord) = 0;
     virtual bool remove_voxel_if_exists(const coordinate_type& coord) = 0;
-    virtual void remove_voxel(const container_type::iterator& position) = 0;
-    virtual void swap(const container_type::iterator& a, const container_type::iterator& b) = 0;
-    virtual coordinate_id_pair_type& at(const Integer& index) = 0;
-    virtual coordinate_id_pair_type const& at(const Integer& index) const = 0;
-    virtual coordinate_id_pair_type& operator[](const Integer& n) = 0;
-    virtual coordinate_id_pair_type const& operator[](const Integer& n) const = 0;
-    virtual const Integer size() const = 0;
-    virtual void shuffle(RandomNumberGenerator& rng) = 0;
-    virtual container_type::iterator begin() = 0;
-    virtual container_type::const_iterator begin() const = 0;
-    virtual container_type::iterator end() = 0;
-    virtual container_type::const_iterator end() const = 0;
     virtual const ParticleID find_particle_id(const coordinate_type& coord) const = 0;
-    virtual container_type::iterator find(const ParticleID& pid) = 0;
-    virtual container_type::const_iterator find(const ParticleID& pid) const = 0;
+    // virtual void remove_voxel(const container_type::iterator& position) = 0;
+    // virtual void swap(const container_type::iterator& a, const container_type::iterator& b) = 0;
+    // virtual void shuffle(RandomNumberGenerator& rng) = 0;
+    // virtual const Integer size() const = 0;
+    // virtual coordinate_id_pair_type& at(const Integer& index) = 0;
+    // virtual coordinate_id_pair_type const& at(const Integer& index) const = 0;
+    // virtual coordinate_id_pair_type& operator[](const Integer& n) = 0;
+    // virtual coordinate_id_pair_type const& operator[](const Integer& n) const = 0;
+    // virtual container_type::iterator begin() = 0;
+    // virtual container_type::const_iterator begin() const = 0;
+    // virtual container_type::iterator end() = 0;
+    // virtual container_type::const_iterator end() const = 0;
+    // virtual container_type::iterator find(const ParticleID& pid) = 0;
+    // virtual container_type::const_iterator find(const ParticleID& pid) const = 0;
 
 protected:
 

@@ -387,8 +387,8 @@ protected:
     // void register_step_event(const Species& species);
     void update_alpha_map();
 
-    void walk_in_space_(const VoxelPool* mtype, const Real& alpha);
-    void walk_on_surface_(const VoxelPool* mtype, const Real& alpha);
+    void walk_in_space_(const MolecularType* mtype, const Real& alpha);
+    void walk_on_surface_(const MolecularType* mtype, const Real& alpha);
 
     const std::string get_serial(
         const SpatiocyteWorld::coordinate_type coord) const

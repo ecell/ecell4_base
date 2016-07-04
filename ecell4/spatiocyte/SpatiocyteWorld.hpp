@@ -459,12 +459,18 @@ public:
 
     std::pair<ParticleID, Voxel> choice(const Species& sp)
     {
-        VoxelPool* mt(find_molecular_type(sp));
-        if (!mt->with_voxels())
+        const MolecularType* mt(dynamic_cast<const MolecularType*>(find_molecular_type(sp)));
+        if (!mt)
         {
             throw NotSupported(
                 "choice for a Species with no voxel is not supporeted.");
         }
+        // VoxelPool* mt(find_molecular_type(sp));
+        // if (!mt->with_voxels())
+        // {
+        //     throw NotSupported(
+        //         "choice for a Species with no voxel is not supporeted.");
+        // }
         const Integer i(rng_->uniform_int(0, mt->size() - 1));
         const coordinate_id_pair_type& info(mt->at(i));
         return make_pid_voxel_pair(mt, info);

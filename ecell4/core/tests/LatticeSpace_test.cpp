@@ -575,8 +575,14 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_save_and_load)
             itr != species.end(); ++itr)
     {
         const Species species((*itr).serial());
-        const VoxelPool *mtb1(space.find_molecular_type(species));
-        const VoxelPool *mtb2(space2.find_molecular_type(species));
+        // const VoxelPool *mtb1(space.find_molecular_type(species));
+        // const VoxelPool *mtb2(space2.find_molecular_type(species));
+        const MolecularType* mtb1(
+            dynamic_cast<const MolecularType*>(space.find_molecular_type(species)));
+        const MolecularType* mtb2(
+            dynamic_cast<const MolecularType*>(space2.find_molecular_type(species)));
+        BOOST_ASSERT(mtb1);
+        BOOST_ASSERT(mtb2);
         BOOST_CHECK_EQUAL(mtb1->radius(), mtb2->radius());
         BOOST_CHECK_EQUAL(mtb1->D(), mtb2->D());
         BOOST_CHECK_EQUAL(mtb1->get_dimension(), mtb2->get_dimension());

@@ -433,10 +433,18 @@ BOOST_AUTO_TEST_CASE(LattiecSimulator_test_scheduler)
 
     sim.initialize();
 
-    const VoxelPool
-        *mt1(world->find_molecular_type(sp1)),
-        *mt2(world->find_molecular_type(sp2)),
-        *mt3(world->find_molecular_type(sp3));
+    // const VoxelPool
+    //     *mt1(world->find_molecular_type(sp1)),
+    //     *mt2(world->find_molecular_type(sp2)),
+    //     *mt3(world->find_molecular_type(sp3));
+    const MolecularType
+        *mt1(dynamic_cast<const MolecularType*>(world->find_molecular_type(sp1))),
+        *mt2(dynamic_cast<const MolecularType*>(world->find_molecular_type(sp2))),
+        *mt3(dynamic_cast<const MolecularType*>(world->find_molecular_type(sp3)));
+    BOOST_ASSERT(mt1);
+    BOOST_ASSERT(mt2);
+    BOOST_ASSERT(mt3);
+
     VoxelPool::const_iterator
         itr1(mt1->begin()),
         itr2(mt2->begin()),
