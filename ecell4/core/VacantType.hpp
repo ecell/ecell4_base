@@ -7,11 +7,11 @@ namespace ecell4
 {
 
 class VacantType
-    : public MolecularTypeBase
+    : public VoxelPool
 {
 public:
 
-    typedef MolecularTypeBase base_type;
+    typedef VoxelPool base_type;
     typedef base_type::coordinate_id_pair_type coordinate_id_pair_type;
     typedef base_type::coordinate_type coordinate_type;
     typedef base_type::container_type container_type;
