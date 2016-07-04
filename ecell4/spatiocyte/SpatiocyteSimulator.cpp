@@ -719,7 +719,7 @@ SpatiocyteSimulator::apply_a2b(
             // When B is the location of A, it's enough to remove A
             // rinfo.add_product(
             //     world_->get_voxel(world_->private2coord(coord)));
-            rinfo.add_product(world_->get_voxel_private(coord));
+            rinfo.add_product(world_->get_voxel_private_private(coord));
         }
     }
     else
@@ -807,7 +807,7 @@ std::pair<bool, SpatiocyteSimulator::reaction_type> SpatiocyteSimulator::apply_a
         {
             // When B is the location of A, it's enough to remove A
             // rinfo.add_product(world_->get_voxel(world_->private2coord(coord)));
-            rinfo.add_product(world_->get_voxel_private(coord));
+            rinfo.add_product(world_->get_voxel_private_private(coord));
         }
 
         // Place a new C-molecule at the neighbor
@@ -864,7 +864,7 @@ std::pair<bool, SpatiocyteSimulator::reaction_type> SpatiocyteSimulator::apply_a
         {
             // When C is the location of A, it's enough to remove A
             // rinfo.add_product(world_->get_voxel(world_->private2coord(coord)));
-            rinfo.add_product(world_->get_voxel_private(coord));
+            rinfo.add_product(world_->get_voxel_private_private(coord));
         }
         return std::make_pair(true, std::make_pair(reaction_rule, rinfo));
     }

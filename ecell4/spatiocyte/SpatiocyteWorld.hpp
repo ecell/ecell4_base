@@ -216,19 +216,24 @@ public:
         return (*space_).get_particle(pid);
     }
 
-    std::pair<ParticleID, Voxel> get_voxel(const ParticleID& pid) const
-    {
-        return (*space_).get_voxel(pid);
-    }
+    // std::pair<ParticleID, Voxel> get_voxel(const ParticleID& pid) const
+    // {
+    //     return (*space_).get_voxel(pid);
+    // }
 
     // std::pair<ParticleID, Voxel> get_voxel(const coordinate_type& coord) const
     // {
     //     return (*space_).get_voxel(coord);
     // }
 
-    std::pair<ParticleID, Voxel> get_voxel_private(const private_coordinate_type& coord) const
+    std::pair<ParticleID, Voxel> get_voxel_private(const ParticleID& pid) const
     {
-        return (*space_).get_voxel_private(coord);
+        return (*space_).get_voxel_private_private(pid);
+    }
+
+    std::pair<ParticleID, Voxel> get_voxel_private_private(const private_coordinate_type& coord) const
+    {
+        return (*space_).get_voxel_private_private(coord);
     }
 
     bool remove_particle(const ParticleID& pid)

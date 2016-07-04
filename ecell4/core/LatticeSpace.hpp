@@ -126,9 +126,11 @@ public:
         throw NotSupported(
             "update_voxel_private_without_chekcing(const ParticleID&, const Voxel&) is not supported by this space class");
     }
-    virtual std::pair<ParticleID, Voxel> get_voxel(const ParticleID& pid) const = 0;
-    virtual std::pair<ParticleID, Voxel> get_voxel(const coordinate_type& coord) const = 0;
-    virtual std::pair<ParticleID, Voxel> get_voxel_private(const private_coordinate_type& private_coord) const = 0;
+    // virtual std::pair<ParticleID, Voxel> get_voxel(const ParticleID& pid) const = 0;
+    // virtual std::pair<ParticleID, Voxel> get_voxel(const coordinate_type& coord) const = 0;
+    virtual std::pair<ParticleID, Voxel> get_voxel_private_private(const ParticleID& pid) const = 0;
+    virtual std::pair<ParticleID, Voxel> get_voxel_private_private(const private_coordinate_type& private_coord) const = 0;
+    // virtual std::pair<ParticleID, Voxel> get_voxel_private(const private_coordinate_type& private_coord) const = 0;
     // virtual std::pair<ParticleID, Voxel> get_voxel(const coordinate_type& coord) const = 0;
     virtual bool remove_voxel(const ParticleID& pid) = 0;
     virtual bool remove_voxel_private(const private_coordinate_type& coord) = 0;
@@ -290,9 +292,12 @@ public:
 
     virtual std::pair<ParticleID, Particle> get_particle(const ParticleID& pid) const
     {
-        const Voxel v(get_voxel(pid).second);
+        // const Voxel v(get_voxel(pid).second);
+        // return std::make_pair(pid, Particle(
+        //     v.species(), coordinate2position(v.coordinate()), v.radius(), v.D()));
+        const Voxel v(get_voxel_private_private(pid).second);
         return std::make_pair(pid, Particle(
-            v.species(), coordinate2position(v.coordinate()), v.radius(), v.D()));
+            v.species(), private2position(v.coordinate()), v.radius(), v.D()));
     }
 
     virtual bool remove_particle(const ParticleID& pid)
@@ -640,9 +645,11 @@ public:
         list_voxels(const Species& sp) const;
     std::vector<std::pair<ParticleID, Voxel> >
         list_voxels_exact(const Species& sp) const;
-    virtual std::pair<ParticleID, Voxel> get_voxel(const ParticleID& pid) const;
-    virtual std::pair<ParticleID, Voxel> get_voxel(const coordinate_type& coord) const;
-    virtual std::pair<ParticleID, Voxel> get_voxel_private(const private_coordinate_type& private_coord) const;
+    // virtual std::pair<ParticleID, Voxel> get_voxel(const ParticleID& pid) const;
+    // virtual std::pair<ParticleID, Voxel> get_voxel(const coordinate_type& coord) const;
+    // virtual std::pair<ParticleID, Voxel> get_voxel_private(const private_coordinate_type& private_coord) const;
+    virtual std::pair<ParticleID, Voxel> get_voxel_private_private(const ParticleID& pid) const;
+    virtual std::pair<ParticleID, Voxel> get_voxel_private_private(const private_coordinate_type& private_coord) const;
 
     virtual Integer num_voxels_exact(const Species& sp) const;
     virtual Integer num_voxels(const Species& sp) const;
