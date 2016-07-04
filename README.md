@@ -65,9 +65,9 @@ Installation
 ### Requirements
 
 #### Minimum requirements
-- Python or **32bit** Miniconda for Windows (2.7, 3.* both versions are supported)
-- pip
-- hdf5 (E-Cell4 **for Windows** works only for version 1.8.16)
+- Python or **32bit** Miniconda for Windows (2.7 and 3.4, 3.5 both major versions are supported [3.4 is only supported on Linux])
+- pip (8.1 and later)
+- hdf5 (required only on **Windows**. works only for **version 1.8.16**)
 
 #### Optional requirements
 We strongly recommend that you run E-Cell4 with [Jupyter Notebook](http://jupyter.org/).
@@ -80,19 +80,18 @@ And some E-Cell4 functions (for visualization, datastore) optionaly depend on
 
 Please use **32bit** [Miniconda](http://conda.pydata.org/miniconda.html), even if you use 64bit Windows.
 We have NOT supported 64bit Python yet.
-Python 2.7, 3.5 both are supported.
 
 - Install **32bit** Miniconda for Windows from http://conda.pydata.org/miniconda.html
-- Run the follwing commands on command prompt (if you use Python3.5, please replace the target of ```pip install``` to the whl for 3.5)
+- Run the follwing commands on command prompt
 - (**Important**) E-Cell4 for Windows works only for hdf5 version **1.8.16**. Please check the version of hdf5, even if you installed hdf5 before with conda.
 
     ```shell
     conda install hdf5 notebook matplotlib
-    pip install https://github.com/ecell/ecell4/releases/download/4.0.0/ecell-4.0.0-cp27-none-win32.whl
+    pip install ecell
     ```
 
 Although Jupyter Notebook is optional, we strongly recommend that you run E-Cell4 with jupyter.
-If you use animated visualization for E-Cell4, please install [ffmpeg windows build](http://ffmpeg.zeranoe.com/builds/) and add its path to your **USER** PATH enviromental variable.
+If you use animated visualization with E-Cell4, please install [ffmpeg windows build](http://ffmpeg.zeranoe.com/builds/) and add its path to your **USER** PATH enviromental variable.
 
 ### Mac
 
@@ -104,7 +103,7 @@ After installing Miniconda, run the following commands in your terminal.
 ~/miniconda2/bin/conda install matplotlib jupyter
 
 # Download E-Cell4 whl file for your Python version from https://github.com/ecell/ecell4/releases before running this command.
-~/miniconda2/bin/pip install ecell-4.0.0-cp27-none-macosx_10_6_intel.macosx_10_9_intel.macosx_10_9_x86_64.macosx_10_10_intel.macosx_10_10_x86_64.whl
+~/miniconda2/bin/pip install ecell
 
 # If you want animation support, install ffmpeg with homebrew
 brew install ffmpeg
@@ -116,12 +115,11 @@ brew install ffmpeg
 Please run the following commands with root privilege.
 
 ```shell
-apt-get install libgsl0-dev libhdf5-dev wget
 wget https://bootstrap.pypa.io/get-pip.py
 # If you use Python3, replace python to python3
 python get-pip.py
-# If you use Python3.*, replace the whl for Python3.*
-pip install https://github.com/ecell/ecell4/releases/download/4.0.0/ecell-4.0.0-cp27-cp27mu-manylinux1_x86_64.whl
+# If you use Python3.*, replace pip to pip3.
+pip install ecell
 
 # The latest matplotlib and jupyter. If you use Python3, replace those for Python3.
 apt-get install python-dev libfreetype6-dev libpng-dev pkg-config python-numpy pandoc
