@@ -281,14 +281,14 @@ cdef class SpatiocyteWorld:
         return (ParticleID_from_Cpp_ParticleID(address(pid_voxel_pair.first)),
                 Voxel_from_Cpp_Voxel(address(pid_voxel_pair.second)))
 
-    # def on_structure(self, Voxel v):
-    #     """Check if the given voxel would be on the proper structure at the coordinate
-    #     Args:
-    #         v (Voxel): a voxel scheduled to be placed
-    #     Returns:
-    #         bool: if it is on the proper structure, or not
-    #     """
-    #     return self.thisptr.get().on_structure(deref((<Voxel>v).thisptr))
+    def on_structure(self, Voxel v):
+        """Check if the given voxel would be on the proper structure at the coordinate
+        Args:
+            v (Voxel): a voxel scheduled to be placed
+        Returns:
+            bool: if it is on the proper structure, or not
+        """
+        return self.thisptr.get().on_structure(deref((<Voxel>v).thisptr))
 
     # def on_structure(self, Species sp, Integer coord):
     #     """on_structure(sp, coord) -> bool
@@ -651,42 +651,22 @@ cdef class SpatiocyteWorld:
             inc(it)
         return retval
 
-    # def get_neighbor(self, coord, nrand):
-    #     """get_neighbor(coord, nrand) -> Integer
-
-    #     Return the neighbor coordinate of a given coordinate.
-
-    #     Parameters
-    #     ----------
-    #     coord : Integer
-    #         A coordinate of a voxel
-    #     nrand : Integer
-    #         A key in the range from 0 to 11 to assign a neighbor voxel
-
-    #     Returns
-    #     -------
-    #     Integer:
-    #         The coordinate of the neighbor voxel
-
-    #     """
-    #     return self.thisptr.get().get_neighbor(coord, nrand)
-
     def get_neighbor(self, coord, nrand):
         """get_neighbor(coord, nrand) -> Integer
 
-        Return the neighbor coordinate of a given coordinate in private.
+        Return the neighbor coordinate of a given coordinate.
 
         Parameters
         ----------
         coord : Integer
-            A private coordinate of a voxel
+            A coordinate of a voxel
         nrand : Integer
             A key in the range from 0 to 11 to assign a neighbor voxel
 
         Returns
         -------
         Integer:
-            The private coordinate of the neighbor voxel
+            The coordinate of the neighbor voxel
 
         """
         return self.thisptr.get().get_neighbor(coord, nrand)
@@ -884,26 +864,6 @@ cdef class SpatiocyteWorld:
 
         retval = self.thisptr.get().new_voxel_structure(deref((<Species> arg1).thisptr), <Integer> arg2)
         return ((ParticleID_from_Cpp_ParticleID(address(retval.first.first)), Voxel_from_Cpp_Voxel(address(retval.first.second))), retval.second)
-
-    # def update_voxel(self, ParticleID pid, Voxel v):
-    #     """update_voxel(pid, v) -> bool
-
-    #     Update a particle.
-
-    #     Parameters
-    #     ----------
-    #     pid : ParticleID
-    #         A particle id of the particle to update
-    #     v : Voxel
-    #         The information to update
-
-    #     Returns
-    #     -------
-    #     bool:
-    #         whether to succeed to update the particle
-
-    #     """
-    #     return self.thisptr.get().update_voxel(deref(pid.thisptr), deref(v.thisptr))
 
     def update_voxel(self, ParticleID pid, Voxel v):
         """update_voxel(pid, v) -> bool

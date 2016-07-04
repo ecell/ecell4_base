@@ -129,7 +129,6 @@ BOOST_AUTO_TEST_CASE(SpatiocyteWorld_test_add_molecule)
 
     SpatiocyteWorld::coordinate_type coord(486420);
     // BOOST_CHECK(world.place_voxel(sp, coord).second);
-    // BOOST_CHECK(world.new_voxel(sp, world.private2coord(coord)).second);
     BOOST_CHECK(world.new_voxel(sp, coord).second);
     BOOST_CHECK_EQUAL(world.num_particles(sp), 1);
 
@@ -230,18 +229,18 @@ BOOST_AUTO_TEST_CASE(SpatiocyteWorld_test_move)
     sp.set_attribute("radius", "2.5e-9");
     sp.set_attribute("D", "1e-12");
 
-    SpatiocyteWorld::coordinate_type private_from(
+    SpatiocyteWorld::coordinate_type from(
             coord2private(world, 1034));
-    SpatiocyteWorld::coordinate_type private_to(
+    SpatiocyteWorld::coordinate_type to(
             coord2private(world, 786420));
 
-    BOOST_CHECK(world.new_voxel(sp, private_from).second);
-    BOOST_CHECK(world.move(private_from, private_to));
+    BOOST_CHECK(world.new_voxel(sp, from).second);
+    BOOST_CHECK(world.move(from, to));
 
-    MolecularTypeBase* mt(world.get_molecular_type(private_to));
+    MolecularTypeBase* mt(world.get_molecular_type(to));
     BOOST_CHECK(!mt->is_vacant());
 
-    BOOST_CHECK(world.move(private_from, private_to));
+    BOOST_CHECK(world.move(from, to));
 }
 
 BOOST_AUTO_TEST_CASE(SpatiocyteWorld_test_structure)

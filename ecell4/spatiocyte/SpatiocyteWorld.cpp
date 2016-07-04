@@ -199,11 +199,6 @@ SpatiocyteWorld::list_non_structure_particles() const
     return retval;
 }
 
-// bool SpatiocyteWorld::update_particle(const ParticleID& pid, const Particle& p)
-// {
-//     return (*space_).update_particle(pid, p);
-// }
-
 std::vector<Species> SpatiocyteWorld::list_species() const
 {
     return (*space_).list_species();
@@ -270,11 +265,11 @@ MolecularTypeBase* SpatiocyteWorld::get_molecular_type(
 
 std::pair<std::pair<ParticleID, Voxel>, bool>
 SpatiocyteWorld::new_voxel(
-        const Species& sp, const coordinate_type& private_coord)
+        const Species& sp, const coordinate_type& coord)
 {
     const molecule_info_type minfo(get_molecule_info(sp));
     return new_voxel(
-        Voxel(sp, private_coord, minfo.radius, minfo.D, minfo.loc));
+        Voxel(sp, coord, minfo.radius, minfo.D, minfo.loc));
 }
 
 std::pair<std::pair<ParticleID, Voxel>, bool>
@@ -286,11 +281,11 @@ SpatiocyteWorld::new_voxel(const Voxel& v)
 }
 
 std::pair<std::pair<ParticleID, Voxel>, bool>
-SpatiocyteWorld::new_voxel_structure(const Species& sp, const coordinate_type& private_coord)
+SpatiocyteWorld::new_voxel_structure(const Species& sp, const coordinate_type& coord)
 {
     const molecule_info_type minfo(get_molecule_info(sp));
     return new_voxel_structure(
-        Voxel(sp, private_coord, minfo.radius, minfo.D, minfo.loc));
+        Voxel(sp, coord, minfo.radius, minfo.D, minfo.loc));
 }
 
 std::pair<std::pair<ParticleID, Voxel>, bool>
@@ -301,11 +296,11 @@ SpatiocyteWorld::new_voxel_structure(const Voxel& v)
 }
 
 std::pair<std::pair<ParticleID, Voxel>, bool>
-SpatiocyteWorld::new_voxel_interface(const Species& sp, const coordinate_type& private_coord)
+SpatiocyteWorld::new_voxel_interface(const Species& sp, const coordinate_type& coord)
 {
     const molecule_info_type minfo(get_molecule_info(sp));
     return new_voxel_interface(
-        Voxel(sp, private_coord, minfo.radius, minfo.D, minfo.loc));
+        Voxel(sp, coord, minfo.radius, minfo.D, minfo.loc));
 }
 
 std::pair<std::pair<ParticleID, Voxel>, bool>
@@ -327,8 +322,6 @@ bool SpatiocyteWorld::add_molecules(const Species& sp, const Integer& num)
     Integer count(0);
     while (count < num)
     {
-        // const coordinate_type coord(rng()->uniform_int(0, (*space_).size() - 1));
-        // const Voxel v(sp, coord2private(coord), info.radius, info.D, info.loc);
         const coordinate_type coord(coord2private(*this, rng()->uniform_int(0, (*space_).size() - 1)));  //XXX: just for consistency. rather use below
         // const coordinate_type coord(rng()->uniform_int(0, (*space_).size_private() - 1));
 
@@ -518,11 +511,11 @@ bool SpatiocyteWorld::is_surface_voxel(
     }
 
     const SpatiocyteWorld::coordinate_type
-        private_coord((*space_).global2private(g));
+        coord((*space_).global2private(g));
     for (Integer i(0); i < 12; ++i)
     {
         if (shape->is_inside(global2position((*space_).private2global(
-            (*space_).get_neighbor(private_coord, i)))) > 0)
+            (*space_).get_neighbor(coord, i)))) > 0)
         {
             return true;
         }
@@ -600,11 +593,6 @@ bool SpatiocyteWorld::remove_voxel(const coordinate_type coord)
 {
     return (*space_).remove_voxel(coord);
 }
-
-// bool SpatiocyteWorld::move(coordinate_type from, coordinate_type to)
-// {
-//     return (*space_).move(from, to);
-// }
 
 bool SpatiocyteWorld::move(
     const coordinate_type& src, const coordinate_type& dest, const std::size_t candidate)

@@ -390,13 +390,6 @@ protected:
     void walk_in_space_(const MolecularTypeBase* mtype, const Real& alpha);
     void walk_on_surface_(const MolecularTypeBase* mtype, const Real& alpha);
 
-    // inline Voxel private_voxel2voxel(const Voxel& v) const
-    // {
-    //     const SpatiocyteWorld::coordinate_type
-    //         coord(world_->private2coord(v.coordinate()));
-    //     return Voxel(v.species(), coord, v.radius(), v.D(), v.loc());
-    // }
-
     const std::string get_serial(
         const SpatiocyteWorld::coordinate_type coord) const
     {

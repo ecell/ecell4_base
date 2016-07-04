@@ -27,7 +27,6 @@ public:
 
     typedef base_type::particle_info_type particle_info_type;
     typedef base_type::coordinate_type coordinate_type;
-    // typedef base_type::coordinate_type coordinate_type;
 
     typedef std::map<Species, boost::shared_ptr<MolecularType> > spmap;
     typedef std::vector<std::pair<MolecularTypeBase*, coordinate_type> >
@@ -276,77 +275,6 @@ public:
         return false;
     }
 
-    // virtual std::vector<std::pair<ParticleID, Voxel> > list_voxels() const
-    // {
-    //     std::vector<std::pair<ParticleID, Voxel> > retval;
-
-    //     for (spmap::const_iterator itr(spmap_.begin()); itr != spmap_.end(); ++itr)
-    //     {
-    //         const boost::shared_ptr<MolecularType>& mt((*itr).second);
-    //         const std::string loc((mt->location()->is_vacant())
-    //             ? "" : mt->location()->species().serial());
-    //         const Species& sp(mt->species());
-    //         for (MolecularType::const_iterator itr(mt->begin());
-    //             itr != mt->end(); ++itr)
-    //         {
-    //             retval.push_back(std::make_pair(
-    //                 (*itr).second,
-    //                 Voxel(sp, private2coord((*itr).first), mt->radius(), mt->D(), loc)));
-    //         }
-    //     }
-    //     return retval;
-    // }
-
-    // virtual std::vector<std::pair<ParticleID, Voxel> >
-    //     list_voxels(const Species& sp) const
-    // {
-    //     SpeciesExpressionMatcher sexp(sp);
-    //     std::vector<std::pair<ParticleID, Voxel> > retval;
-    //     for (spmap::const_iterator itr(spmap_.begin());
-    //             itr != spmap_.end(); ++itr)
-    //     {
-    //         if (!sexp.match((*itr).first))
-    //         {
-    //             continue;
-    //         }
-
-    //         const boost::shared_ptr<MolecularType>& mt((*itr).second);
-    //         const std::string loc((mt->location()->is_vacant())
-    //             ? "" : mt->location()->species().serial());
-    //         for (MolecularType::const_iterator i(mt->begin());
-    //             i != mt->end(); ++i)
-    //         {
-    //             retval.push_back(std::make_pair(
-    //                 (*i).second,
-    //                 Voxel(sp, private2coord((*i).first), mt->radius(), mt->D(), loc)));
-    //         }
-    //     }
-    //     return retval;
-    // }
-
-    // virtual std::vector<std::pair<ParticleID, Voxel> >
-    //     list_voxels_exact(const Species& sp) const
-    // {
-    //     std::vector<std::pair<ParticleID, Voxel> > retval;
-    //     spmap::const_iterator itr(spmap_.find(sp));
-    //     if (itr == spmap_.end())
-    //     {
-    //         return retval;
-    //     }
-
-    //     const boost::shared_ptr<MolecularType>& mt((*itr).second);
-    //     const std::string loc((mt->location()->is_vacant())
-    //         ? "" : mt->location()->species().serial());
-    //     for (MolecularType::const_iterator i(mt->begin());
-    //         i != mt->end(); ++i)
-    //     {
-    //         retval.push_back(std::make_pair(
-    //             (*i).second,
-    //             Voxel(sp, private2coord((*i).first), mt->radius(), mt->D(), loc)));
-    //     }
-    //     return retval;
-    // }
-
     virtual std::vector<std::pair<ParticleID, Voxel> > list_voxels() const
     {
         std::vector<std::pair<ParticleID, Voxel> > retval;
@@ -457,58 +385,6 @@ public:
 
     virtual bool update_voxel(const ParticleID& pid, const Voxel& v);
 
-    // virtual std::pair<ParticleID, Voxel> get_voxel(const ParticleID& pid) const
-    // {
-    //     const std::pair<const MolecularTypeBase*, coordinate_type>
-    //         target(__get_coordinate(pid));
-    //     if (target.second == -1)
-    //     {
-    //         throw NotFound("voxel not found.");
-    //     }
-
-    //     const coordinate_type coord(private2coord(target.second));
-    //     const MolecularTypeBase* mt(target.first);
-    //     const std::string loc((mt->location()->is_vacant())
-    //         ? "" : mt->location()->species().serial());
-    //     return std::make_pair(
-    //         pid, Voxel(mt->species(), coord, mt->radius(), mt->D(), loc));
-    // }
-
-    // virtual std::pair<ParticleID, Voxel> get_voxel(const coordinate_type& coord) const
-    // {
-    //     const coordinate_type private_coord(coord2private(coord));
-    //     const MolecularTypeBase* mt(get_molecular_type(private_coord));
-    //     const std::string loc((mt->location()->is_vacant())
-    //         ? "" : mt->location()->species().serial());
-    //     if (mt->with_voxels())
-    //     {
-    //         return std::make_pair(mt->find_particle_id(private_coord),
-    //             Voxel(mt->species(), coord, mt->radius(), mt->D(), loc));
-    //     }
-    //     else
-    //     {
-    //         return std::make_pair(ParticleID(),
-    //             Voxel(mt->species(), coord, mt->radius(), mt->D(), loc));
-    //     }
-    // }
-
-    // virtual std::pair<ParticleID, Voxel> get_voxel(const coordinate_type& private_coord) const
-    // {
-    //     const MolecularTypeBase* mt(get_molecular_type(private_coord));
-    //     const std::string loc((mt->location()->is_vacant())
-    //         ? "" : mt->location()->species().serial());
-    //     if (mt->with_voxels())
-    //     {
-    //         return std::make_pair(mt->find_particle_id(private_coord),
-    //             Voxel(mt->species(), private_coord, mt->radius(), mt->D(), loc));
-    //     }
-    //     else
-    //     {
-    //         return std::make_pair(ParticleID(),
-    //             Voxel(mt->species(), private_coord, mt->radius(), mt->D(), loc));
-    //     }
-    // }
-
     virtual std::pair<ParticleID, Voxel> get_voxel(const ParticleID& pid) const
     {
         const std::pair<const MolecularTypeBase*, coordinate_type>
@@ -525,20 +401,20 @@ public:
             pid, Voxel(mt->species(), target.second, mt->radius(), mt->D(), loc));
     }
 
-    virtual std::pair<ParticleID, Voxel> get_voxel(const coordinate_type& private_coord) const
+    virtual std::pair<ParticleID, Voxel> get_voxel(const coordinate_type& coord) const
     {
-        const MolecularTypeBase* mt(get_molecular_type(private_coord));
+        const MolecularTypeBase* mt(get_molecular_type(coord));
         const std::string loc((mt->location()->is_vacant())
             ? "" : mt->location()->species().serial());
         if (mt->with_voxels())
         {
-            return std::make_pair(mt->find_particle_id(private_coord),
-                Voxel(mt->species(), private_coord, mt->radius(), mt->D(), loc));
+            return std::make_pair(mt->find_particle_id(coord),
+                Voxel(mt->species(), coord, mt->radius(), mt->D(), loc));
         }
         else
         {
             return std::make_pair(ParticleID(),
-                Voxel(mt->species(), private_coord, mt->radius(), mt->D(), loc));
+                Voxel(mt->species(), coord, mt->radius(), mt->D(), loc));
         }
     }
 
@@ -580,15 +456,9 @@ public:
         return true;
     }
 
-    // virtual bool move(const coordinate_type& from, const coordinate_type& to)
-    // {
-    //     const coordinate_type src(coord2private(from));
-    //     const coordinate_type dest(coord2private(to));
-    //     return move_private(src, dest);
-    // }
-
-    virtual bool move(const coordinate_type& src,
-            const coordinate_type& dest, const std::size_t candidate=0)
+    virtual bool move(
+        const coordinate_type& src, const coordinate_type& dest,
+        const std::size_t candidate=0)
     {
         coordinate_type tmp_dest(dest);
         if (src == tmp_dest)
@@ -632,11 +502,11 @@ public:
         return true;
     }
 
-    virtual const Particle particle_at(const coordinate_type& private_coord) const
+    virtual const Particle particle_at(const coordinate_type& coord) const
     {
-        const MolecularTypeBase* mt(get_molecular_type(private_coord));
+        const MolecularTypeBase* mt(get_molecular_type(coord));
         return Particle(
-            mt->species(), private2position(private_coord), mt->radius(), mt->D());
+            mt->species(), private2position(coord), mt->radius(), mt->D());
     }
 
     virtual MolecularTypeBase* find_molecular_type(const Species& sp)

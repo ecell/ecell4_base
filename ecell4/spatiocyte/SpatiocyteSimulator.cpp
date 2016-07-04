@@ -356,10 +356,6 @@ std::pair<bool, SpatiocyteSimulator::reaction_type> SpatiocyteSimulator::apply_s
     const ReactionRule::product_container_type&
         products(reaction_rule.products());
 
-    // const SpatiocyteWorld::coordinate_type from_coord(
-    //     world_->coord2private(p0.second.coordinate()));
-    // const SpatiocyteWorld::coordinate_type to_coord(
-    //     world_->coord2private(p1.second.coordinate()));
     const SpatiocyteWorld::coordinate_type from_coord(p0.second.coordinate());
     const SpatiocyteWorld::coordinate_type to_coord(p1.second.coordinate());
 
@@ -642,8 +638,6 @@ std::pair<bool, SpatiocyteSimulator::reaction_type>
 {
     const ReactionRule::product_container_type& products(reaction_rule.products());
 
-    // const SpatiocyteWorld::coordinate_type coord(
-    //     world_->coord2private(p.second.coordinate()));
     const SpatiocyteWorld::coordinate_type coord(p.second.coordinate());
     const SpatiocyteWorld::particle_info_type info(coord, p.first);
 
@@ -894,8 +888,8 @@ void SpatiocyteSimulator::register_product_species(const Species& product_specie
 //     reaction.reactants.push_back(
 //         reaction_type::particle_type(
 //             pinfo.second,
-//             Voxel(mtype->species(), world_->private2coord(pinfo.first),
-//                 mtype->radius(), mtype->D(), location)));
+//             Voxel(mtype->species(), pinfo.first,
+//                   mtype->radius(), mtype->D(), location)));
 // }
 
 SpatiocyteSimulator::reaction_info_type::particle_id_pair_type const
@@ -908,8 +902,6 @@ SpatiocyteSimulator::create_particle_id_pair(
     return std::make_pair(
         pinfo.second,
         Voxel(mtype->species(), pinfo.first,  mtype->radius(), mtype->D(), location));
-        // Voxel(mtype->species(), world_->private2coord(pinfo.first),
-        //       mtype->radius(), mtype->D(), location));
 }
 
 void SpatiocyteSimulator::step()

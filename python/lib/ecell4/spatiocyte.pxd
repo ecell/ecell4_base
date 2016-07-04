@@ -50,9 +50,8 @@ cdef extern from "ecell4/spatiocyte/SpatiocyteWorld.hpp" namespace "ecell4::spat
         bool remove_voxel(Cpp_ParticleID& pid)
         pair[Cpp_ParticleID, Cpp_Particle] get_particle(Cpp_ParticleID& pid)
         pair[Cpp_ParticleID, Cpp_Voxel] get_voxel(Cpp_ParticleID& pid)
-        # pair[Cpp_ParticleID, Cpp_Voxel] get_voxel(Integer)
         pair[Cpp_ParticleID, Cpp_Voxel] get_voxel(Integer)
-        # bool on_structure(Cpp_Voxel&)
+        bool on_structure(Cpp_Voxel&)
         # bool on_structure(Cpp_Species&, Integer)
 
         void set_value(Cpp_Species&, Real)
@@ -91,19 +90,12 @@ cdef extern from "ecell4/spatiocyte/SpatiocyteWorld.hpp" namespace "ecell4::spat
         Integer get_neighbor(Integer, Integer)
         void save(string filename) except +
         void load(string filename)
-        # pair[pair[Cpp_ParticleID, Cpp_Voxel], bool] new_voxel(Cpp_Voxel& p)
-        # pair[pair[Cpp_ParticleID, Cpp_Voxel], bool] new_voxel(Cpp_Species& sp, Integer pos)
-        # pair[pair[Cpp_ParticleID, Cpp_Voxel], bool] new_voxel_structure(Cpp_Species& sp, Integer pos)
         pair[pair[Cpp_ParticleID, Cpp_Voxel], bool] new_voxel(Cpp_Voxel& p)
         pair[pair[Cpp_ParticleID, Cpp_Voxel], bool] new_voxel(Cpp_Species& sp, Integer pos)
         pair[pair[Cpp_ParticleID, Cpp_Voxel], bool] new_voxel_structure(Cpp_Species& sp, Integer pos)
-        # vector[pair[Cpp_ParticleID, Cpp_Voxel]] list_voxels()
-        # vector[pair[Cpp_ParticleID, Cpp_Voxel]] list_voxels(Cpp_Species& sp)
-        # vector[pair[Cpp_ParticleID, Cpp_Voxel]] list_voxels_exact(Cpp_Species& sp)
         vector[pair[Cpp_ParticleID, Cpp_Voxel]] list_voxels()
         vector[pair[Cpp_ParticleID, Cpp_Voxel]] list_voxels(Cpp_Species& sp)
         vector[pair[Cpp_ParticleID, Cpp_Voxel]] list_voxels_exact(Cpp_Species& sp)
-        # bool update_voxel(Cpp_ParticleID, Cpp_Voxel)
         bool update_voxel(Cpp_ParticleID, Cpp_Voxel)
         bool has_voxel(Cpp_ParticleID)
         Real voxel_radius()
@@ -129,7 +121,6 @@ cdef extern from "ecell4/spatiocyte/SpatiocyteWorld.hpp" namespace "ecell4::spat
         Integer add_structure(Cpp_Species&, shared_ptr[Cpp_Shape]) except +
         void add_molecules(Cpp_Species& sp, Integer num, shared_ptr[Cpp_Shape])
 
-        # pair[pair[Cpp_ParticleID, Cpp_Voxel], bool] new_voxel_interface(Cpp_Species& sp, Integer pos)
         pair[pair[Cpp_ParticleID, Cpp_Voxel], bool] new_voxel_interface(Cpp_Species& sp, Integer pos)
         Integer add_interface(Cpp_Species&) except +
 
