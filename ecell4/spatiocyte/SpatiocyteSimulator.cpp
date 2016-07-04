@@ -284,7 +284,7 @@ Real SpatiocyteSimulator::calculate_alpha(const ReactionRule& rule) const
 }
 
 std::pair<SpatiocyteSimulator::attempt_reaction_result_type, SpatiocyteSimulator::reaction_type> SpatiocyteSimulator::attempt_reaction_(
-    const SpatiocyteWorld::particle_info_type info, SpatiocyteWorld::coordinate_type to_coord,
+    const SpatiocyteWorld::coordinate_id_pair_type info, SpatiocyteWorld::coordinate_type to_coord,
     const Real& alpha)
 {
     const MolecularTypeBase* from_mt(
@@ -359,8 +359,8 @@ std::pair<bool, SpatiocyteSimulator::reaction_type> SpatiocyteSimulator::apply_s
     const SpatiocyteWorld::coordinate_type from_coord(p0.second.coordinate());
     const SpatiocyteWorld::coordinate_type to_coord(p1.second.coordinate());
 
-    const SpatiocyteWorld::particle_info_type from_info(from_coord, p0.first);
-    const SpatiocyteWorld::particle_info_type to_info(to_coord, p1.first);
+    const SpatiocyteWorld::coordinate_id_pair_type from_info(from_coord, p0.first);
+    const SpatiocyteWorld::coordinate_id_pair_type to_info(to_coord, p1.first);
 
     std::pair<bool, reaction_type> retval;
 
@@ -390,8 +390,8 @@ std::pair<bool, SpatiocyteSimulator::reaction_type> SpatiocyteSimulator::apply_s
 }
 
 std::pair<bool, SpatiocyteSimulator::reaction_type> SpatiocyteSimulator::apply_vanishment(
-    const SpatiocyteWorld::particle_info_type from_info,
-    const SpatiocyteWorld::particle_info_type to_info,
+    const SpatiocyteWorld::coordinate_id_pair_type from_info,
+    const SpatiocyteWorld::coordinate_id_pair_type to_info,
     const ReactionRule& reaction_rule)
 {
     reaction_info_type rinfo(world_->t());
@@ -405,8 +405,8 @@ std::pair<bool, SpatiocyteSimulator::reaction_type> SpatiocyteSimulator::apply_v
 }
 
 std::pair<bool, SpatiocyteSimulator::reaction_type> SpatiocyteSimulator::apply_ab2c(
-    const SpatiocyteWorld::particle_info_type from_info,
-    const SpatiocyteWorld::particle_info_type to_info,
+    const SpatiocyteWorld::coordinate_id_pair_type from_info,
+    const SpatiocyteWorld::coordinate_id_pair_type to_info,
     const Species& product_species,
     const ReactionRule& reaction_rule)
 {
@@ -468,8 +468,8 @@ std::pair<bool, SpatiocyteSimulator::reaction_type> SpatiocyteSimulator::apply_a
 
 // Not tested yet
 std::pair<bool, SpatiocyteSimulator::reaction_type> SpatiocyteSimulator::apply_ab2cd(
-    const SpatiocyteWorld::particle_info_type from_info,
-    const SpatiocyteWorld::particle_info_type to_info,
+    const SpatiocyteWorld::coordinate_id_pair_type from_info,
+    const SpatiocyteWorld::coordinate_id_pair_type to_info,
     const Species& product_species0,
     const Species& product_species1,
     const ReactionRule& reaction_rule)
@@ -595,8 +595,8 @@ std::pair<bool, SpatiocyteSimulator::reaction_type> SpatiocyteSimulator::apply_a
 }
 
 std::pair<bool, SpatiocyteSimulator::reaction_type> SpatiocyteSimulator::apply_ab2cd_in_order(
-    const SpatiocyteWorld::particle_info_type from_info,
-    const SpatiocyteWorld::particle_info_type to_info,
+    const SpatiocyteWorld::coordinate_id_pair_type from_info,
+    const SpatiocyteWorld::coordinate_id_pair_type to_info,
     const SpatiocyteWorld::coordinate_type coord0,
     const Species& product_species0,
     const SpatiocyteWorld::coordinate_type coord1,
@@ -639,7 +639,7 @@ std::pair<bool, SpatiocyteSimulator::reaction_type>
     const ReactionRule::product_container_type& products(reaction_rule.products());
 
     const SpatiocyteWorld::coordinate_type coord(p.second.coordinate());
-    const SpatiocyteWorld::particle_info_type info(coord, p.first);
+    const SpatiocyteWorld::coordinate_id_pair_type info(coord, p.first);
 
     std::pair<bool, reaction_type> retval;
 
@@ -674,7 +674,7 @@ std::pair<bool, SpatiocyteSimulator::reaction_type>
 
 std::pair<bool, SpatiocyteSimulator::reaction_type>
 SpatiocyteSimulator::apply_a2b(
-    const SpatiocyteWorld::particle_info_type pinfo,
+    const SpatiocyteWorld::coordinate_id_pair_type pinfo,
     const Species& product_species,
     const ReactionRule& reaction_rule)
 {
@@ -739,7 +739,7 @@ SpatiocyteSimulator::apply_a2b(
 }
 
 std::pair<bool, SpatiocyteSimulator::reaction_type> SpatiocyteSimulator::apply_a2bc(
-    const SpatiocyteWorld::particle_info_type pinfo,
+    const SpatiocyteWorld::coordinate_id_pair_type pinfo,
     const Species& product_species0,
     const Species& product_species1,
     const ReactionRule& reaction_rule)
@@ -876,7 +876,7 @@ void SpatiocyteSimulator::register_product_species(const Species& product_specie
 }
 
 // void SpatiocyteSimulator::register_reactant_species(
-//         const SpatiocyteWorld::particle_info_type pinfo, reaction_type& reaction) const
+//         const SpatiocyteWorld::coordinate_id_pair_type pinfo, reaction_type& reaction) const
 // {
 //     const MolecularTypeBase* mtype(world_->get_molecular_type(pinfo.first));
 //     const std::string location(
@@ -890,7 +890,7 @@ void SpatiocyteSimulator::register_product_species(const Species& product_specie
 
 SpatiocyteSimulator::reaction_info_type::particle_id_pair_type const
 SpatiocyteSimulator::create_particle_id_pair(
-    const SpatiocyteWorld::particle_info_type pinfo) const
+    const SpatiocyteWorld::coordinate_id_pair_type pinfo) const
 {
     const MolecularTypeBase* mtype(world_->get_molecular_type(pinfo.first));
     const std::string location(
@@ -996,7 +996,7 @@ void SpatiocyteSimulator::walk_in_space_(const MolecularTypeBase* mtype, const R
             itr != voxels.end(); ++itr)
     {
         const Integer rnd(rng->uniform_int(0, 11));
-        const SpatiocyteWorld::particle_info_type info(*itr);
+        const SpatiocyteWorld::coordinate_id_pair_type info(*itr);
         if (world_->get_molecular_type(info.first) != mtype)
         {
             // should skip if a voxel is not the target species.
@@ -1029,7 +1029,7 @@ void SpatiocyteSimulator::walk_on_surface_(const MolecularTypeBase* mtype, const
     for (MolecularTypeBase::container_type::iterator itr(voxels.begin());
             itr != voxels.end(); ++itr)
     {
-        const SpatiocyteWorld::particle_info_type info(*itr);
+        const SpatiocyteWorld::coordinate_id_pair_type info(*itr);
         if (world_->get_molecular_type(info.first) != mtype)
         {
             // should skip if a voxel is not the target species.

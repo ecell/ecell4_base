@@ -38,7 +38,7 @@ public:
 
     typedef MoleculeInfo molecule_info_type;
 
-    typedef LatticeSpace::particle_info_type particle_info_type;
+    typedef LatticeSpace::coordinate_id_pair_type coordinate_id_pair_type;
     typedef LatticeSpace::coordinate_type coordinate_type;
 
 public:
@@ -288,12 +288,12 @@ public:
     // std::pair<coordinate_type, bool> move_to_neighbor(
     //     coordinate_type coord, Integer nrand);
     // std::pair<coordinate_type, bool> move_to_neighbor(
-    //     particle_info_type& info, Integer nrand);
-    // std::pair<std::pair<particle_info_type, coordinate_type>, bool>
+    //     coordinate_id_pair_type& info, Integer nrand);
+    // std::pair<std::pair<coordinate_id_pair_type, coordinate_type>, bool>
     //     move_to_neighbor(MolecularTypeBase* mtype, Integer index);
     std::pair<coordinate_type, bool> move_to_neighbor(
         MolecularTypeBase* const& from_mt, MolecularTypeBase* const& loc,
-        particle_info_type& info, const Integer nrand);
+        coordinate_id_pair_type& info, const Integer nrand);
 
     coordinate_type get_neighbor(coordinate_type coord, Integer nrand) const
     {
@@ -443,12 +443,12 @@ public:
             mt->with_voxels()
                 ? mt->find_particle_id(coord)
                 : ParticleID());
-        const particle_info_type info(std::make_pair(coord, pid));
+        const coordinate_id_pair_type info(std::make_pair(coord, pid));
         return make_pid_voxel_pair(mt, info);
     }
 
     std::pair<ParticleID, Voxel> make_pid_voxel_pair(
-        const MolecularTypeBase* mt, const particle_info_type& info) const
+        const MolecularTypeBase* mt, const coordinate_id_pair_type& info) const
     {
         const std::string loc(
             mt->location()->is_vacant() ? "" : mt->location()->species().serial());
@@ -466,7 +466,7 @@ public:
                 "choice for a Species with no voxel is not supporeted.");
         }
         const Integer i(rng_->uniform_int(0, mt->size() - 1));
-        const particle_info_type& info(mt->at(i));
+        const coordinate_id_pair_type& info(mt->at(i));
         return make_pid_voxel_pair(mt, info);
     }
 

@@ -46,7 +46,7 @@ class LatticeSpace
 public:
 
     typedef Voxel::coordinate_type coordinate_type;
-    typedef MolecularTypeBase::coord_id_pair particle_info_type;
+    typedef MolecularTypeBase::coordinate_id_pair_type coordinate_id_pair_type;
 
 public:
 
@@ -169,7 +169,7 @@ public:
 
     virtual std::pair<coordinate_type, bool> move_to_neighbor(
         MolecularTypeBase* const& from_mt, MolecularTypeBase* const& loc,
-        particle_info_type& info, const Integer nrand) = 0;
+        coordinate_id_pair_type& info, const Integer nrand) = 0;
 
     /**
      Coordinate transformations: See LatticeSpaceBase for the implementation
@@ -540,7 +540,7 @@ public:
 
     typedef LatticeSpaceBase base_type;
 
-    typedef base_type::particle_info_type particle_info_type;
+    typedef base_type::coordinate_id_pair_type coordinate_id_pair_type;
     typedef base_type::coordinate_type coordinate_type;
 
     typedef std::map<Species, boost::shared_ptr<MolecularType> > spmap;
@@ -625,10 +625,10 @@ public:
     std::pair<coordinate_type, bool> move_to_neighbor(
         coordinate_type coord, Integer nrand);
     std::pair<coordinate_type, bool> move_to_neighbor(
-        particle_info_type& info, Integer nrand);
+        coordinate_id_pair_type& info, Integer nrand);
     std::pair<coordinate_type, bool> move_to_neighbor(
         MolecularTypeBase* const& from_mt, MolecularTypeBase* const& loc,
-        particle_info_type& info, const Integer nrand);
+        coordinate_id_pair_type& info, const Integer nrand);
 
     coordinate_type get_neighbor_boundary(
         const coordinate_type& coord, const Integer& nrand) const
@@ -696,7 +696,7 @@ protected:
             coordinate_type from, coordinate_type to,
             const std::size_t candidate=0);
     std::pair<coordinate_type, bool> move_(
-            particle_info_type& info, coordinate_type to);
+            coordinate_id_pair_type& info, coordinate_type to);
     coordinate_type get_coord(const ParticleID& pid) const;
 
     Integer count_voxels(const boost::shared_ptr<MolecularType>& mt) const;

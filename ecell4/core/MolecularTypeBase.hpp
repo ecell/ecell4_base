@@ -17,9 +17,9 @@ class MolecularTypeBase
 public:
 
     typedef Voxel::coordinate_type coordinate_type;
-    typedef std::pair<coordinate_type, ParticleID> coord_id_pair;
+    typedef std::pair<coordinate_type, ParticleID> coordinate_id_pair_type;
 
-    typedef std::vector<coord_id_pair> container_type;
+    typedef std::vector<coordinate_id_pair_type> container_type;
     typedef container_type::const_iterator const_iterator;
     typedef container_type::iterator iterator;
 
@@ -108,14 +108,14 @@ public:
         return Shape::UNDEF;
     }
 
-    virtual void add_voxel_without_checking(const coord_id_pair& info)
+    virtual void add_voxel_without_checking(const coordinate_id_pair_type& info)
     {
         voxels_.push_back(info);
     }
 
     virtual void replace_voxel(
         const coordinate_type& from_coord,
-        const coord_id_pair& to_info)
+        const coordinate_id_pair_type& to_info)
     {
         container_type::iterator itr(find(from_coord));
         if (itr == voxels_.end())
@@ -140,10 +140,10 @@ public:
         (*itr).first = to_coord;
     }
 
-    virtual coord_id_pair pop(const coordinate_type& coord)
+    virtual coordinate_id_pair_type pop(const coordinate_type& coord)
     {
         container_type::iterator position(this->find(coord));
-        const coord_id_pair info(*position);
+        const coordinate_id_pair_type info(*position);
         this->remove_voxel(position);
         return info;
     }
@@ -179,22 +179,22 @@ public:
         (*a) = info;
     }
 
-    coord_id_pair& at(const Integer& index)
+    coordinate_id_pair_type& at(const Integer& index)
     {
         return voxels_.at(index);
     }
 
-    coord_id_pair const& at(const Integer& index) const
+    coordinate_id_pair_type const& at(const Integer& index) const
     {
         return voxels_.at(index);
     }
 
-    coord_id_pair& operator[](const Integer& n)
+    coordinate_id_pair_type& operator[](const Integer& n)
     {
         return voxels_[n];
     }
 
-    coord_id_pair const& operator[](const Integer& n) const
+    coordinate_id_pair_type const& operator[](const Integer& n) const
     {
         return voxels_[n];
     }

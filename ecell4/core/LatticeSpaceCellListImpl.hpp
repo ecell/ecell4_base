@@ -25,7 +25,7 @@ public:
 
     typedef LatticeSpaceBase base_type;
 
-    typedef base_type::particle_info_type particle_info_type;
+    typedef base_type::coordinate_id_pair_type coordinate_id_pair_type;
     typedef base_type::coordinate_type coordinate_type;
 
     typedef std::map<Species, boost::shared_ptr<MolecularType> > spmap;
@@ -432,7 +432,7 @@ public:
             }
 
             mt->location()->add_voxel_without_checking(
-                particle_info_type(coord, ParticleID()));
+                coordinate_id_pair_type(coord, ParticleID()));
             update_matrix(coord, mt->location());
             return true;
         }
@@ -555,7 +555,7 @@ public:
 
     virtual std::pair<coordinate_type, bool> move_to_neighbor(
         MolecularTypeBase* const& from_mt, MolecularTypeBase* const& loc,
-        particle_info_type& info, const Integer nrand);
+        coordinate_id_pair_type& info, const Integer nrand);
 
     virtual Integer num_molecules(const Species& sp) const;
 

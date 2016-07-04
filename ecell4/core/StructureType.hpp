@@ -13,7 +13,7 @@ class StructureType
 public:
 
     typedef MolecularType base_type;
-    typedef base_type::coord_id_pair coord_id_pair;
+    typedef base_type::coordinate_id_pair_type coordinate_id_pair_type;
     typedef base_type::coordinate_type coordinate_type;
     typedef base_type::container_type container_type;
     typedef base_type::iterator iterator;
@@ -62,7 +62,7 @@ public:
         return dimension_;
     }
 
-    virtual void add_voxel_without_checking(const coord_id_pair& info)
+    virtual void add_voxel_without_checking(const coordinate_id_pair_type& info)
     {
         if (info.second != ParticleID())
         {
@@ -74,7 +74,7 @@ public:
 
     virtual void replace_voxel(
         const coordinate_type& from_coord,
-        const coord_id_pair& to_info)
+        const coordinate_id_pair_type& to_info)
     {
         ; // do nothing
     }
@@ -87,9 +87,9 @@ public:
         ; // do nothing
     }
 
-    virtual coord_id_pair pop(const coordinate_type& coord)
+    virtual coordinate_id_pair_type pop(const coordinate_type& coord)
     {
-        return coord_id_pair(coord, ParticleID());
+        return std::make_pair(coord, ParticleID());
     }
 
     virtual bool remove_voxel_if_exists(const coordinate_type& coord)

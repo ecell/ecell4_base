@@ -607,7 +607,7 @@ bool SpatiocyteWorld::can_move(const coordinate_type& src,
 std::pair<SpatiocyteWorld::coordinate_type, bool>
 SpatiocyteWorld::move_to_neighbor(
     MolecularTypeBase* const& from_mt, MolecularTypeBase* const& loc,
-    particle_info_type& info, const Integer nrand)
+    coordinate_id_pair_type& info, const Integer nrand)
 {
     return (*space_).move_to_neighbor(from_mt, loc, info, nrand);
 }
