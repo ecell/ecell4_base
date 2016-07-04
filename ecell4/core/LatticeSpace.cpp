@@ -170,7 +170,7 @@ bool LatticeSpaceVectorImpl::has_voxel(const ParticleID& pid) const
         for (MolecularType::const_iterator vitr(mt->begin());
             vitr != mt->end(); ++vitr)
         {
-            if ((*vitr).second == pid)
+            if ((*vitr).pid == pid)
             {
                 return true;
             }
@@ -192,7 +192,7 @@ LatticeSpaceVectorImpl::get_voxel(const ParticleID& pid) const
             const std::string loc((mt->location()->is_vacant())
                 ? "" : mt->location()->species().serial());
             return std::make_pair(pid,
-                Voxel((*i).first, (*j).first, mt->radius(), mt->D(), loc));
+                Voxel((*i).first, (*j).coordinate, mt->radius(), mt->D(), loc));
         }
     }
 
@@ -266,7 +266,7 @@ std::vector<LatticeSpaceVectorImpl::coordinate_type>
 
     for (MolecularType::const_iterator itr(mt->begin()); itr != mt->end(); ++itr)
     {
-        retval.push_back((*itr).first);
+        retval.push_back((*itr).coordinate);
     }
     return retval;
 }
@@ -287,7 +287,7 @@ std::vector<LatticeSpaceVectorImpl::coordinate_type> LatticeSpaceVectorImpl::lis
         for (MolecularType::const_iterator itr(mt->begin());
             itr != mt->end(); ++itr)
         {
-            retval.push_back((*itr).first);
+            retval.push_back((*itr).coordinate);
         }
     }
     return retval;
@@ -311,8 +311,8 @@ LatticeSpaceVectorImpl::list_voxels() const
                 i != mt->end(); ++i)
             {
                 retval.push_back(std::make_pair(
-                    (*i).second,
-                    Voxel(sp, (*i).first, mt->radius(), mt->D(), loc)));
+                    (*i).pid,
+                    Voxel(sp, (*i).coordinate, mt->radius(), mt->D(), loc)));
             }
         }
         else
@@ -355,8 +355,8 @@ LatticeSpaceVectorImpl::list_voxels_exact(const Species& sp) const
             i != mt->end(); ++i)
         {
             retval.push_back(std::make_pair(
-                (*i).second,
-                Voxel(sp, (*i).first, mt->radius(), mt->D(), loc)));
+                (*i).pid,
+                Voxel(sp, (*i).coordinate, mt->radius(), mt->D(), loc)));
         }
     }
     else
@@ -401,8 +401,8 @@ LatticeSpaceVectorImpl::list_voxels(const Species& sp) const
                 i != mt->end(); ++i)
             {
                 retval.push_back(std::make_pair(
-                    (*i).second,
-                    Voxel(sp, (*i).first, mt->radius(), mt->D(), loc)));
+                    (*i).pid,
+                    Voxel(sp, (*i).coordinate, mt->radius(), mt->D(), loc)));
             }
         }
         else
@@ -525,9 +525,9 @@ LatticeSpaceVectorImpl::coordinate_type LatticeSpaceVectorImpl::get_coord(
         for (MolecularType::const_iterator vitr(mt->begin());
             vitr != mt->end(); ++vitr)
         {
-            if ((*vitr).second == pid)
+            if ((*vitr).pid == pid)
             {
-                return (*vitr).first;
+                return (*vitr).coordinate;
             }
         }
     }
@@ -559,7 +559,7 @@ bool LatticeSpaceVectorImpl::remove_voxel(const ParticleID& pid)
         MolecularType::const_iterator j(mt->find(pid));
         if (j != mt->end())
         {
-            const coordinate_type coord((*j).first);
+            const coordinate_type coord((*j).coordinate);
             if (!mt->remove_voxel_if_exists(coord))
             {
                 return false;
@@ -632,7 +632,7 @@ std::pair<LatticeSpaceVectorImpl::coordinate_type, bool>
     LatticeSpaceVectorImpl::move_to_neighbor(
         coordinate_id_pair_type& info, Integer nrand)
 {
-    const coordinate_type neighbor(get_neighbor(info.first, nrand));
+    const coordinate_type neighbor(get_neighbor(info.coordinate, nrand));
     return move_(info, neighbor);
 }
 
@@ -688,7 +688,7 @@ std::pair<LatticeSpaceVectorImpl::coordinate_type, bool>
     LatticeSpaceVectorImpl::move_(
         coordinate_id_pair_type& info, coordinate_type to)
 {
-    const coordinate_type from(info.first);
+    const coordinate_type from(info.coordinate);
     if (from == to)
     {
         return std::pair<coordinate_type, bool>(from, false);
@@ -717,7 +717,7 @@ std::pair<LatticeSpaceVectorImpl::coordinate_type, bool>
         return std::pair<coordinate_type, bool>(to, false);
     }
 
-    info.first = to;
+    info.coordinate = to;
     voxel_container::iterator from_itr(voxels_.begin() + from);
     (*from_itr) = to_mt;
 
@@ -734,7 +734,7 @@ std::pair<LatticeSpaceVectorImpl::coordinate_type, bool>
         MolecularTypeBase* const& from_mt, MolecularTypeBase* const& loc,
         coordinate_id_pair_type& info, const Integer nrand)
 {
-    const coordinate_type from(info.first);
+    const coordinate_type from(info.coordinate);
     coordinate_type to(get_neighbor(from, nrand));
 
     //XXX: assert(from != to);
@@ -766,7 +766,7 @@ std::pair<LatticeSpaceVectorImpl::coordinate_type, bool>
 
     voxels_[from] = to_mt;
     voxels_[to] = from_mt;
-    info.first = to; //XXX: updating data
+    info.coordinate = to; //XXX: updating data
 
     to_mt->replace_voxel(to, from);
     // if (to_mt != vacant_) // (!to_mt->is_vacant())

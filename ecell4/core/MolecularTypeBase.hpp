@@ -17,7 +17,56 @@ class MolecularTypeBase
 public:
 
     typedef Voxel::coordinate_type coordinate_type;
-    typedef std::pair<coordinate_type, ParticleID> coordinate_id_pair_type;
+
+    // typedef std::pair<coordinate_type, ParticleID> coordinate_id_pair_type;
+    typedef struct coordinate_id_pair_type {
+        coordinate_id_pair_type(coordinate_type const& coordinate, ParticleID const& pid)
+            : coordinate(coordinate), pid(pid)
+        {}
+
+        coordinate_type coordinate;
+        ParticleID pid;
+
+        bool operator==(const coordinate_id_pair_type& rhs) const
+        {
+            return pid == rhs.pid &&
+                coordinate == rhs.coordinate;
+        }
+
+        bool operator!=(const coordinate_id_pair_type& rhs) const
+        {
+            return pid != rhs.pid
+                || coordinate != rhs.coordinate;
+        }
+
+        bool operator<(const coordinate_id_pair_type& rhs) const
+        {
+            return coordinate < rhs.coordinate
+                || (coordinate == rhs.coordinate &&
+                    pid < rhs.pid);
+        }
+
+        bool operator>=(const coordinate_id_pair_type& rhs) const
+        {
+            return coordinate > rhs.coordinate
+                || (coordinate == rhs.coordinate &&
+                    pid >= rhs.pid);
+        }
+
+        bool operator>(const coordinate_id_pair_type& rhs) const
+        {
+            return coordinate > rhs.coordinate
+                || (coordinate == rhs.coordinate &&
+                    pid > rhs.pid);
+        }
+
+        bool operator<=(const coordinate_id_pair_type& rhs) const
+        {
+            return coordinate < rhs.coordinate
+                || (coordinate == rhs.coordinate &&
+                    pid <= rhs.pid);
+        }
+    } coordinate_id_pair_type;
 
     typedef std::vector<coordinate_id_pair_type> container_type;
     typedef container_type::const_iterator const_iterator;
@@ -137,7 +186,7 @@ public:
             throw NotFound("no corresponding coordinate was found.");
         }
 
-        (*itr).first = to_coord;
+        (*itr).coordinate = to_coord;
     }
 
     virtual coordinate_id_pair_type pop(const coordinate_type& coord)
@@ -236,7 +285,7 @@ public:
         {
             throw NotFound("No corresponding ParticleID was found.");
         }
-        return (*i).second;
+        return (*i).pid;
     }
 
     container_type::iterator find(const ParticleID& pid)
@@ -244,7 +293,7 @@ public:
         container_type::iterator itr;
         for (itr = voxels_.begin(); itr != voxels_.end(); ++itr)
         {
-            if ((*itr).second == pid)
+            if ((*itr).pid == pid)
             {
                 break;
             }
@@ -257,7 +306,7 @@ public:
         container_type::const_iterator itr;
         for (itr = voxels_.begin(); itr != voxels_.end(); ++itr)
         {
-            if ((*itr).second == pid)
+            if ((*itr).pid == pid)
             {
                 break;
             }
@@ -274,12 +323,12 @@ protected:
         if (candidate < voxels_.size())
         {
             itr = voxels_.begin() + candidate;
-            if ((*itr).first == coord)
+            if ((*itr).coordinate == coord)
                 return itr;
         }
         for (itr = voxels_.begin(); itr != voxels_.end(); ++itr)
         {
-            if ((*itr).first == coord)
+            if ((*itr).coordinate == coord)
             {
                 break;
             }
@@ -287,19 +336,19 @@ protected:
         return itr;
     }
 
-    container_type::const_iterator find(coordinate_type coord,
-            const std::size_t candidate=0) const
+    container_type::const_iterator find(
+        coordinate_type coord, const std::size_t candidate = 0) const
     {
         container_type::const_iterator itr;
         if (candidate < voxels_.size())
         {
             itr = voxels_.begin() + candidate;
-            if ((*itr).first == coord)
+            if ((*itr).coordinate == coord)
                 return itr;
         }
         for (itr = voxels_.begin(); itr != voxels_.end(); ++itr)
         {
-            if ((*itr).first == coord)
+            if ((*itr).coordinate == coord)
             {
                 break;
             }

@@ -589,8 +589,8 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_save_and_load)
         std::sort(voxels2.begin(), voxels2.end());
         for (int i(0); i < voxels1.size(); ++i)
         {
-            BOOST_CHECK_EQUAL(voxels1.at(i).first, voxels2.at(i).first);
-            BOOST_CHECK_EQUAL(voxels1.at(i).second, voxels2.at(i).second);
+            BOOST_CHECK_EQUAL(voxels1.at(i).pid, voxels2.at(i).pid);
+            BOOST_CHECK_EQUAL(voxels1.at(i).coordinate, voxels2.at(i).coordinate);
         }
     }
 }

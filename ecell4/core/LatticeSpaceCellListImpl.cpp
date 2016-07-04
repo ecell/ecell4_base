@@ -224,10 +224,10 @@ std::pair<MolecularTypeBase*, LatticeSpaceCellListImpl::coordinate_type>
         for (MolecularType::const_iterator vitr(mt->begin());
             vitr != mt->end(); ++vitr)
         {
-            if ((*vitr).second == pid)
+            if ((*vitr).pid == pid)
             {
                 return std::pair<MolecularTypeBase*, coordinate_type>(
-                    mt.get(), (*vitr).first);
+                    mt.get(), (*vitr).coordinate);
             }
         }
     }
@@ -245,10 +245,10 @@ std::pair<const MolecularTypeBase*, LatticeSpaceCellListImpl::coordinate_type>
         for (MolecularTypeBase::const_iterator vitr(mt->begin());
             vitr != mt->end(); ++vitr)
         {
-            if ((*vitr).second == pid)
+            if ((*vitr).pid == pid)
             {
                 return std::pair<const MolecularTypeBase*, coordinate_type>(
-                    mt.get(), (*vitr).first);
+                    mt.get(), (*vitr).coordinate);
             }
         }
     }
@@ -374,7 +374,7 @@ std::pair<LatticeSpaceCellListImpl::coordinate_type, bool>
         MolecularTypeBase* const& from_mt, MolecularTypeBase* const& loc,
         LatticeSpaceCellListImpl::coordinate_id_pair_type& info, const Integer nrand)
 {
-    const coordinate_type from(info.first);
+    const coordinate_type from(info.coordinate);
     coordinate_type to(get_neighbor(from, nrand));
 
     MolecularTypeBase* to_mt(get_molecular_type(to));
@@ -400,7 +400,7 @@ std::pair<LatticeSpaceCellListImpl::coordinate_type, bool>
         }
     }
 
-    info.first = to; //XXX: updating data
+    info.coordinate = to; //XXX: updating data
 
     to_mt->replace_voxel(to, from);
 

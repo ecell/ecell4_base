@@ -580,7 +580,7 @@ void SpatiocyteWorld::remove_molecules(const Species& sp, const Integer& num)
     while (count < num)
     {
         const Integer idx(rng_->uniform_int(0, mtype->size() - 1));
-        if (remove_voxel(mtype->at(idx).first))
+        if (remove_voxel(mtype->at(idx).coordinate))
         {
             ++count;
         }

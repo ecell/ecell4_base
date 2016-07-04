@@ -443,7 +443,7 @@ public:
             mt->with_voxels()
                 ? mt->find_particle_id(coord)
                 : ParticleID());
-        const coordinate_id_pair_type info(std::make_pair(coord, pid));
+        const coordinate_id_pair_type info(coord, pid);
         return make_pid_voxel_pair(mt, info);
     }
 
@@ -453,8 +453,8 @@ public:
         const std::string loc(
             mt->location()->is_vacant() ? "" : mt->location()->species().serial());
         return std::make_pair<ParticleID, Voxel>(
-            ParticleID(info.second()),
-            Voxel(mt->species(), info.first, mt->radius(), mt->D(), loc));
+            ParticleID(info.pid),
+            Voxel(mt->species(), info.coordinate, mt->radius(), mt->D(), loc));
     }
 
     std::pair<ParticleID, Voxel> choice(const Species& sp)

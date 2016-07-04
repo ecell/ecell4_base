@@ -64,7 +64,7 @@ public:
 
     virtual void add_voxel_without_checking(const coordinate_id_pair_type& info)
     {
-        if (info.second != ParticleID())
+        if (info.pid != ParticleID())
         {
             throw NotSupported("No ParticleID is allowed.");
         }
@@ -89,7 +89,7 @@ public:
 
     virtual coordinate_id_pair_type pop(const coordinate_type& coord)
     {
-        return std::make_pair(coord, ParticleID());
+        return coordinate_id_pair_type(coord, ParticleID());
     }
 
     virtual bool remove_voxel_if_exists(const coordinate_type& coord)

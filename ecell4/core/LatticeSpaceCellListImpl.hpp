@@ -266,7 +266,7 @@ public:
             for (MolecularType::const_iterator vitr(mt->begin());
                 vitr != mt->end(); ++vitr)
             {
-                if ((*vitr).second == pid)
+                if ((*vitr).pid == pid)
                 {
                     return true;
                 }
@@ -289,8 +289,8 @@ public:
                 itr != mt->end(); ++itr)
             {
                 retval.push_back(std::make_pair(
-                    (*itr).second,
-                    Voxel(sp, (*itr).first, mt->radius(), mt->D(), loc)));
+                    (*itr).pid,
+                    Voxel(sp, (*itr).coordinate, mt->radius(), mt->D(), loc)));
             }
         }
         return retval;
@@ -316,8 +316,8 @@ public:
                 i != mt->end(); ++i)
             {
                 retval.push_back(std::make_pair(
-                    (*i).second,
-                    Voxel(sp, (*i).first, mt->radius(), mt->D(), loc)));
+                    (*i).pid,
+                    Voxel(sp, (*i).coordinate, mt->radius(), mt->D(), loc)));
             }
         }
         return retval;
@@ -340,8 +340,8 @@ public:
             i != mt->end(); ++i)
         {
             retval.push_back(std::make_pair(
-                (*i).second,
-                Voxel(sp, (*i).first, mt->radius(), mt->D(), loc)));
+                (*i).pid,
+                Voxel(sp, (*i).coordinate, mt->radius(), mt->D(), loc)));
         }
         return retval;
     }

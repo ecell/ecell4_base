@@ -437,7 +437,8 @@ BOOST_AUTO_TEST_CASE(LattiecSimulator_test_scheduler)
         *mt1(world->find_molecular_type(sp1)),
         *mt2(world->find_molecular_type(sp2)),
         *mt3(world->find_molecular_type(sp3));
-    std::vector<std::pair<SpatiocyteWorld::coordinate_type, ParticleID> >::const_iterator
+    // std::vector<std::pair<SpatiocyteWorld::coordinate_type, ParticleID> >::const_iterator
+    MolecularType::const_iterator
         itr1(mt1->begin()),
         itr2(mt2->begin()),
         itr3(mt3->begin());
@@ -446,36 +447,36 @@ BOOST_AUTO_TEST_CASE(LattiecSimulator_test_scheduler)
     BOOST_ASSERT(itr2 != mt2->end());
     BOOST_ASSERT(itr3 != mt3->end());
 
-    c1 = (*itr1).first;
-    c2 = (*itr2).first;
-    c3 = (*itr3).first;
+    c1 = (*itr1).coordinate;
+    c2 = (*itr2).coordinate;
+    c3 = (*itr3).coordinate;
 
     sim.step();
     itr1 = mt1->begin();
     itr2 = mt2->begin();
     itr3 = mt3->begin();
-    BOOST_ASSERT((*itr1).first == c1);
-    BOOST_ASSERT((*itr2).first == c2);
-    BOOST_ASSERT((*itr3).first != c3);
-    c3 = (*itr3).first;
+    BOOST_ASSERT((*itr1).coordinate == c1);
+    BOOST_ASSERT((*itr2).coordinate == c2);
+    BOOST_ASSERT((*itr3).coordinate != c3);
+    c3 = (*itr3).coordinate;
 
     sim.step();
     itr1 = mt1->begin();
     itr2 = mt2->begin();
     itr3 = mt3->begin();
-    BOOST_ASSERT((*itr1).first == c1);
-    BOOST_ASSERT((*itr2).first != c2);
-    BOOST_ASSERT((*itr3).first == c3);
-    c2 = (*itr2).first;
+    BOOST_ASSERT((*itr1).coordinate == c1);
+    BOOST_ASSERT((*itr2).coordinate != c2);
+    BOOST_ASSERT((*itr3).coordinate == c3);
+    c2 = (*itr2).coordinate;
 
     sim.step();
     itr1 = mt1->begin();
     itr2 = mt2->begin();
     itr3 = mt3->begin();
-    BOOST_ASSERT((*itr1).first != c1);
-    BOOST_ASSERT((*itr2).first == c2);
-    BOOST_ASSERT((*itr3).first == c3);
-    c1 = (*itr1).first;
+    BOOST_ASSERT((*itr1).coordinate != c1);
+    BOOST_ASSERT((*itr2).coordinate == c2);
+    BOOST_ASSERT((*itr3).coordinate == c3);
+    c1 = (*itr1).coordinate;
 
 }
 
