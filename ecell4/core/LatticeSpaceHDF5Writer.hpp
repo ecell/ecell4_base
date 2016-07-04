@@ -73,7 +73,7 @@ struct LatticeSpaceHDF5Traits
         return voxel_comp_type;
     }
 
-    static void save_molecular_type(const MolecularTypeBase* mtb,
+    static void save_molecular_type(const VoxelPool* mtb,
             std::vector<std::pair<ParticleID, Voxel> > voxels, H5::Group* group)
     {
         const Species species(mtb->species());
@@ -83,7 +83,7 @@ struct LatticeSpaceHDF5Traits
         h5_species_struct property;
         property.radius = mtb->radius();
         property.D = mtb->D();
-        const MolecularTypeBase* loc(mtb->location());
+        const VoxelPool* loc(mtb->location());
         if (loc->is_vacant())
             std::strcpy(property.location, "");
         else
@@ -118,13 +118,13 @@ struct LatticeSpaceHDF5Traits
 
     template<typename Tspace_>
     static void save_molecular_type_recursively(const Species& location,
-            std::multimap<Species, const MolecularTypeBase*>& location_map,
+            std::multimap<Species, const VoxelPool*>& location_map,
             Tspace_& space, H5::Group* root)
     {
-        std::multimap<Species, const MolecularTypeBase*>::iterator itr;
+        std::multimap<Species, const VoxelPool*>::iterator itr;
         while ((itr = location_map.find(location)) != location_map.end())
         {
-            const MolecularTypeBase* mtb((*itr).second);
+            const VoxelPool* mtb((*itr).second);
             const Species species(mtb->species());
             save_molecular_type(mtb, space.list_voxels_exact(species), root);
             save_molecular_type_recursively(species, location_map, space, root);
@@ -155,11 +155,11 @@ void save_lattice_space(const Tspace_& space, H5::Group* root)
     boost::scoped_ptr<H5::Group> spgroup(new H5::Group(root->createGroup("species")));
 
     const std::vector<Species> species(space.list_species());
-    std::multimap<Species, const MolecularTypeBase*> location_map;
+    std::multimap<Species, const VoxelPool*> location_map;
     for (std::vector<Species>::const_iterator itr(species.begin());
             itr != species.end(); ++itr)
     {
-        const MolecularTypeBase *mtb(space.find_molecular_type(*itr));
+        const VoxelPool *mtb(space.find_molecular_type(*itr));
         Species location(mtb->location()->species());
         location_map.insert(std::make_pair(location, mtb));
     }

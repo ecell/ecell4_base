@@ -23,7 +23,7 @@ public:
 public:
 
     StructureType(
-        const Species& species, MolecularTypeBase* location,
+        const Species& species, VoxelPool* location,
         const Real& radius = 0.0, const Shape::dimension_kind& dimension=Shape::UNDEF)
         : base_type(species, location, radius, 0),
         dimension_(std::min(dimension, location->get_dimension()))
@@ -98,8 +98,8 @@ public:
     }
 
 private:
-    const Shape::dimension_kind dimension_;
 
+    const Shape::dimension_kind dimension_;
 };
 
 } //ecell4

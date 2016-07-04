@@ -29,7 +29,7 @@ public:
     typedef base_type::coordinate_type coordinate_type;
 
     typedef std::map<Species, boost::shared_ptr<MolecularType> > spmap;
-    typedef std::vector<std::pair<MolecularTypeBase*, coordinate_type> >
+    typedef std::vector<std::pair<VoxelPool*, coordinate_type> >
         cell_type;
     typedef std::vector<cell_type> matrix_type;
     typedef std::map<Species, boost::shared_ptr<const Shape> > structure_container_type;
@@ -78,7 +78,7 @@ public:
     {
         return std::find_if(cell.begin(), cell.end(),
             utils::pair_second_element_unary_predicator<
-                MolecularTypeBase*, coordinate_type>(coord));
+                VoxelPool*, coordinate_type>(coord));
         // cell_type::iterator i(cell.begin());
         // for (; i != cell.end(); ++i)
         // {
@@ -95,7 +95,7 @@ public:
     {
         return std::find_if(cell.begin(), cell.end(),
             utils::pair_second_element_unary_predicator<
-                MolecularTypeBase*, coordinate_type>(coord));
+                VoxelPool*, coordinate_type>(coord));
         // cell_type::const_iterator i(cell.begin());
         // for (; i != cell.end(); ++i)
         // {
@@ -107,7 +107,7 @@ public:
         // return i;
     }
 
-    void update_matrix(const coordinate_type& coord, MolecularTypeBase* mt)
+    void update_matrix(const coordinate_type& coord, VoxelPool* mt)
     {
         cell_type& cell(matrix_[coordinate2index(coord)]);
         cell_type::iterator i(find_from_cell(coord, cell));
@@ -135,7 +135,7 @@ public:
 
     void update_matrix(const coordinate_type& from_coord,
         const coordinate_type& to_coord,
-        MolecularTypeBase* mt)
+        VoxelPool* mt)
     {
         const matrix_type::size_type from_idx(coordinate2index(from_coord)),
             to_idx(coordinate2index(to_coord));
@@ -204,7 +204,7 @@ public:
     {
         Integer count(0);
         utils::pair_first_element_unary_predicator<
-            MolecularTypeBase*, coordinate_type> pred(mt.get());
+            VoxelPool*, coordinate_type> pred(mt.get());
 
         for (matrix_type::const_iterator i(matrix_.begin());
             i != matrix_.end(); ++i)
@@ -353,8 +353,8 @@ public:
     virtual void update_voxel(const Voxel& v)
     {
         const coordinate_type coord(v.coordinate());
-        MolecularTypeBase* src_mt(get_molecular_type(coord));
-        MolecularTypeBase* new_mt(get_molecular_type(v));
+        VoxelPool* src_mt(get_molecular_type(coord));
+        VoxelPool* new_mt(get_molecular_type(v));
 
         if (src_mt->with_voxels() != new_mt->with_voxels())
         {
@@ -365,13 +365,13 @@ public:
         update_matrix(coord, new_mt);
 
         // const coordinate_type coord(v.coordinate());
-        // MolecularTypeBase* src_mt(get_molecular_type(coord));
+        // VoxelPool* src_mt(get_molecular_type(coord));
         // if (src_mt->is_vacant())
         // {
         //     return false;
         // }
 
-        // MolecularTypeBase* new_mt(get_molecular_type(v));
+        // VoxelPool* new_mt(get_molecular_type(v));
         // if (new_mt->is_vacant())
         // {
         //     // ???
@@ -387,14 +387,14 @@ public:
 
     virtual std::pair<ParticleID, Voxel> get_voxel(const ParticleID& pid) const
     {
-        const std::pair<const MolecularTypeBase*, coordinate_type>
+        const std::pair<const VoxelPool*, coordinate_type>
             target(__get_coordinate(pid));
         if (target.second == -1)
         {
             throw NotFound("voxel not found.");
         }
 
-        const MolecularTypeBase* mt(target.first);
+        const VoxelPool* mt(target.first);
         const std::string loc((mt->location()->is_vacant())
             ? "" : mt->location()->species().serial());
         return std::make_pair(
@@ -403,7 +403,7 @@ public:
 
     virtual std::pair<ParticleID, Voxel> get_voxel(const coordinate_type& coord) const
     {
-        const MolecularTypeBase* mt(get_molecular_type(coord));
+        const VoxelPool* mt(get_molecular_type(coord));
         const std::string loc((mt->location()->is_vacant())
             ? "" : mt->location()->species().serial());
         if (mt->with_voxels())
@@ -420,11 +420,11 @@ public:
 
     virtual bool remove_voxel(const ParticleID& pid)
     {
-        std::pair<MolecularTypeBase*, coordinate_type>
+        std::pair<VoxelPool*, coordinate_type>
             target(__get_coordinate(pid));
         if (target.second != -1)
         {
-            MolecularTypeBase* mt(target.first);
+            VoxelPool* mt(target.first);
             const coordinate_type coord(target.second);
             if (!mt->remove_voxel_if_exists(coord))
             {
@@ -441,7 +441,7 @@ public:
 
     virtual bool remove_voxel(const coordinate_type& coord)
     {
-        MolecularTypeBase* mt(get_molecular_type(coord));
+        VoxelPool* mt(get_molecular_type(coord));
         if (mt->is_vacant())
         {
             return false;
@@ -466,13 +466,13 @@ public:
             return false;
         }
 
-        MolecularTypeBase* src_mt(get_molecular_type(src));
+        VoxelPool* src_mt(get_molecular_type(src));
         if (src_mt->is_vacant())
         {
             return true;
         }
 
-        MolecularTypeBase* dest_mt(get_molecular_type(tmp_dest));
+        VoxelPool* dest_mt(get_molecular_type(tmp_dest));
         if (dest_mt == border_)
         {
             return false;
@@ -504,12 +504,12 @@ public:
 
     virtual const Particle particle_at(const coordinate_type& coord) const
     {
-        const MolecularTypeBase* mt(get_molecular_type(coord));
+        const VoxelPool* mt(get_molecular_type(coord));
         return Particle(
             mt->species(), coordinate2position(coord), mt->radius(), mt->D());
     }
 
-    virtual MolecularTypeBase* find_molecular_type(const Species& sp)
+    virtual VoxelPool* find_molecular_type(const Species& sp)
     {
         spmap::iterator itr(spmap_.find(sp));
         if (itr == spmap_.end())
@@ -519,7 +519,7 @@ public:
         return (*itr).second.get(); //XXX: Raw pointer was thrown.
     }
 
-    virtual const MolecularTypeBase* find_molecular_type(const Species& sp) const
+    virtual const VoxelPool* find_molecular_type(const Species& sp) const
     {
         spmap::const_iterator itr(spmap_.find(sp));
         if (itr == spmap_.end())
@@ -529,11 +529,11 @@ public:
         return (*itr).second.get(); //XXX: Raw pointer was thrown.
     }
 
-    virtual MolecularTypeBase* get_molecular_type(
+    virtual VoxelPool* get_molecular_type(
         const coordinate_type& coord);
-    const MolecularTypeBase* get_molecular_type(
+    const VoxelPool* get_molecular_type(
         const coordinate_type& coord) const;
-    MolecularTypeBase* get_molecular_type(const Voxel& v);
+    VoxelPool* get_molecular_type(const Voxel& v);
 
     virtual bool on_structure(const Voxel& v)
     {
@@ -554,7 +554,7 @@ public:
     virtual const Shape::dimension_kind get_structure_dimension(const Species& sp) const;
 
     virtual std::pair<coordinate_type, bool> move_to_neighbor(
-        MolecularTypeBase* const& from_mt, MolecularTypeBase* const& loc,
+        VoxelPool* const& from_mt, VoxelPool* const& loc,
         coordinate_id_pair_type& info, const Integer nrand);
 
     virtual Integer num_molecules(const Species& sp) const;
@@ -580,9 +580,9 @@ public:
 protected:
 
     std::pair<spmap::iterator, bool> __get_molecular_type(const Voxel& v);
-    std::pair<MolecularTypeBase*, coordinate_type>
+    std::pair<VoxelPool*, coordinate_type>
         __get_coordinate(const ParticleID& pid);
-    std::pair<const MolecularTypeBase*, coordinate_type>
+    std::pair<const VoxelPool*, coordinate_type>
         __get_coordinate(const ParticleID& pid) const;
 
     bool make_structure_type(
@@ -594,9 +594,9 @@ protected:
 
     spmap spmap_;
 
-    MolecularTypeBase* vacant_;
-    MolecularTypeBase* border_;
-    MolecularTypeBase* periodic_;
+    VoxelPool* vacant_;
+    VoxelPool* border_;
+    VoxelPool* periodic_;
 
     Integer3 matrix_sizes_, cell_sizes_;
     matrix_type matrix_;

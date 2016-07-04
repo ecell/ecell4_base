@@ -184,11 +184,11 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_add_remove_molecule)
         pid, Voxel(sp, coord, radius, D)));
     BOOST_CHECK_EQUAL(space.num_particles(sp), 1);
 
-    const MolecularTypeBase* mt(space.get_molecular_type(coord));
+    const VoxelPool* mt(space.get_molecular_type(coord));
     BOOST_CHECK(!mt->is_vacant());
 
     BOOST_CHECK(space.remove_voxel(coord));
-    const MolecularTypeBase* vacant(space.get_molecular_type(coord));
+    const VoxelPool* vacant(space.get_molecular_type(coord));
     BOOST_CHECK(vacant->is_vacant());
 }
 
@@ -202,7 +202,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_move)
     BOOST_CHECK(space.update_voxel(
         pid, Voxel(sp, coord, radius, D)));
 
-    MolecularTypeBase* from_mt(space.get_molecular_type(coord));
+    VoxelPool* from_mt(space.get_molecular_type(coord));
     BOOST_CHECK(!from_mt->is_vacant());
 
     const Integer3 global1(3,5,5);
@@ -211,7 +211,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_move)
 
     BOOST_CHECK(space.move(coord, to_coord));
 
-    MolecularTypeBase* mt(space.get_molecular_type(to_coord));
+    VoxelPool* mt(space.get_molecular_type(to_coord));
     BOOST_CHECK(!mt->is_vacant());
 
     BOOST_CHECK(space.update_voxel(
@@ -234,7 +234,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_update_molecule)
     space.update_voxel(
         Voxel(product, coord, radius, D));
 
-    const MolecularTypeBase* mt(space.get_molecular_type(coord));
+    const VoxelPool* mt(space.get_molecular_type(coord));
     BOOST_ASSERT(mt->species() == product);
 }
 
@@ -575,13 +575,13 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_save_and_load)
             itr != species.end(); ++itr)
     {
         const Species species((*itr).serial());
-        const MolecularTypeBase *mtb1(space.find_molecular_type(species));
-        const MolecularTypeBase *mtb2(space2.find_molecular_type(species));
+        const VoxelPool *mtb1(space.find_molecular_type(species));
+        const VoxelPool *mtb2(space2.find_molecular_type(species));
         BOOST_CHECK_EQUAL(mtb1->radius(), mtb2->radius());
         BOOST_CHECK_EQUAL(mtb1->D(), mtb2->D());
         BOOST_CHECK_EQUAL(mtb1->get_dimension(), mtb2->get_dimension());
 
-        MolecularTypeBase::container_type voxels1, voxels2;
+        VoxelPool::container_type voxels1, voxels2;
         std::copy(mtb1->begin(), mtb1->end(), back_inserter(voxels1));
         std::copy(mtb2->begin(), mtb2->end(), back_inserter(voxels2));
         BOOST_ASSERT(voxels1.size() == voxels2.size());

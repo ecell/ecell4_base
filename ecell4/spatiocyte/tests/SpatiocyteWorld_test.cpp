@@ -132,7 +132,7 @@ BOOST_AUTO_TEST_CASE(SpatiocyteWorld_test_add_molecule)
     BOOST_CHECK(world.new_voxel(sp, coord).second);
     BOOST_CHECK_EQUAL(world.num_particles(sp), 1);
 
-    MolecularTypeBase* mt(world.get_molecular_type(coord));
+    VoxelPool* mt(world.get_molecular_type(coord));
     BOOST_CHECK(!mt->is_vacant());
 }
 
@@ -237,7 +237,7 @@ BOOST_AUTO_TEST_CASE(SpatiocyteWorld_test_move)
     BOOST_CHECK(world.new_voxel(sp, from).second);
     BOOST_CHECK(world.move(from, to));
 
-    MolecularTypeBase* mt(world.get_molecular_type(to));
+    VoxelPool* mt(world.get_molecular_type(to));
     BOOST_CHECK(!mt->is_vacant());
 
     BOOST_CHECK(world.move(from, to));

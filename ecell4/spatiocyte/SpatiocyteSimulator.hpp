@@ -106,7 +106,7 @@ protected:
                 minfo(sim_->world_->get_molecule_info(species));
             const Real R(minfo.radius);
             const Real D(minfo.D);
-            const MolecularTypeBase* mtype(sim_->world_->find_molecular_type(species));
+            const VoxelPool* mtype(sim_->world_->find_molecular_type(species));
             // const Real R(sim_->world_->voxel_radius());
             // Real D = boost::lexical_cast<Real>(species.get_attribute("D"));
             if (D <= 0)
@@ -157,7 +157,7 @@ protected:
 
         SpatiocyteSimulator* sim_;
         Species species_;
-        MolecularTypeBase* mt_;
+        VoxelPool* mt_;
         const Real alpha_;
     };
 
@@ -318,7 +318,7 @@ protected:
     boost::shared_ptr<EventScheduler::Event> create_first_order_reaction_event(
         const ReactionRule& reaction_rule, const Real& t);
     Real calculate_dimensional_factor(
-        const MolecularTypeBase* mt0, const MolecularTypeBase* mt1) const;
+        const VoxelPool* mt0, const VoxelPool* mt1) const;
 
     typedef enum
     {
@@ -387,25 +387,25 @@ protected:
     // void register_step_event(const Species& species);
     void update_alpha_map();
 
-    void walk_in_space_(const MolecularTypeBase* mtype, const Real& alpha);
-    void walk_on_surface_(const MolecularTypeBase* mtype, const Real& alpha);
+    void walk_in_space_(const VoxelPool* mtype, const Real& alpha);
+    void walk_on_surface_(const VoxelPool* mtype, const Real& alpha);
 
     const std::string get_serial(
         const SpatiocyteWorld::coordinate_type coord) const
     {
-        const MolecularTypeBase* mtype(world_->get_molecular_type(coord));
+        const VoxelPool* mtype(world_->get_molecular_type(coord));
         return mtype->is_vacant() ? "" : mtype->species().serial();
     }
 
     const std::string get_location(
         const SpatiocyteWorld::coordinate_type coord) const
     {
-        const MolecularTypeBase* mtype(world_->get_molecular_type(coord));
+        const VoxelPool* mtype(world_->get_molecular_type(coord));
         if (mtype->is_vacant())
         {
             return "";
         }
-        const MolecularTypeBase* ltype(mtype->location());
+        const VoxelPool* ltype(mtype->location());
         return ltype->is_vacant() ? "" : ltype->species().serial();
     }
 

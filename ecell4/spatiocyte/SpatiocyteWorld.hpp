@@ -260,9 +260,9 @@ public:
     std::vector<Species> list_structure_species() const;
     // std::vector<coordinate_type> list_coords(const Species& sp) const;
 
-    MolecularTypeBase* find_molecular_type(const Species& species);
-    const MolecularTypeBase* find_molecular_type(const Species& species) const;
-    MolecularTypeBase* get_molecular_type(const coordinate_type& coord);
+    VoxelPool* find_molecular_type(const Species& species);
+    const VoxelPool* find_molecular_type(const Species& species) const;
+    VoxelPool* get_molecular_type(const coordinate_type& coord);
 
     std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel(const Voxel& v);
     std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel(const Species& sp, const coordinate_type& coord);
@@ -290,9 +290,9 @@ public:
     // std::pair<coordinate_type, bool> move_to_neighbor(
     //     coordinate_id_pair_type& info, Integer nrand);
     // std::pair<std::pair<coordinate_id_pair_type, coordinate_type>, bool>
-    //     move_to_neighbor(MolecularTypeBase* mtype, Integer index);
+    //     move_to_neighbor(VoxelPool* mtype, Integer index);
     std::pair<coordinate_type, bool> move_to_neighbor(
-        MolecularTypeBase* const& from_mt, MolecularTypeBase* const& loc,
+        VoxelPool* const& from_mt, VoxelPool* const& loc,
         coordinate_id_pair_type& info, const Integer nrand);
 
     coordinate_type get_neighbor(coordinate_type coord, Integer nrand) const
@@ -428,7 +428,7 @@ public:
      * temp
      */
 
-    const molecule_info_type get_molecule_info(const MolecularTypeBase* mt) const
+    const molecule_info_type get_molecule_info(const VoxelPool* mt) const
     {
         const std::string loc(
             mt->location()->is_vacant() ? "" : mt->location()->species().serial());
@@ -437,7 +437,7 @@ public:
     }
 
     std::pair<ParticleID, Voxel> make_pid_voxel_pair(
-        const MolecularTypeBase* mt, const coordinate_type& coord) const
+        const VoxelPool* mt, const coordinate_type& coord) const
     {
         const ParticleID pid(
             mt->with_voxels()
@@ -448,7 +448,7 @@ public:
     }
 
     std::pair<ParticleID, Voxel> make_pid_voxel_pair(
-        const MolecularTypeBase* mt, const coordinate_id_pair_type& info) const
+        const VoxelPool* mt, const coordinate_id_pair_type& info) const
     {
         const std::string loc(
             mt->location()->is_vacant() ? "" : mt->location()->species().serial());
@@ -459,7 +459,7 @@ public:
 
     std::pair<ParticleID, Voxel> choice(const Species& sp)
     {
-        MolecularTypeBase* mt(find_molecular_type(sp));
+        VoxelPool* mt(find_molecular_type(sp));
         if (!mt->with_voxels())
         {
             throw NotSupported(

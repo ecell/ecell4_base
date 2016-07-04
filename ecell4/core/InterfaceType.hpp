@@ -25,7 +25,7 @@ public:
 public:
 
     InterfaceType(
-        const Species& sp, MolecularTypeBase* location,
+        const Species& sp, VoxelPool* location,
         const Real& radius = 0, const Shape::dimension_kind& dimension=Shape::UNDEF)
         : base_type(sp, location, radius, 0),
         dimension_(std::min(dimension, location->get_dimension()))
@@ -101,7 +101,7 @@ private:
     const Shape::dimension_kind dimension_;
 
     // const Species species_;
-    // MolecularTypeBase* location_;
+    // VoxelPool* location_;
     // Real radius_, D_;
     // container_type voxels_;  // typedef std::vector<coordinate_id_pair_type> container_type;
 };

@@ -46,7 +46,7 @@ class LatticeSpace
 public:
 
     typedef Voxel::coordinate_type coordinate_type;
-    typedef MolecularTypeBase::coordinate_id_pair_type coordinate_id_pair_type;
+    typedef VoxelPool::coordinate_id_pair_type coordinate_id_pair_type;
 
 public:
 
@@ -156,9 +156,9 @@ public:
     virtual bool can_move(const coordinate_type& src, const coordinate_type& dest) const;
     virtual const Particle particle_at(const coordinate_type& coord) const = 0;
 
-    virtual MolecularTypeBase* find_molecular_type(const Species& sp) = 0;
-    virtual const MolecularTypeBase* find_molecular_type(const Species& sp) const = 0;
-    virtual MolecularTypeBase* get_molecular_type(
+    virtual VoxelPool* find_molecular_type(const Species& sp) = 0;
+    virtual const VoxelPool* find_molecular_type(const Species& sp) const = 0;
+    virtual VoxelPool* get_molecular_type(
         const coordinate_type& coord) = 0;
     virtual bool make_structure_type(const Species& sp,
         Shape::dimension_kind dimension, const std::string loc);
@@ -168,7 +168,7 @@ public:
     virtual bool on_structure(const Voxel& v) = 0;
 
     virtual std::pair<coordinate_type, bool> move_to_neighbor(
-        MolecularTypeBase* const& from_mt, MolecularTypeBase* const& loc,
+        VoxelPool* const& from_mt, VoxelPool* const& loc,
         coordinate_id_pair_type& info, const Integer nrand) = 0;
 
     /**
@@ -544,7 +544,7 @@ public:
     typedef base_type::coordinate_type coordinate_type;
 
     typedef std::map<Species, boost::shared_ptr<MolecularType> > spmap;
-    typedef std::vector<MolecularTypeBase*> voxel_container;
+    typedef std::vector<VoxelPool*> voxel_container;
 
 public:
 
@@ -611,10 +611,10 @@ public:
     const Species& find_species(std::string name) const;
     std::vector<coordinate_type> list_coords(const Species& sp) const;
     std::vector<coordinate_type> list_coords_exact(const Species& sp) const;
-    virtual MolecularTypeBase* find_molecular_type(const Species& sp);
-    virtual const MolecularTypeBase* find_molecular_type(const Species& sp) const;
-    // MolecularTypeBase* find_molecular_type(const std::string name);
-    virtual MolecularTypeBase* get_molecular_type(const coordinate_type& coord);
+    virtual VoxelPool* find_molecular_type(const Species& sp);
+    virtual const VoxelPool* find_molecular_type(const Species& sp) const;
+    // VoxelPool* find_molecular_type(const std::string name);
+    virtual VoxelPool* get_molecular_type(const coordinate_type& coord);
     // bool update_molecule(coordinate_type coord, const Species& species);
     // bool add_molecule(const Species& sp, coordinate_type coord, const ParticleID& pid);
     virtual bool move(
@@ -627,14 +627,14 @@ public:
     std::pair<coordinate_type, bool> move_to_neighbor(
         coordinate_id_pair_type& info, Integer nrand);
     std::pair<coordinate_type, bool> move_to_neighbor(
-        MolecularTypeBase* const& from_mt, MolecularTypeBase* const& loc,
+        VoxelPool* const& from_mt, VoxelPool* const& loc,
         coordinate_id_pair_type& info, const Integer nrand);
 
     coordinate_type get_neighbor_boundary(
         const coordinate_type& coord, const Integer& nrand) const
     {
         coordinate_type const dest = get_neighbor(coord, nrand);
-        MolecularTypeBase* dest_mt(voxels_.at(dest));
+        VoxelPool* dest_mt(voxels_.at(dest));
         return (dest_mt != periodic_ ? dest : periodic_transpose(dest));
     }
 
@@ -688,7 +688,7 @@ public:
 protected:
 
     std::pair<spmap::iterator, bool> __get_molecular_type(const Voxel& v);
-    MolecularTypeBase* get_molecular_type(const Voxel& v);
+    VoxelPool* get_molecular_type(const Voxel& v);
 
     void initialize_voxels(const bool is_periodic);
 
@@ -708,9 +708,9 @@ protected:
     spmap spmap_;
     voxel_container voxels_;
 
-    MolecularTypeBase* vacant_;
-    MolecularTypeBase* border_;
-    MolecularTypeBase* periodic_;
+    VoxelPool* vacant_;
+    VoxelPool* border_;
+    VoxelPool* periodic_;
 };
 
 }

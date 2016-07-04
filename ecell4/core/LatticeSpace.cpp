@@ -202,7 +202,7 @@ LatticeSpaceVectorImpl::get_voxel(const ParticleID& pid) const
 std::pair<ParticleID, Voxel>
 LatticeSpaceVectorImpl::get_voxel(const coordinate_type& coord) const
 {
-    const MolecularTypeBase* mt(voxels_[coord]);
+    const VoxelPool* mt(voxels_[coord]);
     const std::string loc((mt->location()->is_vacant())
         ? "" : mt->location()->species().serial());
     if (mt->with_voxels())
@@ -434,7 +434,7 @@ LatticeSpaceVectorImpl::__get_molecular_type(const Voxel& v)
         return std::make_pair(itr, false);
     }
 
-    MolecularTypeBase* location;
+    VoxelPool* location;
     if (v.loc() == "")
     {
         location = vacant_;
@@ -448,12 +448,12 @@ LatticeSpaceVectorImpl::__get_molecular_type(const Voxel& v)
         }
         catch (const NotFound& err)
         {
-            // XXX: A MolecularTypeBase for the structure (location) must be allocated
+            // XXX: A VoxelPool for the structure (location) must be allocated
             // XXX: before the allocation of a Species on the structure.
-            // XXX: The MolecularTypeBase cannot be automatically allocated at the time
+            // XXX: The VoxelPool cannot be automatically allocated at the time
             // XXX: because its MoleculeInfo is unknown.
             // XXX: LatticeSpaceVectorImpl::load will raise a problem about this issue.
-            // XXX: In this implementation, the MolecularTypeBase for a structure is
+            // XXX: In this implementation, the VoxelPool for a structure is
             // XXX: created with default arguments.
             boost::shared_ptr<MolecularType>
                 locmt(new MolecularType(locsp, vacant_, voxel_radius_, 0));
@@ -480,7 +480,7 @@ LatticeSpaceVectorImpl::__get_molecular_type(const Voxel& v)
     return retval;
 }
 
-MolecularTypeBase* LatticeSpaceVectorImpl::find_molecular_type(const Species& sp)
+VoxelPool* LatticeSpaceVectorImpl::find_molecular_type(const Species& sp)
 {
     LatticeSpaceVectorImpl::spmap::iterator itr(spmap_.find(sp));
     if (itr == spmap_.end())
@@ -490,7 +490,7 @@ MolecularTypeBase* LatticeSpaceVectorImpl::find_molecular_type(const Species& sp
     return (*itr).second.get(); //XXX: Raw pointer was thrown.
 }
 
-const MolecularTypeBase* LatticeSpaceVectorImpl::find_molecular_type(const Species& sp) const
+const VoxelPool* LatticeSpaceVectorImpl::find_molecular_type(const Species& sp) const
 {
     LatticeSpaceVectorImpl::spmap::const_iterator itr(spmap_.find(sp));
     if (itr == spmap_.end())
@@ -500,7 +500,7 @@ const MolecularTypeBase* LatticeSpaceVectorImpl::find_molecular_type(const Speci
     return (*itr).second.get(); //XXX: Raw pointer was thrown.
 }
 
-MolecularTypeBase* LatticeSpaceVectorImpl::get_molecular_type(const Voxel& v)
+VoxelPool* LatticeSpaceVectorImpl::get_molecular_type(const Voxel& v)
 {
     return (*(__get_molecular_type(v).first)).second.get(); //XXX: Raw pointer was thrown.
 }
@@ -534,7 +534,7 @@ LatticeSpaceVectorImpl::coordinate_type LatticeSpaceVectorImpl::get_coord(
     return -1; //XXX: a bit dirty way
 }
 
-MolecularTypeBase* LatticeSpaceVectorImpl::get_molecular_type(
+VoxelPool* LatticeSpaceVectorImpl::get_molecular_type(
     const coordinate_type& coord)
 {
     // return voxels_.at(coord2coordinate(coord));
@@ -578,7 +578,7 @@ bool LatticeSpaceVectorImpl::remove_voxel(const ParticleID& pid)
 bool LatticeSpaceVectorImpl::remove_voxel(const coordinate_type& coord)
 {
     voxel_container::iterator itr(voxels_.begin() + coord);
-    MolecularTypeBase* mt(*itr);
+    VoxelPool* mt(*itr);
     if (mt->is_vacant())
     {
         return false;
@@ -605,11 +605,11 @@ bool LatticeSpaceVectorImpl::can_move(
     if (src == dest)
         return false;
 
-    const MolecularTypeBase* src_mt(voxels_.at(src));
+    const VoxelPool* src_mt(voxels_.at(src));
     if (src_mt->is_vacant())
         return false;
 
-    MolecularTypeBase* dest_mt(voxels_.at(dest));
+    VoxelPool* dest_mt(voxels_.at(dest));
 
     if (dest_mt == border_)
         return false;
@@ -647,13 +647,13 @@ std::pair<LatticeSpaceVectorImpl::coordinate_type, bool>
         return std::pair<coordinate_type, bool>(from, false);
     }
 
-    MolecularTypeBase* from_mt(voxels_.at(from));
+    VoxelPool* from_mt(voxels_.at(from));
     if (from_mt->is_vacant())
     {
         return std::pair<coordinate_type, bool>(from, true);
     }
 
-    MolecularTypeBase* to_mt(voxels_.at(to));
+    VoxelPool* to_mt(voxels_.at(to));
 
     if (to_mt == border_)
     {
@@ -694,13 +694,13 @@ std::pair<LatticeSpaceVectorImpl::coordinate_type, bool>
         return std::pair<coordinate_type, bool>(from, false);
     }
 
-    MolecularTypeBase* from_mt(voxels_.at(from));
+    VoxelPool* from_mt(voxels_.at(from));
     if (from_mt->is_vacant())
     {
         return std::pair<coordinate_type, bool>(from, true);
     }
 
-    MolecularTypeBase* to_mt(voxels_.at(to));
+    VoxelPool* to_mt(voxels_.at(to));
 
     if (to_mt == border_)
     {
@@ -731,7 +731,7 @@ std::pair<LatticeSpaceVectorImpl::coordinate_type, bool>
 
 std::pair<LatticeSpaceVectorImpl::coordinate_type, bool>
     LatticeSpaceVectorImpl::move_to_neighbor(
-        MolecularTypeBase* const& from_mt, MolecularTypeBase* const& loc,
+        VoxelPool* const& from_mt, VoxelPool* const& loc,
         coordinate_id_pair_type& info, const Integer nrand)
 {
     const coordinate_type from(info.coordinate);
@@ -741,7 +741,7 @@ std::pair<LatticeSpaceVectorImpl::coordinate_type, bool>
     //XXX: assert(from_mt == voxels_[from]);
     //XXX: assert(from_mt != vacant_);
 
-    MolecularTypeBase* to_mt(voxels_[to]);
+    VoxelPool* to_mt(voxels_[to]);
 
     if (to_mt != loc)
     {
@@ -780,7 +780,7 @@ std::pair<LatticeSpaceVectorImpl::coordinate_type, bool>
 const Particle LatticeSpaceVectorImpl::particle_at(
     const coordinate_type& coord) const
 {
-    const MolecularTypeBase* mt(voxels_.at(coord));
+    const VoxelPool* mt(voxels_.at(coord));
     return Particle(
         mt->species(),
         coordinate2position(coord),
@@ -856,8 +856,8 @@ Integer LatticeSpaceVectorImpl::num_voxels() const
 void LatticeSpaceVectorImpl::update_voxel(const Voxel& v)
 {
     const coordinate_type coord(v.coordinate());
-    MolecularTypeBase* src_mt(voxels_.at(coord));
-    MolecularTypeBase* new_mt(get_molecular_type(v)); //XXX: need MoleculeInfo
+    VoxelPool* src_mt(voxels_.at(coord));
+    VoxelPool* new_mt(get_molecular_type(v)); //XXX: need MoleculeInfo
 
     if (src_mt->with_voxels() != new_mt->with_voxels())
     {
@@ -869,24 +869,24 @@ void LatticeSpaceVectorImpl::update_voxel(const Voxel& v)
     (*itr) = new_mt;
 
     // const LatticeSpaceVectorImpl::coordinate_type coord(v.coordinate());
-    // MolecularTypeBase* src_mt(voxels_.at(coord));
+    // VoxelPool* src_mt(voxels_.at(coord));
     // // if (src_mt->is_vacant())
     // if (!src_mt->with_voxels())
     // {
     //     return false; // has no ParticleID. Call update_voxel with a ParticleID.
     // }
 
-    // MolecularTypeBase* new_mt(get_molecular_type(v)); //XXX: need MoleculeInfo
+    // VoxelPool* new_mt(get_molecular_type(v)); //XXX: need MoleculeInfo
     // // if (new_mt->is_vacant())
     // if (!new_mt->with_voxels())
     // {
     //     return false; // has no ParticleID. Call remove_voxel.
     // }
 
-    // // MolecularTypeBase::coordinate_id_pair_type info(*(src_mt->find(coord)));
+    // // VoxelPool::coordinate_id_pair_type info(*(src_mt->find(coord)));
     // // src_mt->remove_voxel_if_exists(coord);
     // // new_mt->addVoxel(info);
-    // // MolecularTypeBase::iterator position(src_mt->find(coord));
+    // // VoxelPool::iterator position(src_mt->find(coord));
     // // new_mt->add_voxel_without_checking(*position);
     // // src_mt->remove_voxel(position);
     // new_mt->add_voxel_without_checking(src_mt->pop(coord));
@@ -908,8 +908,8 @@ bool LatticeSpaceVectorImpl::update_voxel(const ParticleID& pid, const Voxel& v)
         throw NotSupported("Out of bounds");
     }
 
-    MolecularTypeBase* new_mt(get_molecular_type(v)); //XXX: need MoleculeInfo
-    MolecularTypeBase* dest_mt(get_molecular_type(to_coord));
+    VoxelPool* new_mt(get_molecular_type(v)); //XXX: need MoleculeInfo
+    VoxelPool* dest_mt(get_molecular_type(to_coord));
 
     if (dest_mt != new_mt->location())
     {
@@ -924,7 +924,7 @@ bool LatticeSpaceVectorImpl::update_voxel(const ParticleID& pid, const Voxel& v)
     if (from_coord != -1)
     {
         // move
-        MolecularTypeBase* src_mt(voxels_.at(from_coord));
+        VoxelPool* src_mt(voxels_.at(from_coord));
         src_mt->remove_voxel_if_exists(from_coord);
 
         //XXX: use location?
@@ -952,13 +952,13 @@ bool LatticeSpaceVectorImpl::update_voxel(const ParticleID& pid, const Voxel& v)
     //     return false;
     // }
 
-    // MolecularTypeBase* new_mt(get_molecular_type(v)); //XXX: need MoleculeInfo
+    // VoxelPool* new_mt(get_molecular_type(v)); //XXX: need MoleculeInfo
     // if (new_mt->is_vacant())
     // {
     //     return false; // has no ParticleID.
     // }
 
-    // MolecularTypeBase* dest_mt(get_molecular_type(to_coord));
+    // VoxelPool* dest_mt(get_molecular_type(to_coord));
     // if (!dest_mt->is_vacant() && dest_mt != new_mt->location())
     // {
     //     if (dest_mt->species() == periodic_->species()
@@ -984,7 +984,7 @@ bool LatticeSpaceVectorImpl::update_voxel(const ParticleID& pid, const Voxel& v)
     //     const LatticeSpaceVectorImpl::coordinate_type from_coord(get_coord(pid));
     //     if (from_coord != -1)
     //     {
-    //         MolecularTypeBase* src_mt(voxels_.at(from_coord));
+    //         VoxelPool* src_mt(voxels_.at(from_coord));
     //         // assert(src_mt->with_voxels());
     //         src_mt->remove_voxel_if_exists(from_coord);
     //         voxel_container::iterator itr(voxels_.begin() + from_coord);
@@ -1012,15 +1012,15 @@ bool LatticeSpaceVectorImpl::update_voxel_without_checking(const ParticleID& pid
         throw NotSupported("Out of bounds");
     }
 
-    MolecularTypeBase* new_mt(get_molecular_type(v)); //XXX: need MoleculeInfo
-    MolecularTypeBase* dest_mt(get_molecular_type(to_coord));
+    VoxelPool* new_mt(get_molecular_type(v)); //XXX: need MoleculeInfo
+    VoxelPool* dest_mt(get_molecular_type(to_coord));
 
     const LatticeSpaceVectorImpl::coordinate_type
         from_coord(pid != ParticleID() ? get_coord(pid) : -1);
     if (from_coord != -1)
     {
         // move
-        MolecularTypeBase* src_mt(voxels_.at(from_coord));
+        VoxelPool* src_mt(voxels_.at(from_coord));
         src_mt->remove_voxel_if_exists(from_coord);
 
         //XXX: use location?
@@ -1053,7 +1053,7 @@ bool LatticeSpaceVectorImpl::make_structure_type(const Species& sp,
         return false;
     }
 
-    MolecularTypeBase* location;
+    VoxelPool* location;
     if (loc == "")
     {
         location = vacant_;
@@ -1067,12 +1067,12 @@ bool LatticeSpaceVectorImpl::make_structure_type(const Species& sp,
         }
         catch (const NotFound& err)
         {
-            // XXX: A MolecularTypeBase for the structure (location) must be allocated
+            // XXX: A VoxelPool for the structure (location) must be allocated
             // XXX: before the allocation of a Species on the structure.
-            // XXX: The MolecularTypeBase cannot be automatically allocated at the time
+            // XXX: The VoxelPool cannot be automatically allocated at the time
             // XXX: because its MoleculeInfo is unknown.
             // XXX: LatticeSpaceVectorImpl::load will raise a problem about this issue.
-            // XXX: In this implementation, the MolecularTypeBase for a structure is
+            // XXX: In this implementation, the VoxelPool for a structure is
             // XXX: created with default arguments.
             boost::shared_ptr<MolecularType>
                 locmt(new MolecularType(locsp, vacant_, voxel_radius_, 0));
@@ -1102,7 +1102,7 @@ bool LatticeSpaceVectorImpl::make_interface_type(const Species& sp,
         return false;
     }
 
-    MolecularTypeBase* location;
+    VoxelPool* location;
     if (loc == "")
     {
         location = vacant_;
@@ -1116,12 +1116,12 @@ bool LatticeSpaceVectorImpl::make_interface_type(const Species& sp,
         }
         catch (const NotFound& err)
         {
-            // XXX: A MolecularTypeBase for the structure (location) must be allocated
+            // XXX: A VoxelPool for the structure (location) must be allocated
             // XXX: before the allocation of a Species on the structure.
-            // XXX: The MolecularTypeBase cannot be automatically allocated at the time
+            // XXX: The VoxelPool cannot be automatically allocated at the time
             // XXX: because its MoleculeInfo is unknown.
             // XXX: LatticeSpaceVectorImpl::load will raise a problem about this issue.
-            // XXX: In this implementation, the MolecularTypeBase for a structure is
+            // XXX: In this implementation, the VoxelPool for a structure is
             // XXX: created with default arguments.
             boost::shared_ptr<MolecularType>
                 locmt(new MolecularType(locsp, vacant_, voxel_radius_, 0));
@@ -1154,7 +1154,7 @@ bool LatticeSpaceVectorImpl::make_molecular_type(const Species& sp, Real radius,
 bool LatticeSpaceVectorImpl::add_voxels(const Species sp, std::vector<std::pair<ParticleID, coordinate_type> > voxels)
 {
     // this function doesn't check location.
-    MolecularTypeBase *mtb;
+    VoxelPool *mtb;
     try
     {
         mtb = find_molecular_type(sp);
@@ -1168,7 +1168,7 @@ bool LatticeSpaceVectorImpl::add_voxels(const Species sp, std::vector<std::pair<
     {
         const ParticleID pid((*itr).first);
         const coordinate_type coord((*itr).second);
-        MolecularTypeBase* src_mt(get_molecular_type(coord));
+        VoxelPool* src_mt(get_molecular_type(coord));
         src_mt->remove_voxel_if_exists(coord);
         mtb->add_voxel_without_checking(coordinate_id_pair_type(pid, coord));
         voxel_container::iterator vitr(voxels_.begin() + coord);
