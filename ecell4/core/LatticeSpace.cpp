@@ -320,10 +320,51 @@ const Species& LatticeSpaceVectorImpl::find_species(std::string name) const
     throw NotFound(name);
 }
 
-std::vector<LatticeSpaceVectorImpl::coordinate_type>
-    LatticeSpaceVectorImpl::list_coords_exact(const Species& sp) const
+// std::vector<LatticeSpaceVectorImpl::coordinate_type>
+//     LatticeSpaceVectorImpl::list_coords_exact(const Species& sp) const
+// {
+//     std::vector<coordinate_type> retval;
+//     spmap::const_iterator itr(spmap_.find(sp));
+//     if (itr == spmap_.end())
+//     {
+//         return retval;
+//     }
+// 
+//     const boost::shared_ptr<MolecularType>& mt((*itr).second);
+// 
+//     for (MolecularType::const_iterator itr(mt->begin()); itr != mt->end(); ++itr)
+//     {
+//         retval.push_back(private2coord((*itr).first));
+//     }
+//     return retval;
+// }
+// 
+// std::vector<LatticeSpaceVectorImpl::coordinate_type> LatticeSpaceVectorImpl::list_coords(const Species& sp) const
+// {
+//     std::vector<coordinate_type> retval;
+//     for (spmap::const_iterator itr(spmap_.begin());
+//             itr != spmap_.end(); ++itr)
+//     {
+//         if (!spmatch(sp, (*itr).first))
+//         {
+//             continue;
+//         }
+// 
+//         const boost::shared_ptr<MolecularType>& mt((*itr).second);
+// 
+//         for (MolecularType::const_iterator itr(mt->begin());
+//             itr != mt->end(); ++itr)
+//         {
+//             retval.push_back(private2coord((*itr).first));
+//         }
+//     }
+//     return retval;
+// }
+
+std::vector<LatticeSpaceVectorImpl::private_coordinate_type>
+    LatticeSpaceVectorImpl::list_coords_exact_private(const Species& sp) const
 {
-    std::vector<coordinate_type> retval;
+    std::vector<private_coordinate_type> retval;
     spmap::const_iterator itr(spmap_.find(sp));
     if (itr == spmap_.end())
     {
@@ -334,14 +375,14 @@ std::vector<LatticeSpaceVectorImpl::coordinate_type>
 
     for (MolecularType::const_iterator itr(mt->begin()); itr != mt->end(); ++itr)
     {
-        retval.push_back(private2coord((*itr).first));
+        retval.push_back((*itr).first);
     }
     return retval;
 }
 
-std::vector<LatticeSpaceVectorImpl::coordinate_type> LatticeSpaceVectorImpl::list_coords(const Species& sp) const
+std::vector<LatticeSpaceVectorImpl::private_coordinate_type> LatticeSpaceVectorImpl::list_coords_private(const Species& sp) const
 {
-    std::vector<coordinate_type> retval;
+    std::vector<private_coordinate_type> retval;
     for (spmap::const_iterator itr(spmap_.begin());
             itr != spmap_.end(); ++itr)
     {
@@ -355,7 +396,7 @@ std::vector<LatticeSpaceVectorImpl::coordinate_type> LatticeSpaceVectorImpl::lis
         for (MolecularType::const_iterator itr(mt->begin());
             itr != mt->end(); ++itr)
         {
-            retval.push_back(private2coord((*itr).first));
+            retval.push_back((*itr).first);
         }
     }
     return retval;

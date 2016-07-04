@@ -189,11 +189,11 @@ public:
     virtual private_coordinate_type get_neighbor_private_boundary(
         const private_coordinate_type& private_coord, const Integer& nrand) const = 0;
 
-    virtual coordinate_type get_neighbor(
-        const coordinate_type& coord, const Integer& nrand) const
-    {
-        return private2coord(get_neighbor_private(coord2private(coord), nrand));
-    }
+    // virtual coordinate_type get_neighbor(
+    //     const coordinate_type& coord, const Integer& nrand) const
+    // {
+    //     return private2coord(get_neighbor_private(coord2private(coord), nrand));
+    // }
 
     /**
       */
@@ -562,10 +562,10 @@ public:
 
 public:
 
-    bool is_in_range(const coordinate_type& coord) const
-    {
-        return coord >= 0 && coord < row_size() * layer_size() * col_size();
-    }
+    // bool is_in_range(const coordinate_type& coord) const
+    // {
+    //     return coord >= 0 && coord < row_size() * layer_size() * col_size();
+    // }
 
     bool is_in_range_private(const private_coordinate_type& coord) const
     {
@@ -678,8 +678,10 @@ public:
 
     std::vector<Species> list_species() const;
     const Species& find_species(std::string name) const;
-    std::vector<coordinate_type> list_coords(const Species& sp) const;
-    std::vector<coordinate_type> list_coords_exact(const Species& sp) const;
+    std::vector<private_coordinate_type> list_coords_private(const Species& sp) const;
+    std::vector<private_coordinate_type> list_coords_exact_private(const Species& sp) const;
+    // std::vector<coordinate_type> list_coords(const Species& sp) const;
+    // std::vector<coordinate_type> list_coords_exact(const Species& sp) const;
     virtual MolecularTypeBase* find_molecular_type(const Species& sp);
     virtual const MolecularTypeBase* find_molecular_type(const Species& sp) const;
     // MolecularTypeBase* find_molecular_type(const std::string name);
