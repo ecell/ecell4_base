@@ -47,46 +47,12 @@ public:
         return Shape::THREE;
     }
 
-    virtual void add_voxel_without_checking(const coordinate_id_pair_type& info)
-    {
-        ; // do nothing
-    }
-
-    virtual void replace_voxel(
-        const coordinate_type& from_coord,
-        const coordinate_id_pair_type& to_info)
-    {
-        ; // do nothing
-    }
-
-    virtual void replace_voxel(
-        const coordinate_type& from_coord,
-        const coordinate_type& to_coord,
-        const std::size_t candidate=0)
-    {
-        ; // do nothing
-    }
-
-    virtual bool remove_voxel_if_exists(const coordinate_type& coord)
-    {
-        return true; // just return true
-    }
-
-    virtual coordinate_id_pair_type pop(const coordinate_type& coord)
-    {
-        return coordinate_id_pair_type(ParticleID(), coord);
-    }
-
-    virtual const ParticleID get_particle_id(const coordinate_type& coord) const
-    {
-        return ParticleID();
-    }
-
 private:
 
     VacantType()
         : base_type(Species("VACANT", "0", "0"), NULL, 0, 0)
     {
+        ; // do nothing
     }
 };
 

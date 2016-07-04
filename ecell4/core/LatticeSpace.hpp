@@ -385,13 +385,16 @@ public:
     coordinate_type global2coordinate(const Integer3& global) const
     {
         const Integer3 g(global.col + 1, global.row + 1, global.layer + 1);
-        return __global2coord(g, col_size_, row_size_, layer_size_);
+        return g.row + row_size_ * (g.col + col_size_ * g.layer);
     }
 
     Integer3 coordinate2global(const coordinate_type& coord) const
     {
-        const Integer3 global(
-            __coord2global(coord, col_size_, row_size_, layer_size_));
+        const Integer NUM_COLROW(row_size_ * col_size_);
+        const Integer LAYER(coord / NUM_COLROW);
+        const Integer SURPLUS(coord - LAYER * NUM_COLROW);
+        const Integer COL(SURPLUS / row_size_);
+        const Integer3 global(COL, SURPLUS - COL * row_size_, LAYER);
         const Integer3 retval(
             global.col - 1, global.row - 1, global.layer - 1);
         return retval;
@@ -503,27 +506,6 @@ public:
     virtual Integer3 shape() const
     {
         return Integer3(col_size_, row_size_, layer_size_);
-    }
-
-protected:
-
-    static inline Integer __global2coord(
-        const Integer3& global,
-        const Integer& num_col, const Integer& num_row, const Integer& num_layer)
-    {
-        return global.row + num_row * (global.col + num_col * global.layer);
-    }
-
-    static inline Integer3 __coord2global(
-        const Integer& coord,
-        const Integer& num_col, const Integer& num_row, const Integer& num_layer)
-    {
-        const Integer NUM_COLROW(num_row * num_col);
-        const Integer LAYER(coord / NUM_COLROW);
-        const Integer SURPLUS(coord - LAYER * NUM_COLROW);
-        const Integer COL(SURPLUS / num_row);
-        const Integer3 retval(COL, SURPLUS - COL * num_row, LAYER);
-        return retval;
     }
 
 protected:
