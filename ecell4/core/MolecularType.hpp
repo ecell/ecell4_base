@@ -14,7 +14,7 @@ public:
 
     typedef MolecularTypeBase base_type;
     typedef base_type::coord_id_pair coord_id_pair;
-    typedef base_type::coordinate_type coordinate_type;
+    typedef base_type::private_coordinate_type private_coordinate_type;
     typedef base_type::container_type container_type;
     typedef base_type::iterator iterator;
     typedef base_type::const_iterator const_iterator;

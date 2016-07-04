@@ -869,7 +869,7 @@ bool LatticeSpaceVectorImpl::can_move(const private_coordinate_type& src,
     return (dest_mt == src_mt->location());
 }
 
-std::pair<LatticeSpaceVectorImpl::coordinate_type, bool>
+std::pair<LatticeSpaceVectorImpl::private_coordinate_type, bool>
     LatticeSpaceVectorImpl::move_to_neighbor(
         private_coordinate_type coord, Integer nrand)
 {
@@ -881,7 +881,7 @@ std::pair<LatticeSpaceVectorImpl::private_coordinate_type, bool>
     LatticeSpaceVectorImpl::move_to_neighbor(
         particle_info_type& info, Integer nrand)
 {
-    const coordinate_type neighbor(get_neighbor_private(info.first, nrand));
+    const private_coordinate_type neighbor(get_neighbor_private(info.first, nrand));
     return move_(info, neighbor);
 }
 
@@ -1412,7 +1412,7 @@ bool LatticeSpaceVectorImpl::add_voxels_private(const Species sp, std::vector<st
     {
         return false;
     }
-    for (std::vector<std::pair<ParticleID, coordinate_type> >::iterator itr(voxels.begin());
+    for (std::vector<std::pair<ParticleID, private_coordinate_type> >::iterator itr(voxels.begin());
             itr != voxels.end(); ++itr)
     {
         const ParticleID pid((*itr).first);

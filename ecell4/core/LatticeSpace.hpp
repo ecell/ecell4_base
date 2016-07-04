@@ -46,8 +46,8 @@ class LatticeSpace
 public:
 
     typedef MolecularTypeBase::coord_id_pair particle_info_type;
-    typedef MolecularTypeBase::coordinate_type coordinate_type;
-    typedef MolecularTypeBase::coordinate_type private_coordinate_type;
+    // typedef MolecularTypeBase::coordinate_type coordinate_type;
+    typedef MolecularTypeBase::private_coordinate_type private_coordinate_type;
 
 public:
 
@@ -431,15 +431,15 @@ public:
      Coordinate transformations
      */
 
-    static coordinate_type __global2coord(
+    static inline Integer __global2coord(
         const Integer3& global,
         const Integer& num_col, const Integer& num_row, const Integer& num_layer)
     {
         return global.row + num_row * (global.col + num_col * global.layer);
     }
 
-    static Integer3 __coord2global(
-        const coordinate_type& coord,
+    static inline Integer3 __coord2global(
+        const Integer& coord,
         const Integer& num_col, const Integer& num_row, const Integer& num_layer)
     {
         const Integer NUM_COLROW(num_row * num_col);
@@ -457,7 +457,7 @@ public:
     //     return __global2coord(global, col_size(), row_size(), layer_size());
     // }
 
-    coordinate_type global2private(const Integer3& global) const
+    private_coordinate_type global2private(const Integer3& global) const
     {
         const Integer3 g(global.col + 1, global.row + 1, global.layer + 1);
         return __global2coord(g, col_size_, row_size_, layer_size_);
@@ -620,8 +620,8 @@ public:
     typedef LatticeSpaceBase base_type;
 
     typedef base_type::particle_info_type particle_info_type;
+    // typedef base_type::coordinate_type coordinate_type;
     typedef base_type::private_coordinate_type private_coordinate_type;
-    typedef base_type::private_coordinate_type coordinate_type;
 
     typedef std::map<Species, boost::shared_ptr<MolecularType> > spmap;
     typedef std::vector<MolecularTypeBase*> voxel_container;

@@ -16,8 +16,8 @@ class MolecularTypeBase
 {
 public:
 
-    typedef Integer coordinate_type;
-    typedef std::pair<coordinate_type, ParticleID> coord_id_pair;
+    typedef Integer private_coordinate_type;
+    typedef std::pair<private_coordinate_type, ParticleID> coord_id_pair;
 
     typedef std::vector<coord_id_pair> container_type;
     typedef container_type::const_iterator const_iterator;
@@ -114,7 +114,7 @@ public:
     }
 
     virtual void replace_voxel(
-        const coordinate_type& from_coord,
+        const private_coordinate_type& from_coord,
         const coord_id_pair& to_info)
     {
         container_type::iterator itr(find(from_coord));
@@ -127,8 +127,8 @@ public:
     }
 
     virtual void replace_voxel(
-        const coordinate_type& from_coord,
-        const coordinate_type& to_coord, const std::size_t candidate=0)
+        const private_coordinate_type& from_coord,
+        const private_coordinate_type& to_coord, const std::size_t candidate=0)
     {
         container_type::iterator itr(find(from_coord, candidate));
         if (itr == voxels_.end())
@@ -140,7 +140,7 @@ public:
         (*itr).first = to_coord;
     }
 
-    virtual coord_id_pair pop(const coordinate_type& coord)
+    virtual coord_id_pair pop(const private_coordinate_type& coord)
     {
         container_type::iterator position(this->find(coord));
         const coord_id_pair info(*position);
@@ -148,7 +148,7 @@ public:
         return info;
     }
 
-    virtual bool remove_voxel_if_exists(const coordinate_type& coord)
+    virtual bool remove_voxel_if_exists(const private_coordinate_type& coord)
     {
         container_type::iterator itr(find(coord));
         if (itr != voxels_.end())
@@ -229,7 +229,7 @@ public:
         return voxels_.end();
     }
 
-    const ParticleID find_particle_id(const coordinate_type& coord) const
+    const ParticleID find_particle_id(const private_coordinate_type& coord) const
     {
         container_type::const_iterator i(this->find(coord));
         if (i == voxels_.end())
@@ -267,7 +267,7 @@ public:
 
 protected:
 
-    container_type::iterator find(coordinate_type coord,
+    container_type::iterator find(private_coordinate_type coord,
             const std::size_t candidate=0)
     {
         container_type::iterator itr;
@@ -287,7 +287,7 @@ protected:
         return itr;
     }
 
-    container_type::const_iterator find(coordinate_type coord,
+    container_type::const_iterator find(private_coordinate_type coord,
             const std::size_t candidate=0) const
     {
         container_type::const_iterator itr;
