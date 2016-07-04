@@ -63,9 +63,9 @@ public:
     /**
      */
 
-    inline matrix_type::size_type coord2index(const coordinate_type& coord) const
+    inline matrix_type::size_type coordinate2index(const coordinate_type& coord) const
     {
-        return global2index(private2global(coord));
+        return global2index(coordinate2global(coord));
     }
 
     inline matrix_type::size_type global2index(const Integer3& g) const
@@ -109,7 +109,7 @@ public:
 
     void update_matrix(const coordinate_type& coord, MolecularTypeBase* mt)
     {
-        cell_type& cell(matrix_[coord2index(coord)]);
+        cell_type& cell(matrix_[coordinate2index(coord)]);
         cell_type::iterator i(find_from_cell(coord, cell));
 
         if (i != cell.end())
@@ -137,8 +137,8 @@ public:
         const coordinate_type& to_coord,
         MolecularTypeBase* mt)
     {
-        const matrix_type::size_type from_idx(coord2index(from_coord)),
-            to_idx(coord2index(to_coord));
+        const matrix_type::size_type from_idx(coordinate2index(from_coord)),
+            to_idx(coordinate2index(to_coord));
         if (from_idx == to_idx)
         {
             cell_type& cell(matrix_[from_idx]);
@@ -506,7 +506,7 @@ public:
     {
         const MolecularTypeBase* mt(get_molecular_type(coord));
         return Particle(
-            mt->species(), private2position(coord), mt->radius(), mt->D());
+            mt->species(), coordinate2position(coord), mt->radius(), mt->D());
     }
 
     virtual MolecularTypeBase* find_molecular_type(const Species& sp)

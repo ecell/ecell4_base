@@ -37,7 +37,7 @@ Integer coord2private(const Tspace_& w, const Integer coord)
     const Integer COL(SURPLUS / num_row);
     const Integer3 g(COL, SURPLUS - COL * num_row, LAYER);
 
-    return w.global2private(g);
+    return w.global2coordinate(g);
 }
 
 class LatticeSpace
@@ -179,19 +179,10 @@ public:
     virtual const Integer row_size() const = 0;
     virtual const Integer layer_size() const = 0;
 
-    // virtual coordinate_type global2coord(const Integer3& global) const = 0;
-    // virtual Real3 coordinate2position(const coordinate_type& coord) const = 0;
-    // virtual coordinate_type position2coordinate(const Real3& pos) const = 0;
-    // virtual coordinate_type coord2private(const coordinate_type& cood) const = 0;
-    // virtual coordinate_type private2coord(
-    //     const coordinate_type& private_coord) const = 0;
-    // virtual Integer3 coord2global(coordinate_type coord) const = 0;
-
-    virtual coordinate_type global2private(const Integer3& global) const = 0;
-    virtual Integer3 private2global(const coordinate_type& coord) const = 0;
-    virtual Real3 private2position(
-        const coordinate_type& coord) const = 0;
-    virtual coordinate_type position2private(const Real3& pos) const = 0;
+    virtual coordinate_type global2coordinate(const Integer3& global) const = 0;
+    virtual Integer3 coordinate2global(const coordinate_type& coord) const = 0;
+    virtual Real3 coordinate2position(const coordinate_type& coord) const = 0;
+    virtual coordinate_type position2coordinate(const Real3& pos) const = 0;
     virtual Real3 global2position(const Integer3& global) const = 0;
     virtual Integer3 position2global(const Real3& pos) const = 0;
 
@@ -285,7 +276,7 @@ public:
     {
         const Voxel v(get_voxel(pid).second);
         return std::make_pair(pid, Particle(
-            v.species(), private2position(v.coordinate()), v.radius(), v.D()));
+            v.species(), coordinate2position(v.coordinate()), v.radius(), v.D()));
     }
 
     virtual bool remove_particle(const ParticleID& pid)
@@ -393,36 +384,29 @@ public:
      Coordinate transformations
      */
 
-    static inline Integer __global2coord(
-        const Integer3& global,
-        const Integer& num_col, const Integer& num_row, const Integer& num_layer)
-    {
-        return global.row + num_row * (global.col + num_col * global.layer);
-    }
-
-    static inline Integer3 __coord2global(
-        const Integer& coord,
-        const Integer& num_col, const Integer& num_row, const Integer& num_layer)
-    {
-        const Integer NUM_COLROW(num_row * num_col);
-        const Integer LAYER(coord / NUM_COLROW);
-        const Integer SURPLUS(coord - LAYER * NUM_COLROW);
-        const Integer COL(SURPLUS / num_row);
-        const Integer3 retval(COL, SURPLUS - COL * num_row, LAYER);
-        return retval;
-    }
-
-    /** global -> */
-
-    // coordinate_type global2coord(const Integer3& global) const
-    // {
-    //     return __global2coord(global, col_size(), row_size(), layer_size());
-    // }
-
-    coordinate_type global2private(const Integer3& global) const
+    coordinate_type global2coordinate(const Integer3& global) const
     {
         const Integer3 g(global.col + 1, global.row + 1, global.layer + 1);
         return __global2coord(g, col_size_, row_size_, layer_size_);
+    }
+
+    Integer3 coordinate2global(const coordinate_type& coord) const
+    {
+        const Integer3 global(
+            __coord2global(coord, col_size_, row_size_, layer_size_));
+        const Integer3 retval(
+            global.col - 1, global.row - 1, global.layer - 1);
+        return retval;
+    }
+
+    Real3 coordinate2position(const coordinate_type& coord) const
+    {
+        return global2position(coordinate2global(coord));
+    }
+
+    coordinate_type position2coordinate(const Real3& pos) const
+    {
+        return global2coordinate(position2global(pos));
     }
 
     Real3 global2position(const Integer3& global) const
@@ -436,59 +420,15 @@ public:
         return pos;
     }
 
-    /** -> global */
-
-    // Integer3 coord2global(coordinate_type coord) const
-    // {
-    //     return __coord2global(coord, col_size(), row_size(), layer_size());
-    // }
-
-    Integer3 private2global(const coordinate_type& coord) const
+    Integer3 position2global(const Real3& pos) const
     {
-        const Integer3 global(
-            __coord2global(coord, col_size_, row_size_, layer_size_));
-        const Integer3 retval(
-            global.col - 1, global.row - 1, global.layer - 1);
-        return retval;
+        const Integer col(round(pos[0] / HCP_X));
+        const Integer layer(round((pos[1] - (col % 2) * HCP_L) / HCP_Y));
+        const Integer row(round(
+            (pos[2] / voxel_radius_ - ((layer + col) % 2)) / 2));
+        const Integer3 global(col, row, layer);
+        return global;
     }
-
-    Integer3 position2global(const Real3& pos) const;
-
-    /** others */
-
-    // Real3 coordinate2position(const coordinate_type& coord) const
-    // {
-    //     // return global2position(private2global(
-    //     //     global2private(coord2global(coord))));
-    //     return global2position(coord2global(coord));
-    // }
-
-    // coordinate_type coord2private(const coordinate_type& coord) const
-    // {
-    //     return global2private(coord2global(coord));
-    // }
-
-    Real3 private2position(
-        const coordinate_type& coord) const
-    {
-        return global2position(private2global(coord));
-    }
-
-    coordinate_type position2private(const Real3& pos) const
-    {
-        return global2private(position2global(pos));
-    }
-
-    // coordinate_type position2coordinate(const Real3& pos) const
-    // {
-    //     return global2coord(position2global(pos));
-    // }
-
-    // coordinate_type private2coord(
-    //     const coordinate_type& coord) const
-    // {
-    //     return global2coord(private2global(coord));
-    // }
 
     coordinate_type get_neighbor(
         const coordinate_type& coord, const Integer& nrand) const
@@ -529,7 +469,7 @@ public:
     coordinate_type periodic_transpose(
         const coordinate_type& coord) const
     {
-        Integer3 global(private2global(coord));
+        Integer3 global(coordinate2global(coord));
 
         global.col = global.col % col_size();
         global.row = global.row % row_size();
@@ -539,7 +479,7 @@ public:
         global.row = global.row < 0 ? global.row + row_size() : global.row;
         global.layer = global.layer < 0 ? global.layer + layer_size() : global.layer;
 
-        return global2private(global);
+        return global2coordinate(global);
     }
 
 public:
@@ -551,7 +491,7 @@ public:
 
     bool is_inside(const coordinate_type& coord) const
     {
-        const Integer3 global(private2global(coord));
+        const Integer3 global(coordinate2global(coord));
         return global.col >= 0 && global.col < col_size()
             && global.row >= 0 && global.row < row_size()
             && global.layer >= 0 && global.layer < layer_size();
@@ -560,6 +500,27 @@ public:
     Integer size_private() const
     {
         return row_size_ * col_size_ * layer_size_;
+    }
+
+protected:
+
+    static inline Integer __global2coord(
+        const Integer3& global,
+        const Integer& num_col, const Integer& num_row, const Integer& num_layer)
+    {
+        return global.row + num_row * (global.col + num_col * global.layer);
+    }
+
+    static inline Integer3 __coord2global(
+        const Integer& coord,
+        const Integer& num_col, const Integer& num_row, const Integer& num_layer)
+    {
+        const Integer NUM_COLROW(num_row * num_col);
+        const Integer LAYER(coord / NUM_COLROW);
+        const Integer SURPLUS(coord - LAYER * NUM_COLROW);
+        const Integer COL(SURPLUS / num_row);
+        const Integer3 retval(COL, SURPLUS - COL * num_row, LAYER);
+        return retval;
     }
 
 protected:

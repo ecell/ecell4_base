@@ -109,15 +109,13 @@ cdef extern from "ecell4/spatiocyte/SpatiocyteWorld.hpp" namespace "ecell4::spat
         # Integer position2coordinate(Cpp_Real3)
         shared_ptr[Cpp_RandomNumberGenerator] rng()
 
-        Cpp_Real3 private2position(Integer)
-        # Integer private2coord(Integer)
-        # Integer coord2private(Integer)
-        # Cpp_Integer3 coord2global(Integer)
-        # Integer global2coord(Cpp_Integer3)
-        Cpp_Integer3 private2global(Integer)
-        Integer global2private(Cpp_Integer3)
+        Cpp_Real3 coordinate2position(Integer)
+        Cpp_Integer3 coordinate2global(Integer)
+        Integer global2coordinate(Cpp_Integer3)
         Cpp_Real3 global2position(Cpp_Integer3)
         Cpp_Integer3 position2global(Cpp_Real3)
+        Integer position2coordinate(Cpp_Real3)
+
         Integer add_structure(Cpp_Species&, shared_ptr[Cpp_Shape]) except +
         void add_molecules(Cpp_Species& sp, Integer num, shared_ptr[Cpp_Shape])
 

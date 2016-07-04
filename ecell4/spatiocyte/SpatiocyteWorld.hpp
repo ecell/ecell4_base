@@ -189,7 +189,7 @@ public:
         // return std::make_pair(get_particle(pid), is_succeeded);
         const molecule_info_type minfo(get_molecule_info(p.species()));
         const Voxel v(
-            p.species(), position2private(p.position()), p.radius(), p.D(), minfo.loc);
+            p.species(), position2coordinate(p.position()), p.radius(), p.D(), minfo.loc);
         if ((*space_).on_structure(v))
         {
             return std::make_pair(std::make_pair(ParticleID(), p), false);
@@ -245,7 +245,7 @@ public:
     {
         const molecule_info_type minfo(get_molecule_info(p.species()));
         return update_voxel(pid, Voxel(p.species(),
-            position2private(p.position()), p.radius(), p.D(), minfo.loc));
+            position2coordinate(p.position()), p.radius(), p.D(), minfo.loc));
     }
 
     std::vector<std::pair<ParticleID, Voxel> >
@@ -389,14 +389,14 @@ public:
         return (*space_).shape();
     }
 
-    coordinate_type position2private(const Real3& pos) const
+    coordinate_type position2coordinate(const Real3& pos) const
     {
-        return (*space_).position2private(pos);
+        return (*space_).position2coordinate(pos);
     }
 
-    const Real3 private2position(const coordinate_type& coord) const
+    const Real3 coordinate2position(const coordinate_type& coord) const
     {
-        return (*space_).private2position(coord);
+        return (*space_).coordinate2position(coord);
     }
 
     const Real3 global2position(const Integer3& global) const
@@ -409,14 +409,14 @@ public:
         return (*space_).position2global(pos);
     }
 
-    coordinate_type global2private(const Integer3& global) const
+    coordinate_type global2coordinate(const Integer3& global) const
     {
-        return (*space_).global2private(global);
+        return (*space_).global2coordinate(global);
     }
 
-    const Integer3 private2global(coordinate_type coord) const
+    const Integer3 coordinate2global(coordinate_type coord) const
     {
-        return (*space_).private2global(coord);
+        return (*space_).coordinate2global(coord);
     }
 
     /**

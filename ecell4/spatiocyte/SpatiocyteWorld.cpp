@@ -276,7 +276,7 @@ std::pair<std::pair<ParticleID, Voxel>, bool>
 SpatiocyteWorld::new_voxel(const Voxel& v)
 {
     ParticleID pid(sidgen_());
-    const bool is_succeeded((*space_).update_voxel(pid, v));
+    const bool is_succeeded(update_voxel(pid, v));
     return std::make_pair(std::make_pair(pid, v), is_succeeded);
 }
 
@@ -291,7 +291,7 @@ SpatiocyteWorld::new_voxel_structure(const Species& sp, const coordinate_type& c
 std::pair<std::pair<ParticleID, Voxel>, bool>
 SpatiocyteWorld::new_voxel_structure(const Voxel& v)
 {
-    const bool is_succeeded((*space_).update_voxel(ParticleID(), v));
+    const bool is_succeeded(update_voxel(ParticleID(), v));
     return std::make_pair(std::make_pair(ParticleID(), v), is_succeeded);
 }
 
@@ -306,7 +306,7 @@ SpatiocyteWorld::new_voxel_interface(const Species& sp, const coordinate_type& c
 std::pair<std::pair<ParticleID, Voxel>, bool>
 SpatiocyteWorld::new_voxel_interface(const Voxel& v)
 {
-    const bool is_succeeded((*space_).update_voxel(ParticleID(), v));
+    const bool is_succeeded(update_voxel(ParticleID(), v));
     return std::make_pair(std::make_pair(ParticleID(), v), is_succeeded);
 }
 
@@ -322,12 +322,12 @@ bool SpatiocyteWorld::add_molecules(const Species& sp, const Integer& num)
     Integer count(0);
     while (count < num)
     {
-        const coordinate_type coord(coord2private(*this, rng()->uniform_int(0, (*space_).size() - 1)));  //XXX: just for consistency. rather use below
-        // const coordinate_type coord(rng()->uniform_int(0, (*space_).size_private() - 1));
+        const coordinate_type coord(coord2private(*this, rng()->uniform_int(0, size() - 1)));  //XXX: just for consistency. rather use below
+        // const coordinate_type coord(rng()->uniform_int(0, size_private() - 1));
 
         const Voxel v(sp, coord, info.radius, info.D, info.loc);
 
-        if ((*space_).on_structure(v))
+        if (on_structure(v))
         {
             continue;
         }
@@ -353,9 +353,9 @@ bool SpatiocyteWorld::add_molecules(
     while (count < num)
     {
         const Real3 pos(shape->draw_position(rng_));
-        const Voxel v(sp, (*space_).position2private(pos), info.radius, info.D, info.loc);
+        const Voxel v(sp, position2coordinate(pos), info.radius, info.D, info.loc);
 
-        if ((*space_).on_structure(v))
+        if (on_structure(v))
         {
             continue;
         }
@@ -421,7 +421,7 @@ Integer SpatiocyteWorld::add_structure3(const Species& sp, const boost::shared_p
                     continue;
                 }
 
-                const Voxel v(sp, (*space_).global2private(g),
+                const Voxel v(sp, global2coordinate(g),
                     info.radius, info.D, info.loc);
                 if (new_voxel_structure(v).second)
                 {
@@ -483,7 +483,7 @@ Integer SpatiocyteWorld::add_structure2(const Species& sp, const boost::shared_p
                     continue;
                 }
 
-                const Voxel v(sp, (*space_).global2private(g),
+                const Voxel v(sp, global2coordinate(g),
                     info.radius, info.D, info.loc);
                 if (new_voxel_structure(v).second)
                 {
@@ -510,12 +510,10 @@ bool SpatiocyteWorld::is_surface_voxel(
         return false;
     }
 
-    const SpatiocyteWorld::coordinate_type
-        coord((*space_).global2private(g));
+    const SpatiocyteWorld::coordinate_type coord(global2coordinate(g));
     for (Integer i(0); i < 12; ++i)
     {
-        if (shape->is_inside(global2position((*space_).private2global(
-            (*space_).get_neighbor(coord, i)))) > 0)
+        if (shape->is_inside(coordinate2position(get_neighbor(coord, i))) > 0)
         {
             return true;
         }
@@ -531,7 +529,7 @@ Integer SpatiocyteWorld::add_neighbors(const Species& sp,
     const SpatiocyteWorld::molecule_info_type info(get_molecule_info(sp));
     for (Integer i(0); i < 12; ++i)
     {
-        const coordinate_type n((*space_).get_neighbor(center, i));
+        const coordinate_type n(get_neighbor(center, i));
         if (new_voxel(Voxel(sp, n, info.radius, info.D, info.loc)).second)
         {
             ++count;
@@ -546,7 +544,7 @@ Integer SpatiocyteWorld::add_neighbors(const Species& sp,
     // Integer count(0);
     // const SpatiocyteWorld::molecule_info_type info(get_molecule_info(sp));
     // std::vector<SpatiocyteWorld::coordinate_type> neighbors(
-    //         (*space_).get_neighbors(center));
+    //         get_neighbors(center));
     // for (std::vector<SpatiocyteWorld::coordinate_type>::iterator itr(
     //             neighbors.begin()); itr != neighbors.end(); itr++)
     // {
@@ -622,8 +620,7 @@ SpatiocyteWorld::check_neighbor(
     tmp.reserve(12);
     for (unsigned int rnd(0); rnd < 12; ++rnd)
     {
-        const coordinate_type
-            neighbor((*space_).get_neighbor(coord, rnd));
+        const coordinate_type neighbor(get_neighbor(coord, rnd));
         const MolecularTypeBase* mt(get_molecular_type(neighbor));
         const std::string
             serial(mt->is_vacant() ? "" : mt->species().serial());
@@ -642,7 +639,7 @@ SpatiocyteWorld::check_neighbor(
         tmp[rng()->uniform_int(0, tmp.size() - 1)], true);
 
     // const Integer rnd(rng()->uniform_int(0, 11));
-    // const coordinate_type neighbor((*space_).get_neighbor(coord, rnd));
+    // const coordinate_type neighbor(get_neighbor(coord, rnd));
     // bool flg = get_molecular_type(neighbor)->is_vacant(); //XXX: loc
     // return std::make_pair(neighbor, flg);
 }

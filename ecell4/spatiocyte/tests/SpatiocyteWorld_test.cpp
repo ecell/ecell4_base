@@ -163,7 +163,7 @@ BOOST_AUTO_TEST_CASE(SpatiocyteWorld_test_neighbor)
 
     const Integer3 center(
             world.col_size()/2, world.row_size()/2, world.layer_size()/2);
-    const SpatiocyteWorld::coordinate_type cc(world.global2private(center));
+    const SpatiocyteWorld::coordinate_type cc(world.global2coordinate(center));
     const Real3 cp(world.global2position(center));
 
     Species sp(std::string("TEST"));
@@ -175,14 +175,14 @@ BOOST_AUTO_TEST_CASE(SpatiocyteWorld_test_neighbor)
     std::ofstream ofs("neighbor.txt");
     ofs << "center" << std::endl;
     // ofs << "(" << cp[0] << "," << cp[1] << "," << cp[2] << ") "
-    //     << world.private2coord(cc) << std::endl;
+    //     << world.coordinate2coord(cc) << std::endl;
     ofs << "(" << cp[0] << "," << cp[1] << "," << cp[2] << ") " << cc << std::endl;
     for (std::vector<std::pair<ParticleID, Particle> >::iterator itr(
                 particles.begin()); itr != particles.end(); ++itr)
     {
         Real3 pos((*itr).second.position());
         BOOST_ASSERT(length(pos-cp) < voxel_radius*2.1);
-        const SpatiocyteWorld::coordinate_type coord(world.position2private(pos));
+        const SpatiocyteWorld::coordinate_type coord(world.position2coordinate(pos));
         //pos /= voxel_radius * 2;
         ofs << "(" << pos[0] << "," << pos[1] << "," << pos[2] << ") "
             << coord << std::endl;

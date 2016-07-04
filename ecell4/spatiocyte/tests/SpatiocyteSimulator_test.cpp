@@ -422,9 +422,9 @@ BOOST_AUTO_TEST_CASE(LattiecSimulator_test_scheduler)
     boost::shared_ptr<SpatiocyteWorld> world(
             new SpatiocyteWorld(edge_lengths, voxel_radius, rng));
 
-    SpatiocyteWorld::coordinate_type c1(world->global2private(Integer3(40,34,56))),
-          c2(world->global2private(Integer3(32,50,24))),
-          c3(world->global2private(Integer3(60,36,89)));
+    SpatiocyteWorld::coordinate_type c1(world->global2coordinate(Integer3(40,34,56))),
+          c2(world->global2coordinate(Integer3(32,50,24))),
+          c3(world->global2coordinate(Integer3(60,36,89)));
     BOOST_CHECK(world->new_voxel(sp1, c1).second);
     BOOST_CHECK(world->new_voxel(sp2, c2).second);
     BOOST_CHECK(world->new_voxel(sp3, c3).second);

@@ -1012,82 +1012,28 @@ cdef class SpatiocyteWorld:
         """
         self.thisptr.get().bind_to(Cpp_Model_from_Model(m))
 
-    def private2position(self, Integer coord):
-        """private2position(coord) -> Real3
+    def coordinate2position(self, Integer coord):
+        """coordinate2position(coord) -> Real3
 
-        Transform a private coordinate to a position.
+        Transform a coordinate to a position.
 
         """
-        cdef Cpp_Real3 pos = self.thisptr.get().private2position(coord)
+        cdef Cpp_Real3 pos = self.thisptr.get().coordinate2position(coord)
         return Real3_from_Cpp_Real3(address(pos))
 
-    # def coordinate2position(self, Integer coord):
-    #     """coordinate2position(coord) -> Real3
+    def coordinate2global(self, Integer coord):
+        """coordinate2global(coord) -> Integer3
 
-    #     Transform a coordinate to a position.
+        Transform a coordinate to a global coordinate.
 
-    #     """
-    #     cdef Cpp_Real3 pos = self.thisptr.get().coordinate2position(coord)
-    #     return Real3_from_Cpp_Real3(address(pos))
+        """
+        cdef Cpp_Integer3 g = self.thisptr.get().coordinate2global(coord)
+        return Integer3_from_Cpp_Integer3(address(g))
 
-    # def position2coordinate(self, Real3 pos):
-    #     """position2coordinate(pos) -> Integer
+    def global2coordinate(self, Integer3 coord):
+        """global2coordinate(g) -> Integer
 
-    #     Transform a position to a coordinate.
-
-    #     Parameters
-    #     ----------
-    #     pos : Real3
-    #         A position
-
-    #     Returns
-    #     -------
-    #     Integer:
-    #         A coordinate
-
-    #     """
-    #     return self.thisptr.get().position2coordinate(
-    #         deref(pos.thisptr))
-
-    # def private2coord(self, Integer coord):
-    #     """Transform a private coordinate to a coordinate."""
-    #     return self.thisptr.get().private2coord(coord)
-
-    # def coord2private(self, Integer coord):
-    #     """Transform a coordinate to a private coordinate."""
-    #     return self.thisptr.get().coord2private(coord)
-
-    # def global2coord(self, Integer3 g):
-    #     """global2coord(g) -> Integer
-
-    #     Transform a global coordinate to a coordinate.
-
-    #     Parameters
-    #     ----------
-    #     g : Integer3
-    #         A global coordinate
-
-    #     Returns
-    #     -------
-    #     Integer:
-    #         A coordinate
-
-    #     """
-    #     return self.thisptr.get().global2coord(deref(g.thisptr))
-
-    # def coord2global(self, Integer coord):
-    #     """coord2global(coord) -> Integer3
-
-    #     Transform a coordinate to a global coordinate.
-
-    #     """
-    #     cdef Cpp_Integer3 g = self.thisptr.get().coord2global(coord)
-    #     return Integer3_from_Cpp_Integer3(address(g))
-
-    def global2private(self, Integer3 coord):
-        """global2private(g) -> Integer
-
-        Transform a global coordinate to a private coordinate.
+        Transform a global coordinate to a coordinate.
 
         Parameters
         ----------
@@ -1097,19 +1043,10 @@ cdef class SpatiocyteWorld:
         Returns
         -------
         Integer:
-            A private coordinate
+            A coordinate
 
         """
-        return self.thisptr.get().global2private(deref(coord.thisptr))
-
-    def private2global(self, Integer coord):
-        """private2global(coord) -> Integer3
-
-        Transform a private coordinate to a global coordinate.
-
-        """
-        cdef Cpp_Integer3 g = self.thisptr.get().private2global(coord)
-        return Integer3_from_Cpp_Integer3(address(g))
+        return self.thisptr.get().global2coordinate(deref(coord.thisptr))
 
     def global2position(self, Integer3 g):
         """global2position(g) -> Real3
@@ -1148,6 +1085,24 @@ cdef class SpatiocyteWorld:
         """
         cdef Cpp_Integer3 g = self.thisptr.get().position2global(deref(pos.thisptr))
         return Integer3_from_Cpp_Integer3(address(g))
+
+    def position2coordinate(self, Real3 pos):
+        """position2coordinate(pos) -> Integer
+
+        Transform a position to a coordinate.
+
+        Parameters
+        ----------
+        pos : Real3
+            A position
+
+        Returns
+        -------
+        Integer:
+            A coordinate
+
+        """
+        return self.thisptr.get().position2coordinate(deref(pos.thisptr))
 
     def add_structure(self, Species sp, shape):
         """add_structure(sp, shape)

@@ -74,16 +74,6 @@ void LatticeSpaceBase::set_lattice_properties(const bool is_periodic)
     col_size_ += 2;
 }
 
-Integer3 LatticeSpaceBase::position2global(const Real3& pos) const
-{
-    const Integer col(round(pos[0] / HCP_X));
-    const Integer layer(round((pos[1] - (col % 2) * HCP_L) / HCP_Y));
-    const Integer row(round(
-        (pos[2] / voxel_radius_ - ((layer + col) % 2)) / 2));
-    const Integer3 global(col, row, layer);
-    return global;
-}
-
 LatticeSpaceVectorImpl::LatticeSpaceVectorImpl(
     const Real3& edge_lengths, const Real& voxel_radius,
     const bool is_periodic) :
@@ -230,7 +220,7 @@ LatticeSpaceVectorImpl::get_voxel(const coordinate_type& coord) const
 bool LatticeSpaceVectorImpl::update_structure(const Particle& p)
 {
     //XXX: Particle does not have a location.
-    Voxel v(p.species(), position2private(p.position()), p.radius(), p.D());
+    Voxel v(p.species(), position2coordinate(p.position()), p.radius(), p.D());
     return update_voxel(ParticleID(), v);
 }
 
@@ -547,7 +537,7 @@ LatticeSpaceVectorImpl::coordinate_type LatticeSpaceVectorImpl::get_coord(
 MolecularTypeBase* LatticeSpaceVectorImpl::get_molecular_type(
     const coordinate_type& coord)
 {
-    // return voxels_.at(coord2private(coord));
+    // return voxels_.at(coord2coordinate(coord));
     return voxels_.at(coord);
 }
 
@@ -793,7 +783,7 @@ const Particle LatticeSpaceVectorImpl::particle_at(
     const MolecularTypeBase* mt(voxels_.at(coord));
     return Particle(
         mt->species(),
-        private2position(coord),
+        coordinate2position(coord),
         mt->radius(), mt->D());
 }
 

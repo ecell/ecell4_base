@@ -295,7 +295,7 @@ MolecularTypeBase* LatticeSpaceCellListImpl::get_molecular_type(
     //     }
     // }
 
-    cell_type& cell(matrix_[coord2index(coord)]);
+    cell_type& cell(matrix_[coordinate2index(coord)]);
     if (cell.size() == 0)
     {
         return vacant_;
@@ -349,7 +349,7 @@ const MolecularTypeBase* LatticeSpaceCellListImpl::get_molecular_type(
     //     }
     // }
 
-    const cell_type& cell(matrix_[coord2index(coord)]);
+    const cell_type& cell(matrix_[coordinate2index(coord)]);
     if (cell.size() == 0)
     {
         return vacant_;
@@ -374,83 +374,83 @@ std::pair<LatticeSpaceCellListImpl::coordinate_type, bool>
         MolecularTypeBase* const& from_mt, MolecularTypeBase* const& loc,
         LatticeSpaceCellListImpl::particle_info_type& info, const Integer nrand)
 {
-    const coordinate_type private_from(info.first);
-    coordinate_type private_to(get_neighbor(private_from, nrand));
+    const coordinate_type from(info.first);
+    coordinate_type to(get_neighbor(from, nrand));
 
-    MolecularTypeBase* to_mt(get_molecular_type(private_to));
+    MolecularTypeBase* to_mt(get_molecular_type(to));
 
     if (to_mt != loc)
     {
         if (to_mt == border_)
         {
-            return std::make_pair(private_from, false);
+            return std::make_pair(from, false);
         }
         else if (to_mt != periodic_)
         {
-            return std::make_pair(private_to, false);
+            return std::make_pair(to, false);
         }
 
         // to_mt == periodic_
-        private_to = periodic_transpose(private_to);
-        to_mt = get_molecular_type(private_to);
+        to = periodic_transpose(to);
+        to_mt = get_molecular_type(to);
 
         if (to_mt != loc)
         {
-            return std::make_pair(private_to, false);
+            return std::make_pair(to, false);
         }
     }
 
-    info.first = private_to; //XXX: updating data
+    info.first = to; //XXX: updating data
 
-    to_mt->replace_voxel(private_to, private_from);
+    to_mt->replace_voxel(to, from);
 
     if (to_mt != vacant_) // (!to_mt->is_vacant())
     {
-        update_matrix(private_from, to_mt);
-        update_matrix(private_to, from_mt);
+        update_matrix(from, to_mt);
+        update_matrix(to, from_mt);
     }
     else
     {
-        update_matrix(private_from, private_to, from_mt);
+        update_matrix(from, to, from_mt);
     }
-    return std::make_pair(private_to, true);
+    return std::make_pair(to, true);
 
-    // const coordinate_type private_from(info.first);
-    // coordinate_type private_to(get_neighbor(private_from, nrand));
-    // MolecularTypeBase* to_mt(get_molecular_type(private_to));
+    // const coordinate_type from(info.first);
+    // coordinate_type to(get_neighbor(from, nrand));
+    // MolecularTypeBase* to_mt(get_molecular_type(to));
     // if (to_mt != loc)
     // {
     //     if (to_mt == border_)
     //     {
-    //         return std::make_pair(private_from, false);
+    //         return std::make_pair(from, false);
     //     }
     //     else if (to_mt != periodic_)
     //     {
-    //         return std::make_pair(private_to, false);
+    //         return std::make_pair(to, false);
     //     }
 
     //     // to_mt == periodic_
-    //     private_to = periodic_transpose(private_to);
-    //     to_mt = get_molecular_type(private_to);
+    //     to = periodic_transpose(to);
+    //     to_mt = get_molecular_type(to);
     //     if (to_mt != loc)
     //     {
-    //         return std::make_pair(private_to, false);
+    //         return std::make_pair(to, false);
     //     }
     // }
 
-    // info.first = private_to;
+    // info.first = to;
     // if (to_mt != vacant_) // (!to_mt->is_vacant())
     // {
     //     to_mt->replace_voxel(
-    //         private_to, particle_info_type(private_from, ParticleID()));
-    //     update_matrix(private_from, to_mt);
-    //     update_matrix(private_to, from_mt);
+    //         to, particle_info_type(from, ParticleID()));
+    //     update_matrix(from, to_mt);
+    //     update_matrix(to, from_mt);
     // }
     // else
     // {
-    //     update_matrix(private_from, private_to, from_mt);
+    //     update_matrix(from, to, from_mt);
     // }
-    // return std::make_pair(private_to, true);
+    // return std::make_pair(to, true);
 }
 
 bool LatticeSpaceCellListImpl::make_structure_type(
