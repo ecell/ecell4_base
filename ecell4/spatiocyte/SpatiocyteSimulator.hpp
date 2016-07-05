@@ -328,7 +328,7 @@ protected:
     } attempt_reaction_result_type;
 
     std::pair<attempt_reaction_result_type, reaction_type> attempt_reaction_(
-        const SpatiocyteWorld::coordinate_id_pair_type info,
+        const SpatiocyteWorld::coordinate_id_pair_type& info,
         SpatiocyteWorld::coordinate_type to_coord, const Real& alpha);
 
     std::pair<bool, reaction_type> apply_zeroth_order_reaction_(
@@ -338,49 +338,49 @@ protected:
         const ReactionRule& reaction_rule,
         const reaction_info_type::particle_id_pair_type& p);
     std::pair<bool, reaction_type> apply_a2b(
-        const SpatiocyteWorld::coordinate_id_pair_type pinfo,
-        const Species& product_species,
-        const ReactionRule& reaction_rule);
+        const ReactionRule& reaction_rule,
+        const reaction_info_type::particle_id_pair_type& p,
+        const Species& product_species);
     std::pair<bool, reaction_type> apply_a2bc(
-        const SpatiocyteWorld::coordinate_id_pair_type pinfo,
+        const ReactionRule& reaction_rule,
+        const reaction_info_type::particle_id_pair_type& p,
         const Species& product_species0,
-        const Species& product_species1,
-        const ReactionRule& reaction_rule);
+        const Species& product_species1);
 
     std::pair<bool, reaction_type> apply_second_order_reaction_(
         const ReactionRule& reaction_rule,
         const reaction_info_type::particle_id_pair_type& p0,
         const reaction_info_type::particle_id_pair_type& p1);
     std::pair<bool, reaction_type> apply_vanishment(
-        const SpatiocyteWorld::coordinate_id_pair_type from_info,
-        const SpatiocyteWorld::coordinate_id_pair_type to_info,
-        const ReactionRule& reaction_rule);
+        const ReactionRule& reaction_rule,
+        const reaction_info_type::particle_id_pair_type& p0,
+        const reaction_info_type::particle_id_pair_type& p1);
     std::pair<bool, reaction_type> apply_ab2c(
-        const SpatiocyteWorld::coordinate_id_pair_type from_info,
-        const SpatiocyteWorld::coordinate_id_pair_type to_info,
-        const Species& product_species,
-        const ReactionRule& reaction_rule);
+        const ReactionRule& reaction_rule,
+        const reaction_info_type::particle_id_pair_type& p0,
+        const reaction_info_type::particle_id_pair_type& p1,
+        const Species& product_species);
     std::pair<bool, reaction_type> apply_ab2cd(
-        const SpatiocyteWorld::coordinate_id_pair_type from_info,
-        const SpatiocyteWorld::coordinate_id_pair_type to_info,
+        const ReactionRule& reaction_rule,
+        const reaction_info_type::particle_id_pair_type& p0,
+        const reaction_info_type::particle_id_pair_type& p1,
         const Species& product_species0,
-        const Species& product_species1,
-        const ReactionRule& reaction_rule);
+        const Species& product_species1);
     std::pair<bool, reaction_type> apply_ab2cd_in_order(
-        const SpatiocyteWorld::coordinate_id_pair_type from_info,
-        const SpatiocyteWorld::coordinate_id_pair_type to_info,
-        const SpatiocyteWorld::coordinate_type coord0,
+        const ReactionRule& reaction_rule,
+        const reaction_info_type::particle_id_pair_type& p0,
+        const reaction_info_type::particle_id_pair_type& p1,
         const Species& product_species0,
-        const SpatiocyteWorld::coordinate_type coord1,
         const Species& product_species1,
-        const ReactionRule& reaction_rule);
+        const SpatiocyteWorld::coordinate_type coord0,
+        const SpatiocyteWorld::coordinate_type coord1);
 
     void register_product_species(const Species& product_species);
     // void register_reactant_species(
     //     const SpatiocyteWorld::coordinate_id_pair_type pinfo, reaction_type& reaction) const;
 
-    reaction_info_type::particle_id_pair_type const create_particle_id_pair(
-        const SpatiocyteWorld::coordinate_id_pair_type pinfo) const;
+    // reaction_info_type::particle_id_pair_type const create_particle_id_pair(
+    //     const SpatiocyteWorld::coordinate_id_pair_type pinfo) const;
 
     void step_();
     void register_events(const Species& species);
