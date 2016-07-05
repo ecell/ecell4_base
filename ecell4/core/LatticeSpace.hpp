@@ -525,7 +525,6 @@ public:
     typedef base_type::coordinate_id_pair_type coordinate_id_pair_type;
     typedef base_type::coordinate_type coordinate_type;
 
-    // typedef std::map<Species, boost::shared_ptr<MolecularType> > spmap;
     typedef std::vector<VoxelPool*> voxel_container;
 
 protected:
@@ -679,8 +678,6 @@ public:
 
 protected:
 
-    // std::pair<spmap::iterator, bool> __get_molecular_type(const Voxel& v);
-    // std::pair<molecular_type_map_type::iterator, bool> __get_molecular_type(const Voxel& v);
     VoxelPool* get_molecular_type(const Voxel& v);
 
     void initialize_voxels(const bool is_periodic);
@@ -698,7 +695,6 @@ protected:
 
     bool is_periodic_;
 
-    // spmap spmap_;
     voxel_pool_map_type voxel_pools_;
     molecular_type_map_type molecular_types_;
     voxel_container voxels_;

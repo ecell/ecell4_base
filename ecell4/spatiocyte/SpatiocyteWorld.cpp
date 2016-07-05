@@ -632,7 +632,6 @@ SpatiocyteWorld::check_neighbor(
     for (unsigned int rnd(0); rnd < 12; ++rnd)
     {
         const coordinate_type neighbor(get_neighbor(coord, rnd));
-        // const VoxelPool* mt(get_molecular_type(neighbor));
         const VoxelPool* mt(find_molecular_type(neighbor));
         const std::string
             serial(mt->is_vacant() ? "" : mt->species().serial());
@@ -652,7 +651,7 @@ SpatiocyteWorld::check_neighbor(
 
     // const Integer rnd(rng()->uniform_int(0, 11));
     // const coordinate_type neighbor(get_neighbor(coord, rnd));
-    // bool flg = get_molecular_type(neighbor)->is_vacant(); //XXX: loc
+    // bool flg = find_molecular_type(neighbor)->is_vacant(); //XXX: loc
     // return std::make_pair(neighbor, flg);
 }
 

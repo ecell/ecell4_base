@@ -28,7 +28,6 @@ public:
     typedef base_type::coordinate_id_pair_type coordinate_id_pair_type;
     typedef base_type::coordinate_type coordinate_type;
 
-    // typedef std::map<Species, boost::shared_ptr<MolecularType> > spmap;
     typedef std::vector<std::pair<VoxelPool*, coordinate_type> >
         cell_type;
     typedef std::vector<cell_type> matrix_type;
@@ -213,15 +212,6 @@ public:
             keys.push_back((*itr).first);
         }
         return keys;
-
-        // std::vector<Species> keys;
-        // keys.reserve(spmap_.size());
-        // for (spmap::const_iterator i(spmap_.begin());
-        //     i != spmap_.end(); ++i)
-        // {
-        //     keys.push_back((*i).first);
-        // }
-        // return keys;
     }
 
     Integer count_voxels(
@@ -261,14 +251,6 @@ public:
         }
 
         return 0;
-
-        // spmap::const_iterator itr(spmap_.find(sp));
-        // if (itr == spmap_.end())
-        // {
-        //     return 0;
-        // }
-        // const boost::shared_ptr<MolecularType>& mt((*itr).second);
-        // return mt->size();
     }
 
     virtual Integer num_voxels(const Species& sp) const
@@ -296,19 +278,6 @@ public:
             }
         }
         return count;
-
-        // Integer count(0);
-        // SpeciesExpressionMatcher sexp(sp);
-        // for (spmap::const_iterator itr(spmap_.begin());
-        //         itr != spmap_.end(); ++itr)
-        // {
-        //     if (sexp.match((*itr).first))
-        //     {
-        //         const boost::shared_ptr<MolecularType>& mt((*itr).second);
-        //         count += mt->size();
-        //     }
-        // }
-        // return count;
     }
 
     virtual Integer num_voxels() const
@@ -329,14 +298,6 @@ public:
             count += mt->size();
         }
         return count;
-
-        // Integer retval(0);
-        // for (spmap::const_iterator itr(spmap_.begin());
-        //     itr != spmap_.end(); ++itr)
-        // {
-        //     retval += (*itr).second->size();
-        // }
-        // return retval;
     }
 
     virtual bool has_voxel(const ParticleID& pid) const
@@ -351,25 +312,6 @@ public:
             }
         }
         return false;
-
-        // for (spmap::const_iterator itr(spmap_.begin());
-        //     itr != spmap_.end(); ++itr)
-        // {
-        //     const boost::shared_ptr<MolecularType>& mt((*itr).second);
-        //     if (mt->is_vacant())
-        //     {
-        //         return false;
-        //     }
-        //     for (MolecularType::const_iterator vitr(mt->begin());
-        //         vitr != mt->end(); ++vitr)
-        //     {
-        //         if ((*vitr).pid == pid)
-        //         {
-        //             return true;
-        //         }
-        //     }
-        // }
-        // return false;
     }
 
     virtual std::vector<std::pair<ParticleID, Voxel> > list_voxels() const
@@ -419,24 +361,6 @@ public:
         //     }
         // }
         return retval;
-
-        // std::vector<std::pair<ParticleID, Voxel> > retval;
-
-        // for (spmap::const_iterator itr(spmap_.begin()); itr != spmap_.end(); ++itr)
-        // {
-        //     const boost::shared_ptr<MolecularType>& mt((*itr).second);
-        //     const std::string loc((mt->location()->is_vacant())
-        //         ? "" : mt->location()->species().serial());
-        //     const Species& sp(mt->species());
-        //     for (MolecularType::const_iterator itr(mt->begin());
-        //         itr != mt->end(); ++itr)
-        //     {
-        //         retval.push_back(std::make_pair(
-        //             (*itr).pid,
-        //             Voxel(sp, (*itr).coordinate, mt->radius(), mt->D(), loc)));
-        //     }
-        // }
-        // return retval;
     }
 
     virtual std::vector<std::pair<ParticleID, Voxel> >
@@ -493,29 +417,6 @@ public:
         }
 
         return retval;
-
-        // SpeciesExpressionMatcher sexp(sp);
-        // std::vector<std::pair<ParticleID, Voxel> > retval;
-        // for (spmap::const_iterator itr(spmap_.begin());
-        //         itr != spmap_.end(); ++itr)
-        // {
-        //     if (!sexp.match((*itr).first))
-        //     {
-        //         continue;
-        //     }
-
-        //     const boost::shared_ptr<MolecularType>& mt((*itr).second);
-        //     const std::string loc((mt->location()->is_vacant())
-        //         ? "" : mt->location()->species().serial());
-        //     for (MolecularType::const_iterator i(mt->begin());
-        //         i != mt->end(); ++i)
-        //     {
-        //         retval.push_back(std::make_pair(
-        //             (*i).pid,
-        //             Voxel(sp, (*i).coordinate, mt->radius(), mt->D(), loc)));
-        //     }
-        // }
-        // return retval;
     }
 
     virtual std::vector<std::pair<ParticleID, Voxel> >
@@ -566,25 +467,6 @@ public:
             }
         }
         return retval; // an empty vector
-
-        // std::vector<std::pair<ParticleID, Voxel> > retval;
-        // spmap::const_iterator itr(spmap_.find(sp));
-        // if (itr == spmap_.end())
-        // {
-        //     return retval;
-        // }
-
-        // const boost::shared_ptr<MolecularType>& mt((*itr).second);
-        // const std::string loc((mt->location()->is_vacant())
-        //     ? "" : mt->location()->species().serial());
-        // for (MolecularType::const_iterator i(mt->begin());
-        //     i != mt->end(); ++i)
-        // {
-        //     retval.push_back(std::make_pair(
-        //         (*i).pid,
-        //         Voxel(sp, (*i).coordinate, mt->radius(), mt->D(), loc)));
-        // }
-        // return retval;
     }
 
     /**
@@ -605,24 +487,6 @@ public:
 
         new_mt->add_voxel_without_checking(src_mt->pop(coord));
         update_matrix(coord, new_mt);
-
-        // const coordinate_type coord(v.coordinate());
-        // VoxelPool* src_mt(get_molecular_type(coord));
-        // if (src_mt->is_vacant())
-        // {
-        //     return false;
-        // }
-
-        // VoxelPool* new_mt(get_molecular_type(v));
-        // if (new_mt->is_vacant())
-        // {
-        //     // ???
-        //     return false;
-        // }
-
-        // new_mt->add_voxel_without_checking(src_mt->pop(coord));
-        // update_matrix(coord, new_mt);
-        // return true;
     }
 
     virtual bool update_voxel(const ParticleID& pid, const Voxel& v);
@@ -645,7 +509,6 @@ public:
 
     virtual std::pair<ParticleID, Voxel> get_voxel(const coordinate_type& coord) const
     {
-        // const VoxelPool* mt(get_molecular_type(coord));
         const VoxelPool* mt(find_molecular_type(coord));
         const std::string loc((mt->location()->is_vacant())
             ? "" : mt->location()->species().serial());
@@ -677,7 +540,6 @@ public:
 
     virtual bool remove_voxel(const coordinate_type& coord)
     {
-        // VoxelPool* mt(get_molecular_type(coord));
         VoxelPool* mt(find_molecular_type(coord));
         if (mt->is_vacant())
         {
@@ -703,14 +565,12 @@ public:
             return false;
         }
 
-        // VoxelPool* src_mt(get_molecular_type(src));
         VoxelPool* src_mt(find_molecular_type(src));
         if (src_mt->is_vacant())
         {
             return true;
         }
 
-        // VoxelPool* dest_mt(get_molecular_type(tmp_dest));
         VoxelPool* dest_mt(find_molecular_type(tmp_dest));
         if (dest_mt == border_)
         {
@@ -719,7 +579,6 @@ public:
         else if (dest_mt == periodic_)
         {
             tmp_dest = periodic_transpose(tmp_dest);
-            // dest_mt = get_molecular_type(tmp_dest);
             dest_mt = find_molecular_type(tmp_dest);
         }
 
@@ -744,7 +603,6 @@ public:
 
     virtual const Particle particle_at(const coordinate_type& coord) const
     {
-        // const VoxelPool* mt(get_molecular_type(coord));
         const VoxelPool* mt(find_molecular_type(coord));
         return Particle(
             mt->species(), coordinate2position(coord), mt->radius(), mt->D());
@@ -769,13 +627,6 @@ public:
         }
 
         throw NotFound("MolecularType not found.");
-
-        // spmap::iterator itr(spmap_.find(sp));
-        // if (itr == spmap_.end())
-        // {
-        //     throw NotFound("MolecularType not found.");
-        // }
-        // return (*itr).second.get(); //XXX: Raw pointer was thrown.
     }
 
     virtual const VoxelPool* find_molecular_type(const Species& sp) const
@@ -797,25 +648,14 @@ public:
         }
 
         throw NotFound("MolecularType not found.");
-
-        // spmap::const_iterator itr(spmap_.find(sp));
-        // if (itr == spmap_.end())
-        // {
-        //     throw NotFound("MolecularType not found.");
-        // }
-        // return (*itr).second.get(); //XXX: Raw pointer was thrown.
     }
 
     VoxelPool* find_molecular_type(const coordinate_type& coord) const;
-    // VoxelPool* get_molecular_type(const coordinate_type& coord);
-    // const VoxelPool* get_molecular_type(const coordinate_type& coord) const;
 
     virtual bool on_structure(const Voxel& v)
     {
         return (find_molecular_type(v.coordinate())
-            != get_molecular_type(v)->location()); //XXX: == ???
-        // return (get_molecular_type(v.coordinate())
-        //     != get_molecular_type(v)->location()); //XXX: == ???
+                != get_molecular_type(v)->location()); //XXX: == ???
     }
 
     coordinate_type get_neighbor_boundary(
@@ -853,13 +693,10 @@ public:
     {
         return (voxel_pools_.find(sp) != voxel_pools_.end()
                 || molecular_types_.find(sp) != molecular_types_.end());
-        // return spmap_.find(sp) != spmap_.end();
     }
 
 protected:
 
-    // std::pair<spmap::iterator, bool> __get_molecular_type(const Voxel& v);
-    // std::pair<molecular_type_map_type::iterator, bool> __get_molecular_type(const Voxel& v);
     VoxelPool* get_molecular_type(const Voxel& v);
 
     std::pair<VoxelPool*, coordinate_type>
@@ -876,7 +713,6 @@ protected:
 
     bool is_periodic_;
 
-    // spmap spmap_;
     voxel_pool_map_type voxel_pools_;
     molecular_type_map_type molecular_types_;
 
