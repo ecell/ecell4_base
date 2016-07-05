@@ -260,10 +260,9 @@ public:
     std::vector<Species> list_structure_species() const;
     // std::vector<coordinate_type> list_coords(const Species& sp) const;
 
-    VoxelPool* find_molecular_type(const Species& species);
-    const VoxelPool* find_molecular_type(const Species& species) const;
-    // VoxelPool* get_molecular_type(const coordinate_type& coord);
-    VoxelPool* find_molecular_type(const coordinate_type& coord) const;
+    VoxelPool* find_voxel_pool(const Species& species);
+    const VoxelPool* find_voxel_pool(const Species& species) const;
+    VoxelPool* find_voxel_pool(const coordinate_type& coord) const;
 
     std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel(const Voxel& v);
     std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel(const Species& sp, const coordinate_type& coord);
@@ -457,13 +456,13 @@ public:
 
     std::pair<ParticleID, Voxel> choice(const Species& sp)
     {
-        const MoleculePool* mt(dynamic_cast<const MoleculePool*>(find_molecular_type(sp)));
+        const MoleculePool* mt(dynamic_cast<const MoleculePool*>(find_voxel_pool(sp)));
         if (!mt)
         {
             throw NotSupported(
                 "choice for a Species with no voxel is not supporeted.");
         }
-        // VoxelPool* mt(find_molecular_type(sp));
+        // VoxelPool* mt(find_voxel_pool(sp));
         // if (!mt->with_voxels())
         // {
         //     throw NotSupported(

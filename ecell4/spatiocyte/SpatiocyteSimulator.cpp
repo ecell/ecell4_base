@@ -72,7 +72,7 @@ void SpatiocyteSimulator::update_alpha_map()
 
 void SpatiocyteSimulator::register_events(const Species& sp)
 {
-    if (world_->find_molecular_type(sp)->with_voxels())
+    if (world_->find_voxel_pool(sp)->with_voxels())
     {
         //TODO: Call steps only if sp is assigned not to StructureType.
         const boost::shared_ptr<EventScheduler::Event> step_event(
@@ -256,7 +256,7 @@ Real SpatiocyteSimulator::calculate_alpha(const ReactionRule& rule) const
     for (int i(0); i < 2; ++i) {
         try
         {
-            mt[i] = world_->find_molecular_type(species[i]);
+            mt[i] = world_->find_voxel_pool(species[i]);
         }
         catch(NotFound e)
         {
@@ -264,7 +264,7 @@ Real SpatiocyteSimulator::calculate_alpha(const ReactionRule& rule) const
             if (info[i].loc != "") {
                 try
                 {
-                    location = world_->find_molecular_type(Species(info[i].loc));
+                    location = world_->find_voxel_pool(Species(info[i].loc));
                 }
                 catch(NotFound e)
                 {
@@ -288,9 +288,9 @@ std::pair<SpatiocyteSimulator::attempt_reaction_result_type, SpatiocyteSimulator
     const Real& alpha)
 {
     const VoxelPool* from_mt(
-        world_->find_molecular_type(info.coordinate));
+        world_->find_voxel_pool(info.coordinate));
     const VoxelPool* to_mt(
-        world_->find_molecular_type(to_coord));
+        world_->find_voxel_pool(to_coord));
 
     if (to_mt->is_vacant())
     {
@@ -874,7 +874,7 @@ void SpatiocyteSimulator::register_product_species(const Species& product_specie
 // void SpatiocyteSimulator::register_reactant_species(
 //         const SpatiocyteWorld::coordinate_id_pair_type pinfo, reaction_type& reaction) const
 // {
-//     const VoxelPool* mtype(world_->find_molecular_type(pinfo.first));
+//     const VoxelPool* mtype(world_->find_voxel_pool(pinfo.first));
 //     const std::string location(
 //             mtype->location()->is_vacant() ? "" : mtype->location()->species().serial());
 //     reaction.reactants.push_back(
@@ -954,12 +954,12 @@ void SpatiocyteSimulator::walk(const Species& species, const Real& alpha)
 
     const boost::shared_ptr<RandomNumberGenerator>& rng(world_->rng());
 
-    const MoleculePool* mtype(dynamic_cast<const MoleculePool*>(world_->find_molecular_type(species)));
+    const MoleculePool* mtype(dynamic_cast<const MoleculePool*>(world_->find_voxel_pool(species)));
     if (!mtype)
     {
         throw NotSupported("MolecularPool must be with voxels.");
     }
-    // const VoxelPool* mtype(world_->find_molecular_type(species));
+    // const VoxelPool* mtype(world_->find_voxel_pool(species));
     // if (!mtype->with_voxels())
     // {
     //     throw NotSupported("MolecularType must be with voxels.");
@@ -986,7 +986,7 @@ void SpatiocyteSimulator::walk_in_space_(const MoleculePool* mtype, const Real& 
     {
         const Integer rnd(rng->uniform_int(0, 11));
         const SpatiocyteWorld::coordinate_id_pair_type& info(*itr);
-        if (world_->find_molecular_type(info.coordinate) != mtype)
+        if (world_->find_voxel_pool(info.coordinate) != mtype)
         {
             // should skip if a voxel is not the target species.
             // when reaction has occured before, a voxel can be changed.
@@ -1019,7 +1019,7 @@ void SpatiocyteSimulator::walk_on_surface_(const MoleculePool* mtype, const Real
          itr != voxels.end(); ++itr)
     {
         const SpatiocyteWorld::coordinate_id_pair_type& info(*itr);
-        if (world_->find_molecular_type(info.coordinate) != mtype)
+        if (world_->find_voxel_pool(info.coordinate) != mtype)
         {
             // should skip if a voxel is not the target species.
             // when reaction has occured before, a voxel can be changed.
@@ -1032,7 +1032,7 @@ void SpatiocyteSimulator::walk_on_surface_(const MoleculePool* mtype, const Real
         {
             const SpatiocyteWorld::coordinate_type neighbor(
                     world_->get_neighbor_boundary(info.coordinate, *itr));
-            const VoxelPool* target(world_->find_molecular_type(neighbor));
+            const VoxelPool* target(world_->find_voxel_pool(neighbor));
 
             if (target->get_dimension() > mtype->get_dimension())
             {

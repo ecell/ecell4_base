@@ -157,9 +157,9 @@ public:
     virtual bool can_move(const coordinate_type& src, const coordinate_type& dest) const;
     virtual const Particle particle_at(const coordinate_type& coord) const = 0;
 
-    virtual VoxelPool* find_molecular_type(const Species& sp) = 0;
-    virtual const VoxelPool* find_molecular_type(const Species& sp) const = 0;
-    virtual VoxelPool* find_molecular_type(const coordinate_type& coord) const = 0;
+    virtual VoxelPool* find_voxel_pool(const Species& sp) = 0;
+    virtual const VoxelPool* find_voxel_pool(const Species& sp) const = 0;
+    virtual VoxelPool* find_voxel_pool(const coordinate_type& coord) const = 0;
     virtual bool make_structure_type(const Species& sp,
         Shape::dimension_kind dimension, const std::string loc);
     virtual bool make_interface_type(const Species& sp,
@@ -532,11 +532,11 @@ protected:
     typedef utils::get_mapper_mf<
         Species, boost::shared_ptr<VoxelPool> >::type voxel_pool_map_type;
     typedef utils::get_mapper_mf<
-        Species, boost::shared_ptr<MoleculePool> >::type molecular_type_map_type;
+        Species, boost::shared_ptr<MoleculePool> >::type molecule_pool_map_type;
     // typedef std::map<
     //     Species, boost::shared_ptr<VoxelPool> > voxel_pool_map_type;
     // typedef std::map<
-    //     Species, boost::shared_ptr<MoleculePool> > molecular_type_map_type;
+    //     Species, boost::shared_ptr<MoleculePool> > molecule_pool_map_type;
 
 public:
 
@@ -603,10 +603,10 @@ public:
     const Species& find_species(std::string name) const;
     std::vector<coordinate_type> list_coords(const Species& sp) const;
     std::vector<coordinate_type> list_coords_exact(const Species& sp) const;
-    virtual VoxelPool* find_molecular_type(const Species& sp);
-    virtual const VoxelPool* find_molecular_type(const Species& sp) const;
-    // VoxelPool* find_molecular_type(const std::string name);
-    virtual VoxelPool* find_molecular_type(const coordinate_type& coord) const;
+    virtual VoxelPool* find_voxel_pool(const Species& sp);
+    virtual const VoxelPool* find_voxel_pool(const Species& sp) const;
+    // VoxelPool* find_voxel_pool(const std::string name);
+    virtual VoxelPool* find_voxel_pool(const coordinate_type& coord) const;
     // bool update_molecule(coordinate_type coord, const Species& species);
     // bool add_molecule(const Species& sp, coordinate_type coord, const ParticleID& pid);
     virtual bool move(
@@ -678,7 +678,7 @@ public:
 
 protected:
 
-    VoxelPool* get_molecular_type(const Voxel& v);
+    VoxelPool* get_voxel_pool(const Voxel& v);
 
     void initialize_voxels(const bool is_periodic);
 
@@ -696,7 +696,7 @@ protected:
     bool is_periodic_;
 
     voxel_pool_map_type voxel_pools_;
-    molecular_type_map_type molecular_types_;
+    molecule_pool_map_type molecule_pools_;
     voxel_container voxels_;
 
     VoxelPool* vacant_;

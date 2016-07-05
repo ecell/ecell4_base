@@ -106,7 +106,7 @@ protected:
                 minfo(sim_->world_->get_molecule_info(species));
             const Real R(minfo.radius);
             const Real D(minfo.D);
-            const VoxelPool* mtype(sim_->world_->find_molecular_type(species));
+            const VoxelPool* mtype(sim_->world_->find_voxel_pool(species));
             // const Real R(sim_->world_->voxel_radius());
             // Real D = boost::lexical_cast<Real>(species.get_attribute("D"));
             if (D <= 0)
@@ -390,14 +390,14 @@ protected:
     const std::string get_serial(
         const SpatiocyteWorld::coordinate_type coord) const
     {
-        const VoxelPool* mtype(world_->find_molecular_type(coord));
+        const VoxelPool* mtype(world_->find_voxel_pool(coord));
         return mtype->is_vacant() ? "" : mtype->species().serial();
     }
 
     const std::string get_location(
         const SpatiocyteWorld::coordinate_type coord) const
     {
-        const VoxelPool* mtype(world_->find_molecular_type(coord));
+        const VoxelPool* mtype(world_->find_voxel_pool(coord));
         if (mtype->is_vacant())
         {
             return "";

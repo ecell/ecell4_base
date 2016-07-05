@@ -73,7 +73,7 @@ struct LatticeSpaceHDF5Traits
         return voxel_comp_type;
     }
 
-    static void save_molecular_type(const VoxelPool* mtb,
+    static void save_voxel_pool(const VoxelPool* mtb,
             std::vector<std::pair<ParticleID, Voxel> > voxels, H5::Group* group)
     {
         const Species species(mtb->species());
@@ -117,7 +117,7 @@ struct LatticeSpaceHDF5Traits
     }
 
     template<typename Tspace_>
-    static void save_molecular_type_recursively(const Species& location,
+    static void save_voxel_pool_recursively(const Species& location,
             std::multimap<Species, const VoxelPool*>& location_map,
             Tspace_& space, H5::Group* root)
     {
@@ -126,8 +126,8 @@ struct LatticeSpaceHDF5Traits
         {
             const VoxelPool* mtb((*itr).second);
             const Species species(mtb->species());
-            save_molecular_type(mtb, space.list_voxels_exact(species), root);
-            save_molecular_type_recursively(species, location_map, space, root);
+            save_voxel_pool(mtb, space.list_voxels_exact(species), root);
+            save_voxel_pool_recursively(species, location_map, space, root);
             location_map.erase(itr);
         }
     }
@@ -159,11 +159,11 @@ void save_lattice_space(const Tspace_& space, H5::Group* root)
     for (std::vector<Species>::const_iterator itr(species.begin());
             itr != species.end(); ++itr)
     {
-        const VoxelPool *mtb(space.find_molecular_type(*itr));
+        const VoxelPool *mtb(space.find_voxel_pool(*itr));
         Species location(mtb->location()->species());
         location_map.insert(std::make_pair(location, mtb));
     }
-    traits_type::save_molecular_type_recursively(VacantType::getInstance().species(),
+    traits_type::save_voxel_pool_recursively(VacantType::getInstance().species(),
             location_map, space, spgroup.get());
 
     const hsize_t dims[] = {3};

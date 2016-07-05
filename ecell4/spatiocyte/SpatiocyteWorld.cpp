@@ -211,7 +211,7 @@ std::vector<Species> SpatiocyteWorld::list_non_structure_species() const
     for (std::vector<Species>::const_iterator itr(species.begin());
             itr != species.end(); ++itr)
     {
-        if (!find_molecular_type(*itr)->is_structure())
+        if (!find_voxel_pool(*itr)->is_structure())
             retval.push_back(*itr);
     }
     return retval;
@@ -224,7 +224,7 @@ std::vector<Species> SpatiocyteWorld::list_structure_species() const
     for (std::vector<Species>::const_iterator itr(species.begin());
             itr != species.end(); ++itr)
     {
-        if (find_molecular_type(*itr)->is_structure())
+        if (find_voxel_pool(*itr)->is_structure())
             retval.push_back(*itr);
     }
     return retval;
@@ -247,19 +247,19 @@ std::vector<std::pair<ParticleID, Voxel> >
     return (*space_).list_voxels_exact(sp);
 }
 
-VoxelPool* SpatiocyteWorld::find_molecular_type(const Species& species)
+VoxelPool* SpatiocyteWorld::find_voxel_pool(const Species& species)
 {
-    return (*space_).find_molecular_type(species);
+    return (*space_).find_voxel_pool(species);
 }
 
-const VoxelPool* SpatiocyteWorld::find_molecular_type(const Species& species) const
+const VoxelPool* SpatiocyteWorld::find_voxel_pool(const Species& species) const
 {
-    return (*space_).find_molecular_type(species);
+    return (*space_).find_voxel_pool(species);
 }
 
-VoxelPool* SpatiocyteWorld::find_molecular_type(const coordinate_type& coord) const
+VoxelPool* SpatiocyteWorld::find_voxel_pool(const coordinate_type& coord) const
 {
-    return (*space_).find_molecular_type(coord);
+    return (*space_).find_voxel_pool(coord);
 }
 
 std::pair<std::pair<ParticleID, Voxel>, bool>
@@ -563,7 +563,7 @@ void SpatiocyteWorld::remove_molecules(const Species& sp, const Integer& num)
         throw std::invalid_argument("The number of molecules must be positive.");
     }
 
-    const MoleculePool* mtype(dynamic_cast<const MoleculePool*>(find_molecular_type(sp)));
+    const MoleculePool* mtype(dynamic_cast<const MoleculePool*>(find_voxel_pool(sp)));
     if (!mtype)
     {
         throw NotSupported(
@@ -575,7 +575,7 @@ void SpatiocyteWorld::remove_molecules(const Species& sp, const Integer& num)
             "The number of molecules cannot be negative.");
     }
 
-    // VoxelPool* mtype(find_molecular_type(sp));
+    // VoxelPool* mtype(find_voxel_pool(sp));
     // if (!mtype->with_voxels())
     // {
     //     throw NotSupported(
@@ -632,7 +632,7 @@ SpatiocyteWorld::check_neighbor(
     for (unsigned int rnd(0); rnd < 12; ++rnd)
     {
         const coordinate_type neighbor(get_neighbor(coord, rnd));
-        const VoxelPool* mt(find_molecular_type(neighbor));
+        const VoxelPool* mt(find_voxel_pool(neighbor));
         const std::string
             serial(mt->is_vacant() ? "" : mt->species().serial());
         if (serial == loc)
@@ -651,7 +651,7 @@ SpatiocyteWorld::check_neighbor(
 
     // const Integer rnd(rng()->uniform_int(0, 11));
     // const coordinate_type neighbor(get_neighbor(coord, rnd));
-    // bool flg = find_molecular_type(neighbor)->is_vacant(); //XXX: loc
+    // bool flg = find_voxel_pool(neighbor)->is_vacant(); //XXX: loc
     // return std::make_pair(neighbor, flg);
 }
 

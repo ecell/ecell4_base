@@ -184,11 +184,11 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_add_remove_molecule)
         pid, Voxel(sp, coord, radius, D)));
     BOOST_CHECK_EQUAL(space.num_particles(sp), 1);
 
-    const VoxelPool* mt(space.find_molecular_type(coord));
+    const VoxelPool* mt(space.find_voxel_pool(coord));
     BOOST_CHECK(!mt->is_vacant());
 
     BOOST_CHECK(space.remove_voxel(coord));
-    const VoxelPool* vacant(space.find_molecular_type(coord));
+    const VoxelPool* vacant(space.find_voxel_pool(coord));
     BOOST_CHECK(vacant->is_vacant());
 }
 
@@ -202,7 +202,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_move)
     BOOST_CHECK(space.update_voxel(
         pid, Voxel(sp, coord, radius, D)));
 
-    VoxelPool* from_mt(space.find_molecular_type(coord));
+    VoxelPool* from_mt(space.find_voxel_pool(coord));
     BOOST_CHECK(!from_mt->is_vacant());
 
     const Integer3 global1(3,5,5);
@@ -211,7 +211,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_move)
 
     BOOST_CHECK(space.move(coord, to_coord));
 
-    VoxelPool* mt(space.find_molecular_type(to_coord));
+    VoxelPool* mt(space.find_voxel_pool(to_coord));
     BOOST_CHECK(!mt->is_vacant());
 
     BOOST_CHECK(space.update_voxel(
@@ -237,7 +237,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_update_molecule)
     BOOST_CHECK(space.update_voxel(
         pid, Voxel(product, coord, radius, D)));
 
-    const VoxelPool* mt(space.find_molecular_type(coord));
+    const VoxelPool* mt(space.find_voxel_pool(coord));
     BOOST_ASSERT(mt->species() == product);
 }
 
@@ -580,8 +580,8 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_save_and_load)
     {
         const Species species((*itr).serial());
 
-        const VoxelPool *vp1(space.find_molecular_type(species));
-        const VoxelPool *vp2(space2.find_molecular_type(species));
+        const VoxelPool *vp1(space.find_voxel_pool(species));
+        const VoxelPool *vp2(space2.find_voxel_pool(species));
 
         BOOST_CHECK_EQUAL(vp1->radius(), vp2->radius());
         BOOST_CHECK_EQUAL(vp1->D(), vp2->D());
