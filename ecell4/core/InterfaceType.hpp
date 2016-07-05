@@ -15,9 +15,6 @@ public:
     typedef VoxelPool base_type;
     typedef base_type::coordinate_id_pair_type coordinate_id_pair_type;
     typedef base_type::coordinate_type coordinate_type;
-    typedef base_type::container_type container_type;
-    typedef base_type::iterator iterator;
-    typedef base_type::const_iterator const_iterator;
     typedef base_type::voxel_type_type voxel_type_type;
 
 public:
@@ -54,11 +51,6 @@ public:
 private:
 
     const Shape::dimension_kind dimension_;
-
-    // const Species species_;
-    // VoxelPool* location_;
-    // Real radius_, D_;
-    // container_type voxels_;  // typedef std::vector<coordinate_id_pair_type> container_type;
 };
 
 } // ecell4

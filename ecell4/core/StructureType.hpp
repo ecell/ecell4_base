@@ -15,9 +15,6 @@ public:
     typedef VoxelPool base_type;
     typedef base_type::coordinate_id_pair_type coordinate_id_pair_type;
     typedef base_type::coordinate_type coordinate_type;
-    typedef base_type::container_type container_type;
-    typedef base_type::iterator iterator;
-    typedef base_type::const_iterator const_iterator;
     typedef base_type::voxel_type_type voxel_type_type;
 
 public:

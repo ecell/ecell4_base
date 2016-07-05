@@ -445,7 +445,7 @@ BOOST_AUTO_TEST_CASE(LattiecSimulator_test_scheduler)
     BOOST_ASSERT(mt2);
     BOOST_ASSERT(mt3);
 
-    VoxelPool::const_iterator
+    MoleculePool::const_iterator
         itr1(mt1->begin()),
         itr2(mt2->begin()),
         itr3(mt3->begin());

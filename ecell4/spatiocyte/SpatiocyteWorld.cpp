@@ -563,11 +563,11 @@ void SpatiocyteWorld::remove_molecules(const Species& sp, const Integer& num)
         throw std::invalid_argument("The number of molecules must be positive.");
     }
 
-    const MolecularType* mtype(dynamic_cast<const MolecularType*>(find_molecular_type(sp)));
+    const MoleculePool* mtype(dynamic_cast<const MoleculePool*>(find_molecular_type(sp)));
     if (!mtype)
     {
         throw NotSupported(
-            "remove_molecuels for MolecularType with no voxel is not supported now");
+            "remove_molecuels for VoxelPool with no voxel is not supported now");
     }
     else if (mtype->size() < num)
     {
@@ -579,7 +579,7 @@ void SpatiocyteWorld::remove_molecules(const Species& sp, const Integer& num)
     // if (!mtype->with_voxels())
     // {
     //     throw NotSupported(
-    //         "remove_molecuels for MolecularType with no voxel is not supported now");
+    //         "remove_molecuels for VoxelPool with no voxel is not supported now");
     // }
     // else if (mtype->size() < num)
     // {

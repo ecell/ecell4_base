@@ -8,11 +8,11 @@ namespace ecell4
 {
 
 class MolecularType
-    : public MolecularTypeBase
+    : public MoleculePool
 {
 public:
 
-    typedef MolecularTypeBase base_type;
+    typedef MoleculePool base_type;
     typedef base_type::coordinate_id_pair_type coordinate_id_pair_type;
     typedef base_type::coordinate_type coordinate_type;
     typedef base_type::container_type container_type;
@@ -28,15 +28,14 @@ public:
         ;
     }
 
-    MolecularType(const Species& species, const Real& radius = 0.0,
-            const Real& D = 0.0)
+    MolecularType(const Species& species, const Real& radius = 0.0, const Real& D = 0.0)
         : base_type(species, &(VacantType::getInstance()), radius, D)
     {
         ;
     }
 
     MolecularType(const Species& species, VoxelPool* location,
-            const Real& radius = 0.0, const Real& D = 0.0)
+                  const Real& radius = 0.0, const Real& D = 0.0)
         : base_type(species, location, radius, D)
     {
         ;
@@ -52,16 +51,10 @@ public:
         return DEFAULT;
     }
 
-    // bool is_vacant() const
-    // {
-    //     return false;
-    // }
-
     virtual const Shape::dimension_kind get_dimension() const
     {
         return location()->get_dimension();
     }
-
 };
 
 } // ecell4

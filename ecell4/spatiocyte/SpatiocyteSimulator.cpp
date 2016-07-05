@@ -954,10 +954,10 @@ void SpatiocyteSimulator::walk(const Species& species, const Real& alpha)
 
     const boost::shared_ptr<RandomNumberGenerator>& rng(world_->rng());
 
-    const MolecularType* mtype(dynamic_cast<const MolecularType*>(world_->find_molecular_type(species)));
+    const MoleculePool* mtype(dynamic_cast<const MoleculePool*>(world_->find_molecular_type(species)));
     if (!mtype)
     {
-        throw NotSupported("MolecularType must be with voxels.");
+        throw NotSupported("MolecularPool must be with voxels.");
     }
     // const VoxelPool* mtype(world_->find_molecular_type(species));
     // if (!mtype->with_voxels())
@@ -965,7 +965,7 @@ void SpatiocyteSimulator::walk(const Species& species, const Real& alpha)
     //     throw NotSupported("MolecularType must be with voxels.");
     // }
 
-    VoxelPool::container_type voxels;
+    MoleculePool::container_type voxels;
     copy(mtype->begin(), mtype->end(), back_inserter(voxels));
 
     if (mtype->get_dimension() == Shape::THREE)
@@ -974,15 +974,15 @@ void SpatiocyteSimulator::walk(const Species& species, const Real& alpha)
         walk_on_surface_(mtype, alpha);
 }
 
-void SpatiocyteSimulator::walk_in_space_(const MolecularType* mtype, const Real& alpha)
+void SpatiocyteSimulator::walk_in_space_(const MoleculePool* mtype, const Real& alpha)
 {
     const boost::shared_ptr<RandomNumberGenerator>& rng(world_->rng());
-    VoxelPool::container_type voxels;
+    MoleculePool::container_type voxels;
     copy(mtype->begin(), mtype->end(), back_inserter(voxels));
 
     std::size_t idx(0);
-    for (VoxelPool::container_type::iterator itr(voxels.begin());
-            itr != voxels.end(); ++itr)
+    for (MoleculePool::container_type::iterator itr(voxels.begin());
+         itr != voxels.end(); ++itr)
     {
         const Integer rnd(rng->uniform_int(0, 11));
         const SpatiocyteWorld::coordinate_id_pair_type& info(*itr);
@@ -1007,16 +1007,16 @@ void SpatiocyteSimulator::walk_in_space_(const MolecularType* mtype, const Real&
     }
 }
 
-void SpatiocyteSimulator::walk_on_surface_(const MolecularType* mtype, const Real& alpha)
+void SpatiocyteSimulator::walk_on_surface_(const MoleculePool* mtype, const Real& alpha)
 {
     const boost::shared_ptr<RandomNumberGenerator>& rng(world_->rng());
-    VoxelPool::container_type voxels;
+    MoleculePool::container_type voxels;
     copy(mtype->begin(), mtype->end(), back_inserter(voxels));
 
     const VoxelPool* location(mtype->location());
     std::size_t idx(0);
-    for (VoxelPool::container_type::iterator itr(voxels.begin());
-            itr != voxels.end(); ++itr)
+    for (MoleculePool::container_type::iterator itr(voxels.begin());
+         itr != voxels.end(); ++itr)
     {
         const SpatiocyteWorld::coordinate_id_pair_type& info(*itr);
         if (world_->find_molecular_type(info.coordinate) != mtype)
@@ -1028,7 +1028,7 @@ void SpatiocyteSimulator::walk_on_surface_(const MolecularType* mtype, const Rea
 
         ecell4::shuffle(*(rng.get()), nids_);
         for (std::vector<unsigned int>::const_iterator itr(nids_.begin());
-                itr != nids_.end(); ++itr)
+             itr != nids_.end(); ++itr)
         {
             const SpatiocyteWorld::coordinate_type neighbor(
                     world_->get_neighbor_boundary(info.coordinate, *itr));

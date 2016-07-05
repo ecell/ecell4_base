@@ -38,11 +38,11 @@ protected:
     typedef utils::get_mapper_mf<
         Species, boost::shared_ptr<VoxelPool> >::type voxel_pool_map_type;
     typedef utils::get_mapper_mf<
-        Species, boost::shared_ptr<MolecularType> >::type molecular_type_map_type;
+        Species, boost::shared_ptr<MoleculePool> >::type molecular_type_map_type;
     // typedef std::map<
     //     Species, boost::shared_ptr<VoxelPool> > voxel_pool_map_type;
     // typedef std::map<
-    //     Species, boost::shared_ptr<MolecularType> > molecular_type_map_type;
+    //     Species, boost::shared_ptr<MoleculePool> > molecular_type_map_type;
 
 public:
 
@@ -215,7 +215,7 @@ public:
     }
 
     Integer count_voxels(
-        const boost::shared_ptr<MolecularType>& mt) const
+        const boost::shared_ptr<VoxelPool>& mt) const
     {
         Integer count(0);
         utils::pair_first_element_unary_predicator<
@@ -245,7 +245,7 @@ public:
             molecular_type_map_type::const_iterator itr(molecular_types_.find(sp));
             if (itr != molecular_types_.end())
             {
-                const boost::shared_ptr<MolecularType>& mt((*itr).second);
+                const boost::shared_ptr<MoleculePool>& mt((*itr).second);
                 return mt->size();  // upcast
             }
         }
@@ -273,7 +273,7 @@ public:
         {
             if (sexp.match((*itr).first))
             {
-                const boost::shared_ptr<MolecularType>& mt((*itr).second);
+                const boost::shared_ptr<MoleculePool>& mt((*itr).second);
                 count += mt->size();
             }
         }
@@ -294,7 +294,7 @@ public:
         for (molecular_type_map_type::const_iterator itr(molecular_types_.begin());
              itr != molecular_types_.end(); ++itr)
         {
-            const boost::shared_ptr<MolecularType>& mt((*itr).second);
+            const boost::shared_ptr<MoleculePool>& mt((*itr).second);
             count += mt->size();
         }
         return count;
@@ -305,7 +305,7 @@ public:
         for (molecular_type_map_type::const_iterator itr(molecular_types_.begin());
              itr != molecular_types_.end(); ++itr)
         {
-            const boost::shared_ptr<MolecularType>& mt((*itr).second);
+            const boost::shared_ptr<MoleculePool>& mt((*itr).second);
             if (mt->find(pid) != mt->end())
             {
                 return true;
@@ -321,13 +321,13 @@ public:
         for (molecular_type_map_type::const_iterator itr(molecular_types_.begin());
              itr != molecular_types_.end(); ++itr)
         {
-            const boost::shared_ptr<MolecularType>& mt((*itr).second);
+            const boost::shared_ptr<MoleculePool>& mt((*itr).second);
 
             const std::string loc((mt->location()->is_vacant())
                 ? "" : mt->location()->species().serial());
             const Species& sp(mt->species());
 
-            for (MolecularType::const_iterator i(mt->begin());
+            for (MoleculePool::const_iterator i(mt->begin());
                 i != mt->end(); ++i)
             {
                 retval.push_back(std::make_pair(
@@ -404,10 +404,10 @@ public:
                 continue;
             }
 
-            const boost::shared_ptr<MolecularType>& mt((*itr).second);
+            const boost::shared_ptr<MoleculePool>& mt((*itr).second);
             const std::string loc((mt->location()->is_vacant())
                 ? "" : mt->location()->species().serial());
-            for (MolecularType::const_iterator i(mt->begin());
+            for (MoleculePool::const_iterator i(mt->begin());
                 i != mt->end(); ++i)
             {
                 retval.push_back(std::make_pair(
@@ -453,10 +453,10 @@ public:
             molecular_type_map_type::const_iterator itr(molecular_types_.find(sp));
             if (itr != molecular_types_.end())
             {
-                const boost::shared_ptr<MolecularType>& mt((*itr).second);
+                const boost::shared_ptr<MoleculePool>& mt((*itr).second);
                 const std::string loc((mt->location()->is_vacant())
                     ? "" : mt->location()->species().serial());
-                for (MolecularType::const_iterator i(mt->begin());
+                for (MoleculePool::const_iterator i(mt->begin());
                      i != mt->end(); ++i)
                 {
                     retval.push_back(std::make_pair(

@@ -27,7 +27,7 @@ Integer LatticeSpaceCellListImpl::num_molecules(const Species& sp) const
         const Integer cnt(sexp.count((*itr).first));
         if (cnt > 0)
         {
-            const boost::shared_ptr<MolecularType>& mt((*itr).second);
+            const boost::shared_ptr<MoleculePool>& mt((*itr).second);
             count += mt->size() * cnt;
         }
     }
@@ -98,8 +98,8 @@ std::pair<VoxelPool*, LatticeSpaceCellListImpl::coordinate_type>
     for (molecular_type_map_type::iterator itr(molecular_types_.begin());
          itr != molecular_types_.end(); ++itr)
     {
-        const boost::shared_ptr<MolecularType>& mt((*itr).second);
-        MolecularType::container_type::const_iterator j(mt->find(pid));
+        const boost::shared_ptr<MoleculePool>& mt((*itr).second);
+        MoleculePool::container_type::const_iterator j(mt->find(pid));
         if (j != mt->end())
         {
             return std::pair<VoxelPool*, coordinate_type>(
@@ -115,8 +115,8 @@ std::pair<const VoxelPool*, LatticeSpaceCellListImpl::coordinate_type>
     for (molecular_type_map_type::const_iterator itr(molecular_types_.begin());
          itr != molecular_types_.end(); ++itr)
     {
-        const boost::shared_ptr<MolecularType>& mt((*itr).second);
-        MolecularType::container_type::const_iterator j(mt->find(pid));
+        const boost::shared_ptr<MoleculePool>& mt((*itr).second);
+        MoleculePool::container_type::const_iterator j(mt->find(pid));
         if (j != mt->end())
         {
             return std::pair<const VoxelPool*, coordinate_type>(
@@ -248,7 +248,7 @@ bool LatticeSpaceCellListImpl::make_molecular_type(const Species& sp, Real radiu
             // XXX: LatticeSpaceVectorImpl::load will raise a problem about this issue.
             // XXX: In this implementation, the VoxelPool for a structure is
             // XXX: created with default arguments.
-            boost::shared_ptr<MolecularType>
+            boost::shared_ptr<MoleculePool>
                 locmt(new MolecularType(locsp, vacant_, voxel_radius_, 0));
             std::pair<molecular_type_map_type::iterator, bool>
                 locval(molecular_types_.insert(
@@ -262,7 +262,7 @@ bool LatticeSpaceCellListImpl::make_molecular_type(const Species& sp, Real radiu
         }
     }
 
-    boost::shared_ptr<MolecularType>
+    boost::shared_ptr<MoleculePool>
         mt(new MolecularType(sp, location, radius, D));
     std::pair<molecular_type_map_type::iterator, bool>
         retval(molecular_types_.insert(
@@ -332,7 +332,7 @@ bool LatticeSpaceCellListImpl::make_structure_type(
     else if (molecular_types_.find(sp) != molecular_types_.end())
     {
         throw IllegalState(
-            "The given species is already assigned to the MolecularType.");
+            "The given species is already assigned to the MoleculePool.");
     }
 
     VoxelPool* location;
@@ -356,7 +356,7 @@ bool LatticeSpaceCellListImpl::make_structure_type(
             // XXX: LatticeSpaceVectorImpl::load will raise a problem about this issue.
             // XXX: In this implementation, the VoxelPool for a structure is
             // XXX: created with default arguments.
-            boost::shared_ptr<MolecularType>
+            boost::shared_ptr<MoleculePool>
                 locmt(new MolecularType(locsp, vacant_, voxel_radius_, 0));
             std::pair<molecular_type_map_type::iterator, bool>
                 locval(molecular_types_.insert(

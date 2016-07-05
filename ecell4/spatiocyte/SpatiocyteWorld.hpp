@@ -457,7 +457,7 @@ public:
 
     std::pair<ParticleID, Voxel> choice(const Species& sp)
     {
-        const MolecularType* mt(dynamic_cast<const MolecularType*>(find_molecular_type(sp)));
+        const MoleculePool* mt(dynamic_cast<const MoleculePool*>(find_molecular_type(sp)));
         if (!mt)
         {
             throw NotSupported(

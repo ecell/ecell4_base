@@ -69,10 +69,6 @@ public:
             }
         } coordinate_id_pair_type;
 
-    typedef std::vector<coordinate_id_pair_type> container_type;
-    typedef container_type::const_iterator const_iterator;
-    typedef container_type::iterator iterator;
-
 public:
 
     typedef enum
@@ -190,23 +186,6 @@ public:
         return ParticleID();
     }
 
-    // virtual void replace_voxel(
-    //     const coordinate_type& from_coord, const coordinate_id_pair_type& to_info) = 0;
-    // virtual void remove_voxel(const container_type::iterator& position) = 0;
-    // virtual void swap(const container_type::iterator& a, const container_type::iterator& b) = 0;
-    // virtual void shuffle(RandomNumberGenerator& rng) = 0;
-    // virtual const Integer size() const = 0;
-    // virtual coordinate_id_pair_type& at(const Integer& index) = 0;
-    // virtual coordinate_id_pair_type const& at(const Integer& index) const = 0;
-    // virtual coordinate_id_pair_type& operator[](const Integer& n) = 0;
-    // virtual coordinate_id_pair_type const& operator[](const Integer& n) const = 0;
-    // virtual container_type::iterator begin() = 0;
-    // virtual container_type::const_iterator begin() const = 0;
-    // virtual container_type::iterator end() = 0;
-    // virtual container_type::const_iterator end() const = 0;
-    // virtual container_type::iterator find(const ParticleID& pid) = 0;
-    // virtual container_type::const_iterator find(const ParticleID& pid) const = 0;
-
 protected:
 
     const Species species_;
@@ -214,7 +193,7 @@ protected:
     Real radius_, D_;
 };
 
-class MolecularTypeBase
+class MoleculePool
     : public VoxelPool
 {
 public:
@@ -222,14 +201,15 @@ public:
     typedef VoxelPool base_type;
     typedef base_type::coordinate_type coordinate_type;
     typedef base_type::coordinate_id_pair_type coordinate_id_pair_type;
-    typedef base_type::container_type container_type;
-    typedef base_type::const_iterator const_iterator;
-    typedef base_type::iterator iterator;
     typedef base_type::voxel_type_type voxel_type_type;
+
+    typedef std::vector<coordinate_id_pair_type> container_type;
+    typedef container_type::const_iterator const_iterator;
+    typedef container_type::iterator iterator;
 
 public:
 
-    MolecularTypeBase(
+    MoleculePool(
         const Species& species, VoxelPool* location,
         const Real& radius, const Real& D)
         : base_type(species, location, radius, D)
@@ -237,7 +217,7 @@ public:
         ;
     }
 
-    virtual ~MolecularTypeBase()
+    virtual ~MoleculePool()
     {
         ;
     }
@@ -247,22 +227,15 @@ public:
         return true;
     }
 
+    // virtual voxel_type_type const voxel_type() const = 0;
+
+    // virtual const Shape::dimension_kind get_dimension() const = 0;
+
+public:
+
     virtual void add_voxel_without_checking(const coordinate_id_pair_type& info)
     {
         voxels_.push_back(info);
-    }
-
-    virtual void replace_voxel(
-        const coordinate_type& from_coord,
-        const coordinate_id_pair_type& to_info)
-    {
-        container_type::iterator itr(find(from_coord));
-        if (itr == voxels_.end())
-        {
-            throw NotFound("no corresponding coordinate was found.");
-        }
-
-        (*itr) = to_info;
     }
 
     virtual void replace_voxel(
@@ -279,14 +252,6 @@ public:
         (*itr).coordinate = to_coord;
     }
 
-    virtual coordinate_id_pair_type pop(const coordinate_type& coord)
-    {
-        container_type::iterator position(this->find(coord));
-        const coordinate_id_pair_type info(*position);
-        this->remove_voxel(position);
-        return info;
-    }
-
     virtual bool remove_voxel_if_exists(const coordinate_type& coord)
     {
         container_type::iterator itr(find(coord));
@@ -298,6 +263,18 @@ public:
         return false;
     }
 
+    virtual const ParticleID get_particle_id(const coordinate_type& coord) const
+    {
+        container_type::const_iterator i(this->find(coord));
+        if (i == voxels_.end())
+        {
+            throw NotFound("No corresponding ParticleID was found.");
+        }
+        return (*i).pid;
+    }
+
+public:
+
     void remove_voxel(const container_type::iterator& position)
     {
         // voxels_.erase(position);
@@ -305,8 +282,27 @@ public:
         voxels_.pop_back();
     }
 
-    void swap(
-        const container_type::iterator& a, const container_type::iterator& b)
+    coordinate_id_pair_type pop(const coordinate_type& coord)
+    {
+        container_type::iterator position(this->find(coord));
+        const coordinate_id_pair_type info(*position);
+        this->remove_voxel(position);
+        return info;
+    }
+
+    void replace_voxel(
+        const coordinate_type& from_coord, const coordinate_id_pair_type& to_info)
+    {
+        container_type::iterator itr(find(from_coord));
+        if (itr == voxels_.end())
+        {
+            throw NotFound("no corresponding coordinate was found.");
+        }
+
+        (*itr) = to_info;
+    }
+
+    void swap(const container_type::iterator& a, const container_type::iterator& b)
     {
         if (a == b)
         {
@@ -366,16 +362,6 @@ public:
     container_type::const_iterator end() const
     {
         return voxels_.end();
-    }
-
-    virtual const ParticleID get_particle_id(const coordinate_type& coord) const
-    {
-        container_type::const_iterator i(this->find(coord));
-        if (i == voxels_.end())
-        {
-            throw NotFound("No corresponding ParticleID was found.");
-        }
-        return (*i).pid;
     }
 
     container_type::iterator find(const ParticleID& pid)

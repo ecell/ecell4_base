@@ -596,7 +596,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_save_and_load)
             continue;
         }
 
-        VoxelPool::container_type voxels1, voxels2;
+        MoleculePool::container_type voxels1, voxels2;
         std::copy(mtb1->begin(), mtb1->end(), back_inserter(voxels1));
         std::copy(mtb2->begin(), mtb2->end(), back_inserter(voxels2));
         BOOST_ASSERT(voxels1.size() == voxels2.size());
