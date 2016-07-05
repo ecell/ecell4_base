@@ -8,7 +8,7 @@
 #include <ecell4/core/Model.hpp>
 #include <ecell4/core/ReactionRule.hpp>
 // #include <ecell4/core/Reaction.hpp>
-#include <ecell4/core/MolecularTypeBase.hpp>
+#include <ecell4/core/VoxelPool.hpp>
 #include <ecell4/core/SimulatorBase.hpp>
 #include <ecell4/core/RandomNumberGenerator.hpp>
 #include <ecell4/core/EventScheduler.hpp>

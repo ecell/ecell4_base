@@ -1,7 +1,7 @@
 #ifndef __ECELL4_MOLECULAR_TYPE_HPP
 #define __ECELL4_MOLECULAR_TYPE_HPP
 
-#include "MolecularTypeBase.hpp"
+#include "VoxelPool.hpp"
 #include "VacantType.hpp"
 
 namespace ecell4

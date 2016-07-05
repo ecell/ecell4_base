@@ -15,7 +15,8 @@
 #include "types.hpp"
 #include "Species.hpp"
 #include "Voxel.hpp"
-#include "MolecularTypeBase.hpp"
+#include "VoxelPool.hpp"
+#include "MolecularType.hpp"
 #include "StructureType.hpp"
 #include "VacantType.hpp"
 

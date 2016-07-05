@@ -15,8 +15,7 @@
 #include "LatticeSpaceHDF5Writer.hpp"
 #endif
 
-#include "MolecularTypeBase.hpp"
-#include "MolecularType.hpp"
+#include "VoxelPool.hpp"
 #include "Voxel.hpp"
 
 namespace ecell4

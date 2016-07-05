@@ -7,8 +7,7 @@
 
 #include <ecell4/core/LatticeSpace.hpp>
 #include <ecell4/core/LatticeSpaceCellListImpl.hpp>
-#include <ecell4/core/MolecularTypeBase.hpp>
-#include <ecell4/core/MolecularType.hpp>
+#include <ecell4/core/VoxelPool.hpp>
 #include <ecell4/core/RandomNumberGenerator.hpp>
 #include <ecell4/core/SerialIDGenerator.hpp>
 #include <ecell4/core/Model.hpp>
