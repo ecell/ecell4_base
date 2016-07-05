@@ -257,10 +257,9 @@ const VoxelPool* SpatiocyteWorld::find_molecular_type(const Species& species) co
     return (*space_).find_molecular_type(species);
 }
 
-VoxelPool* SpatiocyteWorld::get_molecular_type(
-        const coordinate_type& coord)
+VoxelPool* SpatiocyteWorld::find_molecular_type(const coordinate_type& coord) const
 {
-    return (*space_).get_molecular_type(coord);
+    return (*space_).find_molecular_type(coord);
 }
 
 std::pair<std::pair<ParticleID, Voxel>, bool>
@@ -633,7 +632,8 @@ SpatiocyteWorld::check_neighbor(
     for (unsigned int rnd(0); rnd < 12; ++rnd)
     {
         const coordinate_type neighbor(get_neighbor(coord, rnd));
-        const VoxelPool* mt(get_molecular_type(neighbor));
+        // const VoxelPool* mt(get_molecular_type(neighbor));
+        const VoxelPool* mt(find_molecular_type(neighbor));
         const std::string
             serial(mt->is_vacant() ? "" : mt->species().serial());
         if (serial == loc)

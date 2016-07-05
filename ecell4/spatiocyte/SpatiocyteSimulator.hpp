@@ -393,14 +393,14 @@ protected:
     const std::string get_serial(
         const SpatiocyteWorld::coordinate_type coord) const
     {
-        const VoxelPool* mtype(world_->get_molecular_type(coord));
+        const VoxelPool* mtype(world_->find_molecular_type(coord));
         return mtype->is_vacant() ? "" : mtype->species().serial();
     }
 
     const std::string get_location(
         const SpatiocyteWorld::coordinate_type coord) const
     {
-        const VoxelPool* mtype(world_->get_molecular_type(coord));
+        const VoxelPool* mtype(world_->find_molecular_type(coord));
         if (mtype->is_vacant())
         {
             return "";

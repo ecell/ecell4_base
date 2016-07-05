@@ -288,9 +288,9 @@ std::pair<SpatiocyteSimulator::attempt_reaction_result_type, SpatiocyteSimulator
     const Real& alpha)
 {
     const VoxelPool* from_mt(
-        world_->get_molecular_type(info.coordinate));
+        world_->find_molecular_type(info.coordinate));
     const VoxelPool* to_mt(
-        world_->get_molecular_type(to_coord));
+        world_->find_molecular_type(to_coord));
 
     if (to_mt->is_vacant())
     {
@@ -878,7 +878,7 @@ void SpatiocyteSimulator::register_product_species(const Species& product_specie
 // void SpatiocyteSimulator::register_reactant_species(
 //         const SpatiocyteWorld::coordinate_id_pair_type pinfo, reaction_type& reaction) const
 // {
-//     const VoxelPool* mtype(world_->get_molecular_type(pinfo.first));
+//     const VoxelPool* mtype(world_->find_molecular_type(pinfo.first));
 //     const std::string location(
 //             mtype->location()->is_vacant() ? "" : mtype->location()->species().serial());
 //     reaction.reactants.push_back(
@@ -892,7 +892,7 @@ SpatiocyteSimulator::reaction_info_type::particle_id_pair_type const
 SpatiocyteSimulator::create_particle_id_pair(
     const SpatiocyteWorld::coordinate_id_pair_type pinfo) const
 {
-    const VoxelPool* mtype(world_->get_molecular_type(pinfo.coordinate));
+    const VoxelPool* mtype(world_->find_molecular_type(pinfo.coordinate));
     const std::string location(
             mtype->location()->is_vacant() ? "" : mtype->location()->species().serial());
     return std::make_pair(
@@ -1002,7 +1002,7 @@ void SpatiocyteSimulator::walk_in_space_(const MolecularType* mtype, const Real&
     {
         const Integer rnd(rng->uniform_int(0, 11));
         const SpatiocyteWorld::coordinate_id_pair_type info(*itr);
-        if (world_->get_molecular_type(info.coordinate) != mtype)
+        if (world_->find_molecular_type(info.coordinate) != mtype)
         {
             // should skip if a voxel is not the target species.
             // when reaction has occured before, a voxel can be changed.
@@ -1035,7 +1035,7 @@ void SpatiocyteSimulator::walk_on_surface_(const MolecularType* mtype, const Rea
             itr != voxels.end(); ++itr)
     {
         const SpatiocyteWorld::coordinate_id_pair_type info(*itr);
-        if (world_->get_molecular_type(info.coordinate) != mtype)
+        if (world_->find_molecular_type(info.coordinate) != mtype)
         {
             // should skip if a voxel is not the target species.
             // when reaction has occured before, a voxel can be changed.
@@ -1048,7 +1048,7 @@ void SpatiocyteSimulator::walk_on_surface_(const MolecularType* mtype, const Rea
         {
             const SpatiocyteWorld::coordinate_type neighbor(
                     world_->get_neighbor_boundary(info.coordinate, *itr));
-            const VoxelPool* target(world_->get_molecular_type(neighbor));
+            const VoxelPool* target(world_->find_molecular_type(neighbor));
 
             if (target->get_dimension() > mtype->get_dimension())
             {

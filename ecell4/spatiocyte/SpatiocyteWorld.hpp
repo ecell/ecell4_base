@@ -262,7 +262,8 @@ public:
 
     VoxelPool* find_molecular_type(const Species& species);
     const VoxelPool* find_molecular_type(const Species& species) const;
-    VoxelPool* get_molecular_type(const coordinate_type& coord);
+    // VoxelPool* get_molecular_type(const coordinate_type& coord);
+    VoxelPool* find_molecular_type(const coordinate_type& coord) const;
 
     std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel(const Voxel& v);
     std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel(const Species& sp, const coordinate_type& coord);
