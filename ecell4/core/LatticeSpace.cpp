@@ -878,51 +878,25 @@ Integer LatticeSpaceVectorImpl::num_voxels() const
     return count;
 }
 
-/**
- * Change the Species at v.coordinate() to v.species.
- * The ParticleID must be kept after this update.
- */
-void LatticeSpaceVectorImpl::update_voxel(const Voxel& v)
-{
-    const coordinate_type coord(v.coordinate());
-    VoxelPool* src_mt(voxels_.at(coord));
-    VoxelPool* new_mt(get_molecular_type(v)); //XXX: need MoleculeInfo
-
-    if (src_mt->with_voxels() != new_mt->with_voxels())
-    {
-        throw NotSupported("ParticleID is needed/lost.");
-    }
-
-    new_mt->add_voxel_without_checking(src_mt->pop(coord));
-    voxel_container::iterator itr(voxels_.begin() + coord);
-    (*itr) = new_mt;
-
-    // const LatticeSpaceVectorImpl::coordinate_type coord(v.coordinate());
-    // VoxelPool* src_mt(voxels_.at(coord));
-    // // if (src_mt->is_vacant())
-    // if (!src_mt->with_voxels())
-    // {
-    //     return false; // has no ParticleID. Call update_voxel with a ParticleID.
-    // }
-
-    // VoxelPool* new_mt(get_molecular_type(v)); //XXX: need MoleculeInfo
-    // // if (new_mt->is_vacant())
-    // if (!new_mt->with_voxels())
-    // {
-    //     return false; // has no ParticleID. Call remove_voxel.
-    // }
-
-    // // VoxelPool::coordinate_id_pair_type info(*(src_mt->find(coord)));
-    // // src_mt->remove_voxel_if_exists(coord);
-    // // new_mt->addVoxel(info);
-    // // VoxelPool::iterator position(src_mt->find(coord));
-    // // new_mt->add_voxel_without_checking(*position);
-    // // src_mt->remove_voxel(position);
-    // new_mt->add_voxel_without_checking(src_mt->pop(coord));
-    // voxel_container::iterator itr(voxels_.begin() + coord);
-    // (*itr) = new_mt;
-    // return true;
-}
+// /**
+//  * Change the Species at v.coordinate() to v.species.
+//  * The ParticleID must be kept after this update.
+//  */
+// void LatticeSpaceVectorImpl::update_voxel(const Voxel& v)
+// {
+//     const coordinate_type coord(v.coordinate());
+//     VoxelPool* src_mt(voxels_.at(coord));
+//     VoxelPool* new_mt(get_molecular_type(v)); //XXX: need MoleculeInfo
+// 
+//     if (src_mt->with_voxels() != new_mt->with_voxels())
+//     {
+//         throw NotSupported("ParticleID is needed/lost.");
+//     }
+// 
+//     new_mt->add_voxel_without_checking(src_mt->pop(coord));
+//     voxel_container::iterator itr(voxels_.begin() + coord);
+//     (*itr) = new_mt;
+// }
 
 /*
  * Change the Species and coordinate of a Voxel with ParticleID, pid, to

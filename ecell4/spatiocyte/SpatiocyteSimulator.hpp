@@ -379,9 +379,6 @@ protected:
     // void register_reactant_species(
     //     const SpatiocyteWorld::coordinate_id_pair_type pinfo, reaction_type& reaction) const;
 
-    // reaction_info_type::particle_id_pair_type const create_particle_id_pair(
-    //     const SpatiocyteWorld::coordinate_id_pair_type pinfo) const;
-
     void step_();
     void register_events(const Species& species);
     // void register_step_event(const Species& species);

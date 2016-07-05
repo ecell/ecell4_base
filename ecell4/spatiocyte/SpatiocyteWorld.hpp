@@ -320,10 +320,10 @@ public:
     //     return new_voxel(ecell4::Voxel(sp, coord, info.radius, info.D));
     // }
 
-    void update_voxel(const Voxel& v)
-    {
-        (*space_).update_voxel(v);
-    }
+    // void update_voxel(const Voxel& v)
+    // {
+    //     (*space_).update_voxel(v);
+    // }
 
     bool update_voxel(const ParticleID& pid, const Voxel& v)
     {

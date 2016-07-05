@@ -469,25 +469,25 @@ public:
         return retval; // an empty vector
     }
 
-    /**
-     * Change the Species at v.coordinate() to v.species.
-     * The ParticleID must be kept after this update.
-     */
-    virtual void update_voxel(const Voxel& v)
-    {
-        const coordinate_type coord(v.coordinate());
-        // VoxelPool* src_mt(get_molecular_type(coord));
-        VoxelPool* src_mt(find_molecular_type(coord));
-        VoxelPool* new_mt(get_molecular_type(v));
+    // /**
+    //  * Change the Species at v.coordinate() to v.species.
+    //  * The ParticleID must be kept after this update.
+    //  */
+    // virtual void update_voxel(const Voxel& v)
+    // {
+    //     const coordinate_type coord(v.coordinate());
+    //     // VoxelPool* src_mt(get_molecular_type(coord));
+    //     VoxelPool* src_mt(find_molecular_type(coord));
+    //     VoxelPool* new_mt(get_molecular_type(v));
 
-        if (src_mt->with_voxels() != new_mt->with_voxels())
-        {
-            throw NotSupported("ParticleID is needed/lost.");
-        }
+    //     if (src_mt->with_voxels() != new_mt->with_voxels())
+    //     {
+    //         throw NotSupported("ParticleID is needed/lost.");
+    //     }
 
-        new_mt->add_voxel_without_checking(src_mt->pop(coord));
-        update_matrix(coord, new_mt);
-    }
+    //     new_mt->add_voxel_without_checking(src_mt->pop(coord));
+    //     update_matrix(coord, new_mt);
+    // }
 
     virtual bool update_voxel(const ParticleID& pid, const Voxel& v);
 

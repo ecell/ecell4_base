@@ -884,18 +884,6 @@ void SpatiocyteSimulator::register_product_species(const Species& product_specie
 //                   mtype->radius(), mtype->D(), location)));
 // }
 
-// SpatiocyteSimulator::reaction_info_type::particle_id_pair_type const
-// SpatiocyteSimulator::create_particle_id_pair(
-//     const SpatiocyteWorld::coordinate_id_pair_type pinfo) const
-// {
-//     const VoxelPool* mtype(world_->find_molecular_type(pinfo.coordinate));
-//     const std::string location(
-//             mtype->location()->is_vacant() ? "" : mtype->location()->species().serial());
-//     return std::make_pair(
-//         pinfo.pid,
-//         Voxel(mtype->species(), pinfo.coordinate,  mtype->radius(), mtype->D(), location));
-// }
-
 void SpatiocyteSimulator::step()
 {
     step_();

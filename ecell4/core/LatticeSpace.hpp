@@ -139,7 +139,7 @@ public:
     virtual std::vector<std::pair<ParticleID, Voxel> >
         list_voxels_exact(const Species& sp) const = 0;
 
-    virtual void update_voxel(const Voxel& v) = 0;
+    // virtual void update_voxel(const Voxel& v) = 0;
     virtual bool update_voxel(const ParticleID& pid, const Voxel& v) = 0;
     virtual bool update_voxel_without_checking(const ParticleID& pid, const Voxel& v)
     {
@@ -593,7 +593,7 @@ public:
 
     virtual Integer num_molecules(const Species& sp) const; //XXX:
 
-    virtual void update_voxel(const Voxel& v);
+    // virtual void update_voxel(const Voxel& v);
     virtual bool update_voxel(const ParticleID& pid, const Voxel& v);
     virtual bool update_voxel_without_checking(const ParticleID& pid, const Voxel& v);
 
