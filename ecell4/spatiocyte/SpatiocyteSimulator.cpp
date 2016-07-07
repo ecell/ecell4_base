@@ -105,8 +105,8 @@ boost::shared_ptr<SpatiocyteEvent>
 SpatiocyteSimulator::create_zeroth_order_reaction_event(
     const ReactionRule& reaction_rule, const Real& t)
 {
-    boost::shared_ptr<SpatiocyteEvent> event(new ZerothOrderReactionEvent(
-                this, reaction_rule, t));
+    boost::shared_ptr<SpatiocyteEvent> event(
+            new ZerothOrderReactionEvent(world_, reaction_rule, t));
     return event;
 }
 

@@ -126,7 +126,7 @@ protected:
 struct ZerothOrderReactionEvent : SpatiocyteEvent
 {
     ZerothOrderReactionEvent(
-        SpatiocyteSimulator* sim, const ReactionRule& rule, const Real& t);
+        boost::shared_ptr<SpatiocyteWorld> world, const ReactionRule& rule, const Real& t);
 
     virtual ~ZerothOrderReactionEvent() {}
     virtual void fire();
@@ -139,7 +139,6 @@ struct ZerothOrderReactionEvent : SpatiocyteEvent
 
 protected:
 
-    SpatiocyteSimulator* sim_;
     boost::shared_ptr<SpatiocyteWorld> world_;
     ReactionRule rule_;
 };

@@ -8,8 +8,8 @@ namespace spatiocyte {
 /// ZerothOrderReactionEvent
 
 ZerothOrderReactionEvent::ZerothOrderReactionEvent(
-    SpatiocyteSimulator* sim, const ReactionRule& rule, const Real& t)
-    : SpatiocyteEvent(t), sim_(sim), world_(sim->world()), rule_(rule)
+    boost::shared_ptr<SpatiocyteWorld> world, const ReactionRule& rule, const Real& t)
+    : SpatiocyteEvent(t), world_(world), rule_(rule)
 {
     time_ = t + draw_dt();
 }
