@@ -98,8 +98,6 @@ public:
 
     virtual voxel_type_type const voxel_type() const = 0;
 
-    virtual bool with_voxels() const = 0;
-
     virtual const Shape::dimension_kind get_dimension() const
     {
         return Shape::UNDEF;
@@ -220,11 +218,6 @@ public:
     virtual ~MoleculePool()
     {
         ;
-    }
-
-    virtual bool with_voxels() const
-    {
-        return true;
     }
 
     // virtual voxel_type_type const voxel_type() const = 0;

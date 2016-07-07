@@ -156,6 +156,7 @@ public:
     virtual bool can_move(const coordinate_type& src, const coordinate_type& dest) const;
     virtual const Particle particle_at(const coordinate_type& coord) const = 0;
 
+    virtual bool has_molecule_pool(const Species& sp) const = 0;
     virtual VoxelPool* find_voxel_pool(const Species& sp) = 0;
     virtual const VoxelPool* find_voxel_pool(const Species& sp) const = 0;
     virtual VoxelPool* find_voxel_pool(const coordinate_type& coord) const = 0;
@@ -602,10 +603,18 @@ public:
     const Species& find_species(std::string name) const;
     std::vector<coordinate_type> list_coords(const Species& sp) const;
     std::vector<coordinate_type> list_coords_exact(const Species& sp) const;
+
+    virtual bool has_molecule_pool(const Species& sp) const
+    {
+        molecule_pool_map_type::const_iterator itr(molecule_pools_.find(sp));
+        return (itr != molecule_pools_.end());
+    }
+
     virtual VoxelPool* find_voxel_pool(const Species& sp);
     virtual const VoxelPool* find_voxel_pool(const Species& sp) const;
     // VoxelPool* find_voxel_pool(const std::string name);
     virtual VoxelPool* find_voxel_pool(const coordinate_type& coord) const;
+
     // bool update_molecule(coordinate_type coord, const Species& species);
     // bool add_molecule(const Species& sp, coordinate_type coord, const ParticleID& pid);
     virtual bool move(

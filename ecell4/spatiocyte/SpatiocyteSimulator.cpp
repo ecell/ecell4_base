@@ -72,7 +72,7 @@ void SpatiocyteSimulator::update_alpha_map()
 
 void SpatiocyteSimulator::register_events(const Species& sp)
 {
-    if (world_->find_voxel_pool(sp)->with_voxels())
+    if (world_->has_molecule_pool(sp))
     {
         //TODO: Call steps only if sp is assigned not to StructureType.
         const boost::shared_ptr<EventScheduler::Event> step_event(
@@ -294,7 +294,7 @@ std::pair<SpatiocyteSimulator::attempt_reaction_result_type, SpatiocyteSimulator
 
     if (to_mt->is_vacant())
     {
-        return std::make_pair(NO_REACTION, std::make_pair(ReactionRule(), reaction_info_type()));
+        return std::make_pair(NO_REACTION, reaction_type());
     }
 
     const Species
@@ -306,7 +306,7 @@ std::pair<SpatiocyteSimulator::attempt_reaction_result_type, SpatiocyteSimulator
 
     if (rules.empty())
     {
-        return std::make_pair(NO_REACTION, std::make_pair(ReactionRule(), reaction_info_type()));
+        return std::make_pair(NO_REACTION, reaction_type());
     }
 
     const Real factor(calculate_dimensional_factor(from_mt, to_mt));
@@ -338,11 +338,11 @@ std::pair<SpatiocyteSimulator::attempt_reaction_result_type, SpatiocyteSimulator
             }
             else
             {
-                return std::make_pair(REACTION_FAILED, std::make_pair(ReactionRule(), reaction_info_type()));
+                return std::make_pair(REACTION_FAILED, reaction_type());
             }
         }
     }
-    return std::make_pair(REACTION_FAILED, std::make_pair(ReactionRule(), reaction_info_type()));
+    return std::make_pair(REACTION_FAILED, reaction_type());
 }
 
 /*
@@ -959,11 +959,6 @@ void SpatiocyteSimulator::walk(const Species& species, const Real& alpha)
     {
         throw NotSupported("MolecularPool must be with voxels.");
     }
-    // const VoxelPool* mtype(world_->find_voxel_pool(species));
-    // if (!mtype->with_voxels())
-    // {
-    //     throw NotSupported("MolecularType must be with voxels.");
-    // }
 
     MoleculePool::container_type voxels;
     copy(mtype->begin(), mtype->end(), back_inserter(voxels));

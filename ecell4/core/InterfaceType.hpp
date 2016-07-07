@@ -38,11 +38,6 @@ public:
         return INTERFACE;
     }
 
-    bool with_voxels() const
-    {
-        return false;
-    }
-
     const Shape::dimension_kind get_dimension() const
     {
         return dimension_;

@@ -259,6 +259,11 @@ public:
     std::vector<Species> list_structure_species() const;
     // std::vector<coordinate_type> list_coords(const Species& sp) const;
 
+    bool has_molecule_pool(const Species& sp) const
+    {
+        return (*space_).has_molecule_pool(sp);
+    }
+
     VoxelPool* find_voxel_pool(const Species& species);
     const VoxelPool* find_voxel_pool(const Species& species) const;
     VoxelPool* find_voxel_pool(const coordinate_type& coord) const;
@@ -461,12 +466,6 @@ public:
             throw NotSupported(
                 "choice for a Species with no voxel is not supporeted.");
         }
-        // VoxelPool* mt(find_voxel_pool(sp));
-        // if (!mt->with_voxels())
-        // {
-        //     throw NotSupported(
-        //         "choice for a Species with no voxel is not supporeted.");
-        // }
         const Integer i(rng_->uniform_int(0, mt->size() - 1));
         const coordinate_id_pair_type& info(mt->at(i));
         return make_pid_voxel_pair(mt, info);

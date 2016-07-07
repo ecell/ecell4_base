@@ -28,11 +28,6 @@ public:
         return VACANT;
     }
 
-    bool with_voxels() const
-    {
-        return false;
-    }
-
     static VacantType& getInstance()
     {
         static VacantType instance;

@@ -608,6 +608,12 @@ public:
             mt->species(), coordinate2position(coord), mt->radius(), mt->D());
     }
 
+    virtual bool has_molecule_pool(const Species& sp) const
+    {
+        molecule_pool_map_type::const_iterator itr(molecule_pools_.find(sp));
+        return (itr != molecule_pools_.end());
+    }
+
     virtual VoxelPool* find_voxel_pool(const Species& sp)
     {
         {
