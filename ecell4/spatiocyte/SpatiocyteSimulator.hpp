@@ -95,12 +95,12 @@ public:
 
 protected:
 
-    struct StepEvent : EventScheduler::Event
+    struct StepEvent : Event
     {
         StepEvent(
             SpatiocyteSimulator* sim, const Species& species, const Real& t,
             const Real alpha=1.0)
-            : EventScheduler::Event(t), sim_(sim), species_(species), alpha_(alpha)
+            : Event(t), sim_(sim), species_(species), alpha_(alpha)
         {
             const SpatiocyteWorld::molecule_info_type
                 minfo(sim_->world_->get_molecule_info(species));
@@ -161,11 +161,11 @@ protected:
         const Real alpha_;
     };
 
-    struct ZerothOrderReactionEvent : EventScheduler::Event
+    struct ZerothOrderReactionEvent : Event
     {
         ZerothOrderReactionEvent(
             SpatiocyteSimulator* sim, const ReactionRule& rule, const Real& t)
-            : EventScheduler::Event(t), sim_(sim), rule_(rule)
+            : Event(t), sim_(sim), rule_(rule)
         {
             time_ = t + draw_dt();
         }
@@ -204,11 +204,11 @@ protected:
         ReactionRule rule_;
     };
 
-    struct FirstOrderReactionEvent : EventScheduler::Event
+    struct FirstOrderReactionEvent : Event
     {
         FirstOrderReactionEvent(
             SpatiocyteSimulator* sim, const ReactionRule& rule, const Real& t)
-            : EventScheduler::Event(t), sim_(sim), rule_(rule)
+            : Event(t), sim_(sim), rule_(rule)
         {
             //assert(rule_.reactants().size() == 1);
             time_ = t + draw_dt();
@@ -311,11 +311,11 @@ public:
 
 protected:
 
-    boost::shared_ptr<EventScheduler::Event> create_step_event(
+    boost::shared_ptr<Event> create_step_event(
         const Species& species, const Real& t);
-    boost::shared_ptr<EventScheduler::Event> create_zeroth_order_reaction_event(
+    boost::shared_ptr<Event> create_zeroth_order_reaction_event(
         const ReactionRule& reaction_rule, const Real& t);
-    boost::shared_ptr<EventScheduler::Event> create_first_order_reaction_event(
+    boost::shared_ptr<Event> create_first_order_reaction_event(
         const ReactionRule& reaction_rule, const Real& t);
     Real calculate_dimensional_factor(
         const VoxelPool* mt0, const VoxelPool* mt1) const;

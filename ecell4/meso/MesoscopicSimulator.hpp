@@ -780,12 +780,12 @@ protected:
     };
 
     struct SubvolumeEvent
-        : public EventScheduler::Event
+        : public Event
     {
     public:
 
         SubvolumeEvent(MesoscopicSimulator* sim, const coordinate_type& c, const Real& t)
-            : EventScheduler::Event(t), sim_(sim), coord_(c)
+            : Event(t), sim_(sim), coord_(c)
         {
             update();
         }

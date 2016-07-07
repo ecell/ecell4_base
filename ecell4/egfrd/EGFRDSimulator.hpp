@@ -65,8 +65,8 @@ struct EGFRDSimulatorTraitsBase: public ParticleSimulatorTraitsBase<Tworld_>
     // typedef EventScheduler<typename base_type::time_type> event_scheduler_type;
 
     typedef typename event_scheduler_type::identifier_type event_id_type;
-    typedef typename event_scheduler_type::Event event_type;
     typedef typename event_scheduler_type::value_type event_id_pair_type;
+    typedef ecell4::Event event_type;
 
     template<typename Tshape_>
     struct shell_generator

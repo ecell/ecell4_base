@@ -22,12 +22,11 @@ public:
 
 protected:
 
-    struct ObserverEvent:
-        EventScheduler::Event
+    struct ObserverEvent: Event
     {
         ObserverEvent(
             SimulatorBase<model_type, world_type>* sim, Observer* obs, const Real& t)
-            : EventScheduler::Event(t), sim_(sim), obs_(obs), running_(true)
+            : Event(t), sim_(sim), obs_(obs), running_(true)
         {
             time_ = obs_->next_time();
         }
@@ -184,7 +183,7 @@ public:
         for (std::vector<boost::shared_ptr<Observer> >::const_iterator
             i(observers.begin()); i != observers.end(); ++i)
         {
-            scheduler.add(boost::shared_ptr<EventScheduler::Event>(
+            scheduler.add(boost::shared_ptr<Event>(
                 new ObserverEvent(this, (*i).get(), t())));
         }
 

@@ -12,67 +12,67 @@
 namespace ecell4
 {
 
-class EventScheduler
+struct Event
 {
 public:
 
-    struct Event
+    Event(Real const& time) : time_(time) {}
+
+    virtual ~Event() {}
+
+    virtual void fire() {}
+
+    Real const& time() const
     {
-    public:
+        return time_;
+    }
 
-        Event(Real const& time) : time_(time) {}
+    //XXX: deprecate me
+    Real const& dt() const
+    {
+        return dt_;
+    }
 
-        virtual ~Event() {}
+    virtual void interrupt(Real const& t) {}
 
-        virtual void fire() {}
+protected:
 
-        Real const& time() const
-        {
-            return time_;
-        }
+    Real time_;
+    //XXX: deprecate me
+    Real dt_;
+};
 
-        //XXX: deprecate me
-        Real const& dt() const
-        {
-            return dt_;
-        }
 
-        virtual void interrupt(Real const& t) {}
-
-    protected:
-
-        Real time_;
-        //XXX: deprecate me
-        Real dt_;
-    };
-
+template <class EventType>
+class EventSchedulerBase
+{
 protected:
 
     struct event_comparator
     {
-        bool operator()(boost::shared_ptr<Event> const& lhs,
-                boost::shared_ptr<Event> const& rhs) const
+        bool operator()(boost::shared_ptr<EventType> const& lhs,
+                boost::shared_ptr<EventType> const& rhs) const
         {
             return lhs->time() <= rhs->time();
         }
     };
 
-    typedef DynamicPriorityQueue<boost::shared_ptr<Event>, event_comparator>
+    typedef DynamicPriorityQueue<boost::shared_ptr<EventType>, event_comparator>
         EventPriorityQueue;
 
 public:
 
-    typedef EventPriorityQueue::size_type size_type;
-    typedef EventPriorityQueue::identifier_type identifier_type;
-    typedef EventPriorityQueue::value_type value_type;
-    typedef boost::iterator_range<EventPriorityQueue::const_iterator>
+    typedef typename EventPriorityQueue::size_type size_type;
+    typedef typename EventPriorityQueue::identifier_type identifier_type;
+    typedef typename EventPriorityQueue::value_type value_type;
+    typedef boost::iterator_range<typename EventPriorityQueue::const_iterator>
         events_range;
 
 public:
 
-    EventScheduler() : time_(0.0) {}
+    EventSchedulerBase() : time_(0.0) {}
 
-    ~EventScheduler() {}
+    ~EventSchedulerBase() {}
 
     Real time() const
     {
@@ -106,7 +106,7 @@ public:
         return eventPriorityQueue_.second();
     }
 
-    boost::shared_ptr<Event> get(identifier_type const& id) const
+    boost::shared_ptr<EventType> get(identifier_type const& id) const
     {
         return eventPriorityQueue_.get(id);
     }
@@ -117,7 +117,7 @@ public:
         eventPriorityQueue_.clear();
     }
 
-    identifier_type add(boost::shared_ptr<Event> const& event)
+    identifier_type add(boost::shared_ptr<EventType> const& event)
     {
         return eventPriorityQueue_.push(event);
     }
@@ -160,6 +160,8 @@ protected:
     EventPriorityQueue eventPriorityQueue_;
     Real time_;
 };
+
+typedef EventSchedulerBase<Event> EventScheduler;
 
 } // ecell4
 
