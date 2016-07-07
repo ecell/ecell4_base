@@ -13,22 +13,22 @@ import multiprocessing
 import ecell4.extra.sge as sge
 
 def run_serial(target, jobs, n=1):
-    return [[target(job) for i in range(n)] for job in jobs]
+    return [[target(job, i + 1, j + 1) for j in range(n)] for i, job in enumerate(jobs)]
 
 def run_multiprocessing(target, jobs, n=1):
     def target_wrapper(f, end_send):
-        def wf(j):
-            end_send.send(f(j))
+        def wf(*args, **kwargs):
+            end_send.send(f(*args, **kwargs))
         return wf
 
     processes = []
     end_recvs = []
-    for job in jobs:
-        for i in range(n):
+    for i, job in enumerate(jobs):
+        for j in range(n):
             end_recv, end_send = multiprocessing.Pipe(False)
             end_recvs.append(end_recv)
             p = multiprocessing.Process(
-                target=target_wrapper(target, end_send), args=(job, ))
+                target=target_wrapper(target, end_send), args=(job, i + 1, j + 1))
             p.start()
             processes.append(p)
 
@@ -52,7 +52,7 @@ def run_sge(target, jobs, n=1, path='.', delete=True, environ={}):
     cmds = []
     pickleins = []
     pickleouts = []
-    for job in jobs:
+    for i, job in enumerate(jobs):
         (fd, picklein) = tempfile.mkstemp(suffix='.pickle', prefix='sge-', dir=path)
         with os.fdopen(fd, 'wb') as fout:
             pickle.dump(job, fout)
@@ -60,7 +60,7 @@ def run_sge(target, jobs, n=1, path='.', delete=True, environ={}):
 
         pickleouts.append(
             [tempfile.mkstemp(suffix='.pickle', prefix='sge-', dir=path)[1]
-             for i in range(n)])
+             for j in range(n)])
 
         cmd = '#!/bin/bash\n'
         for key, value in environ.items():
@@ -73,8 +73,8 @@ def run_sge(target, jobs, n=1, path='.', delete=True, environ={}):
         cmd += '    job = pickle.load(fin)\n'
         cmd += 'pass\n'
         cmd += src
-        cmd += '\nretval = {:s}(job)'.format(target.__name__)
         cmd += '\ntid = int(os.environ[\'SGE_TASK_ID\'])'
+        cmd += '\nretval = {:s}(job, {:d}, tid)'.format(target.__name__, i + 1)
         cmd += '\nfilenames = {:s}'.format(str(pickleouts[-1]))
         cmd += '\npickle.dump(retval, open(filenames[tid - 1], \'wb\'))'
         cmd += '" {:s}\n'.format(picklein)
@@ -98,10 +98,11 @@ def run_sge(target, jobs, n=1, path='.', delete=True, environ={}):
 
 
 if __name__ == "__main__":
-    def singlerun(job):
+    def singlerun(job, job_id=0, task_id=0):
         import ecell4
         print("Hi, I'm in local!")
-        print("job => {}".format(str(job)))
+        print("My job id is {:d}, and my task id is {:d}.".format(job_id, task_id))
+        print("My job is {:s}.".format(str(job)))
         return job['x'] + job['y']
 
     jobs = [{'x': i, 'y': i ** 2} for i in range(1, 4)]
