@@ -15,95 +15,13 @@
 #include <ecell4/core/get_mapper_mf.hpp>
 
 #include "SpatiocyteWorld.hpp"
+#include "SpatiocyteEvent.hpp"
 
 namespace ecell4
 {
 
 namespace spatiocyte
 {
-
-class ReactionInfo
-{
-public:
-
-    typedef std::pair<ParticleID, Voxel> particle_id_pair_type;
-    typedef std::vector<particle_id_pair_type> container_type;
-
-public:
-
-    ReactionInfo()
-        : t_(0), reactants_(), products_()
-    {}
-
-    ReactionInfo(const Real t)
-        : t_(t), reactants_(), products_()
-    {}
-
-    ReactionInfo(
-        const Real t,
-        const container_type& reactants,
-        const container_type& products)
-        : t_(t), reactants_(reactants), products_(products)
-    {}
-
-    ReactionInfo(const ReactionInfo& another)
-        : t_(another.t()), reactants_(another.reactants()), products_(another.products())
-    {}
-
-    Real t() const
-    {
-        return t_;
-    }
-
-    const container_type& reactants() const
-    {
-        return reactants_;
-    }
-
-    void add_reactant(const particle_id_pair_type& pid_pair)
-    {
-        reactants_.push_back(pid_pair);
-    }
-
-    const container_type& products() const
-    {
-        return products_;
-    }
-
-    void add_product(const particle_id_pair_type& pid_pair)
-    {
-        products_.push_back(pid_pair);
-    }
-
-protected:
-
-    Real t_;
-    container_type reactants_, products_;
-};
-
-struct SpatiocyteEvent : public Event
-{
-public:
-    typedef ReactionInfo reaction_info_type;
-    typedef std::pair<ReactionRule, reaction_info_type> reaction_type;
-
-    SpatiocyteEvent(Real const& time) : Event(time) {}
-    virtual ~SpatiocyteEvent() {}
-
-    std::vector<reaction_type> last_reactions() const
-    {
-        return last_reactions_;
-    }
-
-    void push_reaction(const reaction_type& reaction)
-    {
-        last_reactions_.push_back(reaction);
-    }
-
-protected:
-    std::vector<reaction_type> last_reactions_;
-
-};
 
 class SpatiocyteSimulator
     : public SimulatorBase<Model, SpatiocyteWorld>
@@ -118,168 +36,6 @@ public:
     typedef EventSchedulerBase<SpatiocyteEvent> scheduler_type;
 
     typedef utils::get_mapper_mf<Species, Real>::type alpha_map_type;
-
-protected:
-
-    struct StepEvent : SpatiocyteEvent
-    {
-        StepEvent(
-            SpatiocyteSimulator* sim, const Species& species, const Real& t,
-            const Real alpha=1.0)
-            : SpatiocyteEvent(t), sim_(sim), species_(species), alpha_(alpha)
-        {
-            const SpatiocyteWorld::molecule_info_type
-                minfo(sim_->world_->get_molecule_info(species));
-            const Real R(minfo.radius);
-            const Real D(minfo.D);
-            const VoxelPool* mtype(sim_->world_->find_voxel_pool(species));
-            // const Real R(sim_->world_->voxel_radius());
-            // Real D = boost::lexical_cast<Real>(species.get_attribute("D"));
-            if (D <= 0)
-            {
-                dt_ = inf;
-            } else if(mtype->get_dimension() == Shape::THREE) {
-                dt_ = 2 * R * R / 3 / D * alpha_;
-            } else if(mtype->get_dimension() == Shape::TWO) {
-                // TODO: Regular Lattice
-                // dt_  = pow((2*sqrt(2.0)+4*sqrt(3.0)+3*sqrt(6.0)+sqrt(22.0))/
-                //           (6*sqrt(2.0)+4*sqrt(3.0)+3*sqrt(6.0)), 2) * R * R / D * alpha_;
-                dt_ = R * R / D * alpha_;
-            } else if(mtype->get_dimension() == Shape::ONE) {
-                dt_ = 2 * R * R / D * alpha_;
-            }
-            else
-            {
-                throw NotSupported(
-                    "The dimension of a structure must be two or three.");
-            }
-
-            time_ = t + dt_;
-            // time_ = t;
-        }
-
-        virtual ~StepEvent()
-        {
-            ;
-        }
-
-        virtual void fire()
-        {
-            sim_->walk(species_, alpha_);
-            time_ += dt_;
-        }
-
-        Species const& species() const
-        {
-            return species_;
-        }
-
-        Real const& alpha() const
-        {
-            return alpha_;
-        }
-
-    protected:
-
-        SpatiocyteSimulator* sim_;
-        Species species_;
-        VoxelPool* mt_;
-        const Real alpha_;
-    };
-
-    struct ZerothOrderReactionEvent : SpatiocyteEvent
-    {
-        ZerothOrderReactionEvent(
-            SpatiocyteSimulator* sim, const ReactionRule& rule, const Real& t)
-            : SpatiocyteEvent(t), sim_(sim), rule_(rule)
-        {
-            time_ = t + draw_dt();
-        }
-
-        virtual ~ZerothOrderReactionEvent() {}
-
-        virtual void fire()
-        {
-            const std::pair<bool, reaction_type> reaction(
-                    sim_->apply_zeroth_order_reaction_(rule_));
-            if (reaction.first)
-                push_reaction(reaction.second);
-            time_ += draw_dt();
-        }
-
-        virtual void interrupt(Real const& t)
-        {
-            time_ = t + draw_dt();
-        }
-
-        Real draw_dt()
-        {
-            const Real k(rule_.k());
-            const Real p = k * sim_->world()->volume();
-            Real dt(inf);
-            if (p != 0.)
-            {
-                const Real rnd(sim_->world_->rng()->uniform(0.,1.));
-                dt = - log(1 - rnd) / p;
-            }
-            return dt;
-        }
-
-    protected:
-
-        SpatiocyteSimulator* sim_;
-        ReactionRule rule_;
-    };
-
-    struct FirstOrderReactionEvent : SpatiocyteEvent
-    {
-        FirstOrderReactionEvent(
-            SpatiocyteSimulator* sim, const ReactionRule& rule, const Real& t)
-            : SpatiocyteEvent(t), sim_(sim), rule_(rule)
-        {
-            //assert(rule_.reactants().size() == 1);
-            time_ = t + draw_dt();
-        }
-
-        virtual ~FirstOrderReactionEvent()
-        {
-        }
-
-        virtual void fire()
-        {
-            const Species& reactant(*(rule_.reactants().begin()));
-            const std::pair<bool, reaction_type> reaction(
-                    sim_->apply_first_order_reaction_(rule_, sim_->world_->choice(reactant)));
-            if (reaction.first)
-                push_reaction(reaction.second);
-            time_ += draw_dt();
-        }
-
-        virtual void interrupt(Real const& t)
-        {
-            time_ = t + draw_dt();
-        }
-
-        Real draw_dt()
-        {
-            const Species& reactant(*(rule_.reactants().begin()));
-            const Integer num_r(sim_->world_->num_voxels_exact(reactant));
-            const Real k(rule_.k());
-            const Real p = k * num_r;
-            Real dt(inf);
-            if (p != 0.)
-            {
-                const Real rnd(sim_->world_->rng()->uniform(0.,1.));
-                dt = - log(1 - rnd) / p;
-            }
-            return dt;
-        }
-
-    protected:
-
-        SpatiocyteSimulator* sim_;
-        ReactionRule rule_;
-    };
 
 public:
 
@@ -341,6 +97,17 @@ public:
         return alpha_;
     }
 
+    // TODO: remove the below public functions
+    boost::shared_ptr<SpatiocyteWorld> world()
+    {
+        return world_;
+    }
+    std::pair<bool, reaction_type> apply_zeroth_order_reaction_(
+        const ReactionRule& reaction_rule);
+    std::pair<bool, reaction_type> apply_first_order_reaction_(
+        const ReactionRule& reaction_rule,
+        const reaction_info_type::particle_id_pair_type& p);
+
 protected:
 
     boost::shared_ptr<SpatiocyteEvent> create_step_event(
@@ -363,12 +130,7 @@ protected:
         const SpatiocyteWorld::coordinate_id_pair_type& info,
         SpatiocyteWorld::coordinate_type to_coord, const Real& alpha);
 
-    std::pair<bool, reaction_type> apply_zeroth_order_reaction_(
-        const ReactionRule& reaction_rule);
 
-    std::pair<bool, reaction_type> apply_first_order_reaction_(
-        const ReactionRule& reaction_rule,
-        const reaction_info_type::particle_id_pair_type& p);
     std::pair<bool, reaction_type> apply_a2b(
         const ReactionRule& reaction_rule,
         const reaction_info_type::particle_id_pair_type& p,
@@ -442,7 +204,7 @@ protected:
 
     scheduler_type scheduler_;
     std::vector<reaction_type> last_reactions_;
-    std::shared_ptr<SpatiocyteEvent> last_event_;
+    boost::shared_ptr<SpatiocyteEvent> last_event_;
     std::vector<Species> new_species_;
     std::vector<unsigned int> nids_; // neighbor indexes
     alpha_map_type alpha_map_;
