@@ -136,53 +136,6 @@ void SpatiocyteSimulator::finalize()
     initialize();
 }
 
-/*
- * the Zeroth Order Reaction
- */
-std::pair<bool, SpatiocyteSimulator::reaction_type>
-    SpatiocyteSimulator::apply_zeroth_order_reaction_(
-        const ReactionRule& reaction_rule)
-{
-    // const ReactionRule::product_container_type&
-    //     products(reaction_rule.products());
-    reaction_info_type rinfo(world_->t());
-
-    for (ReactionRule::product_container_type::const_iterator
-        i(reaction_rule.products().begin());
-        i != reaction_rule.products().end(); ++i)
-    {
-        const Species& sp(*i);
-        const SpatiocyteWorld::molecule_info_type
-            info(world_->get_molecule_info(sp));
-        register_product_species(sp);
-
-        while (true) //TODO: Avoid an inifinite loop
-        {
-            // const SpatiocyteWorld::coordinate_type
-            //     coord(world_->rng()->uniform_int(0, world_->size() - 1));
-            const SpatiocyteWorld::coordinate_type
-                coord(inner2coordinate(*world_, world_->rng()->uniform_int(0, world_->inner_size() - 1)));
-            const Voxel v(sp, coord, info.radius, info.D, info.loc);
-
-            if (world_->on_structure(v))
-            {
-                continue;
-            }
-
-            const std::pair<std::pair<ParticleID, Voxel>, bool>
-                retval(world_->new_voxel(v));
-            if (retval.second)
-            {
-                rinfo.add_product(retval.first);
-                break;
-            }
-        }
-    }
-    reaction_type const reaction = std::make_pair(reaction_rule, rinfo);
-    // last_reactions_.push_back(reaction);
-    return std::make_pair(true, reaction);
-}
-
 Real SpatiocyteSimulator::calculate_dimensional_factor(
     const VoxelPool* mt0, const VoxelPool* mt1) const
 {
@@ -414,7 +367,6 @@ std::pair<bool, SpatiocyteSimulator::reaction_type> SpatiocyteSimulator::apply_a
         // Place C at the coordinate of B, and remove A.
         rinfo.add_reactant(p0);
         rinfo.add_reactant(p1);
-        register_product_species(product_species);
 
         if (tserial != location)
         {
@@ -433,7 +385,6 @@ std::pair<bool, SpatiocyteSimulator::reaction_type> SpatiocyteSimulator::apply_a
         // Place C at the coordinate of A, and remove B.
         rinfo.add_reactant(p0);
         rinfo.add_reactant(p1);
-        register_product_species(product_species);
 
         if (fserial != location)
         {
@@ -602,9 +553,6 @@ std::pair<bool, SpatiocyteSimulator::reaction_type> SpatiocyteSimulator::apply_a
     rinfo.add_reactant(p0);
     rinfo.add_reactant(p1);
 
-    register_product_species(product_species0);
-    register_product_species(product_species1);
-
     std::pair<std::pair<ParticleID, Voxel>, bool> new_mol0(
         world_->new_voxel(product_species0, coord0));
     if (!new_mol0.second)
@@ -621,47 +569,6 @@ std::pair<bool, SpatiocyteSimulator::reaction_type> SpatiocyteSimulator::apply_a
     rinfo.add_product(new_mol0.first);
     rinfo.add_product(new_mol1.first);
     return std::make_pair(true, std::make_pair(reaction_rule, rinfo));
-}
-
-/*
- * the First Order Reaction
- */
-std::pair<bool, SpatiocyteSimulator::reaction_type>
-    SpatiocyteSimulator::apply_first_order_reaction_(
-        const ReactionRule& reaction_rule,
-        const SpatiocyteSimulator::reaction_info_type::particle_id_pair_type& p)
-{
-    const ReactionRule::product_container_type& products(reaction_rule.products());
-
-    std::pair<bool, reaction_type> retval;
-
-    switch (products.size())
-    {
-        case 0:
-            world_->remove_voxel(p.second.coordinate());
-            {
-                reaction_info_type rinfo(world_->t());
-                rinfo.add_reactant(p);
-                retval = std::make_pair(true, std::make_pair(reaction_rule, rinfo));
-            }
-            break;
-        case 1:
-            retval = apply_a2b(reaction_rule, p, *(products.begin()));
-            assert(retval.first);
-            break;
-        case 2:
-            retval = apply_a2bc(
-                reaction_rule, p, *(products.begin()), (*(++products.begin())));
-            break;
-        default:
-            return std::make_pair(false, reaction_type());
-    }
-
-    // if (retval.first)
-    // {
-    //     last_reactions_.push_back(retval.second);
-    // }
-    return retval;
 }
 
 std::pair<bool, SpatiocyteSimulator::reaction_type>
@@ -685,7 +592,6 @@ SpatiocyteSimulator::apply_a2b(
         // or A is on the location of B,
         // or A is on B.
         rinfo.add_reactant(p);
-        register_product_species(product_species);
 
         if (aserial != bloc)
         {
@@ -718,7 +624,6 @@ SpatiocyteSimulator::apply_a2b(
             // The neighbor is the location of B.
             // Place B at the neighbor, and remove A.
             rinfo.add_reactant(p);
-            register_product_species(product_species);
 
             world_->remove_voxel(p.second.coordinate());
             std::pair<std::pair<ParticleID, Voxel>, bool> new_mol(
@@ -768,9 +673,6 @@ std::pair<bool, SpatiocyteSimulator::reaction_type> SpatiocyteSimulator::apply_a
         reaction_info_type rinfo(world_->t());
         rinfo.add_reactant(p);
 
-        register_product_species(product_species0);
-        register_product_species(product_species1);
-
         if (aserial != bloc)
         {
             // Remove A once if A is not the location of a new B-molecule
@@ -818,9 +720,6 @@ std::pair<bool, SpatiocyteSimulator::reaction_type> SpatiocyteSimulator::apply_a
 
         reaction_info_type rinfo(world_->t());
         rinfo.add_reactant(p);
-
-        register_product_species(product_species0);
-        register_product_species(product_species1);
 
         if (aserial != cloc)
         {
@@ -916,6 +815,14 @@ void SpatiocyteSimulator::step_()
     const Real time(top.second->time());
     world_->set_t(time);
     top.second->fire(); // top.second->time_ is updated in fire()
+    if (!check_reaction())
+        last_reactions_ = top.second->last_reactions();
+    for (std::vector<reaction_type>::const_iterator itr(last_reactions_.begin());
+            itr != last_reactions_.end(); ++itr)
+        for (reaction_info_type::container_type::const_iterator
+                product((*itr).second.products().begin());
+                product != (*itr).second.products().end(); ++product)
+            register_product_species((*product).second.species());
 
     scheduler_type::events_range events(scheduler_.events());
     for (scheduler_type::events_range::iterator itr(events.begin());

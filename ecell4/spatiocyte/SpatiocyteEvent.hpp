@@ -140,6 +140,7 @@ struct ZerothOrderReactionEvent : SpatiocyteEvent
 protected:
 
     SpatiocyteSimulator* sim_;
+    boost::shared_ptr<SpatiocyteWorld> world_;
     ReactionRule rule_;
 };
 
@@ -160,6 +161,7 @@ struct FirstOrderReactionEvent : SpatiocyteEvent
 protected:
 
     SpatiocyteSimulator* sim_;
+    boost::shared_ptr<SpatiocyteWorld> world_;
     ReactionRule rule_;
 };
 

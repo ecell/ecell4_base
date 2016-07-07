@@ -69,14 +69,12 @@ public:
 
     virtual bool check_reaction() const
     {
-        return last_event_->last_reactions().size() > 0;
-        // return last_reactions_.size() > 0;
+        return last_reactions_.size() > 0;
     }
 
     std::vector<std::pair<ReactionRule, reaction_info_type> > last_reactions() const
     {
-        return last_event_->last_reactions();
-        // return last_reactions_;
+        return last_reactions_;
     }
 
     void set_alpha(const Real alpha)
@@ -109,11 +107,16 @@ public:
     std::pair<attempt_reaction_result_type, reaction_type> attempt_reaction_(
         const SpatiocyteWorld::coordinate_id_pair_type& info,
         SpatiocyteWorld::coordinate_type to_coord, const Real& alpha);
-    std::pair<bool, reaction_type> apply_zeroth_order_reaction_(
-        const ReactionRule& reaction_rule);
-    std::pair<bool, reaction_type> apply_first_order_reaction_(
+    std::pair<bool, reaction_type> apply_a2b(
         const ReactionRule& reaction_rule,
-        const reaction_info_type::particle_id_pair_type& p);
+        const reaction_info_type::particle_id_pair_type& p,
+        const Species& product_species);
+    std::pair<bool, reaction_type> apply_a2bc(
+        const ReactionRule& reaction_rule,
+        const reaction_info_type::particle_id_pair_type& p,
+        const Species& product_species0,
+        const Species& product_species1);
+    void register_product_species(const Species& product_species);
 
 protected:
 
@@ -125,16 +128,6 @@ protected:
         const ReactionRule& reaction_rule, const Real& t);
     Real calculate_dimensional_factor(
         const VoxelPool* mt0, const VoxelPool* mt1) const;
-
-    std::pair<bool, reaction_type> apply_a2b(
-        const ReactionRule& reaction_rule,
-        const reaction_info_type::particle_id_pair_type& p,
-        const Species& product_species);
-    std::pair<bool, reaction_type> apply_a2bc(
-        const ReactionRule& reaction_rule,
-        const reaction_info_type::particle_id_pair_type& p,
-        const Species& product_species0,
-        const Species& product_species1);
 
     std::pair<bool, reaction_type> apply_second_order_reaction_(
         const ReactionRule& reaction_rule,
@@ -164,7 +157,6 @@ protected:
         const SpatiocyteWorld::coordinate_type coord0,
         const SpatiocyteWorld::coordinate_type coord1);
 
-    void register_product_species(const Species& product_species);
     // void register_reactant_species(
     //     const SpatiocyteWorld::coordinate_id_pair_type pinfo, reaction_type& reaction) const;
 
@@ -196,7 +188,6 @@ protected:
 
     scheduler_type scheduler_;
     std::vector<reaction_type> last_reactions_;
-    boost::shared_ptr<SpatiocyteEvent> last_event_;
     std::vector<Species> new_species_;
     alpha_map_type alpha_map_;
     //map<Species> alpha_map_;
