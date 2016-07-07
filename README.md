@@ -162,8 +162,7 @@ viz.plot_trajectory(obs, interactive=False)
 Docker container for E-Cell4
 ----------------------------
 
-If you have docker environment, you can easily try E-Cell4.
-You can pull E-Cell4 container with `docker pull ecell/ecell4`.
+You can pull E-Cell4 docker container with `docker pull ecell/ecell4`.
 
 After the following steps, you should see [Jupyter Notebook](http://jupyter.org/) up and running (and E-Cell4 tutorials) in your web browser.
 
