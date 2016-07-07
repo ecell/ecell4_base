@@ -107,15 +107,6 @@ public:
     std::pair<attempt_reaction_result_type, reaction_type> attempt_reaction_(
         const SpatiocyteWorld::coordinate_id_pair_type& info,
         SpatiocyteWorld::coordinate_type to_coord, const Real& alpha);
-    std::pair<bool, reaction_type> apply_a2b(
-        const ReactionRule& reaction_rule,
-        const reaction_info_type::particle_id_pair_type& p,
-        const Species& product_species);
-    std::pair<bool, reaction_type> apply_a2bc(
-        const ReactionRule& reaction_rule,
-        const reaction_info_type::particle_id_pair_type& p,
-        const Species& product_species0,
-        const Species& product_species1);
     void register_product_species(const Species& product_species);
 
 protected:

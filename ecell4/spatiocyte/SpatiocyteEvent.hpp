@@ -146,7 +146,7 @@ protected:
 struct FirstOrderReactionEvent : SpatiocyteEvent
 {
     FirstOrderReactionEvent(
-        SpatiocyteSimulator* sim, const ReactionRule& rule, const Real& t);
+        boost::shared_ptr<SpatiocyteWorld> world, const ReactionRule& rule, const Real& t);
 
     virtual ~FirstOrderReactionEvent() {}
     virtual void fire();
@@ -159,7 +159,30 @@ struct FirstOrderReactionEvent : SpatiocyteEvent
 
 protected:
 
-    SpatiocyteSimulator* sim_;
+    const std::string get_serial(const SpatiocyteWorld::coordinate_type coord) const
+    {
+        const VoxelPool* mtype(world_->find_voxel_pool(coord));
+        return mtype->is_vacant() ? "" : mtype->species().serial();
+    }
+
+    const std::string get_location(const SpatiocyteWorld::coordinate_type coord) const
+    {
+        const VoxelPool* mtype(world_->find_voxel_pool(coord));
+        if (mtype->is_vacant())
+            return "";
+        const VoxelPool* ltype(mtype->location());
+        return ltype->is_vacant() ? "" : ltype->species().serial();
+    }
+
+    reaction_info_type apply_a2b(
+        const reaction_info_type::particle_id_pair_type& p,
+        const Species& product_species);
+
+    std::pair<bool, reaction_info_type> apply_a2bc(
+        const reaction_info_type::particle_id_pair_type& p,
+        const Species& product_species0,
+        const Species& product_species1);
+
     boost::shared_ptr<SpatiocyteWorld> world_;
     ReactionRule rule_;
 };
