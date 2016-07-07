@@ -179,7 +179,6 @@ protected:
 
     scheduler_type scheduler_;
     std::vector<reaction_type> last_reactions_;
-    std::vector<Species> new_species_;
     alpha_map_type alpha_map_;
     //map<Species> alpha_map_;
 

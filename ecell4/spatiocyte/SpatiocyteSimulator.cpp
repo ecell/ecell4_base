@@ -571,14 +571,6 @@ std::pair<bool, SpatiocyteSimulator::reaction_type> SpatiocyteSimulator::apply_a
     return std::make_pair(true, std::make_pair(reaction_rule, rinfo));
 }
 
-void SpatiocyteSimulator::register_product_species(const Species& product_species)
-{
-    if (!world_->has_species(product_species))
-    {
-        new_species_.push_back(product_species);
-    }
-}
-
 // void SpatiocyteSimulator::register_reactant_species(
 //         const SpatiocyteWorld::coordinate_id_pair_type pinfo, reaction_type& reaction) const
 // {
@@ -614,7 +606,6 @@ bool SpatiocyteSimulator::step(const Real& upto)
 
     world_->set_t(upto); //XXX: TODO
     last_reactions_.clear();
-    new_species_.clear();
     dt_ = scheduler_.next_time() - t();
     return false;
 }
@@ -622,7 +613,6 @@ bool SpatiocyteSimulator::step(const Real& upto)
 void SpatiocyteSimulator::step_()
 {
     last_reactions_.clear();
-    new_species_.clear();
 
     scheduler_type::value_type top(scheduler_.pop());
     const Real time(top.second->time());
@@ -630,12 +620,18 @@ void SpatiocyteSimulator::step_()
     top.second->fire(); // top.second->time_ is updated in fire()
     if (!check_reaction())
         last_reactions_ = top.second->last_reactions();
+
+    std::vector<Species> new_species;
     for (std::vector<reaction_type>::const_iterator itr(last_reactions_.begin());
             itr != last_reactions_.end(); ++itr)
         for (reaction_info_type::container_type::const_iterator
                 product((*itr).second.products().begin());
                 product != (*itr).second.products().end(); ++product)
-            register_product_species((*product).second.species());
+        {
+            const Species& species((*product).second.species());
+            if (!world_->has_species(species))
+                new_species.push_back(species);
+        }
 
     scheduler_type::events_range events(scheduler_.events());
     for (scheduler_type::events_range::iterator itr(events.begin());
@@ -647,15 +643,14 @@ void SpatiocyteSimulator::step_()
     scheduler_.add(top.second);
 
     // update_alpha_map(); // may be performance cost
-    for (std::vector<Species>::const_iterator itr(new_species_.begin());
-        itr != new_species_.end(); ++itr)
+    for (std::vector<Species>::const_iterator itr(new_species.begin());
+        itr != new_species.end(); ++itr)
     {
         register_events(*itr);
     }
 
     num_steps_++;
 }
-
 
 } // spatiocyte
 
