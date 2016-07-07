@@ -23,10 +23,12 @@ def run(jobs, n=1, path='.', wc_queue_list='all.q', sync=True, delete=True):
     for job in jobs:
         retval.append(singlerun(job, n, path, wc_queue_list, sync=False))
     if sync:
-        wait([jobid for jobid, name, filename in retval])
-        if delete:
-            for jobid, name, filename in retval:
-                os.remove(filename)
+        try:
+            wait([jobid for jobid, name, filename in retval])
+        finally:
+            if delete:
+                for jobid, name, filename in retval:
+                    os.remove(filename)
     return [(jobid, name) for jobid, name, filename in retval]
 
 def singlerun(job, n=1, path='.', wc_queue_list='all.q', sync=True, delete=True):
@@ -37,9 +39,11 @@ def singlerun(job, n=1, path='.', wc_queue_list='all.q', sync=True, delete=True)
     (jobid, name) = submit(filename, n, path, path, wc_queue_list)
 
     if sync:
-        wait(jobid)
-        if delete:
-            os.remove(filename)
+        try:
+            wait(jobid)
+        finally:
+            if delete:
+                os.remove(filename)
 
     return (jobid, name, filename)
 
