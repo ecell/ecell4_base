@@ -95,6 +95,11 @@ public:
         return last_reactions_;
     }
 
+    void push_reaction(const reaction_type& reaction)
+    {
+        last_reactions_.push_back(reaction);
+    }
+
 protected:
     std::vector<reaction_type> last_reactions_;
 
@@ -191,13 +196,14 @@ protected:
             time_ = t + draw_dt();
         }
 
-        virtual ~ZerothOrderReactionEvent()
-        {
-        }
+        virtual ~ZerothOrderReactionEvent() {}
 
         virtual void fire()
         {
-            sim_->apply_zeroth_order_reaction_(rule_);
+            const std::pair<bool, reaction_type> reaction(
+                    sim_->apply_zeroth_order_reaction_(rule_));
+            if (reaction.first)
+                push_reaction(reaction.second);
             time_ += draw_dt();
         }
 
@@ -242,7 +248,10 @@ protected:
         virtual void fire()
         {
             const Species reactant(*(rule_.reactants().begin()));
-            sim_->apply_first_order_reaction_(rule_, sim_->world_->choice(reactant));
+            const std::pair<bool, reaction_type> reaction(
+                    sim_->apply_first_order_reaction_(rule_, sim_->world_->choice(reactant)));
+            if (reaction.first)
+                push_reaction(reaction.second);
             time_ += draw_dt();
         }
 
@@ -300,18 +309,20 @@ public:
     void finalize();
     void step();
     bool step(const Real& upto);
-    void walk(const Species& species);
+    // void walk(const Species& species);
     void walk(const Species& species, const Real& alpha);
     Real calculate_alpha(const ReactionRule& rule) const;
 
     virtual bool check_reaction() const
     {
-        return last_reactions_.size() > 0;
+        return last_event_->last_reactions().size() > 0;
+        // return last_reactions_.size() > 0;
     }
 
     std::vector<std::pair<ReactionRule, reaction_info_type> > last_reactions() const
     {
-        return last_reactions_;
+        return last_event_->last_reactions();
+        // return last_reactions_;
     }
 
     void set_alpha(const Real alpha)
@@ -431,6 +442,7 @@ protected:
 
     scheduler_type scheduler_;
     std::vector<reaction_type> last_reactions_;
+    std::shared_ptr<SpatiocyteEvent> last_event_;
     std::vector<Species> new_species_;
     std::vector<unsigned int> nids_; // neighbor indexes
     alpha_map_type alpha_map_;

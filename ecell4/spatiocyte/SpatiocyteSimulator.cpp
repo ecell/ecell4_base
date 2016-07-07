@@ -183,7 +183,7 @@ std::pair<bool, SpatiocyteSimulator::reaction_type>
         }
     }
     reaction_type const reaction = std::make_pair(reaction_rule, rinfo);
-    last_reactions_.push_back(reaction);
+    // last_reactions_.push_back(reaction);
     return std::make_pair(true, reaction);
 }
 
@@ -661,10 +661,10 @@ std::pair<bool, SpatiocyteSimulator::reaction_type>
             return std::make_pair(false, reaction_type());
     }
 
-    if (retval.first)
-    {
-        last_reactions_.push_back(retval.second);
-    }
+    // if (retval.first)
+    // {
+    //     last_reactions_.push_back(retval.second);
+    // }
     return retval;
 }
 
@@ -940,10 +940,10 @@ void SpatiocyteSimulator::step_()
     num_steps_++;
 }
 
-void SpatiocyteSimulator::walk(const Species& species)
-{
-    walk(species, 1.0);
-}
+// void SpatiocyteSimulator::walk(const Species& species)
+// {
+//     walk(species, 1.0);
+// }
 
 void SpatiocyteSimulator::walk(const Species& species, const Real& alpha)
 {
