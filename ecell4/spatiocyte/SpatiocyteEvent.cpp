@@ -9,14 +9,14 @@ namespace spatiocyte {
 
 StepEvent::StepEvent(SpatiocyteSimulator* sim, const Species& species, const Real& t,
     const Real alpha)
-    : SpatiocyteEvent(t), sim_(sim), species_(species), alpha_(alpha)
+    : SpatiocyteEvent(t), sim_(sim), world_(sim->world()), species_(species), alpha_(alpha)
 {
     const SpatiocyteWorld::molecule_info_type
-        minfo(sim_->world()->get_molecule_info(species));
+        minfo(world_->get_molecule_info(species));
     const Real R(minfo.radius);
     const Real D(minfo.D);
-    const VoxelPool* mtype(sim_->world()->find_voxel_pool(species));
-    // const Real R(sim_->world()->voxel_radius());
+    const VoxelPool* mtype(world_->find_voxel_pool(species));
+    // const Real R(world_->voxel_radius());
     // Real D = boost::lexical_cast<Real>(species.get_attribute("D"));
     if (D <= 0)
     {
@@ -39,6 +39,10 @@ StepEvent::StepEvent(SpatiocyteSimulator* sim, const Species& species, const Rea
 
     time_ = t + dt_;
     // time_ = t;
+
+    nids_.clear();
+    for (unsigned int i(0); i < 12; ++i)
+        nids_.push_back(i);
 }
 
 void StepEvent::fire()
@@ -47,20 +51,96 @@ void StepEvent::fire()
     time_ += dt_;
 }
 
-void StepEvent::walk(const Real& alpha) const
+void StepEvent::walk(const Real& alpha)
 {
     if (alpha < 0 || alpha > 1)
     {
         return; // INVALID ALPHA VALUE
     }
 
-    const boost::shared_ptr<RandomNumberGenerator>& rng(sim_->world()->rng());
-    const MoleculePool* mtype(sim_->world()->find_molecule_pool(species_));
+    const boost::shared_ptr<RandomNumberGenerator>& rng(world_->rng());
+    const MoleculePool* mtype(world_->find_molecule_pool(species_));
 
     if (mtype->get_dimension() == Shape::THREE)
-        sim_->walk_in_space_(mtype, alpha);
+        walk_in_space_(mtype, alpha);
     else // dimension == TWO, etc.
-        sim_->walk_on_surface_(mtype, alpha);
+        walk_on_surface_(mtype, alpha);
+}
+
+void StepEvent::walk_in_space_(const MoleculePool* mtype, const Real& alpha)
+{
+    const boost::shared_ptr<RandomNumberGenerator>& rng(world_->rng());
+    MoleculePool::container_type voxels;
+    copy(mtype->begin(), mtype->end(), back_inserter(voxels));
+
+    std::size_t idx(0);
+    for (MoleculePool::container_type::iterator itr(voxels.begin());
+         itr != voxels.end(); ++itr)
+    {
+        const Integer rnd(rng->uniform_int(0, 11));
+        const SpatiocyteWorld::coordinate_id_pair_type& info(*itr);
+        if (world_->find_voxel_pool(info.coordinate) != mtype)
+        {
+            // should skip if a voxel is not the target species.
+            // when reaction has occured before, a voxel can be changed.
+            continue;
+        }
+        const SpatiocyteWorld::coordinate_type neighbor(
+                world_->get_neighbor_boundary(info.coordinate, rnd));
+        if (world_->can_move(info.coordinate, neighbor))
+        {
+            if (rng->uniform(0,1) <= alpha)
+                world_->move(info.coordinate, neighbor, /*candidate=*/idx);
+        }
+        else
+        {
+            sim_->attempt_reaction_(info, neighbor, alpha);
+        }
+        ++idx;
+    }
+}
+
+void StepEvent::walk_on_surface_(const MoleculePool* mtype, const Real& alpha)
+{
+    const boost::shared_ptr<RandomNumberGenerator>& rng(world_->rng());
+    MoleculePool::container_type voxels;
+    copy(mtype->begin(), mtype->end(), back_inserter(voxels));
+
+    const VoxelPool* location(mtype->location());
+    std::size_t idx(0);
+    for (MoleculePool::container_type::iterator itr(voxels.begin());
+         itr != voxels.end(); ++itr)
+    {
+        const SpatiocyteWorld::coordinate_id_pair_type& info(*itr);
+        if (world_->find_voxel_pool(info.coordinate) != mtype)
+        {
+            // should skip if a voxel is not the target species.
+            // when reaction has occured before, a voxel can be changed.
+            continue;
+        }
+
+        ecell4::shuffle(*(rng.get()), nids_);
+        for (std::vector<unsigned int>::const_iterator itr(nids_.begin());
+             itr != nids_.end(); ++itr)
+        {
+            const SpatiocyteWorld::coordinate_type neighbor(
+                    world_->get_neighbor_boundary(info.coordinate, *itr));
+            const VoxelPool* target(world_->find_voxel_pool(neighbor));
+
+            if (target->get_dimension() > mtype->get_dimension())
+                continue;
+
+            if (world_->can_move(info.coordinate, neighbor))
+            {
+                if (rng->uniform(0,1) <= alpha)
+                    world_->move(info.coordinate, neighbor, /*candidate=*/idx);
+                break;
+            }
+            else if (sim_->attempt_reaction_(info, neighbor, alpha).first != SpatiocyteSimulator::NO_REACTION)
+                break;
+        }
+        ++idx;
+    }
 }
 
 

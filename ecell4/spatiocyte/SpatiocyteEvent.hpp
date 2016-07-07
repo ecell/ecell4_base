@@ -4,6 +4,7 @@
 #include <ecell4/core/ReactionRule.hpp>
 #include <ecell4/core/EventScheduler.hpp>
 #include <ecell4/core/VoxelPool.hpp>
+#include "SpatiocyteWorld.hpp"
 
 namespace ecell4
 {
@@ -107,14 +108,19 @@ struct StepEvent : SpatiocyteEvent
         return alpha_;
     }
 
-    void walk(const Real& alpha) const;
+    void walk(const Real& alpha);
 
 protected:
 
+    void walk_in_space_(const MoleculePool* mtype, const Real& alpha);
+    void walk_on_surface_(const MoleculePool* mtype, const Real& alpha);
+
     SpatiocyteSimulator* sim_;
+    boost::shared_ptr<SpatiocyteWorld> world_;
     Species species_;
     VoxelPool* mt_;
     const Real alpha_;
+    std::vector<unsigned int> nids_; // neighbor indexes
 };
 
 struct ZerothOrderReactionEvent : SpatiocyteEvent

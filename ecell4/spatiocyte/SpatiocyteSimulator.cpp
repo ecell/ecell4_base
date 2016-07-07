@@ -37,10 +37,6 @@ void SpatiocyteSimulator::initialize()
         scheduler_.add(zeroth_order_reaction_event);
     }
 
-    nids_.clear();
-    for (unsigned int i(0); i < 12; ++i)
-        nids_.push_back(i);
-
     dt_ = scheduler_.next_time() - t();
 }
 
@@ -940,86 +936,6 @@ void SpatiocyteSimulator::step_()
     num_steps_++;
 }
 
-void SpatiocyteSimulator::walk_in_space_(const MoleculePool* mtype, const Real& alpha)
-{
-    const boost::shared_ptr<RandomNumberGenerator>& rng(world_->rng());
-    MoleculePool::container_type voxels;
-    copy(mtype->begin(), mtype->end(), back_inserter(voxels));
-
-    std::size_t idx(0);
-    for (MoleculePool::container_type::iterator itr(voxels.begin());
-         itr != voxels.end(); ++itr)
-    {
-        const Integer rnd(rng->uniform_int(0, 11));
-        const SpatiocyteWorld::coordinate_id_pair_type& info(*itr);
-        if (world_->find_voxel_pool(info.coordinate) != mtype)
-        {
-            // should skip if a voxel is not the target species.
-            // when reaction has occured before, a voxel can be changed.
-            continue;
-        }
-        const SpatiocyteWorld::coordinate_type neighbor(
-                world_->get_neighbor_boundary(info.coordinate, rnd));
-        if (world_->can_move(info.coordinate, neighbor))
-        {
-            if (rng->uniform(0,1) <= alpha)
-                world_->move(info.coordinate, neighbor, /*candidate=*/idx);
-        }
-        else
-        {
-            attempt_reaction_(info, neighbor, alpha);
-        }
-        ++idx;
-    }
-}
-
-void SpatiocyteSimulator::walk_on_surface_(const MoleculePool* mtype, const Real& alpha)
-{
-    const boost::shared_ptr<RandomNumberGenerator>& rng(world_->rng());
-    MoleculePool::container_type voxels;
-    copy(mtype->begin(), mtype->end(), back_inserter(voxels));
-
-    const VoxelPool* location(mtype->location());
-    std::size_t idx(0);
-    for (MoleculePool::container_type::iterator itr(voxels.begin());
-         itr != voxels.end(); ++itr)
-    {
-        const SpatiocyteWorld::coordinate_id_pair_type& info(*itr);
-        if (world_->find_voxel_pool(info.coordinate) != mtype)
-        {
-            // should skip if a voxel is not the target species.
-            // when reaction has occured before, a voxel can be changed.
-            continue;
-        }
-
-        ecell4::shuffle(*(rng.get()), nids_);
-        for (std::vector<unsigned int>::const_iterator itr(nids_.begin());
-             itr != nids_.end(); ++itr)
-        {
-            const SpatiocyteWorld::coordinate_type neighbor(
-                    world_->get_neighbor_boundary(info.coordinate, *itr));
-            const VoxelPool* target(world_->find_voxel_pool(neighbor));
-
-            if (target->get_dimension() > mtype->get_dimension())
-            {
-                continue;
-            }
-
-            if (world_->can_move(info.coordinate, neighbor))
-            {
-                if (rng->uniform(0,1) <= alpha)
-                    world_->move(info.coordinate, neighbor, /*candidate=*/idx);
-                break;
-            }
-            else
-            {
-                if (attempt_reaction_(info, neighbor, alpha).first != NO_REACTION)
-                    break;
-            }
-        }
-        ++idx;
-    }
-}
 
 } // spatiocyte
 

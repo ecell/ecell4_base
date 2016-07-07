@@ -100,8 +100,15 @@ public:
     {
         return world_;
     }
-    void walk_in_space_(const MoleculePool* mtype, const Real& alpha);
-    void walk_on_surface_(const MoleculePool* mtype, const Real& alpha);
+    typedef enum
+    {
+        NO_REACTION = 0,
+        REACTION_FAILED = 1,
+        REACTION_SUCCEEDED = 2
+    } attempt_reaction_result_type;
+    std::pair<attempt_reaction_result_type, reaction_type> attempt_reaction_(
+        const SpatiocyteWorld::coordinate_id_pair_type& info,
+        SpatiocyteWorld::coordinate_type to_coord, const Real& alpha);
     std::pair<bool, reaction_type> apply_zeroth_order_reaction_(
         const ReactionRule& reaction_rule);
     std::pair<bool, reaction_type> apply_first_order_reaction_(
@@ -118,18 +125,6 @@ protected:
         const ReactionRule& reaction_rule, const Real& t);
     Real calculate_dimensional_factor(
         const VoxelPool* mt0, const VoxelPool* mt1) const;
-
-    typedef enum
-    {
-        NO_REACTION = 0,
-        REACTION_FAILED = 1,
-        REACTION_SUCCEEDED = 2
-    } attempt_reaction_result_type;
-
-    std::pair<attempt_reaction_result_type, reaction_type> attempt_reaction_(
-        const SpatiocyteWorld::coordinate_id_pair_type& info,
-        SpatiocyteWorld::coordinate_type to_coord, const Real& alpha);
-
 
     std::pair<bool, reaction_type> apply_a2b(
         const ReactionRule& reaction_rule,
@@ -203,7 +198,6 @@ protected:
     std::vector<reaction_type> last_reactions_;
     boost::shared_ptr<SpatiocyteEvent> last_event_;
     std::vector<Species> new_species_;
-    std::vector<unsigned int> nids_; // neighbor indexes
     alpha_map_type alpha_map_;
     //map<Species> alpha_map_;
 
