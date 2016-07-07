@@ -107,7 +107,6 @@ public:
     std::pair<attempt_reaction_result_type, reaction_type> attempt_reaction_(
         const SpatiocyteWorld::coordinate_id_pair_type& info,
         SpatiocyteWorld::coordinate_type to_coord, const Real& alpha);
-    void register_product_species(const Species& product_species);
 
 protected:
 
