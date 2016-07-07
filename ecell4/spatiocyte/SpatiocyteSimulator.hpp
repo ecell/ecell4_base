@@ -81,6 +81,25 @@ protected:
     container_type reactants_, products_;
 };
 
+struct SpatiocyteEvent : public Event
+{
+public:
+    typedef ReactionInfo reaction_info_type;
+    typedef std::pair<ReactionRule, reaction_info_type> reaction_type;
+
+    SpatiocyteEvent(Real const& time) : Event(time) {}
+    virtual ~SpatiocyteEvent() {}
+
+    std::vector<reaction_type> last_reactions() const
+    {
+        return last_reactions_;
+    }
+
+protected:
+    std::vector<reaction_type> last_reactions_;
+
+};
+
 class SpatiocyteSimulator
     : public SimulatorBase<Model, SpatiocyteWorld>
 {
@@ -91,16 +110,18 @@ public:
     typedef ReactionInfo reaction_info_type;
     typedef std::pair<ReactionRule, reaction_info_type> reaction_type;
 
+    typedef EventSchedulerBase<SpatiocyteEvent> scheduler_type;
+
     typedef utils::get_mapper_mf<Species, Real>::type alpha_map_type;
 
 protected:
 
-    struct StepEvent : Event
+    struct StepEvent : SpatiocyteEvent
     {
         StepEvent(
             SpatiocyteSimulator* sim, const Species& species, const Real& t,
             const Real alpha=1.0)
-            : Event(t), sim_(sim), species_(species), alpha_(alpha)
+            : SpatiocyteEvent(t), sim_(sim), species_(species), alpha_(alpha)
         {
             const SpatiocyteWorld::molecule_info_type
                 minfo(sim_->world_->get_molecule_info(species));
@@ -161,11 +182,11 @@ protected:
         const Real alpha_;
     };
 
-    struct ZerothOrderReactionEvent : Event
+    struct ZerothOrderReactionEvent : SpatiocyteEvent
     {
         ZerothOrderReactionEvent(
             SpatiocyteSimulator* sim, const ReactionRule& rule, const Real& t)
-            : Event(t), sim_(sim), rule_(rule)
+            : SpatiocyteEvent(t), sim_(sim), rule_(rule)
         {
             time_ = t + draw_dt();
         }
@@ -204,11 +225,11 @@ protected:
         ReactionRule rule_;
     };
 
-    struct FirstOrderReactionEvent : Event
+    struct FirstOrderReactionEvent : SpatiocyteEvent
     {
         FirstOrderReactionEvent(
             SpatiocyteSimulator* sim, const ReactionRule& rule, const Real& t)
-            : Event(t), sim_(sim), rule_(rule)
+            : SpatiocyteEvent(t), sim_(sim), rule_(rule)
         {
             //assert(rule_.reactants().size() == 1);
             time_ = t + draw_dt();
@@ -311,11 +332,11 @@ public:
 
 protected:
 
-    boost::shared_ptr<Event> create_step_event(
+    boost::shared_ptr<SpatiocyteEvent> create_step_event(
         const Species& species, const Real& t);
-    boost::shared_ptr<Event> create_zeroth_order_reaction_event(
+    boost::shared_ptr<SpatiocyteEvent> create_zeroth_order_reaction_event(
         const ReactionRule& reaction_rule, const Real& t);
-    boost::shared_ptr<Event> create_first_order_reaction_event(
+    boost::shared_ptr<SpatiocyteEvent> create_first_order_reaction_event(
         const ReactionRule& reaction_rule, const Real& t);
     Real calculate_dimensional_factor(
         const VoxelPool* mt0, const VoxelPool* mt1) const;
@@ -408,7 +429,7 @@ protected:
 
 protected:
 
-    EventScheduler scheduler_;
+    scheduler_type scheduler_;
     std::vector<reaction_type> last_reactions_;
     std::vector<Species> new_species_;
     std::vector<unsigned int> nids_; // neighbor indexes
