@@ -92,10 +92,9 @@ install:
 
 build: false
 
-# branches:
-#   only:
-#     - master
-#     - develop
+branches:
+  only:
+    - master
 
 artifacts:
   # bdist_wheel puts your built wheel in the dist directory
