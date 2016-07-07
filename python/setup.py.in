@@ -123,27 +123,29 @@ if STATIC_BUILD:
             ("The source directory '{0}/ecell4' or '{0}/ipynb' is a symbolic link."
              + "It might fail to be scanned properly."))
 
+py_path = "${CMAKE_CURRENT_SOURCE_DIR}/lib"
+
 if with_cpp_shared_libraries:
     ext_modules = [
-        Extension("ecell4.core", sources=["lib/ecell4/core.pyx"],
+        Extension("ecell4.core", sources=[os.path.join(py_path, "ecell4/core.pyx")],
             include_dirs=["."], libraries=["ecell4-core"], language="c++",
             extra_compile_args=extra_compile_args),
-        Extension("ecell4.egfrd", sources=["lib/ecell4/egfrd.pyx"],
+        Extension("ecell4.egfrd", sources=[os.path.join(py_path, "ecell4/egfrd.pyx")],
             include_dirs=["."], libraries=["ecell4-core", "ecell4-egfrd"],
             language="c++", extra_compile_args=extra_compile_args + ["-w"]),
-        Extension("ecell4.gillespie", sources=["lib/ecell4/gillespie.pyx"],
+        Extension("ecell4.gillespie", sources=[os.path.join(py_path, "ecell4/gillespie.pyx")],
             include_dirs=["."], libraries=["ecell4-core", "ecell4-gillespie"],
             language="c++", extra_compile_args=extra_compile_args),
-        Extension("ecell4.bd", sources=["lib/ecell4/bd.pyx"],
+        Extension("ecell4.bd", sources=[os.path.join(py_path, "ecell4/bd.pyx")],
             include_dirs=["."], libraries=["ecell4-core", "ecell4-bd"],
             language="c++", extra_compile_args=extra_compile_args),
-        Extension("ecell4.ode", sources=["lib/ecell4/ode.pyx"],
+        Extension("ecell4.ode", sources=[os.path.join(py_path, "ecell4/ode.pyx")],
             include_dirs=["."], libraries=["ecell4-core", "ecell4-ode"],
             language="c++", extra_compile_args=extra_compile_args),
-        Extension("ecell4.spatiocyte", sources=["lib/ecell4/spatiocyte.pyx"],
+        Extension("ecell4.spatiocyte", sources=[os.path.join(py_path, "ecell4/spatiocyte.pyx")],
             include_dirs=["."], libraries=["ecell4-core", "ecell4-spatiocyte"],
             language="c++", extra_compile_args=extra_compile_args),
-        Extension("ecell4.meso", sources=["lib/ecell4/meso.pyx"],
+        Extension("ecell4.meso", sources=[os.path.join(py_path, "ecell4/meso.pyx")],
             include_dirs=["."], libraries=["ecell4-core", "ecell4-meso"],
             language="c++", extra_compile_args=extra_compile_args),
         ]
@@ -152,38 +154,38 @@ else:
     core_src = glob.glob(os.path.join(src_path, "ecell4/core/*.cpp"))
 
     ext_modules = [
-        Extension("ecell4.core", sources=["lib/ecell4/core.pyx"] + core_src,
+        Extension("ecell4.core", sources=[os.path.join(py_path, "ecell4/core.pyx")] + core_src,
             extra_compile_args=extra_compile_args,
             include_dirs=[src_path], libraries=dependent_libs, language="c++"),
         Extension("ecell4.gillespie",
-            sources=["lib/ecell4/gillespie.pyx"]
+            sources=[os.path.join(py_path, "ecell4/gillespie.pyx")]
                 + glob.glob(os.path.join(src_path, "ecell4/gillespie/*.cpp")) + core_src,
             extra_compile_args=extra_compile_args,
             libraries=dependent_libs, include_dirs=[src_path], language="c++"),
         Extension("ecell4.bd",
-            sources=["lib/ecell4/bd.pyx"]
+            sources=[os.path.join(py_path, "ecell4/bd.pyx")]
                 + glob.glob(os.path.join(src_path, "ecell4/bd/*.cpp")) + core_src,
             extra_compile_args=extra_compile_args,
             libraries=dependent_libs, include_dirs=[src_path], language="c++"),
         Extension("ecell4.ode",
-            sources=["lib/ecell4/ode.pyx"]
+            sources=[os.path.join(py_path, "ecell4/ode.pyx")]
                 + glob.glob(os.path.join(src_path, "ecell4/ode/*.cpp")) + core_src,
             extra_compile_args=extra_compile_args,
             libraries=dependent_libs, include_dirs=[src_path], language="c++"),
         Extension("ecell4.spatiocyte",
-            sources=["lib/ecell4/spatiocyte.pyx"]
+            sources=[os.path.join(py_path, "ecell4/spatiocyte.pyx")]
                 + glob.glob(os.path.join(src_path, "ecell4/spatiocyte/*.cpp")) + core_src,
             extra_compile_args=extra_compile_args,
             libraries=dependent_libs, include_dirs=[src_path], language="c++"),
         Extension("ecell4.meso",
-            sources=["lib/ecell4/meso.pyx"]
+            sources=[os.path.join(py_path, "ecell4/meso.pyx")]
                 + glob.glob(os.path.join(src_path, "ecell4/meso/*.cpp")) + core_src,
             extra_compile_args=extra_compile_args,
             libraries=dependent_libs, include_dirs=[src_path], language="c++"),
         ]
     if with_egfrd:
         ext_modules.append(Extension("ecell4.egfrd",
-            sources=["lib/ecell4/egfrd.pyx"]
+            sources=[os.path.join(py_path, "ecell4/egfrd.pyx")]
                 + glob.glob(os.path.join(src_path, "ecell4/egfrd/*.cpp")) + core_src,
             extra_compile_args=extra_compile_args,
             libraries=dependent_libs, include_dirs=[src_path], language="c++"))
@@ -193,7 +195,7 @@ else:
 setup(
     name = "ecell",
     version = "4.0.1",
-    package_dir = {"": "lib"},
+    package_dir = {"": "${CMAKE_CURRENT_SOURCE_DIR}/lib"},
     package_data = {"ecell4.util": [
         "templates/init_ipynb.js", "templates/init_cyjs.js", "templates/template.html",
         "templates/*.tmpl", "templates/ecelllogo/*.png"]},

@@ -104,7 +104,7 @@ if [ $WITH_PYTHON2 != 0 ]; then
         if [ $WITH_HDF5 != 0 ]; then
           INCLUDE_PATH=/usr/include/hdf5/serial/:${INCLUDE_PATH}
         fi
-        INSTALL_OPT="--prefer-shared"
+        BUILD_OPT="--prefer-shared"
     fi
 elif [ $WITH_PYTHON3 != 0 ]; then
     if [ $CLEANUP != 0 ]; then
@@ -112,7 +112,7 @@ elif [ $WITH_PYTHON3 != 0 ]; then
     fi
 
     PYTHON=python3
-    INSTALL_OPT="--prefer-shared"
+    BUILD_OPT="--prefer-shared"
 else
     exit 0
 fi
@@ -128,6 +128,6 @@ mkdir -p ${DEST_DIR}
 export PYTHONPATH=${DEST_DIR}:/usr/local/lib/python${PYTHON_VERSION}/dist-packages:${PYTHONPATH}
 export LD_LIBRARY_PATH=${PREFIX}/lib:${LD_LIBRARY_PATH}
 
-${PYTHON} setup.py build_ext -L${PREFIX}/lib -I${INCLUDE_PATH}
+${PYTHON} setup.py build_ext -L${PREFIX}/lib -I${INCLUDE_PATH} ${BUILD_OPT}
+${PYTHON} setup.py install --prefix=${PREFIX}
 ${PYTHON} setup.py test
-${PYTHON} setup.py install --prefix=${PREFIX} ${INSTALL_OPT}
