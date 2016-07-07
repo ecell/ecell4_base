@@ -38,7 +38,7 @@ def run_multiprocessing(target, jobs, n=1):
     retval = [end_recv.recv() for end_recv in end_recvs]
     return [retval[i: i + n] for i in range(0, len(retval), n)]
 
-def run_sge(target, jobs, n=1, path='.', delete=True):
+def run_sge(target, jobs, n=1, path='.', delete=True, environ={}):
     logging.basicConfig(level=logging.DEBUG)
 
     if isinstance(target, types.LambdaType) and target.__name__ == "<lambda>":
@@ -63,8 +63,8 @@ def run_sge(target, jobs, n=1, path='.', delete=True):
              for i in range(n)])
 
         cmd = '#!/bin/bash\n'
-        # cmd += 'export LD_LIBRARY_PATH=/home/kaizu/lily_kaizu/src/ecell4/local/lib\n'
-        # cmd += 'export PYTHONPATH=/home/kaizu/lily_kaizu/src/ecell4/local/lib/python3.4/site-packages\n'
+        for key, value in environ.items():
+            cmd += 'export {:s}={:s}\n'.format(key, value)
         cmd += 'python3 -c "\n'
         cmd += 'import sys\n'
         cmd += 'import os\n'
@@ -99,6 +99,7 @@ def run_sge(target, jobs, n=1, path='.', delete=True):
 
 if __name__ == "__main__":
     def singlerun(job):
+        import ecell4
         print("Hi, I'm in local!")
         print("job => {}".format(str(job)))
         return job['x'] + job['y']
@@ -106,5 +107,9 @@ if __name__ == "__main__":
     jobs = [{'x': i, 'y': i ** 2} for i in range(1, 4)]
     print(run_serial(singlerun, jobs, n=2))
     print(run_multiprocessing(singlerun, jobs, n=2))
-    # print(run_sge(singlerun, jobs, n=2, delete=False))
-    print(run_sge(singlerun, jobs, n=2))
+
+    # environ = {'LD_LIBRARY_PATH': '/home/kaizu/lily_kaizu/src/ecell4/local/lib', 'PYTHONPATH': '/home/kaizu/lily_kaizu/src/ecell4/local/lib/python3.4/site-packages'}
+    environ = {}
+    # print(run_sge(singlerun, jobs, n=2, delete=False, environ=environ))
+    print(run_sge(singlerun, jobs, n=2, environ=environ))
+
