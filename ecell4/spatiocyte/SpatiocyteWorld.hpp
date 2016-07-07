@@ -264,6 +264,16 @@ public:
         return (*space_).has_molecule_pool(sp);
     }
 
+    MoleculePool* find_molecule_pool(const Species& species)
+    {
+        return (*space_).find_molecule_pool(species);
+    }
+
+    const MoleculePool* find_molecule_pool(const Species& species) const
+    {
+        return (*space_).find_molecule_pool(species);
+    }
+
     VoxelPool* find_voxel_pool(const Species& species);
     const VoxelPool* find_voxel_pool(const Species& species) const;
     VoxelPool* find_voxel_pool(const coordinate_type& coord) const;
@@ -460,12 +470,7 @@ public:
 
     std::pair<ParticleID, Voxel> choice(const Species& sp)
     {
-        const MoleculePool* mt(dynamic_cast<const MoleculePool*>(find_voxel_pool(sp)));
-        if (!mt)
-        {
-            throw NotSupported(
-                "choice for a Species with no voxel is not supporeted.");
-        }
+        const MoleculePool* mt(find_molecule_pool(sp));
         const Integer i(rng_->uniform_int(0, mt->size() - 1));
         const coordinate_id_pair_type& info(mt->at(i));
         return make_pid_voxel_pair(mt, info);

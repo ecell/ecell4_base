@@ -159,6 +159,8 @@ public:
     virtual bool has_molecule_pool(const Species& sp) const = 0;
     virtual VoxelPool* find_voxel_pool(const Species& sp) = 0;
     virtual const VoxelPool* find_voxel_pool(const Species& sp) const = 0;
+    virtual MoleculePool* find_molecule_pool(const Species& sp) = 0;
+    virtual const MoleculePool* find_molecule_pool(const Species& sp) const = 0;
     virtual VoxelPool* find_voxel_pool(const coordinate_type& coord) const = 0;
     virtual bool make_structure_type(const Species& sp,
         Shape::dimension_kind dimension, const std::string loc);
@@ -612,6 +614,8 @@ public:
 
     virtual VoxelPool* find_voxel_pool(const Species& sp);
     virtual const VoxelPool* find_voxel_pool(const Species& sp) const;
+    virtual MoleculePool* find_molecule_pool(const Species& sp);
+    virtual const MoleculePool* find_molecule_pool(const Species& sp) const;
     // VoxelPool* find_voxel_pool(const std::string name);
     virtual VoxelPool* find_voxel_pool(const coordinate_type& coord) const;
 

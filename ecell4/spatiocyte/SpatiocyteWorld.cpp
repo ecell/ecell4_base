@@ -563,13 +563,8 @@ void SpatiocyteWorld::remove_molecules(const Species& sp, const Integer& num)
         throw std::invalid_argument("The number of molecules must be positive.");
     }
 
-    const MoleculePool* mtype(dynamic_cast<const MoleculePool*>(find_voxel_pool(sp)));
-    if (!mtype)
-    {
-        throw NotSupported(
-            "remove_molecuels for VoxelPool with no voxel is not supported now");
-    }
-    else if (mtype->size() < num)
+    const MoleculePool* mtype(find_molecule_pool(sp));
+    if (mtype->size() < num)
     {
         throw std::invalid_argument(
             "The number of molecules cannot be negative.");

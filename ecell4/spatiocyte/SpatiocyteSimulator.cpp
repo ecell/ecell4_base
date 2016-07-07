@@ -954,11 +954,7 @@ void SpatiocyteSimulator::walk(const Species& species, const Real& alpha)
 
     const boost::shared_ptr<RandomNumberGenerator>& rng(world_->rng());
 
-    const MoleculePool* mtype(dynamic_cast<const MoleculePool*>(world_->find_voxel_pool(species)));
-    if (!mtype)
-    {
-        throw NotSupported("MolecularPool must be with voxels.");
-    }
+    const MoleculePool* mtype(world_->find_molecule_pool(species));
 
     MoleculePool::container_type voxels;
     copy(mtype->begin(), mtype->end(), back_inserter(voxels));

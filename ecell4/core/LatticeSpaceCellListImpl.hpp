@@ -616,44 +616,42 @@ public:
 
     virtual VoxelPool* find_voxel_pool(const Species& sp)
     {
+        voxel_pool_map_type::iterator itr(voxel_pools_.find(sp));
+        if (itr != voxel_pools_.end())
         {
-            voxel_pool_map_type::iterator itr(voxel_pools_.find(sp));
-            if (itr != voxel_pools_.end())
-            {
-                return (*itr).second.get();
-            }
+            return (*itr).second.get();
         }
-
-        {
-            molecule_pool_map_type::iterator itr(molecule_pools_.find(sp));
-            if (itr != molecule_pools_.end())
-            {
-                return (*itr).second.get();  // upcast
-            }
-        }
-
-        throw NotFound("MolecularType not found.");
+        return find_molecule_pool(sp);  // upcast
     }
 
     virtual const VoxelPool* find_voxel_pool(const Species& sp) const
     {
+        voxel_pool_map_type::const_iterator itr(voxel_pools_.find(sp));
+        if (itr != voxel_pools_.end())
         {
-            voxel_pool_map_type::const_iterator itr(voxel_pools_.find(sp));
-            if (itr != voxel_pools_.end())
-            {
-                return (*itr).second.get();
-            }
+            return (*itr).second.get();
         }
+        return find_molecule_pool(sp);  // upcast
+    }
 
+    virtual MoleculePool* find_molecule_pool(const Species& sp)
+    {
+        molecule_pool_map_type::iterator itr(molecule_pools_.find(sp));
+        if (itr != molecule_pools_.end())
         {
-            molecule_pool_map_type::const_iterator itr(molecule_pools_.find(sp));
-            if (itr != molecule_pools_.end())
-            {
-                return (*itr).second.get();  // upcast
-            }
+            return (*itr).second.get();  // upcast
         }
+        throw NotFound("MoleculePool not found.");
+    }
 
-        throw NotFound("MolecularType not found.");
+    virtual const MoleculePool* find_molecule_pool(const Species& sp) const
+    {
+        molecule_pool_map_type::const_iterator itr(molecule_pools_.find(sp));
+        if (itr != molecule_pools_.end())
+        {
+            return (*itr).second.get();  // upcast
+        }
+        throw NotFound("MoleculePool not found.");
     }
 
     VoxelPool* find_voxel_pool(const coordinate_type& coord) const;
