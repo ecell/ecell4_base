@@ -7,7 +7,7 @@ import textwrap
 import re
 import types
 import itertools
-
+import binascii
 import multiprocessing
 
 import ecell4.extra.sge as sge
@@ -102,9 +102,11 @@ def run_sge(target, jobs, n=1, path='.', delete=True, environ={}):
 
 def singlerun(job, job_id, task_id):
     import ecell4.util
-    job.update({'return_type': 'array', 'rndseed': task_id})
+    myseed = job.pop('myseed')
+    rndseed = int(myseed[(task_id - 1) * 8: task_id * 8], 16)
+    rndseed = rndseed % (2 ** 31)  #XXX: trancate the first bit
+    job.update({'return_type': 'array', 'rndseed': rndseed})
     data = ecell4.util.run_simulation(**job)
-    # data = ecell4.util.run_simulation(return_type='array', **job)
     return data
 
 import ecell4.util.decorator
@@ -129,7 +131,9 @@ def ensemble_simulations(
     if species_list is None:
         species_list = ecell4.util.simulation.list_species(model, y0.keys())
 
-    jobs = [{'t': t, 'y0': y0, 'volume': volume, 'model': model, 'solver': solver, 'species_list': species_list, 'structures': structures}]
+    myseed = binascii.hexlify(os.urandom(4 * n))
+
+    jobs = [{'t': t, 'y0': y0, 'volume': volume, 'model': model, 'solver': solver, 'species_list': species_list, 'structures': structures, 'myseed': myseed}]
 
     if env is None or env.lower() == "serial":
         retval = run_serial(singlerun, jobs, n=n)
@@ -143,6 +147,7 @@ def ensemble_simulations(
             'Argument "env" must be one of "serial", "multiprocessing" and "sge"')
 
     return retval
+
 
 if __name__ == "__main__":
     # def myrun(job, job_id=0, task_id=0):
