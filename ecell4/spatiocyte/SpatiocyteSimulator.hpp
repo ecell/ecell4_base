@@ -247,7 +247,7 @@ protected:
 
         virtual void fire()
         {
-            const Species reactant(*(rule_.reactants().begin()));
+            const Species& reactant(*(rule_.reactants().begin()));
             const std::pair<bool, reaction_type> reaction(
                     sim_->apply_first_order_reaction_(rule_, sim_->world_->choice(reactant)));
             if (reaction.first)
@@ -262,7 +262,7 @@ protected:
 
         Real draw_dt()
         {
-            const Species reactant(*(rule_.reactants().begin()));
+            const Species& reactant(*(rule_.reactants().begin()));
             const Integer num_r(sim_->world_->num_voxels_exact(reactant));
             const Real k(rule_.k());
             const Real p = k * num_r;

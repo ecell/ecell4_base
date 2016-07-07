@@ -60,7 +60,7 @@ void SpatiocyteSimulator::update_alpha_map()
 
         const Real alpha(calculate_alpha(*itr));
         for (int i(0); i < 2; ++i) {
-            const Species sp(reactants.at(i));
+            const Species& sp(reactants.at(i));
             alpha_map_type::iterator map_itr(alpha_map_.find(sp));
             if (map_itr == alpha_map_.end())
                 alpha_map_.insert(alpha_map_type::value_type(sp, alpha));
@@ -190,7 +190,7 @@ std::pair<bool, SpatiocyteSimulator::reaction_type>
 Real SpatiocyteSimulator::calculate_dimensional_factor(
     const VoxelPool* mt0, const VoxelPool* mt1) const
 {
-    const Species
+    const Species&
         speciesA(mt0->species()),
         speciesB(mt1->species());
     const Real
@@ -297,7 +297,7 @@ std::pair<SpatiocyteSimulator::attempt_reaction_result_type, SpatiocyteSimulator
         return std::make_pair(NO_REACTION, reaction_type());
     }
 
-    const Species
+    const Species&
         speciesA(from_mt->species()),
         speciesB(to_mt->species());
 
