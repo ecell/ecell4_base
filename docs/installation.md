@@ -1,8 +1,6 @@
 Installation and usage
 ======================
 
-- [Docker container for E-Cell4](#docker-container-for-e-cell4)
-
 - [Installation](#installation)
   - [Requirements](#requirements)
   - [Windows](#windows)
@@ -14,33 +12,7 @@ Installation and usage
   - [A reversible binding reaction](#a-reversible-binding-reaction)
   - [Particle tracking on a spherical surface](#particle-tracking-on-a-spherical-surface)
 
-Docker container for E-Cell4
-----------------------------
-
-If you have docker environment, you can easily try E-Cell4.
-You can pull E-Cell4 container with `docker pull ecell/ecell4`.
-
-After the following steps, you should see [Jupyter Notebook](http://jupyter.org/) up and running (and E-Cell4 tutorials) in your web browser.
-
-1. Install [Docker](https://www.docker.com/products/docker).
-2. Run Docker.
-3. Run the following commands
-
-    ```shell
-    docker pull ecell/ecell4
-    docker run -dP ecell/ecell4
-    ```
-
-4. Check which port is used by E-Cell4 docker with `docker ps` command.
-
-    ```shell
-    docker ps
-    CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                     NAMES
-    82b90db240f5        ecell/ecell4        "/bin/sh -c 'jupyter-"   7 seconds ago       Up 6 seconds        0.0.0.0:32768->8888/tcp   clever_raman
-    ```
-
-5. Open the PORT in `docker ps` command with your web browser. In the case of the above example, you will open `0.0.0.0:32768`
-
+- [Docker container for E-Cell4](#docker-container-for-e-cell4)
 
 Installation
 ------------
@@ -170,3 +142,30 @@ viz.plot_trajectory(obs, interactive=False)
 ```
 
 ![png](https://raw.githubusercontent.com/ecell/ecell4/master/docs/images/hairball.png)
+
+Docker container for E-Cell4
+----------------------------
+
+If you have docker environment, you can easily try E-Cell4.
+You can pull E-Cell4 container with `docker pull ecell/ecell4`.
+
+After the following steps, you should see [Jupyter Notebook](http://jupyter.org/) up and running (and E-Cell4 tutorials) in your web browser.
+
+1. Install [Docker](https://www.docker.com/products/docker).
+2. Run Docker.
+3. Run the following commands
+
+    ```shell
+    docker pull ecell/ecell4
+    docker run -dP ecell/ecell4
+    ```
+
+4. Check which port is used by E-Cell4 docker with `docker ps` command.
+
+    ```shell
+    docker ps
+    CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                     NAMES
+    82b90db240f5        ecell/ecell4        "/bin/sh -c 'jupyter-"   7 seconds ago       Up 6 seconds        0.0.0.0:32768->8888/tcp   clever_raman
+    ```
+
+5. Open the PORT in `docker ps` command with your web browser. In the case of the above example, you will open `0.0.0.0:32768`
