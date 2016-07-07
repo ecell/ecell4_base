@@ -108,6 +108,7 @@ def singlerun(job, job_id, task_id):
     return data
 
 import ecell4.util.decorator
+import ecell4.util.simulation
 import ecell4.ode
 
 def ensemble_simulations(
@@ -116,7 +117,6 @@ def ensemble_simulations(
     n=1, nproc=1, env=None):
     """
     """
-
     if not isinstance(solver, str):
         raise ValueError('Argument "solver" must be a string.')
 
@@ -127,7 +127,7 @@ def ensemble_simulations(
         raise ValueError('A model with ratelaws is not supported yet.')
 
     if species_list is None:
-        raise ValueError('Argument "species_list" must be given.')
+        species_list = ecell4.util.simulation.list_species(model, y0.keys())
 
     jobs = [{'t': t, 'y0': y0, 'volume': volume, 'model': model, 'solver': solver, 'species_list': species_list, 'structures': structures}]
 
@@ -167,7 +167,9 @@ if __name__ == "__main__":
     with reaction_rules():
         A + B == C | (0.01, 0.3)
 
-    retval = ensemble.ensemble_simulations(10.0, {'C': 60}, species_list=['A', 'B', 'C'], solver='gillespie', n=20, env='sge')
+    retval = ensemble.ensemble_simulations(
+        10.0, {'C': 60}, solver='gillespie',
+        n=20, env='sge')
 
     import numpy
 

@@ -60,6 +60,21 @@ def get_factory(solver, *args):
             'unknown solver name was given: ' + repr(solver)
             + '. use ode, gillespie, spatiocyte, meso, bd or egfrd')
 
+def list_species(model, seeds=[]):
+    from ecell4.ode import ODENetworkModel
+    from ecell4 import Species
+    if isinstance(model, ODENetworkModel):
+        #XXX: A bit messy way
+        return sorted([sp.serial() for sp in model.list_species()])
+
+    if not isinstance(seeds, list):
+        seeds = list(seeds)
+
+    expanded = model.expand([Species(serial) for serial in seeds])
+    species_list = [sp.serial() for sp in expanded.list_species()]
+    species_list = sorted(set(seeds + species_list))
+    return species_list
+
 def run_simulation(
         t, y0={}, volume=1.0, model=None, solver='ode',
         factory=None, is_netfree=False, species_list=None, without_reset=False,
@@ -163,14 +178,7 @@ def run_simulation(
             w.add_molecules(ecell4.Species(serial), n)
 
     if species_list is None:
-        if isinstance(model, ecell4.ode.ODENetworkModel):
-            #XXX: A bit messy way
-            species_list = [sp.serial() for sp in model.list_species()]
-        else:
-            seeds = [ecell4.Species(serial) for serial in y0.keys()]
-            species_list = [
-                sp.serial() for sp in model.expand(seeds).list_species()]
-            species_list = sorted(set(list(y0.keys()) + species_list))
+        species_list = list_species(model, y0.keys())
 
     if not isinstance(t, collections.Iterable):
         t = [float(t) * i / 100 for i in range(101)]
