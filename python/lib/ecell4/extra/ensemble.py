@@ -101,14 +101,8 @@ def run_sge(target, jobs, n=1, path='.', delete=True, environ={}):
 #XXX:
 
 def singlerun(job, job_id, task_id):
-    import ecell4
     import ecell4.util
-    import ecell4.util.simulation
-    job.update({'return_type': 'array'})
-    solver = job.pop('solver')
-    rng = ecell4.GSLRandomNumberGenerator()
-    rng.seed(task_id)
-    solver = ecell4.util.simulation.get_factory(solver, rng)
+    job.update({'return_type': 'array', 'rndseed': task_id})
     data = ecell4.util.run_simulation(**job)
     # data = ecell4.util.run_simulation(return_type='array', **job)
     return data
@@ -140,10 +134,10 @@ def ensemble_simulations(
     if env is None or env.lower() == "serial":
         retval = run_serial(singlerun, jobs, n=n)
     elif env.lower() == "sge":
-        retval = run_sge(singlerun, jobs, n=n)
-    elif env.lower() == "multiprocessing":
         environ = {'LD_LIBRARY_PATH': '/home/kaizu/lily_kaizu/src/ecell4/local/lib', 'PYTHONPATH': '/home/kaizu/lily_kaizu/src/ecell4/local/lib/python3.4/site-packages'}
-        retval = run_multiprocessing(singlerun, jobs, n=n, environ=environ)
+        retval = run_sge(singlerun, jobs, n=n, environ=environ)
+    elif env.lower() == "multiprocessing":
+        retval = run_multiprocessing(singlerun, jobs, n=n)
     else:
         raise ValueError(
             'Argument "env" must be one of "serial", "multiprocessing" and "sge"')
@@ -173,7 +167,7 @@ if __name__ == "__main__":
     with reaction_rules():
         A + B == C | (0.01, 0.3)
 
-    retval = ensemble.ensemble_simulations(10.0, {'C': 60}, species_list=['A', 'B', 'C'], solver='gillespie', n=10, env='sge')
+    retval = ensemble.ensemble_simulations(10.0, {'C': 60}, species_list=['A', 'B', 'C'], solver='gillespie', n=20, env='sge')
 
     import numpy
 
