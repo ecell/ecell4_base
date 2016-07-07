@@ -134,7 +134,7 @@ void SpatiocyteSimulator::finalize()
         if (step_event != NULL && queued_time < t())
         {
             const Real alpha((t() - queued_time) / (*itr).second->dt());
-            walk(step_event->species(), alpha);
+            step_event->walk(alpha);
         }
     }
     initialize();
@@ -938,31 +938,6 @@ void SpatiocyteSimulator::step_()
     }
 
     num_steps_++;
-}
-
-// void SpatiocyteSimulator::walk(const Species& species)
-// {
-//     walk(species, 1.0);
-// }
-
-void SpatiocyteSimulator::walk(const Species& species, const Real& alpha)
-{
-    if (alpha < 0 || alpha > 1)
-    {
-        return; // INVALID ALPHA VALUE
-    }
-
-    const boost::shared_ptr<RandomNumberGenerator>& rng(world_->rng());
-
-    const MoleculePool* mtype(world_->find_molecule_pool(species));
-
-    MoleculePool::container_type voxels;
-    copy(mtype->begin(), mtype->end(), back_inserter(voxels));
-
-    if (mtype->get_dimension() == Shape::THREE)
-        walk_in_space_(mtype, alpha);
-    else // dimension == TWO, etc.
-        walk_on_surface_(mtype, alpha);
 }
 
 void SpatiocyteSimulator::walk_in_space_(const MoleculePool* mtype, const Real& alpha)

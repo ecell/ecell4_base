@@ -30,8 +30,8 @@ public:
 
     typedef SimulatorBase<Model, SpatiocyteWorld> base_type;
 
-    typedef ReactionInfo reaction_info_type;
-    typedef std::pair<ReactionRule, reaction_info_type> reaction_type;
+    typedef SpatiocyteEvent::reaction_info_type reaction_info_type;
+    typedef SpatiocyteEvent::reaction_type reaction_type;
 
     typedef EventSchedulerBase<SpatiocyteEvent> scheduler_type;
 
@@ -65,8 +65,6 @@ public:
     void finalize();
     void step();
     bool step(const Real& upto);
-    // void walk(const Species& species);
-    void walk(const Species& species, const Real& alpha);
     Real calculate_alpha(const ReactionRule& rule) const;
 
     virtual bool check_reaction() const
@@ -102,6 +100,8 @@ public:
     {
         return world_;
     }
+    void walk_in_space_(const MoleculePool* mtype, const Real& alpha);
+    void walk_on_surface_(const MoleculePool* mtype, const Real& alpha);
     std::pair<bool, reaction_type> apply_zeroth_order_reaction_(
         const ReactionRule& reaction_rule);
     std::pair<bool, reaction_type> apply_first_order_reaction_(
@@ -177,9 +177,6 @@ protected:
     void register_events(const Species& species);
     // void register_step_event(const Species& species);
     void update_alpha_map();
-
-    void walk_in_space_(const MoleculePool* mtype, const Real& alpha);
-    void walk_on_surface_(const MoleculePool* mtype, const Real& alpha);
 
     const std::string get_serial(
         const SpatiocyteWorld::coordinate_type coord) const

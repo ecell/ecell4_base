@@ -43,8 +43,24 @@ StepEvent::StepEvent(SpatiocyteSimulator* sim, const Species& species, const Rea
 
 void StepEvent::fire()
 {
-    sim_->walk(species_, alpha_);
+    walk(alpha_);
     time_ += dt_;
+}
+
+void StepEvent::walk(const Real& alpha) const
+{
+    if (alpha < 0 || alpha > 1)
+    {
+        return; // INVALID ALPHA VALUE
+    }
+
+    const boost::shared_ptr<RandomNumberGenerator>& rng(sim_->world()->rng());
+    const MoleculePool* mtype(sim_->world()->find_molecule_pool(species_));
+
+    if (mtype->get_dimension() == Shape::THREE)
+        sim_->walk_in_space_(mtype, alpha);
+    else // dimension == TWO, etc.
+        sim_->walk_on_surface_(mtype, alpha);
 }
 
 

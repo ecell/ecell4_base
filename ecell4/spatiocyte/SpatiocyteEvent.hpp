@@ -107,6 +107,8 @@ struct StepEvent : SpatiocyteEvent
         return alpha_;
     }
 
+    void walk(const Real& alpha) const;
+
 protected:
 
     SpatiocyteSimulator* sim_;
