@@ -154,19 +154,19 @@ public:
         return (*reinterpret_cast<Tbase_*>(this));
     }
 
-    operator bool() const
-    {
-        return value_.second != 0;
-    }
+    // operator bool() const
+    // {
+    //     return value_.second != 0;
+    // }
+
+    // bool operator!() const
+    // {
+    //     return value_.second == 0;
+    // }
 
     bool is_initialized() const
     {
         return value_.second != 0;
-    }
-
-    bool operator!() const
-    {
-        return value_.second == 0;
     }
 
     bool operator==(const Tbase_& rhs) const
@@ -260,6 +260,14 @@ struct ParticleID:
         ;
     }
 };
+
+template<typename Tstrm_, typename Ttraits_>
+inline std::basic_ostream<Tstrm_, Ttraits_>& operator<<(std::basic_ostream<Tstrm_, Ttraits_>& strm,
+        const ParticleID& v)
+{
+    strm << "PID(" << v().first << ":" << v().second << ")";
+    return strm;
+}
 
 } // ecell4
 
