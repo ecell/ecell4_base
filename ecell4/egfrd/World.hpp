@@ -244,6 +244,10 @@ public:
     typedef Ttraits_ traits_type;
     typedef ParticleContainerBase<World> base_type;
     typedef ParticleContainer<traits_type> particle_container_type;
+    typedef typename particle_container_type::surface_container_type surface_container_type;
+    typedef typename particle_container_type::surface_type surface_type;
+    typedef typename particle_container_type::surface_id_type surface_id_type;
+
     typedef typename traits_type::length_type length_type;
     typedef typename traits_type::molecule_info_type molecule_info_type;
     typedef typename traits_type::position_type position_type;

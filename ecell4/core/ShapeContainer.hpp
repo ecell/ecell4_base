@@ -29,6 +29,8 @@
 
 #include <vector>
 #include <map>
+#include <algorithm>
+#include <functional>
 
 namespace ecell4
 {
@@ -85,6 +87,14 @@ struct hash<ecell4::PlanarSurfaceID>
 
 namespace ecell4
 {
+
+template <typename T_>
+struct compare_second {
+    bool operator() (const T_ &lhs, const T_ &rhs) const
+    {
+        return lhs.second < rhs.second;
+    }
+};
 
 class PlanarSurfaceContainer
 {
@@ -161,13 +171,16 @@ public:
         }
     }
 
-    std::vector<id_distance_pair> list_id_distance_pair(const Real3 &pos) const
+    std::vector<id_distance_pair> list_id_distance_pair(const Real3 &pos, bool do_sort = false) const
     {
         std::vector<id_distance_pair> ret;
         for(surface_container_type::const_iterator it = surfaces_.begin(); it != surfaces_.end(); it++)
         {
             Real dist = std::abs(it->second.second.is_inside(pos));
             ret.push_back( std::make_pair(it->first, dist) );
+        }
+        if (do_sort == true) {
+            std::sort(ret.begin(), ret.end(), compare_second<id_distance_pair>() );
         }
         return ret;
     }

@@ -264,6 +264,10 @@ public:
     typedef typename world_type::particle_id_pair_and_distance particle_id_pair_and_distance;
     typedef typename world_type::particle_id_pair_and_distance_list particle_id_pair_and_distance_list;
 
+    typedef typename world_type::surface_type surface_type;
+    typedef typename world_type::surface_container_type surface_container_type;
+    typedef typename world_type::surface_id_type surface_id_type;
+
     typedef std::pair<const shell_id_type, spherical_shell_type> spherical_shell_id_pair;
     typedef std::pair<const shell_id_type, cylindrical_shell_type> cylindrical_shell_id_pair;
 
@@ -1947,7 +1951,8 @@ protected:
             // length_type const scale(domain.particle().second.radius());
             // BOOST_ASSERT(feq(length(displacement), std::abs(r), scale));
         }
-        return (*base_type::world_).apply_boundary(add(domain.particle().second.position(), displacement));
+        position_type const reflected_((*base_type::world_).apply_reflection(domain.particle().second.position(), displacement));
+        return (*base_type::world_).apply_boundary(reflected_);
     }
 
     position_type draw_new_position(single_type& domain, time_type dt)
@@ -2624,6 +2629,15 @@ protected:
         return std::make_pair(col.intruders.container().get(), col.closest);
     }
     // }}}
+    std::pair<std::vector<std::pair<surface_id_type, Real> >,
+              std::pair<std::pair<surface_id_type, Real>, length_type> >
+    get_intruder_surfaces(particle_shape_type const& p) const
+    {
+        std::vector< std::pair<surface_id_type, Real> > surfaceid_distance_container(
+                (*base_type::world_).list_id_distance_pair(p.position()));
+        std::pair<std::vector<std::pair<surface_id_type, Real> >,
+                  std::pair<std::pair<surface_id_type, Real>, length_type> > ret_container;
+    }
 
     template<typename TdidSet>
     std::pair<domain_id_type, length_type>
@@ -3228,19 +3242,20 @@ protected:
         }
 
         // First, try forming a Pair.
-        {
-            single_type* const _possible_partner(
-                    dynamic_cast<single_type*>(possible_partner));
-            if (_possible_partner)
-            {
-                boost::optional<pair_type&> new_pair(
-                    form_pair(domain, *_possible_partner, neighbors));
-                if (new_pair)
-                {
-                    return new_pair.get();
-                }
-            }
-        }
+        // XXX COMMENT OUT
+        //{
+        //    single_type* const _possible_partner(
+        //            dynamic_cast<single_type*>(possible_partner));
+        //    if (_possible_partner)
+        //    {
+        //        boost::optional<pair_type&> new_pair(
+        //            form_pair(domain, *_possible_partner, neighbors));
+        //        if (new_pair)
+        //        {
+        //            return new_pair.get();
+        //        }
+        //    }
+        //}
 
         // If a Pair is not formed, then try forming a Multi.
         {
