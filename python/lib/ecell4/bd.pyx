@@ -697,6 +697,10 @@ cdef class BDWorld:
 
     def new_surface(self, Species sp, PlanarSurface surface):
         self.thisptr.get().new_surface(deref(sp.thisptr), deref(surface.thisptr.get() ) )
+    def disable_surface_reflection(self):
+        self.thisptr.get().disable_surface_reflection();
+    def enable_surface_reflection(self):
+        self.thisptr.get().enable_surface_reflection();
 
 cdef BDWorld BDWorld_from_Cpp_BDWorld(
     shared_ptr[Cpp_BDWorld] w):

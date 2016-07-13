@@ -146,6 +146,14 @@ public:
     {
         return this->surfaces_.apply_reflection(from, displacement);
     }
+    void disable_surface_reflection(void)
+    {
+        surfaces_.disable_surface_reflection();
+    }
+    void enable_surface_reflection(void)
+    {
+        surfaces_.enable_surface_reflection();
+    }
     
 private:
     surface_container_type surfaces_;

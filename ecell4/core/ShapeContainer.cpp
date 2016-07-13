@@ -44,6 +44,7 @@ private:
 };
 
 PlanarSurfaceContainer::PlanarSurfaceContainer(void)
+    :surface_reflection_enabled_(true)
 {
     ;
 }
@@ -51,6 +52,10 @@ PlanarSurfaceContainer::PlanarSurfaceContainer(void)
 Real3 
 PlanarSurfaceContainer::apply_reflection(const Real3 &from, const Real3 &displacement) const
 {
+    if (this->surface_reflection_enabled_ == false) {
+        return from + displacement;
+    }
+
     std::vector<Real> save_isinside(this->num_surfaces()); // NEVER TO USE vector<bool>
     surface_container_type const surfaces = this->list_surfaces();
 

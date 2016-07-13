@@ -403,6 +403,14 @@ public:
     {
         return this->surfaces_.apply_reflection(from, displacement);
     }
+    void disable_surface_reflection(void)
+    {
+        this->surfaces_.disable_surface_reflection();
+    }
+    void enable_surface_reflection(void)
+    {
+        this->surfaces_.enable_surface_reflection();
+    }
 
 protected:
 

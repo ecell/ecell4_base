@@ -174,9 +174,20 @@ public:
 
     Real3 apply_reflection(const Real3 &from, const Real3 &displacement) const;
 
+    void disable_surface_reflection(void)
+    {
+       this->surface_reflection_enabled_ = false;
+    }
+    void enable_surface_reflection(void)
+    {
+       this->surface_reflection_enabled_ = true;
+    }
+
 protected:
     surface_container_type surfaces_;
     surface_map_type index_map_;
+
+    bool surface_reflection_enabled_;
 };
 
 }   //ecell4
