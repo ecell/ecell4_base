@@ -1992,7 +1992,9 @@ protected:
             // length_type const scale(domain.particle().second.radius());
             // BOOST_ASSERT(feq(length(displacement), std::abs(domain.mobility_radius()), scale));
         }
-        return (*base_type::world_).apply_boundary(add(domain.particle().second.position(), displacement));
+        //return (*base_type::world_).apply_boundary(add(domain.particle().second.position(), displacement));
+        position_type const reflected_((*base_type::world_).apply_reflection(domain.particle().second.position(), displacement));
+        return (*base_type::world_).apply_boundary(reflected_);
     }
 
     position_type draw_escape_position(single_type& domain)
@@ -2630,13 +2632,14 @@ protected:
     }
     // }}}
     std::pair<std::vector<std::pair<surface_id_type, Real> >,
-              std::pair<std::pair<surface_id_type, Real>, length_type> >
+              std::pair<surface_id_type, Real> >
     get_intruder_surfaces(particle_shape_type const& p) const
     {
         std::vector< std::pair<surface_id_type, Real> > surfaceid_distance_container(
-                (*base_type::world_).list_id_distance_pair(p.position()));
-        std::pair<std::vector<std::pair<surface_id_type, Real> >,
-                  std::pair<std::pair<surface_id_type, Real>, length_type> > ret_container;
+                (*base_type::world_).list_id_distance_pair(p.position(), true) );
+        //std::pair<std::vector<std::pair<surface_id_type, Real> >,
+        //          std::pair<std::pair<surface_id_type, Real>, length_type> > ret_container;
+        return std::make_pair(surfaceid_distance_container, surfaceid_distance_container[1]);
     }
 
     template<typename TdidSet>
@@ -3334,6 +3337,8 @@ protected:
                     intruders = res.first;
                     closest = res.second;
                 }
+                get_intruder_surfaces(
+                        particle_shape_type(domain.position(), min_shell_radius) );
 
                 boost::scoped_ptr<std::vector<domain_id_type> > _(intruders);
 

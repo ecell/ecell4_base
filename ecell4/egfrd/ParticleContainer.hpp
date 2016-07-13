@@ -146,6 +146,12 @@ public:
     {
         return this->surfaces_.apply_reflection(from, displacement);
     }
+    std::vector<std::pair<surface_id_type, length_type> >
+    list_id_distance_pair(position_type const &pos, bool do_sort = false) const
+    {
+        return this->surfaces_.list_id_distance_pair(pos, do_sort);
+    }
+
     void disable_surface_reflection(void)
     {
         surfaces_.disable_surface_reflection();
