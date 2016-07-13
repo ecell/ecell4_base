@@ -119,6 +119,7 @@ def ensemble_simulations(
     t, y0={}, volume=1.0, model=None, solver='ode', species_list=None, structures={},
     is_netfree=False, without_reset=False,
     return_type='matplotlib', opt_args=(), opt_kwargs={},
+    errorbar=True,
     n=1, nproc=1, method=None, environ={}):
     """
     observers=(), progressbar=0, rndseed=None,
@@ -156,21 +157,25 @@ def ensemble_simulations(
 
     class DummyObserver:
 
-        def __init__(self, inputs, species_list):
+        def __init__(self, inputs, species_list, errorbar=True):
             if len(inputs) == 0:
                 raise ValueError("No input was given.")
 
             t = numpy.array(inputs[0], numpy.float64).T[0]
             mean = sum([numpy.array(data, numpy.float64).T[1: ] for data in inputs])
             mean /= len(inputs)
-            std = sum([(numpy.array(data, numpy.float64).T[1: ] - mean) ** 2
-                       for data in inputs])
-            std /= len(inputs)
-            std = numpy.sqrt(std)
-            # std = numpy.zeros(mean.shape)
 
             self.__data = numpy.vstack([t, mean]).T
-            self.__error = numpy.vstack([t, std]).T
+
+            if errorbar:
+                std = sum([(numpy.array(data, numpy.float64).T[1: ] - mean) ** 2
+                           for data in inputs])
+                std /= len(inputs)
+                std = numpy.sqrt(std)
+                self.__error = numpy.vstack([t, std]).T
+            else:
+                self.__error = None
+
             self.__species_list = [ecell4.Species(serial) for serial in species_list]
 
         def targets(self):
@@ -188,13 +193,13 @@ def ensemble_simulations(
     if return_type == "matplotlib":
         if isinstance(opt_args, (list, tuple)):
             ecell4.util.viz.plot_number_observer_with_matplotlib(
-                *itertools.chain([DummyObserver(inputs, species_list) for inputs in retval],
+                *itertools.chain([DummyObserver(inputs, species_list, errorbar) for inputs in retval],
                                  opt_args),
                 **opt_kwargs)
         elif isinstance(opt_args, dict):
             # opt_kwargs is ignored
             ecell4.util.viz.plot_number_observer_with_matplotlib(
-                *[DummyObserver(inputs, species_list) for inputs in retval],
+                *[DummyObserver(inputs, species_list, errorbar) for inputs in retval],
                 **opt_args)
         else:
             raise ValueError('opt_args [{}] must be list or dict.'.format(
@@ -202,19 +207,19 @@ def ensemble_simulations(
     elif return_type == "nyaplot":
         if isinstance(opt_args, (list, tuple)):
             ecell4.util.viz.plot_number_observer_with_nya(
-                *itertools.chain([DummyObserver(inputs, species_list) for inputs in retval],
+                *itertools.chain([DummyObserver(inputs, species_list, errorbar) for inputs in retval],
                                  opt_args),
                 **opt_kwargs)
         elif isinstance(opt_args, dict):
             # opt_kwargs is ignored
             ecell4.util.viz.plot_number_observer_with_nya(
-                *[DummyObserver(inputs, species_list) for inputs in retval],
+                *[DummyObserver(inputs, species_list, errorbar) for inputs in retval],
                 **opt_args)
         else:
             raise ValueError('opt_args [{}] must be list or dict.'.format(
                 repr(opt_args)))
     elif return_type == "observer":
-        return [DummyObserver(inputs, species_list) for inputs in retval]
+        return [DummyObserver(inputs, species_list, errorbar) for inputs in retval]
     elif return_type == "dataframe":
         import pandas
         return [[
@@ -226,7 +231,7 @@ def ensemble_simulations(
             for data in inputs] for inputs in retval]
     else:
         raise ValueError(
-            'Invalid Argument "return_type" was given [{}].'.format(str(return_type)))
+            'Invald Argument "return_type" was given [{}].'.format(str(return_type)))
 
 
 if __name__ == "__main__":
