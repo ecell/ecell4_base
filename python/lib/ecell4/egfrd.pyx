@@ -692,6 +692,11 @@ cdef class EGFRDWorld:
         return GSLRandomNumberGenerator_from_Cpp_RandomNumberGenerator(
             self.thisptr.get().rng())
 
+    def num_surfaces(self):
+        return self.thisptr.get().num_surfaces()
+    def new_surface(self, Species sp, PlanarSurface surface):
+        self.thisptr.get().new_surface(deref(sp.thisptr), deref(surface.thisptr.get() ) )
+
 cdef EGFRDWorld EGFRDWorld_from_Cpp_EGFRDWorld(
     shared_ptr[Cpp_EGFRDWorld] w):
     r = EGFRDWorld(Real3(1, 1, 1))

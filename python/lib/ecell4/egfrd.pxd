@@ -70,6 +70,8 @@ cdef extern from "ecell4/egfrd/egfrd.hpp" namespace "ecell4::egfrd":
         void load(string filename) except +
         void bind_to(shared_ptr[Cpp_Model])
         shared_ptr[Cpp_RandomNumberGenerator] rng()
+        Integer num_surfaces()
+        pair[pair[Cpp_PlanarSurfaceID, Cpp_PlanarSurface], bool] new_surface(Cpp_Species &sp, Cpp_PlanarSurface sur)
 
     cdef cppclass Cpp_EGFRDSimulator "ecell4::egfrd::EGFRDSimulator":
         #XXX: be carefull about the order of arguments
