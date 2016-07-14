@@ -97,7 +97,7 @@ boost::shared_ptr<SpatiocyteEvent> SpatiocyteSimulator::create_step_event(
         alpha = (*itr).second;
 
     boost::shared_ptr<SpatiocyteEvent> event(
-        new StepEvent(this, model_, world_, species, t, alpha));
+        new StepEvent(this, species, t, alpha));
     return event;
 }
 
@@ -136,59 +136,6 @@ void SpatiocyteSimulator::finalize()
     initialize();
 }
 
-Real SpatiocyteSimulator::calculate_dimensional_factor(
-    const VoxelPool* mt0, const VoxelPool* mt1, boost::shared_ptr<SpatiocyteWorld> world)
-{
-    const Species&
-        speciesA(mt0->species()),
-        speciesB(mt1->species());
-    const Real
-        D_A(mt0->D()),
-        D_B(mt1->D());
-    const Shape::dimension_kind
-        dimensionA(mt0->get_dimension()),
-        dimensionB(mt1->get_dimension());
-    const Real Dtot(D_A + D_B);
-    const Real gamma(pow(2 * sqrt(2.0) + 4 * sqrt(3.0) + 3 * sqrt(6.0) + sqrt(22.0), 2) /
-        (72 * (6 * sqrt(2.0) + 4 * sqrt(3.0) + 3 * sqrt(6.0))));
-    Real factor(0);
-    if (dimensionA == Shape::THREE && dimensionB == Shape::THREE)
-    {
-        // if (speciesA != speciesB)
-        //     factor = 1. / (6 * sqrt(2.0) * Dtot * world->voxel_radius());
-        // else
-        //     factor = 1. / (6 * sqrt(2.0) * D_A * world->voxel_radius());
-        factor = 1. / (6 * sqrt(2.0) * Dtot * world->voxel_radius());
-    }
-    else if (dimensionA == Shape::TWO && dimensionB == Shape::TWO)
-    {
-        // if (speciesA != speciesB)
-        //     factor = gamma / Dtot;
-        // else
-        //     factor = gamma / D_A;
-        factor = gamma / Dtot;
-    }
-    else if (dimensionA == Shape::THREE && dimensionB == Shape::TWO)
-    {
-        factor = sqrt(2.0) / (3 * D_A * world->voxel_radius());
-        if (mt1->is_structure()) // B is Surface
-        {
-            factor *= world->unit_area();
-        }
-    }
-    else if (dimensionA == Shape::TWO && dimensionB == Shape::THREE)
-    {
-        factor = sqrt(2.0) / (3 * D_B * world->voxel_radius());
-        if (mt0->is_structure()) // A is Surface
-        {
-            factor *= world->unit_area();
-        }
-    }
-    else
-        throw NotSupported("The dimension of a structure must be two or three.");
-    return factor;
-}
-
 Real SpatiocyteSimulator::calculate_alpha(const ReactionRule& rule) const
 {
     const ReactionRule::reactant_container_type& reactants(rule.reactants());
@@ -224,7 +171,8 @@ Real SpatiocyteSimulator::calculate_alpha(const ReactionRule& rule) const
             is_created[i] = true;
         }
     }
-    const Real factor(calculate_dimensional_factor(mt[0], mt[1], world_));
+    const Real factor(calculate_dimensional_factor(mt[0], mt[1],
+                boost::const_pointer_cast<const SpatiocyteWorld>(world_)));
     for (int i(0); i < 2; ++i)
         if (is_created[i])
             delete mt[i];
@@ -256,25 +204,22 @@ bool SpatiocyteSimulator::step(const Real& upto)
     }
 
     world_->set_t(upto); //XXX: TODO
-    last_reactions_.clear();
     dt_ = scheduler_.next_time() - t();
     return false;
 }
 
 void SpatiocyteSimulator::step_()
 {
-    last_reactions_.clear();
 
     scheduler_type::value_type top(scheduler_.pop());
     const Real time(top.second->time());
     world_->set_t(time);
     top.second->fire(); // top.second->time_ is updated in fire()
-    if (!check_reaction())
-        last_reactions_ = top.second->last_reactions();
+    set_last_event_(boost::const_pointer_cast<const SpatiocyteEvent>(top.second));
 
     std::vector<Species> new_species;
-    for (std::vector<reaction_type>::const_iterator itr(last_reactions_.begin());
-            itr != last_reactions_.end(); ++itr)
+    for (std::vector<reaction_type>::const_iterator itr(last_reactions().begin());
+            itr != last_reactions().end(); ++itr)
         for (ReactionInfo::container_type::const_iterator
                 product((*itr).second.products().begin());
                 product != (*itr).second.products().end(); ++product)

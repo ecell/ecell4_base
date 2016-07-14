@@ -13,7 +13,7 @@ ZerothOrderReactionEvent::ZerothOrderReactionEvent(
     time_ = t + draw_dt();
 }
 
-void ZerothOrderReactionEvent::fire()
+void ZerothOrderReactionEvent::fire_()
 {
     ReactionInfo rinfo(world_->t());
 
@@ -76,7 +76,7 @@ FirstOrderReactionEvent::FirstOrderReactionEvent(
     time_ = t + draw_dt();
 }
 
-void FirstOrderReactionEvent::fire()
+void FirstOrderReactionEvent::fire_()
 {
     const ReactionInfo::particle_id_pair_type& p(
             world_->choice(*(rule_.reactants().begin())));

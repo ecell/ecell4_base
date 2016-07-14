@@ -7,10 +7,9 @@ namespace ecell4
 namespace spatiocyte
 {
 
-StepEvent::StepEvent(SpatiocyteSimulator* sim, boost::shared_ptr<Model> model,
-        boost::shared_ptr<SpatiocyteWorld> world, const Species& species, const Real& t,
-    const Real alpha)
-    : SpatiocyteEvent(t), sim_(sim), model_(model), world_(world),
+StepEvent::StepEvent(SpatiocyteSimulator* sim,
+        const Species& species, const Real& t, const Real alpha)
+    : SpatiocyteEvent(t), model_(sim->model()), world_(sim->world()),
     species_(species), alpha_(alpha)
 {
     const SpatiocyteWorld::molecule_info_type
@@ -47,7 +46,7 @@ StepEvent::StepEvent(SpatiocyteSimulator* sim, boost::shared_ptr<Model> model,
         nids_.push_back(i);
 }
 
-void StepEvent::fire()
+void StepEvent::fire_()
 {
     walk(alpha_);
     time_ += dt_;
@@ -161,9 +160,8 @@ StepEvent::attempt_reaction_(
         return std::make_pair(NO_REACTION, reaction_type());
     }
 
-    const Species&
-        speciesA(from_mt->species()),
-        speciesB(to_mt->species());
+    const Species& speciesA(from_mt->species());
+    const Species& speciesB(to_mt->species());
 
     const std::vector<ReactionRule> rules(
         model_->query_reaction_rules(speciesA, speciesB));
@@ -173,12 +171,12 @@ StepEvent::attempt_reaction_(
         return std::make_pair(NO_REACTION, reaction_type());
     }
 
-    const Real factor(sim_->calculate_dimensional_factor(from_mt, to_mt, world_));
+    const Real factor(calculate_dimensional_factor(from_mt, to_mt,
+                boost::const_pointer_cast<const SpatiocyteWorld>(world_)));
 
     const Real rnd(world_->rng()->uniform(0,1));
     Real accp(0.0);
-    for (std::vector<ReactionRule>::const_iterator itr(rules.begin());
-        itr != rules.end(); ++itr)
+    for (std::vector<ReactionRule>::const_iterator itr(rules.begin()); itr != rules.end(); ++itr)
     {
         const Real k((*itr).k());
         const Real P(k * factor * alpha);
@@ -197,15 +195,15 @@ StepEvent::attempt_reaction_(
                         world_->make_pid_voxel_pair(to_mt, to_coord)));
             if (rinfo.has_occurred())
             {
-                return std::make_pair(REACTION_SUCCEEDED, std::make_pair(*itr, rinfo));
+                reaction_type reaction(std::make_pair(*itr, rinfo));
+                push_reaction(reaction);
+                return std::make_pair(REACTION_SUCCEEDED, reaction);
             }
             return std::make_pair(REACTION_FAILED, std::make_pair(*itr, rinfo));
         }
     }
     return std::make_pair(REACTION_FAILED, reaction_type());
 }
-
-
 
 } // spatiocyte
 

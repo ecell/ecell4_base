@@ -26,6 +26,59 @@ SpatiocyteWorld* create_spatiocyte_world_vector_impl(
         new LatticeSpaceVectorImpl(edge_lengths, voxel_radius), rng);
 }
 
+Real calculate_dimensional_factor(const VoxelPool* mt0, const VoxelPool* mt1,
+        boost::shared_ptr<const SpatiocyteWorld> world)
+{
+    const Species&
+        speciesA(mt0->species()),
+        speciesB(mt1->species());
+    const Real
+        D_A(mt0->D()),
+        D_B(mt1->D());
+    const Shape::dimension_kind
+        dimensionA(mt0->get_dimension()),
+        dimensionB(mt1->get_dimension());
+    const Real Dtot(D_A + D_B);
+    const Real gamma(pow(2 * sqrt(2.0) + 4 * sqrt(3.0) + 3 * sqrt(6.0) + sqrt(22.0), 2) /
+        (72 * (6 * sqrt(2.0) + 4 * sqrt(3.0) + 3 * sqrt(6.0))));
+    Real factor(0);
+    if (dimensionA == Shape::THREE && dimensionB == Shape::THREE)
+    {
+        // if (speciesA != speciesB)
+        //     factor = 1. / (6 * sqrt(2.0) * Dtot * world->voxel_radius());
+        // else
+        //     factor = 1. / (6 * sqrt(2.0) * D_A * world->voxel_radius());
+        factor = 1. / (6 * sqrt(2.0) * Dtot * world->voxel_radius());
+    }
+    else if (dimensionA == Shape::TWO && dimensionB == Shape::TWO)
+    {
+        // if (speciesA != speciesB)
+        //     factor = gamma / Dtot;
+        // else
+        //     factor = gamma / D_A;
+        factor = gamma / Dtot;
+    }
+    else if (dimensionA == Shape::THREE && dimensionB == Shape::TWO)
+    {
+        factor = sqrt(2.0) / (3 * D_A * world->voxel_radius());
+        if (mt1->is_structure()) // B is Surface
+        {
+            factor *= world->unit_area();
+        }
+    }
+    else if (dimensionA == Shape::TWO && dimensionB == Shape::THREE)
+    {
+        factor = sqrt(2.0) / (3 * D_B * world->voxel_radius());
+        if (mt0->is_structure()) // A is Surface
+        {
+            factor *= world->unit_area();
+        }
+    }
+    else
+        throw NotSupported("The dimension of a structure must be two or three.");
+    return factor;
+}
+
 const Real SpatiocyteWorld::t() const
 {
     return (*space_).t();

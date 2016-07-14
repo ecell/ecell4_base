@@ -7,7 +7,6 @@
 
 #include <ecell4/core/Model.hpp>
 #include <ecell4/core/ReactionRule.hpp>
-// #include <ecell4/core/Reaction.hpp>
 #include <ecell4/core/VoxelPool.hpp>
 #include <ecell4/core/SimulatorBase.hpp>
 #include <ecell4/core/RandomNumberGenerator.hpp>
@@ -68,12 +67,12 @@ public:
 
     virtual bool check_reaction() const
     {
-        return last_reactions_.size() > 0;
+        return last_reactions().size() > 0;
     }
 
-    std::vector<std::pair<ReactionRule, ReactionInfo> > last_reactions() const
+    const std::vector<SpatiocyteEvent::reaction_type>& last_reactions() const
     {
-        return last_reactions_;
+        return last_event_->reactions();
     }
 
     void set_alpha(const Real alpha)
@@ -91,10 +90,6 @@ public:
     {
         return alpha_;
     }
-
-    // TODO: remove the below public functions
-    static Real calculate_dimensional_factor(const VoxelPool* mt0, const VoxelPool* mt1,
-            boost::shared_ptr<SpatiocyteWorld> world);
 
 protected:
 
@@ -132,12 +127,16 @@ protected:
         return ltype->is_vacant() ? "" : ltype->species().serial();
     }
 
+    void set_last_event_(boost::shared_ptr<const SpatiocyteEvent> event)
+    {
+        last_event_ = event;
+    }
+
 protected:
 
     scheduler_type scheduler_;
-    std::vector<reaction_type> last_reactions_;
+    boost::shared_ptr<const SpatiocyteEvent> last_event_;
     alpha_map_type alpha_map_;
-    //map<Species> alpha_map_;
 
     Real dt_;
     Real alpha_;

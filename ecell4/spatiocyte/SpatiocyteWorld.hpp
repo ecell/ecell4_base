@@ -565,6 +565,9 @@ SpatiocyteWorld* create_spatiocyte_world_vector_impl(
     const Real3& edge_lengths, const Real& voxel_radius,
     const boost::shared_ptr<RandomNumberGenerator>& rng);
 
+Real calculate_dimensional_factor(const VoxelPool* mt0, const VoxelPool* mt1,
+        boost::shared_ptr<const SpatiocyteWorld> world);
+
 /**
  * Alias functions for Cython
  */

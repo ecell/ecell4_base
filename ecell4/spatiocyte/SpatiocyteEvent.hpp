@@ -23,29 +23,33 @@ public:
     SpatiocyteEvent(Real const& time) : Event(time) {}
     virtual ~SpatiocyteEvent() {}
 
-    std::vector<reaction_type> last_reactions() const
+    const std::vector<reaction_type>& reactions() const
     {
-        return last_reactions_;
+        return reactions_;
     }
 
-    void push_reaction(const reaction_type& reaction)
-    {
-        last_reactions_.push_back(reaction);
+    virtual void fire() {
+        reactions_.clear();
+        fire_();
     }
 
 protected:
-    std::vector<reaction_type> last_reactions_;
+    virtual void fire_() = 0;
+
+    void push_reaction(const reaction_type& reaction)
+    {
+        reactions_.push_back(reaction);
+    }
+
+    std::vector<reaction_type> reactions_;
 
 };
 
 struct StepEvent : SpatiocyteEvent
 {
-    StepEvent(SpatiocyteSimulator* sim, boost::shared_ptr<Model> model,
-            boost::shared_ptr<SpatiocyteWorld> world, const Species& species, const Real& t,
-        const Real alpha=1.0);
-
+    StepEvent(SpatiocyteSimulator* sim, const Species& species, const Real& t, const Real alpha=1.0);
     virtual ~StepEvent() {}
-    virtual void fire();
+    virtual void fire_();
 
     Species const& species() const
     {
@@ -89,7 +93,7 @@ struct ZerothOrderReactionEvent : SpatiocyteEvent
         boost::shared_ptr<SpatiocyteWorld> world, const ReactionRule& rule, const Real& t);
 
     virtual ~ZerothOrderReactionEvent() {}
-    virtual void fire();
+    virtual void fire_();
 
     Real draw_dt();
     virtual void interrupt(Real const& t)
@@ -109,7 +113,7 @@ struct FirstOrderReactionEvent : SpatiocyteEvent
         boost::shared_ptr<SpatiocyteWorld> world, const ReactionRule& rule, const Real& t);
 
     virtual ~FirstOrderReactionEvent() {}
-    virtual void fire();
+    virtual void fire_();
 
     Real draw_dt();
     virtual void interrupt(Real const& t)
