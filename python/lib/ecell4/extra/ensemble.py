@@ -124,8 +124,8 @@ def ensemble_simulations(
     """
     observers=(), progressbar=0, rndseed=None,
     """
-    if not isinstance(solver, str):
-        raise ValueError('Argument "solver" must be a string.')
+    # if not isinstance(solver, str):
+    #     raise ValueError('Argument "solver" must be a string.')
 
     if model is None:
         model = ecell4.util.decorator.get_model(is_netfree, without_reset)
