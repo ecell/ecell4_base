@@ -97,7 +97,7 @@ boost::shared_ptr<SpatiocyteEvent> SpatiocyteSimulator::create_step_event(
         alpha = (*itr).second;
 
     boost::shared_ptr<SpatiocyteEvent> event(
-        new StepEvent(this, species, t, alpha));
+        new StepEvent(this, model_, world_, species, t, alpha));
     return event;
 }
 

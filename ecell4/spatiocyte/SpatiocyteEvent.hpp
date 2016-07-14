@@ -10,7 +10,8 @@
 namespace ecell4
 {
 
-namespace spatiocyte {
+namespace spatiocyte
+{
 
 class SpatiocyteSimulator;
 
@@ -93,7 +94,8 @@ protected:
 
 struct StepEvent : SpatiocyteEvent
 {
-    StepEvent(SpatiocyteSimulator* sim, const Species& species, const Real& t,
+    StepEvent(SpatiocyteSimulator* sim, boost::shared_ptr<Model> model,
+            boost::shared_ptr<SpatiocyteWorld> world, const Species& species, const Real& t,
         const Real alpha=1.0);
 
     virtual ~StepEvent() {}

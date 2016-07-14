@@ -2,13 +2,16 @@
 #include "SpatiocyteSimulator.hpp" // TODO: remove this include line
 
 
-namespace ecell4 {
+namespace ecell4
+{
 
-namespace spatiocyte {
+namespace spatiocyte
+{
 
-StepEvent::StepEvent(SpatiocyteSimulator* sim, const Species& species, const Real& t,
+StepEvent::StepEvent(SpatiocyteSimulator* sim, boost::shared_ptr<Model> model,
+        boost::shared_ptr<SpatiocyteWorld> world, const Species& species, const Real& t,
     const Real alpha)
-    : SpatiocyteEvent(t), sim_(sim), model_(sim->model()), world_(sim->world()),
+    : SpatiocyteEvent(t), sim_(sim), model_(model), world_(world),
     species_(species), alpha_(alpha)
 {
     const SpatiocyteWorld::molecule_info_type

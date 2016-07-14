@@ -94,14 +94,6 @@ public:
     }
 
     // TODO: remove the below public functions
-    boost::shared_ptr<SpatiocyteWorld> world()
-    {
-        return world_;
-    }
-    boost::shared_ptr<Model> model()
-    {
-        return model_;
-    }
     Real calculate_dimensional_factor(
         const VoxelPool* mt0, const VoxelPool* mt1) const;
     std::pair<bool, reaction_type> apply_second_order_reaction_(
