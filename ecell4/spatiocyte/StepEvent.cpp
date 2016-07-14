@@ -1,7 +1,6 @@
 #include "SpatiocyteEvent.hpp"
 #include "SpatiocyteSimulator.hpp" // TODO: remove this include line
 
-
 namespace ecell4
 {
 
@@ -174,7 +173,7 @@ StepEvent::attempt_reaction_(
         return std::make_pair(NO_REACTION, reaction_type());
     }
 
-    const Real factor(sim_->calculate_dimensional_factor(from_mt, to_mt));
+    const Real factor(sim_->calculate_dimensional_factor(from_mt, to_mt, world_));
 
     const Real rnd(world_->rng()->uniform(0,1));
     Real accp(0.0);
@@ -192,19 +191,15 @@ StepEvent::attempt_reaction_(
         }
         if (accp >= rnd)
         {
-            std::pair<bool, SpatiocyteSimulator::reaction_type>
-                retval = sim_->apply_second_order_reaction_(
-                    *itr,
-                    world_->make_pid_voxel_pair(from_mt, info),
-                    world_->make_pid_voxel_pair(to_mt, to_coord));
-            if (retval.first)
+            ReactionInfo rinfo(apply_second_order_reaction(
+                        world_, *itr,
+                        world_->make_pid_voxel_pair(from_mt, info),
+                        world_->make_pid_voxel_pair(to_mt, to_coord)));
+            if (rinfo.has_occurred())
             {
-                return std::make_pair(REACTION_SUCCEEDED, retval.second);
+                return std::make_pair(REACTION_SUCCEEDED, std::make_pair(*itr, rinfo));
             }
-            else
-            {
-                return std::make_pair(REACTION_FAILED, reaction_type());
-            }
+            return std::make_pair(REACTION_FAILED, std::make_pair(*itr, rinfo));
         }
     }
     return std::make_pair(REACTION_FAILED, reaction_type());

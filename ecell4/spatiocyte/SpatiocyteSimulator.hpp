@@ -30,7 +30,6 @@ public:
 
     typedef SimulatorBase<Model, SpatiocyteWorld> base_type;
 
-    typedef SpatiocyteEvent::reaction_info_type reaction_info_type;
     typedef SpatiocyteEvent::reaction_type reaction_type;
 
     typedef EventSchedulerBase<SpatiocyteEvent> scheduler_type;
@@ -72,7 +71,7 @@ public:
         return last_reactions_.size() > 0;
     }
 
-    std::vector<std::pair<ReactionRule, reaction_info_type> > last_reactions() const
+    std::vector<std::pair<ReactionRule, ReactionInfo> > last_reactions() const
     {
         return last_reactions_;
     }
@@ -94,12 +93,8 @@ public:
     }
 
     // TODO: remove the below public functions
-    Real calculate_dimensional_factor(
-        const VoxelPool* mt0, const VoxelPool* mt1) const;
-    std::pair<bool, reaction_type> apply_second_order_reaction_(
-        const ReactionRule& reaction_rule,
-        const reaction_info_type::particle_id_pair_type& p0,
-        const reaction_info_type::particle_id_pair_type& p1);
+    static Real calculate_dimensional_factor(const VoxelPool* mt0, const VoxelPool* mt1,
+            boost::shared_ptr<SpatiocyteWorld> world);
 
 protected:
 
@@ -109,30 +104,6 @@ protected:
         const ReactionRule& reaction_rule, const Real& t);
     boost::shared_ptr<SpatiocyteEvent> create_first_order_reaction_event(
         const ReactionRule& reaction_rule, const Real& t);
-
-    std::pair<bool, reaction_type> apply_vanishment(
-        const ReactionRule& reaction_rule,
-        const reaction_info_type::particle_id_pair_type& p0,
-        const reaction_info_type::particle_id_pair_type& p1);
-    std::pair<bool, reaction_type> apply_ab2c(
-        const ReactionRule& reaction_rule,
-        const reaction_info_type::particle_id_pair_type& p0,
-        const reaction_info_type::particle_id_pair_type& p1,
-        const Species& product_species);
-    std::pair<bool, reaction_type> apply_ab2cd(
-        const ReactionRule& reaction_rule,
-        const reaction_info_type::particle_id_pair_type& p0,
-        const reaction_info_type::particle_id_pair_type& p1,
-        const Species& product_species0,
-        const Species& product_species1);
-    std::pair<bool, reaction_type> apply_ab2cd_in_order(
-        const ReactionRule& reaction_rule,
-        const reaction_info_type::particle_id_pair_type& p0,
-        const reaction_info_type::particle_id_pair_type& p1,
-        const Species& product_species0,
-        const Species& product_species1,
-        const SpatiocyteWorld::coordinate_type coord0,
-        const SpatiocyteWorld::coordinate_type coord1);
 
     // void register_reactant_species(
     //     const SpatiocyteWorld::coordinate_id_pair_type pinfo, reaction_type& reaction) const;

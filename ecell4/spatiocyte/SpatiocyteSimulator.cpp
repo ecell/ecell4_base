@@ -137,7 +137,7 @@ void SpatiocyteSimulator::finalize()
 }
 
 Real SpatiocyteSimulator::calculate_dimensional_factor(
-    const VoxelPool* mt0, const VoxelPool* mt1) const
+    const VoxelPool* mt0, const VoxelPool* mt1, boost::shared_ptr<SpatiocyteWorld> world)
 {
     const Species&
         speciesA(mt0->species()),
@@ -155,10 +155,10 @@ Real SpatiocyteSimulator::calculate_dimensional_factor(
     if (dimensionA == Shape::THREE && dimensionB == Shape::THREE)
     {
         // if (speciesA != speciesB)
-        //     factor = 1. / (6 * sqrt(2.0) * Dtot * world_->voxel_radius());
+        //     factor = 1. / (6 * sqrt(2.0) * Dtot * world->voxel_radius());
         // else
-        //     factor = 1. / (6 * sqrt(2.0) * D_A * world_->voxel_radius());
-        factor = 1. / (6 * sqrt(2.0) * Dtot * world_->voxel_radius());
+        //     factor = 1. / (6 * sqrt(2.0) * D_A * world->voxel_radius());
+        factor = 1. / (6 * sqrt(2.0) * Dtot * world->voxel_radius());
     }
     else if (dimensionA == Shape::TWO && dimensionB == Shape::TWO)
     {
@@ -170,18 +170,18 @@ Real SpatiocyteSimulator::calculate_dimensional_factor(
     }
     else if (dimensionA == Shape::THREE && dimensionB == Shape::TWO)
     {
-        factor = sqrt(2.0) / (3 * D_A * world_->voxel_radius());
+        factor = sqrt(2.0) / (3 * D_A * world->voxel_radius());
         if (mt1->is_structure()) // B is Surface
         {
-            factor *= world_->unit_area();
+            factor *= world->unit_area();
         }
     }
     else if (dimensionA == Shape::TWO && dimensionB == Shape::THREE)
     {
-        factor = sqrt(2.0) / (3 * D_B * world_->voxel_radius());
+        factor = sqrt(2.0) / (3 * D_B * world->voxel_radius());
         if (mt0->is_structure()) // A is Surface
         {
-            factor *= world_->unit_area();
+            factor *= world->unit_area();
         }
     }
     else
@@ -224,7 +224,7 @@ Real SpatiocyteSimulator::calculate_alpha(const ReactionRule& rule) const
             is_created[i] = true;
         }
     }
-    const Real factor(calculate_dimensional_factor(mt[0], mt[1]));
+    const Real factor(calculate_dimensional_factor(mt[0], mt[1], world_));
     for (int i(0); i < 2; ++i)
         if (is_created[i])
             delete mt[i];
@@ -235,293 +235,6 @@ Real SpatiocyteSimulator::calculate_alpha(const ReactionRule& rule) const
 /*
  * the Reaction between two molecules
  */
-std::pair<bool, SpatiocyteSimulator::reaction_type> SpatiocyteSimulator::apply_second_order_reaction_(
-    const ReactionRule& reaction_rule,
-    const SpatiocyteSimulator::reaction_info_type::particle_id_pair_type& p0,
-    const SpatiocyteSimulator::reaction_info_type::particle_id_pair_type& p1)
-{
-    const ReactionRule::product_container_type&
-        products(reaction_rule.products());
-
-    std::pair<bool, reaction_type> retval;
-
-    switch (products.size())
-    {
-        case 0:
-            retval = apply_vanishment(reaction_rule, p0, p1);
-            assert(retval.first);
-            break;
-        case 1:
-            retval = apply_ab2c(reaction_rule, p0, p1, *(products.begin()));
-            break;
-        case 2:
-            retval = apply_ab2cd(
-                reaction_rule, p0, p1, *(products.begin()), *(++(products.begin())));
-            break;
-        default:
-            return std::make_pair(false, reaction_type());
-    }
-
-    if (retval.first)
-    {
-        last_reactions_.push_back(retval.second);
-    }
-    return retval;
-}
-
-std::pair<bool, SpatiocyteSimulator::reaction_type> SpatiocyteSimulator::apply_vanishment(
-    const ReactionRule& reaction_rule,
-    const SpatiocyteSimulator::reaction_info_type::particle_id_pair_type& p0,
-    const SpatiocyteSimulator::reaction_info_type::particle_id_pair_type& p1)
-{
-    reaction_info_type rinfo(world_->t());
-    rinfo.add_reactant(p0);
-    rinfo.add_reactant(p1);
-
-    world_->remove_voxel(p0.second.coordinate());
-    world_->remove_voxel(p1.second.coordinate());
-
-    return std::make_pair(true, std::make_pair(reaction_rule, rinfo));
-}
-
-std::pair<bool, SpatiocyteSimulator::reaction_type> SpatiocyteSimulator::apply_ab2c(
-    const ReactionRule& reaction_rule,
-    const SpatiocyteSimulator::reaction_info_type::particle_id_pair_type& p0,
-    const SpatiocyteSimulator::reaction_info_type::particle_id_pair_type& p1,
-    const Species& product_species)
-{
-    // A and B (from_info and to_info) become C (product_species)
-    const std::string location(world_->get_molecule_info(product_species).loc);
-    const std::string fserial(get_serial(p0.second.coordinate()));
-    const std::string floc(get_location(p0.second.coordinate()));
-    const std::string tserial(get_serial(p1.second.coordinate()));
-    const std::string tloc(get_location(p1.second.coordinate()));
-
-    reaction_info_type rinfo(world_->t());
-
-    if (tserial == location || tloc == location)
-    {
-        // B is on the location of C, or the location itself.
-        // Place C at the coordinate of B, and remove A.
-        rinfo.add_reactant(p0);
-        rinfo.add_reactant(p1);
-
-        if (tserial != location)
-        {
-            world_->remove_voxel(p1.second.coordinate());
-        }
-
-        world_->remove_voxel(p0.second.coordinate());
-        std::pair<std::pair<ParticleID, Voxel>, bool> new_mol(
-            world_->new_voxel(product_species, p1.second.coordinate()));
-
-        rinfo.add_product(new_mol.first);
-    }
-    else if (fserial == location || floc == location)
-    {
-        // A is on the location of C, or the location itself.
-        // Place C at the coordinate of A, and remove B.
-        rinfo.add_reactant(p0);
-        rinfo.add_reactant(p1);
-
-        if (fserial != location)
-        {
-            world_->remove_voxel(p0.second.coordinate());
-        }
-
-        world_->remove_voxel(p1.second.coordinate());
-        std::pair<std::pair<ParticleID, Voxel>, bool> new_mol(
-            world_->new_voxel(product_species, p0.second.coordinate()));
-
-        rinfo.add_product(new_mol.first);
-    }
-    else
-    {
-        return std::make_pair(false, reaction_type());
-        // throw IllegalState(
-        //     "no place for the product [" + product_species.serial() + "].");
-    }
-    return std::make_pair(true, std::make_pair(reaction_rule, rinfo));
-}
-
-// Not tested yet
-std::pair<bool, SpatiocyteSimulator::reaction_type> SpatiocyteSimulator::apply_ab2cd(
-    const ReactionRule& reaction_rule,
-    const reaction_info_type::particle_id_pair_type& p0,
-    const reaction_info_type::particle_id_pair_type& p1,
-    const Species& product_species0,
-    const Species& product_species1)
-{
-    const SpatiocyteWorld::coordinate_type from_coord(p0.second.coordinate());
-    const SpatiocyteWorld::coordinate_type to_coord(p1.second.coordinate());
-    const std::string aserial(get_serial(from_coord));
-    const std::string aloc(get_location(from_coord));
-    const std::string bserial(get_serial(to_coord));
-    const std::string bloc(get_location(to_coord));
-    const std::string cloc(world_->get_molecule_info(product_species0).loc);
-    const std::string dloc(world_->get_molecule_info(product_species1).loc);
-
-    if (aserial == cloc || aloc == cloc)
-    {
-        if (bserial == dloc || bloc == dloc)
-        {
-            if (aserial != cloc)
-            {
-                // Remove A once if A is not the location of C
-                world_->remove_voxel(p0.second.coordinate());
-            }
-            if (bserial != dloc)
-            {
-                // Remove B once if B is not the location of D
-                world_->remove_voxel(p1.second.coordinate());
-            }
-            return apply_ab2cd_in_order(
-                reaction_rule, p0, p1, product_species0, product_species1,
-                from_coord, to_coord);
-        }
-        else
-        {
-            std::pair<SpatiocyteWorld::coordinate_type, bool>
-                neighbor(world_->check_neighbor(to_coord, dloc));
-
-            if (neighbor.second)
-            {
-                world_->remove_voxel(p1.second.coordinate());
-                if (aserial != cloc)
-                {
-                    // Remove A once if A is not the location of C
-                    world_->remove_voxel(p0.second.coordinate());
-                }
-                return apply_ab2cd_in_order(
-                    reaction_rule, p0, p1, product_species0, product_species1,
-                    from_coord, neighbor.first);
-            }
-        }
-    }
-    else if (aserial == dloc || aloc == dloc)
-    {
-        if (bserial == cloc || bloc == dloc)
-        {
-            if (aserial != dloc)
-            {
-                // Remove A once if A is not the location of D
-                world_->remove_voxel(p0.second.coordinate());
-            }
-            if (bserial != cloc)
-            {
-                // Remove B once if B is not the location of C
-                world_->remove_voxel(p1.second.coordinate());
-            }
-            return apply_ab2cd_in_order(
-                reaction_rule, p0, p1, product_species0, product_species1,
-                to_coord, from_coord);
-        }
-        else
-        {
-            std::pair<SpatiocyteWorld::coordinate_type, bool>
-                neighbor(world_->check_neighbor(to_coord, cloc));
-
-            if (neighbor.second)
-            {
-                world_->remove_voxel(p1.second.coordinate());
-                if (aserial != dloc)
-                {
-                    // Remove A once if A is not the location of D
-                    world_->remove_voxel(p0.second.coordinate());
-                }
-                return apply_ab2cd_in_order(
-                    reaction_rule, p0, p1, product_species0, product_species1,
-                    neighbor.first, from_coord);
-            }
-        }
-    }
-    else if (bserial == cloc || bloc == cloc)
-    {
-        std::pair<SpatiocyteWorld::coordinate_type, bool>
-            neighbor(world_->check_neighbor(to_coord, dloc));
-
-        if (neighbor.second)
-        {
-            world_->remove_voxel(p0.second.coordinate());
-            if (bserial != cloc)
-            {
-                // Remove B once if B is not the location of C
-                world_->remove_voxel(p1.second.coordinate());
-            }
-            return apply_ab2cd_in_order(
-                reaction_rule, p0, p1, product_species0, product_species1,
-                to_coord, neighbor.first);
-        }
-    }
-    else if (bserial == dloc || bloc == dloc)
-    {
-        std::pair<SpatiocyteWorld::coordinate_type, bool>
-            neighbor(world_->check_neighbor(to_coord, dloc));
-
-        if (neighbor.second)
-        {
-            world_->remove_voxel(p0.second.coordinate());
-            if (bserial != dloc)
-            {
-                // Remove B once if B is not the location of D
-                world_->remove_voxel(p1.second.coordinate());
-            }
-            return apply_ab2cd_in_order(
-                reaction_rule, p0, p1, product_species0, product_species1,
-                neighbor.first, to_coord);
-        }
-    }
-    // else
-    // {
-    //     throw IllegalState("Not Supported.");
-    // }
-    return std::make_pair(false, reaction_type());
-}
-
-std::pair<bool, SpatiocyteSimulator::reaction_type> SpatiocyteSimulator::apply_ab2cd_in_order(
-    const ReactionRule& reaction_rule,
-    const SpatiocyteSimulator::reaction_info_type::particle_id_pair_type& p0,
-    const SpatiocyteSimulator::reaction_info_type::particle_id_pair_type& p1,
-    const Species& product_species0,
-    const Species& product_species1,
-    const SpatiocyteWorld::coordinate_type coord0,
-    const SpatiocyteWorld::coordinate_type coord1)
-{
-    reaction_info_type rinfo(world_->t());
-    rinfo.add_reactant(p0);
-    rinfo.add_reactant(p1);
-
-    std::pair<std::pair<ParticleID, Voxel>, bool> new_mol0(
-        world_->new_voxel(product_species0, coord0));
-    if (!new_mol0.second)
-    {
-        throw IllegalState("no place for " + product_species0.serial());
-    }
-    std::pair<std::pair<ParticleID, Voxel>, bool> new_mol1(
-        world_->new_voxel(product_species1, coord1));
-    if (!new_mol1.second)
-    {
-        throw IllegalState("no place for " + product_species1.serial());
-    }
-
-    rinfo.add_product(new_mol0.first);
-    rinfo.add_product(new_mol1.first);
-    return std::make_pair(true, std::make_pair(reaction_rule, rinfo));
-}
-
-// void SpatiocyteSimulator::register_reactant_species(
-//         const SpatiocyteWorld::coordinate_id_pair_type pinfo, reaction_type& reaction) const
-// {
-//     const VoxelPool* mtype(world_->find_voxel_pool(pinfo.first));
-//     const std::string location(
-//             mtype->location()->is_vacant() ? "" : mtype->location()->species().serial());
-//     reaction.reactants.push_back(
-//         reaction_type::particle_type(
-//             pinfo.second,
-//             Voxel(mtype->species(), pinfo.first,
-//                   mtype->radius(), mtype->D(), location)));
-// }
-
 void SpatiocyteSimulator::step()
 {
     step_();
@@ -562,7 +275,7 @@ void SpatiocyteSimulator::step_()
     std::vector<Species> new_species;
     for (std::vector<reaction_type>::const_iterator itr(last_reactions_.begin());
             itr != last_reactions_.end(); ++itr)
-        for (reaction_info_type::container_type::const_iterator
+        for (ReactionInfo::container_type::const_iterator
                 product((*itr).second.products().begin());
                 product != (*itr).second.products().end(); ++product)
         {
