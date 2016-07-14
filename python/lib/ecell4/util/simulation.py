@@ -256,121 +256,128 @@ def ensemble_simulations(N=1, *args, **kwargs):
     run_simulation
 
     """
-    import ecell4
+    import ecell4.extra.ensemble
 
-    # if (len(args) <= 5 or args[5] is None) and 'factory' not in kwargs.keys():
-    #     if len(args) <= 4 and 'solver' not in kwargs.keys():
-    #         kwargs['factory'] = ecell4.ode.ODEFactory()
+    kwargs.update({'n': N})
+    retval = ecell4.extra.ensemble.ensemble_simulations(*args, **kwargs)
+    if retval is not None:
+        return retval
+
+    # import ecell4
+
+    # # if (len(args) <= 5 or args[5] is None) and 'factory' not in kwargs.keys():
+    # #     if len(args) <= 4 and 'solver' not in kwargs.keys():
+    # #         kwargs['factory'] = ecell4.ode.ODEFactory()
+    # #     else:
+    # #         solver = kwargs['solver'] if len(args) <= 4 else args[4]
+    # #         if solver == 'ode':
+    # #             kwargs['factory'] = get_factory(solver)
+    # #         else:
+    # #             kwargs['factory'] = get_factory(
+    # #                 solver, ecell4.core.GSLRandomNumberGenerator())
+    # #         # 'solver' would be ignored in run_simulation
+
+    # errorbar = kwargs.pop('errorbar', True)
+
+    # return_type = kwargs.get('return_type', 'matplotlib') if len(args) <= 9 else args[9]
+    # if return_type == 'world':
+    #     raise ValueError('return_type "world" is not supported in ensemble_simulations.')
+    # if len(args) > 9:
+    #     args[9] = 'observer'
+    # else:
+    #     kwargs.update({'return_type': 'observer'})
+
+    # opt_args = kwargs.get('opt_args', ()) if len(args) <= 10 else args[10]
+    # opt_kwargs = kwargs.get('opt_kwargs', {}) if len(args) <= 11 else args[11]
+
+    # import numpy
+
+    # class DummyObserver(object):
+
+    #     def __init__(self, targets, data):
+    #         self.__targets = targets
+    #         self.__t = numpy.array(data).T[0]
+    #         self.__tot = self.trancate(data)
+    #         self.__counts = 1
+
+    #     def targets(self):
+    #         return self.__targets
+
+    #     def t(self):
+    #         return self.__t
+
+    #     def counts(self):
+    #         return self.__counts
+
+    #     def trancate(self, data):
+    #         return numpy.array(data, numpy.float64).T[1: ]
+
+    #     def average_(self):
+    #         return self.__tot / self.__counts
+
+    #     def average(self):
+    #         return numpy.vstack([self.__t, self.average_()]).T
+
+    #     def data(self):
+    #         return self.average()
+
+    #     def append(self, data):
+    #         self.__tot += self.trancate(data)
+    #         self.__counts += 1
+
+    # class DummyObserverWithError(DummyObserver):
+
+    #     def __init__(self, targets, data):
+    #         DummyObserver.__init__(self, targets, data)
+    #         self.__sqtot = self.trancate(data) ** 2
+
+    #     def std_(self):
+    #         return self.__sqtot / self.counts() - self.average_() ** 2
+
+    #     def error_(self):
+    #         return self.std_() / numpy.sqrt(self.counts())
+
+    #     def error(self):
+    #         return numpy.vstack([self.t(), self.error_()]).T
+
+    #     def append(self, data):
+    #         DummyObserver.append(self, data)
+    #         self.__sqtot += self.trancate(data) ** 2
+
+    # if 'model' not in kwargs:
+    #     kwargs['model'] = ecell4.util.decorator.get_model(
+    #             kwargs.get('is_netfree', False), kwargs.get('without_reset', False))
+
+    # tmp = ecell4.util.run_simulation(*args, **kwargs)
+
+    # if errorbar:
+    #     obs = DummyObserverWithError(tmp.targets(), tmp.data())
+    # else:
+    #     obs = DummyObserver(tmp.targets(), tmp.data())
+
+    # for i in range(N - 1):
+    #     tmp = ecell4.util.run_simulation(*args, **kwargs)
+    #     obs.append(tmp.data())
+
+    # if return_type == 'matplotlib':
+    #     if isinstance(opt_args, (list, tuple)):
+    #         ecell4.viz.plot_number_observer(obs, *opt_args, **opt_kwargs)
+    #     elif isinstance(opt_args, dict):
+    #         # opt_kwargs is ignored
+    #         ecell4.viz.plot_number_observer(obs, **opt_args)
     #     else:
-    #         solver = kwargs['solver'] if len(args) <= 4 else args[4]
-    #         if solver == 'ode':
-    #             kwargs['factory'] = get_factory(solver)
-    #         else:
-    #             kwargs['factory'] = get_factory(
-    #                 solver, ecell4.core.GSLRandomNumberGenerator())
-    #         # 'solver' would be ignored in run_simulation
-
-    errorbar = kwargs.pop('errorbar', True)
-
-    return_type = kwargs.get('return_type', 'matplotlib') if len(args) <= 9 else args[9]
-    if return_type == 'world':
-        raise ValueError('return_type "world" is not supported in ensemble_simulations.')
-    if len(args) > 9:
-        args[9] = 'observer'
-    else:
-        kwargs.update({'return_type': 'observer'})
-
-    opt_args = kwargs.get('opt_args', ()) if len(args) <= 10 else args[10]
-    opt_kwargs = kwargs.get('opt_kwargs', {}) if len(args) <= 11 else args[11]
-
-    import numpy
-
-    class DummyObserver(object):
-
-        def __init__(self, targets, data):
-            self.__targets = targets
-            self.__t = numpy.array(data).T[0]
-            self.__tot = self.trancate(data)
-            self.__counts = 1
-
-        def targets(self):
-            return self.__targets
-
-        def t(self):
-            return self.__t
-
-        def counts(self):
-            return self.__counts
-
-        def trancate(self, data):
-            return numpy.array(data, numpy.float64).T[1: ]
-
-        def average_(self):
-            return self.__tot / self.__counts
-
-        def average(self):
-            return numpy.vstack([self.__t, self.average_()]).T
-
-        def data(self):
-            return self.average()
-
-        def append(self, data):
-            self.__tot += self.trancate(data)
-            self.__counts += 1
-
-    class DummyObserverWithError(DummyObserver):
-
-        def __init__(self, targets, data):
-            DummyObserver.__init__(self, targets, data)
-            self.__sqtot = self.trancate(data) ** 2
-
-        def std_(self):
-            return self.__sqtot / self.counts() - self.average_() ** 2
-
-        def error_(self):
-            return self.std_() / numpy.sqrt(self.counts())
-
-        def error(self):
-            return numpy.vstack([self.t(), self.error_()]).T
-
-        def append(self, data):
-            DummyObserver.append(self, data)
-            self.__sqtot += self.trancate(data) ** 2
-
-    if 'model' not in kwargs:
-        kwargs['model'] = ecell4.util.decorator.get_model(
-                kwargs.get('is_netfree', False), kwargs.get('without_reset', False))
-
-    tmp = ecell4.util.run_simulation(*args, **kwargs)
-
-    if errorbar:
-        obs = DummyObserverWithError(tmp.targets(), tmp.data())
-    else:
-        obs = DummyObserver(tmp.targets(), tmp.data())
-
-    for i in range(N - 1):
-        tmp = ecell4.util.run_simulation(*args, **kwargs)
-        obs.append(tmp.data())
-
-    if return_type == 'matplotlib':
-        if isinstance(opt_args, (list, tuple)):
-            ecell4.viz.plot_number_observer(obs, *opt_args, **opt_kwargs)
-        elif isinstance(opt_args, dict):
-            # opt_kwargs is ignored
-            ecell4.viz.plot_number_observer(obs, **opt_args)
-        else:
-            raise ValueError('opt_args [{}] must be list or dict.'.format(
-                repr(opt_args)))
-    elif return_type == 'nyaplot':
-        if isinstance(opt_args, list):
-            ecell4.viz.plot_number_observer_with_nya(obs, *opt_args, **opt_kwargs)
-        elif isinstance(opt_args, dict):
-            # opt_kwargs is ignored
-            ecell4.viz.plot_number_observer_with_nya(obs, **opt_args)
-        else:
-            raise ValueError('opt_args [{}] must be list or dict.'.format(
-                repr(opt_args)))
-    elif return_type == 'observer':
-        return obs
-    elif return_type == 'array':
-        return obs.data()
+    #         raise ValueError('opt_args [{}] must be list or dict.'.format(
+    #             repr(opt_args)))
+    # elif return_type == 'nyaplot':
+    #     if isinstance(opt_args, list):
+    #         ecell4.viz.plot_number_observer_with_nya(obs, *opt_args, **opt_kwargs)
+    #     elif isinstance(opt_args, dict):
+    #         # opt_kwargs is ignored
+    #         ecell4.viz.plot_number_observer_with_nya(obs, **opt_args)
+    #     else:
+    #         raise ValueError('opt_args [{}] must be list or dict.'.format(
+    #             repr(opt_args)))
+    # elif return_type == 'observer':
+    #     return obs
+    # elif return_type == 'array':
+    #     return obs.data()
