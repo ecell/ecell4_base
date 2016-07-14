@@ -830,7 +830,7 @@ cdef class ODENetworkModel:
 
     """
 
-    def __init__(self, Model m = None):
+    def __init__(self, m = None):
         """Constructor.
 
         Parameters
@@ -841,17 +841,28 @@ cdef class ODENetworkModel:
         """
         pass
 
-    def __cinit__(self, Model m = None):
+    def __cinit__(self, m = None):
         # self.thisptr = new shared_ptr[Cpp_ODENetworkModel](
         #     <Cpp_ODENetworkModel*>(new Cpp_ODENetworkModel()))
         if m == None:
             self.thisptr = new shared_ptr[Cpp_ODENetworkModel](
                 <Cpp_ODENetworkModel*>(new Cpp_ODENetworkModel()))
-        else:
-            # self.thisptr = new shared_ptr[Cpp_ODENetworkModel](
-            #     (<Cpp_ODENetworkModel*>(new Cpp_ODENetworkModel(deref(m.thisptr)))))
+        # else:
+        #     # self.thisptr = new shared_ptr[Cpp_ODENetworkModel](
+        #     #     (<Cpp_ODENetworkModel*>(new Cpp_ODENetworkModel(deref(m.thisptr)))))
+        #     self.thisptr = new shared_ptr[Cpp_ODENetworkModel](
+        #         (<Cpp_ODENetworkModel*>(new Cpp_ODENetworkModel(m.thisptr))))
+        elif isinstance(m, Model):
             self.thisptr = new shared_ptr[Cpp_ODENetworkModel](
-                (<Cpp_ODENetworkModel*>(new Cpp_ODENetworkModel(m.thisptr))))
+                (<Cpp_ODENetworkModel*>(new Cpp_ODENetworkModel((<Model>m).thisptr))))
+        elif isinstance(m, NetworkModel):
+            self.thisptr = new shared_ptr[Cpp_ODENetworkModel](
+                (<Cpp_ODENetworkModel*>(new Cpp_ODENetworkModel(<shared_ptr[Cpp_Model]>((<NetworkModel>m).thisptr)))))
+        elif isinstance(m, NetfreeModel):
+            self.thisptr = new shared_ptr[Cpp_ODENetworkModel](
+                (<Cpp_ODENetworkModel*>(new Cpp_ODENetworkModel(<shared_ptr[Cpp_Model]>((<NetfreeModel>m).thisptr)))))
+        else:
+            raise ValueError('Unsupported model type was given.')
 
     def __dealloc__(self):
         del self.thisptr
