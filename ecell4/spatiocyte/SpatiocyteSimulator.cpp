@@ -1,4 +1,5 @@
 #include "SpatiocyteSimulator.hpp"
+#include "utils.hpp"
 
 #include <algorithm>
 #include <iterator>
@@ -54,7 +55,7 @@ void SpatiocyteSimulator::update_alpha_map()
         if (reactants.size() != 2)
             continue;
 
-        const Real alpha(calculate_alpha(*itr));
+        const Real alpha(calculate_alpha(*itr, world_));
         for (int i(0); i < 2; ++i) {
             const Species& sp(reactants.at(i));
             alpha_map_type::iterator map_itr(alpha_map_.find(sp));
@@ -136,53 +137,6 @@ void SpatiocyteSimulator::finalize()
     initialize();
 }
 
-Real SpatiocyteSimulator::calculate_alpha(const ReactionRule& rule) const
-{
-    const ReactionRule::reactant_container_type& reactants(rule.reactants());
-    if (reactants.size() != 2)
-        return 1.0;
-
-    const Species species[2] = {reactants.at(0), reactants.at(1)};
-    const MoleculeInfo info[2] = {
-        world_->get_molecule_info(species[0]),
-        world_->get_molecule_info(species[1])
-    };
-    VoxelPool* mt[2];
-    bool is_created[2] = {false, false};
-    for (int i(0); i < 2; ++i) {
-        try
-        {
-            mt[i] = world_->find_voxel_pool(species[i]);
-        }
-        catch(NotFound e)
-        {
-            VoxelPool *location(&(VacantType::getInstance()));
-            if (info[i].loc != "") {
-                try
-                {
-                    location = world_->find_voxel_pool(Species(info[i].loc));
-                }
-                catch(NotFound e)
-                {
-                    ;
-                }
-            }
-            mt[i] = new MolecularType(species[i], location, info[i].radius, info[i].D);
-            is_created[i] = true;
-        }
-    }
-    const Real factor(calculate_dimensional_factor(mt[0], mt[1],
-                boost::const_pointer_cast<const SpatiocyteWorld>(world_)));
-    for (int i(0); i < 2; ++i)
-        if (is_created[i])
-            delete mt[i];
-    const Real alpha(1.0 / (factor * rule.k()));
-    return alpha < 1.0 ? alpha : 1.0;
-}
-
-/*
- * the Reaction between two molecules
- */
 void SpatiocyteSimulator::step()
 {
     step_();

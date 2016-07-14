@@ -28,11 +28,8 @@ class SpatiocyteSimulator
 public:
 
     typedef SimulatorBase<Model, SpatiocyteWorld> base_type;
-
     typedef SpatiocyteEvent::reaction_type reaction_type;
-
     typedef EventSchedulerBase<SpatiocyteEvent> scheduler_type;
-
     typedef utils::get_mapper_mf<Species, Real>::type alpha_map_type;
 
 public:
@@ -63,7 +60,6 @@ public:
     void finalize();
     void step();
     bool step(const Real& upto);
-    Real calculate_alpha(const ReactionRule& rule) const;
 
     virtual bool check_reaction() const
     {
@@ -100,32 +96,9 @@ protected:
     boost::shared_ptr<SpatiocyteEvent> create_first_order_reaction_event(
         const ReactionRule& reaction_rule, const Real& t);
 
-    // void register_reactant_species(
-    //     const SpatiocyteWorld::coordinate_id_pair_type pinfo, reaction_type& reaction) const;
-
     void step_();
     void register_events(const Species& species);
-    // void register_step_event(const Species& species);
     void update_alpha_map();
-
-    const std::string get_serial(
-        const SpatiocyteWorld::coordinate_type coord) const
-    {
-        const VoxelPool* mtype(world_->find_voxel_pool(coord));
-        return mtype->is_vacant() ? "" : mtype->species().serial();
-    }
-
-    const std::string get_location(
-        const SpatiocyteWorld::coordinate_type coord) const
-    {
-        const VoxelPool* mtype(world_->find_voxel_pool(coord));
-        if (mtype->is_vacant())
-        {
-            return "";
-        }
-        const VoxelPool* ltype(mtype->location());
-        return ltype->is_vacant() ? "" : ltype->species().serial();
-    }
 
     void set_last_event_(boost::shared_ptr<const SpatiocyteEvent> event)
     {
@@ -134,8 +107,7 @@ protected:
 
 protected:
 
-    scheduler_type scheduler_;
-    boost::shared_ptr<const SpatiocyteEvent> last_event_;
+    scheduler_type scheduler_; boost::shared_ptr<const SpatiocyteEvent> last_event_;
     alpha_map_type alpha_map_;
 
     Real dt_;

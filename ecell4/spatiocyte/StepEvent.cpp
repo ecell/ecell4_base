@@ -1,5 +1,6 @@
 #include "SpatiocyteEvent.hpp"
-#include "SpatiocyteSimulator.hpp" // TODO: remove this include line
+#include "SpatiocyteSimulator.hpp"
+#include "utils.hpp"
 
 namespace ecell4
 {
