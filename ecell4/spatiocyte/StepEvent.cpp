@@ -8,7 +8,8 @@ namespace spatiocyte {
 
 StepEvent::StepEvent(SpatiocyteSimulator* sim, const Species& species, const Real& t,
     const Real alpha)
-    : SpatiocyteEvent(t), sim_(sim), world_(sim->world()), species_(species), alpha_(alpha)
+    : SpatiocyteEvent(t), sim_(sim), model_(sim->model()), world_(sim->world()),
+    species_(species), alpha_(alpha)
 {
     const SpatiocyteWorld::molecule_info_type
         minfo(world_->get_molecule_info(species));
@@ -93,7 +94,7 @@ void StepEvent::walk_in_space_(const MoleculePool* mtype, const Real& alpha)
         }
         else
         {
-            sim_->attempt_reaction_(info, neighbor, alpha);
+            attempt_reaction_(info, neighbor, alpha);
         }
         ++idx;
     }
@@ -135,12 +136,77 @@ void StepEvent::walk_on_surface_(const MoleculePool* mtype, const Real& alpha)
                     world_->move(info.coordinate, neighbor, /*candidate=*/idx);
                 break;
             }
-            else if (sim_->attempt_reaction_(info, neighbor, alpha).first != SpatiocyteSimulator::NO_REACTION)
+            else if (attempt_reaction_(info, neighbor, alpha).first != NO_REACTION)
                 break;
         }
         ++idx;
     }
 }
+
+std::pair<StepEvent::attempt_reaction_result_type, StepEvent::reaction_type>
+StepEvent::attempt_reaction_(
+    const SpatiocyteWorld::coordinate_id_pair_type& info,
+    const SpatiocyteWorld::coordinate_type to_coord,
+    const Real& alpha)
+{
+    const VoxelPool* from_mt(
+        world_->find_voxel_pool(info.coordinate));
+    const VoxelPool* to_mt(
+        world_->find_voxel_pool(to_coord));
+
+    if (to_mt->is_vacant())
+    {
+        return std::make_pair(NO_REACTION, reaction_type());
+    }
+
+    const Species&
+        speciesA(from_mt->species()),
+        speciesB(to_mt->species());
+
+    const std::vector<ReactionRule> rules(
+        model_->query_reaction_rules(speciesA, speciesB));
+
+    if (rules.empty())
+    {
+        return std::make_pair(NO_REACTION, reaction_type());
+    }
+
+    const Real factor(sim_->calculate_dimensional_factor(from_mt, to_mt));
+
+    const Real rnd(world_->rng()->uniform(0,1));
+    Real accp(0.0);
+    for (std::vector<ReactionRule>::const_iterator itr(rules.begin());
+        itr != rules.end(); ++itr)
+    {
+        const Real k((*itr).k());
+        const Real P(k * factor * alpha);
+        accp += P;
+        if (accp > 1)
+        {
+            std::cerr << "The total acceptance probability [" << accp
+                << "] exceeds 1 for '" << speciesA.serial()
+                << "' and '" << speciesB.serial() << "'." << std::endl;
+        }
+        if (accp >= rnd)
+        {
+            std::pair<bool, SpatiocyteSimulator::reaction_type>
+                retval = sim_->apply_second_order_reaction_(
+                    *itr,
+                    world_->make_pid_voxel_pair(from_mt, info),
+                    world_->make_pid_voxel_pair(to_mt, to_coord));
+            if (retval.first)
+            {
+                return std::make_pair(REACTION_SUCCEEDED, retval.second);
+            }
+            else
+            {
+                return std::make_pair(REACTION_FAILED, reaction_type());
+            }
+        }
+    }
+    return std::make_pair(REACTION_FAILED, reaction_type());
+}
+
 
 
 } // spatiocyte

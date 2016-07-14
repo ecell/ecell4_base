@@ -232,68 +232,6 @@ Real SpatiocyteSimulator::calculate_alpha(const ReactionRule& rule) const
     return alpha < 1.0 ? alpha : 1.0;
 }
 
-std::pair<SpatiocyteSimulator::attempt_reaction_result_type, SpatiocyteSimulator::reaction_type> SpatiocyteSimulator::attempt_reaction_(
-    const SpatiocyteWorld::coordinate_id_pair_type& info, SpatiocyteWorld::coordinate_type to_coord,
-    const Real& alpha)
-{
-    const VoxelPool* from_mt(
-        world_->find_voxel_pool(info.coordinate));
-    const VoxelPool* to_mt(
-        world_->find_voxel_pool(to_coord));
-
-    if (to_mt->is_vacant())
-    {
-        return std::make_pair(NO_REACTION, reaction_type());
-    }
-
-    const Species&
-        speciesA(from_mt->species()),
-        speciesB(to_mt->species());
-
-    const std::vector<ReactionRule> rules(
-        model_->query_reaction_rules(speciesA, speciesB));
-
-    if (rules.empty())
-    {
-        return std::make_pair(NO_REACTION, reaction_type());
-    }
-
-    const Real factor(calculate_dimensional_factor(from_mt, to_mt));
-
-    const Real rnd(world_->rng()->uniform(0,1));
-    Real accp(0.0);
-    for (std::vector<ReactionRule>::const_iterator itr(rules.begin());
-        itr != rules.end(); ++itr)
-    {
-        const Real k((*itr).k());
-        const Real P(k * factor * alpha);
-        accp += P;
-        if (accp > 1)
-        {
-            std::cerr << "The total acceptance probability [" << accp
-                << "] exceeds 1 for '" << speciesA.serial()
-                << "' and '" << speciesB.serial() << "'." << std::endl;
-        }
-        if (accp >= rnd)
-        {
-            std::pair<bool, SpatiocyteSimulator::reaction_type>
-                retval = apply_second_order_reaction_(
-                    *itr,
-                    world_->make_pid_voxel_pair(from_mt, info),
-                    world_->make_pid_voxel_pair(to_mt, to_coord));
-            if (retval.first)
-            {
-                return std::make_pair(REACTION_SUCCEEDED, retval.second);
-            }
-            else
-            {
-                return std::make_pair(REACTION_FAILED, reaction_type());
-            }
-        }
-    }
-    return std::make_pair(REACTION_FAILED, reaction_type());
-}
-
 /*
  * the Reaction between two molecules
  */
