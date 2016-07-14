@@ -13,8 +13,6 @@ namespace ecell4
 namespace spatiocyte
 {
 
-class SpatiocyteSimulator;
-
 struct SpatiocyteEvent : public Event
 {
 public:
@@ -47,7 +45,8 @@ protected:
 
 struct StepEvent : SpatiocyteEvent
 {
-    StepEvent(SpatiocyteSimulator* sim, const Species& species, const Real& t, const Real alpha=1.0);
+    StepEvent(boost::shared_ptr<Model> model, boost::shared_ptr<SpatiocyteWorld> world,
+            const Species& species, const Real& t, const Real alpha=1.0);
     virtual ~StepEvent() {}
     virtual void fire_();
 
@@ -78,7 +77,6 @@ protected:
         const SpatiocyteWorld::coordinate_id_pair_type& info,
         const SpatiocyteWorld::coordinate_type to_coord, const Real& alpha);
 
-    SpatiocyteSimulator* sim_;
     boost::shared_ptr<Model> model_;
     boost::shared_ptr<SpatiocyteWorld> world_;
     Species species_;

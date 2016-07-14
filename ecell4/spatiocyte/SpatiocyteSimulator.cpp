@@ -72,8 +72,10 @@ void SpatiocyteSimulator::register_events(const Species& sp)
     if (world_->has_molecule_pool(sp))
     {
         //TODO: Call steps only if sp is assigned not to StructureType.
+        alpha_map_type::const_iterator itr(alpha_map_.find(sp));
+        const Real alpha(itr != alpha_map_.end() ? itr->second : 1.0);
         const boost::shared_ptr<SpatiocyteEvent> step_event(
-                create_step_event(sp, world_->t()));
+                create_step_event(sp, world_->t(), alpha));
         scheduler_.add(step_event);
     }
 
@@ -90,15 +92,10 @@ void SpatiocyteSimulator::register_events(const Species& sp)
 }
 
 boost::shared_ptr<SpatiocyteEvent> SpatiocyteSimulator::create_step_event(
-        const Species& species, const Real& t)
+        const Species& species, const Real& t, const Real& alpha)
 {
-    double alpha(alpha_);
-    alpha_map_type::const_iterator itr(alpha_map_.find(species));
-    if (itr != alpha_map_.end() && (*itr).second < alpha)
-        alpha = (*itr).second;
-
     boost::shared_ptr<SpatiocyteEvent> event(
-        new StepEvent(this, species, t, alpha));
+            new StepEvent(model_, world_, species, t, alpha));
     return event;
 }
 

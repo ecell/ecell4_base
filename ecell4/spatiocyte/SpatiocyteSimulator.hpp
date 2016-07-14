@@ -36,17 +36,15 @@ public:
 
     SpatiocyteSimulator(
             boost::shared_ptr<Model> model,
-            boost::shared_ptr<SpatiocyteWorld> world,
-            const Real alpha = 1.0)
-        : base_type(model, world), alpha_(alpha)
+            boost::shared_ptr<SpatiocyteWorld> world)
+        : base_type(model, world)
     {
         initialize();
     }
 
     SpatiocyteSimulator(
-            boost::shared_ptr<SpatiocyteWorld> world,
-            const Real alpha = 1.0)
-        : base_type(world), alpha_(alpha)
+            boost::shared_ptr<SpatiocyteWorld> world)
+        : base_type(world)
     {
         initialize();
     }
@@ -71,26 +69,10 @@ public:
         return last_event_->reactions();
     }
 
-    void set_alpha(const Real alpha)
-    {
-        if (alpha < 0 || alpha > 1)
-        {
-            return;  // XXX: ValueError
-        }
-
-        alpha_ = alpha;
-        initialize();
-    }
-
-    Real get_alpha() const
-    {
-        return alpha_;
-    }
-
 protected:
 
     boost::shared_ptr<SpatiocyteEvent> create_step_event(
-        const Species& species, const Real& t);
+        const Species& species, const Real& t, const Real& alpha);
     boost::shared_ptr<SpatiocyteEvent> create_zeroth_order_reaction_event(
         const ReactionRule& reaction_rule, const Real& t);
     boost::shared_ptr<SpatiocyteEvent> create_first_order_reaction_event(
@@ -111,7 +93,6 @@ protected:
     alpha_map_type alpha_map_;
 
     Real dt_;
-    Real alpha_;
 };
 
 } // spatiocyte

@@ -1,5 +1,4 @@
 #include "SpatiocyteEvent.hpp"
-#include "SpatiocyteSimulator.hpp"
 #include "utils.hpp"
 
 namespace ecell4
@@ -8,10 +7,9 @@ namespace ecell4
 namespace spatiocyte
 {
 
-StepEvent::StepEvent(SpatiocyteSimulator* sim,
+StepEvent::StepEvent(boost::shared_ptr<Model> model, boost::shared_ptr<SpatiocyteWorld> world,
         const Species& species, const Real& t, const Real alpha)
-    : SpatiocyteEvent(t), model_(sim->model()), world_(sim->world()),
-    species_(species), alpha_(alpha)
+    : SpatiocyteEvent(t), model_(model), world_(world), species_(species), alpha_(alpha)
 {
     const SpatiocyteWorld::molecule_info_type
         minfo(world_->get_molecule_info(species));
