@@ -1209,13 +1209,13 @@ def create_spatiocyte_world_vector_impl(edge_lengths, voxel_radius, rng):
 cdef class SpatiocyteSimulator:
     """ A class running the simulation with the spatiocyte algorithm.
 
-    SpatiocyteSimulator(m, w, alpha)
+    SpatiocyteSimulator(m, w)
 
     """
 
-    def __init__(self, m, w=None, alpha=None):
-        """SpatiocyteSimulator(m, w, alpha=None)
-        SpatiocyteSimulator(w, alpha=None)
+    def __init__(self, m, w=None):
+        """SpatiocyteSimulator(m, w)
+        SpatiocyteSimulator(w)
 
         Constructor.
 
@@ -1225,31 +1225,18 @@ cdef class SpatiocyteSimulator:
             A model
         w : SpatiocyteWorld
             A world
-        alpha : Real, optional
 
         """
         pass
 
-    def __cinit__(self, m, w=None, alpha=None):
+    def __cinit__(self, m, w=None):
         if w is None:
             # Cpp_SpatiocyteSimulator(shared_ptr[Cpp_SpatiocyteWorld])
             self.thisptr = new Cpp_SpatiocyteSimulator(
                 deref((<SpatiocyteWorld>m).thisptr))
-        elif alpha is None:
-            if isinstance(w, SpatiocyteWorld):
-                # Cpp_SpatiocyteSimulator(shared_ptr[Cpp_Model], shared_ptr[Cpp_SpatiocyteWorld])
-                self.thisptr = new Cpp_SpatiocyteSimulator(
-                    Cpp_Model_from_Model(m), deref((<SpatiocyteWorld>w).thisptr))
-            else:
-                # Cpp_SpatiocyteSimulator(shared_ptr[Cpp_SpatiocyteWorld], Real)
-                self.thisptr = new Cpp_SpatiocyteSimulator(
-                    deref((<SpatiocyteWorld>m).thisptr), <Real>w)
         else:
-            # Cpp_SpatiocyteSimulator(
-            #     shared_ptr[Cpp_Model], shared_ptr[Cpp_SpatiocyteWorld], Real)
             self.thisptr = new Cpp_SpatiocyteSimulator(
-                Cpp_Model_from_Model(m), deref((<SpatiocyteWorld>w).thisptr),
-                <Real>alpha)
+                Cpp_Model_from_Model(m), deref((<SpatiocyteWorld>w).thisptr))
 
     def __dealloc__(self):
         del self.thisptr
@@ -1349,40 +1336,40 @@ cdef class SpatiocyteSimulator:
             inc(it)
         return retval
 
-    def set_alpha(self, Real alpha):
-        """set_alpha(alpha)
+    # def set_alpha(self, Real alpha):
+    #     """set_alpha(alpha)
 
-        Set the value of alpha.
+    #     Set the value of alpha.
 
-        Parameters
-        ----------
-        alpha : Real
-            The value of alpha
+    #     Parameters
+    #     ----------
+    #     alpha : Real
+    #         The value of alpha
 
-        """
-        self.thisptr.set_alpha(alpha)
+    #     """
+    #     self.thisptr.set_alpha(alpha)
 
-    def get_alpha(self):
-        """Return the value of alpha."""
-        return self.thisptr.get_alpha()
+    # def get_alpha(self):
+    #     """Return the value of alpha."""
+    #     return self.thisptr.get_alpha()
 
-    def calculate_alpha(self, ReactionRule rule):
-        """calculate_alpha(rule) -> Real
+    # def calculate_alpha(self, ReactionRule rule):
+    #     """calculate_alpha(rule) -> Real
 
-        Return the recommended value of alpha
+    #     Return the recommended value of alpha
 
-        Parameters
-        ----------
-        rule : ReactionRule
-            A reaction rule.
+    #     Parameters
+    #     ----------
+    #     rule : ReactionRule
+    #         A reaction rule.
 
-        Returns
-        -------
-        Real:
-            The recommneded value of alpha
+    #     Returns
+    #     -------
+    #     Real:
+    #         The recommneded value of alpha
 
-        """
-        return self.thisptr.calculate_alpha(deref(rule.thisptr))
+    #     """
+    #     return self.thisptr.calculate_alpha(deref(rule.thisptr))
 
     def model(self):
         """Return the model bound."""
@@ -1430,13 +1417,12 @@ cdef SpatiocyteSimulator SpatiocyteSimulator_from_Cpp_SpatiocyteSimulator(Cpp_Sp
 cdef class SpatiocyteFactory:
     """ A factory class creating a SpatiocyteWorld instance and a SpatiocyteSimulator instance.
 
-    SpatiocyteFactory(voxel_radius, alpha, rng)
+    SpatiocyteFactory(voxel_radius, rng)
 
     """
 
-    def __init__(self, voxel_radius=None, arg1=None, arg2=None):
-        """SpatiocyteFactory(Real voxel_radius=None, Real alpha=None, GSLRandomNumberGenerator rng=None)
-        SpatiocyteFactory(Real voxel_radius=None, GSLRandomNumberGenerator rng=None)
+    def __init__(self, voxel_radius=None, arg1=None):
+        """SpatiocyteFactory(Real voxel_radius=None, GSLRandomNumberGenerator rng=None)
 
         Constructor.
 
@@ -1444,30 +1430,20 @@ cdef class SpatiocyteFactory:
         ----------
         voxel_radius : Real, optional
             A radius of a voxel.
-        alpha : Real, optional
-            Alpha value for SpatiocyteSimulator.
         rng : GSLRandomNumberGenerator, optional
             A random number generator.
 
         """
         pass
 
-    def __cinit__(self, voxel_radius=None, arg1=None, arg2=None):
+    def __cinit__(self, voxel_radius=None, arg1=None):
         if voxel_radius is None:
             self.thisptr = new Cpp_SpatiocyteFactory()
         elif arg1 is None:
             self.thisptr = new Cpp_SpatiocyteFactory(<Real>voxel_radius)
-        elif arg2 is None:
-            if isinstance(arg1, GSLRandomNumberGenerator):
-                self.thisptr = new Cpp_SpatiocyteFactory(
-                    <Real>voxel_radius, deref((<GSLRandomNumberGenerator>arg1).thisptr))
-            else:
-                self.thisptr = new Cpp_SpatiocyteFactory(
-                    <Real>voxel_radius, <Real>arg1)
         else:
             self.thisptr = new Cpp_SpatiocyteFactory(
-                <Real>voxel_radius, <Real>arg1,
-                deref((<GSLRandomNumberGenerator>arg2).thisptr))
+                <Real>voxel_radius, deref((<GSLRandomNumberGenerator>arg1).thisptr))
 
     def __dealloc__(self):
         del self.thisptr

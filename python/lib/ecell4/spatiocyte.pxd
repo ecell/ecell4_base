@@ -147,10 +147,6 @@ cdef extern from "ecell4/spatiocyte/SpatiocyteSimulator.hpp" namespace "ecell4::
             shared_ptr[Cpp_Model], shared_ptr[Cpp_SpatiocyteWorld]) except +
         Cpp_SpatiocyteSimulator(
             shared_ptr[Cpp_SpatiocyteWorld]) except +
-        Cpp_SpatiocyteSimulator(
-            shared_ptr[Cpp_Model], shared_ptr[Cpp_SpatiocyteWorld], Real) except +
-        Cpp_SpatiocyteSimulator(
-            shared_ptr[Cpp_SpatiocyteWorld], Real) except +
         Integer num_steps()
         Real next_time()
         void step() except +
@@ -160,9 +156,9 @@ cdef extern from "ecell4/spatiocyte/SpatiocyteSimulator.hpp" namespace "ecell4::
         Real dt()
         void set_dt(Real)
         void initialize()
-        void set_alpha(Real)
-        Real get_alpha()
-        Real calculate_alpha(Cpp_ReactionRule)
+        # void set_alpha(Real)
+        # Real get_alpha()
+        # Real calculate_alpha(Cpp_ReactionRule)
         bool check_reaction()
         vector[pair[Cpp_ReactionRule, Cpp_ReactionInfo]] last_reactions()
         shared_ptr[Cpp_Model] model()
