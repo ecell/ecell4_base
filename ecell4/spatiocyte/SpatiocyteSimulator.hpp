@@ -66,7 +66,8 @@ public:
 
     const std::vector<SpatiocyteEvent::reaction_type>& last_reactions() const
     {
-        return last_event_->reactions();
+        // return last_event_->reactions();
+        return last_reactions_;
     }
 
 protected:
@@ -91,6 +92,8 @@ protected:
 
     scheduler_type scheduler_; boost::shared_ptr<const SpatiocyteEvent> last_event_;
     alpha_map_type alpha_map_;
+
+    std::vector<reaction_type> last_reactions_;
 
     Real dt_;
 };

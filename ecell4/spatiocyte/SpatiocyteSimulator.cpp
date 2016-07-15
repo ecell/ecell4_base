@@ -13,6 +13,8 @@ namespace spatiocyte
 
 void SpatiocyteSimulator::initialize()
 {
+    last_reactions_.clear();
+
     scheduler_.clear();
     update_alpha_map();
     const std::vector<Species> species(world_->list_species());
@@ -156,6 +158,7 @@ bool SpatiocyteSimulator::step(const Real& upto)
 
     world_->set_t(upto); //XXX: TODO
     dt_ = scheduler_.next_time() - t();
+    last_reactions_.clear();
     return false;
 }
 
@@ -195,6 +198,9 @@ void SpatiocyteSimulator::step_()
     {
         register_events(*itr);
     }
+
+    std::vector<reaction_type> const& reactions = last_event_.reactions();
+    std::copy(reactions.begin(), reactions.end(), std::back_inserter(last_reactions_));
 
     num_steps_++;
 }
