@@ -171,6 +171,8 @@ void SpatiocyteSimulator::step_()
     top.second->fire(); // top.second->time_ is updated in fire()
     set_last_event_(boost::const_pointer_cast<const SpatiocyteEvent>(top.second));
 
+    last_reactions_ = last_event_->reactions();
+
     std::vector<Species> new_species;
     for (std::vector<reaction_type>::const_iterator itr(last_reactions().begin());
             itr != last_reactions().end(); ++itr)
@@ -198,9 +200,6 @@ void SpatiocyteSimulator::step_()
     {
         register_events(*itr);
     }
-
-    std::vector<reaction_type> const& reactions = last_event_.reactions();
-    std::copy(reactions.begin(), reactions.end(), std::back_inserter(last_reactions_));
 
     num_steps_++;
 }
