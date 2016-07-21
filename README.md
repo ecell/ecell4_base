@@ -168,7 +168,7 @@ After the following steps, you should see [Jupyter Notebook](http://jupyter.org/
 
 1. Install [Docker](https://www.docker.com/products/docker).
 2. Run Docker.
-3. Run the following commands
+3. Run the following commands from your *Terminal* or *Powershell*.
 
     ```shell
     docker pull ecell/ecell4
@@ -183,7 +183,7 @@ After the following steps, you should see [Jupyter Notebook](http://jupyter.org/
     82b90db240f5        ecell/ecell4        "/bin/sh -c 'jupyter-"   7 seconds ago       Up 6 seconds        0.0.0.0:32768->8888/tcp   clever_raman
     ```
 
-5. Open the PORT in `docker ps` command with your web browser. In the case of the above example, you will open `0.0.0.0:32768`
+5. Open the PORT in `docker ps` command with your web browser. In the case of the above example, you will open `http://localhost:32768`
 
 Licensing terms
 ===============
