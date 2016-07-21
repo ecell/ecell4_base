@@ -15,6 +15,9 @@ except ImportError:
     print("copy from www.cython.org and install it")
     sys.exit(1)
 
+os.environ["CC"] = "${CMAKE_CC_COMPILER}"
+os.environ["CXX"] = "${CMAKE_CXX_COMPILER}"
+
 #XXX: $ cmake .
 #XXX: $ make BesselTables
 #XXX: $ cd python
@@ -26,7 +29,7 @@ except ImportError:
 # STATIC_BUILD = True
 STATIC_BUILD = False
 
-sys.path.append("./lib")
+sys.path.append(os.path.join("${CMAKE_CURRENT_SOURCE_DIR}", "lib"))
 
 class run_tests(Command):
     user_options = []
@@ -38,10 +41,11 @@ class run_tests(Command):
         pass
 
     def run(self):
+        top_level_dir=os.path.join("${CMAKE_CURRENT_SOURCE_DIR}", "tests")
         test_loader = unittest.TestLoader()
         def load_tests(module_name):
             return test_loader.discover(
-                "tests/%s" % module_name, top_level_dir="tests")
+                os.path.join(top_level_dir, module_name), top_level_dir=top_level_dir)
 
         suite = unittest.TestSuite()
         suite.addTest(load_tests("core"))
@@ -107,7 +111,7 @@ if with_hdf5:
         extra_compile_args.extend(
             ["-D_HDF5USEDLL_", "-DHDF5CPP_USEDLL", "-DH5_BUILT_AS_DYNAMIC_LIB"])
 
-src_path = ".."
+src_path = "${PROJECT_SOURCE_DIR}"
 
 if STATIC_BUILD:
     src_path = "./src"
@@ -128,25 +132,25 @@ py_path = "${CMAKE_CURRENT_SOURCE_DIR}/lib"
 if with_cpp_shared_libraries:
     ext_modules = [
         Extension("ecell4.core", sources=[os.path.join(py_path, "ecell4/core.pyx")],
-            include_dirs=["."], libraries=["ecell4-core"], language="c++",
+            include_dirs=[src_path], libraries=["ecell4-core"], language="c++",
             extra_compile_args=extra_compile_args),
         Extension("ecell4.egfrd", sources=[os.path.join(py_path, "ecell4/egfrd.pyx")],
-            include_dirs=["."], libraries=["ecell4-core", "ecell4-egfrd"],
+            include_dirs=[src_path], libraries=["ecell4-core", "ecell4-egfrd"],
             language="c++", extra_compile_args=extra_compile_args + ["-w"]),
         Extension("ecell4.gillespie", sources=[os.path.join(py_path, "ecell4/gillespie.pyx")],
-            include_dirs=["."], libraries=["ecell4-core", "ecell4-gillespie"],
+            include_dirs=[src_path], libraries=["ecell4-core", "ecell4-gillespie"],
             language="c++", extra_compile_args=extra_compile_args),
         Extension("ecell4.bd", sources=[os.path.join(py_path, "ecell4/bd.pyx")],
-            include_dirs=["."], libraries=["ecell4-core", "ecell4-bd"],
+            include_dirs=[src_path], libraries=["ecell4-core", "ecell4-bd"],
             language="c++", extra_compile_args=extra_compile_args),
         Extension("ecell4.ode", sources=[os.path.join(py_path, "ecell4/ode.pyx")],
-            include_dirs=["."], libraries=["ecell4-core", "ecell4-ode"],
+            include_dirs=[src_path], libraries=["ecell4-core", "ecell4-ode"],
             language="c++", extra_compile_args=extra_compile_args),
         Extension("ecell4.spatiocyte", sources=[os.path.join(py_path, "ecell4/spatiocyte.pyx")],
-            include_dirs=["."], libraries=["ecell4-core", "ecell4-spatiocyte"],
+            include_dirs=[src_path], libraries=["ecell4-core", "ecell4-spatiocyte"],
             language="c++", extra_compile_args=extra_compile_args),
         Extension("ecell4.meso", sources=[os.path.join(py_path, "ecell4/meso.pyx")],
-            include_dirs=["."], libraries=["ecell4-core", "ecell4-meso"],
+            include_dirs=[src_path], libraries=["ecell4-core", "ecell4-meso"],
             language="c++", extra_compile_args=extra_compile_args),
         ]
     ext_modules = cythonize(ext_modules)
@@ -195,7 +199,7 @@ else:
 setup(
     name = "ecell",
     version = "4.0.1",
-    package_dir = {"": "${CMAKE_CURRENT_SOURCE_DIR}/lib"},
+    package_dir = {"": py_path},
     package_data = {"ecell4.util": [
         "templates/init_ipynb.js", "templates/init_cyjs.js", "templates/template.html",
         "templates/*.tmpl", "templates/ecelllogo/*.png"]},
