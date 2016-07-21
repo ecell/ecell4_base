@@ -14,7 +14,7 @@ set(CPP_FILES
 
 set(HPP_FILES
     CompartmentSpace.hpp DynamicPriorityQueue.hpp LatticeSpace.hpp
-    MolecularType.hpp Particle.hpp Real3.hpp ReactionRule.hpp Space.hpp 
+    MolecularType.hpp Particle.hpp Real3.hpp ReactionRule.hpp Space.hpp
     VacantType.hpp extras.hpp linear_algebra.hpp CompartmentSpaceHDF5Writer.hpp
     EventScheduler.hpp Identifier.hpp LatticeSpaceHDF5Writer.hpp
     SubvolumeSpace.hpp SubvolumeSpaceHDF5Writer.hpp
@@ -28,47 +28,6 @@ set(HPP_FILES
     PlanarSurface.hpp Rod.hpp collision.hpp
     comparators.hpp SimulatorFactory.hpp Mesh.hpp shape_operators.hpp)
 
-if(WITH_VTK)
-  find_package(VTK)
-  if(VTK_FOUND)
-    include(${VTK_USE_FILE})
-    set(HAVE_VTK 1)
-  endif()
-endif()
-
-if(WITH_HDF5)
-find_package(HDF5 COMPONENTS C CXX HL REQUIRED)
-include_directories(${HDF5_INCLUDE_DIRS})
-set(WITH_HDF5 1)
-endif()
-
-# find_package(Boost COMPONENTS regex)
-find_package(Boost REQUIRED)
-include_directories(${Boost_INCLUDE_DIRS})
-# set(HAVE_BOOST_REGEX ${Boost_FOUND})
-
-find_library(GSL_LIBRARIES gsl)
-find_library(GSL_CBLAS_LIBRARIES gslcblas)
-
-include(CheckIncludeFileCXX)
-# set(CMAKE_REQUIRED_INCLUDES "/usr/include")
-include(CheckCXXSourceCompiles)
-
-check_include_file_cxx(unordered_map HAVE_UNORDERED_MAP)
-check_cxx_source_compiles("#include <tr1/unordered_map>
-int main() { std::tr1::unordered_map<int, int> a, b(a); return 0; }"
-    HAVE_TR1_UNORDERED_MAP)
-check_include_file_cxx("boost/unordered_map.hpp" HAVE_BOOST_UNORDERED_MAP_HPP)
-
-check_cxx_source_compiles("#include <tr1/functional>
-int main() { std::tr1::hash<int>(); return 0; }"
-    HAVE_TR1_FUNCTIONAL)
-# check_include_file_cxx(functional HAVE_STD_HASH)
-check_cxx_source_compiles("#include <functional>
-int main() { std::hash<int>(); return 0; }"
-    HAVE_STD_HASH)
-check_include_file_cxx("boost/functional/hash.hpp" HAVE_BOOST_FUNCTIONAL_HASH_HPP)
-
 configure_file(
     ${PROJECT_SOURCE_DIR}/ecell4/core/config.h.in
     ${PROJECT_BINARY_DIR}/ecell4/core/config.h)
@@ -78,11 +37,11 @@ add_library(ecell4-core SHARED
 
 if(WITH_VTK AND NOT VTK_LIBRARIES)
     target_link_libraries(ecell4-core
-        ${HDF5_LIBRARIES} ${Boost_LIBRARIES} ${GSL_LIBRARIES} ${GSL_CBLAS_LIBRARIES}
+        ${HDF5_CXX_LIBRARIES} ${Boost_LIBRARIES} ${GSL_LIBRARIES} ${GSL_CBLAS_LIBRARIES}
         vtkHybrid vtkWidgets)
 else()
     target_link_libraries(ecell4-core
-        ${HDF5_LIBRARIES} ${Boost_LIBRARIES} ${GSL_LIBRARIES} ${GSL_CBLAS_LIBRARIES}
+        ${HDF5_CXX_LIBRARIES} ${Boost_LIBRARIES} ${GSL_LIBRARIES} ${GSL_CBLAS_LIBRARIES}
         ${VTK_LIBRARIES})
 endif()
 
