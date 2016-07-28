@@ -198,7 +198,7 @@ else:
 
 setup(
     name = "ecell",
-    version = "{PROJECT_VERSION}",
+    version = "${PROJECT_VERSION}",
     package_dir = {"": py_path},
     package_data = {"ecell4.util": [
         "templates/init_ipynb.js", "templates/init_cyjs.js", "templates/template.html",

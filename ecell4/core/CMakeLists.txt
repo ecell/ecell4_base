@@ -28,25 +28,27 @@ set(HPP_FILES
     PlanarSurface.hpp Rod.hpp collision.hpp
     comparators.hpp SimulatorFactory.hpp Mesh.hpp shape_operators.hpp)
 
+set(BINARY_DIRECTORIES ${CMAKE_CURRENT_BINARY_DIR}:${BINARY_DIRECTORIES} PARENT_SCOPE)
+
 configure_file(
-    ${PROJECT_SOURCE_DIR}/ecell4/core/config.h.in
-    ${PROJECT_BINARY_DIR}/ecell4/core/config.h)
+    ${CMAKE_CURRENT_SOURCE_DIR}/config.h.in
+    ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 
 add_library(ecell4-core SHARED
-    ${CPP_FILES} ${HPP_FILES} "${PROJECT_BINARY_DIR}/ecell4/core/config.h")
+    ${CPP_FILES} ${HPP_FILES} "${CMAKE_CURRENT_BINARY_DIR}/config.h")
 
 if(WITH_VTK AND NOT VTK_LIBRARIES)
     target_link_libraries(ecell4-core
-        ${HDF5_CXX_LIBRARIES} ${Boost_LIBRARIES} ${GSL_LIBRARIES} ${GSL_CBLAS_LIBRARIES}
+        ${HDF5_LIBRARIES} ${Boost_LIBRARIES} ${GSL_LIBRARIES} ${GSL_CBLAS_LIBRARIES}
         vtkHybrid vtkWidgets)
 else()
     target_link_libraries(ecell4-core
-        ${HDF5_CXX_LIBRARIES} ${Boost_LIBRARIES} ${GSL_LIBRARIES} ${GSL_CBLAS_LIBRARIES}
+        ${HDF5_LIBRARIES} ${Boost_LIBRARIES} ${GSL_LIBRARIES} ${GSL_CBLAS_LIBRARIES}
         ${VTK_LIBRARIES})
 endif()
 
 add_subdirectory(tests)
 
 install(TARGETS ecell4-core DESTINATION lib)
-install(FILES "${PROJECT_BINARY_DIR}/ecell4/core/config.h" ${HPP_FILES}
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/config.h" ${HPP_FILES}
     DESTINATION "include/ecell4/core")

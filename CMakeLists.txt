@@ -29,6 +29,7 @@ if (HDF5_FOUND)
   include_directories(${HDF5_INCLUDE_DIRS})
   set(WITH_HDF5 1)
 else()
+  set(HDF5_LIBRARIES)
   set(WITH_HDF5 0)
 endif()
 
@@ -59,5 +60,7 @@ int main() { std::hash<int>(); return 0; }"
     HAVE_STD_HASH)
 check_include_file_cxx("boost/functional/hash.hpp" HAVE_BOOST_FUNCTIONAL_HASH_HPP)
 
-add_subdirectory(ecell4)
+if (NOT NO_SHARED)
+  add_subdirectory(ecell4)
+endif()
 add_subdirectory(python)
