@@ -15,7 +15,7 @@ except ImportError:
     print("copy from www.cython.org and install it")
     sys.exit(1)
 
-os.environ["CC"] = "${CMAKE_CC_COMPILER}"
+os.environ["CC"] = "${CMAKE_C_COMPILER}"
 os.environ["CXX"] = "${CMAKE_CXX_COMPILER}"
 
 #XXX: $ cmake .
