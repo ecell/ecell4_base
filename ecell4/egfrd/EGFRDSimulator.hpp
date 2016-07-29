@@ -3239,7 +3239,8 @@ protected:
 
     boost::optional<domain_type&> form_pair_or_multi(
         single_type& domain,
-        std::vector<boost::shared_ptr<domain_type> > const& neighbors)
+        std::vector<boost::shared_ptr<domain_type> > const& neighbors,
+        std::vector<std::pair<surface_id_type, Real> > const &inside_surfaces)
     {
         BOOST_ASSERT(!neighbors.empty());
 
@@ -3255,22 +3256,32 @@ protected:
                 length_to_possible_partner = dist;
             }
         }
+        // XXX if distances toward some surfaces is shorter thant length_to_possible_partner,
+        //      reject to form pair.
+        bool reject_flag = false;
+        for(std::size_t i = 0; i < inside_surfaces.size(); i++) {
+            if (inside_surfaces[i].second < length_to_possible_partner)
+            {
+                return boost::optional<domain_type&>();
+            }
+        }
 
         // First, try forming a Pair.
         // XXX COMMENT OUT
-        //{
-        //    single_type* const _possible_partner(
-        //            dynamic_cast<single_type*>(possible_partner));
-        //    if (_possible_partner)
-        //    {
-        //        boost::optional<pair_type&> new_pair(
-        //            form_pair(domain, *_possible_partner, neighbors));
-        //        if (new_pair)
-        //        {
-        //            return new_pair.get();
-        //        }
-        //    }
-        //}
+        if (reject_flag == false)
+        {
+            single_type* const _possible_partner(
+                    dynamic_cast<single_type*>(possible_partner));
+            if (_possible_partner)
+            {
+                boost::optional<pair_type&> new_pair(
+                    form_pair(domain, *_possible_partner, neighbors));
+                if (new_pair)
+                {
+                    return new_pair.get();
+                }
+            }
+        }
 
         // If a Pair is not formed, then try forming a Multi.
         {
@@ -3371,7 +3382,7 @@ protected:
                 {
                     std::vector<boost::shared_ptr<domain_type> > bursted;
                     burst_non_multis(*intruders, bursted);
-                    if (form_pair_or_multi(domain, bursted))
+                    if (form_pair_or_multi(domain, bursted, intruder_surfaces))
                         return;
                     // if nothing was formed, recheck closest and restore shells.
                     restore_domain(domain);
