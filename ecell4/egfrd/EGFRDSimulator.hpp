@@ -2631,15 +2631,27 @@ protected:
         return std::make_pair(col.intruders.container().get(), col.closest);
     }
     // }}}
-    std::pair<std::vector<std::pair<surface_id_type, Real> >,
-              std::pair<surface_id_type, Real> >
+    std::pair<std::vector<std::pair<surface_id_type, length_type> >,
+              boost::optional<std::pair<surface_id_type, Real> > >
     get_intruder_surfaces(particle_shape_type const& p) const
     {
         std::vector< std::pair<surface_id_type, Real> > surfaceid_distance_container(
                 (*base_type::world_).list_id_distance_pair(p.position(), true) );
-        //std::pair<std::vector<std::pair<surface_id_type, Real> >,
-        //          std::pair<std::pair<surface_id_type, Real>, length_type> > ret_container;
-        return std::make_pair(surfaceid_distance_container, surfaceid_distance_container[1]);
+        std::vector< std::pair<surface_id_type, Real> > surfaceid_distance_container_within_r;
+        std::size_t i = 0;
+        for(; i!= surfaceid_distance_container.size(); i++) {
+            if (surfaceid_distance_container[i].second < p.radius()) {
+                surfaceid_distance_container_within_r.push_back(surfaceid_distance_container[i]);
+            } else {
+                break;
+            }
+        }
+        i++;
+        if (i < surfaceid_distance_container.size()) {
+            return std::make_pair(surfaceid_distance_container_within_r, surfaceid_distance_container[i+1]);
+        } else {
+            return std::make_pair(surfaceid_distance_container_within_r, boost::none);
+        }
     }
 
     template<typename TdidSet>
@@ -3337,8 +3349,15 @@ protected:
                     intruders = res.first;
                     closest = res.second;
                 }
-                get_intruder_surfaces(
-                        particle_shape_type(domain.position(), min_shell_radius) );
+
+                std::vector<std::pair<surface_id_type, length_type> > intruder_surfaces; //surfaces that cross with domain.
+                boost::optional<std::pair<surface_id_type, Real> > closest_surface; // closest surface outside of domain
+                {
+                    std::pair<std::vector<std::pair<surface_id_type, length_type> >, boost::optional<std::pair<surface_id_type, Real> > > 
+                        temp(get_intruder_surfaces( particle_shape_type(domain.position(), min_shell_radius) ));
+                    intruder_surfaces = temp.first;
+                    closest_surface = temp.second;
+                }
 
                 boost::scoped_ptr<std::vector<domain_id_type> > _(intruders);
 
