@@ -127,7 +127,7 @@ if with_cpp_shared_libraries:
     ext_modules = [
         Extension("ecell4.core", sources=["lib/ecell4/core.pyx"],
             include_dirs=["."], libraries=["ecell4-core"], language="c++",
-            extra_compile_args=extra_compile_args),
+            extra_compile_args=extra_compile_args + ["-w"]),
         Extension("ecell4.egfrd", sources=["lib/ecell4/egfrd.pyx"],
             include_dirs=["."], libraries=["ecell4-core", "ecell4-egfrd"],
             language="c++", extra_compile_args=extra_compile_args + ["-w"]),
