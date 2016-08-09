@@ -2715,6 +2715,14 @@ protected:
                 boost::lexical_cast<std::string>(*closest_domain).c_str():
                 "(none)",
             closest.second));
+
+        // Surface distance check.
+        std::pair<std::vector<std::pair<surface_id_type, length_type> >, boost::optional<std::pair<surface_id_type, Real> > > 
+            temp(get_intruder_surfaces( particle_shape_type(domain.position(), new_shell_size) ));
+        if (2 < temp.first.size()) {
+            new_shell_size = std::min(temp.first[1].second, new_shell_size);
+        }
+
         if (base_type::paranoiac_)
         {
             BOOST_ASSERT(check_overlap(
@@ -3045,6 +3053,14 @@ protected:
         // 6. Ok, Pair makes sense. Create one.
         new_shell_size = std::min(new_shell_size, max_shell_size);
 
+        // Before execute forming pair, CHECK the SURFACE!!!
+        std::pair<std::vector<std::pair<surface_id_type, length_type> >, boost::optional<std::pair<surface_id_type, Real> > > 
+            temp(get_intruder_surfaces( particle_shape_type(com, new_shell_size) ));
+        if (0 < temp.first.size()) {
+            std::cerr << __LINE__ << " surface exist inside new shell" << std::endl;
+            return boost::optional<pair_type&>();
+        }
+
         boost::shared_ptr<pair_type> new_pair(
             create_pair(
                 domain.particle(),
@@ -3089,8 +3105,12 @@ protected:
                 domain.particle().second.radius() *
                     (1.0 + multi_shell_factor_));
 
+        // check the surface existence around the particle
+        std::pair<std::vector<std::pair<surface_id_type, length_type> >, boost::optional<std::pair<surface_id_type, Real> > > 
+            temp(get_intruder_surfaces( particle_shape_type(domain.position(), min_shell_size) ));
+
         // Multis shells need to be contiguous.
-        if (closest.second > min_shell_size)
+        if (closest.second > min_shell_size && temp.first.size() == 0)
         {
             LOG_DEBUG(("multi shells aren't close enough to each other (closest distance=%.16g, min_shell_size=%.16g)", closest.second, min_shell_size));
             return boost::optional<multi_type&>();
@@ -3256,19 +3276,9 @@ protected:
                 length_to_possible_partner = dist;
             }
         }
-        // XXX if distances toward some surfaces is shorter thant length_to_possible_partner,
-        //      reject to form pair.
-        bool reject_flag = false;
-        for(std::size_t i = 0; i < inside_surfaces.size(); i++) {
-            if (inside_surfaces[i].second < length_to_possible_partner)
-            {
-                return boost::optional<domain_type&>();
-            }
-        }
 
         // First, try forming a Pair.
         // XXX COMMENT OUT
-        if (reject_flag == false)
         {
             single_type* const _possible_partner(
                     dynamic_cast<single_type*>(possible_partner));
