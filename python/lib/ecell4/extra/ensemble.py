@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import os
 import logging
 import tempfile
@@ -12,6 +14,7 @@ import multiprocessing
 import copy
 
 import ecell4.extra.sge as sge
+
 
 def run_serial(target, jobs, n=1):
     return [[target(copy.copy(job), i + 1, j + 1) for j in range(n)] for i, job in enumerate(jobs)]
