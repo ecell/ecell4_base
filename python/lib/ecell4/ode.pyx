@@ -1016,7 +1016,8 @@ cdef class ODESimulator:
                         deref((<ODENetworkModel>arg1).thisptr),
                         deref((<ODEWorld>arg2).thisptr),
                         translate_solver_type(arg3))
-            elif isinstance(arg1, Model):
+            # elif isinstance(arg1, Model):
+            else:
                 if arg3 is None:
                     self.thisptr = new Cpp_ODESimulator(
                         Cpp_Model_from_Model(arg1),
@@ -1026,10 +1027,10 @@ cdef class ODESimulator:
                         Cpp_Model_from_Model(arg1),
                         deref((<ODEWorld>arg2).thisptr),
                         translate_solver_type(arg3))
-            else:
-                raise ValueError(
-                    "An invalid value [{}] for the first argument.".format(repr(arg1))
-                    + " ODENetworkModel or Model is needed.")
+            # else:
+            #     raise ValueError(
+            #         "An invalid value [{}] for the first argument.".format(repr(arg1))
+            #         + " ODENetworkModel or Model is needed.")
 
     def __dealloc__(self):
         del self.thisptr
