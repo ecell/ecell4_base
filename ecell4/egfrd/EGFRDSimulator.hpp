@@ -3110,7 +3110,7 @@ protected:
             temp(get_intruder_surfaces( particle_shape_type(domain.position(), min_shell_size) ));
 
         // Multis shells need to be contiguous.
-        if (closest.second > min_shell_size && temp.first.size() == 0)
+        if (closest.second > min_shell_size && temp.first.size() < 2)
         {
             LOG_DEBUG(("multi shells aren't close enough to each other (closest distance=%.16g, min_shell_size=%.16g)", closest.second, min_shell_size));
             return boost::optional<multi_type&>();
@@ -3119,25 +3119,23 @@ protected:
         // If there's a multi neighbor, merge others into it.
         // Otherwise, create a new multi and let it hold them all.
         multi_type* retval(0);
-        retval = dynamic_cast<multi_type*>(closest.first);
-        if (!retval)
-        {
+        if (closest.second > min_shell_size) {
+
             retval = create_multi().get();
             add_event(*retval);
             LOG_DEBUG(("form multi: created a new multi %s",
                     boost::lexical_cast<std::string>(*retval).c_str()));
+
+            position_type const single_pos(domain.position());
+            add_to_multi(*retval, domain);
+
+            BOOST_FOREACH (boost::shared_ptr<domain_type> neighbor, neighbors)
+            {
+                length_type const dist(distance(*neighbor, single_pos));
+                if (dist < min_shell_size)
+                    add_to_multi_recursive(*retval, *neighbor); 
+            }
         }
-
-        position_type const single_pos(domain.position());
-        add_to_multi(*retval, domain);
-
-        BOOST_FOREACH (boost::shared_ptr<domain_type> neighbor, neighbors)
-        {
-            length_type const dist(distance(*neighbor, single_pos));
-            if (dist < min_shell_size)
-                add_to_multi_recursive(*retval, *neighbor); 
-        }
-
         return *retval;
     }
 
