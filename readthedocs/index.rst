@@ -1,9 +1,4 @@
-.. raw:: html
-
-   <img src="https://raw.githubusercontent.com/ecell/ecell4/master/docs/images/ecell-logo-with-title.png">
-
-.. raw:: html
-
+.. image:: ./images/ecell-logo-with-title.png
 
 Welcome to E-Cell System version 4 documentation!
 =================================================

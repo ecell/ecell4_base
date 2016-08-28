@@ -121,7 +121,7 @@ y = run_simulation(
     numpy.linspace(0, 10, 100), {'A': 60, 'B': 60}, solver='ode')
 ```
 
-![png](https://raw.githubusercontent.com/ecell/ecell4/master/docs/images/output_7_0.png)
+![png](./images/output_7_0.png)
 
 ### Particle tracking on a spherical surface
 
@@ -141,7 +141,7 @@ run_simulation(
 viz.plot_trajectory(obs, interactive=False)
 ```
 
-![png](https://raw.githubusercontent.com/ecell/ecell4/master/docs/images/hairball.png)
+![png](./images/hairball.png)
 
 Docker container for E-Cell4
 ----------------------------
