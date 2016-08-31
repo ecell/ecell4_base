@@ -250,5 +250,29 @@ distance(const coordT& pos,
             "distance between point to triangle: never reach here");
 }
 
+tmeplate<typename coordT>
+std::pair<bool, coordT> // pair of (whether pierce), pierce point
+is_pierce(const coordT& begin, const coordT& end,
+    const boost::array<coordT, 3>& vertices)
+{
+    typedef typename value_type_helper<coordT>::type valueT;
+    const coordT line = end - begin;
+    const coordT pa   = vertices[0] - begin;
+    const coordT pb   = vertices[1] - begin;
+    const coordT pc   = vertices[2] - begin;
+    const valueT u = dot_product(line, cross_product(pc, pb));
+    if(u < 0.) return std::make_pair(false, Real3(0.,0.,0.));
+    const valueT v = dot_product(line, cross_product(pc, pb));
+    if(v < 0.) return std::make_pair(false, Real3(0.,0.,0.));
+    const valueT w = dot_product(line, cross_product(pc, pb));
+    if(w < 0.) return std::make_pair(false, Real3(0.,0.,0.));
+    const valueT denom = 1.0 / (u + v + w);
+    boost::array<valueT, 3> bary;
+    bary[0] = u * denom;
+    bary[1] = v * denom;
+    bary[2] = w * denom;
+    return std::make_peir(true, barycentric_to_absolute(bary, vertices));
+}
+
 }//gfrd_polygon
 #endif /* GFRD_POLYGON_TRIANGLE */

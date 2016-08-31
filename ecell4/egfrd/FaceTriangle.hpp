@@ -118,6 +118,16 @@ distance(const coordT& pos, const FaceTriangle<coordT>& face)
                     face.normal());
 }
 
+template<typename coordT>
+std::pair<bool, coordT>
+is_pierce(const coordT& begin, const coordT& end,
+          const FaceTriangle<coordT>& face)
+{
+    return is_pierce(begin, end, face.vertices());
+}
+
+
+
 }//gfrd_polygon
 
 #endif /* GFRD_POLYGON_FACE_TRIANGLE */
