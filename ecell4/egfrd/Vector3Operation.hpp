@@ -53,6 +53,24 @@ bool is_same_vec(const coordT& lhs, const coordT& rhs,
            (std::abs(lhs[2] - rhs[2]) < tol);
 }
 
+template<typename coordT>
+coordT reflect_plane(const coordT& begin, const coordT& end,
+                     const coordT& normal, const coordT& plane)
+{
+    typedef value_type_helper<coordT>::type valueT;
+    const valueT norm_b = dot_prod((begin - plane), normal);
+    const valueT norm_e = dot_prod((end - plane), normal);
+    if(norm_b == 0e0)
+        throw std::invalid_argument("reflection: begin is on the plane");
+    else if(norm_b * norm_e >= 0.0) // same side of plane
+        return end;
+    else // reflect
+        return end - (normal * (norm_e * 2.0));
+}
+
+
+
+
 }//gfrd-polygon
 
 #endif 
