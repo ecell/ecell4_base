@@ -59,7 +59,7 @@ coordT reflect_plane(const coordT& begin, const coordT& end,
     const valueT norm_e = dot_product((end - plane), normal);
     if(norm_b == 0.0)
         throw std::invalid_argument("reflection: begin is on the plane");
-    else if(norm_e == 0.0) //end is just on the plane... add margin(1e-10)
+    else if(std::abs(norm_e) < 1e-10) //end is just on the plane... add margin(1e-10)
         return (begin * 1e-10) + (end * (1.0 - 1e-10));
     else if(norm_b * norm_e >= 0.0) // same side of plane
         return end;
