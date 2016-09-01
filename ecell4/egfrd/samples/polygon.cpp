@@ -35,6 +35,7 @@
 #include <ecell4/core/ReactionRule.hpp>
 
 #include <ecell4/egfrd/egfrd.hpp>
+#include <ecell4/egfrd/StlFileReader.hpp>
 
 
 // typedef double Real;
@@ -47,21 +48,20 @@ int main(int argc, char **argv)
     // typedef EGFRDSimulator< ::EGFRDSimulatorTraitsBase<world_type> >
     //     simulator_type;
     typedef ecell4::egfrd::EGFRDWorld world_type;
-    typedef ecell4::egfrd::EGFRDSimulator simulator_type;
-    typedef simulator_type::multi_type multi_type;
+    typedef ecell4::egfrd::BDSimulator simulator_type;
+//     typedef simulator_type::multi_type multi_type;
     // }}}
 
     // Constants
     // {{{
-    const ecell4::Real L(1e2);
+    const ecell4::Real L(5e1);
     const ecell4::Real3 edge_lengths(L, L, L);
     const ecell4::Integer3 matrix_sizes(3, 3, 3);
     const ecell4::Real volume(L * L * L);
-    const ecell4::Integer N(60);
+    const ecell4::Integer N(32);
     const ecell4::Real kd(0.1), U(0.5);
     const ecell4::Real ka(kd * volume * (1 - U) / (U * U * N));
     const ecell4::Real k2(ka), k1(kd);
-    const ecell4::Integer dissociation_retry_moves(3);
     // }}}
 
     boost::shared_ptr<ecell4::NetworkModel>
@@ -95,18 +95,39 @@ int main(int argc, char **argv)
     world->bind_to(model);
     // }}}
 
-    // Thorow particles into world at random
+    std::cerr << "particle generate start" << std::endl;
+    // Throw particles into world at random
     // {{{
-    world->add_molecules(ecell4::Species("C"), N);
-
-    typedef std::vector<std::pair<ecell4::ParticleID, ecell4::Particle> >
-        particle_id_pair_list;
-    const particle_id_pair_list particles(world->list_particles());
-    for (particle_id_pair_list::const_iterator i(particles.begin());
-        i != particles.end(); ++i)
+    for(std::size_t i=0; i<N; ++i)
     {
-        const ecell4::Real3 pos((*i).second.position());
+        while(true)
+        {
+            const ecell4::Real radius = rng->uniform(0, 15.0);
+            const ecell4::Real theta = rng->uniform(0, 2.0 * 3.14159265358979);
+            const ecell4::Real phi = rng->uniform(0, 2.0 * 3.14159265358979);
+            const ecell4::Real3 sphere_center(24.0, 24.0, 24.0);
+            const ecell4::Real3 dist(
+                    radius * sin(theta) * cos(phi),
+                    radius * sin(theta) * sin(phi),
+                    radius * cos(theta));
+            assert(length(dist) < 24.);
+
+            const ecell4::Particle newpart(ecell4::Species("C"), sphere_center + dist, 2.5, 1e3);
+            if(world->new_particle(newpart).second) break;
+        }
     }
+    std::cerr << "particle generate end" << std::endl;
+
+    std::cerr << "polygon setup begin" << std::endl;
+    StlFileReader<ecell4::Real3> stlreader;
+    std::vector<StlTriangle<ecell4::Real3> > triangles =
+        stlreader.read("sphere_r-24mm_accurate_asc.stl", StlFileReader<ecell4::Real3>::Ascii);
+    for(std::vector<StlTriangle<ecell4::Real3> >::const_iterator
+        iter = triangles.begin(); iter != triangles.end(); ++iter)
+    {
+        world->add_surface(iter->vertices);
+    }
+    std::cerr << "polygon setup end" << std::endl;
     // }}}
 
     // Logger Settings
@@ -120,19 +141,17 @@ int main(int argc, char **argv)
     // EGFRDSimulator instance generated
     // {{{
     boost::shared_ptr<simulator_type> sim(
-        new simulator_type(world, model, dissociation_retry_moves));
+        new simulator_type(world, model, 0.1));
     // sim->paranoiac() = true;
     sim->initialize();
     // }}}
 
+    std::cerr << "simulation start" << std::endl;
     // Simulation Executed
     // {{{
     ecell4::Real next_time(0.0), dt(0.2);
     for (int i(0); i < 100; i++)
     {
-        next_time += dt;
-        while (sim->step(next_time)){}
-
         ecell4::Integer num_sp1 = world->num_molecules_exact(sp1);
         std::cout << num_sp1 << std::endl;
         std::cout << "now t = " << sim->t() << std::endl;
@@ -141,11 +160,19 @@ int main(int argc, char **argv)
             > particles = world->list_particles();
         for(std::size_t i=0; i< particles.size(); ++i)
         {
+            const ecell4::Real3 center(24.0, 24.0, 24.0);
+            assert(length(particles.at(i).second.position() - center) < 24.);
+            if(length(particles.at(i).second.position() - center) > 24.)
+            {
+                std::cerr << "particle goes out!" << std::endl;
+            }
             std::cout << particles.at(i).second.sid() << " "
                 << particles.at(i).second.position()[0] << " "
                 << particles.at(i).second.position()[1] << " "
                 << particles.at(i).second.position()[2] << std::endl;
         }
+        next_time += dt;
+        while (sim->step(next_time)){}
     }
     // }}}
 
