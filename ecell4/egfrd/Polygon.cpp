@@ -56,7 +56,6 @@ Polygon::apply_reflection(const coordinate_type& pos, const coordinate_type& dis
             // check which face the particle collides first.
             std::vector<std::size_t> first_collision_index_list;
             Real minimum_distance = std::numeric_limits<Real>::max();
-            std::size_t multiplicity = 0;
             for(std::vector<std::pair<std::size_t, Real> >::const_iterator
                 iter = pierce.begin(); iter != pierce.end(); ++iter)
             {
@@ -75,9 +74,9 @@ Polygon::apply_reflection(const coordinate_type& pos, const coordinate_type& dis
             if(first_collision_index_list.size() == 1)
             {
                 coordinate_type tmp_begin = is_pierce(begin, end,
-                        faces.at(first_collision_index_list.first())).second;
+                        faces.at(first_collision_index_list.front())).second;
                 end = reflect_plane(begin, end,
-                        faces.at(first_collision_index_list.first()));
+                        faces.at(first_collision_index_list.front()));
                 begin = tmp_begin;
             }
             else if(first_collision_index_list.size() > 1)
