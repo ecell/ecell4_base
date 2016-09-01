@@ -96,7 +96,7 @@ StlFileReader<coordT>::read_ascii(const std::string& filename) const
     {
         try
         {
-        retval.push_back(this->read_ascii_triangle(ifs));
+            retval.push_back(this->read_ascii_triangle(ifs));
         }
         catch(endsolid_exception& esl)
         {
@@ -126,17 +126,17 @@ StlFileReader<coordT>::read_ascii_triangle(std::ifstream& ifs) const
             if(normal_read)
                 throw std::runtime_error("invalid syntax");
             normal_read = true;
-            retval.normal = read_ascii_normal(line);
+            retval.normal = this->read_ascii_normal(line);
         }
         else if(prefix == "outer")
         {
-            ;
+            ; // outer loop
         }
         else if(prefix == "vertex")
         {
             if(vertex_index > 2)
                 throw std::runtime_error("invalid syntax");
-            retval.vertices.at(vertex_index) = read_ascii_vertex(line);
+            retval.vertices.at(vertex_index) = this->read_ascii_vertex(line);
             ++vertex_index;
         }
         else if(prefix == "endloop") 
@@ -153,7 +153,7 @@ StlFileReader<coordT>::read_ascii_triangle(std::ifstream& ifs) const
         }
         else
         {
-            continue;
+            continue; // comment line?
         }
     }
     throw std::runtime_error("invalid syntax");
