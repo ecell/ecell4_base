@@ -6,9 +6,6 @@
 #include <algorithm>
 #include <cassert>
 
-namespace gfrd_polygon
-{
-
 template<typename coordT>
 inline coordT centroid(const boost::array<coordT, 3>& vertices)
 {
@@ -274,5 +271,4 @@ is_pierce(const coordT& begin, const coordT& end,
     return std::make_peir(true, barycentric_to_absolute(bary, vertices));
 }
 
-}//gfrd_polygon
 #endif /* GFRD_POLYGON_TRIANGLE */

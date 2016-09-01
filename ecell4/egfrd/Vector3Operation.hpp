@@ -5,9 +5,6 @@
 #include "Real3.hpp"
 #include <boost/math/quaternion.hpp>
 
-namespace gfrd_polygon
-{
-
 template<typename coordT>
 struct value_type_helper
 {
@@ -69,10 +66,4 @@ coordT reflect_plane(const coordT& begin, const coordT& end,
     else // reflect
         return end - (normal * (norm_e * 2.0));
 }
-
-
-
-
-}//gfrd-polygon
-
 #endif 

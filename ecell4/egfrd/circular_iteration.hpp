@@ -4,9 +4,6 @@
 #include <cstddef>
 #include <cassert>
 
-namespace gfrd_polygon
-{
-
 namespace detail
 {
 
@@ -159,6 +156,4 @@ circular_iterator<T_iter>::operator--(int) throw()
     return this->iter_;
 }
 
-
-}//gfrd_polygon
 #endif /* lGFRD_POLYGON_CIRCULAR_ITERATION */

@@ -4,9 +4,6 @@
 #include "ParametricPosition.hpp"
 #include <boost/array.hpp>
 
-namespace gfrd_polygon
-{
-
 template<typename coordT>
 struct FaceTriangle
 {
@@ -126,8 +123,5 @@ is_pierce(const coordT& begin, const coordT& end,
     return is_pierce(begin, end, face.vertices());
 }
 
-
-
-}//gfrd_polygon
 
 #endif /* GFRD_POLYGON_FACE_TRIANGLE */

@@ -6,10 +6,6 @@
 #include <algorithm>
 #include <iostream>
 
-namespace gfrd_polygon
-{
-
-
 // parametric representation of position in triangle
 // this position is always relative.
 /*      /\
@@ -323,6 +319,5 @@ inline ParametricPosition<T> operator*(const T& lhs,
 }
 // }}}
 
-}// gfrd_polygon
 
 #endif /* GFRD_POLYGON_PARAMETRIC_POSITION */
