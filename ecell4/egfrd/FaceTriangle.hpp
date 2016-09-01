@@ -123,5 +123,13 @@ is_pierce(const coordT& begin, const coordT& end,
     return is_pierce(begin, end, face.vertices());
 }
 
+template<typename coordT>
+coordT reflect_plane(const coordT& begin, const coordT& end,
+                     const FaceTriangle<coordT>& face)
+{
+    return reflect_plane(begin, end, face.normal(), face.represent());
+}
+
+
 
 #endif /* GFRD_POLYGON_FACE_TRIANGLE */
