@@ -6,6 +6,7 @@
 #include "exceptions.hpp"
 #include "FaceTriangle.hpp"
 #include <limits>
+#include <algorithm>
 
 template<typename coordT>
 struct Polygon : public ecell4::Shape
@@ -78,16 +79,24 @@ Polygon<coordT>::apply_reflection(
     }
     else
     {
+//         std::cerr << "length of disp " << length(displacement) << std::endl;
+//         std::cerr << "size of intruders  " << intruder_idxs.size() << std::endl;
+
         coordinate_type begin = pos;
         coordinate_type end = pos + displacement;
         std::vector<std::pair<std::size_t, Real> > pierce;
         pierce.reserve(intruder_idxs.size());
+        std::size_t loop_time = 0;
+        std::size_t ignore_idx = std::numeric_limits<std::size_t>::max();
         while(true)
         {
+            ++loop_time;
+
             pierce.clear();
             for(std::vector<std::size_t>::const_iterator
                 iter = intruder_idxs.begin(); iter != intruder_idxs.end(); ++iter)
             {
+                if(*iter == ignore_idx) continue;
                 const std::pair<bool, coordinate_type> dist =
                     is_pierce(begin, end, faces.at(*iter));
                 if(dist.first)
@@ -107,19 +116,39 @@ Polygon<coordT>::apply_reflection(
                 }
                 else if(iter->second < minimum_distance)
                 {
+                    minimum_distance = iter->second;
                     first_collision_index_list.clear();
                     first_collision_index_list.push_back(iter->first);
                 }
             }
 
+//             {
+//                 std::cerr << "now loop " << loop_time << std::endl;
+//                 std::cerr << "begin " << begin << std::endl;
+//                 std::cerr << "end   " << end   << std::endl;
+//                 std::cerr << "pierce.size " << pierce.size() << std::endl;
+//             }
             // update begin and end
             if(first_collision_index_list.size() == 1)
             {
-                coordinate_type tmp_begin = is_pierce(begin, end,
+                const coordinate_type tmp_begin = is_pierce(begin, end,
                         faces.at(first_collision_index_list.front())).second;
-                end = reflect_plane(begin, end,
+                const coordinate_type tmp_end = reflect_plane(begin, end,
                         faces.at(first_collision_index_list.front()));
+                assert(length(tmp_end - end) > 1e-12);
+//                 if(length(tmp_end - end) < 1e-12)
+//                 {
+//                     const std::pair<bool, coordinate_type> d =
+//                         is_pierce(begin, end, faces.at(first_collision_index_list.front()));
+//                     std::cerr << tmp_begin << std::endl;
+//                     std::cerr << tmp_end << std::endl;
+//                     std::cerr << d.first << ", " << d.second << std::endl;
+//                     std::cerr << length(tmp_end - end) << std::endl;
+//                     assert(false);
+//                 }
+                end = tmp_end;
                 begin = tmp_begin;
+                ignore_idx = first_collision_index_list.front();
             }
             else if(first_collision_index_list.size() > 1)
             {
@@ -129,6 +158,9 @@ Polygon<coordT>::apply_reflection(
             {
                 throw std::logic_error("app_reflect: never reach here");
             }
+
+//             if(loop_time > 10)
+//                 throw std::logic_error("too much reflection");
         }
         return end;
     }
