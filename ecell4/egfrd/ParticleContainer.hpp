@@ -10,6 +10,8 @@
 #include <ecell4/core/types.hpp>
 #include <ecell4/core/Space.hpp>
 
+#include "Polygon.hpp"
+
 template<typename Ttraits_>
 class Transaction;
 
@@ -123,6 +125,20 @@ public:
             "save(const std::string) is not supported by this space class");
     }
 
+    void add_surface(const boost::array<position_type, 3>& vertices)
+    {
+        polygon_.emplace(vertices);
+    }
+
+    position_type
+    apply_reflection(const position_type& pos, const position_type& disp)
+    {
+        return polygon_.apply_reflection(pos, disp,
+                (polygon_.get_faces_within_radius(pos, length(disp))).first);
+    }
+
+  private:
+    Polygon polygon_;
 };
 
 
