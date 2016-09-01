@@ -2,7 +2,7 @@
 #define GFRD_POLYGON_VECTOR_OPERATION
 
 #include "Defs.hpp"
-#include "Real3.hpp"
+#include <ecell4/core/Real3.hpp>
 #include <boost/math/quaternion.hpp>
 
 template<typename coordT>
