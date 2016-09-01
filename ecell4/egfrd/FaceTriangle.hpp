@@ -20,7 +20,8 @@ struct FaceTriangle
     FaceTriangle(){}
     explicit FaceTriangle(const position_container_type& vertices)
         : normal_(cross_product(vertices[1] - vertices[0], 
-                                vertices[2] - vertices[0])),
+                                vertices[2] - vertices[0]) /
+                length(cross_product(vertices[1] - vertices[0], vertices[2] - vertices[0]))),
           para_b_(vertices[2] - vertices[0]), vertices_(vertices)
     {
         edges_[0] = vertices[1] - vertices[0];
