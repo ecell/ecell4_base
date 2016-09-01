@@ -127,136 +127,101 @@ project_to_plane(const coordT& pos, const boost::array<coordT, 3>& vertices,
 template<typename coordT>
 std::pair<typename value_type_helper<coordT>::type, // distance
           typename value_type_helper<coordT>::type> // r of circle in triangle
-distance(const coordT& pos,
-    const boost::array<coordT, 3>& vertices,
-    const boost::array<coordT, 3>& edges,
-    const boost::array<typename value_type_helper<coordT>::type, 3>& side_length,
-    const coordT& normal)
+distance(const coordT& pos, const boost::array<coordT, 3>& vertices)
 {
     typedef typename value_type_helper<coordT>::type valueT;
-    const coordT projected = project_to_plane(pos, vertices, normal);
-    const boost::array<valueT, 3> barycentric = 
-        absolute_to_barycentric(pos, vertices);
 
-    // never be (-, -, -) because projected pos and triangle are on same plane
-    if(barycentric[0] < 0 && barycentric[1] < 0 && barycentric[2] < 0)
-        throw std::logic_error("projection error");
+    coordT const& a = vertices[0];
+    coordT const& b = vertices[1];
+    coordT const& c = vertices[2];
 
-    if(barycentric[0] >= 0 && barycentric[1] >= 0 && barycentric[2] >= 0)
-    {// nearest position is inside of triangle. r != 0
-        const valueT s =
-            (side_length[0] + side_length[1] + side_length[2]) * 0.5;
-        const valueT area = std::sqrt(s *
-                (s - side_length[0]) * (s - side_length[1]) * (s - side_length[2]));
-        boost::array<valueT, 3> perpendicular;
-        perpendicular[0] = 2.0 * area * barycentric[0] / side_length[1];
-        perpendicular[1] = 2.0 * area * barycentric[1] / side_length[2];
-        perpendicular[2] = 2.0 * area * barycentric[2] / side_length[0];
+    // Check if P in vertex region outside A
+    coordT ab = b - a;
+    coordT ac = c - a;
+    coordT ap = pos - a;
+    valueT d1 = dot_product(ab, ap);
+    valueT d2 = dot_product(ac, ap);
+    if (d1 <= 0.0 && d2 <= 0.0)
+        return std::make_pair(length(pos - a), 0.0); // barycentric coordinates (1,0,0)
+    // Check if P in vertex region outside B
+    coordT bp = pos - b;
+    valueT d3 = dot_product(ab, bp);
+    valueT d4 = dot_product(ac, bp);
+    if (d3 >= 0.0 && d4 <= d3)
+        return std::make_pair(length(pos - b), 0.0); // barycentric coordinates (0,1,0)
+    // Check if P in edge region of AB, if so return projection of P onto AB
+    valueT vc = d1*d4 - d3*d2;
+    if (vc <= 0.0 && d1 >= 0.0 && d3 <= 0.0)
+    {
+        valueT v = d1 / (d1 - d3);
+        return std::make_pair(length(a + ab * v- pos), 0.0); // barycentric coordinates (1-v,v,0)
+    }
+    // Check if P in vertex region outside C
+    coordT cp = pos - c;
+    valueT d5 = dot_product(ab, cp);
+    valueT d6 = dot_product(ac, cp);
+    if (d6 >= 0.0 && d5 <= d6)
+        return std::make_pair(length(c - pos), 0.0); // barycentric coordinates (0,0,1)
 
-        return std::make_pair(
-                length(pos - barycentric_to_absolute(barycentric, vertices)),
-                (*std::min_element(barycentric.begin(), barycentric.end())));
+    //Check if P in edge region of AC, if so return projection of P onto AC
+    valueT vb = d5*d2 - d1*d6;
+    if (vb <= 0.0 && d2 >= 0.0 && d6 <= 0.0)
+    {
+        valueT w = d2 / (d2 - d6);
+        return std::make_pair(length(a + ac * w - pos), 0.0); // barycentric coordinates (1-w,0,w)
     }
-    else if(barycentric[0] * barycentric[1] * barycentric[2] > 0) //(+, -, -)
-    {// nearest position is vertex
-        if(barycentric[0] > 0)
-            return std::make_pair(length(pos - vertices[0]), 0);
-        else if(barycentric[1] > 0)
-            return std::make_pair(length(pos - vertices[1]), 0);
-        else if(barycentric[2] > 0)
-            return std::make_pair(length(pos - vertices[2]), 0);
-        else
-            throw std::logic_error(
-                    "distance between point to triangle: never reach here");
+    // Check if P in edge region of BC, if so return projection of P onto BC
+    valueT va = d3*d6 - d5*d4;
+    if (va <= 0.0 && (d4 - d3) >= 0.0 && (d5 - d6) >= 0.0)
+    {
+        valueT w = (d4 - d3) / ((d4 - d3) + (d5 - d6));
+        return std::make_pair(length(b + (c - b) * w - pos), 0.0); // barycentric coordinates (0,1-w,w)
     }
-    else // (+, -, -)
-    {//nearest position is on edge, or vertex
-        if(barycentric[0] < 0.0)
-        {
-            const valueT tmp =
-                dot_product(edges[1], (pos - vertices[1])) / length_sq(edges[1]);
-            if(0.0 < tmp && tmp < 1.0)
-            {
-                return std::make_pair(
-                        length(pos - (vertices[1] + edges[1] * tmp)), 0.0);
-            }
-            else if(tmp <= 0.0)
-            {
-                return std::make_pair(length(pos - vertices[1]), 0);
-            }
-            else if(1.0 <= tmp)
-            {
-                return std::make_pair(length(pos - vertices[2]), 0);
-            }
-        }
-        else if(barycentric[1] < 0)
-        {
-            const valueT tmp =
-                dot_product(edges[2], (pos - vertices[2])) / length_sq(edges[2]);
-            if(0.0 < tmp && tmp < 1.0)
-            {
-                return std::make_pair(
-                        length(pos - (vertices[2] + edges[2] * tmp)), 0.0);
-            }
-            else if(tmp <= 0.0)
-            {
-                return std::make_pair(length(pos - vertices[2]), 0);
-            }
-            else if(1.0 <= tmp)
-            {
-                return std::make_pair(length(pos - vertices[0]), 0);
-            }
-        }
-        else if(barycentric[2] < 0)
-        {
-            const valueT tmp =
-                dot_product(edges[0], (pos - vertices[0])) / length_sq(edges[0]);
-            if(0.0 < tmp && tmp < 1.0)
-            {
-                return std::make_pair(
-                        length(pos - (vertices[0] + edges[0] * tmp)), 0.0);
-            }
-            else if(tmp <= 0.0)
-            {
-                return std::make_pair(length(pos - vertices[0]), 0);
-            }
-            else if(1.0 <= tmp)
-            {
-                return std::make_pair(length(pos - vertices[1]), 0);
-            }
-        }
-        else
-        {
-            throw std::logic_error(
-                    "distance between point to triangle: never reach here");
-        }
-    }
-    throw std::logic_error(
-            "distance between point to triangle: never reach here");
+    // P inside face region. Compute Q through its barycentric coordinates (u,v,w)
+    valueT denom = 1.0f / (va + vb + vc);
+    valueT v = vb * denom;
+    valueT w = vc * denom;
+    return std::make_pair(length(a + ab * v + ac * w - pos), 0.0); // = u*a + v*b + w*c, u = va * denom = 1.0f-v-w
 }
 
 template<typename coordT>
 std::pair<bool, coordT> // pair of (whether pierce), pierce point
 is_pierce(const coordT& begin, const coordT& end,
-    const boost::array<coordT, 3>& vertices)
+          const boost::array<coordT, 3>& vertices)
 {
     typedef typename value_type_helper<coordT>::type valueT;
     const coordT line = end - begin;
+//     std::cerr << "line = " << line << std::endl;
     const coordT pa   = vertices[0] - begin;
+//     std::cerr << "pa = " << pa << std::endl;
     const coordT pb   = vertices[1] - begin;
+//     std::cerr << "pb = " << pb << std::endl;
     const coordT pc   = vertices[2] - begin;
+//     std::cerr << "pc = " << pc << std::endl;
     const valueT u = dot_product(line, cross_product(pc, pb));
+//     std::cerr << u << std::endl;
     if(u < 0.) return std::make_pair(false, coordT(0.,0.,0.));
     const valueT v = dot_product(line, cross_product(pa, pc));
+//     std::cerr << v << std::endl;
     if(v < 0.) return std::make_pair(false, coordT(0.,0.,0.));
     const valueT w = dot_product(line, cross_product(pb, pa));
+//     std::cerr << w << std::endl;
     if(w < 0.) return std::make_pair(false, coordT(0.,0.,0.));
     const valueT denom = 1.0 / (u + v + w);
     boost::array<valueT, 3> bary;
     bary[0] = u * denom;
     bary[1] = v * denom;
     bary[2] = w * denom;
-    return std::make_pair(true, barycentric_to_absolute(bary, vertices));
+    const coordT intersect = barycentric_to_absolute(bary, vertices);
+//     std::cerr << "int = " << intersect << std::endl;
+//     std::cerr << "intersect - begin = " << intersect - begin << std::endl;
+    const valueT len_l = length(line);
+    const valueT len_p = length(intersect - begin);
+//     std::cerr << "len_l " << len_l << std::endl;
+//     std::cerr << "len_p " << len_p << std::endl;
+    const bool is_intersect = (len_l > len_p) && (dot_product(line, intersect - begin) > 0);
+
+    return std::make_pair(is_intersect, intersect);
 }
 
 #endif /* GFRD_POLYGON_TRIANGLE */

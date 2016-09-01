@@ -112,8 +112,7 @@ std::pair<typename value_type_helper<coordT>::type, // distance
           typename value_type_helper<coordT>::type> // r of circle in triangle
 distance(const coordT& pos, const FaceTriangle<coordT>& face)
 {
-    return distance(pos, face.vertices(), face.edges(), face.lengths_of_edges(),
-                    face.normal());
+    return distance(pos, face.vertices());
 }
 
 template<typename coordT>
