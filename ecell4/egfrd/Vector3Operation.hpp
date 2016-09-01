@@ -55,6 +55,7 @@ coordT reflect_plane(const coordT& begin, const coordT& end,
                      const coordT& normal, const coordT& plane)
 {
     typedef typename value_type_helper<coordT>::type valueT;
+    assert(std::abs(length(normal) - 1.0) < 1e-12);
     const valueT norm_b = dot_product((begin - plane), normal);
     const valueT norm_e = dot_product((end - plane), normal);
     if(norm_b == 0.0)
