@@ -74,7 +74,7 @@ StlFileReader<coordT>::read_ascii(const std::string& filename) const
     if(not ifs.good())
         throw std::runtime_error("file open error");
 
-    while(ifs.eof())
+    while(!ifs.eof())
     {
         std::string line;
         std::getline(ifs, line);
@@ -92,7 +92,7 @@ StlFileReader<coordT>::read_ascii(const std::string& filename) const
         throw std::runtime_error("could not find solid line");
 
     std::vector<StlTriangle<coordT> > retval;
-    while(ifs.eof())
+    while(!ifs.eof())
     {
         try
         {
@@ -113,7 +113,7 @@ StlFileReader<coordT>::read_ascii_triangle(std::ifstream& ifs) const
     StlTriangle<coordT> retval;
     bool normal_read = false;
     std::size_t vertex_index = 0;
-    while(ifs.eof())
+    while(!ifs.eof())
     {
         std::string line;
         std::getline(ifs, line);
