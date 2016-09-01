@@ -121,14 +121,26 @@ std::pair<bool, coordT>
 is_pierce(const coordT& begin, const coordT& end,
           const FaceTriangle<coordT>& face)
 {
-    return is_pierce(begin, end, face.vertices());
+    const coordT line = end - begin;
+    if(dot_product(line, face.normal()) < 0.0)
+    {
+        return is_pierce(begin, end, face.vertices());
+    }
+    else
+    {
+        boost::array<coordT, 3> rev;
+        rev[0] = face.vertex_at(2);
+        rev[1] = face.vertex_at(1);
+        rev[2] = face.vertex_at(0);
+        return is_pierce(begin, end, rev);
+    }
 }
 
 template<typename coordT>
 coordT reflect_plane(const coordT& begin, const coordT& end,
                      const FaceTriangle<coordT>& face)
 {
-    return reflect_plane(begin, end, face.normal(), face.represent());
+    return reflect_plane(begin, end, face.normal(), face.vertex_at(0));
 }
 
 
