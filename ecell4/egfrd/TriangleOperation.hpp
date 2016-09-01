@@ -247,9 +247,9 @@ is_pierce(const coordT& begin, const coordT& end,
     const coordT pc   = vertices[2] - begin;
     const valueT u = dot_product(line, cross_product(pc, pb));
     if(u < 0.) return std::make_pair(false, coordT(0.,0.,0.));
-    const valueT v = dot_product(line, cross_product(pc, pb));
+    const valueT v = dot_product(line, cross_product(pa, pc));
     if(v < 0.) return std::make_pair(false, coordT(0.,0.,0.));
-    const valueT w = dot_product(line, cross_product(pc, pb));
+    const valueT w = dot_product(line, cross_product(pb, pa));
     if(w < 0.) return std::make_pair(false, coordT(0.,0.,0.));
     const valueT denom = 1.0 / (u + v + w);
     boost::array<valueT, 3> bary;
