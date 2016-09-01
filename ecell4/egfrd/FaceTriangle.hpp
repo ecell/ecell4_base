@@ -84,7 +84,7 @@ inline std::size_t match_edge(const coordT& vec, const FaceTriangle<coordT>& fac
 template<typename coordT>
 ParametricPosition<typename value_type_helper<coordT>::type>
 to_parametric(const coordT& pos, const FaceTriangle<coordT>& face,
-        const typename value_type_helper<coordT>::type tol = GLOBAL_TOLERANCE)
+        const typename value_type_helper<coordT>::type tol = 1e-12)
 {
     return to_parametric(pos, face.para_a(), face.para_b(), tol);
 }
@@ -101,7 +101,7 @@ to_absolute(const ParametricPosition<typename value_type_helper<coordT>::type>& 
 template<typename coordT>
 ParametricPosition<typename value_type_helper<coordT>::type>
 projection(const coordT& pos, const FaceTriangle<coordT>& face,
-           const typename value_type_helper<coordT>::type tol = GLOBAL_TOLERANCE)
+           const typename value_type_helper<coordT>::type tol = 1e-12)
 {
     return projection(pos, face.vertices(), face.normal(), tol);
 }
@@ -111,7 +111,7 @@ std::pair<typename value_type_helper<coordT>::type, // distance
           typename value_type_helper<coordT>::type> // r of circle in triangle
 distance(const coordT& pos, const FaceTriangle<coordT>& face)
 {
-    return distance(pos, face.vertices(), face.edges(), face.length_of_edges(),
+    return distance(pos, face.vertices(), face.edges(), face.lengths_of_edges(),
                     face.normal());
 }
 

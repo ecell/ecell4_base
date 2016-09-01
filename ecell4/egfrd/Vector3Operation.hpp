@@ -43,7 +43,7 @@ angle(const coordT& lhs, const coordT& rhs)
 
 template<typename coordT>
 bool is_same_vec(const coordT& lhs, const coordT& rhs,
-         const typename value_type_helper<coordT>::type tol = GLOBAL_TOLERANCE)
+         const typename value_type_helper<coordT>::type tol = 1e-10)
 {
     return (std::abs(lhs[0] - rhs[0]) < tol) &&
            (std::abs(lhs[1] - rhs[1]) < tol) &&
@@ -54,7 +54,7 @@ template<typename coordT>
 coordT reflect_plane(const coordT& begin, const coordT& end,
                      const coordT& normal, const coordT& plane)
 {
-    typedef value_type_helper<coordT>::type valueT;
+    typedef typename value_type_helper<coordT>::type valueT;
     const valueT norm_b = dot_product((begin - plane), normal);
     const valueT norm_e = dot_product((end - plane), normal);
     if(norm_b == 0.0)

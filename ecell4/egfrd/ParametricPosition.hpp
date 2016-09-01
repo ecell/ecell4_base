@@ -26,7 +26,7 @@ struct ParametricPosition
 
 template<typename T>
 inline bool is_in_face(const ParametricPosition<T>& pos,
-                       const T t = GLOBAL_TOLERANCE)
+                       const T t = 1e-12)
 {
     return (0e0 - t <= pos.a         && pos.a         <= 1e0 + t) &&
            (0e0 - t <=         pos.b &&         pos.b <= 1e0 + t) &&
@@ -35,7 +35,7 @@ inline bool is_in_face(const ParametricPosition<T>& pos,
 
 template<typename T>
 inline bool is_on_edge(const ParametricPosition<T>& pos,
-                       const T t = GLOBAL_TOLERANCE)
+                       const T t = 1e-12)
 {
     return (0e0 - t <= pos.a         && pos.a         <= 0e0 + t) ||
            (0e0 - t <=         pos.b &&         pos.b <= 0e0 + t) ||
@@ -45,7 +45,7 @@ inline bool is_on_edge(const ParametricPosition<T>& pos,
 // template<typename T, typename T_edgeid = std::size_t>
 template<typename T>
 inline std::size_t which_edge(const ParametricPosition<T>& pos,
-                              const T t = GLOBAL_TOLERANCE)
+                              const T t = 1e-12)
 {
          if(0e0 - t <= pos.a         && pos.a         <= 0e0 + t) return 2;
     else if(0e0 - t <=         pos.b &&         pos.b <= 0e0 + t) return 0;
@@ -179,7 +179,7 @@ std::size_t cross_edge(const ParametricPosition<T>& lhs,
 template<typename coordT>
 ParametricPosition<typename value_type_helper<coordT>::type>
 to_parametric(const coordT& pos, const coordT& a_vec, const coordT& b_vec,
-     const typename value_type_helper<coordT>::type tol = GLOBAL_TOLERANCE)
+     const typename value_type_helper<coordT>::type tol = 1e-12)
 {
     typedef circular_iteration<3> triangular;
     typedef typename value_type_helper<coordT>::type valueT;
@@ -221,7 +221,7 @@ to_parametric(const coordT& pos, const coordT& a_vec, const coordT& b_vec,
 template<typename coordT>
 ParametricPosition<typename value_type_helper<coordT>::type>
 to_parametric(const coordT& pos, const boost::array<coordT,3>& vtxs,
-    const typename value_type_helper<coordT>::type tol = GLOBAL_TOLERANCE)
+    const typename value_type_helper<coordT>::type tol = 1e-12)
 {
     // make parametric axes
     const coordT a_vec = vtxs[1] - vtxs[0];
@@ -255,7 +255,7 @@ ParametricPosition<typename value_type_helper<coordT>::type>
 projection(const coordT& pos,
     const boost::array<coordT,3>& vtxs,
     const coordT& normal,
-    const typename value_type_helper<coordT>::type tol = GLOBAL_TOLERANCE)
+    const typename value_type_helper<coordT>::type tol = 1e-12)
 {
     typedef typename value_type_helper<coordT>::type valueT;
 

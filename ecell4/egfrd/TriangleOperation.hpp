@@ -131,7 +131,7 @@ project_to_plane(const coordT& pos, const boost::array<coordT, 3>& vertices,
                  const coordT& normal)
 {
     typedef typename value_type_helper<coordT>::type valueT;
-    assert(std::abs(length(normal) - 1.0) < GLOBAL_TOLERANCE);
+    assert(std::abs(length(normal) - 1.0) < 1e-10);
     const valueT distance = dot_product(normal, pos - vertices.front());
     return pos - (normal * distance);
 }
@@ -247,7 +247,7 @@ distance(const coordT& pos,
             "distance between point to triangle: never reach here");
 }
 
-tmeplate<typename coordT>
+template<typename coordT>
 std::pair<bool, coordT> // pair of (whether pierce), pierce point
 is_pierce(const coordT& begin, const coordT& end,
     const boost::array<coordT, 3>& vertices)
@@ -258,17 +258,17 @@ is_pierce(const coordT& begin, const coordT& end,
     const coordT pb   = vertices[1] - begin;
     const coordT pc   = vertices[2] - begin;
     const valueT u = dot_product(line, cross_product(pc, pb));
-    if(u < 0.) return std::make_pair(false, Real3(0.,0.,0.));
+    if(u < 0.) return std::make_pair(false, coordT(0.,0.,0.));
     const valueT v = dot_product(line, cross_product(pc, pb));
-    if(v < 0.) return std::make_pair(false, Real3(0.,0.,0.));
+    if(v < 0.) return std::make_pair(false, coordT(0.,0.,0.));
     const valueT w = dot_product(line, cross_product(pc, pb));
-    if(w < 0.) return std::make_pair(false, Real3(0.,0.,0.));
+    if(w < 0.) return std::make_pair(false, coordT(0.,0.,0.));
     const valueT denom = 1.0 / (u + v + w);
     boost::array<valueT, 3> bary;
     bary[0] = u * denom;
     bary[1] = v * denom;
     bary[2] = w * denom;
-    return std::make_peir(true, barycentric_to_absolute(bary, vertices));
+    return std::make_pair(true, barycentric_to_absolute(bary, vertices));
 }
 
 #endif /* GFRD_POLYGON_TRIANGLE */
