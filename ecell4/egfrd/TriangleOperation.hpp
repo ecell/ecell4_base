@@ -56,65 +56,53 @@ inline std::size_t match_edge(const coordT& vec,
     throw std::invalid_argument("not match any edge");
 }
 
+template<typename realT>
+inline realT
+triangle_area_2D(const realT x1, const realT y1, const realT x2, const realT y2,
+                 const realT x3, const realT y3)
+{
+    return (x1-x2)*(y2-y3) - (x2-x3)*(y1-y2);
+}
+
 template<typename coordT>
 boost::array<typename value_type_helper<coordT>::type, 3>
 absolute_to_barycentric(const coordT pos, const boost::array<coordT, 3>& vertices)
 {
     typedef typename value_type_helper<coordT>::type valueT;
-    typedef circular_iteration<3> triangular;
-    if(vertices[0][0] == 0.0 && vertices[1][0] == 0.0 && vertices[2][0] == 0.0)
-    {// use 1 and 2
-        const valueT determ =
-            (vertices[0][1] - vertices[2][1]) * (vertices[1][2] - vertices[2][2]) - 
-            (vertices[1][1] - vertices[2][1]) * (vertices[0][2] - vertices[2][2]);
-        if(determ == 0.0)
-            throw std::invalid_argument("cannot solve as barycentric");
-        boost::array<valueT, 3> bary;
-        bary[0] =((vertices[1][2] - vertices[2][2]) * (pos[1] - vertices[2][1])+
-                  (vertices[2][1] - vertices[1][1]) * (pos[2] - vertices[2][2]))
-                 / determ;
-        bary[1] =((vertices[2][2] - vertices[0][2]) * (pos[1] - vertices[2][1])+
-                  (vertices[0][1] - vertices[2][1]) * (pos[2] - vertices[2][2]))
-                 / determ;
-        bary[2] = 1.0 - bary[0] - bary[1];
-        return bary;
-    }
-    else if(vertices[0][1] == 0.0 && vertices[1][1] == 0.0 && vertices[2][1] == 0.0)
-    {// use 0 and 2
-        const valueT determ = 
-            (vertices[0][0] - vertices[2][0]) * (vertices[1][2] - vertices[2][2]) -
-            (vertices[0][2] - vertices[2][2]) * (vertices[1][0] - vertices[2][0]);
-        if(determ == 0.0)
-            throw std::invalid_argument("cannot solve as barycentric");
-        boost::array<valueT, 3> bary;
-        bary[0] =((vertices[1][2] - vertices[2][2]) * (pos[0] - vertices[2][0])+
-                  (vertices[2][0] - vertices[1][0]) * (pos[2] - vertices[2][2]))
-                 / determ;
-        bary[1] =((vertices[2][2] - vertices[0][2]) * (pos[0] - vertices[2][0])+
-                  (vertices[0][0] - vertices[2][0]) * (pos[2] - vertices[2][2]))
-                 / determ;
-        bary[2] = 1.0 - bary[0] - bary[1];
-        return bary;
-    }
-    else if(vertices[0][2] == 0.0 && vertices[1][2] == 0.0 && vertices[2][2] == 0.0)
-    {// use 0 and 1
-        const valueT determ = 
-            (vertices[0][0] - vertices[2][0]) * (vertices[1][1] - vertices[2][1]) -
-            (vertices[1][0] - vertices[2][0]) * (vertices[0][1] - vertices[2][1]);
-        if(determ == 0.0)
-            throw std::invalid_argument("cannot solve as barycentric");
-        boost::array<valueT, 3> bary;
-        bary[0] =((vertices[1][1] - vertices[2][1]) * (pos[0] - vertices[2][0])+
-                  (vertices[2][0] - vertices[1][0]) * (pos[1] - vertices[2][1]));
-        bary[1] =((vertices[2][1] - vertices[0][1]) * (pos[0] - vertices[2][0])+
-                  (vertices[0][0] - vertices[2][0]) * (pos[1] - vertices[2][1]));
-        bary[2] = 1.0 - bary[0] - bary[1];
-        return bary;
-    }
-    else
+    const coordT& a = vertices[0];
+    const coordT& b = vertices[1];
+    const coordT& c = vertices[2];
+    const coordT m = cross_product(b - a, c - a);
+    // Nominators and one-over-denominator for u and v ratios
+    valueT nu, nv, ood;
+    // Absolute components for determining projection plane
+    const valueT x = std::abs(m[0]);
+    const valueT y = std::abs(m[1]);
+    const valueT z = std::abs(m[2]);
+    // Compute areas in plane of largest projection
+    if (x >= y && x >= z) // x is largest, project to the yz plane
     {
-        throw std::invalid_argument("cannot solve as barycentric");
+        nu = triangle_area_2D(pos[1], pos[2], b[1], b[2], c[1], c[2]); // Area of PBC in yz plane
+        nv = triangle_area_2D(pos[1], pos[2], c[1], c[2], a[1], a[2]); // Area of PCA in yz plane
+        ood = 1.0 / m[0]; // 1/(2*area of ABC in yz plane)
     }
+    else if (y >= x && y >= z)// y is largest, project to the xz plane
+    {
+        nu = triangle_area_2D(pos[0], pos[2], b[0], b[2], c[0], c[2]);
+        nv = triangle_area_2D(pos[0], pos[2], c[0], c[2], a[0], a[2]);
+        ood = 1.0 / -m[1];
+    }
+    else // z is largest, project to the xy plane
+    {
+        nu = triangle_area_2D(pos[0], pos[1], b[0], b[1], c[0], c[1]);
+        nv = triangle_area_2D(pos[0], pos[1], c[0], c[1], a[0], a[1]);
+        ood = 1.0 / m[2];
+    }
+    boost::array<valueT, 3> bary;
+    bary[0] = nu * ood;
+    bary[1] = nv * ood;
+    bary[2] = 1.0 - bary[0] - bary[1];
+    return bary;
 }
 
 template<typename coordT>
