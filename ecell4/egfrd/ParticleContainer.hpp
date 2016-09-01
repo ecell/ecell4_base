@@ -138,7 +138,7 @@ public:
     }
 
   private:
-    Polygon polygon_;
+    Polygon<position_type> polygon_;
 };
 
 
