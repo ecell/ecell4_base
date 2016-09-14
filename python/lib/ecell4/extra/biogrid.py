@@ -1,7 +1,9 @@
 # coding: utf-8
+
 __author__ = "Keita Sasaki"
 
 import json
+
 try:
     from urllib2 import Request, urlopen
 except ImportError:
@@ -14,7 +16,6 @@ class biogridDataSource(object):
 
     def __init__(self, ACCESS_KEY):
         self.ak = ACCESS_KEY
-
 
     def query(self, ACCESS_POINT, geneList=[], organisms=[], cache=True):
         options = ""
@@ -38,13 +39,12 @@ class biogridDataSource(object):
 
         return json.loads(data)
 
-
     def organisms(self):
         return self.query("organisms").values()
 
-
     def orgmaker(self, org=[]):
-        organisms_reverse = dict([(value, key) for key, value in self.query("organisms").items()])
+        organisms_reverse = dict(
+            [(value, key) for key, value in self.query("organisms").items()])
         if org:
             for i in range(len(org)):
                 if isinstance(org[i], int):
@@ -55,7 +55,6 @@ class biogridDataSource(object):
                     except KeyError:
                         pass
         return org
-
 
     def interactions(self, geneList=[], org=[]):
         organisms = self.query("organisms")
@@ -86,10 +85,9 @@ class biogridDataSource(object):
 
         return returnData
 
-
     def interactor(self, geneList=[], org=[]):
         """
-        geneListは1つの要素であることを想定。
+        Supposing geneList returns an unique item.
         """
         querydata = self.interactions(geneList, org)
         returnData = {}
@@ -101,7 +99,7 @@ class biogridDataSource(object):
 
 
 if __name__ == "__main__":
-    ACCESSKEY = "528f82a103f7785ace2300dd1e2e161c"
+    ACCESSKEY = "YOUR_ACCESSKEY"
     interactions = biogridDataSource(ACCESSKEY).interactions(["MDM2"], [9606])
     interactor = biogridDataSource(ACCESSKEY).interactor(["MDM2"])
     print interactor.keys()
