@@ -8,10 +8,12 @@ usage_exit() {
 WITH_PYTHON2=1
 WITH_PYTHON3=0
 WITH_TEST=1
-VTK_INCLUDE_PATH=/usr/include/vtk-5.8
+VTK_INCLUDE_PATH=/usr/include/vtk-5.10
 WITH_VTK=0
 WITH_HDF5=0
+HDF5_INCLUDE_PATH=/usr/include/hdf5/serial
 CLEANUP=0
+NO_BESSEL_TABLE=0
 
 if [ "${PREFIX-UNDEF}" = "UNDEF" ]; then
     if [ "$PREFIX" = "" ]; then
@@ -43,6 +45,7 @@ do
                 hdf5) WITH_HDF5=1;;
                 nohdf5) WITH_HDF5=0;;
                 prefix=*) PREFIX=${OPTARG#*=};;
+                nobessel) NO_BESSEL_TABLE=1;;
                 clean) CLEANUP=1;;
                 help) usage_exit;;
                 *) usage_exit;;
@@ -74,7 +77,7 @@ fi
 
 set -e
 
-cmake -DCMAKE_INSTALL_PREFIX=${PREFIX} -DWITH_HDF5=${WITH_HDF5} -DWITH_VTK=${WITH_VTK} .
+cmake -DCMAKE_INSTALL_PREFIX=${PREFIX} -DWITH_HDF5=${WITH_HDF5} -DWITH_VTK=${WITH_VTK} -DNO_BESSEL_TABLE=${NO_BESSEL_TABLE} .
 make
 # cmake -DCMAKE_INSTALL_PREFIX=${PREFIX} -DECELL4_ENABLE_PROFILING=1 .
 # make VERBOSE=1
@@ -91,10 +94,10 @@ if [ $WITH_PYTHON2 != 0 ]; then
     fi
     mkdir -p ${PREFIX}/lib/python2.7/site-packages
     if [ "$(uname)" == "Darwin" ]; then
-        LD_LIBRARY_PATH=${PREFIX}/lib PYTHONPATH=${PREFIX}/lib/python2.7/site-packages:/usr/local/lib/python2.7/dist-packages:${PYTHONPATH} python setup.py build_ext -L${PREFIX}/lib -I${PREFIX}/include:${VTK_INCLUDE_PATH} install --prefix=${PREFIX}
+        LD_LIBRARY_PATH=${PREFIX}/lib PYTHONPATH=${PREFIX}/lib/python2.7/site-packages:/usr/local/lib/python2.7/dist-packages:${PYTHONPATH} python setup.py build_ext -L${PREFIX}/lib -I${PREFIX}/include:${VTK_INCLUDE_PATH}:${HDF5_INCLUDE_PATH} install --prefix=${PREFIX}
         PYTHONPATH=${PREFIX}/lib/python2.7/site-packages:/usr/local/lib/python2.7/dist-packages:${PYTHONPATH} LD_LIBRARY_PATH=${PREFIX}/lib python setup.py test
     else
-        LD_LIBRARY_PATH=${PREFIX}/lib PYTHONPATH=${PREFIX}/lib/python2.7/site-packages:/usr/local/lib/python2.7/dist-packages:${PYTHONPATH} python2 setup.py build_ext -L${PREFIX}/lib -I/usr/include/hdf5/serial/:${PREFIX}/include:${VTK_INCLUDE_PATH} install --prefix=${PREFIX} --prefer-shared
+        LD_LIBRARY_PATH=${PREFIX}/lib PYTHONPATH=${PREFIX}/lib/python2.7/site-packages:/usr/local/lib/python2.7/dist-packages:${PYTHONPATH} python2 setup.py build_ext -L${PREFIX}/lib -I${PREFIX}/include:${VTK_INCLUDE_PATH}:${HDF5_INCLUDE_PATH} install --prefix=${PREFIX} --prefer-shared
         PYTHONPATH=${PREFIX}/lib/python2.7/site-packages:/usr/local/lib/python2.7/dist-packages:${PYTHONPATH} LD_LIBRARY_PATH=${PREFIX}/lib python2 setup.py test
     fi
 fi
@@ -103,7 +106,7 @@ if [ $WITH_PYTHON3 != 0 ]; then
     if [ $CLEANUP != 0 -o $WITH_PYTHON2 != 0 ]; then
         rm -rf build lib/ecell4/*.cpp
     fi
-    mkdir -p ${PREFIX}/lib/python3.4/site-packages
-    LD_LIBRARY_PATH=${PREFIX}/lib PYTHONPATH=${PREFIX}/lib/python3.4/site-packages:/usr/local/lib/python3.4/dist-packages:${PYTHONPATH} python3 setup.py build_ext -L${PREFIX}/lib -I${PREFIX}/include:${VTK_INCLUDE_PATH} install --prefix=${PREFIX} --prefer-shared
-    PYTHONPATH=${PREFIX}/lib/python3.4/site-packages:/usr/local/lib/python3.4/dist-packages:${PYTHONPATH} LD_LIBRARY_PATH=${PREFIX}/lib python3 setup.py test
+    mkdir -p ${PREFIX}/lib/python3.5/site-packages
+    LD_LIBRARY_PATH=${PREFIX}/lib PYTHONPATH=${PREFIX}/lib/python3.5/site-packages:/usr/local/lib/python3.5/dist-packages:${PYTHONPATH} python3 setup.py build_ext -L${PREFIX}/lib -I${PREFIX}/include:${VTK_INCLUDE_PATH}:${HDF5_INCLUDE_PATH} install --prefix=${PREFIX} --prefer-shared
+    PYTHONPATH=${PREFIX}/lib/python3.5/site-packages:/usr/local/lib/python3.5/dist-packages:${PYTHONPATH} LD_LIBRARY_PATH=${PREFIX}/lib python3 setup.py test
 fi
