@@ -15,8 +15,12 @@ class UniProtDataSourceBase(object):
     GRAPH = {}
     UNIPROT = Namespace("http://purl.uniprot.org/core/")
 
-    def __init__(self):
-        pass
+    def __init__(self, url=None, cache=True):
+        self.url = url
+        self.cache = cache
+
+        if self.url is not None:
+            self.graph = self.fetch(self.url, self.cache)
 
     def fetch(self, url, cache=False):
         if not cache or url not in self.GRAPH.keys():
@@ -44,12 +48,13 @@ class UniProtTaxonDataSource(UniProtDataSourceBase):
     URL = "http://www.uniprot.org/taxonomy/{entry_id}.rdf"
 
     def __init__(self, entry_id=None, cache=True):
-        self.entry_id = entry_id
-        self.cache = cache
-
-        if self.entry_id is not None:
-            url = self.URL.format(entry_id=self.entry_id)
-            self.graph = self.fetch(url, self.cache)
+        if entry_id is not None:
+            UniProtDataSourceBase.__init__(
+                self, self.URL.format(entry_id=entry_id), cache)
+            self.entry_id = entry_id
+        else:
+            UniProtDataSourceBase.__init__(self, None, cache)
+            self.entry_id = None
 
     def scientific_name(self):
         return [str(obj) for obj in self.graph.objects(predicate=self.UNIPROT.scientificName)]
@@ -59,12 +64,13 @@ class UniProtDataSource(UniProtDataSourceBase):
     URL = "http://www.uniprot.org/uniprot/{entry_id}.rdf"
 
     def __init__(self, entry_id=None, cache=True):
-        self.entry_id = entry_id
-        self.cache = cache
-
-        if self.entry_id is not None:
-            url = self.URL.format(entry_id=self.entry_id)
-            self.graph = self.fetch(url, self.cache)
+        if entry_id is not None:
+            UniProtDataSourceBase.__init__(
+                self, self.URL.format(entry_id=entry_id), cache)
+            self.entry_id = entry_id
+        else:
+            UniProtDataSourceBase.__init__(self, None, cache)
+            self.entry_id = None
 
     def gene(self):
         return [str(obj) for obj in self.objects(self.UNIPROT.Gene, SKOS.prefLabel)]
@@ -86,15 +92,7 @@ class UniProtDataSource(UniProtDataSourceBase):
         return retval
 
     def structure_resource(self):
-        retval = []
-        for sub in self.graph.subjects(predicate=RDF.type, object=self.UNIPROT.Structure_Resource):
-            # mobj = re.match("http:\/\/rdf\.wwpdb\.org\/pdb\/([0-9A-Za-z]+)", str(sub))
-            # if mobj is None:
-            #     continue
-            # pdb_id = mobj.group(1).upper()
-            # retval.append(pdb_id)
-            retval.append(str(sub))
-        return retval
+        return [str(sub) for sub in self.graph.subjects(predicate=RDF.type, object=self.UNIPROT.Structure_Resource)]
 
     def pdb(self):
         retval = []
