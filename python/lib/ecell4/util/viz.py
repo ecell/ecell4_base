@@ -1555,3 +1555,7 @@ def plot_movie_of_trajectory_with_matplotlib(
     display(HTML(anim_to_html(ani, output, fps=1.0 / interval)))
 
 plot_movie_of_trajectory = plot_movie_of_trajectory_with_matplotlib  # default
+
+def display_pdb(entry_id, width=500, height=500):
+    from IPython.display import display, IFrame
+    display(IFrame("http://gjbekker.github.io/molmil/#molmil.loadPDB('{}');".format(entry_id), width, height))
