@@ -102,4 +102,4 @@ if __name__ == "__main__":
     ACCESSKEY = "YOUR_ACCESSKEY"
     interactions = biogridDataSource(ACCESSKEY).interactions(["MDM2"], [9606])
     interactor = biogridDataSource(ACCESSKEY).interactor(["MDM2"])
-    print interactor.keys()
+    print(interactor.keys())

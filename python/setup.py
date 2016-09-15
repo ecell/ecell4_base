@@ -162,7 +162,7 @@ setup(
                   ('ecell4ipynb/Tests', glob.glob('../ipynb/Tests/*.ipynb')),
                   ('ecell4ipynb/Sandbox', glob.glob('../ipynb/Sandbox/*.ipynb')),
                   ],
-    packages = ["ecell4", "ecell4.util", "ecell4.extra"],
+    packages = ["ecell4", "ecell4.util", "ecell4.extra", "ecell4.datasource"],
     cmdclass = {'build_ext': build_ext, 'test': run_tests},
     ext_modules = ext_modules
     )

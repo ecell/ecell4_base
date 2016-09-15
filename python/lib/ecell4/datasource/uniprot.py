@@ -9,6 +9,8 @@ from rdflib import Graph, Namespace
 from rdflib.namespace import RDF, RDFS, SKOS
 from rdflib.term import URIRef
 
+import ecell4.datasource.pdb
+
 
 class UniProtDataSourceBase(object):
 
@@ -97,13 +99,14 @@ class UniProtDataSource(UniProtDataSourceBase):
     def pdb(self):
         retval = []
         for sub in self.graph.subjects(predicate=RDF.type, object=self.UNIPROT.Structure_Resource):
-            mobj = re.match("http:\/\/rdf\.wwpdb\.org\/pdb\/([0-9A-Za-z]+)", str(sub))
-            if mobj is None:
-                continue
+            # mobj = re.match("http:\/\/rdf\.wwpdb\.org\/pdb\/([0-9A-Za-z]+)", str(sub))
+            # if mobj is None:
+            #     continue
             if URIRef("http://purl.uniprot.org/database/PDB") not in self.graph.objects(subject=sub, predicate=self.UNIPROT.database):
                 continue
-            pdb_id = mobj.group(1).upper()
-            retval.append(pdb_id)
+            # pdb_id = mobj.group(1).upper()
+            # retval.append(pdb_id)
+            retval.extend(ecell4.datasource.pdb.PDBDataSource(url=str(sub)).identifier())
         return retval
 
 

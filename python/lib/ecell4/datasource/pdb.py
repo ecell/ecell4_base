@@ -37,14 +37,15 @@ class PDBDataSource(PDBDataSourceBase):
 
     URL = "http://rdf.wwpdb.org/pdb/{entry_id}"
 
-    def __init__(self, entry_id=None, cache=True):
-        if entry_id is not None:
+    def __init__(self, entry_id=None, url=None, cache=True):
+        if url is not None:
+            PDBDataSourceBase.__init__(
+                self, url, cache)
+        elif entry_id is not None:
             PDBDataSourceBase.__init__(
                 self, self.URL.format(entry_id=entry_id), cache)
-            self.entry_id = entry_id
         else:
             PDBDataSourceBase.__init__(self, None, cache)
-            self.entry_id = None
 
     def identifier(self):
         return [str(obj) for obj in self.graph.objects(predicate=DCTERMS.identifier)]
