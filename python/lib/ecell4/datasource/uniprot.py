@@ -9,13 +9,16 @@ from rdflib import Graph, Namespace
 from rdflib.namespace import RDF, RDFS, SKOS
 from rdflib.term import URIRef
 
-import ecell4.datasource.pdb
-
+try:
+    from . import pdb
+except SystemError:
+    import pdb
 
 class UniProtDataSourceBase(object):
 
     GRAPH = {}
     UNIPROT = Namespace("http://purl.uniprot.org/core/")
+    UPDB = Namespace("http://purl.uniprot.org/database/")
 
     def __init__(self, url=None, cache=True):
         self.url = url
@@ -41,9 +44,19 @@ class UniProtDataSourceBase(object):
         return graph
 
     def objects(self, uri, pred):
-        for sub in self.graph.subjects(predicate=RDF.type, object=uri):
-            for obj in self.graph.objects(subject=sub, predicate=pred):
-                yield obj
+        # for sub in self.graph.subjects(predicate=RDF.type, object=uri):
+        #     for obj in self.graph.objects(subject=sub, predicate=pred):
+        #         yield obj
+        qres = self.graph.query(
+            """select ?obj where
+            {{
+            ?s
+            rdf:type <{:s}>;
+            <{:s}> ?obj.
+            }}
+            """.format(uri, pred))
+        for row in qres:
+            yield row[0]
 
 class UniProtTaxonDataSource(UniProtDataSourceBase):
 
@@ -99,15 +112,20 @@ class UniProtDataSource(UniProtDataSourceBase):
     def pdb(self):
         retval = []
         for sub in self.graph.subjects(predicate=RDF.type, object=self.UNIPROT.Structure_Resource):
+            if URIRef("http://purl.uniprot.org/database/PDB") not in self.graph.objects(subject=sub, predicate=self.UNIPROT.database):
+                continue
             # mobj = re.match("http:\/\/rdf\.wwpdb\.org\/pdb\/([0-9A-Za-z]+)", str(sub))
             # if mobj is None:
             #     continue
-            if URIRef("http://purl.uniprot.org/database/PDB") not in self.graph.objects(subject=sub, predicate=self.UNIPROT.database):
-                continue
             # pdb_id = mobj.group(1).upper()
-            # retval.append(pdb_id)
-            retval.extend(ecell4.datasource.pdb.PDBDataSource(url=str(sub)).identifier())
+            retval.extend(pdb.PDBDataSource(url=str(sub)).identifier())
         return retval
+
+    def database(self, dbname):
+        return [str(sub) for sub in self.graph.subjects(predicate=self.UNIPROT.database, object=self.UPDB[dbname])]
+
+    def biogrid(self):
+        return self.database("BioGrid")
 
 
 if __name__ == "__main__":
@@ -117,3 +135,5 @@ if __name__ == "__main__":
     print(UniProtDataSource("P0AEZ3").organism()[0])
     print(UniProtDataSource("P0AEZ3").structure_resource())
     print(UniProtDataSource("P0AEZ3").pdb())
+    print(UniProtDataSource("P0AEZ3").biogrid())
+    print(UniProtDataSource("P0AEZ3").database("IntAct"))

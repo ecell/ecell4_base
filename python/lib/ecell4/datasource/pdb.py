@@ -29,9 +29,19 @@ class PDBDataSourceBase(object):
         return graph
 
     def objects(self, uri, pred):
-        for sub in self.graph.subjects(predicate=RDF.type, object=uri):
-            for obj in self.graph.objects(subject=sub, predicate=pred):
-                yield obj
+        # for sub in self.graph.subjects(predicate=RDF.type, object=uri):
+        #     for obj in self.graph.objects(subject=sub, predicate=pred):
+        #         yield obj
+        qres = self.graph.query(
+            """select ?obj where
+            {{
+            ?s
+            rdf:type <{:s}>;
+            <{:s}> ?obj.
+            }}
+            """.format(uri, pred))
+        for row in qres:
+            yield row[0]
 
 class PDBDataSource(PDBDataSourceBase):
 
