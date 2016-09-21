@@ -1,3 +1,6 @@
+from rdflib.namespace import RDF
+from rdflib import Namespace
+
 try:
     from . import rdf
 except SystemError:
@@ -6,6 +9,7 @@ except SystemError:
 
 class PSICQUICDataSource(rdf.RDFDataSourceBase):
 
+    BIOPAX = Namespace("http://www.biopax.org/release/biopax-level3.owl#")
     URL = "http://www.ebi.ac.uk/Tools/webservices/psicquic/intact/webservices/current/search/interactor/{entry_id}?format=rdf-xml"
 
     def __init__(self, entry_id=None, url=None, cache=True):
@@ -19,26 +23,16 @@ class PSICQUICDataSource(rdf.RDFDataSourceBase):
             rdf.RDFDataSourceBase.__init__(self, None, cache)
 
     def protein(self):
-        qres =  self.query(
-             """prefix biopax: <http://www.biopax.org/release/biopax-level3.owl#>
-             select ?s where {{ ?s rdf:type biopax:ProteinReference . }}
-             """)
-        return [str(row[0]) for row in qres]
+        return [str(sub) for sub in self.graph.subjects(RDF.type, self.BIOPAX.ProteinReference)]
 
     def small_molecule(self):
-        qres =  self.query(
-             """prefix biopax: <http://www.biopax.org/release/biopax-level3.owl#>
-             select ?s where {{ ?s rdf:type biopax:SmallMoleculeReference . }}
-             """)
-        return [str(row[0]) for row in qres]
+        return [str(sub) for sub in self.graph.subjects(RDF.type, self.BIOPAX.SmallMoleculeReference)]
+
+    def interactor(self):
+        return self.protein() + self.small_molecule()
 
     def interaction(self):
-        qres =  self.query(
-             """prefix biopax: <http://www.biopax.org/release/biopax-level3.owl#>
-             select ?s where {{ ?s rdf:type biopax:MolecularInteraction . }}
-             """)
-        return [str(row[0]) for row in qres]
-
+        return [str(sub) for sub in self.graph.subjects(RDF.type, self.BIOPAX.MolecularInteraction)]
 
 
 if __name__ == "__main__":

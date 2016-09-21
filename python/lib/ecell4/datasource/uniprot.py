@@ -1,75 +1,38 @@
 import re
 
-# try:
-#     from urllib2 import Request, urlopen
-# except ImportError:
-#     from urllib.request import Request, urlopen
-
-from rdflib import Graph, Namespace
+from rdflib import Namespace
 from rdflib.namespace import RDF, RDFS, SKOS
 from rdflib.term import URIRef
 
 try:
+    from . import rdf
     from . import pdb
 except SystemError:
+    import rdf
     import pdb
 
-class UniProtDataSourceBase(object):
+class UniProtDataSourceBase(rdf.RDFDataSourceBase):
 
     GRAPH = {}
     UNIPROT = Namespace("http://purl.uniprot.org/core/")
     UPDB = Namespace("http://purl.uniprot.org/database/")
 
     def __init__(self, url=None, cache=True):
-        self.url = url
-        self.cache = cache
-
-        if self.url is not None:
-            self.graph = self.fetch(self.url, self.cache)
-
-    def fetch(self, url, cache=False):
-        if not cache or url not in self.GRAPH.keys():
-            # req = Request(url)
-            # response = urlopen(req)
-            # rdf = response.read().decode('utf-8')
-            graph = Graph()
-            graph.parse(url)
-
-            if cache:
-                self.GRAPH[url] = graph
-        else:
-            graph = self.GRAPH[url]
-        # for s, p, o in graph:
-        #     print(repr(s), repr(p), repr(o))
-        return graph
-
-    def objects(self, uri, pred):
-        # for sub in self.graph.subjects(predicate=RDF.type, object=uri):
-        #     for obj in self.graph.objects(subject=sub, predicate=pred):
-        #         yield obj
-        qres = self.graph.query(
-            """select ?obj where
-            {{
-            ?s
-            rdf:type <{:s}>;
-            <{:s}> ?obj.
-            }}
-            """.format(uri, pred))
-        for row in qres:
-            yield row[0]
+        rdf.RDFDataSourceBase.__init__(self, url, cache)
 
 class UniProtTaxonDataSource(UniProtDataSourceBase):
 
     URL = "http://www.uniprot.org/taxonomy/{entry_id}.rdf"
 
-    def __init__(self, entry_id=None, cache=True):
-        if entry_id is not None:
+    def __init__(self, entry_id=None, url=None, cache=True):
+        if url is not None:
+            UniProtDataSourceBase.__init__(
+                self, url, cache)
+        elif entry_id is not None:
             UniProtDataSourceBase.__init__(
                 self, self.URL.format(entry_id=entry_id), cache)
-            self.entry_id = entry_id
         else:
             UniProtDataSourceBase.__init__(self, None, cache)
-            self.entry_id = None
 
     def scientific_name(self):
         return [str(obj) for obj in self.graph.objects(predicate=self.UNIPROT.scientificName)]
@@ -78,14 +41,15 @@ class UniProtDataSource(UniProtDataSourceBase):
 
     URL = "http://www.uniprot.org/uniprot/{entry_id}.rdf"
 
-    def __init__(self, entry_id=None, cache=True):
-        if entry_id is not None:
+    def __init__(self, entry_id=None, url=None, cache=True):
+        if url is not None:
+            UniProtDataSourceBase.__init__(
+                self, url, cache)
+        elif entry_id is not None:
             UniProtDataSourceBase.__init__(
                 self, self.URL.format(entry_id=entry_id), cache)
-            self.entry_id = entry_id
         else:
             UniProtDataSourceBase.__init__(self, None, cache)
-            self.entry_id = None
 
     def gene(self):
         return [str(obj) for obj in self.objects(self.UNIPROT.Gene, SKOS.prefLabel)]
@@ -102,8 +66,9 @@ class UniProtDataSource(UniProtDataSourceBase):
             mobj = re.match("http:\/\/purl\.uniprot\.org\/taxonomy\/([0-9]+)", str(obj1))
             if mobj is None:
                 continue
-            taxon_id = mobj.group(1)
-            retval.extend(UniProtTaxonDataSource(taxon_id).scientific_name())
+            # taxon_id = mobj.group(1)
+            # retval.extend(UniProtTaxonDataSource(taxon_id).scientific_name())
+            retval.extend(UniProtTaxonDataSource(url=str(obj1)).scientific_name())
         return retval
 
     def structure_resource(self):
