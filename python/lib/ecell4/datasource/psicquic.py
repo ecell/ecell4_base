@@ -62,10 +62,17 @@ class PSICQUICDataSource(rdf.RDFDataSourceBase):
             return
 
         self.url = "{:s}interactor/{:s}?format=rdf-xml".format(self.ACTIVE_SERVICES[service_name], self.entry_id)
+
+        if self.cache and self.url in self.GRAPH.keys():
+            self.graph = self.fetch(self.url, self.cache)
+            return
+
         cnt = int(read_url("{:s}interactor/{:s}?format=count".format(self.ACTIVE_SERVICES[service_name], self.entry_id)))
         # print(service_name, self.url, cnt)
 
         if cnt == 0:
+            if self.cache:
+                self.GRAPH[self.url] = None
             self.graph = None
         else:
             try:
@@ -82,6 +89,8 @@ class PSICQUICDataSource(rdf.RDFDataSourceBase):
                         msg = "HTTP Error {:d}: Not an error. Request is OK".format(e.code)
                     else:
                         msg = e.reason()
+                    if self.cache:
+                        self.GRAPH[self.url] = None
                     self.graph = None
                     # print(msg)
                 else:
@@ -98,24 +107,26 @@ class PSICQUICDataSource(rdf.RDFDataSourceBase):
         return retval
 
     def protein(self):
-        return self.subjects("ProteinReference")
+        return tuple(set(self.subjects("ProteinReference")))
 
     def small_molecule(self):
-        return self.subjects("SmallMoleculeReference")
+        return tuple(set(self.subjects("SmallMoleculeReference")))
 
     def interactor(self):
-        return self.protein() + self.small_molecule()
+        return tuple(set(self.protein() + self.small_molecule()))
 
     def interaction(self):
-        return self.subjects("MolecularInteraction")
+        return tuple(set(self.subjects("MolecularInteraction")))
 
 
 if __name__ == "__main__":
     print(get_active_services())
 
-    res = PSICQUICDataSource("P0AEZ3", services="IntAct").protein()
+    # services = None
+    services = "IntAct"
+    res = PSICQUICDataSource("P0AEZ3", services=services).protein()
     print(res, len(res))
-    res = PSICQUICDataSource("P0AEZ3", services="IntAct").small_molecule()
+    res = PSICQUICDataSource("P0AEZ3", services=services).small_molecule()
     print(res, len(res))
-    res = PSICQUICDataSource("P0AEZ3", services="IntAct").interaction()
+    res = PSICQUICDataSource("P0AEZ3", services=services).interaction()
     print(res, len(res))
