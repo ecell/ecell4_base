@@ -57,6 +57,11 @@ class PSICQUICDataSource(rdf.RDFDataSourceBase):
             self.services = [
                 name for name in services if name in self.ACTIVE_SERVICES.keys()]
 
+    def count(self, service_name):
+        if service_name not in self.ACTIVE_SERVICES.keys():
+            return None  #XXX: Error?
+        return int(read_url("{:s}interactor/{:s}?format=count".format(self.ACTIVE_SERVICES[service_name], self.entry_id)))
+
     def set_graph(self, service_name):
         if self.entry_id is None:
             return
@@ -67,7 +72,7 @@ class PSICQUICDataSource(rdf.RDFDataSourceBase):
             self.graph = self.fetch(self.url, self.cache)
             return
 
-        cnt = int(read_url("{:s}interactor/{:s}?format=count".format(self.ACTIVE_SERVICES[service_name], self.entry_id)))
+        cnt = self.count(service_name)
         # print(service_name, self.url, cnt)
 
         if cnt == 0:
