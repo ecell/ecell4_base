@@ -100,7 +100,7 @@ Polygon<coordT>::apply_reflection(
                 const std::pair<bool, coordinate_type> dist =
                     is_pierce(begin, end, faces.at(*iter));
                 if(dist.first)
-                    pierce.push_back(std::make_pair(*iter, length(dist.second)));
+                    pierce.push_back(std::make_pair(*iter, length(dist.second - begin)));
             }
             if(pierce.empty()) break; // particle goes through no faces. return.
 
