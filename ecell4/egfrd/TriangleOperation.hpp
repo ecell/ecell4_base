@@ -197,38 +197,41 @@ is_pierce(const coordT& begin, const coordT& end,
     typedef typename value_type_helper<coordT>::type valueT;
     // this implementation is from Real-Time Collision Detection by Christer Ericson,
     // published by Morgan Kaufmann Publishers, (c) 2005 Elsevier Inc.
-    const coordT line = end - begin;
-//     std::cerr << "line = " << line << std::endl;
-    const coordT pa   = vertices[0] - begin;
-//     std::cerr << "pa = " << pa << std::endl;
-    const coordT pb   = vertices[1] - begin;
-//     std::cerr << "pb = " << pb << std::endl;
-    const coordT pc   = vertices[2] - begin;
-//     std::cerr << "pc = " << pc << std::endl;
-    const valueT u = dot_product(line, cross_product(pc, pb));
-//     std::cerr << u << std::endl;
-    if(u < 0.) return std::make_pair(false, coordT(0.,0.,0.));
-    const valueT v = dot_product(line, cross_product(pa, pc));
-//     std::cerr << v << std::endl;
-    if(v < 0.) return std::make_pair(false, coordT(0.,0.,0.));
-    const valueT w = dot_product(line, cross_product(pb, pa));
-//     std::cerr << w << std::endl;
-    if(w < 0.) return std::make_pair(false, coordT(0.,0.,0.));
-    const valueT denom = 1.0 / (u + v + w);
-    boost::array<valueT, 3> bary;
-    bary[0] = u * denom;
-    bary[1] = v * denom;
-    bary[2] = w * denom;
-    const coordT intersect = barycentric_to_absolute(bary, vertices);
-//     std::cerr << "int = " << intersect << std::endl;
-//     std::cerr << "intersect - begin = " << intersect - begin << std::endl;
-    const valueT len_l = length(line);
-    const valueT len_p = length(intersect - begin);
-//     std::cerr << "len_l " << len_l << std::endl;
-//     std::cerr << "len_p " << len_p << std::endl;
-    const bool is_intersect = (len_l > len_p) && (dot_product(line, intersect - begin) > 0);
+    // pp.190-194
 
-    return std::make_pair(is_intersect, intersect);
+    const coordT line = begin - end;
+    const coordT ab = vertices[1] - vertices[0];
+    const coordT ac = vertices[2] - vertices[0];
+    const coordT normal = cross_product(ab, ac);
+
+    const valueT d = dot_product(line, normal);
+    if(d < 0.0)
+        return std::make_pair(false, coordT(0.,0.,0.));
+
+    const coordT ap = begin - vertices[0];
+    const valueT t = dot_product(ap, normal);
+    if(t < 0.0 || d < t)
+        return std::make_pair(false, coordT(0.,0.,0.));
+
+    const coordT e = cross_product(line, ap);
+    valueT v = dot_product(ac, e);
+    if(v < 0. || d < v)
+        return std::make_pair(false, coordT(0.,0.,0.));
+    valueT w = -1.0 * dot_product(ab, e);
+    if(w < 0. || d < v + w)
+        return std::make_pair(false, coordT(0.,0.,0.));
+
+    valueT ood = 1. / d;
+    v *= ood;
+    w *= ood;
+    const valueT u = 1. - v - w;
+    boost::array<valueT, 3> bary;
+    bary[0] = u;
+    bary[1] = v;
+    bary[2] = w;
+    const coordT intersect = barycentric_to_absolute(bary, vertices);
+
+    return std::make_pair(true, intersect);
 }
 
 #endif /* GFRD_POLYGON_TRIANGLE */
