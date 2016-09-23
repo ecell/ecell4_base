@@ -68,6 +68,9 @@ template<typename coordT>
 boost::array<typename value_type_helper<coordT>::type, 3>
 absolute_to_barycentric(const coordT pos, const boost::array<coordT, 3>& vertices)
 {
+    // this implementation is from Real-Time Collision Detection by Christer Ericson,
+    // published by Morgan Kaufmann Publishers, (c) 2005 Elsevier Inc.
+
     typedef typename value_type_helper<coordT>::type valueT;
     const coordT& a = vertices[0];
     const coordT& b = vertices[1];
@@ -130,6 +133,8 @@ std::pair<typename value_type_helper<coordT>::type, // distance
 distance(const coordT& pos, const boost::array<coordT, 3>& vertices)
 {
     typedef typename value_type_helper<coordT>::type valueT;
+    // this implementation is from Real-Time Collision Detection by Christer Ericson,
+    // published by Morgan Kaufmann Publishers, (c) 2005 Elsevier Inc.
 
     coordT const& a = vertices[0];
     coordT const& b = vertices[1];
@@ -190,6 +195,8 @@ is_pierce(const coordT& begin, const coordT& end,
           const boost::array<coordT, 3>& vertices)
 {
     typedef typename value_type_helper<coordT>::type valueT;
+    // this implementation is from Real-Time Collision Detection by Christer Ericson,
+    // published by Morgan Kaufmann Publishers, (c) 2005 Elsevier Inc.
     const coordT line = end - begin;
 //     std::cerr << "line = " << line << std::endl;
     const coordT pa   = vertices[0] - begin;
