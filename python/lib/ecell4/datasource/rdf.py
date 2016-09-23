@@ -18,12 +18,6 @@ class RDFDataSourceBase(object):
         if not cache or url not in self.GRAPH.keys():
             graph = Graph()
             graph.parse(url, format="xml")
-            # try:
-            #     graph.parse(url, format="xml")
-            # except HTTPError as e:
-            #     if e.code in (500, ):
-            #         return None
-            #     raise e
             if cache:
                 self.GRAPH[url] = graph
         else:
