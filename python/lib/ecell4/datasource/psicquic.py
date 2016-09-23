@@ -218,7 +218,7 @@ def parse_psimitab(content, fmt='tab27'):
         retval.append(dict(zip(columns, tmp)))
     return retval
 
-class PSICQUICTab27DataSource(object):
+class PSICQUICPsimiTabDataSource(object):
 
     DATA = {}
     ACTIVE_SERVICES = dict(get_active_services())
@@ -365,7 +365,7 @@ class PSICQUICTab27DataSource(object):
         return tuple([parse_psimitab_fields(value) for value in self.getvalues('Interaction Identifier(s)')])
 
 # PSICQUICDataSource = PSICQUICRDFDataSource
-PSICQUICDataSource = PSICQUICTab27DataSource
+PSICQUICDataSource = PSICQUICPsimiTabDataSource
 
 
 if __name__ == "__main__":
@@ -374,7 +374,7 @@ if __name__ == "__main__":
     services = None
     # services = "DIP"
     # services = "IntAct"
-    # datasource = PSICQUICTab27DataSource
+    # datasource = PSICQUICPsimiTabDataSource
     # datasource = PSICQUICRDFDataSource
     datasource = PSICQUICDataSource
 
