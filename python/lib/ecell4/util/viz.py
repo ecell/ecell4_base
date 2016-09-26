@@ -1556,6 +1556,10 @@ def plot_movie_of_trajectory_with_matplotlib(
 
 plot_movie_of_trajectory = plot_movie_of_trajectory_with_matplotlib  # default
 
-def display_pdb(entry_id, width=400, height=400):
+def display_pdb(entity, width=400, height=400):
     from IPython.display import display, IFrame
-    display(IFrame("http://gjbekker.github.io/molmil/#molmil.loadPDB('{}');".format(entry_id), width, height))
+    import ecell4.datasource.pdb as pdb
+    entity_id = pdb.PDBDataSource.parse_entity(entity)
+    if entity is None:
+        raise ValueError('An invalid entity [{}] was given.'.format(repr(entity)))
+    display(IFrame("http://gjbekker.github.io/molmil/#molmil.loadPDB('{}');".format(entity_id), width, height))
