@@ -9,11 +9,15 @@ from rdflib.namespace import RDF
 from rdflib import Namespace
 
 import xml.dom.minidom
+import logging
+logger = logging.getLogger(__name__)
 
 try:
     from . import rdf
+    from . import uniprot
 except SystemError:
     import rdf
+    import uniprot
 
 
 def read_url(url):
@@ -46,9 +50,9 @@ class PSICQUICRDFDataSource(rdf.RDFDataSourceBase):
 
     ACTIVE_SERVICES = dict(get_active_services())
 
-    def __init__(self, entry_id=None, cache=True, services=None):
+    def __init__(self, entity_id=None, cache=True, services=None):
         rdf.RDFDataSourceBase.__init__(self, None, cache)
-        self.entry_id = entry_id
+        self.entity_id = entity_id
 
         if services is None:
             self.services = tuple(self.ACTIVE_SERVICES.keys())
@@ -64,13 +68,13 @@ class PSICQUICRDFDataSource(rdf.RDFDataSourceBase):
     def count(self, service_name):
         if service_name not in self.ACTIVE_SERVICES.keys():
             return None  #XXX: Error?
-        return int(read_url("{:s}interactor/{:s}?format=count".format(self.ACTIVE_SERVICES[service_name], self.entry_id)))
+        return int(read_url("{:s}interactor/{:s}?format=count".format(self.ACTIVE_SERVICES[service_name], self.entity_id)))
 
     def set_graph(self, service_name):
-        if self.entry_id is None:
+        if self.entity_id is None:
             return
 
-        self.url = "{:s}interactor/{:s}?format=rdf-xml".format(self.ACTIVE_SERVICES[service_name], self.entry_id)
+        self.url = "{:s}interactor/{:s}?format=rdf-xml".format(self.ACTIVE_SERVICES[service_name], self.entity_id)
 
         if self.cache and self.url in self.GRAPH.keys():
             self.graph = self.fetch(self.url, self.cache)
@@ -116,7 +120,7 @@ class PSICQUICRDFDataSource(rdf.RDFDataSourceBase):
         return retval
 
     def proteins(self):
-        return tuple(set(self.subjects("ProteinReference")))  #XXX: The return value includes entry_id itself.
+        return tuple(set(self.subjects("ProteinReference")))  #XXX: The return value includes entity_id itself.
 
     def small_molecules(self):
         return tuple(set(self.subjects("SmallMoleculeReference")))
@@ -140,6 +144,9 @@ class PSICQUICRDFDataSource(rdf.RDFDataSourceBase):
         return tuple(set(self.subjects("MolecularInteraction")))
 
 def parse_psimitab_fields(column):
+    if column is None or column == '-':
+        return []
+
     # print(column)
     elem = r"(?P<{0}_quote>\")?(?P<{0}>(?({0}_quote)([^\"]|((?<=\\)\"))|([^()\"|\t:]|((?<=\\)\")))*)(?({0}_quote)\")"
     rexp = re.compile(r"({}\:{}(\({}\))?)([|]|$)".format(
@@ -223,9 +230,9 @@ class PSICQUICPsimiTabDataSource(object):
     DATA = {}
     ACTIVE_SERVICES = dict(get_active_services())
 
-    def __init__(self, entry_id=None, cache=True, services=None):
+    def __init__(self, entity=None, cache=True, services=None):
         self.fmt = 'tab25'
-        self.entry_id = entry_id
+        self.entity_id = self.parse_entity(entity)
         self.cache = cache
 
         if services is None:
@@ -239,23 +246,27 @@ class PSICQUICPsimiTabDataSource(object):
             self.services = [
                 name for name in services if name in self.ACTIVE_SERVICES.keys()]
 
+    @classmethod
+    def parse_entity(cls, entity):
+        return uniprot.UniProtDataSource.parse_entity(entity)
+
     def count(self, service_name):
         if service_name not in self.ACTIVE_SERVICES.keys():
             return None  #XXX: Error?
-        return int(read_url("{:s}interactor/{:s}?format=count".format(self.ACTIVE_SERVICES[service_name], self.entry_id)))
+        return int(read_url("{:s}interactor/{:s}?format=count".format(self.ACTIVE_SERVICES[service_name], self.entity_id)))
 
     def set_data(self, service_name):
-        if self.entry_id is None:
+        if self.entity_id is None:
             return
 
-        self.url = "{:s}interactor/{:s}?format={:s}".format(self.ACTIVE_SERVICES[service_name], self.entry_id, self.fmt)
+        self.url = "{:s}interactor/{:s}?format={:s}".format(self.ACTIVE_SERVICES[service_name], self.entity_id, self.fmt)
 
         if self.cache and self.url in self.DATA.keys():
             self.data = self.fetch(self.url, self.cache)
             return
 
         cnt = self.count(service_name)
-        print(service_name, self.url, cnt)
+        logger.info("{} <{}> contains {} interactions.".format(service_name, self.url, cnt))
 
         if cnt == 0:
             if self.cache:
@@ -279,14 +290,15 @@ class PSICQUICPsimiTabDataSource(object):
                     if self.cache:
                         self.DATA[self.url] = None
                     self.data = None
+                    logger.warning("{} returns {}.".format(service_name, msg))
                     # print(msg)
                 else:
                     raise e
 
         if self.data is not None:
-            print('<{}> provides {} entries.'.format(self.url, len(self.data)))
+            logger.debug('{} provides {} interactions.'.format(service_name, len(self.data)))
         else:
-            print('<{}> provides no entry.'.format(self.url))
+            logger.debug('{} provides no interaction.')
 
     def fetch(self, url, cache=False):
         if not cache or url not in self.DATA.keys():
@@ -315,51 +327,22 @@ class PSICQUICPsimiTabDataSource(object):
             if key in data.keys():
                 yield data[key]
 
-    # def proteins(self):
-    #     retval = []
-    #     for data in self.getiter():
-    #         value = data.get('Unique identifier for interactor A')
-    #         if value == 'uniprotkb:' + self.entry_id:
-    #             value = data.get('Unique identifier for interactor B')
-    #         if value is None:
-    #             continue
-    #         fields = parse_psimitab_fields(value)
-    #         assert len(fields) == 1
-    #         if fields[0]['xref'] == 'uniprotkb':
-    #             retval.append(fields[0]['value'])
-    #     return tuple(set(retval))
-
-    # def small_molecules(self):
-    #     retval = []
-    #     for data in self.getiter():
-    #         value = data.get('Unique identifier for interactor A')
-    #         if value == 'uniprotkb:' + self.entry_id:
-    #             value = data.get('Unique identifier for interactor B')
-    #         if value is None:
-    #             continue
-    #         fields = parse_psimitab_fields(value)
-    #         assert len(fields) == 1
-    #         if fields[0]['xref'] == 'chebi':
-    #             retval.append(fields[0]['value'])
-    #     return tuple(set(retval))
-
     def interactors(self):
-        tmp = []
-        for data in self.getiter():
-            value = data.get('Unique identifier for interactor A')
-            if value == 'uniprotkb:' + self.entry_id:  #XXX: this might be not enough.
-                value = data.get('Unique identifier for interactor B')
-            if value is None:
-                continue
-            tmp.append(value)
-        tmp = set(tmp)
-
         retval = []
-        for value in tmp:
-            fields = parse_psimitab_fields(value)
-            assert len(fields) == 1
+        for data in self.getiter():
+            fields = [field['value'] for field in parse_psimitab_fields(data.get('Unique identifier for interactor A')) if field['xref'] == 'uniprotkb']
+            if len(fields) != 1:
+                fields = [field['value'] for field in parse_psimitab_fields(data.get('Alternative identifier for interacor A')) if field['xref'] == 'uniprotkb']
+                if len(fields) != 1:
+                    continue
+            if fields[0] == self.entity_id:
+                fields = [field['value'] for field in parse_psimitab_fields(data.get('Unique identifier for interactor B')) if field['xref'] == 'uniprotkb']
+                if len(fields) != 1:
+                    fields = [field['value'] for field in parse_psimitab_fields(data.get('Alternative identifier for interacor B')) if field['xref'] == 'uniprotkb']
+                    if len(fields) != 1:
+                        continue
             retval.append(fields[0])
-        return retval
+        return tuple(set(retval))
 
     def interactions(self):
         return tuple([parse_psimitab_fields(value) for value in self.getvalues('Interaction Identifier(s)')])
@@ -384,8 +367,8 @@ if __name__ == "__main__":
     # print(res, len(res))
     res = datasource("P0AEZ3", services=services).interactors()
     print(res, len(res))
-    res = datasource("P0AEZ3", services=services).interactions()
-    print(res, len(res))
+    # res = datasource("P0AEZ3", services=services).interactions()
+    # print(res, len(res))
 
     # print(parse_psimitab_column('psi-mi:"MI:0000"(a cv term)'))
     # print(parse_psimitab_column('psi-mi:"MI:0000"("I can now use braces ()()() or pipes ||| here and ::colons::")'))
