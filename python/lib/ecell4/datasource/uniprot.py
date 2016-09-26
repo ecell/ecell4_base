@@ -16,6 +16,10 @@ def description(entity):
     desc = []
     if entity_id is not None:
         src = UniProtDataSource(entity_id)
+        if src.obsolete():
+            desc.append("UniProtKB - {} (This entry is obsolete)".format(entity_id))
+            desc.append("URL: {}".format(UniProtDataSource.link(entity)))
+            return desc
         desc.append("UniProtKB - {} ({})".format(entity_id, ', '.join(src.mnemonic())))
         desc.append("Protein: {}".format(', '.join(src.structured_name())))
         desc.append("Gene: {}".format(', '.join(src.gene())))
@@ -98,6 +102,9 @@ class UniProtDataSource(UniProtDataSourceBase):
 
     def mnemonic(self):
         return [str(obj) for obj in self.graph.objects(predicate=self.UNIPROT.mnemonic)]  #XXX: Specify its subject
+
+    def obsolete(self):
+        return any(self.graph.objects(predicate=self.UNIPROT.obsolete))  #XXX: Specify its subject
 
     def gene(self):
         return [str(obj) for obj in self.objects(self.UNIPROT.Gene, SKOS.prefLabel)]
