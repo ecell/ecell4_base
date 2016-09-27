@@ -1,6 +1,5 @@
 #ifndef GFRD_POLYGON_FACE_TRIANGLE
 #define GFRD_POLYGON_FACE_TRIANGLE
-#include "TriangleOperation.hpp"
 #include "ParametricPosition.hpp"
 #include <boost/array.hpp>
 
