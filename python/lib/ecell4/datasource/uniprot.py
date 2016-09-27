@@ -11,36 +11,38 @@ except SystemError:
     import rdf
     import pdb
 
-def description(entity):
-    desc = []
 
+def description(entity):
     entity_id = UniProtDataSource.parse_entity(entity)
     if entity_id is not None:
+        entry = []
         src = UniProtDataSource(entity_id)
         if src.obsolete():
-            desc.append("UniProtKB - {} (This entry is obsolete)".format(entity_id))
-            desc.append("URL: {}".format(UniProtDataSource.link(entity)))
-            return desc
-        desc.append("UniProtKB - {} ({})".format(entity_id, ', '.join(src.mnemonic())))
-        desc.append("Protein: {}".format(', '.join(src.structured_name())))
-        desc.append("Gene: {}".format(', '.join(src.gene())))
-        desc.append("Organism: {}".format(', '.join(src.organism())))
-        desc.append("Function: {}".format(', '.join(src.function_annotation())))
-        desc.append("URL: {}".format(UniProtDataSource.link(entity)))
-        return desc
+            entry.append(('UniProtKB', '{} (This entry is obsolete)'.format(entity_id), ' - '))
+            entry.append(('URL', UniProtDataSource.link(entity)))
+            return [entry]
+        entry.append(('UniProtKB', '{} ({})'.format(entity_id, ', '.join(src.mnemonic())), ' - '))
+        entry.append(('Protein', ', '.join(src.structured_name())))
+        entry.append(('Gene', ', '.join(src.gene())))
+        entry.append(('Organism', ', '.join(src.organism())))
+        entry.append(('Function', ', '.join(src.function_annotation())))
+        entry.append(('URL', UniProtDataSource.link(entity)))
+        return [entry]
 
     entity_id = UniProtLocationDataSource.parse_entity(entity)
     if entity_id is not None:
+        entry = []
         src = UniProtLocationDataSource(entity_id)
-        desc.append("UniProtKB - {} ({})".format(', '.join(src.pref_label()), src.get_type()))
-        desc.append("Definition: {}".format(', '.join(src.comment())))
-        desc.append("Synonyms: {}".format(', '.join(src.alt_label())))
-        desc.append("PartOf: {}".format(', '.join(src.part_of())))
-        desc.append("GO: {}".format(', '.join(src.go())))
-        desc.append("URL: {}".format(UniProtLocationDataSource.link(entity)))
-        return desc
+        entry.append(('UniProtKB', '{} ({})'.format(', '.join(src.pref_label()), src.get_type()), ' - '))
 
-    return desc
+        entry.append(('Definition', ', '.join(src.comment())))
+        entry.append(('Synonyms', ', '.join(src.alt_label())))
+        entry.append(('PartOf', ', '.join(src.part_of())))
+        entry.append(('GO', ', '.join(src.go())))
+        entry.append(('URL', UniProtLocationDataSource.link(entity)))
+        return [entry]
+
+    return []
 
 def whereis(entity):
     desc = []
@@ -48,16 +50,9 @@ def whereis(entity):
     if entity_id is not None:
         src = UniProtDataSource(entity_id)
         for component, topology in src.subcellular_location():
-            tmp = description(component)
-            if len(tmp) > 0 and len(desc) > 0:
-                desc.append('')
-            desc.extend(tmp)
-            if topology is None:
-                continue
-            tmp = description(topology)
-            if len(tmp) > 0 and len(desc) > 0:
-                desc.append('')
-            desc.extend(tmp)
+            desc.extend(description(component))
+            if topology is not None:
+                desc.extend(description(topology))
     return desc
 
 class UniProtDataSourceBase(rdf.RDFDataSourceBase):

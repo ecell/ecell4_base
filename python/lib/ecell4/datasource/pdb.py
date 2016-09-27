@@ -12,20 +12,21 @@ from rdflib import Graph, Namespace
 
 def description(entity):
     entity_id = PDBDataSource.parse_entity(entity)
-    desc = []
     if entity_id is not None:
+        entry = []
         src = PDBDataSource(entity_id)
-        desc.append("PDB - {}".format(', '.join(src.identifier())))
-        desc.append("Title: {}".format(', '.join(src.title())))
+        entry.append(("PDB", ', '.join(src.identifier()), ' - '))
+        entry.append(("Title", ', '.join(src.title())))
         # desc.append("Protein: {}".format(', '.join(src.structured_name())))
         src_gen = src.src_gen()
         if len(src_gen) > 0:
-            desc.append("Gene: {}".format(src_gen[0]["gene"]))
-            desc.append("Organism: {} {}".format(src_gen[0]["scientific_name"], src_gen[0]["strain"]))
+            entry.append(("Gene", src_gen[0]["gene"]))
+            entry.append(("Organism", "{} {}".format(src_gen[0]["scientific_name"], src_gen[0]["strain"])))
         for url in src.see_also():
-            desc.append("See Also: {}".format(url))
-        desc.append("URL: {}".format(PDBDataSource.link(entity)))
-    return desc
+            entry.append(("See Also", url))
+        entry.append(("URL", PDBDataSource.link(entity)))
+        return [entry]
+    return []
 
 class PDBDataSource(rdf.RDFDataSourceBase):
 
@@ -107,4 +108,4 @@ if __name__ == "__main__":
     print(PDBDataSource("3Q9L").see_also())
     print(PDBDataSource("3Q9L").src_gen())
 
-    print('\n'.join(description("3Q9L")))
+    print(description("3Q9L"))
