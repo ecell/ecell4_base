@@ -92,17 +92,5 @@ BOOST_AUTO_TEST_CASE(closest_point_is_inside_of_triangle_test)
         BOOST_CHECK_CLOSE_FRACTION(closest_position[0], result[0], 1e-12);
         BOOST_CHECK_CLOSE_FRACTION(closest_position[1], result[1], 1e-12);
         BOOST_CHECK_CLOSE_FRACTION(closest_position[2], result[2], 1e-12);
-
-        {
-            std::cout << "center: " << center << std::endl;
-            std::cout << "a     : " << a << std::endl;
-            std::cout << "b     : " << b << std::endl;
-            std::cout << "c     : " << c << std::endl;
-            std::cout << "alpha : " << alpha << std::endl;
-            std::cout << "beta  : " << beta  << std::endl;
-        }
-
-        std::cout << std::endl;
     }
- 
 }
