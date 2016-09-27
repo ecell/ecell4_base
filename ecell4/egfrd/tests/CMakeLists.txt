@@ -1,8 +1,8 @@
 set(TEST_NAMES
-#     is_pierce_test
     barycentric_test
     distance_test
     is_pierce_test
+    test_reflection
 )
 
 set(test_library_dependencies)
