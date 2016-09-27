@@ -174,10 +174,7 @@ is_pierce(const coordT& begin, const coordT& end,
     v *= ood;
     w *= ood;
     const valueT u = 1. - v - w;
-    boost::array<valueT, 3> bary;
-    bary[0] = u;
-    bary[1] = v;
-    bary[2] = w;
+    Barycentric<valueT> bary(u, v, w);
     const coordT intersect = make_absolute(bary, FaceTriangle<coordT>(vertices));
 
     return std::make_pair(true, intersect);
