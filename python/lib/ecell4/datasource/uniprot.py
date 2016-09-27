@@ -115,6 +115,89 @@ class UniProtDataSource(UniProtDataSourceBase):
     def function_annotation(self):
         return [str(obj) for obj in self.objects(self.UNIPROT.Function_Annotation, RDFS.comment)]
 
+    def simple_sequence(self):
+        return [str(obj) for obj in self.objects(self.UNIPROT.Simple_Sequence, RDF.value)]
+
+    def sequence_annotation(self, uri=UniProtDataSourceBase.UNIPROT.Sequence_Annotation):
+        # http://www.uniprot.org/core/
+        # http://www.uniprot.org/help/sequence_annotation
+        qres = rdf.RDFDataSourceBase(str(self.UNIPROT)).query(
+            """prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+            prefix uniprot: <http://purl.uniprot.org/core/>
+            select ?s ?label ?comment ?see_also where
+            {{
+            {{
+            {{
+            ?s
+            rdfs:subClassOf+ <{uri}> ;
+            rdfs:label ?label .
+            }}
+            union
+            {{
+            ?s rdfs:label ?label .
+            filter( ?s = <{uri}> ).
+            }}
+            optional {{ ?s rdfs:comment ?comment }}
+            optional {{ ?s rdfs:seeAlso ?see_also . }}
+            }}
+            }}
+            """.format(uri=str(uri)))
+        names = {}
+        for row in qres:
+            name, label = str(row[0]), str(row[1])
+            value = dict(name=name, label=label)
+            if row[2] is not None:
+                value['comment'] = str(row[2])
+            if row[3] is not None:
+                value['see_also'] = str(row[3])
+            names[name] = value
+
+        qres = self.query("""prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+            prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+            prefix faldo: <http://biohackathon.org/resource/faldo#>
+            prefix uniprot: <http://purl.uniprot.org/core/>
+            select ?type ?begin ?end ?comment where
+            {{
+            ?s
+            rdf:type ?type ;
+            uniprot:range ?range .
+            optional {{ ?s rdfs:comment ?comment }} .
+            filter( ?type in ({}) ) .
+            ?range faldo:begin ?begin_ ; faldo:end ?end_ .
+            ?begin_ faldo:position ?begin .
+            ?end_ faldo:position ?end .
+            }}
+            """.format(', '.join('<{}>'.format(name) for name in names.keys())))
+        retval = []
+        for row in qres:
+            name, begin, end = str(row[0]), int(row[1]), int(row[2])
+            value = dict(begin=begin, end=end, type=names[name])
+            if row[3] is not None:
+                value['comment'] = str(row[3])
+            retval.append(value)
+        return retval
+
+    def molecule_processing(self):
+        return self.sequence_annotation(uri=self.UNIPROT.Molecule_Processing_Annotation)
+
+    def region(self):
+        return self.sequence_annotation(uri=self.UNIPROT.Region_Annotation)
+
+    def site(self):
+        return self.sequence_annotation(uri=self.UNIPROT.Site_Annotation)
+
+    def modification(self):
+        return self.sequence_annotation(uri=self.UNIPROT.Modification_Annotation)
+
+    def natural_variation(self):
+        return self.sequence_annotation(uri=self.UNIPROT.Natural_Variation_Annotation)
+
+    def experimental_information(self):
+        return self.sequence_annotation(uri=self.UNIPROT.Experimental_Information_Annotation)
+
+    def secondary_structure(self):
+        return self.sequence_annotation(uri=self.UNIPROT.Secondary_Structure_Annotation)
+
     def organism(self):
         retval = []
         for obj1 in self.graph.objects(predicate=self.UNIPROT.organism):
@@ -152,9 +235,9 @@ class UniProtDataSource(UniProtDataSourceBase):
 
 
 if __name__ == "__main__":
-    # description("P0AEZ3")
-    description("http://identifiers.org/uniprot/P0AEZ3")
-    # description("http://www.uniprot.org/uniprot/P0AEZ3.rdf")
+    # print(description("P0AEZ3"))
+    print(description("http://identifiers.org/uniprot/P0AEZ3"))
+    # print(description("http://www.uniprot.org/uniprot/P0AEZ3.rdf"))
 
     print(UniProtDataSource("P0AEZ3").gene()[0])
     print(UniProtDataSource("P0AEZ3").locus_name())
@@ -164,3 +247,11 @@ if __name__ == "__main__":
     print(UniProtDataSource("P0AEZ3").pdb())
     print(UniProtDataSource("P0AEZ3").biogrid())
     print(UniProtDataSource("P0AEZ3").database("IntAct"))
+
+    print(UniProtDataSource("P28482").molecule_processing())
+    print(UniProtDataSource("P28482").region())
+    print(UniProtDataSource("P28482").site())
+    print(UniProtDataSource("P28482").modification())
+    print(UniProtDataSource("P28482").natural_variation())
+    print(UniProtDataSource("P28482").experimental_information())
+    print(UniProtDataSource("P28482").secondary_structure())
