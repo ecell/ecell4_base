@@ -177,12 +177,12 @@ std::size_t cross_edge(const ParametricPosition<T>& lhs,
 
 // XXX: NOTE: pos is relative position to the vtxs[0].
 template<typename coordT>
-ParametricPosition<typename value_type_helper<coordT>::type>
+ParametricPosition<typename scalar_type_helper<coordT>::type>
 to_parametric(const coordT& pos, const coordT& a_vec, const coordT& b_vec,
-     const typename value_type_helper<coordT>::type tol = 1e-12)
+     const typename scalar_type_helper<coordT>::type tol = 1e-12)
 {
     typedef circular_iteration<3> triangular;
-    typedef typename value_type_helper<coordT>::type valueT;
+    typedef typename scalar_type_helper<coordT>::type valueT;
 
     // to solve (a * a_vec + b * b_vec == pos), compute determinant of 3 matrices
     boost::array<valueT, 3> determinants;
@@ -219,9 +219,9 @@ to_parametric(const coordT& pos, const coordT& a_vec, const coordT& b_vec,
 }
 
 template<typename coordT>
-ParametricPosition<typename value_type_helper<coordT>::type>
+ParametricPosition<typename scalar_type_helper<coordT>::type>
 to_parametric(const coordT& pos, const boost::array<coordT,3>& vtxs,
-    const typename value_type_helper<coordT>::type tol = 1e-12)
+    const typename scalar_type_helper<coordT>::type tol = 1e-12)
 {
     // make parametric axes
     const coordT a_vec = vtxs[1] - vtxs[0];
@@ -233,7 +233,7 @@ to_parametric(const coordT& pos, const boost::array<coordT,3>& vtxs,
 // return value is relative position to the origin
 template<typename coordT>
 inline coordT
-to_absolute(const ParametricPosition<typename value_type_helper<coordT>::type>& para,
+to_absolute(const ParametricPosition<typename scalar_type_helper<coordT>::type>& para,
             const coordT& a_vec, const coordT& b_vec)
 {
     return a_vec * para.a + b_vec * para.b;
@@ -241,7 +241,7 @@ to_absolute(const ParametricPosition<typename value_type_helper<coordT>::type>& 
 
 template<typename coordT>
 inline coordT
-to_absolute(const ParametricPosition<typename value_type_helper<coordT>::type>& para,
+to_absolute(const ParametricPosition<typename scalar_type_helper<coordT>::type>& para,
             const boost::array<coordT,3>& vtxs)
 {
     const coordT a_vec  = vtxs[1] - vtxs[0];
@@ -251,13 +251,13 @@ to_absolute(const ParametricPosition<typename value_type_helper<coordT>::type>& 
 
 
 template<typename coordT>
-ParametricPosition<typename value_type_helper<coordT>::type>
+ParametricPosition<typename scalar_type_helper<coordT>::type>
 projection(const coordT& pos,
     const boost::array<coordT,3>& vtxs,
     const coordT& normal,
-    const typename value_type_helper<coordT>::type tol = 1e-12)
+    const typename scalar_type_helper<coordT>::type tol = 1e-12)
 {
-    typedef typename value_type_helper<coordT>::type valueT;
+    typedef typename scalar_type_helper<coordT>::type valueT;
 
     const coordT a_vec  = vtxs[1] - vtxs[0];
     const coordT b_vec  = vtxs[2] - vtxs[0];
