@@ -1,4 +1,4 @@
-#define BOOST_TEST_MODULE "GreensFunction3DRadInf_test"
+#define BOOST_TEST_MODULE "barycentric_test"
 
 #ifdef UNITTEST_FRAMEWORK_LIBRARY_EXIST
 #   include <boost/test/unit_test.hpp>

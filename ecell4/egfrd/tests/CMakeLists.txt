@@ -1,6 +1,7 @@
 set(TEST_NAMES
 #     is_pierce_test
     barycentric_test
+    distance_test
 )
 
 set(test_library_dependencies)
