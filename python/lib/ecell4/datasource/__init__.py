@@ -12,5 +12,14 @@ def description(entity, collections=None):
         for line in pdb.description(entity):
             print(line)
 
+def whereis(entity, collections=None):
+    if isinstance(collections, str):
+        collections = [collections]
 
-__all__ = ['description']
+    if collections is None or 'uniprot' in collections:
+        from . import uniprot
+        for line in uniprot.whereis(entity):
+            print(line)
+
+
+__all__ = ['description', 'where']

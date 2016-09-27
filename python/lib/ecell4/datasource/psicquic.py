@@ -328,6 +328,8 @@ class PSICQUICPsimiTabDataSource(object):
                 yield data[key]
 
     def interactors(self):
+        import ecell4
+
         retval = []
         for data in self.getiter():
             fields = [field['value'] for field in parse_psimitab_fields(data.get('Unique identifier for interactor A')) if field['xref'] == 'uniprotkb']
@@ -341,7 +343,8 @@ class PSICQUICPsimiTabDataSource(object):
                     fields = [field['value'] for field in parse_psimitab_fields(data.get('Alternative identifier for interacor B')) if field['xref'] == 'uniprotkb']
                     if len(fields) != 1:
                         continue
-            retval.append(fields[0])
+            value = uniprot.UniProtDataSource.link(fields[0])
+            retval.append(value)
         return tuple(set(retval))
 
     def interactions(self):

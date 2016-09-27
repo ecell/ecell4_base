@@ -12,8 +12,9 @@ except SystemError:
     import pdb
 
 def description(entity):
-    entity_id = UniProtDataSource.parse_entity(entity)
     desc = []
+
+    entity_id = UniProtDataSource.parse_entity(entity)
     if entity_id is not None:
         src = UniProtDataSource(entity_id)
         if src.obsolete():
@@ -26,6 +27,37 @@ def description(entity):
         desc.append("Organism: {}".format(', '.join(src.organism())))
         desc.append("Function: {}".format(', '.join(src.function_annotation())))
         desc.append("URL: {}".format(UniProtDataSource.link(entity)))
+        return desc
+
+    entity_id = UniProtLocationDataSource.parse_entity(entity)
+    if entity_id is not None:
+        src = UniProtLocationDataSource(entity_id)
+        desc.append("UniProtKB - {} ({})".format(', '.join(src.pref_label()), src.get_type()))
+        desc.append("Definition: {}".format(', '.join(src.comment())))
+        desc.append("Synonyms: {}".format(', '.join(src.alt_label())))
+        desc.append("PartOf: {}".format(', '.join(src.part_of())))
+        desc.append("GO: {}".format(', '.join(src.go())))
+        desc.append("URL: {}".format(UniProtLocationDataSource.link(entity)))
+        return desc
+
+    return desc
+
+def whereis(entity):
+    desc = []
+    entity_id = UniProtDataSource.parse_entity(entity)
+    if entity_id is not None:
+        src = UniProtDataSource(entity_id)
+        for component, topology in src.subcellular_location():
+            tmp = description(component)
+            if len(tmp) > 0 and len(desc) > 0:
+                desc.append('')
+            desc.extend(tmp)
+            if topology is None:
+                continue
+            tmp = description(topology)
+            if len(tmp) > 0 and len(desc) > 0:
+                desc.append('')
+            desc.extend(tmp)
     return desc
 
 class UniProtDataSourceBase(rdf.RDFDataSourceBase):
@@ -53,6 +85,96 @@ class UniProtTaxonDataSource(UniProtDataSourceBase):
 
     def scientific_name(self):
         return [str(obj) for obj in self.graph.objects(predicate=self.UNIPROT.scientificName)]
+
+class UniProtLocationDataSource(UniProtDataSourceBase):
+
+    URL = "http://www.uniprot.org/locations/{entity_id}.rdf"
+
+    def __init__(self, entity=None, url=None, cache=True):
+        if url is not None:
+            UniProtDataSourceBase.__init__(
+                self, url, cache)
+        elif entity is not None:
+            entity_id = self.parse_entity(entity)
+            if entity_id is not None:
+                UniProtDataSourceBase.__init__(
+                    self, self.URL.format(entity_id=entity_id), cache)
+            else:
+                UniProtDataSourceBase.__init__(self, None, cache)
+        else:
+            UniProtDataSourceBase.__init__(self, None, cache)
+
+    @classmethod
+    def parse_entity(cls, entity):
+        idpttrn= r'(?P<prefix>SL-)?[0-9]{1,4}'
+        uri1 = r'http://purl.uniprot\.org/locations/(?P<id>{})(\.rdf)?'.format(idpttrn)
+        uri2 = r'http://www.uniprot\.org/locations/(?P<id>{})(\.rdf)?'.format(idpttrn)
+
+        if isinstance(entity, str):
+            mobj = re.match(r'^{}$'.format(idpttrn), entity)
+            if mobj is not None:
+                if mobj.group('prefix') is None:
+                    return 'SL-{:04d}'.format(int(entity))
+                else:
+                    return entity
+            mobj = re.match(uri1, entity)
+            if mobj is not None:
+                if mobj.group('prefix') is None:
+                    return 'SL-{:04d}'.format(int(mobj.group('id')))
+                else:
+                    return mobj.group('id')
+            mobj = re.match(uri2, entity)
+            if mobj is not None:
+                if mobj.group('prefix') is None:
+                    return 'SL-{:04d}'.format(int(mobj.group('id')))
+                else:
+                    return mobj.group('id')
+        # else:
+        #     import ecell4
+        #     if isinstance(entity, ecell4.Species) and entity.has_attribute(collection):
+        #         return cls.parse_entity(entity.get_attribute(collection))
+        return None  #XXX: Error
+
+    @classmethod
+    def link(cls, entity):
+        entity_id = cls.parse_entity(entity)
+        assert entity_id is not None
+        return 'http://www.uniprot.org/locations/{}'.format(entity_id)
+
+    def pref_label(self):
+        return [str(obj) for obj in self.graph.objects(predicate=SKOS.prefLabel)]
+
+    def alt_label(self):
+        return [str(obj) for obj in self.graph.objects(predicate=SKOS.altLabel)]
+
+    def alias(self):
+        return [str(obj) for obj in self.graph.objects(predicate=self.UNIPROT.alias)]
+
+    def comment(self):
+        return [str(obj) for obj in self.graph.objects(predicate=RDFS.comment)]
+
+    def go(self):
+        return [str(sub) for sub in self.graph.subjects(predicate=self.UNIPROT.database, object=self.UPDB.go)]
+
+    def part_of(self):
+        return [str(obj) for obj in self.graph.objects(predicate=self.UNIPROT.partOf)]
+
+    def get_type(self):
+        qres = self.query(
+            """prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+            prefix skos: <http://www.w3.org/2004/02/skos/core#>
+            select ?type where
+            {{
+            ?s
+            rdf:type ?type ;
+            skos:prefLabel ?label .
+            }}
+            """)
+        uri = [str(row[0]) for row in qres]
+        assert len(uri) == 1
+        label = [str(obj) for obj in rdf.RDFDataSourceBase(uri[0]).graph.objects(subject=URIRef(uri[0]), predicate=RDFS.label)]
+        assert len(label) == 1
+        return label[0]
 
 class UniProtDataSource(UniProtDataSourceBase):
 
@@ -198,6 +320,27 @@ class UniProtDataSource(UniProtDataSourceBase):
     def secondary_structure(self):
         return self.sequence_annotation(uri=self.UNIPROT.Secondary_Structure_Annotation)
 
+    def subcellular_location(self):
+        qres = self.query("""
+            prefix uniprot: <http://purl.uniprot.org/core/>
+            select ?cellular_component ?topology where
+            {{
+            ?s
+            rdf:type uniprot:Subcellular_Location_Annotation ;
+            uniprot:locatedIn ?w .
+            ?w
+            uniprot:cellularComponent ?cellular_component .
+            optional {{ ?w uniprot:topology ?topology }} .
+            }}
+            """)
+        retval = []
+        for row in qres:
+            if row[1] is None:
+                retval.append((str(row[0]), None))
+            else:
+                retval.append((str(row[0]), str(row[1])))
+        return retval
+
     def organism(self):
         retval = []
         for obj1 in self.graph.objects(predicate=self.UNIPROT.organism):
@@ -255,3 +398,6 @@ if __name__ == "__main__":
     print(UniProtDataSource("P28482").natural_variation())
     print(UniProtDataSource("P28482").experimental_information())
     print(UniProtDataSource("P28482").secondary_structure())
+
+    print(UniProtDataSource("P28482").subcellular_location())
+    print(whereis("P28482"))
