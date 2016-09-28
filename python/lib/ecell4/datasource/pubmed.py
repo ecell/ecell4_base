@@ -29,11 +29,9 @@ def description(entity):
         entry.append(('PubMed', '{}'.format(entity_id), ' - '))
         entry.append(('Title', src.data['Title']))
         entry.append(('Author(s)', ', '.join(src.data['AuthorList'])))
-        entry.append(('Volume', src.data['Volume']))
-        entry.append(('Issue', src.data['Issue']))
-        entry.append(('Pages', src.data['Pages']))
         entry.append(('Source', src.data['Source']))
-        entry.append(('PubDate', src.data['PubDate']))
+        entry.append(('SO', src.data['SO']))
+        entry.append(('URL', src.link(entity_id)))
         return [entry]
 
     return []
