@@ -101,7 +101,7 @@ class UniProtLocationDataSource(UniProtDataSourceBase):
 
     @classmethod
     def parse_entity(cls, entity):
-        idpttrn= r'(?P<prefix>SL-)?[0-9]{1,4}'
+        idpttrn = r'(?P<prefix>SL-)?[0-9]{1,4}'
         uri1 = r'http://purl.uniprot\.org/locations/(?P<id>{})(\.rdf)?'.format(idpttrn)
         uri2 = r'http://www.uniprot\.org/locations/(?P<id>{})(\.rdf)?'.format(idpttrn)
 
