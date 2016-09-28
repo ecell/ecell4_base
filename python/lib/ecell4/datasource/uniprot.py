@@ -195,7 +195,7 @@ class UniProtDataSource(UniProtDataSourceBase):
         collection = 'uniprot'
         idpttrn = r'([A-N,R-Z][0-9]([A-Z][A-Z, 0-9][A-Z, 0-9][0-9]){1,2})|([O,P,Q][0-9][A-Z, 0-9][A-Z, 0-9][A-Z, 0-9][0-9])(\.\d+)?'
         uri1 = r'http://identifiers\.org/uniprot/(?P<id>{})'.format(idpttrn)
-        uri2 = r'http://www.uniprot\.org/uniprot/(?P<id>{}).rdf'.format(idpttrn)
+        uri2 = r'http://www.uniprot\.org/uniprot/(?P<id>{})(.rdf)?'.format(idpttrn)
         if isinstance(entity, str):
             if re.match(r'^{}$'.format(idpttrn), entity) is not None:
                 return entity
