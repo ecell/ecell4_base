@@ -1,4 +1,5 @@
 import re
+import itertools
 
 try:
     from urllib.request import Request, urlopen, HTTPError  # Python3
@@ -336,25 +337,31 @@ class PSICQUICPsimiTabDataSource(object):
             if key in data.keys():
                 yield data[key]
 
-    def interactors(self):
-        def selectone(entry, xref='uniprotkb'):
-            identifiers = [obj['value'] for obj in entry['identifiers']
-                           if obj['xref'] == xref]
-            if len(identifiers) == 1:
-                return identifiers[0]
-            alternatives = [obj['value'] for obj in entry['alternatives']
-                            if obj['xref'] == xref]
-            if len(alternatives) == 1:
-                return alternatives[0]
-            return None
+    @classmethod
+    def selectone(cls, entry, xref='uniprotkb'):
+        identifiers = [obj['value'] for obj in entry['identifiers']
+                       if obj['xref'] == xref]
+        if len(identifiers) == 1:
+            return identifiers[0]
+        alternatives = [obj['value'] for obj in entry['alternatives']
+                        if obj['xref'] == xref]
+        if len(alternatives) == 1:
+            return alternatives[0]
+        aliases = [obj['value'] for obj in entry['aliases']
+                        if obj['xref'] == xref]
+        if len(aliases) == 1:
+            return aliases[0]
+        return None
 
+    @classmethod
+    def findone(cls, entry, value, xref='uniprotkb'):
+        return any([(obj.get('xref') == xref and obj.get('value') == value) for obj in itertools.chain(entry['identifiers'], entry['alternatives'], entry['aliases'])])
+
+    def interactors(self):
         retval = {}
         for entry in self.interactions():
-            interactor1, interactor2 = entry['A'], entry['B']
-            if selectone(interactor1) == self.entity_id:
-                interactor2, interactor1 = entry['A'], entry['B']
-
-            entity = selectone(interactor1)
+            partner = entry['B']
+            entity = self.selectone(partner)
             if entity is None:
                 continue
             value = uniprot.UniProtDataSource.link(entity)
@@ -362,7 +369,7 @@ class PSICQUICPsimiTabDataSource(object):
                 retval[value].append(entry)
             else:
                 retval[value] = [entry]
-        return retval
+        return tuple(retval.keys())
 
     @classmethod
     def get_uri(self, field):
@@ -381,13 +388,18 @@ class PSICQUICPsimiTabDataSource(object):
             if PubMedDataSource.parse_entity(value) is None:
                 return None
             return PubMedDataSource.link(value)
-        elif xref in ('imex', 'mint'):
+        elif xref in ('imex', 'mint', 'doi'):
             return "http://identifiers.org/{}/{}".format(xref, value)
 
         logging.error("An unknown field was given [{}]".format(repr(field)))
         return None
 
-    def interactions(self):
+    def interactions(self, partner=None):
+        if partner is not None:
+            partner = self.parse_entity(partner)
+            if partner is None:
+                raise ValueError('Unknown partner [{}] was given.'.format(repr(partner)))
+
         remove = True
         retval = []
         for service, data in self.getiter():
@@ -419,6 +431,17 @@ class PSICQUICPsimiTabDataSource(object):
                 'aliases': parse_psimitab_fields(data['Aliases for B'], remove),
                 'taxons': parse_psimitab_fields(data['NCBI Taxonomy identifier for interactor B'], remove)
                 }
+
+            if not self.findone(interactor1, self.entity_id):
+                if not self.findone(interactor2, self.entity_id):
+                    print(self.entity_id, interactor1)
+                    print(self.entity_id, interactor2)
+                assert self.findone(interactor2,  self.entity_id)
+                interactor1, interactor2 = interactor2, interactor1
+
+            if partner is not None and not self.findone(interactor2, partner):
+                continue
+
             entry['A'] = interactor1
             entry['B'] = interactor2
             retval.append(entry)
@@ -457,7 +480,8 @@ if __name__ == "__main__":
     # print(parse_psimitab('psi-mi:"MI:0000"("I can now use tab \t here")\t-'))
     # print(parse_psimitab('dip:"DIP-35946N"\tdip:"DIP-35946N"\tuniprotkb:"P0AEZ3"\tuniprotkb:"P0AEZ3"\tDIP:"minD"("synonym")|DIP:"Septum site-determining protein minD"("synonym")\tDIP:"minD"("synonym")|DIP:"Septum site-determining protein minD"("synonym")\tpsi-mi:"MI:0018"("two hybrid")\t-\tpubmed:"17242352"(identity)|imex:"IM-22717-2"(imex-primary)\ttaxid:83333("Escherichia coli K12")\ttaxid:83333("Escherichia coli K12")\tpsi-mi:"MI:0915"("physical association")\tpsi-mi:"MI:0465"("DIP")\tdip:"DIP-196612E"\t-\t-\t-\t-\t-\t-\tpsi-mi:"MI:0326"("protein")\tpsi-mi:"MI:0326"("protein")\tentrez gene/locuslink:"945741"\tentrez gene/locuslink:"945741"\t-\t-\t-\t-\t\t-\t2016-07-31\t-\t-\t-\t-\t-\t-\t-\t-\t-\t-\t\t-'))
 
-    print(datasource("P0AEZ3", services="IntAct").interactions())
-    print(tuple(datasource("P0AEZ3", services="IntAct").interactors().keys()))
+    # print(datasource("P0AEZ3", services="IntAct").interactions())
+    # print(tuple(datasource("P0AEZ3", services="IntAct").interactors().keys()))
 
     print(datasource("P0AEZ3").interactions())
+    print(datasource("P28482").interactions())
