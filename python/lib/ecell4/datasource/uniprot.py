@@ -273,12 +273,13 @@ class UniProtDataSource(UniProtDataSourceBase):
             prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
             prefix faldo: <http://biohackathon.org/resource/faldo#>
             prefix uniprot: <http://purl.uniprot.org/core/>
-            select ?type ?begin ?end ?comment where
+            select ?type ?begin ?end ?s ?comment ?substitution where
             {{
             ?s
             rdf:type ?type ;
             uniprot:range ?range .
             optional {{ ?s rdfs:comment ?comment }} .
+            optional {{ ?s uniprot:substitution ?substitution }} .
             filter( ?type in ({}) ) .
             ?range faldo:begin ?begin_ ; faldo:end ?end_ .
             ?begin_ faldo:position ?begin .
@@ -289,9 +290,60 @@ class UniProtDataSource(UniProtDataSourceBase):
         for row in qres:
             name, begin, end = str(row[0]), int(row[1]), int(row[2])
             value = dict(begin=begin, end=end, type=names[name])
-            if row[3] is not None:
-                value['comment'] = str(row[3])
+            about = str(row[3])
+            citation = self.citation(about)
+            if len(citation) > 0:
+                value['citation'] = citation
+            if row[4] is not None:
+                value['comment'] = str(row[4])
+            if row[5] is not None:
+                value['substitution'] = str(row[5])
             retval.append(value)
+        return retval
+
+    def citation(self, about):
+        qres = self.query("""prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+            prefix uniprot: <http://purl.uniprot.org/core/>
+            prefix dcterms: <http://purl.org/dc/terms/>
+            prefix foaf: <http://xmlns.com/foaf/0.1/>
+            prefix xsd: <http://www.w3.org/2001/XMLSchema#>
+            select ?source ?title (group_concat(?author; separator="|") as ?authors) ?link ?doi ?year ?name ?volume ?pages where
+            {{
+            ?s rdf:object <{about}> .
+            ?s uniprot:attribution ?attribution .
+            ?attribution uniprot:source ?source .
+            ?source rdf:type uniprot:Journal_Citation .
+            optional {{ ?source uniprot:title ?title . }}
+            optional {{ ?source uniprot:author ?author . }}
+            optional {{ ?source foaf:primaryTopicOf ?link . }}
+            optional {{ ?source dcterms:identifier ?doi . }}
+            optional
+            {{
+            ?source uniprot:date ?year .
+            filter(datatype(?year) = xsd:gYear)
+            }}
+            optional {{ ?source uniprot:name ?name . }}
+            optional {{ ?source uniprot:volume ?volume . }}
+            optional {{ ?source uniprot:pages ?pages . }}
+            }}
+            group by ?source
+            """.format(about=about))
+
+        keys = ("about", "title", "author", "link", "doi", "year", "name", "volume", "pages", "datatype")
+        retval = []
+        for row in qres:
+            # assert len(row) > 0 and row[0] is not None
+            assert len(row) > 0
+            if row[0] is None:
+                continue
+            entry = {}
+            for key, value in zip(keys, row):
+                if value is None:
+                    continue
+                entry[key] = str(value)
+            if "author" in entry.keys():
+                entry["author"] = entry["author"].split("|")
+            retval.append(entry)
         return retval
 
     def molecule_processing(self):
