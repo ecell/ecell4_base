@@ -11,16 +11,7 @@ def print_descriptions(desc):
             else:
                 print('{0}{2}{1}'.format(*line))
 
-def description(entity, collections=None):
-    if isinstance(collections, str):
-        collections = [collections]
-
-    if not isinstance(entity, str):
-        for i, e in enumerate(entity):
-            if i > 0:
-                print()
-            description(e, collections)
-
+def __description(entity, collections):
     desc = []
 
     if collections is None or 'uniprot' in collections:
@@ -34,6 +25,21 @@ def description(entity, collections=None):
     if collections is None or 'pubmed' in collections:
         from . import pubmed
         desc.extend(pubmed.description(entity))
+
+    return desc
+
+def description(entity, collections=None):
+    from ecell4 import Species
+
+    if isinstance(collections, str):
+        collections = [collections]
+
+    if isinstance(entity, (str, Species)):
+        desc = __description(entity, collections)
+    else:
+        desc = []
+        for e in entity:
+            desc.extend(__description(e, collections))
 
     print_descriptions(desc)
 
