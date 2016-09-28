@@ -15,6 +15,12 @@ def description(entity, collections=None):
     if isinstance(collections, str):
         collections = [collections]
 
+    if not isinstance(entity, str):
+        for i, e in enumerate(entity):
+            if i > 0:
+                print()
+            description(e, collections)
+
     desc = []
 
     if collections is None or 'uniprot' in collections:
@@ -24,6 +30,10 @@ def description(entity, collections=None):
     if collections is None or 'pdb' in collections:
         from . import pdb
         desc.extend(pdb.description(entity))
+
+    if collections is None or 'pubmed' in collections:
+        from . import pubmed
+        desc.extend(pubmed.description(entity))
 
     print_descriptions(desc)
 

@@ -143,7 +143,7 @@ class PSICQUICRDFDataSource(rdf.RDFDataSourceBase):
             """)
         return tuple(set(self.subjects("MolecularInteraction")))
 
-def parse_psimitab_fields(column):
+def parse_psimitab_fields(column, remove=False):
     if column is None or column == '-':
         return []
 
@@ -156,7 +156,10 @@ def parse_psimitab_fields(column):
     start = 0
     retval = []
     for mobj in rexp.finditer(column):
-        assert mobj.start() == start
+        # assert mobj.start() == start
+        if mobj.start() != start:
+            logging.error('An invalid line was given ["{}" matches "{}"]'.format(column, mobj.group(0)))
+            return []
         start = mobj.end()
         groupdict = mobj.groupdict()
         tmp = {}
@@ -164,7 +167,7 @@ def parse_psimitab_fields(column):
             if groupdict[key] is not None:
                 # tmp[key] = re.sub(r"(?<!\\)\\\"", '\"', groupdict[key])
                 tmp[key] = re.sub(r"\\\"", '\"', groupdict[key])
-            else:
+            elif not remove:
                 tmp[key] = None
         retval.append(tmp)
     return retval
@@ -173,16 +176,22 @@ def parse_psimitab(content, fmt='tab27'):
     """https://code.google.com/archive/p/psimi/wikis/PsimiTab27Format.wiki
     """
     columns = [
-        'Unique identifier for interactor A', 'Unique identifier for interactor B',
-        'Alternative identifier for interacor A', 'Alternative identifier for interactor B',
-        'Aliases for A', 'Aliases for B',
+        'Unique identifier for interactor A',
+        'Unique identifier for interactor B',
+        'Alternative identifier for interactor A',
+        'Alternative identifier for interactor B',
+        'Aliases for A',
+        'Aliases for B',
         'Interaction detection methods',
-        'First author', 'Identifier of the publication',
-        'NCBI Taxonomy identifier for interactor A', 'NCBI Taxonomy identifier for interactor B',
+        'First author',
+        'Identifier of the publication',
+        'NCBI Taxonomy identifier for interactor A',
+        'NCBI Taxonomy identifier for interactor B',
         'Interaction types',
         'Source databases',
-        'Interaction Identifier(s)',
-        'Confidence score',
+        'Interaction identifier(s)',
+        'Confidence score']
+    columns += [
         'Complex expansion',
         'Biological role A', 'Biological role B',
         'Experimental role A', 'Experimental role B',
@@ -320,35 +329,100 @@ class PSICQUICPsimiTabDataSource(object):
             if self.data is None:
                 continue
             for data in self.data:
-                yield data
+                yield (name, data)
 
     def getvalues(self, key):
-        for data in self.getiter():
+        for name, data in self.getiter():
             if key in data.keys():
                 yield data[key]
 
     def interactors(self):
-        import ecell4
+        def selectone(entry, xref='uniprotkb'):
+            identifiers = [obj['value'] for obj in entry['identifiers']
+                           if obj['xref'] == xref]
+            if len(identifiers) == 1:
+                return identifiers[0]
+            alternatives = [obj['value'] for obj in entry['alternatives']
+                            if obj['xref'] == xref]
+            if len(alternatives) == 1:
+                return alternatives[0]
+            return None
 
-        retval = []
-        for data in self.getiter():
-            fields = [field['value'] for field in parse_psimitab_fields(data.get('Unique identifier for interactor A')) if field['xref'] == 'uniprotkb']
-            if len(fields) != 1:
-                fields = [field['value'] for field in parse_psimitab_fields(data.get('Alternative identifier for interacor A')) if field['xref'] == 'uniprotkb']
-                if len(fields) != 1:
-                    continue
-            if fields[0] == self.entity_id:
-                fields = [field['value'] for field in parse_psimitab_fields(data.get('Unique identifier for interactor B')) if field['xref'] == 'uniprotkb']
-                if len(fields) != 1:
-                    fields = [field['value'] for field in parse_psimitab_fields(data.get('Alternative identifier for interacor B')) if field['xref'] == 'uniprotkb']
-                    if len(fields) != 1:
-                        continue
-            value = uniprot.UniProtDataSource.link(fields[0])
-            retval.append(value)
-        return tuple(set(retval))
+        retval = {}
+        for entry in self.interactions():
+            interactor1, interactor2 = entry['A'], entry['B']
+            if selectone(interactor1) == self.entity_id:
+                interactor2, interactor1 = entry['A'], entry['B']
+
+            entity = selectone(interactor1)
+            if entity is None:
+                continue
+            value = uniprot.UniProtDataSource.link(entity)
+            if value in retval.keys():
+                retval[value].append(entry)
+            else:
+                retval[value] = [entry]
+        return retval
+
+    @classmethod
+    def get_uri(self, field):
+        if 'xref' not in field.keys() or 'value' not in field.keys():
+            return None
+        elif field['xref'] is None or field['value'] is None:
+            return None
+
+        xref, value = field['xref'], field['value']
+        if xref == 'pubmed':
+            try:
+                from .pubmed import PubMedDataSource
+            except SystemError:
+                from pubmed import PubMedDataSource
+
+            if PubMedDataSource.parse_entity(value) is None:
+                return None
+            return PubMedDataSource.link(value)
+        elif xref in ('imex', 'mint'):
+            return "http://identifiers.org/{}/{}".format(xref, value)
+
+        logging.error("An unknown field was given [{}]".format(repr(field)))
+        return None
 
     def interactions(self):
-        return tuple([parse_psimitab_fields(value) for value in self.getvalues('Interaction Identifier(s)')])
+        remove = True
+        retval = []
+        for service, data in self.getiter():
+            entry = {
+                'service': service,
+                'databases': parse_psimitab_fields(data['Source databases'], remove),
+                'identifiers': parse_psimitab_fields(data['Interaction identifier(s)'], remove),
+                'scores': parse_psimitab_fields(data['Confidence score'], remove),
+                'types': parse_psimitab_fields(data['Interaction types'], remove),
+                'methods': parse_psimitab_fields(data['Interaction detection methods'], remove),
+                }
+
+            entry['publications'] = []
+            for field in parse_psimitab_fields(data['Identifier of the publication'], remove):
+                uri = self.get_uri(field)
+                if uri is None:
+                    continue
+                entry['publications'].append(uri)
+
+            interactor1 = {
+                'identifiers': parse_psimitab_fields(data['Unique identifier for interactor A'], remove),
+                'alternatives': parse_psimitab_fields(data['Alternative identifier for interactor A'], remove),
+                'aliases': parse_psimitab_fields(data['Aliases for A'], remove),
+                'taxons': parse_psimitab_fields(data['NCBI Taxonomy identifier for interactor A'], remove)
+                }
+            interactor2 = {
+                'identifiers': parse_psimitab_fields(data['Unique identifier for interactor B'], remove),
+                'alternatives': parse_psimitab_fields(data['Alternative identifier for interactor B'], remove),
+                'aliases': parse_psimitab_fields(data['Aliases for B'], remove),
+                'taxons': parse_psimitab_fields(data['NCBI Taxonomy identifier for interactor B'], remove)
+                }
+            entry['A'] = interactor1
+            entry['B'] = interactor2
+            retval.append(entry)
+        return retval
 
 # PSICQUICDataSource = PSICQUICRDFDataSource
 PSICQUICDataSource = PSICQUICPsimiTabDataSource
@@ -368,8 +442,8 @@ if __name__ == "__main__":
     # print(res, len(res))
     # res = datasource("P0AEZ3", services=services).small_molecules()
     # print(res, len(res))
-    res = datasource("P0AEZ3", services=services).interactors()
-    print(res, len(res))
+    # res = datasource("P0AEZ3", services=services).interactors()
+    # print(res, len(res))
     # res = datasource("P0AEZ3", services=services).interactions()
     # print(res, len(res))
 
@@ -382,3 +456,8 @@ if __name__ == "__main__":
 
     # print(parse_psimitab('psi-mi:"MI:0000"("I can now use tab \t here")\t-'))
     # print(parse_psimitab('dip:"DIP-35946N"\tdip:"DIP-35946N"\tuniprotkb:"P0AEZ3"\tuniprotkb:"P0AEZ3"\tDIP:"minD"("synonym")|DIP:"Septum site-determining protein minD"("synonym")\tDIP:"minD"("synonym")|DIP:"Septum site-determining protein minD"("synonym")\tpsi-mi:"MI:0018"("two hybrid")\t-\tpubmed:"17242352"(identity)|imex:"IM-22717-2"(imex-primary)\ttaxid:83333("Escherichia coli K12")\ttaxid:83333("Escherichia coli K12")\tpsi-mi:"MI:0915"("physical association")\tpsi-mi:"MI:0465"("DIP")\tdip:"DIP-196612E"\t-\t-\t-\t-\t-\t-\tpsi-mi:"MI:0326"("protein")\tpsi-mi:"MI:0326"("protein")\tentrez gene/locuslink:"945741"\tentrez gene/locuslink:"945741"\t-\t-\t-\t-\t\t-\t2016-07-31\t-\t-\t-\t-\t-\t-\t-\t-\t-\t-\t\t-'))
+
+    print(datasource("P0AEZ3", services="IntAct").interactions())
+    print(tuple(datasource("P0AEZ3", services="IntAct").interactors().keys()))
+
+    print(datasource("P0AEZ3").interactions())
