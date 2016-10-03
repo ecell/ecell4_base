@@ -85,15 +85,16 @@ if sys.platform == "win32":
     elif sys.version_info.major == 3:
         dependent_libs = ['gsl', 'gslcblas']
         extra_compile_args = ["/EHsc", "/w", "-DHAVE_CONFIG_H"]  # "-DHAVE_INLINE"
+    # extra_compile_args.append('-DNO_BESSEL_TABLE')
 elif sys.platform == "darwin":
     with_hdf5 = True  #XXX: forced
     dependent_libs = ['gsl', 'gslcblas', 'm']
-    extra_compile_args = ["-DHAVE_CONFIG_H"]
+    extra_compile_args = ["-DNO_BESSEL_TABLE", "-DHAVE_CONFIG_H"]
 else: # for linux
     if not with_cpp_shared_libraries:
         with_hdf5 = True  #XXX: forced
     dependent_libs = ['gsl', 'gslcblas', 'm']
-    extra_compile_args = ["-DHAVE_CONFIG_H"]
+    extra_compile_args = ["-DNO_BESSEL_TABLE", "-DHAVE_CONFIG_H"]
 
 if "--disable-hdf5" in sys.argv:
     with_hdf5 = False
@@ -126,7 +127,7 @@ if with_cpp_shared_libraries:
     ext_modules = [
         Extension("ecell4.core", sources=["lib/ecell4/core.pyx"],
             include_dirs=["."], libraries=["ecell4-core"], language="c++",
-            extra_compile_args=extra_compile_args),
+            extra_compile_args=extra_compile_args + ["-w"]),
         Extension("ecell4.egfrd", sources=["lib/ecell4/egfrd.pyx"],
             include_dirs=["."], libraries=["ecell4-core", "ecell4-egfrd"],
             language="c++", extra_compile_args=extra_compile_args + ["-w"]),
@@ -191,18 +192,19 @@ else:
 
 setup(
     name = "ecell",
-    version = "4.0.1",
+    version = "4.0.4",
     package_dir = {"": "lib"},
     package_data = {"ecell4.util": [
         "templates/init_ipynb.js", "templates/init_cyjs.js", "templates/template.html",
         "templates/*.tmpl", "templates/ecelllogo/*.png"]},
-    data_files = [('ecell4ipynb/Licenses', glob.glob(os.path.join(src_path, 'licenses/*'))),
-                  ('ecell4ipynb', [os.path.join(src_path, 'ipynb/index.ipynb')]),
-                  ('ecell4ipynb/Tutorials', glob.glob(os.path.join(src_path, 'ipynb/Tutorials/*.ipynb'))),
-                  ('ecell4ipynb/Examples', glob.glob(os.path.join(src_path, 'ipynb/Examples/*.ipynb'))),
-                  ('ecell4ipynb/Tests', glob.glob(os.path.join(src_path, 'ipynb/Tests/*.ipynb'))),
-                  ('ecell4ipynb/Sandbox', glob.glob(os.path.join(src_path, 'ipynb/Sandbox/*.ipynb'))),
-                  ],
+    data_files = [('ecell4-licenses', glob.glob(os.path.join(src_path, 'licenses/*')))],
+    # data_files = [('ecell4ipynb/Licenses', glob.glob(os.path.join(src_path, 'licenses/*'))),
+    #               ('ecell4ipynb', [os.path.join(src_path, 'ipynb/index.ipynb')]),
+    #               ('ecell4ipynb/Tutorials', glob.glob(os.path.join(src_path, 'ipynb/Tutorials/*.ipynb'))),
+    #               ('ecell4ipynb/Examples', glob.glob(os.path.join(src_path, 'ipynb/Examples/*.ipynb'))),
+    #               ('ecell4ipynb/Tests', glob.glob(os.path.join(src_path, 'ipynb/Tests/*.ipynb'))),
+    #               ('ecell4ipynb/Sandbox', glob.glob(os.path.join(src_path, 'ipynb/Sandbox/*.ipynb'))),
+    #               ],
     packages = ["ecell4", "ecell4.util", "ecell4.extra"],
     cmdclass = {'build_ext': build_ext, 'test': run_tests},
     license = "the GNU General Public License v2",

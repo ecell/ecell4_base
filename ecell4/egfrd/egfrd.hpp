@@ -35,22 +35,22 @@ protected:
 public:
 
     EGFRDFactory(
-        Integer dissociation_retry_moves=-1, Real bd_dt_factor=-1,
+        Real bd_dt_factor=-1, Integer dissociation_retry_moves=-1,
         Real user_max_shell_size=-1)
         : base_type(), matrix_sizes_(0, 0, 0), rng_(),
-        num_retries_(dissociation_retry_moves),
         bd_dt_factor_(bd_dt_factor),
+        num_retries_(dissociation_retry_moves),
         user_max_shell_size_(user_max_shell_size)
     {
         ; // do nothing
     }
 
     EGFRDFactory(const matrix_sizes_type& matrix_sizes,
-        Integer dissociation_retry_moves=-1, Real bd_dt_factor=-1,
+        Real bd_dt_factor=-1, Integer dissociation_retry_moves=-1,
         Real user_max_shell_size=-1)
         : base_type(), matrix_sizes_(matrix_sizes), rng_(),
-        num_retries_(dissociation_retry_moves),
         bd_dt_factor_(bd_dt_factor),
+        num_retries_(dissociation_retry_moves),
         user_max_shell_size_(user_max_shell_size)
     {
         ; // do nothing
@@ -58,11 +58,11 @@ public:
 
     EGFRDFactory(const matrix_sizes_type& matrix_sizes,
         const boost::shared_ptr<RandomNumberGenerator>& rng,
-        Integer dissociation_retry_moves=-1, Real bd_dt_factor=-1,
+        Real bd_dt_factor=-1, Integer dissociation_retry_moves=-1,
         Real user_max_shell_size=-1)
         : base_type(), matrix_sizes_(matrix_sizes), rng_(rng),
-        num_retries_(dissociation_retry_moves),
         bd_dt_factor_(bd_dt_factor),
+        num_retries_(dissociation_retry_moves),
         user_max_shell_size_(user_max_shell_size)
     {
         ; // do nothing
@@ -108,16 +108,16 @@ public:
         if (user_max_shell_size_ > 0)
         {
             return new EGFRDSimulator(
-                world, model, num_retries_, bd_dt_factor_, user_max_shell_size_);
-        }
-        else if (bd_dt_factor_ > 0)
-        {
-            return new EGFRDSimulator(
-                world, model, num_retries_, bd_dt_factor_);
+                world, model, bd_dt_factor_, num_retries_, user_max_shell_size_);
         }
         else if (num_retries_ >= 0)
         {
-            return new EGFRDSimulator(world, model, num_retries_);
+            return new EGFRDSimulator(
+                world, model, bd_dt_factor_, num_retries_);
+        }
+        else if (bd_dt_factor_ > 0)
+        {
+            return new EGFRDSimulator(world, model, bd_dt_factor_);
         }
         else
         {
@@ -143,8 +143,8 @@ protected:
     matrix_sizes_type matrix_sizes_;
     boost::shared_ptr<RandomNumberGenerator> rng_;
 
+    Real bd_dt_factor_;
     Integer num_retries_;
-    Integer bd_dt_factor_;
     Real user_max_shell_size_;
 };
 
@@ -162,29 +162,29 @@ protected:
 public:
 
     BDFactory(
-        Integer dissociation_retry_moves=-1, Real bd_dt_factor=-1)
+        Real bd_dt_factor=-1, Integer dissociation_retry_moves=-1)
         : base_type(), matrix_sizes_(0, 0, 0), rng_(),
-        num_retries_(dissociation_retry_moves),
-        bd_dt_factor_(bd_dt_factor)
+        bd_dt_factor_(bd_dt_factor),
+        num_retries_(dissociation_retry_moves)
     {
         ; // do nothing
     }
 
     BDFactory(const matrix_sizes_type& matrix_sizes,
-        Integer dissociation_retry_moves=-1, Real bd_dt_factor=-1)
+        Real bd_dt_factor=-1, Integer dissociation_retry_moves=-1)
         : base_type(), matrix_sizes_(matrix_sizes), rng_(),
-        num_retries_(dissociation_retry_moves),
-        bd_dt_factor_(bd_dt_factor)
+        bd_dt_factor_(bd_dt_factor),
+        num_retries_(dissociation_retry_moves)
     {
         ; // do nothing
     }
 
     BDFactory(const matrix_sizes_type& matrix_sizes,
         const boost::shared_ptr<RandomNumberGenerator>& rng,
-        Integer dissociation_retry_moves=-1, Real bd_dt_factor=-1)
+        Real bd_dt_factor=-1, Integer dissociation_retry_moves=-1)
         : base_type(), matrix_sizes_(matrix_sizes), rng_(rng),
-        num_retries_(dissociation_retry_moves),
-        bd_dt_factor_(bd_dt_factor)
+        bd_dt_factor_(bd_dt_factor),
+        num_retries_(dissociation_retry_moves)
     {
         ; // do nothing
     }
@@ -226,14 +226,14 @@ public:
         const boost::shared_ptr<Model>& model,
         const boost::shared_ptr<world_type>& world) const
     {
-        if (bd_dt_factor_ > 0)
+        if (num_retries_ >= 0)
         {
             return new BDSimulator(
-                world, model, num_retries_, bd_dt_factor_);
+                world, model, bd_dt_factor_, num_retries_);
         }
-        else if (num_retries_ >= 0)
+        else if (bd_dt_factor_ > 0)
         {
-            return new BDSimulator(world, model, num_retries_);
+            return new BDSimulator(world, model, bd_dt_factor_);
         }
         else
         {
@@ -259,8 +259,8 @@ protected:
     matrix_sizes_type matrix_sizes_;
     boost::shared_ptr<RandomNumberGenerator> rng_;
 
+    Real bd_dt_factor_;
     Integer num_retries_;
-    Integer bd_dt_factor_;
 };
 
 } // egfrd

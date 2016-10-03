@@ -994,11 +994,11 @@ public:
     EGFRDSimulator(
         const boost::shared_ptr<world_type>& world,
         const boost::shared_ptr<model_type>& ecell4_model,
-        int dissociation_retry_moves = 1, Real bd_dt_factor = 1e-5,
+        Real bd_dt_factor = 1e-5, int dissociation_retry_moves = 1,
         length_type user_max_shell_size = std::numeric_limits<length_type>::infinity())
         : base_type(world, ecell4_model),
-          num_retries_(dissociation_retry_moves),
           bd_dt_factor_(bd_dt_factor),
+          num_retries_(dissociation_retry_moves),
           user_max_shell_size_(user_max_shell_size),
           ssmat_(new spherical_shell_matrix_type((*world).edge_lengths(), (*world).matrix_sizes())),
           csmat_(new cylindrical_shell_matrix_type((*world).edge_lengths(), (*world).matrix_sizes())),
@@ -1018,11 +1018,11 @@ public:
 
     EGFRDSimulator(
         const boost::shared_ptr<world_type>& world,
-        int dissociation_retry_moves = 1, Real bd_dt_factor = 1e-5,
+        Real bd_dt_factor = 1e-5, int dissociation_retry_moves = 1,
         length_type user_max_shell_size = std::numeric_limits<length_type>::infinity())
         : base_type(world),
-          num_retries_(dissociation_retry_moves),
           bd_dt_factor_(bd_dt_factor),
+          num_retries_(dissociation_retry_moves),
           user_max_shell_size_(user_max_shell_size),
           ssmat_(new spherical_shell_matrix_type((*world).edge_lengths(), (*world).matrix_sizes())),
           csmat_(new cylindrical_shell_matrix_type((*world).edge_lengths(), (*world).matrix_sizes())),
@@ -4169,8 +4169,8 @@ protected:
     }
 
 protected:
-    int const num_retries_;
     double const bd_dt_factor_;
+    int const num_retries_;
     length_type const user_max_shell_size_;
 
     domain_map domains_;

@@ -1,19 +1,3 @@
-E-Cell System version 4
-=======================
-
-[![Binder](http://mybinder.org/badge.svg)](http://mybinder.org/repo/ecell/ecell4-notebooks)
-[![Build Status](https://travis-ci.org/ecell/ecell4.svg?branch=develop)](https://travis-ci.org/ecell/ecell4)
-[![Build status](https://ci.appveyor.com/api/projects/status/github/ecell/ecell4?svg=true)](https://ci.appveyor.com/project/kaizu/ecell4)
-[![Documentation Status](https://readthedocs.org/projects/ecell4/badge/?version=latest)](http://ecell4.readthedocs.org/en/latest/?badge=latest)
-[![PyPI](https://img.shields.io/pypi/v/ecell.svg)](https://pypi.python.org/pypi/ecell)
-[![License: GPL v2](https://img.shields.io/badge/license-GPL%20v2-blue.svg)](https://github.com/ecell/ecell4/blob/master/licenses/LICENSE)
-[![Slack Status](https://ecell-project.herokuapp.com/badge.svg)](https://ecell-project.herokuapp.com/)
-
-What is E-Cell System?
-----------------------
-
-E-Cell System is, a software platform for modeling, simulation and analysis of complex, heterogeneous and multi-scale systems like the cell.
-
 Installation and usage
 ======================
 
@@ -137,7 +121,7 @@ y = run_simulation(
     numpy.linspace(0, 10, 100), {'A': 60, 'B': 60}, solver='ode')
 ```
 
-![png](./readthedocs/images/output_7_0.png)
+![png](./images/output_7_0.png)
 
 ### Particle tracking on a spherical surface
 
@@ -157,7 +141,7 @@ run_simulation(
 viz.plot_trajectory(obs, interactive=False)
 ```
 
-![png](./readthedocs/images/hairball.png)
+![png](./images/hairball.png)
 
 Docker container for E-Cell4
 ----------------------------
@@ -168,7 +152,7 @@ After the following steps, you should see [Jupyter Notebook](http://jupyter.org/
 
 1. Install [Docker](https://www.docker.com/products/docker).
 2. Run Docker.
-3. Run the following commands from your *Terminal* or *Powershell*.
+3. Run the following commands
 
     ```shell
     docker pull ecell/ecell4
@@ -183,14 +167,4 @@ After the following steps, you should see [Jupyter Notebook](http://jupyter.org/
     82b90db240f5        ecell/ecell4        "/bin/sh -c 'jupyter-"   7 seconds ago       Up 6 seconds        0.0.0.0:32768->8888/tcp   clever_raman
     ```
 
-5. Open the PORT in `docker ps` command with your web browser. In the case of the above example, you will open `http://localhost:32768`
-
-Licensing terms
-===============
-
-This product is licensed under the terms of the [GNU General Public License v2](https://github.com/ecell/ecell4/blob/master/licenses/LICENSE),
-See [NOTICE](https://github.com/ecell/ecell4/blob/master/licenses/NOTICE.txt) for the software included in this product.
-
-- Copyright (c) 2010-, RIKEN
-
-All rights reserved.
+5. Open the PORT in `docker ps` command with your web browser. In the case of the above example, you will open `0.0.0.0:32768`
