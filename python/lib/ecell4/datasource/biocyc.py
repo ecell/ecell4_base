@@ -24,11 +24,13 @@ def read_url(url):
 
 class BioCycDataSource(object):
 
+    # URL = "http://websvc.biocyc.org/getxml?id={entity_id}"
+    URL = "http://websvc.biocyc.org/getxml?id={entity_id}&detail=low"
+
     def __init__(self, entity=None):
         if entity is not None:
             entity_id = self.parse_entity(entity)
-            orgid, frameid = entity_id.split(':')
-            url = "http://websvc.biocyc.org/getxml?id={0}:{1}&detail=low".format(orgid, frameid)
+            url = self.URL.format(entity_id=entity_id)
             data = self.parse_ptools_xml(read_url(url))
             assert len(data) == 1
             self.data = data
@@ -59,7 +61,7 @@ class BioCycDataSource(object):
     def link(cls, entity):
         entity_id = cls.parse_entity(entity)
         assert entity_id is not None
-        return ""
+        return "http://identifiers.org/biocyc/{}".format(entity_id)
 
     @classmethod
     def __parse_ptools_xml(cls, node, tags=None, ignores=None, unique=False):
@@ -100,7 +102,7 @@ class BioCycDataSource(object):
                             entry[item.tagName] = [value]
                         else:
                             entry[item.tagName].append(value)
-                    elif item.tagName in ('component', 'component-of', 'parent', 'gene', 'left', 'right', 'enzyme', 'reaction', 'instance'):
+                    elif item.tagName in ('component', 'component-of', 'parent', 'gene', 'left', 'right', 'enzyme', 'reaction', 'instance', 'product'):
                         if item.tagName not in entry.keys():
                             entry[item.tagName] = cls.__parse_ptools_xml(item)
                         else:
