@@ -1,6 +1,6 @@
 #ifndef GFRD_POLYGON_BARYCENTRIC
 #define GFRD_POLYGON_BARYCENTRIC
-#include "FaceTriangle.hpp"
+#include "Vector3Operation.hpp"
 #include <boost/array.hpp>
 
 template<typename realT>
@@ -35,7 +35,7 @@ triangle_area_2D(const realT x1, const realT y1, const realT x2, const realT y2,
 
 template<typename coordT>
 Barycentric<typename scalar_type_helper<coordT>::type>
-make_barycentric(const coordT& pos, const FaceTriangle<coordT>& tri)
+make_barycentric(const coordT& pos, const boost::array<coordT, 3>& tri)
 {
     // the implementation of this function is based on
     // Real-Time Collision Detection by Christer Ericson,
@@ -43,9 +43,9 @@ make_barycentric(const coordT& pos, const FaceTriangle<coordT>& tri)
     // p. 51
 
     typedef typename scalar_type_helper<coordT>::type scalarT;
-    const coordT& a = tri.vertex_at(0);
-    const coordT& b = tri.vertex_at(1);
-    const coordT& c = tri.vertex_at(2);
+    const coordT& a = tri.at(0);
+    const coordT& b = tri.at(1);
+    const coordT& c = tri.at(2);
     const coordT m = cross_product(b - a, c - a);
     const scalarT x = std::abs(m[0]);
     const scalarT y = std::abs(m[1]);
@@ -80,11 +80,11 @@ make_barycentric(const coordT& pos, const FaceTriangle<coordT>& tri)
 template<typename coordT>
 inline coordT make_absolute(
     const Barycentric<typename scalar_type_helper<coordT>::type>& barycentric,
-    const FaceTriangle<coordT>& triangle)
+    const boost::array<coordT, 3>& triangle)
 {
-    return triangle.vertex_at(0) * barycentric.coordinate[0] +
-           triangle.vertex_at(1) * barycentric.coordinate[1] +
-           triangle.vertex_at(2) * barycentric.coordinate[2];
+    return triangle.at(0) * barycentric.coordinate[0] +
+           triangle.at(1) * barycentric.coordinate[1] +
+           triangle.at(2) * barycentric.coordinate[2];
 }
 
 template<typename realT>
