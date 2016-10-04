@@ -48,7 +48,8 @@ def run_sge(target, jobs, n=1, path='.', delete=True, wait=True, environ=None, m
     if isinstance(target, types.LambdaType) and target.__name__ == "<lambda>":
         raise RuntimeError("A lambda function is not accepted")
 
-    src = textwrap.dedent(inspect.getsource(singlerun)).replace(r'"', r'\"')
+    # src = textwrap.dedent(inspect.getsource(singlerun)).replace(r'"', r'\"')
+    src = textwrap.dedent(inspect.getsource(target)).replace(r'"', r'\"')
     if re.match('[\s\t]+', src.split('\n')[0]) is not None:
         raise RuntimeError(
             "Wrong indentation was found in the source translated")
@@ -127,18 +128,22 @@ def run_sge(target, jobs, n=1, path='.', delete=True, wait=True, environ=None, m
 
     return retval
 
+def genseeds(n):
+    return binascii.hexlify(os.urandom(4 * n))
+
+def getseed(myseed, i):
+    rndseed = int(myseed[(i - 1) * 8: i * 8], 16)
+    rndseed = rndseed % (2 ** 31)  #XXX: trancate the first bit
+    return rndseed
+
 #XXX:
 #XXX:
 #XXX:
 
 def singlerun(job, job_id, task_id):
     import ecell4.util
-    myseed = job.pop('myseed')
-    rndseed = int(myseed[(task_id - 1) * 8: task_id * 8], 16)
-    rndseed = rndseed % (2 ** 31)  #XXX: trancate the first bit
-    myrng = ecell4.GSLRandomNumberGenerator()
-    myrng.seed(rndseed)
-    job.update({'return_type': 'array', 'rng': myrng})
+    rndseed = getseed(job.pop('myseed'), task_id)
+    job.update({'return_type': 'array', 'rndseed': rndseed})
     data = ecell4.util.run_simulation(**job)
     return data
 
@@ -183,7 +188,7 @@ def ensemble_simulations(
     if species_list is None:
         species_list = ecell4.util.simulation.list_species(model, y0.keys())
 
-    myseed = binascii.hexlify(os.urandom(4 * n))
+    myseed = genseeds(n)
 
     jobs = [{'t': t, 'y0': y0, 'volume': volume, 'model': model, 'solver': solver, 'species_list': species_list, 'structures': structures, 'myseed': myseed}]
 
