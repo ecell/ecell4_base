@@ -1,6 +1,8 @@
 #ifndef GFRD_POLYGON_FACE_TRIANGLE
 #define GFRD_POLYGON_FACE_TRIANGLE
 #include "ParametricPosition.hpp"
+#include "BarycentricCoordinate.hpp"
+#include "TriangleOperation.hpp"
 #include <boost/array.hpp>
 
 template<typename coordT>
@@ -172,6 +174,18 @@ coordT reflect_plane(const coordT& begin, const coordT& end,
     return reflect_plane(begin, end, face.normal(), face.vertex_at(0));
 }
 
-
+template<typename coordT>
+Barycentric<typename scalar_type_helper<coordT>::type>
+make_barycentric(const coordT& pos, const FaceTriangle<coordT>& face)
+{
+    return make_barycentric(pos, face.vertices());
+}
+template<typename coordT>
+coordT
+make_absolute(const Barycentric<typename scalar_type_helper<coordT>::type>& bary,
+              const FaceTriangle<coordT>& face)
+{
+    return make_absolute(bary, face.vertices());
+}
 
 #endif /* GFRD_POLYGON_FACE_TRIANGLE */
