@@ -171,7 +171,7 @@ int main(int argc, char **argv)
             > particles = world->list_particles();
         for(std::size_t i=0; i< particles.size(); ++i)
         {
-            const ecell4::Real3 center(24.0, 24.0, 24.0);
+            const ecell4::Real3 center(50.0, 50.0, 50.0);
             if(particles.at(i).second.sid() == "C")
             {
                 if(length(particles.at(i).second.position() - center) > 24.)
