@@ -109,17 +109,17 @@ int main(int argc, char **argv)
 //             const ecell4::Real radius = rng->uniform(0, 15.0);
 //             const ecell4::Real theta = rng->uniform(0, 2.0 * 3.14159265358979);
 //             const ecell4::Real phi = rng->uniform(0, 2.0 * 3.14159265358979);
-            const ecell4::Real3 sphere_center(24.0, 24.0, 24.0);
+            const ecell4::Real3 sphere_center(50.0, 50.0, 50.0);
 //             const ecell4::Real3 dist(
 //                     radius * sin(theta) * cos(phi),
 //                     radius * sin(theta) * sin(phi),
 //                     radius * cos(theta));
 //             assert(length(dist) < 24.);
-            const ecell4::Real3 position(rng->uniform(0.0, 5e1), rng->uniform(0.0, 5e1), rng->uniform(0.0, 5e1));
+            const ecell4::Real3 position(rng->uniform(0.0, 1e2), rng->uniform(0.0, 1e2), rng->uniform(0.0, 1e2));
             ecell4::Particle newpart;
             if(length(position - sphere_center) < 20.0)
                 newpart = ecell4::Particle(ecell4::Species("C"), position, 2.5, 1e3);
-            else if(length(position - sphere_center) > 24.5)
+            else if(length(position - sphere_center) > 30)
                 newpart = ecell4::Particle(ecell4::Species("N"), position, 2.5, 1e3);
             else
                 continue;
@@ -131,7 +131,7 @@ int main(int argc, char **argv)
     std::cerr << "polygon setup begin" << std::endl;
     StlFileReader<ecell4::Real3> stlreader;
     std::vector<StlTriangle<ecell4::Real3> > triangles =
-        stlreader.read("sphere_r-24mm_accurate_asc.stl", StlFileReader<ecell4::Real3>::Ascii);
+        stlreader.read("sphere_radius_24_center_50.stl", StlFileReader<ecell4::Real3>::Ascii);
     for(std::vector<StlTriangle<ecell4::Real3> >::const_iterator
         iter = triangles.begin(); iter != triangles.end(); ++iter)
     {
