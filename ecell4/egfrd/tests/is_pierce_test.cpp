@@ -8,7 +8,7 @@
 #endif
 
 #include "../TriangleOperation.hpp"
-// #include "../FaceTriangle.hpp"
+#include "../FaceTriangle.hpp"
 #include "../BarycentricCoordinate.hpp"
 #include <ecell4/core/RandomNumberGenerator.hpp>
 #include <ecell4/core/Real3.hpp>

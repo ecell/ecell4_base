@@ -8,6 +8,7 @@
 #endif
 
 #include "../BarycentricCoordinate.hpp"
+#include "../FaceTriangle.hpp"
 #include <ecell4/core/RandomNumberGenerator.hpp>
 #include <ecell4/core/Real3.hpp>
 
