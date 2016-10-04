@@ -99,8 +99,8 @@ public:
             return true;
 
         position_type const displacement = drawR_free(species);
-        position_type const reflected    = tx_.apply_reflection(pp.second.position(), displacement);
-        position_type const new_pos      = tx_.apply_boundary(reflected);
+        position_type const new_pos    = tx_.apply_reflection(pp.second.position(), displacement);
+//         position_type const new_pos      = tx_.apply_boundary(reflected);
 
         particle_id_pair particle_to_update(
                 pp.first, particle_type(species_id,

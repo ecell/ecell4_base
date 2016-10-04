@@ -2,6 +2,7 @@
 #define EGFRD_POLYGON
 
 #include <ecell4/core/Shape.hpp>
+#include <ecell4/core/AABB.hpp>
 #include <ecell4/core/Real3.hpp>
 #include "exceptions.hpp"
 #include "FaceTriangle.hpp"
@@ -28,9 +29,9 @@ struct Polygon : public ecell4::Shape
     }
 
     coordinate_type
-    apply_reflection(const coordinate_type& pos,
-                     const coordinate_type& displacement,
-                     const std::vector<std::size_t>& intruder_idxs) const;
+    apply_reflection(const coordinate_type& pos, const coordinate_type& displacement,
+                     const std::vector<std::size_t>& intruder_idxs,
+                     const coordinate_type& edge_lengths) const;
 
 // data member
     std::vector<face_type> faces;
@@ -71,98 +72,114 @@ template<typename coordT>
 typename Polygon<coordT>::coordinate_type
 Polygon<coordT>::apply_reflection(
         const coordinate_type& pos, const coordinate_type& displacement,
-        const std::vector<std::size_t>& intruder_idxs) const
+        const std::vector<std::size_t>& intruder_idxs,
+        const coordinate_type& edge_lengths/* = unit cell of periodic boundary*/) const
 {
-    if(intruder_idxs.empty())
-    {
-        return pos + displacement;
+    const ecell4::AABB unitcell(coordinate_type(0.,0.,0.), edge_lengths);
+    coordinate_type begin = pos;
+    coordinate_type end   = pos + displacement;
+    std::pair<bool, Real> collide_world = unitcell.intersect_ray(pos, displacement);
+    if(collide_world.first)
+    {// second is just a parameter
+        collide_world.second = collide_world.second * length(displacement);
     }
     else
     {
-//         std::cerr << "length of disp " << length(displacement) << std::endl;
-//         std::cerr << "size of intruders  " << intruder_idxs.size() << std::endl;
+        collide_world.second = std::numeric_limits<Real>::infinity();
+    }
 
-        coordinate_type begin = pos;
-        coordinate_type end = pos + displacement;
-        std::vector<std::pair<std::size_t, Real> > pierce;
-        pierce.reserve(intruder_idxs.size());
-        std::size_t loop_time = 0;
-        std::size_t ignore_idx = std::numeric_limits<std::size_t>::max();
-        while(true)
-        {
-            ++loop_time;
-
-            pierce.clear();
-            for(std::vector<std::size_t>::const_iterator
-                iter = intruder_idxs.begin(); iter != intruder_idxs.end(); ++iter)
-            {
-                if(*iter == ignore_idx) continue;
-                const std::pair<bool, coordinate_type> dist =
-                    is_pierce(begin, end, faces.at(*iter));
-                if(dist.first)
-                    pierce.push_back(std::make_pair(*iter, length(dist.second - begin)));
-            }
-            if(pierce.empty()) break; // particle goes through no faces. return.
-
-            // check which face the particle collides first.
-            std::vector<std::size_t> first_collision_index_list;
-            Real minimum_distance = std::numeric_limits<Real>::max();
-            for(std::vector<std::pair<std::size_t, Real> >::const_iterator
-                iter = pierce.begin(); iter != pierce.end(); ++iter)
-            {
-                if(iter->second == minimum_distance)
-                {
-                    first_collision_index_list.push_back(iter->first);
-                }
-                else if(iter->second < minimum_distance)
-                {
-                    minimum_distance = iter->second;
-                    first_collision_index_list.clear();
-                    first_collision_index_list.push_back(iter->first);
-                }
-            }
-
-//             {
-//                 std::cerr << "now loop " << loop_time << std::endl;
-//                 std::cerr << "begin " << begin << std::endl;
-//                 std::cerr << "end   " << end   << std::endl;
-//                 std::cerr << "pierce.size " << pierce.size() << std::endl;
-//             }
-            // update begin and end
-            if(first_collision_index_list.size() == 1)
-            {
-                const coordinate_type tmp_begin = is_pierce(begin, end,
-                        faces.at(first_collision_index_list.front())).second;
-                const coordinate_type tmp_end = reflect_plane(begin, end,
-                        faces.at(first_collision_index_list.front()));
-                assert(length(tmp_end - end) > 1e-12);
-//                 if(length(tmp_end - end) < 1e-12)
-//                 {
-//                     const std::pair<bool, coordinate_type> d =
-//                         is_pierce(begin, end, faces.at(first_collision_index_list.front()));
-//                     std::cerr << tmp_begin << std::endl;
-//                     std::cerr << tmp_end << std::endl;
-//                     std::cerr << d.first << ", " << d.second << std::endl;
-//                     std::cerr << length(tmp_end - end) << std::endl;
-//                     assert(false);
-//                 }
-                end = tmp_end;
-                begin = tmp_begin;
-                ignore_idx = first_collision_index_list.front();
-            }
-            else if(first_collision_index_list.size() > 1)
-            {
-                throw ecell4::NotImplemented("particle collides several faces at once");
-            }
-            else
-            {
-                throw std::logic_error("app_reflect: never reach here");
-            }
-
-//             if(loop_time > 10)
-//                 throw std::logic_error("too much reflection");
-        }
+    if(intruder_idxs.empty() && not collide_world.first)
         return end;
+
+    std::vector<std::size_t> intruder_faces = intruder_idxs;
+    std::size_t ignore_idx = std::numeric_limits<std::size_t>::max();
+
+    while(true)
+    {
+        bool        collide_face = false;
+        std::size_t first_collide_face_idx = std::numeric_limits<std::size_t>::max();
+        Real        first_collide_distance = collide_world.second;// inf or dist to unit cell
+
+        for(typename std::vector<std::size_t>::const_iterator
+            iter = intruder_faces.begin(); iter != intruder_faces.end(); ++iter)
+        {
+            if(*iter == ignore_idx) continue;
+
+            const std::pair<bool, coordinate_type> dist =
+                is_pierce(begin, end, faces.at(*iter));
+            if(dist.first)
+            {
+                const Real dist_to_face = length(dist.second - begin);
+                if(dist_to_face == collide_world.second)
+                {
+                    throw ecell4::NotImplemented("collide 2 object at the same time");
+                }
+                else if(dist_to_face < first_collide_distance)
+                {
+                    collide_face = true;
+                    first_collide_face_idx = *iter;
+                    first_collide_distance = dist_to_face;
+                }
+            }
+        }
+        if(not collide_face && not collide_world.first) return end;
+
+        if(not collide_face)
+        {// collide unit cell first
+
+            const coordinate_type upto_collision =
+                (end - begin) * (collide_world.second / length(end - begin));
+            coordinate_type move_into_unit_cell;
+            coordinate_type tmp_begin = begin + upto_collision;
+
+            // XXX omg!!!
+            if(std::abs(tmp_begin[0]) < 1e-12)
+                move_into_unit_cell = coordinate_type(edge_lengths[0], 0., 0.);
+            else if(std::abs(tmp_begin[0] - edge_lengths[0]) < 1e-12)
+                move_into_unit_cell = coordinate_type(-1. * edge_lengths[0], 0., 0.);
+            else if(std::abs(tmp_begin[1]) < 1e-12)
+                move_into_unit_cell = coordinate_type(0., edge_lengths[1], 0.);
+            else if(std::abs(tmp_begin[1] - edge_lengths[1]) < 1e-12)
+                move_into_unit_cell = coordinate_type(0., -1. * edge_lengths[1], 0.);
+            else if(std::abs(tmp_begin[2]) < 1e-12)
+                move_into_unit_cell = coordinate_type(0., 0., edge_lengths[2]);
+            else if(std::abs(tmp_begin[2] - edge_lengths[2]) < 1e-12)
+                move_into_unit_cell = coordinate_type(0., 0., -1. * edge_lengths[2]);
+            else throw std::logic_error("never reach here");
+
+            begin = (tmp_begin + move_into_unit_cell);
+            end   = (end       + move_into_unit_cell);
+
+            const coordinate_type new_displ = end - begin;
+            const Real length_new_displ = length(new_displ);
+            collide_world = unitcell.intersect_ray(begin, new_displ);
+            if(collide_world.first)
+                collide_world.second = collide_world.second * length_new_displ;
+            else
+                collide_world.second = std::numeric_limits<Real>::infinity();
+
+            intruder_faces = (this->get_faces_within_radius(begin, length_new_displ)).first;
+            ignore_idx = std::numeric_limits<std::size_t>::max();
+        }
+        else
+        {// collide certain face first
+
+            const coordinate_type tmp_begin = is_pierce(begin, end,
+                    faces.at(first_collide_face_idx)).second;
+            const coordinate_type tmp_end = reflect_plane(begin, end,
+                    faces.at(first_collide_face_idx));
+
+            begin = tmp_begin;
+            end   = tmp_end;
+            ignore_idx = first_collide_face_idx;
+
+            const coordinate_type new_displ = end - begin;
+            collide_world = unitcell.intersect_ray(begin, new_displ);
+            if(collide_world.first)
+                collide_world.second = collide_world.second * length(new_displ);
+            else
+                collide_world.second = std::numeric_limits<Real>::infinity();
+        }
     }
 }
 
