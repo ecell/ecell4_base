@@ -135,7 +135,7 @@ std::pair<typename scalar_type_helper<coordT>::type, // distance
           typename scalar_type_helper<coordT>::type> // r of circle in triangle
 distance(const coordT& pos, const boost::array<coordT, 3>& vertices)
 {
-    return std::make_pair(length(closest_point(pos - vertices) - pos), 0.);
+    return std::make_pair(length(closest_point(pos, vertices) - pos), 0.);
 }
 
 template<typename coordT>
@@ -175,7 +175,7 @@ is_pierce(const coordT& begin, const coordT& end,
     w *= ood;
     const valueT u = 1. - v - w;
     Barycentric<valueT> bary(u, v, w);
-    const coordT intersect = make_absolute(bary, FaceTriangle<coordT>(vertices));
+    const coordT intersect = make_absolute(bary, vertices);
 
     return std::make_pair(true, intersect);
 }
