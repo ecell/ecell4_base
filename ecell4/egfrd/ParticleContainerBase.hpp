@@ -10,6 +10,7 @@
 #include "exceptions.hpp"
 #include "ParticleContainer.hpp"
 #include "Transaction.hpp"
+#include "Polygon.hpp"
 
 template<typename Ttraits_>
 struct ParticleContainerUtils
@@ -317,6 +318,20 @@ public:
         t_ = t;
     }
 
+    // for polygon
+    virtual void add_surface(const boost::array<position_type, 3>& vertices)
+    {
+        polygon_.emplace(vertices);
+    }
+
+    virtual position_type
+    apply_reflection(const position_type& pos, const position_type& disp)
+    {
+        return polygon_.apply_reflection(pos, disp,
+                (polygon_.get_faces_within_radius(pos, length(disp))).first,
+                this->edge_lengths());
+    }
+
 protected:
 
     std::pair<bool, typename particle_matrix_type::iterator>
@@ -341,6 +356,7 @@ protected:
 
 protected:
     boost::scoped_ptr<particle_matrix_type> pmat_;
+    Polygon<position_type> polygon_;
 
     time_type t_;
 };
