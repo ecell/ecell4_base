@@ -21,6 +21,7 @@
 #include "Logger.hpp"
 
 #include <ecell4/core/get_mapper_mf.hpp>
+#include "PotentialField.hpp"
 
 template<typename Ttraits_>
 class BDPropagator
@@ -52,17 +53,21 @@ public:
 
     typedef typename ecell4::utils::get_mapper_mf<particle_id_type, position_type>::type particle_id_position_map_type;
 
+    typedef ecell4::PotentialField<particle_container_type> potential_field_type;
+    typedef typename ecell4::utils::get_mapper_mf<species_id_type, boost::shared_ptr<potential_field_type> >::type potential_field_map_type;
+
 public:
     template<typename Trange_>
     BDPropagator(
         particle_container_type& tx, network_rules_type const& rules,
         rng_type& rng, time_type dt, int max_retry_count,
         reaction_recorder_type* rrec, volume_clearer_type* vc,
-        Trange_ const& particles, Real const R=std::numeric_limits<length_type>::infinity(),
-        particle_id_position_map_type const& original_positions = particle_id_position_map_type())
+        Trange_ const& particles,
+        potential_field_map_type const& potentials = potential_field_map_type())
         : tx_(tx), rules_(rules), rng_(rng), dt_(dt),
           max_retry_count_(max_retry_count), rrec_(rrec), vc_(vc),
-          queue_(), rejected_move_count_(0), R_(R), original_positions_(original_positions)
+          queue_(), rejected_move_count_(0),
+          potentials_(potentials)
     {
         call_with_size_if_randomly_accessible(
             boost::bind(&particle_id_vector_type::reserve, &queue_, _1),
@@ -108,9 +113,15 @@ public:
         position_type const new_pos(
             tx_.apply_boundary(
                 add(pp.second.position(), displacement)));
-        typename particle_id_position_map_type::const_iterator it = original_positions_.find(pp.first);
-        if (it != original_positions_.end() && tx_.distance(new_pos, (*it).second) > R_)
-            return true;
+
+        typename potential_field_map_type::const_iterator it = potentials_.find(species_id);
+        if (it != potentials_.end())
+        {
+            if (!(*it).second->try_move(rng_, pp, new_pos, tx_))
+            {
+                return true;
+            }
+        }
 
         particle_id_pair particle_to_update(
                 pp.first, particle_type(species_id,
@@ -448,8 +459,7 @@ private:
     volume_clearer_type* const vc_;
     particle_id_vector_type queue_;
     int rejected_move_count_;
-    Real const R_;
-    particle_id_position_map_type original_positions_;
+    potential_field_map_type const& potentials_;
     static Logger& log_;
 };
 

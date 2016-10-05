@@ -2,6 +2,7 @@ import collections
 from cython cimport address
 from cython.operator cimport dereference as deref, preincrement as inc
 from ecell4.core cimport *
+import numbers
 
 
 ## ReactionInfo
@@ -1190,12 +1191,6 @@ cdef class BDSimulator:
             inc(it)
         return retval
 
-    def set_R(self, Real R):
-        self.thisptr.set_R(R)
-
-    def get_R(self):
-        return self.thisptr.get_R()
-
     def set_t(self, Real new_t):
         """set_t(t)
 
@@ -1262,6 +1257,25 @@ cdef class BDSimulator:
 
     def dt_factor(self):
         return self.thisptr.dt_factor()
+
+    def add_potential(self, Species sp, arg):
+        """add_potential(sp, arg)
+
+        Set the potential for each Species.
+
+        Parameters
+        ----------
+        sp : Species
+            a species of molecules to add
+        arg : Real or Shape
+            a radius or a shape for the potential
+
+        """
+        if isinstance(arg, numbers.Number):
+            self.thisptr.add_potential(deref(sp.thisptr), <Real>arg)
+        else:
+            self.thisptr.add_potential(
+                deref(sp.thisptr), deref((<Shape>(arg.as_base())).thisptr))
 
 
 cdef BDSimulator BDSimulator_from_Cpp_BDSimulator(Cpp_BDSimulator* s):

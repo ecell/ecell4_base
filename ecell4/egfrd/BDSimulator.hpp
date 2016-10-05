@@ -10,8 +10,11 @@
 #include "ParticleSimulator.hpp"
 #include "utils/pair.hpp"
 
+#include "PotentialField.hpp"
+
 #include <ecell4/core/get_mapper_mf.hpp>
 #include <ecell4/core/Species.hpp>
+#include <ecell4/core/exceptions.hpp>
 
 template<typename Tworld_>
 struct BDSimulatorTraitsBase: public ParticleSimulatorTraitsBase<Tworld_>
@@ -46,7 +49,9 @@ public:
     typedef typename traits_type::reaction_recorder_type reaction_recorder_type;
     typedef typename ReactionRecorderWrapper<reaction_record_type>::reaction_info_type reaction_info_type;
 
-    typedef typename ecell4::utils::get_mapper_mf<particle_id_type, position_type>::type particle_id_position_map_type;
+    typedef typename world_type::particle_container_type particle_container_type;
+    typedef ecell4::PotentialField<particle_container_type> potential_field_type;
+    typedef typename ecell4::utils::get_mapper_mf<species_id_type, boost::shared_ptr<potential_field_type> >::type potential_field_map_type;
 
 public:
 
@@ -64,8 +69,7 @@ public:
         int dissociation_retry_moves = 1)
         : base_type(world, ecell4_model),
           dt_factor_(bd_dt_factor),
-          num_retries_(dissociation_retry_moves),
-          R_(std::numeric_limits<typename world_type::length_type>::infinity())
+          num_retries_(dissociation_retry_moves)
     {
         calculate_dt();
     }
@@ -83,14 +87,7 @@ public:
 
     virtual void initialize()
     {
-        if ((*base_type::world_).num_particles(ecell4::Species("B")) != original_positions_.size())
-        {
-            typename std::vector<std::pair<particle_id_type, particle_type> > const particles((*base_type::world_).list_particles(ecell4::Species("B")));
-            for (typename std::vector<std::pair<particle_id_type, particle_type> >::const_iterator i(particles.begin()); i != particles.end(); ++i)
-            {
-                original_positions_[(*i).first] = (*i).second.position();
-            }
-        }
+        ;
     }
 
     virtual void calculate_dt()
@@ -104,19 +101,29 @@ public:
         base_type::dt_ = dt;
     }
 
-    void set_R(const Real& R)
-    {
-        R_ = R;
-    }
-
-    const Real get_R() const
-    {
-        return R_;
-    }
-
     virtual void step()
     {
         _step(base_type::dt());
+    }
+
+    void add_potential(const ecell4::Species& sp, const Real& radius)
+    {
+        std::pair<typename potential_field_map_type::iterator, bool> retval
+            = potentials_.insert(typename potential_field_map_type::value_type(sp.serial(), boost::shared_ptr<potential_field_type>(new ecell4::LeashPotentialField<typename potential_field_type::container_type>(radius))));
+        if (!retval.second)
+        {
+            throw ecell4::AlreadyExists("never reach here.");
+        }
+    }
+
+    void add_potential(const ecell4::Species& sp, const boost::shared_ptr<ecell4::Shape>& shape)
+    {
+        std::pair<typename potential_field_map_type::iterator, bool> retval
+            = potentials_.insert(typename potential_field_map_type::value_type(sp.serial(), boost::shared_ptr<potential_field_type>(new ecell4::ShapedPotentialField<typename potential_field_type::container_type>(shape))));
+        if (!retval.second)
+        {
+            throw ecell4::AlreadyExists("never reach here.");
+        }
     }
 
     virtual bool step(const time_type& upto)
@@ -195,7 +202,7 @@ protected:
                 base_type::rrec_.get(), 0,
                 make_select_first_range(base_type::world_->
                                         get_particles_range()),
-                R_, original_positions_);
+                potentials_);
             while (propagator());
         }
 
@@ -273,7 +280,7 @@ private:
     Real R_;
     static Logger& log_;
 
-    particle_id_position_map_type original_positions_;
+    potential_field_map_type potentials_;
 };
 
 template<typename Ttraits_>
