@@ -95,7 +95,6 @@ build: false
 branches:
   only:
     - master
-    - cmake_mpy
 
 artifacts:
   # bdist_wheel puts your built wheel in the dist directory
