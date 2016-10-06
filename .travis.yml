@@ -5,7 +5,7 @@ python:
 language: cpp
 os:
 - linux
-#- osx
+- osx
 
 compiler:
 - gcc
