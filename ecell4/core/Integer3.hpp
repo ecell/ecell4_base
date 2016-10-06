@@ -148,13 +148,13 @@ inline Integer3 operator-(const Integer3& lhs, const Integer3& rhs)
 inline bool operator<(const Integer3& lhs, const Integer3& rhs)
 {
     return (lhs.col < rhs.col ? true :
-        (lhs.row < rhs.row ? true : (lhs.layer < lhs.layer ? true : false)));
+        (lhs.row < rhs.row ? true : (lhs.layer < rhs.layer ? true : false)));
 }
 
 inline bool operator>(const Integer3& lhs, const Integer3& rhs)
 {
     return (lhs.col > rhs.col ? true :
-        (lhs.row > rhs.row ? true : (lhs.layer > lhs.layer ? true : false)));
+        (lhs.row > rhs.row ? true : (lhs.layer > rhs.layer ? true : false)));
 }
 
 inline bool operator==(const Integer3& lhs, const Integer3& rhs)
