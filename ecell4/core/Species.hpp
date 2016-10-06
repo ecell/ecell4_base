@@ -41,71 +41,99 @@ protected:
 
 public:
 
+    // Species()
+    //     : units_()
+    // {
+    //     ; // do nothing
+    // }
+
+    // explicit Species(const serial_type& name)
+    //     : units_()
+    // {
+    //     deserialize(name);
+    // }
+
+    // Species(
+    //     const serial_type& name, const std::string& radius, const std::string& D,
+    //     const std::string location = "")
+    //     : units_()
+    // {
+    //     deserialize(name);
+    //     set_attribute("radius", radius);
+    //     set_attribute("D", D);
+    //     set_attribute("location", location);
+    // }
+
     Species()
-        : units_()
+        : serial_("")
     {
         ; // do nothing
     }
 
-    // Species(const Species& sp)
-    //     : units_()
-    // {
-    //     deserialize(sp.serial());
-    // }
-
     explicit Species(const serial_type& name)
-        : units_()
+        : serial_(name)
     {
-        deserialize(name);
+        ; // deserialize(name);
     }
-
-    // Species(
-    //     const serial_type& name, const std::string& D)
-    //     : units_()
-    // {
-    //     deserialize(name);
-    //     set_attribute("D", D);
-    // }
 
     Species(
         const serial_type& name, const std::string& radius, const std::string& D,
         const std::string location = "")
-        : units_()
+        : serial_(name)
     {
-        deserialize(name);
+        // deserialize(name);
         set_attribute("radius", radius);
         set_attribute("D", D);
         set_attribute("location", location);
     }
 
     void deserialize(const serial_type& serial);
-    serial_type serial() const;
+    // serial_type serial() const;
+    const serial_type serial() const
+    {
+        return serial_;
+    }
 
     Integer num_units() const
     {
-        return units_.size();
+        return units().size();
     }
 
     void add_unit(const UnitSpecies& usp);
 
-    inline container_type::const_iterator begin() const
+    // inline container_type::const_iterator begin() const
+    // {
+    //     return units().begin();
+    // }
+
+    // inline container_type::const_iterator end() const
+    // {
+    //     return units().end();
+    // }
+
+    const std::vector<UnitSpecies> units() const
     {
-        return units_.begin();
+        std::vector<std::string> unit_serials;
+        boost::split(unit_serials, serial_, boost::is_any_of("."));
+
+        std::vector<UnitSpecies> units_;
+        for (std::vector<std::string>::const_iterator i(unit_serials.begin());
+            i != unit_serials.end(); ++i)
+        {
+            UnitSpecies usp;
+            usp.deserialize(*i);
+            units_.insert(std::lower_bound(units_.begin(), units_.end(), usp), usp);
+        }
     }
 
-    inline container_type::const_iterator end() const
-    {
-        return units_.end();
-    }
-
-    const std::vector<UnitSpecies>& units() const
-    {
-        return units_;
-    }
+    // const std::vector<UnitSpecies>& units() const
+    // {
+    //     return units_;
+    // }
 
     const UnitSpecies& at(const container_type::size_type& idx) const
     {
-        return units_.at(idx);
+        return units().at(idx);
     }
 
     // Integer get_unit(const UnitSpecies& usp)
@@ -169,7 +197,8 @@ public:
 
 protected:
 
-    std::vector<UnitSpecies> units_;
+    serial_type serial_;
+    // std::vector<UnitSpecies> units_;
     attributes_container_type attributes_;
 };
 

@@ -197,6 +197,11 @@ public:
 
     // ParticleSpace member functions
 
+    bool update_particle_without_checking(const ParticleID& pid, const Particle& p)
+    {
+        return (*ps_).update_particle(pid, p);
+    }
+
     bool update_particle(const ParticleID& pid, const Particle& p)
     {
         if (list_particles_within_radius(p.position(), p.radius(), pid).size()

@@ -39,7 +39,9 @@ public:
         const Species& sp, const Real3& pos, const Real& radius,
         const Real& D)
         // : position_(pos), radius_(radius), D_(D)
-        : species_serial_(sp.serial()), position_(pos), radius_(radius), D_(D)
+        : // species_serial_(sp.serial()),
+          position_(pos), radius_(radius), D_(D),
+          species_(sp)
         // : species_(sp), species_serial_(sp.serial()), position_(pos), radius_(radius), D_(D)
     {
         // std::strcpy(species_serial_, sp.serial().c_str());
@@ -49,7 +51,9 @@ public:
         const species_serial_type& sid, const Real3& pos,
         const Real& radius, const Real& D)
         // : position_(pos), radius_(radius), D_(D)
-        : species_serial_(sid), position_(pos), radius_(radius), D_(D)
+        : // species_serial_(sid),
+          position_(pos), radius_(radius), D_(D),
+          species_(sid)
         // : species_(sid), species_serial_(sid), position_(pos), radius_(radius), D_(D)
     {
         // std::strcpy(species_serial_, sid.c_str());
@@ -85,32 +89,42 @@ public:
         return D_;
     }
 
-    const Species species() const
-    {
-        return Species(species_serial());
-    }
-
-    // Species& species()
+    // const Species species() const
     // {
-    //     return species_;
+    //     return Species(species_serial());
     // }
 
-    // const Species& species() const
+    Species& species()
+    {
+        return species_;
+    }
+
+    const Species& species() const
+    {
+        return species_;
+    }
+
+    // Species::serial_type& species_serial()
     // {
-    //     return species_;
+    //     return this->species_serial_;
     // }
 
-    Species::serial_type& species_serial()
+    // const Species::serial_type& species_serial() const
+    // {
+    //     return this->species_serial_;
+    // }
+
+    Species::serial_type species_serial()
     {
-        return this->species_serial_;
+        return species_.serial();
     }
 
-    const Species::serial_type& species_serial() const
+    const Species::serial_type species_serial() const
     {
-        return this->species_serial_;
+        return species_.serial();
     }
-
     // Species::serial_type species_serial()
+
     // {
     //     return std::string(species_serial_);
     // }
@@ -120,15 +134,25 @@ public:
     //     return std::string(species_serial_);
     // }
 
-    inline Species::serial_type& sid()
+    inline Species::serial_type sid()
     {
         return species_serial();
     }
 
-    inline const Species::serial_type& sid() const
+    inline const Species::serial_type sid() const
     {
         return species_serial();
     }
+
+    // inline Species::serial_type& sid()
+    // {
+    //     return species_serial();
+    // }
+
+    // inline const Species::serial_type& sid() const
+    // {
+    //     return species_serial();
+    // }
 
     bool operator==(Particle const& rhs) const
     {
@@ -152,8 +176,8 @@ public:
 
 private:
 
-    // Species species_;
-    species_serial_type species_serial_;
+    Species species_;
+    // species_serial_type species_serial_;
     // char species_serial_[32];
     Real3 position_;
     Real radius_, D_;
