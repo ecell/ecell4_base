@@ -14,7 +14,8 @@ if (PYTHONINTERP_FOUND)
       set(_GLUE ":") # delimiter
     endforeach()
     set(INCLUDE_PATH ${_TMP_RESULT})
-    message("${INCLUDE_PATH}")
+    # message("${INCLUDE_PATH}")
+    message("XXX: CMAKE_CURRENT_SOURCE_DIR is '${CMAKE_CURRENT_SOURCE_DIR}'.")
 
     set(SETUP_PY_IN ${CMAKE_CURRENT_SOURCE_DIR}/setup.py.in)
     set(SETUP_PY    ${CMAKE_CURRENT_SOURCE_DIR}/setup.py)

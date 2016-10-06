@@ -128,7 +128,8 @@ include_path = [src_path] + "${INCLUDE_PATH}".split(":")
 #             ("The source directory '{0}/ecell4' or '{0}/ipynb' is a symbolic link."
 #              + "It might fail to be scanned properly."))
 
-py_path = "${CMAKE_CURRENT_SOURCE_DIR}/lib"
+# py_path = "${CMAKE_CURRENT_SOURCE_DIR}/lib"
+py_path = os.path.join("${CMAKE_CURRENT_SOURCE_DIR}", "lib")
 
 if with_cpp_shared_libraries:
     ext_modules = [
