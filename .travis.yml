@@ -43,8 +43,8 @@ script:
 # - if [ "$TRAVIS_OS_NAME" == "osx" ]; then PYTHONPATH=/usr/local/lib/python3.5/site-packages:/usr/local/lib/python3.5/dist-packages:$PYTHONPATH python3 setup.py build_ext -I.. install --prefix=/usr/local; fi
 # - if [ "$TRAVIS_OS_NAME" == "osx" ]; then PYTHONPATH=/usr/local/lib/python3.5/site-packages:/usr/local/lib/python3.5/dist-packages:$PYTHONPATH python3 setup.py test; fi
 
-- if [ "$TRAVIS_OS_NAME" == "linux" ]; sudo bash -c 'cmake -DCMAKE_INSTALL_PREFIX=/usr/local . && make && make test && make install'; fi
-- if [ "$TRAVIS_OS_NAME" == "osx" ]; sudo bash -c 'cmake -DCMAKE_INSTALL_PREFIX=/usr/local -DPYTHON_EXECUTABLE:FILEPATH=/usr/local/bin/python3 . && make && make test && make install'; fi
+- if [ "$TRAVIS_OS_NAME" == "linux" ]; then sudo bash -c 'cmake -DCMAKE_INSTALL_PREFIX=/usr/local . && make && make test && make install'; fi
+- if [ "$TRAVIS_OS_NAME" == "osx" ]; then sudo bash -c 'cmake -DCMAKE_INSTALL_PREFIX=/usr/local -DPYTHON_EXECUTABLE:FILEPATH=/usr/local/bin/python3 . && make && make test && make install'; fi
 
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH PYTHONPATH=/usr/local/lib/python2.7/site-packages python -c "from ecell4 import *"; fi
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH PYTHONPATH=/usr/local/lib/python2.7/site-packages python -c "from ecell4 import *; ode.ODEWorld().bind_to(NetworkModel())"; fi
