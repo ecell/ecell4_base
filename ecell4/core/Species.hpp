@@ -70,11 +70,6 @@ public:
         return serial_;
     }
 
-    Integer num_units() const
-    {
-        return units().size();
-    }
-
     void add_unit(const UnitSpecies& usp);
 
     const std::vector<UnitSpecies> units() const

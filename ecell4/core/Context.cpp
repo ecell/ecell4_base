@@ -555,16 +555,16 @@ std::vector<Species> ReactionRuleExpressionMatcher::generate()
     for (ReactionRule::reactant_container_type::const_iterator
         i(pttrn_.reactants().begin()); i != pttrn_.reactants().end(); ++i)
     {
-        reactant_units.reserve(reactant_units.size() + (*i).num_units());
         std::vector<UnitSpecies> units = (*i).units();
+        reactant_units.reserve(reactant_units.size() + units.size());
         std::copy(units.begin(), units.end(), std::back_inserter(reactant_units));
     }
 
     for (ReactionRule::reactant_container_type::const_iterator
         i(pttrn_.products().begin()); i != pttrn_.products().end(); ++i)
     {
-        product_units.reserve(product_units.size() + (*i).num_units());
         std::vector<UnitSpecies> units = (*i).units();
+        product_units.reserve(product_units.size() + units.size());
         std::copy(units.begin(), units.end(), std::back_inserter(product_units));
     }
 
@@ -676,7 +676,7 @@ std::vector<Species> ReactionRuleExpressionMatcher::generate()
                 for (ReactionRule::product_container_type::const_iterator
                     j(pttrn_.products().begin()); j != pttrn_.products().end(); ++j)
                 {
-                    stride += (*j).num_units();
+                    stride += (*j).units().size();
                     if (stride > idx1)
                     {
                         label = atoi((*i).second.second.c_str()) * pttrn_.products().size()

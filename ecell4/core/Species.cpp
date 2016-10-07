@@ -135,6 +135,11 @@ public:
         initialize();
     }
 
+    const std::vector<UnitSpecies>& units() const
+    {
+        return root_;
+    }
+
     void initialize()
     {
         connections_.clear();
@@ -268,17 +273,17 @@ public:
     }
 
     void reorder_units(
-        std::vector<unsigned int>& units, const unsigned int& idx,
+        std::vector<unsigned int>& unit_indices, const unsigned int& idx,
         unsigned int& stride)
     {
-        if (units[idx] != root_.size())
+        if (unit_indices[idx] != root_.size())
         {
             return;
         }
 
         const UnitSpecies& usp(root_.at(idx));
 
-        units[idx] = stride;
+        unit_indices[idx] = stride;
         ++stride;
 
         for (UnitSpecies::container_type::const_iterator i(usp.begin());
@@ -297,7 +302,7 @@ public:
                 tgt((pair[0].first == idx && pair[0].second == (*i).first)?
                     pair[1] : pair[0]);
 
-            reorder_units(units, tgt.first, stride);
+            reorder_units(unit_indices, tgt.first, stride);
         }
     }
 
@@ -311,8 +316,10 @@ protected:
 Species format_species(const Species& sp)
 {
     unit_species_comparerator comp(sp);
+    const std::vector<UnitSpecies>::size_type num_units = comp.units().size();
+
     std::vector<unit_species_comparerator::index_type> units;
-    for (unit_species_comparerator::index_type i(0); i < sp.num_units(); ++i)
+    for (unit_species_comparerator::index_type i(0); i < num_units; ++i)
     {
         units.push_back(i);
     }
@@ -320,14 +327,14 @@ Species format_species(const Species& sp)
     std::sort(units.begin(), units.end(), comp);
 
     std::vector<unit_species_comparerator::index_type>
-        next(sp.num_units(), sp.num_units());
+        next(num_units, num_units);
     unsigned int stride(0);
-    for (unit_species_comparerator::index_type i(0); i < sp.num_units(); ++i)
+    for (unit_species_comparerator::index_type i(0); i < num_units; ++i)
     {
         const unit_species_comparerator::index_type idx(units[i]);
         comp.reorder_units(next, idx, stride);
     }
-    for (unsigned int i(0); i < sp.num_units(); ++i)
+    for (unsigned int i(0); i < num_units; ++i)
     {
         units[next[i]] = i;
     }

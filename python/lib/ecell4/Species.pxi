@@ -200,14 +200,6 @@ cdef class Species:
             inc(it)
         return retval
 
-    def num_units(self):
-        """num_units() -> Integer
-
-        Return the number of ``UnitSpecies``.
-
-        """
-        return self.thisptr.num_units()
-
     def deserialize(self, serial):
         """deserialize(serial)
 
