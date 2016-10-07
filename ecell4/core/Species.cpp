@@ -32,11 +32,6 @@ Integer Species::count(const Species& sp) const
     return count_spmatches(*this, sp);
 }
 
-void Species::deserialize(const Species::serial_type& serial)
-{
-    serial_ = serial;
-}
-
 void Species::add_unit(const UnitSpecies& usp)
 {
     if (usp.name() == "")

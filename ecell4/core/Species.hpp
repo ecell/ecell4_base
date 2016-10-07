@@ -63,8 +63,6 @@ public:
         set_attribute("location", location);
     }
 
-    void deserialize(const serial_type& serial);
-
     const serial_type serial() const
     {
         return serial_;

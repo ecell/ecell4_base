@@ -98,7 +98,6 @@ cdef extern from "ecell4/core/Species.hpp" namespace "ecell4":
         vector[pair[string, string]] list_attributes()
         void add_unit(Cpp_UnitSpecies)
         vector[Cpp_UnitSpecies]& units()
-        void deserialize(string) except+
 
 ## Species
 #  a python wrapper for Cpp_Species

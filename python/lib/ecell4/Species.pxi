@@ -200,19 +200,6 @@ cdef class Species:
             inc(it)
         return retval
 
-    def deserialize(self, serial):
-        """deserialize(serial)
-
-        Reset the serial. All attributes will be kept.
-
-        Parameters
-        ----------
-        serial : str
-            A new serial as an unicode string.
-
-        """
-        self.thisptr.deserialize(tostring(serial))
-
     def __reduce__(self):
         return (__rebuild_species, (self.serial(), self.list_attributes()))
 
