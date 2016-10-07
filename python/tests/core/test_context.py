@@ -18,6 +18,10 @@ class ContextText(unittest.TestCase):
         self.assertEqual(sp1.count(Species("A.B")), 1)
         self.assertEqual(sp1.count(Species("B.A")), 1)
 
+    def test3(self):
+        sp1 = Species("A(p=u^_)")
+        self.assertEqual(sp1.count(Species("A(p=u^1).B(b^1)")), 1)
+
 
 if __name__ == "__main__":
     unittest.main()
