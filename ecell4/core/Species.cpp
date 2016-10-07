@@ -74,7 +74,14 @@ void Species::add_unit(const UnitSpecies& usp)
     }
     // units_.push_back(usp);
     // units_.insert(std::lower_bound(units_.begin(), units_.end(), usp), usp);
-    serial_ += "." + usp.serial();
+    if (serial_ != "")
+    {
+        serial_ += "." + usp.serial();
+    }
+    else
+    {
+        serial_ = usp.serial();
+    }
 }
 
 std::vector<std::pair<std::string, std::string> > Species::list_attributes()

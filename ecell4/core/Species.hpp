@@ -124,6 +124,7 @@ public:
             usp.deserialize(*i);
             units_.insert(std::lower_bound(units_.begin(), units_.end(), usp), usp);
         }
+        return units_;
     }
 
     // const std::vector<UnitSpecies>& units() const
