@@ -132,10 +132,10 @@ public:
     //     return units_;
     // }
 
-    const UnitSpecies& at(const container_type::size_type& idx) const
-    {
-        return units().at(idx);
-    }
+    // const UnitSpecies& at(const container_type::size_type& idx) const
+    // {
+    //     return units().at(idx);
+    // }
 
     // Integer get_unit(const UnitSpecies& usp)
     // {
