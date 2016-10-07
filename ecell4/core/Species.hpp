@@ -41,29 +41,6 @@ protected:
 
 public:
 
-    // Species()
-    //     : units_()
-    // {
-    //     ; // do nothing
-    // }
-
-    // explicit Species(const serial_type& name)
-    //     : units_()
-    // {
-    //     deserialize(name);
-    // }
-
-    // Species(
-    //     const serial_type& name, const std::string& radius, const std::string& D,
-    //     const std::string location = "")
-    //     : units_()
-    // {
-    //     deserialize(name);
-    //     set_attribute("radius", radius);
-    //     set_attribute("D", D);
-    //     set_attribute("location", location);
-    // }
-
     Species()
         : serial_("")
     {
@@ -73,7 +50,7 @@ public:
     explicit Species(const serial_type& name)
         : serial_(name)
     {
-        ; // deserialize(name);
+        ;
     }
 
     Species(
@@ -81,14 +58,13 @@ public:
         const std::string location = "")
         : serial_(name)
     {
-        // deserialize(name);
         set_attribute("radius", radius);
         set_attribute("D", D);
         set_attribute("location", location);
     }
 
     void deserialize(const serial_type& serial);
-    // serial_type serial() const;
+
     const serial_type serial() const
     {
         return serial_;
@@ -100,16 +76,6 @@ public:
     }
 
     void add_unit(const UnitSpecies& usp);
-
-    // inline container_type::const_iterator begin() const
-    // {
-    //     return units().begin();
-    // }
-
-    // inline container_type::const_iterator end() const
-    // {
-    //     return units().end();
-    // }
 
     const std::vector<UnitSpecies> units() const
     {
@@ -126,48 +92,6 @@ public:
         }
         return units_;
     }
-
-    // const std::vector<UnitSpecies>& units() const
-    // {
-    //     return units_;
-    // }
-
-    // const UnitSpecies& at(const container_type::size_type& idx) const
-    // {
-    //     return units().at(idx);
-    // }
-
-    // Integer get_unit(const UnitSpecies& usp)
-    // {
-    //     container_type::iterator itr;
-    //     for (itr = units_.begin(); itr != units_.end(); ++itr)
-    //     {
-    //         if (usp == *itr)
-    //         {
-    //             return itr - units_.begin();
-    //         }
-    //     }
-    //     throw NotFound("UnitSpecies not found");
-    // }
-
-    // const std::vector<UnitSpecies> list_sites()
-    // {
-    //     std::vector<UnitSpecies> usps;
-    //     if (units_.size() == 0)
-    //     {
-    //         return usps;
-    //     }
-    //     container_type::const_iterator it(units_.begin());
-    //     ++it;
-    //     for (; it != units_.end(); ++it)
-    //     {
-    //           if ((*it).sites_.size() != 0)
-    //           {
-    //             usps.push_back((*it).serial());
-    //           }
-    //     }
-    //     return usps;
-    // }
 
     const attributes_container_type& attributes() const
     {
@@ -199,7 +123,6 @@ public:
 protected:
 
     serial_type serial_;
-    // std::vector<UnitSpecies> units_;
     attributes_container_type attributes_;
 };
 

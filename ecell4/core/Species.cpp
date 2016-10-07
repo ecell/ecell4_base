@@ -35,36 +35,7 @@ Integer Species::count(const Species& sp) const
 void Species::deserialize(const Species::serial_type& serial)
 {
     serial_ = serial;
-    // std::vector<std::string> unit_serials;
-    // boost::split(unit_serials, serial, boost::is_any_of("."));
-
-    // units_.clear();
-    // for (std::vector<std::string>::const_iterator i(unit_serials.begin());
-    //     i != unit_serials.end(); ++i)
-    // {
-    //     UnitSpecies usp;
-    //     usp.deserialize(*i);
-    //     add_unit(usp);
-    // }
 }
-
-// Species::serial_type Species::serial() const
-// {
-//     if (units_.size() == 0)
-//     {
-//         return "";
-//     }
-// 
-//     container_type::const_iterator it(units_.begin());
-//     serial_type retval((*it).serial());
-//     ++it;
-//     for (; it != units_.end(); ++it)
-//     {
-//         retval += ".";
-//         retval += (*it).serial();
-//     }
-//     return retval;
-// }
 
 void Species::add_unit(const UnitSpecies& usp)
 {
@@ -72,9 +43,7 @@ void Species::add_unit(const UnitSpecies& usp)
     {
         throw NotSupported("UnitSpecies must have a name.");
     }
-    // units_.push_back(usp);
-    // units_.insert(std::lower_bound(units_.begin(), units_.end(), usp), usp);
-    if (serial_ != "")
+    else if (serial_ != "")
     {
         serial_ += "." + usp.serial();
     }
@@ -335,7 +304,6 @@ public:
 protected:
 
     const std::vector<UnitSpecies> root_;
-    // const Species& root_;
     connection_container_type connections_;
     std::vector<std::pair<index_type, index_type> > ignores_;
 };
