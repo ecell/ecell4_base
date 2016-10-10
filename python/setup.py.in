@@ -15,6 +15,9 @@ except ImportError:
     print("copy from www.cython.org and install it")
     sys.exit(1)
 
+os.environ["CC"] = "${CMAKE_C_COMPILER}"
+os.environ["CXX"] = "${CMAKE_CXX_COMPILER}"
+
 #XXX: $ cmake .
 #XXX: $ make BesselTables
 #XXX: $ cd python
@@ -24,9 +27,9 @@ except ImportError:
 #XXX: $ python setup.py sdict
 #XXX: $ pip install dist/ecell-4.0.0.tar.gz
 # STATIC_BUILD = True
-STATIC_BUILD = False
+# STATIC_BUILD = False
 
-sys.path.append("./lib")
+sys.path.append(os.path.join("${CMAKE_CURRENT_SOURCE_DIR}", "lib"))
 
 class run_tests(Command):
     user_options = []
@@ -38,10 +41,11 @@ class run_tests(Command):
         pass
 
     def run(self):
+        top_level_dir=os.path.join("${CMAKE_CURRENT_SOURCE_DIR}", "tests")
         test_loader = unittest.TestLoader()
         def load_tests(module_name):
             return test_loader.discover(
-                "tests/%s" % module_name, top_level_dir="tests")
+                os.path.join(top_level_dir, module_name), top_level_dir=top_level_dir)
 
         suite = unittest.TestSuite()
         suite.addTest(load_tests("core"))
@@ -107,44 +111,47 @@ if with_hdf5:
         extra_compile_args.extend(
             ["-D_HDF5USEDLL_", "-DHDF5CPP_USEDLL", "-DH5_BUILT_AS_DYNAMIC_LIB"])
 
-src_path = ".."
+src_path = "${PROJECT_SOURCE_DIR}"
+include_path = [src_path] + "${INCLUDE_PATH}".split(":")
 
-if STATIC_BUILD:
-    src_path = "./src"
-    with_cpp_shared_libraries = False
-    if not (os.path.isdir(os.path.join(src_path, "ecell4"))
-            and os.path.isdir(os.path.join(src_path, "ipynb"))):
-        raise IOError(
-            ("The source directory '{0}/ecell4' or '{0}/ipynb' was not found."
-             + "Do as follows: cp -r ../ecell4 {0}/.").format(src_path))
-    elif (os.path.islink(os.path.join(src_path, "ecell4"))
-            or os.path.islink(os.path.join(src_path, "ipynb"))):
-        raise UserWarning(
-            ("The source directory '{0}/ecell4' or '{0}/ipynb' is a symbolic link."
-             + "It might fail to be scanned properly."))
+# if STATIC_BUILD:
+#     src_path = "./src"
+#     with_cpp_shared_libraries = False
+#     if not (os.path.isdir(os.path.join(src_path, "ecell4"))
+#             and os.path.isdir(os.path.join(src_path, "ipynb"))):
+#         raise IOError(
+#             ("The source directory '{0}/ecell4' or '{0}/ipynb' was not found."
+#              + "Do as follows: cp -r ../ecell4 {0}/.").format(src_path))
+#     elif (os.path.islink(os.path.join(src_path, "ecell4"))
+#             or os.path.islink(os.path.join(src_path, "ipynb"))):
+#         raise UserWarning(
+#             ("The source directory '{0}/ecell4' or '{0}/ipynb' is a symbolic link."
+#              + "It might fail to be scanned properly."))
+
+py_path = os.path.join("${CMAKE_CURRENT_SOURCE_DIR}", "lib")
 
 if with_cpp_shared_libraries:
     ext_modules = [
-        Extension("ecell4.core", sources=["lib/ecell4/core.pyx"],
-            include_dirs=["."], libraries=["ecell4-core"], language="c++",
-            extra_compile_args=extra_compile_args + ["-w"]),
-        Extension("ecell4.egfrd", sources=["lib/ecell4/egfrd.pyx"],
-            include_dirs=["."], libraries=["ecell4-core", "ecell4-egfrd"],
+        Extension("ecell4.core", sources=[os.path.join(py_path, "ecell4/core.pyx")],
+            include_dirs=include_path, libraries=["ecell4-core"], language="c++",
+            extra_compile_args=extra_compile_args),
+        Extension("ecell4.egfrd", sources=[os.path.join(py_path, "ecell4/egfrd.pyx")],
+            include_dirs=include_path, libraries=["ecell4-core", "ecell4-egfrd"],
             language="c++", extra_compile_args=extra_compile_args + ["-w"]),
-        Extension("ecell4.gillespie", sources=["lib/ecell4/gillespie.pyx"],
-            include_dirs=["."], libraries=["ecell4-core", "ecell4-gillespie"],
+        Extension("ecell4.gillespie", sources=[os.path.join(py_path, "ecell4/gillespie.pyx")],
+            include_dirs=include_path, libraries=["ecell4-core", "ecell4-gillespie"],
             language="c++", extra_compile_args=extra_compile_args),
-        Extension("ecell4.bd", sources=["lib/ecell4/bd.pyx"],
-            include_dirs=["."], libraries=["ecell4-core", "ecell4-bd"],
+        Extension("ecell4.bd", sources=[os.path.join(py_path, "ecell4/bd.pyx")],
+            include_dirs=include_path, libraries=["ecell4-core", "ecell4-bd"],
             language="c++", extra_compile_args=extra_compile_args),
-        Extension("ecell4.ode", sources=["lib/ecell4/ode.pyx"],
-            include_dirs=["."], libraries=["ecell4-core", "ecell4-ode"],
+        Extension("ecell4.ode", sources=[os.path.join(py_path, "ecell4/ode.pyx")],
+            include_dirs=include_path, libraries=["ecell4-core", "ecell4-ode"],
             language="c++", extra_compile_args=extra_compile_args),
-        Extension("ecell4.spatiocyte", sources=["lib/ecell4/spatiocyte.pyx"],
-            include_dirs=["."], libraries=["ecell4-core", "ecell4-spatiocyte"],
+        Extension("ecell4.spatiocyte", sources=[os.path.join(py_path, "ecell4/spatiocyte.pyx")],
+            include_dirs=include_path, libraries=["ecell4-core", "ecell4-spatiocyte"],
             language="c++", extra_compile_args=extra_compile_args),
-        Extension("ecell4.meso", sources=["lib/ecell4/meso.pyx"],
-            include_dirs=["."], libraries=["ecell4-core", "ecell4-meso"],
+        Extension("ecell4.meso", sources=[os.path.join(py_path, "ecell4/meso.pyx")],
+            include_dirs=include_path, libraries=["ecell4-core", "ecell4-meso"],
             language="c++", extra_compile_args=extra_compile_args),
         ]
     ext_modules = cythonize(ext_modules)
@@ -152,59 +159,57 @@ else:
     core_src = glob.glob(os.path.join(src_path, "ecell4/core/*.cpp"))
 
     ext_modules = [
-        Extension("ecell4.core", sources=["lib/ecell4/core.pyx"] + core_src,
+        Extension("ecell4.core", sources=[os.path.join(py_path, "ecell4/core.pyx")] + core_src,
             extra_compile_args=extra_compile_args,
-            include_dirs=[src_path], libraries=dependent_libs, language="c++"),
+            include_dirs=include_path, libraries=dependent_libs, language="c++"),
         Extension("ecell4.gillespie",
-            sources=["lib/ecell4/gillespie.pyx"]
+            sources=[os.path.join(py_path, "ecell4/gillespie.pyx")]
                 + glob.glob(os.path.join(src_path, "ecell4/gillespie/*.cpp")) + core_src,
             extra_compile_args=extra_compile_args,
-            libraries=dependent_libs, include_dirs=[src_path], language="c++"),
+            libraries=dependent_libs, include_dirs=include_path, language="c++"),
         Extension("ecell4.bd",
-            sources=["lib/ecell4/bd.pyx"]
+            sources=[os.path.join(py_path, "ecell4/bd.pyx")]
                 + glob.glob(os.path.join(src_path, "ecell4/bd/*.cpp")) + core_src,
             extra_compile_args=extra_compile_args,
-            libraries=dependent_libs, include_dirs=[src_path], language="c++"),
+            libraries=dependent_libs, include_dirs=include_path, language="c++"),
         Extension("ecell4.ode",
-            sources=["lib/ecell4/ode.pyx"]
+            sources=[os.path.join(py_path, "ecell4/ode.pyx")]
                 + glob.glob(os.path.join(src_path, "ecell4/ode/*.cpp")) + core_src,
             extra_compile_args=extra_compile_args,
-            libraries=dependent_libs, include_dirs=[src_path], language="c++"),
+            libraries=dependent_libs, include_dirs=include_path, language="c++"),
         Extension("ecell4.spatiocyte",
-            sources=["lib/ecell4/spatiocyte.pyx"]
+            sources=[os.path.join(py_path, "ecell4/spatiocyte.pyx")]
                 + glob.glob(os.path.join(src_path, "ecell4/spatiocyte/*.cpp")) + core_src,
             extra_compile_args=extra_compile_args,
-            libraries=dependent_libs, include_dirs=[src_path], language="c++"),
+            libraries=dependent_libs, include_dirs=include_path, language="c++"),
         Extension("ecell4.meso",
-            sources=["lib/ecell4/meso.pyx"]
+            sources=[os.path.join(py_path, "ecell4/meso.pyx")]
                 + glob.glob(os.path.join(src_path, "ecell4/meso/*.cpp")) + core_src,
             extra_compile_args=extra_compile_args,
-            libraries=dependent_libs, include_dirs=[src_path], language="c++"),
+            libraries=dependent_libs, include_dirs=include_path, language="c++"),
         ]
     if with_egfrd:
         ext_modules.append(Extension("ecell4.egfrd",
-            sources=["lib/ecell4/egfrd.pyx"]
+            sources=[os.path.join(py_path, "ecell4/egfrd.pyx")]
                 + glob.glob(os.path.join(src_path, "ecell4/egfrd/*.cpp")) + core_src,
             extra_compile_args=extra_compile_args,
-            libraries=dependent_libs, include_dirs=[src_path], language="c++"))
+            libraries=dependent_libs, include_dirs=include_path, language="c++"))
 
     ext_modules = cythonize(ext_modules)
 
+def convert_path(pathname):
+    if os.sep == '/':
+        return pathname
+    return pathname.replace('/', os.sep)  #XXX: This is a workaround for Windows
+
 setup(
     name = "ecell",
-    version = "4.0.4",
-    package_dir = {"": "lib"},
+    version = "${PROJECT_VERSION}",
+    package_dir = {"": convert_path(py_path)},
     package_data = {"ecell4.util": [
         "templates/init_ipynb.js", "templates/init_cyjs.js", "templates/template.html",
         "templates/*.tmpl", "templates/ecelllogo/*.png"]},
-    data_files = [('ecell4-licenses', glob.glob(os.path.join(src_path, 'licenses/*')))],
-    # data_files = [('ecell4ipynb/Licenses', glob.glob(os.path.join(src_path, 'licenses/*'))),
-    #               ('ecell4ipynb', [os.path.join(src_path, 'ipynb/index.ipynb')]),
-    #               ('ecell4ipynb/Tutorials', glob.glob(os.path.join(src_path, 'ipynb/Tutorials/*.ipynb'))),
-    #               ('ecell4ipynb/Examples', glob.glob(os.path.join(src_path, 'ipynb/Examples/*.ipynb'))),
-    #               ('ecell4ipynb/Tests', glob.glob(os.path.join(src_path, 'ipynb/Tests/*.ipynb'))),
-    #               ('ecell4ipynb/Sandbox', glob.glob(os.path.join(src_path, 'ipynb/Sandbox/*.ipynb'))),
-    #               ],
+    data_files = [('ecell4-licenses', glob.glob(os.path.join(convert_path(src_path), 'licenses/*')))],
     packages = ["ecell4", "ecell4.util", "ecell4.extra"],
     cmdclass = {'build_ext': build_ext, 'test': run_tests},
     license = "the GNU General Public License v2",

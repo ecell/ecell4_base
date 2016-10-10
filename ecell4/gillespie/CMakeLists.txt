@@ -4,6 +4,8 @@ set(CPP_FILES
 set(HPP_FILES
     GillespieSimulator.hpp GillespieWorld.hpp GillespieFactory.hpp)
 
+set(BINARY_DIRECTORIES ${CMAKE_CURRENT_BINARY_DIR}:${BINARY_DIRECTORIES} PARENT_SCOPE)
+
 add_library(ecell4-gillespie SHARED ${CPP_FILES} ${HPP_FILES})
 target_link_libraries(ecell4-gillespie ecell4-core)
 

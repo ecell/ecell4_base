@@ -21,6 +21,8 @@ set(UTILS_HPP_FILES
 
 # find_library(BOOST_REGEX_LIBRARIES boost_regex)
 
+set(BINARY_DIRECTORIES ${CMAKE_CURRENT_BINARY_DIR}:${BINARY_DIRECTORIES} PARENT_SCOPE)
+
 check_cxx_source_compiles("#include <math.h>
 int main() { double a = INFINITY; return (int)a * 0; }"
     HAVE_DECL_INFINITY)

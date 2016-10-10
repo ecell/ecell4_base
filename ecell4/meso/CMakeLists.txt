@@ -4,6 +4,8 @@ set(CPP_FILES
 set(HPP_FILES
     MesoscopicSimulator.hpp MesoscopicWorld.hpp MesoscopicFactory.hpp)
 
+set(BINARY_DIRECTORIES ${CMAKE_CURRENT_BINARY_DIR}:${BINARY_DIRECTORIES} PARENT_SCOPE)
+
 add_library(ecell4-meso SHARED ${CPP_FILES} ${HPP_FILES})
 target_link_libraries(ecell4-meso ecell4-core)
 

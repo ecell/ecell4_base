@@ -42,7 +42,7 @@ Installation
 
 #### Optional requirements
 We strongly recommend that you run E-Cell4 with [Jupyter Notebook](http://jupyter.org/).
-And some E-Cell4 functions (for visualization, datastore) optionaly depend on
+And some E-Cell4 functions (for visualization, datastore) optionally depend on
 - matplotlib (**1.5.1** and later)
 - ffmpeg
 - pandas
