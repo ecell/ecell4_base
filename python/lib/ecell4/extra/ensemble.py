@@ -42,7 +42,7 @@ def run_multiprocessing(target, jobs, n=1):
     retval = [end_recv.recv() for end_recv in end_recvs]
     return [retval[i: i + n] for i in range(0, len(retval), n)]
 
-def run_sge(target, jobs, n=1, path='.', delete=True, wait=True, environ={}):
+def run_sge(target, jobs, n=1, path='.', delete=True, wait=True, environ=None, modules=[]):
     logging.basicConfig(level=logging.DEBUG)
 
     if isinstance(target, types.LambdaType) and target.__name__ == "<lambda>":
@@ -56,6 +56,13 @@ def run_sge(target, jobs, n=1, path='.', delete=True, wait=True, environ={}):
 
     if not os.path.isdir(path):
         os.makedirs(path)  #XXX: MYOB
+
+    if environ is None:
+        environ = {}
+        keys = ("LD_LIBRARY_PATH", "PYTHONPATH")
+        for key in keys:
+            if key in os.environ.keys():
+                environ[key] = os.environ[key]
 
     cmds = []
     pickleins = []
@@ -80,6 +87,8 @@ def run_sge(target, jobs, n=1, path='.', delete=True, wait=True, environ={}):
         cmd += 'with open(sys.argv[1], \'rb\') as fin:\n'
         cmd += '    job = pickle.load(fin)\n'
         cmd += 'pass\n'
+        for m in modules:
+            cmd += "from {} import *\n".format(m)
         cmd += src
         cmd += '\ntid = int(os.environ[\'SGE_TASK_ID\'])'
         cmd += '\nretval = {:s}(job, {:d}, tid)'.format(target.__name__, i + 1)
@@ -136,7 +145,7 @@ def ensemble_simulations(
     is_netfree=False, without_reset=False,
     return_type='matplotlib', opt_args=(), opt_kwargs={},
     errorbar=True,
-    n=1, nproc=1, method=None, environ={}):
+    n=1, nproc=1, method=None, environ=None):
     """
     observers=(), progressbar=0, rndseed=None,
     """
