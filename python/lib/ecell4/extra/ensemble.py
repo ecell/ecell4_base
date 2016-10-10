@@ -42,7 +42,7 @@ def run_multiprocessing(target, jobs, n=1):
     retval = [end_recv.recv() for end_recv in end_recvs]
     return [retval[i: i + n] for i in range(0, len(retval), n)]
 
-def run_sge(target, jobs, n=1, path='.', delete=True, environ={}):
+def run_sge(target, jobs, n=1, path='.', delete=True, wait=True, environ=None, modules=[]):
     logging.basicConfig(level=logging.DEBUG)
 
     if isinstance(target, types.LambdaType) and target.__name__ == "<lambda>":
@@ -52,6 +52,16 @@ def run_sge(target, jobs, n=1, path='.', delete=True, environ={}):
     if re.match('[\s\t]+', src.split('\n')[0]) is not None:
         raise RuntimeError(
             "Wrong indentation was found in the source translated")
+
+    if not os.path.isdir(path):
+        os.makedirs(path)  #XXX: MYOB
+
+    if environ is None:
+        environ = {}
+        keys = ("LD_LIBRARY_PATH", "PYTHONPATH")
+        for key in keys:
+            if key in os.environ.keys():
+                environ[key] = os.environ[key]
 
     cmds = []
     pickleins = []
@@ -76,6 +86,8 @@ def run_sge(target, jobs, n=1, path='.', delete=True, environ={}):
         cmd += 'with open(sys.argv[1], \'rb\') as fin:\n'
         cmd += '    job = pickle.load(fin)\n'
         cmd += 'pass\n'
+        for m in modules:
+            cmd += "from {} import *\n".format(m)
         cmd += src
         cmd += '\ntid = int(os.environ[\'SGE_TASK_ID\'])'
         cmd += '\nretval = {:s}(job, {:d}, tid)'.format(target.__name__, i + 1)
@@ -125,7 +137,7 @@ def ensemble_simulations(
     t, y0={}, volume=1.0, model=None, solver='ode', species_list=None, structures={},
     is_netfree=False, without_reset=False,
     return_type='matplotlib', opt_args=(), opt_kwargs={},
-    errorbar=True, n=1, nproc=1, method=None, environ={}):
+    errorbar=True, n=1, nproc=1, method=None, environ=None):
     """
     observers=(), progressbar=0, rndseed=None,
     """
@@ -250,11 +262,8 @@ if __name__ == "__main__":
     # jobs = [{'x': i, 'y': i ** 2} for i in range(1, 4)]
     # print(run_serial(myrun, jobs, n=2))
     # print(run_multiprocessing(myrun, jobs, n=2))
-
-    # # environ = {'LD_LIBRARY_PATH': '/home/kaizu/lily_kaizu/src/ecell4/local/lib', 'PYTHONPATH': '/home/kaizu/lily_kaizu/src/ecell4/local/lib/python3.4/site-packages'}
-    # environ = {}
-    # # print(run_sge(myrun, jobs, n=2, delete=False, environ=environ))
-    # print(run_sge(myrun, jobs, n=2, environ=environ))
+    # # print(run_sge(myrun, jobs, n=2, delete=False))
+    # print(run_sge(myrun, jobs, n=2))
 
     from ecell4 import *
     from ecell4.extra import ensemble
@@ -262,17 +271,6 @@ if __name__ == "__main__":
     with reaction_rules():
         A + B == C | (0.01, 0.3)
 
-    environ = {'LD_LIBRARY_PATH': '/home/kaizu/lily_kaizu/src/ecell4/local/lib',
-               'PYTHONPATH': '/home/kaizu/lily_kaizu/src/ecell4/local/lib/python3.4/site-packages'}
-    retval = ensemble.ensemble_simulations(
+    ensemble.ensemble_simulations(
         10.0, {'C': 60}, solver='gillespie', return_type='matplotlib',
-        n=5, method='multiprocessing', environ=environ)
-
-    # import numpy
-
-    # def concatenate(results):
-    #     return sum([numpy.array(data) for data in results]) / len(results)
-    # retval = [concatenate(results) for results in retval]
-    # print(retval)
-
-    # numpy.savetxt('ens.dat', retval[0])
+        n=30, method='multiprocessing')
