@@ -125,13 +125,13 @@ public:
 
     virtual void add_surface(const boost::array<position_type, 3>& vertices)
     {
-        throw ecell4::NotSupported("add_surface is for ParticleContainerBase::Polygon");
+        return;
     }
 
     virtual position_type
     apply_reflection(const position_type& pos, const position_type& disp)
     {
-        throw ecell4::NotSupported("add_surface is for ParticleContainerBase::Polygon");
+        return pos + disp;
     }
 };
 
