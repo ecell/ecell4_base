@@ -42,34 +42,51 @@ Real AABBSurface::distance(const Real3& pos) const
 Real3 AABBSurface::draw_position(
     boost::shared_ptr<RandomNumberGenerator>& rng) const
 {
-    switch(rng->uniform_int(0, 5))
+    const Real Sxy = (upper_[0] - lower_[0]) * (upper_[1] - lower_[1]);
+    const Real Syz = (upper_[1] - lower_[1]) * (upper_[2] - lower_[2]);
+    const Real Szx = (upper_[1] - lower_[1]) * (upper_[0] - lower_[0]);
+    const Real Stot = (Sxy + Syz + Szx) * 2;
+    Real rnd = rng->uniform_real(0., Stot);
+
+    if((rnd -= Sxy) < 0.)
     {
-        case 0:
-            return Real3(rng->uniform(lower_[0], upper_[0]),
-                         rng->uniform(lower_[1], upper_[1]),
-                         lower_[0]);
-        case 1:
-            return Real3(rng->uniform(lower_[0], upper_[0]),
-                         rng->uniform(lower_[1], upper_[1]),
-                         upper_[0]);
-        case 2:
-            return Real3(rng->uniform(lower_[0], upper_[0]),
-                         lower_[1],
-                         rng->uniform(lower_[2], upper_[2]));
-        case 3:
-            return Real3(rng->uniform(lower_[0], upper_[0]),
-                         upper_[1],
-                         rng->uniform(lower_[2], upper_[2]));
-        case 4:
-            return Real3(lower_[2],
-                         rng->uniform(lower_[1], upper_[1]),
-                         rng->uniform(lower_[2], upper_[2]));
-        case 5:
-            return Real3(upper_[2],
-                         rng->uniform(lower_[1], upper_[1]),
-                         rng->uniform(lower_[2], upper_[2]));
-        default:
-            throw std::logic_error("rng returns invalid value");
+        return Real3(rng->uniform(lower_[0], upper_[0]),
+                     rng->uniform(lower_[1], upper_[1]),
+                     lower_[2]);
+    }
+    else if((rnd -= Sxy) < 0.)
+    {
+        return Real3(rng->uniform(lower_[0], upper_[0]),
+                     rng->uniform(lower_[1], upper_[1]),
+                     upper_[2]);
+    }
+    else if((rnd -= Syz) < 0.)
+    {
+        return Real3(lower_[0],
+                     rng->uniform(lower_[1], upper_[1]),
+                     rng->uniform(lower_[2], upper_[2]));
+    }
+    else if((rnd -= Syz) < 0.)
+    {
+        return Real3(upper_[0],
+                     rng->uniform(lower_[1], upper_[1]),
+                     rng->uniform(lower_[2], upper_[2]));
+    }
+    else if((rnd -= Szx) < 0.)
+    {
+        return Real3(rng->uniform(lower_[0], upper_[0]),
+                     lower_[1],
+                     rng->uniform(lower_[2], upper_[2]);
+    }
+    else if((rnd -= Szx) < 0.)
+    {
+        return Real3(rng->uniform(lower_[0], upper_[0]),
+                     upper_[1],
+                     rng->uniform(lower_[2], upper_[2]);
+    }
+    else
+    {
+        throw std::logic_error("invalid random number");
     }
 }
 
