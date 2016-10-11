@@ -46,7 +46,7 @@ Real3 AABBSurface::draw_position(
     const Real Syz = (upper_[1] - lower_[1]) * (upper_[2] - lower_[2]);
     const Real Szx = (upper_[1] - lower_[1]) * (upper_[0] - lower_[0]);
     const Real Stot = (Sxy + Syz + Szx) * 2;
-    Real rnd = rng->uniform_real(0., Stot);
+    Real rnd = rng->uniform(0., Stot);
 
     if((rnd -= Sxy) < 0.)
     {
@@ -76,13 +76,13 @@ Real3 AABBSurface::draw_position(
     {
         return Real3(rng->uniform(lower_[0], upper_[0]),
                      lower_[1],
-                     rng->uniform(lower_[2], upper_[2]);
+                     rng->uniform(lower_[2], upper_[2]));
     }
     else if((rnd -= Szx) < 0.)
     {
         return Real3(rng->uniform(lower_[0], upper_[0]),
                      upper_[1],
-                     rng->uniform(lower_[2], upper_[2]);
+                     rng->uniform(lower_[2], upper_[2]));
     }
     else
     {
