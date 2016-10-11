@@ -54,7 +54,7 @@ int main(int argc, char **argv)
 
     // Constants
     // {{{
-    const ecell4::Real L(5e1);
+    const ecell4::Real L(1e2);
     const ecell4::Real3 edge_lengths(L, L, L);
     const ecell4::Integer3 matrix_sizes(3, 3, 3);
     const ecell4::Real volume(L * L * L);
