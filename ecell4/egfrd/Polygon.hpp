@@ -36,6 +36,14 @@ struct Polygon : public ecell4::Shape
                      const std::vector<face_id_type>& intruder_faces,
                      const face_id_type ignore_face) const;
 
+    std::pair<std::pair<coordinate_type, coordinate_type>, face_id_type>
+    apply_reflection(const coordinate_type& pos, const coordinate_type& displacement,
+                     const face_id_type intruder_face) const;
+
+    std::pair<bool, std::pair<Real, face_id_type> >
+    intersect_ray(const coordinate_type& pos, const coordinate_type& disp,
+                  const face_id_type ignore_face) const;
+
     static face_id_type make_nonsence_id(){return std::numeric_limits<std::size_t>::max();}
 
 // data member
@@ -83,7 +91,7 @@ Polygon<coordT>::apply_reflection(
         const face_id_type ignore_face) const
 {
     const coordinate_type end = pos + displacement;
-    if(intruder_idxs.empty())
+    if(intruder_faces.empty())
         return std::make_pair(std::make_pair(end, end), make_nonsence_id());
 
     bool collide_face = false;
@@ -110,7 +118,7 @@ Polygon<coordT>::apply_reflection(
                 first_collide_distance = dist_to_face;
                 next_begin = test_result.second;
             }
-            else if(dist_to_face == collide_world.second)
+            else if(dist_to_face == first_collide_distance)
             {
                 throw ecell4::NotImplemented("collide 2 object at the same time");
             }
@@ -124,6 +132,65 @@ Polygon<coordT>::apply_reflection(
 
     return std::make_pair(
             std::make_pair(next_begin, next_end), first_collide_face_idx);
+}
+
+
+template<typename coordT>
+std::pair<std::pair<typename Polygon<coordT>::coordinate_type,
+                    typename Polygon<coordT>::coordinate_type>,
+          typename Polygon<coordT>::face_id_type>
+Polygon<coordT>::apply_reflection(
+        const coordinate_type& pos, const coordinate_type& displacement,
+        const face_id_type intruder_face) const
+{
+    const coordinate_type end = pos + displacement;
+    const std::pair<bool, coordinate_type> test_result =
+        is_pierce(pos, end, faces.at(intruder_face));
+
+    const coordinate_type next_end =
+        reflect_plane(pos, end, faces.at(intruder_face));
+
+    return std::make_pair(
+            std::make_pair(test_result.second, next_end), intruder_face);
+}
+
+
+template<typename coordT>
+std::pair<bool, std::pair<Real, typename Polygon<coordT>::face_id_type> >
+Polygon<coordT>::intersect_ray(
+        const coordinate_type& pos, const coordinate_type& disp, 
+        const face_id_type ignore_face) const
+{
+    const std::pair<std::vector<face_id_type>,
+                    std::pair<face_id_type, std::pair<Real, Real> > > intruders =
+            this->get_faces_within_radius(pos, length(disp));
+
+    bool collide_face = false;
+    face_id_type first_collide_face_idx = std::numeric_limits<std::size_t>::max();
+    Real         first_collide_distance = length(disp);
+    const coordinate_type end = pos + disp;
+    for(typename std::vector<face_id_type>::const_iterator
+        iter = intruders.first.begin(); iter != intruders.first.end(); ++iter)
+    {
+        if(*iter == ignore_face) continue;
+
+        const std::pair<bool, coordinate_type> test_result =
+            is_pierce(pos, end, this->faces.at(*iter));
+
+        if(test_result.first)
+        {
+            const Real dist_to_face = length(test_result.second - pos);
+            if(dist_to_face < first_collide_distance)
+            {
+                collide_face = true;
+                first_collide_face_idx = *iter;
+                first_collide_distance = dist_to_face;
+            }
+        }
+    }
+
+    return std::make_pair(collide_face,
+                std::make_pair(first_collide_distance, first_collide_face_idx));
 }
 
 template<typename coordT>
