@@ -115,7 +115,6 @@ std::pair<bool, Real> AABBSurface::intersect_ray(const Real3& p, const Real3& d)
 {
     if(this->_is_inside(p))
     {
-        bool retval = false;
         Real tmin = inf;
         for(std::size_t i=0; i<3; ++i)
         {
@@ -123,8 +122,8 @@ std::pair<bool, Real> AABBSurface::intersect_ray(const Real3& p, const Real3& d)
             const Real tmp = (d[i] > 0) ? (this->upper_[i] - p[i]) / d[i] :
                                           (this->lower_[i] - p[i]) / d[i] ;
             tmin = std::min(tmin, tmp);
-            retval = true;
         }
+        bool retval(tmin <= 1.0);
         return std::make_pair(retval, tmin);
     }
     else
