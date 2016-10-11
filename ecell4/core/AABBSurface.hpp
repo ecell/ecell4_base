@@ -1,5 +1,5 @@
-#ifndef __ECELL4_AABB_HPP
-#define __ECELL4_AABB_HPP
+#ifndef __ECELL4_AABB_SURFACE_HPP
+#define __ECELL4_AABB_SURFACE_HPP
 
 #include "Shape.hpp"
 #include "shape_operators.hpp"
@@ -7,22 +7,22 @@
 namespace ecell4
 {
 
-struct AABB
+struct AABBSurface
     : public Shape
 {
-    AABB()
+    AABBSurface()
         : lower_(), upper_()
     {
         ;
     }
 
-    AABB(const Real3& lower, const Real3& upper)
+    AABBSurface(const Real3& lower, const Real3& upper)
         : lower_(lower), upper_(upper)
     {
         ;
     }
 
-    AABB(const AABB& rhs)
+    AABBSurface(const AABBSurface& rhs)
         : lower_(rhs.lower()), upper_(rhs.upper())
     {
         ;
@@ -53,11 +53,20 @@ struct AABB
 
     Real is_inside(const Real3& coord) const
     {
-        return distance(coord);
+        if(this->_is_inside(coord))
+            return -1. * this->distance(coord);
+        else
+            return this->distance(coord);
     }
 
-    Real3 draw_position(
-        boost::shared_ptr<RandomNumberGenerator>& rng) const;
+    bool _is_inside(const Real3& coord) const
+    {
+        return (lower_[0] <= coord[0] && coord[0] <= upper_[0]) &&
+               (lower_[1] <= coord[1] && coord[1] <= upper_[1]) &&
+               (lower_[2] <= coord[2] && coord[2] <= upper_[2]);
+    }
+
+    Real3 draw_position(boost::shared_ptr<RandomNumberGenerator>& rng) const;
     bool test_AABB(const Real3& l, const Real3& u) const;
     bool test_segment(const Real3& p0, const Real3& p1) const;
     std::pair<bool, Real> intersect_ray(const Real3& p, const Real3& d) const;
@@ -78,12 +87,12 @@ struct AABB
 
     dimension_kind dimension() const
     {
-        return THREE;
+        return TWO;
     }
 
     Surface surface() const
     {
-        return Surface(boost::shared_ptr<Shape>(new AABB(*this)));
+        return Surface(boost::shared_ptr<Shape>(new AABBSurface(*this)));
     }
 
 protected:
@@ -93,4 +102,4 @@ protected:
 
 }// ecell4
 
-#endif /* __ECELL4_AABB_HPP */
+#endif /* __ECELL4_AABB_SURFACE_HPP */
