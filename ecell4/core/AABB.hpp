@@ -53,7 +53,24 @@ struct AABB
 
     Real is_inside(const Real3& coord) const
     {
-        return distance(coord);
+        if(this->_is_inside(coord))
+        {
+            return -1 * std::min(std::min(
+                            std::min(coord[0] - lower[0], upper[0] - coord[0]), 
+                            std::min(coord[1] - lower[1], upper[1] - coord[1])),
+                        std::min(coord[2] - lower[2], upper[2] - coord[2]));
+        }
+        else
+        {
+            return distance(coord);
+        }
+    }
+
+    bool _is_inside(const Real3& coord) const
+    {
+        return (lower_[0] <= coord[0] && coord[0] <= upper[0]) &&
+               (lower_[1] <= coord[1] && coord[1] <= upper[1]) &&
+               (lower_[2] <= coord[2] && coord[2] <= upper[2]);
     }
 
     Real3 draw_position(
