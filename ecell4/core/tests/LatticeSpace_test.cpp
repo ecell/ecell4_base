@@ -11,7 +11,8 @@
 
 #include <ecell4/core/MolecularType.hpp>
 #include <ecell4/core/VacantType.hpp>
-#include <ecell4/core/LatticeSpace.hpp>
+//#include <ecell4/core/LatticeSpace.hpp>
+#include <ecell4/core/LatticeSpaceVectorImpl.hpp>
 #include <ecell4/core/SerialIDGenerator.hpp>
 
 using namespace ecell4;

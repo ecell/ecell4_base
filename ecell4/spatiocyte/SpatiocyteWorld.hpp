@@ -5,8 +5,9 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
 
-#include <ecell4/core/LatticeSpace.hpp>
+// #include <ecell4/core/LatticeSpace.hpp>
 #include <ecell4/core/LatticeSpaceCellListImpl.hpp>
+#include <ecell4/core/LatticeSpaceVectorImpl.hpp>
 #include <ecell4/core/VoxelPool.hpp>
 #include <ecell4/core/RandomNumberGenerator.hpp>
 #include <ecell4/core/SerialIDGenerator.hpp>
