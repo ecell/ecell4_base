@@ -153,8 +153,10 @@ if __name__ == "__main__":
             ftypes = sorted(tuple(solvers.keys()))
 
         import matplotlib.pyplot as plt
-        fig, ax = plt.subplots(1, 1, figsize=(10, 5))
-        plt.subplots_adjust(left = 0.1, right = 0.6)
+        plt.rcParams["font.size"] = 16
+
+        fig, ax = plt.subplots(1, 1, figsize=(11, 7))
+        plt.subplots_adjust(left = 0.10, right = 0.72)
         ax.set_xscale("log")
         ax.set_yscale("log")
         ax.set_xlim(10.0 ** 0.5, 10.0 ** 6.5)
@@ -180,9 +182,9 @@ if __name__ == "__main__":
 
         handles, labels = ax.get_legend_handles_labels()
         handles = [h[0] for h in handles]  # remove the errorbars
-        ax.legend(handles, labels, loc='upper left', numpoints=1, shadow=True, bbox_to_anchor=(1.0, 1.0))
+        ax.legend(handles, labels, loc='upper left', numpoints=1, shadow=True, fontsize=11, bbox_to_anchor=(1.0, 1.0))
 
-        inset = fig.add_axes([0.18, 0.58, 0.18, 0.28])
+        inset = fig.add_axes([0.19, 0.58, 0.18, 0.28])
         inset.set_xscale("log")
         inset.set_yscale("log")
         inset.set_xlabel("Concentration [uM]")
