@@ -141,7 +141,7 @@ if __name__ == "__main__":
         if not os.path.isdir("C"):
             os.mkdir("C")
 
-        for ftype in ("eGFRD", ):
+        for ftype in ("eGFRD", "BD"):
             for num in (300, 3000):
                 cs = (-3, 3, 7)
                 create_factory, one_particle_per_step, c, marker = solvers[ftype]
@@ -184,21 +184,25 @@ if __name__ == "__main__":
         handles = [h[0] for h in handles]  # remove the errorbars
         ax.legend(handles, labels, loc='upper left', numpoints=1, shadow=True, fontsize=11, bbox_to_anchor=(1.0, 1.0))
 
-        inset = fig.add_axes([0.19, 0.58, 0.18, 0.28])
+        inset = fig.add_axes([0.16, 0.58, 0.22, 0.28])
         inset.set_xscale("log")
         inset.set_yscale("log")
-        inset.set_xlabel("Concentration [uM]")
-        inset.set_ylabel("time [sec]")
+        inset.tick_params(labelsize=11)
+        inset.set_xlabel("Concentration [uM]", fontsize=11)
+        inset.set_ylabel("time [sec]", fontsize=11)
         inset.set_xlim(10.0 ** -3.5, 10.0 ** +3.5)
-        inset.set_ylim(10.0 ** -1.0, 10.0 ** +10.0)
-        for ftype in ("eGFRD", ):
+        inset.set_ylim(10.0 ** -1.0, 10.0 ** +8.0)
+        for ftype in ("eGFRD", "BD"):
             for num in (300, 3000):
                 create_factory, one_particle_per_step, c, marker = solvers[ftype]
                 filename = "C/{}-{:d}.tsv".format(ftype, num)
-                if num == 300:
-                    plotdata(inset, filename, c='k', marker='d', lines=[(0, 2.0 / 3.0), (-1, 1.5)])
+                if ftype == "eGFRD":
+                    if num == 300:
+                        plotdata(inset, filename, c='k', marker=marker, lines=[(0, 2.0 / 3.0), (-1, 1.5)])
+                    else:
+                        plotdata(inset, filename, c='k', marker=marker, lines=None)
                 else:
-                    plotdata(inset, filename, c='k', marker='o', lines=None)
+                    plotdata(inset, filename, c='k', marker=marker, lines=None)
 
         plt.savefig(outputfilename)
         plt.show()
@@ -209,10 +213,10 @@ if __name__ == "__main__":
     solvers = {
         "Mesoscopic": (non_partitioned_factory_maker(meso.MesoscopicFactory, 0.1), True, "b", "o"),
         "Mesoscopic relaxed": (non_partitioned_factory_maker(meso.MesoscopicFactory, 0.3), True, "navy", "o"),
-        "BD": (partitioned_factory_maker(bd.BDFactory, 1e-5), False, "k", "^"),
-        "BD relaxed": (partitioned_factory_maker(bd.BDFactory, 1e-3), False, "gray", "^"),
+        "BD": (partitioned_factory_maker(bd.BDFactory, 1e-5), False, "k", "x"),
+        "BD relaxed": (partitioned_factory_maker(bd.BDFactory, 1e-3), False, "gray", "x"),
         "BD eGFRD": (partitioned_factory_maker(egfrd.BDFactory, 1e-5), False, "silver", "v"),
-        "eGFRD": (partitioned_factory_maker(egfrd.EGFRDFactory), True, "r", "v"),
+        "eGFRD": (partitioned_factory_maker(egfrd.EGFRDFactory), True, "r", "d"),
         "Spatiocyte": (non_partitioned_factory_maker(spatiocyte.SpatiocyteFactory, radius), False, "g", "o"),
         }
 
