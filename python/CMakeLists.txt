@@ -33,6 +33,7 @@ if (PYTHONINTERP_FOUND)
     add_custom_command(
         OUTPUT ${OUTPUT}
         COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY} build_ext -L${BINARY_DIRECTORIES} ${OPTS}
+        COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY} bdist_wheel
         COMMAND ${CMAKE_COMMAND} -E touch ${OUTPUT})
     add_custom_target(python ALL DEPENDS ${OUTPUT})
     add_test(
