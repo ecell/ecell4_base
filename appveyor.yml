@@ -8,8 +8,19 @@ environment:
   matrix:
     - PYTHON: "C:\\Python27"
       PYTHON_VERSION: "2.7.11"
+      PYTHON_ARCH: "32"
+
+    - PYTHON: "C:\\Python27"
+      PYTHON_VERSION: "2.7.11"
+      PYTHON_ARCH: "64"
+
     - PYTHON: "C:\\Python35"
       PYTHON_VERSION: "3.5.1"
+      PYTHON_ARCH: "32"
+
+    - PYTHON: "C:\\Python35-x64"
+      PYTHON_VERSION: "3.5.1"
+      PYTHON_ARCH: "64"
 
 init:
   - cmd: cmake --version
@@ -73,6 +84,7 @@ install:
   # go into ecell4/python
   - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
   - "python --version"
+  - "python -c \"import struct; print(struct.calcsize('P') * 8)\""
   - curl -O https://bootstrap.pypa.io/get-pip.py
   - "python get-pip.py"
   - if "%PYTHON_VERSION%" == "2.7.11" python -m pip install cython
@@ -95,6 +107,7 @@ build: false
 branches:
   only:
     - master
+    - 4-1-stable
 
 artifacts:
   # bdist_wheel puts your built wheel in the dist directory
