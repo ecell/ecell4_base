@@ -88,7 +88,8 @@ install:
   - curl -O https://bootstrap.pypa.io/get-pip.py
   - "python get-pip.py"
   - if "%PYTHON_VERSION%" == "2.7.12" python -m pip install cython
-  - if "%PYTHON_VERSION%" == "3.5.2" python -m pip install https://pypi.python.org/packages/cp35/C/Cython/Cython-0.23.4-cp35-none-win32.whl
+  # - if "%PYTHON_VERSION%" == "3.5.2" python -m pip install https://pypi.python.org/packages/cp35/C/Cython/Cython-0.23.4-cp35-none-win32.whl
+  - if "%PYTHON_VERSION%" == "3.5.2" python -m pip install Cython --install-option="--no-cython-compile"
   - cd python
   - ECHO "ls boost:"
   - ps: "ls \"C:/Libraries/boost\""
