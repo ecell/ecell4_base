@@ -69,7 +69,8 @@ public:
         }
 
         const Real dt(rmin < inf && Dmax > 0.0
-            ? rmin * rmin / (6.0 * Dmax) * bd_dt_factor_
+            ? 4.0 * rmin * rmin / (2.0 * Dmax) * bd_dt_factor_
+            // ? rmin * rmin / (6.0 * Dmax) * bd_dt_factor_
             : inf);
         return dt;
     }

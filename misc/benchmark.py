@@ -125,18 +125,18 @@ if __name__ == "__main__":
         if ftypes is None:
             ftypes = solvers.keys()
 
-        # if not os.path.isdir("N"):
-        #     os.mkdir("N")
+        if not os.path.isdir("N"):
+            os.mkdir("N")
 
-        # for ftype in ftypes:
-        #     for fixed_volume in (True, False):
-        #         if (ftype, fixed_volume) in (("Spatiocyte", False), ):
-        #             ns = (1.0, 5.0, 9)
-        #         else:
-        #             ns = (1.0, 6.0, 11)
-        #         create_factory, one_particle_per_step, c, marker = solvers[ftype]
-        #         filename = "N/{}-{}.tsv".format(ftype, "volume" if fixed_volume else "conc")
-        #         profile1(filename, ns, create_factory, fixed_volume, one_particle_per_step, max_steps, min_duration)
+        for ftype in ftypes:
+            for fixed_volume in (True, False):
+                if (ftype, fixed_volume) in (("Spatiocyte", False), ):
+                    ns = (1.0, 5.0, 9)
+                else:
+                    ns = (1.0, 6.0, 11)
+                create_factory, one_particle_per_step, c, marker = solvers[ftype]
+                filename = "N/{}-{}.tsv".format(ftype, "volume" if fixed_volume else "conc")
+                profile1(filename, ns, create_factory, fixed_volume, one_particle_per_step, max_steps, min_duration)
 
         if not os.path.isdir("C"):
             os.mkdir("C")
@@ -151,6 +151,9 @@ if __name__ == "__main__":
     def plotall(outputfilename, solvers, ftypes=None):
         if ftypes is None:
             ftypes = sorted(tuple(solvers.keys()))
+
+        import matplotlib
+        matplotlib.use('Agg')
 
         import matplotlib.pyplot as plt
         plt.rcParams["font.size"] = 16
@@ -184,7 +187,7 @@ if __name__ == "__main__":
         handles = [h[0] for h in handles]  # remove the errorbars
         ax.legend(handles, labels, loc='upper left', numpoints=1, shadow=True, fontsize=11, bbox_to_anchor=(1.0, 1.0))
 
-        inset = fig.add_axes([0.16, 0.58, 0.22, 0.28])
+        inset = fig.add_axes([0.16, 0.60, 0.22, 0.26])
         inset.set_xscale("log")
         inset.set_yscale("log")
         inset.tick_params(labelsize=11)
@@ -205,10 +208,10 @@ if __name__ == "__main__":
                     plotdata(inset, filename, c='k', marker=marker, lines=None)
 
         plt.savefig(outputfilename)
-        plt.show()
+        # plt.show()
 
     max_steps = 10
-    min_duration = 1.0
+    min_duration = 10.0 # 1.0
 
     solvers = {
         "Mesoscopic": (non_partitioned_factory_maker(meso.MesoscopicFactory, 0.1), True, "b", "o"),
@@ -220,5 +223,5 @@ if __name__ == "__main__":
         "Spatiocyte": (non_partitioned_factory_maker(spatiocyte.SpatiocyteFactory, radius), False, "g", "o"),
         }
 
-    # profileall(solvers)
+    profileall(solvers)
     plotall("benchmark.png", solvers)
