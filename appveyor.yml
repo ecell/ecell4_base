@@ -62,10 +62,9 @@ install:
   # - msbuild GSL.sln /p:Configuration=Release /v:d
 
   - if "%PYTHON_VERSION%" == "2.7.12" if "%PYTHON_ARCH%" == "32" cmake -G "Visual Studio 9 2008" -D CMAKE_CXX_FLAGS_RELEASE="/MT" -D CMAKE_CXX_FLAGS_DEBUG="/MTd" -DBOOST_REGEX_LIBRARIES=C:/Libraries/boost/libs -DBoost_INCLUDE_DIR=C:/Libraries/boost -DGSL_INCLUDE_DIR=C:/projects/ecell4/gsl/include -DGSL_CBLAS_LIBRARIES=C:/projects/ecell4/gsl/lib -DGSL_LIBRARIES=C:/projects/ecell4/gsl/lib .
-  - if "%PYTHON_VERSION%" == "2.7.12" if "%PYTHON_ARCH%" == "64" set PATH=C:\Users\appveyor\AppData\Local\Programs\Common\Microsoft\Visual C++ for Python\9.0\VC\Bin\amd64;%PATH%
+  - dir "C:\Users\appveyor\AppData\Local\Programs\Common\Microsoft\Visual C++ for Python\9.0\VC"
+  - if "%PYTHON_VERSION%" == "2.7.12" if "%PYTHON_ARCH%" == "64" "C:\Users\appveyor\AppData\Local\Programs\Common\Microsoft\Visual C++ for Python\9.0\VC\vcvarsall.bat"
   - echo %PATH%
-  - dir "C:\Users\appveyor\AppData\Local\Programs\Common\Microsoft\Visual C++ for Python\9.0\VC\Bin"
-  - dir "C:\Users\appveyor\AppData\Local\Programs\Common\Microsoft\Visual C++ for Python\9.0\VC\Bin\amd64"
   - if "%PYTHON_VERSION%" == "2.7.12" if "%PYTHON_ARCH%" == "64" cmake -G "Visual Studio 9 2008 Win64" -D CMAKE_CXX_FLAGS_RELEASE="/MT" -D CMAKE_CXX_FLAGS_DEBUG="/MTd" -DBOOST_REGEX_LIBRARIES=C:/Libraries/boost/libs -DBoost_INCLUDE_DIR=C:/Libraries/boost -DGSL_INCLUDE_DIR=C:/projects/ecell4/gsl/include -DGSL_CBLAS_LIBRARIES=C:/projects/ecell4/gsl/lib -DGSL_LIBRARIES=C:/projects/ecell4/gsl/lib .
   - if "%PYTHON_VERSION%" == "3.5.2" if "%PYTHON_ARCH%" == "32" cmake -G "Visual Studio 14 2015" -D CMAKE_CXX_FLAGS_RELEASE="/MD" -D CMAKE_CXX_FLAGS_DEBUG="/MDd" -D CMAKE_C_FLAGS_DEBUG="/MDd" -DBoost_INCLUDE_DIR=C:/Libraries/boost -DGSL_INCLUDE_DIR=C:/projects/ecell4/gsl -DGSL_CBLAS_LIBRARIES=C:/projects/ecell4/gsl/Release -DGSL_LIBRARIES=C:/projects/ecell4/gsl/Release .
   - if "%PYTHON_VERSION%" == "3.5.2" if "%PYTHON_ARCH%" == "64" cmake -G "Visual Studio 14 2015 Win64" -D CMAKE_CXX_FLAGS_RELEASE="/MD" -D CMAKE_CXX_FLAGS_DEBUG="/MDd" -D CMAKE_C_FLAGS_DEBUG="/MDd" -DBoost_INCLUDE_DIR=C:/Libraries/boost -DGSL_INCLUDE_DIR=C:/projects/ecell4/gsl -DGSL_CBLAS_LIBRARIES=C:/projects/ecell4/gsl/Release -DGSL_LIBRARIES=C:/projects/ecell4/gsl/Release .
