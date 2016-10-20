@@ -29,12 +29,12 @@ install:
   # install hdf5
   - mkdir hdf5lib
   - cd hdf5lib
-  - if (("%PYTHON_VERSION%" == "2.7.12") -And ("%PYTHON_ARCH%" == "32")) curl -O http://repo.continuum.io/pkgs/free/win-32/hdf5-1.8.16-vc9_0.tar.bz2
-  - if (("%PYTHON_VERSION%" == "2.7.12") -And ("%PYTHON_ARCH%" == "64")) curl -O http://repo.continuum.io/pkgs/free/win-64/hdf5-1.8.16-vc9_0.tar.bz2
+  - ps: if (($env:PYTHON_VERSION -eq "2.7.12") -and ($env:PYTHON_ARCH -eq "32")) { curl -O http://repo.continuum.io/pkgs/free/win-32/hdf5-1.8.16-vc9_0.tar.bz2 }
+  - ps: if (($env:PYTHON_VERSION -eq "2.7.12") -and ($env:PYTHON_ARCH -eq "64")) { curl -O http://repo.continuum.io/pkgs/free/win-64/hdf5-1.8.16-vc9_0.tar.bz2 }
   - if "%PYTHON_VERSION%" == "2.7.12" 7z x -y hdf5-1.8.16-vc9_0.tar.bz2
   - if "%PYTHON_VERSION%" == "2.7.12" 7z x -y hdf5-1.8.16-vc9_0.tar
-  - if (("%PYTHON_VERSION%" == "3.5.2") -And ("%PYTHON_ARCH%" == "32")) curl -O http://repo.continuum.io/pkgs/free/win-32/hdf5-1.8.16-vc14_0.tar.bz2
-  - if (("%PYTHON_VERSION%" == "3.5.2") -And ("%PYTHON_ARCH%" == "64")) curl -O http://repo.continuum.io/pkgs/free/win-64/hdf5-1.8.16-vc14_0.tar.bz2
+  - ps: if (($env:PYTHON_VERSION -eq "3.5.2") -and ($env:PYTHON_ARCH -eq "32")) { curl -O http://repo.continuum.io/pkgs/free/win-32/hdf5-1.8.16-vc14_0.tar.bz2 }
+  - ps: if (($env:PYTHON_VERSION -eq "3.5.2") -and ($env:PYTHON_ARCH -eq "64")) { curl -O http://repo.continuum.io/pkgs/free/win-64/hdf5-1.8.16-vc14_0.tar.bz2 }
   - if "%PYTHON_VERSION%" == "3.5.2" 7z x -y hdf5-1.8.16-vc14_0.tar.bz2
   - if "%PYTHON_VERSION%" == "3.5.2" 7z x -y hdf5-1.8.16-vc14_0.tar
   - mkdir "C:/Program Files (x86)/HDF_Group/HDF5/1.8.16"
