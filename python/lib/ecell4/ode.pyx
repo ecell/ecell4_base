@@ -20,7 +20,7 @@ cdef class ODEWorld:
 
     """
 
-    def __init__(self, edge_lengths = None):
+    def __init__(self, edge_lengths=None):
         """Constructor.
 
         Parameters
@@ -31,7 +31,7 @@ cdef class ODEWorld:
         """
         pass  # XXX: Only used for doc string
 
-    def __cinit__(self, edge_lengths = None):
+    def __cinit__(self, edge_lengths=None):
         cdef string filename
 
         if edge_lengths is None:
@@ -830,7 +830,7 @@ cdef class ODENetworkModel:
 
     """
 
-    def __init__(self, m = None):
+    def __init__(self, m=None):
         """Constructor.
 
         Parameters
@@ -841,7 +841,7 @@ cdef class ODENetworkModel:
         """
         pass
 
-    def __cinit__(self, m = None):
+    def __cinit__(self, m=None):
         # self.thisptr = new shared_ptr[Cpp_ODENetworkModel](
         #     <Cpp_ODENetworkModel*>(new Cpp_ODENetworkModel()))
         if m == None:
@@ -975,7 +975,7 @@ cdef class ODESimulator:
 
     """
 
-    def __init__(self, arg1, arg2 = None, arg3 = None):
+    def __init__(self, arg1, arg2=None, arg3=None):
         """Constructor.
 
         Parameters
@@ -991,7 +991,7 @@ cdef class ODESimulator:
         """
         pass
 
-    def __cinit__(self, arg1, arg2 = None, arg3 = None):
+    def __cinit__(self, arg1, arg2=None, arg3=None):
         if arg2 is None or not isinstance(arg2, ODEWorld):
             if not isinstance(arg1, ODEWorld):
                 raise ValueError(
@@ -1039,7 +1039,7 @@ cdef class ODESimulator:
         """Initialize the simulator."""
         self.thisptr.initialize()
 
-    def step(self, upto = None):
+    def step(self, upto=None):
         """step(upto=None) -> bool
 
         Step the simulation.
@@ -1189,16 +1189,16 @@ cdef ODESimulator ODESimulator_from_Cpp_ODESimulator(Cpp_ODESimulator* s):
 cdef class ODEFactory:
     """ A factory class creating a ODEWorld instance and a ODESimulator instance.
 
-    ODEFactory(solvertype=None, dt=None, abs_tol=None, rel_tol=None)
+    ODEFactory(ODESolverType solver_type=None, Real dt=None, Real abs_tol=None, Real rel_tol=None)
 
     """
 
-    def __init__(self, solvertype = None, dt = None, abs_tol = None, rel_tol = None):
+    def __init__(self, solver_type=None, dt=None, abs_tol=None, rel_tol=None):
         """Constructor.
 
         Parameters
         ----------
-        solvertype : int, optional
+        solver_type : int, optional
             a type of the ode solver.
             Choose one from RUNGE_KUTTA_CASH_KARP54, ROSENBROCK4_CONTROLLER and EULER.
         dt : Real, optional
@@ -1211,19 +1211,22 @@ cdef class ODEFactory:
         """
         pass
 
-    def __cinit__(self, solvertype = None, dt = None, abs_tol = None, rel_tol = None):
-        if solvertype is None:
+    def __cinit__(self, solver_type=None, dt=None, abs_tol=None, rel_tol=None):
+        if solver_type is None:
+            assert dt is None and abs_tol is None and rel_tol is None
             self.thisptr = new Cpp_ODEFactory()
         elif dt is None:
-            self.thisptr = new Cpp_ODEFactory(translate_solver_type(solvertype))
+            assert abs_tol is None and rel_tol is None
+            self.thisptr = new Cpp_ODEFactory(translate_solver_type(solver_type))
         elif abs_tol is None:
-            self.thisptr = new Cpp_ODEFactory(translate_solver_type(solvertype), <Real>dt)
+            assert rel_tol is None
+            self.thisptr = new Cpp_ODEFactory(translate_solver_type(solver_type), <Real>dt)
         elif rel_tol is None:
             self.thisptr = new Cpp_ODEFactory(
-                translate_solver_type(solvertype), <Real>dt, <Real>abs_tol)
+                translate_solver_type(solver_type), <Real>dt, <Real>abs_tol)
         else:
             self.thisptr = new Cpp_ODEFactory(
-                translate_solver_type(solvertype), <Real>dt, <Real>abs_tol, <Real>rel_tol)
+                translate_solver_type(solver_type), <Real>dt, <Real>abs_tol, <Real>rel_tol)
 
     def __dealloc__(self):
         del self.thisptr
@@ -1270,7 +1273,7 @@ cdef class ODEFactory:
     #             self.thisptr.create_simulator(
     #                 deref((<ODENetworkModel>arg1).thisptr), deref(arg2.thisptr)))
 
-    def create_simulator(self, arg1, arg2 = None):
+    def create_simulator(self, arg1, arg2=None):
         """create_simulator(arg1, arg2) -> ODESimulator
 
         Return a ODESimulator instance.

@@ -908,20 +908,31 @@ cdef class BDFactory:
     def __cinit__(self, Integer3 matrix_sizes=None, GSLRandomNumberGenerator rng=None,
                   bd_dt_factor=None):
         if matrix_sizes is None:
-            if bd_dt_factor is None:
-                self.thisptr = new Cpp_BDFactory()
-            else:
-                self.thisptr = new Cpp_BDFactory(<Real>bd_dt_factor)
+            assert rng is None and bd_dt_factor is None
+            self.thisptr = new Cpp_BDFactory()
         elif rng is None:
-            if bd_dt_factor is None:
-                self.thisptr = new Cpp_BDFactory(deref(matrix_sizes.thisptr))
-            else:
-                self.thisptr = new Cpp_BDFactory(deref(matrix_sizes.thisptr), <Real>bd_dt_factor)
+            assert bd_dt_factor is None
+            self.thisptr = new Cpp_BDFactory(deref(matrix_sizes.thisptr))
+        elif bd_dt_factor is None:
+            self.thisptr = new Cpp_BDFactory(deref(matrix_sizes.thisptr), deref(rng.thisptr))
         else:
-            if bd_dt_factor is None:
-                self.thisptr = new Cpp_BDFactory(deref(matrix_sizes.thisptr), deref(rng.thisptr))
-            else:
-                self.thisptr = new Cpp_BDFactory(deref(matrix_sizes.thisptr), deref(rng.thisptr), <Real>bd_dt_factor)
+            self.thisptr = new Cpp_BDFactory(deref(matrix_sizes.thisptr), deref(rng.thisptr), <Real>bd_dt_factor)
+
+        # if matrix_sizes is None:
+        #     if bd_dt_factor is None:
+        #         self.thisptr = new Cpp_BDFactory()
+        #     else:
+        #         self.thisptr = new Cpp_BDFactory(<Real>bd_dt_factor)
+        # elif rng is None:
+        #     if bd_dt_factor is None:
+        #         self.thisptr = new Cpp_BDFactory(deref(matrix_sizes.thisptr))
+        #     else:
+        #         self.thisptr = new Cpp_BDFactory(deref(matrix_sizes.thisptr), <Real>bd_dt_factor)
+        # else:
+        #     if bd_dt_factor is None:
+        #         self.thisptr = new Cpp_BDFactory(deref(matrix_sizes.thisptr), deref(rng.thisptr))
+        #     else:
+        #         self.thisptr = new Cpp_BDFactory(deref(matrix_sizes.thisptr), deref(rng.thisptr), <Real>bd_dt_factor)
 
     def __dealloc__(self):
         del self.thisptr

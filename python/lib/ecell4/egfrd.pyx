@@ -912,18 +912,17 @@ cdef EGFRDSimulator EGFRDSimulator_from_Cpp_EGFRDSimulator(Cpp_EGFRDSimulator* s
 cdef class EGFRDFactory:
     """ A factory class creating a EGFRDWorld instance and a EGFRDSimulator instance.
 
-    EGFRDFactory(matrix_sizes=None, rng=None, dissociation_retry_moves,
-                 bd_dt_factor, user_max_shell_size)
+    EGFRDFactory(Integer3 matrix_sizes=None, GSLRandomNumberGenerator rng=None,
+                 Real bd_dt_factor, Integer dissociation_retry_moves,
+                 Real user_max_shell_size)
 
     """
 
-    def __init__(self, arg1=None, arg2=None, arg3=None, arg4=None, arg5=None):
-        """EGFRDFactory(matrix_sizes=None, rng=None, dissociation_retry_moves=None,
-                     bd_dt_factor=None, user_max_shell_size=None)
-        EGFRDFactory(matrix_sizes=None, dissociation_retry_moves=None,
-                     bd_dt_factor=None, user_max_shell_size=None)
-        EGFRDFactory(dissociation_retry_moves=None, bd_dt_factor=None,
-                     user_max_shell_size=None)
+    def __init__(self, matrix_sizes=None, rng=None, bd_dt_factor=None,
+                 dissociation_retry_moves=None, user_max_shell_size=None):
+        """EGFRDFactory(Integer3 matrix_sizes=None, GSLRandomNumberGenerator rng=None,
+                 Real bd_dt_factor, Integer dissociation_retry_moves,
+                 Real user_max_shell_size)
 
         Constructor.
 
@@ -946,53 +945,82 @@ cdef class EGFRDFactory:
         """
         pass
 
-    def __cinit__(self, arg1=None, arg2=None, arg3=None, arg4=None, arg5=None):
-        self.thisptr = new Cpp_EGFRDFactory()
-        if isinstance(arg1, Integer3):
-            if isinstance(arg2, GSLRandomNumberGenerator):
-                if arg3 is None:
-                    self.thisptr = new Cpp_EGFRDFactory(
-                        deref((<Integer3>arg1).thisptr),
-                        deref((<GSLRandomNumberGenerator>arg2).thisptr))
-                elif arg4 is None:
-                    self.thisptr = new Cpp_EGFRDFactory(
-                        deref((<Integer3>arg1).thisptr),
-                        deref((<GSLRandomNumberGenerator>arg2).thisptr), <Integer>arg3)
-                elif arg5 is None:
-                    self.thisptr = new Cpp_EGFRDFactory(
-                        deref((<Integer3>arg1).thisptr),
-                        deref((<GSLRandomNumberGenerator>arg2).thisptr),
-                        <Integer>arg3, <Real>arg4)
-                else:
-                    self.thisptr = new Cpp_EGFRDFactory(
-                        deref((<Integer3>arg1).thisptr),
-                        deref((<GSLRandomNumberGenerator>arg2).thisptr),
-                        <Integer>arg3, <Real>arg4, <Real>arg5)
-            else:
-                if arg5 is not None:
-                    raise RuntimeError, "too many arguments were given."
-                elif arg2 is None:
-                    self.thisptr = new Cpp_EGFRDFactory(deref((<Integer3>arg1).thisptr))
-                elif arg3 is None:
-                    self.thisptr = new Cpp_EGFRDFactory(
-                        deref((<Integer3>arg1).thisptr), <Integer>arg2)
-                elif arg4 is None:
-                    self.thisptr = new Cpp_EGFRDFactory(
-                        deref((<Integer3>arg1).thisptr), <Integer>arg2, <Real>arg3)
-                else:
-                    self.thisptr = new Cpp_EGFRDFactory(
-                        deref((<Integer3>arg1).thisptr), <Integer>arg2, <Real>arg3, <Real>arg4)
+    def __cinit__(self, matrix_sizes=None, rng=None, bd_dt_factor=None,
+                  dissociation_retry_moves=None, user_max_shell_size=None):
+        if matrix_sizes is None:
+            assert rng is None and bd_dt_factor is None and dissociation_retry_moves is None and user_max_shell_size is None
+            self.thisptr = new Cpp_EGFRDFactory()
+        elif rng is None:
+            assert bd_dt_factor is None and dissociation_retry_moves is None and user_max_shell_size is None
+            self.thisptr = new Cpp_EGFRDFactory(deref((<Integer3>matrix_sizes).thisptr))
+        elif bd_dt_factor is None:
+            assert dissociation_retry_moves is None and user_max_shell_size is None
+            self.thisptr = new Cpp_EGFRDFactory(
+                deref((<Integer3>matrix_sizes).thisptr),
+                deref((<GSLRandomNumberGenerator>rng).thisptr))
+        elif dissociation_retry_moves is None:
+            assert user_max_shell_size is None
+            self.thisptr = new Cpp_EGFRDFactory(
+                deref((<Integer3>matrix_sizes).thisptr),
+                deref((<GSLRandomNumberGenerator>rng).thisptr),
+                <Real>bd_dt_factor)
+        elif user_max_shell_size is None:
+            self.thisptr = new Cpp_EGFRDFactory(
+                deref((<Integer3>matrix_sizes).thisptr),
+                deref((<GSLRandomNumberGenerator>rng).thisptr),
+                <Real>bd_dt_factor, <Integer>dissociation_retry_moves)
         else:
-            if arg4 is not None or arg5 is not None:
-                raise RuntimeError, "too many arguments were given."
-            elif arg1 is None:
-                self.thisptr = new Cpp_EGFRDFactory()
-            elif arg2 is None:
-                self.thisptr = new Cpp_EGFRDFactory(<Integer>arg1)
-            elif arg3 is None:
-                self.thisptr = new Cpp_EGFRDFactory(<Integer>arg1, <Real>arg2)
-            else:
-                self.thisptr = new Cpp_EGFRDFactory(<Integer>arg1, <Real>arg2, <Real>arg3)
+            self.thisptr = new Cpp_EGFRDFactory(
+                deref((<Integer3>matrix_sizes).thisptr),
+                deref((<GSLRandomNumberGenerator>rng).thisptr),
+                <Real>bd_dt_factor, <Integer>dissociation_retry_moves, <Real>user_max_shell_size)
+
+        # self.thisptr = new Cpp_EGFRDFactory()
+        # if isinstance(arg1, Integer3):
+        #     if isinstance(arg2, GSLRandomNumberGenerator):
+        #         if arg3 is None:
+        #             self.thisptr = new Cpp_EGFRDFactory(
+        #                 deref((<Integer3>arg1).thisptr),
+        #                 deref((<GSLRandomNumberGenerator>arg2).thisptr))
+        #         elif arg4 is None:
+        #             self.thisptr = new Cpp_EGFRDFactory(
+        #                 deref((<Integer3>arg1).thisptr),
+        #                 deref((<GSLRandomNumberGenerator>arg2).thisptr), <Integer>arg3)
+        #         elif arg5 is None:
+        #             self.thisptr = new Cpp_EGFRDFactory(
+        #                 deref((<Integer3>arg1).thisptr),
+        #                 deref((<GSLRandomNumberGenerator>arg2).thisptr),
+        #                 <Integer>arg3, <Real>arg4)
+        #         else:
+        #             self.thisptr = new Cpp_EGFRDFactory(
+        #                 deref((<Integer3>arg1).thisptr),
+        #                 deref((<GSLRandomNumberGenerator>arg2).thisptr),
+        #                 <Integer>arg3, <Real>arg4, <Real>arg5)
+        #     else:
+        #         if arg5 is not None:
+        #             raise RuntimeError, "too many arguments were given."
+        #         elif arg2 is None:
+        #             self.thisptr = new Cpp_EGFRDFactory(deref((<Integer3>arg1).thisptr))
+        #         elif arg3 is None:
+        #             self.thisptr = new Cpp_EGFRDFactory(
+        #                 deref((<Integer3>arg1).thisptr), <Integer>arg2)
+        #         elif arg4 is None:
+        #             self.thisptr = new Cpp_EGFRDFactory(
+        #                 deref((<Integer3>arg1).thisptr), <Integer>arg2, <Real>arg3)
+        #         else:
+        #             self.thisptr = new Cpp_EGFRDFactory(
+        #                 deref((<Integer3>arg1).thisptr), <Integer>arg2, <Real>arg3, <Real>arg4)
+        # else:
+        #     if arg4 is not None or arg5 is not None:
+        #         raise RuntimeError, "too many arguments were given."
+        #     elif arg1 is None:
+        #         self.thisptr = new Cpp_EGFRDFactory()
+        #     elif arg2 is None:
+        #         self.thisptr = new Cpp_EGFRDFactory(<Integer>arg1)
+        #     elif arg3 is None:
+        #         self.thisptr = new Cpp_EGFRDFactory(<Integer>arg1, <Real>arg2)
+        #     else:
+        #         self.thisptr = new Cpp_EGFRDFactory(<Integer>arg1, <Real>arg2, <Real>arg3)
 
     def __dealloc__(self):
         del self.thisptr
@@ -1270,17 +1298,15 @@ cdef BDSimulator BDSimulator_from_Cpp_BDSimulator(Cpp_BDSimulator* s):
 cdef class BDFactory:
     """ A factory class creating a BDWorld instance and a BDSimulator instance.
 
-    BDFactory(matrix_sizes=None, rng=None, bd_dt_factor=None,
-              dissociation_retry_moves=None)
+    BDFactory(Integer3 matrix_sizes=None, GSLRandomNumberGenerator rng=None,
+              Real bd_dt_factor, Integer dissociation_retry_moves)
 
     """
 
-    def __init__(self, arg1=None, arg2=None, arg3=None, arg4=None):
-        """BDFactory(matrix_sizes=None, rng=None, bd_dt_factor=None,
-                  dissociation_retry_moves=None)
-        BDFactory(matrix_sizes=None, bd_dt_factor=None,
-                  dissociation_retry_moves=None)
-        BDFactory(bd_dt_factor=None, dissociation_retry_moves=None)
+    def __init__(self, matrix_sizes=None, rng=None, bd_dt_factor=None,
+                 dissociation_retry_moves=None):
+        """BDFactory(Integer3 matrix_sizes=None, GSLRandomNumberGenerator rng=None,
+                     Real bd_dt_factor, Integer dissociation_retry_moves)
 
         Constructor.
 
@@ -1291,53 +1317,76 @@ cdef class BDFactory:
             The number of cells must be larger than 3, in principle.
         rng : GSLRandomNumberGenerator, optional
             A random number generator.
-        bd_dt_factor : Real, optioanl
-            A rescaling factor for the step interval
-            of BD propagation in a Multi domain.
         dissociation_retry_moves : Integer, optional
             A number of trials for placing a new product when it's failed
             because of the overlap.
+        bd_dt_factor : Real, optioanl
+            A rescaling factor for the step interval
+            of BD propagation in a Multi domain.
 
         """
         pass
 
-    def __cinit__(self, arg1=None, arg2=None, arg3=None, arg4=None):
-        self.thisptr = new Cpp_BDFactory()
-        if isinstance(arg1, Integer3):
-            if isinstance(arg2, GSLRandomNumberGenerator):
-                if arg3 is None:
-                    self.thisptr = new Cpp_BDFactory(
-                        deref((<Integer3>arg1).thisptr),
-                        deref((<GSLRandomNumberGenerator>arg2).thisptr))
-                elif arg4 is None:
-                    self.thisptr = new Cpp_BDFactory(
-                        deref((<Integer3>arg1).thisptr),
-                        deref((<GSLRandomNumberGenerator>arg2).thisptr), <Real>arg3)
-                else:
-                    self.thisptr = new Cpp_BDFactory(
-                        deref((<Integer3>arg1).thisptr),
-                        deref((<GSLRandomNumberGenerator>arg2).thisptr),
-                        <Real>arg3, <Integer>arg4)
-            else:
-                if arg4 is not None:
-                    raise RuntimeError, "too many arguments were given."
-                elif arg2 is None:
-                    self.thisptr = new Cpp_BDFactory(deref((<Integer3>arg1).thisptr))
-                elif arg3 is None:
-                    self.thisptr = new Cpp_BDFactory(
-                        deref((<Integer3>arg1).thisptr), <Real>arg2)
-                else:
-                    self.thisptr = new Cpp_BDFactory(
-                        deref((<Integer3>arg1).thisptr), <Real>arg2, <Integer>arg3)
+    def __cinit__(self, matrix_sizes=None, rng=None, bd_dt_factor=None,
+                  dissociation_retry_moves=None):
+        if matrix_sizes is None:
+            assert rng is None and bd_dt_factor is None and dissociation_retry_moves is None
+            self.thisptr = new Cpp_BDFactory()
+        elif rng is None:
+            assert bd_dt_factor is None and dissociation_retry_moves is None
+            self.thisptr = new Cpp_BDFactory(deref((<Integer3>matrix_sizes).thisptr))
+        elif bd_dt_factor is None:
+            assert dissociation_retry_moves is None
+            self.thisptr = new Cpp_BDFactory(
+                deref((<Integer3>matrix_sizes).thisptr),
+                deref((<GSLRandomNumberGenerator>rng).thisptr))
+        elif dissociation_retry_moves is None:
+            self.thisptr = new Cpp_BDFactory(
+                deref((<Integer3>matrix_sizes).thisptr),
+                deref((<GSLRandomNumberGenerator>rng).thisptr),
+                <Real>bd_dt_factor)
         else:
-            if arg3 is not None or arg4 is not None:
-                raise RuntimeError, "too many arguments were given."
-            elif arg1 is None:
-                self.thisptr = new Cpp_BDFactory()
-            elif arg2 is None:
-                self.thisptr = new Cpp_BDFactory(<Real>arg1)
-            else:
-                self.thisptr = new Cpp_BDFactory(<Real>arg1, <Integer>arg2)
+            self.thisptr = new Cpp_BDFactory(
+                deref((<Integer3>matrix_sizes).thisptr),
+                deref((<GSLRandomNumberGenerator>rng).thisptr),
+                <Real>bd_dt_factor, <Integer>dissociation_retry_moves)
+
+        # self.thisptr = new Cpp_BDFactory()
+        # if isinstance(arg1, Integer3):
+        #     if isinstance(arg2, GSLRandomNumberGenerator):
+        #         if arg3 is None:
+        #             self.thisptr = new Cpp_BDFactory(
+        #                 deref((<Integer3>arg1).thisptr),
+        #                 deref((<GSLRandomNumberGenerator>arg2).thisptr))
+        #         elif arg4 is None:
+        #             self.thisptr = new Cpp_BDFactory(
+        #                 deref((<Integer3>arg1).thisptr),
+        #                 deref((<GSLRandomNumberGenerator>arg2).thisptr), <Real>arg3)
+        #         else:
+        #             self.thisptr = new Cpp_BDFactory(
+        #                 deref((<Integer3>arg1).thisptr),
+        #                 deref((<GSLRandomNumberGenerator>arg2).thisptr),
+        #                 <Real>arg3, <Integer>arg4)
+        #     else:
+        #         if arg4 is not None:
+        #             raise RuntimeError, "too many arguments were given."
+        #         elif arg2 is None:
+        #             self.thisptr = new Cpp_BDFactory(deref((<Integer3>arg1).thisptr))
+        #         elif arg3 is None:
+        #             self.thisptr = new Cpp_BDFactory(
+        #                 deref((<Integer3>arg1).thisptr), <Real>arg2)
+        #         else:
+        #             self.thisptr = new Cpp_BDFactory(
+        #                 deref((<Integer3>arg1).thisptr), <Real>arg2, <Integer>arg3)
+        # else:
+        #     if arg3 is not None or arg4 is not None:
+        #         raise RuntimeError, "too many arguments were given."
+        #     elif arg1 is None:
+        #         self.thisptr = new Cpp_BDFactory()
+        #     elif arg2 is None:
+        #         self.thisptr = new Cpp_BDFactory(<Real>arg1)
+        #     else:
+        #         self.thisptr = new Cpp_BDFactory(<Real>arg1, <Integer>arg2)
 
     def __dealloc__(self):
         del self.thisptr

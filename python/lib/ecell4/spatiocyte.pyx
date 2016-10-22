@@ -1445,13 +1445,12 @@ cdef SpatiocyteSimulator SpatiocyteSimulator_from_Cpp_SpatiocyteSimulator(Cpp_Sp
 cdef class SpatiocyteFactory:
     """ A factory class creating a SpatiocyteWorld instance and a SpatiocyteSimulator instance.
 
-    SpatiocyteFactory(voxel_radius, alpha, rng)
+    SpatiocyteFactory(Real voxel_radius, Real alpha, GSLRandomNumberGenerator rng)
 
     """
 
-    def __init__(self, voxel_radius=None, arg1=None, arg2=None):
+    def __init__(self, voxel_radius=None, alpha=None, rng=None):
         """SpatiocyteFactory(Real voxel_radius=None, Real alpha=None, GSLRandomNumberGenerator rng=None)
-        SpatiocyteFactory(Real voxel_radius=None, GSLRandomNumberGenerator rng=None)
 
         Constructor.
 
@@ -1467,22 +1466,35 @@ cdef class SpatiocyteFactory:
         """
         pass
 
-    def __cinit__(self, voxel_radius=None, arg1=None, arg2=None):
+    def __cinit__(self, voxel_radius=None, alpha=None, rng=None):
         if voxel_radius is None:
+            assert alpha is None and rng is None
             self.thisptr = new Cpp_SpatiocyteFactory()
-        elif arg1 is None:
+        elif alpha is None:
+            assert rng is None
             self.thisptr = new Cpp_SpatiocyteFactory(<Real>voxel_radius)
-        elif arg2 is None:
-            if isinstance(arg1, GSLRandomNumberGenerator):
-                self.thisptr = new Cpp_SpatiocyteFactory(
-                    <Real>voxel_radius, deref((<GSLRandomNumberGenerator>arg1).thisptr))
-            else:
-                self.thisptr = new Cpp_SpatiocyteFactory(
-                    <Real>voxel_radius, <Real>arg1)
+        elif rng is None:
+            self.thisptr = new Cpp_SpatiocyteFactory(<Real>voxel_radius, <Real>alpha)
         else:
             self.thisptr = new Cpp_SpatiocyteFactory(
-                <Real>voxel_radius, <Real>arg1,
-                deref((<GSLRandomNumberGenerator>arg2).thisptr))
+                <Real>voxel_radius, <Real>alpha,
+                deref((<GSLRandomNumberGenerator>rng).thisptr))
+
+        # if voxel_radius is None:
+        #     self.thisptr = new Cpp_SpatiocyteFactory()
+        # elif arg1 is None:
+        #     self.thisptr = new Cpp_SpatiocyteFactory(<Real>voxel_radius)
+        # elif arg2 is None:
+        #     if isinstance(arg1, GSLRandomNumberGenerator):
+        #         self.thisptr = new Cpp_SpatiocyteFactory(
+        #             <Real>voxel_radius, deref((<GSLRandomNumberGenerator>arg1).thisptr))
+        #     else:
+        #         self.thisptr = new Cpp_SpatiocyteFactory(
+        #             <Real>voxel_radius, <Real>arg1)
+        # else:
+        #     self.thisptr = new Cpp_SpatiocyteFactory(
+        #         <Real>voxel_radius, <Real>arg1,
+        #         deref((<GSLRandomNumberGenerator>arg2).thisptr))
 
     def __dealloc__(self):
         del self.thisptr

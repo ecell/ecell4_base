@@ -177,11 +177,11 @@ cdef SpatiocyteSimulator SpatiocyteSimulator_from_Cpp_SpatiocyteSimulator(Cpp_Sp
 #  ecell4::spatiocyte::SpatiocyteFactory
 cdef extern from "ecell4/spatiocyte/SpatiocyteFactory.hpp" namespace "ecell4::spatiocyte":
     cdef cppclass Cpp_SpatiocyteFactory "ecell4::spatiocyte::SpatiocyteFactory":
-        Cpp_SpatiocyteFactory() except +
-        Cpp_SpatiocyteFactory(Real) except +
-        Cpp_SpatiocyteFactory(Real, shared_ptr[Cpp_RandomNumberGenerator]&) except +
-        Cpp_SpatiocyteFactory(Real, Real) except +
         Cpp_SpatiocyteFactory(Real, Real, shared_ptr[Cpp_RandomNumberGenerator]&) except +
+        Cpp_SpatiocyteFactory(Real, Real) except +
+        Cpp_SpatiocyteFactory(Real) except +
+        Cpp_SpatiocyteFactory() except +
+        # Cpp_SpatiocyteFactory(Real, shared_ptr[Cpp_RandomNumberGenerator]&) except +
         Cpp_SpatiocyteWorld* create_world()
         Cpp_SpatiocyteWorld* create_world(string)
         Cpp_SpatiocyteWorld* create_world(Cpp_Real3&)
