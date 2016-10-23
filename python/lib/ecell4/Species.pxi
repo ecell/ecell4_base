@@ -200,6 +200,36 @@ cdef class Species:
             inc(it)
         return retval
 
+    def D(self, value):
+        """D(string) -> Species
+
+        set attribute 'D', and return self.
+
+        """
+        cdef Cpp_Species *sp = self.thisptr.D_ptr(tostring(value))
+        assert sp == self.thisptr
+        return self
+
+    def radius(self, value):
+        """radius(string) -> Species
+
+        set attribute 'radius', and return self.
+
+        """
+        cdef Cpp_Species *sp = self.thisptr.radius_ptr(tostring(value))
+        assert sp == self.thisptr
+        return self
+
+    def location(self, value):
+        """location(string) -> Species
+
+        set attribute 'location', and return self.
+
+        """
+        cdef Cpp_Species *sp = self.thisptr.location_ptr(tostring(value))
+        assert sp == self.thisptr
+        return self
+
     def __reduce__(self):
         return (__rebuild_species, (self.serial(), self.list_attributes()))
 
