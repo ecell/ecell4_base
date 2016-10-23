@@ -29,12 +29,12 @@ public:
         ; // do nothing
     }
 
-    static inline Integer3 default_matrix_sizes()
+    static inline const Integer3 default_matrix_sizes()
     {
         return Integer3(3, 3, 3);
     }
 
-    static inline Real default_bd_dt_factor()
+    static inline const Real default_bd_dt_factor()
     {
         return -1.0;
     }
@@ -107,8 +107,8 @@ public:
 
 protected:
 
-    Integer3 matrix_sizes_;
     boost::shared_ptr<RandomNumberGenerator> rng_;
+    Integer3 matrix_sizes_;
     Real bd_dt_factor_;
 };
 

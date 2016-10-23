@@ -1212,21 +1212,21 @@ cdef class ODEFactory:
         pass
 
     def __cinit__(self, solver_type=None, dt=None, abs_tol=None, rel_tol=None):
-        if solver_type is None:
-            assert dt is None and abs_tol is None and rel_tol is None
-            self.thisptr = new Cpp_ODEFactory()
-        elif dt is None:
-            assert abs_tol is None and rel_tol is None
-            self.thisptr = new Cpp_ODEFactory(translate_solver_type(solver_type))
-        elif abs_tol is None:
-            assert rel_tol is None
-            self.thisptr = new Cpp_ODEFactory(translate_solver_type(solver_type), <Real>dt)
-        elif rel_tol is None:
-            self.thisptr = new Cpp_ODEFactory(
-                translate_solver_type(solver_type), <Real>dt, <Real>abs_tol)
-        else:
-            self.thisptr = new Cpp_ODEFactory(
-                translate_solver_type(solver_type), <Real>dt, <Real>abs_tol, <Real>rel_tol)
+        self.thisptr = new Cpp_ODEFactory(
+            Cpp_ODEFactory.default_solver_type() if solver_type is None else translate_solver_type(solver_type),
+            Cpp_ODEFactory.default_dt() if dt is None else <Real>dt,
+            Cpp_ODEFactory.default_abs_tol() if abs_tol is None else <Real>abs_tol,
+            Cpp_ODEFactory.default_rel_tol() if rel_tol is None else <Real>rel_tol)
+
+    def rng(self, GSLRandomNumberGenerator rng):
+        """rng(GSLRandomNumberGenerator) -> ODEFactory
+
+        Just return self. This method is for the compatibility between Factory classes.
+
+        """
+        cdef Cpp_ODEFactory *ptr = self.thisptr.rng_ptr(deref(rng.thisptr))
+        assert ptr == self.thisptr
+        return self
 
     def __dealloc__(self):
         del self.thisptr
