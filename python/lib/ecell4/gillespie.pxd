@@ -98,7 +98,6 @@ cdef GillespieSimulator GillespieSimulator_from_Cpp_GillespieSimulator(Cpp_Gille
 #  ecell4::gillespie::GillespieFactory
 cdef extern from "ecell4/gillespie/GillespieFactory.hpp" namespace "ecell4::gillespie":
     cdef cppclass Cpp_GillespieFactory "ecell4::gillespie::GillespieFactory":
-        Cpp_GillespieFactory(shared_ptr[Cpp_RandomNumberGenerator]) except +
         Cpp_GillespieFactory() except +
         Cpp_GillespieWorld* create_world()
         Cpp_GillespieWorld* create_world(string)
@@ -106,6 +105,7 @@ cdef extern from "ecell4/gillespie/GillespieFactory.hpp" namespace "ecell4::gill
         Cpp_GillespieWorld* create_world(shared_ptr[Cpp_Model])
         Cpp_GillespieSimulator* create_simulator(shared_ptr[Cpp_Model], shared_ptr[Cpp_GillespieWorld])
         Cpp_GillespieSimulator* create_simulator(shared_ptr[Cpp_GillespieWorld])
+        Cpp_GillespieFactory* rng_ptr(shared_ptr[Cpp_RandomNumberGenerator]&)
 
 ## GillespieFactory
 #  a python wrapper for Cpp_GillespieFactory
