@@ -40,7 +40,22 @@ public:
 #ifdef WITH_HDF5
     virtual void save(H5::CommonFG* root) const = 0;
     virtual void load(const H5::CommonFG& root) = 0;
+    virtual void save(const std::string& filename) const = 0;
+    virtual void load(const std::string& filename) = 0;
+#else
+    void save(const std::string& filename) const
+    {
+        throw NotSupported(
+            "This method requires HDF5. The HDF5 support is turned off.");
+    }
+
+    void load(const std::string& filename)
+    {
+        throw NotSupported(
+            "This method requires HDF5. The HDF5 support is turned off.");
+    }
 #endif
+
 };
 
 template<typename Telem_>
@@ -76,6 +91,8 @@ public:
 #ifdef WITH_HDF5
     void save(H5::CommonFG* root) const;
     void load(const H5::CommonFG& root);
+    void save(const std::string& filename) const;
+    void load(const std::string& filename);
 #endif
 
     GSLRandomNumberGenerator()

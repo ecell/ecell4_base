@@ -33,6 +33,8 @@ cdef extern from "ecell4/core/RandomNumberGenerator.hpp" namespace "ecell4":
         Integer binomial(Real, Integer)
         void seed(Integer)
         void seed()
+        void save(string) except +
+        void load(string) except +
 
     cdef cppclass Cpp_GSLRandomNumberGenerator "ecell4::GSLRandomNumberGenerator":
         # GSLRandomNumberGenerator(shared_ptr[gsl_rng]) except +
@@ -44,6 +46,8 @@ cdef extern from "ecell4/core/RandomNumberGenerator.hpp" namespace "ecell4":
         Real gaussian(Real)
         void seed(Integer)
         void seed()
+        void save(string) except +
+        void load(string) except +
 
 ## RandomNumberGenerator
 #  a python wrapper for Cpp_GSLRandomNumberGenerator

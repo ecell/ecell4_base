@@ -130,6 +130,32 @@ cdef class GSLRandomNumberGenerator:
         else:
             self.thisptr.get().seed(<Integer> val)
 
+    def save(self, filename):
+        """save(filename)
+
+        Save the random number generator state to a file.
+
+        Parameters
+        ----------
+        filename : str
+            A filename to save to
+
+        """
+        self.thisptr.get().save(tostring(filename))
+
+    def load(self, filename):
+        """load(filename)
+
+        Load the random number generator state from a file.
+
+        Parameters
+        ----------
+        filename : str
+            A filename to load from
+
+        """
+        self.thisptr.get().load(tostring(filename))
+
 cdef GSLRandomNumberGenerator GSLRandomNumberGenerator_from_Cpp_RandomNumberGenerator(
     shared_ptr[Cpp_RandomNumberGenerator] rng):
     r = GSLRandomNumberGenerator()
