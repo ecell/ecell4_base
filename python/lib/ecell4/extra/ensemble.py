@@ -109,7 +109,9 @@ def singlerun(job, job_id, task_id):
     myseed = job.pop('myseed')
     rndseed = int(myseed[(task_id - 1) * 8: task_id * 8], 16)
     rndseed = rndseed % (2 ** 31)  #XXX: trancate the first bit
-    job.update({'return_type': 'array', 'rndseed': rndseed})
+    myrng = GSLRandomNumberGenerator()
+    myrng.seed(rndseed)
+    job.update({'return_type': 'array', 'rng': myrng})
     data = ecell4.util.run_simulation(**job)
     return data
 
@@ -118,12 +120,12 @@ import ecell4.util.simulation
 import ecell4.util.viz
 import ecell4.ode
 
+
 def ensemble_simulations(
     t, y0={}, volume=1.0, model=None, solver='ode', species_list=None, structures={},
     is_netfree=False, without_reset=False,
     return_type='matplotlib', opt_args=(), opt_kwargs={},
-    errorbar=True,
-    n=1, nproc=1, method=None, environ={}):
+    errorbar=True, n=1, nproc=1, method=None, environ={}):
     """
     observers=(), progressbar=0, rndseed=None,
     """

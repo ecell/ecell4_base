@@ -79,7 +79,7 @@ def run_simulation(
         t, y0={}, volume=1.0, model=None, solver='ode',
         factory=None, is_netfree=False, species_list=None, without_reset=False,
         return_type='matplotlib', opt_args=(), opt_kwargs={},
-        structures={}, observers=(), progressbar=0, rndseed=None):
+        structures={}, observers=(), progressbar=0, rng=None):
     """Run a simulation with the given model and plot the result on IPython
     notebook with matplotlib.
 
@@ -124,9 +124,8 @@ def run_simulation(
         A timeout for a progress bar in seconds.
         When the value is not more than 0, show nothing.
         Default is 0.
-    rndseed : int, optional
-        A random seed for a simulation.
-        This argument will be ignored when 'solver' is given NOT as a string.
+    rng : RandomNumberGenerator, optional
+        A random number generator for the simulation.
 
     Returns
     -------
@@ -143,16 +142,14 @@ def run_simulation(
     if factory is not None:
         f = factory  #XXX: will be deprecated in the future. just use solver
     elif isinstance(solver, str):
-        if solver == 'ode' or rndseed is None:
-            f = get_factory(solver)
-        else:
-            rng = ecell4.GSLRandomNumberGenerator()
-            rng.seed(rndseed)
-            f = get_factory(solver, rng)
+        f = get_factory(solver)
     elif isinstance(solver, collections.Iterable):
         f = get_factory(*solver)
     else:
         f = solver
+
+    if rng is not None:
+        f = f.rng(rng)
 
     if model is None:
         model = ecell4.util.decorator.get_model(is_netfree, without_reset)
