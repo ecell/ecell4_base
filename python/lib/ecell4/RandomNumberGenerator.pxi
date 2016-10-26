@@ -1,19 +1,31 @@
 cdef class GSLRandomNumberGenerator:
     """A random number generator using the GNU Scientific Library (GSL).
 
-    GSLRandomNumberGenerator()
+    GSLRandomNumberGenerator(Integer myseed=None)
 
     """
 
-    def __init__(self):
-        """Constructor."""
+    def __init__(self, myseed=None):
+        """Constructor.
+
+        Parameters
+        ----------
+        myseed : Integer, optional
+            A seed for the random number generation.
+
+        """
         pass
 
-    def __cinit__(self):
+    def __cinit__(self, myseed=None):
         # self.thisptr = new shared_ptr[Cpp_GSLRandomNumberGenerator](
         #     new Cpp_GSLRandomNumberGenerator())
-        self.thisptr = new shared_ptr[Cpp_RandomNumberGenerator](
-            <Cpp_RandomNumberGenerator*> (new Cpp_GSLRandomNumberGenerator()))
+        if myseed is None:
+            self.thisptr = new shared_ptr[Cpp_RandomNumberGenerator](
+                <Cpp_RandomNumberGenerator*> (new Cpp_GSLRandomNumberGenerator()))
+        else:
+            self.thisptr = new shared_ptr[Cpp_RandomNumberGenerator](
+                <Cpp_RandomNumberGenerator*> (
+                    new Cpp_GSLRandomNumberGenerator(<Integer>myseed)))
 
     def __dealloc__(self):
         del self.thisptr

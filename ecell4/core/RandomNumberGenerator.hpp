@@ -78,17 +78,29 @@ public:
     void load(const H5::CommonFG& root);
 #endif
 
-    GSLRandomNumberGenerator(rng_handle hdl)
-        : rng_(hdl)
+    GSLRandomNumberGenerator()
+        : rng_(gsl_rng_alloc(gsl_rng_mt19937), &gsl_rng_free)
     {
         ;
     }
 
-    GSLRandomNumberGenerator(gsl_rng* rng = gsl_rng_alloc(gsl_rng_mt19937))
-        : rng_(rng, &gsl_rng_free)
+    GSLRandomNumberGenerator(const Integer myseed)
+        : rng_(gsl_rng_alloc(gsl_rng_mt19937), &gsl_rng_free)
     {
-        ;
+        seed(myseed);
     }
+
+    // GSLRandomNumberGenerator(rng_handle hdl)
+    //     : rng_(hdl)
+    // {
+    //     ;
+    // }
+
+    // GSLRandomNumberGenerator(gsl_rng* rng = gsl_rng_alloc(gsl_rng_mt19937))
+    //     : rng_(rng, &gsl_rng_free)
+    // {
+    //     ;
+    // }
 
 protected:
 
