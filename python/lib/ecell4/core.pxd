@@ -40,6 +40,7 @@ cdef extern from "ecell4/core/RandomNumberGenerator.hpp" namespace "ecell4":
         # GSLRandomNumberGenerator(shared_ptr[gsl_rng]) except +
         Cpp_GSLRandomNumberGenerator() except +
         Cpp_GSLRandomNumberGenerator(Integer) except +
+        Cpp_GSLRandomNumberGenerator(string) except +
         Real uniform(Real, Real)
         Integer uniform_int(Integer, Integer)
         Real gaussian(Real, Real)

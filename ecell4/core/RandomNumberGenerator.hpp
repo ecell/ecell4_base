@@ -107,6 +107,12 @@ public:
         seed(myseed);
     }
 
+    GSLRandomNumberGenerator(const std::string& filename)
+        : rng_(gsl_rng_alloc(gsl_rng_mt19937), &gsl_rng_free)
+    {
+        load(filename);
+    }
+
     // GSLRandomNumberGenerator(rng_handle hdl)
     //     : rng_(hdl)
     // {
