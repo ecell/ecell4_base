@@ -109,7 +109,7 @@ def singlerun(job, job_id, task_id):
     myseed = job.pop('myseed')
     rndseed = int(myseed[(task_id - 1) * 8: task_id * 8], 16)
     rndseed = rndseed % (2 ** 31)  #XXX: trancate the first bit
-    myrng = GSLRandomNumberGenerator()
+    myrng = ecell4.GSLRandomNumberGenerator()
     myrng.seed(rndseed)
     job.update({'return_type': 'array', 'rng': myrng})
     data = ecell4.util.run_simulation(**job)
