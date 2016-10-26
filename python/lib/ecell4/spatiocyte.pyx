@@ -1445,12 +1445,12 @@ cdef SpatiocyteSimulator SpatiocyteSimulator_from_Cpp_SpatiocyteSimulator(Cpp_Sp
 cdef class SpatiocyteFactory:
     """ A factory class creating a SpatiocyteWorld instance and a SpatiocyteSimulator instance.
 
-    SpatiocyteFactory(Real voxel_radius, Real alpha, GSLRandomNumberGenerator rng)
+    SpatiocyteFactory(Real voxel_radius, Real alpha)
 
     """
 
-    def __init__(self, voxel_radius=None, alpha=None, rng=None):
-        """SpatiocyteFactory(Real voxel_radius=None, Real alpha=None, GSLRandomNumberGenerator rng=None)
+    def __init__(self, voxel_radius=None, alpha=None):
+        """SpatiocyteFactory(Real voxel_radius=None, Real alpha=None)
 
         Constructor.
 
@@ -1460,44 +1460,27 @@ cdef class SpatiocyteFactory:
             A radius of a voxel.
         alpha : Real, optional
             Alpha value for SpatiocyteSimulator.
-        rng : GSLRandomNumberGenerator, optional
-            A random number generator.
 
         """
         pass
 
-    def __cinit__(self, voxel_radius=None, alpha=None, rng=None):
-        if voxel_radius is None:
-            assert alpha is None and rng is None
-            self.thisptr = new Cpp_SpatiocyteFactory()
-        elif alpha is None:
-            assert rng is None
-            self.thisptr = new Cpp_SpatiocyteFactory(<Real>voxel_radius)
-        elif rng is None:
-            self.thisptr = new Cpp_SpatiocyteFactory(<Real>voxel_radius, <Real>alpha)
-        else:
-            self.thisptr = new Cpp_SpatiocyteFactory(
-                <Real>voxel_radius, <Real>alpha,
-                deref((<GSLRandomNumberGenerator>rng).thisptr))
-
-        # if voxel_radius is None:
-        #     self.thisptr = new Cpp_SpatiocyteFactory()
-        # elif arg1 is None:
-        #     self.thisptr = new Cpp_SpatiocyteFactory(<Real>voxel_radius)
-        # elif arg2 is None:
-        #     if isinstance(arg1, GSLRandomNumberGenerator):
-        #         self.thisptr = new Cpp_SpatiocyteFactory(
-        #             <Real>voxel_radius, deref((<GSLRandomNumberGenerator>arg1).thisptr))
-        #     else:
-        #         self.thisptr = new Cpp_SpatiocyteFactory(
-        #             <Real>voxel_radius, <Real>arg1)
-        # else:
-        #     self.thisptr = new Cpp_SpatiocyteFactory(
-        #         <Real>voxel_radius, <Real>arg1,
-        #         deref((<GSLRandomNumberGenerator>arg2).thisptr))
+    def __cinit__(self, voxel_radius=None, alpha=None):
+        self.thisptr = new Cpp_SpatiocyteFactory(
+            Cpp_SpatiocyteFactory.default_voxel_radius() if voxel_radius is None else <Real>voxel_radius,
+            Cpp_SpatiocyteFactory.default_alpha() if alpha is None else <Real>alpha)
 
     def __dealloc__(self):
         del self.thisptr
+
+    def rng(self, GSLRandomNumberGenerator rng):
+        """rng(GSLRandomNumberGenerator) -> SpatiocyteFactory
+
+        Set a random number generator, and return self.
+
+        """
+        cdef Cpp_SpatiocyteFactory *ptr = self.thisptr.rng_ptr(deref(rng.thisptr))
+        assert ptr == self.thisptr
+        return self
 
     def create_world(self, arg1=None):
         """create_world(arg1=None) -> SpatiocyteWorld
