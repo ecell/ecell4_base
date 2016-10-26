@@ -64,6 +64,22 @@ public:
     virtual MesoscopicWorld* create_world(
         const Real3& edge_lengths = Real3(1, 1, 1)) const
     {
+        if (rng_)
+        {
+            if (matrix_sizes_ != default_matrix_sizes())
+            {
+                return new MesoscopicWorld(edge_lengths, matrix_sizes_, rng_);
+            }
+            else if (subvolume_length_ != default_subvolume_length())
+            {
+                return new MesoscopicWorld(edge_lengths, subvolume_length_, rng_);
+            }
+            else
+            {
+                throw NotSupported(
+                    "Either matrix_sizes or subvolume_length must be given.");
+            }
+        }
         if (matrix_sizes_ != default_matrix_sizes())
         {
             return new MesoscopicWorld(edge_lengths, matrix_sizes_);
