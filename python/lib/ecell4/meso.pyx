@@ -987,7 +987,7 @@ cdef class MesoscopicFactory:
         del self.thisptr
 
     def rng(self, GSLRandomNumberGenerator rng):
-        """rng(GSLRandomNumberGenerator) -> BDFactory
+        """rng(GSLRandomNumberGenerator) -> MesoscopicFactory
 
         Set a random number generator, and return self.
 

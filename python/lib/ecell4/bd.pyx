@@ -907,6 +907,9 @@ cdef class BDFactory:
             Cpp_BDFactory.default_matrix_sizes() if matrix_sizes is None else deref(matrix_sizes.thisptr),
             Cpp_BDFactory.default_bd_dt_factor() if bd_dt_factor is None else <Real>bd_dt_factor)
 
+    def __dealloc__(self):
+        del self.thisptr
+
     def rng(self, GSLRandomNumberGenerator rng):
         """rng(GSLRandomNumberGenerator) -> BDFactory
 
@@ -916,9 +919,6 @@ cdef class BDFactory:
         cdef Cpp_BDFactory *ptr = self.thisptr.rng_ptr(deref(rng.thisptr))
         assert ptr == self.thisptr
         return self
-
-    def __dealloc__(self):
-        del self.thisptr
 
     def create_world(self, arg1=None):
         """create_world(arg1=None) -> BDWorld

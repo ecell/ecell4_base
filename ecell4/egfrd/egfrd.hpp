@@ -35,42 +35,52 @@ protected:
 public:
 
     EGFRDFactory(
-        Real bd_dt_factor=-1, Integer dissociation_retry_moves=-1,
-        Real user_max_shell_size=-1)
-        : base_type(), matrix_sizes_(0, 0, 0), rng_(),
-        bd_dt_factor_(bd_dt_factor),
-        num_retries_(dissociation_retry_moves),
-        user_max_shell_size_(user_max_shell_size)
+        const matrix_sizes_type& matrix_sizes = default_matrix_sizes(),
+        Real bd_dt_factor = default_bd_dt_factor(),
+        Integer dissociation_retry_moves = default_dissociation_retry_moves(),
+        Real user_max_shell_size = default_user_max_shell_size())
+        : base_type(), rng_(),
+          matrix_sizes_(matrix_sizes), bd_dt_factor_(bd_dt_factor),
+          dissociation_retry_moves_(dissociation_retry_moves),
+          user_max_shell_size_(user_max_shell_size)
     {
         ; // do nothing
     }
 
-    EGFRDFactory(const matrix_sizes_type& matrix_sizes,
-        Real bd_dt_factor=-1, Integer dissociation_retry_moves=-1,
-        Real user_max_shell_size=-1)
-        : base_type(), matrix_sizes_(matrix_sizes), rng_(),
-        bd_dt_factor_(bd_dt_factor),
-        num_retries_(dissociation_retry_moves),
-        user_max_shell_size_(user_max_shell_size)
+    static inline const matrix_sizes_type default_matrix_sizes()
     {
-        ; // do nothing
+        return Integer3(0, 0, 0);
     }
 
-    EGFRDFactory(const matrix_sizes_type& matrix_sizes,
-        const boost::shared_ptr<RandomNumberGenerator>& rng,
-        Real bd_dt_factor=-1, Integer dissociation_retry_moves=-1,
-        Real user_max_shell_size=-1)
-        : base_type(), matrix_sizes_(matrix_sizes), rng_(rng),
-        bd_dt_factor_(bd_dt_factor),
-        num_retries_(dissociation_retry_moves),
-        user_max_shell_size_(user_max_shell_size)
+    static inline const Real default_bd_dt_factor()
     {
-        ; // do nothing
+        return 0.0;
+    }
+
+    static inline const Integer default_dissociation_retry_moves()
+    {
+        return -1;
+    }
+
+    static inline const Real default_user_max_shell_size()
+    {
+        return 0.0;
     }
 
     virtual ~EGFRDFactory()
     {
         ; // do nothing
+    }
+
+    EGFRDFactory& rng(const boost::shared_ptr<RandomNumberGenerator>& rng)
+    {
+        rng_ = rng;
+        return (*this);
+    }
+
+    inline EGFRDFactory* rng_ptr(const boost::shared_ptr<RandomNumberGenerator>& rng)
+    {
+        return &(this->rng(rng));  //XXX: == this
     }
 
     virtual EGFRDWorld* create_world(const std::string filename) const
@@ -85,8 +95,9 @@ public:
         {
             return new EGFRDWorld(edge_lengths, matrix_sizes_, rng_);
         }
-        else if (matrix_sizes_[0] >= 3 && matrix_sizes_[1] >= 3
-            && matrix_sizes_[2] >= 3)
+        // else if (matrix_sizes_[0] >= 3 && matrix_sizes_[1] >= 3
+        //     && matrix_sizes_[2] >= 3)
+        else if (matrix_sizes_ != default_matrix_sizes())
         {
             return new EGFRDWorld(edge_lengths, matrix_sizes_);
         }
@@ -105,17 +116,17 @@ public:
         const boost::shared_ptr<Model>& model,
         const boost::shared_ptr<world_type>& world) const
     {
-        if (user_max_shell_size_ > 0)
+        if (user_max_shell_size_ != default_user_max_shell_size())
         {
             return new EGFRDSimulator(
-                world, model, bd_dt_factor_, num_retries_, user_max_shell_size_);
+                world, model, bd_dt_factor_, dissociation_retry_moves_, user_max_shell_size_);
         }
-        else if (num_retries_ >= 0)
+        else if (dissociation_retry_moves_ != default_dissociation_retry_moves())
         {
             return new EGFRDSimulator(
-                world, model, bd_dt_factor_, num_retries_);
+                world, model, bd_dt_factor_, dissociation_retry_moves_);
         }
-        else if (bd_dt_factor_ > 0)
+        else if (bd_dt_factor_ != default_bd_dt_factor())
         {
             return new EGFRDSimulator(world, model, bd_dt_factor_);
         }
@@ -144,7 +155,7 @@ protected:
     boost::shared_ptr<RandomNumberGenerator> rng_;
 
     Real bd_dt_factor_;
-    Integer num_retries_;
+    Integer dissociation_retry_moves_;
     Real user_max_shell_size_;
 };
 
@@ -162,36 +173,45 @@ protected:
 public:
 
     BDFactory(
-        Real bd_dt_factor=-1, Integer dissociation_retry_moves=-1)
-        : base_type(), matrix_sizes_(0, 0, 0), rng_(),
-        bd_dt_factor_(bd_dt_factor),
-        num_retries_(dissociation_retry_moves)
+        const matrix_sizes_type& matrix_sizes = default_matrix_sizes(),
+        Real bd_dt_factor = default_bd_dt_factor(),
+        Integer dissociation_retry_moves = default_dissociation_retry_moves())
+        : base_type(), rng_(),
+          matrix_sizes_(matrix_sizes), bd_dt_factor_(bd_dt_factor),
+          dissociation_retry_moves_(dissociation_retry_moves)
     {
         ; // do nothing
     }
 
-    BDFactory(const matrix_sizes_type& matrix_sizes,
-        Real bd_dt_factor=-1, Integer dissociation_retry_moves=-1)
-        : base_type(), matrix_sizes_(matrix_sizes), rng_(),
-        bd_dt_factor_(bd_dt_factor),
-        num_retries_(dissociation_retry_moves)
+    static inline const matrix_sizes_type default_matrix_sizes()
     {
-        ; // do nothing
+        return Integer3(0, 0, 0);
     }
 
-    BDFactory(const matrix_sizes_type& matrix_sizes,
-        const boost::shared_ptr<RandomNumberGenerator>& rng,
-        Real bd_dt_factor=-1, Integer dissociation_retry_moves=-1)
-        : base_type(), matrix_sizes_(matrix_sizes), rng_(rng),
-        bd_dt_factor_(bd_dt_factor),
-        num_retries_(dissociation_retry_moves)
+    static inline const Real default_bd_dt_factor()
     {
-        ; // do nothing
+        return 0.0;
+    }
+
+    static inline const Integer default_dissociation_retry_moves()
+    {
+        return -1;
     }
 
     virtual ~BDFactory()
     {
         ; // do nothing
+    }
+
+    BDFactory& rng(const boost::shared_ptr<RandomNumberGenerator>& rng)
+    {
+        rng_ = rng;
+        return (*this);
+    }
+
+    inline BDFactory* rng_ptr(const boost::shared_ptr<RandomNumberGenerator>& rng)
+    {
+        return &(this->rng(rng));  //XXX: == this
     }
 
     virtual EGFRDWorld* create_world(const std::string filename) const
@@ -206,8 +226,9 @@ public:
         {
             return new EGFRDWorld(edge_lengths, matrix_sizes_, rng_);
         }
-        else if (matrix_sizes_[0] >= 3 && matrix_sizes_[1] >= 3
-            && matrix_sizes_[2] >= 3)
+        // else if (matrix_sizes_[0] >= 3 && matrix_sizes_[1] >= 3
+        //     && matrix_sizes_[2] >= 3)
+        else if (matrix_sizes_ != default_matrix_sizes())
         {
             return new EGFRDWorld(edge_lengths, matrix_sizes_);
         }
@@ -226,12 +247,12 @@ public:
         const boost::shared_ptr<Model>& model,
         const boost::shared_ptr<world_type>& world) const
     {
-        if (num_retries_ >= 0)
+        if (dissociation_retry_moves_ != default_dissociation_retry_moves())
         {
             return new BDSimulator(
-                world, model, bd_dt_factor_, num_retries_);
+                world, model, bd_dt_factor_, dissociation_retry_moves_);
         }
-        else if (bd_dt_factor_ > 0)
+        else if (bd_dt_factor_ != default_bd_dt_factor())
         {
             return new BDSimulator(world, model, bd_dt_factor_);
         }
@@ -260,7 +281,7 @@ protected:
     boost::shared_ptr<RandomNumberGenerator> rng_;
 
     Real bd_dt_factor_;
-    Integer num_retries_;
+    Integer dissociation_retry_moves_;
 };
 
 } // egfrd
