@@ -106,6 +106,42 @@ public:
 
     Integer count(const Species& sp) const;
 
+    /** Method chaining
+     */
+
+    Species& D(const std::string& value)
+    {
+        set_attribute("D", value);
+        return (*this);
+    }
+
+    inline Species* D_ptr(const std::string& value)
+    {
+        return &(this->D(value));
+    }
+
+    Species& radius(const std::string& value)
+    {
+        set_attribute("radius", value);
+        return (*this);
+    }
+
+    inline Species* radius_ptr(const std::string& value)
+    {
+        return &(this->radius(value));
+    }
+
+    Species& location(const std::string& value)
+    {
+        set_attribute("location", value);
+        return (*this);
+    }
+
+    inline Species* location_ptr(const std::string& value)
+    {
+        return &(this->location(value));
+    }
+
     /** for epdp
      */
     serial_type name() const

@@ -958,43 +958,43 @@ cdef MesoscopicSimulator MesoscopicSimulator_from_Cpp_MesoscopicSimulator(
 cdef class MesoscopicFactory:
     """ A factory class creating a MesoscopicWorld instance and a MesoscopicSimulator instance.
 
-    MesoscopicFactory(matrix_sizes=None, GSLRandomNumberGenerator rng=None)
+    MesoscopicFactory(matrix_sizes=None, subvolume_length=None)
 
     """
 
-    def __init__(self, matrix_sizes=None, GSLRandomNumberGenerator rng=None):
+    def __init__(self, matrix_sizes=None, subvolume_length=None):
         """Constructor.
 
         Parameters
         ----------
-        matrix_sizes : Integer3 or Real, optional
+        matrix_sizes : Integer3, optional
             A cell size of the space.
             The number of cells must be larger than 3, in principle.
-            When given as a value, it is assumed to be a edge length of a cell.
-        rng : GSLRandomNumberGenerator, optional
-            A random number generator.
+        subvolume_length : Real, optional
+            The candidate for a edge length of a cell.
+            If both matrix_sizes and subvolume_length are given,
+            subvolume_length will be ignored.
 
         """
         pass
 
-    def __cinit__(self, matrix_sizes=None, GSLRandomNumberGenerator rng=None):
-        if rng is not None:
-            if isinstance(matrix_sizes, Integer3):
-                self.thisptr = new Cpp_MesoscopicFactory(
-                    deref((<Integer3>matrix_sizes).thisptr), deref(rng.thisptr))
-            else:
-                self.thisptr = new Cpp_MesoscopicFactory(<Real>matrix_sizes, deref(rng.thisptr))
-        elif matrix_sizes is not None:
-            if isinstance(matrix_sizes, Integer3):
-                self.thisptr = new Cpp_MesoscopicFactory(
-                    deref((<Integer3>matrix_sizes).thisptr))
-            else:
-                self.thisptr = new Cpp_MesoscopicFactory(<Real>matrix_sizes)
-        else:
-            self.thisptr = new Cpp_MesoscopicFactory()
+    def __cinit__(self, Integer3 matrix_sizes=None, subvolume_length=None):
+        self.thisptr = new Cpp_MesoscopicFactory(
+            Cpp_MesoscopicFactory.default_matrix_sizes() if matrix_sizes is None else deref(matrix_sizes.thisptr),
+            Cpp_MesoscopicFactory.default_subvolume_length() if subvolume_length is None else <Real>subvolume_length)
 
     def __dealloc__(self):
         del self.thisptr
+
+    def rng(self, GSLRandomNumberGenerator rng):
+        """rng(GSLRandomNumberGenerator) -> MesoscopicFactory
+
+        Set a random number generator, and return self.
+
+        """
+        cdef Cpp_MesoscopicFactory *ptr = self.thisptr.rng_ptr(deref(rng.thisptr))
+        assert ptr == self.thisptr
+        return self
 
     def create_world(self, arg1=None):
         """create_world(arg1=None) -> MesoscopicWorld

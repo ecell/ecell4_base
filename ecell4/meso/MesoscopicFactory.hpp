@@ -24,41 +24,36 @@ public:
 
 public:
 
-    MesoscopicFactory()
-        : base_type(), matrix_sizes_(0, 0, 0), subvolume_length_(0.0), rng_()
+    MesoscopicFactory(const Integer3& matrix_sizes = default_matrix_sizes(), const Real subvolume_length = default_subvolume_length())
+        : base_type(), rng_(), matrix_sizes_(matrix_sizes), subvolume_length_(subvolume_length)
     {
         ; // do nothing
     }
 
-    MesoscopicFactory(const Integer3& matrix_sizes)
-        : base_type(), matrix_sizes_(matrix_sizes), subvolume_length_(0.0), rng_()
+    static inline const Integer3 default_matrix_sizes()
     {
-        ; // do nothing
+        return Integer3(1, 1, 1);
     }
 
-    MesoscopicFactory(const Integer3& matrix_sizes,
-        const boost::shared_ptr<RandomNumberGenerator>& rng)
-        : base_type(), matrix_sizes_(matrix_sizes), subvolume_length_(0.0), rng_(rng)
+    static inline const Real default_subvolume_length()
     {
-        ; // do nothing
-    }
-
-    MesoscopicFactory(const Real subvolume_length)
-        : base_type(), matrix_sizes_(), subvolume_length_(subvolume_length), rng_()
-    {
-        ; // do nothing
-    }
-
-    MesoscopicFactory(const Real subvolume_length,
-        const boost::shared_ptr<RandomNumberGenerator>& rng)
-        : base_type(), matrix_sizes_(), subvolume_length_(subvolume_length), rng_(rng)
-    {
-        ; // do nothing
+        return 0.0;
     }
 
     virtual ~MesoscopicFactory()
     {
         ; // do nothing
+    }
+
+    MesoscopicFactory& rng(const boost::shared_ptr<RandomNumberGenerator>& rng)
+    {
+        rng_ = rng;
+        return (*this);
+    }
+
+    inline MesoscopicFactory* rng_ptr(const boost::shared_ptr<RandomNumberGenerator>& rng)
+    {
+        return &(this->rng(rng));  //XXX: == this
     }
 
     virtual MesoscopicWorld* create_world(const std::string filename) const
@@ -71,27 +66,29 @@ public:
     {
         if (rng_)
         {
-            if (subvolume_length_ > 0)
+            if (matrix_sizes_ != default_matrix_sizes())
+            {
+                return new MesoscopicWorld(edge_lengths, matrix_sizes_, rng_);
+            }
+            else if (subvolume_length_ != default_subvolume_length())
             {
                 return new MesoscopicWorld(edge_lengths, subvolume_length_, rng_);
             }
             else
             {
-                return new MesoscopicWorld(edge_lengths, matrix_sizes_, rng_);
+                throw NotSupported(
+                    "Either matrix_sizes or subvolume_length must be given.");
             }
         }
-        else if (subvolume_length_ > 0)
-        {
-            return new MesoscopicWorld(edge_lengths, subvolume_length_);
-        }
-        else if (matrix_sizes_[0] > 0 && matrix_sizes_[1] > 0 && matrix_sizes_[2] > 0)
+        if (matrix_sizes_ != default_matrix_sizes())
         {
             return new MesoscopicWorld(edge_lengths, matrix_sizes_);
         }
-        else
+        else if (subvolume_length_ != default_subvolume_length())
         {
-            return new MesoscopicWorld(edge_lengths);
+            return new MesoscopicWorld(edge_lengths, subvolume_length_);
         }
+        return new MesoscopicWorld(edge_lengths);
     }
 
     virtual MesoscopicWorld* create_world(const boost::shared_ptr<Model>& m) const
