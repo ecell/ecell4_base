@@ -137,6 +137,7 @@ void SpatiocyteSimulator::finalize()
             walk(step_event->species(), alpha);
         }
     }
+
     initialize();
 }
 
@@ -938,10 +939,11 @@ bool SpatiocyteSimulator::step(const Real& upto)
         return true;
     }
 
-    world_->set_t(upto); //XXX: TODO
+    world_->set_t(upto);
     last_reactions_.clear();
     new_species_.clear();
     dt_ = scheduler_.next_time() - t();
+    finalize();
     return false;
 }
 
@@ -1025,7 +1027,7 @@ void SpatiocyteSimulator::walk_in_space_(const MolecularTypeBase* mtype, const R
                 world_->get_neighbor_private_boundary(info.first, rnd));
         if (world_->can_move(info.first, neighbor))
         {
-            if (rng->uniform(0,1) <= alpha)
+            if (rng->uniform(0.0, 1.0) <= alpha)
                 world_->move_private(info.first, neighbor, /*candidate=*/idx);
         }
         else
@@ -1070,7 +1072,7 @@ void SpatiocyteSimulator::walk_on_surface_(const MolecularTypeBase* mtype, const
 
             if (world_->can_move(info.first, neighbor))
             {
-                if (rng->uniform(0,1) <= alpha)
+                if (rng->uniform(0.0, 1.0) <= alpha)
                     world_->move_private(info.first, neighbor, /*candidate=*/idx);
                 break;
             }
