@@ -187,9 +187,23 @@ cdef class SpatiocyteWorld:
         """Return the volume of a voxel."""
         return self.thisptr.get().voxel_volume()
 
-    def get_volume(self):
-        """Return the actual volume of the world."""
-        return self.thisptr.get().get_volume()
+    def get_volume(self, Species sp):
+        """get_volume(sp) -> Real
+
+        Return a volume of the given structure.
+
+        Parameters
+        ----------
+        sp : Species
+            A species for the target structure.
+
+        Returns
+        -------
+        Real:
+            A total volume of voxels belonging to the structure.
+
+        """
+        return self.thisptr.get().get_volume(deref(sp.thisptr))
 
     def actual_lengths(self):
         """Return the actual edge lengths of the world.

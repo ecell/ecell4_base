@@ -355,9 +355,13 @@ public:
         return (*space_).unit_area();
     }
 
-    Real get_volume() const
+    Real get_volume(const Species& sp) const
     {
-        return (*space_).get_volume();
+        if (!has_species(sp) || !find_molecular_type(sp)->is_structure())
+        {
+            return 0.0;
+        }
+        return (*space_).get_volume(sp);
     }
 
     Real3 actual_lengths() const

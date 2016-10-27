@@ -42,7 +42,7 @@ cdef extern from "ecell4/spatiocyte/SpatiocyteWorld.hpp" namespace "ecell4::spat
         Real volume()
         Real voxel_volume()
         Cpp_Real3 actual_lengths()
-        Real get_volume()
+        Real get_volume(Cpp_Species)
 
         pair[pair[Cpp_ParticleID, Cpp_Particle], bool] new_particle(Cpp_Particle& p)
         pair[pair[Cpp_ParticleID, Cpp_Particle], bool] new_particle(Cpp_Species& sp, Cpp_Real3& pos)

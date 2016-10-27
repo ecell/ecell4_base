@@ -76,9 +76,9 @@ public:
         return 2.0 * sqrt(3.0) * r * r;
     }
 
-    Real get_volume() const
+    Real get_volume(const Species& sp) const
     {
-        return size() * voxel_volume();
+        return voxel_volume() * num_voxels_exact(sp);
     }
 
     virtual Real3 actual_lengths() const = 0;
