@@ -63,6 +63,8 @@ int main() { std::hash<int>(); return 0; }"
     HAVE_STD_HASH)
 check_include_file_cxx("boost/functional/hash.hpp" HAVE_BOOST_FUNCTIONAL_HASH_HPP)
 
+include_directories(${CMAKE_BINARY_DIR})
+
 if (NOT NO_SHARED)
   add_subdirectory(ecell4)
 endif()
