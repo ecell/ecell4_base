@@ -34,15 +34,21 @@ if (PYTHONINTERP_FOUND)
     configure_file(${SETUP_PY_IN} ${SETUP_PY})
     configure_file(${INIT_PY_IN} ${INIT_PY})
 
-    if (NOT NO_SHARED)
+    if (NO_SHARED)
+        add_custom_command(
+            OUTPUT ${OUTPUT}
+            COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY} build_ext
+            COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY} bdist_wheel
+            COMMAND ${CMAKE_COMMAND} -E touch ${OUTPUT})
+    else()
         set(OPTS --prefer-shared)
+        add_custom_command(
+            OUTPUT ${OUTPUT}
+            COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY} build_ext -L${BINARY_DIRECTORIES} ${OPTS}
+            COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY} bdist_wheel
+            COMMAND ${CMAKE_COMMAND} -E touch ${OUTPUT})
     endif()
 
-    add_custom_command(
-        OUTPUT ${OUTPUT}
-        COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY} build_ext -L${BINARY_DIRECTORIES} ${OPTS}
-        COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY} bdist_wheel
-        COMMAND ${CMAKE_COMMAND} -E touch ${OUTPUT})
     add_custom_target(python ALL DEPENDS ${OUTPUT})
     add_test(
         NAME python_test
