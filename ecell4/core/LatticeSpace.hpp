@@ -355,7 +355,8 @@ public:
 
     const Real volume() const
     {
-        return edge_lengths_[0] * edge_lengths_[1] * edge_lengths_[2];
+        return size() * voxel_volume();
+        // return edge_lengths_[0] * edge_lengths_[1] * edge_lengths_[2];
     }
 
     virtual const Integer col_size() const
