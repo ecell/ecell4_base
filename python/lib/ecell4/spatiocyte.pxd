@@ -126,9 +126,9 @@ cdef extern from "ecell4/spatiocyte/SpatiocyteWorld.hpp" namespace "ecell4::spat
         @staticmethod
         Cpp_Real3 calculate_hcp_lengths(Real)
         @staticmethod
-        Cpp_Integer3 calculate_shape(Cpp_Real3&, Real, bool)
+        Cpp_Integer3 calculate_shape(Cpp_Real3&, Real)
         @staticmethod
-        Real calculate_volume(Cpp_Real3&, Real, bool)
+        Real calculate_volume(Cpp_Real3&, Real)
 
     cdef Cpp_SpatiocyteWorld* create_spatiocyte_world_cell_list_impl_alias(
         Cpp_Real3&, Real, Cpp_Integer3&, shared_ptr[Cpp_RandomNumberGenerator]&)

@@ -1219,25 +1219,25 @@ cdef class SpatiocyteWorld:
         return Real3_from_Cpp_Real3(address(lengths))
 
     @staticmethod
-    def calculate_shape(Real3 edge_lengths, voxel_radius, is_periodic):
-        """calculate_shape(Real3 edge_lengths, Real voxel_radius, bool is_periodic) -> Integer3
+    def calculate_shape(Real3 edge_lengths, voxel_radius):
+        """calculate_shape(Real3 edge_lengths, Real voxel_radius) -> Integer3
 
         Calculate World shape.
 
         """
         cdef Cpp_Integer3 shape = Cpp_SpatiocyteWorld.calculate_shape(
-            deref(edge_lengths.thisptr), voxel_radius, is_periodic)
+            deref(edge_lengths.thisptr), voxel_radius)
         return Integer3_from_Cpp_Integer3(address(shape))
 
     @staticmethod
-    def calculate_volume(Real3 edge_lengths, voxel_radius, is_periodic):
-        """calculate_volume(Real3 edge_lengths, Real voxel_radius, bool is_periodic) -> Real
+    def calculate_volume(Real3 edge_lengths, voxel_radius):
+        """calculate_volume(Real3 edge_lengths, Real voxel_radius) -> Real
 
         Calculate World volume.
 
         """
         return Cpp_SpatiocyteWorld.calculate_volume(
-            deref(edge_lengths.thisptr), voxel_radius, is_periodic)
+            deref(edge_lengths.thisptr), voxel_radius)
 
     def as_base(self):
         """Return self as a base class. Only for developmental use."""
