@@ -43,6 +43,8 @@ include_directories(${Boost_INCLUDE_DIRS})
 
 find_library(GSL_LIBRARIES gsl)
 find_library(GSL_CBLAS_LIBRARIES gslcblas)
+message("=> ${GSL_LIBRARIES}")
+message("=> ${GSL_CBLAS_LIBRARIES}")
 
 include(CheckIncludeFileCXX)
 # set(CMAKE_REQUIRED_INCLUDES "/usr/include")
