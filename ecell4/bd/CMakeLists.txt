@@ -1,3 +1,7 @@
+if (NO_SHARED)
+    return()
+endif()
+
 set(CPP_FILES
     BDSimulator.cpp BDPropagator.cpp functions3d.cpp)
 

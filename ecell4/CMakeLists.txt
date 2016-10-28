@@ -5,5 +5,3 @@ add_subdirectory(ode)
 add_subdirectory(bd)
 add_subdirectory(meso)
 add_subdirectory(spatiocyte)
-
-set(BINARY_DIRECTORIES ${BINARY_DIRECTORIES} PARENT_SCOPE)

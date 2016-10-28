@@ -1,3 +1,7 @@
+if (NO_SHARED)
+    return()
+endif()
+
 set(CPP_FILES
     GillespieSimulator.cpp GillespieWorld.cpp)
 

@@ -65,7 +65,5 @@ check_include_file_cxx("boost/functional/hash.hpp" HAVE_BOOST_FUNCTIONAL_HASH_HP
 
 include_directories(${CMAKE_BINARY_DIR})
 
-if (NOT NO_SHARED)
-  add_subdirectory(ecell4)
-endif()
+add_subdirectory(ecell4)
 add_subdirectory(python)

@@ -1,3 +1,7 @@
+if (NO_SHARED)
+    return()
+endif()
+
 set(CPP_FILES
 	ODEWorld.cpp ODENetworkModel.cpp ODEReactionRule.cpp ODESimulator.cpp ODERatelaw.cpp)
 

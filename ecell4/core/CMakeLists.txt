@@ -4,6 +4,14 @@
 # SET(CPACK_DEBIAN_PACKAGE_MAINTAINER "Kozo Nishida <knishida@riken.jp>")
 # INCLUDE(CPack)
 
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/config.h.in
+    ${CMAKE_CURRENT_BINARY_DIR}/config.h)
+
+if (NO_SHARED)
+    return()
+endif()
+
 set(CPP_FILES
     CompartmentSpace.cpp Context.cpp Integer3.cpp Journal.cpp ReactionRule.cpp
     LatticeSpace.cpp Model.cpp NetworkModel.cpp NetfreeModel.cpp ParticleSpace.cpp
@@ -27,12 +35,6 @@ set(HPP_FILES
     ParticleSpaceCellListImpl.hpp LatticeSpaceCellListImpl.hpp
     PlanarSurface.hpp Rod.hpp collision.hpp
     comparators.hpp SimulatorFactory.hpp Mesh.hpp shape_operators.hpp)
-
-set(BINARY_DIRECTORIES ${CMAKE_CURRENT_BINARY_DIR}:${BINARY_DIRECTORIES} PARENT_SCOPE)
-
-configure_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/config.h.in
-    ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 
 add_library(ecell4-core SHARED
     ${CPP_FILES} ${HPP_FILES} "${CMAKE_CURRENT_BINARY_DIR}/config.h")
