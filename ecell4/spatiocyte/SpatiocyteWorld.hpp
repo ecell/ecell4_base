@@ -576,6 +576,29 @@ public:
         return model_.lock();
     }
 
+    /**
+     * static members
+     */
+    static inline Real calculate_voxel_volume(const Real r)
+    {
+        return LatticeSpace::calculate_voxel_volume(r);
+    }
+
+    static inline Real3 calculate_hcp_lengths(const Real voxel_radius)
+    {
+        return LatticeSpace::calculate_hcp_lengths(voxel_radius);
+    }
+
+    static inline Integer3 calculate_shape(const Real3& edge_lengths, const Real& voxel_radius, const bool is_periodic)
+    {
+        return LatticeSpace::calculate_shape(edge_lengths, voxel_radius, is_periodic);
+    }
+
+    static inline Real calculate_volume(const Real3& edge_lengths, const Real& voxel_radius, const bool is_periodic)
+    {
+        return LatticeSpace::calculate_volume(edge_lengths, voxel_radius, is_periodic);
+    }
+
 protected:
 
     Integer add_structure2(const Species& sp, const boost::shared_ptr<const Shape> shape);

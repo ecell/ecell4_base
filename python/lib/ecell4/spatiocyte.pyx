@@ -1203,6 +1203,42 @@ cdef class SpatiocyteWorld:
         return GSLRandomNumberGenerator_from_Cpp_RandomNumberGenerator(
             self.thisptr.get().rng())
 
+    @staticmethod
+    def calculate_voxel_volume(voxel_radius):
+        """Calculate a voxel volume from a voxel radius."""
+        return Cpp_SpatiocyteWorld.calculate_voxel_volume(voxel_radius)
+
+    @staticmethod
+    def calculate_hcp_lengths(voxel_radius):
+        """calculate_hcp_lengths(Real voxel_radius) -> Real3
+
+        Calculate HCP lengths (HCP_L, HCP_X, HCP_Y) from a voxel radius.
+
+        """
+        cdef Cpp_Real3 lengths = Cpp_SpatiocyteWorld.calculate_hcp_lengths(voxel_radius)
+        return Real3_from_Cpp_Real3(address(lengths))
+
+    @staticmethod
+    def calculate_shape(Real3 edge_lengths, voxel_radius, is_periodic):
+        """calculate_shape(Real3 edge_lengths, Real voxel_radius, bool is_periodic) -> Integer3
+
+        Calculate World shape.
+
+        """
+        cdef Cpp_Integer3 shape = Cpp_SpatiocyteWorld.calculate_shape(
+            deref(edge_lengths.thisptr), voxel_radius, is_periodic)
+        return Integer3_from_Cpp_Integer3(address(shape))
+
+    @staticmethod
+    def calculate_volume(Real3 edge_lengths, voxel_radius, is_periodic):
+        """calculate_volume(Real3 edge_lengths, Real voxel_radius, bool is_periodic) -> Real
+
+        Calculate World volume.
+
+        """
+        return Cpp_SpatiocyteWorld.calculate_volume(
+            deref(edge_lengths.thisptr), voxel_radius, is_periodic)
+
     def as_base(self):
         """Return self as a base class. Only for developmental use."""
         retval = Space()
