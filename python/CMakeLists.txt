@@ -46,6 +46,8 @@ if (PYTHONINTERP_FOUND)
     configure_file(${SETUP_PY_IN} ${SETUP_PY})
     configure_file(${INIT_PY_IN} ${INIT_PY})
 
+    message("XXX: ECELL4_SHARED_DIRS '${ECELL4_SHARED_DIRS}'")
+
     if (NOT NO_SHARED)
         set(OPTS --prefer-shared)
     endif()

@@ -55,6 +55,8 @@ add_library(ecell4-egfrd SHARED
 target_link_libraries(ecell4-egfrd ${GSL_LIBRARIES} ${GSL_CBLAS_LIBRARIES} ecell4-core)
 # target_link_libraries(ecell4-egfrd ecell4-core ${BOOST_REGEX_LIBRARIES})
 
+set(ECELL4_SHARED_DIRS ${CMAKE_CURRENT_BINARY_DIR}:${ECELL4_SHARED_DIRS} PARENT_SCOPE)
+
 # add_subdirectory(tests)
 add_subdirectory(samples)
 

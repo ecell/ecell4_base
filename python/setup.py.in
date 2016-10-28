@@ -108,7 +108,7 @@ dependent_lib_dirs = []
 
 if with_hdf5:
     dependent_libs.extend(['hdf5_cpp', 'hdf5'])
-    dependent_lib_dirs.extend("${HDF5_LIBRARY_DIRS}".split(":"))
+    dependent_lib_dirs.extend("${HDF5_LIBRARY_DIRS}".split(";"))
     extra_compile_args.append("-DWITH_HDF5")
     if sys.platform == "win32":
         extra_compile_args.extend(
@@ -120,10 +120,10 @@ if vtk_libraries != "":
 
 vtk_library_dirs = "${VTK_LIBRARY_DIRS}"
 if vtk_library_dirs != "":
-    dependent_lib_dirs.extend("${VTK_LIBRARY_DIRS}".split(";"))
+    dependent_lib_dirs.extend(vtk_library_dirs.split(";"))
 
 src_path = "${PROJECT_SOURCE_DIR}"
-include_path = [src_path] + "${INCLUDE_PATH}".split(";")
+include_path = [src_path] + "${INCLUDE_PATH}".split(":")
 
 # if STATIC_BUILD:
 #     src_path = "./src"
@@ -142,27 +142,33 @@ include_path = [src_path] + "${INCLUDE_PATH}".split(";")
 py_path = os.path.join("${CMAKE_CURRENT_SOURCE_DIR}", "lib")
 
 if with_cpp_shared_libraries:
+    ecell4_shared_dirs = "${ECELL4_SHARED_DIRS}"
+    if ecell4_shared_dirs != "":
+        dependent_lib_dirs = ecell4_shared_dirs.split(":")
+    else:
+        dependent_lib_dirs = []
+
     ext_modules = [
         Extension("ecell4.core", sources=[os.path.join(py_path, "ecell4/core.pyx")],
-            include_dirs=include_path, libraries=["ecell4-core"], language="c++",
+            include_dirs=include_path, libraries=["ecell4-core"], library_dirs=dependent_lib_dirs, language="c++",
             extra_compile_args=extra_compile_args),
         Extension("ecell4.egfrd", sources=[os.path.join(py_path, "ecell4/egfrd.pyx")],
-            include_dirs=include_path, libraries=["ecell4-core", "ecell4-egfrd"],
+            include_dirs=include_path, libraries=["ecell4-core", "ecell4-egfrd"], library_dirs=dependent_lib_dirs,
             language="c++", extra_compile_args=extra_compile_args + ["-w"]),
         Extension("ecell4.gillespie", sources=[os.path.join(py_path, "ecell4/gillespie.pyx")],
-            include_dirs=include_path, libraries=["ecell4-core", "ecell4-gillespie"],
+            include_dirs=include_path, libraries=["ecell4-core", "ecell4-gillespie"], library_dirs=dependent_lib_dirs,
             language="c++", extra_compile_args=extra_compile_args),
         Extension("ecell4.bd", sources=[os.path.join(py_path, "ecell4/bd.pyx")],
-            include_dirs=include_path, libraries=["ecell4-core", "ecell4-bd"],
+            include_dirs=include_path, libraries=["ecell4-core", "ecell4-bd"], library_dirs=dependent_lib_dirs,
             language="c++", extra_compile_args=extra_compile_args),
         Extension("ecell4.ode", sources=[os.path.join(py_path, "ecell4/ode.pyx")],
-            include_dirs=include_path, libraries=["ecell4-core", "ecell4-ode"],
+            include_dirs=include_path, libraries=["ecell4-core", "ecell4-ode"], library_dirs=dependent_lib_dirs,
             language="c++", extra_compile_args=extra_compile_args),
         Extension("ecell4.spatiocyte", sources=[os.path.join(py_path, "ecell4/spatiocyte.pyx")],
-            include_dirs=include_path, libraries=["ecell4-core", "ecell4-spatiocyte"],
+            include_dirs=include_path, libraries=["ecell4-core", "ecell4-spatiocyte"], library_dirs=dependent_lib_dirs,
             language="c++", extra_compile_args=extra_compile_args),
         Extension("ecell4.meso", sources=[os.path.join(py_path, "ecell4/meso.pyx")],
-            include_dirs=include_path, libraries=["ecell4-core", "ecell4-meso"],
+            include_dirs=include_path, libraries=["ecell4-core", "ecell4-meso"], library_dirs=dependent_lib_dirs,
             language="c++", extra_compile_args=extra_compile_args),
         ]
     ext_modules = cythonize(ext_modules)
