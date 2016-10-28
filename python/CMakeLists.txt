@@ -46,7 +46,7 @@ if (PYTHONINTERP_FOUND)
     configure_file(${SETUP_PY_IN} ${SETUP_PY})
     configure_file(${INIT_PY_IN} ${INIT_PY})
 
-    message("XXX: ECELL4_SHARED_DIRS '${ECELL4_SHARED_DIRS}'")
+    # message("XXX: ECELL4_SHARED_DIRS '${ECELL4_SHARED_DIRS}'")
 
     if (NOT NO_SHARED)
         set(OPTS --prefer-shared)
@@ -55,8 +55,7 @@ if (PYTHONINTERP_FOUND)
     add_custom_command(
         OUTPUT ${OUTPUT}
         COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY} build_ext ${OPTS}
-        # COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY} build_ext -L${BINARY_DIRECTORIES} ${OPTS}
-        # COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY} bdist_wheel
+        COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY} bdist_wheel
         COMMAND ${CMAKE_COMMAND} -E touch ${OUTPUT})
     add_custom_target(python ALL DEPENDS ${OUTPUT})
     add_test(
