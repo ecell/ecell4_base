@@ -119,8 +119,8 @@ Python 2.7.6 (default, Mar 22 2014, 22:59:56)
 Type "help", "copyright", "credits" or "license" for more information.
 >>> from ecell4.core import *
 >>> sp = Species("B.A.C")
->>> print sp.serial()
-A.B.C
+>>> print(sp.serial())
+B.A.C
 >>>
 ```
 
