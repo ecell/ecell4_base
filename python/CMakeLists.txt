@@ -36,6 +36,7 @@ if (PYTHONINTERP_FOUND)
     # message("XXX: HDF5_LIBRARY_DIRS '${HDF5_LIBRARY_DIRS}'")
     # message("XXX: VTK_LIBRARIES '${VTK_LIBRARIES}'")
     # message("XXX: VTK_LIBRARY_DIRS '${VTK_LIBRARY_DIRS}'")
+    # message("XXX: ECELL4_SHARED_DIRS '${ECELL4_SHARED_DIRS}'")
 
     set(SETUP_PY_IN ${CMAKE_CURRENT_SOURCE_DIR}/setup.py.in)
     set(SETUP_PY    ${CMAKE_CURRENT_SOURCE_DIR}/setup.py)
@@ -46,17 +47,19 @@ if (PYTHONINTERP_FOUND)
     configure_file(${SETUP_PY_IN} ${SETUP_PY})
     configure_file(${INIT_PY_IN} ${INIT_PY})
 
-    # message("XXX: ECELL4_SHARED_DIRS '${ECELL4_SHARED_DIRS}'")
-
     if (NOT NO_SHARED)
-        set(OPTS --prefer-shared)
+        add_custom_command(
+            OUTPUT ${OUTPUT}
+            COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY} build_ext -L${ECELL4_SHARED_DIRS} --prefer-shared
+            COMMAND ${CMAKE_COMMAND} -E touch ${OUTPUT})
+    else()
+        add_custom_command(
+            OUTPUT ${OUTPUT}
+            COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY} build_ext
+            COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY} bdist_wheel
+            COMMAND ${CMAKE_COMMAND} -E touch ${OUTPUT})
     endif()
 
-    add_custom_command(
-        OUTPUT ${OUTPUT}
-        COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY} build_ext -L${ECELL4_SHARED_DIRS} ${OPTS}
-        # COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY} bdist_wheel
-        COMMAND ${CMAKE_COMMAND} -E touch ${OUTPUT})
     add_custom_target(python ALL DEPENDS ${OUTPUT})
     add_test(
         NAME python_test
