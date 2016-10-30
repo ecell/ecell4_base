@@ -19,7 +19,7 @@ if (PYTHONINTERP_FOUND)
     set(_GLUE "") # effective glue is empty at the beginning
     foreach(SINGLE_PATH ${INCLUDE_PATH})
       set(_TMP_RESULT "${_TMP_RESULT}${_GLUE}${SINGLE_PATH}")
-      set(_GLUE ":") # delimiter
+      set(_GLUE ";") # delimiter
     endforeach()
     set(INCLUDE_PATH ${_TMP_RESULT})
 
