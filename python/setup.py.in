@@ -122,6 +122,8 @@ vtk_library_dirs = "${VTK_LIBRARY_DIRS}"
 if vtk_library_dirs != "":
     dependent_lib_dirs.extend(vtk_library_dirs.split(";"))
 
+dependent_lib_dirs = [path for path in dependent_lib_dirs if path.strip() != ""]
+
 src_path = "${PROJECT_SOURCE_DIR}"
 include_path = [src_path] + "${INCLUDE_PATH}".split(":")
 
