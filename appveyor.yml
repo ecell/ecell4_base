@@ -18,10 +18,12 @@ install:
   # install hdf5
   - mkdir hdf5lib
   - cd hdf5lib
-  - if "%PYTHON_VERSION%" == "2.7.11" curl -O http://repo.continuum.io/pkgs/free/win-32/hdf5-1.8.16-vc9_0.tar.bz2
+  - if "%PYTHON_VERSION%" == "2.7.11" curl -LvkO https://anaconda.org/anaconda/hdf5/1.8.16/download/win-32/hdf5-1.8.16-vc9_0.tar.bz2
+  # - if "%PYTHON_VERSION%" == "2.7.11" curl -O http://repo.continuum.io/pkgs/free/win-32/hdf5-1.8.16-vc9_0.tar.bz2
   - if "%PYTHON_VERSION%" == "2.7.11" 7z x -y hdf5-1.8.16-vc9_0.tar.bz2
   - if "%PYTHON_VERSION%" == "2.7.11" 7z x -y hdf5-1.8.16-vc9_0.tar
-  - if "%PYTHON_VERSION%" == "3.5.1" curl -O http://repo.continuum.io/pkgs/free/win-32/hdf5-1.8.16-vc14_0.tar.bz2
+  - if "%PYTHON_VERSION%" == "3.5.1" curl -LvkO https://anaconda.org/anaconda/hdf5/1.8.16/download/win-32/hdf5-1.8.16-vc14_0.tar.bz2
+  # - if "%PYTHON_VERSION%" == "3.5.1" curl -O http://repo.continuum.io/pkgs/free/win-32/hdf5-1.8.16-vc14_0.tar.bz2
   - if "%PYTHON_VERSION%" == "3.5.1" 7z x -y hdf5-1.8.16-vc14_0.tar.bz2
   - if "%PYTHON_VERSION%" == "3.5.1" 7z x -y hdf5-1.8.16-vc14_0.tar
   - mkdir "C:/Program Files (x86)/HDF_Group/HDF5/1.8.16"
