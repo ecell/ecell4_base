@@ -3,11 +3,12 @@
 
 #include <map>
 
+#include <ecell4/core/config.h>
+
 #include "types.hpp"
 #include "Real3.hpp"
 #include "Species.hpp"
 #include "Identifier.hpp"
-#include "config.h"
 
 #include "hash.hpp"
 

@@ -2,7 +2,7 @@
 #define COMPAT_HPP
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+#include <ecell4/egfrd/config.h>
 #endif /* HAVE_CONFIG_H */
 
 #if defined( __cplusplus )

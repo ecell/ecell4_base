@@ -5,7 +5,7 @@
 #include <boost/type_traits/is_integral.hpp>
 #include <boost/scoped_ptr.hpp>
 
-#include "config.h"
+#include <ecell4/core/config.h>
 
 #ifdef WITH_HDF5
 #include <hdf5.h>

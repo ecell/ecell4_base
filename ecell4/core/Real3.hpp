@@ -8,7 +8,8 @@
 #include <cmath>
 #include <boost/array.hpp>
 
-#include "config.h"
+#include <ecell4/core/config.h>
+
 #include "types.hpp"
 #include "functions.hpp"
 

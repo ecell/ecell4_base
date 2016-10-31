@@ -19,14 +19,28 @@ if (PYTHONINTERP_FOUND)
     set(_GLUE "") # effective glue is empty at the beginning
     foreach(SINGLE_PATH ${INCLUDE_PATH})
       set(_TMP_RESULT "${_TMP_RESULT}${_GLUE}${SINGLE_PATH}")
-      set(_GLUE ":") # delimiter
+      set(_GLUE ";") # delimiter
     endforeach()
     set(INCLUDE_PATH ${_TMP_RESULT})
-    # message("${INCLUDE_PATH}")
-    message("XXX: CMAKE_CURRENT_SOURCE_DIR is '${CMAKE_CURRENT_SOURCE_DIR}'.")
+
+    set(_TMP_RESULT "")
+    set(_GLUE "") # effective glue is empty at the beginning
+    foreach(SINGLE_PATH ${HDF5_CXX_LIBRARIES})
+      get_filename_component(HDF5_LIBRARY_DIRS ${SINGLE_PATH} DIRECTORY)
+      set(_TMP_RESULT "${_TMP_RESULT}${_GLUE}${HDF5_LIBRARY_DIRS}")
+      set(_GLUE ";") # delimiter
+    endforeach()
+    set(HDF5_LIBRARY_DIRS ${_TMP_RESULT})
+
+    # message("XXX: CMAKE_CURRENT_SOURCE_DIR '${CMAKE_CURRENT_SOURCE_DIR}'")
+    # message("XXX: HDF5_LIBRARY_DIRS '${HDF5_LIBRARY_DIRS}'")
+    # message("XXX: VTK_LIBRARIES '${VTK_LIBRARIES}'")
+    # message("XXX: VTK_LIBRARY_DIRS '${VTK_LIBRARY_DIRS}'")
+    # message("XXX: ECELL4_SHARED_DIRS '${ECELL4_SHARED_DIRS}'")
 
     set(SETUP_PY_IN ${CMAKE_CURRENT_SOURCE_DIR}/setup.py.in)
-    set(SETUP_PY    ${CMAKE_CURRENT_SOURCE_DIR}/setup.py)
+    # set(SETUP_PY    ${CMAKE_CURRENT_SOURCE_DIR}/setup.py)
+    set(SETUP_PY    ${CMAKE_CURRENT_BINARY_DIR}/setup.py)
     set(INIT_PY_IN  ${CMAKE_CURRENT_SOURCE_DIR}/lib/ecell4/__init__.py.in)
     set(INIT_PY     ${CMAKE_CURRENT_SOURCE_DIR}/lib/ecell4/__init__.py)
     set(OUTPUT      ${CMAKE_CURRENT_BINARY_DIR}/build/timestanp)
@@ -34,17 +48,15 @@ if (PYTHONINTERP_FOUND)
     configure_file(${SETUP_PY_IN} ${SETUP_PY})
     configure_file(${INIT_PY_IN} ${INIT_PY})
 
-    if (NO_SHARED)
+    if (NOT NO_SHARED)
+        add_custom_command(
+            OUTPUT ${OUTPUT}
+            COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY} build_ext -L${ECELL4_SHARED_DIRS} --prefer-shared
+            COMMAND ${CMAKE_COMMAND} -E touch ${OUTPUT})
+    else()
         add_custom_command(
             OUTPUT ${OUTPUT}
             COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY} build_ext
-            COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY} bdist_wheel
-            COMMAND ${CMAKE_COMMAND} -E touch ${OUTPUT})
-    else()
-        set(OPTS --prefer-shared)
-        add_custom_command(
-            OUTPUT ${OUTPUT}
-            COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY} build_ext -L${BINARY_DIRECTORIES} ${OPTS}
             COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY} bdist_wheel
             COMMAND ${CMAKE_COMMAND} -E touch ${OUTPUT})
     endif()
@@ -57,5 +69,6 @@ if (PYTHONINTERP_FOUND)
     install(CODE "
         set(ENV{PYTHONPATH} ${CMAKE_INSTALL_PREFIX}/lib/python${PYTHON_VERSION}/site-packages)
         set(ENV{LIBRARY_PATH} ${CMAKE_INSTALL_PREFIX}/lib)
-        execute_process(COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY} install --prefix=${CMAKE_INSTALL_PREFIX} ${OPTS})")
+        execute_process(COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY} install --prefix=${CMAKE_INSTALL_PREFIX})")
+    #     execute_process(COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY} install --prefix=${CMAKE_INSTALL_PREFIX} ${OPTS})")
 endif()

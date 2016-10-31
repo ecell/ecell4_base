@@ -4,7 +4,8 @@
 #include <iostream>
 #include <string>
 
-#include "config.h"
+#include <ecell4/core/config.h>
+
 #include "hash.hpp"
 
 #include "types.hpp"

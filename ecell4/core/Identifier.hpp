@@ -3,7 +3,7 @@
 
 #include <ostream>
 #include <utility>
-#include "config.h"
+#include <ecell4/core/config.h>
 #include "hash.hpp"
 
 namespace ecell4

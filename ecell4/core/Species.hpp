@@ -8,7 +8,8 @@
 #include <algorithm>
 #include <boost/algorithm/string.hpp>
 
-#include "config.h"
+#include <ecell4/core/config.h>
+
 #include "hash.hpp"
 #include "get_mapper_mf.hpp"
 #include "types.hpp"
