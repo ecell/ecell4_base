@@ -1,7 +1,7 @@
 #ifndef __ECELL4_UTILS_GET_MAPPER_MF_HPP
 #define __ECELL4_UTILS_GET_MAPPER_MF_HPP
 
-#include "config.h"
+#include <ecell4/core/config.h>
 
 #if defined(HAVE_UNORDERED_MAP)
 #include <unordered_map>

@@ -8,18 +8,12 @@
 #include <cmath>
 #include <boost/array.hpp>
 
-#include "config.h"
+#include <ecell4/core/config.h>
+
 #include "types.hpp"
 #include "functions.hpp"
 
-#if defined(HAVE_TR1_FUNCTIONAL)
-#include <tr1/functional>
-#elif defined(HAVE_STD_HASH)
-#include <functional>
-#elif defined(HAVE_BOOST_FUNCTIONAL_HASH_HPP)
-#include <boost/functional/hash.hpp>
-#endif
-
+#include "hash.hpp"
 
 namespace ecell4
 {
@@ -217,13 +211,7 @@ inline Real3 unitz()
 
 } // ecell4
 
-#if defined(HAVE_TR1_FUNCTIONAL)
-namespace std { namespace tr1 {
-#elif defined(HAVE_STD_HASH)
-namespace std {
-#elif defined(HAVE_BOOST_FUNCTIONAL_HASH_HPP)
-namespace boost {
-#endif
+ECELL4_DEFINE_HASH_BEGIN()
 
 template<>
 struct hash<ecell4::Real3>
@@ -238,12 +226,6 @@ struct hash<ecell4::Real3>
     }
 };
 
-#if defined(HAVE_TR1_FUNCTIONAL)
-} } // namespace std::tr1
-#elif defined(HAVE_STD_HASH)
-} // namespace std
-#elif defined(HAVE_BOOST_FUNCTIONAL_HASH_HPP)
-} // namespace boost
-#endif
+ECELL4_DEFINE_HASH_END()
 
 #endif /* __ECELL4_POSITION3_HPP */

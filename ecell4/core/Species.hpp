@@ -8,16 +8,9 @@
 #include <algorithm>
 #include <boost/algorithm/string.hpp>
 
-#include "config.h"
+#include <ecell4/core/config.h>
 
-#if defined(HAVE_TR1_FUNCTIONAL)
-#include <tr1/functional>
-#elif defined(HAVE_STD_HASH)
-#include <functional>
-#elif defined(HAVE_BOOST_FUNCTIONAL_HASH_HPP)
-#include <boost/functional/hash.hpp>
-#endif
-
+#include "hash.hpp"
 #include "get_mapper_mf.hpp"
 #include "types.hpp"
 #include "exceptions.hpp"
@@ -173,19 +166,7 @@ inline std::basic_ostream<Tstrm_, Ttraits_>& operator<<(
 
 } // ecell4
 
-#if defined(HAVE_TR1_FUNCTIONAL)
-namespace std
-{
-
-namespace tr1
-{
-#elif defined(HAVE_STD_HASH)
-namespace std
-{
-#elif defined(HAVE_BOOST_FUNCTIONAL_HASH_HPP)
-namespace boost
-{
-#endif
+ECELL4_DEFINE_HASH_BEGIN()
 
 template<>
 struct hash<ecell4::Species>
@@ -196,14 +177,6 @@ struct hash<ecell4::Species>
     }
 };
 
-#if defined(HAVE_TR1_FUNCTIONAL)
-} // tr1
-
-} // std
-#elif defined(HAVE_STD_HASH)
-} // std
-#elif defined(HAVE_BOOST_FUNCTIONAL_HASH_HPP)
-} // boost
-#endif
+ECELL4_DEFINE_HASH_END()
 
 #endif /* __ECELL4_SPECIES_HPP */

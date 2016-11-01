@@ -2,15 +2,9 @@
 #define SHELL_HPP
 
 #include <ecell4/core/config.h>
+#include <ecell4/core/hash.hpp>
 
 #include <ostream>
-#if defined(HAVE_TR1_FUNCTIONAL)
-#include <tr1/functional>
-#elif defined(HAVE_STD_HASH)
-#include <functional>
-#elif defined(HAVE_BOOST_FUNCTIONAL_HASH_HPP)
-#include <boost/functional/hash.hpp>
-#endif
 
 template<typename Tshape_, typename Tdid_>
 struct Shell
@@ -98,13 +92,7 @@ inline std::basic_ostream<Tstrm_, Ttraits_>& operator<<(std::basic_ostream<Tstrm
     return strm;
 }
 
-#if defined(HAVE_TR1_FUNCTIONAL)
-namespace std { namespace tr1 {
-#elif defined(HAVE_STD_HASH)
-namespace std {
-#elif defined(HAVE_BOOST_FUNCTIONAL_HASH_HPP)
-namespace boost {
-#endif
+ECELL4_DEFINE_HASH_BEGIN()
 
 template<typename Tshape_, typename Tdid_>
 struct hash<Shell<Tshape_, Tdid_> >
@@ -118,12 +106,6 @@ struct hash<Shell<Tshape_, Tdid_> >
     }
 };
 
-#if defined(HAVE_TR1_FUNCTIONAL)
-} } // namespace std::tr1
-#elif defined(HAVE_STD_HASH)
-} // namespace std
-#elif defined(HAVE_BOOST_FUNCTIONAL_HASH_HPP)
-} // namespace boost
-#endif
+ECELL4_DEFINE_HASH_END()
 
 #endif /* SHELL_HPP */
