@@ -174,7 +174,7 @@ public:
              i != e; ++i)
         {
             length_type const dist(world_.distance(shape((*i).second), s.position()));
-            if (dist < s.radius())
+            if (dist < s.radius() && !collection_contains(ignore, (*i).first))
             {
                 retval.push_back(std::make_pair(*i, dist));
             }
