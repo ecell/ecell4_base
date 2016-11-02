@@ -231,7 +231,7 @@ public:
         const T1_ p2_trans(cyclic_transpose(p2, p1));
         const element_type D12(add(D1, D2));
         const element_type s(divide(D1, D12)), t(divide(D2, D12));
-        const T1_ com(add(multiply(p1, s), multiply(p2_trans, t)));
+        const T1_ com(add(multiply(p1, t), multiply(p2_trans, s)));
         return apply_boundary(com);
     }
 
