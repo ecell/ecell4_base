@@ -38,7 +38,7 @@ Installation
 ### Requirements
 
 #### Minimum requirements
-- Python or **32bit** Miniconda for Windows (2.7 and 3.4, 3.5 both major versions are supported [3.4 is only supported on Linux])
+- Python (2.7 and 3.4, 3.5 both major versions are supported [3.4 is only supported on Linux])
 - pip (8.1 and later)
 - hdf5 (required only on **Windows**. works only for **version 1.8.16**)
 
@@ -51,10 +51,9 @@ And some E-Cell4 functions (for visualization, datastore) optionally depend on
 
 ### Windows
 
-Please use **32bit** [Miniconda](http://conda.pydata.org/miniconda.html), even if you use 64bit Windows.
-We have NOT supported 64bit Python yet.
+Please use [Miniconda](http://conda.pydata.org/miniconda.html), Note that we does not support 64bit for Python2.7.
 
-- Install **32bit** Miniconda for Windows from http://conda.pydata.org/miniconda.html
+- Install Miniconda for Windows from http://conda.pydata.org/miniconda.html
 - Run the follwing commands on command prompt
 - (**Important**) E-Cell4 for Windows works only for hdf5 version **1.8.16**. Please check the version of hdf5, even if you installed hdf5 before with conda.
 
