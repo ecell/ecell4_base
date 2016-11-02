@@ -150,25 +150,25 @@ public:
         return particles_.end() != particles_.find(id);
     }
 
-    virtual particle_id_pair_and_distance_list* check_overlap(particle_shape_type const& s) const
+    virtual particle_id_pair_and_distance_list check_overlap(particle_shape_type const& s) const
     {
         return check_overlap(s, array_gen<particle_id_type>());
     }
 
-    virtual particle_id_pair_and_distance_list* check_overlap(particle_shape_type const& s, particle_id_type const& ignore) const
+    virtual particle_id_pair_and_distance_list check_overlap(particle_shape_type const& s, particle_id_type const& ignore) const
     {
         return check_overlap(s, array_gen(ignore));
     }
 
-    virtual particle_id_pair_and_distance_list* check_overlap(particle_shape_type const& s, particle_id_type const& ignore1, particle_id_type const& ignore2) const
+    virtual particle_id_pair_and_distance_list check_overlap(particle_shape_type const& s, particle_id_type const& ignore1, particle_id_type const& ignore2) const
     {
         return check_overlap(s, array_gen(ignore1, ignore2));
     }
 
     template<typename Tsph_, typename Tset_>
-    particle_id_pair_and_distance_list* check_overlap(Tsph_ const& s, Tset_ const& ignore) const
+    particle_id_pair_and_distance_list check_overlap(Tsph_ const& s, Tset_ const& ignore) const
     {
-        typename utils::template overlap_checker<Tset_> checker(ignore);
+        particle_id_pair_and_distance_list retval;
         for (typename particle_map::const_iterator i(particles_.begin()),
                                                    e(particles_.end());
              i != e; ++i)
@@ -176,15 +176,10 @@ public:
             length_type const dist(world_.distance(shape((*i).second), s.position()));
             if (dist < s.radius())
             {
-                checker(i, dist);
+                retval.push_back(std::make_pair(*i, dist));
             }
         }
-        return checker.result();
-    }
-
-    virtual particle_id_pair_generator* get_particles() const
-    {
-        return make_range_generator<particle_id_pair>(particles_);
+        return retval;
     }
 
     virtual transaction_type* create_transaction()
@@ -452,26 +447,14 @@ public:
     {
         LOG_DEBUG(("clear_volume was called here."));
         main_.clear_volume(shape, base_type::id_);
-        boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped(
-            main_.world()->check_overlap(shape, ignore));
-        if (overlapped && ::size(*overlapped))
-        {
-            return false;
-        }
-        return true;
+        return (main_.world()->no_overlap(shape, ignore));
     }
 
     bool clear_volume(particle_shape_type const& shape, particle_id_type const& ignore0, particle_id_type const& ignore1) const
     {
         LOG_DEBUG(("clear_volume was called here."));
         main_.clear_volume(shape, base_type::id_);
-        boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped(
-            main_.world()->check_overlap(shape, ignore0, ignore1));
-        if (overlapped && ::size(*overlapped))
-        {
-            return false;
-        }
-        return true;
+        return (main_.world()->no_overlap(shape, ignore0, ignore1));
     }
 
     typename multi_particle_container_type::particle_id_pair_range

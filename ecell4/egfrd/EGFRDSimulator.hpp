@@ -3951,14 +3951,14 @@ protected:
 
     bool check_overlap(particle_shape_type const& s) const
     {
-        boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped(
+        const particle_id_pair_and_distance_list overlapped(
             (*base_type::world_).check_overlap(s));
 
-        if (overlapped && ::size(*overlapped))
+        if (overlapped.size() > 0)
         {
             LOG_DEBUG(("check_overlap %s failed:",
                 boost::lexical_cast<std::string>(s).c_str()));
-            dump_overlapped(*overlapped);
+            dump_overlapped(overlapped);
             return false;
         }
         return true;
@@ -3966,14 +3966,14 @@ protected:
 
     bool check_overlap(particle_shape_type const& s, particle_id_type const& ignore) const
     {
-        boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped(
+        const particle_id_pair_and_distance_list overlapped(
             (*base_type::world_).check_overlap(s, ignore));
 
-        if (overlapped && ::size(*overlapped))
+        if (overlapped.size() > 0)
         {
             LOG_DEBUG(("check_overlap %s failed:",
                 boost::lexical_cast<std::string>(s).c_str());
-            dump_overlapped(*overlapped));
+            dump_overlapped(overlapped));
             return false;
         }
         return true;
@@ -3981,14 +3981,14 @@ protected:
 
     bool check_overlap(particle_shape_type const& s, particle_id_type const& ignore1, particle_id_type const& ignore2) const
     {
-        boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped(
+        const particle_id_pair_and_distance_list overlapped(
             (*base_type::world_).check_overlap(s, ignore1, ignore2));
 
-        if (overlapped && ::size(*overlapped))
+        if (overlapped.size() > 0)
         {
             LOG_DEBUG(("check_overlap %s failed:",
                 boost::lexical_cast<std::string>(s).c_str()));
-            dump_overlapped(*overlapped);
+            dump_overlapped(overlapped);
             return false;
         }
         return true;

@@ -62,6 +62,16 @@ public:
         return edge_lengths_;
     }
 
+    const Real3& cell_sizes() const
+    {
+        return cell_sizes_;
+    }
+
+    const Integer3 matrix_sizes() const
+    {
+        return Integer3(matrix_.shape()[0], matrix_.shape()[1], matrix_.shape()[2]);
+    }
+
     void reset(const Real3& edge_lengths);
 
     bool update_particle(const ParticleID& pid, const Particle& p);

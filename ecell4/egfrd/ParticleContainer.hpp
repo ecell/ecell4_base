@@ -65,42 +65,38 @@ public:
 
     virtual bool has_particle(particle_id_type const& id) const = 0;
 
-    virtual particle_id_pair_and_distance_list* check_overlap(
+    virtual particle_id_pair_and_distance_list check_overlap(
         particle_shape_type const& s) const = 0;
 
-    virtual particle_id_pair_and_distance_list* check_overlap(
+    virtual particle_id_pair_and_distance_list check_overlap(
         particle_shape_type const& s, particle_id_type const& ignore) const = 0;
 
-    virtual particle_id_pair_and_distance_list* check_overlap(
+    virtual particle_id_pair_and_distance_list check_overlap(
         particle_shape_type const& s, particle_id_type const& ignore1,
         particle_id_type const& ignore2) const = 0;
 
     virtual bool no_overlap(particle_shape_type const& s) const
     {
-        boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped(
+        const particle_id_pair_and_distance_list overlapped(
             check_overlap(s));
-        // boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped(
-        //     check_overlap<particle_shape_type>(s));
-        return (!overlapped || ::size(*overlapped) == 0);
+        return (overlapped.size() == 0);
     }
 
     virtual bool no_overlap(particle_shape_type const& s,
         particle_id_type const& ignore) const
     {
-        boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped(
+        const particle_id_pair_and_distance_list overlapped(
             check_overlap(s, ignore));
-        return (!overlapped || ::size(*overlapped) == 0);
+        return (overlapped.size() == 0);
     }
 
     virtual bool no_overlap(particle_shape_type const& s,
         particle_id_type const& ignore1, particle_id_type const& ignore2) const
     {
-        boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped(
+        const particle_id_pair_and_distance_list overlapped(
             check_overlap(s, ignore1, ignore2));
-        return (!overlapped || ::size(*overlapped) == 0);
+        return (overlapped.size() == 0);
     }
-
-    virtual particle_id_pair_generator* get_particles() const = 0;
 
     virtual transaction_type* create_transaction() = 0;
 

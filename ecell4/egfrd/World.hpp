@@ -330,15 +330,15 @@ public:
 
     virtual bool update_particle(particle_id_pair const& pi_pair)
     {
-        std::pair<bool, typename base_type::particle_matrix_type::iterator>
-            retval(base_type::__has_particle(pi_pair.first));
-        if (retval.first)
+        //XXX: This function might be slower than before
+        //XXX: because both get_particle and update_particle search the given pi_pair.
+        //XXX: Futher, ParticleSpace also has particle_pool.
+        if (base_type::has_particle(pi_pair.first))
         {
-            typename base_type::particle_matrix_type::iterator&
-                i(retval.second);
-            if ((*i).second.sid() != pi_pair.second.sid())
+            const particle_id_pair prev = base_type::get_particle(pi_pair.first);
+            if (prev.second.sid() != pi_pair.second.sid())
             {
-                particle_pool_[(*i).second.sid()].erase((*i).first);
+                particle_pool_[prev.second.sid()].erase(prev.first);
 
                 typename per_species_particle_id_set::iterator
                     j(particle_pool_.find(pi_pair.second.sid()));
@@ -350,13 +350,12 @@ public:
                 }
                 (*j).second.insert(pi_pair.first);
             }
-            base_type::__update_particle(i, pi_pair);
+            base_type::update_particle(pi_pair);
             return false;
         }
 
         const bool is_succeeded(base_type::update_particle(pi_pair));
         BOOST_ASSERT(is_succeeded);
-        // BOOST_ASSERT(base_type::update_particle(pi_pair)); //XXX: -DNDEBUG!!!
         typename per_species_particle_id_set::iterator
             k(particle_pool_.find(pi_pair.second.sid()));
         if (k == particle_pool_.end())
@@ -704,14 +703,14 @@ public:
     list_particles_within_radius(
         const position_type& pos, const length_type& radius) const
     {
-        boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped(
+        const particle_id_pair_and_distance_list overlapped(
             base_type::check_overlap(particle_shape_type(pos, radius)));
         std::vector<std::pair<std::pair<particle_id_type, particle_type>, length_type> >
             retval;
-        if (overlapped && ::size(*overlapped))
+        if (overlapped.size() > 0)
         {
             for (typename particle_id_pair_and_distance_list::const_iterator
-                i(overlapped->begin()); i != overlapped->end(); ++i)
+                i(overlapped.begin()); i != overlapped.end(); ++i)
             {
                 retval.push_back(*i);
             }
@@ -724,14 +723,14 @@ public:
         const position_type& pos, const length_type& radius,
         const particle_id_type& ignore) const
     {
-        boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped(
+        const particle_id_pair_and_distance_list overlapped(
             base_type::check_overlap(particle_shape_type(pos, radius), ignore));
         std::vector<std::pair<std::pair<particle_id_type, particle_type>, length_type> >
             retval;
-        if (overlapped && ::size(*overlapped))
+        if (overlapped.size() > 0)
         {
             for (typename particle_id_pair_and_distance_list::const_iterator
-                i(overlapped->begin()); i != overlapped->end(); ++i)
+                i(overlapped.begin()); i != overlapped.end(); ++i)
             {
                 retval.push_back(*i);
             }
@@ -744,15 +743,15 @@ public:
         const position_type& pos, const length_type& radius,
         const particle_id_type& ignore1, const particle_id_type& ignore2) const
     {
-        boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped(
+        const particle_id_pair_and_distance_list overlapped(
             base_type::check_overlap(
                 particle_shape_type(pos, radius), ignore1, ignore2));
         std::vector<std::pair<std::pair<particle_id_type, particle_type>, length_type> >
             retval;
-        if (overlapped && ::size(*overlapped))
+        if (overlapped.size() > 0)
         {
             for (typename particle_id_pair_and_distance_list::const_iterator
-                i(overlapped->begin()); i != overlapped->end(); ++i)
+                i(overlapped.begin()); i != overlapped.end(); ++i)
             {
                 retval.push_back(*i);
             }
@@ -798,10 +797,7 @@ public:
     new_particle(const particle_type& p)
     {
         particle_id_pair retval(pidgen_(), p);
-        boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped(
-            base_type::check_overlap(
-                particle_shape_type(p.position(), p.radius())));
-        if (overlapped && ::size(*overlapped))
+        if (!base_type::no_overlap(particle_shape_type(p.position(), p.radius())))
         {
             return std::make_pair(retval, false);
         }

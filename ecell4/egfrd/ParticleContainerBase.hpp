@@ -2,6 +2,8 @@
 #define PARTICLE_CONTAINER_BASE_HPP
 
 #include <ecell4/core/get_mapper_mf.hpp>
+#include <ecell4/core/ParticleSpaceCellListImpl.hpp>
+
 #include "utils/range.hpp"
 #include "utils/unassignable_adapter.hpp"
 #include "MatrixSpace.hpp"
@@ -98,8 +100,9 @@ class ParticleContainerBase
 {
 public:
 
-    typedef ParticleContainerUtils<Ttraits_> utils;
     typedef ParticleContainer<Ttraits_> base_type;
+
+    typedef ParticleContainerUtils<Ttraits_> utils;
     typedef Ttraits_ traits_type;
     typedef typename traits_type::length_type length_type;
     typedef typename traits_type::molecule_info_type molecule_info_type;
@@ -127,222 +130,196 @@ public:
     typedef sized_iterator_range<typename particle_matrix_type::const_iterator> particle_id_pair_range;
     typedef typename particle_matrix_type::matrix_sizes_type matrix_sizes_type;
 
+    typedef ecell4::ParticleSpaceCellListImpl particle_space_type;
+
 public:
-    ParticleContainerBase(const position_type& edge_lengths, const matrix_sizes_type& sizes)
-        : pmat_(new particle_matrix_type(edge_lengths, sizes)), t_(0.0) {}
+
+    ParticleContainerBase(
+        const position_type& edge_lengths, const matrix_sizes_type& matrix_sizes)
+        : ps_(new particle_space_type(edge_lengths, matrix_sizes))
+    {
+        ;
+    }
+
+    /**
+     * redirects
+     */
 
     virtual ecell4::Integer num_particles() const
     {
-        return (*pmat_).size();
+        return (*ps_).num_particles();
     }
-
-    // virtual size_type num_particles() const
-    // {
-    //     return (*pmat_).size();
-    // }
 
     virtual const position_type& edge_lengths() const
     {
-        return (*pmat_).edge_lengths();
+        return (*ps_).edge_lengths();
     }
 
     virtual void reset(const position_type& lengths)
     {
-        const matrix_sizes_type sizes((*pmat_).matrix_sizes());
-        this->reset(lengths, sizes);
+        (*ps_).reset(lengths);
     }
 
     virtual void reset(const position_type& lengths, const matrix_sizes_type& sizes)
     {
-        (*pmat_).clear();
-        boost::scoped_ptr<particle_matrix_type>
-            newpmat(new particle_matrix_type(lengths, sizes));
-        pmat_.swap(newpmat);
+        boost::scoped_ptr<particle_space_type>
+            newps(new particle_space_type(lengths, sizes));
+        ps_.swap(newps);
 
         ; // newpmat will be released here
     }
 
     position_type cell_sizes() const
     {
-        return (*pmat_).cell_sizes();
+        return (*ps_).cell_sizes();
     }
 
     matrix_sizes_type matrix_sizes() const
     {
-        return (*pmat_).matrix_sizes();
-    }
-
-    template<typename T_>
-    length_type distance(T_ const& lhs, position_type const& rhs) const
-    {
-        return traits_type::distance(lhs, rhs, edge_lengths());
-    }
-
-    virtual length_type distance(position_type const& lhs,
-                                 position_type const& rhs) const
-    {
-        return traits_type::distance(lhs, rhs, edge_lengths());
-    }
-
-    virtual position_type apply_boundary(position_type const& v) const
-    {
-        return traits_type::apply_boundary(v, edge_lengths());
-    }
-
-    // virtual length_type apply_boundary(length_type const& v) const
-    // {
-    //     return traits_type::apply_boundary(v, edge_lengths());
-    // }
-
-    virtual position_type cyclic_transpose(position_type const& p0, position_type const& p1) const
-    {
-        return traits_type::cyclic_transpose(p0, p1, edge_lengths());
-    }
-
-    // virtual length_type cyclic_transpose(length_type const& p0, length_type const& p1) const
-    // {
-    //     return traits_type::cyclic_transpose(p0, p1, world_size());
-    // }
-
-    template<typename T1_>
-    T1_ calculate_pair_CoM(
-        T1_ const& p1, T1_ const& p2, 
-        typename element_type_of<T1_>::type const& D1,
-        typename element_type_of<T1_>::type const& D2)
-    {
-        typedef typename element_type_of< T1_ >::type element_type;   
-
-        T1_ retval;
-
-        const T1_ p2t(cyclic_transpose(p2, p1));
-
-        return modulo(
-            divide(
-                add(multiply(p1, D2), multiply(p2t, D1)),
-                add(D1, D2)),
-            edge_lengths());
-    }
-
-    virtual particle_id_pair_and_distance_list* check_overlap(particle_shape_type const& s) const
-    {
-        return check_overlap<particle_shape_type>(s);
-    }
-
-    virtual particle_id_pair_and_distance_list* check_overlap(particle_shape_type const& s, particle_id_type const& ignore) const
-    {
-        return check_overlap(s, array_gen(ignore));
-    }
-
-    virtual particle_id_pair_and_distance_list* check_overlap(particle_shape_type const& s, particle_id_type const& ignore1, particle_id_type const& ignore2) const
-    {
-        return check_overlap(s, array_gen(ignore1, ignore2));
-    }
-
-    template<typename Tsph_, typename Tset_>
-    particle_id_pair_and_distance_list* check_overlap(Tsph_ const& s, Tset_ const& ignore,
-        typename boost::disable_if<boost::is_same<Tsph_, particle_id_pair> >::type* =0) const
-    {
-        typename utils::template overlap_checker<Tset_> oc(ignore);
-        traits_type::take_neighbor(*pmat_, oc, s);
-        return oc.result();
-    }
-
-    template<typename Tsph_>
-    particle_id_pair_and_distance_list* check_overlap(Tsph_ const& s,
-        typename boost::disable_if<boost::is_same<Tsph_, particle_id_pair> >::type* =0) const
-    {
-        typename utils::template overlap_checker<boost::array<particle_id_type, 0> > oc;
-        traits_type::take_neighbor(*pmat_, oc, s);
-        return oc.result();
-    }
-
-    particle_id_pair get_particle(particle_id_type const& id, bool& found) const
-    {
-        typename particle_matrix_type::const_iterator i((*pmat_).find(id));
-        if ((*pmat_).end() == i) {
-            found = false;
-            return particle_id_pair();
-        }
-        found = true;
-        return *i;
-    }
-
-    virtual particle_id_pair get_particle(particle_id_type const& id) const
-    {
-        typename particle_matrix_type::const_iterator i((*pmat_).find(id));
-        if ((*pmat_).end() == i) {
-            throw not_found(std::string("No such particle: id=")
-                    + boost::lexical_cast<std::string>(id));
-        }
-        return *i;
+        return (*ps_).matrix_sizes();
     }
 
     virtual bool has_particle(particle_id_type const& id) const
     {
-        return (*pmat_).end() != (*pmat_).find(id);
+        return (*ps_).has_particle(id);
     }
 
-    virtual transaction_type* create_transaction();
-
-    virtual particle_id_pair_generator* get_particles() const
+    virtual particle_id_pair get_particle(particle_id_type const& id) const
     {
-        return make_range_generator<particle_id_pair>(*pmat_);
+        return (*ps_).get_particle(id);
     }
 
-    particle_id_pair_range get_particles_range() const
+    virtual length_type distance(
+        position_type const& lhs, position_type const& rhs) const
     {
-        return particle_id_pair_range((*pmat_).begin(), (*pmat_).end(), (*pmat_).size());
+        return (*ps_).distance(lhs, rhs);
     }
 
-    virtual bool update_particle(particle_id_pair const& pi_pair)
+    virtual position_type apply_boundary(position_type const& v) const
     {
-        return (*pmat_).update(pi_pair).second;
+        return (*ps_).apply_boundary(v);
     }
 
-    virtual bool remove_particle(particle_id_type const& id)
-    {
-        return (*pmat_).erase(id);
-    }
-
-    /** ecell4::Space
-     */
-    // virtual const time_type& t() const
     virtual const time_type t() const
     {
-        return t_;
+        return (*ps_).t();
     }
 
     virtual void set_t(const time_type& t)
     {
-        t_ = t;
+        (*ps_).set_t(t);
+    }
+
+    /**
+     * wrappers
+     */
+
+    virtual position_type cyclic_transpose(
+        position_type const& p0, position_type const& p1) const
+    {
+        return (*ps_).periodic_transpose(p0, p1);
+    }
+
+    template<typename T1_>
+    T1_ calculate_pair_CoM(
+        T1_ const& p1, T1_ const& p2,
+        typename element_type_of<T1_>::type const& D1,
+        typename element_type_of<T1_>::type const& D2)
+    {
+        typedef typename element_type_of<T1_>::type element_type;
+
+        const T1_ p2_trans(cyclic_transpose(p2, p1));
+        const element_type D12(add(D1, D2));
+        const element_type s(divide(D1, D12)), t(divide(D2, D12));
+        const T1_ com(add(multiply(p1, s), multiply(p2_trans, t)));
+        return apply_boundary(com);
+    }
+
+    virtual bool remove_particle(particle_id_type const& id)
+    {
+        if (!has_particle(id))
+        {
+            return false;
+        }
+        (*ps_).remove_particle(id);
+        return true;
+    }
+
+    virtual bool update_particle(particle_id_pair const& pid_particle_pair)
+    {
+        return (*ps_).update_particle(pid_particle_pair.first, pid_particle_pair.second);
+    }
+
+    particle_id_pair get_particle(particle_id_type const& id, bool& found) const
+    {
+        found = (*ps_).has_particle(id);
+        if (!found)
+        {
+            return particle_id_pair();
+        }
+        return get_particle(id);
+    }
+
+    virtual particle_id_pair_and_distance_list check_overlap(particle_shape_type const& s) const
+    {
+        return (*ps_).list_particles_within_radius(s.position(), s.radius());
+    }
+
+    virtual particle_id_pair_and_distance_list check_overlap(particle_shape_type const& s, particle_id_type const& ignore) const
+    {
+        return (*ps_).list_particles_within_radius(s.position(), s.radius(), ignore);
+    }
+
+    virtual particle_id_pair_and_distance_list check_overlap(particle_shape_type const& s, particle_id_type const& ignore1, particle_id_type const& ignore2) const
+    {
+        return (*ps_).list_particles_within_radius(s.position(), s.radius(), ignore1, ignore2);
+    }
+
+    // template<typename Tsph_, typename Tset_>
+    // particle_id_pair_and_distance_list* check_overlap(Tsph_ const& s, Tset_ const& ignore,
+    //     typename boost::disable_if<boost::is_same<Tsph_, particle_id_pair> >::type* = 0) const
+    // {
+    //     typename utils::template overlap_checker<Tset_> oc(ignore);
+    //     traits_type::take_neighbor(*pmat_, oc, s);
+    //     return oc.result();
+    // }
+
+    // template<typename Tsph_>
+    // particle_id_pair_and_distance_list* check_overlap(Tsph_ const& s,
+    //     typename boost::disable_if<boost::is_same<Tsph_, particle_id_pair> >::type* = 0) const
+    // {
+    //     typename utils::template overlap_checker<boost::array<particle_id_type, 0> > oc;
+    //     traits_type::take_neighbor(*pmat_, oc, s);
+    //     return oc.result();
+    // }
+
+    particle_id_pair_range get_particles_range() const
+    {
+        const particle_space_type::particle_container_type& particles((*ps_).particles());
+        return particle_id_pair_range(particles.begin(), particles.end(), particles.size());
+    }
+
+    /**
+     *
+     */
+
+    virtual transaction_type* create_transaction();
+
+    template<typename T_>
+    length_type distance(T_ const& lhs, position_type const& rhs) const
+    {
+        // return (*ps_).distance(lhs, rhs);
+        return traits_type::distance(lhs, rhs, edge_lengths());
+    }
+
+    void clear()
+    {
+        (*ps_).reset((*ps_).edge_lengths());
     }
 
 protected:
 
-    std::pair<bool, typename particle_matrix_type::iterator>
-    __has_particle(const particle_id_type& pid)
-    {
-        typename particle_matrix_type::iterator i((*pmat_).find(pid));
-        return std::make_pair(i != (*pmat_).end(), i);
-    }
-
-    typename particle_matrix_type::iterator __update_particle(
-        const typename particle_matrix_type::iterator& position,
-        const particle_id_pair& pi_pair)
-    {
-        return (*pmat_).update(position, pi_pair);
-    }
-
-    virtual void clear()
-    {
-        (*pmat_).clear();
-        t_ = 0.0;
-    }
-
-protected:
-    boost::scoped_ptr<particle_matrix_type> pmat_;
-
-    time_type t_;
+    boost::scoped_ptr<particle_space_type> ps_;
 };
 
 template<typename Tderived_, typename Ttraits_>
