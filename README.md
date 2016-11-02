@@ -14,6 +14,7 @@ What is E-Cell System?
 ----------------------
 
 E-Cell System is, a software platform for modeling, simulation and analysis of complex, heterogeneous and multi-scale systems like the cell.
+E-Cell has multi-algorithm, multi-timescale and multi-spatial-representation as its central feature.
 
 Installation and usage
 ======================
