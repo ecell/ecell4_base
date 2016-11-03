@@ -797,7 +797,12 @@ public:
     new_particle(const particle_type& p)
     {
         particle_id_pair retval(pidgen_(), p);
-        if (!base_type::no_overlap(particle_shape_type(p.position(), p.radius())))
+
+        const particle_id_pair_and_distance_list overlapped(
+            base_type::check_overlap(
+                particle_shape_type(p.position(), p.radius())));
+        if (overlapped.size() > 0)
+        // if (!base_type::no_overlap(particle_shape_type(p.position(), p.radius())))
         {
             return std::make_pair(retval, false);
         }
