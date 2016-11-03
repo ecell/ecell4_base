@@ -6,6 +6,7 @@
 #include <boost/algorithm/string/join.hpp>
 
 #include <ecell4/core/config.h>
+#include <ecell4/core/comparators.hpp>
 #ifdef WIN32_MSC
 #include <boost/container/map.hpp>
 #endif
@@ -179,6 +180,8 @@ public:
                 retval.push_back(std::make_pair(*i, dist));
             }
         }
+        std::sort(retval.begin(), retval.end(),
+            ecell4::utils::pair_second_element_comparator<particle_id_pair, length_type>());
         return retval;
     }
 
@@ -447,14 +450,30 @@ public:
     {
         LOG_DEBUG(("clear_volume was called here."));
         main_.clear_volume(shape, base_type::id_);
-        return (main_.world()->no_overlap(shape, ignore));
+
+        const particle_id_pair_and_distance_list overlapped(
+            main_.world()->check_overlap(shape, ignore));
+        if (overlapped.size() > 0)
+        {
+            return false;
+        }
+        return true;
+        // return (main_.world()->no_overlap(shape, ignore));
     }
 
     bool clear_volume(particle_shape_type const& shape, particle_id_type const& ignore0, particle_id_type const& ignore1) const
     {
         LOG_DEBUG(("clear_volume was called here."));
         main_.clear_volume(shape, base_type::id_);
-        return (main_.world()->no_overlap(shape, ignore0, ignore1));
+
+        const particle_id_pair_and_distance_list overlapped(
+            main_.world()->check_overlap(shape, ignore0, ignore1));
+        if (overlapped.size() > 0)
+        {
+            return false;
+        }
+        return true;
+        // return (main_.world()->no_overlap(shape, ignore0, ignore1));
     }
 
     typename multi_particle_container_type::particle_id_pair_range
