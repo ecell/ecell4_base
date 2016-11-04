@@ -192,12 +192,14 @@ public:
     virtual length_type distance(
         position_type const& lhs, position_type const& rhs) const
     {
-        return (*ps_).distance(lhs, rhs);
+        // return (*ps_).distance(lhs, rhs);
+        return traits_type::distance(lhs, rhs, edge_lengths());
     }
 
     virtual position_type apply_boundary(position_type const& v) const
     {
-        return (*ps_).apply_boundary(v);
+        // return (*ps_).apply_boundary(v);
+        return traits_type::apply_boundary(v, edge_lengths());
     }
 
     virtual const time_type t() const
@@ -218,6 +220,7 @@ public:
         position_type const& p0, position_type const& p1) const
     {
         return (*ps_).periodic_transpose(p0, p1);
+        // return traits_type::cyclic_transpose(p0, p1, edge_lengths());
     }
 
     template<typename T1_>
