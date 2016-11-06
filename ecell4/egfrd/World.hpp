@@ -1,7 +1,6 @@
 #ifndef WORLD_HPP
 #define WORLD_HPP
 
-
 #include <ecell4/core/exceptions.hpp>
 #include <ecell4/core/RandomNumberGenerator.hpp>
 #include <ecell4/core/Species.hpp>
@@ -14,6 +13,7 @@
 #include <ecell4/core/Model.hpp>
 #include <ecell4/core/extras.hpp>
 #include <ecell4/core/SerialIDGenerator.hpp>
+#include <ecell4/core/get_mapper_mf.hpp>
 
 #ifdef WITH_HDF5
 #include <ecell4/core/ParticleSpaceHDF5Writer.hpp>
@@ -23,8 +23,8 @@
 #include "./ParticleTraits.hpp" // This refers ecell4::Particle
 #include "structures.hpp"
 
-#include "ParticleContainerBase.hpp"
-
+#include <ecell4/core/ParticleSpaceCellListImpl.hpp>
+#include "ParticleContainer.hpp"
 
 #include <map>
 #include <boost/lexical_cast.hpp>
@@ -56,6 +56,18 @@
 // #include "PlanarSurface.hpp"
 // #include "CylindricalSurface.hpp"
 // #include "SphericalSurface.hpp"
+
+/*
+ * ParticleContainerBase
+ */
+#include "utils/range.hpp"
+#include "utils/unassignable_adapter.hpp"
+#include "MatrixSpace.hpp"
+#include "abstract_set.hpp"
+#include "generator.hpp"
+#include "exceptions.hpp"
+#include "ParticleContainer.hpp"
+#include "Transaction.hpp"
 
 
 // For twofold_container
@@ -273,7 +285,7 @@ public:
     typedef sized_iterator_range<typename particle_matrix_type::const_iterator> particle_id_pair_range;
     typedef typename particle_matrix_type::matrix_sizes_type matrix_sizes_type;
     typedef ecell4::ParticleSpaceCellListImpl particle_space_type;
-    typedef ParticleContainerUtils<Ttraits_> utils;
+    // typedef ParticleContainerUtils<Ttraits_> utils;
     typedef typename base_type::transaction_type transaction_type;
     typedef typename base_type::time_type time_type;
 

@@ -45,7 +45,7 @@ public:
     typedef typename Ttraits_::world_type::particle_container_type base_type;
     typedef typename Ttraits_::world_type world_type;
     typedef typename world_type::traits_type traits_type;
-    typedef ParticleContainerUtils<traits_type> utils;
+    // typedef ParticleContainerUtils<traits_type> utils;
 
     typedef typename traits_type::particle_type particle_type;
     typedef typename traits_type::particle_shape_type particle_shape_type;
