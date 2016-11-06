@@ -346,66 +346,82 @@ public:
         return retval;
     }
 
+    virtual bool update_particle(const particle_id_type& pid, const particle_type& p)
+    {
+        if (molecule_info_map_.find(p.species().serial()) == molecule_info_map_.end())
+        {
+            register_species(std::make_pair(pid, p));
+        }
+        return (*ps_).update_particle(pid, p);
+
+        // bool const exists = !((*ps_).update_particle(pid, p));
+        // if (exists && molecule_info_map_.find(p.species().serial()) == molecule_info_map_.end())
+        // {
+        //     register_species(std::make_pair(pid, p));
+        // }
+    }
+
     virtual bool update_particle(particle_id_pair const& pid_particle_pair)
     {
-        //XXX: This function might be slower than before
-        //XXX: because both get_particle and update_particle search the given pid_particle_pair.
-        //XXX: Futher, ParticleSpace also has particle_pool.
-        if (has_particle(pid_particle_pair.first))
-        {
-            const particle_id_pair prev = get_particle(pid_particle_pair.first);
-            if (prev.second.sid() != pid_particle_pair.second.sid())
-            {
-                particle_pool_[prev.second.sid()].erase(prev.first);
+        return update_particle(pid_particle_pair.first, pid_particle_pair.second);
+        // //XXX: This function might be slower than before
+        // //XXX: because both get_particle and update_particle search the given pid_particle_pair.
+        // //XXX: Futher, ParticleSpace also has particle_pool.
+        // if (has_particle(pid_particle_pair.first))
+        // {
+        //     const particle_id_pair prev = get_particle(pid_particle_pair.first);
+        //     if (prev.second.sid() != pid_particle_pair.second.sid())
+        //     {
+        //         particle_pool_[prev.second.sid()].erase(prev.first);
 
-                typename per_species_particle_id_set::iterator
-                    j(particle_pool_.find(pid_particle_pair.second.sid()));
-                if (j == particle_pool_.end())
-                {
-                    this->register_species(pid_particle_pair);
-                    // this->register_species(pid_particle_pair.second.sid());
-                    j = particle_pool_.find(pid_particle_pair.second.sid());
-                }
-                (*j).second.insert(pid_particle_pair.first);
-            }
+        //         typename per_species_particle_id_set::iterator
+        //             j(particle_pool_.find(pid_particle_pair.second.sid()));
+        //         if (j == particle_pool_.end())
+        //         {
+        //             this->register_species(pid_particle_pair);
+        //             // this->register_species(pid_particle_pair.second.sid());
+        //             j = particle_pool_.find(pid_particle_pair.second.sid());
+        //         }
+        //         (*j).second.insert(pid_particle_pair.first);
+        //     }
 
-            (*ps_).update_particle(pid_particle_pair.first, pid_particle_pair.second);
-            return false;
-        }
+        //     (*ps_).update_particle(pid_particle_pair.first, pid_particle_pair.second);
+        //     return false;
+        // }
 
-        const bool is_succeeded(
-            (*ps_).update_particle(pid_particle_pair.first, pid_particle_pair.second));
-        BOOST_ASSERT(is_succeeded);
-        typename per_species_particle_id_set::iterator
-            k(particle_pool_.find(pid_particle_pair.second.sid()));
-        if (k == particle_pool_.end())
-        {
-            this->register_species(pid_particle_pair);
-            // this->register_species(pid_particle_pair.second.sid());
-            k = particle_pool_.find(pid_particle_pair.second.sid());
-        }
-        (*k).second.insert(pid_particle_pair.first);
-        return true;
+        // const bool is_succeeded(
+        //     (*ps_).update_particle(pid_particle_pair.first, pid_particle_pair.second));
+        // BOOST_ASSERT(is_succeeded);
+        // typename per_species_particle_id_set::iterator
+        //     k(particle_pool_.find(pid_particle_pair.second.sid()));
+        // if (k == particle_pool_.end())
+        // {
+        //     this->register_species(pid_particle_pair);
+        //     // this->register_species(pid_particle_pair.second.sid());
+        //     k = particle_pool_.find(pid_particle_pair.second.sid());
+        // }
+        // (*k).second.insert(pid_particle_pair.first);
+        // return true;
     }
 
     virtual bool remove_particle(particle_id_type const& id)
     {
-        bool found(false);
-        particle_id_pair pp(get_particle(id, found));
-        if (!found)
-        {
-            return false;
-        }
-        particle_pool_[pp.second.sid()].erase(id);
-        (*ps_).remove_particle(id);
-        return true;
-
-        // if (!has_particle(id))
+        // bool found(false);
+        // particle_id_pair pp(get_particle(id, found));
+        // if (!found)
         // {
         //     return false;
         // }
+        // particle_pool_[pp.second.sid()].erase(id);
         // (*ps_).remove_particle(id);
         // return true;
+
+        if (!has_particle(id))
+        {
+            return false;
+        }
+        (*ps_).remove_particle(id);
+        return true;
     }
 
     molecule_info_range get_molecule_info_range() const
@@ -443,17 +459,17 @@ public:
             structure_map_.size());
     }
 
-    particle_id_set get_particle_ids(species_id_type const& sid) const
-    {
-        typename per_species_particle_id_set::const_iterator i(
-            particle_pool_.find(sid));
-        if (i == particle_pool_.end())
-        {
-            throw not_found(std::string("Unknown species (id=")
-                + boost::lexical_cast<std::string>(sid) + ")");
-        }
-        return (*i).second;
-    }
+    // particle_id_set get_particle_ids(species_id_type const& sid) const
+    // {
+    //     typename per_species_particle_id_set::const_iterator i(
+    //         particle_pool_.find(sid));
+    //     if (i == particle_pool_.end())
+    //     {
+    //         throw not_found(std::string("Unknown species (id=")
+    //             + boost::lexical_cast<std::string>(sid) + ")");
+    //     }
+    //     return (*i).second;
+    // }
 
     /** ecell4::Space
      */
@@ -462,7 +478,6 @@ public:
     {
         return rng_;
     }
-
 
     virtual void save(const std::string& filename) const
     {
@@ -494,8 +509,6 @@ public:
 #endif
     }
 
-
-
     virtual void load(const std::string& filename)
     {
 #ifdef WITH_HDF5
@@ -525,7 +538,6 @@ public:
             "This method requires HDF5. The HDF5 support is turned off.");
 #endif
     }
-
 
     virtual const length_type volume() const
     {
@@ -559,29 +571,12 @@ public:
 
     virtual ecell4::Integer num_particles_exact(const ecell4::Species& sp) const
     {
-        typename per_species_particle_id_set::const_iterator
-            i(particle_pool_.find(sp.serial()));
-        if (i == particle_pool_.end())
-        {
-            return 0;
-        }
-        return (*i).second.size();
+        return (*ps_).num_particles_exact(sp);
     }
 
     virtual ecell4::Integer num_particles(const ecell4::Species& sp) const
     {
-        ecell4::Integer retval(0);
-        ecell4::SpeciesExpressionMatcher sexp(sp);
-        for (typename per_species_particle_id_set::const_iterator
-            i(particle_pool_.begin()); i != particle_pool_.end(); ++i)
-        {
-            const ecell4::Species tgt((*i).first);
-            if (sexp.match(tgt))
-            {
-                retval += (*i).second.size();
-            }
-        }
-        return retval;
+        return (*ps_).num_particles(sp);
     }
 
     void set_value(const ecell4::Species& sp, const ecell4::Real value)
@@ -610,99 +605,44 @@ public:
 
     virtual ecell4::Integer num_molecules(const ecell4::Species& sp) const
     {
-        ecell4::Integer retval(0);
-        ecell4::SpeciesExpressionMatcher sexp(sp);
-        for (typename per_species_particle_id_set::const_iterator
-            i(particle_pool_.begin()); i != particle_pool_.end(); ++i)
-        {
-            const ecell4::Species tgt((*i).first);
-            retval += sexp.count(tgt) * (*i).second.size();
-        }
-        return retval;
+        return (*ps_).num_molecules(sp);
     }
 
     virtual ecell4::Integer num_molecules_exact(const ecell4::Species& sp) const
     {
-        return num_particles_exact(sp);
+        return (*ps_).num_molecules_exact(sp);
     }
 
     virtual ecell4::Integer num_species() const
     {
-        return particle_pool_.size();
+        return (*ps_).num_species();
     }
 
     virtual bool has_species(const ecell4::Species& sp) const
     {
-        return (particle_pool_.find(sp.serial()) != particle_pool_.end());
+        return (*ps_).has_species(sp);
     }
 
     virtual std::vector<std::pair<particle_id_type, particle_type> > list_particles() const
     {
-        std::vector<std::pair<particle_id_type, particle_type> > retval;
-        retval.reserve(num_particles());
-        BOOST_FOREACH(particle_id_pair p, this->get_particles_range())
-        {
-            retval.push_back(p);
-        }
-        return retval;
+        return (*ps_).list_particles();
     }
 
     virtual std::vector<std::pair<particle_id_type, particle_type> >
         list_particles(const ecell4::Species& sp) const
     {
-        std::vector<std::pair<particle_id_type, particle_type> > retval;
-        ecell4::SpeciesExpressionMatcher sexp(sp);
-        for (typename per_species_particle_id_set::const_iterator
-            i(particle_pool_.begin()); i != particle_pool_.end(); ++i)
-        {
-            const ecell4::Species tgt((*i).first);
-            if (sexp.match(tgt))
-            {
-                for (typename particle_id_set::const_iterator j((*i).second.begin());
-                    j != (*i).second.end(); ++j)
-                {
-                    const particle_id_type& pid(*j);
-                    retval.push_back(this->get_particle(pid));
-                }
-            }
-        }
-        return retval;
+        return (*ps_).list_particles(sp);
     }
 
     virtual std::vector<std::pair<particle_id_type, particle_type> >
         list_particles_exact(const ecell4::Species& sp) const
     {
-        std::vector<std::pair<particle_id_type, particle_type> > retval;
-        typename per_species_particle_id_set::const_iterator
-            i(particle_pool_.find(sp.serial()));
-        if (i == particle_pool_.end())
-        {
-            return retval;
-        }
-
-        for (typename particle_id_set::const_iterator j((*i).second.begin());
-            j != (*i).second.end(); ++j)
-        {
-            const particle_id_type& pid(*j);
-            retval.push_back(this->get_particle(pid));
-        }
-        return retval;
+        return (*ps_).list_particles_exact(sp);
     }
 
     std::vector<ecell4::Species> list_species() const
     {
-        std::vector<ecell4::Species> retval;
-        BOOST_FOREACH(particle_id_pair p, this->get_particles_range())
-        {
-            // ecell4::Species::serial_type == species_id_type
-            const ecell4::Species& sp(p.second.species());
-            if (std::find(retval.begin(), retval.end(), sp)
-                == retval.end())
-            {
-                retval.push_back(sp);
-            }
-        }
-        return retval;
+        return (*ps_).list_species();
     }
 
     std::vector<std::pair<std::pair<particle_id_type, particle_type>, length_type> >
@@ -817,11 +757,6 @@ public:
         }
     }
 
-    virtual bool update_particle(const particle_id_type& pid, const particle_type& p)
-    {
-        return this->update_particle(std::make_pair(pid, p));
-    }
-
     void add_molecules(const ecell4::Species& sp, const ecell4::Integer& num)
     {
         ecell4::extras::throw_in_particles(*this, sp, num, rng());
@@ -836,34 +771,26 @@ public:
 
     void remove_molecules(const ecell4::Species& sp, const ecell4::Integer& num)
     {
-        if (num == 0)
-        {
-            return;
-        }
-        else if (num < 0)
+        if (num < 0)
         {
             throw std::invalid_argument(
                 "The number of molecules must be positive.");
         }
 
-        typename per_species_particle_id_set::const_iterator
-            i(particle_pool_.find(sp.serial()));
-        if (i == particle_pool_.end() || (*i).second.size() < num)
+        std::vector<std::pair<ecell4::ParticleID, ecell4::Particle> >
+            particles(list_particles(sp));
+        const Integer num_particles(particles.size());
+        if (num_particles < num)
         {
             throw std::invalid_argument(
                 "The number of molecules cannot be negative.");
         }
 
-        for (unsigned int j(0); j < num; ++j)
+        shuffle((*rng_), particles);
+        for (std::vector<std::pair<ecell4::ParticleID, ecell4::Particle> >::const_iterator
+            i(particles.begin()); i != particles.begin() + num; ++i)
         {
-            const Integer n(rng()->uniform_int(0, (*i).second.size() - 1));
-            // typename particle_id_set::const_iterator
-            //     target(std::advance((*i).second.begin(), n));
-            // this->remove_particle((*target).first);
-            typename particle_id_set::const_iterator
-                target((*i).second.begin());
-            std::advance(target, n);
-            this->remove_particle(*target);
+            remove_particle((*i).first);
         }
     }
 
@@ -921,8 +848,6 @@ public:
         if (molecule_info_map_.end() == i)
         {
             return this->register_species(sid);
-            // throw not_found(std::string("Unknown species (id=")
-            //     + boost::lexical_cast<std::string>(sid) + ")");
         }
         return (*i).second;
     }
@@ -948,7 +873,6 @@ protected:
         const ecell4::Species sp(sid);
         molecule_info_type info(get_molecule_info(sp, defaults));
         molecule_info_map_.insert(std::make_pair(sid, info));
-        particle_pool_[sid] = particle_id_set();
         return (*molecule_info_map_.find(sid)).second;
     }
 
@@ -957,7 +881,6 @@ protected:
         const ecell4::Species sp(sid);
         molecule_info_type info(get_molecule_info(sp));
         molecule_info_map_.insert(std::make_pair(sid, info));
-        particle_pool_[sid] = particle_id_set();
         return (*molecule_info_map_.find(sid)).second;
     }
 
@@ -1129,7 +1052,6 @@ public:
         // per_species_particle_id_set particle_pool_;
         molecule_info_map_.clear();
         structure_map_.clear();
-        particle_pool_.clear();
 
         (*ps_).reset((*ps_).edge_lengths());
     }
@@ -1139,7 +1061,6 @@ private:
     particle_id_generator pidgen_;
     molecule_info_map molecule_info_map_;
     structure_map structure_map_;
-    per_species_particle_id_set particle_pool_;
 
     /** ecell4::Space
      */
