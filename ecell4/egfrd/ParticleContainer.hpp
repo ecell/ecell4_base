@@ -20,6 +20,7 @@ class ParticleContainer
 public:
 
     typedef Ttraits_ traits_type;
+    typedef Transaction<traits_type> transaction_type;
 
     typedef typename traits_type::particle_type particle_type;
     typedef typename traits_type::particle_shape_type particle_shape_type;
@@ -39,14 +40,10 @@ public:
         particle_id_pair_and_distance;
     typedef typename traits_type::particle_id_pair_and_distance_list
         particle_id_pair_and_distance_list;
-    typedef Transaction<traits_type> transaction_type;
 
 public:
 
     virtual ~ParticleContainer() {};
-
-    virtual ecell4::Integer num_particles() const = 0;
-    // virtual size_type num_particles() const = 0;
 
     virtual molecule_info_type const& get_molecule_info(species_id_type const& id) = 0;
     virtual molecule_info_type const& find_molecule_info(species_id_type const& id) const = 0;
@@ -56,14 +53,6 @@ public:
 
     virtual particle_id_pair new_particle(
         species_id_type const& sid, position_type const& pos) = 0;
-
-    virtual bool update_particle(particle_id_pair const& pi_pair) = 0;
-
-    virtual bool remove_particle(particle_id_type const& id) = 0;
-
-    virtual particle_id_pair get_particle(particle_id_type const& id) const = 0;
-
-    virtual bool has_particle(particle_id_type const& id) const = 0;
 
     virtual particle_id_pair_and_distance_list check_overlap(
         particle_shape_type const& s) const = 0;
@@ -100,18 +89,26 @@ public:
 
     virtual transaction_type* create_transaction() = 0;
 
-    virtual length_type distance(
-        position_type const& lhs, position_type const& rhs) const = 0;
+    /**
+     * ParticleSpace has functions similar, but a bit different.
+     */
 
-    virtual position_type apply_boundary(position_type const& v) const = 0;
+    virtual bool update_particle(particle_id_pair const& pi_pair) = 0;
 
-    // virtual length_type apply_boundary(length_type const& v) const = 0;
+    virtual bool remove_particle(particle_id_type const& id) = 0;
 
     virtual position_type cyclic_transpose(
         position_type const& p0, position_type const& p1) const = 0;
 
-    // virtual length_type cyclic_transpose(
-    //     length_type const& p0, length_type const& p1) const = 0;
+    /**
+     * Space
+     */
+
+    // virtual ecell4::Integer num_particles() const = 0;
+
+    // virtual particle_id_pair get_particle(particle_id_type const& id) const = 0;
+
+    // virtual bool has_particle(particle_id_type const& id) const = 0;
 
     virtual void save(const std::string& filename) const
     {
@@ -119,6 +116,14 @@ public:
             "save(const std::string) is not supported by this space class");
     }
 
+    /**
+     * ParticleSpace
+     */
+
+    virtual length_type distance(
+        position_type const& lhs, position_type const& rhs) const = 0;
+
+    virtual position_type apply_boundary(position_type const& v) const = 0;
 };
 
 

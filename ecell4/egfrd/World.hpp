@@ -238,11 +238,16 @@ public:
 };
 
 template<typename Ttraits_>
-class World: public ParticleContainerBase<World<Ttraits_>, Ttraits_>
+class World
+    : public ParticleContainer<Ttraits_>
+    // : public ParticleContainerBase<World<Ttraits_>, Ttraits_>
 {
 public:
+
     typedef Ttraits_ traits_type;
-    typedef ParticleContainerBase<World> base_type;
+    typedef ParticleContainer<Ttraits_> base_type;
+    // typedef ParticleContainerBase<World> base_type;
+
     typedef ParticleContainer<traits_type> particle_container_type;
     typedef typename traits_type::length_type length_type;
     typedef typename traits_type::molecule_info_type molecule_info_type;
@@ -261,9 +266,19 @@ public:
         particle_id_pair_and_distance_list;
     typedef typename traits_type::model_type model_type;
 
-    typedef typename base_type::matrix_sizes_type matrix_sizes_type;
+    /**
+     * ParticleContainerBase
+     */
+    typedef MatrixSpace<particle_type, particle_id_type, ecell4::utils::get_mapper_mf> particle_matrix_type;
+    typedef sized_iterator_range<typename particle_matrix_type::const_iterator> particle_id_pair_range;
+    typedef typename particle_matrix_type::matrix_sizes_type matrix_sizes_type;
+    typedef ecell4::ParticleSpaceCellListImpl particle_space_type;
+    typedef ParticleContainerUtils<Ttraits_> utils;
+    typedef typename base_type::transaction_type transaction_type;
+    typedef typename base_type::time_type time_type;
 
 protected:
+
     typedef std::map<species_id_type, molecule_info_type> molecule_info_map;
     typedef std::map<structure_id_type, boost::shared_ptr<structure_type> > structure_map;
     typedef std::set<particle_id_type> particle_id_set;
@@ -272,6 +287,7 @@ protected:
     typedef select_second<typename structure_map::value_type> surface_second_selector_type;
 
 public:
+
     typedef boost::transform_iterator<species_second_selector_type,
             typename molecule_info_map::const_iterator> molecule_info_iterator;
     typedef boost::transform_iterator<surface_second_selector_type,
@@ -283,8 +299,8 @@ public:
 
     World(
         const position_type& edge_lengths = position_type(1, 1, 1),
-        const matrix_sizes_type& sizes = matrix_sizes_type(3, 3, 3))
-        : base_type(edge_lengths, sizes)
+        const matrix_sizes_type& matrix_sizes = matrix_sizes_type(3, 3, 3))
+        : ps_(new particle_space_type(edge_lengths, matrix_sizes))
     {
         // rng_ = boost::shared_ptr<rng_type>(new rng_type());
         rng_ = boost::shared_ptr<rng_type>(new ecell4::GSLRandomNumberGenerator());
@@ -294,27 +310,17 @@ public:
     }
 
     World(
-        const position_type& edge_lengths, const matrix_sizes_type& sizes,
+        const position_type& edge_lengths, const matrix_sizes_type& matrix_sizes,
         const boost::shared_ptr<rng_type>& rng)
-        : base_type(edge_lengths, sizes), rng_(rng)
+        :ps_(new particle_space_type(edge_lengths, matrix_sizes)), rng_(rng)
     {
         add_world_structure();
     }
 
-    // World(
-    //     const position_type& edge_lengths, const matrix_sizes_type& sizes,
-    //     const boost::shared_ptr<ecell4::RandomNumberGenerator>& rng)
-    //     : base_type(edge_lengths, sizes),
-    //     rng_(boost::dynamic_pointer_cast<rng_type>(rng))
-    // {
-    //     add_world_structure();
-    // }
-
     World(const std::string filename)
-        : base_type(position_type(1, 1, 1), matrix_sizes_type(3, 3, 3)), rng_()
+        : ps_(new particle_space_type(position_type(1, 1, 1), matrix_sizes_type(3, 3, 3))), rng_()
     {
         rng_ = boost::shared_ptr<rng_type>(new ecell4::GSLRandomNumberGenerator());
-        // rng_ = boost::shared_ptr<rng_type>(new rng_type());
         this->load(filename);
     }
 
@@ -328,57 +334,66 @@ public:
         return retval;
     }
 
-    virtual bool update_particle(particle_id_pair const& pi_pair)
+    virtual bool update_particle(particle_id_pair const& pid_particle_pair)
     {
         //XXX: This function might be slower than before
-        //XXX: because both get_particle and update_particle search the given pi_pair.
+        //XXX: because both get_particle and update_particle search the given pid_particle_pair.
         //XXX: Futher, ParticleSpace also has particle_pool.
-        if (base_type::has_particle(pi_pair.first))
+        if (has_particle(pid_particle_pair.first))
         {
-            const particle_id_pair prev = base_type::get_particle(pi_pair.first);
-            if (prev.second.sid() != pi_pair.second.sid())
+            const particle_id_pair prev = get_particle(pid_particle_pair.first);
+            if (prev.second.sid() != pid_particle_pair.second.sid())
             {
                 particle_pool_[prev.second.sid()].erase(prev.first);
 
                 typename per_species_particle_id_set::iterator
-                    j(particle_pool_.find(pi_pair.second.sid()));
+                    j(particle_pool_.find(pid_particle_pair.second.sid()));
                 if (j == particle_pool_.end())
                 {
-                    this->register_species(pi_pair);
-                    // this->register_species(pi_pair.second.sid());
-                    j = particle_pool_.find(pi_pair.second.sid());
+                    this->register_species(pid_particle_pair);
+                    // this->register_species(pid_particle_pair.second.sid());
+                    j = particle_pool_.find(pid_particle_pair.second.sid());
                 }
-                (*j).second.insert(pi_pair.first);
+                (*j).second.insert(pid_particle_pair.first);
             }
-            base_type::update_particle(pi_pair);
+
+            (*ps_).update_particle(pid_particle_pair.first, pid_particle_pair.second);
             return false;
         }
 
-        const bool is_succeeded(base_type::update_particle(pi_pair));
+        const bool is_succeeded(
+            (*ps_).update_particle(pid_particle_pair.first, pid_particle_pair.second));
         BOOST_ASSERT(is_succeeded);
         typename per_species_particle_id_set::iterator
-            k(particle_pool_.find(pi_pair.second.sid()));
+            k(particle_pool_.find(pid_particle_pair.second.sid()));
         if (k == particle_pool_.end())
         {
-            this->register_species(pi_pair);
-            // this->register_species(pi_pair.second.sid());
-            k = particle_pool_.find(pi_pair.second.sid());
+            this->register_species(pid_particle_pair);
+            // this->register_species(pid_particle_pair.second.sid());
+            k = particle_pool_.find(pid_particle_pair.second.sid());
         }
-        (*k).second.insert(pi_pair.first);
+        (*k).second.insert(pid_particle_pair.first);
         return true;
     }
 
     virtual bool remove_particle(particle_id_type const& id)
     {
         bool found(false);
-        particle_id_pair pp(this->get_particle(id, found));
+        particle_id_pair pp(get_particle(id, found));
         if (!found)
         {
             return false;
         }
         particle_pool_[pp.second.sid()].erase(id);
-        base_type::remove_particle(id);
+        (*ps_).remove_particle(id);
         return true;
+
+        // if (!has_particle(id))
+        // {
+        //     return false;
+        // }
+        // (*ps_).remove_particle(id);
+        // return true;
     }
 
     molecule_info_range get_molecule_info_range() const
@@ -451,7 +466,7 @@ public:
 
         /** matrix_sizes
          */
-        const matrix_sizes_type sizes = base_type::matrix_sizes();
+        const matrix_sizes_type sizes = matrix_sizes();
         const hsize_t dims[] = {3};
         const H5::ArrayType sizes_type(H5::PredType::NATIVE_INT, 1, dims);
         H5::Attribute attr_sizes(
@@ -500,26 +515,6 @@ public:
     }
 
 
-    virtual void clear()
-    {
-        // particle_id_generator pidgen_;
-        // boost::shared_ptr<rng_type> rng_;
-        // boost::weak_ptr<model_type> model_;
-        ; // do nothing
-
-        // molecule_info_map molecule_info_map_;
-        // structure_map structure_map_;
-        // per_species_particle_id_set particle_pool_;
-        molecule_info_map_.clear();
-        structure_map_.clear();
-        particle_pool_.clear();
-
-        // ParticleContainerBase
-        // particle_matrix_type pmat_;
-        // time_type t_;
-        base_type::clear();
-    }
-
     virtual const length_type volume() const
     {
         const position_type& L(edge_lengths());
@@ -528,27 +523,26 @@ public:
 
     virtual const position_type& edge_lengths() const
     {
-        return base_type::edge_lengths();
+        return (*ps_).edge_lengths();
     }
 
     virtual void reset(const position_type& lengths)
     {
-        base_type::reset(lengths);
+        (*ps_).reset(lengths);
     }
 
     virtual void reset(const position_type& lengths, const matrix_sizes_type& sizes)
     {
-        base_type::reset(lengths, sizes);
-    }
+        boost::scoped_ptr<particle_space_type>
+            newps(new particle_space_type(lengths, sizes));
+        ps_.swap(newps);
 
-    virtual bool has_particle(const particle_id_type& pid) const
-    {
-        return base_type::has_particle(pid);
+        ; // newps will be released here
     }
 
     virtual ecell4::Integer num_particles() const
     {
-        return base_type::num_particles();
+        return (*ps_).num_particles();
     }
 
     virtual ecell4::Integer num_particles_exact(const ecell4::Species& sp) const
@@ -704,7 +698,7 @@ public:
         const position_type& pos, const length_type& radius) const
     {
         const particle_id_pair_and_distance_list overlapped(
-            base_type::check_overlap(particle_shape_type(pos, radius)));
+            check_overlap(particle_shape_type(pos, radius)));
         std::vector<std::pair<std::pair<particle_id_type, particle_type>, length_type> >
             retval;
         if (overlapped.size() > 0)
@@ -724,7 +718,7 @@ public:
         const particle_id_type& ignore) const
     {
         const particle_id_pair_and_distance_list overlapped(
-            base_type::check_overlap(particle_shape_type(pos, radius), ignore));
+            check_overlap(particle_shape_type(pos, radius), ignore));
         std::vector<std::pair<std::pair<particle_id_type, particle_type>, length_type> >
             retval;
         if (overlapped.size() > 0)
@@ -744,7 +738,7 @@ public:
         const particle_id_type& ignore1, const particle_id_type& ignore2) const
     {
         const particle_id_pair_and_distance_list overlapped(
-            base_type::check_overlap(
+            check_overlap(
                 particle_shape_type(pos, radius), ignore1, ignore2));
         std::vector<std::pair<std::pair<particle_id_type, particle_type>, length_type> >
             retval;
@@ -799,10 +793,9 @@ public:
         particle_id_pair retval(pidgen_(), p);
 
         const particle_id_pair_and_distance_list overlapped(
-            base_type::check_overlap(
+            check_overlap(
                 particle_shape_type(p.position(), p.radius())));
         if (overlapped.size() > 0)
-        // if (!base_type::no_overlap(particle_shape_type(p.position(), p.radius())))
         {
             return std::make_pair(retval, false);
         }
@@ -974,7 +967,163 @@ protected:
         //             "world", cuboidal_region_shape_type(center, center))));
     }
 
+public:
+
+    /**
+     * ParticleContainerBase
+     */
+
+    /**
+     * redirects
+     */
+
+    position_type cell_sizes() const
+    {
+        return (*ps_).cell_sizes();
+    }
+
+    matrix_sizes_type matrix_sizes() const
+    {
+        return (*ps_).matrix_sizes();
+    }
+
+    virtual bool has_particle(particle_id_type const& id) const
+    {
+        return (*ps_).has_particle(id);
+    }
+
+    virtual particle_id_pair get_particle(particle_id_type const& id) const
+    {
+        return (*ps_).get_particle(id);
+    }
+
+    virtual length_type distance(
+        position_type const& lhs, position_type const& rhs) const
+    {
+        return (*ps_).distance(lhs, rhs);
+    }
+
+    virtual position_type apply_boundary(position_type const& v) const
+    {
+        return (*ps_).apply_boundary(v);
+    }
+
+    virtual const time_type t() const
+    {
+        return (*ps_).t();
+    }
+
+    virtual void set_t(const time_type& t)
+    {
+        (*ps_).set_t(t);
+    }
+
+    /**
+     * wrappers
+     */
+
+    virtual position_type cyclic_transpose(
+        position_type const& p0, position_type const& p1) const
+    {
+        return (*ps_).periodic_transpose(p0, p1);
+    }
+
+    template<typename T1_>
+    T1_ calculate_pair_CoM(
+        T1_ const& p1, T1_ const& p2,
+        typename element_type_of<T1_>::type const& D1,
+        typename element_type_of<T1_>::type const& D2)
+    {
+        typedef typename element_type_of<T1_>::type element_type;
+
+        const T1_ p2_trans(cyclic_transpose(p2, p1));
+        const element_type D12(add(D1, D2));
+        const element_type s(divide(D1, D12)), t(divide(D2, D12));
+        const T1_ com(add(multiply(p1, t), multiply(p2_trans, s)));
+        return apply_boundary(com);
+    }
+
+    particle_id_pair get_particle(particle_id_type const& id, bool& found) const
+    {
+        found = (*ps_).has_particle(id);
+        if (!found)
+        {
+            return particle_id_pair();
+        }
+        return get_particle(id);
+    }
+
+    virtual particle_id_pair_and_distance_list check_overlap(particle_shape_type const& s) const
+    {
+        return (*ps_).list_particles_within_radius(s.position(), s.radius());
+    }
+
+    virtual particle_id_pair_and_distance_list check_overlap(particle_shape_type const& s, particle_id_type const& ignore) const
+    {
+        return (*ps_).list_particles_within_radius(s.position(), s.radius(), ignore);
+    }
+
+    virtual particle_id_pair_and_distance_list check_overlap(particle_shape_type const& s, particle_id_type const& ignore1, particle_id_type const& ignore2) const
+    {
+        return (*ps_).list_particles_within_radius(s.position(), s.radius(), ignore1, ignore2);
+    }
+
+    // template<typename Tsph_, typename Tset_>
+    // particle_id_pair_and_distance_list* check_overlap(Tsph_ const& s, Tset_ const& ignore,
+    //     typename boost::disable_if<boost::is_same<Tsph_, particle_id_pair> >::type* = 0) const
+    // {
+    //     typename utils::template overlap_checker<Tset_> oc(ignore);
+    //     traits_type::take_neighbor(*pmat_, oc, s);
+    //     return oc.result();
+    // }
+
+    // template<typename Tsph_>
+    // particle_id_pair_and_distance_list* check_overlap(Tsph_ const& s,
+    //     typename boost::disable_if<boost::is_same<Tsph_, particle_id_pair> >::type* = 0) const
+    // {
+    //     typename utils::template overlap_checker<boost::array<particle_id_type, 0> > oc;
+    //     traits_type::take_neighbor(*pmat_, oc, s);
+    //     return oc.result();
+    // }
+
+    particle_id_pair_range get_particles_range() const
+    {
+        const particle_space_type::particle_container_type& particles((*ps_).particles());
+        return particle_id_pair_range(particles.begin(), particles.end(), particles.size());
+    }
+
+    /**
+     *
+     */
+
+    virtual transaction_type* create_transaction();
+
+    template<typename T_>
+    length_type distance(T_ const& lhs, position_type const& rhs) const
+    {
+        // return (*ps_).distance(lhs, rhs);
+        return traits_type::distance(lhs, rhs, edge_lengths());
+    }
+
+    void clear()
+    {
+        // particle_id_generator pidgen_;
+        // boost::shared_ptr<rng_type> rng_;
+        // boost::weak_ptr<model_type> model_;
+        ; // do nothing
+
+        // molecule_info_map molecule_info_map_;
+        // structure_map structure_map_;
+        // per_species_particle_id_set particle_pool_;
+        molecule_info_map_.clear();
+        structure_map_.clear();
+        particle_pool_.clear();
+
+        (*ps_).reset((*ps_).edge_lengths());
+    }
+
 private:
+
     particle_id_generator pidgen_;
     molecule_info_map molecule_info_map_;
     structure_map structure_map_;
@@ -984,6 +1133,17 @@ private:
      */
     boost::shared_ptr<rng_type> rng_;
     boost::weak_ptr<model_type> model_;
+
+protected:
+
+    boost::scoped_ptr<particle_space_type> ps_;
 };
+
+template<typename Ttraits_>
+inline typename World<Ttraits_>::transaction_type*
+World<Ttraits_>::create_transaction()
+{
+    return new TransactionImpl<World>(*this);
+}
 
 #endif /* WORLD_HPP */
