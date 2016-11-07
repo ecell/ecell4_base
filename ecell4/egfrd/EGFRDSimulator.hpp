@@ -1712,7 +1712,8 @@ protected:
             domain_kind& kind;
         };
 
-        molecule_info_type const& species((*base_type::world_).find_molecule_info(p.second.sid()));
+        molecule_info_type const species((*base_type::world_).get_molecule_info(p.second.species()));
+        // molecule_info_type const& species((*base_type::world_).find_molecule_info(p.second.species()));
         dynamic_cast<particle_simulation_structure_type const&>(*(*base_type::world_).get_structure(species.structure_id)).accept(factory(this, p, did, new_single, kind));
         boost::shared_ptr<domain_type> const retval(new_single);
         domains_.insert(std::make_pair(did, retval));
@@ -1793,7 +1794,7 @@ protected:
                 : _this(_this), p0(p0), p1(p1), com(com), iv(iv),
                   shell_size(shell_size), did(did),
                   rules((*_this->network_rules_).query_reaction_rule(
-                        p0.second.sid(), p1.second.sid())),
+                        p0.second.species(), p1.second.species())),
                   new_pair(new_pair), kind(kind) {}
 
             EGFRDSimulator* _this;
@@ -1808,7 +1809,8 @@ protected:
             domain_kind& kind;
         };
 
-        molecule_info_type const& species((*base_type::world_).find_molecule_info(p0.second.sid()));
+        molecule_info_type const species((*base_type::world_).get_molecule_info(p0.second.species()));
+        // molecule_info_type const& species((*base_type::world_).find_molecule_info(p0.second.species()));
         dynamic_cast<particle_simulation_structure_type&>(*(*base_type::world_).get_structure(species.structure_id)).accept(factory(this, p0, p1, com, iv, shell_size, did, new_pair, kind));
 
         boost::shared_ptr<domain_type> const retval(new_pair);
@@ -2275,8 +2277,9 @@ protected:
     bool attempt_single_reaction(single_type& domain)
     {
         const particle_id_pair reactant(domain.particle());
-        const molecule_info_type reactant_species((*base_type::world_).find_molecule_info(reactant.second.sid()));
-        reaction_rules const& rules((*base_type::network_rules_).query_reaction_rule(reactant.second.sid()));
+        const molecule_info_type reactant_species((*base_type::world_).get_molecule_info(reactant.second.species()));
+        // const molecule_info_type reactant_species((*base_type::world_).find_molecule_info(reactant.second.species()));
+        reaction_rules const& rules((*base_type::network_rules_).query_reaction_rule(reactant.second.species()));
         if (::size(rules) == 0)
         {
             return false;
@@ -2303,7 +2306,7 @@ protected:
         case 1: 
             {
                 species_id_type const& product_id0(r.get_products()[0]);
-                molecule_info_type const& product_species(
+                molecule_info_type const product_species(
                     (*base_type::world_).get_molecule_info(product_id0));
 
                 if (reactant_species.radius < product_species.radius)
@@ -2320,10 +2323,10 @@ protected:
                 (*base_type::world_).remove_particle(reactant.first);
                 // particle_id_pair product(
                 //     (*base_type::world_).new_particle(
-                //         product_species.id(), reactant.second.position()));
+                //         product_species.id(), reactant.second.position()).first);
                 particle_id_pair product(
                     (*base_type::world_).new_particle(
-                        product_id0, reactant.second.position()));
+                        product_id0, reactant.second.position()).first);
                 boost::shared_ptr<single_type> new_domain(create_single(product));
                 add_event(*new_domain, SINGLE_EVENT_ESCAPE);
                 if (base_type::rrec_)
@@ -2339,14 +2342,22 @@ protected:
             {
                 species_id_type const& product_id0(r.get_products()[0]);
                 species_id_type const& product_id1(r.get_products()[1]);
-                molecule_info_type const* const product_species[] = {
-                    &(*base_type::world_).get_molecule_info(product_id0),
-                    &(*base_type::world_).get_molecule_info(product_id1)
+                // molecule_info_type const* const product_species[] = {
+                //     &(*base_type::world_).get_molecule_info(product_id0),
+                //     &(*base_type::world_).get_molecule_info(product_id1)
+                // };
+
+                // D_type const D0(product_species[0]->D), D1(product_species[1]->D);
+                // length_type const radius0(product_species[0]->radius),
+                //     radius1(product_species[1]->radius);
+                molecule_info_type const product_species[] = {
+                    (*base_type::world_).get_molecule_info(product_id0),
+                    (*base_type::world_).get_molecule_info(product_id1)
                 };
 
-                D_type const D0(product_species[0]->D), D1(product_species[1]->D);
-                length_type const radius0(product_species[0]->radius),
-                    radius1(product_species[1]->radius);
+                D_type const D0(product_species[0].D), D1(product_species[1].D);
+                length_type const radius0(product_species[0].radius),
+                    radius1(product_species[1].radius);
                 D_type const D01(D0 + D1);
                 length_type r01(radius0 + radius1);
                 Real const rad(std::max(
@@ -2408,9 +2419,9 @@ protected:
 
                 particle_id_pair const pp[] = {
                     (*base_type::world_).new_particle(
-                        product_id0, new_particles[0].position()),
+                        product_id0, new_particles[0].position()).first,
                     (*base_type::world_).new_particle(
-                        product_id1, new_particles[1].position())
+                        product_id1, new_particles[1].position()).first
                 };
                 // create domains for two particles and add them to
                 // the event queue
@@ -2509,8 +2520,8 @@ protected:
     draw_single_reaction_time(AnalyticalPair<traits_type, Tshell> const& domain)
     {
         time_type const dt[2] = {
-            draw_single_reaction_time(domain.particles()[0].second.sid()),
-            draw_single_reaction_time(domain.particles()[1].second.sid())
+            draw_single_reaction_time(domain.particles()[0].second.species()),
+            draw_single_reaction_time(domain.particles()[1].second.species())
         };
         if (dt[0] < dt[1])
         {
@@ -2529,7 +2540,7 @@ protected:
         typedef Tshell shell_type;
         typedef typename shell_type::shape_type shape_type;
         typedef typename detail::get_greens_function<shape_type>::type greens_function;
-        time_type const dt_reaction(draw_single_reaction_time(domain.particle().second.sid()));
+        time_type const dt_reaction(draw_single_reaction_time(domain.particle().second.species()));
         time_type const dt_escape_or_interaction(draw_escape_or_interaction_time(domain));
         LOG_DEBUG(("determine_next_event: %s => dt_reaction=%.16g, "
                    "dt_escape_or_interaction=%.16g",
@@ -3487,7 +3498,7 @@ protected:
                 case 1:
                     {
                         species_id_type const& new_species_id(r.get_products()[0]);
-                        molecule_info_type const& new_species(
+                        molecule_info_type const new_species(
                             (*base_type::world_).get_molecule_info(new_species_id));
 
                         // calculate new R
@@ -3509,7 +3520,7 @@ protected:
 
                         particle_id_pair const new_particle(
                             (*base_type::world_).new_particle(
-                                new_species_id, new_com));
+                                new_species_id, new_com).first);
                         boost::shared_ptr<single_type> new_single(
                             create_single(new_particle));
                         add_event(*new_single, SINGLE_EVENT_ESCAPE);
@@ -3584,7 +3595,7 @@ protected:
 
         try
         {
-            molecule_info_type const& minfo(
+            molecule_info_type const minfo(
                 (*base_type::world_).get_molecule_info(sp));
 
             //XXX: A cuboidal region is expected here.
@@ -3604,7 +3615,7 @@ protected:
             }
 
             particle_id_pair pp(
-                (*base_type::world_).new_particle(sp, new_pos));
+                (*base_type::world_).new_particle(sp, new_pos).first);
 
             if (base_type::rrec_)
             {

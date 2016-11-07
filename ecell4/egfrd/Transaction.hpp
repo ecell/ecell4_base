@@ -66,11 +66,11 @@ private:
     typedef sorted_list<std::vector<particle_id_type> > particle_id_list_type;
 
 public:
-    virtual particle_id_pair new_particle(species_id_type const& sid,
+    virtual std::pair<particle_id_pair, bool> new_particle(species_id_type const& sid,
             position_type const& pos)
     {
-        particle_id_pair retval(pc_.new_particle(sid, pos));
-        const bool result(added_particles_.push_no_duplicate(retval.first));
+        std::pair<particle_id_pair, bool> retval(pc_.new_particle(sid, pos));
+        const bool result(added_particles_.push_no_duplicate(retval.first.first));
         BOOST_ASSERT(result);
         return retval;
     }
@@ -151,12 +151,17 @@ public:
         return pc_.get_structure(id);
     }
 
-    virtual molecule_info_type const& find_molecule_info(species_id_type const& id) const
-    {
-        return pc_.find_molecule_info(id);
-    }
+    // virtual molecule_info_type const& find_molecule_info(species_id_type const& id) const
+    // {
+    //     return pc_.find_molecule_info(id);
+    // }
 
-    virtual molecule_info_type const& get_molecule_info(species_id_type const& id)
+    // virtual molecule_info_type const& get_molecule_info(species_id_type const& id)
+    // {
+    //     return pc_.get_molecule_info(id);
+    // }
+
+    virtual molecule_info_type get_molecule_info(species_id_type const& id) const
     {
         return pc_.get_molecule_info(id);
     }

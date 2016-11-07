@@ -48,7 +48,7 @@ void Species::add_unit(const UnitSpecies& usp)
     }
 }
 
-std::vector<std::pair<std::string, std::string> > Species::list_attributes()
+std::vector<std::pair<std::string, std::string> > Species::list_attributes() const
 {
     std::vector<std::pair<std::string, std::string> > retval;
     for (attributes_container_type::const_iterator

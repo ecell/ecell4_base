@@ -77,6 +77,12 @@ bool is_initialized(std::string const &obj)
     return (0 < obj.size());
 }
 
+inline
+bool is_initialized(ecell4::Species const &obj)
+{
+    return (0 < obj.serial().size());
+}
+
 template<typename Tderived_, typename TD_>
 struct WorldTraitsBase
 {
@@ -86,7 +92,8 @@ struct WorldTraitsBase
     typedef ecell4::Real time_type;
     typedef ecell4::ParticleID particle_id_type;
     typedef ecell4::SerialIDGenerator<particle_id_type> particle_id_generator;
-    typedef ecell4::Species::serial_type species_id_type; // std::string
+    typedef ecell4::Species species_id_type; // std::string
+    // typedef ecell4::Species::serial_type species_id_type; // std::string
     typedef ecell4::Particle particle_type;
     typedef ecell4::Real3 position_type;
     // typedef ecell4::GSLRandomNumberGenerator rng_type;
@@ -333,19 +340,9 @@ public:
         this->load(filename);
     }
 
-    virtual particle_id_pair new_particle(species_id_type const& sid,
-            position_type const& pos)
-    {
-        molecule_info_type const& minfo(get_molecule_info(sid));
-        particle_id_pair retval(pidgen_(),
-            particle_type(sid, pos, minfo.radius, minfo.D));
-        update_particle(retval);
-        return retval;
-    }
-
     virtual bool update_particle(const particle_id_type& pid, const particle_type& p)
     {
-        if (molecule_info_map_.find(p.species().serial()) == molecule_info_map_.end())
+        if (molecule_info_map_.find(p.species()) == molecule_info_map_.end())
         {
             register_species(std::make_pair(pid, p));
         }
@@ -550,7 +547,7 @@ public:
     {
         const species_id_type sid(sp.serial());
         typename molecule_info_map::const_iterator i(molecule_info_map_.find(sid));
-        molecule_info_type const& minfo(
+        molecule_info_type const minfo(
             i != molecule_info_map_.end() ? (*i).second : get_molecule_info(sp));
         return new_particle(particle_type(sid, pos, minfo.radius, minfo.D));
     }
@@ -615,17 +612,21 @@ public:
      * @param sp a species
      * @return info a molecule info
      */
-    molecule_info_type get_molecule_info(const ecell4::Species& sp) const
-    {
-        const molecule_info_type defaults = {0.0, 0.0, "world"};
-        return get_molecule_info(sp, defaults);
-    }
+    // molecule_info_type get_molecule_info(const ecell4::Species& sp) const
+    // {
+    //     const molecule_info_type defaults = {0.0, 0.0, "world"};
+    //     return get_molecule_info(sp, defaults);
+    // }
 
-    molecule_info_type get_molecule_info(
-        const ecell4::Species& sp, const molecule_info_type& defaults) const
+    // molecule_info_type get_molecule_info(
+    //     const ecell4::Species& sp, const molecule_info_type& defaults) const
+    // {
+    molecule_info_type get_molecule_info(species_id_type const& sp) const
     {
-        ecell4::Real radius(defaults.radius), D(defaults.D);
-        std::string structure_id(defaults.structure_id);
+        // ecell4::Real radius(defaults.radius), D(defaults.D);
+        // std::string structure_id(defaults.structure_id);
+        ecell4::Real radius(0.0), D(0.0);
+        std::string structure_id("world");
 
         if (sp.has_attribute("radius") && sp.has_attribute("D"))
         {
@@ -658,26 +659,26 @@ public:
         return info;
     }
 
-    virtual molecule_info_type const& get_molecule_info(species_id_type const& sid)
-    {
-        typename molecule_info_map::const_iterator i(molecule_info_map_.find(sid));
-        if (molecule_info_map_.end() == i)
-        {
-            return this->register_species(sid);
-        }
-        return (*i).second;
-    }
+    // virtual molecule_info_type const& get_molecule_info(species_id_type const& sid)
+    // {
+    //     typename molecule_info_map::const_iterator i(molecule_info_map_.find(sid));
+    //     if (molecule_info_map_.end() == i)
+    //     {
+    //         return this->register_species(sid);
+    //     }
+    //     return (*i).second;
+    // }
 
-    virtual molecule_info_type const& find_molecule_info(species_id_type const& sid) const
-    {
-        typename molecule_info_map::const_iterator i(molecule_info_map_.find(sid));
-        if (molecule_info_map_.end() == i)
-        {
-            throw not_found(std::string("Unknown species (id=")
-                + boost::lexical_cast<std::string>(sid) + ")");
-        }
-        return (*i).second;
-    }
+    // virtual molecule_info_type const& find_molecule_info(species_id_type const& sid) const
+    // {
+    //     typename molecule_info_map::const_iterator i(molecule_info_map_.find(sid));
+    //     if (molecule_info_map_.end() == i)
+    //     {
+    //         throw not_found(std::string("Unknown species (id=")
+    //             + boost::lexical_cast<std::string>(sid) + ")");
+    //     }
+    //     return (*i).second;
+    // }
 
 protected:
 
@@ -687,7 +688,8 @@ protected:
             = {pid_pair.second.radius(), pid_pair.second.D(), "world"};
         const species_id_type sid(pid_pair.second.sid());
         const ecell4::Species sp(sid);
-        molecule_info_type info(get_molecule_info(sp, defaults));
+        molecule_info_type info = defaults;
+        // molecule_info_type info(get_molecule_info(sp, defaults));
         molecule_info_map_.insert(std::make_pair(sid, info));
         return (*molecule_info_map_.find(sid)).second;
     }

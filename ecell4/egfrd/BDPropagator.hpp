@@ -93,8 +93,8 @@ public:
             return true;
         }
 
-        const species_id_type& species_id(pp.second.sid());
-        const molecule_info_type species(tx_.find_molecule_info(species_id));
+        const species_id_type& species_id(pp.second.species());
+        const molecule_info_type species(tx_.get_molecule_info(species_id));
         if (species.D == 0.)
             return true;
 
@@ -166,7 +166,7 @@ private:
 
     bool attempt_reaction(particle_id_pair const& pp)
     {
-        reaction_rules const& rules(rules_.query_reaction_rule(pp.second.sid()));
+        reaction_rules const& rules(rules_.query_reaction_rule(pp.second.species()));
         if (::size(rules) == 0)
         {
             return false;
@@ -268,8 +268,8 @@ private:
 
                         tx_.remove_particle(pp.first);
                         const particle_id_pair
-                            npp0(tx_.new_particle(product_id0, np0)),
-                            npp1(tx_.new_particle(product_id1, np1));
+                            npp0(tx_.new_particle(product_id0, np0).first),
+                            npp1(tx_.new_particle(product_id1, np1).first);
 
                         if (rrec_)
                         {
@@ -293,14 +293,14 @@ private:
 
     bool attempt_reaction(particle_id_pair const& pp0, particle_id_pair const& pp1)
     {
-        reaction_rules const& rules(rules_.query_reaction_rule(pp0.second.sid(), pp1.second.sid()));
+        reaction_rules const& rules(rules_.query_reaction_rule(pp0.second.species(), pp1.second.species()));
         if (::size(rules) == 0)
         {
             return false;
         }
 
-        const molecule_info_type s0(tx_.find_molecule_info(pp0.second.sid())),
-                s1(tx_.find_molecule_info(pp1.second.sid()));
+        const molecule_info_type s0(tx_.get_molecule_info(pp0.second.species())),
+                s1(tx_.get_molecule_info(pp1.second.species()));
         const length_type r01(s0.radius + s1.radius);
 
         const Real rnd(rng_.random());
@@ -362,7 +362,7 @@ private:
 
                         remove_particle(pp0.first);
                         remove_particle(pp1.first);
-                        particle_id_pair npp(tx_.new_particle(product, new_pos));
+                        particle_id_pair npp(tx_.new_particle(product, new_pos).first);
                         if (rrec_)
                         {
                             // (*rrec_)(

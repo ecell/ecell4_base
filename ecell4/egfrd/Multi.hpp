@@ -90,12 +90,17 @@ public:
         return world_.edge_lengths();
     }
 
-    virtual molecule_info_type const& find_molecule_info(species_id_type const& id) const
-    {
-        return world_.find_molecule_info(id);
-    }
+    // virtual molecule_info_type const& find_molecule_info(species_id_type const& id) const
+    // {
+    //     return world_.find_molecule_info(id);
+    // }
 
-    virtual molecule_info_type const& get_molecule_info(species_id_type const& id)
+    // virtual molecule_info_type const& get_molecule_info(species_id_type const& id)
+    // {
+    //     return world_.get_molecule_info(id);
+    // }
+
+    virtual molecule_info_type get_molecule_info(species_id_type const& id) const
     {
         return world_.get_molecule_info(id);
     }
@@ -105,11 +110,11 @@ public:
         return world_.get_structure(id);
     }
 
-    virtual particle_id_pair new_particle(species_id_type const& sid,
+    virtual std::pair<particle_id_pair, bool> new_particle(species_id_type const& sid,
             position_type const& pos)
     {
-        particle_id_pair const retval(world_.new_particle(sid, pos));
-        particles_.insert(retval);
+        std::pair<particle_id_pair, bool> const retval(world_.new_particle(sid, pos));
+        particles_.insert(retval.first);
         return retval;
     }
 

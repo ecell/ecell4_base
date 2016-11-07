@@ -45,13 +45,14 @@ public:
 
     virtual ~ParticleContainer() {};
 
-    virtual molecule_info_type const& get_molecule_info(species_id_type const& id) = 0;
-    virtual molecule_info_type const& find_molecule_info(species_id_type const& id) const = 0;
+    virtual molecule_info_type get_molecule_info(species_id_type const& id) const = 0;
+    // virtual molecule_info_type const& get_molecule_info(species_id_type const& id) = 0;
+    // virtual molecule_info_type const& find_molecule_info(species_id_type const& id) const = 0;
 
     virtual boost::shared_ptr<structure_type> get_structure(
         structure_id_type const& id) const = 0;
 
-    virtual particle_id_pair new_particle(
+    virtual std::pair<particle_id_pair, bool> new_particle(
         species_id_type const& sid, position_type const& pos) = 0;
 
     virtual particle_id_pair_and_distance_list check_overlap(

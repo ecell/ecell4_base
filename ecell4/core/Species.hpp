@@ -56,6 +56,17 @@ public:
         set_attribute("location", location);
     }
 
+    Species(const Species& another)
+        : serial_(another.serial())
+    {
+        const std::vector<std::pair<std::string, std::string> > attrs = another.list_attributes();
+        for (std::vector<std::pair<std::string, std::string> >::const_iterator
+            i(attrs.begin()); i != attrs.end(); i++)
+        {
+            set_attribute((*i).first, (*i).second);
+        }
+    }
+
     const serial_type serial() const
     {
         return serial_;
@@ -84,7 +95,7 @@ public:
         return attributes_;
     }
 
-    std::vector<std::pair<std::string, std::string> > list_attributes();
+    std::vector<std::pair<std::string, std::string> > list_attributes() const;
     std::string get_attribute(const std::string& name_attr) const;
     void set_attribute(const std::string& name_attr, const std::string& value);
     void set_attributes(const Species& sp);
