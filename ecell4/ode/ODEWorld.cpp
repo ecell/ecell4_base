@@ -66,7 +66,7 @@ void ODEWorld::save(const std::string& filename) const
     const uint32_t space_type = static_cast<uint32_t>(Space::ELSE);
     group->openAttribute("type").write(H5::PredType::STD_I32LE, &space_type);
 
-    extras::save_version_information(fout.get(), "ecell4-ode-0.0-1");
+    extras::save_version_information(fout.get(), std::string("ecell4-ode-") + std::string(ECELL4_VERSION));
 #else
     throw NotSupported(
         "This method requires HDF5. The HDF5 support is turned off.");
