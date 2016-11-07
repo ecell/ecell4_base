@@ -488,16 +488,6 @@ public:
         return L[0] * L[1] * L[2];
     }
 
-    virtual const position_type& edge_lengths() const
-    {
-        return (*ps_).edge_lengths();
-    }
-
-    virtual void reset(const position_type& lengths)
-    {
-        (*ps_).reset(lengths);
-    }
-
     virtual void reset(const position_type& lengths, const matrix_sizes_type& sizes)
     {
         boost::scoped_ptr<particle_space_type>
@@ -505,21 +495,6 @@ public:
         ps_.swap(newps);
 
         ; // newps will be released here
-    }
-
-    virtual ecell4::Integer num_particles() const
-    {
-        return (*ps_).num_particles();
-    }
-
-    virtual ecell4::Integer num_particles_exact(const ecell4::Species& sp) const
-    {
-        return (*ps_).num_particles_exact(sp);
-    }
-
-    virtual ecell4::Integer num_particles(const ecell4::Species& sp) const
-    {
-        return (*ps_).num_particles(sp);
     }
 
     void set_value(const ecell4::Species& sp, const ecell4::Real value)
@@ -544,108 +519,6 @@ public:
     virtual ecell4::Real get_value_exact(const ecell4::Species& sp) const
     {
         return static_cast<ecell4::Real>(num_molecules_exact(sp));
-    }
-
-    virtual ecell4::Integer num_molecules(const ecell4::Species& sp) const
-    {
-        return (*ps_).num_molecules(sp);
-    }
-
-    virtual ecell4::Integer num_molecules_exact(const ecell4::Species& sp) const
-    {
-        return (*ps_).num_molecules_exact(sp);
-    }
-
-    virtual ecell4::Integer num_species() const
-    {
-        return (*ps_).num_species();
-    }
-
-    virtual bool has_species(const ecell4::Species& sp) const
-    {
-        return (*ps_).has_species(sp);
-    }
-
-    virtual std::vector<std::pair<particle_id_type, particle_type> > list_particles() const
-    {
-        return (*ps_).list_particles();
-    }
-
-    virtual std::vector<std::pair<particle_id_type, particle_type> >
-        list_particles(const ecell4::Species& sp) const
-    {
-        return (*ps_).list_particles(sp);
-    }
-
-    virtual std::vector<std::pair<particle_id_type, particle_type> >
-        list_particles_exact(const ecell4::Species& sp) const
-    {
-        return (*ps_).list_particles_exact(sp);
-    }
-
-    std::vector<ecell4::Species> list_species() const
-    {
-        return (*ps_).list_species();
-    }
-
-    std::vector<std::pair<std::pair<particle_id_type, particle_type>, length_type> >
-    list_particles_within_radius(
-        const position_type& pos, const length_type& radius) const
-    {
-        const particle_id_pair_and_distance_list overlapped(
-            check_overlap(particle_shape_type(pos, radius)));
-        std::vector<std::pair<std::pair<particle_id_type, particle_type>, length_type> >
-            retval;
-        if (overlapped.size() > 0)
-        {
-            for (typename particle_id_pair_and_distance_list::const_iterator
-                i(overlapped.begin()); i != overlapped.end(); ++i)
-            {
-                retval.push_back(*i);
-            }
-        }
-        return retval;
-    }
-
-    std::vector<std::pair<std::pair<particle_id_type, particle_type>, length_type> >
-    list_particles_within_radius(
-        const position_type& pos, const length_type& radius,
-        const particle_id_type& ignore) const
-    {
-        const particle_id_pair_and_distance_list overlapped(
-            check_overlap(particle_shape_type(pos, radius), ignore));
-        std::vector<std::pair<std::pair<particle_id_type, particle_type>, length_type> >
-            retval;
-        if (overlapped.size() > 0)
-        {
-            for (typename particle_id_pair_and_distance_list::const_iterator
-                i(overlapped.begin()); i != overlapped.end(); ++i)
-            {
-                retval.push_back(*i);
-            }
-        }
-        return retval;
-    }
-
-    std::vector<std::pair<std::pair<particle_id_type, particle_type>, length_type> >
-    list_particles_within_radius(
-        const position_type& pos, const length_type& radius,
-        const particle_id_type& ignore1, const particle_id_type& ignore2) const
-    {
-        const particle_id_pair_and_distance_list overlapped(
-            check_overlap(
-                particle_shape_type(pos, radius), ignore1, ignore2));
-        std::vector<std::pair<std::pair<particle_id_type, particle_type>, length_type> >
-            retval;
-        if (overlapped.size() > 0)
-        {
-            for (typename particle_id_pair_and_distance_list::const_iterator
-                i(overlapped.begin()); i != overlapped.end(); ++i)
-            {
-                retval.push_back(*i);
-            }
-        }
-        return retval;
     }
 
     void bind_to(boost::shared_ptr<model_type> model)
@@ -848,12 +721,74 @@ protected:
 public:
 
     /**
-     * ParticleContainerBase
-     */
-
-    /**
      * redirects
      */
+
+    virtual ecell4::Integer num_particles() const
+    {
+        return (*ps_).num_particles();
+    }
+
+    virtual ecell4::Integer num_particles_exact(const ecell4::Species& sp) const
+    {
+        return (*ps_).num_particles_exact(sp);
+    }
+
+    virtual ecell4::Integer num_particles(const ecell4::Species& sp) const
+    {
+        return (*ps_).num_particles(sp);
+    }
+
+    virtual ecell4::Integer num_molecules(const ecell4::Species& sp) const
+    {
+        return (*ps_).num_molecules(sp);
+    }
+
+    virtual ecell4::Integer num_molecules_exact(const ecell4::Species& sp) const
+    {
+        return (*ps_).num_molecules_exact(sp);
+    }
+
+    virtual ecell4::Integer num_species() const
+    {
+        return (*ps_).num_species();
+    }
+
+    virtual bool has_species(const ecell4::Species& sp) const
+    {
+        return (*ps_).has_species(sp);
+    }
+
+    virtual std::vector<std::pair<particle_id_type, particle_type> > list_particles() const
+    {
+        return (*ps_).list_particles();
+    }
+
+    virtual std::vector<std::pair<particle_id_type, particle_type> >
+        list_particles(const ecell4::Species& sp) const
+    {
+        return (*ps_).list_particles(sp);
+    }
+
+    virtual std::vector<std::pair<particle_id_type, particle_type> >
+        list_particles_exact(const ecell4::Species& sp) const
+    {
+        return (*ps_).list_particles_exact(sp);
+    }
+
+    std::vector<ecell4::Species> list_species() const
+    {
+        return (*ps_).list_species();
+    }
+    virtual const position_type& edge_lengths() const
+    {
+        return (*ps_).edge_lengths();
+    }
+
+    virtual void reset(const position_type& lengths)
+    {
+        (*ps_).reset(lengths);
+    }
 
     position_type cell_sizes() const
     {
@@ -900,6 +835,29 @@ public:
         position_type const& p0, position_type const& p1) const
     {
         return (*ps_).periodic_transpose(p0, p1);
+    }
+
+    std::vector<std::pair<std::pair<particle_id_type, particle_type>, length_type> >
+    list_particles_within_radius(
+        const position_type& pos, const length_type& radius) const
+    {
+        return (*ps_).list_particles_within_radius(pos, radius);
+    }
+
+    std::vector<std::pair<std::pair<particle_id_type, particle_type>, length_type> >
+    list_particles_within_radius(
+        const position_type& pos, const length_type& radius,
+        const particle_id_type& ignore) const
+    {
+        return (*ps_).list_particles_within_radius(pos, radius, ignore);
+    }
+
+    std::vector<std::pair<std::pair<particle_id_type, particle_type>, length_type> >
+    list_particles_within_radius(
+        const position_type& pos, const length_type& radius,
+        const particle_id_type& ignore1, const particle_id_type& ignore2) const
+    {
+        return (*ps_).list_particles_within_radius(pos, radius, ignore1, ignore2);
     }
 
     /**
