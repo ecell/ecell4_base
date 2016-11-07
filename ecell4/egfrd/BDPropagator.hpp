@@ -339,7 +339,7 @@ private:
                             tx_.apply_boundary(
                                 divide(
                                     add(multiply(pp0.second.position(), s1.D),
-                                        multiply(tx_.cyclic_transpose(
+                                        multiply(tx_.periodic_transpose(
                                             pp1.second.position(),
                                             pp0.second.position()), s0.D)),
                                     (s0.D + s1.D))));

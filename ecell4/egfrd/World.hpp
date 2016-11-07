@@ -158,7 +158,7 @@ public:
     }
 
     template<typename Tval_>
-    static Tval_ cyclic_transpose(Tval_ const& p0, Tval_ const& p1, Tval_ const& world_size)
+    static Tval_ periodic_transpose(Tval_ const& p0, Tval_ const& p1, Tval_ const& world_size)
     {
         return p0;
     }
@@ -208,14 +208,14 @@ public:
         return ::apply_boundary(v, edge_lengths);
     }
 
-    static length_type cyclic_transpose(length_type const& p0, length_type const& p1, length_type const& world_size)
+    static length_type periodic_transpose(length_type const& p0, length_type const& p1, length_type const& world_size)
     {
-        return ::cyclic_transpose(p0, p1, world_size);
+        return ::periodic_transpose(p0, p1, world_size);
     }
 
-    static position_type cyclic_transpose(position_type const& p0, position_type const& p1, position_type const& edge_lengths)
+    static position_type periodic_transpose(position_type const& p0, position_type const& p1, position_type const& edge_lengths)
     {
-        return ::cyclic_transpose(p0, p1, edge_lengths);
+        return ::periodic_transpose(p0, p1, edge_lengths);
     }
 
     template<typename T1_, typename T2_, typename T3_>
@@ -252,13 +252,11 @@ public:
 template<typename Ttraits_>
 class World
     : public ParticleContainer<Ttraits_>
-    // : public ParticleContainerBase<World<Ttraits_>, Ttraits_>
 {
 public:
 
     typedef Ttraits_ traits_type;
     typedef ParticleContainer<Ttraits_> base_type;
-    // typedef ParticleContainerBase<World> base_type;
 
     typedef ParticleContainer<traits_type> particle_container_type;
     typedef typename traits_type::length_type length_type;
@@ -285,7 +283,6 @@ public:
     typedef sized_iterator_range<typename particle_matrix_type::const_iterator> particle_id_pair_range;
     typedef typename particle_matrix_type::matrix_sizes_type matrix_sizes_type;
     typedef ecell4::ParticleSpaceCellListImpl particle_space_type;
-    // typedef ParticleContainerUtils<Ttraits_> utils;
     typedef typename base_type::transaction_type transaction_type;
     typedef typename base_type::time_type time_type;
 
@@ -353,69 +350,15 @@ public:
             register_species(std::make_pair(pid, p));
         }
         return (*ps_).update_particle(pid, p);
-
-        // bool const exists = !((*ps_).update_particle(pid, p));
-        // if (exists && molecule_info_map_.find(p.species().serial()) == molecule_info_map_.end())
-        // {
-        //     register_species(std::make_pair(pid, p));
-        // }
     }
 
     virtual bool update_particle(particle_id_pair const& pid_particle_pair)
     {
         return update_particle(pid_particle_pair.first, pid_particle_pair.second);
-        // //XXX: This function might be slower than before
-        // //XXX: because both get_particle and update_particle search the given pid_particle_pair.
-        // //XXX: Futher, ParticleSpace also has particle_pool.
-        // if (has_particle(pid_particle_pair.first))
-        // {
-        //     const particle_id_pair prev = get_particle(pid_particle_pair.first);
-        //     if (prev.second.sid() != pid_particle_pair.second.sid())
-        //     {
-        //         particle_pool_[prev.second.sid()].erase(prev.first);
-
-        //         typename per_species_particle_id_set::iterator
-        //             j(particle_pool_.find(pid_particle_pair.second.sid()));
-        //         if (j == particle_pool_.end())
-        //         {
-        //             this->register_species(pid_particle_pair);
-        //             // this->register_species(pid_particle_pair.second.sid());
-        //             j = particle_pool_.find(pid_particle_pair.second.sid());
-        //         }
-        //         (*j).second.insert(pid_particle_pair.first);
-        //     }
-
-        //     (*ps_).update_particle(pid_particle_pair.first, pid_particle_pair.second);
-        //     return false;
-        // }
-
-        // const bool is_succeeded(
-        //     (*ps_).update_particle(pid_particle_pair.first, pid_particle_pair.second));
-        // BOOST_ASSERT(is_succeeded);
-        // typename per_species_particle_id_set::iterator
-        //     k(particle_pool_.find(pid_particle_pair.second.sid()));
-        // if (k == particle_pool_.end())
-        // {
-        //     this->register_species(pid_particle_pair);
-        //     // this->register_species(pid_particle_pair.second.sid());
-        //     k = particle_pool_.find(pid_particle_pair.second.sid());
-        // }
-        // (*k).second.insert(pid_particle_pair.first);
-        // return true;
     }
 
     virtual bool remove_particle(particle_id_type const& id)
     {
-        // bool found(false);
-        // particle_id_pair pp(get_particle(id, found));
-        // if (!found)
-        // {
-        //     return false;
-        // }
-        // particle_pool_[pp.second.sid()].erase(id);
-        // (*ps_).remove_particle(id);
-        // return true;
-
         if (!has_particle(id))
         {
             return false;
@@ -953,15 +896,15 @@ public:
         (*ps_).set_t(t);
     }
 
-    /**
-     * wrappers
-     */
-
-    virtual position_type cyclic_transpose(
+    virtual position_type periodic_transpose(
         position_type const& p0, position_type const& p1) const
     {
         return (*ps_).periodic_transpose(p0, p1);
     }
+
+    /**
+     * wrappers
+     */
 
     template<typename T1_>
     T1_ calculate_pair_CoM(
@@ -971,7 +914,7 @@ public:
     {
         typedef typename element_type_of<T1_>::type element_type;
 
-        const T1_ p2_trans(cyclic_transpose(p2, p1));
+        const T1_ p2_trans(periodic_transpose(p2, p1));
         const element_type D12(add(D1, D2));
         const element_type s(divide(D1, D12)), t(divide(D2, D12));
         const T1_ com(add(multiply(p1, t), multiply(p2_trans, s)));

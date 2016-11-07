@@ -2837,7 +2837,7 @@ protected:
 
         position_type iv(
                 subtract(domain.position(),
-                    (*base_type::world_).cyclic_transpose(
+                    (*base_type::world_).periodic_transpose(
                         possible_partner.position(),
                         domain.position())));
         length_type const r0(length(iv));

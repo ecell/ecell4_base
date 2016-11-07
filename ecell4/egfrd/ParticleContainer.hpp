@@ -97,7 +97,7 @@ public:
 
     virtual bool remove_particle(particle_id_type const& id) = 0;
 
-    virtual position_type cyclic_transpose(
+    virtual position_type periodic_transpose(
         position_type const& p0, position_type const& p1) const = 0;
 
     /**

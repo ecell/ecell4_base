@@ -206,14 +206,14 @@ public:
     //     return world_.apply_boundary(v);
     // }
 
-    virtual position_type cyclic_transpose(position_type const& p0, position_type const& p1) const
+    virtual position_type periodic_transpose(position_type const& p0, position_type const& p1) const
     {
-        return world_.cyclic_transpose(p0, p1);
+        return world_.periodic_transpose(p0, p1);
     }
 
-    // virtual length_type cyclic_transpose(length_type const& p0, length_type const& p1) const
+    // virtual length_type periodic_transpose(length_type const& p0, length_type const& p1) const
     // {
-    //     return world_.cyclic_transpose(p0, p1);
+    //     return world_.periodic_transpose(p0, p1);
     // }
 
     particle_id_pair_range get_particles_range() const
@@ -437,7 +437,7 @@ public:
                 i(shells_.begin()), e(shells_.end()); i != e; ++i)
         {
             spherical_shell_id_pair const& sp(*i);
-            position_type ppos(main_.world()->cyclic_transpose(sphere.position(), (sp).second.position()));
+            position_type ppos(main_.world()->periodic_transpose(sphere.position(), (sp).second.position()));
             if (distance(ppos, (sp).second.shape().position()) < (sp).second.shape().radius() - sphere.radius())
             {
                 return true;

@@ -51,7 +51,7 @@ inline T_ normalize(T_ const& p,
  * note that the returned transposed pos1 may not be within the cyclic boundary.
  */
 template<typename T_>
-inline T_ cyclic_transpose(T_ const& p0, T_ const& p1, T_ const& world_size, typename boost::enable_if<is_scalar<T_> >::type*)
+inline T_ periodic_transpose(T_ const& p0, T_ const& p1, T_ const& world_size, typename boost::enable_if<is_scalar<T_> >::type*)
 {
     const T_ diff(p1 - p0), half(world_size / 2);
     if (diff > half)
@@ -69,29 +69,29 @@ inline T_ cyclic_transpose(T_ const& p0, T_ const& p1, T_ const& world_size, typ
 }
 
 template<typename T_>
-inline T_ cyclic_transpose(T_ const& p0, T_ const& p1, typename element_type_of<T_>::type const& world_size, typename boost::enable_if<is_vector3<T_> >::type*)
+inline T_ periodic_transpose(T_ const& p0, T_ const& p1, typename element_type_of<T_>::type const& world_size, typename boost::enable_if<is_vector3<T_> >::type*)
 {
     T_ retval;
-    retval[0] = cyclic_transpose(p0[0], p1[0], world_size, (void*)0);
-    retval[1] = cyclic_transpose(p0[1], p1[1], world_size, (void*)0);
-    retval[2] = cyclic_transpose(p0[2], p1[2], world_size, (void*)0);
+    retval[0] = periodic_transpose(p0[0], p1[0], world_size, (void*)0);
+    retval[1] = periodic_transpose(p0[1], p1[1], world_size, (void*)0);
+    retval[2] = periodic_transpose(p0[2], p1[2], world_size, (void*)0);
     return retval;
 }
 
 template<typename T_>
-inline T_ cyclic_transpose(T_ const& p0, T_ const& p1, T_ const& edge_lengths, typename boost::enable_if<is_vector3<T_> >::type*)
+inline T_ periodic_transpose(T_ const& p0, T_ const& p1, T_ const& edge_lengths, typename boost::enable_if<is_vector3<T_> >::type*)
 {
     T_ retval;
-    retval[0] = cyclic_transpose(p0[0], p1[0], edge_lengths[0], (void*)0);
-    retval[1] = cyclic_transpose(p0[1], p1[1], edge_lengths[1], (void*)0);
-    retval[2] = cyclic_transpose(p0[2], p1[2], edge_lengths[2], (void*)0);
+    retval[0] = periodic_transpose(p0[0], p1[0], edge_lengths[0], (void*)0);
+    retval[1] = periodic_transpose(p0[1], p1[1], edge_lengths[1], (void*)0);
+    retval[2] = periodic_transpose(p0[2], p1[2], edge_lengths[2], (void*)0);
     return retval;
 }
 
 template<typename T1_, typename T2_>
-inline T1_ cyclic_transpose(T1_ const& p0, T1_ const& p1, T2_ const& world_size)
+inline T1_ periodic_transpose(T1_ const& p0, T1_ const& p1, T2_ const& world_size)
 {
-    return cyclic_transpose(p0, p1, world_size, (void*)0);
+    return periodic_transpose(p0, p1, world_size, (void*)0);
 }
 
 template<typename T_>
@@ -129,7 +129,7 @@ inline typename element_type_of<T1_>::type distance_cyclic(
                 is_vector3<T1_>,
                 is_vector3<T2_> > >::type* = 0)
 {
-    return distance(p1, cyclic_transpose(p2, p1, world_size));
+    return distance(p1, periodic_transpose(p2, p1, world_size));
 }
 
 template<typename T1_, typename T2_, typename T3_>
@@ -141,7 +141,7 @@ inline typename element_type_of<T1_>::type distance_cyclic(
                 is_vector3<T2_>,
                 is_vector3<T3_> > >::type* = 0)
 {
-    return distance(p1, cyclic_transpose(p2, p1, edge_lengths));
+    return distance(p1, periodic_transpose(p2, p1, edge_lengths));
 }
 
 template<typename T_>

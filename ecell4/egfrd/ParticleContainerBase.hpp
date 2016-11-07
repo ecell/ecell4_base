@@ -214,7 +214,7 @@
 //      * wrappers
 //      */
 // 
-//     virtual position_type cyclic_transpose(
+//     virtual position_type periodic_transpose(
 //         position_type const& p0, position_type const& p1) const
 //     {
 //         return (*ps_).periodic_transpose(p0, p1);
@@ -228,7 +228,7 @@
 //     {
 //         typedef typename element_type_of<T1_>::type element_type;
 // 
-//         const T1_ p2_trans(cyclic_transpose(p2, p1));
+//         const T1_ p2_trans(periodic_transpose(p2, p1));
 //         const element_type D12(add(D1, D2));
 //         const element_type s(divide(D1, D12)), t(divide(D2, D12));
 //         const T1_ com(add(multiply(p1, t), multiply(p2_trans, s)));

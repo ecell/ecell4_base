@@ -234,14 +234,14 @@ public:
     //     return pc_.apply_boundary(v);
     // }
 
-    virtual position_type cyclic_transpose(position_type const& p0, position_type const& p1) const
+    virtual position_type periodic_transpose(position_type const& p0, position_type const& p1) const
     {
-        return pc_.cyclic_transpose(p0, p1);
+        return pc_.periodic_transpose(p0, p1);
     }
 
-    // virtual length_type cyclic_transpose(length_type const& p0, length_type const& p1) const
+    // virtual length_type periodic_transpose(length_type const& p0, length_type const& p1) const
     // {
-    //     return pc_.cyclic_transpose(p0, p1);
+    //     return pc_.periodic_transpose(p0, p1);
     // }
 
     virtual ~TransactionImpl() {}
