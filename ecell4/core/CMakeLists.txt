@@ -4,6 +4,8 @@
 # SET(CPACK_DEBIAN_PACKAGE_MAINTAINER "Kozo Nishida <knishida@riken.jp>")
 # INCLUDE(CPack)
 
+set(ECELL4_VERSION ${PROJECT_VERSION})
+
 configure_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/config.h.in
     ${CMAKE_CURRENT_BINARY_DIR}/config.h)
