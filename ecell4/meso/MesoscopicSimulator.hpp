@@ -228,11 +228,11 @@ protected:
                 retval = this->draw(src);
 
             const ReactionRule& nextr = retval.first;
-            const coordinate_type& dst = retval.second;
+            // const coordinate_type& dst = retval.second;
             const ReactionRule::reactant_container_type& reactants(nextr.reactants());
             const ReactionRule::product_container_type& products(nextr.products());
 
-            assert(dst == src);
+            assert(retval.second == src);
 
             for (ReactionRule::product_container_type::const_iterator
                     it(products.begin()); it != products.end(); ++it)

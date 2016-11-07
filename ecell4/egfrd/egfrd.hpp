@@ -151,9 +151,8 @@ public:
 
 protected:
 
-    matrix_sizes_type matrix_sizes_;
     boost::shared_ptr<RandomNumberGenerator> rng_;
-
+    matrix_sizes_type matrix_sizes_;
     Real bd_dt_factor_;
     Integer dissociation_retry_moves_;
     Real user_max_shell_size_;
@@ -277,9 +276,8 @@ public:
 
 protected:
 
-    matrix_sizes_type matrix_sizes_;
     boost::shared_ptr<RandomNumberGenerator> rng_;
-
+    matrix_sizes_type matrix_sizes_;
     Real bd_dt_factor_;
     Integer dissociation_retry_moves_;
 };

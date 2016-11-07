@@ -111,9 +111,9 @@ public:
 
 protected:
 
+    boost::shared_ptr<RandomNumberGenerator> rng_;
     Integer3 matrix_sizes_;
     Real subvolume_length_;
-    boost::shared_ptr<RandomNumberGenerator> rng_;
 };
 
 } // meso
