@@ -4,7 +4,8 @@
 #include <cmath>
 #include <gsl/gsl_pow_int.h>
 
-#include "config.h"
+#include <ecell4/core/config.h>
+
 #include "types.hpp"
 
 #include <sys/types.h>

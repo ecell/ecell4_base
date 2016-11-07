@@ -18,10 +18,12 @@ install:
   # install hdf5
   - mkdir hdf5lib
   - cd hdf5lib
-  - if "%PYTHON_VERSION%" == "2.7.11" curl -O http://repo.continuum.io/pkgs/free/win-32/hdf5-1.8.16-vc9_0.tar.bz2
+  - if "%PYTHON_VERSION%" == "2.7.11" curl -LvkO https://anaconda.org/anaconda/hdf5/1.8.16/download/win-32/hdf5-1.8.16-vc9_0.tar.bz2
+  # - if "%PYTHON_VERSION%" == "2.7.11" curl -O http://repo.continuum.io/pkgs/free/win-32/hdf5-1.8.16-vc9_0.tar.bz2
   - if "%PYTHON_VERSION%" == "2.7.11" 7z x -y hdf5-1.8.16-vc9_0.tar.bz2
   - if "%PYTHON_VERSION%" == "2.7.11" 7z x -y hdf5-1.8.16-vc9_0.tar
-  - if "%PYTHON_VERSION%" == "3.5.1" curl -O http://repo.continuum.io/pkgs/free/win-32/hdf5-1.8.16-vc14_0.tar.bz2
+  - if "%PYTHON_VERSION%" == "3.5.1" curl -LvkO https://anaconda.org/anaconda/hdf5/1.8.16/download/win-32/hdf5-1.8.16-vc14_0.tar.bz2
+  # - if "%PYTHON_VERSION%" == "3.5.1" curl -O http://repo.continuum.io/pkgs/free/win-32/hdf5-1.8.16-vc14_0.tar.bz2
   - if "%PYTHON_VERSION%" == "3.5.1" 7z x -y hdf5-1.8.16-vc14_0.tar.bz2
   - if "%PYTHON_VERSION%" == "3.5.1" 7z x -y hdf5-1.8.16-vc14_0.tar
   - mkdir "C:/Program Files (x86)/HDF_Group/HDF5/1.8.16"
@@ -54,10 +56,10 @@ install:
   # - if "%PYTHON_VERSION%" == "3.5.1" move cmlwinpy35.txt CMakeLists.txt
   # - cd ../../..
 
-  - if "%PYTHON_VERSION%" == "2.7.11" cmake -G "Visual Studio 9 2008" -D CMAKE_CXX_FLAGS_RELEASE="/MT" -D CMAKE_CXX_FLAGS_DEBUG="/MTd" -DBOOST_REGEX_LIBRARIES=C:/Libraries/boost/libs -DBoost_INCLUDE_DIR=C:/Libraries/boost -DGSL_INCLUDE_DIR=C:/projects/ecell4/gsl/include -DGSL_CBLAS_LIBRARIES=C:/projects/ecell4/gsl/lib -DGSL_LIBRARIES=C:/projects/ecell4/gsl/lib .
+  - if "%PYTHON_VERSION%" == "2.7.11" cmake -G "Visual Studio 9 2008" -D CMAKE_CXX_FLAGS_RELEASE="/MT" -D CMAKE_CXX_FLAGS_DEBUG="/MTd" -DBOOST_REGEX_LIBRARIES=C:/Libraries/boost/libs -DBoost_INCLUDE_DIR=C:/Libraries/boost -DGSL_INCLUDE_DIR=C:/projects/ecell4/gsl/include -DGSL_CBLAS_LIBRARIES=C:/projects/ecell4/gsl/lib -DGSL_LIBRARIES=C:/projects/ecell4/gsl/lib -DNO_SHARED:BOOL=1 .
   # - if "%PYTHON_VERSION%" == "2.7.11" cmake --build . --target BesselTables
 
-  - if "%PYTHON_VERSION%" == "3.5.1" cmake -G "Visual Studio 14 2015" -D CMAKE_CXX_FLAGS_RELEASE="/MD" -D CMAKE_CXX_FLAGS_DEBUG="/MDd" -D CMAKE_C_FLAGS_DEBUG="/MDd" -DBoost_INCLUDE_DIR=C:/Libraries/boost -DGSL_INCLUDE_DIR=C:/projects/ecell4/gsl -DGSL_CBLAS_LIBRARIES=C:/projects/ecell4/gsl/Release -DGSL_LIBRARIES=C:/projects/ecell4/gsl/Release .
+  - if "%PYTHON_VERSION%" == "3.5.1" cmake -G "Visual Studio 14 2015" -D CMAKE_CXX_FLAGS_RELEASE="/MD" -D CMAKE_CXX_FLAGS_DEBUG="/MDd" -D CMAKE_C_FLAGS_DEBUG="/MDd" -DBoost_INCLUDE_DIR=C:/Libraries/boost -DGSL_INCLUDE_DIR=C:/projects/ecell4/gsl -DGSL_CBLAS_LIBRARIES=C:/projects/ecell4/gsl/Release -DGSL_LIBRARIES=C:/projects/ecell4/gsl/Release -DNO_SHARED:BOOL=1 .
 
   # - if "%PYTHON_VERSION%" == "3.5.1" cmake --build . --target BesselTables --config Release
 
@@ -95,6 +97,7 @@ build: false
 branches:
   only:
     - master
+    - cmake
 
 artifacts:
   # bdist_wheel puts your built wheel in the dist directory

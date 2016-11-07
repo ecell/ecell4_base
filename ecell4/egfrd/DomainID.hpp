@@ -2,15 +2,9 @@
 #define DOMAIN_ID_HPP
 
 #include <ecell4/core/config.h>
+#include <ecell4/core/hash.hpp>
 
 #include <ostream>
-#if defined(HAVE_TR1_FUNCTIONAL)
-#include <tr1/functional>
-#elif defined(HAVE_STD_HASH)
-#include <functional>
-#elif defined(HAVE_BOOST_FUNCTIONAL_HASH_HPP)
-#include <boost/functional/hash.hpp>
-#endif
 // #include "Identifier.hpp"
 #include <ecell4/core/Identifier.hpp>
 
@@ -22,13 +16,7 @@ struct DomainID: public ecell4::Identifier<DomainID, unsigned long long, int>
         : base_type(value) {}
 };
 
-#if defined(HAVE_TR1_FUNCTIONAL)
-namespace std { namespace tr1 {
-#elif defined(HAVE_STD_HASH)
-namespace std {
-#elif defined(HAVE_BOOST_FUNCTIONAL_HASH_HPP)
-namespace boost {
-#endif
+ECELL4_DEFINE_HASH_BEGIN()
 
 template<>
 struct hash<DomainID>
@@ -39,13 +27,7 @@ struct hash<DomainID>
     }
 };
 
-#if defined(HAVE_TR1_FUNCTIONAL)
-} } // namespace std::tr1
-#elif defined(HAVE_STD_HASH)
-} // namespace std
-#elif defined(HAVE_BOOST_FUNCTIONAL_HASH_HPP)
-} // namespace boost
-#endif
+ECELL4_DEFINE_HASH_END()
 
 template<typename Tstrm_>
 inline std::basic_ostream<Tstrm_>& operator<<(std::basic_ostream<Tstrm_>& strm,

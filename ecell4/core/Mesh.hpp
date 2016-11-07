@@ -1,7 +1,7 @@
 #ifndef __ECELL4_MESH_HPP
 #define __ECELL4_MESH_HPP
 
-#include "config.h"
+#include <ecell4/core/config.h>
 #include "Shape.hpp"
 
 #ifdef HAVE_VTK

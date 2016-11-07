@@ -7,12 +7,14 @@ E-Cell System version 4
 [![Documentation Status](https://readthedocs.org/projects/ecell4/badge/?version=latest)](http://ecell4.readthedocs.org/en/latest/?badge=latest)
 [![PyPI](https://img.shields.io/pypi/v/ecell.svg)](https://pypi.python.org/pypi/ecell)
 [![License: GPL v2](https://img.shields.io/badge/license-GPL%20v2-blue.svg)](https://github.com/ecell/ecell4/blob/master/licenses/LICENSE)
-[![Slack Status](https://ecell-project.herokuapp.com/badge.svg)](https://ecell-project.herokuapp.com/)
+[![Slack Status](https://img.shields.io/badge/chat-on%20slack-50baa6.svg)](https://ecell-project.herokuapp.com/)
+<!---[![Slack Status](https://ecell-project.herokuapp.com/badge.svg)](https://ecell-project.herokuapp.com/)--->
 
 What is E-Cell System?
 ----------------------
 
 E-Cell System is, a software platform for modeling, simulation and analysis of complex, heterogeneous and multi-scale systems like the cell.
+E-Cell has multi-algorithm, multi-timescale and multi-spatial-representation as its central feature.
 
 Installation and usage
 ======================
@@ -36,7 +38,7 @@ Installation
 ### Requirements
 
 #### Minimum requirements
-- Python or **32bit** Miniconda for Windows (2.7 and 3.4, 3.5 both major versions are supported [3.4 is only supported on Linux])
+- Python (2.7 and 3.4, 3.5 both major versions are supported [3.4 is only supported on Linux])
 - pip (8.1 and later)
 - hdf5 (required only on **Windows**. works only for **version 1.8.16**)
 
@@ -49,10 +51,9 @@ And some E-Cell4 functions (for visualization, datastore) optionally depend on
 
 ### Windows
 
-Please use **32bit** [Miniconda](http://conda.pydata.org/miniconda.html), even if you use 64bit Windows.
-We have NOT supported 64bit Python yet.
+Please use [Miniconda](http://conda.pydata.org/miniconda.html), Note that we does not support 64bit for Python2.7.
 
-- Install **32bit** Miniconda for Windows from http://conda.pydata.org/miniconda.html
+- Install Miniconda for Windows from http://conda.pydata.org/miniconda.html
 - Run the follwing commands on command prompt
 - (**Important**) E-Cell4 for Windows works only for hdf5 version **1.8.16**. Please check the version of hdf5, even if you installed hdf5 before with conda.
 
@@ -118,8 +119,8 @@ Python 2.7.6 (default, Mar 22 2014, 22:59:56)
 Type "help", "copyright", "credits" or "license" for more information.
 >>> from ecell4.core import *
 >>> sp = Species("B.A.C")
->>> print sp.serial()
-A.B.C
+>>> print(sp.serial())
+B.A.C
 >>>
 ```
 

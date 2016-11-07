@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.6)
 # cmake_minimum_required(VERSION 3.0)
 project(ecell4)
 set(PROJECT_VERSION 4.0.4)
@@ -63,7 +63,7 @@ int main() { std::hash<int>(); return 0; }"
     HAVE_STD_HASH)
 check_include_file_cxx("boost/functional/hash.hpp" HAVE_BOOST_FUNCTIONAL_HASH_HPP)
 
-if (NOT NO_SHARED)
-  add_subdirectory(ecell4)
-endif()
+include_directories(${CMAKE_BINARY_DIR})
+
+add_subdirectory(ecell4)
 add_subdirectory(python)
