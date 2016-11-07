@@ -612,10 +612,9 @@ protected:
     bool resolve_boundary_;
     Real threshold_;
 
+    std::vector<ParticleID> pids_;
     std::vector<Real3> prev_positions_;
     std::vector<Real3> strides_;
-
-    std::vector<ParticleID> pids_;
     std::vector<std::vector<Real3> > trajectories_;
     std::vector<Real> t_;
 };
