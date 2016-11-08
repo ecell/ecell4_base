@@ -2163,3 +2163,11 @@ def plot_world_with_plotly(world, species_list=None, max_count=1000):
     layout = go.Layout(margin=dict(l=0, r=0, b=0, t=0))
     fig = go.Figure(data=data, layout=layout)
     plotly.offline.iplot(fig)
+
+def display_pdb(entity, width=400, height=400):
+    from IPython.display import display, IFrame
+    import ecell4.datasource.pdb as pdb
+    entity_id = pdb.PDBDataSource.parse_entity(entity)
+    if entity is None:
+        raise ValueError('An invalid entity [{}] was given.'.format(repr(entity)))
+    display(IFrame("http://gjbekker.github.io/molmil/#molmil.loadPDB('{}');".format(entity_id), width, height))
