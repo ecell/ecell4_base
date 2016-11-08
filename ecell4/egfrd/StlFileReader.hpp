@@ -7,6 +7,7 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include "utils/array_traits.hpp"
 
 template<typename coordT>
 struct StlTriangle
@@ -163,7 +164,7 @@ StlFileReader<coordT>::read_ascii_triangle(std::ifstream& ifs) const
 template<typename coordT>
 coordT StlFileReader<coordT>::read_ascii_vertex(const std::string& line) const
 {
-    typedef typename coordT::value_type valueT;
+    typedef typename element_type_of<coordT>::type valueT;
     std::istringstream iss(line);
     std::string prefix;
     iss >> prefix;
@@ -176,7 +177,7 @@ coordT StlFileReader<coordT>::read_ascii_vertex(const std::string& line) const
 template<typename coordT>
 coordT StlFileReader<coordT>::read_ascii_normal(const std::string& line) const
 {
-    typedef typename coordT::value_type valueT;
+    typedef typename element_type_of<coordT>::type valueT;
     std::istringstream iss(line);
     std::string facet, normal;
     iss >> facet >> normal;
