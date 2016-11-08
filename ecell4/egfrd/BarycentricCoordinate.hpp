@@ -1,6 +1,5 @@
 #ifndef GFRD_POLYGON_BARYCENTRIC
 #define GFRD_POLYGON_BARYCENTRIC
-#include "Vector3Operation.hpp"
 #include <boost/array.hpp>
 
 template<typename realT>
@@ -34,7 +33,7 @@ triangle_area_2D(const realT x1, const realT y1, const realT x2, const realT y2,
 }
 
 template<typename coordT>
-Barycentric<typename scalar_type_helper<coordT>::type>
+Barycentric<typename element_type_of<coordT>::type>
 make_barycentric(const coordT& pos, const boost::array<coordT, 3>& tri)
 {
     // the implementation of this function is based on
@@ -42,7 +41,7 @@ make_barycentric(const coordT& pos, const boost::array<coordT, 3>& tri)
     // published by Morgan Kaufmann Publishers, (c) 2005 Elsevier Inc.
     // p. 51
 
-    typedef typename scalar_type_helper<coordT>::type scalarT;
+    typedef typename element_type_of<coordT>::type scalarT;
     const coordT& a = tri.at(0);
     const coordT& b = tri.at(1);
     const coordT& c = tri.at(2);
@@ -79,7 +78,7 @@ make_barycentric(const coordT& pos, const boost::array<coordT, 3>& tri)
 
 template<typename coordT>
 inline coordT make_absolute(
-    const Barycentric<typename scalar_type_helper<coordT>::type>& barycentric,
+    const Barycentric<typename element_type_of<coordT>::type>& barycentric,
     const boost::array<coordT, 3>& triangle)
 {
     return triangle.at(0) * barycentric.coordinate[0] +

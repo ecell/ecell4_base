@@ -1,7 +1,7 @@
 #ifndef GFRD_POLYGON_TRIANGLE_OPERATION
 #define GFRD_POLYGON_TRIANGLE_OPERATION
-#include "Vector3Operation.hpp"
 #include "BarycentricCoordinate.hpp"
+#include "utils/array_traits.hpp"
 #include <boost/array.hpp>
 #include <algorithm>
 #include <cassert>
@@ -17,7 +17,7 @@ inline coordT centroid(const boost::array<coordT, 3>& vertices)
 template<typename coordT>
 inline coordT incenter(const boost::array<coordT, 3>& vertices)
 {
-    typedef typename scalar_type_helper<coordT>::type valueT;
+    typedef typename element_type_of<coordT>::type valueT;
     const valueT a = length(vertices[2] - vertices[1]);
     const valueT b = length(vertices[0] - vertices[2]);
     const valueT c = length(vertices[1] - vertices[0]);
@@ -29,7 +29,7 @@ template<typename coordT>
 inline coordT incenter(const boost::array<coordT, 3>& vertices,
                        const boost::array<coordT, 3>& edges)
 {
-    typedef typename scalar_type_helper<coordT>::type valueT;
+    typedef typename element_type_of<coordT>::type valueT;
     const valueT a = length(edges[1]);
     const valueT b = length(edges[2]);
     const valueT c = length(edges[0]);
@@ -39,9 +39,9 @@ inline coordT incenter(const boost::array<coordT, 3>& vertices,
 
 template<typename coordT>
 inline coordT incenter(const boost::array<coordT, 3>& vertices,
-    const boost::array<typename scalar_type_helper<coordT>::type, 3>& length_of_edge)
+    const boost::array<typename element_type_of<coordT>::type, 3>& length_of_edge)
 {
-    typedef typename scalar_type_helper<coordT>::type valueT;
+    typedef typename element_type_of<coordT>::type valueT;
     const valueT a = length_of_edge[1];
     const valueT b = length_of_edge[2];
     const valueT c = length_of_edge[0];
@@ -50,11 +50,16 @@ inline coordT incenter(const boost::array<coordT, 3>& vertices,
 }
 
 template<typename coordT>
-inline std::size_t match_edge(const coordT& vec,
-                              const boost::array<coordT, 3>& edges)
+inline std::size_t
+match_edge(const coordT& vec, const boost::array<coordT, 3>& edges,
+           const typename element_type_of<coordT>::type tol = 1e-10)
 {
     for(std::size_t i=0; i<3; ++i)
-        if(is_same_vec(vec, edges[i])) return i;
+    {
+        if((std::abs(vec[0] - edges[i][0]) < tol) &&
+           (std::abs(vec[1] - edges[i][1]) < tol) &&
+           (std::abs(vec[2] - edges[i][2]) < tol)) return i;
+    }
     throw std::invalid_argument("not match any edge");
 }
 
@@ -63,7 +68,7 @@ coordT
 project_to_plane(const coordT& pos, const boost::array<coordT, 3>& vertices,
                  const coordT& normal)
 {
-    typedef typename scalar_type_helper<coordT>::type valueT;
+    typedef typename element_type_of<coordT>::type valueT;
     assert(std::abs(length(normal) - 1.0) < 1e-10);
     const valueT distance = dot_product(normal, pos - vertices.front());
     return pos - (normal * distance);
@@ -73,7 +78,7 @@ template<typename coordT>
 coordT
 closest_point(const coordT& pos, const boost::array<coordT, 3>& vertices)
 {
-    typedef typename scalar_type_helper<coordT>::type valueT;
+    typedef typename element_type_of<coordT>::type valueT;
     // this implementation is from Real-Time Collision Detection by Christer Ericson,
     // published by Morgan Kaufmann Publishers, (c) 2005 Elsevier Inc.
     // pp.141-142
@@ -130,8 +135,8 @@ closest_point(const coordT& pos, const boost::array<coordT, 3>& vertices)
 }
 
 template<typename coordT>
-std::pair<typename scalar_type_helper<coordT>::type, // distance
-          typename scalar_type_helper<coordT>::type> // r of circle in triangle
+std::pair<typename element_type_of<coordT>::type, // distance
+          typename element_type_of<coordT>::type> // r of circle in triangle
 distance(const coordT& pos, const boost::array<coordT, 3>& vertices)
 {
     return std::make_pair(length(closest_point(pos, vertices) - pos), 0.);
@@ -142,7 +147,7 @@ std::pair<bool, coordT> // pair of (whether pierce), pierce point
 is_pierce(const coordT& begin, const coordT& end,
           const boost::array<coordT, 3>& vertices)
 {
-    typedef typename scalar_type_helper<coordT>::type valueT;
+    typedef typename element_type_of<coordT>::type valueT;
     // this implementation is from Real-Time Collision Detection by Christer Ericson,
     // published by Morgan Kaufmann Publishers, (c) 2005 Elsevier Inc.
     // pp.190-194

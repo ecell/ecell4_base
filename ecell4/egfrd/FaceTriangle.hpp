@@ -1,5 +1,6 @@
 #ifndef GFRD_POLYGON_FACE_TRIANGLE
 #define GFRD_POLYGON_FACE_TRIANGLE
+#include "geometry.hpp"
 #include "BarycentricCoordinate.hpp"
 #include "TriangleOperation.hpp"
 #include <boost/array.hpp>
@@ -10,7 +11,7 @@ struct FaceTriangle
   public:
     typedef coordT                                   position_type;
     typedef position_type                            vector_type;
-    typedef typename scalar_type_helper<coordT>::type length_type;
+    typedef typename element_type_of<coordT>::type length_type;
     typedef std::size_t                              size_type;
     typedef size_type                                index_type;
     typedef boost::array<length_type, 3>             length_container_type;
@@ -100,8 +101,8 @@ inline std::size_t match_edge(const coordT& vec, const FaceTriangle<coordT>& fac
 }
 
 template<typename coordT>
-std::pair<typename scalar_type_helper<coordT>::type, // distance
-          typename scalar_type_helper<coordT>::type> // r of circle in triangle
+std::pair<typename element_type_of<coordT>::type, // distance
+          typename element_type_of<coordT>::type> // r of circle in triangle
 distance(const coordT& pos, const FaceTriangle<coordT>& face)
 {
     const coordT line = pos - face.vertex_at(0);
@@ -147,14 +148,14 @@ coordT reflect_plane(const coordT& begin, const coordT& end,
 }
 
 template<typename coordT>
-Barycentric<typename scalar_type_helper<coordT>::type>
+Barycentric<typename element_type_of<coordT>::type>
 make_barycentric(const coordT& pos, const FaceTriangle<coordT>& face)
 {
     return make_barycentric(pos, face.vertices());
 }
 template<typename coordT>
 coordT
-make_absolute(const Barycentric<typename scalar_type_helper<coordT>::type>& bary,
+make_absolute(const Barycentric<typename element_type_of<coordT>::type>& bary,
               const FaceTriangle<coordT>& face)
 {
     return make_absolute(bary, face.vertices());
