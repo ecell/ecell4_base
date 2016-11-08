@@ -96,7 +96,7 @@ Polygon<coordT>::apply_reflection(
 
     bool collide_face = false;
     coordinate_type next_begin = end;
-    face_id_type first_collide_face_idx = make_nonsence_id;
+    face_id_type first_collide_face_idx = make_nonsence_id();
     Real         first_collide_distance = length(displacement);
 
     for(typename std::vector<face_id_type>::const_iterator
