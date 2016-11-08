@@ -7,7 +7,7 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
-#include "utils/array_traits.hpp"
+#include "Real3Type.hpp"
 
 template<typename coordT>
 struct StlTriangle

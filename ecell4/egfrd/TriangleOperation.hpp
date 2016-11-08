@@ -1,6 +1,6 @@
 #ifndef GFRD_POLYGON_TRIANGLE_OPERATION
 #define GFRD_POLYGON_TRIANGLE_OPERATION
-#include "utils/array_traits.hpp"
+#include "Real3Type.hpp"
 #include <boost/array.hpp>
 #include <algorithm>
 #include <cassert>
