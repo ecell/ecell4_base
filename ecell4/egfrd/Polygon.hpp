@@ -105,7 +105,7 @@ Polygon<coordT>::apply_reflection(
         if(*iter == ignore_face) continue;
 
         const std::pair<bool, coordinate_type> test_result =
-            is_pierce(pos, end, faces.at(*iter));
+            test_intersect_segment_triangle(pos, end, faces.at(*iter));
 
         if(test_result.first)
         {
@@ -145,7 +145,7 @@ Polygon<coordT>::apply_reflection(
 {
     const coordinate_type end = pos + displacement;
     const std::pair<bool, coordinate_type> test_result =
-        is_pierce(pos, end, faces.at(intruder_face));
+        test_intersect_segment_triangle(pos, end, faces.at(intruder_face));
 
     const coordinate_type next_end =
         reflect_plane(pos, end, faces.at(intruder_face));
@@ -175,7 +175,7 @@ Polygon<coordT>::intersect_ray(
         if(*iter == ignore_face) continue;
 
         const std::pair<bool, coordinate_type> test_result =
-            is_pierce(pos, end, this->faces.at(*iter));
+            test_intersect_segment_triangle(pos, end, this->faces.at(*iter));
 
         if(test_result.first)
         {

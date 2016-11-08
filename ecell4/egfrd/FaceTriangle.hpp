@@ -122,13 +122,13 @@ distance(const coordT& pos, const FaceTriangle<coordT>& face)
 
 template<typename coordT>
 std::pair<bool, coordT>
-is_pierce(const coordT& begin, const coordT& end,
+test_intersect_segment_triangle(const coordT& begin, const coordT& end,
           const FaceTriangle<coordT>& face)
 {
     const coordT line = end - begin;
     if(dot_product(line, face.normal()) < 0.0)
     {
-        return is_pierce(begin, end, face.vertices());
+        return test_intersect_segment_triangle(begin, end, face.vertices());
     }
     else
     {
@@ -136,7 +136,7 @@ is_pierce(const coordT& begin, const coordT& end,
         rev[0] = face.vertex_at(2);
         rev[1] = face.vertex_at(1);
         rev[2] = face.vertex_at(0);
-        return is_pierce(begin, end, rev);
+        return test_intersect_segment_triangle(begin, end, rev);
     }
 }
 

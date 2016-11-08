@@ -143,9 +143,10 @@ distance(const coordT& pos, const boost::array<coordT, 3>& vertices)
 }
 
 template<typename coordT>
-std::pair<bool, coordT> // pair of (whether pierce), pierce point
-is_pierce(const coordT& begin, const coordT& end,
-          const boost::array<coordT, 3>& vertices)
+std::pair<bool, coordT>
+test_intersect_segment_triangle(
+        const coordT& begin, const coordT& end,
+        const boost::array<coordT, 3>& vertices)
 {
     typedef typename element_type_of<coordT>::type valueT;
     // this implementation is from Real-Time Collision Detection by Christer Ericson,
