@@ -123,10 +123,24 @@ def ensemble_simulations(
     is_netfree=False, without_reset=False,
     return_type='matplotlib', opt_args=(), opt_kwargs={},
     errorbar=True,
-    n=1, nproc=1, method=None, environ={}):
+    n=1, nproc=1, method=None, environ={},
+    **kwargs):
     """
     observers=(), progressbar=0, rndseed=None,
     """
+    for key, value in kwargs.items():
+        if key == 'r':
+            return_type = value
+        elif key == 'v':
+            volume = value
+        elif key == 's':
+            solver = value
+        elif key == 'm':
+            model = value
+        else:
+            raise ValueError(
+                "An unknown keyword argument was given [{}={}]".format(key, value))
+
     # if not isinstance(solver, str):
     #     raise ValueError('Argument "solver" must be a string.')
 
@@ -195,7 +209,7 @@ def ensemble_simulations(
         def error(self):
             return self.__error
 
-    if return_type == "matplotlib":
+    if return_type in ("matplotlib", 'm'):
         if isinstance(opt_args, (list, tuple)):
             ecell4.util.viz.plot_number_observer_with_matplotlib(
                 DummyObserver(retval[0], species_list, errorbar), *opt_args, **opt_kwargs)
@@ -206,7 +220,7 @@ def ensemble_simulations(
         else:
             raise ValueError('opt_args [{}] must be list or dict.'.format(
                 repr(opt_args)))
-    elif return_type == "nyaplot":
+    elif return_type in ("nyaplot", 'n'):
         if isinstance(opt_args, (list, tuple)):
             ecell4.util.viz.plot_number_observer_with_nya(
                 DummyObserver(retval[0], species_list, errorbar), *opt_args, **opt_kwargs)
@@ -217,9 +231,9 @@ def ensemble_simulations(
         else:
             raise ValueError('opt_args [{}] must be list or dict.'.format(
                 repr(opt_args)))
-    elif return_type == "observer":
+    elif return_type in ("observer", 'o'):
         return DummyObserver(retval[0], species_list, errorbar)
-    elif return_type == "dataframe":
+    elif return_type in ("dataframe", 'd'):
         import pandas
         return [
             pandas.concat([
