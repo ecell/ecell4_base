@@ -1,7 +1,6 @@
 #ifndef GFRD_POLYGON_FACE_TRIANGLE
 #define GFRD_POLYGON_FACE_TRIANGLE
 #include "geometry.hpp"
-#include "BarycentricCoordinate.hpp"
 #include "TriangleOperation.hpp"
 #include <boost/array.hpp>
 
@@ -145,20 +144,6 @@ coordT reflect_plane(const coordT& begin, const coordT& end,
                      const FaceTriangle<coordT>& face)
 {
     return reflect_plane(begin, end, face.normal(), face.vertex_at(0));
-}
-
-template<typename coordT>
-Barycentric<typename element_type_of<coordT>::type>
-make_barycentric(const coordT& pos, const FaceTriangle<coordT>& face)
-{
-    return make_barycentric(pos, face.vertices());
-}
-template<typename coordT>
-coordT
-make_absolute(const Barycentric<typename element_type_of<coordT>::type>& bary,
-              const FaceTriangle<coordT>& face)
-{
-    return make_absolute(bary, face.vertices());
 }
 
 #endif /* GFRD_POLYGON_FACE_TRIANGLE */
