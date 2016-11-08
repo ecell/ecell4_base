@@ -1,6 +1,5 @@
 #ifndef GFRD_POLYGON_FACE_TRIANGLE
 #define GFRD_POLYGON_FACE_TRIANGLE
-#include "ParametricPosition.hpp"
 #include "BarycentricCoordinate.hpp"
 #include "TriangleOperation.hpp"
 #include <boost/array.hpp>
@@ -98,33 +97,6 @@ template<typename coordT>
 inline std::size_t match_edge(const coordT& vec, const FaceTriangle<coordT>& face)
 {
     return match_edge(vec, face.edges());
-}
-
-// for parametric representation
-
-template<typename coordT>
-ParametricPosition<typename scalar_type_helper<coordT>::type>
-to_parametric(const coordT& pos, const FaceTriangle<coordT>& face,
-        const typename scalar_type_helper<coordT>::type tol = 1e-12)
-{
-    return to_parametric(pos, face.para_a(), face.para_b(), tol);
-}
-
-// relative to face.origin()
-template<typename coordT>
-inline coordT
-to_absolute(const ParametricPosition<typename scalar_type_helper<coordT>::type>& para,
-            const FaceTriangle<coordT>& face)
-{
-    return to_absolute(para, face.para_a(), face.para_b());
-}
-
-template<typename coordT>
-ParametricPosition<typename scalar_type_helper<coordT>::type>
-projection(const coordT& pos, const FaceTriangle<coordT>& face,
-           const typename scalar_type_helper<coordT>::type tol = 1e-12)
-{
-    return projection(pos, face.vertices(), face.normal(), tol);
 }
 
 template<typename coordT>
