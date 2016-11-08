@@ -188,4 +188,36 @@ inline T1 rotate_vector(T1 const& v, T2 const& axis, double angle)
     return multiply(mat, v);
 }
 
+// reflect 
+template<typename coordT>
+coordT reflect_plane(const coordT& begin, const coordT& end,
+                     const coordT& normal, const coordT& plane)
+{
+    typedef typename element_type_of<coordT>::type valueT;
+//     assert(std::abs(length(normal) - 1.0) < 1e-12);
+    const valueT norm_b = dot_product((begin - plane), normal);
+    const valueT norm_e = dot_product((end - plane), normal);
+    if(norm_b == 0.0)
+    {
+        throw std::invalid_argument("reflection: begin is on the plane");
+    }
+    else if(norm_b * norm_e > 0.0 && std::abs(norm_e) < 1e-10)
+    {
+        return (begin * 1e-10) + (end * (1.0 - 1e-10));
+    }
+    else if(norm_b * norm_e < 0.0 && std::abs(norm_e) < 1e-10)
+    {
+        return begin * 1e-10 + (end - (normal * (norm_e * 2.0))) * (1. - 1e-10);
+    }
+    else if(norm_b * norm_e > 0.0)
+    {
+        return end;
+    }
+    else
+    {
+        return end - (normal * (norm_e * 2.0));
+    }
+}
+
+
 #endif /* GEOMETRY_HPP */
