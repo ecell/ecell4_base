@@ -11,6 +11,7 @@
 #include "../FaceTriangle.hpp"
 #include "../BarycentricCoordinate.hpp"
 #include "../geometry.hpp"
+#include "../Real3Type.hpp"
 #include <ecell4/core/RandomNumberGenerator.hpp>
 #include <ecell4/core/Real3.hpp>
 #include <cmath>
@@ -94,7 +95,8 @@ BOOST_AUTO_TEST_CASE(test_bare_is_pierce)
         // end
 
         {
-        const std::pair<bool, ecell4::Real3> result = is_pierce(begin, end, tri);
+        const std::pair<bool, ecell4::Real3> result =
+            test_intersect_segment_triangle(begin, end, tri);
         BOOST_CHECK(result.first);
         BOOST_CHECK_CLOSE_FRACTION(result.second[0], through[0], 1e-12);
         BOOST_CHECK_CLOSE_FRACTION(result.second[1], through[1], 1e-12);
@@ -103,7 +105,8 @@ BOOST_AUTO_TEST_CASE(test_bare_is_pierce)
 
         {
         const FaceTriangle<ecell4::Real3> rv(rev);
-        const std::pair<bool, ecell4::Real3> result = is_pierce(begin, end, rv);
+        const std::pair<bool, ecell4::Real3> result =
+            test_intersect_segment_triangle(begin, end, rev);
         BOOST_CHECK(result.first);
         BOOST_CHECK_CLOSE_FRACTION(result.second[0], through[0], 1e-12);
         BOOST_CHECK_CLOSE_FRACTION(result.second[1], through[1], 1e-12);

@@ -7,7 +7,7 @@
 #   include <boost/test/included/unit_test.hpp>
 #endif
 
-#include "../Vector3Operation.hpp"
+#include "../geometry.hpp"
 #include <ecell4/core/RandomNumberGenerator.hpp>
 #include <ecell4/core/Real3.hpp>
 
