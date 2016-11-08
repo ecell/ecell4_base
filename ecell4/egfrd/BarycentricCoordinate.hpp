@@ -1,5 +1,6 @@
 #ifndef GFRD_POLYGON_BARYCENTRIC
 #define GFRD_POLYGON_BARYCENTRIC
+#include "utils/array_traits.hpp"
 #include <boost/array.hpp>
 
 template<typename realT>
