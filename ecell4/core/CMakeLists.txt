@@ -19,8 +19,8 @@ set(CPP_FILES
     LatticeSpace.cpp Model.cpp NetworkModel.cpp NetfreeModel.cpp ParticleSpace.cpp
     Real3.cpp RandomNumberGenerator.cpp Species.cpp UnitSpecies.cpp
     Sphere.cpp Cylinder.cpp SubvolumeSpace.cpp ParticleSpaceCellListImpl.cpp
-    LatticeSpaceCellListImpl.cpp collision.cpp Rod.cpp AABB.cpp PlanarSurface.cpp
-    Mesh.cpp observers.cpp extras.cpp)
+    LatticeSpaceCellListImpl.cpp collision.cpp Rod.cpp AABB.cpp AABBSurface.cpp
+    PlanarSurface.cpp Mesh.cpp observers.cpp extras.cpp)
 
 set(HPP_FILES
     CompartmentSpace.hpp DynamicPriorityQueue.hpp LatticeSpace.hpp
@@ -33,7 +33,7 @@ set(HPP_FILES
     Context.hpp Integer3.hpp Journal.hpp Model.hpp NetworkModel.hpp NetfreeModel.hpp
     ParticleSpaceHDF5Writer.hpp Reaction.hpp Simulator.hpp SimulatorBase.hpp
     UnitSpecies.hpp observers.hpp exceptions.hpp get_mapper_mf.hpp types.hpp
-    Shape.hpp Sphere.hpp Cylinder.hpp AABB.hpp StructureType.hpp
+    Shape.hpp Sphere.hpp Cylinder.hpp AABB.hpp AABBSurface.hpp StructureType.hpp
     ParticleSpaceCellListImpl.hpp LatticeSpaceCellListImpl.hpp
     PlanarSurface.hpp Rod.hpp collision.hpp
     comparators.hpp SimulatorFactory.hpp Mesh.hpp shape_operators.hpp)
