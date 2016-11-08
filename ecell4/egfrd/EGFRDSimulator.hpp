@@ -2057,7 +2057,8 @@ protected:
         particle_type const& old(domain.particle().second);
         domain.particle().second = particle_type(old.sid(),
                 new_pos, old.radius(), old.D());
-        (*base_type::world_).update_particle(domain.particle());
+        (*base_type::world_).update_particle(
+            domain.particle().first, domain.particle().second);
 
         domain.position() = new_pos;
         domain.size() = domain.particle().second.radius();
@@ -2088,8 +2089,10 @@ protected:
             BOOST_ASSERT(check_pair_pos(domain, new_particles));
         }
 
-        (*base_type::world_).update_particle(new_particles[0]);
-        (*base_type::world_).update_particle(new_particles[1]);
+        (*base_type::world_).update_particle(
+            new_particles[0].first, new_particles[0].second);
+        (*base_type::world_).update_particle(
+            new_particles[1].first, new_particles[1].second);
 
         remove_domain(domain);
 

@@ -75,24 +75,24 @@ public:
         return retval;
     }
 
-    virtual bool update_particle(particle_id_pair const& pi_pair)
+    virtual bool update_particle(const particle_id_type& pid, const particle_type& p)
     {
         BOOST_ASSERT(removed_particles_.end() ==
-                removed_particles_.find(pi_pair.first));
+                removed_particles_.find(pid));
         std::pair<typename particle_id_pair_set_type::iterator, bool> r(
                 orig_particles_.insert(particle_id_pair(
-                    pi_pair.first, particle_type())));
+                    pid, particle_type())));
         if (r.second &&
-            added_particles_.end() == added_particles_.find(pi_pair.first))
+            added_particles_.end() == added_particles_.find(pid))
         {
-            modified_particles_.push_no_duplicate(pi_pair.first);
-            particle_type _v(pc_.get_particle(pi_pair.first).second);
+            modified_particles_.push_no_duplicate(pid);
+            particle_type _v(pc_.get_particle(pid).second);
             std::swap((*r.first).second, _v);
         }
-        return pc_.update_particle(pi_pair);
+        return pc_.update_particle(pid, p);
     }
 
-    virtual bool remove_particle(particle_id_type const& id)
+    virtual void remove_particle(particle_id_type const& id)
     {
         std::pair<typename particle_id_pair_set_type::iterator, bool> r(
                 orig_particles_.insert(particle_id_pair(
@@ -113,7 +113,8 @@ public:
         {
             orig_particles_.erase(id);
         }
-        return pc_.remove_particle(id);
+
+        pc_.remove_particle(id);
     }
 
     virtual particle_id_pair get_particle(particle_id_type const& id) const
@@ -208,7 +209,7 @@ public:
                 i(orig_particles_.begin()), e(orig_particles_.end());
                 i != e; ++i)
         {
-            pc_.update_particle(*i);
+            pc_.update_particle((*i).first, (*i).second);
         }
 
         for (typename particle_id_list_type::iterator

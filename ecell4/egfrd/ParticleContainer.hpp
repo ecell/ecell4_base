@@ -94,9 +94,7 @@ public:
      * ParticleSpace has functions similar, but a bit different.
      */
 
-    virtual bool update_particle(particle_id_pair const& pi_pair) = 0;
-
-    virtual bool remove_particle(particle_id_type const& id) = 0;
+    virtual bool update_particle(const particle_id_type& pid, const particle_type& p) = 0;
 
     virtual position_type periodic_transpose(
         position_type const& p0, position_type const& p1) const = 0;
@@ -104,12 +102,6 @@ public:
     /**
      * Space
      */
-
-    // virtual ecell4::Integer num_particles() const = 0;
-
-    // virtual particle_id_pair get_particle(particle_id_type const& id) const = 0;
-
-    // virtual bool has_particle(particle_id_type const& id) const = 0;
 
     virtual void save(const std::string& filename) const
     {
@@ -120,6 +112,8 @@ public:
     /**
      * ParticleSpace
      */
+
+    virtual void remove_particle(particle_id_type const& id) = 0;
 
     virtual length_type distance(
         position_type const& lhs, position_type const& rhs) const = 0;

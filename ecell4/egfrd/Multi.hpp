@@ -118,26 +118,26 @@ public:
         return retval;
     }
 
-    virtual bool update_particle(particle_id_pair const& pi_pair)
+    virtual bool update_particle(const particle_id_type& pid, const particle_type& p)
     {
-        world_.update_particle(pi_pair);
-        typename particle_map::iterator const i(particles_.find(pi_pair.first));
+        world_.update_particle(pid, p);
+        typename particle_map::iterator const i(particles_.find(pid));
         if (i != particles_.end())
         {
-            (*i).second = pi_pair.second;
+            (*i).second = p;
             return false;
         }
         else
         {
-            particles_.insert(i, pi_pair);
+            particles_.insert(i, std::make_pair(pid, p));
             return true;
         }
     }
 
-    virtual bool remove_particle(particle_id_type const& id)
+    virtual void remove_particle(particle_id_type const& id)
     {
         world_.remove_particle(id);
-        return particles_.erase(id);
+        particles_.erase(id);
     }
 
     virtual particle_id_pair get_particle(particle_id_type const& id) const
@@ -401,7 +401,7 @@ public:
 
     bool add_particle(particle_id_pair const& pp)
     {
-        return pc_.update_particle(pp);
+        return pc_.update_particle(pp.first, pp.second);
     }
 
     bool add_shell(spherical_shell_id_pair const& sp)

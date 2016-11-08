@@ -344,24 +344,9 @@ public:
     {
         if (molecule_info_map_.find(p.species()) == molecule_info_map_.end())
         {
-            register_species(std::make_pair(pid, p));
+            register_species(p);
         }
         return (*ps_).update_particle(pid, p);
-    }
-
-    virtual bool update_particle(particle_id_pair const& pid_particle_pair)
-    {
-        return update_particle(pid_particle_pair.first, pid_particle_pair.second);
-    }
-
-    virtual bool remove_particle(particle_id_type const& id)
-    {
-        if (!has_particle(id))
-        {
-            return false;
-        }
-        (*ps_).remove_particle(id);
-        return true;
     }
 
     molecule_info_range get_molecule_info_range() const
@@ -555,18 +540,18 @@ public:
     std::pair<std::pair<particle_id_type, particle_type>, bool>
     new_particle(const particle_type& p)
     {
-        particle_id_pair retval(pidgen_(), p);
-
         const particle_id_pair_and_distance_list overlapped(
             check_overlap(
                 particle_shape_type(p.position(), p.radius())));
         if (overlapped.size() > 0)
         {
-            return std::make_pair(retval, false);
+            return std::make_pair(std::make_pair(pidgen_(), p), false);
+            // return std::make_pair(std::make_pair(particle_id_type(), p), false);
         }
         else
         {
-            return std::make_pair(retval, update_particle(retval));
+            const particle_id_type pid = pidgen_();
+            return std::make_pair(std::make_pair(pid, p), update_particle(pid, p));
         }
     }
 
@@ -612,19 +597,8 @@ public:
      * @param sp a species
      * @return info a molecule info
      */
-    // molecule_info_type get_molecule_info(const ecell4::Species& sp) const
-    // {
-    //     const molecule_info_type defaults = {0.0, 0.0, "world"};
-    //     return get_molecule_info(sp, defaults);
-    // }
-
-    // molecule_info_type get_molecule_info(
-    //     const ecell4::Species& sp, const molecule_info_type& defaults) const
-    // {
     molecule_info_type get_molecule_info(species_id_type const& sp) const
     {
-        // ecell4::Real radius(defaults.radius), D(defaults.D);
-        // std::string structure_id(defaults.structure_id);
         ecell4::Real radius(0.0), D(0.0);
         std::string structure_id("world");
 
@@ -659,47 +633,16 @@ public:
         return info;
     }
 
-    // virtual molecule_info_type const& get_molecule_info(species_id_type const& sid)
-    // {
-    //     typename molecule_info_map::const_iterator i(molecule_info_map_.find(sid));
-    //     if (molecule_info_map_.end() == i)
-    //     {
-    //         return this->register_species(sid);
-    //     }
-    //     return (*i).second;
-    // }
-
-    // virtual molecule_info_type const& find_molecule_info(species_id_type const& sid) const
-    // {
-    //     typename molecule_info_map::const_iterator i(molecule_info_map_.find(sid));
-    //     if (molecule_info_map_.end() == i)
-    //     {
-    //         throw not_found(std::string("Unknown species (id=")
-    //             + boost::lexical_cast<std::string>(sid) + ")");
-    //     }
-    //     return (*i).second;
-    // }
-
 protected:
 
-    const molecule_info_type& register_species(const particle_id_pair& pid_pair)
+    const molecule_info_type& register_species(const particle_type& p)
     {
-        const molecule_info_type defaults
-            = {pid_pair.second.radius(), pid_pair.second.D(), "world"};
-        const species_id_type sid(pid_pair.second.sid());
-        const ecell4::Species sp(sid);
+        const molecule_info_type defaults = {p.radius(), p.D(), "world"};
+        const species_id_type sp(p.species());
         molecule_info_type info = defaults;
         // molecule_info_type info(get_molecule_info(sp, defaults));
-        molecule_info_map_.insert(std::make_pair(sid, info));
-        return (*molecule_info_map_.find(sid)).second;
-    }
-
-    const molecule_info_type& register_species(const species_id_type& sid)
-    {
-        const ecell4::Species sp(sid);
-        molecule_info_type info(get_molecule_info(sp));
-        molecule_info_map_.insert(std::make_pair(sid, info));
-        return (*molecule_info_map_.find(sid)).second;
+        molecule_info_map_.insert(std::make_pair(sp, info));
+        return (*molecule_info_map_.find(sp)).second;
     }
 
     void add_world_structure()
@@ -782,6 +725,7 @@ public:
     {
         return (*ps_).list_species();
     }
+
     virtual const position_type& edge_lengths() const
     {
         return (*ps_).edge_lengths();
@@ -831,6 +775,11 @@ public:
     virtual void set_t(const time_type& t)
     {
         (*ps_).set_t(t);
+    }
+
+    virtual void remove_particle(particle_id_type const& id)
+    {
+        (*ps_).remove_particle(id);
     }
 
     virtual position_type periodic_transpose(

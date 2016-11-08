@@ -149,7 +149,7 @@ public:
                 return true;
             }
         }
-        tx_.update_particle(particle_to_update);
+        tx_.update_particle(particle_to_update.first, particle_to_update.second);
         return true;
     }
 
@@ -209,7 +209,7 @@ private:
                             }
                         }
 
-                        tx_.update_particle(new_p);
+                        tx_.update_particle(new_p.first, new_p.second);
 
                         if (rrec_)
                         {
