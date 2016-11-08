@@ -1,6 +1,5 @@
 #ifndef GFRD_POLYGON_TRIANGLE_OPERATION
 #define GFRD_POLYGON_TRIANGLE_OPERATION
-#include "BarycentricCoordinate.hpp"
 #include "utils/array_traits.hpp"
 #include <boost/array.hpp>
 #include <algorithm>
@@ -144,9 +143,8 @@ distance(const coordT& pos, const boost::array<coordT, 3>& vertices)
 
 template<typename coordT>
 std::pair<bool, coordT>
-test_intersect_segment_triangle(
-        const coordT& begin, const coordT& end,
-        const boost::array<coordT, 3>& vertices)
+test_intersect_segment_triangle(const coordT& begin, const coordT& end,
+                                const boost::array<coordT, 3>& vertices)
 {
     typedef typename element_type_of<coordT>::type valueT;
     // this implementation is from Real-Time Collision Detection by Christer Ericson,
@@ -175,12 +173,11 @@ test_intersect_segment_triangle(
     if(w < 0. || d < v + w)
         return std::make_pair(false, coordT(0.,0.,0.));
 
-    valueT ood = 1. / d;
+    const valueT ood = 1. / d;
     v *= ood;
     w *= ood;
     const valueT u = 1. - v - w;
-    Barycentric<valueT> bary(u, v, w);
-    const coordT intersect = make_absolute(bary, vertices);
+    const coordT intersect = vertices[0] * u + vertices[1] * v + vertices[2] * w;
 
     return std::make_pair(true, intersect);
 }
