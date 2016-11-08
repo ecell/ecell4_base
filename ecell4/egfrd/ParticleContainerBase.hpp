@@ -388,6 +388,8 @@ public:
                     next_segment.first, next_segment.second - next_segment.first,
                     Polygon<position_type>::make_nonsence_id());
         }
+        else
+            throw std::logic_error("never reach here");
     }
 
     std::pair<position_type, position_type>
