@@ -10,6 +10,7 @@
 #include "../TriangleOperation.hpp"
 #include "../BarycentricCoordinate.hpp"
 #include "../FaceTriangle.hpp"
+#include "../geometry.hpp"
 #include <ecell4/core/RandomNumberGenerator.hpp>
 #include <ecell4/core/Real3.hpp>
 #include <cmath>
@@ -52,11 +53,11 @@ BOOST_AUTO_TEST_CASE(closest_point_is_inside_of_triangle_test)
         while(alpha == beta_ || beta_ == 2 * M_PI){beta_ = rng.uniform(M_PI, alpha + M_PI);}
         const ecell4::Real beta = beta_;
 
-        const ecell4::Real3 direction_b = rotation(alpha, direction, on_plane);
+        const ecell4::Real3 direction_b = rotate_vector(on_plane, direction, alpha);
         const ecell4::Real dot_b = ecell4::dot_product(direction_b, direction);
         BOOST_CHECK_SMALL(dot_b, 1e-12);
 
-        const ecell4::Real3 direction_c = rotation(beta, direction, on_plane);
+        const ecell4::Real3 direction_c = rotate_vector(on_plane, direction, beta);
         const ecell4::Real dot_c = ecell4::dot_product(direction_c, direction);
         BOOST_CHECK_SMALL(dot_c, 1e-12);
 
