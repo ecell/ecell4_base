@@ -153,8 +153,10 @@ def ensemble_simulations(
         raise ValueError(
             'Argument "method" must be one of "serial", "multiprocessing" and "sge".')
 
+    assert len(retval) == len(jobs) == 1
+
     if return_type == "array":
-        return retval
+        return retval[0]
 
     import numpy
 
@@ -196,42 +198,36 @@ def ensemble_simulations(
     if return_type == "matplotlib":
         if isinstance(opt_args, (list, tuple)):
             ecell4.util.viz.plot_number_observer_with_matplotlib(
-                *itertools.chain([DummyObserver(inputs, species_list, errorbar) for inputs in retval],
-                                 opt_args),
-                **opt_kwargs)
+                DummyObserver(retval[0], species_list, errorbar), *opt_args, **opt_kwargs)
         elif isinstance(opt_args, dict):
             # opt_kwargs is ignored
             ecell4.util.viz.plot_number_observer_with_matplotlib(
-                *[DummyObserver(inputs, species_list, errorbar) for inputs in retval],
-                **opt_args)
+                DummyObserver(retval[0], species_list, errorbar), **opt_args)
         else:
             raise ValueError('opt_args [{}] must be list or dict.'.format(
                 repr(opt_args)))
     elif return_type == "nyaplot":
         if isinstance(opt_args, (list, tuple)):
             ecell4.util.viz.plot_number_observer_with_nya(
-                *itertools.chain([DummyObserver(inputs, species_list, errorbar) for inputs in retval],
-                                 opt_args),
-                **opt_kwargs)
+                DummyObserver(retval[0], species_list, errorbar), *opt_args, **opt_kwargs)
         elif isinstance(opt_args, dict):
             # opt_kwargs is ignored
             ecell4.util.viz.plot_number_observer_with_nya(
-                *[DummyObserver(inputs, species_list, errorbar) for inputs in retval],
-                **opt_args)
+                DummyObserver(retval[0], species_list, errorbar), **opt_args)
         else:
             raise ValueError('opt_args [{}] must be list or dict.'.format(
                 repr(opt_args)))
     elif return_type == "observer":
-        return [DummyObserver(inputs, species_list, errorbar) for inputs in retval]
+        return DummyObserver(retval[0], species_list, errorbar)
     elif return_type == "dataframe":
         import pandas
-        return [[
+        return [
             pandas.concat([
                 pandas.DataFrame(dict(Time=numpy.array(data).T[0],
                                       Value=numpy.array(data).T[i + 1],
                                       Species=serial))
                 for i, serial in enumerate(species_list)])
-            for data in inputs] for inputs in retval]
+            for data in retval[0]]
     else:
         raise ValueError(
             'Invald Argument "return_type" was given [{}].'.format(str(return_type)))
