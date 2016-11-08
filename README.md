@@ -7,7 +7,8 @@ E-Cell System version 4
 [![Documentation Status](https://readthedocs.org/projects/ecell4/badge/?version=latest)](http://ecell4.readthedocs.org/en/latest/?badge=latest)
 [![PyPI](https://img.shields.io/pypi/v/ecell.svg)](https://pypi.python.org/pypi/ecell)
 [![License: GPL v2](https://img.shields.io/badge/license-GPL%20v2-blue.svg)](https://github.com/ecell/ecell4/blob/master/licenses/LICENSE)
-[![Slack Status](https://ecell-project.herokuapp.com/badge.svg)](https://ecell-project.herokuapp.com/)
+[![Slack Status](https://img.shields.io/badge/chat-on%20slack-50baa6.svg)](https://ecell-project.herokuapp.com/)
+<!---[![Slack Status](https://ecell-project.herokuapp.com/badge.svg)](https://ecell-project.herokuapp.com/)--->
 
 What is E-Cell System?
 ----------------------
@@ -42,7 +43,7 @@ Installation
 
 #### Optional requirements
 We strongly recommend that you run E-Cell4 with [Jupyter Notebook](http://jupyter.org/).
-And some E-Cell4 functions (for visualization, datastore) optionaly depend on
+And some E-Cell4 functions (for visualization, datastore) optionally depend on
 - matplotlib (**1.5.1** and later)
 - ffmpeg
 - pandas
@@ -117,7 +118,7 @@ Python 2.7.6 (default, Mar 22 2014, 22:59:56)
 [GCC 4.8.2] on linux2
 Type "help", "copyright", "credits" or "license" for more information.
 >>> from ecell4.core import *
->>> sp = Species("B.A.C")
+>>> sp = Species("A.B.C")
 >>> print sp.serial()
 A.B.C
 >>>

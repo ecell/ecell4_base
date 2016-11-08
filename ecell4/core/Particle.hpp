@@ -3,12 +3,14 @@
 
 #include <map>
 
+#include <ecell4/core/config.h>
+
 #include "types.hpp"
 #include "Real3.hpp"
 #include "Species.hpp"
 #include "Identifier.hpp"
-#include "config.h"
 
+#include "hash.hpp"
 
 namespace ecell4
 {
@@ -38,21 +40,17 @@ public:
     explicit Particle(
         const Species& sp, const Real3& pos, const Real& radius,
         const Real& D)
-        // : position_(pos), radius_(radius), D_(D)
-        : species_serial_(sp.serial()), position_(pos), radius_(radius), D_(D)
-        // : species_(sp), species_serial_(sp.serial()), position_(pos), radius_(radius), D_(D)
+        : species_(sp), position_(pos), radius_(radius), D_(D)
     {
-        // std::strcpy(species_serial_, sp.serial().c_str());
+        ;
     }
 
     Particle(
         const species_serial_type& sid, const Real3& pos,
         const Real& radius, const Real& D)
-        // : position_(pos), radius_(radius), D_(D)
-        : species_serial_(sid), position_(pos), radius_(radius), D_(D)
-        // : species_(sid), species_serial_(sid), position_(pos), radius_(radius), D_(D)
+        : species_(sid), position_(pos), radius_(radius), D_(D)
     {
-        // std::strcpy(species_serial_, sid.c_str());
+        ;
     }
 
     Real3& position()
@@ -85,47 +83,32 @@ public:
         return D_;
     }
 
-    const Species species() const
+    Species& species()
     {
-        return Species(species_serial());
+        return species_;
     }
 
-    // Species& species()
-    // {
-    //     return species_;
-    // }
-
-    // const Species& species() const
-    // {
-    //     return species_;
-    // }
-
-    Species::serial_type& species_serial()
+    const Species& species() const
     {
-        return this->species_serial_;
+        return species_;
     }
 
-    const Species::serial_type& species_serial() const
+    Species::serial_type species_serial()
     {
-        return this->species_serial_;
+        return species_.serial();
     }
 
-    // Species::serial_type species_serial()
-    // {
-    //     return std::string(species_serial_);
-    // }
+    const Species::serial_type species_serial() const
+    {
+        return species_.serial();
+    }
 
-    // const Species::serial_type species_serial() const
-    // {
-    //     return std::string(species_serial_);
-    // }
-
-    inline Species::serial_type& sid()
+    inline Species::serial_type sid()
     {
         return species_serial();
     }
 
-    inline const Species::serial_type& sid() const
+    inline const Species::serial_type sid() const
     {
         return species_serial();
     }
@@ -152,9 +135,7 @@ public:
 
 private:
 
-    // Species species_;
-    species_serial_type species_serial_;
-    // char species_serial_[32];
+    Species species_;
     Real3 position_;
     Real radius_, D_;
 };
@@ -168,13 +149,7 @@ inline std::basic_ostream<Tstrm_, Ttraits_>& operator<<(std::basic_ostream<Tstrm
 
 } // ecell4
 
-#if defined(HAVE_TR1_FUNCTIONAL)
-namespace std { namespace tr1 {
-#elif defined(HAVE_STD_HASH)
-namespace std {
-#elif defined(HAVE_BOOST_FUNCTIONAL_HASH_HPP)
-namespace boost {
-#endif
+ECELL4_DEFINE_HASH_BEGIN()
 
 template<>
 struct hash<ecell4::Particle>
@@ -191,12 +166,6 @@ struct hash<ecell4::Particle>
     }
 };
 
-#if defined(HAVE_TR1_FUNCTIONAL)
-} } // namespace std::tr1
-#elif defined(HAVE_STD_HASH)
-} // namespace std
-#elif defined(HAVE_BOOST_FUNCTIONAL_HASH_HPP)
-} // namespace boost
-#endif
+ECELL4_DEFINE_HASH_END()
 
 #endif /* __ECELL4_PARTICLE_HPP */

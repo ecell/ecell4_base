@@ -8,16 +8,9 @@
 #include <algorithm>
 #include <boost/algorithm/string.hpp>
 
-#include "config.h"
+#include <ecell4/core/config.h>
 
-#if defined(HAVE_TR1_FUNCTIONAL)
-#include <tr1/functional>
-#elif defined(HAVE_STD_HASH)
-#include <functional>
-#elif defined(HAVE_BOOST_FUNCTIONAL_HASH_HPP)
-#include <boost/functional/hash.hpp>
-#endif
-
+#include "hash.hpp"
 #include "get_mapper_mf.hpp"
 #include "types.hpp"
 #include "exceptions.hpp"
@@ -42,103 +35,49 @@ protected:
 public:
 
     Species()
-        : units_()
+        : serial_("")
     {
         ; // do nothing
     }
 
-    // Species(const Species& sp)
-    //     : units_()
-    // {
-    //     deserialize(sp.serial());
-    // }
-
     explicit Species(const serial_type& name)
-        : units_()
+        : serial_(name)
     {
-        deserialize(name);
+        ;
     }
-
-    // Species(
-    //     const serial_type& name, const std::string& D)
-    //     : units_()
-    // {
-    //     deserialize(name);
-    //     set_attribute("D", D);
-    // }
 
     Species(
         const serial_type& name, const std::string& radius, const std::string& D,
         const std::string location = "")
-        : units_()
+        : serial_(name)
     {
-        deserialize(name);
         set_attribute("radius", radius);
         set_attribute("D", D);
         set_attribute("location", location);
     }
 
-    void deserialize(const serial_type& serial);
-    serial_type serial() const;
-
-    Integer num_units() const
+    const serial_type serial() const
     {
-        return units_.size();
+        return serial_;
     }
 
     void add_unit(const UnitSpecies& usp);
 
-    inline container_type::const_iterator begin() const
+    const std::vector<UnitSpecies> units() const
     {
-        return units_.begin();
-    }
+        std::vector<std::string> unit_serials;
+        boost::split(unit_serials, serial_, boost::is_any_of("."));
 
-    inline container_type::const_iterator end() const
-    {
-        return units_.end();
-    }
-
-    const std::vector<UnitSpecies>& units() const
-    {
+        std::vector<UnitSpecies> units_;
+        for (std::vector<std::string>::const_iterator i(unit_serials.begin());
+            i != unit_serials.end(); ++i)
+        {
+            UnitSpecies usp;
+            usp.deserialize(*i);
+            units_.insert(std::lower_bound(units_.begin(), units_.end(), usp), usp);
+        }
         return units_;
     }
-
-    const UnitSpecies& at(const container_type::size_type& idx) const
-    {
-        return units_.at(idx);
-    }
-
-    // Integer get_unit(const UnitSpecies& usp)
-    // {
-    //     container_type::iterator itr;
-    //     for (itr = units_.begin(); itr != units_.end(); ++itr)
-    //     {
-    //         if (usp == *itr)
-    //         {
-    //             return itr - units_.begin();
-    //         }
-    //     }
-    //     throw NotFound("UnitSpecies not found");
-    // }
-
-    // const std::vector<UnitSpecies> list_sites()
-    // {
-    //     std::vector<UnitSpecies> usps;
-    //     if (units_.size() == 0)
-    //     {
-    //         return usps;
-    //     }
-    //     container_type::const_iterator it(units_.begin());
-    //     ++it;
-    //     for (; it != units_.end(); ++it)
-    //     {
-    //           if ((*it).sites_.size() != 0)
-    //           {
-    //             usps.push_back((*it).serial());
-    //           }
-    //     }
-    //     return usps;
-    // }
 
     const attributes_container_type& attributes() const
     {
@@ -160,6 +99,42 @@ public:
 
     Integer count(const Species& sp) const;
 
+    /** Method chaining
+     */
+
+    Species& D(const std::string& value)
+    {
+        set_attribute("D", value);
+        return (*this);
+    }
+
+    inline Species* D_ptr(const std::string& value)
+    {
+        return &(this->D(value));
+    }
+
+    Species& radius(const std::string& value)
+    {
+        set_attribute("radius", value);
+        return (*this);
+    }
+
+    inline Species* radius_ptr(const std::string& value)
+    {
+        return &(this->radius(value));
+    }
+
+    Species& location(const std::string& value)
+    {
+        set_attribute("location", value);
+        return (*this);
+    }
+
+    inline Species* location_ptr(const std::string& value)
+    {
+        return &(this->location(value));
+    }
+
     /** for epdp
      */
     serial_type name() const
@@ -169,7 +144,7 @@ public:
 
 protected:
 
-    std::vector<UnitSpecies> units_;
+    serial_type serial_;
     attributes_container_type attributes_;
 };
 
@@ -191,19 +166,7 @@ inline std::basic_ostream<Tstrm_, Ttraits_>& operator<<(
 
 } // ecell4
 
-#if defined(HAVE_TR1_FUNCTIONAL)
-namespace std
-{
-
-namespace tr1
-{
-#elif defined(HAVE_STD_HASH)
-namespace std
-{
-#elif defined(HAVE_BOOST_FUNCTIONAL_HASH_HPP)
-namespace boost
-{
-#endif
+ECELL4_DEFINE_HASH_BEGIN()
 
 template<>
 struct hash<ecell4::Species>
@@ -214,14 +177,6 @@ struct hash<ecell4::Species>
     }
 };
 
-#if defined(HAVE_TR1_FUNCTIONAL)
-} // tr1
-
-} // std
-#elif defined(HAVE_STD_HASH)
-} // std
-#elif defined(HAVE_BOOST_FUNCTIONAL_HASH_HPP)
-} // boost
-#endif
+ECELL4_DEFINE_HASH_END()
 
 #endif /* __ECELL4_SPECIES_HPP */

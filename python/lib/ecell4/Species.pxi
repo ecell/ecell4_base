@@ -200,26 +200,35 @@ cdef class Species:
             inc(it)
         return retval
 
-    def num_units(self):
-        """num_units() -> Integer
+    def D(self, value):
+        """D(string) -> Species
 
-        Return the number of ``UnitSpecies``.
-
-        """
-        return self.thisptr.num_units()
-
-    def deserialize(self, serial):
-        """deserialize(serial)
-
-        Reset the serial. All attributes will be kept.
-
-        Parameters
-        ----------
-        serial : str
-            A new serial as an unicode string.
+        set attribute 'D', and return self.
 
         """
-        self.thisptr.deserialize(tostring(serial))
+        cdef Cpp_Species *sp = self.thisptr.D_ptr(tostring(value))
+        assert sp == self.thisptr
+        return self
+
+    def radius(self, value):
+        """radius(string) -> Species
+
+        set attribute 'radius', and return self.
+
+        """
+        cdef Cpp_Species *sp = self.thisptr.radius_ptr(tostring(value))
+        assert sp == self.thisptr
+        return self
+
+    def location(self, value):
+        """location(string) -> Species
+
+        set attribute 'location', and return self.
+
+        """
+        cdef Cpp_Species *sp = self.thisptr.location_ptr(tostring(value))
+        assert sp == self.thisptr
+        return self
 
     def __reduce__(self):
         return (__rebuild_species, (self.serial(), self.list_attributes()))

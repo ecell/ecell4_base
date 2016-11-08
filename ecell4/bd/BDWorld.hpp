@@ -197,6 +197,11 @@ public:
 
     // ParticleSpace member functions
 
+    bool update_particle_without_checking(const ParticleID& pid, const Particle& p)
+    {
+        return (*ps_).update_particle(pid, p);
+    }
+
     bool update_particle(const ParticleID& pid, const Particle& p)
     {
         if (list_particles_within_radius(p.position(), p.radius(), pid).size()
@@ -339,7 +344,7 @@ public:
         boost::scoped_ptr<H5::Group>
             group(new H5::Group(fout->createGroup("ParticleSpace")));
         ps_->save_hdf5(group.get());
-        extras::save_version_information(fout.get(), "ecell4-bd-0.0-1");
+        extras::save_version_information(fout.get(), std::string("ecell4-bd-") + std::string(ECELL4_VERSION));
 #else
         throw NotSupported(
             "This method requires HDF5. The HDF5 support is turned off.");

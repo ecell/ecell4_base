@@ -127,9 +127,9 @@ protected:
             static_cast<matrix_type::size_type>(
                 pos[0] / cell_sizes_[0]) % matrix_.shape()[0],
             static_cast<matrix_type::size_type>(
-                pos[1] / cell_sizes_[0]) % matrix_.shape()[1],
+                pos[1] / cell_sizes_[1]) % matrix_.shape()[1],
             static_cast<matrix_type::size_type>(
-                pos[2] / cell_sizes_[0]) % matrix_.shape()[2]
+                pos[2] / cell_sizes_[2]) % matrix_.shape()[2]
             }}; // boost::array<matrix_type::size_type, 3>
         return retval;
     }

@@ -1,0 +1,7 @@
+{
+  "name": "E-Cell System version 4",
+  "tagline": "A multi-algorithm, multi-timescale, multi-spatial-representation biochemical simulation environment",
+  "body": "# Hello E-Cell4\r\n\r\nE-Cell System is, a software platform for modeling, simulation and analysis of complex, heterogeneous and multi-scale systems like the cell.\r\n\r\n```python\r\nfrom ecell4 import *\r\n\r\nwith reaction_rules():\r\n    A + B == C | (0.01, 0.3)\r\n\r\nrun_simulation(10, {'A': 60, 'B': 60}, solver='gillespie')\r\n```\r\n\r\n![gillespie](https://raw.githubusercontent.com/ecell/ecell4/master/docs/images/intro_31_0.png)\r\n\r\n# Features\r\n\r\n# Examples\r\n\r\n### [Installation and usage](http://ecell4.readthedocs.org/en/latest/installation.html)\r\n### [Documentation](http://ecell4.readthedocs.org)\r\n### [Help](https://gitter.im/ecell/ecell4)\r\n\r\n## License \r\n\r\nThis project is licensed under the terms of the GNU General Public License v2. See [LICENSE](https://raw.githubusercontent.com/ecell/ecell4/master/LICENSE).",
+  "google": "",
+  "note": "Don't delete this file! It's used internally to help with page regeneration."
+}

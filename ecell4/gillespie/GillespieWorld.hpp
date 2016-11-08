@@ -109,7 +109,7 @@ public:
         boost::scoped_ptr<H5::Group>
             group(new H5::Group(fout->createGroup("CompartmentSpace")));
         cs_->save_hdf5(group.get());
-        extras::save_version_information(fout.get(), "ecell4-gillespie-0.0-1");
+        extras::save_version_information(fout.get(), std::string("ecell4-gillespie-") + std::string(ECELL4_VERSION));
 #else
         throw NotSupported(
             "This method requires HDF5. The HDF5 support is turned off.");

@@ -355,9 +355,13 @@ public:
         return (*space_).unit_area();
     }
 
-    Real get_volume() const
+    Real get_volume(const Species& sp) const
     {
-        return (*space_).get_volume();
+        if (!has_species(sp) || !find_molecular_type(sp)->is_structure())
+        {
+            return 0.0;
+        }
+        return (*space_).get_volume(sp);
     }
 
     Real3 actual_lengths() const
@@ -531,7 +535,7 @@ public:
         boost::scoped_ptr<H5::Group>
             group(new H5::Group(fout->createGroup("LatticeSpace")));
         (*space_).save_hdf5(group.get());
-        extras::save_version_information(fout.get(), "ecell4-spatiocyte-0.0-1");
+        extras::save_version_information(fout.get(), std::string("ecell4-spatiocyte-") + std::string(ECELL4_VERSION));
 #else
         throw NotSupported(
             "This method requires HDF5. The HDF5 support is turned off.");
@@ -570,6 +574,29 @@ public:
     boost::shared_ptr<Model> lock_model() const
     {
         return model_.lock();
+    }
+
+    /**
+     * static members
+     */
+    static inline Real calculate_voxel_volume(const Real r)
+    {
+        return LatticeSpace::calculate_voxel_volume(r);
+    }
+
+    static inline Real3 calculate_hcp_lengths(const Real voxel_radius)
+    {
+        return LatticeSpace::calculate_hcp_lengths(voxel_radius);
+    }
+
+    static inline Integer3 calculate_shape(const Real3& edge_lengths, const Real& voxel_radius)
+    {
+        return LatticeSpace::calculate_shape(edge_lengths, voxel_radius, true);
+    }
+
+    static inline Real calculate_volume(const Real3& edge_lengths, const Real& voxel_radius)
+    {
+        return LatticeSpace::calculate_volume(edge_lengths, voxel_radius, true);
     }
 
 protected:

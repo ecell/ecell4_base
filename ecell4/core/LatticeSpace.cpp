@@ -41,30 +41,14 @@ bool LatticeSpace::make_structure_type(const Species& sp,
 
 void LatticeSpaceBase::set_lattice_properties(const bool is_periodic)
 {
-    //XXX: derived from SpatiocyteStepper::setLatticeProperties()
-    HCP_L = voxel_radius_ / sqrt(3.0);
-    HCP_X = voxel_radius_ * sqrt(8.0 / 3.0); // Lx
-    HCP_Y = voxel_radius_ * sqrt(3.0); // Ly
-
-    const Real lengthX = edge_lengths_[0];
-    const Real lengthY = edge_lengths_[1];
-    const Real lengthZ = edge_lengths_[2];
-
-    col_size_ = (Integer)rint(lengthX / HCP_X) + 1;
-    layer_size_ = (Integer)rint(lengthY / HCP_Y) + 1;
-    row_size_ = (Integer)rint((lengthZ / 2) / voxel_radius_) + 1;
-
-    if (is_periodic)
-    {
-        // The number of voxels in each axis must be even for a periodic boundary.
-        col_size_ = (col_size_ % 2 == 0 ? col_size_ : col_size_ + 1);
-        layer_size_ = (layer_size_ % 2 == 0 ? layer_size_ : layer_size_ + 1);
-        row_size_ = (row_size_ % 2 == 0 ? row_size_ : row_size_ + 1);
-    }
-
-    row_size_ += 2;
-    layer_size_ += 2;
-    col_size_ += 2;
+    const Real3 hcpLXY = calculate_hcp_lengths(voxel_radius_);
+    const Integer3 shape = calculate_shape(edge_lengths_, voxel_radius_, is_periodic);
+    HCP_L = hcpLXY[0];
+    HCP_X = hcpLXY[1];
+    HCP_Y = hcpLXY[2];
+    col_size_ = shape[0] + 2;
+    row_size_ = shape[1] + 2;
+    layer_size_ = shape[2] + 2;
 }
 
 Integer3 LatticeSpaceBase::position2global(const Real3& pos) const
