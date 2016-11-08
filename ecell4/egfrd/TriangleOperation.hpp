@@ -2,7 +2,6 @@
 #define GFRD_POLYGON_TRIANGLE_OPERATION
 #include "Vector3Operation.hpp"
 #include "BarycentricCoordinate.hpp"
-#include "circular_iteration.hpp"
 #include <boost/array.hpp>
 #include <algorithm>
 #include <cassert>
