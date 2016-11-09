@@ -123,6 +123,22 @@ public:
             "save(const std::string) is not supported by this space class");
     }
 
+    virtual void add_surface(const boost::array<position_type, 3>& vertices)
+    {
+        return;
+    }
+
+    virtual position_type
+    apply_reflection(const position_type& pos, const position_type& disp)
+    {
+        return pos + disp;
+    }
+
+    virtual position_type
+    apply_structure(const position_type& pos, const position_type& disp)
+    {
+        return pos + disp;
+    }
 };
 
 
