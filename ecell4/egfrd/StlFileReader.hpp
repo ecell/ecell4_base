@@ -72,7 +72,7 @@ std::vector<StlTriangle<coordT> >
 StlFileReader<coordT>::read_ascii(const std::string& filename) const
 {
     std::ifstream ifs(filename.c_str());
-    if(not ifs.good())
+    if(!ifs.good())
         throw std::runtime_error("file open error");
 
     while(!ifs.eof())
@@ -193,7 +193,7 @@ std::vector<StlTriangle<coordT> >
 StlFileReader<coordT>::read_binary(const std::string& filename) const
 {
     std::ifstream ifs(filename.c_str(), std::ios::in | std::ios::binary);
-    if(not ifs.good())
+    if(!ifs.good())
         throw std::runtime_error("file open error");
 
     ifs.seekg(0, ifs.end);

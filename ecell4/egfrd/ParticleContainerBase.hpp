@@ -357,7 +357,7 @@ public:
         const std::pair<bool, std::pair<length_type, face_id_t> > test_polygon = 
                 this->polygon_.intersect_ray(pos, disp, ignore);
 
-        if(not test_unitcell.first && not test_polygon.first)
+        if(!test_unitcell.first && !test_polygon.first)
             return pos + disp;
 
         if(test_polygon.first && test_polygon.second.first < dist_to_unit_cell)

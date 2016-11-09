@@ -124,7 +124,7 @@ Polygon<coordT>::apply_reflection(
             }
         }
     }
-    if(not collide_face)
+    if(!collide_face)
         return std::make_pair(std::make_pair(end, end), make_nonsence_id());
 
     const coordinate_type next_end =
