@@ -11,8 +11,8 @@ project = u'E-Cell'
 copyright = u'2015-, E-Cell project'
 author = u'Kazunari Kaizu'
 
-version = '4.0.5'
-release = '4.0.5'
+version = '4.0.6'
+release = '4.0.6'
 
 language = None
 
