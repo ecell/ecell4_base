@@ -22,7 +22,7 @@ Installation and usage
 - [Installation](#installation)
   - [Requirements](#requirements)
   - [Windows](#windows)
-  - [Mac Linux](#mac-linux)
+  - [Mac or Linux](#mac-or-linux)
 
 - [How to try E-Cell4 examples](#how-to-try-e-cell4-examples)
 
@@ -38,41 +38,44 @@ Installation
 ### Requirements
 
 #### Minimum requirements
+
 - Python (2.7 and 3.4, 3.5 both major versions are supported [3.4 is only supported on Linux])
-- pip (8.1 and later)
+- pip (8.1 or later)
 - hdf5 (required only on **Windows**. works only for **version 1.8.16**)
 
 #### Optional requirements
+
 We strongly recommend that you run E-Cell4 with [Jupyter Notebook](http://jupyter.org/).
-And some E-Cell4 functions (for visualization, datastore) optionally depend on
+Some E-Cell4 functions (for visualization, datastore) optionally depend on
+
 - matplotlib (**1.5.1** and later)
 - ffmpeg
 - pandas
 
 ### Windows
 
-Please use [Miniconda](http://conda.pydata.org/miniconda.html), Note that we does not support 64bit for Python2.7.
+We recommend that you install [Miniconda](http://conda.pydata.org/miniconda.html) to manage Python packages.
+**Note that we do not support Python2.7 64bit for Windows.**
 
 - Install Miniconda for Windows from http://conda.pydata.org/miniconda.html
-- Run the follwing commands on command prompt
-- (**Important**) E-Cell4 for Windows works only for hdf5 version **1.8.16**. Please check the version of hdf5, even if you installed hdf5 before with conda.
+- Run the following commands on command prompt
+  - (**Important**) E-Cell4 for Windows works only for hdf5 version **1.8.16**. Please check the version of hdf5, even if you installed hdf5 before with conda.
 
     ```shell
-    conda install hdf5 notebook matplotlib
+    conda install hdf5 matplotlib notebook
     pip install ecell
     ```
 
-Although Jupyter Notebook is optional, we strongly recommend that you run E-Cell4 with jupyter.
 If you use animated visualization with E-Cell4, please install [ffmpeg windows build](http://ffmpeg.zeranoe.com/builds/) and add its path to your **USER** PATH enviromental variable.
 
-### Mac Linux
+### Mac or Linux
 
 We recommend that you install [Miniconda](http://conda.pydata.org/miniconda.html) to manage Python packages.
 After installing Miniconda, run the following commands in your terminal.
 
 ```shell
 # After installing Miniconda2 or Miniconda3 (Here we assume that you installed Miniconda2).
-~/miniconda2/bin/conda install matplotlib jupyter
+~/miniconda2/bin/conda install matplotlib notebook
 
 # Download E-Cell4 whl file for your Python version from https://github.com/ecell/ecell4/releases before running this command.
 ~/miniconda2/bin/pip install ecell
