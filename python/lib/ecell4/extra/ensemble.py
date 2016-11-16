@@ -53,6 +53,20 @@ def run_sge(target, jobs, n=1, path='.', delete=True, environ={}):
         raise RuntimeError(
             "Wrong indentation was found in the source translated")
 
+    if not os.path.isdir(path):
+        os.makedirs(path)  #XXX: MYOB
+
+    if environ is None:
+        environ = {}
+        keys = ("LD_LIBRARY_PATH", "PYTHONPATH")
+        for key in keys:
+            if key in os.environ.keys():
+                environ[key] = os.environ[key]
+        if "PYTHONPATH" in environ.keys() and environ["PYTHONPATH"].strip() != "":
+            environ["PYTHONPATH"] = "{}:{}".format(os.getcwd(), environ["PYTHONPATH"])
+        else:
+            environ["PYTHONPATH"] = os.getcwd()
+
     cmds = []
     pickleins = []
     pickleouts = []
@@ -84,14 +98,14 @@ def run_sge(target, jobs, n=1, path='.', delete=True, environ={}):
         cmd += '" {:s}\n'.format(picklein)
         cmds.append(cmd)
 
-    if isinstance(wait, int):
-        sync = wait
-    elif isinstance(wait, bool):
+    if isinstance(wait, bool):
         sync = 0 if not wait else 10
+    elif isinstance(wait, int):
+        sync = wait
     else:
         raise ValueError("'wait' must be either 'int' or 'bool'.")
 
-    jobids = sge.run(cmds, n=n, path=path, delete=delete, sync=wait)
+    jobids = sge.run(cmds, n=n, path=path, delete=delete, sync=sync)
 
     if not (sync > 0):
         return None
