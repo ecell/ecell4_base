@@ -15,32 +15,32 @@ QDEL_CMD = os.path.join(PREFIX, 'qdel')
 def get_logger():
     return logging.getLogger('sge')
 
-def run(jobs, n=1, path='.', wc_queue_list='all.q', sync=True, delete=True):
+def run(jobs, n=1, path='.', wc_queue_list='all.q', sync=10, delete=True):
     if not isinstance(jobs, collections.Iterable):
         return singlerun(jobs, n, path, wc_queue_list, sync, delete)
 
     retval = []
     for job in jobs:
-        retval.append(singlerun(job, n, path, wc_queue_list, sync=False))
-    if sync:
+        retval.append(singlerun(job, n, path, wc_queue_list, sync=0))
+    if sync > 0:
         try:
-            wait([jobid for jobid, name, filename in retval])
+            wait([jobid for jobid, name, filename in retval], sync)
         finally:
             if delete:
                 for jobid, name, filename in retval:
                     os.remove(filename)
     return [(jobid, name) for jobid, name, filename in retval]
 
-def singlerun(job, n=1, path='.', wc_queue_list='all.q', sync=True, delete=True):
+def singlerun(job, n=1, path='.', wc_queue_list='all.q', sync=10, delete=True):
     (fd, filename) = tempfile.mkstemp(suffix='.job', prefix='sge-', dir=path, text=True)
     with os.fdopen(fd, 'w') as fout:
         fout.write(job)
 
     (jobid, name) = submit(filename, n, path, path, wc_queue_list)
 
-    if sync:
+    if sync > 0:
         try:
-            wait(jobid)
+            wait(jobid, sync)
         finally:
             if delete:
                 os.remove(filename)

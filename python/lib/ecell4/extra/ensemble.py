@@ -84,7 +84,17 @@ def run_sge(target, jobs, n=1, path='.', delete=True, environ={}):
         cmd += '" {:s}\n'.format(picklein)
         cmds.append(cmd)
 
-    jobids = sge.run(cmds, n=n, path=path, delete=delete)
+    if isinstance(wait, int):
+        sync = wait
+    elif isinstance(wait, bool):
+        sync = 0 if not wait else 10
+    else:
+        raise ValueError("'wait' must be either 'int' or 'bool'.")
+
+    jobids = sge.run(cmds, n=n, path=path, delete=delete, sync=wait)
+
+    if not (sync > 0):
+        return None
 
     for jobid, name in jobids:
         outputs = sge.collect(jobid, name, n=n, path=path, delete=delete)
