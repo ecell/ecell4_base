@@ -16,8 +16,8 @@ Integer LatticeSpaceCellListImpl::num_molecules(const Species& sp) const
     //     const Integer cnt(sexp.count((*itr).first));
     //     if (cnt > 0)
     //     {
-    //         const boost::shared_ptr<VoxelPool>& mt((*itr).second);
-    //         count += count_voxels(mt) * cnt;
+    //         const boost::shared_ptr<VoxelPool>& vp((*itr).second);
+    //         count += count_voxels(vp) * cnt;
     //     }
     // }
 
@@ -27,8 +27,8 @@ Integer LatticeSpaceCellListImpl::num_molecules(const Species& sp) const
         const Integer cnt(sexp.count((*itr).first));
         if (cnt > 0)
         {
-            const boost::shared_ptr<MoleculePool>& mt((*itr).second);
-            count += mt->size() * cnt;
+            const boost::shared_ptr<MoleculePool>& vp((*itr).second);
+            count += vp->size() * cnt;
         }
     }
     return count;
@@ -47,10 +47,10 @@ bool LatticeSpaceCellListImpl::update_voxel(const ParticleID& pid, const Voxel& 
         throw NotSupported("Out of bounds");
     }
 
-    VoxelPool* new_mt(get_voxel_pool(v)); //XXX: need MoleculeInfo
-    VoxelPool* dest_mt(find_voxel_pool(to_coord));
+    VoxelPool* new_vp(get_voxel_pool(v)); //XXX: need MoleculeInfo
+    VoxelPool* dest_vp(find_voxel_pool(to_coord));
 
-    if (dest_mt != new_mt->location())
+    if (dest_vp != new_vp->location())
     {
         throw NotSupported("Mismatch in the location.");
     }
@@ -63,32 +63,32 @@ bool LatticeSpaceCellListImpl::update_voxel(const ParticleID& pid, const Voxel& 
         if (from_coord != -1)
         {
             // move
-            VoxelPool* src_mt(target.first);
-            src_mt->remove_voxel_if_exists(from_coord);
+            VoxelPool* src_vp(target.first);
+            src_vp->remove_voxel_if_exists(from_coord);
 
             //XXX: use location?
-            dest_mt->replace_voxel(to_coord, from_coord);
+            dest_vp->replace_voxel(to_coord, from_coord);
 
-            new_mt->add_voxel(coordinate_id_pair_type(pid, to_coord));
+            new_vp->add_voxel(coordinate_id_pair_type(pid, to_coord));
 
-            if (!dest_mt->is_vacant())
+            if (!dest_vp->is_vacant())
             {
-                update_matrix(from_coord, dest_mt);
-                update_matrix(to_coord, new_mt);
+                update_matrix(from_coord, dest_vp);
+                update_matrix(to_coord, new_vp);
             }
             else
             {
-                update_matrix(from_coord, to_coord, new_mt);
+                update_matrix(from_coord, to_coord, new_vp);
             }
             return true;
         }
     }
 
     // new
-    dest_mt->remove_voxel_if_exists(to_coord);
+    dest_vp->remove_voxel_if_exists(to_coord);
 
-    new_mt->add_voxel(coordinate_id_pair_type(pid, to_coord));
-    update_matrix(to_coord, new_mt);
+    new_vp->add_voxel(coordinate_id_pair_type(pid, to_coord));
+    update_matrix(to_coord, new_vp);
     return true;
 }
 
@@ -98,12 +98,12 @@ std::pair<VoxelPool*, LatticeSpaceCellListImpl::coordinate_type>
     for (molecule_pool_map_type::iterator itr(molecule_pools_.begin());
          itr != molecule_pools_.end(); ++itr)
     {
-        const boost::shared_ptr<MoleculePool>& mt((*itr).second);
-        MoleculePool::container_type::const_iterator j(mt->find(pid));
-        if (j != mt->end())
+        const boost::shared_ptr<MoleculePool>& vp((*itr).second);
+        MoleculePool::container_type::const_iterator j(vp->find(pid));
+        if (j != vp->end())
         {
             return std::pair<VoxelPool*, coordinate_type>(
-                mt.get(), (*j).coordinate);
+                vp.get(), (*j).coordinate);
         }
     }
     return std::make_pair<VoxelPool*, coordinate_type>(NULL, -1); //XXX: a bit dirty way
@@ -115,12 +115,12 @@ std::pair<const VoxelPool*, LatticeSpaceCellListImpl::coordinate_type>
     for (molecule_pool_map_type::const_iterator itr(molecule_pools_.begin());
          itr != molecule_pools_.end(); ++itr)
     {
-        const boost::shared_ptr<MoleculePool>& mt((*itr).second);
-        MoleculePool::container_type::const_iterator j(mt->find(pid));
-        if (j != mt->end())
+        const boost::shared_ptr<MoleculePool>& vp((*itr).second);
+        MoleculePool::container_type::const_iterator j(vp->find(pid));
+        if (j != vp->end())
         {
             return std::pair<const VoxelPool*, coordinate_type>(
-                mt.get(), (*j).coordinate);
+                vp.get(), (*j).coordinate);
         }
     }
     return std::make_pair<const VoxelPool*, coordinate_type>(NULL, -1); //XXX: a bit dirty way
@@ -152,16 +152,16 @@ VoxelPool* LatticeSpaceCellListImpl::find_voxel_pool(
     // for (spmap::iterator itr(spmap_.begin());
     //     itr != spmap_.end(); ++itr)
     // {
-    //     VoxelPool& mt((*itr).second);
-    //     if (mt.is_vacant())
+    //     VoxelPool& vp((*itr).second);
+    //     if (vp.is_vacant())
     //     {
     //         continue;
     //     }
 
-    //     VoxelPool::container_type::const_iterator j(mt.find(coord));
-    //     if (j != mt.end())
+    //     VoxelPool::container_type::const_iterator j(vp.find(coord));
+    //     if (j != vp.end())
     //     {
-    //         return (&mt);
+    //         return (&vp);
     //     }
     // }
 
@@ -263,10 +263,10 @@ bool LatticeSpaceCellListImpl::make_molecular_type(const Species& sp, Real radiu
     }
 
     boost::shared_ptr<MoleculePool>
-        mt(new MolecularType(sp, location, radius, D));
+        vp(new MolecularType(sp, location, radius, D));
     std::pair<molecule_pool_map_type::iterator, bool>
         retval(molecule_pools_.insert(
-            molecule_pool_map_type::value_type(sp, mt)));
+            molecule_pool_map_type::value_type(sp, vp)));
     if (!retval.second)
     {
         throw AlreadyExists("never reach here.");
@@ -276,30 +276,30 @@ bool LatticeSpaceCellListImpl::make_molecular_type(const Species& sp, Real radiu
 
 std::pair<LatticeSpaceCellListImpl::coordinate_type, bool>
     LatticeSpaceCellListImpl::move_to_neighbor(
-        VoxelPool* const& from_mt, VoxelPool* const& loc,
+        VoxelPool* const& from_vp, VoxelPool* const& loc,
         LatticeSpaceCellListImpl::coordinate_id_pair_type& info, const Integer nrand)
 {
     const coordinate_type from(info.coordinate);
     coordinate_type to(get_neighbor(from, nrand));
 
-    VoxelPool* to_mt(find_voxel_pool(to));
+    VoxelPool* to_vp(find_voxel_pool(to));
 
-    if (to_mt != loc)
+    if (to_vp != loc)
     {
-        if (to_mt == border_)
+        if (to_vp == border_)
         {
             return std::make_pair(from, false);
         }
-        else if (to_mt != periodic_)
+        else if (to_vp != periodic_)
         {
             return std::make_pair(to, false);
         }
 
-        // to_mt == periodic_
+        // to_vp == periodic_
         to = periodic_transpose(to);
-        to_mt = find_voxel_pool(to);
+        to_vp = find_voxel_pool(to);
 
-        if (to_mt != loc)
+        if (to_vp != loc)
         {
             return std::make_pair(to, false);
         }
@@ -307,16 +307,16 @@ std::pair<LatticeSpaceCellListImpl::coordinate_type, bool>
 
     info.coordinate = to; //XXX: updating data
 
-    to_mt->replace_voxel(to, from);
+    to_vp->replace_voxel(to, from);
 
-    if (to_mt != vacant_) // (!to_mt->is_vacant())
+    if (to_vp != vacant_) // (!to_vp->is_vacant())
     {
-        update_matrix(from, to_mt);
-        update_matrix(to, from_mt);
+        update_matrix(from, to_vp);
+        update_matrix(to, from_vp);
     }
     else
     {
-        update_matrix(from, to, from_mt);
+        update_matrix(from, to, from_vp);
     }
     return std::make_pair(to, true);
 }
@@ -371,9 +371,9 @@ bool LatticeSpaceCellListImpl::make_structure_type(
     }
 
     boost::shared_ptr<VoxelPool>
-        mt(new StructureType(sp, location, voxel_radius_, dimension));
+        vp(new StructureType(sp, location, voxel_radius_, dimension));
     std::pair<voxel_pool_map_type::iterator, bool>
-        retval(voxel_pools_.insert(voxel_pool_map_type::value_type(sp, mt)));
+        retval(voxel_pools_.insert(voxel_pool_map_type::value_type(sp, vp)));
     if (!retval.second)
     {
         throw AlreadyExists("never reach here.");

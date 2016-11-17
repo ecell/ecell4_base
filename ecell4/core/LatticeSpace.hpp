@@ -165,7 +165,7 @@ public:
     virtual bool on_structure(const Voxel& v) = 0;
 
     virtual std::pair<coordinate_type, bool> move_to_neighbor(
-        VoxelPool* const& from_mt, VoxelPool* const& loc,
+        VoxelPool* const& from, VoxelPool* const& loc,
         coordinate_id_pair_type& info, const Integer nrand) = 0;
 
     /**

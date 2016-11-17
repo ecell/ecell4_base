@@ -118,15 +118,15 @@ public:
     std::pair<coordinate_type, bool> move_to_neighbor(
         coordinate_id_pair_type& info, Integer nrand);
     std::pair<coordinate_type, bool> move_to_neighbor(
-        VoxelPool* const& from_mt, VoxelPool* const& loc,
+        VoxelPool* const& from_vp, VoxelPool* const& loc,
         coordinate_id_pair_type& info, const Integer nrand);
 
     coordinate_type get_neighbor_boundary(
         const coordinate_type& coord, const Integer& nrand) const
     {
         coordinate_type const dest = get_neighbor(coord, nrand);
-        VoxelPool* dest_mt(voxels_.at(dest));
-        return (dest_mt != periodic_ ? dest : periodic_transpose(dest));
+        VoxelPool* dest_vp(voxels_.at(dest));
+        return (dest_vp != periodic_ ? dest : periodic_transpose(dest));
     }
 
     inline bool is_periodic() const
@@ -188,7 +188,7 @@ protected:
             coordinate_id_pair_type& info, coordinate_type to);
     coordinate_type get_coord(const ParticleID& pid) const;
 
-    Integer count_voxels(const boost::shared_ptr<VoxelPool>& mt) const;
+    Integer count_voxels(const boost::shared_ptr<VoxelPool>& vp) const;
 
 protected:
 
