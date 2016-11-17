@@ -374,21 +374,6 @@ public:
         return rng_;
     }
 
-    const Integer col_size() const
-    {
-        return (*space_).col_size();
-    }
-
-    const Integer row_size() const
-    {
-        return (*space_).row_size();
-    }
-
-    const Integer layer_size() const
-    {
-        return (*space_).layer_size();
-    }
-
     const Integer size() const
     {
         return (*space_).size();
@@ -409,6 +394,11 @@ public:
         return (*space_).inner_shape();
     }
 
+    const coordinate_type inner2coordinate(const coordinate_type inner)
+    {
+        return ecell4::inner2coordinate(*space_, inner);
+    }
+
     coordinate_type position2coordinate(const Real3& pos) const
     {
         return (*space_).position2coordinate(pos);
@@ -417,26 +407,6 @@ public:
     const Real3 coordinate2position(const coordinate_type& coord) const
     {
         return (*space_).coordinate2position(coord);
-    }
-
-    const Real3 global2position(const Integer3& global) const
-    {
-        return (*space_).global2position(global);
-    }
-
-    const Integer3 position2global(const Real3& pos) const
-    {
-        return (*space_).position2global(pos);
-    }
-
-    coordinate_type global2coordinate(const Integer3& global) const
-    {
-        return (*space_).global2coordinate(global);
-    }
-
-    const Integer3 coordinate2global(coordinate_type coord) const
-    {
-        return (*space_).coordinate2global(coord);
     }
 
     /**
@@ -547,7 +517,8 @@ protected:
 
     Integer add_structure2(const Species& sp, const boost::shared_ptr<const Shape> shape);
     Integer add_structure3(const Species& sp, const boost::shared_ptr<const Shape> shape);
-    bool is_surface_voxel(const Integer3& g, const boost::shared_ptr<const Shape> shape) const;
+    bool is_surface_voxel(const coordinate_type coord,
+            const boost::shared_ptr<const Shape> shape) const;
 
 protected:
 

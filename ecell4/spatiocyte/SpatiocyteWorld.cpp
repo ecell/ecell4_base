@@ -321,7 +321,8 @@ bool SpatiocyteWorld::add_molecules(const Species& sp, const Integer& num)
     Integer count(0);
     while (count < num)
     {
-        const coordinate_type coord(inner2coordinate(*this, rng()->uniform_int(0, inner_size() - 1)));  //XXX: just for consistency. rather use below
+        const coordinate_type coord(inner2coordinate(rng()->uniform_int(0, inner_size() - 1)));
+        //XXX: just for consistency. rather use below
         // const coordinate_type coord(rng()->uniform_int(0, size() - 1));
 
         const Voxel v(sp, coord, info.radius, info.D, info.loc);
@@ -388,108 +389,33 @@ Integer SpatiocyteWorld::add_structure(
 
 Integer SpatiocyteWorld::add_structure3(const Species& sp, const boost::shared_ptr<const Shape> shape)
 {
-    // Real3 l, u;
-    // shape->bounding_box(edge_lengths(), l, u);
-    // const Real sigma(voxel_radius() * 2);
-    // const unsigned int ndim(3);
-    // for (unsigned int i(0); i != ndim; ++i)
-    // {
-    //     l[i] = std::max(0.0, l[i] - sigma);
-    //     u[i] = std::min(edge_lengths()[i], u[i] + sigma);
-    // }
-    // const Integer3 lower(position2global(l)), upper(position2global(u));
-
     const SpatiocyteWorld::molecule_info_type info(get_molecule_info(sp));
     Integer count(0);
-    for (Integer col(0); col < col_size(); ++col)
-    {
-        for (Integer row(0); row < row_size(); ++row)
-        {
-            for (Integer layer(0); layer < layer_size(); ++layer)
-            {
-    // for (Integer col(lower[0]); col < upper[0]; ++col)
-    // {
-    //     for (Integer row(lower[1]); row < upper[1]; ++row)
-    //     {
-    //         for (Integer layer(lower[2]); layer < upper[2]; ++layer)
-    //         {
-                const Integer3 g(col, row, layer);
-                const Real L(shape->is_inside(global2position(g)));
-                if (L > 0)
-                {
-                    continue;
-                }
+    for (coordinate_type inner(0); inner < inner_size(); ++inner) {
+        const coordinate_type coord(inner2coordinate(inner));
+        const Real L(shape->is_inside(coordinate2position(coord)));
+        if (L > 0)
+            continue;
 
-                const Voxel v(sp, global2coordinate(g),
-                    info.radius, info.D, info.loc);
-                if (new_voxel_structure(v).second)
-                {
-                    ++count;
-                }
-            }
-        }
+        const Voxel v(sp, coord, info.radius, info.D, info.loc);
+        if (new_voxel_structure(v).second)
+            ++count;
     }
     return count;
 }
 
 Integer SpatiocyteWorld::add_structure2(const Species& sp, const boost::shared_ptr<const Shape> shape)
 {
-    // std::ofstream fout("shape.csv");
-    // fout << "# " << sp.serial() << std::endl;
-    // const unsigned int n(50);
-    // const Real3 L(edge_lengths() / static_cast<Real>(n));
-    // for (unsigned int i(0); i < n * n * n; ++i)
-    // {
-    //     const unsigned int x(i % n);
-    //     const unsigned int y((i / n) % n);
-    //     const unsigned int z(i / (n * n));
-    //     if (shape->test_AABB(Real3(x * L[0], y * L[1], z * L[2]),
-    //         Real3((x + 1) * L[0], (y + 1) * L[1], (z + 1) * L[2])))
-    //     {
-    //         fout << x << "," << y << "," << z << std::endl;
-    //     }
-    // }
-    // fout.close();
-
-    // Real3 l, u;
-    // shape->bounding_box(edge_lengths(), l, u);
-    // const Real sigma(voxel_radius() * 2);
-    // const unsigned int ndim(3);
-    // for (unsigned int i(0); i != ndim; ++i)
-    // {
-    //     l[i] = std::max(0.0, l[i] - sigma);
-    //     u[i] = std::min(edge_lengths()[i], u[i] + sigma);
-    // }
-    // const Integer3 lower(position2global(l)), upper(position2global(u));
-
     const SpatiocyteWorld::molecule_info_type info(get_molecule_info(sp));
     Integer count(0);
-    for (Integer col(0); col < col_size(); ++col)
-    {
-        for (Integer row(0); row < row_size(); ++row)
-        {
-            for (Integer layer(0); layer < layer_size(); ++layer)
-            {
-    // for (Integer col(lower[0]); col < upper[0]; ++col)
-    // {
-    //     for (Integer row(lower[1]); row < upper[1]; ++row)
-    //     {
-    //         for (Integer layer(lower[2]); layer < upper[2]; ++layer)
-    //         {
-                const Integer3 g(col, row, layer);
-                if (!is_surface_voxel(g, shape))
-                {
-                    continue;
-                }
+    for (coordinate_type inner(0); inner < inner_size(); ++inner) {
+        const coordinate_type coord(inner2coordinate(inner));
+        if (!is_surface_voxel(coord, shape))
+            continue;
 
-                const Voxel v(sp, global2coordinate(g),
-                    info.radius, info.D, info.loc);
-                if (new_voxel_structure(v).second)
-                {
-                    ++count;
-                }
-            }
-        }
+        const Voxel v(sp, coord, info.radius, info.D, info.loc);
+        if (new_voxel_structure(v).second)
+            ++count;
     }
     return count;
 }
@@ -501,22 +427,16 @@ Integer SpatiocyteWorld::add_interface(const Species& sp)
 }
 
 bool SpatiocyteWorld::is_surface_voxel(
-    const Integer3& g, const boost::shared_ptr<const Shape> shape) const
+    const coordinate_type coord, const boost::shared_ptr<const Shape> shape) const
 {
-    const Real L(shape->is_inside(global2position(g)));
+    const Real L(shape->is_inside(coordinate2position(coord)));
     if (L > 0 || L < -2 * voxel_radius())
-    {
         return false;
-    }
 
-    const SpatiocyteWorld::coordinate_type coord(global2coordinate(g));
     for (Integer i(0); i < 12; ++i)
-    {
         if (shape->is_inside(coordinate2position(get_neighbor(coord, i))) > 0)
-        {
             return true;
-        }
-    }
+
     return false;
 }
 

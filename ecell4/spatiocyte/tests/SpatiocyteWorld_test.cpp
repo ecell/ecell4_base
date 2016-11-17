@@ -161,22 +161,20 @@ BOOST_AUTO_TEST_CASE(SpatiocyteWorld_test_neighbor)
         rng(new GSLRandomNumberGenerator());
     SpatiocyteWorld world(edge_lengths, voxel_radius, rng);
 
-    const Integer3 center(
-            world.col_size()/2, world.row_size()/2, world.layer_size()/2);
-    const SpatiocyteWorld::coordinate_type cc(world.global2coordinate(center));
-    const Real3 cp(world.global2position(center));
+    const SpatiocyteWorld::coordinate_type coord(515151);
+    const Real3 cp(world.coordinate2position(coord));
 
     Species sp(std::string("TEST"));
     sp.set_attribute("radius", "2.5e-9");
     sp.set_attribute("D", "1e-12");
-    const Integer n(world.add_neighbors(sp, cc));
+    const Integer n(world.add_neighbors(sp, coord));
     std::vector<std::pair<ParticleID, Particle> > particles(
             world.list_particles());
     std::ofstream ofs("neighbor.txt");
     ofs << "center" << std::endl;
     // ofs << "(" << cp[0] << "," << cp[1] << "," << cp[2] << ") "
-    //     << world.coordinate2coord(cc) << std::endl;
-    ofs << "(" << cp[0] << "," << cp[1] << "," << cp[2] << ") " << cc << std::endl;
+    //     << world.coordinate2coord(coord) << std::endl;
+    ofs << "(" << cp[0] << "," << cp[1] << "," << cp[2] << ") " << coord << std::endl;
     for (std::vector<std::pair<ParticleID, Particle> >::iterator itr(
                 particles.begin()); itr != particles.end(); ++itr)
     {
@@ -229,10 +227,8 @@ BOOST_AUTO_TEST_CASE(SpatiocyteWorld_test_move)
     sp.set_attribute("radius", "2.5e-9");
     sp.set_attribute("D", "1e-12");
 
-    SpatiocyteWorld::coordinate_type from(
-        inner2coordinate(world, 1034));
-    SpatiocyteWorld::coordinate_type to(
-        inner2coordinate(world, 786420));
+    SpatiocyteWorld::coordinate_type from(world.inner2coordinate(1034));
+    SpatiocyteWorld::coordinate_type to(world.inner2coordinate(786420));
 
     BOOST_CHECK(world.new_voxel(sp, from).second);
     BOOST_CHECK(world.move(from, to));

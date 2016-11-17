@@ -86,7 +86,7 @@ BOOST_AUTO_TEST_CASE(SpatiocyteSimulator_test_step_with_single_particle)
     boost::shared_ptr<SpatiocyteWorld> world(
             new SpatiocyteWorld(edge_lengths, voxel_radius, rng));
 
-    BOOST_CHECK(world->new_voxel(sp, inner2coordinate(*world, 36)).second);
+    BOOST_CHECK(world->new_voxel(sp, world->inner2coordinate(36)).second);
 
     SpatiocyteSimulator sim(model, world);
 
@@ -422,9 +422,10 @@ BOOST_AUTO_TEST_CASE(LattiecSimulator_test_scheduler)
     boost::shared_ptr<SpatiocyteWorld> world(
             new SpatiocyteWorld(edge_lengths, voxel_radius, rng));
 
-    SpatiocyteWorld::coordinate_type c1(world->global2coordinate(Integer3(40,34,56))),
-          c2(world->global2coordinate(Integer3(32,50,24))),
-          c3(world->global2coordinate(Integer3(60,36,89)));
+    SpatiocyteWorld::coordinate_type
+        c1(world->inner2coordinate(41*400*400+35*400+56)),
+        c2(world->inner2coordinate(33*400*400+51*400+25)),
+        c3(world->inner2coordinate(61*400*400+37*400+90));
     BOOST_CHECK(world->new_voxel(sp1, c1).second);
     BOOST_CHECK(world->new_voxel(sp2, c2).second);
     BOOST_CHECK(world->new_voxel(sp3, c3).second);
@@ -432,18 +433,6 @@ BOOST_AUTO_TEST_CASE(LattiecSimulator_test_scheduler)
     SpatiocyteSimulator sim(model, world);
 
     sim.initialize();
-
-    // const VoxelPool
-    //     *mt1(world->find_voxel_pool(sp1)),
-    //     *mt2(world->find_voxel_pool(sp2)),
-    //     *mt3(world->find_voxel_pool(sp3));
-    // const MoleculePool
-    //     *mt1(dynamic_cast<const MoleculePool*>(world->find_voxel_pool(sp1))),
-    //     *mt2(dynamic_cast<const MoleculePool*>(world->find_voxel_pool(sp2))),
-    //     *mt3(dynamic_cast<const MoleculePool*>(world->find_voxel_pool(sp3)));
-    // BOOST_ASSERT(mt1);
-    // BOOST_ASSERT(mt2);
-    // BOOST_ASSERT(mt3);
 
     BOOST_ASSERT(world->has_molecule_pool(sp1));
     BOOST_ASSERT(world->has_molecule_pool(sp2));
