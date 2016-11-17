@@ -140,11 +140,6 @@ public:
 
     // virtual void update_voxel(const Voxel& v) = 0;
     virtual bool update_voxel(const ParticleID& pid, const Voxel& v) = 0;
-    virtual bool update_voxel_without_location_check(const ParticleID& pid, const Voxel& v)
-    {
-        throw NotSupported(
-            "update_voxel_without_location_check(const ParticleID&, const Voxel&) is not supported by this space class");
-    }
 
     virtual std::pair<ParticleID, Voxel> get_voxel(const ParticleID& pid) const = 0;
     virtual std::pair<ParticleID, Voxel> get_voxel(const coordinate_type& coord) const = 0;

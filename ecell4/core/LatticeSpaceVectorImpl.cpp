@@ -881,47 +881,6 @@ bool LatticeSpaceVectorImpl::update_voxel(const ParticleID& pid, const Voxel& v)
     return true;
 }
 
-bool LatticeSpaceVectorImpl::update_voxel_without_location_check(
-        const ParticleID& pid, const Voxel& v)
-{
-    const LatticeSpaceVectorImpl::coordinate_type& to_coord(v.coordinate());
-    if (!is_in_range(to_coord))
-    {
-        throw NotSupported("Out of bounds");
-    }
-
-    VoxelPool* new_mt(get_voxel_pool(v)); //XXX: need MoleculeInfo
-    VoxelPool* dest_mt(find_voxel_pool(to_coord));
-
-    const LatticeSpaceVectorImpl::coordinate_type
-        from_coord(pid != ParticleID() ? get_coord(pid) : -1);
-    if (from_coord != -1)
-    {
-        // move
-        VoxelPool* src_mt(voxels_.at(from_coord));
-        src_mt->remove_voxel_if_exists(from_coord);
-
-        //XXX: use location?
-        dest_mt->replace_voxel(to_coord, from_coord);
-        voxel_container::iterator from_itr(voxels_.begin() + from_coord);
-        (*from_itr) = dest_mt;
-
-        new_mt->add_voxel_without_checking(coordinate_id_pair_type(pid, to_coord));
-        voxel_container::iterator to_itr(voxels_.begin() + to_coord);
-        (*to_itr) = new_mt;
-        return false;
-    }
-
-    // new
-    dest_mt->remove_voxel_if_exists(to_coord);
-
-    new_mt->add_voxel_without_checking(coordinate_id_pair_type(pid, to_coord));
-    voxel_container::iterator to_itr(voxels_.begin() + to_coord);
-    (*to_itr) = new_mt;
-    return true;
-
-}
-
 bool LatticeSpaceVectorImpl::make_structure_type(const Species& sp,
     Shape::dimension_kind dimension, const std::string loc)
 {
