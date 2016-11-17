@@ -485,7 +485,7 @@ public:
     //         throw NotSupported("ParticleID is needed/lost.");
     //     }
 
-    //     new_mt->add_voxel_without_checking(src_mt->pop(coord));
+    //     new_mt->add_voxel(src_mt->pop(coord));
     //     update_matrix(coord, new_mt);
     // }
 
@@ -530,8 +530,7 @@ public:
                 return false;
             }
 
-            mt->location()->add_voxel_without_checking(
-                coordinate_id_pair_type(ParticleID(), coord));
+            mt->location()->add_voxel(coordinate_id_pair_type(ParticleID(), coord));
             update_matrix(coord, mt->location());
             return true;
         }

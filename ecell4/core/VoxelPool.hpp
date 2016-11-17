@@ -152,7 +152,7 @@ public:
 
 public:
 
-    virtual void add_voxel_without_checking(const coordinate_id_pair_type& info)
+    virtual void add_voxel(const coordinate_id_pair_type& info)
     {
         if (info.pid != ParticleID())
         {
@@ -226,7 +226,7 @@ public:
 
 public:
 
-    virtual void add_voxel_without_checking(const coordinate_id_pair_type& info)
+    virtual void add_voxel(const coordinate_id_pair_type& info)
     {
         voxels_.push_back(info);
     }

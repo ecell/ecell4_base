@@ -519,7 +519,7 @@ bool LatticeSpaceVectorImpl::remove_voxel(const ParticleID& pid)
 
             voxel_container::iterator itr(voxels_.begin() + coord);
             (*itr) = mt->location();
-            mt->location()->add_voxel_without_checking(
+            mt->location()->add_voxel(
                 coordinate_id_pair_type(ParticleID(), coord));
             return true;
         }
@@ -538,7 +538,7 @@ bool LatticeSpaceVectorImpl::remove_voxel(const coordinate_type& coord)
     if (mt->remove_voxel_if_exists(coord))
     {
         (*itr) = mt->location();
-        mt->location()->add_voxel_without_checking(
+        mt->location()->add_voxel(
             coordinate_id_pair_type(ParticleID(), coord));
         return true;
     }
@@ -824,7 +824,7 @@ Integer LatticeSpaceVectorImpl::num_voxels() const
 //         throw NotSupported("ParticleID is needed/lost.");
 //     }
 // 
-//     new_mt->add_voxel_without_checking(src_mt->pop(coord));
+//     new_mt->add_voxel(src_mt->pop(coord));
 //     voxel_container::iterator itr(voxels_.begin() + coord);
 //     (*itr) = new_mt;
 // }
@@ -866,7 +866,7 @@ bool LatticeSpaceVectorImpl::update_voxel(const ParticleID& pid, const Voxel& v)
         voxel_container::iterator from_itr(voxels_.begin() + from_coord);
         (*from_itr) = dest_mt;
 
-        new_mt->add_voxel_without_checking(coordinate_id_pair_type(pid, to_coord));
+        new_mt->add_voxel(coordinate_id_pair_type(pid, to_coord));
         voxel_container::iterator to_itr(voxels_.begin() + to_coord);
         (*to_itr) = new_mt;
         return false;
@@ -875,7 +875,7 @@ bool LatticeSpaceVectorImpl::update_voxel(const ParticleID& pid, const Voxel& v)
     // new
     dest_mt->remove_voxel_if_exists(to_coord);
 
-    new_mt->add_voxel_without_checking(coordinate_id_pair_type(pid, to_coord));
+    new_mt->add_voxel(coordinate_id_pair_type(pid, to_coord));
     voxel_container::iterator to_itr(voxels_.begin() + to_coord);
     (*to_itr) = new_mt;
     return true;
@@ -1080,7 +1080,7 @@ bool LatticeSpaceVectorImpl::add_voxels(const Species sp, std::vector<std::pair<
         const coordinate_type coord((*itr).second);
         VoxelPool* src_mt(find_voxel_pool(coord));
         src_mt->remove_voxel_if_exists(coord);
-        mtb->add_voxel_without_checking(coordinate_id_pair_type(pid, coord));
+        mtb->add_voxel(coordinate_id_pair_type(pid, coord));
         voxel_container::iterator vitr(voxels_.begin() + coord);
         (*vitr) = mtb;
     }
