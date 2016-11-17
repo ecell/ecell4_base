@@ -1,19 +1,10 @@
 #ifndef __ECELL4_IDENTIFIER_HPP
 #define __ECELL4_IDENTIFIER_HPP
 
-#include "config.h"
-
 #include <ostream>
-#if defined(HAVE_TR1_FUNCTIONAL)
-#include <tr1/functional>
-#elif defined(HAVE_STD_HASH)
-#include <functional>
-#elif defined(HAVE_BOOST_FUNCTIONAL_HASH_HPP)
-#include <boost/functional/hash.hpp>
-#endif
-
 #include <utility>
-
+#include <ecell4/core/config.h>
+#include "hash.hpp"
 
 namespace ecell4
 {
@@ -271,19 +262,7 @@ inline std::basic_ostream<Tstrm_, Ttraits_>& operator<<(std::basic_ostream<Tstrm
 
 } // ecell4
 
-#if defined(HAVE_TR1_FUNCTIONAL)
-namespace std
-{
-
-namespace tr1
-{
-#elif defined(HAVE_STD_HASH)
-namespace std
-{
-#elif defined(HAVE_BOOST_FUNCTIONAL_HASH_HPP)
-namespace boost
-{
-#endif
+ECELL4_DEFINE_HASH_BEGIN()
 
 template<>
 struct hash<ecell4::ParticleID>
@@ -294,14 +273,6 @@ struct hash<ecell4::ParticleID>
     }
 };
 
-#if defined(HAVE_TR1_FUNCTIONAL)
-} // tr1
-
-} // std
-#elif defined(HAVE_STD_HASH)
-} // std
-#elif defined(HAVE_BOOST_FUNCTIONAL_HASH_HPP)
-} // boost
-#endif
+ECELL4_DEFINE_HASH_END()
 
 #endif /* __ECELL4_IDENTIFIER_HPP */

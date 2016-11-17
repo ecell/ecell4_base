@@ -3,12 +3,14 @@
 
 #include <map>
 
+#include <ecell4/core/config.h>
+
 #include "types.hpp"
 #include "Real3.hpp"
 #include "Species.hpp"
 #include "Identifier.hpp"
-#include "config.h"
 
+#include "hash.hpp"
 
 namespace ecell4
 {
@@ -168,13 +170,7 @@ inline std::basic_ostream<Tstrm_, Ttraits_>& operator<<(std::basic_ostream<Tstrm
 
 } // ecell4
 
-#if defined(HAVE_TR1_FUNCTIONAL)
-namespace std { namespace tr1 {
-#elif defined(HAVE_STD_HASH)
-namespace std {
-#elif defined(HAVE_BOOST_FUNCTIONAL_HASH_HPP)
-namespace boost {
-#endif
+ECELL4_DEFINE_HASH_BEGIN()
 
 template<>
 struct hash<ecell4::Particle>
@@ -191,12 +187,6 @@ struct hash<ecell4::Particle>
     }
 };
 
-#if defined(HAVE_TR1_FUNCTIONAL)
-} } // namespace std::tr1
-#elif defined(HAVE_STD_HASH)
-} // namespace std
-#elif defined(HAVE_BOOST_FUNCTIONAL_HASH_HPP)
-} // namespace boost
-#endif
+ECELL4_DEFINE_HASH_END()
 
 #endif /* __ECELL4_PARTICLE_HPP */

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="UTF-8">
+    <title>ecell4</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+    <link rel="shortcut icon" href="images/favicon.ico">
+  </head>
+  <body>
+    <section class="page-header">
+      <h1 class="project-name">E-Cell System version 4</h1>
+      <h2 class="project-tagline">A multi-algorithm, multi-timescale, multi-spatial-representation biochemical simulation environment</h2>
+      <a href="https://github.com/ecell/ecell4" class="btn">View on GitHub</a>
+      <a href="http://mybinder.org/repo/ecell/ecell4-notebooks" class="btn">Run without installing</a>
+      <a href="http://ecell4.readthedocs.org/en/latest/" class="btn">Documentation</a>
+      <h2 class="project-tagline"><a href="http://ecell4.readthedocs.org/en/latest/installation.html" style="color: #fff; text-decoration: underline">installation</a> <span style="font-size: 0.7em">and</span> <a href="http://ecell4.readthedocs.org/en/latest/tutorial1/tutorial1.html" style="color: #fff; text-decoration: underline">usage</a></h2>
+    </section>
+
+    <section class="main-content">
+      <h1>
+<a id="hello-e-cell4" class="anchor" href="#hello-e-cell4" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Hello E-Cell4</h1>
+
+<p>E-Cell System is a software platform for modeling, simulation and analysis of complex, heterogeneous and multi-scale systems like the cell.</p>
+
+<div class="highlight highlight-source-python"><pre><span class="pl-k">from</span> ecell4 <span class="pl-k">import</span> <span class="pl-k">*</span>
+
+<span class="pl-k">with</span> reaction_rules():
+    <span class="pl-c1">A</span> <span class="pl-k">+</span> <span class="pl-c1">B</span> <span class="pl-k">==</span> <span class="pl-c1">C</span> <span class="pl-k">|</span> (<span class="pl-c1">0.01</span>, <span class="pl-c1">0.3</span>)
+
+run_simulation(<span class="pl-c1">10</span>, {<span class="pl-s"><span class="pl-pds">'</span>A<span class="pl-pds">'</span></span>: <span class="pl-c1">60</span>, <span class="pl-s"><span class="pl-pds">'</span>B<span class="pl-pds">'</span></span>: <span class="pl-c1">60</span>}, <span class="pl-v">solver</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">'</span>gillespie<span class="pl-pds">'</span></span>)</pre></div>
+
+<div style="text-align: center"><img src="images/gillespie.png" alt="gillespie"></div>
+
+<h1>
+<a id="features" class="anchor" href="#features" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Features</h1>
+
+<div id="subfeatures" style="width: 100%">
+    <div id="subfeature1" class="feature-tile"><h3 style="text-align: left">Single particle simulations</h3><p style="font-size: 0.8em">This is a description about feature1. <a href="http://gfrd.org">The enhanced Green's Function Reaction Dynamics (eGFRD) method</a>, <a href="http://spatiocyte.org">Spatiocyte</a>, and the Reaction Brownian Dynamics (RBD) method.</p></div>
+    <div id="subfeature2" class="feature-tile"><h3 style="text-align: left">Multi-algorithm support</h3><p style="font-size: 0.85em">This is a description about feature2.</p></div>
+    <div id="subfeature3" class="feature-tile"><h3 style="text-align: left">Rule-based modeling</h3><p style="font-size: 0.85em">This is a description about feature3.</p></div>
+    <div id="subfeature4" class="feature-tile"><h3 style="text-align: left">Python programmable</h3><p style="font-size: 0.85em">This is a description about feature4.</p></div>
+    <div id="subfeature5" class="feature-tile"><h3 style="text-align: left">Interactive visualizations on Jupyter Notebook</h3><p style="font-size: 0.85em">This is a description about feature5.</p></div>
+    <div id="subfeature6" class="feature-tile"><h3 style="text-align: left">Bioinformatics integration</h3><p style="font-size: 0.85em">Garuda gadget, data source, etc.</p></div>
+    <div style="clear: both"></div>
+</div>
+
+<h1>
+<a id="examples" class="anchor" href="#examples" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Examples</h1>
+<div id="subexamples" style="width: 100%">
+    <div id="subexample1" class="example-tile"><p style="font-size: 0.9em"><a href="https://github.com/ecell/ecell4-notebooks/blob/master/Examples/Drosophila%20Circadian%20Clock.ipynb"><img src="images/drosophila.png" alt="attractors" style="height: 18em"></a></p></div>
+    <div id="subexample2" class="example-tile"><p style="font-size: 0.9em"><a href="https://github.com/ecell/ecell4-notebooks/blob/master/Examples/MinDE%20System%20with%20Spatiocyte%20Simulator.ipynb"><img src="images/minde.gif" alt="minde" style="height: 18em"></a></p></div>
+    <div id="subexample3" class="example-tile"><p style="font-size: 0.9em">This is a screenshot about example3.</p><div style="text-align: center"><a href="">notebook</a></div></div>
+    <div id="subexample4" class="example-tile"><p style="font-size: 0.9em"><a href="https://github.com/ecell/ecell4-notebooks/blob/master/Examples/Attractors.ipynb"><img src="images/attractors.png" alt="attractors" style="height: 18em"></a></p></div>
+    <div style="clear: both"></div>
+</div>
+<p style="text-align: center">For more exmaples and tutorials, see <a href="http://ecell4.readthedocs.org/en/latest/">documentation</a>.</p>
+
+<!-- <h3><a id="help" class="anchor" href="#help" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a><a href="https://gitter.im/ecell/ecell4">Help</a></h3> -->
+
+<h2>
+<a id="license" class="anchor" href="#license" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>License</h2>
+
+<p>This project is licensed under the terms of the GNU General Public License v2. See <a href="https://github.com/ecell/ecell4/blob/master/licenses/LICENSE">LICENSE</a>.</p>
+<div style="text-align: center"><img src="https://upload.wikimedia.org/wikipedia/en/d/dc/RIKEN_logo.gif" alt="RIKEN_logo" height=120px>
+<!-- <img src="https://upload.wikimedia.org/wikipedia/commons/c/c3/Keio_Logo.jpg" alt="Keio_Logo" height=120px> --></div>
+
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/ecell/ecell4">E-Cell System version 4</a> is maintained by <a href="https://github.com/ecell">ecell</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </footer>
+
+    </section>
+
+  </body>
+</html>

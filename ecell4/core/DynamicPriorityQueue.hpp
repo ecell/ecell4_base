@@ -5,9 +5,7 @@
 // modified by Mozoyoshi Koizumi
 //
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif /* HAVE_CONFIG_H */
+#include <ecell4/core/config.h>
 
 #include <functional>
 #include <vector>

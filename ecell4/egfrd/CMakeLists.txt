@@ -1,3 +1,32 @@
+check_cxx_source_compiles("#include <math.h>
+int main() { double a = INFINITY; return (int)a * 0; }"
+    HAVE_DECL_INFINITY)
+check_cxx_source_compiles("#include <math.h>
+int main() { isfinite(0.); return 0; }"
+    HAVE_ISFINITE)
+check_cxx_source_compiles("#include <math.h>
+int main() { double a, b; sincos(0., &a, &b); return 0; }"
+    HAVE_SINCOS)
+
+# find_library(BOOST_REGEX_LIBRARIES boost_regex)
+
+configure_file(
+    ${PROJECT_SOURCE_DIR}/ecell4/egfrd/config.h.in
+    ${PROJECT_BINARY_DIR}/ecell4/egfrd/config.h)
+
+execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/ecell4/egfrd)
+
+if (NOT NO_BESSEL_TABLE)
+add_subdirectory(tablegen)
+endif()
+
+# add_definitions(-DHAVE_CONFIG_H -DHAVE_INLINE)
+add_definitions(-DHAVE_CONFIG_H)
+
+if (NO_SHARED)
+    return()
+endif()
+
 set(CPP_FILES
     Logger.cpp ConsoleAppender.cpp utils.cpp findRoot.cpp funcSum.cpp
     GreensFunction1DAbsAbs.cpp GreensFunction1DRadAbs.cpp
@@ -18,32 +47,7 @@ set(UTILS_HPP_FILES
 # CPP_FILES BasicNetworkRulesImpl.cpp NetworkRules.cpp SpeciesType.cpp StructureType.cpp
 # HPP_FILES StructureUtils.hpp EGFRDSimulatorFactory.hpp ParticleSimulatorFactory.hpp Model.hpp ParticleModel.hpp BasicNetworkRulesImpl.hpp NetworkRules.hpp ReactionRule.hpp SpeciesInfo.hpp BDSimulator.hpp SpeciesTypeID.hpp SpeciesType.hpp ParticleID.hpp StructureType.hpp bessel.hpp PyEventScheduler.hpp NetworkRulesWrapper.hpp BasicReactionRecorderImpl.hpp DynamicPriorityQueue.hpp EventScheduler.hpp SerialIDGenerator.hpp Surface.hpp SphericalSurface.hpp Structure.hpp CylindricalSurface.hpp PlanarSurface.hpp CuboidalRegion.hpp ParticleSimulationStructure.hpp Region.hpp Box.hpp Plane.hpp Cylinder.hpp Shape.hpp Sphere.hpp Point.hpp Vector3.hpp Identifier.hpp
 
-# find_library(BOOST_REGEX_LIBRARIES boost_regex)
-
-check_cxx_source_compiles("#include <math.h>
-int main() { double a = INFINITY; return (int)a * 0; }"
-    HAVE_DECL_INFINITY)
-check_cxx_source_compiles("#include <math.h>
-int main() { isfinite(0.); return 0; }"
-    HAVE_ISFINITE)
-check_cxx_source_compiles("#include <math.h>
-int main() { double a, b; sincos(0., &a, &b); return 0; }"
-    HAVE_SINCOS)
-
-configure_file(
-    ${PROJECT_SOURCE_DIR}/ecell4/egfrd/config.h.in
-    ${PROJECT_BINARY_DIR}/ecell4/egfrd/config.h)
-
-execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/ecell4/egfrd)
-
-if (NOT NO_BESSEL_TABLE)
-add_subdirectory(tablegen)
-endif()
-
 include_directories(${PROJECT_SOURCE_DIR}/ecell4/egfrd ${PROJECT_BINARY_DIR}/ecell4/egfrd)
-
-# add_definitions(-DHAVE_CONFIG_H -DHAVE_INLINE)
-add_definitions(-DHAVE_CONFIG_H)
 
 add_library(ecell4-egfrd SHARED
     ${CPP_FILES} ${HPP_FILES} ${UTILS_HPP_FILES}
@@ -51,7 +55,9 @@ add_library(ecell4-egfrd SHARED
 target_link_libraries(ecell4-egfrd ${GSL_LIBRARIES} ${GSL_CBLAS_LIBRARIES} ecell4-core)
 # target_link_libraries(ecell4-egfrd ecell4-core ${BOOST_REGEX_LIBRARIES})
 
-add_subdirectory(tests)
+set(ECELL4_SHARED_DIRS ${CMAKE_CURRENT_BINARY_DIR}:${ECELL4_SHARED_DIRS} PARENT_SCOPE)
+
+# add_subdirectory(tests)
 add_subdirectory(samples)
 
 install(TARGETS ecell4-egfrd DESTINATION lib)

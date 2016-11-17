@@ -1,8 +1,6 @@
 #include <stdexcept>
 #include <boost/algorithm/string.hpp>
 
-#include "config.h"
-
 #if defined(HAVE_BOOST_REGEX)
 #include <boost/regex.hpp>
 #elif defined(WIN32_MSC)

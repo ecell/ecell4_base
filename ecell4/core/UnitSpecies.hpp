@@ -4,15 +4,9 @@
 #include <iostream>
 #include <string>
 
-#include "config.h"
+#include <ecell4/core/config.h>
 
-#if defined(HAVE_TR1_FUNCTIONAL)
-#include <tr1/functional>
-#elif defined(HAVE_STD_HASH)
-#include <functional>
-#elif defined(HAVE_BOOST_FUNCTIONAL_HASH_HPP)
-#include <boost/functional/hash.hpp>
-#endif
+#include "hash.hpp"
 
 #include "types.hpp"
 #include "get_mapper_mf.hpp"
@@ -152,19 +146,7 @@ protected:
 
 } // ecell4
 
-#if defined(HAVE_TR1_FUNCTIONAL)
-namespace std
-{
-
-namespace tr1
-{
-#elif defined(HAVE_STD_HASH)
-namespace std
-{
-#elif defined(HAVE_BOOST_FUNCTIONAL_HASH_HPP)
-namespace boost
-{
-#endif
+ECELL4_DEFINE_HASH_BEGIN()
 
 template<>
 struct hash<ecell4::UnitSpecies>
@@ -175,15 +157,7 @@ struct hash<ecell4::UnitSpecies>
     }
 };
 
-#if defined(HAVE_TR1_FUNCTIONAL)
-} // tr1
+ECELL4_DEFINE_HASH_END()
 
-} // std
-#elif defined(HAVE_STD_HASH)
-} // std
-#elif defined(HAVE_BOOST_FUNCTIONAL_HASH_HPP)
-} // boost
-#endif
-
-#endif /* __ECELL4_SPECIES_HPP */
+#endif /* __ECELL4_UNIT_SPECIES_HPP */
 
