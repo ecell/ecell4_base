@@ -24,21 +24,21 @@ namespace ecell4
 /**
   * XXX: Just for the temporal use
   */
-template <typename Tspace_>
-Integer inner2coordinate(const Tspace_& w, const Integer coord)
-{
-    const Integer num_row(w.row_size());
-    const Integer num_col(w.col_size());
-    const Integer num_layer(w.layer_size());
-
-    const Integer NUM_COLROW(num_row * num_col);
-    const Integer LAYER(coord / NUM_COLROW);
-    const Integer SURPLUS(coord - LAYER * NUM_COLROW);
-    const Integer COL(SURPLUS / num_row);
-    const Integer3 g(COL, SURPLUS - COL * num_row, LAYER);
-
-    return w.global2coordinate(g);
-}
+// template <typename Tspace_>
+// Integer inner2coordinate(const Tspace_& w, const Integer coord)
+// {
+//     const Integer num_row(w.row_size());
+//     const Integer num_col(w.col_size());
+//     const Integer num_layer(w.layer_size());
+//
+//     const Integer NUM_COLROW(num_row * num_col);
+//     const Integer LAYER(coord / NUM_COLROW);
+//     const Integer SURPLUS(coord - LAYER * NUM_COLROW);
+//     const Integer COL(SURPLUS / num_row);
+//     const Integer3 g(COL, SURPLUS - COL * num_row, LAYER);
+//
+//     return w.global2coordinate(g);
+// }
 
 class LatticeSpace
     : public Space
@@ -177,16 +177,10 @@ public:
      Coordinate transformations: See LatticeSpaceBase for the implementation
      */
 
-    virtual const Integer col_size() const = 0;
-    virtual const Integer row_size() const = 0;
-    virtual const Integer layer_size() const = 0;
+    virtual coordinate_type inner2coordinate(const coordinate_type inner) const = 0;
 
-    virtual coordinate_type global2coordinate(const Integer3& global) const = 0;
-    virtual Integer3 coordinate2global(const coordinate_type& coord) const = 0;
     virtual Real3 coordinate2position(const coordinate_type& coord) const = 0;
     virtual coordinate_type position2coordinate(const Real3& pos) const = 0;
-    virtual Real3 global2position(const Integer3& global) const = 0;
-    virtual Integer3 position2global(const Real3& pos) const = 0;
 
     virtual coordinate_type get_neighbor(
         const coordinate_type& coord, const Integer& nrand) const = 0;
@@ -289,15 +283,7 @@ public:
     virtual Integer size() const = 0;
     virtual Integer3 shape() const = 0;
 
-    inline Integer inner_size() const
-    {
-        return col_size() * row_size() * layer_size();
-    }
-
-    inline Integer3 inner_shape() const
-    {
-        return Integer3(col_size(), row_size(), layer_size());
-    }
+    virtual Integer inner_size() const = 0;
 
 protected:
 
@@ -383,6 +369,20 @@ public:
     /**
      Coordinate transformations
      */
+
+    coordinate_type inner2coordinate(const coordinate_type inner) const {
+        const Integer num_row(row_size());
+        const Integer num_col(col_size());
+        const Integer num_layer(layer_size());
+
+        const Integer NUM_COLROW(num_row * num_col);
+        const Integer LAYER(inner / NUM_COLROW);
+        const Integer SURPLUS(inner - LAYER * NUM_COLROW);
+        const Integer COL(SURPLUS / num_row);
+        const Integer3 g(COL, SURPLUS - COL * num_row, LAYER);
+
+        return global2coordinate(g);
+    }
 
     coordinate_type global2coordinate(const Integer3& global) const
     {
@@ -509,6 +509,17 @@ public:
     {
         return Integer3(col_size_, row_size_, layer_size_);
     }
+
+    virtual Integer inner_size() const
+    {
+        return col_size() * row_size() * layer_size();
+    }
+
+    inline Integer3 inner_shape() const
+    {
+        return Integer3(col_size(), row_size(), layer_size());
+    }
+
 
 protected:
 

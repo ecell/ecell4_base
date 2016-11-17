@@ -389,14 +389,15 @@ public:
         return (*space_).inner_size();
     }
 
-    const Integer3 inner_shape() const
-    {
-        return (*space_).inner_shape();
-    }
+    // TODO
+    // const Integer3 inner_shape() const
+    // {
+    //     return (*space_).inner_shape();
+    // }
 
     const coordinate_type inner2coordinate(const coordinate_type inner)
     {
-        return ecell4::inner2coordinate(*space_, inner);
+        return (*space_).inner2coordinate(inner);
     }
 
     coordinate_type position2coordinate(const Real3& pos) const
