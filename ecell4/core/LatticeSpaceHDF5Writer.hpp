@@ -110,7 +110,7 @@ struct LatticeSpaceHDF5Traits
         }
 
         H5::CompType voxel_comp_type(get_voxel_comp());
-        hsize_t dims[] = {num_voxels};
+        hsize_t dims[] = {(hsize_t) num_voxels};
         H5::DataSpace dspace(/* RANK= */1, dims);
         boost::scoped_ptr<H5::DataSet> dset(new H5::DataSet(
             mtgroup->createDataSet("voxels", voxel_comp_type, dspace)));
