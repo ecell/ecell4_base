@@ -140,10 +140,10 @@ public:
 
     // virtual void update_voxel(const Voxel& v) = 0;
     virtual bool update_voxel(const ParticleID& pid, const Voxel& v) = 0;
-    virtual bool update_voxel_without_checking(const ParticleID& pid, const Voxel& v)
+    virtual bool update_voxel_without_location_check(const ParticleID& pid, const Voxel& v)
     {
         throw NotSupported(
-            "update_voxel_without_chekcing(const ParticleID&, const Voxel&) is not supported by this space class");
+            "update_voxel_without_location_check(const ParticleID&, const Voxel&) is not supported by this space class");
     }
 
     virtual std::pair<ParticleID, Voxel> get_voxel(const ParticleID& pid) const = 0;

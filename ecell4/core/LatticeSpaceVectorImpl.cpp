@@ -881,7 +881,8 @@ bool LatticeSpaceVectorImpl::update_voxel(const ParticleID& pid, const Voxel& v)
     return true;
 }
 
-bool LatticeSpaceVectorImpl::update_voxel_without_checking(const ParticleID& pid, const Voxel& v)
+bool LatticeSpaceVectorImpl::update_voxel_without_location_check(
+        const ParticleID& pid, const Voxel& v)
 {
     const LatticeSpaceVectorImpl::coordinate_type& to_coord(v.coordinate());
     if (!is_in_range(to_coord))

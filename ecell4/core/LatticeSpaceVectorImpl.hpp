@@ -85,7 +85,7 @@ public:
 
     // virtual void update_voxel(const Voxel& v);
     virtual bool update_voxel(const ParticleID& pid, const Voxel& v);
-    virtual bool update_voxel_without_checking(const ParticleID& pid, const Voxel& v);
+    virtual bool update_voxel_without_location_check(const ParticleID& pid, const Voxel& v);
 
     bool add_voxels(const Species species, std::vector<std::pair<ParticleID, coordinate_type> > voxels);
 
