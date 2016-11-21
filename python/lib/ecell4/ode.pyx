@@ -420,7 +420,7 @@ cdef class ODERatelawMassAction:
 
     def is_available(self):
         """Check if this ratelaw is available or not. Return True always."""
-        return self.get().is_available
+        return self.thisptr.get().is_available()
 
     def set_k(self, Real k):
         """set_k(k)
@@ -433,11 +433,13 @@ cdef class ODERatelawMassAction:
             A kinetic rate constant.
 
         """
-        self.get().thisptr.set_k(k)
+        #self.get().thisptr.set_k(k)
+        self.thisptr.get().set_k(k)
 
     def get_k(self):
         """Return the kinetic rate constant as a float value."""
-        return self.get().thisptr.get_k()
+        #return self.get().thisptr.get_k()
+        return self.thisptr.get().get_k()
 
     def as_string(self):
         """"Return a name of the function"""
@@ -539,6 +541,7 @@ cdef class ODERatelawCallback:
 
         """
         self.thisptr.get().set_callback_pyfunc(<Python_CallbackFunctype>pyfunc)
+        self.pyfunc = pyfunc
 
     def set_name(self, name):
         """"Set the name of a function"""
@@ -555,6 +558,8 @@ cdef class ODERatelawCallback:
         retval.thisptr = new shared_ptr[Cpp_ODERatelaw](
             <shared_ptr[Cpp_ODERatelaw]>deref(self.thisptr))
         return retval
+    def get_pyfunc(self):
+        return self.pyfunc
 
 cdef class ODEReactionRule:
     """A class representing a reaction rule between ``Species``, which accepts at most
