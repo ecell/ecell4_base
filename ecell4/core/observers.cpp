@@ -414,10 +414,11 @@ void FixedIntervalTrajectoryObserver::initialize(const boost::shared_ptr<Space>&
                 pids_.push_back((*i).first);
             }
         }
-        prev_positions_.resize(pids_.size());
-        trajectories_.resize(pids_.size());
-        strides_.resize(pids_.size());
     }
+
+    prev_positions_.resize(pids_.size());
+    trajectories_.resize(pids_.size());
+    strides_.resize(pids_.size());
 }
 
 bool FixedIntervalTrajectoryObserver::fire(

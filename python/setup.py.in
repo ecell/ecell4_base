@@ -176,7 +176,7 @@ setup(
         "templates/init_ipynb.js", "templates/init_cyjs.js", "templates/template.html",
         "templates/*.tmpl", "templates/ecelllogo/*.png"]},
     data_files = [('ecell4-licenses', glob.glob(os.path.join(convert_path(source_dir), 'licenses/*')))],
-    packages = ["ecell4", "ecell4.util", "ecell4.extra"],
+    packages = ["ecell4", "ecell4.util", "ecell4.extra", "ecell4.datasource"],
     cmdclass = {'build_ext': build_ext, 'test': run_tests},
     license = "the GNU General Public License v2",
     author = "Kazunari Kaizu",
