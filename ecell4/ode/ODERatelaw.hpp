@@ -32,13 +32,6 @@ namespace ode
 
 class ODEReactionRule;
 
-enum ODERatelawType {
-    ABSTRACT_TYPE = 0,
-    MASSACTION_TYPE = 1,
-    PYTHON_CALLBACK_TYPE = 2,
-    CPP_CALLBACK_TYPE = 3,
-};
-
 class ODERatelaw
 {
 public:
@@ -64,10 +57,6 @@ public:
     virtual std::string as_string() const
     {
         return "nan";
-    }
-    virtual const ODERatelawType ratelaw_type() const
-    {
-        return ABSTRACT_TYPE;
     }
 private:
 
@@ -129,10 +118,6 @@ public:
         ODERatelaw_Callback prev = get_callback();
         this->func_ = new_func;
         return prev;
-    }
-    virtual const ODERatelawType ratelaw_type() const
-    {
-        return CPP_CALLBACK_TYPE;
     }
 
 private:
@@ -212,11 +197,6 @@ public:
         return funcname_;
     }
 
-    virtual const ODERatelawType ratelaw_type() const
-    {
-        return PYTHON_CALLBACK_TYPE;
-    }
-
 protected:
     void inc_ref(Python_CallbackFunctype python_func)
     {
@@ -283,11 +263,6 @@ public:
     virtual std::string as_string() const
     {
         return (boost::format("%g") % this->k_).str();
-    }
-
-    virtual const ODERatelawType ratelaw_type() const
-    {
-        return MASSACTION_TYPE;
     }
 
 private:

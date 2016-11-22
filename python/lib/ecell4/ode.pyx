@@ -388,16 +388,16 @@ cdef class ODERatelaw:
         """Return self as a base class. Only for developmental use."""
         return self
 
-    def ratelaw_type(self):
-        return self.thisptr.get().ratelaw_type()
-
     def to_derivative(self):
-        if self.ratelaw_type() == MASSACTION_TYPE:
-            return ODERatelawMassAction_from_Cpp_ODERatelaw(deref(self.thisptr) )
-        elif self.ratelaw_type() == PYTHON_CALLBACK_TYPE:
-            return ODERatelawCallback_from_Cpp_ODERatelaw(deref(self.thisptr) )
-        else:
-            raise ValueError("Invalid Ratelaw Type")
+        r = ODERatelawMassAction_from_Cpp_ODERatelaw(deref(self.thisptr) )
+        if r !=  None:
+            return r
+
+        r = ODERatelawCallback_from_Cpp_ODERatelaw(deref(self.thisptr) )
+        if r != None:
+            return r
+
+        raise ValueError("Invalid Ratelaw Type")
 
 
 cdef ODERatelaw ODERatelaw_from_Cpp_ODERatelaw(shared_ptr[Cpp_ODERatelaw] s):
@@ -409,7 +409,7 @@ cdef ODERatelawMassAction ODERatelawMassAction_from_Cpp_ODERatelaw(shared_ptr[Cp
     r = ODERatelawMassAction(0.01)
     cdef shared_ptr[Cpp_ODERatelawMassAction] temp = to_ODERatelawMassAction(s)
     if temp.get() == NULL:
-        raise ValueError("Dynamic Cast Failed.")
+        return None
     r.thisptr.swap(temp)
     return r
 
@@ -417,7 +417,7 @@ cdef ODERatelawCallback ODERatelawCallback_from_Cpp_ODERatelaw(shared_ptr[Cpp_OD
     r = ODERatelawCallback(lambda x:x)
     cdef shared_ptr[Cpp_ODERatelawCythonCallback] temp = to_ODERatelawCythonCallback(s)
     if temp.get() == NULL:
-        raise ValueError("Dynamic Cast Failed.")
+        return None
     r.thisptr.swap(temp)
     return r
 
