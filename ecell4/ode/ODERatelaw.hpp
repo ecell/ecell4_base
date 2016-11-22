@@ -32,6 +32,13 @@ namespace ode
 
 class ODEReactionRule;
 
+enum ODERatelawType {
+    ABSTRACT_TYPE = 0,
+    MASSACTION_TYPE = 1,
+    PYTHON_CALLBACK_TYPE = 2,
+    CPP_CALLBACK_TYPE = 3,
+};
+
 class ODERatelaw
 {
 public:
@@ -58,6 +65,12 @@ public:
     {
         return "nan";
     }
+    virtual const ODERatelawType ratelaw_type() const
+    {
+        return ABSTRACT_TYPE;
+    }
+private:
+
 };
 
 class ODERatelawCppCallback
@@ -116,6 +129,10 @@ public:
         ODERatelaw_Callback prev = get_callback();
         this->func_ = new_func;
         return prev;
+    }
+    virtual const ODERatelawType ratelaw_type() const
+    {
+        return CPP_CALLBACK_TYPE;
     }
 
 private:
@@ -180,6 +197,11 @@ public:
         this->inc_ref_(this->python_func_);
     }
 
+    Python_CallbackFunctype get_callback_pyfunc() const
+    {
+        return this->python_func_;
+    }
+
     void set_name(const std::string& name)
     {
         funcname_ = name;
@@ -188,6 +210,11 @@ public:
     virtual std::string as_string() const
     {
         return funcname_;
+    }
+
+    virtual const ODERatelawType ratelaw_type() const
+    {
+        return PYTHON_CALLBACK_TYPE;
     }
 
 protected:
@@ -258,10 +285,19 @@ public:
         return (boost::format("%g") % this->k_).str();
     }
 
+    virtual const ODERatelawType ratelaw_type() const
+    {
+        return MASSACTION_TYPE;
+    }
+
 private:
 
     Real k_;
 };
+
+boost::shared_ptr<ODERatelawMassAction> to_ODERatelawMassAction(boost::shared_ptr<ODERatelaw> p);
+
+boost::shared_ptr<ODERatelawCythonCallback> to_ODERatelawCythonCallback(boost::shared_ptr<ODERatelaw> p);
 
 } // ode
 

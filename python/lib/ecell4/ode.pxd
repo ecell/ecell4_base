@@ -15,6 +15,7 @@ cdef extern from "ecell4/ode/ODERatelaw.hpp" namespace "ecell4::ode":
         Cpp_ODERatelaw() except +
         bool is_available()
         string as_string()
+        Cpp_ODERatelawType ratelaw_type()
 
 ## ODERatelaw
 cdef class ODERatelaw:
@@ -31,6 +32,7 @@ cdef extern from "ecell4/ode/ODERatelaw.hpp" namespace "ecell4::ode":
         void set_k(Real)
         Real get_k()
         string as_string()
+        Cpp_ODERatelawType ratelaw_type()
 
 cdef class ODERatelawMassAction:
     #cdef Cpp_ODERatelawMassAction *thisptr
@@ -49,12 +51,19 @@ cdef extern from "ecell4/ode/ODERatelaw.hpp" namespace "ecell4::ode":
         Cpp_ODERatelawCythonCallback(Stepladder_Functype, Python_CallbackFunctype, OperateRef_Functype, OperateRef_Functype, string name) except+
         bool is_available()
         void set_callback_pyfunc(Python_CallbackFunctype)
+        Python_CallbackFunctype get_callback_pyfunc()
         string as_string()
         void set_name(string)
+        Cpp_ODERatelawType ratelaw_type()
 
 cdef class ODERatelawCallback:
     cdef shared_ptr[Cpp_ODERatelawCythonCallback] *thisptr
     cdef object pyfunc
+
+cdef extern from "ecell4/ode/ODERatelaw.hpp" namespace "ecell4::ode":
+    cdef shared_ptr[Cpp_ODERatelawMassAction] to_ODERatelawMassAction(shared_ptr[Cpp_ODERatelaw]);
+    cdef shared_ptr[Cpp_ODERatelawCythonCallback] to_ODERatelawCythonCallback(shared_ptr[Cpp_ODERatelaw]);
+
 
 ## Cpp_ODEReactionRule
 cdef extern from "ecell4/ode/ODEReactionRule.hpp" namespace "ecell4::ode":
@@ -115,6 +124,13 @@ cdef extern from "ecell4/ode/ODESimulator.hpp" namespace "ecell4::ode":
         Cpp_RUNGE_KUTA_CASH_KARP54 "ecell4::ode::RUNGE_KUTA_CASH_KARP54"
         Cpp_ROSENBROCK4_CONTROLLER "ecell4::ode::ROSENBROCK4_CONTROLLER"
         Cpp_EULER "ecell4::ode::EULER"
+
+cdef extern from "ecell4/ode/ODERatelaw.hpp" namespace "ecell4::ode":
+    cdef enum Cpp_ODERatelawType "ecell4::ode::ODERatelawType":
+        Cpp_UNDEF_RATELAW_TYPE "ecell4::ode::ABSTRACT_TYPE"
+        Cpp_UNDEF_MASSACTION_TYPE "ecell4::ode::MASSACTION_TYPE"
+        Cpp_PYTHON_CALLBACK_TYPE  "ecell4::ode::PYTHON_CALLBACK_TYPE"
+        Cpp_CALLBACK_TYPE "ecell4::ode::CPP_CALLBACK_TYPE"
 
 ## Cpp_ODEWorld
 #  ecell4::ode::ODEWorld

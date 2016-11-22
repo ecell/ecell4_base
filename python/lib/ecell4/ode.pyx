@@ -388,9 +388,37 @@ cdef class ODERatelaw:
         """Return self as a base class. Only for developmental use."""
         return self
 
+    def ratelaw_type(self):
+        return self.thisptr.get().ratelaw_type()
+
+    def to_derivative(self):
+        if self.ratelaw_type() == MASSACTION_TYPE:
+            return ODERatelawMassAction_from_Cpp_ODERatelaw(deref(self.thisptr) )
+        elif self.ratelaw_type() == PYTHON_CALLBACK_TYPE:
+            return ODERatelawCallback_from_Cpp_ODERatelaw(deref(self.thisptr) )
+        else:
+            raise ValueError("Invalid Ratelaw Type")
+
+
 cdef ODERatelaw ODERatelaw_from_Cpp_ODERatelaw(shared_ptr[Cpp_ODERatelaw] s):
     r = ODERatelaw()
     r.thisptr.swap(s)
+    return r
+
+cdef ODERatelawMassAction ODERatelawMassAction_from_Cpp_ODERatelaw(shared_ptr[Cpp_ODERatelaw] s):
+    r = ODERatelawMassAction(0.01)
+    cdef shared_ptr[Cpp_ODERatelawMassAction] temp = to_ODERatelawMassAction(s)
+    if temp.get() == NULL:
+        raise ValueError("Dynamic Cast Failed.")
+    r.thisptr.swap(temp)
+    return r
+
+cdef ODERatelawCallback ODERatelawCallback_from_Cpp_ODERatelaw(shared_ptr[Cpp_ODERatelaw] s):
+    r = ODERatelawCallback(lambda x:x)
+    cdef shared_ptr[Cpp_ODERatelawCythonCallback] temp = to_ODERatelawCythonCallback(s)
+    if temp.get() == NULL:
+        raise ValueError("Dynamic Cast Failed.")
+    r.thisptr.swap(temp)
     return r
 
 cdef class ODERatelawMassAction:
@@ -452,7 +480,6 @@ cdef class ODERatelawMassAction:
         base_type.thisptr = new shared_ptr[Cpp_ODERatelaw](
                 <shared_ptr[Cpp_ODERatelaw]>(deref(self.thisptr)))
         return base_type
-
 
 cdef double indirect_function(
     void *func, vector[Real] reactants, vector[Real] products,
@@ -542,6 +569,8 @@ cdef class ODERatelawCallback:
         """
         self.thisptr.get().set_callback_pyfunc(<Python_CallbackFunctype>pyfunc)
         self.pyfunc = pyfunc
+    def get_callback(self):
+        return <object>self.thisptr.get().get_callback_pyfunc()
 
     def set_name(self, name):
         """"Set the name of a function"""
@@ -972,6 +1001,15 @@ cdef Cpp_ODESolverType translate_solver_type(solvertype_constant):
     else:
         raise ValueError(
             "invalid solver type was given [{0}]".format(repr(solvertype_constant)))
+
+# ODERatelawType:
+(
+    ABSTRACT_TYPE,
+    MASSACTION_TYPE,
+    PYTHON_CALLBACK_TYPE,
+    CPP_CALLBACK_TYPE,
+) = (0, 1, 2, 3)
+
 
 cdef class ODESimulator:
     """ A class running the simulation with the ode algorithm.
