@@ -89,6 +89,8 @@ std::string load_version_information(const H5::CommonFG& root);
 #endif
 std::string load_version_information(const std::string& filename);
 
+bool check_version_information(const std::string& version, const std::string& required);
+
 } // extras
 
 } // ecell4

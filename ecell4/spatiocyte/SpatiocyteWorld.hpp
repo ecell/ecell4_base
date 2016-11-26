@@ -1,6 +1,7 @@
 #ifndef __ECELL4_LATTICE_LATTICE_WORLD_HPP
 #define __ECELL4_LATTICE_LATTICE_WORLD_HPP
 
+#include <sstream>
 #include <stdexcept>
 #include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
@@ -547,6 +548,24 @@ public:
 #ifdef WITH_HDF5
         boost::scoped_ptr<H5::H5File>
             fin(new H5::H5File(filename.c_str(), H5F_ACC_RDONLY));
+
+        const std::string required = "ecell4-spatiocyte-4.1.0";
+        try
+        {
+            const std::string version = extras::load_version_information(*fin);
+            if (!extras::check_version_information(version, required))
+            {
+                std::stringstream ss;
+                ss << "The version of the given file [" << version
+                    << "] is too old. [" << required << "] or later is required.";
+                throw NotSupported(ss.str());
+            }
+        }
+        catch(H5::GroupIException not_found_error)
+        {
+            throw NotFound("No version information was found.");
+        }
+
         const H5::Group group(fin->openGroup("LatticeSpace"));
         (*space_).load_hdf5(group);
         sidgen_.load(*fin);
