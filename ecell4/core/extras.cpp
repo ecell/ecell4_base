@@ -10,6 +10,10 @@ namespace extras
 #ifdef WITH_HDF5
 void save_version_information(H5::CommonFG* root, const std::string& version)
 {
+    if (version.size() > 32)
+    {
+        throw IllegalArgument("Version info must be shorter than 32 characters.");
+    }
     using namespace H5;
     boost::scoped_ptr<DataSet> dataset(
         new DataSet(root->createDataSet("version", H5::StrType(H5::PredType::C_S1, 32), H5::DataSpace(H5S_SCALAR))));
