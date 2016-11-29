@@ -398,6 +398,8 @@ cdef class ODERatelaw:
             return r
 
         raise ValueError("Invalid Ratelaw Type")
+    def __reduce__(self):
+        return self.to_derivative().__reduce__()
 
 
 cdef ODERatelaw ODERatelaw_from_Cpp_ODERatelaw(shared_ptr[Cpp_ODERatelaw] s):
@@ -480,6 +482,9 @@ cdef class ODERatelawMassAction:
         base_type.thisptr = new shared_ptr[Cpp_ODERatelaw](
                 <shared_ptr[Cpp_ODERatelaw]>(deref(self.thisptr)))
         return base_type
+    def __reduce__(self):
+        return (__rebuild_ode_ratelaw, ("ODERatelawMassAction", self.as_string(), self.get_k() ) )
+
 
 cdef double indirect_function(
     void *func, vector[Real] reactants, vector[Real] products,
@@ -589,6 +594,25 @@ cdef class ODERatelawCallback:
         return retval
     def get_pyfunc(self):
         return self.pyfunc
+
+    def __reduce__(self):
+        import sys
+        loaded_modules = sys.modules.keys()
+        if not  "dill" in loaded_modules:
+            raise RuntimeError("dill module is required for pickling user-defined function")
+        return (__rebuild_ode_ratelaw, ("ODERatelawCallback", self.as_string(), self.get_callback()) )
+
+def __rebuild_ode_ratelaw(ratelaw_type, name, param):
+    if ratelaw_type == "ODERatelawCallback":
+        m = ODERatelawCallback(param, name)
+        return m
+    elif ratelaw_type == "ODERatelawMassAction":
+        m = ODERatelawMassAction(param)
+        #m.set_name(name)
+        return m
+    else:
+        raise ValueError("Invalid Ratelaw Type")
+    
 
 cdef class ODEReactionRule:
     """A class representing a reaction rule between ``Species``, which accepts at most
@@ -833,7 +857,7 @@ cdef class ODEReactionRule:
 
     def __reduce__(self):
         if self.has_ratelaw():
-            self.ratelaw = self.ratelaw()
+            ratelaw = self.get_ratelaw()
         else:
             ratelaw = None
         return (__rebuild_ode_reaction_rule, (self.reactants(), self.products(), self.reactants_coefficients(), self.products_coefficients(), ratelaw))
@@ -849,6 +873,7 @@ def __rebuild_ode_reaction_rule(reactants, products, reactants_coefficients, pro
         pass
     else:
         rr.set_ratelaw(ratelaw)
+    return rr
 
 cdef ODEReactionRule ODEReactionRule_from_Cpp_ODEReactionRule(Cpp_ODEReactionRule *s):
     cdef Cpp_ODEReactionRule *new_obj = new Cpp_ODEReactionRule(deref(s))
@@ -958,6 +983,13 @@ cdef class ODENetworkModel:
             self.thisptr.get().add_reaction_rule(deref((<ReactionRule>rr).thisptr))
         else:
             raise ValueError("invalid argument {}".format(repr(rr)))
+
+    def add_reaction_rules(self, rrs):
+        if isinstance(rrs, list):
+            for rr in rrs:
+                self.add_reaction_rule(rr)
+        else:
+            self.add_reaction_rule(rrs)
 
     def list_species(self):
         """Return a list of species, contained in reaction rules in the model."""
