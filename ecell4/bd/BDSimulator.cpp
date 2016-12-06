@@ -15,7 +15,14 @@ void BDSimulator::step()
     last_reactions_.clear();
 
     {
-        BDPropagator propagator(*model_, *world_, *rng(), dt(), last_reactions_);
+        BDPropagator propagator(*model_, *world_, world->pcon3d(), *rng(), dt(), last_reactions_);
+        while (propagator())
+        {
+            ; // do nothing here
+        }
+    }
+    {
+        BDPropagator2D propagator(*model_, *world_, world->pcon2d(), *rng(), dt(), last_reactions_);
         while (propagator())
         {
             ; // do nothing here

@@ -9,6 +9,7 @@
 
 #include "BDWorld.hpp"
 #include "BDPropagator.hpp"
+#include "BDPropagator2D.hpp"
 
 
 namespace ecell4
