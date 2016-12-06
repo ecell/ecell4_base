@@ -29,6 +29,8 @@ public:
     typedef Real D_type;
     typedef Species species_type;
     typedef species_type::serial_type species_serial_type;
+    typedef std::string Location;
+    typedef Location location_type;
 
 public:
 
@@ -39,16 +41,16 @@ public:
 
     explicit Particle(
         const Species& sp, const Real3& pos, const Real& radius,
-        const Real& D)
-        : species_(sp), position_(pos), radius_(radius), D_(D)
+        const Real& D, const Location& loc = "")
+        : species_(sp), position_(pos), radius_(radius), D_(D), location_(loc)
     {
         ;
     }
 
     Particle(
         const species_serial_type& sid, const Real3& pos,
-        const Real& radius, const Real& D)
-        : species_(sid), position_(pos), radius_(radius), D_(D)
+        const Real& radius, const Real& D, const Location& loc = "")
+        : species_(sid), position_(pos), radius_(radius), D_(D), location_(loc)
     {
         ;
     }
@@ -93,6 +95,16 @@ public:
         return species_;
     }
 
+    Location& location()
+    {
+        return location_;
+    }
+
+    const Location& location()
+    {
+        return location_;
+    }
+
     Species::serial_type species_serial()
     {
         return species_.serial();
@@ -117,7 +129,8 @@ public:
     {
         return (this->sid() == rhs.sid() &&
                 this->radius() == rhs.radius() &&
-                this->position() == rhs.position());
+                this->position() == rhs.position() &&
+                this->location() == rhs.location());
     }
 
     bool operator!=(Particle const& rhs) const
@@ -138,12 +151,13 @@ private:
     Species species_;
     Real3 position_;
     Real radius_, D_;
+    Location location_;
 };
 
 template<typename Tstrm_, typename Ttraits_>
 inline std::basic_ostream<Tstrm_, Ttraits_>& operator<<(std::basic_ostream<Tstrm_, Ttraits_>& strm, const Particle& p)
 {
-    strm << "Particle(" << "{ " << p.position() << ", " << p.radius() << "}, " << ", D=" << p.D() << ", " << p.sid() << ")";
+    strm << "Particle(" << "{ " << p.position() << ", " << p.radius() << "}, " << ", D=" << p.D() << ", " << p.sid() << ", " << p.location() << ")";
     return strm;
 }
 
