@@ -100,7 +100,7 @@ public:
         return location_;
     }
 
-    const Location& location()
+    const Location& location() const
     {
         return location_;
     }
