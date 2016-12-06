@@ -1,6 +1,7 @@
 #ifndef WORLD_HPP
 #define WORLD_HPP
 
+#include <sstream>
 
 #include <ecell4/core/exceptions.hpp>
 #include <ecell4/core/RandomNumberGenerator.hpp>
@@ -478,6 +479,24 @@ public:
         //XXX: initialize Simulator
         boost::scoped_ptr<H5::H5File>
             fin(new H5::H5File(filename.c_str(), H5F_ACC_RDONLY));
+
+        const std::string required = "ecell4-egfrd-4.1.0";
+        try
+        {
+            const std::string version = ecell4::extras::load_version_information(*fin);
+            if (!ecell4::extras::check_version_information(version, required))
+            {
+                std::stringstream ss;
+                ss << "The version of the given file [" << version
+                    << "] is too old. [" << required << "] or later is required.";
+                throw ecell4::NotSupported(ss.str());
+            }
+        }
+        catch(H5::GroupIException not_found_error)
+        {
+            throw ecell4::NotFound("No version information was found.");
+        }
+
         const H5::Group group(fin->openGroup("ParticleSpace"));
 
         /** matrix_sizes

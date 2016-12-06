@@ -215,13 +215,14 @@ std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
                     particle_container_type::const_iterator
                         itr(particles_.begin() + (*i));
 
-                    const Real dist_sq(
-                        length_sq((*itr).second.position() + stride - pos));
-                    if (dist_sq < radius_sq)
+                    const Real dist(
+                        length((*itr).second.position() + stride - pos)
+                        - (*itr).second.radius());
+                    if (dist < radius)
                     {
                         // overlap_checker::operator()
                         retval.push_back(
-                            std::make_pair(*itr, sqrt(dist_sq)));
+                            std::make_pair(*itr, dist));
                     }
                 }
             }
@@ -266,15 +267,16 @@ std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
                     particle_container_type::const_iterator
                         itr(particles_.begin() + (*i));
 
-                    const Real dist_sq(
-                        length_sq((*itr).second.position() + stride - pos));
-                    if (dist_sq < radius_sq)
+                    const Real dist(
+                        length((*itr).second.position() + stride - pos)
+                        - (*itr).second.radius());
+                    if (dist < radius)
                     {
                         // overlap_checker::operator()
                         if ((*itr).first != ignore)
                         {
                             retval.push_back(
-                                std::make_pair(*itr, sqrt(dist_sq)));
+                                std::make_pair(*itr, dist));
                         }
                     }
                 }
@@ -320,15 +322,16 @@ std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
                     particle_container_type::const_iterator
                         itr(particles_.begin() + (*i));
 
-                    const Real dist_sq(
-                        length_sq((*itr).second.position() + stride - pos));
-                    if (dist_sq < radius_sq)
+                    const Real dist(
+                        length((*itr).second.position() + stride - pos)
+                        - (*itr).second.radius());
+                    if (dist < radius)
                     {
                         // overlap_checker::operator()
                         if ((*itr).first != ignore1 && (*itr).first != ignore2)
                         {
                             retval.push_back(
-                                std::make_pair(*itr, sqrt(dist_sq)));
+                                std::make_pair(*itr, dist));
                         }
                     }
                 }

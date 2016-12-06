@@ -63,6 +63,11 @@ def run_sge(target, jobs, n=1, path='.', delete=True, wait=True, environ=None, m
             if key in os.environ.keys():
                 environ[key] = os.environ[key]
 
+        if "PYTHONPATH" in environ.keys() and environ["PYTHONPATH"].strip() != "":
+            environ["PYTHONPATH"] = "{}:{}".format(os.getcwd(), environ["PYTHONPATH"])
+        else:
+            environ["PYTHONPATH"] = os.getcwd()
+
     cmds = []
     pickleins = []
     pickleouts = []
@@ -96,7 +101,17 @@ def run_sge(target, jobs, n=1, path='.', delete=True, wait=True, environ=None, m
         cmd += '" {:s}\n'.format(picklein)
         cmds.append(cmd)
 
-    jobids = sge.run(cmds, n=n, path=path, delete=delete)
+    if isinstance(wait, bool):
+        sync = 0 if not wait else 10
+    elif isinstance(wait, int):
+        sync = wait
+    else:
+        raise ValueError("'wait' must be either 'int' or 'bool'.")
+
+    jobids = sge.run(cmds, n=n, path=path, delete=delete, sync=sync)
+
+    if not (sync > 0):
+        return None
 
     for jobid, name in jobids:
         outputs = sge.collect(jobid, name, n=n, path=path, delete=delete)
@@ -137,10 +152,25 @@ def ensemble_simulations(
     t, y0={}, volume=1.0, model=None, solver='ode', species_list=None, structures={},
     is_netfree=False, without_reset=False,
     return_type='matplotlib', opt_args=(), opt_kwargs={},
-    errorbar=True, n=1, nproc=1, method=None, environ=None):
+    errorbar=True,
+    n=1, nproc=1, method=None, environ={},
+    **kwargs):
     """
     observers=(), progressbar=0, rndseed=None,
     """
+    for key, value in kwargs.items():
+        if key == 'r':
+            return_type = value
+        elif key == 'v':
+            volume = value
+        elif key == 's':
+            solver = value
+        elif key == 'm':
+            model = value
+        else:
+            raise ValueError(
+                "An unknown keyword argument was given [{}={}]".format(key, value))
+
     # if not isinstance(solver, str):
     #     raise ValueError('Argument "solver" must be a string.')
 
@@ -167,8 +197,10 @@ def ensemble_simulations(
         raise ValueError(
             'Argument "method" must be one of "serial", "multiprocessing" and "sge".')
 
+    assert len(retval) == len(jobs) == 1
+
     if return_type == "array":
-        return retval
+        return retval[0]
 
     import numpy
 
@@ -207,45 +239,39 @@ def ensemble_simulations(
         def error(self):
             return self.__error
 
-    if return_type == "matplotlib":
+    if return_type in ("matplotlib", 'm'):
         if isinstance(opt_args, (list, tuple)):
             ecell4.util.viz.plot_number_observer_with_matplotlib(
-                *itertools.chain([DummyObserver(inputs, species_list, errorbar) for inputs in retval],
-                                 opt_args),
-                **opt_kwargs)
+                DummyObserver(retval[0], species_list, errorbar), *opt_args, **opt_kwargs)
         elif isinstance(opt_args, dict):
             # opt_kwargs is ignored
             ecell4.util.viz.plot_number_observer_with_matplotlib(
-                *[DummyObserver(inputs, species_list, errorbar) for inputs in retval],
-                **opt_args)
+                DummyObserver(retval[0], species_list, errorbar), **opt_args)
         else:
             raise ValueError('opt_args [{}] must be list or dict.'.format(
                 repr(opt_args)))
-    elif return_type == "nyaplot":
+    elif return_type in ("nyaplot", 'n'):
         if isinstance(opt_args, (list, tuple)):
             ecell4.util.viz.plot_number_observer_with_nya(
-                *itertools.chain([DummyObserver(inputs, species_list, errorbar) for inputs in retval],
-                                 opt_args),
-                **opt_kwargs)
+                DummyObserver(retval[0], species_list, errorbar), *opt_args, **opt_kwargs)
         elif isinstance(opt_args, dict):
             # opt_kwargs is ignored
             ecell4.util.viz.plot_number_observer_with_nya(
-                *[DummyObserver(inputs, species_list, errorbar) for inputs in retval],
-                **opt_args)
+                DummyObserver(retval[0], species_list, errorbar), **opt_args)
         else:
             raise ValueError('opt_args [{}] must be list or dict.'.format(
                 repr(opt_args)))
-    elif return_type == "observer":
-        return [DummyObserver(inputs, species_list, errorbar) for inputs in retval]
-    elif return_type == "dataframe":
+    elif return_type in ("observer", 'o'):
+        return DummyObserver(retval[0], species_list, errorbar)
+    elif return_type in ("dataframe", 'd'):
         import pandas
-        return [[
+        return [
             pandas.concat([
                 pandas.DataFrame(dict(Time=numpy.array(data).T[0],
                                       Value=numpy.array(data).T[i + 1],
                                       Species=serial))
                 for i, serial in enumerate(species_list)])
-            for data in inputs] for inputs in retval]
+            for data in retval[0]]
     else:
         raise ValueError(
             'Invald Argument "return_type" was given [{}].'.format(str(return_type)))

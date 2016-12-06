@@ -28,7 +28,7 @@ struct LatticeSpaceHDF5Traits
     struct h5_species_struct {
         double radius;
         double D;
-        char location[32];
+        H5std_string location;
         uint32_t is_structure;
         uint32_t dimension;
     };
@@ -50,7 +50,7 @@ struct LatticeSpaceHDF5Traits
                 HOFFSET(h5_species_struct, member), type.getId())
         INSERT_MEMBER(radius, H5::PredType::IEEE_F64LE);
         INSERT_MEMBER(D, H5::PredType::IEEE_F64LE);
-        INSERT_MEMBER(location, H5::StrType(H5::PredType::C_S1, 32));
+        INSERT_MEMBER(location, H5::StrType(0, H5T_VARIABLE));
         INSERT_MEMBER(is_structure, H5::PredType::STD_I32LE);
         INSERT_MEMBER(dimension, H5::PredType::STD_I32LE);
 #undef INSERT_MEMBER
@@ -85,9 +85,9 @@ struct LatticeSpaceHDF5Traits
         property.D = mtb->D();
         const MolecularTypeBase* loc(mtb->location());
         if (loc->is_vacant())
-            std::strcpy(property.location, "");
+            property.location = H5std_string("");
         else
-            std::strcpy(property.location, loc->species().serial().c_str());
+            property.location = H5std_string(loc->species().serial().c_str());
         property.is_structure = mtb->is_structure() ? 1 : 0;
         property.dimension = mtb->get_dimension();
 
@@ -224,14 +224,17 @@ void load_lattice_space(const H5::Group& root, Tspace_* space)
             std::vector<std::pair<ParticleID, Integer> > > > tmp_map;
 
     H5::Group spgroup(root.openGroup("species"));
-    char name_C[32 + 1];
+    // char name_C[32 + 1];
     for (hsize_t idx(0); idx < spgroup.getNumObjs(); ++idx)
     {
-        memset(name_C, 0, 32 + 1);  // clear buffer
-        const ssize_t name_len = H5Lget_name_by_idx(spgroup.getLocId(), ".", H5_INDEX_NAME, H5_ITER_INC, idx, name_C, 32, H5P_DEFAULT);
-        H5::Group group(spgroup.openGroup(name_C));
-        const std::string name_S(name_C);
-        Species species(name_S);
+        const H5std_string name = spgroup.getObjnameByIdx(idx);
+        H5::Group group(spgroup.openGroup(name.c_str()));
+
+        // memset(name_C, 0, 32 + 1);  // clear buffer
+        // const ssize_t name_len = H5Lget_name_by_idx(spgroup.getLocId(), ".", H5_INDEX_NAME, H5_ITER_INC, idx, name_C, 32, H5P_DEFAULT);
+        // H5::Group group(spgroup.openGroup(name_C));
+        // const std::string name_S(name_C);
+        Species species(name.c_str());
 
         // const H5std_string serial = spgroup.getObjnameByIdx(idx);
         // H5::Group group(spgroup.openGroup(serial.c_str()));

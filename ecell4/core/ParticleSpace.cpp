@@ -153,10 +153,10 @@ ParticleSpaceVectorImpl::list_particles_within_radius(
     for (particle_container_type::const_iterator i(particles_.begin());
          i != particles_.end(); ++i)
     {
-        const Real dsq(distance_sq((*i).second.position(), pos));
-        if (dsq <= rsq)
+        const Real dist(distance((*i).second.position(), pos) - (*i).second.radius());
+        if (dist <= radius)
         {
-            retval.push_back(std::make_pair(*i, std::sqrt(dsq)));
+            retval.push_back(std::make_pair(*i, dist));
         }
     }
 
@@ -175,12 +175,12 @@ ParticleSpaceVectorImpl::list_particles_within_radius(
     for (particle_container_type::const_iterator i(particles_.begin());
          i != particles_.end(); ++i)
     {
-        const Real dsq(distance_sq((*i).second.position(), pos));
-        if (dsq <= rsq)
+        const Real dist(distance((*i).second.position(), pos) - (*i).second.radius());
+        if (dist <= radius)
         {
             if ((*i).first != ignore)
             {
-                retval.push_back(std::make_pair(*i, std::sqrt(dsq)));
+                retval.push_back(std::make_pair(*i, dist));
             }
         }
     }
@@ -201,12 +201,12 @@ ParticleSpaceVectorImpl::list_particles_within_radius(
     for (particle_container_type::const_iterator i(particles_.begin());
          i != particles_.end(); ++i)
     {
-        const Real dsq(distance_sq((*i).second.position(), pos));
-        if (dsq <= rsq)
+        const Real dist(distance((*i).second.position(), pos) - (*i).second.radius());
+        if (dist <= radius)
         {
             if ((*i).first != ignore1 && (*i).first != ignore2)
             {
-                retval.push_back(std::make_pair(*i, std::sqrt(dsq)));
+                retval.push_back(std::make_pair(*i, dist));
             }
         }
     }
