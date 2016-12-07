@@ -423,15 +423,24 @@ class InvExp(UnaryExp):
     def __init__(self, root, target):
         UnaryExp.__init__(self, root, target, "~")
 
+    def __deepcopy__(self, memo):
+        return InvExp(self._root, copy.deepcopy(self._target))
+
 class PosExp(UnaryExp):
 
     def __init__(self, root, target):
         UnaryExp.__init__(self, root, target, "+")
 
+    def __deepcopy__(self, memo):
+        return PosExp(self._root, copy.deepcopy(self._target))
+
 class NegExp(UnaryExp):
 
     def __init__(self, root, target):
         UnaryExp.__init__(self, root, target, "-")
+
+    def __deepcopy__(self, memo):
+        return NegExp(self._root, copy.deepcopy(self._target))
 
 class AddExp(ExpBase):
 
@@ -456,6 +465,11 @@ class AddExp(ExpBase):
     def __str__(self):
         return "(%s)" % ("+".join([str(obj) for obj in self._elems]))
 
+    def __deepcopy__(self, memo):
+        retval = AddExp(self._root, None, None)
+        retval._elems = copy.deepcopy(self._elems)
+        return retval
+
 class SubExp(ExpBase):
 
     def __init__(self, root, lhs, rhs):
@@ -478,6 +492,11 @@ class SubExp(ExpBase):
 
     def __str__(self):
         return "(%s)" % ("-".join([str(obj) for obj in self._elems]))
+
+    def __deepcopy__(self, memo):
+        retval = SubExp(self._root, None, None)
+        retval._elems = copy.deepcopy(self._elems)
+        return retval
 
 class DivExp(ExpBase):
 
@@ -502,6 +521,11 @@ class DivExp(ExpBase):
     def __str__(self):
         return "(%s)" % ("/".join([str(obj) for obj in self._elems]))
 
+    def __deepcopy__(self, memo):
+        retval = DivExp(self._root, None, None)
+        retval._elems = copy.deepcopy(self._elems)
+        return retval
+
 class MulExp(ExpBase):
 
     def __init__(self, root, lhs, rhs):
@@ -524,6 +548,11 @@ class MulExp(ExpBase):
 
     def __str__(self):
         return "(%s)" % ("*".join([str(obj) for obj in self._elems]))
+
+    def __deepcopy__(self, memo):
+        retval = MulExp(self._root, None, None)
+        retval._elems = copy.deepcopy(self._elems)
+        return retval
 
 # class LshiftExp(ExpBase):
 # 
@@ -569,6 +598,11 @@ class PowExp(ExpBase):
         return "pow(%s,%s)" % (self._elems[0], self._elems[1])
         # return "(%s**%s)" % (self._elems[0], self._elems[1])
 
+    def __deepcopy__(self, memo):
+        retval = PowExp(self._root, None, None)
+        retval._elems = copy.deepcopy(self._elems)
+        return retval
+
 class OrExp(ExpBase):
 
     def __init__(self, root, lhs, rhs):
@@ -592,6 +626,11 @@ class OrExp(ExpBase):
     def __str__(self):
         return "(%s)" % ("|".join([str(obj) for obj in self._elems]))
 
+    def __deepcopy__(self, memo):
+        retval = OrExp(self._root, None, None)
+        retval._elems = copy.deepcopy(self._elems)
+        return retval
+
 class AndExp(ExpBase):
 
     def __init__(self, root, lhs, rhs):
@@ -614,6 +653,11 @@ class AndExp(ExpBase):
 
     def __str__(self):
         return "(%s)" % ("&".join([str(obj) for obj in self._elems]))
+
+    def __deepcopy__(self, memo):
+        retval = AndExp(self._root, None, None)
+        retval._elems = copy.deepcopy(self._elems)
+        return retval
 
 class CmpExp(ExpBase):
 
@@ -639,12 +683,21 @@ class GtExp(CmpExp):
     def __init__(self, root, lhs, rhs):
         CmpExp.__init__(self, root, lhs, rhs, ">")
 
+    def __deepcopy__(self, memo):
+        return GtExp(self._root, copy.deepcopy(self._lhs), copy.deepcopy(self._rhs))
+
 class NeExp(CmpExp):
 
     def __init__(self, root, lhs, rhs):
         CmpExp.__init__(self, root, lhs, rhs, "<>")
 
+    def __deepcopy__(self, memo):
+        return NeExp(self._root, copy.deepcopy(self._lhs), copy.deepcopy(self._rhs))
+
 class EqExp(CmpExp):
 
     def __init__(self, root, lhs, rhs):
         CmpExp.__init__(self, root, lhs, rhs, "==")
+
+    def __deepcopy__(self, memo):
+        return EqExp(self._root, copy.deepcopy(self._lhs), copy.deepcopy(self._rhs))
