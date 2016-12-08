@@ -567,47 +567,47 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_save_and_load)
     space2.load_hdf5(groupin);
     fin.close();
 
-    // BOOST_CHECK_EQUAL(space.edge_lengths(), space2.edge_lengths());
-    // BOOST_CHECK_EQUAL(space.voxel_radius(), space2.voxel_radius());
-    // BOOST_CHECK_EQUAL(space.is_periodic(), space2.is_periodic());
-    // BOOST_CHECK_EQUAL(space.t(), space2.t());
-    // BOOST_CHECK_EQUAL(space.num_particles(), space2.num_particles());
-    // BOOST_CHECK_EQUAL(space.num_species(), space2.num_species());
-    //
-    // std::vector<Species> species(space.list_species());
-    // for (std::vector<Species>::const_iterator itr(species.begin());
-    //         itr != species.end(); ++itr)
-    // {
-    //     const Species species((*itr).serial());
-    //
-    //     const VoxelPool *vp1(space.find_voxel_pool(species));
-    //     const VoxelPool *vp2(space2.find_voxel_pool(species));
-    //
-    //     BOOST_CHECK_EQUAL(vp1->radius(), vp2->radius());
-    //     BOOST_CHECK_EQUAL(vp1->D(), vp2->D());
-    //     BOOST_CHECK_EQUAL(vp1->get_dimension(), vp2->get_dimension());
-    //
-    //     const MolecularType* mtb1(dynamic_cast<const MolecularType*>(vp1));
-    //     const MolecularType* mtb2(dynamic_cast<const MolecularType*>(vp2));
-    //     BOOST_ASSERT((mtb1 && mtb2) || (!mtb1 && !mtb2));
-    //
-    //     if (!mtb1 || !mtb2)
-    //     {
-    //         continue;
-    //     }
-    //
-    //     MoleculePool::container_type voxels1, voxels2;
-    //     std::copy(mtb1->begin(), mtb1->end(), back_inserter(voxels1));
-    //     std::copy(mtb2->begin(), mtb2->end(), back_inserter(voxels2));
-    //     BOOST_ASSERT(voxels1.size() == voxels2.size());
-    //     std::sort(voxels1.begin(), voxels1.end());
-    //     std::sort(voxels2.begin(), voxels2.end());
-    //     for (int i(0); i < voxels1.size(); ++i)
-    //     {
-    //         BOOST_CHECK_EQUAL(voxels1.at(i).pid, voxels2.at(i).pid);
-    //         BOOST_CHECK_EQUAL(voxels1.at(i).coordinate, voxels2.at(i).coordinate);
-    //     }
-    // }
+    BOOST_CHECK_EQUAL(space.edge_lengths(), space2.edge_lengths());
+    BOOST_CHECK_EQUAL(space.voxel_radius(), space2.voxel_radius());
+    BOOST_CHECK_EQUAL(space.is_periodic(), space2.is_periodic());
+    BOOST_CHECK_EQUAL(space.t(), space2.t());
+    BOOST_CHECK_EQUAL(space.num_particles(), space2.num_particles());
+    BOOST_CHECK_EQUAL(space.num_species(), space2.num_species());
+
+    std::vector<Species> species(space.list_species());
+    for (std::vector<Species>::const_iterator itr(species.begin());
+            itr != species.end(); ++itr)
+    {
+        const Species species((*itr).serial());
+
+        const VoxelPool *vp1(space.find_voxel_pool(species));
+        const VoxelPool *vp2(space2.find_voxel_pool(species));
+
+        BOOST_CHECK_EQUAL(vp1->radius(), vp2->radius());
+        BOOST_CHECK_EQUAL(vp1->D(), vp2->D());
+        BOOST_CHECK_EQUAL(vp1->get_dimension(), vp2->get_dimension());
+
+        const MolecularType* mtb1(dynamic_cast<const MolecularType*>(vp1));
+        const MolecularType* mtb2(dynamic_cast<const MolecularType*>(vp2));
+        BOOST_ASSERT((mtb1 && mtb2) || (!mtb1 && !mtb2));
+
+        if (!mtb1 || !mtb2)
+        {
+            continue;
+        }
+
+        MoleculePool::container_type voxels1, voxels2;
+        std::copy(mtb1->begin(), mtb1->end(), back_inserter(voxels1));
+        std::copy(mtb2->begin(), mtb2->end(), back_inserter(voxels2));
+        BOOST_ASSERT(voxels1.size() == voxels2.size());
+        std::sort(voxels1.begin(), voxels1.end());
+        std::sort(voxels2.begin(), voxels2.end());
+        for (int i(0); i < voxels1.size(); ++i)
+        {
+            BOOST_CHECK_EQUAL(voxels1.at(i).pid, voxels2.at(i).pid);
+            BOOST_CHECK_EQUAL(voxels1.at(i).coordinate, voxels2.at(i).coordinate);
+        }
+    }
 }
 #endif
 
