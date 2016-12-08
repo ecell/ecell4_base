@@ -974,18 +974,6 @@ cdef class SpatiocyteWorld:
         """Return the voxel radius."""
         return self.thisptr.get().voxel_radius()
 
-    def col_size(self):
-        """Return the size of the column of the world."""
-        return self.thisptr.get().col_size()
-
-    def row_size(self):
-        """Return the size of row of the world."""
-        return self.thisptr.get().row_size()
-
-    def layer_size(self):
-        """Return the size of layer of the world."""
-        return self.thisptr.get().layer_size()
-
     def size(self):
         """Return the size of voxels."""
         return self.thisptr.get().size()
@@ -1003,14 +991,14 @@ cdef class SpatiocyteWorld:
         """Return the size of inner voxels."""
         return self.thisptr.get().inner_size()
 
-    def inner_shape(self):
-        """inner_shape() -> Integer3
-
-        Return the triplet of inner sizes of column, row and layer.
-
-        """
-        cdef Cpp_Integer3 sizes = self.thisptr.get().inner_shape()
-        return Integer3_from_Cpp_Integer3(address(sizes))
+    # def inner_shape(self):
+    #     """inner_shape() -> Integer3
+    #
+    #     Return the triplet of inner sizes of column, row and layer.
+    #
+    #     """
+    #     cdef Cpp_Integer3 sizes = self.thisptr.get().inner_shape()
+    #     return Integer3_from_Cpp_Integer3(address(sizes))
 
     def bind_to(self, m):
         """bind_to(m)
@@ -1034,70 +1022,70 @@ cdef class SpatiocyteWorld:
         cdef Cpp_Real3 pos = self.thisptr.get().coordinate2position(coord)
         return Real3_from_Cpp_Real3(address(pos))
 
-    def coordinate2global(self, Integer coord):
-        """coordinate2global(coord) -> Integer3
+    # def coordinate2global(self, Integer coord):
+    #     """coordinate2global(coord) -> Integer3
+    #
+    #     Transform a coordinate to a global coordinate.
+    #
+    #     """
+    #     cdef Cpp_Integer3 g = self.thisptr.get().coordinate2global(coord)
+    #     return Integer3_from_Cpp_Integer3(address(g))
 
-        Transform a coordinate to a global coordinate.
+    # def global2coordinate(self, Integer3 coord):
+    #     """global2coordinate(g) -> Integer
+    #
+    #     Transform a global coordinate to a coordinate.
+    #
+    #     Parameters
+    #     ----------
+    #     g : Integer3
+    #         A global coordinate
+    #
+    #     Returns
+    #     -------
+    #     Integer:
+    #         A coordinate
+    #
+    #     """
+    #     return self.thisptr.get().global2coordinate(deref(coord.thisptr))
 
-        """
-        cdef Cpp_Integer3 g = self.thisptr.get().coordinate2global(coord)
-        return Integer3_from_Cpp_Integer3(address(g))
+    # def global2position(self, Integer3 g):
+    #     """global2position(g) -> Real3
+    #
+    #     Transform a global coordinate to a position.
+    #
+    #     Parameters
+    #     ----------
+    #     g : Integer3
+    #         A global coordinate
+    #
+    #     Returns
+    #     -------
+    #     Real3:
+    #         A position
+    #
+    #     """
+    #     cdef Cpp_Real3 pos = self.thisptr.get().global2position(deref(g.thisptr))
+    #     return Real3_from_Cpp_Real3(address(pos))
 
-    def global2coordinate(self, Integer3 coord):
-        """global2coordinate(g) -> Integer
-
-        Transform a global coordinate to a coordinate.
-
-        Parameters
-        ----------
-        g : Integer3
-            A global coordinate
-
-        Returns
-        -------
-        Integer:
-            A coordinate
-
-        """
-        return self.thisptr.get().global2coordinate(deref(coord.thisptr))
-
-    def global2position(self, Integer3 g):
-        """global2position(g) -> Real3
-
-        Transform a global coordinate to a position.
-
-        Parameters
-        ----------
-        g : Integer3
-            A global coordinate
-
-        Returns
-        -------
-        Real3:
-            A position
-
-        """
-        cdef Cpp_Real3 pos = self.thisptr.get().global2position(deref(g.thisptr))
-        return Real3_from_Cpp_Real3(address(pos))
-
-    def position2global(self, Real3 pos):
-        """position2global(pos) -> Integer3
-
-        Transform a position to a global coordinate.
-
-        Parameters
-        ----------
-        pos : Real3
-            A position
-
-        Returns
-        -------
-        Integer3:
-            A global coordinate
-
-        """
-        cdef Cpp_Integer3 g = self.thisptr.get().position2global(deref(pos.thisptr))
-        return Integer3_from_Cpp_Integer3(address(g))
+    # def position2global(self, Real3 pos):
+    #     """position2global(pos) -> Integer3
+    #
+    #     Transform a position to a global coordinate.
+    #
+    #     Parameters
+    #     ----------
+    #     pos : Real3
+    #         A position
+    #
+    #     Returns
+    #     -------
+    #     Integer3:
+    #         A global coordinate
+    #
+    #     """
+    #     cdef Cpp_Integer3 g = self.thisptr.get().position2global(deref(pos.thisptr))
+    #     return Integer3_from_Cpp_Integer3(address(g))
 
     def position2coordinate(self, Real3 pos):
         """position2coordinate(pos) -> Integer
