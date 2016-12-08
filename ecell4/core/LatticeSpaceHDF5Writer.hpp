@@ -43,9 +43,11 @@ struct LatticeSpaceHDF5Traits
     static H5::CompType get_property_comp()
     {
         H5::CompType property_comp_type(sizeof(h5_species_struct));
-// #define INSERT_MEMBER(member, type) \
-//         property_comp_type.insertMember(#member,\
-//                 HOFFSET(h5_species_struct, member), type)
+/*
+#define INSERT_MEMBER(member, type) \
+       property_comp_type.insertMember(#member,\
+               HOFFSET(h5_species_struct, member), type)
+*/
 #define INSERT_MEMBER(member, type) \
         H5Tinsert(property_comp_type.getId(), #member,\
                 HOFFSET(h5_species_struct, member), type.getId())
@@ -61,9 +63,11 @@ struct LatticeSpaceHDF5Traits
     static H5::CompType get_voxel_comp()
     {
         H5::CompType voxel_comp_type(sizeof(h5_voxel_struct));
-// #define INSERT_MEMBER(member, type) \
-//         voxel_comp_type.insertMember(std::string(#member),\
-//             HOFFSET(h5_voxel_struct, member), type)
+/*
+#define INSERT_MEMBER(member, type) \
+        voxel_comp_type.insertMember(std::string(#member),\
+            HOFFSET(h5_voxel_struct, member), type)
+*/
 #define INSERT_MEMBER(member, type) \
         H5Tinsert(voxel_comp_type.getId(), #member,\
                 HOFFSET(h5_voxel_struct, member), type.getId())
@@ -229,7 +233,7 @@ void load_lattice_space(const H5::Group& root, Tspace_* space)
     for (hsize_t idx(0); idx < spgroup.getNumObjs(); ++idx)
     {
         memset(name_C, 0, 32 + 1);  // clear buffer
-        const ssize_t name_len = H5Lget_name_by_idx(spgroup.getLocId(), ".", H5_INDEX_NAME, H5_ITER_INC, idx, name_C, 32, H5P_DEFAULT);
+        H5Lget_name_by_idx(spgroup.getLocId(), ".", H5_INDEX_NAME, H5_ITER_INC, idx, name_C, 32, H5P_DEFAULT);
         H5::Group group(spgroup.openGroup(name_C));
         const std::string name_S(name_C);
         Species species(name_S);

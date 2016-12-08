@@ -1,7 +1,7 @@
 #ifndef __ECELL4_LATTICE_SPACE_VECTOR_IMPL_HPP
 #define __ECELL4_LATTICE_SPACE_VECTOR_IMPL_HPP
 
-#include "LatticeSpace.hpp"
+#include "LatticeSpaceBase.hpp"
 
 namespace ecell4 {
 

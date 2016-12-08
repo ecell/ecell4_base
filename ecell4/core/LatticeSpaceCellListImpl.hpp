@@ -8,7 +8,7 @@
 #include <sstream>
 
 #include "comparators.hpp"
-#include "LatticeSpace.hpp"
+#include "LatticeSpaceBase.hpp"
 
 namespace ecell4
 {

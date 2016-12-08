@@ -161,7 +161,7 @@ BOOST_AUTO_TEST_CASE(SpatiocyteWorld_test_neighbor)
         rng(new GSLRandomNumberGenerator());
     SpatiocyteWorld world(edge_lengths, voxel_radius, rng);
 
-    const SpatiocyteWorld::coordinate_type coord(515151);
+    const SpatiocyteWorld::coordinate_type coord(26 + 52 * 26 + 52 * 52 * 26);
     const Real3 cp(world.coordinate2position(coord));
 
     Species sp(std::string("TEST"));
