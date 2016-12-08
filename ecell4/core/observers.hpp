@@ -19,7 +19,7 @@ class Observer
 public:
 
     Observer(const bool e)
-        : every_(e)
+        : every_(e), num_steps_(0)
     {
         ;
     }
@@ -37,6 +37,8 @@ public:
     virtual bool fire(const Simulator* sim, const boost::shared_ptr<Space>& space);
     // virtual bool fire(const Simulator* sim, const boost::shared_ptr<Space>& space) = 0;
 
+    const Integer num_steps() const;
+
     bool every()
     {
         return every_;
@@ -45,6 +47,10 @@ public:
 private:
 
     const bool every_;
+
+protected:
+
+    Integer num_steps_;
 };
 
 class FixedIntervalObserver
@@ -57,7 +63,7 @@ public:
 public:
 
     FixedIntervalObserver(const Real& dt)
-        : base_type(false), t0_(0.0), dt_(dt), num_steps_(0), count_(0)
+        : base_type(false), t0_(0.0), dt_(dt), count_(0)
     {
         ;
     }
@@ -68,7 +74,6 @@ public:
     }
 
     const Real next_time() const;
-    const Integer num_steps() const;
     const Integer count() const;
     virtual void initialize(const boost::shared_ptr<Space>& space);
     virtual bool fire(const Simulator* sim, const boost::shared_ptr<Space>& space);
@@ -77,7 +82,6 @@ public:
 protected:
 
     Real t0_, dt_;
-    Integer num_steps_;
     Integer count_;
 };
 
@@ -164,7 +168,7 @@ public:
 public:
 
     NumberObserver(const std::vector<std::string>& species)
-        : base_type(true), logger_(species), num_steps_(0)
+        : base_type(true), logger_(species)
     {
         ;
     }
@@ -178,7 +182,6 @@ public:
     virtual void finalize(const boost::shared_ptr<Space>& space);
     virtual bool fire(const Simulator* sim, const boost::shared_ptr<Space>& space);
     virtual void reset();
-    const Integer num_steps() const;
     NumberLogger::data_container_type data() const;
     NumberLogger::species_container_type targets() const;
 
@@ -190,7 +193,6 @@ public:
 protected:
 
     NumberLogger logger_;
-    Integer num_steps_;
 };
 
 class TimingObserver
@@ -308,6 +310,102 @@ protected:
     std::string prefix_;
 };
 
+struct PositionLogger
+{
+    typedef std::vector<std::pair<ParticleID, Particle> >
+        particle_container_type;
+    typedef utils::get_mapper_mf<Species::serial_type, unsigned int>::type
+        serial_map_type;
+
+    PositionLogger(const std::vector<std::string>& species)
+        : species(species), header("x,y,z,r,sid"), formatter("%2%,%3%,%4%,%5%,%8%"), serials()
+    {
+        ;
+    }
+
+    PositionLogger()
+        : species(), header("x,y,z,r,sid"), formatter("%2%,%3%,%4%,%5%,%8%"), serials()
+    {
+        ;
+    }
+
+    ~PositionLogger()
+    {
+        ;
+    }
+
+    void initialize()
+    {
+        ;
+    }
+
+    void reset()
+    {
+        ;
+    }
+
+    void write_particles(
+        std::ofstream& ofs, const Real t, const particle_container_type& particles,
+        const Species::serial_type label = "")
+    {
+        for(particle_container_type::const_iterator i(particles.begin());
+            i != particles.end(); ++i)
+        {
+            const ParticleID& pid((*i).first);
+            const Real3 pos((*i).second.position());
+            const Real radius((*i).second.radius());
+            const Species::serial_type serial(
+                label == "" ? (*i).second.species_serial() : label);
+
+            unsigned int idx;
+            serial_map_type::iterator j(serials.find(serial));
+            if (j == serials.end())
+            {
+                idx = serials.size();
+                serials.insert(std::make_pair(serial, idx));
+            }
+            else
+            {
+                idx = (*j).second;
+            }
+
+            boost::format fmt(formatter);
+            ofs << (fmt % t % pos[0] % pos[1] % pos[2] % radius
+                    % pid.lot() % pid.serial() % idx).str() << std::endl;
+        }
+    }
+
+    void save(std::ofstream& ofs, const boost::shared_ptr<Space>& space)
+    {
+        ofs << std::setprecision(17);
+
+        if (header.size() > 0)
+        {
+            ofs << header << std::endl;
+        }
+
+        if (species.size() == 0)
+        {
+            const particle_container_type particles(space->list_particles());
+            write_particles(ofs, space->t(), particles);
+        }
+        else
+        {
+            for (std::vector<std::string>::const_iterator i(species.begin());
+                i != species.end(); ++i)
+            {
+                const Species sp(*i);
+                const particle_container_type particles(space->list_particles(sp));
+                write_particles(ofs, space->t(), particles, *i);
+            }
+        }
+    }
+
+    std::vector<std::string> species;
+    std::string header, formatter;
+    serial_map_type serials;
+};
+
 class FixedIntervalCSVObserver
     : public FixedIntervalObserver
 {
@@ -324,7 +422,7 @@ public:
 
     FixedIntervalCSVObserver(
         const Real& dt, const std::string& filename)
-        : base_type(dt), prefix_(filename), species_()
+        : base_type(dt), prefix_(filename), logger_()
     {
         ;
     }
@@ -332,7 +430,7 @@ public:
     FixedIntervalCSVObserver(
         const Real& dt, const std::string& filename,
         const std::vector<std::string>& species)
-        : base_type(dt), prefix_(filename), species_(species)
+        : base_type(dt), prefix_(filename), logger_(species)
     {
         ;
     }
@@ -344,18 +442,80 @@ public:
 
     virtual void initialize(const boost::shared_ptr<Space>& space);
     virtual bool fire(const Simulator* sim, const boost::shared_ptr<Space>& space);
-    void write_particles(
-        std::ofstream& ofs, const particle_container_type& particles,
-        const Species::serial_type label = "");
     void log(const boost::shared_ptr<Space>& space);
     const std::string filename() const;
     virtual void reset();
 
+    void set_header(const std::string& header)
+    {
+        logger_.header = header;
+    }
+
+    void set_formatter(const std::string& formatter)
+    {
+        logger_.formatter = formatter;
+    }
+
 protected:
 
     std::string prefix_;
-    std::vector<std::string> species_;
-    serial_map_type serials_;
+    PositionLogger logger_;
+};
+
+class CSVObserver
+    : public Observer
+{
+public:
+
+    typedef Observer base_type;
+
+    typedef std::vector<std::pair<ParticleID, Particle> >
+        particle_container_type;
+    typedef utils::get_mapper_mf<Species::serial_type, unsigned int>::type
+        serial_map_type;
+
+public:
+
+    CSVObserver(
+        const std::string& filename)
+        : base_type(true), prefix_(filename), logger_()
+    {
+        ;
+    }
+
+    CSVObserver(
+        const std::string& filename,
+        const std::vector<std::string>& species)
+        : base_type(true), prefix_(filename), logger_(species)
+    {
+        ;
+    }
+
+    virtual ~CSVObserver()
+    {
+        ;
+    }
+
+    virtual void initialize(const boost::shared_ptr<Space>& space);
+    virtual bool fire(const Simulator* sim, const boost::shared_ptr<Space>& space);
+    void log(const boost::shared_ptr<Space>& space);
+    const std::string filename() const;
+    virtual void reset();
+
+    void set_header(const std::string& header)
+    {
+        logger_.header = header;
+    }
+
+    void set_formatter(const std::string& formatter)
+    {
+        logger_.formatter = formatter;
+    }
+
+protected:
+
+    std::string prefix_;
+    PositionLogger logger_;
 };
 
 struct FixedIntervalEvent
