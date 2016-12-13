@@ -41,14 +41,14 @@ Installation
 
 - Python (2.7 and 3.4, 3.5 both major versions are supported [3.4 is only supported on Linux])
 - pip (8.1 or later)
-- hdf5 (required only on **Windows**. works only for **version 1.8.16**)
+- hdf5 (required only on **Windows**.)
 
 #### Optional requirements
 
 We strongly recommend that you run E-Cell4 with [Jupyter Notebook](http://jupyter.org/).
 Some E-Cell4 functions (for visualization, datastore) optionally depend on
 
-- matplotlib (**1.5.1** and later)
+- matplotlib (**1.5.1** or later)
 - ffmpeg
 - pandas
 
@@ -59,11 +59,16 @@ We recommend that you install [Miniconda](http://conda.pydata.org/miniconda.html
 
 - Install Miniconda for Windows from http://conda.pydata.org/miniconda.html
 - Run the following commands on command prompt
-  - (**Important**) E-Cell4 for Windows works only for hdf5 version **1.8.16**. Please check the version of hdf5, even if you installed hdf5 before with conda.
 
     ```shell
     conda install hdf5 matplotlib notebook
     pip install ecell
+    ```
+
+- (**Important**) E-Cell4 for Windows needs the latest `hdf5`. If there's any problem, please update the version of hdf5.
+
+    ```shell
+    conda update hdf5
     ```
 
 If you use animated visualization with E-Cell4, please install [ffmpeg windows build](http://ffmpeg.zeranoe.com/builds/) and add its path to your **USER** PATH enviromental variable.
@@ -74,11 +79,11 @@ We recommend that you install [Miniconda](http://conda.pydata.org/miniconda.html
 After installing Miniconda, run the following commands in your terminal.
 
 ```shell
-# After installing Miniconda2 or Miniconda3 (Here we assume that you installed Miniconda2).
-~/miniconda2/bin/conda install matplotlib notebook
+# After installing Miniconda2 or Miniconda3 (Here we assume that you installed Miniconda3).
+~/miniconda3/bin/conda install matplotlib notebook
 
 # Download E-Cell4 whl file for your Python version from https://github.com/ecell/ecell4/releases before running this command.
-~/miniconda2/bin/pip install ecell
+~/miniconda3/bin/pip install ecell
 
 # If you want animation support, install ffmpeg with homebrew
 brew install ffmpeg
@@ -92,23 +97,23 @@ Here we download example notebooks from https://github.com/ecell/ecell4-notebook
 
 ### Windows
 Open powershell and run these commands.
-Here we assume that you installed Miniconda(Python2.7) to C:¥Miniconda2
+Here we assume that you installed Miniconda(Python3.5) to C:¥Miniconda3
 
 ```shell
-cd C:¥Miniconda2¥Scripts
+cd C:¥Miniconda3¥Scripts
 wget https://github.com/ecell/ecell4-notebooks/archive/master.zip -OutFile master.zip
 Expand-Archive master.zip
 .¥jupyter-notebook.exe .¥master¥ecell4-notebooks-master¥
 ```
 
 ### Mac Linux
-Here we assume that you installed Miniconda(Python2.7) to ~/miniconda2
+Here we assume that you installed Miniconda(Python3.5) to ~/miniconda3
 
 ```shell
 wget https://github.com/ecell/ecell4-notebooks/archive/master.zip
 unzip master.zip
 cd ecell4-notebooks-master
-~/miniconda2/bin/jupyter-notebook
+~/miniconda3/bin/jupyter-notebook
 ```
 
 Simple examples
