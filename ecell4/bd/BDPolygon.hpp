@@ -1,5 +1,5 @@
-#ifndef EGFRD_POLYGON
-#define EGFRD_POLYGON
+#ifndef BD_POLYGON
+#define BD_POLYGON
 #include <ecell4/core/Triangle.hpp>
 #include <ecell4/core/get_mapper_mf.hpp>
 #include <utility>
@@ -10,7 +10,7 @@ namespace ecell4
 namespace bd
 {
 
-struct Polygon
+struct BDPolygon
 {
   public:
     typedef Triangle face_type;
@@ -25,8 +25,8 @@ struct Polygon
         vertex_group_type;
 
   public:
-    Polygon(){}
-    ~Polygon(){}
+    BDPolygon(){}
+    ~BDPolygon(){}
 
     void add_face(const face_type& face)
     {
@@ -50,12 +50,37 @@ struct Polygon
         return vertex_groups_[vid];
     }
 
+    std::pair<bool, uint32_t>
+    is_connected(const face_id_type& lhs, const face_id_type& rhs) const;
+    std::pair<bool, uint32_t>
+    is_share_vertex(const face_id_type& lhs, const face_id_type& rhs) const;
+
+    Real distance(const std::pair<Real3, face_id_type>& lhs,
+                  const std::pair<Real3, face_id_type>& rhs) const;
+
+
+    std::pair<face_id_type, Real3> bend_displacement(
+            const std::pair<face_id_type, Real3>& pos, const Real3& disp) const;
+
+
     bool empty() const {return faces_.empty();}
     void clear() {return faces_.clear();}
     face_type&       operator[](const std::size_t i)       {return faces_[i];}
     face_type const& operator[](const std::size_t i) const {return faces_[i];}
     face_type&       at(const std::size_t i)       {return faces_.at(i);}
     face_type const& at(const std::size_t i) const {return faces_.at(i);}
+
+    struct face_finder
+        : public std::unary_function<vertex_id_type, bool>
+    {
+        face_finder(const face_id_type& fid): fid_(fid){}
+        bool operator()(const vertex_id_type& vid) const
+        {
+            return vid.first == fid_;
+        }
+      protected:
+        face_id_type fid_;
+    };
 
   private:
 

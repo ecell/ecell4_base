@@ -1,4 +1,5 @@
 #include "BDPolygon.hpp"
+#include "rotate_vector.hpp"
 #include <set>
 
 namespace ecell4
@@ -7,7 +8,7 @@ namespace ecell4
 namespace bd
 {
 
-void Polygon::detect_connectivity()
+void BDPolygon::detect_connectivity()
 {
     {
     std::set<edge_id_type> is_detected;
@@ -65,6 +66,7 @@ void Polygon::detect_connectivity()
             lookup = edge_pairs_[prev_edge]; // XXX dangerous cast!!!
             if(lookup.first == current.first) break;
             this->vertex_groups_[current].push_back(lookup);
+            is_detected.insert(lookup);
         }
     }
     }// vertex
@@ -72,6 +74,107 @@ void Polygon::detect_connectivity()
     return;
 }
 
+std::pair<bool, uint32_t>
+BDPolygon::is_connected(const face_id_type& lhs, const face_id_type& rhs) const
+{
+    if(edge_pairs_.find(std::make_pair(lhs, 0))->second.first == rhs)
+        return std::make_pair(true, 0);
+    if(edge_pairs_.find(std::make_pair(lhs, 1))->second.first == rhs)
+        return std::make_pair(true, 1);
+    if(edge_pairs_.find(std::make_pair(lhs, 2))->second.first == rhs)
+        return std::make_pair(true, 2);
+    return std::make_pair(false, 3);
+}
+
+std::pair<bool, uint32_t>
+BDPolygon::is_share_vertex(const face_id_type& lhs, const face_id_type& rhs) const
+{
+    for(uint32_t i=0; i<3; ++i)
+    {
+        vertex_id_list list = vertex_groups_.find(std::make_pair(lhs, 0))->second;
+        const face_finder cmp(rhs);
+        if(std::find(list.begin(), list.end(), cmp) != list.end())
+            return std::make_pair(true, i);
+    }
+    return std::make_pair(false, 3);
+}
+
+Real BDPolygon::distance(const std::pair<Real3, face_id_type>& lhs,
+                         const std::pair<Real3, face_id_type>& rhs) const
+{
+    const std::pair<bool, uint32_t> edg =
+        this->is_connected(lhs.second, rhs.second);
+    if(edg.first)
+    {
+        const Triangle& lhs_t = faces_[lhs.second];
+        const Triangle& rhs_t = faces_[rhs.second];
+        const Real ang = angle(lhs_t.normal(), rhs_t.normal());
+
+        const edge_id_type redg = edge_pairs_.find(edg)->second;
+        const Real3 developped = lhs_t.vertex_at(edg.second) + 
+            rotate(-ang,
+                   rhs.first - lhs_t.vertex_at(edg.second),
+                   lhs_t.edge_at(edg.second));
+        return length(lhs.first - developped);
+    }
+
+    const std::pair<bool, uint32_t> vtx =
+        this->is_connected(lhs.second, rhs.second);
+    if(vtx.first)
+    {
+        Real whole_angle = 0.;
+        Real angle_sum = 0.;
+
+        bool inter = false;
+        Real r0 = 0.;
+        Real r1 = 0.;
+
+        vertex_id_list const& list =
+            vertex_groups_.find(std::make_pair(lhs.second, vtx.second))->second;
+        for(vertex_id_list::const_iterator iter = list.begin();
+                iter != list.end(); ++iter) // ccw
+        {
+            const Triangle& f = this->faces_.at(iter->first);
+            whole_angle += f.angle_at(iter->second);
+            if(!inter && iter->first == lhs.second)
+            {
+                inter = true;
+                angle_sum += angle(f.vertex_at(iter->second) - lhs.first,
+                                   f.edge_at(iter->second==0?2:iter->second-1));
+            }
+            else if(inter && iter->first == rhs.second)
+            {
+                inter = false;
+                angle_sum += angle(rhs.first - f.vertex_at(iter->second),
+                                   f.edge_at(iter->second));
+            }
+            else if(inter)
+            {
+                angle_sum += this->faces_.at(iter->first).angle_at(iter->second);
+            }
+        }
+        if(inter)
+        {
+            for(vertex_id_list::const_iterator iter = list.begin();
+                    iter != list.end(); ++iter)
+            {
+                if(iter->first == rhs.second)
+                {
+                    const Triangle& f = this->faces_.at(iter->first);
+                    angle_sum += angle(rhs.first - f.vertex_at(iter->second),
+                                       f.edge_at(iter->second));
+                    break;
+                }
+                angle_sum += this->faces_.at(iter->first).angle_at(iter->second);
+            }
+        }
+        const Real min_angle = std::min(angle_sum, whole_angle - angle_sum);
+        return r0 * r0 + r1 * r1 - 2. * r0 * r1 * cos(min_angle);
+    }
+
+    // return infty;
+    throw std::logic_error("cannot determine the distance");
+}
 
 
 }// bd
