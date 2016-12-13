@@ -7,11 +7,6 @@ namespace ecell4
 namespace bd
 {
 
-ParticleContainer2D::ParticleContainer2D()
-{
-    // do nothing
-}
-
 Integer ParticleContainer2D::num_particles() const
 {
     return particles_.size();
@@ -35,8 +30,7 @@ Integer ParticleContainer2D::num_particles(const Species& sp) const
 
 Integer ParticleContainer2D::num_particles_exact(const Species& sp) const
 {
-    per_species_particle_id_set::const_iterator i =
-        particle_pool_.find(sp.serial());
+    per_species_particle_id_set::const_iterator i = particle_pool_.find(sp.serial());
     if (i == particle_pool_.end())
     {
         return 0;
@@ -102,6 +96,79 @@ ParticleContainer2D::list_particles_exact(const Species& sp) const
 }
 
 
+bool ParticleContainer2D::has_particle(const ParticleID& pid) const
+{
+    return (this->rmap_.find(pid) != this->rmap_.end());
+}
+
+bool
+ParticleContainer2D::update_particle(
+        const ParticleID& pid, const Particle& p, const face_id_type& fid)
+{
+    particle_container_type::iterator iter = this->find(pid);
+    if(iter != particles_.end())
+    {
+        if(iter->second.species() != p.species())
+        {
+            particle_pool_[iter->second.species_serial()].erase(iter->first);
+            particle_pool_[p.species_serial()].insert(pid);
+        }
+        this->update(std::make_pair(pid, p), fid);
+        return false;
+    }
+    particle_pool_[p.species_serial()].insert(pid);
+    this->update(std::make_pair(pid, p), fid);
+    return true;
+}
+
+std::pair<ParticleID, Particle>
+ParticleContainer2D::get_particle(const ParticleID& pid) const
+{
+    const particle_container_type::const_iterator iter = this->find(pid);
+    if(iter == particles_.end()) throw NotFound("No such particle");
+    return *iter;
+}
+
+void ParticleContainer2D::remove_particle(const ParticleID& pid)
+{
+    const std::pair<ParticleID, Particle> p = this->get_particle(pid);
+    particle_pool_[p.second.species_serial()].erase(pid);
+    this->erase(pid);
+    return;
+}
+
+std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
+ParticleContainer2D::list_particles_within_radius(
+        const Real3& pos, const Real& radius) const
+{
+// TODO
+
+}
+std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
+ParticleContainer2D::list_particles_within_radius(
+        const Real3& pos, const Real& radius, const ParticleID& ignore) const
+{
+// TODO
+
+
+}
+std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
+ParticleContainer2D::list_particles_within_radius(
+        const Real3& pos, const Real& radius,
+        const ParticleID& ignore1, const ParticleID& ignore2) const
+{
+// TODO
+
+
+}
+
+Real3 ParticleContainer2D::apply_surface(
+        const Real3& position, const Real3& displacement) const
+{
+// TODO
+
+
+}
 
 }// bd
 }// ecell4
