@@ -23,7 +23,7 @@ public:
     typedef std::map<Species::serial_type, particle_id_set>
         per_species_particle_id_set;
 
-    typedef Polygon polygon_type;
+    typedef BDPolygon polygon_type;
     typedef typename polygon_type::face_id_type face_id_type;
     typedef utils::get_mapper_mf<ParticleID, face_id_type>::type 
         pid_to_faceid_type;
@@ -33,6 +33,7 @@ public:
 public:
 
     ParticleContainer2D(){}
+    ParticleContainer2D(const Real3& edge_lengths): edge_lengths_(edge_lengths){}
     ~ParticleContainer2D(){}
 
     const Real3& edge_lengths() const {return edge_lengths_;}
@@ -64,6 +65,7 @@ public:
             const ParticleID& ignore1, const ParticleID& ignore2) const;
 
     bool has_particle(const ParticleID& pid) const;
+    bool update_particle(const ParticleID& pid, const Particle& p);
     bool update_particle(const ParticleID& pid, const Particle& p, const face_id_type& fid);
     std::pair<ParticleID, Particle> get_particle(const ParticleID& pid) const;
     void remove_particle(const ParticleID& pid);
@@ -71,6 +73,20 @@ public:
 
     // polygon
     Real3 apply_surface(const Real3& position, const Real3& displacement) const;
+
+
+    polygon_type&       polygon()       {return polygon_;}
+    polygon_type const& polygon() const {return polygon_;}
+
+#ifdef WITH_HDF5
+    void save_hdf5(H5::Group* root) const;
+    void load_hdf5(const H5::Group& root);
+#endif
+    virtual void save(const std::string& filename) const
+    {
+        throw NotSupported(
+            "save(const std::string) is not supported by this space class");
+    }
 
 private:
 
