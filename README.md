@@ -16,6 +16,15 @@ What is E-Cell System?
 E-Cell System is, a software platform for modeling, simulation and analysis of complex, heterogeneous and multi-scale systems like the cell.
 E-Cell has multi-algorithm, multi-timescale and multi-spatial-representation as its central feature.
 
+Quick start
+===========
+
+You can try E-Cell4 without installing it on your computer’s hard drive.
+
+You can do this by just clicking [![Binder](http://mybinder.org/badge.svg)](http://mybinder.org/repo/ecell/ecell4-notebooks).
+
+And all you need to do is just running the cells in each example Jupyter notebooks.
+
 Installation and usage
 ======================
 
@@ -106,7 +115,7 @@ Expand-Archive master.zip
 .¥jupyter-notebook.exe .¥master¥ecell4-notebooks-master¥
 ```
 
-### Mac Linux
+### Mac or Linux
 Here we assume that you installed Miniconda(Python3.5) to ~/miniconda3
 
 ```shell
