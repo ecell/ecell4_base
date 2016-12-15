@@ -12,14 +12,14 @@ namespace spatiocyte
 const std::string get_serial(boost::shared_ptr<SpatiocyteWorld> world,
         const SpatiocyteWorld::coordinate_type coord)
 {
-    const VoxelPool* mtype(world->find_voxel_pool(coord));
+    const VoxelPool* mtype(world->get_voxel_pool_at(coord));
     return mtype->is_vacant() ? "" : mtype->species().serial();
 }
 
 const std::string get_location(boost::shared_ptr<SpatiocyteWorld> world,
         const SpatiocyteWorld::coordinate_type coord)
 {
-    const VoxelPool* mtype(world->find_voxel_pool(coord));
+    const VoxelPool* mtype(world->get_voxel_pool_at(coord));
     if (mtype->is_vacant())
         return "";
     const VoxelPool* ltype(mtype->location());

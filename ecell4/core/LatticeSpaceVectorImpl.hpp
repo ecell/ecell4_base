@@ -100,7 +100,7 @@ public:
     virtual MoleculePool* find_molecule_pool(const Species& sp);
     virtual const MoleculePool* find_molecule_pool(const Species& sp) const;
     // VoxelPool* find_voxel_pool(const std::string name);
-    virtual VoxelPool* find_voxel_pool(const coordinate_type& coord) const;
+    virtual VoxelPool* get_voxel_pool_at(const coordinate_type& coord) const;
 
     // bool update_molecule(coordinate_type coord, const Species& species);
     // bool add_molecule(const Species& sp, coordinate_type coord, const ParticleID& pid);

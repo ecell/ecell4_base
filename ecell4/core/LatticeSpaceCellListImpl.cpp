@@ -48,7 +48,7 @@ bool LatticeSpaceCellListImpl::update_voxel(const ParticleID& pid, const Voxel& 
     }
 
     VoxelPool* new_vp(get_voxel_pool(v)); //XXX: need MoleculeInfo
-    VoxelPool* dest_vp(find_voxel_pool(to_coord));
+    VoxelPool* dest_vp(get_voxel_pool_at(to_coord));
 
     if (dest_vp != new_vp->location())
     {
@@ -126,7 +126,7 @@ std::pair<const VoxelPool*, LatticeSpaceCellListImpl::coordinate_type>
     return std::make_pair<const VoxelPool*, coordinate_type>(NULL, -1); //XXX: a bit dirty way
 }
 
-VoxelPool* LatticeSpaceCellListImpl::find_voxel_pool(
+VoxelPool* LatticeSpaceCellListImpl::get_voxel_pool_at(
     const LatticeSpaceCellListImpl::coordinate_type& coord) const
 {
     /**
@@ -282,7 +282,7 @@ std::pair<LatticeSpaceCellListImpl::coordinate_type, bool>
     const coordinate_type from(info.coordinate);
     coordinate_type to(get_neighbor(from, nrand));
 
-    VoxelPool* to_vp(find_voxel_pool(to));
+    VoxelPool* to_vp(get_voxel_pool_at(to));
 
     if (to_vp != loc)
     {
@@ -297,7 +297,7 @@ std::pair<LatticeSpaceCellListImpl::coordinate_type, bool>
 
         // to_vp == periodic_
         to = periodic_transpose(to);
-        to_vp = find_voxel_pool(to);
+        to_vp = get_voxel_pool_at(to);
 
         if (to_vp != loc)
         {

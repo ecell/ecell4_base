@@ -133,7 +133,7 @@ public:
     /*
      * find_voxel_pool
      */
-    virtual VoxelPool* find_voxel_pool(const coordinate_type& coord) const = 0;
+    virtual VoxelPool* get_voxel_pool_at(const coordinate_type& coord) const = 0;
     virtual VoxelPool* find_voxel_pool(const Species& sp) = 0;
     virtual const VoxelPool* find_voxel_pool(const Species& sp) const = 0;
 

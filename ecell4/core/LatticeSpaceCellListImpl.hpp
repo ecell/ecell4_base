@@ -500,7 +500,7 @@ public:
 
     virtual std::pair<ParticleID, Voxel> get_voxel(const coordinate_type& coord) const
     {
-        const VoxelPool* vp(find_voxel_pool(coord));
+        const VoxelPool* vp(get_voxel_pool_at(coord));
         const std::string loc((vp->location()->is_vacant())
             ? "" : vp->location()->species().serial());
         return std::make_pair(
@@ -530,7 +530,7 @@ public:
 
     virtual bool remove_voxel(const coordinate_type& coord)
     {
-        VoxelPool* vp(find_voxel_pool(coord));
+        VoxelPool* vp(get_voxel_pool_at(coord));
         if (vp->is_vacant())
         {
             return false;
@@ -555,13 +555,13 @@ public:
             return false;
         }
 
-        VoxelPool* src_vp(find_voxel_pool(src));
+        VoxelPool* src_vp(get_voxel_pool_at(src));
         if (src_vp->is_vacant())
         {
             return true;
         }
 
-        VoxelPool* dest_vp(find_voxel_pool(tmp_dest));
+        VoxelPool* dest_vp(get_voxel_pool_at(tmp_dest));
         if (dest_vp == border_)
         {
             return false;
@@ -569,7 +569,7 @@ public:
         else if (dest_vp == periodic_)
         {
             tmp_dest = periodic_transpose(tmp_dest);
-            dest_vp = find_voxel_pool(tmp_dest);
+            dest_vp = get_voxel_pool_at(tmp_dest);
         }
 
         if (dest_vp != src_vp->location())
@@ -593,7 +593,7 @@ public:
 
     virtual const Particle particle_at(const coordinate_type& coord) const
     {
-        const VoxelPool* vp(find_voxel_pool(coord));
+        const VoxelPool* vp(get_voxel_pool_at(coord));
         return Particle(
             vp->species(), coordinate2position(coord), vp->radius(), vp->D());
     }
@@ -644,11 +644,11 @@ public:
         throw NotFound("MoleculePool not found.");
     }
 
-    VoxelPool* find_voxel_pool(const coordinate_type& coord) const;
+    VoxelPool* get_voxel_pool_at(const coordinate_type& coord) const;
 
     virtual bool on_structure(const Voxel& v)
     {
-        return (find_voxel_pool(v.coordinate())
+        return (get_voxel_pool_at(v.coordinate())
                 != get_voxel_pool(v)->location()); //XXX: == ???
     }
 

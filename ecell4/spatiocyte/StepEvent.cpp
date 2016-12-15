@@ -79,7 +79,7 @@ void StepEvent::walk_in_space_(const MoleculePool* mtype, const Real& alpha)
     {
         const Integer rnd(rng->uniform_int(0, 11));
         const SpatiocyteWorld::coordinate_id_pair_type& info(*itr);
-        if (world_->find_voxel_pool(info.coordinate) != mtype)
+        if (world_->get_voxel_pool_at(info.coordinate) != mtype)
         {
             // should skip if a voxel is not the target species.
             // when reaction has occured before, a voxel can be changed.
@@ -112,7 +112,7 @@ void StepEvent::walk_on_surface_(const MoleculePool* mtype, const Real& alpha)
          itr != voxels.end(); ++itr)
     {
         const SpatiocyteWorld::coordinate_id_pair_type& info(*itr);
-        if (world_->find_voxel_pool(info.coordinate) != mtype)
+        if (world_->get_voxel_pool_at(info.coordinate) != mtype)
         {
             // should skip if a voxel is not the target species.
             // when reaction has occured before, a voxel can be changed.
@@ -125,7 +125,7 @@ void StepEvent::walk_on_surface_(const MoleculePool* mtype, const Real& alpha)
         {
             const SpatiocyteWorld::coordinate_type neighbor(
                     world_->get_neighbor_boundary(info.coordinate, *itr));
-            const VoxelPool* target(world_->find_voxel_pool(neighbor));
+            const VoxelPool* target(world_->get_voxel_pool_at(neighbor));
 
             if (target->get_dimension() > mtype->get_dimension())
                 continue;
@@ -152,9 +152,9 @@ StepEvent::attempt_reaction_(
     const Real& alpha)
 {
     const VoxelPool* from_mt(
-        world_->find_voxel_pool(info.coordinate));
+        world_->get_voxel_pool_at(info.coordinate));
     const VoxelPool* to_mt(
-        world_->find_voxel_pool(to_coord));
+        world_->get_voxel_pool_at(to_coord));
 
     if (to_mt->is_vacant())
     {

@@ -257,9 +257,9 @@ const VoxelPool* SpatiocyteWorld::find_voxel_pool(const Species& species) const
     return (*space_).find_voxel_pool(species);
 }
 
-VoxelPool* SpatiocyteWorld::find_voxel_pool(const coordinate_type& coord) const
+VoxelPool* SpatiocyteWorld::get_voxel_pool_at(const coordinate_type& coord) const
 {
-    return (*space_).find_voxel_pool(coord);
+    return (*space_).get_voxel_pool_at(coord);
 }
 
 std::pair<std::pair<ParticleID, Voxel>, bool>
@@ -535,7 +535,7 @@ SpatiocyteWorld::check_neighbor(
     for (unsigned int rnd(0); rnd < 12; ++rnd)
     {
         const coordinate_type neighbor(get_neighbor(coord, rnd));
-        const VoxelPool* mt(find_voxel_pool(neighbor));
+        const VoxelPool* mt(get_voxel_pool_at(neighbor));
         const std::string
             serial(mt->is_vacant() ? "" : mt->species().serial());
         if (serial == loc)

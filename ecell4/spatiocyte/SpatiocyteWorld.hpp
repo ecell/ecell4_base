@@ -277,7 +277,7 @@ public:
 
     VoxelPool* find_voxel_pool(const Species& species);
     const VoxelPool* find_voxel_pool(const Species& species) const;
-    VoxelPool* find_voxel_pool(const coordinate_type& coord) const;
+    VoxelPool* get_voxel_pool_at(const coordinate_type& coord) const;
 
     std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel(const Voxel& v);
     std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel(const Species& sp, const coordinate_type& coord);

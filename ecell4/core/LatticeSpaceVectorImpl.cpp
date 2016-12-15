@@ -478,7 +478,7 @@ LatticeSpaceVectorImpl::coordinate_type LatticeSpaceVectorImpl::get_coord(
     return -1; //XXX: a bit dirty way
 }
 
-VoxelPool* LatticeSpaceVectorImpl::find_voxel_pool(const coordinate_type& coord) const
+VoxelPool* LatticeSpaceVectorImpl::get_voxel_pool_at(const coordinate_type& coord) const
 {
     return voxels_.at(coord);
 }
@@ -835,7 +835,7 @@ bool LatticeSpaceVectorImpl::update_voxel(const ParticleID& pid, const Voxel& v)
     }
 
     VoxelPool* new_vp(get_voxel_pool(v)); //XXX: need MoleculeInfo
-    VoxelPool* dest_vp(find_voxel_pool(to_coord));
+    VoxelPool* dest_vp(get_voxel_pool_at(to_coord));
 
     if (dest_vp != new_vp->location())
     {
@@ -1070,7 +1070,7 @@ bool LatticeSpaceVectorImpl::add_voxels(const Species sp, std::vector<std::pair<
     {
         const ParticleID pid((*itr).first);
         const coordinate_type coord((*itr).second);
-        VoxelPool* src_vp(find_voxel_pool(coord));
+        VoxelPool* src_vp(get_voxel_pool_at(coord));
         src_vp->remove_voxel_if_exists(coord);
         mtb->add_voxel(coordinate_id_pair_type(pid, coord));
         voxel_container::iterator vitr(voxels_.begin() + coord);
