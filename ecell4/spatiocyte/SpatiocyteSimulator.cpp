@@ -1072,13 +1072,12 @@ void SpatiocyteSimulator::walk_on_surface_(const MolecularTypeBase* mtype, const
             {
                 if (rng->uniform(0,1) <= alpha)
                     world_->move_private(info.first, neighbor, /*candidate=*/idx);
-                break;
             }
             else
             {
-                if (attempt_reaction_(info, neighbor, alpha).first != NO_REACTION)
-                    break;
+                attempt_reaction_(info, neighbor, alpha);
             }
+            break;
         }
         ++idx;
     }
