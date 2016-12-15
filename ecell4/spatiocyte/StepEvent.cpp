@@ -134,10 +134,12 @@ void StepEvent::walk_on_surface_(const MoleculePool* mtype, const Real& alpha)
             {
                 if (rng->uniform(0,1) <= alpha)
                     world_->move(info.coordinate, neighbor, /*candidate=*/idx);
-                break;
             }
-            else if (attempt_reaction_(info, neighbor, alpha).first != NO_REACTION)
-                break;
+            else
+            {
+                attempt_reaction_(info, neighbor, alpha);
+            }
+            break;
         }
         ++idx;
     }
