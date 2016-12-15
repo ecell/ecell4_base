@@ -200,17 +200,8 @@ public:
     virtual std::vector<Species> list_species() const
     {
         std::vector<Species> keys;
-        for (voxel_pool_map_type::const_iterator itr(voxel_pools_.begin());
-             itr != voxel_pools_.end(); ++itr)
-        {
-            keys.push_back((*itr).first);
-        }
-
-        for (molecule_pool_map_type::const_iterator itr(molecule_pools_.begin());
-             itr != molecule_pools_.end(); ++itr)
-        {
-            keys.push_back((*itr).first);
-        }
+        utils::retrieve_keys(voxel_pools_, keys);
+        utils::retrieve_keys(molecule_pools_, keys);
         return keys;
     }
 

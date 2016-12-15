@@ -23,10 +23,6 @@ protected:
         Species, boost::shared_ptr<VoxelPool> >::type voxel_pool_map_type;
     typedef utils::get_mapper_mf<
         Species, boost::shared_ptr<MoleculePool> >::type molecule_pool_map_type;
-    // typedef std::map<
-    //     Species, boost::shared_ptr<VoxelPool> > voxel_pool_map_type;
-    // typedef std::map<
-    //     Species, boost::shared_ptr<MoleculePool> > molecule_pool_map_type;
 
 public:
 

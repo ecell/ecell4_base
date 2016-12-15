@@ -149,17 +149,8 @@ bool LatticeSpaceVectorImpl::update_structure(const Particle& p)
 std::vector<Species> LatticeSpaceVectorImpl::list_species() const
 {
     std::vector<Species> keys;
-    for (voxel_pool_map_type::const_iterator itr(voxel_pools_.begin());
-         itr != voxel_pools_.end(); ++itr)
-    {
-        keys.push_back((*itr).first);
-    }
-
-    for (molecule_pool_map_type::const_iterator itr(molecule_pools_.begin());
-         itr != molecule_pools_.end(); ++itr)
-    {
-        keys.push_back((*itr).first);
-    }
+    utils::retrieve_keys(voxel_pools_, keys);
+    utils::retrieve_keys(molecule_pools_, keys);
     return keys;
 }
 
@@ -186,7 +177,7 @@ const Species& LatticeSpaceVectorImpl::find_species(std::string name) const
 }
 
 std::vector<LatticeSpaceVectorImpl::coordinate_type>
-    LatticeSpaceVectorImpl::list_coords_exact(const Species& sp) const
+LatticeSpaceVectorImpl::list_coords_exact(const Species& sp) const
 {
     std::vector<coordinate_type> retval;
 
@@ -205,7 +196,8 @@ std::vector<LatticeSpaceVectorImpl::coordinate_type>
     return retval;
 }
 
-std::vector<LatticeSpaceVectorImpl::coordinate_type> LatticeSpaceVectorImpl::list_coords(const Species& sp) const
+std::vector<LatticeSpaceVectorImpl::coordinate_type>
+LatticeSpaceVectorImpl::list_coords(const Species& sp) const
 {
     std::vector<coordinate_type> retval;
     for (molecule_pool_map_type::const_iterator itr(molecule_pools_.begin());
