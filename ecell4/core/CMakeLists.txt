@@ -18,7 +18,7 @@ set(CPP_FILES
     Real3.cpp RandomNumberGenerator.cpp Species.cpp UnitSpecies.cpp
     Sphere.cpp Cylinder.cpp SubvolumeSpace.cpp ParticleSpaceCellListImpl.cpp
     LatticeSpaceCellListImpl.cpp collision.cpp Rod.cpp AABB.cpp PlanarSurface.cpp
-    Mesh.cpp observers.cpp extras.cpp)
+    Mesh.cpp observers.cpp extras.cpp PyapiBind.cpp)
 
 set(HPP_FILES
     CompartmentSpace.hpp DynamicPriorityQueue.hpp LatticeSpace.hpp
@@ -34,7 +34,7 @@ set(HPP_FILES
     Shape.hpp Sphere.hpp Cylinder.hpp AABB.hpp StructureType.hpp
     ParticleSpaceCellListImpl.hpp LatticeSpaceCellListImpl.hpp
     PlanarSurface.hpp Rod.hpp collision.hpp
-    comparators.hpp SimulatorFactory.hpp Mesh.hpp shape_operators.hpp)
+    comparators.hpp SimulatorFactory.hpp Mesh.hpp shape_operators.hpp PyapiBind.hpp)
 
 add_library(ecell4-core SHARED
     ${CPP_FILES} ${HPP_FILES} "${CMAKE_CURRENT_BINARY_DIR}/config.h")

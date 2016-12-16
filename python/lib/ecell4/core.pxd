@@ -784,3 +784,17 @@ cdef SphericalSurface SphericalSurface_from_Cpp_SphericalSurface(Cpp_SphericalSu
 cdef Cylinder Cylinder_from_Cpp_Cylinder(Cpp_Cylinder* p)
 cdef CylindricalSurface CylindricalSurface_from_Cpp_CylindricalSurface(Cpp_CylindricalSurface* p)
 cdef AABB AABB_from_Cpp_AABB(Cpp_AABB* p)
+
+ctypedef void (*PyRefFuncType)(void*)
+
+cdef extern from "ecell4/core/PyapiBind.hpp" namespace "ecell4":
+    cdef cppclass Cpp_PythonAPIBind "ecell4::PythonAPIBind":
+        Cpp_PythonAPIBind() except+
+        Cpp_PythonAPIBind(PyRefFuncType, PyRefFuncType)
+        bool is_initialized()
+
+cdef class PythonAPIBind:
+    cdef shared_ptr[Cpp_PythonAPIBind]* thisptr
+
+
+
