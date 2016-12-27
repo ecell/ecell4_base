@@ -191,12 +191,17 @@ ParticleContainer2D::list_particles_within_radius(
     return retval;
 }
 
-Real3 ParticleContainer2D::apply_surface(
-        const Real3& position, const Real3& displacement) const
+std::pair<Real3, face_id_type> ParticleContainer2D::apply_surface(
+        const std::pair<Real3, face_id_type>& position, const Real3& displacement) const
 {
-// TODO
+    std::pair<std::pair<Real3, face_id_type>, Real3>
+        state = std::make_pair(pos, disp);
 
-
+    while(length(state.second) > 1e-10)//tolerance
+    {
+        state = polygon_.move_next_face(state.first, state.second);
+    }
+    return state.first;
 }
 
 }// bd
