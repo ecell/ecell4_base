@@ -12,6 +12,8 @@
 #include <ecell4/core/ParticleSpace.hpp>
 #include <ecell4/core/ParticleSpaceCellListImpl.hpp>
 #include <ecell4/core/Model.hpp>
+#include "BDPolygon.hpp"
+#include "BDContainer2D.hpp"
 
 
 namespace ecell4
@@ -36,11 +38,15 @@ public:
     // typedef ParticleSpaceVectorImpl particle_space_type;
     typedef particle_space_type::particle_container_type particle_container_type;
 
+    typedef BDPolygon::face_type face_type;
+    typedef BDPolygon::face_id_type face_id_type;
+
 public:
 
     BDWorld(const Real3& edge_lengths = Real3(1, 1, 1),
         const Integer3& matrix_sizes = Integer3(3, 3, 3))
-        : ps_(new particle_space_type(edge_lengths, matrix_sizes))
+        : ps_(new particle_space_type(edge_lengths, matrix_sizes)),
+          pcon2d_(new ParticleContainer2D(edge_lengths))
     {
         rng_ = boost::shared_ptr<RandomNumberGenerator>(
             new GSLRandomNumberGenerator());
@@ -50,7 +56,8 @@ public:
     BDWorld(
         const Real3& edge_lengths, const Integer3& matrix_sizes,
         boost::shared_ptr<RandomNumberGenerator> rng)
-        : ps_(new particle_space_type(edge_lengths, matrix_sizes)), rng_(rng)
+        : ps_(new particle_space_type(edge_lengths, matrix_sizes)),
+          pcon2d_(new ParticleContainer2D(edge_lengths)), rng_(rng)
     {
         ;
     }
@@ -61,6 +68,8 @@ public:
         rng_ = boost::shared_ptr<RandomNumberGenerator>(
             new GSLRandomNumberGenerator());
         this->load(filename);
+
+        // 2D does not support HDF5 yet
     }
 
     /**
@@ -404,9 +413,101 @@ public:
         return model_.lock();
     }
 
+    // additional
+
+    BDPolygon&       polygon()       {return pcon2d_->polygon();}
+    BDPolygon const& polygon() const {return pcon2d_->polygon();}
+
+    std::vector<std::pair<ParticleID, Particle> >
+    list_2D_particles() const
+    {
+        return (*pcon2d_).list_particles();
+    }
+
+    std::pair<Real3, face_id_type>
+    apply_surface(const std::pair<Real3, face_id_type>& position,
+                  const Real3& displacement)
+    {
+        return (*pcon2d_).apply_surface(position, displacement);
+    }
+
+    const face_type& face_on(const ParticleID& pid)
+    {
+        return (*pcon2d_).face_on(pid);
+    }
+
+    const face_id_type& face_id_on(const ParticleID& pid)
+    {
+        return (*pcon2d_).face_id_on(pid);
+    }
+
+    std::pair<ParticleID, Particle> get_2D_particle(const ParticleID& pid) const
+    {
+        return (*pcon2d_).get_particle(pid);
+    }
+
+    std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
+    list_2D_particles_within_radius(
+            const std::pair<Real3, face_id_type>& pos, const Real radius)
+    {
+        return (*pcon2d_).list_particles_within_radius(pos, radius);
+    }
+
+    std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
+    list_2D_particles_within_radius(
+            const std::pair<Real3, face_id_type>& pos, const Real radius,
+            const ParticleID& ignore)
+    {
+        return (*pcon2d_).list_particles_within_radius(pos, radius, ignore);
+    }
+
+    std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
+    list_2D_particles_within_radius(
+            const std::pair<Real3, face_id_type>& pos, const Real radius,
+            const ParticleID& ignore1, const ParticleID& ignore2)
+    {
+        return (*pcon2d_).list_particles_within_radius(
+                pos, radius, ignore1, ignore2);
+    }
+
+    bool update_2D_particle_without_checking(
+            const ParticleID& pid, const Particle& p, const face_id_type& fid)
+    {
+        return (*pcon2d_).update_particle(pid, p, fid);
+    }
+
+    std::pair<std::pair<ParticleID, Particle>, bool>
+    new_2D_particle(const Particle& p, const face_id_type& fid)
+    {
+        ParticleID pid(pidgen_());
+        if (list_2D_particles_within_radius(std::make_pair(p.position(), fid),
+                    p.radius()).size() == 0)
+        {
+            //XXX: DONOT call this->update_particle
+            (*pcon2d_).update_particle(pid, p, fid);
+            return std::make_pair(std::make_pair(pid, p), true);
+        }
+        else
+        {
+            return std::make_pair(std::make_pair(pid, p), false);
+        }
+    }
+
+    void new_face(const face_type& face)
+    {
+        (*pcon2d_).polygon().add_face(face);
+    }
+
+    void initialize_polygon()
+    {
+        (*pcon2d_).polygon().detect_connectivity();
+    }
+
+
 protected:
 
     boost::scoped_ptr<ParticleSpace> ps_;
+    boost::scoped_ptr<ParticleContainer2D> pcon2d_;
     boost::shared_ptr<RandomNumberGenerator> rng_;
     SerialIDGenerator<ParticleID> pidgen_;
 
