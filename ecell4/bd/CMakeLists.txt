@@ -3,10 +3,14 @@ if (NO_SHARED)
 endif()
 
 set(CPP_FILES
-    BDSimulator.cpp BDPropagator.cpp functions3d.cpp)
+    BDSimulator.cpp BDPropagator.cpp functions3d.cpp
+    BDContainer2D.cpp BDPolygon.cpp BDPropagator2D.cpp rotate_vector.cpp
+    )
 
 set(HPP_FILES
-    BDSimulator.hpp BDWorld.hpp BDPropagator.hpp functions3d.hpp BDFactory.hpp)
+    BDSimulator.hpp BDWorld.hpp BDPropagator.hpp functions3d.hpp BDFactory.hpp
+    BDContainer2D.hpp BDPolygon.hpp BDPropagator2D.hpp rotate_vector.hpp
+    )
 
 add_library(ecell4-bd SHARED ${CPP_FILES} ${HPP_FILES})
 target_link_libraries(ecell4-bd ecell4-core)
