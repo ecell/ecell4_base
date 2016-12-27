@@ -3,6 +3,7 @@
 #include <ecell4/core/Triangle.hpp>
 #include <ecell4/core/get_mapper_mf.hpp>
 #include <utility>
+#include <functional>
 #include <vector>
 
 namespace ecell4

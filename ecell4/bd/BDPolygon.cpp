@@ -1,6 +1,7 @@
 #include "BDPolygon.hpp"
 #include "rotate_vector.hpp"
 #include <set>
+#include <limits>
 
 namespace ecell4
 {
@@ -102,6 +103,9 @@ BDPolygon::is_share_vertex(const face_id_type& lhs, const face_id_type& rhs) con
 Real BDPolygon::distance(const std::pair<Real3, face_id_type>& lhs,
                          const std::pair<Real3, face_id_type>& rhs) const
 {
+    if(lhs.second == rhs.second)
+        return length(lhs.first - rhs.first);
+
     const std::pair<bool, uint32_t> edg =
         this->is_connected(lhs.second, rhs.second);
     if(edg.first)
@@ -172,8 +176,8 @@ Real BDPolygon::distance(const std::pair<Real3, face_id_type>& lhs,
         return r0 * r0 + r1 * r1 - 2. * r0 * r1 * cos(min_angle);
     }
 
-    // return infty;
-    throw std::logic_error("cannot determine the distance");
+//     throw std::logic_error("cannot determine the distance");
+    return std::numeric_limits<Real>::infinity();
 }
 
 
