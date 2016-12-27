@@ -54,14 +54,14 @@ public:
     // these can be implemented by using spherical region
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
         list_particles_within_radius(
-            const Real3& pos, const Real& radius) const;
+            const std::pair<Real3, face_id_type>& pos, const Real& radius) const;
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
         list_particles_within_radius(
-            const Real3& pos, const Real& radius,
+            const std::pair<Real3, face_id_type>& pos, const Real& radius,
             const ParticleID& ignore) const;
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
         list_particles_within_radius(
-            const Real3& pos, const Real& radius,
+            const std::pair<Real3, face_id_type>& pos, const Real& radius,
             const ParticleID& ignore1, const ParticleID& ignore2) const;
 
     bool has_particle(const ParticleID& pid) const;

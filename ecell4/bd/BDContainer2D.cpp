@@ -139,27 +139,56 @@ void ParticleContainer2D::remove_particle(const ParticleID& pid)
 
 std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
 ParticleContainer2D::list_particles_within_radius(
-        const Real3& pos, const Real& radius) const
+        const std::pair<Real3, face_id_type>& pos, const Real& radius) const
 {
-// TODO
-
+    std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > retval;
+    for(particle_container_type::const_iterator iter = particles_.begin();
+            iter != particles_.end(); ++iter)
+    {
+        const Real l = polygon_.distance(pos, std::make_pair(
+                    iter->second.position(), fmap_[iter->first]));
+        if(l <= radius)
+            retval.push_back(std::make_pair(*iter, l));
+    }
+    return retval;
 }
+
 std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
 ParticleContainer2D::list_particles_within_radius(
-        const Real3& pos, const Real& radius, const ParticleID& ignore) const
+        const std::pair<Real3, face_id_type>& pos,
+        const Real& radius, const ParticleID& ignore) const
 {
-// TODO
-
-
+    std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > retval;
+    for(particle_container_type::const_iterator iter = particles_.begin();
+            iter != particles_.end(); ++iter)
+    {
+        if(iter->first == ignore) continue;
+        const Real l = polygon_.distance(pos, std::make_pair(
+                    iter->second.position(), fmap_[iter->first]));
+        if(l <= radius)
+            retval.push_back(std::make_pair(*iter, l));
+    }
+    return retval;
 }
+
 std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
 ParticleContainer2D::list_particles_within_radius(
-        const Real3& pos, const Real& radius,
+        const std::pair<Real3, face_id_type>& pos, const Real& radius,
         const ParticleID& ignore1, const ParticleID& ignore2) const
 {
-// TODO
 
-
+    std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > retval;
+    for(particle_container_type::const_iterator iter = particles_.begin();
+            iter != particles_.end(); ++iter)
+    {
+        if(iter->first == ignore1) continue;
+        if(iter->first == ignore2) continue;
+        const Real l = polygon_.distance(pos, std::make_pair(
+                    iter->second.position(), fmap_[iter->first]));
+        if(l <= radius)
+            retval.push_back(std::make_pair(*iter, l));
+    }
+    return retval;
 }
 
 Real3 ParticleContainer2D::apply_surface(
