@@ -2,9 +2,26 @@
 #define BD_POLYGON
 #include <ecell4/core/Triangle.hpp>
 #include <ecell4/core/get_mapper_mf.hpp>
+#include <ecell4/core/hash.hpp>
 #include <utility>
 #include <functional>
 #include <vector>
+
+ECELL4_DEFINE_HASH_BEGIN()
+
+template<>
+struct hash<std::pair<std::size_t, uint32_t> >
+{
+    typedef std::pair<std::size_t, uint32_t> argument_type;
+
+    std::size_t operator()(argument_type const& val) const
+    {
+        return hash<std::size_t>()(val.first) ^
+               hash<uint32_t>()(val.second);
+    }
+};
+
+ECELL4_DEFINE_HASH_END()
 
 namespace ecell4
 {
@@ -83,6 +100,19 @@ struct BDPolygon
         face_id_type fid_;
     };
 
+
+    struct edge_finder
+        : public std::unary_function<edge_id_type, bool>
+    {
+        edge_finder(const edge_id_type& eid): eid_(eid){}
+        bool operator()(const std::pair<edge_id_type, edge_id_type>& eid) const
+        {
+            return eid.first == eid_;
+        }
+      protected:
+        edge_id_type eid_;
+    };
+
   private:
 
     boost::array<Real, 3> to_barycentric(const Real3& pos, const face_type& face) const;
@@ -103,42 +133,6 @@ struct BDPolygon
     vertex_group_type   vertex_groups_;
 };
 
-boost::array<Real, 3>
-BDPolygon::to_barycentric(const Real3& pos, const face_type& face) const
-{
-    const Real3& a = face.vertex_at(0);
-    const Real3& b = face.vertex_at(1);
-    const Real3& c = face.vertex_at(2);
-    const Real3  m = cross_product(face.edge_at(0), face.edge_at(2)) * (-1.);
-    const Real x = std::abs(m[0]);
-    const Real y = std::abs(m[1]);
-    const Real z = std::abs(m[2]);
-
-    Real nu, nv, ood;
-    if (x >= y && x >= z)
-    {
-        nu = triangle_area_2D(pos[1], pos[2], b[1], b[2], c[1], c[2]);
-        nv = triangle_area_2D(pos[1], pos[2], c[1], c[2], a[1], a[2]);
-        ood = 1.0 / m[0];
-    }
-    else if (y >= x && y >= z)
-    {
-        nu = triangle_area_2D(pos[0], pos[2], b[0], b[2], c[0], c[2]);
-        nv = triangle_area_2D(pos[0], pos[2], c[0], c[2], a[0], a[2]);
-        ood = 1.0 / -m[1];
-    }
-    else
-    {
-        nu = triangle_area_2D(pos[0], pos[1], b[0], b[1], c[0], c[1]);
-        nv = triangle_area_2D(pos[0], pos[1], c[0], c[1], a[0], a[1]);
-        ood = 1.0 / m[2];
-    }
-    boost::array<Real, 3> bary;
-    bary[0] = nu * ood;
-    bary[1] = nv * ood;
-    bary[2] = 1.0 - bary[0] - bary[1];
-    return bary;
-}
 
 inline Real3 BDPolygon::to_absolute(
         const boost::array<Real, 3>& bary, const face_type& f) const
