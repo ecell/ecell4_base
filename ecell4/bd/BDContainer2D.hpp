@@ -2,6 +2,7 @@
 #define ECELL4_BD_BD_CONTAINER_2D
 
 #include <ecell4/core/ParticleSpace.hpp>
+#include <ecell4/core/exceptions.hpp>
 #include "BDPolygon.hpp"
 #include <set>
 
@@ -24,6 +25,7 @@ public:
         per_species_particle_id_set;
 
     typedef BDPolygon polygon_type;
+    typedef typename polygon_type::face_type face_type;
     typedef typename polygon_type::face_id_type face_id_type;
     typedef utils::get_mapper_mf<ParticleID, face_id_type>::type 
         pid_to_faceid_type;
@@ -51,7 +53,24 @@ public:
     std::vector<std::pair<ParticleID, Particle> >
         list_particles_exact(const Species& sp) const;
  
-    // these can be implemented by using spherical region
+    std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
+    list_particles_within_radius(const Real3& pos, const Real& radius) const
+    {
+        throw NotImplemented("2D");
+    }
+    std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
+    list_particles_within_radius(const Real3& pos, const Real& radius,
+        const ParticleID& ignore) const
+    {
+        throw NotImplemented("2D");
+    }
+    std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
+    list_particles_within_radius(const Real3& pos, const Real& radius,
+        const ParticleID& ignore1, const ParticleID& ignore2) const
+    {
+        throw NotImplemented("2D");
+    }
+ 
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
         list_particles_within_radius(
             const std::pair<Real3, face_id_type>& pos, const Real& radius) const;
@@ -65,23 +84,42 @@ public:
             const ParticleID& ignore1, const ParticleID& ignore2) const;
 
     bool has_particle(const ParticleID& pid) const;
-    bool update_particle(const ParticleID& pid, const Particle& p);
+    bool update_particle(const ParticleID& pid, const Particle& p)
+    {
+        throw NotImplemented("2D");
+    }
     bool update_particle(const ParticleID& pid, const Particle& p, const face_id_type& fid);
     std::pair<ParticleID, Particle> get_particle(const ParticleID& pid) const;
     void remove_particle(const ParticleID& pid);
     const particle_container_type& particles() const {return particles_;}
 
     // polygon
-    Real3 apply_surface(const Real3& position, const Real3& displacement) const;
+    std::pair<Real3, face_id_type>
+    apply_surface(const std::pair<Real3, face_id_type>& position, 
+                  const Real3& displacement) const;
 
 
     polygon_type&       polygon()       {return polygon_;}
     polygon_type const& polygon() const {return polygon_;}
 
-#ifdef WITH_HDF5
-    void save_hdf5(H5::Group* root) const;
-    void load_hdf5(const H5::Group& root);
-#endif
+    face_type const& face_on(const ParticleID& pid)
+    {
+        return polygon_.at(fmap_[pid]);
+    }
+
+    face_id_type const& face_id_on(const ParticleID& pid)
+    {
+        return fmap_[pid];
+    }
+
+    void save_hdf5(H5::Group* root) const
+    {
+        throw NotSupported("2D hdf");
+    }
+    void load_hdf5(const H5::Group& root)
+    {
+        throw NotSupported("2D hdf");
+    }
     virtual void save(const std::string& filename) const
     {
         throw NotSupported(
@@ -104,6 +142,20 @@ private:
 
     bool erase(const particle_container_type::iterator& pid);
     bool erase(const ParticleID& pid);
+
+    struct particle_finder
+        : public std::unary_function<std::pair<ParticleID, face_id_type>, bool>
+    {
+        particle_finder(const ParticleID& pid): pid_(pid){}
+
+        bool operator()(std::pair<ParticleID, face_id_type> ptof) const
+        {
+            return ptof.first == pid_;
+        }
+      protected:
+        ParticleID pid_;
+    };
+
 
 private:
 
@@ -204,4 +256,5 @@ inline bool ParticleContainer2D::erase(const ParticleID& pid)
 
 }// bd
 }// ecell4
+
 #endif /* ECELL4_BD_BD_CONTAINER_2D */

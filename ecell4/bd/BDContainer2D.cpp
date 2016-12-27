@@ -56,13 +56,13 @@ Integer ParticleContainer2D::num_molecules_exact(const Species& sp) const
     return num_particles_exact(sp);
 }
 
-std::vector<std::pair<ParticleID, Particle>>
+std::vector<std::pair<ParticleID, Particle> >
 ParticleContainer2D::list_particles() const
 {
     return particles_;
 }
 
-std::vector<std::pair<ParticleID, Particle>>
+std::vector<std::pair<ParticleID, Particle> >
 ParticleContainer2D::list_particles(const Species& sp) const
 {
     std::vector<std::pair<ParticleID, Particle> > retval;
@@ -79,7 +79,7 @@ ParticleContainer2D::list_particles(const Species& sp) const
     return retval;
 }
 
-std::vector<std::pair<ParticleID, Particle>>
+std::vector<std::pair<ParticleID, Particle> >
 ParticleContainer2D::list_particles_exact(const Species& sp) const
 {
     std::vector<std::pair<ParticleID, Particle> > retval;
@@ -145,8 +145,10 @@ ParticleContainer2D::list_particles_within_radius(
     for(particle_container_type::const_iterator iter = particles_.begin();
             iter != particles_.end(); ++iter)
     {
+        const particle_finder fdr(iter->first);
+        const face_id_type fid = std::find_if(fmap_.begin(), fmap_.end(), fdr)->second;
         const Real l = polygon_.distance(pos, std::make_pair(
-                    iter->second.position(), fmap_[iter->first]));
+                    iter->second.position(), fid));
         if(l <= radius)
             retval.push_back(std::make_pair(*iter, l));
     }
@@ -163,8 +165,11 @@ ParticleContainer2D::list_particles_within_radius(
             iter != particles_.end(); ++iter)
     {
         if(iter->first == ignore) continue;
+
+        const particle_finder fdr(iter->first);
+        const face_id_type fid = std::find_if(fmap_.begin(), fmap_.end(), fdr)->second;
         const Real l = polygon_.distance(pos, std::make_pair(
-                    iter->second.position(), fmap_[iter->first]));
+                    iter->second.position(), fid));
         if(l <= radius)
             retval.push_back(std::make_pair(*iter, l));
     }
@@ -183,19 +188,22 @@ ParticleContainer2D::list_particles_within_radius(
     {
         if(iter->first == ignore1) continue;
         if(iter->first == ignore2) continue;
+        const particle_finder fdr(iter->first);
+        const face_id_type fid = std::find_if(fmap_.begin(), fmap_.end(), fdr)->second;
         const Real l = polygon_.distance(pos, std::make_pair(
-                    iter->second.position(), fmap_[iter->first]));
+                    iter->second.position(), fid));
         if(l <= radius)
             retval.push_back(std::make_pair(*iter, l));
     }
     return retval;
 }
 
-std::pair<Real3, face_id_type> ParticleContainer2D::apply_surface(
+std::pair<Real3, ParticleContainer2D::face_id_type>
+ParticleContainer2D::apply_surface(
         const std::pair<Real3, face_id_type>& position, const Real3& displacement) const
 {
     std::pair<std::pair<Real3, face_id_type>, Real3>
-        state = std::make_pair(pos, disp);
+        state = std::make_pair(position, displacement);
 
     while(length(state.second) > 1e-10)//tolerance
     {
