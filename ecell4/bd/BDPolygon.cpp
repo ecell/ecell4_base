@@ -114,7 +114,7 @@ Real BDPolygon::distance(const std::pair<Real3, face_id_type>& lhs,
         const Triangle& rhs_t = faces_[rhs.second];
         const Real ang = angle(lhs_t.normal(), rhs_t.normal());
 
-        const edge_id_type redg = edge_pairs_.find(edg)->second;
+//         const edge_id_type redg = edge_pairs_.find(edg)->second;
         const Real3 developped = lhs_t.vertex_at(edg.second) + 
             rotate(-ang,
                    rhs.first - lhs_t.vertex_at(edg.second),
@@ -180,7 +180,84 @@ Real BDPolygon::distance(const std::pair<Real3, face_id_type>& lhs,
     return std::numeric_limits<Real>::infinity();
 }
 
+std::pair<std::pair<Real3, BDPolygon::face_id_type>, Real3>
+BDPolygon::move_next_face(const std::pair<Real3, face_id_type>& pos,
+                          const Real3& disp) const
+{
+    const face_type& f = faces_[pos.second];
+    const boost::array<Real, 3> newpos =
+        this->to_barycentric(pos.first + disp, f);
+
+    if(is_inside(newpos))
+        return std::make_pair(
+                std::make_pair(this->to_absolute(newpos, f), pos.second),
+                Real3(0.,0.,0.));
+
+    const boost::array<Real, 3> bpos = to_barycentric(pos.first, f);
+    boost::array<Real, 3> bdis;
+    bdis[0] = newpos[0] - bpos[0];
+    bdis[1] = newpos[1] - bpos[1];
+    bdis[2] = newpos[2] - bpos[2];
+
+    const std::pair<uint32_t, Real> cross = crossed_edge(bpos, bdis);
+    const face_id_type next_face =
+        std::find(edge_pairs_.begin(), edge_pairs_.end(), std::make_pair(f, cross.first)
+                )->first.first;
+
+    return std::make_pair(std::make_pair(pos.first + disp * cross.second, next_face),
+            disp * (1. - cross.second));
+}
+
+std::pair<uint32_t, Real>
+BDPolygon::crossed_edge(const boost::array<Real, 3>& pos, const boost::array<Real, 3>& disp) const
+{
+    boost::array<Real, 3> npos;
+    npos[0] = pos[0] + disp[0];
+    npos[1] = pos[1] + disp[1];
+    npos[2] = pos[2] + disp[2];
+
+    if(npos[0] * npos[1] * npos[2] < 0)
+    {
+             if(npos[0] < 0) return std::make_pair(1, cross_section(pos, disp, 1));
+        else if(npos[1] < 0) return std::make_pair(2, cross_section(pos, disp, 2));
+        else if(npos[2] < 0) return std::make_pair(0, cross_section(pos, disp, 0));
+    }
+    else
+    {
+        assert(!is_inside(npos));
+        if(npos[0] > 0)
+        {
+            const Real ab = cross_section(pos, disp, 0);
+            const Real ca = cross_section(pos, disp, 2);
+            return (ca > ab) ? std::make_pair(0, ab) : std::make_pair(2, ca);
+        }
+        else if(npos[1] > 0)
+        {
+            const Real ab = cross_section(pos, disp, 0);
+            const Real bc = cross_section(pos, disp, 1);
+            return (ab > bc) ? std::make_pair(1, bc) : std::make_pair(0, ab);
+        }
+        else if(npos[2] > 0)
+        {
+            const Real bc = cross_section(pos, disp, 1);
+            const Real ca = cross_section(pos, disp, 2);
+            return (bc > ca) ? std::make_pair(2, ca) : std::make_pair(1, bc);
+        }
+    }
+}
+
+Real BDPolygon::cross_section(const boost::array<Real, 3>& pos,
+        const boost::array<Real, 3>& disp, const uint32_t e) const
+{
+    switch(e)
+    {
+        case 0:  return -pos[1] / disp[1];
+        case 1:  return -pos[0] / disp[0];
+        case 2:  return -pos[2] / disp[2];
+        default: return std::numeric_limits<Real>::infinity();
+    }
+}
+ 
 
 }// bd
-
 }// ecell
