@@ -48,6 +48,7 @@ script:
 deploy:
   provider: surge
   project: ./surge/
+  domain: ecell4.surge.sh
 
 notifications:
   webhooks:
