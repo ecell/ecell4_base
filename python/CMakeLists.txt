@@ -66,9 +66,17 @@ if (PYTHONINTERP_FOUND)
         NAME python_test
         COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY} test ${OPTS})
     install(DIRECTORY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/python${PYTHON_VERSION}/site-packages)
-    install(CODE "
-        set(ENV{PYTHONPATH} ${CMAKE_INSTALL_PREFIX}/lib/python${PYTHON_VERSION}/site-packages)
-        set(ENV{LIBRARY_PATH} ${CMAKE_INSTALL_PREFIX}/lib)
-        execute_process(COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY} install --prefix=${CMAKE_INSTALL_PREFIX})")
+
+    if (NO_SHARED)
+        install(CODE "
+            set(ENV{PYTHONPATH} ${CMAKE_INSTALL_PREFIX}/lib/python${PYTHON_VERSION}/site-packages)
+            set(ENV{LIBRARY_PATH} ${CMAKE_INSTALL_PREFIX}/lib)
+            execute_process(COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY} install --prefix=${CMAKE_INSTALL_PREFIX})")
+    else()
+        install(CODE "
+            set(ENV{PYTHONPATH} ${CMAKE_INSTALL_PREFIX}/lib/python${PYTHON_VERSION}/site-packages)
+            set(ENV{LIBRARY_PATH} ${CMAKE_INSTALL_PREFIX}/lib)
+            execute_process(COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY} install --prefix=${CMAKE_INSTALL_PREFIX} --prefer-shared)")
+    endif()
     #     execute_process(COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY} install --prefix=${CMAKE_INSTALL_PREFIX} ${OPTS})")
 endif()
