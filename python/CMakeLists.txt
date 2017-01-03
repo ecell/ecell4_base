@@ -48,16 +48,16 @@ if (PYTHONINTERP_FOUND)
     configure_file(${SETUP_PY_IN} ${SETUP_PY})
     configure_file(${INIT_PY_IN} ${INIT_PY})
 
-    if (NOT NO_SHARED)
-        add_custom_command(
-            OUTPUT ${OUTPUT}
-            COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY} build_ext -L${ECELL4_SHARED_DIRS} --prefer-shared
-            COMMAND ${CMAKE_COMMAND} -E touch ${OUTPUT})
-    else()
+    if (NO_SHARED)
         add_custom_command(
             OUTPUT ${OUTPUT}
             COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY} build_ext
             COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY} bdist_wheel
+            COMMAND ${CMAKE_COMMAND} -E touch ${OUTPUT})
+    else()
+        add_custom_command(
+            OUTPUT ${OUTPUT}
+            COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY} build_ext -L${ECELL4_SHARED_DIRS} --prefer-shared
             COMMAND ${CMAKE_COMMAND} -E touch ${OUTPUT})
     endif()
 
