@@ -1,20 +1,32 @@
 dist: trusty
 sudo: false
 language: cpp
-os:
-- linux
-- osx
-compiler:
-- gcc
-- clang
-language: python
-python:
-- "2.7"
-- "3.5"
 matrix:
-  exclude:
-  - os: osx
+  include:
+  - ox: linux
     compiler: gcc
+    language: python
+    python: "2.7"
+  - ox: linux
+    compiler: clang
+    language: python
+    python: "2.7"
+  - ox: linux
+    compiler: gcc
+    language: python
+    python: "3.5"
+  - ox: linux
+    compiler: clang
+    language: python
+    python: "3.5"
+  - ox: osx
+    compiler: clang
+    language: python
+    python: "2.7"
+  - ox: osx
+    compiler: clang
+    language: python
+    python: "3.5"
 
 addons:
   apt:
