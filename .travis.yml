@@ -3,27 +3,27 @@ sudo: false
 language: cpp
 matrix:
   include:
-  - ox: linux
+  - os: linux
     compiler: gcc
     language: python
     python: "2.7"
-  - ox: linux
+  - os: linux
     compiler: clang
     language: python
     python: "2.7"
-  - ox: linux
+  - os: linux
     compiler: gcc
     language: python
     python: "3.5"
-  - ox: linux
+  - os: linux
     compiler: clang
     language: python
     python: "3.5"
-  - ox: osx
+  - os: osx
     compiler: clang
     language: python
     python: "2.7"
-  - ox: osx
+  - os: osx
     compiler: clang
     language: python
     python: "3.5"
