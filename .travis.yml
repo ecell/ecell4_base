@@ -75,6 +75,7 @@ before_install:
     if [[ $TRAVIS_PYTHON_VERSION == 3* ]]; then
       /usr/local/bin/python3 get-pip.py;
       /usr/local/bin/python3 -m pip install -U cython numpy matplotlib jupyter;
+    fi;
   fi
 
 script:
