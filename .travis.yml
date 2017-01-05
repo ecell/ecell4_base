@@ -1,16 +1,30 @@
 dist: trusty
 sudo: false
 language: cpp
-os:
-- linux
-- osx
-compiler:
-- gcc
-- clang
 matrix:
-  exclude:
-  - os: osx
+  include:
+  - os: linux
     compiler: gcc
+    language: python
+    python: "2.7"
+  - os: linux
+    compiler: clang
+    language: python
+    python: "2.7"
+  - os: linux
+    compiler: gcc
+    language: python
+    python: "3.5"
+  - os: linux
+    compiler: clang
+    language: python
+    python: "3.5"
+  - os: osx
+    compiler: clang
+    env: TRAVIS_PYTHON_VERSION="2.7"
+  - os: osx
+    compiler: clang
+    env: TRAVIS_PYTHON_VERSION="3.5"
 
 addons:
   apt:
@@ -31,19 +45,74 @@ addons:
 #    - ffmpeg
 
 before_install:
-- if [ "$TRAVIS_OS_NAME" == "linux" ]; then mkdir ~/local; wget https://bootstrap.pypa.io/get-pip.py; /usr/bin/python2 get-pip.py --user; /usr/bin/python3 get-pip.py --user; /usr/bin/python2 -m pip install -U --user cython numpy matplotlib ipykernel; /usr/bin/python3 -m pip install -U --user cython jupyter numpy matplotlib; /usr/bin/python2 -m ipykernel install --user; fi
-- if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew update; brew upgrade; brew install gsl ffmpeg; brew install homebrew/science/hdf5; fi
-- if [ "$TRAVIS_OS_NAME" == "osx" ]; then curl -O https://bootstrap.pypa.io/get-pip.py; /usr/local/bin/python get-pip.py; /usr/local/bin/python -m pip install -U cython numpy matplotlib jupyter; fi
+- if [ "$TRAVIS_OS_NAME" == "osx" ]; then
+    brew update; brew upgrade;
+    brew install gsl ffmpeg;
+    brew install homebrew/science/hdf5;
+    if [[ $TRAVIS_PYTHON_VERSION == 3* ]]; then
+      brew install python3;
+      which python3;
+      /usr/local/bin/python3 -V;
+      brew install freetype;
+    fi;
+  fi
+
+- which python
+- python -V
+
+- if [ "$TRAVIS_OS_NAME" == "linux" ]; then
+    mkdir ~/local;
+    wget https://bootstrap.pypa.io/get-pip.py;
+    python get-pip.py;
+    python -m pip install -U cython numpy matplotlib jupyter;
+  fi
+- if [ "$TRAVIS_OS_NAME" == "osx" ]; then
+    curl -O https://bootstrap.pypa.io/get-pip.py;
+    if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then
+      /usr/local/bin/python get-pip.py;
+      /usr/local/bin/python -m pip install -U cython numpy matplotlib jupyter;
+    fi;
+    if [[ $TRAVIS_PYTHON_VERSION == 3* ]]; then
+      /usr/local/bin/python3 get-pip.py;
+      /usr/local/bin/python3 -m pip install -U cython numpy matplotlib jupyter;
+    fi;
+  fi
 
 script:
-- if [ "$TRAVIS_OS_NAME" == "linux" ]; then bash -c 'cmake -DCMAKE_INSTALL_PREFIX=~/local -DPYTHON_EXECUTABLE:FILEPATH=/usr/bin/python3 . && make && make test && make install'; rm CMakeCache.txt; fi
-- if [ "$TRAVIS_OS_NAME" == "linux" ]; then bash -c 'cmake -DCMAKE_INSTALL_PREFIX=~/local -DPYTHON_EXECUTABLE:FILEPATH=/usr/bin/python2 . && make && make test && make install'; rm CMakeCache.txt; fi
-- if [ "$TRAVIS_OS_NAME" == "osx" ]; then sudo bash -c 'cmake -DCMAKE_INSTALL_PREFIX=/usr/local -DPYTHON_EXECUTABLE:FILEPATH=/usr/local/bin/python . && make && make test && make install'; rm CMakeCache.txt; fi
+- if [ "$TRAVIS_OS_NAME" == "linux" ]; then
+    bash -c 'cmake -DCMAKE_INSTALL_PREFIX=~/local . && make && make test && make install';
+    rm CMakeCache.txt;
+  fi
+- if [ "$TRAVIS_OS_NAME" == "osx" ]; then
+    if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then
+      sudo bash -c 'cmake -DCMAKE_INSTALL_PREFIX=/usr/local -DPYTHON_EXECUTABLE:FILEPATH=/usr/local/bin/python . && make && make test && make install';
+    fi;
+    if [[ $TRAVIS_PYTHON_VERSION == 3* ]]; then
+      sudo bash -c 'cmake -DCMAKE_INSTALL_PREFIX=/usr/local -DPYTHON_EXECUTABLE:FILEPATH=/usr/local/bin/python3 . && make && make test && make install';
+    fi;
+    rm CMakeCache.txt;
+  fi
 
-- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then ldd /usr/local/lib/libecell4-core.so; mkdir surge; cd ecell4-notebooks/Tutorials; fi
-- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then LD_LIBRARY_PATH=~/local/lib:$LD_LIBRARY_PATH PYTHONPATH=~/local/lib/python3.4/site-packages:$PYTHON_PATH jupyter nbconvert --to=html --ExecutePreprocessor.enabled=True --ExecutePreprocessor.timeout=3600 --ExecutePreprocessor.kernel_name='python3' tutorial1.ipynb tutorial2.ipynb tutorial3.ipynb tutorial4.ipynb tutorial6.ipynb tutorial7.ipynb tutorial8.ipynb tutorial9.ipynb tutorial10.ipynb; mv *.html ../../surge/; fi
-- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then LD_LIBRARY_PATH=~/local/lib:$LD_LIBRARY_PATH PYTHONPATH=~/local/lib/python2.7/site-packages:$PYTHON_PATH jupyter nbconvert --to=html --ExecutePreprocessor.enabled=True --ExecutePreprocessor.timeout=3600 --ExecutePreprocessor.kernel_name='python2' tutorial1.ipynb tutorial2.ipynb tutorial3.ipynb tutorial4.ipynb tutorial6.ipynb tutorial7.ipynb tutorial8.ipynb tutorial9.ipynb tutorial10.ipynb; fi
-- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then mkdir surge; cd ecell4-notebooks/Tutorials; /usr/local/bin/python -m jupyter nbconvert --to=html --ExecutePreprocessor.enabled=True --ExecutePreprocessor.timeout=3600 --ExecutePreprocessor.kernel_name='python2' tutorial1.ipynb tutorial2.ipynb tutorial3.ipynb tutorial4.ipynb tutorial6.ipynb tutorial7.ipynb tutorial8.ipynb tutorial9.ipynb tutorial10.ipynb; mv *.html ../../surge/; fi
+- mkdir surge; cd ecell4-notebooks/Tutorials
+
+- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+    if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then
+      LD_LIBRARY_PATH=~/local/lib:$LD_LIBRARY_PATH PYTHONPATH=~/local/lib/python2.7/site-packages:$PYTHON_PATH jupyter nbconvert --to=html --ExecutePreprocessor.enabled=True --ExecutePreprocessor.timeout=3600 --ExecutePreprocessor.kernel_name='python2' tutorial1.ipynb tutorial2.ipynb tutorial3.ipynb tutorial4.ipynb tutorial6.ipynb tutorial7.ipynb tutorial8.ipynb tutorial9.ipynb tutorial10.ipynb;
+    fi;
+    if [[ $TRAVIS_PYTHON_VERSION == 3* ]]; then
+      LD_LIBRARY_PATH=~/local/lib:$LD_LIBRARY_PATH PYTHONPATH=~/local/lib/python3.5/site-packages:$PYTHON_PATH jupyter nbconvert --to=html --ExecutePreprocessor.enabled=True --ExecutePreprocessor.timeout=3600 --ExecutePreprocessor.kernel_name='python3' tutorial1.ipynb tutorial2.ipynb tutorial3.ipynb tutorial4.ipynb tutorial6.ipynb tutorial7.ipynb tutorial8.ipynb tutorial9.ipynb tutorial10.ipynb;
+    fi;
+  fi
+- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+    if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then
+      /usr/local/bin/python -m jupyter nbconvert --to=html --ExecutePreprocessor.enabled=True --ExecutePreprocessor.timeout=3600 --ExecutePreprocessor.kernel_name='python2' tutorial1.ipynb tutorial2.ipynb tutorial3.ipynb tutorial4.ipynb tutorial6.ipynb tutorial7.ipynb tutorial8.ipynb tutorial9.ipynb tutorial10.ipynb;
+    fi;
+    if [[ $TRAVIS_PYTHON_VERSION == 3* ]]; then
+      /usr/local/bin/python3 -m jupyter nbconvert --to=html --ExecutePreprocessor.enabled=True --ExecutePreprocessor.timeout=3600 --ExecutePreprocessor.kernel_name='python3' tutorial1.ipynb tutorial2.ipynb tutorial3.ipynb tutorial4.ipynb tutorial6.ipynb tutorial7.ipynb tutorial8.ipynb tutorial9.ipynb tutorial10.ipynb;
+    fi;
+  fi
+
+- mv *.html ../../surge/
 
 deploy:
   provider: surge
