@@ -50,8 +50,8 @@ before_install:
 - which python
 - python -V
 - if [ "$TRAVIS_OS_NAME" == "linux" ]; then mkdir ~/local; wget https://bootstrap.pypa.io/get-pip.py; fi
-- if [ "$TRAVIS_OS_NAME" == "linux" ]; then if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then python get-pip.py --user; python -m pip install -U --user cython numpy matplotlib jupyter; fi; fi
-- if [ "$TRAVIS_OS_NAME" == "linux" ]; then if [[ $TRAVIS_PYTHON_VERSION == 3* ]]; then python get-pip.py --user; python -m pip install -U --user cython numpy matplotlib jupyter; fi; fi
+- if [ "$TRAVIS_OS_NAME" == "linux" ]; then if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then python get-pip.py; python -m pip install -U cython numpy matplotlib jupyter; fi; fi
+- if [ "$TRAVIS_OS_NAME" == "linux" ]; then if [[ $TRAVIS_PYTHON_VERSION == 3* ]]; then python get-pip.py; python -m pip install -U cython numpy matplotlib jupyter; fi; fi
 - if [ "$TRAVIS_OS_NAME" == "osx" ]; then curl -O https://bootstrap.pypa.io/get-pip.py; fi
 - if [ "$TRAVIS_OS_NAME" == "osx" ]; then if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then /usr/local/bin/python get-pip.py; /usr/local/bin/python -m pip install -U cython numpy matplotlib jupyter; fi; fi
 - if [ "$TRAVIS_OS_NAME" == "osx" ]; then if [[ $TRAVIS_PYTHON_VERSION == 3* ]]; then /usr/local/bin/python3 get-pip.py; /usr/local/bin/python3 -m pip install -U cython numpy matplotlib jupyter; fi; fi
