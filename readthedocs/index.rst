@@ -15,7 +15,9 @@ The source code is available on
 Here, you can get information about E-Cell4 **API**.
 
 Please refer to https://github.com/ecell/ecell4 for information about **installation instructions**.
+
 Please refer to https://github.com/ecell/ecell4/releases for information about **new release**.
+
 Please refer to http://ecell4.surge.sh/ for information about **practical example**.
 
 API
