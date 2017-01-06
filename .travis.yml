@@ -93,32 +93,6 @@ script:
     rm CMakeCache.txt;
   fi
 
-- mkdir surge; cd ecell4-notebooks/Tutorials
-
-- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-    if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then
-      LD_LIBRARY_PATH=~/local/lib:$LD_LIBRARY_PATH PYTHONPATH=~/local/lib/python2.7/site-packages:$PYTHON_PATH jupyter nbconvert --to=html --ExecutePreprocessor.enabled=True --ExecutePreprocessor.timeout=3600 --ExecutePreprocessor.kernel_name='python2' tutorial1.ipynb tutorial2.ipynb tutorial3.ipynb tutorial4.ipynb tutorial6.ipynb tutorial7.ipynb tutorial8.ipynb tutorial9.ipynb tutorial10.ipynb;
-    fi;
-    if [[ $TRAVIS_PYTHON_VERSION == 3* ]]; then
-      LD_LIBRARY_PATH=~/local/lib:$LD_LIBRARY_PATH PYTHONPATH=~/local/lib/python3.5/site-packages:$PYTHON_PATH jupyter nbconvert --to=html --ExecutePreprocessor.enabled=True --ExecutePreprocessor.timeout=3600 --ExecutePreprocessor.kernel_name='python3' tutorial1.ipynb tutorial2.ipynb tutorial3.ipynb tutorial4.ipynb tutorial6.ipynb tutorial7.ipynb tutorial8.ipynb tutorial9.ipynb tutorial10.ipynb;
-    fi;
-  fi
-- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-    if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then
-      /usr/local/bin/python -m jupyter nbconvert --to=html --ExecutePreprocessor.enabled=True --ExecutePreprocessor.timeout=3600 --ExecutePreprocessor.kernel_name='python2' tutorial1.ipynb tutorial2.ipynb tutorial3.ipynb tutorial4.ipynb tutorial6.ipynb tutorial7.ipynb tutorial8.ipynb tutorial9.ipynb tutorial10.ipynb;
-    fi;
-    if [[ $TRAVIS_PYTHON_VERSION == 3* ]]; then
-      /usr/local/bin/python3 -m jupyter nbconvert --to=html --ExecutePreprocessor.enabled=True --ExecutePreprocessor.timeout=3600 --ExecutePreprocessor.kernel_name='python3' tutorial1.ipynb tutorial2.ipynb tutorial3.ipynb tutorial4.ipynb tutorial6.ipynb tutorial7.ipynb tutorial8.ipynb tutorial9.ipynb tutorial10.ipynb;
-    fi;
-  fi
-
-- mv *.html ../../surge/
-
-deploy:
-  provider: surge
-  project: ./surge/
-  domain: ecell4.surge.sh
-
 notifications:
   webhooks:
     urls:
