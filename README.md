@@ -23,7 +23,7 @@ You can try E-Cell4 without installing it on your computer’s hard drive.
 
 You can do this by just clicking [![Binder](http://mybinder.org/badge.svg)](http://mybinder.org/repo/ecell/ecell4-notebooks).
 
-And all you need to do is just running the cells in each example Jupyter notebooks.
+All you need to do is just running the cells in each of the example Jupyter notebooks.
 
 Installation and usage
 ======================
@@ -39,7 +39,7 @@ Installation and usage
   - [A reversible binding reaction](#a-reversible-binding-reaction)
   - [Particle tracking on a spherical surface](#particle-tracking-on-a-spherical-surface)
 
-- [Docker container for E-Cell4](#docker-container-for-e-cell4)
+- [Docker image for E-Cell4](#docker-image-for-e-cell4)
 
 Installation
 ------------
@@ -177,31 +177,43 @@ viz.plot_trajectory(obs, interactive=False)
 
 ![png](./readthedocs/images/hairball.png)
 
-Docker container for E-Cell4
+Docker image for E-Cell4
 ----------------------------
 
-You can pull E-Cell4 docker container with `docker pull ecell/ecell4`.
+You can pull E-Cell4 docker image with `docker pull ecell/ecell4`.
+This image includes E-Cell4 and its example Jupyter notebooks.
 
-After the following steps, you should see [Jupyter Notebook](http://jupyter.org/) up and running (and E-Cell4 tutorials) in your web browser.
+You need to install IPython and create a hashed password before running the docker image.
+(Here we use miniconda IPython as an example.)
+```
+~/miniconda3/bin/ipython
+Python 3.5.2 |Continuum Analytics, Inc.| (default, Jul  2 2016, 17:52:12) 
+Type "copyright", "credits" or "license" for more information.
 
-1. Install [Docker](https://www.docker.com/products/docker).
-2. Run Docker.
-3. Run the following commands from your *Terminal* or *Powershell*.
+IPython 5.1.0 -- An enhanced Interactive Python.
+?         -> Introduction and overview of IPython's features.
+%quickref -> Quick reference.
+help      -> Python's own help system.
+object?   -> Details about 'object', use 'object??' for extra details.
 
-    ```shell
-    docker pull ecell/ecell4
-    docker run -dP ecell/ecell4
-    ```
+In [1]: from IPython.lib.security import passwd
 
-4. Check which port is used by E-Cell4 docker with `docker ps` command.
+In [2]: passwd()
+Enter password: 
+Verify password: 
+Out[2]: 'sha1:78345db65767:e156e28013d2f6741a042c44fcc12d21af7b7529'
+```
 
-    ```shell
-    docker ps
-    CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                     NAMES
-    82b90db240f5        ecell/ecell4        "/bin/sh -c 'jupyter-"   7 seconds ago       Up 6 seconds        0.0.0.0:32768->8888/tcp   clever_raman
-    ```
+And run the docker image with
+```
+docker run -d -p 8888:8888 ecell/ecell4 start-notebook.sh --NotebookApp.password='sha1:78345db65767:e156e28013d2f6741a042c44fcc12d21af7b7529'
+```
 
-5. Open the PORT in `docker ps` command with your web browser. In the case of the above example, you will open `http://localhost:32768`
+You can see E-Cell4 example Jupyter notebooks after opening `http://localhost:8888` and login.
+
+E-Cell4 docker image is based on `jupyter/minimal-notebook`. 
+See https://github.com/jupyter/docker-stacks/tree/master/minimal-notebook for more details about the `docker run` options.
+
 
 Licensing terms
 ===============
