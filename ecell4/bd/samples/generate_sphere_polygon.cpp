@@ -9,16 +9,24 @@ using ecell4::Real3;
 
 void write_stl(const Real3& a, const Real3& b, const Real3& c)
 {
-    const Real3 normal_ = cross_product(b-a, c-b);
-    const Real3 normal = normal_ / length(normal_);
-    std::cout << "facet normal " << normal << std::endl;
+    const Real3 normal = cross_product(b-a, c-b);
+    const Real3 n = normal / length(normal);
+    std::cout << "facet normal " << n[0] << " " << n[1] << " " << n[2] << std::endl;
     std::cout << "outer loop" << std::endl;
-    std::cout << "vertex " << a << std::endl;
-    std::cout << "vertex " << b << std::endl;
-    std::cout << "vertex " << c << std::endl;
+    std::cout << "vertex " << a[0] << " " << a[1] << " " << a[2] << std::endl;
+    std::cout << "vertex " << b[0] << " " << b[1] << " " << b[2] << std::endl;
+    std::cout << "vertex " << c[0] << " " << c[1] << " " << c[2] << std::endl;
     std::cout << "endloop" << std::endl;
     std::cout << "endfacet" << std::endl;
     return ;
+}
+
+void write_xyz(const Real3& a, const Real3& b, const Real3& c)
+{
+    std::cout << a[0] << " " << a[1] << " " << a[2] << std::endl;
+    std::cout << b[0] << " " << b[1] << " " << b[2] << std::endl;
+    std::cout << c[0] << " " << c[1] << " " << c[2] << std::endl;
+    return;
 }
 
 int main(int argc, char **argv)
@@ -63,14 +71,17 @@ int main(int argc, char **argv)
             const std::size_t goal  = (i+1) * (i+2) / 2;
             for(std::size_t j = start; j < goal-1; ++j)
             {
-                write_stl(vertices.at(j), vertices.at(j+1), vertices.at(j-i));
-                write_stl(vertices.at(j), vertices.at(j+i+2), vertices.at(j+1));
+//                 write_stl(vertices.at(j), vertices.at(j+1), vertices.at(j-i));
+//                 write_stl(vertices.at(j), vertices.at(j+i+2), vertices.at(j+1));
+                write_xyz(vertices.at(j), vertices.at(j+1), vertices.at(j-i));
+                write_xyz(vertices.at(j), vertices.at(j+i+2), vertices.at(j+1));
             }
         }
         // edge
         for(std::size_t i=N*(N+1)/2; i< (N+1)*(N+2)/2-1; ++i)
         {
-            write_stl(vertices.at(i), vertices.at(i+1), vertices.at(i-N));
+//             write_stl(vertices.at(i), vertices.at(i+1), vertices.at(i-N));
+            write_xyz(vertices.at(i), vertices.at(i+1), vertices.at(i-N));
         }
 
     }
@@ -101,14 +112,17 @@ int main(int argc, char **argv)
             const std::size_t goal  = (i+1) * (i+2) / 2;
             for(std::size_t j = start; j < goal-1; ++j)
             {
-                write_stl(vertices.at(j), vertices.at(j+1), vertices.at(j-i));
-                write_stl(vertices.at(j), vertices.at(j+i+2), vertices.at(j+1));
+//                 write_stl(vertices.at(j), vertices.at(j+1), vertices.at(j-i));
+//                 write_stl(vertices.at(j), vertices.at(j+i+2), vertices.at(j+1));
+                write_xyz(vertices.at(j), vertices.at(j+1), vertices.at(j-i));
+                write_xyz(vertices.at(j), vertices.at(j+i+2), vertices.at(j+1));
             }
         }
         // edge
         for(std::size_t i=N*(N+1)/2; i< (N+1)*(N+2)/2-1; ++i)
         {
-            write_stl(vertices.at(i), vertices.at(i+1), vertices.at(i-N));
+//             write_stl(vertices.at(i), vertices.at(i+1), vertices.at(i-N));
+            write_xyz(vertices.at(i), vertices.at(i+1), vertices.at(i-N));
         }
     }
     }
