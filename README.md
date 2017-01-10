@@ -87,12 +87,14 @@ If you use animated visualization with E-Cell4, please install [ffmpeg windows b
 We recommend that you install [Miniconda](http://conda.pydata.org/miniconda.html) to manage Python packages.
 After installing Miniconda, run the following commands in your terminal.
 
+(NOTICE) Currently we have a problem in Mac Python3 whl. Now you can not use Miniconda Python3.5 for Mac. Please use Miniconda Python2.7 for Mac instead.
+
 ```shell
 # After installing Miniconda2 or Miniconda3 (Here we assume that you installed Miniconda3).
-~/miniconda3/bin/conda install matplotlib notebook
+~/miniconda2/bin/conda install matplotlib notebook
 
 # Download E-Cell4 whl file for your Python version from https://github.com/ecell/ecell4/releases before running this command.
-~/miniconda3/bin/pip install ecell
+~/miniconda2/bin/pip install ecell
 
 # If you want animation support, install ffmpeg with homebrew
 brew install ffmpeg
