@@ -11,69 +11,8 @@ namespace bd
 
 void BDPolygon::detect_connectivity()
 {
-    {
-    std::set<edge_id_type> is_detected;
-    for(std::size_t fidx = 0; fidx < faces_.size(); ++fidx)
-    for(std::size_t eidx = 0; eidx < 3; ++eidx)
-    {
-        const edge_id_type current = std::make_pair(fidx, eidx);
-        if(is_detected.count(current) == 1) continue;
-        const Real3 pos1 = faces_.at(fidx).edge_at(eidx); // start pos
-        const Real3 pos2 = faces_.at(fidx).edge_at(eidx==2?0:eidx+1); // end pos
-
-        bool found = false;
-        for(std::size_t f=fidx+1; f<faces_.size(); ++f)
-        {
-            for(std::size_t e=0; e<3; ++e)
-            {
-                const edge_id_type lookup = std::make_pair(f,e);
-                if(is_detected.count(lookup) == 1)
-                    continue;
-                else if(// each vertex positions are same
-                   length(faces_.at(f).vertex_at(e)          - pos2) < 1e-10 &&
-                   length(faces_.at(f).vertex_at(e==2?0:e+1) - pos1) < 1e-10)
-                {
-                    found = true;
-                    is_detected.insert(lookup);
-                    this->edge_pairs_[current] = lookup;
-                    this->edge_pairs_[lookup] = current;
-                    break;
-                }
-            }
-            if(found) break;
-        }
-        if(!found) throw std::logic_error("the polygon is not closed");
-    }
-    }// edge
-
-    {
-    std::set<vertex_id_type> is_detected;
-    for(std::size_t fidx = 0; fidx < faces_.size(); ++fidx)
-    for(std::size_t vidx = 0; vidx < 3; ++vidx)
-    {
-        const vertex_id_type current = std::make_pair(fidx, vidx);
-        if(is_detected.count(current) == 1) continue;
-        this->vertex_groups_[current] = vertex_id_list();
-        vertex_id_type lookup = current;
-        while(true)
-        {
-            const edge_id_type prev_edge =
-                std::make_pair(lookup.first, lookup.second==0?2:lookup.second-1);
-            const edge_finder cmp(prev_edge);
-            const typename edge_pair_type::const_iterator pairing =
-                std::find_if(edge_pairs_.begin(), edge_pairs_.end(), cmp);
-
-            if(pairing == edge_pairs_.end())
-                throw std::logic_error("the polygon is not closed");
-
-            lookup = edge_pairs_[prev_edge]; // XXX dangerous cast!!!
-            if(lookup.first == current.first) break;
-            this->vertex_groups_[current].push_back(lookup);
-            is_detected.insert(lookup);
-        }
-    }
-    }// vertex
-
+    detect_shared_edges();
+    detect_shared_vertices();
     return;
 }
 
@@ -191,9 +130,11 @@ BDPolygon::move_next_face(const std::pair<Real3, face_id_type>& pos,
         this->to_barycentric(pos.first + disp, f);
 
     if(is_inside(newpos))
+    {
         return std::make_pair(
                 std::make_pair(this->to_absolute(newpos, f), pos.second),
                 Real3(0.,0.,0.));
+    }
 
     const boost::array<Real, 3> bpos = to_barycentric(pos.first, f);
     boost::array<Real, 3> bdis;
@@ -297,6 +238,104 @@ BDPolygon::to_barycentric(const Real3& pos, const face_type& face) const
     return bary;
 }
 
+void BDPolygon::detect_shared_vertices()
+{
+    std::set<vertex_id_type> is_detected;
+    const Real same_position_tolerance = 1e-6;
+    for(std::size_t fidx = 0; fidx < faces_.size(); ++fidx)
+    {
+        for(std::size_t vidx = 0; vidx < 3; ++vidx)
+        {
+            const vertex_id_type current_vtx = std::make_pair(fidx, vidx);
+
+            if(is_detected.count(current_vtx) == 1) continue;
+            vertex_id_list sharing_list;
+            sharing_list.push_back(current_vtx);
+            is_detected.insert(current_vtx);
+
+            edge_id_type lookup = current_vtx;
+            std::size_t i=0;
+            for(; i<100; ++i)
+            {
+                const std::size_t f = lookup.first;
+                const std::size_t e = (lookup.second == 0) ? 2: lookup.second - 1;
+                const edge_id_type eid  = std::make_pair(f, e);
+                const edge_id_type next = this->edge_pairs_[eid];
+                lookup = next;
+                if(lookup.first == current_vtx.first) break;
+                sharing_list.push_back(lookup);
+            }
+            if(i==100) throw std::logic_error("too many sharing vertex");
+
+            for(std::size_t i=0; i<sharing_list.size(); ++i)
+                vertex_groups_[sharing_list.at(i)] = sharing_list;
+        }
+    }
+
+    return;
+}
+
+
+void BDPolygon::detect_shared_edges()
+{
+    std::set<edge_id_type> is_detected;
+    const Real same_position_tolerance = 1e-6;
+
+    for(std::size_t fidx = 0; fidx < faces_.size(); ++fidx)
+    {
+        const std::size_t currentf = fidx;
+        for(std::size_t eidx = 0; eidx < 3; ++eidx)
+        {
+            const edge_id_type current_edge = std::make_pair(currentf, eidx);
+            if(is_detected.count(current_edge) == 1) continue;
+
+            const std::size_t start_v = eidx;
+            const std::size_t end_v   = (eidx==2) ? 0 : eidx+1;
+            const Real3 start_pos = faces_.at(currentf).vertex_at(start_v);
+            const Real3 end_pos   = faces_.at(currentf).vertex_at(end_v);
+
+            const Real start_dist = length(start_pos);
+            const Real start_length_scale =
+                (start_dist >= same_position_tolerance) ?
+                (start_dist) : (same_position_tolerance);
+
+            const Real end_dist = length(end_pos);
+            const Real end_length_scale =
+                (end_dist >= same_position_tolerance) ?
+                (end_dist) : (same_position_tolerance);
+
+            bool found = false;
+            for(std::size_t f = currentf + 1; f < faces_.size(); ++f)
+            {
+                for(std::size_t e = 0; e < 3; ++e)
+                {
+                    const Real start_pos_dist =
+                        length(start_pos - faces_.at(f).vertex_at(e));
+                    if(start_pos_dist >
+                            start_length_scale * same_position_tolerance)
+                        continue;
+
+                    const Real end_pos_dist =
+                        length(end_pos - faces_.at(f).vertex_at((e==0)?2:e-1));
+                    if(end_pos_dist <= 
+                            end_length_scale * same_position_tolerance)
+                    {
+                        const edge_id_type detected = std::make_pair(f, (e==0)?2:e-1);
+                        this->edge_pairs_[current_edge] = detected;
+                        this->edge_pairs_[detected] = current_edge;
+                        is_detected.insert(detected);
+                        found = true;
+                        break;
+                    }
+                }
+                if(found) break;
+            }
+            if(!found) throw std::logic_error("polygon is not closed");
+        }
+    }
+
+    return;
+}
  
 
 }// bd

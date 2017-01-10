@@ -115,6 +115,9 @@ struct BDPolygon
 
   private:
 
+    void detect_shared_vertices();
+    void detect_shared_edges();
+
     boost::array<Real, 3> to_barycentric(const Real3& pos, const face_type& face) const;
     Real3 to_absolute(const boost::array<Real, 3>& pos, const face_type& face) const;
     bool is_inside(const boost::array<Real, 3>& pos) const;
