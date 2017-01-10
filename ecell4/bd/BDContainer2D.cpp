@@ -204,8 +204,9 @@ ParticleContainer2D::apply_surface(
 {
     std::pair<std::pair<Real3, face_id_type>, Real3>
         state = std::make_pair(position, displacement);
+    const Real len2 = length_sq(displacement);
 
-    while(length(state.second) > 1e-10)//tolerance
+    while(length_sq(state.second) > 1e-6 * len2)//tolerance
     {
         state = polygon_.move_next_face(state.first, state.second);
     }
