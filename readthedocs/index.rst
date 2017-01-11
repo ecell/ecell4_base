@@ -44,6 +44,8 @@ Examples
    examples/example5
    examples/example6
    examples/example7
+   examples/example8
+   examples/example9
    examples/example10
    examples/example11
 
