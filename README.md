@@ -87,7 +87,7 @@ If you use animated visualization with E-Cell4, please install [ffmpeg windows b
 We recommend that you install [Miniconda](http://conda.pydata.org/miniconda.html) to manage Python packages.
 After installing Miniconda, run the following commands in your terminal.
 
-(NOTICE) Currently we have a problem in Mac Python3 whl. Now you can not use Miniconda Python3.5 for Mac. Please use Miniconda Python2.7 for Mac instead.
+(NOTICE for Mac users) We do not provide **Python3.5 whl for Mac**. Instead we provide **Python3.6 whl for Mac**. To use Python3.6 enviroment, please refer to http://conda.pydata.org/docs/py2or3.html . Continuum.io already offers Python3.6 conda packages.
 
 ```shell
 # After installing Miniconda2 or Miniconda3 (Here we assume that you installed Miniconda3).
