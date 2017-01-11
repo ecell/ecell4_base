@@ -24,6 +24,7 @@ Tutorials
    tutorials/tutorial2
    tutorials/tutorial3
    tutorials/tutorial4
+   tutorials/tutorial5
    tutorials/tutorial6
    tutorials/tutorial7
    tutorials/tutorial8
@@ -42,6 +43,7 @@ Examples
    examples/example4
    examples/example5
    examples/example6
+   examples/example7
    examples/example10
    examples/example11
 
