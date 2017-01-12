@@ -64,7 +64,7 @@ ReactionInfo apply_a2b(
         else
         {
             // When B is the location of A, it's enough to remove A
-            rinfo.add_product(world->get_voxel(coord));
+            rinfo.add_product(world->get_voxel_at(coord));
         }
     }
     else
@@ -148,7 +148,7 @@ ReactionInfo apply_a2bc(
         else
         {
             // When B is the location of A, it's enough to remove A
-            rinfo.add_product(world->get_voxel(coord));
+            rinfo.add_product(world->get_voxel_at(coord));
         }
 
         // Place a new C-molecule at the neighbor
@@ -200,7 +200,7 @@ ReactionInfo apply_a2bc(
         else
         {
             // When C is the location of A, it's enough to remove A
-            rinfo.add_product(world->get_voxel(coord));
+            rinfo.add_product(world->get_voxel_at(coord));
         }
         return rinfo;
     }

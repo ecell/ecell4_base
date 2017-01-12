@@ -114,7 +114,7 @@ public:
     virtual std::vector<std::pair<ParticleID, Voxel> > list_voxels_exact(const Species& sp) const = 0;
 
     virtual std::pair<ParticleID, Voxel> get_voxel(const ParticleID& pid) const = 0;
-    virtual std::pair<ParticleID, Voxel> get_voxel(const coordinate_type& coord) const = 0;
+    virtual std::pair<ParticleID, Voxel> get_voxel_at(const coordinate_type& coord) const = 0;
 
     virtual const Particle particle_at(const coordinate_type& coord) const = 0;
 

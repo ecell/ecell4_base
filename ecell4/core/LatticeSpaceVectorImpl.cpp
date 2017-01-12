@@ -125,7 +125,7 @@ LatticeSpaceVectorImpl::get_voxel(const ParticleID& pid) const
 }
 
 std::pair<ParticleID, Voxel>
-LatticeSpaceVectorImpl::get_voxel(const coordinate_type& coord) const
+LatticeSpaceVectorImpl::get_voxel_at(const coordinate_type& coord) const
 {
     const VoxelPool* vp(voxels_[coord]);
     const std::string loc((vp->location()->is_vacant())

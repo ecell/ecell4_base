@@ -45,7 +45,7 @@ public:
 
     virtual Real3 actual_lengths() const = 0;
 
-    virtual std::pair<ParticleID, Voxel> get_voxel(const coordinate_type& coord) const = 0;
+    virtual std::pair<ParticleID, Voxel> get_voxel_at(const coordinate_type& coord) const = 0;
     virtual VoxelPool* get_voxel_pool_at(const coordinate_type& coord) const = 0;
     virtual const Particle particle_at(const coordinate_type& coord) const = 0;
 

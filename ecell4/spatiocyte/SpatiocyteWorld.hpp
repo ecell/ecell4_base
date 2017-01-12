@@ -215,9 +215,9 @@ public:
         return (*space_).get_voxel(pid);
     }
 
-    std::pair<ParticleID, Voxel> get_voxel(const coordinate_type& coord) const
+    std::pair<ParticleID, Voxel> get_voxel_at(const coordinate_type& coord) const
     {
-        return (*space_).get_voxel(coord);
+        return (*space_).get_voxel_at(coord);
     }
 
     bool remove_particle(const ParticleID& pid)

@@ -498,7 +498,7 @@ public:
             pid, Voxel(vp->species(), target.second, vp->radius(), vp->D(), loc));
     }
 
-    virtual std::pair<ParticleID, Voxel> get_voxel(const coordinate_type& coord) const
+    virtual std::pair<ParticleID, Voxel> get_voxel_at(const coordinate_type& coord) const
     {
         const VoxelPool* vp(get_voxel_pool_at(coord));
         const std::string loc((vp->location()->is_vacant())
