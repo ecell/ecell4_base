@@ -146,7 +146,7 @@ VoxelSpaceBase::list_voxels(const Species& sp) const
 
     for (molecule_pool_map_type::const_iterator itr(molecule_pools_.begin());
             itr != molecule_pools_.end(); ++itr)
-        if (!sexp.match((*itr).first))
+        if (sexp.match((*itr).first))
             push_voxels(retval, (*itr).second, sp);
 
     return retval;

@@ -16,8 +16,13 @@ protected:
 
 public:
     typedef std::vector<Real3> position_container;
+    typedef std::vector<std::pair<coordinate_type, coordinate_type> > coordinate_pair_list_type;
 
-    OffLatticeSpace(const Real& voxel_radius, const position_container& positions);
+    OffLatticeSpace(const Real& voxel_radius);
+    OffLatticeSpace(
+            const Real& voxel_radius,
+            const position_container& positions,
+            const coordinate_pair_list_type& adjoining_pairs);
     virtual ~OffLatticeSpace();
 
     virtual std::pair<ParticleID, Voxel> get_voxel_at(const coordinate_type& coord) const;
@@ -28,6 +33,7 @@ public:
     virtual bool remove_voxel(const ParticleID& pid);
     virtual bool remove_voxel(const coordinate_type& coord);
 
+    virtual bool can_move(const coordinate_type& src, const coordinate_type& dest) const;
     virtual bool move(
         const coordinate_type& src, const coordinate_type& dest,
         const std::size_t candidate=0);
@@ -54,13 +60,22 @@ public:
 
     virtual Integer num_molecules(const Species& sp) const;
 
+    virtual Real3 actual_lengths() const;
+
     virtual Integer size() const;
     virtual Integer3 shape() const;
     virtual Integer inner_size() const;
 
+#ifdef WITH_HDF5
+    virtual void save_hdf5(H5::Group* root) const;
+    virtual void load_hdf5(const H5::Group& root);
+#endif
+
 protected:
 
-    void reset(const position_container& positions);
+    void reset(
+            const position_container& positions,
+            const coordinate_pair_list_type& adjoining_pairs);
     bool is_in_range(const coordinate_type& coord) const;
     VoxelPool* get_voxel_pool(const Voxel& v);
     coordinate_type get_coord(const ParticleID& pid) const;

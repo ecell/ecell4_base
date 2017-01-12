@@ -4,16 +4,27 @@
 
 namespace ecell4 {
 
-OffLatticeSpace::OffLatticeSpace(const Real& voxel_radius, const position_container& positions)
+OffLatticeSpace::OffLatticeSpace(const Real& voxel_radius)
     : base_type(voxel_radius), voxels_(), positions_(), adjoinings_(),
     vacant_(&(VacantType::getInstance()))
 {
-    reset(positions);
+}
+
+OffLatticeSpace::OffLatticeSpace(
+        const Real& voxel_radius,
+        const position_container& positions,
+        const coordinate_pair_list_type& adjoining_pairs)
+    : base_type(voxel_radius), voxels_(), positions_(), adjoinings_(),
+    vacant_(&(VacantType::getInstance()))
+{
+    reset(positions, adjoining_pairs);
 }
 
 OffLatticeSpace::~OffLatticeSpace() {}
 
-void OffLatticeSpace::reset(const position_container& positions)
+void OffLatticeSpace::reset(
+        const position_container& positions,
+        const coordinate_pair_list_type& adjoining_pairs)
 {
     voxels_.clear();
     positions_.clear();
@@ -21,11 +32,28 @@ void OffLatticeSpace::reset(const position_container& positions)
 
     const std::size_t size(positions.size());
 
-    voxels_.resize(size);
+    voxels_.resize(size, vacant_);
     positions_.resize(size);
     adjoinings_.resize(size);
 
     std::copy(positions.begin(), positions.end(), positions_.begin());
+
+    for (coordinate_pair_list_type::const_iterator itr(adjoining_pairs.begin());
+            itr != adjoining_pairs.end(); ++itr)
+    {
+        const coordinate_type coord0((*itr).first);
+        const coordinate_type coord1((*itr).second);
+
+        if (is_in_range(coord0) && is_in_range(coord1))
+        {
+            adjoinings_.at(coord0).push_back(voxels_.begin() + coord1);
+            adjoinings_.at(coord1).push_back(voxels_.begin() + coord0);
+        }
+        else
+        {
+            throw IllegalState("A given pair is invalid.");
+        }
+    }
 }
 
 bool OffLatticeSpace::is_in_range(const coordinate_type& coord) const
@@ -85,7 +113,8 @@ OffLatticeSpace::get_coord(const ParticleID& pid) const
             }
         }
     }
-    throw NotFound("A corresponding particle is not found");
+    // throw NotFound("A corresponding particle is not found");
+    return -1;
 }
 
 bool OffLatticeSpace::make_molecular_pool(
@@ -270,6 +299,11 @@ bool OffLatticeSpace::remove_voxel(const coordinate_type& coord)
     return false;
 }
 
+bool OffLatticeSpace::can_move(const coordinate_type& src, const coordinate_type& dest) const
+{
+    throw NotSupported("OffLatticeSpace::can_move() is not supported yet.");
+}
+
 bool OffLatticeSpace::move(const coordinate_type& src, const coordinate_type& dest,
         const std::size_t candidate)
 {
@@ -366,6 +400,11 @@ Integer OffLatticeSpace::num_molecules(const Species& sp) const
     return count;
 }
 
+Real3 OffLatticeSpace::actual_lengths() const
+{
+    throw NotSupported("OffLatticeSpace::actual_lengths() is not supported.");
+}
+
 Integer OffLatticeSpace::size() const
 {
     return voxels_.size();
@@ -380,5 +419,15 @@ Integer OffLatticeSpace::inner_size() const
 {
     return size();
 }
+
+#ifdef WITH_HDF5
+void OffLatticeSpace::save_hdf5(H5::Group* root) const
+{
+}
+
+void OffLatticeSpace::load_hdf5(const H5::Group& root)
+{
+}
+#endif
 
 } // ecell4
