@@ -58,6 +58,16 @@ Real ODERatelawCythonCallback::deriv_func(
         volume, t, &rr_tempolrary);
 }
 
+boost::shared_ptr<ODERatelawMassAction> to_ODERatelawMassAction(boost::shared_ptr<ODERatelaw> p)
+{
+    return boost::dynamic_pointer_cast<ODERatelawMassAction>(p);
+}
+
+boost::shared_ptr<ODERatelawCythonCallback> to_ODERatelawCythonCallback(boost::shared_ptr<ODERatelaw> p)
+{
+    return boost::dynamic_pointer_cast<ODERatelawCythonCallback>(p);
+}
+
 } // ode
 
 } // ecell4

@@ -1,7 +1,7 @@
 import sys
 import os
 
-extensions = ['sphinx.ext.pngmath', 'sphinx.ext.autodoc', 'sphinx.ext.autosummary', 'numpydoc']
+extensions = ['sphinx.ext.pngmath', 'sphinx.ext.autodoc', 'sphinx.ext.autosummary', 'numpydoc', 'IPython.sphinxext.ipython_console_highlighting', 'IPython.sphinxext.ipython_directive']
 
 templates_path = ['_templates']
 
@@ -11,8 +11,8 @@ project = u'E-Cell'
 copyright = u'2015-, E-Cell project'
 author = u'Kazunari Kaizu'
 
-version = '4.0.6'
-release = '4.0.6'
+version = '4.0.8'
+release = '4.0.8'
 
 language = None
 
