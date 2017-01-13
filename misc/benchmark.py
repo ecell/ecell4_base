@@ -44,18 +44,14 @@ def matrix_sizes(L, N, r):
     N = int(min(L / (2 * r), max(3, cbrt(N))))
     return Integer3(N, N, N)
 
-def partitioned_factory_maker(ftype, *args):
+def partitioned_factory_maker(ftype, *args, **kwargs):
     def create_factory(L, num):
-        rng = GSLRandomNumberGenerator()
-        rng.seed(0)
-        return ftype(matrix_sizes(L, num, radius), rng, *args)
+        return ftype(matrix_sizes(L, num, radius), *args, **kwargs).rng(GSLRandomNumberGenerator(0))
     return create_factory
 
-def non_partitioned_factory_maker(ftype, *args):
+def non_partitioned_factory_maker(ftype, *args, **kwargs):
     def create_factory(L, num):
-        rng = GSLRandomNumberGenerator()
-        rng.seed(0)
-        return ftype(*(args + (rng, )))
+        return ftype(*args, **kwargs).rng(GSLRandomNumberGenerator(0))
     return create_factory
 
 def savedata(filename, x, data):
@@ -214,13 +210,13 @@ if __name__ == "__main__":
     min_duration = 10.0 # 1.0
 
     solvers = {
-        "Mesoscopic": (non_partitioned_factory_maker(meso.MesoscopicFactory, 0.1), True, "b", "o"),
-        "Mesoscopic relaxed": (non_partitioned_factory_maker(meso.MesoscopicFactory, 0.3), True, "navy", "o"),
-        "BD": (partitioned_factory_maker(bd.BDFactory, 1e-5), False, "k", "x"),
-        "BD relaxed": (partitioned_factory_maker(bd.BDFactory, 1e-3), False, "gray", "x"),
-        "BD eGFRD": (partitioned_factory_maker(egfrd.BDFactory, 1e-5), False, "silver", "v"),
+        "Mesoscopic": (non_partitioned_factory_maker(meso.MesoscopicFactory, subvolume_length=0.1), True, "b", "o"),
+        "Mesoscopic relaxed": (non_partitioned_factory_maker(meso.MesoscopicFactory, subvolume_length=0.3), True, "navy", "o"),
+        "BD": (partitioned_factory_maker(bd.BDFactory, bd_dt_factor=1e-5), False, "k", "x"),
+        "BD relaxed": (partitioned_factory_maker(bd.BDFactory, bd_dt_factor=1e-3), False, "gray", "x"),
+        "BD eGFRD": (partitioned_factory_maker(egfrd.BDFactory, bd_dt_factor=1e-5), False, "silver", "v"),
         "eGFRD": (partitioned_factory_maker(egfrd.EGFRDFactory), True, "r", "d"),
-        "Spatiocyte": (non_partitioned_factory_maker(spatiocyte.SpatiocyteFactory, radius), False, "g", "o"),
+        "Spatiocyte": (non_partitioned_factory_maker(spatiocyte.SpatiocyteFactory, voxel_radius=radius), False, "g", "o"),
         }
 
     profileall(solvers)
