@@ -119,6 +119,21 @@ public:
         position_type const& lhs, position_type const& rhs) const = 0;
 
     virtual position_type apply_boundary(position_type const& v) const = 0;
+
+    virtual void add_surface(const boost::array<position_type, 3>& vertices)
+    {
+        return;
+    }
+
+    virtual position_type apply_reflection(const position_type& pos, const position_type& disp)
+    {
+        return pos + disp;
+    }
+
+    virtual position_type apply_structure(const position_type& pos, const position_type& disp)
+    {
+        return pos + disp;
+    }
 };
 
 

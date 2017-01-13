@@ -1,6 +1,8 @@
 #ifndef WORLD_HPP
 #define WORLD_HPP
 
+#include <sstream>
+
 #include <ecell4/core/exceptions.hpp>
 #include <ecell4/core/RandomNumberGenerator.hpp>
 #include <ecell4/core/Species.hpp>
@@ -68,6 +70,9 @@
 #include "exceptions.hpp"
 #include "ParticleContainer.hpp"
 #include "Transaction.hpp"
+
+#include <ecell4/core/AABBSurface.hpp>
+#include "Polygon.hpp"
 
 
 // For twofold_container
@@ -427,7 +432,7 @@ public:
         int data[] = {sizes[0], sizes[1], sizes[2]};
         attr_sizes.write(sizes_type, data);
 
-        ecell4::extras::save_version_information(fout.get(), "ecell4-egfrd-0.0-1");
+        ecell4::extras::save_version_information(fout.get(), std::string("ecell4-egfrd-") + std::string(ECELL4_VERSION));
 #else
         throw ecell4::NotSupported(
             "This method requires HDF5. The HDF5 support is turned off.");
@@ -442,6 +447,24 @@ public:
         //XXX: initialize Simulator
         boost::scoped_ptr<H5::H5File>
             fin(new H5::H5File(filename.c_str(), H5F_ACC_RDONLY));
+
+        const std::string required = "ecell4-egfrd-4.1.0";
+        try
+        {
+            const std::string version = ecell4::extras::load_version_information(*fin);
+            if (!ecell4::extras::check_version_information(version, required))
+            {
+                std::stringstream ss;
+                ss << "The version of the given file [" << version
+                    << "] is too old. [" << required << "] or later is required.";
+                throw ecell4::NotSupported(ss.str());
+            }
+        }
+        catch(H5::GroupIException not_found_error)
+        {
+            throw ecell4::NotFound("No version information was found.");
+        }
+
         const H5::Group group(fin->openGroup("ParticleSpace"));
 
         /** matrix_sizes
@@ -908,6 +931,130 @@ public:
         (*ps_).reset((*ps_).edge_lengths());
     }
 
+    // for polygon
+    virtual void add_surface(const boost::array<position_type, 3>& vertices)
+    {
+        polygon_.emplace(vertices);
+    }
+
+//     virtual position_type
+//     apply_reflection(const position_type& pos, const position_type& disp)
+//     {
+//         return polygon_.apply_reflection(pos, disp,
+//                 (polygon_.get_faces_within_radius(pos, length(disp))).first,
+//                 this->edge_lengths());
+//     }
+
+    virtual position_type
+    apply_structure(const position_type& pos, const position_type& disp)
+    {
+        return this->apply_structure_rec(pos, disp, Polygon<position_type>::make_nonsence_id());
+    }
+
+protected:
+
+    // for polygon
+    position_type
+    apply_structure_rec(const position_type& pos, const position_type& disp,
+            const typename Polygon<position_type>::face_id_type ignore)
+    {
+        typedef typename Polygon<position_type>::face_id_type face_id_t;
+
+        const ecell4::AABBSurface unitcell(
+                position_type(0., 0., 0.), this->edge_lengths());
+        const std::pair<bool, length_type> test_unitcell =
+                unitcell.intersect_ray(pos, disp);
+        const length_type dist_to_unit_cell =
+                length(disp) * test_unitcell.second;
+
+        const std::pair<bool, std::pair<length_type, face_id_t> > test_polygon = 
+                this->polygon_.intersect_ray(pos, disp, ignore);
+
+        if(!test_unitcell.first && !test_polygon.first)
+            return pos + disp;
+
+        if(test_polygon.first && test_polygon.second.first < dist_to_unit_cell)
+        {
+            const std::pair<std::pair<position_type, position_type>, face_id_t>
+                    reflected = this->polygon_.apply_reflection(
+                            pos, disp, test_polygon.second.second);
+            return this->apply_structure_rec(reflected.first.first,
+                    reflected.first.second - reflected.first.first, reflected.second);
+        }
+        else if(test_unitcell.first)
+        {
+            if(test_unitcell.second <= 0.0 || 1.0 < test_unitcell.second)
+            {
+                std::cerr << "aabb.is_inside(begin) = " << unitcell._is_inside(pos) << std::endl;
+                std::cerr << "begin = " << pos << std::endl;
+                std::cerr << "edge_length = " << this->edge_lengths() << std::endl;
+                std::cerr << "test_unitcell.first = " << test_unitcell.first << std::endl;
+                std::cerr << "test_unitcell.second = " <<  test_unitcell.second  << std::endl;
+                std::cerr << "test_polygon.first = " << test_polygon.first << std::endl;
+                std::cerr << "test_polygon.second.first = "  << test_polygon.second.first << std::endl;
+                std::cerr << "test_polygon.second.second = " << test_polygon.second.second << std::endl;
+                assert(0);
+            }
+            const std::pair<position_type, position_type> next_segment =
+                apply_periodic_only_once(pos, disp, test_unitcell.second, unitcell);
+            return this->apply_structure_rec(
+                    next_segment.first, next_segment.second - next_segment.first,
+                    Polygon<position_type>::make_nonsence_id());
+        }
+        else
+            throw std::logic_error("never reach here");
+    }
+
+    std::pair<position_type, position_type>
+    apply_periodic_only_once(const position_type& pos, const position_type& disp,
+                             const length_type tmin, const ecell4::AABBSurface& aabb)
+    {
+        //XXX: this function assumes the conditions described below is satisfied.
+        // - aabb.lower = (0, 0, 0)
+        // - periodic boundary is applied
+        assert(0. < tmin && tmin <= 1.0);
+        position_type next_begin = pos + disp * tmin;
+        position_type next_end   = pos + disp;
+        position_type pullback;
+             if(std::abs(next_begin[0] - aabb.upper()[0]) < 1e-12)
+        {
+            next_begin[0] = aabb.lower()[0];
+            next_end[0] -= (aabb.upper()[0] - aabb.lower()[0]);
+        }
+        else if(std::abs(next_begin[0] - aabb.lower()[0]) < 1e-12)
+        {
+            next_begin[0] = aabb.upper()[0];
+            next_end[0] += (aabb.upper()[0] - aabb.lower()[0]);
+        }
+        else if(std::abs(next_begin[1] - aabb.upper()[1]) < 1e-12)
+        {
+            next_begin[1] = aabb.lower()[1];
+            next_end[1] -= (aabb.upper()[1] - aabb.lower()[1]);
+        }
+        else if(std::abs(next_begin[1] - aabb.lower()[1]) < 1e-12)
+        {
+            next_begin[1] = aabb.upper()[1];
+            next_end[1] += (aabb.upper()[1] - aabb.lower()[1]);
+        }
+        else if(std::abs(next_begin[2] - aabb.upper()[2]) < 1e-12)
+        {
+            next_begin[2] = aabb.lower()[2];
+            next_end[2] -= (aabb.upper()[2] - aabb.lower()[2]);
+        }
+        else if(std::abs(next_begin[2] - aabb.lower()[2]) < 1e-12)
+        {
+            next_begin[2] = aabb.upper()[2];
+            next_end[2] += (aabb.upper()[2] - aabb.lower()[2]);
+        }
+        else
+        {
+            throw std::logic_error("never reach here");
+        }
+        assert(aabb._is_inside(next_begin));
+
+        return std::make_pair(next_begin, next_end);
+    }
+
 private:
 
     particle_id_generator pidgen_;
@@ -922,6 +1069,8 @@ private:
 protected:
 
     boost::scoped_ptr<particle_space_type> ps_;
+
+    Polygon<position_type> polygon_;
 };
 
 template<typename Ttraits_>

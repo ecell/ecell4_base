@@ -96,7 +96,7 @@ cdef extern from "ecell4/core/Species.hpp" namespace "ecell4":
         bool operator<(Cpp_Species& rhs)
         bool operator>(Cpp_Species& rhs)
         string serial() # string == serial_type
-        string get_attribute(string)
+        string get_attribute(string) except +
         Integer count(Cpp_Species& sp) except +
         void set_attribute(string, string)
         void remove_attribute(string) except +
@@ -480,6 +480,20 @@ cdef extern from "ecell4/core/observers.hpp" namespace "ecell4":
         # void log(Cpp_Space*)
         void log(shared_ptr[Cpp_Space]&)
         void reset()
+        void set_header(string&)
+        void set_formatter(string&)
+
+    cdef cppclass Cpp_CSVObserver "ecell4::CSVObserver":
+        Cpp_CSVObserver(string) except +
+        Cpp_CSVObserver(string, vector[string]) except +
+        Real next_time()
+        Integer num_steps()
+        string filename()
+        # void log(Cpp_Space*)
+        void log(shared_ptr[Cpp_Space]&)
+        void reset()
+        void set_header(string&)
+        void set_formatter(string&)
 
     cdef cppclass Cpp_FixedIntervalTrajectoryObserver "ecell4::FixedIntervalTrajectoryObserver":
         Cpp_FixedIntervalTrajectoryObserver(Real, vector[Cpp_ParticleID]) except +
@@ -543,6 +557,9 @@ cdef class FixedIntervalHDF5Observer:
 
 cdef class FixedIntervalCSVObserver:
     cdef shared_ptr[Cpp_FixedIntervalCSVObserver]* thisptr
+
+cdef class CSVObserver:
+    cdef shared_ptr[Cpp_CSVObserver]* thisptr
 
 cdef class FixedIntervalTrajectoryObserver:
     cdef shared_ptr[Cpp_FixedIntervalTrajectoryObserver]* thisptr

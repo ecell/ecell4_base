@@ -112,8 +112,7 @@ def traverse_ParseObj(obj, keys):
 
 def generate_ratelaw(obj, rr, implicit=False):
     keys = []
-    exp = str(traverse_ParseObj(obj, keys))
-    # exp = str(traverse_ParseObj(copy.deepcopy(obj), keys))
+    exp = str(traverse_ParseObj(copy.deepcopy(obj), keys))
     aliases = {}
     for i, sp in enumerate(rr.reactants()):
         aliases[sp.serial()] = "_r[{0:d}]".format(i)

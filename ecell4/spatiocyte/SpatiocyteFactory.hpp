@@ -24,8 +24,8 @@ public:
 
 public:
 
-    SpatiocyteFactory(const Real voxel_radius = default_voxel_radius(), const Real alpha = default_alpha())
-        : base_type(), rng_(), voxel_radius_(voxel_radius), alpha_(alpha)
+    SpatiocyteFactory(const Real voxel_radius = default_voxel_radius())
+        : base_type(), rng_(), voxel_radius_(voxel_radius)
     {
         ; // do nothing
     }
@@ -33,11 +33,6 @@ public:
     static inline const Real default_voxel_radius()
     {
         return 0.0;
-    }
-
-    static inline const Real default_alpha()
-    {
-        return 1.0;
     }
 
     virtual ~SpatiocyteFactory()
@@ -87,19 +82,18 @@ public:
         const boost::shared_ptr<Model>& model,
         const boost::shared_ptr<world_type>& world) const
     {
-        return new SpatiocyteSimulator(model, world, alpha_);
+        return new SpatiocyteSimulator(model, world);
     }
 
     virtual SpatiocyteSimulator* create_simulator(
         const boost::shared_ptr<world_type>& world) const
     {
-        return new SpatiocyteSimulator(world, alpha_);
+        return new SpatiocyteSimulator(world);
     }
 
 protected:
 
     Real voxel_radius_;
-    Real alpha_;
     boost::shared_ptr<RandomNumberGenerator> rng_;
 };
 

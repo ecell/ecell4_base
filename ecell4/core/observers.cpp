@@ -21,22 +21,23 @@ void Observer::finalize(const boost::shared_ptr<Space>& space)
 
 void Observer::reset()
 {
-    ;
+    num_steps_ = 0;
 }
 
 bool Observer::fire(const Simulator* sim, const boost::shared_ptr<Space>& space)
 {
+    ++num_steps_;
     return true;
+}
+
+const Integer Observer::num_steps() const
+{
+    return num_steps_;
 }
 
 const Real FixedIntervalObserver::next_time() const
 {
     return t0_ + dt_ * count_;
-}
-
-const Integer FixedIntervalObserver::num_steps() const
-{
-    return num_steps_;
 }
 
 const Integer FixedIntervalObserver::count() const
@@ -46,6 +47,8 @@ const Integer FixedIntervalObserver::count() const
 
 void FixedIntervalObserver::initialize(const boost::shared_ptr<Space>& space)
 {
+    base_type::initialize(space);
+
     if (dt_ <= 0.0)
     {
         throw std::invalid_argument(
@@ -67,14 +70,13 @@ void FixedIntervalObserver::initialize(const boost::shared_ptr<Space>& space)
 
 bool FixedIntervalObserver::fire(const Simulator* sim, const boost::shared_ptr<Space>& space)
 {
-    ++num_steps_;
     ++count_;
-    return true;
+    return base_type::fire(sim, space);
 }
 
 void FixedIntervalObserver::reset()
 {
-    num_steps_ = 0;
+    base_type::reset();
     count_ = 0;
     t0_ = 0.0; //DUMMY
 }
@@ -175,21 +177,15 @@ bool NumberObserver::fire(const Simulator* sim, const boost::shared_ptr<Space>& 
     if (sim->check_reaction())
     {
         logger_.log(space);
-        ++num_steps_;
+        return base_type::fire(sim, space);
     }
     return true;
 }
 
 void NumberObserver::reset()
 {
-    num_steps_ = 0;
     logger_.reset();
     base_type::reset();
-}
-
-const Integer NumberObserver::num_steps() const
-{
-    return num_steps_;
 }
 
 NumberLogger::data_container_type NumberObserver::data() const
@@ -294,41 +290,13 @@ const std::string FixedIntervalHDF5Observer::filename(const Integer idx) const
 void FixedIntervalCSVObserver::initialize(const boost::shared_ptr<Space>& space)
 {
     base_type::initialize(space);
+    logger_.initialize();
 }
 
 bool FixedIntervalCSVObserver::fire(const Simulator* sim, const boost::shared_ptr<Space>& space)
 {
     log(space);
     return base_type::fire(sim, space);
-}
-
-void FixedIntervalCSVObserver::write_particles(
-    std::ofstream& ofs, const particle_container_type& particles,
-    const Species::serial_type label)
-{
-    for(particle_container_type::const_iterator i(particles.begin());
-        i != particles.end(); ++i)
-    {
-        const Real3 pos((*i).second.position());
-        const Real radius((*i).second.radius());
-        const Species::serial_type serial(
-            label == "" ? (*i).second.species_serial() : label);
-
-        unsigned int idx;
-        serial_map_type::iterator j(serials_.find(serial));
-        if (j == serials_.end())
-        {
-            idx = serials_.size();
-            serials_.insert(std::make_pair(serial, idx));
-        }
-        else
-        {
-            idx = (*j).second;
-        }
-
-        ofs << pos[0] << "," << pos[1] << "," << pos[2] << "," << radius
-            << "," << idx << std::endl;
-    }
 }
 
 void FixedIntervalCSVObserver::log(const boost::shared_ptr<Space>& space)
@@ -339,25 +307,7 @@ void FixedIntervalCSVObserver::log(const boost::shared_ptr<Space>& space)
     }
 
     std::ofstream ofs(filename().c_str(), std::ios::out);
-    ofs << std::setprecision(17);
-    ofs << "x,y,z,r,sid" << std::endl;
-
-    if (species_.size() == 0)
-    {
-        const particle_container_type particles(space->list_particles());
-        write_particles(ofs, particles);
-    }
-    else
-    {
-        for (std::vector<std::string>::const_iterator i(species_.begin());
-            i != species_.end(); ++i)
-        {
-            const Species sp(*i);
-            const particle_container_type particles(space->list_particles(sp));
-            write_particles(ofs, particles, *i);
-        }
-    }
-
+    logger_.save(ofs, space);
     ofs.close();
 }
 
@@ -377,7 +327,53 @@ const std::string FixedIntervalCSVObserver::filename() const
 
 void FixedIntervalCSVObserver::reset()
 {
-    serials_.clear();
+    logger_.reset();
+    base_type::reset();
+}
+
+void CSVObserver::initialize(const boost::shared_ptr<Space>& space)
+{
+    base_type::initialize(space);
+    logger_.initialize();
+    log(space);
+}
+
+bool CSVObserver::fire(const Simulator* sim, const boost::shared_ptr<Space>& space)
+{
+    const bool retval = base_type::fire(sim, space); // Increment num_steps_ first.
+    log(space);
+    return retval;
+}
+
+void CSVObserver::log(const boost::shared_ptr<Space>& space)
+{
+    if (!is_directory(filename()))
+    {
+        throw NotFound("The output path does not exists.");
+    }
+
+    std::ofstream ofs(filename().c_str(), std::ios::out);
+    logger_.save(ofs, space);
+    ofs.close();
+}
+
+const std::string CSVObserver::filename() const
+{
+    boost::format fmt(prefix_);
+
+    if (fmt.expected_args() == 0)
+    {
+        return fmt.str();
+    }
+    else
+    {
+        return (fmt % num_steps()).str();
+    }
+}
+
+void CSVObserver::reset()
+{
+    logger_.reset();
     base_type::reset();
 }
 
@@ -414,10 +410,11 @@ void FixedIntervalTrajectoryObserver::initialize(const boost::shared_ptr<Space>&
                 pids_.push_back((*i).first);
             }
         }
-        prev_positions_.resize(pids_.size());
-        trajectories_.resize(pids_.size());
-        strides_.resize(pids_.size());
     }
+
+    prev_positions_.resize(pids_.size());
+    trajectories_.resize(pids_.size());
+    strides_.resize(pids_.size());
 }
 
 bool FixedIntervalTrajectoryObserver::fire(

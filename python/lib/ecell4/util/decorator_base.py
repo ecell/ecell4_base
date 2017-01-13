@@ -3,6 +3,7 @@ import types
 import warnings
 import functools
 import inspect
+import re
 
 from . import parseobj
 
@@ -107,7 +108,7 @@ class ParseDecorator:
                 del vardict[ignore]
 
         if "_eval" not in vardict.keys():
-            vardict["_eval"] = self.evaluate
+            vardict["_eval"] = self.__evaluate
         if "_callback" not in vardict.keys():
             vardict["_callback"] = self.__callback
         else:
@@ -143,7 +144,7 @@ class ParseDecorator:
             "_i1", "_i2", "_i3", "_dh", "_sh", "_oh")
 
         if "_eval" not in calling_frame.f_globals.keys():
-            calling_frame.f_globals["_eval"] = self.evaluate
+            calling_frame.f_globals["_eval"] = self.__evaluate
             self.__newvars["_eval"] = None
         if "_callback" not in calling_frame.f_globals.keys():
             calling_frame.f_globals["_callback"] = self.__callback
@@ -182,7 +183,7 @@ class ParseDecorator:
                     calling_frame.f_globals[k] = v
                     # print "WARNING: '%s' was recovered to be '%s'." % (k, v)
 
-    def evaluate(self, expr, params={}):
+    def __evaluate(self, expr, params={}):
         class AnyCallableLocals:
 
             def __init__(self, callback, locals):
@@ -196,6 +197,20 @@ class ParseDecorator:
 
         l = locals()
         l.update(params)
+
+        if "-" in expr:
+            print(expr, "NOTICE: - can not be used in Species descriptor, we replaced it with _")
+            expr = expr.replace("-", "_")
+
+        if "|" in expr:
+            print(expr, "NOTICE: | can not be used in Species descriptor, we remove it")
+            expr = expr.replace("|", "")
+
+        prog = re.compile("^[0-9]")
+        if prog.match(expr):
+            print(expr, "NOTICE: Species name that begins with numbers is not allowed, we put x to the head")
+            expr = "x" + expr
+
         return eval(expr, globals(), AnyCallableLocals(self.__callback, l))
 
 # def parse_decorator(callback_class, func):
