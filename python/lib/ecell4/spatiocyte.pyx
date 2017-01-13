@@ -269,16 +269,15 @@ cdef class SpatiocyteWorld:
         return (ParticleID_from_Cpp_ParticleID(address(pid_particle_pair.first)),
                 Particle_from_Cpp_Particle(address(pid_particle_pair.second)))
 
-    def get_voxel(self, arg):
-        """get_voxel(arg) -> (ParticleID, Voxle)
+    def get_voxel(self, ParticleID pid):
+        """get_voxel(pid) -> (ParticleID, Voxel)
 
-        Return the voxel having a particle associated with a given ParticleID
-        or coordinate.
+        Return the voxel having a particle associated with a given ParticleID.
 
         Parameters
         ----------
-        arg : ParticleID or Integer
-            An id or coordiante of the particle in the voxel you want
+        pid : ParticleID
+            An id of the particle in the voxel you want
 
         Returns
         -------
@@ -287,11 +286,29 @@ cdef class SpatiocyteWorld:
 
         """
         cdef pair[Cpp_ParticleID, Cpp_Voxel] pid_voxel_pair
-        if isinstance(arg, ParticleID):
-            pid_voxel_pair = self.thisptr.get().get_voxel(deref((<ParticleID>arg).thisptr))
-        else:
-            # pid_voxel_pair = self.thisptr.get().get_voxel(<Integer>arg)
-            pid_voxel_pair = self.thisptr.get().get_voxel(<Integer>arg)
+        pid_voxel_pair = self.thisptr.get().get_voxel(deref(pid.thisptr))
+        return (ParticleID_from_Cpp_ParticleID(address(pid_voxel_pair.first)),
+                Voxel_from_Cpp_Voxel(address(pid_voxel_pair.second)))
+
+    def get_voxel_at(self, coord):
+        """get_voxel_at(coord) -> (ParticleID, Voxel)
+
+        Return the voxel having a particle at the given coordinate.
+
+        Parameters
+        ----------
+        coord : Integer
+            A coordiante of the particle in the voxel you want
+
+        Returns
+        -------
+        tuple:
+            A pair of ParticleID and Voxel
+
+        """
+        cdef pair[Cpp_ParticleID, Cpp_Voxel] pid_voxel_pair
+        # pid_voxel_pair = self.thisptr.get().get_voxel_at(<Integer>coord)
+        pid_voxel_pair = self.thisptr.get().get_voxel_at(<Integer>coord)
         return (ParticleID_from_Cpp_ParticleID(address(pid_voxel_pair.first)),
                 Voxel_from_Cpp_Voxel(address(pid_voxel_pair.second)))
 

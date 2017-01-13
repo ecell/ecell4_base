@@ -362,7 +362,7 @@ public:
 
     Real get_volume(const Species& sp) const
     {
-        if (!has_species(sp) || !find_molecular_type(sp)->is_structure())
+        if (!has_species(sp) || !find_molecule_pool(sp)->is_structure())
         {
             return 0.0;
         }

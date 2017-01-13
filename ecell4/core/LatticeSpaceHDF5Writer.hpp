@@ -246,17 +246,11 @@ void load_lattice_space(const H5::Group& root, Tspace_* space)
             std::vector<std::pair<ParticleID, Integer> > > > tmp_map;
 
     H5::Group spgroup(root.openGroup("species"));
-    // char name_C[32 + 1];
+    char name_C[32 + 1];
     for (hsize_t idx(0); idx < spgroup.getNumObjs(); ++idx)
     {
         // const H5std_string name = spgroup.getObjnameByIdx(idx);
         // H5::Group group(spgroup.openGroup(name.c_str()));
-
-        // // memset(name_C, 0, 32 + 1);  // clear buffer
-        // // const ssize_t name_len = H5Lget_name_by_idx(spgroup.getLocId(), ".", H5_INDEX_NAME, H5_ITER_INC, idx, name_C, 32, H5P_DEFAULT);
-        // // H5::Group group(spgroup.openGroup(name_C));
-        // // const std::string name_S(name_C);
-        // Species species(name.c_str());
 
         memset(name_C, 0, 32 + 1);  // clear buffer
         H5Lget_name_by_idx(spgroup.getLocId(), ".", H5_INDEX_NAME, H5_ITER_INC, idx, name_C, 32, H5P_DEFAULT);

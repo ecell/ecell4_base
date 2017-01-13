@@ -50,7 +50,7 @@ cdef extern from "ecell4/spatiocyte/SpatiocyteWorld.hpp" namespace "ecell4::spat
         bool remove_voxel(Cpp_ParticleID& pid)
         pair[Cpp_ParticleID, Cpp_Particle] get_particle(Cpp_ParticleID& pid)
         pair[Cpp_ParticleID, Cpp_Voxel] get_voxel(Cpp_ParticleID& pid)
-        pair[Cpp_ParticleID, Cpp_Voxel] get_voxel(Integer)
+        pair[Cpp_ParticleID, Cpp_Voxel] get_voxel_at(Integer)
         bool on_structure(Cpp_Voxel&)
         # bool on_structure(Cpp_Species&, Integer)
 
@@ -184,7 +184,7 @@ cdef SpatiocyteSimulator SpatiocyteSimulator_from_Cpp_SpatiocyteSimulator(Cpp_Sp
 #  ecell4::spatiocyte::SpatiocyteFactory
 cdef extern from "ecell4/spatiocyte/SpatiocyteFactory.hpp" namespace "ecell4::spatiocyte":
     cdef cppclass Cpp_SpatiocyteFactory "ecell4::spatiocyte::SpatiocyteFactory":
-        Cpp_SpatiocyteFactory(Real, Real) except +
+        Cpp_SpatiocyteFactory(Real) except +
         Cpp_SpatiocyteWorld* create_world()
         Cpp_SpatiocyteWorld* create_world(string)
         Cpp_SpatiocyteWorld* create_world(Cpp_Real3&)
