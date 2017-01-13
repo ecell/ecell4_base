@@ -814,3 +814,25 @@ cdef extern from "ecell4/core/callback.hpp" namespace "ecell4":
 cdef class CallbackWrapper:
     cdef Cpp_CallbackWrapper* thisptr
     cdef object pyfunc_
+
+ctypedef bool (*stepladder_type_space)(pyfunc_type pyfunc, shared_ptr[Cpp_CompartmentSpaceVectorImpl])
+cdef extern from "ecell4/core/callback.hpp" namespace "ecell4":
+    cdef cppclass Cpp_PythonNumberHooker "ecell4::PythonNumberHooker":
+        Cpp_PythonNumberHooker(stepladder_type_space, pyfunc_type)
+        bool is_available()
+        bool call(shared_ptr[Cpp_CompartmentSpaceVectorImpl])
+
+cdef class PythonNumberHooker:
+    cdef Cpp_PythonNumberHooker* thisptr
+    cdef object pyfunc_
+    
+cdef extern from "ecell4/core/callback.hpp" namespace "ecell4":
+    cdef cppclass PythonHook_1arg[T1]:
+        PythonHook_1arg(stepladder_type_space, pyfunc_type)
+        bool is_available()
+        bool call(T1)
+
+cdef class PythonCompartmentSpaceVectorImplHooker:
+    cdef PythonHook_1arg[shared_ptr[Cpp_CompartmentSpaceVectorImpl]]* thisptr
+    cdef object pyfunc_
+
