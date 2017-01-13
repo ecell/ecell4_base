@@ -801,3 +801,16 @@ cdef SphericalSurface SphericalSurface_from_Cpp_SphericalSurface(Cpp_SphericalSu
 cdef Cylinder Cylinder_from_Cpp_Cylinder(Cpp_Cylinder* p)
 cdef CylindricalSurface CylindricalSurface_from_Cpp_CylindricalSurface(Cpp_CylindricalSurface* p)
 cdef AABB AABB_from_Cpp_AABB(Cpp_AABB* p)
+
+ctypedef void* pyfunc_type
+ctypedef int (*stepladder_type)(pyfunc_type pyfunc, vector[Real])
+    
+cdef extern from "ecell4/core/callback.hpp" namespace "ecell4":
+    cdef cppclass Cpp_CallbackWrapper "ecell4::CallbackWrapper":
+        Cpp_CallbackWrapper(stepladder_type, pyfunc_type)
+        bool is_available()
+        void call()
+
+cdef class CallbackWrapper:
+    cdef Cpp_CallbackWrapper* thisptr
+    cdef object pyfunc_
