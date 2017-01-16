@@ -109,43 +109,41 @@ cdef extern from "ecell4/egfrd/egfrd.hpp" namespace "ecell4::egfrd":
         void run(Real) except +
         void run(Real, shared_ptr[Cpp_Observer]) except +
         void run(Real, vector[shared_ptr[Cpp_Observer]]) except +
+        void set_paranoiac(bool)
 
     cdef cppclass Cpp_EGFRDFactory "ecell4::egfrd::EGFRDFactory":
-        Cpp_EGFRDFactory() except +
-        Cpp_EGFRDFactory(Integer) except +
-        Cpp_EGFRDFactory(Integer, Real) except +
-        Cpp_EGFRDFactory(Integer, Real, Real) except +
-        Cpp_EGFRDFactory(Cpp_Integer3&) except +
-        Cpp_EGFRDFactory(Cpp_Integer3&, Integer) except +
-        Cpp_EGFRDFactory(Cpp_Integer3&, Integer, Real) except +
-        Cpp_EGFRDFactory(Cpp_Integer3&, Integer, Real, Real) except +
-        Cpp_EGFRDFactory(Cpp_Integer3&, shared_ptr[Cpp_RandomNumberGenerator]&) except +
-        Cpp_EGFRDFactory(Cpp_Integer3&, shared_ptr[Cpp_RandomNumberGenerator]&, Integer) except +
-        Cpp_EGFRDFactory(Cpp_Integer3&, shared_ptr[Cpp_RandomNumberGenerator]&, Integer, Real) except +
-        Cpp_EGFRDFactory(Cpp_Integer3&, shared_ptr[Cpp_RandomNumberGenerator]&, Integer, Real, Real) except +
+        Cpp_EGFRDFactory(Cpp_Integer3&, Real, Integer, Real) except +
         Cpp_EGFRDWorld* create_world()
         Cpp_EGFRDWorld* create_world(string)
         Cpp_EGFRDWorld* create_world(Cpp_Real3&)
         Cpp_EGFRDWorld* create_world(shared_ptr[Cpp_Model])
         Cpp_EGFRDSimulator* create_simulator(shared_ptr[Cpp_Model], shared_ptr[Cpp_EGFRDWorld])
         Cpp_EGFRDSimulator* create_simulator(shared_ptr[Cpp_EGFRDWorld])
+        Cpp_EGFRDFactory* rng_ptr(shared_ptr[Cpp_RandomNumberGenerator]&)
+        @staticmethod
+        Cpp_Integer3 default_matrix_sizes()
+        @staticmethod
+        Real default_bd_dt_factor()
+        @staticmethod
+        Integer default_dissociation_retry_moves()
+        @staticmethod
+        Real default_user_max_shell_size()
 
     cdef cppclass Cpp_BDFactory "ecell4::egfrd::BDFactory":
-        Cpp_BDFactory() except +
-        Cpp_BDFactory(Real) except +
-        Cpp_BDFactory(Real, Integer) except +
-        Cpp_BDFactory(Cpp_Integer3&) except +
-        Cpp_BDFactory(Cpp_Integer3&, Real) except +
         Cpp_BDFactory(Cpp_Integer3&, Real, Integer) except +
-        Cpp_BDFactory(Cpp_Integer3&, shared_ptr[Cpp_RandomNumberGenerator]&) except +
-        Cpp_BDFactory(Cpp_Integer3&, shared_ptr[Cpp_RandomNumberGenerator]&, Real) except +
-        Cpp_BDFactory(Cpp_Integer3&, shared_ptr[Cpp_RandomNumberGenerator]&, Real, Integer) except +
         Cpp_EGFRDWorld* create_world()
         Cpp_EGFRDWorld* create_world(string)
         Cpp_EGFRDWorld* create_world(Cpp_Real3&)
         Cpp_EGFRDWorld* create_world(shared_ptr[Cpp_Model])
         Cpp_BDSimulator* create_simulator(shared_ptr[Cpp_Model], shared_ptr[Cpp_EGFRDWorld])
         Cpp_BDSimulator* create_simulator(shared_ptr[Cpp_EGFRDWorld])
+        Cpp_BDFactory* rng_ptr(shared_ptr[Cpp_RandomNumberGenerator]&)
+        @staticmethod
+        Cpp_Integer3 default_matrix_sizes()
+        @staticmethod
+        Real default_bd_dt_factor()
+        @staticmethod
+        Integer default_dissociation_retry_moves()
 
     cdef cppclass Cpp_BDSimulator "ecell4::egfrd::BDSimulator":
         #XXX: be carefull about the order of arguments

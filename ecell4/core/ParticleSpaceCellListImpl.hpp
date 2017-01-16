@@ -55,11 +55,43 @@ public:
         cell_sizes_[2] = edge_lengths_[2] / matrix_.shape()[2];
     }
 
+    // Space
+
+    virtual Integer num_species() const
+    {
+        return particle_pool_.size();
+    }
+    virtual bool has_species(const Species& sp) const
+    {
+        return (particle_pool_.find(sp.serial()) != particle_pool_.end());
+    }
+
+    virtual std::vector<Species> list_species() const
+    {
+        std::vector<Species> retval;
+        for (per_species_particle_id_set::const_iterator
+            i(particle_pool_.begin()); i != particle_pool_.end(); ++i)
+        {
+            retval.push_back(Species((*i).first));
+        }
+        return retval;
+    }
+
     // ParticleSpaceTraits
 
     const Real3& edge_lengths() const
     {
         return edge_lengths_;
+    }
+
+    const Real3& cell_sizes() const
+    {
+        return cell_sizes_;
+    }
+
+    const Integer3 matrix_sizes() const
+    {
+        return Integer3(matrix_.shape()[0], matrix_.shape()[1], matrix_.shape()[2]);
     }
 
     void reset(const Real3& edge_lengths);

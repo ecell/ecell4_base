@@ -20,7 +20,7 @@ cdef class ODEWorld:
 
     """
 
-    def __init__(self, edge_lengths = None):
+    def __init__(self, edge_lengths=None):
         """Constructor.
 
         Parameters
@@ -31,7 +31,7 @@ cdef class ODEWorld:
         """
         pass  # XXX: Only used for doc string
 
-    def __cinit__(self, edge_lengths = None):
+    def __cinit__(self, edge_lengths=None):
         cdef string filename
 
         if edge_lengths is None:
@@ -388,9 +388,39 @@ cdef class ODERatelaw:
         """Return self as a base class. Only for developmental use."""
         return self
 
+    def to_derivative(self):
+        r = ODERatelawMassAction_from_Cpp_ODERatelaw(deref(self.thisptr) )
+        if r !=  None:
+            return r
+
+        r = ODERatelawCallback_from_Cpp_ODERatelaw(deref(self.thisptr) )
+        if r != None:
+            return r
+
+        raise ValueError("Invalid Ratelaw Type")
+    def __reduce__(self):
+        return self.to_derivative().__reduce__()
+
+
 cdef ODERatelaw ODERatelaw_from_Cpp_ODERatelaw(shared_ptr[Cpp_ODERatelaw] s):
     r = ODERatelaw()
     r.thisptr.swap(s)
+    return r
+
+cdef ODERatelawMassAction ODERatelawMassAction_from_Cpp_ODERatelaw(shared_ptr[Cpp_ODERatelaw] s):
+    r = ODERatelawMassAction(0.01)
+    cdef shared_ptr[Cpp_ODERatelawMassAction] temp = to_ODERatelawMassAction(s)
+    if temp.get() == NULL:
+        return None
+    r.thisptr.swap(temp)
+    return r
+
+cdef ODERatelawCallback ODERatelawCallback_from_Cpp_ODERatelaw(shared_ptr[Cpp_ODERatelaw] s):
+    r = ODERatelawCallback(lambda x:x)
+    cdef shared_ptr[Cpp_ODERatelawCythonCallback] temp = to_ODERatelawCythonCallback(s)
+    if temp.get() == NULL:
+        return None
+    r.thisptr.swap(temp)
     return r
 
 cdef class ODERatelawMassAction:
@@ -420,7 +450,7 @@ cdef class ODERatelawMassAction:
 
     def is_available(self):
         """Check if this ratelaw is available or not. Return True always."""
-        return self.get().is_available
+        return self.thisptr.get().is_available()
 
     def set_k(self, Real k):
         """set_k(k)
@@ -433,11 +463,13 @@ cdef class ODERatelawMassAction:
             A kinetic rate constant.
 
         """
-        self.get().thisptr.set_k(k)
+        #self.get().thisptr.set_k(k)
+        self.thisptr.get().set_k(k)
 
     def get_k(self):
         """Return the kinetic rate constant as a float value."""
-        return self.get().thisptr.get_k()
+        #return self.get().thisptr.get_k()
+        return self.thisptr.get().get_k()
 
     def as_string(self):
         """"Return a name of the function"""
@@ -450,6 +482,8 @@ cdef class ODERatelawMassAction:
         base_type.thisptr = new shared_ptr[Cpp_ODERatelaw](
                 <shared_ptr[Cpp_ODERatelaw]>(deref(self.thisptr)))
         return base_type
+    def __reduce__(self):
+        return (__rebuild_ode_ratelaw, ("ODERatelawMassAction", self.as_string(), self.get_k() ) )
 
 
 cdef double indirect_function(
@@ -539,6 +573,9 @@ cdef class ODERatelawCallback:
 
         """
         self.thisptr.get().set_callback_pyfunc(<Python_CallbackFunctype>pyfunc)
+        self.pyfunc = pyfunc
+    def get_callback(self):
+        return <object>self.thisptr.get().get_callback_pyfunc()
 
     def set_name(self, name):
         """"Set the name of a function"""
@@ -555,6 +592,27 @@ cdef class ODERatelawCallback:
         retval.thisptr = new shared_ptr[Cpp_ODERatelaw](
             <shared_ptr[Cpp_ODERatelaw]>deref(self.thisptr))
         return retval
+    def get_pyfunc(self):
+        return self.pyfunc
+
+    def __reduce__(self):
+        import sys
+        loaded_modules = sys.modules.keys()
+        if not  "dill" in loaded_modules:
+            raise RuntimeError("dill module is required for pickling user-defined function")
+        return (__rebuild_ode_ratelaw, ("ODERatelawCallback", self.as_string(), self.get_callback()) )
+
+def __rebuild_ode_ratelaw(ratelaw_type, name, param):
+    if ratelaw_type == "ODERatelawCallback":
+        m = ODERatelawCallback(param, name)
+        return m
+    elif ratelaw_type == "ODERatelawMassAction":
+        m = ODERatelawMassAction(param)
+        #m.set_name(name)
+        return m
+    else:
+        raise ValueError("Invalid Ratelaw Type")
+    
 
 cdef class ODEReactionRule:
     """A class representing a reaction rule between ``Species``, which accepts at most
@@ -799,7 +857,7 @@ cdef class ODEReactionRule:
 
     def __reduce__(self):
         if self.has_ratelaw():
-            self.ratelaw = self.ratelaw()
+            ratelaw = self.get_ratelaw()
         else:
             ratelaw = None
         return (__rebuild_ode_reaction_rule, (self.reactants(), self.products(), self.reactants_coefficients(), self.products_coefficients(), ratelaw))
@@ -815,6 +873,7 @@ def __rebuild_ode_reaction_rule(reactants, products, reactants_coefficients, pro
         pass
     else:
         rr.set_ratelaw(ratelaw)
+    return rr
 
 cdef ODEReactionRule ODEReactionRule_from_Cpp_ODEReactionRule(Cpp_ODEReactionRule *s):
     cdef Cpp_ODEReactionRule *new_obj = new Cpp_ODEReactionRule(deref(s))
@@ -830,7 +889,7 @@ cdef class ODENetworkModel:
 
     """
 
-    def __init__(self, m = None):
+    def __init__(self, m=None):
         """Constructor.
 
         Parameters
@@ -841,7 +900,7 @@ cdef class ODENetworkModel:
         """
         pass
 
-    def __cinit__(self, m = None):
+    def __cinit__(self, m=None):
         # self.thisptr = new shared_ptr[Cpp_ODENetworkModel](
         #     <Cpp_ODENetworkModel*>(new Cpp_ODENetworkModel()))
         if m == None:
@@ -925,6 +984,13 @@ cdef class ODENetworkModel:
         else:
             raise ValueError("invalid argument {}".format(repr(rr)))
 
+    def add_reaction_rules(self, rrs):
+        if isinstance(rrs, list):
+            for rr in rrs:
+                self.add_reaction_rule(rr)
+        else:
+            self.add_reaction_rule(rrs)
+
     def list_species(self):
         """Return a list of species, contained in reaction rules in the model."""
         cdef vector[Cpp_Species] species = self.thisptr.get().list_species()
@@ -968,6 +1034,15 @@ cdef Cpp_ODESolverType translate_solver_type(solvertype_constant):
         raise ValueError(
             "invalid solver type was given [{0}]".format(repr(solvertype_constant)))
 
+# ODERatelawType:
+(
+    ABSTRACT_TYPE,
+    MASSACTION_TYPE,
+    PYTHON_CALLBACK_TYPE,
+    CPP_CALLBACK_TYPE,
+) = (0, 1, 2, 3)
+
+
 cdef class ODESimulator:
     """ A class running the simulation with the ode algorithm.
 
@@ -975,7 +1050,7 @@ cdef class ODESimulator:
 
     """
 
-    def __init__(self, arg1, arg2 = None, arg3 = None):
+    def __init__(self, arg1, arg2=None, arg3=None):
         """Constructor.
 
         Parameters
@@ -991,7 +1066,7 @@ cdef class ODESimulator:
         """
         pass
 
-    def __cinit__(self, arg1, arg2 = None, arg3 = None):
+    def __cinit__(self, arg1, arg2=None, arg3=None):
         if arg2 is None or not isinstance(arg2, ODEWorld):
             if not isinstance(arg1, ODEWorld):
                 raise ValueError(
@@ -1039,7 +1114,7 @@ cdef class ODESimulator:
         """Initialize the simulator."""
         self.thisptr.initialize()
 
-    def step(self, upto = None):
+    def step(self, upto=None):
         """step(upto=None) -> bool
 
         Step the simulation.
@@ -1189,16 +1264,16 @@ cdef ODESimulator ODESimulator_from_Cpp_ODESimulator(Cpp_ODESimulator* s):
 cdef class ODEFactory:
     """ A factory class creating a ODEWorld instance and a ODESimulator instance.
 
-    ODEFactory(solvertype=None, dt=None, abs_tol=None, rel_tol=None)
+    ODEFactory(ODESolverType solver_type=None, Real dt=None, Real abs_tol=None, Real rel_tol=None)
 
     """
 
-    def __init__(self, solvertype = None, dt = None, abs_tol = None, rel_tol = None):
+    def __init__(self, solver_type=None, dt=None, abs_tol=None, rel_tol=None):
         """Constructor.
 
         Parameters
         ----------
-        solvertype : int, optional
+        solver_type : int, optional
             a type of the ode solver.
             Choose one from RUNGE_KUTTA_CASH_KARP54, ROSENBROCK4_CONTROLLER and EULER.
         dt : Real, optional
@@ -1211,19 +1286,22 @@ cdef class ODEFactory:
         """
         pass
 
-    def __cinit__(self, solvertype = None, dt = None, abs_tol = None, rel_tol = None):
-        if solvertype is None:
-            self.thisptr = new Cpp_ODEFactory()
-        elif dt is None:
-            self.thisptr = new Cpp_ODEFactory(translate_solver_type(solvertype))
-        elif abs_tol is None:
-            self.thisptr = new Cpp_ODEFactory(translate_solver_type(solvertype), <Real>dt)
-        elif rel_tol is None:
-            self.thisptr = new Cpp_ODEFactory(
-                translate_solver_type(solvertype), <Real>dt, <Real>abs_tol)
-        else:
-            self.thisptr = new Cpp_ODEFactory(
-                translate_solver_type(solvertype), <Real>dt, <Real>abs_tol, <Real>rel_tol)
+    def __cinit__(self, solver_type=None, dt=None, abs_tol=None, rel_tol=None):
+        self.thisptr = new Cpp_ODEFactory(
+            Cpp_ODEFactory.default_solver_type() if solver_type is None else translate_solver_type(solver_type),
+            Cpp_ODEFactory.default_dt() if dt is None else <Real>dt,
+            Cpp_ODEFactory.default_abs_tol() if abs_tol is None else <Real>abs_tol,
+            Cpp_ODEFactory.default_rel_tol() if rel_tol is None else <Real>rel_tol)
+
+    def rng(self, GSLRandomNumberGenerator rng):
+        """rng(GSLRandomNumberGenerator) -> ODEFactory
+
+        Just return self. This method is for the compatibility between Factory classes.
+
+        """
+        cdef Cpp_ODEFactory *ptr = self.thisptr.rng_ptr(deref(rng.thisptr))
+        assert ptr == self.thisptr
+        return self
 
     def __dealloc__(self):
         del self.thisptr
@@ -1270,7 +1348,7 @@ cdef class ODEFactory:
     #             self.thisptr.create_simulator(
     #                 deref((<ODENetworkModel>arg1).thisptr), deref(arg2.thisptr)))
 
-    def create_simulator(self, arg1, arg2 = None):
+    def create_simulator(self, arg1, arg2=None):
         """create_simulator(arg1, arg2) -> ODESimulator
 
         Return a ODESimulator instance.

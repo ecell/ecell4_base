@@ -367,15 +367,16 @@ void check_correspondences(
     }
 }
 
-int concatenate_units(std::vector<UnitSpecies>& units, const Species& sp, const int bond_stride)
+int concatenate_units(std::vector<UnitSpecies>& units1, const Species& sp, const int bond_stride)
 {
-    units.reserve(units.size() + sp.num_units());
+    const std::vector<UnitSpecies> units2 = sp.units();
+    units1.reserve(units1.size() + units2.size());
 
     int bond_ministride = 0;
-    for (Species::container_type::const_iterator j(sp.begin());
-        j != sp.end(); ++j)
+    for (Species::container_type::const_iterator j(units2.begin());
+        j != units2.end(); ++j)
     {
-        units.push_back(*j);
+        units1.push_back(*j);
 
         for (UnitSpecies::container_type::const_iterator
             k((*j).begin()); k != (*j).end(); ++k)
@@ -386,7 +387,7 @@ int concatenate_units(std::vector<UnitSpecies>& units, const Species& sp, const 
                 const int bondi = atoi(bond.c_str());
                 // assert(bondi > 0);
                 const std::string newbond = itos(bondi + bond_stride);
-                units.back().at(std::distance((*j).begin(), k)).second.second = newbond;
+                units1.back().at(std::distance((*j).begin(), k)).second.second = newbond;
                 bond_ministride = std::max(bond_ministride, bondi);
             }
         }
@@ -554,15 +555,17 @@ std::vector<Species> ReactionRuleExpressionMatcher::generate()
     for (ReactionRule::reactant_container_type::const_iterator
         i(pttrn_.reactants().begin()); i != pttrn_.reactants().end(); ++i)
     {
-        reactant_units.reserve(reactant_units.size() + (*i).num_units());
-        std::copy((*i).begin(), (*i).end(), std::back_inserter(reactant_units));
+        std::vector<UnitSpecies> units = (*i).units();
+        reactant_units.reserve(reactant_units.size() + units.size());
+        std::copy(units.begin(), units.end(), std::back_inserter(reactant_units));
     }
 
     for (ReactionRule::reactant_container_type::const_iterator
         i(pttrn_.products().begin()); i != pttrn_.products().end(); ++i)
     {
-        product_units.reserve(product_units.size() + (*i).num_units());
-        std::copy((*i).begin(), (*i).end(), std::back_inserter(product_units));
+        std::vector<UnitSpecies> units = (*i).units();
+        product_units.reserve(product_units.size() + units.size());
+        std::copy(units.begin(), units.end(), std::back_inserter(product_units));
     }
 
     std::vector<std::vector<UnitSpecies>::size_type> correspo, removed;
@@ -673,7 +676,7 @@ std::vector<Species> ReactionRuleExpressionMatcher::generate()
                 for (ReactionRule::product_container_type::const_iterator
                     j(pttrn_.products().begin()); j != pttrn_.products().end(); ++j)
                 {
-                    stride += (*j).num_units();
+                    stride += (*j).units().size();
                     if (stride > idx1)
                     {
                         label = atoi((*i).second.second.c_str()) * pttrn_.products().size()
@@ -748,10 +751,11 @@ std::vector<Species> ReactionRuleExpressionMatcher::generate()
 
 std::pair<bool, MatchObject::context_type> MatchObject::next()
 {
+    std::vector<UnitSpecies>::const_iterator itr_start = target_.begin();
     for (; itr_ != target_.end(); ++itr_)
     {
         const Species::container_type::difference_type
-            pos(distance(target_.begin(), itr_));
+            pos(distance(itr_start, itr_));
         if (std::find(ctx_.iterators.begin(), ctx_.iterators.end(), pos)
             != ctx_.iterators.end())
         {

@@ -1,4 +1,5 @@
 recommonmark
 numpydoc
+ipython
 pip>=8.1.2
-ecell>=4.0.4
+ecell>=4.0.8

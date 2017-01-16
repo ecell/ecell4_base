@@ -16,13 +16,22 @@ What is E-Cell System?
 E-Cell System is, a software platform for modeling, simulation and analysis of complex, heterogeneous and multi-scale systems like the cell.
 E-Cell has multi-algorithm, multi-timescale and multi-spatial-representation as its central feature.
 
+Quick start
+===========
+
+You can try E-Cell4 without installing it on your computer’s hard drive.
+
+You can do this by just clicking [![Binder](http://mybinder.org/badge.svg)](http://mybinder.org/repo/ecell/ecell4-notebooks).
+
+All you need to do is just running the cells in each of the example Jupyter notebooks.
+
 Installation and usage
 ======================
 
 - [Installation](#installation)
   - [Requirements](#requirements)
   - [Windows](#windows)
-  - [Mac Linux](#mac-linux)
+  - [Mac or Linux](#mac-or-linux)
 
 - [How to try E-Cell4 examples](#how-to-try-e-cell4-examples)
 
@@ -30,7 +39,7 @@ Installation and usage
   - [A reversible binding reaction](#a-reversible-binding-reaction)
   - [Particle tracking on a spherical surface](#particle-tracking-on-a-spherical-surface)
 
-- [Docker container for E-Cell4](#docker-container-for-e-cell4)
+- [Docker image for E-Cell4](#docker-image-for-e-cell4)
 
 Installation
 ------------
@@ -38,41 +47,51 @@ Installation
 ### Requirements
 
 #### Minimum requirements
-- Python (2.7 and 3.4, 3.5 both major versions are supported [3.4 is only supported on Linux])
-- pip (8.1 and later)
-- hdf5 (required only on **Windows**. works only for **version 1.8.16**)
+
+- Python (2.7 and 3.4, 3.5, 3.6 both major versions are supported [3.4 is only supported on Linux, 3.6 is only supported on Mac])
+- pip (8.1 or later)
+- hdf5 (required only on **Windows**.)
 
 #### Optional requirements
+
 We strongly recommend that you run E-Cell4 with [Jupyter Notebook](http://jupyter.org/).
-And some E-Cell4 functions (for visualization, datastore) optionally depend on
-- matplotlib (**1.5.1** and later)
+Some E-Cell4 functions (for visualization, datastore) optionally depend on
+
+- matplotlib (**1.5.1** or later)
 - ffmpeg
 - pandas
 
 ### Windows
 
-Please use [Miniconda](http://conda.pydata.org/miniconda.html), Note that we does not support 64bit for Python2.7.
+We recommend that you install [Miniconda](http://conda.pydata.org/miniconda.html) to manage Python packages.
+**Note that we do not support Python2.7 64bit for Windows.**
 
 - Install Miniconda for Windows from http://conda.pydata.org/miniconda.html
-- Run the follwing commands on command prompt
-- (**Important**) E-Cell4 for Windows works only for hdf5 version **1.8.16**. Please check the version of hdf5, even if you installed hdf5 before with conda.
+- Run the following commands on command prompt
 
     ```shell
-    conda install hdf5 notebook matplotlib
+    conda install hdf5 matplotlib notebook
     pip install ecell
     ```
 
-Although Jupyter Notebook is optional, we strongly recommend that you run E-Cell4 with jupyter.
+- (**Important**) E-Cell4 for Windows needs the latest `hdf5`. If there's any problem, please update the version of hdf5.
+
+    ```shell
+    conda update hdf5
+    ```
+
 If you use animated visualization with E-Cell4, please install [ffmpeg windows build](http://ffmpeg.zeranoe.com/builds/) and add its path to your **USER** PATH enviromental variable.
 
-### Mac Linux
+### Mac or Linux
 
 We recommend that you install [Miniconda](http://conda.pydata.org/miniconda.html) to manage Python packages.
 After installing Miniconda, run the following commands in your terminal.
 
+(NOTICE for Mac users) We do not provide **Python3.5 whl for Mac**. Instead we provide **Python3.6 whl for Mac**. To use Python3.6 enviroment, please refer to http://conda.pydata.org/docs/py2or3.html . Continuum.io already offers Python3.6 conda packages.
+
 ```shell
-# After installing Miniconda2 or Miniconda3 (Here we assume that you installed Miniconda2).
-~/miniconda2/bin/conda install matplotlib jupyter
+# After installing Miniconda2 or Miniconda3 (Here we assume that you installed Miniconda3).
+~/miniconda2/bin/conda install matplotlib notebook
 
 # Download E-Cell4 whl file for your Python version from https://github.com/ecell/ecell4/releases before running this command.
 ~/miniconda2/bin/pip install ecell
@@ -89,23 +108,23 @@ Here we download example notebooks from https://github.com/ecell/ecell4-notebook
 
 ### Windows
 Open powershell and run these commands.
-Here we assume that you installed Miniconda(Python2.7) to C:¥Miniconda2
+Here we assume that you installed Miniconda(Python3.5) to C:¥Miniconda3
 
 ```shell
-cd C:¥Miniconda2¥Scripts
+cd C:¥Miniconda3¥Scripts
 wget https://github.com/ecell/ecell4-notebooks/archive/master.zip -OutFile master.zip
 Expand-Archive master.zip
 .¥jupyter-notebook.exe .¥master¥ecell4-notebooks-master¥
 ```
 
-### Mac Linux
-Here we assume that you installed Miniconda(Python2.7) to ~/miniconda2
+### Mac or Linux
+Here we assume that you installed Miniconda(Python3.5) to ~/miniconda3
 
 ```shell
 wget https://github.com/ecell/ecell4-notebooks/archive/master.zip
 unzip master.zip
 cd ecell4-notebooks-master
-~/miniconda2/bin/jupyter-notebook
+~/miniconda3/bin/jupyter-notebook
 ```
 
 Simple examples
@@ -118,9 +137,9 @@ Python 2.7.6 (default, Mar 22 2014, 22:59:56)
 [GCC 4.8.2] on linux2
 Type "help", "copyright", "credits" or "license" for more information.
 >>> from ecell4.core import *
->>> sp = Species("B.A.C")
->>> print(sp.serial())
-B.A.C
+>>> sp = Species("A.B.C")
+>>> print sp.serial()
+A.B.C
 >>>
 ```
 
@@ -160,31 +179,68 @@ viz.plot_trajectory(obs, interactive=False)
 
 ![png](./readthedocs/images/hairball.png)
 
-Docker container for E-Cell4
+Docker image for E-Cell4
 ----------------------------
 
-You can pull E-Cell4 docker container with `docker pull ecell/ecell4`.
+You can pull E-Cell4 docker image with `docker pull ecell/ecell4`.
+This image includes E-Cell4 and its example Jupyter notebooks.
 
-After the following steps, you should see [Jupyter Notebook](http://jupyter.org/) up and running (and E-Cell4 tutorials) in your web browser.
+You need to set up your password or get a token to login there.
+E-Cell4 docker image is based on `jupyter/minimal-notebook`. 
+See https://github.com/jupyter/docker-stacks/tree/master/minimal-notebook for more details about the `docker run` options.
 
-1. Install [Docker](https://www.docker.com/products/docker).
-2. Run Docker.
-3. Run the following commands from your *Terminal* or *Powershell*.
+### Password auth
 
-    ```shell
-    docker pull ecell/ecell4
-    docker run -dP ecell/ecell4
-    ```
+You need to install IPython and create a hashed password before running the docker image.
+(Here we use miniconda IPython as an example.)
+```
+~/miniconda3/bin/ipython
+Python 3.5.2 |Continuum Analytics, Inc.| (default, Jul  2 2016, 17:52:12) 
+Type "copyright", "credits" or "license" for more information.
 
-4. Check which port is used by E-Cell4 docker with `docker ps` command.
+IPython 5.1.0 -- An enhanced Interactive Python.
+?         -> Introduction and overview of IPython's features.
+%quickref -> Quick reference.
+help      -> Python's own help system.
+object?   -> Details about 'object', use 'object??' for extra details.
 
-    ```shell
-    docker ps
-    CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                     NAMES
-    82b90db240f5        ecell/ecell4        "/bin/sh -c 'jupyter-"   7 seconds ago       Up 6 seconds        0.0.0.0:32768->8888/tcp   clever_raman
-    ```
+In [1]: from IPython.lib.security import passwd
 
-5. Open the PORT in `docker ps` command with your web browser. In the case of the above example, you will open `http://localhost:32768`
+In [2]: passwd()
+Enter password: 
+Verify password: 
+Out[2]: 'sha1:78345db65767:e156e28013d2f6741a042c44fcc12d21af7b7529'
+```
+
+And run the docker image with
+```
+docker run -d -p 8888:8888 ecell/ecell4 start-notebook.sh --NotebookApp.password='sha1:78345db65767:e156e28013d2f6741a042c44fcc12d21af7b7529'
+```
+
+You can see E-Cell4 example Jupyter notebooks after opening `http://localhost:8888` and login.
+
+### Token auth
+
+First run the docker image with
+```
+docker run -d -p 8888:8888 ecell/ecell4
+```
+Then get the container name with `docker ps` command
+```
+docker ps
+CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                    NAMES
+f2109e17eb55        ecell/ecell4        "tini -- start-notebo"   40 minutes ago      Up 40 minutes       0.0.0.0:8888->8888/tcp   peaceful_panini
+```
+And get the token for the container with the follwoing command, in the above case the container ID is `peaceful_panini`.
+```
+docker exec -it peaceful_panini jupyter notebook list
+Currently running servers:
+http://localhost:8888/?token=d8872dc7e0d5bd78882dcc326255f9848db24fd1a40711af :: /home/jovyan/work
+```
+In this case, the token is `d8872dc7e0d5bd78882dcc326255f9848db24fd1a40711af`
+
+By using this token, you can login to the Jupyter Notebook service (`http://localhost:8888`).
+
 
 Licensing terms
 ===============

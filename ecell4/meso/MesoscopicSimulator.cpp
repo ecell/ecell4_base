@@ -136,7 +136,7 @@ void MesoscopicSimulator::step(void)
     if (interrupted_ < event_ids_.size())
     {
         EventScheduler::identifier_type evid(event_ids_[interrupted_]);
-        boost::shared_ptr<EventScheduler::Event> ev(scheduler_.get(evid));
+        boost::shared_ptr<Event> ev(scheduler_.get(evid));
         ev->interrupt(t());
         scheduler_.update(std::make_pair(evid, ev));
     }
@@ -255,7 +255,7 @@ void MesoscopicSimulator::initialize(void)
     for (Integer i(0); i < world_->num_subvolumes(); ++i)
     {
         event_ids_[i] =
-            scheduler_.add(boost::shared_ptr<EventScheduler::Event>(
+            scheduler_.add(boost::shared_ptr<Event>(
                 new SubvolumeEvent(this, i, t())));
     }
 }

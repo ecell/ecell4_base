@@ -32,50 +32,23 @@ Integer Species::count(const Species& sp) const
     return count_spmatches(*this, sp);
 }
 
-void Species::deserialize(const Species::serial_type& serial)
-{
-    std::vector<std::string> unit_serials;
-    boost::split(unit_serials, serial, boost::is_any_of("."));
-
-    units_.clear();
-    for (std::vector<std::string>::const_iterator i(unit_serials.begin());
-        i != unit_serials.end(); ++i)
-    {
-        UnitSpecies usp;
-        usp.deserialize(*i);
-        add_unit(usp);
-    }
-}
-
-Species::serial_type Species::serial() const
-{
-    if (units_.size() == 0)
-    {
-        return "";
-    }
-
-    container_type::const_iterator it(units_.begin());
-    serial_type retval((*it).serial());
-    ++it;
-    for (; it != units_.end(); ++it)
-    {
-        retval += ".";
-        retval += (*it).serial();
-    }
-    return retval;
-}
-
 void Species::add_unit(const UnitSpecies& usp)
 {
     if (usp.name() == "")
     {
         throw NotSupported("UnitSpecies must have a name.");
     }
-    units_.push_back(usp);
-    // units_.insert(std::lower_bound(units_.begin(), units_.end(), usp), usp);
+    else if (serial_ != "")
+    {
+        serial_ += "." + usp.serial();
+    }
+    else
+    {
+        serial_ = usp.serial();
+    }
 }
 
-std::vector<std::pair<std::string, std::string> > Species::list_attributes()
+std::vector<std::pair<std::string, std::string> > Species::list_attributes() const
 {
     std::vector<std::pair<std::string, std::string> > retval;
     for (attributes_container_type::const_iterator
@@ -152,15 +125,20 @@ public:
 public:
 
     unit_species_comparerator(const Species& sp)
-        : root_(sp)
+        : root_(sp.units())
     {
         initialize();
+    }
+
+    const std::vector<UnitSpecies>& units() const
+    {
+        return root_;
     }
 
     void initialize()
     {
         connections_.clear();
-        for (index_type idx(0); idx < root_.num_units(); ++idx)
+        for (index_type idx(0); idx < root_.size(); ++idx)
         {
             const UnitSpecies usp(root_.at(idx));
             for (UnitSpecies::container_type::const_iterator i(usp.begin());
@@ -196,8 +174,8 @@ public:
             return 0;
         }
 
-        const UnitSpecies& lhs(root_.units().at(val1));
-        const UnitSpecies& rhs(root_.units().at(val2));
+        const UnitSpecies& lhs(root_.at(val1));
+        const UnitSpecies& rhs(root_.at(val2));
 
         if (lhs.name() != rhs.name())
         {
@@ -290,17 +268,17 @@ public:
     }
 
     void reorder_units(
-        std::vector<unsigned int>& units, const unsigned int& idx,
+        std::vector<unsigned int>& unit_indices, const unsigned int& idx,
         unsigned int& stride)
     {
-        if (units[idx] != root_.num_units())
+        if (unit_indices[idx] != root_.size())
         {
             return;
         }
 
         const UnitSpecies& usp(root_.at(idx));
 
-        units[idx] = stride;
+        unit_indices[idx] = stride;
         ++stride;
 
         for (UnitSpecies::container_type::const_iterator i(usp.begin());
@@ -319,13 +297,13 @@ public:
                 tgt((pair[0].first == idx && pair[0].second == (*i).first)?
                     pair[1] : pair[0]);
 
-            reorder_units(units, tgt.first, stride);
+            reorder_units(unit_indices, tgt.first, stride);
         }
     }
 
 protected:
 
-    const Species& root_;
+    const std::vector<UnitSpecies> root_;
     connection_container_type connections_;
     std::vector<std::pair<index_type, index_type> > ignores_;
 };
@@ -333,8 +311,10 @@ protected:
 Species format_species(const Species& sp)
 {
     unit_species_comparerator comp(sp);
+    const std::vector<UnitSpecies>::size_type num_units = comp.units().size();
+
     std::vector<unit_species_comparerator::index_type> units;
-    for (unit_species_comparerator::index_type i(0); i < sp.num_units(); ++i)
+    for (unit_species_comparerator::index_type i(0); i < num_units; ++i)
     {
         units.push_back(i);
     }
@@ -342,14 +322,14 @@ Species format_species(const Species& sp)
     std::sort(units.begin(), units.end(), comp);
 
     std::vector<unit_species_comparerator::index_type>
-        next(sp.num_units(), sp.num_units());
+        next(num_units, num_units);
     unsigned int stride(0);
-    for (unit_species_comparerator::index_type i(0); i < sp.num_units(); ++i)
+    for (unit_species_comparerator::index_type i(0); i < num_units; ++i)
     {
         const unit_species_comparerator::index_type idx(units[i]);
         comp.reorder_units(next, idx, stride);
     }
-    for (unsigned int i(0); i < sp.num_units(); ++i)
+    for (unsigned int i(0); i < num_units; ++i)
     {
         units[next[i]] = i;
     }
@@ -361,7 +341,7 @@ Species format_species(const Species& sp)
     for (std::vector<unit_species_comparerator::index_type>::const_iterator
         i(units.begin()); i != units.end(); ++i)
     {
-        UnitSpecies usp(sp.at(*i));
+        UnitSpecies usp(sp.units().at(*i));
         for (UnitSpecies::container_type::size_type j(0);
             j < static_cast<UnitSpecies::container_type::size_type>(usp.num_sites()); ++j)
         {

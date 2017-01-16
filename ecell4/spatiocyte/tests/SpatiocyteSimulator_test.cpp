@@ -86,10 +86,7 @@ BOOST_AUTO_TEST_CASE(SpatiocyteSimulator_test_step_with_single_particle)
     boost::shared_ptr<SpatiocyteWorld> world(
             new SpatiocyteWorld(edge_lengths, voxel_radius, rng));
 
-    // SpatiocyteWorld::private_coordinate_type private_coord(
-    //         world->coord2private(36));
-    // BOOST_CHECK(world->place_voxel_private(sp, private_coord).second);
-    BOOST_CHECK(world->new_voxel(sp, 36).second);
+    BOOST_CHECK(world->new_voxel(sp, world->inner2coordinate(36)).second);
 
     SpatiocyteSimulator sim(model, world);
 
@@ -425,12 +422,10 @@ BOOST_AUTO_TEST_CASE(LattiecSimulator_test_scheduler)
     boost::shared_ptr<SpatiocyteWorld> world(
             new SpatiocyteWorld(edge_lengths, voxel_radius, rng));
 
-    SpatiocyteWorld::coordinate_type c1(world->global2coord(Integer3(40,34,56))),
-          c2(world->global2coord(Integer3(32,50,24))),
-          c3(world->global2coord(Integer3(60,36,89)));
-    // BOOST_CHECK(world->place_voxel_private(sp1, c1).second);
-    // BOOST_CHECK(world->place_voxel_private(sp2, c2).second);
-    // BOOST_CHECK(world->place_voxel_private(sp3, c3).second);
+    SpatiocyteWorld::coordinate_type
+        c1(world->inner2coordinate(41*400*400+35*400+56)),
+        c2(world->inner2coordinate(33*400*400+51*400+25)),
+        c3(world->inner2coordinate(61*400*400+37*400+90));
     BOOST_CHECK(world->new_voxel(sp1, c1).second);
     BOOST_CHECK(world->new_voxel(sp2, c2).second);
     BOOST_CHECK(world->new_voxel(sp3, c3).second);
@@ -439,11 +434,16 @@ BOOST_AUTO_TEST_CASE(LattiecSimulator_test_scheduler)
 
     sim.initialize();
 
-    const MolecularTypeBase
-        *mt1(world->find_molecular_type(sp1)),
-        *mt2(world->find_molecular_type(sp2)),
-        *mt3(world->find_molecular_type(sp3));
-    std::vector<std::pair<SpatiocyteWorld::coordinate_type, ParticleID> >::const_iterator
+    BOOST_ASSERT(world->has_molecule_pool(sp1));
+    BOOST_ASSERT(world->has_molecule_pool(sp2));
+    BOOST_ASSERT(world->has_molecule_pool(sp3));
+
+    const MoleculePool
+        *mt1(world->find_molecule_pool(sp1)),
+        *mt2(world->find_molecule_pool(sp2)),
+        *mt3(world->find_molecule_pool(sp3));
+
+    MoleculePool::const_iterator
         itr1(mt1->begin()),
         itr2(mt2->begin()),
         itr3(mt3->begin());
@@ -452,36 +452,36 @@ BOOST_AUTO_TEST_CASE(LattiecSimulator_test_scheduler)
     BOOST_ASSERT(itr2 != mt2->end());
     BOOST_ASSERT(itr3 != mt3->end());
 
-    c1 = (*itr1).first;
-    c2 = (*itr2).first;
-    c3 = (*itr3).first;
+    c1 = (*itr1).coordinate;
+    c2 = (*itr2).coordinate;
+    c3 = (*itr3).coordinate;
 
     sim.step();
     itr1 = mt1->begin();
     itr2 = mt2->begin();
     itr3 = mt3->begin();
-    BOOST_ASSERT((*itr1).first == c1);
-    BOOST_ASSERT((*itr2).first == c2);
-    BOOST_ASSERT((*itr3).first != c3);
-    c3 = (*itr3).first;
+    BOOST_ASSERT((*itr1).coordinate == c1);
+    BOOST_ASSERT((*itr2).coordinate == c2);
+    BOOST_ASSERT((*itr3).coordinate != c3);
+    c3 = (*itr3).coordinate;
 
     sim.step();
     itr1 = mt1->begin();
     itr2 = mt2->begin();
     itr3 = mt3->begin();
-    BOOST_ASSERT((*itr1).first == c1);
-    BOOST_ASSERT((*itr2).first != c2);
-    BOOST_ASSERT((*itr3).first == c3);
-    c2 = (*itr2).first;
+    BOOST_ASSERT((*itr1).coordinate == c1);
+    BOOST_ASSERT((*itr2).coordinate != c2);
+    BOOST_ASSERT((*itr3).coordinate == c3);
+    c2 = (*itr2).coordinate;
 
     sim.step();
     itr1 = mt1->begin();
     itr2 = mt2->begin();
     itr3 = mt3->begin();
-    BOOST_ASSERT((*itr1).first != c1);
-    BOOST_ASSERT((*itr2).first == c2);
-    BOOST_ASSERT((*itr3).first == c3);
-    c1 = (*itr1).first;
+    BOOST_ASSERT((*itr1).coordinate != c1);
+    BOOST_ASSERT((*itr2).coordinate == c2);
+    BOOST_ASSERT((*itr3).coordinate == c3);
+    c1 = (*itr1).coordinate;
 
 }
 

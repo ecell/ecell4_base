@@ -28,7 +28,7 @@ namespace ecell4
 
 inline int64_t modulo(const int64_t& p1, const int64_t& p2)
 {
-    int64_t r(p1 % p2);
+    int64_t r = p1 % p2;
     if (r != 0 && (r > 0) == (p2 < 0))
     {
         r += p2;
@@ -38,7 +38,7 @@ inline int64_t modulo(const int64_t& p1, const int64_t& p2)
 
 inline double modulo(const double& p1, const double& p2)
 {
-    double r(std::fmod(p1, p2));
+    double r = std::fmod(p1, p2);
     if (r != 0 && (r > 0) == (p2 < 0))
     {
         r += p2;

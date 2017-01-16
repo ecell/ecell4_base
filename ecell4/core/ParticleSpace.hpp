@@ -273,27 +273,29 @@ public:
     Real distance_sq(
         const Real3& pos1, const Real3& pos2) const
     {
-        Real retval(0);
-        const Real3& edges(edge_lengths());
-        for (Real3::size_type dim(0); dim < 3; ++dim)
-        {
-            const Real edge_length(edges[dim]);
-            const Real diff(pos2[dim] - pos1[dim]), half(edge_length * 0.5);
+        // Real retval(0);
+        // const Real3& edges(edge_lengths());
+        // for (Real3::size_type dim(0); dim < 3; ++dim)
+        // {
+        //     const Real edge_length(edges[dim]);
+        //     const Real diff(pos2[dim] - pos1[dim]), half(edge_length * 0.5);
 
-            if (diff > half)
-            {
-                retval += pow_2(diff - edge_length);
-            }
-            else if (diff < -half)
-            {
-                retval += pow_2(diff + edge_length);
-            }
-            else
-            {
-                retval += pow_2(diff);
-            }
-        }
-        return retval;
+        //     if (diff > half)
+        //     {
+        //         retval += pow_2(diff - edge_length);
+        //     }
+        //     else if (diff < -half)
+        //     {
+        //         retval += pow_2(diff + edge_length);
+        //     }
+        //     else
+        //     {
+        //         retval += pow_2(diff);
+        //     }
+        // }
+        // return retval;
+
+        return length_sq(subtract(pos1, periodic_transpose(pos2, pos1)));
     }
 
     /**

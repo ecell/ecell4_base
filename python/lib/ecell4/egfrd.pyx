@@ -901,6 +901,9 @@ cdef class EGFRDSimulator:
             self.thisptr.run(duration,
                 deref((<Observer>(observers.as_base())).thisptr))
 
+    def set_paranoiac(self, val):
+        self.thisptr.set_paranoiac(<bool>val)
+
 cdef EGFRDSimulator EGFRDSimulator_from_Cpp_EGFRDSimulator(Cpp_EGFRDSimulator* s):
     r = EGFRDSimulator(
         Model_from_Cpp_Model(s.model()), EGFRDWorld_from_Cpp_EGFRDWorld(s.world()))
@@ -913,90 +916,52 @@ cdef EGFRDSimulator EGFRDSimulator_from_Cpp_EGFRDSimulator(Cpp_EGFRDSimulator* s
 cdef class EGFRDFactory:
     """ A factory class creating a EGFRDWorld instance and a EGFRDSimulator instance.
 
-    EGFRDFactory(matrix_sizes=None, rng=None, dissociation_retry_moves,
-                 bd_dt_factor, user_max_shell_size)
+    EGFRDFactory(Integer3 matrix_sizes=None, Real bd_dt_factor=None,
+                 Integer dissociation_retry_moves=None, Real user_max_shell_size=None)
 
     """
 
-    def __init__(self, arg1=None, arg2=None, arg3=None, arg4=None, arg5=None):
-        """EGFRDFactory(matrix_sizes=None, rng=None, dissociation_retry_moves=None,
-                     bd_dt_factor=None, user_max_shell_size=None)
-        EGFRDFactory(matrix_sizes=None, dissociation_retry_moves=None,
-                     bd_dt_factor=None, user_max_shell_size=None)
-        EGFRDFactory(dissociation_retry_moves=None, bd_dt_factor=None,
-                     user_max_shell_size=None)
-
-        Constructor.
+    def __init__(self, Integer3 matrix_sizes=None, bd_dt_factor=None,
+                 dissociation_retry_moves=None, user_max_shell_size=None):
+        """Constructor.
 
         Parameters
         ----------
         matrix_sizes : Integer3, optional
             A size of a cell matrix.
             The number of cells must be larger than 3, in principle.
-        rng : GSLRandomNumberGenerator, optional
-            A random number generator.
-        dissociation_retry_moves : Integer, optional
-            A number of trials for placing a new product when it's failed
-            because of the overlap.
         bd_dt_factor : Real, optioanl
             A rescaling factor for the step interval
             of BD propagation in a Multi domain.
+        dissociation_retry_moves : Integer, optional
+            A number of trials for placing a new product when it's failed
+            because of the overlap.
         user_max_shell_size : Real, optional
             A custom max shell size.
 
         """
         pass
 
-    def __cinit__(self, arg1=None, arg2=None, arg3=None, arg4=None, arg5=None):
-        self.thisptr = new Cpp_EGFRDFactory()
-        if isinstance(arg1, Integer3):
-            if isinstance(arg2, GSLRandomNumberGenerator):
-                if arg3 is None:
-                    self.thisptr = new Cpp_EGFRDFactory(
-                        deref((<Integer3>arg1).thisptr),
-                        deref((<GSLRandomNumberGenerator>arg2).thisptr))
-                elif arg4 is None:
-                    self.thisptr = new Cpp_EGFRDFactory(
-                        deref((<Integer3>arg1).thisptr),
-                        deref((<GSLRandomNumberGenerator>arg2).thisptr), <Integer>arg3)
-                elif arg5 is None:
-                    self.thisptr = new Cpp_EGFRDFactory(
-                        deref((<Integer3>arg1).thisptr),
-                        deref((<GSLRandomNumberGenerator>arg2).thisptr),
-                        <Integer>arg3, <Real>arg4)
-                else:
-                    self.thisptr = new Cpp_EGFRDFactory(
-                        deref((<Integer3>arg1).thisptr),
-                        deref((<GSLRandomNumberGenerator>arg2).thisptr),
-                        <Integer>arg3, <Real>arg4, <Real>arg5)
-            else:
-                if arg5 is not None:
-                    raise RuntimeError, "too many arguments were given."
-                elif arg2 is None:
-                    self.thisptr = new Cpp_EGFRDFactory(deref((<Integer3>arg1).thisptr))
-                elif arg3 is None:
-                    self.thisptr = new Cpp_EGFRDFactory(
-                        deref((<Integer3>arg1).thisptr), <Integer>arg2)
-                elif arg4 is None:
-                    self.thisptr = new Cpp_EGFRDFactory(
-                        deref((<Integer3>arg1).thisptr), <Integer>arg2, <Real>arg3)
-                else:
-                    self.thisptr = new Cpp_EGFRDFactory(
-                        deref((<Integer3>arg1).thisptr), <Integer>arg2, <Real>arg3, <Real>arg4)
-        else:
-            if arg4 is not None or arg5 is not None:
-                raise RuntimeError, "too many arguments were given."
-            elif arg1 is None:
-                self.thisptr = new Cpp_EGFRDFactory()
-            elif arg2 is None:
-                self.thisptr = new Cpp_EGFRDFactory(<Integer>arg1)
-            elif arg3 is None:
-                self.thisptr = new Cpp_EGFRDFactory(<Integer>arg1, <Real>arg2)
-            else:
-                self.thisptr = new Cpp_EGFRDFactory(<Integer>arg1, <Real>arg2, <Real>arg3)
+    def __cinit__(self, Integer3 matrix_sizes=None, bd_dt_factor=None,
+                  dissociation_retry_moves=None, user_max_shell_size=None):
+        self.thisptr = new Cpp_EGFRDFactory(
+            Cpp_EGFRDFactory.default_matrix_sizes() if matrix_sizes is None else deref(matrix_sizes.thisptr),
+            Cpp_EGFRDFactory.default_bd_dt_factor() if bd_dt_factor is None else <Real>bd_dt_factor,
+            Cpp_EGFRDFactory.default_dissociation_retry_moves() if dissociation_retry_moves is None else <Integer>dissociation_retry_moves,
+            Cpp_EGFRDFactory.default_user_max_shell_size() if user_max_shell_size is None else <Real>user_max_shell_size)
 
     def __dealloc__(self):
         del self.thisptr
+
+    def rng(self, GSLRandomNumberGenerator rng):
+        """rng(GSLRandomNumberGenerator) -> EGFRDFactory
+
+        Set a random number generator, and return self.
+
+        """
+        cdef Cpp_EGFRDFactory *ptr = self.thisptr.rng_ptr(deref(rng.thisptr))
+        assert ptr == self.thisptr
+        return self
 
     def create_world(self, arg1=None):
         """create_world(arg1=None) -> EGFRDWorld
@@ -1290,27 +1255,20 @@ cdef BDSimulator BDSimulator_from_Cpp_BDSimulator(Cpp_BDSimulator* s):
 cdef class BDFactory:
     """ A factory class creating a BDWorld instance and a BDSimulator instance.
 
-    BDFactory(matrix_sizes=None, rng=None, bd_dt_factor=None,
-              dissociation_retry_moves=None)
+    BDFactory(Integer3 matrix_sizes=None, Real bd_dt_factor=None,
+              Integer dissociation_retry_moves=None)
 
     """
 
-    def __init__(self, arg1=None, arg2=None, arg3=None, arg4=None):
-        """BDFactory(matrix_sizes=None, rng=None, bd_dt_factor=None,
-                  dissociation_retry_moves=None)
-        BDFactory(matrix_sizes=None, bd_dt_factor=None,
-                  dissociation_retry_moves=None)
-        BDFactory(bd_dt_factor=None, dissociation_retry_moves=None)
-
-        Constructor.
+    def __init__(self, Integer3 matrix_sizes=None, bd_dt_factor=None,
+                 dissociation_retry_moves=None):
+        """Constructor.
 
         Parameters
         ----------
         matrix_sizes : Integer3, optional
             A size of a cell matrix.
             The number of cells must be larger than 3, in principle.
-        rng : GSLRandomNumberGenerator, optional
-            A random number generator.
         bd_dt_factor : Real, optioanl
             A rescaling factor for the step interval
             of BD propagation in a Multi domain.
@@ -1321,46 +1279,25 @@ cdef class BDFactory:
         """
         pass
 
-    def __cinit__(self, arg1=None, arg2=None, arg3=None, arg4=None):
-        self.thisptr = new Cpp_BDFactory()
-        if isinstance(arg1, Integer3):
-            if isinstance(arg2, GSLRandomNumberGenerator):
-                if arg3 is None:
-                    self.thisptr = new Cpp_BDFactory(
-                        deref((<Integer3>arg1).thisptr),
-                        deref((<GSLRandomNumberGenerator>arg2).thisptr))
-                elif arg4 is None:
-                    self.thisptr = new Cpp_BDFactory(
-                        deref((<Integer3>arg1).thisptr),
-                        deref((<GSLRandomNumberGenerator>arg2).thisptr), <Real>arg3)
-                else:
-                    self.thisptr = new Cpp_BDFactory(
-                        deref((<Integer3>arg1).thisptr),
-                        deref((<GSLRandomNumberGenerator>arg2).thisptr),
-                        <Real>arg3, <Integer>arg4)
-            else:
-                if arg4 is not None:
-                    raise RuntimeError, "too many arguments were given."
-                elif arg2 is None:
-                    self.thisptr = new Cpp_BDFactory(deref((<Integer3>arg1).thisptr))
-                elif arg3 is None:
-                    self.thisptr = new Cpp_BDFactory(
-                        deref((<Integer3>arg1).thisptr), <Real>arg2)
-                else:
-                    self.thisptr = new Cpp_BDFactory(
-                        deref((<Integer3>arg1).thisptr), <Real>arg2, <Integer>arg3)
-        else:
-            if arg3 is not None or arg4 is not None:
-                raise RuntimeError, "too many arguments were given."
-            elif arg1 is None:
-                self.thisptr = new Cpp_BDFactory()
-            elif arg2 is None:
-                self.thisptr = new Cpp_BDFactory(<Real>arg1)
-            else:
-                self.thisptr = new Cpp_BDFactory(<Real>arg1, <Integer>arg2)
+    def __cinit__(self, Integer3 matrix_sizes=None, bd_dt_factor=None,
+                  dissociation_retry_moves=None):
+        self.thisptr = new Cpp_BDFactory(
+            Cpp_BDFactory.default_matrix_sizes() if matrix_sizes is None else deref(matrix_sizes.thisptr),
+            Cpp_BDFactory.default_bd_dt_factor() if bd_dt_factor is None else <Real>bd_dt_factor,
+            Cpp_BDFactory.default_dissociation_retry_moves() if dissociation_retry_moves is None else <Integer>dissociation_retry_moves)
 
     def __dealloc__(self):
         del self.thisptr
+
+    def rng(self, GSLRandomNumberGenerator rng):
+        """rng(GSLRandomNumberGenerator) -> BDFactory
+
+        Set a random number generator, and return self.
+
+        """
+        cdef Cpp_BDFactory *ptr = self.thisptr.rng_ptr(deref(rng.thisptr))
+        assert ptr == self.thisptr
+        return self
 
     def create_world(self, arg1):
         """create_world(arg1=None) -> EGFRDWorld

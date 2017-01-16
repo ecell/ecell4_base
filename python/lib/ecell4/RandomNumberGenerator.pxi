@@ -1,19 +1,34 @@
 cdef class GSLRandomNumberGenerator:
     """A random number generator using the GNU Scientific Library (GSL).
 
-    GSLRandomNumberGenerator()
+    GSLRandomNumberGenerator(Integer myseed=None)
 
     """
 
-    def __init__(self):
-        """Constructor."""
+    def __init__(self, val=None):
+        """Constructor.
+
+        Parameters
+        ----------
+        val : Integer or string, optional
+            A seed for the random number generation (Integer),
+            or a HDF5 filename (string).
+
+        """
         pass
 
-    def __cinit__(self):
-        # self.thisptr = new shared_ptr[Cpp_GSLRandomNumberGenerator](
-        #     new Cpp_GSLRandomNumberGenerator())
-        self.thisptr = new shared_ptr[Cpp_RandomNumberGenerator](
-            <Cpp_RandomNumberGenerator*> (new Cpp_GSLRandomNumberGenerator()))
+    def __cinit__(self, val=None):
+        if val is None:
+            self.thisptr = new shared_ptr[Cpp_RandomNumberGenerator](
+                <Cpp_RandomNumberGenerator*> (new Cpp_GSLRandomNumberGenerator()))
+        elif isinstance(val, str):
+            self.thisptr = new shared_ptr[Cpp_RandomNumberGenerator](
+                <Cpp_RandomNumberGenerator*> (
+                    new Cpp_GSLRandomNumberGenerator(tostring(val))))
+        else:
+            self.thisptr = new shared_ptr[Cpp_RandomNumberGenerator](
+                <Cpp_RandomNumberGenerator*> (
+                    new Cpp_GSLRandomNumberGenerator(<Integer>val)))
 
     def __dealloc__(self):
         del self.thisptr
@@ -117,6 +132,32 @@ cdef class GSLRandomNumberGenerator:
             self.thisptr.get().seed()
         else:
             self.thisptr.get().seed(<Integer> val)
+
+    def save(self, filename):
+        """save(filename)
+
+        Save the random number generator state to a file.
+
+        Parameters
+        ----------
+        filename : str
+            A filename to save to
+
+        """
+        self.thisptr.get().save(tostring(filename))
+
+    def load(self, filename):
+        """load(filename)
+
+        Load the random number generator state from a file.
+
+        Parameters
+        ----------
+        filename : str
+            A filename to load from
+
+        """
+        self.thisptr.get().load(tostring(filename))
 
 cdef GSLRandomNumberGenerator GSLRandomNumberGenerator_from_Cpp_RandomNumberGenerator(
     shared_ptr[Cpp_RandomNumberGenerator] rng):

@@ -126,18 +126,18 @@ cdef BDSimulator BDSimulator_from_Cpp_BDSimulator(Cpp_BDSimulator* s)
 #  ecell4::bd::BDFactory
 cdef extern from "ecell4/bd/BDFactory.hpp" namespace "ecell4::bd":
     cdef cppclass Cpp_BDFactory "ecell4::bd::BDFactory":
-        Cpp_BDFactory() except +
-        Cpp_BDFactory(Cpp_Integer3&) except +
-        Cpp_BDFactory(Cpp_Integer3&, shared_ptr[Cpp_RandomNumberGenerator]) except +
-        Cpp_BDFactory(Real) except +
         Cpp_BDFactory(Cpp_Integer3&, Real) except +
-        Cpp_BDFactory(Cpp_Integer3&, shared_ptr[Cpp_RandomNumberGenerator], Real) except +
         Cpp_BDWorld* create_world()
         Cpp_BDWorld* create_world(string)
         Cpp_BDWorld* create_world(Cpp_Real3&)
         Cpp_BDWorld* create_world(shared_ptr[Cpp_Model])
         Cpp_BDSimulator* create_simulator(shared_ptr[Cpp_Model], shared_ptr[Cpp_BDWorld])
         Cpp_BDSimulator* create_simulator(shared_ptr[Cpp_BDWorld])
+        Cpp_BDFactory* rng_ptr(shared_ptr[Cpp_RandomNumberGenerator]&)
+        @staticmethod
+        Cpp_Integer3 default_matrix_sizes()
+        @staticmethod
+        Real default_bd_dt_factor()
 
 ## BDFactory
 #  a python wrapper for Cpp_BDFactory

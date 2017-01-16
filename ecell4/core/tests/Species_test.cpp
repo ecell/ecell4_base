@@ -26,7 +26,8 @@ BOOST_AUTO_TEST_CASE(Species_test_name)
     Species sp1("test");
     BOOST_CHECK_EQUAL(sp1.serial(), "test");
     Species sp2("test()");
-    BOOST_CHECK_EQUAL(sp2.serial(), "test");
+    BOOST_CHECK_EQUAL(sp2.serial(), "test()");
+    // BOOST_CHECK_EQUAL(sp2.serial(), "test");
 }
 
 BOOST_AUTO_TEST_CASE(Species_test_attributes)

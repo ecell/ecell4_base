@@ -394,7 +394,7 @@ cdef class FixedIntervalCSVObserver:
     This ``Observer`` saves the ``World`` at the current time first, and
     then keeps saving every after the interval.
 
-    FixedIntervalCSVObserver(dt, filename)
+    FixedIntervalCSVObserver(dt, filename, species=None)
 
     """
 
@@ -487,6 +487,133 @@ cdef class FixedIntervalCSVObserver:
     def reset(self):
         """Reset the internal state."""
         self.thisptr.get().reset()
+
+    def set_header(self, header):
+        """Set the header. 'x,y,z,r,sid' as a default."""
+        self.thisptr.get().set_header(tostring(header))
+
+    def set_formatter(self, formatter):
+        """Set the formatter.
+
+        8 arguments are given: (1) the current time, (2-4) x, y, z,
+        (5) radius, (6-7) lot and serial of a ParticleID, (8) species index.
+        (1-5) are Real, and (6-8) Integer.
+        Its default value is '%2%,%3%,%4%,%5%,%8%'.
+
+        """
+        self.thisptr.get().set_formatter(tostring(formatter))
+
+cdef class CSVObserver:
+    """An ``Observer`` class to log the state of ``World`` in CSV format.
+    This ``Observer`` saves the ``World`` at the current time first, and
+    then keeps saving every after steps.
+
+    CSVObserver(filename, species=None)
+
+    """
+
+    def __init__(self, filename, species=None):
+        """Constructor.
+
+        Parameters
+        ----------
+        filename : str
+            A file name to be saved. Data are saved in CSV format.
+            The extension name is recommended to be `.csv` or `.txt`.
+            The file name can contain at most one formatting string like
+            `%02d`, which will be replaced with the number of steps.
+            When the file name contains no formmating string, data will
+            be overwritten in a single file at every steps.
+            The first line in a file represents labels for each row.
+            Each column contains a position, a radius, and a serial id
+            for the ``Species``.
+        species : list
+            A list of strings, but not of ``Species``.
+            The strings suggest serials of ``Species`` to be observed.
+
+        """
+        pass  # XXX: Only used for doc string
+
+    def __cinit__(self, filename, species=None):
+        cdef vector[string] cpp_species
+        if species is None:
+            self.thisptr = new shared_ptr[Cpp_CSVObserver](
+                new Cpp_CSVObserver(tostring(filename)))
+        else:
+            for serial in species:
+                cpp_species.push_back(tostring(serial))
+            self.thisptr = new shared_ptr[Cpp_CSVObserver](
+                new Cpp_CSVObserver(
+                    tostring(filename), cpp_species))
+
+    def __dealloc__(self):
+        del self.thisptr
+
+    def next_time(self):
+        """Return the next time for logging."""
+        return self.thisptr.get().next_time()
+
+    def num_steps(self):
+        """Return the number of steps."""
+        return self.thisptr.get().num_steps()
+
+    def log(self, w):
+        """Force to log the given ``World`` to a file.
+
+        Parameters
+        ----------
+        w : Space
+            A ``Space`` (``World``) to be logged.
+
+        Examples
+        --------
+        This is an easy way to save a ``World`` in CSV format without
+        running a simulation.
+
+        >>> w = spatiocyte.SpatiocyteWorld(Real3(1, 1, 1), 0.005)
+        >>> w.bind_to(NetworkModel())
+        >>> w.add_molecules(Species("A"), 3)
+        >>> CSVObserver(1, "test.csv").log(w)
+        >>> print(open("test.csv").read())
+        x,y,z,r,sid
+        0.10614455552060439,0.66106605822212161,0.81500000000000006,0.0050000000000000001,0
+        0.38375339303603129,0.37527767497325676,0.23999999999999999,0.0050000000000000001,0
+        0.25311394008759508,0.05484827557301445,0.495,0.0050000000000000001,0
+        """
+        cdef Space space = w.as_base()
+        # self.thisptr.get().log(space.thisptr.get())
+        self.thisptr.get().log(deref(space.thisptr))
+
+    def filename(self):
+        """Return a file name to be saved at the next time"""
+        return self.thisptr.get().filename().decode('UTF-8')
+
+    def as_base(self):
+        """Clone self as a base class. This function is for developers."""
+        retval = Observer()
+        del retval.thisptr
+        retval.thisptr = new shared_ptr[Cpp_Observer](
+            <shared_ptr[Cpp_Observer]>deref(self.thisptr))
+        return retval
+
+    def reset(self):
+        """Reset the internal state."""
+        self.thisptr.get().reset()
+
+    def set_header(self, header):
+        """Set the header. 'x,y,z,r,sid' as a default."""
+        self.thisptr.get().set_header(tostring(header))
+
+    def set_formatter(self, formatter):
+        """Set the formatter.
+
+        8 arguments are given: (1) the current time, (2-4) x, y, z,
+        (5) radius, (6-7) lot and serial of a ParticleID, (8) species index.
+        (1-5) are Real, and (6-8) Integer.
+        Its default value is '%2%,%3%,%4%,%5%,%8%'.
+
+        """
+        self.thisptr.get().set_formatter(tostring(formatter))
 
 cdef class FixedIntervalTrajectoryObserver:
     """An ``Observer`` class to trace and log trajectories of diffusing

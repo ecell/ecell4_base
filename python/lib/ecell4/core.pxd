@@ -24,7 +24,7 @@ cdef extern from "gsl/gsl_rng.h":
 cdef extern from "ecell4/core/RandomNumberGenerator.hpp" namespace "ecell4":
     cdef cppclass Cpp_RandomNumberGenerator "ecell4::RandomNumberGenerator":
         # RandomNumberGenerator(shared_ptr[gsl_rng]) except +
-        Cpp_RandomNumberGenerator() except +
+        # Cpp_RandomNumberGenerator() except +
         Real random()
         Real uniform(Real, Real)
         Integer uniform_int(Integer, Integer)
@@ -33,16 +33,22 @@ cdef extern from "ecell4/core/RandomNumberGenerator.hpp" namespace "ecell4":
         Integer binomial(Real, Integer)
         void seed(Integer)
         void seed()
+        void save(string) except +
+        void load(string) except +
 
     cdef cppclass Cpp_GSLRandomNumberGenerator "ecell4::GSLRandomNumberGenerator":
         # GSLRandomNumberGenerator(shared_ptr[gsl_rng]) except +
         Cpp_GSLRandomNumberGenerator() except +
+        Cpp_GSLRandomNumberGenerator(Integer) except +
+        Cpp_GSLRandomNumberGenerator(string) except +
         Real uniform(Real, Real)
         Integer uniform_int(Integer, Integer)
         Real gaussian(Real, Real)
         Real gaussian(Real)
         void seed(Integer)
         void seed()
+        void save(string) except +
+        void load(string) except +
 
 ## RandomNumberGenerator
 #  a python wrapper for Cpp_GSLRandomNumberGenerator
@@ -90,17 +96,17 @@ cdef extern from "ecell4/core/Species.hpp" namespace "ecell4":
         bool operator<(Cpp_Species& rhs)
         bool operator>(Cpp_Species& rhs)
         string serial() # string == serial_type
-        string get_attribute(string)
+        string get_attribute(string) except +
         Integer count(Cpp_Species& sp) except +
         void set_attribute(string, string)
         void remove_attribute(string) except +
         bool has_attribute(string)
         vector[pair[string, string]] list_attributes()
-        # Integer get_unit(Cpp_UnitSpecies)
         void add_unit(Cpp_UnitSpecies)
         vector[Cpp_UnitSpecies]& units()
-        Integer num_units()
-        void deserialize(string) except+
+        Cpp_Species* D_ptr(string)
+        Cpp_Species* radius_ptr(string)
+        Cpp_Species* location_ptr(string)
 
 ## Species
 #  a python wrapper for Cpp_Species
@@ -474,6 +480,20 @@ cdef extern from "ecell4/core/observers.hpp" namespace "ecell4":
         # void log(Cpp_Space*)
         void log(shared_ptr[Cpp_Space]&)
         void reset()
+        void set_header(string&)
+        void set_formatter(string&)
+
+    cdef cppclass Cpp_CSVObserver "ecell4::CSVObserver":
+        Cpp_CSVObserver(string) except +
+        Cpp_CSVObserver(string, vector[string]) except +
+        Real next_time()
+        Integer num_steps()
+        string filename()
+        # void log(Cpp_Space*)
+        void log(shared_ptr[Cpp_Space]&)
+        void reset()
+        void set_header(string&)
+        void set_formatter(string&)
 
     cdef cppclass Cpp_FixedIntervalTrajectoryObserver "ecell4::FixedIntervalTrajectoryObserver":
         Cpp_FixedIntervalTrajectoryObserver(Real, vector[Cpp_ParticleID]) except +
@@ -537,6 +557,9 @@ cdef class FixedIntervalHDF5Observer:
 
 cdef class FixedIntervalCSVObserver:
     cdef shared_ptr[Cpp_FixedIntervalCSVObserver]* thisptr
+
+cdef class CSVObserver:
+    cdef shared_ptr[Cpp_CSVObserver]* thisptr
 
 cdef class FixedIntervalTrajectoryObserver:
     cdef shared_ptr[Cpp_FixedIntervalTrajectoryObserver]* thisptr

@@ -49,12 +49,18 @@ cdef extern from "ecell4/ode/ODERatelaw.hpp" namespace "ecell4::ode":
         Cpp_ODERatelawCythonCallback(Stepladder_Functype, Python_CallbackFunctype, OperateRef_Functype, OperateRef_Functype, string name) except+
         bool is_available()
         void set_callback_pyfunc(Python_CallbackFunctype)
+        Python_CallbackFunctype get_callback_pyfunc()
         string as_string()
         void set_name(string)
 
 cdef class ODERatelawCallback:
     cdef shared_ptr[Cpp_ODERatelawCythonCallback] *thisptr
     cdef object pyfunc
+
+cdef extern from "ecell4/ode/ODERatelaw.hpp" namespace "ecell4::ode":
+    cdef shared_ptr[Cpp_ODERatelawMassAction] to_ODERatelawMassAction(shared_ptr[Cpp_ODERatelaw]);
+    cdef shared_ptr[Cpp_ODERatelawCythonCallback] to_ODERatelawCythonCallback(shared_ptr[Cpp_ODERatelaw]);
+
 
 ## Cpp_ODEReactionRule
 cdef extern from "ecell4/ode/ODEReactionRule.hpp" namespace "ecell4::ode":
@@ -206,17 +212,23 @@ cdef ODESimulator ODESimulator_from_Cpp_ODESimulator(Cpp_ODESimulator* s)
 #  ecell4::ode::ODEFactory
 cdef extern from "ecell4/ode/ODEFactory.hpp" namespace "ecell4::ode":
     cdef cppclass Cpp_ODEFactory "ecell4::ode::ODEFactory":
-        Cpp_ODEFactory() except +
-        Cpp_ODEFactory(Cpp_ODESolverType) except +
-        Cpp_ODEFactory(Cpp_ODESolverType, Real) except +
-        Cpp_ODEFactory(Cpp_ODESolverType, Real, Real) except +
         Cpp_ODEFactory(Cpp_ODESolverType, Real, Real, Real) except +
+        Cpp_ODEFactory() except +
         Cpp_ODEWorld* create_world()
         Cpp_ODEWorld* create_world(string)
         Cpp_ODEWorld* create_world(Cpp_Real3&)
         Cpp_ODESimulator* create_simulator(shared_ptr[Cpp_Model], shared_ptr[Cpp_ODEWorld])
         Cpp_ODESimulator* create_simulator(shared_ptr[Cpp_ODENetworkModel], shared_ptr[Cpp_ODEWorld])
         Cpp_ODESimulator* create_simulator(shared_ptr[Cpp_ODEWorld])
+        Cpp_ODEFactory* rng_ptr(shared_ptr[Cpp_RandomNumberGenerator]&)
+        @staticmethod
+        Cpp_ODESolverType default_solver_type()
+        @staticmethod
+        Real default_dt()
+        @staticmethod
+        Real default_abs_tol()
+        @staticmethod
+        Real default_rel_tol()
 
 ## ODEFactory
 #  a python wrapper for Cpp_ODEFactory

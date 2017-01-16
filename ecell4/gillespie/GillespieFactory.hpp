@@ -30,15 +30,20 @@ public:
         ; // do nothing
     }
 
-    GillespieFactory(const boost::shared_ptr<RandomNumberGenerator>& rng)
-        : base_type(), rng_(rng)
+    virtual ~GillespieFactory()
     {
         ; // do nothing
     }
 
-    virtual ~GillespieFactory()
+    GillespieFactory& rng(const boost::shared_ptr<RandomNumberGenerator>& rng)
     {
-        ; // do nothing
+        rng_ = rng;
+        return (*this);
+    }
+
+    inline GillespieFactory* rng_ptr(const boost::shared_ptr<RandomNumberGenerator>& rng)
+    {
+        return &(this->rng(rng));  //XXX: == this
     }
 
     virtual GillespieWorld* create_world(const std::string filename) const
