@@ -509,6 +509,20 @@ cdef extern from "ecell4/core/observers.hpp" namespace "ecell4":
         vector[vector[Cpp_Real3]] data()
         void reset()
 
+    cdef cppclass Cpp_TimingTrajectoryObserver "ecell4::TimingTrajectoryObserver":
+        Cpp_TimingTrajectoryObserver(vector[double], vector[Cpp_ParticleID]) except +  #XXX: vector[Real]
+        Cpp_TimingTrajectoryObserver(vector[double], vector[Cpp_ParticleID], bool) except +
+        Cpp_TimingTrajectoryObserver(vector[double], vector[Cpp_ParticleID], bool, Real) except +
+        Cpp_TimingTrajectoryObserver(vector[double]) except +
+        Cpp_TimingTrajectoryObserver(vector[double], bool) except +
+        Cpp_TimingTrajectoryObserver(vector[double], bool, Real) except +
+        Real next_time()
+        Integer num_steps()
+        Integer num_tracers()
+        vector[Real]& t()
+        vector[vector[Cpp_Real3]] data()
+        void reset()
+
     cdef cppclass Cpp_TimingNumberObserver "ecell4::TimingNumberObserver":
         Cpp_TimingNumberObserver(vector[double], vector[string]) except +  #XXX: vector[Real]
         Real next_time()
@@ -563,6 +577,9 @@ cdef class CSVObserver:
 
 cdef class FixedIntervalTrajectoryObserver:
     cdef shared_ptr[Cpp_FixedIntervalTrajectoryObserver]* thisptr
+
+cdef class TimingTrajectoryObserver:
+    cdef shared_ptr[Cpp_TimingTrajectoryObserver]* thisptr
 
 cdef class TimeoutObserver:
     cdef shared_ptr[Cpp_TimeoutObserver]* thisptr
