@@ -1,11 +1,12 @@
 #ifndef ECELL_BD_POLYGON
 #define ECELL_BD_POLYGON
 #include "Barycentric.hpp"
+#include "map_const_at.hpp"
 #include <ecell4/core/Triangle.hpp>
 #include <ecell4/core/get_mapper_mf.hpp>
 #include <ecell4/core/hash.hpp>
-#include <utility>
 #include <functional>
+#include <utility>
 #include <vector>
 #include <stdint.h>
 
@@ -149,13 +150,6 @@ class BDPolygon
 
     void detect_shared_vertices();
     void detect_shared_edges();
-
-    template<typename mapT>
-    typename mapT::mapped_type const&
-    const_at(mapT const& m, typename mapT::key_type const& k) const
-    {
-        return m.find(k)->second;
-    }
 
     std::pair<uint32_t, Real>
     crossed_edge(const barycentric_type& pos, const barycentric_type& disp) const;
