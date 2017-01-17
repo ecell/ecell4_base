@@ -14,6 +14,7 @@ namespace ecell4
 namespace bd
 {
 
+// definition of face_id, edge_id, vertex_id and its utility function
 struct polygon_traits
 {
     typedef Triangle    face_type;
@@ -79,7 +80,7 @@ class BDPolygon
 {
   public:
     typedef polygon_traits traits; // hard-coded
-    typedef polygon_traits traits_type; // hard-coded
+    typedef traits traits_type;
     typedef /*typename*/ traits_type::face_type         face_type;
     typedef /*typename*/ traits_type::face_id_type      face_id_type;
     typedef /*typename*/ traits_type::face_index_type   face_index_type;
@@ -140,42 +141,12 @@ class BDPolygon
 
   private:
 
-    struct face_finder
-        : public std::unary_function<vertex_id_type, bool>
-    {
-        face_finder(const face_id_type& fid): fid_(fid){}
-
-        bool operator()(const vertex_id_type& vid) const
-        {
-            return vid.first == fid_;
-        }
-      protected:
-        face_id_type fid_;
-    };
-
-    struct edge_finder
-        : public std::unary_function<edge_id_type, bool>
-    {
-        edge_finder(const edge_id_type& eid): eid_(eid){}
-
-        bool operator()(const std::pair<edge_id_type, edge_id_type>& eid) const
-        {
-            return eid.first == eid_;
-        }
-      protected:
-        edge_id_type eid_;
-    };
-
     void detect_shared_vertices();
     void detect_shared_edges();
 
-//     typedef /*typename*/ utils::get_mapper_mf<edge_id_type, edge_id_type>::type
-//         edge_pair_type;
-//     typedef /*typename*/ utils::get_mapper_mf<vertex_id_type, vertex_id_list>::type
-//         vertex_group_type;
-    template<typename keyT, typename mapT>
+    template<typename mapT>
     typename mapT::mapped_type const&
-    const_at(const mapT& m, const keyT& k) const
+    const_at(mapT const& m, typename mapT::key_type const& k) const
     {
         return m.find(k)->second;
     }

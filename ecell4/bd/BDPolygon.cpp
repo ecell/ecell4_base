@@ -37,12 +37,13 @@ BDPolygon::is_share_vertex(const face_id_type& lhs, const face_id_type& rhs) con
 {
     for(vertex_index_type i=0; i<3; ++i)
     {
-        vertex_id_list const& list = const_at(
-                vertex_groups_, traits::make_vertex_id(lhs, i));
+        vertex_id_list const& list =
+            const_at(vertex_groups_, traits::make_vertex_id(lhs, i));
 
-        const face_finder cmp(rhs);
-        if(std::find_if(list.begin(), list.end(), cmp) != list.end())
-            return std::make_pair(true, i);
+        typedef vertex_id_list::const_iterator iter_type;
+        for(iter_type iter = list.begin(); iter != list.end(); ++iter)
+            if(traits::get_face_id(*iter) == rhs)
+                return std::make_pair(true, i);
     }
     return std::make_pair(false, 3);
 }
@@ -227,7 +228,6 @@ Real BDPolygon::cross_section(const barycentric_type& pos,
     }
 }
 
-
 void BDPolygon::detect_shared_vertices()
 {
     std::set<vertex_id_type> is_detected;
@@ -246,18 +246,18 @@ void BDPolygon::detect_shared_vertices()
 
             edge_id_type lookup = traits::vtoe(current_vtx);
             std::size_t i=0;
-            for(; i<100; ++i)
+            for(; i<1000; ++i)
             {
-                const std::size_t f = traits::get_face_id(lookup);
+                const std::size_t     f = traits::get_face_id(lookup);
                 const edge_index_type e = traits::get_edge_index(lookup);
-                const edge_id_type eid = traits::make_edge_id(f, (e==0 ? 2 : e-1));
-                lookup = this->edge_pairs_[eid]; // update
+                const edge_id_type  eid = traits::make_edge_id(f, (e==0?2:e-1));
+                lookup = this->edge_pairs_[eid]; // update lookup face
 
                 if(traits::get_face_id(lookup) == traits::get_face_id(current_vtx))
                     break;
                 sharing_list.push_back(lookup);
             }
-            if(i == 100)
+            if(i == 1000)
                 throw std::logic_error("too many faces share a certain vertex");
 
             //XXX: too many copies...
@@ -312,7 +312,8 @@ void BDPolygon::detect_shared_edges()
                     if(end_pos_dist <= 
                             end_length_scale * same_position_tolerance)
                     {
-                        const edge_id_type detected = std::make_pair(f, (e==0)?2:e-1);
+                        const edge_id_type detected =
+                            std::make_pair(f, (e==0)?2:e-1);
                         this->edge_pairs_[current_edge] = detected;
                         this->edge_pairs_[detected] = current_edge;
                         is_detected.insert(detected);
