@@ -16,21 +16,21 @@ class ParticleContainer2D : public ParticleSpace
 {
 public:
     typedef ParticleSpace base_type;
-    typedef typename base_type::particle_container_type particle_container_type;
-    typedef typename particle_container_type::size_type container_index_type;
+    typedef base_type::particle_container_type particle_container_type;
+    typedef particle_container_type::size_type container_index_type;
     typedef utils::get_mapper_mf<ParticleID, container_index_type>::type 
-        pid_to_particle_index_type;
+            pid_to_particle_index_type;
     typedef std::set<ParticleID> particle_id_set;
     typedef std::map<Species::serial_type, particle_id_set>
-        per_species_particle_id_set;
+            per_species_particle_id_set;
 
     typedef BDPolygon polygon_type;
-    typedef typename polygon_type::face_type face_type;
-    typedef typename polygon_type::face_id_type face_id_type;
+    typedef polygon_type::face_type face_type;
+    typedef polygon_type::face_id_type face_id_type;
     typedef utils::get_mapper_mf<ParticleID, face_id_type>::type 
-        pid_to_faceid_type;
+            pid_to_faceid_type;
     typedef utils::get_mapper_mf<face_id_type, particle_id_set>::type
-        per_faces_particle_id_set;
+            per_faces_particle_id_set;
 
 public:
 

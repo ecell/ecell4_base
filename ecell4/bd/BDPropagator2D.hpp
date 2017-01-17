@@ -20,7 +20,7 @@ public:
 
     typedef ReactionInfo reaction_info_type;
     typedef BDPolygon polygon_type;
-    typedef typename BDPolygon::face_type face_type;
+    typedef BDPolygon::face_type face_type;
 
 public:
 
