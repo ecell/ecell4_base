@@ -1,8 +1,8 @@
 #ifndef ECELL_BARYCENTRIC
 #define ECELL_BARYCENTRIC
-#include <boost/array.hpp>
 #include <ecell4/core/Real3.hpp>
 #include <ecell4/core/Triangle.hpp>
+#include <ostream>
 
 namespace ecell4
 {
@@ -34,7 +34,7 @@ struct Barycentric
 };
 
 template<typename realT>
-Barycentric<realT>::Barycentric<realT>(
+Barycentric<realT>::Barycentric(
         const real_type a, const real_type b, const real_type c)
 //     : val{{a, b, c}}
 {
@@ -44,7 +44,7 @@ Barycentric<realT>::Barycentric<realT>(
 }
 
 template<typename realT>
-Barycentric<realT>::Barycentric<realT>(const Barycentric<realT>& b)
+Barycentric<realT>::Barycentric(const Barycentric<realT>& b)
 {
     val[0] = b.val[0];
     val[1] = b.val[1];
@@ -76,11 +76,18 @@ operator-(const Barycentric<realT>& lhs, const Barycentric<realT>& rhs)
 }
 
 template<typename realT>
-inline bool is_inside(const Barycentric<realT>& bary) const
+inline bool is_inside(const Barycentric<realT>& bary)
 {
     return (0. <= bary[0] && bary[0] <= 1.0) &&
            (0. <= bary[1] && bary[1] <= 1.0) &&
            (0. <= bary[2] && bary[2] <= 1.0);
+}
+
+template<typename realT>
+inline bool on_plane(
+        const Barycentric<realT>& bary, const realT tolerance = 1e-10)
+{
+    return std::abs(bary[0] + bary[1] + bary[2] - 1.0) < tolerance;
 }
 
 template<typename realT>
@@ -95,8 +102,8 @@ namespace detail
 {
 
 template<typename realT>
-inline realT BDPolygon::triangle_area_2D(const realT x1, const realT y1,
-        const realT x2, const realT y2, const realT x3, const realT y3) const
+inline realT triangle_area_2D(const realT x1, const realT y1,
+        const realT x2, const realT y2, const realT x3, const realT y3)
 {
     return (x1 - x2) * (y2 - y3) - (x2 - x3) * (y1 - y2);
 }
@@ -105,7 +112,7 @@ inline realT BDPolygon::triangle_area_2D(const realT x1, const realT y1,
 
 //XXX hard-coded realT
 inline Barycentric<Real>
-to_barycentric(const Real3& pos, const Triangle& face) const
+to_barycentric(const Real3& pos, const Triangle& face)
 {
     const Real3& a = face.vertex_at(0);
     const Real3& b = face.vertex_at(1);
@@ -140,6 +147,15 @@ to_barycentric(const Real3& pos, const Triangle& face) const
     bary[2] = 1.0 - bary[0] - bary[1];
     return bary;
 }
+
+template<typename realT, typename charT, typename traitsT>
+inline std::basic_ostream<charT, traitsT>&
+operator<<(std::basic_ostream<charT, traitsT>& os, const Barycentric<realT>& b)
+{
+    os << b[0] << ", " << b[1] << ", " << b[2];
+    return os;
+}
+
 
 } // bd
 } // ecell4
