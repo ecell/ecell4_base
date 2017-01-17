@@ -113,10 +113,16 @@ class BDPolygon
     void detect_connectivity();
 
     edge_id_type const&
-    connecting_edge(const edge_id_type& eid){return edge_pairs_[eid];}
+    connecting_edge(const edge_id_type& eid) const 
+    {
+        return const_at(edge_pairs_, eid);
+    }
 
     vertex_id_list const&
-    connecting_vertices(const vertex_id_type& vid){return vertex_groups_[vid];}
+    connecting_vertices(const vertex_id_type& vid) const 
+    {
+        return const_at(vertex_groups_, vid);
+    }
 
     std::pair<bool, uint32_t>
     is_connected(const face_id_type& lhs, const face_id_type& rhs) const;
