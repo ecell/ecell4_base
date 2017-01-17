@@ -16,12 +16,13 @@ namespace bd
 
 struct polygon_traits
 {
-    typedef face_type         Triangle;
-    typedef face_id_type      std::size_t;
-    typedef vertex_index_type uint32_t;
-    typedef edge_index_type   uint32_t;
-    typedef vertex_id_type    std::pair<face_id_type, vertex_index_type>;
-    typedef edge_id_type      std::pair<face_id_type, edge_index_type>;
+    typedef Triangle    face_type;
+    typedef std::size_t face_index_type;
+    typedef std::size_t face_id_type;
+    typedef uint32_t    vertex_index_type;
+    typedef uint32_t    edge_index_type;
+    typedef std::pair<face_id_type, vertex_index_type> vertex_id_type;
+    typedef std::pair<face_id_type, edge_index_type>   edge_id_type;
 
     static vertex_id_type
     make_vertex_id(face_id_type fid, vertex_index_type vidx)
@@ -40,11 +41,11 @@ struct polygon_traits
 
     static face_id_type get_face_id(const vertex_id_type vid){return vid.first;}
 //    static face_id_type get_face_id(const edge_id_type eid){return eid.first;}
-    static vertex_id_type get_vertex_index(const vertex_id_type& vid)
+    static vertex_index_type get_vertex_index(const vertex_id_type& vid)
     {
         return vid.second;
     }
-    static edge_id_type get_edge_index(const edge_id_type& eid)
+    static edge_index_type get_edge_index(const edge_id_type& eid)
     {
         return eid.second;
     }
@@ -77,19 +78,21 @@ namespace bd
 class BDPolygon
 {
   public:
+    typedef polygon_traits traits; // hard-coded
     typedef polygon_traits traits_type; // hard-coded
-    typedef typename traits_type::face_type         face_type;
-    typedef typename traits_type::face_id_type      face_id_type;
-    typedef typename traits_type::vertex_index_type vertex_id_type;
-    typedef typename traits_type::edge_index_type   edge_id_type;
-    typedef typename traits_type::vertex_id_type    vertex_id_type;
-    typedef typename traits_type::edge_id_type      edge_id_type;
+    typedef /*typename*/ traits_type::face_type         face_type;
+    typedef /*typename*/ traits_type::face_id_type      face_id_type;
+    typedef /*typename*/ traits_type::face_index_type   face_index_type;
+    typedef /*typename*/ traits_type::vertex_index_type vertex_index_type;
+    typedef /*typename*/ traits_type::edge_index_type   edge_index_type;
+    typedef /*typename*/ traits_type::vertex_id_type    vertex_id_type;
+    typedef /*typename*/ traits_type::edge_id_type      edge_id_type;
 
     typedef std::vector<face_type>      face_container_type;
     typedef std::vector<vertex_id_type> vertex_id_list;
-    typedef typename utils::get_mapper_mf<edge_id_type, edge_id_type>::type
+    typedef /*typename*/ utils::get_mapper_mf<edge_id_type, edge_id_type>::type
         edge_pair_type;
-    typedef typename utils::get_mapper_mf<vertex_id_type, vertex_id_list>::type
+    typedef /*typename*/ utils::get_mapper_mf<vertex_id_type, vertex_id_list>::type
         vertex_group_type;
 
     typedef std::pair<Real3, face_id_type> surface_position_type;
@@ -166,10 +169,13 @@ class BDPolygon
     void detect_shared_vertices();
     void detect_shared_edges();
 
-    template<typename keyT, typename valT, typename allocT, typename compT,
-             template<typename T1, typename T2, typename T3, typename T4>
-             class mapT>
-    valT const& const_at(const mapT<keyT, valT, allocT, compT>& m const keyT& k)
+//     typedef /*typename*/ utils::get_mapper_mf<edge_id_type, edge_id_type>::type
+//         edge_pair_type;
+//     typedef /*typename*/ utils::get_mapper_mf<vertex_id_type, vertex_id_list>::type
+//         vertex_group_type;
+    template<typename keyT, typename mapT>
+    typename mapT::mapped_type const&
+    const_at(const mapT& m, const keyT& k) const
     {
         return m.find(k)->second;
     }

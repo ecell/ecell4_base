@@ -16,25 +16,29 @@ void BDPolygon::detect_connectivity()
     return;
 }
 
-std::pair<bool, edge_index_type>
+std::pair<bool, BDPolygon::edge_index_type>
 BDPolygon::is_connected(const face_id_type& lhs, const face_id_type& rhs) const
 {
-    if(edge_pairs_.find(traits::make_pair(lhs, 0))->second.first == rhs)
+    if(traits::get_face_id(const_at(edge_pairs_, traits::make_edge_id(lhs, 0)))
+        == rhs)
         return std::make_pair(true, 0);
-    if(edge_pairs_.find(traits::make_pair(lhs, 1))->second.first == rhs)
+    if(traits::get_face_id(const_at(edge_pairs_, traits::make_edge_id(lhs, 1)))
+        == rhs)
         return std::make_pair(true, 1);
-    if(edge_pairs_.find(traits::make_pair(lhs, 2))->second.first == rhs)
+    if(traits::get_face_id(const_at(edge_pairs_, traits::make_edge_id(lhs, 2)))
+        == rhs)
         return std::make_pair(true, 2);
+
     return std::make_pair(false, 3);
 }
 
-std::pair<bool, vertex_index_type>
+std::pair<bool, BDPolygon::vertex_index_type>
 BDPolygon::is_share_vertex(const face_id_type& lhs, const face_id_type& rhs) const
 {
     for(vertex_index_type i=0; i<3; ++i)
     {
-        vertex_id_list const& list =
-            vertex_groups_.find(std::make_pair(lhs, i));
+        vertex_id_list const& list = const_at(
+                vertex_groups_, traits::make_vertex_id(lhs, i));
 
         const face_finder cmp(rhs);
         if(std::find_if(list.begin(), list.end(), cmp) != list.end())
@@ -75,58 +79,64 @@ Real BDPolygon::distance(const std::pair<Real3, face_id_type>& lhs,
     const std::pair<bool, vertex_index_type> vtx =
         this->is_share_vertex(lhs.second, rhs.second);
 
-    if(vtx.first) // XXX!
+    if(vtx.first)
     {
         Real whole_angle = 0.; // whole angle around the vertex
         Real inter_angle = 0.; // angle lhs--vtx--rhs
 
-        Real r0 = 0.; // distance from the shared vertex to lhs.position
-        Real r1 = 0.; // ...                                rhs.position
+        Real r0_sq = 0.; // distance from the shared vertex to lhs.position
+        Real r1_sq = 0.; // ...                                rhs.position
 
-        vertex_id_list const& list = const_at(vertex_groups_,
-                traits::make_vertex_id(lhs.second, vtx.second));
+        vertex_id_list const& list = const_at(
+                vertex_groups_, traits::make_vertex_id(lhs.second, vtx.second));
 
         bool inter = false;
         for(vertex_id_list::const_iterator
                 iter = list.begin(); iter != list.end(); ++iter) // ccw
         {
-            const Triangle& f = this->faces_.at(traits::get_face_id(*iter));
-            whole_angle += f.angle_at(traits::get_vertex_index(*iter));
+            const face_id_type      fid = traits::get_face_id(*iter);
+            const vertex_index_type vid = traits::get_vertex_index(*iter);
 
-            if(!inter && traits::get_face_id(*iter) == lhs.second)
+            const Triangle& f = faces_.at(fid);
+            whole_angle += f.angle_at(vid);
+
+            const bool lhs_on_face = (fid == lhs.second);
+            const bool rhs_on_face = (fid == rhs.second);
+            const bool pos_on_face = (lhs_on_face || rhs_on_face);
+
+            if(!inter && pos_on_face) // start calculating inter-angle
             {
                 inter = true;
-                angle_sum += angle(f.vertex_at(iter->second) - lhs.first,
-                                   f.edge_at(iter->second==0?2:iter->second-1));
+                const edge_index_type eid = traits::get_edge_index(traits::vtoe(*iter));
+
+                Real3 pos_vtx;
+                if(lhs_on_face) pos_vtx = f.vertex_at(vid) - lhs.first;
+                if(rhs_on_face) pos_vtx = f.vertex_at(vid) - rhs.first;
+
+                inter_angle += angle(pos_vtx, f.edge_at(eid==0 ? 2 : eid-1));
+                r0_sq = length_sq(pos_vtx);
             }
-            else if(inter && traits::get_face_id(*iter) == rhs.second)
+            else if(inter && pos_on_face) // end calculating inter-angle
             {
                 inter = false;
-                angle_sum += angle(rhs.first - f.vertex_at(iter->second),
-                                   f.edge_at(iter->second));
+                const edge_index_type eid = traits::get_edge_index(traits::vtoe(*iter));
+
+                Real3 pos_vtx;
+                if(lhs_on_face) pos_vtx = lhs.first - f.vertex_at(vid);
+                if(rhs_on_face) pos_vtx = rhs.first - f.vertex_at(vid);
+
+                inter_angle += angle(pos_vtx, f.edge_at(eid==0 ? 2 : eid-1));
+                r1_sq = length_sq(pos_vtx);
             }
-            else if(inter)
+            else if(inter) // simply add the angle
             {
-                angle_sum += this->faces_.at(iter->first).angle_at(iter->second);
+                inter_angle += this->faces_.at(fid).angle_at(vid);
             }
         }
-        if(inter)
-        {
-            for(vertex_id_list::const_iterator iter = list.begin();
-                    iter != list.end(); ++iter)
-            {
-                if(iter->first == rhs.second)
-                {
-                    const Triangle& f = this->faces_.at(iter->first);
-                    angle_sum += angle(rhs.first - f.vertex_at(iter->second),
-                                       f.edge_at(iter->second));
-                    break;
-                }
-                angle_sum += this->faces_.at(iter->first).angle_at(iter->second);
-            }
-        }
-        const Real min_angle = std::min(angle_sum, whole_angle - angle_sum);
-        return r0 * r0 + r1 * r1 - 2. * r0 * r1 * std::cos(min_angle);
+        assert(inter_angle < whole_angle);
+
+        const Real min_angle = std::min(inter_angle, whole_angle - inter_angle);
+        return r0_sq + r1_sq - 2. * std::sqrt(r0_sq * r1_sq) * std::cos(min_angle);
     }
     }// end CASE 2
 
@@ -138,69 +148,36 @@ std::pair<std::pair<Real3, BDPolygon::face_id_type>, Real3>
 BDPolygon::move_next_face(const std::pair<Real3, face_id_type>& pos,
                           const Real3& disp) const
 {
-    const face_type& f = faces_[pos.second];
-
-    const boost::array<Real, 3> newpos =
-        this->to_barycentric(pos.first + disp, f);
+    const face_type& f = faces_.at(pos.second);
+    const barycentric_type newpos = to_barycentric(pos.first + disp, f);
 
     if(is_inside(newpos))
-    {
         return std::make_pair(
-                std::make_pair(this->to_absolute(newpos, f), pos.second),
-                Real3(0.,0.,0.));
-    }
+            std::make_pair(to_absolute(newpos, f), pos.second), Real3(0.,0.,0.));
 
-#ifdef ECELL4_TWOD_BD_DUMP
-    const boost::array<Real, 3> curpos =
-        this->to_barycentric(pos.first, f);
-    std::cerr << "curpos       = " << curpos[0] << ", " << curpos[1] << ", " << curpos[2] << std::endl;
-    std::cerr << "newpos       = " << newpos[0] << ", " << newpos[1] << ", " << newpos[2] << std::endl;
-    std::cerr << "length(disp) = " << length(disp) << std::endl;
-    std::cerr << "dot(norm, nd)= " << dot_product(disp, f.normal()) << std::endl;
-#endif
+    const barycentric_type bpos = to_barycentric(pos.first, f);
+    const barycentric_type bdis = newpos - bpos;
 
-    const boost::array<Real, 3> bpos = to_barycentric(pos.first, f);
-    boost::array<Real, 3> bdis;
-    bdis[0] = newpos[0] - bpos[0];
-    bdis[1] = newpos[1] - bpos[1];
-    bdis[2] = newpos[2] - bpos[2];
+    const std::pair<edge_index_type, Real> cross = crossed_edge(bpos, bdis);
 
-#ifdef ECELL4_TWOD_BD_DUMP
-    std::cerr << "pos(bary)    = " << bpos[0] << ", " << bpos[1] << ", " << bpos[2] << std::endl;
-    std::cerr << "disp(bary)   = " << bdis[0] << ", " << bdis[1] << ", " << bdis[2] << std::endl;
-#endif
-
-    const std::pair<uint32_t, Real> cross = crossed_edge(bpos, bdis);
-    const edge_finder cmp(std::make_pair(pos.second, cross.first));
-    const face_id_type next_face_id =
-        std::find_if(edge_pairs_.begin(), edge_pairs_.end(), cmp)->second.first;
-    const face_type& next_face = faces_[next_face_id];
-
-#ifdef ECELL4_TWOD_BD_DUMP
-    std::cerr << "cross ratio  = " << cross.second << std::endl;
-    std::cerr << "next_face id = " << next_face_id << std::endl;
-#endif
+    const face_id_type next_face_id = traits::get_face_id(
+        const_at(edge_pairs_, traits::make_edge_id(pos.second, cross.first)));
+    const face_type& next_face = faces_.at(next_face_id);
 
     // turn displacement
-    const Real ang = angle(f.normal(), next_face.normal());
-    const Real3 axis = f.edge_at(cross.first) / length(f.edge_at(cross.first));
+    const Real  ang  = angle(f.normal(), next_face.normal());
+    const Real3 axis = f.edge_at(cross.first) / f.length_of_edge_at(cross.first);
     const Real3 next_disp = rotate(ang, axis, disp) * (1. - cross.second);
 
-#ifdef ECELL4_TWOD_BD_DUMP
-    std::cerr << "next disp    = " << next_disp << std::endl;
-    std::cerr << "next disp len= " << length(next_disp) << std::endl;
-    std::cerr << "dot(norm, nd)= " << dot_product(next_disp, next_face.normal()) << std::endl;
-    std::cerr << std::endl;
-#endif
+    const Real3 next_pos  = pos.first + disp * cross.second;
 
-    return std::make_pair(std::make_pair(pos.first + disp * cross.second, next_face_id),
-            next_disp);
+    return std::make_pair(std::make_pair(next_pos, next_face_id), next_disp);
 }
 
 //!
 //  find first-crossing edge and
 //  return its index and displacement ratio to the cross section
-std::pair<edge_index_type, Real>
+std::pair<BDPolygon::edge_index_type, Real>
 BDPolygon::crossed_edge(const barycentric_type& pos, const barycentric_type& disp) const
 {
     barycentric_type npos = pos + disp;
@@ -214,8 +191,9 @@ BDPolygon::crossed_edge(const barycentric_type& pos, const barycentric_type& dis
     }
     else // (+, -, -) or one of its permutations
     {
-        assert(!is_inside(npos)); // not (+, +, +) case
-//         assert(on_plane(npos));   // summation is 1
+        if(npos[0] > 0. && npos[1] > 0. && npos[2] > 0) // not (+, +, +) case
+            throw std::invalid_argument("BDPolygon::crossed_edge");
+
         if(npos[0] > 0.)
         {
             const Real ab = cross_section(pos, disp, 0);
@@ -228,7 +206,7 @@ BDPolygon::crossed_edge(const barycentric_type& pos, const barycentric_type& dis
             const Real bc = cross_section(pos, disp, 1);
             return (bc > ab) ? std::make_pair(0, ab) : std::make_pair(1, bc);
         }
-        else if(npos[2] > 0.)
+        else // if(npos[2] > 0.)
         {
             const Real bc = cross_section(pos, disp, 1);
             const Real ca = cross_section(pos, disp, 2);
@@ -254,39 +232,41 @@ void BDPolygon::detect_shared_vertices()
 {
     std::set<vertex_id_type> is_detected;
     const Real same_position_tolerance = 1e-6;
+
     for(std::size_t fidx = 0; fidx < faces_.size(); ++fidx)
     {
-        for(std::size_t vidx = 0; vidx < 3; ++vidx)
+        for(vertex_index_type vidx = 0; vidx < 3; ++vidx)
         {
-            const vertex_id_type current_vtx = std::make_pair(fidx, vidx);
-
+            const vertex_id_type current_vtx = traits::make_vertex_id(fidx, vidx);
             if(is_detected.count(current_vtx) == 1) continue;
+
             vertex_id_list sharing_list;
             sharing_list.push_back(current_vtx);
             is_detected.insert(current_vtx);
 
-            edge_id_type lookup = current_vtx;
+            edge_id_type lookup = traits::vtoe(current_vtx);
             std::size_t i=0;
             for(; i<100; ++i)
             {
-                const std::size_t f = lookup.first;
-                const std::size_t e = (lookup.second == 0) ? 2: lookup.second - 1;
-                const edge_id_type eid  = std::make_pair(f, e);
-                const edge_id_type next = this->edge_pairs_[eid];
-                lookup = next;
-                if(lookup.first == current_vtx.first) break;
+                const std::size_t f = traits::get_face_id(lookup);
+                const edge_index_type e = traits::get_edge_index(lookup);
+                const edge_id_type eid = traits::make_edge_id(f, (e==0 ? 2 : e-1));
+                lookup = this->edge_pairs_[eid]; // update
+
+                if(traits::get_face_id(lookup) == traits::get_face_id(current_vtx))
+                    break;
                 sharing_list.push_back(lookup);
             }
-            if(i==100) throw std::logic_error("too many sharing vertex");
+            if(i == 100)
+                throw std::logic_error("too many faces share a certain vertex");
 
+            //XXX: too many copies...
             for(std::size_t i=0; i<sharing_list.size(); ++i)
                 vertex_groups_[sharing_list.at(i)] = sharing_list;
         }
     }
-
     return;
 }
-
 
 void BDPolygon::detect_shared_edges()
 {
