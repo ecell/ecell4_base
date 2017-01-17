@@ -496,11 +496,18 @@ public:
     void new_face(const face_type& face)
     {
         (*pcon2d_).polygon().add_face(face);
+        return;
+    }
+
+    Triangle const& face_at(const std::size_t i)
+    {
+        return (*pcon2d_).polygon().at(i);
     }
 
     void initialize_polygon()
     {
         (*pcon2d_).polygon().detect_connectivity();
+        return;
     }
 
 
