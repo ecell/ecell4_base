@@ -21,6 +21,7 @@ public:
     typedef ReactionInfo reaction_info_type;
     typedef BDPolygon polygon_type;
     typedef BDPolygon::face_type face_type;
+    typedef BDPolygon::face_id_type face_id_type;
 
 public:
 
@@ -46,12 +47,11 @@ public:
         return rng_;
     }
 
-    bool attempt_reaction(const ParticleID& pid, const Particle& particle);
+    bool attempt_reaction(const ParticleID& pid, const Particle& particle,
+                          const face_id_type& fid);
     bool attempt_reaction(
-        const ParticleID& pid1, const Particle& particle1,
-        const ParticleID& pid2, const Particle& particle2);
-
-
+        const ParticleID& pid1, const Particle& particle1, const face_id_type& f1,
+        const ParticleID& pid2, const Particle& particle2, const face_id_type& f2);
 
     void remove_particle(const ParticleID& pid);
 
