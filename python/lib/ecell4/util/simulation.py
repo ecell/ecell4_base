@@ -77,7 +77,7 @@ def list_species(model, seeds=[]):
 
 def run_simulation(
         t, y0={}, volume=1.0, model=None, solver='ode',
-        factory=None, is_netfree=False, species_list=None, without_reset=False,
+        is_netfree=False, species_list=None, without_reset=False,
         return_type='matplotlib', opt_args=(), opt_kwargs={},
         structures={}, observers=(), progressbar=0, rndseed=None,
         **kwargs):
@@ -116,7 +116,6 @@ def run_simulation(
         Arguments for plotting. If return_type suggests no plotting or
         opt_args is a list or tuple, just ignored.
         i.e.) viz.plot_number_observer(obs, *opt_args, **opt_kwargs)
-    factory: Factory, optional
     is_netfree: bool, optional
         Whether the model is netfree or not. When a model is given as an
         argument, just ignored. Default is False.
@@ -159,7 +158,9 @@ def run_simulation(
     import ecell4
 
     if factory is not None:
-        f = factory  #XXX: will be deprecated in the future. just use solver
+        # f = factory  #XXX: will be deprecated in the future. just use solver
+        raise ValueError(
+            "Argument 'factory' is no longer available. Use 'solver' instead.")
     elif isinstance(solver, str):
         f = get_factory(solver)
     elif isinstance(solver, collections.Iterable):
@@ -248,33 +249,6 @@ def run_simulation(
         return sim.world()
 
 def ensemble_simulations(N=1, *args, **kwargs):
-    """Run simulations with the given model and take the ensemble.
-
-    Parameters
-    ----------
-    N : int
-        A number of samples.
-    args : list
-    kwargs : dict
-        Arguments for ``run_simulation``.
-        See the help of ``run_simulation`` for details.
-
-    Returns
-    -------
-    value : list, DummyObserver, or None
-        Return a value suggested by ``return_type``.
-        When ``return_type`` is 'array', return a time course data.
-        When ``return_type`` is 'observer', return an observer.
-        Return nothing if else.
-
-    See Also
-    --------
-    run_simulation
-
-    """
-    import ecell4.extra.ensemble
-
-    kwargs.update({'n': N})
-    retval = ecell4.extra.ensemble.ensemble_simulations(*args, **kwargs)
-    if retval is not None:
-        return retval
+    """Deprecated"""
+    raise RuntimeError(
+        "This function was deprecated. Use ecell4.extra.ensemble.ensemble_simulations instread.")
