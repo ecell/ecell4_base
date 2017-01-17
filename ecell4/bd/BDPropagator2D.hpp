@@ -96,7 +96,7 @@ public:
             std::cerr << "disp   = " << disp[0] << ", " << disp[1] << ", " << disp[2] << std::endl;
         }
 
-        return disp;
+        return disp * leng;
     }
 
     inline Real3 draw_ipv(const Real& sigma, const Real& t, const Real& D)
