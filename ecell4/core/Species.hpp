@@ -35,13 +35,13 @@ protected:
 public:
 
     Species()
-        : serial_("")
+        : serial_(""), attributes_()
     {
         ; // do nothing
     }
 
     explicit Species(const serial_type& name)
-        : serial_(name)
+        : serial_(name), attributes_()
     {
         ;
     }
@@ -49,7 +49,7 @@ public:
     Species(
         const serial_type& name, const std::string& radius, const std::string& D,
         const std::string location = "")
-        : serial_(name)
+        : serial_(name), attributes_()
     {
         set_attribute("radius", radius);
         set_attribute("D", D);
@@ -57,7 +57,7 @@ public:
     }
 
     Species(const Species& another)
-        : serial_(another.serial())
+        : serial_(another.serial()), attributes_()
     {
         const std::vector<std::pair<std::string, std::string> > attrs = another.list_attributes();
         for (std::vector<std::pair<std::string, std::string> >::const_iterator
