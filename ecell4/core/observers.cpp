@@ -433,8 +433,8 @@ void FixedIntervalTrackingObserver::initialize(const boost::shared_ptr<Space>& s
     if (pids_.size() == 0)
     {
         typedef std::vector<std::pair<ParticleID, Particle> > particle_id_pairs;
-        for (std::vector<Species>::const_iterator i(species_list_.begin());
-             i != species_list_.end(); ++i)
+        for (std::vector<Species>::const_iterator i(species_.begin());
+             i != species_.end(); ++i)
         {
             const Species& sp(*i);
             particle_id_pairs const particles(space->list_particles_exact(sp));
@@ -491,8 +491,8 @@ void FixedIntervalTrackingObserver::fire_subevent(
         Real Lmin(threshold_);
         ParticleID newpid;
 
-        for (std::vector<Species>::const_iterator l(species_list_.begin());
-             l != species_list_.end(); ++l)
+        for (std::vector<Species>::const_iterator l(species_.begin());
+             l != species_.end(); ++l)
         {
             const Species& sp(*l);
             particle_id_pairs const particles(space->list_particles_exact(sp));

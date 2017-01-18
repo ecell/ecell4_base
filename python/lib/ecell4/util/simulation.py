@@ -80,6 +80,7 @@ def run_simulation(
         is_netfree=False, species_list=None, without_reset=False,
         return_type='matplotlib', opt_args=(), opt_kwargs={},
         structures={}, observers=(), progressbar=0, rndseed=None,
+        factory=None, ## deprecated
         **kwargs):
     """Run a simulation with the given model and plot the result on IPython
     notebook with matplotlib.

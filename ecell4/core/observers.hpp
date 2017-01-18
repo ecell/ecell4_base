@@ -655,7 +655,8 @@ public:
 
     TrajectoryObserver(
         const std::vector<ParticleID>& pids,
-        const bool& resolve_boundary, const Real subdt)
+        const bool resolve_boundary = default_resolve_boundary(),
+        const Real subdt = default_subdt())
         : base_type(false), event_(), subevent_(subdt > 0 ? subdt : inf),
         pids_(pids), resolve_boundary_(resolve_boundary), prev_positions_(),
         trajectories_(pids.size()), strides_(pids.size()), t_()
@@ -664,7 +665,8 @@ public:
     }
 
     TrajectoryObserver(
-        const bool& resolve_boundary, const Real subdt)
+        const bool resolve_boundary = default_resolve_boundary(),
+        const Real subdt = default_subdt())
         : base_type(false), event_(), subevent_(subdt > 0 ? subdt : inf),
         pids_(), resolve_boundary_(resolve_boundary), prev_positions_(),
         trajectories_(), strides_(), t_()
@@ -675,6 +677,16 @@ public:
     virtual ~TrajectoryObserver()
     {
         ;
+    }
+
+    static inline bool default_resolve_boundary()
+    {
+        return true;
+    }
+
+    static inline const Real default_subdt()
+    {
+        return 0;
     }
 
     const Real next_time() const
@@ -868,14 +880,17 @@ public:
 
     FixedIntervalTrajectoryObserver(
         const Real& dt, const std::vector<ParticleID>& pids,
-        const bool resolve_boundary = true, const Real subdt = 0)
+        const bool resolve_boundary = default_resolve_boundary(),
+        const Real subdt = default_subdt())
         : base_type(pids, resolve_boundary, (subdt > 0 ? subdt : dt))
     {
         event_.set_dt(dt);
     }
 
     FixedIntervalTrajectoryObserver(
-        const Real& dt, const bool resolve_boundary = true, const Real subdt = 0)
+        const Real& dt,
+        const bool resolve_boundary = default_resolve_boundary(),
+        const Real subdt = default_subdt())
         : base_type(resolve_boundary, (subdt > 0 ? subdt : dt))
     {
         event_.set_dt(dt);
@@ -898,14 +913,17 @@ public:
 
     TimingTrajectoryObserver(
         const std::vector<Real>& t, const std::vector<ParticleID>& pids,
-        const bool resolve_boundary = true, const Real subdt = 0)
+        const bool resolve_boundary = default_resolve_boundary(),
+        const Real subdt = default_subdt())
         : base_type(pids, resolve_boundary, subdt)
     {
         event_.set_times(t);
     }
 
     TimingTrajectoryObserver(
-        const std::vector<Real>& t, const bool resolve_boundary = true, const Real subdt = 0)
+        const std::vector<Real>& t,
+        const bool resolve_boundary = default_resolve_boundary(),
+        const Real subdt = default_subdt())
         : base_type(resolve_boundary, subdt)
     {
         event_.set_times(t);
@@ -981,12 +999,12 @@ public:
 public:
 
     FixedIntervalTrackingObserver(
-        const Real& dt, const std::vector<Species>& species_list,
-        const bool& resolve_boundary = true, const Real subdt = 0,
-        const Real threshold = inf)
+        const Real& dt, const std::vector<Species>& species,
+        const bool& resolve_boundary = default_resolve_boundary(), const Real subdt = default_subdt(),
+        const Real threshold = default_threshold())
         : base_type(false), event_(dt), subevent_(subdt > 0 ? subdt : dt),
-        species_list_(species_list), resolve_boundary_(resolve_boundary),
-        threshold_(threshold),
+        species_(species), resolve_boundary_(resolve_boundary),
+        threshold_(threshold > 0 ? threshold : inf),
         prev_positions_(), strides_(), pids_(), trajectories_(), t_()
     {
         ;
@@ -995,6 +1013,21 @@ public:
     virtual ~FixedIntervalTrackingObserver()
     {
         ;
+    }
+
+    static inline bool default_resolve_boundary()
+    {
+        return true;
+    }
+
+    static inline const Real default_subdt()
+    {
+        return 0;
+    }
+
+    static inline const Real default_threshold()
+    {
+        return 0;
     }
 
     const Real next_time() const;
@@ -1047,7 +1080,7 @@ protected:
 
     FixedIntervalEvent event_, subevent_;
 
-    std::vector<Species> species_list_;
+    std::vector<Species> species_;
     bool resolve_boundary_;
     Real threshold_;
 
