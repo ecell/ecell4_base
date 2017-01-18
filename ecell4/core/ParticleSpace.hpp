@@ -324,6 +324,12 @@ public:
         return static_cast<Real>(num_molecules_exact(sp));
     }
 
+    virtual const Real volume() const
+    {
+        const Real3& size(edge_lengths());
+        return size[0] * size[1] * size[2];
+    }
+
 protected:
 
     Real t_;
