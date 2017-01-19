@@ -423,10 +423,12 @@ Integer OffLatticeSpace::inner_size() const
 #ifdef WITH_HDF5
 void OffLatticeSpace::save_hdf5(H5::Group* root) const
 {
+    throw NotSupported("OffLatticeSpace::save_hdf5 is not supported yet.");
 }
 
 void OffLatticeSpace::load_hdf5(const H5::Group& root)
 {
+    throw NotSupported("OffLatticeSpace::load_hdf5 is not supported yet.");
 }
 #endif
 

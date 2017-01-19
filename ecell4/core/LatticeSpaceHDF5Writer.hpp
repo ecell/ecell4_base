@@ -170,7 +170,7 @@ struct LatticeSpaceHDF5Traits
 };
 
 template<typename Tspace_>
-void save_lattice_space(const Tspace_& space, H5::Group* root)
+void save_lattice_space(const Tspace_& space, H5::Group* root, const std::string& implementation = "")
 {
     typedef LatticeSpaceHDF5Traits traits_type;
 
@@ -207,13 +207,12 @@ void save_lattice_space(const Tspace_& space, H5::Group* root)
     CREATE_ATTRIBUTE(voxel_radius, H5::PredType::IEEE_F64LE);
     CREATE_ATTRIBUTE(is_periodic, H5::PredType::STD_I32LE);
     CREATE_ATTRIBUTE(edge_lengths, lengths_type);
-
+    CREATE_ATTRIBUTE(implementation, H5::StrType(0, H5T_VARIABLE));
 #undef CREATE_ATTRIBUTE
-
 }
 
 template<typename Tspace_>
-void load_lattice_space(const H5::Group& root, Tspace_* space)
+void load_lattice_space(const H5::Group& root, Tspace_* space, const std::string& implementation = "")
 {
     typedef LatticeSpaceHDF5Traits traits_type;
 
@@ -223,6 +222,7 @@ void load_lattice_space(const H5::Group& root, Tspace_* space)
     Real3 edge_lengths;
     const hsize_t dims[] = {3};
     uint32_t is_periodic;
+    std::string impl = "";
 
 #define OPEN_ATTRIBUTE(attribute, type) \
     root.openAttribute(#attribute).read(type, &attribute)
@@ -233,7 +233,19 @@ void load_lattice_space(const H5::Group& root, Tspace_* space)
     OPEN_ATTRIBUTE(edge_lengths, H5::ArrayType(H5::PredType::NATIVE_DOUBLE, 1, dims));
     OPEN_ATTRIBUTE(is_periodic, H5::PredType::STD_I32LE);
 
+    if (root.attrExists("implementation"))
+        root.openAttribute("implementation").read(
+            H5::StrType(0, H5T_VARIABLE), impl);  //XXX:  '&' is not needed for HDF5std_string
+
 #undef OPEN_ATTRIBUTE
+
+    if (implementation != "" && implementation != impl)
+    {
+        std::ostringstream oss;
+        oss << "Implementation mismatch between LatticeSpaces given and saved in the HDF5 ['"
+            << implementation << "' != '" << impl << "']." << std::endl;
+        throw NotSupported(oss.str());
+    }
 
     space->set_t(t);
     space->reset(edge_lengths, voxel_radius, (is_periodic != 0));

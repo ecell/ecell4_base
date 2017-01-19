@@ -102,7 +102,7 @@ cdef extern from "ecell4/spatiocyte/SpatiocyteWorld.hpp" namespace "ecell4::spat
 
         Integer size()
         Cpp_Integer3 shape()
-        Integer inner_size()
+        # Integer inner_size()
         # Cpp_Integer3 inner_shape()
 
         void bind_to(shared_ptr[Cpp_Model])
