@@ -193,7 +193,7 @@ std::pair<ParticleID, Voxel>
 OffLatticeSpace::get_voxel_at(const coordinate_type& coord) const
 {
     const VoxelPool* vp(voxels_.at(coord));
-    const std::string loc(vp->location()->is_vacant() ?
+    const std::string loc(vp->is_vacant() || vp->location()->is_vacant() ?
                           "" : vp->location()->species().serial());
     return std::make_pair(vp->get_particle_id(coord),
                           Voxel(vp->species(), coord, vp->radius(), vp->D(), loc));
@@ -348,6 +348,7 @@ OffLatticeSpace::move_to_neighbor(
     voxels_.at(src) = loc; // == dest_vp
     voxels_.at(dest) = src_vp;
 
+    src_vp->replace_voxel(src, dest);
     dest_vp->replace_voxel(dest, src);
     return std::make_pair(dest, true);
 }

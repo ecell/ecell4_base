@@ -98,8 +98,23 @@ BOOST_AUTO_TEST_CASE(OffLatticeSpace_test_move)
 
     BOOST_CHECK(space.can_move(3, 4));
     BOOST_CHECK(space.move(3, 4, 0));
+    BOOST_CHECK_EQUAL(space.get_voxel_at(3).first, ParticleID());
+    BOOST_CHECK_EQUAL(space.get_voxel_at(4).first, pid);
 
     BOOST_CHECK(!space.can_move(3, 4));
+
+    BOOST_CHECK(space.can_move(4, 5));
+    OffLatticeSpace::coordinate_id_pair_type info(pid, 4);
+    std::pair<OffLatticeSpace::coordinate_type, bool> result(
+            space.move_to_neighbor(
+                /* src_vp = */ space.get_voxel_pool_at(4),
+                /* loc = */    space.get_voxel_pool_at(4)->location(),
+                /* info = */   info,
+                /* nrand = */  1));
+    BOOST_CHECK_EQUAL(result.first, 5);
+    BOOST_CHECK(result.second);
+    BOOST_CHECK_EQUAL(space.get_voxel_at(4).first, ParticleID());
+    BOOST_CHECK_EQUAL(space.get_voxel_at(5).first, pid);
 }
 
 BOOST_AUTO_TEST_CASE(OffLatticeSpace_test_at)
@@ -131,6 +146,25 @@ BOOST_AUTO_TEST_CASE(OffLatticeSpace_test_neighbor)
     BOOST_CHECK_EQUAL(space.num_neighbors(7), 2);
     BOOST_CHECK_EQUAL(space.num_neighbors(8), 2);
     BOOST_CHECK_EQUAL(space.num_neighbors(9), 1);
+
+    BOOST_CHECK_EQUAL(space.get_neighbor(0, 0), 1);
+    BOOST_CHECK_EQUAL(space.get_neighbor(1, 0), 0);
+    BOOST_CHECK_EQUAL(space.get_neighbor(1, 1), 2);
+    BOOST_CHECK_EQUAL(space.get_neighbor(2, 0), 1);
+    BOOST_CHECK_EQUAL(space.get_neighbor(2, 1), 3);
+    BOOST_CHECK_EQUAL(space.get_neighbor(3, 0), 2);
+    BOOST_CHECK_EQUAL(space.get_neighbor(3, 1), 4);
+    BOOST_CHECK_EQUAL(space.get_neighbor(4, 0), 3);
+    BOOST_CHECK_EQUAL(space.get_neighbor(4, 1), 5);
+    BOOST_CHECK_EQUAL(space.get_neighbor(5, 0), 4);
+    BOOST_CHECK_EQUAL(space.get_neighbor(5, 1), 6);
+    BOOST_CHECK_EQUAL(space.get_neighbor(6, 0), 5);
+    BOOST_CHECK_EQUAL(space.get_neighbor(6, 1), 7);
+    BOOST_CHECK_EQUAL(space.get_neighbor(7, 0), 6);
+    BOOST_CHECK_EQUAL(space.get_neighbor(7, 1), 8);
+    BOOST_CHECK_EQUAL(space.get_neighbor(8, 0), 7);
+    BOOST_CHECK_EQUAL(space.get_neighbor(8, 1), 9);
+    BOOST_CHECK_EQUAL(space.get_neighbor(9, 0), 8);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
