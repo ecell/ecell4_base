@@ -293,12 +293,12 @@ cdef class SpatiocyteWorld:
     def get_voxel_at(self, coord):
         """get_voxel_at(coord) -> (ParticleID, Voxel)
 
-        Return the voxel having a particle at the given coordinate.
+        Return the voxel at a given coordinate.
 
         Parameters
         ----------
-        coord : Integer
-            A coordiante of the particle in the voxel you want
+        coord: Integer
+            An coordinate of the voxel you want
 
         Returns
         -------
@@ -307,7 +307,6 @@ cdef class SpatiocyteWorld:
 
         """
         cdef pair[Cpp_ParticleID, Cpp_Voxel] pid_voxel_pair
-        # pid_voxel_pair = self.thisptr.get().get_voxel_at(<Integer>coord)
         pid_voxel_pair = self.thisptr.get().get_voxel_at(<Integer>coord)
         return (ParticleID_from_Cpp_ParticleID(address(pid_voxel_pair.first)),
                 Voxel_from_Cpp_Voxel(address(pid_voxel_pair.second)))
