@@ -12,7 +12,7 @@ protected:
 
     typedef VoxelSpaceBase base_type;
     typedef std::vector<VoxelPool*> voxel_container;
-    typedef std::vector<std::vector<voxel_container::iterator> > adjoining_container;
+    typedef std::vector<std::vector<coordinate_type> > adjoining_container;
 
 public:
     typedef std::pair<coordinate_type, coordinate_type> coordinate_pair_type;

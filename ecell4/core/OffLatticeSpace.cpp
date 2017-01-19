@@ -46,8 +46,8 @@ void OffLatticeSpace::reset(
 
         if (is_in_range(coord0) && is_in_range(coord1))
         {
-            adjoinings_.at(coord0).push_back(voxels_.begin() + coord1);
-            adjoinings_.at(coord1).push_back(voxels_.begin() + coord0);
+            adjoinings_.at(coord0).push_back(coord1);
+            adjoinings_.at(coord1).push_back(coord0);
         }
         else
         {
@@ -333,10 +333,23 @@ bool OffLatticeSpace::move(const coordinate_type& src, const coordinate_type& de
 }
 
 std::pair<OffLatticeSpace::coordinate_type, bool>
-OffLatticeSpace::move_to_neighbor(VoxelPool* const& from, VoxelPool* const& loc,
+OffLatticeSpace::move_to_neighbor(
+        VoxelPool* const& src_vp, VoxelPool* const& loc,
         coordinate_id_pair_type& info, const Integer nrand)
 {
-    throw NotSupported("OffLatticeSpace::move_to_neighbor() is not supported yet."); // TODO
+    const coordinate_type src(info.coordinate);
+    coordinate_type dest(get_neighbor(src, nrand));
+
+    VoxelPool* dest_vp(voxels_.at(dest));
+
+    if (dest_vp != loc)
+        return std::make_pair(dest, false);
+
+    voxels_.at(src) = loc; // == dest_vp
+    voxels_.at(dest) = src_vp;
+
+    dest_vp->replace_voxel(dest, src);
+    return std::make_pair(dest, true);
 }
 
 // Same as LatticeSpaceVectorImpl
@@ -389,7 +402,7 @@ Integer OffLatticeSpace::num_neighbors(const coordinate_type& coord) const
 OffLatticeSpace::coordinate_type
 OffLatticeSpace::get_neighbor(const coordinate_type& coord, const Integer& nrand) const
 {
-    throw NotSupported("OffLatticeSpace::get_neighbor() is not supprted yet."); // TODO
+    return adjoinings_.at(coord).at(nrand);
 }
 
 OffLatticeSpace::coordinate_type
