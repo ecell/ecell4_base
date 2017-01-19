@@ -6,6 +6,8 @@
 #include "Space.hpp"
 #include "Simulator.hpp"
 
+#include "callback.hpp"
+
 #include <fstream>
 #include <boost/format.hpp>
 #include <time.h>
@@ -156,6 +158,30 @@ public:
 protected:
 
     NumberLogger logger_;
+};
+
+class FixedIntervalNumberHooker
+    : public FixedIntervalObserver
+{
+    typedef FixedIntervalObserver base_type;
+    typedef PythonHook_Space::pyfunc_type pyfunc_type;
+    typedef PythonHook_Space::stepladder_type_space stepladder_type_space;
+public:
+    FixedIntervalNumberHooker(const Real &dt, stepladder_type_space stepladder, pyfunc_type pyfunc)
+        :base_type(dt), hooker_(stepladder, pyfunc)
+    {
+        ;
+    }
+    ~FixedIntervalNumberHooker()
+    {
+        ;
+    }
+    virtual void initialize(const boost::shared_ptr<Space>& space);
+    virtual bool fire(const Simulator* sim, const boost::shared_ptr<Space>& space);
+    virtual void reset();
+
+protected:
+    PythonHook_Space hooker_;
 };
 
 class NumberObserver

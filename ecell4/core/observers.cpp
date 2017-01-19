@@ -146,6 +146,21 @@ void FixedIntervalNumberObserver::reset()
     base_type::reset();
 }
 
+void FixedIntervalNumberHooker::initialize(const boost::shared_ptr<Space>& space)
+{
+    ;
+}
+
+bool FixedIntervalNumberHooker::fire(const Simulator* sim, const boost::shared_ptr<Space>& space)
+{
+    return this->hooker_.call(space);
+}
+
+void FixedIntervalNumberHooker::reset()
+{
+    ;
+}
+
 NumberLogger::data_container_type FixedIntervalNumberObserver::data() const
 {
     return logger_.data;

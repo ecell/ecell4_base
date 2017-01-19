@@ -101,6 +101,37 @@ struct PythonHook_1arg
     stepladder_type stepladder_;
 };
 
+struct PythonHook_Space
+{
+    typedef void *pyfunc_type;
+    typedef bool (*stepladder_type_space)(pyfunc_type, boost::shared_ptr<Space> space);
+
+    PythonHook_Space(
+            stepladder_type_space stepladder, pyfunc_type pyfunc)
+        :stepladder_(stepladder), pyfunc_(pyfunc)
+    {;}
+    ~PythonHook_Space()
+    {
+        ;
+    }
+    bool is_available()
+    {
+        return (this->pyfunc_ != NULL && this->stepladder_ != NULL);
+    }
+
+    // XXX What does this return value mean ???
+    bool call(const boost::shared_ptr<Space>& space)
+    {
+        if (this->is_available()) {
+            return this->stepladder_(this->pyfunc_, space);
+        } else {
+            throw IllegalState("Callback failed.");
+        }
+    }
+    pyfunc_type pyfunc_;
+    stepladder_type_space stepladder_;
+};
+
 struct PythonPositionHooker
 {
 };
