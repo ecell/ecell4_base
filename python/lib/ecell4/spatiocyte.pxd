@@ -50,7 +50,7 @@ cdef extern from "ecell4/spatiocyte/SpatiocyteWorld.hpp" namespace "ecell4::spat
         bool remove_voxel(Cpp_ParticleID& pid)
         pair[Cpp_ParticleID, Cpp_Particle] get_particle(Cpp_ParticleID& pid)
         pair[Cpp_ParticleID, Cpp_Voxel] get_voxel(Cpp_ParticleID& pid)
-        pair[Cpp_ParticleID, Cpp_Voxel] get_voxel(Integer)
+        pair[Cpp_ParticleID, Cpp_Voxel] get_voxel_at(Integer)
         bool on_structure(Cpp_Voxel&)
         # bool on_structure(Cpp_Species&, Integer)
 
