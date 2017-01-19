@@ -119,4 +119,18 @@ BOOST_AUTO_TEST_CASE(OffLatticeSpace_test_at)
     BOOST_CHECK_EQUAL(space.particle_at(3).D(), 1e-12);
 }
 
+BOOST_AUTO_TEST_CASE(OffLatticeSpace_test_neighbor)
+{
+    BOOST_CHECK_EQUAL(space.num_neighbors(0), 1);
+    BOOST_CHECK_EQUAL(space.num_neighbors(1), 2);
+    BOOST_CHECK_EQUAL(space.num_neighbors(2), 2);
+    BOOST_CHECK_EQUAL(space.num_neighbors(3), 2);
+    BOOST_CHECK_EQUAL(space.num_neighbors(4), 2);
+    BOOST_CHECK_EQUAL(space.num_neighbors(5), 2);
+    BOOST_CHECK_EQUAL(space.num_neighbors(6), 2);
+    BOOST_CHECK_EQUAL(space.num_neighbors(7), 2);
+    BOOST_CHECK_EQUAL(space.num_neighbors(8), 2);
+    BOOST_CHECK_EQUAL(space.num_neighbors(9), 1);
+}
+
 BOOST_AUTO_TEST_SUITE_END()

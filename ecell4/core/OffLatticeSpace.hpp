@@ -56,6 +56,7 @@ public:
     virtual Real3 coordinate2position(const coordinate_type& coord) const;
     virtual coordinate_type position2coordinate(const Real3& pos) const;
 
+    virtual Integer num_neighbors(const coordinate_type& coord) const;
     virtual coordinate_type get_neighbor(const coordinate_type& coord,
                                          const Integer& nrand) const;
     virtual coordinate_type get_neighbor_boundary(const coordinate_type& coord,

@@ -154,10 +154,12 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_coordinate_position_translation)
     BOOST_ASSERT(origin_p[1] == 0);
     BOOST_ASSERT(origin_p[2] == 0);
 
+    BOOST_ASSERT(space.num_neighbors(origin) == 12);
     for (Integer i(0); i < 12; ++i)
     {
         const Real3 neighbor(
                 space.coordinate2position(space.get_neighbor(origin, i)));
+        BOOST_CHECK(origin_p != neighbor);
         const LatticeSpace::coordinate_type coord(
                 space.position2coordinate(origin_p * 0.7 + neighbor * 0.3));
         BOOST_CHECK_EQUAL(origin, coord);
@@ -280,6 +282,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_neighbor)
     for (Integer inner_coord(0); inner_coord < space.inner_size(); ++inner_coord)
     {
         Real3 center(space.coordinate2position(space.inner2coordinate(inner_coord)));
+        BOOST_ASSERT(space.num_neighbors(space.inner2coordinate(inner_coord)) == 12);
         for (int i(0); i < 12; ++i)
         {
             LatticeSpace::coordinate_type neighbor(

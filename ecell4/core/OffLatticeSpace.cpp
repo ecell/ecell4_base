@@ -380,6 +380,11 @@ OffLatticeSpace::position2coordinate(const Real3& pos) const
     return coordinate;
 }
 
+Integer OffLatticeSpace::num_neighbors(const coordinate_type& coord) const
+{
+    return adjoinings_.at(coord).size();
+}
+
 // the second argument should be RandomNumberGenerator rather than Integer.
 OffLatticeSpace::coordinate_type
 OffLatticeSpace::get_neighbor(const coordinate_type& coord, const Integer& nrand) const
