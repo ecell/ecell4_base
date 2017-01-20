@@ -1,7 +1,7 @@
 set(TEST_NAMES
     Real3_test CompartmentSpace_test Species_test
     ReactionRule_test NetworkModel_test NetfreeModel_test get_mapper_mf_test
-    EventScheduler_test Shape_test SubvolumeSpace_test
+    EventScheduler_test Shape_test SubvolumeSpace_test extras_test
     LatticeSpace_test OffLatticeSpace_test ParticleSpace_test)
 
 set(test_library_dependencies)
