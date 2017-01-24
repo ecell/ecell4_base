@@ -18,7 +18,7 @@ public:
     typedef ParticleSpace base_type;
     typedef base_type::particle_container_type particle_container_type;
     typedef particle_container_type::size_type container_index_type;
-    typedef utils::get_mapper_mf<ParticleID, container_index_type>::type 
+    typedef utils::get_mapper_mf<ParticleID, container_index_type>::type
             pid_to_particle_index_type;
     typedef std::set<ParticleID> particle_id_set;
     typedef std::map<Species::serial_type, particle_id_set>
@@ -27,7 +27,7 @@ public:
     typedef BDPolygon polygon_type;
     typedef polygon_type::face_type face_type;
     typedef polygon_type::face_id_type face_id_type;
-    typedef utils::get_mapper_mf<ParticleID, face_id_type>::type 
+    typedef utils::get_mapper_mf<ParticleID, face_id_type>::type
             pid_to_faceid_type;
     typedef utils::get_mapper_mf<face_id_type, particle_id_set>::type
             per_faces_particle_id_set;
@@ -52,25 +52,28 @@ public:
         list_particles(const Species& sp) const;
     std::vector<std::pair<ParticleID, Particle> >
         list_particles_exact(const Species& sp) const;
- 
+
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
     list_particles_within_radius(const Real3& pos, const Real& radius) const
     {
-        throw NotImplemented("2D");
+        throw NotImplemented(
+            "2D::list_particle_within_radius(Real3, Real)");
     }
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
     list_particles_within_radius(const Real3& pos, const Real& radius,
         const ParticleID& ignore) const
     {
-        throw NotImplemented("2D");
+        throw NotImplemented(
+            "2D::list_particle_within_radius(Real3, Real, ParticleID)");
     }
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
     list_particles_within_radius(const Real3& pos, const Real& radius,
         const ParticleID& ignore1, const ParticleID& ignore2) const
     {
-        throw NotImplemented("2D");
+        throw NotImplemented(
+            "2D::list_particle_within_radius(Real3, Real, ParticleID, ParticleID)");
     }
- 
+
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
         list_particles_within_radius(
             const std::pair<Real3, face_id_type>& pos, const Real& radius) const;
@@ -83,21 +86,35 @@ public:
             const std::pair<Real3, face_id_type>& pos, const Real& radius,
             const ParticleID& ignore1, const ParticleID& ignore2) const;
 
+    inline Real distance_sq(const Real3& pos1, const face_id_type& fid1,
+                            const Real3& pos2, const face_id_type& fid2) const
+    {
+        return polygon_.distance_sq(
+                std::make_pair(pos1, fid1), std::make_pair(pos2, fid2));
+    }
+
+    inline Real distance(const Real3& pos1, const face_id_type& fid1,
+                         const Real3& pos2, const face_id_type& fid2) const
+    {
+        return polygon_.distance(
+                std::make_pair(pos1, fid1), std::make_pair(pos2, fid2));
+    }
+
     bool has_particle(const ParticleID& pid) const;
     bool update_particle(const ParticleID& pid, const Particle& p)
     {
-        throw NotImplemented("2D");
+        throw NotImplemented("2D::update_particle(pid, p)");
     }
     bool update_particle(const ParticleID& pid, const Particle& p, const face_id_type& fid);
+
     std::pair<ParticleID, Particle> get_particle(const ParticleID& pid) const;
     void remove_particle(const ParticleID& pid);
     const particle_container_type& particles() const {return particles_;}
 
     // polygon
     std::pair<Real3, face_id_type>
-    apply_surface(const std::pair<Real3, face_id_type>& position, 
+    apply_surface(const std::pair<Real3, face_id_type>& position,
                   const Real3& displacement) const;
-
 
     polygon_type&       polygon()       {return polygon_;}
     polygon_type const& polygon() const {return polygon_;}
