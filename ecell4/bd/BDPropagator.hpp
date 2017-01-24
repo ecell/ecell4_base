@@ -79,7 +79,7 @@ public:
         : model_(model), world_(world), rng_(rng), dt_(dt),
         last_reactions_(last_reactions), max_retry_count_(1)
     {
-        queue_ = world_.list_particles();
+        queue_ = (*(world_.container_3D())).list_particles();
         shuffle(rng_, queue_);
     }
 
