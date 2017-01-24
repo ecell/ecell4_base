@@ -48,15 +48,15 @@ BDPolygon::is_share_vertex(const face_id_type& lhs, const face_id_type& rhs) con
     return std::make_pair(false, 3);
 }
 
-Real BDPolygon::distance(const std::pair<Real3, face_id_type>& lhs,
-                         const std::pair<Real3, face_id_type>& rhs) const
+Real BDPolygon::distance_sq(const std::pair<Real3, face_id_type>& lhs,
+                            const std::pair<Real3, face_id_type>& rhs) const
 {
     // CASE 0: on the same face
     if(lhs.second == rhs.second)
-        return length(lhs.first - rhs.first);
+        return length_sq(lhs.first - rhs.first);
 
     // CASE 1: lhs and rhs share an edge
-    { 
+    {
     const std::pair<bool, edge_index_type> edg =
         this->is_connected(lhs.second, rhs.second);
 
@@ -67,11 +67,11 @@ Real BDPolygon::distance(const std::pair<Real3, face_id_type>& lhs,
         const Triangle& rhs_t = faces_[rhs.second];
         const Real ang = angle(lhs_t.normal(), rhs_t.normal());
 
-        const Real3 developped = lhs_t.vertex_at(edg.second) + 
+        const Real3 developped = lhs_t.vertex_at(edg.second) +
             rotate(-ang,
                    rhs.first - lhs_t.vertex_at(edg.second),
                    lhs_t.edge_at(edg.second));
-        return length(lhs.first - developped);
+        return length_sq(lhs.first - developped);
     }
     }// end CASE 1
 

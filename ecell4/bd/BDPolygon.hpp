@@ -114,13 +114,13 @@ class BDPolygon
     void detect_connectivity();
 
     edge_id_type const&
-    connecting_edge(const edge_id_type& eid) const 
+    connecting_edge(const edge_id_type& eid) const
     {
         return const_at(edge_pairs_, eid);
     }
 
     vertex_id_list const&
-    connecting_vertices(const vertex_id_type& vid) const 
+    connecting_vertices(const vertex_id_type& vid) const
     {
         return const_at(vertex_groups_, vid);
     }
@@ -131,8 +131,14 @@ class BDPolygon
     std::pair<bool, uint32_t>
     is_share_vertex(const face_id_type& lhs, const face_id_type& rhs) const;
 
+    Real distance_sq(const std::pair<Real3, face_id_type>& lhs,
+                     const std::pair<Real3, face_id_type>& rhs) const;
+
     Real distance(const std::pair<Real3, face_id_type>& lhs,
-                  const std::pair<Real3, face_id_type>& rhs) const;
+                  const std::pair<Real3, face_id_type>& rhs) const
+    {
+        return std::sqrt(distance_sq(lhs, rhs));
+    }
 
     std::pair<std::pair<Real3, face_id_type>, Real3>
     move_next_face(const std::pair<Real3, face_id_type>& pos,
