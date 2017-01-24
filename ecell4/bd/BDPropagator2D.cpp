@@ -19,11 +19,13 @@ bool BDPropagator2D::operator()()
         return false;
     }
 
+    boost::scoped_ptr<ParticleContainer2D>& container2D = world_.container_2D();
+
     const ParticleID pid(queue_.back().first);
     queue_.pop_back();
-    Particle particle(world_.get_2D_particle(pid).second);
-    BDPolygon::face_id_type fid = world_.face_id_on(pid);
-    Triangle const& face = world_.face_on(pid);
+    Particle           particle = (*(container2D)).get_particle(pid).second;
+    BDPolygon::face_id_type fid = (*(container2D)).face_id_on(pid);
+    Triangle const&        face = (*(container2D)).face_on(pid);
 
     if(attempt_reaction(pid, particle, fid))
     {
@@ -44,21 +46,22 @@ bool BDPropagator2D::operator()()
         particle.species(), newpos.first, particle.radius(), particle.D());
     // Particle particle_to_update(
     //     particle.species_serial(), newpos, particle.radius(), particle.D());
+
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
-        overlapped(world_.list_2D_particles_within_radius(
-                       newpos, particle.radius(), pid));
+        overlapped((*container2D).list_particles_within_radius(newpos, particle.radius(), pid));
 
     switch (overlapped.size())
     {
     case 0:
-        world_.update_2D_particle_without_checking(pid, particle_to_update, newpos.second);
+        (*container2D).update_particle(pid, particle_to_update, newpos.second);
         return true;
     case 1:
         {
-            std::pair<ParticleID, Particle, face_id_type> closest(
-                (*(overlapped.begin())).first);
+            std::pair<std::pair<ParticleID, Particle>, face_id_type> closest =
+                overlapped.front();
             if (attempt_reaction(
-                    pid, particle_to_update, fid, closest.first, closest.second))
+                    pid, particle_to_update, fid,
+                    closest.first.first, closest.first.second, closest.second))
             {
                 return true;
             }
@@ -72,74 +75,74 @@ bool BDPropagator2D::operator()()
 bool BDPropagator2D::attempt_reaction(
     const ParticleID& pid, const Particle& particle, const BDPolygon::face_id_type& fid)
 {
-    std::vector<ReactionRule> const& reaction_rules = 
-        model_.query_reaction_rules(particle.species());
-
-    if (reaction_rules.size() == 0)
-        return false;
-
-    const Real rnd(rng().uniform(0., 1.));
-    Real prob = 0.;
-    for(std::vector<ReactionRule>::const_iterator
-            iter = reaction_rules.begin(); iter != reaction_rules.end(); ++iter)
-    {
-        const ReactionRule& rule(*iter);
-        prob += rule.k() * dt();
-        if(prob <= rnd) continue;
-
-        ReactionRule::product_container_type const& products = rule.products();
-        reaction_info_type r_info(world_.t() + dt_,
-            reaction_info_type::container_type(1, std::make_pair(pid, particle)),
-            reaction_info_type::container_type());
-
-        switch(products.size())
-        {
-        case 0: // decay reaction 1->0
-            remove_particle(pid);
-            last_reactions_.push_back(std::make_pair(rule, r_info));
-            return true;
-
-        case 1: // transform reaction 1->1
-            const Species species_new =
-                model_.apply_species_attributes(products.front());
-            const BDWorld::molecule_info_type mol_info =
-                world_.get_molecule_info(species_new);
-            const Real radius_new = mol_info.radius;
-            const Real D_new      = mol_info.D;
-
-            // confirm whether does new molecule overlaps
-            std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
-                overlapped = world_.list_2D_particles_within_radius(
-                    particle.position(), radius_new, pid, fid);
-            if(overlapped.size() != 0)
-                return false;
-
-            Particle particle_to_update(
-                    species_new, particle.position(), radius_new, D_new);
-
-            world_.update_2D_particle_without_checking(// already checked
-                    std::make_pair(pid, particle_to_update, fid));
-            r_info.add_product(std::make_pair(pid, particle_to_update));
-            last_reactions_.push_back(std::make_pair(rule, r_info));
-            return true;
-
-        case 2: // split reaction 1->2
-            // TODO
-            // XXX: 2D impl of degradation is different from 3D!
-            return false;
-            break;
-
-        default:
-            throw NotImplemented(
-                    "BDPropagator: more than two products are not allowed");
-        }
-    }
+//     std::vector<ReactionRule> const& reaction_rules =
+//         model_.query_reaction_rules(particle.species());
+//
+//     if (reaction_rules.size() == 0)
+//         return false;
+//
+//     const Real rnd(rng().uniform(0., 1.));
+//     Real prob = 0.;
+//     for(std::vector<ReactionRule>::const_iterator
+//             iter = reaction_rules.begin(); iter != reaction_rules.end(); ++iter)
+//     {
+//         const ReactionRule& rule(*iter);
+//         prob += rule.k() * dt();
+//         if(prob <= rnd) continue;
+//
+//         ReactionRule::product_container_type const& products = rule.products();
+//         reaction_info_type r_info(world_.t() + dt_,
+//             reaction_info_type::container_type(1, std::make_pair(pid, particle)),
+//             reaction_info_type::container_type());
+//
+//         switch(products.size())
+//         {
+//         case 0: // decay reaction 1->0
+//             remove_particle(pid);
+//             last_reactions_.push_back(std::make_pair(rule, r_info));
+//             return true;
+//
+//         case 1: // transform reaction 1->1
+//             const Species species_new =
+//                 model_.apply_species_attributes(products.front());
+//             const BDWorld::molecule_info_type mol_info =
+//                 world_.get_molecule_info(species_new);
+//             const Real radius_new = mol_info.radius;
+//             const Real D_new      = mol_info.D;
+//
+//             // confirm whether does new molecule overlaps
+//             std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
+//                 overlapped = world_.list_2D_particles_within_radius(
+//                     particle.position(), radius_new, pid, fid);
+//             if(overlapped.size() != 0)
+//                 return false;
+//
+//             Particle particle_to_update(
+//                     species_new, particle.position(), radius_new, D_new);
+//
+//             world_.update_2D_particle_without_checking(// already checked
+//                     std::make_pair(pid, particle_to_update, fid));
+//             r_info.add_product(std::make_pair(pid, particle_to_update));
+//             last_reactions_.push_back(std::make_pair(rule, r_info));
+//             return true;
+//
+//         case 2: // split reaction 1->2
+//             // TODO
+//             // XXX: 2D impl of degradation is different from 3D!
+//             return false;
+//             break;
+//
+//         default:
+//             throw NotImplemented(
+//                     "BDPropagator: more than two products are not allowed");
+//         }
+//     }
     return false;
 }
 
 bool BDPropagator2D::attempt_reaction(
-    const ParticleID& pid1, const Particle& particle1,
-    const ParticleID& pid2, const Particle& particle2)
+        const ParticleID& pid1, const Particle& particle1, const face_id_type& f1,
+        const ParticleID& pid2, const Particle& particle2, const face_id_type& f2)
 {
 //     std::vector<ReactionRule> reaction_rules(
 //         model_.query_reaction_rules(

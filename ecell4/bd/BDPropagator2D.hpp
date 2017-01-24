@@ -31,7 +31,7 @@ public:
         : model_(model), world_(world), poly_(world.polygon()), rng_(rng), dt_(dt),
         last_reactions_(last_reactions), max_retry_count_(1)
     {
-        queue_ = world.list_2D_particles();
+        queue_ = (*(world.container_2D())).list_particles();
         shuffle(rng_, queue_);
     }
 
@@ -104,7 +104,7 @@ protected:
 
     Model& model_;
     BDWorld& world_;
-    BDPolygon& poly_; // XXX additional
+    const BDPolygon& poly_; // XXX additional
     RandomNumberGenerator& rng_;
     Real dt_;
     std::vector<std::pair<ReactionRule, reaction_info_type> >& last_reactions_;
