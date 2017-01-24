@@ -12,10 +12,10 @@ namespace bd
 template<typename realT>
 struct Barycentric
 {
-    typedef realT real_type;
-    typedef real_type value_type;
+    typedef realT       real_type;
+    typedef real_type   value_type;
     typedef std::size_t size_type;
-    typedef size_type index_type;
+    typedef size_type   index_type;
 
     Barycentric(){}
     ~Barycentric(){}
@@ -34,9 +34,8 @@ struct Barycentric
 };
 
 template<typename realT>
-Barycentric<realT>::Barycentric(
+inline Barycentric<realT>::Barycentric(
         const real_type a, const real_type b, const real_type c)
-//     : val{{a, b, c}}
 {
     val[0] = a;
     val[1] = b;
@@ -44,7 +43,7 @@ Barycentric<realT>::Barycentric(
 }
 
 template<typename realT>
-Barycentric<realT>::Barycentric(const Barycentric<realT>& b)
+inline Barycentric<realT>::Barycentric(const Barycentric<realT>& b)
 {
     val[0] = b.val[0];
     val[1] = b.val[1];
@@ -52,7 +51,8 @@ Barycentric<realT>::Barycentric(const Barycentric<realT>& b)
 }
 
 template<typename realT>
-Barycentric<realT>& Barycentric<realT>::operator=(const Barycentric<realT>& b)
+inline Barycentric<realT>& Barycentric<realT>::operator=(
+        const Barycentric<realT>& b)
 {
     val[0] = b.val[0];
     val[1] = b.val[1];
@@ -61,7 +61,7 @@ Barycentric<realT>& Barycentric<realT>::operator=(const Barycentric<realT>& b)
 }
 
 template<typename realT>
-Barycentric<realT>
+inline Barycentric<realT>
 operator+(const Barycentric<realT>& lhs, const Barycentric<realT>& rhs)
 {
     return Barycentric<realT>(lhs[0]+rhs[0], lhs[1]+rhs[1], lhs[2]+rhs[2]);
@@ -69,7 +69,7 @@ operator+(const Barycentric<realT>& lhs, const Barycentric<realT>& rhs)
 
 
 template<typename realT>
-Barycentric<realT>
+inline Barycentric<realT>
 operator-(const Barycentric<realT>& lhs, const Barycentric<realT>& rhs)
 {
     return Barycentric<realT>(lhs[0]-rhs[0], lhs[1]-rhs[1], lhs[2]-rhs[2]);
@@ -110,19 +110,21 @@ inline realT triangle_area_2D(const realT x1, const realT y1,
 
 } // detail
 
-//XXX hard-coded realT
-inline Barycentric<Real>
-to_barycentric(const Real3& pos, const Triangle& face)
+template<typename vectorT> //XXX normally, this is Real3.
+Barycentric<typename vectorT::value_type>
+to_barycentric(const vectorT& pos, const Triangle& face)
 {
-    const Real3& a = face.vertex_at(0);
-    const Real3& b = face.vertex_at(1);
-    const Real3& c = face.vertex_at(2);
-    const Real3  m = cross_product(face.edge_at(0), face.edge_at(2)) * (-1.);
-    const Real x = std::abs(m[0]);
-    const Real y = std::abs(m[1]);
-    const Real z = std::abs(m[2]);
+    typedef typename vectorT::value_type real_type;
 
-    Real nu, nv, ood;
+    const vectorT&  a = face.vertex_at(0);
+    const vectorT&  b = face.vertex_at(1);
+    const vectorT&  c = face.vertex_at(2);
+    const vectorT   m = cross_product(face.edge_at(0), face.edge_at(2)) * (-1.);
+    const real_type x = std::abs(m[0]);
+    const real_type y = std::abs(m[1]);
+    const real_type z = std::abs(m[2]);
+
+    real_type nu, nv, ood;
     if(x >= y && x >= z)
     {
         nu = detail::triangle_area_2D(pos[1], pos[2], b[1], b[2], c[1], c[2]);
@@ -141,7 +143,7 @@ to_barycentric(const Real3& pos, const Triangle& face)
         nv = detail::triangle_area_2D(pos[0], pos[1], c[0], c[1], a[0], a[1]);
         ood = 1.0 / m[2];
     }
-    Barycentric<Real> bary;
+    Barycentric<real_type> bary;
     bary[0] = nu * ood;
     bary[1] = nv * ood;
     bary[2] = 1.0 - bary[0] - bary[1];
