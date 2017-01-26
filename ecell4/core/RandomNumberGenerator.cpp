@@ -2,13 +2,11 @@
 #include <gsl/gsl_rng.h>
 #include <sstream>
 
-#ifdef WITH_HDF5
-#include <hdf5.h>
-#include <H5Cpp.h>
-#endif
-
 #include "RandomNumberGenerator.hpp"
 
+#ifdef WITH_HDF5
+#include "extras.hpp"
+#endif
 
 namespace ecell4
 {
@@ -37,6 +35,21 @@ void GSLRandomNumberGenerator::load(const H5::CommonFG& root)
     optype->setTag("GSLRandomNumberGenerator state type");
     unsigned char* state = (unsigned char*)(gsl_rng_state(rng_.get()));
     dataset.read(state, *optype);
+}
+
+void GSLRandomNumberGenerator::save(const std::string& filename) const
+{
+    boost::scoped_ptr<H5::H5File>
+        fout(new H5::H5File(filename.c_str(), H5F_ACC_TRUNC));
+    this->save(fout.get());
+    extras::save_version_information(fout.get(), std::string("ecell4-gsl_number_generator-") + std::string(ECELL4_VERSION));
+}
+
+void GSLRandomNumberGenerator::load(const std::string& filename)
+{
+    boost::scoped_ptr<H5::H5File>
+        fin(new H5::H5File(filename.c_str(), H5F_ACC_RDONLY));
+    this->load(*fin);
 }
 #endif
 

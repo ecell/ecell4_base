@@ -2,6 +2,7 @@
 #define __ECELL4_GILLESPIE_GILLESPIE_WORLD_HPP
 
 #include <stdexcept>
+#include <sstream>
 #include <map>
 #include <boost/scoped_ptr.hpp>
 #include <boost/shared_ptr.hpp>
@@ -109,7 +110,7 @@ public:
         boost::scoped_ptr<H5::Group>
             group(new H5::Group(fout->createGroup("CompartmentSpace")));
         cs_->save_hdf5(group.get());
-        extras::save_version_information(fout.get(), "ecell4-gillespie-0.0-1");
+        extras::save_version_information(fout.get(), std::string("ecell4-gillespie-") + std::string(ECELL4_VERSION));
 #else
         throw NotSupported(
             "This method requires HDF5. The HDF5 support is turned off.");
@@ -121,6 +122,24 @@ public:
 #ifdef WITH_HDF5
         boost::scoped_ptr<H5::H5File>
             fin(new H5::H5File(filename.c_str(), H5F_ACC_RDONLY));
+
+        const std::string required = "ecell4-gillespie-4.1.0";
+        try
+        {
+            const std::string version = extras::load_version_information(*fin);
+            if (!extras::check_version_information(version, required))
+            {
+                std::stringstream ss;
+                ss << "The version of the given file [" << version
+                    << "] is too old. [" << required << "] or later is required.";
+                throw NotSupported(ss.str());
+            }
+        }
+        catch(H5::GroupIException not_found_error)
+        {
+            throw NotFound("No version information was found.");
+        }
+
         rng_->load(*fin);
         const H5::Group group(fin->openGroup("CompartmentSpace"));
         cs_->load_hdf5(group);

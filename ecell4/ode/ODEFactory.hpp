@@ -3,6 +3,7 @@
 
 #include <ecell4/core/SimulatorFactory.hpp>
 #include <ecell4/core/extras.hpp>
+#include <ecell4/core/RandomNumberGenerator.hpp>
 
 #include "ODEWorld.hpp"
 #include "ODESimulator.hpp"
@@ -23,10 +24,9 @@ public:
 
 public:
 
-    ODEFactory(const ODESolverType solver_type = ROSENBROCK4_CONTROLLER,
-               const Real dt = inf, const Real abs_tol = 0, const Real rel_tol = 0)
-        : base_type(), solver_type_(solver_type),
-        dt_(dt), abs_tol_(abs_tol), rel_tol_(rel_tol)
+    ODEFactory(const ODESolverType solver_type = default_solver_type(), const Real dt = default_dt(),
+               const Real abs_tol = default_abs_tol(), const Real rel_tol = default_rel_tol())
+        : base_type(), solver_type_(solver_type), dt_(dt), abs_tol_(abs_tol), rel_tol_(rel_tol)
     {
         ; // do nothing
     }
@@ -34,6 +34,36 @@ public:
     virtual ~ODEFactory()
     {
         ; // do nothing
+    }
+
+    static inline const ODESolverType default_solver_type()
+    {
+        return ROSENBROCK4_CONTROLLER;
+    }
+
+    static inline const Real default_dt()
+    {
+        return inf;
+    }
+
+    static inline const Real default_abs_tol()
+    {
+        return 0.0;
+    }
+
+    static inline const Real default_rel_tol()
+    {
+        return 0.0;
+    }
+
+    ODEFactory& rng(const boost::shared_ptr<RandomNumberGenerator>& rng)
+    {
+        return (*this);  //XXX: Just for the compatibility
+    }
+
+    inline ODEFactory* rng_ptr(const boost::shared_ptr<RandomNumberGenerator>& rng)
+    {
+        return &(this->rng(rng));  //XXX: == this
     }
 
     virtual ODEWorld* create_world(const std::string filename) const

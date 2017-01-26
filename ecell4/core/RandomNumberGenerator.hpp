@@ -40,7 +40,22 @@ public:
 #ifdef WITH_HDF5
     virtual void save(H5::CommonFG* root) const = 0;
     virtual void load(const H5::CommonFG& root) = 0;
+    virtual void save(const std::string& filename) const = 0;
+    virtual void load(const std::string& filename) = 0;
+#else
+    void save(const std::string& filename) const
+    {
+        throw NotSupported(
+            "This method requires HDF5. The HDF5 support is turned off.");
+    }
+
+    void load(const std::string& filename)
+    {
+        throw NotSupported(
+            "This method requires HDF5. The HDF5 support is turned off.");
+    }
 #endif
+
 };
 
 template<typename Telem_>
@@ -76,19 +91,39 @@ public:
 #ifdef WITH_HDF5
     void save(H5::CommonFG* root) const;
     void load(const H5::CommonFG& root);
+    void save(const std::string& filename) const;
+    void load(const std::string& filename);
 #endif
 
-    GSLRandomNumberGenerator(rng_handle hdl)
-        : rng_(hdl)
+    GSLRandomNumberGenerator()
+        : rng_(gsl_rng_alloc(gsl_rng_mt19937), &gsl_rng_free)
     {
         ;
     }
 
-    GSLRandomNumberGenerator(gsl_rng* rng = gsl_rng_alloc(gsl_rng_mt19937))
-        : rng_(rng, &gsl_rng_free)
+    GSLRandomNumberGenerator(const Integer myseed)
+        : rng_(gsl_rng_alloc(gsl_rng_mt19937), &gsl_rng_free)
     {
-        ;
+        seed(myseed);
     }
+
+    GSLRandomNumberGenerator(const std::string& filename)
+        : rng_(gsl_rng_alloc(gsl_rng_mt19937), &gsl_rng_free)
+    {
+        load(filename);
+    }
+
+    // GSLRandomNumberGenerator(rng_handle hdl)
+    //     : rng_(hdl)
+    // {
+    //     ;
+    // }
+
+    // GSLRandomNumberGenerator(gsl_rng* rng = gsl_rng_alloc(gsl_rng_mt19937))
+    //     : rng_(rng, &gsl_rng_free)
+    // {
+    //     ;
+    // }
 
 protected:
 

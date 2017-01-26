@@ -128,7 +128,7 @@ BOOST_AUTO_TEST_CASE(ReactionRule_test_generate2)
     retval = rr1.generate(reactants1);
     BOOST_CHECK_EQUAL(retval.size(), 1);
     BOOST_CHECK_EQUAL(retval[0].products().size(), 1);
-    BOOST_CHECK_EQUAL(retval[0].products()[0].num_units(), 3);
+    BOOST_CHECK_EQUAL(retval[0].products()[0].units().size(), 3);
 
     ReactionRule rr2;
     rr2.add_reactant(Species("A(b)"));
@@ -161,8 +161,8 @@ BOOST_AUTO_TEST_CASE(ReactionRule_test_generate2)
     BOOST_CHECK_EQUAL(retval.size(), 2);
     BOOST_CHECK_EQUAL(retval[0].products().size(), 2);
     BOOST_CHECK_EQUAL(retval[1].products().size(), 2);
-    BOOST_CHECK_EQUAL(retval[0].products()[0].num_units() + retval[0].products()[1].num_units(), 6);
-    BOOST_CHECK_EQUAL(retval[1].products()[0].num_units() + retval[1].products()[1].num_units(), 6);
+    BOOST_CHECK_EQUAL(retval[0].products()[0].units().size() + retval[0].products()[1].units().size(), 6);
+    BOOST_CHECK_EQUAL(retval[1].products()[0].units().size() + retval[1].products()[1].units().size(), 6);
 }
 
 BOOST_AUTO_TEST_CASE(ReactionRule_test_recursive_generation1)

@@ -104,7 +104,7 @@ build: false
 branches:
   only:
     - master
-    - tmp
+    - 4-1-stable
 
 artifacts:
   # bdist_wheel puts your built wheel in the dist directory

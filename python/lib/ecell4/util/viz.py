@@ -720,6 +720,7 @@ def plot_dense_array(
     from tempfile import TemporaryFile
     from math import sqrt
     from IPython.core.display import display, HTML
+    from functools import reduce
 
     # unfold 3d box into 2d grid
     def unfold(arr, dtype=None):

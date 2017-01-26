@@ -6,6 +6,7 @@
 #include <boost/bind.hpp>
 #include <boost/lexical_cast.hpp>
 #include "utils.hpp"
+#include "exceptions.hpp"
 #include "ParticleContainer.hpp"
 #include "sorted_list.hpp"
 #include "generator.hpp"
@@ -65,33 +66,33 @@ private:
     typedef sorted_list<std::vector<particle_id_type> > particle_id_list_type;
 
 public:
-    virtual particle_id_pair new_particle(species_id_type const& sid,
+    virtual std::pair<particle_id_pair, bool> new_particle(species_id_type const& sid,
             position_type const& pos)
     {
-        particle_id_pair retval(pc_.new_particle(sid, pos));
-        const bool result(added_particles_.push_no_duplicate(retval.first));
+        std::pair<particle_id_pair, bool> retval(pc_.new_particle(sid, pos));
+        const bool result(added_particles_.push_no_duplicate(retval.first.first));
         BOOST_ASSERT(result);
         return retval;
     }
 
-    virtual bool update_particle(particle_id_pair const& pi_pair)
+    virtual bool update_particle(const particle_id_type& pid, const particle_type& p)
     {
         BOOST_ASSERT(removed_particles_.end() ==
-                removed_particles_.find(pi_pair.first));
+                removed_particles_.find(pid));
         std::pair<typename particle_id_pair_set_type::iterator, bool> r(
                 orig_particles_.insert(particle_id_pair(
-                    pi_pair.first, particle_type())));
+                    pid, particle_type())));
         if (r.second &&
-            added_particles_.end() == added_particles_.find(pi_pair.first))
+            added_particles_.end() == added_particles_.find(pid))
         {
-            modified_particles_.push_no_duplicate(pi_pair.first);
-            particle_type _v(pc_.get_particle(pi_pair.first).second);
+            modified_particles_.push_no_duplicate(pid);
+            particle_type _v(pc_.get_particle(pid).second);
             std::swap((*r.first).second, _v);
         }
-        return pc_.update_particle(pi_pair);
+        return pc_.update_particle(pid, p);
     }
 
-    virtual bool remove_particle(particle_id_type const& id)
+    virtual void remove_particle(particle_id_type const& id)
     {
         std::pair<typename particle_id_pair_set_type::iterator, bool> r(
                 orig_particles_.insert(particle_id_pair(
@@ -112,7 +113,8 @@ public:
         {
             orig_particles_.erase(id);
         }
-        return pc_.remove_particle(id);
+
+        pc_.remove_particle(id);
     }
 
     virtual particle_id_pair get_particle(particle_id_type const& id) const
@@ -125,17 +127,17 @@ public:
         return pc_.has_particle(id);
     }
 
-    virtual particle_id_pair_and_distance_list* check_overlap(particle_shape_type const& s) const
+    virtual particle_id_pair_and_distance_list check_overlap(particle_shape_type const& s) const
     {
         return pc_.check_overlap(s);
     }
 
-    virtual particle_id_pair_and_distance_list* check_overlap(particle_shape_type const& s, particle_id_type const& ignore) const
+    virtual particle_id_pair_and_distance_list check_overlap(particle_shape_type const& s, particle_id_type const& ignore) const
     {
         return pc_.check_overlap(s, ignore);
     }
 
-    virtual particle_id_pair_and_distance_list* check_overlap(particle_shape_type const& s, particle_id_type const& ignore1, particle_id_type const& ignore2) const
+    virtual particle_id_pair_and_distance_list check_overlap(particle_shape_type const& s, particle_id_type const& ignore1, particle_id_type const& ignore2) const
     {
         return pc_.check_overlap(s, ignore1, ignore2);
     }
@@ -150,12 +152,17 @@ public:
         return pc_.get_structure(id);
     }
 
-    virtual molecule_info_type const& find_molecule_info(species_id_type const& id) const
-    {
-        return pc_.find_molecule_info(id);
-    }
+    // virtual molecule_info_type const& find_molecule_info(species_id_type const& id) const
+    // {
+    //     return pc_.find_molecule_info(id);
+    // }
 
-    virtual molecule_info_type const& get_molecule_info(species_id_type const& id)
+    // virtual molecule_info_type const& get_molecule_info(species_id_type const& id)
+    // {
+    //     return pc_.get_molecule_info(id);
+    // }
+
+    virtual molecule_info_type get_molecule_info(species_id_type const& id) const
     {
         return pc_.get_molecule_info(id);
     }
@@ -173,11 +180,6 @@ public:
     virtual const position_type& edge_lengths() const
     {
         return pc_.edge_lengths();
-    }
-
-    virtual particle_id_pair_generator* get_particles() const
-    {
-        return pc_.get_particles();
     }
 
     virtual particle_id_pair_generator* get_added_particles() const
@@ -207,7 +209,7 @@ public:
                 i(orig_particles_.begin()), e(orig_particles_.end());
                 i != e; ++i)
         {
-            pc_.update_particle(*i);
+            pc_.update_particle((*i).first, (*i).second);
         }
 
         for (typename particle_id_list_type::iterator
@@ -238,14 +240,14 @@ public:
     //     return pc_.apply_boundary(v);
     // }
 
-    virtual position_type cyclic_transpose(position_type const& p0, position_type const& p1) const
+    virtual position_type periodic_transpose(position_type const& p0, position_type const& p1) const
     {
-        return pc_.cyclic_transpose(p0, p1);
+        return pc_.periodic_transpose(p0, p1);
     }
 
-    // virtual length_type cyclic_transpose(length_type const& p0, length_type const& p1) const
+    // virtual length_type periodic_transpose(length_type const& p0, length_type const& p1) const
     // {
-    //     return pc_.cyclic_transpose(p0, p1);
+    //     return pc_.periodic_transpose(p0, p1);
     // }
 
     virtual ~TransactionImpl() {}

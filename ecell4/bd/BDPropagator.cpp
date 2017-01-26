@@ -39,6 +39,8 @@ bool BDPropagator::operator()()
             particle.position() + draw_displacement(particle)));
     Particle particle_to_update(
         particle.species(), newpos, particle.radius(), particle.D());
+    // Particle particle_to_update(
+    //     particle.species_serial(), newpos, particle.radius(), particle.D());
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
         overlapped(world_.list_particles_within_radius(
                        newpos, particle.radius(), pid));
@@ -46,7 +48,7 @@ bool BDPropagator::operator()()
     switch (overlapped.size())
     {
     case 0:
-        world_.update_particle(pid, particle_to_update);
+        world_.update_particle_without_checking(pid, particle_to_update);
         return true;
     case 1:
         {

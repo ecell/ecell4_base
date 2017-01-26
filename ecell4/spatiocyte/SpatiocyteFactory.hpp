@@ -24,29 +24,31 @@ public:
 
 public:
 
-    SpatiocyteFactory(const Real voxel_radius=0.0, const Real alpha=1.0)
-        : base_type(), voxel_radius_(voxel_radius), alpha_(alpha), rng_()
+    SpatiocyteFactory(const Real voxel_radius = default_voxel_radius())
+        : base_type(), rng_(), voxel_radius_(voxel_radius)
     {
         ; // do nothing
     }
 
-    SpatiocyteFactory(const Real voxel_radius,
-        const boost::shared_ptr<RandomNumberGenerator>& rng)
-        : base_type(), voxel_radius_(voxel_radius), alpha_(1.0), rng_(rng)
+    static inline const Real default_voxel_radius()
     {
-        ; // do nothing
-    }
-
-    SpatiocyteFactory(const Real voxel_radius, const Real alpha,
-        const boost::shared_ptr<RandomNumberGenerator>& rng)
-        : base_type(), voxel_radius_(voxel_radius), alpha_(alpha), rng_(rng)
-    {
-        ; // do nothing
+        return 0.0;
     }
 
     virtual ~SpatiocyteFactory()
     {
         ; // do nothing
+    }
+
+    SpatiocyteFactory& rng(const boost::shared_ptr<RandomNumberGenerator>& rng)
+    {
+        rng_ = rng;
+        return (*this);
+    }
+
+    inline SpatiocyteFactory* rng_ptr(const boost::shared_ptr<RandomNumberGenerator>& rng)
+    {
+        return &(this->rng(rng));  //XXX: == this
     }
 
     virtual SpatiocyteWorld* create_world(const std::string filename) const
@@ -80,19 +82,18 @@ public:
         const boost::shared_ptr<Model>& model,
         const boost::shared_ptr<world_type>& world) const
     {
-        return new SpatiocyteSimulator(model, world, alpha_);
+        return new SpatiocyteSimulator(model, world);
     }
 
     virtual SpatiocyteSimulator* create_simulator(
         const boost::shared_ptr<world_type>& world) const
     {
-        return new SpatiocyteSimulator(world, alpha_);
+        return new SpatiocyteSimulator(world);
     }
 
 protected:
 
     Real voxel_radius_;
-    Real alpha_;
     boost::shared_ptr<RandomNumberGenerator> rng_;
 };
 
