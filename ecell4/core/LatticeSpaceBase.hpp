@@ -139,6 +139,12 @@ public:
         return global;
     }
 
+    Integer num_neighbors(const coordinate_type& coord) const
+    {
+        if (!is_inside(coord)) return 0;
+        return 12;
+    }
+
     coordinate_type get_neighbor(
         const coordinate_type& coord, const Integer& nrand) const
     {
@@ -147,8 +153,13 @@ public:
         const bool odd_col(((coord % NUM_COLROW) / NUM_ROW) & 1);
         const bool odd_lay((coord / NUM_COLROW) & 1);
 
+        if (!is_inside(coord))
+            throw NotFound("There is no neighbor voxel.");
+
         switch (nrand)
         {
+        case 0:
+            return coord - 1;
         case 1:
             return coord + 1;
         case 2:
@@ -172,7 +183,7 @@ public:
         case 11:
             return coord + (odd_col ^ odd_lay) + NUM_COLROW;
         }
-        return coord - 1; // nrand == 0
+        throw NotFound("Invalid argument: nrand");
     }
 
     coordinate_type periodic_transpose(

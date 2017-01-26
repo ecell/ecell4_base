@@ -46,8 +46,8 @@ void OffLatticeSpace::reset(
 
         if (is_in_range(coord0) && is_in_range(coord1))
         {
-            adjoinings_.at(coord0).push_back(voxels_.begin() + coord1);
-            adjoinings_.at(coord1).push_back(voxels_.begin() + coord0);
+            adjoinings_.at(coord0).push_back(coord1);
+            adjoinings_.at(coord1).push_back(coord0);
         }
         else
         {
@@ -192,12 +192,11 @@ Integer OffLatticeSpace::count_voxels(const boost::shared_ptr<VoxelPool>& vp) co
 std::pair<ParticleID, Voxel>
 OffLatticeSpace::get_voxel_at(const coordinate_type& coord) const
 {
-    const VoxelPool* vp(voxels_[coord]);
-    const std::string loc((vp->location()->is_vacant())
-        ? "" : vp->location()->species().serial());
-    return std::make_pair(
-        vp->get_particle_id(coord),
-        Voxel(vp->species(), coord, vp->radius(), vp->D(), loc));
+    const VoxelPool* vp(voxels_.at(coord));
+    const std::string loc(vp->is_vacant() || vp->location()->is_vacant() ?
+                          "" : vp->location()->species().serial());
+    return std::make_pair(vp->get_particle_id(coord),
+                          Voxel(vp->species(), coord, vp->radius(), vp->D(), loc));
 }
 
 // Same as LatticeSpaceVectorImpl
@@ -301,20 +300,57 @@ bool OffLatticeSpace::remove_voxel(const coordinate_type& coord)
 
 bool OffLatticeSpace::can_move(const coordinate_type& src, const coordinate_type& dest) const
 {
-    throw NotSupported("OffLatticeSpace::can_move() is not supported yet.");
+    if (src == dest) return false;
+
+    const VoxelPool* src_vp(voxels_.at(src));
+    if (src_vp->is_vacant()) return false;
+
+    VoxelPool* dest_vp(voxels_.at(dest));
+
+    return (voxels_.at(dest) == src_vp->location());
 }
 
 bool OffLatticeSpace::move(const coordinate_type& src, const coordinate_type& dest,
         const std::size_t candidate)
 {
-    throw NotSupported("OffLatticeSpace::move() is not supported yet."); // TODO
+    if (src == dest) return false;
+
+    VoxelPool* src_vp(voxels_.at(src));
+    if (src_vp->is_vacant()) return true;
+
+    VoxelPool* dest_vp(voxels_.at(dest));
+    if (dest_vp != src_vp->location()) return false;
+
+    src_vp->replace_voxel(src, dest, candidate);
+    voxel_container::iterator src_itr(voxels_.begin() + src);
+    (*src_itr) = dest_vp;
+
+    dest_vp->replace_voxel(dest, src);
+    voxel_container::iterator dest_itr(voxels_.begin() + dest);
+    (*dest_itr) = src_vp;
+
+    return true;
 }
 
 std::pair<OffLatticeSpace::coordinate_type, bool>
-OffLatticeSpace::move_to_neighbor(VoxelPool* const& from, VoxelPool* const& loc,
+OffLatticeSpace::move_to_neighbor(
+        VoxelPool* const& src_vp, VoxelPool* const& loc,
         coordinate_id_pair_type& info, const Integer nrand)
 {
-    throw NotSupported("OffLatticeSpace::move_to_neighbor() is not supported yet."); // TODO
+    const coordinate_type src(info.coordinate);
+    coordinate_type dest(get_neighbor(src, nrand));
+
+    VoxelPool* dest_vp(voxels_.at(dest));
+
+    if (dest_vp != loc)
+        return std::make_pair(dest, false);
+
+    voxels_.at(src) = loc; // == dest_vp
+    voxels_.at(dest) = src_vp;
+
+    src_vp->replace_voxel(src, dest);
+    dest_vp->replace_voxel(dest, src);
+    return std::make_pair(dest, true);
 }
 
 // Same as LatticeSpaceVectorImpl
@@ -358,17 +394,22 @@ OffLatticeSpace::position2coordinate(const Real3& pos) const
     return coordinate;
 }
 
+Integer OffLatticeSpace::num_neighbors(const coordinate_type& coord) const
+{
+    return adjoinings_.at(coord).size();
+}
+
 // the second argument should be RandomNumberGenerator rather than Integer.
 OffLatticeSpace::coordinate_type
 OffLatticeSpace::get_neighbor(const coordinate_type& coord, const Integer& nrand) const
 {
-    throw NotSupported("OffLatticeSpace::get_neighbor() is not supprted yet."); // TODO
+    return adjoinings_.at(coord).at(nrand);
 }
 
 OffLatticeSpace::coordinate_type
 OffLatticeSpace::get_neighbor_boundary(const coordinate_type& coord, const Integer& nrand) const
 {
-    throw NotSupported("OffLatticeSpace::get_neighbor_boundary() is not supported yet."); // TODO
+    return get_neighbor(coord, nrand);
 }
 
 Integer OffLatticeSpace::num_molecules(const Species& sp) const

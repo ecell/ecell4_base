@@ -214,6 +214,7 @@ public:
     virtual Real3 coordinate2position(const coordinate_type& coord) const = 0;
     virtual coordinate_type position2coordinate(const Real3& pos) const = 0;
 
+    virtual Integer num_neighbors(const coordinate_type& coord) const = 0;
     virtual coordinate_type get_neighbor(
         const coordinate_type& coord, const Integer& nrand) const = 0;
     virtual coordinate_type get_neighbor_boundary(
