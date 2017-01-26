@@ -50,6 +50,14 @@ BOOST_FIXTURE_TEST_SUITE(suite, Fixture)
 
 BOOST_AUTO_TEST_CASE(OffLatticeSpace_test_constructor) {}
 
+BOOST_AUTO_TEST_CASE(OffLatticeSpace_test_molecules)
+{
+    const ParticleID pid(sidgen());
+    space.update_voxel(pid, voxel);
+
+    BOOST_CHECK_EQUAL(space.num_molecules(species), 1);
+}
+
 BOOST_AUTO_TEST_CASE(OffLatticeSpace_test_voxelspacebase)
 {
     const ParticleID pid(sidgen());
