@@ -47,6 +47,9 @@ public:
     {
         last_reactions_.clear();
         dt_ = determine_dt();
+
+        // XXX: refine determine_reaction_length!
+        reaction_length_ = this->min_sigma() * bd_dt_factor_;
     }
 
     Real determine_dt() const
@@ -110,6 +113,21 @@ public:
     {
         return (*world_).rng();
     }
+private:
+
+    Real min_sigma()
+    {
+        std::vector<Species> sps(world_->list_species());
+        Real minimum(std::numeric_limits<Real>::max());
+        for(std::vector<Species>::const_iterator
+                iter = sps.begin(); iter != sps.end(); ++iter)
+        {
+            const BDWorld::molecule_info_type mol(
+                    world_->get_molecule_info(*iter));
+            if(minimum > mol.radius) minimum = mol.radius;
+        }
+        return minimum;
+    }
 
 protected:
 
@@ -118,6 +136,7 @@ protected:
      * they are needed to be saved/loaded with Visitor pattern.
      */
     Real dt_;
+    Real reaction_length_;
     const Real bd_dt_factor_;
     std::vector<std::pair<ReactionRule, reaction_info_type> > last_reactions_;
 };
