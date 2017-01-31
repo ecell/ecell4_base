@@ -24,6 +24,20 @@ void print_particle_position(const BDWorld& world, const ParticleID& pid)
         << pos[0] << " " << pos[1] << " " << pos[2] << std::endl;
 }
 
+void print_particle_position(const BDWorld& world)
+{
+    const std::vector<std::pair<ParticleID, Particle> > ps(world.list_particles());
+    for(std::vector<std::pair<ParticleID, Particle> >::const_iterator
+            iter = ps.begin(); iter != ps.end(); ++iter)
+    {
+        const Real3 pos(iter->second.position());
+        std::cout << std::setprecision(12)
+                  << pos[0] << " " << pos[1] << " " << pos[2] << std::endl;
+    }
+    std::cout << std::endl << std::endl;
+    return ;
+}
+
 /**
  * main function
  */
@@ -42,7 +56,13 @@ int main(int argc, char** argv)
     Species sp1("A");
     sp1.set_attribute("D", D);
     sp1.set_attribute("radius", radius);
+    ReactionRule rr1;
+    rr1.set_k(1.);
+    rr1.add_reactant(sp1);
+    rr1.add_product(sp1);
+    rr1.add_product(sp1);
     (*model).add_species_attribute(sp1);
+    (*model).add_reaction_rule(rr1);
 
     boost::shared_ptr<RandomNumberGenerator> rng(new GSLRandomNumberGenerator());
 
@@ -120,11 +140,12 @@ int main(int argc, char** argv)
     std::cerr << "begin simulation..." << std::endl;
     for(unsigned int i(0); i <= 100; ++i)
     {
-        while(sim.step(1.0*i))
+        while(sim.step(5e-2*i))
         {
             // do nothing
         }
-        print_particle_position(*world, pid1);
+//         print_particle_position(*world, pid1);
+        print_particle_position(*world);
     }
     std::cerr << "end!" << std::endl;
     return 0;
