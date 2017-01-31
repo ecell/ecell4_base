@@ -19,13 +19,13 @@ bool BDPropagator2D::operator()()
         return false;
     }
 
-    boost::scoped_ptr<ParticleContainer2D>& container2D = world_.container_2D();
+    ParticleContainer2D& container2D = world_.container_2D();
 
     const ParticleID pid(queue_.back().first);
     queue_.pop_back();
-    Particle           particle = (*(container2D)).get_particle(pid).second;
-    BDPolygon::face_id_type fid = (*(container2D)).face_id_on(pid);
-    Triangle const&        face = (*(container2D)).face_on(pid);
+    Particle           particle = container2D.get_particle(pid).second;
+    BDPolygon::face_id_type fid = container2D.belonging_faceid(pid);
+    Triangle const&        face = container2D.belonging_face(pid);
 
     if(attempt_reaction(pid, particle, fid))
     {
@@ -44,16 +44,14 @@ bool BDPropagator2D::operator()()
 
     Particle particle_to_update(
         particle.species(), newpos.first, particle.radius(), particle.D());
-    // Particle particle_to_update(
-    //     particle.species_serial(), newpos, particle.radius(), particle.D());
 
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
-        overlapped((*container2D).list_particles_within_radius(newpos, particle.radius(), pid));
+        overlapped(container2D.list_particles_within_radius(newpos, particle.radius(), pid));
 
     switch (overlapped.size())
     {
     case 0:
-        (*container2D).update_particle(pid, particle_to_update, newpos.second);
+        container2D.update_particle(pid, particle_to_update, newpos.second);
         return true;
     case 1:
         {
@@ -120,15 +118,15 @@ bool BDPropagator2D::attempt_reaction(
 //             Particle particle_to_update(
 //                     species_new, particle.position(), radius_new, D_new);
 //
-//             world_.update_2D_particle_without_checking(// already checked
+//             world_.update_2D_particle_without_checking(
 //                     std::make_pair(pid, particle_to_update, fid));
 //             r_info.add_product(std::make_pair(pid, particle_to_update));
 //             last_reactions_.push_back(std::make_pair(rule, r_info));
 //             return true;
 //
 //         case 2: // split reaction 1->2
-//             // TODO
 //             // XXX: 2D impl of degradation is different from 3D!
+//             attempt_reaction_1to2();
 //             return false;
 //             break;
 //

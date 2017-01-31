@@ -480,7 +480,6 @@ public:
     // XXX return 3D particles ONLY!!!
     const particle_container_type& particles() const
     {
-        // do concat...? return value may become dangling reference...?
         return (*ps3d_).particles();
     }
 
@@ -564,11 +563,11 @@ public:
     }
 
     // XXX
-    boost::scoped_ptr<ParticleSpace>&       container_3D(){return ps3d_;}
-    boost::scoped_ptr<ParticleContainer2D>& container_2D(){return ps2d_;}
+    ParticleSpace&       container_3D(){return *ps3d_;}
+    ParticleContainer2D& container_2D(){return *ps2d_;}
 
     // TODO make return type Shape*
-    BDPolygon const& polygon() const {return (*ps2d_).polygon();}
+//     BDPolygon const& polygon() const {return (*ps2d_).polygon();}
 
     void set_polygon(const BDPolygon& poly)
     {
@@ -577,14 +576,14 @@ public:
         return;
     }
 
-    const face_type& face_on(const ParticleID& pid)
+    const face_type& belonging_face(const ParticleID& pid)
     {
-        return (*ps2d_).face_on(pid);
+        return (*ps2d_).belonging_face(pid);
     }
 
-    const face_id_type& face_id_on(const ParticleID& pid)
+    const face_id_type& belonging_faceid(const ParticleID& pid)
     {
-        return (*ps2d_).face_id_on(pid);
+        return (*ps2d_).belonging_faceid(pid);
     }
 
     face_type const& get_face(const std::size_t i)

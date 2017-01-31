@@ -119,12 +119,12 @@ public:
     polygon_type&       polygon()       {return polygon_;}
     polygon_type const& polygon() const {return polygon_;}
 
-    face_type const& face_on(const ParticleID& pid)
+    face_type const& belonging_face(const ParticleID& pid)
     {
         return polygon_.at(fmap_[pid]);
     }
 
-    face_id_type const& face_id_on(const ParticleID& pid)
+    face_id_type const& belonging_faceid(const ParticleID& pid)
     {
         return fmap_[pid];
     }

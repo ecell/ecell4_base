@@ -28,10 +28,10 @@ public:
     BDPropagator2D(
         Model& model, BDWorld& world, RandomNumberGenerator& rng, const Real& dt,
         std::vector<std::pair<ReactionRule, reaction_info_type> >& last_reactions)
-        : model_(model), world_(world), poly_(world.polygon()), rng_(rng), dt_(dt),
-        last_reactions_(last_reactions), max_retry_count_(1)
+        : model_(model), world_(world), poly_(world.container_2D().polygon()),
+          rng_(rng), dt_(dt), last_reactions_(last_reactions), max_retry_count_(1)
     {
-        queue_ = (*(world.container_2D())).list_particles();
+        queue_ = world.container_2D().list_particles();
         shuffle(rng_, queue_);
     }
 
@@ -57,6 +57,7 @@ public:
 
     inline Real3 draw_displacement(const Particle& particle, const Real3& normal)
     {
+        //TODO do more sophisticated way
         assert(length_sq(normal) - 1.0 < 1e-12);
         const Real sigma = std::sqrt(2 * particle.D() * dt());
         const Real x = rng_.gaussian(sigma);
