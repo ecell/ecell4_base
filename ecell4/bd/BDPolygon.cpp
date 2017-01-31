@@ -114,7 +114,8 @@ Real BDPolygon::distance_sq(const std::pair<Real3, face_id_type>& lhs,
                 if(lhs_on_face) pos_vtx = f.vertex_at(vid) - lhs.first;
                 if(rhs_on_face) pos_vtx = f.vertex_at(vid) - rhs.first;
 
-                inter_angle += angle(pos_vtx, f.edge_at(eid==0 ? 2 : eid-1));
+                inter_angle += angle(pos_vtx, f.edge_at((eid == 0) ? 2 : eid - 1));
+
                 r0_sq = length_sq(pos_vtx);
             }
             else if(inter && pos_on_face) // end calculating inter-angle
@@ -126,12 +127,12 @@ Real BDPolygon::distance_sq(const std::pair<Real3, face_id_type>& lhs,
                 if(lhs_on_face) pos_vtx = lhs.first - f.vertex_at(vid);
                 if(rhs_on_face) pos_vtx = rhs.first - f.vertex_at(vid);
 
-                inter_angle += angle(pos_vtx, f.edge_at(eid==0 ? 2 : eid-1));
+                inter_angle += angle(pos_vtx, f.edge_at(eid));
                 r1_sq = length_sq(pos_vtx);
             }
             else if(inter) // simply add the angle
             {
-                inter_angle += this->faces_.at(fid).angle_at(vid);
+                inter_angle += f.angle_at(vid);
             }
         }
         assert(inter_angle < whole_angle);
