@@ -7,6 +7,7 @@
 #include "BDPropagator.hpp"
 #include "BDPolygon.hpp"
 #include "rotate_vector.hpp"
+#include "functions2d.hpp"
 
 namespace ecell4
 {
@@ -19,6 +20,7 @@ class BDPropagator2D
 public:
 
     typedef ReactionInfo reaction_info_type;
+    typedef BDWorld::molecule_info_type molecule_info_type;
     typedef BDPolygon polygon_type;
     typedef BDPolygon::face_type face_type;
     typedef BDPolygon::face_id_type face_id_type;
@@ -26,10 +28,12 @@ public:
 public:
 
     BDPropagator2D(
-        Model& model, BDWorld& world, RandomNumberGenerator& rng, const Real& dt,
+        Model& model, BDWorld& world, RandomNumberGenerator& rng,
+        const Real dt, const Real rl,
         std::vector<std::pair<ReactionRule, reaction_info_type> >& last_reactions)
-        : model_(model), world_(world), poly_(world.container_2D().polygon()),
-          rng_(rng), dt_(dt), last_reactions_(last_reactions), max_retry_count_(1)
+    : model_(model), world_(world), poly_(world.container_2D().polygon()),
+      rng_(rng), dt_(dt), last_reactions_(last_reactions),
+      max_retry_count_(1), reaction_length_(rl)
     {
         queue_ = world.container_2D().list_particles();
         shuffle(rng_, queue_);
@@ -73,9 +77,14 @@ public:
         return disp * leng;
     }
 
-    inline Real3 draw_ipv(const Real& sigma, const Real& t, const Real& D)
-    {// XXX!
-        return random_ipv_3d(rng(), sigma, t, D);
+    Real3 draw_ipv(const Real r, const Real D)
+    {
+        return random_ipv_2d(rng_, r, D, reaction_length_);
+    }
+
+    Real3 draw_ipv(const Real r, const Real D, const Real3& normal)
+    {
+        return random_ipv_2d(rng_, r, D, reaction_length_, normal);
     }
 
 private:
@@ -110,6 +119,7 @@ protected:
     Real dt_;
     std::vector<std::pair<ReactionRule, reaction_info_type> >& last_reactions_;
     Integer max_retry_count_;
+    Real reaction_length_;
 
     BDWorld::particle_container_type queue_;
 };
