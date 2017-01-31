@@ -1,17 +1,19 @@
 #ifndef ECELL_BD_MAP_UTILITUY
 #define ECELL_BD_MAP_UTILITUY
+#include <stdexcept>
 
 namespace ecell4
 {
 namespace bd
 {
 
-// its nice to have static_assert or enable_if
 template<typename mapT>
 inline typename mapT::mapped_type const&
 const_at(mapT const& m, typename mapT::key_type const& k)
 {
-    return m.find(k)->second;
+    const typename mapT::const_iterator iter = m.find(k);
+    if(iter == m.end()) throw std::out_of_range("map::at");
+    return iter->second;
 }
 
 } // bd
