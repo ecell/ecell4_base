@@ -16,3 +16,14 @@ cdef class Space:
 
     def __dealloc__(self):
         del self.thisptr
+
+    def volume(self):
+        return self.thisptr.get().volume()
+    
+    def t(self):
+        return self.thisptr.get().t()
+
+    def num_molecules(self, Species sp):
+        return self.thisptr.get().num_molecules(deref(sp.thisptr))
+
+

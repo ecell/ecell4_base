@@ -25,6 +25,24 @@ cdef class Observer:
     def reset(self):
         """Reset the internal state."""
         self.thisptr.get().reset()
+    
+cdef class FixedIntervalNumberHooker:
+    def __cinit__(self, Real dt,  pyfunc):
+        pass
+    def __cinit__(self, Real dt,  pyfunc):
+        self.thisptr = new shared_ptr[Cpp_FixedIntervalNumberHooker](
+                new Cpp_FixedIntervalNumberHooker(dt, 
+                    <stepladder_type_space>indirect_func_space, <void*>pyfunc))
+    def __dealloc__(self):
+        del self.thisptr
+    def as_base(self):
+        """Clone self as a base class. This function is for developers."""
+        retval = Observer()
+        del retval.thisptr
+        retval.thisptr = new shared_ptr[Cpp_Observer](
+            <shared_ptr[Cpp_Observer]>deref(self.thisptr))
+        return retval
+
 
 cdef class FixedIntervalNumberObserver:
     """An ``Observer``class to log the number of molecules with the fixed

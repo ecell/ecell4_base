@@ -434,6 +434,29 @@ cdef class Voxel:
 
 cdef Voxel Voxel_from_Cpp_Voxel(Cpp_Voxel* p)
 
+## Callback Related
+ctypedef void* pyfunc_type
+ctypedef int (*stepladder_type)(pyfunc_type pyfunc, vector[Real])
+    
+cdef extern from "ecell4/core/callback.hpp" namespace "ecell4":
+    cdef cppclass Cpp_CallbackWrapper "ecell4::CallbackWrapper":
+        Cpp_CallbackWrapper(stepladder_type, pyfunc_type)
+        bool is_available()
+        void call()
+
+ctypedef bool (*stepladder_type_space)(pyfunc_type pyfunc, shared_ptr[Cpp_Space])
+cdef extern from "ecell4/core/callback.hpp" namespace "ecell4":
+    cdef cppclass PythonHook_Space:
+        #PythonHook_1arg( "(*)(pyfunc_type, T1)" , pyfunc_type)
+        PythonHook_Space( stepladder_type_space, pyfunc_type)
+        bool is_available()
+        bool call(shared_ptr[Cpp_Space] space )
+
+cdef class PythonSpaceHooker:
+    cdef PythonHook_Space* thisptr
+    cdef object pyfunc_
+
+
 ## Cpp_FixedIntervalNumberObserver
 #  ecell4::FixedIntervalNumberObserver
 cdef extern from "ecell4/core/observers.hpp" namespace "ecell4":
@@ -447,6 +470,15 @@ cdef extern from "ecell4/core/observers.hpp" namespace "ecell4":
         Integer num_steps()
         vector[vector[Real]] data()
         vector[Cpp_Species] targets()
+        void reset()
+        void save(string)
+
+    cdef cppclass Cpp_FixedIntervalNumberHooker "ecell4::FixedIntervalNumberHooker":
+        Cpp_FixedIntervalNumberHooker(Real, stepladder_type_space, pyfunc_type)
+        Real next_time()
+        Integer num_steps()
+        #vector[vector[Real]] data()
+        #vector[Cpp_Species] targets()
         void reset()
         void save(string)
 
@@ -542,6 +574,9 @@ cdef class Observer:
 
 cdef class FixedIntervalNumberObserver:
     cdef shared_ptr[Cpp_FixedIntervalNumberObserver]* thisptr
+
+cdef class FixedIntervalNumberHooker:
+    cdef shared_ptr[Cpp_FixedIntervalNumberHooker]* thisptr
 
 cdef class NumberObserver:
     cdef shared_ptr[Cpp_NumberObserver]* thisptr
@@ -805,15 +840,6 @@ cdef Cylinder Cylinder_from_Cpp_Cylinder(Cpp_Cylinder* p)
 cdef CylindricalSurface CylindricalSurface_from_Cpp_CylindricalSurface(Cpp_CylindricalSurface* p)
 cdef AABB AABB_from_Cpp_AABB(Cpp_AABB* p)
 
-ctypedef void* pyfunc_type
-ctypedef int (*stepladder_type)(pyfunc_type pyfunc, vector[Real])
-    
-cdef extern from "ecell4/core/callback.hpp" namespace "ecell4":
-    cdef cppclass Cpp_CallbackWrapper "ecell4::CallbackWrapper":
-        Cpp_CallbackWrapper(stepladder_type, pyfunc_type)
-        bool is_available()
-        void call()
-
 
 #cdef class CallbackWrapper:
 #    cdef Cpp_CallbackWrapper* thisptr
@@ -843,14 +869,3 @@ cdef extern from "ecell4/core/callback.hpp" namespace "ecell4":
 #    cdef object pyfunc_
 
 
-ctypedef bool (*stepladder_type_space)(pyfunc_type pyfunc, shared_ptr[Cpp_Space])
-cdef extern from "ecell4/core/callback.hpp" namespace "ecell4":
-    cdef cppclass PythonHook_Space:
-        #PythonHook_1arg( "(*)(pyfunc_type, T1)" , pyfunc_type)
-        PythonHook_Space( stepladder_type_space, pyfunc_type)
-        bool is_available()
-        bool call(shared_ptr[Cpp_Space] space )
-
-cdef class PythonSpaceHooker:
-    cdef PythonHook_Space* thisptr
-    cdef object pyfunc_
