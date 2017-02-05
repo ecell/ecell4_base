@@ -1223,7 +1223,7 @@ cdef class BDSimulator:
     def dt_factor(self):
         return self.thisptr.dt_factor()
 
-    def add_potential(self, Species sp, arg):
+    def add_potential(self, Species sp, shape, threshold=None):
         """add_potential(sp, arg)
 
         Set the potential for each Species.
@@ -1232,15 +1232,22 @@ cdef class BDSimulator:
         ----------
         sp : Species
             a species of molecules to add
-        arg : Real or Shape
+        shape : Real or Shape
             a radius or a shape for the potential
+        threshold : Real, optional
+            a threshold
+            default is None.
 
         """
-        if isinstance(arg, numbers.Number):
-            self.thisptr.add_potential(deref(sp.thisptr), <Real>arg)
+        if threshold is None:
+            if isinstance(shape, numbers.Number):
+                self.thisptr.add_potential(deref(sp.thisptr), <Real>shape)
+            else:
+                self.thisptr.add_potential(
+                    deref(sp.thisptr), deref((<Shape>(shape.as_base())).thisptr))
         else:
             self.thisptr.add_potential(
-                deref(sp.thisptr), deref((<Shape>(arg.as_base())).thisptr))
+                deref(sp.thisptr), deref((<Shape>(shape.as_base())).thisptr), <Real>threshold)
 
 
 cdef BDSimulator BDSimulator_from_Cpp_BDSimulator(Cpp_BDSimulator* s):

@@ -22,6 +22,11 @@ public:
 
 public:
 
+    virtual ~PotentialField()
+    {
+        ;
+    }
+
     virtual bool try_move(rng_type& rng, const pid_particle_pair& p, const Real3& newpos, const container_type& space)
     {
         return true;
@@ -29,7 +34,7 @@ public:
 };
 
 template <typename Tcontainer>
-class ShapedPotentialField
+class ShapedHardbodyPotentialField
     : public PotentialField<Tcontainer>
 {
 public:
@@ -41,7 +46,7 @@ public:
 
 public:
 
-    ShapedPotentialField(const boost::shared_ptr<Shape>& shape)
+    ShapedHardbodyPotentialField(const boost::shared_ptr<Shape>& shape)
         : shape_(shape)
     {
         ;
@@ -55,6 +60,43 @@ public:
 protected:
 
     boost::shared_ptr<Shape> shape_;
+};
+
+template <typename Tcontainer>
+class ShapedDiscretePotentialField
+    : public PotentialField<Tcontainer>
+{
+public:
+
+    typedef PotentialField<Tcontainer> base_type;
+    typedef typename base_type::container_type container_type;
+    typedef typename base_type::pid_particle_pair pid_particle_pair;
+    typedef typename base_type::rng_type rng_type;
+
+public:
+
+    ShapedDiscretePotentialField(const boost::shared_ptr<Shape>& shape, const Real& threshold)
+        : shape_(shape), threshold_(threshold)
+    {
+        ;
+    }
+
+    bool try_move(rng_type& rng, const pid_particle_pair& p, const Real3& newpos, const container_type& space)
+    {
+        const Real3& oldpos(p.second.position());
+        if (shape_->is_inside(newpos) <= 0.0 || shape_->is_inside(oldpos) > 0.0)
+        {
+            return true;
+        }
+
+        const Real rnd = rng.uniform(0.0, 1.0);
+        return (rnd < threshold_);
+    }
+
+protected:
+
+    boost::shared_ptr<Shape> shape_;
+    Real threshold_;
 };
 
 template <typename Tcontainer>

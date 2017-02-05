@@ -109,7 +109,7 @@ public:
     void add_potential(const ecell4::Species& sp, const Real& radius)
     {
         std::pair<typename potential_field_map_type::iterator, bool> retval
-            = potentials_.insert(typename potential_field_map_type::value_type(sp.serial(), boost::shared_ptr<potential_field_type>(new ecell4::LeashPotentialField<typename potential_field_type::container_type>(radius))));
+            = potentials_.insert(typename potential_field_map_type::value_type(sp, boost::shared_ptr<potential_field_type>(new ecell4::LeashPotentialField<typename potential_field_type::container_type>(radius))));
         if (!retval.second)
         {
             throw ecell4::AlreadyExists("never reach here.");
@@ -119,7 +119,17 @@ public:
     void add_potential(const ecell4::Species& sp, const boost::shared_ptr<ecell4::Shape>& shape)
     {
         std::pair<typename potential_field_map_type::iterator, bool> retval
-            = potentials_.insert(typename potential_field_map_type::value_type(sp.serial(), boost::shared_ptr<potential_field_type>(new ecell4::ShapedPotentialField<typename potential_field_type::container_type>(shape))));
+            = potentials_.insert(typename potential_field_map_type::value_type(sp, boost::shared_ptr<potential_field_type>(new ecell4::ShapedHardbodyPotentialField<typename potential_field_type::container_type>(shape))));
+        if (!retval.second)
+        {
+            throw ecell4::AlreadyExists("never reach here.");
+        }
+    }
+
+    void add_potential(const ecell4::Species& sp, const boost::shared_ptr<ecell4::Shape>& shape, const Real& threshold)
+    {
+        std::pair<typename potential_field_map_type::iterator, bool> retval
+            = potentials_.insert(typename potential_field_map_type::value_type(sp, boost::shared_ptr<potential_field_type>(new ecell4::ShapedDiscretePotentialField<typename potential_field_type::container_type>(shape, threshold))));
         if (!retval.second)
         {
             throw ecell4::AlreadyExists("never reach here.");
