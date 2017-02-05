@@ -75,11 +75,16 @@ def run_sge(target, jobs, n=1, path='.', delete=True, wait=True, environ=None, m
         (fd, picklein) = tempfile.mkstemp(suffix='.pickle', prefix='sge-', dir=path)
         with os.fdopen(fd, 'wb') as fout:
             pickle.dump(job, fout)
+        os.close(fd)
         pickleins.append(picklein)
 
-        pickleouts.append(
-            [tempfile.mkstemp(suffix='.pickle', prefix='sge-', dir=path)[1]
-             for j in range(n)])
+        pickleouts.append([])
+        for j in range(n):
+            fd, pickleout = tempfile.mkstemp(suffix='.pickle', prefix='sge-', dir=path)
+            pickleouts[-1].append(pickleout)
+        # pickleouts.append(
+        #     [tempfile.mkstemp(suffix='.pickle', prefix='sge-', dir=path)[1]
+        #      for j in range(n)])
 
         cmd = '#!/bin/bash\n'
         for key, value in environ.items():
@@ -157,7 +162,7 @@ def ensemble_simulations(
     is_netfree=False, without_reset=False,
     return_type='matplotlib', opt_args=(), opt_kwargs={},
     errorbar=True,
-    n=1, nproc=1, method=None, environ=None):
+    n=1, nproc=1, method=None, environ=None,
     **kwargs):
     """
     observers=(), progressbar=0, rndseed=None,
