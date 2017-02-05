@@ -78,9 +78,14 @@ def run_sge(target, jobs, n=1, path='.', delete=True, wait=True, environ=None, m
             pickle.dump(job, fout)
         pickleins.append(picklein)
 
-        pickleouts.append(
-            [tempfile.mkstemp(suffix='.pickle', prefix='sge-', dir=path)[1]
-             for j in range(n)])
+        pickleouts.append([])
+        for j in range(n):
+            fd, pickleout = tempfile.mkstemp(suffix='.pickle', prefix='sge-', dir=path)
+            os.close(fd)
+            pickleouts[-1].append(pickleout)
+        # pickleouts.append(
+        #     [tempfile.mkstemp(suffix='.pickle', prefix='sge-', dir=path)[1]
+        #      for j in range(n)])
 
         cmd = '#!/bin/bash\n'
         for key, value in environ.items():
