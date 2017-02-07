@@ -23,9 +23,9 @@ bool BDPropagator2D::operator()()
 
     const ParticleID pid(queue_.back().first);
     queue_.pop_back();
-    Particle           particle = container2D.get_particle(pid).second;
-    BDPolygon::face_id_type fid = container2D.belonging_faceid(pid);
-    Triangle const&        face = container2D.belonging_face(pid);
+    Particle        particle = container2D.get_particle(pid).second;
+    face_id_type    fid = container2D.belonging_faceid(pid);
+    Triangle const& face = container2D.belonging_face(pid);
 
     if(attempt_reaction(pid, particle, fid))
     {
@@ -38,9 +38,9 @@ bool BDPropagator2D::operator()()
         return true; //XXX consider reaction
     }
 
-    const std::pair<Real3, BDPolygon::face_id_type> newpos(
-        world_.apply_surface(std::make_pair(particle.position(), fid),
-                             draw_displacement(particle, face.normal())));
+    const std::pair<Real3, face_id_type> newpos(world_.apply_surface(
+        std::make_pair(particle.position(), fid),
+        draw_displacement(particle, face.normal())));
 
     Particle particle_to_update(
         particle.species(), newpos.first, particle.radius(), particle.D());
@@ -147,8 +147,13 @@ bool BDPropagator2D::attempt_reaction(
 
                 Integer retry(max_retry_count_);
                 std::pair<Real3, face_id_type> newpf1, newpf2;
-                while(retry > 0)
+                while(true)
                 {
+                    if(--retry < 0)
+                    {
+                        // dissociation rejected because there is no space
+                        return false;
+                    }
                     const Real3 ipv(draw_ipv(r12, D12, n));
 
                     newpf1 = world_.apply_surface(
@@ -170,7 +175,6 @@ bool BDPropagator2D::attempt_reaction(
                         overlapped2(world_.list_particles_within_radius(
                             newpf2, r2, pid));
                     if(overlapped2.size() == 0) break;
-                    --retry;
                 }
 
                 Particle particle_to_update1(sp1, newpf1.first, r1, D1);
@@ -242,94 +246,99 @@ bool BDPropagator2D::attempt_reaction(
         const ParticleID& pid1, const Particle& particle1, const face_id_type& f1,
         const ParticleID& pid2, const Particle& particle2, const face_id_type& f2)
 {
-//     std::vector<ReactionRule> reaction_rules(
-//         model_.query_reaction_rules(
-//             particle1.species(), particle2.species()));
-//     if (reaction_rules.size() == 0)
-//     {
-//         return false;
-//     }
-//
-//     const Real D1(particle1.D()), D2(particle2.D());
-//     const Real r12(particle1.radius() + particle2.radius());
-//     const Real rnd(rng().uniform(0, 1));
-//     Real prob(0); //XXX: consider reaction length
-//
-//     for (std::vector<ReactionRule>::const_iterator i(reaction_rules.begin());
-//          i != reaction_rules.end(); ++i)
-//     {
-//         const ReactionRule& rr(*i);
-//         prob += rr.k() * dt() / (
-//             (Igbd_3d(r12, dt(), D1) + Igbd_3d(r12, dt(), D2)) * 4 * M_PI);
-//
-//         if (prob >= 1)
-//         {
-//             // throw std::runtime_error(
-//             //     "the total reaction probability exceeds 1."
-//             //     " the step interval is too long");
-//             std::cerr <<
-//                 "the total reaction probability exceeds 1."
-//                 " the step interval is too long" << std::endl;
-//         }
-//         if (prob > rnd)
-//         {
-//             const ReactionRule::product_container_type& products(rr.products());
-//             reaction_info_type ri(world_.t() + dt_, reaction_info_type::container_type(1, std::make_pair(pid1, particle1)), reaction_info_type::container_type());
-//             ri.add_reactant(std::make_pair(pid2, particle2));
-//
-//             switch (products.size())
-//             {
-//             case 0:
-//                 remove_particle(pid1);
-//                 remove_particle(pid2);
-//
-//                 last_reactions_.push_back(std::make_pair(rr, ri));
-//                 break;
-//             case 1:
-//                 {
-//                     const Species sp(*(products.begin()));
-//                     const BDWorld::molecule_info_type
-//                         info(world_.get_molecule_info(sp));
-//                     const Real radius_new(info.radius);
-//                     const Real D_new(info.D);
-//
-//                     const Real3 pos1(particle1.position());
-//                     const Real3 pos2(
-//                         world_.periodic_transpose(particle2.position(), pos1));
-//                     const Real D1(particle1.D()), D2(particle2.D());
-//                     const Real D12(D1 + D2);
-//                     const Real3 newpos(
-//                         world_.apply_boundary((pos1 * D2 + pos2 * D1) / D12));
-//
-//                     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
-//                         overlapped(world_.list_particles_within_radius(
-//                                        newpos, radius_new, pid1, pid2));
-//                     if (overlapped.size() > 0)
-//                     {
-//                         // throw NoSpace("");
-//                         return false;
-//                     }
-//
-//                     const Particle particle_to_update(
-//                         sp, newpos, radius_new, D_new);
-//                     remove_particle(pid2);
-//                     // world_.update_particle(pid1, particle_to_update);
-//                     remove_particle(pid1);
-//                     std::pair<std::pair<ParticleID, Particle>, bool> retval = world_.new_particle(particle_to_update);
-//
-//                     ri.add_product(retval.first);
-//                     last_reactions_.push_back(std::make_pair(rr, ri));
-//                 }
-//                 break;
-//             default:
-//                 throw NotImplemented(
-//                     "more than one product is not allowed");
-//                 break;
-//             }
-//             return true;
-//         }
-//     }
-//
+    std::vector<ReactionRule> reaction_rules(
+        model_.query_reaction_rules(
+            particle1.species(), particle2.species()));
+    if (reaction_rules.size() == 0)
+    {
+        return false;
+    }
+
+    const Real r12(particle1.radius() + particle2.radius());
+
+    const Real D1(particle1.D()), D2(particle2.D());
+    const Real rnd(rng().uniform(0, 1));
+    Real prob(0);
+
+    for (std::vector<ReactionRule>::const_iterator i(reaction_rules.begin());
+         i != reaction_rules.end(); ++i)
+    {
+        const ReactionRule& rr(*i);
+        prob += rr.k() * dt(); //XXX:INCORRECT consider reaction length
+
+        if(prob <= rnd)
+        {
+            continue;
+        }
+        else if (prob >= 1)
+        {
+            std::cerr << "the total reaction probability exceeds 1."
+                      << " the step interval is too long" << std::endl;
+        }
+
+        // reaction occured (1 > prob > rnd)
+
+        const ReactionRule::product_container_type& products(rr.products());
+        reaction_info_type ri(world_.t() + dt_,
+                              reaction_info_type::container_type(
+                                  1, std::make_pair(pid1, particle1)),
+                                  reaction_info_type::container_type());
+        ri.add_reactant(std::make_pair(pid2, particle2));
+
+        switch (products.size())
+        {
+            case 0: // degradation reaction: 2 -> 0
+            {
+                remove_particle(pid1);
+                remove_particle(pid2);
+
+                last_reactions_.push_back(std::make_pair(rr, ri));
+                return true;
+            }
+            case 1: // binding reaction : 2 -> 1
+            {
+                const Species sp_new(products.front());
+                const BDWorld::molecule_info_type
+                    info(world_.get_molecule_info(sp_new));
+                const Real radius_new(info.radius);
+                const Real D_new(info.D);
+
+                const Real3 pos1(particle1.position());
+                const Real3 pos2(particle2.position());
+                const Real D1(particle1.D()), D2(particle2.D());
+                const Real D12(D1 + D2);
+
+                // this calculates the center position waited by Diffusion coef.
+                const Real3 dp = world_.get_inter_position_vector(
+                        std::make_pair(pos1, f1), std::make_pair(pos2, f2));
+                const Real3 dp1 = dp * (D1 / D12);
+                const std::pair<Real3, face_id_type> newpf(
+                        world_.apply_surface(std::make_pair(pos1, f1), dp1));
+
+                std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
+                    overlapped(world_.list_particles_within_radius(
+                                   newpf, radius_new, pid1, pid2));
+                if(overlapped.size() > 0)
+                {
+                    return false;
+                }
+
+                const Particle particle_to_update(
+                        sp_new, newpf.first, radius_new, D_new);
+                remove_particle(pid2);
+                remove_particle(pid1);
+
+                std::pair<std::pair<ParticleID, Particle>, bool> retval =
+                    world_.new_particle(particle_to_update, newpf.second);
+
+                ri.add_product(retval.first);
+                last_reactions_.push_back(std::make_pair(rr, ri));
+                return true;
+            }
+            default:
+                throw NotImplemented("more than one product is not allowed");
+        }
+    }
     return false;
 }
 
