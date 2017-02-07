@@ -59,22 +59,9 @@ public:
 
     void remove_particle(const ParticleID& pid);
 
-    inline Real3 draw_displacement(const Particle& particle, const Real3& normal)
+    Real3 draw_displacement(const Particle& particle, const Real3& normal)
     {
-        //TODO do more sophisticated way
-        assert(length_sq(normal) - 1.0 < 1e-12);
-        const Real sigma = std::sqrt(2 * particle.D() * dt());
-        const Real x = rng_.gaussian(sigma);
-        const Real y = rng_.gaussian(sigma);
-        const Real leng  = std::sqrt(x * x + y * y);
-
-        const Real theta = rng_.random() * 2. * M_PI;
-        const Real3 dr = Real3(normal[1], -normal[0], 0) /
-            std::sqrt(normal[1] * normal[1] + normal[0] * normal[0]);
-        const Real3 disp = rotate(theta, normal, dr);
-
-        assert(std::abs(dot_product(normal, disp)) < 1e-10);
-        return disp * leng;
+        return random_displacement_2d(rng_, this->dt(), particle.D(), normal);
     }
 
     Real3 draw_ipv(const Real r, const Real D)
