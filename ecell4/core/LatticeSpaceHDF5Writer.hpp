@@ -15,7 +15,8 @@
 #include "types.hpp"
 #include "Species.hpp"
 #include "Voxel.hpp"
-#include "MolecularTypeBase.hpp"
+#include "VoxelPool.hpp"
+#include "MolecularType.hpp"
 #include "StructureType.hpp"
 #include "VacantType.hpp"
 
@@ -29,6 +30,7 @@ struct LatticeSpaceHDF5Traits
         double radius;
         double D;
         H5std_string location;
+        // char location[32];
         uint32_t is_structure;
         uint32_t dimension;
     };
@@ -39,30 +41,33 @@ struct LatticeSpaceHDF5Traits
         uint64_t coordinate;
     };
 
-    static H5::CompType get_property_comp()
-    {
-        H5::CompType property_comp_type(sizeof(h5_species_struct));
+//     static H5::CompType get_property_comp()
+//     {
+//         H5::CompType property_comp_type(sizeof(h5_species_struct));
+// // #define INSERT_MEMBER(member, type) \
+// //         property_comp_type.insertMember(#member,\
+// //                 HOFFSET(h5_species_struct, member), type)
 // #define INSERT_MEMBER(member, type) \
-//         property_comp_type.insertMember(#member,\
-//                 HOFFSET(h5_species_struct, member), type)
-#define INSERT_MEMBER(member, type) \
-        H5Tinsert(property_comp_type.getId(), #member,\
-                HOFFSET(h5_species_struct, member), type.getId())
-        INSERT_MEMBER(radius, H5::PredType::IEEE_F64LE);
-        INSERT_MEMBER(D, H5::PredType::IEEE_F64LE);
-        INSERT_MEMBER(location, H5::StrType(0, H5T_VARIABLE));
-        INSERT_MEMBER(is_structure, H5::PredType::STD_I32LE);
-        INSERT_MEMBER(dimension, H5::PredType::STD_I32LE);
-#undef INSERT_MEMBER
-        return property_comp_type;
-    }
+//         H5Tinsert(property_comp_type.getId(), #member,\
+//                 HOFFSET(h5_species_struct, member), type.getId())
+//         INSERT_MEMBER(radius, H5::PredType::IEEE_F64LE);
+//         INSERT_MEMBER(D, H5::PredType::IEEE_F64LE);
+//         INSERT_MEMBER(location, H5::StrType(0, H5T_VARIABLE));
+//         // INSERT_MEMBER(location, H5::StrType(H5::PredType::C_S1, 32));
+//         INSERT_MEMBER(is_structure, H5::PredType::STD_I32LE);
+//         INSERT_MEMBER(dimension, H5::PredType::STD_I32LE);
+// #undef INSERT_MEMBER
+//         return property_comp_type;
+//     }
 
     static H5::CompType get_voxel_comp()
     {
         H5::CompType voxel_comp_type(sizeof(h5_voxel_struct));
-// #define INSERT_MEMBER(member, type) \
-//         voxel_comp_type.insertMember(std::string(#member),\
-//             HOFFSET(h5_voxel_struct, member), type)
+/*
+#define INSERT_MEMBER(member, type) \
+        voxel_comp_type.insertMember(std::string(#member),\
+            HOFFSET(h5_voxel_struct, member), type)
+*/
 #define INSERT_MEMBER(member, type) \
         H5Tinsert(voxel_comp_type.getId(), #member,\
                 HOFFSET(h5_voxel_struct, member), type.getId())
@@ -73,7 +78,7 @@ struct LatticeSpaceHDF5Traits
         return voxel_comp_type;
     }
 
-    static void save_molecular_type(const MolecularTypeBase* mtb,
+    static void save_voxel_pool(const VoxelPool* mtb,
             std::vector<std::pair<ParticleID, Voxel> > voxels, H5::Group* group)
     {
         const Species species(mtb->species());
@@ -83,17 +88,34 @@ struct LatticeSpaceHDF5Traits
         h5_species_struct property;
         property.radius = mtb->radius();
         property.D = mtb->D();
-        const MolecularTypeBase* loc(mtb->location());
+        const VoxelPool* loc(mtb->location());
         if (loc->is_vacant())
             property.location = H5std_string("");
         else
             property.location = H5std_string(loc->species().serial().c_str());
+        // if (loc->is_vacant())
+        //     std::strcpy(property.location, "");
+        // else
+        //     std::strcpy(property.location, loc->species().serial().c_str());
         property.is_structure = mtb->is_structure() ? 1 : 0;
         property.dimension = mtb->get_dimension();
 
-        H5::CompType property_comp_type(get_property_comp());
-        mtgroup->createAttribute("property", property_comp_type,
-                H5::DataSpace(H5S_SCALAR)).write(property_comp_type, &property);
+        // H5::CompType property_comp_type(get_property_comp());
+        // mtgroup->createAttribute("property", property_comp_type,
+        //         H5::DataSpace(H5S_SCALAR)).write(property_comp_type, &property);
+        // // mtgroup->createDataSet("property", property_comp_type,
+        // //         H5::DataSpace(H5S_SCALAR)).write(&property, property_comp_type);
+
+        mtgroup->createAttribute("radius", H5::PredType::IEEE_F64LE, H5::DataSpace(H5S_SCALAR)
+            ).write(H5::PredType::IEEE_F64LE, &property.radius);
+        mtgroup->createAttribute("D", H5::PredType::IEEE_F64LE, H5::DataSpace(H5S_SCALAR)
+            ).write(H5::PredType::IEEE_F64LE, &property.D);
+        mtgroup->createAttribute("location", H5::StrType(0, H5T_VARIABLE), H5::DataSpace(H5S_SCALAR)
+            ).write(H5::StrType(0, H5T_VARIABLE), &property.location);
+        mtgroup->createAttribute("is_structure", H5::PredType::STD_I32LE, H5::DataSpace(H5S_SCALAR)
+            ).write(H5::PredType::STD_I32LE, &property.is_structure);
+        mtgroup->createAttribute("dimension", H5::PredType::STD_I32LE, H5::DataSpace(H5S_SCALAR)
+            ).write(H5::PredType::STD_I32LE, &property.dimension);
 
         // Save voxels
         const Integer num_voxels(voxels.size());
@@ -109,7 +131,7 @@ struct LatticeSpaceHDF5Traits
         }
 
         H5::CompType voxel_comp_type(get_voxel_comp());
-        hsize_t dims[] = {num_voxels};
+        hsize_t dims[] = {(hsize_t) num_voxels};
         H5::DataSpace dspace(/* RANK= */1, dims);
         boost::scoped_ptr<H5::DataSet> dset(new H5::DataSet(
             mtgroup->createDataSet("voxels", voxel_comp_type, dspace)));
@@ -117,17 +139,17 @@ struct LatticeSpaceHDF5Traits
     }
 
     template<typename Tspace_>
-    static void save_molecular_type_recursively(const Species& location,
-            std::multimap<Species, const MolecularTypeBase*>& location_map,
+    static void save_voxel_pool_recursively(const Species& location,
+            std::multimap<Species, const VoxelPool*>& location_map,
             Tspace_& space, H5::Group* root)
     {
-        std::multimap<Species, const MolecularTypeBase*>::iterator itr;
+        std::multimap<Species, const VoxelPool*>::iterator itr;
         while ((itr = location_map.find(location)) != location_map.end())
         {
-            const MolecularTypeBase* mtb((*itr).second);
+            const VoxelPool* mtb((*itr).second);
             const Species species(mtb->species());
-            save_molecular_type(mtb, space.list_voxels_exact(species), root);
-            save_molecular_type_recursively(species, location_map, space, root);
+            save_voxel_pool(mtb, space.list_voxels_exact(species), root);
+            save_voxel_pool_recursively(species, location_map, space, root);
             location_map.erase(itr);
         }
     }
@@ -148,22 +170,22 @@ struct LatticeSpaceHDF5Traits
 };
 
 template<typename Tspace_>
-void save_lattice_space(const Tspace_& space, H5::Group* root)
+void save_lattice_space(const Tspace_& space, H5::Group* root, const std::string& implementation = "")
 {
     typedef LatticeSpaceHDF5Traits traits_type;
 
     boost::scoped_ptr<H5::Group> spgroup(new H5::Group(root->createGroup("species")));
 
     const std::vector<Species> species(space.list_species());
-    std::multimap<Species, const MolecularTypeBase*> location_map;
+    std::multimap<Species, const VoxelPool*> location_map;
     for (std::vector<Species>::const_iterator itr(species.begin());
             itr != species.end(); ++itr)
     {
-        const MolecularTypeBase *mtb(space.find_molecular_type(*itr));
+        const VoxelPool *mtb(space.find_voxel_pool(*itr));
         Species location(mtb->location()->species());
         location_map.insert(std::make_pair(location, mtb));
     }
-    traits_type::save_molecular_type_recursively(VacantType::getInstance().species(),
+    traits_type::save_voxel_pool_recursively(VacantType::getInstance().species(),
             location_map, space, spgroup.get());
 
     const hsize_t dims[] = {3};
@@ -185,13 +207,12 @@ void save_lattice_space(const Tspace_& space, H5::Group* root)
     CREATE_ATTRIBUTE(voxel_radius, H5::PredType::IEEE_F64LE);
     CREATE_ATTRIBUTE(is_periodic, H5::PredType::STD_I32LE);
     CREATE_ATTRIBUTE(edge_lengths, lengths_type);
-
+    CREATE_ATTRIBUTE(implementation, H5::StrType(0, H5T_VARIABLE));
 #undef CREATE_ATTRIBUTE
-
 }
 
 template<typename Tspace_>
-void load_lattice_space(const H5::Group& root, Tspace_* space)
+void load_lattice_space(const H5::Group& root, Tspace_* space, const std::string& implementation = "")
 {
     typedef LatticeSpaceHDF5Traits traits_type;
 
@@ -201,6 +222,7 @@ void load_lattice_space(const H5::Group& root, Tspace_* space)
     Real3 edge_lengths;
     const hsize_t dims[] = {3};
     uint32_t is_periodic;
+    std::string impl = "";
 
 #define OPEN_ATTRIBUTE(attribute, type) \
     root.openAttribute(#attribute).read(type, &attribute)
@@ -211,7 +233,19 @@ void load_lattice_space(const H5::Group& root, Tspace_* space)
     OPEN_ATTRIBUTE(edge_lengths, H5::ArrayType(H5::PredType::NATIVE_DOUBLE, 1, dims));
     OPEN_ATTRIBUTE(is_periodic, H5::PredType::STD_I32LE);
 
+    if (root.attrExists("implementation"))
+        root.openAttribute("implementation").read(
+            H5::StrType(0, H5T_VARIABLE), impl);  //XXX:  '&' is not needed for HDF5std_string
+
 #undef OPEN_ATTRIBUTE
+
+    if (implementation != "" && implementation != impl)
+    {
+        std::ostringstream oss;
+        oss << "Implementation mismatch between LatticeSpaces given and saved in the HDF5 ['"
+            << implementation << "' != '" << impl << "']." << std::endl;
+        throw NotSupported(oss.str());
+    }
 
     space->set_t(t);
     space->reset(edge_lengths, voxel_radius, (is_periodic != 0));
@@ -224,27 +258,42 @@ void load_lattice_space(const H5::Group& root, Tspace_* space)
             std::vector<std::pair<ParticleID, Integer> > > > tmp_map;
 
     H5::Group spgroup(root.openGroup("species"));
-    // char name_C[32 + 1];
+    char name_C[32 + 1];
     for (hsize_t idx(0); idx < spgroup.getNumObjs(); ++idx)
     {
-        const H5std_string name = spgroup.getObjnameByIdx(idx);
-        H5::Group group(spgroup.openGroup(name.c_str()));
+        // const H5std_string name = spgroup.getObjnameByIdx(idx);
+        // H5::Group group(spgroup.openGroup(name.c_str()));
 
-        // memset(name_C, 0, 32 + 1);  // clear buffer
-        // const ssize_t name_len = H5Lget_name_by_idx(spgroup.getLocId(), ".", H5_INDEX_NAME, H5_ITER_INC, idx, name_C, 32, H5P_DEFAULT);
-        // H5::Group group(spgroup.openGroup(name_C));
-        // const std::string name_S(name_C);
-        Species species(name.c_str());
+        memset(name_C, 0, 32 + 1);  // clear buffer
+        H5Lget_name_by_idx(spgroup.getLocId(), ".", H5_INDEX_NAME, H5_ITER_INC, idx, name_C, 32, H5P_DEFAULT);
+        H5::Group group(spgroup.openGroup(name_C));
+        const std::string name(name_C);
+        Species species(name);
 
         // const H5std_string serial = spgroup.getObjnameByIdx(idx);
         // H5::Group group(spgroup.openGroup(serial.c_str()));
         // Species species(std::string(serial.c_str()));
 
         traits_type::h5_species_struct property;
-        group.openAttribute("property").read(
-                traits_type::get_property_comp(), &property);
+        // group.openAttribute("property").read(
+        //         traits_type::get_property_comp(), &property);
+        // group.openDataSet("property").read(
+        //         &property, traits_type::get_property_comp());
+        // H5::Attribute attr = group.openAttribute("property");
+        // H5::DataType dtype = attr.getDataType();
+        // attr.read(dtype, &property);
+
+        group.openAttribute("radius").read(H5::PredType::IEEE_F64LE, &property.radius);
+        group.openAttribute("D").read(H5::PredType::IEEE_F64LE, &property.D);
+        group.openAttribute("location").read(H5::StrType(0, H5T_VARIABLE), property.location);  //XXX: NEVER use "&" for H5std_string when reading.
+        group.openAttribute("is_structure").read(H5::PredType::STD_I32LE, &property.is_structure);
+        group.openAttribute("dimension").read(H5::PredType::STD_I32LE, &property.dimension);
+
+        // std::cout << "load_property(" << name << "," << property.radius << "," << property.D << "," << property.location << ");" << std::endl;
+
         struct_map.insert(std::make_pair(species, property));
-        location_map.insert(std::make_pair(property.location, species));
+        location_map.insert(std::make_pair(std::string(property.location), species));
+        // location_map.insert(std::make_pair(property.location, species));
 
         H5::DataSet voxel_dset(group.openDataSet("voxels"));
         const unsigned int num_voxels(
@@ -275,10 +324,14 @@ void load_lattice_space(const H5::Group& root, Tspace_* space)
         Species species(*itr);
         traits_type::h5_species_struct property((*struct_map.find(species)).second);
         std::vector<std::pair<ParticleID, Integer> > voxels((*voxels_map.find(species)).second);
+        // if (property.is_structure == 0)
+        //     space->make_molecular_type(species, property.radius, property.D, property.location);
+        // else
+        //     space->make_structure_type(species, static_cast<Shape::dimension_kind>(property.dimension), property.location);
         if (property.is_structure == 0)
-            space->make_molecular_type(species, property.radius, property.D, property.location);
+            space->make_molecular_type(species, property.radius, property.D, std::string(property.location));
         else
-            space->make_structure_type(species, static_cast<Shape::dimension_kind>(property.dimension), property.location);
+            space->make_structure_type(species, static_cast<Shape::dimension_kind>(property.dimension), std::string(property.location));
         space->add_voxels(species, voxels);
     }
 }

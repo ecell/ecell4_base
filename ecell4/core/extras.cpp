@@ -2,10 +2,9 @@
 #include <iostream>
 #include <sstream>
 
-// #if defined(HAVE_BOOST_REGEX)
-// #include <boost/regex.hpp>
-// #elif defined(WIN32_MSC)
-#if defined(WIN32_MSC)
+#if defined(HAVE_BOOST_REGEX)
+#include <boost/regex.hpp>
+#elif defined(WIN32_MSC)
 #include <regex>
 #else
 #include <regex.h>
@@ -53,19 +52,6 @@ std::string load_version_information(const std::string& filename)
 #endif
 }
 
-struct VersionInformation
-{
-    std::string header;
-    int majorno, minorno, patchno;
-
-    VersionInformation(
-        const std::string& header, const int majorno, const int minorno, const int patchno)
-        : header(header), majorno(majorno), minorno(minorno), patchno(patchno)
-    {
-        ;
-    }
-};
-
 int mystoi(const std::string& s)
 {
     std::stringstream ss;
@@ -77,6 +63,27 @@ int mystoi(const std::string& s)
 
 VersionInformation parse_version_information(const std::string& version)
 {
+#if defined(HAVE_BOOST_REGEX) || defined(WIN32_MSC)
+#if defined(HAVE_BOOST_REGEX)
+    using namespace boost;
+#else /* WIN32_MSC */
+    using namespace std::tr1;
+#endif /* HAVE_BOOST_REGEX */
+    regex reg("^([^-\\.]+-[^-\\.]+-)([0123456789]+)\\.([0123456789]+)\\.([0123456789]+)$");
+    smatch result;
+    if (!regex_match(version, result, reg))
+    {
+        throw std::invalid_argument(
+            "a wrong version information was given [" + version + "]"); //XXX:
+    }
+
+    const std::string header = result.str(1);
+    const int majorno = mystoi(result.str(2));
+    const int minorno = mystoi(result.str(3));
+    const int patchno = mystoi(result.str(4));
+
+    return VersionInformation(header, majorno, minorno, patchno);
+#else /* regex.h */
     regex_t reg;
     int errcode = regcomp(
         &reg, "^([^-\\.]+-[^-\\.]+-)([0123456789]+)\\.([0123456789]+)\\.([0123456789]+)$",
@@ -108,6 +115,7 @@ VersionInformation parse_version_information(const std::string& version)
 
     regfree(&reg);
     return VersionInformation(header, majorno, minorno, patchno);
+#endif /* HAVE_BOOST_REGEX */
 }
 
 bool check_version_information(const std::string& version, const std::string& required)

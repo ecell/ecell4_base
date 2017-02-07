@@ -109,6 +109,7 @@ cdef extern from "ecell4/egfrd/egfrd.hpp" namespace "ecell4::egfrd":
         void run(Real) except +
         void run(Real, shared_ptr[Cpp_Observer]) except +
         void run(Real, vector[shared_ptr[Cpp_Observer]]) except +
+        void set_paranoiac(bool)
 
     cdef cppclass Cpp_EGFRDFactory "ecell4::egfrd::EGFRDFactory":
         Cpp_EGFRDFactory(Cpp_Integer3&, Real, Integer, Real) except +

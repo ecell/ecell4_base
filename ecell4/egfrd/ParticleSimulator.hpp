@@ -182,6 +182,11 @@ public:
         return paranoiac_;
     }
 
+    void set_paranoiac(const bool val)
+    {
+        paranoiac_ = val;
+    }
+
     virtual void step() = 0;
     virtual bool step(const time_type& upto) = 0;
 

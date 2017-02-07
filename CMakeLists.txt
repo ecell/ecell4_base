@@ -37,9 +37,13 @@ else()
 endif()
 
 # find_package(Boost COMPONENTS regex)
-find_package(Boost REQUIRED)
+if(NOT Boost_FOUND)
+  find_package(Boost REQUIRED)
+else()
+  set(HAVE_BOOST_REGEX 1)
+endif()
+
 include_directories(${Boost_INCLUDE_DIRS})
-# set(HAVE_BOOST_REGEX ${Boost_FOUND})
 
 find_library(GSL_LIBRARIES gsl)
 find_library(GSL_CBLAS_LIBRARIES gslcblas)

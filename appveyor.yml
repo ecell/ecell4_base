@@ -2,7 +2,7 @@
 
 environment:
   global:
-    HDF_DIR: "C:/Program Files (x86)/HDF_Group/HDF5/1.8.16/lib"
+    HDF_DIR: "C:/Program Files (x86)/HDF_Group/HDF5/1.8.17/lib"
     BOOST_ROOT: C:\Libraries\boost
 
   matrix:
@@ -29,16 +29,16 @@ install:
   # install hdf5
   - mkdir hdf5lib
   - cd hdf5lib
-  - if "%PYTHON_VERSION%" == "2.7.12" if "%PYTHON_ARCH%" == "32" curl -LvkO https://anaconda.org/anaconda/hdf5/1.8.16/download/win-32/hdf5-1.8.16-vc9_0.tar.bz2
-  - if "%PYTHON_VERSION%" == "2.7.12" if "%PYTHON_ARCH%" == "64" curl -LvkO https://anaconda.org/anaconda/hdf5/1.8.16/download/win-64/hdf5-1.8.16-vc9_0.tar.bz2
-  - if "%PYTHON_VERSION%" == "2.7.12" 7z x -y hdf5-1.8.16-vc9_0.tar.bz2
-  - if "%PYTHON_VERSION%" == "2.7.12" 7z x -y hdf5-1.8.16-vc9_0.tar
-  - if "%PYTHON_VERSION%" == "3.5.2" if "%PYTHON_ARCH%" == "32" curl -LvkO https://anaconda.org/anaconda/hdf5/1.8.16/download/win-32/hdf5-1.8.16-vc14_0.tar.bz2
-  - if "%PYTHON_VERSION%" == "3.5.2" if "%PYTHON_ARCH%" == "64" curl -LvkO https://anaconda.org/anaconda/hdf5/1.8.16/download/win-64/hdf5-1.8.16-vc14_0.tar.bz2
-  - if "%PYTHON_VERSION%" == "3.5.2" 7z x -y hdf5-1.8.16-vc14_0.tar.bz2
-  - if "%PYTHON_VERSION%" == "3.5.2" 7z x -y hdf5-1.8.16-vc14_0.tar
-  - mkdir "C:/Program Files (x86)/HDF_Group/HDF5/1.8.16"
-  - xcopy Library "C:/Program Files (x86)/HDF_Group/HDF5/1.8.16" /s /e /y
+  - if "%PYTHON_VERSION%" == "2.7.12" if "%PYTHON_ARCH%" == "32" curl -LvkO https://anaconda.org/anaconda/hdf5/1.8.17/download/win-32/hdf5-1.8.17-vc9_0.tar.bz2
+  #- if "%PYTHON_VERSION%" == "2.7.12" if "%PYTHON_ARCH%" == "64" curl -LvkO https://anaconda.org/anaconda/hdf5/1.8.16/download/win-64/hdf5-1.8.16-vc9_0.tar.bz2
+  - if "%PYTHON_VERSION%" == "2.7.12" 7z x -y hdf5-1.8.17-vc9_0.tar.bz2
+  - if "%PYTHON_VERSION%" == "2.7.12" 7z x -y hdf5-1.8.17-vc9_0.tar
+  - if "%PYTHON_VERSION%" == "3.5.2" if "%PYTHON_ARCH%" == "32" curl -LvkO https://anaconda.org/anaconda/hdf5/1.8.17/download/win-32/hdf5-1.8.17-vc14_0.tar.bz2
+  - if "%PYTHON_VERSION%" == "3.5.2" if "%PYTHON_ARCH%" == "64" curl -LvkO https://anaconda.org/anaconda/hdf5/1.8.17/download/win-64/hdf5-1.8.17-vc14_0.tar.bz2
+  - if "%PYTHON_VERSION%" == "3.5.2" 7z x -y hdf5-1.8.17-vc14_0.tar.bz2
+  - if "%PYTHON_VERSION%" == "3.5.2" 7z x -y hdf5-1.8.17-vc14_0.tar
+  - mkdir "C:/Program Files (x86)/HDF_Group/HDF5/1.8.17"
+  - xcopy Library "C:/Program Files (x86)/HDF_Group/HDF5/1.8.17" /s /e /y
   - cd ..
 
   # install stdint
@@ -90,8 +90,8 @@ install:
   - ECHO "ls boost:"
   - ps: "ls \"C:/Libraries/boost\""
   - echo %CD%
-  - if "%PYTHON_VERSION%" == "2.7.12" python setup.py build_ext -I"C:\Program Files (x86)\HDF_Group\HDF5\1.8.16\include";C:/Libraries/boost;C:/projects/ecell4;C:/projects/ecell4/stdint-20070624;C:/projects/ecell4/gsl/include -LC:/projects/ecell4/gsl/lib;"C:\Program Files (x86)\HDF_Group\HDF5\1.8.16\lib"
-  - if "%PYTHON_VERSION%" == "3.5.2" python setup.py build_ext -I"C:\Program Files (x86)\HDF_Group\HDF5\1.8.16\include";C:/Libraries/boost;C:/projects/ecell4/gsl -LC:/projects/ecell4/gsl/Release;"C:\Program Files (x86)\HDF_Group\HDF5\1.8.16\lib"
+  - if "%PYTHON_VERSION%" == "2.7.12" python setup.py build_ext -I"C:\Program Files (x86)\HDF_Group\HDF5\1.8.17\include";C:/Libraries/boost;C:/projects/ecell4;C:/projects/ecell4/stdint-20070624;C:/projects/ecell4/gsl/include -LC:/projects/ecell4/gsl/lib;"C:\Program Files (x86)\HDF_Group\HDF5\1.8.17\lib"
+  - if "%PYTHON_VERSION%" == "3.5.2" python setup.py build_ext -I"C:\Program Files (x86)\HDF_Group\HDF5\1.8.17\include";C:/Libraries/boost;C:/projects/ecell4/gsl -LC:/projects/ecell4/gsl/Release;"C:\Program Files (x86)\HDF_Group\HDF5\1.8.17\lib"
   - "pip install wheel"
   - "python setup.py bdist_wheel -v"
   # - "pip install dist/ecell4-4.0.0b2-cp35-none-win32.whl"

@@ -55,11 +55,64 @@ public:
         cell_sizes_[2] = edge_lengths_[2] / matrix_.shape()[2];
     }
 
+    void diagnosis() const
+    {
+        for (matrix_type::size_type i(0); i < matrix_.shape()[0]; ++i)
+        {
+            for (matrix_type::size_type j(0); j < matrix_.shape()[1]; ++j)
+            {
+                for (matrix_type::size_type k(0); k < matrix_.shape()[2]; ++k)
+                {
+                    const cell_type& c = matrix_[i][j][k];
+                    for (cell_type::const_iterator it(c.begin()); it != c.end(); ++it)
+                    {
+                        if (*it >= particles_.size())
+                        {
+                            throw IllegalState("out of bounds.");
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Space
+
+    virtual Integer num_species() const
+    {
+        return particle_pool_.size();
+    }
+    virtual bool has_species(const Species& sp) const
+    {
+        return (particle_pool_.find(sp.serial()) != particle_pool_.end());
+    }
+
+    virtual std::vector<Species> list_species() const
+    {
+        std::vector<Species> retval;
+        for (per_species_particle_id_set::const_iterator
+            i(particle_pool_.begin()); i != particle_pool_.end(); ++i)
+        {
+            retval.push_back(Species((*i).first));
+        }
+        return retval;
+    }
+
     // ParticleSpaceTraits
 
     const Real3& edge_lengths() const
     {
         return edge_lengths_;
+    }
+
+    const Real3& cell_sizes() const
+    {
+        return cell_sizes_;
+    }
+
+    const Integer3 matrix_sizes() const
+    {
+        return Integer3(matrix_.shape()[0], matrix_.shape()[1], matrix_.shape()[2]);
     }
 
     void reset(const Real3& edge_lengths);
@@ -345,8 +398,9 @@ protected:
         }
 
         particle_container_type::size_type old_idx(i - particles_.begin());
-        // cell_type& old_cell(cell(index((*i).second.position())));
-        // const bool succeeded(erase_from_cell(&old_cell, old_idx));
+        cell_type& old_cell(cell(index((*i).second.position())));
+        const bool succeeded(erase_from_cell(&old_cell, old_idx));
+        assert(succeeded);
         // BOOST_ASSERT(succeeded);
         rmap_.erase((*i).first);
 
@@ -356,8 +410,9 @@ protected:
         {
             const std::pair<ParticleID, Particle>& last(particles_[last_idx]);
             cell_type& last_cell(cell(index(last.second.position())));
-            // const bool tmp(erase_from_cell(&last_cell, last_idx));
+            const bool tmp(erase_from_cell(&last_cell, last_idx));
             // BOOST_ASSERT(tmp);
+            assert(succeeded);
             push_into_cell(&last_cell, old_idx);
             rmap_[last.first] = old_idx;
             // reinterpret_cast<nonconst_value_type&>(*i) = last;

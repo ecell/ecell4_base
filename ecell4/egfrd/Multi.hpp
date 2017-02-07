@@ -6,6 +6,7 @@
 #include <boost/algorithm/string/join.hpp>
 
 #include <ecell4/core/config.h>
+#include <ecell4/core/comparators.hpp>
 #ifdef WIN32_MSC
 #include <boost/container/map.hpp>
 #endif
@@ -44,7 +45,7 @@ public:
     typedef typename Ttraits_::world_type::particle_container_type base_type;
     typedef typename Ttraits_::world_type world_type;
     typedef typename world_type::traits_type traits_type;
-    typedef ParticleContainerUtils<traits_type> utils;
+    // typedef ParticleContainerUtils<traits_type> utils;
 
     typedef typename traits_type::particle_type particle_type;
     typedef typename traits_type::particle_shape_type particle_shape_type;
@@ -89,12 +90,17 @@ public:
         return world_.edge_lengths();
     }
 
-    virtual molecule_info_type const& find_molecule_info(species_id_type const& id) const
-    {
-        return world_.find_molecule_info(id);
-    }
+    // virtual molecule_info_type const& find_molecule_info(species_id_type const& id) const
+    // {
+    //     return world_.find_molecule_info(id);
+    // }
 
-    virtual molecule_info_type const& get_molecule_info(species_id_type const& id)
+    // virtual molecule_info_type const& get_molecule_info(species_id_type const& id)
+    // {
+    //     return world_.get_molecule_info(id);
+    // }
+
+    virtual molecule_info_type get_molecule_info(species_id_type const& id) const
     {
         return world_.get_molecule_info(id);
     }
@@ -104,34 +110,34 @@ public:
         return world_.get_structure(id);
     }
 
-    virtual particle_id_pair new_particle(species_id_type const& sid,
+    virtual std::pair<particle_id_pair, bool> new_particle(species_id_type const& sid,
             position_type const& pos)
     {
-        particle_id_pair const retval(world_.new_particle(sid, pos));
-        particles_.insert(retval);
+        std::pair<particle_id_pair, bool> const retval(world_.new_particle(sid, pos));
+        particles_.insert(retval.first);
         return retval;
     }
 
-    virtual bool update_particle(particle_id_pair const& pi_pair)
+    virtual bool update_particle(const particle_id_type& pid, const particle_type& p)
     {
-        world_.update_particle(pi_pair);
-        typename particle_map::iterator const i(particles_.find(pi_pair.first));
+        world_.update_particle(pid, p);
+        typename particle_map::iterator const i(particles_.find(pid));
         if (i != particles_.end())
         {
-            (*i).second = pi_pair.second;
+            (*i).second = p;
             return false;
         }
         else
         {
-            particles_.insert(i, pi_pair);
+            particles_.insert(i, std::make_pair(pid, p));
             return true;
         }
     }
 
-    virtual bool remove_particle(particle_id_type const& id)
+    virtual void remove_particle(particle_id_type const& id)
     {
         world_.remove_particle(id);
-        return particles_.erase(id);
+        particles_.erase(id);
     }
 
     virtual particle_id_pair get_particle(particle_id_type const& id) const
@@ -150,41 +156,38 @@ public:
         return particles_.end() != particles_.find(id);
     }
 
-    virtual particle_id_pair_and_distance_list* check_overlap(particle_shape_type const& s) const
+    virtual particle_id_pair_and_distance_list check_overlap(particle_shape_type const& s) const
     {
         return check_overlap(s, array_gen<particle_id_type>());
     }
 
-    virtual particle_id_pair_and_distance_list* check_overlap(particle_shape_type const& s, particle_id_type const& ignore) const
+    virtual particle_id_pair_and_distance_list check_overlap(particle_shape_type const& s, particle_id_type const& ignore) const
     {
         return check_overlap(s, array_gen(ignore));
     }
 
-    virtual particle_id_pair_and_distance_list* check_overlap(particle_shape_type const& s, particle_id_type const& ignore1, particle_id_type const& ignore2) const
+    virtual particle_id_pair_and_distance_list check_overlap(particle_shape_type const& s, particle_id_type const& ignore1, particle_id_type const& ignore2) const
     {
         return check_overlap(s, array_gen(ignore1, ignore2));
     }
 
     template<typename Tsph_, typename Tset_>
-    particle_id_pair_and_distance_list* check_overlap(Tsph_ const& s, Tset_ const& ignore) const
+    particle_id_pair_and_distance_list check_overlap(Tsph_ const& s, Tset_ const& ignore) const
     {
-        typename utils::template overlap_checker<Tset_> checker(ignore);
+        particle_id_pair_and_distance_list retval;
         for (typename particle_map::const_iterator i(particles_.begin()),
                                                    e(particles_.end());
              i != e; ++i)
         {
             length_type const dist(world_.distance(shape((*i).second), s.position()));
-            if (dist < s.radius())
+            if (dist < s.radius() && !collection_contains(ignore, (*i).first))
             {
-                checker(i, dist);
+                retval.push_back(std::make_pair(*i, dist));
             }
         }
-        return checker.result();
-    }
-
-    virtual particle_id_pair_generator* get_particles() const
-    {
-        return make_range_generator<particle_id_pair>(particles_);
+        std::sort(retval.begin(), retval.end(),
+            ecell4::utils::pair_second_element_comparator<particle_id_pair, length_type>());
+        return retval;
     }
 
     virtual transaction_type* create_transaction()
@@ -208,14 +211,14 @@ public:
     //     return world_.apply_boundary(v);
     // }
 
-    virtual position_type cyclic_transpose(position_type const& p0, position_type const& p1) const
+    virtual position_type periodic_transpose(position_type const& p0, position_type const& p1) const
     {
-        return world_.cyclic_transpose(p0, p1);
+        return world_.periodic_transpose(p0, p1);
     }
 
-    // virtual length_type cyclic_transpose(length_type const& p0, length_type const& p1) const
+    // virtual length_type periodic_transpose(length_type const& p0, length_type const& p1) const
     // {
-    //     return world_.cyclic_transpose(p0, p1);
+    //     return world_.periodic_transpose(p0, p1);
     // }
 
     particle_id_pair_range get_particles_range() const
@@ -398,7 +401,7 @@ public:
 
     bool add_particle(particle_id_pair const& pp)
     {
-        return pc_.update_particle(pp);
+        return pc_.update_particle(pp.first, pp.second);
     }
 
     bool add_shell(spherical_shell_id_pair const& sp)
@@ -439,7 +442,7 @@ public:
                 i(shells_.begin()), e(shells_.end()); i != e; ++i)
         {
             spherical_shell_id_pair const& sp(*i);
-            position_type ppos(main_.world()->cyclic_transpose(sphere.position(), (sp).second.position()));
+            position_type ppos(main_.world()->periodic_transpose(sphere.position(), (sp).second.position()));
             if (distance(ppos, (sp).second.shape().position()) < (sp).second.shape().radius() - sphere.radius())
             {
                 return true;
@@ -452,26 +455,30 @@ public:
     {
         LOG_DEBUG(("clear_volume was called here."));
         main_.clear_volume(shape, base_type::id_);
-        boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped(
+
+        const particle_id_pair_and_distance_list overlapped(
             main_.world()->check_overlap(shape, ignore));
-        if (overlapped && ::size(*overlapped))
+        if (overlapped.size() > 0)
         {
             return false;
         }
         return true;
+        // return (main_.world()->no_overlap(shape, ignore));
     }
 
     bool clear_volume(particle_shape_type const& shape, particle_id_type const& ignore0, particle_id_type const& ignore1) const
     {
         LOG_DEBUG(("clear_volume was called here."));
         main_.clear_volume(shape, base_type::id_);
-        boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped(
+
+        const particle_id_pair_and_distance_list overlapped(
             main_.world()->check_overlap(shape, ignore0, ignore1));
-        if (overlapped && ::size(*overlapped))
+        if (overlapped.size() > 0)
         {
             return false;
         }
         return true;
+        // return (main_.world()->no_overlap(shape, ignore0, ignore1));
     }
 
     typename multi_particle_container_type::particle_id_pair_range

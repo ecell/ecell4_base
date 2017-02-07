@@ -1,6 +1,8 @@
 #include <stdexcept>
 #include <boost/algorithm/string.hpp>
 
+#include "UnitSpecies.hpp"
+
 #if defined(HAVE_BOOST_REGEX)
 #include <boost/regex.hpp>
 #elif defined(WIN32_MSC)
@@ -8,8 +10,6 @@
 #else
 #include <regex.h>
 #endif /* HAVE_BOOST_REGEX */
-
-#include "UnitSpecies.hpp"
 
 
 namespace ecell4
@@ -35,7 +35,6 @@ void UnitSpecies::deserialize(const UnitSpecies::serial_type& serial)
 #else /* WIN32_MSC */
     using namespace std::tr1;
 #endif /* HAVE_BOOST_REGEX */
-
     regex r1(
         "^\\s*(\\w+)\\s*(\\(\\s*([\\w\\s\\^=,]*)\\))?\\s*$");
     smatch results1;

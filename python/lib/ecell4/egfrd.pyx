@@ -900,6 +900,9 @@ cdef class EGFRDSimulator:
             self.thisptr.run(duration,
                 deref((<Observer>(observers.as_base())).thisptr))
 
+    def set_paranoiac(self, val):
+        self.thisptr.set_paranoiac(<bool>val)
+
 cdef EGFRDSimulator EGFRDSimulator_from_Cpp_EGFRDSimulator(Cpp_EGFRDSimulator* s):
     r = EGFRDSimulator(
         Model_from_Cpp_Model(s.model()), EGFRDWorld_from_Cpp_EGFRDWorld(s.world()))

@@ -15,6 +15,7 @@
 #include <ecell4/core/Model.hpp>
 #include <ecell4/core/extras.hpp>
 #include <ecell4/core/SerialIDGenerator.hpp>
+#include <ecell4/core/get_mapper_mf.hpp>
 
 #ifdef WITH_HDF5
 #include <ecell4/core/ParticleSpaceHDF5Writer.hpp>
@@ -24,8 +25,8 @@
 #include "./ParticleTraits.hpp" // This refers ecell4::Particle
 #include "structures.hpp"
 
-#include "ParticleContainerBase.hpp"
-
+#include <ecell4/core/ParticleSpaceCellListImpl.hpp>
+#include "ParticleContainer.hpp"
 
 #include <map>
 #include <boost/lexical_cast.hpp>
@@ -58,12 +59,33 @@
 // #include "CylindricalSurface.hpp"
 // #include "SphericalSurface.hpp"
 
+/*
+ * ParticleContainerBase
+ */
+#include "utils/range.hpp"
+#include "utils/unassignable_adapter.hpp"
+#include "MatrixSpace.hpp"
+#include "abstract_set.hpp"
+#include "generator.hpp"
+#include "exceptions.hpp"
+#include "ParticleContainer.hpp"
+#include "Transaction.hpp"
+
+#include <ecell4/core/AABBSurface.hpp>
+#include "Polygon.hpp"
+
 
 // For twofold_container
 inline
 bool is_initialized(std::string const &obj)
 {
     return (0 < obj.size());
+}
+
+inline
+bool is_initialized(ecell4::Species const &obj)
+{
+    return (0 < obj.serial().size());
 }
 
 template<typename Tderived_, typename TD_>
@@ -75,7 +97,8 @@ struct WorldTraitsBase
     typedef ecell4::Real time_type;
     typedef ecell4::ParticleID particle_id_type;
     typedef ecell4::SerialIDGenerator<particle_id_type> particle_id_generator;
-    typedef ecell4::Species::serial_type species_id_type; // std::string
+    typedef ecell4::Species species_id_type; // std::string
+    // typedef ecell4::Species::serial_type species_id_type; // std::string
     typedef ecell4::Particle particle_type;
     typedef ecell4::Real3 position_type;
     // typedef ecell4::GSLRandomNumberGenerator rng_type;
@@ -147,7 +170,7 @@ public:
     }
 
     template<typename Tval_>
-    static Tval_ cyclic_transpose(Tval_ const& p0, Tval_ const& p1, Tval_ const& world_size)
+    static Tval_ periodic_transpose(Tval_ const& p0, Tval_ const& p1, Tval_ const& world_size)
     {
         return p0;
     }
@@ -197,14 +220,14 @@ public:
         return ::apply_boundary(v, edge_lengths);
     }
 
-    static length_type cyclic_transpose(length_type const& p0, length_type const& p1, length_type const& world_size)
+    static length_type periodic_transpose(length_type const& p0, length_type const& p1, length_type const& world_size)
     {
-        return ::cyclic_transpose(p0, p1, world_size);
+        return ::periodic_transpose(p0, p1, world_size);
     }
 
-    static position_type cyclic_transpose(position_type const& p0, position_type const& p1, position_type const& edge_lengths)
+    static position_type periodic_transpose(position_type const& p0, position_type const& p1, position_type const& edge_lengths)
     {
-        return ::cyclic_transpose(p0, p1, edge_lengths);
+        return ::periodic_transpose(p0, p1, edge_lengths);
     }
 
     template<typename T1_, typename T2_, typename T3_>
@@ -239,11 +262,14 @@ public:
 };
 
 template<typename Ttraits_>
-class World: public ParticleContainerBase<World<Ttraits_>, Ttraits_>
+class World
+    : public ParticleContainer<Ttraits_>
 {
 public:
+
     typedef Ttraits_ traits_type;
-    typedef ParticleContainerBase<World> base_type;
+    typedef ParticleContainer<Ttraits_> base_type;
+
     typedef ParticleContainer<traits_type> particle_container_type;
     typedef typename traits_type::length_type length_type;
     typedef typename traits_type::molecule_info_type molecule_info_type;
@@ -262,9 +288,18 @@ public:
         particle_id_pair_and_distance_list;
     typedef typename traits_type::model_type model_type;
 
-    typedef typename base_type::matrix_sizes_type matrix_sizes_type;
+    /**
+     * ParticleContainerBase
+     */
+    typedef MatrixSpace<particle_type, particle_id_type, ecell4::utils::get_mapper_mf> particle_matrix_type;
+    typedef sized_iterator_range<typename particle_matrix_type::const_iterator> particle_id_pair_range;
+    typedef typename particle_matrix_type::matrix_sizes_type matrix_sizes_type;
+    typedef ecell4::ParticleSpaceCellListImpl particle_space_type;
+    typedef typename base_type::transaction_type transaction_type;
+    typedef typename base_type::time_type time_type;
 
 protected:
+
     typedef std::map<species_id_type, molecule_info_type> molecule_info_map;
     typedef std::map<structure_id_type, boost::shared_ptr<structure_type> > structure_map;
     typedef std::set<particle_id_type> particle_id_set;
@@ -273,6 +308,7 @@ protected:
     typedef select_second<typename structure_map::value_type> surface_second_selector_type;
 
 public:
+
     typedef boost::transform_iterator<species_second_selector_type,
             typename molecule_info_map::const_iterator> molecule_info_iterator;
     typedef boost::transform_iterator<surface_second_selector_type,
@@ -284,8 +320,8 @@ public:
 
     World(
         const position_type& edge_lengths = position_type(1, 1, 1),
-        const matrix_sizes_type& sizes = matrix_sizes_type(3, 3, 3))
-        : base_type(edge_lengths, sizes)
+        const matrix_sizes_type& matrix_sizes = matrix_sizes_type(3, 3, 3))
+        : ps_(new particle_space_type(edge_lengths, matrix_sizes))
     {
         // rng_ = boost::shared_ptr<rng_type>(new rng_type());
         rng_ = boost::shared_ptr<rng_type>(new ecell4::GSLRandomNumberGenerator());
@@ -295,92 +331,27 @@ public:
     }
 
     World(
-        const position_type& edge_lengths, const matrix_sizes_type& sizes,
+        const position_type& edge_lengths, const matrix_sizes_type& matrix_sizes,
         const boost::shared_ptr<rng_type>& rng)
-        : base_type(edge_lengths, sizes), rng_(rng)
+        :ps_(new particle_space_type(edge_lengths, matrix_sizes)), rng_(rng)
     {
         add_world_structure();
     }
 
-    // World(
-    //     const position_type& edge_lengths, const matrix_sizes_type& sizes,
-    //     const boost::shared_ptr<ecell4::RandomNumberGenerator>& rng)
-    //     : base_type(edge_lengths, sizes),
-    //     rng_(boost::dynamic_pointer_cast<rng_type>(rng))
-    // {
-    //     add_world_structure();
-    // }
-
     World(const std::string filename)
-        : base_type(position_type(1, 1, 1), matrix_sizes_type(3, 3, 3)), rng_()
+        : ps_(new particle_space_type(position_type(1, 1, 1), matrix_sizes_type(3, 3, 3))), rng_()
     {
         rng_ = boost::shared_ptr<rng_type>(new ecell4::GSLRandomNumberGenerator());
-        // rng_ = boost::shared_ptr<rng_type>(new rng_type());
         this->load(filename);
     }
 
-    virtual particle_id_pair new_particle(species_id_type const& sid,
-            position_type const& pos)
+    virtual bool update_particle(const particle_id_type& pid, const particle_type& p)
     {
-        molecule_info_type const& minfo(get_molecule_info(sid));
-        particle_id_pair retval(pidgen_(),
-            particle_type(sid, pos, minfo.radius, minfo.D));
-        update_particle(retval);
-        return retval;
-    }
-
-    virtual bool update_particle(particle_id_pair const& pi_pair)
-    {
-        std::pair<bool, typename base_type::particle_matrix_type::iterator>
-            retval(base_type::__has_particle(pi_pair.first));
-        if (retval.first)
+        if (molecule_info_map_.find(p.species()) == molecule_info_map_.end())
         {
-            typename base_type::particle_matrix_type::iterator&
-                i(retval.second);
-            if ((*i).second.sid() != pi_pair.second.sid())
-            {
-                particle_pool_[(*i).second.sid()].erase((*i).first);
-
-                typename per_species_particle_id_set::iterator
-                    j(particle_pool_.find(pi_pair.second.sid()));
-                if (j == particle_pool_.end())
-                {
-                    this->register_species(pi_pair);
-                    // this->register_species(pi_pair.second.sid());
-                    j = particle_pool_.find(pi_pair.second.sid());
-                }
-                (*j).second.insert(pi_pair.first);
-            }
-            base_type::__update_particle(i, pi_pair);
-            return false;
+            register_species(p);
         }
-
-        const bool is_succeeded(base_type::update_particle(pi_pair));
-        BOOST_ASSERT(is_succeeded);
-        // BOOST_ASSERT(base_type::update_particle(pi_pair)); //XXX: -DNDEBUG!!!
-        typename per_species_particle_id_set::iterator
-            k(particle_pool_.find(pi_pair.second.sid()));
-        if (k == particle_pool_.end())
-        {
-            this->register_species(pi_pair);
-            // this->register_species(pi_pair.second.sid());
-            k = particle_pool_.find(pi_pair.second.sid());
-        }
-        (*k).second.insert(pi_pair.first);
-        return true;
-    }
-
-    virtual bool remove_particle(particle_id_type const& id)
-    {
-        bool found(false);
-        particle_id_pair pp(this->get_particle(id, found));
-        if (!found)
-        {
-            return false;
-        }
-        particle_pool_[pp.second.sid()].erase(id);
-        base_type::remove_particle(id);
-        return true;
+        return (*ps_).update_particle(pid, p);
     }
 
     molecule_info_range get_molecule_info_range() const
@@ -418,17 +389,17 @@ public:
             structure_map_.size());
     }
 
-    particle_id_set get_particle_ids(species_id_type const& sid) const
-    {
-        typename per_species_particle_id_set::const_iterator i(
-            particle_pool_.find(sid));
-        if (i == particle_pool_.end())
-        {
-            throw not_found(std::string("Unknown species (id=")
-                + boost::lexical_cast<std::string>(sid) + ")");
-        }
-        return (*i).second;
-    }
+    // particle_id_set get_particle_ids(species_id_type const& sid) const
+    // {
+    //     typename per_species_particle_id_set::const_iterator i(
+    //         particle_pool_.find(sid));
+    //     if (i == particle_pool_.end())
+    //     {
+    //         throw not_found(std::string("Unknown species (id=")
+    //             + boost::lexical_cast<std::string>(sid) + ")");
+    //     }
+    //     return (*i).second;
+    // }
 
     /** ecell4::Space
      */
@@ -437,7 +408,6 @@ public:
     {
         return rng_;
     }
-
 
     virtual void save(const std::string& filename) const
     {
@@ -453,7 +423,7 @@ public:
 
         /** matrix_sizes
          */
-        const matrix_sizes_type sizes = base_type::matrix_sizes();
+        const matrix_sizes_type sizes = matrix_sizes();
         const hsize_t dims[] = {3};
         const H5::ArrayType sizes_type(H5::PredType::NATIVE_INT, 1, dims);
         H5::Attribute attr_sizes(
@@ -468,8 +438,6 @@ public:
             "This method requires HDF5. The HDF5 support is turned off.");
 #endif
     }
-
-
 
     virtual void load(const std::string& filename)
     {
@@ -519,83 +487,19 @@ public:
 #endif
     }
 
-
-    virtual void clear()
-    {
-        // particle_id_generator pidgen_;
-        // boost::shared_ptr<rng_type> rng_;
-        // boost::weak_ptr<model_type> model_;
-        ; // do nothing
-
-        // molecule_info_map molecule_info_map_;
-        // structure_map structure_map_;
-        // per_species_particle_id_set particle_pool_;
-        molecule_info_map_.clear();
-        structure_map_.clear();
-        particle_pool_.clear();
-
-        // ParticleContainerBase
-        // particle_matrix_type pmat_;
-        // time_type t_;
-        base_type::clear();
-    }
-
     virtual const length_type volume() const
     {
         const position_type& L(edge_lengths());
         return L[0] * L[1] * L[2];
     }
 
-    virtual const position_type& edge_lengths() const
-    {
-        return base_type::edge_lengths();
-    }
-
-    virtual void reset(const position_type& lengths)
-    {
-        base_type::reset(lengths);
-    }
-
     virtual void reset(const position_type& lengths, const matrix_sizes_type& sizes)
     {
-        base_type::reset(lengths, sizes);
-    }
+        boost::scoped_ptr<particle_space_type>
+            newps(new particle_space_type(lengths, sizes));
+        ps_.swap(newps);
 
-    virtual bool has_particle(const particle_id_type& pid) const
-    {
-        return base_type::has_particle(pid);
-    }
-
-    virtual ecell4::Integer num_particles() const
-    {
-        return base_type::num_particles();
-    }
-
-    virtual ecell4::Integer num_particles_exact(const ecell4::Species& sp) const
-    {
-        typename per_species_particle_id_set::const_iterator
-            i(particle_pool_.find(sp.serial()));
-        if (i == particle_pool_.end())
-        {
-            return 0;
-        }
-        return (*i).second.size();
-    }
-
-    virtual ecell4::Integer num_particles(const ecell4::Species& sp) const
-    {
-        ecell4::Integer retval(0);
-        ecell4::SpeciesExpressionMatcher sexp(sp);
-        for (typename per_species_particle_id_set::const_iterator
-            i(particle_pool_.begin()); i != particle_pool_.end(); ++i)
-        {
-            const ecell4::Species tgt((*i).first);
-            if (sexp.match(tgt))
-            {
-                retval += (*i).second.size();
-            }
-        }
-        return retval;
+        ; // newps will be released here
     }
 
     void set_value(const ecell4::Species& sp, const ecell4::Real value)
@@ -620,163 +524,6 @@ public:
     virtual ecell4::Real get_value_exact(const ecell4::Species& sp) const
     {
         return static_cast<ecell4::Real>(num_molecules_exact(sp));
-    }
-
-    virtual ecell4::Integer num_molecules(const ecell4::Species& sp) const
-    {
-        ecell4::Integer retval(0);
-        ecell4::SpeciesExpressionMatcher sexp(sp);
-        for (typename per_species_particle_id_set::const_iterator
-            i(particle_pool_.begin()); i != particle_pool_.end(); ++i)
-        {
-            const ecell4::Species tgt((*i).first);
-            retval += sexp.count(tgt) * (*i).second.size();
-        }
-        return retval;
-    }
-
-    virtual ecell4::Integer num_molecules_exact(const ecell4::Species& sp) const
-    {
-        return num_particles_exact(sp);
-    }
-
-    virtual ecell4::Integer num_species() const
-    {
-        return particle_pool_.size();
-    }
-
-    virtual bool has_species(const ecell4::Species& sp) const
-    {
-        return (particle_pool_.find(sp.serial()) != particle_pool_.end());
-    }
-
-    virtual std::vector<std::pair<particle_id_type, particle_type> > list_particles() const
-    {
-        std::vector<std::pair<particle_id_type, particle_type> > retval;
-        retval.reserve(num_particles());
-        BOOST_FOREACH(particle_id_pair p, this->get_particles_range())
-        {
-            retval.push_back(p);
-        }
-        return retval;
-    }
-
-    virtual std::vector<std::pair<particle_id_type, particle_type> >
-        list_particles(const ecell4::Species& sp) const
-    {
-        std::vector<std::pair<particle_id_type, particle_type> > retval;
-        ecell4::SpeciesExpressionMatcher sexp(sp);
-        for (typename per_species_particle_id_set::const_iterator
-            i(particle_pool_.begin()); i != particle_pool_.end(); ++i)
-        {
-            const ecell4::Species tgt((*i).first);
-            if (sexp.match(tgt))
-            {
-                for (typename particle_id_set::const_iterator j((*i).second.begin());
-                    j != (*i).second.end(); ++j)
-                {
-                    const particle_id_type& pid(*j);
-                    retval.push_back(this->get_particle(pid));
-                }
-            }
-        }
-        return retval;
-    }
-
-    virtual std::vector<std::pair<particle_id_type, particle_type> >
-        list_particles_exact(const ecell4::Species& sp) const
-    {
-        std::vector<std::pair<particle_id_type, particle_type> > retval;
-        typename per_species_particle_id_set::const_iterator
-            i(particle_pool_.find(sp.serial()));
-        if (i == particle_pool_.end())
-        {
-            return retval;
-        }
-
-        for (typename particle_id_set::const_iterator j((*i).second.begin());
-            j != (*i).second.end(); ++j)
-        {
-            const particle_id_type& pid(*j);
-            retval.push_back(this->get_particle(pid));
-        }
-        return retval;
-    }
-
-    std::vector<ecell4::Species> list_species() const
-    {
-        std::vector<ecell4::Species> retval;
-        BOOST_FOREACH(particle_id_pair p, this->get_particles_range())
-        {
-            // ecell4::Species::serial_type == species_id_type
-            const ecell4::Species& sp(p.second.species());
-            if (std::find(retval.begin(), retval.end(), sp)
-                == retval.end())
-            {
-                retval.push_back(sp);
-            }
-        }
-        return retval;
-    }
-
-    std::vector<std::pair<std::pair<particle_id_type, particle_type>, length_type> >
-    list_particles_within_radius(
-        const position_type& pos, const length_type& radius) const
-    {
-        boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped(
-            base_type::check_overlap(particle_shape_type(pos, radius)));
-        std::vector<std::pair<std::pair<particle_id_type, particle_type>, length_type> >
-            retval;
-        if (overlapped && ::size(*overlapped))
-        {
-            for (typename particle_id_pair_and_distance_list::const_iterator
-                i(overlapped->begin()); i != overlapped->end(); ++i)
-            {
-                retval.push_back(*i);
-            }
-        }
-        return retval;
-    }
-
-    std::vector<std::pair<std::pair<particle_id_type, particle_type>, length_type> >
-    list_particles_within_radius(
-        const position_type& pos, const length_type& radius,
-        const particle_id_type& ignore) const
-    {
-        boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped(
-            base_type::check_overlap(particle_shape_type(pos, radius), ignore));
-        std::vector<std::pair<std::pair<particle_id_type, particle_type>, length_type> >
-            retval;
-        if (overlapped && ::size(*overlapped))
-        {
-            for (typename particle_id_pair_and_distance_list::const_iterator
-                i(overlapped->begin()); i != overlapped->end(); ++i)
-            {
-                retval.push_back(*i);
-            }
-        }
-        return retval;
-    }
-
-    std::vector<std::pair<std::pair<particle_id_type, particle_type>, length_type> >
-    list_particles_within_radius(
-        const position_type& pos, const length_type& radius,
-        const particle_id_type& ignore1, const particle_id_type& ignore2) const
-    {
-        boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped(
-            base_type::check_overlap(
-                particle_shape_type(pos, radius), ignore1, ignore2));
-        std::vector<std::pair<std::pair<particle_id_type, particle_type>, length_type> >
-            retval;
-        if (overlapped && ::size(*overlapped))
-        {
-            for (typename particle_id_pair_and_distance_list::const_iterator
-                i(overlapped->begin()); i != overlapped->end(); ++i)
-            {
-                retval.push_back(*i);
-            }
-        }
-        return retval;
     }
 
     void bind_to(boost::shared_ptr<model_type> model)
@@ -808,7 +555,7 @@ public:
     {
         const species_id_type sid(sp.serial());
         typename molecule_info_map::const_iterator i(molecule_info_map_.find(sid));
-        molecule_info_type const& minfo(
+        molecule_info_type const minfo(
             i != molecule_info_map_.end() ? (*i).second : get_molecule_info(sp));
         return new_particle(particle_type(sid, pos, minfo.radius, minfo.D));
     }
@@ -816,23 +563,19 @@ public:
     std::pair<std::pair<particle_id_type, particle_type>, bool>
     new_particle(const particle_type& p)
     {
-        particle_id_pair retval(pidgen_(), p);
-        boost::scoped_ptr<particle_id_pair_and_distance_list> overlapped(
-            base_type::check_overlap(
+        const particle_id_pair_and_distance_list overlapped(
+            check_overlap(
                 particle_shape_type(p.position(), p.radius())));
-        if (overlapped && ::size(*overlapped))
+        if (overlapped.size() > 0)
         {
-            return std::make_pair(retval, false);
+            return std::make_pair(std::make_pair(pidgen_(), p), false);
+            // return std::make_pair(std::make_pair(particle_id_type(), p), false);
         }
         else
         {
-            return std::make_pair(retval, update_particle(retval));
+            const particle_id_type pid = pidgen_();
+            return std::make_pair(std::make_pair(pid, p), update_particle(pid, p));
         }
-    }
-
-    virtual bool update_particle(const particle_id_type& pid, const particle_type& p)
-    {
-        return this->update_particle(std::make_pair(pid, p));
     }
 
     void add_molecules(const ecell4::Species& sp, const ecell4::Integer& num)
@@ -849,34 +592,26 @@ public:
 
     void remove_molecules(const ecell4::Species& sp, const ecell4::Integer& num)
     {
-        if (num == 0)
-        {
-            return;
-        }
-        else if (num < 0)
+        if (num < 0)
         {
             throw std::invalid_argument(
                 "The number of molecules must be positive.");
         }
 
-        typename per_species_particle_id_set::const_iterator
-            i(particle_pool_.find(sp.serial()));
-        if (i == particle_pool_.end() || (*i).second.size() < num)
+        std::vector<std::pair<ecell4::ParticleID, ecell4::Particle> >
+            particles(list_particles(sp));
+        const Integer num_particles(particles.size());
+        if (num_particles < num)
         {
             throw std::invalid_argument(
                 "The number of molecules cannot be negative.");
         }
 
-        for (unsigned int j(0); j < num; ++j)
+        shuffle((*rng_), particles);
+        for (std::vector<std::pair<ecell4::ParticleID, ecell4::Particle> >::const_iterator
+            i(particles.begin()); i != particles.begin() + num; ++i)
         {
-            const Integer n(rng()->uniform_int(0, (*i).second.size() - 1));
-            // typename particle_id_set::const_iterator
-            //     target(std::advance((*i).second.begin(), n));
-            // this->remove_particle((*target).first);
-            typename particle_id_set::const_iterator
-                target((*i).second.begin());
-            std::advance(target, n);
-            this->remove_particle(*target);
+            remove_particle((*i).first);
         }
     }
 
@@ -885,17 +620,10 @@ public:
      * @param sp a species
      * @return info a molecule info
      */
-    molecule_info_type get_molecule_info(const ecell4::Species& sp) const
+    molecule_info_type get_molecule_info(species_id_type const& sp) const
     {
-        const molecule_info_type defaults = {0.0, 0.0, "world"};
-        return get_molecule_info(sp, defaults);
-    }
-
-    molecule_info_type get_molecule_info(
-        const ecell4::Species& sp, const molecule_info_type& defaults) const
-    {
-        ecell4::Real radius(defaults.radius), D(defaults.D);
-        std::string structure_id(defaults.structure_id);
+        ecell4::Real radius(0.0), D(0.0);
+        std::string structure_id("world");
 
         if (sp.has_attribute("radius") && sp.has_attribute("D"))
         {
@@ -928,50 +656,16 @@ public:
         return info;
     }
 
-    virtual molecule_info_type const& get_molecule_info(species_id_type const& sid)
-    {
-        typename molecule_info_map::const_iterator i(molecule_info_map_.find(sid));
-        if (molecule_info_map_.end() == i)
-        {
-            return this->register_species(sid);
-            // throw not_found(std::string("Unknown species (id=")
-            //     + boost::lexical_cast<std::string>(sid) + ")");
-        }
-        return (*i).second;
-    }
-
-    virtual molecule_info_type const& find_molecule_info(species_id_type const& sid) const
-    {
-        typename molecule_info_map::const_iterator i(molecule_info_map_.find(sid));
-        if (molecule_info_map_.end() == i)
-        {
-            throw not_found(std::string("Unknown species (id=")
-                + boost::lexical_cast<std::string>(sid) + ")");
-        }
-        return (*i).second;
-    }
-
 protected:
 
-    const molecule_info_type& register_species(const particle_id_pair& pid_pair)
+    const molecule_info_type& register_species(const particle_type& p)
     {
-        const molecule_info_type defaults
-            = {pid_pair.second.radius(), pid_pair.second.D(), "world"};
-        const species_id_type sid(pid_pair.second.sid());
-        const ecell4::Species sp(sid);
-        molecule_info_type info(get_molecule_info(sp, defaults));
-        molecule_info_map_.insert(std::make_pair(sid, info));
-        particle_pool_[sid] = particle_id_set();
-        return (*molecule_info_map_.find(sid)).second;
-    }
-
-    const molecule_info_type& register_species(const species_id_type& sid)
-    {
-        const ecell4::Species sp(sid);
-        molecule_info_type info(get_molecule_info(sp));
-        molecule_info_map_.insert(std::make_pair(sid, info));
-        particle_pool_[sid] = particle_id_set();
-        return (*molecule_info_map_.find(sid)).second;
+        const molecule_info_type defaults = {p.radius(), p.D(), "world"};
+        const species_id_type sp(p.species());
+        molecule_info_type info = defaults;
+        // molecule_info_type info(get_molecule_info(sp, defaults));
+        molecule_info_map_.insert(std::make_pair(sp, info));
+        return (*molecule_info_map_.find(sp)).second;
     }
 
     void add_world_structure()
@@ -992,16 +686,398 @@ protected:
         //             "world", cuboidal_region_shape_type(center, center))));
     }
 
+public:
+
+    /**
+     * redirects
+     */
+
+    virtual ecell4::Integer num_particles() const
+    {
+        return (*ps_).num_particles();
+    }
+
+    virtual ecell4::Integer num_particles_exact(const ecell4::Species& sp) const
+    {
+        return (*ps_).num_particles_exact(sp);
+    }
+
+    virtual ecell4::Integer num_particles(const ecell4::Species& sp) const
+    {
+        return (*ps_).num_particles(sp);
+    }
+
+    virtual ecell4::Integer num_molecules(const ecell4::Species& sp) const
+    {
+        return (*ps_).num_molecules(sp);
+    }
+
+    virtual ecell4::Integer num_molecules_exact(const ecell4::Species& sp) const
+    {
+        return (*ps_).num_molecules_exact(sp);
+    }
+
+    virtual ecell4::Integer num_species() const
+    {
+        return (*ps_).num_species();
+    }
+
+    virtual bool has_species(const ecell4::Species& sp) const
+    {
+        return (*ps_).has_species(sp);
+    }
+
+    virtual std::vector<std::pair<particle_id_type, particle_type> > list_particles() const
+    {
+        return (*ps_).list_particles();
+    }
+
+    virtual std::vector<std::pair<particle_id_type, particle_type> >
+        list_particles(const ecell4::Species& sp) const
+    {
+        return (*ps_).list_particles(sp);
+    }
+
+    virtual std::vector<std::pair<particle_id_type, particle_type> >
+        list_particles_exact(const ecell4::Species& sp) const
+    {
+        return (*ps_).list_particles_exact(sp);
+    }
+
+    std::vector<ecell4::Species> list_species() const
+    {
+        return (*ps_).list_species();
+    }
+
+    virtual const position_type& edge_lengths() const
+    {
+        return (*ps_).edge_lengths();
+    }
+
+    virtual void reset(const position_type& lengths)
+    {
+        (*ps_).reset(lengths);
+    }
+
+    position_type cell_sizes() const
+    {
+        return (*ps_).cell_sizes();
+    }
+
+    matrix_sizes_type matrix_sizes() const
+    {
+        return (*ps_).matrix_sizes();
+    }
+
+    virtual bool has_particle(particle_id_type const& id) const
+    {
+        return (*ps_).has_particle(id);
+    }
+
+    virtual particle_id_pair get_particle(particle_id_type const& id) const
+    {
+        return (*ps_).get_particle(id);
+    }
+
+    virtual length_type distance(
+        position_type const& lhs, position_type const& rhs) const
+    {
+        return (*ps_).distance(lhs, rhs);
+    }
+
+    virtual position_type apply_boundary(position_type const& v) const
+    {
+        return (*ps_).apply_boundary(v);
+    }
+
+    virtual const time_type t() const
+    {
+        return (*ps_).t();
+    }
+
+    virtual void set_t(const time_type& t)
+    {
+        (*ps_).set_t(t);
+    }
+
+    virtual void remove_particle(particle_id_type const& id)
+    {
+        (*ps_).remove_particle(id);
+    }
+
+    virtual position_type periodic_transpose(
+        position_type const& p0, position_type const& p1) const
+    {
+        return (*ps_).periodic_transpose(p0, p1);
+    }
+
+    std::vector<std::pair<std::pair<particle_id_type, particle_type>, length_type> >
+    list_particles_within_radius(
+        const position_type& pos, const length_type& radius) const
+    {
+        return (*ps_).list_particles_within_radius(pos, radius);
+    }
+
+    std::vector<std::pair<std::pair<particle_id_type, particle_type>, length_type> >
+    list_particles_within_radius(
+        const position_type& pos, const length_type& radius,
+        const particle_id_type& ignore) const
+    {
+        return (*ps_).list_particles_within_radius(pos, radius, ignore);
+    }
+
+    std::vector<std::pair<std::pair<particle_id_type, particle_type>, length_type> >
+    list_particles_within_radius(
+        const position_type& pos, const length_type& radius,
+        const particle_id_type& ignore1, const particle_id_type& ignore2) const
+    {
+        return (*ps_).list_particles_within_radius(pos, radius, ignore1, ignore2);
+    }
+
+    /**
+     * wrappers
+     */
+
+    template<typename T1_>
+    T1_ calculate_pair_CoM(
+        T1_ const& p1, T1_ const& p2,
+        typename element_type_of<T1_>::type const& D1,
+        typename element_type_of<T1_>::type const& D2)
+    {
+        typedef typename element_type_of<T1_>::type element_type;
+
+        const T1_ p2_trans(periodic_transpose(p2, p1));
+        const element_type D12(add(D1, D2));
+        const element_type s(divide(D1, D12)), t(divide(D2, D12));
+        const T1_ com(add(multiply(p1, t), multiply(p2_trans, s)));
+        return apply_boundary(com);
+    }
+
+    particle_id_pair get_particle(particle_id_type const& id, bool& found) const
+    {
+        found = (*ps_).has_particle(id);
+        if (!found)
+        {
+            return particle_id_pair();
+        }
+        return get_particle(id);
+    }
+
+    virtual particle_id_pair_and_distance_list check_overlap(particle_shape_type const& s) const
+    {
+        return (*ps_).list_particles_within_radius(s.position(), s.radius());
+    }
+
+    virtual particle_id_pair_and_distance_list check_overlap(particle_shape_type const& s, particle_id_type const& ignore) const
+    {
+        return (*ps_).list_particles_within_radius(s.position(), s.radius(), ignore);
+    }
+
+    virtual particle_id_pair_and_distance_list check_overlap(particle_shape_type const& s, particle_id_type const& ignore1, particle_id_type const& ignore2) const
+    {
+        return (*ps_).list_particles_within_radius(s.position(), s.radius(), ignore1, ignore2);
+    }
+
+    // template<typename Tsph_, typename Tset_>
+    // particle_id_pair_and_distance_list* check_overlap(Tsph_ const& s, Tset_ const& ignore,
+    //     typename boost::disable_if<boost::is_same<Tsph_, particle_id_pair> >::type* = 0) const
+    // {
+    //     typename utils::template overlap_checker<Tset_> oc(ignore);
+    //     traits_type::take_neighbor(*pmat_, oc, s);
+    //     return oc.result();
+    // }
+
+    // template<typename Tsph_>
+    // particle_id_pair_and_distance_list* check_overlap(Tsph_ const& s,
+    //     typename boost::disable_if<boost::is_same<Tsph_, particle_id_pair> >::type* = 0) const
+    // {
+    //     typename utils::template overlap_checker<boost::array<particle_id_type, 0> > oc;
+    //     traits_type::take_neighbor(*pmat_, oc, s);
+    //     return oc.result();
+    // }
+
+    particle_id_pair_range get_particles_range() const
+    {
+        const particle_space_type::particle_container_type& particles((*ps_).particles());
+        return particle_id_pair_range(particles.begin(), particles.end(), particles.size());
+    }
+
+    /**
+     *
+     */
+
+    virtual transaction_type* create_transaction();
+
+    template<typename T_>
+    length_type distance(T_ const& lhs, position_type const& rhs) const
+    {
+        // return (*ps_).distance(lhs, rhs);
+        return traits_type::distance(lhs, rhs, edge_lengths());
+    }
+
+    void clear()
+    {
+        // particle_id_generator pidgen_;
+        // boost::shared_ptr<rng_type> rng_;
+        // boost::weak_ptr<model_type> model_;
+        ; // do nothing
+
+        // molecule_info_map molecule_info_map_;
+        // structure_map structure_map_;
+        // per_species_particle_id_set particle_pool_;
+        molecule_info_map_.clear();
+        structure_map_.clear();
+
+        (*ps_).reset((*ps_).edge_lengths());
+    }
+
+    // for polygon
+    virtual void add_surface(const boost::array<position_type, 3>& vertices)
+    {
+        polygon_.emplace(vertices);
+    }
+
+//     virtual position_type
+//     apply_reflection(const position_type& pos, const position_type& disp)
+//     {
+//         return polygon_.apply_reflection(pos, disp,
+//                 (polygon_.get_faces_within_radius(pos, length(disp))).first,
+//                 this->edge_lengths());
+//     }
+
+    virtual position_type
+    apply_structure(const position_type& pos, const position_type& disp)
+    {
+        return this->apply_structure_rec(pos, disp, Polygon<position_type>::make_nonsence_id());
+    }
+
+protected:
+
+    // for polygon
+    position_type
+    apply_structure_rec(const position_type& pos, const position_type& disp,
+            const typename Polygon<position_type>::face_id_type ignore)
+    {
+        typedef typename Polygon<position_type>::face_id_type face_id_t;
+
+        const ecell4::AABBSurface unitcell(
+                position_type(0., 0., 0.), this->edge_lengths());
+        const std::pair<bool, length_type> test_unitcell =
+                unitcell.intersect_ray(pos, disp);
+        const length_type dist_to_unit_cell =
+                length(disp) * test_unitcell.second;
+
+        const std::pair<bool, std::pair<length_type, face_id_t> > test_polygon = 
+                this->polygon_.intersect_ray(pos, disp, ignore);
+
+        if(!test_unitcell.first && !test_polygon.first)
+            return pos + disp;
+
+        if(test_polygon.first && test_polygon.second.first < dist_to_unit_cell)
+        {
+            const std::pair<std::pair<position_type, position_type>, face_id_t>
+                    reflected = this->polygon_.apply_reflection(
+                            pos, disp, test_polygon.second.second);
+            return this->apply_structure_rec(reflected.first.first,
+                    reflected.first.second - reflected.first.first, reflected.second);
+        }
+        else if(test_unitcell.first)
+        {
+            if(test_unitcell.second <= 0.0 || 1.0 < test_unitcell.second)
+            {
+                std::cerr << "aabb.is_inside(begin) = " << unitcell._is_inside(pos) << std::endl;
+                std::cerr << "begin = " << pos << std::endl;
+                std::cerr << "edge_length = " << this->edge_lengths() << std::endl;
+                std::cerr << "test_unitcell.first = " << test_unitcell.first << std::endl;
+                std::cerr << "test_unitcell.second = " <<  test_unitcell.second  << std::endl;
+                std::cerr << "test_polygon.first = " << test_polygon.first << std::endl;
+                std::cerr << "test_polygon.second.first = "  << test_polygon.second.first << std::endl;
+                std::cerr << "test_polygon.second.second = " << test_polygon.second.second << std::endl;
+                assert(0);
+            }
+            const std::pair<position_type, position_type> next_segment =
+                apply_periodic_only_once(pos, disp, test_unitcell.second, unitcell);
+            return this->apply_structure_rec(
+                    next_segment.first, next_segment.second - next_segment.first,
+                    Polygon<position_type>::make_nonsence_id());
+        }
+        else
+            throw std::logic_error("never reach here");
+    }
+
+    std::pair<position_type, position_type>
+    apply_periodic_only_once(const position_type& pos, const position_type& disp,
+                             const length_type tmin, const ecell4::AABBSurface& aabb)
+    {
+        //XXX: this function assumes the conditions described below is satisfied.
+        // - aabb.lower = (0, 0, 0)
+        // - periodic boundary is applied
+        assert(0. < tmin && tmin <= 1.0);
+        position_type next_begin = pos + disp * tmin;
+        position_type next_end   = pos + disp;
+        position_type pullback;
+             if(std::abs(next_begin[0] - aabb.upper()[0]) < 1e-12)
+        {
+            next_begin[0] = aabb.lower()[0];
+            next_end[0] -= (aabb.upper()[0] - aabb.lower()[0]);
+        }
+        else if(std::abs(next_begin[0] - aabb.lower()[0]) < 1e-12)
+        {
+            next_begin[0] = aabb.upper()[0];
+            next_end[0] += (aabb.upper()[0] - aabb.lower()[0]);
+        }
+        else if(std::abs(next_begin[1] - aabb.upper()[1]) < 1e-12)
+        {
+            next_begin[1] = aabb.lower()[1];
+            next_end[1] -= (aabb.upper()[1] - aabb.lower()[1]);
+        }
+        else if(std::abs(next_begin[1] - aabb.lower()[1]) < 1e-12)
+        {
+            next_begin[1] = aabb.upper()[1];
+            next_end[1] += (aabb.upper()[1] - aabb.lower()[1]);
+        }
+        else if(std::abs(next_begin[2] - aabb.upper()[2]) < 1e-12)
+        {
+            next_begin[2] = aabb.lower()[2];
+            next_end[2] -= (aabb.upper()[2] - aabb.lower()[2]);
+        }
+        else if(std::abs(next_begin[2] - aabb.lower()[2]) < 1e-12)
+        {
+            next_begin[2] = aabb.upper()[2];
+            next_end[2] += (aabb.upper()[2] - aabb.lower()[2]);
+        }
+        else
+        {
+            throw std::logic_error("never reach here");
+        }
+        assert(aabb._is_inside(next_begin));
+
+        return std::make_pair(next_begin, next_end);
+    }
+
 private:
+
     particle_id_generator pidgen_;
     molecule_info_map molecule_info_map_;
     structure_map structure_map_;
-    per_species_particle_id_set particle_pool_;
 
     /** ecell4::Space
      */
     boost::shared_ptr<rng_type> rng_;
     boost::weak_ptr<model_type> model_;
+
+protected:
+
+    boost::scoped_ptr<particle_space_type> ps_;
+
+    Polygon<position_type> polygon_;
 };
+
+template<typename Ttraits_>
+inline typename World<Ttraits_>::transaction_type*
+World<Ttraits_>::create_transaction()
+{
+    return new TransactionImpl<World>(*this);
+}
 
 #endif /* WORLD_HPP */
