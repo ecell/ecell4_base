@@ -179,17 +179,8 @@ bool BDPropagator2D::attempt_reaction(
                 // move.
                 // if rejected, update particles with positions just after reaction
 
-                int update_particle = 0;
-                if(D1 == 0)
-                    update_particle = 2;
-                else if(D2 == 0)
-                    update_particle = 1;
-                else if(rng_.uniform(0., 1.) < 0.5)
-                    update_particle = 1;
-                else
-                    update_particle = 2;
-
-                if(update_particle == 1)
+                assert(D1 != 0 || D2 != 0);
+                if(D2 == 0 || (D1 != 0 && rng_.uniform_int(0, 1) == 0))
                 {
                     const Real3& normal = this->poly_.at(newpf1.second).normal();
                     const ParticleContainer2D& container2D = world_.container_2D();
@@ -207,7 +198,7 @@ bool BDPropagator2D::attempt_reaction(
                         newpf1.second                  = newpf.second;
                     }
                 }
-                else if(update_particle == 2)
+                else
                 {// particle 2
                     const Real3& normal = this->poly_.at(newpf2.second).normal();
                     const ParticleContainer2D& container2D = world_.container_2D();
@@ -224,10 +215,6 @@ bool BDPropagator2D::attempt_reaction(
                         particle_to_update2.position() = newpf.first;
                         newpf2.second                  = newpf.second;
                     }
-                }
-                else
-                {
-                    throw std::logic_error("invalid update_particle");
                 }
 
                 world_.update_particle_without_checking(
