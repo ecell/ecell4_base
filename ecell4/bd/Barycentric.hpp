@@ -76,18 +76,19 @@ operator-(const Barycentric<realT>& lhs, const Barycentric<realT>& rhs)
 }
 
 template<typename realT>
-inline bool is_inside(const Barycentric<realT>& bary)
-{
-    return (0. <= bary[0] && bary[0] <= 1.0) &&
-           (0. <= bary[1] && bary[1] <= 1.0) &&
-           (0. <= bary[2] && bary[2] <= 1.0);
-}
-
-template<typename realT>
 inline bool on_plane(
         const Barycentric<realT>& bary, const realT tolerance = 1e-10)
 {
     return std::abs(bary[0] + bary[1] + bary[2] - 1.0) < tolerance;
+}
+
+template<typename realT>
+inline bool is_inside(const Barycentric<realT>& bary)
+{
+    return on_plane(bary) &&
+           (0. <= bary[0] && bary[0] <= 1.0) &&
+           (0. <= bary[1] && bary[1] <= 1.0) &&
+           (0. <= bary[2] && bary[2] <= 1.0);
 }
 
 template<typename realT>
