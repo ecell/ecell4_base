@@ -275,8 +275,8 @@ public:
             const ParticleID& pid, const Particle& p, const face_id_type& fid)
     {
         // XXX: checking overlap in 3D spherical region
-        if (list_particles_within_radius(p.position(), p.radius(), pid).size()
-            == 0)
+        if (list_particles_within_radius(std::make_pair(p.position(), fid),
+                    p.radius(), pid).size() == 0)
         {
             return (*ps2d_).update_particle(pid, p, fid);
         }
