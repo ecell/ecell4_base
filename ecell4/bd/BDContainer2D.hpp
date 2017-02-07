@@ -54,25 +54,13 @@ public:
         list_particles_exact(const Species& sp) const;
 
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
-    list_particles_within_radius(const Real3& pos, const Real& radius) const
-    {
-        throw NotImplemented(
-            "2D::list_particle_within_radius(Real3, Real)");
-    }
+    list_particles_within_radius(const Real3& pos, const Real& radius) const;
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
     list_particles_within_radius(const Real3& pos, const Real& radius,
-        const ParticleID& ignore) const
-    {
-        throw NotImplemented(
-            "2D::list_particle_within_radius(Real3, Real, ParticleID)");
-    }
+        const ParticleID& ignore) const;
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
     list_particles_within_radius(const Real3& pos, const Real& radius,
-        const ParticleID& ignore1, const ParticleID& ignore2) const
-    {
-        throw NotImplemented(
-            "2D::list_particle_within_radius(Real3, Real, ParticleID, ParticleID)");
-    }
+        const ParticleID& ignore1, const ParticleID& ignore2) const;
 
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
         list_particles_within_radius(

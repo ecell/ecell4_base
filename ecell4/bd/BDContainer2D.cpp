@@ -139,6 +139,61 @@ void ParticleContainer2D::remove_particle(const ParticleID& pid)
 
 std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
 ParticleContainer2D::list_particles_within_radius(
+        const Real3& pos, const Real& radius) const
+{
+    const Real rad2 = radius * radius;
+
+    std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > retval;
+    for(particle_container_type::const_iterator
+            iter = particles_.begin(); iter != particles_.end(); ++iter)
+    {
+        const Real l2 = length_sq(iter->second.position() - pos);
+        if(l2 <= rad2)
+            retval.push_back(std::make_pair(*iter, std::sqrt(l2)));
+    }
+    return retval;
+}
+
+std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
+ParticleContainer2D::list_particles_within_radius(
+        const Real3& pos, const Real& radius, const ParticleID& ignore) const
+{
+    const Real rad2 = radius * radius;
+    std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > retval;
+    for(particle_container_type::const_iterator
+            iter = particles_.begin(); iter != particles_.end(); ++iter)
+    {
+        if(iter->first == ignore) continue;
+
+        const Real l2 = length_sq(iter->second.position() - pos);
+        if(l2 <= rad2)
+            retval.push_back(std::make_pair(*iter, std::sqrt(l2)));
+    }
+    return retval;
+}
+
+std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
+ParticleContainer2D::list_particles_within_radius(
+        const Real3& pos, const Real& radius,
+        const ParticleID& ignore1, const ParticleID& ignore2) const
+{
+    const Real rad2 = radius * radius;
+    std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > retval;
+    for(particle_container_type::const_iterator
+            iter = particles_.begin(); iter != particles_.end(); ++iter)
+    {
+        if(iter->first == ignore1 || iter->first == ignore2) continue;
+
+        const Real l2 = length_sq(iter->second.position() - pos);
+        if(l2 <= rad2)
+            retval.push_back(std::make_pair(*iter, std::sqrt(l2)));
+    }
+    return retval;
+}
+
+
+std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
+ParticleContainer2D::list_particles_within_radius(
         const std::pair<Real3, face_id_type>& pos, const Real& radius) const
 {
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > retval;
