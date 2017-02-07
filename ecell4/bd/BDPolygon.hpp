@@ -140,6 +140,9 @@ class BDPolygon
         return std::sqrt(distance_sq(lhs, rhs));
     }
 
+    Real3 inter_position_vector(const std::pair<Real3, face_id_type>& lhs,
+                                const std::pair<Real3, face_id_type>& rhs) const;
+
     std::pair<std::pair<Real3, face_id_type>, Real3>
     move_next_face(const std::pair<Real3, face_id_type>& pos,
                    const Real3& disp) const;

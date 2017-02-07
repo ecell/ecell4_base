@@ -100,6 +100,13 @@ public:
                 std::make_pair(pos1, fid1), std::make_pair(pos2, fid2));
     }
 
+    Real3 get_inter_position_vector(
+            const std::pair<Real3, face_id_type>& lhs,
+            const std::pair<Real3, face_id_type>& rhs) const
+    {
+        return polygon_.inter_position_vector(lhs, rhs);
+    }
+
     bool has_particle(const ParticleID& pid) const;
     bool update_particle(const ParticleID& pid, const Particle& p)
     {
@@ -129,6 +136,7 @@ public:
         return fmap_[pid];
     }
 
+#ifdef WITH_HDF5
     void save_hdf5(H5::Group* root) const
     {
         throw NotSupported("2D hdf");
@@ -142,6 +150,18 @@ public:
         throw NotSupported(
             "save(const std::string) is not supported by this space class");
     }
+#else
+    virtual void save(const std::string& filename) const
+    {
+        throw NotSupported(
+            "save(const std::string) is not supported by this space class");
+    }
+    virtual void load(const std::string& filename) const
+    {
+        throw NotSupported(
+            "load(const std::string) is not supported by this space class");
+    }
+#endif
 
 private:
 

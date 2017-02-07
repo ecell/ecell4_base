@@ -591,6 +591,18 @@ public:
         return (*ps2d_).polygon().at(i);
     }
 
+    Real3 get_inter_position_vector(const Real3& lhs, const Real3& rhs) const
+    {
+        return rhs - lhs;
+    }
+
+    Real3 get_inter_position_vector(
+            const std::pair<Real3, face_id_type>& lhs,
+            const std::pair<Real3, face_id_type>& rhs) const
+    {
+        (*ps2d_).get_inter_position_vector(lhs, rhs);
+    }
+
 private:
 
     template<typename T>
