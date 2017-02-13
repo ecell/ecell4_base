@@ -885,12 +885,11 @@ cdef BDSimulator BDSimulator_from_Cpp_BDSimulator(Cpp_BDSimulator* s):
 cdef class BDFactory:
     """ A factory class creating a BDWorld instance and a BDSimulator instance.
 
-    BDFactory(Integer3 matrix_sizes=None, GSLRandomNumberGenerator rng=None, Real bd_dt_factor=None)
+    BDFactory(Integer3 matrix_sizes=None, Real bd_dt_factor=None)
 
     """
 
-    def __init__(self, Integer3 matrix_sizes=None, GSLRandomNumberGenerator rng=None,
-                 bd_dt_factor=None):
+    def __init__(self, Integer3 matrix_sizes=None, bd_dt_factor=None):
         """Constructor.
 
         Parameters
@@ -898,33 +897,28 @@ cdef class BDFactory:
         matrix_sizes : Integer3, optional
             A size of a cell matrix.
             The number of cells must be larger than 3, in principle.
-        rng : GSLRandomNumberGenerator, optional
-            A random number generator.
         bd_dt_factor : Real
 
         """
         pass
 
-    def __cinit__(self, Integer3 matrix_sizes=None, GSLRandomNumberGenerator rng=None,
-                  bd_dt_factor=None):
-        if matrix_sizes is None:
-            if bd_dt_factor is None:
-                self.thisptr = new Cpp_BDFactory()
-            else:
-                self.thisptr = new Cpp_BDFactory(<Real>bd_dt_factor)
-        elif rng is None:
-            if bd_dt_factor is None:
-                self.thisptr = new Cpp_BDFactory(deref(matrix_sizes.thisptr))
-            else:
-                self.thisptr = new Cpp_BDFactory(deref(matrix_sizes.thisptr), <Real>bd_dt_factor)
-        else:
-            if bd_dt_factor is None:
-                self.thisptr = new Cpp_BDFactory(deref(matrix_sizes.thisptr), deref(rng.thisptr))
-            else:
-                self.thisptr = new Cpp_BDFactory(deref(matrix_sizes.thisptr), deref(rng.thisptr), <Real>bd_dt_factor)
+    def __cinit__(self, Integer3 matrix_sizes=None, bd_dt_factor=None):
+        self.thisptr = new Cpp_BDFactory(
+            Cpp_BDFactory.default_matrix_sizes() if matrix_sizes is None else deref(matrix_sizes.thisptr),
+            Cpp_BDFactory.default_bd_dt_factor() if bd_dt_factor is None else <Real>bd_dt_factor)
 
     def __dealloc__(self):
         del self.thisptr
+
+    def rng(self, GSLRandomNumberGenerator rng):
+        """rng(GSLRandomNumberGenerator) -> BDFactory
+
+        Set a random number generator, and return self.
+
+        """
+        cdef Cpp_BDFactory *ptr = self.thisptr.rng_ptr(deref(rng.thisptr))
+        assert ptr == self.thisptr
+        return self
 
     def create_world(self, arg1=None):
         """create_world(arg1=None) -> BDWorld

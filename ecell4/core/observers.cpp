@@ -377,178 +377,6 @@ void CSVObserver::reset()
     base_type::reset();
 }
 
-const Real FixedIntervalTrajectoryObserver::next_time() const
-{
-    return std::min(event_.next_time(), subevent_.next_time());
-}
-
-const Integer FixedIntervalTrajectoryObserver::num_steps() const
-{
-    return event_.num_steps + subevent_.num_steps;
-}
-
-const Integer FixedIntervalTrajectoryObserver::count() const
-{
-    return event_.count;
-}
-
-void FixedIntervalTrajectoryObserver::initialize(const boost::shared_ptr<Space>& space)
-{
-    event_.initialize(space->t());
-    subevent_.initialize(space->t());
-
-    typedef std::vector<std::pair<ParticleID, Particle> > particle_id_pairs;
-    if (pids_.size() == 0)
-    {
-        particle_id_pairs const particles(space->list_particles());
-        pids_.reserve(particles.size());
-        for (particle_id_pairs::const_iterator i(particles.begin());
-            i != particles.end(); ++i)
-        {
-            if ((*i).second.D() > 0)
-            {
-                pids_.push_back((*i).first);
-            }
-        }
-    }
-
-    prev_positions_.resize(pids_.size());
-    trajectories_.resize(pids_.size());
-    strides_.resize(pids_.size());
-}
-
-bool FixedIntervalTrajectoryObserver::fire(
-    const Simulator* sim, const boost::shared_ptr<Space>& space)
-{
-    if (subevent_.next_time() <= event_.next_time())
-    {
-        fire_subevent(sim, space);
-    }
-    else
-    {
-        fire_event(sim, space);
-    }
-    return true;
-}
-
-void FixedIntervalTrajectoryObserver::fire_subevent(
-    const Simulator* sim, const boost::shared_ptr<Space>& space)
-{
-    if (resolve_boundary_)
-    {
-        const Real3 edge_lengths(space->actual_lengths());
-        std::vector<Real3>::iterator j(prev_positions_.begin());
-        std::vector<Real3>::iterator k(strides_.begin());
-        for (std::vector<ParticleID>::const_iterator i(pids_.begin());
-            i != pids_.end(); ++i)
-        {
-            if (space->has_particle(*i))
-            {
-                Real3& stride(*k);
-                Real3 pos(stride + space->get_particle(*i).second.position());
-                if (subevent_.num_steps > 0)
-                {
-                    const Real3& prev(*j);
-                    for (unsigned int dim(0); dim != 3; ++dim)
-                    {
-                        const Real L(edge_lengths[dim]);
-                        if (pos[dim] - prev[dim] >= L * 0.5)
-                        {
-                            stride[dim] -= L;
-                            pos[dim] -= L;
-                        }
-                        else if (pos[dim] - prev[dim] <= L * -0.5)
-                        {
-                            stride[dim] += L;
-                            pos[dim] += L;
-                        }
-                    }
-                }
-                (*j) = pos;
-            }
-            ++j;
-            ++k;
-        }
-    }
-
-    subevent_.fire();
-}
-
-void FixedIntervalTrajectoryObserver::fire_event(
-    const Simulator* sim, const boost::shared_ptr<Space>& space)
-{
-    t_.push_back(space->t());
-
-    const Real3 edge_lengths(space->actual_lengths());
-    std::vector<Real3>::const_iterator j(prev_positions_.begin());
-    std::vector<Real3>::const_iterator k(strides_.begin());
-    std::vector<std::vector<Real3> >::iterator l(trajectories_.begin());
-    for (std::vector<ParticleID>::const_iterator i(pids_.begin());
-        i != pids_.end(); ++i)
-    {
-        if (space->has_particle(*i))
-        {
-            const Real3& stride(*k);
-            Real3 pos(stride + space->get_particle(*i).second.position());
-
-            if (resolve_boundary_ && subevent_.num_steps > 0)
-            {
-                const Real3& prev(*j);
-
-                for (unsigned int dim(0); dim != 3; ++dim)
-                {
-                    const Real L(edge_lengths[dim]);
-                    if (pos[dim] - prev[dim] >= L * 0.5)
-                    {
-                        pos[dim] -= L;
-                    }
-                    else if (pos[dim] - prev[dim] <= L * -0.5)
-                    {
-                        pos[dim] += L;
-                    }
-                }
-            }
-
-            (*l).push_back(pos);
-        }
-        ++j;
-        ++k;
-        ++l;
-    }
-
-    event_.fire();
-}
-
-
-void FixedIntervalTrajectoryObserver::reset()
-{
-    event_.reset();
-    subevent_.reset();
-
-    prev_positions_.clear();
-    prev_positions_.resize(pids_.size(), Real3(0, 0, 0));
-    trajectories_.clear();
-    trajectories_.resize(pids_.size(), std::vector<Real3>());
-    strides_.clear();
-    strides_.resize(pids_.size(), Real3(0, 0, 0));
-    t_.clear();
-}
-
-const std::vector<std::vector<Real3> >& FixedIntervalTrajectoryObserver::data() const
-{
-    return trajectories_;
-}
-
-const Integer FixedIntervalTrajectoryObserver::num_tracers() const
-{
-    return pids_.size();
-}
-
-const std::vector<Real>& FixedIntervalTrajectoryObserver::t() const
-{
-    return t_;
-}
-
 void TimeoutObserver::initialize(const boost::shared_ptr<Space>& space)
 {
     base_type::initialize(space);
@@ -605,8 +433,8 @@ void FixedIntervalTrackingObserver::initialize(const boost::shared_ptr<Space>& s
     if (pids_.size() == 0)
     {
         typedef std::vector<std::pair<ParticleID, Particle> > particle_id_pairs;
-        for (std::vector<Species>::const_iterator i(species_list_.begin());
-             i != species_list_.end(); ++i)
+        for (std::vector<Species>::const_iterator i(species_.begin());
+             i != species_.end(); ++i)
         {
             const Species& sp(*i);
             particle_id_pairs const particles(space->list_particles_exact(sp));
@@ -663,8 +491,8 @@ void FixedIntervalTrackingObserver::fire_subevent(
         Real Lmin(threshold_);
         ParticleID newpid;
 
-        for (std::vector<Species>::const_iterator l(species_list_.begin());
-             l != species_list_.end(); ++l)
+        for (std::vector<Species>::const_iterator l(species_.begin());
+             l != species_.end(); ++l)
         {
             const Species& sp(*l);
             particle_id_pairs const particles(space->list_particles_exact(sp));

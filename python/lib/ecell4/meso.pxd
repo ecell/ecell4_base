@@ -130,17 +130,18 @@ cdef MesoscopicSimulator MesoscopicSimulator_from_Cpp_MesoscopicSimulator(Cpp_Me
 #  ecell4::meso::MesoscopicFactory
 cdef extern from "ecell4/meso/MesoscopicFactory.hpp" namespace "ecell4::meso":
     cdef cppclass Cpp_MesoscopicFactory "ecell4::meso::MesoscopicFactory":
-        Cpp_MesoscopicFactory() except +
-        Cpp_MesoscopicFactory(Cpp_Integer3&) except +
-        Cpp_MesoscopicFactory(Cpp_Integer3&, shared_ptr[Cpp_RandomNumberGenerator]) except +
-        Cpp_MesoscopicFactory(Real) except +
-        Cpp_MesoscopicFactory(Real, shared_ptr[Cpp_RandomNumberGenerator]) except +
+        Cpp_MesoscopicFactory(Cpp_Integer3&, Real) except +
         Cpp_MesoscopicWorld* create_world()
         Cpp_MesoscopicWorld* create_world(string)
         Cpp_MesoscopicWorld* create_world(Cpp_Real3&)
         Cpp_MesoscopicWorld* create_world(shared_ptr[Cpp_Model])
         Cpp_MesoscopicSimulator* create_simulator(shared_ptr[Cpp_Model], shared_ptr[Cpp_MesoscopicWorld])
         Cpp_MesoscopicSimulator* create_simulator(shared_ptr[Cpp_MesoscopicWorld])
+        Cpp_MesoscopicFactory* rng_ptr(shared_ptr[Cpp_RandomNumberGenerator]&)
+        @staticmethod
+        Cpp_Integer3 default_matrix_sizes()
+        @staticmethod
+        Real default_subvolume_length()
 
 ## MesoscopicFactory
 #  a python wrapper for Cpp_MesoscopicFactory

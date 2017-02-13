@@ -42,7 +42,17 @@ public:
     std::pair<bool, context_type> match(
         const Species& sp, const context_type& ctx)
     {
-        target_ = sp;
+        // target_ = sp;
+        target_ = sp.units();
+        itr_ = target_.begin();
+        ctx_ = ctx;
+        return next();
+    }
+
+    std::pair<bool, context_type> match(
+        const std::vector<UnitSpecies>& target, const context_type& ctx)
+    {
+        target_ = target;
         itr_ = target_.begin();
         ctx_ = ctx;
         return next();
@@ -53,7 +63,8 @@ public:
 protected:
 
     UnitSpecies pttrn_;
-    Species target_;
+    // Species target_;
+    std::vector<UnitSpecies> target_;
     Species::container_type::const_iterator itr_;
     context_type ctx_;
 };
@@ -94,7 +105,7 @@ public:
 public:
 
     SpeciesExpressionMatcher(const Species& pttrn)
-        : pttrn_(pttrn)
+        : pttrn_(pttrn.units())
     {
         ;
     }
@@ -120,7 +131,8 @@ public:
             matches_.push_back(MatchObject(*i));
         }
 
-        target_ = sp;
+        // target_ = sp;
+        target_ = sp.units();
         itr_ = matches_.begin();
         context_type ctx;
         ctx.globals = globals;
@@ -203,8 +215,10 @@ public:
 
 protected:
 
-    Species pttrn_;
-    Species target_;
+    // Species pttrn_;
+    // Species target_;
+    std::vector<UnitSpecies> pttrn_;
+    std::vector<UnitSpecies> target_;
     std::vector<MatchObject> matches_;
     std::vector<MatchObject>::iterator itr_;
     context_type ctx_;
@@ -406,7 +420,7 @@ public:
         //     {
         //         ctx.iterators.push_back((*j) + stride);
         //     }
-        //     stride += target_[std::distance(matchers_.begin(), i)].num_units();
+        //     stride += target_[std::distance(matchers_.begin(), i)].units().size();
         // }
         Species::container_type::difference_type totstride(0);
         std::vector<Species::container_type::difference_type> strides(matchers_.size());
@@ -414,7 +428,7 @@ public:
             i(permutation_.begin()); i != permutation_.end(); ++i)
         {
             strides[(*i)] = totstride;
-            totstride += target_[(*i)].num_units();
+            totstride += target_[(*i)].units().size();
         }
 
         for (std::vector<SpeciesExpressionMatcher>::const_iterator

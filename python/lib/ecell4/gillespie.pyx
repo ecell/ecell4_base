@@ -649,29 +649,29 @@ cdef GillespieSimulator GillespieSimulator_from_Cpp_GillespieSimulator(Cpp_Gille
 cdef class GillespieFactory:
     """ A factory class creating a GillespieWorld instance and a GillespieSimulator instance.
 
-    GillespieFactory(GSLRandomNumberGenerator rng=None)
+    GillespieFactory()
 
     """
 
-    def __init__(self, GSLRandomNumberGenerator rng=None):
-        """Constructor.
-
-        Parameters
-        ----------
-        rng : GSLRandomNumberGenerator, optional
-            a random number generator.
-
-        """
+    def __init__(self):
+        """Constructor."""
         pass
 
-    def __cinit__(self, GSLRandomNumberGenerator rng=None):
-        if rng is None:
-            self.thisptr = new Cpp_GillespieFactory()
-        else:
-            self.thisptr = new Cpp_GillespieFactory(deref(rng.thisptr))
+    def __cinit__(self):
+        self.thisptr = new Cpp_GillespieFactory()
 
     def __dealloc__(self):
         del self.thisptr
+
+    def rng(self, GSLRandomNumberGenerator rng):
+        """rng(GSLRandomNumberGenerator) -> GillespieFactory
+
+        Set a random number generator, and return self.
+
+        """
+        cdef Cpp_GillespieFactory *ptr = self.thisptr.rng_ptr(deref(rng.thisptr))
+        assert ptr == self.thisptr
+        return self
 
     def create_world(self, arg1=None):
         """create_world(arg1=None) -> GillespieWorld

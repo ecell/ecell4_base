@@ -71,6 +71,13 @@ class SpeciesTest(unittest.TestCase):
 
         units[1].add_site('h', 'i', '')
 
+    def test6(self):
+        sp = Species(" A   . B . C.D")
+        units = sp.units()
+        self.assertEqual(len(units), 4)
+        self.assertEqual(units[0].name(), "A")
+        self.assertEqual(units[1].name(), "B")
+
 
 if __name__ == '__main__':
     unittest.main()
