@@ -12,7 +12,7 @@ inline typename mapT::mapped_type const&
 const_at(mapT const& m, typename mapT::key_type const& k)
 {
     const typename mapT::const_iterator iter = m.find(k);
-    if(iter == m.end()) throw std::out_of_range("map::at");
+    if(iter == m.end()) throw std::out_of_range("ecell4::bd::const_at(mapT, key)");
     return iter->second;
 }
 
