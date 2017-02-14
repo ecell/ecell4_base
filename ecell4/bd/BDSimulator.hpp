@@ -49,7 +49,7 @@ public:
         dt_ = determine_dt();
 
         // XXX: refine determine_reaction_length!
-        reaction_length_ = this->min_sigma() * bd_dt_factor_;
+        reaction_length_ = this->min_sigma() * 1e-2;
     }
 
     Real determine_dt() const
