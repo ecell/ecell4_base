@@ -94,8 +94,10 @@ class BDPolygon
     typedef std::vector<vertex_id_type> vertex_id_list;
     typedef /*typename*/ utils::get_mapper_mf<edge_id_type, edge_id_type>::type
         edge_pair_type;
-    typedef /*typename*/ utils::get_mapper_mf<vertex_id_type, vertex_id_list>::type
-        vertex_group_type;
+    // map from vertex_id_type --to-> pairof(vertex_id_list, whole_angle)
+    typedef std::pair<vertex_id_list, Real> vertex_list_angle_pair;
+    typedef /*typename*/ utils::get_mapper_mf<vertex_id_type,
+            vertex_list_angle_pair>::type vertex_group_type;
 
     typedef std::pair<Real3, face_id_type> surface_position_type;
     typedef Barycentric<Real> barycentric_type;
@@ -122,7 +124,7 @@ class BDPolygon
     vertex_id_list const&
     connecting_vertices(const vertex_id_type& vid) const
     {
-        return const_at(vertex_groups_, vid);
+        return const_at(vertex_groups_, vid).first;
     }
 
     std::pair<bool, uint32_t>

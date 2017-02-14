@@ -38,7 +38,7 @@ BDPolygon::is_share_vertex(const face_id_type& lhs, const face_id_type& rhs) con
     for(vertex_index_type i=0; i<3; ++i)
     {
         vertex_id_list const& list =
-            const_at(vertex_groups_, traits::make_vertex_id(lhs, i));
+            const_at(vertex_groups_, traits::make_vertex_id(lhs, i)).first;
 
         typedef vertex_id_list::const_iterator iter_type;
         for(iter_type iter = list.begin(); iter != list.end(); ++iter)
@@ -88,35 +88,28 @@ Real BDPolygon::distance_sq(const std::pair<Real3, face_id_type>& lhs,
         const Real lhs_to_vtx_lensq = length_sq(lhs_to_vtx);
         const Real rhs_to_vtx_lensq = length_sq(vtx_to_rhs);
 
-        // whole angle around the vertex
-        Real whole_angle = faces_.at(lhs.second).angle_at(vtx.second);
-        // angle between lhs--vtx--rhs
+        vertex_list_angle_pair vlap = const_at(vertex_groups_,
+                traits::make_vertex_id(lhs.second, vtx.second));
+        const Real whole_angle = vlap.second;
         Real inter_angle = angle(lhs_to_vtx, faces_.at(lhs.second).edge_at(
                     (vtx.second == 0) ? 2 : vtx.second - 1));
 
-        vertex_id_list const& vlist = const_at(
-                vertex_groups_, traits::make_vertex_id(lhs.second, vtx.second));
+        vertex_id_list const& vlist = vlap.first;
         vertex_id_list::const_iterator iter = vlist.begin();
         ++iter;// the first element is same as lhs.second + vtx.second
 
-        bool is_inside = true;
         while(iter != vlist.end())
         {
-            const face_id_type      fid = traits::get_face_id(*iter);
-            const vertex_index_type vid = traits::get_vertex_index(*iter);
-            const Triangle&           f = faces_.at(fid);
-
+            const face_id_type fid = traits::get_face_id(*iter);
+            const Triangle&      f = faces_.at(fid);
             if(fid == rhs.second)
             {
                 inter_angle += angle(vtx_to_rhs,
                         f.edge_at(traits::get_edge_index(traits::vtoe(*iter))));
-                is_inside = false;
+                break;
             }
-
-            if(is_inside)
-                inter_angle += f.angle_at(vid);
-            whole_angle += f.angle_at(vid);
-
+            const vertex_index_type vid = traits::get_vertex_index(*iter);
+            inter_angle += f.angle_at(vid);
             ++iter;
         }
         assert(inter_angle < whole_angle);
@@ -176,7 +169,7 @@ Real3 BDPolygon::inter_position_vector(
         Real r1_sq = 0.; // ...                                rhs.position
 
         vertex_id_list const& list = const_at(
-                vertex_groups_, traits::make_vertex_id(lhs.second, vtx.second));
+                vertex_groups_, traits::make_vertex_id(lhs.second, vtx.second)).first;
 
         bool inter = false;
         for(vertex_id_list::const_iterator
@@ -342,6 +335,7 @@ void BDPolygon::detect_shared_vertices(const Real tolerance)
         {
             const vertex_id_type current_vtx = traits::make_vertex_id(fidx, vidx);
 
+            Real whole_angle = faces_.at(fidx).angle_at(vidx);
             vertex_id_list sharing_list;
             sharing_list.push_back(current_vtx);
 
@@ -356,11 +350,13 @@ void BDPolygon::detect_shared_vertices(const Real tolerance)
 
                 if(traits::get_face_id(lookup) == traits::get_face_id(current_vtx))
                     break;
-                sharing_list.push_back(traits::etov(lookup));
+                const vertex_id_type vid = traits::etov(lookup);
+                whole_angle += faces_.at(f).angle_at(traits::get_vertex_index(vid));
+                sharing_list.push_back(vid);
             }
             if(i == 100)
                 throw std::runtime_error("too many faces share a certain vertex");
-            vertex_groups_[current_vtx] = sharing_list;
+            vertex_groups_[current_vtx] = std::make_pair(sharing_list, whole_angle);
         }
     }
     return;
