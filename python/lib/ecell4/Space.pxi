@@ -27,3 +27,7 @@ cdef class Space:
         return self.thisptr.get().num_molecules(deref(sp.thisptr))
 
 
+cdef Space Space_from_Cpp_Space(shared_ptr[Cpp_Space] space):
+    r = Space()
+    r.thisptr.swap(space)
+    return r

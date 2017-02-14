@@ -86,10 +86,12 @@
 #        
 cdef bool indirect_func_space(
         void *pyfunc, shared_ptr[Cpp_Space] sp):
-    sp_obj = Space()
-    del sp_obj.thisptr
-    sp_obj.thisptr = address(sp)
-    return (<object>pyfunc)(sp_obj)
+    sp_obj = Space_from_Cpp_Space(sp)
+    cdef bool ret = (<object>pyfunc)(sp_obj)
+    if ret == False:
+        return False
+    else:
+        return True
 
 cdef class PythonSpaceHooker:
     def __init__(self, pyfunc):

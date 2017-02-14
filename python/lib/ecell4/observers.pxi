@@ -28,8 +28,6 @@ cdef class Observer:
     
 cdef class FixedIntervalNumberHooker:
     def __cinit__(self, Real dt,  pyfunc):
-        pass
-    def __cinit__(self, Real dt,  pyfunc):
         self.thisptr = new shared_ptr[Cpp_FixedIntervalNumberHooker](
                 new Cpp_FixedIntervalNumberHooker(dt, 
                     <stepladder_type_space>indirect_func_space, <void*>pyfunc))

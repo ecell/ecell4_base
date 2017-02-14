@@ -19,6 +19,10 @@ def ratelaw_func2(reactants, products, volume, t, rr):
         flux *= c/volume
     return flux
 
+def test(Space):
+    print Space.t()
+    return True
+
 def singlerun1():
     L = 1e-16
     edge_length = Real3(L, L, L)
@@ -75,6 +79,13 @@ def singlerun1():
         print("{}\t{}\t{}\t{}".format(
             sim.t(), w.get_value(sp1), w.get_value(sp2), w.get_value(sp3)))
 
+def hoge(space):
+    print ("{}  {}  {}".format(space.t(), space.num_molecules(Species("A")), space.num_molecules(Species("B")) ))
+    if space.t() > 10.0:
+        print "Oops! Stop!!!"
+        return False
+    return True
+
 def singlerun2():
     L = 1e-16
     edge_length = Real3(L, L, L)
@@ -92,12 +103,14 @@ def singlerun2():
     w = ODEWorld(edge_length)
     w.add_molecules(Species("A"), N)
 
-    sim = ODESimulator(m, w, Explicit_Euler)
-    obs = FixedIntervalNumberObserver(0.01, ["A", "B", "C"])
+    #sim = ODESimulator(m, w, Explicit_Euler)
+    sim = ODESimulator(m, w)
+    #obs = FixedIntervalNumberObserver(0.01, ["A", "B", "C"])
+    obs = FixedIntervalNumberHooker(0.10, hoge)
     sim.run(20.0, obs)
 
-    for data in obs.data():
-        print("{}\t{}\t{}\t{}".format(*data))
+    #for data in obs.data():
+    #    print("{}\t{}\t{}\t{}".format(*data))
 
 # singlerun1()
 singlerun2()

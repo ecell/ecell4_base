@@ -122,6 +122,7 @@ struct PythonHook_Space
     // XXX What does this return value mean ???
     bool call(const boost::shared_ptr<Space>& space)
     {
+        //std::cout << "T: " << space->t() << " PythonHook_Space::call L125\n";
         if (this->is_available()) {
             return this->stepladder_(this->pyfunc_, space);
         } else {
