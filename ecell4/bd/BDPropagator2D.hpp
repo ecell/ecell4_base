@@ -97,6 +97,12 @@ private:
         ParticleID pid_;
     };
 
+    Real calc_reaction_area(const Real radius_sum) const
+    {
+        const Real rad_react(radius_sum + this->reaction_length_);
+        return M_PI * (rad_react * rad_react - radius_sum * radius_sum);
+    }
+
 protected:
 
     Model& model_;
