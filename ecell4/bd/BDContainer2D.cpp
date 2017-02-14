@@ -192,7 +192,6 @@ ParticleContainer2D::list_particles_within_radius(
         const Real3& pos, const Real& radius,
         const ParticleID& ignore1, const ParticleID& ignore2) const
 {
-    // XXX: incorrect
     const Real rad2 = radius * radius;
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > retval;
     for(particle_container_type::const_iterator
