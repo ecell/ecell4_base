@@ -146,7 +146,7 @@ int main(int argc, char** argv)
 
     /// run and log
     std::cerr << "begin simulation..." << std::endl;
-    for(unsigned int i(0); i <= 100; ++i)
+    for(unsigned int i(0); i <= 150; ++i)
     {
         while(sim.step(5e-2*i))
         {
