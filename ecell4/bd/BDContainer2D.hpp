@@ -4,6 +4,7 @@
 #include <ecell4/core/ParticleSpace.hpp>
 #include <ecell4/core/exceptions.hpp>
 #include "BDPolygon.hpp"
+#include "map_const_at.hpp"
 #include <set>
 
 namespace ecell4
@@ -114,14 +115,14 @@ public:
     polygon_type&       polygon()       {return polygon_;}
     polygon_type const& polygon() const {return polygon_;}
 
-    face_type const& belonging_face(const ParticleID& pid)
+    face_type const& belonging_face(const ParticleID& pid) const
     {
-        return polygon_.at(fmap_[pid]);
+        return polygon_.at(const_at(fmap_, pid));
     }
 
-    face_id_type const& belonging_faceid(const ParticleID& pid)
+    face_id_type const& belonging_faceid(const ParticleID& pid) const
     {
-        return fmap_[pid];
+        return const_at(fmap_, pid);
     }
 
 #ifdef WITH_HDF5
