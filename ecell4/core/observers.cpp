@@ -154,8 +154,9 @@ void FixedIntervalNumberHooker::initialize(const boost::shared_ptr<Space>& space
 
 bool FixedIntervalNumberHooker::fire(const Simulator* sim, const boost::shared_ptr<Space>& space)
 {
-    bool retval = this->hooker_.call(space);
-    return base_type::fire(sim, space);
+    bool retval1 = this->hooker_.call(space);
+    bool retval2 = base_type::fire(sim, space);
+    return retval1 & retval2;
     //return true;
 }
 
