@@ -26,6 +26,17 @@ cdef class Observer:
         """Reset the internal state."""
         self.thisptr.get().reset()
     
+
+cdef bool indirect_func_space(
+        void *pyfunc, shared_ptr[Cpp_Space] sp):
+    sp_obj = Space_from_Cpp_Space(sp)
+    cdef bool ret = (<object>pyfunc)(sp_obj)
+    if ret == False:
+        return False
+    else:
+        return True
+
+
 cdef class FixedIntervalNumberHooker:
     def __cinit__(self, Real dt,  pyfunc):
         self.thisptr = new shared_ptr[Cpp_FixedIntervalNumberHooker](
