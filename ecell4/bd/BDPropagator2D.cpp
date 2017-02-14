@@ -23,9 +23,9 @@ bool BDPropagator2D::operator()()
 
     const ParticleID pid(queue_.back().first);
     queue_.pop_back();
-    Particle        particle = container2D.get_particle(pid).second;
-    face_id_type    fid = container2D.belonging_faceid(pid);
-    Triangle const& face = container2D.belonging_face(pid);
+    const Particle particle = container2D.get_particle(pid).second;
+    const face_id_type  fid = container2D.belonging_faceid(pid);
+    const Triangle&    face = container2D.belonging_face(pid);
 
     if(attempt_reaction(pid, particle, fid))
     {
@@ -35,32 +35,46 @@ bool BDPropagator2D::operator()()
     const Real D(particle.D());
     if(D == 0.0)
     {
-        return true; //XXX consider reaction
+        return true; //XXX consider reaction ?
+                     // -> change acceptance coef in attempt_reaction(p1, p2)
     }
 
-    const std::pair<Real3, face_id_type> newpos(world_.apply_surface(
+    std::pair<Real3, face_id_type> newpf(world_.apply_surface(
         std::make_pair(particle.position(), fid),
         draw_displacement(particle, face.normal())));
 
     Particle particle_to_update(
-        particle.species(), newpos.first, particle.radius(), particle.D());
+        particle.species(), newpf.first, particle.radius(), particle.D());
+
+    // confirm whether core overlapped or not
+    std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
+        core_overlapped(container2D.list_particles_within_radius(
+                        newpf, particle.radius(), pid));
+
+    if(core_overlapped.size() > 0) // reject
+    {
+        particle_to_update = particle;
+        newpf = std::make_pair(particle.position(), fid);
+    }
 
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
         overlapped(container2D.list_particles_within_radius(
-                    newpos, particle.radius() + reaction_length_, pid));
+            newpf, particle_to_update.radius() + this->reaction_length_, pid));
 
     switch (overlapped.size())
     {
     case 0:
-        container2D.update_particle(pid, particle_to_update, newpos.second);
+        container2D.update_particle(pid, particle_to_update, newpf.second);
         return true;
     case 1:
         {
-            std::pair<std::pair<ParticleID, Particle>, face_id_type> closest =
+            std::pair<std::pair<ParticleID, Particle>, Real> closest =
                 overlapped.front();
-            if (attempt_reaction(
-                    pid, particle_to_update, fid,
-                    closest.first.first, closest.first.second, closest.second))
+            const face_id_type closest_fid =
+                container2D.belonging_faceid(closest.first.first);
+
+            if (attempt_reaction(pid, particle_to_update, newpf.second,
+                    closest.first.first, closest.first.second, closest_fid))
             {
                 return true;
             }
@@ -168,7 +182,7 @@ bool BDPropagator2D::attempt_reaction(
                         std::pair<std::pair<ParticleID, Particle>, Real> >
                         overlapped1(world_.list_particles_within_radius(
                             newpf1, r1, pid));
-                    if(overlapped1.size() != 0) continue;
+                    if(overlapped1.size() > 0) continue;
 
                     const std::vector<
                         std::pair<std::pair<ParticleID, Particle>, Real> >
@@ -194,7 +208,7 @@ bool BDPropagator2D::attempt_reaction(
 
                     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
                         overlapped(container2D.list_particles_within_radius(
-                                newpf, particle.radius() + reaction_length_, pid));
+                                newpf, particle_to_update1.radius(), pid));
 
                     if(overlapped.size() == 0)
                     {
@@ -212,7 +226,7 @@ bool BDPropagator2D::attempt_reaction(
 
                     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
                         overlapped(container2D.list_particles_within_radius(
-                                newpf, particle.radius() + reaction_length_, pid));
+                                newpf, particle_to_update2.radius(), pid));
 
                     if(overlapped.size() == 0)
                     {
@@ -221,8 +235,10 @@ bool BDPropagator2D::attempt_reaction(
                     }
                 }
 
-                world_.update_particle_without_checking(
+                const bool update_result = world_.update_particle(
                         pid, particle_to_update1, newpf1.second);
+                assert(!update_result);
+
                 const std::pair<std::pair<ParticleID, Particle>, bool> retval =
                     world_.new_particle(particle_to_update2, newpf2.second);
 
@@ -255,16 +271,19 @@ bool BDPropagator2D::attempt_reaction(
     }
 
     const Real r12(particle1.radius() + particle2.radius());
-
+    const Real reaction_area = calc_reaction_area(r12);
     const Real D1(particle1.D()), D2(particle2.D());
     const Real rnd(rng().uniform(0, 1));
+    const bool double_count = particle1.D() == 0 || particle2.D() == 0;
+    const Real coef_acceptance_prob = (double_count) ?
+        (dt() / reaction_area) : (0.5 * dt() / reaction_area);
     Real prob(0);
 
     for (std::vector<ReactionRule>::const_iterator i(reaction_rules.begin());
          i != reaction_rules.end(); ++i)
     {
         const ReactionRule& rr(*i);
-        prob += rr.k() * dt(); //XXX:INCORRECT consider reaction length
+        prob += rr.k() * coef_acceptance_prob;
 
         if(prob <= rnd)
         {
@@ -272,8 +291,9 @@ bool BDPropagator2D::attempt_reaction(
         }
         else if (prob >= 1)
         {
-            std::cerr << "the total reaction probability exceeds 1."
-                      << " the step interval is too long" << std::endl;
+            std::cerr << "the total reaction probability exceeds 1. "
+                      << "the step interval is too long or "
+                      << "reaction length is too short" << std::endl;
         }
 
         // reaction occured (1 > prob > rnd)
