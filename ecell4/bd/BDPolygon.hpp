@@ -111,7 +111,7 @@ class BDPolygon
         return id;
     }
 
-    void detect_connectivity();
+    void detect_connectivity(const Real tolerance = 1e-6);
 
     edge_id_type const&
     connecting_edge(const edge_id_type& eid) const
@@ -157,8 +157,8 @@ class BDPolygon
 
   private:
 
-    void detect_shared_vertices();
-    void detect_shared_edges();
+    void detect_shared_vertices(const Real tolerance = 1e-6);
+    void detect_shared_edges(const Real tolerance = 1e-6);
 
     std::pair<uint32_t, Real>
     crossed_edge(const barycentric_type& pos, const barycentric_type& disp) const;

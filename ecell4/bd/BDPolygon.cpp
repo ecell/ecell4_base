@@ -9,10 +9,10 @@ namespace ecell4
 namespace bd
 {
 
-void BDPolygon::detect_connectivity()
+void BDPolygon::detect_connectivity(const Real tolerance)
 {
-    detect_shared_edges();
-    detect_shared_vertices();
+    detect_shared_edges(tolerance);
+    detect_shared_vertices(tolerance);
     return;
 }
 
@@ -277,6 +277,7 @@ BDPolygon::move_next_face(const std::pair<Real3, face_id_type>& pos,
         return std::make_pair(
             std::make_pair(to_absolute(newpos, f), pos.second), Real3(0.,0.,0.));
 
+    // calculate partial displacement to the edge
     const barycentric_type bpos = to_barycentric(pos.first, f);
     const barycentric_type bdis = newpos - bpos;
 
@@ -285,13 +286,12 @@ BDPolygon::move_next_face(const std::pair<Real3, face_id_type>& pos,
     const face_id_type next_face_id = traits::get_face_id(
         const_at(edge_pairs_, traits::make_edge_id(pos.second, cross.first)));
     const face_type& next_face = faces_.at(next_face_id);
+    const Real3 next_pos  = pos.first + disp * cross.second;
 
     // turn displacement
     const Real  ang  = angle(f.normal(), next_face.normal());
     const Real3 axis = f.edge_at(cross.first) / f.length_of_edge_at(cross.first);
     const Real3 next_disp = rotate(ang, axis, disp) * (1. - cross.second);
-
-    const Real3 next_pos  = pos.first + disp * cross.second;
 
     return std::make_pair(std::make_pair(next_pos, next_face_id), next_disp);
 }
@@ -349,25 +349,20 @@ Real BDPolygon::cross_section(const barycentric_type& pos,
     }
 }
 
-void BDPolygon::detect_shared_vertices()
+void BDPolygon::detect_shared_vertices(const Real tolerance)
 {
-    std::set<vertex_id_type> is_detected;
-    const Real same_position_tolerance = 1e-6;
-
     for(std::size_t fidx = 0; fidx < faces_.size(); ++fidx)
     {
         for(vertex_index_type vidx = 0; vidx < 3; ++vidx)
         {
             const vertex_id_type current_vtx = traits::make_vertex_id(fidx, vidx);
-            if(is_detected.count(current_vtx) == 1) continue;
 
             vertex_id_list sharing_list;
             sharing_list.push_back(current_vtx);
-            is_detected.insert(current_vtx);
 
             edge_id_type lookup = traits::vtoe(current_vtx);
             std::size_t i=0;
-            for(; i<1000; ++i)
+            for(; i<100; ++i)
             {
                 const std::size_t     f = traits::get_face_id(lookup);
                 const edge_index_type e = traits::get_edge_index(lookup);
@@ -376,23 +371,19 @@ void BDPolygon::detect_shared_vertices()
 
                 if(traits::get_face_id(lookup) == traits::get_face_id(current_vtx))
                     break;
-                sharing_list.push_back(lookup);
+                sharing_list.push_back(traits::etov(lookup));
             }
-            if(i == 1000)
-                throw std::logic_error("too many faces share a certain vertex");
-
-            //XXX: too many copies...
-            for(std::size_t i=0; i<sharing_list.size(); ++i)
-                vertex_groups_[sharing_list.at(i)] = sharing_list;
+            if(i == 100)
+                throw std::runtime_error("too many faces share a certain vertex");
+            vertex_groups_[current_vtx] = sharing_list;
         }
     }
     return;
 }
 
-void BDPolygon::detect_shared_edges()
+void BDPolygon::detect_shared_edges(const Real tolerance)
 {
     std::set<edge_id_type> is_detected;
-    const Real same_position_tolerance = 1e-6;
 
     for(std::size_t fidx = 0; fidx < faces_.size(); ++fidx)
     {
@@ -409,13 +400,11 @@ void BDPolygon::detect_shared_edges()
 
             const Real start_dist = length(start_pos);
             const Real start_length_scale =
-                (start_dist >= same_position_tolerance) ?
-                (start_dist) : (same_position_tolerance);
+                (start_dist >= tolerance) ? (start_dist) : (tolerance);
 
             const Real end_dist = length(end_pos);
             const Real end_length_scale =
-                (end_dist >= same_position_tolerance) ?
-                (end_dist) : (same_position_tolerance);
+                (end_dist >= tolerance) ? (end_dist) : (tolerance);
 
             bool found = false;
             for(std::size_t f = currentf + 1; f < faces_.size(); ++f)
@@ -424,14 +413,12 @@ void BDPolygon::detect_shared_edges()
                 {
                     const Real start_pos_dist =
                         length(start_pos - faces_.at(f).vertex_at(e));
-                    if(start_pos_dist >
-                            start_length_scale * same_position_tolerance)
+                    if(start_pos_dist > start_length_scale * tolerance)
                         continue;
 
                     const Real end_pos_dist =
                         length(end_pos - faces_.at(f).vertex_at((e==0)?2:e-1));
-                    if(end_pos_dist <= 
-                            end_length_scale * same_position_tolerance)
+                    if(end_pos_dist <= end_length_scale * tolerance)
                     {
                         const edge_id_type detected =
                             std::make_pair(f, (e==0)?2:e-1);
@@ -450,7 +437,6 @@ void BDPolygon::detect_shared_edges()
 
     return;
 }
- 
 
 }// bd
 }// ecell
