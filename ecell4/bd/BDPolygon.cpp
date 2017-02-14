@@ -82,63 +82,48 @@ Real BDPolygon::distance_sq(const std::pair<Real3, face_id_type>& lhs,
 
     if(vtx.first)
     {
-        Real whole_angle = 0.; // whole angle around the vertex
-        Real inter_angle = 0.; // angle lhs--vtx--rhs
+        const Real3 vtx_position = faces_.at(lhs.second).vertex_at(vtx.second);
+        const Real3 lhs_to_vtx = vtx_position - lhs.first;
+        const Real3 vtx_to_rhs = rhs.first - vtx_position;
+        const Real lhs_to_vtx_lensq = length_sq(lhs_to_vtx);
+        const Real rhs_to_vtx_lensq = length_sq(vtx_to_rhs);
 
-        Real r0_sq = 0.; // distance from the shared vertex to lhs.position
-        Real r1_sq = 0.; // ...                                rhs.position
+        // whole angle around the vertex
+        Real whole_angle = faces_.at(lhs.second).angle_at(vtx.second);
+        // angle between lhs--vtx--rhs
+        Real inter_angle = angle(lhs_to_vtx, faces_.at(lhs.second).edge_at(
+                    (vtx.second == 0) ? 2 : vtx.second - 1));
 
-        vertex_id_list const& list = const_at(
+        vertex_id_list const& vlist = const_at(
                 vertex_groups_, traits::make_vertex_id(lhs.second, vtx.second));
+        vertex_id_list::const_iterator iter = vlist.begin();
+        ++iter;// the first element is same as lhs.second + vtx.second
 
-        bool inter = false;
-        for(vertex_id_list::const_iterator
-                iter = list.begin(); iter != list.end(); ++iter) // ccw
+        bool is_inside = true;
+        while(iter != vlist.end())
         {
             const face_id_type      fid = traits::get_face_id(*iter);
             const vertex_index_type vid = traits::get_vertex_index(*iter);
+            const Triangle&           f = faces_.at(fid);
 
-            const Triangle& f = faces_.at(fid);
+            if(fid == rhs.second)
+            {
+                inter_angle += angle(vtx_to_rhs,
+                        f.edge_at(traits::get_edge_index(traits::vtoe(*iter))));
+                is_inside = false;
+            }
+
+            if(is_inside)
+                inter_angle += f.angle_at(vid);
             whole_angle += f.angle_at(vid);
 
-            const bool lhs_on_face = (fid == lhs.second);
-            const bool rhs_on_face = (fid == rhs.second);
-            const bool pos_on_face = (lhs_on_face || rhs_on_face);
-
-            if(!inter && pos_on_face) // start calculating inter-angle
-            {
-                inter = true;
-                const edge_index_type eid = traits::get_edge_index(traits::vtoe(*iter));
-
-                Real3 pos_vtx;
-                if(lhs_on_face) pos_vtx = f.vertex_at(vid) - lhs.first;
-                if(rhs_on_face) pos_vtx = f.vertex_at(vid) - rhs.first;
-
-                inter_angle += angle(pos_vtx, f.edge_at((eid == 0) ? 2 : eid - 1));
-
-                r0_sq = length_sq(pos_vtx);
-            }
-            else if(inter && pos_on_face) // end calculating inter-angle
-            {
-                inter = false;
-                const edge_index_type eid = traits::get_edge_index(traits::vtoe(*iter));
-
-                Real3 pos_vtx;
-                if(lhs_on_face) pos_vtx = lhs.first - f.vertex_at(vid);
-                if(rhs_on_face) pos_vtx = rhs.first - f.vertex_at(vid);
-
-                inter_angle += angle(pos_vtx, f.edge_at(eid));
-                r1_sq = length_sq(pos_vtx);
-            }
-            else if(inter) // simply add the angle
-            {
-                inter_angle += f.angle_at(vid);
-            }
+            ++iter;
         }
         assert(inter_angle < whole_angle);
 
         const Real min_angle = std::min(inter_angle, whole_angle - inter_angle);
-        return r0_sq + r1_sq - 2. * std::sqrt(r0_sq * r1_sq) * std::cos(min_angle);
+        return lhs_to_vtx_lensq + rhs_to_vtx_lensq - 2. *
+               std::sqrt(lhs_to_vtx_lensq * rhs_to_vtx_lensq) * std::cos(min_angle);
     }
     }// end CASE 2
 
