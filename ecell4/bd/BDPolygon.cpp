@@ -189,6 +189,9 @@ Real3 BDPolygon::inter_position_vector(
             ++iter;
         }
         assert(inter_angle < whole_angle);
+        // XXX:NOTE
+        // in the case of inter_angle == whole_angle - inter_angle, it is good
+        // to choose inter-position-vector randomly. but here it is unidirectional.
         const Real min_angle = std::min(inter_angle, whole_angle - inter_angle);
 
         return lhs_to_vtx + rotate(min_angle, normal, lhs_to_vtx * (-1.0)) *
