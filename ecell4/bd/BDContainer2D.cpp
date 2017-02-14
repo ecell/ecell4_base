@@ -279,10 +279,13 @@ ParticleContainer2D::apply_surface(
         state = std::make_pair(position, displacement);
     const Real len2 = length_sq(displacement);
 
-    while(length_sq(state.second) > 1e-6 * len2)//tolerance
-    {
+    Integer retry_count = 100;
+    while(--retry_count > 0 && length_sq(state.second) > 1e-4 * len2)
+    {//tolerance 1e-8
         state = polygon_.move_next_face(state.first, state.second);
     }
+    if(retry_count == 0)
+        std::cerr << "warning: max move_next_face count exceeded" << std::endl;
     return state.first;
 }
 
