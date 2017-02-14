@@ -17,13 +17,6 @@ using namespace ecell4::bd;
 /**
  * a simple function to dump particle position(s)
  */
-void print_particle_position(const BDWorld& world, const ParticleID& pid)
-{
-    const Real3 pos(world.get_particle(pid).second.position());
-    std::cout << std::setprecision(12) << world.t() << " "
-        << pos[0] << " " << pos[1] << " " << pos[2] << std::endl;
-}
-
 void print_particle_position(const BDWorld& world)
 {
     const std::vector<std::pair<ParticleID, Particle> > ps(world.list_particles());
@@ -31,7 +24,7 @@ void print_particle_position(const BDWorld& world)
             iter = ps.begin(); iter != ps.end(); ++iter)
     {
         const Real3 pos(iter->second.position());
-        std::cout << std::setprecision(12)
+        std::cout << iter->second.sid() << " " << std::setprecision(12)
                   << pos[0] << " " << pos[1] << " " << pos[2] << std::endl;
     }
     std::cout << std::endl << std::endl;
@@ -45,7 +38,7 @@ int main(int argc, char** argv)
 {
     /// simulation parameters
     const Real L(1e-6);
-    std::string D("5e0"), radius("5e-9");
+    std::string D("5e0"), radius("1e-1");
     const Real3 edge_lengths(L, L, L);
     const Integer3 matrix_sizes(3, 3, 3);
 
@@ -56,13 +49,28 @@ int main(int argc, char** argv)
     Species sp1("A");
     sp1.set_attribute("D", D);
     sp1.set_attribute("radius", radius);
+
+    Species sp2("B");
+    sp2.set_attribute("D", D);
+    sp2.set_attribute("radius", radius);
+
+    // A -> A + A
     ReactionRule rr1;
     rr1.set_k(1.);
     rr1.add_reactant(sp1);
     rr1.add_product(sp1);
     rr1.add_product(sp1);
+
+    // A + A -> B
+    ReactionRule rr2;
+    rr2.set_k(1.);
+    rr2.add_reactant(sp1);
+    rr2.add_reactant(sp1);
+    rr2.add_product(sp2);
+
     (*model).add_species_attribute(sp1);
     (*model).add_reaction_rule(rr1);
+    (*model).add_reaction_rule(rr2);
 
     boost::shared_ptr<RandomNumberGenerator> rng(new GSLRandomNumberGenerator());
 
@@ -136,7 +144,7 @@ int main(int argc, char** argv)
     sim.set_dt(1e-6);
     std::cerr << "... end!" << std::endl;
 
-    /// run and log by the millisecond
+    /// run and log
     std::cerr << "begin simulation..." << std::endl;
     for(unsigned int i(0); i <= 100; ++i)
     {
@@ -144,7 +152,6 @@ int main(int argc, char** argv)
         {
             // do nothing
         }
-//         print_particle_position(*world, pid1);
         print_particle_position(*world);
     }
     std::cerr << "end!" << std::endl;
