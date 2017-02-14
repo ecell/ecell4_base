@@ -189,6 +189,7 @@ Real3 BDPolygon::inter_position_vector(
             ++iter;
         }
         assert(inter_angle < whole_angle);
+
         // XXX:NOTE
         // in the case of inter_angle == whole_angle - inter_angle, it is good
         // to choose inter-position-vector randomly. but here it is unidirectional.
@@ -309,7 +310,8 @@ void BDPolygon::detect_shared_vertices(const Real tolerance)
                 if(traits::get_face_id(lookup) == traits::get_face_id(current_vtx))
                     break;
                 const vertex_id_type vid = traits::etov(lookup);
-                whole_angle += faces_.at(f).angle_at(traits::get_vertex_index(vid));
+                whole_angle += faces_.at(traits::get_face_id(vid)).angle_at(
+                        traits::get_vertex_index(vid));
                 sharing_list.push_back(vid);
             }
             if(i == 100)
@@ -317,6 +319,20 @@ void BDPolygon::detect_shared_vertices(const Real tolerance)
             vertex_groups_[current_vtx] = std::make_pair(sharing_list, whole_angle);
         }
     }
+
+    // XXX: this is assertion.
+    typedef vertex_group_type::const_iterator iter_type;
+    for(iter_type iter = vertex_groups_.begin();
+            iter != vertex_groups_.end(); ++iter)
+    {
+        const Real wangle = iter->second.second;
+        for(vertex_id_list::const_iterator i = iter->second.first.begin();
+                i != iter->second.first.end(); ++i)
+        {
+            assert(std::abs(vertex_groups_[*i].second - wangle) < 1e-12);
+        }
+    }
+
     return;
 }
 
