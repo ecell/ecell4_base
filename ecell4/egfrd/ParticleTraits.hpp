@@ -52,7 +52,7 @@ distance_cyclic(
     const ecell4::Sphere& p1, T_ const& p2,
     const ecell4::Sphere::position_type& edge_lengths)
 {
-    return distance(p1, cyclic_transpose(p2, p1.position(), edge_lengths));
+    return distance(p1, periodic_transpose(p2, p1.position(), edge_lengths));
 }
 
 inline ecell4::Sphere::length_type const& shape_size(ecell4::Sphere const& shape)
@@ -100,7 +100,7 @@ distance_cyclic(
     const ecell4::Cylinder& p1, T_ const& p2,
     const ecell4::Cylinder::position_type& edge_lengths)
 {
-    return distance(p1, cyclic_transpose(p2, p1.position(), edge_lengths));
+    return distance(p1, periodic_transpose(p2, p1.position(), edge_lengths));
 }
 
 inline ecell4::Cylinder::length_type const& shape_size(ecell4::Cylinder const& shape)

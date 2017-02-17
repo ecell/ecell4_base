@@ -20,7 +20,7 @@ cdef class ODEWorld:
 
     """
 
-    def __init__(self, edge_lengths = None):
+    def __init__(self, edge_lengths=None):
         """Constructor.
 
         Parameters
@@ -31,7 +31,7 @@ cdef class ODEWorld:
         """
         pass  # XXX: Only used for doc string
 
-    def __cinit__(self, edge_lengths = None):
+    def __cinit__(self, edge_lengths=None):
         cdef string filename
 
         if edge_lengths is None:
@@ -486,7 +486,8 @@ cdef class ODERatelawMassAction:
         return (__rebuild_ode_ratelaw, ("ODERatelawMassAction", self.as_string(), self.get_k() ) )
 
 
-cdef double indirect_function(
+# cdef double indirect_function(
+cdef indirect_function(
     void *func, vector[Real] reactants, vector[Real] products,
     Real volume, Real t, Cpp_ODEReactionRule *rr):
     py_reactants = []
@@ -889,7 +890,7 @@ cdef class ODENetworkModel:
 
     """
 
-    def __init__(self, m = None):
+    def __init__(self, m=None):
         """Constructor.
 
         Parameters
@@ -900,7 +901,7 @@ cdef class ODENetworkModel:
         """
         pass
 
-    def __cinit__(self, m = None):
+    def __cinit__(self, m=None):
         # self.thisptr = new shared_ptr[Cpp_ODENetworkModel](
         #     <Cpp_ODENetworkModel*>(new Cpp_ODENetworkModel()))
         if m == None:
@@ -1050,7 +1051,7 @@ cdef class ODESimulator:
 
     """
 
-    def __init__(self, arg1, arg2 = None, arg3 = None):
+    def __init__(self, arg1, arg2=None, arg3=None):
         """Constructor.
 
         Parameters
@@ -1066,7 +1067,7 @@ cdef class ODESimulator:
         """
         pass
 
-    def __cinit__(self, arg1, arg2 = None, arg3 = None):
+    def __cinit__(self, arg1, arg2=None, arg3=None):
         if arg2 is None or not isinstance(arg2, ODEWorld):
             if not isinstance(arg1, ODEWorld):
                 raise ValueError(
@@ -1114,7 +1115,7 @@ cdef class ODESimulator:
         """Initialize the simulator."""
         self.thisptr.initialize()
 
-    def step(self, upto = None):
+    def step(self, upto=None):
         """step(upto=None) -> bool
 
         Step the simulation.
@@ -1264,16 +1265,16 @@ cdef ODESimulator ODESimulator_from_Cpp_ODESimulator(Cpp_ODESimulator* s):
 cdef class ODEFactory:
     """ A factory class creating a ODEWorld instance and a ODESimulator instance.
 
-    ODEFactory(solvertype=None, dt=None, abs_tol=None, rel_tol=None)
+    ODEFactory(ODESolverType solver_type=None, Real dt=None, Real abs_tol=None, Real rel_tol=None)
 
     """
 
-    def __init__(self, solvertype = None, dt = None, abs_tol = None, rel_tol = None):
+    def __init__(self, solver_type=None, dt=None, abs_tol=None, rel_tol=None):
         """Constructor.
 
         Parameters
         ----------
-        solvertype : int, optional
+        solver_type : int, optional
             a type of the ode solver.
             Choose one from RUNGE_KUTTA_CASH_KARP54, ROSENBROCK4_CONTROLLER and EULER.
         dt : Real, optional
@@ -1286,19 +1287,22 @@ cdef class ODEFactory:
         """
         pass
 
-    def __cinit__(self, solvertype = None, dt = None, abs_tol = None, rel_tol = None):
-        if solvertype is None:
-            self.thisptr = new Cpp_ODEFactory()
-        elif dt is None:
-            self.thisptr = new Cpp_ODEFactory(translate_solver_type(solvertype))
-        elif abs_tol is None:
-            self.thisptr = new Cpp_ODEFactory(translate_solver_type(solvertype), <Real>dt)
-        elif rel_tol is None:
-            self.thisptr = new Cpp_ODEFactory(
-                translate_solver_type(solvertype), <Real>dt, <Real>abs_tol)
-        else:
-            self.thisptr = new Cpp_ODEFactory(
-                translate_solver_type(solvertype), <Real>dt, <Real>abs_tol, <Real>rel_tol)
+    def __cinit__(self, solver_type=None, dt=None, abs_tol=None, rel_tol=None):
+        self.thisptr = new Cpp_ODEFactory(
+            Cpp_ODEFactory.default_solver_type() if solver_type is None else translate_solver_type(solver_type),
+            Cpp_ODEFactory.default_dt() if dt is None else <Real>dt,
+            Cpp_ODEFactory.default_abs_tol() if abs_tol is None else <Real>abs_tol,
+            Cpp_ODEFactory.default_rel_tol() if rel_tol is None else <Real>rel_tol)
+
+    def rng(self, GSLRandomNumberGenerator rng):
+        """rng(GSLRandomNumberGenerator) -> ODEFactory
+
+        Just return self. This method is for the compatibility between Factory classes.
+
+        """
+        cdef Cpp_ODEFactory *ptr = self.thisptr.rng_ptr(deref(rng.thisptr))
+        assert ptr == self.thisptr
+        return self
 
     def __dealloc__(self):
         del self.thisptr
@@ -1345,7 +1349,7 @@ cdef class ODEFactory:
     #             self.thisptr.create_simulator(
     #                 deref((<ODENetworkModel>arg1).thisptr), deref(arg2.thisptr)))
 
-    def create_simulator(self, arg1, arg2 = None):
+    def create_simulator(self, arg1, arg2=None):
         """create_simulator(arg1, arg2) -> ODESimulator
 
         Return a ODESimulator instance.

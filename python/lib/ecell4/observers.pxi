@@ -646,11 +646,11 @@ cdef class FixedIntervalTrajectoryObserver:
     This ``Observer`` logs at the current time first, and then keeps logging
     every after the interval.
 
-    FixedIntervalTrajectoryObserver(dt[, pids], resolve_boundary=None, subdt=None)
+    FixedIntervalTrajectoryObserver(dt, pids=None, resolve_boundary=None, subdt=None)
 
     """
 
-    def __init__(self, Real dt, *args):
+    def __init__(self, Real dt, pids=None, resolve_boundary=None, subdt=None):
         """Constructor.
 
         Parameters
@@ -671,33 +671,238 @@ cdef class FixedIntervalTrajectoryObserver:
         """
         pass  # XXX: Only used for doc string
 
-    def __cinit__(self, Real dt, *args):
+    def __cinit__(self, Real dt, pids=None, resolve_boundary=None, subdt=None):
         cdef vector[Cpp_ParticleID] tmp
 
-        if len(args) == 0 or not isinstance(args[0], (tuple, list, set)):
-            if len(args) == 0:
-                self.thisptr = new shared_ptr[Cpp_FixedIntervalTrajectoryObserver](
-                    new Cpp_FixedIntervalTrajectoryObserver(dt))
-            elif len(args) == 1:
-                self.thisptr = new shared_ptr[Cpp_FixedIntervalTrajectoryObserver](
-                    new Cpp_FixedIntervalTrajectoryObserver(dt, <bool>args[0]))
-            elif len(args) == 2:
-                self.thisptr = new shared_ptr[Cpp_FixedIntervalTrajectoryObserver](
-                    new Cpp_FixedIntervalTrajectoryObserver(
-                        dt, <bool>args[0], <Real>args[1]))
+        if pids is None:
+            self.thisptr = new shared_ptr[Cpp_FixedIntervalTrajectoryObserver](
+                new Cpp_FixedIntervalTrajectoryObserver(
+                    dt,
+                    Cpp_FixedIntervalTrajectoryObserver.default_resolve_boundary() if resolve_boundary is None else <bool>resolve_boundary,
+                    Cpp_FixedIntervalTrajectoryObserver.default_subdt() if subdt is None else <Real>subdt))
         else:
-            for pid in args[0]:
+            for pid in pids:
                 tmp.push_back(deref((<ParticleID>pid).thisptr))
-            if len(args) == 1:
-                self.thisptr = new shared_ptr[Cpp_FixedIntervalTrajectoryObserver](
-                    new Cpp_FixedIntervalTrajectoryObserver(dt, tmp))
-            elif len(args) == 2:
-                self.thisptr = new shared_ptr[Cpp_FixedIntervalTrajectoryObserver](
-                    new Cpp_FixedIntervalTrajectoryObserver(dt, tmp, <bool>args[1]))
-            elif len(args) == 3:
-                self.thisptr = new shared_ptr[Cpp_FixedIntervalTrajectoryObserver](
-                    new Cpp_FixedIntervalTrajectoryObserver(
-                        dt, tmp, <bool>args[1], <Real>args[2]))
+
+            self.thisptr = new shared_ptr[Cpp_FixedIntervalTrajectoryObserver](
+                new Cpp_FixedIntervalTrajectoryObserver(
+                    dt, tmp,
+                    Cpp_FixedIntervalTrajectoryObserver.default_resolve_boundary() if resolve_boundary is None else <bool>resolve_boundary,
+                    Cpp_FixedIntervalTrajectoryObserver.default_subdt() if subdt is None else <Real>subdt))
+
+    def __dealloc__(self):
+        del self.thisptr
+
+    def next_time(self):
+        """Return the next time for logging."""
+        return self.thisptr.get().next_time()
+
+    def num_steps(self):
+        """Return the number of steps."""
+        return self.thisptr.get().num_steps()
+
+    def num_tracers(self):
+        """Return the number of tracer molecules."""
+        return self.thisptr.get().num_tracers()
+
+    def t(self):
+        """Return time points at logging as a list."""
+        return self.thisptr.get().t()
+
+    def data(self):
+        """Return a list of trajectories for each particles.
+
+        Returns
+        -------
+        list:
+            A list of lists of ``Real3``. An element of a return value
+            is corresponding the trajectory of each particle. Thus, the size
+            of a return value is the same with that of ``pids`` you gave
+            at the construction.
+            If a particle corresponding to the given ``ParticleID`` is missing,
+            i.e. for a reaction, this ``Observer`` just skips to log the
+            position. Therefore, lengths of the trajectories can be diverse.
+
+        """
+        cdef vector[vector[Cpp_Real3]] d = self.thisptr.get().data()
+        retval = []
+        cdef vector[vector[Cpp_Real3]].iterator it = d.begin()
+        cdef vector[Cpp_Real3].iterator it2
+        while it != d.end():
+            it2 = deref(it).begin()
+            retval.append([])
+            while it2 != deref(it).end():
+                retval[-1].append(Real3_from_Cpp_Real3(address(deref(it2))))
+                inc(it2)
+            inc(it)
+        return retval
+
+    def as_base(self):
+        """Clone self as a base class. This function is for developers."""
+        retval = Observer()
+        del retval.thisptr
+        retval.thisptr = new shared_ptr[Cpp_Observer](
+            <shared_ptr[Cpp_Observer]>deref(self.thisptr))
+        return retval
+
+    def reset(self):
+        """Reset the internal state."""
+        self.thisptr.get().reset()
+
+cdef class TimingTrajectoryObserver:
+    """An ``Observer`` class to trace and log trajectories of diffusing
+    particles in a ``World`` at the given logging times.
+
+    TimingTrajectoryObserver(t, pids, resolve_boundary=None, subdt=None)
+
+    """
+
+    def __init__(self, vector[double] t, pids=None, resolve_boundary=None, subdt=None):  # vector[Real]
+        """Constructor.
+
+        Parameters
+        ----------
+        t : list
+            A list of the logging times.
+            Times prior to the current time are ignored.
+        pids : list, optional
+            A list of ``ParticleID``s.
+        resolve_boundary : bool, optional
+            If True, this ``Observer`` automatically resolves the effect
+            of periodic boundary contidions by keeping shifts for each particles.
+            Otherwise, this just logs positions within the size of ``World``
+            with no care about boundary conditions.
+        subdt : float, optional
+            A step interval to check the periodic boundary.
+            If None, use dt. This only has meaning when resolve_boundary is True.
+
+        """
+        pass  # XXX: Only used for doc string
+
+    def __cinit__(self, vector[double] t, pids=None, resolve_boundary=None, subdt=None):
+        cdef vector[Cpp_ParticleID] tmp
+
+        if pids is None:
+            self.thisptr = new shared_ptr[Cpp_TimingTrajectoryObserver](
+                new Cpp_TimingTrajectoryObserver(
+                    t,
+                    Cpp_TimingTrajectoryObserver.default_resolve_boundary() if resolve_boundary is None else <bool>resolve_boundary,
+                    Cpp_TimingTrajectoryObserver.default_subdt() if subdt is None else <Real>subdt))
+        else:
+            for pid in pids:
+                tmp.push_back(deref((<ParticleID>pid).thisptr))
+
+            self.thisptr = new shared_ptr[Cpp_TimingTrajectoryObserver](
+                new Cpp_TimingTrajectoryObserver(
+                    t, tmp,
+                    Cpp_TimingTrajectoryObserver.default_resolve_boundary() if resolve_boundary is None else <bool>resolve_boundary,
+                    Cpp_TimingTrajectoryObserver.default_subdt() if subdt is None else <Real>subdt))
+
+    def __dealloc__(self):
+        del self.thisptr
+
+    def next_time(self):
+        """Return the next time for logging."""
+        return self.thisptr.get().next_time()
+
+    def num_steps(self):
+        """Return the number of steps."""
+        return self.thisptr.get().num_steps()
+
+    def num_tracers(self):
+        """Return the number of tracer molecules."""
+        return self.thisptr.get().num_tracers()
+
+    def t(self):
+        """Return time points at logging as a list."""
+        return self.thisptr.get().t()
+
+    def data(self):
+        """Return a list of trajectories for each particles.
+
+        Returns
+        -------
+        list:
+            A list of lists of ``Real3``. An element of a return value
+            is corresponding the trajectory of each particle. Thus, the size
+            of a return value is the same with that of ``pids`` you gave
+            at the construction.
+            If a particle corresponding to the given ``ParticleID`` is missing,
+            i.e. for a reaction, this ``Observer`` just skips to log the
+            position. Therefore, lengths of the trajectories can be diverse.
+
+        """
+        cdef vector[vector[Cpp_Real3]] d = self.thisptr.get().data()
+        retval = []
+        cdef vector[vector[Cpp_Real3]].iterator it = d.begin()
+        cdef vector[Cpp_Real3].iterator it2
+        while it != d.end():
+            it2 = deref(it).begin()
+            retval.append([])
+            while it2 != deref(it).end():
+                retval[-1].append(Real3_from_Cpp_Real3(address(deref(it2))))
+                inc(it2)
+            inc(it)
+        return retval
+
+    def as_base(self):
+        """Clone self as a base class. This function is for developers."""
+        retval = Observer()
+        del retval.thisptr
+        retval.thisptr = new shared_ptr[Cpp_Observer](
+            <shared_ptr[Cpp_Observer]>deref(self.thisptr))
+        return retval
+
+    def reset(self):
+        """Reset the internal state."""
+        self.thisptr.get().reset()
+
+cdef class FixedIntervalTrackingObserver:
+    """An ``Observer`` class to trace and log trajectories of diffusing
+    particles in a ``World`` with the fixed step interval.
+    This ``Observer`` logs at the current time first, and then keeps logging
+    every after the interval.
+
+    FixedIntervalTrackingObserver(dt, species, resolve_boundary=None, subdt=None, threshold=None)
+
+    """
+
+    def __init__(self, Real dt, species, resolve_boundary=None, subdt=None, threshold=None):
+        """Constructor.
+
+        Parameters
+        ----------
+        dt : float
+            A step interval for logging.
+        species : list
+            A list of ``Species``.
+        resolve_boundary : bool, optional
+            If True, this ``Observer`` automatically resolves the effect
+            of periodic boundary contidions by keeping shifts for each particles.
+            Otherwise, this just logs positions within the size of ``World``
+            with no care about boundary conditions.
+        subdt : float, optional
+            A step interval to check the periodic boundary.
+            If None, use dt. This only has meaning when resolve_boundary is True.
+        threshold : float, optional
+            A maximum length to assume two particles are the same.
+            If None, no threshold is used.
+
+        """
+        pass  # XXX: Only used for doc string
+
+    def __init__(self, Real dt, species, resolve_boundary=None, subdt=None, threshold=None):
+        cdef vector[Cpp_Species] tmp
+
+        for sp in species:
+            tmp.push_back(deref((<Species>sp).thisptr))
+
+        self.thisptr = new shared_ptr[Cpp_FixedIntervalTrackingObserver](
+            new Cpp_FixedIntervalTrackingObserver(
+                dt, tmp,
+                Cpp_FixedIntervalTrackingObserver.default_resolve_boundary() if resolve_boundary is None else <bool>resolve_boundary,
+                Cpp_FixedIntervalTrackingObserver.default_subdt() if subdt is None else <Real>subdt,
+                Cpp_FixedIntervalTrackingObserver.default_threshold() if threshold is None else <Real>threshold))
 
     def __dealloc__(self):
         del self.thisptr
@@ -810,117 +1015,3 @@ cdef class TimeoutObserver:
     def reset(self):
         """Reset the internal state."""
         self.thisptr.get().reset()
-
-cdef class FixedIntervalTrackingObserver:
-    """An ``Observer`` class to trace and log trajectories of diffusing
-    particles in a ``World`` with the fixed step interval.
-    This ``Observer`` logs at the current time first, and then keeps logging
-    every after the interval.
-
-    FixedIntervalTrackingObserver(dt, species_list, resolve_boundary=None, subdt=None, threshold=None)
-
-    """
-
-    def __init__(self, Real dt, *args):
-        """Constructor.
-
-        Parameters
-        ----------
-        dt : float
-            A step interval for logging.
-        species_list : list
-            A list of ``Species``.
-        resolve_boundary : bool, optional
-            If True, this ``Observer`` automatically resolves the effect
-            of periodic boundary contidions by keeping shifts for each particles.
-            Otherwise, this just logs positions within the size of ``World``
-            with no care about boundary conditions.
-        subdt : float, optional
-            A step interval to check the periodic boundary.
-            If None, use dt. This only has meaning when resolve_boundary is True.
-        threshold : float, optional
-            A maximum length to assume two particles are the same.
-            If None, no threshold is used.
-
-        """
-        pass  # XXX: Only used for doc string
-
-    def __cinit__(self, Real dt, *args):
-        cdef vector[Cpp_Species] tmp
-
-        for sp in args[0]:
-            tmp.push_back(deref((<Species>sp).thisptr))
-        if len(args) == 1:
-            self.thisptr = new shared_ptr[Cpp_FixedIntervalTrackingObserver](
-                new Cpp_FixedIntervalTrackingObserver(dt, tmp))
-        elif len(args) == 2:
-            self.thisptr = new shared_ptr[Cpp_FixedIntervalTrackingObserver](
-                new Cpp_FixedIntervalTrackingObserver(dt, tmp, <bool>args[1]))
-        elif len(args) == 3:
-            self.thisptr = new shared_ptr[Cpp_FixedIntervalTrackingObserver](
-                new Cpp_FixedIntervalTrackingObserver(
-                    dt, tmp, <bool>args[1], <Real>args[2]))
-        elif len(args) == 4:
-            self.thisptr = new shared_ptr[Cpp_FixedIntervalTrackingObserver](
-                new Cpp_FixedIntervalTrackingObserver(
-                    dt, tmp, <bool>args[1], <Real>args[2], <Real>args[3]))
-
-    def __dealloc__(self):
-        del self.thisptr
-
-    def next_time(self):
-        """Return the next time for logging."""
-        return self.thisptr.get().next_time()
-
-    def num_steps(self):
-        """Return the number of steps."""
-        return self.thisptr.get().num_steps()
-
-    def num_tracers(self):
-        """Return the number of tracer molecules."""
-        return self.thisptr.get().num_tracers()
-
-    def t(self):
-        """Return time points at logging as a list."""
-        return self.thisptr.get().t()
-
-    def data(self):
-        """Return a list of trajectories for each particles.
-
-        Returns
-        -------
-        list:
-            A list of lists of ``Real3``. An element of a return value
-            is corresponding the trajectory of each particle. Thus, the size
-            of a return value is the same with that of ``pids`` you gave
-            at the construction.
-            If a particle corresponding to the given ``ParticleID`` is missing,
-            i.e. for a reaction, this ``Observer`` just skips to log the
-            position. Therefore, lengths of the trajectories can be diverse.
-
-        """
-        cdef vector[vector[Cpp_Real3]] d = self.thisptr.get().data()
-        retval = []
-        cdef vector[vector[Cpp_Real3]].iterator it = d.begin()
-        cdef vector[Cpp_Real3].iterator it2
-        while it != d.end():
-            it2 = deref(it).begin()
-            retval.append([])
-            while it2 != deref(it).end():
-                retval[-1].append(Real3_from_Cpp_Real3(address(deref(it2))))
-                inc(it2)
-            inc(it)
-        return retval
-
-    def as_base(self):
-        """Clone self as a base class. This function is for developers."""
-        retval = Observer()
-        del retval.thisptr
-        retval.thisptr = new shared_ptr[Cpp_Observer](
-            <shared_ptr[Cpp_Observer]>deref(self.thisptr))
-        return retval
-
-    def reset(self):
-        """Reset the internal state."""
-        self.thisptr.get().reset()
-

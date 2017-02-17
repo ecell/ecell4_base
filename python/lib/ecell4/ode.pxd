@@ -212,17 +212,23 @@ cdef ODESimulator ODESimulator_from_Cpp_ODESimulator(Cpp_ODESimulator* s)
 #  ecell4::ode::ODEFactory
 cdef extern from "ecell4/ode/ODEFactory.hpp" namespace "ecell4::ode":
     cdef cppclass Cpp_ODEFactory "ecell4::ode::ODEFactory":
-        Cpp_ODEFactory() except +
-        Cpp_ODEFactory(Cpp_ODESolverType) except +
-        Cpp_ODEFactory(Cpp_ODESolverType, Real) except +
-        Cpp_ODEFactory(Cpp_ODESolverType, Real, Real) except +
         Cpp_ODEFactory(Cpp_ODESolverType, Real, Real, Real) except +
+        Cpp_ODEFactory() except +
         Cpp_ODEWorld* create_world()
         Cpp_ODEWorld* create_world(string)
         Cpp_ODEWorld* create_world(Cpp_Real3&)
         Cpp_ODESimulator* create_simulator(shared_ptr[Cpp_Model], shared_ptr[Cpp_ODEWorld])
         Cpp_ODESimulator* create_simulator(shared_ptr[Cpp_ODENetworkModel], shared_ptr[Cpp_ODEWorld])
         Cpp_ODESimulator* create_simulator(shared_ptr[Cpp_ODEWorld])
+        Cpp_ODEFactory* rng_ptr(shared_ptr[Cpp_RandomNumberGenerator]&)
+        @staticmethod
+        Cpp_ODESolverType default_solver_type()
+        @staticmethod
+        Real default_dt()
+        @staticmethod
+        Real default_abs_tol()
+        @staticmethod
+        Real default_rel_tol()
 
 ## ODEFactory
 #  a python wrapper for Cpp_ODEFactory

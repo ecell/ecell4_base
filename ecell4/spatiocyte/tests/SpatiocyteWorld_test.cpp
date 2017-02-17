@@ -127,12 +127,12 @@ BOOST_AUTO_TEST_CASE(SpatiocyteWorld_test_add_molecule)
     sp.set_attribute("radius", "2.5e-9");
     sp.set_attribute("D", "1e-12");
 
-    SpatiocyteWorld::private_coordinate_type coord(486420);
-    // BOOST_CHECK(world.place_voxel_private(sp, coord).second);
-    BOOST_CHECK(world.new_voxel(sp, world.private2coord(coord)).second);
+    SpatiocyteWorld::coordinate_type coord(486420);
+    // BOOST_CHECK(world.place_voxel(sp, coord).second);
+    BOOST_CHECK(world.new_voxel(sp, coord).second);
     BOOST_CHECK_EQUAL(world.num_particles(sp), 1);
 
-    MolecularTypeBase* mt(world.get_molecular_type_private(coord));
+    VoxelPool* mt(world.get_voxel_pool_at(coord));
     BOOST_CHECK(!mt->is_vacant());
 }
 
@@ -161,23 +161,20 @@ BOOST_AUTO_TEST_CASE(SpatiocyteWorld_test_neighbor)
         rng(new GSLRandomNumberGenerator());
     SpatiocyteWorld world(edge_lengths, voxel_radius, rng);
 
-    const Integer3 center(
-            world.col_size()/2, world.row_size()/2, world.layer_size()/2);
-    const SpatiocyteWorld::private_coordinate_type cc(
-            world.coord2private(world.global2coord(center)));
-    const Real3 cp(world.coordinate2position(
-                world.global2coord(center)));
+    const SpatiocyteWorld::coordinate_type coord(26 + 52 * 26 + 52 * 52 * 26);
+    const Real3 cp(world.coordinate2position(coord));
 
     Species sp(std::string("TEST"));
     sp.set_attribute("radius", "2.5e-9");
     sp.set_attribute("D", "1e-12");
-    const Integer n(world.add_neighbors(sp, cc));
+    const Integer n(world.add_neighbors(sp, coord));
     std::vector<std::pair<ParticleID, Particle> > particles(
             world.list_particles());
     std::ofstream ofs("neighbor.txt");
     ofs << "center" << std::endl;
-    ofs << "(" << cp[0] << "," << cp[1] << "," << cp[2] << ") "
-        << world.private2coord(cc) << std::endl;
+    // ofs << "(" << cp[0] << "," << cp[1] << "," << cp[2] << ") "
+    //     << world.coordinate2coord(coord) << std::endl;
+    ofs << "(" << cp[0] << "," << cp[1] << "," << cp[2] << ") " << coord << std::endl;
     for (std::vector<std::pair<ParticleID, Particle> >::iterator itr(
                 particles.begin()); itr != particles.end(); ++itr)
     {
@@ -230,20 +227,13 @@ BOOST_AUTO_TEST_CASE(SpatiocyteWorld_test_move)
     sp.set_attribute("radius", "2.5e-9");
     sp.set_attribute("D", "1e-12");
 
-    SpatiocyteWorld::coordinate_type from(1034), to(786420);
-
-    // SpatiocyteWorld::private_coordinate_type private_from(
-    //         world.coord2private(from));
-    // BOOST_CHECK(world.place_voxel(sp, private_from).second);
-
-    SpatiocyteWorld::private_coordinate_type private_to(
-            world.coord2private(to));
-    // BOOST_CHECK(world.move(from, to));
+    SpatiocyteWorld::coordinate_type from(world.inner2coordinate(1034));
+    SpatiocyteWorld::coordinate_type to(world.inner2coordinate(786420));
 
     BOOST_CHECK(world.new_voxel(sp, from).second);
     BOOST_CHECK(world.move(from, to));
 
-    MolecularTypeBase* mt(world.get_molecular_type_private(private_to));
+    VoxelPool* mt(world.get_voxel_pool_at(to));
     BOOST_CHECK(!mt->is_vacant());
 
     BOOST_CHECK(world.move(from, to));
@@ -264,9 +254,9 @@ BOOST_AUTO_TEST_CASE(SpatiocyteWorld_test_structure)
 
     boost::shared_ptr<const Sphere> sphere(new Sphere(Real3(2.5e-7, 2.5e-7, 2.5e-7), 2e-7));
 
-    BOOST_CHECK(world.add_structure(membrane, sphere) > 0);
-    BOOST_CHECK(world.new_particle(Particle(sp, Real3(2.5e-7, 2.5e-7, 4.5e-7),
-                    2.5e-9, 1e-12)).second);
+    BOOST_CHECK(world.add_structure(membrane, sphere) == 5892);
+    BOOST_CHECK(!world.new_particle(Particle(sp, Real3(2.5e-7, 2.5e-7, 4.5e-7), 2.5e-9, 1e-12)).second);
+    BOOST_CHECK(world.new_particle(Particle(sp, Real3(2.5e-7, 2.5e-7, 4.5e-7 - voxel_radius * 2), 2.5e-9, 1e-12)).second);
 
 #ifdef WITH_HDF5
     world.save("structure.h5");

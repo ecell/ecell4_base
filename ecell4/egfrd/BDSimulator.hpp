@@ -227,7 +227,7 @@ protected:
                 }
 
                 particle_id_pair pp(
-                    (*base_type::world_).new_particle(products[0], new_pos));
+                    (*base_type::world_).new_particle(products[0], new_pos).first);
 
                 if (base_type::rrec_)
                 {

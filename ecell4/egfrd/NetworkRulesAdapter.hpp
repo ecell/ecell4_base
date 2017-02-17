@@ -161,7 +161,7 @@ protected:
         for (ecell4::ReactionRule::product_container_type::const_iterator
             j(rr.products().begin()); j != rr.products().end(); ++j)
         {
-            products.push_back(j->name());
+            products.push_back(*j);
         }
 
         ecell4::ReactionRule::reactant_container_type::const_iterator
@@ -175,17 +175,17 @@ protected:
             }
         case 1:
             {
-                const species_id_type sid1(r->name());
+                const species_id_type sid1(*r);
                 reactants.push_back(sid1);
                 return reaction_rule_type(rr, rate, reactants, products);
             }
             break;
         case 2:
             {
-                const species_id_type sid1(r->name());
+                const species_id_type sid1(*r);
                 reactants.push_back(sid1);
                 ++r;
-                const species_id_type sid2(r->name());
+                const species_id_type sid2(*r);
                 reactants.push_back(sid2);
                 return reaction_rule_type(rr, rate, reactants, products);
             }

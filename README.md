@@ -48,7 +48,7 @@ Installation
 
 #### Minimum requirements
 
-- Python (2.7 and 3.4, 3.5 both major versions are supported [3.4 is only supported on Linux])
+- Python (2.7 and 3.4, 3.5, 3.6 both major versions are supported [3.4 is only supported on Linux, 3.6 is only supported on Mac])
 - pip (8.1 or later)
 - hdf5 (required only on **Windows**.)
 
@@ -87,12 +87,14 @@ If you use animated visualization with E-Cell4, please install [ffmpeg windows b
 We recommend that you install [Miniconda](http://conda.pydata.org/miniconda.html) to manage Python packages.
 After installing Miniconda, run the following commands in your terminal.
 
+(NOTICE for Mac users) We do not provide **Python3.5 whl for Mac**. Instead we provide **Python3.6 whl for Mac**. To use Python3.6 enviroment, please refer to http://conda.pydata.org/docs/py2or3.html . Continuum.io already offers Python3.6 conda packages.
+
 ```shell
 # After installing Miniconda2 or Miniconda3 (Here we assume that you installed Miniconda3).
-~/miniconda3/bin/conda install matplotlib notebook
+~/miniconda2/bin/conda install matplotlib notebook
 
 # Download E-Cell4 whl file for your Python version from https://github.com/ecell/ecell4/releases before running this command.
-~/miniconda3/bin/pip install ecell
+~/miniconda2/bin/pip install ecell
 
 # If you want animation support, install ffmpeg with homebrew
 brew install ffmpeg
@@ -135,9 +137,9 @@ Python 2.7.6 (default, Mar 22 2014, 22:59:56)
 [GCC 4.8.2] on linux2
 Type "help", "copyright", "credits" or "license" for more information.
 >>> from ecell4.core import *
->>> sp = Species("B.A.C")
->>> print(sp.serial())
-B.A.C
+>>> sp = Species("A.B.C")
+>>> print sp.serial()
+A.B.C
 >>>
 ```
 

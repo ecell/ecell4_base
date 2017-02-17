@@ -23,7 +23,7 @@ struct num_elements< T_[ N_ ] >
 template< typename T_ >
 struct element_type_of
 {
-    // typedef typename T_::value_type type;
+//     typedef typename T_::value_type type;
 };
 
 template< typename T_, std::size_t N_ >

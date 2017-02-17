@@ -195,7 +195,6 @@ std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
         return retval;
     }
 
-    const Real radius_sq(radius * radius);
     cell_index_type idx(this->index(pos));
 
     // MatrixSpace::each_neighbor_cyclic_loops
@@ -214,6 +213,8 @@ std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
                     // neighbor_filter::operator()
                     particle_container_type::const_iterator
                         itr(particles_.begin() + (*i));
+                    // particle_container_type::const_iterator itr = particles_.begin();
+                    // std::advance(itr, *i);
 
                     const Real dist(
                         length((*itr).second.position() + stride - pos)
@@ -247,7 +248,6 @@ std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
         return retval;
     }
 
-    const Real radius_sq(radius * radius);
     cell_index_type idx(this->index(pos));
 
     // MatrixSpace::each_neighbor_cyclic_loops
@@ -302,7 +302,6 @@ std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
         return retval;
     }
 
-    const Real radius_sq(radius * radius);
     cell_index_type idx(this->index(pos));
 
     // MatrixSpace::each_neighbor_cyclic_loops

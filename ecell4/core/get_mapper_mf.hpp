@@ -13,6 +13,8 @@
 #include <map>
 #endif /* HAVE_UNORDERED_MAP */
 
+#include <vector>
+
 
 namespace ecell4
 {
@@ -40,6 +42,16 @@ struct get_mapper_mf
     typedef std::map<Tkey_, Tval_> type;
 #endif
 };
+
+template<typename Tmap_>
+void retrieve_keys(Tmap_ map, std::vector<typename Tmap_::key_type>& keys)
+{
+    for (typename Tmap_::const_iterator itr(map.begin());
+            itr != map.end(); ++itr)
+    {
+        keys.push_back(itr->first);
+    }
+}
 
 } // utils
 
