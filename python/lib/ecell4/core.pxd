@@ -450,13 +450,13 @@ cdef extern from "ecell4/core/callback.hpp" namespace "ecell4":
         bool is_available()
         void call()
 
-ctypedef bool (*stepladder_type_space)(pyfunc_type pyfunc, shared_ptr[Cpp_Space])
+ctypedef bool (*stepladder_type_space)(pyfunc_type pyfunc, shared_ptr[Cpp_Space], bool)
 cdef extern from "ecell4/core/callback.hpp" namespace "ecell4":
     cdef cppclass PythonHook_Space:
         #PythonHook_1arg( "(*)(pyfunc_type, T1)" , pyfunc_type)
         PythonHook_Space( stepladder_type_space, pyfunc_type)
         bool is_available()
-        bool call(shared_ptr[Cpp_Space] space )
+        bool call(shared_ptr[Cpp_Space] space, bool check_reaction )
 
 cdef class PythonSpaceHooker:
     cdef PythonHook_Space* thisptr

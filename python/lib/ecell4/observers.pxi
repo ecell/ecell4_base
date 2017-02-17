@@ -28,9 +28,9 @@ cdef class Observer:
     
 
 cdef bool indirect_func_space(
-        void *pyfunc, shared_ptr[Cpp_Space] sp):
+        void *pyfunc, shared_ptr[Cpp_Space] sp, bool check_reaction):
     sp_obj = Space_from_Cpp_Space(sp)
-    cdef bool ret = (<object>pyfunc)(sp_obj)
+    cdef bool ret = (<object>pyfunc)(sp_obj, check_reaction)
     if ret == False:
         return False
     else:

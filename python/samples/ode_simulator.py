@@ -81,7 +81,7 @@ def singlerun1():
 
 test_list = []
 
-def hoge(space):
+def hoge(space, check_reaction):
     # When this function returns False, the simulation will be stopped. 
     #   Please return True to continue the calculation.
     retval = True
@@ -89,7 +89,7 @@ def hoge(space):
     if space.t() > 10.0:
         print "Oops! 10 seconds expired! Stop!!!"
         retval = False
-    print ("{}  {}  {} {}".format(space.t(), space.num_molecules(Species("A")), space.num_molecules(Species("B")), space.num_molecules(Species("C")) ) )
+    print ("{}  {}  {} {} reaction: {}".format(space.t(), space.num_molecules(Species("A")), space.num_molecules(Species("B")), space.num_molecules(Species("C")), check_reaction ) )
     test_list.append(space.t())
     return retval
 

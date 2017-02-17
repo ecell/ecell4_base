@@ -104,7 +104,7 @@ namespace ecell4
 struct PythonHook_Space
 {
     typedef void *pyfunc_type;
-    typedef bool (*stepladder_type_space)(pyfunc_type, boost::shared_ptr<Space> space);
+    typedef bool (*stepladder_type_space)(pyfunc_type, boost::shared_ptr<Space> space, bool check_reaction);
 
     PythonHook_Space(
             stepladder_type_space stepladder, pyfunc_type pyfunc)
@@ -120,7 +120,7 @@ struct PythonHook_Space
     }
 
     // XXX What does this return value mean ???
-    bool call(const boost::shared_ptr<Space>& space);
+    bool call(const boost::shared_ptr<Space>& space, bool check_reaction);
     pyfunc_type pyfunc_;
     stepladder_type_space stepladder_;
 };

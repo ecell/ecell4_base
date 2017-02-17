@@ -27,10 +27,10 @@ namespace ecell4
 //    ;
 //}
 //
-bool PythonHook_Space::call(const boost::shared_ptr<Space>& space)
+bool PythonHook_Space::call(const boost::shared_ptr<Space>& space, bool check_reaction)
 {
     if (this->is_available()) {
-        return this->stepladder_(this->pyfunc_, space);
+        return this->stepladder_(this->pyfunc_, space, check_reaction);
     } else {
         throw IllegalState("Callback failed.");
     }
