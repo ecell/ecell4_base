@@ -79,12 +79,19 @@ def singlerun1():
         print("{}\t{}\t{}\t{}".format(
             sim.t(), w.get_value(sp1), w.get_value(sp2), w.get_value(sp3)))
 
+test_list = []
+
 def hoge(space):
-    print ("{}  {}  {}".format(space.t(), space.num_molecules(Species("A")), space.num_molecules(Species("B")) ))
+    # When this function returns False, the simulation will be stopped. 
+    #   Please return True to continue the calculation.
+    retval = True
+    global test_list
     if space.t() > 10.0:
-        print "Oops! Stop!!!"
-        return False
-    return True
+        print "Oops! 10 seconds expired! Stop!!!"
+        retval = False
+    print ("{}  {}  {} {}".format(space.t(), space.num_molecules(Species("A")), space.num_molecules(Species("B")), space.num_molecules(Species("C")) ) )
+    test_list.append(space.t())
+    return retval
 
 def singlerun2():
     L = 1e-16
@@ -115,3 +122,5 @@ def singlerun2():
 # singlerun1()
 singlerun2()
 print("# done")
+print test_list
+    
