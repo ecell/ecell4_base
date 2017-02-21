@@ -160,6 +160,16 @@ class BDPolygon
     move_next_face(const std::pair<Real3, face_id_type>& pos,
                    const Real3& disp) const;
 
+    std::vector<face_id_type>
+    list_faceids()
+    {
+        std::vector<face_id_type> fids; fids.reserve(this->num_faces());
+        for(face_id_type fid = 0; fid != this->num_faces(); ++fid)
+            fids.push_back(fid);
+        return fids;
+    }
+
+
     std::size_t num_faces() const {return faces_.size();}
     bool empty() const {return faces_.empty();}
     void clear() {return faces_.clear();}
