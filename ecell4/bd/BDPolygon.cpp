@@ -1,7 +1,8 @@
 #include "BDPolygon.hpp"
 #include "rotate_vector.hpp"
-#include <set>
+#include <algorithm>
 #include <limits>
+#include <set>
 
 namespace ecell4
 {
@@ -13,6 +14,7 @@ void BDPolygon::detect_connectivity(const Real tolerance)
 {
     detect_shared_edges(tolerance);
     detect_shared_vertices(tolerance);
+    list_neighboring_faces();
     return;
 }
 
@@ -327,7 +329,7 @@ void BDPolygon::detect_shared_vertices(const Real tolerance)
 
             edge_id_type lookup = traits::vtoe(current_vtx);
             std::size_t i=0;
-            for(; i<100; ++i)
+            for(; i<MAX_FACES_SHARING_VERTEX; ++i)
             {
                 const std::size_t     f = traits::get_face_id(lookup);
                 const edge_index_type e = traits::get_edge_index(lookup);
@@ -341,7 +343,7 @@ void BDPolygon::detect_shared_vertices(const Real tolerance)
                         traits::get_vertex_index(vid));
                 sharing_list.push_back(vid);
             }
-            if(i == 100)
+            if(i == MAX_FACES_SHARING_VERTEX)
                 throw std::runtime_error("too many faces share a certain vertex");
             vertex_groups_[current_vtx] = std::make_pair(sharing_list, whole_angle);
         }
@@ -418,6 +420,78 @@ void BDPolygon::detect_shared_edges(const Real tolerance)
     }
 
     return;
+}
+
+void BDPolygon::list_neighboring_faces()
+{
+    for(face_id_type fidx = 0; fidx < faces_.size(); ++fidx)
+    {
+        face_id_list neighbors;
+        neighbors.push_back(fidx); // XXX: negihbors contain self-id.
+        for(vertex_index_type vidx = 0; vidx < 3; ++vidx)
+        {
+            const vertex_id_type current_vtx = traits::make_vertex_id(fidx, vidx);
+
+            vertex_id_list const& vlist = this->connecting_vertices(current_vtx);
+            vertex_id_list::const_iterator iter = vlist.begin()+1;
+            const vertex_id_list::const_iterator end = vlist.end()-1;
+            while(iter != end)
+            {
+                neighbors.push_back(traits::get_face_id(*iter));
+                ++iter;
+            }
+        }
+        neighbors_[fidx] = neighbors;
+    }
+
+    // assertion: is_unique
+    for(neighboring_face_map::const_iterator iter = neighbors_.begin();
+            iter != neighbors_.end(); ++iter)
+    {
+        face_id_list copied = iter->second;
+        std::sort(copied.begin(), copied.end());
+        face_id_list::iterator result = std::unique(copied.begin(), copied.end());
+
+        if(iter->second.size() != std::distance(copied.begin(), result))
+        {
+            throw std::logic_error("Polygon::list_neighboring_faces: not unique");
+        }
+    }
+
+    // assertion: is_complete
+    for(face_id_type fidx = 0; fidx < faces_.size(); ++fidx)
+    {
+        const face_id_list& neighbors = neighbors_[fidx];
+
+        for(edge_index_type eidx = 0; eidx < 3; ++eidx)
+        {
+            const face_id_type next =
+                traits::get_face_id(edge_pairs_[traits::make_edge_id(fidx, eidx)]);
+            face_id_list::const_iterator result =
+                std::find(neighbors.begin(), neighbors.end(), next);
+            if(result == neighbors.end())
+                throw std::logic_error("Polygon::list_neighboring_faces: incomplete");
+        }
+
+        for(vertex_index_type vidx = 0; vidx < 3; ++vidx)
+        {
+            const vertex_id_type current_vtx = traits::make_vertex_id(fidx, vidx);
+
+            vertex_id_list const& vlist = this->connecting_vertices(current_vtx);
+            for(vertex_id_list::const_iterator iter = vlist.begin();
+                    iter != vlist.end(); ++iter)
+            {
+                face_id_list::const_iterator result =
+                    std::find(neighbors.begin(), neighbors.end(),
+                              traits::get_face_id(*iter));
+
+                if(result == neighbors.end())
+                    throw std::logic_error(
+                        "Polygon::list_neighboring_faces: incomplete");
+            }
+        }
+    }
+    return ;
 }
 
 }// bd

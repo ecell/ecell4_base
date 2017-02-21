@@ -91,6 +91,7 @@ class BDPolygon
     typedef /*typename*/ traits_type::edge_id_type      edge_id_type;
 
     typedef std::vector<face_type>      face_container_type;
+    typedef std::vector<face_id_type>   face_id_list;
     typedef std::vector<vertex_id_type> vertex_id_list;
     typedef /*typename*/ utils::get_mapper_mf<edge_id_type, edge_id_type>::type
         edge_pair_type;
@@ -98,9 +99,13 @@ class BDPolygon
     typedef std::pair<vertex_id_list, Real> vertex_list_angle_pair;
     typedef /*typename*/ utils::get_mapper_mf<vertex_id_type,
             vertex_list_angle_pair>::type vertex_group_type;
+    typedef /*typename*/ utils::get_mapper_mf<face_id_type, face_id_list>::type
+            neighboring_face_map;
 
     typedef std::pair<Real3, face_id_type> surface_position_type;
     typedef Barycentric<Real> barycentric_type;
+
+    const static std::size_t MAX_FACES_SHARING_VERTEX = 100;
 
   public:
     BDPolygon(){}
@@ -114,6 +119,12 @@ class BDPolygon
     }
 
     void detect_connectivity(const Real tolerance = 1e-6);
+
+    face_id_list const&
+    neighbor_faces(const face_id_type fid) const
+    {
+        return const_at(neighbors_, fid);
+    }
 
     edge_id_type const&
     connecting_edge(const edge_id_type& eid) const
@@ -161,6 +172,7 @@ class BDPolygon
 
     void detect_shared_vertices(const Real tolerance = 1e-6);
     void detect_shared_edges(const Real tolerance = 1e-6);
+    void list_neighboring_faces();
 
     std::pair<uint32_t, Real>
     crossed_edge(const barycentric_type& pos, const barycentric_type& disp) const;
@@ -170,9 +182,10 @@ class BDPolygon
 
   private:
 
-    face_container_type faces_;
-    edge_pair_type      edge_pairs_;
-    vertex_group_type   vertex_groups_;
+    face_container_type  faces_;
+    edge_pair_type       edge_pairs_;
+    vertex_group_type    vertex_groups_;
+    neighboring_face_map neighbors_;
 };
 
 }// bd
