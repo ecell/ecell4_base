@@ -111,7 +111,21 @@ Real BDPolygon::distance_sq(const std::pair<Real3, face_id_type>& lhs,
             inter_angle += f.angle_at(vid);
             ++iter;
         }
-        assert(inter_angle < whole_angle);
+//         assert(inter_angle <= whole_angle);
+        if(inter_angle > whole_angle)
+        {
+            std::cerr << "inter particle angle exceeds the whole angle" << std::endl;
+            std::cerr << "p1 is on " << lhs.second << "-th face" << std::endl;
+            std::cerr << "p2 is on " << rhs.second << "-th face" << std::endl;
+            std::cerr << "inter angle " << inter_angle << std::endl;
+            std::cerr << "whole angle " << whole_angle << std::endl;
+            std::cerr << "faces sharing the vertex ";
+            for(vertex_id_list::const_iterator iter = vlist.begin(); iter != vlist.end(); ++iter)
+            {
+                std::cerr << traits::get_face_id(*iter) << ", ";
+            }
+            std::cerr << std::endl;
+        }
 
         const Real min_angle = std::min(inter_angle, whole_angle - inter_angle);
         return lhs_to_vtx_lensq + rhs_to_vtx_lensq - 2. *
@@ -188,8 +202,21 @@ Real3 BDPolygon::inter_position_vector(
             inter_angle += f.angle_at(vid);
             ++iter;
         }
-        assert(inter_angle < whole_angle);
-
+//         assert(inter_angle <= whole_angle);
+        if(inter_angle > whole_angle)
+        {
+            std::cerr << "inter particle angle exceeds the whole angle" << std::endl;
+            std::cerr << "p1 is on " << lhs.second << "-th face" << std::endl;
+            std::cerr << "p2 is on " << rhs.second << "-th face" << std::endl;
+            std::cerr << "inter angle " << inter_angle << std::endl;
+            std::cerr << "whole angle " << whole_angle << std::endl;
+            std::cerr << "faces sharing the vertex ";
+            for(vertex_id_list::const_iterator iter = vlist.begin(); iter != vlist.end(); ++iter)
+            {
+                std::cerr << traits::get_face_id(*iter) << ", ";
+            }
+            std::cerr << std::endl;
+        }
         // XXX:NOTE
         // in the case of inter_angle == whole_angle - inter_angle, it is good
         // to choose inter-position-vector randomly. but here it is unidirectional.

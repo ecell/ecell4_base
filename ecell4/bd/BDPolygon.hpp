@@ -127,10 +127,10 @@ class BDPolygon
         return const_at(vertex_groups_, vid).first;
     }
 
-    std::pair<bool, uint32_t>
+    std::pair<bool, edge_index_type>
     is_connected(const face_id_type& lhs, const face_id_type& rhs) const;
 
-    std::pair<bool, uint32_t>
+    std::pair<bool, vertex_index_type>
     is_share_vertex(const face_id_type& lhs, const face_id_type& rhs) const;
 
     Real distance_sq(const std::pair<Real3, face_id_type>& lhs,
