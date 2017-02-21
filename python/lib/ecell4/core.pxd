@@ -440,6 +440,16 @@ cdef class Voxel:
 
 cdef Voxel Voxel_from_Cpp_Voxel(Cpp_Voxel* p)
 
+## Python object handler for C++ layer
+ctypedef void (*PyObjectHandler_1arg)(void*)
+cdef extern from "ecell4/core/pyhandler.hpp" namespace "ecell4":
+    cdef cppclass Cpp_PyObjectHandler "ecell4::PyObjectHandler":
+        Cpp_PyObjectHandler(PyObjectHandler_1arg, PyObjectHandler_1arg)
+        bool is_available()
+
+cdef class PyObjectHandler:
+    cdef shared_ptr[Cpp_PyObjectHandler] thisptr
+
 ## Callback Related
 ctypedef void* pyfunc_type
 ctypedef int (*stepladder_type)(pyfunc_type pyfunc, vector[Real])
@@ -480,7 +490,8 @@ cdef extern from "ecell4/core/observers.hpp" namespace "ecell4":
         void save(string)
 
     cdef cppclass Cpp_FixedIntervalNumberHooker "ecell4::FixedIntervalNumberHooker":
-        Cpp_FixedIntervalNumberHooker(Real, stepladder_type_space, pyfunc_type)
+        Cpp_FixedIntervalNumberHooker(Real, stepladder_type_space, pyfunc_type, 
+                shared_ptr[Cpp_PyObjectHandler])
         Real next_time()
         Integer num_steps()
         #vector[vector[Real]] data()

@@ -39,9 +39,10 @@ cdef bool indirect_func_space(
 
 cdef class FixedIntervalNumberHooker:
     def __cinit__(self, Real dt,  pyfunc):
+        a = PyObjectHandler()
         self.thisptr = new shared_ptr[Cpp_FixedIntervalNumberHooker](
                 new Cpp_FixedIntervalNumberHooker(dt, 
-                    <stepladder_type_space>indirect_func_space, <void*>pyfunc))
+                    <stepladder_type_space>indirect_func_space, <void*>pyfunc, a.thisptr  ))
     def __dealloc__(self):
         del self.thisptr
     def as_base(self):

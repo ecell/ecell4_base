@@ -6,6 +6,7 @@
 #include "Space.hpp"
 #include "Simulator.hpp"
 
+#include "pyhandler.hpp"
 #include "callback.hpp"
 
 #include <fstream>
@@ -167,8 +168,8 @@ class FixedIntervalNumberHooker
     typedef PythonHook_Space::pyfunc_type pyfunc_type;
     typedef PythonHook_Space::stepladder_type_space stepladder_type_space;
 public:
-    FixedIntervalNumberHooker(const Real &dt, stepladder_type_space stepladder, pyfunc_type pyfunc)
-        :base_type(dt), hooker_(stepladder, pyfunc)
+    FixedIntervalNumberHooker(const Real &dt, stepladder_type_space stepladder, pyfunc_type pyfunc, boost::shared_ptr<PyObjectHandler> py_handler)
+        :base_type(dt), hooker_(stepladder, pyfunc, py_handler)
     {
         ;
     }
