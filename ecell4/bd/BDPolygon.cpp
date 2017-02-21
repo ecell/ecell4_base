@@ -105,8 +105,42 @@ Real BDPolygon::distance_sq(const std::pair<Real3, face_id_type>& lhs,
             const Triangle&      f = faces_.at(fid);
             if(fid == rhs.second)
             {
-                inter_angle += angle(vtx_to_rhs,
+                Real ang = angle(vtx_to_rhs,
                         f.edge_at(traits::get_edge_index(traits::vtoe(*iter))));
+                if(ang > f.angle_at(traits::get_vertex_index(*iter)))
+                {
+                    if(std::abs(ang - f.angle_at(traits::get_vertex_index(*iter))) > 1e-8)
+                    {
+                        std::cerr << std::endl;
+                        std::cerr << "[Error] "
+                                  << "inter particle angle exceeds the whole angle"
+                                  << std::endl;
+                        std::cerr << "p1 is on " << lhs.second << "-th face" << std::endl;
+                        std::cerr << "p2 is on " << rhs.second << "-th face" << std::endl;
+                        std::cerr << "distance between p1 and vtx = "
+                                  << std::sqrt(lhs_to_vtx_lensq) << std::endl;
+                        std::cerr << "distance between p2 and vtx = "
+                                  << std::sqrt(rhs_to_vtx_lensq) << std::endl;
+                        std::cerr << "inter angle " << ang << std::endl;
+                        std::cerr << "whole angle "
+                                  << f.angle_at(traits::get_vertex_index(*iter))
+                                  << std::endl;
+                        std::cerr << "faces sharing the vertex ";
+                        for(vertex_id_list::const_iterator iter = vlist.begin();
+                                iter != vlist.end(); ++iter)
+                        {
+                            std::cerr << traits::get_face_id(*iter) << ", ";
+                        }
+                        std::cerr << std::endl;
+                        throw std::logic_error("invalid inter angle");
+                    }
+                    else
+                    {
+                        ang = f.angle_at(traits::get_vertex_index(*iter));
+                    }
+                }
+
+                inter_angle += ang;
                 break;
             }
             const vertex_index_type vid = traits::get_vertex_index(*iter);
@@ -116,9 +150,14 @@ Real BDPolygon::distance_sq(const std::pair<Real3, face_id_type>& lhs,
 //         assert(inter_angle <= whole_angle);
         if(inter_angle > whole_angle)
         {
-            std::cerr << "inter particle angle exceeds the whole angle" << std::endl;
+            std::cerr << std::endl;
+            std::cerr << "[Error] inter particle angle exceeds the whole angle" << std::endl;
             std::cerr << "p1 is on " << lhs.second << "-th face" << std::endl;
             std::cerr << "p2 is on " << rhs.second << "-th face" << std::endl;
+            std::cerr << "distance between p1 and vtx = "
+                      << std::sqrt(lhs_to_vtx_lensq) << std::endl;
+            std::cerr << "distance between p2 and vtx = "
+                      << std::sqrt(rhs_to_vtx_lensq) << std::endl;
             std::cerr << "inter angle " << inter_angle << std::endl;
             std::cerr << "whole angle " << whole_angle << std::endl;
             std::cerr << "faces sharing the vertex ";
@@ -127,6 +166,7 @@ Real BDPolygon::distance_sq(const std::pair<Real3, face_id_type>& lhs,
                 std::cerr << traits::get_face_id(*iter) << ", ";
             }
             std::cerr << std::endl;
+            throw std::logic_error("invalid inter angle");
         }
 
         const Real min_angle = std::min(inter_angle, whole_angle - inter_angle);
@@ -196,8 +236,10 @@ Real3 BDPolygon::inter_position_vector(
             const Triangle&      f = faces_.at(fid);
             if(fid == rhs.second)
             {
-                inter_angle += angle(vtx_to_rhs,
+                const Real ang = angle(vtx_to_rhs,
                         f.edge_at(traits::get_edge_index(traits::vtoe(*iter))));
+                assert(ang <= f.angle_at(traits::get_vertex_index(*iter)));
+                inter_angle += ang;
                 break;
             }
             const vertex_index_type vid = traits::get_vertex_index(*iter);
@@ -207,9 +249,14 @@ Real3 BDPolygon::inter_position_vector(
 //         assert(inter_angle <= whole_angle);
         if(inter_angle > whole_angle)
         {
-            std::cerr << "inter particle angle exceeds the whole angle" << std::endl;
+            std::cerr << std::endl;
+            std::cerr << "[Error] inter particle angle exceeds the whole angle" << std::endl;
             std::cerr << "p1 is on " << lhs.second << "-th face" << std::endl;
             std::cerr << "p2 is on " << rhs.second << "-th face" << std::endl;
+            std::cerr << "distance between p1 and vtx = "
+                      << std::sqrt(lhs_to_vtx_lensq) << std::endl;
+            std::cerr << "distance between p2 and vtx = "
+                      << std::sqrt(rhs_to_vtx_lensq) << std::endl;
             std::cerr << "inter angle " << inter_angle << std::endl;
             std::cerr << "whole angle " << whole_angle << std::endl;
             std::cerr << "faces sharing the vertex ";
@@ -218,6 +265,7 @@ Real3 BDPolygon::inter_position_vector(
                 std::cerr << traits::get_face_id(*iter) << ", ";
             }
             std::cerr << std::endl;
+            throw std::logic_error("invalid inter angle");
         }
         // XXX:NOTE
         // in the case of inter_angle == whole_angle - inter_angle, it is good
@@ -331,7 +379,7 @@ void BDPolygon::detect_shared_vertices(const Real tolerance)
             std::size_t i=0;
             for(; i<MAX_FACES_SHARING_VERTEX; ++i)
             {
-                const std::size_t     f = traits::get_face_id(lookup);
+                const face_id_type    f = traits::get_face_id(lookup);
                 const edge_index_type e = traits::get_edge_index(lookup);
                 const edge_id_type  eid = traits::make_edge_id(f, (e==0?2:e-1));
                 lookup = this->edge_pairs_[eid]; // update lookup face
@@ -361,7 +409,6 @@ void BDPolygon::detect_shared_vertices(const Real tolerance)
             assert(std::abs(vertex_groups_[*i].second - wangle) < 1e-12);
         }
     }
-
     return;
 }
 
