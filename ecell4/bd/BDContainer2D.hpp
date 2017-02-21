@@ -28,6 +28,7 @@ public:
     typedef BDPolygon polygon_type;
     typedef polygon_type::face_type face_type;
     typedef polygon_type::face_id_type face_id_type;
+    typedef polygon_type::face_id_list face_id_list;
     typedef utils::get_mapper_mf<ParticleID, face_id_type>::type
             pid_to_faceid_type;
     typedef utils::get_mapper_mf<face_id_type, particle_id_set>::type
@@ -115,6 +116,8 @@ public:
     polygon_type&       polygon()       {return polygon_;}
     polygon_type const& polygon() const {return polygon_;}
 
+    void setup_polygon();
+
     face_type const& belonging_face(const ParticleID& pid) const
     {
         return polygon_.at(const_at(fmap_, pid));
@@ -123,6 +126,11 @@ public:
     face_id_type const& belonging_faceid(const ParticleID& pid) const
     {
         return const_at(fmap_, pid);
+    }
+
+    particle_id_set const& particles_on_face(const face_id_type& fid) const
+    {
+        return const_at(particle_face_, fid);
     }
 
 #ifdef WITH_HDF5

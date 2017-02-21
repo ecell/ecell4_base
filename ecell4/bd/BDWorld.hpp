@@ -572,7 +572,7 @@ public:
     void set_polygon(const BDPolygon& poly)
     {
         (*ps2d_).polygon() = poly;
-        (*ps2d_).polygon().detect_connectivity();
+        (*ps2d_).setup_polygon();
         return;
     }
 

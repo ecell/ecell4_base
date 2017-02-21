@@ -220,14 +220,24 @@ ParticleContainer2D::list_particles_within_radius(
         const std::pair<Real3, face_id_type>& pos, const Real& radius) const
 {
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > retval;
-    for(particle_container_type::const_iterator
-            iter = particles_.begin(); iter != particles_.end(); ++iter)
+
+    const face_id_list& neighbors = polygon_.neighbor_faces(pos.second);
+    for(face_id_list::const_iterator
+            iter = neighbors.begin(); iter != neighbors.end(); ++iter)
     {
-        const face_id_type fid = this->belonging_faceid(iter->first);
-        const Real l = polygon_.distance(pos, std::make_pair(
-                    iter->second.position(), fid)) - iter->second.radius();
-        if(l <= radius)
-            retval.push_back(std::make_pair(*iter, l));
+        const particle_id_set& ps_on_face = this->particles_on_face(*iter);
+        for(particle_id_set::const_iterator
+                jter = ps_on_face.begin(); jter != ps_on_face.end(); ++jter)
+        {
+            const ParticleID pid = *jter;
+            const face_id_type fid = this->belonging_faceid(pid);
+            const particle_container_type::const_iterator piter =
+                this->find(pid);
+            const Real l = polygon_.distance(pos, std::make_pair(
+                        piter->second.position(), fid)) - piter->second.radius();
+            if(l <= radius)
+                retval.push_back(std::make_pair(*piter, l));
+        }
     }
     return retval;
 }
@@ -238,18 +248,27 @@ ParticleContainer2D::list_particles_within_radius(
         const Real& radius, const ParticleID& ignore) const
 {
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > retval;
-    for(particle_container_type::const_iterator iter = particles_.begin();
-            iter != particles_.end(); ++iter)
-    {
-        if(iter->first == ignore) continue;
 
-        const face_id_type fid = this->belonging_faceid(iter->first);
-        const Real l = polygon_.distance(pos, std::make_pair(
-                    iter->second.position(), fid)) - iter->second.radius();
-        if(l <= radius)
-            retval.push_back(std::make_pair(*iter, l));
+    const face_id_list& neighbors = polygon_.neighbor_faces(pos.second);
+    for(face_id_list::const_iterator
+            iter = neighbors.begin(); iter != neighbors.end(); ++iter)
+    {
+        const particle_id_set& ps_on_face = this->particles_on_face(*iter);
+        for(particle_id_set::const_iterator
+                jter = ps_on_face.begin(); jter != ps_on_face.end(); ++jter)
+        {
+            const ParticleID pid = *jter;
+            if(pid == ignore) continue;
+            const face_id_type fid = this->belonging_faceid(pid);
+            const particle_container_type::const_iterator piter =
+                this->find(pid);
+            const Real l = polygon_.distance(pos, std::make_pair(
+                        piter->second.position(), fid)) - piter->second.radius();
+            if(l <= radius)
+                retval.push_back(std::make_pair(*piter, l));
+        }
     }
-    return retval;
+    return retval;    return retval;
 }
 
 std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
@@ -258,22 +277,32 @@ ParticleContainer2D::list_particles_within_radius(
         const ParticleID& ignore1, const ParticleID& ignore2) const
 {
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > retval;
-    for(particle_container_type::const_iterator iter = particles_.begin();
-            iter != particles_.end(); ++iter)
+
+    const face_id_list& neighbors = polygon_.neighbor_faces(pos.second);
+    for(face_id_list::const_iterator
+            iter = neighbors.begin(); iter != neighbors.end(); ++iter)
     {
-        if(iter->first == ignore1 || iter->first == ignore2) continue;
-        const face_id_type fid = this->belonging_faceid(iter->first);
-        const Real l = polygon_.distance(pos, std::make_pair(
-                    iter->second.position(), fid)) - iter->second.radius();
-        if(l <= radius)
-            retval.push_back(std::make_pair(*iter, l));
-    }
-    return retval;
+        const particle_id_set& ps_on_face = this->particles_on_face(*iter);
+        for(particle_id_set::const_iterator
+                jter = ps_on_face.begin(); jter != ps_on_face.end(); ++jter)
+        {
+            const ParticleID pid = *jter;
+            if(pid == ignore1 || pid == ignore2) continue;
+            const face_id_type fid = this->belonging_faceid(pid);
+            const particle_container_type::const_iterator piter =
+                this->find(pid);
+            const Real l = polygon_.distance(pos, std::make_pair(
+                        piter->second.position(), fid)) - piter->second.radius();
+            if(l <= radius)
+                retval.push_back(std::make_pair(*piter, l));
+        }
+    }    return retval;
 }
 
 std::pair<Real3, ParticleContainer2D::face_id_type>
 ParticleContainer2D::apply_surface(
-        const std::pair<Real3, face_id_type>& position, const Real3& displacement) const
+        const std::pair<Real3, face_id_type>& position,
+        const Real3& displacement) const
 {
     std::pair<std::pair<Real3, face_id_type>, Real3>
         state = std::make_pair(position, displacement);
@@ -290,6 +319,19 @@ ParticleContainer2D::apply_surface(
 //         std::cerr << "Warning: displacement length cut." << std::endl;
 
     return state.first;
+}
+
+void ParticleContainer2D::setup_polygon()
+{
+    this->polygon_.detect_connectivity();
+    std::vector<face_id_type> face_ids(polygon_.list_faceids());
+    for(std::vector<face_id_type>::const_iterator
+            iter = face_ids.begin(); iter != face_ids.end(); ++iter)
+    {
+        particle_face_[*iter] = particle_id_set();
+    }
+
+    return;
 }
 
 }// bd
