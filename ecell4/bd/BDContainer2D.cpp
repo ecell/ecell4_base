@@ -318,7 +318,23 @@ ParticleContainer2D::apply_surface(
 //     else if(length_sq(state.second) != 0.0)
 //         std::cerr << "Warning: displacement length cut." << std::endl;
 
-    return state.first;
+    const face_id_type fid = state.first.second;
+    Real3 newpos = state.first.first;
+
+    const Triangle& face = this->polygon_.at(fid);
+    const Real      dist = dot_product(face.normal(), newpos - face.vertex_at(0));
+    if(std::abs(dist) > 1e-8)
+        std::cerr << "Warning: particle floats over tolerance: " << dist << std::endl;
+    newpos = newpos - face.normal() * dist;
+
+    Barycentric<Real> bary(to_barycentric(newpos, face));
+    if(!is_inside(bary, 1e-8))
+        std::cerr << "Warning: particle is not in triangle: barycentric("
+                  << bary << ")" << std::endl;
+    bary = force_put_inside(bary);
+    newpos = to_absolute(bary, face);
+
+    return std::make_pair(newpos, fid);
 }
 
 void ParticleContainer2D::setup_polygon()
