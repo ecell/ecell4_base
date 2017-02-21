@@ -111,45 +111,8 @@ inline realT triangle_area_2D(const realT x1, const realT y1,
 
 } // detail
 
-template<typename vectorT> //XXX normally, this is Real3.
-Barycentric<typename vectorT::value_type>
-to_barycentric(const vectorT& pos, const Triangle& face)
-{
-    typedef typename vectorT::value_type real_type;
-
-    const vectorT&  a = face.vertex_at(0);
-    const vectorT&  b = face.vertex_at(1);
-    const vectorT&  c = face.vertex_at(2);
-    const vectorT   m = cross_product(face.edge_at(0), face.edge_at(2)) * (-1.);
-    const real_type x = std::abs(m[0]);
-    const real_type y = std::abs(m[1]);
-    const real_type z = std::abs(m[2]);
-
-    real_type nu, nv, ood;
-    if(x >= y && x >= z)
-    {
-        nu = detail::triangle_area_2D(pos[1], pos[2], b[1], b[2], c[1], c[2]);
-        nv = detail::triangle_area_2D(pos[1], pos[2], c[1], c[2], a[1], a[2]);
-        ood = 1.0 / m[0];
-    }
-    else if(y >= x && y >= z)
-    {
-        nu = detail::triangle_area_2D(pos[0], pos[2], b[0], b[2], c[0], c[2]);
-        nv = detail::triangle_area_2D(pos[0], pos[2], c[0], c[2], a[0], a[2]);
-        ood = 1.0 / -m[1];
-    }
-    else
-    {
-        nu = detail::triangle_area_2D(pos[0], pos[1], b[0], b[1], c[0], c[1]);
-        nv = detail::triangle_area_2D(pos[0], pos[1], c[0], c[1], a[0], a[1]);
-        ood = 1.0 / m[2];
-    }
-    Barycentric<real_type> bary;
-    bary[0] = nu * ood;
-    bary[1] = nv * ood;
-    bary[2] = 1.0 - bary[0] - bary[1];
-    return bary;
-}
+Barycentric<Real>
+to_barycentric(const Real3& pos, const Triangle& face);
 
 template<typename realT, typename charT, typename traitsT>
 inline std::basic_ostream<charT, traitsT>&
