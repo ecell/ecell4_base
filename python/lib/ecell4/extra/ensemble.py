@@ -78,9 +78,14 @@ def run_sge(target, jobs, n=1, path='.', delete=True, wait=True, environ=None, m
             pickle.dump(job, fout)
         pickleins.append(picklein)
 
-        pickleouts.append(
-            [tempfile.mkstemp(suffix='.pickle', prefix='sge-', dir=path)[1]
-             for j in range(n)])
+        pickleouts.append([])
+        for j in range(n):
+            fd, pickleout = tempfile.mkstemp(suffix='.pickle', prefix='sge-', dir=path)
+            os.close(fd)
+            pickleouts[-1].append(pickleout)
+        # pickleouts.append(
+        #     [tempfile.mkstemp(suffix='.pickle', prefix='sge-', dir=path)[1]
+        #      for j in range(n)])
 
         cmd = '#!/bin/bash\n'
         for key, value in environ.items():
@@ -173,7 +178,8 @@ def getseed(myseed, i):
 
 def singlerun(job, job_id, task_id):
     import ecell4.util
-    rndseed = getseed(job.pop('myseed'), task_id)
+    import ecell4.exta.ensemble
+    rndseed = ecell4.exta.ensemble.getseed(job.pop('myseed'), task_id)
     job.update({'return_type': 'array', 'rndseed': rndseed})
     data = ecell4.util.run_simulation(**job)
     return data

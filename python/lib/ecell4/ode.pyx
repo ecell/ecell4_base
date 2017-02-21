@@ -486,7 +486,8 @@ cdef class ODERatelawMassAction:
         return (__rebuild_ode_ratelaw, ("ODERatelawMassAction", self.as_string(), self.get_k() ) )
 
 
-cdef double indirect_function(
+# cdef double indirect_function(
+cdef indirect_function(
     void *func, vector[Real] reactants, vector[Real] products,
     Real volume, Real t, Cpp_ODEReactionRule *rr):
     py_reactants = []
