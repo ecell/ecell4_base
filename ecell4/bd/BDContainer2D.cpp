@@ -277,15 +277,18 @@ ParticleContainer2D::apply_surface(
 {
     std::pair<std::pair<Real3, face_id_type>, Real3>
         state = std::make_pair(position, displacement);
-    const Real len2 = length_sq(displacement);
+    const Real cutoff = length_sq(displacement) * 1e-4;//tolerance 1e-8
 
     Integer retry_count = 100;
-    while(--retry_count > 0 && length_sq(state.second) > 1e-4 * len2)
-    {//tolerance 1e-8
+    while(--retry_count > 0 && length_sq(state.second) > cutoff)
+    {
         state = polygon_.move_next_face(state.first, state.second);
     }
     if(retry_count == 0)
-        std::cerr << "warning: max move_next_face count exceeded" << std::endl;
+        std::cerr << "Warning: max move_next_face count exceeded" << std::endl;
+//     else if(length_sq(state.second) != 0.0)
+//         std::cerr << "Warning: displacement length cut." << std::endl;
+
     return state.first;
 }
 
