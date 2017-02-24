@@ -1,7 +1,6 @@
 E-Cell System version 4
 =======================
 
-[![Binder](http://mybinder.org/badge.svg)](http://mybinder.org/repo/ecell/ecell4-notebooks)
 [![Build Status](https://travis-ci.org/ecell/ecell4.svg?branch=develop)](https://travis-ci.org/ecell/ecell4)
 [![Build status](https://ci.appveyor.com/api/projects/status/github/ecell/ecell4?svg=true)](https://ci.appveyor.com/project/kaizu/ecell4)
 [![Documentation Status](https://readthedocs.org/projects/ecell4/badge/?version=latest)](http://ecell4.readthedocs.org/en/latest/?badge=latest)
@@ -15,15 +14,6 @@ What is E-Cell System?
 
 E-Cell System is, a software platform for modeling, simulation and analysis of complex, heterogeneous and multi-scale systems like the cell.
 E-Cell has multi-algorithm, multi-timescale and multi-spatial-representation as its central feature.
-
-Quick start
-===========
-
-You can try E-Cell4 without installing it on your computer’s hard drive.
-
-You can do this by just clicking [![Binder](http://mybinder.org/badge.svg)](http://mybinder.org/repo/ecell/ecell4-notebooks).
-
-All you need to do is just running the cells in each of the example Jupyter notebooks.
 
 Installation and usage
 ======================
