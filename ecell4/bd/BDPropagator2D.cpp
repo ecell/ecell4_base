@@ -194,8 +194,19 @@ bool BDPropagator2D::attempt_reaction(
                 Particle particle_to_update1(sp1, newpf1.first, r1, D1);
                 Particle particle_to_update2(sp2, newpf2.first, r2, D2);
 
-                // move.
-                // if rejected, update particles with positions just after reaction
+                const bool update_result = world_.update_particle(
+                        pid, particle_to_update1, newpf1.second);
+                assert(!update_result);
+
+                std::pair<std::pair<ParticleID, Particle>, bool>
+                    p2_added = world_.new_particle(
+                            particle_to_update2, newpf2.second);
+                assert(p2_added.second);
+                const ParticleID p2_id(p2_added.first.first);
+
+                // move one particle.
+                // if rejected, particles are left at the position
+                // just after dissociation reaction.
 
                 assert(D1 != 0 || D2 != 0);
                 if(D2 == 0 || (D1 != 0 && rng_.uniform_int(0, 1) == 0))
@@ -213,11 +224,13 @@ bool BDPropagator2D::attempt_reaction(
                     if(overlapped.size() == 0)
                     {
                         particle_to_update1.position() = newpf.first;
-                        newpf1.second                  = newpf.second;
+                        const bool update_1 = world_.update_particle(
+                                pid, particle_to_update1, newpf.second);
+                        assert(!update_1);
                     }
                 }
                 else
-                {// particle 2
+                {
                     const Real3& normal = this->poly_.at(newpf2.second).normal();
                     const ParticleContainer2D& container2D = world_.container_2D();
 
@@ -231,20 +244,16 @@ bool BDPropagator2D::attempt_reaction(
                     if(overlapped.size() == 0)
                     {
                         particle_to_update2.position() = newpf.first;
-                        newpf2.second                  = newpf.second;
+                        const bool update_2 = world_.update_particle(
+                                p2_id, particle_to_update2, newpf.second);
+                        assert(!update_2);
                     }
                 }
 
-                const bool update_result = world_.update_particle(
-                        pid, particle_to_update1, newpf1.second);
-                assert(!update_result);
-
-                const std::pair<std::pair<ParticleID, Particle>, bool> retval =
-                    world_.new_particle(particle_to_update2, newpf2.second);
-
-                r_info.add_product(std::make_pair(pid, particle_to_update1));
-                r_info.add_product(retval.first);
+                r_info.add_product(std::make_pair(pid,   particle_to_update1));
+                r_info.add_product(std::make_pair(p2_id, particle_to_update2));
                 last_reactions_.push_back(std::make_pair(rule, r_info));
+
 
                 return true;
             }
