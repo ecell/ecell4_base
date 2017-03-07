@@ -16,8 +16,8 @@ Integer ParticleContainer2D::num_particles(const Species& sp) const
 {
     Integer retval = 0;
     SpeciesExpressionMatcher sexp(sp);
-    for(per_species_particle_id_set::const_iterator iter = particle_pool_.begin();
-        iter != particle_pool_.end(); ++iter)
+    for(species_to_particle_id_set_map_type::const_iterator
+            iter(particle_pool_.begin()); iter != particle_pool_.end(); ++iter)
     {
         const Species target((*iter).first);
         if(sexp.match(target))
@@ -30,7 +30,8 @@ Integer ParticleContainer2D::num_particles(const Species& sp) const
 
 Integer ParticleContainer2D::num_particles_exact(const Species& sp) const
 {
-    per_species_particle_id_set::const_iterator i = particle_pool_.find(sp.serial());
+    species_to_particle_id_set_map_type::const_iterator
+        i(particle_pool_.find(sp.serial()));
     if (i == particle_pool_.end())
     {
         return 0;
@@ -42,8 +43,8 @@ Integer ParticleContainer2D::num_molecules(const Species& sp) const
 {
     Integer retval(0);
     SpeciesExpressionMatcher sexp(sp);
-    for (per_species_particle_id_set::const_iterator i(particle_pool_.begin());
-        i != particle_pool_.end(); ++i)
+    for (species_to_particle_id_set_map_type::const_iterator
+            i(particle_pool_.begin()); i != particle_pool_.end(); ++i)
     {
         const Species tgt((*i).first);
         retval += sexp.count(tgt) * (*i).second.size();
@@ -98,7 +99,7 @@ ParticleContainer2D::list_particles_exact(const Species& sp) const
 
 bool ParticleContainer2D::has_particle(const ParticleID& pid) const
 {
-    return (this->rmap_.find(pid) != this->rmap_.end());
+    return (this->pid_to_pidx_.find(pid) != this->pid_to_pidx_.end());
 }
 
 bool
@@ -344,7 +345,7 @@ void ParticleContainer2D::setup_polygon()
     for(std::vector<face_id_type>::const_iterator
             iter = face_ids.begin(); iter != face_ids.end(); ++iter)
     {
-        particle_face_[*iter] = particle_id_set();
+        particle_on_face_[*iter] = particle_id_set();
     }
 
     return;

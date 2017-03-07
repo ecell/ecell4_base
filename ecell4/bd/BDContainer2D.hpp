@@ -20,19 +20,19 @@ public:
     typedef base_type::particle_container_type particle_container_type;
     typedef particle_container_type::size_type container_index_type;
     typedef utils::get_mapper_mf<ParticleID, container_index_type>::type
-            pid_to_particle_index_type;
+            pid_to_particle_index_map_type;
     typedef std::set<ParticleID> particle_id_set;
     typedef std::map<Species::serial_type, particle_id_set>
-            per_species_particle_id_set;
+            species_to_particle_id_set_map_type;
 
     typedef BDPolygon polygon_type;
     typedef polygon_type::face_type face_type;
     typedef polygon_type::face_id_type face_id_type;
     typedef polygon_type::face_id_list face_id_list;
     typedef utils::get_mapper_mf<ParticleID, face_id_type>::type
-            pid_to_faceid_type;
+            pid_to_faceid_map_type;
     typedef utils::get_mapper_mf<face_id_type, particle_id_set>::type
-            per_faces_particle_id_set;
+            face_id_to_particle_id_set_map_type;
 
 public:
 
@@ -102,7 +102,8 @@ public:
     {
         throw NotImplemented("2D::update_particle(pid, p)");
     }
-    bool update_particle(const ParticleID& pid, const Particle& p, const face_id_type& fid);
+    bool update_particle(const ParticleID& pid, const Particle& p,
+                         const face_id_type& fid);
 
     std::pair<ParticleID, Particle> get_particle(const ParticleID& pid) const;
     void remove_particle(const ParticleID& pid);
@@ -120,17 +121,17 @@ public:
 
     face_type const& belonging_face(const ParticleID& pid) const
     {
-        return polygon_.at(const_at(fmap_, pid));
+        return polygon_.at(const_at(pid_to_fid_, pid));
     }
 
     face_id_type const& belonging_faceid(const ParticleID& pid) const
     {
-        return const_at(fmap_, pid);
+        return const_at(pid_to_fid_, pid);
     }
 
     particle_id_set const& particles_on_face(const face_id_type& fid) const
     {
-        return const_at(particle_face_, fid);
+        return const_at(particle_on_face_, fid);
     }
 
 #ifdef WITH_HDF5
@@ -177,44 +178,32 @@ private:
     bool erase(const particle_container_type::iterator& pid);
     bool erase(const ParticleID& pid);
 
-    struct particle_finder
-        : public std::unary_function<std::pair<ParticleID, face_id_type>, bool>
-    {
-        particle_finder(const ParticleID& pid): pid_(pid){}
-
-        bool operator()(std::pair<ParticleID, face_id_type> ptof) const
-        {
-            return ptof.first == pid_;
-        }
-      protected:
-        ParticleID pid_;
-    };
-
-
 private:
 
-    Real3                       edge_lengths_;
-    polygon_type                polygon_;
-    pid_to_particle_index_type  rmap_;
-    pid_to_faceid_type          fmap_;
-    per_species_particle_id_set particle_pool_;
-    per_faces_particle_id_set   particle_face_;
-    particle_container_type     particles_;
+    Real3                               edge_lengths_;
+    polygon_type                        polygon_;
+    pid_to_particle_index_map_type      pid_to_pidx_;
+    pid_to_faceid_map_type              pid_to_fid_;
+    species_to_particle_id_set_map_type particle_pool_;
+    face_id_to_particle_id_set_map_type particle_on_face_;
+    particle_container_type             particles_;
 };
 
 inline ParticleContainer2D::particle_container_type::iterator
 ParticleContainer2D::find(const ParticleID& pid)
 {
-    const pid_to_particle_index_type::const_iterator iter = rmap_.find(pid);
-    if(iter == rmap_.end()) return particles_.end();
+    const pid_to_particle_index_map_type::const_iterator
+        iter(pid_to_pidx_.find(pid));
+    if(iter == pid_to_pidx_.end()) return particles_.end();
     return particles_.begin() + iter->second;
 }
 
 inline ParticleContainer2D::particle_container_type::const_iterator
 ParticleContainer2D::find(const ParticleID& pid) const
 {
-    const pid_to_particle_index_type::const_iterator iter = rmap_.find(pid);
-    if(iter == rmap_.end()) return particles_.end();
+    const pid_to_particle_index_map_type::const_iterator
+        iter(pid_to_pidx_.find(pid));
+    if(iter == pid_to_pidx_.end()) return particles_.end();
     return particles_.begin() + iter->second;
 }
 
@@ -227,20 +216,20 @@ ParticleContainer2D::update(const particle_container_type::iterator& old,
     {
         const container_index_type idx = particles_.size();
         particles_.push_back(p);
-        rmap_[p.first] = idx;
-        fmap_[p.first] = fid;
-        particle_face_[fid].insert(p.first);
+        pid_to_pidx_[p.first] = idx;
+        pid_to_fid_[p.first] = fid;
+        particle_on_face_[fid].insert(p.first);
         return particles_.begin() + idx;
     }
 
     *old = p;
-    const face_id_type old_face = fmap_[p.first];
+    const face_id_type old_face(pid_to_fid_[p.first]);
 
     if(old_face != fid)
     {
-        particle_face_[old_face].erase(p.first);
-        particle_face_[fid].insert(p.first);
-        fmap_[p.first] = fid;
+        particle_on_face_[old_face].erase(p.first);
+        particle_on_face_[fid].insert(p.first);
+        pid_to_fid_[p.first] = fid;
     }
     return old;
 }
@@ -249,9 +238,12 @@ inline std::pair<ParticleContainer2D::particle_container_type::iterator, bool>
 ParticleContainer2D::update(
         const std::pair<ParticleID, Particle>& pid, const face_id_type fid)
 {
-    pid_to_particle_index_type::const_iterator iter = this->rmap_.find(pid.first);
-    if(iter != rmap_.end())
-        return std::make_pair(this->update(particles_.begin() + iter->second, pid, fid), false);
+    const pid_to_particle_index_map_type::const_iterator
+        iter(this->pid_to_pidx_.find(pid.first));
+    if(iter != pid_to_pidx_.end())
+        return std::make_pair(
+                this->update(particles_.begin() + iter->second, pid, fid),
+                false);
 
     return std::make_pair(this->update(particles_.end(), pid, fid), true);
 }
@@ -262,18 +254,20 @@ ParticleContainer2D::erase(const particle_container_type::iterator& iter)
     if(particles_.end() == iter)
         return false;
 
-    const container_index_type old_idx = std::distance(particles_.begin(), iter);
-    const face_id_type old_face = this->fmap_[iter->first];
+    const container_index_type old_idx(std::distance(particles_.begin(), iter));
+    const face_id_type old_face(this->pid_to_fid_[iter->first]);
 
-    this->rmap_.erase(iter->first);
-    this->fmap_.erase(iter->first);
-    this->particle_face_[old_face].erase(iter->first);
+    this->pid_to_pidx_.erase(iter->first);
+    this->pid_to_fid_.erase(iter->first);
+    this->particle_on_face_[old_face].erase(iter->first);
 
-    const container_index_type last_idx = particles_.size() - 1;
+    const container_index_type last_idx(particles_.size() - 1);
     if(old_idx < last_idx)
-    {// exchange the last element and the element to remove
-        const std::pair<ParticleID, Particle>& last = particles_[last_idx];
-        rmap_[last.first] = old_idx;
+    {
+        // exchange the last element and the element to remove
+        // because pop_back is efficient
+        const std::pair<ParticleID, Particle>& last(particles_[last_idx]);
+        pid_to_pidx_[last.first] = old_idx;
         *iter = last;
     }
     particles_.pop_back();
@@ -283,8 +277,9 @@ ParticleContainer2D::erase(const particle_container_type::iterator& iter)
 
 inline bool ParticleContainer2D::erase(const ParticleID& pid)
 {
-    const pid_to_particle_index_type::const_iterator iter = this->rmap_.find(pid);
-    if(this->rmap_.end() == iter) return false;
+    const pid_to_particle_index_map_type::const_iterator
+        iter(this->pid_to_pidx_.find(pid));
+    if(this->pid_to_pidx_.end() == iter) return false;
     return this->erase(particles_.begin() + iter->second);
 }
 
