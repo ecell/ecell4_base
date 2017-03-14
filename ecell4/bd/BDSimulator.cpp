@@ -21,6 +21,14 @@ void BDSimulator::step()
             ; // do nothing here
         }
     }
+    {
+        BDPropagator2D propagator(*model_, *world_, *rng(), dt(),
+                                  reaction_length_, last_reactions_);
+        while (propagator())
+        {
+            ; // do nothing here
+        }
+    }
 
     set_t(t() + dt());
     num_steps_++;
