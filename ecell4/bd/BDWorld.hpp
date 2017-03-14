@@ -600,7 +600,7 @@ public:
             const std::pair<Real3, face_id_type>& lhs,
             const std::pair<Real3, face_id_type>& rhs) const
     {
-        (*ps2d_).get_inter_position_vector(lhs, rhs);
+        return (*ps2d_).get_inter_position_vector(lhs, rhs);
     }
 
 private:
