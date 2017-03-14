@@ -160,6 +160,33 @@ private:
     std::string str_;
 };
 
+class IllegalArgument
+    : public Exception
+{
+public:
+
+    IllegalArgument(const std::string& str)
+        : str_(str)
+    {
+        ;
+    }
+
+
+    virtual ~IllegalArgument() throw()
+    {
+        ;
+    }
+
+    virtual const char* what() const throw()
+    {
+        return str_.c_str();
+    }
+
+private:
+
+    std::string str_;
+};
+
 }
 
 #endif /* __ECELL4_EXCEPTIONS_HPP */

@@ -4,6 +4,8 @@
 # SET(CPACK_DEBIAN_PACKAGE_MAINTAINER "Kozo Nishida <knishida@riken.jp>")
 # INCLUDE(CPack)
 
+set(ECELL4_VERSION ${PROJECT_VERSION})
+
 configure_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/config.h.in
     ${CMAKE_CURRENT_BINARY_DIR}/config.h)
@@ -12,29 +14,32 @@ if (NO_SHARED)
     return()
 endif()
 
-set(CPP_FILES
-    CompartmentSpace.cpp Context.cpp Integer3.cpp Journal.cpp ReactionRule.cpp
-    LatticeSpace.cpp Model.cpp NetworkModel.cpp NetfreeModel.cpp ParticleSpace.cpp
-    Real3.cpp RandomNumberGenerator.cpp Species.cpp UnitSpecies.cpp
-    Sphere.cpp Cylinder.cpp SubvolumeSpace.cpp ParticleSpaceCellListImpl.cpp
-    LatticeSpaceCellListImpl.cpp collision.cpp Rod.cpp AABB.cpp PlanarSurface.cpp
-    Mesh.cpp observers.cpp extras.cpp)
+# set(CPP_FILES
+#     CompartmentSpace.cpp Context.cpp Integer3.cpp Journal.cpp ReactionRule.cpp
+#     LatticeSpace.cpp Model.cpp NetworkModel.cpp NetfreeModel.cpp ParticleSpace.cpp
+#     Real3.cpp RandomNumberGenerator.cpp Species.cpp UnitSpecies.cpp
+#     Sphere.cpp Cylinder.cpp SubvolumeSpace.cpp ParticleSpaceCellListImpl.cpp
+#     LatticeSpaceCellListImpl.cpp collision.cpp Rod.cpp AABB.cpp AABBSurface.cpp
+#     PlanarSurface.cpp Mesh.cpp observers.cpp extras.cpp)
 
-set(HPP_FILES
-    CompartmentSpace.hpp DynamicPriorityQueue.hpp LatticeSpace.hpp
-    MolecularType.hpp Particle.hpp Real3.hpp ReactionRule.hpp Space.hpp
-    VacantType.hpp extras.hpp linear_algebra.hpp CompartmentSpaceHDF5Writer.hpp
-    EventScheduler.hpp Identifier.hpp LatticeSpaceHDF5Writer.hpp
-    SubvolumeSpace.hpp SubvolumeSpaceHDF5Writer.hpp
-    MolecularTypeBase.hpp ParticleSpace.hpp RandomNumberGenerator.hpp
-    SerialIDGenerator.hpp Species.hpp Voxel.hpp functions.hpp swap.hpp ModelWrapper.hpp
-    Context.hpp Integer3.hpp Journal.hpp Model.hpp NetworkModel.hpp NetfreeModel.hpp
-    ParticleSpaceHDF5Writer.hpp Reaction.hpp Simulator.hpp SimulatorBase.hpp
-    UnitSpecies.hpp observers.hpp exceptions.hpp get_mapper_mf.hpp types.hpp
-    Shape.hpp Sphere.hpp Cylinder.hpp AABB.hpp StructureType.hpp
-    ParticleSpaceCellListImpl.hpp LatticeSpaceCellListImpl.hpp
-    PlanarSurface.hpp Rod.hpp collision.hpp
-    comparators.hpp SimulatorFactory.hpp Mesh.hpp shape_operators.hpp)
+# set(HPP_FILES
+#     CompartmentSpace.hpp DynamicPriorityQueue.hpp LatticeSpace.hpp
+#     MolecularType.hpp Particle.hpp Real3.hpp ReactionRule.hpp Space.hpp
+#     VacantType.hpp extras.hpp linear_algebra.hpp CompartmentSpaceHDF5Writer.hpp
+#     EventScheduler.hpp Identifier.hpp LatticeSpaceHDF5Writer.hpp
+#     SubvolumeSpace.hpp SubvolumeSpaceHDF5Writer.hpp
+#     MolecularTypeBase.hpp ParticleSpace.hpp RandomNumberGenerator.hpp
+#     SerialIDGenerator.hpp Species.hpp Voxel.hpp functions.hpp swap.hpp ModelWrapper.hpp
+#     Context.hpp Integer3.hpp Journal.hpp Model.hpp NetworkModel.hpp NetfreeModel.hpp
+#     ParticleSpaceHDF5Writer.hpp Reaction.hpp Simulator.hpp SimulatorBase.hpp
+#     UnitSpecies.hpp observers.hpp exceptions.hpp get_mapper_mf.hpp types.hpp
+#     Shape.hpp Sphere.hpp Cylinder.hpp AABB.hpp AABBSurface.hpp StructureType.hpp
+#     ParticleSpaceCellListImpl.hpp LatticeSpaceCellListImpl.hpp
+#     PlanarSurface.hpp Rod.hpp collision.hpp
+#     comparators.hpp SimulatorFactory.hpp Mesh.hpp shape_operators.hpp)
+
+file(GLOB CPP_FILES *.cpp)
+file(GLOB HPP_FILES *.hpp)
 
 add_library(ecell4-core SHARED
     ${CPP_FILES} ${HPP_FILES} "${CMAKE_CURRENT_BINARY_DIR}/config.h")

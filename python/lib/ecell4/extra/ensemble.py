@@ -16,13 +16,13 @@ import copy
 import ecell4.extra.sge as sge
 
 
-def run_serial(target, jobs, n=1):
+def run_serial(target, jobs, n=1, **kwargs):
     return [[target(copy.copy(job), i + 1, j + 1) for j in range(n)] for i, job in enumerate(jobs)]
 
-def run_multiprocessing(target, jobs, n=1):
+def run_multiprocessing(target, jobs, n=1, **kwargs):
     def target_wrapper(f, end_send):
-        def wf(*args, **kwargs):
-            end_send.send(f(*args, **kwargs))
+        def wf(*_args, **_kwargs):
+            end_send.send(f(*_args, **_kwargs))
         return wf
 
     processes = []
@@ -42,13 +42,14 @@ def run_multiprocessing(target, jobs, n=1):
     retval = [end_recv.recv() for end_recv in end_recvs]
     return [retval[i: i + n] for i in range(0, len(retval), n)]
 
-def run_sge(target, jobs, n=1, path='.', delete=True, environ={}):
+def run_sge(target, jobs, n=1, path='.', delete=True, wait=True, environ=None, modules=[], **kwargs):
     logging.basicConfig(level=logging.DEBUG)
 
     if isinstance(target, types.LambdaType) and target.__name__ == "<lambda>":
         raise RuntimeError("A lambda function is not accepted")
 
-    src = textwrap.dedent(inspect.getsource(singlerun)).replace(r'"', r'\"')
+    # src = textwrap.dedent(inspect.getsource(singlerun)).replace(r'"', r'\"')
+    src = textwrap.dedent(inspect.getsource(target)).replace(r'"', r'\"')
     if re.match('[\s\t]+', src.split('\n')[0]) is not None:
         raise RuntimeError(
             "Wrong indentation was found in the source translated")
@@ -62,6 +63,7 @@ def run_sge(target, jobs, n=1, path='.', delete=True, environ={}):
         for key in keys:
             if key in os.environ.keys():
                 environ[key] = os.environ[key]
+
         if "PYTHONPATH" in environ.keys() and environ["PYTHONPATH"].strip() != "":
             environ["PYTHONPATH"] = "{}:{}".format(os.getcwd(), environ["PYTHONPATH"])
         else:
@@ -76,9 +78,14 @@ def run_sge(target, jobs, n=1, path='.', delete=True, environ={}):
             pickle.dump(job, fout)
         pickleins.append(picklein)
 
-        pickleouts.append(
-            [tempfile.mkstemp(suffix='.pickle', prefix='sge-', dir=path)[1]
-             for j in range(n)])
+        pickleouts.append([])
+        for j in range(n):
+            fd, pickleout = tempfile.mkstemp(suffix='.pickle', prefix='sge-', dir=path)
+            os.close(fd)
+            pickleouts[-1].append(pickleout)
+        # pickleouts.append(
+        #     [tempfile.mkstemp(suffix='.pickle', prefix='sge-', dir=path)[1]
+        #      for j in range(n)])
 
         cmd = '#!/bin/bash\n'
         for key, value in environ.items():
@@ -90,6 +97,8 @@ def run_sge(target, jobs, n=1, path='.', delete=True, environ={}):
         cmd += 'with open(sys.argv[1], \'rb\') as fin:\n'
         cmd += '    job = pickle.load(fin)\n'
         cmd += 'pass\n'
+        for m in modules:
+            cmd += "from {} import *\n".format(m)
         cmd += src
         cmd += '\ntid = int(os.environ[\'SGE_TASK_ID\'])'
         cmd += '\nretval = {:s}(job, {:d}, tid)'.format(target.__name__, i + 1)
@@ -124,15 +133,53 @@ def run_sge(target, jobs, n=1, path='.', delete=True, environ={}):
 
     return retval
 
+def genseeds(n):
+    """
+    Return a random number generator seed for ensemble_simulations.
+    A seed for a single run is given by ``getseed(rngseed, i)``.
+
+    Parameters
+    ----------
+    n : int
+        A size of the seed.
+
+    Returns
+    -------
+    rndseed : bytes
+        A random number seed for multiple runs.
+
+    """
+    return binascii.hexlify(os.urandom(4 * n))
+
+def getseed(myseed, i):
+    """
+    Return a single seed from a long seed given by `genseeds`.
+
+    Parameters
+    ----------
+    myseed : bytes
+        A long seed given by `genseeds(n)`.
+    i : int
+        An index less than n.
+
+    Returns
+    -------
+    rndseed : int
+        A seed (less than (2 ** 31))
+
+    """
+    rndseed = int(myseed[(i - 1) * 8: i * 8], 16)
+    rndseed = rndseed % (2 ** 31)  #XXX: trancate the first bit
+    return rndseed
+
 #XXX:
 #XXX:
 #XXX:
 
 def singlerun(job, job_id, task_id):
     import ecell4.util
-    myseed = job.pop('myseed')
-    rndseed = int(myseed[(task_id - 1) * 8: task_id * 8], 16)
-    rndseed = rndseed % (2 ** 31)  #XXX: trancate the first bit
+    import ecell4.exta.ensemble
+    rndseed = ecell4.exta.ensemble.getseed(job.pop('myseed'), task_id)
     job.update({'return_type': 'array', 'rndseed': rndseed})
     data = ecell4.util.run_simulation(**job)
     return data
@@ -142,15 +189,52 @@ import ecell4.util.simulation
 import ecell4.util.viz
 import ecell4.ode
 
+## observers=(), progressbar=0
 def ensemble_simulations(
-    t, y0={}, volume=1.0, model=None, solver='ode', species_list=None, structures={},
-    is_netfree=False, without_reset=False,
+    t, y0={}, volume=1.0, model=None, solver='ode',
+    is_netfree=False, species_list=None, without_reset=False,
     return_type='matplotlib', opt_args=(), opt_kwargs={},
-    errorbar=True,
-    n=1, nproc=1, method=None, environ={},
+    structures={}, rndseed=None,
+    n=1, nproc=1, method=None, errorbar=True,
     **kwargs):
     """
-    observers=(), progressbar=0, rndseed=None,
+    Run simulations multiple times and return its ensemble.
+    Arguments are almost same with ``ecell4.util.run_simulation``.
+    `observers` and `progressbar` is not available here.
+
+    Parameters
+    ----------
+    n : int, optional
+        A number of runs. Default is 1.
+    nproc : int, optional
+        A number of processors. Ignored when method='serial'.
+        Default is 1.
+    method : str, optional
+        The way for running multiple jobs.
+        Choose one from 'serial', 'sge' and 'multiprocessing'.
+        Default is None, which works as 'serial'.
+    **kwargs : dict, optional
+        Optional keyword arugments are passed through to `run_serial`,
+        `run_sge`, or `run_multiprocessing`.
+        See each function for more details.
+
+    Returns
+    -------
+    value : list, DummyObserver, or None
+        Return a value suggested by ``return_type``.
+        When ``return_type`` is 'array', return a time course data.
+        When ``return_type`` is 'observer', return a DummyObserver.
+        DummyObserver is a wrapper, which has the almost same interface
+        with NumberObservers.
+        Return nothing if else.
+
+    See Also
+    --------
+    ecell4.util.run_simulation
+    ecell4.extra.run_serial
+    ecell4.extra.run_sge
+    ecell4.extra.run_multiprocessing
+
     """
     for key, value in kwargs.items():
         if key == 'r':
@@ -165,9 +249,6 @@ def ensemble_simulations(
             raise ValueError(
                 "An unknown keyword argument was given [{}={}]".format(key, value))
 
-    # if not isinstance(solver, str):
-    #     raise ValueError('Argument "solver" must be a string.')
-
     if model is None:
         model = ecell4.util.decorator.get_model(is_netfree, without_reset)
 
@@ -177,16 +258,20 @@ def ensemble_simulations(
     if species_list is None:
         species_list = ecell4.util.simulation.list_species(model, y0.keys())
 
-    myseed = binascii.hexlify(os.urandom(4 * n))
+    if rndseed is None:
+        myseed = genseeds(n)
+    elif (not isinstance(rndseed, bytes) or len(rndseed) != n * 4 * 2):
+        raise ValueError(
+            "A wrong seed for the random number generation was given. Use 'genseeds'.")
 
     jobs = [{'t': t, 'y0': y0, 'volume': volume, 'model': model, 'solver': solver, 'species_list': species_list, 'structures': structures, 'myseed': myseed}]
 
     if method is None or method.lower() == "serial":
-        retval = run_serial(singlerun, jobs, n=n)
+        retval = run_serial(singlerun, jobs, n=n, **kwargs)
     elif method.lower() == "sge":
-        retval = run_sge(singlerun, jobs, n=n, environ=environ)
+        retval = run_sge(singlerun, jobs, n=n, **kwargs)
     elif method.lower() == "multiprocessing":
-        retval = run_multiprocessing(singlerun, jobs, n=n)
+        retval = run_multiprocessing(singlerun, jobs, n=n, **kwargs)
     else:
         raise ValueError(
             'Argument "method" must be one of "serial", "multiprocessing" and "sge".')
@@ -282,11 +367,8 @@ if __name__ == "__main__":
     # jobs = [{'x': i, 'y': i ** 2} for i in range(1, 4)]
     # print(run_serial(myrun, jobs, n=2))
     # print(run_multiprocessing(myrun, jobs, n=2))
-
-    # # environ = {'LD_LIBRARY_PATH': '/home/kaizu/lily_kaizu/src/ecell4/local/lib', 'PYTHONPATH': '/home/kaizu/lily_kaizu/src/ecell4/local/lib/python3.4/site-packages'}
-    # environ = {}
-    # # print(run_sge(myrun, jobs, n=2, delete=False, environ=environ))
-    # print(run_sge(myrun, jobs, n=2, environ=environ))
+    # # print(run_sge(myrun, jobs, n=2, delete=False))
+    # print(run_sge(myrun, jobs, n=2))
 
     from ecell4 import *
     from ecell4.extra import ensemble
@@ -294,17 +376,6 @@ if __name__ == "__main__":
     with reaction_rules():
         A + B == C | (0.01, 0.3)
 
-    environ = {'LD_LIBRARY_PATH': '/home/kaizu/lily_kaizu/src/ecell4/local/lib',
-               'PYTHONPATH': '/home/kaizu/lily_kaizu/src/ecell4/local/lib/python3.4/site-packages'}
-    retval = ensemble.ensemble_simulations(
+    ensemble.ensemble_simulations(
         10.0, {'C': 60}, solver='gillespie', return_type='matplotlib',
-        n=5, method='multiprocessing', environ=environ)
-
-    # import numpy
-
-    # def concatenate(results):
-    #     return sum([numpy.array(data) for data in results]) / len(results)
-    # retval = [concatenate(results) for results in retval]
-    # print(retval)
-
-    # numpy.savetxt('ens.dat', retval[0])
+        n=30, method='multiprocessing')

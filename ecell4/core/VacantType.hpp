@@ -1,22 +1,20 @@
 #ifndef __ECELL4_VACANT_TYPE_HPP
 #define __ECELL4_VACANT_TYPE_HPP
 
-#include "MolecularTypeBase.hpp"
+#include "VoxelPool.hpp"
 
 namespace ecell4
 {
 
 class VacantType
-    : public MolecularTypeBase
+    : public VoxelPool
 {
 public:
 
-    typedef MolecularTypeBase base_type;
-    typedef base_type::coord_id_pair coord_id_pair;
+    typedef VoxelPool base_type;
+    typedef base_type::coordinate_id_pair_type coordinate_id_pair_type;
     typedef base_type::coordinate_type coordinate_type;
-    typedef base_type::container_type container_type;
-    typedef base_type::iterator iterator;
-    typedef base_type::const_iterator const_iterator;
+    typedef base_type::voxel_type_type voxel_type_type;
 
 public:
 
@@ -25,14 +23,9 @@ public:
         ; // do nothing
     }
 
-    bool is_vacant() const
+    virtual voxel_type_type const voxel_type() const
     {
-        return true;
-    }
-
-    bool with_voxels() const
-    {
-        return false;
+        return VACANT;
     }
 
     static VacantType& getInstance()
@@ -46,36 +39,12 @@ public:
         return Shape::THREE;
     }
 
-    virtual void add_voxel_without_checking(const coord_id_pair& info)
-    {
-        ; // do nothing
-    }
-
-    virtual void replace_voxel(
-        const coordinate_type& from_coord,
-        const coord_id_pair& to_info)
-    {
-        ; // do nothing
-    }
-
-    virtual void replace_voxel(
-        const coordinate_type& from_coord,
-        const coordinate_type& to_coord,
-        const std::size_t candidate=0)
-    {
-        ; // do nothing
-    }
-
-    bool remove_voxel_if_exists(const coordinate_type& coord)
-    {
-        return true; // just return true
-    }
-
 private:
 
     VacantType()
         : base_type(Species("VACANT", "0", "0"), NULL, 0, 0)
     {
+        ; // do nothing
     }
 };
 

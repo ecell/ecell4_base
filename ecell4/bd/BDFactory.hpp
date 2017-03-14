@@ -23,28 +23,36 @@ public:
 
 public:
 
-    BDFactory(Real bd_dt_factor = -1)
-        : base_type(), matrix_sizes_(3, 3, 3), rng_(), bd_dt_factor_(bd_dt_factor)
+    BDFactory(const Integer3& matrix_sizes = default_matrix_sizes(), Real bd_dt_factor = default_bd_dt_factor())
+        : base_type(), rng_(), matrix_sizes_(matrix_sizes), bd_dt_factor_(bd_dt_factor)
     {
         ; // do nothing
     }
 
-    BDFactory(const Integer3& matrix_sizes, Real bd_dt_factor = -1)
-        : base_type(), matrix_sizes_(matrix_sizes), rng_(), bd_dt_factor_(bd_dt_factor)
+    static inline const Integer3 default_matrix_sizes()
     {
-        ; // do nothing
+        return Integer3(3, 3, 3);
     }
 
-    BDFactory(const Integer3& matrix_sizes,
-        const boost::shared_ptr<RandomNumberGenerator>& rng, Real bd_dt_factor = -1)
-        : base_type(), matrix_sizes_(matrix_sizes), rng_(rng), bd_dt_factor_(bd_dt_factor)
+    static inline const Real default_bd_dt_factor()
     {
-        ; // do nothing
+        return -1.0;
     }
 
     virtual ~BDFactory()
     {
         ; // do nothing
+    }
+
+    BDFactory& rng(const boost::shared_ptr<RandomNumberGenerator>& rng)
+    {
+        rng_ = rng;
+        return (*this);
+    }
+
+    inline BDFactory* rng_ptr(const boost::shared_ptr<RandomNumberGenerator>& rng)
+    {
+        return &(this->rng(rng));  //XXX: == this
     }
 
     virtual BDWorld* create_world(const std::string filename) const
@@ -99,8 +107,8 @@ public:
 
 protected:
 
-    Integer3 matrix_sizes_;
     boost::shared_ptr<RandomNumberGenerator> rng_;
+    Integer3 matrix_sizes_;
     Real bd_dt_factor_;
 };
 

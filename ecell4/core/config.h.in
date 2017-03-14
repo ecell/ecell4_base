@@ -2,6 +2,8 @@
 #ifndef __ECELL4_CONFIG_H
 #define __ECELL4_CONFIG_H
 
+#cmakedefine ECELL4_VERSION "@ECELL4_VERSION@"
+
 #ifdef _MSC_BUILD
 #define WIN32_MSC 1
 #else
