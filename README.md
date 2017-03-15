@@ -38,7 +38,7 @@ Installation
 
 #### Minimum requirements
 
-- Python (2.7 and 3.4, 3.5, 3.6 both major versions are supported [3.4 is only supported on Linux, 3.6 is only supported on Mac])
+- Python (2.7 and 3.4, 3.5, 3.6 both major versions are supported [3.4 is supported only on Linux, Mac does not support 3.4 and 3.5])
 - pip (8.1 or later)
 - hdf5 (required only on **Windows**.)
 
