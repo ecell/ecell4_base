@@ -12,6 +12,8 @@
 #include <ecell4/core/ParticleSpace.hpp>
 #include <ecell4/core/ParticleSpaceCellListImpl.hpp>
 #include <ecell4/core/Model.hpp>
+#include "BDPolygon.hpp"
+#include "BDContainer2D.hpp"
 
 
 namespace ecell4
@@ -36,11 +38,15 @@ public:
     // typedef ParticleSpaceVectorImpl particle_space_type;
     typedef particle_space_type::particle_container_type particle_container_type;
 
+    typedef BDPolygon::face_type    face_type;
+    typedef BDPolygon::face_id_type face_id_type;
+
 public:
 
     BDWorld(const Real3& edge_lengths = Real3(1, 1, 1),
         const Integer3& matrix_sizes = Integer3(3, 3, 3))
-        : ps_(new particle_space_type(edge_lengths, matrix_sizes))
+        : ps3d_(new particle_space_type(edge_lengths, matrix_sizes)),
+          ps2d_(new ParticleContainer2D(edge_lengths))
     {
         rng_ = boost::shared_ptr<RandomNumberGenerator>(
             new GSLRandomNumberGenerator());
@@ -50,21 +56,25 @@ public:
     BDWorld(
         const Real3& edge_lengths, const Integer3& matrix_sizes,
         boost::shared_ptr<RandomNumberGenerator> rng)
-        : ps_(new particle_space_type(edge_lengths, matrix_sizes)), rng_(rng)
+        : ps3d_(new particle_space_type(edge_lengths, matrix_sizes)),
+          ps2d_(new ParticleContainer2D(edge_lengths)), rng_(rng)
     {
         ;
     }
 
     BDWorld(const std::string& filename)
-        : ps_(new particle_space_type(Real3(1, 1, 1)))
+        : ps3d_(new particle_space_type(Real3(1, 1, 1)))
     {
-        rng_ = boost::shared_ptr<RandomNumberGenerator>(
-            new GSLRandomNumberGenerator());
-        this->load(filename);
+        throw NotImplemented("2D does not support HDF5 yet");
+//         rng_ = boost::shared_ptr<RandomNumberGenerator>(
+//             new GSLRandomNumberGenerator());
+//         this->load(filename);
     }
 
     /**
-     * create and add a new particle
+     * @brief create and add a new particle
+     * XXX checking overlap MUST be done for both 3D particles and surfaces
+     *     using 3D distance (TODO for surfaces)
      * @param p a particle
      * @return a pair of a pair of pid (a particle id) and p (a particle)
      * and bool (if it's succeeded or not)
@@ -73,13 +83,13 @@ public:
     new_particle(const Particle& p)
     {
         ParticleID pid(pidgen_());
-        // if (has_particle(pid))
-        // {
-        //     throw AlreadyExists("particle already exists");
-        // }
+        // if (has_particle(pid)) throw AlreadyExists("particle already exists");
+
+        // TODO search surfaces
+
         if (list_particles_within_radius(p.position(), p.radius()).size() == 0)
-        {
-            (*ps_).update_particle(pid, p); //XXX: DONOT call this->update_particle
+        { //XXX: DONOT call this->update_particle
+            (*ps3d_).update_particle(pid, p);
             return std::make_pair(std::make_pair(pid, p), true);
         }
         else
@@ -93,6 +103,38 @@ public:
     {
         const MoleculeInfo info(get_molecule_info(sp));
         return new_particle(Particle(sp, pos, info.radius, info.D));
+    }
+
+    /**
+     * @brief create and add a new particle on a surface.
+     * @param p a particle
+     * @param fid ID of the face that you want to put the particle
+     * @return a pair of a pair of pid (a particle id) and p (a particle)
+     * and bool (if it's succeeded or not)
+     */
+    std::pair<std::pair<ParticleID, Particle>, bool>
+    new_particle(const Particle& p, const face_id_type& fid)
+    {
+        const ParticleID pid(pidgen_());
+        // if (has_particle(pid)) throw AlreadyExists("particle already exists");
+
+        if(list_particles_within_radius(
+                std::make_pair(p.position(), fid), p.radius()).size() == 0)
+        {
+            (*ps2d_).update_particle(pid, p, fid);
+            return std::make_pair(std::make_pair(pid, p), true);
+        }
+        else
+        {
+            return std::make_pair(std::make_pair(pid, p), false);
+        }
+    }
+
+    std::pair<std::pair<ParticleID, Particle>, bool>
+    new_particle(const Species& sp, const Real3& pos, const face_id_type& fid)
+    {
+        const MoleculeInfo info(get_molecule_info(sp));
+        return new_particle(Particle(sp, pos, info.radius, info.D), fid);
     }
 
     /**
@@ -129,61 +171,68 @@ public:
 
     const Real t() const
     {
-        return (*ps_).t();
+        // check synchro
+        assert((*ps3d_).t() == (*ps2d_).t());
+        return (*ps3d_).t();
     }
 
     void set_t(const Real& t)
     {
-        (*ps_).set_t(t);
+        (*ps2d_).set_t(t);
+        (*ps3d_).set_t(t);
     }
 
     // ParticleSpaceTraits
 
     const Real3& edge_lengths() const
     {
-        return (*ps_).edge_lengths();
+        // check
+//         assert((*ps3d_).edge_lengths() == (*ps2d_).edge_lengths());
+        return (*ps3d_).edge_lengths();
     }
 
     Integer num_particles() const
     {
-        return (*ps_).num_particles();
+        return (*ps2d_).num_particles() + (*ps3d_).num_particles();
     }
 
     Integer num_particles(const Species& species) const
     {
-        return (*ps_).num_particles(species);
+        return (*ps2d_).num_particles(species) + (*ps3d_).num_particles(species);
     }
 
     Integer num_particles_exact(const Species& species) const
     {
-        return (*ps_).num_particles_exact(species);
+        return (*ps2d_).num_particles_exact(species) +
+               (*ps3d_).num_particles_exact(species);
     }
 
     bool has_particle(const ParticleID& pid) const
     {
-        return (*ps_).has_particle(pid);
+        return (*ps2d_).has_particle(pid) || (*ps3d_).has_particle(pid);
     }
 
     std::vector<std::pair<ParticleID, Particle> > list_particles() const
     {
-        return (*ps_).list_particles();
+        return concat((*ps3d_).list_particles(), (*ps2d_).list_particles());
     }
 
     std::vector<std::pair<ParticleID, Particle> >
     list_particles(const Species& sp) const
     {
-        return (*ps_).list_particles(sp);
+        return concat((*ps3d_).list_particles(sp), (*ps2d_).list_particles(sp));
     }
 
     std::vector<std::pair<ParticleID, Particle> >
     list_particles_exact(const Species& sp) const
     {
-        return (*ps_).list_particles_exact(sp);
+        return concat((*ps3d_).list_particles_exact(sp),
+                      (*ps2d_).list_particles_exact(sp));
     }
 
     std::vector<Species> list_species() const
     {
-        return (*ps_).list_species();
+        return concat((*ps3d_).list_species(), (*ps2d_).list_species());
     }
 
     virtual Real get_value(const Species& sp) const
@@ -200,7 +249,13 @@ public:
 
     bool update_particle_without_checking(const ParticleID& pid, const Particle& p)
     {
-        return (*ps_).update_particle(pid, p);
+        return (*ps3d_).update_particle(pid, p);
+    }
+
+    bool update_particle_without_checking(
+            const ParticleID& pid, const Particle& p, const face_id_type& fid)
+    {
+        return (*ps2d_).update_particle(pid, p, fid);
     }
 
     bool update_particle(const ParticleID& pid, const Particle& p)
@@ -208,7 +263,22 @@ public:
         if (list_particles_within_radius(p.position(), p.radius(), pid).size()
             == 0)
         {
-            return (*ps_).update_particle(pid, p);
+            return (*ps3d_).update_particle(pid, p);
+        }
+        else
+        {
+            return true;
+        }
+    }
+
+    bool update_particle(
+            const ParticleID& pid, const Particle& p, const face_id_type& fid)
+    {
+        // XXX: checking overlap in 3D spherical region
+        if (list_particles_within_radius(std::make_pair(p.position(), fid),
+                    p.radius(), pid).size() == 0)
+        {
+            return (*ps2d_).update_particle(pid, p, fid);
         }
         else
         {
@@ -219,26 +289,41 @@ public:
     std::pair<ParticleID, Particle>
     get_particle(const ParticleID& pid) const
     {
-        return (*ps_).get_particle(pid);
+        if((*ps3d_).has_particle(pid))
+            return (*ps3d_).get_particle(pid);
+        else if((*ps2d_).has_particle(pid))
+            return (*ps2d_).get_particle(pid);
+        else
+            throw NotFound("BDWorld: no such particle");
     }
 
     void remove_particle(const ParticleID& pid)
     {
-        (*ps_).remove_particle(pid);
+        if((*ps3d_).has_particle(pid))
+            (*ps3d_).remove_particle(pid);
+        else if((*ps2d_).has_particle(pid))
+            (*ps2d_).remove_particle(pid);
+        else
+            throw NotFound("BDWorld: no such particle");
     }
 
+    // list-up all the particles using 3D distance.
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
     list_particles_within_radius(
         const Real3& pos, const Real& radius) const
     {
-        return (*ps_).list_particles_within_radius(pos, radius);
+        return concat((*ps3d_).list_particles_within_radius(pos, radius),
+                      (*ps2d_).list_particles_within_radius(pos, radius));
     }
 
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
     list_particles_within_radius(
         const Real3& pos, const Real& radius, const ParticleID& ignore) const
     {
-        return (*ps_).list_particles_within_radius(pos, radius, ignore);
+        return concat(
+            (*ps3d_).list_particles_within_radius(pos, radius, ignore),
+            (*ps2d_).list_particles_within_radius(pos, radius, ignore)
+            );
     }
 
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
@@ -246,52 +331,112 @@ public:
         const Real3& pos, const Real& radius,
         const ParticleID& ignore1, const ParticleID& ignore2) const
     {
-        return (*ps_).list_particles_within_radius(pos, radius, ignore1, ignore2);
+        return concat(
+            (*ps3d_).list_particles_within_radius(pos, radius, ignore1, ignore2),
+            (*ps2d_).list_particles_within_radius(pos, radius, ignore1, ignore2)
+            );
+    }
+
+    // list-up 2D particles using 2D distance(along surface).
+    std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
+    list_particles_within_radius(
+        const std::pair<Real3, face_id_type>& pos, const Real& radius) const
+    {
+        return (*ps2d_).list_particles_within_radius(pos, radius);
+    }
+
+    std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
+    list_particles_within_radius(
+        const std::pair<Real3, face_id_type>& pos, const Real& radius,
+        const ParticleID& ignore) const
+    {
+        return (*ps2d_).list_particles_within_radius(pos, radius, ignore);
+    }
+
+    std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
+    list_particles_within_radius(
+        const std::pair<Real3, face_id_type>& pos, const Real& radius,
+        const ParticleID& ignore1, const ParticleID& ignore2) const
+    {
+        return (*ps2d_).list_particles_within_radius(
+                pos, radius, ignore1, ignore2);
     }
 
     inline Real3 periodic_transpose(
         const Real3& pos1, const Real3& pos2) const
     {
-        return (*ps_).periodic_transpose(pos1, pos2);
+        //XXX: only use 3d.
+        //     assuming 2d has same space size(assured by a ctor, maybe)
+        return (*ps3d_).periodic_transpose(pos1, pos2);
     }
 
     inline Real3 apply_boundary(const Real3& pos) const
     {
-        return (*ps_).apply_boundary(pos);
+        //XXX: only use 3d.
+        //     assuming 2d has same space size(assured by a ctor, maybe)
+        return (*ps3d_).apply_boundary(pos);
     }
 
+    inline std::pair<Real3, face_id_type>
+    apply_surface(const std::pair<Real3, face_id_type>& position,
+                  const Real3& displacement) const
+    {
+        return (*ps2d_).apply_surface(position, displacement);
+    }
+
+    //! @brief square distance in normal 3 dimensional space
     inline Real distance_sq(const Real3& pos1, const Real3& pos2) const
     {
-        return (*ps_).distance_sq(pos1, pos2);
+        return (*ps3d_).distance_sq(pos1, pos2);
     }
 
+    //! @brief distance in normal 3 dimensional space
     inline Real distance(const Real3& pos1, const Real3& pos2) const
     {
-        return (*ps_).distance(pos1, pos2);
+        return (*ps3d_).distance(pos1, pos2);
+    }
+
+    //! @brief square distance along the surface. If inaccessible, return infty.
+    inline Real distance_sq(const Real3& pos1, const face_id_type& fid1,
+                            const Real3& pos2, const face_id_type& fid2) const
+    {
+        return (*ps2d_).distance_sq(pos1, fid1, pos2, fid2);
+    }
+
+    //! @brief distance along the surface. If inaccessible, return infty.
+    inline Real distance(const Real3& pos1, const face_id_type& fid1,
+                         const Real3& pos2, const face_id_type& fid2) const
+    {
+        return (*ps2d_).distance(pos1, fid1, pos2, fid2);
     }
 
     // CompartmentSpaceTraits
 
     Integer num_molecules(const Species& sp) const
     {
-        return (*ps_).num_molecules(sp);
+        return (*ps3d_).num_molecules(sp) + (*ps2d_).num_molecules(sp);
     }
 
     Integer num_molecules_exact(const Species& sp) const
     {
-        return (*ps_).num_molecules_exact(sp);
+        return (*ps3d_).num_molecules_exact(sp) +
+               (*ps2d_).num_molecules_exact(sp);
     }
 
+    //XXX only 3D-molecules are available yet.
     void add_molecules(const Species& sp, const Integer& num)
     {
         extras::throw_in_particles(*this, sp, num, rng());
     }
 
-    void add_molecules(const Species& sp, const Integer& num, const boost::shared_ptr<Shape> shape)
+    //XXX only 3D-molecules are available yet.
+    void add_molecules(const Species& sp, const Integer& num,
+                       const boost::shared_ptr<Shape> shape)
     {
         extras::throw_in_particles(*this, sp, num, shape, rng());
     }
 
+    //XXX both 3D and 2D particles are randomly removed.
     void remove_molecules(const Species& sp, const Integer& num)
     {
         if (num < 0)
@@ -301,7 +446,8 @@ public:
         }
 
         std::vector<std::pair<ParticleID, Particle> >
-            particles(list_particles(sp));
+            particles(list_particles(sp)); // 2D + 3D concatenated.
+
         const Integer num_particles(particles.size());
         if (num_particles < num)
         {
@@ -319,6 +465,7 @@ public:
 
     const Real volume() const
     {
+        // XXX: assuming 2d has same space size(assured by a ctor, maybe)
         const Real3& lengths(edge_lengths());
         return lengths[0] * lengths[1] * lengths[2];
     }
@@ -330,9 +477,20 @@ public:
         return rng_;
     }
 
+    // XXX return 3D particles ONLY!!!
     const particle_container_type& particles() const
     {
-        return (*ps_).particles();
+        return (*ps3d_).particles();
+    }
+
+    const particle_container_type& particles_3d() const
+    {
+        return (*ps3d_).particles();
+    }
+
+    const particle_container_type& particles_2d() const
+    {
+        return (*ps2d_).particles();
     }
 
     void save(const std::string& filename) const
@@ -344,7 +502,7 @@ public:
         pidgen_.save(fout.get());
         boost::scoped_ptr<H5::Group>
             group(new H5::Group(fout->createGroup("ParticleSpace")));
-        ps_->save_hdf5(group.get());
+        ps3d_->save_hdf5(group.get());
         extras::save_version_information(fout.get(), std::string("ecell4-bd-") + std::string(ECELL4_VERSION));
 #else
         throw NotSupported(
@@ -376,7 +534,7 @@ public:
         }
 
         const H5::Group group(fin->openGroup("ParticleSpace"));
-        ps_->load_hdf5(group);
+        ps3d_->load_hdf5(group);
         pidgen_.load(*fin);
         rng_->load(*fin);
 #else
@@ -404,9 +562,64 @@ public:
         return model_.lock();
     }
 
+    // XXX
+    ParticleSpace&       container_3D(){return *ps3d_;}
+    ParticleContainer2D& container_2D(){return *ps2d_;}
+
+    // TODO make return type Shape*
+//     BDPolygon const& polygon() const {return (*ps2d_).polygon();}
+
+    void set_polygon(const BDPolygon& poly)
+    {
+        (*ps2d_).polygon() = poly;
+        (*ps2d_).setup_polygon();
+        return;
+    }
+
+    const face_type& belonging_face(const ParticleID& pid)
+    {
+        return (*ps2d_).belonging_face(pid);
+    }
+
+    const face_id_type& belonging_faceid(const ParticleID& pid)
+    {
+        return (*ps2d_).belonging_faceid(pid);
+    }
+
+    face_type const& get_face(const std::size_t i)
+    {
+        return (*ps2d_).polygon().at(i);
+    }
+
+    Real3 get_inter_position_vector(const Real3& lhs, const Real3& rhs) const
+    {
+        return rhs - lhs;
+    }
+
+    Real3 get_inter_position_vector(
+            const std::pair<Real3, face_id_type>& lhs,
+            const std::pair<Real3, face_id_type>& rhs) const
+    {
+        return (*ps2d_).get_inter_position_vector(lhs, rhs);
+    }
+
+private:
+
+    template<typename T>
+    std::vector<T> concat(std::vector<T> lhs, std::vector<T> rhs) const
+    {
+        if(rhs.empty()) return lhs;
+
+        lhs.reserve(lhs.size() + rhs.size());
+        std::copy(rhs.begin(), rhs.end(), std::back_inserter(lhs));
+        return lhs;
+    }
+
 protected:
 
-    boost::scoped_ptr<ParticleSpace> ps_;
+    boost::scoped_ptr<ParticleSpace>       ps3d_;
+    boost::scoped_ptr<ParticleContainer2D> ps2d_;
+
     boost::shared_ptr<RandomNumberGenerator> rng_;
     SerialIDGenerator<ParticleID> pidgen_;
 

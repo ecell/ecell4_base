@@ -2,11 +2,8 @@ if (NO_SHARED)
     return()
 endif()
 
-set(CPP_FILES
-    BDSimulator.cpp BDPropagator.cpp functions3d.cpp)
-
-set(HPP_FILES
-    BDSimulator.hpp BDWorld.hpp BDPropagator.hpp functions3d.hpp BDFactory.hpp)
+file(GLOB CPP_FILES *.cpp)
+file(GLOB HPP_FILES *.hpp)
 
 add_library(ecell4-bd SHARED ${CPP_FILES} ${HPP_FILES})
 target_link_libraries(ecell4-bd ecell4-core)
