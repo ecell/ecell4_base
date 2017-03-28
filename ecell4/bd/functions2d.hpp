@@ -25,11 +25,15 @@ random_circular_uniform(RandomNumberGenerator& rng,
                         const Real& r, const Real3& normal)
 {
     const Real3 rnd = random_circular_uniform(rng, r);
-
     const Real3 unitz(0, 0, 1);
     const Real tilt = angle(unitz, normal);
+
+    if(std::abs(tilt - M_PI) < 1e-12)      return rnd;
+    else if(std::abs(tilt + M_PI) < 1e-12) return rnd * (-1.0);
+
     const Real3 cross = cross_product(unitz, normal);
-    return rotate(tilt, cross, rnd);
+    const Real3 retval = rotate(tilt, cross, rnd);
+    return retval;
 }
 
 inline Real3
