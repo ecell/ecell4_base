@@ -52,10 +52,12 @@ STLPolygonAdapter<T_traits>::make_polygon(
 
     for(typename std::vector<StlTriangle>::const_iterator
             iter = triangles.begin(); iter != triangles.end(); ++iter)
+    {
         polygon->add_face(triangle_type(iter->vertices));
+    }
 
-    this->detece_edge_connections(*polygon);
-    this->detece_vertex_connections(*polygon);
+    this->detect_edge_connections(*polygon);
+    this->detect_vertex_connections(*polygon);
     return polygon;
 }
 
@@ -79,7 +81,7 @@ void STLPolygonAdapter<T_traits>::detect_edge_connections(polygon_type& poly) co
             const Real3 end_pos = poly.triangle_at(currentf).vertex_at(end_v);
 
             bool found = false;
-            for(std::size_t f = currentf+1; f < poly.num_triangles(); ++f)
+            for(std::size_t f = fidx+1; f < poly.num_triangles(); ++f)
             {
                 for(std::size_t e = 0; e < 3; ++e)
                 {
@@ -105,7 +107,7 @@ void STLPolygonAdapter<T_traits>::detect_edge_connections(polygon_type& poly) co
                 }
                 if(found) break;
             }
-            if(not found) throw std::logic_error("polygon is not closed");
+            if(!found) throw std::logic_error("polygon is not closed");
         }
     }
     return;
