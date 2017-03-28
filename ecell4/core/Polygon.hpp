@@ -6,6 +6,7 @@
 #include <ecell4/core/comparators.hpp>
 #include <ecell4/core/Shape.hpp>
 #include <ecell4/core/geometry.hpp>
+#include <ecell4/core/Barycentric.hpp>
 #include <boost/array.hpp>
 #include <algorithm>
 #include <stdexcept>
@@ -36,6 +37,7 @@ class Polygon : public Shape
     typedef vertex_property<vertex_descripter> vertex_property_type;
     typedef edge_property<edge_descripter>     edge_property_type;
     typedef face_property<face_descripter>     face_property_type;
+    typedef Barycentric<Real>                 barycentric_type;
     typedef std::vector<vertex_property_type> vertex_container_type;
     typedef std::vector<edge_property_type>   edge_container_type;
     typedef std::vector<face_property_type>   face_container_type;
@@ -536,7 +538,7 @@ Real3 Polygon<T>::developed_direction(
             rotate(-1. * edge.tilt_angle,
                    lhs_t.edge_at(lidx),
                    rhs.first - lhs_t.vertex_at(lidx));
-        return lhs.first - developped;
+        return developped - lhs.first;
     }
 
     const std::pair<bool, vertex_id_type> vtx =
@@ -618,6 +620,47 @@ Polygon<T>::list_faces_within_radius(const Real3& pos, const Real radius)
 {
     throw NotImplemented("ecell4::Polygon::list_face_within_radius");
 }
+
+template<typename T>
+std::pair<std::pair<Real3, typename Polygon<T>::face_id_type>, Real3>
+Polygon<T>::move_next_face(const std::pair<Real3, face_id_type>& pos,
+                           const Real3& disp) const
+{
+    const triangle_type& t = triangle_at(pos.second);
+    const barycentric_type newpos = to_barycentric(pos.first + disp, t);
+
+    if(::ecell4::is_inside(newpos))
+        return std::make_pair(
+            std::make_pair(to_absolute(newpos, t), pos.second), Real3(0.,0.,0.));
+
+    // calculate partial displacement to the edge
+    const barycentric_type bpos = to_barycentric(pos.first, t);
+    const barycentric_type bdis = newpos - bpos;
+
+    const std::pair<std::size_t, Real> cross = first_cross_edge(bpos, bdis);
+    const edge_id_type next_edge = connecting_edge(
+            make_eid(pos.second, local_idx_type(cross.first)));
+
+    const face_id_type next_face_id = get_face_id(next_edge);
+    const Real3 next_pos  = pos.first + disp * cross.second;
+
+    // turn displacement
+    const Real  ang  = edge_prop_at(next_edge).tilt_angle;
+    const Real3 axis = t.edge_at(cross.first) / t.length_of_edge_at(cross.first);
+    const Real3 next_disp = rotate(ang, axis, disp) * (1. - cross.second);
+
+    return std::make_pair(std::make_pair(next_pos, next_face_id), next_disp);
+}
+
+template<typename T>
+std::pair<Real3, typename Polygon<T>::face_id_type>
+Polygon<T>::rotate_around_vertex(const std::pair<Real3, face_id_type>& pos,
+    const vertex_id_type& apex, const Real r, const Real angle) const
+{
+    throw NotImplemented("ecell4::Polygon::rotate_around_vertex");
+}
+
+
 
 template<typename T>
 inline typename Polygon<T>::triangle_type&
