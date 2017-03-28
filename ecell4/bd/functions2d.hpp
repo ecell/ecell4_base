@@ -4,8 +4,8 @@
 #include <ecell4/core/config.h>
 #include <ecell4/core/types.hpp>
 #include <ecell4/core/Real3.hpp>
+#include <ecell4/core/geometry.hpp>
 #include <ecell4/core/RandomNumberGenerator.hpp>
-#include "rotate_vector.hpp"
 
 namespace ecell4
 {
@@ -24,10 +24,12 @@ inline Real3
 random_circular_uniform(RandomNumberGenerator& rng,
                         const Real& r, const Real3& normal)
 {
-    const Real theta = rng.uniform(0., 2 * M_PI);
-    const Real l = r / std::sqrt(normal[0] * normal[0] + normal[1] * normal[1]);
-    const Real3 retval(l * normal[1], -l * normal[0], 0.);
-    return rotate(theta, normal, retval);
+    const Real3 rnd = random_circular_uniform(rng, r);
+
+    const Real3 unitz(0, 0, 1);
+    const Real tilt = angle(unitz, normal);
+    const Real3 cross = cross_product(unitz, normal);
+    return rotate(tilt, cross, rnd);
 }
 
 inline Real3
