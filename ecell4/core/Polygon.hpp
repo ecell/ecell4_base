@@ -5,6 +5,7 @@
 #include <ecell4/core/exceptions.hpp>
 #include <ecell4/core/comparators.hpp>
 #include <ecell4/core/Shape.hpp>
+#include <ecell4/core/geometry.hpp>
 #include <boost/array.hpp>
 #include <algorithm>
 #include <stdexcept>
@@ -167,7 +168,8 @@ class Polygon : public Shape
     template<typename vertexT>
     struct vertex_property
     {
-        vertexT vertex;
+        vertexT vertex; // additional information for vertex
+        Real apex_angle;
         std::vector<std::size_t> edges; // idx of this->edges_
         // pairof (idx of this->faces_, local idx of this->faces_->vertices)
         std::vector<std::pair<std::size_t, std::size_t> > faces;
@@ -176,7 +178,8 @@ class Polygon : public Shape
     template<typename edgeT>
     struct edge_property
     {
-        edgeT edge;
+        edgeT edge; // additional information for edge
+        Real tilt_angle;
         std::pair<std::size_t, std::size_t> vertices;// idx of this->vertices_
         // pairof (idx of this->faces_, local idx of this->faces_->vertices)
         std::pair<std::pair<std::size_t, std::size_t>,
@@ -186,7 +189,7 @@ class Polygon : public Shape
     template<typename faceT>
     struct face_property
     {
-        faceT      face;
+        faceT      face; // additional information for face
         index_type triangle_index;               // idx of this->triangles_
         boost::array<std::size_t, 3>  vertices;  // idx of this->vertices_
         boost::array<std::size_t, 3>  edges;     // idx of this->edges_
@@ -272,6 +275,7 @@ Polygon<T>::connect_edges(const edge_id_type& lhs, const edge_id_type& rhs)
     ep.faces.second = std::make_pair(fid2, get_local_index(rhs));
     ep.vertices.first  = un_initialized;
     ep.vertices.second = un_initialized;
+    ep.tilt_angle = angle(triangle_at(fid1).normal(), triangle_at(fid2).normal());
     this->edges_.push_back(ep);
 
     //XXX update faces
@@ -302,6 +306,7 @@ Polygon<T>::connect_vertices(const std::vector<vertex_id_type>& vtxs)
     vertex_property_type vp;
     vp.faces.reserve(vtxs.size());
     vp.edges.reserve(vtxs.size());
+    vp.apex_angle = 0.;
 
     for(typename std::vector<vertex_id_type>::const_iterator
         iter = vtxs.begin(); iter != vtxs.end(); ++iter)
@@ -314,6 +319,7 @@ Polygon<T>::connect_vertices(const std::vector<vertex_id_type>& vtxs)
 
         vp.faces.push_back(std::make_pair(fid, lidx));
         vp.edges.push_back(eidx);
+        vp.apex_angle += this->triangle_at(fid).angle_at(lidx);
 
         // XXX: update faces
         this->faces_.at(fid).vertices.at(lidx) = idx;
@@ -424,14 +430,90 @@ template<typename T>
 Real Polygon<T>::distance_sq(const std::pair<Real3, face_id_type>& lhs,
                              const std::pair<Real3, face_id_type>& rhs) const
 {
-    throw NotImplemented("ecell4::Polygon::distance_sq");
+    if(lhs.second == rhs.second)
+        return length_sq(lhs.first - rhs.first);
+
+    const std::pair<bool, edge_id_type> edg =
+        this->is_connected_by_edge(lhs.second, rhs.second);
+    if(edg.first)
+    {
+        const local_idx_type      lidx = get_local_index(edg.second);
+        const edge_property_type& edge = edge_prop_at(edg.second);
+        const triangle_type&     lhs_t = this->triangle_at(lhs.second);
+
+        const Real3 developped = lhs_t.vertex_at(lidx) +
+            rotate(-1. * edge.tilt_angle,
+                   lhs_t.edge_at(lidx),
+                   rhs.first - lhs_t.vertex_at(lidx));
+        return length_sq(lhs.first - developped);
+    }
+
+    const std::pair<bool, vertex_id_type> vtx =
+        this->is_connected_by_vertex(lhs.second, rhs.second);
+
+    if(vtx.first)
+    {
+        const local_idx_type    lidx = get_local_index(vtx.second);
+        const Real3     vtx_position = triangle_at(lhs.second).vertex_at(lidx);
+        const Real3       lhs_to_vtx = vtx_position - lhs.first;
+        const Real3       vtx_to_rhs = rhs.first - vtx_position;
+        const Real  lhs_to_vtx_lensq = length_sq(lhs_to_vtx);
+        const Real  rhs_to_vtx_lensq = length_sq(vtx_to_rhs);
+        const Real        apex_angle = vertex_prop_at(vtx.second).apex_angle;
+
+        Real inter_angle = angle(lhs_to_vtx, triangle_at(lhs.second).edge_at(
+                           (lidx == 0) ? 2 : lidx-1));
+
+        // XXX: order of face idx
+        const std::vector<std::pair<std::size_t, std::size_t> >& faces_vtx =
+            vertex_prop_at(vtx.second).faces;
+        std::vector<std::pair<std::size_t, std::size_t> >::const_iterator
+            iter = std::find_if(faces_vtx.begin(), faces_vtx.end(),
+                    utils::pair_first_element_unary_predicator<
+                        std::size_t, std::size_t>(lhs.second));
+        bool round = false;
+        ++iter;
+        if(iter == faces_vtx.end())
+        {
+            iter  = faces_vtx.begin();
+            round = true;
+        }
+
+        while(true)
+        {
+            const face_id_type fid(iter->first);
+            const triangle_type& f = triangles_.at(fid);
+            if(fid == rhs.second)
+            {
+                inter_angle += angle(vtx_to_rhs, f.edge_at(iter->second));
+                break;
+            }
+            inter_angle += f.angle_at(iter->second);
+
+            ++iter;
+            if(iter == faces_vtx.end())
+            {
+                if(round)
+                    throw std::logic_error("Polygon::distance: rhs not found");
+                iter  = faces_vtx.begin();
+                round = true;
+            }
+        }
+        assert(inter_angle <= apex_angle);
+
+        const Real min_angle = std::min(inter_angle, apex_angle - inter_angle);
+        return lhs_to_vtx_lensq + rhs_to_vtx_lensq - 2. *
+               std::sqrt(lhs_to_vtx_lensq * rhs_to_vtx_lensq) * std::cos(min_angle);
+    }
+    // lhs and rhs don't share edge nor vertex
+    return std::numeric_limits<Real>::infinity();
 }
 
 template<typename T>
 Real Polygon<T>::distance(const std::pair<Real3, face_id_type>& lhs,
                           const std::pair<Real3, face_id_type>& rhs) const
 {
-    throw NotImplemented("ecell4::Polygon::distance");
+    return std::sqrt(this->distance_sq(lhs, rhs));
 }
 
 template<typename T>

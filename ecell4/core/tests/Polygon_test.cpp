@@ -56,6 +56,7 @@ struct test_polygon_traits
     }
 };
 
+typedef ecell4::Real  Real;
 typedef ecell4::Real3 Real3;
 typedef ecell4::Triangle Triangle;
 typedef ecell4::Polygon<test_polygon_traits> polygon_type;
@@ -150,6 +151,7 @@ BOOST_AUTO_TEST_CASE(Polygon_edge_connection)
         BOOST_CHECK(result[2] != faces.end());
     }
 
+    //{{{
     {
         boost::array<face_id_type, 3> const& faces =
             poly.connecting_faces(face_id_type(1));
@@ -171,7 +173,7 @@ BOOST_AUTO_TEST_CASE(Polygon_edge_connection)
             result = find_neighbors(faces, face_id_type(1),
                                            face_id_type(3),
                                            face_id_type(11));
-        BOOST_CHECK(result[0] != faces.end());// failed
+        BOOST_CHECK(result[0] != faces.end());
         BOOST_CHECK(result[1] != faces.end());
         BOOST_CHECK(result[2] != faces.end());
     }
@@ -184,7 +186,7 @@ BOOST_AUTO_TEST_CASE(Polygon_edge_connection)
             result = find_neighbors(faces, face_id_type(2),
                                            face_id_type(4),
                                            face_id_type(9));
-        BOOST_CHECK(result[0] != faces.end()); // failed
+        BOOST_CHECK(result[0] != faces.end());
         BOOST_CHECK(result[1] != faces.end());
         BOOST_CHECK(result[2] != faces.end());
     }
@@ -197,7 +199,7 @@ BOOST_AUTO_TEST_CASE(Polygon_edge_connection)
             result = find_neighbors(faces, face_id_type(3),
                                            face_id_type(5),
                                            face_id_type(9));
-        BOOST_CHECK(result[0] != faces.end());// failed
+        BOOST_CHECK(result[0] != faces.end());
         BOOST_CHECK(result[1] != faces.end());
         BOOST_CHECK(result[2] != faces.end());
     }
@@ -210,7 +212,7 @@ BOOST_AUTO_TEST_CASE(Polygon_edge_connection)
             result = find_neighbors(faces, face_id_type(4),
                                            face_id_type(6),
                                            face_id_type(10));
-        BOOST_CHECK(result[0] != faces.end());// failed
+        BOOST_CHECK(result[0] != faces.end());
         BOOST_CHECK(result[1] != faces.end());
         BOOST_CHECK(result[2] != faces.end());
     }
@@ -292,4 +294,75 @@ BOOST_AUTO_TEST_CASE(Polygon_edge_connection)
         BOOST_CHECK(result[1] != faces.end());
         BOOST_CHECK(result[2] != faces.end());
     }
+    //}}}
+}
+
+BOOST_AUTO_TEST_CASE(Polygon_distance_same_face)
+{
+    const polygon_type poly = make_cube();
+    typedef polygon_type::face_id_type face_id_type;
+
+    const Real dist_same_face1 = poly.distance(
+            std::make_pair(Real3(0.5, 0.1, 0.), face_id_type(0)),
+            std::make_pair(Real3(0.1, 0.5, 0.), face_id_type(0))
+            );
+    const Real ref_same_face1 = length(Real3(0.5, 0.1, 0.) - Real3(0.1, 0.5, 0.));
+    BOOST_CHECK_CLOSE(dist_same_face1, ref_same_face1, 1e-12);
+
+    const Real dist_same_face2 = poly.distance(
+            std::make_pair(Real3(0.5, 0.0, 0.), face_id_type(0)),
+            std::make_pair(Real3(0.0, 0.5, 0.), face_id_type(0))
+            );
+    const Real ref_same_face2 = length(Real3(0.5, 0.0, 0.) - Real3(0.0, 0.5, 0.));
+    BOOST_CHECK_CLOSE(dist_same_face2, ref_same_face2, 1e-12);
+
+    const Real dist_same_face3 = poly.distance(
+            std::make_pair(Real3(1.0, 0.0, 0.), face_id_type(0)),
+            std::make_pair(Real3(0.0, 1.0, 0.), face_id_type(0))
+            );
+    const Real ref_same_face3 = length(Real3(1.0, 0.0, 0.) - Real3(0.0, 1.0, 0.));
+    BOOST_CHECK_CLOSE(dist_same_face3, ref_same_face3, 1e-12);
+}
+
+BOOST_AUTO_TEST_CASE(Polygon_distance_connected_by_edge)
+{
+    const polygon_type poly = make_cube();
+    typedef polygon_type::face_id_type face_id_type;
+
+    const Real dist1_1 = poly.distance(
+            std::make_pair(Real3(0.3, 0.3, 0.), face_id_type(0)),
+            std::make_pair(Real3(0.7, 0.7, 0.), face_id_type(1)));
+    const Real dist1_2 = poly.distance(
+            std::make_pair(Real3(0.7, 0.7, 0.), face_id_type(1)),
+            std::make_pair(Real3(0.3, 0.3, 0.), face_id_type(0)));
+    const Real ref1 = length(Real3(0.3, 0.3, 0.) - Real3(0.7, 0.7, 0.));
+    BOOST_CHECK_CLOSE(dist1_1, ref1, 1e-12);
+    BOOST_CHECK_CLOSE(dist1_2, ref1, 1e-12);
+
+    const Real dist2_1 = poly.distance(
+            std::make_pair(Real3(0.3, 0.3, 0.), face_id_type(0)),
+            std::make_pair(Real3(0.3, 0.0, -0.3), face_id_type(7)));
+    const Real dist2_2 = poly.distance(
+            std::make_pair(Real3(0.3, 0.0, -0.3), face_id_type(7)),
+            std::make_pair(Real3(0.3, 0.3, 0.), face_id_type(0)));
+    const Real ref2 = 0.6;
+    BOOST_CHECK_CLOSE(dist2_1, ref2, 1e-12);
+    BOOST_CHECK_CLOSE(dist2_2, ref2, 1e-12);
+}
+
+BOOST_AUTO_TEST_CASE(Polygon_distance_connected_by_vertex)
+{
+    const polygon_type poly = make_cube();
+    typedef polygon_type::face_id_type face_id_type;
+
+    const Real dist1_1 = poly.distance(
+            std::make_pair(Real3(0.3, 0.3,  0.0), face_id_type(0)),
+            std::make_pair(Real3(1.0, 0.3, -0.7), face_id_type(10)));
+
+    const Real dist1_2 = poly.distance(
+            std::make_pair(Real3(1.0, 0.3, -0.7), face_id_type(10)),
+            std::make_pair(Real3(0.3, 0.3,  0.0), face_id_type(0)));
+    const Real ref1 = 1.4;
+    BOOST_CHECK_CLOSE(dist1_1, ref1, 1e-12);
+    BOOST_CHECK_CLOSE(dist1_2, ref1, 1e-12);
 }
