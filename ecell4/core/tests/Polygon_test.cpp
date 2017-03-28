@@ -488,13 +488,24 @@ BOOST_AUTO_TEST_CASE(Polygon_developped_direction_connected_by_vertex)
     const polygon_type poly = make_cube();
     typedef polygon_type::face_id_type face_id_type;
 
-    const Real3 dir1_1 = poly.developed_direction(
-            std::make_pair(Real3(0.3, 0.3,  0.0), face_id_type(0)),
-            std::make_pair(Real3(1.0, 0.3, -0.7), face_id_type(10)));
-    const Real dist1_1 = poly.distance(
-            std::make_pair(Real3(0.3, 0.3,  0.0), face_id_type(0)),
-            std::make_pair(Real3(1.0, 0.3, -0.7), face_id_type(10)));
+    const std::pair<Real3, face_id_type> start1 =
+            std::make_pair(Real3(0.3, 0.3,  0.0), face_id_type(0));
+    const std::pair<Real3, face_id_type> term1 =
+            std::make_pair(Real3(1.0, 0.3, -0.7), face_id_type(10));
+
+    const Real3 dir1_1 = poly.developed_direction(start1, term1);
+    const Real dist1_1 = poly.distance(start1, term1);
     BOOST_CHECK_CLOSE(dist1_1, length(dir1_1), 1e-12);
+
+    std::pair<std::pair<Real3, face_id_type>, Real3>
+        next1_1 = poly.move_next_face(start1, dir1_1);
+    while(length(next1_1.second) < 1e-12)
+    {
+        BOOST_CHECK_EQUAL(next1_1.first.second, term1.second);
+        BOOST_CHECK_SMALL(length(next1_1.first.first - term1.first), 1e-12);
+    }
+
+    // -------------------------------------------------------------------
 
     const Real3 dir1_2 = poly.developed_direction(
             std::make_pair(Real3(1.0, 0.3, -0.7), face_id_type(10)),
@@ -503,4 +514,12 @@ BOOST_AUTO_TEST_CASE(Polygon_developped_direction_connected_by_vertex)
             std::make_pair(Real3(1.0, 0.3, -0.7), face_id_type(10)),
             std::make_pair(Real3(0.3, 0.3,  0.0), face_id_type(0)));
     BOOST_CHECK_CLOSE(dist1_2, length(dir1_2), 1e-12);
+
+    std::pair<std::pair<Real3, face_id_type>, Real3>
+        next1_2 = poly.move_next_face(term1, dir1_2);
+    while(length(next1_2.second) < 1e-12)
+    {
+        BOOST_CHECK_EQUAL(next1_2.first.second, start1.second);
+        BOOST_CHECK_SMALL(length(next1_2.first.first - start1.first), 1e-12);
+    }
 }
