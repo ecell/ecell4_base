@@ -1,5 +1,5 @@
 set(TEST_NAMES
-    BDSimulator_test BDWorld_test Barycentric_test rotate_vector_test)
+    BDSimulator_test BDWorld_test Barycentric_test)
 
 set(test_library_dependencies)
 find_library(BOOST_UNITTEST_FRAMEWORK_LIBRARY boost_unit_test_framework)
