@@ -130,15 +130,8 @@ class Polygon : public Shape
     std::size_t num_edges()     const {return edges_.size();}
     std::size_t num_vertices()  const {return vertices_.size();}
 
-    triangle_type&           triangle_at(const index_type i);
-    triangle_type const&     triangle_at(const index_type i) const;
-    vertex_descripter&       vertex_at(const index_type i);
-    vertex_descripter const& vertex_at(const index_type i) const;
-    edge_descripter&         edge_at(const index_type i);
-    edge_descripter const&   edge_at(const index_type i) const;
-    face_descripter&         face_at(const index_type i);
-    face_descripter const&   face_at(const index_type i) const;
-
+    triangle_type&           triangle_at(const face_id_type i);
+    triangle_type const&     triangle_at(const face_id_type i) const;
     face_descripter&         face_at(const face_id_type i);
     face_descripter const&   face_at(const face_id_type i) const;
     vertex_descripter&       vertex_at(const vertex_id_type&);
@@ -157,6 +150,15 @@ class Polygon : public Shape
 
     void bounding_box(
             const Real3& edge_lengths, Real3& lower, Real3& upper) const;
+
+  private:
+
+    vertex_property_type&       vertex_prop_at(const vertex_id_type& vid);
+    vertex_property_type const& vertex_prop_at(const vertex_id_type& vid) const;
+    edge_property_type&         edge_prop_at(const edge_id_type& eid);
+    edge_property_type const&   edge_prop_at(const edge_id_type& eid) const;
+    face_property_type&         face_prop_at(const face_id_type& fid);
+    face_property_type const&   face_prop_at(const face_id_type& fid) const;
 
   private:
 
@@ -464,94 +466,16 @@ Polygon<T>::list_faces_within_radius(const Real3& pos, const Real radius)
 
 template<typename T>
 inline typename Polygon<T>::triangle_type&
-Polygon<T>::triangle_at(const index_type i)
+Polygon<T>::triangle_at(const face_id_type i)
 {
     return this->triangles_.at(i);
 }
 
 template<typename T>
 inline typename Polygon<T>::triangle_type const&
-Polygon<T>::triangle_at(const index_type i) const
+Polygon<T>::triangle_at(const face_id_type i) const
 {
     return this->triangles_.at(i);
-}
-
-template<typename T>
-inline typename Polygon<T>::vertex_descripter&
-Polygon<T>::vertex_at(const index_type i)
-{
-    return vertices_.at(i).vertex;
-}
-
-template<typename T>
-inline typename Polygon<T>::vertex_descripter const&
-Polygon<T>::vertex_at(const index_type i) const
-{
-    return vertices_.at(i).vertex;
-}
-
-template<typename T>
-inline typename Polygon<T>::edge_descripter&
-Polygon<T>::edge_at(const index_type i)
-{
-    return edges_.at(i).edge;
-}
-
-template<typename T>
-inline typename Polygon<T>::edge_descripter const&
-Polygon<T>::edge_at(const index_type i) const
-{
-    return edges_.at(i).edge;
-}
-
-template<typename T>
-inline typename Polygon<T>::face_descripter&
-Polygon<T>::face_at(const index_type i)
-{
-    return faces_.at(i).face;
-}
-
-template<typename T>
-inline typename Polygon<T>::face_descripter const&
-Polygon<T>::face_at(const index_type i) const
-{
-    return faces_.at(i).face;
-}
-
-template<typename T>
-inline typename Polygon<T>::vertex_descripter&
-Polygon<T>::vertex_at(const vertex_id_type& vid)
-{
-    return vertices_.at(
-        this->faces_.at(get_face_id(vid)).vertices.at(get_local_index(vid))
-        ).vertex;
-}
-
-template<typename T>
-inline typename Polygon<T>::vertex_descripter const&
-Polygon<T>::vertex_at(const vertex_id_type& vid) const
-{
-    return vertices_.at(
-        this->faces_.at(get_face_id(vid)).vertices.at(get_local_index(vid))
-        ).vertex;
-}
-
-template<typename T>
-inline typename Polygon<T>::edge_descripter&
-Polygon<T>::edge_at(const edge_id_type& eid)
-{
-    return edges_.at(
-        this->faces_.at(get_face_id(eid)).edges.at(get_local_index(eid))
-        ).edge;
-}
-
-template<typename T>
-inline typename Polygon<T>::edge_descripter const&
-Polygon<T>::edge_at(const edge_id_type& eid) const
-{
-    return edges_.at(
-        this->faces_.at(get_face_id(eid)).edges.at(get_local_index(eid))
-        ).edge;
 }
 
 template<typename T>
@@ -567,6 +491,68 @@ Polygon<T>::face_at(const face_id_type i) const
 {
     return faces_.at(i).face;
 }
+
+template<typename T>
+inline typename Polygon<T>::vertex_descripter&
+Polygon<T>::vertex_at(const vertex_id_type& vid)
+{
+    return vertex_prop_at(vid).vertex;
+}
+
+
+template<typename T>
+inline typename Polygon<T>::vertex_descripter const&
+Polygon<T>::vertex_at(const vertex_id_type& vid) const
+{
+    return vertex_prop_at(vid).vertex;
+}
+
+template<typename T>
+inline typename Polygon<T>::edge_descripter&
+Polygon<T>::edge_at(const edge_id_type& eid)
+{
+    return edge_prop_at(eid).edge;
+}
+
+template<typename T>
+inline typename Polygon<T>::edge_descripter const&
+Polygon<T>::edge_at(const edge_id_type& eid) const
+{
+    return edge_prop_at(eid).edge;
+}
+
+template<typename T>
+inline typename Polygon<T>::vertex_property_type&
+Polygon<T>::vertex_prop_at(const vertex_id_type& vid)
+{
+    return vertices_.at(
+        this->faces_.at(get_face_id(vid)).vertices.at(get_local_index(vid)));
+}
+
+template<typename T>
+inline typename Polygon<T>::vertex_property_type const&
+Polygon<T>::vertex_prop_at(const vertex_id_type& vid) const
+{
+    return vertices_.at(
+        this->faces_.at(get_face_id(vid)).vertices.at(get_local_index(vid)));
+}
+
+template<typename T>
+inline typename Polygon<T>::edge_property_type&
+Polygon<T>::edge_prop_at(const edge_id_type& eid)
+{
+    return edges_.at(
+        this->faces_.at(get_face_id(eid)).edges.at(get_local_index(eid)));
+}
+
+template<typename T>
+inline typename Polygon<T>::edge_property_type const&
+Polygon<T>::edge_prop_at(const edge_id_type& eid) const
+{
+    return edges_.at(
+        this->faces_.at(get_face_id(eid)).edges.at(get_local_index(eid)));
+}
+
 
 } // ecell4
 #endif// ECELL4_POLYGON

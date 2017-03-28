@@ -84,12 +84,12 @@ void STLPolygonAdapter<T_traits>::detect_edge_connections(polygon_type& poly) co
                 for(std::size_t e = 0; e < 3; ++e)
                 {
                     const Real start_pos_dist =
-                        length(start_pos - poly.triangle_at(f).vertex_at(e));
+                        length(start_pos - poly.triangle_at(face_id_type(f)).vertex_at(e));
                     if(start_pos_dist > tolerance)
                         continue;
 
                     const Real end_pos_dist =
-                        length(end_pos - poly.triangle_at(f).vertex_at(
+                        length(end_pos - poly.triangle_at(face_id_type(f)).vertex_at(
                                     e == 0 ? 2 : e-1));
 
                     if(end_pos_dist <= tolerance)
@@ -125,7 +125,7 @@ void STLPolygonAdapter<T_traits>::detect_vertex_connections(polygon_type& poly) 
             if(is_detected.count(current_vtx) == 1)
                 continue;
 
-            const Real3 vtx_pos = poly.triangle_at(fidx).vertex_at(vidx);
+            const Real3 vtx_pos = poly.triangle_at(face_id_type(fidx)).vertex_at(vidx);
 
             std::vector<vertex_id_type> vertices_list;
             vertices_list.push_back(current_vtx);
