@@ -10,6 +10,9 @@ Triangle::Triangle()
 
 Triangle::Triangle(const boost::array<Real3, 3>& vertices)
 {
+    vertices_[0] = vertices[0];
+    vertices_[1] = vertices[1];
+    vertices_[2] = vertices[2];
     edges_[0] = vertices[1] - vertices[0];
     edges_[1] = vertices[2] - vertices[1];
     edges_[2] = vertices[0] - vertices[2];
