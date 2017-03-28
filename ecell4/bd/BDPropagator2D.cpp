@@ -157,7 +157,7 @@ bool BDPropagator2D::attempt_reaction(
                 const Real r2 = mol2.radius;
                 const Real r12 = r1 + r2;
 
-                const Real3 n = this->poly_.at(fid).normal();
+                const Real3 n = this->poly_.triangle_at(fid).normal();
 
                 Integer retry(max_retry_count_);
                 std::pair<Real3, face_id_type> newpf1, newpf2;
@@ -211,7 +211,7 @@ bool BDPropagator2D::attempt_reaction(
                 assert(D1 != 0 || D2 != 0);
                 if(D2 == 0 || (D1 != 0 && rng_.uniform_int(0, 1) == 0))
                 {
-                    const Real3& normal = this->poly_.at(newpf1.second).normal();
+                    const Real3& normal = this->poly_.triangle_at(newpf1.second).normal();
                     const ParticleContainer2D& container2D = world_.container_2D();
 
                     std::pair<Real3, face_id_type> newpf(world_.apply_surface(
@@ -231,7 +231,7 @@ bool BDPropagator2D::attempt_reaction(
                 }
                 else
                 {
-                    const Real3& normal = this->poly_.at(newpf2.second).normal();
+                    const Real3& normal = this->poly_.triangle_at(newpf2.second).normal();
                     const ParticleContainer2D& container2D = world_.container_2D();
 
                     std::pair<Real3, face_id_type> newpf(world_.apply_surface(

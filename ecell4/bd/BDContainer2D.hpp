@@ -1,6 +1,5 @@
-#ifndef ECELL4_BD_BD_CONTAINER_2D
-#define ECELL4_BD_BD_CONTAINER_2D
-
+#ifndef ECELL4_BD_CONTAINER_2D
+#define ECELL4_BD_CONTAINER_2D
 #include <ecell4/core/ParticleSpace.hpp>
 #include <ecell4/core/exceptions.hpp>
 #include "BDPolygon.hpp"
@@ -26,9 +25,9 @@ public:
             species_to_particle_id_set_map_type;
 
     typedef BDPolygon polygon_type;
-    typedef polygon_type::face_type face_type;
+    typedef polygon_type::triangle_type face_type;
     typedef polygon_type::face_id_type face_id_type;
-    typedef polygon_type::face_id_list face_id_list;
+    typedef std::vector<face_id_type> face_id_list;
     typedef utils::get_mapper_mf<ParticleID, face_id_type>::type
             pid_to_faceid_map_type;
     typedef utils::get_mapper_mf<face_id_type, particle_id_set>::type
@@ -94,7 +93,7 @@ public:
             const std::pair<Real3, face_id_type>& lhs,
             const std::pair<Real3, face_id_type>& rhs) const
     {
-        return polygon_.inter_position_vector(lhs, rhs);
+        return polygon_.developed_direction(lhs, rhs);
     }
 
     bool has_particle(const ParticleID& pid) const;
@@ -121,7 +120,7 @@ public:
 
     face_type const& belonging_face(const ParticleID& pid) const
     {
-        return polygon_.at(const_at(pid_to_fid_, pid));
+        return polygon_.triangle_at(const_at(pid_to_fid_, pid));
     }
 
     face_id_type const& belonging_faceid(const ParticleID& pid) const

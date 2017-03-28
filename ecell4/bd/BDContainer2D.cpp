@@ -322,7 +322,7 @@ ParticleContainer2D::apply_surface(
     const face_id_type fid = state.first.second;
     Real3 newpos = state.first.first;
 
-    const Triangle& face = this->polygon_.at(fid);
+    const Triangle& face = this->polygon_.triangle_at(fid);
     const Real      dist = dot_product(face.normal(), newpos - face.vertex_at(0));
     if(std::abs(dist) > 1e-8)
         std::cerr << "Warning: particle floats over tolerance: " << dist << std::endl;
@@ -340,13 +340,14 @@ ParticleContainer2D::apply_surface(
 
 void ParticleContainer2D::setup_polygon()
 {
-    this->polygon_.detect_connectivity();
-    std::vector<face_id_type> face_ids(polygon_.list_faceids());
+//     this->polygon_.detect_connectivity();
+    std::vector<face_id_type> face_ids; face_ids.reserve(polygon_.num_faces());
+    for(std::size_t i=0; i<polygon_.num_faces(); ++i)
+        face_ids.push_back(face_id_type(i));
+
     for(std::vector<face_id_type>::const_iterator
             iter = face_ids.begin(); iter != face_ids.end(); ++iter)
-    {
         particle_on_face_[*iter] = particle_id_set();
-    }
 
     return;
 }

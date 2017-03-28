@@ -38,7 +38,7 @@ public:
     // typedef ParticleSpaceVectorImpl particle_space_type;
     typedef particle_space_type::particle_container_type particle_container_type;
 
-    typedef BDPolygon::face_type    face_type;
+    typedef BDPolygon::triangle_type    face_type;
     typedef BDPolygon::face_id_type face_id_type;
 
 public:
@@ -588,7 +588,7 @@ public:
 
     face_type const& get_face(const std::size_t i)
     {
-        return (*ps2d_).polygon().at(i);
+        return (*ps2d_).polygon().triangle_at(face_id_type(i));
     }
 
     Real3 get_inter_position_vector(const Real3& lhs, const Real3& rhs) const

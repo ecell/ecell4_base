@@ -6,7 +6,6 @@
 
 #include "BDPropagator.hpp"
 #include "BDPolygon.hpp"
-#include "rotate_vector.hpp"
 #include "functions2d.hpp"
 
 namespace ecell4
@@ -22,7 +21,7 @@ public:
     typedef ReactionInfo reaction_info_type;
     typedef BDWorld::molecule_info_type molecule_info_type;
     typedef BDPolygon polygon_type;
-    typedef BDPolygon::face_type face_type;
+    typedef BDPolygon::triangle_type face_type;
     typedef BDPolygon::face_id_type face_id_type;
 
 public:
