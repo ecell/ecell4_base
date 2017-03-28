@@ -366,3 +366,102 @@ BOOST_AUTO_TEST_CASE(Polygon_distance_connected_by_vertex)
     BOOST_CHECK_CLOSE(dist1_1, ref1, 1e-12);
     BOOST_CHECK_CLOSE(dist1_2, ref1, 1e-12);
 }
+
+BOOST_AUTO_TEST_CASE(Polygon_developped_direction_same_face)
+{
+    const polygon_type poly = make_cube();
+    typedef polygon_type::face_id_type face_id_type;
+
+    const Real3 dir1 = poly.developed_direction(
+            std::make_pair(Real3(0.5, 0.1, 0.), face_id_type(0)),
+            std::make_pair(Real3(0.1, 0.5, 0.), face_id_type(0)));
+    const Real dist1 = poly.distance(
+            std::make_pair(Real3(0.5, 0.1, 0.), face_id_type(0)),
+            std::make_pair(Real3(0.1, 0.5, 0.), face_id_type(0)));
+//     const std::pair<std::pair<Real3, face_id_type>, Real3>
+//         next = poly.move_next_face(
+//                 std::make_pair(Real3(0.5, 0.1, 0.), face_id_type(0)), dir1);
+    BOOST_CHECK_CLOSE(dist1, length(dir1), 1e-12);
+//     BOOST_CHECK_EQUAL(next.first.second, face_id_type(0));
+//     BOOST_CHECK_SMALL(length(next.second), 1e-12);
+//     BOOST_CHECK_SMALL(length(next.first.first - Real3(0.1, 0.5, 0.)), 1e-12);
+
+    const Real3 dir2 = poly.developed_direction(
+            std::make_pair(Real3(0.5, 0.0, 0.), face_id_type(0)),
+            std::make_pair(Real3(0.0, 0.5, 0.), face_id_type(0)));
+    const Real dist2 = poly.distance(
+            std::make_pair(Real3(0.5, 0.0, 0.), face_id_type(0)),
+            std::make_pair(Real3(0.0, 0.5, 0.), face_id_type(0)));
+    BOOST_CHECK_CLOSE(dist2, length(dir2), 1e-12);
+
+    const Real3 dir3 = poly.developed_direction(
+            std::make_pair(Real3(1.0, 0.0, 0.), face_id_type(0)),
+            std::make_pair(Real3(0.0, 1.0, 0.), face_id_type(0)));
+    const Real dist3 = poly.distance(
+            std::make_pair(Real3(1.0, 0.0, 0.), face_id_type(0)),
+            std::make_pair(Real3(0.0, 1.0, 0.), face_id_type(0)));
+    BOOST_CHECK_CLOSE(dist3, length(dir3), 1e-12);
+}
+
+
+BOOST_AUTO_TEST_CASE(Polygon_developped_direction_connected_by_edge)
+{
+    const polygon_type poly = make_cube();
+    typedef polygon_type::face_id_type face_id_type;
+
+    const Real3 dir1_1 = poly.developed_direction(
+            std::make_pair(Real3(0.3, 0.3, 0.), face_id_type(0)),
+            std::make_pair(Real3(0.7, 0.7, 0.), face_id_type(1)));
+    const Real dist1_1 = poly.distance(
+            std::make_pair(Real3(0.3, 0.3, 0.), face_id_type(0)),
+            std::make_pair(Real3(0.7, 0.7, 0.), face_id_type(1)));
+    BOOST_CHECK_CLOSE(dist1_1, length(dir1_1), 1e-12);
+
+    const Real3 dir1_2 = poly.developed_direction(
+            std::make_pair(Real3(0.7, 0.7, 0.), face_id_type(1)),
+            std::make_pair(Real3(0.3, 0.3, 0.), face_id_type(0)));
+    const Real dist1_2 = poly.distance(
+            std::make_pair(Real3(0.7, 0.7, 0.), face_id_type(1)),
+            std::make_pair(Real3(0.3, 0.3, 0.), face_id_type(0)));
+    BOOST_CHECK_CLOSE(dist1_2, length(dir1_2), 1e-12);
+
+
+    const Real3 dir2_1 = poly.developed_direction(
+            std::make_pair(Real3(0.3, 0.3, 0.), face_id_type(0)),
+            std::make_pair(Real3(0.3, 0.0, -0.3), face_id_type(7)));
+    const Real dist2_1 = poly.distance(
+            std::make_pair(Real3(0.3, 0.3, 0.), face_id_type(0)),
+            std::make_pair(Real3(0.3, 0.0, -0.3), face_id_type(7)));
+    BOOST_CHECK_CLOSE(dist2_1, length(dir2_1), 1e-12);
+
+    const Real3 dir2_2 = poly.developed_direction(
+            std::make_pair(Real3(0.3, 0.0, -0.3), face_id_type(7)),
+            std::make_pair(Real3(0.3, 0.3, 0.), face_id_type(0)));
+    const Real dist2_2 = poly.distance(
+            std::make_pair(Real3(0.3, 0.0, -0.3), face_id_type(7)),
+            std::make_pair(Real3(0.3, 0.3, 0.), face_id_type(0)));
+    const Real ref2 = 0.6;
+    BOOST_CHECK_CLOSE(dist2_2, length(dir2_2), 1e-12);
+}
+
+BOOST_AUTO_TEST_CASE(Polygon_developped_direction_connected_by_vertex)
+{
+    const polygon_type poly = make_cube();
+    typedef polygon_type::face_id_type face_id_type;
+
+    const Real3 dir1_1 = poly.developed_direction(
+            std::make_pair(Real3(0.3, 0.3,  0.0), face_id_type(0)),
+            std::make_pair(Real3(1.0, 0.3, -0.7), face_id_type(10)));
+    const Real dist1_1 = poly.distance(
+            std::make_pair(Real3(0.3, 0.3,  0.0), face_id_type(0)),
+            std::make_pair(Real3(1.0, 0.3, -0.7), face_id_type(10)));
+    BOOST_CHECK_CLOSE(dist1_1, length(dir1_1), 1e-12);
+
+    const Real3 dir1_2 = poly.developed_direction(
+            std::make_pair(Real3(1.0, 0.3, -0.7), face_id_type(10)),
+            std::make_pair(Real3(0.3, 0.3,  0.0), face_id_type(0)));
+    const Real dist1_2 = poly.distance(
+            std::make_pair(Real3(1.0, 0.3, -0.7), face_id_type(10)),
+            std::make_pair(Real3(0.3, 0.3,  0.0), face_id_type(0)));
+    BOOST_CHECK_CLOSE(dist1_2, length(dir1_2), 1e-12);
+}

@@ -518,10 +518,88 @@ Real Polygon<T>::distance(const std::pair<Real3, face_id_type>& lhs,
 
 template<typename T>
 Real3 Polygon<T>::developed_direction(
-        const std::pair<Real3, face_id_type>& from,
-        const std::pair<Real3, face_id_type>& to) const
+        const std::pair<Real3, face_id_type>& lhs,
+        const std::pair<Real3, face_id_type>& rhs) const
 {
-    throw NotImplemented("ecell4::Polygon::developed_direction");
+    if(lhs.second == rhs.second)
+        return rhs.first - lhs.first;
+
+    const std::pair<bool, edge_id_type> edg =
+        this->is_connected_by_edge(lhs.second, rhs.second);
+    if(edg.first)
+    {
+        const local_idx_type      lidx = get_local_index(edg.second);
+        const edge_property_type& edge = edge_prop_at(edg.second);
+        const triangle_type&     lhs_t = this->triangle_at(lhs.second);
+
+        const Real3 developped = lhs_t.vertex_at(lidx) +
+            rotate(-1. * edge.tilt_angle,
+                   lhs_t.edge_at(lidx),
+                   rhs.first - lhs_t.vertex_at(lidx));
+        return lhs.first - developped;
+    }
+
+    const std::pair<bool, vertex_id_type> vtx =
+        this->is_connected_by_vertex(lhs.second, rhs.second);
+
+    if(vtx.first)
+    {
+        const local_idx_type    lidx = get_local_index(vtx.second);
+        const Real3     vtx_position = triangle_at(lhs.second).vertex_at(lidx);
+        const Real3       lhs_to_vtx = vtx_position - lhs.first;
+        const Real3       vtx_to_rhs = rhs.first - vtx_position;
+        const Real3           normal = triangle_at(lhs.second).normal();
+        const Real  lhs_to_vtx_lensq = length_sq(lhs_to_vtx);
+        const Real  rhs_to_vtx_lensq = length_sq(vtx_to_rhs);
+        const Real        apex_angle = vertex_prop_at(vtx.second).apex_angle;
+
+        Real inter_angle = angle(lhs_to_vtx, triangle_at(lhs.second).edge_at(
+                           (lidx == 0) ? 2 : lidx-1));
+
+        // XXX: order of face idx
+        const std::vector<std::pair<std::size_t, std::size_t> >& faces_vtx =
+            vertex_prop_at(vtx.second).faces;
+        const std::vector<std::pair<std::size_t, std::size_t> >::const_iterator
+            lhs_iter = std::find_if(faces_vtx.begin(), faces_vtx.end(),
+                    utils::pair_first_element_unary_predicator<
+                        std::size_t, std::size_t>(lhs.second));
+        bool round = false;
+        std::vector<std::pair<std::size_t, std::size_t> >::const_iterator
+            iter = lhs_iter+1;
+        if(iter == faces_vtx.end())
+        {
+            iter  = faces_vtx.begin();
+            round = true;
+        }
+
+        while(true)
+        {
+            const face_id_type fid(iter->first);
+            const triangle_type& f = triangles_.at(fid);
+            if(fid == rhs.second)
+            {
+                inter_angle += angle(vtx_to_rhs, f.edge_at(iter->second));
+                break;
+            }
+            inter_angle += f.angle_at(iter->second);
+
+            ++iter;
+            if(iter == faces_vtx.end())
+            {
+                if(round)
+                    throw std::logic_error("Polygon::distance: rhs not found");
+                iter  = faces_vtx.begin();
+                round = true;
+            }
+        }
+        assert(inter_angle <= apex_angle);
+
+        const Real min_angle = std::min(inter_angle, apex_angle - inter_angle);
+        return lhs_to_vtx + rotate(min_angle, normal, lhs_to_vtx * (-1.0)) *
+                         std::sqrt(rhs_to_vtx_lensq / lhs_to_vtx_lensq);
+    }
+    throw NotSupported("Polygon::inter_position_vector couldn't determine the path");
+
 }
 
 template<typename T>
