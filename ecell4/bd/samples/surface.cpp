@@ -7,6 +7,8 @@
 #include <ecell4/core/Species.hpp>
 #include <ecell4/core/Real3.hpp>
 #include <ecell4/core/NetworkModel.hpp>
+#include <ecell4/core/STLFileReader.hpp>
+#include <ecell4/core/STLPolygonAdapter.hpp>
 
 #include <ecell4/bd/BDPolygon.hpp>
 #include <ecell4/bd/BDSimulator.hpp>
@@ -36,11 +38,34 @@ void print_particle_position(const BDWorld& world)
  */
 int main(int argc, char** argv)
 {
+    if(argc != 3)
+    {
+        std::cerr << "usage: " << argv[0] << " -stl=[bin|asc] [filename.stl]" << std::endl;
+        return 1;
+    }
+
     /// simulation parameters
     const Real L(1e-6);
     std::string D("5e0"), radius("1e-1");
     const Real3 edge_lengths(L, L, L);
     const Integer3 matrix_sizes(3, 3, 3);
+
+    std::string stltype(argv[1]);
+    if(stltype.size() != 8)
+    {
+        std::cerr << "usage: " << argv[0] << " -stl=[bin|asc] [filename.stl]" << std::endl;
+        return 1;
+    }
+    StlFileReader::FileType ft;
+    if(stltype.substr(5, 3) == "asc")
+        ft = StlFileReader::Ascii;
+    else if(stltype.substr(5, 3) == "bin")
+        ft = StlFileReader::Binary;
+    else
+    {
+        std::cerr << "usage: " << argv[0] << " -stl=[bin|asc] [filename.stl]" << std::endl;
+        return 1;
+    }
 
     /// instantiate NetworkModel
     boost::shared_ptr<NetworkModel> model(new NetworkModel());
@@ -79,53 +104,16 @@ int main(int argc, char** argv)
     world->bind_to(model);
 
     // create polygon
-    std::ifstream poly("polygon.xyz");
-    if(!poly.good())
-    {
-        std::cout << "file open error" << std::endl;
-        return 1;
-    }
 
-    std::cerr << "begin reading polygon.xyz";
-    BDPolygon polygon;
-    std::size_t num_faces=0;
-    while(!poly.eof())
-    {
-        std::string line;
-        Real3 v1, v2, v3;
-        {
-            Real x, y, z;
-            std::getline(poly, line);
-            std::istringstream iss(line);
-            iss >> x >> y >> z;
-            v1 = Real3(x, y, z);
-        }
-        {
-            Real x, y, z;
-            std::getline(poly, line);
-            std::istringstream iss(line);
-            iss >> x >> y >> z;
-            v2 = Real3(x, y, z);
-        }
-        {
-            Real x, y, z;
-            std::getline(poly, line);
-            std::istringstream iss(line);
-            iss >> x >> y >> z;
-            v3 = Real3(x, y, z);
-        }
+    const std::string fname(argv[2]);
+    StlFileReader reader;
+    const std::vector<StlTriangle> stl_data = reader.read(fname, ft);
 
-        Triangle f(v1, v2, v3);
-        polygon.add_face(f);
-        poly.peek();
-    }
-    std::cerr << "... end!" << std::endl;
+    STLPolygonAdapter<polygon_traits> adapter;
+    boost::shared_ptr<BDPolygon> polygon = adapter.make_polygon(stl_data);
+    world->set_polygon(*polygon);
 
-    std::cerr << "begin polygon initialization";
-    world->set_polygon(polygon);
-    std::cerr << "... end!" << std::endl;
-
-    const std::size_t fid=0;
+    const BDPolygon::face_id_type fid(0);
     Triangle f = world->get_face(fid);
     const Real3 initial = (f.vertex_at(0) + f.vertex_at(1) + f.vertex_at(2)) / 3.;
     std::cerr << "initial position = " << initial << std::endl;
