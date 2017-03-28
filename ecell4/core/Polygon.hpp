@@ -345,15 +345,13 @@ Polygon<T>::connect_vertices(const std::vector<vertex_id_type>& vtxs,
 template<typename T>
 std::pair<bool, typename Polygon<T>::edge_id_type>
 Polygon<T>::is_connected_by_edge(
-        const face_id_type& lhs, const face_id_type& rhs) const
+        const face_id_type& fid1, const face_id_type& fid2) const
 {
-    const face_id_type fid1 = get_face_id(lhs);
-    const face_id_type fid2 = get_face_id(rhs);
-
     const face_property_type& fp = this->faces_.at(fid1);
     for(std::size_t i=0; i<3; ++i)
     {
-        const std::pair<std::size_t, std::size_t>& fs =
+        const std::pair<std::pair<std::size_t, std::size_t>,
+                  std::pair<std::size_t, std::size_t> >& fs =
             this->edges_.at(fp.edges[i]).faces;
 
         if(get_face_id(fs.first) == fid2 || get_face_id(fs.second) == fid2)
@@ -366,11 +364,8 @@ Polygon<T>::is_connected_by_edge(
 template<typename T>
 std::pair<bool, typename Polygon<T>::vertex_id_type>
 Polygon<T>::is_connected_by_vertex(
-        const face_id_type& lhs, const face_id_type& rhs) const
+        const face_id_type& fid1, const face_id_type& fid2) const
 {
-    const face_id_type fid1 = get_face_id(lhs);
-    const face_id_type fid2 = get_face_id(rhs);
-
     const face_property_type& fp = this->faces_.at(fid1);
     for(std::size_t i=0; i<3; ++i)
     {
