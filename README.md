@@ -40,7 +40,7 @@ Installation
 
 - Python (2.7 and 3.4, 3.5, 3.6 both major versions are supported [3.4 is supported only on Linux, Mac does not support 3.4 and 3.5])
 - pip (8.1 or later)
-- hdf5 (required only on **Windows**.)
+- HDF5 (1.8.17, required only on **Windows**.)
 
 #### Optional requirements
 
@@ -60,14 +60,17 @@ We recommend that you install [Miniconda](http://conda.pydata.org/miniconda.html
 - Run the following commands on command prompt
 
     ```shell
-    conda install hdf5 matplotlib notebook
+    conda install hdf5=1.8.17
+    conda install matplotlib notebook
     pip install ecell
     ```
 
-- (**Important**) E-Cell4 for Windows needs the latest `hdf5`. If there's any problem, please update the version of hdf5.
+- (**Important**) E-Cell4 for Windows needs `HDF5` version **1.8.17**. If there's any problem, please run the following commands.
 
     ```shell
-    conda update hdf5
+    conda uninstall hdf5
+    conda clean -a
+    conda install hdf5=1.8.17
     ```
 
 If you use animated visualization with E-Cell4, please install [ffmpeg windows build](http://ffmpeg.zeranoe.com/builds/) and add its path to your **USER** PATH enviromental variable.
