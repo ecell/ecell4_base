@@ -29,12 +29,16 @@ struct index_generator
     std::size_t current;
 };
 
+// emulate std::map::iterator
 template<typename T>
 struct identity_iterator
 {
-    identity_iterator(T v): val(v){}
-    T operator*() const {return val;}
-    T val;
+    typedef std::pair<T, T> value_type;
+
+    identity_iterator(T v): val(std::make_pair(v, v)){}
+    value_type  operator*()  const {return val;}
+    value_type* operator->() const {return const_cast<value_type*>(&val);}
+    value_type val;
 };
 
 template<typename T>
@@ -83,11 +87,6 @@ struct test_polygon_traits
     typedef identity_mapper<edge_id_type>   edge_id_idx_map_type;
     typedef identity_mapper<vertex_id_type> vertex_id_idx_map_type;
 
-    template<typename Tid>
-    static inline Tid to_id(std::size_t idx)
-    {
-        return Tid(idx);
-    }
     template<typename Tid>
     static inline Tid un_initialized()
     {

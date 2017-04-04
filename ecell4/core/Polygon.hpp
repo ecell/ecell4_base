@@ -172,7 +172,7 @@ class Polygon : public Shape
             face_id_idx_map.find(id);
         if(result == face_id_idx_map.end())
             throw std::out_of_range("Polygon::to_index(face_id_type)");
-        return *result;
+        return result->second;
     }
     index_type to_index(const edge_id_type& id) const
     {
@@ -180,7 +180,7 @@ class Polygon : public Shape
             edge_id_idx_map.find(id);
         if(result == edge_id_idx_map.end())
             throw std::out_of_range("Polygon::to_index(edge_id_type)");
-        return *result;
+        return result->second;
     }
     index_type to_index(const vertex_id_type& id) const
     {
@@ -188,7 +188,7 @@ class Polygon : public Shape
             vertex_id_idx_map.find(id);
         if(result == vertex_id_idx_map.end())
             throw std::out_of_range("Polygon::to_index(vertex_id_type)");
-        return *result;
+        return result->second;
     }
 
     template<typename Tid>
