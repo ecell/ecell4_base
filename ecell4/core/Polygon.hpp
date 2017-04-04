@@ -24,50 +24,35 @@ class Polygon : public Shape
     template<typename faceT>   struct face_property;
 
   public:
+
+    // types and informations
     typedef T_traits traits_type;
     typedef typename traits_type::index_type        index_type;
     typedef typename traits_type::triangle_type     triangle_type;
     typedef typename traits_type::face_id_type      face_id_type;
-    typedef typename traits_type::local_idx_type    local_idx_type;
     typedef typename traits_type::vertex_id_type    vertex_id_type;
     typedef typename traits_type::edge_id_type      edge_id_type;
     typedef typename traits_type::vertex_descripter vertex_descripter;
     typedef typename traits_type::edge_descripter   edge_descripter;
     typedef typename traits_type::face_descripter   face_descripter;
+
+    // id <==> idx conversion
+    typedef typename traits_type::face_id_idx_map_type     face_id_idx_map_type;
+    typedef typename traits_type::edge_id_idx_map_type     edge_id_idx_map_type;
+    typedef typename traits_type::vertex_id_idx_map_type   vertex_id_idx_map_type;
+    typedef typename traits_type::face_id_generator_type   face_id_generator_type;
+    typedef typename traits_type::edge_id_generator_type   edge_id_generator_type;
+    typedef typename traits_type::vertex_id_generator_type vertex_id_generator_type;
+
+    typedef std::pair<face_id_type, index_type>       local_index_type;
+    typedef Barycentric<Real>                         barycentric_type;
+
     typedef vertex_property<vertex_descripter> vertex_property_type;
     typedef edge_property<edge_descripter>     edge_property_type;
     typedef face_property<face_descripter>     face_property_type;
-    typedef Barycentric<Real>                 barycentric_type;
-    typedef std::vector<vertex_property_type> vertex_container_type;
-    typedef std::vector<edge_property_type>   edge_container_type;
-    typedef std::vector<face_property_type>   face_container_type;
-    typedef std::vector<triangle_type>   triangle_container_type;
-
-    static inline vertex_id_type
-    make_vid(const face_id_type& fid, const local_idx_type& lidx)
-    {
-        return traits_type::make_vid(fid, lidx);
-    }
-
-    static inline edge_id_type
-    make_eid(const face_id_type& fid, const local_idx_type& lidx)
-    {
-        return traits_type::make_eid(fid, lidx);
-    }
-
-    template<typename T>
-    static inline face_id_type
-    get_face_id(const T& id)
-    {
-        return traits_type::template get_face_id<T>(id);
-    }
-
-    template<typename T>
-    static inline local_idx_type
-    get_local_index(const T& id)
-    {
-        return traits_type::template get_local_index<T>(id);
-    }
+    typedef std::vector<vertex_property_type>  vertex_container_type;
+    typedef std::vector<edge_property_type>    edge_container_type;
+    typedef std::vector<face_property_type>    face_container_type;
 
   public:
 
@@ -75,32 +60,37 @@ class Polygon : public Shape
     ~Polygon(){}
 
     /* set connection --------------------------------------------------------*/
-    index_type add_face(const triangle_type& tri);
-    index_type add_face(const triangle_type& tri, const face_descripter& face);
+    face_id_type add_face(const triangle_type& tri);
+    face_id_type add_face(const triangle_type& tri, const face_descripter& face);
 
-    index_type connect_edges(const edge_id_type&, const edge_id_type&);
-    index_type connect_edges(const edge_id_type&, const edge_id_type&,
-                             const edge_descripter&);
+    edge_id_type connect_edges(const local_index_type&, const local_index_type&);
+    edge_id_type connect_edges(const local_index_type&, const local_index_type&,
+                               const edge_descripter&);
 
-    index_type connect_vertices(const std::vector<vertex_id_type>&);
-    index_type connect_vertices(const std::vector<vertex_id_type>&,
-                                const vertex_descripter&);
+    vertex_id_type connect_vertices(const std::vector<local_index_type>&);
+    vertex_id_type connect_vertices(const std::vector<local_index_type>&,
+                                    const vertex_descripter&);
 
     /* get connecting information --------------------------------------------*/
     std::pair<bool, edge_id_type>
-    is_connected_by_edge(const face_id_type& from, const face_id_type& to) const;
-
+    is_connected_by_edge(const face_id_type&, const face_id_type&) const;
     std::pair<bool, vertex_id_type>
-    is_connected_by_vertex(const face_id_type& from, const face_id_type& to) const;
+    is_connected_by_vertex(const face_id_type&, const face_id_type&) const;
 
     std::vector<face_id_type> const&
     neighbor_faces(const face_id_type& fid) const;
-
     boost::array<face_id_type, 3> const&
-    connecting_faces(const face_id_type& fid) const;
+    adjacent_faces(const face_id_type& fid) const;
 
-    edge_id_type
-    connecting_edge(const edge_id_type& eid) const;
+    std::pair<face_id_type, face_id_type> const&
+    connecting_faces_by_edge(const edge_id_type& eid) const;
+    std::pair<vertex_id_type, vertex_id_type> const&
+    connecting_vertices_by_edge(const edge_id_type& eid) const;
+
+    std::vector<face_id_type> const&
+    connecting_faces_by_vertex(const vertex_id_type& vidx) const;
+    std::vector<edge_id_type> const&
+    connecting_edges_by_vertex(const vertex_id_type& vidx) const;
 
     /* geometric functions ---------------------------------------------------*/
     Real distance_sq(const std::pair<Real3, face_id_type>& lhs,
@@ -111,11 +101,13 @@ class Polygon : public Shape
     developed_direction(const std::pair<Real3, face_id_type>& from,
                         const std::pair<Real3, face_id_type>& to) const;
 
-    std::pair<std::vector<vertex_id_type>, std::pair<vertex_id_type, Real> >
+    std::pair<std::vector<std::pair<vertex_id_type, Real> >,
+              std::pair<vertex_id_type, Real> >
     list_vertices_within_radius(const std::pair<Real3, face_id_type>& pos,
                                 const Real radius);
 
-    std::pair<std::vector<vertex_id_type>, std::pair<vertex_id_type, Real> >
+    std::pair<std::vector<std::pair<face_id_type, Real> >,
+              std::pair<face_id_type, Real> >
     list_faces_within_radius(const Real3& pos, const Real radius);
 
     /* dynamics functions ----------------------------------------------------*/
@@ -128,7 +120,7 @@ class Polygon : public Shape
         const vertex_id_type& apex, const Real r, const Real angle) const;
 
     /* member access ---------------------------------------------------------*/
-    std::size_t num_triangles() const {return triangles_.size();}
+    std::size_t num_triangles() const {return faces_.size();}
     std::size_t num_faces()     const {return faces_.size();}
     std::size_t num_edges()     const {return edges_.size();}
     std::size_t num_vertices()  const {return vertices_.size();}
@@ -142,8 +134,11 @@ class Polygon : public Shape
     edge_descripter&         edge_at(const edge_id_type& i);
     edge_descripter const&   edge_at(const edge_id_type& i) const;
 
+    edge_id_type   get_edge_id(const local_index_type idx) const;
+    vertex_id_type get_vertex_id(const local_index_type idx) const;
+
     /* required by shape -----------------------------------------------------*/
-    dimension_kind dimension() const {return THREE;}
+    dimension_kind dimension() const {return THREE;} // TWO?
 
     Real is_inside(const Real3& coord) const;
 
@@ -165,49 +160,78 @@ class Polygon : public Shape
 
   private:
 
-    static const std::size_t un_initialized;
+    // Identifier <=> idx
+    // XXX: if static + template, there can exist only one Polygon instance.
+    face_id_type   generate_face_id()   {return this->face_id_generator();}
+    edge_id_type   generate_edge_id()   {return this->edge_id_generator();}
+    vertex_id_type generate_vertex_id() {return this->vertex_id_generator();}
+
+    // TODO!
+    template<typename Tid>
+    static inline index_type to_index(const Tid& id)
+    {
+        return traits_type::template to_index<Tid>(id);
+    }
+
+    template<typename Tid>
+    static inline Tid to_id(const index_type idx)
+    {
+        return traits_type::template to_id<Tid>(idx);
+    }
+
+    template<typename Tid>
+    static inline Tid un_initialized()
+    {
+        return traits_type::template un_initialized<Tid>();
+    }
+
+  private:
 
     template<typename vertexT>
     struct vertex_property
     {
-        vertexT vertex; // additional information for vertex
+        vertex_id_type id;
+        vertexT vertex;
         Real apex_angle;
-        std::vector<std::size_t> edges; // idx of this->edges_
-        // pairof (idx of this->faces_, local idx of this->faces_->vertices)
-        std::vector<std::pair<std::size_t, std::size_t> > faces;
+        std::vector<edge_id_type> edges;
+        std::vector<face_id_type> faces;
+        std::vector<index_type>   local_indices; //XXX: faces.vertex_at(this);
     };
 
     template<typename edgeT>
     struct edge_property
     {
-        edgeT edge; // additional information for edge
+        edge_id_type id;
+        edgeT edge;
         Real tilt_angle;
-        std::pair<std::size_t, std::size_t> vertices;// idx of this->vertices_
-        // pairof (idx of this->faces_, local idx of this->faces_->vertices)
-        std::pair<std::pair<std::size_t, std::size_t>,
-                  std::pair<std::size_t, std::size_t> > faces;
+        std::pair<vertex_id_type, vertex_id_type> vertices;
+        std::pair<face_id_type,   face_id_type>   faces;
+        std::pair<index_type,     index_type>     local_indices;
     };
 
     template<typename faceT>
     struct face_property
     {
-        faceT      face; // additional information for face
-        index_type triangle_index;               // idx of this->triangles_
-        boost::array<std::size_t, 3>  vertices;  // idx of this->vertices_
-        boost::array<std::size_t, 3>  edges;     // idx of this->edges_
-        boost::array<face_id_type, 3> faces;     // idx of this->faces_
-        std::vector<face_id_type>     neighbors; // idx of this->faces_
+        face_id_type  id;
+        faceT         face;     // additional information for face
+        triangle_type triangle; // geometric  information
+        boost::array<vertex_id_type, 3> vertices;
+        boost::array<edge_id_type, 3>   edges;
+        boost::array<face_id_type, 3>   adjacents; // connected by edge
+        std::vector<face_id_type>       neighbors; // connected by edge or vertex
     };
 
-    triangle_container_type triangles_;
-    vertex_container_type   vertices_;
-    edge_container_type     edges_;
-    face_container_type     faces_;
-};
+    face_id_idx_map_type     face_id_idx_map;
+    vertex_id_idx_map_type   vertex_id_idx_map;
+    edge_id_idx_map_type     edge_id_idx_map;
+    face_id_generator_type   face_id_generator;
+    vertex_id_generator_type vertex_id_generator;
+    edge_id_generator_type   edge_id_generator;
 
-template<typename T>
-const std::size_t
-Polygon<T>::un_initialized = std::numeric_limits<std::size_t>::max();
+    vertex_container_type vertices_;
+    edge_container_type   edges_;
+    face_container_type   faces_;
+};
 
 template<typename T>
 inline Real
@@ -237,136 +261,159 @@ Polygon<T>::bounding_box(const Real3& edge_lengths, Real3& l, Real3& u) const
     throw NotImplemented("ecell4::Polygon::bounding_box");
 }
 
+/* set connection ------------------------------------------------------------*/
+
 template<typename T>
-typename Polygon<T>::index_type
-Polygon<T>::add_face(const triangle_type& face)
+typename Polygon<T>::face_id_type
+Polygon<T>::add_face(const triangle_type& triangle)
 {
-    const index_type idx = this->triangles_.size();
-    assert(idx == this->faces_.size());
-    this->triangles_.push_back(face);
+    const face_id_type fid = generate_face_id();
+
+    const index_type idx = this->faces_.size();
+    this->face_id_idx_map[fid] = idx;
 
     face_property_type fp;
-    fp.triangle_index = idx;
-    fp.vertices.fill(un_initialized);
-    fp.edges.fill(un_initialized);
-    fp.faces.fill(face_id_type(un_initialized));
+    fp.id = fid;
+    fp.triangle = triangle;
+    fp.vertices.fill(un_initialized<vertex_id_type>());
+    fp.edges.fill(un_initialized<edge_id_type>());
+    fp.adjacents.fill(un_initialized<face_id_type>());
     this->faces_.push_back(fp);
 
-    return idx;
+    return fid;
 }
 
 template<typename T>
-typename Polygon<T>::index_type
+typename Polygon<T>::face_id_type
 Polygon<T>::add_face(const triangle_type& tri, const face_descripter& face)
 {
-    const index_type idx = this->add_face(tri);
-    this->faces_.at(idx).face = face;
-    return idx;
+    const face_id_type fid = this->add_face(tri);
+    this->face_at(fid) = face;
+    return fid;
 }
 
 template<typename T>
-typename Polygon<T>::index_type
-Polygon<T>::connect_edges(const edge_id_type& lhs, const edge_id_type& rhs)
+typename Polygon<T>::edge_id_type
+Polygon<T>::connect_edges(const local_index_type& lhs, const local_index_type& rhs)
 {
+    const edge_id_type eid  = generate_edge_id();
+
     const index_type idx = this->edges_.size();
-    const face_id_type fid1 = get_face_id(lhs);
-    const face_id_type fid2 = get_face_id(rhs);
+    this->edge_id_idx_map[eid] = idx;
+
+    const face_id_type fid1 = lhs.first;
+    const face_id_type fid2 = rhs.first;
 
     edge_property_type ep;
-    ep.faces.first  = std::make_pair(fid1, get_local_index(lhs));
-    ep.faces.second = std::make_pair(fid2, get_local_index(rhs));
-    ep.vertices.first  = un_initialized;
-    ep.vertices.second = un_initialized;
-    ep.tilt_angle = angle(triangle_at(fid1).normal(), triangle_at(fid2).normal());
+    ep.id            = eid;
+    ep.faces         = std::make_pair(fid1, fid2);
+    ep.local_indices = std::make_pair(lhs.second, rhs.second);
+    ep.vertices      = std::make_pair(un_initialized<vertex_id_type>(),
+                                      un_initialized<vertex_id_type>());
+    ep.tilt_angle    = angle(this->triangle_at(fid1).normal(),
+                             this->triangle_at(fid2).normal());
     this->edges_.push_back(ep);
 
     //XXX update faces
-    this->faces_.at(fid1).edges.at(get_local_index(lhs)) = idx;
-    this->faces_.at(fid2).edges.at(get_local_index(rhs)) = idx;
+    this->face_prop_at(fid1).edges.at(lhs.second) = eid;
+    this->face_prop_at(fid2).edges.at(rhs.second) = eid;
+    this->face_prop_at(fid1).adjacents.at(lhs.second) = fid2;
+    this->face_prop_at(fid2).adjacents.at(rhs.second) = fid1;
 
-    this->faces_.at(fid1).faces.at(get_local_index(lhs)) = fid2;
-    this->faces_.at(fid2).faces.at(get_local_index(rhs)) = fid1;
-
-    return idx;
+    return eid;
 }
 
 template<typename T>
-typename Polygon<T>::index_type
-Polygon<T>::connect_edges(const edge_id_type& lhs, const edge_id_type& rhs,
-                          const edge_descripter& edge)
+typename Polygon<T>::edge_id_type
+Polygon<T>::connect_edges(const local_index_type& lhs,
+        const local_index_type& rhs, const edge_descripter& edge)
 {
-    const index_type idx = this->connect_edges(lhs, rhs);
-    this->edges_.at(idx).edge = edge;
-    return idx;
+    const edge_id_type eid = this->connect_edges(lhs, rhs);
+    this->edge_at(eid) = edge;
+    return eid;
 }
 
 template<typename T>
-typename Polygon<T>::index_type
-Polygon<T>::connect_vertices(const std::vector<vertex_id_type>& vtxs)
+typename Polygon<T>::vertex_id_type
+Polygon<T>::connect_vertices(const std::vector<local_index_type>& vtxs)
 {
+    const vertex_id_type vid = generate_vertex_id();
     const index_type idx = this->vertices_.size();
+    this->vertex_id_idx_map[vid] = idx;
+
     vertex_property_type vp;
+    vp.id = vid;
     vp.faces.reserve(vtxs.size());
     vp.edges.reserve(vtxs.size());
+    vp.local_indices.reserve(vtxs.size());
     vp.apex_angle = 0.;
 
-    for(typename std::vector<vertex_id_type>::const_iterator
+    for(typename std::vector<local_index_type>::const_iterator
         iter = vtxs.begin(); iter != vtxs.end(); ++iter)
     {
-        const face_id_type   fid  = get_face_id(*iter);
-        const local_idx_type lidx = get_local_index(*iter);
-        const index_type     eidx = this->faces_.at(fid).edges.at(lidx);
-        if(eidx == un_initialized)
+        const face_id_type fid  = iter->first;
+        const index_type   lidx = iter->second;
+        const edge_id_type   eid = this->face_prop_at(fid).edges.at(lidx);
+        if(eid == un_initialized<edge_id_type>())
             throw std::logic_error("edge connection is not specified");
 
-        vp.faces.push_back(std::make_pair(fid, lidx));
-        vp.edges.push_back(eidx);
+        vp.faces.push_back(fid);
+        vp.local_indices.push_back(lidx);
+        vp.edges.push_back(eid);
         vp.apex_angle += this->triangle_at(fid).angle_at(lidx);
 
         // XXX: update faces
-        this->faces_.at(fid).vertices.at(lidx) = idx;
+        this->face_prop_at(fid).vertices.at(lidx) = vid;
 
         // XXX: update edges
-        if(this->edges_.at(eidx).vertices.first == un_initialized)
-            this->edges_.at(eidx).vertices.first = idx;
-        else if(this->edges_.at(eidx).vertices.second == un_initialized)
-            this->edges_.at(eidx).vertices.second = idx;
+        if(this->edge_prop_at(eid).vertices.first ==
+           un_initialized<vertex_id_type>())
+        {
+            this->edge_prop_at(eid).vertices.first = vid;
+        }
+        else if(this->edge_prop_at(eid).vertices.second ==
+                un_initialized<vertex_id_type>())
+        {
+            this->edge_prop_at(eid).vertices.second = vid;
+        }
         else
+        {
             throw std::invalid_argument(
                     "edges that connects to the vertex is already filled");
+        }
     }
     this->vertices_.push_back(vp);
 
-    return idx;
+    return vid;
 }
 
 template<typename T>
-typename Polygon<T>::index_type
-Polygon<T>::connect_vertices(const std::vector<vertex_id_type>& vtxs,
+typename Polygon<T>::vertex_id_type
+Polygon<T>::connect_vertices(const std::vector<local_index_type>& vtxs,
                              const vertex_descripter& vertex)
 {
-    const index_type idx = this->connect_vertices(vtxs);
-    this->vertices_.at(idx).vertex = vertex;
-    return idx;
+    const vertex_id_type vid = this->connect_vertices(vtxs);
+    this->vertex_at(vid) = vertex;
+    return vid;
 }
+
+/* get connecting information ------------------------------------------------*/
 
 template<typename T>
 std::pair<bool, typename Polygon<T>::edge_id_type>
 Polygon<T>::is_connected_by_edge(
         const face_id_type& fid1, const face_id_type& fid2) const
 {
-    const face_property_type& fp = this->faces_.at(fid1);
+    const face_property_type& fp = this->face_prop_at(fid1);
     for(std::size_t i=0; i<3; ++i)
     {
-        const std::pair<std::pair<std::size_t, std::size_t>,
-                  std::pair<std::size_t, std::size_t> >& fs =
-            this->edges_.at(fp.edges[i]).faces;
+        const std::pair<face_id_type, face_id_type>& fs =
+            this->edge_prop_at(fp.edges[i]).faces;
 
-        if(get_face_id(fs.first) == fid2 || get_face_id(fs.second) == fid2)
-            return std::make_pair(true, make_eid(fid1, local_idx_type(i)));
+        if(fs.first == fid2 || fs.second == fid2)
+            return std::make_pair(true, fp.edges[i]);
     }
-    return std::make_pair(false,
-            make_eid(face_id_type(un_initialized), local_idx_type(3)));
+    return std::make_pair(false, un_initialized<edge_id_type>());
 }
 
 template<typename T>
@@ -374,59 +421,63 @@ std::pair<bool, typename Polygon<T>::vertex_id_type>
 Polygon<T>::is_connected_by_vertex(
         const face_id_type& fid1, const face_id_type& fid2) const
 {
-    const face_property_type& fp = this->faces_.at(fid1);
+    const face_property_type& fp = this->face_prop_at(fid1);
     for(std::size_t i=0; i<3; ++i)
     {
-        const std::vector<std::pair<std::size_t, std::size_t> >& fs =
+        const std::vector<face_id_type>& fs =
             this->vertices_.at(fp.vertices[i]).faces;
 
-        const typename std::vector<std::pair<std::size_t, std::size_t>
-            >::const_iterator result = std::find_if(fs.begin(), fs.end(),
-                utils::pair_first_element_unary_predicator<
-                    std::size_t, std::size_t>(fid2));
-
-        if(result != fs.end())
-            return std::make_pair(true, make_vid(fid1, local_idx_type(i)));
-        else
-            continue;
+        if(std::find(fs.begin(), fs.end(), fid2) != fs.end())
+            return std::make_pair(true, fp.vertices[i]);
     }
-    return std::make_pair(false,
-            make_vid(face_id_type(un_initialized), local_idx_type(3)));
+    return std::make_pair(false, un_initialized<vertex_id_type>());
 }
 
 template<typename T>
 inline std::vector<typename Polygon<T>::face_id_type> const&
 Polygon<T>::neighbor_faces(const face_id_type& fid) const
 {
-    return this->faces_.at(fid).neighbors;
+    return this->face_prop_at(fid).neighbors;
 }
 
 template<typename T>
 inline boost::array<typename Polygon<T>::face_id_type, 3> const&
-Polygon<T>::connecting_faces(const face_id_type& fid) const
+Polygon<T>::adjacent_faces(const face_id_type& fid) const
 {
-    return this->faces_.at(fid).faces;
+    return this->face_prop_at(fid).adjacents;
 }
 
 template<typename T>
-typename Polygon<T>::edge_id_type
-Polygon<T>::connecting_edge(const edge_id_type& eid) const
+inline std::pair<typename Polygon<T>::face_id_type,
+                 typename Polygon<T>::face_id_type> const&
+Polygon<T>::connecting_faces_by_edge(const edge_id_type& eid) const
 {
-    const face_id_type fid = get_face_id(eid);
-    const edge_property_type& ep = this->edges_.at(
-            this->faces_.at(get_face_id(eid)).edges.at(get_local_index(eid))
-            );
-
-    if(face_id_type(ep.faces.first.first) == get_face_id(eid))
-        return make_eid(face_id_type(ep.faces.second.first),
-                      local_idx_type(ep.faces.second.second));
-    else if(face_id_type(ep.faces.second.first) == get_face_id(eid))
-        return make_eid(face_id_type(ep.faces.first.first),
-                      local_idx_type(ep.faces.first.second));
-    else
-        throw std::invalid_argument("no connected edge");
+    return this->edge_prop_at(eid).faces;
 }
 
+template<typename T>
+inline std::pair<typename Polygon<T>::vertex_id_type,
+                 typename Polygon<T>::vertex_id_type> const&
+Polygon<T>::connecting_vertices_by_edge(const edge_id_type& eid) const
+{
+    return this->edge_prop_at(eid).vertices;
+}
+
+template<typename T>
+inline std::vector<typename Polygon<T>::face_id_type> const&
+Polygon<T>::connecting_faces_by_vertex(const vertex_id_type& vid) const
+{
+    return this->vertex_prop_at(vid).faces;
+}
+
+template<typename T>
+inline std::vector<typename Polygon<T>::edge_id_type> const&
+Polygon<T>::connecting_edges_by_vertex(const vertex_id_type& vid) const
+{
+    return this->vertex_prop_at(vid).edges;
+}
+
+/* geometric functions -------------------------------------------------------*/
 
 template<typename T>
 Real Polygon<T>::distance_sq(const std::pair<Real3, face_id_type>& lhs,
@@ -439,65 +490,80 @@ Real Polygon<T>::distance_sq(const std::pair<Real3, face_id_type>& lhs,
         this->is_connected_by_edge(lhs.second, rhs.second);
     if(edg.first)
     {
-        const local_idx_type      lidx = get_local_index(edg.second);
-        const edge_property_type& edge = edge_prop_at(edg.second);
-        const triangle_type&     lhs_t = this->triangle_at(lhs.second);
+        const edge_property_type& edge = this->edge_prop_at(edg.second);
+        index_type lidx = std::numeric_limits<index_type>::max();
+        if(edge.faces.first == lhs.second)
+        {
+            lidx = edge.local_indices.first;
+        }
+        else if(edge.faces.second == lhs.second)
+        {
+            lidx = edge.local_indices.second;
+        }
+        else
+        {
+            throw std::logic_error(
+                    "Polygon::distance_sq: edge is not connected!");
+        }
 
+        const triangle_type&     lhs_t = this->triangle_at(lhs.second);
         const Real3 developped = lhs_t.vertex_at(lidx) +
             rotate(-1. * edge.tilt_angle,
                    lhs_t.edge_at(lidx),
                    rhs.first - lhs_t.vertex_at(lidx));
+
         return length_sq(lhs.first - developped);
     }
 
-    const std::pair<bool, vertex_id_type> vtx =
+    const std::pair<bool, vertex_id_type> is_c_vtx =
         this->is_connected_by_vertex(lhs.second, rhs.second);
 
-    if(vtx.first)
+    if(is_c_vtx.first)
     {
-        const local_idx_type    lidx = get_local_index(vtx.second);
+        const vertex_property_type& vtx = this->vertex_prop_at(is_c_vtx.second);
+        const std::vector<face_id_type>& fs = vtx.faces;
+        const typename std::vector<face_id_type>::const_iterator result =
+            std::find(fs.begin(), fs.end(), lhs.second);
+        index_type idx = std::distance(fs.begin(), result);
+        const index_type lidx = vtx.local_indices.at(idx);
+
         const Real3     vtx_position = triangle_at(lhs.second).vertex_at(lidx);
         const Real3       lhs_to_vtx = vtx_position - lhs.first;
         const Real3       vtx_to_rhs = rhs.first - vtx_position;
         const Real  lhs_to_vtx_lensq = length_sq(lhs_to_vtx);
         const Real  rhs_to_vtx_lensq = length_sq(vtx_to_rhs);
-        const Real        apex_angle = vertex_prop_at(vtx.second).apex_angle;
+        const Real        apex_angle = vertex_prop_at(is_c_vtx.second).apex_angle;
 
         Real inter_angle = angle(lhs_to_vtx, triangle_at(lhs.second).edge_at(
                            (lidx == 0) ? 2 : lidx-1));
 
         // XXX: order of face idx
-        const std::vector<std::pair<std::size_t, std::size_t> >& faces_vtx =
-            vertex_prop_at(vtx.second).faces;
-        std::vector<std::pair<std::size_t, std::size_t> >::const_iterator
-            iter = std::find_if(faces_vtx.begin(), faces_vtx.end(),
-                    utils::pair_first_element_unary_predicator<
-                        std::size_t, std::size_t>(lhs.second));
         bool round = false;
-        ++iter;
-        if(iter == faces_vtx.end())
+        ++idx;
+        if(idx == fs.size())
         {
-            iter  = faces_vtx.begin();
+            idx = 0;
             round = true;
         }
 
         while(true)
         {
-            const face_id_type fid(iter->first);
-            const triangle_type& f = triangles_.at(fid);
+            const face_id_type fid(fs.at(idx));
+            const index_type   lvidx(vtx.local_indices.at(idx));
+            const triangle_type& f = this->triangle_at(fid);
             if(fid == rhs.second)
             {
-                inter_angle += angle(vtx_to_rhs, f.edge_at(iter->second));
+                inter_angle += angle(vtx_to_rhs, f.edge_at(lvidx));
                 break;
             }
-            inter_angle += f.angle_at(iter->second);
+            inter_angle += f.angle_at(lvidx);
 
-            ++iter;
-            if(iter == faces_vtx.end())
+            ++idx;
+            if(idx == fs.size())
             {
                 if(round)
                     throw std::logic_error("Polygon::distance: rhs not found");
-                iter  = faces_vtx.begin();
+                idx = 0;
                 round = true;
             }
         }
@@ -507,6 +573,7 @@ Real Polygon<T>::distance_sq(const std::pair<Real3, face_id_type>& lhs,
         return lhs_to_vtx_lensq + rhs_to_vtx_lensq - 2. *
                std::sqrt(lhs_to_vtx_lensq * rhs_to_vtx_lensq) * std::cos(min_angle);
     }
+
     // lhs and rhs don't share edge nor vertex
     return std::numeric_limits<Real>::infinity();
 }
@@ -530,95 +597,140 @@ Real3 Polygon<T>::developed_direction(
         this->is_connected_by_edge(lhs.second, rhs.second);
     if(edg.first)
     {
-        const local_idx_type      lidx = get_local_index(edg.second);
-        const edge_property_type& edge = edge_prop_at(edg.second);
-        const triangle_type&     lhs_t = this->triangle_at(lhs.second);
+        const edge_property_type& edge = this->edge_prop_at(edg.second);
+        index_type lidx = std::numeric_limits<index_type>::max();
+        if(edge.faces.first == lhs.second)
+        {
+            lidx = edge.local_indices.first;
+        }
+        else if(edge.faces.second == lhs.second)
+        {
+            lidx = edge.local_indices.second;
+        }
+        else
+        {
+            throw std::logic_error(
+                    "Polygon::distance_sq: edge is not connected!");
+        }
 
+        const triangle_type&     lhs_t = this->triangle_at(lhs.second);
         const Real3 developped = lhs_t.vertex_at(lidx) +
             rotate(-1. * edge.tilt_angle,
                    lhs_t.edge_at(lidx),
                    rhs.first - lhs_t.vertex_at(lidx));
+
         return developped - lhs.first;
     }
 
-    const std::pair<bool, vertex_id_type> vtx =
+    const std::pair<bool, vertex_id_type> is_vtx =
         this->is_connected_by_vertex(lhs.second, rhs.second);
 
-    if(vtx.first)
+    if(is_vtx.first)
     {
-        const local_idx_type    lidx = get_local_index(vtx.second);
+        const vertex_property_type& vtx = this->vertex_prop_at(is_vtx.second);
+        const std::vector<face_id_type>& fs = vtx.faces;
+        const typename std::vector<face_id_type>::const_iterator result =
+            std::find(fs.begin(), fs.end(), lhs.second);
+        index_type idx = std::distance(fs.begin(), result);
+        const index_type lidx = vtx.local_indices.at(idx);
+
         const Real3     vtx_position = triangle_at(lhs.second).vertex_at(lidx);
         const Real3       lhs_to_vtx = vtx_position - lhs.first;
         const Real3       vtx_to_rhs = rhs.first - vtx_position;
-        const Real3           normal = triangle_at(lhs.second).normal();
+        const Real3           normal = this->triangle_at(lhs.second).normal();
         const Real  lhs_to_vtx_lensq = length_sq(lhs_to_vtx);
         const Real  rhs_to_vtx_lensq = length_sq(vtx_to_rhs);
-        const Real        apex_angle = vertex_prop_at(vtx.second).apex_angle;
+        const Real        apex_angle = vertex_prop_at(is_vtx.second).apex_angle;
 
         Real inter_angle = angle(lhs_to_vtx, triangle_at(lhs.second).edge_at(
                            (lidx == 0) ? 2 : lidx-1));
 
         // XXX: order of face idx
-        const std::vector<std::pair<std::size_t, std::size_t> >& faces_vtx =
-            vertex_prop_at(vtx.second).faces;
-        const std::vector<std::pair<std::size_t, std::size_t> >::const_iterator
-            lhs_iter = std::find_if(faces_vtx.begin(), faces_vtx.end(),
-                    utils::pair_first_element_unary_predicator<
-                        std::size_t, std::size_t>(lhs.second));
         bool round = false;
-        std::vector<std::pair<std::size_t, std::size_t> >::const_iterator
-            iter = lhs_iter+1;
-        if(iter == faces_vtx.end())
+        ++idx;
+        if(idx == fs.size())
         {
-            iter  = faces_vtx.begin();
+            idx = 0;
             round = true;
         }
 
         while(true)
         {
-            const face_id_type fid(iter->first);
-            const triangle_type& f = triangles_.at(fid);
+            const face_id_type fid(fs.at(idx));
+            const index_type   lvidx(vtx.local_indices.at(idx));
+            const triangle_type& f = this->triangle_at(fid);
             if(fid == rhs.second)
             {
-                inter_angle += angle(vtx_to_rhs, f.edge_at(iter->second));
+                inter_angle += angle(vtx_to_rhs, f.edge_at(lvidx));
                 break;
             }
-            inter_angle += f.angle_at(iter->second);
+            inter_angle += f.angle_at(lvidx);
 
-            ++iter;
-            if(iter == faces_vtx.end())
+            ++idx;
+            if(idx == fs.size())
             {
                 if(round)
                     throw std::logic_error("Polygon::distance: rhs not found");
-                iter  = faces_vtx.begin();
+                idx = 0;
                 round = true;
             }
         }
         assert(inter_angle <= apex_angle);
 
         const Real min_angle = std::min(inter_angle, apex_angle - inter_angle);
+
         return lhs_to_vtx + rotate(min_angle, normal, lhs_to_vtx * (-1.0)) *
                          std::sqrt(rhs_to_vtx_lensq / lhs_to_vtx_lensq);
     }
-    throw NotSupported("Polygon::inter_position_vector couldn't determine the path");
-
+    throw NotSupported("Polygon::developped_direction couldn't determine the path");
 }
 
 template<typename T>
-std::pair<std::vector<typename Polygon<T>::vertex_id_type>,
-                      std::pair<typename Polygon<T>::vertex_id_type, Real> >
+std::pair<std::vector<std::pair<typename Polygon<T>::vertex_id_type, Real> >,
+          std::pair<typename Polygon<T>::vertex_id_type, Real> >
 Polygon<T>::list_vertices_within_radius(
         const std::pair<Real3, face_id_type>& pos, const Real radius)
 {
-    throw NotImplemented("ecell4::Polygon::list_vertices_within_radius");
+    // because gfrd circular shell size is restricted so that the shell does not
+    // contain the incenter of neighbor face, nomally this is enough.
+    throw NotImplemented("Polygon::list_vertices_within_radius");
+
+//     std::vector<std::pair<typename Polygon<T>::vertex_id_type, Real> > list;
+//
+//     vertex_id_type nearestid = make_vid(pos.second, 3);
+//     Real             nearest = std::numeric_limits<length_type>::max();
+//     triangle_type const&   f = triangle_at(pos.second);
+//
+//     const Real rad2 = radius * radius;
+//     for(std::size_t i=0; i<3; ++i)
+//     {
+//         const Real dist2 = length_sq(pos.first - f.vertex_at(i));
+//         if(dist2 <= rad2)
+//         {
+//             const Real dist = std::sqrt(dist2);
+//             const vertex_id_type vid = make_vid(pos.second, local_idx_type(i));
+//
+//             list.push_back(std::make_pair(vid, dist));
+//
+//             if(dist < nearest)
+//             {
+//                 nearest   = dist;
+//                 nearestid = vid;
+//             }
+//         }
+//     }
+//     std::sort(list.begin(), list.end(), utils::pair_second_element_comparator<
+//             std::pair<typename Polygon<T>::vertex_id_type, Real> >());
+//
+//     return std::make_pair(list, std::make_pair(nearestid, nearest));
 }
 
 template<typename T>
-std::pair<std::vector<typename Polygon<T>::vertex_id_type>,
-                      std::pair<typename Polygon<T>::vertex_id_type, Real> >
+std::pair<std::vector<std::pair<typename Polygon<T>::face_id_type, Real> >,
+          std::pair<typename Polygon<T>::face_id_type, Real> >
 Polygon<T>::list_faces_within_radius(const Real3& pos, const Real radius)
 {
-    throw NotImplemented("ecell4::Polygon::list_face_within_radius");
+    throw NotImplemented("Polygon::list_faces_within_radius");
 }
 
 template<typename T>
@@ -626,7 +738,7 @@ std::pair<std::pair<Real3, typename Polygon<T>::face_id_type>, Real3>
 Polygon<T>::move_next_face(const std::pair<Real3, face_id_type>& pos,
                            const Real3& disp) const
 {
-    const triangle_type& t = triangle_at(pos.second);
+    const triangle_type& t = this->triangle_at(pos.second);
     const barycentric_type newpos = to_barycentric(pos.first + disp, t);
 
     if(::ecell4::is_inside(newpos))
@@ -638,10 +750,11 @@ Polygon<T>::move_next_face(const std::pair<Real3, face_id_type>& pos,
     const barycentric_type bdis = newpos - bpos;
 
     const std::pair<std::size_t, Real> cross = first_cross_edge(bpos, bdis);
-    const edge_id_type next_edge = connecting_edge(
-            make_eid(pos.second, local_idx_type(cross.first)));
+    const edge_id_type next_edge =
+        this->face_prop_at(pos.second).edges.at(cross.first);
 
-    const face_id_type next_face_id = get_face_id(next_edge);
+    const face_id_type next_face_id =
+        this->face_prop_at(pos.second).adjacents.at(cross.first);
     const Real3 next_pos  = pos.first + disp * cross.second;
 
     // turn displacement
@@ -660,34 +773,34 @@ Polygon<T>::rotate_around_vertex(const std::pair<Real3, face_id_type>& pos,
     throw NotImplemented("ecell4::Polygon::rotate_around_vertex");
 }
 
-
+/* member access -------------------------------------------------------------*/
 
 template<typename T>
 inline typename Polygon<T>::triangle_type&
 Polygon<T>::triangle_at(const face_id_type i)
 {
-    return this->triangles_.at(i);
+    return face_prop_at(i).triangle;
 }
 
 template<typename T>
 inline typename Polygon<T>::triangle_type const&
 Polygon<T>::triangle_at(const face_id_type i) const
 {
-    return this->triangles_.at(i);
+    return face_prop_at(i).triangle;
 }
 
 template<typename T>
 inline typename Polygon<T>::face_descripter&
 Polygon<T>::face_at(const face_id_type i)
 {
-    return faces_.at(i).face;
+    return face_prop_at(i).face;
 }
 
 template<typename T>
 inline typename Polygon<T>::face_descripter const&
 Polygon<T>::face_at(const face_id_type i) const
 {
-    return faces_.at(i).face;
+    return face_prop_at(i).face;
 }
 
 template<typename T>
@@ -723,34 +836,57 @@ template<typename T>
 inline typename Polygon<T>::vertex_property_type&
 Polygon<T>::vertex_prop_at(const vertex_id_type& vid)
 {
-    return vertices_.at(
-        this->faces_.at(get_face_id(vid)).vertices.at(get_local_index(vid)));
+    return vertices_.at(to_index(vid));
 }
 
 template<typename T>
 inline typename Polygon<T>::vertex_property_type const&
 Polygon<T>::vertex_prop_at(const vertex_id_type& vid) const
 {
-    return vertices_.at(
-        this->faces_.at(get_face_id(vid)).vertices.at(get_local_index(vid)));
+    return vertices_.at(to_index(vid));
 }
 
 template<typename T>
 inline typename Polygon<T>::edge_property_type&
 Polygon<T>::edge_prop_at(const edge_id_type& eid)
 {
-    return edges_.at(
-        this->faces_.at(get_face_id(eid)).edges.at(get_local_index(eid)));
+    return edges_.at(to_index(eid));
 }
 
 template<typename T>
 inline typename Polygon<T>::edge_property_type const&
 Polygon<T>::edge_prop_at(const edge_id_type& eid) const
 {
-    return edges_.at(
-        this->faces_.at(get_face_id(eid)).edges.at(get_local_index(eid)));
+    return edges_.at(to_index(eid));
 }
 
+template<typename T>
+inline typename Polygon<T>::face_property_type&
+Polygon<T>::face_prop_at(const face_id_type& fid)
+{
+    return faces_.at(to_index(fid));
+}
+
+template<typename T>
+inline typename Polygon<T>::face_property_type const&
+Polygon<T>::face_prop_at(const face_id_type& fid) const
+{
+    return faces_.at(to_index(fid));
+}
+
+template<typename T>
+inline typename Polygon<T>::edge_id_type
+Polygon<T>::get_edge_id(const local_index_type idx) const
+{
+    return this->face_prop_at(idx.first).edges.at(idx.second);
+}
+
+template<typename T>
+inline typename Polygon<T>::vertex_id_type
+Polygon<T>::get_vertex_id(const local_index_type idx) const
+{
+    return this->face_prop_at(idx.first).vertices.at(idx.second);
+}
 
 } // ecell4
 #endif// ECELL4_POLYGON

@@ -18,9 +18,9 @@ class STLPolygonAdapter
     typedef typename polygon_type::index_type        index_type;
     typedef typename polygon_type::triangle_type     triangle_type;
     typedef typename polygon_type::face_id_type      face_id_type;
-    typedef typename polygon_type::local_idx_type    local_idx_type;
     typedef typename polygon_type::vertex_id_type    vertex_id_type;
     typedef typename polygon_type::edge_id_type      edge_id_type;
+    typedef typename polygon_type::local_index_type  local_index_type;
     typedef typename polygon_type::vertex_descripter vertex_descripter;
     typedef typename polygon_type::edge_descripter   edge_descripter;
     typedef typename polygon_type::face_descripter   face_descripter;
@@ -34,8 +34,11 @@ class STLPolygonAdapter
     boost::shared_ptr<polygon_type>
     make_polygon(const std::vector<StlTriangle>& triangles) const;
 
-    void detect_edge_connections(  polygon_type& poly) const;
-    void detect_vertex_connections(polygon_type& poly) const;
+    void detect_edge_connections(polygon_type& poly,
+            const std::vector<face_id_type>& fid) const;
+
+    void detect_vertex_connections(polygon_type& poly,
+            const std::vector<face_id_type>& fid) const;
 
   private:
 
@@ -50,28 +53,30 @@ STLPolygonAdapter<T_traits>::make_polygon(
 {
     boost::shared_ptr<polygon_type> polygon = boost::make_shared<polygon_type>();
 
+    std::vector<face_id_type> fids;
+    fids.reserve(triangles.size());
     for(typename std::vector<StlTriangle>::const_iterator
             iter = triangles.begin(); iter != triangles.end(); ++iter)
     {
-        polygon->add_face(triangle_type(iter->vertices));
+        fids.push_back(polygon->add_face(triangle_type(iter->vertices)));
     }
 
-    this->detect_edge_connections(*polygon);
-    this->detect_vertex_connections(*polygon);
+    this->detect_edge_connections(*polygon, fids);
+    this->detect_vertex_connections(*polygon, fids);
     return polygon;
 }
 
 template<typename T_traits>
-void STLPolygonAdapter<T_traits>::detect_edge_connections(polygon_type& poly) const
+void STLPolygonAdapter<T_traits>::detect_edge_connections(polygon_type& poly,
+        const std::vector<face_id_type>& fids) const
 {
-    std::set<edge_id_type> is_detected;
+    std::set<local_index_type> is_detected;
     for(std::size_t fidx = 0; fidx < poly.num_triangles(); ++fidx)
     {
-        const face_id_type currentf(fidx);
+        const face_id_type currentf(fids.at(fidx));
         for(std::size_t eidx = 0; eidx < 3; ++eidx)
         {
-            const edge_id_type current_edge =
-                polygon_type::make_eid(currentf, local_idx_type(eidx));
+            const local_index_type current_edge = std::make_pair(currentf, eidx);
             if(is_detected.count(current_edge) == 1) continue;
 
             const std::size_t start_v = eidx;
@@ -86,18 +91,18 @@ void STLPolygonAdapter<T_traits>::detect_edge_connections(polygon_type& poly) co
                 for(std::size_t e = 0; e < 3; ++e)
                 {
                     const Real start_pos_dist =
-                        length(start_pos - poly.triangle_at(face_id_type(f)).vertex_at(e));
+                        length(start_pos - poly.triangle_at(fids.at(f)).vertex_at(e));
                     if(start_pos_dist > tolerance)
                         continue;
 
                     const Real end_pos_dist =
-                        length(end_pos - poly.triangle_at(face_id_type(f)).vertex_at(
+                        length(end_pos - poly.triangle_at(fids.at(f)).vertex_at(
                                     e == 0 ? 2 : e-1));
 
                     if(end_pos_dist <= tolerance)
                     {
-                        const edge_id_type detected = polygon_type::make_eid(
-                            face_id_type(f), local_idx_type(e == 0 ? 2 : e-1));
+                        const local_index_type detected = std::make_pair(
+                            fids.at(f), (e == 0 ? 2 : e-1));
                         poly.connect_edges(current_edge, detected);
 
                         is_detected.insert(detected);
@@ -114,42 +119,42 @@ void STLPolygonAdapter<T_traits>::detect_edge_connections(polygon_type& poly) co
 }
 
 template<typename T_traits>
-void STLPolygonAdapter<T_traits>::detect_vertex_connections(polygon_type& poly) const
+void STLPolygonAdapter<T_traits>::detect_vertex_connections(polygon_type& poly,
+        const std::vector<face_id_type>& fids) const
 {
-    std::set<vertex_id_type> is_detected;
+    std::set<local_index_type> is_detected;
     for(std::size_t fidx = 0; fidx < poly.num_faces(); ++fidx)
     {
-        const face_id_type current_fid(fidx);
+        const face_id_type current_fid(fids.at(fidx));
         for(std::size_t vidx = 0; vidx < 3; ++vidx)
         {
-            const vertex_id_type current_vtx =
-                polygon_type::make_vid(current_fid, local_idx_type(vidx));
+            const local_index_type current_vtx = std::make_pair(current_fid, vidx);
             if(is_detected.count(current_vtx) == 1)
                 continue;
 
-            const Real3 vtx_pos = poly.triangle_at(face_id_type(fidx)).vertex_at(vidx);
+            const Real3 vtx_pos = poly.triangle_at(current_fid).vertex_at(vidx);
 
-            std::vector<vertex_id_type> vertices_list;
+            std::vector<local_index_type> vertices_list;
             vertices_list.push_back(current_vtx);
 
-            edge_id_type lookup =
-                polygon_type::make_eid(current_fid, local_idx_type(vidx));
+            local_index_type lookup = std::make_pair(current_fid, vidx);
 
             std::size_t i=0;
             for(; i<max_faces_sharing_vertex; ++i)
             {
-                const face_id_type   f(polygon_type::get_face_id(lookup));
-                const local_idx_type e(polygon_type::get_local_index(lookup));
-                const edge_id_type eid(
-                    polygon_type::make_eid(f, local_idx_type(e==0?2:e-1)));
-                lookup = poly.connecting_edge(eid); // update lookup face
+                const face_id_type f(lookup.first);
+                const index_type   e(lookup.second == 0 ? 2 : lookup.second-1);
+                const edge_id_type eid(poly.get_edge_id(std::make_pair(f, e)));
 
-                if(polygon_type::get_face_id(lookup) == current_fid)
-                    break;
+                const face_id_type next_f = poly.adjacent_faces(f)[e];
+                const boost::array<face_id_type, 3> adj(poly.adjacent_faces(next_f));
+                const index_type next_e = std::distance(adj.begin(),
+                        std::find(adj.begin(), adj.end(), f));
+                lookup = std::make_pair(next_f, next_e);
 
-                const vertex_id_type detected =
-                    polygon_type::make_vid(polygon_type::get_face_id(lookup),
-                                           polygon_type::get_local_index(lookup));
+                if(lookup.first == current_fid) break;
+
+                const local_index_type detected = lookup;
 
                 is_detected.insert(detected);
                 vertices_list.push_back(detected);

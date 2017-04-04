@@ -16,6 +16,26 @@
 
 struct dummy{};
 
+template<typename Tid>
+struct index_generator
+{
+    index_generator(): current(0){}
+
+    Tid operator()()
+    {
+        return Tid(current++);
+    }
+
+    std::size_t current;
+};
+
+template<typename Tid>
+struct identity_mapper
+{
+    std::size_t& operator[](const Tid& id){return buffer;}
+    std::size_t buffer; // do nothing
+};
+
 struct test_polygon_traits
 {
     typedef std::size_t       index_type;
@@ -24,35 +44,31 @@ struct test_polygon_traits
     typedef dummy             edge_descripter;
     typedef dummy             face_descripter;
 
-    BOOST_STRONG_TYPEDEF(index_type, local_idx_type)
     BOOST_STRONG_TYPEDEF(index_type, face_id_type)
+    BOOST_STRONG_TYPEDEF(index_type, vertex_id_type)
+    BOOST_STRONG_TYPEDEF(index_type, edge_id_type)
 
-    typedef std::pair<face_id_type, local_idx_type> fid_localidx_pair;
+    typedef index_generator<face_id_type>   face_id_generator_type;
+    typedef index_generator<edge_id_type>   edge_id_generator_type;
+    typedef index_generator<vertex_id_type> vertex_id_generator_type;
+    typedef identity_mapper<face_id_type>   face_id_idx_map_type;
+    typedef identity_mapper<edge_id_type>   edge_id_idx_map_type;
+    typedef identity_mapper<vertex_id_type> vertex_id_idx_map_type;
 
-    BOOST_STRONG_TYPEDEF(fid_localidx_pair, vertex_id_type)
-    BOOST_STRONG_TYPEDEF(fid_localidx_pair, edge_id_type)
-
-    static inline vertex_id_type
-    make_vid(const face_id_type& fid, const local_idx_type& lidx)
+    template<typename Tid>
+    static inline std::size_t to_index(const Tid& id)
     {
-        return vertex_id_type(std::make_pair(fid, lidx));
+        return static_cast<std::size_t>(id);
     }
-
-    static inline edge_id_type
-    make_eid(const face_id_type& fid, const local_idx_type& lidx)
+    template<typename Tid>
+    static inline Tid to_id(std::size_t idx)
     {
-        return edge_id_type(std::make_pair(fid, lidx));
+        return Tid(idx);
     }
-
-    template<typename T>
-    static inline face_id_type   get_face_id(const T& id)
+    template<typename Tid>
+    static inline Tid un_initialized()
     {
-        return static_cast<fid_localidx_pair>(id).first;
-    }
-    template<typename T>
-    static inline local_idx_type get_local_index(const T& id)
-    {
-        return static_cast<fid_localidx_pair>(id).second;
+        return Tid(std::numeric_limits<std::size_t>::max());
     }
 };
 
@@ -92,22 +108,23 @@ polygon_type make_cube()
     const Triangle t11(v1, v5, v6);
     const Triangle t12(v1, v6, v2);
 
-    retval.add_face( t1);
-    retval.add_face( t2);
-    retval.add_face( t3);
-    retval.add_face( t4);
-    retval.add_face( t5);
-    retval.add_face( t6);
-    retval.add_face( t7);
-    retval.add_face( t8);
-    retval.add_face( t9);
-    retval.add_face(t10);
-    retval.add_face(t11);
-    retval.add_face(t12);
+    std::vector<face_id_type> fids(12);
+    fids[ 0] = retval.add_face( t1);
+    fids[ 1] = retval.add_face( t2);
+    fids[ 2] = retval.add_face( t3);
+    fids[ 3] = retval.add_face( t4);
+    fids[ 4] = retval.add_face( t5);
+    fids[ 5] = retval.add_face( t6);
+    fids[ 6] = retval.add_face( t7);
+    fids[ 7] = retval.add_face( t8);
+    fids[ 8] = retval.add_face( t9);
+    fids[ 9] = retval.add_face(t10);
+    fids[10] = retval.add_face(t11);
+    fids[11] = retval.add_face(t12);
 
     adapter_type adapter;
-    adapter.detect_edge_connections(retval);
-    adapter.detect_vertex_connections(retval);
+    adapter.detect_edge_connections(retval, fids);
+    adapter.detect_vertex_connections(retval, fids);
 
     return retval;
 }
@@ -140,7 +157,7 @@ BOOST_AUTO_TEST_CASE(Polygon_edge_connection)
     const polygon_type poly = make_cube();
     {
         boost::array<face_id_type, 3> const& faces =
-            poly.connecting_faces(face_id_type(0));
+            poly.adjacent_faces(face_id_type(0));
 
         boost::array<boost::array<face_id_type, 3>::const_iterator, 3>
             result = find_neighbors(faces, face_id_type(1),
@@ -154,7 +171,7 @@ BOOST_AUTO_TEST_CASE(Polygon_edge_connection)
     //{{{
     {
         boost::array<face_id_type, 3> const& faces =
-            poly.connecting_faces(face_id_type(1));
+            poly.adjacent_faces(face_id_type(1));
 
         boost::array<boost::array<face_id_type, 3>::const_iterator, 3>
             result = find_neighbors(faces, face_id_type(0),
@@ -167,7 +184,7 @@ BOOST_AUTO_TEST_CASE(Polygon_edge_connection)
 
     {
         boost::array<face_id_type, 3> const& faces =
-            poly.connecting_faces(face_id_type(2));
+            poly.adjacent_faces(face_id_type(2));
 
         boost::array<boost::array<face_id_type, 3>::const_iterator, 3>
             result = find_neighbors(faces, face_id_type(1),
@@ -180,7 +197,7 @@ BOOST_AUTO_TEST_CASE(Polygon_edge_connection)
 
     {
         boost::array<face_id_type, 3> const& faces =
-            poly.connecting_faces(face_id_type(3));
+            poly.adjacent_faces(face_id_type(3));
 
         boost::array<boost::array<face_id_type, 3>::const_iterator, 3>
             result = find_neighbors(faces, face_id_type(2),
@@ -193,7 +210,7 @@ BOOST_AUTO_TEST_CASE(Polygon_edge_connection)
 
     {
         boost::array<face_id_type, 3> const& faces =
-            poly.connecting_faces(face_id_type(4));
+            poly.adjacent_faces(face_id_type(4));
 
         boost::array<boost::array<face_id_type, 3>::const_iterator, 3>
             result = find_neighbors(faces, face_id_type(3),
@@ -206,7 +223,7 @@ BOOST_AUTO_TEST_CASE(Polygon_edge_connection)
 
     {
         boost::array<face_id_type, 3> const& faces =
-            poly.connecting_faces(face_id_type(5));
+            poly.adjacent_faces(face_id_type(5));
 
         boost::array<boost::array<face_id_type, 3>::const_iterator, 3>
             result = find_neighbors(faces, face_id_type(4),
@@ -219,7 +236,7 @@ BOOST_AUTO_TEST_CASE(Polygon_edge_connection)
 
     {
         boost::array<face_id_type, 3> const& faces =
-            poly.connecting_faces(face_id_type(6));
+            poly.adjacent_faces(face_id_type(6));
 
         boost::array<boost::array<face_id_type, 3>::const_iterator, 3>
             result = find_neighbors(faces, face_id_type(7),
@@ -232,7 +249,7 @@ BOOST_AUTO_TEST_CASE(Polygon_edge_connection)
 
     {
         boost::array<face_id_type, 3> const& faces =
-            poly.connecting_faces(face_id_type(7));
+            poly.adjacent_faces(face_id_type(7));
 
         boost::array<boost::array<face_id_type, 3>::const_iterator, 3>
             result = find_neighbors(faces, face_id_type(0),
@@ -245,7 +262,7 @@ BOOST_AUTO_TEST_CASE(Polygon_edge_connection)
 
     {
         boost::array<face_id_type, 3> const& faces =
-            poly.connecting_faces(face_id_type(8));
+            poly.adjacent_faces(face_id_type(8));
 
         boost::array<boost::array<face_id_type, 3>::const_iterator, 3>
             result = find_neighbors(faces, face_id_type(0),
@@ -258,7 +275,7 @@ BOOST_AUTO_TEST_CASE(Polygon_edge_connection)
 
     {
         boost::array<face_id_type, 3> const& faces =
-            poly.connecting_faces(face_id_type(9));
+            poly.adjacent_faces(face_id_type(9));
 
         boost::array<boost::array<face_id_type, 3>::const_iterator, 3>
             result = find_neighbors(faces, face_id_type(3),
@@ -271,7 +288,7 @@ BOOST_AUTO_TEST_CASE(Polygon_edge_connection)
 
     {
         boost::array<face_id_type, 3> const& faces =
-            poly.connecting_faces(face_id_type(10));
+            poly.adjacent_faces(face_id_type(10));
 
         boost::array<boost::array<face_id_type, 3>::const_iterator, 3>
             result = find_neighbors(faces, face_id_type(5),
@@ -284,7 +301,7 @@ BOOST_AUTO_TEST_CASE(Polygon_edge_connection)
 
     {
         boost::array<face_id_type, 3> const& faces =
-            poly.connecting_faces(face_id_type(11));
+            poly.adjacent_faces(face_id_type(11));
 
         boost::array<boost::array<face_id_type, 3>::const_iterator, 3>
             result = find_neighbors(faces, face_id_type(1),
