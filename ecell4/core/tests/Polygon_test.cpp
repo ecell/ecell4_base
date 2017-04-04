@@ -29,10 +29,38 @@ struct index_generator
     std::size_t current;
 };
 
+template<typename T>
+struct identity_iterator
+{
+    identity_iterator(T v): val(v){}
+    T operator*() const {return val;}
+    T val;
+};
+
+template<typename T>
+inline bool
+operator==(identity_iterator<T> const& lhs, identity_iterator<T> const& rhs)
+{
+    return lhs.val == rhs.val;
+}
+
 template<typename Tid>
 struct identity_mapper
 {
+    typedef identity_iterator<std::size_t> const_iterator;
+
     std::size_t& operator[](const Tid& id){return buffer;}
+
+    const_iterator find(const Tid& id) const
+    {
+        return const_iterator(static_cast<std::size_t>(id));
+    }
+
+    const_iterator end() const
+    {
+        return const_iterator(std::numeric_limits<std::size_t>::max());
+    }
+
     std::size_t buffer; // do nothing
 };
 
@@ -55,11 +83,6 @@ struct test_polygon_traits
     typedef identity_mapper<edge_id_type>   edge_id_idx_map_type;
     typedef identity_mapper<vertex_id_type> vertex_id_idx_map_type;
 
-    template<typename Tid>
-    static inline std::size_t to_index(const Tid& id)
-    {
-        return static_cast<std::size_t>(id);
-    }
     template<typename Tid>
     static inline Tid to_id(std::size_t idx)
     {

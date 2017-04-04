@@ -166,17 +166,29 @@ class Polygon : public Shape
     edge_id_type   generate_edge_id()   {return this->edge_id_generator();}
     vertex_id_type generate_vertex_id() {return this->vertex_id_generator();}
 
-    // TODO!
-    template<typename Tid>
-    static inline index_type to_index(const Tid& id)
+    index_type to_index(const face_id_type& id) const
     {
-        return traits_type::template to_index<Tid>(id);
+        const typename face_id_idx_map_type::const_iterator result =
+            face_id_idx_map.find(id);
+        if(result == face_id_idx_map.end())
+            throw std::out_of_range("Polygon::to_index(face_id_type)");
+        return *result;
     }
-
-    template<typename Tid>
-    static inline Tid to_id(const index_type idx)
+    index_type to_index(const edge_id_type& id) const
     {
-        return traits_type::template to_id<Tid>(idx);
+        const typename edge_id_idx_map_type::const_iterator result =
+            edge_id_idx_map.find(id);
+        if(result == edge_id_idx_map.end())
+            throw std::out_of_range("Polygon::to_index(edge_id_type)");
+        return *result;
+    }
+    index_type to_index(const vertex_id_type& id) const
+    {
+        const typename vertex_id_idx_map_type::const_iterator result =
+            vertex_id_idx_map.find(id);
+        if(result == vertex_id_idx_map.end())
+            throw std::out_of_range("Polygon::to_index(vertex_id_type)");
+        return *result;
     }
 
     template<typename Tid>
