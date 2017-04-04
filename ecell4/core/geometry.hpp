@@ -16,10 +16,10 @@ inline Real3 centroid(const Triangle& tri)
 
 inline Real3 incenter(const Triangle& tri)
 {
-    const valueT a = tri.length_of_edge()[1];
-    const valueT b = tri.length_of_edge()[2];
-    const valueT c = tri.length_of_edge()[0];
-    const valueT abc = a + b + c;
+    const Real a = tri.lengths_of_edges()[1];
+    const Real b = tri.lengths_of_edges()[2];
+    const Real c = tri.lengths_of_edges()[0];
+    const Real abc = a + b + c;
     return (tri.vertices()[0] * a + tri.vertices()[1] * b + tri.vertices()[2] * c)
             * (1e0 / abc);
 }

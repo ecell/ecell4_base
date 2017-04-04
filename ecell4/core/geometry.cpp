@@ -55,7 +55,7 @@ Real3 closest_point(const Real3& pos, const Triangle& tri)
     if (d3 >= 0.0 && d4 <= d3)
         return b;
 
-    const Real3 vc = d1*d4 - d3*d2;
+    const Real vc = d1*d4 - d3*d2;
     if (vc <= 0.0 && d1 >= 0.0 && d3 <= 0.0)
     {
         const Real v = d1 / (d1 - d3);
@@ -95,7 +95,7 @@ Real distance_sq(const Real3& pos, const Triangle& tri)
 
 Real distance(const Real3& pos, const Triangle& tri)
 {
-    return std::sqrt(distance_sq(pos, tri))
+    return std::sqrt(distance_sq(pos, tri));
 }
 
 }//ecell4
