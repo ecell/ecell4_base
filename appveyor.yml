@@ -80,10 +80,10 @@ install:
 
   # config.h
   - cd ecell4/core
-  - move config.h.win32 config.h
+  # - move config.h.win32 config.h
   - type config.h
   - cd ../egfrd
-  - move config.h.win32 config.h
+  # - move config.h.win32 config.h
   - type config.h
   - cd ../..
 
