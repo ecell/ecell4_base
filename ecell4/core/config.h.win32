@@ -1,8 +1,0 @@
-#ifndef __ECELL4_CONFIG_H
-#define __ECELL4_CONFIG_H
-#define ECELL4_VERSION "4.1.0"
-#define WIN32_MSC 1
-//#define WITH_HDF5 1
-#define HAVE_BOOST_UNORDERED_MAP_HPP 1
-#define HAVE_BOOST_FUNCTIONAL_HASH_HPP 1
-#endif /* __ECELL4_CONFIG_H */
