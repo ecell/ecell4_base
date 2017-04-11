@@ -16,56 +16,30 @@
 
 struct dummy{};
 
-template<typename Tid>
+template<typename T_fid, typename T_eid, typename T_vid>
 struct index_generator
 {
-    index_generator(): current(0){}
+    index_generator(): face_(0), edge_(0), vertex_(0){}
 
-    Tid operator()()
-    {
-        return Tid(current++);
-    }
+    T_fid generate_face_id()  {return T_fid(face_++);}
+    T_eid generate_edge_id()  {return T_eid(edge_++);}
+    T_vid generate_vertex_id(){return T_vid(vertex_++);}
 
-    std::size_t current;
+    T_fid face_;
+    T_eid edge_;
+    T_vid vertex_;
 };
 
-// emulate std::map::iterator
-template<typename T>
-struct identity_iterator
+struct identity_converter
 {
-    typedef std::pair<T, T> value_type;
+    template<typename T_id>
+    std::size_t to_index(const T_id& id) const {return static_cast<std::size_t>(id);}
 
-    identity_iterator(T v): val(std::make_pair(v, v)){}
-    value_type  operator*()  const {return val;}
-    value_type* operator->() const {return const_cast<value_type*>(&val);}
-    value_type val;
-};
+    template<typename T_id>
+    T_id to_index(const std::size_t& i) const {return T_id(i);}
 
-template<typename T>
-inline bool
-operator==(identity_iterator<T> const& lhs, identity_iterator<T> const& rhs)
-{
-    return lhs.val == rhs.val;
-}
-
-template<typename Tid>
-struct identity_mapper
-{
-    typedef identity_iterator<std::size_t> const_iterator;
-
-    std::size_t& operator[](const Tid& id){return buffer;}
-
-    const_iterator find(const Tid& id) const
-    {
-        return const_iterator(static_cast<std::size_t>(id));
-    }
-
-    const_iterator end() const
-    {
-        return const_iterator(std::numeric_limits<std::size_t>::max());
-    }
-
-    std::size_t buffer; // do nothing
+    template<typename T_id>
+    void link(const T_id&, std::size_t){return;}
 };
 
 struct test_polygon_traits
@@ -80,12 +54,9 @@ struct test_polygon_traits
     BOOST_STRONG_TYPEDEF(index_type, vertex_id_type)
     BOOST_STRONG_TYPEDEF(index_type, edge_id_type)
 
-    typedef index_generator<face_id_type>   face_id_generator_type;
-    typedef index_generator<edge_id_type>   edge_id_generator_type;
-    typedef index_generator<vertex_id_type> vertex_id_generator_type;
-    typedef identity_mapper<face_id_type>   face_id_idx_map_type;
-    typedef identity_mapper<edge_id_type>   edge_id_idx_map_type;
-    typedef identity_mapper<vertex_id_type> vertex_id_idx_map_type;
+    typedef index_generator<face_id_type, edge_id_type, vertex_id_type>
+        id_generator_type;
+    typedef identity_converter converter_type;
 
     template<typename Tid>
     static inline Tid un_initialized()

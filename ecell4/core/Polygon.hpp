@@ -25,7 +25,6 @@ class Polygon : public Shape
 
   public:
 
-    // types and informations
     typedef T_traits traits_type;
     typedef typename traits_type::index_type        index_type;
     typedef typename traits_type::triangle_type     triangle_type;
@@ -35,24 +34,16 @@ class Polygon : public Shape
     typedef typename traits_type::vertex_descripter vertex_descripter;
     typedef typename traits_type::edge_descripter   edge_descripter;
     typedef typename traits_type::face_descripter   face_descripter;
-
-    // id <==> idx conversion
-    typedef typename traits_type::face_id_idx_map_type     face_id_idx_map_type;
-    typedef typename traits_type::edge_id_idx_map_type     edge_id_idx_map_type;
-    typedef typename traits_type::vertex_id_idx_map_type   vertex_id_idx_map_type;
-    typedef typename traits_type::face_id_generator_type   face_id_generator_type;
-    typedef typename traits_type::edge_id_generator_type   edge_id_generator_type;
-    typedef typename traits_type::vertex_id_generator_type vertex_id_generator_type;
-
-    typedef std::pair<face_id_type, index_type>       local_index_type;
-    typedef Barycentric<Real>                         barycentric_type;
-
-    typedef vertex_property<vertex_descripter> vertex_property_type;
-    typedef edge_property<edge_descripter>     edge_property_type;
-    typedef face_property<face_descripter>     face_property_type;
-    typedef std::vector<vertex_property_type>  vertex_container_type;
-    typedef std::vector<edge_property_type>    edge_container_type;
-    typedef std::vector<face_property_type>    face_container_type;
+    typedef typename traits_type::converter_type    converter_type;
+    typedef typename traits_type::id_generator_type id_generator_type;
+    typedef std::pair<face_id_type, index_type>     local_index_type;
+    typedef Barycentric<Real>                       barycentric_type;
+    typedef vertex_property<vertex_descripter>      vertex_property_type;
+    typedef edge_property<edge_descripter>          edge_property_type;
+    typedef face_property<face_descripter>          face_property_type;
+    typedef std::vector<vertex_property_type>       vertex_container_type;
+    typedef std::vector<edge_property_type>         edge_container_type;
+    typedef std::vector<face_property_type>         face_container_type;
 
   public:
 
@@ -160,36 +151,16 @@ class Polygon : public Shape
 
   private:
 
-    // Identifier <=> idx
-    // XXX: if static + template, there can exist only one Polygon instance.
-    face_id_type   generate_face_id()   {return this->face_id_generator();}
-    edge_id_type   generate_edge_id()   {return this->edge_id_generator();}
-    vertex_id_type generate_vertex_id() {return this->vertex_id_generator();}
+    face_id_type   generate_face_id()   {return idgen_.generate_face_id();}
+    edge_id_type   generate_edge_id()   {return idgen_.generate_edge_id();}
+    vertex_id_type generate_vertex_id() {return idgen_.generate_vertex_id();}
 
-    index_type to_index(const face_id_type& id) const
-    {
-        const typename face_id_idx_map_type::const_iterator result =
-            face_id_idx_map.find(id);
-        if(result == face_id_idx_map.end())
-            throw std::out_of_range("Polygon::to_index(face_id_type)");
-        return result->second;
-    }
-    index_type to_index(const edge_id_type& id) const
-    {
-        const typename edge_id_idx_map_type::const_iterator result =
-            edge_id_idx_map.find(id);
-        if(result == edge_id_idx_map.end())
-            throw std::out_of_range("Polygon::to_index(edge_id_type)");
-        return result->second;
-    }
-    index_type to_index(const vertex_id_type& id) const
-    {
-        const typename vertex_id_idx_map_type::const_iterator result =
-            vertex_id_idx_map.find(id);
-        if(result == vertex_id_idx_map.end())
-            throw std::out_of_range("Polygon::to_index(vertex_id_type)");
-        return result->second;
-    }
+    template<typename T_id>
+    index_type to_index(const T_id& id) const {return converter_.to_index(id);}
+    template<typename T_id>
+    T_id to_id(const index_type& i) const {return converter_.to_id<T_id>(i);}
+    template<typename T_id>
+    void link(const T_id& id, index_type idx) {return converter_.link(id, idx);}
 
     template<typename Tid>
     static inline Tid un_initialized()
@@ -233,13 +204,8 @@ class Polygon : public Shape
         std::vector<face_id_type>       neighbors; // connected by edge or vertex
     };
 
-    face_id_idx_map_type     face_id_idx_map;
-    vertex_id_idx_map_type   vertex_id_idx_map;
-    edge_id_idx_map_type     edge_id_idx_map;
-    face_id_generator_type   face_id_generator;
-    vertex_id_generator_type vertex_id_generator;
-    edge_id_generator_type   edge_id_generator;
-
+    converter_type        converter_;
+    id_generator_type     idgen_;
     vertex_container_type vertices_;
     edge_container_type   edges_;
     face_container_type   faces_;
@@ -282,7 +248,7 @@ Polygon<T>::add_face(const triangle_type& triangle)
     const face_id_type fid = generate_face_id();
 
     const index_type idx = this->faces_.size();
-    this->face_id_idx_map[fid] = idx;
+    this->link(fid, idx);
 
     face_property_type fp;
     fp.id = fid;
@@ -311,7 +277,7 @@ Polygon<T>::connect_edges(const local_index_type& lhs, const local_index_type& r
     const edge_id_type eid  = generate_edge_id();
 
     const index_type idx = this->edges_.size();
-    this->edge_id_idx_map[eid] = idx;
+    this->link(eid, idx);
 
     const face_id_type fid1 = lhs.first;
     const face_id_type fid2 = rhs.first;
@@ -351,7 +317,7 @@ Polygon<T>::connect_vertices(const std::vector<local_index_type>& vtxs)
 {
     const vertex_id_type vid = generate_vertex_id();
     const index_type idx = this->vertices_.size();
-    this->vertex_id_idx_map[vid] = idx;
+    this->link(vid, idx);
 
     vertex_property_type vp;
     vp.id = vid;
