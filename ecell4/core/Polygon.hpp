@@ -483,7 +483,7 @@ Real Polygon<T>::distance_sq(const std::pair<Real3, face_id_type>& lhs,
         const triangle_type&     lhs_t = this->triangle_at(lhs.second);
         const Real3 developped = lhs_t.vertex_at(lidx) +
             rotate(-1. * edge.tilt_angle,
-                   lhs_t.edge_at(lidx),
+                   lhs_t.edge_at(lidx) / lhs_t.length_of_edge_at(lidx),
                    rhs.first - lhs_t.vertex_at(lidx));
 
         return length_sq(lhs.first - developped);
@@ -590,7 +590,7 @@ Real3 Polygon<T>::developed_direction(
         const triangle_type&     lhs_t = this->triangle_at(lhs.second);
         const Real3 developped = lhs_t.vertex_at(lidx) +
             rotate(-1. * edge.tilt_angle,
-                   lhs_t.edge_at(lidx),
+                   lhs_t.edge_at(lidx) / lhs_t.length_of_edge_at(lidx),
                    rhs.first - lhs_t.vertex_at(lidx));
 
         return developped - lhs.first;
