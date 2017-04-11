@@ -148,17 +148,15 @@ StlFileReader::read_binary(const std::string& filename) const
     const std::size_t size_of_file = ifs.tellg();
     ifs.seekg(0, ifs.beg);
 
-    char *ch_header = new char[81];
+    char ch_header[81];
     ifs.read(ch_header, 80);
     ch_header[80] = '\0';
     const std::string header(ch_header);
-    delete [] ch_header;
     std::cerr << "header   : " << header << std::endl;
 
-    char *ch_numTriangle = new char [sizeof(unsigned int)];
+    char ch_numTriangle[sizeof(unsigned int)];
     ifs.read(ch_numTriangle, sizeof(unsigned int));
     const std::size_t num_Triangle = *reinterpret_cast<unsigned int*>(ch_numTriangle);
-    delete [] ch_numTriangle;
     std::cerr << "# of face: " << num_Triangle << std::endl;
 
     if(50 * num_Triangle + 80 + sizeof(unsigned int) != size_of_file)
@@ -178,9 +176,9 @@ StlFileReader::read_binary(const std::string& filename) const
 
 Real3 StlFileReader::read_binary_vector(std::ifstream& ifs) const
 {
-    char *float0 = new char [sizeof(float)];
-    char *float1 = new char [sizeof(float)];
-    char *float2 = new char [sizeof(float)];
+    char float0[sizeof(float)];
+    char float1[sizeof(float)];
+    char float2[sizeof(float)];
 
     ifs.read(float0, sizeof(float));
     ifs.read(float1, sizeof(float));
@@ -189,10 +187,6 @@ Real3 StlFileReader::read_binary_vector(std::ifstream& ifs) const
     const float x = *reinterpret_cast<float*>(float0);
     const float y = *reinterpret_cast<float*>(float1);
     const float z = *reinterpret_cast<float*>(float2);
-
-    delete [] float0;
-    delete [] float1;
-    delete [] float2;
 
     return Real3(x, y, z);
 }
@@ -205,10 +199,7 @@ StlFileReader::read_binary_triangle(std::ifstream& ifs) const
     vertices[0] = this->read_binary_vector(ifs);
     vertices[1] = this->read_binary_vector(ifs);
     vertices[2] = this->read_binary_vector(ifs);
-
-    char *unused_data = new char [2];
-    ifs.read(unused_data, 2);
-    delete [] unused_data;
+    ifs.ignore(2);
 
     return StlTriangle(normal, vertices);
 }
