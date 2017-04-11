@@ -533,3 +533,35 @@ BOOST_AUTO_TEST_CASE(Polygon_developped_direction_connected_by_vertex)
         BOOST_CHECK_SMALL(length(next1_2.first.first - start1.first), 1e-12);
     }
 }
+
+BOOST_AUTO_TEST_CASE(Polygon_list_vertices_within_radius)
+{
+    const polygon_type polygon = make_cube();
+
+    const Real3 pos1(0.2, 0.4, 0.0);
+    const face_id_type fid1(0);
+    const face_id_type fid2(1);
+    const face_id_type fid8(7);
+    const face_id_type fid9(8);
+    std::pair<std::vector<std::pair<vertex_id_type, Real> >,
+        std::pair<vertex_id_type, Real> > value =
+            polygon.list_vertices_within_radius(
+                    std::make_pair(pos1, fid1), std::sqrt(8.0/5.0) + 1e-8);
+
+    const std::vector<std::pair<vertex_id_type, Real> >& list = value.first;
+    const std::pair<vertex_id_type, Real>& nearest = value.second;
+    BOOST_CHECK_EQUAL(nearest.first, polygon.get_vertex_id(std::make_pair(fid1, 0)));
+    BOOST_CHECK_CLOSE_FRACTION(nearest.second, std::sqrt(1./5.), 1e-8);
+
+    BOOST_CHECK_EQUAL(list.size(), 5);
+    BOOST_CHECK_EQUAL(list.at(0).first, polygon.get_vertex_id(std::make_pair(fid1,0)));
+    BOOST_CHECK_EQUAL(list.at(1).first, polygon.get_vertex_id(std::make_pair(fid1,2)));
+    BOOST_CHECK_EQUAL(list.at(2).first, polygon.get_vertex_id(std::make_pair(fid1,1)));
+    BOOST_CHECK_EQUAL(list.at(3).first, polygon.get_vertex_id(std::make_pair(fid2,1)));
+    BOOST_CHECK_EQUAL(list.at(4).first, polygon.get_vertex_id(std::make_pair(fid9,0)));
+    BOOST_CHECK_CLOSE_FRACTION(list.at(0).second, std::sqrt(1./5.), 1e-8);
+    BOOST_CHECK_CLOSE_FRACTION(list.at(1).second, std::sqrt(2./5.), 1e-8);
+    BOOST_CHECK_CLOSE_FRACTION(list.at(2).second, std::sqrt(4./5.), 1e-8);
+    BOOST_CHECK_CLOSE_FRACTION(list.at(3).second, 1.0,              1e-8);
+    BOOST_CHECK_CLOSE_FRACTION(list.at(4).second, std::sqrt(8./5.), 1e-8);
+}

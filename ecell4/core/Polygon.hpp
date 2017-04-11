@@ -95,11 +95,11 @@ class Polygon : public Shape
     std::pair<std::vector<std::pair<vertex_id_type, Real> >,
               std::pair<vertex_id_type, Real> >
     list_vertices_within_radius(const std::pair<Real3, face_id_type>& pos,
-                                const Real radius);
+                                const Real radius) const;
 
     std::pair<std::vector<std::pair<face_id_type, Real> >,
               std::pair<face_id_type, Real> >
-    list_faces_within_radius(const Real3& pos, const Real radius);
+    list_faces_within_radius(const Real3& pos, const Real radius) const;
 
     /* dynamics functions ----------------------------------------------------*/
     std::pair<std::pair<Real3, face_id_type>, Real3>
@@ -465,7 +465,7 @@ Real Polygon<T>::distance_sq(const std::pair<Real3, face_id_type>& lhs,
     if(edg.first)
     {
         const edge_property_type& edge = this->edge_prop_at(edg.second);
-        index_type lidx = std::numeric_limits<index_type>::max();
+        index_type lidx;
         if(edge.faces.first == lhs.second)
         {
             lidx = edge.local_indices.first;
@@ -663,48 +663,93 @@ template<typename T>
 std::pair<std::vector<std::pair<typename Polygon<T>::vertex_id_type, Real> >,
           std::pair<typename Polygon<T>::vertex_id_type, Real> >
 Polygon<T>::list_vertices_within_radius(
-        const std::pair<Real3, face_id_type>& pos, const Real radius)
+        const std::pair<Real3, face_id_type>& pos, const Real radius) const
 {
+    // XXX: it looks vertices only on the adjacent faces
     // because gfrd circular shell size is restricted so that the shell does not
-    // contain the incenter of neighbor face, nomally this is enough.
-    throw NotImplemented("Polygon::list_vertices_within_radius");
+    // contain the incenter of neighbor face, nomally this range is enough.
 
-//     std::vector<std::pair<typename Polygon<T>::vertex_id_type, Real> > list;
-//
-//     vertex_id_type nearestid = make_vid(pos.second, 3);
-//     Real             nearest = std::numeric_limits<length_type>::max();
-//     triangle_type const&   f = triangle_at(pos.second);
-//
-//     const Real rad2 = radius * radius;
-//     for(std::size_t i=0; i<3; ++i)
-//     {
-//         const Real dist2 = length_sq(pos.first - f.vertex_at(i));
-//         if(dist2 <= rad2)
-//         {
-//             const Real dist = std::sqrt(dist2);
-//             const vertex_id_type vid = make_vid(pos.second, local_idx_type(i));
-//
-//             list.push_back(std::make_pair(vid, dist));
-//
-//             if(dist < nearest)
-//             {
-//                 nearest   = dist;
-//                 nearestid = vid;
-//             }
-//         }
-//     }
-//     std::sort(list.begin(), list.end(), utils::pair_second_element_comparator<
-//             std::pair<typename Polygon<T>::vertex_id_type, Real> >());
-//
-//     return std::make_pair(list, std::make_pair(nearestid, nearest));
+    std::vector<std::pair<vertex_id_type, Real> > list;
+
+    vertex_id_type    nearestid = un_initialized<vertex_id_type>();
+    Real                nearest = std::numeric_limits<Real>::max();
+    boost::array<face_id_type, 3> const& adjs = face_prop_at(pos.second).adjacents;
+
+    const Real rad2 = radius * radius;
+    for(std::size_t i=0; i<3; ++i)
+    {
+        face_property_type const& f = face_prop_at(adjs[i]);
+
+        for(std::size_t j=0; j<3; ++j)
+        {
+            const vertex_id_type vid = f.vertices[j];
+
+            const Real dist2 = this->distance_sq(pos,
+                    std::make_pair(f.triangle.vertex_at(j), f.id));
+
+            if(dist2 <= rad2)
+            {
+                const Real dist = std::sqrt(dist2);
+                // there possibly two different path to the vertex.
+                // here, use shortest path only.
+
+                typename std::vector<std::pair<vertex_id_type, Real> >::iterator
+                    iter = std::find_if(list.begin(), list.end(),
+                        utils::pair_first_element_unary_predicator<
+                            vertex_id_type, Real>(vid));
+                if(iter == list.end())
+                {
+                    list.push_back(std::make_pair(vid, dist));
+                }
+                else
+                {
+                    iter->second = std::min(iter->second, dist);
+                }
+
+                if(dist < nearest)
+                {
+                    nearest   = dist;
+                    nearestid = vid;
+                }
+            }
+        }
+    }
+
+    std::sort(list.begin(), list.end(), utils::pair_second_element_comparator<
+              vertex_id_type, Real>());
+
+    return std::make_pair(list, std::make_pair(nearestid, nearest));
 }
 
 template<typename T>
 std::pair<std::vector<std::pair<typename Polygon<T>::face_id_type, Real> >,
           std::pair<typename Polygon<T>::face_id_type, Real> >
-Polygon<T>::list_faces_within_radius(const Real3& pos, const Real radius)
+Polygon<T>::list_faces_within_radius(const Real3& pos, const Real radius) const
 {
-    throw NotImplemented("Polygon::list_faces_within_radius");
+    // TODO: smarter (than brute force) spatial partition method is needed.
+    std::vector<std::pair<face_id_type, Real> > list;
+    face_id_type nearestid = un_initialized<face_id_type>();
+    Real         nearest   = std::numeric_limits<Real>::max();
+
+    const Real rad2 = radius * radius;
+    for(typename face_container_type::const_iterator
+            iter(faces_.begin()), end(faces_.end()); iter != end; ++iter)
+    {
+        const Real dist2 = distance_sq(pos, iter->triangle);
+        if(dist2 < rad2)
+        {
+            const Real dist = std::sqrt(dist2);
+            list.push_back(std::make_pair(iter->id, dist));
+            if(dist < nearest)
+            {
+                nearest = dist;
+                nearestid = iter->id;
+            }
+        }
+    }
+    std::sort(list.begin(), list.end(), utils::pair_second_element_comparator<
+              face_id_type, Real>());
+    return std::make_pair(list, std::make_pair(nearestid, nearest));
 }
 
 template<typename T>
