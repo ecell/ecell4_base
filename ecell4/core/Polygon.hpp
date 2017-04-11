@@ -385,11 +385,7 @@ Polygon<T>::is_connected_by_edge(
     const face_property_type& fp = this->face_prop_at(fid1);
     for(std::size_t i=0; i<3; ++i)
     {
-        const std::pair<face_id_type, face_id_type>& fs =
-            this->edge_prop_at(fp.edges[i]).faces;
-
-        if(fs.first == fid2 || fs.second == fid2)
-            return std::make_pair(true, fp.edges[i]);
+        if(fp.adjacents[i] == fid2) return std::make_pair(true, fp.edges[i]);
     }
     return std::make_pair(false, un_initialized<edge_id_type>());
 }
