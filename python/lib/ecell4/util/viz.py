@@ -2171,4 +2171,4 @@ def display_pdb(entity, width=400, height=400):
     entity_id = pdb.PDBDataSource.parse_entity(entity)
     if entity is None:
         raise ValueError('An invalid entity [{}] was given.'.format(repr(entity)))
-    display(IFrame("http://gjbekker.github.io/molmil/#molmil.loadPDB('{}');".format(entity_id), width, height))
+    display(IFrame("https://gjbekker.github.io/molmil/#molmil.loadPDB('{}');".format(entity_id), width, height))
