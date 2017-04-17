@@ -183,7 +183,9 @@ class ParseDecorator:
                     calling_frame.f_globals[k] = v
                     # print "WARNING: '%s' was recovered to be '%s'." % (k, v)
 
-    def __evaluate(self, expr, params={}):
+    def __evaluate(self, expr, params=None):
+        params = params or {}
+
         class AnyCallableLocals:
 
             def __init__(self, callback, locals):

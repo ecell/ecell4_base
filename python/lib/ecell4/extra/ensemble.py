@@ -42,7 +42,7 @@ def run_multiprocessing(target, jobs, n=1, **kwargs):
     retval = [end_recv.recv() for end_recv in end_recvs]
     return [retval[i: i + n] for i in range(0, len(retval), n)]
 
-def run_sge(target, jobs, n=1, path='.', delete=True, wait=True, environ=None, modules=[], **kwargs):
+def run_sge(target, jobs, n=1, path='.', delete=True, wait=True, environ=None, modules=(), **kwargs):
     logging.basicConfig(level=logging.DEBUG)
 
     if isinstance(target, types.LambdaType) and target.__name__ == "<lambda>":
@@ -191,10 +191,10 @@ import ecell4.ode
 
 ## observers=(), progressbar=0
 def ensemble_simulations(
-    t, y0={}, volume=1.0, model=None, solver='ode',
+    t, y0=None, volume=1.0, model=None, solver='ode',
     is_netfree=False, species_list=None, without_reset=False,
-    return_type='matplotlib', opt_args=(), opt_kwargs={},
-    structures={}, rndseed=None,
+    return_type='matplotlib', opt_args=(), opt_kwargs=None,
+    structures=None, rndseed=None,
     n=1, nproc=1, method=None, errorbar=True,
     **kwargs):
     """
@@ -236,6 +236,10 @@ def ensemble_simulations(
     ecell4.extra.run_multiprocessing
 
     """
+    y0 = y0 or {}
+    opt_kwargs = opt_kwargs or {}
+    structures = structures or {}
+
     for key, value in kwargs.items():
         if key == 'r':
             return_type = value

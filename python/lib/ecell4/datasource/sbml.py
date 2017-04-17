@@ -21,7 +21,8 @@ class SBMLDataSource(object):
         if filename is not None:
             self.read(filename)
 
-    def function_definitions(self, evalfunc=None, kwargs={}):
+    def function_definitions(self, evalfunc=None, kwargs=None):
+        kwargs = kwargs or {}
         for func in self.model.function_definitions:
             args = [func.getArgument(i).getName() for i in range(func.getNumArguments())]
             formula = libsbml.formulaToString(func.getBody())
@@ -66,7 +67,9 @@ class SBMLDataSource(object):
             if sp.getConstant():
                 yield (sp.id)
 
-    def assignment_rules(self, evalfunc=None, kwargs={}):
+    def assignment_rules(self, evalfunc=None, kwargs=None):
+        kwargs = kwargs or {}
+
         for rule in self.model.rules:
             if rule.isAssignment():
                 if evalfunc is None:
@@ -75,7 +78,9 @@ class SBMLDataSource(object):
                     #XXX: Why not evaluate variable?
                     yield (rule.variable, evalfunc(rule.formula, kwargs))
 
-    def reactions(self, evalfunc=None, kwargs={}):
+    def reactions(self, evalfunc=None, kwargs=None):
+        kwargs = kwargs or {}
+
         for r in self.model.reactions:
             reactants = [(reactant.species, reactant.stoichiometry)
                          for reactant in r.reactants]

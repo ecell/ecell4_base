@@ -269,7 +269,7 @@ def plot_number_observer_with_matplotlib(*args, **kwargs):
         ax.set_ylim(kwargs["ylim"])
     plt.show()
 
-def plot_number_observer_with_nya(obs, config={}, width=600, height=400, x=None, y=None, to_png=False):
+def plot_number_observer_with_nya(obs, config=None, width=600, height=400, x=None, y=None, to_png=False):
     """
     Generate a plot from NumberObservers and show it on IPython notebook
     with nyaplot.
@@ -287,6 +287,8 @@ def plot_number_observer_with_nya(obs, config={}, width=600, height=400, x=None,
         Serials for y axis.
 
     """
+    config = config or {}
+
     from IPython.core.display import display, HTML
     import numpy
 
@@ -468,7 +470,7 @@ def __get_range_of_trajectories(data, plot_range=None):
                 repr(plot_range)))
 
 def plot_movie_with_elegans(
-        worlds, radius=None, width=500, height=500, config={}, grid=False,
+        worlds, radius=None, width=500, height=500, config=None, grid=False,
         species_list=None):
     """
     Generate a movie from received instances of World and show them
@@ -493,6 +495,8 @@ def plot_movie_with_elegans(
         If set, plot_movie will not search the list of species
 
     """
+    config = config or {}
+
     from IPython.core.display import display, HTML
     from jinja2 import Template
 
@@ -531,7 +535,7 @@ def plot_movie_with_elegans(
     }, '/templates/movie.tmpl')))
 
 def plot_world_with_elegans(
-        world, radius=None, width=350, height=350, config={}, grid=True,
+        world, radius=None, width=350, height=350, config=None, grid=True,
         wireframe=False, species_list=None, debug=None, max_count=1000,
         camera_position=(-22, 23, 32), camera_rotation=(-0.6, 0.5, 0.6),
         return_id=False, predicator=None):
@@ -578,6 +582,8 @@ def plot_world_with_elegans(
         If True, return a model id, which is required for `to_png` function.
 
     """
+    config = config or {}
+
     from IPython.core.display import display, HTML
     from .simulation import load_world
 
@@ -693,7 +699,7 @@ console.log("Hi!");
 
 
 def plot_dense_array(
-        arr, length=256, ranges=None, colors=["#a6cee3", "#fb9a99"], grid=False, camera_position=(-22, 23, 32), camera_rotation=(-0.6, 0.5, 0.6)):
+        arr, length=256, ranges=None, colors=("#a6cee3", "#fb9a99"), grid=False, camera_position=(-22, 23, 32), camera_rotation=(-0.6, 0.5, 0.6)):
     """
     Volume renderer
 
@@ -814,7 +820,7 @@ def generate_html(keywords, tmpl_path):
 
 
 def plot_trajectory_with_elegans(
-        obs, width=350, height=350, config={}, grid=True, wireframe=False,
+        obs, width=350, height=350, config=None, grid=True, wireframe=False,
         max_count=10, camera_position=(-22, 23, 32), camera_rotation=(-0.6, 0.5, 0.6),
         plot_range=None):
     """
@@ -841,6 +847,8 @@ def plot_trajectory_with_elegans(
         If None, the minimum volume containing all the trajectories is used.
 
     """
+    config = config or {}
+
     from IPython.core.display import display, HTML
 
     color_scale = default_color_scale(config=config)
