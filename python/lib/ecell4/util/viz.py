@@ -758,7 +758,7 @@ def plot_dense_array(
         arr = [((val/numpy.max(hist))*(hist.copy())).reshape(len1d) for val in colors]
         # add blue and green
         return numpy.array(arr, dtype=numpy.int8).transpose().reshape(tuple(list(hist.shape) + [3]))
-    ranges = ranges if ranges is not None else [(numpy.min(a), numpy.max(a)) for a in numpy.array(arr).reshape((sum(map(lambda a: len(a), arr)), 3)).transpose()]
+    ranges = ranges if ranges is not None else [(numpy.min(a), numpy.max(a)) for a in numpy.array(arr).reshape((sum(map(len, arr)), 3)).transpose()]
 
     hist_arr = [hist(a, ranges, length, colors[i]) for i, a in enumerate(arr)]
     compressed = reduce(lambda p, n: p+n, hist_arr)
