@@ -45,7 +45,7 @@ class JustParseCallback(Callback):
                           DeprecationWarning)
         self.comparisons.append(obj)
 
-class TransparentCallback(object):
+class TransparentCallback(Callback):
 
     def __init__(self):
         Callback.__init__(self)
