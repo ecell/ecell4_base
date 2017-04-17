@@ -1,5 +1,5 @@
-#ifndef __ECELL4_SPH_BESSEL_HPP
-#define __ECELL4_SPH_BESSEL_HPP
+#ifndef ECELL4_SPH_BESSEL_HPP
+#define ECELL4_SPH_BESSEL_HPP
 
 #include <utility>
 #include <vector>
@@ -153,4 +153,4 @@ inline values sphy_array(const int n, const double x)
     return std::make_pair(ys, dots);
 }
 
-#endif /* __ECELL4_SPH_BESSEL_HPP */
+#endif /* ECELL4_SPH_BESSEL_HPP */

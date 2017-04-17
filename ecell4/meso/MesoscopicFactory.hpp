@@ -1,5 +1,5 @@
-#ifndef __ECELL4_MESO_MESOSCOPIC_FACTORY_HPP
-#define __ECELL4_MESO_MESOSCOPIC_FACTORY_HPP
+#ifndef ECELL4_MESO_MESOSCOPIC_FACTORY_HPP
+#define ECELL4_MESO_MESOSCOPIC_FACTORY_HPP
 
 #include <ecell4/core/SimulatorFactory.hpp>
 #include <ecell4/core/RandomNumberGenerator.hpp>
@@ -120,4 +120,4 @@ protected:
 
 } // ecell4
 
-#endif /* __ECELL4_MESO_MESOSCOPIC_FACTORY_HPP */
+#endif /* ECELL4_MESO_MESOSCOPIC_FACTORY_HPP */

@@ -1,5 +1,5 @@
-#ifndef __ECELL4_OFFLATTICE_SPACE_HPP
-#define __ECELL4_OFFLATTICE_SPACE_HPP
+#ifndef ECELL4_OFFLATTICE_SPACE_HPP
+#define ECELL4_OFFLATTICE_SPACE_HPP
 
 #include "VoxelSpaceBase.hpp"
 
@@ -99,4 +99,4 @@ protected:
 
 } // ecell4
 
-#endif /* __ECELL4_OFFLATTICE_SPACE_HPP */
+#endif /* ECELL4_OFFLATTICE_SPACE_HPP */

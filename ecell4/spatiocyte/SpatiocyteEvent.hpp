@@ -1,5 +1,5 @@
-#ifndef __ECELL4_SPATIOCYTE_EVENT_HPP
-#define __ECELL4_SPATIOCYTE_EVENT_HPP
+#ifndef ECELL4_SPATIOCYTE_EVENT_HPP
+#define ECELL4_SPATIOCYTE_EVENT_HPP
 
 #include <ecell4/core/ReactionRule.hpp>
 #include <ecell4/core/EventScheduler.hpp>
@@ -129,4 +129,4 @@ protected:
 
 } // ecell4
 
-#endif /* __ECELL4_SPATIOCYTE_EVENT_HPP */
+#endif /* ECELL4_SPATIOCYTE_EVENT_HPP */

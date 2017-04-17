@@ -1,5 +1,5 @@
-#ifndef __ECELL4_ODE_ODE_FACTORY2_HPP
-#define __ECELL4_ODE_ODE_FACTORY2_HPP
+#ifndef ECELL4_ODE_ODE_FACTORY2_HPP
+#define ECELL4_ODE_ODE_FACTORY2_HPP
 
 #include <ecell4/core/SimulatorFactory.hpp>
 #include <ecell4/core/extras.hpp>
@@ -157,4 +157,4 @@ protected:
 
 } // ecell4
 
-#endif /* __ECELL4_ODE_ODE_FACTORY2_HPP */
+#endif /* ECELL4_ODE_ODE_FACTORY2_HPP */

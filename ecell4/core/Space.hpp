@@ -1,5 +1,5 @@
-#ifndef __ECELL4_SPACE_HPP
-#define __ECELL4_SPACE_HPP
+#ifndef ECELL4_SPACE_HPP
+#define ECELL4_SPACE_HPP
 
 #include <stdexcept>
 
@@ -245,4 +245,4 @@ public:
 
 } // ecell4
 
-#endif /* __ECELL4_SPACE_HPP */
+#endif /* ECELL4_SPACE_HPP */

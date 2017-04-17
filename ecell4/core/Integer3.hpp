@@ -1,5 +1,5 @@
-#ifndef __ECELL4__GLOBAL_HPP
-#define __ECELL4__GLOBAL_HPP
+#ifndef ECELL4__GLOBAL_HPP
+#define ECELL4__GLOBAL_HPP
 
 #include <ostream>
 #include <iomanip>

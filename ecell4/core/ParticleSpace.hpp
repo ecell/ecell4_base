@@ -1,5 +1,5 @@
-#ifndef __ECELL4_PARTICLE_SPACE_HPP
-#define __ECELL4_PARTICLE_SPACE_HPP
+#ifndef ECELL4_PARTICLE_SPACE_HPP
+#define ECELL4_PARTICLE_SPACE_HPP
 
 #include <cmath>
 
@@ -431,4 +431,4 @@ protected:
 
 } // ecell4
 
-#endif /* __ECELL4_PARTICLE_SPACE_HPP */
+#endif /* ECELL4_PARTICLE_SPACE_HPP */

@@ -1,5 +1,5 @@
-#ifndef __ECELL4_LATTICE_SPACE_CELL_LIST_IMPL_HPP
-#define __ECELL4_LATTICE_SPACE_CELL_LIST_IMPL_HPP
+#ifndef ECELL4_LATTICE_SPACE_CELL_LIST_IMPL_HPP
+#define ECELL4_LATTICE_SPACE_CELL_LIST_IMPL_HPP
 
 #include "Context.hpp"
 #include "MolecularType.hpp"
@@ -739,4 +739,4 @@ protected:
 
 } // ecell4
 
-#endif /* __ECELL4_LATTICE_SPACE_CELL_LIST_IMPL_HPP */
+#endif /* ECELL4_LATTICE_SPACE_CELL_LIST_IMPL_HPP */
