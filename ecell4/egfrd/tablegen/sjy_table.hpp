@@ -1,5 +1,5 @@
-#ifndef __SJY_TABLE_HPP
-#define __SJY_TABLE_HPP
+#ifndef EGFRD_SJY_TABLE_HPP
+#define EGFRD_SJY_TABLE_HPP
 
 #include <string>
 #include <iostream>
@@ -218,4 +218,4 @@ inline std::vector<double> get_sub_sequence_from_matrix2(const matrix mat0,
     return retval;
 }
 
-#endif /* __SJY_TABLE_HPP */
+#endif /* EGFRD_SJY_TABLE_HPP */

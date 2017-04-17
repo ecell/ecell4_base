@@ -1,5 +1,5 @@
-#if !defined(__PLAINPAIRGREENSFUNCTION)
-#define __PLAINPAIRGREENSFUNCTION 
+#if !defined(EGFRD_PLAINPAIRGREENSFUNCTION)
+#define EGFRD_PLAINPAIRGREENSFUNCTION 
 
 #include <cmath>
 #include <vector>
@@ -119,4 +119,4 @@ private:
 
 
 
-#endif // __PLAINPAIRGREENSFUNCTION 
+#endif // EGFRD_PLAINPAIRGREENSFUNCTION 

@@ -1,5 +1,5 @@
-#if !defined( __FIRSTPASSAGEGREENSFUNCTION1DRAD_HPP )
-#define __FIRSTPASSAGEGREENSFUNCTION1DRAD_HPP
+#if !defined( EGFRD_FIRSTPASSAGEGREENSFUNCTION1DRAD_HPP )
+#define EGFRD_FIRSTPASSAGEGREENSFUNCTION1DRAD_HPP
 
 #include <sstream>
 #include <iostream>
@@ -239,4 +239,4 @@ private:
     // This is the time scale of the system.
     Real t_scale;
 };
-#endif // __FIRSTPASSAGEGREENSFUNCTION1DRAD_HPP
+#endif // EGFRD_FIRSTPASSAGEGREENSFUNCTION1DRAD_HPP

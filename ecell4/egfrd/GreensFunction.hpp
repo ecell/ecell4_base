@@ -1,5 +1,5 @@
-#if !defined( __GREENSFUNCTION_HPP )
-#define __GREENSFUNCTION_HPP
+#if !defined( EGFRD_GREENSFUNCTION_HPP )
+#define EGFRD_GREENSFUNCTION_HPP
 
 #include "Defs.hpp"
 
@@ -27,4 +27,4 @@ protected:
     const Real D;
 };
 
-#endif // __GREENSFUNCTION_HPP
+#endif // EGFRD_GREENSFUNCTION_HPP

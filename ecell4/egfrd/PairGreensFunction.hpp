@@ -1,5 +1,5 @@
-#if !defined( __PAIRGREENSFUNCTION_HPP )
-#define __PAIRGREENSFUNCTION_HPP
+#if !defined( EGFRD_PAIRGREENSFUNCTION_HPP )
+#define EGFRD_PAIRGREENSFUNCTION_HPP
 
 #include "Defs.hpp"
 #include <string>
@@ -49,4 +49,4 @@ protected:
   const Real Sigma;
 };
 
-#endif /* __PAIRGREENSFUNCTION_HPP */
+#endif /* EGFRD_PAIRGREENSFUNCTION_HPP */
