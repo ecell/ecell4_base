@@ -63,7 +63,7 @@ class biogridDataSource(object):
 
     def interactions(self, geneList=None, org=None):
         geneList = geneList or []
-        organisms = organisms or []
+        org = org or []
 
         organisms = self.query("organisms")
         org = self.orgmaker(org)
