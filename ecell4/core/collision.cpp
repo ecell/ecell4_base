@@ -1,6 +1,5 @@
 #include "collision.hpp"
 
-
 namespace ecell4
 {
 
@@ -390,19 +389,19 @@ Real3 closest_point_point_triangle(const Real3& p, const Triangle& t)
     // published by Morgan Kaufmann Publishers, (c) 2005 Elsevier Inc.
     // pp.141-142
 
-    const Real3 a = vertices[0];
-    const Real3 b = vertices[1];
-    const Real3 c = vertices[2];
+    const Real3 a = t.vertices()[0];
+    const Real3 b = t.vertices()[1];
+    const Real3 c = t.vertices()[2];
 
     const Real3 ab = b - a;
     const Real3 ac = c - a;
-    const Real3 ap = pos - a;
+    const Real3 ap = p - a;
     const Real  d1 = dot_product(ab, ap);
     const Real  d2 = dot_product(ac, ap);
     if (d1 <= 0.0 && d2 <= 0.0)
         return a;
 
-    const Real3 bp = pos - b;
+    const Real3 bp = p - b;
     const Real  d3 = dot_product(ab, bp);
     const Real  d4 = dot_product(ac, bp);
     if (d3 >= 0.0 && d4 <= d3)
@@ -415,7 +414,7 @@ Real3 closest_point_point_triangle(const Real3& p, const Triangle& t)
         return a + ab * v;
     }
 
-    const Real3 cp = pos - c;
+    const Real3 cp = p - c;
     const Real  d5 = dot_product(ab, cp);
     const Real  d6 = dot_product(ac, cp);
     if (d6 >= 0.0 && d5 <= d6)
@@ -445,7 +444,7 @@ Real3 closest_point_point_triangle(const Real3& p, const Triangle& t)
 Real3 closest_point_point_circle(const Real3& p, const Circle& c)
 {
     const Real dotp = dot_product((c.center() - p), c.normal());
-    const Real3 projected(p + dotp * c.normal());
+    const Real3 projected(p + c.normal() * dotp);
     const Real dist_on_plane2 = length_sq(projected - c.center());
     const Real rad2 = c.radius() * c.radius();
 
@@ -453,7 +452,7 @@ Real3 closest_point_point_circle(const Real3& p, const Circle& c)
         return projected;
 
     const Real dr = std::sqrt(dist_on_plane2 / rad2);
-    return (1. - dr) * c.center() + dr * projected;
+    return c.center() * (1. - dr) + projected * dr;
 }
 
 Real3 closest_point_point_cone(const Real3&, const Triangle&)
@@ -462,17 +461,17 @@ Real3 closest_point_point_cone(const Real3&, const Triangle&)
 }
 
 bool intersect_segment_triangle(const Real3& p, const Real3& q,
-        const Triangle& t, Barycentric<Real>& b, Real& s)
+        const Triangle& tri, ecell4::Barycentric<Real>& b, Real& s)
 {
     // this implementation is from Real-Time Collision Detection by Christer Ericson,
     // published by Morgan Kaufmann Publishers, (c) 2005 Elsevier Inc.
     // pp.190-194
 
     const Real3 line = p - q;
-    const Real3 ab   = t.edges()[0];
-    const Real3 ac   = t.edges()[2] * (-1.);
-    const Real3 normal t.normal();
-    const Real3 v0 = t.vertices()[0];
+    const Real3 ab   = tri.edges()[0];
+    const Real3 ac   = tri.edges()[2] * (-1.);
+    const Real3 normal = tri.normal();
+    const Real3 v0 = tri.vertices()[0];
 
     const Real d = dot_product(line, normal);
     if(d < 0.0) return false;
@@ -500,32 +499,32 @@ bool intersect_segment_triangle(const Real3& p, const Real3& q,
 }
 
 bool intersect_segment_circle(const Real3& pos, const Real3& disp,
-                              const Circle& t, Real& s)
+                              const Circle& c, Real& s)
 {
     throw NotImplemented("intersect_segment_circle");
 }
 
 bool intersect_segment_cone(const Real3& pos, const Real3& disp,
-                            const Cone& t, Real& s)
+                            const Cone& c, Real& s)
 {
     throw NotImplemented("intersect_segment_cone");
 }
 bool intersect_ray_triangle(const Real3& position, const Real3& direction,
-                            const Triangle& t, Barycentric<Real>& b, Real3& q)
+                            const Triangle& tri, ecell4::Barycentric<Real>& b, Real3& q)
 {
     // this implementation is based on
     // "Real-Time Collision Detection" by Christer Ericson,
     // published by Morgan Kaufmann Publishers, (c) 2005 Elsevier Inc.
     // pp.190-194
 
-    const Real3 ab = t.edges()[0];
-    const Real3 ac = t.edges()[2] * (-1.);
-    const Real3 normal = t.normal();
+    const Real3 ab = tri.edges()[0];
+    const Real3 ac = tri.edges()[2] * (-1.);
+    const Real3 normal = tri.normal();
 
     const Real d = dot_product(direction, normal);
     if(d < 0.0) return false;
 
-    const Real3 ap = pos - vertices[0];
+    const Real3 ap = position - tri.vertices()[0];
     const Real t = dot_product(ap, normal);
     if(t < 0.0 || d < t) return false;
 
@@ -539,19 +538,19 @@ bool intersect_ray_triangle(const Real3& position, const Real3& direction,
     b[1] *= ood;
     b[2] *= ood;
     b[0] = 1. - b[1] - b[2];
-    q = to_absolute(b, t);
+    q = to_absolute(b, tri);
 
     return true;
 }
 
 bool intersect_ray_circle(const Real3& pos, const Real3& disp,
-                          const Circle& t, Real& t, Real3& q)
+                          const Circle& c, Real& t, Real3& q)
 {
     throw NotImplemented("intersect_ray_circle");
 }
 
 bool intersect_ray_cone(const Real3& pos, const Real3& disp,
-                        const Cone& t, Real& t, Real3& q)
+                        const Cone& c, Real& t, Real3& q)
 {
     throw NotImplemented("intersect_ray_cone");
 }

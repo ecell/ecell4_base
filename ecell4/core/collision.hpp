@@ -9,6 +9,10 @@
 #include "PlanarSurface.hpp"
 #include "Sphere.hpp"
 #include "Rod.hpp"
+#include "Circle.hpp"
+#include "Triangle.hpp"
+#include "Cone.hpp"
+#include "Barycentric.hpp"
 
 
 namespace ecell4
@@ -121,20 +125,20 @@ inline Real distance_sq_point_circle(const Real3& p, const Circle& c)
 }
 inline Real distance_sq_point_cone(const Real3& p, const Cone& c)
 {
-    return length_sq(p - closest_point_point_circle(p, c));
+    return length_sq(p - closest_point_point_cone(p, c));
 }
 
 inline Real distance_sq_sphere_triangle(const Sphere& s, const Triangle& t)
 {
-    return distance_sq_point_triangle(s.center(), c) - sphere.radius();
+    return distance_sq_point_triangle(s.center(), t) - s.radius();
 }
 inline Real distance_sq_sphere_circle(const Sphere& s, const Circle& c)
 {
-    return distance_sq_point_circle(s.center(), c) - sphere.radius();
+    return distance_sq_point_circle(s.center(), c) - s.radius();
 }
 inline Real distance_sq_sphere_cone(const Sphere& s, const Cone& c)
 {
-    return distance_sq_point_cone(s.center(), c) - sphere.radius();
+    return distance_sq_point_cone(s.center(), c) - s.radius();
 }
 
 inline bool test_sphere_triangle(const Sphere& s, const Triangle& t)
@@ -156,38 +160,38 @@ inline Real distance_sphere_triangle(const Sphere& s, const Triangle& t)
 }
 inline Real distance_sphere_circle(  const Sphere& s, const Circle& c)
 {
-    return std::sqrt(distance_sq_sphere_circle(s, t));
+    return std::sqrt(distance_sq_sphere_circle(s, c));
 }
 inline Real distance_sphere_cone(    const Sphere& s, const Cone& c)
 {
-    return std::sqrt(distance_sq_sphere_cone(s, t));
+    return std::sqrt(distance_sq_sphere_cone(s, c));
 }
 
 inline Real distance_point_triangle(const Real3& p, const Triangle& t)
 {
-    return std::sqrt(distance_sq_point_triangle(s, t));
+    return std::sqrt(distance_sq_point_triangle(p, t));
 }
 inline Real distance_point_circle(  const Real3& p, const Circle& c)
 {
-    return std::sqrt(distance_sq_point_circle(s, t));
+    return std::sqrt(distance_sq_point_circle(p, c));
 }
 inline Real distance_point_cone(    const Real3& p, const Cone& c)
 {
-    return std::sqrt(distance_sq_point_cone(s, t));
+    return std::sqrt(distance_sq_point_cone(p, c));
 }
 
 bool intersect_segment_triangle(const Real3& p, const Real3& q,
-                                const Triangle& t, Barncentric<Real>& b, Real& s);
+                                const Triangle& t, Barycentric<Real>& b, Real& s);
 bool intersect_segment_circle(const Real3& p, const Real3& q,
-                              const Circle& t, Real& s);
+                              const Circle& c, Real& s);
 bool intersect_segment_cone(const Real3& p, const Real3& q,
-                            const Cone& t, Real& s);
+                            const Cone& c, Real& s);
 bool intersect_ray_triangle(const Real3& pos, const Real3& disp,
                             const Triangle& t, Barycentric<Real>& b, Real3& q);
 bool intersect_ray_circle(const Real3& pos, const Real3& disp,
-                          const Circle& t, Real& t, Real3& q);
+                          const Circle& c, Real& t, Real3& q);
 bool intersect_ray_cone(const Real3& pos, const Real3& disp,
-                        const Cone& t, Real& t, Real3& q);
+                        const Cone& c, Real& t, Real3& q);
 
 } // collision
 
