@@ -36,17 +36,19 @@
 #include "DomainID.hpp"
 #include "Shell.hpp"
 //#include "EventScheduler.hpp"
-#include "PairGreensFunction.hpp"
 #include "ParticleSimulator.hpp"
 #include "MatrixSpace.hpp"
 #include "AnalyticalSingle.hpp"
 #include "AnalyticalPair.hpp"
 #include "Multi.hpp"
-#include "GreensFunction3DRadAbs.hpp"
-#include "GreensFunction3DRadInf.hpp"
-#include "GreensFunction3DAbsSym.hpp"
-#include "GreensFunction3DAbs.hpp"
-#include "GreensFunction3D.hpp"
+
+#include <greens_functions/PairGreensFunction.hpp>
+#include <greens_functions/GreensFunction3DRadAbs.hpp>
+#include <greens_functions/GreensFunction3DRadInf.hpp>
+#include <greens_functions/GreensFunction3DAbsSym.hpp>
+#include <greens_functions/GreensFunction3DAbs.hpp>
+#include <greens_functions/GreensFunction3D.hpp>
+using namespace greens_functions;
 
 
 template<typename Tworld_>

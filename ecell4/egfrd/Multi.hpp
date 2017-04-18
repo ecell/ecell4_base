@@ -6,6 +6,8 @@
 #include <boost/algorithm/string/join.hpp>
 
 #include <ecell4/core/config.h>
+#include <ecell4/core/functions.hpp>
+using ecell4::pow_2;
 #include <ecell4/core/comparators.hpp>
 #ifdef WIN32_MSC
 #include <boost/container/map.hpp>
@@ -31,10 +33,12 @@ struct get_mapper_mf
 // #include "BDSimulator.hpp"
 #include "BDPropagator.hpp"
 #include "Logger.hpp"
-#include "PairGreensFunction.hpp"
 #include "VolumeClearer.hpp"
 #include "utils/array_helper.hpp"
 #include "utils/range.hpp"
+
+#include <greens_functions/PairGreensFunction.hpp>
+using namespace greens_functions;
 
 template<typename Ttraits_>
 class MultiParticleContainer

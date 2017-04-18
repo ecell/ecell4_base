@@ -16,12 +16,12 @@ typedef size_t Index;
 #define XSTR( S ) STR( S )
 #define STR( S ) #S
 
-#define THROW_UNLESS( CLASS, EXPRESSION )       \
-    if( ! ( EXPRESSION ) )\
-    {\
-        throw CLASS( "Check [" + std::string( STR( EXPRESSION ) ) +\
-                     "] failed." );\
-    }\
+// #define THROW_UNLESS( CLASS, EXPRESSION )       \
+//     if( ! ( EXPRESSION ) )\
+//     {\
+//         throw CLASS( "Check [" + std::string( STR( EXPRESSION ) ) +\
+//                      "] failed." );\
+//     }\
 
 
 #define IGNORE_RETURN (void)
