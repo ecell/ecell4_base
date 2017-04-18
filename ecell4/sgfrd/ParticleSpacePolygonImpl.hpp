@@ -6,7 +6,7 @@
 #include <ecell4/core/Polygon.hpp>
 #include <ecell4/core/ParticleSpace.hpp>
 #include <ecell4/core/Context.hpp>
-#include <ecell4/sgfrd/StructuralContainer.hpp>
+#include <ecell4/sgfrd/StructureRegistrator.hpp>
 #include <set>
 
 namespace ecell4
@@ -40,8 +40,8 @@ public:
     typedef typename polygon_type::local_index_type  local_index_type;
     typedef typename polygon_type::barycentric_type  barycentric_type;
 
-    typedef StructuralContainer<ParticleID, face_id_type, traits_type>
-        structural_container_type;
+    typedef StructureRegistrator<ParticleID, face_id_type, traits_type>
+        structure_registrator_type;
 
 protected:
 
@@ -51,7 +51,7 @@ protected:
 public:
 
     ParticleSpacePolygonImpl(const boost::shared_ptr<polygon_type>& polygon)
-        : base_type(), polygon_(polygon), container_(polygon->num_faces())
+        : base_type(), polygon_(polygon), registrator_(polygon->num_faces())
     {}
     virtual ~ParticleSpacePolygonImpl(){}
 
@@ -156,7 +156,7 @@ private:
     // and cell list?
     boost::shared_ptr<polygon_type> polygon_;
     particle_container_type         particles_;
-    structural_container_type          container_;
+    structure_registrator_type      registrator_;
     pid_to_idx_map_type             pid_to_idx_map_;
     per_species_particle_id_set     particle_pool_;
 };
@@ -290,8 +290,8 @@ template<typename T_traits>
 bool ParticleSpacePolygonImpl<T_traits>::update_particle(
         const ParticleID& pid, const Particle& p)
 {
-    if(container_.have(pid)) // 2D->3D
-        container_.remove(pid);
+    if(registrator_.have(pid)) // 2D->3D
+        registrator_.remove(pid);
 
     particle_container_type::iterator iter(find(pid));
     if(iter == particles_.end())
@@ -333,9 +333,9 @@ void ParticleSpacePolygonImpl<T_traits>::remove_particle(const ParticleID& pid)
     particles_.pop_back();
     pid_to_idx_map_.erase(pid);
 
-    if(container_.have(pid))
+    if(registrator_.have(pid))
     {
-        container_.remove(pid);
+        registrator_.remove(pid);
     }
     return;
 }
@@ -344,8 +344,8 @@ template<typename T_traits>
 inline typename ParticleSpacePolygonImpl<T_traits>::face_id_type
 ParticleSpacePolygonImpl<T_traits>::face_on(const ParticleID& pid) const
 {
-    if(container_.have(pid))
-        return container_.structure_on(pid);
+    if(registrator_.have(pid))
+        return registrator_.structure_on(pid);
     throw NotFound("particle is not on a face");
 }
 
@@ -353,7 +353,7 @@ template<typename T_traits>
 inline std::size_t ParticleSpacePolygonImpl<T_traits>::count_particle(
         const face_id_type& fid) const
 {
-    return container_.elements_over(fid).size();
+    return registrator_.elements_over(fid).size();
 }
 
 template<typename T_traits>
@@ -366,21 +366,21 @@ bool ParticleSpacePolygonImpl<T_traits>::update_particle(
         const std::size_t idx(particles_.size());
         pid_to_idx_map_[pid] = idx;
         particles_.push_back(std::make_pair(pid, p));
-        container_.emplace(pid, fid);
+        registrator_.emplace(pid, fid);
         return true;
     }
-    else if(container_.have(pid)) // 2D -> 2D
+    else if(registrator_.have(pid)) // 2D -> 2D
     {
         assert(iter->first == pid);
         iter->second = p;
-        container_.update(pid, fid);
+        registrator_.update(pid, fid);
         return false;
     }
     else // 3D -> 2D
     {
         assert(iter->first == pid);
         iter->second = p;
-        container_.emplace(pid, fid);
+        registrator_.emplace(pid, fid);
         return false;
     }
 }
@@ -389,7 +389,7 @@ template<typename T_traits>
 std::vector<std::pair<ParticleID, Particle> >
 ParticleSpacePolygonImpl<T_traits>::get_particles(const face_id_type& fid) const
 {
-    const std::vector<ParticleID>& ids = container_.elements_over(fid);
+    const std::vector<ParticleID>& ids = registrator_.elements_over(fid);
     std::vector<std::pair<ParticleID, Particle> > retval(ids.size());
     for(std::size_t i=0; i<ids.size(); ++i)
     {
@@ -480,7 +480,7 @@ ParticleSpacePolygonImpl<T_traits>::list_particles_within_radius(
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > retval;
 
     {// same face
-        const std::vector<ParticleID>& ids = container_.elements_over(pos.second);
+        const std::vector<ParticleID>& ids = registrator_.elements_over(pos.second);
         for(std::vector<ParticleID>::const_iterator
                 i(ids.begin()), e(ids.end()); i != e; ++i)
         {
@@ -496,7 +496,7 @@ ParticleSpacePolygonImpl<T_traits>::list_particles_within_radius(
     for(std::size_t i=0; i<3; ++i)
     {
         const std::vector<ParticleID>& ids =
-            container_.elements_over(adjacents[i]);
+            registrator_.elements_over(adjacents[i]);
         for(std::vector<ParticleID>::const_iterator
                 i(ids.begin()), e(ids.end()); i != e; ++i)
         {
@@ -521,7 +521,7 @@ ParticleSpacePolygonImpl<T_traits>::list_particles_within_radius(
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > retval;
 
     {// same face
-        const std::vector<ParticleID>& ids = container_.elements_over(pos.second);
+        const std::vector<ParticleID>& ids = registrator_.elements_over(pos.second);
         for(std::vector<ParticleID>::const_iterator
                 i(ids.begin()), e(ids.end()); i != e; ++i)
         {
@@ -538,7 +538,7 @@ ParticleSpacePolygonImpl<T_traits>::list_particles_within_radius(
     for(std::size_t i=0; i<3; ++i)
     {
         const std::vector<ParticleID>& ids =
-            container_.elements_over(adjacents[i]);
+            registrator_.elements_over(adjacents[i]);
         for(std::vector<ParticleID>::const_iterator
                 i(ids.begin()), e(ids.end()); i != e; ++i)
         {
@@ -564,7 +564,7 @@ ParticleSpacePolygonImpl<T_traits>::list_particles_within_radius(
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > retval;
 
     {// same face
-        const std::vector<ParticleID>& ids = container_.elements_over(pos.second);
+        const std::vector<ParticleID>& ids = registrator_.elements_over(pos.second);
         for(std::vector<ParticleID>::const_iterator
                 i(ids.begin()), e(ids.end()); i != e; ++i)
         {
@@ -581,7 +581,7 @@ ParticleSpacePolygonImpl<T_traits>::list_particles_within_radius(
     for(std::size_t i=0; i<3; ++i)
     {
         const std::vector<ParticleID>& ids =
-            container_.elements_over(adjacents[i]);
+            registrator_.elements_over(adjacents[i]);
         for(std::vector<ParticleID>::const_iterator
                 i(ids.begin()), e(ids.end()); i != e; ++i)
         {

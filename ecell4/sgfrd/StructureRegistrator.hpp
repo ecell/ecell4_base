@@ -1,5 +1,5 @@
-#ifndef ECELL4_SGFRD_STRUCTURAL_CONTAINER
-#define ECELL4_SGFRD_STRUCTURAL_CONTAINER
+#ifndef ECELL4_SGFRD_STRUCTURE_REGISTRATOR
+#define ECELL4_SGFRD_STRUCTURE_REGISTRATOR
 #include <ecell4/core/Polygon.hpp>
 #include <ecell4/core/get_mapper_mf.hpp>
 
@@ -10,7 +10,7 @@ namespace sgfrd
 
 template<typename T_element_id, typename T_structure_id,
          typename T_polygon_traits>
-struct StructuralContainer
+struct StructureRegistrator
 {
 public:
 
@@ -31,9 +31,9 @@ public:
 
 public:
 
-    StructuralContainer(){}
-    StructuralContainer(std::size_t size) : container_(size){}
-    ~StructuralContainer(){}
+    StructureRegistrator(){}
+    StructureRegistrator(std::size_t size) : container_(size){}
+    ~StructureRegistrator(){}
 
     void emplace(const element_id_type&, const structure_id_type&);
     void update(const element_id_type&, const structure_id_type&);
@@ -94,7 +94,7 @@ protected:
 
 
 template<typename Te, typename Ts, typename Tp>
-void StructuralContainer<Te, Ts, Tp>::emplace(
+void StructureRegistrator<Te, Ts, Tp>::emplace(
         const element_id_type& eid, const structure_id_type& sid)
 {
     if(this->have(eid))
@@ -111,7 +111,7 @@ void StructuralContainer<Te, Ts, Tp>::emplace(
 }
 
 template<typename Te, typename Ts, typename Tp>
-void StructuralContainer<Te, Ts, Tp>::update(
+void StructureRegistrator<Te, Ts, Tp>::update(
         const element_id_type& eid, const structure_id_type& sid)
 {
     const std::size_t idx = this->to_index(sid);
@@ -135,7 +135,7 @@ void StructuralContainer<Te, Ts, Tp>::update(
 }
 
 template<typename Te, typename Ts, typename Tp>
-void StructuralContainer<Te, Ts, Tp>::remove(
+void StructureRegistrator<Te, Ts, Tp>::remove(
         const element_id_type& eid, const structure_id_type& sid)
 {
     const std::size_t idx = this->to_index(sid);
@@ -151,74 +151,74 @@ void StructuralContainer<Te, Ts, Tp>::remove(
 }
 
 template<typename Te, typename Ts, typename Tp>
-void StructuralContainer<Te, Ts, Tp>::remove(const element_id_type& eid)
+void StructureRegistrator<Te, Ts, Tp>::remove(const element_id_type& eid)
 {
     remove(eid, structure_id_at(to_index(eid)));
     return;
 }
 
 template<typename Te, typename Ts, typename Tp>
-inline bool StructuralContainer<Te, Ts, Tp>::have(const element_id_type& eid) const
+inline bool StructureRegistrator<Te, Ts, Tp>::have(const element_id_type& eid) const
 {
     return elemid_to_strid_map_.count(eid) == 1;
 }
 
 template<typename Te, typename Ts, typename Tp>
-inline typename StructuralContainer<Te, Ts, Tp>::element_id_array_type&
-StructuralContainer<Te, Ts, Tp>::elements_over(const structure_id_type& sid)
+inline typename StructureRegistrator<Te, Ts, Tp>::element_id_array_type&
+StructureRegistrator<Te, Ts, Tp>::elements_over(const structure_id_type& sid)
 {
     return element_ids_at(this->to_index(sid));
 }
 
 template<typename Te, typename Ts, typename Tp>
-inline typename StructuralContainer<Te, Ts, Tp>::element_id_array_type const&
-StructuralContainer<Te, Ts, Tp>::elements_over(const structure_id_type& sid) const
+inline typename StructureRegistrator<Te, Ts, Tp>::element_id_array_type const&
+StructureRegistrator<Te, Ts, Tp>::elements_over(const structure_id_type& sid) const
 {
     return element_ids_at(this->to_index(sid));
 }
 
 template<typename Te, typename Ts, typename Tp>
-inline typename StructuralContainer<Te, Ts, Tp>::structure_id_type&
-StructuralContainer<Te, Ts, Tp>::structure_on(const element_id_type& eid)
+inline typename StructureRegistrator<Te, Ts, Tp>::structure_id_type&
+StructureRegistrator<Te, Ts, Tp>::structure_on(const element_id_type& eid)
 {
     return structure_id_at(this->to_index(eid));
 }
 
 template<typename Te, typename Ts, typename Tp>
-inline typename StructuralContainer<Te, Ts, Tp>::structure_id_type const&
-StructuralContainer<Te, Ts, Tp>::structure_on(const element_id_type& eid) const
+inline typename StructureRegistrator<Te, Ts, Tp>::structure_id_type const&
+StructureRegistrator<Te, Ts, Tp>::structure_on(const element_id_type& eid) const
 {
     return structure_id_at(this->to_index(eid));
 }
 
 template<typename Te, typename Ts, typename Tp>
-inline typename StructuralContainer<Te, Ts, Tp>::element_id_array_type&
-StructuralContainer<Te, Ts, Tp>::element_ids_at(std::size_t i)
+inline typename StructureRegistrator<Te, Ts, Tp>::element_id_array_type&
+StructureRegistrator<Te, Ts, Tp>::element_ids_at(std::size_t i)
 {
     return container_.at(i).second;
 }
 
 template<typename Te, typename Ts, typename Tp>
-inline typename StructuralContainer<Te, Ts, Tp>::element_id_array_type const&
-StructuralContainer<Te, Ts, Tp>::element_ids_at(std::size_t i) const
+inline typename StructureRegistrator<Te, Ts, Tp>::element_id_array_type const&
+StructureRegistrator<Te, Ts, Tp>::element_ids_at(std::size_t i) const
 {
     return container_.at(i).second;
 }
 
 template<typename Te, typename Ts, typename Tp>
-inline typename StructuralContainer<Te, Ts, Tp>::structure_id_type&
-StructuralContainer<Te, Ts, Tp>::structure_id_at(std::size_t i)
+inline typename StructureRegistrator<Te, Ts, Tp>::structure_id_type&
+StructureRegistrator<Te, Ts, Tp>::structure_id_at(std::size_t i)
 {
     return container_.at(i).first;
 }
 
 template<typename Te, typename Ts, typename Tp>
-inline typename StructuralContainer<Te, Ts, Tp>::structure_id_type const&
-StructuralContainer<Te, Ts, Tp>::structure_id_at(std::size_t i) const
+inline typename StructureRegistrator<Te, Ts, Tp>::structure_id_type const&
+StructureRegistrator<Te, Ts, Tp>::structure_id_at(std::size_t i) const
 {
     return container_.at(i).first;
 }
 
 } // sgfrd
 } // ecell4
-#endif// ECELL4_SGFRD_STRUCTURAL_CONTAINER
+#endif // ECELL4_SGFRD_STRUCTURE_REGISTRATOR
