@@ -1,5 +1,5 @@
-#ifndef __ECELL4_COMPARTMENT_SPACE_HDF5_WRITER_HPP
-#define __ECELL4_COMPARTMENT_SPACE_HDF5_WRITER_HPP
+#ifndef ECELL4_COMPARTMENT_SPACE_HDF5_WRITER_HPP
+#define ECELL4_COMPARTMENT_SPACE_HDF5_WRITER_HPP
 
 #include <cstring>
 #include <boost/scoped_ptr.hpp>
@@ -250,4 +250,4 @@ void load_compartment_space(const H5::Group& root, typename Ttraits_::space_type
 
 } // ecell4
 
-#endif /*  __ECELL4_COMPARTMENT_SPACE_HDF5_WRITER_HPP */
+#endif /*  ECELL4_COMPARTMENT_SPACE_HDF5_WRITER_HPP */

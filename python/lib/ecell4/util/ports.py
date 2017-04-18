@@ -5,7 +5,9 @@ import re
 
 import ecell4
 
-def replace_parseobj(expr, substitutes={}):
+def replace_parseobj(expr, substitutes=None):
+    substitutes = substitutes or {}
+
     import ecell4.util.decorator_base
     obj = ecell4.util.decorator_base.just_parse().evaluate(expr)
 
@@ -21,7 +23,7 @@ def replace_parseobj(expr, substitutes={}):
                 'unknown variable [{}] was used.'.format(key))
     return newexpr.format(*names)
 
-def export_sbml(model, y0={}, volume=1.0):
+def export_sbml(model, y0=None, volume=1.0):
     """
     Export a model as a SBMLDocument.
 
@@ -34,6 +36,8 @@ def export_sbml(model, y0={}, volume=1.0):
         A size of the simulation volume.
 
     """
+    y0 = y0 or {}
+
     import libsbml
 
     document = libsbml.SBMLDocument(3, 1)
@@ -217,7 +221,7 @@ def export_sbml(model, y0={}, volume=1.0):
 
     return document
 
-def save_sbml(filename, model, y0={}, volume=1.0):
+def save_sbml(filename, model, y0=None, volume=1.0):
     """
     Save a model in the SBML format.
 
@@ -230,6 +234,8 @@ def save_sbml(filename, model, y0={}, volume=1.0):
         A size of the simulation volume.
 
     """
+    y0 = y0 or {}
+
     import libsbml
 
     document = export_sbml(model, y0, volume)

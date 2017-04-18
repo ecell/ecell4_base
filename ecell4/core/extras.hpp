@@ -1,5 +1,5 @@
-#ifndef __ECELL4_EXTRAS_HPP
-#define __ECELL4_EXTRAS_HPP
+#ifndef ECELL4_EXTRAS_HPP
+#define ECELL4_EXTRAS_HPP
 
 #include <boost/shared_ptr.hpp>
 #include <boost/scoped_ptr.hpp>
@@ -109,4 +109,4 @@ std::string load_version_information(const std::string& filename);
 
 } // ecell4
 
-#endif // __ECELL4_EXTRAS_HPP
+#endif // ECELL4_EXTRAS_HPP

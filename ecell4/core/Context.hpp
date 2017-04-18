@@ -1,5 +1,5 @@
-#ifndef __ECELL4_CONTEXT_HPP
-#define __ECELL4_CONTEXT_HPP
+#ifndef ECELL4_CONTEXT_HPP
+#define ECELL4_CONTEXT_HPP
 
 #include "get_mapper_mf.hpp"
 #include "Species.hpp"
@@ -464,4 +464,4 @@ protected:
 
 } // ecell4
 
-#endif /* __ECELL4_CONTEXT_HPP */
+#endif /* ECELL4_CONTEXT_HPP */

@@ -1,5 +1,5 @@
-#ifndef __ECELL4_UTILS_SWAP_HPP
-#define __ECELL4_UTILS_SWAP_HPP
+#ifndef ECELL4_UTILS_SWAP_HPP
+#define ECELL4_UTILS_SWAP_HPP
 
 #include <cstring>
 
@@ -20,4 +20,4 @@ void blit_swap(T& x, T& y)
 
 } // ecell4
 
-#endif /* __ECELL4_UTILS_SWAP_HPP */
+#endif /* ECELL4_UTILS_SWAP_HPP */

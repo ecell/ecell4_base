@@ -1,5 +1,5 @@
-#ifndef __ECELL4_SUBVOLUME_SPACE_HDF5_WRITER_HPP
-#define __ECELL4_SUBVOLUME_SPACE_HDF5_WRITER_HPP
+#ifndef ECELL4_SUBVOLUME_SPACE_HDF5_WRITER_HPP
+#define ECELL4_SUBVOLUME_SPACE_HDF5_WRITER_HPP
 
 #include <cstring>
 #include <iostream>
@@ -313,4 +313,4 @@ void load_subvolume_space(const H5::Group& root, Tspace_* space)
 
 } // ecell4
 
-#endif /*  __ECELL4_SUBVOLUME_SPACE_HDF5_WRITER_HPP */
+#endif /*  ECELL4_SUBVOLUME_SPACE_HDF5_WRITER_HPP */

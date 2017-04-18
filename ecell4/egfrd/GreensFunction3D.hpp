@@ -1,5 +1,5 @@
-#if !defined( __FREEPAIRGREENSFUNCTION )
-#define __FREEPAIRGREENSFUNCTION 
+#if !defined( EGFRD_FREEPAIRGREENSFUNCTION )
+#define EGFRD_FREEPAIRGREENSFUNCTION 
 
 #include "compat.h"
 
@@ -61,4 +61,4 @@ private:
 };
 
 
-#endif // __PLAINPAIRGREENSFUNCTION 
+#endif // EGFRD_PLAINPAIRGREENSFUNCTION 

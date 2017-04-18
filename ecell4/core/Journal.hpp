@@ -1,5 +1,5 @@
-#ifndef __ECELL4_JOURNAL_HPP
-#define __ECELL4_JOURNAL_HPP
+#ifndef ECELL4_JOURNAL_HPP
+#define ECELL4_JOURNAL_HPP
 
 #include <cstdarg>
 #include <string>
@@ -103,4 +103,4 @@ protected:
 
 } // ecell4
 
-#endif /* __ECELL4_JOURNAL_HPP */
+#endif /* ECELL4_JOURNAL_HPP */

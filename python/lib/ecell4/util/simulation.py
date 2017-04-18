@@ -60,7 +60,9 @@ def get_factory(solver, *args):
             'unknown solver name was given: ' + repr(solver)
             + '. use ode, gillespie, spatiocyte, meso, bd or egfrd')
 
-def list_species(model, seeds=[]):
+def list_species(model, seeds=None):
+    seeds = None or []
+
     from ecell4.ode import ODENetworkModel
     from ecell4 import Species
     if isinstance(model, ODENetworkModel):
@@ -76,10 +78,10 @@ def list_species(model, seeds=[]):
     return species_list
 
 def run_simulation(
-        t, y0={}, volume=1.0, model=None, solver='ode',
+        t, y0=None, volume=1.0, model=None, solver='ode',
         is_netfree=False, species_list=None, without_reset=False,
-        return_type='matplotlib', opt_args=(), opt_kwargs={},
-        structures={}, observers=(), progressbar=0, rndseed=None,
+        return_type='matplotlib', opt_args=(), opt_kwargs=None,
+        structures=None, observers=(), progressbar=0, rndseed=None,
         factory=None, ## deprecated
         **kwargs):
     """Run a simulation with the given model and plot the result on IPython
@@ -143,6 +145,10 @@ def run_simulation(
         Return nothing if else.
 
     """
+    y0 = y0 or {}
+    opt_kwargs = opt_kwargs or {}
+    structures = structures or {}
+
     for key, value in kwargs.items():
         if key == 'r':
             return_type = value

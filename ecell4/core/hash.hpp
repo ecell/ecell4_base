@@ -1,5 +1,5 @@
-#ifndef __ECELL4_HASH_HPP
-#define __ECELL4_HASH_HPP
+#ifndef ECELL4_HASH_HPP
+#define ECELL4_HASH_HPP
 
 #if defined(HAVE_STD_HASH)
 
@@ -26,4 +26,4 @@
 
 #endif
 
-#endif /* __ECELL4_HASH_HPP */
+#endif /* ECELL4_HASH_HPP */

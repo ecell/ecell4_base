@@ -1,5 +1,5 @@
-#ifndef __ECELL4_SPATIOCYTE_UTILS_HPP
-#define __ECELL4_SPATIOCYTE_UTILS_HPP
+#ifndef ECELL4_SPATIOCYTE_UTILS_HPP
+#define ECELL4_SPATIOCYTE_UTILS_HPP
 
 #include "SpatiocyteWorld.hpp"
 
@@ -20,4 +20,4 @@ const Real calculate_alpha(
 
 } // ecell4
 
-#endif /* __ECELL4_SPATIOCYTE_UTILS_HPP */
+#endif /* ECELL4_SPATIOCYTE_UTILS_HPP */

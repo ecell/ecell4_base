@@ -1,5 +1,5 @@
-#if !defined( __FIRSTPASSAGEGREENSFUNCTION_HPP)
-#define __FIRSTPASSAGEGREENSFUNCTION_HPP
+#if !defined( EGFRD_FIRSTPASSAGEGREENSFUNCTION_HPP)
+#define EGFRD_FIRSTPASSAGEGREENSFUNCTION_HPP
 
 #include "Defs.hpp"
 #include "Logger.hpp"
@@ -69,4 +69,4 @@ operator <<(std::basic_ostream<Tstrm, Ttraits>& strm,
     return strm;
 }
 
-#endif // __PAIRGREENSFUNCTION_HPP
+#endif // EGFRD_PAIRGREENSFUNCTION_HPP

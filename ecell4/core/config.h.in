@@ -1,6 +1,6 @@
 /* WARNING! All changes made to this file will be lost! */
-#ifndef __ECELL4_CONFIG_H
-#define __ECELL4_CONFIG_H
+#ifndef ECELL4_CONFIG_H
+#define ECELL4_CONFIG_H
 
 #cmakedefine ECELL4_VERSION "@ECELL4_VERSION@"
 
@@ -28,4 +28,4 @@
 #cmakedefine HAVE_TR1_FUNCTIONAL 1
 #endif
 
-#endif /* __ECELL4_CONFIG_H */
+#endif /* ECELL4_CONFIG_H */

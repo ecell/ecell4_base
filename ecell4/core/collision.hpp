@@ -1,5 +1,5 @@
-#ifndef __ECELL4_COLLISION_HPP
-#define __ECELL4_COLLISION_HPP
+#ifndef ECELL4_COLLISION_HPP
+#define ECELL4_COLLISION_HPP
 
 #include "types.hpp"
 #include "Real3.hpp"
@@ -102,4 +102,4 @@ bool intersect_moving_sphere_AABB(
 
 } // ecell4
 
-#endif /* __ECELL4_COLLISION_HPP */
+#endif /* ECELL4_COLLISION_HPP */

@@ -1,5 +1,5 @@
-#ifndef __ECELL4_ODE_RATELOW_HPP
-#define __ECELL4_ODE_RATELOW_HPP
+#ifndef ECELL4_ODE_RATELOW_HPP
+#define ECELL4_ODE_RATELOW_HPP
 
 #include <ecell4/core/types.hpp>
 #include <ecell4/core/exceptions.hpp>

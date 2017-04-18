@@ -1,5 +1,5 @@
-#ifndef __MAKE_TABLE_UTIL_HPP
-#define __MAKE_TABLE_UTIL_HPP
+#ifndef EGFRD_MAKE_TABLE_UTIL_HPP
+#define EGFRD_MAKE_TABLE_UTIL_HPP
 
 #include <string>
 #include <fstream>

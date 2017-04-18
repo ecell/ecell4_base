@@ -1,5 +1,5 @@
-#if !defined( __FUNCSUM_HPP )
-#define __FUNCSUM_HPP
+#if !defined( EGFRD_FUNCSUM_HPP )
+#define EGFRD_FUNCSUM_HPP
 
 #include <boost/function.hpp>
 #include <cstddef>
@@ -17,4 +17,4 @@ Real funcSum(boost::function<Real(unsigned int i)> f,
              std::size_t max_i, Real tolerance = TOLERANCE);
 
 
-#endif /* __FUNCSUM_HPP */
+#endif /* EGFRD_FUNCSUM_HPP */

@@ -1,5 +1,5 @@
-#ifndef __ECELL4_MOLECULAR_TYPE_BASE_HPP
-#define __ECELL4_MOLECULAR_TYPE_BASE_HPP
+#ifndef ECELL4_MOLECULAR_TYPE_BASE_HPP
+#define ECELL4_MOLECULAR_TYPE_BASE_HPP
 
 #include <vector>
 #include "Species.hpp"

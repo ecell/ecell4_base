@@ -1,5 +1,5 @@
-#ifndef __ECELL4_OBSERVER_HPP
-#define __ECELL4_OBSERVER_HPP
+#ifndef ECELL4_OBSERVER_HPP
+#define ECELL4_OBSERVER_HPP
 
 #include "types.hpp"
 #include "functions.hpp"
@@ -1093,4 +1093,4 @@ protected:
 
 } // ecell4
 
-#endif /* __ECELL4_OBSEVER_HPP */
+#endif /* ECELL4_OBSEVER_HPP */

@@ -1,5 +1,5 @@
-#ifndef __ECELL4_SIMULATOR_BASE_HPP
-#define __ECELL4_SIMULATOR_BASE_HPP
+#ifndef ECELL4_SIMULATOR_BASE_HPP
+#define ECELL4_SIMULATOR_BASE_HPP
 
 #include <time.h>
 
@@ -247,4 +247,4 @@ protected:
 
 }
 
-#endif /* __ECELL4_SIMULATOR_BASE_HPP */
+#endif /* ECELL4_SIMULATOR_BASE_HPP */
