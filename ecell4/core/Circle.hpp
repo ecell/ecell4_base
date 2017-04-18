@@ -53,7 +53,7 @@ public:
         return this->distance_sq_(pos).second;
     }
 
-    Circumference surface() const {return Circumference(center_, radius_, normal);}
+    Circumference surface() const;
 
     Real3 draw_position(boost::shared_ptr<RandomNumberGenerator>& rng) const
     {
@@ -69,10 +69,10 @@ protected:
 
     std::pair<bool, Real> distance_sq_(const Real3& pos) const
     {
-        const Real dot = dot_product((center - pos), normal_);
+        const Real dot = dot_product(center_ - pos, normal_);
         const bool sign = (dot < 0); // true means + side
-        const Real3 projection(dot * normal_);
-        const Real dist_on_plane2 = length_sq(pos + projection - center);
+        const Real3 projection(normal_ * dot);
+        const Real dist_on_plane2 = length_sq(pos + projection - center_);
         if(dist_on_plane2 > radius_ * radius_)
         {
             const Real dr = std::sqrt(dist_on_plane2) - radius_;
@@ -96,15 +96,16 @@ struct Circumference : public Shape
     Circumference(){}
     ~Circumference(){}
 
-    Circumference(const Real3& center, const Real radius)
-        : center_(center), radius_(radius)
+    Circumference(const Real radius, const Real3& center, const Real3& normal)
+        : radius_(radius), center_(center), normal_(normal)
     {}
     Circumference(const Circumference& rhs)
-        : center_(rhs.center()), radius_(rhs.radius())
+        : radius_(rhs.radius()), center_(rhs.center()), normal_(rhs.normal())
     {}
 
     Real  const& radius() const {return radius_;}
     Real3 const& center() const {return center_;}
+    Real3 const& normal() const {return normal_;}
 
     Real is_inside(const Real3& coord) const
     {
@@ -120,7 +121,7 @@ struct Circumference : public Shape
         return this->distance_sq_(pos).second;
     }
 
-    Circle inside() const {return Circle(center_, radius);}
+    Circle inside() const {return Circle(radius_, center_, normal_);}
 
     Real3 draw_position(boost::shared_ptr<RandomNumberGenerator>& rng) const
     {
@@ -140,10 +141,10 @@ protected:
 
     std::pair<bool, Real> distance_sq_(const Real3& pos) const
     {
-        const Real dot = dot_product((center - pos), normal_);
+        const Real dot = dot_product(center_ - pos, normal_);
         const bool sign = (dot < 0); // true means + side
-        const Real3 projection(dot * normal_);
-        const Real dist_on_plane2 = length_sq(pos + projection - center);
+        const Real3 projection(normal_ * dot);
+        const Real dist_on_plane2 = length_sq(pos + projection - center_);
         if(dist_on_plane2 > radius_ * radius_)
         {
             const Real dr = std::sqrt(dist_on_plane2) - radius_;
@@ -158,8 +159,13 @@ protected:
 protected:
 
     Real radius_;
-    Real3 normal_;
     Real3 center_;
+    Real3 normal_;
+};
+
+inline Circumference Circle::surface() const
+{
+    return Circumference(radius_, center_, normal_);
 }
 
 

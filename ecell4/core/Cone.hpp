@@ -1,6 +1,7 @@
 #ifndef ECELL4_CORE_CONE
 #define ECELL4_CORE_CONE
 #include <ostream>
+#include <limits>
 #include "Shape.hpp"
 
 namespace ecell4
@@ -19,10 +20,13 @@ public:
     Cone(){}
     ~Cone(){}
     Cone(const Real3 apex)/* infinite cone */
-        : radius_(std::numeric_limit<Real>::max()), apex_(apex),
-          bottom_(std::numeric_limit<Real>::max(),
-                  std::numeric_limit<Real>::max(),
-                  std::numeric_limit<Real>::max())
+        : radius_(std::numeric_limits<Real>::max()), apex_(apex),
+          bottom_(std::numeric_limits<Real>::max(),
+                  std::numeric_limits<Real>::max(),
+                  std::numeric_limits<Real>::max())
+    {}
+    Cone(const Real3 apex, const Real3& bottom, const Real radius)
+        : radius_(radius), apex_(apex), bottom_(bottom)
     {}
     Cone(const Cone& rhs)
         : radius_(rhs.radius_), apex_(rhs.apex_), bottom_(rhs.bottom_)
@@ -57,7 +61,7 @@ public:
         throw NotImplemented("Cone::distance_sq");
     }
 
-    ConicalSurface surface() const {return ConicalSurface(center_, radius_, normal);}
+    ConicalSurface surface() const;
 
     Real3 draw_position(boost::shared_ptr<RandomNumberGenerator>& rng) const
     {
@@ -89,8 +93,15 @@ public:
     ConicalSurface(){}
     ~ConicalSurface(){}
     ConicalSurface(const Real3 apex)
-        : radius_(std::numeric_limit<Real>::max()), apex_(apex)
+        : radius_(std::numeric_limits<Real>::max()), apex_(apex),
+          bottom_(std::numeric_limits<Real>::max(),
+                  std::numeric_limits<Real>::max(),
+                  std::numeric_limits<Real>::max())
     {}
+    ConicalSurface(const Real3 apex, const Real3& bottom, const Real radius)
+        : radius_(radius), apex_(apex), bottom_(bottom)
+    {}
+
     ConicalSurface(const ConicalSurface& rhs)
         : radius_(rhs.radius_), apex_(rhs.apex_), bottom_(rhs.bottom_)
     {}
@@ -125,7 +136,7 @@ public:
         return this->distance_sq_(pos).second;
     }
 
-    ConicalSurface surface() const {return ConicalSurface(center_, radius_, normal);}
+    Cone inside() const {return Cone(apex_, bottom_, radius_);}
 
     Real3 draw_position(boost::shared_ptr<RandomNumberGenerator>& rng) const
     {
@@ -151,6 +162,11 @@ protected:
     Real3 bottom_;
 
 };
+
+inline ConicalSurface Cone::surface() const
+{
+    return ConicalSurface(apex_, bottom_, radius_);
+}
 
 template<typename charT, typename traits>
 std::basic_ostream<charT, traits>&
