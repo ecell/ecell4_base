@@ -1,5 +1,6 @@
 #ifndef ECELL4_SGFRD_POLYGON_TRAITS
 #define ECELL4_SGFRD_POLYGON_TRAITS
+#include <ecell4/core/hash.hpp>
 #include <ecell4/core/Real3.hpp>
 #include <ecell4/core/Triangle.hpp>
 #include <boost/serialization/strong_typedef.hpp>
@@ -74,12 +75,15 @@ struct polygon_traits
     }
 };
 
+} // sgfrd
+} // ecell4
+
 ECELL4_DEFINE_HASH_BEGIN()
 
 template<>
-struct hash<ecell4::bd::polygon_traits::face_id_type>
+struct hash<ecell4::sgfrd::polygon_traits::face_id_type>
 {
-    typedef ecell4::bd::polygon_traits::face_id_type argument_type;
+    typedef ecell4::sgfrd::polygon_traits::face_id_type argument_type;
 
     std::size_t operator()(argument_type const& val) const
     {
@@ -88,9 +92,9 @@ struct hash<ecell4::bd::polygon_traits::face_id_type>
 };
 
 template<>
-struct hash<ecell4::bd::polygon_traits::edge_id_type>
+struct hash<ecell4::sgfrd::polygon_traits::edge_id_type>
 {
-    typedef ecell4::bd::polygon_traits::edge_id_type argument_type;
+    typedef ecell4::sgfrd::polygon_traits::edge_id_type argument_type;
 
     std::size_t operator()(argument_type const& val) const
     {
@@ -99,9 +103,9 @@ struct hash<ecell4::bd::polygon_traits::edge_id_type>
 };
 
 template<>
-struct hash<ecell4::bd::polygon_traits::vertex_id_type>
+struct hash<ecell4::sgfrd::polygon_traits::vertex_id_type>
 {
-    typedef ecell4::bd::polygon_traits::vertex_id_type argument_type;
+    typedef ecell4::sgfrd::polygon_traits::vertex_id_type argument_type;
 
     std::size_t operator()(argument_type const& val) const
     {
@@ -111,6 +115,4 @@ struct hash<ecell4::bd::polygon_traits::vertex_id_type>
 
 ECELL4_DEFINE_HASH_END()
 
-} // sgfrd
-} // ecell4
 #endif // ECELL4_SGFRD_POLYGON_TRAITS
