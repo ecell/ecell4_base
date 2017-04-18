@@ -98,6 +98,97 @@ bool intersect_segment_capsule(
 bool intersect_moving_sphere_AABB(
     const Sphere& s, const Real3& d, const AABB& b, Real& t);
 
+/* ------ 2D stuff ------ */
+
+//XXX PROPOSAL:
+//        define struct Ray and Segment as one-dimensional Shape
+//        and use template specialization like
+//        - distance_sq<Sphere, Triangle>
+//        - test<Sphere, Triangle>
+//        - intersect<Ray, Triangle>
+
+Real3 closest_point_point_triangle(const Real3&, const Triangle&);
+Real3 closest_point_point_circle(const Real3&, const Circle&);
+Real3 closest_point_point_cone(const Real3&, const Cone&);
+
+inline Real distance_sq_point_triangle(const Real3& p, const Triangle& t)
+{
+    return length_sq(p - closest_point_point_triangle(p, t));
+}
+inline Real distance_sq_point_circle(const Real3& p, const Circle& c)
+{
+    return length_sq(p - closest_point_point_circle(p, c));
+}
+inline Real distance_sq_point_cone(const Real3& p, const Cone& c)
+{
+    return length_sq(p - closest_point_point_circle(p, c));
+}
+
+inline Real distance_sq_sphere_triangle(const Sphere& s, const Triangle& t)
+{
+    return distance_sq_point_triangle(s.center(), c) - sphere.radius();
+}
+inline Real distance_sq_sphere_circle(const Sphere& s, const Circle& c)
+{
+    return distance_sq_point_circle(s.center(), c) - sphere.radius();
+}
+inline Real distance_sq_sphere_cone(const Sphere& s, const Cone& c)
+{
+    return distance_sq_point_cone(s.center(), c) - sphere.radius();
+}
+
+inline bool test_sphere_triangle(const Sphere& s, const Triangle& t)
+{
+    return distance_sq_sphere_triangle(s, t) <= s.radius() * s.radius();
+}
+inline bool test_sphere_circle(const Sphere& s, const Circle& c)
+{
+    return distance_sq_sphere_circle(s, c) <= s.radius() * s.radius();
+}
+inline bool test_sphere_cone(const Sphere& s, const Cone& c)
+{
+    return distance_sq_sphere_cone(s, c) <= s.radius() * s.radius();
+}
+
+inline Real distance_sphere_triangle(const Sphere& s, const Triangle& t)
+{
+    return std::sqrt(distance_sq_sphere_triangle(s, t));
+}
+inline Real distance_sphere_circle(  const Sphere& s, const Circle& c)
+{
+    return std::sqrt(distance_sq_sphere_circle(s, t));
+}
+inline Real distance_sphere_cone(    const Sphere& s, const Cone& c)
+{
+    return std::sqrt(distance_sq_sphere_cone(s, t));
+}
+
+inline Real distance_point_triangle(const Real3& p, const Triangle& t)
+{
+    return std::sqrt(distance_sq_point_triangle(s, t));
+}
+inline Real distance_point_circle(  const Real3& p, const Circle& c)
+{
+    return std::sqrt(distance_sq_point_circle(s, t));
+}
+inline Real distance_point_cone(    const Real3& p, const Cone& c)
+{
+    return std::sqrt(distance_sq_point_cone(s, t));
+}
+
+bool intersect_segment_triangle(const Real3& p, const Real3& q,
+                                const Triangle& t, Barncentric<Real>& b, Real& s);
+bool intersect_segment_circle(const Real3& p, const Real3& q,
+                              const Circle& t, Real& s);
+bool intersect_segment_cone(const Real3& p, const Real3& q,
+                            const Cone& t, Real& s);
+bool intersect_ray_triangle(const Real3& pos, const Real3& disp,
+                            const Triangle& t, Barycentric<Real>& b, Real3& q);
+bool intersect_ray_circle(const Real3& pos, const Real3& disp,
+                          const Circle& t, Real& t, Real3& q);
+bool intersect_ray_cone(const Real3& pos, const Real3& disp,
+                        const Cone& t, Real& t, Real3& q);
+
 } // collision
 
 } // ecell4
