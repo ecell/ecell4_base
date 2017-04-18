@@ -6,7 +6,7 @@
 #include <ecell4/core/Polygon.hpp>
 #include <ecell4/core/ParticleSpace.hpp>
 #include <ecell4/core/Context.hpp>
-#include <ecell4/sgfrd/OnPolygonContainer.hpp>
+#include <ecell4/sgfrd/StructuralContainer.hpp>
 #include <set>
 
 namespace ecell4
@@ -40,8 +40,8 @@ public:
     typedef typename polygon_type::local_index_type  local_index_type;
     typedef typename polygon_type::barycentric_type  barycentric_type;
 
-    typedef OnPolygonContainer<ParticleID, face_id_type, traits_type>
-        on_polygon_container_type;
+    typedef StructuralContainer<ParticleID, face_id_type, traits_type>
+        structural_container_type;
 
 protected:
 
@@ -66,11 +66,13 @@ public:
 
     virtual std::vector<Species> list_species() const
     {
-        return std::vector<Species>(
-            boost::make_transform_iterator(
+        std::vector<Species> retval(particle_pool_.size());
+        std::copy(boost::make_transform_iterator(
                 particle_pool_.begin(), serial_species_adapter()),
             boost::make_transform_iterator(
-                particle_pool_.end(), serial_species_adapter()));
+                particle_pool_.end(), serial_species_adapter()),
+            retval.begin());
+        return retval;
     }
 
     const particle_container_type& particles() const
@@ -93,7 +95,7 @@ public:
         get_particles(const face_id_type& fid) const;
 
 
-    Integer num_particles() const {return particles.size();}
+    Integer num_particles() const {return particles_.size();}
     Integer num_particles(const Species& sp) const;
     Integer num_particles_exact(const Species& sp) const;
     Integer num_molecules(const Species& sp) const;
@@ -154,7 +156,7 @@ private:
     // and cell list?
     boost::shared_ptr<polygon_type> polygon_;
     particle_container_type         particles_;
-    on_polygon_container_type       container_;
+    structural_container_type          container_;
     pid_to_idx_map_type             pid_to_idx_map_;
     per_species_particle_id_set     particle_pool_;
 };
@@ -261,7 +263,7 @@ ParticleSpacePolygonImpl<T_traits>::find(const ParticleID& k)
     const pid_to_idx_map_type::const_iterator p(pid_to_idx_map_.find(k));
     if(pid_to_idx_map_.end() == p)
         return particles_.end();
-    return particles.begin() + p->second;
+    return particles_.begin() + p->second;
 }
 
 template<typename T_traits>
@@ -272,7 +274,7 @@ ParticleSpacePolygonImpl<T_traits>::find(const ParticleID& k) const
     const pid_to_idx_map_type::const_iterator p(pid_to_idx_map_.find(k));
     if(pid_to_idx_map_.end() == p)
         return particles_.end();
-    return particles.begin() + p->second;
+    return particles_.begin() + p->second;
 }
 
 template<typename T_traits>
@@ -403,7 +405,7 @@ ParticleSpacePolygonImpl<T_traits>::list_particles_within_radius(
         const Real3& pos, const Real& radius) const
 {
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > list;
-    for(particle_container_type::iterator
+    for(particle_container_type::const_iterator
         iter(particles_.begin()), end(particles_.end()); iter != end; ++iter)
     {
         const Real dist =
@@ -426,7 +428,7 @@ ParticleSpacePolygonImpl<T_traits>::list_particles_within_radius(
         const ParticleID& ignore) const
 {
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > list;
-    for(particle_container_type::iterator
+    for(particle_container_type::const_iterator
         iter(particles_.begin()), end(particles_.end()); iter != end; ++iter)
     {
         if(iter->first == ignore) continue;
@@ -451,7 +453,7 @@ ParticleSpacePolygonImpl<T_traits>::list_particles_within_radius(
         const ParticleID& ignore1, const ParticleID& ignore2) const
 {
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > list;
-    for(particle_container_type::iterator
+    for(particle_container_type::const_iterator
         iter(particles_.begin()), end(particles_.end()); iter != end; ++iter)
     {
         if(iter->first == ignore1 || iter->first == ignore2) continue;
