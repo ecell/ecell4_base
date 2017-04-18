@@ -83,7 +83,7 @@ All the members must start with '_'."""
     def __and__(self, rhs):
         return operator.and_(self._as_ParseObj(), rhs)
 
-    def __and__(self, lhs):
+    def __rand__(self, lhs):
         return operator.and_(lhs, self._as_ParseObj())
 
     # arithmatic operators

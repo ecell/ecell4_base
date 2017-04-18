@@ -6,6 +6,7 @@ E-Cell System version 4
 [![Documentation Status](https://readthedocs.org/projects/ecell4/badge/?version=latest)](http://ecell4.readthedocs.org/en/latest/?badge=latest)
 [![PyPI](https://img.shields.io/pypi/v/ecell.svg)](https://pypi.python.org/pypi/ecell)
 [![License: GPL v2](https://img.shields.io/badge/license-GPL%20v2-blue.svg)](https://github.com/ecell/ecell4/blob/master/licenses/LICENSE)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/87e076986e354b508f66af0a0ca3373d)](https://www.codacy.com/app/ecell/ecell4?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ecell/ecell4&amp;utm_campaign=Badge_Grade)
 [![Slack Status](https://img.shields.io/badge/chat-on%20slack-50baa6.svg)](https://ecell-project.herokuapp.com/)
 <!---[![Slack Status](https://ecell-project.herokuapp.com/badge.svg)](https://ecell-project.herokuapp.com/)--->
 
@@ -38,9 +39,9 @@ Installation
 
 #### Minimum requirements
 
-- Python (2.7 and 3.4, 3.5, 3.6 both major versions are supported [3.4 is only supported on Linux, 3.6 is only supported on Mac])
+- Python (2.7 and 3.4, 3.5, 3.6 both major versions are supported [3.4 is supported only on Linux, Mac does not support 3.4 and 3.5])
 - pip (8.1 or later)
-- hdf5 (required only on **Windows**.)
+- HDF5 (1.8.17, required only on **Windows**.)
 
 #### Optional requirements
 
@@ -60,14 +61,17 @@ We recommend that you install [Miniconda](http://conda.pydata.org/miniconda.html
 - Run the following commands on command prompt
 
     ```shell
-    conda install hdf5 matplotlib notebook
+    conda install hdf5=1.8.17
+    conda install matplotlib notebook
     pip install ecell
     ```
 
-- (**Important**) E-Cell4 for Windows needs the latest `hdf5`. If there's any problem, please update the version of hdf5.
+- (**Important**) E-Cell4 for Windows needs `HDF5` version **1.8.17**. If there's any problem, please run the following commands.
 
     ```shell
-    conda update hdf5
+    conda uninstall hdf5
+    conda clean -a
+    conda install hdf5=1.8.17
     ```
 
 If you use animated visualization with E-Cell4, please install [ffmpeg windows build](http://ffmpeg.zeranoe.com/builds/) and add its path to your **USER** PATH enviromental variable.

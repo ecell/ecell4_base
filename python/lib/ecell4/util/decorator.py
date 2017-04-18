@@ -53,16 +53,20 @@ def generate_ReactionRule(lhs, rhs, k=None):
     if k is None:
         raise RuntimeError('no parameter is specified')
 
-    if (callable(k)
-        or (ENABLE_RATELAW and isinstance(k, parseobj.ExpBase))
-        or any([sp[1] is not None for sp in itertools.chain(lhs, rhs)])):
+    elif (callable(k)  # Function
+          or (ENABLE_RATELAW
+              and isinstance(k, (parseobj.ExpBase, parseobj.AnyCallable)))  # Formula
+          or any([coef is not None
+                  for (sp, coef) in itertools.chain(lhs, rhs)])):  # Stoichiometry
         from ecell4.ode import ODEReactionRule, ODERatelawCallback
+
         rr = ODEReactionRule()
-        for sp in lhs:
-            rr.add_reactant(sp[0], 1 if sp[1] is None else sp[1])
-        for sp in rhs:
-            rr.add_product(sp[0], 1 if sp[1] is None else sp[1])
-        if ENABLE_RATELAW and isinstance(k, parseobj.ExpBase):
+        for sp, coef in lhs:
+            rr.add_reactant(sp, coef or 1)
+        for sp, coef in rhs:
+            rr.add_product(sp, coef or 1)
+
+        if ENABLE_RATELAW and isinstance(k, (parseobj.ExpBase, parseobj.AnyCallable)):
             name = str(k)
             func = generate_ratelaw(k, rr, ENABLE_IMPLICIT_DECLARATION)
             rr.set_ratelaw(ODERatelawCallback(func, name))
@@ -71,8 +75,9 @@ def generate_ReactionRule(lhs, rhs, k=None):
         else:
             rr.set_k(k)
         return rr
-    elif isinstance(k, numbers.Number):
-        return ecell4.core.ReactionRule([sp[0] for sp in lhs], [sp[0] for sp in rhs], k)
+
+    elif isinstance(k, numbers.Number):  # Kinetic rate
+        return ecell4.core.ReactionRule([sp for (sp, _) in lhs], [sp for (sp, _) in rhs], k)
 
     raise RuntimeError(
         'parameter must be given as a number; "%s" given' % str(k))
