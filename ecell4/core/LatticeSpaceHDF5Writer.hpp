@@ -212,9 +212,21 @@ void load_lattice_space(const H5::Group& root, Tspace_* space, const std::string
     // if (root.attrExists("implementation"))
     //     root.openAttribute("implementation").read(
     //         H5::StrType(0, H5T_VARIABLE), impl);  //XXX:  '&' is not needed for HDF5std_string
-    if (root.attrExists("implementation"))
+    // if (root.attrExists("implementation"))
+    //     root.openAttribute("implementation").read(
+    //         H5::StrType(H5::PredType::C_S1, 32), impl_C);
+
+    try
+    {
         root.openAttribute("implementation").read(
             H5::StrType(H5::PredType::C_S1, 32), impl_C);
+    }
+    catch (const H5::AttributeIException& e)
+    {
+        // XXX: H5::Location::attrExists is not available in the old version
+        ;  // no attribute exists. do nothing
+    }
+
     const std::string impl(impl_C);
 
     if (implementation != "" && implementation != impl)
