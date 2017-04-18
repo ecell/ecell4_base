@@ -158,7 +158,7 @@ class Polygon : public Shape
     template<typename T_id>
     index_type to_index(const T_id& id) const {return converter_.to_index(id);}
     template<typename T_id>
-    T_id to_id(const index_type& i) const {return converter_.to_id<T_id>(i);}
+    T_id to_id(const index_type& i) const {return converter_.template to_id<T_id>(i);}
     template<typename T_id>
     void link(const T_id& id, index_type idx) {return converter_.link(id, idx);}
 
