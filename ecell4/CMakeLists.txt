@@ -1,3 +1,5 @@
+add_subdirectory(greens_functions)
+
 add_subdirectory(core)
 add_subdirectory(egfrd)
 add_subdirectory(gillespie)
