@@ -38,8 +38,8 @@ set(CPP_FILES
     )
 
 set(HPP_FILES
-    Multi.hpp ReactionRecord.hpp sorted_list.hpp factorial.hpp ParticleContainerBase.hpp NetworkRulesAdapter.hpp Logger.hpp MatrixSpace.hpp DomainFactory.hpp abstract_set.hpp twofold_container.hpp ParticleTraits.hpp DomainID.hpp geometry.hpp generator.hpp ReactionRecorder.hpp AnalyticalPair.hpp utils.hpp DomainUtils.hpp EGFRDSimulator.hpp BDSimulator.hpp Real3Type.hpp ReactionRuleInfo.hpp BDPropagator.hpp VolumeClearer.hpp World.hpp OldDefs.hpp AnalyticalSingle.hpp ShapedDomain.hpp ParticleContainer.hpp ParticleSimulator.hpp Defs.hpp Pair.hpp Domain.hpp filters.hpp ShellID.hpp Shell.hpp ConsoleAppender.hpp Single.hpp Transaction.hpp linear_algebra.hpp exceptions.hpp ReactionRecorderWrapper.hpp
-    # freeFunctions.hpp funcSum.hpp findRoot.hpp
+    Multi.hpp ReactionRecord.hpp sorted_list.hpp factorial.hpp ParticleContainerBase.hpp NetworkRulesAdapter.hpp Logger.hpp MatrixSpace.hpp DomainFactory.hpp abstract_set.hpp twofold_container.hpp ParticleTraits.hpp DomainID.hpp geometry.hpp generator.hpp ReactionRecorder.hpp AnalyticalPair.hpp utils.hpp DomainUtils.hpp EGFRDSimulator.hpp BDSimulator.hpp Real3Type.hpp ReactionRuleInfo.hpp BDPropagator.hpp VolumeClearer.hpp World.hpp AnalyticalSingle.hpp ShapedDomain.hpp ParticleContainer.hpp ParticleSimulator.hpp Defs.hpp Pair.hpp Domain.hpp filters.hpp ShellID.hpp Shell.hpp ConsoleAppender.hpp Single.hpp Transaction.hpp linear_algebra.hpp exceptions.hpp ReactionRecorderWrapper.hpp
+    # freeFunctions.hpp funcSum.hpp findRoot.hpp OldDefs.hpp
     # GreensFunction3D.hpp GreensFunction3DSym.hpp GreensFunction3DRadInf.hpp SphericalBesselGenerator.hpp GreensFunction1DAbsAbs.hpp PairGreensFunction.hpp GreensFunction3DRadAbsBase.hpp GreensFunction3DAbs.hpp GreensFunction3DRadAbs.hpp GreensFunction3DAbsSym.hpp GreensFunction1DRadAbs.hpp GreensFunction.hpp CylindricalBesselGenerator.hpp HalfOrderBesselGenerator.hpp
     compat.h
     egfrd.hpp structures.hpp)
