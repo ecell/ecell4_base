@@ -15,7 +15,7 @@ if (PYTHONINTERP_FOUND)
     # set(ENV{PYTHONPATH} ${CMAKE_INSTALL_PREFIX}/lib/python${PYTHON_VERSION}/site-packages)
 
     set(ECELL4_SHARED_DIRS ${PROJECT_BINARY_DIR}/greens_functions:${ECELL4_SHARED_DIRS})
-    include_directories(${PROJECT_SOURCE_DIR}/greens_functions)
+    include_directories(${PROJECT_SOURCE_DIR}/greens_functions ${PROJECT_BINARY_DIR}/greens_functions)
 
     get_directory_property(INCLUDE_PATH INCLUDE_DIRECTORIES)
     set(_TMP_RESULT "")

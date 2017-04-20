@@ -16,9 +16,9 @@ configure_file(
 
 execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/ecell4/egfrd)
 
-if (NOT NO_BESSEL_TABLE)
-add_subdirectory(tablegen)
-endif()
+# if (NOT NO_BESSEL_TABLE)
+# add_subdirectory(tablegen)
+# endif()
 
 # add_definitions(-DHAVE_CONFIG_H -DHAVE_INLINE)
 add_definitions(-DHAVE_CONFIG_H)
