@@ -81,9 +81,9 @@ install:
   # config.h
   - cd ecell4/core
   - type config.h
-  - cd ../egfrd
+  - cd ../../greens_functions
   - type config.h
-  - cd ../..
+  - cd ..
 
   # go into ecell4/python
   - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
