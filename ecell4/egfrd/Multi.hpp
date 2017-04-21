@@ -5,7 +5,6 @@
 #include <boost/foreach.hpp>
 #include <boost/algorithm/string/join.hpp>
 
-#include <ecell4/core/config.h>
 #include <ecell4/core/functions.hpp>
 using ecell4::pow_2;
 #include <ecell4/core/comparators.hpp>

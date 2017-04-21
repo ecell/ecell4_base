@@ -1,7 +1,6 @@
 #ifndef DOMAIN_ID_HPP
 #define DOMAIN_ID_HPP
 
-#include <ecell4/core/config.h>
 #include <ecell4/core/hash.hpp>
 
 #include <ostream>
