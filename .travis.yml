@@ -93,6 +93,7 @@ script:
     fi;
     rm CMakeCache.txt;
   fi
+- set +e
 
 notifications:
   webhooks:
