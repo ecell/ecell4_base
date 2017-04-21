@@ -36,6 +36,8 @@ init:
   - cmd: cmake --version
 
 install:
+  - git submodule update --init --recursive
+
   # install hdf5
   - mkdir hdf5lib
   - cd hdf5lib
