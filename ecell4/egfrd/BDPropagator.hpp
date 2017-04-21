@@ -19,7 +19,7 @@
 #include "Logger.hpp"
 
 #include <greens_functions/freeFunctions.hpp>
-using namespace greens_functions;
+// using namespace greens_functions;
 
 template<typename Ttraits_>
 class BDPropagator
@@ -243,7 +243,7 @@ private:
 
                             const Real rnd(rng_.random());
                             length_type pair_distance(
-                                drawR_gbd_3D(rnd, r01, dt_, D01));
+                                greens_functions::drawR_gbd_3D(rnd, r01, dt_, D01));
                             const position_type m(random_unit_vector() * pair_distance);
                             np0 = tx_.apply_boundary(pp.second.position()
                                     + m * (s0.D / D01));
@@ -311,7 +311,7 @@ private:
                 i(boost::begin(rules)), e(boost::end(rules)); i != e; ++i)
         {
             reaction_rule_type const& r(*i);
-            const Real p(r.k() * dt_ / ((I_bd_3D(r01, dt_, s0.D) + I_bd_3D(r01, dt_, s1.D)) * 4.0 * M_PI));
+            const Real p(r.k() * dt_ / ((greens_functions::I_bd_3D(r01, dt_, s0.D) + greens_functions::I_bd_3D(r01, dt_, s1.D)) * 4.0 * M_PI));
             BOOST_ASSERT(p >= 0.);
             prob += p;
             if (prob >= 1.)

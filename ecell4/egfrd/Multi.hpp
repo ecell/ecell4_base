@@ -37,7 +37,7 @@ struct get_mapper_mf
 #include "utils/range.hpp"
 
 #include <greens_functions/PairGreensFunction.hpp>
-using namespace greens_functions;
+// using namespace greens_functions;
 
 template<typename Ttraits_>
 class MultiParticleContainer
