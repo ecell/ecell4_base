@@ -71,8 +71,9 @@ def convert_parseobj(obj, params):
         raise ValueError("The given type of ParseObj is not supported yet [{}].".format(repr(obj)))
 
     if params is not None and isinstance(obj, numbers.Number):
-        k = "k_{{{}}}".format(len(params) + 1)
-        params[k] = str(obj)
+        idx = len(params) + 1
+        k = "k_{{{}}}".format(idx)
+        params[k] = (idx, obj)
         return k
     return str(obj)
 
@@ -85,8 +86,9 @@ def equations(m, inline=False, constants=True):
 
         if isinstance(rr, ReactionRule) or (isinstance(rr, ODEReactionRule) and rr.is_massaction()):
             if constants:
-                k = "k_{{{}}}".format(len(params) + 1)
-                params[k] = rr.k()
+                idx = len(params) + 1
+                k = "k_{{{}}}".format(idx)
+                params[k] = (idx, rr.k())
             elif rr.k() != 1:
                 k = "{:g}".format(rr.k())
             else:
@@ -173,9 +175,9 @@ def equations(m, inline=False, constants=True):
                 "{} &=& {}".format(name, equations[name]))
 
     if params:
-        for name in sorted(params.keys()):
+        for name, (_, value) in sorted(params.items(), key=lambda x: x[1][0]):
             res.append(
-                "{} &=& {}".format(name, params[name]))
+                "{} &=& {}".format(name, value))
 
     res = "\\begin{{eqnarray}}\n{}\n\\end{{eqnarray}}".format(',\\\\\n'.join(res))
     return res
