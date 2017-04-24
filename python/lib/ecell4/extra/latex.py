@@ -76,7 +76,7 @@ def equations(m):
     derivatives = defaultdict(list)
     equations = {}
     for i, rr in enumerate(m.reaction_rules()):
-        name = "v_{}".format(i + 1)
+        name = "v_{{{}}}".format(i + 1)
 
         if isinstance(rr, ReactionRule) or (isinstance(rr, ODEReactionRule) and rr.is_massaction()):
             equations[name] = "{}{}".format(rr.k(), "".join([escape_serial(sp) for sp in rr.reactants()]))
@@ -93,9 +93,9 @@ def equations(m):
 
         if isinstance(rr, ReactionRule):
             for sp in rr.reactants():
-                stoich[escape_serial(sp)] += 1
-            for sp in rr.products():
                 stoich[escape_serial(sp)] -= 1
+            for sp in rr.products():
+                stoich[escape_serial(sp)] += 1
 
             for serial, coef in stoich.items():
                 if coef == 0:
@@ -115,9 +115,9 @@ def equations(m):
                     derivatives[serial].append("{}{}".format(pref, name))
         elif isinstance(rr, ODEReactionRule):
             for sp, coef in zip(rr.reactants(), rr.reactants_coefficients()):
-                stoich[escape_serial(sp)] += coef
-            for sp, coef in zip(rr.products(), rr.products_coefficients()):
                 stoich[escape_serial(sp)] -= coef
+            for sp, coef in zip(rr.products(), rr.products_coefficients()):
+                stoich[escape_serial(sp)] += coef
 
             for serial, coef in stoich.items():
                 if coef == 0:
