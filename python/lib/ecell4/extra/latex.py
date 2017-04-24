@@ -93,7 +93,7 @@ def equations(m, inline=False, constants=True):
                 k = "{:g}".format(rr.k())
             else:
                 k = ""
-            equations[name] = "{}{}".format(k, "".join([escape_serial(sp) for sp in rr.reactants()]))
+            equations[name] = (i + 1, "{}{}".format(k, "".join([escape_serial(sp) for sp in rr.reactants()])))
         elif isinstance(rr, ODEReactionRule):
             #XXX: rr.is_massaction() is False
             rl = rr.get_ratelaw()
@@ -102,14 +102,14 @@ def equations(m, inline=False, constants=True):
             obj = parser.eval(rl.as_string(), params={'pow': pow})
             # obj = just_parse()._ParseDecorator__evaluate(rl.as_string())
             if inline:
-                equations[name] = wrap_parseobj(obj, params)
+                equations[name] = (i + 1, wrap_parseobj(obj, params))
             else:
-                equations[name] = convert_parseobj(obj, params)
+                equations[name] = (i + 1, convert_parseobj(obj, params))
 
         if inline:
             if name not in equations:
                 raise ValueError("No equation is defined [{}]".format(rr.as_string()))
-            eq = equations[name]
+            _, eq = equations[name]
         else:
             eq = name
 
@@ -170,9 +170,9 @@ def equations(m, inline=False, constants=True):
             "\\frac{{\\mathrm{{d}} {}}}{{\\mathrm{{d}} t}} &=& {}".format(serial, ''.join(derivatives[serial])))
 
     if not inline:
-        for name in sorted(equations.keys()):
+        for name, (_, value) in sorted(equations.items(), key=lambda x: x[1][0]):
             res.append(
-                "{} &=& {}".format(name, equations[name]))
+                "{} &=& {}".format(name, value))
 
     if params:
         for name, (_, value) in sorted(params.items(), key=lambda x: x[1][0]):
