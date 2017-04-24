@@ -15,7 +15,7 @@ def escape_serial(val):
     return "\\left[{}\\right]".format(val)
 
 def function_parseobj(obj, params):
-    reserved_vars = ['_t', 'pi']
+    # reserved_vars = ['_t', 'pi']
     reserved_funcs = ['exp', 'log', 'sin', 'cos', 'tan', 'asin', 'acos', 'atan'] # , 'pow']
 
     if not isinstance(obj, parseobj.ParseObj) or obj._size() != 1:
@@ -183,19 +183,19 @@ def equations(m, inline=False, constants=True):
     return res
 
 def display_equations(m, inline=False, constants=True):
-    from IPython.display import display, Math, Latex
+    from IPython.display import display, Latex #, Math
     fmt = equations(m, inline, constants)
     display(Latex(fmt))
 
 
-if __name__ == "__main__":
-    from ecell4 import reaction_rules, get_model
+# if __name__ == "__main__":
+#     from ecell4 import reaction_rules, get_model
 
-    with reaction_rules():
-        A + B == C | (1.0, 2.0)
-        C > D | 3.0
-        D > A + B | 4.0
+#     with reaction_rules():
+#         A + B == C | (1.0, 2.0)
+#         C > D | 3.0
+#         D > A + B | 4.0
 
-    m = get_model()
+#     m = get_model()
 
-    print(equations(m))
+#     print(equations(m))
