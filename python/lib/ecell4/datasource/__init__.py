@@ -14,6 +14,11 @@ def print_descriptions(desc):
 def __description(entity, collections):
     desc = []
 
+    if collections is None or 'kegg' in collections:
+        from . import kegg
+        #print(type(entity))
+        desc.extend(kegg.description(entity))
+
     if collections is None or 'uniprot' in collections:
         from . import uniprot
         desc.extend(uniprot.description(entity))
