@@ -34,7 +34,7 @@ template<>
 struct hash<ShellID>
 {
     typedef std::size_t result_type;
-    typedef ecell4::sgfrd::DomainID argument_type;
+    typedef ecell4::sgfrd::ShellID argument_type;
 
     result_type operator()(argument_type const& val) const
     {
