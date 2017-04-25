@@ -1,19 +1,14 @@
 #ifndef ECELL4_SGFRD_PAIR_DOMAIN
 #define ECELL4_SGFRD_PAIR_DOMAIN
-#include <ecell4/sgfrd/Shell.hpp>
+#include <ecell4/sgfrd/ShellID.hpp>
 #include <ecell4/sgfrd/DomainID.hpp>
 #include <ecell4/core/Particle.hpp>
-#include <ecell4/core/Identifier.hpp>
-#include <ecell4/core/Circle.hpp>
-#include <ecell4/core/Cone.hpp>
-#include <boost/variant.hpp>
 
 namespace ecell4
 {
 namespace sgfrd
 {
 
-template<typename T_polygon_traits>
 class Pair
 {
   public:
@@ -22,23 +17,22 @@ class Pair
     typedef typename polygon_traits::face_id_type face_id_type;
 
     typedef DomainID   identifier_type;
+    typedef ShellID    shell_id_type;
     typedef Particle   particle_type;
     typedef ParticleID particle_id_type;
     typedef std::pair<ParticleID, Particle>   particle_id_pair;
     typedef boost::array<particle_id_pair, 2> particle_array_type;
-    typedef Shell<ecell4::Circle, face_id_type> circular_shell;
-    typedef boost::variant<circular_shell> storage_type;
 
   public:
     Pair(): dt_(0.), last_time_(0.){}
     ~Pair(){}
 
-    Pair(identifier_type const& id, circular_shell const& sh)
-        : id_(id), shell_(sh)
+    Pair(identifier_type const& id, shell_id_type const& sh)
+        : id_(id), shell_id_(sh)
     {}
-    Pair(identifier_type const& id,
+    Pair(identifier_type const& id, shell_id_type const& sh,
          particle_id_pair const& p0, particle_id_pair const& p1)
-        : id_(id)
+        : id_(id), shell_id_(sh)
     {
         if(p0.second.D() < p1.second.D())
         {
@@ -54,8 +48,9 @@ class Pair
 
     identifier_type&       id()       {return id_;}
     identifier_type const& id() const {return id_;}
-    storage_type&       shell()       {return shell_;}
-    storage_type const& shell() const {return shell_;}
+    shell_id_type&       shell_id()       {return shell_id_;}
+    shell_id_type const& shell_id() const {return shell_id_;}
+
     Real& dt()       {return dt_;}
     Real  dt() const {return dt_;}
     Real& last_time()       {return last_time_;}
@@ -71,11 +66,10 @@ class Pair
 
     Real dt_;
     Real last_time_;
-    identifier_type     id_;
+    identifier_type id_;
+    shell_id_type   shell_id_;
     particle_array_type particles_;
-    storage_type        shell_;
 };
-
 
 } // sgfrd
 } // ecell4
