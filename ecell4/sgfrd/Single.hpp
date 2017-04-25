@@ -14,16 +14,21 @@ namespace sgfrd
 {
 
 /*! @brief single domain type. */
+template<typename T_polygon_traits>
 class Single
 {
   public:
+
+    typedef T_polygon_traits polygon_traits;
+    typedef typename polygon_traits::face_id_type face_id_type;
+    typedef typename polygon_traits::vertex_id_type vertex_id_type;
 
     typedef DomainID   identifier_type;
     typedef Particle   particle_type;
     typedef ParticleID particle_id_type;
     typedef std::pair<ParticleID, Particle> particle_id_pair;
-    typedef Shell<ecell4::Circle>         circular_shell;
-    typedef Shell<ecell4::ConicalSurface> conical_surface_shell;
+    typedef Shell<ecell4::Circle, face_id_type> circular_shell;
+    typedef Shell<ecell4::ConicalSurface, vertex_id_type> conical_surface_shell;
     typedef boost::variant<circular_shell, conical_surface_shell> storage_type;
 
   public:

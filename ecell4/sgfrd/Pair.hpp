@@ -13,15 +13,20 @@ namespace ecell4
 namespace sgfrd
 {
 
+template<typename T_polygon_traits>
 class Pair
 {
   public:
+
+    typedef T_polygon_traits polygon_traits;
+    typedef typename polygon_traits::face_id_type face_id_type;
+
     typedef DomainID   identifier_type;
     typedef Particle   particle_type;
     typedef ParticleID particle_id_type;
     typedef std::pair<ParticleID, Particle>   particle_id_pair;
     typedef boost::array<particle_id_pair, 2> particle_array_type;
-    typedef Shell<ecell4::Circle>          circular_shell;
+    typedef Shell<ecell4::Circle, face_id_type> circular_shell;
     typedef boost::variant<circular_shell> storage_type;
 
   public:
@@ -56,8 +61,8 @@ class Pair
     Real& last_time()       {return last_time_;}
     Real  last_time() const {return last_time_;}
 
-    particle_array_type&       particles()       {return particle_;}
-    particle_array_type const& particles() const {return particle_;}
+    particle_array_type&       particles()       {return particles_;}
+    particle_array_type const& particles() const {return particles_;}
 
     std::size_t num_shells()   const {return 1;}
     std::size_t multiplicity() const {return 2;}
