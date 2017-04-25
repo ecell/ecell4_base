@@ -1,6 +1,7 @@
 #ifndef ECELL4_SGFRD_SHELL
 #define ECELL4_SGFRD_SHELL
 #include <ecell4/core/Real3.hpp>
+#include <ecell4/sgfrd/DomainID.hpp>
 #include <boost/shared_ptr.hpp>
 
 namespace ecell4
@@ -13,6 +14,7 @@ class Shell
 {
   public:
     typedef T_shape shape_type;
+    typedef DomainID domain_id_type;
 
   public:
     Shell(){}
