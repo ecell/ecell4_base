@@ -16,11 +16,10 @@ namespace sgfrd
 class Pair
 {
   public:
-
     typedef DomainID   identifier_type;
     typedef Particle   particle_type;
     typedef ParticleID particle_id_type;
-    typedef std::pair<ParticleID, Particle> particle_id_pair;
+    typedef std::pair<ParticleID, Particle>   particle_id_pair;
     typedef boost::array<particle_id_pair, 2> particle_array_type;
     typedef Shell<ecell4::Circle>          circular_shell;
     typedef boost::variant<circular_shell> storage_type;
@@ -32,10 +31,6 @@ class Pair
     Pair(identifier_type const& id, circular_shell const& sh)
         : id_(id), shell_(sh)
     {}
-    Pair(identifier_type const& id, conical_surface_shell const& sh)
-        : id_(id), shell_(sh)
-    {}
-
     Pair(identifier_type const& id,
          particle_id_pair const& p0, particle_id_pair const& p1)
         : id_(id)
@@ -56,10 +51,10 @@ class Pair
     identifier_type const& id() const {return id_;}
     storage_type&       shell()       {return shell_;}
     storage_type const& shell() const {return shell_;}
-    time_type& dt()       {return dt_;}
-    time_type  dt() const {return dt_;}
-    time_type& last_time()       {return last_time_;}
-    time_type  last_time() const {return last_time_;}
+    Real& dt()       {return dt_;}
+    Real  dt() const {return dt_;}
+    Real& last_time()       {return last_time_;}
+    Real  last_time() const {return last_time_;}
 
     particle_array_type&       particles()       {return particle_;}
     particle_array_type const& particles() const {return particle_;}
@@ -72,7 +67,6 @@ class Pair
     Real dt_;
     Real last_time_;
     identifier_type     id_;
-    event_id_pair_type  event_;
     particle_array_type particles_;
     storage_type        shell_;
 };

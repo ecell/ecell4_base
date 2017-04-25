@@ -43,10 +43,10 @@ class Single
     identifier_type const& id() const {return id_;}
     storage_type&       shell()       {return shell_;}
     storage_type const& shell() const {return shell_;}
-    time_type& dt()       {return dt_;}
-    time_type  dt() const {return dt_;}
-    time_type& last_time()       {return last_time_;}
-    time_type  last_time() const {return last_time_;}
+    Real& dt()       {return dt_;}
+    Real  dt() const {return dt_;}
+    Real& last_time()       {return last_time_;}
+    Real  last_time() const {return last_time_;}
 
     particle_id_pair&       particle()       {return particle_;}
     particle_id_pair const& particle() const {return particle_;}
@@ -59,7 +59,6 @@ class Single
     Real dt_;
     Real last_time_;
     identifier_type    id_;
-    event_id_pair_type event_;
     particle_id_pair   particle_;
     storage_type       shell_;
 };
