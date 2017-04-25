@@ -17,7 +17,7 @@ template<typename T_polygon_traits>
 class SGFRDWorld : public ecell4::Space
 {
   public:
-    typedef T_traits traits_type;
+    typedef T_polygon_traits traits_type;
     typedef Polygon<traits_type> polygon_type;
     typedef typename polygon_type::triangle_type     triangle_type;
     typedef typename polygon_type::face_id_type      face_id_type;
@@ -31,6 +31,8 @@ class SGFRDWorld : public ecell4::Space
 
     typedef ParticleSpaceCellListImpl default_particle_space_type;
     typedef ParticleSpace particle_space_type;
+    typedef typename particle_space_type::particle_container_type
+        particle_container_type;
     typedef StructureRegistrator<ParticleID, face_id_type, traits_type>
         structure_registrator_type;
 
@@ -65,20 +67,21 @@ class SGFRDWorld : public ecell4::Space
     bool has_species(const Species& sp) const {return ps_->has_species(sp);}
     std::vector<Species> list_species() const {return ps_->list_species();}
 
-    Real3 const& edge_lengths() const {return ps_->edge_lengths();}
-    Real3 const& cell_sizes()   const {return ps_->cell_sizes();}
-    Integer3     matrix_sizes() const {return ps_->matrix_sizes();}
+// CellListImpl stuff
+//     Real3 const& edge_lengths() const {return ps_->edge_lengths();}
+//     Real3 const& cell_sizes()   const {return ps_->cell_sizes();}
+//     Integer3     matrix_sizes() const {return ps_->matrix_sizes();}
+//     void reset(const Real3& edge_lengths) {ps_->reset(edge_lengths);}
 
-    void reset(const Real3& edge_lengths) {ps_->reset(edge_lengths);}
     bool update_particle(const ParticleID& pid, const Particle& p);
     bool update_particle(const ParticleID& pid, const Particle& p,
                          const face_id_type& fid);
 
     // this also removes particle if it is on surface
     void
-    remove_particle(const ParticleID& pid) const;
+    remove_particle(const ParticleID& pid);
     void
-    remove_particle(const ParticleID& pid, const face_id_type& fid) const;
+    remove_particle(const ParticleID& pid, const face_id_type& fid);
 
     std::pair<ParticleID, Particle>
     get_particle(const ParticleID& pid) const {return ps_->get_particle(pid);}
@@ -86,11 +89,11 @@ class SGFRDWorld : public ecell4::Space
     has_particle(const ParticleID& pid) const {return ps_->has_particle(pid);}
     bool
     has_particle(const face_id_type& fid) const;
-    std::size_t
+    Integer
     num_particle(const face_id_type& fid) const;
 
     Integer
-    num_particles()                        const {return particles_.size();}
+    num_particles()                        const {return ps_->num_particles();}
     Integer
     num_particles(const Species& sp)       const {return ps_->num_particles(sp);}
     Integer
@@ -160,7 +163,7 @@ class SGFRDWorld : public ecell4::Space
             const std::pair<Real3, face_id_type>& pos, const Real& radius,
             const ParticleID& ignore1, const ParticleID& ignore2) const;
 
-    particle_container const& particles() const {return ps_->particles();}
+    particle_container_type const& particles() const {return ps_->particles();}
 
   protected:
 
@@ -177,7 +180,7 @@ template<typename traits>
 inline bool
 SGFRDWorld<traits>::update_particle(const ParticleID& pid, const Particle& p)
 {
-    return result = ps_->update_particle(pid, p);
+    return ps_->update_particle(pid, p);
 }
 
 template<typename traits>
@@ -186,12 +189,12 @@ SGFRDWorld<traits>::update_particle(const ParticleID& pid, const Particle& p,
                                     const face_id_type& fid)
 {
     registrator_.update(pid, fid);
-    return result = ps_->update_particle(pid, p);
+    return ps_->update_particle(pid, p);
 }
 
 template<typename traits>
 inline void
-SGFRDWorld<traits>::remove_particle(const ParticleID& pid) const
+SGFRDWorld<traits>::remove_particle(const ParticleID& pid)
 {
     if(registrator_.have(pid)) registrator_.remove(pid);
     return ps_->remove_particle(pid);
@@ -200,7 +203,7 @@ SGFRDWorld<traits>::remove_particle(const ParticleID& pid) const
 template<typename traits>
 inline void
 SGFRDWorld<traits>::remove_particle(
-        const ParticleID& pid, const face_id_type& fid) const
+        const ParticleID& pid, const face_id_type& fid)
 {
     registrator_.remove(pid, fid);
     return ps_->remove_particle(pid);
@@ -239,7 +242,7 @@ SGFRDWorld<traits>::list_particleIDs(const face_id_type& fid) const
 }
 
 template<typename traits>
-inline face_id_type
+inline typename SGFRDWorld<traits>::face_id_type
 SGFRDWorld<traits>::get_faceID(const ParticleID& pid) const
 {
     return registrator_.structure_on(pid);
@@ -281,10 +284,10 @@ SGFRDWorld<traits>::list_particles_within_radius(
 
     {// same face
         const std::vector<ParticleID>& ids = this->list_particleIDs(pos.second);
-        for(std::vector<ParticleID>::const_iterator
+        for(typename std::vector<ParticleID>::const_iterator
             i(ids.begin()), e(ids.end()); i != e; ++i)
         {
-            const std::pair<ParticleID, Particle> pp = ps_.get_particle(*i);
+            const std::pair<ParticleID, Particle> pp = ps_->get_particle(*i);
             const Real dist = length(pos.first - pp.second.position()) -
                               pp.second.radius();
             if(dist < radius) retval.push_back(std::make_pair(pp, dist));
@@ -292,15 +295,15 @@ SGFRDWorld<traits>::list_particles_within_radius(
     }
 
     std::vector<face_id_type> const& neighbors =
-        polygon_->neighbor_faces(pos.second);
-    for(std::vector<face_id_type>::const_iterator
+        polygon_.neighbor_faces(pos.second);
+    for(typename std::vector<face_id_type>::const_iterator
         iter = neighbors.begin(); iter != neighbors.end(); ++iter)
     {
         const std::vector<ParticleID>& ids = registrator_.elements_over(*iter);
-        for(std::vector<ParticleID>::const_iterator
+        for(typename std::vector<ParticleID>::const_iterator
                 i(ids.begin()), e(ids.end()); i != e; ++i)
         {
-            const std::pair<ParticleID, Particle> pp = ps_.get_particle(*i);
+            const std::pair<ParticleID, Particle> pp = ps_->get_particle(*i);
             const Real dist = length(pos.first - pp.second.position()) -
                               pp.second.radius();
             if(dist < radius) retval.push_back(std::make_pair(pp, dist));
@@ -321,11 +324,11 @@ SGFRDWorld<traits>::list_particles_within_radius(
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > retval;
     {// same face
         const std::vector<ParticleID>& ids = this->list_particleIDs(pos.second);
-        for(std::vector<ParticleID>::const_iterator
+        for(typename std::vector<ParticleID>::const_iterator
             i(ids.begin()), e(ids.end()); i != e; ++i)
         {
             if(*i == ignore) continue;
-            const std::pair<ParticleID, Particle> pp = ps_.get_particle(*i);
+            const std::pair<ParticleID, Particle> pp = ps_->get_particle(*i);
             const Real dist = length(pos.first - pp.second.position()) -
                               pp.second.radius();
             if(dist < radius) retval.push_back(std::make_pair(pp, dist));
@@ -333,16 +336,16 @@ SGFRDWorld<traits>::list_particles_within_radius(
     }
 
     std::vector<face_id_type> const& neighbors =
-        polygon_->neighbor_faces(pos.second);
-    for(std::vector<face_id_type>::const_iterator
+        polygon_.neighbor_faces(pos.second);
+    for(typename std::vector<face_id_type>::const_iterator
         iter = neighbors.begin(); iter != neighbors.end(); ++iter)
     {
         const std::vector<ParticleID>& ids = this->list_particleIDs(*iter);
-        for(std::vector<ParticleID>::const_iterator
+        for(typename std::vector<ParticleID>::const_iterator
                 i(ids.begin()), e(ids.end()); i != e; ++i)
         {
             if(*i == ignore) continue;
-            const std::pair<ParticleID, Particle> pp = ps_.get_particle(*i);
+            const std::pair<ParticleID, Particle> pp = ps_->get_particle(*i);
             const Real dist = length(pos.first - pp.second.position()) -
                               pp.second.radius();
             if(dist < radius) retval.push_back(std::make_pair(pp, dist));
@@ -354,6 +357,7 @@ SGFRDWorld<traits>::list_particles_within_radius(
     return retval;
 }
 
+template<typename traits>
 std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
 SGFRDWorld<traits>::list_particles_within_radius(
         const std::pair<Real3, face_id_type>& pos, const Real& radius,
@@ -362,11 +366,11 @@ SGFRDWorld<traits>::list_particles_within_radius(
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > retval;
     {// same face
         const std::vector<ParticleID>& ids = this->list_particleIDs(pos.second);
-        for(std::vector<ParticleID>::const_iterator
+        for(typename std::vector<ParticleID>::const_iterator
             i(ids.begin()), e(ids.end()); i != e; ++i)
         {
             if(*i == ignore1 || *i == ignore2) continue;
-            const std::pair<ParticleID, Particle> pp = ps_.get_particle(*i);
+            const std::pair<ParticleID, Particle> pp = ps_->get_particle(*i);
             const Real dist = length(pos.first - pp.second.position()) -
                               pp.second.radius();
             if(dist < radius) retval.push_back(std::make_pair(pp, dist));
@@ -374,16 +378,16 @@ SGFRDWorld<traits>::list_particles_within_radius(
     }
 
     std::vector<face_id_type> const& neighbors =
-        polygon_->neighbor_faces(pos.second);
-    for(std::vector<face_id_type>::const_iterator
+        polygon_.neighbor_faces(pos.second);
+    for(typename std::vector<face_id_type>::const_iterator
         iter = neighbors.begin(); iter != neighbors.end(); ++iter)
     {
         const std::vector<ParticleID>& ids = this->list_particleIDs(*iter);
-        for(std::vector<ParticleID>::const_iterator
+        for(typename std::vector<ParticleID>::const_iterator
                 i(ids.begin()), e(ids.end()); i != e; ++i)
         {
             if(*i == ignore1 || *i == ignore2) continue;
-            const std::pair<ParticleID, Particle> pp = ps_.get_particle(*i);
+            const std::pair<ParticleID, Particle> pp = ps_->get_particle(*i);
             const Real dist = length(pos.first - pp.second.position()) -
                               pp.second.radius();
             if(dist < radius) retval.push_back(std::make_pair(pp, dist));
