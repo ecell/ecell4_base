@@ -31,8 +31,10 @@ public:
 
 public:
 
-    StructureRegistrator(){}
-    StructureRegistrator(std::size_t size) : container_(size){}
+    StructureRegistrator(const polygon_type& poly)
+        : structure_id_converter_(poly.converter()),
+          container_(poly.num_faces())
+    {}
     ~StructureRegistrator(){}
 
     void emplace(const element_id_type&, const structure_id_type&);
@@ -87,9 +89,9 @@ protected:
 
 protected:
 
-    structure_id_converter_type structure_id_converter_; //ex) {fID -> idx}
-    elemid_to_strid_map_type    elemid_to_strid_map_;    //ex) {pID -> fID}
-    container_type              container_;   //ex) {<fid, {pid,...}>, ...}
+    structure_id_converter_type const& structure_id_converter_;//ex {fID -> idx}
+    elemid_to_strid_map_type           elemid_to_strid_map_;   //ex {pID -> fID}
+    container_type                     container_;  //ex {<fid, {pid,...}>, ...}
 };
 
 

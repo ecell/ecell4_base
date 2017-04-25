@@ -166,6 +166,8 @@ class Polygon : public Shape
     edge_id_type   get_edge_id(const local_index_type idx) const;
     vertex_id_type get_vertex_id(const local_index_type idx) const;
 
+    const converter_type& converter() const {return converter_;}
+
     /* required by shape -----------------------------------------------------*/
     dimension_kind dimension() const {return THREE;} // TWO?
 

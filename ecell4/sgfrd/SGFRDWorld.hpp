@@ -41,7 +41,7 @@ class SGFRDWorld : public ecell4::Space
     SGFRDWorld(const Real3& edge_lengths, const Integer3& matrix_sizes,
                const polygon_type& polygon)
         : ps_(new default_particle_space_type(edge_lengths, matrix_sizes)),
-          polygon_(polygon), registrator_(polygon.num_faces())
+          polygon_(polygon), registrator_(polygon)
     {
         rng_ = boost::shared_ptr<RandomNumberGenerator>(
             new GSLRandomNumberGenerator());
@@ -52,7 +52,7 @@ class SGFRDWorld : public ecell4::Space
                const polygon_type& polygon,
                boost::shared_ptr<RandomNumberGenerator> rng)
         : ps_(new default_particle_space_type(edge_lengths, matrix_sizes)),
-          rng_(rng), polygon_(polygon), registrator_(polygon.num_faces())
+          rng_(rng), polygon_(polygon), registrator_(polygon)
     {}
 
     ~SGFRDWorld(){}
