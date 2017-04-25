@@ -8,6 +8,8 @@
 #endif
 
 #include <boost/serialization/strong_typedef.hpp>
+#include <boost/algorithm/cxx11/is_permutation.hpp>
+#include <boost/assign.hpp>
 #include <ecell4/core/Polygon.hpp>
 #include <ecell4/core/STLPolygonAdapter.hpp>
 #include <ecell4/core/Real3.hpp>
@@ -141,6 +143,122 @@ BOOST_AUTO_TEST_CASE(Polygon_num_stuff)
     BOOST_CHECK_EQUAL(poly.num_triangles(), 12);
     BOOST_CHECK_EQUAL(poly.num_edges(),     18);
     BOOST_CHECK_EQUAL(poly.num_vertices(),  8);
+}
+
+
+BOOST_AUTO_TEST_CASE(Polygon_neighbor_faces)
+{
+    using namespace boost::assign;
+    typedef face_id_type f;
+    const polygon_type poly = make_cube();
+    {
+        std::vector<face_id_type> const& neighbors = poly.neighbor_faces(f(0));
+        std::vector<face_id_type> expects;
+        expects += f(1),f(2),f(3),f(6),f(7),f(8),f(9),f(10),f(11);
+        BOOST_CHECK_EQUAL(neighbors.size(), expects.size());
+        const bool result = boost::algorithm::is_permutation(
+                neighbors.begin(), neighbors.end(), expects.begin());
+        BOOST_CHECK(result);
+    }
+    {
+        std::vector<face_id_type> const& neighbors = poly.neighbor_faces(f(1));
+        std::vector<face_id_type> expects;
+        expects += f(0),f(2),f(3),f(6),f(7),f(8),f(9),f(10),f(11);
+        BOOST_CHECK_EQUAL(neighbors.size(), expects.size());
+        const bool result = boost::algorithm::is_permutation(
+                neighbors.begin(), neighbors.end(), expects.begin());
+        BOOST_CHECK(result);
+    }
+    {
+        std::vector<face_id_type> const& neighbors = poly.neighbor_faces(f(2));
+        std::vector<face_id_type> expects;
+        expects += f(0),f(1),f(3),f(4),f(5),f(8),f(9),f(10),f(11);
+        BOOST_CHECK_EQUAL(neighbors.size(), expects.size());
+        const bool result = boost::algorithm::is_permutation(
+                neighbors.begin(), neighbors.end(), expects.begin());
+        BOOST_CHECK(result);
+    }
+    {
+        std::vector<face_id_type> const& neighbors = poly.neighbor_faces(f(3));
+        std::vector<face_id_type> expects;
+        expects += f(0),f(1),f(2),f(4),f(5),f(8),f(9),f(10),f(11);
+        BOOST_CHECK_EQUAL(neighbors.size(), expects.size());
+        const bool result = boost::algorithm::is_permutation(
+                neighbors.begin(), neighbors.end(), expects.begin());
+        BOOST_CHECK(result);
+    }
+    {
+        std::vector<face_id_type> const& neighbors = poly.neighbor_faces(f(4));
+        std::vector<face_id_type> expects;
+        expects += f(2),f(3),f(5),f(6),f(7),f(8),f(9),f(10),f(11);
+        BOOST_CHECK_EQUAL(neighbors.size(), expects.size());
+        const bool result = boost::algorithm::is_permutation(
+                neighbors.begin(), neighbors.end(), expects.begin());
+        BOOST_CHECK(result);
+    }
+    {
+        std::vector<face_id_type> const& neighbors = poly.neighbor_faces(f(5));
+        std::vector<face_id_type> expects;
+        expects += f(2),f(3),f(4),f(6),f(7),f(8),f(9),f(10),f(11);
+        BOOST_CHECK_EQUAL(neighbors.size(), expects.size());
+        const bool result = boost::algorithm::is_permutation(
+                neighbors.begin(), neighbors.end(), expects.begin());
+        BOOST_CHECK(result);
+    }
+    {
+        std::vector<face_id_type> const& neighbors = poly.neighbor_faces(f(6));
+        std::vector<face_id_type> expects;
+        expects += f(0),f(1),f(4),f(5),f(7),f(8),f(9),f(10),f(11);
+        BOOST_CHECK_EQUAL(neighbors.size(), expects.size());
+        const bool result = boost::algorithm::is_permutation(
+                neighbors.begin(), neighbors.end(), expects.begin());
+        BOOST_CHECK(result);
+    }
+    {
+        std::vector<face_id_type> const& neighbors = poly.neighbor_faces(f(7));
+        std::vector<face_id_type> expects;
+        expects += f(0),f(1),f(4),f(5),f(6),f(8),f(9),f(10),f(11);
+        BOOST_CHECK_EQUAL(neighbors.size(), expects.size());
+        const bool result = boost::algorithm::is_permutation(
+                neighbors.begin(), neighbors.end(), expects.begin());
+        BOOST_CHECK(result);
+    }
+    {
+        std::vector<face_id_type> const& neighbors = poly.neighbor_faces(f(8));
+        std::vector<face_id_type> expects;
+        expects += f(0),f(1),f(2),f(3),f(4),f(5),f(6),f(7),f(9);
+        BOOST_CHECK_EQUAL(neighbors.size(), expects.size());
+        const bool result = boost::algorithm::is_permutation(
+                neighbors.begin(), neighbors.end(), expects.begin());
+        BOOST_CHECK(result);
+    }
+    {
+        std::vector<face_id_type> const& neighbors = poly.neighbor_faces(f(9));
+        std::vector<face_id_type> expects;
+        expects += f(0),f(1),f(2),f(3),f(4),f(5),f(6),f(7),f(8);
+        BOOST_CHECK_EQUAL(neighbors.size(), expects.size());
+        const bool result = boost::algorithm::is_permutation(
+                neighbors.begin(), neighbors.end(), expects.begin());
+        BOOST_CHECK(result);
+    }
+    {
+        std::vector<face_id_type> const& neighbors = poly.neighbor_faces(f(10));
+        std::vector<face_id_type> expects;
+        expects += f(0),f(1),f(2),f(3),f(4),f(5),f(6),f(7),f(11);
+        BOOST_CHECK_EQUAL(neighbors.size(), expects.size());
+        const bool result = boost::algorithm::is_permutation(
+                neighbors.begin(), neighbors.end(), expects.begin());
+        BOOST_CHECK(result);
+    }
+    {
+        std::vector<face_id_type> const& neighbors = poly.neighbor_faces(f(11));
+        std::vector<face_id_type> expects;
+        expects += f(0),f(1),f(2),f(3),f(4),f(5),f(6),f(7),f(10);
+        BOOST_CHECK_EQUAL(neighbors.size(), expects.size());
+        const bool result = boost::algorithm::is_permutation(
+                neighbors.begin(), neighbors.end(), expects.begin());
+        BOOST_CHECK(result);
+    }
 }
 
 

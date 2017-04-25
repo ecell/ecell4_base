@@ -7,7 +7,11 @@
 #include <ecell4/core/Shape.hpp>
 #include <ecell4/core/geometry.hpp>
 #include <ecell4/core/Barycentric.hpp>
+
+#include <boost/utility.hpp>
+#include <boost/type_traits.hpp>
 #include <boost/array.hpp>
+
 #include <algorithm>
 #include <stdexcept>
 #include <vector>
@@ -15,6 +19,20 @@
 
 namespace ecell4
 {
+
+/*! if the arg is already in container, do nothing. otherwise, insert it.
+ * @return if inserted, return true.
+ */
+template<typename containerT, typename argumentT>
+inline typename boost::enable_if<
+    boost::is_convertible<typename containerT::value_type, argumentT>,
+    bool>::type
+uniquely_add(containerT& c, const argumentT& arg)
+{
+    if(std::find(c.begin(), c.end(), arg) != c.end()) return false;
+    c.push_back(arg);
+    return true;
+}
 
 template<typename T_traits>
 class Polygon : public Shape
@@ -201,7 +219,7 @@ class Polygon : public Shape
         boost::array<vertex_id_type, 3> vertices;
         boost::array<edge_id_type, 3>   edges;
         boost::array<face_id_type, 3>   adjacents; // connected by edge
-        std::vector<face_id_type>       neighbors; // connected by edge or vertex
+        std::vector<face_id_type>       neighbors; // connected by edge of vtx
     };
 
     converter_type        converter_;
@@ -297,7 +315,8 @@ Polygon<T>::connect_edges(const local_index_type& lhs, const local_index_type& r
     this->face_prop_at(fid2).edges.at(rhs.second) = eid;
     this->face_prop_at(fid1).adjacents.at(lhs.second) = fid2;
     this->face_prop_at(fid2).adjacents.at(rhs.second) = fid1;
-
+    uniquely_add(this->face_prop_at(fid1).neighbors, fid2);
+    uniquely_add(this->face_prop_at(fid2).neighbors, fid1);
     return eid;
 }
 
@@ -360,6 +379,20 @@ Polygon<T>::connect_vertices(const std::vector<local_index_type>& vtxs)
                     "edges that connects to the vertex is already filled");
         }
     }
+
+    // XXX: update face_prop.neighbors
+    for(typename std::vector<face_id_type>::const_iterator
+        iter = vp.faces.begin(); iter != vp.faces.end(); ++iter)
+    {
+        face_property_type& fp = this->face_prop_at(*iter);
+        for(typename std::vector<face_id_type>::const_iterator
+            jter = vp.faces.begin(); jter != vp.faces.end(); ++jter)
+        {
+            if(*iter == *jter) continue;
+            uniquely_add(fp.neighbors, *jter);
+        }
+    }
+
     this->vertices_.push_back(vp);
 
     return vid;
