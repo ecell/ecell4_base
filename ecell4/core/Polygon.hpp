@@ -106,6 +106,26 @@ class Polygon : public Shape
                      const std::pair<Real3, face_id_type>& rhs) const;
     Real distance(const std::pair<Real3, face_id_type>& lhs,
                   const std::pair<Real3, face_id_type>& rhs) const;
+
+    Real distance_sq(const std::pair<Real3, vertex_id_type>& lhs,
+                     const std::pair<Real3, face_id_type>& rhs) const;
+    Real distance(const std::pair<Real3, vertex_id_type>& lhs,
+                  const std::pair<Real3, face_id_type>& rhs) const
+    {return std::sqrt(distance_sq(lhs, rhs));}
+
+    Real distance_sq(const std::pair<Real3, face_id_type>& lhs,
+                     const std::pair<Real3, vertex_id_type>& rhs) const
+    {return distance_sq(rhs, lhs);}
+    Real distance(const std::pair<Real3, face_id_type>& lhs,
+                  const std::pair<Real3, vertex_id_type>& rhs) const
+    {return distance(rhs, lhs);}
+
+    Real distance_sq(const std::pair<Real3, vertex_id_type>& lhs,
+                     const std::pair<Real3, vertex_id_type>& rhs) const;
+    Real distance(const std::pair<Real3, vertex_id_type>& lhs,
+                  const std::pair<Real3, vertex_id_type>& rhs) const
+    {return std::sqrt(distance_sq(lhs, rhs));}
+
     Real3
     developed_direction(const std::pair<Real3, face_id_type>& from,
                         const std::pair<Real3, face_id_type>& to) const;
@@ -167,6 +187,10 @@ class Polygon : public Shape
     face_property_type&         face_prop_at(const face_id_type& fid);
     face_property_type const&   face_prop_at(const face_id_type& fid) const;
 
+    Real distance_over_edge(const std::pair<Real3, face_id_type>& lhs,
+                            const std::pair<Real3, face_id_type>& rhs) const;
+    Real distance_over_vertex(const std::pair<Real3, face_id_type>& lhs,
+                              const std::pair<Real3, face_id_type>& rhs) const;
   private:
 
     face_id_type   generate_face_id()   {return idgen_.generate_face_id();}
@@ -590,6 +614,37 @@ Real Polygon<T>::distance(const std::pair<Real3, face_id_type>& lhs,
                           const std::pair<Real3, face_id_type>& rhs) const
 {
     return std::sqrt(this->distance_sq(lhs, rhs));
+}
+
+template<typename T>
+Real Polygon<T>::distance_sq(const std::pair<Real3, vertex_id_type>& lhs,
+                             const std::pair<Real3, face_id_type>& rhs) const
+{
+    const face_property_type& fp = face_prop_at(rhs.second);
+    for(std::size_t i=0; i<3; ++i)
+        if(fp.vertices[i] == lhs.second)
+            return length_sq(lhs.first - rhs.first);
+
+    //XXX it is enough for sgfrd,
+    //    but basically one can measure the distance from more distant vertex
+    return std::numeric_limits<Real>::max();
+}
+
+template<typename T>
+Real Polygon<T>::distance_sq(const std::pair<Real3, vertex_id_type>& lhs,
+                             const std::pair<Real3, vertex_id_type>& rhs) const
+{
+    const vertex_property_type& vp = vertex_prop_at(lhs.second);
+    for(typename std::vector<edge_id_type>::const_iterator
+        iter = vp.edges.begin(); iter != vp.edges.end(); ++iter)
+    {
+        const edge_property_type& ep = edge_prop_at(*iter);
+        if(ep.vertices.first  == rhs.second || ep.vertices.second == rhs.second)
+            return length_sq(lhs.first - rhs.first);
+    }
+    //XXX it is enough for sgfrd,
+    //    but basically one can measure the distance from more distant vertex
+    return std::numeric_limits<Real>::max();
 }
 
 template<typename T>
