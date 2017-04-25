@@ -1,7 +1,7 @@
 #ifndef ECELL4_SGFRD_SHELL
 #define ECELL4_SGFRD_SHELL
 #include <ecell4/core/Real3.hpp>
-#include <ecell4/sgfrd/DomainID.hpp>
+#include <ecell4/sgfrd/SGFRDEvent.hpp>
 #include <boost/shared_ptr.hpp>
 
 namespace ecell4

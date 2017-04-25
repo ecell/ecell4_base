@@ -1,7 +1,6 @@
 #ifndef ECELL4_SGFRD_DOMAIN
 #define ECELL4_SGFRD_DOMAIN
 #include <ecell4/sgfrd/Shell.hpp>
-#include <ecell4/sgfrd/DomainID.hpp>
 #include <ecell4/core/Particle.hpp>
 #include <ecell4/core/Identifier.hpp>
 #include <ecell4/core/Circle.hpp>
@@ -13,14 +12,12 @@ namespace ecell4
 namespace sgfrd
 {
 
-template<typename T_simulator>
 class Multi
 {
   public:
 
-    typedef T_simulator simulator_type;
+//     typedef BDPropagator simulator_type;
 
-    typedef DomainID   identifier_type;
     typedef Particle   particle_type;
     typedef ParticleID particle_id_type;
     typedef std::pair<ParticleID, Particle> particle_id_pair;
@@ -36,12 +33,10 @@ class Multi
     Multi(){}
     ~Multi(){}
 
-    Multi(identifier_type const& id, simulator_type& sim)
-        : id_(id), simulator_(sim)
-    {}
+//     Multi(identifier_type const& id, simulator_type& sim)
+//         : id_(id), simulator_(sim)
+//     {}
 
-    identifier_type&           id()              {return id_;}
-    identifier_type const&     id()        const {return id_;}
     container_type&            shells()          {return shells_;}
     container_type const&      shells()    const {return shells_;}
     particle_array_type&       particles()       {return particle_;}
@@ -75,8 +70,7 @@ class Multi
   private:
 
     Real dt_factor_;
-    identifier_type         id_;
-    simulator_type&         simulator_;
+//     simulator_type&         simulator_;
     event_id_pair_type      event_;
     particle_container_type particles_;
     shell_container_type    shells_;

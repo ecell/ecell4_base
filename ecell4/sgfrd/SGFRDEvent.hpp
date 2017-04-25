@@ -1,6 +1,9 @@
 #ifndef ECELL4_SGFRD_EVENT
 #define ECELL4_SGFRD_EVENT
 #include <ecell4/core/EventScheduler.hpp>
+#include <ecell4/sgfrd/Single.hpp>
+#include <ecell4/sgfrd/Pair.hpp>
+#include <ecell4/sgfrd/Multi.hpp>
 
 namespace ecell4
 {
