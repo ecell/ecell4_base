@@ -3,9 +3,12 @@
 #include <ecell4/core/config.h>
 #include <ecell4/core/hash.hpp>
 #include <ecell4/core/Identifier.hpp>
-
 #include <ostream>
 
+namespace ecell4
+{
+namespace sgfrd
+{
 struct ShellID: public ecell4::Identifier<ShellID, unsigned long long, int>
 {
     typedef ecell4::Identifier<ShellID, unsigned long long, int> base_type;
@@ -14,19 +17,6 @@ struct ShellID: public ecell4::Identifier<ShellID, unsigned long long, int>
         : base_type(value) {}
 };
 
-ECELL4_DEFINE_HASH_BEGIN()
-
-template<>
-struct hash<ShellID>
-{
-    std::size_t operator()(ShellID const& val) const
-    {
-        return static_cast<std::size_t>(val().first ^ val().second);
-    }
-};
-
-ECELL4_DEFINE_HASH_END()
-
 template<typename charT, typename traitsT>
 inline std::basic_ostream<charT, traitsT>&
 operator<<(std::basic_ostream<charT, traitsT>& strm, const ShellID& v)
@@ -34,5 +24,25 @@ operator<<(std::basic_ostream<charT, traitsT>& strm, const ShellID& v)
     strm << "ShellID(" << v().first << ":" << v().second << ")";
     return strm;
 }
+
+} // sgfrd
+} // ecell4
+
+ECELL4_DEFINE_HASH_BEGIN()
+
+template<>
+struct hash<ShellID>
+{
+    typedef std::size_t result_type;
+    typedef ecell4::sgfrd::DomainID argument_type;
+
+    result_type operator()(argument_type const& val) const
+    {
+        return static_cast<std::size_t>(val().first ^ val().second);
+    }
+};
+
+ECELL4_DEFINE_HASH_END()
+
 
 #endif /* ECELL4_SGFRD_SHELL_ID */

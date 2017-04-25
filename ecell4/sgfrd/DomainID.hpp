@@ -17,19 +17,6 @@ struct DomainID: public ecell4::Identifier<DomainID, unsigned long long, int>
         : base_type(value) {}
 };
 
-ECELL4_DEFINE_HASH_BEGIN()
-
-template<>
-struct hash<DomainID>
-{
-    std::size_t operator()(DomainID const& val) const
-    {
-        return static_cast<std::size_t>(val().first ^ val().second);
-    }
-};
-
-ECELL4_DEFINE_HASH_END()
-
 template<typename charT, typename traitsT>
 inline std::basic_ostream<charT, traitsT>&
 operator<<(std::basic_ostream<charT, traitsT>& strm, const DomainID& v)
@@ -40,4 +27,21 @@ operator<<(std::basic_ostream<charT, traitsT>& strm, const DomainID& v)
 
 } // sgfrd
 } // ecell4
+
+ECELL4_DEFINE_HASH_BEGIN()
+
+template<>
+struct hash<ecell4::sgfrd::DomainID>
+{
+    typedef std::size_t result_type;
+    typedef ecell4::sgfrd::DomainID argument_type;
+
+    result_type operator()(argument_type const& val) const
+    {
+        return static_cast<std::size_t>(val().first ^ val().second);
+    }
+};
+
+ECELL4_DEFINE_HASH_END()
+
 #endif /* ECELL4_SGFRD_DOMAIN_ID */
