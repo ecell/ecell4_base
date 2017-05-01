@@ -1,0 +1,3 @@
+[submodule "ecell4/greens_functions"]
+	path = greens_functions
+	url = https://github.com/ecell/greens_functions.git
