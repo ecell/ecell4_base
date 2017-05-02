@@ -12,6 +12,12 @@ class Single
 {
   public:
 
+    enum EventKind
+    {
+        ESCAPE,
+        REACTION,
+    };
+
     typedef ShellID    shell_id_type;
     typedef Particle   particle_type;
     typedef ParticleID particle_id_type;

@@ -12,6 +12,16 @@ class Pair
 {
   public:
 
+    enum EventKind
+    {
+        SINGLE_REACTION_0,
+        SINGLE_REACTION_1,
+        COM_ESCAPE,
+        IV_ESCAPE,
+        IV_REACTION,
+        IV_UNDETERMINED,
+    };
+
     typedef ShellID    shell_id_type;
     typedef Particle   particle_type;
     typedef ParticleID particle_id_type;
