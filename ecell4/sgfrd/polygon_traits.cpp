@@ -18,7 +18,7 @@ make_vertex_information(const ecell4::Polygon<polygon_traits>& poly,
     vtx.neighbor_vertices.reserve(faces.size());
 
     vtx.max_conical_shell_size = std::numeric_limits<Real>::max();
-    for(typename std::vector<polygon::face_id_type>::const_iterator
+    for(std::vector<polygon::face_id_type>::const_iterator
         iter = faces.begin(); iter != faces.end(); ++iter)
     {
         const ecell4::Triangle& tri = poly.triangle_at(*iter);
@@ -38,7 +38,7 @@ make_vertex_information(const ecell4::Polygon<polygon_traits>& poly,
                                               length_of_perpendicular);
     }
 
-    for(typename std::vector<polygon::face_id_type>::const_iterator
+    for(std::vector<polygon::face_id_type>::const_iterator
         iter = faces.begin(); iter != faces.end(); ++iter)
     {
         const boost::array<polygon::vertex_id_type, 3>& vtxs =
@@ -48,7 +48,7 @@ make_vertex_information(const ecell4::Polygon<polygon_traits>& poly,
         uniquely_add(vtx.neighbor_vertices, vtxs[2]);
     }
 
-    for(typename std::vector<polygon::face_id_type>::const_iterator
+    for(std::vector<polygon::face_id_type>::const_iterator
         iter = faces.begin(); iter != faces.end(); ++iter)
     {
         const boost::array<polygon::face_id_type, 3>& adj
@@ -70,7 +70,7 @@ make_face_information(const ecell4::Polygon<polygon_traits>& poly,
     face.neighbor_faces = poly.neighbor_faces(fid);
     face.neighbor_vertices.reserve(6);
 
-    for(typename std::vector<polygon::face_id_type>::const_iterator
+    for(std::vector<polygon::face_id_type>::const_iterator
         iter = face.neighbor_faces.begin(); iter != face.neighbor_faces.end(); ++iter)
     {
         const boost::array<polygon::vertex_id_type, 3>& vtxs =
@@ -86,7 +86,7 @@ make_face_information(const ecell4::Polygon<polygon_traits>& poly,
         poly.connecting_vertices(fid);
     const boost::array<polygon::face_id_type, 3>& adjs =
         poly.adjacent_faces(fid);
-    for(typename boost::array<polygon::face_id_type, 3>::const_iterator
+    for(boost::array<polygon::face_id_type, 3>::const_iterator
         iter = adjs.begin(); iter != adjs.end(); ++iter)
     {
         const boost::array<polygon::vertex_id_type, 3>& vtxs_of_adj =
