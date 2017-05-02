@@ -1,10 +1,11 @@
 #ifndef ECELL4_SGFRD_POLYGON_TRAITS
 #define ECELL4_SGFRD_POLYGON_TRAITS
-#include <ecell4/core/hash.hpp>
 #include <ecell4/core/Real3.hpp>
 #include <ecell4/core/Triangle.hpp>
+#include <ecell4/core/Polygon.hpp>
 #include <boost/serialization/strong_typedef.hpp>
 #include <utility>
+#include <limits>
 #include <vector>
 
 namespace ecell4
@@ -13,17 +14,32 @@ namespace ecell4
 namespace sgfrd
 {
 
+namespace polygon
+{
+
+BOOST_STRONG_TYPEDEF(std::size_t, face_id_type)
+BOOST_STRONG_TYPEDEF(std::size_t, vertex_id_type)
+BOOST_STRONG_TYPEDEF(std::size_t, edge_id_type)
+
 struct vertex_descripter
 {
-    Real distance_to_nearest_incenter;
+    Real max_conical_shell_size;
+    std::vector<face_id_type>   neighbor_faces;
+    std::vector<vertex_id_type> neighbor_vertices; // include self
 };
 
 struct edge_descripter
 {
+    // empty.
 };
 
 struct face_descripter
 {
+    // developped edges of neighbor faces
+    boost::array<std::pair<Real3, Real3>, 6> segments_must_not_collide;
+
+    std::vector<face_id_type>   neighbor_faces;
+    std::vector<vertex_id_type> neighbor_vertices;
 };
 
 template<typename T_fid, typename T_eid, typename T_vid>
@@ -51,22 +67,22 @@ struct identity_converter
     template<typename T_id>
     void link(const T_id&, std::size_t){return;}
 };
+}// namespace polygon
 
 struct polygon_traits
 {
-    typedef std::size_t       index_type;
-    typedef Triangle          triangle_type;
-    typedef ::ecell4::sgfrd::vertex_descripter vertex_descripter;
-    typedef ::ecell4::sgfrd::edge_descripter   edge_descripter;
-    typedef ::ecell4::sgfrd::face_descripter   face_descripter;
+    typedef std::size_t index_type;
+    typedef ecell4::sgfrd::polygon::face_id_type   face_id_type;
+    typedef ecell4::sgfrd::polygon::edge_id_type   edge_id_type;
+    typedef ecell4::sgfrd::polygon::vertex_id_type vertex_id_type;
 
-    BOOST_STRONG_TYPEDEF(index_type, face_id_type)
-    BOOST_STRONG_TYPEDEF(index_type, vertex_id_type)
-    BOOST_STRONG_TYPEDEF(index_type, edge_id_type)
-
-    typedef index_generator<face_id_type, edge_id_type, vertex_id_type>
-        id_generator_type;
-    typedef identity_converter converter_type;
+    typedef Triangle    triangle_type;
+    typedef ecell4::sgfrd::polygon::vertex_descripter vertex_descripter;
+    typedef ecell4::sgfrd::polygon::edge_descripter   edge_descripter;
+    typedef ecell4::sgfrd::polygon::face_descripter   face_descripter;
+    typedef ecell4::sgfrd::polygon::index_generator<
+            face_id_type, edge_id_type, vertex_id_type> id_generator_type;
+    typedef ecell4::sgfrd::polygon::identity_converter converter_type;
 
     template<typename Tid>
     static inline Tid un_initialized()
@@ -75,15 +91,23 @@ struct polygon_traits
     }
 };
 
+//XXX impl of these function is dirty...
+polygon::vertex_descripter
+make_vertex_information(const ecell4::Polygon<polygon_traits>& poly,
+                        const polygon::vertex_id_type vid);
+polygon::face_descripter
+make_face_information(const ecell4::Polygon<polygon_traits>& poly,
+                      const polygon::face_id_type fid);
+
 } // sgfrd
 } // ecell4
 
 ECELL4_DEFINE_HASH_BEGIN()
 
 template<>
-struct hash<ecell4::sgfrd::polygon_traits::face_id_type>
+struct hash<ecell4::sgfrd::polygon::face_id_type>
 {
-    typedef ecell4::sgfrd::polygon_traits::face_id_type argument_type;
+    typedef ecell4::sgfrd::polygon::face_id_type argument_type;
 
     std::size_t operator()(argument_type const& val) const
     {
@@ -94,7 +118,7 @@ struct hash<ecell4::sgfrd::polygon_traits::face_id_type>
 template<>
 struct hash<ecell4::sgfrd::polygon_traits::edge_id_type>
 {
-    typedef ecell4::sgfrd::polygon_traits::edge_id_type argument_type;
+    typedef ecell4::sgfrd::polygon::edge_id_type argument_type;
 
     std::size_t operator()(argument_type const& val) const
     {
@@ -103,9 +127,9 @@ struct hash<ecell4::sgfrd::polygon_traits::edge_id_type>
 };
 
 template<>
-struct hash<ecell4::sgfrd::polygon_traits::vertex_id_type>
+struct hash<ecell4::sgfrd::polygon::vertex_id_type>
 {
-    typedef ecell4::sgfrd::polygon_traits::vertex_id_type argument_type;
+    typedef ecell4::sgfrd::polygon::vertex_id_type argument_type;
 
     std::size_t operator()(argument_type const& val) const
     {
