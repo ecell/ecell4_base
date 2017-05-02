@@ -31,7 +31,7 @@ operator<<(std::basic_ostream<charT, traitsT>& strm, const ShellID& v)
 ECELL4_DEFINE_HASH_BEGIN()
 
 template<>
-struct hash<ShellID>
+struct hash<ecell4::sgfrd::ShellID>
 {
     typedef std::size_t result_type;
     typedef ecell4::sgfrd::ShellID argument_type;
