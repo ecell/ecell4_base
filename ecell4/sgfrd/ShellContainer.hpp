@@ -25,20 +25,23 @@ public:
     typedef Shell<circle_type, face_id_type>            circular_shell_type;
     typedef Shell<conical_surface_type, vertex_id_type> conical_surface_shell_type;
 
-    typedef boost::variant<circular_shell_type, conical_surface_shell_type>
-        storage_type;
-    typedef std::vector<storage_type> container_type;
+    typedef boost::variant<
+                circular_shell_type,
+                conical_surface_shell_type
+            > storage_type;
+    typedef std::pair<ShellID, storage_type> shell_id_pair_type;
+    typedef std::vector<shell_id_pair_type> container_type;
+    typedef typename ecell4::utils::get_mapper_mf<ShellID, std::size_t>::type
+        shell_id_to_index_map_type;
 
     typedef StructureRegistrator<ShellID, face_id_type, traits_type>
         face_registrator_type;
     typedef StructureRegistrator<ShellID, vertex_id_type, traits_type>
         vertex_registrator_type;
 
-    typedef typename ecell4::utils::get_mapper_mf<ShellID, std::size_t>::type
-        shell_id_to_index_map_type;
-
+    template<typename sidT>
+    struct register_updater;
     struct register_cleaner;
-    template<typename sidT> struct register_updater;
 
 public:
 
@@ -63,19 +66,37 @@ public:
 
     void remove_shell(const ShellID& id);
 
-    template<typename positionT>
+    // calculate distance as 3D object
     std::vector<std::pair<std::pair<ShellID, storage_type>, Real> >
-        list_shells_within_radius(const positionT& pos, const Real radius);
-
-    template<typename positionT>
+        list_shells_within_radius(const Real3& pos, const Real radius);
     std::vector<std::pair<std::pair<ShellID, storage_type>, Real> >
-        list_shells_within_radius(const positionT& pos, const Real radius,
+        list_shells_within_radius(const Real3& pos, const Real radius,
             const ShellID& ignore);
-
-    template<typename positionT>
     std::vector<std::pair<std::pair<ShellID, storage_type>, Real> >
-        list_shells_within_radius(const positionT& pos, const Real radius,
+        list_shells_within_radius(const Real3& pos, const Real radius,
             const ShellID& ignore1, const ShellID& ignore2);
+
+    //calculate distance between position on face
+    std::vector<std::pair<std::pair<ShellID, storage_type>, Real> >
+        list_shells_within_radius(const std::pair<Real3, face_id_type>& pos,
+            const Real radius);
+    std::vector<std::pair<std::pair<ShellID, storage_type>, Real> >
+        list_shells_within_radius(const std::pair<Real3, face_id_type>& pos,
+            const Real radius, const ShellID& ignore);
+    std::vector<std::pair<std::pair<ShellID, storage_type>, Real> >
+        list_shells_within_radius(const std::pair<Real3, face_id_type>& pos,
+            const Real radius, const ShellID& ignore1, const ShellID& ignore2);
+
+    //calculate distance between position on vertex
+    std::vector<std::pair<std::pair<ShellID, storage_type>, Real> >
+        list_shells_within_radius(const std::pair<Real3, vertex_id_type>& pos,
+            const Real radius);
+    std::vector<std::pair<std::pair<ShellID, storage_type>, Real> >
+        list_shells_within_radius(const std::pair<Real3, vertex_id_type>& pos,
+            const Real radius, const ShellID& ignore);
+    std::vector<std::pair<std::pair<ShellID, storage_type>, Real> >
+        list_shells_within_radius(const std::pair<Real3, vertex_id_type>& pos,
+            const Real radius, const ShellID& ignore1, const ShellID& ignore2);
 
 private:
 
@@ -173,7 +194,7 @@ void ShellContainer<T_pt>::add_shell(
     const std::size_t idx = container_.size();
     shell_id_to_index_map_[id] = idx;
     face_registrator_.emplace(id, fid);
-    container_.push_back(sh);
+    container_.push_back(std::make_pair(id, storage_type(sh)));
     return;
 }
 
@@ -187,7 +208,7 @@ void ShellContainer<T_pt>::add_shell(
     const std::size_t idx = container_.size();
     shell_id_to_index_map_[id] = idx;
     vertex_registrator_.emplace(id, vid);
-    container_.push_back(sh);
+    container_.push_back(std::make_pair(id, storage_type(sh)));
     return;
 }
 
@@ -201,7 +222,7 @@ void ShellContainer<T_pt>::update_shell(
     const std::size_t idx = shell_id_to_index_map_[id];
     boost::apply_visitor(register_updator<face_id_type>(*this, id, fid),
                          container_.at(idx));
-    container_.at(idx) = sh;
+    container_.at(idx).second = sh;
     return;
 }
 
@@ -215,7 +236,7 @@ void ShellContainer<T_pt>::update_shell(
     const std::size_t idx = shell_id_to_index_map_[id];
     boost::apply_visitor(register_updator<vertex_id_type>(*this, id, vid),
                          container_.at(idx));
-    container_.at(idx) = sh;
+    container_.at(idx).second = sh;
     return;
 }
 
@@ -223,14 +244,14 @@ template<typename T_pt>
 typename ShellContainer<T_pt>::storage_type const&
 ShellContainer<T_pt>::get_shell(const ShellID& id) const
 {
-    return container_.at(shell_id_to_index_map_.find(id)->second);
+    return container_.at(shell_id_to_index_map_.find(id)->second).second;
 }
 
 template<typename T_pt>
 typename ShellContainer<T_pt>::storage_type&
 ShellContainer<T_pt>::get_shell(const ShellID& id)
 {
-    return container_.at(shell_id_to_index_map_[id]);
+    return container_.at(shell_id_to_index_map_[id]).second;
 }
 
 template<typename T_pt>
@@ -245,7 +266,6 @@ void ShellContainer<T_pt>::remove_shell(const ShellID& id)
     container_.pop_back();
     return ;
 }
-
 
 
 }// sgfrd
