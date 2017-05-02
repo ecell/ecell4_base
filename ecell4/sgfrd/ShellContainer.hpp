@@ -68,6 +68,9 @@ public:
 
     void remove_shell(const ShellID& id);
 
+    std::vector<ShellID> const& list_shells_on(const face_id_type&) const;
+    std::vector<ShellID> const& list_shells_on(const vertex_id_type&) const;
+
     // calculate distance as 3D object
     std::vector<std::pair<std::pair<ShellID, storage_type>, Real> >
         list_shells_within_radius(const Real3& pos, const Real radius) const;
@@ -106,19 +109,22 @@ struct ShellContainer<T_pt>::register_cleaner
     : public boost::static_visitor<void>
 {
     ShellContainer<T_pt>& scon;
-    register_cleaner(ShellContainer<T_pt>& self) : scon(self){}
+    ShellID sid;
+
+    register_cleaner(ShellContainer<T_pt>& self, const ShellID& si)
+        : scon(self), sid(si){}
 
     template<typename shapeT>
     void operator()(const Shell<shapeT, face_id_type>& sh) const
     {
-        scon.face_registrator_.remove(sh.structure_id());
+        scon.face_registrator_.remove(sid);
         return;
     }
 
     template<typename shapeT>
     void operator()(const Shell<shapeT, vertex_id_type>& sh) const
     {
-        scon.vertex_registrator_.remove(sh.structure_id());
+        scon.vertex_registrator_.remove(sid);
         return;
     }
 };
@@ -255,11 +261,26 @@ void ShellContainer<T_pt>::remove_shell(const ShellID& id)
     if(shell_id_to_index_map_.count(id) == 0)
         throw std::invalid_argument("shellcontianer doesnt have the shell");
     const std::size_t idx = shell_id_to_index_map_[id];
-    boost::apply_visitor(register_cleaner(*this), container_.at(idx));
+    boost::apply_visitor(register_cleaner(*this, id),
+                         container_.at(idx).second);
 
     container_.at(idx) = container_.back();
     container_.pop_back();
     return ;
+}
+
+template<typename T_pt>
+inline std::vector<ShellID> const&
+ShellContainer<T_pt>::list_shells_on(const face_id_type& fid) const
+{
+    return face_registrator_.elements_over(fid);
+}
+
+template<typename T_pt>
+inline std::vector<ShellID> const&
+ShellContainer<T_pt>::list_shells_on(const vertex_id_type& vid) const
+{
+    return vertex_registrator_.elements_over(vid);
 }
 
 template<typename T_pt>
@@ -283,7 +304,7 @@ ShellContainer<T_pt>::list_shells_within_radius(
     }
     std::sort(retval.begin(), retval.end(),
               ecell4::utils::pair_second_element_comparator<
-                  std::pair<ParticleID, Particle>, Real>());
+                  std::pair<ShellID, storage_type>, Real>());
     return retval;
 }
 
@@ -309,7 +330,7 @@ ShellContainer<T_pt>::list_shells_within_radius(
     }
     std::sort(retval.begin(), retval.end(),
               ecell4::utils::pair_second_element_comparator<
-                  std::pair<ParticleID, Particle>, Real>());
+                  std::pair<ShellID, storage_type>, Real>());
     return retval;
 }
 
@@ -336,7 +357,7 @@ ShellContainer<T_pt>::list_shells_within_radius(
     }
     std::sort(retval.begin(), retval.end(),
               ecell4::utils::pair_second_element_comparator<
-                  std::pair<ParticleID, Particle>, Real>());
+                  std::pair<ShellID, storage_type>, Real>());
     return retval;
 }
 
@@ -351,20 +372,41 @@ ShellContainer<T_pt>::list_shells_within_radius(
     const distance_calculator_on_surface<T_pt, strID>
         distance(pos, this->polygon_);
 
-    // lookup neighbor faces and vertices
-    for(typename container_type::const_iterator
-        iter = container_.begin(); iter != container_.end(); ++iter)
+    std::vector<face_id_type>   neighborf = polygon_.at(pos.second).neighbor_faces;
+    std::vector<vertex_id_type> neighborv = polygon_.at(pos.second).neighbor_vertices;
+
+    for(typename std::vector<face_id_type>::const_iterator
+        iter = neighborf.begin(); iter != neighborf.end(); ++iter)
     {
-        const Real dist = boost::apply_visitor(distance, iter->second);
-        if(dist < radius)
+        const std::vector<ShellID>& shells = list_shells_on(*iter);
+        for(typename std::vector<ShellID>::const_iterator
+            iter = shells.begin(); iter != shells.end(); ++iter)
         {
-            retval.push_back(std::make_pair(*iter, dist));
+            const Real dist = boost::apply_visitor(distance, this->get_shell(*iter));
+            if(dist < radius)
+            {
+                retval.push_back(std::make_pair(*iter, dist));
+            }
         }
     }
 
+    for(typename std::vector<vertex_id_type>::const_iterator
+        iter = neighborv.begin(); iter != neighborv.end(); ++iter)
+    {
+        const std::vector<ShellID>& shells = list_shells_on(*iter);
+        for(typename std::vector<ShellID>::const_iterator
+            iter = shells.begin(); iter != shells.end(); ++iter)
+        {
+            const Real dist = boost::apply_visitor(distance, this->get_shell(*iter));
+            if(dist < radius)
+            {
+                retval.push_back(std::make_pair(*iter, dist));
+            }
+        }
+    }
     std::sort(retval.begin(), retval.end(),
               ecell4::utils::pair_second_element_comparator<
-                  std::pair<ParticleID, Particle>, Real>());
+                  std::pair<ShellID, storage_type>, Real>());
     return retval;
 }
 
@@ -380,21 +422,43 @@ ShellContainer<T_pt>::list_shells_within_radius(
     const distance_calculator_on_surface<T_pt, strID>
         distance(pos, this->polygon_);
 
-    // lookup only neighbor faces and vertices
-    for(typename container_type::const_iterator
-        iter = container_.begin(); iter != container_.end(); ++iter)
+    std::vector<face_id_type>   neighborf = polygon_.at(pos.second).neighbor_faces;
+    std::vector<vertex_id_type> neighborv = polygon_.at(pos.second).neighbor_vertices;
+
+    for(typename std::vector<face_id_type>::const_iterator
+        iter = neighborf.begin(); iter != neighborf.end(); ++iter)
     {
-        if(iter->first == ignore) continue;
-        const Real dist = boost::apply_visitor(distance, iter->second);
-        if(dist < radius)
+        const std::vector<ShellID>& shells = list_shells_on(*iter);
+        for(typename std::vector<ShellID>::const_iterator
+            iter = shells.begin(); iter != shells.end(); ++iter)
         {
-            retval.push_back(std::make_pair(*iter, dist));
+            if(*iter == ignore) continue;
+            const Real dist = boost::apply_visitor(distance, this->get_shell(*iter));
+            if(dist < radius)
+            {
+                retval.push_back(std::make_pair(*iter, dist));
+            }
         }
     }
 
+    for(typename std::vector<vertex_id_type>::const_iterator
+        iter = neighborv.begin(); iter != neighborv.end(); ++iter)
+    {
+        const std::vector<ShellID>& shells = list_shells_on(*iter);
+        for(typename std::vector<ShellID>::const_iterator
+            iter = shells.begin(); iter != shells.end(); ++iter)
+        {
+            if(*iter == ignore) continue;
+            const Real dist = boost::apply_visitor(distance, this->get_shell(*iter));
+            if(dist < radius)
+            {
+                retval.push_back(std::make_pair(*iter, dist));
+            }
+        }
+    }
     std::sort(retval.begin(), retval.end(),
               ecell4::utils::pair_second_element_comparator<
-                  std::pair<ParticleID, Particle>, Real>());
+                  std::pair<ShellID, storage_type>, Real>());
     return retval;
 }
 
@@ -410,26 +474,43 @@ ShellContainer<T_pt>::list_shells_within_radius(
     const distance_calculator_on_surface<T_pt, strID>
         distance(pos, this->polygon_);
 
-    // lookup only neighbor faces and vertices
-    // std::vector<face_id_type>   neighborf = polygon_.list_neighbor_faces(pos.second);
-    // std::vector<vertex_id_type> neighborv = polygon_.list_neighbor_vertices(pos.second);
-    // or using xxx_descripter,
-    // std::vector<face_id_type>   neighborf = polygon_.at(pos.second).neighbor_faces;
-    // std::vector<vertex_id_type> neighborv = polygon_.at(pos.second).neighbor_vertices;
+    std::vector<face_id_type>   neighborf = polygon_.at(pos.second).neighbor_faces;
+    std::vector<vertex_id_type> neighborv = polygon_.at(pos.second).neighbor_vertices;
 
-    for(typename container_type::const_iterator
-        iter = container_.begin(); iter != container_.end(); ++iter)
+    for(typename std::vector<face_id_type>::const_iterator
+        iter = neighborf.begin(); iter != neighborf.end(); ++iter)
     {
-        if(iter->first == ignore1 || iter->first == ignore2) continue;
-        const Real dist = boost::apply_visitor(distance, iter->second);
-        if(dist < radius)
+        const std::vector<ShellID>& shells = list_shells_on(*iter);
+        for(typename std::vector<ShellID>::const_iterator
+            iter = shells.begin(); iter != shells.end(); ++iter)
         {
-            retval.push_back(std::make_pair(*iter, dist));
+            if(*iter == ignore1 || *iter == ignore2) continue;
+            const Real dist = boost::apply_visitor(distance, this->get_shell(*iter));
+            if(dist < radius)
+            {
+                retval.push_back(std::make_pair(*iter, dist));
+            }
+        }
+    }
+
+    for(typename std::vector<vertex_id_type>::const_iterator
+        iter = neighborv.begin(); iter != neighborv.end(); ++iter)
+    {
+        const std::vector<ShellID>& shells = list_shells_on(*iter);
+        for(typename std::vector<ShellID>::const_iterator
+            iter = shells.begin(); iter != shells.end(); ++iter)
+        {
+            if(*iter == ignore1 || *iter == ignore2) continue;
+            const Real dist = boost::apply_visitor(distance, this->get_shell(*iter));
+            if(dist < radius)
+            {
+                retval.push_back(std::make_pair(*iter, dist));
+            }
         }
     }
     std::sort(retval.begin(), retval.end(),
               ecell4::utils::pair_second_element_comparator<
-                  std::pair<ParticleID, Particle>, Real>());
+                  std::pair<ShellID, storage_type>, Real>());
     return retval;
 }
 
