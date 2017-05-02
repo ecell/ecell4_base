@@ -1,7 +1,6 @@
 #ifndef ECELL4_SGFRD_PAIR_DOMAIN
 #define ECELL4_SGFRD_PAIR_DOMAIN
 #include <ecell4/sgfrd/ShellID.hpp>
-#include <ecell4/sgfrd/DomainID.hpp>
 #include <ecell4/core/Particle.hpp>
 
 namespace ecell4
@@ -16,7 +15,6 @@ class Pair
     typedef T_polygon_traits polygon_traits;
     typedef typename polygon_traits::face_id_type face_id_type;
 
-    typedef DomainID   identifier_type;
     typedef ShellID    shell_id_type;
     typedef Particle   particle_type;
     typedef ParticleID particle_id_type;
@@ -27,12 +25,13 @@ class Pair
     Pair(): dt_(0.), last_time_(0.){}
     ~Pair(){}
 
-    Pair(identifier_type const& id, shell_id_type const& sh)
-        : id_(id), shell_id_(sh)
+    Pair(const Real dt, const Real last_time, shell_id_type const& sh)
+        : dt_(dt), last_time_(last_time), shell_id_(sh)
     {}
+
     Pair(identifier_type const& id, shell_id_type const& sh,
          particle_id_pair const& p0, particle_id_pair const& p1)
-        : id_(id), shell_id_(sh)
+        : shell_id_(sh)
     {
         if(p0.second.D() < p1.second.D())
         {
