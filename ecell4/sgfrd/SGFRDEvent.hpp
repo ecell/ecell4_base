@@ -4,6 +4,7 @@
 #include <ecell4/sgfrd/Single.hpp>
 #include <ecell4/sgfrd/Pair.hpp>
 #include <ecell4/sgfrd/Multi.hpp>
+#include <boost/variant.hpp>
 
 namespace ecell4
 {
@@ -32,7 +33,7 @@ private:
 };
 
 typedef ecell4::EventSchedulerBase<SGFRDEvent> SGFRDEventScheduler;
-typedef SGFRDEventScheduler::identifier EventID;
+typedef SGFRDEventScheduler::identifier_type EventID;
 typedef EventID DomainID; // XXX!
 
 } // sgfrd
