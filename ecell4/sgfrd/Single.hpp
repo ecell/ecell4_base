@@ -12,10 +12,6 @@ class Single
 {
   public:
 
-    typedef T_polygon_traits polygon_traits;
-    typedef typename polygon_traits::face_id_type face_id_type;
-    typedef typename polygon_traits::vertex_id_type vertex_id_type;
-
     typedef ShellID    shell_id_type;
     typedef Particle   particle_type;
     typedef ParticleID particle_id_type;

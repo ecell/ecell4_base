@@ -12,9 +12,6 @@ class Pair
 {
   public:
 
-    typedef T_polygon_traits polygon_traits;
-    typedef typename polygon_traits::face_id_type face_id_type;
-
     typedef ShellID    shell_id_type;
     typedef Particle   particle_type;
     typedef ParticleID particle_id_type;
@@ -29,7 +26,7 @@ class Pair
         : dt_(dt), last_time_(last_time), shell_id_(sh)
     {}
 
-    Pair(identifier_type const& id, shell_id_type const& sh,
+    Pair(shell_id_type const& sh,
          particle_id_pair const& p0, particle_id_pair const& p1)
         : shell_id_(sh)
     {
@@ -45,8 +42,6 @@ class Pair
         }
     }
 
-    identifier_type&       id()       {return id_;}
-    identifier_type const& id() const {return id_;}
     shell_id_type&       shell_id()       {return shell_id_;}
     shell_id_type const& shell_id() const {return shell_id_;}
 
@@ -65,7 +60,6 @@ class Pair
 
     Real dt_;
     Real last_time_;
-    identifier_type id_;
     shell_id_type   shell_id_;
     particle_array_type particles_;
 };
