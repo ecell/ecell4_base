@@ -86,22 +86,32 @@ class Polygon : public Shape
     std::pair<bool, vertex_id_type>
     is_connected_by_vertex(const face_id_type&, const face_id_type&) const;
 
+    //! return faceIDs that distance between (points on (it & arg)) is calculatable
     std::vector<face_id_type> const&
     neighbor_faces(const face_id_type& fid) const;
+    //! return faceIDs that directory connects through the edges
     boost::array<face_id_type, 3> const&
     adjacent_faces(const face_id_type& fid) const;
 
     std::pair<face_id_type, face_id_type> const&
-    connecting_faces_by_edge(const edge_id_type& eid) const;
-    std::pair<vertex_id_type, vertex_id_type> const&
-    connecting_vertices_by_edge(const edge_id_type& eid) const;
-
+    connecting_faces(const edge_id_type& eid) const;
     std::vector<face_id_type> const&
-    connecting_faces_by_vertex(const vertex_id_type& vidx) const;
+    connecting_faces(const vertex_id_type& vid) const;
+
+    boost::array<vertex_id_type, 3> const&
+    connecting_vertices(const face_id_type& fid) const;
+    std::pair<vertex_id_type, vertex_id_type> const&
+    connecting_vertices(const edge_id_type& eid) const;
+
+    boost::array<edge_id_type, 3> const&
+    connecting_edges(const face_id_type& fid) const;
     std::vector<edge_id_type> const&
-    connecting_edges_by_vertex(const vertex_id_type& vidx) const;
+    connecting_edges(const vertex_id_type& vid) const;
 
     /* geometric functions ---------------------------------------------------*/
+    Real apex_angle(const vertex_id_type& vid) const
+    {return this->vertex_prop_at(vid).apex_angle;}
+
     Real distance_sq(const std::pair<Real3, face_id_type>& lhs,
                      const std::pair<Real3, face_id_type>& rhs) const;
     Real distance(const std::pair<Real3, face_id_type>& lhs,
@@ -189,10 +199,10 @@ class Polygon : public Shape
     face_property_type&         face_prop_at(const face_id_type& fid);
     face_property_type const&   face_prop_at(const face_id_type& fid) const;
 
-    Real distance_over_edge(const std::pair<Real3, face_id_type>& lhs,
-                            const std::pair<Real3, face_id_type>& rhs) const;
-    Real distance_over_vertex(const std::pair<Real3, face_id_type>& lhs,
-                              const std::pair<Real3, face_id_type>& rhs) const;
+//     Real distance_over_edge(const std::pair<Real3, face_id_type>& lhs,
+//                             const std::pair<Real3, face_id_type>& rhs) const;
+//     Real distance_over_vertex(const std::pair<Real3, face_id_type>& lhs,
+//                               const std::pair<Real3, face_id_type>& rhs) const;
   private:
 
     face_id_type   generate_face_id()   {return idgen_.generate_face_id();}
@@ -483,32 +493,47 @@ Polygon<T>::adjacent_faces(const face_id_type& fid) const
 template<typename T>
 inline std::pair<typename Polygon<T>::face_id_type,
                  typename Polygon<T>::face_id_type> const&
-Polygon<T>::connecting_faces_by_edge(const edge_id_type& eid) const
+Polygon<T>::connecting_faces(const edge_id_type& eid) const
 {
     return this->edge_prop_at(eid).faces;
 }
 
 template<typename T>
-inline std::pair<typename Polygon<T>::vertex_id_type,
-                 typename Polygon<T>::vertex_id_type> const&
-Polygon<T>::connecting_vertices_by_edge(const edge_id_type& eid) const
-{
-    return this->edge_prop_at(eid).vertices;
-}
-
-template<typename T>
 inline std::vector<typename Polygon<T>::face_id_type> const&
-Polygon<T>::connecting_faces_by_vertex(const vertex_id_type& vid) const
+Polygon<T>::connecting_faces(const vertex_id_type& vid) const
 {
     return this->vertex_prop_at(vid).faces;
 }
 
 template<typename T>
+inline std::pair<typename Polygon<T>::vertex_id_type,
+                 typename Polygon<T>::vertex_id_type> const&
+Polygon<T>::connecting_vertices(const edge_id_type& eid) const
+{
+    return this->edge_prop_at(eid).vertices;
+}
+
+template<typename T>
+inline boost::array<typename Polygon<T>::vertex_id_type, 3> const&
+Polygon<T>::connecting_vertices(const face_id_type& fid) const
+{
+    return this->face_prop_at(fid).vertices;
+}
+
+template<typename T>
 inline std::vector<typename Polygon<T>::edge_id_type> const&
-Polygon<T>::connecting_edges_by_vertex(const vertex_id_type& vid) const
+Polygon<T>::connecting_edges(const vertex_id_type& vid) const
 {
     return this->vertex_prop_at(vid).edges;
 }
+
+template<typename T>
+inline boost::array<typename Polygon<T>::edge_id_type, 3> const&
+Polygon<T>::connecting_edges(const face_id_type& fid) const
+{
+    return this->face_prop_at(fid).edges;
+}
+
 
 /* geometric functions -------------------------------------------------------*/
 
@@ -755,7 +780,7 @@ std::pair<std::vector<std::pair<typename Polygon<T>::vertex_id_type, Real> >,
 Polygon<T>::list_vertices_within_radius(
         const std::pair<Real3, face_id_type>& pos, const Real radius) const
 {
-    // XXX: it looks vertices only on the adjacent faces
+    // XXX: it searchs vertices only on the adjacent faces
     // because gfrd circular shell size is restricted so that the shell does not
     // contain the incenter of neighbor face, nomally this range is enough.
 
