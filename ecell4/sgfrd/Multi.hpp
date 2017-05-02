@@ -1,12 +1,8 @@
 #ifndef ECELL4_SGFRD_DOMAIN
 #define ECELL4_SGFRD_DOMAIN
-#include <ecell4/sgfrd/Shell.hpp>
+#include <ecell4/sgfrd/ShellID.hpp>
 #include <ecell4/sgfrd/DomainID.hpp>
 #include <ecell4/core/Particle.hpp>
-#include <ecell4/core/Identifier.hpp>
-#include <ecell4/core/Circle.hpp>
-#include <ecell4/core/Cone.hpp>
-#include <boost/variant.hpp>
 
 namespace ecell4
 {
@@ -25,12 +21,8 @@ class Multi
     typedef ParticleID particle_id_type;
     typedef std::pair<ParticleID, Particle> particle_id_pair;
     typedef std::vector<particle_id_pair>   particle_container_type;
-
     typedef ShellID shell_id_type;
-    typedef Shell<ecell4::Circle>           circular_shell;
-    typedef Shell<ecell4::ConicalSurface>   conical_surface_shell;
-    typedef boost::variant<circular_shell, conical_surface_shell> storage_type;
-    typedef std::map<shell_id_type, storage_type> shell_container_type;
+    typedef std::vector<shell_id_type> shell_id_array_type;
 
   public:
     Multi(){}
@@ -77,7 +69,6 @@ class Multi
     Real dt_factor_;
     identifier_type         id_;
     simulator_type&         simulator_;
-    event_id_pair_type      event_;
     particle_container_type particles_;
     shell_container_type    shells_;
 };
