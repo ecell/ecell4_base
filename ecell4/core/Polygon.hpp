@@ -183,6 +183,10 @@ class Polygon : public Shape
     edge_id_type   get_edge_id(const local_index_type idx) const;
     vertex_id_type get_vertex_id(const local_index_type idx) const;
 
+    std::vector<face_id_type>   list_face_id()   const;
+    std::vector<vertex_id_type> list_vertex_id() const;
+    std::vector<edge_id_type>   list_edge_id()   const;
+
     const converter_type& converter() const {return converter_;}
 
     /* required by shape -----------------------------------------------------*/
@@ -1028,6 +1032,45 @@ Polygon<T>::get_vertex_id(const local_index_type idx) const
 {
     return this->face_prop_at(idx.first).vertices.at(idx.second);
 }
+
+template<typename T>
+std::vector<typename Polygon<T>::face_id_type>
+Polygon<T>::list_face_id()   const
+{
+    std::vector<face_id_type> retval; retval.reserve(faces_.size());
+    for(typename face_container_type::const_iterator
+        iter = faces_.begin(); iter != faces_.end(); ++iter)
+    {
+        retval.push_back(iter->id);
+    }
+    return retval;
+}
+
+template<typename T>
+std::vector<typename Polygon<T>::vertex_id_type>
+Polygon<T>::list_vertex_id() const
+{
+    std::vector<vertex_id_type> retval; retval.reserve(vertices_.size());
+    for(typename vertex_container_type::const_iterator
+        iter = vertices_.begin(); iter != vertices_.end(); ++iter)
+    {
+        retval.push_back(iter->id);
+    }
+    return retval;
+}
+template<typename T>
+std::vector<typename Polygon<T>::edge_id_type>
+Polygon<T>::list_edge_id() const
+{
+    std::vector<edge_id_type> retval; retval.reserve(vertices_.size());
+    for(typename edge_container_type::const_iterator
+        iter = vertices_.begin(); iter != vertices_.end(); ++iter)
+    {
+        retval.push_back(iter->id);
+    }
+    return retval;
+}
+
 
 } // ecell4
 #endif// ECELL4_POLYGON
