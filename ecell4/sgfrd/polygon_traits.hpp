@@ -99,6 +99,8 @@ polygon::face_descripter
 make_face_information(const ecell4::Polygon<polygon_traits>& poly,
                       const polygon::face_id_type fid);
 
+void setup_descriptors(ecell4::Polygon<polygon_traits>& poly);
+
 } // sgfrd
 } // ecell4
 

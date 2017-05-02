@@ -115,5 +115,24 @@ make_face_information(const ecell4::Polygon<polygon_traits>& poly,
     return face;
 }
 
+void setup_descriptors(ecell4::Polygon<polygon_traits>& poly)
+{
+    const std::vector<polygon::face_id_type> fids = poly.list_face_id();
+    for(std::vector<polygon::face_id_type>::const_iterator
+        iter = fids.begin(); iter != fids.end(); ++iter)
+    {
+        poly.at(*iter) = make_face_information(poly, *iter);
+    }
+
+    const std::vector<polygon::vertex_id_type> vids = poly.list_vertex_id();
+    for(std::vector<polygon::vertex_id_type>::const_iterator
+        iter = vids.begin(); iter != vids.end(); ++iter)
+    {
+        poly.at(*iter) = make_vertex_information(poly, *iter);
+    }
+
+    return ;
+}
+
 } // sgfrd
 } // ecell4
