@@ -76,26 +76,18 @@ public:
         list_shells_within_radius(const Real3& pos, const Real radius,
             const ShellID& ignore1, const ShellID& ignore2);
 
-    //calculate distance between position on face
+    //calculate distance along the polygon
+    template<typename strID>
     std::vector<std::pair<std::pair<ShellID, storage_type>, Real> >
-        list_shells_within_radius(const std::pair<Real3, face_id_type>& pos,
+        list_shells_within_radius(const std::pair<Real3, strID>& pos,
             const Real radius);
+    template<typename strID>
     std::vector<std::pair<std::pair<ShellID, storage_type>, Real> >
-        list_shells_within_radius(const std::pair<Real3, face_id_type>& pos,
+        list_shells_within_radius(const std::pair<Real3, strID>& pos,
             const Real radius, const ShellID& ignore);
+    template<typename strID>
     std::vector<std::pair<std::pair<ShellID, storage_type>, Real> >
-        list_shells_within_radius(const std::pair<Real3, face_id_type>& pos,
-            const Real radius, const ShellID& ignore1, const ShellID& ignore2);
-
-    //calculate distance between position on vertex
-    std::vector<std::pair<std::pair<ShellID, storage_type>, Real> >
-        list_shells_within_radius(const std::pair<Real3, vertex_id_type>& pos,
-            const Real radius);
-    std::vector<std::pair<std::pair<ShellID, storage_type>, Real> >
-        list_shells_within_radius(const std::pair<Real3, vertex_id_type>& pos,
-            const Real radius, const ShellID& ignore);
-    std::vector<std::pair<std::pair<ShellID, storage_type>, Real> >
-        list_shells_within_radius(const std::pair<Real3, vertex_id_type>& pos,
+        list_shells_within_radius(const std::pair<Real3, strID>& pos,
             const Real radius, const ShellID& ignore1, const ShellID& ignore2);
 
 private:
@@ -265,6 +257,175 @@ void ShellContainer<T_pt>::remove_shell(const ShellID& id)
     container_.at(idx) = container_.back();
     container_.pop_back();
     return ;
+}
+
+template<typename T_pt>
+std::vector<std::pair<
+    std::pair<ShellID, typename ShellContainer<T_pt>::storage_type>, Real> >
+ShellContainer<T_pt>::list_shells_within_radius(
+        const Real3& pos, const Real radius)
+{
+    std::vector<std::pair<std::pair<ShellID, storage_type>, Real> > retval;
+    const distance_calculator distance(pos);
+    //XXX need more sophisticated way than brute-force searching
+
+    for(typename container_type::const_iterator
+        iter = container_.begin(); iter != container_.end(); ++iter)
+    {
+        const Real dist = boost::apply_visitor(distance, iter->second);
+        if(dist < radius)
+        {
+            retval.push_back(std::make_pair(*iter, dist));
+        }
+    }
+    std::sort(retval.begin(), retval.end(),
+              ecell4::utils::pair_second_element_comparator<
+                  std::pair<ParticleID, Particle>, Real>());
+    return retval;
+}
+
+template<typename T_pt>
+std::vector<std::pair<
+    std::pair<ShellID, typename ShellContainer<T_pt>::storage_type>, Real> >
+ShellContainer<T_pt>::list_shells_within_radius(
+        const Real3& pos, const Real radius, const ShellID ignore)
+{
+    std::vector<std::pair<std::pair<ShellID, storage_type>, Real> > retval;
+    const distance_calculator distance(pos);
+    //XXX need more sophisticated way than brute-force searching
+
+    for(typename container_type::const_iterator
+        iter = container_.begin(); iter != container_.end(); ++iter)
+    {
+        if(iter->first == ignore) continue;
+        const Real dist = boost::apply_visitor(distance, iter->second);
+        if(dist < radius)
+        {
+            retval.push_back(std::make_pair(*iter, dist));
+        }
+    }
+    std::sort(retval.begin(), retval.end(),
+              ecell4::utils::pair_second_element_comparator<
+                  std::pair<ParticleID, Particle>, Real>());
+    return retval;
+}
+
+template<typename T_pt>
+std::vector<std::pair<
+    std::pair<ShellID, typename ShellContainer<T_pt>::storage_type>, Real> >
+ShellContainer<T_pt>::list_shells_within_radius(
+        const Real3& pos, const Real radius,
+        const ShellID ignore1, const ShellID ignore2)
+{
+    std::vector<std::pair<std::pair<ShellID, storage_type>, Real> > retval;
+    const distance_calculator distance(pos);
+    //XXX need more sophisticated way than brute-force searching
+
+    for(typename container_type::const_iterator
+        iter = container_.begin(); iter != container_.end(); ++iter)
+    {
+        if(iter->first == ignore1 || iter->first == ignore2) continue;
+        const Real dist = boost::apply_visitor(distance, iter->second);
+        if(dist < radius)
+        {
+            retval.push_back(std::make_pair(*iter, dist));
+        }
+    }
+    std::sort(retval.begin(), retval.end(),
+              ecell4::utils::pair_second_element_comparator<
+                  std::pair<ParticleID, Particle>, Real>());
+    return retval;
+}
+
+template<typename T_pt>
+std::vector<std::pair<
+    std::pair<ShellID, typename ShellContainer<T_pt>::storage_type>, Real> >
+ShellContainer<T_pt>::list_shells_within_radius(
+        const std::pair<Real3, strID>& pos, const Real radius)
+{
+    std::vector<std::pair<std::pair<ShellID, storage_type>, Real> > retval;
+    const distance_calculator_on_surface<T_pt, strID>
+        distance(pos, this->polygon_);
+
+    // lookup neighbor faces and vertices
+    for(typename container_type::const_iterator
+        iter = container_.begin(); iter != container_.end(); ++iter)
+    {
+        const Real dist = boost::apply_visitor(distance, iter->second);
+        if(dist < radius)
+        {
+            retval.push_back(std::make_pair(*iter, dist));
+        }
+    }
+
+    std::sort(retval.begin(), retval.end(),
+              ecell4::utils::pair_second_element_comparator<
+                  std::pair<ParticleID, Particle>, Real>());
+    return retval;
+}
+
+template<typename T_pt>
+std::vector<std::pair<
+    std::pair<ShellID, typename ShellContainer<T_pt>::storage_type>, Real> >
+ShellContainer<T_pt>::list_shells_within_radius(
+        const std::pair<Real3, strID>& pos, const Real radius,
+        const ShellID& ignore)
+{
+    std::vector<std::pair<std::pair<ShellID, storage_type>, Real> > retval;
+    const distance_calculator_on_surface<T_pt, strID>
+        distance(pos, this->polygon_);
+
+    // lookup only neighbor faces and vertices
+    for(typename container_type::const_iterator
+        iter = container_.begin(); iter != container_.end(); ++iter)
+    {
+        if(iter->first == ignore) continue;
+        const Real dist = boost::apply_visitor(distance, iter->second);
+        if(dist < radius)
+        {
+            retval.push_back(std::make_pair(*iter, dist));
+        }
+    }
+
+    std::sort(retval.begin(), retval.end(),
+              ecell4::utils::pair_second_element_comparator<
+                  std::pair<ParticleID, Particle>, Real>());
+    return retval;
+}
+
+template<typename T_pt>
+template<typename strID>
+std::vector<std::pair<
+    std::pair<ShellID, typename ShellContainer<T_pt>::storage_type>, Real> >
+ShellContainer<T_pt>::list_shells_within_radius(
+        const std::pair<Real3, strID>& pos, const Real radius,
+        const ShellID& ignore1, const ShellID& ignore2)
+{
+    std::vector<std::pair<std::pair<ShellID, storage_type>, Real> > retval;
+    const distance_calculator_on_surface<T_pt, strID>
+        distance(pos, this->polygon_);
+
+    // lookup only neighbor faces and vertices
+    // std::vector<face_id_type>   neighborf = polygon_.list_neighbor_faces(pos.second);
+    // std::vector<vertex_id_type> neighborv = polygon_.list_neighbor_vertices(pos.second);
+    // or using xxx_descripter,
+    // std::vector<face_id_type>   neighborf = polygon_.at(pos.second).neighbor_faces;
+    // std::vector<vertex_id_type> neighborv = polygon_.at(pos.second).neighbor_vertices;
+
+    for(typename container_type::const_iterator
+        iter = container_.begin(); iter != container_.end(); ++iter)
+    {
+        if(iter->first == ignore1 || iter->first == ignore2) continue;
+        const Real dist = boost::apply_visitor(distance, iter->second);
+        if(dist < radius)
+        {
+            retval.push_back(std::make_pair(*iter, dist));
+        }
+    }
+    std::sort(retval.begin(), retval.end(),
+              ecell4::utils::pair_second_element_comparator<
+                  std::pair<ParticleID, Particle>, Real>());
+    return retval;
 }
 
 
