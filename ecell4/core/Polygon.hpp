@@ -173,6 +173,13 @@ class Polygon : public Shape
     edge_descripter&         edge_at(const edge_id_type& i);
     edge_descripter const&   edge_at(const edge_id_type& i) const;
 
+    face_descripter&         at(const face_id_type& i)       {return face_at(i);}
+    face_descripter const&   at(const face_id_type& i) const {return face_at(i);}
+    vertex_descripter&       at(const vertex_id_type& i)       {return vertex_at(i);}
+    vertex_descripter const& at(const vertex_id_type& i) const {return vertex_at(i);}
+    edge_descripter&         at(const edge_id_type& i)       {return edge_at(i);}
+    edge_descripter const&   at(const edge_id_type& i) const {return edge_at(i);}
+
     edge_id_type   get_edge_id(const local_index_type idx) const;
     vertex_id_type get_vertex_id(const local_index_type idx) const;
 
