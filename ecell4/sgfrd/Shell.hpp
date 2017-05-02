@@ -21,9 +21,8 @@ class Shell
     Shell(){}
     ~Shell(){}
 
-    Shell(const domain_id_type& domain_id, const shape_type& shape,
-          const structure_id_type& sid)
-        : domain_id_(domain_id), structure_id_(sid), shape_(shape)
+    Shell(const shape_type& shape, const structure_id_type& sid)
+        : structure_id_(sid), shape_(shape)
     {}
 
     Real3 const& position() const {return shape_.position();}
