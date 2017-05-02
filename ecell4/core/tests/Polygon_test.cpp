@@ -72,10 +72,10 @@ typedef ecell4::Real3 Real3;
 typedef ecell4::Triangle Triangle;
 typedef ecell4::Polygon<test_polygon_traits> polygon_type;
 typedef ecell4::STLPolygonAdapter<test_polygon_traits> adapter_type;
-typedef typename polygon_type::index_type index_type;
-typedef typename polygon_type::face_id_type face_id_type;
-typedef typename polygon_type::edge_id_type edge_id_type;
-typedef typename polygon_type::vertex_id_type vertex_id_type;
+typedef polygon_type::index_type index_type;
+typedef polygon_type::face_id_type face_id_type;
+typedef polygon_type::edge_id_type edge_id_type;
+typedef polygon_type::vertex_id_type vertex_id_type;
 
 polygon_type make_cube()
 {
