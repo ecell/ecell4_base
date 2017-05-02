@@ -4,6 +4,7 @@
 #include <ecell4/core/Circle.hpp>
 #include <ecell4/core/Cone.hpp>
 #include <ecell4/sgfrd/Shell.hpp>
+#include <ecell4/sgfrd/distance_calculator.hpp>
 
 namespace ecell4
 {
@@ -39,8 +40,8 @@ public:
     typedef StructureRegistrator<ShellID, vertex_id_type, traits_type>
         vertex_registrator_type;
 
-    template<typename sidT>
-    struct register_updater;
+    struct face_register_updater;
+    struct vertex_register_updater;
     struct register_cleaner;
 
 public:
@@ -57,9 +58,10 @@ public:
 
     template<typename shellT>
     void update_shell(const ShellID& id, const shellT& sh,
-                      const face_id_type& fid) const;
+                      const face_id_type& fid);
+    template<typename shellT>
     void update_shell(const ShellID& id, const shellT& sh,
-                      const vertex_id_type& vid) const;
+                      const vertex_id_type& vid);
 
     storage_type const& get_shell(const ShellID& id) const;
     storage_type&       get_shell(const ShellID& id);
@@ -68,27 +70,27 @@ public:
 
     // calculate distance as 3D object
     std::vector<std::pair<std::pair<ShellID, storage_type>, Real> >
-        list_shells_within_radius(const Real3& pos, const Real radius);
+        list_shells_within_radius(const Real3& pos, const Real radius) const;
     std::vector<std::pair<std::pair<ShellID, storage_type>, Real> >
         list_shells_within_radius(const Real3& pos, const Real radius,
-            const ShellID& ignore);
+            const ShellID& ignore) const;
     std::vector<std::pair<std::pair<ShellID, storage_type>, Real> >
         list_shells_within_radius(const Real3& pos, const Real radius,
-            const ShellID& ignore1, const ShellID& ignore2);
+            const ShellID& ignore1, const ShellID& ignore2) const;
 
     //calculate distance along the polygon
     template<typename strID>
     std::vector<std::pair<std::pair<ShellID, storage_type>, Real> >
         list_shells_within_radius(const std::pair<Real3, strID>& pos,
-            const Real radius);
+            const Real radius) const;
     template<typename strID>
     std::vector<std::pair<std::pair<ShellID, storage_type>, Real> >
         list_shells_within_radius(const std::pair<Real3, strID>& pos,
-            const Real radius, const ShellID& ignore);
+            const Real radius, const ShellID& ignore) const;
     template<typename strID>
     std::vector<std::pair<std::pair<ShellID, storage_type>, Real> >
         list_shells_within_radius(const std::pair<Real3, strID>& pos,
-            const Real radius, const ShellID& ignore1, const ShellID& ignore2);
+            const Real radius, const ShellID& ignore1, const ShellID& ignore2) const;
 
 private:
 
@@ -100,7 +102,8 @@ private:
 };
 
 template<typename T_pt>
-struct ShellContainer<T_pt>::register_cleaner : public boost::static_visitor<void>
+struct ShellContainer<T_pt>::register_cleaner
+    : public boost::static_visitor<void>
 {
     ShellContainer<T_pt>& scon;
     register_cleaner(ShellContainer<T_pt>& self) : scon(self){}
@@ -121,14 +124,14 @@ struct ShellContainer<T_pt>::register_cleaner : public boost::static_visitor<voi
 };
 
 template<typename T_pt>
-struct ShellContainer<T_pt>::register_updater<face_id_type>
+struct ShellContainer<T_pt>::face_register_updater
     : public boost::static_visitor<void>
 {
     ShellContainer<T_pt>& scon;
     ShellID      sid;
     face_id_type fid;
 
-    register_cleaner(ShellContainer<T_pt>& self, ShellID s, face_id_type f)
+    face_register_updater(ShellContainer<T_pt>& self, ShellID s, face_id_type f)
         : scon(self), sid(s), fid(f)
     {}
 
@@ -149,14 +152,14 @@ struct ShellContainer<T_pt>::register_updater<face_id_type>
 };
 
 template<typename T_pt>
-struct ShellContainer<T_pt>::register_updater<vertex_id_type>
+struct ShellContainer<T_pt>::vertex_register_updater
     : public boost::static_visitor<void>
 {
     ShellContainer<T_pt>& scon;
     ShellID        sid;
     vertex_id_type vid;
 
-    register_cleaner(ShellContainer<T_pt>& self, ShellID s, vertex_id_type v)
+    vertex_register_updater(ShellContainer<T_pt>& self, ShellID s, vertex_id_type v)
         : scon(self), sid(s), vid(v)
     {}
 
@@ -209,10 +212,10 @@ template<typename shellT>
 void ShellContainer<T_pt>::update_shell(
         const ShellID& id, const shellT& sh, const face_id_type& fid)
 {
-    if(shell_id_to_index_map.count(id) == 0)
+    if(shell_id_to_index_map_.count(id) == 0)
         throw std::invalid_argument("shellcontianer doesnt have the shell");
     const std::size_t idx = shell_id_to_index_map_[id];
-    boost::apply_visitor(register_updator<face_id_type>(*this, id, fid),
+    boost::apply_visitor(face_register_updater(*this, id, fid),
                          container_.at(idx));
     container_.at(idx).second = sh;
     return;
@@ -223,10 +226,10 @@ template<typename shellT>
 void ShellContainer<T_pt>::update_shell(
         const ShellID& id, const shellT& sh, const vertex_id_type& vid)
 {
-    if(shell_id_to_index_map.count(id) == 0)
+    if(shell_id_to_index_map_.count(id) == 0)
         throw std::invalid_argument("shellcontianer doesnt have the shell");
     const std::size_t idx = shell_id_to_index_map_[id];
-    boost::apply_visitor(register_updator<vertex_id_type>(*this, id, vid),
+    boost::apply_visitor(vertex_register_updater(*this, id, vid),
                          container_.at(idx));
     container_.at(idx).second = sh;
     return;
@@ -249,7 +252,7 @@ ShellContainer<T_pt>::get_shell(const ShellID& id)
 template<typename T_pt>
 void ShellContainer<T_pt>::remove_shell(const ShellID& id)
 {
-    if(shell_id_to_index_map.count(id) == 0)
+    if(shell_id_to_index_map_.count(id) == 0)
         throw std::invalid_argument("shellcontianer doesnt have the shell");
     const std::size_t idx = shell_id_to_index_map_[id];
     boost::apply_visitor(register_cleaner(*this), container_.at(idx));
@@ -263,7 +266,7 @@ template<typename T_pt>
 std::vector<std::pair<
     std::pair<ShellID, typename ShellContainer<T_pt>::storage_type>, Real> >
 ShellContainer<T_pt>::list_shells_within_radius(
-        const Real3& pos, const Real radius)
+        const Real3& pos, const Real radius) const
 {
     std::vector<std::pair<std::pair<ShellID, storage_type>, Real> > retval;
     const distance_calculator distance(pos);
@@ -288,7 +291,7 @@ template<typename T_pt>
 std::vector<std::pair<
     std::pair<ShellID, typename ShellContainer<T_pt>::storage_type>, Real> >
 ShellContainer<T_pt>::list_shells_within_radius(
-        const Real3& pos, const Real radius, const ShellID ignore)
+        const Real3& pos, const Real radius, const ShellID& ignore) const
 {
     std::vector<std::pair<std::pair<ShellID, storage_type>, Real> > retval;
     const distance_calculator distance(pos);
@@ -315,7 +318,7 @@ std::vector<std::pair<
     std::pair<ShellID, typename ShellContainer<T_pt>::storage_type>, Real> >
 ShellContainer<T_pt>::list_shells_within_radius(
         const Real3& pos, const Real radius,
-        const ShellID ignore1, const ShellID ignore2)
+        const ShellID& ignore1, const ShellID& ignore2) const
 {
     std::vector<std::pair<std::pair<ShellID, storage_type>, Real> > retval;
     const distance_calculator distance(pos);
@@ -338,10 +341,11 @@ ShellContainer<T_pt>::list_shells_within_radius(
 }
 
 template<typename T_pt>
+template<typename strID>
 std::vector<std::pair<
     std::pair<ShellID, typename ShellContainer<T_pt>::storage_type>, Real> >
 ShellContainer<T_pt>::list_shells_within_radius(
-        const std::pair<Real3, strID>& pos, const Real radius)
+        const std::pair<Real3, strID>& pos, const Real radius) const
 {
     std::vector<std::pair<std::pair<ShellID, storage_type>, Real> > retval;
     const distance_calculator_on_surface<T_pt, strID>
@@ -365,11 +369,12 @@ ShellContainer<T_pt>::list_shells_within_radius(
 }
 
 template<typename T_pt>
+template<typename strID>
 std::vector<std::pair<
     std::pair<ShellID, typename ShellContainer<T_pt>::storage_type>, Real> >
 ShellContainer<T_pt>::list_shells_within_radius(
         const std::pair<Real3, strID>& pos, const Real radius,
-        const ShellID& ignore)
+        const ShellID& ignore) const
 {
     std::vector<std::pair<std::pair<ShellID, storage_type>, Real> > retval;
     const distance_calculator_on_surface<T_pt, strID>
@@ -399,7 +404,7 @@ std::vector<std::pair<
     std::pair<ShellID, typename ShellContainer<T_pt>::storage_type>, Real> >
 ShellContainer<T_pt>::list_shells_within_radius(
         const std::pair<Real3, strID>& pos, const Real radius,
-        const ShellID& ignore1, const ShellID& ignore2)
+        const ShellID& ignore1, const ShellID& ignore2) const
 {
     std::vector<std::pair<std::pair<ShellID, storage_type>, Real> > retval;
     const distance_calculator_on_surface<T_pt, strID>
