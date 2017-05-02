@@ -1,11 +1,14 @@
 #ifndef ECELL4_SGFRD_WORLD
 #define ECELL4_SGFRD_WORLD
+#include <ecell4/sgfrd/polygon_traits.hpp>
 #include <ecell4/sgfrd/StructureRegistrator.hpp>
 #include <ecell4/core/ParticleSpaceCellListImpl.hpp>
 #include <ecell4/core/Polygon.hpp>
 #include <ecell4/core/Context.hpp>
+#include <ecell4/core/Model.hpp>
 #include <boost/scoped_ptr.hpp>
 #include <boost/shared_ptr.hpp>
+#include <boost/weak_ptr.hpp>
 #include <boost/bind.hpp>
 
 namespace ecell4
@@ -29,6 +32,8 @@ class SGFRDWorld : public ecell4::Space
     typedef typename polygon_type::local_index_type  local_index_type;
     typedef typename polygon_type::barycentric_type  barycentric_type;
 
+    typedef ecell4::Model model_type;
+
     typedef ParticleSpaceCellListImpl default_particle_space_type;
     typedef ParticleSpace particle_space_type;
     typedef typename particle_space_type::particle_container_type
@@ -43,6 +48,8 @@ class SGFRDWorld : public ecell4::Space
         : ps_(new default_particle_space_type(edge_lengths, matrix_sizes)),
           polygon_(polygon), registrator_(polygon)
     {
+        setup_descriptors(polygon_);
+
         rng_ = boost::shared_ptr<RandomNumberGenerator>(
             new GSLRandomNumberGenerator());
         rng_->seed();
@@ -53,7 +60,9 @@ class SGFRDWorld : public ecell4::Space
                boost::shared_ptr<RandomNumberGenerator> rng)
         : ps_(new default_particle_space_type(edge_lengths, matrix_sizes)),
           rng_(rng), polygon_(polygon), registrator_(polygon)
-    {}
+    {
+//         setup_descriptors(polygon_);
+    }
 
     ~SGFRDWorld(){}
 
@@ -165,13 +174,31 @@ class SGFRDWorld : public ecell4::Space
 
     particle_container_type const& particles() const {return ps_->particles();}
 
-  protected:
+    polygon_type const& polygon() const {return polygon_;}
 
+    void bind_to(boost::shared_ptr<model_type> model)
+    {
+        if (boost::shared_ptr<model_type> bound_model = lock_model())
+        {
+            if (bound_model.get() != model.get())
+            {
+                std::cerr << "Warning: Model already bound to BDWorld"
+                    << std::endl;
+            }
+        }
+        model_ = model;
+    }
+
+    boost::shared_ptr<model_type> lock_model() const
+    {
+        return model_.lock();
+    }
 
   private:
 
     boost::scoped_ptr<particle_space_type>   ps_;
     boost::shared_ptr<RandomNumberGenerator> rng_;
+    boost::weak_ptr<Model>                   model_;
     polygon_type                             polygon_;
     structure_registrator_type               registrator_;
 };
