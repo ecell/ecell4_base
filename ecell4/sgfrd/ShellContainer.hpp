@@ -30,6 +30,7 @@ public:
                 circular_shell_type,
                 conical_surface_shell_type
             > storage_type;
+    typedef storage_type shell_type;
     typedef std::pair<ShellID, storage_type> shell_id_pair_type;
     typedef std::vector<shell_id_pair_type> container_type;
     typedef typename ecell4::utils::get_mapper_mf<ShellID, std::size_t>::type
