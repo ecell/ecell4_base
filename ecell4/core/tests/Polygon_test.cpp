@@ -145,6 +145,17 @@ BOOST_AUTO_TEST_CASE(Polygon_num_stuff)
     BOOST_CHECK_EQUAL(poly.num_vertices(),  8);
 }
 
+BOOST_AUTO_TEST_CASE(Polygon_apex_angle)
+{
+    const polygon_type poly = make_cube();
+    const std::vector<vertex_id_type> vids = poly.list_vertex_id();
+
+    for(std::vector<vertex_id_type>::const_iterator
+        iter = vids.begin(); iter != vids.end(); ++iter)
+    {
+        BOOST_CHECK_CLOSE_FRACTION(poly.apex_angle(*iter), 270.0 / 180.0 * M_PI, 1e-8);
+    }
+}
 
 BOOST_AUTO_TEST_CASE(Polygon_neighbor_faces)
 {
