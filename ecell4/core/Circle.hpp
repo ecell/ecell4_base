@@ -27,6 +27,7 @@ public:
         radius_ = rhs.radius_;
         center_ = rhs.center_;
         normal_ = rhs.normal_;
+        return *this;
     }
 
     Real  const& radius() const {return radius_;}

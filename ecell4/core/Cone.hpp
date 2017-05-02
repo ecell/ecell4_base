@@ -36,6 +36,7 @@ public:
         radius_ = rhs.radius_;
         apex_   = rhs.apex_;
         bottom_ = rhs.bottom_;
+        return *this;
     }
 
     Real  const& radius() const {return radius_;}
@@ -110,6 +111,7 @@ public:
         radius_ = rhs.radius_;
         apex_   = rhs.apex_;
         bottom_ = rhs.bottom_;
+        return *this;
     }
 
     Real  const& radius() const {return radius_;}
