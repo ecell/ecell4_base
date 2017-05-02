@@ -17,13 +17,13 @@ struct distance_calculator : public boost::static_visitor<Real>
     distance_calculator(const Real3& pos): pos_(pos){}
 
     template<typename shapeT, typename stridT>
-    Real operator(const Shell<shapeT, stridT>& sh)
+    Real operator()(const Shell<shapeT, stridT>& sh)
     {
-        return ecell4::sgfrd::distance<Real3, shapeT>()(pos, sh.shape());
+        return ecell4::sgfrd::distance<Real3, shapeT>()(pos_, sh.shape());
     }
 
   private:
-    Real3 pos;
+    Real3 pos_;
 };
 
 template<typename T_polygon_traits, typename strID>
@@ -31,6 +31,7 @@ struct distance_calculator_on_surface : public boost::static_visitor<Real>
 {
 public:
     typedef T_polygon_traits polygon_traits;
+    typedef strID structure_id_type;
     typedef ecell4::Polygon<polygon_traits> polygon_type;
     typedef typename polygon_type::face_id_type   face_id_type;
     typedef typename polygon_type::vertex_id_type vertex_id_type;
@@ -53,12 +54,13 @@ private:
 public:
 
     distance_calculator_on_surface(
-            const std::pair<Real3, strID>& pos, const polygon_type& poly)
+            const std::pair<Real3, structure_id_type>& pos,
+            const polygon_type& poly)
         : poly_(poly), pos_(pos)
     {}
 
     template<typename shapeT, typename stridT>
-    typename boost::enable_if<is_2d_shell<shapeT, stridT> >, Real>::type
+    typename boost::enable_if<is_2d_shell<shapeT, stridT>, Real>::type
     operator()(const Shell<shapeT, stridT>& sh) const
     {
         return poly_.distance(pos_, sh.get_surface_position()) - sh.size();
@@ -67,7 +69,7 @@ public:
 private:
 
     polygon_type const& poly_;
-    std::pair<Real3, strID> pos_;
+    std::pair<Real3, structure_id_type> pos_;
 };
 
 } // sgfrd
