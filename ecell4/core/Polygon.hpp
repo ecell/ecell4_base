@@ -154,7 +154,7 @@ class Polygon : public Shape
 
     std::pair<Real3, face_id_type>
     rotate_around_vertex(const std::pair<Real3, face_id_type>& pos,
-        const vertex_id_type& apex, const Real r, const Real angle) const;
+        const vertex_id_type& apex, const Real r, const Real theta) const;
 
     /* member access ---------------------------------------------------------*/
     std::size_t num_triangles() const {return faces_.size();}
@@ -892,9 +892,54 @@ Polygon<T>::move_next_face(const std::pair<Real3, face_id_type>& pos,
 template<typename T>
 std::pair<Real3, typename Polygon<T>::face_id_type>
 Polygon<T>::rotate_around_vertex(const std::pair<Real3, face_id_type>& pos,
-    const vertex_id_type& apex, const Real r, const Real angle) const
+    const vertex_id_type& apex, const Real r, const Real theta) const
 {
-    throw NotImplemented("ecell4::Polygon::rotate_around_vertex");
+    assert(theta <= this->apex_angle(apex));
+
+    const vertex_property_type&     vtx = this->vertex_prop_at(apex);
+    const std::vector<face_id_type>& fs = vtx.faces;
+    const typename std::vector<face_id_type>::const_iterator initial =
+        std::find(fs.begin(), fs.end(), pos.second);
+    const std::size_t       idx = std::distance(fs.begin(), initial);
+    const std::size_t      lidx = vtx.local_indices.at(idx);
+    const triangle_type& initri = this->triangle_at(pos.second);
+    const Real3    vtx_position = initri.vertex_at(lidx);
+    const Real      inter_angle = angle(vtx_position - pos.first,
+            initri.edge_at((lidx==0)?2:lidx-1));
+
+    if(inter_angle >= theta)
+    {
+        const Real3 direction = rotate(theta, initri.normal(),
+                                       pos.first - vtx_position);
+        return std::make_pair(
+            vtx_position + direction * (r / length_sq(direction)), pos.second);
+    }
+
+    Real rest_angle = theta - inter_angle;
+    typename std::vector<face_id_type>::const_iterator iter = initial + 1;
+    while(iter != initial)
+    {
+        const std::size_t  i = std::distance(fs.begin(), iter);
+        const std::size_t vi = vtx.local_indices.at(i);
+        const triangle_type& tri = this->triangle_at(*iter);
+        if(rest_angle <= tri.angle_at(vi))
+        {
+            const Real3 direction = rotate(rest_angle, tri.normal(),
+                                           tri.edge_at(vi));
+            return std::make_pair(
+                vtx_position + direction * (r / length_sq(direction)), *iter);
+        }
+        rest_angle -= tri.angle_at(vi);
+        ++iter; if(iter == fs.end()) iter = fs.begin();
+    }
+
+    assert(rest_angle >= 0.);
+
+    const Real3 direction = rotate(rest_angle, initri.normal(),
+                                   initri.edge_at(lidx));
+    return std::make_pair(
+        vtx_position + direction * (r / length_sq(direction)), pos.second);
+
 }
 
 /* member access -------------------------------------------------------------*/
