@@ -19,29 +19,34 @@ public:
 
     Cone(){}
     ~Cone(){}
-    Cone(const Real3 apex)/* infinite cone */
-        : radius_(std::numeric_limits<Real>::max()), apex_(apex),
+    Cone(const Real3 apex, const Real apex_angl)/* infinite cone */
+        : radius_(std::numeric_limits<Real>::max()),
+          apex_angle_(apex_angl), apex_(apex),
           bottom_(std::numeric_limits<Real>::max(),
                   std::numeric_limits<Real>::max(),
                   std::numeric_limits<Real>::max())
     {}
-    Cone(const Real3 apex, const Real3& bottom, const Real radius)
-        : radius_(radius), apex_(apex), bottom_(bottom)
+    Cone(const Real3 apex, const Real apex_angl,
+         const Real3& bottom, const Real radius)
+        : radius_(radius), apex_angle_(apex_angl), apex_(apex), bottom_(bottom)
     {}
     Cone(const Cone& rhs)
-        : radius_(rhs.radius_), apex_(rhs.apex_), bottom_(rhs.bottom_)
+        : radius_(rhs.radius_), apex_angle_(rhs.apex_angle_),
+          apex_(rhs.apex_), bottom_(rhs.bottom_)
     {}
     Cone& operator=(const Cone& rhs)
     {
-        radius_ = rhs.radius_;
-        apex_   = rhs.apex_;
-        bottom_ = rhs.bottom_;
+        radius_     = rhs.radius_;
+        apex_angle_ = rhs.apex_angle_;
+        apex_       = rhs.apex_;
+        bottom_     = rhs.bottom_;
         return *this;
     }
 
-    Real  const& radius() const {return radius_;}
-    Real3 const& apex()   const {return apex_;}
-    Real3 const& bottom() const {return bottom_;}
+    Real  const& radius()     const {return radius_;}
+    Real  const& apex_angle() const {return apex_angle_;}
+    Real3 const& apex()       const {return apex_;}
+    Real3 const& bottom()     const {return bottom_;}
 
     Real3 const& position() const {return apex_;} // XXX ?
     Real3&       position()       {return apex_;}
@@ -77,6 +82,7 @@ public:
 protected:
 
     Real radius_;// bottom radius
+    Real apex_angle_;
     Real3 apex_;
     Real3 bottom_;
 
@@ -93,28 +99,33 @@ public:
 
     ConicalSurface(){}
     ~ConicalSurface(){}
-    ConicalSurface(const Real3 apex)
-        : radius_(std::numeric_limits<Real>::max()), apex_(apex),
+    ConicalSurface(const Real3 apex, const Real apex_angl)
+        : radius_(std::numeric_limits<Real>::max()),
+          apex_angle_(apex_angl), apex_(apex),
           bottom_(std::numeric_limits<Real>::max(),
                   std::numeric_limits<Real>::max(),
                   std::numeric_limits<Real>::max())
     {}
-    ConicalSurface(const Real3 apex, const Real3& bottom, const Real radius)
-        : radius_(radius), apex_(apex), bottom_(bottom)
+    ConicalSurface(const Real3 apex, const Real apex_angl,
+                   const Real3& bottom, const Real radius)
+        : radius_(radius), apex_angle_(apex_angl), apex_(apex), bottom_(bottom)
     {}
 
     ConicalSurface(const ConicalSurface& rhs)
-        : radius_(rhs.radius_), apex_(rhs.apex_), bottom_(rhs.bottom_)
+        : radius_(rhs.radius_), apex_angle_(rhs.apex_angle_),
+          apex_(rhs.apex_), bottom_(rhs.bottom_)
     {}
     ConicalSurface& operator=(const ConicalSurface& rhs)
     {
-        radius_ = rhs.radius_;
-        apex_   = rhs.apex_;
-        bottom_ = rhs.bottom_;
+        radius_     = rhs.radius_;
+        apex_angle_ = rhs.apex_angle_;
+        apex_       = rhs.apex_;
+        bottom_     = rhs.bottom_;
         return *this;
     }
 
-    Real  const& radius() const {return radius_;}
+    Real  const& radius()     const {return radius_;}
+    Real  const& apex_angle() const {return apex_angle_;}
     Real3 const& apex()   const {return apex_;}
     Real3 const& bottom() const {return bottom_;}
 
@@ -138,7 +149,7 @@ public:
         return this->distance_sq_(pos).second;
     }
 
-    Cone inside() const {return Cone(apex_, bottom_, radius_);}
+    Cone inside() const {return Cone(apex_, apex_angle_, bottom_, radius_);}
 
     Real3 draw_position(boost::shared_ptr<RandomNumberGenerator>& rng) const
     {
@@ -160,6 +171,7 @@ protected:
 protected:
 
     Real radius_;// bottom radius
+    Real apex_angle_;
     Real3 apex_;
     Real3 bottom_;
 
@@ -167,15 +179,15 @@ protected:
 
 inline ConicalSurface Cone::surface() const
 {
-    return ConicalSurface(apex_, bottom_, radius_);
+    return ConicalSurface(apex_, apex_angle_, bottom_, radius_);
 }
 
 template<typename charT, typename traits>
 std::basic_ostream<charT, traits>&
 operator<<(std::basic_ostream<charT, traits>& os, const Cone& c)
 {
-    os << "Cone(apex=" << c.apex() << ", bottom=" << c.bottom()
-       << ", radius=" << c.radius() << ")";
+    os << "Cone(apex=" << c.apex()  << ", apex_angle = " << c.apex_angle()
+       << ", bottom=" << c.bottom() << ", radius=" << c.radius() << ")";
     return os;
 }
 
@@ -184,8 +196,8 @@ template<typename charT, typename traits>
 std::basic_ostream<charT, traits>&
 operator<<(std::basic_ostream<charT, traits>& os, const ConicalSurface& c)
 {
-    os << "ConicalSurface(apex=" << c.apex() << ", bottom=" << c.bottom()
-       << ", radius=" << c.radius() << ")";
+    os << "ConicalSurface(apex=" << c.apex() << ", apex_angle = " << c.apex_angle()
+       << ", bottom=" << c.bottom() << ", radius=" << c.radius() << ")";
     return os;
 }
 
