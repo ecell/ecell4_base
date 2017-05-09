@@ -455,7 +455,7 @@ Real3 closest_point_point_circle(const Real3& p, const Circle& c)
     return c.center() * (1. - dr) + projected * dr;
 }
 
-Real3 closest_point_point_cone(const Real3&, const Triangle&)
+Real3 closest_point_point_cone(const Real3&, const Cone&)
 {
     throw NotImplemented("closest_point_point_cone");
 }
