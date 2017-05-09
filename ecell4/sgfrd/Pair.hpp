@@ -29,11 +29,11 @@ class Pair
     typedef boost::array<particle_id_pair, 2> particle_array_type;
 
   public:
-    Pair(): dt_(0.), last_time_(0.){}
+    Pair(): dt_(0.), begin_time_(0.){}
     ~Pair(){}
 
-    Pair(const Real dt, const Real last_time, shell_id_type const& sh)
-        : dt_(dt), last_time_(last_time), shell_id_(sh)
+    Pair(const Real dt, const Real begin_time, shell_id_type const& sh)
+        : dt_(dt), begin_time_(begin_time), shell_id_(sh)
     {}
 
     Pair(shell_id_type const& sh,
@@ -57,8 +57,8 @@ class Pair
 
     Real& dt()       {return dt_;}
     Real  dt() const {return dt_;}
-    Real& last_time()       {return last_time_;}
-    Real  last_time() const {return last_time_;}
+    Real& begin_time()       {return begin_time_;}
+    Real  begin_time() const {return begin_time_;}
 
     particle_array_type&       particles()       {return particles_;}
     particle_array_type const& particles() const {return particles_;}
@@ -69,7 +69,7 @@ class Pair
   private:
 
     Real dt_;
-    Real last_time_;
+    Real begin_time_;
     shell_id_type   shell_id_;
     particle_array_type particles_;
 };

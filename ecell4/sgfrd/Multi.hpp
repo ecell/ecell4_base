@@ -21,10 +21,15 @@ class Multi
     typedef std::vector<shell_id_type>      shell_id_container_type;
 
   public:
-    Multi(){}
+    Multi(): dt_(0.), begin_time_(0.){}
     ~Multi(){}
 
 //     Multi(simulator_type& sim) : simulator_(sim){}
+
+    Real& dt()       {return dt_;}
+    Real  dt() const {return dt_;}
+    Real& begin_time()       {return begin_time_;}
+    Real  begin_time() const {return begin_time_;}
 
     shell_id_container_type&          shells()       {return shells_;}
     shell_id_container_type const&    shells() const {return shells_;}
@@ -48,6 +53,7 @@ class Multi
   private:
 
     Real dt_factor_;
+    Real dt_, begin_time_;
 //     simulator_type&         simulator_;
     particle_container_type particles_;
     shell_id_container_type    shells_;
