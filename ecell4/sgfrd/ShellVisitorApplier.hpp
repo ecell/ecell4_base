@@ -49,7 +49,7 @@ struct mutable_shell_visitor_applier
     operator()(Functor& f, const Multi& dom)
     {
         std::vector<ShellID> const& sids = dom.shells();
-        for(typename std::vector<ShellID>::const_iterator
+        for(typename Multi::shell_id_container_type::const_iterator
             iter = sids.begin(); iter != sids.end(); ++iter)
         {
             boost::apply_visitor(f, container_.get_shell(*iter));
@@ -63,7 +63,7 @@ struct mutable_shell_visitor_applier
     operator()(Functor& f, const Multi& dom)
     {
         std::vector<ShellID> const& sids = dom.shells();
-        for(typename std::vector<ShellID>::const_iterator
+        for(typename Multi::shell_id_container_type::const_iterator
             iter = sids.begin(); iter != sids.end(); ++iter)
         {
             if(Functor::eval_manner::is_resolved(
