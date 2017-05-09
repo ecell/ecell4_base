@@ -140,13 +140,11 @@ class Polygon : public Shape
     developed_direction(const std::pair<Real3, face_id_type>& from,
                         const std::pair<Real3, face_id_type>& to) const;
 
-    std::pair<std::vector<std::pair<vertex_id_type, Real> >,
-              std::pair<vertex_id_type, Real> >
+    std::vector<std::pair<vertex_id_type, Real> >
     list_vertices_within_radius(const std::pair<Real3, face_id_type>& pos,
                                 const Real radius) const;
 
-    std::pair<std::vector<std::pair<face_id_type, Real> >,
-              std::pair<face_id_type, Real> >
+    std::vector<std::pair<face_id_type, Real> >
     list_faces_within_radius(const Real3& pos, const Real radius) const;
 
     /* dynamics functions ----------------------------------------------------*/
@@ -786,8 +784,7 @@ Real3 Polygon<T>::developed_direction(
 }
 
 template<typename T>
-std::pair<std::vector<std::pair<typename Polygon<T>::vertex_id_type, Real> >,
-          std::pair<typename Polygon<T>::vertex_id_type, Real> >
+std::vector<std::pair<typename Polygon<T>::vertex_id_type, Real> >
 Polygon<T>::list_vertices_within_radius(
         const std::pair<Real3, face_id_type>& pos, const Real radius) const
 {
@@ -795,10 +792,8 @@ Polygon<T>::list_vertices_within_radius(
     // because gfrd circular shell size is restricted so that the shell does not
     // contain the incenter of neighbor face, nomally this range is enough.
 
-    std::vector<std::pair<vertex_id_type, Real> > list;
+    std::vector<std::pair<vertex_id_type, Real> > list; list.reserve(6);
 
-    vertex_id_type    nearestid = un_initialized<vertex_id_type>();
-    Real                nearest = std::numeric_limits<Real>::max();
     boost::array<face_id_type, 3> const& adjs = face_prop_at(pos.second).adjacents;
 
     const Real rad2 = radius * radius;
@@ -815,27 +810,21 @@ Polygon<T>::list_vertices_within_radius(
 
             if(dist2 <= rad2)
             {
-                const Real dist = std::sqrt(dist2);
                 // there possibly two different path to the vertex.
                 // here, use shortest path only.
-
+                // at first, search the vertex in the list
                 typename std::vector<std::pair<vertex_id_type, Real> >::iterator
                     iter = std::find_if(list.begin(), list.end(),
                         utils::pair_first_element_unary_predicator<
                             vertex_id_type, Real>(vid));
+                // and update list.
                 if(iter == list.end())
                 {
-                    list.push_back(std::make_pair(vid, dist));
+                    list.push_back(std::make_pair(vid, std::sqrt(dist2)));
                 }
                 else
                 {
-                    iter->second = std::min(iter->second, dist);
-                }
-
-                if(dist < nearest)
-                {
-                    nearest   = dist;
-                    nearestid = vid;
+                    iter->second = std::min(iter->second, std::sqrt(dist2));
                 }
             }
         }
@@ -843,19 +832,15 @@ Polygon<T>::list_vertices_within_radius(
 
     std::sort(list.begin(), list.end(), utils::pair_second_element_comparator<
               vertex_id_type, Real>());
-
-    return std::make_pair(list, std::make_pair(nearestid, nearest));
+    return list;
 }
 
 template<typename T>
-std::pair<std::vector<std::pair<typename Polygon<T>::face_id_type, Real> >,
-          std::pair<typename Polygon<T>::face_id_type, Real> >
+std::vector<std::pair<typename Polygon<T>::face_id_type, Real> >
 Polygon<T>::list_faces_within_radius(const Real3& pos, const Real radius) const
 {
     // TODO: smarter (than brute force) spatial partition method is needed.
     std::vector<std::pair<face_id_type, Real> > list;
-    face_id_type nearestid = un_initialized<face_id_type>();
-    Real         nearest   = std::numeric_limits<Real>::max();
 
     const Real rad2 = radius * radius;
     for(typename face_container_type::const_iterator
@@ -864,18 +849,12 @@ Polygon<T>::list_faces_within_radius(const Real3& pos, const Real radius) const
         const Real dist2 = distance_sq(pos, iter->triangle);
         if(dist2 < rad2)
         {
-            const Real dist = std::sqrt(dist2);
-            list.push_back(std::make_pair(iter->id, dist));
-            if(dist < nearest)
-            {
-                nearest = dist;
-                nearestid = iter->id;
-            }
+            list.push_back(std::make_pair(iter->id, std::sqrt(dist2)));
         }
     }
     std::sort(list.begin(), list.end(), utils::pair_second_element_comparator<
               face_id_type, Real>());
-    return std::make_pair(list, std::make_pair(nearestid, nearest));
+    return list;
 }
 
 template<typename T>

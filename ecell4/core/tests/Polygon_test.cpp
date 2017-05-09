@@ -672,15 +672,9 @@ BOOST_AUTO_TEST_CASE(Polygon_list_vertices_within_radius)
     const face_id_type fid2(1);
     const face_id_type fid8(7);
     const face_id_type fid9(8);
-    std::pair<std::vector<std::pair<vertex_id_type, Real> >,
-        std::pair<vertex_id_type, Real> > value =
+    std::vector<std::pair<vertex_id_type, Real> > list =
             polygon.list_vertices_within_radius(
                     std::make_pair(pos1, fid1), std::sqrt(8.0/5.0) + 1e-8);
-
-    const std::vector<std::pair<vertex_id_type, Real> >& list = value.first;
-    const std::pair<vertex_id_type, Real>& nearest = value.second;
-    BOOST_CHECK_EQUAL(nearest.first, polygon.get_vertex_id(std::make_pair(fid1, 0)));
-    BOOST_CHECK_CLOSE_FRACTION(nearest.second, std::sqrt(1./5.), 1e-8);
 
     BOOST_CHECK_EQUAL(list.size(), 5);
     BOOST_CHECK_EQUAL(list.at(0).first, polygon.get_vertex_id(std::make_pair(fid1,0)));
