@@ -45,7 +45,7 @@ class JustParseCallback(Callback):
                           DeprecationWarning)
         self.comparisons.append(obj)
 
-class TransparentCallback(object):
+class TransparentCallback(Callback):
 
     def __init__(self):
         Callback.__init__(self)
@@ -86,8 +86,11 @@ class ParseDecorator:
         else:
             self.__func = lambda *args, **kwargs: []
 
-    def set_callback(self, callback):
-        self.__callback = callback
+    def set_callback(self, callback=None):
+        if callback is None:
+            self.__callback = self.__callback_class()
+        else:
+            self.__callback = callback
 
     def wrapper(self, *args, **kwargs):
         try:
@@ -130,14 +133,14 @@ class ParseDecorator:
             and isinstance(calling_frame.f_globals['_callback'], self.__callback_class)):
             self.set_callback(calling_frame.f_globals["_callback"])
         else:
-            self.set_callback(self.__callback_class())
+            self.set_callback()
         retval = self.wrapper(*args, **kwargs)
         self.__callback = None
         return retval
 
     def __enter__(self):
         # print "ParseDecorator#__enter__"
-        self.set_callback(self.__callback_class())
+        self.set_callback()
         calling_frame = inspect.currentframe().f_back
         vardict = copy.copy(calling_frame.f_globals)
         ignores = ("_", "__", "___", "_i", "_ii", "_iii",
@@ -183,7 +186,9 @@ class ParseDecorator:
                     calling_frame.f_globals[k] = v
                     # print "WARNING: '%s' was recovered to be '%s'." % (k, v)
 
-    def __evaluate(self, expr, params={}):
+    def eval(self, expr, params=None):
+        params = params or {}
+
         class AnyCallableLocals:
 
             def __init__(self, callback, locals):
@@ -198,6 +203,9 @@ class ParseDecorator:
         l = locals()
         l.update(params)
 
+        return eval(expr, globals(), AnyCallableLocals(self.__callback, l))
+
+    def __evaluate(self, expr, params=None):
         if "-" in expr:
             print(expr, "NOTICE: - can not be used in Species descriptor, we replaced it with _")
             expr = expr.replace("-", "_")
@@ -211,7 +219,7 @@ class ParseDecorator:
             print(expr, "NOTICE: Species name that begins with numbers is not allowed, we put x to the head")
             expr = "x" + expr
 
-        return eval(expr, globals(), AnyCallableLocals(self.__callback, l))
+        return self.eval(expr, params)
 
 # def parse_decorator(callback_class, func):
 #     @functools.wraps(func)

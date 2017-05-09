@@ -1,5 +1,5 @@
-#ifndef __ECELL4_EGFRD_NETWORK_RULES_ADAPTER
-#define __ECELL4_EGFRD_NETWORK_RULES_ADAPTER
+#ifndef ECELL4_EGFRD_NETWORK_RULES_ADAPTER
+#define ECELL4_EGFRD_NETWORK_RULES_ADAPTER
 
 #include <map>
 #include <numeric>
@@ -204,4 +204,4 @@ private:
     boost::shared_ptr<ecell4::Model> model_;
 };
 
-#endif  // __ECELL4_EGFRD_NETWORK_RULES_ADAPTER
+#endif  // ECELL4_EGFRD_NETWORK_RULES_ADAPTER

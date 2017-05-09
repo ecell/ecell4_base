@@ -1,5 +1,5 @@
-#ifndef __ECELL4_VOXELSPACEBASE_HPP
-#define __ECELL4_VOXELSPACEBASE_HPP
+#ifndef ECELL4_VOXELSPACEBASE_HPP
+#define ECELL4_VOXELSPACEBASE_HPP
 
 #include "LatticeSpace.hpp"
 
@@ -83,4 +83,4 @@ protected:
 
 } // ecell4
 
-#endif /* __ECELL4_VOXELSPACEBASE_HPP */
+#endif /* ECELL4_VOXELSPACEBASE_HPP */

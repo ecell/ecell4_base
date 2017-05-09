@@ -1,5 +1,5 @@
-#ifndef __ECELL4_EGFRD_EGFRD_HPP
-#define __ECELL4_EGFRD_EGFRD_HPP
+#ifndef ECELL4_EGFRD_EGFRD_HPP
+#define ECELL4_EGFRD_EGFRD_HPP
 
 #include <ecell4/core/types.hpp>
 #include <ecell4/core/SimulatorFactory.hpp>
@@ -286,4 +286,4 @@ protected:
 
 } // ecell4
 
-#endif /* __ECELL4_EGFRD_EGFRD_HPP */
+#endif /* ECELL4_EGFRD_EGFRD_HPP */

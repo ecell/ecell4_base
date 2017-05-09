@@ -1,5 +1,5 @@
-#ifndef __ECELL4_REACTION_RULE_HPP
-#define __ECELL4_REACTION_RULE_HPP
+#ifndef ECELL4_REACTION_RULE_HPP
+#define ECELL4_REACTION_RULE_HPP
 
 // #include <set>
 #include <stdexcept>
@@ -177,4 +177,4 @@ ReactionRule format_reaction_rule(const ReactionRule& rr);
 
 } // ecell4
 
-#endif /* __ECELL4_REACTION_RULE_HPP */
+#endif /* ECELL4_REACTION_RULE_HPP */

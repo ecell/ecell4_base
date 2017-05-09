@@ -1,5 +1,5 @@
-#ifndef __ECELL4_SHAPE_HPP
-#define __ECELL4_SHAPE_HPP
+#ifndef ECELL4_SHAPE_HPP
+#define ECELL4_SHAPE_HPP
 
 #include "Real3.hpp"
 #include "RandomNumberGenerator.hpp"
@@ -44,4 +44,4 @@ struct Shape
 
 } // ecell4
 
-#endif /* __ECELL4_SHAPE_HPP */
+#endif /* ECELL4_SHAPE_HPP */

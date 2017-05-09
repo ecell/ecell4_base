@@ -1,5 +1,5 @@
-#ifndef __ECELL4_ODE_ODE_SIMULATOR2_HPP
-#define __ECELL4_ODE_ODE_SIMULATOR2_HPP
+#ifndef ECELL4_ODE_ODE_SIMULATOR2_HPP
+#define ECELL4_ODE_ODE_SIMULATOR2_HPP
 
 #include <cstring>
 #include <vector>
@@ -459,4 +459,4 @@ protected:
 
 } // ecell4
 
-#endif  // __ECELL4_ODE_ODE_SIMULATOR2_HPP
+#endif  // ECELL4_ODE_ODE_SIMULATOR2_HPP

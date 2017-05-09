@@ -1,5 +1,5 @@
-#ifndef __ECELL4_TYPES_HPP
-#define __ECELL4_TYPES_HPP
+#ifndef ECELL4_TYPES_HPP
+#define ECELL4_TYPES_HPP
 
 #include <stdint.h>
 #define _USE_MATH_DEFINES
@@ -19,4 +19,4 @@ const double epsilon = DBL_EPSILON; // std::numeric_limits<Real>::epsilon();
 
 } // ecell4
 
-#endif /* __ECELL4_TYPES_HPP */
+#endif /* ECELL4_TYPES_HPP */

@@ -1,5 +1,5 @@
-#ifndef __ECELL4_POSITION3_HPP
-#define __ECELL4_POSITION3_HPP
+#ifndef ECELL4_REAL3_HPP
+#define ECELL4_REAL3_HPP
 
 #include <ostream>
 #include <iomanip>
@@ -228,4 +228,4 @@ struct hash<ecell4::Real3>
 
 ECELL4_DEFINE_HASH_END()
 
-#endif /* __ECELL4_POSITION3_HPP */
+#endif /* ECELL4_REAL3_HPP */

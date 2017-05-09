@@ -1,7 +1,6 @@
 #ifndef SHELL_HPP
 #define SHELL_HPP
 
-#include <ecell4/core/config.h>
 #include <ecell4/core/hash.hpp>
 
 #include <ostream>

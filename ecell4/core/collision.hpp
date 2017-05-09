@@ -1,5 +1,5 @@
-#ifndef __ECELL4_COLLISION_HPP
-#define __ECELL4_COLLISION_HPP
+#ifndef ECELL4_COLLISION_HPP
+#define ECELL4_COLLISION_HPP
 
 #include "types.hpp"
 #include "Real3.hpp"
@@ -197,4 +197,4 @@ bool intersect_ray_cone(const Real3& pos, const Real3& disp,
 
 } // ecell4
 
-#endif /* __ECELL4_COLLISION_HPP */
+#endif /* ECELL4_COLLISION_HPP */

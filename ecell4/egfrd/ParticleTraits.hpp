@@ -1,5 +1,5 @@
-#ifndef __ECELL4_EGFRD_PARTICLE_TRAITS_HPP
-#define __ECELL4_EGFRD_PARTICLE_TRAITS_HPP
+#ifndef ECELL4_EGFRD_PARTICLE_TRAITS_HPP
+#define ECELL4_EGFRD_PARTICLE_TRAITS_HPP
 
 #include <ecell4/core/Particle.hpp>
 #include <ecell4/core/Sphere.hpp>

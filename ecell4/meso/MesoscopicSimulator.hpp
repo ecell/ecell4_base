@@ -1,5 +1,5 @@
-#ifndef __ECELL4_MESO_MESOSCOPIC_SIMULATOR_HPP
-#define __ECELL4_MESO_MESOSCOPIC_SIMULATOR_HPP
+#ifndef ECELL4_MESO_MESOSCOPIC_SIMULATOR_HPP
+#define ECELL4_MESO_MESOSCOPIC_SIMULATOR_HPP
 
 #include <boost/shared_ptr.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
@@ -913,4 +913,4 @@ protected:
 
 } // ecell4
 
-#endif /* __ECELL4_MESO_MESOSCOPIC_SIMULATOR_HPP */
+#endif /* ECELL4_MESO_MESOSCOPIC_SIMULATOR_HPP */

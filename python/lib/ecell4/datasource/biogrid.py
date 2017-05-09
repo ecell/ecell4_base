@@ -17,7 +17,10 @@ class biogridDataSource(object):
     def __init__(self, ACCESS_KEY):
         self.ak = ACCESS_KEY
 
-    def query(self, ACCESS_POINT, geneList=[], organisms=[], cache=True):
+    def query(self, ACCESS_POINT, geneList=None, organisms=None, cache=True):
+        geneList = geneList or []
+        organisms = organisms or []
+
         options = ""
         if geneList:
             options += "&geneList={}".format("|".join(geneList))
@@ -42,7 +45,9 @@ class biogridDataSource(object):
     def organisms(self):
         return self.query("organisms").values()
 
-    def orgmaker(self, org=[]):
+    def orgmaker(self, org=None):
+        org = org or []
+
         organisms_reverse = dict(
             [(value, key) for key, value in self.query("organisms").items()])
         if org:
@@ -56,7 +61,10 @@ class biogridDataSource(object):
                         pass
         return org
 
-    def interactions(self, geneList=[], org=[]):
+    def interactions(self, geneList=None, org=None):
+        geneList = geneList or []
+        org = org or []
+
         organisms = self.query("organisms")
         org = self.orgmaker(org)
 
@@ -85,10 +93,13 @@ class biogridDataSource(object):
 
         return returnData
 
-    def interactor(self, geneList=[], org=[]):
+    def interactor(self, geneList=None, org=None):
         """
         Supposing geneList returns an unique item.
         """
+        geneList = geneList or []
+        organisms = organisms or []
+
         querydata = self.interactions(geneList, org)
         returnData = {}
         for i in querydata:

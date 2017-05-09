@@ -1,5 +1,5 @@
-#ifndef __ECELL4_VACANT_TYPE_HPP
-#define __ECELL4_VACANT_TYPE_HPP
+#ifndef ECELL4_VACANT_TYPE_HPP
+#define ECELL4_VACANT_TYPE_HPP
 
 #include "VoxelPool.hpp"
 
@@ -50,4 +50,4 @@ private:
 
 } // ecell4
 
-#endif /* __ECELL4_VACANT_TYPE_HPP */
+#endif /* ECELL4_VACANT_TYPE_HPP */

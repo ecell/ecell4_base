@@ -1,5 +1,5 @@
-#ifndef __ECELL4_PARTICLE_HPP
-#define __ECELL4_PARTICLE_HPP
+#ifndef ECELL4_PARTICLE_HPP
+#define ECELL4_PARTICLE_HPP
 
 #include <map>
 
@@ -182,4 +182,4 @@ struct hash<ecell4::Particle>
 
 ECELL4_DEFINE_HASH_END()
 
-#endif /* __ECELL4_PARTICLE_HPP */
+#endif /* ECELL4_PARTICLE_HPP */

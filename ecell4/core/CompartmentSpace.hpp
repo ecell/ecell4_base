@@ -1,5 +1,5 @@
-#ifndef __ECELL4_COMPARTMENT_SPACE_HPP
-#define __ECELL4_COMPARTMENT_SPACE_HPP
+#ifndef ECELL4_COMPARTMENT_SPACE_HPP
+#define ECELL4_COMPARTMENT_SPACE_HPP
 
 #include "get_mapper_mf.hpp"
 #include "types.hpp"
@@ -258,4 +258,4 @@ protected:
 
 } // ecell4
 
-#endif /* __ECELL4_COMPARTMENT_SPACE_HPP */
+#endif /* ECELL4_COMPARTMENT_SPACE_HPP */

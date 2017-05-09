@@ -1,5 +1,5 @@
-#ifndef __ECELL4_PARTICLE_SPACE_HDF5_WRITER_HPP
-#define __ECELL4_PARTICLE_SPACE_HDF5_WRITER_HPP
+#ifndef ECELL4_PARTICLE_SPACE_HDF5_WRITER_HPP
+#define ECELL4_PARTICLE_SPACE_HDF5_WRITER_HPP
 
 #include <cstring>
 #include <boost/scoped_ptr.hpp>
@@ -271,4 +271,4 @@ void load_particle_space(const H5::Group& root, Tspace_* space)
 
 } // ecell4
 
-#endif /*  __ECELL4_PARTICLE_SPACE_HDF5_WRITER_HPP */
+#endif /*  ECELL4_PARTICLE_SPACE_HDF5_WRITER_HPP */

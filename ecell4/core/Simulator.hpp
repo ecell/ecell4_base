@@ -1,5 +1,5 @@
-#ifndef __ECELL4_SIMULATOR_HPP
-#define __ECELL4_SIMULATOR_HPP
+#ifndef ECELL4_SIMULATOR_HPP
+#define ECELL4_SIMULATOR_HPP
 
 #include <vector>
 #include "types.hpp"
@@ -80,4 +80,4 @@ public:
 
 }
 
-#endif /* __ECELL4_SIMULATOR_HPP */
+#endif /* ECELL4_SIMULATOR_HPP */

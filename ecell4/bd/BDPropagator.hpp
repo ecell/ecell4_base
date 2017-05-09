@@ -1,5 +1,5 @@
-#ifndef __ECELL4_BD_BD_PROPAGATOR_HPP
-#define __ECELL4_BD_BD_PROPAGATOR_HPP
+#ifndef ECELL4_BD_BD_PROPAGATOR_HPP
+#define ECELL4_BD_BD_PROPAGATOR_HPP
 
 #include <ecell4/core/RandomNumberGenerator.hpp>
 #include <ecell4/core/Model.hpp>
@@ -149,4 +149,4 @@ protected:
 
 } // ecell4
 
-#endif /* __ECELL4_BD_BD_PROPAGATOR_HPP */
+#endif /* ECELL4_BD_BD_PROPAGATOR_HPP */
