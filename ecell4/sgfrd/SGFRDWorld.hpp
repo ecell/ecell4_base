@@ -61,10 +61,12 @@ class SGFRDWorld : public ecell4::Space
         : ps_(new default_particle_space_type(edge_lengths, matrix_sizes)),
           rng_(rng), polygon_(polygon), registrator_(polygon)
     {
-//         setup_descriptors(polygon_);
+        setup_descriptors(polygon_);
     }
 
     ~SGFRDWorld(){}
+
+    boost::shared_ptr<RandomNumberGenerator> const& rng() {return this->rng_;}
 
     const Real t()                  const {return ps_->t();}
     void       set_t(const Real& t)       {return ps_->set_t(t);}
@@ -123,8 +125,8 @@ class SGFRDWorld : public ecell4::Space
     list_particles(const face_id_type& fid) const;
     std::vector<ParticleID> const&
     list_particleIDs(const face_id_type& fid) const;
-    face_id_type
-    get_faceID(const ParticleID& pid) const;
+
+    face_id_type get_face_id(const ParticleID& pid) const;
 
     void save(const std::string& fname) const
     {
@@ -270,7 +272,7 @@ SGFRDWorld<traits>::list_particleIDs(const face_id_type& fid) const
 
 template<typename traits>
 inline typename SGFRDWorld<traits>::face_id_type
-SGFRDWorld<traits>::get_faceID(const ParticleID& pid) const
+SGFRDWorld<traits>::get_face_id(const ParticleID& pid) const
 {
     return registrator_.structure_on(pid);
 }
