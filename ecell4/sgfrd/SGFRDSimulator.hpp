@@ -39,7 +39,6 @@ class SGFRDSimulator :
     // Event
     typedef SGFRDEvent          event_type;
     typedef SGFRDEventScheduler scheduler_type;
-    typedef DomainID            domain_id_type;
     typedef typename SGFRDEvent::domain_type domain_type;
     typedef typename SGFRDEventScheduler::value_type event_id_pair_type;
 
@@ -171,50 +170,26 @@ class SGFRDSimulator :
             const ParticleID& pid, const Particle& p, const face_id_type fid);
 
 
-    std::pair<std::vector<vertex_id_type>, std::pair<vertex_id_type, Real> >
+    std::vector<std::pair<vertex_id_type, Real> >
     get_intrusive_vertices(const std::pair<Real3, face_id_type>& pos,
                            const Real radius) const;
 
-    std::pair<std::vector<domain_id_type>, std::pair<domain_id_type, Real> >
+    std::vector<std::pair<DomainID, Real> >
     get_intrusive_domains(const std::pair<Real3, face_id_type>& pos,
-                          const Real min, const Real max) const;
+                          const Real radius) const;
 
-    std::pair<std::vector<domain_id_type>, std::pair<domain_id_type, Real> >
-    get_intrusive_domains(const vertex_id_type& vid,
-                          const Real min, const Real max) const;
+    std::vector<std::pair<DomainID, Real> >
+    get_intrusive_domains(const vertex_id_type& vid, const Real radius) const;
 
     //! calculate max circle size allowed by geometric restraints
     Real get_max_circle_size(const std::pair<Real3, face_id_type>& pos) const;
     //! calculate max cone size allowed by geometric restraints
     Real get_max_cone_size(const vertex_id_type& vid) const;
 
-//     domain_type create_domain(
-//             const ParticleID& pid, const Particle& p, const face_id_type fid);
-//
-//     Single create_single(
-//             const ParticleID& pid, const Particle& p, const face_id_type fid);
-//
-//     circular_shell_type draw_circular_shell(
-//             const ParticleID& pid, const Particle& p, const face_id_type fid,
-//             const std::pair<vertex_id_type, Real>& closest_vertex,
-//             const std::pair<domain_id_type, Real>& closest_domain);
-//
-//     circular_shell_type draw_conical_shell(
-//             const ParticleID& pid, const Particle& p, const face_id_type fid,
-//             const std::pair<vertex_id_type, Real>& closest_vertex,
-//             const std::pair<domain_id_type, Real>& closest_domain);
-//
-//     std::pair<bool, domain_type>
-//     form_pair_or_multi(const ParticleID& pid,
-//                        const std::vector<domain_type>& bursted)
-//     {
-//         // not implemented yet.
-//         return std::make_pair(false, domain_type());
-//     }
-
   private:
 
     static const Real single_circular_shell_factor;
+    static const Real single_conical_surface_shell_factor;
 
   private:
 
@@ -232,7 +207,9 @@ class SGFRDSimulator :
 };
 
 template<typename T>
-const Real SGFRDSimulator<T>::single_circular_shell_factor = 1.1;
+const Real SGFRDSimulator<T>::single_circular_shell_factor = 1.5;
+template<typename T>
+const Real SGFRDSimulator<T>::single_conical_surface_shell_factor = 1.5;
 
 template<typename T>
 void SGFRDSimulator<T>::step()
@@ -563,51 +540,66 @@ void SGFRDSimulator<T>::create_event(
             const ParticleID& pid, const Particle& p, const face_id_type fid)
 {
     const std::pair<Real3, face_id_type> pos = std::make_pair(p.position(), fid);
+
     const Real min_circle_size = p.radius() * single_circular_shell_factor;
+          Real max_circle_size = get_max_circle_size(pos);
 
-    std::pair<std::vector<vertex_id_type>, std::pair<vertex_id_type, Real>
-        > const intrusive_vertices(get_intrusive_vertices(pos, min_circle_size));
+    const std::vector<std::pair<vertex_id_type, Real> > intrusive_vertices(
+            get_intrusive_vertices(pos, max_circle_size));
 
-    if(intrusive_vertices.first.empty())
+    if(intrusive_vertices.empty() ||
+       intrusive_vertices.front().second > min_circle_size)
     {
-        const Real max_circle_size = get_max_circle_size(pos);
-        std::pair<std::vector<domain_id_type>, std::pair<domain_id_type, Real>
-            > const intrusive_domains(get_intrusive_domains(
-                        pos, min_circle_size, max_circle_size));
+        if(!intrusive_vertices.empty())
+            max_circle_size = intrusive_vertices.front().second;
 
-        if(intrusive_domains.first.empty())
+        const std::vector<std::pair<DomainID, Real> > intrusive_domains(
+                get_intrusive_domains(pos, max_circle_size));
+
+        if(intrusive_domains.empty())
         {
             return add_event(create_single(create_single_circular_shell(
-                        pos, intrusive_domains.second.second), pid, p));
+                             pos, max_circle_size), pid, p));
         }
-        else
-        {// TODO burst and form pair or multi if needed
-            std::cerr << "[WARNING] intrusive domains exist." << std::endl;
+
+        if(intrusive_domains.front().second > min_circle_size)
+        {
             return add_event(create_single(create_single_circular_shell(
-                        pos, intrusive_domains.second.second), pid, p));
+                             pos, intrusive_domains.front().second), pid, p));
         }
+
+        // TODO burst!
+        std::cerr << "[WARNING] ignoring intrusive domains." << std::endl;
+        return add_event(create_single(create_single_circular_shell(
+                         pos, max_circle_size), pid, p));
     }
     else // conical surface shell
     {
-        const vertex_id_type& vid = intrusive_vertices.second.first;
+        const vertex_id_type& vid = intrusive_vertices.front().first;
+        const Real min_cone_size = p.radius() * single_conical_surface_shell_factor;
         const Real max_cone_size = get_max_cone_size(vid);
-        std::pair<std::vector<domain_id_type>, std::pair<domain_id_type, Real>
-            > const intrusive_domains(get_intrusive_domains(
-                        vid, min_circle_size, max_cone_size));
+        const std::vector<std::pair<DomainID, Real> > intrusive_domains(
+                get_intrusive_domains(vid, max_cone_size));
 
-        if(intrusive_domains.first.empty())
+        if(intrusive_domains.empty())
         {
             return add_event(create_single(create_single_conical_surface_shell(
-                std::make_pair(pos.first, vid), intrusive_domains.second.second),
-                        pid, p));
+                             std::make_pair(pos.first, vid), max_cone_size),
+                             pid, p));
         }
-        else
-        {// TODO burst and form pair or multi if needed
-            std::cerr << "[WARNING] intrusive domains exist." << std::endl;
+
+        if(intrusive_domains.front().second > min_cone_size)
+        {
             return add_event(create_single(create_single_conical_surface_shell(
-                std::make_pair(pos.first, vid), intrusive_domains.second.second),
-                        pid, p));
+                std::make_pair(pos.first, vid), intrusive_domains.front().second),
+                             pid, p));
         }
+
+        // TODO burst and form pair or multi if needed
+        std::cerr << "[WARNING] intrusive domains exist." << std::endl;
+        return add_event(create_single(create_single_conical_surface_shell(
+                         std::make_pair(pos.first, vid), max_cone_size),
+                         pid, p));
     }
 }
 
@@ -644,6 +636,7 @@ Single SGFRDSimulator<T>::create_single(
         const std::pair<ShellID, circle_type>& sh,
         const ParticleID& pid, const Particle& p)
 {
+    // determine EventKind
     throw ecell4::NotImplemented("get_intrusive_vertices");
 }
 
@@ -656,43 +649,85 @@ Single SGFRDSimulator<T>::create_single(
 }
 
 template<typename T>
-std::pair<std::vector<typename SGFRDSimulator<T>::vertex_id_type>,
-          std::pair<typename SGFRDSimulator<T>::vertex_id_type, Real> >
+std::vector<std::pair<typename SGFRDSimulator<T>::vertex_id_type, Real> >
 SGFRDSimulator<T>::get_intrusive_vertices(
         const std::pair<Real3, face_id_type>& pos, const Real radius) const
 {
-    throw ecell4::NotImplemented("get_intrusive_vertices");
+    return polygon().list_vertices_within_radius(pos, radius);
 }
 
 template<typename T>
-std::pair<std::vector<typename SGFRDSimulator<T>::domain_id_type>,
-          std::pair<typename SGFRDSimulator<T>::domain_id_type, Real> >
+std::vector<std::pair<DomainID, Real> >
 SGFRDSimulator<T>::get_intrusive_domains(
-        const std::pair<Real3, face_id_type>& pos, const Real min, const Real max) const
+        const std::pair<Real3, face_id_type>& pos, const Real radius) const
 {
-    throw ecell4::NotImplemented("get_intrusive_vertices");
+    const std::vector<std::pair<std::pair<ShellID, shell_type>, Real>
+        > shells(shell_container_.list_shells_within_radius(pos, radius));
+
+    std::vector<std::pair<DomainID, Real> > domains(shells.size());
+
+    typename std::vector<std::pair<DomainID, Real> >::iterator
+        dest = domains.begin();
+    for(typename std::vector<std::pair<std::pair<ShellID, shell_type>, Real>
+        >::const_iterator iter(shells.begin()), end(shells.end()); iter != end; ++iter)
+    {
+        *dest = std::make_pair(
+                boost::apply_visitor(domain_id_getter(), iter->first.second),
+                iter->second);
+        ++dest;
+    }
+    return domains;
 }
 
 template<typename T>
-std::pair<std::vector<typename SGFRDSimulator<T>::domain_id_type>,
-          std::pair<typename SGFRDSimulator<T>::domain_id_type, Real> >
-SGFRDSimulator<T>::get_intrusive_domains(const vertex_id_type& vid,
-                      const Real min, const Real max) const
+std::vector<std::pair<DomainID, Real> >
+SGFRDSimulator<T>::get_intrusive_domains(
+        const vertex_id_type& vid, const Real radius) const
 {
-    throw ecell4::NotImplemented("get_intrusive_vertices");
+    const std::pair<Real3, vertex_id_type> vpos = std::make_pair(
+            polygon().vertex_at(vid).position, vid);
+    const std::vector<std::pair<std::pair<ShellID, shell_type>, Real>
+        > shells(shell_container_.list_shells_within_radius(vpos, radius));
+
+    std::vector<std::pair<DomainID, Real> > domains(shells.size());
+
+    typename std::vector<std::pair<DomainID, Real> >::iterator
+        dest = domains.begin();
+    for(typename std::vector<std::pair<std::pair<ShellID, shell_type>, Real>
+        >::const_iterator iter(shells.begin()), end(shells.end()); iter != end; ++iter)
+    {
+        *dest = std::make_pair(
+                boost::apply_visitor(domain_id_getter(), iter->first.second),
+                iter->second);
+        ++dest;
+    }
+    return domains;
 }
 
 template<typename T>
 Real SGFRDSimulator<T>::get_max_circle_size(
         const std::pair<Real3, face_id_type>& pos) const
 {
-    throw ecell4::NotImplemented("get_max_circle_size");
+    Real lensq = std::numeric_limits<Real>::max();
+    const boost::array<std::pair<Real3, Real3>, 6>& barrier =
+        polygon().face_at(pos.second).segments_must_not_collide;
+
+    for(std::size_t i=0; i<6; ++i)
+    {
+        const Real3 a = pos.first         - barrier[i].first;
+        const Real3 b = barrier[i].second - barrier[i].first;
+        const Real dot = dot_product(a, b);
+        const Real dist2 = length_sq(a) - dot * dot / length_sq(b);
+
+        if(lensq > dist2) lensq = dist2;
+    }
+    return std::sqrt(lensq);
 }
 
 template<typename T>
 Real SGFRDSimulator<T>::get_max_cone_size(const vertex_id_type& vid) const
 {
-    throw ecell4::NotImplemented("get_max_cone_size");
+    return polygon().vertex_at(vid).max_conical_shell_size;
 }
 
 
