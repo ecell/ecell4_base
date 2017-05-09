@@ -87,6 +87,8 @@ class SGFRDSimulator :
     void initialize();
     void finalize();
 
+    Real dt() const {return dt_;}
+
 //     bool check_reaction() const {return last_reactions_.size() > 0;}
 //     std::vector<std::pair<ReactionRule, reaction_info_type> >
 //     last_reactions() const {return last_reactions_;}
