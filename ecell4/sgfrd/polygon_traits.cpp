@@ -17,6 +17,7 @@ make_vertex_information(const ecell4::Polygon<polygon_traits>& poly,
     vtx.neighbor_faces.reserve(faces.size()*2);
     vtx.neighbor_vertices.reserve(faces.size());
 
+    vtx.position[0] = std::numeric_limits<Real>::max();
     vtx.max_conical_shell_size = std::numeric_limits<Real>::max();
     for(std::vector<polygon::face_id_type>::const_iterator
         iter = faces.begin(); iter != faces.end(); ++iter)
@@ -30,13 +31,23 @@ make_vertex_information(const ecell4::Polygon<polygon_traits>& poly,
         else if(vtxs[2] == vid) vidx = 2;
         else assert(false);
 
+        if(vtx.position[0] == std::numeric_limits<Real>::max())
+        {
+            vtx.position = tri.vertex_at(vidx);
+        }
+        else
+        {
+            assert(length_sq(tri.vertex_at(vidx) - vtx.position) < 1e-4);
+        }
+
         const Real length_of_perpendicular = length_sq(tri.edge_at(vidx)) -
                 std::pow(dot_product(tri.edge_at(vidx),
-                                     tri.edge_at(vidx==2?0:vidx+1)), 2) /
+                                     tri.edge_at(vidx==2?0:vidx+1)*(-1.0)), 2) /
                 length_sq(tri.edge_at(vidx==2?0:vidx+1));
         vtx.max_conical_shell_size = std::min(vtx.max_conical_shell_size,
                                               length_of_perpendicular);
     }
+    vtx.max_conical_shell_size = std::sqrt(vtx.max_conical_shell_size);
 
     for(std::vector<polygon::face_id_type>::const_iterator
         iter = faces.begin(); iter != faces.end(); ++iter)

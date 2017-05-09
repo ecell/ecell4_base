@@ -24,6 +24,7 @@ BOOST_STRONG_TYPEDEF(std::size_t, edge_id_type)
 struct vertex_descripter
 {
     Real max_conical_shell_size;
+    Real3 position;
     std::vector<face_id_type>   neighbor_faces;
     std::vector<vertex_id_type> neighbor_vertices; // include self
 };
