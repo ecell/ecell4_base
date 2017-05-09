@@ -20,6 +20,15 @@ struct domain_id_setter : boost::static_visitor<void>
     }
 };
 
+struct domain_id_getter : boost::static_visitor<DomainID>
+{
+    template<typename shapeT, typename stridT>
+    DomainID operator()(const Shell<shapeT, stridT>& shell) const
+    {
+        return shell.domain_id();
+    }
+};
+
 
 
 
