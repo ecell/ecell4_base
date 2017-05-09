@@ -43,8 +43,8 @@ public:
     Real3 const& apex()   const {return apex_;}
     Real3 const& bottom() const {return bottom_;}
 
-    Real3 const& position() const {return bottom_;} // XXX ?
-    Real3&       position()       {return bottom_;}
+    Real3 const& position() const {return apex_;} // XXX ?
+    Real3&       position()       {return apex_;}
     Real const&  size() const {return radius_;} // XXX ?
     Real&        size()       {return radius_;}
     dimension_kind dimension() const {return THREE;}
@@ -118,8 +118,8 @@ public:
     Real3 const& apex()   const {return apex_;}
     Real3 const& bottom() const {return bottom_;}
 
-    Real3 const& position() const {return bottom_;} // XXX ?
-    Real3&       position()       {return bottom_;}
+    Real3 const& position() const {return apex_;} // XXX ?
+    Real3&       position()       {return apex_;}
     Real const&  size() const {return radius_;} // XXX ?
     Real&        size()       {return radius_;}
     dimension_kind dimension() const {return THREE;}
