@@ -18,7 +18,7 @@ class Multi
     typedef ShellID    shell_id_type;
     typedef std::pair<ParticleID, Particle> particle_id_pair;
     typedef std::vector<particle_id_pair>   particle_container_type;
-    typedef std::vector<shell_id_type> shell_container_type;
+    typedef std::vector<shell_id_type>      shell_id_container_type;
 
   public:
     Multi(){}
@@ -26,8 +26,8 @@ class Multi
 
 //     Multi(simulator_type& sim) : simulator_(sim){}
 
-    shell_container_type&          shells()          {return shells_;}
-    shell_container_type const&    shells()    const {return shells_;}
+    shell_id_container_type&          shells()       {return shells_;}
+    shell_id_container_type const&    shells() const {return shells_;}
     particle_container_type&       particles()       {return particles_;}
     particle_container_type const& particles() const {return particles_;}
 
@@ -50,7 +50,7 @@ class Multi
     Real dt_factor_;
 //     simulator_type&         simulator_;
     particle_container_type particles_;
-    shell_container_type    shells_;
+    shell_id_container_type    shells_;
 };
 
 } // sgfrd
