@@ -84,6 +84,7 @@ class SGFRDWorld : public ecell4::Space
 //     Integer3     matrix_sizes() const {return ps_->matrix_sizes();}
 //     void reset(const Real3& edge_lengths) {ps_->reset(edge_lengths);}
 
+
     bool update_particle(const ParticleID& pid, const Particle& p);
     bool update_particle(const ParticleID& pid, const Particle& p,
                          const face_id_type& fid);
@@ -217,7 +218,8 @@ inline bool
 SGFRDWorld<traits>::update_particle(const ParticleID& pid, const Particle& p,
                                     const face_id_type& fid)
 {
-    registrator_.update(pid, fid);
+    if(registrator_.have(pid)) registrator_.update(pid, fid);
+    else registrator_.emplace(pid, fid);
     return ps_->update_particle(pid, p);
 }
 
