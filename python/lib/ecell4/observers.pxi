@@ -1,3 +1,5 @@
+import types
+
 cdef class Observer:
     """A wrapper for a base class of Observers.
 

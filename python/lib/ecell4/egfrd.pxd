@@ -177,6 +177,10 @@ cdef extern from "ecell4/egfrd/egfrd.hpp" namespace "ecell4::egfrd":
         void run(Real, vector[shared_ptr[Cpp_Observer]]) except +
         Real dt_factor()
 
+        void add_potential(Cpp_Species&, shared_ptr[Cpp_Shape], Real) except +
+        void add_potential(Cpp_Species&, shared_ptr[Cpp_Shape]) except +
+        void add_potential(Cpp_Species&, Real) except +
+
 cdef class EGFRDWorld:
     cdef shared_ptr[Cpp_EGFRDWorld]* thisptr
 

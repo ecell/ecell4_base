@@ -63,7 +63,6 @@ def run_sge(target, jobs, n=1, path='.', delete=True, wait=True, environ=None, m
         for key in keys:
             if key in os.environ.keys():
                 environ[key] = os.environ[key]
-
         if "PYTHONPATH" in environ.keys() and environ["PYTHONPATH"].strip() != "":
             environ["PYTHONPATH"] = "{}:{}".format(os.getcwd(), environ["PYTHONPATH"])
         else:
@@ -76,6 +75,7 @@ def run_sge(target, jobs, n=1, path='.', delete=True, wait=True, environ=None, m
         (fd, picklein) = tempfile.mkstemp(suffix='.pickle', prefix='sge-', dir=path)
         with os.fdopen(fd, 'wb') as fout:
             pickle.dump(job, fout)
+        os.close(fd)
         pickleins.append(picklein)
 
         pickleouts.append([])
