@@ -1,5 +1,5 @@
-#ifndef __ECELL4_LATTICE_SPACE_VECTOR_IMPL_HPP
-#define __ECELL4_LATTICE_SPACE_VECTOR_IMPL_HPP
+#ifndef ECELL4_LATTICE_SPACE_VECTOR_IMPL_HPP
+#define ECELL4_LATTICE_SPACE_VECTOR_IMPL_HPP
 
 #include "LatticeSpaceBase.hpp"
 
@@ -136,12 +136,13 @@ public:
      */
     void save_hdf5(H5::Group* root) const
     {
-        save_lattice_space(*this, root);
+        save_lattice_space(*this, root, "LatticeSpaceVectorImpl");
     }
 
     void load_hdf5(const H5::Group& root)
     {
         load_lattice_space(root, this);
+        // load_lattice_space(root, this, "LatticeSpaceVectorImpl");
     }
 #endif
 

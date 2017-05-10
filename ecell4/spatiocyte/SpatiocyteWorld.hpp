@@ -1,5 +1,5 @@
-#ifndef __ECELL4_LATTICE_LATTICE_WORLD_HPP
-#define __ECELL4_LATTICE_LATTICE_WORLD_HPP
+#ifndef ECELL4_LATTICE_LATTICE_WORLD_HPP
+#define ECELL4_LATTICE_LATTICE_WORLD_HPP
 
 #include <sstream>
 #include <stdexcept>
@@ -608,4 +608,4 @@ inline SpatiocyteWorld* create_spatiocyte_world_vector_impl_alias(
 
 } // ecell4
 
-#endif /* __ECELL4_LATTICE_LATTICE_WORLD_HPP */
+#endif /* ECELL4_LATTICE_LATTICE_WORLD_HPP */

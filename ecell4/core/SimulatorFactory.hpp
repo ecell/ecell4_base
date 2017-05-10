@@ -1,5 +1,5 @@
-#ifndef __ECELL4_SIMULATOR_FACTORY_HPP
-#define __ECELL4_SIMULATOR_FACTORY_HPP
+#ifndef ECELL4_SIMULATOR_FACTORY_HPP
+#define ECELL4_SIMULATOR_FACTORY_HPP
 
 #include "Space.hpp"
 #include "Model.hpp"
@@ -46,4 +46,4 @@ public:
 
 } // ecell4
 
-#endif /* __ECELL4_SIMULATOR_FACTORY_HPP */
+#endif /* ECELL4_SIMULATOR_FACTORY_HPP */

@@ -1,5 +1,5 @@
-#if !defined( __DEFS_HPP )
-#define __DEFS_HPP
+#if !defined( EGFRD_DEFS_HPP )
+#define EGFRD_DEFS_HPP
 
 #include <cstddef>
 #include <ecell4/core/types.hpp>
@@ -26,4 +26,4 @@ typedef size_t Index;
 
 #define IGNORE_RETURN (void)
 
-#endif // __DEFS_HPP
+#endif // EGFRD_DEFS_HPP

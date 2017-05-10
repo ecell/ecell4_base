@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.6)
 # cmake_minimum_required(VERSION 3.0)
 project(ecell4)
-set(PROJECT_VERSION 4.1.0)
+set(PROJECT_VERSION 4.1.2)
 
 if(ECELL4_ENABLE_PROFILING)
     add_definitions(-pg -O0)
@@ -37,9 +37,13 @@ else()
 endif()
 
 # find_package(Boost COMPONENTS regex)
-find_package(Boost REQUIRED)
+if(NOT Boost_FOUND)
+  find_package(Boost REQUIRED)
+else()
+  set(HAVE_BOOST_REGEX 1)
+endif()
+
 include_directories(${Boost_INCLUDE_DIRS})
-# set(HAVE_BOOST_REGEX ${Boost_FOUND})
 
 find_library(GSL_LIBRARIES gsl)
 find_library(GSL_CBLAS_LIBRARIES gslcblas)

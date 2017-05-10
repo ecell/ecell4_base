@@ -1,5 +1,5 @@
-#ifndef __ECELL4_DYNAMICPRIORITYQUEUE_HPP
-#define __ECELL4_DYNAMICPRIORITYQUEUE_HPP
+#ifndef ECELL4_DYNAMICPRIORITYQUEUE_HPP
+#define ECELL4_DYNAMICPRIORITYQUEUE_HPP
 //
 // written by Koichi Takahashi based on the initial version by Eiichiro Adachi.
 // modified by Mozoyoshi Koizumi
@@ -582,4 +582,4 @@ inline bool DynamicPriorityQueue<Titem_, Tcomparator_, Tpolicy_>::check_heap() c
 
 } // ecell4
 
-#endif // __ECELL4_DYNAMICPRIORITYQUEUE_HPP
+#endif // ECELL4_DYNAMICPRIORITYQUEUE_HPP

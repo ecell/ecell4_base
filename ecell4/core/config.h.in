@@ -1,6 +1,6 @@
 /* WARNING! All changes made to this file will be lost! */
-#ifndef __ECELL4_CONFIG_H
-#define __ECELL4_CONFIG_H
+#ifndef ECELL4_CONFIG_H
+#define ECELL4_CONFIG_H
 
 #cmakedefine ECELL4_VERSION "@ECELL4_VERSION@"
 
@@ -10,6 +10,12 @@
 /* #undef WIN32_MSC */
 #endif
 
+#ifdef WIN32_MSC
+/* The following is the default behavior on Windows environment. */
+// #define WITH_HDF5 1
+#define HAVE_BOOST_UNORDERED_MAP_HPP 1
+#define HAVE_BOOST_FUNCTIONAL_HASH_HPP 1
+#else
 #cmakedefine WITH_HDF5 1
 #cmakedefine HAVE_VTK 1
 #cmakedefine HAVE_BOOST_REGEX 1
@@ -20,5 +26,6 @@
 #cmakedefine HAVE_BOOST_FUNCTIONAL_HASH_HPP 1
 #cmakedefine HAVE_TR1_UNORDERED_MAP 1
 #cmakedefine HAVE_TR1_FUNCTIONAL 1
+#endif
 
-#endif /* __ECELL4_CONFIG_H */
+#endif /* ECELL4_CONFIG_H */

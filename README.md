@@ -1,12 +1,12 @@
 E-Cell System version 4
 =======================
 
-[![Binder](http://mybinder.org/badge.svg)](http://mybinder.org/repo/ecell/ecell4-notebooks)
 [![Build Status](https://travis-ci.org/ecell/ecell4.svg?branch=develop)](https://travis-ci.org/ecell/ecell4)
 [![Build status](https://ci.appveyor.com/api/projects/status/github/ecell/ecell4?svg=true)](https://ci.appveyor.com/project/kaizu/ecell4)
 [![Documentation Status](https://readthedocs.org/projects/ecell4/badge/?version=latest)](http://ecell4.readthedocs.org/en/latest/?badge=latest)
 [![PyPI](https://img.shields.io/pypi/v/ecell.svg)](https://pypi.python.org/pypi/ecell)
 [![License: GPL v2](https://img.shields.io/badge/license-GPL%20v2-blue.svg)](https://github.com/ecell/ecell4/blob/master/licenses/LICENSE)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/87e076986e354b508f66af0a0ca3373d)](https://www.codacy.com/app/ecell/ecell4?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ecell/ecell4&amp;utm_campaign=Badge_Grade)
 [![Slack Status](https://img.shields.io/badge/chat-on%20slack-50baa6.svg)](https://ecell-project.herokuapp.com/)
 <!---[![Slack Status](https://ecell-project.herokuapp.com/badge.svg)](https://ecell-project.herokuapp.com/)--->
 
@@ -15,15 +15,6 @@ What is E-Cell System?
 
 E-Cell System is, a software platform for modeling, simulation and analysis of complex, heterogeneous and multi-scale systems like the cell.
 E-Cell has multi-algorithm, multi-timescale and multi-spatial-representation as its central feature.
-
-Quick start
-===========
-
-You can try E-Cell4 without installing it on your computer’s hard drive.
-
-You can do this by just clicking [![Binder](http://mybinder.org/badge.svg)](http://mybinder.org/repo/ecell/ecell4-notebooks).
-
-All you need to do is just running the cells in each of the example Jupyter notebooks.
 
 Installation and usage
 ======================
@@ -48,9 +39,9 @@ Installation
 
 #### Minimum requirements
 
-- Python (2.7 and 3.4, 3.5, 3.6 both major versions are supported [3.4 is only supported on Linux, 3.6 is only supported on Mac])
+- Python (2.7 and 3.4, 3.5, 3.6 both major versions are supported [3.4 is supported only on Linux, Mac does not support 3.4 and 3.5])
 - pip (8.1 or later)
-- hdf5 (required only on **Windows**.)
+- HDF5 (1.8.17, required only on **Windows**.)
 
 #### Optional requirements
 
@@ -70,14 +61,17 @@ We recommend that you install [Miniconda](http://conda.pydata.org/miniconda.html
 - Run the following commands on command prompt
 
     ```shell
-    conda install hdf5 matplotlib notebook
+    conda install hdf5=1.8.17
+    conda install matplotlib notebook
     pip install ecell
     ```
 
-- (**Important**) E-Cell4 for Windows needs the latest `hdf5`. If there's any problem, please update the version of hdf5.
+- (**Important**) E-Cell4 for Windows needs `HDF5` version **1.8.17**. If there's any problem, please run the following commands.
 
     ```shell
-    conda update hdf5
+    conda uninstall hdf5
+    conda clean -a
+    conda install hdf5=1.8.17
     ```
 
 If you use animated visualization with E-Cell4, please install [ffmpeg windows build](http://ffmpeg.zeranoe.com/builds/) and add its path to your **USER** PATH enviromental variable.
@@ -182,65 +176,16 @@ viz.plot_trajectory(obs, interactive=False)
 Docker image for E-Cell4
 ----------------------------
 
-You can pull E-Cell4 docker image with `docker pull ecell/ecell4`.
-This image includes E-Cell4 and its example Jupyter notebooks.
+If you're familiar with Docker, the following commands should work in most cases:
 
-You need to set up your password or get a token to login there.
-E-Cell4 docker image is based on `jupyter/minimal-notebook`. 
-See https://github.com/jupyter/docker-stacks/tree/master/minimal-notebook for more details about the `docker run` options.
-
-### Password auth
-
-You need to install IPython and create a hashed password before running the docker image.
-(Here we use miniconda IPython as an example.)
-```
-~/miniconda3/bin/ipython
-Python 3.5.2 |Continuum Analytics, Inc.| (default, Jul  2 2016, 17:52:12) 
-Type "copyright", "credits" or "license" for more information.
-
-IPython 5.1.0 -- An enhanced Interactive Python.
-?         -> Introduction and overview of IPython's features.
-%quickref -> Quick reference.
-help      -> Python's own help system.
-object?   -> Details about 'object', use 'object??' for extra details.
-
-In [1]: from IPython.lib.security import passwd
-
-In [2]: passwd()
-Enter password: 
-Verify password: 
-Out[2]: 'sha1:78345db65767:e156e28013d2f6741a042c44fcc12d21af7b7529'
+```shell
+docker pull ecell/ecell4
+docker run -d -p 8888:8888 ecell/ecell4 start-notebook.sh --NotebookApp.token=''
 ```
 
-And run the docker image with
-```
-docker run -d -p 8888:8888 ecell/ecell4 start-notebook.sh --NotebookApp.password='sha1:78345db65767:e156e28013d2f6741a042c44fcc12d21af7b7529'
-```
+and open a web browser to `http://localhost:8888` .
 
-You can see E-Cell4 example Jupyter notebooks after opening `http://localhost:8888` and login.
-
-### Token auth
-
-First run the docker image with
-```
-docker run -d -p 8888:8888 ecell/ecell4
-```
-Then get the container name with `docker ps` command
-```
-docker ps
-CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                    NAMES
-f2109e17eb55        ecell/ecell4        "tini -- start-notebo"   40 minutes ago      Up 40 minutes       0.0.0.0:8888->8888/tcp   peaceful_panini
-```
-And get the token for the container with the follwoing command, in the above case the container ID is `peaceful_panini`.
-```
-docker exec -it peaceful_panini jupyter notebook list
-Currently running servers:
-http://localhost:8888/?token=d8872dc7e0d5bd78882dcc326255f9848db24fd1a40711af :: /home/jovyan/work
-```
-In this case, the token is `d8872dc7e0d5bd78882dcc326255f9848db24fd1a40711af`
-
-By using this token, you can login to the Jupyter Notebook service (`http://localhost:8888`).
-
+Our Docker image is based on **Minimal Jupyter Notebook Stack**. See https://github.com/jupyter/docker-stacks/tree/master/base-notebook or [Our Wiki page](https://github.com/ecell/ecell4/wiki/Security-in-the-Docker-Jupyter-notebook-server) for more details on the Docker command options.
 
 Licensing terms
 ===============

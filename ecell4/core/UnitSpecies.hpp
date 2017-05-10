@@ -1,5 +1,5 @@
-#ifndef __ECELL4_UNIT_SPECIES_HPP
-#define __ECELL4_UNIT_SPECIES_HPP
+#ifndef ECELL4_UNIT_SPECIES_HPP
+#define ECELL4_UNIT_SPECIES_HPP
 
 #include <iostream>
 #include <string>
@@ -159,5 +159,5 @@ struct hash<ecell4::UnitSpecies>
 
 ECELL4_DEFINE_HASH_END()
 
-#endif /* __ECELL4_UNIT_SPECIES_HPP */
+#endif /* ECELL4_UNIT_SPECIES_HPP */
 

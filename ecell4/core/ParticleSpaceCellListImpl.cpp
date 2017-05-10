@@ -213,6 +213,8 @@ std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
                     // neighbor_filter::operator()
                     particle_container_type::const_iterator
                         itr(particles_.begin() + (*i));
+                    // particle_container_type::const_iterator itr = particles_.begin();
+                    // std::advance(itr, *i);
 
                     const Real dist(
                         length((*itr).second.position() + stride - pos)

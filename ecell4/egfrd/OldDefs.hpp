@@ -1,5 +1,5 @@
-#if !defined( __OLDDEFS_HPP )
-#define __OLDDEFS_HPP
+#if !defined( EGFRD_OLDDEFS_HPP )
+#define EGFRD_OLDDEFS_HPP
 
 #include <vector>
 #include <boost/multi_array.hpp>
@@ -43,4 +43,4 @@ Real4DArray;
 #define IGNORE_RETURN (void)
 
 
-#endif // __OLDDEFS_HPP
+#endif // EGFRD_OLDDEFS_HPP

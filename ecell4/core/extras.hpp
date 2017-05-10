@@ -1,5 +1,5 @@
-#ifndef __ECELL4_EXTRAS_HPP
-#define __ECELL4_EXTRAS_HPP
+#ifndef ECELL4_EXTRAS_HPP
+#define ECELL4_EXTRAS_HPP
 
 #include <boost/shared_ptr.hpp>
 #include <boost/scoped_ptr.hpp>
@@ -83,16 +83,30 @@ typename Tfactory_::world_type* generate_world_from_model(
     return w;
 }
 
+struct VersionInformation
+{
+    std::string header;
+    int majorno, minorno, patchno;
+
+    VersionInformation(
+        const std::string& header, const int majorno, const int minorno, const int patchno)
+        : header(header), majorno(majorno), minorno(minorno), patchno(patchno)
+    {
+        ;
+    }
+};
+
+VersionInformation parse_version_information(const std::string& version);
+bool check_version_information(const std::string& version, const std::string& required);
+
 #ifdef WITH_HDF5
 void save_version_information(H5::CommonFG* root, const std::string& version);
 std::string load_version_information(const H5::CommonFG& root);
 #endif
 std::string load_version_information(const std::string& filename);
 
-bool check_version_information(const std::string& version, const std::string& required);
-
 } // extras
 
 } // ecell4
 
-#endif // __ECELL4_EXTRAS_HPP
+#endif // ECELL4_EXTRAS_HPP

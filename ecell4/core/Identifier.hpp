@@ -1,5 +1,5 @@
-#ifndef __ECELL4_IDENTIFIER_HPP
-#define __ECELL4_IDENTIFIER_HPP
+#ifndef ECELL4_IDENTIFIER_HPP
+#define ECELL4_IDENTIFIER_HPP
 
 #include <ostream>
 #include <utility>
@@ -275,4 +275,4 @@ struct hash<ecell4::ParticleID>
 
 ECELL4_DEFINE_HASH_END()
 
-#endif /* __ECELL4_IDENTIFIER_HPP */
+#endif /* ECELL4_IDENTIFIER_HPP */

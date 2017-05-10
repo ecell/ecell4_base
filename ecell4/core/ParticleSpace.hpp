@@ -1,5 +1,5 @@
-#ifndef __ECELL4_PARTICLE_SPACE_HPP
-#define __ECELL4_PARTICLE_SPACE_HPP
+#ifndef ECELL4_PARTICLE_SPACE_HPP
+#define ECELL4_PARTICLE_SPACE_HPP
 
 #include <cmath>
 
@@ -324,6 +324,12 @@ public:
         return static_cast<Real>(num_molecules_exact(sp));
     }
 
+    virtual const Real volume() const
+    {
+        const Real3& size(edge_lengths());
+        return size[0] * size[1] * size[2];
+    }
+
 protected:
 
     Real t_;
@@ -425,4 +431,4 @@ protected:
 
 } // ecell4
 
-#endif /* __ECELL4_PARTICLE_SPACE_HPP */
+#endif /* ECELL4_PARTICLE_SPACE_HPP */

@@ -1,5 +1,5 @@
-#ifndef __ECELL4_CYLINDER_HPP
-#define __ECELL4_CYLINDER_HPP
+#ifndef ECELL4_CYLINDER_HPP
+#define ECELL4_CYLINDER_HPP
 
 #include <ostream>
 #include "Shape.hpp"
@@ -115,5 +115,5 @@ protected:
 
 } // ecell4
 
-#endif /* __ECELL4_CYLINDER_HPP */
+#endif /* ECELL4_CYLINDER_HPP */
 

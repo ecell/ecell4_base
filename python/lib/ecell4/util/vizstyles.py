@@ -9,7 +9,7 @@ def periodic_color_scale(color_list):
 
         COLORS = color_list
 
-        def __init__(self, config={}):
+        def __init__(self, config=None):
             """
             Initialize a color scale
 
@@ -20,7 +20,7 @@ def periodic_color_scale(color_list):
                 to each key. Colors included in config will never be used.
 
             """
-            self.__config = config
+            self.__config = config or {}
             self.__buffer = copy.copy(self.COLORS)
 
             for color in self.__config.values():

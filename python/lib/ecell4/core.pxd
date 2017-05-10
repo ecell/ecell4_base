@@ -496,11 +496,7 @@ cdef extern from "ecell4/core/observers.hpp" namespace "ecell4":
         void set_formatter(string&)
 
     cdef cppclass Cpp_FixedIntervalTrajectoryObserver "ecell4::FixedIntervalTrajectoryObserver":
-        Cpp_FixedIntervalTrajectoryObserver(Real, vector[Cpp_ParticleID]) except +
-        Cpp_FixedIntervalTrajectoryObserver(Real, vector[Cpp_ParticleID], bool) except +
         Cpp_FixedIntervalTrajectoryObserver(Real, vector[Cpp_ParticleID], bool, Real) except +
-        Cpp_FixedIntervalTrajectoryObserver(Real) except +
-        Cpp_FixedIntervalTrajectoryObserver(Real, bool) except +
         Cpp_FixedIntervalTrajectoryObserver(Real, bool, Real) except +
         Real next_time()
         Integer num_steps()
@@ -508,6 +504,24 @@ cdef extern from "ecell4/core/observers.hpp" namespace "ecell4":
         vector[Real]& t()
         vector[vector[Cpp_Real3]] data()
         void reset()
+        @staticmethod
+        bool default_resolve_boundary()
+        @staticmethod
+        Real default_subdt()
+
+    cdef cppclass Cpp_TimingTrajectoryObserver "ecell4::TimingTrajectoryObserver":
+        Cpp_TimingTrajectoryObserver(vector[double], vector[Cpp_ParticleID], bool, Real) except +
+        Cpp_TimingTrajectoryObserver(vector[double], bool, Real) except +
+        Real next_time()
+        Integer num_steps()
+        Integer num_tracers()
+        vector[Real]& t()
+        vector[vector[Cpp_Real3]] data()
+        void reset()
+        @staticmethod
+        bool default_resolve_boundary()
+        @staticmethod
+        Real default_subdt()
 
     cdef cppclass Cpp_TimingNumberObserver "ecell4::TimingNumberObserver":
         Cpp_TimingNumberObserver(vector[double], vector[string]) except +  #XXX: vector[Real]
@@ -527,9 +541,6 @@ cdef extern from "ecell4/core/observers.hpp" namespace "ecell4":
         void reset()
 
     cdef cppclass Cpp_FixedIntervalTrackingObserver "ecell4::FixedIntervalTrackingObserver":
-        Cpp_FixedIntervalTrackingObserver(Real, vector[Cpp_Species]) except +
-        Cpp_FixedIntervalTrackingObserver(Real, vector[Cpp_Species], bool) except +
-        Cpp_FixedIntervalTrackingObserver(Real, vector[Cpp_Species], bool, Real) except +
         Cpp_FixedIntervalTrackingObserver(Real, vector[Cpp_Species], bool, Real, Real) except +
         Real next_time()
         Integer num_steps()
@@ -537,6 +548,12 @@ cdef extern from "ecell4/core/observers.hpp" namespace "ecell4":
         vector[Real]& t()
         vector[vector[Cpp_Real3]] data()
         void reset()
+        @staticmethod
+        bool default_resolve_boundary()
+        @staticmethod
+        Real default_subdt()
+        @staticmethod
+        Real default_threshold()
 
 ## FixedIntervalNumberObserver
 #  a python wrapper for Cpp_FixedIntervalNumberObserver
@@ -563,6 +580,9 @@ cdef class CSVObserver:
 
 cdef class FixedIntervalTrajectoryObserver:
     cdef shared_ptr[Cpp_FixedIntervalTrajectoryObserver]* thisptr
+
+cdef class TimingTrajectoryObserver:
+    cdef shared_ptr[Cpp_TimingTrajectoryObserver]* thisptr
 
 cdef class TimeoutObserver:
     cdef shared_ptr[Cpp_TimeoutObserver]* thisptr

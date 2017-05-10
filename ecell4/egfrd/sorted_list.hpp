@@ -1,5 +1,5 @@
-#ifndef _SORTED_LIST
-#define _SORTED_LIST
+#ifndef EGFRD_SORTED_LIST
+#define EGFRD_SORTED_LIST
 
 #include <algorithm>
 #include <functional>
@@ -198,4 +198,4 @@ private:
     holder_type cntnr_;
 };
 
-#endif /* SORTED_LIST */
+#endif /* EGFRD_SORTED_LIST */

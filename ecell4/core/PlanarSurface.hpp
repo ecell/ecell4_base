@@ -1,5 +1,5 @@
-#ifndef __ECELL4_PLANAR_SURFACE_HPP
-#define __ECELL4_PLANAR_SURFACE_HPP
+#ifndef ECELL4_PLANAR_SURFACE_HPP
+#define ECELL4_PLANAR_SURFACE_HPP
 
 #include "Shape.hpp"
 
@@ -68,4 +68,4 @@ inline PlanarSurface create_z_plane(const Real v)
 
 }
 
-#endif /* __ECELL4_PLANAR_SURFACE_HPP */
+#endif /* ECELL4_PLANAR_SURFACE_HPP */

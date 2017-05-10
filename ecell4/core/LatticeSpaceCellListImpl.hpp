@@ -1,5 +1,5 @@
-#ifndef __ECELL4_LATTICE_SPACE_CELL_LIST_IMPL_HPP
-#define __ECELL4_LATTICE_SPACE_CELL_LIST_IMPL_HPP
+#ifndef ECELL4_LATTICE_SPACE_CELL_LIST_IMPL_HPP
+#define ECELL4_LATTICE_SPACE_CELL_LIST_IMPL_HPP
 
 #include "Context.hpp"
 #include "MolecularType.hpp"
@@ -689,6 +689,24 @@ public:
                 || molecule_pools_.find(sp) != molecule_pools_.end());
     }
 
+#ifdef WITH_HDF5
+    /*
+     * HDF5 Save
+     */
+    void save_hdf5(H5::Group* root) const
+    {
+        // save_lattice_space(*this, root, "LatticeSpaceCellListImpl");
+        throw NotSupported("LatticeSpaceCellListImpl::save_hdf5 is not supported yet.");
+    }
+
+    void load_hdf5(const H5::Group& root)
+    {
+        // load_lattice_space(root, this);
+        // load_lattice_space(root, this, "LatticeSpaceCellListImpl");
+        throw NotSupported("LatticeSpaceCellListImpl::load_hdf5 is not supported yet.");
+    }
+#endif
+
 protected:
 
     VoxelPool* get_voxel_pool(const Voxel& v);
@@ -721,4 +739,4 @@ protected:
 
 } // ecell4
 
-#endif /* __ECELL4_LATTICE_SPACE_CELL_LIST_IMPL_HPP */
+#endif /* ECELL4_LATTICE_SPACE_CELL_LIST_IMPL_HPP */

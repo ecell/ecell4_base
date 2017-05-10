@@ -1,5 +1,5 @@
-#ifndef __ECELL4_LATTICE_LATTICE_SIMULATOR_HPP
-#define __ECELL4_LATTICE_LATTICE_SIMULATOR_HPP
+#ifndef ECELL4_LATTICE_LATTICE_SIMULATOR_HPP
+#define ECELL4_LATTICE_LATTICE_SIMULATOR_HPP
 
 #include <numeric>
 #include <boost/shared_ptr.hpp>
@@ -102,4 +102,4 @@ protected:
 
 } // ecell4
 
-#endif /* __ECELL4_LATTICE_LATTICE_SIMULATOR_HPP */
+#endif /* ECELL4_LATTICE_LATTICE_SIMULATOR_HPP */

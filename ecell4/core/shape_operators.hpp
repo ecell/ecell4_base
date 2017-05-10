@@ -1,5 +1,5 @@
-#ifndef __ECELL4_SHAPE_OPERATORS
-#define __ECELL4_SHAPE_OPERATORS
+#ifndef ECELL4_SHAPE_OPERATORS
+#define ECELL4_SHAPE_OPERATORS
 
 #include "exceptions.hpp"
 #include "Shape.hpp"
@@ -438,4 +438,4 @@ protected:
 
 }
 
-#endif /* __ECELL4_SHAPE_OPERATORS */
+#endif /* ECELL4_SHAPE_OPERATORS */

@@ -1,5 +1,5 @@
-#ifndef __ECELL4_UTILS_GET_MAPPER_MF_HPP
-#define __ECELL4_UTILS_GET_MAPPER_MF_HPP
+#ifndef ECELL4_UTILS_GET_MAPPER_MF_HPP
+#define ECELL4_UTILS_GET_MAPPER_MF_HPP
 
 #include <ecell4/core/config.h>
 
@@ -57,4 +57,4 @@ void retrieve_keys(Tmap_ map, std::vector<typename Tmap_::key_type>& keys)
 
 } // ecell4
 
-#endif /* __ECELL4_UTILS_GET_MAPPER_MF_HPP */
+#endif /* ECELL4_UTILS_GET_MAPPER_MF_HPP */

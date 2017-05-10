@@ -1,5 +1,5 @@
-#ifndef __ECELL4_LATTICE_SPACE_HPP
-#define __ECELL4_LATTICE_SPACE_HPP
+#ifndef ECELL4_LATTICE_SPACE_HPP
+#define ECELL4_LATTICE_SPACE_HPP
 
 #include <vector>
 #include <set>
@@ -214,6 +214,7 @@ public:
     virtual Real3 coordinate2position(const coordinate_type& coord) const = 0;
     virtual coordinate_type position2coordinate(const Real3& pos) const = 0;
 
+    virtual Integer num_neighbors(const coordinate_type& coord) const = 0;
     virtual coordinate_type get_neighbor(
         const coordinate_type& coord, const Integer& nrand) const = 0;
     virtual coordinate_type get_neighbor_boundary(
@@ -276,4 +277,4 @@ protected:
 
 } // ecell4
 
-#endif /* __ECELL4_LATTICE_SPACE_HPP */
+#endif /* ECELL4_LATTICE_SPACE_HPP */

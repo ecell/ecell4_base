@@ -424,6 +424,7 @@ Integer SpatiocyteWorld::add_interface(const Species& sp)
 {
     const SpatiocyteWorld::molecule_info_type info(get_molecule_info(sp));
     (*space_).make_interface_type(sp, Shape::UNDEF, info.loc);  //XXX: set the dimension properly
+    return 0;  //XXX: dummpy
 }
 
 bool SpatiocyteWorld::is_surface_voxel(
