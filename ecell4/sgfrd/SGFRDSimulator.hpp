@@ -110,6 +110,9 @@ class SGFRDSimulator :
     {return shell_container_.get_shell(id);}
     shell_type const& get_shell(ShellID const& id) const
     {return shell_container_.get_shell(id);}
+    void remove_shell(ShellID const& id)
+    {return shell_container_.remove_shell(id);}
+
     face_id_type      get_face_id(const ParticleID& pid) const
     {return this->world_->get_face_id(pid);}
     std::pair<ParticleID, Particle> get_particle(const ParticleID& pid) const
@@ -315,7 +318,6 @@ void SGFRDSimulator<T>::fire_event(const event_id_pair_type& ev)
 {
     domain_firer firer(*this);
     boost::apply_visitor(firer, ev.second->domain());
-
     return ;
 }
 
@@ -489,6 +491,7 @@ void SGFRDSimulator<T>::escape(const Single& domain)
 {
     single_shell_escapement escapement(*this, domain);
     boost::apply_visitor(escapement, get_shell(domain.shell_id()));
+    remove_shell(domain.shell_id());
     return;
 }
 
@@ -513,6 +516,7 @@ void SGFRDSimulator<T>::reaction(const Single& domain)
 {
     single_shell_reactor reactor;
     boost::apply_visitor(reactor, get_shell(domain.shell_id()));
+    remove_shell(domain.shell_id());
     return;
 }
 
