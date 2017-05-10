@@ -46,7 +46,7 @@ addons:
 
 before_install:
 - if [ "$TRAVIS_OS_NAME" == "osx" ]; then
-    brew update; brew upgrade;
+    brew update;
     brew install gsl ffmpeg;
     brew install homebrew/science/hdf5;
     if [[ $TRAVIS_PYTHON_VERSION == 3* ]]; then
@@ -79,6 +79,7 @@ before_install:
   fi
 
 script:
+- set -ev
 - if [ "$TRAVIS_OS_NAME" == "linux" ]; then
     bash -c 'cmake -DCMAKE_INSTALL_PREFIX=~/local . && make && make test && make install';
     rm CMakeCache.txt;
@@ -92,6 +93,7 @@ script:
     fi;
     rm CMakeCache.txt;
   fi
+- set +e
 
 notifications:
   webhooks:
