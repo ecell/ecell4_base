@@ -178,8 +178,8 @@ def getseed(myseed, i):
 
 def singlerun(job, job_id, task_id):
     import ecell4.util
-    import ecell4.exta.ensemble
-    rndseed = ecell4.exta.ensemble.getseed(job.pop('myseed'), task_id)
+    import ecell4.extra.ensemble
+    rndseed = ecell4.extra.ensemble.getseed(job.pop('myseed'), task_id)
     job.update({'return_type': 'array', 'rndseed': rndseed})
     data = ecell4.util.run_simulation(**job)
     return data
