@@ -249,9 +249,6 @@ def ensemble_simulations(
             solver = value
         elif key == 'm':
             model = value
-        else:
-            raise ValueError(
-                "An unknown keyword argument was given [{}={}]".format(key, value))
 
     if model is None:
         model = ecell4.util.decorator.get_model(is_netfree, without_reset)
