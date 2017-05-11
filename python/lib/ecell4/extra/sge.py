@@ -15,13 +15,13 @@ QDEL_CMD = os.path.join(PREFIX, 'qdel')
 def get_logger():
     return logging.getLogger('sge')
 
-def run(jobs, n=1, path='.', wc_queue_list='all.q', sync=10, delete=True):
+def run(jobs, n=1, path='.', wc_queue_list=None, sync=10, delete=True, cmd=QSUB_CMD, opts=None):
     if not isinstance(jobs, collections.Iterable):
-        return singlerun(jobs, n, path, wc_queue_list, sync, delete)
+        return singlerun(jobs, n, path, wc_queue_list, sync, delete, cmd, opts)
 
     retval = []
     for job in jobs:
-        retval.append(singlerun(job, n, path, wc_queue_list, sync=0))
+        retval.append(singlerun(job, n, path, wc_queue_list, 0, delete, cmd, opts))
     if sync > 0:
         try:
             wait([jobid for jobid, name, filename in retval], sync)
@@ -31,12 +31,12 @@ def run(jobs, n=1, path='.', wc_queue_list='all.q', sync=10, delete=True):
                     os.remove(filename)
     return [(jobid, name) for jobid, name, filename in retval]
 
-def singlerun(job, n=1, path='.', wc_queue_list='all.q', sync=10, delete=True):
+def singlerun(job, n=1, path='.', wc_queue_list=None, sync=10, delete=True, cmd=QSUB_CMD, opts=None):
     (fd, filename) = tempfile.mkstemp(suffix='.job', prefix='sge-', dir=path, text=True)
     with os.fdopen(fd, 'w') as fout:
         fout.write(job)
 
-    (jobid, name) = submit(filename, n, path, path, wc_queue_list)
+    (jobid, name) = submit(filename, n, path, path, wc_queue_list, cmd, opts)
 
     if sync > 0:
         try:
@@ -68,10 +68,10 @@ def collect(jobid, name, n=1, path='.', delete=True):
             os.remove(filename)
     return outputs
 
-def submit(job, n=1, epath='.', opath='.', wc_queue_list='all.q'):
+def submit(job, n=1, epath='.', opath='.', wc_queue_list=None, cmd=QSUB_CMD, opts=None):
     output = subprocess.check_output(
-        [QSUB_CMD, '-cwd', '-q', wc_queue_list, '-e', epath, '-o', opath,
-         '-t', '1-{:d}'.format(n), job])
+        [cmd, '-cwd'] + (['-q', wc_queue_list] if wc_queue_list is not None else [])
+        + (opts or []) + ['-e', epath, '-o', opath, '-t', '1-{:d}'.format(n), job])
     output = output.decode('utf-8')
     get_logger().debug(output.strip())
 
