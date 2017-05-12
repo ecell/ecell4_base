@@ -72,6 +72,8 @@ public:
     std::vector<ShellID> const& list_shells_on(const face_id_type&) const;
     std::vector<ShellID> const& list_shells_on(const vertex_id_type&) const;
 
+    std::size_t num_shells() const {return container_.size();}
+
     // calculate distance as 3D object
     std::vector<std::pair<std::pair<ShellID, storage_type>, Real> >
         list_shells_within_radius(const Real3& pos, const Real radius) const;
