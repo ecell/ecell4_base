@@ -73,17 +73,15 @@ class SGFRDSimulator :
                    const boost::shared_ptr<model_type>& model,
                    Real bd_dt_factor = 1e-5)
         : base_type(model, world), dt_(0), bd_dt_factor_(bd_dt_factor),
-          shell_container_(world->polygon()), mut_sh_vis_applier(shell_container_)
-    {
-        initialize();
-    }
+          rng_(*(world->rng())), shell_container_(world->polygon()),
+          mut_sh_vis_applier(shell_container_)
+    {}
 
     SGFRDSimulator(boost::shared_ptr<world_type> world, Real bd_dt_factor = 1e-5)
         : base_type(world), dt_(0), bd_dt_factor_(bd_dt_factor),
-          shell_container_(world->polygon()), mut_sh_vis_applier(shell_container_)
-    {
-        initialize();
-    }
+          rng_(*(world->rng())), shell_container_(world->polygon()),
+          mut_sh_vis_applier(shell_container_)
+    {}
 
     ~SGFRDSimulator(){}
 
@@ -99,18 +97,17 @@ class SGFRDSimulator :
 //     std::vector<std::pair<ReactionRule, reaction_info_type> >
 //     last_reactions() const {return last_reactions_;}
 
-    boost::shared_ptr<RandomNumberGenerator> rng() {return this->world_->rng();}
-
   private: // wrappers
+
+    Real uniform_real(){return this->rng_.random();}
 
     world_type   const& world()   const {return *(this->world_);}
     polygon_type const& polygon() const {return this->world_->polygon();}
 
     bool update_particle(const ParticleID& pid, const Particle& p,
                          const face_id_type& fid)
-    {return this->world_->update_particle(pid, p);}
+    {return this->world_->update_particle(pid, p, fid);}
 
-    Real uniform_real() {this->world_->rng()->random();}
 
     shell_type&       get_shell(ShellID const& id)
     {return shell_container_.get_shell(id);}
@@ -123,7 +120,6 @@ class SGFRDSimulator :
     {return this->world_->get_face_id(pid);}
     std::pair<ParticleID, Particle> get_particle(const ParticleID& pid) const
     {return this->world_->get_particle(pid);}
-
 
     // consider scheduler.time
     Real time() const {return this->world_->t();}
@@ -153,19 +149,21 @@ class SGFRDSimulator :
     void escape  (const Single& domain);
     void reaction(const Single& domain);
 
-    //! make shell that has same size as particle radius
+    //! make shell that has same size as particle radius. add the shell to scon.
     ShellID create_minimum_shell(
             const ParticleID& pid, const Particle& p, const face_id_type fid);
-    //! make single that has same shell size as particle radius
+    //! make single that has same shell size as particle radius.
     Single create_minimum_domain(
             const ShellID& sid, const ParticleID& pid, const Particle& p);
 
     //! create single circular shell from geometric & domain information
+    //  this adds the shell to shell container.
     std::pair<ShellID, circle_type>
     create_single_circular_shell(
             const std::pair<Real3, face_id_type>& pos, const Real size);
 
     //! create single conical surf shell from geometric & domain information
+    //  this adds the shell to shell container.
     std::pair<ShellID, conical_surface_type>
     create_single_conical_surface_shell(
             const std::pair<Real3, vertex_id_type>& pos, const Real size);
@@ -210,6 +208,7 @@ class SGFRDSimulator :
     // Integer num_steps_;
     Real dt_;
     Real bd_dt_factor_;
+    ecell4::RandomNumberGenerator&     rng_;
     scheduler_type                     scheduler_;
     shell_id_generator_type            shell_id_gen;
     shell_container_type               shell_container_;
@@ -399,6 +398,7 @@ struct SGFRDSimulator<T>::domain_burster : boost::static_visitor<void>
     {
         single_shell_burster burster(sim, dom, result);
         boost::apply_visitor(burster, sim.get_shell(dom.shell_id()));
+        sim.remove_shell(dom.shell_id());
         return;
     }
 
@@ -406,6 +406,7 @@ struct SGFRDSimulator<T>::domain_burster : boost::static_visitor<void>
     {
         pair_shell_burster burster(sim, dom, result);
         boost::apply_visitor(burster, sim.get_shell(dom.shell_id()));
+        sim.remove_shell(dom.shell_id());
         return;
     }
 
