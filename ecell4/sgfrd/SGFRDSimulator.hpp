@@ -603,6 +603,7 @@ void SGFRDSimulator<T>::create_event(
 
         DUMP_MESSAGE("creating single circle that size is " << max_circle_size);
 
+        //XXX! consider shell-removing timing !
         const std::vector<std::pair<DomainID, Real> > intrusive_domains(
                 get_intrusive_domains(pos, max_circle_size));
 
@@ -636,6 +637,7 @@ void SGFRDSimulator<T>::create_event(
         DUMP_MESSAGE("max cone size = " << max_cone_size);
         const std::vector<std::pair<DomainID, Real> > intrusive_domains(
                 get_intrusive_domains(vid, max_cone_size));
+        DUMP_MESSAGE("intrusive domains = " << intrusive_domains.size());
 
         if(intrusive_domains.empty())
         {
@@ -646,9 +648,13 @@ void SGFRDSimulator<T>::create_event(
 
         if(intrusive_domains.front().second > min_cone_size)
         {
+            DUMP_MESSAGE("avoid domains overlapping");
             return add_event(create_single(create_single_conical_surface_shell(
-                std::make_pair(pos.first, vid), intrusive_domains.front().second),
+                             std::make_pair(pos.first, vid), max_cone_size),
                              pid, p));
+//             return add_event(create_single(create_single_conical_surface_shell(
+//                 std::make_pair(pos.first, vid), intrusive_domains.front().second),
+//                              pid, p));
         }
 
         // TODO burst and form pair or multi if needed
@@ -715,6 +721,10 @@ Single SGFRDSimulator<T>::create_single(
 {
     //TODO consider single-reaction
     DUMP_MESSAGE("create single domain having conical shell");
+    DUMP_MESSAGE("D = "   << p.D());
+    DUMP_MESSAGE("r0 = "  << length(p.position() - sh.second.apex()));
+    DUMP_MESSAGE("a = "   << sh.second.size() - p.radius());
+    DUMP_MESSAGE("phi = " << sh.second.apex_angle());
 
     const greens_functions::GreensFunction2DRefWedgeAbs
         gf(/* D   = */ p.D(),
