@@ -266,6 +266,7 @@ void ShellContainer<T_pt>::remove_shell(const ShellID& id)
                          container_.at(idx).second);
 
     container_.at(idx) = container_.back();
+    shell_id_to_index_map_[container_.back().first] = idx;
     container_.pop_back();
     return ;
 }
