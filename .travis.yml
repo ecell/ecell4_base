@@ -97,6 +97,7 @@ script:
   fi
 - set +e
 
+cache: false
 notifications:
   webhooks:
     urls:
