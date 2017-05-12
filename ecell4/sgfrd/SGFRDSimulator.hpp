@@ -459,11 +459,13 @@ struct SGFRDSimulator<T>::single_shell_escapement : boost::static_visitor<void>
         const face_id_type   fid  = sim.get_face_id(pid);
         const triangle_type& face = sim.polygon().triangle_at(fid);
         const Real3 direction = rotate(theta, face.normal(), face.represent());
+        DUMP_MESSAGE("direction = " << direction << ", length = " << length(direction));
 
         std::pair<std::pair<Real3, face_id_type>, Real3> state =
             std::make_pair(/*position = */std::make_pair(p.position(), fid),
                        /*displacement = */direction * r / length(direction));
 
+        DUMP_MESSAGE("pos  = " << state.first.first << ", fid = " << state.first.second);
         unsigned int continue_count = 2;
         while(continue_count > 0)
         {
@@ -471,9 +473,14 @@ struct SGFRDSimulator<T>::single_shell_escapement : boost::static_visitor<void>
             const Real3& disp = state.second;
             if(disp[0] == 0. && disp[1] == 0. && disp[2] == 0.) break;
             --continue_count;
+            DUMP_MESSAGE("pos  = " << state.first.first << ", fid = " << state.first.second);
+            DUMP_MESSAGE("disp = " << disp << ", length = " << length(disp));
         }
         if(continue_count == 0)
             std::cerr << "[WARNING] moving on face: precision lost" << std::endl;
+
+        DUMP_MESSAGE("pos  = " << state.first.first << ", fid = " << state.first.second);
+        DUMP_MESSAGE("disp = " << state.second << ", length = " << state.second);
 
         DUMP_MESSAGE("escaped.");
 
@@ -488,6 +495,7 @@ struct SGFRDSimulator<T>::single_shell_escapement : boost::static_visitor<void>
         Particle           p   = dom.particle();
         const ParticleID   pid = dom.particle_id();
         const face_id_type fid = sim.get_face_id(pid);
+        DUMP_MESSAGE("escape-conical: pos  = " << p.position() << ", fid = " << fid);
 
         const Real r     = sh.size() - p.radius();
         greens_functions::GreensFunction2DRefWedgeAbs
@@ -495,9 +503,14 @@ struct SGFRDSimulator<T>::single_shell_escapement : boost::static_visitor<void>
                r,     sh.shape().apex_angle());
         const Real theta = gf.drawTheta(sim.uniform_real(), r, dom.dt());
 
+        DUMP_MESSAGE("escape-conical: r = " << r << ", theta = " << theta);
+
         const std::pair<Real3, face_id_type> state =
             sim.polygon().rotate_around_vertex(std::make_pair(p.position(), fid),
                                                sh.structure_id(), r, theta);
+
+        DUMP_MESSAGE("escaped : pos = " << state.first << ", fid = " << state.second);
+
         p.position() = state.first;
         sim.update_particle(pid, p, state.second);
         results = boost::make_tuple(pid, p, state.second);
