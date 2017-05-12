@@ -227,6 +227,7 @@ void SGFRDSimulator<T>::step()
     this->set_time(this->scheduler_.next_time());
     DUMP_MESSAGE("start firing event");
     fire_event(this->scheduler_.pop());
+    DUMP_MESSAGE("now " << shell_container_.num_shells() << " shells exist.");
     return;
 }
 
@@ -578,13 +579,22 @@ void SGFRDSimulator<T>::create_event(
     const Real min_circle_size = p.radius() * single_circular_shell_factor;
           Real max_circle_size = get_max_circle_size(pos);
 
-    const std::vector<std::pair<vertex_id_type, Real> > intrusive_vertices(
-            get_intrusive_vertices(pos, max_circle_size));
+    DUMP_MESSAGE("min circle size = " << min_circle_size);
+    DUMP_MESSAGE("max circle size = " << max_circle_size);
 
-    const bool draw_circular = intrusive_vertices.empty() ? true :
-        (intrusive_vertices.front().second > min_circle_size);
+    const Real vertices_search_range = (max_circle_size > min_circle_size) ? max_circle_size :
+        std::numeric_limits<Real>::infinity();
+    DUMP_MESSAGE("vertices range = " << vertices_search_range);
+
+    const std::vector<std::pair<vertex_id_type, Real> > intrusive_vertices(
+            get_intrusive_vertices(pos, vertices_search_range));
+
+    const bool draw_circular = max_circle_size < min_circle_size ? false :
+                               intrusive_vertices.empty() ? true :
+                              (intrusive_vertices.front().second > min_circle_size);
     if(draw_circular)
     {
+        DUMP_MESSAGE("drawing circular shell");
         if(!intrusive_vertices.empty())
         {
             DUMP_MESSAGE("vertices found. " << intrusive_vertices.front().second);
@@ -595,6 +605,8 @@ void SGFRDSimulator<T>::create_event(
 
         const std::vector<std::pair<DomainID, Real> > intrusive_domains(
                 get_intrusive_domains(pos, max_circle_size));
+
+        DUMP_MESSAGE("intrusive domains: " << intrusive_domains.size());
 
         if(intrusive_domains.empty())
         {
@@ -615,9 +627,13 @@ void SGFRDSimulator<T>::create_event(
     }
     else // conical surface shell
     {
+        DUMP_MESSAGE("drawing conical shell");
         const vertex_id_type& vid = intrusive_vertices.front().first;
+        DUMP_MESSAGE("vertex id = " << vid);
         const Real min_cone_size = p.radius() * single_conical_surface_shell_factor;
         const Real max_cone_size = get_max_cone_size(vid);
+        DUMP_MESSAGE("min cone size = " << min_cone_size);
+        DUMP_MESSAGE("max cone size = " << max_cone_size);
         const std::vector<std::pair<DomainID, Real> > intrusive_domains(
                 get_intrusive_domains(vid, max_cone_size));
 
@@ -790,7 +806,7 @@ Real SGFRDSimulator<T>::get_max_circle_size(
 template<typename T>
 Real SGFRDSimulator<T>::get_max_cone_size(const vertex_id_type& vid) const
 {
-    return polygon().vertex_at(vid).max_conical_shell_size;
+    return polygon().vertex_at(vid).max_conical_shell_size * 0.5;
 }
 
 } // sgfrd
