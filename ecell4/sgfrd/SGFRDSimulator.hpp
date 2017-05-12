@@ -11,6 +11,7 @@
 #include "ShellVisitors.hpp"
 #include "SGFRDEvent.hpp"
 #include "SGFRDWorld.hpp"
+#include <boost/tuple/tuple.hpp>
 #include <iostream>
 
 #ifndef SGFRD_NDEBUG
@@ -434,8 +435,6 @@ void SGFRDSimulator<T>::burst_event(
 template<typename T>
 struct SGFRDSimulator<T>::single_shell_escapement : boost::static_visitor<void>
 {
-    // when it called, there are no intruders in the domain region.
-
     single_shell_escapement(SGFRDSimulator& s, const Single& d)
         : sim(s), dom(d)
     {}
@@ -446,8 +445,8 @@ struct SGFRDSimulator<T>::single_shell_escapement : boost::static_visitor<void>
         if(sh.size() == dom.particle().radius())
         {
             DUMP_MESSAGE("minimum shell. didnot move.");
-            sim.create_event(dom.particle_id(), dom.particle(),
-                             sim.get_face_id(dom.particle_id()));
+            results = boost::make_tuple(dom.particle_id(), dom.particle(),
+                                        sim.get_face_id(dom.particle_id()));
             return;
         }
 
@@ -480,7 +479,7 @@ struct SGFRDSimulator<T>::single_shell_escapement : boost::static_visitor<void>
 
         p.position() = state.first.first;
         sim.update_particle(pid, p, state.first.second);
-        sim.create_event(pid, p, state.first.second);
+        results = boost::make_tuple(pid, p, state.first.second);
         return ;
     }
 
@@ -501,14 +500,18 @@ struct SGFRDSimulator<T>::single_shell_escapement : boost::static_visitor<void>
                                                sh.structure_id(), r, theta);
         p.position() = state.first;
         sim.update_particle(pid, p, state.second);
-        sim.create_event(pid, p, state.second);
+        results = boost::make_tuple(pid, p, state.second);
         return;
     }
+
+    // single shell escapement result can be only one particle
+    boost::tuple<ParticleID, Particle, face_id_type> results;
 
   private:
 
     SGFRDSimulator<T>& sim;
     Single const& dom;
+
 };
 
 template<typename T>
@@ -519,6 +522,9 @@ void SGFRDSimulator<T>::escape(const Single& domain)
     boost::apply_visitor(escapement, get_shell(domain.shell_id()));
     DUMP_MESSAGE("single escapement applied");
     remove_shell(domain.shell_id());
+    this->create_event(boost::get<0>(escapement.results),
+                       boost::get<1>(escapement.results),
+                       boost::get<2>(escapement.results));
     DUMP_MESSAGE("shell removed");
     return;
 }
