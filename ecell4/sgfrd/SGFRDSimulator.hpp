@@ -13,6 +13,12 @@
 #include "SGFRDWorld.hpp"
 #include <iostream>
 
+#ifndef SGFRD_NDEBUG
+#define DUMP_MESSAGE( str ) std::cerr << str << std::endl
+#else
+#define DUMP_MESSAGE( str )
+#endif //NDEBUG
+
 namespace ecell4
 {
 namespace sgfrd
@@ -220,6 +226,7 @@ template<typename T>
 void SGFRDSimulator<T>::step()
 {
     this->set_time(this->scheduler_.next_time());
+    DUMP_MESSAGE("start firing event");
     fire_event(this->scheduler_.pop());
     return;
 }
@@ -236,9 +243,11 @@ void SGFRDSimulator<T>::initialize()
 {
     std::vector<std::pair<ParticleID, Particle> > const& ps =
         this->world_->list_particles();
+    DUMP_MESSAGE("number of particles: " << ps.size());
     for(std::vector<std::pair<ParticleID, Particle> >::const_iterator
         iter = ps.begin(); iter != ps.end(); ++iter)
     {
+        DUMP_MESSAGE("making minimum shells...");
         add_event(create_minimum_domain(create_minimum_shell(
                       iter->first, iter->second, this->get_face_id(iter->first)),
                   iter->first, iter->second));
@@ -279,11 +288,13 @@ struct SGFRDSimulator<T>::domain_firer : boost::static_visitor<void>
         {
             case Single::ESCAPE:
             {
+                DUMP_MESSAGE("single escape");
                 sim.escape(dom);
                 return;
             }
             case Single::REACTION:
             {
+                DUMP_MESSAGE("single reaction");
                 sim.reaction(dom);
                 return;
             }
@@ -316,8 +327,10 @@ struct SGFRDSimulator<T>::domain_firer : boost::static_visitor<void>
 template<typename T>
 void SGFRDSimulator<T>::fire_event(const event_id_pair_type& ev)
 {
+    DUMP_MESSAGE("applying firer");
     domain_firer firer(*this);
     boost::apply_visitor(firer, ev.second->domain());
+    DUMP_MESSAGE("end applying firer");
     return ;
 }
 
@@ -427,13 +440,21 @@ struct SGFRDSimulator<T>::single_shell_escapement : boost::static_visitor<void>
 
     void operator()(const circular_shell_type& sh)
     {
-        if(sh.size() == dom.particle().radius()) return;
+        DUMP_MESSAGE("single shell escapement circular shell");
+        if(sh.size() == dom.particle().radius())
+        {
+            DUMP_MESSAGE("minimum shell. didnot move.");
+            sim.create_event(dom.particle_id(), dom.particle(),
+                             sim.get_face_id(dom.particle_id()));
+            return;
+        }
 
         Particle   p   = dom.particle();
         ParticleID pid = dom.particle_id();
 
-        const Real r     = sh.size() - p.radius();
-        const Real theta = sim.uniform_real() * 2 * M_PI;
+        const Real r   = sh.size() - p.radius();
+        const Real theta = sim.uniform_real() * 2.0 * 3.141592653589793;
+        DUMP_MESSAGE("r = " << r << ", theta = " << theta);
         const face_id_type   fid  = sim.get_face_id(pid);
         const triangle_type& face = sim.polygon().triangle_at(fid);
         const Real3 direction = rotate(theta, face.normal(), face.represent());
@@ -452,6 +473,8 @@ struct SGFRDSimulator<T>::single_shell_escapement : boost::static_visitor<void>
         }
         if(continue_count == 0)
             std::cerr << "[WARNING] moving on face: precision lost" << std::endl;
+
+        DUMP_MESSAGE("escaped.");
 
         p.position() = state.first.first;
         sim.update_particle(pid, p, state.first.second);
@@ -489,9 +512,12 @@ struct SGFRDSimulator<T>::single_shell_escapement : boost::static_visitor<void>
 template<typename T>
 void SGFRDSimulator<T>::escape(const Single& domain)
 {
+    DUMP_MESSAGE("single escapement begin");
     single_shell_escapement escapement(*this, domain);
     boost::apply_visitor(escapement, get_shell(domain.shell_id()));
+    DUMP_MESSAGE("single escapement applied");
     remove_shell(domain.shell_id());
+    DUMP_MESSAGE("shell removed");
     return;
 }
 
@@ -545,6 +571,7 @@ template<typename T>
 void SGFRDSimulator<T>::create_event(
             const ParticleID& pid, const Particle& p, const face_id_type fid)
 {
+    DUMP_MESSAGE("create event");
     const std::pair<Real3, face_id_type> pos = std::make_pair(p.position(), fid);
 
     const Real min_circle_size = p.radius() * single_circular_shell_factor;
@@ -553,11 +580,17 @@ void SGFRDSimulator<T>::create_event(
     const std::vector<std::pair<vertex_id_type, Real> > intrusive_vertices(
             get_intrusive_vertices(pos, max_circle_size));
 
-    if(intrusive_vertices.empty() ||
-       intrusive_vertices.front().second > min_circle_size)
+    const bool draw_circular = intrusive_vertices.empty() ? true :
+        (intrusive_vertices.front().second > min_circle_size);
+    if(draw_circular)
     {
         if(!intrusive_vertices.empty())
+        {
+            DUMP_MESSAGE("vertices found. " << intrusive_vertices.front().second);
             max_circle_size = intrusive_vertices.front().second;
+        }
+
+        DUMP_MESSAGE("creating single circle that size is " << max_circle_size);
 
         const std::vector<std::pair<DomainID, Real> > intrusive_domains(
                 get_intrusive_domains(pos, max_circle_size));
@@ -614,10 +647,12 @@ std::pair<ShellID, typename SGFRDSimulator<T>::circle_type>
 SGFRDSimulator<T>::create_single_circular_shell(
             const std::pair<Real3, face_id_type>& pos, const Real size)
 {
+    DUMP_MESSAGE("create single circular shell");
     const ShellID id(shell_id_gen());
     const circle_type shape(size, pos.first,
                             polygon().triangle_at(pos.second).normal());
-    shell_container_.add_shell(id, circular_shell_type(shape, pos.second), pos.second);
+    shell_container_.add_shell(id, circular_shell_type(shape, pos.second),
+                               pos.second);
     return std::make_pair(id, shape);
 }
 
@@ -626,6 +661,7 @@ std::pair<ShellID, typename SGFRDSimulator<T>::conical_surface_type>
 SGFRDSimulator<T>::create_single_conical_surface_shell(
             const std::pair<Real3, vertex_id_type>& pos, const Real size)
 {
+    DUMP_MESSAGE("create single conical surface shell");
     const ShellID id(shell_id_gen());
     const conical_surface_type shape(
             polygon().vertex_at(pos.second).position,
@@ -642,8 +678,17 @@ Single SGFRDSimulator<T>::create_single(
         const std::pair<ShellID, circle_type>& sh,
         const ParticleID& pid, const Particle& p)
 {
-    // determine EventKind
-    throw ecell4::NotImplemented("get_intrusive_vertices");
+    //TODO consider single-reaction
+    DUMP_MESSAGE("create single domain having circular shell");
+
+    const greens_functions::GreensFunction2DAbsSym
+        gf(/* D = */ p.D(),
+           /* a = */ sh.second.size() - p.radius());
+    const Real dt = gf.drawTime(uniform_real());
+    DUMP_MESSAGE("delta t calculated: " << dt);
+
+    return Single(Single::ESCAPE, dt, this->time(), sh.first,
+                  std::make_pair(pid, p));
 }
 
 template<typename T>
@@ -651,7 +696,18 @@ Single SGFRDSimulator<T>::create_single(
         const std::pair<ShellID, conical_surface_type>& sh,
         const ParticleID& pid, const Particle& p)
 {
-    throw ecell4::NotImplemented("get_intrusive_vertices");
+    //TODO consider single-reaction
+    DUMP_MESSAGE("create single domain having conical shell");
+
+    const greens_functions::GreensFunction2DRefWedgeAbs
+        gf(/* D   = */ p.D(),
+           /* r0  = */ length(p.position() - sh.second.apex()),
+           /* a   = */ sh.second.size() - p.radius(),
+           /* phi = */ sh.second.apex_angle());
+    const Real dt = gf.drawTime(uniform_real());
+
+    return Single(Single::ESCAPE, dt, this->time(), sh.first,
+                  std::make_pair(pid, p));
 }
 
 template<typename T>
@@ -735,11 +791,6 @@ Real SGFRDSimulator<T>::get_max_cone_size(const vertex_id_type& vid) const
 {
     return polygon().vertex_at(vid).max_conical_shell_size;
 }
-
-
-
-
-
 
 } // sgfrd
 } // ecell4
