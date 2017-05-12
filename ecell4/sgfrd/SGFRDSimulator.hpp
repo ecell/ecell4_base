@@ -167,7 +167,7 @@ class SGFRDSimulator :
     //  this adds the shell to shell container.
     std::pair<ShellID, conical_surface_type>
     create_single_conical_surface_shell(
-            const std::pair<Real3, vertex_id_type>& pos, const Real size);
+            const vertex_id_type& pos, const Real size);
 
     //! create domain and determine EventKind using GF
     Single create_single(const std::pair<ShellID, circle_type>& sh,
@@ -649,7 +649,7 @@ void SGFRDSimulator<T>::create_event(
     {
         DUMP_MESSAGE("drawing conical shell");
         const vertex_id_type& vid = intrusive_vertices.front().first;
-        DUMP_MESSAGE("vertex id = " << vid);
+        DUMP_MESSAGE("vertex id = " << vid << ", distance = " << intrusive_vertices.front().second);
         const Real min_cone_size = p.radius() * single_conical_surface_shell_factor;
         const Real max_cone_size = get_max_cone_size(vid);
         DUMP_MESSAGE("min cone size = " << min_cone_size);
@@ -661,26 +661,20 @@ void SGFRDSimulator<T>::create_event(
         if(intrusive_domains.empty())
         {
             return add_event(create_single(create_single_conical_surface_shell(
-                             std::make_pair(pos.first, vid), max_cone_size),
-                             pid, p));
+                                           vid, max_cone_size), pid, p));
         }
 
         if(intrusive_domains.front().second > min_cone_size)
         {
             DUMP_MESSAGE("avoid domains overlapping");
             return add_event(create_single(create_single_conical_surface_shell(
-                             std::make_pair(pos.first, vid), max_cone_size),
-                             pid, p));
-//             return add_event(create_single(create_single_conical_surface_shell(
-//                 std::make_pair(pos.first, vid), intrusive_domains.front().second),
-//                              pid, p));
+                             vid, intrusive_domains.front().second), pid, p));
         }
 
         // TODO burst and form pair or multi if needed
         std::cerr << "[WARNING] intrusive domains exist." << std::endl;
         return add_event(create_single(create_single_conical_surface_shell(
-                         std::make_pair(pos.first, vid), max_cone_size),
-                         pid, p));
+                                       vid, max_cone_size), pid, p));
     }
 }
 
@@ -701,16 +695,15 @@ SGFRDSimulator<T>::create_single_circular_shell(
 template<typename T>
 std::pair<ShellID, typename SGFRDSimulator<T>::conical_surface_type>
 SGFRDSimulator<T>::create_single_conical_surface_shell(
-            const std::pair<Real3, vertex_id_type>& pos, const Real size)
+            const vertex_id_type& vid, const Real size)
 {
     DUMP_MESSAGE("create single conical surface shell");
     const ShellID id(shell_id_gen());
-    const conical_surface_type shape(
-            polygon().vertex_at(pos.second).position,
-            polygon().apex_angle(pos.second), size);
+    const conical_surface_type shape(polygon().vertex_at(vid).position,
+                                     polygon().apex_angle(vid), size);
 
-    shell_container_.add_shell(id, conical_surface_shell_type(shape, pos.second),
-                               pos.second);
+    shell_container_.add_shell(id, conical_surface_shell_type(shape, vid),
+                               vid);
     return std::make_pair(id, shape);
 }
 
@@ -740,9 +733,9 @@ Single SGFRDSimulator<T>::create_single(
 {
     //TODO consider single-reaction
     DUMP_MESSAGE("create single domain having conical shell");
-    DUMP_MESSAGE("D = "   << p.D());
-    DUMP_MESSAGE("r0 = "  << length(p.position() - sh.second.apex()));
-    DUMP_MESSAGE("a = "   << sh.second.size() - p.radius());
+    DUMP_MESSAGE("D   = " << p.D());
+    DUMP_MESSAGE("r0  = " << length(p.position() - sh.second.apex()));
+    DUMP_MESSAGE("a   = " << sh.second.size() - p.radius());
     DUMP_MESSAGE("phi = " << sh.second.apex_angle());
 
     const greens_functions::GreensFunction2DRefWedgeAbs
