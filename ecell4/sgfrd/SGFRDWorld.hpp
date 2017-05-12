@@ -218,8 +218,14 @@ inline bool
 SGFRDWorld<traits>::update_particle(const ParticleID& pid, const Particle& p,
                                     const face_id_type& fid)
 {
-    if(registrator_.have(pid)) registrator_.update(pid, fid);
-    else registrator_.emplace(pid, fid);
+    if(registrator_.have(pid))
+    {
+        registrator_.update(pid, fid);
+    }
+    else
+    {
+        registrator_.emplace(pid, fid);
+    }
     return ps_->update_particle(pid, p);
 }
 
