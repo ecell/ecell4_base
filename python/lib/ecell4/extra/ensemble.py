@@ -276,7 +276,7 @@ def ensemble_simulations(
         raise ValueError(
             'Argument "method" must be one of "serial", "multiprocessing" and "sge".')
 
-    if return_type is None:
+    if return_type is None or return_type in ("none", ):
         return
 
     assert len(retval) == len(jobs) == 1
@@ -354,6 +354,10 @@ def ensemble_simulations(
                                       Species=serial))
                 for i, serial in enumerate(species_list)])
             for data in retval[0]]
+    else:
+        raise ValueError(
+            'An invald value for "return_type" was given [{}].'.format(str(return_type))
+            + 'Use "none" if you need nothing to be returned.')
 
 
 if __name__ == "__main__":

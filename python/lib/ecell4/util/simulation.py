@@ -109,8 +109,8 @@ def run_simulation(
         Default is None.
     return_type : str, optional
         Choose a type of return value from 'array', 'observer',
-        'matplotlib', 'nyaplot', 'world', 'dataframe' or None.
-        If None, return and plot nothing. Default is 'matplotlib'.
+        'matplotlib', 'nyaplot', 'world', 'dataframe', 'none' or None.
+        If None or 'none', return and plot nothing. Default is 'matplotlib'.
         'dataframe' requires numpy and pandas libraries.
         Keyword 'r' is a shortcut for specifying 'return_type'.
     opt_args: list, tuple or dict, optional
@@ -213,7 +213,7 @@ def run_simulation(
 
     if not isinstance(observers, collections.Iterable):
         observers = (observers, )
-    if return_type not in ('world', None):
+    if return_type not in ('world', 'none', None):
         observers = (obs, ) + tuple(observers)
 
     if progressbar > 0:
@@ -254,6 +254,12 @@ def run_simulation(
             for i, sp in enumerate(obs.targets())])
     elif return_type in ('world', 'w'):
         return sim.world()
+    elif return_type is None or return_type in ('none', ):
+        return
+    else:
+        raise ValueError(
+            'An invald value for "return_type" was given [{}].'.format(str(return_type))
+            + 'Use "none" if you need nothing to be returned.')
 
 def ensemble_simulations(N=1, *args, **kwargs):
     """Deprecated"""
