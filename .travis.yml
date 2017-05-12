@@ -48,7 +48,7 @@ before_install:
 - if [ "$TRAVIS_OS_NAME" == "osx" ]; then
     brew update;
     brew install gsl ffmpeg;
-    brew install homebrew/science/hdf5;
+    brew install homebrew/science/hdf5@1.8;
     if [[ $TRAVIS_PYTHON_VERSION == 3* ]]; then
       brew install python3;
       which python3;
