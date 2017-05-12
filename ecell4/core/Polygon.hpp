@@ -912,7 +912,7 @@ Polygon<T>::rotate_around_vertex(const std::pair<Real3, face_id_type>& pos,
         const Real3 direction = rotate(theta, initri.normal(),
                                        pos.first - vtx_position);
         return std::make_pair(
-            vtx_position + direction * (r / length_sq(direction)), pos.second);
+            vtx_position + direction * (r / length(direction)), pos.second);
     }
 
     Real rest_angle = theta - inter_angle;
@@ -927,7 +927,7 @@ Polygon<T>::rotate_around_vertex(const std::pair<Real3, face_id_type>& pos,
             const Real3 direction = rotate(rest_angle, tri.normal(),
                                            tri.edge_at(vi));
             return std::make_pair(
-                vtx_position + direction * (r / length_sq(direction)), *iter);
+                vtx_position + direction * (r / length(direction)), *iter);
         }
         rest_angle -= tri.angle_at(vi);
         ++iter; if(iter == fs.end()) iter = fs.begin();
