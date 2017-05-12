@@ -102,6 +102,7 @@ make_face_information(const ecell4::Polygon<polygon_traits>& poly,
     {
         const boost::array<polygon::vertex_id_type, 3>& vtxs_of_adj =
             poly.connecting_vertices(*iter);
+
         const Triangle& tri = poly.triangle_at(*iter);
         Real3 developped_vtx;
         std::size_t vtx_idx = std::numeric_limits<std::size_t>::max();
@@ -117,10 +118,12 @@ make_face_information(const ecell4::Polygon<polygon_traits>& poly,
             vtx_idx = i;
             break;
         }
-        face.segments_must_not_collide.at(idx++) =
-            std::make_pair(developped_vtx, tri.vertex_at(vtx_idx==2?0:vtx_idx+1));
-        face.segments_must_not_collide.at(idx++) =
-            std::make_pair(developped_vtx, tri.vertex_at(vtx_idx==0?2:vtx_idx-1));
+        face.barrier.at(idx) = std::make_pair(
+                developped_vtx, target.vertex_at(vtx_idx==2?0:vtx_idx+1));
+        idx++;
+        face.barrier.at(idx) = std::make_pair(
+                developped_vtx, target.vertex_at(vtx_idx==0?2:vtx_idx-1));
+        idx++;
     }
 
     return face;

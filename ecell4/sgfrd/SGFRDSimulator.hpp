@@ -811,7 +811,7 @@ Real SGFRDSimulator<T>::get_max_circle_size(
 {
     Real lensq = std::numeric_limits<Real>::max();
     const boost::array<std::pair<Real3, Real3>, 6>& barrier =
-        polygon().face_at(pos.second).segments_must_not_collide;
+        polygon().face_at(pos.second).barrier;
 
     for(std::size_t i=0; i<6; ++i)
     {

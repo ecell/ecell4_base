@@ -37,7 +37,7 @@ struct edge_descripter
 struct face_descripter
 {
     // developped edges of neighbor faces
-    boost::array<std::pair<Real3, Real3>, 6> segments_must_not_collide;
+    boost::array<std::pair<Real3, Real3>, 6> barrier;
 
     std::vector<face_id_type>   neighbor_faces;
     std::vector<vertex_id_type> neighbor_vertices;
