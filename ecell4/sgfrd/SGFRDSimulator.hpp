@@ -196,6 +196,9 @@ class SGFRDSimulator :
     //! calculate max cone size allowed by geometric restraints
     Real get_max_cone_size(const vertex_id_type& vid) const;
 
+    //XXX make free function
+    Real distance_to_segment(const Real3& pos, const std::pair<Real3, Real3>& seg) const;
+
   private:
 
     static const Real single_circular_shell_factor;
@@ -815,17 +818,9 @@ Real SGFRDSimulator<T>::get_max_circle_size(
 
     for(std::size_t i=0; i<6; ++i)
     {
-        //XXX distance to the segment!
-        const Real3 a = pos.first         - barrier[i].first;
-        const Real3 b = barrier[i].second - barrier[i].first;
-        const Real dot = dot_product(a, b);
-        const Real dist2 = length_sq(a) - dot * dot / length_sq(b);
-
-        if(lensq > dist2)
+        const Real dist2 = distance_to_segment(pos.first, barrier[i]);
+        if(dist2 < lensq)
         {
-            DUMP_MESSAGE("max_circle_size updated: " << i << ", " << std::sqrt(dist2));
-            DUMP_MESSAGE("barrier: " << barrier[i].first[0]  << " " << barrier[i].first[1]  << " " << barrier[i].first[2]);
-            DUMP_MESSAGE("barrier: " << barrier[i].second[0] << " " << barrier[i].second[1] << " " << barrier[i].second[2]);
             lensq = dist2;
         }
     }
@@ -837,6 +832,21 @@ Real SGFRDSimulator<T>::get_max_cone_size(const vertex_id_type& vid) const
 {
     return polygon().vertex_at(vid).max_conical_shell_size * 0.5;
 }
+
+template<typename T>
+Real SGFRDSimulator<T>::distance_to_segment(
+        const Real3& p, const std::pair<Real3, Real3>& seg) const
+{
+    const Real3 ab = seg.second - seg.first;
+    const Real3 ac = p - seg.first;
+    const Real3 bc = p - seg.second;
+    const Real dot = dot_product(ac, ab);
+    if(dot <= 0.0) return length_sq(ac);
+    const Real len = length_sq(ab);
+    if(dot >= len) return length_sq(bc);
+    return length_sq(ac) - (dot * dot) / len;
+}
+
 
 } // sgfrd
 } // ecell4
