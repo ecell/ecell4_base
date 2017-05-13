@@ -74,13 +74,13 @@ class SGFRDSimulator :
                    const boost::shared_ptr<model_type>& model,
                    Real bd_dt_factor = 1e-5)
         : base_type(model, world), dt_(0), bd_dt_factor_(bd_dt_factor),
-          rng_(*(world->rng())), shell_container_(world->polygon()),
+          rng_(*(world->rng())), shell_container_(*(world->polygon())),
           mut_sh_vis_applier(shell_container_)
     {}
 
     SGFRDSimulator(boost::shared_ptr<world_type> world, Real bd_dt_factor = 1e-5)
         : base_type(world), dt_(0), bd_dt_factor_(bd_dt_factor),
-          rng_(*(world->rng())), shell_container_(world->polygon()),
+          rng_(*(world->rng())), shell_container_(*(world->polygon())),
           mut_sh_vis_applier(shell_container_)
     {}
 
@@ -103,7 +103,7 @@ class SGFRDSimulator :
     Real uniform_real(){return this->rng_.random();}
 
     world_type   const& world()   const {return *(this->world_);}
-    polygon_type const& polygon() const {return this->world_->polygon();}
+    polygon_type const& polygon() const {return *(this->world_->polygon());}
 
     bool update_particle(const ParticleID& pid, const Particle& p,
                          const face_id_type& fid)

@@ -3,6 +3,7 @@
 #include <ecell4/sgfrd/polygon_traits.hpp>
 #include <ecell4/sgfrd/StructureRegistrator.hpp>
 #include <ecell4/core/ParticleSpaceCellListImpl.hpp>
+#include <ecell4/core/SerialIDGenerator.hpp>
 #include <ecell4/core/Polygon.hpp>
 #include <ecell4/core/Context.hpp>
 #include <ecell4/core/Model.hpp>
@@ -38,17 +39,18 @@ class SGFRDWorld : public ecell4::Space
     typedef ParticleSpace particle_space_type;
     typedef typename particle_space_type::particle_container_type
         particle_container_type;
+    typedef ecell4::SerialIDGenerator<ParticleID> particle_id_generator_type;
     typedef StructureRegistrator<ParticleID, face_id_type, traits_type>
         structure_registrator_type;
 
   public:
 
     SGFRDWorld(const Real3& edge_lengths, const Integer3& matrix_sizes,
-               const polygon_type& polygon)
+               const boost::shared_ptr<polygon_type>& polygon)
         : ps_(new default_particle_space_type(edge_lengths, matrix_sizes)),
-          polygon_(polygon), registrator_(polygon)
+          polygon_(polygon), registrator_(*polygon)
     {
-        setup_descriptors(polygon_);
+        setup_descriptors(*polygon_);
 
         rng_ = boost::shared_ptr<RandomNumberGenerator>(
             new GSLRandomNumberGenerator());
@@ -56,17 +58,18 @@ class SGFRDWorld : public ecell4::Space
     }
 
     SGFRDWorld(const Real3& edge_lengths, const Integer3& matrix_sizes,
-               const polygon_type& polygon,
+               const boost::shared_ptr<polygon_type>& polygon,
                boost::shared_ptr<RandomNumberGenerator> rng)
         : ps_(new default_particle_space_type(edge_lengths, matrix_sizes)),
-          rng_(rng), polygon_(polygon), registrator_(polygon)
+          rng_(rng), polygon_(polygon), registrator_(*polygon)
     {
-        setup_descriptors(polygon_);
+        setup_descriptors(*polygon_);
     }
 
     ~SGFRDWorld(){}
 
     boost::shared_ptr<RandomNumberGenerator> const& rng() {return this->rng_;}
+    boost::shared_ptr<polygon_type> const& polygon() const {return polygon_;}
 
     const Real t()                  const {return ps_->t();}
     void       set_t(const Real& t)       {return ps_->set_t(t);}
@@ -84,6 +87,10 @@ class SGFRDWorld : public ecell4::Space
 //     Integer3     matrix_sizes() const {return ps_->matrix_sizes();}
 //     void reset(const Real3& edge_lengths) {ps_->reset(edge_lengths);}
 
+    std::pair<std::pair<ParticleID, Particle>, bool>
+    new_particle(const Particle& p);
+    std::pair<std::pair<ParticleID, Particle>, bool>
+    new_particle(const Particle& p, const face_id_type& fid);
 
     bool update_particle(const ParticleID& pid, const Particle& p);
     bool update_particle(const ParticleID& pid, const Particle& p,
@@ -177,7 +184,6 @@ class SGFRDWorld : public ecell4::Space
 
     particle_container_type const& particles() const {return ps_->particles();}
 
-    polygon_type const& polygon() const {return polygon_;}
 
     void bind_to(boost::shared_ptr<model_type> model)
     {
@@ -202,9 +208,39 @@ class SGFRDWorld : public ecell4::Space
     boost::scoped_ptr<particle_space_type>   ps_;
     boost::shared_ptr<RandomNumberGenerator> rng_;
     boost::weak_ptr<Model>                   model_;
-    polygon_type                             polygon_;
+    boost::shared_ptr<polygon_type>          polygon_;
     structure_registrator_type               registrator_;
+    particle_id_generator_type               pidgen_;
 };
+
+template<typename traits>
+std::pair<std::pair<ParticleID, Particle>, bool>
+SGFRDWorld<traits>::new_particle(const Particle& p)
+{
+    const std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
+        overlap3 = list_particles_within_radius(p.position(), p.radius());
+    if(!overlap3.empty())
+    {
+        return std::make_pair(std::make_pair(pidgen_(), p), false);
+    }
+    const ParticleID pid = pidgen_();
+    return std::make_pair(std::make_pair(pid, p), update_particle(pid, p));
+}
+
+template<typename traits>
+std::pair<std::pair<ParticleID, Particle>, bool>
+SGFRDWorld<traits>::new_particle(const Particle& p, const face_id_type& fid)
+{
+    // XXX: consider particle shape and split overlap check for 2d and 3d
+    const std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
+        overlap3 = list_particles_within_radius(p.position(), p.radius());
+    if(!overlap3.empty())
+    {
+        return std::make_pair(std::make_pair(pidgen_(), p), false);
+    }
+    const ParticleID pid = pidgen_();
+    return std::make_pair(std::make_pair(pid, p), update_particle(pid, p, fid));
+}
 
 template<typename traits>
 inline bool
@@ -332,7 +368,7 @@ SGFRDWorld<traits>::list_particles_within_radius(
     }
 
     std::vector<face_id_type> const& neighbors =
-        polygon_.neighbor_faces(pos.second);
+        polygon_->neighbor_faces(pos.second);
     for(typename std::vector<face_id_type>::const_iterator
         iter = neighbors.begin(); iter != neighbors.end(); ++iter)
     {
@@ -373,7 +409,7 @@ SGFRDWorld<traits>::list_particles_within_radius(
     }
 
     std::vector<face_id_type> const& neighbors =
-        polygon_.neighbor_faces(pos.second);
+        polygon_->neighbor_faces(pos.second);
     for(typename std::vector<face_id_type>::const_iterator
         iter = neighbors.begin(); iter != neighbors.end(); ++iter)
     {
@@ -415,7 +451,7 @@ SGFRDWorld<traits>::list_particles_within_radius(
     }
 
     std::vector<face_id_type> const& neighbors =
-        polygon_.neighbor_faces(pos.second);
+        polygon_->neighbor_faces(pos.second);
     for(typename std::vector<face_id_type>::const_iterator
         iter = neighbors.begin(); iter != neighbors.end(); ++iter)
     {
