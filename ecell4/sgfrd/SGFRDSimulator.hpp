@@ -815,12 +815,19 @@ Real SGFRDSimulator<T>::get_max_circle_size(
 
     for(std::size_t i=0; i<6; ++i)
     {
+        //XXX distance to the segment!
         const Real3 a = pos.first         - barrier[i].first;
         const Real3 b = barrier[i].second - barrier[i].first;
         const Real dot = dot_product(a, b);
         const Real dist2 = length_sq(a) - dot * dot / length_sq(b);
 
-        if(lensq > dist2) lensq = dist2;
+        if(lensq > dist2)
+        {
+            DUMP_MESSAGE("max_circle_size updated: " << i << ", " << std::sqrt(dist2));
+            DUMP_MESSAGE("barrier: " << barrier[i].first[0]  << " " << barrier[i].first[1]  << " " << barrier[i].first[2]);
+            DUMP_MESSAGE("barrier: " << barrier[i].second[0] << " " << barrier[i].second[1] << " " << barrier[i].second[2]);
+            lensq = dist2;
+        }
     }
     return std::sqrt(lensq);
 }
