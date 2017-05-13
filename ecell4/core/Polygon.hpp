@@ -896,6 +896,7 @@ Polygon<T>::rotate_around_vertex(const std::pair<Real3, face_id_type>& pos,
 {
     assert(theta <= this->apex_angle(apex));
 
+
     const vertex_property_type&     vtx = this->vertex_prop_at(apex);
     const std::vector<face_id_type>& fs = vtx.faces;
     const typename std::vector<face_id_type>::const_iterator initial =
@@ -919,6 +920,8 @@ Polygon<T>::rotate_around_vertex(const std::pair<Real3, face_id_type>& pos,
     typename std::vector<face_id_type>::const_iterator iter = initial + 1;
     while(iter != initial)
     {
+        if(iter == fs.end()) iter = fs.begin();
+
         const std::size_t  i = std::distance(fs.begin(), iter);
         const std::size_t vi = vtx.local_indices.at(i);
         const triangle_type& tri = this->triangle_at(*iter);
@@ -930,7 +933,7 @@ Polygon<T>::rotate_around_vertex(const std::pair<Real3, face_id_type>& pos,
                 vtx_position + direction * (r / length(direction)), *iter);
         }
         rest_angle -= tri.angle_at(vi);
-        ++iter; if(iter == fs.end()) iter = fs.begin();
+        ++iter;
     }
 
     assert(rest_angle >= 0.);
