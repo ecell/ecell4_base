@@ -93,36 +93,38 @@ make_face_information(const ecell4::Polygon<polygon_traits>& poly,
 
     std::size_t idx=0;
     const Triangle& target = poly.triangle_at(fid);
-    const boost::array<polygon::vertex_id_type, 3>& vtxs =
+    const boost::array<polygon::vertex_id_type, 3>& vtxs = // vtx of this face
         poly.connecting_vertices(fid);
-    const boost::array<polygon::face_id_type, 3>& adjs =
+    const boost::array<polygon::face_id_type, 3>& adjs = // id of adjacent face
         poly.adjacent_faces(fid);
     for(boost::array<polygon::face_id_type, 3>::const_iterator
         iter = adjs.begin(); iter != adjs.end(); ++iter)
     {
         const boost::array<polygon::vertex_id_type, 3>& vtxs_of_adj =
-            poly.connecting_vertices(*iter);
+            poly.connecting_vertices(*iter); // vtx ids of adjacent face
 
-        const Triangle& tri = poly.triangle_at(*iter);
-        Real3 developped_vtx;
         std::size_t vtx_idx = std::numeric_limits<std::size_t>::max();
         for(std::size_t i=0; i<3; ++i)
         {
-            if(std::find(vtxs.begin(), vtxs.end(), vtxs_of_adj[i]) != vtxs.end())
-                continue;
-            const Real3 pos = tri.vertex_at(i);
-            const Real tilt = angle(target.normal(), tri.normal());
-            const Real3 axis   = tri.edge_at(i==2?0:i+1);
-            const Real3 origin = tri.vertex_at(i==2?0:i+1);
-            developped_vtx = origin + rotate(tilt, axis, pos - origin);
-            vtx_idx = i;
-            break;
+            if(std::find(vtxs.begin(), vtxs.end(), vtxs_of_adj[i]) == vtxs.end())
+            {
+                assert(vtx_idx == std::numeric_limits<std::size_t>::max());
+                vtx_idx = i;
+            }
         }
+
+        const Triangle& tri = poly.triangle_at(*iter);
+        const Real3 vpos   = tri.vertex_at(vtx_idx);
+        const Real  tilt   = ecell4::angle(target.normal(), tri.normal());
+        const Real3 axis   = tri.edge_at(vtx_idx==2?0:vtx_idx+1);
+        const Real3 origin = tri.vertex_at(vtx_idx==2?0:vtx_idx+1);
+        const Real3 developped_vtx = origin + ecell4::rotate(tilt, axis, vpos - origin);
+
         face.barrier.at(idx) = std::make_pair(
-                developped_vtx, target.vertex_at(vtx_idx==2?0:vtx_idx+1));
+                developped_vtx, tri.vertex_at(vtx_idx==2?0:vtx_idx+1));
         idx++;
         face.barrier.at(idx) = std::make_pair(
-                developped_vtx, target.vertex_at(vtx_idx==0?2:vtx_idx-1));
+                developped_vtx, tri.vertex_at(vtx_idx==0?2:vtx_idx-1));
         idx++;
     }
 
