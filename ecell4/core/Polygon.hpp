@@ -11,6 +11,7 @@
 #include <boost/utility.hpp>
 #include <boost/type_traits.hpp>
 #include <boost/array.hpp>
+#include <boost/lambda/lambda.hpp>
 
 #include <algorithm>
 #include <stdexcept>
@@ -794,39 +795,36 @@ Polygon<T>::list_vertices_within_radius(
 
     std::vector<std::pair<vertex_id_type, Real> > list; list.reserve(6);
 
-    boost::array<face_id_type, 3> const& adjs = face_prop_at(pos.second).adjacents;
-
     const Real rad2 = radius * radius;
+    triangle_type const& tri = triangle_at(pos.second);
+    for(std::size_t i=0; i<3; ++i)
+    {
+        const Real dist2 = length_sq(pos.first - tri.vertex_at(i));
+        if(dist2 <= rad2)
+        {
+            list.push_back(std::make_pair(
+                face_prop_at(pos.second).vertices.at(i), std::sqrt(dist2)));
+        }
+    }
+
+    boost::array<vertex_id_type, 3> const& known = face_prop_at(pos.second).vertices;
+    boost::array<face_id_type, 3> const& adjs = face_prop_at(pos.second).adjacents;
     for(std::size_t i=0; i<3; ++i)
     {
         face_property_type const& f = face_prop_at(adjs[i]);
+        const typename boost::array<vertex_id_type, 3>::const_iterator unknown =
+            std::find_if(f.vertices.begin(), f.vertices.end(),
+                         boost::lambda::_1 != known[0] &&
+                         boost::lambda::_1 != known[1] &&
+                         boost::lambda::_1 != known[2]);
+        const std::size_t idx = std::distance(f.vertices.begin(), unknown);
+        assert(idx != 3);
+        const Real dist2 = this->distance_sq(
+                pos, std::make_pair(f.triangle.vertex_at(idx), adjs[i]));
 
-        for(std::size_t j=0; j<3; ++j)
+        if(dist2 <= rad2)
         {
-            const vertex_id_type vid = f.vertices[j];
-
-            const Real dist2 = this->distance_sq(pos,
-                    std::make_pair(f.triangle.vertex_at(j), f.id));
-
-            if(dist2 <= rad2)
-            {
-                // there possibly two different path to the vertex.
-                // here, use shortest path only.
-                // at first, search the vertex in the list
-                typename std::vector<std::pair<vertex_id_type, Real> >::iterator
-                    iter = std::find_if(list.begin(), list.end(),
-                        utils::pair_first_element_unary_predicator<
-                            vertex_id_type, Real>(vid));
-                // and update list.
-                if(iter == list.end())
-                {
-                    list.push_back(std::make_pair(vid, std::sqrt(dist2)));
-                }
-                else
-                {
-                    iter->second = std::min(iter->second, std::sqrt(dist2));
-                }
-            }
+            list.push_back(std::make_pair(*unknown, std::sqrt(dist2)));
         }
     }
 
