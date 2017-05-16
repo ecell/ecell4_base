@@ -1,7 +1,8 @@
 #ifndef ECELL4_SGFRD_WORLD
 #define ECELL4_SGFRD_WORLD
-#include <ecell4/sgfrd/polygon_traits.hpp>
-#include <ecell4/sgfrd/StructureRegistrator.hpp>
+#include "polygon_traits.hpp"
+#include "StructureRegistrator.hpp"
+#include "Informations.hpp"
 #include <ecell4/core/ParticleSpaceCellListImpl.hpp>
 #include <ecell4/core/SerialIDGenerator.hpp>
 #include <ecell4/core/Polygon.hpp>
@@ -11,6 +12,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
 #include <boost/bind.hpp>
+#include <boost/lexical_cast.hpp>
 
 namespace ecell4
 {
@@ -242,6 +244,27 @@ class SGFRDWorld : public ecell4::Space
     boost::shared_ptr<model_type> lock_model() const
     {
         return model_.lock();
+    }
+
+    MoleculeInfo get_molecule_info(const Species& sp) const
+    {
+        if(sp.has_attribute("radius") && sp.has_attribute("D"))
+        {
+            return MoleculeInfo(
+                    boost::lexical_cast<Real>(sp.get_attribute("radius")),
+                    boost::lexical_cast<Real>(sp.get_attribute("D")));
+        }
+        else if(boost::shared_ptr<Model> bound_model = lock_model())
+        {
+            Species attr(bound_model->apply_species_attributes(sp));
+            if (attr.has_attribute("radius") && attr.has_attribute("D"))
+            {
+                return MoleculeInfo(
+                        boost::lexical_cast<Real>(attr.get_attribute("radius")),
+                        boost::lexical_cast<Real>(attr.get_attribute("D")));
+            }
+        }
+        return MoleculeInfo(0., 0.);
     }
 
   private:

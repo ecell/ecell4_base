@@ -3,19 +3,23 @@
 
 #include <greens_functions/GreensFunction2DAbsSym.hpp>
 #include <greens_functions/GreensFunction2DRefWedgeAbs.hpp>
+
 #include <ecell4/core/SimulatorBase.hpp>
 #include <ecell4/core/ReactionRule.hpp>
 #include <ecell4/core/SerialIDGenerator.hpp>
 #include <ecell4/core/geometry.hpp>
-#include <ecell4/bd/BDPropagator.hpp>
+
 #include "ShellContainer.hpp"
 #include "ShellVisitorApplier.hpp"
 #include "ShellVisitors.hpp"
+#include "Informations.hpp"
 #include "SGFRDEvent.hpp"
 #include "SGFRDWorld.hpp"
+
 #include <boost/make_shared.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <boost/container/static_vector.hpp>
+
 #include <iostream>
 
 #ifndef SGFRD_NDEBUG
@@ -72,9 +76,9 @@ class SGFRDSimulator :
             mutable_shell_visitor_applier_type;
 
     // reaction stuff
-    typedef ecell4::ReactionRule     reaction_rule_type;
-    typedef ecell4::bd::MoleculeInfo molecule_info_type;
-    typedef ecell4::bd::ReactionInfo reaction_info_type;
+    typedef ecell4::ReactionRule reaction_rule_type;
+    typedef MoleculeInfo molecule_info_type;
+    typedef ReactionInfo reaction_info_type;
 
   public:
 
