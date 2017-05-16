@@ -182,10 +182,12 @@ void SGFRDSimulator::create_event(
                 get_intrusive_vertices(pos, std::numeric_limits<Real>::infinity()));
 
         const vertex_id_type& vid = intrusive_vertices.front().first;
-        DUMP_MESSAGE("vertex id = " << vid << ", distance = " << intrusive_vertices.front().second);
+        DUMP_MESSAGE("vertex id = " << vid << ", distance = "
+                     << intrusive_vertices.front().second);
 
-        const Real min_cone_size = (p.radius() + intrusive_vertices.front().second) *
-                                   single_conical_surface_shell_factor;
+        const Real min_cone_size =
+            (p.radius() + intrusive_vertices.front().second) *
+            single_conical_surface_shell_factor;
         const Real max_cone_size = get_max_cone_size(vid);
         DUMP_MESSAGE("min cone size = " << min_cone_size);
         DUMP_MESSAGE("max cone size = " << max_cone_size);
@@ -202,10 +204,11 @@ void SGFRDSimulator::create_event(
 
         if(intrusive_domains.front().second > min_cone_size)
         {
-            DUMP_MESSAGE("avoid domains overlapping: distance = " << intrusive_domains.front().second);
+            DUMP_MESSAGE("avoid domains overlapping: distance = "
+                         << intrusive_domains.front().second);
             return add_event(create_single(create_single_conical_surface_shell(
-                vid, intrusive_domains.front().second * single_conical_surface_shell_mergin),
-                pid, p));
+                vid, intrusive_domains.front().second *
+                single_conical_surface_shell_mergin), pid, p));
         }
 
         // TODO burst and form pair or multi if needed
