@@ -3,8 +3,9 @@
 #include <ecell4/core/Polygon.hpp>
 #include <ecell4/core/Circle.hpp>
 #include <ecell4/core/Cone.hpp>
-#include <ecell4/sgfrd/Shell.hpp>
+#include <ecell4/sgfrd/StructureRegistrator.hpp>
 #include <ecell4/sgfrd/distance_calculator.hpp>
+#include <ecell4/sgfrd/Shell.hpp>
 
 namespace ecell4
 {
