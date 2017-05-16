@@ -5,7 +5,9 @@ namespace ecell4
 namespace sgfrd
 {
 const Real SGFRDSimulator::single_circular_shell_factor        = 1.5;
+const Real SGFRDSimulator::single_circular_shell_mergin        = 0.99;
 const Real SGFRDSimulator::single_conical_surface_shell_factor = 1.5;
+const Real SGFRDSimulator::single_conical_surface_shell_mergin = 0.99;
 
 void SGFRDSimulator::domain_firer::operator()(const Single& dom)
 {
@@ -173,60 +175,21 @@ void SGFRDSimulator::create_event(
     DUMP_MESSAGE("min circle size = " << min_circle_size);
     DUMP_MESSAGE("max circle size = " << max_circle_size);
 
-    const Real vertices_search_range = (max_circle_size > min_circle_size) ? max_circle_size :
-        std::numeric_limits<Real>::infinity();
-    DUMP_MESSAGE("vertices range = " << vertices_search_range);
-
-    const std::vector<std::pair<vertex_id_type, Real> > intrusive_vertices(
-            get_intrusive_vertices(pos, vertices_search_range));
-
-    const bool draw_circular = max_circle_size < min_circle_size ? false :
-                               intrusive_vertices.empty() ? true :
-                              (intrusive_vertices.front().second > min_circle_size);
-    if(draw_circular)
+    if(max_circle_size < min_circle_size)
     {
-        DUMP_MESSAGE("drawing circular shell");
-        if(!intrusive_vertices.empty())
-        {
-            DUMP_MESSAGE("vertices found. " << intrusive_vertices.front().second);
-            max_circle_size = intrusive_vertices.front().second;
-        }
+        DUMP_MESSAGE("drawing conical shell: min_circle_size = " << min_circle_size);
+        const std::vector<std::pair<vertex_id_type, Real> > intrusive_vertices(
+                get_intrusive_vertices(pos, std::numeric_limits<Real>::infinity()));
 
-        DUMP_MESSAGE("creating single circle that size is " << max_circle_size);
-
-        //XXX! consider shell-removing timing !
-        const std::vector<std::pair<DomainID, Real> > intrusive_domains(
-                get_intrusive_domains(pos, max_circle_size));
-
-        DUMP_MESSAGE("intrusive domains: " << intrusive_domains.size());
-
-        if(intrusive_domains.empty())
-        {
-            return add_event(create_single(create_single_circular_shell(
-                             pos, max_circle_size), pid, p));
-        }
-
-        if(intrusive_domains.front().second > min_circle_size)
-        {
-            return add_event(create_single(create_single_circular_shell(
-                             pos, intrusive_domains.front().second), pid, p));
-        }
-
-        // TODO burst!
-        std::cerr << "[WARNING] ignoring intrusive domains." << std::endl;
-        return add_event(create_single(create_single_circular_shell(
-                         pos, max_circle_size), pid, p));
-    }
-    else // conical surface shell
-    {
-        DUMP_MESSAGE("drawing conical shell");
         const vertex_id_type& vid = intrusive_vertices.front().first;
         DUMP_MESSAGE("vertex id = " << vid << ", distance = " << intrusive_vertices.front().second);
-        const Real min_cone_size = std::max(p.radius(), intrusive_vertices.front().second) *
+
+        const Real min_cone_size = (p.radius() + intrusive_vertices.front().second) *
                                    single_conical_surface_shell_factor;
         const Real max_cone_size = get_max_cone_size(vid);
         DUMP_MESSAGE("min cone size = " << min_cone_size);
         DUMP_MESSAGE("max cone size = " << max_cone_size);
+
         const std::vector<std::pair<DomainID, Real> > intrusive_domains(
                 get_intrusive_domains(vid, max_cone_size));
         DUMP_MESSAGE("intrusive domains = " << intrusive_domains.size());
@@ -241,7 +204,8 @@ void SGFRDSimulator::create_event(
         {
             DUMP_MESSAGE("avoid domains overlapping: distance = " << intrusive_domains.front().second);
             return add_event(create_single(create_single_conical_surface_shell(
-                             vid, intrusive_domains.front().second), pid, p));
+                vid, intrusive_domains.front().second * single_conical_surface_shell_mergin),
+                pid, p));
         }
 
         // TODO burst and form pair or multi if needed
@@ -249,9 +213,33 @@ void SGFRDSimulator::create_event(
         return add_event(create_single(create_single_conical_surface_shell(
                                        vid, max_cone_size), pid, p));
     }
+
+    DUMP_MESSAGE("drawing circular shell");
+
+    const std::vector<std::pair<DomainID, Real> > intrusive_domains(
+            get_intrusive_domains(pos, max_circle_size));
+    DUMP_MESSAGE("intrusive domains: " << intrusive_domains.size());
+
+    if(intrusive_domains.empty())
+    {
+        return add_event(create_single(create_single_circular_shell(
+                         pos, max_circle_size), pid, p));
+    }
+
+    if(intrusive_domains.front().second > min_circle_size)
+    {
+        return add_event(create_single(create_single_circular_shell(
+            pos, intrusive_domains.front().second * single_circular_shell_mergin),
+            pid, p));
+    }
+
+    // TODO burst!
+    std::cerr << "[WARNING] ignoring intrusive domains." << std::endl;
+    return add_event(create_single(create_single_circular_shell(
+                     pos, max_circle_size), pid, p));
 }
 
-Real SGFRDSimulator::distance_to_segment(
+Real SGFRDSimulator::distance_sq_to_segment(
         const Real3& p, const std::pair<Real3, Real3>& seg) const
 {
     const Real3 ab = seg.second - seg.first;
