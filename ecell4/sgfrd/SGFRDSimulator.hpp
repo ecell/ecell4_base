@@ -474,7 +474,7 @@ class SGFRDSimulator :
 
         for(std::size_t i=0; i<6; ++i)
         {
-            const Real dist2 = distance_to_segment(pos.first, barrier[i]);
+            const Real dist2 = distance_sq_to_segment(pos.first, barrier[i]);
             if(dist2 < lensq)
             {
                 lensq = dist2;
@@ -487,12 +487,14 @@ class SGFRDSimulator :
         return polygon().vertex_at(vid).max_conical_shell_size * 0.5;
     }
 
-    Real distance_to_segment(const Real3& pos, const std::pair<Real3, Real3>& seg) const;
+    Real distance_sq_to_segment(const Real3& pos, const std::pair<Real3, Real3>& seg) const;
 
   private:
 
     static const Real single_circular_shell_factor;
+    static const Real single_circular_shell_mergin;
     static const Real single_conical_surface_shell_factor;
+    static const Real single_conical_surface_shell_mergin;
 
   private:
 
