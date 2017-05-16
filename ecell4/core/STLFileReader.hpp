@@ -8,20 +8,20 @@
 namespace ecell4
 {
 
-struct StlTriangle
+struct STLTriangle
 {
-    StlTriangle(){}
-    StlTriangle(const Real3& n, const boost::array<Real3, 3>& vtx)
+    STLTriangle(){}
+    STLTriangle(const Real3& n, const boost::array<Real3, 3>& vtx)
         : normal(n), vertices(vtx)
     {}
     Real3 normal;
     boost::array<Real3, 3> vertices;
 };
 
-class StlFileReader
+class STLFileReader
 {
   public:
-    typedef StlTriangle triangle_type;
+    typedef STLTriangle triangle_type;
 
     enum FileType
     {
@@ -31,8 +31,8 @@ class StlFileReader
 
   public:
 
-    StlFileReader(){}
-    ~StlFileReader(){}
+    STLFileReader(){}
+    ~STLFileReader(){}
 
     std::vector<triangle_type>
     read(const std::string& filename, const FileType t) const;

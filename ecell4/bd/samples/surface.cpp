@@ -56,11 +56,11 @@ int main(int argc, char** argv)
         std::cerr << "usage: " << argv[0] << " -stl=[bin|asc] [filename.stl]" << std::endl;
         return 1;
     }
-    StlFileReader::FileType ft;
+    STLFileReader::FileType ft;
     if(stltype.substr(5, 3) == "asc")
-        ft = StlFileReader::Ascii;
+        ft = STLFileReader::Ascii;
     else if(stltype.substr(5, 3) == "bin")
-        ft = StlFileReader::Binary;
+        ft = STLFileReader::Binary;
     else
     {
         std::cerr << "usage: " << argv[0] << " -stl=[bin|asc] [filename.stl]" << std::endl;
@@ -106,8 +106,8 @@ int main(int argc, char** argv)
     // create polygon
 
     const std::string fname(argv[2]);
-    StlFileReader reader;
-    const std::vector<StlTriangle> stl_data = reader.read(fname, ft);
+    STLFileReader reader;
+    const std::vector<STLTriangle> stl_data = reader.read(fname, ft);
 
     STLPolygonAdapter<polygon_traits> adapter;
     boost::shared_ptr<BDPolygon> polygon = adapter.make_polygon(stl_data);

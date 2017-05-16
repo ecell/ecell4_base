@@ -7,9 +7,9 @@
 namespace ecell4
 {
 
-std::vector<StlTriangle>
-StlFileReader::read(const std::string& filename,
-                    const StlFileReader::FileType type) const
+std::vector<STLTriangle>
+STLFileReader::read(const std::string& filename,
+                    const STLFileReader::FileType type) const
 {
     switch(type)
     {
@@ -22,8 +22,8 @@ StlFileReader::read(const std::string& filename,
     }
 }
 
-std::vector<StlTriangle>
-StlFileReader::read_ascii(const std::string& filename) const
+std::vector<STLTriangle>
+STLFileReader::read_ascii(const std::string& filename) const
 {
     std::ifstream ifs(filename.c_str());
     if(!ifs.good())
@@ -46,7 +46,7 @@ StlFileReader::read_ascii(const std::string& filename) const
     if(ifs.eof())
         throw std::runtime_error("could not find solid line");
 
-    std::vector<StlTriangle> retval;
+    std::vector<STLTriangle> retval;
     while(!ifs.eof())
     {
         try
@@ -61,10 +61,10 @@ StlFileReader::read_ascii(const std::string& filename) const
     return retval;
 }
 
-StlTriangle
-StlFileReader::read_ascii_triangle(std::ifstream& ifs) const
+STLTriangle
+STLFileReader::read_ascii_triangle(std::ifstream& ifs) const
 {
-    StlTriangle retval;
+    STLTriangle retval;
     bool normal_read = false;
     std::size_t vertex_index = 0;
     while(!ifs.eof())
@@ -114,7 +114,7 @@ StlFileReader::read_ascii_triangle(std::ifstream& ifs) const
 }
 
 
-Real3 StlFileReader::read_ascii_vertex(const std::string& line) const
+Real3 STLFileReader::read_ascii_vertex(const std::string& line) const
 {
     std::istringstream iss(line);
     std::string prefix;
@@ -125,7 +125,7 @@ Real3 StlFileReader::read_ascii_vertex(const std::string& line) const
     return Real3(x, y, z);
 }
 
-Real3 StlFileReader::read_ascii_normal(const std::string& line) const
+Real3 STLFileReader::read_ascii_normal(const std::string& line) const
 {
     std::istringstream iss(line);
     std::string facet, normal;
@@ -137,8 +137,8 @@ Real3 StlFileReader::read_ascii_normal(const std::string& line) const
     return Real3(x, y, z);
 }
 
-std::vector<StlTriangle>
-StlFileReader::read_binary(const std::string& filename) const
+std::vector<STLTriangle>
+STLFileReader::read_binary(const std::string& filename) const
 {
     std::ifstream ifs(filename.c_str(), std::ios::in | std::ios::binary);
     if(not ifs.good())
@@ -166,7 +166,7 @@ StlFileReader::read_binary(const std::string& filename) const
         throw std::runtime_error("invalid filesize");
     }
 
-    std::vector<StlTriangle> retval(num_Triangle);
+    std::vector<STLTriangle> retval(num_Triangle);
     for(std::size_t i=0; i < num_Triangle; ++i)
     {
         retval.at(i) = this->read_binary_triangle(ifs);
@@ -174,7 +174,7 @@ StlFileReader::read_binary(const std::string& filename) const
     return retval;
 }
 
-Real3 StlFileReader::read_binary_vector(std::ifstream& ifs) const
+Real3 STLFileReader::read_binary_vector(std::ifstream& ifs) const
 {
     char float0[sizeof(float)];
     char float1[sizeof(float)];
@@ -191,8 +191,8 @@ Real3 StlFileReader::read_binary_vector(std::ifstream& ifs) const
     return Real3(x, y, z);
 }
 
-StlTriangle
-StlFileReader::read_binary_triangle(std::ifstream& ifs) const
+STLTriangle
+STLFileReader::read_binary_triangle(std::ifstream& ifs) const
 {
     const Real3 normal = read_binary_vector(ifs);
     boost::array<Real3, 3> vertices;
@@ -201,10 +201,10 @@ StlFileReader::read_binary_triangle(std::ifstream& ifs) const
     vertices[2] = this->read_binary_vector(ifs);
     ifs.ignore(2);
 
-    return StlTriangle(normal, vertices);
+    return STLTriangle(normal, vertices);
 }
 
-void StlFileReader::dump(const std::string& filename,
+void STLFileReader::dump(const std::string& filename,
         const std::vector<triangle_type>& tri) const
 {
     std::ofstream ofs(filename.c_str());

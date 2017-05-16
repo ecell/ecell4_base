@@ -32,7 +32,7 @@ class STLPolygonAdapter
     ~STLPolygonAdapter(){}
 
     boost::shared_ptr<polygon_type>
-    make_polygon(const std::vector<StlTriangle>& triangles) const;
+    make_polygon(const std::vector<STLTriangle>& triangles) const;
 
     void detect_edge_connections(polygon_type& poly,
             const std::vector<face_id_type>& fid) const;
@@ -49,13 +49,13 @@ class STLPolygonAdapter
 template<typename T_traits>
 boost::shared_ptr<typename STLPolygonAdapter<T_traits>::polygon_type>
 STLPolygonAdapter<T_traits>::make_polygon(
-        const std::vector<StlTriangle>& triangles) const
+        const std::vector<STLTriangle>& triangles) const
 {
     boost::shared_ptr<polygon_type> polygon = boost::make_shared<polygon_type>();
 
     std::vector<face_id_type> fids;
     fids.reserve(triangles.size());
-    for(typename std::vector<StlTriangle>::const_iterator
+    for(typename std::vector<STLTriangle>::const_iterator
             iter = triangles.begin(); iter != triangles.end(); ++iter)
     {
         fids.push_back(polygon->add_face(triangle_type(iter->vertices)));
