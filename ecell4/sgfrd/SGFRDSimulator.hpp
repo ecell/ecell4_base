@@ -61,6 +61,8 @@ class SGFRDSimulator :
     typedef ecell4::SimulatorBase<ecell4::Model, SGFRDWorld> base_type;
     typedef base_type::world_type world_type;
     typedef base_type::model_type model_type;
+    typedef std::pair<ParticleID, Particle> particle_id_pair_type;
+    typedef boost::tuple<ParticleID, Particle, face_id_type> pid_p_fid_tuple_type;
 
     // ShellContainer
     typedef ecell4::SerialIDGenerator<ShellID> shell_id_generator_type;
@@ -105,7 +107,7 @@ class SGFRDSimulator :
         for(std::vector<std::pair<ParticleID, Particle> >::const_iterator
             iter = ps.begin(); iter != ps.end(); ++iter)
         {
-            add_event(create_minimum_domain(create_minimum_shell(
+            add_event(create_closely_fitted_domain(create_closely_fitted_shell(
                       iter->first, iter->second, this->get_face_id(iter->first)),
                   iter->first, iter->second));
         }
@@ -113,10 +115,11 @@ class SGFRDSimulator :
     }
     void finalize()
     {
-        std::vector<domain_type> tmp;
+        domain_burster::remnants_type tmp;
         while(scheduler_.size() != 0)
         {
             burst_event(*(this->scheduler_.pop().second), tmp);
+            tmp.clear();
         }
         return ;
     }
@@ -124,6 +127,7 @@ class SGFRDSimulator :
     void step()
     {
         this->set_time(this->scheduler_.next_time());
+        // fire event executes `create_event` inside.
         this->fire_event(this->scheduler_.pop());
         DUMP_MESSAGE("now " << shell_container_.num_shells() << " shells exist.");
         return;
@@ -169,8 +173,6 @@ class SGFRDSimulator :
 
   private:
 
-    // visitors decl: algorithm specific part {{{
-
     struct domain_firer : boost::static_visitor<void>
     {
         domain_firer(SGFRDSimulator& s): sim(s){}
@@ -183,19 +185,21 @@ class SGFRDSimulator :
 
     struct domain_burster : boost::static_visitor<void>
     {
-        domain_burster(SGFRDSimulator& s, std::vector<domain_type>& r)
-            : results(r), sim(s)
+        typedef std::vector<pid_p_fid_tuple_type> remnants_type;
+
+        domain_burster(SGFRDSimulator& s, remnants_type& r)
+            : remnants(r), sim(s)
         {}
         void operator()(const Single& dom)
         {
-            single_burster burster(sim, dom, results);
+            single_burster burster(sim, dom, remnants);
             boost::apply_visitor(burster, sim.get_shell(dom.shell_id()));
             sim.remove_shell(dom.shell_id());
             return;
         }
         void operator()(const Pair& dom)
         {
-            pair_burster burster(sim, dom, results);
+            pair_burster burster(sim, dom, remnants);
             boost::apply_visitor(burster, sim.get_shell(dom.shell_id()));
             sim.remove_shell(dom.shell_id());
             return;
@@ -206,48 +210,50 @@ class SGFRDSimulator :
             return;
         }
 
-        std::vector<domain_type>& results;
+        remnants_type& remnants;
 
       private:
         SGFRDSimulator& sim;
     };
     struct single_burster : boost::static_visitor<void>
     {
-        single_burster(SGFRDSimulator& s, const domain_type& d,
-                       std::vector<domain_type>& r)
-            : results(r), sim(s), dom(d)
+        typedef std::vector<pid_p_fid_tuple_type> remnants_type;
+
+        single_burster(SGFRDSimulator& s, const Single& d, remnants_type& r)
+            : remnants(r), sim(s), dom(d)
         {}
 
         void operator()(const circular_shell_type& sh);
         void operator()(const conical_surface_shell_type& sh);
 
-        std::vector<domain_type>& results;
+        remnants_type& remnants;
 
       private:
         SGFRDSimulator& sim;
-        const domain_type& dom;
+        const Single& dom;
     };
     struct pair_burster : boost::static_visitor<void>
     {
-        pair_burster(SGFRDSimulator& s, const domain_type& d,
-                     std::vector<domain_type>& r)
-            : results(r), sim(s), dom(d)
+        typedef std::vector<pid_p_fid_tuple_type> remnants_type;
+
+        pair_burster(SGFRDSimulator& s, const Pair& d, remnants_type& r)
+            : remnants(r), sim(s), dom(d)
         {}
 
         void operator()(const circular_shell_type& sh);
         void operator()(const conical_surface_shell_type& sh);
 
-        std::vector<domain_type>& results;
+        remnants_type& remnants;
 
       private:
         SGFRDSimulator& sim;
-        const domain_type& dom;
+        const Pair& dom;
     };
 
     struct single_escapement : boost::static_visitor<void>
     {
-        typedef boost::container::static_vector<
-            boost::tuple<ParticleID, Particle, face_id_type>, 1> executed_type;
+        typedef boost::container::static_vector<pid_p_fid_tuple_type, 1>
+                remnants_type;
 
         single_escapement(SGFRDSimulator& s, const Single& d)
             : sim(s), dom(d)
@@ -256,7 +262,7 @@ class SGFRDSimulator :
         void operator()(const circular_shell_type& sh);
         void operator()(const conical_surface_shell_type& sh);
 
-        executed_type remnants;
+        remnants_type remnants;
 
       private:
         SGFRDSimulator& sim;
@@ -265,8 +271,8 @@ class SGFRDSimulator :
 
     struct single_reactor : boost::static_visitor<void>
     {
-        typedef boost::container::static_vector<
-            boost::tuple<ParticleID, Particle, face_id_type>, 2> executed_type;
+        typedef boost::container::static_vector<pid_p_fid_tuple_type, 2>
+                remnants_type;
 
         single_reactor(SGFRDSimulator& s, const Single& d)
             : sim(s), dom(d)
@@ -275,13 +281,12 @@ class SGFRDSimulator :
         void operator()(const circular_shell_type& sh);
         void operator()(const conical_surface_shell_type& sh);
 
-        executed_type remnants;
+        remnants_type remnants;
 
       private:
         SGFRDSimulator& sim;
         Single const& dom;
     };
-    // }}}
 
     //! make event from domain and push it into scheduler
     template<typename domainT>
@@ -302,7 +307,8 @@ class SGFRDSimulator :
         return ;
     }
 
-    void burst_event(const event_type& ev, std::vector<domain_type>& results)
+    void burst_event(const event_type& ev,
+                     std::vector<pid_p_fid_tuple_type>& results)
     {
         domain_burster burster(*this, results);
         boost::apply_visitor(burster, ev.domain());
@@ -323,7 +329,7 @@ class SGFRDSimulator :
         remove_shell(sid);
 
         ParticleID pid; Particle p; face_id_type fid;
-        for(typename EventExecutor::executed_type::const_iterator
+        for(typename EventExecutor::remnants_type::const_iterator
             iter(executor.remnants.begin()), end(executor.remnants.end());
             iter != end; ++iter)
         {
@@ -333,7 +339,7 @@ class SGFRDSimulator :
         return;
     }
 
-    ShellID create_minimum_shell(
+    ShellID create_closely_fitted_shell(
             const ParticleID& pid, const Particle& p, const face_id_type fid)
     {
         const ShellID sid(shell_id_gen());
@@ -342,7 +348,7 @@ class SGFRDSimulator :
         shell_container_.add_shell(sid, sh, fid);
         return sid;
     }
-    Single create_minimum_domain(
+    Single create_closely_fitted_domain(
             const ShellID& sid, const ParticleID& pid, const Particle& p)
     {
         return Single(Single::ESCAPE, 0., this->time(), sid, std::make_pair(pid, p));

@@ -5,9 +5,9 @@ namespace ecell4
 namespace sgfrd
 {
 const Real SGFRDSimulator::single_circular_shell_factor        = 1.5;
-const Real SGFRDSimulator::single_circular_shell_mergin        = 0.99;
+const Real SGFRDSimulator::single_circular_shell_mergin        = 1.0 - 1e-7;
 const Real SGFRDSimulator::single_conical_surface_shell_factor = 1.5;
-const Real SGFRDSimulator::single_conical_surface_shell_mergin = 0.99;
+const Real SGFRDSimulator::single_conical_surface_shell_mergin = 1.0 - 1e-7;
 
 void SGFRDSimulator::domain_firer::operator()(const Single& dom)
 {
@@ -49,14 +49,82 @@ void SGFRDSimulator::domain_firer::operator()(const Multi& dom)
 }
 
 void SGFRDSimulator::single_burster::operator()(const circular_shell_type& sh)
-{//TODO
-    std::cerr << "bursting circualr shell" << std::endl;
-    return;
+{
+    DUMP_MESSAGE("bursting single circular shell");
+
+    Particle   p   = dom.particle();
+    ParticleID pid = dom.particle_id();
+
+    greens_functions::GreensFunction2DAbsSym gf(p.D(), sh.size());
+
+    const Real del_t = sim.time() - dom.begin_time();
+    const Real r     = gf.drawR(sim.uniform_real(), del_t);
+    const Real theta = sim.uniform_real() * 2 * M_PI;
+    DUMP_MESSAGE("r = " << r << ", theta = " << theta);
+
+    const face_id_type   fid  = sim.get_face_id(pid);
+    const triangle_type& face = sim.polygon().triangle_at(fid);
+    const Real3 direction = rotate(theta, face.normal(), face.represent());
+    DUMP_MESSAGE("direction = " << direction << ", length = " << length(direction));
+
+    std::pair<std::pair<Real3, face_id_type>, Real3> state =
+        std::make_pair(/*position = */std::make_pair(p.position(), fid),
+                   /*displacement = */direction * r / length(direction));
+
+    DUMP_MESSAGE("pos  = " << state.first.first << ", fid = " << state.first.second);
+    unsigned int continue_count = 2;
+    while(continue_count > 0)
+    {
+        state = sim.polygon().move_next_face(state.first, state.second);
+        const Real3& disp = state.second;
+        if(disp[0] == 0. && disp[1] == 0. && disp[2] == 0.) break;
+        --continue_count;
+        DUMP_MESSAGE("pos  = " << state.first.first << ", fid = " << state.first.second);
+        DUMP_MESSAGE("disp = " << disp << ", length = " << length(disp));
+    }
+    if(continue_count == 0)
+        std::cerr << "[WARNING] moving on face: precision lost" << std::endl;
+
+    DUMP_MESSAGE("pos  = " << state.first.first << ", fid = " << state.first.second);
+    DUMP_MESSAGE("disp = " << state.second << ", length = " << state.second);
+
+    DUMP_MESSAGE("bursted.");
+
+    p.position() = state.first.first;
+    sim.update_particle(pid, p, state.first.second);
+    remnants.push_back(boost::make_tuple(pid, p, state.first.second));
+    return ;
 }
 
 void SGFRDSimulator::single_burster::operator()(const conical_surface_shell_type& sh)
-{//TODO
-    std::cerr << "bursting conical surface shell" << std::endl;
+{
+    Particle           p   = dom.particle();
+    const ParticleID   pid = dom.particle_id();
+    const face_id_type fid = sim.get_face_id(pid);
+    DUMP_MESSAGE("escape-conical: pos  = " << p.position() << ", fid = " << fid);
+
+    const Real r_max = sh.size() - p.radius();
+    greens_functions::GreensFunction2DRefWedgeAbs
+        gf(/* D   = */ p.D(),
+           /* r0  = */ length(p.position() - sh.position()),
+           /* a   = */ r_max,
+           /* phi = */ sh.shape().apex_angle());
+
+    const Real del_t = sim.time() - dom.begin_time();
+    const Real r     = gf.drawR(sim.uniform_real(), del_t);
+    const Real theta = gf.drawTheta(sim.uniform_real(), r, del_t);
+
+    DUMP_MESSAGE("escape-conical: r = " << r << ", theta = " << theta);
+
+    const std::pair<Real3, face_id_type> state =
+        sim.polygon().rotate_around_vertex(std::make_pair(p.position(), fid),
+                                           sh.structure_id(), r, theta);
+
+    DUMP_MESSAGE("escaped : pos = " << state.first << ", fid = " << state.second);
+
+    p.position() = state.first;
+    sim.update_particle(pid, p, state.second);
+    remnants.push_back(boost::make_tuple(pid, p, state.second));
     return;
 }
 
@@ -77,7 +145,7 @@ void SGFRDSimulator::single_escapement::operator()(const circular_shell_type& sh
     DUMP_MESSAGE("single shell escapement circular shell");
     if(sh.size() == dom.particle().radius())
     {
-        DUMP_MESSAGE("minimum shell. didnot move.");
+        DUMP_MESSAGE("closely fitted shell. didnot move.");
         remnants.push_back(boost::make_tuple(dom.particle_id(), dom.particle(),
                                             sim.get_face_id(dom.particle_id())));
         return;
