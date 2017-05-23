@@ -22,7 +22,7 @@ struct distance_calculator : public boost::static_visitor<Real>
     template<typename shapeT, typename stridT>
     Real operator()(const Shell<shapeT, stridT>& sh) const
     {
-        return ecell4::sgfrd::distance(pos_, sh.shape());
+        return ecell4::sgfrd::distance(pos_, sh.shape()) - sh.size();
     }
 
   private:
