@@ -4,6 +4,9 @@
 #include <ecell4/core/Circle.hpp>
 #include <ecell4/core/Cone.hpp>
 #include <boost/variant.hpp>
+#include <boost/type_traits.hpp>
+#include <boost/mpl/and.hpp>
+#include <boost/mpl/or.hpp>
 #include "distance.hpp"
 #include "Shell.hpp"
 
@@ -19,7 +22,7 @@ struct distance_calculator : public boost::static_visitor<Real>
     template<typename shapeT, typename stridT>
     Real operator()(const Shell<shapeT, stridT>& sh) const
     {
-        return ecell4::sgfrd::distance<Real3, shapeT>()(pos_, sh.shape());
+        return ecell4::sgfrd::distance(pos_, sh.shape());
     }
 
   private:

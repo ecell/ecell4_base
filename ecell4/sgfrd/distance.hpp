@@ -1,6 +1,12 @@
 #ifndef ECELL4_SGFRD_DISTANCE
 #define ECELL4_SGFRD_DISTANCE
+#include <ecell4/core/Segment.hpp>
 #include <ecell4/core/collision.hpp>
+#include <boost/type_traits.hpp>
+#include <boost/mpl/and.hpp>
+#include <boost/mpl/or.hpp>
+#include <boost/format.hpp>
+#include <ecell4/sgfrd/type_name_of.hpp>
 
 namespace ecell4
 {
@@ -8,19 +14,20 @@ namespace sgfrd
 {
 
 template<typename shape1, typename shape2>
-struct distance_sq
+struct distance_sq_impl
 {
     typedef Real result_type;
 
     Real operator()(const shape1& s1, const shape2& s2) const
     {
-        throw ecell4::NotSupported(
-                "distance_sq between these shapes is not supported");
+        throw ecell4::NotSupported((boost::format(
+                    "distance_sq between <%s> and <%s> is not supported") %
+                    type_name_of<shape1>()() % type_name_of<shape2>()()).str());
     }
 };
 
 template<>
-struct distance_sq<Real3, ecell4::Triangle>
+struct distance_sq_impl<Real3, ecell4::Triangle>
 {
     typedef Real result_type;
 
@@ -31,7 +38,7 @@ struct distance_sq<Real3, ecell4::Triangle>
 };
 
 template<>
-struct distance_sq<Real3, ecell4::Circle>
+struct distance_sq_impl<Real3, ecell4::Circle>
 {
     typedef Real result_type;
 
@@ -42,7 +49,7 @@ struct distance_sq<Real3, ecell4::Circle>
 };
 
 template<>
-struct distance_sq<Real3, ecell4::Cone>
+struct distance_sq_impl<Real3, ecell4::Cone>
 {
     typedef Real result_type;
 
@@ -53,7 +60,7 @@ struct distance_sq<Real3, ecell4::Cone>
 };
 
 template<>
-struct distance_sq<Real3, ecell4::Cylinder>
+struct distance_sq_impl<Real3, ecell4::Cylinder>
 {
     typedef Real result_type;
 
@@ -65,7 +72,7 @@ struct distance_sq<Real3, ecell4::Cylinder>
 };
 
 template<>
-struct distance_sq<Real3, ecell4::Sphere>
+struct distance_sq_impl<Real3, ecell4::Sphere>
 {
     typedef Real result_type;
 
@@ -76,22 +83,41 @@ struct distance_sq<Real3, ecell4::Sphere>
     }
 };
 
+template<>
+struct distance_sq_impl<Real3, ecell4::Segment>
+{
+    typedef Real result_type;
+
+    Real operator()(const Real3& p, const ecell4::Segment& s) const
+    {
+        const Real3 ab = s.stop() - s.start();
+        const Real3 ac = p - s.start();
+        const Real3 bc = p - s.stop();
+        const Real dot = dot_product(ac, ab);
+        if(dot <= 0.0) return length_sq(ac);
+        const Real len = length_sq(ab);
+        if(dot >= len) return length_sq(bc);
+        return length_sq(ac) - (dot * dot) / len;
+    }
+};
+
 //---------------------------------- distance ----------------------------------
 
 template<typename shape1, typename shape2>
-struct distance
+struct distance_impl
 {
     typedef Real result_type;
 
     Real operator()(shape1 s1, shape2 s2) const
     {
-        throw ecell4::NotSupported(
-                "distance between these shapes is not supported");
+        throw ecell4::NotSupported((boost::format(
+                    "distance between <%s> and <%s> is not supported") %
+                    type_name_of<shape1>()() % type_name_of<shape2>()()).str());
     }
 };
 
 template<>
-struct distance<Real3, ecell4::Triangle>
+struct distance_impl<Real3, ecell4::Triangle>
 {
     typedef Real result_type;
 
@@ -102,7 +128,7 @@ struct distance<Real3, ecell4::Triangle>
 };
 
 template<>
-struct distance<Real3, ecell4::Circle>
+struct distance_impl<Real3, ecell4::Circle>
 {
     typedef Real result_type;
 
@@ -113,7 +139,7 @@ struct distance<Real3, ecell4::Circle>
 };
 
 template<>
-struct distance<Real3, ecell4::Cone>
+struct distance_impl<Real3, ecell4::Cone>
 {
     typedef Real result_type;
 
@@ -124,7 +150,7 @@ struct distance<Real3, ecell4::Cone>
 };
 
 template<>
-struct distance<Real3, ecell4::Cylinder>
+struct distance_impl<Real3, ecell4::Cylinder>
 {
     typedef Real result_type;
 
@@ -135,7 +161,7 @@ struct distance<Real3, ecell4::Cylinder>
 };
 
 template<>
-struct distance<Real3, ecell4::Sphere>
+struct distance_impl<Real3, ecell4::Sphere>
 {
     typedef Real result_type;
 
@@ -144,6 +170,38 @@ struct distance<Real3, ecell4::Sphere>
         return length(p - s.center()) - s.radius();
     }
 };
+
+template<>
+struct distance_impl<Real3, ecell4::Segment>
+{
+    typedef Real result_type;
+
+    Real operator()(const Real3& p, const ecell4::Segment& s) const
+    {
+        return std::sqrt(distance_sq_impl<Real3, ecell4::Segment>()(p, s));
+    }
+};
+
+template<typename T1, typename T2>
+inline typename boost::enable_if<boost::mpl::and_<
+boost::mpl::or_<boost::is_base_of<ecell4::Shape, T1>, boost::is_same<T1, Real3> >,
+boost::mpl::or_<boost::is_base_of<ecell4::Shape, T2>, boost::is_same<T2, Real3> >
+>, Real>::type
+distance(const T1& shape1, const T2& shape2)
+{
+    return distance_impl<T1, T2>()(shape1, shape2);
+}
+
+template<typename T1, typename T2>
+inline typename boost::enable_if<boost::mpl::and_<
+boost::mpl::or_<boost::is_base_of<ecell4::Shape, T1>, boost::is_same<T1, Real3> >,
+boost::mpl::or_<boost::is_base_of<ecell4::Shape, T2>, boost::is_same<T2, Real3> >
+>, Real>::type
+distance_sq(const T1& shape1, const T2& shape2)
+{
+    return distance_sq_impl<T1, T2>()(shape1, shape2);
+}
+
 
 } // sgfrd
 }// ecell4
