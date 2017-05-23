@@ -473,12 +473,12 @@ class SGFRDSimulator :
     Real get_max_circle_size(const std::pair<Real3, face_id_type>& pos) const
     {
         Real lensq = std::numeric_limits<Real>::max();
-        const boost::array<std::pair<Real3, Real3>, 6>& barrier =
+        const boost::array<ecell4::Segment, 6>& barrier =
             polygon().face_at(pos.second).barrier;
 
         for(std::size_t i=0; i<6; ++i)
         {
-            const Real dist2 = distance_sq_to_segment(pos.first, barrier[i]);
+            const Real dist2 = ecell4::sgfrd::distance_sq(pos.first, barrier[i]);
             if(dist2 < lensq)
             {
                 lensq = dist2;
@@ -490,8 +490,6 @@ class SGFRDSimulator :
     {
         return polygon().vertex_at(vid).max_conical_shell_size * 0.5;
     }
-
-    Real distance_sq_to_segment(const Real3& pos, const std::pair<Real3, Real3>& seg) const;
 
   private:
 

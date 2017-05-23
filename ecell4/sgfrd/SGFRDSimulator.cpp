@@ -242,18 +242,5 @@ void SGFRDSimulator::create_event(
                      pos, max_circle_size), pid, p));
 }
 
-Real SGFRDSimulator::distance_sq_to_segment(
-        const Real3& p, const std::pair<Real3, Real3>& seg) const
-{
-    const Real3 ab = seg.second - seg.first;
-    const Real3 ac = p - seg.first;
-    const Real3 bc = p - seg.second;
-    const Real dot = dot_product(ac, ab);
-    if(dot <= 0.0) return length_sq(ac);
-    const Real len = length_sq(ab);
-    if(dot >= len) return length_sq(bc);
-    return length_sq(ac) - (dot * dot) / len;
-}
-
 } // sgfrd
 } // ecell4

@@ -2,6 +2,7 @@
 #define ECELL4_SGFRD_POLYGON_TRAITS
 #include <ecell4/core/Real3.hpp>
 #include <ecell4/core/Triangle.hpp>
+#include <ecell4/core/Segment.hpp>
 #include <ecell4/core/Polygon.hpp>
 #include <boost/serialization/strong_typedef.hpp>
 #include <utility>
@@ -37,7 +38,7 @@ struct edge_descripter
 struct face_descripter
 {
     // developped edges of neighbor faces
-    boost::array<std::pair<Real3, Real3>, 6> barrier;
+    boost::array<ecell4::Segment, 6> barrier;
 
     std::vector<face_id_type>   neighbor_faces;
     std::vector<vertex_id_type> neighbor_vertices;

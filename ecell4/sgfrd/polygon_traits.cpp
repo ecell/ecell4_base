@@ -120,10 +120,10 @@ make_face_information(const ecell4::Polygon<polygon_traits>& poly,
         const Real3 origin = tri.vertex_at(vtx_idx==2?0:vtx_idx+1);
         const Real3 developped_vtx = origin + ecell4::rotate(tilt, axis, vpos - origin);
 
-        face.barrier.at(idx) = std::make_pair(
+        face.barrier.at(idx) = ecell4::Segment(
                 developped_vtx, tri.vertex_at(vtx_idx==2?0:vtx_idx+1));
         idx++;
-        face.barrier.at(idx) = std::make_pair(
+        face.barrier.at(idx) = ecell4::Segment(
                 developped_vtx, tri.vertex_at(vtx_idx==0?2:vtx_idx-1));
         idx++;
     }
