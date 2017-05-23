@@ -65,6 +65,7 @@ public:
 
     void remove_particle(const ParticleID& pid)
     {
+        container_.remove_particle(pid);
         const typename std::vector<std::pair<ParticleID, Particle> >::iterator i(
             std::find_if(queue_.begin(), queue_.end(),
                          ecell4::utils::pair_first_element_unary_predicator<
