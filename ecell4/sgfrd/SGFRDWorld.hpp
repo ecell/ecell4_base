@@ -192,6 +192,29 @@ class SGFRDWorld : public ecell4::Space
     }
 #endif
 
+    //TODO: consider periodic transpose in the same way as ParticleSpaceCellListImpl
+    Real distance_sq(const Real3& lhs, const Real3& rhs)
+    {
+        return length_sq(lhs - rhs);
+    }
+    Real distance(const Real3& lhs, const Real3& rhs)
+    {
+        return length(lhs - rhs);
+    }
+
+    template<typename str1T, typename str2T>
+    Real distance_sq(const std::pair<Real3, str1T>& lhs,
+                     const std::pair<Real3, str2T>& rhs)
+    {
+        return polygon_->distance_sq(lhs, rhs);
+    }
+    template<typename str1T, typename str2T>
+    Real distance(const std::pair<Real3, str1T>& lhs,
+                  const std::pair<Real3, str2T>& rhs)
+    {
+        return polygon_->distance(lhs, rhs);
+    }
+
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
         list_particles_within_radius(
             const Real3& pos, const Real& radius) const
