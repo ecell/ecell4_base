@@ -35,6 +35,7 @@ class SGFRDWorld : public ecell4::Space
     typedef polygon_type::barycentric_type  barycentric_type;
 
     typedef ecell4::Model model_type;
+    typedef ecell4::sgfrd::MoleculeInfo molecule_info_type;
 
     typedef ParticleSpaceCellListImpl default_particle_space_type;
     typedef ParticleSpace particle_space_type;
