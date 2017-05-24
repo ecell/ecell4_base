@@ -600,7 +600,9 @@ public:
 
         const VoxelPool* src_vp(get_voxel_pool_at(src));
         if (src_vp->is_vacant())
+        {
             return false;
+        }
 
         VoxelPool* dest_vp(get_voxel_pool_at(dest));
 
