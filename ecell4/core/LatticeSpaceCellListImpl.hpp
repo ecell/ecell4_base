@@ -591,6 +591,32 @@ public:
         return true;
     }
 
+    virtual bool can_move(const coordinate_type& src, const coordinate_type& dest) const
+    {
+        if (src == dest)
+        {
+            return false;
+        }
+
+        const VoxelPool* src_vp(get_voxel_pool_at(src));
+        if (src_vp->is_vacant())
+            return false;
+
+        VoxelPool* dest_vp(get_voxel_pool_at(dest));
+
+        if (dest_vp == border_)
+        {
+            return false;
+        }
+
+        if (dest_vp == periodic_)
+        {
+            dest_vp = get_voxel_pool_at(periodic_transpose(dest));
+        }
+
+        return (dest_vp == src_vp->location());
+    }
+
     virtual const Particle particle_at(const coordinate_type& coord) const
     {
         const VoxelPool* vp(get_voxel_pool_at(coord));

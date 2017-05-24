@@ -9,18 +9,21 @@ namespace ecell4
 bool LatticeSpace::can_move(const coordinate_type& src,
         const coordinate_type& dest) const
 {
+    throw NotImplemented("can_move is not implemented.");
     return false;
 }
 
 bool LatticeSpace::make_structure_type(const Species& sp,
     Shape::dimension_kind dimension, const std::string loc)
 {
+    throw NotImplemented("make_structure_type is not implemented.");
     return false;
 }
 
 bool LatticeSpace::make_interface_type(const Species& sp,
     Shape::dimension_kind dimension, const std::string loc)
 {
+    throw NotImplemented("make_interface_type is not implemented.");
     return false;
 }
 
