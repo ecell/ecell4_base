@@ -9,6 +9,7 @@
 
 #include "types.hpp"
 #include "Real3.hpp"
+#include "exceptions.hpp"
 
 #ifdef WITH_HDF5
 #include <hdf5.h>
