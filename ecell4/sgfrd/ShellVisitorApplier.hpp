@@ -4,6 +4,7 @@
 #include "Single.hpp"
 #include "Pair.hpp"
 #include "Multi.hpp"
+#include <boost/foreach.hpp>
 
 namespace ecell4
 {
@@ -48,11 +49,10 @@ struct mutable_shell_visitor_applier
         boost::is_same<void, typename Functor::result_type>, void>::type
     operator()(Functor& f, const Multi& dom)
     {
-        std::vector<ShellID> const& sids = dom.shells();
-        for(typename Multi::shell_id_container_type::const_iterator
-            iter = sids.begin(); iter != sids.end(); ++iter)
+        std::vector<ShellID> const& sids = dom.shell_ids();
+        BOOST_FOREACH(ShellID const& sid, sids)
         {
-            boost::apply_visitor(f, container_.get_shell(*iter));
+            boost::apply_visitor(f, container_.get_shell(sid));
         }
         return;
     }
@@ -62,12 +62,11 @@ struct mutable_shell_visitor_applier
         boost::is_same<bool, typename Functor::result_type>, bool>::type
     operator()(Functor& f, const Multi& dom)
     {
-        std::vector<ShellID> const& sids = dom.shells();
-        for(typename Multi::shell_id_container_type::const_iterator
-            iter = sids.begin(); iter != sids.end(); ++iter)
+        std::vector<ShellID> const& sids = dom.shell_ids();
+        BOOST_FOREACH(ShellID const& sid, sids)
         {
             if(Functor::eval_manner::is_resolved(
-                        boost::apply_visitor(f, container_.get_shell(*iter))))
+                        boost::apply_visitor(f, container_.get_shell(sid))))
             {
                 return Functor::eval_manner::value;
             }
