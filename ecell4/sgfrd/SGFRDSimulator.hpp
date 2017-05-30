@@ -51,10 +51,12 @@ class SGFRDSimulator :
     typedef polygon_type::local_index_type  local_index_type;
     typedef polygon_type::barycentric_type  barycentric_type;
 
-    // Event
+    // Event & Domain
     typedef SGFRDEvent                      event_type;
-    typedef SGFRDEventScheduler             scheduler_type;
     typedef SGFRDEvent::domain_type         domain_type;
+    typedef EventID                         event_id_type;
+    typedef DomainID                        domain_id_type;
+    typedef SGFRDEventScheduler             scheduler_type;
     typedef SGFRDEventScheduler::value_type event_id_pair_type;
 
     // Simulator
@@ -77,10 +79,12 @@ class SGFRDSimulator :
     typedef mutable_shell_visitor_applier<polygon_traits_type>
             mutable_shell_visitor_applier_type;
 
-    // reaction stuff
-    typedef ecell4::ReactionRule reaction_rule_type;
-    typedef MoleculeInfo molecule_info_type;
-    typedef ReactionInfo reaction_info_type;
+    // reaction
+    typedef ecell4::ReactionRule           reaction_rule_type;
+    typedef MoleculeInfo                   molecule_info_type;
+    typedef ReactionInfo                   reaction_info_type;
+    typedef std::pair<reaction_rule_type, reaction_info_type> reaction_log_type;
+    typedef std::vector<reaction_log_type> reaction_archive_type;
 
   public:
 
@@ -175,12 +179,13 @@ class SGFRDSimulator :
 
     struct domain_firer : boost::static_visitor<void>
     {
-        domain_firer(SGFRDSimulator& s): sim(s){}
+        domain_firer(SGFRDSimulator& s, domain_id_type d): sim(s), did(d){}
         void operator()(const Single&);
         void operator()(const Pair&);
         void operator()(const Multi&);
       private:
         SGFRDSimulator& sim;
+        domain_id_type  did;
     };
 
     struct domain_burster : boost::static_visitor<void>
@@ -205,8 +210,9 @@ class SGFRDSimulator :
             return;
         }
         void operator()(const Multi& dom)
-        {// TODO
-            std::cerr << "bursting multi shell" << std::endl;
+        {
+            // TODO
+            std::cerr << "bursting multi domain" << std::endl;
             return;
         }
 
@@ -249,6 +255,23 @@ class SGFRDSimulator :
         SGFRDSimulator& sim;
         const Pair& dom;
     };
+
+    /*!@brief burst domains that overlaps to particle in argument.
+     * for volume_clearer in Multi case.                          */
+    struct overlap_burster : boost::static_visitor<void>
+    {
+        overlap_burster(SGFRDSimulator& s, const domain_id_type& d)
+            : sim(s), did(d)
+        {}
+
+        void operator()(const Particle& p);
+        void operator()(const Particle& p, const face_id_type& fid);
+
+      private:
+        SGFRDSimulator& sim;
+        domain_id_type  did;
+    };
+
 
     struct single_escapement : boost::static_visitor<void>
     {
@@ -302,7 +325,7 @@ class SGFRDSimulator :
     void fire_event(const event_id_pair_type& ev)
     {
         DUMP_MESSAGE("fire_event");
-        domain_firer firer(*this);
+        domain_firer firer(*this, ev.first);
         boost::apply_visitor(firer, ev.second->domain());
         return ;
     }
