@@ -259,12 +259,12 @@ class SpeciesAttributesCallback(Callback):
                         'parameter must be given as a dict; "%s" given'
                         % str(rhs))
                 for key, value in rhs.items():
-                    if not (isinstance(key, (str, bytes))
-                        and isinstance(value, (str, bytes))):
-                        raise RuntimeError(
-                            'attributes must be given as a pair of strings;'
-                            + ' "%s" and "%s" given'
-                            % (str(key), str(value)))
+                    # if not (isinstance(key, (str, bytes))
+                    #     and isinstance(value, (str, bytes))):
+                    #     raise RuntimeError(
+                    #         'attributes must be given as a pair of strings;'
+                    #         + ' "%s" and "%s" given'
+                    #         % (str(key), str(value)))
                     sp.set_attribute(key, value)
             else:
                 if not isinstance(rhs, (tuple, list)):
@@ -280,10 +280,10 @@ class SpeciesAttributesCallback(Callback):
                         % (len(self.keys), len(rhs)))
                 else:
                     for key, value in zip(self.keys, rhs):
-                        if not isinstance(value, (str, bytes)):
-                            raise RuntimeError(
-                                'paramter must be given as a string; "%s" given'
-                                % str(value))
+                        # if not isinstance(value, (str, bytes)):
+                        #     raise RuntimeError(
+                        #         'paramter must be given as a string; "%s" given'
+                        #         % str(value))
                         sp.set_attribute(key, value)
 
             self.bitwise_operations.append(sp)

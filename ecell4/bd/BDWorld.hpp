@@ -106,18 +106,17 @@ public:
 
         if (sp.has_attribute("radius") && sp.has_attribute("D"))
         {
-            radius = std::atof(sp.get_attribute("radius").c_str());
-            D = std::atof(sp.get_attribute("D").c_str());
+            radius = sp.get_attribute_as<Real>("radius");
+            D = sp.get_attribute_as<Real>("D");
         }
         else if (boost::shared_ptr<Model> bound_model = lock_model())
         {
-            Species attributed(bound_model->apply_species_attributes(sp));
-            if (attributed.has_attribute("radius")
-                && attributed.has_attribute("D"))
+            Species newsp(bound_model->apply_species_attributes(sp));
+            if (newsp.has_attribute("radius")
+                && newsp.has_attribute("D"))
             {
-                radius = std::atof(
-                    attributed.get_attribute("radius").c_str());
-                D = std::atof(attributed.get_attribute("D").c_str());
+                radius = newsp.get_attribute_as<Real>("radius");
+                D = newsp.get_attribute_as<Real>("D");
             }
         }
 

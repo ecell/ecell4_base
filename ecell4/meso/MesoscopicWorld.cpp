@@ -44,26 +44,26 @@ MoleculeInfo MesoscopicWorld::get_molecule_info(const Species& sp) const
 
     if (with_loc)
     {
-        loc = sp.get_attribute("location");
+        loc = sp.get_attribute_as<std::string>("location");
     }
 
     if (with_D)
     {
-        D = std::atof(sp.get_attribute("D").c_str());
+        D = sp.get_attribute_as<Real>("D");
     }
     else
     {
         if (boost::shared_ptr<Model> bound_model = lock_model())
         {
-            Species attributed(bound_model->apply_species_attributes(sp));
-            if (attributed.has_attribute("D"))
+            Species newsp(bound_model->apply_species_attributes(sp));
+            if (newsp.has_attribute("D"))
             {
-                D = std::atof(attributed.get_attribute("D").c_str());
+                D = newsp.get_attribute_as<Real>("D");
             }
 
-            if (!with_loc && attributed.has_attribute("location"))
+            if (!with_loc && newsp.has_attribute("location"))
             {
-                loc = attributed.get_attribute("location");
+                loc = newsp.get_attribute_as<std::string>("location");
             }
         }
     }
