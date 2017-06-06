@@ -186,6 +186,31 @@ class SGFRDSimulator :
 
   private:
 
+    struct is_inside : boost::static_visitor<bool>
+    {
+        typedef minimal_eval_or eval_manner;
+
+        is_inside(Real3 pos, face_id_type f, polygon_type const& p)
+            : position(pos), fid(f), poly(p)
+        {}
+
+        //XXX: dispatch using shapeT::dimension to use 3D shells
+        template<typename shapeT, typename stridT>
+        bool operator()(const Shell<shapeT, stridT>& shell) const
+        {
+            return poly.distance_sq(
+                    std::make_pair(shell.position(), shell.structure_id()),
+                    std::make_pair(position, fid)) < (shell.size() * shell.size());
+        }
+
+      private:
+
+        Real3        position;
+        face_id_type fid;
+        polygon_type const& poly;
+    };
+
+
     struct domain_firer : boost::static_visitor<void>
     {
         domain_firer(SGFRDSimulator& s, domain_id_type d): sim(s), did(d){}
