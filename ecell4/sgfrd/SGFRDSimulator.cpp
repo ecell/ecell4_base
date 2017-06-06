@@ -41,7 +41,7 @@ void SGFRDSimulator::domain_firer::operator()(const Pair& dom)
     return;
 }
 
-void SGFRDSimulator::domain_firer::operator()(const Multi& dom)
+void SGFRDSimulator::domain_firer::operator()(Multi& dom)
 {
     volume_clearer vc(did, dom, sim, sim.imm_sh_vis_applier);
     dom.step(vc);

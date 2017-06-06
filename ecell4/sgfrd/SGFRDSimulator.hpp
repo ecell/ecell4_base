@@ -210,13 +210,12 @@ class SGFRDSimulator :
         polygon_type const& poly;
     };
 
-
     struct domain_firer : boost::static_visitor<void>
     {
         domain_firer(SGFRDSimulator& s, domain_id_type d): sim(s), did(d){}
         void operator()(const Single&);
         void operator()(const Pair&);
-        void operator()(const Multi&);
+        void operator()(Multi&);
       private:
         SGFRDSimulator& sim;
         domain_id_type  did;
@@ -427,7 +426,7 @@ class SGFRDSimulator :
         return;
     }
 
-    void fire_event(const event_id_pair_type& ev)
+    void fire_event(event_id_pair_type ev)
     {
         DUMP_MESSAGE("fire_event");
         domain_firer firer(*this, ev.first);
