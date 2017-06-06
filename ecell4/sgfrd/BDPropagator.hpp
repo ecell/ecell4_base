@@ -14,6 +14,8 @@ namespace ecell4
 namespace sgfrd
 {
 
+/* @brief execute BD algorithm for Multi shell.                      *
+ * @tparam containerT is expected to be a World or its wrapper class */
 template<typename containerT>
 class BDPropagator
 {
@@ -84,14 +86,13 @@ public:
             {
                 ParticleID pid2; Particle p2;
                 boost::tie(pid2, p2) = overlapped.front().first;
-                attempt_reaction(pid, p, fid,
-                        pid2, p2, this->container_.get_face_id(pid2));
+                attempt_reaction(pid, p, fid, pid2, p2, container_.get_face_id(pid2));
                 return true; // check and update is done in attempt_reaction().
             }
-            default: return true; // reject
+            default: return true; // reject if more than 2 particles overlap
         }
 
-        if(clear_volume(p, fid, pid))
+        if(clear_volume(p, fid, pid)) // return true if volume is cleared
             this->container_.update_particle(pid, p, fid);
 
         return true;
@@ -179,10 +180,10 @@ public:
         return false;
     }
 
-    //! A -> B case.
-    // particle does not move. but its radius may change. if overlap occur after
-    // reaction, the reaction rejected. if accepted, this function does both
-    // update and record reaction.
+    /*! @brief A -> B case.
+     * particle does not move. but its radius may change. if overlap occur after
+     * reaction, the reaction rejected. if accepted, this function does both
+     * update and record reaction. */
     bool attempt_reaction_1_to_1(
             const ParticleID& pid, const Particle& p, const face_id_type& fid,
             reaction_log_type rlog)
@@ -207,8 +208,8 @@ public:
         return true;
     }
 
-    //! A -> B + C case.
-    // after reaction, one of the products try to move.
+    /*! @brief A -> B + C case.
+     * after reaction, one of the products will try to move. */
     bool attempt_reaction_1_to_2(
             const ParticleID& pid, const Particle& p, const face_id_type& fid,
             reaction_log_type rlog)
@@ -290,8 +291,7 @@ public:
         return true;
     }
 
-    // XXX consider using boost::tuple
-    bool attempt_reaction_2_to_1(
+    bool attempt_reaction_2_to_1(// XXX consider using boost::tuple
             const ParticleID& pid1, const Particle& p1, const face_id_type& fid1,
             const ParticleID& pid2, const Particle& p2, const face_id_type& fid2,
             reaction_log_type rlog)
@@ -340,9 +340,9 @@ public:
         return;
     }
 
-    //! return true if there is overlapping particle.
-    //XXX: you can speedup this function by adding check_overlap() function that
-    //     returns immediately when found elements overlapping to the region.
+    /*! @brief return true if there is overlapping particle.
+     * XXX: you can speedup this function by adding check_overlap() function
+     *      returns immediately when found elements overlapping to the region.*/
     bool check_core_overlap(
             const std::pair<Real3, face_id_type>& pos, const Real& rad,
             const ParticleID& pid) const
@@ -379,8 +379,8 @@ public:
         return ;
     }
 
-    //! clear the region that particle will occupy. returns if succeed.
-    //  this may burst some domains that overlap with particle.
+    /*! clear the region that particle will occupy. returns if succeed.
+     *  this may burst some domains that overlap with particle. */
     bool clear_volume(const Particle& p, const face_id_type& fid)
     {// TODO
         return true;
