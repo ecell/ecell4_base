@@ -21,7 +21,7 @@ class BDPropagator
 {
 public:
     typedef containerT container_type;
-    typedef vcT volume_clearer_type;
+    typedef volume_clearerT volume_clearer_type;
     typedef ecell4::sgfrd::polygon_traits   polygon_traits_type;
     typedef Polygon<polygon_traits_type>    polygon_type;
     typedef polygon_type::triangle_type     triangle_type;
