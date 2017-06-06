@@ -76,8 +76,10 @@ class SGFRDSimulator :
     typedef shell_container_type::circular_shell_type  circular_shell_type;
     typedef shell_container_type::conical_surface_shell_type
             conical_surface_shell_type;
-    typedef mutable_shell_visitor_applier<polygon_traits_type>
+    typedef shell_visitor_applier<shell_container_type>
             mutable_shell_visitor_applier_type;
+    typedef shell_visitor_applier<const shell_container_type>
+            immutable_shell_visitor_applier_type;
 
     // reaction
     typedef ecell4::ReactionRule           reaction_rule_type;
@@ -93,13 +95,13 @@ class SGFRDSimulator :
                    Real bd_dt_factor = 1e-5)
         : base_type(model, world), dt_(0), bd_dt_factor_(bd_dt_factor),
           rng_(*(world->rng())), shell_container_(*(world->polygon())),
-          mut_sh_vis_applier(shell_container_)
+          mut_sh_vis_applier(shell_container_), imm_sh_vis_applier(shell_container_)
     {}
 
     SGFRDSimulator(boost::shared_ptr<world_type> world, Real bd_dt_factor = 1e-5)
         : base_type(world), dt_(0), bd_dt_factor_(bd_dt_factor),
           rng_(*(world->rng())), shell_container_(*(world->polygon())),
-          mut_sh_vis_applier(shell_container_)
+          mut_sh_vis_applier(shell_container_), imm_sh_vis_applier(shell_container_)
     {}
 
     ~SGFRDSimulator(){}
@@ -192,6 +194,7 @@ class SGFRDSimulator :
     {
         typedef std::vector<pid_p_fid_tuple_type> remnants_type;
 
+        // TODO: enable to change bursting time
         domain_burster(SGFRDSimulator& s, remnants_type& r)
             : remnants(r), sim(s)
         {}
@@ -535,11 +538,12 @@ class SGFRDSimulator :
     // Integer num_steps_;
     Real dt_;
     Real bd_dt_factor_;
-    ecell4::RandomNumberGenerator&     rng_;
-    scheduler_type                     scheduler_;
-    shell_id_generator_type            shell_id_gen;
-    shell_container_type               shell_container_;
-    mutable_shell_visitor_applier_type mut_sh_vis_applier;
+    ecell4::RandomNumberGenerator&       rng_;
+    scheduler_type                       scheduler_;
+    shell_id_generator_type              shell_id_gen;
+    shell_container_type                 shell_container_;
+    mutable_shell_visitor_applier_type   mut_sh_vis_applier;
+    immutable_shell_visitor_applier_type imm_sh_vis_applier;
     std::vector<std::pair<reaction_rule_type, reaction_info_type> > last_reactions_;
 };
 
