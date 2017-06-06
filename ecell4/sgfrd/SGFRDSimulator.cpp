@@ -53,8 +53,13 @@ void SGFRDSimulator::domain_firer::operator()(Multi& dom)
             sim.add_event(dom);
             break;
         }
-        case Multi::ESCAPE: // or
         case Multi::REACTION:
+        {
+            std::copy(dom.last_reactions().begin(), dom.last_reactions().end(),
+                      std::back_inserter(this->last_reactions_));
+            //XXX: succeeding block will executed to burst this domain.
+        }
+        case Multi::ESCAPE:
         {
             /* burst this domain! */
             domain_burster::remnants_type bursted;
