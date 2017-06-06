@@ -42,6 +42,8 @@ class MultiContainer
     particle_container_type&       list_particles()       {return pcon_;}
     particle_container_type const& list_particles() const {return pcon_;}
 
+    std::size_t num_particles() const {return pcon_.size();}
+
     Real t() const {return world_.t();}
 
     face_id_type get_face_id(const ParticleID& pid) const
