@@ -177,6 +177,13 @@ class SGFRDSimulator :
     Real time() const {return this->world_->t();}
     void set_time(const Real t) {return this->world_->set_t(t);}
 
+    boost::shared_ptr<event_type> pickout_event(const event_id_type& id)
+    {
+        BOOST_AUTO(tmp, scheduler_.get(id));
+        scheduler_.remove(id);
+        return tmp;
+    }
+
   private:
 
     struct domain_firer : boost::static_visitor<void>
@@ -277,7 +284,6 @@ class SGFRDSimulator :
             : sim(s), did(d)
         {}
 
-        void operator()(const Particle& p);
         void operator()(const Particle& p, const face_id_type& fid);
 
       private:

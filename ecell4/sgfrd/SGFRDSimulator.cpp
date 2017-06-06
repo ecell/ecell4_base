@@ -139,6 +139,25 @@ void SGFRDSimulator::pair_burster::operator()(const conical_surface_shell_type& 
     throw std::logic_error("bursting pair conical surface shell");
 }
 
+void SGFRDSimulator::overlap_burster::operator()(
+        const Particle& p, const face_id_type& fid)
+{
+    const std::vector<std::pair<DomainID, Real> > overlaps =
+        sim.get_intrusive_domains(std::make_pair(p.position(), fid), p.radius());
+
+    DomainID domid; ParticleID pid; Particle part; face_id_type face;
+    domain_burster::remnants_type bursted;
+    BOOST_FOREACH(boost::tie(domid, boost::tuples::ignore), overlaps)
+    {
+        if(this->did == domid) continue;
+        sim.burst_event(*(sim.pickout_event(domid)), bursted);
+        BOOST_FOREACH(boost::tie(pid, part, face), bursted)
+        {
+            sim.add_event(sim.create_closely_fitted_domain(
+                sim.create_closely_fitted_shell(pid, part, face), pid, part));
+        }
+    }
+}
 
 void SGFRDSimulator::single_escapement::operator()(const circular_shell_type& sh)
 {
