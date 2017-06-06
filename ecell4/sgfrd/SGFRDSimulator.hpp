@@ -225,9 +225,7 @@ class SGFRDSimulator :
             Particle p; ParticleID pid;
             BOOST_FOREACH(boost::tie(pid, p), dom.particles())
             {
-                sim.add_event(create_closely_fitted_domain(
-                    create_closely_fitted_shell(pid, p, this->get_face_id(pid)),
-                        pid, p));
+                remnants.push_back(boost::make_tuple(pid, p, sim.get_face_id(pid)));
             }
             BOOST_FOREACH(ShellID sid, dom.shell_ids())
             {
