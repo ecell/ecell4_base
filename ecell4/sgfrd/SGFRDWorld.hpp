@@ -166,6 +166,11 @@ class SGFRDWorld : public ecell4::Space
         return registrator_.elements_over(fid);
     }
 
+    bool is_on_face(const ParticleID& pid) const
+    {
+        return registrator_.have(pid);
+    }
+
     face_id_type get_face_id(const ParticleID& pid) const
     {
         return registrator_.structure_on(pid);
@@ -270,7 +275,7 @@ class SGFRDWorld : public ecell4::Space
         return model_.lock();
     }
 
-    MoleculeInfo get_molecule_info(const Species& sp) const
+    molecule_info_type get_molecule_info(const Species& sp) const
     {
         if(sp.has_attribute("radius") && sp.has_attribute("D"))
         {
