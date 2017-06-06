@@ -25,6 +25,7 @@ public:
 
     Real const&        time()   const {return time_;}
     domain_type const& domain() const {return domain_;}
+    domain_type &      domain()       {return domain_;}
 
 private:
 
