@@ -214,8 +214,18 @@ class SGFRDSimulator :
         }
         void operator()(const Multi& dom)
         {
-            // TODO
-            std::cerr << "bursting multi domain" << std::endl;
+            // simply remove all the shells and add domain for all the particles
+            Particle p; ParticleID pid;
+            BOOST_FOREACH(boost::tie(pid, p), dom.particles())
+            {
+                sim.add_event(create_closely_fitted_domain(
+                    create_closely_fitted_shell(pid, p, this->get_face_id(pid)),
+                        pid, p));
+            }
+            BOOST_FOREACH(ShellID sid, dom.shell_ids())
+            {
+                sim.remove_shell(sid);
+            }
             return;
         }
 
