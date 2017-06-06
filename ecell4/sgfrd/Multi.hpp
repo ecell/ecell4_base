@@ -37,12 +37,11 @@ class Multi
     typedef SGFRDSimulator           simulator_type;
     typedef MultiContainer           container_type;
 
-    typedef BDPropagator<container_type> propagator_type;
-    typedef propagator_type::reaction_rule_type    reaction_rule_type;
-    typedef propagator_type::molecule_info_type    molecule_info_type;
-    typedef propagator_type::reaction_info_type    reaction_info_type;
-    typedef propagator_type::reaction_log_type     reaction_log_type;
-    typedef propagator_type::reaction_archive_type reaction_archive_type;
+    typedef ecell4::ReactionRule reaction_rule_type;
+    typedef ecell4::sgfrd::MoleculeInfo molecule_info_type;
+    typedef ecell4::sgfrd::ReactionInfo reaction_info_type;
+    typedef std::pair<reaction_rule_type, reaction_info_type> reaction_log_type;
+    typedef std::vector<reaction_log_type>                reaction_archive_type;
 
   public:
 
@@ -58,8 +57,10 @@ class Multi
         this->last_reactions_.clear();
         kind_ = NONE;
 
-        propagator_type propagator(model_, container_, *(world_.polygon()),
-                *(world_.rng()), dt_, reaction_length_, last_reactions_, vc);
+        BDPropagator<container_type, vcT> propagator(model_, container_,
+                *(world_.polygon()), *(world_.rng()), dt_, reaction_length_,
+                last_reactions_, vc);
+
         while(propagator())
         {
             // if reaction occurs, return immediately
