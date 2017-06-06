@@ -74,7 +74,7 @@ public:
 
         this->propagate(position, displacement);
 
-        if(this->check_core_overlap(position, p.radius(), pid))
+        if(is_overlapping(position, p.radius(), pid))
             position = std::make_pair(p.position(), fid); // restore
 
         boost::tie(p.position(), fid) = position;
@@ -196,7 +196,7 @@ public:
         const Real radius_new = mol_info.radius;
         const Real D_new      = mol_info.D;
 
-        if(check_core_overlap(std::make_pair(p.position(), fid), radius_new, pid))
+        if(is_overlapping(std::make_pair(p.position(), fid), radius_new, pid))
             return false;
 
         Particle particle_new(species_new, p.position(), radius_new, D_new);
@@ -242,8 +242,8 @@ public:
             this->propagate(newpfs[0], disp1);
             this->propagate(newpfs[1], disp2);
 
-            if(check_core_overlap(newpfs[0], r1, pid)) continue;
-            if(check_core_overlap(newpfs[1], r2, pid)) continue;
+            if(is_overlapping(newpfs[0], r1, pid)) continue;
+            if(is_overlapping(newpfs[1], r2, pid)) continue;
 
             break; // no overlap!
         }
@@ -274,7 +274,7 @@ public:
         BOOST_AUTO(displacement, draw_displacement(particles_new[idx],
                                                    newpfs[idx].second));
         this->propagate(position, displacement);
-        if(!check_core_overlap(position, particles_new[idx].radius(), pid_to_move))
+        if(!is_overlapping(position, particles_new[idx].radius(), pid_to_move))
         {
             const Real3 tmp = particles_new[idx].position();
             particles_new[idx].position() = position.first;
@@ -311,7 +311,7 @@ public:
         std::pair<Real3, face_id_type> pf1(pos1, fid1);
         this->propagate(pf1, dp);
 
-        if(check_core_overlap(pf1, radius_new, pid1, pid2)) return false;
+        if(is_overlapping(pf1, radius_new, pid1, pid2)) return false;
 
         const Particle particle_new(sp_new, pf1.first, radius_new, D_new);
         if(!clear_volume(particle_new, pf1.second, pid1, pid2)) return false;
@@ -341,21 +341,17 @@ public:
         return;
     }
 
-    /*! @brief return true if there is overlapping particle.
-     * XXX: you can speedup this function by adding check_overlap() function
-     *      returns immediately when found elements overlapping to the region.*/
-    bool check_core_overlap(
+    bool is_overlapping(
             const std::pair<Real3, face_id_type>& pos, const Real& rad,
             const ParticleID& pid) const
     {
-        return !(this->container_.list_particles_within_radius(pos, rad, pid).empty());
+        return !(this->container_.check_no_overlap(pos, rad, pid));
     }
-    bool check_core_overlap(
+    bool is_overlapping(
             const std::pair<Real3, face_id_type>& pos, const Real& rad,
             const ParticleID& pid1, const ParticleID& pid2) const
     {
-        return !(this->container_.list_particles_within_radius(
-                    pos, rad, pid1, pid2).empty());
+        return !(this->container_.check_no_overlap(pos, rad, pid1, pid2));
     }
 
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
