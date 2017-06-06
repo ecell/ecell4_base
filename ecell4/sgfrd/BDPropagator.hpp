@@ -46,8 +46,9 @@ public:
 
 public:
 
-    BDPropagator(Model& model, container_type& container, const polygon_type& p,
-                 RandomNumberGenerator& rng, const Real dt, const Real rl,
+    BDPropagator(const model_type& model, container_type& container,
+                 const polygon_type& p, RandomNumberGenerator& rng,
+                 const Real dt, const Real rl,
                  reaction_archive_type& last_reactions)
     : max_retry_count_(1), dt_(dt), reaction_length_(rl), model_(model),
       container_(container), polygon_(p), rng_(rng),
@@ -468,8 +469,8 @@ protected:
     Integer max_retry_count_;
     Real    dt_;
     Real    reaction_length_;
-    ecell4::Model&         model_;
     container_type&        container_;
+    model_type const&      model_;
     polygon_type const&    polygon_;
     RandomNumberGenerator& rng_;
     reaction_archive_type& last_reactions_;
