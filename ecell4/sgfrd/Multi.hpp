@@ -44,20 +44,31 @@ class Multi
     typedef propagator_type::reaction_log_type     reaction_log_type;
     typedef propagator_type::reaction_archive_type reaction_archive_type;
 
-
   public:
+
     Multi(simulator_type& sim, world_type& world)
         : dt_(0.), begin_time_(0.), simulator_(sim), world_(world),
           container_(world), model_(*world.lock_model())
     {}
     ~Multi(){}
 
-    void step()
+    template<typename vcT>
+    void step(vcT vc)
     {
         this->last_reactions_.clear();
+        kind_ = NONE;
+
         propagator_type propagator(model_, container_, *(world_.polygon()),
-                *(world_.rng()), dt_, reaction_length_, last_reactions_);
-        while(propagator()){/*do nothing*/}
+                *(world_.rng()), dt_, reaction_length_, last_reactions_, vc);
+        while(propagator())
+        {
+            // if reaction occurs, return immediately
+            if(!last_reactions_.empty())
+            {
+                kind_ = REACTION;
+                break;
+            }
+        }
     }
 
     EventKind& eventkind()       {return kind_;}
