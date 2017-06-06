@@ -21,14 +21,12 @@ struct minimal_eval_and : boost::false_type
     static bool is_resolved(const bool v) {return !v;}
 };
 
-template<typename T_polygon_traits>
-struct mutable_shell_visitor_applier
+template<typename T_shell_container>
+struct shell_visitor_applier
 {
-    ShellContainer<T_polygon_traits>& container_;
+    T_shell_container& container_;
 
-    mutable_shell_visitor_applier(ShellContainer<T_polygon_traits>& con)
-        : container_(con)
-    {}
+    shell_visitor_applier(T_shell_container& con) : container_(con){}
 
     template<typename Functor>
     typename Functor::result_type
