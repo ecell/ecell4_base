@@ -150,7 +150,9 @@ class SGFRDSimulator :
     std::vector<std::pair<ReactionRule, reaction_info_type> > const&
     last_reactions() const {return last_reactions_;}
 
-  private: // wrappers
+  private:
+
+    // simple wrappers to call member's member-method (e.g. world_->t()) {{{
 
     Real uniform_real(){return this->rng_.random();}
 
@@ -177,6 +179,8 @@ class SGFRDSimulator :
     Real time() const {return this->world_->t();}
     void set_time(const Real t) {return this->world_->set_t(t);}
 
+    // }}}
+
     boost::shared_ptr<event_type> pickout_event(const event_id_type& id)
     {
         BOOST_AUTO(tmp, scheduler_.get(id));
@@ -186,6 +190,7 @@ class SGFRDSimulator :
 
   private:
 
+    // visitors and functors to handle events {{{
     struct is_inside : boost::static_visitor<bool>
     {
         typedef minimal_eval_or eval_manner;
@@ -414,6 +419,7 @@ class SGFRDSimulator :
         SGFRDSimulator& sim;
         Single const& dom;
     };
+    //}}} visitors
 
     //! make event from domain and push it into scheduler
     template<typename domainT>
