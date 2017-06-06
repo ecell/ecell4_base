@@ -473,17 +473,21 @@ class SGFRDSimulator :
         const std::vector<std::pair<std::pair<ShellID, shell_type>, Real>
             > shells(shell_container_.list_shells_within_radius(pos, radius));
 
-        std::vector<std::pair<DomainID, Real> > domains(shells.size());
+        std::vector<std::pair<DomainID, Real> > domains;
+        domains.reserve(shells.size());
 
-        std::vector<std::pair<DomainID, Real> >::iterator dest = domains.begin();
-        for(std::vector<std::pair<std::pair<ShellID, shell_type>, Real>
-            >::const_iterator iter(shells.begin()), end(shells.end());
-            iter != end; ++iter)
+        std::pair<ShellID, shell_type> shell_id_pair; Real dist;
+        BOOST_FOREACH(boost::tie(shell_id_pair, dist), shells)
         {
-            *dest = std::make_pair(
-                    boost::apply_visitor(domain_id_getter(), iter->first.second),
-                    iter->second);
-            ++dest;
+            const DomainID did = boost::apply_visitor(
+                    domain_id_getter(), shell_id_pair.second);
+
+            if(std::find_if(domains.begin(), domains.end(),
+                    ecell4::utils::pair_first_element_unary_predicator<
+                    DomainID, Real>(did)) == domains.end())
+            {
+                domains.push_back(std::make_pair(did, dist));
+            }
         }
         return domains;
     }
@@ -496,17 +500,21 @@ class SGFRDSimulator :
         const std::vector<std::pair<std::pair<ShellID, shell_type>, Real>
             > shells(shell_container_.list_shells_within_radius(vpos, radius));
 
-        std::vector<std::pair<DomainID, Real> > domains(shells.size());
+        std::vector<std::pair<DomainID, Real> > domains;
+        domains.reserve(shells.size());
 
-        std::vector<std::pair<DomainID, Real> >::iterator dest = domains.begin();
-        for(std::vector<std::pair<std::pair<ShellID, shell_type>, Real>
-            >::const_iterator iter(shells.begin()), end(shells.end());
-            iter != end; ++iter)
+        std::pair<ShellID, shell_type> shell_id_pair; Real dist;
+        BOOST_FOREACH(boost::tie(shell_id_pair, dist), shells)
         {
-            *dest = std::make_pair(
-                    boost::apply_visitor(domain_id_getter(), iter->first.second),
-                    iter->second);
-            ++dest;
+            const DomainID did = boost::apply_visitor(
+                    domain_id_getter(), shell_id_pair.second);
+
+            if(std::find_if(domains.begin(), domains.end(),
+                    ecell4::utils::pair_first_element_unary_predicator<
+                    DomainID, Real>(did)) == domains.end())
+            {
+                domains.push_back(std::make_pair(did, dist));
+            }
         }
         return domains;
     }
