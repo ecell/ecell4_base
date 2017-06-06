@@ -157,5 +157,117 @@ SGFRDWorld::list_particles_within_radius(
     return retval;
 }
 
+
+bool SGFRDWorld::check_no_overlap(
+        const std::pair<Real3, face_id_type>& pos, const Real& radius) const
+{
+    {// same face
+        const std::vector<ParticleID>& ids = this->list_particleIDs(pos.second);
+        for(std::vector<ParticleID>::const_iterator
+            i(ids.begin()), e(ids.end()); i != e; ++i)
+        {
+            const std::pair<ParticleID, Particle> pp = ps_->get_particle(*i);
+            const Real dist = length(pos.first - pp.second.position()) -
+                              pp.second.radius();
+            if(dist < radius) return false;
+        }
+    }
+
+    std::vector<face_id_type> const& neighbors =
+        polygon_->neighbor_faces(pos.second);
+    for(std::vector<face_id_type>::const_iterator
+        iter = neighbors.begin(); iter != neighbors.end(); ++iter)
+    {
+        const std::vector<ParticleID>& ids = registrator_.elements_over(*iter);
+        for(std::vector<ParticleID>::const_iterator
+                i(ids.begin()), e(ids.end()); i != e; ++i)
+        {
+            const std::pair<ParticleID, Particle> pp = ps_->get_particle(*i);
+            const Real dist = polygon_->distance(pos,
+                std::make_pair(pp.second.position(), get_face_id(pp.first))) -
+                pp.second.radius();
+            if(dist < radius) return false;
+        }
+    }
+    return true;
+}
+
+bool SGFRDWorld::check_no_overlap(
+        const std::pair<Real3, face_id_type>& pos, const Real& radius,
+        const ParticleID& ignore) const
+{
+    {// same face
+        const std::vector<ParticleID>& ids = this->list_particleIDs(pos.second);
+        for(std::vector<ParticleID>::const_iterator
+            i(ids.begin()), e(ids.end()); i != e; ++i)
+        {
+            if(*i == ignore) continue;
+            const std::pair<ParticleID, Particle> pp = ps_->get_particle(*i);
+            const Real dist = length(pos.first - pp.second.position()) -
+                              pp.second.radius();
+            if(dist < radius) return false;
+        }
+    }
+
+    std::vector<face_id_type> const& neighbors =
+        polygon_->neighbor_faces(pos.second);
+    for(std::vector<face_id_type>::const_iterator
+        iter = neighbors.begin(); iter != neighbors.end(); ++iter)
+    {
+        const std::vector<ParticleID>& ids = this->list_particleIDs(*iter);
+        for(std::vector<ParticleID>::const_iterator
+                i(ids.begin()), e(ids.end()); i != e; ++i)
+        {
+            if(*i == ignore) continue;
+            const std::pair<ParticleID, Particle> pp = ps_->get_particle(*i);
+            const Real dist = polygon_->distance(pos,
+                std::make_pair(pp.second.position(), get_face_id(pp.first))) -
+                pp.second.radius();
+            if(dist < radius) return false;
+        }
+    }
+    return true;
+}
+
+bool SGFRDWorld::check_no_overlap(
+        const std::pair<Real3, face_id_type>& pos, const Real& radius,
+        const ParticleID& ignore1, const ParticleID& ignore2) const
+{
+    {// same face
+        const std::vector<ParticleID>& ids = this->list_particleIDs(pos.second);
+        for(std::vector<ParticleID>::const_iterator
+            i(ids.begin()), e(ids.end()); i != e; ++i)
+        {
+            if(*i == ignore1 || *i == ignore2) continue;
+            const std::pair<ParticleID, Particle> pp = ps_->get_particle(*i);
+            const Real dist = length(pos.first - pp.second.position()) -
+                              pp.second.radius();
+            if(dist < radius) return false;
+        }
+    }
+
+    std::vector<face_id_type> const& neighbors =
+        polygon_->neighbor_faces(pos.second);
+    for(std::vector<face_id_type>::const_iterator
+        iter = neighbors.begin(); iter != neighbors.end(); ++iter)
+    {
+        const std::vector<ParticleID>& ids = this->list_particleIDs(*iter);
+        for(std::vector<ParticleID>::const_iterator
+                i(ids.begin()), e(ids.end()); i != e; ++i)
+        {
+            if(*i == ignore1 || *i == ignore2) continue;
+            const std::pair<ParticleID, Particle> pp = ps_->get_particle(*i);
+            const Real dist = polygon_->distance(pos,
+                std::make_pair(pp.second.position(), get_face_id(pp.first))) -
+                pp.second.radius();
+            if(dist < radius) return false;
+        }
+    }
+    return false;
+}
+
+
+
+
 }// sgfrd
 }// ecell4

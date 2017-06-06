@@ -254,6 +254,33 @@ class SGFRDWorld : public ecell4::Space
             const std::pair<Real3, face_id_type>& pos, const Real& radius,
             const ParticleID& ignore1, const ParticleID& ignore2) const;
 
+    // return false if overlap exists. for 3D. FIXME: speedup
+    bool check_no_overlap(const Real3& pos, const Real& radius) const
+    {
+        return ps_->list_particles_within_radius(pos, radius).empty();
+    }
+    bool check_no_overlap(const Real3& pos, const Real& radius,
+            const ParticleID& ignore) const
+    {
+        return ps_->list_particles_within_radius(pos, radius, ignore).empty();
+    }
+    bool check_no_overlap(const Real3& pos, const Real& radius,
+            const ParticleID& ignore1, const ParticleID& ignore2) const
+    {
+        return ps_->list_particles_within_radius(pos, radius, ignore1, ignore2
+                ).empty();
+    }
+
+    // return false if overlap exists.
+    bool check_no_overlap(
+            const std::pair<Real3, face_id_type>& pos, const Real& radius) const;
+    bool check_no_overlap(
+            const std::pair<Real3, face_id_type>& pos, const Real& radius,
+            const ParticleID& ignore) const;
+    bool check_no_overlap(
+            const std::pair<Real3, face_id_type>& pos, const Real& radius,
+            const ParticleID& ignore1, const ParticleID& ignore2) const;
+
     particle_container_type const& particles() const {return ps_->particles();}
 
 
