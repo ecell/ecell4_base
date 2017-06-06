@@ -42,9 +42,37 @@ void SGFRDSimulator::domain_firer::operator()(const Pair& dom)
 }
 
 void SGFRDSimulator::domain_firer::operator()(const Multi& dom)
-{//TODO
-    std::cerr << "[WARNING] Multi domain firer has not been implemented yet"
-              << std::endl;
+{
+    volume_clearer vc(did, dom, sim, sim.imm_sh_vis_applier);
+    dom.step(vc);
+    switch(dom.eventkind())
+    {
+        case Multi::NONE:
+        {
+            /* continuing multi domain: add this domain to scheduler */
+            sim.add_event(dom);
+            break;
+        }
+        case Multi::ESCAPE: // or
+        case Multi::REACTION:
+        {
+            /* burst this domain! */
+            domain_burster::remnants_type bursted;
+            domain_burster burster(sim, bursted);
+            burster(dom);
+            ParticleID pid; Particle p; face_id_type fid;
+            BOOST_FOREACH(boost::tie(pid, p, fid), bursted)
+            {
+                sim.add_event(sim.create_closely_fitted_domain(
+                    sim.create_closely_fitted_shell(pid, p, fid), pid, p));
+            }
+            break;
+        }
+        default:
+        {
+            throw std::logic_error("never reach here");
+        }
+    }
     return;
 }
 
