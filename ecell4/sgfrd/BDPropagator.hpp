@@ -16,11 +16,12 @@ namespace sgfrd
 
 /* @brief execute BD algorithm for Multi shell.                      *
  * @tparam containerT is expected to be a World or its wrapper class */
-template<typename containerT>
+template<typename containerT, typename volume_clearerT>
 class BDPropagator
 {
 public:
     typedef containerT container_type;
+    typedef vcT volume_clearer_type;
     typedef ecell4::sgfrd::polygon_traits   polygon_traits_type;
     typedef Polygon<polygon_traits_type>    polygon_type;
     typedef polygon_type::triangle_type     triangle_type;
@@ -49,12 +50,12 @@ public:
     BDPropagator(const model_type& model, container_type& container,
                  const polygon_type& p, RandomNumberGenerator& rng,
                  const Real dt, const Real rl,
-                 reaction_archive_type& last_reactions)
+                 reaction_archive_type& last_reactions,
+                 volume_clearer_type vc)
     : max_retry_count_(1), dt_(dt), reaction_length_(rl), model_(model),
       container_(container), polygon_(p), rng_(rng),
-      last_reactions_(last_reactions)
+      last_reactions_(last_reactions), vc_(vc), queue_(container.list_particles())
     {
-        queue_ = container.list_particles();
         shuffle(rng_, queue_);
     }
 
@@ -379,20 +380,20 @@ public:
     /*! clear the region that particle will occupy. returns if succeed.
      *  this may burst some domains that overlap with particle. */
     bool clear_volume(const Particle& p, const face_id_type& fid)
-    {// TODO
-        return true;
+    {
+        return vc_(p, fid);
     }
 
     bool clear_volume(const Particle& p, const face_id_type& fid,
                       const ParticleID& ignore)
-    {// TODO
-        return true;
+    {
+        return vc_(p, fid, ignore);
     }
 
     bool clear_volume(const Particle& p, const face_id_type& fid,
                       const ParticleID& ignore1, const ParticleID& ignore2)
-    {// TODO
-        return true;
+    {
+        return vc_(p, fid, ignore1, ignore2);
     }
 
     Real3 random_circular_uniform(const Real& r)
@@ -470,6 +471,7 @@ protected:
     polygon_type const&    polygon_;
     RandomNumberGenerator& rng_;
     reaction_archive_type& last_reactions_;
+    volume_clearer_type    vc_;
     queue_type queue_;
 };
 
