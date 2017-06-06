@@ -314,6 +314,69 @@ class SGFRDSimulator :
         domain_id_type  did;
     };
 
+    struct volume_clearer
+    {
+        volume_clearer(domain_id_type d, const Multi& dom, SGFRDSimulator& s,
+                       immutable_shell_visitor_applier_type& imm)
+            : sim(s), did(d), domain(dom), applier(imm)
+        {}
+
+        bool operator()(const Particle& p, const face_id_type& fid)
+        {
+            // - check particle is inside the domain
+            is_inside inside_checker(p.position(), fid, sim.polygon());
+            if(applier(inside_checker, domain))
+                return true;
+
+            // - burst overlapping shells
+            overlap_burster burst_overlaps(sim, did);
+            burst_overlaps(p, fid);
+
+            // - check overlapping particles
+            return sim.world().check_no_overlap(
+                    std::make_pair(p.position(), fid), p.radius());
+        }
+
+        bool operator()(const Particle& p, const face_id_type& fid,
+                        const ParticleID& ignore)
+        {
+            // - check particle is inside the domain
+            is_inside inside_checker(p.position(), fid, sim.polygon());
+            if(applier(inside_checker, domain))
+                return true;
+
+            // - burst overlapping shells
+            overlap_burster burst_overlaps(sim, did);
+            burst_overlaps(p, fid);
+
+            // - check overlapping particles
+            return sim.world().check_no_overlap(
+                    std::make_pair(p.position(), fid), p.radius(), ignore);
+        }
+
+        bool operator()(const Particle& p, const face_id_type& fid,
+                        const ParticleID& ign1, const ParticleID& ign2)
+        {
+            // - check particle is inside the domain
+            is_inside inside_checker(p.position(), fid, sim.polygon());
+            if(applier(inside_checker, domain))
+                return true;
+
+            // - burst overlapping shells
+            overlap_burster burst_overlaps(sim, did);
+            burst_overlaps(p, fid);
+
+            // - check overlapping particles
+            return sim.world().check_no_overlap(
+                    std::make_pair(p.position(), fid), p.radius(), ign1, ign2);
+        }
+
+      private:
+        SGFRDSimulator& sim;
+        domain_id_type  did;
+        Multi const&    domain;
+        immutable_shell_visitor_applier_type applier;
+    };
 
     struct single_escapement : boost::static_visitor<void>
     {
