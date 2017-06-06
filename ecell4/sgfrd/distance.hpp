@@ -182,26 +182,63 @@ struct distance_impl<Real3, ecell4::Segment>
     }
 };
 
+// ----------------------------------------------------------------------------
+
 template<typename T1, typename T2>
 inline typename boost::enable_if<boost::mpl::and_<
-boost::mpl::or_<boost::is_base_of<ecell4::Shape, T1>, boost::is_same<T1, Real3> >,
-boost::mpl::or_<boost::is_base_of<ecell4::Shape, T2>, boost::is_same<T2, Real3> >
->, Real>::type
+    boost::is_base_of<ecell4::Shape, T1>, boost::is_base_of<ecell4::Shape, T2>
+    >, Real>::type
 distance(const T1& shape1, const T2& shape2)
 {
     return distance_impl<T1, T2>()(shape1, shape2);
 }
 
+template<typename T>
+inline typename boost::enable_if<boost::is_base_of<ecell4::Shape, T>, Real>::type
+distance(const T& shape, const Real3& pos)
+{
+    return distance_impl<Real3, T>()(pos, shape);
+}
+
+template<typename T>
+inline typename boost::enable_if<boost::is_base_of<ecell4::Shape, T>, Real>::type
+distance(const Real3& pos, const T& shape)
+{
+    return distance_impl<Real3, T>()(pos, shape);
+}
+
+inline Real distance(const Real3& lhs, const Real3& rhs)
+{
+    return length(lhs - rhs);
+}
+
 template<typename T1, typename T2>
 inline typename boost::enable_if<boost::mpl::and_<
-boost::mpl::or_<boost::is_base_of<ecell4::Shape, T1>, boost::is_same<T1, Real3> >,
-boost::mpl::or_<boost::is_base_of<ecell4::Shape, T2>, boost::is_same<T2, Real3> >
->, Real>::type
+    boost::is_base_of<ecell4::Shape, T1>, boost::is_base_of<ecell4::Shape, T2>
+    >, Real>::type
 distance_sq(const T1& shape1, const T2& shape2)
 {
     return distance_sq_impl<T1, T2>()(shape1, shape2);
 }
 
+template<typename T>
+inline typename boost::enable_if<boost::is_base_of<ecell4::Shape, T>, Real>::type
+distance_sq(const T& shape, const Real3& pos)
+{
+    return distance_sq_impl<Real3, T>()(pos, shape);
+}
+
+template<typename T>
+inline typename boost::enable_if<boost::is_base_of<ecell4::Shape, T>, Real>::type
+distance_sq(const Real3& pos, const T& shape)
+{
+    return distance_sq_impl<Real3, T>()(pos, shape);
+}
+
+inline Real distance_sq(const Real3& lhs, const Real3& rhs)
+{
+    return length_sq(lhs - rhs);
+}
 
 } // sgfrd
 }// ecell4
