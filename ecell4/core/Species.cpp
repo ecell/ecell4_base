@@ -48,9 +48,9 @@ void Species::add_unit(const UnitSpecies& usp)
     }
 }
 
-std::vector<std::pair<std::string, std::string> > Species::list_attributes() const
+std::vector<std::pair<std::string, Species::attribute_type> > Species::list_attributes() const
 {
-    std::vector<std::pair<std::string, std::string> > retval;
+    std::vector<std::pair<std::string, attribute_type> > retval;
     for (attributes_container_type::const_iterator
         i(attributes_.begin()); i != attributes_.end(); ++i)
     {
@@ -59,7 +59,7 @@ std::vector<std::pair<std::string, std::string> > Species::list_attributes() con
     return retval;
 }
 
-std::string Species::get_attribute(const std::string& name_attr) const
+Species::attribute_type Species::get_attribute(const std::string& name_attr) const
 {
     attributes_container_type::const_iterator
         i(attributes_.find(name_attr));
@@ -73,10 +73,10 @@ std::string Species::get_attribute(const std::string& name_attr) const
     return (*i).second;
 }
 
-void Species::set_attribute(const std::string& name_attr, const std::string& value)
-{
-    attributes_[name_attr] = value;
-}
+// std::string Species::get_attribute(const std::string& name_attr) const
+// {
+//     return boost::get<std::string>(get_attribute_as_variant(name_attr));
+// }
 
 void Species::set_attributes(const Species& sp)
 {
