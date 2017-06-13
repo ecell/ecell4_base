@@ -56,7 +56,7 @@ void SGFRDSimulator::domain_firer::operator()(Multi& dom)
         case Multi::REACTION:
         {
             std::copy(dom.last_reactions().begin(), dom.last_reactions().end(),
-                      std::back_inserter(this->last_reactions_));
+                      std::back_inserter(sim.last_reactions_));
             //XXX: succeeding block will executed to burst this domain.
         }
         case Multi::ESCAPE:
@@ -332,7 +332,9 @@ void SGFRDSimulator::create_event(
         }
 
         // TODO burst and form pair or multi if needed
-        std::cerr << "[WARNING] intrusive domains exist." << std::endl;
+        // note: L3347-3367 in egfrd/EGFRDSimulator.hpp
+        DUMP_MESSAGE("intrusive domains exist. try to burst");
+
         return add_event(create_single(create_single_conical_surface_shell(
                                        vid, max_cone_size), pid, p));
     }
