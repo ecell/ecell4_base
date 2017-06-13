@@ -444,13 +444,13 @@ class SGFRDSimulator :
 
     //! make event from domain and push it into scheduler
     template<typename domainT>
-    void add_event(const domainT& dom)
+    DomainID add_event(const domainT& dom)
     {
         const DomainID did = scheduler_.add(boost::make_shared<event_type>(
                                             dom.begin_time() + dom.dt(), dom));
         domain_id_setter didset(did);
         mut_sh_vis_applier(didset, dom);
-        return;
+        return did;
     }
 
     void fire_event(event_id_pair_type ev)
