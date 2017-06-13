@@ -50,6 +50,7 @@ void SGFRDSimulator::domain_firer::operator()(Multi& dom)
         case Multi::NONE:
         {
             /* continuing multi domain: add this domain to scheduler */
+            dom.begin_time() = this->time();
             sim.add_event(dom);
             break;
         }
