@@ -250,7 +250,9 @@ class SGFRDSimulator :
         }
         void operator()(const Multi& dom)
         {
-            // simply remove all the shells and add domain for all the particles
+            // simply remove all the shells. not add a domains for each particles
+            // particles are updated at each step, so here nothing is needed to
+            // update world.
             Particle p; ParticleID pid;
             BOOST_FOREACH(boost::tie(pid, p), dom.particles())
             {
@@ -301,6 +303,25 @@ class SGFRDSimulator :
       private:
         SGFRDSimulator& sim;
         const Pair& dom;
+    };
+
+    struct non_multi_burster : boost::static_visitor<bool>
+    {
+        typedef std::vector<pid_p_fid_tuple_type> remnants_type;
+
+        domain_burster(SGFRDSimulator& s, remnants_type& r)
+            : remnants(r), sim(s), bstr(s, r)
+        {}
+
+        bool operator()(const Single& dom){bstr(dom);return true;}
+        bool operator()(const Pair&   dom){bstr(dom);return true;}
+        bool operator()(const Multi&  dom){return false;}
+
+        remnants_type& remnants;
+
+      private:
+        SGFRDSimulator& sim;
+        domain_burster bstr;
     };
 
     /*!@brief burst domains that overlaps to particle in argument.
@@ -448,11 +469,19 @@ class SGFRDSimulator :
         return ;
     }
 
-    void burst_non_multis(std::vector<domain_type>& domains)
+    template<typename Iterator>
+    boost::enable_if<
+        boost::is_same<std::iterator_traits<Iterator>::value_type, DomainID>,
+        std::vector<pid_p_fid_tuple_type> >::type
+    burst_non_multis(Iterator iter, const Iterator end)
     {
-        std::cerr << "[WARNING]: burst_non_multis is not implemented yet"
-                  << std::endl;
-        return;
+        std::vector<pid_p_fid_tuple_type> rems;
+        non_multi_burster bstr(*this, rems);
+        while(iter != end)
+        {
+            bstr(scheduler_.get(*iter)->domain());
+        }
+        return rems;
     }
 
     template<typename EventExecutor>
