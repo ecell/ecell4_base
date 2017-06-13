@@ -1,32 +1,30 @@
-#ifndef ECELL4_MAKE_OVERLOAD
-#define ECELL4_MAKE_OVERLOAD
+#ifndef ECELL4_MAKE_VISITOR
+#define ECELL4_MAKE_VISITOR
 #include <boost/static_assert.hpp>
 #include <boost/preprocessor.hpp>
 #include <boost/function.hpp>
 #include <boost/bind.hpp>
 
+#ifndef ECELL4_MAKE_VISITOR_MAX_SIZE
+#define ECELL4_MAKE_VISITOR_MAX_SIZE 10
+#endif//ECELL4_MAKE_VISITOR_MAX_SIZE
+
+#define ECELL4_MAKE_VISITOR_MAX_INDEX BOOST_PP_ADD(ECELL4_MAKE_VISITOR_MAX_SIZE, 1)
+
 namespace ecell4
 {
 
-//TODO: make a function_ptr wrapper?
+//TODO:
+// - assert if not all the result_type is same
 
 template<typename T>
-struct function_traits;
+struct function_traits
+{
+    typedef typename T::result_type result_type;
+};
 
 template<typename R, typename T>
 struct function_traits<boost::function<R(T)> >
-{
-    typedef R result_type;
-};
-
-template<typename R, typename T>
-struct function_traits<boost::visitor_ptr<T, R> >
-{
-    typedef R result_type;
-};
-
-template<typename R, typename T>
-struct function_traits<R(*)T>
 {
     typedef R result_type;
 };
@@ -59,7 +57,7 @@ struct BOOST_PP_CAT(aggregate_functions, N)\
 };\
 /**/
 
-BOOST_PP_REPEAT_FROM_TO(1, 11, EXPAND_AGGREGATE_FUNCTIONS, dummy)
+BOOST_PP_REPEAT_FROM_TO(1, ECELL4_MAKE_VISITOR_MAX_INDEX, EXPAND_AGGREGATE_FUNCTIONS, dummy)
 
 #undef EXPAND_CONSTRUCTOR_ARGUMENTS
 #undef EXPAND_BASECLASS_INITIALIZER
@@ -78,7 +76,7 @@ make_visitor(BOOST_PP_ENUM_BINARY_PARAMS(N, T, t))\
 }\
 /**/
 
-BOOST_PP_REPEAT_FROM_TO(1, 11, EXPAND_MAKE_VISITOR, dummy)
+BOOST_PP_REPEAT_FROM_TO(1, ECELL4_MAKE_VISITOR_MAX_INDEX, EXPAND_MAKE_VISITOR, dummy)
 
 #undef EXPAND_MAKE_VISITOR
 
@@ -97,4 +95,6 @@ resolve(R(C::*fptr)(T), C* cptr)
 }
 
 } // ecell4
+
+#undef ECELL4_MAKE_VISITOR_MAX_INDEX
 #endif// ECELL4_MAKE_OVERLOAD
