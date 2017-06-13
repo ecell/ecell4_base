@@ -16,6 +16,10 @@ struct SGFRDEvent
 public:
     typedef boost::variant<Single, Pair, Multi> domain_type;
 
+    static const std::size_t idx_single = 0;
+    static const std::size_t idx_pair   = 1;
+    static const std::size_t idx_multi  = 2;
+
 public:
 
     template<typename domainT>
@@ -26,6 +30,8 @@ public:
     Real const&        time()   const {return time_;}
     domain_type const& domain() const {return domain_;}
     domain_type &      domain()       {return domain_;}
+
+    std::size_t which_domain() const {return domain_.which();}
 
 private:
 
