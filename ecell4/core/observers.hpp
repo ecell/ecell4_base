@@ -658,7 +658,7 @@ public:
         const bool resolve_boundary = default_resolve_boundary(),
         const Real subdt = default_subdt())
         : base_type(false), event_(), subevent_(subdt > 0 ? subdt : inf),
-        pids_(pids), resolve_boundary_(resolve_boundary), prev_positions_(),
+        pids_(pids), resolve_boundary_(resolve_boundary), prev_positions_(pids.size()),
         trajectories_(pids.size()), strides_(pids.size()), t_()
     {
         ;

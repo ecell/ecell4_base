@@ -63,7 +63,6 @@ def run_sge(target, jobs, n=1, path='.', delete=True, wait=True, environ=None, m
         for key in keys:
             if key in os.environ.keys():
                 environ[key] = os.environ[key]
-
         if "PYTHONPATH" in environ.keys() and environ["PYTHONPATH"].strip() != "":
             environ["PYTHONPATH"] = "{}:{}".format(os.getcwd(), environ["PYTHONPATH"])
         else:
@@ -114,7 +113,7 @@ def run_sge(target, jobs, n=1, path='.', delete=True, wait=True, environ=None, m
     else:
         raise ValueError("'wait' must be either 'int' or 'bool'.")
 
-    jobids = sge.run(cmds, n=n, path=path, delete=delete, sync=sync)
+    jobids = sge.run(cmds, n=n, path=path, delete=delete, sync=sync, **kwargs)
 
     if not (sync > 0):
         return None
@@ -178,8 +177,8 @@ def getseed(myseed, i):
 
 def singlerun(job, job_id, task_id):
     import ecell4.util
-    import ecell4.exta.ensemble
-    rndseed = ecell4.exta.ensemble.getseed(job.pop('myseed'), task_id)
+    import ecell4.extra.ensemble
+    rndseed = ecell4.extra.ensemble.getseed(job.pop('myseed'), task_id)
     job.update({'return_type': 'array', 'rndseed': rndseed})
     data = ecell4.util.run_simulation(**job)
     return data
@@ -249,9 +248,6 @@ def ensemble_simulations(
             solver = value
         elif key == 'm':
             model = value
-        else:
-            raise ValueError(
-                "An unknown keyword argument was given [{}={}]".format(key, value))
 
     if model is None:
         model = ecell4.util.decorator.get_model(is_netfree, without_reset)
@@ -280,9 +276,12 @@ def ensemble_simulations(
         raise ValueError(
             'Argument "method" must be one of "serial", "multiprocessing" and "sge".')
 
+    if return_type is None or return_type in ("none", ):
+        return
+
     assert len(retval) == len(jobs) == 1
 
-    if return_type == "array":
+    if return_type in ("array", 'a'):
         return retval[0]
 
     import numpy
@@ -357,7 +356,8 @@ def ensemble_simulations(
             for data in retval[0]]
     else:
         raise ValueError(
-            'Invald Argument "return_type" was given [{}].'.format(str(return_type)))
+            'An invald value for "return_type" was given [{}].'.format(str(return_type))
+            + 'Use "none" if you need nothing to be returned.')
 
 
 if __name__ == "__main__":

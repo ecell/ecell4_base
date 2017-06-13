@@ -620,35 +620,34 @@ public:
      * @param sp a species
      * @return info a molecule info
      */
-    molecule_info_type get_molecule_info(species_id_type const& sp) const
+    molecule_info_type get_molecule_info(ecell4::Species const& sp) const
     {
         ecell4::Real radius(0.0), D(0.0);
         std::string structure_id("world");
 
         if (sp.has_attribute("radius") && sp.has_attribute("D"))
         {
-            radius = std::atof(sp.get_attribute("radius").c_str());
-            D = std::atof(sp.get_attribute("D").c_str());
+            radius = sp.get_attribute_as<Real>("radius");
+            D = sp.get_attribute_as<Real>("D");
             if (sp.has_attribute("structure_id"))
             {
-                structure_id = sp.get_attribute("structure_id");
+                structure_id = sp.get_attribute_as<std::string>("structure_id");
             }
         }
         else if (boost::shared_ptr<model_type> bound_model = lock_model())
         {
-            ecell4::Species attributed(bound_model->apply_species_attributes(sp));
+            ecell4::Species newsp(bound_model->apply_species_attributes(sp));
 
-            if (attributed.has_attribute("radius")
-                && attributed.has_attribute("D"))
+            if (newsp.has_attribute("radius")
+                && newsp.has_attribute("D"))
             {
-                radius = std::atof(
-                    attributed.get_attribute("radius").c_str());
-                D = std::atof(attributed.get_attribute("D").c_str());
+                radius = newsp.get_attribute_as<Real>("radius");
+                D = newsp.get_attribute_as<Real>("D");
             }
 
-            if (sp.has_attribute("structure_id"))
+            if (newsp.has_attribute("structure_id"))
             {
-                structure_id = attributed.get_attribute("structure_id");
+                structure_id = newsp.get_attribute_as<std::string>("structure_id");
             }
         }
 

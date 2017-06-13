@@ -7,21 +7,22 @@ import os.path
 import logging
 import collections
 
-PREFIX = '/usr/bin'
-QSUB_CMD = os.path.join(PREFIX, 'qsub')
-QSTAT_CMD = os.path.join(PREFIX, 'qstat')
-QDEL_CMD = os.path.join(PREFIX, 'qdel')
+rcParams = {}
+rcParams["PREFIX"] = "/usr/bin"
+rcParams["QSUB"] = "qsub"
+rcParams["QSTAT"] = "qstat"
+rcParams["QDEL"] = "qdel"
 
 def get_logger():
     return logging.getLogger('sge')
 
-def run(jobs, n=1, path='.', wc_queue_list='all.q', sync=10, delete=True):
+def run(jobs, n=1, path='.', sync=10, delete=True, extra_args=None):
     if not isinstance(jobs, collections.Iterable):
-        return singlerun(jobs, n, path, wc_queue_list, sync, delete)
+        return singlerun(jobs, n, path, sync, delete, extra_args)
 
     retval = []
     for job in jobs:
-        retval.append(singlerun(job, n, path, wc_queue_list, sync=0))
+        retval.append(singlerun(job, n, path, 0, delete, extra_args))
     if sync > 0:
         try:
             wait([jobid for jobid, name, filename in retval], sync)
@@ -31,12 +32,12 @@ def run(jobs, n=1, path='.', wc_queue_list='all.q', sync=10, delete=True):
                     os.remove(filename)
     return [(jobid, name) for jobid, name, filename in retval]
 
-def singlerun(job, n=1, path='.', wc_queue_list='all.q', sync=10, delete=True):
+def singlerun(job, n=1, path='.', sync=10, delete=True, extra_args=None):
     (fd, filename) = tempfile.mkstemp(suffix='.job', prefix='sge-', dir=path, text=True)
     with os.fdopen(fd, 'w') as fout:
         fout.write(job)
 
-    (jobid, name) = submit(filename, n, path, path, wc_queue_list)
+    (jobid, name) = submit(filename, n, path, path, extra_args)
 
     if sync > 0:
         try:
@@ -68,10 +69,10 @@ def collect(jobid, name, n=1, path='.', delete=True):
             os.remove(filename)
     return outputs
 
-def submit(job, n=1, epath='.', opath='.', wc_queue_list='all.q'):
+def submit(job, n=1, epath='.', opath='.', extra_args=None):
     output = subprocess.check_output(
-        [QSUB_CMD, '-cwd', '-q', wc_queue_list, '-e', epath, '-o', opath,
-         '-t', '1-{:d}'.format(n), job])
+        [os.path.join(rcParams["PREFIX"], rcParams["QSUB"]), '-cwd']
+        + (extra_args or []) + ['-e', epath, '-o', opath, '-t', '1-{:d}'.format(n), job])
     output = output.decode('utf-8')
     get_logger().debug(output.strip())
 
@@ -90,7 +91,7 @@ def wait(jobids, interval=10):
     dowait = True
     try:
         while dowait:
-            output = subprocess.check_output([QSTAT_CMD])
+            output = subprocess.check_output([os.path.join(rcParams["PREFIX"], rcParams["QSTAT"])])
             output = output.decode('utf-8')
             for line in output.split('\n'):
                 get_logger().debug(line)
@@ -119,7 +120,7 @@ def wait(jobids, interval=10):
                     "Waiting for jobids {:s} to finish".format(str(jobids)))
     finally:
         if dowait:
-            output = subprocess.check_output([QDEL_CMD] + jobidstrs)
+            output = subprocess.check_output([os.path.join(rcParams["PREFIX"], rcParams["QDEL"])] + jobidstrs)
             get_logger().debug(output.strip())
 
 

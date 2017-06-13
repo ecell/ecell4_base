@@ -96,48 +96,40 @@ public:
         Real radius(voxel_radius()), D(0.0);
         std::string loc("");
 
-        if (with_D && with_radius)
+        if (with_D)
         {
-            radius = std::atof(sp.get_attribute("radius").c_str());
-            D = std::atof(sp.get_attribute("D").c_str());
-
-            if (with_loc)
-            {
-                loc = sp.get_attribute("location");
-            }
+            D = sp.get_attribute_as<Real>("D");
         }
-        else
+
+        if (with_radius)
         {
-            if (with_D)
-            {
-                D = std::atof(sp.get_attribute("D").c_str());
-            }
+            radius = sp.get_attribute_as<Real>("radius");
+        }
 
-            if (with_radius)
-            {
-                radius = std::atof(sp.get_attribute("radius").c_str());
-            }
+        if (with_loc)
+        {
+            loc = sp.get_attribute_as<std::string>("location");
+        }
 
-            if (with_loc)
-            {
-                loc = sp.get_attribute("location");
-            }
-
+        if (!(with_D && with_radius))  //XXX: with_loc?
+        {
             if (boost::shared_ptr<Model> bound_model = lock_model())
             {
-                Species attributed(bound_model->apply_species_attributes(sp));
-                if (!with_D && attributed.has_attribute("D"))
+                Species newsp(bound_model->apply_species_attributes(sp));
+
+                if (!with_D && newsp.has_attribute("D"))
                 {
-                    D = std::atof(attributed.get_attribute("D").c_str());
+                    D = newsp.get_attribute_as<Real>("D");
                 }
-                if (!with_radius && attributed.has_attribute("radius"))
+
+                if (!with_radius && newsp.has_attribute("radius"))
                 {
-                    radius = std::atof(
-                        attributed.get_attribute("radius").c_str());
+                    radius = newsp.get_attribute_as<Real>("radius");
                 }
-                if (!with_loc && attributed.has_attribute("location"))
+
+                if (!with_loc && newsp.has_attribute("location"))
                 {
-                    loc = attributed.get_attribute("location");
+                    loc = newsp.get_attribute_as<std::string>("location");
                 }
             }
         }
