@@ -517,6 +517,15 @@ class SGFRDSimulator :
     }
 
     std::pair<ShellID, circle_type>
+    create_minimum_single_shell(
+            const ParticleID& pid, const Particle& p, const face_id_type fid)
+    {
+        const Real radius = p.radius() * single_circular_shell_factor;
+        return this->create_single_circular_shell(
+                std::make_pair(p.position(), fid), radius);
+    }
+
+    std::pair<ShellID, circle_type>
     create_single_circular_shell(const std::pair<Real3, face_id_type>& pos,
                                  const Real size)
     {
@@ -665,6 +674,15 @@ class SGFRDSimulator :
     Real get_max_cone_size(const vertex_id_type& vid) const
     {
         return polygon().vertex_at(vid).max_conical_shell_size * 0.5;
+    }
+
+    Real calc_min_single_circular_shell_radius(const Particle& p)
+    {
+        return p.radius() * single_circular_shell_factor;
+    }
+    Real calc_min_single_conical_shell_radius(const Particle& p)
+    {
+        return p.radius() * single_conical_shell_factor;
     }
 
   private:
