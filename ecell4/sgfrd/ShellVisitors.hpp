@@ -2,6 +2,7 @@
 #define ECELL4_SGFRD_SHELL_VISITORS
 #include "Shell.hpp"
 #include "SGFRDEvent.hpp"
+#include "polygon_traits.hpp"
 
 namespace ecell4
 {
@@ -42,6 +43,9 @@ struct domain_id_getter : boost::static_visitor<DomainID>
 struct is_inside : boost::static_visitor<bool>
 {
     typedef minimal_eval_or eval_manner;
+    typedef ecell4::Polygon<polygon_traits> polygon_type;
+    typedef polygon_type::face_id_type      face_id_type;
+
 
     is_inside(Real3 pos, face_id_type f, polygon_type const& p)
         : position(pos), fid(f), poly(p)
