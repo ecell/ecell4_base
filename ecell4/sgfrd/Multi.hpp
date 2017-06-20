@@ -46,7 +46,8 @@ class Multi
   public:
 
     Multi(simulator_type& sim, world_type& world)
-        : dt_(0.), begin_time_(0.), simulator_(sim), world_(world),
+        : dt_(1e-5), begin_time_(0.), reaction_length_(1e-3)
+          simulator_(sim), world_(world),
           container_(world), model_(*world.lock_model())
     {}
     ~Multi(){}
@@ -81,6 +82,10 @@ class Multi
     Real  begin_time() const {return begin_time_;}
     Real& reaction_length()       {return reaction_length_;}
     Real  reaction_length() const {return reaction_length_;}
+
+    // TODO
+    void determine_reaction_length(){return;}
+    void determine_delta_t(){return;}
 
     void add_particle(particle_id_type const& pid){container_.make_entry(pid);}
     void add_shell   (shell_id_type    const& sid){shells_.push_back(sid);}
