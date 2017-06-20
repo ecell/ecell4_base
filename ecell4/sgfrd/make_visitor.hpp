@@ -83,7 +83,7 @@ BOOST_PP_REPEAT_FROM_TO(1, ECELL4_MAKE_VISITOR_MAX_INDEX, ECELL4_MAKE_VISITOR, d
 #undef ECELL4_MAKE_VISITOR_MAX_INDEX
 #undef ECELL4_MAKE_VISITOR
 
-template<typename R, typename T>
+template<typename T, typename R>
 inline boost::visitor_ptr_t<T, R>
 resolve(R(*fptr)(T))
 {
@@ -92,7 +92,7 @@ resolve(R(*fptr)(T))
 
 //TODO: remove wrapper `boost::function` using some technique like
 //      `decltype(boost::bind(declval<R(C::*)(T)>(), declval<C*>()))`
-template<typename R, typename T, class C>
+template<typename T, typename R, class C>
 inline boost::function<R(T)>
 resolve(R(C::*fptr)(T), C* cptr)
 {
