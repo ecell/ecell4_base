@@ -8,6 +8,7 @@
 #include <ecell4/core/ReactionRule.hpp>
 #include <ecell4/core/SerialIDGenerator.hpp>
 #include <ecell4/core/geometry.hpp>
+#include "make_visitor.hpp"
 
 #include "ShellContainer.hpp"
 #include "ShellVisitorApplier.hpp"
@@ -19,6 +20,9 @@
 #include <boost/make_shared.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <boost/container/static_vector.hpp>
+#include <boost/container/small_vector.hpp>
+#include <boost/lambda/lambda.hpp>
+#include <boost/lambda/bind.hpp>
 
 #include <iostream>
 
@@ -37,6 +41,7 @@ class SGFRDSimulator :
     public ecell4::SimulatorBase<ecell4::Model, SGFRDWorld>
 {
   public:
+    typedef SGFRDSimulator self_type;
 
     // polygon
     typedef polygon_traits polygon_traits_type;
@@ -50,6 +55,9 @@ class SGFRDSimulator :
     typedef polygon_type::vertex_descripter vertex_descripter;
     typedef polygon_type::local_index_type  local_index_type;
     typedef polygon_type::barycentric_type  barycentric_type;
+    typedef face_id_type   FaceID;// just for looks same as ParticleID
+    typedef edge_id_type   EdgeID;
+    typedef vertex_id_type VertexID;
 
     // Event & Domain
     typedef SGFRDEvent                      event_type;
@@ -64,7 +72,9 @@ class SGFRDSimulator :
     typedef base_type::world_type world_type;
     typedef base_type::model_type model_type;
     typedef std::pair<ParticleID, Particle> particle_id_pair_type;
-    typedef boost::tuple<ParticleID, Particle, face_id_type> pid_p_fid_tuple_type;
+    typedef boost::tuple<ParticleID, Particle, FaceID> pid_p_fid_tuple_type;
+    // length of this type may be tuned
+    typedef boost::container::small_vector<pid_p_fid_tuple_type, 5> bursted_type;
 
     // ShellContainer
     typedef ecell4::SerialIDGenerator<ShellID> shell_id_generator_type;
@@ -106,43 +116,10 @@ class SGFRDSimulator :
 
     ~SGFRDSimulator(){}
 
-    void initialize()
-    {
-        std::vector<std::pair<ParticleID, Particle> > const& ps =
-            this->world_->list_particles();
-        for(std::vector<std::pair<ParticleID, Particle> >::const_iterator
-            iter = ps.begin(); iter != ps.end(); ++iter)
-        {
-            add_event(create_closely_fitted_domain(create_closely_fitted_shell(
-                      iter->first, iter->second, this->get_face_id(iter->first)),
-                  iter->first, iter->second));
-        }
-        return ;
-    }
-    void finalize()
-    {
-        domain_burster::remnants_type tmp;
-        while(scheduler_.size() != 0)
-        {
-            burst_event(*(this->scheduler_.pop().second), tmp);
-            tmp.clear();
-        }
-        return ;
-    }
-
-    void step()
-    {
-        this->set_time(this->scheduler_.next_time());
-        // fire event executes `create_event` inside.
-        this->fire_event(this->scheduler_.pop());
-        DUMP_MESSAGE("now " << shell_container_.num_shells() << " shells exist.");
-        return;
-    }
-    bool step(const Real& upto)
-    {
-        this->step();
-        return this->time() < upto;
-    }
+    void initialize();
+    void finalize();
+    void step();
+    bool step(const Real& upto);
 
     Real dt() const {return dt_;}
 
@@ -153,7 +130,6 @@ class SGFRDSimulator :
   private:
 
     // simple wrappers to call member's member-method (e.g. world_->t()) {{{
-
     Real uniform_real(){return this->rng_.random();}
 
     world_type   const& world()   const {return *(this->world_);}
@@ -179,150 +155,168 @@ class SGFRDSimulator :
     Real time() const {return this->world_->t();}
     void set_time(const Real t) {return this->world_->set_t(t);}
 
-    // }}}
-
     boost::shared_ptr<event_type> pickout_event(const event_id_type& id)
     {
         BOOST_AUTO(tmp, scheduler_.get(id));
         scheduler_.remove(id);
         return tmp;
     }
+    // }}}
 
   private:
 
-    // visitors and functors to handle events {{{
-    struct is_inside : boost::static_visitor<bool>
+    /*! execute Event associated with Domain, remove shell, create next event. */
+    void fire_single(const Single& dom, DomainID did);
+
+    template<typename shellT>
+    boost::tuple<ParticleID, Particle, FaceID>
+    propagate_single(const shellT& sh, const Single& dom, const Real tm);
+
+    template<typename shellT>
+    boost::tuple<ParticleID, Particle, FaceID>
+    escape_single(const shellT& sh, const Single& dom);
+
+    template<typename shellT>
+    boost::container::static_vector<boost::tuple<ParticleID, Particle, FaceID>, 2>
+    reaction_single(const shellT& sh, const Single& dom, const DomainID did);
+
+    bursted_type burst_single(const Single& dom, const Real tm);
+
+    template<typename shellT>// TODO
+    boost::container::static_vector<boost::tuple<ParticleID, Particle, FaceID>, 2>
+    attempt_reaction_single(const shellT& sh, const DomainID did,
+            const ParticleID& pid, const Particle& p, const FaceID& fid);
+
+    std::pair<ShellID, circle_type>
+    create_single_circular_shell(
+            const std::pair<Real3, face_id_type>& pos, const Real size)
     {
-        typedef minimal_eval_or eval_manner;
-
-        is_inside(Real3 pos, face_id_type f, polygon_type const& p)
-            : position(pos), fid(f), poly(p)
-        {}
-
-        //XXX: dispatch using shapeT::dimension to use 3D shells
-        template<typename shapeT, typename stridT>
-        bool operator()(const Shell<shapeT, stridT>& shell) const
-        {
-            return poly.distance_sq(
-                    std::make_pair(shell.position(), shell.structure_id()),
-                    std::make_pair(position, fid)) < (shell.size() * shell.size());
-        }
-
-      private:
-
-        Real3        position;
-        face_id_type fid;
-        polygon_type const& poly;
-    };
-
-    struct domain_firer : boost::static_visitor<void>
+        DUMP_MESSAGE("create single circular shell");
+        const ShellID id(shell_id_gen());
+        const circle_type shape(size, pos.first,
+                                polygon().triangle_at(pos.second).normal());
+        shell_container_.add_shell(id, circular_shell_type(shape, pos.second),
+                                   pos.second);
+        return std::make_pair(id, shape);
+    }
+    std::pair<ShellID, conical_surface_type>
+    create_single_conical_surface_shell(
+            const vertex_id_type& vid, const Real size)
     {
-        domain_firer(SGFRDSimulator& s, domain_id_type d): sim(s), did(d){}
-        void operator()(const Single&);
-        void operator()(const Pair&);
-        void operator()(Multi&);
-      private:
-        SGFRDSimulator& sim;
-        domain_id_type  did;
-    };
+        DUMP_MESSAGE("create single conical surface shell");
+        const ShellID id(shell_id_gen());
+        const conical_surface_type shape(polygon().vertex_at(vid).position,
+                                         polygon().apex_angle(vid), size);
+        shell_container_.add_shell(
+                id, conical_surface_shell_type(shape, vid), vid);
 
-    struct domain_burster : boost::static_visitor<void>
+        return std::make_pair(id, shape);
+    }
+
+    Single create_single(const std::pair<ShellID, circle_type>& sh,
+                         const ParticleID& pid, const Particle& p)
+    {//TODO consider single-reaction
+        DUMP_MESSAGE("create single domain having circular shell");
+
+        const greens_functions::GreensFunction2DAbsSym
+            gf(/* D = */ p.D(),
+               /* a = */ sh.second.size() - p.radius());
+        const Real dt = gf.drawTime(uniform_real());
+        DUMP_MESSAGE("delta t calculated: " << dt);
+
+        return Single(Single::ESCAPE, dt, this->time(), sh.first,
+                      std::make_pair(pid, p));
+    }
+    Single create_single(const std::pair<ShellID, conical_surface_type>& sh,
+                         const ParticleID& pid, const Particle& p)
+    {//TODO consider single-reaction
+        DUMP_MESSAGE("create single domain having conical shell");
+        DUMP_MESSAGE("shell size = " << sh.second.size());
+        DUMP_MESSAGE("D   = " << p.D());
+        DUMP_MESSAGE("r0  = " << length(p.position() - sh.second.apex()));
+        DUMP_MESSAGE("a   = " << sh.second.size() - p.radius());
+        DUMP_MESSAGE("phi = " << sh.second.apex_angle());
+
+        const greens_functions::GreensFunction2DRefWedgeAbs
+            gf(/* D   = */ p.D(),
+               /* r0  = */ length(p.position() - sh.second.apex()),
+               /* a   = */ sh.second.size() - p.radius(),
+               /* phi = */ sh.second.apex_angle());
+        const Real dt = gf.drawTime(uniform_real());
+
+        return Single(Single::ESCAPE, dt, this->time(), sh.first,
+                      std::make_pair(pid, p));
+    }
+
+    void fire_pair(const Pair& dom, DomainID did)
+    {// TODO
+        std::cerr << "[WARNING] fire_pair(Pair) has not been implemented yet."
+                  << std::endl;
+    }
+
+    bursted_type burst_pair(const Pair& dom, const Real tm)
+    {// TODO
+        std::cerr << "[WARNING] burst_pair(Pair) has not been implemented yet."
+                  << std::endl;
+    }
+
+    void fire_multi(Multi& dom, DomainID did)
     {
-        typedef std::vector<pid_p_fid_tuple_type> remnants_type;
-
-        // TODO: enable to change bursting time
-        domain_burster(SGFRDSimulator& s, remnants_type& r)
-            : remnants(r), sim(s)
-        {}
-        void operator()(const Single& dom)
+        volume_clearer vc(did, dom, *this, this->imm_sh_vis_applier);
+        dom.step(vc);
+        switch(dom.eventkind())
         {
-            single_burster burster(sim, dom, remnants);
-            boost::apply_visitor(burster, sim.get_shell(dom.shell_id()));
-            sim.remove_shell(dom.shell_id());
-            return;
-        }
-        void operator()(const Pair& dom)
-        {
-            pair_burster burster(sim, dom, remnants);
-            boost::apply_visitor(burster, sim.get_shell(dom.shell_id()));
-            sim.remove_shell(dom.shell_id());
-            return;
-        }
-        void operator()(const Multi& dom)
-        {
-            // simply remove all the shells. not add a domains for each particles
-            // particles are updated at each step, so here nothing is needed to
-            // update world.
-            Particle p; ParticleID pid;
-            BOOST_FOREACH(boost::tie(pid, p), dom.particles())
+            case Multi::NONE:
             {
-                remnants.push_back(boost::make_tuple(pid, p, sim.get_face_id(pid)));
+                /* continuing multi domain: add this domain to scheduler */
+                dom.begin_time() = this->time();
+                this->add_event(dom);
+                break;
             }
-            BOOST_FOREACH(ShellID sid, dom.shell_ids())
+            case Multi::REACTION:
             {
-                sim.remove_shell(sid);
+                std::copy(dom.last_reactions().begin(), dom.last_reactions().end(),
+                          std::back_inserter(this->last_reactions_));
+                //XXX: succeeding block will executed to burst this domain.
             }
-            return;
+            case Multi::ESCAPE:
+            {
+                /* burst this domain! */
+                ParticleID pid; Particle p; face_id_type fid;
+                BOOST_FOREACH(boost::tie(pid, p, fid),
+                              this->burst_multi(dom, this->time()))
+                {
+                    this->add_event(this->create_closely_fitted_domain(
+                        this->create_closely_fitted_shell(pid, p, fid), pid, p));
+                }
+                break;
+            }
+            default:
+            {
+                throw std::logic_error("never reach here");
+            }
         }
+        return;
+    }
 
-        remnants_type& remnants;
-
-      private:
-        SGFRDSimulator& sim;
-    };
-    struct single_burster : boost::static_visitor<void>
+    bursted_type burst_multi(const Multi& dom, const Real tm)
     {
-        typedef std::vector<pid_p_fid_tuple_type> remnants_type;
-
-        single_burster(SGFRDSimulator& s, const Single& d, remnants_type& r)
-            : remnants(r), sim(s), dom(d)
-        {}
-
-        void operator()(const circular_shell_type& sh);
-        void operator()(const conical_surface_shell_type& sh);
-
-        remnants_type& remnants;
-
-      private:
-        SGFRDSimulator& sim;
-        const Single& dom;
-    };
-    struct pair_burster : boost::static_visitor<void>
-    {
-        typedef std::vector<pid_p_fid_tuple_type> remnants_type;
-
-        pair_burster(SGFRDSimulator& s, const Pair& d, remnants_type& r)
-            : remnants(r), sim(s), dom(d)
-        {}
-
-        void operator()(const circular_shell_type& sh);
-        void operator()(const conical_surface_shell_type& sh);
-
-        remnants_type& remnants;
-
-      private:
-        SGFRDSimulator& sim;
-        const Pair& dom;
-    };
-
-    struct non_multi_burster : boost::static_visitor<bool>
-    {
-        typedef std::vector<pid_p_fid_tuple_type> remnants_type;
-
-        domain_burster(SGFRDSimulator& s, remnants_type& r)
-            : remnants(r), sim(s), bstr(s, r)
-        {}
-
-        bool operator()(const Single& dom){bstr(dom);return true;}
-        bool operator()(const Pair&   dom){bstr(dom);return true;}
-        bool operator()(const Multi&  dom){return false;}
-
-        remnants_type& remnants;
-
-      private:
-        SGFRDSimulator& sim;
-        domain_burster bstr;
-    };
+        // TODO: handle time properly!
+        // simply remove all the shells. not add a domains for each particles
+        // particles are updated at each step, so here nothing is needed to
+        // update world.
+        bursted_type results;
+        Particle p; ParticleID pid;
+        BOOST_FOREACH(boost::tie(pid, p), dom.particles())
+        {
+            results.push_back(boost::make_tuple(pid, p, this->get_face_id(pid)));
+        }
+        BOOST_FOREACH(ShellID sid, dom.shell_ids())
+        {
+            this->remove_shell(sid);
+        }
+        return results;
+    }
 
     /*!@brief burst domains that overlaps to particle in argument.
      * for volume_clearer in Multi case.                          */
@@ -332,7 +326,10 @@ class SGFRDSimulator :
             : sim(s), did(d)
         {}
 
-        void operator()(const Particle& p, const face_id_type& fid);
+        void operator()(const Particle& p, const face_id_type& fid)
+        {
+            return ;
+        }
 
       private:
         SGFRDSimulator& sim;
@@ -402,52 +399,14 @@ class SGFRDSimulator :
         Multi const&    domain;
         immutable_shell_visitor_applier_type applier;
     };
-
-    struct single_escapement : boost::static_visitor<void>
-    {
-        typedef boost::container::static_vector<pid_p_fid_tuple_type, 1>
-                remnants_type;
-
-        single_escapement(SGFRDSimulator& s, const Single& d)
-            : sim(s), dom(d)
-        {}
-
-        void operator()(const circular_shell_type& sh);
-        void operator()(const conical_surface_shell_type& sh);
-
-        remnants_type remnants;
-
-      private:
-        SGFRDSimulator& sim;
-        Single const& dom;
-    };
-
-    struct single_reactor : boost::static_visitor<void>
-    {
-        typedef boost::container::static_vector<pid_p_fid_tuple_type, 2>
-                remnants_type;
-
-        single_reactor(SGFRDSimulator& s, const Single& d)
-            : sim(s), dom(d)
-        {}
-
-        void operator()(const circular_shell_type& sh);
-        void operator()(const conical_surface_shell_type& sh);
-
-        remnants_type remnants;
-
-      private:
-        SGFRDSimulator& sim;
-        Single const& dom;
-    };
     //}}} visitors
 
     //! make event from domain and push it into scheduler
     template<typename domainT>
     DomainID add_event(const domainT& dom)
     {
-        const DomainID did = scheduler_.add(boost::make_shared<event_type>(
-                                            dom.begin_time() + dom.dt(), dom));
+        const DomainID did = scheduler_.add(
+            boost::make_shared<event_type>(dom.begin_time() + dom.dt(), dom));
         domain_id_setter didset(did);
         mut_sh_vis_applier(didset, dom);
         return did;
@@ -456,48 +415,58 @@ class SGFRDSimulator :
     void fire_event(event_id_pair_type ev)
     {
         DUMP_MESSAGE("fire_event");
-        domain_firer firer(*this, ev.first);
-        boost::apply_visitor(firer, ev.second->domain());
-        return ;
+        return boost::apply_visitor(make_visitor(
+            resolve<Single const&, void>(boost::bind(
+                    &self_type::fire_single, this, _1, ev.first)),
+            resolve<Pair   const&, void>(boost::bind(
+                    &self_type::fire_pair,   this, _1, ev.first)),
+            resolve<Multi&,        void>(boost::bind(
+                    &self_type::fire_multi,  this, _1, ev.first))
+            ), ev.second->domain());
     }
 
-    void burst_event(const event_type& ev,
-                     std::vector<pid_p_fid_tuple_type>& results)
+    bursted_type burst_event(const event_id_pair_type& ev, Real tm)
     {
-        domain_burster burster(*this, results);
-        boost::apply_visitor(burster, ev.domain());
-        return ;
+        DUMP_MESSAGE("burst_event");
+        return boost::apply_visitor(make_visitor(
+            resolve<Single const&, bursted_type>(boost::bind(
+                    &self_type::burst_single, this, _1, tm)),
+            resolve<Pair   const&, bursted_type>(boost::bind(
+                    &self_type::burst_pair,  this, _1,  tm)),
+            resolve<Multi&,        bursted_type>(boost::bind(
+                    &self_type::burst_multi, this, _1,  tm))
+            ), ev.second->domain());
     }
 
     template<typename Iterator>
-    boost::enable_if<
-        boost::is_same<std::iterator_traits<Iterator>::value_type, DomainID>,
+    typename boost::enable_if<
+        boost::is_same<typename std::iterator_traits<Iterator>::value_type, DomainID>,
         std::vector<pid_p_fid_tuple_type> >::type
     burst_non_multis(Iterator iter, const Iterator end)
     {
+        const Real tm(this->time());
         std::vector<pid_p_fid_tuple_type> rems;
-        non_multi_burster bstr(*this, rems);
         while(iter != end)
         {
-            bstr(scheduler_.get(*iter)->domain());
+            burst_event(std::make_pair(*iter, scheduler_.get(*iter)), tm);
         }
         return rems;
     }
 
-    template<typename EventExecutor>
-    void execute_event(EventExecutor& executor, const ShellID& sid)
-    {
-        boost::apply_visitor(executor, get_shell(sid));
-        remove_shell(sid);
+    void join_multi(
+            const ParticleID& pid, const Particle& p, const face_id_type fid,
+            Multi& dom)
+    {// TODO
+        // create min_shell
+        // add it to multi
+        return;
+    }
 
-        ParticleID pid; Particle p; face_id_type fid;
-        for(typename EventExecutor::remnants_type::const_iterator
-            iter(executor.remnants.begin()), end(executor.remnants.end());
-            iter != end; ++iter)
-        {
-            boost::tie(pid, p, fid) = *iter;
-            this->create_event(pid, p, fid);
-        }
+    void merge_multi(Multi& from, Multi& to)
+    {// TODO
+        // move shell_ids
+        // move particles
+        // adjust dt and reaction length
         return;
     }
 
@@ -525,74 +494,8 @@ class SGFRDSimulator :
                 std::make_pair(p.position(), fid), radius);
     }
 
-    std::pair<ShellID, circle_type>
-    create_single_circular_shell(const std::pair<Real3, face_id_type>& pos,
-                                 const Real size)
-    {
-        DUMP_MESSAGE("create single circular shell");
-        const ShellID id(shell_id_gen());
-        const circle_type shape(size, pos.first,
-                                polygon().triangle_at(pos.second).normal());
-        shell_container_.add_shell(id, circular_shell_type(shape, pos.second),
-                                   pos.second);
-        return std::make_pair(id, shape);
-    }
-
-    std::pair<ShellID, conical_surface_type>
-    create_single_conical_surface_shell(const vertex_id_type& vid,
-                                        const Real size)
-    {
-        DUMP_MESSAGE("create single conical surface shell");
-        const ShellID id(shell_id_gen());
-        const conical_surface_type shape(polygon().vertex_at(vid).position,
-                                         polygon().apex_angle(vid), size);
-        shell_container_.add_shell(
-                id, conical_surface_shell_type(shape, vid), vid);
-
-        return std::make_pair(id, shape);
-    }
-
-    //! create domain and determine EventKind using GF
-    Single create_single(const std::pair<ShellID, circle_type>& sh,
-            const ParticleID& pid, const Particle& p)
-    {
-        //TODO consider single-reaction
-        DUMP_MESSAGE("create single domain having circular shell");
-
-        const greens_functions::GreensFunction2DAbsSym
-            gf(/* D = */ p.D(),
-               /* a = */ sh.second.size() - p.radius());
-        const Real dt = gf.drawTime(uniform_real());
-        DUMP_MESSAGE("delta t calculated: " << dt);
-
-        return Single(Single::ESCAPE, dt, this->time(), sh.first,
-                      std::make_pair(pid, p));
-    }
-    Single create_single(const std::pair<ShellID, conical_surface_type>& sh,
-            const ParticleID& pid, const Particle& p)
-    {
-        //TODO consider single-reaction
-        DUMP_MESSAGE("create single domain having conical shell");
-        DUMP_MESSAGE("shell size = " << sh.second.size());
-        DUMP_MESSAGE("D   = " << p.D());
-        DUMP_MESSAGE("r0  = " << length(p.position() - sh.second.apex()));
-        DUMP_MESSAGE("a   = " << sh.second.size() - p.radius());
-        DUMP_MESSAGE("phi = " << sh.second.apex_angle());
-
-        const greens_functions::GreensFunction2DRefWedgeAbs
-            gf(/* D   = */ p.D(),
-               /* r0  = */ length(p.position() - sh.second.apex()),
-               /* a   = */ sh.second.size() - p.radius(),
-               /* phi = */ sh.second.apex_angle());
-        const Real dt = gf.drawTime(uniform_real());
-
-        return Single(Single::ESCAPE, dt, this->time(), sh.first,
-                      std::make_pair(pid, p));
-    }
-
     //! make domain and call add_event
-    void create_event(
-            const ParticleID& pid, const Particle& p, const face_id_type fid);
+    DomainID create_event(const ParticleID&, const Particle&, const face_id_type);
 
     std::vector<std::pair<vertex_id_type, Real> >
     get_intrusive_vertices(const std::pair<Real3, face_id_type>& pos,
@@ -682,7 +585,7 @@ class SGFRDSimulator :
     }
     Real calc_min_single_conical_shell_radius(const Particle& p)
     {
-        return p.radius() * single_conical_shell_factor;
+        return p.radius() * single_conical_surface_shell_factor;
     }
 
   private:
@@ -709,7 +612,327 @@ class SGFRDSimulator :
     std::vector<std::pair<reaction_rule_type, reaction_info_type> > last_reactions_;
 };
 
+// XXX NOTE XXX:
+// To avoid an error "specialization of template function after instantiation"
+// these specialized functions are must be implemented before other function
+// calling it.
+template<>
+inline boost::tuple<ParticleID, Particle, SGFRDSimulator::FaceID>
+SGFRDSimulator::propagate_single<SGFRDSimulator::circular_shell_type>(
+        const circular_shell_type& sh, const Single& dom, const Real tm)
+{
+    DUMP_MESSAGE("propagating single circular shell");
+
+    Particle   p   = dom.particle();
+    ParticleID pid = dom.particle_id();
+
+    greens_functions::GreensFunction2DAbsSym gf(p.D(), sh.size() - p.radius());
+
+    const Real del_t = tm - dom.begin_time();
+    const Real r     = gf.drawR(this->uniform_real(), del_t);
+    const Real theta = this->uniform_real() * 2 * M_PI;
+    DUMP_MESSAGE("r = " << r << ", theta = " << theta);
+
+    const face_id_type   fid  = this->get_face_id(pid);
+    const triangle_type& face = this->polygon().triangle_at(fid);
+    const Real3 direction = rotate(theta, face.normal(), face.represent());
+
+    DUMP_MESSAGE("direction = " << direction << ", length = " << length(direction));
+
+    std::pair<std::pair<Real3, face_id_type>, Real3> state =
+        std::make_pair(/*position = */std::make_pair(p.position(), fid),
+                   /*displacement = */direction * r / length(direction));
+
+    DUMP_MESSAGE("pos  = " << state.first.first
+             << ", fid = " << state.first.second);
+
+    unsigned int continue_count = 2;
+    while(continue_count > 0)
+    {
+        state = this->polygon().move_next_face(state.first, state.second);
+        const Real3& disp = state.second;
+        if(disp[0] == 0. && disp[1] == 0. && disp[2] == 0.) break;
+        --continue_count;
+        DUMP_MESSAGE("pos  = " << state.first.first
+                 << ", fid = " << state.first.second);
+        DUMP_MESSAGE("disp = " << disp << ", length = " << length(disp));
+    }
+    if(continue_count == 0)
+        std::cerr << "[WARNING] moving on face: precision lost" << std::endl;
+
+    DUMP_MESSAGE("pos  = " << state.first.first << ", fid = " << state.first.second);
+    DUMP_MESSAGE("disp = " << state.second << ", length = " << state.second);
+
+    DUMP_MESSAGE("bursted.");
+
+    p.position() = state.first.first;
+    this->update_particle(pid, p, state.first.second);
+    return boost::make_tuple(pid, p, state.first.second);
+}
+
+template<>
+inline boost::tuple<ParticleID, Particle, SGFRDSimulator::FaceID>
+SGFRDSimulator::propagate_single<SGFRDSimulator::conical_surface_shell_type>(
+        const conical_surface_shell_type& sh, const Single& dom, const Real tm)
+{
+    Particle           p   = dom.particle();
+    const ParticleID   pid = dom.particle_id();
+    const face_id_type fid = this->get_face_id(pid);
+    DUMP_MESSAGE("propagate-conical: pos  = " << p.position() << ", fid = " << fid);
+
+    const Real r_max = sh.size() - p.radius();
+    greens_functions::GreensFunction2DRefWedgeAbs
+        gf(/* D   = */ p.D(),
+           /* r0  = */ length(p.position() - sh.position()),
+           /* a   = */ r_max,
+           /* phi = */ sh.shape().apex_angle());
+
+    const Real del_t = tm - dom.begin_time();
+    const Real r     = gf.drawR(this->uniform_real(), del_t);
+    const Real theta = gf.drawTheta(this->uniform_real(), r, del_t);
+
+    DUMP_MESSAGE("propagate-conical: r = " << r << ", theta = " << theta);
+
+    const std::pair<Real3, face_id_type> state =
+        this->polygon().rotate_around_vertex(std::make_pair(p.position(), fid),
+                                           sh.structure_id(), r, theta);
+
+    DUMP_MESSAGE("propagated : pos = " << state.first << ", fid = " << state.second);
+
+    p.position() = state.first;
+    this->update_particle(pid, p, state.second);
+    return boost::make_tuple(pid, p, state.second);
+}
+
+template<>
+inline boost::tuple<ParticleID, Particle, SGFRDSimulator::FaceID>
+SGFRDSimulator::escape_single<SGFRDSimulator::circular_shell_type>(
+        const circular_shell_type& sh, const Single& dom)
+{
+    DUMP_MESSAGE("single shell escapement circular shell");
+    if(sh.size() == dom.particle().radius())
+    {
+        DUMP_MESSAGE("closely fitted shell. didnot move.");
+        return boost::make_tuple(dom.particle_id(), dom.particle(),
+                                 this->get_face_id(dom.particle_id()));
+    }
+
+    Particle   p   = dom.particle();
+    ParticleID pid = dom.particle_id();
+
+    const Real r   = sh.size() - p.radius();
+    const Real theta = this->uniform_real() * 2.0 * M_PI;
+    DUMP_MESSAGE("r = " << r << ", theta = " << theta);
+    const face_id_type   fid  = this->get_face_id(pid);
+    const triangle_type& face = this->polygon().triangle_at(fid);
+    const Real3 direction = rotate(theta, face.normal(), face.represent());
+    DUMP_MESSAGE("direction = " << direction << ", length = " << length(direction));
+
+    std::pair<std::pair<Real3, face_id_type>, Real3> state =
+        std::make_pair(/*position = */std::make_pair(p.position(), fid),
+                   /*displacement = */direction * r / length(direction));
+
+    DUMP_MESSAGE("pos  = " << state.first.first << ", fid = " << state.first.second);
+    unsigned int continue_count = 2;
+    while(continue_count > 0)
+    {
+        state = this->polygon().move_next_face(state.first, state.second);
+        const Real3& disp = state.second;
+        if(disp[0] == 0. && disp[1] == 0. && disp[2] == 0.) break;
+        --continue_count;
+        DUMP_MESSAGE("pos  = " << state.first.first << ", fid = " << state.first.second);
+        DUMP_MESSAGE("disp = " << disp << ", length = " << length(disp));
+    }
+    if(continue_count == 0)
+        std::cerr << "[WARNING] moving on face: precision lost" << std::endl;
+
+    DUMP_MESSAGE("pos  = " << state.first.first << ", fid = " << state.first.second);
+    DUMP_MESSAGE("disp = " << state.second << ", length = " << state.second);
+
+    DUMP_MESSAGE("escaped.");
+
+    p.position() = state.first.first;
+    this->update_particle(pid, p, state.first.second);
+    return boost::make_tuple(pid, p, state.first.second);
+}
+
+template<>
+inline boost::tuple<ParticleID, Particle, SGFRDSimulator::FaceID>
+SGFRDSimulator::escape_single<SGFRDSimulator::conical_surface_shell_type>(
+        const conical_surface_shell_type& sh, const Single& dom)
+{
+    Particle           p   = dom.particle();
+    const ParticleID   pid = dom.particle_id();
+    const face_id_type fid = this->get_face_id(pid);
+    DUMP_MESSAGE("escape-conical: pos  = " << p.position() << ", fid = " << fid);
+
+    const Real r     = sh.size() - p.radius();
+    greens_functions::GreensFunction2DRefWedgeAbs
+        gf(p.D(), length(p.position() - sh.position()),
+           r,     sh.shape().apex_angle());
+    const Real theta = gf.drawTheta(this->uniform_real(), r, dom.dt());
+
+    DUMP_MESSAGE("escape-conical: r = " << r << ", theta = " << theta);
+
+    const std::pair<Real3, face_id_type> state =
+        this->polygon().rotate_around_vertex(std::make_pair(p.position(), fid),
+                                           sh.structure_id(), r, theta);
+
+    DUMP_MESSAGE("escaped : pos = " << state.first << ", fid = " << state.second);
+
+    p.position() = state.first;
+    this->update_particle(pid, p, state.second);
+    return boost::make_tuple(pid, p, state.second);
+}
+
+inline void SGFRDSimulator::fire_single(const Single& dom, DomainID did)
+{
+    const ShellID sid(dom.shell_id());
+    ParticleID pid; Particle p; FaceID fid;
+    switch(dom.eventkind())
+    {
+    case Single::ESCAPE:
+    {
+        DUMP_MESSAGE("single escape");
+        boost::tie(pid, p, fid) = boost::apply_visitor(make_visitor(
+            resolve<const circular_shell_type&,
+                    boost::tuple<ParticleID, Particle, FaceID> >(boost::bind(
+                &self_type::escape_single<circular_shell_type>,
+                this, _1, dom)),
+            resolve<const conical_surface_shell_type&,
+                    boost::tuple<ParticleID, Particle, FaceID> >(boost::bind(
+                &self_type::escape_single<conical_surface_shell_type>,
+                this, _1, dom))
+            ), get_shell(sid));
+        this->remove_shell(sid);
+        this->create_event(pid, p, fid);
+        return;
+    }
+    case Single::REACTION:
+    {
+        DUMP_MESSAGE("single reaction");
+        BOOST_AUTO(results, boost::apply_visitor(make_visitor(
+            resolve<const circular_shell_type&,
+                    boost::container::static_vector<
+                        boost::tuple<ParticleID, Particle, FaceID>, 2>
+                    >(boost::bind(
+                &self_type::reaction_single<circular_shell_type>,
+                this, _1, dom, did)),
+            resolve<const conical_surface_shell_type&,
+                    boost::container::static_vector<
+                        boost::tuple<ParticleID, Particle, FaceID>, 2>
+                    >(boost::bind(
+                &self_type::reaction_single<conical_surface_shell_type>,
+                this, _1, dom, did))
+            ), get_shell(sid)));
+        this->remove_shell(sid);
+
+        BOOST_FOREACH(boost::tie(pid, p, fid), results)
+        {
+            this->create_event(pid, p, fid);
+        }
+        return;
+    }
+    case Single::UNKNOWN:
+        throw std::logic_error("when firing Single: event unspecified");
+    default:
+        throw std::logic_error("when firing Single: invalid enum value");
+    }
+}
+
+template<typename shellT>
+boost::container::static_vector<
+    boost::tuple<ParticleID, Particle, SGFRDSimulator::FaceID>, 2>
+SGFRDSimulator::reaction_single(
+        const shellT& sh, const Single& dom, const DomainID did)
+{
+    ParticleID pid; Particle p; FaceID fid;
+    boost::tie(pid, p, fid) = this->propagate_single(sh, dom, dom.dt());// XXX
+    boost::container::static_vector<
+        boost::tuple<ParticleID, Particle, FaceID>, 2> retval;
+    return retval;
+    // TODO make clear_volume() for single reaction
+//         volume_clearer vc(did, dom, *this, this->imm_sh_vis_applier);
+//         return this->attempt_reaction_single(sh, pid, p, fid, vc);
+}
+
+inline SGFRDSimulator::bursted_type
+SGFRDSimulator::burst_single(const Single& dom, const Real tm)
+{
+    const ShellID sid(dom.shell_id());
+    bursted_type results;
+    results.push_back(boost::apply_visitor(make_visitor(
+        resolve<const circular_shell_type&,
+                boost::tuple<ParticleID, Particle, FaceID>
+                >(boost::bind(
+            &self_type::propagate_single<circular_shell_type>,
+            this, _1, dom, tm)),
+        resolve<const conical_surface_shell_type&,
+                boost::tuple<ParticleID, Particle, FaceID>
+                >(boost::bind(
+            &self_type::propagate_single<conical_surface_shell_type>,
+            this, _1, dom, tm))
+        ), get_shell(sid)));
+    this->remove_shell(sid);
+    return results;
+}
+
+// TODO
+template<typename shellT>
+boost::container::static_vector<
+boost::tuple<ParticleID, Particle, SGFRDSimulator::FaceID>, 2>
+SGFRDSimulator::attempt_reaction_single(const shellT& sh, const DomainID did,
+        const ParticleID& pid, const Particle& p, const FaceID& fid)
+{
+    std::cerr << "[WARNING] attempt_reaction_single has not been implemented yet"
+              << std::endl;
+    boost::container::static_vector<boost::tuple<ParticleID, Particle, FaceID>,
+        2> retval;
+    return retval;
+}
+
+inline void SGFRDSimulator::initialize()
+{
+    std::vector<std::pair<ParticleID, Particle> > const& ps =
+        this->world_->list_particles();
+    for(std::vector<std::pair<ParticleID, Particle> >::const_iterator
+        iter = ps.begin(); iter != ps.end(); ++iter)
+    {
+        add_event(create_closely_fitted_domain(create_closely_fitted_shell(
+                  iter->first, iter->second, this->get_face_id(iter->first)),
+              iter->first, iter->second));
+    }
+    return ;
+}
+
+inline void SGFRDSimulator::finalize()
+{
+    const Real tm(this->time());
+    while(scheduler_.size() != 0)
+    {
+        this->burst_event(this->scheduler_.pop(), tm);
+    }
+    return ;
+}
+
+inline void SGFRDSimulator::step()
+{
+    this->set_time(this->scheduler_.next_time());
+    // fire event executes `create_event` inside.
+    this->fire_event(this->scheduler_.pop());
+    DUMP_MESSAGE("now " << shell_container_.num_shells() << " shells exist.");
+    return;
+}
+inline bool SGFRDSimulator::step(const Real& upto)
+{
+    this->step();
+    return this->time() < upto;
+}
+
+
+
+
+
 } // sgfrd
 } // ecell4
-
 #endif // ECELL4_SGFRD_SIMULATOR
