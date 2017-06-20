@@ -99,5 +99,13 @@ resolve(R(C::*fptr)(T), C* cptr)
     return boost::function<R(T)>(boost::bind(fptr, cptr, _1));
 }
 
+template<typename T, typename R, typename F>
+inline boost::function<R(T)>
+resolve(F f)
+{
+    return boost::function<R(T)>(f);
+}
+
+
 } // ecell4
 #endif// ECELL4_MAKE_VISITOR_HPP
