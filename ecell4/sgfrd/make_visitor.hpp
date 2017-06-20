@@ -28,8 +28,6 @@ struct result_type_of
 namespace detail
 {
 
-// ---------------------------- aggregate_functions ----------------------------
-
 #define ECELL4_AGGREGATE_FUNCTION_BASECLASS_INITIALIZER(z, N, NAME)\
     BOOST_PP_CAT(NAME, N)(BOOST_PP_CAT(t, N))\
     /**/
@@ -38,11 +36,13 @@ namespace detail
     using BOOST_PP_CAT(NAME, N)::operator();\
     /**/
 
-// error: redeclaration of `boost_static_assert_typedef_<line number at the macro expanded>`
+//XXX error: redeclaration of
+//           `boost_static_assert_typedef_<line num @ the macro expanded>`
 // #define ECELL4_CHECK_RESULT_TYPE_IS_SAME(z, N, data)\
 //     BOOST_STATIC_ASSERT((boost::is_same<\
 //         typename result_type_of<BOOST_PP_CAT(T, N)>::type, result_type>::type::value));
 //     BOOST_PP_REPEAT_FROM_TO(1, N, ECELL4_CHECK_RESULT_TYPE_IS_SAME, DUMMY)\
+// #undef ECELL4_CHECK_RESULT_TYPE_IS_SAME
 
 #define ECELL4_AGGREGATE_FUNCTIONS(z, N, DUMMY)\
 template<BOOST_PP_ENUM_PARAMS(N, typename T)>\
@@ -61,7 +61,6 @@ struct BOOST_PP_CAT(aggregate_functions, N)\
 
 BOOST_PP_REPEAT_FROM_TO(1, ECELL4_MAKE_VISITOR_MAX_INDEX, ECELL4_AGGREGATE_FUNCTIONS, dummy)
 
-// #undef ECELL4_CHECK_RESULT_TYPE_IS_SAME
 #undef ECELL4_AGGREGATE_FUNCTION_BASECLASS_INITIALIZER
 #undef ECELL4_AGGREGATE_FUNCTION_USING_OPERATORS
 #undef ECELL4_AGGREGATE_FUNCTIONS
@@ -91,7 +90,7 @@ resolve(R(*fptr)(T))
     return boost::visitor_ptr(fptr);
 }
 
-//TODO: remove wrapper doing some technique like
+//TODO: remove wrapper `boost::function` using some technique like
 //      `decltype(boost::bind(declval<R(C::*)(T)>(), declval<C*>()))`
 template<typename R, typename T, class C>
 inline boost::function<R(T)>
