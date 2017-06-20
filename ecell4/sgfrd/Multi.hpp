@@ -46,7 +46,7 @@ class Multi
   public:
 
     Multi(simulator_type& sim, world_type& world)
-        : dt_(1e-5), begin_time_(0.), reaction_length_(1e-3)
+        : dt_(1e-5), begin_time_(0.), reaction_length_(1e-3),
           simulator_(sim), world_(world),
           container_(world), model_(*world.lock_model())
     {}
