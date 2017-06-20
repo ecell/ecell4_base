@@ -11,16 +11,6 @@ namespace ecell4
 namespace sgfrd
 {
 
-struct minimal_eval_or : boost::true_type
-{
-    static bool is_resolved(const bool v) {return v;}
-};
-
-struct minimal_eval_and : boost::false_type
-{
-    static bool is_resolved(const bool v) {return !v;}
-};
-
 template<typename T_shell_container>
 struct shell_visitor_applier
 {

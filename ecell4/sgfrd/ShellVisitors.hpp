@@ -8,6 +8,16 @@ namespace ecell4
 namespace sgfrd
 {
 
+struct minimal_eval_or : boost::true_type
+{
+    static bool is_resolved(const bool v) {return v;}
+};
+
+struct minimal_eval_and : boost::false_type
+{
+    static bool is_resolved(const bool v) {return !v;}
+};
+
 struct domain_id_setter : boost::static_visitor<void>
 {
     DomainID did_;
@@ -29,9 +39,29 @@ struct domain_id_getter : boost::static_visitor<DomainID>
     }
 };
 
+struct is_inside : boost::static_visitor<bool>
+{
+    typedef minimal_eval_or eval_manner;
 
+    is_inside(Real3 pos, face_id_type f, polygon_type const& p)
+        : position(pos), fid(f), poly(p)
+    {}
 
+    //XXX: dispatch using shapeT::dimension to use 3D shells
+    template<typename shapeT, typename stridT>
+    bool operator()(const Shell<shapeT, stridT>& shell) const
+    {
+        return poly.distance_sq(
+                std::make_pair(shell.position(), shell.structure_id()),
+                std::make_pair(position, fid)) < (shell.size() * shell.size());
+    }
 
+  private:
+
+    Real3        position;
+    face_id_type fid;
+    polygon_type const& poly;
+};
 
 
 } // sgfrd
