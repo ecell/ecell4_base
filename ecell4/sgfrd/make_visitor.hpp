@@ -1,12 +1,17 @@
-#ifndef ECELL4_MAKE_VISITOR
-#define ECELL4_MAKE_VISITOR
-#include <boost/static_assert.hpp>
+#ifndef ECELL4_MAKE_VISITOR_HPP
+#define ECELL4_MAKE_VISITOR_HPP
 #include <boost/preprocessor.hpp>
+#include <boost/typeof/typeof.hpp>
+#include <boost/type_traits.hpp>
+#include <boost/mpl/assert.hpp>
+#include <boost/mpl/logical.hpp>
+#include <boost/mpl/and.hpp>
 #include <boost/function.hpp>
 #include <boost/bind.hpp>
+#include <boost/variant.hpp>
 
 #ifndef ECELL4_MAKE_VISITOR_MAX_SIZE
-#define ECELL4_MAKE_VISITOR_MAX_SIZE 10
+#define ECELL4_MAKE_VISITOR_MAX_SIZE BOOST_VARIANT_LIMIT_TYPES
 #endif//ECELL4_MAKE_VISITOR_MAX_SIZE
 
 #define ECELL4_MAKE_VISITOR_MAX_INDEX BOOST_PP_ADD(ECELL4_MAKE_VISITOR_MAX_SIZE, 1)
@@ -14,19 +19,10 @@
 namespace ecell4
 {
 
-//TODO:
-// - assert if not all the result_type is same
-
 template<typename T>
-struct function_traits
+struct result_type_of
 {
-    typedef typename T::result_type result_type;
-};
-
-template<typename R, typename T>
-struct function_traits<boost::function<R(T)> >
-{
-    typedef R result_type;
+    typedef typename T::result_type type;
 };
 
 namespace detail
@@ -34,38 +30,45 @@ namespace detail
 
 // ---------------------------- aggregate_functions ----------------------------
 
-#define EXPAND_BASECLASS_INITIALIZER(z, N, NAME)\
+#define ECELL4_AGGREGATE_FUNCTION_BASECLASS_INITIALIZER(z, N, NAME)\
     BOOST_PP_CAT(NAME, N)(BOOST_PP_CAT(t, N))\
     /**/
 
-#define EXPAND_USING_OPERATORS(z, N, NAME)\
+#define ECELL4_AGGREGATE_FUNCTION_USING_OPERATORS(z, N, NAME)\
     using BOOST_PP_CAT(NAME, N)::operator();\
     /**/
 
-#define EXPAND_AGGREGATE_FUNCTIONS(z, N, DUMMY)\
+// error: redeclaration of `boost_static_assert_typedef_<line number at the macro expanded>`
+// #define ECELL4_CHECK_RESULT_TYPE_IS_SAME(z, N, data)\
+//     BOOST_STATIC_ASSERT((boost::is_same<\
+//         typename result_type_of<BOOST_PP_CAT(T, N)>::type, result_type>::type::value));
+//     BOOST_PP_REPEAT_FROM_TO(1, N, ECELL4_CHECK_RESULT_TYPE_IS_SAME, DUMMY)\
+
+#define ECELL4_AGGREGATE_FUNCTIONS(z, N, DUMMY)\
 template<BOOST_PP_ENUM_PARAMS(N, typename T)>\
 struct BOOST_PP_CAT(aggregate_functions, N)\
     :BOOST_PP_ENUM_PARAMS(N, T)\
 {\
-    typedef typename function_traits<T0>::result_type result_type;\
+    typedef typename result_type_of<T0>::type result_type;\
 \
     BOOST_PP_CAT(aggregate_functions, N)(BOOST_PP_ENUM_BINARY_PARAMS(N, T, t))\
-    :BOOST_PP_ENUM(N, EXPAND_BASECLASS_INITIALIZER, T)\
+    :BOOST_PP_ENUM(N, ECELL4_AGGREGATE_FUNCTION_BASECLASS_INITIALIZER, T)\
     {}\
 \
-    BOOST_PP_REPEAT(N, EXPAND_USING_OPERATORS, T)\
+    BOOST_PP_REPEAT(N, ECELL4_AGGREGATE_FUNCTION_USING_OPERATORS, T)\
 };\
 /**/
 
-BOOST_PP_REPEAT_FROM_TO(1, ECELL4_MAKE_VISITOR_MAX_INDEX, EXPAND_AGGREGATE_FUNCTIONS, dummy)
+BOOST_PP_REPEAT_FROM_TO(1, ECELL4_MAKE_VISITOR_MAX_INDEX, ECELL4_AGGREGATE_FUNCTIONS, dummy)
 
-#undef EXPAND_CONSTRUCTOR_ARGUMENTS
-#undef EXPAND_BASECLASS_INITIALIZER
-#undef EXPAND_AGGREGATE_FUNCTIONS
+// #undef ECELL4_CHECK_RESULT_TYPE_IS_SAME
+#undef ECELL4_AGGREGATE_FUNCTION_BASECLASS_INITIALIZER
+#undef ECELL4_AGGREGATE_FUNCTION_USING_OPERATORS
+#undef ECELL4_AGGREGATE_FUNCTIONS
 
 } // detail
 
-#define EXPAND_MAKE_VISITOR(z, N, DUMMY)\
+#define ECELL4_MAKE_VISITOR(z, N, DUMMY)\
 template<BOOST_PP_ENUM_PARAMS(N, typename T)>\
 inline BOOST_PP_CAT(detail::aggregate_functions, N)<BOOST_PP_ENUM_PARAMS(N, T)>\
 make_visitor(BOOST_PP_ENUM_BINARY_PARAMS(N, T, t))\
@@ -76,17 +79,20 @@ make_visitor(BOOST_PP_ENUM_BINARY_PARAMS(N, T, t))\
 }\
 /**/
 
-BOOST_PP_REPEAT_FROM_TO(1, ECELL4_MAKE_VISITOR_MAX_INDEX, EXPAND_MAKE_VISITOR, dummy)
+BOOST_PP_REPEAT_FROM_TO(1, ECELL4_MAKE_VISITOR_MAX_INDEX, ECELL4_MAKE_VISITOR, dummy)
 
-#undef EXPAND_MAKE_VISITOR
+#undef ECELL4_MAKE_VISITOR_MAX_INDEX
+#undef ECELL4_MAKE_VISITOR
 
 template<typename R, typename T>
-inline boost::function<R(T)>
+inline boost::visitor_ptr_t<T, R>
 resolve(R(*fptr)(T))
 {
-    return boost::function<R(T)>(fptr);
+    return boost::visitor_ptr(fptr);
 }
 
+//TODO: remove wrapper doing some technique like
+//      `decltype(boost::bind(declval<R(C::*)(T)>(), declval<C*>()))`
 template<typename R, typename T, class C>
 inline boost::function<R(T)>
 resolve(R(C::*fptr)(T), C* cptr)
@@ -95,6 +101,4 @@ resolve(R(C::*fptr)(T), C* cptr)
 }
 
 } // ecell4
-
-#undef ECELL4_MAKE_VISITOR_MAX_INDEX
-#endif// ECELL4_MAKE_OVERLOAD
+#endif// ECELL4_MAKE_VISITOR_HPP
