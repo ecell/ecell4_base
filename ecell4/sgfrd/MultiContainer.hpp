@@ -1,6 +1,7 @@
 #ifndef ECELL4_SGFRD_MULTI_CONTAINER
 #define ECELL4_SGFRD_MULTI_CONTAINER
 #include <ecell4/sgfrd/SGFRDWorld.hpp>
+#include <algorithm>
 
 namespace ecell4
 {
@@ -31,12 +32,16 @@ class MultiContainer
     MultiContainer(world_type& w) : world_(w), registrator_(*(w.polygon())){}
     ~MultiContainer(){}
 
-    void make_entry(const ParticleID& pid)
+    bool make_entry(const ParticleID& pid)
     {
+        if(std::find_if(pcon_.begin(), pcon_.end(),
+                ecell4::utils::pair_first_element_unary_predicator<
+                ParticleID, Particle>(pid)) != pcon_.end()) return false;
+
         pcon_.push_back(world_.get_particle(pid));
         if(world_.is_on_face(pid))
             registrator_.emplace(pid, world_.get_face_id(pid));
-        return;
+        return true;
     }
 
     particle_container_type&       list_particles()       {return pcon_;}

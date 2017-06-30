@@ -87,8 +87,17 @@ class Multi
     void determine_reaction_length(){return;}
     void determine_delta_t(){return;}
 
-    void add_particle(particle_id_type const& pid){container_.make_entry(pid);}
-    void add_shell   (shell_id_type    const& sid){shells_.push_back(sid);}
+    bool add_particle(particle_id_type const& pid)
+    {
+        return container_.make_entry(pid);
+    }
+    bool add_shell   (shell_id_type    const& sid)
+    {
+        if(std::find(shells_.begin(), shells_.end(), sid) != shells_.end())
+            return false;
+        shells_.push_back(sid);
+        return true;
+    }
 
     shell_ids_type&       shell_ids()       {return shells_;}
     shell_ids_type const& shell_ids() const {return shells_;}
