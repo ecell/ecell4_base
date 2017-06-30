@@ -406,35 +406,50 @@ class SGFRDSimulator :
     }
 
     // to clear volume
-    bursted_type burst_overlaps(const Particle& p, const face_id_type& fid);
+    bursted_type burst_overlaps(const Particle& p, const FaceID& fid);
 
-    void join_multi(
-            const ParticleID& pid, const Particle& p, const face_id_type fid,
-            Multi& dom)
+    void form_multi(const ParticleID& pid, const Particle& p, const FaceID& fid,
+                    const std::vector<std::pair<DomainID, Real> >& doms);
+
+    boost::optional<circle_type>
+    join_multi(const ParticleID& pid, const ShellID& sid, Multi& dom)
     {
+        if(!dom.add_particle(pid)) return false;
 
-        // create min_shell
-        // add it to multi
-        return;
+        //XXX consider creating conical shell.
+        Real const min_circle_size = p.radius() * single_circular_shell_factor;
+
+        BOOST_AUTO(sid_shape, create_single_circular_shell(
+                std::make_pair(p.position(), fid), min_circle_size));
+        const bool addshell_result = dom.add_shell(sid_shape.first);
+        assert(addshell_result);
+        return boost::optional<circle_type>(sid_shape.second);
     }
-
-    void join_multi_recursively(
-            const ParticleID& pid, const Particle& p, const face_id_type fid,
-            Multi& dom)
-    {
-
-        // create min_shell
-        // add it to multi
-        return;
-    }
-
 
     void merge_multi(Multi& from, Multi& to)
-    {// TODO
-        // move shell_ids
-        // move particles
-        // rewrite domain_id in each shell
-        // adjust dt and reaction length
+    {
+        // reset domain_id
+        const domain_id_setter didset(this->get_domain_id(to));
+        mut_sh_vis_applier(didset, from);
+
+        // move particle
+        ParticleID pid; Particle p; FaceID fid;
+        BOOST_FOREACH(boost::tie(pid, p), from.particles())
+        {
+            const bool addp_result = to.add_particle(pid);
+            assert(addp_result);
+        }
+        // move shell
+        BOOST_FOREACH(ShellID sid, from.shell_ids())
+        {
+            const bool adds_result = to.add_shell(sid);
+            assert(adds_result);
+        }
+        to.determine_reaction_length();
+        to.determine_delta_t();
+
+        // remove event
+        scheduler_.remove(get_domain_id(from));
         return;
     }
 
