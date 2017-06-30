@@ -118,21 +118,18 @@ class SGFRDSimulator :
 
     void initialize()
     {
-        std::vector<std::pair<ParticleID, Particle> > const& ps =
-            this->world_->list_particles();
-        for(std::vector<std::pair<ParticleID, Particle> >::const_iterator
-            iter = ps.begin(); iter != ps.end(); ++iter)
+        ParticleID pid; Particle p;
+        BOOST_FOREACH(boost::tie(pid, p), this->world_->list_particles())
         {
             add_event(create_closely_fitted_domain(create_closely_fitted_shell(
-                      iter->first, iter->second, this->get_face_id(iter->first)),
-                  iter->first, iter->second));
+                      pid, p, this->get_face_id(pid)), pid, p));
         }
         return ;
     }
     void finalize()
     {
         const Real tm(this->time());
-        while(scheduler_.size() != 0)
+        while(this->scheduler_.size() != 0)
         {
             this->burst_event(this->scheduler_.pop(), tm);
         }
