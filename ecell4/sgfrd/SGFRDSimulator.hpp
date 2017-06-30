@@ -164,7 +164,7 @@ class SGFRDSimulator :
     polygon_type const& polygon() const {return *(this->world_->polygon());}
 
     bool update_particle(const ParticleID& pid, const Particle& p,
-                         const face_id_type& fid)
+                         const FaceID& fid)
     {return this->world_->update_particle(pid, p, fid);}
 
     shell_type&       get_shell(ShellID const& id)
@@ -174,7 +174,7 @@ class SGFRDSimulator :
     void remove_shell(ShellID const& id)
     {return shell_container_.remove_shell(id);}
 
-    face_id_type      get_face_id(const ParticleID& pid) const
+    FaceID get_face_id(const ParticleID& pid) const
     {return this->world_->get_face_id(pid);}
     std::pair<ParticleID, Particle> get_particle(const ParticleID& pid) const
     {return this->world_->get_particle(pid);}
@@ -207,17 +207,17 @@ class SGFRDSimulator :
     escape_single(const shellT& sh, const Single& dom);
 
     template<typename shellT>
-    boost::container::static_vector<boost::tuple<ParticleID, Particle, FaceID>, 2>
+    boost::container::static_vector<pid_p_fid_tuple_type, 2>
     reaction_single(const shellT& sh, const Single& dom, const DomainID did);
 
     template<typename shellT>
-    boost::container::static_vector<boost::tuple<ParticleID, Particle, FaceID>, 2>
+    boost::container::static_vector<pid_p_fid_tuple_type, 2>
     attempt_reaction_single(const shellT& sh, const DomainID did,
             const ParticleID& pid, const Particle& p, const FaceID& fid);
 
     std::pair<ShellID, circle_type>
     create_single_circular_shell(
-            const std::pair<Real3, face_id_type>& pos, const Real size)
+            const std::pair<Real3, FaceID>& pos, const Real size)
     {
         DUMP_MESSAGE("create single circular shell");
         const ShellID id(shell_id_gen());
@@ -314,7 +314,7 @@ class SGFRDSimulator :
             case Multi::ESCAPE:
             {
                 /* burst this domain! */
-                ParticleID pid; Particle p; face_id_type fid;
+                ParticleID pid; Particle p; FaceID fid;
                 BOOST_FOREACH(boost::tie(pid, p, fid),
                               this->burst_multi(dom, this->time()))
                 {
@@ -404,12 +404,12 @@ class SGFRDSimulator :
             : sim(s), did(d), domain(dom), applier(imm)
         {}
 
-        bool operator()(const Particle& p, const face_id_type& fid)
+        bool operator()(const Particle& p, const FaceID& fid)
         {return true;}
-        bool operator()(const Particle& p, const face_id_type& fid,
+        bool operator()(const Particle& p, const FaceID& fid,
                         const ParticleID& ignore)
         {return true;}
-        bool operator()(const Particle& p, const face_id_type& fid,
+        bool operator()(const Particle& p, const FaceID& fid,
                         const ParticleID& ignore1, const ParticleID& ignore2)
         {return true;}
 
@@ -472,7 +472,7 @@ class SGFRDSimulator :
     }
 
     ShellID create_closely_fitted_shell(
-            const ParticleID& pid, const Particle& p, const face_id_type fid)
+            const ParticleID& pid, const Particle& p, const FaceID fid)
     {
         const ShellID sid(shell_id_gen());
         circular_shell_type sh(circle_type(p.radius(), p.position(),
@@ -488,7 +488,7 @@ class SGFRDSimulator :
 
     std::pair<ShellID, circle_type>
     create_minimum_single_shell(
-            const ParticleID& pid, const Particle& p, const face_id_type fid)
+            const ParticleID& pid, const Particle& p, const FaceID fid)
     {
         const Real radius = p.radius() * single_circular_shell_factor;
         return this->create_single_circular_shell(
@@ -496,17 +496,17 @@ class SGFRDSimulator :
     }
 
     //! make domain and call add_event
-    DomainID create_event(const ParticleID&, const Particle&, const face_id_type);
+    DomainID create_event(const ParticleID&, const Particle&, const FaceID);
 
     std::vector<std::pair<vertex_id_type, Real> >
-    get_intrusive_vertices(const std::pair<Real3, face_id_type>& pos,
+    get_intrusive_vertices(const std::pair<Real3, FaceID>& pos,
                            const Real radius) const
     {
         return polygon().list_vertices_within_radius(pos, radius);
     }
 
     std::vector<std::pair<DomainID, Real> >
-    get_intrusive_domains(const std::pair<Real3, face_id_type>& pos,
+    get_intrusive_domains(const std::pair<Real3, FaceID>& pos,
                           const Real radius) const
     {
         const std::vector<std::pair<std::pair<ShellID, shell_type>, Real>
@@ -559,7 +559,7 @@ class SGFRDSimulator :
     }
 
     //! just a geometric restriction
-    Real get_max_circle_size(const std::pair<Real3, face_id_type>& pos) const
+    Real get_max_circle_size(const std::pair<Real3, FaceID>& pos) const
     {
         Real lensq = std::numeric_limits<Real>::max();
         const boost::array<ecell4::Segment, 6>& barrier =
@@ -634,13 +634,13 @@ SGFRDSimulator::propagate_single<SGFRDSimulator::circular_shell_type>(
     const Real theta = this->uniform_real() * 2 * M_PI;
     DUMP_MESSAGE("r = " << r << ", theta = " << theta);
 
-    const face_id_type   fid  = this->get_face_id(pid);
+    const FaceID         fid  = this->get_face_id(pid);
     const triangle_type& face = this->polygon().triangle_at(fid);
     const Real3 direction = rotate(theta, face.normal(), face.represent());
 
     DUMP_MESSAGE("direction = " << direction << ", length = " << length(direction));
 
-    std::pair<std::pair<Real3, face_id_type>, Real3> state =
+    std::pair<std::pair<Real3, FaceID>, Real3> state =
         std::make_pair(/*position = */std::make_pair(p.position(), fid),
                    /*displacement = */direction * r / length(direction));
 
@@ -675,9 +675,9 @@ inline boost::tuple<ParticleID, Particle, SGFRDSimulator::FaceID>
 SGFRDSimulator::propagate_single<SGFRDSimulator::conical_surface_shell_type>(
         const conical_surface_shell_type& sh, const Single& dom, const Real tm)
 {
-    Particle           p   = dom.particle();
-    const ParticleID   pid = dom.particle_id();
-    const face_id_type fid = this->get_face_id(pid);
+    Particle         p   = dom.particle();
+    const ParticleID pid = dom.particle_id();
+    const FaceID     fid = this->get_face_id(pid);
     DUMP_MESSAGE("propagate-conical: pos  = " << p.position() << ", fid = " << fid);
 
     const Real r_max = sh.size() - p.radius();
@@ -693,7 +693,7 @@ SGFRDSimulator::propagate_single<SGFRDSimulator::conical_surface_shell_type>(
 
     DUMP_MESSAGE("propagate-conical: r = " << r << ", theta = " << theta);
 
-    const std::pair<Real3, face_id_type> state =
+    const std::pair<Real3, FaceID> state =
         this->polygon().rotate_around_vertex(std::make_pair(p.position(), fid),
                                            sh.structure_id(), r, theta);
 
@@ -723,12 +723,12 @@ SGFRDSimulator::escape_single<SGFRDSimulator::circular_shell_type>(
     const Real r   = sh.size() - p.radius();
     const Real theta = this->uniform_real() * 2.0 * M_PI;
     DUMP_MESSAGE("r = " << r << ", theta = " << theta);
-    const face_id_type   fid  = this->get_face_id(pid);
+    const FaceID         fid  = this->get_face_id(pid);
     const triangle_type& face = this->polygon().triangle_at(fid);
     const Real3 direction = rotate(theta, face.normal(), face.represent());
     DUMP_MESSAGE("direction = " << direction << ", length = " << length(direction));
 
-    std::pair<std::pair<Real3, face_id_type>, Real3> state =
+    std::pair<std::pair<Real3, FaceID>, Real3> state =
         std::make_pair(/*position = */std::make_pair(p.position(), fid),
                    /*displacement = */direction * r / length(direction));
 
@@ -763,7 +763,7 @@ SGFRDSimulator::escape_single<SGFRDSimulator::conical_surface_shell_type>(
 {
     Particle           p   = dom.particle();
     const ParticleID   pid = dom.particle_id();
-    const face_id_type fid = this->get_face_id(pid);
+    const FaceID       fid = this->get_face_id(pid);
     DUMP_MESSAGE("escape-conical: pos  = " << p.position() << ", fid = " << fid);
 
     const Real r     = sh.size() - p.radius();
@@ -774,7 +774,7 @@ SGFRDSimulator::escape_single<SGFRDSimulator::conical_surface_shell_type>(
 
     DUMP_MESSAGE("escape-conical: r = " << r << ", theta = " << theta);
 
-    const std::pair<Real3, face_id_type> state =
+    const std::pair<Real3, FaceID> state =
         this->polygon().rotate_around_vertex(std::make_pair(p.position(), fid),
                                            sh.structure_id(), r, theta);
 
@@ -792,13 +792,11 @@ SGFRDSimulator::burst_single(const Single& dom, const Real tm)
     bursted_type results;
     results.push_back(boost::apply_visitor(make_visitor(
         resolve<const circular_shell_type&,
-                boost::tuple<ParticleID, Particle, FaceID>
-                >(boost::bind(
+                boost::tuple<ParticleID, Particle, FaceID> >(boost::bind(
             &self_type::propagate_single<circular_shell_type>,
             this, _1, dom, tm)),
         resolve<const conical_surface_shell_type&,
-                boost::tuple<ParticleID, Particle, FaceID>
-                >(boost::bind(
+                boost::tuple<ParticleID, Particle, FaceID> >(boost::bind(
             &self_type::propagate_single<conical_surface_shell_type>,
             this, _1, dom, tm))
         ), get_shell(sid)));
@@ -827,15 +825,13 @@ SGFRDSimulator::reaction_single(
 // TODO
 // calls propagate_single.
 template<typename shellT>
-boost::container::static_vector<
-boost::tuple<ParticleID, Particle, SGFRDSimulator::FaceID>, 2>
+boost::container::static_vector<SGFRDSimulator::pid_p_fid_tuple_type, 2>
 SGFRDSimulator::attempt_reaction_single(const shellT& sh, const DomainID did,
         const ParticleID& pid, const Particle& p, const FaceID& fid)
 {
     std::cerr << "[WARNING] attempt_reaction_single has not been implemented yet"
               << std::endl;
-    boost::container::static_vector<boost::tuple<ParticleID, Particle, FaceID>,
-        2> retval;
+    boost::container::static_vector<pid_p_fid_tuple_type, 2> retval;
     return retval;
 }
 
