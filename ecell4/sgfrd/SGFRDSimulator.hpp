@@ -363,19 +363,46 @@ class SGFRDSimulator :
         return results;
     }
 
-    template<typename Iterator>
-    typename boost::enable_if<
-        boost::is_same<typename std::iterator_traits<Iterator>::value_type, DomainID>,
-        std::vector<pid_p_fid_tuple_type> >::type
-    burst_non_multis(Iterator iter, const Iterator end)
+// -----------------------------------------------------------------------------
+
+    // XXX: second value of element of result is not distance, but
+    //      distance minus min_single_circular_shell_radius.
+    std::vector<std::pair<DomainID, Real> >
+    burst_and_shrink_non_multis(
+            const ParticleID& pid, const Particle& p, const FaceID& fid,
+            const std::vector<std::pair<DomainID, Real> >& intruders)
     {
         const Real tm(this->time());
-        std::vector<pid_p_fid_tuple_type> rems;
-        while(iter != end)
+        std::vector<std::pair<DomainID, Real> > results;
+
+        DomainID did; Real dist;
+        BOOST_FOREACH(boost::tie(did, dist), intruders)
         {
-            burst_event(std::make_pair(*iter, scheduler_.get(*iter)), tm);
+            BOOST_AUTO(const& ev = pickout_event(did));
+            if(ev.which_domain() == event_type::idx_multi)
+            {
+                results.push_back(std::make_pair(did, dist));
+                continue;
+            }
+
+            DomainID did_; ParticleID pid_; Particle p_; FaceID fid_;
+            BOOST_FOREACH(boost::tie(pid_, p_, fid_),
+                          burst_event(std::make_pair(did, ev)))
+            {
+                did_ = add_event(create_closely_fitted_domain(
+                    create_closely_fitted_shell(pid_, p_, fid_), pid_, p_));
+                bursted.push_back(std::make_pair(did, this->polygon().distance(
+                    std::make_pair(p.position(),  fid),
+                    std::make_pair(p_.position(), fid_)) -
+                    // this possibly is a problem, consider the case this particle
+                    // is close to a certain vertex...
+                    calc_min_single_circular_shell_radius(p_)));
+            }
         }
-        return rems;
+
+        std::sort(results.begin(), results.end(),
+            ecell4::utils::pair_second_element_comparator<DomainID, Real>());
+        return results;
     }
 
     // to clear volume
