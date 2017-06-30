@@ -188,6 +188,20 @@ class SGFRDSimulator :
         scheduler_.remove(id);
         return tmp;
     }
+
+    DomainID get_domain_id(Single const& dom) const
+    {
+        return boost::apply_visitor(domain_id_getter(), get_shell(dom.shell_id()));
+    }
+    DomainID get_domain_id(Pair const& dom) const
+    {
+        return boost::apply_visitor(domain_id_getter(), get_shell(dom.shell_id()));
+    }
+    DomainID get_domain_id(Multi const& dom) const
+    {
+        return boost::apply_visitor(domain_id_getter(),
+                                    get_shell(dom.shell_ids().front()));
+    }
     // }}}
 
   private:
