@@ -5,6 +5,7 @@ add_subdirectory(ode)
 add_subdirectory(bd)
 add_subdirectory(meso)
 add_subdirectory(spatiocyte)
+add_subdirectory(sgfrd)
 
 if (NOT NO_SHARED)
   set(ECELL4_SHARED_DIRS ${ECELL4_SHARED_DIRS} PARENT_SCOPE)
