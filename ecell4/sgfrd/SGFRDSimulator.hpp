@@ -8,14 +8,14 @@
 #include <ecell4/core/ReactionRule.hpp>
 #include <ecell4/core/SerialIDGenerator.hpp>
 #include <ecell4/core/geometry.hpp>
-#include "make_visitor.hpp"
 
-#include "ShellContainer.hpp"
-#include "ShellVisitorApplier.hpp"
-#include "ShellVisitors.hpp"
-#include "Informations.hpp"
-#include "SGFRDEvent.hpp"
-#include "SGFRDWorld.hpp"
+#include <ecell4/sgfrd/make_visitor.hpp>
+#include <ecell4/sgfrd/ShellContainer.hpp>
+#include <ecell4/sgfrd/ShellVisitorApplier.hpp>
+#include <ecell4/sgfrd/ShellVisitors.hpp>
+#include <ecell4/sgfrd/Informations.hpp>
+#include <ecell4/sgfrd/SGFRDEvent.hpp>
+#include <ecell4/sgfrd/SGFRDWorld.hpp>
 
 #include <boost/make_shared.hpp>
 #include <boost/tuple/tuple.hpp>
@@ -116,10 +116,41 @@ class SGFRDSimulator :
 
     ~SGFRDSimulator(){}
 
-    void initialize();
-    void finalize();
-    void step();
-    bool step(const Real& upto);
+    void initialize()
+    {
+        std::vector<std::pair<ParticleID, Particle> > const& ps =
+            this->world_->list_particles();
+        for(std::vector<std::pair<ParticleID, Particle> >::const_iterator
+            iter = ps.begin(); iter != ps.end(); ++iter)
+        {
+            add_event(create_closely_fitted_domain(create_closely_fitted_shell(
+                      iter->first, iter->second, this->get_face_id(iter->first)),
+                  iter->first, iter->second));
+        }
+        return ;
+    }
+    void finalize()
+    {
+        const Real tm(this->time());
+        while(scheduler_.size() != 0)
+        {
+            this->burst_event(this->scheduler_.pop(), tm);
+        }
+        return ;
+    }
+    void step()
+    {
+        this->set_time(this->scheduler_.next_time());
+        // fire event executes `create_event` inside.
+        this->fire_event(this->scheduler_.pop());
+        DUMP_MESSAGE("now " << shell_container_.num_shells() << " shells exist.");
+        return;
+    }
+    bool step(const Real& upto)
+    {
+        this->step();
+        return this->time() < upto;
+    }
 
     Real dt() const {return dt_;}
 
@@ -151,7 +182,6 @@ class SGFRDSimulator :
     std::pair<ParticleID, Particle> get_particle(const ParticleID& pid) const
     {return this->world_->get_particle(pid);}
 
-    // consider scheduler.time
     Real time() const {return this->world_->t();}
     void set_time(const Real t) {return this->world_->set_t(t);}
 
@@ -165,8 +195,11 @@ class SGFRDSimulator :
 
   private:
 
+//----------------------------------- single -----------------------------------
+
     /*! execute Event associated with Domain, remove shell, create next event. */
-    void fire_single(const Single& dom, DomainID did);
+    void         fire_single(const Single& dom, DomainID did);
+    bursted_type burst_single(const Single& dom, const Real tm);
 
     template<typename shellT>
     boost::tuple<ParticleID, Particle, FaceID>
@@ -180,9 +213,7 @@ class SGFRDSimulator :
     boost::container::static_vector<boost::tuple<ParticleID, Particle, FaceID>, 2>
     reaction_single(const shellT& sh, const Single& dom, const DomainID did);
 
-    bursted_type burst_single(const Single& dom, const Real tm);
-
-    template<typename shellT>// TODO
+    template<typename shellT>
     boost::container::static_vector<boost::tuple<ParticleID, Particle, FaceID>, 2>
     attempt_reaction_single(const shellT& sh, const DomainID did,
             const ParticleID& pid, const Particle& p, const FaceID& fid);
@@ -248,6 +279,8 @@ class SGFRDSimulator :
                       std::make_pair(pid, p));
     }
 
+//------------------------------------ pair ------------------------------------
+
     void fire_pair(const Pair& dom, DomainID did)
     {// TODO
         std::cerr << "[WARNING] fire_pair(Pair) has not been implemented yet."
@@ -259,6 +292,8 @@ class SGFRDSimulator :
         std::cerr << "[WARNING] burst_pair(Pair) has not been implemented yet."
                   << std::endl;
     }
+
+//----------------------------------- multi ------------------------------------
 
     void fire_multi(Multi& dom, DomainID did)
     {
@@ -301,8 +336,7 @@ class SGFRDSimulator :
 
     bursted_type burst_multi(const Multi& dom, const Real tm)
     {
-        // TODO: handle time properly!
-        // simply remove all the shells. not add a domains for each particles
+        // simply remove all the shells. not add a domains for each particles.
         // particles are updated at each step, so here nothing is needed to
         // update world.
         bursted_type results;
@@ -318,23 +352,53 @@ class SGFRDSimulator :
         return results;
     }
 
-    /*!@brief burst domains that overlaps to particle in argument.
-     * for volume_clearer in Multi case.                          */
-    struct overlap_burster : boost::static_visitor<void>
+    template<typename Iterator>
+    typename boost::enable_if<
+        boost::is_same<typename std::iterator_traits<Iterator>::value_type, DomainID>,
+        std::vector<pid_p_fid_tuple_type> >::type
+    burst_non_multis(Iterator iter, const Iterator end)
     {
-        overlap_burster(SGFRDSimulator& s, const domain_id_type& d)
-            : sim(s), did(d)
-        {}
-
-        void operator()(const Particle& p, const face_id_type& fid)
+        const Real tm(this->time());
+        std::vector<pid_p_fid_tuple_type> rems;
+        while(iter != end)
         {
-            return ;
+            burst_event(std::make_pair(*iter, scheduler_.get(*iter)), tm);
         }
+        return rems;
+    }
 
-      private:
-        SGFRDSimulator& sim;
-        domain_id_type  did;
-    };
+    // to clear volume
+    bursted_type burst_overlaps(const Particle& p, const face_id_type& fid);
+
+    void join_multi(
+            const ParticleID& pid, const Particle& p, const face_id_type fid,
+            Multi& dom)
+    {
+
+        // create min_shell
+        // add it to multi
+        return;
+    }
+
+    void join_multi_recursively(
+            const ParticleID& pid, const Particle& p, const face_id_type fid,
+            Multi& dom)
+    {
+
+        // create min_shell
+        // add it to multi
+        return;
+    }
+
+
+    void merge_multi(Multi& from, Multi& to)
+    {// TODO
+        // move shell_ids
+        // move particles
+        // rewrite domain_id in each shell
+        // adjust dt and reaction length
+        return;
+    }
 
     struct volume_clearer
     {
@@ -344,62 +408,34 @@ class SGFRDSimulator :
         {}
 
         bool operator()(const Particle& p, const face_id_type& fid)
-        {
-            // - check particle is inside the domain
-            is_inside inside_checker(p.position(), fid, sim.polygon());
-            if(applier(inside_checker, domain))
-                return true;
-
-            // - burst overlapping shells
-            overlap_burster burst_overlaps(sim, did);
-            burst_overlaps(p, fid);
-
-            // - check overlapping particles
-            return sim.world().check_no_overlap(
-                    std::make_pair(p.position(), fid), p.radius());
-        }
-
+        {return true;}
         bool operator()(const Particle& p, const face_id_type& fid,
                         const ParticleID& ignore)
-        {
-            // - check particle is inside the domain
-            is_inside inside_checker(p.position(), fid, sim.polygon());
-            if(applier(inside_checker, domain))
-                return true;
-
-            // - burst overlapping shells
-            overlap_burster burst_overlaps(sim, did);
-            burst_overlaps(p, fid);
-
-            // - check overlapping particles
-            return sim.world().check_no_overlap(
-                    std::make_pair(p.position(), fid), p.radius(), ignore);
-        }
-
+        {return true;}
         bool operator()(const Particle& p, const face_id_type& fid,
-                        const ParticleID& ign1, const ParticleID& ign2)
-        {
-            // - check particle is inside the domain
-            is_inside inside_checker(p.position(), fid, sim.polygon());
-            if(applier(inside_checker, domain))
-                return true;
-
-            // - burst overlapping shells
-            overlap_burster burst_overlaps(sim, did);
-            burst_overlaps(p, fid);
-
-            // - check overlapping particles
-            return sim.world().check_no_overlap(
-                    std::make_pair(p.position(), fid), p.radius(), ign1, ign2);
-        }
+                        const ParticleID& ignore1, const ParticleID& ignore2)
+        {return true;}
 
       private:
         SGFRDSimulator& sim;
         domain_id_type  did;
         Multi const&    domain;
         immutable_shell_visitor_applier_type applier;
+//      // - check particle is inside the domain
+//      is_inside inside_checker(p.position(), fid, sim.polygon());
+//      if(applier(inside_checker, domain))
+//          return true;
+//
+//      // - burst overlapping shells
+//      overlap_burster burst_overlaps(sim, did);
+//      burst_overlaps(p, fid);
+//
+//      // - check overlapping particles
+//      return sim.world().check_no_overlap(
+//              std::make_pair(p.position(), fid), p.radius());
     };
-    //}}} visitors
+
+//----------------------------------- event ------------------------------------
 
     //! make event from domain and push it into scheduler
     template<typename domainT>
@@ -436,38 +472,6 @@ class SGFRDSimulator :
             resolve<Multi&,        bursted_type>(boost::bind(
                     &self_type::burst_multi, this, _1,  tm))
             ), ev.second->domain());
-    }
-
-    template<typename Iterator>
-    typename boost::enable_if<
-        boost::is_same<typename std::iterator_traits<Iterator>::value_type, DomainID>,
-        std::vector<pid_p_fid_tuple_type> >::type
-    burst_non_multis(Iterator iter, const Iterator end)
-    {
-        const Real tm(this->time());
-        std::vector<pid_p_fid_tuple_type> rems;
-        while(iter != end)
-        {
-            burst_event(std::make_pair(*iter, scheduler_.get(*iter)), tm);
-        }
-        return rems;
-    }
-
-    void join_multi(
-            const ParticleID& pid, const Particle& p, const face_id_type fid,
-            Multi& dom)
-    {// TODO
-        // create min_shell
-        // add it to multi
-        return;
-    }
-
-    void merge_multi(Multi& from, Multi& to)
-    {// TODO
-        // move shell_ids
-        // move particles
-        // adjust dt and reaction length
-        return;
     }
 
     ShellID create_closely_fitted_shell(
@@ -614,8 +618,8 @@ class SGFRDSimulator :
 
 // XXX NOTE XXX:
 // To avoid an error "specialization of template function after instantiation"
-// these specialized functions are must be implemented before other function
-// calling it.
+// these specialized functions are must be implemented before other member
+// (maybe template) function directory calling it.
 template<>
 inline boost::tuple<ParticleID, Particle, SGFRDSimulator::FaceID>
 SGFRDSimulator::propagate_single<SGFRDSimulator::circular_shell_type>(
@@ -643,8 +647,7 @@ SGFRDSimulator::propagate_single<SGFRDSimulator::circular_shell_type>(
         std::make_pair(/*position = */std::make_pair(p.position(), fid),
                    /*displacement = */direction * r / length(direction));
 
-    DUMP_MESSAGE("pos  = " << state.first.first
-             << ", fid = " << state.first.second);
+    DUMP_MESSAGE("pos  = " << state.first.first << ", fid = " << state.first.second);
 
     unsigned int continue_count = 2;
     while(continue_count > 0)
@@ -785,77 +788,6 @@ SGFRDSimulator::escape_single<SGFRDSimulator::conical_surface_shell_type>(
     return boost::make_tuple(pid, p, state.second);
 }
 
-inline void SGFRDSimulator::fire_single(const Single& dom, DomainID did)
-{
-    const ShellID sid(dom.shell_id());
-    ParticleID pid; Particle p; FaceID fid;
-    switch(dom.eventkind())
-    {
-    case Single::ESCAPE:
-    {
-        DUMP_MESSAGE("single escape");
-        boost::tie(pid, p, fid) = boost::apply_visitor(make_visitor(
-            resolve<const circular_shell_type&,
-                    boost::tuple<ParticleID, Particle, FaceID> >(boost::bind(
-                &self_type::escape_single<circular_shell_type>,
-                this, _1, dom)),
-            resolve<const conical_surface_shell_type&,
-                    boost::tuple<ParticleID, Particle, FaceID> >(boost::bind(
-                &self_type::escape_single<conical_surface_shell_type>,
-                this, _1, dom))
-            ), get_shell(sid));
-        this->remove_shell(sid);
-        this->create_event(pid, p, fid);
-        return;
-    }
-    case Single::REACTION:
-    {
-        DUMP_MESSAGE("single reaction");
-        BOOST_AUTO(results, boost::apply_visitor(make_visitor(
-            resolve<const circular_shell_type&,
-                    boost::container::static_vector<
-                        boost::tuple<ParticleID, Particle, FaceID>, 2>
-                    >(boost::bind(
-                &self_type::reaction_single<circular_shell_type>,
-                this, _1, dom, did)),
-            resolve<const conical_surface_shell_type&,
-                    boost::container::static_vector<
-                        boost::tuple<ParticleID, Particle, FaceID>, 2>
-                    >(boost::bind(
-                &self_type::reaction_single<conical_surface_shell_type>,
-                this, _1, dom, did))
-            ), get_shell(sid)));
-        this->remove_shell(sid);
-
-        BOOST_FOREACH(boost::tie(pid, p, fid), results)
-        {
-            this->create_event(pid, p, fid);
-        }
-        return;
-    }
-    case Single::UNKNOWN:
-        throw std::logic_error("when firing Single: event unspecified");
-    default:
-        throw std::logic_error("when firing Single: invalid enum value");
-    }
-}
-
-template<typename shellT>
-boost::container::static_vector<
-    boost::tuple<ParticleID, Particle, SGFRDSimulator::FaceID>, 2>
-SGFRDSimulator::reaction_single(
-        const shellT& sh, const Single& dom, const DomainID did)
-{
-    ParticleID pid; Particle p; FaceID fid;
-    boost::tie(pid, p, fid) = this->propagate_single(sh, dom, dom.dt());// XXX
-    boost::container::static_vector<
-        boost::tuple<ParticleID, Particle, FaceID>, 2> retval;
-    return retval;
-    // TODO make clear_volume() for single reaction
-//         volume_clearer vc(did, dom, *this, this->imm_sh_vis_applier);
-//         return this->attempt_reaction_single(sh, pid, p, fid, vc);
-}
-
 inline SGFRDSimulator::bursted_type
 SGFRDSimulator::burst_single(const Single& dom, const Real tm)
 {
@@ -877,7 +809,26 @@ SGFRDSimulator::burst_single(const Single& dom, const Real tm)
     return results;
 }
 
+// calls propagate_single.
+template<typename shellT>
+boost::container::static_vector<
+    boost::tuple<ParticleID, Particle, SGFRDSimulator::FaceID>, 2>
+SGFRDSimulator::reaction_single(
+        const shellT& sh, const Single& dom, const DomainID did)
+{
+    ParticleID pid; Particle p; FaceID fid;
+    boost::tie(pid, p, fid) = this->propagate_single(sh, dom, dom.dt());// XXX
+    boost::container::static_vector<
+        boost::tuple<ParticleID, Particle, FaceID>, 2> retval;
+    return retval;
+    // TODO make clear_volume() for single reaction
+//         volume_clearer vc(did, dom, *this, this->imm_sh_vis_applier);
+//         return this->attempt_reaction_single(sh, pid, p, fid, vc);
+}
+
+
 // TODO
+// calls propagate_single.
 template<typename shellT>
 boost::container::static_vector<
 boost::tuple<ParticleID, Particle, SGFRDSimulator::FaceID>, 2>
@@ -890,48 +841,6 @@ SGFRDSimulator::attempt_reaction_single(const shellT& sh, const DomainID did,
         2> retval;
     return retval;
 }
-
-inline void SGFRDSimulator::initialize()
-{
-    std::vector<std::pair<ParticleID, Particle> > const& ps =
-        this->world_->list_particles();
-    for(std::vector<std::pair<ParticleID, Particle> >::const_iterator
-        iter = ps.begin(); iter != ps.end(); ++iter)
-    {
-        add_event(create_closely_fitted_domain(create_closely_fitted_shell(
-                  iter->first, iter->second, this->get_face_id(iter->first)),
-              iter->first, iter->second));
-    }
-    return ;
-}
-
-inline void SGFRDSimulator::finalize()
-{
-    const Real tm(this->time());
-    while(scheduler_.size() != 0)
-    {
-        this->burst_event(this->scheduler_.pop(), tm);
-    }
-    return ;
-}
-
-inline void SGFRDSimulator::step()
-{
-    this->set_time(this->scheduler_.next_time());
-    // fire event executes `create_event` inside.
-    this->fire_event(this->scheduler_.pop());
-    DUMP_MESSAGE("now " << shell_container_.num_shells() << " shells exist.");
-    return;
-}
-inline bool SGFRDSimulator::step(const Real& upto)
-{
-    this->step();
-    return this->time() < upto;
-}
-
-
-
-
 
 } // sgfrd
 } // ecell4

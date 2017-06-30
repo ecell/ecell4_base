@@ -9,6 +9,82 @@ const Real SGFRDSimulator::single_circular_shell_mergin        = 1.0 - 1e-7;
 const Real SGFRDSimulator::single_conical_surface_shell_factor = 1.5;
 const Real SGFRDSimulator::single_conical_surface_shell_mergin = 1.0 - 1e-7;
 
+void SGFRDSimulator::fire_single(const Single& dom, DomainID did)
+{
+    const ShellID sid(dom.shell_id());
+    ParticleID pid; Particle p; FaceID fid;
+    switch(dom.eventkind())
+    {
+    case Single::ESCAPE:
+    {
+        DUMP_MESSAGE("single escape");
+        boost::tie(pid, p, fid) = boost::apply_visitor(make_visitor(
+            resolve<const circular_shell_type&,
+                    boost::tuple<ParticleID, Particle, FaceID> >(boost::bind(
+                &self_type::escape_single<circular_shell_type>,
+                this, _1, dom)),
+            resolve<const conical_surface_shell_type&,
+                    boost::tuple<ParticleID, Particle, FaceID> >(boost::bind(
+                &self_type::escape_single<conical_surface_shell_type>,
+                this, _1, dom))
+            ), get_shell(sid));
+        this->remove_shell(sid);
+        this->create_event(pid, p, fid);
+        return;
+    }
+    case Single::REACTION:
+    {
+        DUMP_MESSAGE("single reaction");
+        BOOST_AUTO(results, boost::apply_visitor(make_visitor(
+            resolve<const circular_shell_type&,
+                    boost::container::static_vector<
+                        boost::tuple<ParticleID, Particle, FaceID>, 2>
+                    >(boost::bind(
+                &self_type::reaction_single<circular_shell_type>,
+                this, _1, dom, did)),
+            resolve<const conical_surface_shell_type&,
+                    boost::container::static_vector<
+                        boost::tuple<ParticleID, Particle, FaceID>, 2>
+                    >(boost::bind(
+                &self_type::reaction_single<conical_surface_shell_type>,
+                this, _1, dom, did))
+            ), get_shell(sid)));
+        this->remove_shell(sid);
+
+        BOOST_FOREACH(boost::tie(pid, p, fid), results)
+        {
+            this->create_event(pid, p, fid);
+        }
+        return;
+    }
+    case Single::UNKNOWN:
+        throw std::logic_error("when firing Single: event unspecified");
+    default:
+        throw std::logic_error("when firing Single: invalid enum value");
+    }
+}
+
+
+SGFRDSimulator::bursted_type
+SGFRDSimulator::burst_overlaps(const Particle& p, const face_id_type& fid)
+{
+    const Real tm = this->time();
+    BOOST_AUTO(intruders, this->get_intrusive_domains(
+                std::make_pair(p.position(), fid), p.radius()));
+
+    bursted_type bursted;
+    DomainID did;
+    BOOST_FOREACH(boost::tie(did, boost::tuples::ignore), intruders)
+    {
+        BOOST_FOREACH(typename bursted_type::value_type const& elem,
+                      burst_event(std::make_pair(did, pickout_event(did)), tm))
+        {
+            bursted.push_back(elem);
+        }
+    }
+    return bursted;
+}
+
 DomainID SGFRDSimulator::create_event(
             const ParticleID& pid, const Particle& p, const face_id_type fid)
 {
