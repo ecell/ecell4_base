@@ -447,9 +447,11 @@ class SGFRDSimulator :
             BOOST_FOREACH(boost::tie(pid_, p_, fid_),
                           burst_event(std::make_pair(did, ev), tm))
             {
+                SGFRD_LOG(trace, boost::format(
+                    "creating closely-fitted shell for %1%") % pid_);
                 did_ = add_event(create_closely_fitted_domain(
                     create_closely_fitted_shell(pid_, p_, fid_), pid_, p_));
-                results.push_back(std::make_pair(did, this->polygon().distance(
+                results.push_back(std::make_pair(did_, this->polygon().distance(
                     std::make_pair(p.position(),  fid),
                     std::make_pair(p_.position(), fid_)) -
                     calc_min_single_circular_shell_radius(p_)));
@@ -816,7 +818,7 @@ SGFRDSimulator::propagate_single<SGFRDSimulator::circular_shell_type>(
     p.position() = state.first.first;
     this->update_particle(pid, p, state.first.second);
 
-    SGFRD_LOG(trace, "bursted");
+    SGFRD_LOG(trace, "propagated");
     return boost::make_tuple(pid, p, state.first.second);
 }
 
