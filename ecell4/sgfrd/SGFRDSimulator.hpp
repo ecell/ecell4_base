@@ -330,7 +330,7 @@ class SGFRDSimulator :
                 /* burst this domain! */
                 ParticleID pid; Particle p; FaceID fid;
                 BOOST_FOREACH(boost::tie(pid, p, fid),
-                              this->burst_multi(dom, this->time()))
+                              this->remove_multi(dom, this->time()))
                 {
                     this->add_event(this->create_closely_fitted_domain(
                         this->create_closely_fitted_shell(pid, p, fid), pid, p));
@@ -345,11 +345,11 @@ class SGFRDSimulator :
         return;
     }
 
-    bursted_type burst_multi(const Multi& dom, const Real tm)
+    // simply remove all the shells. not add a domains for each particles.
+    // particles are updated at each step, so here nothing is needed to
+    // update world.
+    bursted_type remove_multi(const Multi& dom)
     {
-        // simply remove all the shells. not add a domains for each particles.
-        // particles are updated at each step, so here nothing is needed to
-        // update world.
         bursted_type results;
         Particle p; ParticleID pid;
         BOOST_FOREACH(boost::tie(pid, p), dom.particles())
@@ -361,6 +361,20 @@ class SGFRDSimulator :
             this->remove_shell(sid);
         }
         return results;
+    }
+
+    // burst. step until(tm - dom.begin_time()).
+    bursted_type burst_multi(Multi& dom, const Real tm)
+    {
+        BOOST_AUTO(did, get_domain_id(dom));
+        volume_clearer vc(did, dom, *this, this->imm_sh_vis_applier);
+        dom.step(vc, tm - dom.begin_time());
+        if(dom.eventkind() == Multi::REACTION)
+        {
+            std::copy(dom.last_reactions().begin(), dom.last_reactions().end(),
+                      std::back_inserter(this->last_reactions_));
+        }
+        return remove_multi(dom);
     }
 
 // -----------------------------------------------------------------------------
@@ -571,6 +585,11 @@ class SGFRDSimulator :
         const Real radius = p.radius() * single_circular_shell_factor;
         return this->create_single_circular_shell(
                 std::make_pair(p.position(), fid), radius);
+    }
+
+    Multi create_empty_multi()
+    {
+        return Multi(*this, this->world_);
     }
 
     //! make domain and call add_event
