@@ -50,16 +50,29 @@ class Multi
           simulator_(sim), world_(world),
           container_(world), model_(*world.lock_model())
     {}
+
+    Multi(simulator_type& sim, world_type& world, real_type begin_t)
+        : dt_(1e-5), begin_time_(begin_t), reaction_length_(1e-3),
+          simulator_(sim), world_(world),
+          container_(world), model_(*world.lock_model())
+    {}
     ~Multi(){}
 
     template<typename vcT>
     void step(vcT vc)
     {
+        step(vc, this->dt_);
+        return ;
+    }
+
+    template<typename vcT>
+    void step(vcT vc, const real_type dt)
+    {
         this->last_reactions_.clear();
         kind_ = NONE;
 
         BDPropagator<container_type, vcT> propagator(model_, container_,
-                *(world_.polygon()), *(world_.rng()), dt_, reaction_length_,
+                *(world_.polygon()), *(world_.rng()), dt, reaction_length_,
                 last_reactions_, vc);
 
         while(propagator())
