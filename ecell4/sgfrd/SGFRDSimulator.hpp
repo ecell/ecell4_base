@@ -392,8 +392,8 @@ class SGFRDSimulator :
         DomainID did; Real dist;
         BOOST_FOREACH(boost::tie(did, dist), intruders)
         {
-            BOOST_AUTO(const& ev = pickout_event(did));
-            if(ev.which_domain() == event_type::idx_multi)
+            BOOST_AUTO(const& ev, pickout_event(did));
+            if(ev->which_domain() == event_type::idx_multi)
             {
                 results.push_back(std::make_pair(did, dist));
                 continue;
@@ -589,7 +589,7 @@ class SGFRDSimulator :
 
     Multi create_empty_multi()
     {
-        return Multi(*this, this->world_);
+        return Multi(*this, *(this->world_));
     }
 
     //! make domain and call add_event
