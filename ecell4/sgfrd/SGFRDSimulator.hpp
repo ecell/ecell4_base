@@ -575,14 +575,13 @@ class SGFRDSimulator :
     create_minimum_single_shell(
             const ParticleID& pid, const Particle& p, const FaceID fid)
     {
-        const Real radius = p.radius() * single_circular_shell_factor;
-        return this->create_single_circular_shell(
-                std::make_pair(p.position(), fid), radius);
+        return create_single_circular_shell(std::make_pair(p.position(), fid),
+            calc_min_single_circular_shell_radius(p));
     }
 
     Multi create_empty_multi()
     {
-        return Multi(*this, *(this->world_));
+        return Multi(*this, *(this->world_), this->time());
     }
 
     //! make domain and call add_event
