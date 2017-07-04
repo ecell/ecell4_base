@@ -330,7 +330,7 @@ class SGFRDSimulator :
                 /* burst this domain! */
                 ParticleID pid; Particle p; FaceID fid;
                 BOOST_FOREACH(boost::tie(pid, p, fid),
-                              this->remove_multi(dom, this->time()))
+                              this->remove_multi(dom))
                 {
                     this->add_event(this->create_closely_fitted_domain(
                         this->create_closely_fitted_shell(pid, p, fid), pid, p));
@@ -401,11 +401,11 @@ class SGFRDSimulator :
 
             DomainID did_; ParticleID pid_; Particle p_; FaceID fid_;
             BOOST_FOREACH(boost::tie(pid_, p_, fid_),
-                          burst_event(std::make_pair(did, ev)))
+                          burst_event(std::make_pair(did, ev), tm))
             {
                 did_ = add_event(create_closely_fitted_domain(
                     create_closely_fitted_shell(pid_, p_, fid_), pid_, p_));
-                bursted.push_back(std::make_pair(did, this->polygon().distance(
+                results.push_back(std::make_pair(did, this->polygon().distance(
                     std::make_pair(p.position(),  fid),
                     std::make_pair(p_.position(), fid_)) -
                     // this possibly is a problem, consider the case this particle
