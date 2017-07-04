@@ -188,6 +188,11 @@ class SGFRDSimulator :
         scheduler_.remove(id);
         return tmp;
     }
+    void remove_event(const event_id_type id)
+    {
+        this->scheduler_.remove(id);
+        return;
+    }
 
     DomainID get_domain_id(Single const& dom) const
     {
@@ -209,7 +214,7 @@ class SGFRDSimulator :
 //----------------------------------- single -----------------------------------
 
     /*! execute Event associated with Domain, remove shell, create next event. */
-    void         fire_single(const Single& dom, DomainID did);
+    void          fire_single(const Single& dom, DomainID did);
     bursted_type burst_single(const Single& dom, const Real tm);
 
     template<typename shellT>
