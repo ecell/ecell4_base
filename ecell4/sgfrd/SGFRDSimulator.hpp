@@ -405,9 +405,11 @@ class SGFRDSimulator :
         return results;
     }
 
-    // to clear volume
-    bursted_type burst_overlaps(const Particle& p, const FaceID& fid);
+    // to clear volume. burst all the overlapping shells then add closely-fitted
+    // shells to them
+    bursted_type burst_and_shrink_overlaps(const Particle& p, const FaceID& fid);
 
+    // form multi shell recursively
     void form_multi(const ParticleID& pid, const Particle& p, const FaceID& fid,
                     const std::vector<std::pair<DomainID, Real> >& doms);
 
@@ -416,7 +418,6 @@ class SGFRDSimulator :
     {
         if(!dom.add_particle(pid)) return false;
 
-        //XXX consider creating conical shell.
         Real const min_circle_size = p.radius() * single_circular_shell_factor;
 
         BOOST_AUTO(sid_shape, create_single_circular_shell(
@@ -461,31 +462,52 @@ class SGFRDSimulator :
         {}
 
         bool operator()(const Particle& p, const FaceID& fid)
-        {return true;}
+        {
+            escaped_ = false;
+            inside_checker is_inside(p.position, fid, sim.polygon());
+            if(applier(is_inside, domain)) return true;
+
+            sim.burst_and_shrink_overlaps(p, fid);
+            const bool no_overlap = sim.world().check_no_overlap(
+                std::make_pair(p.position(), fid), p.radius());
+            escaped_ = no_overlap;
+            return no_overlap;
+        }
         bool operator()(const Particle& p, const FaceID& fid,
                         const ParticleID& ignore)
-        {return true;}
+        {
+            escaped_ = false;
+            inside_checker is_inside(p.position, fid, sim.polygon());
+            if(applier(is_inside, domain)) return true;
+
+            sim.burst_and_shrink_overlaps(p, fid);
+            const bool no_overlap = sim.world().check_no_overlap(
+                std::make_pair(p.position(), fid), p.radius(), ignore);
+            escaped_ = no_overlap;
+            return no_overlap;
+        }
         bool operator()(const Particle& p, const FaceID& fid,
                         const ParticleID& ignore1, const ParticleID& ignore2)
-        {return true;}
+        {
+            escaped_ = false;
+            inside_checker is_inside(p.position, fid, sim.polygon());
+            if(applier(is_inside, domain)) return true;
+
+            sim.burst_and_shrink_overlaps(p, fid);
+            const bool no_overlap = sim.world().check_no_overlap(
+                std::make_pair(p.position(), fid), p.radius(), ignore1, ignore2);
+            escaped_ = no_overlap;
+            return no_overlap;
+        }
+
+        bool escaped() const {return escaped_;}
 
       private:
+        bool            escaped_;
         SGFRDSimulator& sim;
         domain_id_type  did;
         Multi const&    domain;
         immutable_shell_visitor_applier_type applier;
-//      // - check particle is inside the domain
-//      is_inside inside_checker(p.position(), fid, sim.polygon());
-//      if(applier(inside_checker, domain))
-//          return true;
-//
-//      // - burst overlapping shells
-//      overlap_burster burst_overlaps(sim, did);
-//      burst_overlaps(p, fid);
-//
-//      // - check overlapping particles
-//      return sim.world().check_no_overlap(
-//              std::make_pair(p.position(), fid), p.radius());
     };
 
 //----------------------------------- event ------------------------------------
