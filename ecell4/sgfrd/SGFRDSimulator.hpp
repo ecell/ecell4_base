@@ -464,7 +464,7 @@ class SGFRDSimulator :
         bool operator()(const Particle& p, const FaceID& fid)
         {
             escaped_ = false;
-            inside_checker is_inside(p.position, fid, sim.polygon());
+            inside_checker is_inside(p.position(), fid, sim.polygon());
             if(applier(is_inside, domain)) return true;
 
             sim.burst_and_shrink_overlaps(p, fid);
@@ -477,7 +477,7 @@ class SGFRDSimulator :
                         const ParticleID& ignore)
         {
             escaped_ = false;
-            inside_checker is_inside(p.position, fid, sim.polygon());
+            inside_checker is_inside(p.position(), fid, sim.polygon());
             if(applier(is_inside, domain)) return true;
 
             sim.burst_and_shrink_overlaps(p, fid);
@@ -490,7 +490,7 @@ class SGFRDSimulator :
                         const ParticleID& ignore1, const ParticleID& ignore2)
         {
             escaped_ = false;
-            inside_checker is_inside(p.position, fid, sim.polygon());
+            inside_checker is_inside(p.position(), fid, sim.polygon());
             if(applier(is_inside, domain)) return true;
 
             sim.burst_and_shrink_overlaps(p, fid);
