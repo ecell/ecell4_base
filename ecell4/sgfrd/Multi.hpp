@@ -51,7 +51,7 @@ class Multi
           container_(world), model_(*world.lock_model())
     {}
 
-    Multi(simulator_type& sim, world_type& world, real_type begin_t)
+    Multi(simulator_type& sim, world_type& world, Real begin_t)
         : dt_(1e-5), begin_time_(begin_t), reaction_length_(1e-3),
           simulator_(sim), world_(world),
           container_(world), model_(*world.lock_model())
@@ -66,7 +66,7 @@ class Multi
     }
 
     template<typename vcT>
-    void step(vcT vc, const real_type dt)
+    void step(vcT vc, const Real dt)
     {
         this->last_reactions_.clear();
         kind_ = NONE;
@@ -78,9 +78,15 @@ class Multi
         while(propagator())
         {
             // if reaction occurs, return immediately
+            // XXX is it okay?
             if(!last_reactions_.empty())
             {
                 kind_ = REACTION;
+                break;
+            }
+            if(vc.escaped())
+            {
+                kind_ = ESCAPE;
                 break;
             }
         }
