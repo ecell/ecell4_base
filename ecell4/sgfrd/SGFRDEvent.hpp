@@ -5,6 +5,7 @@
 #include <ecell4/sgfrd/Pair.hpp>
 #include <ecell4/sgfrd/Multi.hpp>
 #include <boost/variant.hpp>
+#include <ostream>
 
 namespace ecell4
 {
@@ -42,6 +43,14 @@ private:
 typedef ecell4::EventSchedulerBase<SGFRDEvent> SGFRDEventScheduler;
 typedef SGFRDEventScheduler::identifier_type EventID;
 typedef EventID DomainID; // XXX!
+
+template<typename charT, typename traits>
+inline std::basic_ostream<charT, traits>&
+operator<<(std::basic_ostream<charT, traits>& os, EventID const& eid)
+{
+    os << "Event/DomainID(" << eid << ')' << std::endl;
+    return os;
+}
 
 } // sgfrd
 } // ecell4
