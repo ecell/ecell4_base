@@ -64,25 +64,126 @@ void SGFRDSimulator::fire_single(const Single& dom, DomainID did)
     }
 }
 
-
-SGFRDSimulator::bursted_type
-SGFRDSimulator::burst_overlaps(const Particle& p, const face_id_type& fid)
+bool SGFRDSimulator::burst_and_shrink_overlaps(
+        const Particle& p, const face_id_type& fid)
 {
     const Real tm = this->time();
     BOOST_AUTO(intruders, this->get_intrusive_domains(
-                std::make_pair(p.position(), fid), p.radius()));
+               std::make_pair(p.position(), fid), p.radius()));
 
-    bursted_type bursted;
+    bool no_overlap = true;
     DomainID did;
     BOOST_FOREACH(boost::tie(did, boost::tuples::ignore), intruders)
     {
-        BOOST_FOREACH(typename bursted_type::value_type const& elem,
+        ParticleID pid_; Particle p_; FaceID fid_;
+        BOOST_FOREACH(boost::tie(pid_, p_, fid_),
                       burst_event(std::make_pair(did, pickout_event(did)), tm))
         {
-            bursted.push_back(elem);
+            const Real dist = distance(p.position(), p_.position());
+            no_overlap = no_overlap && (dist > p.radius() + p_.radius());
+            add_event(create_closely_fitted_domain(
+                create_closely_fitted_shell(pid_, p_, fid_), pid_, p_));
         }
     }
-    return bursted;
+    return no_overlap;
+}
+
+/*XXX assuming doms are multi or shrinked single domain and are sorted by dist*/
+DomainID SGFRDSimulator::form_multi(
+        const ParticleID& pid, const Particle& p, const FaceID& fid,
+        const std::vector<std::pair<DomainID, Real> >& doms)
+{
+    SGFRD_LOG(trace, "form_multi called");
+    // make Multi domain to join if the closest domain is no Multi.
+    DomainID id_of_multi_to_join = doms.front().first;
+    BOOST_AUTO(closest_dom, pickout_event(doms.front().first)->domain());
+    if(closest_dom.which() != event_type::idx_multi)
+    {
+        // 1. closest domain is shrinked single. create empty multi
+        Multi new_multi = create_empty_multi();
+        // 2. then add a particle in the closest domain creating min_shell.
+        Single& shrinked = boost::get<Single>(closest_dom);
+        ParticleID pid_;
+        boost::tie(pid_, boost::tuples::ignore) = shrinked.particle_id_pair();
+        ShellID sid = shrinked.shell_id();
+        new_multi.add_particle(pid);
+        new_multi.add_shell(sid);
+        // 3. and remove the event and shell of shrinked shell.
+        remove_shell(sid);
+        remove_event(doms.front().first);
+        // 4. at last, assign the domain to event scheduler.
+        id_of_multi_to_join = add_event(new_multi);
+    }
+    Multi& multi_to_join = boost::get<Multi>(
+            pickout_event(id_of_multi_to_join)->domain());
+
+    // create min shell for particle passed as an argument.
+    BOOST_AUTO(sh, create_minimum_single_shell(pid, p, fid));
+    const bool add_pt_result = multi_to_join.add_particle(pid);
+    const bool add_sh_result = multi_to_join.add_shell(sh.first);
+    assert(add_pt_result);
+    assert(add_sh_result);
+
+    // lookup rest of domains and if there are domains to join in to the multi,
+    // add them recursively.
+    const Real new_shell_size = sh.second.size();
+    DomainID did; Real dist;
+    BOOST_FOREACH(boost::tie(did, dist), doms)
+    {
+        if(dist < new_shell_size)
+        {
+            form_multi_recursive(multi_to_join, did);
+        }
+    }
+    return id_of_multi_to_join;
+}
+
+void SGFRDSimulator::form_multi_recursive(Multi& multi_to_join, const DomainID did)
+{
+    SGFRD_LOG(trace, "form_multi_recursive called");
+    event_type& ev = *(pickout_event(did));
+    if(ev.which_domain() == event_type::idx_multi)
+    {
+        merge_multi(boost::get<Multi>(ev.domain()), multi_to_join);
+        return;
+    }
+    else if(ev.which_domain() == event_type::idx_pair)
+    {
+        throw std::logic_error("shrinked pair domain exists!");
+    }
+
+    Single& dom = boost::get<Single>(ev.domain());
+    ParticleID pid; Particle p;
+    boost::tie(pid, p) = dom.particle_id_pair();
+    FaceID  fid = this->get_face_id(pid);
+
+    remove_shell(dom.shell_id());
+    remove_event(did);
+
+    const Real new_shell_size = calc_min_single_circular_shell_radius(p);
+
+    BOOST_AUTO(sh, create_single_circular_shell(
+                       std::make_pair(p.position(), fid), new_shell_size));
+    const bool add_pt_result = multi_to_join.add_particle(pid);
+    const bool add_sh_result = multi_to_join.add_shell(sh.first);
+    assert(add_pt_result);
+    assert(add_sh_result);
+
+    const std::vector<std::pair<DomainID, Real> > intrusive_domains(
+            get_intrusive_domains(std::make_pair(p.position(), fid), new_shell_size));
+
+    const std::vector<std::pair<DomainID, Real> > bursted_domains(
+        burst_and_shrink_non_multis(pid, p, fid, intrusive_domains));
+
+    DomainID did_; Real dist;
+    BOOST_FOREACH(boost::tie(did_, dist), bursted_domains)
+    {
+        if(dist < new_shell_size)
+        {
+            form_multi_recursive(multi_to_join, did_);
+        }
+    }
+    return;
 }
 
 DomainID SGFRDSimulator::create_event(
