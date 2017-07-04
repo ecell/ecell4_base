@@ -427,20 +427,6 @@ class SGFRDSimulator :
     void form_multi(const ParticleID& pid, const Particle& p, const FaceID& fid,
                     const std::vector<std::pair<DomainID, Real> >& doms);
 
-    boost::optional<circle_type>
-    join_multi(const ParticleID& pid, const ShellID& sid, Multi& dom)
-    {
-        if(!dom.add_particle(pid)) return false;
-
-        Real const min_circle_size = p.radius() * single_circular_shell_factor;
-
-        BOOST_AUTO(sid_shape, create_single_circular_shell(
-                std::make_pair(p.position(), fid), min_circle_size));
-        const bool addshell_result = dom.add_shell(sid_shape.first);
-        assert(addshell_result);
-        return boost::optional<circle_type>(sid_shape.second);
-    }
-
     void merge_multi(Multi& from, Multi& to)
     {
         // reset domain_id
