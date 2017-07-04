@@ -11,7 +11,17 @@
 #include <ecell4/sgfrd/SGFRDWorld.hpp>
 #include <ecell4/sgfrd/SGFRDSimulator.hpp>
 
+#include <boost/log/utility/setup/file.hpp>
+#include <boost/log/support/date_time.hpp>
 #include <boost/lexical_cast.hpp>
+
+// for boost.Log
+void init()
+{
+    boost::log::add_file_log(
+        boost::log::keywords::file_name = "sgfrd_diffusion.log"
+        );
+}
 
 void trajectory_output(const std::vector<ecell4::ParticleID>& pids,
     const boost::shared_ptr<ecell4::sgfrd::SGFRDWorld>& world)
@@ -43,6 +53,8 @@ int main(int argc, char **argv)
                   << std::endl;
         return 1;
     }
+
+    init();
 
     const std::string stlname(argv[1]);
     ecell4::STLFileReader reader;
