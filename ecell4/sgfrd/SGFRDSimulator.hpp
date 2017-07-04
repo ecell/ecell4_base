@@ -425,12 +425,14 @@ class SGFRDSimulator :
     }
 
     // to clear volume. burst all the overlapping shells then add closely-fitted
-    // shells to them
-    bursted_type burst_and_shrink_overlaps(const Particle& p, const FaceID& fid);
+    // shells to them. returns true if there are no overlapping particles.
+    bool burst_and_shrink_overlaps(const Particle& p, const FaceID& fid);
 
     // form multi shell recursively
-    void form_multi(const ParticleID& pid, const Particle& p, const FaceID& fid,
-                    const std::vector<std::pair<DomainID, Real> >& doms);
+    DomainID form_multi(const ParticleID& pid, const Particle& p, const FaceID& fid,
+                        const std::vector<std::pair<DomainID, Real> >& doms);
+
+    void form_multi_recursive(Multi& multi_to_join, const DomainID did);
 
     void merge_multi(Multi& from, Multi& to)
     {
