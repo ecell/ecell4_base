@@ -40,14 +40,14 @@ struct domain_id_getter : boost::static_visitor<DomainID>
     }
 };
 
-struct is_inside : boost::static_visitor<bool>
+struct inside_checker : boost::static_visitor<bool>
 {
     typedef minimal_eval_or eval_manner;
     typedef ecell4::Polygon<polygon_traits> polygon_type;
     typedef polygon_type::face_id_type      face_id_type;
 
 
-    is_inside(Real3 pos, face_id_type f, polygon_type const& p)
+    inside_checker(Real3 pos, face_id_type f, polygon_type const& p)
         : position(pos), fid(f), poly(p)
     {}
 
