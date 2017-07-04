@@ -149,6 +149,8 @@ class SGFRDSimulator :
         this->fire_event(this->scheduler_.pop());
         SGFRD_LOG(debug, boost::format("now %1% shells exist") %
                   shell_container_.num_shells());
+        SGFRD_LOG(debug, boost::format("now %1% events exist") %
+                  scheduler_.size());
         return;
     }
     bool step(const Real& upto)
