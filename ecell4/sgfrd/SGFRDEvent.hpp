@@ -6,6 +6,7 @@
 #include <ecell4/sgfrd/Multi.hpp>
 #include <boost/variant.hpp>
 #include <ostream>
+#include <climits>
 
 namespace ecell4
 {
@@ -17,9 +18,15 @@ struct SGFRDEvent
 public:
     typedef boost::variant<Single, Pair, Multi> domain_type;
 
-    static const std::size_t idx_single = 0;
-    static const std::size_t idx_pair   = 1;
-    static const std::size_t idx_multi  = 2;
+    enum domain_kind
+    {
+        single_domain = 0,
+        pair_domain   = 1,
+        multi_domain  = 2,
+        invalid       = INT_MAX,
+        // because std::numeric_limits<int>::max() is not constexpr in c++03,
+        // there is no other way but to use macro defined in <climits>.
+    };
 
 public:
 
@@ -32,7 +39,16 @@ public:
     domain_type const& domain() const {return domain_;}
     domain_type &      domain()       {return domain_;}
 
-    std::size_t which_domain() const {return domain_.which();}
+    domain_kind which_domain() const
+    {
+        switch(this->domain_.which())
+        {
+            case 0: return single_domain;
+            case 1: return pair_domain;
+            case 2: return multi_domain;
+            default: return invalid;
+        }
+    }
 
 private:
 
