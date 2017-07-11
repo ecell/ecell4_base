@@ -11,30 +11,20 @@
 #include <ecell4/sgfrd/SGFRDWorld.hpp>
 #include <ecell4/sgfrd/SGFRDSimulator.hpp>
 
-#include <boost/log/utility/setup/file.hpp>
-#include <boost/log/support/date_time.hpp>
 #include <boost/lexical_cast.hpp>
-
-// for boost.Log
-void init()
-{
-    boost::log::add_file_log(
-        boost::log::keywords::file_name = "sgfrd_diffusion.log"
-        );
-}
 
 void trajectory_output(const std::vector<ecell4::ParticleID>& pids,
     const boost::shared_ptr<ecell4::sgfrd::SGFRDWorld>& world)
 {
-    std::cout << world->t() << " ";
     for(std::vector<ecell4::ParticleID>::const_iterator
         iter = pids.begin(); iter != pids.end(); ++iter)
     {
-        std::cout << world->get_particle(*iter).second.position()[0] << " "
-                  << world->get_particle(*iter).second.position()[1] << " "
-                  << world->get_particle(*iter).second.position()[2] << " ";
+        std::cout << world->t() << ' '
+                  << world->get_particle(*iter).second.position()[0] << ' '
+                  << world->get_particle(*iter).second.position()[1] << ' '
+                  << world->get_particle(*iter).second.position()[2] << '\n';
     }
-    std::cout << std::endl;
+    std::cout << "\n\n";
     return;
 }
 
@@ -53,8 +43,6 @@ int main(int argc, char **argv)
                   << std::endl;
         return 1;
     }
-
-    init();
 
     const std::string stlname(argv[1]);
     ecell4::STLFileReader reader;
@@ -82,10 +70,12 @@ int main(int argc, char **argv)
     boost::shared_ptr<world_type> world =
         boost::make_shared<world_type>(edge_lengths, matrix_sizes, polygon, rng);
 
-    const std::vector<face_id_type> fids = polygon->list_face_id();
-    std::vector<ecell4::ParticleID> pids; pids.reserve(100);
+    const std::size_t num_particle = polygon->num_triangles();
 
-    for(std::size_t np = 0; np < 100; ++np)
+    const std::vector<face_id_type> fids = polygon->list_face_id();
+    std::vector<ecell4::ParticleID> pids; pids.reserve(num_particle);
+
+    for(std::size_t np = 0; np < num_particle; ++np)
     {
         ecell4::Particle p(sp1, ecell4::centroid(polygon->triangle_at(fids.at(np))),
                            1e-2, 1e-2);
@@ -101,10 +91,11 @@ int main(int argc, char **argv)
     sim.initialize();
     trajectory_output(pids, world);
 
+    const ecell4::Real dt = 0.001;
     const std::size_t num_step = boost::lexical_cast<std::size_t>(std::string(argv[3]));
     for(std::size_t i=0; i<num_step; ++i)
     {
-        sim.step();
+        while(sim.step(i * dt)){}
         trajectory_output(pids, world);
    }
     sim.finalize();

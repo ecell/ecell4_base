@@ -23,13 +23,10 @@
 #include <boost/container/small_vector.hpp>
 #include <boost/lambda/lambda.hpp>
 #include <boost/lambda/bind.hpp>
-#include <boost/log/core.hpp>
-#include <boost/log/trivial.hpp>
 
 #include <iostream>
 
 #ifndef SGFRD_NO_DEBUG
-// #define SGFRD_LOG( sev, x ) BOOST_LOG_SEV(this->logger_, sev) << (x)
 #define SGFRD_LOG( sev, x ) std::cerr << #sev << ':' << (x) << std::endl;
 #endif // SGFRD_NO_DEBUG
 
@@ -37,13 +34,6 @@ namespace ecell4
 {
 namespace sgfrd
 {
-
-using boost::log::trivial::trace;
-using boost::log::trivial::debug;
-using boost::log::trivial::info;
-using boost::log::trivial::warning;
-using boost::log::trivial::error;
-using boost::log::trivial::fatal;
 
 class SGFRDSimulator :
     public ecell4::SimulatorBase<ecell4::Model, SGFRDWorld>
@@ -536,7 +526,7 @@ class SGFRDSimulator :
     {
         volume_clearer(domain_id_type d, const Multi& dom, SGFRDSimulator& s,
                        immutable_shell_visitor_applier_type& imm)
-            : sim(s), did(d), domain(dom), applier(imm), logger_(sim.logger_)
+            : sim(s), did(d), domain(dom), applier(imm)
         {}
 
         bool operator()(const Particle& p, const FaceID& fid)
@@ -594,8 +584,6 @@ class SGFRDSimulator :
         domain_id_type  did;
         Multi const&    domain;
         immutable_shell_visitor_applier_type applier;
-        boost::log::sources::severity_logger<boost::log::trivial::severity_level>
-            logger_;
     };
 
 //----------------------------------- event ------------------------------------
@@ -791,9 +779,6 @@ class SGFRDSimulator :
     immutable_shell_visitor_applier_type imm_sh_vis_applier;
     std::vector<std::pair<reaction_rule_type, reaction_info_type> > last_reactions_;
 
-    mutable
-    boost::log::sources::severity_logger<boost::log::trivial::severity_level>
-        logger_;
 };
 
 // XXX NOTE XXX:
