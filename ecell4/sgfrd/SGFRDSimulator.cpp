@@ -113,7 +113,9 @@ DomainID SGFRDSimulator::form_multi(
         formed_multi_id = add_event(new_multi);
         SGFRD_LOG(trace, boost::format("new multi(%1%) created") % formed_multi_id);
     }
+    const domain_id_setter didset(formed_multi_id);
     Multi& formed_multi = boost::get<Multi>(get_event(formed_multi_id)->domain());
+
     BOOST_AUTO(minsh, create_minimum_single_shell(pid, p, fid));
     const Real new_shell_radius = minsh.second.size();
     formed_multi.add_particle(pid);
@@ -170,6 +172,8 @@ DomainID SGFRDSimulator::form_multi(
             }
         }
     }
+    mut_sh_vis_applier(didset, formed_multi);
+
     // search intruders on the new multi, burst them all and add to multi if needed
     add_to_multi_recursive(formed_multi);
     return formed_multi_id;
@@ -180,6 +184,8 @@ void SGFRDSimulator::add_to_multi_recursive(Multi& multi_to_join)
     SGFRD_LOG(trace, "add_to_multi_recursive called");
     const Real tm = this->time();
     bool multi_enlarged = false;
+    const DomainID multi_to_join_id = get_domain_id(multi_to_join);
+    const domain_id_setter didset(multi_to_join_id);
 
     BOOST_FOREACH(ShellID sid, multi_to_join.shell_ids())
     {
@@ -195,6 +201,8 @@ void SGFRDSimulator::add_to_multi_recursive(Multi& multi_to_join)
         DomainID did;
         BOOST_FOREACH(boost::tie(did, boost::tuples::ignore), intruder)
         {
+            if(did == multi_to_join_id) continue;
+
             SGFRD_LOG(trace, boost::format("bursting domain(%1%)") % did);
             BOOST_AUTO(ev, get_event(did));
 
@@ -236,7 +244,11 @@ void SGFRDSimulator::add_to_multi_recursive(Multi& multi_to_join)
             }
         }
     }
-    if(multi_enlarged) add_to_multi_recursive(multi_to_join);
+    if(multi_enlarged)
+    {
+        mut_sh_vis_applier(didset, multi_to_join);
+        add_to_multi_recursive(multi_to_join);
+    }
 
     return;
 }
