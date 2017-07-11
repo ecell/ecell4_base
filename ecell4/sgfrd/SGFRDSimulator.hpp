@@ -434,8 +434,8 @@ class SGFRDSimulator :
         DomainID did; Real dist;
         BOOST_FOREACH(boost::tie(did, dist), intruders)
         {
-            BOOST_AUTO(const& ev, pickout_event(did));
-            if(ev->which_domain() == event_type::idx_multi)
+            BOOST_AUTO(const& ev, get_event(did));
+            if(ev->which_domain() == event_type::multi_domain)
             {
                 SGFRD_LOG(trace, boost::format("domain %1% is multi") % did);
                 results.push_back(std::make_pair(did, dist));
@@ -759,6 +759,7 @@ class SGFRDSimulator :
     immutable_shell_visitor_applier_type imm_sh_vis_applier;
     std::vector<std::pair<reaction_rule_type, reaction_info_type> > last_reactions_;
 
+    mutable
     boost::log::sources::severity_logger<boost::log::trivial::severity_level>
         logger_;
 };
