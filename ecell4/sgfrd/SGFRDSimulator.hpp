@@ -349,7 +349,7 @@ class SGFRDSimulator :
 
     void fire_multi(Multi& dom, DomainID did)
     {
-        SGFRD_LOG(trace, "fire multi");
+        SGFRD_LOG(trace, boost::format("fire multi for default dt(%1%)") % dom.dt());
 
         volume_clearer vc(did, dom, *this, this->imm_sh_vis_applier);
         dom.step(vc);
