@@ -475,7 +475,8 @@ class SGFRDSimulator :
                           burst_event(std::make_pair(did, ev), tm))
             {
                 SGFRD_LOG(trace, boost::format(
-                    "creating closely-fitted shell for %1%") % pid_);
+                    "add closely-fitted domain to bursted particle %1%") % pid_);
+                remove_event(did);
                 did_ = add_event(create_closely_fitted_domain(
                     create_closely_fitted_shell(pid_, p_, fid_), pid_, p_));
                 results.push_back(std::make_pair(did_, this->polygon().distance(
@@ -500,7 +501,8 @@ class SGFRDSimulator :
     DomainID form_multi(const ParticleID& pid, const Particle& p, const FaceID& fid,
                         const std::vector<std::pair<DomainID, Real> >& doms);
 
-    void form_multi_recursive(Multi& multi_to_join, const DomainID did);
+    // search intruder for multi, burst them and add them to multi if needed.
+    void add_to_multi_recursive(Multi&);
 
     void merge_multi(Multi& from, Multi& to)
     {
