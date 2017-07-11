@@ -29,7 +29,8 @@
 #include <iostream>
 
 #ifndef SGFRD_NO_DEBUG
-#define SGFRD_LOG( sev, x ) BOOST_LOG_SEV(this->logger_, sev) << (x)
+// #define SGFRD_LOG( sev, x ) BOOST_LOG_SEV(this->logger_, sev) << (x)
+#define SGFRD_LOG( sev, x ) std::cerr << #sev << ':' << (x) << std::endl;
 #endif // SGFRD_NO_DEBUG
 
 namespace ecell4
@@ -175,14 +176,33 @@ class SGFRDSimulator :
 
     bool update_particle(const ParticleID& pid, const Particle& p,
                          const FaceID& fid)
-    {return this->world_->update_particle(pid, p, fid);}
+    {
+        SGFRD_LOG(debug, boost::format("particle %1% is updated") % pid);
+        return this->world_->update_particle(pid, p, fid);
+    }
 
     shell_type&       get_shell(ShellID const& id)
-    {return shell_container_.get_shell(id);}
+    {
+        SGFRD_LOG(debug, boost::format("searching shell %1%") % id);
+        return shell_container_.get_shell(id);
+    }
     shell_type const& get_shell(ShellID const& id) const
-    {return shell_container_.get_shell(id);}
+    {
+        SGFRD_LOG(debug, boost::format("searching shell %1%") % id);
+        return shell_container_.get_shell(id);
+    }
     void remove_shell(ShellID const& id)
-    {return shell_container_.remove_shell(id);}
+    {
+        SGFRD_LOG(debug, boost::format("removing shell %1%") % id);
+        return shell_container_.remove_shell(id);
+    }
+    template<typename shT, typename stridT>
+    void update_shell(ShellID const& shid, shT const& sh, stridT strid)
+    {
+        this->shell_container_.update_shell(shid, sh, strid);
+        return;
+    }
+
 
     FaceID get_face_id(const ParticleID& pid) const
     {return this->world_->get_face_id(pid);}
@@ -192,14 +212,21 @@ class SGFRDSimulator :
     Real time() const {return this->world_->t();}
     void set_time(const Real t) {return this->world_->set_t(t);}
 
+    boost::shared_ptr<event_type> get_event(const event_id_type& id)
+    {
+        SGFRD_LOG(debug, boost::format("getting event %1%") % id);
+        return scheduler_.get(id);
+    }
     boost::shared_ptr<event_type> pickout_event(const event_id_type& id)
     {
+        SGFRD_LOG(debug, boost::format("picking out event %1%") % id);
         BOOST_AUTO(tmp, scheduler_.get(id));
         scheduler_.remove(id);
         return tmp;
     }
     void remove_event(const event_id_type id)
     {
+        SGFRD_LOG(debug, boost::format("removing event %1%") % id);
         this->scheduler_.remove(id);
         return;
     }
@@ -420,7 +447,7 @@ class SGFRDSimulator :
 
     // XXX: second value of element of result_type is not a mere distance.
     //      - in Multi case, it is just a distance.
-    //      - in bursted Single case, it become a distance minus
+    //      - in bursted Single case, it become a distance between centers minus
     //        min_circular_shell of the particle
     std::vector<std::pair<DomainID, Real> >
     burst_and_shrink_non_multis(
@@ -581,9 +608,11 @@ class SGFRDSimulator :
         SGFRD_LOG(trace, boost::format("domain ID = %1%") % did);
         domain_id_setter didset(did);
         mut_sh_vis_applier(didset, dom);
+        SGFRD_LOG(trace, "return from add_event");
         return did;
     }
 
+    // assuming the event is already poped
     void fire_event(event_id_pair_type ev)
     {
         SGFRD_LOG(trace, "fire_event");
@@ -597,6 +626,7 @@ class SGFRDSimulator :
             ), ev.second->domain());
     }
 
+    // assuming the event is already poped
     bursted_type burst_event(const event_id_pair_type& ev, Real tm)
     {
         SGFRD_LOG(trace, "burst_event");
