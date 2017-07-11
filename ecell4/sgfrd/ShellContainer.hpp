@@ -155,7 +155,7 @@ struct ShellContainer<T_pt>::face_register_updater
     template<typename shapeT>
     void operator()(const Shell<shapeT, vertex_id_type>& sh) const
     {
-        scon.vertex_registrator_.remove(sh.structure_id());
+        scon.vertex_registrator_.remove(sid, sh.structure_id());
         scon.face_registrator_.emplace(sid, fid);
         return;
     }
@@ -176,7 +176,7 @@ struct ShellContainer<T_pt>::vertex_register_updater
     template<typename shapeT>
     void operator()(const Shell<shapeT, face_id_type>& sh) const
     {
-        scon.face_registrator_.remove(sh.structure_id());
+        scon.face_registrator_.remove(sid, sh.structure_id());
         scon.vertex_registrator_.emplace(sid, vid);
         return;
     }
@@ -226,7 +226,7 @@ void ShellContainer<T_pt>::update_shell(
         throw std::invalid_argument("shellcontianer doesnt have the shell");
     const std::size_t idx = shell_id_to_index_map_[id];
     boost::apply_visitor(face_register_updater(*this, id, fid),
-                         container_.at(idx));
+                         container_.at(idx).second);
     container_.at(idx).second = sh;
     return;
 }
@@ -240,7 +240,7 @@ void ShellContainer<T_pt>::update_shell(
         throw std::invalid_argument("shellcontianer doesnt have the shell");
     const std::size_t idx = shell_id_to_index_map_[id];
     boost::apply_visitor(vertex_register_updater(*this, id, vid),
-                         container_.at(idx));
+                         container_.at(idx).second);
     container_.at(idx).second = sh;
     return;
 }
