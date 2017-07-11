@@ -5,10 +5,11 @@ endif()
 file(GLOB HPP_FILES *.hpp)
 set(CPP_FILES polygon_traits.cpp SGFRDWorld.cpp SGFRDSimulator.cpp)
 
-find_package(Boost COMPONENTS thread system log log_setup REQUIRED)
-add_definitions("-DBOOST_LOG_DYN_LINK")
 add_executable(sgfrd-sample-diffusion sample/diffusion.cpp ${CPP_FILES})
-target_link_libraries(sgfrd-sample-diffusion ecell4-egfrd ecell4-core ecell4-bd ${Boost_LIBRARIES})
+target_link_libraries(sgfrd-sample-diffusion ecell4-egfrd ecell4-core ecell4-bd)
+
+add_executable(sgfrd-sample-reaction sample/reaction.cpp ${CPP_FILES})
+target_link_libraries(sgfrd-sample-reaction ecell4-egfrd ecell4-core ecell4-bd)
 
 # add_library(ecell4-sgfrd SHARED ${CPP_FILES} ${HPP_FILES})
 # target_link_libraries(ecell4-sgfrd ecell4-core ecell4-egfrd)
