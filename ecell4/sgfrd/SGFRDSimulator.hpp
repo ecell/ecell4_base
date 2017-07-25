@@ -289,17 +289,34 @@ class SGFRDSimulator :
 
     Single create_single(const std::pair<ShellID, circle_type>& sh,
                          const ParticleID& pid, const Particle& p)
-    {//TODO consider single-reaction
+    {
         SGFRD_LOG(trace, "create single domain having circular shell");
 
         const greens_functions::GreensFunction2DAbsSym
             gf(/* D = */ p.D(),
                /* a = */ sh.second.size() - p.radius());
-        const Real dt = gf.drawTime(uniform_real());
-        SGFRD_LOG(debug, boost::format("calculated delta t = %1%") % dt);
+        const Real t_escape = gf.drawTime(uniform_real());
+        SGFRD_LOG(debug, boost::format("calculated escape_time = %1%")
+                  % t_escape);
 
-        return Single(Single::ESCAPE, dt, this->time(), sh.first,
-                      std::make_pair(pid, p));
+        //consider whether reaction occur or not.
+        const Real t_reaction = draw_reaction_time(calc_k_tot(
+            this->model_->query_reaction_rules(p.species())));
+        SGFRD_LOG(debug, boost::format("calculated reaction_time = %1%")
+                  % t_reaction);
+
+        if(t_reaction < t_escape)
+        {
+            SGFRD_LOG(trace, "single event is set as reaction");
+            return Single(Single::REACTION, t_reaction, this->time(), sh.first,
+                          std::make_pair(pid, p));
+        }
+        else
+        {
+            SGFRD_LOG(trace, "single event is set as escape");
+            return Single(Single::ESCAPE, t_escape, this->time(), sh.first,
+                          std::make_pair(pid, p));
+        }
     }
     Single create_single(const std::pair<ShellID, conical_surface_type>& sh,
                          const ParticleID& pid, const Particle& p)
@@ -317,10 +334,25 @@ class SGFRDSimulator :
                /* r0  = */ length(p.position() - sh.second.apex()),
                /* a   = */ sh.second.size() - p.radius(),
                /* phi = */ sh.second.apex_angle());
-        const Real dt = gf.drawTime(uniform_real());
+        const Real t_escape = gf.drawTime(uniform_real());
+        SGFRD_LOG(debug, boost::format("calculated escape_time = %1%")
+                  % t_escape);
 
-        return Single(Single::ESCAPE, dt, this->time(), sh.first,
-                      std::make_pair(pid, p));
+        const Real t_reaction = draw_reaction_time(calc_k_tot(
+            this->model_->query_reaction_rules(p.species())));
+        SGFRD_LOG(debug, boost::format("calculated reaction_time = %1%")
+                  % t_reaction);
+
+        if(t_reaction < t_escape)
+        {
+            return Single(Single::REACTION, t_reaction, this->time(), sh.first,
+                          std::make_pair(pid, p));
+        }
+        else
+        {
+            return Single(Single::ESCAPE, t_escape, this->time(), sh.first,
+                          std::make_pair(pid, p));
+        }
     }
 
 //------------------------------------ pair ------------------------------------
@@ -747,13 +779,40 @@ class SGFRDSimulator :
         return polygon().vertex_at(vid).max_conical_shell_size * 0.5;
     }
 
-    Real calc_min_single_circular_shell_radius(const Particle& p)
+    Real calc_min_single_circular_shell_radius(const Particle& p) const
     {
         return p.radius() * single_circular_shell_factor;
     }
-    Real calc_min_single_conical_shell_radius(const Particle& p)
+    Real calc_min_single_conical_shell_radius(const Particle& p) const
     {
         return p.radius() * single_conical_surface_shell_factor;
+    }
+
+    Real calc_k_tot(const std::vector<ReactionRule>& rules) const
+    {
+        Real k_tot = 0;
+        BOOST_FOREACH(ReactionRule const& rule, rules)
+        {
+            SGFRD_LOG(debug, boost::format("reaction rule found: k = %1%")
+                      % rule.k());
+            k_tot += rule.k();
+        }
+        return k_tot;
+    }
+
+    Real draw_reaction_time(const Real k_tot)
+    {
+        SGFRD_LOG(debug, boost::format("drawing reaction time for : ktot = %1%")
+                  % k_tot);
+        if(k_tot <= 0) return std::numeric_limits<Real>::infinity();
+        if(k_tot == std::numeric_limits<Real>::infinity()) return 0;
+
+        const Real rnd = this->uniform_real();
+        SGFRD_LOG(debug, boost::format("drawing reaction time for : rnd = %1%")
+                  % rnd);
+        if(rnd <= 0) return std::numeric_limits<Real>::infinity();
+
+        return (1. / k_tot) * (-std::log(rnd));
     }
 
   private:
