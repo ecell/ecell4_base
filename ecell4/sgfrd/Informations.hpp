@@ -68,6 +68,60 @@ protected:
     container_type reactants_, products_;
 };
 
+inline ReactionInfo
+make_degradation_reaction_info(
+        const Real t, const ParticleID& pid, const Particle& p)
+{
+    typedef ReactionInfo::container_type container_type;
+    return ReactionInfo(t, container_type(1, std::make_pair(pid, p)),
+                           container_type(0));
+}
+
+inline ReactionInfo
+make_synthesis_reaction_info(
+        const Real t, const ParticleID& pid, const Particle& p)
+{
+    typedef ReactionInfo::container_type container_type;
+    return ReactionInfo(t, container_type(0),
+                           container_type(1, std::make_pair(pid, p)));
+}
+
+inline ReactionInfo
+make_unimolecular_reaction_info(const Real t,
+        const ParticleID& pid1, const Particle& p1,
+        const ParticleID& pid2, const Particle& p2)
+{
+    typedef ReactionInfo::container_type container_type;
+    return ReactionInfo(t, container_type(1, std::make_pair(pid1, p1)),
+                           container_type(1, std::make_pair(pid2, p2)));
+}
+
+inline ReactionInfo
+make_binding_reaction_info(const Real t,
+        const ParticleID& pid1, const Particle& p1,
+        const ParticleID& pid2, const Particle& p2,
+        const ParticleID& pid3, const Particle& p3)
+{
+    typedef ReactionInfo::container_type container_type;
+    container_type cont(2);
+    cont[0] = std::make_pair(pid1, p1);
+    cont[1] = std::make_pair(pid2, p2);
+    return ReactionInfo(t, cont, container_type(1, std::make_pair(pid3, p3)));
+}
+
+inline ReactionInfo
+make_unbinding_reaction_info(const Real t,
+        const ParticleID& pid1, const Particle& p1,
+        const ParticleID& pid2, const Particle& p2,
+        const ParticleID& pid3, const Particle& p3)
+{
+    typedef ReactionInfo::container_type container_type;
+    container_type cont(2);
+    cont[0] = std::make_pair(pid2, p2);
+    cont[1] = std::make_pair(pid3, p3);
+    return ReactionInfo(t, container_type(1, std::make_pair(pid1, p1)), cont);
+}
+
 } // sgfrd
 } // ecell4
 #endif// ECELL4_SGFRD_REACTION_AND_MOLECULE_INFO
