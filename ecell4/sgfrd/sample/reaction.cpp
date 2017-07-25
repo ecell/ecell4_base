@@ -13,18 +13,19 @@
 
 #include <boost/lexical_cast.hpp>
 
-void trajectory_output(const std::vector<ecell4::ParticleID>& pids,
-    const boost::shared_ptr<ecell4::sgfrd::SGFRDWorld>& world)
+void trajectory_output(const boost::shared_ptr<ecell4::sgfrd::SGFRDWorld>& world)
 {
-    for(std::vector<ecell4::ParticleID>::const_iterator
-        iter = pids.begin(); iter != pids.end(); ++iter)
+    typedef ecell4::sgfrd::SGFRDWorld::particle_container_type container;
+    container const ps = world->list_particles();
+    for(container::const_iterator iter = ps.begin(); iter != ps.end(); ++iter)
     {
         std::cout << world->t() << ' '
-                  << world->get_particle(*iter).second.position()[0] << ' '
-                  << world->get_particle(*iter).second.position()[1] << ' '
-                  << world->get_particle(*iter).second.position()[2] << '\n';
+                  << iter->second.species().serial() << ' '
+                  << iter->second.position()[0]      << ' '
+                  << iter->second.position()[1]      << ' '
+                  << iter->second.position()[2]      << '\n';
     }
-    std::cout << "\n\n";
+    std::cout << "\n\n" << std::flush;
     return;
 }
 
@@ -104,17 +105,17 @@ int main(int argc, char **argv)
 
     simulator_type sim(world, model);
     sim.initialize();
-    trajectory_output(pids, world);
+    trajectory_output(world);
 
     const ecell4::Real dt = 0.001;
     const std::size_t num_step = boost::lexical_cast<std::size_t>(std::string(argv[3]));
     for(std::size_t i=0; i<num_step; ++i)
     {
         while(sim.step(i * dt)){}
-        trajectory_output(pids, world);
-   }
+        trajectory_output(world);
+    }
     sim.finalize();
-    trajectory_output(pids, world);
+    trajectory_output(world);
 
     return 0;
 }
