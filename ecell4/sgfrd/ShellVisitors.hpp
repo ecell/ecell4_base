@@ -47,21 +47,22 @@ struct inside_checker : boost::static_visitor<bool>
     typedef polygon_type::face_id_type      face_id_type;
 
 
-    inside_checker(Real3 pos, face_id_type f, polygon_type const& p)
-        : position(pos), fid(f), poly(p)
+    inside_checker(Real3 pos, Real rad, face_id_type f, polygon_type const& p)
+        : radius(rad), position(pos), fid(f), poly(p)
     {}
 
     //XXX: dispatch using shapeT::dimension to use 3D shells
     template<typename shapeT, typename stridT>
     bool operator()(const Shell<shapeT, stridT>& shell) const
     {
-        return poly.distance_sq(
+        return poly.distance(
                 std::make_pair(shell.position(), shell.structure_id()),
-                std::make_pair(position, fid)) < (shell.size() * shell.size());
+                std::make_pair(position, fid)) - radius < shell.size();
     }
 
   private:
 
+    Real         radius;
     Real3        position;
     face_id_type fid;
     polygon_type const& poly;
