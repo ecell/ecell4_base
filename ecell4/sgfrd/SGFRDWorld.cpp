@@ -22,12 +22,6 @@ std::pair<std::pair<ParticleID, Particle>, bool>
 SGFRDWorld::new_particle(const Particle& p, const face_id_type& fid)
 {
     // XXX: consider particle shape and split overlap check for 2d and 3d
-    const std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
-        overlap3 = list_particles_within_radius(p.position(), p.radius());
-    if(!overlap3.empty())
-    {
-        return std::make_pair(std::make_pair(pidgen_(), p), false);
-    }
     const ParticleID pid = pidgen_();
     return std::make_pair(std::make_pair(pid, p), update_particle(pid, p, fid));
 }
