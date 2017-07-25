@@ -75,11 +75,8 @@ int main(int argc, char **argv)
 
     const ecell4::Real kf(0.25), kr(1.0);
 
-    std::vector<ecell4::Species> before; before.push_back(sp1);
-    std::vector<ecell4::Species> after;  before.push_back(sp2); before.push_back(sp3);
-    ecell4::ReactionRule rr1(before, after, kr), rr2(after, before, kf);
-    model->add_reaction_rule(rr1);
-    model->add_reaction_rule(rr2);
+    model->add_reaction_rule(ecell4::create_binding_reaction_rule(sp2, sp3, sp1, kf));
+    model->add_reaction_rule(ecell4::create_unbinding_reaction_rule(sp1, sp2, sp3, kf));
 
     boost::shared_ptr<ecell4::RandomNumberGenerator> rng =
         boost::make_shared<ecell4::GSLRandomNumberGenerator>();
