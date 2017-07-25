@@ -262,7 +262,7 @@ public:
             this->container_.new_particle(particles_new[1], newpfs[1].second));
         const ParticleID pid2(pp2.first.first);
 
-        //----------------------------- tryal move -----------------------------
+        //----------------------------- trial move -----------------------------
 
         if(D1 == 0. && D2 == 0)
             throw std::invalid_argument("reaction between immobile particles");
