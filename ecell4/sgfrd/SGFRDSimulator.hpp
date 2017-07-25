@@ -136,6 +136,8 @@ class SGFRDSimulator :
     void step()
     {
         this->set_time(this->scheduler_.next_time());
+        SGFRD_LOG(debug, "================================================================================");
+        SGFRD_LOG(debug, boost::format("now t = %1%") % this->time());
         // fire event executes `create_event` inside.
         this->fire_event(this->scheduler_.pop());
         SGFRD_LOG(debug, boost::format("now %1% shells exist") %
@@ -271,6 +273,7 @@ class SGFRDSimulator :
                                 polygon().triangle_at(pos.second).normal());
         shell_container_.add_shell(id, circular_shell_type(shape, pos.second),
                                    pos.second);
+        SGFRD_LOG(debug, boost::format("the shell id is %1%") % id);
         return std::make_pair(id, shape);
     }
     std::pair<ShellID, conical_surface_type>
@@ -283,6 +286,7 @@ class SGFRDSimulator :
                                          polygon().apex_angle(vid), size);
         shell_container_.add_shell(
                 id, conical_surface_shell_type(shape, vid), vid);
+        SGFRD_LOG(debug, boost::format("the shell id is %1%") % id);
 
         return std::make_pair(id, shape);
     }
@@ -345,11 +349,13 @@ class SGFRDSimulator :
 
         if(t_reaction < t_escape)
         {
+            SGFRD_LOG(trace, "single event is set as reaction");
             return Single(Single::REACTION, t_reaction, this->time(), sh.first,
                           std::make_pair(pid, p));
         }
         else
         {
+            SGFRD_LOG(trace, "single event is set as escape");
             return Single(Single::ESCAPE, t_escape, this->time(), sh.first,
                           std::make_pair(pid, p));
         }
@@ -625,9 +631,12 @@ class SGFRDSimulator :
     DomainID add_event(const domainT& dom)
     {
         SGFRD_LOG(trace, "add_event called");
-        const DomainID did = scheduler_.add(
-            boost::make_shared<event_type>(dom.begin_time() + dom.dt(), dom));
-        SGFRD_LOG(trace, boost::format("domain ID = %1%") % did);
+        SGFRD_LOG(debug, boost::format("the domain has dt = %1%, begin_time = %2%")
+                  % dom.dt() % dom.begin_time());
+        BOOST_AUTO(ev, boost::make_shared<event_type>(dom.begin_time() + dom.dt(), dom));
+        const DomainID did = scheduler_.add(ev);
+        SGFRD_LOG(trace, boost::format("event_time = %1%, domain ID = %2%")
+                  % ev->time() % did);
         domain_id_setter didset(did);
         mut_sh_vis_applier(didset, dom);
         SGFRD_LOG(trace, "return from add_event");
@@ -671,6 +680,7 @@ class SGFRDSimulator :
         circular_shell_type sh(circle_type(p.radius(), p.position(),
                                this->polygon().triangle_at(fid).normal()), fid);
         shell_container_.add_shell(sid, sh, fid);
+        SGFRD_LOG(debug, boost::format("the shell id is %1%") % sid);
         return sid;
     }
     Single create_closely_fitted_domain(
@@ -857,6 +867,8 @@ SGFRDSimulator::propagate_single<SGFRDSimulator::circular_shell_type>(
     greens_functions::GreensFunction2DAbsSym gf(p.D(), sh.size() - p.radius());
 
     const Real del_t = tm - dom.begin_time();
+    SGFRD_LOG(debug, boost::format("delta t for domain having shell %1% is %2%") % del_t % dom.shell_id());
+    SGFRD_LOG(debug, boost::format("its own dt = %1%, and begin_time = %2%") % dom.dt() % dom.begin_time());
     const Real r     = gf.drawR(this->uniform_real(), del_t);
     const Real theta = this->uniform_real() * 2 * M_PI;
     SGFRD_LOG(debug, boost::format("r = %1%, theta = %2%") % r % theta);
@@ -1049,13 +1061,8 @@ SGFRDSimulator::reaction_single(
 {
     SGFRD_LOG(trace, "reaction_single called");
     ParticleID pid; Particle p; FaceID fid;
-    boost::tie(pid, p, fid) = this->propagate_single(sh, dom, dom.dt());// XXX
-    boost::container::static_vector<
-        boost::tuple<ParticleID, Particle, FaceID>, 2> retval;
-    return retval;
-    // TODO make clear_volume() for single reaction
-//         volume_clearer vc(did, dom, *this, this->imm_sh_vis_applier);
-//         return this->attempt_reaction_single(sh, pid, p, fid, vc);
+    boost::tie(pid, p, fid) = this->propagate_single(sh, dom, this->time());
+    return attempt_reaction_single(sh, did, pid, p, fid);
 }
 
 
@@ -1068,7 +1075,7 @@ SGFRDSimulator::attempt_reaction_single(const shellT& sh, const DomainID did,
 {
     SGFRD_LOG(trace,   "attempt_reaction_single called");
     SGFRD_LOG(warning, "attempt_reaction_single has not been implemented yet");
-    boost::container::static_vector<pid_p_fid_tuple_type, 2> retval;
+    boost::container::static_vector<pid_p_fid_tuple_type, 2> retval(1, boost::make_tuple(pid, p, fid));
     return retval;
 }
 
