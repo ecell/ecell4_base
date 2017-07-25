@@ -172,6 +172,28 @@ class SGFRDSimulator :
         SGFRD_LOG(debug, boost::format("particle %1% is updated") % pid);
         return this->world_->update_particle(pid, p, fid);
     }
+    std::pair<std::pair<ParticleID, Particle>, bool>
+    create_particle(const Particle& p, const FaceID& fid)
+    {
+        BOOST_AUTO(const retval, this->world_->new_particle(p, fid));
+        if(retval.second)
+        {
+            SGFRD_LOG(debug, boost::format("particle %1% is created")
+                      % retval.first.first);
+        }
+        else
+        {
+            SGFRD_LOG(debug, boost::format("fail to create particle %1%")
+                      % retval.first.first);
+        }
+        return retval;
+    }
+    void remove_particle(const ParticleID& pid, const FaceID& fid)
+    {
+        SGFRD_LOG(debug, boost::format("removing particle %1% on face %2%")
+                  % pid % fid);
+        return this->world_->remove_particle(pid, fid);
+    }
 
     shell_type&       get_shell(ShellID const& id)
     {
@@ -197,7 +219,15 @@ class SGFRDSimulator :
 
 
     FaceID get_face_id(const ParticleID& pid) const
-    {return this->world_->get_face_id(pid);}
+    {
+        if(!this->world_->is_on_face(pid))
+        {
+            SGFRD_LOG(debug, boost::format("particle %1% is not on face.") % pid);
+            SGFRD_LOG(debug, boost::format("particle %1% is in world?: %2%")
+                      % pid % this->world_->has_particle(pid));
+        }
+        return this->world_->get_face_id(pid);
+    }
     std::pair<ParticleID, Particle> get_particle(const ParticleID& pid) const
     {return this->world_->get_particle(pid);}
 
@@ -260,8 +290,24 @@ class SGFRDSimulator :
 
     template<typename shellT>
     boost::container::static_vector<pid_p_fid_tuple_type, 2>
-    attempt_reaction_single(const shellT& sh, const DomainID did,
-            const ParticleID& pid, const Particle& p, const FaceID& fid);
+    attempt_reaction_single(
+            const shellT&     sh,  const DomainID did, const Single& dom,
+            const ParticleID& pid, const Particle&  p, const FaceID& fid);
+
+    template<typename shellT>
+    boost::container::static_vector<pid_p_fid_tuple_type, 2>
+    attempt_reaction_1_to_1(const ReactionRule& rule,
+            const shellT&     sh,  const DomainID did, const Single& dom,
+            const ParticleID& pid, const Particle&  p, const FaceID& fid);
+
+    template<typename shellT>
+    boost::container::static_vector<pid_p_fid_tuple_type, 2>
+    attempt_reaction_1_to_2(const ReactionRule& rule,
+            const shellT&     sh,  const DomainID did, const Single& dom,
+            const ParticleID& pid, const Particle&  p, const FaceID& fid);
+
+
+
 
     std::pair<ShellID, circle_type>
     create_single_circular_shell(
@@ -571,7 +617,7 @@ class SGFRDSimulator :
         {
             SGFRD_LOG(trace, "volume clearer(p, fid) called");
             escaped_ = false;
-            inside_checker is_inside(p.position(), fid, sim.polygon());
+            inside_checker is_inside(p.position(), p.radius(), fid, sim.polygon());
             if(applier(is_inside, domain)) return true;
 
             SGFRD_LOG(trace, "particle escaped");
@@ -588,7 +634,7 @@ class SGFRDSimulator :
                     boost::format("volume clearer(p, fid, ignore = %1%) called")
                     % ignore);
             escaped_ = false;
-            inside_checker is_inside(p.position(), fid, sim.polygon());
+            inside_checker is_inside(p.position(), p.radius(), fid, sim.polygon());
             if(applier(is_inside, domain)) return true;
 
             SGFRD_LOG(trace, "particle escaped");
@@ -604,7 +650,7 @@ class SGFRDSimulator :
                 boost::format("volume clearer(p, fid, ignore1 = %1%, ignore2 = %2%) called")
                 % ignore1 % ignore2);
             escaped_ = false;
-            inside_checker is_inside(p.position(), fid, sim.polygon());
+            inside_checker is_inside(p.position(), p.radius(), fid, sim.polygon());
             if(applier(is_inside, domain)) return true;
 
             SGFRD_LOG(trace, "particle escaped");
@@ -825,12 +871,65 @@ class SGFRDSimulator :
         return (1. / k_tot) * (-std::log(rnd));
     }
 
+    ReactionRule const&
+    determine_reaction_rule(const std::vector<ReactionRule>& rules)
+    {
+        if(rules.size() == 1) return rules.front();
+        if(rules.empty()) throw std::invalid_argument("no reaction rule exists");
+
+        const Real ktot = calc_k_tot(rules);
+        const Real thrs = ktot * this->uniform_real();
+        Real a = 0.0;
+        BOOST_FOREACH(ReactionRule const& rule, rules)
+        {
+            a += rule.k();
+            if(a > thrs) return rule;
+        }
+        throw std::logic_error("reaction cannot detemined");
+    }
+
+    // for BD part...
+    Real3 random_circular_uniform(const Real r)
+    {
+        const Real theta = this->rng_.uniform(0., 2 * M_PI);
+        return Real3(r * std::cos(theta), r * std::sin(theta), 0.);
+    }
+
+    Real3 random_circular_uniform(const Real r, const Real3& normal)
+    {
+        const Real3 rnd = random_circular_uniform(r);
+        const Real tilt = angle(Real3(0, 0, 1), normal);
+
+             if(std::abs(tilt - M_PI) < 1e-10) return rnd;
+        else if(std::abs(tilt + M_PI) < 1e-10) return rnd * (-1.0);
+
+        const Real3 axis = cross_product(Real3(0., 0., 1.), normal);
+        return rotate(tilt, axis * (1. / length(axis)), rnd);
+    }
+
+    Real3 draw_displacement(const Particle& p, const FaceID& fid)
+    {
+        return random_circular_uniform(rng_.gaussian(std::sqrt(4*p.D()*dt_)),
+                                 this->polygon().triangle_at(fid).normal());
+    }
+
+    Real3 draw_ipv(const Real r, const Real D, const FaceID& fid)
+    {
+        const Real rl    = r + this->reaction_length;
+        const Real r_sq  = r * r;
+        const Real rd    = rl * rl - r_sq;
+        const Real ipvl  = std::sqrt(r_sq + this->rng_.uniform(0., 1.) * rd);
+        return random_circular_uniform(
+                ipvl, this->polygon().triangle_at(fid).normal());
+    }
+
   private:
 
     static const Real single_circular_shell_factor;
     static const Real single_circular_shell_mergin;
     static const Real single_conical_surface_shell_factor;
     static const Real single_conical_surface_shell_mergin;
+    static const Real reaction_length;
 
   private:
 
@@ -1052,7 +1151,6 @@ SGFRDSimulator::burst_single(const Single& dom, const Real tm)
     return results;
 }
 
-// calls propagate_single.
 template<typename shellT>
 boost::container::static_vector<
     boost::tuple<ParticleID, Particle, SGFRDSimulator::FaceID>, 2>
@@ -1062,20 +1160,250 @@ SGFRDSimulator::reaction_single(
     SGFRD_LOG(trace, "reaction_single called");
     ParticleID pid; Particle p; FaceID fid;
     boost::tie(pid, p, fid) = this->propagate_single(sh, dom, this->time());
-    return attempt_reaction_single(sh, did, pid, p, fid);
+    return attempt_reaction_single(sh, did, dom, pid, p, fid);
 }
 
 
-// TODO
-// calls propagate_single.
 template<typename shellT>
 boost::container::static_vector<SGFRDSimulator::pid_p_fid_tuple_type, 2>
-SGFRDSimulator::attempt_reaction_single(const shellT& sh, const DomainID did,
-        const ParticleID& pid, const Particle& p, const FaceID& fid)
+SGFRDSimulator::attempt_reaction_single(
+        const shellT&     sh,  const DomainID did, const Single& dom,
+        const ParticleID& pid, const Particle&  p, const FaceID& fid)
 {
     SGFRD_LOG(trace,   "attempt_reaction_single called");
-    SGFRD_LOG(warning, "attempt_reaction_single has not been implemented yet");
-    boost::container::static_vector<pid_p_fid_tuple_type, 2> retval(1, boost::make_tuple(pid, p, fid));
+
+    BOOST_AUTO(const rules, this->model_->query_reaction_rules(p.species()));
+    if(rules.empty())
+    {
+        SGFRD_LOG(trace, "rule is empty. return particle kept intact");
+        return boost::container::static_vector<pid_p_fid_tuple_type, 2>(1,
+                boost::make_tuple(pid, p, fid));
+    }
+    const ReactionRule& rule = determine_reaction_rule(rules);
+
+    switch(rule.products().size())
+    {
+        case 0:
+        {
+            SGFRD_LOG(trace, "degradation reaction occurs.");
+            this->remove_particle(pid, fid);
+            last_reactions_.push_back(std::make_pair(rule,
+                make_degradation_reaction_info(this->time(), pid, p)));
+            return boost::container::static_vector<pid_p_fid_tuple_type, 2>(0);
+        }
+        case 1:
+        {
+            SGFRD_LOG(trace, "attempting 1 to 1 reaction.");
+            return attempt_reaction_1_to_1(rule, sh, did, dom, pid, p, fid);
+        }
+        case 2:
+        {
+            SGFRD_LOG(trace, "attempting 1 to 2 reaction.");
+            return attempt_reaction_1_to_2(rule, sh, did, dom, pid, p, fid);
+        }
+        default: throw NotImplemented("SGFRD Single Reaction:\
+            more than two products from one reactant are not allowed");
+    }
+}
+
+template<typename shellT>
+boost::container::static_vector<SGFRDSimulator::pid_p_fid_tuple_type, 2>
+SGFRDSimulator::attempt_reaction_1_to_1(const ReactionRule& rule,
+        const shellT&     sh,  const DomainID did, const Single& dom,
+        const ParticleID& pid, const Particle&  p, const FaceID& fid)
+{
+    SGFRD_LOG(trace, "attempt_reaction_1_to_1 called");
+
+    const Species species_new =
+        this->model_->apply_species_attributes(rule.products().front());
+    const molecule_info_type mol_info =
+        this->world_->get_molecule_info(species_new);
+    const Real radius_new = mol_info.radius;
+    const Real D_new      = mol_info.D;
+    const Particle p_new(species_new, p.position(), radius_new, D_new);
+
+    inside_checker is_inside_of(p.position(), p.radius(), fid, this->polygon());
+    if(!is_inside_of(sh))
+    {
+        // particle goes outside of the shell. must clear the volume.
+        const bool no_overlap = this->burst_and_shrink_overlaps(p_new, fid);
+        if(!no_overlap)
+        {// cannot avoid overlapping... reject the reaction.
+            return boost::container::static_vector<pid_p_fid_tuple_type, 2>(
+                    1, boost::make_tuple(pid, p, fid));
+        }
+    }
+
+    // reaction occurs. record this reaction to `last_reactions`.
+    last_reactions_.push_back(std::make_pair(rule,
+        make_unimolecular_reaction_info(this->time(), pid, p, pid, p_new)));
+
+    // update particle and return resulting particles.
+    this->update_particle(pid, p_new, fid);
+    return boost::container::static_vector<pid_p_fid_tuple_type, 2>(
+            1, boost::make_tuple(pid, p_new, fid));
+}
+
+template<typename shellT>
+boost::container::static_vector<SGFRDSimulator::pid_p_fid_tuple_type, 2>
+SGFRDSimulator::attempt_reaction_1_to_2(const ReactionRule& rule,
+        const shellT&     sh,  const DomainID did, const Single& dom,
+        const ParticleID& pid, const Particle&  p, const FaceID& fid)
+{
+    SGFRD_LOG(trace, "attempt_reaction_1_to_2 called");
+
+    const Species sp1 =
+        this->model_->apply_species_attributes(rule.products().at(0));
+    const Species sp2 =
+        this->model_->apply_species_attributes(rule.products().at(1));
+
+    const molecule_info_type mol1 = world_->get_molecule_info(sp1);
+    const molecule_info_type mol2 = world_->get_molecule_info(sp2);
+
+    const Real D1(mol1.D),      D2(mol2.D),      D12(mol1.D + mol2.D);
+    const Real r1(mol1.radius), r2(mol2.radius), r12(mol1.radius + mol2.radius);
+
+    boost::array<std::pair<Real3, face_id_type>, 2> newpfs;
+    newpfs[0] = std::make_pair(p.position(), fid);
+    newpfs[1] = std::make_pair(p.position(), fid);
+
+    boost::array<Particle, 2> particles_new;
+    particles_new[0] = Particle(sp1, newpfs[0].first, r1, D1);
+    particles_new[1] = Particle(sp2, newpfs[1].first, r2, D2);
+
+    Integer retry(2);
+    while(retry > 0)
+    {
+        --retry;
+
+        const Real3 ipv(draw_ipv(r12, D12, fid));
+        SGFRD_LOG(debug, boost::format("length of ipv drawn now is %1%")
+                  % length(ipv));
+        Real3 disp1(ipv * ( D1 / D12)), disp2(ipv * (-D2 / D12));
+        {
+            std::size_t continue_count = 100;
+            while(continue_count != 0)
+            {
+                boost::tie(newpfs[0], disp1) =
+                    this->polygon().move_next_face(newpfs[0], disp1);
+                if(disp1[0] == 0. && disp1[1] == 0. && disp1[2] == 0.) break;
+                --continue_count;
+            }
+            if(continue_count == 0)
+                std::cerr << "[WARNING] moving on face by BD: precision lost\n";
+
+            particles_new[0].position() = newpfs[0].first;
+            inside_checker
+                is_inside_of(newpfs[0].first, r1, newpfs[0].second, this->polygon());
+            if(!is_inside_of(sh))
+            {
+                const bool no_overlap = this->burst_and_shrink_overlaps(
+                    particles_new[0], newpfs[0].second);
+                if(!no_overlap) continue;
+            }
+        }
+        {
+            std::size_t continue_count = 100;
+            while(continue_count != 0)
+            {
+                boost::tie(newpfs[1], disp2) =
+                    this->polygon().move_next_face(newpfs[1], disp2);
+                if(disp2[0] == 0. && disp2[1] == 0. && disp2[2] == 0.) break;
+                --continue_count;
+            }
+            if(continue_count == 0)
+                std::cerr << "[WARNING] moving on face by BD: precision lost\n";
+
+            particles_new[1].position() = newpfs[1].first;
+            inside_checker
+                is_inside_of(newpfs[1].first, r2, newpfs[1].second, this->polygon());
+            if(!is_inside_of(sh))
+            {
+                const bool no_overlap = this->burst_and_shrink_overlaps(
+                    particles_new[1], newpfs[1].second);
+                if(!no_overlap) continue;
+            }
+        }
+        break; // no overlap!
+    }
+    if(retry == 0)
+    {
+        SGFRD_LOG(trace, "reaction is rejected because there are no space.");
+        return boost::container::static_vector<pid_p_fid_tuple_type, 2>(
+                1, boost::make_tuple(pid, p, fid));
+    }
+
+    SGFRD_LOG(trace, "single reaction 1 -> 2 occurs");
+
+    this->update_particle(pid, particles_new[0], newpfs[0].second);
+    BOOST_AUTO(pp2, this->create_particle(particles_new[1], newpfs[1].second));
+    const ParticleID pid2(pp2.first.first);
+
+    //----------------------------- trial move -----------------------------
+
+    if(D1 == 0. && D2 == 0)
+        throw std::invalid_argument("reaction between immobile particles");
+
+    const std::size_t idx = // select particle that is moved
+        (D1 != 0 && D2 != 0) ? this->rng_.uniform_int(0, 1) : (D1==0) ? 1 : 0;
+
+    const ParticleID pid_to_move = (idx==0) ? pid : pid2;
+    const Real r_to_move = (idx==0) ? r1 : r2;
+
+    BOOST_AUTO(position,     newpfs[idx]);
+    BOOST_AUTO(displacement, draw_displacement(particles_new[idx], newpfs[idx].second));
+
+    {
+        std::size_t continue_count = 100;
+        while(continue_count != 0)
+        {
+            boost::tie(position, displacement) =
+                this->polygon().move_next_face(position, displacement);
+            if(displacement[0] == 0. && displacement[1] == 0. &&
+               displacement[2] == 0.) break;
+            --continue_count;
+        }
+        if(continue_count == 0)
+            std::cerr << "[WARNING] moving on face by BD: precision lost\n";
+
+        const Real3  tmp_pos = particles_new[idx].position();
+        const FaceID tmp_fid = newpfs[idx].second;
+        particles_new[idx].position() = position.first;
+        newpfs[idx].second            = position.second;
+
+        if(this->polygon().distance(
+            std::make_pair(particles_new[0].position(), newpfs[0].second),
+            std::make_pair(particles_new[1].position(), newpfs[1].second)) < r12)
+        {
+            particles_new[idx].position() = tmp_pos;
+            newpfs[idx].second = tmp_fid;
+            SGFRD_LOG(trace, "trial move rejected.");
+        }
+        else
+        {
+            inside_checker is_inside_of(particles_new[idx].position(), r_to_move,
+                                        newpfs[idx].second, this->polygon());
+            if(!is_inside_of(sh))
+            {
+                const bool no_overlap = this->burst_and_shrink_overlaps(
+                    particles_new[idx], newpfs[idx].second);
+                if(!no_overlap)
+                {
+                    particles_new[idx].position() = tmp_pos;
+                    newpfs[idx].second = tmp_fid;
+                    SGFRD_LOG(trace, "trial move rejected.");
+                }
+            }
+        }
+    }
+    this->update_particle(pid_to_move, particles_new[idx], newpfs[idx].second);
+
+    //------------------------ record reaction -----------------------------
+    last_reactions_.push_back(std::make_pair(rule, make_unbinding_reaction_info(
+        this->time(), pid, p, pid, particles_new[0], pid2, particles_new[1])));
+    boost::container::static_vector<pid_p_fid_tuple_type, 2> retval(2);
+    retval[0] = boost::make_tuple(pid , particles_new[0], newpfs[0].second);
+    retval[1] = boost::make_tuple(pid2, particles_new[1], newpfs[1].second);
     return retval;
 }
 
