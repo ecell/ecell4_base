@@ -34,9 +34,7 @@ class MultiContainer
 
     bool make_entry(const ParticleID& pid)
     {
-        if(std::find_if(pcon_.begin(), pcon_.end(),
-                ecell4::utils::pair_first_element_unary_predicator<
-                ParticleID, Particle>(pid)) != pcon_.end()) return false;
+        if(this->find_(pid) != pcon_.end()) return false;
 
         pcon_.push_back(world_.get_particle(pid));
         if(world_.is_on_face(pid))
@@ -59,6 +57,7 @@ class MultiContainer
 
     bool update_particle(const ParticleID& pid, const Particle& p)
     {
+        *(this->find_(pid)) = std::make_pair(pid, p);
         return world_.update_particle(pid, p);
     }
     bool update_particle(const ParticleID& pid, const Particle& p,
@@ -66,13 +65,21 @@ class MultiContainer
     {
         if(registrator_.have(pid)) registrator_.update(pid, fid);
         else                       registrator_.emplace(pid, fid);
+        *(this->find_(pid)) = std::make_pair(pid, p);
+
         return world_.update_particle(pid, p, fid);
     }
 
     std::pair<std::pair<ParticleID, Particle>, bool>
     new_particle(const Particle& p)
     {
-        return world_.new_particle(p);
+        const std::pair<std::pair<ParticleID, Particle>, bool> result =
+            world_.new_particle(p);
+        if(result.second)
+        {
+            this->pcon_.push_back(result.first);
+        }
+        return result;
     }
     std::pair<std::pair<ParticleID, Particle>, bool>
     new_particle(const Particle& p, const face_id_type& fid)
@@ -80,18 +87,29 @@ class MultiContainer
         const std::pair<std::pair<ParticleID, Particle>, bool> result =
             world_.new_particle(p, fid);
         if(result.second)
+        {
+            this->pcon_.push_back(result.first);
             registrator_.emplace(result.first.first, fid);
+        }
         return result;
     }
 
     void remove_particle(const ParticleID& pid)
     {
-        if(registrator_.have(pid)) registrator_.remove(pid);
+        if(registrator_.have(pid))
+        {
+            registrator_.remove(pid);
+        }
+        const particle_container_type::iterator to_be_removed = this->find_(pid);
+        this->pcon_.erase(to_be_removed);
+
         return world_.remove_particle(pid);
     }
     void remove_particle(const ParticleID& pid, const face_id_type& fid)
     {
         registrator_.remove(pid, fid);
+        const particle_container_type::iterator to_be_removed = this->find_(pid);
+        this->pcon_.erase(to_be_removed);
         return world_.remove_particle(pid);
     }
 
@@ -205,6 +223,14 @@ class MultiContainer
         return true; // no overlap!
     }
 
+  private:
+
+    particle_container_type::iterator find_(const ParticleID& pid)
+    {
+        return std::find_if(pcon_.begin(), pcon_.end(),
+                  ecell4::utils::pair_first_element_unary_predicator<
+                      ParticleID, Particle>(pid));
+    }
 
   private:
 
