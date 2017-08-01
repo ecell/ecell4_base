@@ -632,7 +632,7 @@ class SGFRDSimulator :
 
             const bool no_overlap = sim.burst_and_shrink_overlaps(p, fid);
             escaped_ = no_overlap;
-            SGFRD_TRACE(sim.tracer_.write("overlap exist ? %1%", no_overlap));
+            SGFRD_TRACE(sim.tracer_.write("no_overlap = %1%", no_overlap));
             return no_overlap;
         }
         bool operator()(const Particle& p, const FaceID& fid,
@@ -646,9 +646,10 @@ class SGFRDSimulator :
             if(applier(is_inside, domain)) return true;
 
             SGFRD_TRACE(sim.tracer_.write("particle escaped"))
+
             const bool no_overlap = sim.burst_and_shrink_overlaps(p, fid);
             escaped_ = no_overlap;
-            SGFRD_TRACE(sim.tracer_.write("overlap exist ? %1%", no_overlap));
+            SGFRD_TRACE(sim.tracer_.write("no_overlap = %1%", no_overlap));
             return no_overlap;
         }
         bool operator()(const Particle& p, const FaceID& fid,
@@ -662,9 +663,10 @@ class SGFRDSimulator :
             if(applier(is_inside, domain)) return true;
 
             SGFRD_TRACE(sim.tracer_.write("particle escaped"))
+
             const bool no_overlap = sim.burst_and_shrink_overlaps(p, fid);
             escaped_ = no_overlap;
-            SGFRD_TRACE(sim.tracer_.write("overlap exist ? %1%", no_overlap));
+            SGFRD_TRACE(sim.tracer_.write("no_overlap = %1%", no_overlap));
             return no_overlap;
         }
 
