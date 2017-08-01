@@ -57,7 +57,7 @@ struct inside_checker : boost::static_visitor<bool>
     {
         return poly.distance(
                 std::make_pair(shell.position(), shell.structure_id()),
-                std::make_pair(position, fid)) - radius < shell.size();
+                std::make_pair(position, fid)) < shell.size() - radius;
     }
 
   private:
