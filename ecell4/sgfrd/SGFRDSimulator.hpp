@@ -17,6 +17,8 @@
 #include <ecell4/sgfrd/SGFRDEvent.hpp>
 #include <ecell4/sgfrd/SGFRDWorld.hpp>
 
+#include <ecell4/sgfrd/tracer.hpp>
+
 #include <boost/make_shared.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <boost/container/static_vector.hpp>
@@ -26,9 +28,7 @@
 
 #include <iostream>
 
-#ifndef SGFRD_NO_DEBUG
-#define SGFRD_LOG( sev, x ) std::cerr << #sev << ':' << (x) << std::endl;
-#endif // SGFRD_NO_DEBUG
+#define SGFRD_LOG(x, y) /**/
 
 namespace ecell4
 {
@@ -100,16 +100,20 @@ class SGFRDSimulator :
 
     SGFRDSimulator(const boost::shared_ptr<world_type>& world,
                    const boost::shared_ptr<model_type>& model,
-                   Real bd_dt_factor = 1e-5)
+                   Real bd_dt_factor = 1e-5,
+                   const std::string& trace_fname = "sgfrd_trace.log")
         : base_type(model, world), dt_(0), bd_dt_factor_(bd_dt_factor),
           rng_(*(world->rng())), shell_container_(*(world->polygon())),
-          mut_sh_vis_applier(shell_container_), imm_sh_vis_applier(shell_container_)
+          mut_sh_vis_applier(shell_container_), imm_sh_vis_applier(shell_container_),
+          tracer_(trace_fname)
     {}
 
-    SGFRDSimulator(boost::shared_ptr<world_type> world, Real bd_dt_factor = 1e-5)
+    SGFRDSimulator(boost::shared_ptr<world_type> world, Real bd_dt_factor = 1e-5,
+                   const std::string& trace_fname = "sgfrd_trace.log")
         : base_type(world), dt_(0), bd_dt_factor_(bd_dt_factor),
           rng_(*(world->rng())), shell_container_(*(world->polygon())),
-          mut_sh_vis_applier(shell_container_), imm_sh_vis_applier(shell_container_)
+          mut_sh_vis_applier(shell_container_), imm_sh_vis_applier(shell_container_),
+          tracer_(trace_fname)
     {}
 
     ~SGFRDSimulator(){}
@@ -135,15 +139,15 @@ class SGFRDSimulator :
     }
     void step()
     {
+        SGFRD_SCOPE(us, step, tracer_);
+
         this->set_time(this->scheduler_.next_time());
-        SGFRD_LOG(debug, "================================================================================");
-        SGFRD_LOG(debug, boost::format("now t = %1%") % this->time());
+        SGFRD_TRACE(tracer_.write("now t = %1%", this->time()))
+
         // fire event executes `create_event` inside.
         this->fire_event(this->scheduler_.pop());
-        SGFRD_LOG(debug, boost::format("now %1% shells exist") %
-                  shell_container_.num_shells());
-        SGFRD_LOG(debug, boost::format("now %1% events exist") %
-                  scheduler_.size());
+        SGFRD_TRACE(tracer_.write("now %1% shells exists", shell_container_.num_shells()))
+        SGFRD_TRACE(tracer_.write("now %1% events exists", scheduler_.size()))
         return;
     }
     bool step(const Real& upto)
@@ -169,7 +173,7 @@ class SGFRDSimulator :
     bool update_particle(const ParticleID& pid, const Particle& p,
                          const FaceID& fid)
     {
-        SGFRD_LOG(debug, boost::format("particle %1% is updated") % pid);
+        SGFRD_TRACE(tracer_.write("  particle %1% is updated", pid))
         return this->world_->update_particle(pid, p, fid);
     }
     std::pair<std::pair<ParticleID, Particle>, bool>
@@ -178,36 +182,35 @@ class SGFRDSimulator :
         BOOST_AUTO(const retval, this->world_->new_particle(p, fid));
         if(retval.second)
         {
-            SGFRD_LOG(debug, boost::format("particle %1% is created")
-                      % retval.first.first);
+            SGFRD_TRACE(tracer_.write("  particle %1% has been created",
+                        retval.first.first))
         }
         else
         {
-            SGFRD_LOG(debug, boost::format("fail to create particle %1%")
-                      % retval.first.first);
+            SGFRD_TRACE(tracer_.write("  failed to create particle %1%",
+                        retval.first.first))
         }
         return retval;
     }
     void remove_particle(const ParticleID& pid, const FaceID& fid)
     {
-        SGFRD_LOG(debug, boost::format("removing particle %1% on face %2%")
-                  % pid % fid);
+        SGFRD_TRACE(tracer_.write("  removing particle %1% on face %2%", pid, fid));
         return this->world_->remove_particle(pid, fid);
     }
 
     shell_type&       get_shell(ShellID const& id)
     {
-        SGFRD_LOG(debug, boost::format("searching shell %1%") % id);
+        SGFRD_TRACE(tracer_.write("  searching shell %1%", id));
         return shell_container_.get_shell(id);
     }
     shell_type const& get_shell(ShellID const& id) const
     {
-        SGFRD_LOG(debug, boost::format("searching shell %1%") % id);
+        SGFRD_TRACE(tracer_.write("  searching shell %1%", id));
         return shell_container_.get_shell(id);
     }
     void remove_shell(ShellID const& id)
     {
-        SGFRD_LOG(debug, boost::format("removing shell %1%") % id);
+        SGFRD_TRACE(tracer_.write("  removing shell %1%", id));
         return shell_container_.remove_shell(id);
     }
     template<typename shT, typename stridT>
@@ -217,14 +220,13 @@ class SGFRDSimulator :
         return;
     }
 
-
     FaceID get_face_id(const ParticleID& pid) const
     {
         if(!this->world_->is_on_face(pid))
         {
-            SGFRD_LOG(debug, boost::format("particle %1% is not on face.") % pid);
-            SGFRD_LOG(debug, boost::format("particle %1% is in world?: %2%")
-                      % pid % this->world_->has_particle(pid));
+            SGFRD_TRACE(tracer_.write("  particle %1% is not on face", pid));
+            SGFRD_TRACE(tracer_.write("  is particle %1% is in world?: %2%",
+                        pid, this->world_->has_particle(pid)));
         }
         return this->world_->get_face_id(pid);
     }
@@ -236,19 +238,19 @@ class SGFRDSimulator :
 
     boost::shared_ptr<event_type> get_event(const event_id_type& id)
     {
-        SGFRD_LOG(debug, boost::format("getting event %1%") % id);
+        SGFRD_TRACE(tracer_.write("  getting event %1%", id));
         return scheduler_.get(id);
     }
     boost::shared_ptr<event_type> pickout_event(const event_id_type& id)
     {
-        SGFRD_LOG(debug, boost::format("picking out event %1%") % id);
+        SGFRD_TRACE(tracer_.write("  picking out event %1%", id));
         BOOST_AUTO(tmp, scheduler_.get(id));
         scheduler_.remove(id);
         return tmp;
     }
     void remove_event(const event_id_type id)
     {
-        SGFRD_LOG(debug, boost::format("removing event %1%") % id);
+        SGFRD_TRACE(tracer_.write("  removing event %1%", id));
         this->scheduler_.remove(id);
         return;
     }
@@ -306,33 +308,32 @@ class SGFRDSimulator :
             const shellT&     sh,  const DomainID did, const Single& dom,
             const ParticleID& pid, const Particle&  p, const FaceID& fid);
 
-
-
-
     std::pair<ShellID, circle_type>
     create_single_circular_shell(
             const std::pair<Real3, FaceID>& pos, const Real size)
     {
-        SGFRD_LOG(trace, "create single circular shell");
+        SGFRD_SCOPE(ns, create_single_circular_shell, tracer_);
+
         const ShellID id(shell_id_gen());
         const circle_type shape(size, pos.first,
                                 polygon().triangle_at(pos.second).normal());
         shell_container_.add_shell(id, circular_shell_type(shape, pos.second),
                                    pos.second);
-        SGFRD_LOG(debug, boost::format("the shell id is %1%") % id);
+        SGFRD_TRACE(tracer_.write("the shell id is %1%", id))
         return std::make_pair(id, shape);
     }
     std::pair<ShellID, conical_surface_type>
     create_single_conical_surface_shell(
             const vertex_id_type& vid, const Real size)
     {
-        SGFRD_LOG(trace, "create single conical surface shell");
+        SGFRD_SCOPE(ns, create_single_conical_shell, tracer_);
+
         const ShellID id(shell_id_gen());
         const conical_surface_type shape(polygon().vertex_at(vid).position,
                                          polygon().apex_angle(vid), size);
         shell_container_.add_shell(
                 id, conical_surface_shell_type(shape, vid), vid);
-        SGFRD_LOG(debug, boost::format("the shell id is %1%") % id);
+        SGFRD_TRACE(tracer_.write("the shell id is %1%", id));
 
         return std::make_pair(id, shape);
     }
@@ -340,44 +341,43 @@ class SGFRDSimulator :
     Single create_single(const std::pair<ShellID, circle_type>& sh,
                          const ParticleID& pid, const Particle& p)
     {
-        SGFRD_LOG(trace, "create single domain having circular shell");
+        SGFRD_SCOPE(ns, create_single_circular_domain, tracer_);
 
         const greens_functions::GreensFunction2DAbsSym
             gf(/* D = */ p.D(),
                /* a = */ sh.second.size() - p.radius());
         const Real t_escape = gf.drawTime(uniform_real());
-        SGFRD_LOG(debug, boost::format("calculated escape_time = %1%")
-                  % t_escape);
+        SGFRD_TRACE(tracer_.write("calculated escape_time = %1%", t_escape))
 
         //consider whether reaction occur or not.
         const Real t_reaction = draw_reaction_time(calc_k_tot(
             this->model_->query_reaction_rules(p.species())));
-        SGFRD_LOG(debug, boost::format("calculated reaction_time = %1%")
-                  % t_reaction);
+        SGFRD_TRACE(tracer_.write("calculated reaction_time = %1%", t_reaction))
 
         if(t_reaction < t_escape)
         {
-            SGFRD_LOG(trace, "single event is set as reaction");
+            SGFRD_TRACE(tracer_.write("single event is set as reaction"))
             return Single(Single::REACTION, t_reaction, this->time(), sh.first,
                           std::make_pair(pid, p));
         }
         else
         {
-            SGFRD_LOG(trace, "single event is set as escape");
+            SGFRD_TRACE(tracer_.write("single event is set as escape"))
             return Single(Single::ESCAPE, t_escape, this->time(), sh.first,
                           std::make_pair(pid, p));
         }
     }
+
     Single create_single(const std::pair<ShellID, conical_surface_type>& sh,
                          const ParticleID& pid, const Particle& p)
-    {//TODO consider single-reaction
-        SGFRD_LOG(trace, "create single domain having conical shell");
-        SGFRD_LOG(debug, boost::format("shell size = %1%") % sh.second.size());
-        SGFRD_LOG(debug, boost::format("D   = %1%") % p.D());
-        SGFRD_LOG(debug, boost::format("r0  = %1%") %
-                  length(p.position() - sh.second.apex()));
-        SGFRD_LOG(debug, boost::format("a   = %1%") % (sh.second.size() - p.radius()));
-        SGFRD_LOG(debug, boost::format("phi = %1%") % sh.second.apex_angle());
+    {
+        SGFRD_SCOPE(ns, create_single_conical_domain, tracer_);
+
+        SGFRD_TRACE(tracer_.write("shell size = %1%", sh.second.size()))
+        SGFRD_TRACE(tracer_.write("D   = %1%", p.D()))
+        SGFRD_TRACE(tracer_.write("r0  = %1%", length(p.position() - sh.second.apex())))
+        SGFRD_TRACE(tracer_.write("a   = %1%", sh.second.size() - p.radius()))
+        SGFRD_TRACE(tracer_.write("phi = %1%", sh.second.apex_angle()))
 
         const greens_functions::GreensFunction2DRefWedgeAbs
             gf(/* D   = */ p.D(),
@@ -385,23 +385,22 @@ class SGFRDSimulator :
                /* a   = */ sh.second.size() - p.radius(),
                /* phi = */ sh.second.apex_angle());
         const Real t_escape = gf.drawTime(uniform_real());
-        SGFRD_LOG(debug, boost::format("calculated escape_time = %1%")
-                  % t_escape);
+
+        SGFRD_TRACE(tracer_.write("calculated escape_time = %1%", t_escape))
 
         const Real t_reaction = draw_reaction_time(calc_k_tot(
             this->model_->query_reaction_rules(p.species())));
-        SGFRD_LOG(debug, boost::format("calculated reaction_time = %1%")
-                  % t_reaction);
+        SGFRD_TRACE(tracer_.write("calculated reaction_time = %1%", t_reaction))
 
         if(t_reaction < t_escape)
         {
-            SGFRD_LOG(trace, "single event is set as reaction");
+            SGFRD_TRACE(tracer_.write("single event is set as reaction"))
             return Single(Single::REACTION, t_reaction, this->time(), sh.first,
                           std::make_pair(pid, p));
         }
         else
         {
-            SGFRD_LOG(trace, "single event is set as escape");
+            SGFRD_TRACE(tracer_.write("single event is set as escape"))
             return Single(Single::ESCAPE, t_escape, this->time(), sh.first,
                           std::make_pair(pid, p));
         }
@@ -411,19 +410,20 @@ class SGFRDSimulator :
 
     void fire_pair(const Pair& dom, DomainID did)
     {// TODO
-        SGFRD_LOG(warning, "fire_pair has not been implemented yet.");
+        SGFRD_TRACE(tracer_.write("fire_pair has not been implemented yet."))
     }
 
     bursted_type burst_pair(const Pair& dom, const Real tm)
     {// TODO
-        SGFRD_LOG(warning, "burst_pair has not been implemented yet.");
+        SGFRD_TRACE(tracer_.write("burst_pair has not been implemented yet."))
     }
 
 //----------------------------------- multi ------------------------------------
 
     void fire_multi(Multi& dom, DomainID did)
     {
-        SGFRD_LOG(trace, boost::format("fire multi for default dt(%1%)") % dom.dt());
+        SGFRD_SCOPE(ns, fire_multi, tracer_);
+        SGFRD_TRACE(tracer_.write("fire multi for default dt(%1%)", dom.dt()));
 
         volume_clearer vc(did, dom, *this, this->imm_sh_vis_applier);
         dom.step(vc);
@@ -431,7 +431,7 @@ class SGFRDSimulator :
         {
             case Multi::NONE:
             {
-                SGFRD_LOG(trace, "nothing occurs");
+                SGFRD_TRACE(tracer_.write("nothing occurs"))
                 /* continuing multi domain: add this domain to scheduler */
                 dom.begin_time() = this->time();
                 this->add_event(dom);
@@ -439,7 +439,7 @@ class SGFRDSimulator :
             }
             case Multi::REACTION:
             {
-                SGFRD_LOG(trace, "reaction occurs");
+                SGFRD_TRACE(tracer_.write("reaction occurs"))
                 std::copy(dom.last_reactions().begin(), dom.last_reactions().end(),
                           std::back_inserter(this->last_reactions_));
                 ParticleID pid; Particle p; FaceID fid;
@@ -449,13 +449,12 @@ class SGFRDSimulator :
                     this->add_event(this->create_closely_fitted_domain(
                         this->create_closely_fitted_shell(pid, p, fid), pid, p));
                 }
-                SGFRD_LOG(trace, boost::format("multi domain (id = %1%) removed.") %
-                          did);
+                SGFRD_TRACE(tracer_.write("multi domain (id = %1%) removed.", did))
                 return;
             }
             case Multi::ESCAPE:
             {
-                SGFRD_LOG(trace, "particle escapes");
+                SGFRD_TRACE(tracer_.write("escape occurs"))
                 /* burst this domain! */
                 ParticleID pid; Particle p; FaceID fid;
                 BOOST_FOREACH(boost::tie(pid, p, fid),
@@ -464,13 +463,12 @@ class SGFRDSimulator :
                     this->add_event(this->create_closely_fitted_domain(
                         this->create_closely_fitted_shell(pid, p, fid), pid, p));
                 }
-                SGFRD_LOG(trace, boost::format("multi domain (id = %1%) removed.") %
-                          did);
+                SGFRD_TRACE(tracer_.write("multi domain (id = %1%) removed.", did))
                 return;
             }
             default:
             {
-                SGFRD_LOG(fatal, "Multi eventkind become invalid value!");
+                SGFRD_TRACE(tracer_.write("Multi eventkind become invalid value!"))
                 throw std::logic_error("never reach here");
             }
         }
@@ -481,36 +479,39 @@ class SGFRDSimulator :
     // update world.
     bursted_type remove_multi(const Multi& dom)
     {
-        SGFRD_LOG(trace, "remove multi called");
+        SGFRD_SCOPE(ns, remove_multi, tracer_);
         bursted_type results;
         Particle p; ParticleID pid;
         BOOST_FOREACH(boost::tie(pid, p), dom.particles())
         {
             results.push_back(boost::make_tuple(pid, p, this->get_face_id(pid)));
         }
-        SGFRD_LOG(trace, "particles are collected");
+
+        SGFRD_TRACE(tracer_.write("particles are collected"))
+
         BOOST_FOREACH(ShellID sid, dom.shell_ids())
         {
             this->remove_shell(sid);
         }
-        SGFRD_LOG(trace, "shells are removed");
+        SGFRD_TRACE(tracer_.write("shells are removed"))
         return results;
     }
 
     // burst. step until(tm - dom.begin_time()).
     bursted_type burst_multi(Multi& dom, const Real tm)
     {
-        SGFRD_LOG(trace, "burst_multi called");
+        SGFRD_SCOPE(ns, burst_multi, tracer_);
+
         BOOST_AUTO(did, get_domain_id(dom));
         volume_clearer vc(did, dom, *this, this->imm_sh_vis_applier);
         dom.step(vc, tm - dom.begin_time());
 
-        SGFRD_LOG(debug, boost::format("multi domain steps with delta_t = %1%") %
-                  (tm - dom.begin_time()));
+        SGFRD_TRACE(tracer_.write("multi domain steps with delta_t = %1%",
+                    tm - dom.begin_time()));
 
         if(dom.eventkind() == Multi::REACTION)
         {
-            SGFRD_LOG(trace, "reaction occured");
+            SGFRD_TRACE(tracer_.write("reaction occured"));
             std::copy(dom.last_reactions().begin(), dom.last_reactions().end(),
                       std::back_inserter(this->last_reactions_));
         }
@@ -528,28 +529,31 @@ class SGFRDSimulator :
             const ParticleID& pid, const Particle& p, const FaceID& fid,
             const std::vector<std::pair<DomainID, Real> >& intruders)
     {
-        SGFRD_LOG(trace, "burst_and_shrink_non_multis called");
+        SGFRD_SCOPE(us, burst_and_shrink_non_multis, tracer_)
+
         const Real tm(this->time());
         std::vector<std::pair<DomainID, Real> > results;
 
         DomainID did; Real dist;
         BOOST_FOREACH(boost::tie(did, dist), intruders)
         {
+            SGFRD_SCOPE(ns, loop_for_intruders, tracer_)
+
             BOOST_AUTO(const& ev, get_event(did));
             if(ev->which_domain() == event_type::multi_domain)
             {
-                SGFRD_LOG(trace, boost::format("domain %1% is multi") % did);
+                SGFRD_TRACE(tracer_.write("domain %1% is multi", did))
                 results.push_back(std::make_pair(did, dist));
                 continue;
             }
-            SGFRD_LOG(trace, boost::format("domain %1% is single") % did);
+            SGFRD_TRACE(tracer_.write("domain %1% is single", did))
 
             DomainID did_; ParticleID pid_; Particle p_; FaceID fid_;
             BOOST_FOREACH(boost::tie(pid_, p_, fid_),
                           burst_event(std::make_pair(did, ev), tm))
             {
-                SGFRD_LOG(trace, boost::format(
-                    "add closely-fitted domain to bursted particle %1%") % pid_);
+                SGFRD_TRACE(tracer_.write("add closely-fitted domain to bursted particle %1%", pid_))
+
                 remove_event(did);
                 did_ = add_event(create_closely_fitted_domain(
                     create_closely_fitted_shell(pid_, p_, fid_), pid_, p_));
@@ -558,12 +562,12 @@ class SGFRDSimulator :
                     std::make_pair(p_.position(), fid_)) -
                     calc_min_single_circular_shell_radius(p_)));
             }
-            SGFRD_LOG(trace, boost::format("domain %1% is bursted and shrinked") % did);
+            SGFRD_TRACE(tracer_.write("domain %1% is bursted and shrinked", did))
         }
 
         std::sort(results.begin(), results.end(),
             ecell4::utils::pair_second_element_comparator<DomainID, Real>());
-        SGFRD_LOG(trace, "results are sorted");
+        SGFRD_TRACE(tracer_.write("results are sorted"))
         return results;
     }
 
@@ -580,7 +584,8 @@ class SGFRDSimulator :
 
     void merge_multi(Multi& from, Multi& to)
     {
-        SGFRD_LOG(trace, "merge_multi called");
+        SGFRD_SCOPE(us, merge_multi, tracer_)
+
         // reset domain_id
         const domain_id_setter didset(this->get_domain_id(to));
         mut_sh_vis_applier(didset, from);
@@ -601,8 +606,9 @@ class SGFRDSimulator :
         to.determine_reaction_length();
         to.determine_delta_t();
 
-        remove_event(get_domain_id(from));
-        SGFRD_LOG(trace, "multi from is removed");
+        BOOST_AUTO(const id_of_from, get_domain_id(from));
+        remove_event(id_of_from);
+        SGFRD_TRACE(tracer_.write("multi domain %1% is removed", id_of_from))
         return;
     }
 
@@ -615,48 +621,50 @@ class SGFRDSimulator :
 
         bool operator()(const Particle& p, const FaceID& fid)
         {
-            SGFRD_LOG(trace, "volume clearer(p, fid) called");
+            SGFRD_SCOPE(us, volume_clearer, sim.tracer_)
+            SGFRD_TRACE(sim.tracer_.write("ignoring nothing"))
+
             escaped_ = false;
             inside_checker is_inside(p.position(), p.radius(), fid, sim.polygon());
             if(applier(is_inside, domain)) return true;
 
-            SGFRD_LOG(trace, "particle escaped");
+            SGFRD_TRACE(sim.tracer_.write("particle escaped"));
 
             const bool no_overlap = sim.burst_and_shrink_overlaps(p, fid);
             escaped_ = no_overlap;
-            SGFRD_LOG(trace, boost::format("overlap exist ? %1%") % no_overlap);
+            SGFRD_TRACE(sim.tracer_.write("overlap exist ? %1%", no_overlap));
             return no_overlap;
         }
         bool operator()(const Particle& p, const FaceID& fid,
                         const ParticleID& ignore)
         {
-            SGFRD_LOG(trace,
-                    boost::format("volume clearer(p, fid, ignore = %1%) called")
-                    % ignore);
+            SGFRD_SCOPE(us, volume_clearer, sim.tracer_)
+            SGFRD_TRACE(sim.tracer_.write("ignoring %1%", ignore))
+
             escaped_ = false;
             inside_checker is_inside(p.position(), p.radius(), fid, sim.polygon());
             if(applier(is_inside, domain)) return true;
 
-            SGFRD_LOG(trace, "particle escaped");
+            SGFRD_TRACE(sim.tracer_.write("particle escaped"))
             const bool no_overlap = sim.burst_and_shrink_overlaps(p, fid);
             escaped_ = no_overlap;
-            SGFRD_LOG(trace, boost::format("overlap exist ? %1%") % no_overlap);
+            SGFRD_TRACE(sim.tracer_.write("overlap exist ? %1%", no_overlap));
             return no_overlap;
         }
         bool operator()(const Particle& p, const FaceID& fid,
                         const ParticleID& ignore1, const ParticleID& ignore2)
         {
-            SGFRD_LOG(trace,
-                boost::format("volume clearer(p, fid, ignore1 = %1%, ignore2 = %2%) called")
-                % ignore1 % ignore2);
+            SGFRD_SCOPE(us, volume_clearer, sim.tracer_)
+            SGFRD_TRACE(sim.tracer_.write("ignoring %1% and %2%", ignore1, ignore2))
+
             escaped_ = false;
             inside_checker is_inside(p.position(), p.radius(), fid, sim.polygon());
             if(applier(is_inside, domain)) return true;
 
-            SGFRD_LOG(trace, "particle escaped");
+            SGFRD_TRACE(sim.tracer_.write("particle escaped"))
             const bool no_overlap = sim.burst_and_shrink_overlaps(p, fid);
             escaped_ = no_overlap;
-            SGFRD_LOG(trace, boost::format("overlap exist ? %1%") % no_overlap);
+            SGFRD_TRACE(sim.tracer_.write("overlap exist ? %1%", no_overlap));
             return no_overlap;
         }
 
@@ -676,23 +684,24 @@ class SGFRDSimulator :
     template<typename domainT>
     DomainID add_event(const domainT& dom)
     {
-        SGFRD_LOG(trace, "add_event called");
-        SGFRD_LOG(debug, boost::format("the domain has dt = %1%, begin_time = %2%")
-                  % dom.dt() % dom.begin_time());
+        SGFRD_SCOPE(ns, add_event, tracer_);
+        SGFRD_TRACE(tracer_.write("the domain has dt = %1%, begin_time = %2%",
+                    dom.dt(), dom.begin_time()))
+
         BOOST_AUTO(ev, boost::make_shared<event_type>(dom.begin_time() + dom.dt(), dom));
         const DomainID did = scheduler_.add(ev);
-        SGFRD_LOG(trace, boost::format("event_time = %1%, domain ID = %2%")
-                  % ev->time() % did);
+
+        SGFRD_TRACE(tracer_.write("event_time = %1%, domain ID = %2%", ev->time(), did))
+
         domain_id_setter didset(did);
         mut_sh_vis_applier(didset, dom);
-        SGFRD_LOG(trace, "return from add_event");
         return did;
     }
 
     // assuming the event is already poped
     void fire_event(event_id_pair_type ev)
     {
-        SGFRD_LOG(trace, "fire_event");
+        SGFRD_SCOPE(us, fire_event, tracer_);
         return boost::apply_visitor(make_visitor(
             resolve<Single const&, void>(boost::bind(
                     &self_type::fire_single, this, _1, ev.first)),
@@ -706,7 +715,7 @@ class SGFRDSimulator :
     // assuming the event is already poped
     bursted_type burst_event(const event_id_pair_type& ev, Real tm)
     {
-        SGFRD_LOG(trace, "burst_event");
+        SGFRD_SCOPE(us, burst_event, tracer_);
         return boost::apply_visitor(make_visitor(
             resolve<Single const&, bursted_type>(boost::bind(
                     &self_type::burst_single, this, _1, tm)),
@@ -720,20 +729,20 @@ class SGFRDSimulator :
     ShellID create_closely_fitted_shell(
             const ParticleID& pid, const Particle& p, const FaceID fid)
     {
-        SGFRD_LOG(trace,
-            boost::format("creating closely fitted shell for particle %1%") % pid);
+        SGFRD_SCOPE(us, create_closely_fitted_shell, tracer_);
+        SGFRD_TRACE(tracer_.write("add close shell for %1%", pid))
         const ShellID sid(shell_id_gen());
         circular_shell_type sh(circle_type(p.radius(), p.position(),
                                this->polygon().triangle_at(fid).normal()), fid);
         shell_container_.add_shell(sid, sh, fid);
-        SGFRD_LOG(debug, boost::format("the shell id is %1%") % sid);
+        SGFRD_TRACE(tracer_.write("the shell id is %1%", sid))
         return sid;
     }
     Single create_closely_fitted_domain(
             const ShellID& sid, const ParticleID& pid, const Particle& p)
     {
-        SGFRD_LOG(trace,
-            boost::format("creating closely fitted domain for particle %1%") % pid);
+        SGFRD_SCOPE(us, create_closely_fitted_domain, tracer_);
+        SGFRD_TRACE(tracer_.write("for particle %1%, shell %2%", pid, sid))
         return Single(Single::ESCAPE, 0., this->time(), sid, std::make_pair(pid, p));
     }
 
@@ -846,11 +855,11 @@ class SGFRDSimulator :
 
     Real calc_k_tot(const std::vector<ReactionRule>& rules) const
     {
+        SGFRD_SCOPE(ns, calc_k_tot, tracer_)
         Real k_tot = 0;
         BOOST_FOREACH(ReactionRule const& rule, rules)
         {
-            SGFRD_LOG(debug, boost::format("reaction rule found: k = %1%")
-                      % rule.k());
+            SGFRD_TRACE(tracer_.write("reaction rule found: k = %1%", rule.k()));
             k_tot += rule.k();
         }
         return k_tot;
@@ -858,15 +867,17 @@ class SGFRDSimulator :
 
     Real draw_reaction_time(const Real k_tot)
     {
-        SGFRD_LOG(debug, boost::format("drawing reaction time for : ktot = %1%")
-                  % k_tot);
+        SGFRD_SCOPE(ns, draw_reaction_time, tracer_)
+        SGFRD_TRACE(tracer_.write("for ktot = %1%", k_tot));
+
         if(k_tot <= 0) return std::numeric_limits<Real>::infinity();
         if(k_tot == std::numeric_limits<Real>::infinity()) return 0;
 
         const Real rnd = this->uniform_real();
-        SGFRD_LOG(debug, boost::format("drawing reaction time for : rnd = %1%")
-                  % rnd);
+        SGFRD_TRACE(tracer_.write("rnd = %1%", rnd));
         if(rnd <= 0) return std::numeric_limits<Real>::infinity();
+
+        SGFRD_TRACE(tracer_.write("reaction occurs in a finite time"));
 
         return (1. / k_tot) * (-std::log(rnd));
     }
@@ -946,6 +957,7 @@ class SGFRDSimulator :
     mutable_shell_visitor_applier_type   mut_sh_vis_applier;
     immutable_shell_visitor_applier_type imm_sh_vis_applier;
     std::vector<std::pair<reaction_rule_type, reaction_info_type> > last_reactions_;
+    mutable tracer tracer_;
 
 };
 
@@ -958,7 +970,7 @@ inline boost::tuple<ParticleID, Particle, SGFRDSimulator::FaceID>
 SGFRDSimulator::propagate_single<SGFRDSimulator::circular_shell_type>(
         const circular_shell_type& sh, const Single& dom, const Real tm)
 {
-    SGFRD_LOG(trace, "propagating single circular shell");
+    SGFRD_SCOPE(us, propagate_single_circular, tracer_);
 
     Particle   p   = dom.particle();
     ParticleID pid = dom.particle_id();
@@ -966,24 +978,29 @@ SGFRDSimulator::propagate_single<SGFRDSimulator::circular_shell_type>(
     greens_functions::GreensFunction2DAbsSym gf(p.D(), sh.size() - p.radius());
 
     const Real del_t = tm - dom.begin_time();
-    SGFRD_LOG(debug, boost::format("delta t for domain having shell %1% is %2%") % del_t % dom.shell_id());
-    SGFRD_LOG(debug, boost::format("its own dt = %1%, and begin_time = %2%") % dom.dt() % dom.begin_time());
+
+    SGFRD_TRACE(tracer_.write("delta t for domain having shell %1% is %2%",
+                del_t, dom.shell_id()));
+    SGFRD_TRACE(tracer_.write("its own dt = %1%, and begin_time = %2%",
+                dom.dt(), dom.begin_time()));
+
     const Real r     = gf.drawR(this->uniform_real(), del_t);
     const Real theta = this->uniform_real() * 2 * M_PI;
-    SGFRD_LOG(debug, boost::format("r = %1%, theta = %2%") % r % theta);
+
+    SGFRD_TRACE(tracer_.write("r = %1%, theta = %2%", r, theta));
 
     const FaceID         fid  = this->get_face_id(pid);
     const triangle_type& face = this->polygon().triangle_at(fid);
     const Real3 direction = rotate(theta, face.normal(), face.represent());
     const Real  len_direction = length(direction);
-    SGFRD_LOG(debug, boost::format("direction = %1%, len = %2%")
-                                   % direction % len_direction);
+
+    SGFRD_TRACE(tracer_.write("direction = %1%, len = %2%", direction, len_direction));
 
     std::pair<std::pair<Real3, FaceID>, Real3> state =
         std::make_pair(std::make_pair(p.position(), fid),
                        direction * r / len_direction);
-    SGFRD_LOG(debug, boost::format("pos = %1%, fid = %2%")
-              % state.first.first % state.first.second);
+
+    SGFRD_TRACE(tracer_.write("pos = %1%, fid = %2%", state.first.first, state.first.second));
 
     unsigned int continue_count = 2;
     while(continue_count > 0)
@@ -992,21 +1009,22 @@ SGFRDSimulator::propagate_single<SGFRDSimulator::circular_shell_type>(
         const Real3& disp = state.second;
         if(disp[0] == 0. && disp[1] == 0. && disp[2] == 0.) break;
         --continue_count;
-        SGFRD_LOG(debug, boost::format("pos = %1%, fid = %2%, dsp=%3%, count=%4%")
-                  % state.first.first % state.first.second % disp % continue_count);
+
+        SGFRD_TRACE(tracer_.write("pos = %1%, fid = %2%, dsp=%3%, count=%4%",
+                     state.first.first, state.first.second, disp, continue_count));
     }
     if(continue_count == 0)
     {
-        SGFRD_LOG(warning, "moving on face: precision lost");
+        SGFRD_TRACE(tracer_.write("moving on face: precision lost"))
     }
 
-    SGFRD_LOG(debug, boost::format("pos = %1%, fid = %2%, dsp = %3%, count = %4%")
-          % state.first.first % state.first.second % state.second % continue_count);
+    SGFRD_TRACE(tracer_.write("pos = %1%, fid = %2%, dsp = %3%, count = %4%",
+                state.first.first, state.first.second, state.second, continue_count))
 
     p.position() = state.first.first;
     this->update_particle(pid, p, state.first.second);
+    SGFRD_TRACE(tracer_.write("particle updated"))
 
-    SGFRD_LOG(trace, "propagated");
     return boost::make_tuple(pid, p, state.first.second);
 }
 
@@ -1015,11 +1033,13 @@ inline boost::tuple<ParticleID, Particle, SGFRDSimulator::FaceID>
 SGFRDSimulator::propagate_single<SGFRDSimulator::conical_surface_shell_type>(
         const conical_surface_shell_type& sh, const Single& dom, const Real tm)
 {
-    SGFRD_LOG(trace, "propagating single conical");
+    SGFRD_SCOPE(us, propagate_single_conical, tracer_);
+
     Particle         p   = dom.particle();
     const ParticleID pid = dom.particle_id();
     const FaceID     fid = this->get_face_id(pid);
-    SGFRD_LOG(debug, boost::format("pos = %1%, fid = %2%") % p.position() % fid);
+
+    SGFRD_TRACE(tracer_.write("pos = %1%, fid = %2%", p.position(), fid));
 
     const Real r_max = sh.size() - p.radius();
     greens_functions::GreensFunction2DRefWedgeAbs
@@ -1032,16 +1052,18 @@ SGFRDSimulator::propagate_single<SGFRDSimulator::conical_surface_shell_type>(
     const Real r     = gf.drawR(this->uniform_real(), del_t);
     const Real theta = gf.drawTheta(this->uniform_real(), r, del_t);
 
-    SGFRD_LOG(debug, boost::format("r = %1%, theta = %2%") % r % theta);
+    SGFRD_TRACE(tracer_.write("r = %1%, theta = %2%", r, theta));
 
     const std::pair<Real3, FaceID> state =
         this->polygon().rotate_around_vertex(std::make_pair(p.position(), fid),
                                            sh.structure_id(), r, theta);
-    SGFRD_LOG(debug, boost::format("propagateed : pos = %1%, fid = %2%")
-              % state.first % state.second);
+    SGFRD_TRACE(tracer_.write("propagateed : pos = %1%, fid = %2%",
+                state.first, state.second));
 
     p.position() = state.first;
     this->update_particle(pid, p, state.second);
+    SGFRD_TRACE(tracer_.write("particle updated"))
+
     return boost::make_tuple(pid, p, state.second);
 }
 
@@ -1050,10 +1072,11 @@ inline boost::tuple<ParticleID, Particle, SGFRDSimulator::FaceID>
 SGFRDSimulator::escape_single<SGFRDSimulator::circular_shell_type>(
         const circular_shell_type& sh, const Single& dom)
 {
-    SGFRD_LOG(trace, "single shell escapement circular shell");
+    SGFRD_SCOPE(us, escape_single_circular, tracer_);
+
     if(sh.size() == dom.particle().radius())
     {
-        SGFRD_LOG(trace, "closely fitted shell. didnot move.");
+        SGFRD_TRACE(tracer_.write("closely fitted shell. didnot move."));
         return boost::make_tuple(dom.particle_id(), dom.particle(),
                                  this->get_face_id(dom.particle_id()));
     }
@@ -1063,19 +1086,21 @@ SGFRDSimulator::escape_single<SGFRDSimulator::circular_shell_type>(
 
     const Real r   = sh.size() - p.radius();
     const Real theta = this->uniform_real() * 2.0 * M_PI;
-    SGFRD_LOG(debug, boost::format("r = %1%, theta = %2%") % r % theta);
+
+    SGFRD_TRACE(tracer_.write("r = %1%, theta = %2%", r, theta))
+
     const FaceID         fid  = this->get_face_id(pid);
     const triangle_type& face = this->polygon().triangle_at(fid);
     const Real3 direction = rotate(theta, face.normal(), face.represent());
-    SGFRD_LOG(debug, boost::format("dir = %1%, len = %2%")
-              % direction % length(direction));
+
+    SGFRD_TRACE(tracer_.write("dir = %1%, len = %2%", direction, length(direction)))
 
     std::pair<std::pair<Real3, FaceID>, Real3> state =
         std::make_pair(/*position = */std::make_pair(p.position(), fid),
                    /*displacement = */direction * r / length(direction));
 
-    SGFRD_LOG(debug, boost::format("pos = %1%, fid = %2%")
-              % state.first.first % state.first.second);
+    SGFRD_TRACE(tracer_.write("pos = %1%, fid = %2%", state.first.first, state.first.second))
+
     unsigned int continue_count = 2;
     while(continue_count > 0)
     {
@@ -1083,19 +1108,19 @@ SGFRDSimulator::escape_single<SGFRDSimulator::circular_shell_type>(
         const Real3& disp = state.second;
         if(disp[0] == 0. && disp[1] == 0. && disp[2] == 0.) break;
         --continue_count;
-        SGFRD_LOG(debug, boost::format("pos = %1%, fid = %2%, disp = %3%")
-                  % state.first.first % state.first.second % disp);
+        SGFRD_TRACE(tracer_.write("pos = %1%, fid = %2%, disp = %3%",
+                    state.first.first, state.first.second, disp));
     }
     if(continue_count == 0)
     {
-        SGFRD_LOG(warning, "moving on face: precision lost");
+        SGFRD_TRACE(tracer_.write("moving on face: precision lost"))
     }
-    SGFRD_LOG(trace, "escaped.");
-    SGFRD_LOG(debug, boost::format("pos = %1%, fid = %2%")
-              % state.first.first % state.first.second);
+    SGFRD_TRACE(tracer_.write("escaped"))
+    SGFRD_TRACE(tracer_.write("pos = %1%, fid = %2%", state.first.first, state.first.second))
 
     p.position() = state.first.first;
     this->update_particle(pid, p, state.first.second);
+    SGFRD_TRACE(tracer_.write("particle updated"))
     return boost::make_tuple(pid, p, state.first.second);
 }
 
@@ -1104,37 +1129,40 @@ inline boost::tuple<ParticleID, Particle, SGFRDSimulator::FaceID>
 SGFRDSimulator::escape_single<SGFRDSimulator::conical_surface_shell_type>(
         const conical_surface_shell_type& sh, const Single& dom)
 {
-    SGFRD_LOG(trace, "single shell escapement: conical shell");
+    SGFRD_SCOPE(us, escape_single_conical, tracer_);
+
     Particle           p   = dom.particle();
     const ParticleID   pid = dom.particle_id();
     const FaceID       fid = this->get_face_id(pid);
-    SGFRD_LOG(debug, boost::format("pos = %1%, fid = %2%") % p.position() % fid);
+
+    SGFRD_TRACE(tracer_.write("pos = %1%, fid = %2%", p.position(), fid))
 
     const Real r     = sh.size() - p.radius();
     greens_functions::GreensFunction2DRefWedgeAbs
         gf(p.D(), length(p.position() - sh.position()),
            r,     sh.shape().apex_angle());
     const Real theta = gf.drawTheta(this->uniform_real(), r, dom.dt());
-    SGFRD_LOG(debug, boost::format("r = %1%, theta = %2%") % r % theta);
+
+    SGFRD_TRACE(tracer_.write("r = %1%, theta = %2%", r, theta))
 
     const std::pair<Real3, FaceID> state =
         this->polygon().rotate_around_vertex(std::make_pair(p.position(), fid),
                                            sh.structure_id(), r, theta);
 
-    SGFRD_LOG(trace, "escaped");
-    SGFRD_LOG(debug, boost::format("pos = %1%, fid = %2%") % p.position() % fid);
+    SGFRD_TRACE(tracer_.write("escaped. pos = %1%, fid = %2%", p.position(), fid));
 
     p.position() = state.first;
     this->update_particle(pid, p, state.second);
-    SGFRD_LOG(trace, "particle updated");
+    SGFRD_TRACE(tracer_.write("particle updated"))
     return boost::make_tuple(pid, p, state.second);
 }
 
 inline SGFRDSimulator::bursted_type
 SGFRDSimulator::burst_single(const Single& dom, const Real tm)
 {
-    SGFRD_LOG(trace, "bursting single");
+    SGFRD_SCOPE(us, burst_single, tracer_);
     const ShellID sid(dom.shell_id());
+    SGFRD_TRACE(tracer_.write("shell id = %1%", sid));
     bursted_type results;
     results.push_back(boost::apply_visitor(make_visitor(
         resolve<const circular_shell_type&,
@@ -1147,7 +1175,7 @@ SGFRDSimulator::burst_single(const Single& dom, const Real tm)
             this, _1, dom, tm))
         ), get_shell(sid)));
     this->remove_shell(sid);
-    SGFRD_LOG(trace, "shell removed");
+    SGFRD_TRACE(tracer_.write("shell removed"));
     return results;
 }
 
@@ -1157,7 +1185,7 @@ boost::container::static_vector<
 SGFRDSimulator::reaction_single(
         const shellT& sh, const Single& dom, const DomainID did)
 {
-    SGFRD_LOG(trace, "reaction_single called");
+    SGFRD_SCOPE(us, reaction_single, tracer_)
     ParticleID pid; Particle p; FaceID fid;
     boost::tie(pid, p, fid) = this->propagate_single(sh, dom, this->time());
     return attempt_reaction_single(sh, did, dom, pid, p, fid);
@@ -1170,12 +1198,12 @@ SGFRDSimulator::attempt_reaction_single(
         const shellT&     sh,  const DomainID did, const Single& dom,
         const ParticleID& pid, const Particle&  p, const FaceID& fid)
 {
-    SGFRD_LOG(trace,   "attempt_reaction_single called");
+    SGFRD_SCOPE(us, attempt_reaction_single, tracer_)
 
     BOOST_AUTO(const rules, this->model_->query_reaction_rules(p.species()));
     if(rules.empty())
     {
-        SGFRD_LOG(trace, "rule is empty. return particle kept intact");
+        SGFRD_TRACE(tracer_.write("rule is empty. return particle kept intact"))
         return boost::container::static_vector<pid_p_fid_tuple_type, 2>(1,
                 boost::make_tuple(pid, p, fid));
     }
@@ -1185,7 +1213,7 @@ SGFRDSimulator::attempt_reaction_single(
     {
         case 0:
         {
-            SGFRD_LOG(trace, "degradation reaction occurs.");
+            SGFRD_TRACE(tracer_.write("degradation reaction occurs."))
             this->remove_particle(pid, fid);
             last_reactions_.push_back(std::make_pair(rule,
                 make_degradation_reaction_info(this->time(), pid, p)));
@@ -1193,12 +1221,12 @@ SGFRDSimulator::attempt_reaction_single(
         }
         case 1:
         {
-            SGFRD_LOG(trace, "attempting 1 to 1 reaction.");
+            SGFRD_TRACE(tracer_.write("attempting 1 to 1 reaction."))
             return attempt_reaction_1_to_1(rule, sh, did, dom, pid, p, fid);
         }
         case 2:
         {
-            SGFRD_LOG(trace, "attempting 1 to 2 reaction.");
+            SGFRD_TRACE(tracer_.write("attempting 1 to 2 reaction."))
             return attempt_reaction_1_to_2(rule, sh, did, dom, pid, p, fid);
         }
         default: throw NotImplemented("SGFRD Single Reaction:\
@@ -1212,7 +1240,7 @@ SGFRDSimulator::attempt_reaction_1_to_1(const ReactionRule& rule,
         const shellT&     sh,  const DomainID did, const Single& dom,
         const ParticleID& pid, const Particle&  p, const FaceID& fid)
 {
-    SGFRD_LOG(trace, "attempt_reaction_1_to_1 called");
+    SGFRD_SCOPE(us, attempt_reaction_1_to_1, tracer_)
 
     const Species species_new =
         this->model_->apply_species_attributes(rule.products().front());
@@ -1225,21 +1253,26 @@ SGFRDSimulator::attempt_reaction_1_to_1(const ReactionRule& rule,
     inside_checker is_inside_of(p.position(), p.radius(), fid, this->polygon());
     if(!is_inside_of(sh))
     {
+        SGFRD_SCOPE(us, particle_goes_outside, tracer_)
         // particle goes outside of the shell. must clear the volume.
         const bool no_overlap = this->burst_and_shrink_overlaps(p_new, fid);
+        SGFRD_TRACE(tracer_.write("no_overlap = %1%", no_overlap))
         if(!no_overlap)
         {// cannot avoid overlapping... reject the reaction.
+            SGFRD_TRACE(tracer_.write("reject the reaction because of no space"))
             return boost::container::static_vector<pid_p_fid_tuple_type, 2>(
                     1, boost::make_tuple(pid, p, fid));
         }
     }
 
+    SGFRD_TRACE(tracer_.write("reaction is accepted."))
     // reaction occurs. record this reaction to `last_reactions`.
     last_reactions_.push_back(std::make_pair(rule,
         make_unimolecular_reaction_info(this->time(), pid, p, pid, p_new)));
 
     // update particle and return resulting particles.
     this->update_particle(pid, p_new, fid);
+    SGFRD_TRACE(tracer_.write("particle updated."))
     return boost::container::static_vector<pid_p_fid_tuple_type, 2>(
             1, boost::make_tuple(pid, p_new, fid));
 }
@@ -1250,7 +1283,7 @@ SGFRDSimulator::attempt_reaction_1_to_2(const ReactionRule& rule,
         const shellT&     sh,  const DomainID did, const Single& dom,
         const ParticleID& pid, const Particle&  p, const FaceID& fid)
 {
-    SGFRD_LOG(trace, "attempt_reaction_1_to_2 called");
+    SGFRD_SCOPE(us, attempt_reaction_1_to_2, tracer_)
 
     const Species sp1 =
         this->model_->apply_species_attributes(rule.products().at(0));
@@ -1274,11 +1307,12 @@ SGFRDSimulator::attempt_reaction_1_to_2(const ReactionRule& rule,
     Integer retry(2);
     while(retry > 0)
     {
+        SGFRD_SCOPE(us, try_to_split, tracer_)
         --retry;
+        SGFRD_TRACE(tracer_.write("retry_count = %1%", retry))
 
         const Real3 ipv(draw_ipv(r12, D12, fid));
-        SGFRD_LOG(debug, boost::format("length of ipv drawn now is %1%")
-                  % length(ipv));
+        SGFRD_TRACE(tracer_.write("length of ipv drawn now is %1%", length(ipv)));
         Real3 disp1(ipv * ( D1 / D12)), disp2(ipv * (-D2 / D12));
         {
             std::size_t continue_count = 100;
@@ -1328,12 +1362,12 @@ SGFRDSimulator::attempt_reaction_1_to_2(const ReactionRule& rule,
     }
     if(retry == 0)
     {
-        SGFRD_LOG(trace, "reaction is rejected because there are no space.");
+        SGFRD_TRACE(tracer_.write("reaction is rejected because there are no space."))
         return boost::container::static_vector<pid_p_fid_tuple_type, 2>(
                 1, boost::make_tuple(pid, p, fid));
     }
 
-    SGFRD_LOG(trace, "single reaction 1 -> 2 occurs");
+    SGFRD_TRACE(tracer_.write("single reaction 1 -> 2 occurs"))
 
     this->update_particle(pid, particles_new[0], newpfs[0].second);
     BOOST_AUTO(pp2, this->create_particle(particles_new[1], newpfs[1].second));
@@ -1377,7 +1411,7 @@ SGFRDSimulator::attempt_reaction_1_to_2(const ReactionRule& rule,
         {
             particles_new[idx].position() = tmp_pos;
             newpfs[idx].second = tmp_fid;
-            SGFRD_LOG(trace, "trial move rejected.");
+            SGFRD_TRACE(tracer_.write("trial move rejected because two particle collides"))
         }
         else
         {
@@ -1391,7 +1425,7 @@ SGFRDSimulator::attempt_reaction_1_to_2(const ReactionRule& rule,
                 {
                     particles_new[idx].position() = tmp_pos;
                     newpfs[idx].second = tmp_fid;
-                    SGFRD_LOG(trace, "trial move rejected.");
+                    SGFRD_TRACE(tracer_.write("trial move rejected because of no space"))
                 }
             }
         }
