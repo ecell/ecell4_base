@@ -80,7 +80,7 @@ bool SGFRDSimulator::burst_and_shrink_overlaps(
     const Real tm = this->time();
     BOOST_AUTO(intruders, this->get_intrusive_domains(
                std::make_pair(p.position(), fid), p.radius()));
-    SGFRD_TRACE(tracer_.write("there are %1% intruders", intruders_.size()))
+    SGFRD_TRACE(tracer_.write("there are %1% intruders", intruders.size()))
 
     bool no_overlap = true;
     DomainID did;

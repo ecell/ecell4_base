@@ -422,7 +422,7 @@ class SGFRDSimulator :
 
     void fire_multi(Multi& dom, DomainID did)
     {
-        SGFRD_SCOPE(ns, fire_multi, tracer_);
+        SGFRD_SCOPE(us, fire_multi, tracer_);
         SGFRD_TRACE(tracer_.write("fire multi for default dt(%1%)", dom.dt()));
 
         volume_clearer vc(did, dom, *this, this->imm_sh_vis_applier);
