@@ -560,7 +560,7 @@ class SGFRDSimulator :
                 results.push_back(std::make_pair(did_, this->polygon().distance(
                     std::make_pair(p.position(),  fid),
                     std::make_pair(p_.position(), fid_)) -
-                    calc_min_single_circular_shell_radius(p_)));
+                    (calc_min_single_circular_shell_radius(p_) * 1.1)));
             }
             SGFRD_TRACE(tracer_.write("domain %1% is bursted and shrinked", did))
         }
