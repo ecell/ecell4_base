@@ -323,7 +323,7 @@ DomainID SGFRDSimulator::create_event(
 
         // burst intruder_domains and get new positions of particles
         std::vector<std::pair<DomainID, Real> > shrinked_or_multi =
-            burst_and_shrink_non_multis(pid, p, fid, intrusive_domains);
+            burst_and_shrink_non_multis(vid, intrusive_domains);
         SGFRD_TRACE(tracer_.write("close domains are bursted."));
 
         if(shrinked_or_multi.front().second > min_cone_size)

@@ -571,6 +571,54 @@ class SGFRDSimulator :
         return results;
     }
 
+    std::vector<std::pair<DomainID, Real> >
+    burst_and_shrink_non_multis(const vertex_id_type& vid,
+        const std::vector<std::pair<DomainID, Real> >& intruders)
+    {
+        SGFRD_SCOPE(us, burst_and_shrink_non_multis_vertex, tracer_)
+        const std::pair<Real3, vertex_id_type> vpos = std::make_pair(
+                polygon().vertex_at(vid).position, vid);
+
+        const Real tm(this->time());
+        std::vector<std::pair<DomainID, Real> > results;
+
+        DomainID did; Real dist;
+        BOOST_FOREACH(boost::tie(did, dist), intruders)
+        {
+            SGFRD_SCOPE(ns, loop_for_intruders, tracer_)
+
+            BOOST_AUTO(const& ev, get_event(did));
+            if(ev->which_domain() == event_type::multi_domain)
+            {
+                SGFRD_TRACE(tracer_.write("domain %1% is multi", did))
+                results.push_back(std::make_pair(did, dist));
+                continue;
+            }
+            SGFRD_TRACE(tracer_.write("domain %1% is single", did))
+
+            DomainID did_; ParticleID pid_; Particle p_; FaceID fid_;
+            BOOST_FOREACH(boost::tie(pid_, p_, fid_),
+                          burst_event(std::make_pair(did, ev), tm))
+            {
+                SGFRD_TRACE(tracer_.write("add closely-fitted domain to bursted particle %1%", pid_))
+
+                remove_event(did);
+                did_ = add_event(create_closely_fitted_domain(
+                    create_closely_fitted_shell(pid_, p_, fid_), pid_, p_));
+                results.push_back(std::make_pair(did_, this->polygon().distance(
+                    vpos, std::make_pair(p_.position(), fid_)) -
+                    (calc_min_single_circular_shell_radius(p_) * 1.1)));
+            }
+            SGFRD_TRACE(tracer_.write("domain %1% is bursted and shrinked", did))
+        }
+
+        std::sort(results.begin(), results.end(),
+            ecell4::utils::pair_second_element_comparator<DomainID, Real>());
+        SGFRD_TRACE(tracer_.write("results are sorted"))
+        return results;
+    }
+
+
     // to clear volume. burst all the overlapping shells then add closely-fitted
     // shells to them. returns true if there are no overlapping particles.
     bool burst_and_shrink_overlaps(
