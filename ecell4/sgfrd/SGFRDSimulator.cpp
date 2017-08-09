@@ -74,7 +74,7 @@ void SGFRDSimulator::fire_single(const Single& dom, DomainID did)
 }
 
 bool SGFRDSimulator::burst_and_shrink_overlaps(
-        const Particle& p, const face_id_type& fid)
+        const Particle& p, const face_id_type& fid, const DomainID& did)
 {
     SGFRD_SCOPE(us, burst_and_shrink_overlaps, tracer_);
     const Real tm = this->time();
@@ -83,15 +83,21 @@ bool SGFRDSimulator::burst_and_shrink_overlaps(
     SGFRD_TRACE(tracer_.write("there are %1% intruders", intruders.size()))
 
     bool no_overlap = true;
-    DomainID did;
-    BOOST_FOREACH(boost::tie(did, boost::tuples::ignore), intruders)
+    DomainID did_;
+    BOOST_FOREACH(boost::tie(did_, boost::tuples::ignore), intruders)
     {
         SGFRD_SCOPE(ms, intruders, tracer_)
-        SGFRD_TRACE(tracer_.write("burst domain %1%", did))
+        SGFRD_TRACE(tracer_.write("burst domain %1%", did_))
+
+        if(did == did_)
+        {
+            SGFRD_TRACE(tracer_.write("domain %1% was ignored", did_))
+            continue;
+        }
 
         ParticleID pid_; Particle p_; FaceID fid_;
         BOOST_FOREACH(boost::tie(pid_, p_, fid_),
-                      burst_event(std::make_pair(did, pickout_event(did)), tm))
+                      burst_event(std::make_pair(did_, get_event(did_)), tm))
         {
             const Real dist = this->polygon().distance(
                 std::make_pair(p.position(), fid),
@@ -99,6 +105,7 @@ bool SGFRDSimulator::burst_and_shrink_overlaps(
             no_overlap = no_overlap && (dist > p.radius() + p_.radius());
             add_event(create_closely_fitted_domain(
                 create_closely_fitted_shell(pid_, p_, fid_), pid_, p_));
+            scheduler_.remove(did_);
         }
     }
     return no_overlap;

@@ -573,7 +573,8 @@ class SGFRDSimulator :
 
     // to clear volume. burst all the overlapping shells then add closely-fitted
     // shells to them. returns true if there are no overlapping particles.
-    bool burst_and_shrink_overlaps(const Particle& p, const FaceID& fid);
+    bool burst_and_shrink_overlaps(
+            const Particle& p, const FaceID& fid, const DomainID& did);
 
     // form multi shell recursively
     DomainID form_multi(const ParticleID& pid, const Particle& p, const FaceID& fid,
@@ -630,7 +631,7 @@ class SGFRDSimulator :
 
             SGFRD_TRACE(sim.tracer_.write("particle escaped"));
 
-            const bool no_overlap = sim.burst_and_shrink_overlaps(p, fid);
+            const bool no_overlap = sim.burst_and_shrink_overlaps(p, fid, did);
             escaped_ = no_overlap;
             SGFRD_TRACE(sim.tracer_.write("no_overlap = %1%", no_overlap));
             return no_overlap;
@@ -647,7 +648,7 @@ class SGFRDSimulator :
 
             SGFRD_TRACE(sim.tracer_.write("particle escaped"))
 
-            const bool no_overlap = sim.burst_and_shrink_overlaps(p, fid);
+            const bool no_overlap = sim.burst_and_shrink_overlaps(p, fid, did);
             escaped_ = no_overlap;
             SGFRD_TRACE(sim.tracer_.write("no_overlap = %1%", no_overlap));
             return no_overlap;
@@ -664,7 +665,7 @@ class SGFRDSimulator :
 
             SGFRD_TRACE(sim.tracer_.write("particle escaped"))
 
-            const bool no_overlap = sim.burst_and_shrink_overlaps(p, fid);
+            const bool no_overlap = sim.burst_and_shrink_overlaps(p, fid, did);
             escaped_ = no_overlap;
             SGFRD_TRACE(sim.tracer_.write("no_overlap = %1%", no_overlap));
             return no_overlap;
@@ -1257,7 +1258,7 @@ SGFRDSimulator::attempt_reaction_1_to_1(const ReactionRule& rule,
     {
         SGFRD_SCOPE(us, particle_goes_outside, tracer_)
         // particle goes outside of the shell. must clear the volume.
-        const bool no_overlap = this->burst_and_shrink_overlaps(p_new, fid);
+        const bool no_overlap = this->burst_and_shrink_overlaps(p_new, fid, did);
         SGFRD_TRACE(tracer_.write("no_overlap = %1%", no_overlap))
         if(!no_overlap)
         {// cannot avoid overlapping... reject the reaction.
@@ -1334,7 +1335,7 @@ SGFRDSimulator::attempt_reaction_1_to_2(const ReactionRule& rule,
             if(!is_inside_of(sh))
             {
                 const bool no_overlap = this->burst_and_shrink_overlaps(
-                    particles_new[0], newpfs[0].second);
+                    particles_new[0], newpfs[0].second, did);
                 if(!no_overlap) continue;
             }
         }
@@ -1356,7 +1357,7 @@ SGFRDSimulator::attempt_reaction_1_to_2(const ReactionRule& rule,
             if(!is_inside_of(sh))
             {
                 const bool no_overlap = this->burst_and_shrink_overlaps(
-                    particles_new[1], newpfs[1].second);
+                    particles_new[1], newpfs[1].second, did);
                 if(!no_overlap) continue;
             }
         }
@@ -1422,7 +1423,7 @@ SGFRDSimulator::attempt_reaction_1_to_2(const ReactionRule& rule,
             if(!is_inside_of(sh))
             {
                 const bool no_overlap = this->burst_and_shrink_overlaps(
-                    particles_new[idx], newpfs[idx].second);
+                    particles_new[idx], newpfs[idx].second, did);
                 if(!no_overlap)
                 {
                     particles_new[idx].position() = tmp_pos;
