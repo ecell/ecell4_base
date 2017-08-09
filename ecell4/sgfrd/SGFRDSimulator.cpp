@@ -13,6 +13,8 @@ const Real SGFRDSimulator::reaction_length                     = 1e-5;
 void SGFRDSimulator::fire_single(const Single& dom, DomainID did)
 {
     SGFRD_SCOPE(us, fire_single, tracer_);
+    SGFRD_TRACE(tracer_.write("fire single domain %1%", did))
+
     const ShellID sid(dom.shell_id());
     ParticleID pid; Particle p; FaceID fid;
     switch(dom.eventkind())
@@ -326,7 +328,18 @@ DomainID SGFRDSimulator::create_event(
 
         if(shrinked_or_multi.front().second > min_cone_size)
         {
-            SGFRD_TRACE(tracer_.write("after burst, no intruders exist"));
+            SGFRD_TRACE(tracer_.write(
+                "after burst, no intruders exist in the min-range %1%",
+                min_cone_size));
+
+#ifndef ECELL4_SGFRD_NO_TRACE
+            for(std::size_t i=0; i<shrinked_or_multi.size(); ++i)
+            {
+                tracer_.write("domain %1%; dist = %2%;",
+                    shrinked_or_multi[i].first, shrinked_or_multi[i].second);
+            }
+#endif//ECELL4_SGFRD_NO_TRACE
+
             return add_event(create_single(create_single_conical_surface_shell(
                 vid, shrinked_or_multi.front().second *
                      single_conical_surface_shell_mergin),
@@ -364,6 +377,14 @@ DomainID SGFRDSimulator::create_event(
     if(shrinked_or_multi.front().second > min_circle_size)
     {
         SGFRD_TRACE(tracer_.write("after burst, no intruders exist"))
+#ifndef ECELL4_SGFRD_NO_TRACE
+        for(std::size_t i=0; i<shrinked_or_multi.size(); ++i)
+        {
+            tracer_.write("domain %1%; dist = %2%;",
+                shrinked_or_multi[i].first, shrinked_or_multi[i].second);
+        }
+#endif//ECELL4_SGFRD_NO_TRACE
+
         return add_event(create_single(create_single_circular_shell(
             pos, shrinked_or_multi.front().second * single_circular_shell_mergin),
             pid, p));
