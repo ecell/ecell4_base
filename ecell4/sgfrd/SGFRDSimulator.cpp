@@ -316,6 +316,13 @@ DomainID SGFRDSimulator::create_event(
         if(intrusive_domains.front().second > min_cone_size)
         {
             SGFRD_TRACE(tracer_.write("intrusive domains exist but enough distant"));
+#ifndef ECELL4_SGFRD_NO_TRACE
+            for(std::size_t i=0; i<intrusive_domains.size(); ++i)
+            {
+                tracer_.write("domain %1%; dist = %2%;",
+                    intrusive_domains[i].first, intrusive_domains[i].second);
+            }
+#endif//ECELL4_SGFRD_NO_TRACE
             return add_event(create_single(create_single_conical_surface_shell(
                 vid, intrusive_domains.front().second *
                 single_conical_surface_shell_mergin), pid, p));
@@ -365,6 +372,14 @@ DomainID SGFRDSimulator::create_event(
     if(intrusive_domains.front().second > min_circle_size)
     {
         SGFRD_TRACE(tracer_.write("intrusive domains exists but enough distant"))
+#ifndef ECELL4_SGFRD_NO_TRACE
+        for(std::size_t i=0; i<intrusive_domains.size(); ++i)
+        {
+            tracer_.write("domain %1%; dist = %2%;",
+                intrusive_domains[i].first, intrusive_domains[i].second);
+        }
+#endif//ECELL4_SGFRD_NO_TRACE
+
         return add_event(create_single(create_single_circular_shell(
             pos, intrusive_domains.front().second * single_circular_shell_mergin),
             pid, p));
