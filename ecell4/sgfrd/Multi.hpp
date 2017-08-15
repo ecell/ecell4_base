@@ -84,10 +84,9 @@ class Multi
                 kind_ = REACTION;
                 break;
             }
-            if(vc.escaped())
+            if(propagator.vc().escaped())
             {
                 kind_ = ESCAPE;
-                break;
             }
         }
     }

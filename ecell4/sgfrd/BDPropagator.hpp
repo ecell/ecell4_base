@@ -102,6 +102,7 @@ public:
 
     Real                   dt() const {return dt_;}
     RandomNumberGenerator& rng()      {return rng_;}
+    volume_clearer_type const& vc() const {return vc_;}
 
   protected:
 
