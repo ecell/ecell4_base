@@ -330,9 +330,14 @@ DomainID SGFRDSimulator::create_event(
                     intrusive_domains[i].first, intrusive_domains[i].second);
             }
 #endif//ECELL4_SGFRD_NO_TRACE
-            return add_event(create_single(create_single_conical_surface_shell(
-                vid, intrusive_domains.front().second *
-                single_conical_surface_shell_mergin), pid, p));
+
+            const Real shell_size =
+                std::min(max_cone_size, intrusive_domains.front().second) *
+                single_conical_surface_shell_mergin;
+
+            return add_event(create_single(
+                        create_single_conical_surface_shell(vid, shell_size),
+                        pid, p));
         }
 
         // burst intruder_domains and get new positions of particles
@@ -353,11 +358,13 @@ DomainID SGFRDSimulator::create_event(
                     shrinked_or_multi[i].first, shrinked_or_multi[i].second);
             }
 #endif//ECELL4_SGFRD_NO_TRACE
+            const Real shell_size =
+                std::min(max_cone_size, shrinked_or_multi.front().second) *
+                single_conical_surface_shell_mergin;
 
-            return add_event(create_single(create_single_conical_surface_shell(
-                vid, shrinked_or_multi.front().second *
-                     single_conical_surface_shell_mergin),
-                pid, p));
+            return add_event(create_single(
+                        create_single_conical_surface_shell(vid, shell_size),
+                        pid, p));
         }
 
         SGFRD_TRACE(tracer_.write("forming multi"));
@@ -394,9 +401,12 @@ DomainID SGFRDSimulator::create_event(
         }
 #endif//ECELL4_SGFRD_NO_TRACE
 
-        return add_event(create_single(create_single_circular_shell(
-            pos, intrusive_domains.front().second * single_circular_shell_mergin),
-            pid, p));
+        const Real shell_size =
+            std::min(max_circle_size, intrusive_domains.front().second) *
+            single_circular_shell_mergin;
+
+        return add_event(create_single(
+                    create_single_circular_shell(pos, shell_size), pid, p));
     }
 
     std::vector<std::pair<DomainID, Real> > shrinked_or_multi =
@@ -414,9 +424,12 @@ DomainID SGFRDSimulator::create_event(
         }
 #endif//ECELL4_SGFRD_NO_TRACE
 
-        return add_event(create_single(create_single_circular_shell(
-            pos, shrinked_or_multi.front().second * single_circular_shell_mergin),
-            pid, p));
+        const Real shell_size =
+            std::min(max_circle_size, shrinked_or_multi.front().second) *
+            single_circular_shell_mergin;
+
+        return add_event(create_single(
+                    create_single_circular_shell(pos, shell_size), pid, p));
     }
 
     SGFRD_TRACE(tracer_.write("forming multi"))
