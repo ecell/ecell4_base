@@ -8,7 +8,6 @@ const Real SGFRDSimulator::single_circular_shell_factor        = 1.5;
 const Real SGFRDSimulator::single_circular_shell_mergin        = 1.0 - 1e-7;
 const Real SGFRDSimulator::single_conical_surface_shell_factor = 1.5;
 const Real SGFRDSimulator::single_conical_surface_shell_mergin = 1.0 - 1e-7;
-const Real SGFRDSimulator::reaction_length                     = 1e-5;
 
 void SGFRDSimulator::fire_single(const Single& dom, DomainID did)
 {

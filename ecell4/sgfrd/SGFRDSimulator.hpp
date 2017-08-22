@@ -100,17 +100,20 @@ class SGFRDSimulator :
 
     SGFRDSimulator(const boost::shared_ptr<world_type>& world,
                    const boost::shared_ptr<model_type>& model,
-                   Real bd_dt_factor = 1e-5,
+                   Real bd_dt_factor = 1e-5, Real reaction_length = 1e-3,
                    const std::string& trace_fname = "sgfrd_trace.log")
-        : base_type(model, world), dt_(0), bd_dt_factor_(bd_dt_factor),
+        : base_type(model, world), dt_(0),
+          bd_dt_factor_(bd_dt_factor), reaction_length_(reaction_length),
           rng_(*(world->rng())), shell_container_(*(world->polygon())),
           mut_sh_vis_applier(shell_container_), imm_sh_vis_applier(shell_container_),
           tracer_(trace_fname)
     {}
 
-    SGFRDSimulator(boost::shared_ptr<world_type> world, Real bd_dt_factor = 1e-5,
+    SGFRDSimulator(boost::shared_ptr<world_type> world,
+                   Real bd_dt_factor = 1e-5, Real reaction_length = 1e-3,
                    const std::string& trace_fname = "sgfrd_trace.log")
-        : base_type(world), dt_(0), bd_dt_factor_(bd_dt_factor),
+        : base_type(world), dt_(0),
+          bd_dt_factor_(bd_dt_factor), reaction_length_(reaction_length),
           rng_(*(world->rng())), shell_container_(*(world->polygon())),
           mut_sh_vis_applier(shell_container_), imm_sh_vis_applier(shell_container_),
           tracer_(trace_fname)
@@ -157,6 +160,7 @@ class SGFRDSimulator :
     }
 
     Real dt() const {return dt_;}
+    Real reaction_length() const {return reaction_length_;}
 
     bool check_reaction() const {return last_reactions_.size() > 0;}
     std::vector<std::pair<ReactionRule, reaction_info_type> > const&
@@ -807,7 +811,8 @@ class SGFRDSimulator :
 
     Multi create_empty_multi()
     {
-        return Multi(*this, *(this->world_), this->time());
+        return Multi(*this, *(this->world_), this->time(),
+                     this->bd_dt_factor_, this->reaction_length_);
     }
 
     //! make domain and call add_event
@@ -977,7 +982,7 @@ class SGFRDSimulator :
 
     Real3 draw_ipv(const Real r, const Real D, const FaceID& fid)
     {
-        const Real rl    = r + this->reaction_length;
+        const Real rl    = r + this->reaction_length_;
         const Real r_sq  = r * r;
         const Real rd    = rl * rl - r_sq;
         const Real ipvl  = std::sqrt(r_sq + this->rng_.uniform(0., 1.) * rd);
@@ -991,7 +996,6 @@ class SGFRDSimulator :
     static const Real single_circular_shell_mergin;
     static const Real single_conical_surface_shell_factor;
     static const Real single_conical_surface_shell_mergin;
-    static const Real reaction_length;
 
   private:
 
@@ -1001,6 +1005,7 @@ class SGFRDSimulator :
     // Integer num_steps_;
     Real dt_;
     Real bd_dt_factor_;
+    Real reaction_length_;
     ecell4::RandomNumberGenerator&       rng_;
     scheduler_type                       scheduler_;
     shell_id_generator_type              shell_id_gen;
