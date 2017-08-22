@@ -313,7 +313,14 @@ DomainID SGFRDSimulator::create_event(
                                            vid, max_cone_size), pid, p));
         }
 
-        if(intrusive_domains.front().second > min_cone_size)
+        std::vector<std::pair<DomainID, Real> > min_shell_intruder;
+        for(typename std::vector<std::pair<DomainID, Real> >::const_iterator
+                iter = intrusive_domains.begin(), end = intrusive_domains.end();
+                iter != end; ++iter)
+            if(iter->second <= min_cone_size)
+                min_shell_intruder.push_back(*iter);
+
+        if(min_shell_intruder.empty())
         {
             SGFRD_TRACE(tracer_.write("intrusive domains exist but enough distant"));
 #ifndef ECELL4_SGFRD_NO_TRACE
@@ -330,7 +337,7 @@ DomainID SGFRDSimulator::create_event(
 
         // burst intruder_domains and get new positions of particles
         std::vector<std::pair<DomainID, Real> > shrinked_or_multi =
-            burst_and_shrink_non_multis(vid, intrusive_domains);
+            burst_and_shrink_non_multis(vid, min_shell_intruder);
         SGFRD_TRACE(tracer_.write("close domains are bursted."));
 
         if(shrinked_or_multi.front().second > min_cone_size)
@@ -369,7 +376,14 @@ DomainID SGFRDSimulator::create_event(
                          pos, max_circle_size), pid, p));
     }
 
-    if(intrusive_domains.front().second > min_circle_size)
+    std::vector<std::pair<DomainID, Real> > min_shell_intruder;
+    for(typename std::vector<std::pair<DomainID, Real> >::const_iterator
+            iter = intrusive_domains.begin(), end = intrusive_domains.end();
+            iter != end; ++iter)
+        if(iter->second <= min_circle_size)
+            min_shell_intruder.push_back(*iter);
+
+    if(min_shell_intruder.empty())
     {
         SGFRD_TRACE(tracer_.write("intrusive domains exists but enough distant"))
 #ifndef ECELL4_SGFRD_NO_TRACE
@@ -386,8 +400,8 @@ DomainID SGFRDSimulator::create_event(
     }
 
     std::vector<std::pair<DomainID, Real> > shrinked_or_multi =
-        burst_and_shrink_non_multis(pid, p, fid, intrusive_domains);
-    SGFRD_TRACE(tracer_.write("intruder domains are bursted"))
+        burst_and_shrink_non_multis(pid, p, fid, min_shell_intruder);
+    SGFRD_TRACE(tracer_.write("min_shell_intruder domains are bursted"))
 
     if(shrinked_or_multi.front().second > min_circle_size)
     {
