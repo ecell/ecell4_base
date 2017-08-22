@@ -28,15 +28,20 @@ struct AABB
         ;
     }
 
-    const Real3& lower() const
+    const Real3& lower() const throw()
     {
         return lower_;
     }
 
-    const Real3& upper() const
+    const Real3& upper() const throw()
     {
         return upper_;
     }
+
+    // these two modifiers are for boost::geometry::index::rtree.
+    // see ParticleSpaceRTreeImpl.hpp
+    Real3& lower() throw() {return lower_;}
+    Real3& upper() throw() {return upper_;}
 
     const Real3 center() const
     {
