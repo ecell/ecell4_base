@@ -1,11 +1,13 @@
 #ifndef ECELL4_PARTICLE_SPACE_RTREE_IMPL_HPP
 #define ECELL4_PARTICLE_SPACE_RTREE_IMPL_HPP
 
+#include <boost/core/enable_if.hpp>
 #include <boost/geometry/index/rtree.hpp>
 #include <boost/geometry/geometries/register/point.hpp>
 #include <boost/geometry/geometries/point.hpp>
 #include <boost/geometry/core/cs.hpp>
-#include <boost/contianer/small_vector.hpp>
+#include <boost/container/small_vector.hpp>
+#include <boost/container/static_vector.hpp>
 #include <boost/tuple/tuple.hpp>
 
 #include <ecell4/core/ParticleSpace.hpp>
@@ -291,6 +293,35 @@ protected:
         up[0] += radius; up[1] += radius; up[2] += radius;
         lw[0] -= radius; lw[1] -= radius; lw[2] -= radius;
         return box_type(up, lw);
+    }
+
+    template<std::size_t N>
+    static inline typename boost::enable_if_c<(N<3), void>::type
+    split_box_by_boundary(boost::container::static_vector<box_type, 8>& boxes)
+    {
+        // assuming the boundary is [0, edge_length_)
+        //          and the query box is inside of the boundary...
+        const std::size_t sz = boxes.size();
+        for(std::size_t i=0; i<sz; ++i)
+        {
+            if(this->edge_length_[N] < boxes[i].upper()[N])
+            {
+                box_type bx(boxes[i]);
+                bx[N].lower()[N] = 0.0;
+                bx[N].upper()[N] = boxes[i].upper()[N] - this->edge_length_[N];
+                boxes[i].upper()[N] = this->edge_length_[N];
+                boxes.push_back(bx);// XXX do not use iterator
+            }
+            else if(boxes[i].lower()[N] < 0)
+            {
+                box_type bx(boxes[i]);
+                bx[N].lower()[N] = boxes[i].lower()[N] + this->edge_length_[N];
+                bx[N].upper()[N] = this->edge_length_[N];
+                boxes[i].lower()[N] = 0.0;
+                boxes.push_back(bx);// XXX do not use iterator
+            }
+        }
+        return;
     }
 
     static inline rtree_value_type
