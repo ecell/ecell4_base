@@ -108,7 +108,6 @@ public:
     typedef typename particle_container_type::const_iterator const_iterator;
 
     // species support
-    // TODO keep consistency between species_support and container.
     typedef std::set<ParticleID> particle_id_set;
     typedef utils::get_mapper_mf<Species::serial_type, particle_id_set>::type
             per_species_particle_id_set;
@@ -322,6 +321,7 @@ protected:
             throw std::invalid_argument("ParticleSpaceRTree::insert: already has");
 
         rtree_.insert(make_rtree_value(pid, p));
+        particle_pool_[p.species_serial()].insert(pid);
 
         const std::size_t idx = particles_.size();
         particles_.push_back(std::make_pair(pid, p));
@@ -338,10 +338,12 @@ protected:
 
         const Particle& p = this->particles_[idx].second;
         rtree_.remove(make_rtree_value(pid, p));
+        particle_pool_[p.species_serial()].erase(pid);
 
         idx_map_[particles_.back().first] = idx;
         particles_[idx] = particles_.back();
         particles_.pop_back();
+
         return;
     }
 
@@ -353,6 +355,12 @@ protected:
         const std::size_t idx = idx_map_[pid];
         rtree_.remove(make_rtree_value(pid, particles_[idx]));
         rtree_.insert(make_rtree_value(pid, p));
+
+        if(particles_[idx].second.species() != p.species())
+        {
+            particle_pool_[particles_[idx].second.species_serial()].erase(pid);
+            particle_pool_[p.species_serial()].insert(pid);
+        }
         particles_[idx].second = p;
         return;
     }
