@@ -203,7 +203,7 @@ public:
     }
     bool has_particle(const ParticleID& pid) const
     {
-        return (this->find(pid) == this->particles_.end());
+        return (this->find(pid) != this->particles_.end());
     }
     void remove_particle(const ParticleID& pid)
     {
@@ -286,14 +286,14 @@ protected:
         Real3 up(p.position()), lw(p.position());
         up[0] += r; up[1] += r; up[2] += r;
         lw[0] -= r; lw[1] -= r; lw[2] -= r;
-        return box_type(up, lw);
+        return box_type(lw, up);
     }
     static inline box_type make_box(const Real3& center, const Real radius)
     {
         Real3 up(center), lw(center);
         up[0] += radius; up[1] += radius; up[2] += radius;
         lw[0] -= radius; lw[1] -= radius; lw[2] -= radius;
-        return box_type(up, lw);
+        return box_type(lw, up);
     }
 
     template<std::size_t N>
