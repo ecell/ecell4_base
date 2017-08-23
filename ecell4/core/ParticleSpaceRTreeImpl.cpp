@@ -1,4 +1,5 @@
 #include <ecell4/core/ParticleSpaceRTreeImpl.hpp>
+#include <boost/geometry/algorithms/within.hpp>
 
 namespace ecell4
 {
@@ -89,27 +90,38 @@ std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
 ParticleSpaceRTreeImpl::list_particles_within_radius(
         const Real3& pos, const Real& radius) const
 {
-    // TODO: consider periodic boundary condition!
-    //     : by splitting the query box so that the query box would be inside
-    //     : of the boundary.
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > retval;
     if(this->particles_.empty()) return retval;
 
-    boost::container::small_vector<rtree_value_type, qsz> tmp;
-    rtree_.query(
-        boost::geometry::index::intersect(self_type::make_box(pos, radius)),
-        std::back_inserter(tmp));
+    boost::container::static_vector<box_type, 8>
+        boxes(1, self_type::make_box(pos, radius));
 
-    for(boost::container::small_vector<rtree_value_type, qsz>::const_iterator
-            i(tmp.begin()), e(tmp.end()); i != e; ++i)
+    const box_type boundary(Real3(0,0,0), this->edge_length_);
+    if(!boost::geometry::within(boxes.front(), boundary))
+    {// if the query box is out of periodic-boundary, split the query box
+        split_box_by_boundary<0>(boxes);
+        split_box_by_boundary<1>(boxes);
+        split_box_by_boundary<2>(boxes);
+    }
+
+    for(boost::container::static_vector<box_type, 8>::const_iterator
+            bxi(boxes.begin()), bxe(boxes.end()); bxi != bxe; ++bxi)
     {
-        const ParticleID& pid = boost::get<1>(*i);
-        const Particle&   p   = boost::get<2>(*i);
-        const Real dist = length(p.position() - pos) - p.radius();
+        boost::container::small_vector<rtree_value_type, qsz> tmp;
+        this->rtree_.query(boost::geometry::index::intersect(*bxi),
+                           std::back_inserter(tmp));
 
-        if(dist < radius)
+        for(boost::container::small_vector<rtree_value_type, qsz>::const_iterator
+                i(tmp.begin()), e(tmp.end()); i != e; ++i)
         {
-            retval.push_back(std::make_pair(std::make_pair(pid, p), dist));
+            const ParticleID& pid = boost::get<1>(*i);
+            const Particle&   p   = boost::get<2>(*i);
+            const Real dist = length(p.position() - pos) - p.radius();
+
+            if(dist < radius)
+            {
+                retval.push_back(std::make_pair(std::make_pair(pid, p), dist));
+            }
         }
     }
     return retval;
@@ -119,29 +131,39 @@ std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
 list_particles_within_radius(const Real3& pos, const Real& radius,
         const ParticleID& ignore) const
 {
-    // TODO: consider periodic boundary condition!
-    //     : by splitting the query box so that the query box would be inside
-    //     : of the boundary.
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > retval;
     if(this->particles_.empty()) return retval;
 
-    boost::container::small_vector<rtree_value_type, qsz> tmp;
-    rtree_.query(
-        boost::geometry::index::intersect(self_type::make_box(pos, radius)) &&
-        boost::geometry::index::satisfies(particle_id_excluder(ignore)),
-        std::back_inserter(tmp));
+    boost::container::static_vector<box_type, 8>
+        boxes(1, self_type::make_box(pos, radius));
 
-    for(boost::container::small_vector<rtree_value_type, qsz>::const_iterator
-            i(tmp.begin()), e(tmp.end()); i != e; ++i)
+    const box_type boundary(Real3(0,0,0), this->edge_length_);
+    if(!boost::geometry::within(boxes.front(), boundary))
+    {// if the query box is out of periodic-boundary, split the query box
+        split_box_by_boundary<0>(boxes);
+        split_box_by_boundary<1>(boxes);
+        split_box_by_boundary<2>(boxes);
+    }
+
+    for(boost::container::static_vector<box_type, 8>::const_iterator
+            bxi(boxes.begin()), bxe(boxes.end()); bxi != bxe; ++bxi)
     {
-        const ParticleID& pid = boost::get<1>(*i);
-        const Particle&   p   = boost::get<2>(*i);
-//         if(pid == ignore) continue; // probably not needed
+        boost::container::small_vector<rtree_value_type, qsz> tmp;
+        this->rtree_.query(boost::geometry::index::intersect(*bxi) &&
+            boost::geometry::index::satisfies(particle_id_excluder(ignore)),
+            std::back_inserter(tmp));
 
-        const Real dist = length(p.position() - pos) - p.radius();
-        if(dist < radius)
+        for(boost::container::small_vector<rtree_value_type, qsz>::const_iterator
+                i(tmp.begin()), e(tmp.end()); i != e; ++i)
         {
-            retval.push_back(std::make_pair(std::make_pair(pid, p), dist));
+            const ParticleID& pid = boost::get<1>(*i);
+            const Particle&   p   = boost::get<2>(*i);
+            const Real dist = length(p.position() - pos) - p.radius();
+
+            if(dist < radius)
+            {
+                retval.push_back(std::make_pair(std::make_pair(pid, p), dist));
+            }
         }
     }
     return retval;
@@ -151,34 +173,42 @@ std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
 list_particles_within_radius(const Real3& pos, const Real& radius,
         const ParticleID& ignore1, const ParticleID& ignore2) const
 {
-    // TODO: consider periodic boundary condition!
-    //     : by splitting the query box so that the query box would be inside
-    //     : of the boundary.
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > retval;
     if(this->particles_.empty()) return retval;
 
-    boost::container::small_vector<rtree_value_type, qsz> tmp;
-    rtree_.query(
-        boost::geometry::index::intersect(self_type::make_box(pos, radius)) &&
-        boost::geometry::index::satisfies(particle_id2_excluder(ignore1, ignore2)),
-        std::back_inserter(tmp));
+    boost::container::static_vector<box_type, 8>
+        boxes(1, self_type::make_box(pos, radius));
 
-    for(boost::container::small_vector<rtree_value_type, qsz>::const_iterator
-            i(tmp.begin()), e(tmp.end()); i != e; ++i)
+    const box_type boundary(Real3(0,0,0), this->edge_length_);
+    if(!boost::geometry::within(boxes.front(), boundary))
+    {// if the query box is out of periodic-boundary, split the query box
+        split_box_by_boundary<0>(boxes);
+        split_box_by_boundary<1>(boxes);
+        split_box_by_boundary<2>(boxes);
+    }
+
+    for(boost::container::static_vector<box_type, 8>::const_iterator
+            bxi(boxes.begin()), bxe(boxes.end()); bxi != bxe; ++bxi)
     {
-        const ParticleID& pid = boost::get<1>(*i);
-        const Particle&   p   = boost::get<2>(*i);
-//         if(pid == ignore1 || pid == ignore2) continue; // probably not needed
+        boost::container::small_vector<rtree_value_type, qsz> tmp;
+        this->rtree_.query(boost::geometry::index::intersect(*bxi) &&
+            boost::geometry::index::satisfies(particle_id2_excluder(ignore1, ignore2)),
+            std::back_inserter(tmp));
 
-        const Real dist = length(p.position() - pos) - p.radius();
-        if(dist < radius)
+        for(boost::container::small_vector<rtree_value_type, qsz>::const_iterator
+                i(tmp.begin()), e(tmp.end()); i != e; ++i)
         {
-            retval.push_back(std::make_pair(std::make_pair(pid, p), dist));
+            const ParticleID& pid = boost::get<1>(*i);
+            const Particle&   p   = boost::get<2>(*i);
+            const Real dist = length(p.position() - pos) - p.radius();
+
+            if(dist < radius)
+            {
+                retval.push_back(std::make_pair(std::make_pair(pid, p), dist));
+            }
         }
     }
     return retval;
 }
-
-
 
 } // ecell4
