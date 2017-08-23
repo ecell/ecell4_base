@@ -2,10 +2,11 @@
 #define ECELL4_PARTICLE_SPACE_RTREE_IMPL_HPP
 
 #include <boost/core/enable_if.hpp>
-#include <boost/geometry/index/rtree.hpp>
-#include <boost/geometry/geometries/register/point.hpp>
-#include <boost/geometry/geometries/point.hpp>
 #include <boost/geometry/core/cs.hpp>
+#include <boost/geometry/geometries/point.hpp>
+#include <boost/geometry/geometries/register/point.hpp>
+#include <boost/geometry/index/rtree.hpp>
+#include <boost/geometry/index/predicates.hpp>
 #include <boost/container/small_vector.hpp>
 #include <boost/container/static_vector.hpp>
 #include <boost/tuple/tuple.hpp>
@@ -34,18 +35,18 @@ template<> struct coordinate_system<ecell4::Real3> {typedef boost::geometry::cs:
 
 template<> struct access<ecell4::Real3, 0>
 {
-    static inline double get(ecell4::Real3 const& p)           throw() {return p[0];}
-    static inline void   set(ecell4::Real3& p, T const& value) throw() {p[0] = value;}
+    static inline double get(ecell4::Real3 const& p)             throw() {return p[0];}
+    static inline void   set(ecell4::Real3& p, const ecell4::Real value) throw() {p[0] = value;}
 };
 template<> struct access<ecell4::Real3, 1>
 {
-    static inline double get(ecell4::Real3 const& p)           throw() {return p[1];}
-    static inline void   set(ecell4::Real3& p, T const& value) throw() {p[1] = value;}
+    static inline double get(ecell4::Real3 const& p)             throw() {return p[1];}
+    static inline void   set(ecell4::Real3& p, const ecell4::Real value) throw() {p[1] = value;}
 };
 template<> struct access<ecell4::Real3, 2>
 {
-    static inline double get(ecell4::Real3 const& p)           throw() {return p[2];}
-    static inline void   set(ecell4::Real3& p, T const& value) throw() {p[2] = value;}
+    static inline double get(ecell4::Real3 const& p)             throw() {return p[2];}
+    static inline void   set(ecell4::Real3& p, const ecell4::Real value) throw() {p[2] = value;}
 };
 
 // for ecell4::AABB as boost.geometry's box concept
@@ -58,7 +59,7 @@ template<> struct point_type<ecell4::AABB>
 };
 
 template <std::size_t D>
-struct indexed_access<ecell4::Real3, min_corner, D>
+struct indexed_access<ecell4::AABB, min_corner, D>
 {
     typedef typename coordinate_type<
         typename point_type<ecell4::AABB>::type>::type ct;
@@ -69,8 +70,8 @@ struct indexed_access<ecell4::Real3, min_corner, D>
     static inline void set(ecell4::AABB& b, ct const& value) throw()
     {geometry::set<D>(b.lower(), value);}
 };
-template <typename T, std::size_t D>
-struct indexed_access<nanogfrd::aabb<T>, max_corner, D>
+template <std::size_t D>
+struct indexed_access<ecell4::AABB, max_corner, D>
 {
     typedef typename coordinate_type<
         typename point_type<ecell4::AABB>::type>::type ct;
@@ -78,7 +79,7 @@ struct indexed_access<nanogfrd::aabb<T>, max_corner, D>
     static inline ct get(ecell4::AABB const& b) throw()
     {return geometry::get<D>(b.upper());}
 
-    static inline void set(AABB& b, ct const& value) throw()
+    static inline void set(ecell4::AABB& b, ct const& value) throw()
     {geometry::set<D>(b.upper(), value);}
 };
 
@@ -202,7 +203,7 @@ public:
     }
     bool has_particle(const ParticleID& pid) const
     {
-        return if(this->find(pid) == this->particles_.end())
+        return (this->find(pid) == this->particles_.end());
     }
     void remove_particle(const ParticleID& pid)
     {
@@ -296,27 +297,27 @@ protected:
     }
 
     template<std::size_t N>
-    static inline typename boost::enable_if_c<(N<3), void>::type
-    split_box_by_boundary(boost::container::static_vector<box_type, 8>& boxes)
+    inline typename boost::enable_if_c<(N<3), void>::type
+    split_box_by_boundary(boost::container::static_vector<box_type, 8>& boxes) const
     {
-        // assuming the boundary is [0, edge_length_)
+        // assuming the boundary is [0, edge_lengths_)
         //          and the query box is inside of the boundary...
         const std::size_t sz = boxes.size();
         for(std::size_t i=0; i<sz; ++i)
         {
-            if(this->edge_length_[N] < boxes[i].upper()[N])
+            if(this->edge_lengths_[N] < boxes[i].upper()[N])
             {
                 box_type bx(boxes[i]);
-                bx[N].lower()[N] = 0.0;
-                bx[N].upper()[N] = boxes[i].upper()[N] - this->edge_length_[N];
-                boxes[i].upper()[N] = this->edge_length_[N];
+                bx.lower()[N] = 0.0;
+                bx.upper()[N] = boxes[i].upper()[N] - this->edge_lengths_[N];
+                boxes[i].upper()[N] = this->edge_lengths_[N];
                 boxes.push_back(bx);// XXX do not use iterator
             }
             else if(boxes[i].lower()[N] < 0)
             {
                 box_type bx(boxes[i]);
-                bx[N].lower()[N] = boxes[i].lower()[N] + this->edge_length_[N];
-                bx[N].upper()[N] = this->edge_length_[N];
+                bx.lower()[N] = boxes[i].lower()[N] + this->edge_lengths_[N];
+                bx.upper()[N] = this->edge_lengths_[N];
                 boxes[i].lower()[N] = 0.0;
                 boxes.push_back(bx);// XXX do not use iterator
             }
@@ -384,7 +385,7 @@ protected:
             throw NotFound("ParticleSpaceRTree::update: particle not found");
 
         const std::size_t idx = idx_map_[pid];
-        rtree_.remove(make_rtree_value(pid, particles_[idx]));
+        rtree_.remove(make_rtree_value(pid, particles_[idx].second));
         rtree_.insert(make_rtree_value(pid, p));
 
         if(particles_[idx].second.species() != p.species())
