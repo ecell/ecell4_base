@@ -1,7 +1,7 @@
 #ifndef ECELL4_PARTICLE_SPACE_RTREE_IMPL_HPP
 #define ECELL4_PARTICLE_SPACE_RTREE_IMPL_HPP
 
-#include <boost/core/enable_if.hpp>
+#include <boost/utility/enable_if.hpp>
 #include <boost/assert.hpp>
 #include <boost/geometry/core/cs.hpp>
 #include <boost/geometry/geometries/point.hpp>
