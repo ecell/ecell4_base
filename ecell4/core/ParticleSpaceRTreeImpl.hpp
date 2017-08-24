@@ -8,9 +8,19 @@
 #include <boost/geometry/geometries/register/point.hpp>
 #include <boost/geometry/index/rtree.hpp>
 #include <boost/geometry/index/predicates.hpp>
-#include <boost/container/small_vector.hpp>
-#include <boost/container/static_vector.hpp>
 #include <boost/tuple/tuple.hpp>
+
+#include <boost/version.hpp>
+
+#if BOOST_VERSION >= 105400
+#define  ECELL4_HAS_BOOST_STATIC_VECTOR 1
+#include <boost/container/static_vector.hpp>
+#endif//BOOST_VERSION
+
+#if BOOST_VERSION >= 105800
+#define  ECELL4_HAS_BOOST_SMALL_VECTOR 1
+#include <boost/container/small_vector.hpp>
+#endif//BOOST_VERSION
 
 #include <ecell4/core/ParticleSpace.hpp>
 #include <ecell4/core/AABB.hpp>
@@ -118,8 +128,24 @@ public:
 
 protected:
 
+#ifdef ECELL4_HAS_BOOST_SMALL_VECTOR
     const static std::size_t typical_query_result_size = 10;
     const static std::size_t qsz = typical_query_result_size; // just an alias.
+
+    typedef boost::container::small_vector<rtree_value_type, qsz>
+            query_result_container_type;
+#else
+    typedef std::vector<rtree_value_type> query_result_container_type;
+#endif//ECELL4_HAS_BOOST_SMALL_VECTOR
+
+
+#ifdef ECELL4_HAS_BOOST_STATIC_VECTOR
+    typedef boost::container::static_vector<box_type, 8>
+            query_boxes_container_type;
+#else
+    typedef std::vector<box_type> query_boxes_container_type;
+#endif//ECELL4_HAS_BOOST_STATIC_VECTOR
+
 
     struct particle_id_excluder
     {
@@ -266,13 +292,13 @@ public:
     std::vector<std::pair<ParticleID, Particle> >
     list_particles_satisfies(Query query) const
     {
-        boost::container::small_vector<rtree_value_type, qsz> tmp;
+        query_result_container_type tmp;
         rtree_.query(query, std::back_inserter(tmp));
 
         std::vector<std::pair<ParticleID, Particle> > retval;
         retval.reserve(tmp.size());
-        for(typename boost::container::small_vector<rtree_value_type, qsz
-                >::const_iterator i(tmp.begin()), e(tmp.end()); i!=e; ++i)
+        for(typename query_result_container_type::const_iterator
+                i(tmp.begin()), e(tmp.end()); i!=e; ++i)
         {
             retval.push_back(
                     std::make_pair(boost::get<1>(*i), boost::get<2>(*i)));
@@ -301,7 +327,7 @@ protected:
 
     template<std::size_t N>
     inline typename boost::enable_if_c<(N<3), void>::type
-    split_box_by_boundary(boost::container::static_vector<box_type, 8>& boxes) const
+    split_box_by_boundary(query_boxes_container_type& boxes) const
     {
         // assuming the boundary is [0, edge_lengths_)
         //          and the query box is inside of the boundary...
