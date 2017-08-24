@@ -117,7 +117,7 @@ ParticleSpaceRTreeImpl::list_particles_within_radius(
         boxes(1, self_type::make_box(pos, radius+this->max_radius_));
 
     const box_type boundary(Real3(0,0,0), this->edge_lengths_);
-    if(!boost::geometry::within(boxes.front(), boundary))
+    if(not boost::geometry::within(boxes.front(), boundary))
     {// if the query box is out of periodic-boundary, split the query box
         this->split_box_by_boundary<0>(boxes);
         this->split_box_by_boundary<1>(boxes);
@@ -163,7 +163,7 @@ ParticleSpaceRTreeImpl::list_particles_within_radius(
         boxes(1, self_type::make_box(pos, radius+this->max_radius_));
 
     const box_type boundary(Real3(0,0,0), this->edge_lengths_);
-    if(!boost::geometry::within(boxes.front(), boundary))
+    if(not boost::geometry::within(boxes.front(), boundary))
     {// if the query box is out of periodic-boundary, split the query box
         this->split_box_by_boundary<0>(boxes);
         this->split_box_by_boundary<1>(boxes);
@@ -214,7 +214,7 @@ ParticleSpaceRTreeImpl::list_particles_within_radius(
 
     const box_type boundary(Real3(0,0,0), this->edge_lengths_);
 
-    if(!boost::geometry::within(boxes.front(), boundary))
+    if(not boost::geometry::within(boxes.front(), boundary))
     {// if the query box is out of periodic-boundary, split the query box
         this->split_box_by_boundary<0>(boxes);
         this->split_box_by_boundary<1>(boxes);

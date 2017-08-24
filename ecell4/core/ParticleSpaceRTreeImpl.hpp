@@ -33,6 +33,7 @@
 #endif
 
 #include <set>
+#include <ciso646>
 
 // enable boost to recognize ecell4::Real3 and ecell4::AABB {{{
 namespace boost { namespace geometry { namespace traits {
@@ -396,7 +397,7 @@ protected:
 
     void remove(const ParticleID& pid)
     {
-        if(!this->has_particle(pid))
+        if(not this->has_particle(pid))
         {
             throw NotFound("ParticleSpaceRTree::remove: particle not found");
         }
@@ -418,7 +419,7 @@ protected:
 
     void update(const ParticleID& pid, const Particle& p)
     {
-        if(!this->has_particle(pid))
+        if(not this->has_particle(pid))
         {
             throw NotFound("ParticleSpaceRTree::update: particle not found");
         }
