@@ -125,7 +125,7 @@ protected:
     {
         ParticleID pid;
 
-        particle_id_excluder(const ParticleID& ignore): pid(ignore){}
+        explicit particle_id_excluder(const ParticleID& ignore): pid(ignore){}
 
         inline bool operator()(const rtree_value_type& x) const
         {
@@ -149,7 +149,7 @@ protected:
 
 public:
 
-    ParticleSpaceRTreeImpl(const Real3& edge_lengths)
+    explicit ParticleSpaceRTreeImpl(const Real3& edge_lengths)
         : base_type(), max_radius_(0.0), edge_lengths_(edge_lengths)
     {}
 
