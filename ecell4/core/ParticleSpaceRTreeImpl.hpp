@@ -2,6 +2,7 @@
 #define ECELL4_PARTICLE_SPACE_RTREE_IMPL_HPP
 
 #include <boost/core/enable_if.hpp>
+#include <boost/assert.hpp>
 #include <boost/geometry/core/cs.hpp>
 #include <boost/geometry/geometries/point.hpp>
 #include <boost/geometry/geometries/register/point.hpp>
@@ -142,14 +143,14 @@ protected:
 
         inline bool operator()(const rtree_value_type& x) const
         {
-            return boost::get<1>(x) != pid1 && boost::get<1>(x) != pid2;
+            return (boost::get<1>(x) != pid1) && (boost::get<1>(x) != pid2);
         }
     };
 
 public:
 
     ParticleSpaceRTreeImpl(const Real3& edge_lengths)
-        : base_type(), edge_lengths_(edge_lengths)
+        : base_type(), max_radius_(0.0), edge_lengths_(edge_lengths)
     {}
 
     void reset(const Real3& edge_lengths);
@@ -354,6 +355,7 @@ protected:
 
         rtree_.insert(make_rtree_value(pid, p));
         particle_pool_[p.species_serial()].insert(pid);
+        max_radius_ = std::max(max_radius_, p.radius());
 
         const std::size_t idx = particles_.size();
         particles_.push_back(std::make_pair(pid, p));
@@ -369,7 +371,9 @@ protected:
         idx_map_.erase(pid);
 
         const Particle& p = this->particles_[idx].second;
-        rtree_.remove(make_rtree_value(pid, p));
+        const std::size_t result = rtree_.remove(make_rtree_value(pid, p));
+        BOOST_ASSERT(result == 1);
+
         particle_pool_[p.species_serial()].erase(pid);
 
         idx_map_[particles_.back().first] = idx;
@@ -385,13 +389,16 @@ protected:
             throw NotFound("ParticleSpaceRTree::update: particle not found");
 
         const std::size_t idx = idx_map_[pid];
-        rtree_.remove(make_rtree_value(pid, particles_[idx].second));
+        const std::size_t result = rtree_.remove(make_rtree_value(pid, particles_[idx].second));
+        BOOST_ASSERT(result == 1);
         rtree_.insert(make_rtree_value(pid, p));
 
         if(particles_[idx].second.species() != p.species())
         {
             particle_pool_[particles_[idx].second.species_serial()].erase(pid);
             particle_pool_[p.species_serial()].insert(pid);
+
+            max_radius_ = std::max(max_radius_, p.radius());
         }
         particles_[idx].second = p;
         return;
@@ -399,6 +406,7 @@ protected:
 
 protected:
 
+    Real  max_radius_; // XXX
     Real3 edge_lengths_;
 
     rtree_type                  rtree_;
