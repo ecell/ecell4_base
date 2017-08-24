@@ -1,6 +1,13 @@
 #ifndef ECELL4_PARTICLE_SPACE_RTREE_IMPL_HPP
 #define ECELL4_PARTICLE_SPACE_RTREE_IMPL_HPP
 
+#include <boost/version.hpp>
+
+#if BOOST_VERSION < 106300
+// ticket 12289
+#include <iostream>
+#endif
+
 #include <boost/utility/enable_if.hpp>
 #include <boost/assert.hpp>
 #include <boost/geometry/core/cs.hpp>
@@ -9,13 +16,6 @@
 #include <boost/geometry/index/rtree.hpp>
 #include <boost/geometry/index/predicates.hpp>
 #include <boost/tuple/tuple.hpp>
-
-#include <boost/version.hpp>
-
-#if BOOST_VERSION < 106300
-// ticket 12289
-#include <iostream>
-#endif
 
 #if BOOST_VERSION >= 105400
 #define  ECELL4_HAS_BOOST_STATIC_VECTOR 1
