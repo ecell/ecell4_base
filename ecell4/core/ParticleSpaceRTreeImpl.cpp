@@ -113,7 +113,7 @@ ParticleSpaceRTreeImpl::list_particles_within_radius(
         return retval;
     }
 
-    boost::container::static_vector<box_type, 8>
+    query_boxes_container_type
         boxes(1, self_type::make_box(pos, radius+this->max_radius_));
 
     const box_type boundary(Real3(0,0,0), this->edge_lengths_);
@@ -124,14 +124,14 @@ ParticleSpaceRTreeImpl::list_particles_within_radius(
         this->split_box_by_boundary<2>(boxes);
     }
 
-    for(boost::container::static_vector<box_type, 8>::const_iterator
+    for(query_boxes_container_type::const_iterator
             bxi(boxes.begin()), bxe(boxes.end()); bxi != bxe; ++bxi)
     {
-        boost::container::small_vector<rtree_value_type, qsz> tmp;
+        query_result_container_type tmp;
         this->rtree_.query(boost::geometry::index::intersects(*bxi),
                            std::back_inserter(tmp));
 
-        for(boost::container::small_vector<rtree_value_type, qsz>::const_iterator
+        for(query_result_container_type::const_iterator
                 i(tmp.begin()), e(tmp.end()); i != e; ++i)
         {
             const ParticleID& pid = boost::get<1>(*i);
@@ -159,7 +159,7 @@ ParticleSpaceRTreeImpl::list_particles_within_radius(
         return retval;
     }
 
-    boost::container::static_vector<box_type, 8>
+    query_boxes_container_type
         boxes(1, self_type::make_box(pos, radius+this->max_radius_));
 
     const box_type boundary(Real3(0,0,0), this->edge_lengths_);
@@ -170,15 +170,15 @@ ParticleSpaceRTreeImpl::list_particles_within_radius(
         this->split_box_by_boundary<2>(boxes);
     }
 
-    for(boost::container::static_vector<box_type, 8>::const_iterator
+    for(query_boxes_container_type::const_iterator
             bxi(boxes.begin()), bxe(boxes.end()); bxi != bxe; ++bxi)
     {
-        boost::container::small_vector<rtree_value_type, qsz> tmp;
+        query_result_container_type tmp;
         this->rtree_.query(boost::geometry::index::intersects(*bxi) &&
             boost::geometry::index::satisfies(particle_id_excluder(ignore)),
             std::back_inserter(tmp));
 
-        for(boost::container::small_vector<rtree_value_type, qsz>::const_iterator
+        for(query_result_container_type::const_iterator
                 i(tmp.begin()), e(tmp.end()); i != e; ++i)
         {
             const ParticleID& pid = boost::get<1>(*i);
@@ -209,7 +209,7 @@ ParticleSpaceRTreeImpl::list_particles_within_radius(
         return retval;
     }
 
-    boost::container::static_vector<box_type, 8>
+    query_boxes_container_type
         boxes(1, self_type::make_box(pos, radius+this->max_radius_));
 
     const box_type boundary(Real3(0,0,0), this->edge_lengths_);
@@ -221,15 +221,15 @@ ParticleSpaceRTreeImpl::list_particles_within_radius(
         this->split_box_by_boundary<2>(boxes);
     }
 
-    for(boost::container::static_vector<box_type, 8>::const_iterator
+    for(query_boxes_container_type::const_iterator
             bxi(boxes.begin()), bxe(boxes.end()); bxi != bxe; ++bxi)
     {
-        boost::container::small_vector<rtree_value_type, qsz> tmp;
+        query_result_container_type tmp;
         this->rtree_.query(boost::geometry::index::intersects(*bxi) &&
             boost::geometry::index::satisfies(particle_id2_excluder(ignore1, ignore2)),
             std::back_inserter(tmp));
 
-        for(boost::container::small_vector<rtree_value_type, qsz>::const_iterator
+        for(query_result_container_type::const_iterator
                 i(tmp.begin()), e(tmp.end()); i != e; ++i)
         {
             const ParticleID& pid = boost::get<1>(*i);
