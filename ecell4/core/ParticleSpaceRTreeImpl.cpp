@@ -1,4 +1,5 @@
 #include <ecell4/core/ParticleSpaceRTreeImpl.hpp>
+#include <ecell4/core/comparators.hpp>
 #include <boost/geometry/algorithms/within.hpp>
 
 namespace ecell4
@@ -124,12 +125,14 @@ ParticleSpaceRTreeImpl::list_particles_within_radius(
             const Particle&   p   = boost::get<2>(*i);
             const Real dist = this->distance(p.position(), pos) - p.radius();
 
-            if(dist < radius)
+            if(dist <= radius)
             {
                 retval.push_back(std::make_pair(std::make_pair(pid, p), dist));
             }
         }
     }
+    std::sort(retval.begin(), retval.end(), utils::pair_second_element_comparator<
+            std::pair<ParticleID, Particle>, Real>());
     return retval;
 }
 
@@ -166,12 +169,16 @@ ParticleSpaceRTreeImpl::list_particles_within_radius(
             const Particle&   p   = boost::get<2>(*i);
             const Real dist = this->distance(p.position(), pos) - p.radius();
 
-            if(dist < radius)
+            BOOST_ASSERT(pid != ignore);
+
+            if(dist <= radius)
             {
                 retval.push_back(std::make_pair(std::make_pair(pid, p), dist));
             }
         }
     }
+    std::sort(retval.begin(), retval.end(), utils::pair_second_element_comparator<
+            std::pair<ParticleID, Particle>, Real>());
     return retval;
 }
 
@@ -210,12 +217,18 @@ ParticleSpaceRTreeImpl::list_particles_within_radius(
             const Particle&   p   = boost::get<2>(*i);
             const Real dist = this->distance(p.position(), pos) - p.radius();
 
-            if(dist < radius)
+            BOOST_ASSERT(pid != ignore1);
+            BOOST_ASSERT(pid != ignore2);
+
+            if(dist <= radius)
             {
                 retval.push_back(std::make_pair(std::make_pair(pid, p), dist));
             }
         }
     }
+    std::sort(retval.begin(), retval.end(), utils::pair_second_element_comparator<
+            std::pair<ParticleID, Particle>, Real>());
+
     return retval;
 }
 
