@@ -12,6 +12,11 @@
 
 #include <boost/version.hpp>
 
+#if BOOST_VERSION < 106300
+// ticket 12289
+#include <iostream>
+#endif
+
 #if BOOST_VERSION >= 105400
 #define  ECELL4_HAS_BOOST_STATIC_VECTOR 1
 #include <boost/container/static_vector.hpp>
