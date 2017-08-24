@@ -358,7 +358,10 @@ protected:
         }
         rtree_.insert(make_rtree_value(pid, p));
         particle_pool_[p.species_serial()].insert(pid);
-        max_radius_ = std::max(max_radius_, p.radius());
+        if(max_radius_ < p.radius())
+        {
+            max_radius_ = p.radius();
+        }
 
         const std::size_t idx = particles_.size();
         particles_.push_back(std::make_pair(pid, p));
@@ -403,7 +406,10 @@ protected:
             particle_pool_[particles_[idx].second.species_serial()].erase(pid);
             particle_pool_[p.species_serial()].insert(pid);
 
-            max_radius_ = std::max(max_radius_, p.radius());
+            if(max_radius_ < p.radius())
+            {
+                max_radius_ = p.radius();
+            }
         }
         particles_[idx].second = p;
         return;
