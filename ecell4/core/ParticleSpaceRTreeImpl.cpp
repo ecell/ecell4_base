@@ -36,7 +36,9 @@ Integer ParticleSpaceRTreeImpl::num_particles(const Species& sp) const
     {
         const Species target(i->first);
         if(sexp.match(target))
+        {
             retval += i->second.size();
+        }
     }
     return retval;
 }
@@ -75,8 +77,12 @@ ParticleSpaceRTreeImpl::list_particles(const Species& sp) const
 
     for(particle_container_type::const_iterator
             i(particles_.begin()), e(particles_.end()); i != e; ++i)
+    {
         if(sexp.match(i->second.species()))
+        {
             retval.push_back(*i);
+        }
+    }
 
     return retval;
 }
@@ -87,8 +93,12 @@ ParticleSpaceRTreeImpl::list_particles_exact(const Species& sp) const
 
     for(particle_container_type::const_iterator
             i(particles_.begin()), e(particles_.end()); i != e; ++i)
+    {
         if (i->second.species() == sp)
+        {
             retval.push_back(*i);
+        }
+    }
 
     return retval;
 }
@@ -98,7 +108,10 @@ ParticleSpaceRTreeImpl::list_particles_within_radius(
         const Real3& pos, const Real& radius) const
 {
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > retval;
-    if(this->particles_.empty()) return retval;
+    if(this->particles_.empty())
+    {
+        return retval;
+    }
 
     boost::container::static_vector<box_type, 8>
         boxes(1, self_type::make_box(pos, radius+this->max_radius_));
@@ -141,7 +154,10 @@ ParticleSpaceRTreeImpl::list_particles_within_radius(
         const Real3& pos, const Real& radius, const ParticleID& ignore) const
 {
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > retval;
-    if(this->particles_.empty()) return retval;
+    if(this->particles_.empty())
+    {
+        return retval;
+    }
 
     boost::container::static_vector<box_type, 8>
         boxes(1, self_type::make_box(pos, radius+this->max_radius_));
@@ -188,7 +204,10 @@ ParticleSpaceRTreeImpl::list_particles_within_radius(
         const ParticleID& ignore1, const ParticleID& ignore2) const
 {
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > retval;
-    if(this->particles_.empty()) return retval;
+    if(this->particles_.empty())
+    {
+        return retval;
+    }
 
     boost::container::static_vector<box_type, 8>
         boxes(1, self_type::make_box(pos, radius+this->max_radius_));

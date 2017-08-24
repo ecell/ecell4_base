@@ -185,7 +185,9 @@ public:
     {
         const particle_container_type::const_iterator found = this->find(pid);
         if(found == this->particles_.end())
+        {
             throw NotFound("ParticleSpaceRTree::get_particle: particle not found.");
+        }
         return *found;
     }
 
@@ -351,8 +353,9 @@ protected:
     void insert(const ParticleID& pid, const Particle& p)
     {
         if(this->has_particle(pid))
+        {
             throw std::invalid_argument("ParticleSpaceRTree::insert: already has");
-
+        }
         rtree_.insert(make_rtree_value(pid, p));
         particle_pool_[p.species_serial()].insert(pid);
         max_radius_ = std::max(max_radius_, p.radius());
@@ -365,8 +368,9 @@ protected:
     void remove(const ParticleID& pid)
     {
         if(!this->has_particle(pid))
+        {
             throw NotFound("ParticleSpaceRTree::remove: particle not found");
-
+        }
         const std::size_t idx = idx_map_[pid];
         idx_map_.erase(pid);
 
@@ -386,8 +390,9 @@ protected:
     void update(const ParticleID& pid, const Particle& p)
     {
         if(!this->has_particle(pid))
+        {
             throw NotFound("ParticleSpaceRTree::update: particle not found");
-
+        }
         const std::size_t idx = idx_map_[pid];
         const std::size_t result = rtree_.remove(make_rtree_value(pid, particles_[idx].second));
         BOOST_ASSERT(result == 1);
