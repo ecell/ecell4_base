@@ -69,7 +69,14 @@ struct Triangle : public Shape
     }
     Real3 draw_position(boost::shared_ptr<RandomNumberGenerator>& rng) const
     {
-        throw NotImplemented("Triangle::draw_position(rng)");
+        Real a1 = rng.uniform(0.0, 1.0);
+        Real a2 = rng.uniform(0.0, 1.0);
+        if(a1 + a2 > 1.0)
+        {
+            a1 = 1.0 - a1;
+            a2 = 1.0 - a2;
+        }
+        return edges_[0] * a1 - edges_[2] * a2;
     }
     bool test_AABB(const Real3& l, const Real3& u) const
     {
