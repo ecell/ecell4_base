@@ -848,6 +848,9 @@ class SGFRDSimulator :
                 domains.push_back(std::make_pair(did, dist));
             }
         }
+
+        std::sort(domains.begin(), domains.end(),
+                  utils::pair_second_element_comparator<DomainID, Real>());
         return domains;
     }
 
@@ -875,6 +878,8 @@ class SGFRDSimulator :
                 domains.push_back(std::make_pair(did, dist));
             }
         }
+        std::sort(domains.begin(), domains.end(),
+                  utils::pair_second_element_comparator<DomainID, Real>());
         return domains;
     }
 
