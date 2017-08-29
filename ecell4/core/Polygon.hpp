@@ -188,6 +188,10 @@ class Polygon : public Shape
 
     const converter_type& converter() const {return converter_;}
 
+    std::pair<Real3, face_id_type>
+    draw_random_position(boost::shared_ptr<RandomNumberGenerator>& rng) const;
+
+
     /* required by shape -----------------------------------------------------*/
     dimension_kind dimension() const {return THREE;} // TWO?
 
@@ -302,6 +306,33 @@ Polygon<T>::bounding_box(const Real3& edge_lengths, Real3& l, Real3& u) const
 {
     throw NotImplemented("ecell4::Polygon::bounding_box");
 }
+
+template<typename T>
+std::pair<Real3, typename Polygon<T>::face_id_type>
+Polygon<T>::draw_random_position(
+        const boost::shared_ptr<RandomNumberGenerator>& rng) const
+{
+    //TODO too slow.
+    Real total_area = 0.0;
+    for(typename face_container_type::const_iterator
+            i(faces_.begin()), e(faces_.end()); i != e; ++i)
+    {
+        total_area += i->triangle.area();
+    }
+
+    Real draw_triangle = rng.uniform(0.0, total_area);
+    for(typename face_container_type::const_iterator
+            i(faces_.begin()), e(faces_.end()); i != e; ++i)
+    {
+        draw_triangle -= i->triangle.area();
+        if(draw_triangle <= 0.0)
+        {
+            return std::make_pair(i->triangle.draw_position(), i->id);
+        }
+    }
+    return std::make_pair(faces_.back().triangle.draw_position(), faces_.back().id);
+}
+
 
 /* set connection ------------------------------------------------------------*/
 
