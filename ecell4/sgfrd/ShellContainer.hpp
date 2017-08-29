@@ -385,14 +385,14 @@ ShellContainer<T_pt>::list_shells_within_radius(
     {
         const std::vector<ShellID>& shells = list_shells_on(*iter);
         for(typename std::vector<ShellID>::const_iterator
-            iter = shells.begin(); iter != shells.end(); ++iter)
+            jter = shells.begin(); jter != shells.end(); ++jter)
         {
-            const storage_type shell(this->get_shell(*iter));
+            const storage_type shell(this->get_shell(*jter));
             const Real dist = boost::apply_visitor(distance, shell);
             if(dist < radius)
             {
                 retval.push_back(std::make_pair(
-                            std::make_pair(*iter, shell), dist));
+                            std::make_pair(*jter, shell), dist));
             }
         }
     }
@@ -402,14 +402,14 @@ ShellContainer<T_pt>::list_shells_within_radius(
     {
         const std::vector<ShellID>& shells = list_shells_on(*iter);
         for(typename std::vector<ShellID>::const_iterator
-            iter = shells.begin(); iter != shells.end(); ++iter)
+            jter = shells.begin(); jter != shells.end(); ++jter)
         {
-            const storage_type shell(this->get_shell(*iter));
-            const Real dist = boost::apply_visitor(distance, this->get_shell(*iter));
+            const storage_type shell(this->get_shell(*jter));
+            const Real dist = boost::apply_visitor(distance, this->get_shell(*jter));
             if(dist < radius)
             {
                 retval.push_back(std::make_pair(
-                            std::make_pair(*iter, shell), dist));
+                            std::make_pair(*jter, shell), dist));
             }
         }
     }
@@ -439,15 +439,15 @@ ShellContainer<T_pt>::list_shells_within_radius(
     {
         const std::vector<ShellID>& shells = list_shells_on(*iter);
         for(typename std::vector<ShellID>::const_iterator
-            iter = shells.begin(); iter != shells.end(); ++iter)
+            jter = shells.begin(); jter != shells.end(); ++jter)
         {
-            if(*iter == ignore) continue;
-            const storage_type shell(this->get_shell(*iter));
+            if(*jter == ignore) continue;
+            const storage_type shell(this->get_shell(*jter));
             const Real dist = boost::apply_visitor(distance, shell);
             if(dist < radius)
             {
                 retval.push_back(std::make_pair(
-                            std::make_pair(*iter, shell), dist));
+                            std::make_pair(*jter, shell), dist));
             }
         }
     }
@@ -457,15 +457,15 @@ ShellContainer<T_pt>::list_shells_within_radius(
     {
         const std::vector<ShellID>& shells = list_shells_on(*iter);
         for(typename std::vector<ShellID>::const_iterator
-            iter = shells.begin(); iter != shells.end(); ++iter)
+            jter = shells.begin(); jter != shells.end(); ++jter)
         {
-            if(*iter == ignore) continue;
-            const storage_type shell(this->get_shell(*iter));
+            if(*jter == ignore) continue;
+            const storage_type shell(this->get_shell(*jter));
             const Real dist = boost::apply_visitor(distance, shell);
             if(dist < radius)
             {
                 retval.push_back(std::make_pair(
-                            std::make_pair(*iter,shell), dist));
+                            std::make_pair(*jter,shell), dist));
             }
         }
     }
@@ -495,15 +495,15 @@ ShellContainer<T_pt>::list_shells_within_radius(
     {
         const std::vector<ShellID>& shells = list_shells_on(*iter);
         for(typename std::vector<ShellID>::const_iterator
-            iter = shells.begin(); iter != shells.end(); ++iter)
+            jter = shells.begin(); jter != shells.end(); ++jter)
         {
-            if(*iter == ignore1 || *iter == ignore2) continue;
-            const storage_type shell(this->get_shell(*iter));
+            if(*jter == ignore1 || *jter == ignore2) continue;
+            const storage_type shell(this->get_shell(*jter));
             const Real dist = boost::apply_visitor(distance, shell);
             if(dist < radius)
             {
                 retval.push_back(std::make_pair(
-                            std::make_pair(*iter, shell), dist));
+                            std::make_pair(*jter, shell), dist));
             }
         }
     }
@@ -513,16 +513,16 @@ ShellContainer<T_pt>::list_shells_within_radius(
     {
         const std::vector<ShellID>& shells = list_shells_on(*iter);
         for(typename std::vector<ShellID>::const_iterator
-            iter = shells.begin(); iter != shells.end(); ++iter)
+            jter = shells.begin(); jter != shells.end(); ++jter)
         {
-            if(*iter == ignore1 || *iter == ignore2) continue;
+            if(*jter == ignore1 || *jter == ignore2) continue;
 
-            const storage_type shell(this->get_shell(*iter));
+            const storage_type shell(this->get_shell(*jter));
             const Real dist = boost::apply_visitor(distance, shell);
             if(dist < radius)
             {
                 retval.push_back(std::make_pair(
-                            std::make_pair(*iter, shell), dist));
+                            std::make_pair(*jter, shell), dist));
             }
         }
     }
