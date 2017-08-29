@@ -61,14 +61,14 @@ void reaction_output(
                 r_iter = iter->second.reactants().begin(),
                 r_end = iter->second.reactants().end(); r_iter != r_end; ++r_iter)
         {
-            outstr << "PID(" << r_iter->first << ") ";
+            outstr << r_iter->first;
         }
         outstr << "}, products = { ";
         for(reaction_info_type::container_type::const_iterator
                 p_iter = iter->second.products().begin(),
                 p_end  = iter->second.products().end(); p_iter != p_end; ++p_iter)
         {
-            outstr << "PID(" << p_iter->first << ") ";
+            outstr << p_iter->first;
         }
         outstr << '}' << std::endl;
     }
@@ -174,21 +174,10 @@ int main(int argc, char **argv)
         boost::make_shared<world_type>(edge_lengths, matrix_sizes, polygon, rng);
 
     const std::size_t num_particle = polygon->num_triangles();
-
-    const std::vector<face_id_type> fids = polygon->list_face_id();
-    std::vector<ecell4::ParticleID> pids; pids.reserve(num_particle);
-
-    for(std::size_t np = 0; np < num_particle; ++np)
-    {
-        ecell4::Particle p(sp1, ecell4::centroid(polygon->triangle_at(fids.at(np))),
-                           1e-2, 1e-2);
-
-        //TODO add world::new_particle(Species, pos)
-        const std::pair<std::pair<ecell4::ParticleID, ecell4::Particle>, bool> newp =
-            world->new_particle(p, fids.at(np));
-        assert(newp.second);
-        pids.push_back(newp.first.first);
-    }
+    world->add_molecule(sp1, num_particle);
+    world->add_molecule(sp2, num_particle);
+    world->add_molecule(sp3, num_particle);
+    std::cout << num_particle << "*3 molecules have been added" << std::endl;
 
     if(key_missing(input, "trajectory")) return 1;
     if(key_missing(input, "species"))    return 1;
@@ -236,7 +225,7 @@ int main(int argc, char **argv)
     sim.finalize();
     snapshot_output(traj, world);
     species_output(spec, world, sp1, sp2, sp3);
-    reaction_output(reac, world);
+    reaction_output(reac, sim);
 
     return 0;
 }
