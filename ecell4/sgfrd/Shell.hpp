@@ -51,6 +51,17 @@ class Shell
     shape_type     shape_;
 };
 
+template<typename charT, typename traits,
+         typename T_shape, typename T_structure_id>
+std::basic_ostream<charT, traits>&
+operator<<(std::basic_ostream<charT, traits>& os,
+           const Shell<T_shape, T_structure_id>& sh)
+{
+    os << "Shell(pos=" << sh.position() << ", size=" << sh.size()
+       << ", strid = " << sh.structure_id() << ", shape=" << sh.shape() << ")";
+    return os;
+}
+
 } // sgfrd
 } // ecell4
 #endif /* ECELL4_SGFRD_SHELL */
