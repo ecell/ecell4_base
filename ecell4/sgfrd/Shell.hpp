@@ -58,7 +58,8 @@ operator<<(std::basic_ostream<charT, traits>& os,
            const Shell<T_shape, T_structure_id>& sh)
 {
     os << "Shell(pos=" << sh.position() << ", size=" << sh.size()
-       << ", strid = " << sh.structure_id() << ", shape=" << sh.shape() << ")";
+       << ", strid = " << sh.structure_id() << ", domID = " << sh.domain_id()
+       << ", shape=" << sh.shape() << ")";
     return os;
 }
 
