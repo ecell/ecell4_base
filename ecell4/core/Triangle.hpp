@@ -57,6 +57,10 @@ struct Triangle : public Shape
     {
         return acos(dot_product(a, b) / std::sqrt(length_sq(a) * length_sq(b)));
     }
+    Real area() const
+    {
+        return 0.5 * length(cross_product(edges_[0], edges_[2] * (-1.0)));
+    }
 
     // shape
     dimension_kind dimension() const
