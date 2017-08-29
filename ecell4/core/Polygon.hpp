@@ -310,7 +310,7 @@ Polygon<T>::bounding_box(const Real3& edge_lengths, Real3& l, Real3& u) const
 template<typename T>
 std::pair<Real3, typename Polygon<T>::face_id_type>
 Polygon<T>::draw_random_position(
-        const boost::shared_ptr<RandomNumberGenerator>& rng) const
+        boost::shared_ptr<RandomNumberGenerator>& rng) const
 {
     //TODO too slow.
     Real total_area = 0.0;
@@ -320,17 +320,18 @@ Polygon<T>::draw_random_position(
         total_area += i->triangle.area();
     }
 
-    Real draw_triangle = rng.uniform(0.0, total_area);
+    Real draw_triangle = rng->uniform(0.0, total_area);
     for(typename face_container_type::const_iterator
             i(faces_.begin()), e(faces_.end()); i != e; ++i)
     {
         draw_triangle -= i->triangle.area();
         if(draw_triangle <= 0.0)
         {
-            return std::make_pair(i->triangle.draw_position(), i->id);
+            const Real3 pos = i->triangle.draw_position(rng);
+            return std::make_pair(pos, i->id);
         }
     }
-    return std::make_pair(faces_.back().triangle.draw_position(), faces_.back().id);
+    return std::make_pair(faces_.back().triangle.draw_position(rng), faces_.back().id);
 }
 
 
