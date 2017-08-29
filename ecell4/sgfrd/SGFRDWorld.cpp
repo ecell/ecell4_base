@@ -26,6 +26,27 @@ SGFRDWorld::new_particle(const Particle& p, const face_id_type& fid)
     return std::make_pair(std::make_pair(pid, p), update_particle(pid, p, fid));
 }
 
+std::pair<std::pair<ParticleID, Particle>, bool>
+SGFRDWorld::throw_in_particle(const Species& sp)
+{
+    const molecule_info_type molinfo = this->get_molecule_info(sp);
+    Real3 pos; face_id_type fid;
+    boost::tie(pos, fid) = this->polygon_->draw_random_position(this->rng_);
+    const Particle p(sp, pos, molinfo.radius, molinfo.D);
+    return this->new_particle(p, fid);
+}
+
+void SGFRDWorld::add_molecule(const Species& sp, const std::size_t N)
+{
+    for(std::size_t i=0; i<N; ++i)
+    {
+        while(this->throw_in_particle(sp).second == false)
+        {
+            /*do nothing*/
+        }
+    }
+    return;
+}
 
 std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
 SGFRDWorld::list_particles_within_radius(

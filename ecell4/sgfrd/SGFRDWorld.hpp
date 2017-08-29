@@ -94,6 +94,11 @@ class SGFRDWorld : public ecell4::Space
     std::pair<std::pair<ParticleID, Particle>, bool>
     new_particle(const Particle& p, const face_id_type& fid);
 
+    std::pair<std::pair<ParticleID, Particle>, bool>
+    throw_in_particle(const Species& sp);
+
+    void add_molecule(const Species& sp, const std::size_t N);
+
     bool update_particle(const ParticleID& pid, const Particle& p)
     {
         return ps_->update_particle(pid, p);
