@@ -21,8 +21,19 @@ SGFRDWorld::new_particle(const Particle& p)
 std::pair<std::pair<ParticleID, Particle>, bool>
 SGFRDWorld::new_particle(const Particle& p, const face_id_type& fid)
 {
-    // XXX: consider particle shape and split overlap check for 2d and 3d
     const ParticleID pid = pidgen_();
+    // now this consider only 2D particles
+    const std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
+        overlap2d(list_particles_within_radius(
+            std::make_pair(p.position(), fid), p.radius()));
+    if(!overlap2d.empty())
+    {
+//         std::cout << "overlapped particle = ";
+//         for(std::size_t i=0; i<overlap2d.size(); ++i)
+//             std::cout << overlap2d.at(i).first.first << ", ";
+//         std::cout << std::endl;
+        return std::make_pair(std::make_pair(pid, p), false);
+    }
     return std::make_pair(std::make_pair(pid, p), update_particle(pid, p, fid));
 }
 
