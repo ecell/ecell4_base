@@ -375,7 +375,22 @@ ShellContainer<T_pt>::list_shells_within_radius(
 {
     std::vector<std::pair<std::pair<ShellID, storage_type>, Real> > retval;
     const distance_calculator_on_surface<T_pt, strID>
-        distance(pos, this->polygon_);
+        distance_on_surf(pos, this->polygon_);
+
+    {
+        const std::vector<ShellID>& shells = list_shells_on(pos.second);
+        for(typename std::vector<ShellID>::const_iterator
+            jter = shells.begin(); jter != shells.end(); ++jter)
+        {
+            const storage_type shell(this->get_shell(*jter));
+            const Real dist = boost::apply_visitor(distance_on_surf, shell);
+            if(dist < radius)
+            {
+                retval.push_back(std::make_pair(
+                            std::make_pair(*jter, shell), dist));
+            }
+        }
+    }
 
     std::vector<face_id_type>   neighborf = polygon_.at(pos.second).neighbor_faces;
     std::vector<vertex_id_type> neighborv = polygon_.at(pos.second).neighbor_vertices;
@@ -388,9 +403,20 @@ ShellContainer<T_pt>::list_shells_within_radius(
             jter = shells.begin(); jter != shells.end(); ++jter)
         {
             const storage_type shell(this->get_shell(*jter));
-            const Real dist = boost::apply_visitor(distance, shell);
+            const Real dist = boost::apply_visitor(distance_on_surf, shell);
             if(dist < radius)
             {
+                bool already_inside = false;
+                for(std::size_t i=0; i<retval.size(); ++i)
+                {
+                    if(retval.at(i).first.first == *jter)
+                    {
+                        already_inside = true;
+                    }
+                }
+                assert(already_inside == false);
+
+
                 retval.push_back(std::make_pair(
                             std::make_pair(*jter, shell), dist));
             }
@@ -405,9 +431,19 @@ ShellContainer<T_pt>::list_shells_within_radius(
             jter = shells.begin(); jter != shells.end(); ++jter)
         {
             const storage_type shell(this->get_shell(*jter));
-            const Real dist = boost::apply_visitor(distance, this->get_shell(*jter));
+            const Real dist = boost::apply_visitor(distance_on_surf, this->get_shell(*jter));
             if(dist < radius)
             {
+                bool already_inside = false;
+                for(std::size_t i=0; i<retval.size(); ++i)
+                {
+                    if(retval.at(i).first.first == *jter)
+                    {
+                        already_inside = true;
+                    }
+                }
+                assert(already_inside == false);
+
                 retval.push_back(std::make_pair(
                             std::make_pair(*jter, shell), dist));
             }
@@ -429,7 +465,22 @@ ShellContainer<T_pt>::list_shells_within_radius(
 {
     std::vector<std::pair<std::pair<ShellID, storage_type>, Real> > retval;
     const distance_calculator_on_surface<T_pt, strID>
-        distance(pos, this->polygon_);
+        distance_on_surf(pos, this->polygon_);
+
+    {
+        const std::vector<ShellID>& shells = list_shells_on(pos.second);
+        for(typename std::vector<ShellID>::const_iterator
+            jter = shells.begin(); jter != shells.end(); ++jter)
+        {
+            const storage_type shell(this->get_shell(*jter));
+            const Real dist = boost::apply_visitor(distance_on_surf, shell);
+            if(dist < radius)
+            {
+                retval.push_back(std::make_pair(
+                            std::make_pair(*jter, shell), dist));
+            }
+        }
+    }
 
     std::vector<face_id_type>   neighborf = polygon_.at(pos.second).neighbor_faces;
     std::vector<vertex_id_type> neighborv = polygon_.at(pos.second).neighbor_vertices;
@@ -443,9 +494,19 @@ ShellContainer<T_pt>::list_shells_within_radius(
         {
             if(*jter == ignore) continue;
             const storage_type shell(this->get_shell(*jter));
-            const Real dist = boost::apply_visitor(distance, shell);
+            const Real dist = boost::apply_visitor(distance_on_surf, shell);
             if(dist < radius)
             {
+                bool already_inside = false;
+                for(std::size_t i=0; i<retval.size(); ++i)
+                {
+                    if(retval.at(i).first.first == *jter)
+                    {
+                        already_inside = true;
+                    }
+                }
+                assert(already_inside == false);
+
                 retval.push_back(std::make_pair(
                             std::make_pair(*jter, shell), dist));
             }
@@ -461,9 +522,19 @@ ShellContainer<T_pt>::list_shells_within_radius(
         {
             if(*jter == ignore) continue;
             const storage_type shell(this->get_shell(*jter));
-            const Real dist = boost::apply_visitor(distance, shell);
+            const Real dist = boost::apply_visitor(distance_on_surf, shell);
             if(dist < radius)
             {
+                bool already_inside = false;
+                for(std::size_t i=0; i<retval.size(); ++i)
+                {
+                    if(retval.at(i).first.first == *jter)
+                    {
+                        already_inside = true;
+                    }
+                }
+                assert(already_inside == false);
+
                 retval.push_back(std::make_pair(
                             std::make_pair(*jter,shell), dist));
             }
@@ -485,7 +556,22 @@ ShellContainer<T_pt>::list_shells_within_radius(
 {
     std::vector<std::pair<std::pair<ShellID, storage_type>, Real> > retval;
     const distance_calculator_on_surface<T_pt, strID>
-        distance(pos, this->polygon_);
+        distance_on_surf(pos, this->polygon_);
+
+    {
+        const std::vector<ShellID>& shells = list_shells_on(pos.second);
+        for(typename std::vector<ShellID>::const_iterator
+            jter = shells.begin(); jter != shells.end(); ++jter)
+        {
+            const storage_type shell(this->get_shell(*jter));
+            const Real dist = boost::apply_visitor(distance_on_surf, shell);
+            if(dist < radius)
+            {
+                retval.push_back(std::make_pair(
+                            std::make_pair(*jter, shell), dist));
+            }
+        }
+    }
 
     std::vector<face_id_type>   neighborf = polygon_.at(pos.second).neighbor_faces;
     std::vector<vertex_id_type> neighborv = polygon_.at(pos.second).neighbor_vertices;
@@ -499,9 +585,19 @@ ShellContainer<T_pt>::list_shells_within_radius(
         {
             if(*jter == ignore1 || *jter == ignore2) continue;
             const storage_type shell(this->get_shell(*jter));
-            const Real dist = boost::apply_visitor(distance, shell);
+            const Real dist = boost::apply_visitor(distance_on_surf, shell);
             if(dist < radius)
             {
+                bool already_inside = false;
+                for(std::size_t i=0; i<retval.size(); ++i)
+                {
+                    if(retval.at(i).first.first == *jter)
+                    {
+                        already_inside = true;
+                    }
+                }
+                assert(already_inside == false);
+
                 retval.push_back(std::make_pair(
                             std::make_pair(*jter, shell), dist));
             }
@@ -518,9 +614,18 @@ ShellContainer<T_pt>::list_shells_within_radius(
             if(*jter == ignore1 || *jter == ignore2) continue;
 
             const storage_type shell(this->get_shell(*jter));
-            const Real dist = boost::apply_visitor(distance, shell);
+            const Real dist = boost::apply_visitor(distance_on_surf, shell);
             if(dist < radius)
             {
+                bool already_inside = false;
+                for(std::size_t i=0; i<retval.size(); ++i)
+                {
+                    if(retval.at(i).first.first == *jter)
+                    {
+                        already_inside = true;
+                    }
+                }
+                assert(already_inside == false);
                 retval.push_back(std::make_pair(
                             std::make_pair(*jter, shell), dist));
             }
@@ -529,6 +634,7 @@ ShellContainer<T_pt>::list_shells_within_radius(
     std::sort(retval.begin(), retval.end(),
               ecell4::utils::pair_second_element_comparator<
                   std::pair<ShellID, storage_type>, Real>());
+
     return retval;
 }
 
