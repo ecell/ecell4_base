@@ -38,9 +38,10 @@ struct shell_visitor_applier
     operator()(Functor& f, const Multi& dom)
     {
         std::vector<ShellID> const& sids = dom.shell_ids();
-        BOOST_FOREACH(ShellID const& sid, sids)
+        for(std::vector<ShellID>::const_iterator i(sids.begin()), e(sids.end());
+                i != e; ++i)
         {
-            boost::apply_visitor(f, container_.get_shell(sid));
+            boost::apply_visitor(f, container_.get_shell(*i));
         }
         return;
     }
@@ -51,10 +52,11 @@ struct shell_visitor_applier
     operator()(Functor& f, const Multi& dom)
     {
         std::vector<ShellID> const& sids = dom.shell_ids();
-        BOOST_FOREACH(ShellID const& sid, sids)
+        for(std::vector<ShellID>::const_iterator i(sids.begin()), e(sids.end());
+                i != e; ++i)
         {
             if(Functor::eval_manner::is_resolved(
-                        boost::apply_visitor(f, container_.get_shell(sid))))
+                        boost::apply_visitor(f, container_.get_shell(*i))))
             {
                 return Functor::eval_manner::value;
             }

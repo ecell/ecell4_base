@@ -3,6 +3,7 @@
 #include "Shell.hpp"
 #include "SGFRDEvent.hpp"
 #include "polygon_traits.hpp"
+#include <boost/type_traits.hpp>
 
 namespace ecell4
 {
