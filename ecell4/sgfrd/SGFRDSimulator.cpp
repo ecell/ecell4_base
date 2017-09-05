@@ -181,6 +181,7 @@ DomainID SGFRDSimulator::form_multi(
                     boost::get<circular_shell_type>(get_shell(sid));
                 clsh.shape().size() =
                     calc_min_single_circular_shell_radius(p_);
+                clsh.domain_id() = formed_multi_id;
                 update_shell(sid, clsh, clsh.structure_id());
                 SGFRD_TRACE(tracer_.write("shell(%1%) size updated to %2%.",
                             sid, clsh.shape().size()));
@@ -208,6 +209,8 @@ void SGFRDSimulator::add_to_multi_recursive(Multi& multi_to_join)
     const DomainID multi_to_join_id = get_domain_id(multi_to_join);
     const domain_id_setter didset(multi_to_join_id);
 
+    SGFRD_TRACE(tracer_.write("add domain to multi %1% ", multi_to_join_id));
+
     BOOST_FOREACH(ShellID sid, multi_to_join.shell_ids())
     {
         // assuming multi has only a circular_shell...
@@ -221,7 +224,7 @@ void SGFRDSimulator::add_to_multi_recursive(Multi& multi_to_join)
         DomainID did;
         BOOST_FOREACH(boost::tie(did, boost::tuples::ignore), intruder)
         {
-            if(did == multi_to_join_id) continue;
+            if(did == multi_to_join_id){continue;}
 
             SGFRD_TRACE(tracer_.write("bursting domain(%1%)", did));
             BOOST_AUTO(ev, get_event(did));
