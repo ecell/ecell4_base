@@ -829,8 +829,13 @@ class SGFRDSimulator :
     get_intrusive_domains(const std::pair<Real3, FaceID>& pos,
                           const Real radius) const
     {
+        SGFRD_SCOPE(us, get_intrusive_domains_position, tracer_);
+
         const std::vector<std::pair<std::pair<ShellID, shell_type>, Real>
             > shells(shell_container_.list_shells_within_radius(pos, radius));
+
+        SGFRD_TRACE(tracer_.write("collected %1% shells in radius %2%",
+                    shells.size(), radius));
 
         std::vector<std::pair<DomainID, Real> > domains;
         domains.reserve(shells.size());
@@ -838,13 +843,20 @@ class SGFRDSimulator :
         std::pair<ShellID, shell_type> shell_id_pair; Real dist;
         BOOST_FOREACH(boost::tie(shell_id_pair, dist), shells)
         {
+            SGFRD_TRACE(tracer_.write("shell %1% is at %2% distant",
+                        shell_id_pair.second, dist));
+
             const DomainID did = boost::apply_visitor(
                     domain_id_getter(), shell_id_pair.second);
+
+            SGFRD_TRACE(tracer_.write("shell %1% is related to domain %2%",
+                        shell_id_pair.second, did));
 
             if(std::find_if(domains.begin(), domains.end(),
                     ecell4::utils::pair_first_element_unary_predicator<
                     DomainID, Real>(did)) == domains.end())
             {
+                SGFRD_TRACE(tracer_.write("domain %1% is assigned to retval", did));
                 domains.push_back(std::make_pair(did, dist));
             }
         }
@@ -857,10 +869,15 @@ class SGFRDSimulator :
     std::vector<std::pair<DomainID, Real> >
     get_intrusive_domains(const vertex_id_type& vid, const Real radius) const
     {
+        SGFRD_SCOPE(us, get_intrusive_domains_vid, tracer_);
+
         const std::pair<Real3, vertex_id_type> vpos = std::make_pair(
                 polygon().vertex_at(vid).position, vid);
         const std::vector<std::pair<std::pair<ShellID, shell_type>, Real>
             > shells(shell_container_.list_shells_within_radius(vpos, radius));
+
+        SGFRD_TRACE(tracer_.write("collected %1% shells in radius %2%",
+                    shells.size(), radius));
 
         std::vector<std::pair<DomainID, Real> > domains;
         domains.reserve(shells.size());
@@ -868,13 +885,20 @@ class SGFRDSimulator :
         std::pair<ShellID, shell_type> shell_id_pair; Real dist;
         BOOST_FOREACH(boost::tie(shell_id_pair, dist), shells)
         {
+            SGFRD_TRACE(tracer_.write("shell %1% is at %2% distant",
+                        shell_id_pair.second, dist));
+
             const DomainID did = boost::apply_visitor(
                     domain_id_getter(), shell_id_pair.second);
+
+            SGFRD_TRACE(tracer_.write("shell %1% is related to domain %2%",
+                        shell_id_pair.second, did));
 
             if(std::find_if(domains.begin(), domains.end(),
                     ecell4::utils::pair_first_element_unary_predicator<
                     DomainID, Real>(did)) == domains.end())
             {
+                SGFRD_TRACE(tracer_.write("domain %1% is assigned to retval", did));
                 domains.push_back(std::make_pair(did, dist));
             }
         }
@@ -1365,14 +1389,12 @@ SGFRDSimulator::attempt_reaction_1_to_2(const ReactionRule& rule,
     particles_new[0] = Particle(sp1, newpfs[0].first, r1, D1);
     particles_new[1] = Particle(sp2, newpfs[1].first, r2, D2);
 
-    Integer retry(2);
-    while(retry > 0)
-    {
+    const Real minimum_separation_factor = 1.0e-7;
+    bool rejected = false;
+    do {
         SGFRD_SCOPE(us, try_to_split, tracer_)
-        --retry;
-        SGFRD_TRACE(tracer_.write("retry_count = %1%", retry))
 
-        const Real3 ipv(draw_ipv(r12, D12, fid));
+        const Real3 ipv(draw_ipv(r12 + minimum_separation_factor, D12, fid));
         SGFRD_TRACE(tracer_.write("length of ipv drawn now is %1%", length(ipv)));
         Real3 disp1(ipv * ( D1 / D12)), disp2(ipv * (-D2 / D12));
         {
@@ -1394,7 +1416,11 @@ SGFRDSimulator::attempt_reaction_1_to_2(const ReactionRule& rule,
             {
                 const bool no_overlap = this->burst_and_shrink_overlaps(
                     particles_new[0], newpfs[0].second, did);
-                if(!no_overlap) continue;
+                if(!no_overlap)
+                {
+                    rejected = true;
+                    break;
+                }
             }
         }
         {
@@ -1416,19 +1442,22 @@ SGFRDSimulator::attempt_reaction_1_to_2(const ReactionRule& rule,
             {
                 const bool no_overlap = this->burst_and_shrink_overlaps(
                     particles_new[1], newpfs[1].second, did);
-                if(!no_overlap) continue;
+                if(!no_overlap)
+                {
+                    rejected = true;
+                    break;
+                }
             }
         }
-        break; // no overlap!
-    }
-    if(retry == 0)
+    } while(false);
+    if(rejected)
     {
         SGFRD_TRACE(tracer_.write("reaction is rejected because there are no space."))
         return boost::container::static_vector<pid_p_fid_tuple_type, 2>(
                 1, boost::make_tuple(pid, p, fid));
     }
 
-    SGFRD_TRACE(tracer_.write("single reaction 1 -> 2 occurs"))
+    SGFRD_TRACE(tracer_.write("single reaction 1(%1%) -> 2 occurs", pid))
 
     this->update_particle(pid, particles_new[0], newpfs[0].second);
     BOOST_AUTO(pp2, this->create_particle(particles_new[1], newpfs[1].second));
