@@ -389,8 +389,20 @@ DomainID SGFRDSimulator::create_event(
     for(typename std::vector<std::pair<DomainID, Real> >::const_iterator
             iter = intrusive_domains.begin(), end = intrusive_domains.end();
             iter != end; ++iter)
+    {
+        SGFRD_TRACE(tracer_.write("check domain %1%: distance = %2%",
+                    iter->first, iter->second));
         if(iter->second <= min_circle_size)
+        {
+            SGFRD_TRACE(tracer_.write("%1% is inside of minimum circle size",
+                        iter->first));
             min_shell_intruder.push_back(*iter);
+        }
+        else
+        {
+            SGFRD_TRACE(tracer_.write("%1% does not intersect with minimum circle", iter->first));
+        }
+    }
 
     if(min_shell_intruder.empty())
     {
