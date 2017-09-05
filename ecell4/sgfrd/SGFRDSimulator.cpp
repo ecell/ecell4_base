@@ -248,6 +248,11 @@ void SGFRDSimulator::add_to_multi_recursive(Multi& multi_to_join)
                     {
                         // add the particle into multi
                         BOOST_AUTO(minsh, create_minimum_single_shell(pid, p, fid));
+
+                        // In the next loop, next shell may find this shell.
+                        // and if so, the domain_id would not be initialized.
+                        mut_sh_vis_applier(didset, multi_to_join);
+
                         multi_to_join.add_particle(pid);
                         multi_to_join.add_shell(minsh.first);
                         multi_enlarged = true;
