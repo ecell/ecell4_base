@@ -444,6 +444,38 @@ public:
         rel_tol_ = rel_tol;
     }
 
+    Real calculate_derivative(const ODEReactionRule& rr) const
+    {
+        if (!rr.has_ratelaw())
+        {
+            std::cout << "No ratelaw was bound. Return zero." << std::endl;
+            return 0.0;
+        }
+
+        const ODEReactionRule::reactant_container_type reactants = rr.reactants();
+        const ODEReactionRule::product_container_type products = rr.products();
+
+        ODERatelaw::state_container_type::size_type cnt(0);
+
+        ODERatelaw::state_container_type r(reactants.size());
+        for(ODEReactionRule::reactant_container_type::const_iterator j(reactants.begin());
+            j != reactants.end(); j++, cnt++)
+        {
+            r[cnt] = static_cast<double>(world_->get_value_exact(*j));
+        }
+
+        cnt = 0;
+
+        ODERatelaw::state_container_type p(products.size());
+        for(ODEReactionRule::reactant_container_type::const_iterator j(products.begin());
+            j != products.end(); j++, cnt++)
+        {
+            p[cnt] = static_cast<double>(world_->get_value_exact(*j));
+        }
+
+        return rr.get_ratelaw()->deriv_func(r, p, world_->volume(), world_->t(), rr);
+    }
+
 protected:
     std::pair<deriv_func, jacobi_func> generate_system() const;
 protected:

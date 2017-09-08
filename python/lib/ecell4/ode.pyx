@@ -575,6 +575,7 @@ cdef class ODERatelawCallback:
         """
         self.thisptr.get().set_callback_pyfunc(<Python_CallbackFunctype>pyfunc)
         self.pyfunc = pyfunc
+
     def get_callback(self):
         return <object>self.thisptr.get().get_callback_pyfunc()
 
@@ -613,7 +614,6 @@ def __rebuild_ode_ratelaw(ratelaw_type, name, param):
         return m
     else:
         raise ValueError("Invalid Ratelaw Type")
-    
 
 cdef class ODEReactionRule:
     """A class representing a reaction rule between ``Species``, which accepts at most
@@ -1251,6 +1251,9 @@ cdef class ODESimulator:
         else:
             self.thisptr.run(duration,
                 deref((<Observer>(observers.as_base())).thisptr))
+
+    def calculate_derivative(self, ODEReactionRule rr):
+        return self.thisptr.calculate_derivative(deref(rr.thisptr))
 
 cdef ODESimulator ODESimulator_from_Cpp_ODESimulator(Cpp_ODESimulator* s):
     r = ODESimulator(
