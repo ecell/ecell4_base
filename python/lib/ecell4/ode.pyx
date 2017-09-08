@@ -485,9 +485,8 @@ cdef class ODERatelawMassAction:
     def __reduce__(self):
         return (__rebuild_ode_ratelaw, ("ODERatelawMassAction", self.as_string(), self.get_k() ) )
 
-
-# cdef double indirect_function(
-cdef indirect_function(
+# cdef indirect_function(
+cdef double indirect_function(
     void *func, vector[Real] reactants, vector[Real] products,
     Real volume, Real t, Cpp_ODEReactionRule *rr):
     py_reactants = []
@@ -500,9 +499,14 @@ cdef indirect_function(
     while it2 != products.end():
         py_products.append(deref(it2))
         inc(it2)
-    return (<object>func)(
+    ret = (<object>func)(
             py_reactants, py_products, volume, t,
             ODEReactionRule_from_Cpp_ODEReactionRule(rr))
+    if not isinstance(ret, float):
+        #XXX: Show some warning here
+        # print('indirect_function: {} {} {} {} {} => {}'.format(py_reactants, py_products, volume, t, rr.as_string(), ret))
+        return 0.0
+    return ret
 
 cdef void inc_ref(void* func):
     Py_XINCREF(<PyObject*>func)
@@ -1252,8 +1256,27 @@ cdef class ODESimulator:
             self.thisptr.run(duration,
                 deref((<Observer>(observers.as_base())).thisptr))
 
-    def calculate_derivative(self, ODEReactionRule rr):
-        return self.thisptr.calculate_derivative(deref(rr.thisptr))
+    def evaluate(self, rr):
+        """evaluate(rr) -> Real
+
+        Evaluate the given reaction rule, and return the value.
+
+        Parameters
+        ----------
+        rr : ODEReactionRule
+            a reaction rule
+
+        Returns
+        -------
+        Real:
+            a propensity of the given reaction rule
+
+        """
+        if isinstance(rr, ODEReactionRule):
+            return self.thisptr.evaluate(deref((<ODEReactionRule>rr).thisptr))
+        elif isinstance(rr, ReactionRule):
+            return self.thisptr.evaluate(deref((<ReactionRule>rr).thisptr))
+        raise TypeError('A reaction rule is required.')
 
 cdef ODESimulator ODESimulator_from_Cpp_ODESimulator(Cpp_ODESimulator* s):
     r = ODESimulator(

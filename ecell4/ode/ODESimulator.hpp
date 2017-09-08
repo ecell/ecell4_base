@@ -471,11 +471,16 @@ public:
         rel_tol_ = rel_tol;
     }
 
-    Real calculate_derivative(const ODEReactionRule& rr) const
+    Real evaluate(const ReactionRule& rr) const
+    {
+        return evaluate(ODEReactionRule(rr));
+    }
+
+    Real evaluate(const ODEReactionRule& rr) const
     {
         if (!rr.has_ratelaw())
         {
-            std::cout << "No ratelaw was bound. Return zero." << std::endl;
+            // std::cout << "No ratelaw was bound. Return zero." << std::endl;
             return 0.0;
         }
 
