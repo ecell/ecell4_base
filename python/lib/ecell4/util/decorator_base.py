@@ -206,19 +206,16 @@ class ParseDecorator:
         return eval(expr, globals(), AnyCallableLocals(self.__callback, l))
 
     def __evaluate(self, expr, params=None):
-        if "-" in expr:
-            print(expr, "NOTICE: - can not be used in Species descriptor, we replaced it with _")
-            expr = expr.replace("-", "_")
-
-        if "|" in expr:
-            print(expr, "NOTICE: | can not be used in Species descriptor, we remove it")
-            expr = expr.replace("|", "")
-
-        prog = re.compile("^[0-9]")
-        if prog.match(expr):
-            print(expr, "NOTICE: Species name that begins with numbers is not allowed, we put x to the head")
-            expr = "x" + expr
-
+        # if "-" in expr:
+        #     print(expr, "NOTICE: - can not be used in Species descriptor, we replaced it with _")
+        #     expr = expr.replace("-", "_")
+        # if "|" in expr:
+        #     print(expr, "NOTICE: | can not be used in Species descriptor, we remove it")
+        #     expr = expr.replace("|", "")
+        # prog = re.compile("^[0-9]")
+        # if prog.match(expr):
+        #     print(expr, "NOTICE: Species name that begins with numbers is not allowed, we put x to the head")
+        #     expr = "x" + expr
         return self.eval(expr, params)
 
 # def parse_decorator(callback_class, func):
