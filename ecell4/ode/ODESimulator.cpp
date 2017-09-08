@@ -67,7 +67,7 @@ ODESimulator::generate_system() const
     }
     return std::make_pair(
             deriv_func(reactions, world_->volume()),
-            jacobi_func(reactions, world_->volume()));
+            jacobi_func(reactions, world_->volume(), abs_tol_, rel_tol_));
 }
 
 bool ODESimulator::step(const Real &upto)
