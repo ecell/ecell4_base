@@ -175,7 +175,7 @@ public:
                     // Differentiate by time
                     {
                         Real flux = temporary_ratelaw_obj->deriv_func(reactants_states, products_states, volume_, t + ht, *(i->raw) );
-                        Real flux_deriv = (flux - flux_0) / h;
+                        Real flux_deriv = (flux - flux_0) / ht;
                         if (flux_deriv != 0.0)
                         {
                             for(std::size_t k(0); k < i->reactants.size(); k++)
@@ -242,7 +242,7 @@ public:
                     // Differentiate by time
                     {
                         Real flux = ratelaw->deriv_func(reactants_states, products_states, volume_, t + ht, *(i->raw) );
-                        Real flux_deriv = (flux - flux_0) / h;
+                        Real flux_deriv = (flux - flux_0) / ht;
                         if (flux_deriv != 0.0)
                         {
                             for(std::size_t k(0); k < i->reactants.size(); k++)
