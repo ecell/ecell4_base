@@ -231,11 +231,13 @@ void SGFRDSimulator::add_to_multi_recursive(Multi& multi_to_join)
 
             if(ev->which_domain() == event_type::multi_domain)
             {
+                SGFRD_TRACE(tracer_.write("intruder is multi. merge."))
                 merge_multi(boost::get<Multi>(ev->domain()), multi_to_join);
                 multi_enlarged = true;
             }
             else
             {
+                SGFRD_TRACE(tracer_.write("intruder is not multi. burst."))
                 ParticleID pid; Particle p; FaceID fid;
                 BOOST_FOREACH(boost::tie(pid, p, fid),
                               burst_event(std::make_pair(did, ev), tm))
@@ -246,19 +248,24 @@ void SGFRDSimulator::add_to_multi_recursive(Multi& multi_to_join)
                         calc_min_single_circular_shell_radius(p);
                     if(dist < min_shell_radius)
                     {
-                        // add the particle into multi
+                        SGFRD_TRACE(tracer_.write("add the particle to multi"))
+
+                        // assign new shell to shell_container and return its ID.
                         BOOST_AUTO(minsh, create_minimum_single_shell(pid, p, fid));
+
+                        multi_to_join.add_particle(pid);
+                        multi_to_join.add_shell(minsh.first);
 
                         // In the next loop, next shell may find this shell.
                         // and if so, the domain_id would not be initialized.
                         mut_sh_vis_applier(didset, multi_to_join);
+//                         boost::get<circular_shell_type>(this->get_shell(minsh.first)).domain_id() = multi_to_join_id;
 
-                        multi_to_join.add_particle(pid);
-                        multi_to_join.add_shell(minsh.first);
                         multi_enlarged = true;
                     }
                     else // enough distant. add closely-fitted shell
                     {
+                        SGFRD_TRACE(tracer_.write("add tight shell to the particle"))
                         add_event(
                             create_closely_fitted_domain(
                                 create_closely_fitted_shell(
