@@ -639,9 +639,15 @@ class SGFRDSimulator :
     {
         SGFRD_SCOPE(us, merge_multi, tracer_)
 
+        BOOST_AUTO(const id_of_from, get_domain_id(from));
+        remove_event(id_of_from);
+        SGFRD_TRACE(tracer_.write("remove domain from(%1%)", id_of_from))
+
         // reset domain_id
         const domain_id_setter didset(this->get_domain_id(to));
         mut_sh_vis_applier(didset, from);
+        SGFRD_TRACE(tracer_.write("set domain ID for shell in from(%1%)", id_of_from))
+
 
         // move particle
         ParticleID pid; Particle p; FaceID fid;
@@ -654,13 +660,13 @@ class SGFRDSimulator :
         BOOST_FOREACH(ShellID sid, from.shell_ids())
         {
             const bool adds_result = to.add_shell(sid);
+            SGFRD_TRACE(tracer_.write("Shell(%1%).domain_id = %2%", sid,
+                        boost::get<circular_shell_type>(this->get_shell(sid)).domain_id()))
             assert(adds_result);
         }
         to.determine_reaction_length();
         to.determine_delta_t();
 
-        BOOST_AUTO(const id_of_from, get_domain_id(from));
-        remove_event(id_of_from);
         SGFRD_TRACE(tracer_.write("multi domain %1% is removed", id_of_from))
         return;
     }
