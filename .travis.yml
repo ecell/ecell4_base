@@ -49,8 +49,9 @@ before_install:
     brew update;
     brew install gsl ffmpeg;
     brew install homebrew/science/hdf5@1.8;
-    cp /usr/local/Cellar/hdf5\@1.8/1.8.18/include/* /usr/local/include/ ;
-    cp /usr/local/Cellar/hdf5\@1.8/1.8.18/lib/* /usr/local/lib/ ;
+    brew list hdf5@1.8 | head -n 1 | sed 's/\(^.*\/hdf5\@1.8\/[^\/]*\).*/\1/';
+    cp $(brew list hdf5@1.8 | head -n 1 | sed 's/\(^.*\/hdf5\@1.8\/[^\/]*\).*/\1/')/include/* /usr/local/include/ ;
+    cp $(brew list hdf5@1.8 | head -n 1 | sed 's/\(^.*\/hdf5\@1.8\/[^\/]*\).*/\1/')/lib/* /usr/local/lib/ ;
     if [[ $TRAVIS_PYTHON_VERSION == 3* ]]; then
       brew install python3;
       which python3;
