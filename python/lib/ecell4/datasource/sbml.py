@@ -1,3 +1,5 @@
+import itertools
+
 import libsbml
 
 try:
@@ -21,15 +23,9 @@ class SBMLDataSource(object):
         if filename is not None:
             self.read(filename)
 
-    def function_definitions(self, evalfunc=None, kwargs=None):
-        kwargs = kwargs or {}
-        for func in self.model.function_definitions:
-            args = [func.getArgument(i).getName() for i in range(func.getNumArguments())]
-            formula = libsbml.formulaToString(func.getBody())
-            if evalfunc is None:
-                yield (func.id, (args, formula))
-            else:
-                yield (func.id, LambdaFunction(args, formula, evalfunc))
+    def __del__(self):
+        del self.model
+        del self.data
 
     def read(self, filename):
         self.data = libsbml.SBMLReader().readSBML(filename)
@@ -44,6 +40,16 @@ class SBMLDataSource(object):
         self.data = libsbml.SBMLReader().readSBMLFromString(xml)
         self.model = self.data.getModel()
 
+    def function_definitions(self, evalfunc=None, kwargs=None):
+        kwargs = kwargs or {}
+        for func in self.model.function_definitions:
+            args = [func.getArgument(i).getName() for i in range(func.getNumArguments())]
+            formula = libsbml.formulaToString(func.getBody())
+            if evalfunc is None:
+                yield (func.id, (args, formula))
+            else:
+                yield (func.id, LambdaFunction(args, formula, evalfunc))
+
     def initial_amounts(self):
         for sp in self.model.species:
             if sp.isSetInitialAmount():
@@ -54,21 +60,49 @@ class SBMLDataSource(object):
             if sp.isSetInitialConcentration():
                 yield (sp.id, sp.initial_concentration)
 
+    def initial_assignments(self, evalfunc=None, kwargs=None):
+        evalfunc = evalfunc or None
+        kwargs = kwargs.copy() if kwargs else {}
+
+        for assignment in self.model.initial_assignments:
+            formula = libsbml.formulaToString(assignment.math)
+            if evalfunc is None:
+                yield (assignment.id, formula)
+            else:
+                val = evalfunc(formula, kwargs)
+                kwargs[assignment.id] = val
+                yield (assignment.id, val)
+
     def compartments(self):
         for comp in self.model.compartments:
             yield (comp.id, comp.volume)
 
-    def parameters(self):
+    def parameters(self, is_const=None):
         for p in self.model.parameters:
-            yield (p.id, p.value)
+            if is_const is None or (p.getConstant() == is_const):
+                yield (p.id, p.value)
 
-    def constants(self):
+    def species(self, is_const=None):
         for sp in self.model.species:
-            if sp.getConstant():
+            if is_const is None or (sp.getConstant() == is_const):
                 yield (sp.id)
 
+    def constants(self):
+        # for key, val in self.parameters(is_const=True):
+        #     yield key
+        # for key in self.species(is_const=True):
+        #     yield key
+
+        return self.species(is_const=True)
+
+    def variables(self):
+        for key, val in self.parameters(is_const=False):
+            yield key
+        for key in self.species(is_const=False):
+            yield key
+
     def assignment_rules(self, evalfunc=None, kwargs=None):
-        kwargs = kwargs or {}
+        kwargs = kwargs.copy() if kwargs else {}
 
         for rule in self.model.rules:
             if rule.isAssignment():
@@ -76,7 +110,8 @@ class SBMLDataSource(object):
                     yield (rule.variable, rule.formula)
                 else:
                     #XXX: Why not evaluate variable?
-                    yield (rule.variable, evalfunc(rule.formula, kwargs))
+                    kwargs[rule.variable] = evalfunc(rule.formula, kwargs)
+                    yield (rule.variable, kwargs[rule.variable])
 
     def reactions(self, evalfunc=None, kwargs=None):
         kwargs = kwargs or {}
@@ -94,8 +129,10 @@ class SBMLDataSource(object):
                 yield (reactants, products, formula, params)
             else:
                 params.update(kwargs)
-                yield (sum((evalfunc(sp, params) * coef for sp, coef in reactants), evalfunc('~EmptySet')),
-                       sum((evalfunc(sp, params) * coef for sp, coef in products), evalfunc('~EmptySet')),
+                yield (sum((evalfunc(sp, params) * coef for sp, coef in reactants if sp not in params.keys()),
+                           evalfunc('~EmptySet')),
+                       sum((evalfunc(sp, params) * coef for sp, coef in products if sp not in params.keys()),
+                           evalfunc('~EmptySet')),
                        evalfunc(formula, params))
 
 class BioModelsDataSource(SBMLDataSource):
@@ -141,8 +178,9 @@ if __name__ == '__main__':
     import sys
 
     from ecell4 import *
-    biomodels = BioModelsDataSource
+    from ecell4.datasource import sbml
 
+    biomodels = sbml.BioModelsDataSource
     mid = 'BIOMD0000000005'
 
     y0 = dict(biomodels(mid).initial_amounts())
@@ -151,7 +189,6 @@ if __name__ == '__main__':
     params = dict(biomodels(mid).parameters())
     params.update(biomodels(mid).compartments())
     print(params)
-
 
     with reaction_rules():
         params['EmptySet'] = ~EmptySet  #XXX: Just ignore EmptySet

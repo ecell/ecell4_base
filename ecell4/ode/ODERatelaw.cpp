@@ -54,7 +54,7 @@ Real ODERatelawCythonCallback::deriv_func(
     }
     ODEReactionRule rr_tempolrary(rr);
     return this->indirect_func_(
-        this->python_func_, reactants_state_array, products_state_array, 
+        this->python_func_, reactants_state_array, products_state_array,
         volume, t, &rr_tempolrary);
 }
 

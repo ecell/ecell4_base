@@ -130,8 +130,10 @@ public:
     class jacobi_func
     {
     public:
-        jacobi_func(const reaction_container_type &reactions, const Real& volume)
-            : reactions_(reactions), volume_(volume), vinv_(1.0 / volume)
+        jacobi_func(
+            const reaction_container_type &reactions, const Real& volume,
+            const Real& abs_tol, const Real& rel_tol)
+            : reactions_(reactions), volume_(volume), vinv_(1.0 / volume), abs_tol_(abs_tol), rel_tol_(rel_tol)
         {
             ;
         }
@@ -142,11 +144,27 @@ public:
             std::fill(dfdt.begin(), dfdt.end(), 0.0);
             std::fill(jacobi.data().begin(), jacobi.data().end(), 0.0);
 
-            const Real h(1.0e-8);
+            // const Real ETA(2.2204460492503131e-16);
+            const Real SQRTETA(1.4901161193847656e-08);
+            const Real r0(1.0);
+            // Real fac(0.0);
+            // for (std::size_t k(0); k < dfdt.size(); ++k)
+            // {
+            //     const Real ewtk(atol + rtol * x[k]);
+            //     fac = std::max(fac, dfdt[k] * ewtk);
+            // }
+            // const Real r0(1000.0 * h * ETA * dfdt.size() * fac);  //XXX: h means the step interval
+            // {
+            //     const Real ewtj(atol + rtol * x[j]);
+            //     const Real dyj(std::max(SQRTETA * abs(x[j]), r0 * ewtj));
+            // }
+
+            // const Real h(1.0e-8);
+            // const Real ht(1.0e-10);
             const Real ht(1.0e-10);
 
             // calculate jacobian for each reaction and merge it.
-            for(reaction_container_type::const_iterator i(reactions_.begin()); 
+            for(reaction_container_type::const_iterator i(reactions_.begin());
                 i != reactions_.end(); i++)
             {
                 // Calculate one reactions's jabobian
@@ -175,7 +193,7 @@ public:
                     // Differentiate by time
                     {
                         Real flux = temporary_ratelaw_obj->deriv_func(reactants_states, products_states, volume_, t + ht, *(i->raw) );
-                        Real flux_deriv = (flux - flux_0) / h;
+                        Real flux_deriv = (flux - flux_0) / ht;
                         if (flux_deriv != 0.0)
                         {
                             for(std::size_t k(0); k < i->reactants.size(); k++)
@@ -195,6 +213,8 @@ public:
                     // Differentiate by each Reactants
                     for(std::size_t j(0); j < reactants_states.size(); j++)
                     {
+                        const Real ewt = abs_tol_ + rel_tol_ * abs(reactants_states[j]);
+                        const Real h = std::max(SQRTETA * abs(reactants_states[j]), r0 * ewt);
                         ODERatelaw::state_container_type h_shift(reactants_states);
                         h_shift[j] += h;
                         Real flux = temporary_ratelaw_obj->deriv_func(h_shift, products_states, volume_, t, *(i->raw) );
@@ -216,6 +236,8 @@ public:
                     // Differentiate by Products
                     for(std::size_t j(0); j < products_states.size(); j++)
                     {
+                        const Real ewt = abs_tol_ + rel_tol_ * abs(products_states[j]);
+                        const Real h = std::max(SQRTETA * abs(products_states[j]), r0 * ewt);
                         ODERatelaw::state_container_type h_shift(products_states);
                         h_shift[j] += h;
                         Real flux = temporary_ratelaw_obj->deriv_func(reactants_states, h_shift, volume_, t, *(i->raw));
@@ -242,7 +264,7 @@ public:
                     // Differentiate by time
                     {
                         Real flux = ratelaw->deriv_func(reactants_states, products_states, volume_, t + ht, *(i->raw) );
-                        Real flux_deriv = (flux - flux_0) / h;
+                        Real flux_deriv = (flux - flux_0) / ht;
                         if (flux_deriv != 0.0)
                         {
                             for(std::size_t k(0); k < i->reactants.size(); k++)
@@ -262,6 +284,8 @@ public:
                     // Differentiate by each Reactants
                     for(std::size_t j(0); j < reactants_states.size(); j++)
                     {
+                        const Real ewt = abs_tol_ + rel_tol_ * abs(reactants_states[j]);
+                        const Real h = std::max(SQRTETA * abs(reactants_states[j]), r0 * ewt);
                         ODERatelaw::state_container_type h_shift(reactants_states);
                         h_shift[j] += h;
                         Real flux = ratelaw->deriv_func(h_shift, products_states, volume_, t, *(i->raw) );
@@ -283,6 +307,8 @@ public:
                     // Differentiate by Products
                     for(std::size_t j(0); j < products_states.size(); j++)
                     {
+                        const Real ewt = abs_tol_ + rel_tol_ * abs(products_states[j]);
+                        const Real h = std::max(SQRTETA * abs(products_states[j]), r0 * ewt);
                         ODERatelaw::state_container_type h_shift(products_states);
                         h_shift[j] += h;
                         Real flux = ratelaw->deriv_func(reactants_states, h_shift, volume_, t, *(i->raw));
@@ -308,6 +334,7 @@ public:
         const reaction_container_type reactions_;
         const Real volume_;
         const Real vinv_;
+        const Real abs_tol_, rel_tol_;
     };
 
 
@@ -442,6 +469,43 @@ public:
             throw std::invalid_argument("A tolerance must be positive or zero.");
         }
         rel_tol_ = rel_tol;
+    }
+
+    Real evaluate(const ReactionRule& rr) const
+    {
+        return evaluate(ODEReactionRule(rr));
+    }
+
+    Real evaluate(const ODEReactionRule& rr) const
+    {
+        if (!rr.has_ratelaw())
+        {
+            // std::cout << "No ratelaw was bound. Return zero." << std::endl;
+            return 0.0;
+        }
+
+        const ODEReactionRule::reactant_container_type reactants = rr.reactants();
+        const ODEReactionRule::product_container_type products = rr.products();
+
+        ODERatelaw::state_container_type::size_type cnt(0);
+
+        ODERatelaw::state_container_type r(reactants.size());
+        for(ODEReactionRule::reactant_container_type::const_iterator j(reactants.begin());
+            j != reactants.end(); j++, cnt++)
+        {
+            r[cnt] = static_cast<double>(world_->get_value_exact(*j));
+        }
+
+        cnt = 0;
+
+        ODERatelaw::state_container_type p(products.size());
+        for(ODEReactionRule::reactant_container_type::const_iterator j(products.begin());
+            j != products.end(); j++, cnt++)
+        {
+            p[cnt] = static_cast<double>(world_->get_value_exact(*j));
+        }
+
+        return rr.get_ratelaw()->deriv_func(r, p, world_->volume(), world_->t(), rr);
     }
 
 protected:
