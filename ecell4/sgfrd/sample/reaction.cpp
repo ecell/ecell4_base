@@ -201,12 +201,13 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    if(key_missing(input, "bd_dt")) return 1;
+    if(key_missing(input, "bd_dt"))           return 1;
     if(key_missing(input, "reaction_length")) return 1;
-
+    if(key_missing(input, "log_file"))        return 1;
     simulator_type sim(world, model,
         boost::lexical_cast<ecell4::Real>(input["bd_dt"]),
-        boost::lexical_cast<ecell4::Real>(input["reaction_length"]));
+        boost::lexical_cast<ecell4::Real>(input["reaction_length"]),
+        input["log_file"]);
     sim.initialize();
 
     snapshot_output(traj, world);
