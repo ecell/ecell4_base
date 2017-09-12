@@ -258,10 +258,14 @@ public:
         if(!clear_volume(particles_new[0], newpfs[0].second, pid)) return false;
         if(!clear_volume(particles_new[1], newpfs[1].second     )) return false;
 
-        this->container_.update_particle(pid, particles_new[0], newpfs[0].second);
+        const bool update_result = this->container_.update_particle(
+                pid, particles_new[0], newpfs[0].second);
         BOOST_AUTO(pp2,
             this->container_.new_particle(particles_new[1], newpfs[1].second));
         const ParticleID pid2(pp2.first.first);
+
+        assert(update_result == true);
+        assert(pid2.second   == true);
 
         //----------------------------- trial move -----------------------------
 
@@ -322,6 +326,7 @@ public:
         remove_particle(pid1);
         const std::pair<std::pair<ParticleID, Particle>, bool> pp_new =
             this->container_.new_particle(particle_new, pf1.second);
+        assert(pp_new.second);
 
         rlog.second.add_product(pp_new.first);
         last_reactions_.push_back(rlog);
