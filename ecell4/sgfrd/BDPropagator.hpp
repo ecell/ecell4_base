@@ -265,7 +265,7 @@ public:
         const ParticleID pid2(pp2.first.first);
 
         assert(update_result == true);
-        assert(pid2.second   == true);
+        assert(pp2.second    == true);
 
         //----------------------------- trial move -----------------------------
 
