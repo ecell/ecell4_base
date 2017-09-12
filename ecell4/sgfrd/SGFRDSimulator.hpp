@@ -1411,12 +1411,11 @@ SGFRDSimulator::attempt_reaction_1_to_2(const ReactionRule& rule,
     particles_new[0] = Particle(sp1, newpfs[0].first, r1, D1);
     particles_new[1] = Particle(sp2, newpfs[1].first, r2, D2);
 
-    const Real minimum_separation_factor = 1.0e-7;
     bool rejected = false;
     do {
         SGFRD_SCOPE(us, try_to_split, tracer_)
 
-        const Real3 ipv(draw_ipv(r12 + minimum_separation_factor, D12, fid));
+        const Real3 ipv(draw_ipv(r12, D12, fid));
         SGFRD_TRACE(tracer_.write("length of ipv drawn now is %1%", length(ipv)));
         Real3 disp1(ipv * ( D1 / D12)), disp2(ipv * (-D2 / D12));
         {
