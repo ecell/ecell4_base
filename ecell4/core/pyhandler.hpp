@@ -18,7 +18,7 @@ struct PyObjectHandler {
     ~PyObjectHandler();
     void inc_ref(myPython_Object obj)
     {
-        if (this->inc_ref_ != 0)
+        if (this->inc_ref_ == 0)
         {
             throw IllegalState("Functions to Operate python reference counts are not registered");
         }
@@ -26,7 +26,7 @@ struct PyObjectHandler {
     }
     void dec_ref(myPython_Object obj)
     {
-        if (this->dec_ref_ != 0)
+        if (this->dec_ref_ == 0)
         {
             throw IllegalState("Functions to Operate python reference counts are not registered");
         }
@@ -34,10 +34,10 @@ struct PyObjectHandler {
     }
     bool is_available(void)
     {
-        if (this->inc_ref_ != 0) {
+        if (this->inc_ref_ == 0) {
             return false;
         }
-        if (this->dec_ref_ != 0) {
+        if (this->dec_ref_ == 0) {
             return false;
         }
         // add criteria for checking if you have a new handler function
