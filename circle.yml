@@ -1,0 +1,41 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: quay.io/pypa/manylinux1_x86_64
+      
+    working_directory: ~/circle
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build E-Cell4
+          command: |
+            set -x
+            ECELLVER="4.1.2"
+            PY27="cp27-cp27mu"
+            PY35="cp35-cp35m"
+            PY36="cp36-cp36m"
+            git submodule init && git submodule update
+            /opt/python/$PY36/bin/python -m pip install cython
+            /opt/python/$PY35/bin/python -m pip install cython
+            /opt/python/$PY27/bin/python -m pip install cython
+            curl -O https://cmake.org/files/v3.7/cmake-3.7.2.tar.gz
+            wget --no-check-certificate ftp://ftp.gnu.org/gnu/gsl/gsl-2.3.tar.gz
+            wget --no-check-certificate https://downloads.sourceforge.net/project/boost/boost/1.63.0/boost_1_63_0.tar.bz2
+            curl -LO https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.8.17/src/hdf5-1.8.17.tar.bz2
+            tar xf cmake-3.7.2.tar.gz && tar xf gsl-2.3.tar.gz && tar xf hdf5-1.8.17.tar.bz2 && tar xf boost_1_63_0.tar.bz2
+            cd cmake-3.7.2 && ./configure && make && make install
+            cd ../gsl-2.3 && ./configure && make && make install
+            cd ../hdf5-1.8.17 && ./configure --prefix=/usr/local --enable-cxx && make && make install
+            cd ~/circle && export BOOST_INCLUDEDIR=/root/circle/boost_1_63_0
+            cmake -DNO_SHARED:BOOL=1 -DPYTHON_EXECUTABLE:FILEPATH=/opt/python/$PY36/bin/python . && make && rm -f CMakeCache.txt
+            cmake -DNO_SHARED:BOOL=1 -DPYTHON_EXECUTABLE:FILEPATH=/opt/python/$PY35/bin/python . && make && rm -f CMakeCache.txt
+            cmake -DNO_SHARED:BOOL=1 -DPYTHON_EXECUTABLE:FILEPATH=/opt/python/$PY27/bin/python . && make && rm -f CMakeCache.txt
+            auditwheel repair /root/circle/python/dist/ecell-$ECELLVER-$PY36-linux_x86_64.whl
+            auditwheel repair /root/circle/python/dist/ecell-$ECELLVER-$PY35-linux_x86_64.whl
+            auditwheel repair /root/circle/python/dist/ecell-$ECELLVER-$PY27-linux_x86_64.whl
+
+      - store_artifacts:
+          path: /root/circle/wheelhouse
+          

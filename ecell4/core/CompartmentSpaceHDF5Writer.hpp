@@ -1,5 +1,5 @@
-#ifndef __ECELL4_COMPARTMENT_SPACE_HDF5_WRITER_HPP
-#define __ECELL4_COMPARTMENT_SPACE_HDF5_WRITER_HPP
+#ifndef ECELL4_COMPARTMENT_SPACE_HDF5_WRITER_HPP
+#define ECELL4_COMPARTMENT_SPACE_HDF5_WRITER_HPP
 
 #include <cstring>
 #include <boost/scoped_ptr.hpp>
@@ -45,17 +45,25 @@ struct CompartmentSpaceHDF5TraitsBase
 
     typedef struct species_id_table_struct {
         uint32_t sid;
-        H5std_string serial; // #define H5std_string std::string
+        char serial[32]; // species' serial may exceed the limit
     } species_id_table_struct;
 
     static H5::CompType get_species_id_table_struct_memtype()
     {
         H5::CompType mtype_id_table_struct(sizeof(species_id_table_struct));
+        // const H5std_string name1("sid");
+        // const H5std_string name2("serial");
+        // mtype_id_table_struct.insertMember(
+        //     name1, HOFFSET(species_id_table_struct, sid),
+        //     H5::PredType::STD_I32LE);
+        // mtype_id_table_struct.insertMember(
+        //     name2, HOFFSET(species_id_table_struct, serial),
+        //     H5::StrType(H5::PredType::C_S1, 32));
 #define INSERT_MEMBER(member, type) \
         H5Tinsert(mtype_id_table_struct.getId(), #member,\
                 HOFFSET(species_id_table_struct, member), type.getId())
         INSERT_MEMBER(sid, H5::PredType::STD_I32LE);
-        INSERT_MEMBER(serial, H5::StrType(0, H5T_VARIABLE)); // H5T_VARIABLE is a macro
+        INSERT_MEMBER(serial, H5::StrType(H5::PredType::C_S1, 32));
 #undef INSERT_MEMBER
         return mtype_id_table_struct;
     }
@@ -149,7 +157,9 @@ void save_compartment_space(const typename Ttraits_::space_type& space, H5::Grou
     for(unsigned int i(0); i < num_species; ++i)
     {
         species_id_table[i].sid = i + 1;
-        species_id_table[i].serial = H5std_string(species_list[i].serial().c_str());
+        std::strcpy(
+            species_id_table[i].serial, species_list[i].serial().c_str());
+
         species_num_table[i].sid = i + 1;
         species_num_table[i].num_molecules =
             space.num_molecules(species_list[i]);
@@ -232,7 +242,7 @@ void load_compartment_space(const H5::Group& root, typename Ttraits_::space_type
         for (unsigned int i(0); i < num_species; ++i)
         {
             space->add_molecules(
-                Species(species_id_table[i].serial.c_str()),
+                Species(species_id_table[i].serial),
                 num_molecules_cache[species_id_table[i].sid]);
         }
     }
@@ -240,4 +250,4 @@ void load_compartment_space(const H5::Group& root, typename Ttraits_::space_type
 
 } // ecell4
 
-#endif /*  __ECELL4_COMPARTMENT_SPACE_HDF5_WRITER_HPP */
+#endif /*  ECELL4_COMPARTMENT_SPACE_HDF5_WRITER_HPP */

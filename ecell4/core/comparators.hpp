@@ -1,5 +1,5 @@
-#ifndef __ECELL4_COMPARATORS_HPP
-#define __ECELL4_COMPARATORS_HPP
+#ifndef ECELL4_COMPARATORS_HPP
+#define ECELL4_COMPARATORS_HPP
 
 namespace ecell4
 {
@@ -92,4 +92,4 @@ struct pair_second_element_comparator
 
 } // ecell4
 
-#endif /* __ECELL4_COMPARATORS_HPP */
+#endif /* ECELL4_COMPARATORS_HPP */

@@ -1,5 +1,5 @@
-#ifndef __ECELL4_VOXEL_HPP
-#define __ECELL4_VOXEL_HPP
+#ifndef ECELL4_VOXEL_HPP
+#define ECELL4_VOXEL_HPP
 
 namespace ecell4
 {

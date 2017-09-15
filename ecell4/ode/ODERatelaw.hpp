@@ -1,5 +1,5 @@
-#ifndef __ECELL4_ODE_RATELOW_HPP
-#define __ECELL4_ODE_RATELOW_HPP
+#ifndef ECELL4_ODE_RATELOW_HPP
+#define ECELL4_ODE_RATELOW_HPP
 
 #include <ecell4/core/types.hpp>
 #include <ecell4/core/exceptions.hpp>
@@ -50,7 +50,7 @@ public:
 
     virtual Real deriv_func(
         state_container_type const &reactants_state_array,
-        state_container_type const &products_state_array, 
+        state_container_type const &products_state_array,
         Real const volume, Real const t,
         ODEReactionRule const &reaction) = 0;
 

@@ -1,5 +1,5 @@
-#ifndef __ECELL4_ODE_ODE_WORLD_HPP
-#define __ECELL4_ODE_ODE_WORLD_HPP
+#ifndef ECELL4_ODE_ODE_WORLD_HPP
+#define ECELL4_ODE_ODE_WORLD_HPP
 
 #include <ecell4/core/Species.hpp>
 #include <ecell4/core/Context.hpp>
@@ -325,4 +325,4 @@ protected:
 
 } // ecell4
 
-#endif /* __ECELL4_ODE_ODE_WORLD_HPP */
+#endif /* ECELL4_ODE_ODE_WORLD_HPP */

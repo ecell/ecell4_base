@@ -5,9 +5,11 @@ import re
 
 import ecell4
 
-def replace_parseobj(expr, substitutes={}):
+def replace_parseobj(expr, substitutes=None):
+    substitutes = substitutes or {}
+
     import ecell4.util.decorator_base
-    obj = ecell4.util.decorator_base.just_parse().evaluate(expr)
+    obj = ecell4.util.decorator_base.just_parse().eval(expr)
 
     from ecell4.util.decorator import traverse_ParseObj
     keys = []
@@ -21,7 +23,7 @@ def replace_parseobj(expr, substitutes={}):
                 'unknown variable [{}] was used.'.format(key))
     return newexpr.format(*names)
 
-def export_sbml(model, y0={}, volume=1.0):
+def export_sbml(model, y0=None, volume=1.0, is_valid=True):
     """
     Export a model as a SBMLDocument.
 
@@ -31,9 +33,13 @@ def export_sbml(model, y0={}, volume=1.0):
     y0 : dict
         Initial condition.
     volume : Real or Real3, optional
-        A size of the simulation volume.
+        A size of the simulation volume. 1 as a default.
+    is_valid : bool, optional
+        Check if the generated model is valid. True as a default.
 
     """
+    y0 = y0 or {}
+
     import libsbml
 
     document = libsbml.SBMLDocument(3, 1)
@@ -201,23 +207,24 @@ def export_sbml(model, y0={}, volume=1.0):
             "The invalid type of a Model was given [{:s}].".format(str(model))
             + " NetworkModel or ODENetworkModel must be given.")
 
-    document.validateSBML()
-    num_errors = (document.getNumErrors(libsbml.LIBSBML_SEV_ERROR)
-                  + document.getNumErrors(libsbml.LIBSBML_SEV_FATAL))
-    if num_errors > 0:
-        messages = "The generated document is not valid."
-        messages += " {} errors were found:\n".format(num_errors)
-        for i in range(document.getNumErrors(libsbml.LIBSBML_SEV_ERROR)):
-            err = document.getErrorWithSeverity(i, libsbml.LIBSBML_SEV_ERROR)
-            messages += "{}: {}\n".format(err.getSeverityAsString(), err.getShortMessage())
-        for i in range(document.getNumErrors(libsbml.LIBSBML_SEV_FATAL)):
-            err = document.getErrorWithSeverity(i, libsbml.LIBSBML_SEV_FATAL)
-            messages += "{}: {}\n".format(err.getSeverityAsString(), err.getShortMessage())
-        raise RuntimeError(messages)
+    if is_valid:
+        document.validateSBML()
+        num_errors = (document.getNumErrors(libsbml.LIBSBML_SEV_ERROR)
+                      + document.getNumErrors(libsbml.LIBSBML_SEV_FATAL))
+        if num_errors > 0:
+            messages = "The generated document is not valid."
+            messages += " {} errors were found:\n".format(num_errors)
+            for i in range(document.getNumErrors(libsbml.LIBSBML_SEV_ERROR)):
+                err = document.getErrorWithSeverity(i, libsbml.LIBSBML_SEV_ERROR)
+                messages += "{}: {}\n".format(err.getSeverityAsString(), err.getShortMessage())
+            for i in range(document.getNumErrors(libsbml.LIBSBML_SEV_FATAL)):
+                err = document.getErrorWithSeverity(i, libsbml.LIBSBML_SEV_FATAL)
+                messages += "{}: {}\n".format(err.getSeverityAsString(), err.getShortMessage())
+            raise RuntimeError(messages)
 
     return document
 
-def save_sbml(filename, model, y0={}, volume=1.0):
+def save_sbml(filename, model, y0=None, volume=1.0, is_valid=True):
     """
     Save a model in the SBML format.
 
@@ -228,11 +235,15 @@ def save_sbml(filename, model, y0={}, volume=1.0):
         Initial condition.
     volume : Real or Real3, optional
         A size of the simulation volume.
+    is_valid : bool, optional
+        Check if the generated model is valid. True as a default.
 
     """
+    y0 = y0 or {}
+
     import libsbml
 
-    document = export_sbml(model, y0, volume)
+    document = export_sbml(model, y0, volume, is_valid)
 
     # with open(filename, 'w') as fout:
     #     fout.write(libsbml.writeSBMLToString(document))

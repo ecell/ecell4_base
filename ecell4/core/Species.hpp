@@ -1,5 +1,5 @@
-#ifndef __ECELL4_SPECIES_HPP
-#define __ECELL4_SPECIES_HPP
+#ifndef ECELL4_SPECIES_HPP
+#define ECELL4_SPECIES_HPP
 
 #include <string>
 #include <vector>
@@ -7,6 +7,7 @@
 #include <sstream>
 #include <algorithm>
 #include <boost/algorithm/string.hpp>
+#include <boost/variant.hpp>
 
 #include <ecell4/core/config.h>
 
@@ -27,10 +28,12 @@ public:
     typedef UnitSpecies::serial_type serial_type; //XXX: std::string
     typedef std::vector<UnitSpecies> container_type;
 
+    typedef boost::variant<std::string, Real, Integer, bool> attribute_type;
+
 protected:
 
-    typedef utils::get_mapper_mf<std::string, std::string>::type
-    attributes_container_type;
+    typedef utils::get_mapper_mf<std::string, attribute_type>::type
+        attributes_container_type;
 
 public:
 
@@ -46,8 +49,19 @@ public:
         ;
     }
 
+    Species(const Species& another)
+        : serial_(another.serial()), attributes_()
+    {
+        const std::vector<std::pair<std::string, attribute_type> > attrs = another.list_attributes();
+        for (std::vector<std::pair<std::string, attribute_type> >::const_iterator
+            i(attrs.begin()); i != attrs.end(); i++)
+        {
+            set_attribute((*i).first, (*i).second);
+        }
+    }
+
     Species(
-        const serial_type& name, const std::string& radius, const std::string& D,
+        const serial_type& name, const Real& radius, const Real& D,
         const std::string location = "")
         : serial_(name), attributes_()
     {
@@ -56,15 +70,17 @@ public:
         set_attribute("location", location);
     }
 
-    Species(const Species& another)
-        : serial_(another.serial()), attributes_()
+    /*
+     * The following constructor will be deprecated. Use the above one.
+     */
+    Species(
+        const serial_type& name, const std::string& radius, const std::string& D,
+        const std::string location = "")
+        : serial_(name), attributes_()
     {
-        const std::vector<std::pair<std::string, std::string> > attrs = another.list_attributes();
-        for (std::vector<std::pair<std::string, std::string> >::const_iterator
-            i(attrs.begin()); i != attrs.end(); i++)
-        {
-            set_attribute((*i).first, (*i).second);
-        }
+        set_attribute("radius", radius);
+        set_attribute("D", D);
+        set_attribute("location", location);
     }
 
     const serial_type serial() const
@@ -95,13 +111,33 @@ public:
         return attributes_;
     }
 
-    std::vector<std::pair<std::string, std::string> > list_attributes() const;
-    std::string get_attribute(const std::string& name_attr) const;
-    void set_attribute(const std::string& name_attr, const std::string& value);
+    std::vector<std::pair<std::string, attribute_type> > list_attributes() const;
+
+    attribute_type get_attribute(const std::string& name_attr) const;
+
+    template <typename T_>
+    T_ get_attribute_as(const std::string& name_attr) const
+    {
+        attribute_type val = get_attribute(name_attr);
+        if (T_* x = boost::get<T_>(&val))
+        {
+            return (*x);
+        }
+        throw NotSupported("An attribute has incorrect type.");
+    }
+
+
+    template <typename T_>
+    void set_attribute(const std::string& name_attr, T_ value)
+    // void set_attribute(const std::string& name_attr, const T_& value)
+    {
+        attributes_[name_attr] = value;
+    }
+
     void set_attributes(const Species& sp);
-    void overwrite_attributes(const Species& sp);
     void remove_attribute(const std::string& name_attr);
     bool has_attribute(const std::string& name_attr) const;
+    void overwrite_attributes(const Species& sp);
 
     bool operator==(const Species& rhs) const;
     bool operator!=(const Species& rhs) const;
@@ -159,6 +195,31 @@ protected:
     attributes_container_type attributes_;
 };
 
+template <>
+inline Real Species::get_attribute_as<Real>(const std::string& name_attr) const
+{
+    attribute_type val = get_attribute(name_attr);
+    if (Real* x = boost::get<Real>(&val))
+    {
+        return (*x);
+    }
+    else if (Integer* x = boost::get<Integer>(&val))
+    {
+        return static_cast<Real>(*x);
+    }
+    else if (std::string* x = boost::get<std::string>(&val))
+    {
+        return std::atof((*x).c_str());
+    }
+    throw NotSupported("An attribute has incorrect type. Real is expected");
+}
+
+template <>
+inline void Species::set_attribute(const std::string& name_attr, const char* value)
+{
+    attributes_[name_attr] = std::string(value);
+}
+
 Species format_species(const Species& sp);
 
 inline Species::serial_type unique_serial(const Species& sp)
@@ -190,4 +251,4 @@ struct hash<ecell4::Species>
 
 ECELL4_DEFINE_HASH_END()
 
-#endif /* __ECELL4_SPECIES_HPP */
+#endif /* ECELL4_SPECIES_HPP */

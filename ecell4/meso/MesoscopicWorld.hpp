@@ -1,5 +1,5 @@
-#ifndef __ECELL4_MESO_MESOSCOPIC_WORLD_HPP
-#define __ECELL4_MESO_MESOSCOPIC_WORLD_HPP
+#ifndef ECELL4_MESO_MESOSCOPIC_WORLD_HPP
+#define ECELL4_MESO_MESOSCOPIC_WORLD_HPP
 
 #include <numeric>
 #include <sstream>
@@ -416,4 +416,4 @@ private:
 
 } // ecell4
 
-#endif /* __ECELL4_MESO_MESOSCOPIC_WORLD_HPP */
+#endif /* ECELL4_MESO_MESOSCOPIC_WORLD_HPP */

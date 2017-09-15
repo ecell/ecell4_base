@@ -1,5 +1,5 @@
-#ifndef __ECELL4_SERIAL_ID_GENERATOR_HPP
-#define __ECELL4_SERIAL_ID_GENERATOR_HPP
+#ifndef ECELL4_SERIAL_ID_GENERATOR_HPP
+#define ECELL4_SERIAL_ID_GENERATOR_HPP
 
 #include <functional>
 #include <boost/type_traits/is_integral.hpp>
@@ -357,4 +357,4 @@ private:
 
 } // ecell4
 
-#endif /* __ECELL4_SERIAL_ID_GENERATOR_HPP */
+#endif /* ECELL4_SERIAL_ID_GENERATOR_HPP */

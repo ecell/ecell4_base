@@ -61,7 +61,9 @@ def savedata(filename, x, data):
         fout.write("\n")
         print("{} => {}".format(filename, line))
 
-def plotdata(ax, filename, label=None, c="k", marker="s", lines=[(0, 1.0)]):
+def plotdata(ax, filename, label=None, c="k", marker="s", lines=None):
+    lines = lines or [(0, 1.0)]
+
     import numpy
     data = numpy.loadtxt(filename)
     # data = numpy.log10(data)

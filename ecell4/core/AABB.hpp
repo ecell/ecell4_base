@@ -1,5 +1,5 @@
-#ifndef __ECELL4_AABB_HPP
-#define __ECELL4_AABB_HPP
+#ifndef ECELL4_AABB_HPP
+#define ECELL4_AABB_HPP
 
 #include "Shape.hpp"
 #include "shape_operators.hpp"
@@ -93,4 +93,4 @@ protected:
 
 }// ecell4
 
-#endif /* __ECELL4_AABB_HPP */
+#endif /* ECELL4_AABB_HPP */

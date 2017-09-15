@@ -36,17 +36,19 @@
 #include "DomainID.hpp"
 #include "Shell.hpp"
 //#include "EventScheduler.hpp"
-#include "PairGreensFunction.hpp"
 #include "ParticleSimulator.hpp"
 #include "MatrixSpace.hpp"
 #include "AnalyticalSingle.hpp"
 #include "AnalyticalPair.hpp"
 #include "Multi.hpp"
-#include "GreensFunction3DRadAbs.hpp"
-#include "GreensFunction3DRadInf.hpp"
-#include "GreensFunction3DAbsSym.hpp"
-#include "GreensFunction3DAbs.hpp"
-#include "GreensFunction3D.hpp"
+
+#include <greens_functions/PairGreensFunction.hpp>
+#include <greens_functions/GreensFunction3DRadAbs.hpp>
+#include <greens_functions/GreensFunction3DRadInf.hpp>
+#include <greens_functions/GreensFunction3DAbsSym.hpp>
+#include <greens_functions/GreensFunction3DAbs.hpp>
+#include <greens_functions/GreensFunction3D.hpp>
+// using namespace greens_functions;
 
 
 template<typename Tworld_>
@@ -111,25 +113,25 @@ struct get_greens_function {};
 template<>
 struct get_greens_function<ecell4::Sphere>
 {
-    typedef GreensFunction3DAbsSym type;
+    typedef greens_functions::GreensFunction3DAbsSym type;
 };
 
 // template<>
 // struct get_greens_function<Cylinder>
 // {
-//     typedef GreensFunction3DAbsSym type;
+//     typedef greens_functions::GreensFunction3DAbsSym type;
 // };
 // 
 // template<>
 // struct get_greens_function<Sphere>
 // {
-//     typedef GreensFunction3DAbsSym type;
+//     typedef greens_functions::GreensFunction3DAbsSym type;
 // };
 
 template<>
 struct get_greens_function<ecell4::Cylinder>
 {
-    typedef GreensFunction3DAbsSym type;
+    typedef greens_functions::GreensFunction3DAbsSym type;
 };
 
 template<typename T_>
@@ -138,29 +140,29 @@ struct get_pair_greens_function {};
 template<>
 struct get_pair_greens_function<ecell4::Sphere>
 {
-    typedef GreensFunction3DRadAbs iv_type;
-    typedef GreensFunction3DAbsSym com_type;
+    typedef greens_functions::GreensFunction3DRadAbs iv_type;
+    typedef greens_functions::GreensFunction3DAbsSym com_type;
 };
 
 template<>
 struct get_pair_greens_function<ecell4::Cylinder>
 {
-    typedef GreensFunction3DRadAbs iv_type;
-    typedef GreensFunction3DAbsSym com_type;
+    typedef greens_functions::GreensFunction3DRadAbs iv_type;
+    typedef greens_functions::GreensFunction3DAbsSym com_type;
 };
 
 // template<>
 // struct get_pair_greens_function<Sphere>
 // {
-//     typedef GreensFunction3DRadAbs iv_type;
-//     typedef GreensFunction3DAbsSym com_type;
+//     typedef greens_functions::GreensFunction3DRadAbs iv_type;
+//     typedef greens_functions::GreensFunction3DAbsSym com_type;
 // };
 // 
 // template<>
 // struct get_pair_greens_function<Cylinder>
 // {
-//     typedef GreensFunction3DRadAbs iv_type;
-//     typedef GreensFunction3DAbsSym com_type;
+//     typedef greens_functions::GreensFunction3DRadAbs iv_type;
+//     typedef greens_functions::GreensFunction3DAbsSym com_type;
 // };
 
 } // namespace detail
@@ -652,7 +654,7 @@ protected:
         position_type draw_iv(spherical_pair_type const& domain,
                               time_type dt, position_type const& old_iv) const
         {
-            boost::scoped_ptr<PairGreensFunction> const gf(
+            boost::scoped_ptr<greens_functions::PairGreensFunction> const gf(
                 choose_pair_greens_function(domain, dt));
             length_type const r(draw_r(
                 rng_, *gf, dt, domain.a_r(), domain.sigma()));
@@ -687,7 +689,7 @@ protected:
             BOOST_ASSERT(::size(domain.reactions()) == 1);
             throw not_implemented("unsupported pair type.");
             // length_type const r(
-            //     draw_r(rng_, GreensFunction3DRadAbs(domain.D_tot(),
+            //     draw_r(rng_, greens_functions::GreensFunction3DRadAbs(domain.D_tot(),
             //         domain.reactions()[0].k(), domain.r0(),
             //         domain.sigma(), domain.a_r()),
             //        dt, domain.a_r(), domain.sigma()));
@@ -709,7 +711,7 @@ protected:
     //         return add(
     //             domain.shell().second.position(),
     //             draw_r(rng_,
-    //                     GreensFunction3DAbsSym(domain.D_R(), domain.a_R()),
+    //                     greens_functions::GreensFunction3DAbsSym(domain.D_R(), domain.a_R()),
     //                     dt, domain.a_R()));
 
     //     }
@@ -717,7 +719,7 @@ protected:
     //     position_type draw_iv(spherical_pair_type const& domain,
     //                           time_type dt, position_type const& old_iv) const
     //     {
-    //         boost::scoped_ptr<PairGreensFunction> const gf(
+    //         boost::scoped_ptr<greens_functions::PairGreensFunction> const gf(
     //             choose_pair_greens_function(domain, dt));
     //         length_type const r(draw_r(
     //             rng_, *gf, dt, domain.a_r(), domain.sigma()));
@@ -751,7 +753,7 @@ protected:
     //     {
     //         BOOST_ASSERT(::size(domain.reactions()) == 1);
     //         length_type const r(
-    //             draw_r(rng_, GreensFunction3DRadAbs(domain.D_tot(),
+    //             draw_r(rng_, greens_functions::GreensFunction3DRadAbs(domain.D_tot(),
     //                 domain.reactions()[0].k(), domain.r0(),
     //                 domain.sigma(), domain().a_r()),
     //                dt, domain.a_r(), domain.sigma()));
@@ -780,14 +782,14 @@ protected:
                         rng_.uniform(-1., 1.)),
                     draw_r(
                         rng_,
-                        GreensFunction3DAbsSym(domain.D_R(), domain.a_R()),
+                        greens_functions::GreensFunction3DAbsSym(domain.D_R(), domain.a_R()),
                         dt, domain.a_R())));
         }
 
         position_type draw_iv(spherical_pair_type const& domain,
                               time_type dt, position_type const& old_iv)
         {
-            boost::scoped_ptr<PairGreensFunction> const gf(
+            boost::scoped_ptr<greens_functions::PairGreensFunction> const gf(
                 choose_pair_greens_function(domain, dt));
             length_type const r(domain.a_r());
             length_type const theta(draw_theta(rng_, *gf, dt, r));
@@ -814,7 +816,7 @@ protected:
 
             // length_type const r_R(draw_r(
             //     rng_,
-            //     GreensFunction3DAbsSym(domain.D_R(), domain.a_R()),
+            //     greens_functions::GreensFunction3DAbsSym(domain.D_R(), domain.a_R()),
             //     dt, domain.a_R()));
             // return add(
             //     domain.shell().second.position(),
@@ -849,14 +851,14 @@ protected:
                         rng_.uniform(-1., 1.)),
                     draw_r(
                         rng_,
-                        GreensFunction3DAbsSym(domain.D_R(), domain.a_R()),
+                        greens_functions::GreensFunction3DAbsSym(domain.D_R(), domain.a_R()),
                         dt, domain.a_R())));
         }
 
         position_type draw_iv(spherical_pair_type const& domain,
                               time_type dt, position_type const& old_iv)
         {
-            boost::scoped_ptr<PairGreensFunction> const gf(
+            boost::scoped_ptr<greens_functions::PairGreensFunction> const gf(
                 choose_pair_greens_function(domain, dt));
             length_type const r(domain.sigma());
             length_type const theta(draw_theta(rng_, *gf, dt, r));
@@ -882,7 +884,7 @@ protected:
 
             // length_type const r_R(draw_r(
             //     rng_,
-            //     GreensFunction3DAbsSym(domain.D_R(), domain.a_R()),
+            //     greens_functions::GreensFunction3DAbsSym(domain.D_R(), domain.a_R()),
             //     dt, domain.a_R()));
             // return add(
             //     domain.shell().second.position(),
@@ -917,14 +919,14 @@ protected:
                         rng_.uniform(-1., 1.)),
                     draw_r(
                         rng_,
-                        GreensFunction3DAbsSym(domain.D_R(), domain.a_R()),
+                        greens_functions::GreensFunction3DAbsSym(domain.D_R(), domain.a_R()),
                         dt, domain.a_R())));
         }
 
         position_type draw_iv(spherical_pair_type const& domain,
                               time_type dt, position_type const& old_iv)
         {
-            boost::scoped_ptr<PairGreensFunction> const gf(
+            boost::scoped_ptr<greens_functions::PairGreensFunction> const gf(
                 choose_pair_greens_function(domain, dt));
             length_type const r(draw_r(
                 rng_, *gf, dt, domain.a_r(), domain.sigma()));
@@ -952,7 +954,7 @@ protected:
 
             // length_type const r_R(draw_r(
             //     rng_,
-            //     GreensFunction3DAbsSym(domain.D_R(), domain.a_R()),
+            //     greens_functions::GreensFunction3DAbsSym(domain.D_R(), domain.a_R()),
             //     dt, domain.a_R()));
             // return add(
             //     domain.shell().second.position(),
@@ -966,7 +968,7 @@ protected:
             // BOOST_ASSERT(::size(domain.reactions()) == 1);
             // length_type const r(
             //     draw_r(rng_,
-            //         GreensFunction3DRadAbs(
+            //         greens_functions::GreensFunction3DRadAbs(
             //             domain.D_tot(),
             //             domain.reactions()[0].k(), domain.r0(),
             //             domain.sigma(), domain.a_r()),
@@ -3373,7 +3375,7 @@ protected:
     }
 
     template<typename Tshell>
-    GreensFunction3DRadAbs::EventKind
+    greens_functions::GreensFunction3DRadAbs::EventKind
     draw_iv_event_type(AnalyticalPair<traits_type, Tshell> const& domain)
     {
         typedef Tshell shell_type;
@@ -3418,10 +3420,10 @@ protected:
             // Draw actual pair event for iv at very last minute.
             switch (draw_iv_event_type(domain))
             {
-            case GreensFunction3DRadAbs::IV_ESCAPE:
+            case greens_functions::GreensFunction3DRadAbs::IV_ESCAPE:
                 kind = PAIR_EVENT_IV_ESCAPE;
                 break;
-            case GreensFunction3DRadAbs::IV_REACTION:
+            case greens_functions::GreensFunction3DRadAbs::IV_REACTION:
                 kind = PAIR_EVENT_IV_REACTION;
                 break;
             }
@@ -4113,7 +4115,7 @@ protected:
     }
 
     template<typename T>
-    static PairGreensFunction* choose_pair_greens_function(
+    static greens_functions::PairGreensFunction* choose_pair_greens_function(
             AnalyticalPair<traits_type, T> const& domain, time_type t)
     {
         length_type const r0(domain.r0());
@@ -4128,17 +4130,17 @@ protected:
             if (distance_from_shell < threshold_distance)
             {
                 // near both a and sigma;
-                // use GreensFunction3DRadAbs
+                // use greens_functions::GreensFunction3DRadAbs
                 LOG_DEBUG(("GF: normal"));
-                return new GreensFunction3DRadAbs(
+                return new greens_functions::GreensFunction3DRadAbs(
                     domain.D_tot(), domain.reactions()[0].k(),
                     r0, domain.sigma(), domain.a_r());
             }
             else
             {
-                // near sigma; use GreensFunction3DRadInf
+                // near sigma; use greens_functions::GreensFunction3DRadInf
                 LOG_DEBUG(("GF: only sigma"));
-                return new GreensFunction3DRadInf(
+                return new greens_functions::GreensFunction3DRadInf(
                     domain.D_tot(), domain.reactions()[0].k(),
                     r0, domain.sigma());
             }
@@ -4149,14 +4151,14 @@ protected:
             {
                 // near a;
                 LOG_DEBUG(("GF: only a"));
-                return new GreensFunction3DAbs(
+                return new greens_functions::GreensFunction3DAbs(
                     domain.D_tot(), r0, domain.a_r());
             }
             else
             {
                 // distant from both a and sigma; 
                 LOG_DEBUG(("GF: free"));
-                return new GreensFunction3D(domain.D_tot(), r0);
+                return new greens_functions::GreensFunction3D(domain.D_tot(), r0);
             }
         }
     }

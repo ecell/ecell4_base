@@ -1,10 +1,28 @@
 from cython.operator cimport dereference as deref, preincrement as inc
 from libcpp.string cimport string
 from cython cimport address
-cimport util
 
+cimport util
 cimport context
 
+import numbers
+from cpython cimport bool as bool_t
+
+cdef boost_get_from_Cpp_Species_value_type(Cpp_Species_value_type value):
+    cdef string* value_str = boost_get[string, string, Real, Integer, bool](address(value))
+    if value_str != NULL:
+        return deref(value_str).decode('UTF-8')
+    cdef Real* value_real = boost_get[Real, string, Real, Integer, bool](address(value))
+    if value_real != NULL:
+        return deref(value_real)
+    cdef Integer* value_int = boost_get[Integer, string, Real, Integer, bool](address(value))
+    if value_int != NULL:
+        return deref(value_int)
+    cdef bool* value_bool = boost_get[bool, string, Real, Integer, bool](address(value))
+    if value_bool != NULL:
+        return deref(value_bool)
+
+    raise RuntimeError('Never get here. Unsupported return type was given.')
 
 cdef class Species:
     """A class representing a type of molecules with attributes.
@@ -20,12 +38,10 @@ cdef class Species:
         ----------
         serial : str, optional
             The serial name.
-        radius : str, optional
+        radius : float, optional
             The radius of a molecule.
-            This must be given as a string.
-        D : str, optional
+        D : foat, optional
             The diffusion rate of a molecule.
-            This must be given as a string.
         location : str, optional
             The location of a molecule.
 
@@ -35,20 +51,29 @@ cdef class Species:
     def __cinit__(self, serial=None, radius=None, D=None, location=None):
         if serial is None:
             self.thisptr = new Cpp_Species()
-        elif radius is not None and D is not None:
-            if location is None:
-                self.thisptr = new Cpp_Species(
-                    tostring(serial),
-                    tostring(radius),
-                    tostring(D))
-            else:
-                self.thisptr = new Cpp_Species(
-                    tostring(serial),
-                    tostring(radius),
-                    tostring(D),
-                    tostring(location))
-        else:
+        elif radius is None:
             self.thisptr = new Cpp_Species(tostring(serial)) #XXX:
+        elif D is None:
+            raise ValueError(
+                'D must be given. D is not optional when radius is given.')
+        elif location is None:
+            if isinstance(radius, str) and isinstance(D, str):
+                self.thisptr = new Cpp_Species(
+                    tostring(serial), tostring(radius), tostring(D))
+            elif isinstance(radius, numbers.Real) and isinstance(D, numbers.Real):
+                self.thisptr = new Cpp_Species(
+                    tostring(serial), <Real>radius, <Real>D)
+            else:
+                raise TypeError('radius and D must be float.')
+        else:
+            if isinstance(radius, str) and isinstance(D, str):
+                self.thisptr = new Cpp_Species(
+                    tostring(serial), tostring(radius), tostring(D), tostring(location))
+            elif isinstance(radius, numbers.Real) and isinstance(D, numbers.Real):
+                self.thisptr = new Cpp_Species(
+                    tostring(serial), <Real>radius, <Real>D, tostring(location))
+            else:
+                raise TypeError('radius and D must be float.')
 
     def __dealloc__(self):
         del self.thisptr
@@ -70,10 +95,30 @@ cdef class Species:
         """Return the serial name as an unicode string."""
         return self.thisptr.serial().decode('UTF-8')
 
-    def get_attribute(self, name):
-        """get_attribute(name) -> str
+    # def get_attribute(self, name):
+    #     """get_attribute(name) -> str
 
-        Return an attribute as an unicode string.
+    #     Return an attribute as an unicode string.
+    #     If no corresponding attribute is found, raise an error.
+
+    #     Parameters
+    #     ----------
+    #     name : str
+    #         The name of an attribute.
+
+    #     Returns
+    #     -------
+    #     value : str
+    #         The value of the attribute.
+
+    #     """
+    #     return self.thisptr.get_attribute(
+    #         tostring(name)).decode('UTF-8')
+
+    def get_attribute(self, name):
+        """get_attribute(name) -> str, float, int, or bool
+
+        Return an attribute.
         If no corresponding attribute is found, raise an error.
 
         Parameters
@@ -83,12 +128,11 @@ cdef class Species:
 
         Returns
         -------
-        str:
+        value : str, float, int, or bool
             The value of the attribute.
 
         """
-        return self.thisptr.get_attribute(
-            tostring(name)).decode('UTF-8')
+        return boost_get_from_Cpp_Species_value_type(self.thisptr.get_attribute(tostring(name)))
 
     def set_attribute(self, name, value):
         """set_attribute(name, value)
@@ -100,11 +144,22 @@ cdef class Species:
         ----------
         name : str
             The name of an attribute.
-        value : str
+        value : str, float, int, or bool
             The value of an attribute.
 
         """
-        self.thisptr.set_attribute(tostring(name), tostring(value))
+        if isinstance(value, str):
+            self.thisptr.set_attribute(tostring(name), tostring(value))
+        elif isinstance(value, bool_t):
+            self.thisptr.set_attribute(tostring(name), <bool> value)
+        elif isinstance(value, numbers.Integral):
+            self.thisptr.set_attribute(tostring(name), <Integer> value)
+        elif isinstance(value, numbers.Real):
+            self.thisptr.set_attribute(tostring(name), <Real> value)
+        else:
+            raise TypeError(
+                'Type [{}] is not supported. str, int, float or bool must be given.'.format(
+                    type(value)))
 
     def remove_attribute(self, name):
         """remove_attribute(name)
@@ -150,9 +205,13 @@ cdef class Species:
             ``name`` and ``value`` are given as unicode strings.
 
         """
-        retval = self.thisptr.list_attributes()
-        return [(key.decode('UTF-8'), value.decode('UTF-8'))
-            for key, value in retval]
+        cdef vector[pair[string, Cpp_Species_value_type]] attrs = self.thisptr.list_attributes()
+        res = []
+        cdef vector[pair[string, Cpp_Species_value_type]].iterator it = attrs.begin()
+        while it != attrs.end():
+            res.append((deref(it).first.decode('UTF-8'), boost_get_from_Cpp_Species_value_type(deref(it).second)))
+            inc(it)
+        return res
 
     def add_unit(self, UnitSpecies usp):
         """add_unit(usp)

@@ -60,7 +60,9 @@ def get_factory(solver, *args):
             'unknown solver name was given: ' + repr(solver)
             + '. use ode, gillespie, spatiocyte, meso, bd or egfrd')
 
-def list_species(model, seeds=[]):
+def list_species(model, seeds=None):
+    seeds = None or []
+
     from ecell4.ode import ODENetworkModel
     from ecell4 import Species
     if isinstance(model, ODENetworkModel):
@@ -76,10 +78,10 @@ def list_species(model, seeds=[]):
     return species_list
 
 def run_simulation(
-        t, y0={}, volume=1.0, model=None, solver='ode',
+        t, y0=None, volume=1.0, model=None, solver='ode',
         is_netfree=False, species_list=None, without_reset=False,
-        return_type='matplotlib', opt_args=(), opt_kwargs={},
-        structures={}, observers=(), progressbar=0, rndseed=None,
+        return_type='matplotlib', opt_args=(), opt_kwargs=None,
+        structures=None, observers=(), progressbar=0, rndseed=None,
         factory=None, ## deprecated
         **kwargs):
     """Run a simulation with the given model and plot the result on IPython
@@ -107,8 +109,8 @@ def run_simulation(
         Default is None.
     return_type : str, optional
         Choose a type of return value from 'array', 'observer',
-        'matplotlib', 'nyaplot', 'world', 'dataframe' or None.
-        If None, return and plot nothing. Default is 'matplotlib'.
+        'matplotlib', 'nyaplot', 'world', 'dataframe', 'none' or None.
+        If None or 'none', return and plot nothing. Default is 'matplotlib'.
         'dataframe' requires numpy and pandas libraries.
         Keyword 'r' is a shortcut for specifying 'return_type'.
     opt_args: list, tuple or dict, optional
@@ -143,6 +145,10 @@ def run_simulation(
         Return nothing if else.
 
     """
+    y0 = y0 or {}
+    opt_kwargs = opt_kwargs or {}
+    structures = structures or {}
+
     for key, value in kwargs.items():
         if key == 'r':
             return_type = value
@@ -207,7 +213,7 @@ def run_simulation(
 
     if not isinstance(observers, collections.Iterable):
         observers = (observers, )
-    if return_type not in ('world', None):
+    if return_type not in ('world', 'none', None):
         observers = (obs, ) + tuple(observers)
 
     if progressbar > 0:
@@ -248,6 +254,12 @@ def run_simulation(
             for i, sp in enumerate(obs.targets())])
     elif return_type in ('world', 'w'):
         return sim.world()
+    elif return_type is None or return_type in ('none', ):
+        return
+    else:
+        raise ValueError(
+            'An invald value for "return_type" was given [{}].'.format(str(return_type))
+            + 'Use "none" if you need nothing to be returned.')
 
 def ensemble_simulations(N=1, *args, **kwargs):
     """Deprecated"""

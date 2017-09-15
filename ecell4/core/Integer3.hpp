@@ -1,5 +1,5 @@
-#ifndef __ECELL4__GLOBAL_HPP
-#define __ECELL4__GLOBAL_HPP
+#ifndef ECELL4_INTEGER3_HPP
+#define ECELL4_INTEGER3_HPP
 
 #include <ostream>
 #include <iomanip>
@@ -177,4 +177,4 @@ inline std::basic_ostream<Tstrm_, Ttraits_>& operator<<(
 
 } // ecell4
 
-#endif
+#endif /* ECELL4_INTEGER3_HPP */

@@ -1,5 +1,5 @@
-#ifndef __ECELL4_NETFREE_MODEL_HPP
-#define __ECELL4_NETFREE_MODEL_HPP
+#ifndef ECELL4_NETFREE_MODEL_HPP
+#define ECELL4_NETFREE_MODEL_HPP
 
 // #include "get_mapper_mf.hpp"
 
@@ -145,4 +145,4 @@ inline std::pair<boost::shared_ptr<NetworkModel>, bool> generate_network_from_ne
 
 } // ecell4
 
-#endif /* __ECELL4_NETFREE_MODEL_HPP */
+#endif /* ECELL4_NETFREE_MODEL_HPP */

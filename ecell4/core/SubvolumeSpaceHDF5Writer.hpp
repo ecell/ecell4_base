@@ -1,5 +1,5 @@
-#ifndef __ECELL4_SUBVOLUME_SPACE_HDF5_WRITER_HPP
-#define __ECELL4_SUBVOLUME_SPACE_HDF5_WRITER_HPP
+#ifndef ECELL4_SUBVOLUME_SPACE_HDF5_WRITER_HPP
+#define ECELL4_SUBVOLUME_SPACE_HDF5_WRITER_HPP
 
 #include <cstring>
 #include <iostream>
@@ -24,9 +24,9 @@ struct SubvolumeSpaceHDF5Traits
 {
     typedef struct h5_species_struct {
         uint32_t id;
-        H5std_string serial;
+        char serial[32]; // species' serial may exceed the limit
         double D;
-        H5std_string loc;
+        char loc[32]; // species' loc may exceed the limit
     } h5_species_struct;
 
     static H5::CompType get_species_comp_type()
@@ -36,16 +36,28 @@ struct SubvolumeSpaceHDF5Traits
         H5Tinsert(h5_species_comp_type.getId(), #member,\
                 HOFFSET(h5_species_struct, member), type.getId())
         INSERT_MEMBER(id, H5::PredType::STD_I32LE);
-        INSERT_MEMBER(serial, H5::StrType(0, H5T_VARIABLE));
+        INSERT_MEMBER(serial, H5::StrType(H5::PredType::C_S1, 32));
         INSERT_MEMBER(D, H5::PredType::NATIVE_DOUBLE);
-        INSERT_MEMBER(loc, H5::StrType(0, H5T_VARIABLE));
+        INSERT_MEMBER(loc, H5::StrType(H5::PredType::C_S1, 32));
 #undef INSERT_MEMBER
+        // h5_species_comp_type.insertMember(
+        //     std::string("id"), HOFFSET(h5_species_struct, id),
+        //     H5::PredType::STD_I32LE);
+        // h5_species_comp_type.insertMember(
+        //     std::string("serial"), HOFFSET(h5_species_struct, serial),
+        //     H5::StrType(H5::PredType::C_S1, 32));
+        // h5_species_comp_type.insertMember(
+        //     std::string("D"), HOFFSET(h5_species_struct, D),
+        //     H5::PredType::STD_I64LE);  //XXX: -> NATIVE_DOUBLE?
+        // h5_species_comp_type.insertMember(
+        //     std::string("loc"), HOFFSET(h5_species_struct, loc),
+        //     H5::StrType(H5::PredType::C_S1, 32));
         return h5_species_comp_type;
     }
 
     typedef struct h5_structures_struct {
         uint32_t id;
-        H5std_string serial;
+        char serial[32]; // structures' serial may exceed the limit
         // uint32_t dimension;
     } h5_structures_struct;
 
@@ -56,9 +68,18 @@ struct SubvolumeSpaceHDF5Traits
         H5Tinsert(h5_structures_comp_type.getId(), #member,\
                 HOFFSET(h5_structures_struct, member), type.getId())
         INSERT_MEMBER(id, H5::PredType::STD_I32LE);
-        INSERT_MEMBER(serial, H5::StrType(0, H5T_VARIABLE));
+        INSERT_MEMBER(serial, H5::StrType(H5::PredType::C_S1, 32));
         // INSERT_MEMBER(dimension, H5::PredType::STD_I32LE);
 #undef INSERT_MEMBER
+        // h5_structures_comp_type.insertMember(
+        //     std::string("id"), HOFFSET(h5_structures_struct, id),
+        //     H5::PredType::STD_I32LE);
+        // h5_structures_comp_type.insertMember(
+        //     std::string("serial"), HOFFSET(h5_structures_struct, serial),
+        //     H5::StrType(H5::PredType::C_S1, 32));
+        // // h5_species_comp_type.insertMember(
+        // //     std::string("dimension"), HOFFSET(h5_structure_struct, dimension),
+        // //     H5::PredType::STD_I32LE);
         return h5_structures_comp_type;
     }
 };
@@ -85,11 +106,11 @@ void save_subvolume_space(const Tspace_& space, H5::Group* root)
     {
         const unsigned int sid(i + 1);
         h5_species_table[i].id = sid;
-        h5_species_table[i].serial = H5std_string(species[i].serial().c_str());
+        std::strcpy(h5_species_table[i].serial, species[i].serial().c_str());
         const boost::shared_ptr<typename Tspace_::PoolBase>&
             pool = space.get_pool(species[i]);
         h5_species_table[i].D = pool->D();
-        h5_species_table[i].loc = H5std_string(pool->loc().c_str());
+        std::strcpy(h5_species_table[i].loc, pool->loc().c_str());
 
         for (unsigned int j(0); j < num_subvolumes; ++j)
         {
@@ -106,7 +127,7 @@ void save_subvolume_space(const Tspace_& space, H5::Group* root)
     {
         const unsigned int sid(i + 1);
         h5_structures_table[i].id = sid;
-        h5_structures_table[i].serial = H5std_string(structures[i].c_str());
+        std::strcpy(h5_structures_table[i].serial, structures[i].c_str());
         // h5_structures_table[i].dimension = space.get_dimension(structures[i]);
         for (unsigned int j(0); j < num_subvolumes; ++j)
         {
@@ -237,9 +258,9 @@ void load_subvolume_space(const H5::Group& root, Tspace_* space)
             const uint32_t sid(i + 1);
             const unsigned int k(species_id_map[sid]);
 
-            const Species sp(h5_species_table[k].serial.c_str());
+            const Species sp(h5_species_table[k].serial);
             const Real D(h5_species_table[k].D);
-            const Species::serial_type loc(h5_species_table[k].loc.c_str());
+            const Species::serial_type loc(h5_species_table[k].loc);
             space->reserve_pool(sp, D, loc);
 
             for (unsigned int j(0); j < num_subvolumes; ++j)
@@ -275,7 +296,7 @@ void load_subvolume_space(const H5::Group& root, Tspace_* space)
         structures_id_map_type structures_id_map;
         for (unsigned int i(0); i < num_structures; ++i)
         {
-            structures_id_map[h5_structures_table[i].id] = Species::serial_type(h5_structures_table[i].serial.c_str());
+            structures_id_map[h5_structures_table[i].id] = h5_structures_table[i].serial;
         }
 
         for (unsigned int i(0); i < num_structures; ++i)
@@ -292,4 +313,4 @@ void load_subvolume_space(const H5::Group& root, Tspace_* space)
 
 } // ecell4
 
-#endif /*  __ECELL4_SUBVOLUME_SPACE_HDF5_WRITER_HPP */
+#endif /*  ECELL4_SUBVOLUME_SPACE_HDF5_WRITER_HPP */

@@ -1,5 +1,5 @@
-#ifndef __ECELL4_MOLECULAR_TYPE_HPP
-#define __ECELL4_MOLECULAR_TYPE_HPP
+#ifndef ECELL4_MOLECULAR_TYPE_HPP
+#define ECELL4_MOLECULAR_TYPE_HPP
 
 #include "VoxelPool.hpp"
 #include "VacantType.hpp"
@@ -59,4 +59,4 @@ public:
 
 } // ecell4
 
-#endif /* __ECELL4_MOLECULAR_TYPE_HPP */
+#endif /* ECELL4_MOLECULAR_TYPE_HPP */

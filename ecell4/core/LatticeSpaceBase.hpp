@@ -1,5 +1,5 @@
-#ifndef __ECELL4_LATTICE_SPACE_BASE_HPP
-#define __ECELL4_LATTICE_SPACE_BASE_HPP
+#ifndef ECELL4_LATTICE_SPACE_BASE_HPP
+#define ECELL4_LATTICE_SPACE_BASE_HPP
 
 #include "LatticeSpace.hpp"
 
@@ -247,4 +247,4 @@ protected:
 
 } // ecell4
 
-#endif /* __ECELL4_LATTICE_SPACE_BASE_HPP */
+#endif /* ECELL4_LATTICE_SPACE_BASE_HPP */

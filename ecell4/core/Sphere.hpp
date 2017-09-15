@@ -1,5 +1,5 @@
-#ifndef __ECELL4_SPHERE_HPP
-#define __ECELL4_SPHERE_HPP
+#ifndef ECELL4_SPHERE_HPP
+#define ECELL4_SPHERE_HPP
 
 #include <ostream>
 #include "Shape.hpp"
@@ -93,4 +93,4 @@ protected:
 
 } // ecell4
 
-#endif /* __ECELL4_SPHERE_HPP */
+#endif /* ECELL4_SPHERE_HPP */

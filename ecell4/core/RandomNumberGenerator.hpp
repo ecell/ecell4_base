@@ -1,5 +1,5 @@
-#ifndef __ECELL4_RANDOM_NUMBER_GENERATOR_HPP
-#define __ECELL4_RANDOM_NUMBER_GENERATOR_HPP
+#ifndef ECELL4_RANDOM_NUMBER_GENERATOR_HPP
+#define ECELL4_RANDOM_NUMBER_GENERATOR_HPP
 
 #include <ctime>
 #include <vector>
@@ -9,6 +9,7 @@
 
 #include "types.hpp"
 #include "Real3.hpp"
+#include "exceptions.hpp"
 
 #ifdef WITH_HDF5
 #include <hdf5.h>
@@ -132,4 +133,4 @@ protected:
 
 } // ecell4
 
-#endif /* __ECELL4_RANDOM_NUMBER_GENERATOR_HPP */
+#endif /* ECELL4_RANDOM_NUMBER_GENERATOR_HPP */

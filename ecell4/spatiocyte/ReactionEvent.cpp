@@ -82,7 +82,6 @@ void FirstOrderReactionEvent::fire_()
             world_->choice(*(rule_.reactants().begin())));
     const ReactionRule::product_container_type& products(rule_.products());
 
-    time_ += draw_dt();
     switch (products.size())
     {
         case 0:
@@ -105,6 +104,7 @@ void FirstOrderReactionEvent::fire_()
             }
             break;
     }
+    time_ += draw_dt();
 }
 
 Real FirstOrderReactionEvent::draw_dt()

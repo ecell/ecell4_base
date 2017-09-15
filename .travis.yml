@@ -46,9 +46,11 @@ addons:
 
 before_install:
 - if [ "$TRAVIS_OS_NAME" == "osx" ]; then
-    brew update; brew upgrade;
+    brew update;
     brew install gsl ffmpeg;
-    brew install homebrew/science/hdf5;
+    brew install homebrew/science/hdf5@1.8;
+    cp /usr/local/Cellar/hdf5\@1.8/1.8.18/include/* /usr/local/include/ ;
+    cp /usr/local/Cellar/hdf5\@1.8/1.8.18/lib/* /usr/local/lib/ ;
     if [[ $TRAVIS_PYTHON_VERSION == 3* ]]; then
       brew install python3;
       which python3;
@@ -79,6 +81,7 @@ before_install:
   fi
 
 script:
+- set -ev
 - if [ "$TRAVIS_OS_NAME" == "linux" ]; then
     bash -c 'cmake -DCMAKE_INSTALL_PREFIX=~/local . && make && make test && make install';
     rm CMakeCache.txt;
@@ -92,10 +95,13 @@ script:
     fi;
     rm CMakeCache.txt;
   fi
+- set +e
 
+cache: false
 notifications:
   webhooks:
     urls:
     - http://dev.e-cell.org/ecell-bot/travis/notification
   slack:
     secure: kCN8PCrinRfaDFKn93TMrYY5LberBt8GHDHOtSbR7B1Zmo9Pr/uHxxqoXlu1g9XYxgs2lud/AKo0gKMu8n+QHWeAXaOwe8GSccEqBdilXDVp4fzO96jT2R82RYljQ2wAR5ug1YIACRq06mtFn6U7GRZRnpRI4VsEUFLJPljZ+UM=
+    slack: ecell-project:LvsPrINO4bNonZNTNw3IqMhV

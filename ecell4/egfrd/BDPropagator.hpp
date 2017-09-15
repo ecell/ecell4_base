@@ -2,6 +2,7 @@
 #define BD_PROPAGATOR_HPP
 
 #include <algorithm>
+#include <limits>
 #include <boost/bind.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/range/size.hpp>
@@ -13,11 +14,15 @@
 #include "Defs.hpp"
 #include "generator.hpp"
 #include "exceptions.hpp"
-#include "freeFunctions.hpp"
 #include "utils.hpp"
 #include "utils/random.hpp"
 #include "utils/get_default_impl.hpp"
 #include "Logger.hpp"
+
+#include <ecell4/core/get_mapper_mf.hpp>
+#include "PotentialField.hpp"
+#include <greens_functions/freeFunctions.hpp>
+// using namespace greens_functions;
 
 template<typename Ttraits_>
 class BDPropagator
@@ -47,16 +52,23 @@ public:
     typedef typename traits_type::reaction_recorder_type reaction_recorder_type;
     typedef typename traits_type::volume_clearer_type volume_clearer_type;
 
+    typedef typename ecell4::utils::get_mapper_mf<particle_id_type, position_type>::type particle_id_position_map_type;
+
+    typedef ecell4::PotentialField<particle_container_type> potential_field_type;
+    typedef typename ecell4::utils::get_mapper_mf<species_id_type, boost::shared_ptr<potential_field_type> >::type potential_field_map_type;
+
 public:
     template<typename Trange_>
     BDPropagator(
         particle_container_type& tx, network_rules_type const& rules,
         rng_type& rng, time_type dt, int max_retry_count,
         reaction_recorder_type* rrec, volume_clearer_type* vc,
-        Trange_ const& particles)
+        Trange_ const& particles,
+        potential_field_map_type const& potentials = potential_field_map_type())
         : tx_(tx), rules_(rules), rng_(rng), dt_(dt),
           max_retry_count_(max_retry_count), rrec_(rrec), vc_(vc),
-          queue_(), rejected_move_count_(0)
+          queue_(), rejected_move_count_(0),
+          potentials_(potentials)
     {
         call_with_size_if_randomly_accessible(
             boost::bind(&particle_id_vector_type::reserve, &queue_, _1),
@@ -101,6 +113,15 @@ public:
         position_type const displacement = drawR_free(species);
         position_type const new_pos    = tx_.apply_structure(pp.second.position(), displacement);
 //         position_type const new_pos      = tx_.apply_boundary(reflected);
+
+        typename potential_field_map_type::const_iterator it = potentials_.find(species_id);
+        if (it != potentials_.end())
+        {
+            if (!(*it).second->try_move(rng_, pp, new_pos, tx_))
+            {
+                return true;
+            }
+        }
 
         particle_id_pair particle_to_update(
                 pp.first, particle_type(species_id,
@@ -241,7 +262,7 @@ private:
 
                             const Real rnd(rng_.random());
                             length_type pair_distance(
-                                drawR_gbd(rnd, r01, dt_, D01));
+                                greens_functions::drawR_gbd_3D(rnd, r01, dt_, D01));
                             const position_type m(random_unit_vector() * pair_distance);
                             np0 = tx_.apply_boundary(pp.second.position()
                                     + m * (s0.D / D01));
@@ -309,7 +330,7 @@ private:
                 i(boost::begin(rules)), e(boost::end(rules)); i != e; ++i)
         {
             reaction_rule_type const& r(*i);
-            const Real p(r.k() * dt_ / ((I_bd(r01, dt_, s0.D) + I_bd(r01, dt_, s1.D)) * 4.0 * M_PI));
+            const Real p(r.k() * dt_ / ((greens_functions::I_bd_3D(r01, dt_, s0.D) + greens_functions::I_bd_3D(r01, dt_, s1.D)) * 4.0 * M_PI));
             BOOST_ASSERT(p >= 0.);
             prob += p;
             if (prob >= 1.)
@@ -375,7 +396,6 @@ private:
                     remove_particle(pp0.first);
                     remove_particle(pp1.first);
                     break;
-                
                 default:
                     throw not_implemented("bimolecular reactions that produce more than one product are not supported");
                 }
@@ -413,6 +433,7 @@ private:
     volume_clearer_type* const vc_;
     particle_id_vector_type queue_;
     int rejected_move_count_;
+    potential_field_map_type const& potentials_;
     static Logger& log_;
 };
 

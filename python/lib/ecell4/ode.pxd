@@ -203,6 +203,9 @@ cdef extern from "ecell4/ode/ODESimulator.hpp" namespace "ecell4::ode":
         void run(Real, shared_ptr[Cpp_Observer]) except +
         void run(Real, vector[shared_ptr[Cpp_Observer]]) except +
 
+        Real evaluate(Cpp_ODEReactionRule&)
+        Real evaluate(Cpp_ReactionRule&)
+
 cdef class ODESimulator:
     cdef Cpp_ODESimulator *thisptr
 

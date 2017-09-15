@@ -1,5 +1,5 @@
-#ifndef __ECELL4_FUNCTIONS_HPP
-#define __ECELL4_FUNCTIONS_HPP
+#ifndef ECELL4_FUNCTIONS_HPP
+#define ECELL4_FUNCTIONS_HPP
 
 #include <cmath>
 #include <gsl/gsl_pow_int.h>
@@ -113,4 +113,4 @@ inline bool is_directory(const std::string& filename)
 
 }
 
-#endif /* __ECELL4_FUNCTIONS_HPP */
+#endif /* ECELL4_FUNCTIONS_HPP */

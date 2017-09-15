@@ -1,5 +1,5 @@
-#ifndef __ECELL4_NETWORK_MODEL_HPP
-#define __ECELL4_NETWORK_MODEL_HPP
+#ifndef ECELL4_NETWORK_MODEL_HPP
+#define ECELL4_NETWORK_MODEL_HPP
 
 // #include "get_mapper_mf.hpp"
 
@@ -134,4 +134,4 @@ protected:
 
 } // ecell4
 
-#endif /* __ECELL4_NETWORK_MODEL_HPP */
+#endif /* ECELL4_NETWORK_MODEL_HPP */

@@ -4,6 +4,7 @@ import numbers
 import warnings
 import functools
 import itertools
+import math
 
 from . import parseobj
 from .decorator_base import Callback, JustParseCallback, ParseDecorator
@@ -15,6 +16,28 @@ ENABLE_IMPLICIT_DECLARATION = True
 
 SPECIES_ATTRIBUTES = []
 REACTION_RULES = []
+
+RATELAW_RESERVED_FUNCTIONS = {
+    'pow': pow, 'exp': math.exp, 'log': math.log,
+    'sin': math.sin, 'cos': math.cos, 'tan': math.tan,
+    'asin': math.asin, 'acos': math.acos, 'atan': math.atan
+    }
+RATELAW_RESERVED_CONSTANTS = {
+    '_t': None,  #XXX: just reserved
+    'pi': math.pi
+    }
+
+def define_ratelaw_function(key, val):
+    global RATELAW_RESERVED_FUNCTIONS
+    if not callable(val):
+        raise ValueError('A function must be callable [{}]'.format(type(val)))
+    RATELAW_RESERVED_FUNCTIONS[key] = val
+
+def define_ratelaw_constant(key, val):
+    global RATELAW_RESERVED_CONSTANTS
+    if not isinstance(val, numbers.Number):
+        raise ValueError('A constant must be a number [{}]'.format(type(val)))
+    RATELAW_RESERVED_CONSTANTS[key] = val
 
 def generate_Species(obj):
     if isinstance(obj, parseobj.AnyCallable):
@@ -53,16 +76,20 @@ def generate_ReactionRule(lhs, rhs, k=None):
     if k is None:
         raise RuntimeError('no parameter is specified')
 
-    if (callable(k)
-        or (ENABLE_RATELAW and isinstance(k, parseobj.ExpBase))
-        or any([sp[1] is not None for sp in itertools.chain(lhs, rhs)])):
+    elif (callable(k)  # Function
+          or (ENABLE_RATELAW
+              and isinstance(k, (parseobj.ExpBase, parseobj.AnyCallable)))  # Formula
+          or any([coef is not None
+                  for (sp, coef) in itertools.chain(lhs, rhs)])):  # Stoichiometry
         from ecell4.ode import ODEReactionRule, ODERatelawCallback
+
         rr = ODEReactionRule()
-        for sp in lhs:
-            rr.add_reactant(sp[0], 1 if sp[1] is None else sp[1])
-        for sp in rhs:
-            rr.add_product(sp[0], 1 if sp[1] is None else sp[1])
-        if ENABLE_RATELAW and isinstance(k, parseobj.ExpBase):
+        for sp, coef in lhs:
+            rr.add_reactant(sp, coef or 1)
+        for sp, coef in rhs:
+            rr.add_product(sp, coef or 1)
+
+        if ENABLE_RATELAW and isinstance(k, (parseobj.ExpBase, parseobj.AnyCallable)):
             name = str(k)
             func = generate_ratelaw(k, rr, ENABLE_IMPLICIT_DECLARATION)
             rr.set_ratelaw(ODERatelawCallback(func, name))
@@ -71,15 +98,16 @@ def generate_ReactionRule(lhs, rhs, k=None):
         else:
             rr.set_k(k)
         return rr
-    elif isinstance(k, numbers.Number):
-        return ecell4.core.ReactionRule([sp[0] for sp in lhs], [sp[0] for sp in rhs], k)
+
+    elif isinstance(k, numbers.Number):  # Kinetic rate
+        return ecell4.core.ReactionRule([sp for (sp, _) in lhs], [sp for (sp, _) in rhs], k)
 
     raise RuntimeError(
         'parameter must be given as a number; "%s" given' % str(k))
 
 def traverse_ParseObj(obj, keys):
-    reserved_vars = ['_t', 'pi']
-    reserved_funcs = ['exp', 'log', 'sin', 'cos', 'tan', 'asin', 'acos', 'atan', 'pow']
+    reserved_vars = tuple(RATELAW_RESERVED_CONSTANTS.keys())
+    reserved_funcs = tuple(RATELAW_RESERVED_FUNCTIONS.keys())
 
     if isinstance(obj, parseobj.AnyCallable):
         obj = obj._as_ParseObj()
@@ -132,18 +160,10 @@ def generate_ratelaw(obj, rr, implicit=False):
                 'unknown variable [{}] was used.'.format(key))
     exp = exp.format(*names)
     # print(exp)
-    import math
     f = eval("lambda _r, _p, _v, _t, _rr: {0}".format(exp))
-    f.__globals__['exp'] = math.exp
-    f.__globals__['log'] = math.log
-    f.__globals__['sin'] = math.sin
-    f.__globals__['cos'] = math.cos
-    f.__globals__['tan'] = math.tan
-    f.__globals__['asin'] = math.asin
-    f.__globals__['acos'] = math.acos
-    f.__globals__['atan'] = math.atan
-    f.__globals__['pi'] = math.pi
-    f.__globals__['pow'] = pow
+    f.__globals__.update(RATELAW_RESERVED_FUNCTIONS)
+    f.__globals__.update((key, val) for key, val in RATELAW_RESERVED_CONSTANTS if val is not None)
+
     return f
     # return (lambda _r, _p, *args: eval(exp))
 
@@ -254,12 +274,12 @@ class SpeciesAttributesCallback(Callback):
                         'parameter must be given as a dict; "%s" given'
                         % str(rhs))
                 for key, value in rhs.items():
-                    if not (isinstance(key, (str, bytes))
-                        and isinstance(value, (str, bytes))):
-                        raise RuntimeError(
-                            'attributes must be given as a pair of strings;'
-                            + ' "%s" and "%s" given'
-                            % (str(key), str(value)))
+                    # if not (isinstance(key, (str, bytes))
+                    #     and isinstance(value, (str, bytes))):
+                    #     raise RuntimeError(
+                    #         'attributes must be given as a pair of strings;'
+                    #         + ' "%s" and "%s" given'
+                    #         % (str(key), str(value)))
                     sp.set_attribute(key, value)
             else:
                 if not isinstance(rhs, (tuple, list)):
@@ -275,10 +295,10 @@ class SpeciesAttributesCallback(Callback):
                         % (len(self.keys), len(rhs)))
                 else:
                     for key, value in zip(self.keys, rhs):
-                        if not isinstance(value, (str, bytes)):
-                            raise RuntimeError(
-                                'paramter must be given as a string; "%s" given'
-                                % str(value))
+                        # if not isinstance(value, (str, bytes)):
+                        #     raise RuntimeError(
+                        #         'paramter must be given as a string; "%s" given'
+                        #         % str(value))
                         sp.set_attribute(key, value)
 
             self.bitwise_operations.append(sp)

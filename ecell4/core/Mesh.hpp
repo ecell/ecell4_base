@@ -1,5 +1,5 @@
-#ifndef __ECELL4_MESH_HPP
-#define __ECELL4_MESH_HPP
+#ifndef ECELL4_MESH_HPP
+#define ECELL4_MESH_HPP
 
 #include <ecell4/core/config.h>
 #include "Shape.hpp"
@@ -77,4 +77,4 @@ protected:
 
 } // ecell4
 
-#endif /* __ECELL4_MESH_HPP */
+#endif /* ECELL4_MESH_HPP */

@@ -1,5 +1,5 @@
-#ifndef __ECELL4_PARTICLE_SPACE_HDF5_WRITER_HPP
-#define __ECELL4_PARTICLE_SPACE_HDF5_WRITER_HPP
+#ifndef ECELL4_PARTICLE_SPACE_HDF5_WRITER_HPP
+#define ECELL4_PARTICLE_SPACE_HDF5_WRITER_HPP
 
 #include <cstring>
 #include <boost/scoped_ptr.hpp>
@@ -22,7 +22,7 @@ struct ParticleSpaceHDF5Traits
 {
     typedef struct h5_species_struct {
         uint32_t id;
-        H5std_string serial; // species' serial may exceed the limit
+        char serial[32]; // species' serial may exceed the limit
     } h5_species_struct;
 
     typedef struct h5_particle_struct {
@@ -51,6 +51,30 @@ struct ParticleSpaceHDF5Traits
         INSERT_MEMBER(radius, H5::PredType::NATIVE_DOUBLE);
         INSERT_MEMBER(D, H5::PredType::NATIVE_DOUBLE);
 #undef INSERT_MEMBER
+        // h5_particle_comp_type.insertMember(
+        //     std::string("lot"), HOFFSET(h5_particle_struct, lot),
+        //     H5::PredType::NATIVE_INT);
+        // h5_particle_comp_type.insertMember(
+        //     std::string("serial"), HOFFSET(h5_particle_struct, serial),
+        //     H5::PredType::NATIVE_INT);
+        // h5_particle_comp_type.insertMember(
+        //     std::string("sid"), HOFFSET(h5_particle_struct, sid),
+        //     H5::PredType::STD_I32LE);
+        // h5_particle_comp_type.insertMember(
+        //     std::string("posx"), HOFFSET(h5_particle_struct, posx),
+        //     H5::PredType::NATIVE_DOUBLE);
+        // h5_particle_comp_type.insertMember(
+        //     std::string("posy"), HOFFSET(h5_particle_struct, posy),
+        //     H5::PredType::NATIVE_DOUBLE);
+        // h5_particle_comp_type.insertMember(
+        //     std::string("posz"), HOFFSET(h5_particle_struct, posz),
+        //     H5::PredType::NATIVE_DOUBLE);
+        // h5_particle_comp_type.insertMember(
+        //     std::string("radius"), HOFFSET(h5_particle_struct, radius),
+        //     H5::PredType::NATIVE_DOUBLE);
+        // h5_particle_comp_type.insertMember(
+        //     std::string("D"), HOFFSET(h5_particle_struct, D),
+        //     H5::PredType::NATIVE_DOUBLE);
         return h5_particle_comp_type;
     }
 
@@ -61,8 +85,14 @@ struct ParticleSpaceHDF5Traits
         H5Tinsert(h5_species_comp_type.getId(), #member,\
                 HOFFSET(h5_species_struct, member), type.getId())
         INSERT_MEMBER(id, H5::PredType::STD_I32LE);
-        INSERT_MEMBER(serial, H5::StrType(0, H5T_VARIABLE));
+        INSERT_MEMBER(serial, H5::StrType(H5::PredType::C_S1, 32));
 #undef INSERT_MEMBER
+        // h5_species_comp_type.insertMember(
+        //     std::string("id"), HOFFSET(h5_species_struct, id),
+        //     H5::PredType::STD_I32LE);
+        // h5_species_comp_type.insertMember(
+        //     std::string("serial"), HOFFSET(h5_species_struct, serial),
+        //     H5::StrType(H5::PredType::C_S1, 32));
         return h5_species_comp_type;
     }
 };
@@ -113,7 +143,8 @@ void save_particle_space(const Tspace_& space, H5::Group* root)
     for (unsigned int i(0); i < species.size(); ++i)
     {
         h5_species_table[i].id = i + 1;
-        h5_species_table[i].serial = H5std_string(species[i].serial().c_str());
+        std::strcpy(h5_species_table[i].serial,
+                    species[i].serial().c_str());
     }
 
     const int RANK = 1;
@@ -190,21 +221,54 @@ void load_particle_space(const H5::Group& root, Tspace_* space)
             h5_particle_table.get(), traits_type::get_particle_comp_type());
         particle_dset.close();
 
-        typedef utils::get_mapper_mf<unsigned int, H5std_string>::type
+        typedef utils::get_mapper_mf<unsigned int, Species::serial_type>::type
             species_id_map_type;
         species_id_map_type species_id_map;
         for (unsigned int i(0); i < num_species; ++i)
         {
-            species_id_map[h5_species_table[i].id] = H5std_string(h5_species_table[i].serial.c_str());
+            species_id_map[h5_species_table[i].id] = h5_species_table[i].serial;
         }
 
         for (unsigned int i(0); i < num_particles; ++i)
         {
-            space->update_particle(ParticleID(std::make_pair(h5_particle_table[i].lot, h5_particle_table[i].serial)), Particle(Species(species_id_map[h5_particle_table[i].sid].c_str()), Real3(h5_particle_table[i].posx, h5_particle_table[i].posy, h5_particle_table[i].posz), h5_particle_table[i].radius, h5_particle_table[i].D));
+            space->update_particle(ParticleID(std::make_pair(h5_particle_table[i].lot, h5_particle_table[i].serial)), Particle(Species(species_id_map[h5_particle_table[i].sid]), Real3(h5_particle_table[i].posx, h5_particle_table[i].posy, h5_particle_table[i].posz), h5_particle_table[i].radius, h5_particle_table[i].D));
         }
+
+        // boost::scoped_array<h5_particle_struct>
+        //     h5_particle_table(new h5_particle_struct[num_particles]);
+        // for (unsigned int i(0); i < num_particles; ++i)
+        // {
+        //     species_id_map_type::const_iterator
+        //         it(species_id_map.find(particles[i].second.species_serial()));
+        //     if (it == species_id_map.end())
+        //     {
+        //         species.push_back(particles[i].second.species());
+        //         it = species_id_map.insert(
+        //             std::make_pair(particles[i].second.species_serial(),
+        //                            species.size())).first;
+        //     }
+
+        //     h5_particle_table[i].lot = particles[i].first.lot();
+        //     h5_particle_table[i].serial = particles[i].first.serial();
+        //     h5_particle_table[i].sid = (*it).second;
+        //     h5_particle_table[i].posx = particles[i].second.position()[0];
+        //     h5_particle_table[i].posy = particles[i].second.position()[1];
+        //     h5_particle_table[i].posz = particles[i].second.position()[2];
+        //     h5_particle_table[i].radius = particles[i].second.radius();
+        //     h5_particle_table[i].D = particles[i].second.D();
+        // }
+
+        // boost::scoped_array<h5_species_struct>
+        //     h5_species_table(new h5_species_struct[species.size()]);
+        // for (unsigned int i(0); i < species.size(); ++i)
+        // {
+        //     h5_species_table[i].id = i + 1;
+        //     std::strcpy(h5_species_table[i].serial,
+        //                 species[i].serial().c_str());
+        // }
     }
 }
 
 } // ecell4
 
-#endif /*  __ECELL4_PARTICLE_SPACE_HDF5_WRITER_HPP */
+#endif /*  ECELL4_PARTICLE_SPACE_HDF5_WRITER_HPP */

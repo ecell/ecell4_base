@@ -129,8 +129,9 @@ void SpatiocyteSimulator::finalize()
         StepEvent* step_event(dynamic_cast<StepEvent*>((*itr).second.get()));
         if (step_event != NULL && queued_time < t())
         {
-            const Real alpha((t() - queued_time) / (*itr).second->dt());
-            step_event->walk(alpha);
+            const Real factor((t() - queued_time) / (*itr).second->dt());
+            // assert(factor <= 1);
+            step_event->walk(step_event->alpha() * factor);
         }
     }
 

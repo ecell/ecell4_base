@@ -1,5 +1,5 @@
-#ifndef __ECELL4_EVENTSCHEDULER_HPP
-#define __ECELL4_EVENTSCHEDULER_HPP
+#ifndef ECELL4_EVENTSCHEDULER_HPP
+#define ECELL4_EVENTSCHEDULER_HPP
 
 #include <boost/range/iterator_range.hpp>
 #include <boost/shared_ptr.hpp>
@@ -165,4 +165,4 @@ typedef EventSchedulerBase<Event> EventScheduler;
 
 } // ecell4
 
-#endif /* __ECELL4_EVENTSCHEDULER_HPP */
+#endif /* ECELL4_EVENTSCHEDULER_HPP */

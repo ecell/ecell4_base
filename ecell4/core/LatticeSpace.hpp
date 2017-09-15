@@ -1,5 +1,5 @@
-#ifndef __ECELL4_LATTICE_SPACE_HPP
-#define __ECELL4_LATTICE_SPACE_HPP
+#ifndef ECELL4_LATTICE_SPACE_HPP
+#define ECELL4_LATTICE_SPACE_HPP
 
 #include <vector>
 #include <set>
@@ -277,4 +277,4 @@ protected:
 
 } // ecell4
 
-#endif /* __ECELL4_LATTICE_SPACE_HPP */
+#endif /* ECELL4_LATTICE_SPACE_HPP */
