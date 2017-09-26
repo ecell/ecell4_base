@@ -187,16 +187,16 @@ class SGFRDSimulator :
     {
         const std::pair<std::pair<ParticleID, Particle>, bool> result =
             this->world_->new_particle(p, fid);
-        if(result.second)
-        {
-            SGFRD_TRACE(tracer_.write("  particle %1% has been created",
-                        result.first.first))
-        }
-        else
-        {
-            SGFRD_TRACE(tracer_.write("  failed to create particle %1%",
-                        result.first.first))
-        }
+        assert(result.second);
+//         {
+//             SGFRD_TRACE(tracer_.write("  particle %1% has been created",
+//                         result.first.first))
+//         }
+//         else
+//         {
+//             SGFRD_TRACE(tracer_.write("  failed to create particle %1%",
+//                         result.first.first))
+//         }
         return result;
     }
     void remove_particle(const ParticleID& pid, const FaceID& fid)
