@@ -28,10 +28,12 @@ SGFRDWorld::new_particle(const Particle& p, const face_id_type& fid)
             std::make_pair(p.position(), fid), p.radius()));
     if(!overlap2d.empty())
     {
-//         std::cout << "overlapped particle = ";
-//         for(std::size_t i=0; i<overlap2d.size(); ++i)
-//             std::cout << overlap2d.at(i).first.first << ", ";
-//         std::cout << std::endl;
+//         std::cout << "overlapped particle = {" << overlap2d.at(0).first.first;
+//         for(std::size_t i=1; i<overlap2d.size(); ++i)
+//         {
+//             std::cout << ", " << overlap2d.at(i).first.first;
+//         }
+//         std::cout << '}' << std::endl;
         return std::make_pair(std::make_pair(pid, p), false);
     }
     return std::make_pair(std::make_pair(pid, p), update_particle(pid, p, fid));
