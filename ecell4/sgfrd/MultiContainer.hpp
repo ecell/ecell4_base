@@ -63,8 +63,14 @@ class MultiContainer
     bool update_particle(const ParticleID& pid, const Particle& p,
                          const face_id_type fid)
     {
-        if(registrator_.have(pid)) registrator_.update(pid, fid);
-        else                       registrator_.emplace(pid, fid);
+        if(registrator_.have(pid))
+        {
+            registrator_.update(pid, fid);
+        }
+        else
+        {
+            registrator_.emplace(pid, fid);
+        }
         *(this->find_(pid)) = std::make_pair(pid, p);
 
         return world_.update_particle(pid, p, fid);
