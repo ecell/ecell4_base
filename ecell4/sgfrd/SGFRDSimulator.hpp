@@ -574,6 +574,7 @@ class SGFRDSimulator :
 
         std::sort(results.begin(), results.end(),
             ecell4::utils::pair_second_element_comparator<DomainID, Real>());
+
         SGFRD_TRACE(tracer_.write("results are sorted"))
         return results;
     }
@@ -849,9 +850,14 @@ class SGFRDSimulator :
         std::vector<std::pair<DomainID, Real> > domains;
         domains.reserve(shells.size());
 
-        std::pair<ShellID, shell_type> shell_id_pair; Real dist;
-        BOOST_FOREACH(boost::tie(shell_id_pair, dist), shells)
+        for(std::vector<std::pair<std::pair<ShellID, shell_type>, Real>
+                >::const_iterator iter(shells.begin()), iend(shells.end());
+                iter != iend; ++iter)
         {
+            std::pair<ShellID, shell_type> shell_id_pair;
+            Real dist;
+            boost::tie(shell_id_pair, dist) = *iter;
+
             SGFRD_TRACE(tracer_.write("shell %1% = {%2%} is at %3% distant",
                         shell_id_pair.first, shell_id_pair.second, dist));
 
@@ -861,15 +867,20 @@ class SGFRDSimulator :
             SGFRD_TRACE(tracer_.write("shell %1% is related to domain %2%",
                         shell_id_pair.first, did));
 
-            if(std::find_if(domains.begin(), domains.end(),
+            // filter by domainID to be unique
+            std::vector<std::pair<DomainID, Real> >::iterator found =
+                std::find_if(domains.begin(), domains.end(),
                     ecell4::utils::pair_first_element_unary_predicator<
-                    DomainID, Real>(did)) == domains.end())
+                    DomainID, Real>(did));
+            if(found == domains.end())
             {
                 SGFRD_TRACE(tracer_.write("domain %1% is assigned to retval", did));
                 domains.push_back(std::make_pair(did, dist));
             }
             else
             {
+                found->second = std::min(found->second, dist);
+
                 SGFRD_TRACE(tracer_.write("domain %1% is already assigned", did));
                 for(std::size_t i=0; i < domains.size(); ++i)
                 {
@@ -877,7 +888,6 @@ class SGFRDSimulator :
                 }
             }
         }
-
         std::sort(domains.begin(), domains.end(),
                   utils::pair_second_element_comparator<DomainID, Real>());
         return domains;
@@ -899,9 +909,13 @@ class SGFRDSimulator :
         std::vector<std::pair<DomainID, Real> > domains;
         domains.reserve(shells.size());
 
-        std::pair<ShellID, shell_type> shell_id_pair; Real dist;
-        BOOST_FOREACH(boost::tie(shell_id_pair, dist), shells)
+        for(std::vector<std::pair<std::pair<ShellID, shell_type>, Real>
+                >::const_iterator iter(shells.begin()), iend(shells.end());
+                iter != iend; ++iter)
         {
+            std::pair<ShellID, shell_type> shell_id_pair;
+            Real dist;
+            boost::tie(shell_id_pair, dist) = *iter;
             SGFRD_TRACE(tracer_.write("shell %1% = {%2%} is at %3% distant",
                         shell_id_pair.first, shell_id_pair.second, dist));
 
@@ -911,15 +925,18 @@ class SGFRDSimulator :
             SGFRD_TRACE(tracer_.write("shell %1% is related to domain %2%",
                         shell_id_pair.first, did));
 
-            if(std::find_if(domains.begin(), domains.end(),
+            std::vector<std::pair<DomainID, Real> >::iterator found =
+                std::find_if(domains.begin(), domains.end(),
                     ecell4::utils::pair_first_element_unary_predicator<
-                    DomainID, Real>(did)) == domains.end())
+                    DomainID, Real>(did));
+            if(found == domains.end())
             {
                 SGFRD_TRACE(tracer_.write("domain %1% is assigned to retval", did));
                 domains.push_back(std::make_pair(did, dist));
             }
             else
             {
+                found->second = std::min(found->second, dist);
                 SGFRD_TRACE(tracer_.write("domain %1% is already assigned", did));
                 for(std::size_t i=0; i < domains.size(); ++i)
                 {
