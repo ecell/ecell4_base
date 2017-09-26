@@ -61,24 +61,30 @@ public:
 
     bool operator()()
     {
-        if(queue_.empty()) return false;
+        if(queue_.empty()){return false;}
 
         ParticleID pid; Particle p;
         boost::tie(pid, p) = queue_.back(); queue_.pop_back();
-        BOOST_AUTO(fid, this->container_.get_face_id(pid));
+        face_id_type fid = this->container_.get_face_id(pid);
 
-        if(this->attempt_reaction(pid, p, fid)) return true;
-        if(p.D() == 0.0)                        return true;
+        if(this->attempt_reaction(pid, p, fid)){return true;}
+        if(p.D() == 0.0)                       {return true;}
 
         BOOST_AUTO(position,     std::make_pair(p.position(), fid));
         BOOST_AUTO(displacement, draw_displacement(p, fid));
 
         this->propagate(position, displacement);
-
-        if(is_overlapping(position, p.radius(), pid))
-            position = std::make_pair(p.position(), fid); // restore
-
-        boost::tie(p.position(), fid) = position;
+        /* checking whether the new position overlaps with other particles */{
+            Particle moved_particle(p);
+            moved_particle.position() = position.first;
+            if(false == clear_volume(moved_particle, position.second, pid))
+            {
+                // reject the move. restore.
+                position.first  = p.position();
+                position.second = fid;
+            }
+        }
+        boost::tie(p.position(), fid) = position; // update position
 
         BOOST_AUTO(overlapped, list_reaction_overlap(pid, p, fid));
         switch(overlapped.size())
@@ -94,9 +100,9 @@ public:
             default: return true; // reject if more than 2 particles overlap
         }
 
-        if(clear_volume(p, fid, pid)) // return true if volume is cleared
+        if(clear_volume(p, fid, pid)){// return true if volume is cleared
             this->container_.update_particle(pid, p, fid);
-
+        }
         return true;
     }
 
@@ -320,13 +326,18 @@ public:
         if(is_overlapping(pf1, radius_new, pid1, pid2)) return false;
 
         const Particle particle_new(sp_new, pf1.first, radius_new, D_new);
-        if(!clear_volume(particle_new, pf1.second, pid1, pid2)) return false;
+        if(false == clear_volume(particle_new, pf1.second, pid1, pid2))
+        {
+            return false;
+        }
 
+        //XXX here, p1 is not updated,
+        //    so fid1 may differ from the structure_registrator.
         remove_particle(pid2);
         remove_particle(pid1);
         const std::pair<std::pair<ParticleID, Particle>, bool> pp_new =
             this->container_.new_particle(particle_new, pf1.second);
-        assert(pp_new.second);
+        assert(pp_new.second); //XXX
 
         rlog.second.add_product(pp_new.first);
         last_reactions_.push_back(rlog);
