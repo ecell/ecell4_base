@@ -177,9 +177,9 @@ class SGFRDSimulator :
     bool update_particle(const ParticleID& pid, const Particle& p,
                          const FaceID& fid)
     {
-        SGFRD_TRACE(tracer_.write("  particle %1% is updated", pid))
         const bool result = this->world_->update_particle(pid, p, fid);
-        assert(result);
+        SGFRD_TRACE(tracer_.write("  particle %1% is updated, %2%", pid, result))
+        assert(result == false);
         return result;
     }
     std::pair<std::pair<ParticleID, Particle>, bool>
