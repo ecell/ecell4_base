@@ -348,6 +348,20 @@ public:
         return;
     }
 
+    void remove_particle(const ParticleID& pid, const face_id_type& fid)
+    {
+        container_.remove_particle(pid, fid);
+        const typename std::vector<std::pair<ParticleID, Particle> >::iterator i(
+            std::find_if(queue_.begin(), queue_.end(),
+                         ecell4::utils::pair_first_element_unary_predicator<
+                             ParticleID, Particle>(pid)));
+        if(i != queue_.end())
+        {
+            queue_.erase(i);
+        }
+        return;
+    }
+
     bool is_overlapping(
             const std::pair<Real3, face_id_type>& pos, const Real& rad,
             const ParticleID& pid) const
