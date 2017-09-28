@@ -147,6 +147,11 @@ public:
     bool has_species(const Species &sp) const;
     // bool has_species_exact(const Species &sp) const;
 
+    Real actual_volume() const
+    {
+        return (*space_).actual_volume();
+    }
+
     Integer num_molecules(const Species& sp) const;
     Integer num_molecules_exact(const Species& sp) const;
     Integer num_particles() const;

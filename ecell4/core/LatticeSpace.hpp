@@ -132,6 +132,11 @@ public:
 
     virtual Real3 actual_lengths() const = 0; // XXX should be owned by LatticeSpaceBase?
 
+    Real actual_volume() const
+    {
+        return inner_size() * voxel_volume();
+    }
+
     virtual void save(const std::string& filename) const
     {
         throw NotSupported(
