@@ -151,7 +151,7 @@ def plot_number_observer_with_matplotlib(*args, **kwargs):
     import numpy
     import collections
 
-    special_keys = ("xlim", "ylim", "xlabel", "ylabel", "legend", "x", "y")
+    special_keys = ("xlim", "ylim", "xlabel", "ylabel", "legend", "x", "y", "filename")
     plot_opts = {key: value for key, value in kwargs.items()
                  if key not in special_keys}
 
@@ -267,7 +267,11 @@ def plot_number_observer_with_matplotlib(*args, **kwargs):
         ax.set_xlim(kwargs["xlim"])
     if "ylim" in kwargs.keys():
         ax.set_ylim(kwargs["ylim"])
-    plt.show()
+
+    if "filename" in kwargs.keys():
+        plt.savefig(kwargs["filename"])
+    else:
+        plt.show()
 
 def plot_number_observer_with_nya(obs, config=None, width=600, height=400, x=None, y=None, to_png=False):
     """
