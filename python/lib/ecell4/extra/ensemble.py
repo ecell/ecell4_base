@@ -299,11 +299,12 @@ def ensemble_simulations(
             self.__data = numpy.vstack([t, mean]).T
 
             if errorbar:
-                std = sum([(numpy.array(data, numpy.float64).T[1: ] - mean) ** 2
-                           for data in inputs])
-                std /= len(inputs)
-                std = numpy.sqrt(std)
-                self.__error = numpy.vstack([t, std]).T
+                var = sum([(numpy.array(data, numpy.float64).T[1: ] - mean) ** 2
+                             for data in inputs]) / len(inputs)
+                stdev = numpy.sqrt(var)
+                stder = stdev / numpy.sqrt(len(inputs))
+                # self.__error = numpy.vstack([t, stdev]).T
+                self.__error = numpy.vstack([t, stder]).T
             else:
                 self.__error = None
 
