@@ -331,6 +331,24 @@ public:
             return false;
         }
 
+//         {
+//             std::vector<std::pair<std::pair<ParticleID, Particle>, Real>
+//                 > overlap_ps = this->container_.world().list_particles_within_radius(
+//                         pf1, radius_new, pid1, pid2);
+//             if(!overlap_ps.empty())
+//             {
+//                 std::cout << "warning: after clear volume, overlapping particle exists!" << std::endl;
+//                 for(std::vector<std::pair<std::pair<ParticleID, Particle>, Real>
+//                         >::const_iterator i(overlap_ps.begin()), e(overlap_ps.end());
+//                         i!=e; ++i)
+//                 {
+//                     std::cout << "pid     : " << i->first.first << std::endl;
+//                     std::cout << "position: " << i->first.second.position() << std::endl;
+//                     std::cout << "distance: " << i->second << std::endl;
+//                 }
+//             }
+//         }
+
         //XXX here, p1 is not updated,
         //    so fid1 may differ from the structure_registrator.
         remove_particle(pid2);
