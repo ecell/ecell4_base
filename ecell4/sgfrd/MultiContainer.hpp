@@ -229,6 +229,8 @@ class MultiContainer
         return true; // no overlap!
     }
 
+    world_type const& world() const throw() {return world_;}
+
   private:
 
     particle_container_type::iterator find_(const ParticleID& pid)
