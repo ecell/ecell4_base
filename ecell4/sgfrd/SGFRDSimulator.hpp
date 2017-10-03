@@ -767,6 +767,7 @@ class SGFRDSimulator :
     void fire_event(event_id_pair_type ev)
     {
         SGFRD_SCOPE(us, fire_event, tracer_);
+//         std::cerr << "fire event " << ev.first << " at " << this->time() << std::endl;
         return boost::apply_visitor(make_visitor(
             resolve<Single const&, void>(boost::bind(
                     &self_type::fire_single, this, _1, ev.first)),
@@ -1028,38 +1029,18 @@ class SGFRDSimulator :
     }
 
     // for BD part...
-    Real3 random_circular_uniform(const Real r)
+    Real3 random_circular_uniform(const Real r, const FaceID& fid)
     {
         const Real theta = this->rng_.uniform(0., 2 * M_PI);
-        return Real3(r * std::cos(theta), r * std::sin(theta), 0.);
-    }
+        const Real3 rnd(r * std::cos(theta), r * std::sin(theta), 0.);
+        const Real3& normal = this->polygon().triangle_at(fid).normal();
+        const Real tilt  = angle(Real3(0, 0, 1), normal);
 
-    Real3 random_circular_uniform(const Real r, const Real3& normal)
-    {
-        const Real3 rnd = random_circular_uniform(r);
-        const Real tilt = angle(Real3(0, 0, 1), normal);
-
-             if(std::abs(tilt - M_PI) < 1e-10) return rnd;
-        else if(std::abs(tilt + M_PI) < 1e-10) return rnd * (-1.0);
+             if(std::abs(tilt - M_PI) < 1e-8){return rnd;}
+        else if(std::abs(tilt + M_PI) < 1e-8){return rnd * (-1.0);}
 
         const Real3 axis = cross_product(Real3(0., 0., 1.), normal);
         return rotate(tilt, axis * (1. / length(axis)), rnd);
-    }
-
-    Real3 draw_displacement(const Particle& p, const FaceID& fid)
-    {
-        return random_circular_uniform(rng_.gaussian(std::sqrt(4*p.D()*dt_)),
-                                 this->polygon().triangle_at(fid).normal());
-    }
-
-    Real3 draw_ipv(const Real r, const Real D, const FaceID& fid)
-    {
-        const Real rl    = r + this->reaction_length_;
-        const Real r_sq  = r * r;
-        const Real rd    = rl * rl - r_sq;
-        const Real ipvl  = std::sqrt(r_sq + this->rng_.uniform(0., 1.) * rd);
-        return random_circular_uniform(
-                ipvl, this->polygon().triangle_at(fid).normal());
     }
 
   private:
@@ -1421,7 +1402,7 @@ SGFRDSimulator::attempt_reaction_1_to_2(const ReactionRule& rule,
     const molecule_info_type mol1 = world_->get_molecule_info(sp1);
     const molecule_info_type mol2 = world_->get_molecule_info(sp2);
 
-    const Real D1(mol1.D),      D2(mol2.D),      D12(mol1.D + mol2.D);
+    const Real D1(mol1.D),      D2(mol2.D);
     const Real r1(mol1.radius), r2(mol2.radius), r12(mol1.radius + mol2.radius);
 
     boost::array<std::pair<Real3, face_id_type>, 2> newpfs;
@@ -1433,24 +1414,56 @@ SGFRDSimulator::attempt_reaction_1_to_2(const ReactionRule& rule,
     particles_new[1] = Particle(sp2, newpfs[1].first, r2, D2);
 
     bool rejected = false;
-    do { // to use break inside of this block
+    Real separation_factor = 1e-7;
+    std::size_t separation_count = 10;
+    while(separation_count != 0)
+    {
+        --separation_count;
         SGFRD_SCOPE(us, try_to_split, tracer_)
 
-        const Real3 ipv(draw_ipv(r12, D12, fid));
+        const Real3 ipv(random_circular_uniform(r12 + separation_factor, fid));
         SGFRD_TRACE(tracer_.write("length of ipv drawn now is %1%", length(ipv)));
-        Real3 disp1(ipv * ( D1 / D12)), disp2(ipv * (-D2 / D12));
-        {
-            std::size_t continue_count = 100;
-            while(continue_count != 0)
-            {
-                boost::tie(newpfs[0], disp1) =
-                    this->polygon().move_next_face(newpfs[0], disp1);
-                if(disp1[0] == 0. && disp1[1] == 0. && disp1[2] == 0.){break;}
-                --continue_count;
-            }
-            if(continue_count == 0)
-                std::cerr << "[WARNING] moving on face by BD: precision lost\n";
 
+        Real3 disp1(ipv * ( r1 / r12)), disp2(ipv * (-r2 / r12));
+
+        std::size_t continue_count = 100;
+        while(continue_count != 0)
+        {
+            boost::tie(newpfs[0], disp1) =
+                this->polygon().move_next_face(newpfs[0], disp1);
+            if(disp1[0] == 0. && disp1[1] == 0. && disp1[2] == 0.){break;}
+            --continue_count;
+        }
+        if(continue_count == 0)
+        {
+            std::cerr << "[WARNING] moving on face by BD: precision lost\n";
+        }
+
+        continue_count = 100;
+        while(continue_count != 0)
+        {
+            boost::tie(newpfs[1], disp2) =
+                this->polygon().move_next_face(newpfs[1], disp2);
+            if(disp2[0] == 0. && disp2[1] == 0. && disp2[2] == 0.){break;}
+            --continue_count;
+        }
+        if(continue_count == 0)
+        {
+            std::cerr << "[WARNING] moving on face by BD: precision lost\n";
+        }
+
+        // if two particle overlaps...
+        const Real dist = this->polygon().distance(newpfs[0], newpfs[1]);
+        if(dist <= r12)
+        {
+//             std::cerr << "particle overlaps! dist = "
+//                       << dist << ", r12 = " << r12 << std::endl;
+            separation_factor *= 2.0;
+            continue;
+        }
+
+        // check whether new particles are inside of the shell, reject the move.
+        {
             particles_new[0].position() = newpfs[0].first;
             inside_checker
                 is_inside_of(newpfs[0].first, r1, newpfs[0].second, this->polygon());
@@ -1466,17 +1479,6 @@ SGFRDSimulator::attempt_reaction_1_to_2(const ReactionRule& rule,
             }
         }
         {
-            std::size_t continue_count = 100;
-            while(continue_count != 0)
-            {
-                boost::tie(newpfs[1], disp2) =
-                    this->polygon().move_next_face(newpfs[1], disp2);
-                if(disp2[0] == 0. && disp2[1] == 0. && disp2[2] == 0.){break;}
-                --continue_count;
-            }
-            if(continue_count == 0)
-                std::cerr << "[WARNING] moving on face by BD: precision lost\n";
-
             particles_new[1].position() = newpfs[1].first;
             inside_checker
                 is_inside_of(newpfs[1].first, r2, newpfs[1].second, this->polygon());
@@ -1491,7 +1493,8 @@ SGFRDSimulator::attempt_reaction_1_to_2(const ReactionRule& rule,
                 }
             }
         }
-    } while(false);
+        break;
+    }
     if(rejected)
     {
         SGFRD_TRACE(tracer_.write("reaction is rejected because there are no space."))
