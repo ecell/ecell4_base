@@ -1433,7 +1433,7 @@ SGFRDSimulator::attempt_reaction_1_to_2(const ReactionRule& rule,
     particles_new[1] = Particle(sp2, newpfs[1].first, r2, D2);
 
     bool rejected = false;
-    do {
+    do { // to use break inside of this block
         SGFRD_SCOPE(us, try_to_split, tracer_)
 
         const Real3 ipv(draw_ipv(r12, D12, fid));
@@ -1445,7 +1445,7 @@ SGFRDSimulator::attempt_reaction_1_to_2(const ReactionRule& rule,
             {
                 boost::tie(newpfs[0], disp1) =
                     this->polygon().move_next_face(newpfs[0], disp1);
-                if(disp1[0] == 0. && disp1[1] == 0. && disp1[2] == 0.) break;
+                if(disp1[0] == 0. && disp1[1] == 0. && disp1[2] == 0.){break;}
                 --continue_count;
             }
             if(continue_count == 0)
@@ -1471,7 +1471,7 @@ SGFRDSimulator::attempt_reaction_1_to_2(const ReactionRule& rule,
             {
                 boost::tie(newpfs[1], disp2) =
                     this->polygon().move_next_face(newpfs[1], disp2);
-                if(disp2[0] == 0. && disp2[1] == 0. && disp2[2] == 0.) break;
+                if(disp2[0] == 0. && disp2[1] == 0. && disp2[2] == 0.){break;}
                 --continue_count;
             }
             if(continue_count == 0)
@@ -1502,71 +1502,14 @@ SGFRDSimulator::attempt_reaction_1_to_2(const ReactionRule& rule,
     SGFRD_TRACE(tracer_.write("single reaction 1(%1%) -> 2 occurs", pid))
 
     this->update_particle(pid, particles_new[0], newpfs[0].second);
-    BOOST_AUTO(pp2, this->create_particle(particles_new[1], newpfs[1].second));
+    std::pair<std::pair<ParticleID, Particle>, bool>
+        pp2 = this->create_particle(particles_new[1], newpfs[1].second);
     const ParticleID pid2(pp2.first.first);
-
-    //----------------------------- trial move -----------------------------
-
-    if(D1 == 0. && D2 == 0)
-        throw std::invalid_argument("reaction between immobile particles");
-
-    const std::size_t idx = // select particle that is moved
-        (D1 != 0 && D2 != 0) ? this->rng_.uniform_int(0, 1) : (D1==0) ? 1 : 0;
-
-    const ParticleID pid_to_move = (idx==0) ? pid : pid2;
-    const Real r_to_move = (idx==0) ? r1 : r2;
-
-    BOOST_AUTO(position,     newpfs[idx]);
-    BOOST_AUTO(displacement, draw_displacement(particles_new[idx], newpfs[idx].second));
-
-    {
-        std::size_t continue_count = 100;
-        while(continue_count != 0)
-        {
-            boost::tie(position, displacement) =
-                this->polygon().move_next_face(position, displacement);
-            if(displacement[0] == 0. && displacement[1] == 0. &&
-               displacement[2] == 0.) break;
-            --continue_count;
-        }
-        if(continue_count == 0)
-            std::cerr << "[WARNING] moving on face by BD: precision lost\n";
-
-        const Real3  tmp_pos = particles_new[idx].position();
-        const FaceID tmp_fid = newpfs[idx].second;
-        particles_new[idx].position() = position.first;
-        newpfs[idx].second            = position.second;
-
-        if(this->polygon().distance(
-            std::make_pair(particles_new[0].position(), newpfs[0].second),
-            std::make_pair(particles_new[1].position(), newpfs[1].second)) < r12)
-        {
-            particles_new[idx].position() = tmp_pos;
-            newpfs[idx].second = tmp_fid;
-            SGFRD_TRACE(tracer_.write("trial move rejected because two particle collides"))
-        }
-        else
-        {
-            inside_checker is_inside_of(particles_new[idx].position(), r_to_move,
-                                        newpfs[idx].second, this->polygon());
-            if(!is_inside_of(sh))
-            {
-                const bool no_overlap = this->burst_and_shrink_overlaps(
-                    particles_new[idx], newpfs[idx].second, did);
-                if(!no_overlap)
-                {
-                    particles_new[idx].position() = tmp_pos;
-                    newpfs[idx].second = tmp_fid;
-                    SGFRD_TRACE(tracer_.write("trial move rejected because of no space"))
-                }
-            }
-        }
-    }
-    this->update_particle(pid_to_move, particles_new[idx], newpfs[idx].second);
 
     //------------------------ record reaction -----------------------------
     last_reactions_.push_back(std::make_pair(rule, make_unbinding_reaction_info(
         this->time(), pid, p, pid, particles_new[0], pid2, particles_new[1])));
+
     boost::container::static_vector<pid_p_fid_tuple_type, 2> retval(2);
     retval[0] = boost::make_tuple(pid , particles_new[0], newpfs[0].second);
     retval[1] = boost::make_tuple(pid2, particles_new[1], newpfs[1].second);
