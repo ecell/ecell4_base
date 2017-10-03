@@ -5,6 +5,8 @@ endif()
 file(GLOB HPP_FILES *.hpp)
 set(CPP_FILES polygon_traits.cpp SGFRDWorld.cpp SGFRDSimulator.cpp)
 
+add_definitions(-DECELL4_SGFRD_NO_TRACE)
+
 add_executable(sgfrd-sample-diffusion sample/diffusion.cpp ${CPP_FILES})
 target_link_libraries(sgfrd-sample-diffusion ecell4-egfrd ecell4-core ecell4-bd boost_system boost_chrono)
 
