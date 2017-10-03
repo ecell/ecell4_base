@@ -338,6 +338,8 @@ public:
 //             if(!overlap_ps.empty())
 //             {
 //                 std::cout << "warning: after clear volume, overlapping particle exists!" << std::endl;
+//                 std::cout << "pid1 = " << pid1 << ", pos = " << p1.position() << " on " << fid1 << std::endl;
+//                 std::cout << "pid2 = " << pid2 << ", pos = " << p2.position() << " on " << fid2 << std::endl;
 //                 for(std::vector<std::pair<std::pair<ParticleID, Particle>, Real>
 //                         >::const_iterator i(overlap_ps.begin()), e(overlap_ps.end());
 //                         i!=e; ++i)
