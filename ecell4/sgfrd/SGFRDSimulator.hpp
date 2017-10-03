@@ -946,6 +946,7 @@ class SGFRDSimulator :
         }
         std::sort(domains.begin(), domains.end(),
                   utils::pair_second_element_comparator<DomainID, Real>());
+
         return domains;
     }
 
