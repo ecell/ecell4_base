@@ -196,6 +196,17 @@ void ShellContainer<T_pt>::add_shell(
 {
     if(shell_id_to_index_map_.count(id) == 1)
         throw std::invalid_argument("shellcontianer already have the shell");
+
+//     /* overlap check */{
+//         std::vector<std::pair<std::pair<ShellID, storage_type>, Real>
+//             > ovlp = this->list_shells_within_radius(
+//                     std::make_pair(sh.position(), fid), sh.size());
+//         if(!ovlp.empty())
+//         {
+//             std::cout << "WARNING: circular shells overlap!" << std::endl;
+//         }
+//     }
+
     const std::size_t idx = container_.size();
     shell_id_to_index_map_[id] = idx;
     face_registrator_.emplace(id, fid);
@@ -210,6 +221,17 @@ void ShellContainer<T_pt>::add_shell(
 {
     if(shell_id_to_index_map_.count(id) == 1)
         throw std::invalid_argument("shellcontianer already have the shell");
+
+//     /* overlap check */{
+//         std::vector<std::pair<std::pair<ShellID, storage_type>, Real>
+//             > ovlp = this->list_shells_within_radius(
+//                     std::make_pair(sh.position(), vid), sh.size());
+//         if(!ovlp.empty())
+//         {
+//             std::cout << "WARNING: conical shells overlap!" << std::endl;
+//         }
+//     }
+
     const std::size_t idx = container_.size();
     shell_id_to_index_map_[id] = idx;
     vertex_registrator_.emplace(id, vid);
@@ -224,6 +246,17 @@ void ShellContainer<T_pt>::update_shell(
 {
     if(shell_id_to_index_map_.count(id) == 0)
         throw std::invalid_argument("shellcontianer doesnt have the shell");
+
+//     /* overlap check */{
+//         std::vector<std::pair<std::pair<ShellID, storage_type>, Real>
+//             > ovlp = this->list_shells_within_radius(
+//                     std::make_pair(sh.position(), fid), sh.size(), id);
+//         if(!ovlp.empty())
+//         {
+//             std::cout << "WARNING: circular shells overlap!" << std::endl;
+//         }
+//     }
+
     const std::size_t idx = shell_id_to_index_map_[id];
     boost::apply_visitor(face_register_updater(*this, id, fid),
                          container_.at(idx).second);
@@ -238,6 +271,17 @@ void ShellContainer<T_pt>::update_shell(
 {
     if(shell_id_to_index_map_.count(id) == 0)
         throw std::invalid_argument("shellcontianer doesnt have the shell");
+
+//     /* overlap check */{
+//         std::vector<std::pair<std::pair<ShellID, storage_type>, Real>
+//             > ovlp = this->list_shells_within_radius(
+//                     std::make_pair(sh.position(), vid), sh.size(), id);
+//         if(!ovlp.empty())
+//         {
+//             std::cout << "WARNING: circular shell overlaps!" << std::endl;
+//         }
+//     }
+
     const std::size_t idx = shell_id_to_index_map_[id];
     boost::apply_visitor(vertex_register_updater(*this, id, vid),
                          container_.at(idx).second);
