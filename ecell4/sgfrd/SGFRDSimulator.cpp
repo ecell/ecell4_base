@@ -243,7 +243,8 @@ void SGFRDSimulator::add_to_multi_recursive(Multi& multi_to_join)
                               burst_event(std::make_pair(did, ev), tm))
                 {
                     const Real dist = this->polygon().distance(
-                            sh_pos, std::make_pair(p.position(), fid)) - sh.size();
+                            sh_pos, std::make_pair(p.position(), fid)
+                            ) - sh.size() - p.radius();
                     const Real min_shell_radius =
                         calc_min_single_circular_shell_radius(p);
                     if(dist < min_shell_radius)
