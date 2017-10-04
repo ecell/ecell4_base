@@ -19,30 +19,39 @@ import ecell4.extra.sge as sge
 def run_serial(target, jobs, n=1, **kwargs):
     return [[target(copy.copy(job), i + 1, j + 1) for j in range(n)] for i, job in enumerate(jobs)]
 
-def run_multiprocessing(target, jobs, n=1, **kwargs):
-    def target_wrapper(f, end_send):
-        def wf(*_args, **_kwargs):
-            end_send.send(f(*_args, **_kwargs))
-        return wf
+def run_multiprocessing(target, jobs, n=1, nproc=None, **kwargs):
+    def consumer(f, q_in, q_out):
+        while True:
+            val = q_in.get()
+            if val is None:
+                q_in.task_done()
+                break
+            i, x = val
+            res = (i, f(*x))
+            q_in.task_done()
+            q_out.put(res)
 
-    processes = []
-    end_recvs = []
-    for i, job in enumerate(jobs):
-        for j in range(n):
-            end_recv, end_send = multiprocessing.Pipe(False)
-            end_recvs.append(end_recv)
-            p = multiprocessing.Process(
-                target=target_wrapper(target, end_send), args=(job, i + 1, j + 1))
-            p.start()
-            processes.append(p)
+    def mulpmap(f, X, nproc):
+        nproc = nproc or multiprocessing.cpu_count()
 
-    for p in processes:
-        p.join()
+        q_in = multiprocessing.JoinableQueue()
+        q_out = multiprocessing.Queue()
+        workers = [multiprocessing.Process(target=consumer, args=(f, q_in, q_out), daemon=True) for _ in range(nproc)]
+        sent = [q_in.put((i, x)) for i, x in enumerate(X)]
+        num_tasks = len(sent)
+        [q_in.put(None) for _ in range(nproc)]  #XXX: poison pill
+        [w.start() for w in workers]
+        # [w.join() for w in workers]
+        q_in.join()
+        res = [q_out.get() for _ in range(num_tasks)]
+        return [x for (_, x) in sorted(res)]
 
-    retval = [end_recv.recv() for end_recv in end_recvs]
-    return [retval[i: i + n] for i in range(0, len(retval), n)]
+    res = mulpmap(
+        target, ((job, i + 1, j + 1) for (i, job), j in itertools.product(enumerate(jobs), range(n))), nproc)
+    return [res[i: i + n] for i in range(0, len(res), n)]
 
-def run_sge(target, jobs, n=1, path='.', delete=True, wait=True, environ=None, modules=(), **kwargs):
+def run_sge(target, jobs, n=1, nproc=None, path='.', delete=True, wait=True, environ=None, modules=(), **kwargs):
+    #XXX: nproc is not supported yet
     logging.basicConfig(level=logging.DEBUG)
 
     if isinstance(target, types.LambdaType) and target.__name__ == "<lambda>":
@@ -194,7 +203,7 @@ def ensemble_simulations(
     is_netfree=False, species_list=None, without_reset=False,
     return_type='matplotlib', opt_args=(), opt_kwargs=None,
     structures=None, rndseed=None,
-    n=1, nproc=1, method=None, errorbar=True,
+    n=1, nproc=None, method=None, errorbar=True,
     **kwargs):
     """
     Run simulations multiple times and return its ensemble.
@@ -207,7 +216,7 @@ def ensemble_simulations(
         A number of runs. Default is 1.
     nproc : int, optional
         A number of processors. Ignored when method='serial'.
-        Default is 1.
+        Default is None.
     method : str, optional
         The way for running multiple jobs.
         Choose one from 'serial', 'sge' and 'multiprocessing'.
@@ -269,9 +278,9 @@ def ensemble_simulations(
     if method is None or method.lower() == "serial":
         retval = run_serial(singlerun, jobs, n=n, **kwargs)
     elif method.lower() == "sge":
-        retval = run_sge(singlerun, jobs, n=n, **kwargs)
+        retval = run_sge(singlerun, jobs, n=n, nproc=nproc, **kwargs)
     elif method.lower() == "multiprocessing":
-        retval = run_multiprocessing(singlerun, jobs, n=n, **kwargs)
+        retval = run_multiprocessing(singlerun, jobs, n=n, nproc=nproc, **kwargs)
     else:
         raise ValueError(
             'Argument "method" must be one of "serial", "multiprocessing" and "sge".')
