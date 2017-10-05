@@ -52,7 +52,6 @@ def run_multiprocessing(target, jobs, n=1, nproc=None, **kwargs):
     return [res[i: i + n] for i in range(0, len(res), n)]
 
 def run_sge(target, jobs, n=1, nproc=None, path='.', delete=True, wait=True, environ=None, modules=(), **kwargs):
-    #XXX: nproc is not supported yet
     logging.basicConfig(level=logging.DEBUG)
 
     if isinstance(target, types.LambdaType) and target.__name__ == "<lambda>":
@@ -144,7 +143,7 @@ def run_sge(target, jobs, n=1, nproc=None, path='.', delete=True, wait=True, env
     else:
         raise ValueError("'wait' must be either 'int' or 'bool'.")
 
-    jobids = sge.run(cmds, n=n, path=path, delete=delete, sync=sync, **kwargs)
+    jobids = sge.run(cmds, n=n, path=path, delete=delete, sync=sync, max_running_tasks=nproc, **kwargs)
 
     if not (sync > 0):
         return None
