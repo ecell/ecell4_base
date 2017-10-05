@@ -1,6 +1,7 @@
 from __future__ import print_function
 
 import os
+import os.path
 import logging
 import tempfile
 import pickle
@@ -80,6 +81,7 @@ def run_sge(target, jobs, n=1, nproc=None, path='.', delete=True, wait=True, env
     cmds = []
     pickleins = []
     pickleouts = []
+    scripts = []
     for i, job in enumerate(jobs):
         (fd, picklein) = tempfile.mkstemp(suffix='.pickle', prefix='sge-', dir=path)
         with os.fdopen(fd, 'wb') as fout:
@@ -95,24 +97,44 @@ def run_sge(target, jobs, n=1, nproc=None, path='.', delete=True, wait=True, env
         #     [tempfile.mkstemp(suffix='.pickle', prefix='sge-', dir=path)[1]
         #      for j in range(n)])
 
+        code = 'import sys\n'
+        code += 'import os\n'
+        code += 'import pickle\n'
+        code += 'with open(\'{}\', \'rb\') as fin:\n'.format(picklein)
+        code += '    job = pickle.load(fin)\n'
+        code += 'pass\n'
+        for m in modules:
+            code += "from {} import *\n".format(m)
+        code += src
+        code += '\ntid = int(os.environ[\'SGE_TASK_ID\'])'
+        code += '\nretval = {:s}(job, {:d}, tid)'.format(target.__name__, i + 1)
+        code += '\nfilenames = {:s}'.format(str(pickleouts[-1]))
+        code += '\npickle.dump(retval, open(filenames[tid - 1], \'wb\'))\n'
+
+        (fd, script) = tempfile.mkstemp(suffix='.py', prefix='sge-', dir=path)
+        with os.fdopen(fd, 'w') as fout:
+            fout.write(code)
+        scripts.append(script)
+
         cmd = '#!/bin/bash\n'
         for key, value in environ.items():
             cmd += 'export {:s}={:s}\n'.format(key, value)
-        cmd += 'python3 -c "\n'
-        cmd += 'import sys\n'
-        cmd += 'import os\n'
-        cmd += 'import pickle\n'
-        cmd += 'with open(sys.argv[1], \'rb\') as fin:\n'
-        cmd += '    job = pickle.load(fin)\n'
-        cmd += 'pass\n'
-        for m in modules:
-            cmd += "from {} import *\n".format(m)
-        cmd += src
-        cmd += '\ntid = int(os.environ[\'SGE_TASK_ID\'])'
-        cmd += '\nretval = {:s}(job, {:d}, tid)'.format(target.__name__, i + 1)
-        cmd += '\nfilenames = {:s}'.format(str(pickleouts[-1]))
-        cmd += '\npickle.dump(retval, open(filenames[tid - 1], \'wb\'))'
-        cmd += '" {:s}\n'.format(picklein)
+        cmd += 'python3 {}'.format(script)  #XXX: Use the same executer, python
+        # cmd += 'python3 -c "\n'
+        # cmd += 'import sys\n'
+        # cmd += 'import os\n'
+        # cmd += 'import pickle\n'
+        # cmd += 'with open(sys.argv[1], \'rb\') as fin:\n'
+        # cmd += '    job = pickle.load(fin)\n'
+        # cmd += 'pass\n'
+        # for m in modules:
+        #     cmd += "from {} import *\n".format(m)
+        # cmd += src
+        # cmd += '\ntid = int(os.environ[\'SGE_TASK_ID\'])'
+        # cmd += '\nretval = {:s}(job, {:d}, tid)'.format(target.__name__, i + 1)
+        # cmd += '\nfilenames = {:s}'.format(str(pickleouts[-1]))
+        # cmd += '\npickle.dump(retval, open(filenames[tid - 1], \'wb\'))'
+        # cmd += '" {:s}\n'.format(picklein)
         cmds.append(cmd)
 
     if isinstance(wait, bool):
@@ -136,8 +158,8 @@ def run_sge(target, jobs, n=1, nproc=None, path='.', delete=True, wait=True, env
               for tasks in pickleouts]
 
     if delete:
-        for picklename in itertools.chain(pickleins, *pickleouts):
-            os.remove(picklename)
+        for tmpname in itertools.chain(pickleins, scripts, *pickleouts):
+            os.remove(tmpname)
 
     return retval
 
