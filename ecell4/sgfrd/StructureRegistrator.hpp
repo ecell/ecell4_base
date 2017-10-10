@@ -71,6 +71,8 @@ public:
     const_iterator cbegin() const throw() {return container_.begin();}
     const_iterator cend()   const throw() {return container_.end();}
 
+    void dump(std::ostream& os) const;
+
 protected:
 
     std::size_t to_index(const structure_id_type& sid) const
@@ -219,6 +221,36 @@ inline typename StructureRegistrator<Te, Ts, Tp>::structure_id_type const&
 StructureRegistrator<Te, Ts, Tp>::structure_id_at(std::size_t i) const
 {
     return container_.at(i).first;
+}
+
+template<typename Te, typename Ts, typename Tp>
+void StructureRegistrator<Te, Ts, Tp>::dump(std::ostream& os) const
+{
+//     elemid_to_strid_map_type           elemid_to_strid_map_;   //ex {pID -> fID}
+//     container_type                     container_;  //ex {<fid, {pid,...}>, ...}
+    os << "StructureRegistrator::dump\n";
+    os << "{element ID -> structure ID}\n";
+    for(typename elemid_to_strid_map_type::const_iterator
+        i(elemid_to_strid_map_.begin()), e(elemid_to_strid_map_.end()); i!=e; ++i)
+    {
+        os << "{ " << i->first << " -> " << i->second " }\n";
+    }
+    os << std::endl;
+
+    os << "{structure ID -> {list of elements...}}\n";
+    for(typename container_type::const_iterator
+        i(container_.begin()), e(container_.end()); i!=e; ++i)
+    {
+        os << "{ " << i->first << " -> { ";
+        for(typename element_id_array_type::const_iterator
+            ei(i->second.begin()), ee(i->second.end()); ei != ee; ++ei)
+        {
+            os << *ei << ' ';
+        }
+        os << " }\n"
+    }
+    os << std::endl;
+    return ;
 }
 
 } // sgfrd
