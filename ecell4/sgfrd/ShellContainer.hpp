@@ -450,16 +450,12 @@ ShellContainer<T_pt>::list_shells_within_radius(
             const Real dist = boost::apply_visitor(distance_on_surf, shell);
             if(dist < radius)
             {
-                bool already_inside = false;
                 for(std::size_t i=0; i<retval.size(); ++i)
                 {
-                    if(retval.at(i).first.first == *jter)
-                    {
-                        already_inside = true;
-                    }
+                    // to avoid double-count;
+                    // to check the consistency of polygon and structure_registrator.
+                    assert(retval.at(i).first.first != *jter);
                 }
-                assert(already_inside == false);
-
 
                 retval.push_back(std::make_pair(
                             std::make_pair(*jter, shell), dist));
@@ -478,15 +474,10 @@ ShellContainer<T_pt>::list_shells_within_radius(
             const Real dist = boost::apply_visitor(distance_on_surf, this->get_shell(*jter));
             if(dist < radius)
             {
-                bool already_inside = false;
                 for(std::size_t i=0; i<retval.size(); ++i)
                 {
-                    if(retval.at(i).first.first == *jter)
-                    {
-                        already_inside = true;
-                    }
+                    assert(retval.at(i).first.first != *jter);
                 }
-                assert(already_inside == false);
 
                 retval.push_back(std::make_pair(
                             std::make_pair(*jter, shell), dist));
@@ -541,15 +532,10 @@ ShellContainer<T_pt>::list_shells_within_radius(
             const Real dist = boost::apply_visitor(distance_on_surf, shell);
             if(dist < radius)
             {
-                bool already_inside = false;
                 for(std::size_t i=0; i<retval.size(); ++i)
                 {
-                    if(retval.at(i).first.first == *jter)
-                    {
-                        already_inside = true;
-                    }
+                    assert(retval.at(i).first.first != *jter);
                 }
-                assert(already_inside == false);
 
                 retval.push_back(std::make_pair(
                             std::make_pair(*jter, shell), dist));
@@ -569,15 +555,10 @@ ShellContainer<T_pt>::list_shells_within_radius(
             const Real dist = boost::apply_visitor(distance_on_surf, shell);
             if(dist < radius)
             {
-                bool already_inside = false;
                 for(std::size_t i=0; i<retval.size(); ++i)
                 {
-                    if(retval.at(i).first.first == *jter)
-                    {
-                        already_inside = true;
-                    }
+                    assert(retval.at(i).first.first != *jter);
                 }
-                assert(already_inside == false);
 
                 retval.push_back(std::make_pair(
                             std::make_pair(*jter,shell), dist));
@@ -632,15 +613,10 @@ ShellContainer<T_pt>::list_shells_within_radius(
             const Real dist = boost::apply_visitor(distance_on_surf, shell);
             if(dist < radius)
             {
-                bool already_inside = false;
                 for(std::size_t i=0; i<retval.size(); ++i)
                 {
-                    if(retval.at(i).first.first == *jter)
-                    {
-                        already_inside = true;
-                    }
+                    assert(retval.at(i).first.first != *jter);
                 }
-                assert(already_inside == false);
 
                 retval.push_back(std::make_pair(
                             std::make_pair(*jter, shell), dist));
@@ -661,15 +637,10 @@ ShellContainer<T_pt>::list_shells_within_radius(
             const Real dist = boost::apply_visitor(distance_on_surf, shell);
             if(dist < radius)
             {
-                bool already_inside = false;
                 for(std::size_t i=0; i<retval.size(); ++i)
                 {
-                    if(retval.at(i).first.first == *jter)
-                    {
-                        already_inside = true;
-                    }
+                    assert(retval.at(i).first.first != *jter);
                 }
-                assert(already_inside == false);
                 retval.push_back(std::make_pair(
                             std::make_pair(*jter, shell), dist));
             }
