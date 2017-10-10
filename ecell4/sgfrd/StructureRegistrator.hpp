@@ -233,7 +233,7 @@ void StructureRegistrator<Te, Ts, Tp>::dump(std::ostream& os) const
     for(typename elemid_to_strid_map_type::const_iterator
         i(elemid_to_strid_map_.begin()), e(elemid_to_strid_map_.end()); i!=e; ++i)
     {
-        os << "{ " << i->first << " -> " << i->second " }\n";
+        os << "{ " << i->first << " -> " << i->second << " }\n";
     }
     os << std::endl;
 
@@ -247,7 +247,7 @@ void StructureRegistrator<Te, Ts, Tp>::dump(std::ostream& os) const
         {
             os << *ei << ' ';
         }
-        os << " }\n"
+        os << " }\n";
     }
     os << std::endl;
     return ;

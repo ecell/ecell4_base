@@ -459,7 +459,7 @@ ShellContainer<T_pt>::list_shells_within_radius(
                         std::cerr << "Error: broken consistency in structure id\n";
                         std::cerr << "ShellContainer::list_shells_within_radius\n";
                         std::cerr << "FaceID " << pos.second << " has ...\n";
-                        for(typename std::vecotr<face_id_type>::const_iterator
+                        for(typename std::vector<face_id_type>::const_iterator
                             nfi(neighborf.begin()), nfe(neighborf.end());
                             nfi != nfe; ++nfi)
                         {
@@ -469,7 +469,7 @@ ShellContainer<T_pt>::list_shells_within_radius(
                         std::cerr << "Shell " << *jter
                                   << " is found on both Face " << *iter
                                   << " and Face " << pos.second << std::endl;
-                        face_registrator.dump(std::cerr);
+                        face_registrator_.dump(std::cerr);
                         assert(false);
                     }
                 }
@@ -498,9 +498,9 @@ ShellContainer<T_pt>::list_shells_within_radius(
                         std::cerr << "Error: broken consistency in structure id\n";
                         std::cerr << "ShellContainer::list_shells_within_radius\n";
                         std::cerr << "Vertex " << pos.second << " has ...\n";
-                        for(typename std::vecotr<vertex_id_type>::const_iterator
+                        for(typename std::vector<vertex_id_type>::const_iterator
                             nvi(neighborv.begin()), nve(neighborv.end());
-                            nvi != nfe; ++nvi)
+                            nvi != nve; ++nvi)
                         {
                             std::cerr << "  VertexID = " << *nvi << std::endl;
                         }
@@ -572,7 +572,7 @@ ShellContainer<T_pt>::list_shells_within_radius(
                         std::cerr << "Error: broken consistency in structure id\n";
                         std::cerr << "ShellContainer::list_shells_within_radius\n";
                         std::cerr << "FaceID " << pos.second << " has ...\n";
-                        for(typename std::vecotr<face_id_type>::const_iterator
+                        for(typename std::vector<face_id_type>::const_iterator
                             nfi(neighborf.begin()), nfe(neighborf.end());
                             nfi != nfe; ++nfi)
                         {
@@ -612,9 +612,9 @@ ShellContainer<T_pt>::list_shells_within_radius(
                         std::cerr << "Error: broken consistency in structure id\n";
                         std::cerr << "ShellContainer::list_shells_within_radius\n";
                         std::cerr << "Vertex " << pos.second << " has ...\n";
-                        for(typename std::vecotr<vertex_id_type>::const_iterator
+                        for(typename std::vector<vertex_id_type>::const_iterator
                             nvi(neighborv.begin()), nve(neighborv.end());
-                            nvi != nfe; ++nvi)
+                            nvi != nve; ++nvi)
                         {
                             std::cerr << "  VertexID = " << *nvi << std::endl;
                         }
@@ -687,7 +687,7 @@ ShellContainer<T_pt>::list_shells_within_radius(
                         std::cerr << "Error: broken consistency in structure id\n";
                         std::cerr << "ShellContainer::list_shells_within_radius\n";
                         std::cerr << "FaceID " << pos.second << " has ...\n";
-                        for(typename std::vecotr<face_id_type>::const_iterator
+                        for(typename std::vector<face_id_type>::const_iterator
                             nfi(neighborf.begin()), nfe(neighborf.end());
                             nfi != nfe; ++nfi)
                         {
@@ -728,7 +728,7 @@ ShellContainer<T_pt>::list_shells_within_radius(
                         std::cerr << "Error: broken consistency in structure id\n";
                         std::cerr << "ShellContainer::list_shells_within_radius\n";
                         std::cerr << "Vertex " << pos.second << " has ...\n";
-                        for(typename std::vecotr<vertex_id_type>::const_iterator
+                        for(typename std::vector<vertex_id_type>::const_iterator
                             nvi(neighborv.begin()), nve(neighborv.end());
                             nvi != nve; ++nvi)
                         {
@@ -737,7 +737,7 @@ ShellContainer<T_pt>::list_shells_within_radius(
                         std::cerr << "neighbors.\n";
                         std::cerr << "Shell " << *jter
                                   << " is found on both Vertex " << *iter
-                                  << " and another Face.";
+                                  << " and another Face." << std::endl;
                         vertex_registrator_.dump(std::cerr);
                         assert(false);
                     }
