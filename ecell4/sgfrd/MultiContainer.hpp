@@ -187,13 +187,16 @@ class MultiContainer
             const Real& radius) const
     {
         std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > retval;
-        const Real rad2 = radius * radius;
         Particle p; ParticleID pid;
         BOOST_FOREACH(boost::tie(pid, p), pcon_)
         {
             BOOST_AUTO(fid, registrator_.structure_on(pid));
-            const Real d2 = world_.distance_sq(std::make_pair(p.position(), fid), pos);
-            if(d2 <= rad2) return false;
+            const Real dist =
+                this->world_.distance(std::make_pair(p.position(), fid), pos);
+            if(dist <= radius + p.radius())
+            {
+                return false; // overlaps!
+            }
         }
         return true; // no overlap!
     }
@@ -201,14 +204,18 @@ class MultiContainer
             const Real& radius, const ParticleID& ignore) const
     {
         std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > retval;
-        const Real rad2 = radius * radius;
         Particle p; ParticleID pid;
         BOOST_FOREACH(boost::tie(pid, p), pcon_)
         {
-            if(pid == ignore) continue;
+            if(pid == ignore){continue;}
+
             BOOST_AUTO(fid, registrator_.structure_on(pid));
-            const Real d2 = world_.distance_sq(std::make_pair(p.position(), fid), pos);
-            if(d2 <= rad2) return false;
+            const Real dist =
+                this->world_.distance(std::make_pair(p.position(), fid), pos);
+            if(dist <= radius + p.radius())
+            {
+                return false; // overlaps!
+            }
         }
         return true; // no overlap!
     }
@@ -221,10 +228,15 @@ class MultiContainer
         Particle p; ParticleID pid;
         BOOST_FOREACH(boost::tie(pid, p), pcon_)
         {
-            if(pid == ignore1 || pid == ignore2) continue;
+            if(pid == ignore1 || pid == ignore2){continue;}
+
             BOOST_AUTO(fid, registrator_.structure_on(pid));
-            const Real d2 = world_.distance_sq(std::make_pair(p.position(), fid), pos);
-            if(d2 <= rad2) return false;
+            const Real dist =
+                this->world_.distance(std::make_pair(p.position(), fid), pos);
+            if(dist <= radius + p.radius())
+            {
+                return false; // overlaps!
+            }
         }
         return true; // no overlap!
     }
