@@ -1504,9 +1504,11 @@ SGFRDSimulator::attempt_reaction_1_to_2(const ReactionRule& rule,
 
     SGFRD_TRACE(tracer_.write("single reaction 1(%1%) -> 2 occurs", pid))
 
+    //------------------------ update particles -----------------------------
     this->update_particle(pid, particles_new[0], newpfs[0].second);
     std::pair<std::pair<ParticleID, Particle>, bool>
         pp2 = this->create_particle(particles_new[1], newpfs[1].second);
+    assert(pp2.second);
     const ParticleID pid2(pp2.first.first);
 
     //------------------------ record reaction -----------------------------
