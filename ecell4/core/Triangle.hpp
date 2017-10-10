@@ -19,9 +19,9 @@ struct Triangle : public Shape
     {
         return normal_;
     }
-    Real3 const& represent() const
+    Real3 represent() const
     {
-        return edges_[0];
+        return edges_[0] / lengths_[0];
     }
 
     Real3 const& vertex_at(const std::size_t i) const
