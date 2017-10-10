@@ -276,7 +276,9 @@ public:
         //----------------------------- trial move -----------------------------
 
         if(D1 == 0. && D2 == 0)
+        {
             throw std::invalid_argument("reaction between immobile particles");
+        }
 
         const std::size_t idx = // select particle that is moved
             (D2 == 0 || (D1 != 0 && rng_.uniform_int(0, 1) == 0)) ? 0 : 1;
@@ -291,10 +293,14 @@ public:
             const Real3 tmp = particles_new[idx].position();
             particles_new[idx].position() = position.first;
             if(clear_volume(particles_new[idx], position.second, pid_to_move))
+            {
                 this->container_.update_particle(
                         pid_to_move, particles_new[idx], position.second);
+            }
             else
+            {
                 particles_new[idx].position() = tmp;
+            }
         }
 
         rlog.second.add_product(std::make_pair(pid,  particles_new[0]));
@@ -323,7 +329,7 @@ public:
         std::pair<Real3, face_id_type> pf1(pos1, fid1);
         this->propagate(pf1, dp);
 
-        if(is_overlapping(pf1, radius_new, pid1, pid2)) return false;
+        if(is_overlapping(pf1, radius_new, pid1, pid2)){return false;}
 
         const Particle particle_new(sp_new, pf1.first, radius_new, D_new);
         if(false == clear_volume(particle_new, pf1.second, pid1, pid2))
@@ -331,33 +337,52 @@ public:
             return false;
         }
 
-//         {
-//             std::vector<std::pair<std::pair<ParticleID, Particle>, Real>
-//                 > overlap_ps = this->container_.world().list_particles_within_radius(
-//                         pf1, radius_new, pid1, pid2);
-//             if(!overlap_ps.empty())
-//             {
-//                 std::cout << "warning: after clear volume, overlapping particle exists!" << std::endl;
-//                 std::cout << "pid1 = " << pid1 << ", pos = " << p1.position() << " on " << fid1 << std::endl;
-//                 std::cout << "pid2 = " << pid2 << ", pos = " << p2.position() << " on " << fid2 << std::endl;
-//                 for(std::vector<std::pair<std::pair<ParticleID, Particle>, Real>
-//                         >::const_iterator i(overlap_ps.begin()), e(overlap_ps.end());
-//                         i!=e; ++i)
-//                 {
-//                     std::cout << "pid     : " << i->first.first << std::endl;
-//                     std::cout << "position: " << i->first.second.position() << std::endl;
-//                     std::cout << "distance: " << i->second << std::endl;
-//                 }
-//             }
-//         }
-
         //XXX here, p1 is not updated,
         //    so fid1 may differ from the structure_registrator.
         remove_particle(pid2);
         remove_particle(pid1);
         const std::pair<std::pair<ParticleID, Particle>, bool> pp_new =
             this->container_.new_particle(particle_new, pf1.second);
-        assert(pp_new.second); //XXX
+
+        if(false == pp_new.second)
+        {
+            vc_.access_tracer().write(
+                "after calling clear_volume, particle overlaps with another particle");
+            std::vector<std::pair<std::pair<ParticleID, Particle>, Real>
+                > overlap_ps =
+                    this->container_.world().list_particles_within_radius(
+                        pf1, radius_new, pid1, pid2);
+            if(overlap_ps.empty())
+            {
+                vc_.access_tracer().write("no overlapping particles...internal error.");
+            }
+            else
+            {
+                vc_.access_tracer().write("reactant 1: id = %1%, pos = %2%, fid = %3%",
+                    pid1, p1.position(), fid1);
+                vc_.access_tracer().write("reactant 2: id = %1%, pos = %2%, fid = %3%",
+                    pid2, p2.position(), fid2);
+
+                for(std::vector<std::pair<std::pair<ParticleID, Particle>, Real>
+                    >::const_iterator i(overlap_ps.begin()), e(overlap_ps.end());
+                    i!=e; ++i)
+                {
+                    vc_.access_tracer().write(
+                        "overlapping particle: id = %1%, pos = %2%, fid = %3%",
+                        i->first.first, i->first.second.position(), i->second);
+                }
+
+                vc_.access_tracer().write("currently, Multi has ...");
+                for(typename container_type::particle_container_type::const_iterator
+                        i(container_.list_particles().begin()),
+                        e(container_.list_particles().end()); i!=e; ++i)
+                {
+                    vc_.access_tracer().write("particle: id = %1%, pos = %2%",
+                        i->first, i->second.position());
+                }
+                vc_.access_tracer().write("particles.");
+            }
+        }
 
         rlog.second.add_product(pp_new.first);
         last_reactions_.push_back(rlog);

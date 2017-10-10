@@ -689,7 +689,11 @@ class SGFRDSimulator :
 
             escaped_ = false;
             inside_checker is_inside(p.position(), p.radius(), fid, sim.polygon());
-            if(applier(is_inside, domain)) return true;
+            if(applier(is_inside, domain))
+            {
+                SGFRD_TRACE(sim.tracer_.write("particle is inside of the shell"))
+                return true;
+            }
 
             SGFRD_TRACE(sim.tracer_.write("particle escaped"));
 
@@ -706,7 +710,11 @@ class SGFRDSimulator :
 
             escaped_ = false;
             inside_checker is_inside(p.position(), p.radius(), fid, sim.polygon());
-            if(applier(is_inside, domain)) return true;
+            if(applier(is_inside, domain))
+            {
+                SGFRD_TRACE(sim.tracer_.write("particle is inside of the shell"))
+                return true;
+            }
 
             SGFRD_TRACE(sim.tracer_.write("particle escaped"))
 
@@ -723,7 +731,11 @@ class SGFRDSimulator :
 
             escaped_ = false;
             inside_checker is_inside(p.position(), p.radius(), fid, sim.polygon());
-            if(applier(is_inside, domain)) return true;
+            if(applier(is_inside, domain))
+            {
+                SGFRD_TRACE(sim.tracer_.write("particle is inside of the shell"))
+                return true;
+            }
 
             SGFRD_TRACE(sim.tracer_.write("particle escaped"))
 
@@ -734,6 +746,11 @@ class SGFRDSimulator :
         }
 
         bool escaped() const {return escaped_;}
+
+        tracer& access_tracer()
+        {
+            return sim.tracer_;
+        }
 
       private:
         bool            escaped_;
