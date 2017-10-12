@@ -3,14 +3,56 @@
 
 // #include <set>
 #include <stdexcept>
+#include <boost/shared_ptr.hpp>
+#include <boost/weak_ptr.hpp>
 
 #include "types.hpp"
 #include "Species.hpp"
+#include "pyhandler.hpp"
 //#include "Ratelaw.hpp"
 
 
 namespace ecell4
 {
+
+class ReactionRuleDescriptor
+{
+public:
+    bool is_available() const
+    {   return false;    }
+private:
+
+};
+
+class ReactionRuleDescriptorPyfunc
+    : public ReactionRuleDescriptor 
+{
+
+    typedef std::vector<Species> reactant_container_type;
+    typedef std::vector<Species> product_container_type;
+
+    typedef ReactionRuleDescriptor base_type;
+    typedef void *pyfunc_type;
+    typedef bool (*stepladder_type_rrdescriptor)(
+            pyfunc_type, reactant_container_type, product_container_type,  boost::shared_ptr<PyObjectHandler> py_handler );
+
+public:
+    bool is_available() const 
+    {
+        if (pyfunc_ != 0) {return true;}
+        return false;
+    }
+    ReactionRuleDescriptorPyfunc(
+            stepladder_type_rrdescriptor stepladder, pyfunc_type pyfunc, boost::shared_ptr<PyObjectHandler> py_handler)
+        :pyfunc_(pyfunc)
+    {;}
+    Real flux() const 
+    {
+        return 0.;
+    }
+private:
+    pyfunc_type pyfunc_;
+};
 
 class ReactionRule
 {
@@ -137,6 +179,21 @@ public:
     {
         return !(this->ratelaw_.expired());
     }*/
+    
+    /** ReactionRule Descriptor related functions.
+      */
+    void set_descriptor(const boost::shared_ptr<ReactionRuleDescriptor> rrd) 
+    {
+        this->rr_descriptor_ = rrd;
+    }
+    bool has_descriptor() const 
+    {
+        return !(this->rr_descriptor_.expired());
+    }
+    boost::shared_ptr<ReactionRuleDescriptor> get_descriptor() const
+    {
+        return this->rr_descriptor_.lock();
+    }
 
 protected:
 
@@ -146,6 +203,7 @@ protected:
 
     policy_type policy_;
     //boost::weak_ptr<Ratelaw> ratelaw_;
+    boost::weak_ptr<ReactionRuleDescriptor> rr_descriptor_;
 };
 
 inline bool operator<(const ReactionRule& lhs, const ReactionRule& rhs)
