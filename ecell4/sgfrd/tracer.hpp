@@ -2,6 +2,7 @@
 #define ECELL4_SGFRD_TRACER
 #include <boost/format.hpp>
 #include <boost/chrono.hpp>
+#include <boost/array.hpp>
 #include <boost/preprocessor/cat.hpp>
 #include <boost/preprocessor/stringize.hpp>
 #include <string>
@@ -24,11 +25,17 @@ class basic_tracer<char, std::char_traits<char> >
 
   public:
     basic_tracer(const std::string& fname)
-        : indent_(0), indent_size_(2), ofs(fname.c_str())
-    {}
+        : indent_(0), indent_size_(2), current(0)
+    {
+        fnames[0] = fname + std::string("01.log");
+        fnames[1] = fname + std::string("02.log");
+    }
     basic_tracer(const std::string& fname, const std::size_t indent_size)
-        : indent_(0), indent_size_(indent_size), ofs(fname.c_str())
-    {}
+        : indent_(0), indent_size_(indent_size), current(0)
+    {
+        fnames[0] = fname + std::string("01.log");
+        fnames[1] = fname + std::string("02.log");
+    }
     ~basic_tracer(){}
 
     basic_tracer& indent()   throw() {indent_ += 1;}
@@ -36,8 +43,25 @@ class basic_tracer<char, std::char_traits<char> >
 
     basic_tracer& write(const std::string& tr)
     {
+        std::ofstream ofs(fnames[current].c_str(),
+                std::ios_base::in | std::ios_base::out | std::ios_base::ate);
         const std::string idt(indent_size_ * indent_, ' ');
         ofs << idt << tr << std::endl;
+
+        ofs.seekp(0, std::ios::beg);
+        std::ofstream::streampos init = ofs.tellp();
+        ofs.seekp(0, std::ios::end);
+        std::ofstream::streampos last = ofs.tellp();
+        ofs.close();
+
+        std::ofstream::streampos sz = last - init;
+        if(sz > 50000000)
+        {
+            current = (current == 0) ? 1 : 0;
+            // clear the next file
+            std::ofstream nxt(fnames[current].c_str(), std::ios_base::trunc);
+            nxt.close();
+        }
         return *this;
     }
 
@@ -94,8 +118,9 @@ class basic_tracer<char, std::char_traits<char> >
 
   private:
     const std::size_t indent_size_;
-    std::size_t   indent_;
-    std::ofstream ofs;
+    std::size_t       indent_;
+    std::size_t       current;
+    boost::array<std::string, 2> fnames;
 };
 
 typedef basic_tracer<char, std::char_traits<char> > tracer;
