@@ -248,13 +248,6 @@ class SGFRDSimulator :
         SGFRD_TRACE(tracer_.write("  getting event %1%", id));
         return scheduler_.get(id);
     }
-    boost::shared_ptr<event_type> pickout_event(const event_id_type& id)
-    {
-        SGFRD_TRACE(tracer_.write("  picking out event %1%", id));
-        BOOST_AUTO(tmp, scheduler_.get(id));
-        scheduler_.remove(id);
-        return tmp;
-    }
     void remove_event(const event_id_type id)
     {
         SGFRD_TRACE(tracer_.write("  removing event %1%", id));
