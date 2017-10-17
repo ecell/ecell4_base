@@ -1130,6 +1130,8 @@ Polygon<T>::list_edge_id() const
 
 /********************** free functions to use a Polygon **********************/
 
+namespace polygon
+{
 template<typename T, typename s1idT, typename s2idT>
 inline Real distance(const Polygon<T>& p,
         const std::pair<Real3, s1idT>& p1, const std::pair<Real3, s2idT>& p2)
@@ -1144,7 +1146,7 @@ inline Real distance_sq(const Polygon<T>& p,
 }
 
 template<typename T, typename sidT>
-inline Real direction(const Polygon<T>& p,
+inline Real3 direction(const Polygon<T>& p,
         const std::pair<Real3, sidT>& p1, const std::pair<Real3, sidT>& p2)
 {
     return p.developed_direction(p1, p2);
@@ -1172,6 +1174,7 @@ roll(const Polygon<T>& p, const std::pair<Real3, typename T::face_id_type>& pos,
 {
     return p.rotate_around_vertex(p, pos, vid, r, theta);
 }
+} // polygon
 
 } // ecell4
 #endif// ECELL4_POLYGON
