@@ -1431,7 +1431,7 @@ SGFRDSimulator::attempt_reaction_1_to_2(const ReactionRule& rule,
     particles_new[1] = Particle(sp2, newpfs[1].first, r2, D2);
 
     bool rejected = false;
-    Real separation_factor = 1e-7;
+    Real separation_factor = r12 * 1e-7;
     std::size_t separation_count = 10;
     while(separation_count != 0)
     {
