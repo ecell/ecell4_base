@@ -564,9 +564,10 @@ class SGFRDSimulator :
                 remove_event(did);
                 did_ = add_event(create_closely_fitted_domain(
                     create_closely_fitted_shell(pid_, p_, fid_), pid_, p_));
-                results.push_back(std::make_pair(did_, this->polygon().distance(
-                    std::make_pair(p.position(),  fid),
-                    std::make_pair(p_.position(), fid_)) -
+                results.push_back(std::make_pair(did_,
+                    ecell4::polygon::distance(this->polygon(),
+                        std::make_pair(p.position(), fid),
+                        std::make_pair(p_.position(), fid_)) -
                     (calc_min_single_circular_shell_radius(p_) * 1.1)));
             }
             SGFRD_TRACE(tracer_.write("domain %1% is bursted and shrinked", did))
@@ -613,8 +614,9 @@ class SGFRDSimulator :
                 remove_event(did);
                 did_ = add_event(create_closely_fitted_domain(
                     create_closely_fitted_shell(pid_, p_, fid_), pid_, p_));
-                results.push_back(std::make_pair(did_, this->polygon().distance(
-                    vpos, std::make_pair(p_.position(), fid_)) -
+                results.push_back(std::make_pair(did_,
+                    ecell4::polygon::distance(this->polygon(),
+                        vpos, std::make_pair(p_.position(), fid_)) -
                     (calc_min_single_circular_shell_radius(p_) * 1.1)));
             }
             SGFRD_TRACE(tracer_.write("domain %1% is bursted and shrinked", did))
@@ -1128,17 +1130,8 @@ SGFRDSimulator::propagate_single<SGFRDSimulator::circular_shell_type>(
 
     SGFRD_TRACE(tracer_.write("pos = %1%, fid = %2%", state.first.first, state.first.second));
 
-    unsigned int continue_count = 2;
-    while(continue_count > 0)
-    {
-        state = this->polygon().move_next_face(state.first, state.second);
-        const Real3& disp = state.second;
-        if(disp[0] == 0. && disp[1] == 0. && disp[2] == 0.) break;
-        --continue_count;
-
-        SGFRD_TRACE(tracer_.write("pos = %1%, fid = %2%, dsp=%3%, count=%4%",
-                     state.first.first, state.first.second, disp, continue_count));
-    }
+    std::size_t continue_count =
+        ecell4::polygon::travel(this->polygon(), state.first, state.second, 2);
     if(continue_count == 0)
     {
         SGFRD_TRACE(tracer_.write("moving on face: precision lost"))
@@ -1181,8 +1174,8 @@ SGFRDSimulator::propagate_single<SGFRDSimulator::conical_surface_shell_type>(
     SGFRD_TRACE(tracer_.write("r = %1%, theta = %2%", r, theta));
 
     const std::pair<Real3, FaceID> state =
-        this->polygon().rotate_around_vertex(std::make_pair(p.position(), fid),
-                                           sh.structure_id(), r, theta);
+        ecell4::polygon::roll(this->polygon(), std::make_pair(p.position(), fid),
+                      sh.structure_id(), r, theta);
     SGFRD_TRACE(tracer_.write("propagateed : pos = %1%, fid = %2%",
                 state.first, state.second));
 
@@ -1227,22 +1220,15 @@ SGFRDSimulator::escape_single<SGFRDSimulator::circular_shell_type>(
 
     SGFRD_TRACE(tracer_.write("pos = %1%, fid = %2%", state.first.first, state.first.second))
 
-    unsigned int continue_count = 2;
-    while(continue_count > 0)
-    {
-        state = this->polygon().move_next_face(state.first, state.second);
-        const Real3& disp = state.second;
-        if(disp[0] == 0. && disp[1] == 0. && disp[2] == 0.) break;
-        --continue_count;
-        SGFRD_TRACE(tracer_.write("pos = %1%, fid = %2%, disp = %3%",
-                    state.first.first, state.first.second, disp));
-    }
+    const std::size_t continue_count =
+        ecell4::polygon::travel(this->polygon(), state.first, state.second, 2);
     if(continue_count == 0)
     {
         SGFRD_TRACE(tracer_.write("moving on face: precision lost"))
     }
     SGFRD_TRACE(tracer_.write("escaped"))
-    SGFRD_TRACE(tracer_.write("pos = %1%, fid = %2%", state.first.first, state.first.second))
+    SGFRD_TRACE(tracer_.write("pos = %1%, fid = %2%",
+                              state.first.first, state.first.second))
 
     p.position() = state.first.first;
     this->update_particle(pid, p, state.first.second);
@@ -1272,9 +1258,8 @@ SGFRDSimulator::escape_single<SGFRDSimulator::conical_surface_shell_type>(
     SGFRD_TRACE(tracer_.write("r = %1%, theta = %2%", r, theta))
 
     const std::pair<Real3, FaceID> state =
-        this->polygon().rotate_around_vertex(std::make_pair(p.position(), fid),
-                                           sh.structure_id(), r, theta);
-
+        ecell4::polygon::roll(this->polygon(), std::make_pair(p.position(), fid),
+                      sh.structure_id(), r, theta);
     SGFRD_TRACE(tracer_.write("escaped. pos = %1%, fid = %2%", p.position(), fid));
 
     p.position() = state.first;
@@ -1443,38 +1428,20 @@ SGFRDSimulator::attempt_reaction_1_to_2(const ReactionRule& rule,
 
         Real3 disp1(ipv * ( r1 / r12)), disp2(ipv * (-r2 / r12));
 
-        std::size_t continue_count = 100;
-        while(continue_count != 0)
-        {
-            boost::tie(newpfs[0], disp1) =
-                this->polygon().move_next_face(newpfs[0], disp1);
-            if(disp1[0] == 0. && disp1[1] == 0. && disp1[2] == 0.){break;}
-            --continue_count;
-        }
-        if(continue_count == 0)
+        if(0 == ecell4::polygon::travel(this->polygon(), newpfs[0], disp1, 100))
         {
             std::cerr << "[WARNING] moving on face by BD: precision lost\n";
         }
-
-        continue_count = 100;
-        while(continue_count != 0)
-        {
-            boost::tie(newpfs[1], disp2) =
-                this->polygon().move_next_face(newpfs[1], disp2);
-            if(disp2[0] == 0. && disp2[1] == 0. && disp2[2] == 0.){break;}
-            --continue_count;
-        }
-        if(continue_count == 0)
+        if(0 == ecell4::polygon::travel(this->polygon(), newpfs[1], disp2, 100))
         {
             std::cerr << "[WARNING] moving on face by BD: precision lost\n";
         }
 
         // if two particle overlaps...
-        const Real dist = this->polygon().distance(newpfs[0], newpfs[1]);
+        const Real dist =
+            ecell4::polygon::distance(this->polygon(), newpfs[0], newpfs[1]);
         if(dist <= r12)
         {
-//             std::cerr << "particle overlaps! dist = "
-//                       << dist << ", r12 = " << r12 << std::endl;
             separation_factor *= 2.0;
             continue;
         }

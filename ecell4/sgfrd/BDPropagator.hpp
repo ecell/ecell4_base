@@ -324,8 +324,9 @@ public:
         const Real D12(D1 + D2);
 
         // this calculates the center position weighted by Diffusion coef.
-        Real3 dp = polygon_.developed_direction(std::make_pair(pos1, fid1),
-                std::make_pair(pos2, fid2)) * (D1 / D12);
+        Real3 dp = ecell4::polygon::direction(this->polygon_,
+            std::make_pair(pos1, fid1), std::make_pair(pos2, fid2)) * (D1 / D12);
+
         std::pair<Real3, face_id_type> pf1(pos1, fid1);
         this->propagate(pf1, dp);
 
@@ -441,15 +442,12 @@ public:
 
     void propagate(std::pair<Real3, face_id_type>& pos, Real3& disp) const
     {
-        unsigned int continue_count = 100;
-        while(continue_count > 0)
-        {
-            boost::tie(pos, disp) = polygon_.move_next_face(pos, disp);
-            if(disp[0] == 0. && disp[1] == 0. && disp[2] == 0.) break;
-            --continue_count;
-        }
+        const std::size_t continue_count =
+            ecell4::polygon::travel(this->polygon_, pos, disp, 100);
         if(continue_count == 0)
+        {
             std::cerr << "[WARNING] moving on face by BD: precision lost\n";
+        }
         return ;
     }
 
