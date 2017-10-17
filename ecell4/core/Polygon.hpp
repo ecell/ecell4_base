@@ -1172,7 +1172,7 @@ inline std::pair<Real3, typename T::face_id_type>
 roll(const Polygon<T>& p, const std::pair<Real3, typename T::face_id_type>& pos,
      typename T::vertex_id_type vid, const Real r, const Real theta)
 {
-    return p.rotate_around_vertex(p, pos, vid, r, theta);
+    return p.rotate_around_vertex(pos, vid, r, theta);
 }
 } // polygon
 
