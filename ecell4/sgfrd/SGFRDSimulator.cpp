@@ -106,7 +106,7 @@ bool SGFRDSimulator::burst_and_shrink_overlaps(
             no_overlap = no_overlap && (dist > p.radius() + p_.radius());
             add_event(create_closely_fitted_domain(
                 create_closely_fitted_shell(pid_, p_, fid_), pid_, p_));
-            scheduler_.remove(did_);
+            remove_event(did_);
         }
     }
     return no_overlap;
