@@ -6,6 +6,7 @@
 #include <ecell4/core/comparators.hpp>
 #include <ecell4/core/Shape.hpp>
 #include <ecell4/core/geometry.hpp>
+#include <ecell4/core/triangle_geometry.hpp>
 #include <ecell4/core/Barycentric.hpp>
 
 #include <boost/utility.hpp>
@@ -20,7 +21,6 @@
 
 namespace ecell4
 {
-
 /*! if the arg is already in container, do nothing. otherwise, insert it.
  * @return if inserted, return true.
  */
@@ -1128,6 +1128,50 @@ Polygon<T>::list_edge_id() const
     return retval;
 }
 
+/********************** free functions to use a Polygon **********************/
+
+template<typename T, typename s1idT, typename s2idT>
+inline Real distance(const Polygon<T>& p,
+        const std::pair<Real3, s1idT>& p1, const std::pair<Real3, s2idT>& p2)
+{
+    return p.distance(p1, p2);
+}
+template<typename T, typename s1idT, typename s2idT>
+inline Real distance_sq(const Polygon<T>& p,
+        const std::pair<Real3, s1idT>& p1, const std::pair<Real3, s2idT>& p2)
+{
+    return p.distance_sq(p1, p2);
+}
+
+template<typename T, typename sidT>
+inline Real direction(const Polygon<T>& p,
+        const std::pair<Real3, sidT>& p1, const std::pair<Real3, sidT>& p2)
+{
+    return p.developed_direction(p1, p2);
+}
+
+//! call move_next_face until the disp become zero.
+template<typename T>
+std::size_t
+travel(const Polygon<T>& p, std::pair<Real3, typename T::face_id_type>& pos,
+       Real3& disp, std::size_t max_move_count = 10)
+{
+    while(max_move_count-- != 0)
+    {
+        boost::tie(pos, disp) = p.move_next_face(pos, disp);
+        if(disp[0] == 0. && disp[1] == 0. && disp[2] == 0.){break;}
+    }
+    return max_move_count;
+}
+
+//! call rotate_around_vertex.
+template<typename T>
+inline std::pair<Real3, typename T::face_id_type>
+roll(const Polygon<T>& p, const std::pair<Real3, typename T::face_id_type>& pos,
+     typename T::vertex_id_type vid, const Real r, const Real theta)
+{
+    return p.rotate_around_vertex(p, pos, vid, r, theta);
+}
 
 } // ecell4
 #endif// ECELL4_POLYGON
