@@ -2,7 +2,9 @@
 #define ECELL_CORE_TRIANGLE
 
 #include "Shape.hpp"
+#include "geometry.hpp"
 #include "exceptions.hpp"
+#include "TriangleView.hpp"
 
 namespace ecell4
 {
@@ -13,7 +15,13 @@ struct Triangle : public Shape
 
     Triangle();
     explicit Triangle(const boost::array<Real3, 3>& vertices);
+    explicit Triangle(const TriangleView& tv);
+    explicit Triangle(const TriangleConstView& tv);
     Triangle(const Real3& a, const Real3& b, const Real3& c);
+
+    Triangle& operator=(const Triangle& rhs);
+    Triangle& operator=(const TriangleView& tv);
+    Triangle& operator=(const TriangleConstView& tv);
 
     Real3 const& normal() const
     {
@@ -52,10 +60,6 @@ struct Triangle : public Shape
     boost::array<Real, 3> const& lengths_of_edges() const
     {
         return lengths_;
-    }
-    Real angle(const Real3& a, const Real3& b) const
-    {
-        return acos(dot_product(a, b) / std::sqrt(length_sq(a) * length_sq(b)));
     }
     Real area() const
     {
