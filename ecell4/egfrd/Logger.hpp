@@ -160,4 +160,6 @@ public:
 
 #define LOG_WARNING(args) if (enum Logger::level const level = log_.level()) if (level <= Logger::L_WARNING) log_.warn args
 
+#define LOG_ERROR(args) if (enum Logger::level const level = log_.level()) if (level <= Logger::L_ERROR) log_.error args
+
 #endif /* LOGGER_HPP */
