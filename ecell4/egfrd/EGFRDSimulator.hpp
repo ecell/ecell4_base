@@ -3481,6 +3481,7 @@ protected:
         case PAIR_EVENT_IV_REACTION:
             {
                 LOG_DEBUG(("=> iv_reaction"));
+
                 BOOST_ASSERT(::size(domain.reactions()) == 1);
                 reaction_rule_type const& r(domain.reactions()[0]);
 
@@ -3603,20 +3604,32 @@ protected:
             molecule_info_type const minfo(
                 (*base_type::world_).get_molecule_info(sp));
 
-            //XXX: A cuboidal region is expected here.
-            const position_type new_pos(
-                this->rng().uniform(0, (*base_type::world_).edge_lengths()[0]),
-                this->rng().uniform(0, (*base_type::world_).edge_lengths()[1]),
-                this->rng().uniform(0, (*base_type::world_).edge_lengths()[2]));
-
-            const particle_shape_type new_particle(new_pos, minfo.radius);
-
-            clear_volume(new_particle);
-
-            if (!(*base_type::world_).no_overlap(new_particle))
+            position_type new_pos;
+            const unsigned int max_retry_position = 1000;  // 1 means no retry.
+            for (unsigned int i = 0; i < max_retry_position; ++i)
             {
-                LOG_INFO(("no space for product particle."));
-                throw no_space();
+                //XXX: A cuboidal region is expected here.
+                new_pos[0] = this->rng().uniform(0, (*base_type::world_).edge_lengths()[0]);
+                new_pos[1] = this->rng().uniform(0, (*base_type::world_).edge_lengths()[1]);
+                new_pos[2] = this->rng().uniform(0, (*base_type::world_).edge_lengths()[2]);
+
+                const particle_shape_type new_particle(new_pos, minfo.radius);
+
+                clear_volume(new_particle);
+
+                if (!(*base_type::world_).no_overlap(new_particle))
+                {
+                    if (i != max_retry_position - 1)
+                    {
+                        continue;
+                    }
+                    LOG_INFO(("no space for product particle."));
+                    throw no_space();
+                }
+                else
+                {
+                    break;
+                }
             }
 
             particle_id_pair pp(
