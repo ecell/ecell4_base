@@ -13,6 +13,7 @@ import itertools
 import binascii
 import multiprocessing
 import copy
+import csv
 
 import ecell4.extra.sge as sge
 
@@ -110,7 +111,7 @@ def run_sge(target, jobs, n=1, nproc=None, path='.', delete=True, wait=True, env
         code += '\nfilenames = {:s}'.format(str(pickleouts[-1]))
         code += '\npickle.dump(retval, open(filenames[tid - 1], \'wb\'))\n'
 
-        (fd, script) = tempfile.mkstemp(suffix='.py', prefix='sge-', dir=path)
+        (fd, script) = tempfile.mkstemp(suffix='.py', prefix='sge-', dir=path, text=True)
         with os.fdopen(fd, 'w') as fout:
             fout.write(code)
         scripts.append(script)
@@ -351,6 +352,12 @@ def ensemble_simulations(
 
         def error(self):
             return self.__error
+
+        def save(self, filename):
+            with open(filename, 'w') as fout:
+                writer = csv.writer(fout, delimiter=',', lineterminator='\n')
+                writer.writerow(['"{}"'.format(sp.serial()) for sp in self.__species_list])
+                writer.writerows(self.data())
 
     if return_type in ("matplotlib", 'm'):
         if isinstance(opt_args, (list, tuple)):
