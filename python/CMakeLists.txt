@@ -62,13 +62,6 @@ if (PYTHONINTERP_FOUND)
             python ALL
             COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY} build_ext
             COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY} bdist_wheel
-            DEPENDS ecell4-core
-            DEPENDS ecell4-egfrd
-            DEPENDS ecell4-bd
-            DEPENDS ecell4-spatiocyte
-            DEPENDS ecell4-ode
-            DEPENDS ecell4-gillespie
-            DEPENDS ecell4-meso
             )
     else()
         # add_custom_command(
