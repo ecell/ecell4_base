@@ -47,25 +47,47 @@ if (PYTHONINTERP_FOUND)
     set(SETUP_PY    ${CMAKE_CURRENT_BINARY_DIR}/setup.py)
     set(INIT_PY_IN  ${CMAKE_CURRENT_SOURCE_DIR}/lib/ecell4/__init__.py.in)
     set(INIT_PY     ${CMAKE_CURRENT_SOURCE_DIR}/lib/ecell4/__init__.py)
-    set(OUTPUT      ${CMAKE_CURRENT_BINARY_DIR}/build/timestanp)
+    # set(OUTPUT      ${CMAKE_CURRENT_BINARY_DIR}/build/timestanp)
 
     configure_file(${SETUP_PY_IN} ${SETUP_PY})
     configure_file(${INIT_PY_IN} ${INIT_PY})
 
     if (NO_SHARED)
-        add_custom_command(
-            OUTPUT ${OUTPUT}
+        # add_custom_command(
+        #     OUTPUT ${OUTPUT}
+        #     COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY} build_ext
+        #     COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY} bdist_wheel
+        #     COMMAND ${CMAKE_COMMAND} -E touch ${OUTPUT})
+        add_custom_target(
+            python ALL
             COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY} build_ext
             COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY} bdist_wheel
-            COMMAND ${CMAKE_COMMAND} -E touch ${OUTPUT})
+            DEPENDS ecell4-egfrd
+            DEPENDS ecell4-bd
+            DEPENDS ecell4-spatiocyte
+            DEPENDS ecell4-ode
+            DEPENDS ecell4-gillespie
+            DEPENDS ecell4-meso
+            )
     else()
-        add_custom_command(
-            OUTPUT ${OUTPUT}
+        # add_custom_command(
+        #     OUTPUT ${OUTPUT}
+        #     COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY} build_ext -L${ECELL4_SHARED_DIRS} --prefer-shared
+        #     COMMAND ${CMAKE_COMMAND} -E touch ${OUTPUT})
+        add_custom_target(
+            python ALL
             COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY} build_ext -L${ECELL4_SHARED_DIRS} --prefer-shared
-            COMMAND ${CMAKE_COMMAND} -E touch ${OUTPUT})
+            DEPENDS ecell4-egfrd
+            DEPENDS ecell4-bd
+            DEPENDS ecell4-spatiocyte
+            DEPENDS ecell4-ode
+            DEPENDS ecell4-gillespie
+            DEPENDS ecell4-meso
+            )
     endif()
 
-    add_custom_target(python ALL DEPENDS ${OUTPUT})
+    # add_custom_target(python ALL DEPENDS ${OUTPUT})
+
     add_test(
         NAME python_test
         COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY} test ${OPTS})
