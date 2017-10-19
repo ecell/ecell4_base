@@ -62,6 +62,7 @@ if (PYTHONINTERP_FOUND)
             python ALL
             COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY} build_ext
             COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY} bdist_wheel
+            DEPENDS ecell4-core
             DEPENDS ecell4-egfrd
             DEPENDS ecell4-bd
             DEPENDS ecell4-spatiocyte
@@ -77,6 +78,7 @@ if (PYTHONINTERP_FOUND)
         add_custom_target(
             python ALL
             COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY} build_ext -L${ECELL4_SHARED_DIRS} --prefer-shared
+            DEPENDS ecell4-core
             DEPENDS ecell4-egfrd
             DEPENDS ecell4-bd
             DEPENDS ecell4-spatiocyte
