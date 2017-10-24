@@ -9,7 +9,6 @@
 #include <ecell4/core/SerialIDGenerator.hpp>
 #include <ecell4/core/geometry.hpp>
 
-#include <ecell4/sgfrd/make_visitor.hpp>
 #include <ecell4/sgfrd/ShellContainer.hpp>
 #include <ecell4/sgfrd/ShellVisitorApplier.hpp>
 #include <ecell4/sgfrd/ShellVisitors.hpp>
