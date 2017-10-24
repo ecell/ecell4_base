@@ -39,7 +39,7 @@ void species_output(std::ofstream& outstr,
     outstr << world->t() << ' '
            << world->num_molecules(sp1) << ' '
            << world->num_molecules(sp2) << ' '
-           << world->num_molecules(sp3) << '\n';
+           << world->num_molecules(sp3) << std::endl;
     return;
 }
 
@@ -132,7 +132,7 @@ int main(int argc, char **argv)
     ecell4::STLFileReader reader;
     ecell4::STLPolygonAdapter<polygon_traits> adapter;
 
-    if(key_missing(input, "polygon")) return 1;
+    if(key_missing(input, "polygon")){return 1;}
     boost::shared_ptr<polygon_type> polygon =
         adapter.make_polygon(reader.read(input["polygon"], ecell4::STLFileReader::Ascii));
 
@@ -145,21 +145,21 @@ int main(int argc, char **argv)
     boost::shared_ptr<ecell4::NetworkModel>
         model(new ecell4::NetworkModel());
 
-    if(key_missing(input, "DA")) return 1;
-    if(key_missing(input, "RA")) return 1;
+    if(key_missing(input, "DA")){return 1;}
+    if(key_missing(input, "RA")){return 1;}
     ecell4::Species sp1(std::string("A"), input["RA"], input["DA"]);
     model->add_species_attribute(sp1);
-    if(key_missing(input, "DB")) return 1;
-    if(key_missing(input, "RB")) return 1;
+    if(key_missing(input, "DB")){return 1;}
+    if(key_missing(input, "RB")){return 1;}
     ecell4::Species sp2(std::string("B"), input["RB"], input["DB"]);
     model->add_species_attribute(sp2);
-    if(key_missing(input, "DC")) return 1;
-    if(key_missing(input, "RC")) return 1;
+    if(key_missing(input, "DC")){return 1;}
+    if(key_missing(input, "RC")){return 1;}
     ecell4::Species sp3(std::string("C"), input["RC"], input["DC"]);
     model->add_species_attribute(sp3);
 
-    if(key_missing(input, "k_bind")) return 1;
-    if(key_missing(input, "k_unbind")) return 1;
+    if(key_missing(input, "k_bind"))  {return 1;}
+    if(key_missing(input, "k_unbind")){return 1;}
     const ecell4::Real k_bind   = boost::lexical_cast<ecell4::Real>(input["k_bind"]),
                        k_unbind = boost::lexical_cast<ecell4::Real>(input["k_unbind"]);
 
@@ -168,20 +168,22 @@ int main(int argc, char **argv)
 
     boost::shared_ptr<ecell4::RandomNumberGenerator> rng =
         boost::make_shared<ecell4::GSLRandomNumberGenerator>();
-    rng->seed((unsigned long int)123456);
+    if(key_missing(input, "seed")){return 1;}
+    rng->seed(boost::lexical_cast<unsigned int>(input["seed"]));
 
     boost::shared_ptr<world_type> world =
         boost::make_shared<world_type>(edge_lengths, matrix_sizes, polygon, rng);
 
-    const std::size_t num_particle = polygon->num_triangles();
-    world->add_molecule(sp1, num_particle);
-    world->add_molecule(sp2, num_particle);
-    world->add_molecule(sp3, num_particle);
-    std::cout << num_particle << "*3 molecules have been added" << std::endl;
+    if(key_missing(input, "num_A")){return 1;}
+    if(key_missing(input, "num_B")){return 1;}
+    if(key_missing(input, "num_C")){return 1;}
+    world->add_molecule(sp1, boost::lexical_cast<std::size_t>(input["num_A"]));
+    world->add_molecule(sp2, boost::lexical_cast<std::size_t>(input["num_B"]));
+    world->add_molecule(sp3, boost::lexical_cast<std::size_t>(input["num_C"]));
 
-    if(key_missing(input, "trajectory")) return 1;
-    if(key_missing(input, "species"))    return 1;
-    if(key_missing(input, "reaction"))   return 1;
+    if(key_missing(input, "trajectory")){return 1;}
+    if(key_missing(input, "species"))   {return 1;}
+    if(key_missing(input, "reaction"))  {return 1;}
     std::ofstream traj(input["trajectory"].c_str());
     std::ofstream spec(input["species"].c_str());
     std::ofstream reac(input["reaction"].c_str());
@@ -201,20 +203,21 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    if(key_missing(input, "bd_dt"))           return 1;
-    if(key_missing(input, "reaction_length")) return 1;
-    if(key_missing(input, "log_file"))        return 1;
+    if(key_missing(input, "bd_dt"))          {return 1;}
+    if(key_missing(input, "reaction_length")){return 1;}
+    if(key_missing(input, "log_file"))       {return 1;}
     simulator_type sim(world, model,
         boost::lexical_cast<ecell4::Real>(input["bd_dt"]),
         boost::lexical_cast<ecell4::Real>(input["reaction_length"]),
         input["log_file"]);
+    SGFRD_TRACE(std::cerr << "log_file = " << input["log_file"] << std::endl;)
     sim.initialize();
 
     snapshot_output(traj, world);
     species_output(spec, world, sp1, sp2, sp3);
 
-    if(key_missing(input, "output_dt")) return 1;
-    if(key_missing(input, "gfrd_step")) return 1;
+    if(key_missing(input, "output_dt")){return 1;}
+    if(key_missing(input, "gfrd_step")){return 1;}
     const ecell4::Real dt       = boost::lexical_cast<ecell4::Real>(input["output_dt"]);
     const std::size_t  num_step = boost::lexical_cast<std::size_t>(input["gfrd_step"]);
     for(std::size_t i=0; i<num_step; ++i)
