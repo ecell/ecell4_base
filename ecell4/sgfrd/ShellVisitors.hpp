@@ -56,7 +56,7 @@ struct inside_checker : boost::static_visitor<bool>
     template<typename shapeT, typename stridT>
     bool operator()(const Shell<shapeT, stridT>& shell) const
     {
-        return poly.distance(
+        return ecell4::polygon::distance(poly,
                 std::make_pair(shell.position(), shell.structure_id()),
                 std::make_pair(position, fid)) < shell.size() - radius;
     }

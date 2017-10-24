@@ -222,13 +222,13 @@ class SGFRDWorld : public ecell4::Space
     Real distance_sq(const std::pair<Real3, str1T>& lhs,
                      const std::pair<Real3, str2T>& rhs)
     {
-        return polygon_->distance_sq(lhs, rhs);
+        return ecell4::polygon::distance_sq(*polygon_, lhs, rhs);
     }
     template<typename str1T, typename str2T>
     Real distance(const std::pair<Real3, str1T>& lhs,
                   const std::pair<Real3, str2T>& rhs)
     {
-        return polygon_->distance(lhs, rhs);
+        return ecell4::polygon::distance(*polygon_, lhs, rhs);
     }
 
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >

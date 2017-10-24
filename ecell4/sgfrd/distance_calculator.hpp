@@ -66,7 +66,8 @@ public:
     typename boost::enable_if<is_2d_shell<shapeT, stridT>, Real>::type
     operator()(const Shell<shapeT, stridT>& sh) const
     {
-        return poly_.distance(pos_, sh.get_surface_position()) - sh.size();
+        return ecell4::polygon::distance(poly_, pos_, sh.get_surface_position()) -
+               sh.size();
     }
 
 private:
