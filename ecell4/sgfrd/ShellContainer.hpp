@@ -16,6 +16,7 @@ template<typename T_polygon_traits>
 class ShellContainer
 {
 public:
+
     typedef T_polygon_traits traits_type;
     typedef Polygon<traits_type> polygon_type;
     typedef typename polygon_type::face_id_type   face_id_type;
@@ -27,9 +28,11 @@ public:
     typedef Shell<circle_type, face_id_type>            circular_shell_type;
     typedef Shell<conical_surface_type, vertex_id_type> conical_surface_shell_type;
 
+    static const int circular_shell = 0;
+    static const int conical_shell  = 1;
     typedef boost::variant<
-                circular_shell_type,
-                conical_surface_shell_type
+                circular_shell_type,       // <- 0
+                conical_surface_shell_type // <- 1
             > storage_type;
     typedef storage_type shell_type;
     typedef std::pair<ShellID, storage_type> shell_id_pair_type;
