@@ -43,34 +43,26 @@ if (PYTHONINTERP_FOUND)
     # message("XXX: ECELL4_SHARED_DIRS '${ECELL4_SHARED_DIRS}'")
 
     set(SETUP_PY_IN ${CMAKE_CURRENT_SOURCE_DIR}/setup.py.in)
-    # set(SETUP_PY    ${CMAKE_CURRENT_SOURCE_DIR}/setup.py)
     set(SETUP_PY    ${CMAKE_CURRENT_BINARY_DIR}/setup.py)
     set(INIT_PY_IN  ${CMAKE_CURRENT_SOURCE_DIR}/lib/ecell4/__init__.py.in)
     set(INIT_PY     ${CMAKE_CURRENT_SOURCE_DIR}/lib/ecell4/__init__.py)
-    # set(OUTPUT      ${CMAKE_CURRENT_BINARY_DIR}/build/timestanp)
+    set(TIMESTAMP   ${CMAKE_CURRENT_BINARY_DIR}/build/timestamp)
 
     configure_file(${SETUP_PY_IN} ${SETUP_PY})
     configure_file(${INIT_PY_IN} ${INIT_PY})
 
     if (NO_SHARED)
-        # add_custom_command(
-        #     OUTPUT ${OUTPUT}
-        #     COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY} build_ext
-        #     COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY} bdist_wheel
-        #     COMMAND ${CMAKE_COMMAND} -E touch ${OUTPUT})
-        add_custom_target(
-            python ALL
+        add_custom_command(
+            OUTPUT ${TIMESTAMP}
             COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY} build_ext
             COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY} bdist_wheel
+            COMMAND ${CMAKE_COMMAND} -E touch ${TIMESTAMP}
             )
     else()
-        # add_custom_command(
-        #     OUTPUT ${OUTPUT}
-        #     COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY} build_ext -L${ECELL4_SHARED_DIRS} --prefer-shared
-        #     COMMAND ${CMAKE_COMMAND} -E touch ${OUTPUT})
-        add_custom_target(
-            python ALL
+        add_custom_command(
+            OUTPUT ${TIMESTAMP}
             COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY} build_ext -L${ECELL4_SHARED_DIRS} --prefer-shared
+            COMMAND ${CMAKE_COMMAND} -E touch ${TIMESTAMP}
             DEPENDS ecell4-core
             DEPENDS ecell4-egfrd
             DEPENDS ecell4-bd
@@ -81,7 +73,7 @@ if (PYTHONINTERP_FOUND)
             )
     endif()
 
-    # add_custom_target(python ALL DEPENDS ${OUTPUT})
+    add_custom_target(python ALL DEPENDS ${TIMESTAMP})
 
     add_test(
         NAME python_test
