@@ -296,8 +296,9 @@ class SGFRDSimulator :
             }
             default:
             {
-                throw std::logic_error(
-                        "boost::variant<shells>::which(): invalid value");
+                throw std::logic_error((boost::format(
+                    "boost::variant<shells>::which(): invalid value(%1%)") %
+                    sh.which()).str());
             }
         }
     }
@@ -317,17 +318,18 @@ class SGFRDSimulator :
             case shell_container_type::circular_shell:
             {
                 return escape_single_circular(
-                    boost::get<circular_shell_type>(sh), dom, tm);
+                    boost::get<circular_shell_type>(sh), dom);
             }
             case shell_container_type::conical_shell:
             {
                 return escape_single_conical(
-                    boost::get<conical_surface_shell_type>(sh), dom, tm);
+                    boost::get<conical_surface_shell_type>(sh), dom);
             }
             default:
             {
-                throw std::logic_error(
-                        "boost::variant<shells>::which(): invalid value");
+                throw std::logic_error((boost::format(
+                    "boost::variant<shells>::which(): invalid value(%1%)") %
+                    sh.which()).str());
             }
         }
     }
@@ -826,29 +828,44 @@ class SGFRDSimulator :
     void fire_event(event_id_pair_type ev)
     {
         SGFRD_SCOPE(us, fire_event, tracer_);
-//         std::cerr << "fire event " << ev.first << " at " << this->time() << std::endl;
-        return boost::apply_visitor(make_visitor(
-            resolve<Single const&, void>(boost::bind(
-                    &self_type::fire_single, this, _1, ev.first)),
-            resolve<Pair   const&, void>(boost::bind(
-                    &self_type::fire_pair,   this, _1, ev.first)),
-            resolve<Multi&,        void>(boost::bind(
-                    &self_type::fire_multi,  this, _1, ev.first))
-            ), ev.second->domain());
+        switch(ev.second->which_domain())
+        {
+            case event_type::single_domain:
+                return this->fire_single(
+                        boost::get<Single>(ev.second->domain()), ev.first);
+            case event_type::pair_domain:
+                return this->fire_pair(
+                        boost::get<Pair>(ev.second->domain()), ev.first);
+            case event_type::multi_domain:
+                return this->fire_multi(
+                        boost::get<Multi>(ev.second->domain()), ev.first);
+            default:
+                throw std::runtime_error((boost::format(
+                    "event::which_domain returns invalid value (%1%)") %
+                    ev.second->which_domain()).str());
+        }
     }
 
     // assuming the event is already poped
     bursted_type burst_event(const event_id_pair_type& ev, Real tm)
     {
         SGFRD_SCOPE(us, burst_event, tracer_);
-        return boost::apply_visitor(make_visitor(
-            resolve<Single const&, bursted_type>(boost::bind(
-                    &self_type::burst_single, this, _1, tm)),
-            resolve<Pair   const&, bursted_type>(boost::bind(
-                    &self_type::burst_pair,  this, _1,  tm)),
-            resolve<Multi&,        bursted_type>(boost::bind(
-                    &self_type::burst_multi, this, _1,  tm))
-            ), ev.second->domain());
+        switch(ev.second->which_domain())
+        {
+            case event_type::single_domain:
+                return this->burst_single(
+                        boost::get<Single>(ev.second->domain()), tm);
+            case event_type::pair_domain:
+                return this->burst_pair(
+                        boost::get<Pair>(ev.second->domain()), tm);
+            case event_type::multi_domain:
+                return this->burst_multi(
+                        boost::get<Multi>(ev.second->domain()), tm);
+            default:
+                throw std::runtime_error((boost::format(
+                    "event::which_domain returns invalid value (%1%)") %
+                    ev.second->which_domain()).str());
+        }
     }
 
     ShellID create_closely_fitted_shell(
