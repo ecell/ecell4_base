@@ -310,7 +310,98 @@ SGFRDSimulator::attempt_reaction_1_to_2(const ReactionRule& rule,
     return retval;
 }
 
+boost::tuple<ParticleID, Particle, SGFRDSimulator::FaceID>
+SGFRDSimulator::escape_single_circular(
+        const circular_shell_type& sh, const Single& dom)
+{
+    SGFRD_SCOPE(us, escape_single_circular, tracer_);
 
+    if(sh.size() == dom.particle().radius())
+    {
+        SGFRD_TRACE(tracer_.write("closely fitted shell. didnot move."));
+        return boost::make_tuple(dom.particle_id(), dom.particle(),
+                                 this->get_face_id(dom.particle_id()));
+    }
+
+    Particle   p   = dom.particle();
+    ParticleID pid = dom.particle_id();
+
+    const Real r   = sh.size() - p.radius();
+    const Real theta = this->uniform_real() * 2.0 * M_PI;
+
+    SGFRD_TRACE(tracer_.write("r = %1%, theta = %2%", r, theta))
+
+    const FaceID         fid  = this->get_face_id(pid);
+    const triangle_type& face = this->polygon().triangle_at(fid);
+    const Real3 direction = rotate(theta, face.normal(), face.represent());
+
+    SGFRD_TRACE(tracer_.write("dir = %1%, len = %2%", direction, length(direction)))
+
+    std::pair<std::pair<Real3, FaceID>, Real3> state =
+        std::make_pair(/*position = */std::make_pair(p.position(), fid),
+                   /*displacement = */direction * r / length(direction));
+
+    SGFRD_TRACE(tracer_.write("pos = %1%, fid = %2%", state.first.first, state.first.second))
+
+    const std::size_t continue_count =
+        ecell4::polygon::travel(this->polygon(), state.first, state.second, 2);
+    if(continue_count == 0)
+    {
+        SGFRD_TRACE(tracer_.write("moving on face: precision lost"))
+    }
+    SGFRD_TRACE(tracer_.write("escaped"))
+    SGFRD_TRACE(tracer_.write("pos = %1%, fid = %2%",
+                              state.first.first, state.first.second))
+
+    p.position() = state.first.first;
+    this->update_particle(pid, p, state.first.second);
+    SGFRD_TRACE(tracer_.write("particle updated"))
+    return boost::make_tuple(pid, p, state.first.second);
+}
+
+boost::tuple<ParticleID, Particle, SGFRDSimulator::FaceID>
+SGFRDSimulator::escape_single_conical(
+        const conical_surface_shell_type& sh, const Single& dom)
+{
+    SGFRD_SCOPE(us, escape_single_conical, tracer_);
+
+    Particle           p   = dom.particle();
+    const ParticleID   pid = dom.particle_id();
+    const FaceID       fid = this->get_face_id(pid);
+
+    SGFRD_TRACE(tracer_.write("pos = %1%, fid = %2%", p.position(), fid))
+
+    const Real r     = sh.size() - p.radius();
+    greens_functions::GreensFunction2DRefWedgeAbs
+        gf(p.D(), length(p.position() - sh.position()),
+           r,     sh.shape().apex_angle());
+    const Real theta = gf.drawTheta(this->uniform_real(), r, dom.dt());
+
+    SGFRD_TRACE(tracer_.write("r = %1%, theta = %2%", r, theta))
+
+    const std::pair<Real3, FaceID> state =
+        ecell4::polygon::roll(this->polygon(), std::make_pair(p.position(), fid),
+                      sh.structure_id(), r, theta);
+    SGFRD_TRACE(tracer_.write("escaped. pos = %1%, fid = %2%", p.position(), fid));
+
+    p.position() = state.first;
+    this->update_particle(pid, p, state.second);
+    SGFRD_TRACE(tracer_.write("particle updated"))
+    return boost::make_tuple(pid, p, state.second);
+}
+
+SGFRDSimulator::bursted_type
+SGFRDSimulator::burst_single(const Single& dom, const Real tm)
+{
+    SGFRD_SCOPE(us, burst_single, tracer_);
+    const ShellID sid(dom.shell_id());
+    SGFRD_TRACE(tracer_.write("shell id = %1%", sid));
+    bursted_type results;
+    results.push_back(this->propagate_single(this->get_shell(sid), dom, tm));
+    this->remove_shell(sid);
+    SGFRD_TRACE(tracer_.write("shell removed"));
+    return results;
+}
 
 void SGFRDSimulator::fire_single(const Single& dom, DomainID did)
 {
@@ -318,49 +409,50 @@ void SGFRDSimulator::fire_single(const Single& dom, DomainID did)
     SGFRD_TRACE(tracer_.write("fire single domain %1%", did))
 
     const ShellID sid(dom.shell_id());
-    ParticleID pid; Particle p; FaceID fid;
     switch(dom.eventkind())
     {
-    case Single::ESCAPE:
-    {
-        SGFRD_SCOPE(us, single_escape, tracer_);
-        boost::tie(pid, p, fid) = boost::apply_visitor(make_visitor(
-            resolve<const circular_shell_type&,
-                    boost::tuple<ParticleID, Particle, FaceID> >(boost::bind(
-                &self_type::escape_single<circular_shell_type>,
-                this, _1, dom)),
-            resolve<const conical_surface_shell_type&,
-                    boost::tuple<ParticleID, Particle, FaceID> >(boost::bind(
-                &self_type::escape_single<conical_surface_shell_type>,
-                this, _1, dom))
-            ), get_shell(sid));
-        this->remove_shell(sid);
-        SGFRD_TRACE(tracer_.write("shell %1% removed", sid))
-
-        SGFRD_TRACE(tracer_.write("adding next event for %1%", pid))
-        this->create_event(pid, p, fid);
-        return;
-    }
-    case Single::REACTION:
-    {
-        SGFRD_SCOPE(us, single_reaction, tracer_);
-        BOOST_AUTO(results, this->reaction_single(this->get_shell(sid), dom, did));
-        this->remove_shell(sid);
-
-        BOOST_FOREACH(boost::tie(pid, p, fid), results)
+        case Single::ESCAPE:
         {
+            SGFRD_SCOPE(us, single_escape, tracer_);
+
+            ParticleID pid; Particle p; FaceID fid;
+            boost::tie(pid, p, fid) =
+                this->escape_single(this->get_shell(sid), dom);
+
+            this->remove_shell(sid);
+            SGFRD_TRACE(tracer_.write("shell %1% removed", sid))
+
             SGFRD_TRACE(tracer_.write("adding next event for %1%", pid))
-            add_event(create_closely_fitted_domain(create_closely_fitted_shell(
-                      pid, p, fid), pid, p));
-//             this->create_event(pid, p, fid); to consider two domains evenly
+            this->create_event(pid, p, fid);
+            return;
         }
-        return;
-    }
-    case Single::UNKNOWN:
-        throw std::logic_error("when firing Single: event unspecified");
-    default:
-        throw std::logic_error("when firing Single: invalid enum value");
-    }
+        case Single::REACTION:
+        {
+            SGFRD_SCOPE(us, single_reaction, tracer_);
+            BOOST_AUTO(results,
+                       this->reaction_single(this->get_shell(sid), dom, did));
+            this->remove_shell(sid);
+
+            ParticleID pid; Particle p; FaceID fid;
+            BOOST_FOREACH(boost::tie(pid, p, fid), results)
+            {
+                SGFRD_TRACE(tracer_.write("adding next event for %1%", pid))
+                // here, by calling create_event, the first domain might include
+                // the other particle that is one of the result of 1->2 reaction
+                add_event(create_closely_fitted_domain(
+                            create_closely_fitted_shell(pid, p, fid), pid, p));
+            }
+            return;
+        }
+        case Single::UNKNOWN:
+        {
+            throw std::logic_error("when firing Single: event unspecified");
+        }
+        default:
+        {
+            throw std::logic_error("when firing Single: invalid enum value");
+        }
+    }// switch
 }
 
 bool SGFRDSimulator::burst_and_shrink_overlaps(

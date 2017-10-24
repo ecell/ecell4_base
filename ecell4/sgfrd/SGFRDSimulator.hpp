@@ -309,9 +309,33 @@ class SGFRDSimulator :
     propagate_single_conical(
         const conical_surface_shell_type& sh, const Single& dom, const Real tm);
 
-    template<typename shellT>
     boost::tuple<ParticleID, Particle, FaceID>
-    escape_single(const shellT& sh, const Single& dom);
+    escape_single(const shell_type& sh, const Single& dom)
+    {
+        switch(sh.which())
+        {
+            case shell_container_type::circular_shell:
+            {
+                return escape_single_circular(
+                    boost::get<circular_shell_type>(sh), dom, tm);
+            }
+            case shell_container_type::conical_shell:
+            {
+                return escape_single_conical(
+                    boost::get<conical_surface_shell_type>(sh), dom, tm);
+            }
+            default:
+            {
+                throw std::logic_error(
+                        "boost::variant<shells>::which(): invalid value");
+            }
+        }
+    }
+
+    boost::tuple<ParticleID, Particle, FaceID>
+    escape_single_circular(const circular_shell_type& sh, const Single& dom);
+    boost::tuple<ParticleID, Particle, FaceID>
+    escape_single_conical(const conical_surface_shell_type& sh, const Single& dom);
 
     boost::container::static_vector<pid_p_fid_tuple_type, 2>
     reaction_single(const shell_type& sh, const Single& dom, const DomainID did);
@@ -1105,100 +1129,6 @@ class SGFRDSimulator :
 
 };
 
-template<>
-inline boost::tuple<ParticleID, Particle, SGFRDSimulator::FaceID>
-SGFRDSimulator::escape_single<SGFRDSimulator::circular_shell_type>(
-        const circular_shell_type& sh, const Single& dom)
-{
-    SGFRD_SCOPE(us, escape_single_circular, tracer_);
-
-    if(sh.size() == dom.particle().radius())
-    {
-        SGFRD_TRACE(tracer_.write("closely fitted shell. didnot move."));
-        return boost::make_tuple(dom.particle_id(), dom.particle(),
-                                 this->get_face_id(dom.particle_id()));
-    }
-
-    Particle   p   = dom.particle();
-    ParticleID pid = dom.particle_id();
-
-    const Real r   = sh.size() - p.radius();
-    const Real theta = this->uniform_real() * 2.0 * M_PI;
-
-    SGFRD_TRACE(tracer_.write("r = %1%, theta = %2%", r, theta))
-
-    const FaceID         fid  = this->get_face_id(pid);
-    const triangle_type& face = this->polygon().triangle_at(fid);
-    const Real3 direction = rotate(theta, face.normal(), face.represent());
-
-    SGFRD_TRACE(tracer_.write("dir = %1%, len = %2%", direction, length(direction)))
-
-    std::pair<std::pair<Real3, FaceID>, Real3> state =
-        std::make_pair(/*position = */std::make_pair(p.position(), fid),
-                   /*displacement = */direction * r / length(direction));
-
-    SGFRD_TRACE(tracer_.write("pos = %1%, fid = %2%", state.first.first, state.first.second))
-
-    const std::size_t continue_count =
-        ecell4::polygon::travel(this->polygon(), state.first, state.second, 2);
-    if(continue_count == 0)
-    {
-        SGFRD_TRACE(tracer_.write("moving on face: precision lost"))
-    }
-    SGFRD_TRACE(tracer_.write("escaped"))
-    SGFRD_TRACE(tracer_.write("pos = %1%, fid = %2%",
-                              state.first.first, state.first.second))
-
-    p.position() = state.first.first;
-    this->update_particle(pid, p, state.first.second);
-    SGFRD_TRACE(tracer_.write("particle updated"))
-    return boost::make_tuple(pid, p, state.first.second);
-}
-
-template<>
-inline boost::tuple<ParticleID, Particle, SGFRDSimulator::FaceID>
-SGFRDSimulator::escape_single<SGFRDSimulator::conical_surface_shell_type>(
-        const conical_surface_shell_type& sh, const Single& dom)
-{
-    SGFRD_SCOPE(us, escape_single_conical, tracer_);
-
-    Particle           p   = dom.particle();
-    const ParticleID   pid = dom.particle_id();
-    const FaceID       fid = this->get_face_id(pid);
-
-    SGFRD_TRACE(tracer_.write("pos = %1%, fid = %2%", p.position(), fid))
-
-    const Real r     = sh.size() - p.radius();
-    greens_functions::GreensFunction2DRefWedgeAbs
-        gf(p.D(), length(p.position() - sh.position()),
-           r,     sh.shape().apex_angle());
-    const Real theta = gf.drawTheta(this->uniform_real(), r, dom.dt());
-
-    SGFRD_TRACE(tracer_.write("r = %1%, theta = %2%", r, theta))
-
-    const std::pair<Real3, FaceID> state =
-        ecell4::polygon::roll(this->polygon(), std::make_pair(p.position(), fid),
-                      sh.structure_id(), r, theta);
-    SGFRD_TRACE(tracer_.write("escaped. pos = %1%, fid = %2%", p.position(), fid));
-
-    p.position() = state.first;
-    this->update_particle(pid, p, state.second);
-    SGFRD_TRACE(tracer_.write("particle updated"))
-    return boost::make_tuple(pid, p, state.second);
-}
-
-inline SGFRDSimulator::bursted_type
-SGFRDSimulator::burst_single(const Single& dom, const Real tm)
-{
-    SGFRD_SCOPE(us, burst_single, tracer_);
-    const ShellID sid(dom.shell_id());
-    SGFRD_TRACE(tracer_.write("shell id = %1%", sid));
-    bursted_type results;
-    results.push_back(this->propagate_single(this->get_shell(sid), dom, tm));
-    this->remove_shell(sid);
-    SGFRD_TRACE(tracer_.write("shell removed"));
-    return results;
-}
 
 } // sgfrd
 } // ecell4
