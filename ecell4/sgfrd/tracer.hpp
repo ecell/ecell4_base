@@ -29,12 +29,16 @@ class basic_tracer<char, std::char_traits<char> >
     {
         fnames[0] = fname + std::string("01.log");
         fnames[1] = fname + std::string("02.log");
+        std::ofstream f0(fnames[0]); f0.close();
+        std::ofstream f1(fnames[1]); f1.close();
     }
     basic_tracer(const std::string& fname, const std::size_t indent_size)
         : indent_(0), indent_size_(indent_size), current(0)
     {
         fnames[0] = fname + std::string("01.log");
         fnames[1] = fname + std::string("02.log");
+        std::ofstream f0(fnames[0]); f0.close();
+        std::ofstream f1(fnames[1]); f1.close();
     }
     ~basic_tracer(){}
 
