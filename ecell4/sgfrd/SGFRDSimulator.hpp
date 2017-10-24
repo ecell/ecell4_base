@@ -278,9 +278,36 @@ class SGFRDSimulator :
     void          fire_single(const Single& dom, DomainID did);
     bursted_type burst_single(const Single& dom, const Real tm);
 
-    template<typename shellT>
     boost::tuple<ParticleID, Particle, FaceID>
-    propagate_single(const shellT& sh, const Single& dom, const Real tm);
+    propagate_single(
+            const shell_type& sh, const Single& dom, const Real tm)
+    {
+        switch(sh.which())
+        {
+            case shell_container_type::circular_shell:
+            {
+                return propagate_single_circular(
+                    boost::get<circular_shell_type>(sh), dom, tm);
+            }
+            case shell_container_type::conical_shell:
+            {
+                return propagate_single_conical(
+                    boost::get<conical_surface_shell_type>(sh), dom, tm);
+            }
+            default:
+            {
+                throw std::logic_error(
+                        "boost::variant<shells>::which(): invalid value");
+            }
+        }
+    }
+
+    boost::tuple<ParticleID, Particle, FaceID>
+    propagate_single_circular(
+        const circular_shell_type& sh, const Single& dom, const Real tm);
+    boost::tuple<ParticleID, Particle, FaceID>
+    propagate_single_conical(
+        const conical_surface_shell_type& sh, const Single& dom, const Real tm);
 
     template<typename shellT>
     boost::tuple<ParticleID, Particle, FaceID>
@@ -1082,103 +1109,6 @@ class SGFRDSimulator :
 
 };
 
-// XXX NOTE XXX:
-// To avoid an error "specialization of template function after instantiation"
-// these specialized functions are must be implemented before other member
-// (maybe template) function directory calling it.
-template<>
-inline boost::tuple<ParticleID, Particle, SGFRDSimulator::FaceID>
-SGFRDSimulator::propagate_single<SGFRDSimulator::circular_shell_type>(
-        const circular_shell_type& sh, const Single& dom, const Real tm)
-{
-    SGFRD_SCOPE(us, propagate_single_circular, tracer_);
-
-    Particle   p   = dom.particle();
-    ParticleID pid = dom.particle_id();
-
-    greens_functions::GreensFunction2DAbsSym gf(p.D(), sh.size() - p.radius());
-
-    const Real del_t = tm - dom.begin_time();
-
-    SGFRD_TRACE(tracer_.write("delta t for domain having shell %1% is %2%",
-                del_t, dom.shell_id()));
-    SGFRD_TRACE(tracer_.write("its own dt = %1%, and begin_time = %2%",
-                dom.dt(), dom.begin_time()));
-
-    const Real r     = gf.drawR(this->uniform_real(), del_t);
-    const Real theta = this->uniform_real() * 2 * M_PI;
-
-    SGFRD_TRACE(tracer_.write("r = %1%, theta = %2%", r, theta));
-
-    const FaceID         fid  = this->get_face_id(pid);
-    const triangle_type& face = this->polygon().triangle_at(fid);
-    const Real3 direction = rotate(theta, face.normal(), face.represent());
-    const Real  len_direction = length(direction);
-
-    SGFRD_TRACE(tracer_.write("direction = %1%, len = %2%", direction, len_direction));
-
-    std::pair<std::pair<Real3, FaceID>, Real3> state =
-        std::make_pair(std::make_pair(p.position(), fid),
-                       direction * r / len_direction);
-
-    SGFRD_TRACE(tracer_.write("pos = %1%, fid = %2%", state.first.first, state.first.second));
-
-    std::size_t continue_count =
-        ecell4::polygon::travel(this->polygon(), state.first, state.second, 2);
-    if(continue_count == 0)
-    {
-        SGFRD_TRACE(tracer_.write("moving on face: precision lost"))
-    }
-
-    SGFRD_TRACE(tracer_.write("pos = %1%, fid = %2%, dsp = %3%, count = %4%",
-                state.first.first, state.first.second, state.second, continue_count))
-
-    p.position() = state.first.first;
-    this->update_particle(pid, p, state.first.second);
-    SGFRD_TRACE(tracer_.write("particle updated"))
-
-    return boost::make_tuple(pid, p, state.first.second);
-}
-
-template<>
-inline boost::tuple<ParticleID, Particle, SGFRDSimulator::FaceID>
-SGFRDSimulator::propagate_single<SGFRDSimulator::conical_surface_shell_type>(
-        const conical_surface_shell_type& sh, const Single& dom, const Real tm)
-{
-    SGFRD_SCOPE(us, propagate_single_conical, tracer_);
-
-    Particle         p   = dom.particle();
-    const ParticleID pid = dom.particle_id();
-    const FaceID     fid = this->get_face_id(pid);
-
-    SGFRD_TRACE(tracer_.write("pos = %1%, fid = %2%", p.position(), fid));
-
-    const Real r_max = sh.size() - p.radius();
-    greens_functions::GreensFunction2DRefWedgeAbs
-        gf(/* D   = */ p.D(),
-           /* r0  = */ length(p.position() - sh.position()),
-           /* a   = */ r_max,
-           /* phi = */ sh.shape().apex_angle());
-
-    const Real del_t = tm - dom.begin_time();
-    const Real r     = gf.drawR(this->uniform_real(), del_t);
-    const Real theta = gf.drawTheta(this->uniform_real(), r, del_t);
-
-    SGFRD_TRACE(tracer_.write("r = %1%, theta = %2%", r, theta));
-
-    const std::pair<Real3, FaceID> state =
-        ecell4::polygon::roll(this->polygon(), std::make_pair(p.position(), fid),
-                      sh.structure_id(), r, theta);
-    SGFRD_TRACE(tracer_.write("propagateed : pos = %1%, fid = %2%",
-                state.first, state.second));
-
-    p.position() = state.first;
-    this->update_particle(pid, p, state.second);
-    SGFRD_TRACE(tracer_.write("particle updated"))
-
-    return boost::make_tuple(pid, p, state.second);
-}
-
 template<>
 inline boost::tuple<ParticleID, Particle, SGFRDSimulator::FaceID>
 SGFRDSimulator::escape_single<SGFRDSimulator::circular_shell_type>(
@@ -1268,16 +1198,7 @@ SGFRDSimulator::burst_single(const Single& dom, const Real tm)
     const ShellID sid(dom.shell_id());
     SGFRD_TRACE(tracer_.write("shell id = %1%", sid));
     bursted_type results;
-    results.push_back(boost::apply_visitor(make_visitor(
-        resolve<const circular_shell_type&,
-                boost::tuple<ParticleID, Particle, FaceID> >(boost::bind(
-            &self_type::propagate_single<circular_shell_type>,
-            this, _1, dom, tm)),
-        resolve<const conical_surface_shell_type&,
-                boost::tuple<ParticleID, Particle, FaceID> >(boost::bind(
-            &self_type::propagate_single<conical_surface_shell_type>,
-            this, _1, dom, tm))
-        ), get_shell(sid)));
+    results.push_back(this->propagate_single(this->get_shell(sid), dom, tm));
     this->remove_shell(sid);
     SGFRD_TRACE(tracer_.write("shell removed"));
     return results;
