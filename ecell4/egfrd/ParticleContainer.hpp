@@ -130,10 +130,8 @@ public:
         return pos + disp;
     }
 
-    virtual position_type apply_structure(const position_type& pos, const position_type& disp)
-    {
-        return pos + disp;
-    }
+    virtual position_type apply_structure(
+            position_type const& pos, position_type const& disp) const = 0;
 };
 
 
