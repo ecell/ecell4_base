@@ -23,9 +23,8 @@ public:
         single_domain = 0,
         pair_domain   = 1,
         multi_domain  = 2,
+        // std::numeric_limits<int>::max() is not constexpr in c++03.
         invalid       = INT_MAX,
-        // because std::numeric_limits<int>::max() is not constexpr in c++03,
-        // there is no other way but to use macro defined in <climits>.
     };
 
 public:
@@ -41,13 +40,7 @@ public:
 
     domain_kind which_domain() const
     {
-        switch(this->domain_.which())
-        {
-            case 0: return single_domain;
-            case 1: return pair_domain;
-            case 2: return multi_domain;
-            default: return invalid;
-        }
+        return static_cast<domain_kind>(domain_.which());
     }
 
 private:
