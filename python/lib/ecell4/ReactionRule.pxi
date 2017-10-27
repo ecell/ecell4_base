@@ -3,6 +3,33 @@ from cython cimport address
 
 cimport create_reaction_rule as crr
 
+cdef double indirect_function_rrd(
+    void *pyfunc, vector[Real] reactants, vector[Real] products):
+    py_reactants = []
+    cdef vector[Real].iterator it1 = reactants.begin()
+    while it1 != reactants.end():
+        py_reactants.append(deref(it1))
+        inc(it1)
+    py_products = []
+    cdef vector[Real].iterator it2 = products.begin()
+    while it2 != products.end():
+        py_products.append(deref(it2))
+        inc(it2)
+    ret = (<object>pyfunc)(
+            py_reactants, py_products)
+    if not isinstance(ret, float):
+        #XXX: Show some warning here
+        # print('indirect_function: {} {} {} {} {} => {}'.format(py_reactants, py_products, volume, t, rr.as_string(), ret))
+        return 0.0
+    return ret
+
+cdef class ReactionRuleDescriptor:
+    def __init__(self, pyfunc):
+        a = PyObjectHandler()
+        self.thisptr = shared_ptr[Cpp_ReactionRuleDescriptor](
+                new Cpp_ReactionRuleDescriptor(<stepladder_type_rrdescriptor>indirect_function_rrd, <void*>pyfunc, a.thisptr) )
+    def flux(self):
+        return self.thisptr.get().flux()
 
 cdef class ReactionRule:
     """A class representing a reaction rule between ``Species``.
@@ -235,6 +262,11 @@ cdef class ReactionRule:
 
     def __reduce__(self):
         return (ReactionRule, (self.reactants(), self.products(), self.k()))
+
+    def set_descriptor(self, ReactionRuleDescriptor rrd):
+        self.thisptr.set_descriptor(rrd.thisptr) 
+    def has_descriptor(self):
+        return self.thisptr.has_descriptor()
 
 cdef ReactionRule ReactionRule_from_Cpp_ReactionRule(Cpp_ReactionRule *rr):
     cdef Cpp_ReactionRule *new_obj = new Cpp_ReactionRule(deref(rr))

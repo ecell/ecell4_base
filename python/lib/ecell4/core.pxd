@@ -15,9 +15,21 @@ from shared_ptr cimport shared_ptr
 
 cdef string tostring(ustr)
 
+## Python object handler for C++ layer
+ctypedef void (*PyObjectHandler_1arg)(void*)
+cdef extern from "ecell4/core/pyhandler.hpp" namespace "ecell4":
+    cdef cppclass Cpp_PyObjectHandler "ecell4::PyObjectHandler":
+        Cpp_PyObjectHandler(PyObjectHandler_1arg, PyObjectHandler_1arg)
+        bool is_available()
+
+cdef class PyObjectHandler:
+    cdef shared_ptr[Cpp_PyObjectHandler] thisptr
+
+
 cdef extern from "gsl/gsl_rng.h":
     ctypedef struct gsl_rng:
         pass
+
 
 ## Cpp_GSLRandomNumberGenerator
 #  ecell4::GSLRandomNumberGenerator
@@ -128,6 +140,23 @@ cdef class Species:
 
 cdef Species Species_from_Cpp_Species(Cpp_Species *sp)
 
+
+ctypedef void* pyfunc_type_rrdesc
+ctypedef double (*stepladder_type_rrdescriptor)(pyfunc_type_rrdesc, vector[Cpp_Species], vector[Cpp_Species])
+
+# Cpp_ReactionRuleDescriptor
+#ecell4::ReactionRuleDescriptorPyfunc
+cdef extern from "ecell4/core/ReactionRule.hpp" namespace "ecell4":
+    cdef cppclass Cpp_ReactionRuleDescriptor "ecell4::ReactionRuleDescriptorPyfunc":
+        Cpp_ReactionRuleDescriptor() except +
+        Cpp_ReactionRuleDescriptor(
+                stepladder_type_rrdescriptor, pyfunc_type_rrdesc, shared_ptr[Cpp_PyObjectHandler]) 
+        Real flux()
+
+cdef class ReactionRuleDescriptor:
+    cdef shared_ptr[Cpp_ReactionRuleDescriptor] thisptr
+    #cdef object pyfunc_
+
 ## Cpp_ReactionRule
 #  ecell4::ReactionRule
 cdef extern from "ecell4/core/ReactionRule.hpp" namespace "ecell4":
@@ -155,6 +184,9 @@ cdef extern from "ecell4/core/ReactionRule.hpp" namespace "ecell4":
         void set_policy(Cpp_ReactionRulePolicyType)
         Integer count(vector[Cpp_Species]) except +
         vector[Cpp_ReactionRule] generate(vector[Cpp_Species]) except +
+        void set_descriptor(shared_ptr[Cpp_ReactionRuleDescriptor])
+        bool has_descriptor()
+
 
 ## ReactionRule
 #  a python wrapper for Cpp_ReactionRule
@@ -452,16 +484,6 @@ cdef class Voxel:
     cdef Cpp_Voxel* thisptr
 
 cdef Voxel Voxel_from_Cpp_Voxel(Cpp_Voxel* p)
-
-## Python object handler for C++ layer
-ctypedef void (*PyObjectHandler_1arg)(void*)
-cdef extern from "ecell4/core/pyhandler.hpp" namespace "ecell4":
-    cdef cppclass Cpp_PyObjectHandler "ecell4::PyObjectHandler":
-        Cpp_PyObjectHandler(PyObjectHandler_1arg, PyObjectHandler_1arg)
-        bool is_available()
-
-cdef class PyObjectHandler:
-    cdef shared_ptr[Cpp_PyObjectHandler] thisptr
 
 ## Callback Related
 ctypedef void* pyfunc_type

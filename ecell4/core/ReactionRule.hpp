@@ -18,40 +18,81 @@ namespace ecell4
 class ReactionRuleDescriptor
 {
 public:
+    typedef std::vector<Species> reactant_container_type;
+    typedef std::vector<Species> product_container_type;
+public:
+    virtual
     bool is_available() const
     {   return false;    }
 private:
 
 };
 
+class ReactionRuleDescriptorCPPfunc
+    : public ReactionRuleDescriptor
+{
+public:
+    typedef Real (*func_type)(reactant_container_type, product_container_type);
+
+    ReactionRuleDescriptorCPPfunc(func_type pf)
+        : pf_(pf)
+    {;}
+    bool is_available() const
+    {
+        if (this->pf_ != 0) {return true;}
+        return false;
+    }
+    virtual
+    Real flux(const reactant_container_type &reactants, const product_container_type &products) const 
+    {
+        if (this->is_available() ) {
+            return (this->pf_)(reactants, products);
+        } else {
+            throw IllegalState("Pointer to the user-defined flux function is NULL");
+        }
+    }
+
+private:
+    func_type pf_;
+};
+
 class ReactionRuleDescriptorPyfunc
     : public ReactionRuleDescriptor 
 {
-
-    typedef std::vector<Species> reactant_container_type;
-    typedef std::vector<Species> product_container_type;
-
+public:
     typedef ReactionRuleDescriptor base_type;
     typedef void *pyfunc_type;
-    typedef bool (*stepladder_type_rrdescriptor)(
-            pyfunc_type, reactant_container_type, product_container_type,  boost::shared_ptr<PyObjectHandler> py_handler );
+    typedef Real (*stepladder_type_rrdescriptor)(
+            pyfunc_type, reactant_container_type, product_container_type);
 
 public:
     bool is_available() const 
     {
-        if (pyfunc_ != 0) {return true;}
-        return false;
+        if (pyfunc_ != 0 && stepladder_ != 0) {
+            return true;
+        } else {
+            return false;
+        }
     }
     ReactionRuleDescriptorPyfunc(
             stepladder_type_rrdescriptor stepladder, pyfunc_type pyfunc, boost::shared_ptr<PyObjectHandler> py_handler)
-        :pyfunc_(pyfunc)
-    {;}
+        :pyfunc_(pyfunc), pyobject_handler_(py_handler)
+    {
+        this->pyobject_handler_->inc_ref(this->pyfunc_);
+    }
+    virtual
+    ~ReactionRuleDescriptorPyfunc()
+    {
+        this->pyobject_handler_->dec_ref(this->pyfunc_);
+    }
     Real flux() const 
     {
         return 0.;
     }
 private:
     pyfunc_type pyfunc_;
+    stepladder_type_rrdescriptor stepladder_;
+    boost::shared_ptr<PyObjectHandler> pyobject_handler_;
 };
 
 class ReactionRule
