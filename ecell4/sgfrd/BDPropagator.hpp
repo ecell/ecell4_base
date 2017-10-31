@@ -4,9 +4,10 @@
 #include <ecell4/core/RandomNumberGenerator.hpp>
 #include <ecell4/core/Model.hpp>
 #include <ecell4/core/geometry.hpp>
+#include <ecell4/sgfrd/tracer.hpp>
 #include <boost/foreach.hpp>
-#include "Informations.hpp"
-#include "SGFRDWorld.hpp"
+#include <ecell4/sgfrd/Informations.hpp>
+#include <ecell4/sgfrd/SGFRDWorld.hpp>
 
 namespace ecell4
 {
@@ -61,6 +62,7 @@ public:
 
     bool operator()()
     {
+        SGFRD_SCOPE(ns, BDPropagator, this->vc_.access_tracer())
         if(queue_.empty()){return false;}
 
         ParticleID pid; Particle p;
@@ -115,20 +117,30 @@ public:
     bool attempt_reaction(const ParticleID& pid, const Particle& p,
                           const face_id_type& fid)
     {
+        SGFRD_SCOPE(ns, BD_attempt_single_reaction, this->vc_.access_tracer())
+
         BOOST_AUTO(const& rules, this->model_.query_reaction_rules(p.species()));
-        if(rules.empty()) return false;
+        SGFRD_TRACE(this->vc_.access_tracer().write(
+                    "%1% rules found for particle %2%", rules.size(), pid))
+        if(rules.empty()){return false;}
 
         const Real rnd(this->rng_.uniform(0., 1.));
+        SGFRD_TRACE(this->vc_.access_tracer().write(
+                    "drawn probability = %1%", rnd))
         Real prob = 0.;
         BOOST_FOREACH(reaction_rule_type const& rule, rules)
         {
-            if((prob += rule.k() * dt_) <= rnd) continue;
-            if(prob >= 1.) std::cerr << "reaction prob exceeds 1" << std::endl;
+            SGFRD_TRACE(this->vc_.access_tracer().write("k * dt = %1%",
+                        rule.k() * dt_))
+            if((prob += rule.k() * dt_) <= rnd){continue;}
+            if(prob >= 1.){std::cerr << "reaction prob exceeds 1" << std::endl;}
 
             switch(rule.products().size())
             {
                 case 0:
                 {
+                    SGFRD_TRACE(this->vc_.access_tracer().write(
+                        "1->0 reaction occured."))
                     remove_particle(pid);
                     last_reactions_.push_back(std::make_pair(
                                 rule, init_reaction_info(pid, p)));
@@ -197,6 +209,7 @@ public:
             const ParticleID& pid, const Particle& p, const face_id_type& fid,
             reaction_log_type rlog)
     {
+        SGFRD_SCOPE(ns, BD_attempt_1to1_reaction, this->vc_.access_tracer())
         const species_type species_new =
             this->model_.apply_species_attributes(rlog.first.products().front());
         const molecule_info_type mol_info =
@@ -205,12 +218,22 @@ public:
         const Real D_new      = mol_info.D;
 
         if(is_overlapping(std::make_pair(p.position(), fid), radius_new, pid))
+        {
+            SGFRD_TRACE(this->vc_.access_tracer().write(
+                "1->1 reaction rejected because of the overlapping"))
             return false;
+        }
 
         Particle particle_new(species_new, p.position(), radius_new, D_new);
 
-        if(!clear_volume(particle_new, fid, pid)) return false; // if no space
+        if(!clear_volume(particle_new, fid, pid))
+        {
+            SGFRD_TRACE(this->vc_.access_tracer().write(
+                "1->1 reaction rejected because of the overlapping(vc)"))
+            return false;
+        }
 
+        SGFRD_TRACE(this->vc_.access_tracer().write("1->1 reaction occured"))
         this->container_.update_particle(pid, particle_new, fid);
         rlog.second.add_product(std::make_pair(pid, particle_new));
         last_reactions_.push_back(rlog);
@@ -223,6 +246,8 @@ public:
             const ParticleID& pid, const Particle& p, const face_id_type& fid,
             reaction_log_type rlog)
     {
+        SGFRD_SCOPE(ns, BD_attempt_1to2_reaction, this->vc_.access_tracer())
+
         const Species sp1 =
             model_.apply_species_attributes(rlog.first.products().at(0));
         const Species sp2 =
@@ -250,19 +275,24 @@ public:
             this->propagate(newpfs[0], disp1);
             this->propagate(newpfs[1], disp2);
 
-            if(is_overlapping(newpfs[0], r1, pid)) continue;
-            if(is_overlapping(newpfs[1], r2, pid)) continue;
+            if(is_overlapping(newpfs[0], r1, pid)){continue;}
+            if(is_overlapping(newpfs[1], r2, pid)){continue;}
 
             break; // no overlap!
         }
-        if(retry == 0) return false; // no space
+        if(retry == 0)
+        {
+            SGFRD_TRACE(this->vc_.access_tracer().write(
+                "1->2 reaction rejected because of no space"))
+            return false; // no space
+        }
 
         boost::array<Particle, 2> particles_new;
         particles_new[0] = Particle(sp1, newpfs[0].first, r1, D1);
         particles_new[1] = Particle(sp2, newpfs[1].first, r2, D2);
 
-        if(!clear_volume(particles_new[0], newpfs[0].second, pid)) return false;
-        if(!clear_volume(particles_new[1], newpfs[1].second     )) return false;
+        if(!clear_volume(particles_new[0], newpfs[0].second, pid)){return false;}
+        if(!clear_volume(particles_new[1], newpfs[1].second     )){return false;}
 
         const bool update_result = this->container_.update_particle(
                 pid, particles_new[0], newpfs[0].second);
@@ -273,6 +303,7 @@ public:
         assert(update_result == true);
         assert(pp2.second    == true);
 
+        SGFRD_TRACE(this->vc_.access_tracer().write("1->2 reaction occured"))
         //----------------------------- trial move -----------------------------
 
         if(D1 == 0. && D2 == 0)
@@ -345,45 +376,45 @@ public:
         const std::pair<std::pair<ParticleID, Particle>, bool> pp_new =
             this->container_.new_particle(particle_new, pf1.second);
 
-        if(false == pp_new.second)
-        {
-            vc_.access_tracer().write(
-                "after calling clear_volume, particle overlaps with another particle");
-            std::vector<std::pair<std::pair<ParticleID, Particle>, Real>
-                > overlap_ps =
-                    this->container_.world().list_particles_within_radius(
-                        pf1, radius_new, pid1, pid2);
-            if(overlap_ps.empty())
-            {
-                vc_.access_tracer().write("no overlapping particles...internal error.");
-            }
-            else
-            {
-                vc_.access_tracer().write("reactant 1: id = %1%, pos = %2%, fid = %3%",
-                    pid1, p1.position(), fid1);
-                vc_.access_tracer().write("reactant 2: id = %1%, pos = %2%, fid = %3%",
-                    pid2, p2.position(), fid2);
-
-                for(std::vector<std::pair<std::pair<ParticleID, Particle>, Real>
-                    >::const_iterator i(overlap_ps.begin()), e(overlap_ps.end());
-                    i!=e; ++i)
-                {
-                    vc_.access_tracer().write(
-                        "overlapping particle: id = %1%, pos = %2%, fid = %3%",
-                        i->first.first, i->first.second.position(), i->second);
-                }
-
-                vc_.access_tracer().write("currently, Multi has ...");
-                for(typename container_type::particle_container_type::const_iterator
-                        i(container_.list_particles().begin()),
-                        e(container_.list_particles().end()); i!=e; ++i)
-                {
-                    vc_.access_tracer().write("particle: id = %1%, pos = %2%",
-                        i->first, i->second.position());
-                }
-                vc_.access_tracer().write("particles.");
-            }
-        }
+//         if(false == pp_new.second)
+//         {
+//             vc_.access_tracer().write(
+//                 "after calling clear_volume, particle overlaps with another particle");
+//             std::vector<std::pair<std::pair<ParticleID, Particle>, Real>
+//                 > overlap_ps =
+//                     this->container_.world().list_particles_within_radius(
+//                         pf1, radius_new, pid1, pid2);
+//             if(overlap_ps.empty())
+//             {
+//                 vc_.access_tracer().write("no overlapping particles...internal error.");
+//             }
+//             else
+//             {
+//                 vc_.access_tracer().write("reactant 1: id = %1%, pos = %2%, fid = %3%",
+//                     pid1, p1.position(), fid1);
+//                 vc_.access_tracer().write("reactant 2: id = %1%, pos = %2%, fid = %3%",
+//                     pid2, p2.position(), fid2);
+//
+//                 for(std::vector<std::pair<std::pair<ParticleID, Particle>, Real>
+//                     >::const_iterator i(overlap_ps.begin()), e(overlap_ps.end());
+//                     i!=e; ++i)
+//                 {
+//                     vc_.access_tracer().write(
+//                         "overlapping particle: id = %1%, pos = %2%, fid = %3%",
+//                         i->first.first, i->first.second.position(), i->second);
+//                 }
+//
+//                 vc_.access_tracer().write("currently, Multi has ...");
+//                 for(typename container_type::particle_container_type::const_iterator
+//                         i(container_.list_particles().begin()),
+//                         e(container_.list_particles().end()); i!=e; ++i)
+//                 {
+//                     vc_.access_tracer().write("particle: id = %1%, pos = %2%",
+//                         i->first, i->second.position());
+//                 }
+//                 vc_.access_tracer().write("particles.");
+//             }
+//         }
 
         rlog.second.add_product(pp_new.first);
         last_reactions_.push_back(rlog);
