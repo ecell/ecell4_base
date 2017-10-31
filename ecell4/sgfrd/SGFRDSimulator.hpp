@@ -1074,12 +1074,12 @@ class SGFRDSimulator :
         SGFRD_SCOPE(ns, draw_reaction_time, tracer_)
         SGFRD_TRACE(tracer_.write("for ktot = %1%", k_tot));
 
-        if(k_tot <= 0) return std::numeric_limits<Real>::infinity();
-        if(k_tot == std::numeric_limits<Real>::infinity()) return 0;
+        if(k_tot <= 0){return std::numeric_limits<Real>::infinity();}
+        if(k_tot == std::numeric_limits<Real>::infinity()){return 0;}
 
         const Real rnd = this->uniform_real();
         SGFRD_TRACE(tracer_.write("rnd = %1%", rnd));
-        if(rnd <= 0) return std::numeric_limits<Real>::infinity();
+        if(rnd <= 0){return std::numeric_limits<Real>::infinity();}
 
         SGFRD_TRACE(tracer_.write("reaction occurs in a finite time"));
 
