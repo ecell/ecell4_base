@@ -14,7 +14,6 @@
 #include <ecell4/sgfrd/ShellVisitors.hpp>
 #include <ecell4/sgfrd/Informations.hpp>
 #include <ecell4/sgfrd/SGFRDEvent.hpp>
-#include <ecell4/sgfrd/SGFRDWorld.hpp>
 
 #include <ecell4/sgfrd/tracer.hpp>
 
@@ -566,6 +565,15 @@ class SGFRDSimulator :
         return remove_multi(dom);
     }
 
+//----------------------------------- birth ------------------------------------
+
+    void fire_birth(const Birth& dom, DomainID did)
+    {
+        //TODO
+        return;
+    }
+
+
 // -----------------------------------------------------------------------------
 
     // XXX: second value of element of result_type is not a mere distance.
@@ -827,21 +835,32 @@ class SGFRDSimulator :
     void fire_event(event_id_pair_type ev)
     {
         SGFRD_SCOPE(us, fire_event, tracer_);
+        const SGFRDEvent::domain_type& dom = ev.second->domain();
+
         switch(ev.second->which_domain())
         {
             case event_type::single_domain:
-                return this->fire_single(
-                        boost::get<Single>(ev.second->domain()), ev.first);
+            {
+                return this->fire_single(boost::get<Single>(dom), ev.first);
+            }
             case event_type::pair_domain:
-                return this->fire_pair(
-                        boost::get<Pair>(ev.second->domain()), ev.first);
+            {
+                return this->fire_pair(boost::get<Pair>(dom), ev.first);
+            }
             case event_type::multi_domain:
-                return this->fire_multi(
-                        boost::get<Multi>(ev.second->domain()), ev.first);
+            {
+                return this->fire_multi(boost::get<Multi>(dom), ev.first);
+            }
+            case event_type::birth_domain:
+            {
+                return this->fire_birth(boost::get<Birth>(dom), ev.first);
+            }
             default:
+            {
                 throw std::runtime_error((boost::format(
                     "event::which_domain returns invalid value (%1%)") %
                     ev.second->which_domain()).str());
+            }
         }
     }
 
@@ -849,21 +868,28 @@ class SGFRDSimulator :
     bursted_type burst_event(const event_id_pair_type& ev, Real tm)
     {
         SGFRD_SCOPE(us, burst_event, tracer_);
+        const SGFRDEvent::domain_type& dom = ev.second->domain();
+
         switch(ev.second->which_domain())
         {
             case event_type::single_domain:
-                return this->burst_single(
-                        boost::get<Single>(ev.second->domain()), tm);
+            {
+                return this->burst_single(boost::get<Single>(dom), tm);
+            }
             case event_type::pair_domain:
-                return this->burst_pair(
-                        boost::get<Pair>(ev.second->domain()), tm);
+            {
+                return this->burst_pair(boost::get<Pair>(dom), tm);
+            }
             case event_type::multi_domain:
-                return this->burst_multi(
-                        boost::get<Multi>(ev.second->domain()), tm);
+            {
+                return this->burst_multi(boost::get<Multi>(dom), tm);
+            }
             default:
+            {
                 throw std::runtime_error((boost::format(
                     "event::which_domain returns invalid value (%1%)") %
                     ev.second->which_domain()).str());
+            }
         }
     }
 
