@@ -60,7 +60,7 @@ make_vertex_information(const ecell4::Polygon<polygon_traits>& poly,
     }
     /* remove itself from neighbor_vertices */
     {
-        const typename std::vector<vertex_id_type>::iterator self =
+        const typename std::vector<polygon::vertex_id_type>::iterator self =
             std::find(vtx.neighbor_vertices.begin(),
                       vtx.neighbor_vertices.end(), vid);
         vtx.neighbor_vertices.erase(self);
