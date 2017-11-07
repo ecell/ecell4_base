@@ -264,35 +264,39 @@ public:
         newpfs[0] = std::make_pair(p.position(), fid);
         newpfs[1] = std::make_pair(p.position(), fid);
 
-        Integer retry(max_retry_count_);
-        while(retry > 0)
         {
-            --retry;
-
             const Real3 ipv(draw_ipv(r12, D12, n));
             Real3 disp1(ipv * ( D1 / D12)), disp2(ipv * (-D2 / D12));
 
+            // put two particles next to each other
             this->propagate(newpfs[0], disp1);
             this->propagate(newpfs[1], disp2);
 
-            if(is_overlapping(newpfs[0], r1, pid)){continue;}
-            if(is_overlapping(newpfs[1], r2, pid)){continue;}
-
-            break; // no overlap!
-        }
-        if(retry == 0)
-        {
-            SGFRD_TRACE(this->vc_.access_tracer().write(
-                "1->2 reaction rejected because of no space"))
-            return false; // no space
+            if(is_overlapping(newpfs[0], r1, pid) ||
+               is_overlapping(newpfs[1], r2, pid))
+            {
+                SGFRD_TRACE(this->vc_.access_tracer().write(
+                    "1->2 reaction rejected because of no space"))
+                return false; // no space
+            }
         }
 
         boost::array<Particle, 2> particles_new;
         particles_new[0] = Particle(sp1, newpfs[0].first, r1, D1);
         particles_new[1] = Particle(sp2, newpfs[1].first, r2, D2);
 
-        if(!clear_volume(particles_new[0], newpfs[0].second, pid)){return false;}
-        if(!clear_volume(particles_new[1], newpfs[1].second     )){return false;}
+        if(!clear_volume(particles_new[0], newpfs[0].second, pid))
+        {
+            SGFRD_TRACE(this->vc_.access_tracer().write(
+                "1->2 reaction rejected because clear_volume failed (no space)"))
+            return false;
+        }
+        if(!clear_volume(particles_new[1], newpfs[1].second))
+        {
+            SGFRD_TRACE(this->vc_.access_tracer().write(
+                "1->2 reaction rejected because clear_volume failed (no space)"))
+            return false;
+        }
 
         const bool update_result = this->container_.update_particle(
                 pid, particles_new[0], newpfs[0].second);
@@ -311,13 +315,14 @@ public:
             throw std::invalid_argument("reaction between immobile particles");
         }
 
-        const std::size_t idx = // select particle that is moved
+        const std::size_t idx = // select particle that will move
             (D2 == 0 || (D1 != 0 && rng_.uniform_int(0, 1) == 0)) ? 0 : 1;
         const ParticleID pid_to_move = (idx==0) ? pid : pid2;
 
         BOOST_AUTO(position,     newpfs[idx]);
-        BOOST_AUTO(displacement, draw_displacement(particles_new[idx],
-                                                   newpfs[idx].second));
+        BOOST_AUTO(displacement,
+                   draw_displacement(particles_new[idx], newpfs[idx].second));
+
         this->propagate(position, displacement);
         if(!is_overlapping(position, particles_new[idx].radius(), pid_to_move))
         {
@@ -376,6 +381,7 @@ public:
         const std::pair<std::pair<ParticleID, Particle>, bool> pp_new =
             this->container_.new_particle(particle_new, pf1.second);
 
+//      for logging
 //         if(false == pp_new.second)
 //         {
 //             vc_.access_tracer().write(
