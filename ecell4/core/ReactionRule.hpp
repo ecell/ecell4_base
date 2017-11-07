@@ -24,6 +24,8 @@ public:
     virtual
     bool is_available() const
     {   return false;    }
+    virtual
+    Real flux(const std::vector<Real> &r, const std::vector<Real> &p, Real time) const = 0;
 private:
 
 };
@@ -32,7 +34,7 @@ class ReactionRuleDescriptorCPPfunc
     : public ReactionRuleDescriptor
 {
 public:
-    typedef Real (*func_type)(reactant_container_type, product_container_type);
+    typedef Real (*func_type)(const std::vector<Real> &r, const std::vector<Real> &p, Real t);
 
     ReactionRuleDescriptorCPPfunc(func_type pf)
         : pf_(pf)
@@ -43,10 +45,11 @@ public:
         return false;
     }
     virtual
-    Real flux(const reactant_container_type &reactants, const product_container_type &products) const 
+    Real flux(const std::vector<Real> &reactants, const std::vector<Real> &products, Real time) const
     {
         if (this->is_available() ) {
-            return (this->pf_)(reactants, products);
+            return (this->pf_)(reactants, products, time);
+            //return 0.;
         } else {
             throw IllegalState("Pointer to the user-defined flux function is NULL");
         }
@@ -63,7 +66,7 @@ public:
     typedef ReactionRuleDescriptor base_type;
     typedef void *pyfunc_type;
     typedef Real (*stepladder_type_rrdescriptor)(
-            pyfunc_type, reactant_container_type, product_container_type);
+            pyfunc_type, std::vector<Real>, std::vector<Real>, Real t);
 
 public:
     bool is_available() const 
@@ -76,7 +79,7 @@ public:
     }
     ReactionRuleDescriptorPyfunc(
             stepladder_type_rrdescriptor stepladder, pyfunc_type pyfunc, boost::shared_ptr<PyObjectHandler> py_handler)
-        :pyfunc_(pyfunc), pyobject_handler_(py_handler)
+        :stepladder_(stepladder), pyfunc_(pyfunc), pyobject_handler_(py_handler)
     {
         this->pyobject_handler_->inc_ref(this->pyfunc_);
     }
@@ -85,9 +88,13 @@ public:
     {
         this->pyobject_handler_->dec_ref(this->pyfunc_);
     }
-    Real flux() const 
+    virtual
+    Real flux(const std::vector<Real> &r, const std::vector<Real> &p, Real time) const
     {
-        return 0.;
+        if (stepladder_ == NULL) {  throw IllegalState("stepladder is not registered"); }
+        if (pyfunc_ == NULL) {  throw IllegalState("pyfunc is not registered"); }
+        Real ret = stepladder_(this->pyfunc_, r, p, time);
+        return ret;
     }
 private:
     pyfunc_type pyfunc_;
@@ -234,6 +241,13 @@ public:
     boost::shared_ptr<ReactionRuleDescriptor> get_descriptor() const
     {
         return this->rr_descriptor_.lock();
+    }
+    Real flux(const std::vector<Real> &r, const std::vector<Real> &p, Real t) const
+    {
+        if (!has_descriptor()) {
+            throw IllegalState("ReactionRule Descriptor has not been registered");
+        }
+        return this->get_descriptor()->flux(r, p, t);
     }
 
 protected:

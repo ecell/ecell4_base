@@ -142,7 +142,7 @@ cdef Species Species_from_Cpp_Species(Cpp_Species *sp)
 
 
 ctypedef void* pyfunc_type_rrdesc
-ctypedef double (*stepladder_type_rrdescriptor)(pyfunc_type_rrdesc, vector[Cpp_Species], vector[Cpp_Species])
+ctypedef double (*stepladder_type_rrdescriptor)(pyfunc_type_rrdesc, vector[Real], vector[Real], Real)
 
 # Cpp_ReactionRuleDescriptor
 #ecell4::ReactionRuleDescriptorPyfunc
@@ -151,7 +151,7 @@ cdef extern from "ecell4/core/ReactionRule.hpp" namespace "ecell4":
         Cpp_ReactionRuleDescriptor() except +
         Cpp_ReactionRuleDescriptor(
                 stepladder_type_rrdescriptor, pyfunc_type_rrdesc, shared_ptr[Cpp_PyObjectHandler]) 
-        Real flux()
+        #Real flux()
 
 cdef class ReactionRuleDescriptor:
     cdef shared_ptr[Cpp_ReactionRuleDescriptor] thisptr
@@ -186,6 +186,7 @@ cdef extern from "ecell4/core/ReactionRule.hpp" namespace "ecell4":
         vector[Cpp_ReactionRule] generate(vector[Cpp_Species]) except +
         void set_descriptor(shared_ptr[Cpp_ReactionRuleDescriptor])
         bool has_descriptor()
+        Real flux(vector[Real], vector[Real], Real)
 
 
 ## ReactionRule

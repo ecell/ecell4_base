@@ -4,7 +4,7 @@ from cython cimport address
 cimport create_reaction_rule as crr
 
 cdef double indirect_function_rrd(
-    void *pyfunc, vector[Real] reactants, vector[Real] products):
+    void *pyfunc, vector[Real] reactants, vector[Real] products, Real t):
     py_reactants = []
     cdef vector[Real].iterator it1 = reactants.begin()
     while it1 != reactants.end():
@@ -15,12 +15,11 @@ cdef double indirect_function_rrd(
     while it2 != products.end():
         py_products.append(deref(it2))
         inc(it2)
-    ret = (<object>pyfunc)(
-            py_reactants, py_products)
-    if not isinstance(ret, float):
-        #XXX: Show some warning here
-        # print('indirect_function: {} {} {} {} {} => {}'.format(py_reactants, py_products, volume, t, rr.as_string(), ret))
-        return 0.0
+    ret = (<object>pyfunc)(py_reactants, py_products, t)
+    #if not isinstance(ret, float):
+    #    #XXX: Show some warning here
+    #    # print('indirect_function: {} {} {} {} {} => {}'.format(py_reactants, py_products, volume, t, rr.as_string(), ret))
+    #    return 0.0
     return ret
 
 cdef class ReactionRuleDescriptor:
@@ -28,8 +27,6 @@ cdef class ReactionRuleDescriptor:
         a = PyObjectHandler()
         self.thisptr = shared_ptr[Cpp_ReactionRuleDescriptor](
                 new Cpp_ReactionRuleDescriptor(<stepladder_type_rrdescriptor>indirect_function_rrd, <void*>pyfunc, a.thisptr) )
-    def flux(self):
-        return self.thisptr.get().flux()
 
 cdef class ReactionRule:
     """A class representing a reaction rule between ``Species``.
@@ -267,6 +264,14 @@ cdef class ReactionRule:
         self.thisptr.set_descriptor(rrd.thisptr) 
     def has_descriptor(self):
         return self.thisptr.has_descriptor()
+    def flux(self, reactants_amount, products_amount, time):
+        cdef vector[Real] cpp_reactants_amount
+        cdef vector[Real] cpp_products_amount
+        for i in reactants_amount:
+            cpp_reactants_amount.push_back(i)
+        for i in products_amount:
+            cpp_products_amount.push_back(i)
+        return self.thisptr.flux(cpp_reactants_amount, cpp_products_amount, time)
 
 cdef ReactionRule ReactionRule_from_Cpp_ReactionRule(Cpp_ReactionRule *rr):
     cdef Cpp_ReactionRule *new_obj = new Cpp_ReactionRule(deref(rr))
