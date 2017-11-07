@@ -291,7 +291,7 @@ public:
                 "1->2 reaction rejected because clear_volume failed (no space)"))
             return false;
         }
-        if(!clear_volume(particles_new[1], newpfs[1].second))
+        if(!clear_volume(particles_new[1], newpfs[1].second, pid))
         {
             SGFRD_TRACE(this->vc_.access_tracer().write(
                 "1->2 reaction rejected because clear_volume failed (no space)"))
@@ -304,7 +304,7 @@ public:
             this->container_.new_particle(particles_new[1], newpfs[1].second));
         const ParticleID pid2(pp2.first.first);
 
-        assert(update_result == true);
+        assert(update_result == false);
         assert(pp2.second    == true);
 
         SGFRD_TRACE(this->vc_.access_tracer().write("1->2 reaction occured"))
