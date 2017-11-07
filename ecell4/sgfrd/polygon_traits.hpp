@@ -27,7 +27,7 @@ struct vertex_descripter
     Real max_conical_shell_size;
     Real3 position;
     std::vector<face_id_type>   neighbor_faces;
-    std::vector<vertex_id_type> neighbor_vertices; // include self
+    std::vector<vertex_id_type> neighbor_vertices; // exclude itself
 };
 
 struct edge_descripter
@@ -40,7 +40,7 @@ struct face_descripter
     // developped edges of neighbor faces
     boost::array<ecell4::Segment, 6> barrier;
 
-    std::vector<face_id_type>   neighbor_faces;
+    std::vector<face_id_type>   neighbor_faces; // exclude itself
     std::vector<vertex_id_type> neighbor_vertices;
 };
 

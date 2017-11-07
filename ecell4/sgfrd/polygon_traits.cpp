@@ -15,7 +15,7 @@ make_vertex_information(const ecell4::Polygon<polygon_traits>& poly,
     polygon::vertex_descripter vtx;
     const std::vector<polygon::face_id_type>& faces = poly.connecting_faces(vid);
     vtx.neighbor_faces.reserve(faces.size()*2);
-    vtx.neighbor_vertices.reserve(faces.size());
+    vtx.neighbor_vertices.reserve(faces.size()+1);
 
     vtx.position[0] = std::numeric_limits<Real>::max();
     vtx.max_conical_shell_size = std::numeric_limits<Real>::max();
@@ -58,6 +58,14 @@ make_vertex_information(const ecell4::Polygon<polygon_traits>& poly,
         uniquely_add(vtx.neighbor_vertices, vtxs[1]);
         uniquely_add(vtx.neighbor_vertices, vtxs[2]);
     }
+    /* remove itself from neighbor_vertices */
+    {
+        const typename std::vector<vertex_id_type>::iterator self =
+            std::find(vtx.neighbor_vertices.begin(),
+                      vtx.neighbor_vertices.end(), vid);
+        vtx.neighbor_vertices.erase(self);
+    }
+
 
     for(std::vector<polygon::face_id_type>::const_iterator
         iter = faces.begin(); iter != faces.end(); ++iter)
