@@ -1,6 +1,7 @@
 #ifndef ECELL4_SGFRD_EVENT
 #define ECELL4_SGFRD_EVENT
 #include <ecell4/core/EventScheduler.hpp>
+#include <ecell4/sgfrd/Birth.hpp>
 #include <ecell4/sgfrd/Single.hpp>
 #include <ecell4/sgfrd/Pair.hpp>
 #include <ecell4/sgfrd/Multi.hpp>
@@ -16,13 +17,14 @@ namespace sgfrd
 struct SGFRDEvent
 {
 public:
-    typedef boost::variant<Single, Pair, Multi> domain_type;
+    typedef boost::variant<Single, Pair, Multi, Birth> domain_type;
 
     enum domain_kind
     {
         single_domain = 0,
         pair_domain   = 1,
         multi_domain  = 2,
+        birth_domain  = 3,
         // std::numeric_limits<int>::max() is not constexpr in c++03.
         invalid       = INT_MAX,
     };
