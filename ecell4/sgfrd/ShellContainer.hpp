@@ -511,6 +511,7 @@ ShellContainer<T_pt>::list_shells_within_radius(
                         std::cerr << "Shell " << *jter
                                   << " is found on both Vertex " << *iter
                                   << " and another Face." << std::endl;
+                        face_registrator_.dump(std::cerr);
                         vertex_registrator_.dump(std::cerr);
                         assert(false);
                     }
@@ -625,6 +626,7 @@ ShellContainer<T_pt>::list_shells_within_radius(
                         std::cerr << "Shell " << *jter
                                   << " is found on both Vertex " << *iter
                                   << " and another Face." << std::endl;
+                        face_registrator_.dump(std::cerr);
                         vertex_registrator_.dump(std::cerr);
                         assert(false);
                     }
@@ -741,6 +743,7 @@ ShellContainer<T_pt>::list_shells_within_radius(
                         std::cerr << "Shell " << *jter
                                   << " is found on both Vertex " << *iter
                                   << " and another Face." << std::endl;
+                        face_registrator_.dump(std::cerr);
                         vertex_registrator_.dump(std::cerr);
                         assert(false);
                     }

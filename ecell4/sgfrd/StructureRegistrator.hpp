@@ -247,7 +247,7 @@ void StructureRegistrator<Te, Ts, Tp>::dump(std::ostream& os) const
         {
             os << *ei << ' ';
         }
-        os << " }\n";
+        os << " } }\n";
     }
     os << std::endl;
     return ;
