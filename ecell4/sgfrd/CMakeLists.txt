@@ -24,6 +24,9 @@ target_link_libraries(sgfrd-sample-diffusion ecell4-egfrd ecell4-core ecell4-bd 
 add_executable(sgfrd-sample-reaction sample/reaction.cpp ${CPP_FILES})
 target_link_libraries(sgfrd-sample-reaction ecell4-egfrd ecell4-core ecell4-bd ${SGFRD_LIBRARIES_TO_BE_LINKED})
 
+add_executable(sgfrd-sample-bdonly sample/bdonly.cpp ${CPP_FILES})
+target_link_libraries(sgfrd-sample-bdonly ecell4-egfrd ecell4-core ecell4-bd ${SGFRD_LIBRARIES_TO_BE_LINKED})
+
 # add_library(ecell4-sgfrd SHARED ${CPP_FILES} ${HPP_FILES})
 # target_link_libraries(ecell4-sgfrd ecell4-core ecell4-egfrd)
 #
