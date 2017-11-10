@@ -186,7 +186,7 @@ cdef extern from "ecell4/core/ReactionRule.hpp" namespace "ecell4":
         vector[Cpp_ReactionRule] generate(vector[Cpp_Species]) except +
         void set_descriptor(shared_ptr[Cpp_ReactionRuleDescriptor])
         bool has_descriptor()
-        Real flux(vector[Real], vector[Real], Real)
+        Real propensity(vector[Real], vector[Real], Real)
 
 
 ## ReactionRule

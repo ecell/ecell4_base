@@ -10,6 +10,9 @@
 #include "Species.hpp"
 #include "pyhandler.hpp"
 //#include "Ratelaw.hpp"
+//
+#include "boost/tuple/tuple.hpp"
+#include "boost/tuple/tuple_io.hpp"
 
 
 namespace ecell4
@@ -20,14 +23,51 @@ class ReactionRuleDescriptor
 public:
     typedef std::vector<Species> reactant_container_type;
     typedef std::vector<Species> product_container_type;
+    typedef std::vector<Real> reaction_coefficient_list_type;
+
+    typedef boost::tuple<bool, int, int> descriptor_attribute;  // has_propensity_func, number of reactant coefficients, number of product_coefficients;
 public:
     virtual
     bool is_available() const
-    {   return false;    }
-    virtual
-    Real flux(const std::vector<Real> &r, const std::vector<Real> &p, Real time) const = 0;
-private:
+    {   return true;    }
 
+    descriptor_attribute attribute(void) const
+    {   return boost::make_tuple(this->is_available(), reactant_coefficients_.size(), product_coefficients_.size());    }
+
+    virtual
+    Real propensity(const std::vector<Real> &r, const std::vector<Real> &p, Real time) const = 0;
+
+    // Accessor of coefficients;
+    const reaction_coefficient_list_type &reactant_coefficients(void) const
+    {   return this->reactant_coefficients_;    }
+
+    const reaction_coefficient_list_type &product_coefficients(void) const
+    {   return this->product_coefficients_; }
+
+    void set_reactant_coefficients(const reaction_coefficient_list_type &new_reactant_coefficients) 
+    {
+        this->reactant_coefficients_.clear();
+        for(int i = 0; i < new_reactant_coefficients.size(); i++) {
+            this->reactant_coefficients_.push_back(new_reactant_coefficients[i]);
+        }
+    }
+
+    void set_product_coefficients(const reaction_coefficient_list_type &new_product_coefficients) 
+    {
+        this->product_coefficients_.clear();
+        for(int i = 0; i < new_product_coefficients.size(); i++) {
+            this->product_coefficients_.push_back(new_product_coefficients[i]);
+        }
+    }
+
+    bool has_coefficients(void) const
+    {
+        return !(this->reactant_coefficients_.empty() && this->product_coefficients_.empty());
+    }
+    
+private:
+    reaction_coefficient_list_type reactant_coefficients_;
+    reaction_coefficient_list_type product_coefficients_;
 };
 
 class ReactionRuleDescriptorCPPfunc
@@ -36,22 +76,21 @@ class ReactionRuleDescriptorCPPfunc
 public:
     typedef Real (*func_type)(const std::vector<Real> &r, const std::vector<Real> &p, Real t);
 
-    ReactionRuleDescriptorCPPfunc(func_type pf)
-        : pf_(pf)
-    {;}
+    ReactionRuleDescriptorCPPfunc(func_type pf) : pf_(pf) {;}
+
     bool is_available() const
     {
         if (this->pf_ != 0) {return true;}
         return false;
     }
+
     virtual
-    Real flux(const std::vector<Real> &reactants, const std::vector<Real> &products, Real time) const
+    Real propensity(const std::vector<Real> &reactants, const std::vector<Real> &products, Real time) const
     {
         if (this->is_available() ) {
             return (this->pf_)(reactants, products, time);
-            //return 0.;
         } else {
-            throw IllegalState("Pointer to the user-defined flux function is NULL");
+            throw IllegalState("Pointer to the user-defined propensity function is NULL");
         }
     }
 
@@ -88,8 +127,9 @@ public:
     {
         this->pyobject_handler_->dec_ref(this->pyfunc_);
     }
+
     virtual
-    Real flux(const std::vector<Real> &r, const std::vector<Real> &p, Real time) const
+    Real propensity(const std::vector<Real> &r, const std::vector<Real> &p, Real time) const
     {
         if (stepladder_ == NULL) {  throw IllegalState("stepladder is not registered"); }
         if (pyfunc_ == NULL) {  throw IllegalState("pyfunc is not registered"); }
@@ -242,12 +282,12 @@ public:
     {
         return this->rr_descriptor_.lock();
     }
-    Real flux(const std::vector<Real> &r, const std::vector<Real> &p, Real t) const
+    Real propensity(const std::vector<Real> &r, const std::vector<Real> &p, Real t) const
     {
         if (!has_descriptor()) {
             throw IllegalState("ReactionRule Descriptor has not been registered");
         }
-        return this->get_descriptor()->flux(r, p, t);
+        return this->get_descriptor()->propensity(r, p, t);
     }
 
 protected:

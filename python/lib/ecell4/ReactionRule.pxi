@@ -264,14 +264,14 @@ cdef class ReactionRule:
         self.thisptr.set_descriptor(rrd.thisptr) 
     def has_descriptor(self):
         return self.thisptr.has_descriptor()
-    def flux(self, reactants_amount, products_amount, time):
+    def propensity(self, reactants_amount, products_amount, time):
         cdef vector[Real] cpp_reactants_amount
         cdef vector[Real] cpp_products_amount
         for i in reactants_amount:
             cpp_reactants_amount.push_back(i)
         for i in products_amount:
             cpp_products_amount.push_back(i)
-        return self.thisptr.flux(cpp_reactants_amount, cpp_products_amount, time)
+        return self.thisptr.propensity(cpp_reactants_amount, cpp_products_amount, time)
 
 cdef ReactionRule ReactionRule_from_Cpp_ReactionRule(Cpp_ReactionRule *rr):
     cdef Cpp_ReactionRule *new_obj = new Cpp_ReactionRule(deref(rr))
