@@ -178,22 +178,27 @@ def parse_ReactionRule_options(elements):
         return opts
 
     for elem in elements:
-        if (isinstance(elem, parseobj.ParseObj) and len(elem._elems) > 0
-            and elem._elems[0].name == '_policy'):
-            policy = elem._elems[0]
-            if len(elem._elems) != 1:
-                raise RuntimeError(
-                    '_policy only accepts one argument; '
-                    + ' [{}] given'.format(len(elem._elems)))
-            elif policy.args is None or len(policy.args) != 1 or (policy.kwargs is not None and len(policy.kwargs) > 0) or policy.key is not None or policy.modification is not None:
-                raise RuntimeError(
-                    '_policy is not well-formed [{}]'.format(
-                        str(policy)))
-
+        if isinstance(elem, ecell4.core.ReactionRulePolicy):
             if 'policy' not in opts.keys():
-                opts['policy'] = policy.args[0]
+                opts['policy'] = elem.get()
             else:
-                opts['policy'] |= policy.args[0]
+                opts['policy'] |= elem.get()
+        # if (isinstance(elem, parseobj.ParseObj) and len(elem._elems) > 0
+        #     and elem._elems[0].name == '_policy'):
+        #     policy = elem._elems[0]
+        #     if len(elem._elems) != 1:
+        #         raise RuntimeError(
+        #             '_policy only accepts one argument; '
+        #             + ' [{}] given'.format(len(elem._elems)))
+        #     elif policy.args is None or len(policy.args) != 1 or (policy.kwargs is not None and len(policy.kwargs) > 0) or policy.key is not None or policy.modification is not None:
+        #         raise RuntimeError(
+        #             '_policy is not well-formed [{}]'.format(
+        #                 str(policy)))
+
+        #     if 'policy' not in opts.keys():
+        #         opts['policy'] = policy.args[0]
+        #     else:
+        #         opts['policy'] |= policy.args[0]
         # elif (isinstance(elem, parseobj.ParseObj) and len(elem._elems) > 0
         #     and elem._elems[0].name == '_tag'):
         #     tag = elem._elems[0]
