@@ -152,6 +152,11 @@ cdef extern from "ecell4/core/ReactionRule.hpp" namespace "ecell4":
         Cpp_ReactionRuleDescriptor(
                 stepladder_type_rrdescriptor, pyfunc_type_rrdesc, shared_ptr[Cpp_PyObjectHandler]) 
         #Real flux()
+        void set_reactant_coefficients(vector[Real])
+        void set_product_coefficients(vector[Real])
+        bool has_coefficients()
+        vector[Real] reactant_coefficients()
+        vector[Real] product_coefficients()
 
 cdef class ReactionRuleDescriptor:
     cdef shared_ptr[Cpp_ReactionRuleDescriptor] thisptr

@@ -28,6 +28,37 @@ cdef class ReactionRuleDescriptor:
         self.thisptr = shared_ptr[Cpp_ReactionRuleDescriptor](
                 new Cpp_ReactionRuleDescriptor(<stepladder_type_rrdescriptor>indirect_function_rrd, <void*>pyfunc, a.thisptr) )
 
+
+    def reactant_coefficients(self):
+        cdef vector[Real] cpp_coefficients = self.thisptr.get().reactant_coefficients()
+        py_reactant_coefficients = []
+        cdef vector[Real].iterator it = cpp_coefficients.begin()
+        while it != cpp_coefficients.end():
+            py_reactant_coefficients.append(deref(it))
+            inc(it)
+        return py_reactant_coefficients
+
+    def product_coefficients(self):
+        cdef vector[Real] cpp_coefficients = self.thisptr.get().product_coefficients()
+        py_product_coefficients = []
+        cdef vector[Real].iterator it = cpp_coefficients.begin()
+        while it != cpp_coefficients.end():
+            py_product_coefficients.append(deref(it))
+            inc(it)
+        return py_product_coefficients
+    
+    def set_reactant_coefficients(self, coefficients):
+        cdef vector[Real] cpp_coefficients
+        for c in coefficients:
+            cpp_coefficients.push_back(c)
+        self.thisptr.get().set_reactant_coefficients(cpp_coefficients)
+
+    def set_product_coefficients(self, coefficients):
+        cdef vector[Real] cpp_coefficients
+        for c in coefficients:
+            cpp_coefficients.push_back(c)
+        self.thisptr.get().set_product_coefficients(cpp_coefficients)
+
 cdef class ReactionRule:
     """A class representing a reaction rule between ``Species``.
 
