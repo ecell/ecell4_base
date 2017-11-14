@@ -144,7 +144,7 @@ public:
             for (UnitSpecies::container_type::const_iterator i(usp.begin());
                  i != usp.end(); ++i)
             {
-                if ((*i).second.second == "" || is_wildcard((*i).second.second))
+                if ((*i).second.second == "" || rbex::is_wildcard((*i).second.second))
                 {
                     continue;
                 }
@@ -284,7 +284,7 @@ public:
         for (UnitSpecies::container_type::const_iterator i(usp.begin());
             i != usp.end(); ++i)
         {
-            if ((*i).second.second == "" || is_wildcard((*i).second.second))
+            if ((*i).second.second == "" || rbex::is_wildcard((*i).second.second))
             {
                 continue;
             }
@@ -346,7 +346,7 @@ Species format_species(const Species& sp)
             j < static_cast<UnitSpecies::container_type::size_type>(usp.num_sites()); ++j)
         {
             UnitSpecies::container_type::value_type& site(usp.at(j));
-            if (site.second.second == "" || is_wildcard(site.second.second))
+            if (site.second.second == "" || rbex::is_wildcard(site.second.second))
             {
                 continue;
             }

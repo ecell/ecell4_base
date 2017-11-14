@@ -10,6 +10,31 @@
 namespace ecell4
 {
 
+namespace rbex
+{
+
+inline bool is_wildcard(const std::string& name)
+{
+    return (name.size() > 0 && name[0] == '_');
+}
+
+inline bool is_unnamed_wildcard(const std::string& name)
+{
+    return name == "_";
+}
+
+inline bool is_pass_wildcard(const std::string& name)
+{
+    return name == "_0";
+}
+
+inline bool is_named_wildcard(const std::string& name)
+{
+    return (name.size() > 1 && name[0] == '_' && !is_pass_wildcard(name));
+}
+
+} // rbex
+
 class MatchObject
 {
 public:
@@ -68,11 +93,6 @@ protected:
     Species::container_type::const_iterator itr_;
     context_type ctx_;
 };
-
-bool is_wildcard(const std::string& name);
-bool is_unnamed_wildcard(const std::string& name);
-bool is_named_wildcard(const std::string& name);
-bool is_pass_wildcard(const std::string& name);
 
 std::pair<bool, MatchObject::context_type>
 uspmatch(const UnitSpecies& pttrn, const UnitSpecies& sp,
@@ -410,6 +430,37 @@ public:
         }
 
         ctx.globals = matchers_.back().context().globals;
+
+        std::vector<unsigned int> strides;
+        strides.reserve(target_.size());
+        {
+            unsigned int stride = 0;
+            for (std::vector<Species>::const_iterator
+                i(target_.begin()); i != target_.end(); ++i)
+            {
+                strides.push_back(stride);
+                stride += (*i).units().size();
+            }
+        }
+
+        for (std::vector<SpeciesExpressionMatcher>::const_iterator
+            i(matchers_.begin()); i != matchers_.end(); ++i)
+        {
+            const unsigned int idx1 = std::distance(matchers_.begin(), i);  // a position in matcher_
+            const unsigned int idx2 = permutation_[idx1];  // a position in reactants
+            const unsigned int stride = strides[idx2];
+
+            for (context_type::iterator_container_type::const_iterator
+                j((*i).context().iterators.begin());
+                j != (*i).context().iterators.end(); ++j)
+            {
+                const unsigned int idx3 = std::distance((*i).context().iterators.begin(), j);  // a position in context.iterators
+                const unsigned int idx4 = (*j);  // a position in units of a Species
+
+                ctx.iterators.push_back(idx4 + stride);
+            }
+        }
+
         // Species::container_type::difference_type stride(0);
         // for (std::vector<SpeciesExpressionMatcher>::const_iterator
         //     i(matchers_.begin()); i != matchers_.end(); ++i)
@@ -422,28 +473,28 @@ public:
         //     }
         //     stride += target_[std::distance(matchers_.begin(), i)].units().size();
         // }
-        Species::container_type::difference_type totstride(0);
-        std::vector<Species::container_type::difference_type> strides(matchers_.size());
-        for (std::vector<reactant_container_type::size_type>::const_iterator
-            i(permutation_.begin()); i != permutation_.end(); ++i)
-        {
-            strides[(*i)] = totstride;
-            totstride += target_[(*i)].units().size();
-        }
+        //XXX: Species::container_type::difference_type totstride(0);
+        //XXX: std::vector<Species::container_type::difference_type> strides(matchers_.size());
+        //XXX: for (std::vector<reactant_container_type::size_type>::const_iterator
+        //XXX:     i(permutation_.begin()); i != permutation_.end(); ++i)
+        //XXX: {
+        //XXX:     strides[(*i)] = totstride;
+        //XXX:     totstride += target_[(*i)].units().size();
+        //XXX: }
 
-        for (std::vector<SpeciesExpressionMatcher>::const_iterator
-            i(matchers_.begin()); i != matchers_.end(); ++i)
-        {
-            const Species::container_type::difference_type stride
-                = strides[std::distance(matchers_.begin(), i)];
-            for (context_type::iterator_container_type::const_iterator
-                j((*i).context().iterators.begin());
-                j != (*i).context().iterators.end(); ++j)
-            {
-                ctx.iterators.push_back((*j) + stride);
-            }
-        }
-        return ctx;
+        //XXX: for (std::vector<SpeciesExpressionMatcher>::const_iterator
+        //XXX:     i(matchers_.begin()); i != matchers_.end(); ++i)
+        //XXX: {
+        //XXX:     const Species::container_type::difference_type stride
+        //XXX:         = strides[std::distance(matchers_.begin(), i)];
+        //XXX:     for (context_type::iterator_container_type::const_iterator
+        //XXX:         j((*i).context().iterators.begin());
+        //XXX:         j != (*i).context().iterators.end(); ++j)
+        //XXX:     {
+        //XXX:         ctx.iterators.push_back((*j) + stride);
+        //XXX:     }
+        //XXX: }
+        //XXX: return ctx;
     }
 
     std::vector<Species> generate();
