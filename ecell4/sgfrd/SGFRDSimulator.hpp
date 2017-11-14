@@ -835,7 +835,7 @@ class SGFRDSimulator :
     void fire_event(event_id_pair_type ev)
     {
         SGFRD_SCOPE(us, fire_event, tracer_);
-        const SGFRDEvent::domain_type& dom = ev.second->domain();
+        SGFRDEvent::domain_type& dom = ev.second->domain();
 
         switch(ev.second->which_domain())
         {
@@ -868,7 +868,7 @@ class SGFRDSimulator :
     bursted_type burst_event(const event_id_pair_type& ev, Real tm)
     {
         SGFRD_SCOPE(us, burst_event, tracer_);
-        const SGFRDEvent::domain_type& dom = ev.second->domain();
+        SGFRDEvent::domain_type& dom = ev.second->domain();
 
         switch(ev.second->which_domain())
         {
