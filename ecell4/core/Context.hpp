@@ -499,6 +499,16 @@ public:
 
     std::vector<Species> generate();
 
+    typedef struct
+    {
+        std::vector<UnitSpecies> products;
+        std::vector<std::vector<UnitSpecies>::size_type> correspo;
+        std::vector<std::vector<UnitSpecies>::size_type> removed;
+        std::vector<UnitSpecies>::size_type reserved;
+    } operation_type;
+
+    operation_type compile();
+    std::vector<UnitSpecies> genunits(const operation_type& op);
     std::vector<ReactionRule> gen(const ReactionRule::reactant_container_type& reactants);
 
     const reactant_container_type& reactants() const

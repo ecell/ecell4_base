@@ -99,11 +99,12 @@ BOOST_AUTO_TEST_CASE(ReactionRule_test_compare)
 
 void check_reaction_rule_generation(
     const ReactionRule& rr, const std::vector<Species>& reactants,
-    const std::vector<ReactionRule>& ans)
+    const std::vector<ReactionRule>& ans,
+    const std::string& filename, const unsigned int& lineno)
 {
     const std::vector<ReactionRule> res = rr.generate(reactants);
 
-    BOOST_CHECK_EQUAL(res.size(), ans.size());
+    BOOST_CHECK_MESSAGE(res.size() == ans.size(), "" << filename << "(" << lineno << "): check res.size() == ans.size() failed [" << res.size() << " != " << ans.size() << "]");
 
     std::vector<std::vector<ReactionRule>::difference_type> done;
     done.reserve(res.size());
@@ -127,9 +128,13 @@ void check_reaction_rule_generation(
             }
         }
 
-        BOOST_CHECK_MESSAGE(found, "A result [" << (*i).as_string() << "] is not in the list");
+        BOOST_CHECK_MESSAGE(found, "" << filename << "(" << lineno << "): A result [" << (*i).as_string() << "] is not in the list");
     }
 }
+
+#define ECELL4_TEST_REACTION_RULE_GENERATION( rr, reactants, ans ) \
+    check_reaction_rule_generation(rr, reactants, ans, __FILE__, __LINE__)
+
 
 BOOST_AUTO_TEST_CASE(ReactionRule_test_generate1)
 {
@@ -139,7 +144,7 @@ BOOST_AUTO_TEST_CASE(ReactionRule_test_generate1)
         std::vector<ReactionRule> ans;
         ans.push_back(rr);
 
-        check_reaction_rule_generation(rr, reactants, ans);
+        ECELL4_TEST_REACTION_RULE_GENERATION(rr, reactants, ans);
     }
 }
 
@@ -157,7 +162,7 @@ BOOST_AUTO_TEST_CASE(ReactionRule_test_generate2)
         ans.push_back(format_reaction_rule_with_nosort(create_binding_reaction_rule(
             reactants[0], reactants[1], Species("A(a^1,b).B(a^1,b^3).B(a,b^3)"), 1.0)));
 
-        check_reaction_rule_generation(rr, reactants, ans);
+        ECELL4_TEST_REACTION_RULE_GENERATION(rr, reactants, ans);
     }
 
     {
@@ -178,7 +183,7 @@ BOOST_AUTO_TEST_CASE(ReactionRule_test_generate2)
         ans.push_back(_ans2);
         ans.push_back(_ans2);
 
-        check_reaction_rule_generation(rr, reactants, ans);
+        ECELL4_TEST_REACTION_RULE_GENERATION(rr, reactants, ans);
     }
 
     std::vector<ReactionRule> retval;
@@ -191,7 +196,7 @@ BOOST_AUTO_TEST_CASE(ReactionRule_test_generate2)
         std::vector<ReactionRule> ans;
         ans.push_back(rr);
 
-        check_reaction_rule_generation(rr, reactants, ans);
+        ECELL4_TEST_REACTION_RULE_GENERATION(rr, reactants, ans);
     }
 
     {
@@ -207,7 +212,7 @@ BOOST_AUTO_TEST_CASE(ReactionRule_test_generate2)
         ans.push_back(format_reaction_rule_with_nosort(create_unbinding_reaction_rule(
             reactants[0], Species("A(a^1,b^5).A(a^1,b).B(a,b^5)"), Species("B(a^2,b).B(a^2,b^3).B(a^3,b)"), 1.0)));
 
-        check_reaction_rule_generation(rr, reactants, ans);
+        ECELL4_TEST_REACTION_RULE_GENERATION(rr, reactants, ans);
     }
 }
 
@@ -245,7 +250,7 @@ BOOST_AUTO_TEST_CASE(ReactionRule_test_generate3)
         ReactionRule::reactant_container_type reactants(1, Species("A(b=u^1).A(b=u^1)"));
         std::vector<ReactionRule> ans;
         ans.push_back(format_reaction_rule_with_nosort(rr));
-        check_reaction_rule_generation(rr, reactants, ans);
+        ECELL4_TEST_REACTION_RULE_GENERATION(rr, reactants, ans);
     }
     {
         const ReactionRule rr = create_unbinding_reaction_rule(
@@ -256,7 +261,7 @@ BOOST_AUTO_TEST_CASE(ReactionRule_test_generate3)
         // ans.push_back(format_reaction_rule_with_nosort(rr));
         ans.push_back(format_reaction_rule_with_nosort(create_unbinding_reaction_rule(
             Species("A(b=u^1).A(b=u^1)"), Species("A(b=p)"), Species("A(b=u)"), 1.0)));
-        check_reaction_rule_generation(rr, reactants, ans);
+        ECELL4_TEST_REACTION_RULE_GENERATION(rr, reactants, ans);
     }
     {
         const ReactionRule rr = create_unbinding_reaction_rule(
@@ -267,7 +272,7 @@ BOOST_AUTO_TEST_CASE(ReactionRule_test_generate3)
         std::vector<ReactionRule> ans;
         ans.push_back(format_reaction_rule_with_nosort(create_unbinding_reaction_rule(
             reactants[0], Species("A(b^1,c).A(b^1,c)"), Species("B(l,r^1).B(l,r^1)"), 1.0)));
-        check_reaction_rule_generation(rr, reactants, ans);
+        ECELL4_TEST_REACTION_RULE_GENERATION(rr, reactants, ans);
     }
     {
         ReactionRule rr = create_binding_reaction_rule(
@@ -282,7 +287,7 @@ BOOST_AUTO_TEST_CASE(ReactionRule_test_generate3)
         ans.push_back(format_reaction_rule_with_nosort(rr));
         ans.push_back(format_reaction_rule_with_nosort(rr));
 
-        check_reaction_rule_generation(rr, reactants, ans);
+        ECELL4_TEST_REACTION_RULE_GENERATION(rr, reactants, ans);
     }
     {
         ReactionRule rr = create_unbinding_reaction_rule(
@@ -293,7 +298,7 @@ BOOST_AUTO_TEST_CASE(ReactionRule_test_generate3)
         ans.push_back(format_reaction_rule_with_nosort(create_unbinding_reaction_rule(
             Species("A(b^1).A(b^1)"), Species("A(b)"), Species("A(b)"), 1.0)));
 
-        check_reaction_rule_generation(rr, reactants, ans);
+        ECELL4_TEST_REACTION_RULE_GENERATION(rr, reactants, ans);
     }
     {
         ReactionRule rr = create_unbinding_reaction_rule(
@@ -302,7 +307,7 @@ BOOST_AUTO_TEST_CASE(ReactionRule_test_generate3)
         ReactionRule::reactant_container_type reactants(1, Species("A(b^1).B(b^1)"));
         std::vector<ReactionRule> ans;
 
-        check_reaction_rule_generation(rr, reactants, ans);
+        ECELL4_TEST_REACTION_RULE_GENERATION(rr, reactants, ans);
     }
 }
 
@@ -315,7 +320,7 @@ BOOST_AUTO_TEST_CASE(ReactionRule_test_generate4)
         std::vector<ReactionRule> ans;
         ans.push_back(format_reaction_rule_with_nosort(create_unimolecular_reaction_rule(
             reactants[0], Species("A(b=u)"), 1.0)));
-        check_reaction_rule_generation(rr, reactants, ans);
+        ECELL4_TEST_REACTION_RULE_GENERATION(rr, reactants, ans);
     }
     {
         ReactionRule rr = create_degradation_reaction_rule(Species("B"), 1.0);
@@ -325,7 +330,7 @@ BOOST_AUTO_TEST_CASE(ReactionRule_test_generate4)
         std::vector<ReactionRule> ans;
         ans.push_back(format_reaction_rule_with_nosort(create_unimolecular_reaction_rule(
             reactants[0], Species("A(b=u)"), 1.0)));
-        check_reaction_rule_generation(rr, reactants, ans);
+        ECELL4_TEST_REACTION_RULE_GENERATION(rr, reactants, ans);
     }
     {
         ReactionRule rr = create_degradation_reaction_rule(Species("B"), 1.0);
@@ -334,7 +339,7 @@ BOOST_AUTO_TEST_CASE(ReactionRule_test_generate4)
         ReactionRule::reactant_container_type reactants(1, Species("A(b=u^1).B(b^1)"));
         std::vector<ReactionRule> ans;
         ans.push_back(format_reaction_rule_with_nosort(create_degradation_reaction_rule(reactants[0], 1.0)));
-        check_reaction_rule_generation(rr, reactants, ans);
+        ECELL4_TEST_REACTION_RULE_GENERATION(rr, reactants, ans);
     }
     {
         const ReactionRule rr = create_unimolecular_reaction_rule(
@@ -344,8 +349,8 @@ BOOST_AUTO_TEST_CASE(ReactionRule_test_generate4)
         const ReactionRule _ans = format_reaction_rule_with_nosort(create_unimolecular_reaction_rule(
             reactants[0], Species("A(b)"), 1.0));
         ans.push_back(_ans);
-        // ans.push_back(_ans);   //XXX: res should have two ReactionRules as shown here
-        check_reaction_rule_generation(rr, reactants, ans);
+        ans.push_back(_ans);   //XXX: res should have two ReactionRules as shown here
+        ECELL4_TEST_REACTION_RULE_GENERATION(rr, reactants, ans);
     }
     {
         ReactionRule rr = create_degradation_reaction_rule(Species("A(b^1).A(b^1)"), 1.0);
@@ -353,7 +358,7 @@ BOOST_AUTO_TEST_CASE(ReactionRule_test_generate4)
         ReactionRule::reactant_container_type reactants(1, Species("A(b^1).A(b^1)"));
         std::vector<ReactionRule> ans;
         ans.push_back(format_reaction_rule_with_nosort(create_degradation_reaction_rule(reactants[0], 1.0)));
-        check_reaction_rule_generation(rr, reactants, ans);
+        ECELL4_TEST_REACTION_RULE_GENERATION(rr, reactants, ans);
     }
     {
         const ReactionRule rr = create_unimolecular_reaction_rule(
@@ -362,6 +367,54 @@ BOOST_AUTO_TEST_CASE(ReactionRule_test_generate4)
         std::vector<ReactionRule> ans;
         ans.push_back(format_reaction_rule_with_nosort(create_unimolecular_reaction_rule(
             reactants[0], Species("A(b=u^1).C(b=u^1)"), 1.0)));
-        check_reaction_rule_generation(rr, reactants, ans);
+        ECELL4_TEST_REACTION_RULE_GENERATION(rr, reactants, ans);
     }
 }
+
+BOOST_AUTO_TEST_CASE(ReactionRule_test_generate5)
+{
+    {
+        const ReactionRule rr = create_binding_reaction_rule(
+            Species("X(r)"), Species("X(l)"), Species("X(r^1).X(l^1)"), 1.0);
+        ReactionRule::reactant_container_type reactants(2, Species("X(l,r)"));
+        std::vector<ReactionRule> ans;
+        ans.push_back(format_reaction_rule_with_nosort(create_binding_reaction_rule(
+            reactants[0], reactants[1], Species("X(l,r^1).X(l^1,r)"), 1.0)));
+        // ans.push_back(format_reaction_rule_with_nosort(create_binding_reaction_rule(
+        //     reactants[0], reactants[1], Species("X(l,r^1).X(l^1,r)"), 1.0)));
+        ECELL4_TEST_REACTION_RULE_GENERATION(rr, reactants, ans);
+    }
+    {
+        const ReactionRule rr = create_binding_reaction_rule(
+            Species("X(r)"), Species("X(l)"), Species("X(r^1).X(l^1)"), 1.0);
+        ReactionRule::reactant_container_type reactants;
+        reactants.push_back(Species("X(l,r^1).X(l^1,r)"));
+        reactants.push_back(Species("X(l,r)"));
+        std::vector<ReactionRule> ans;
+        ans.push_back(format_reaction_rule_with_nosort(create_binding_reaction_rule(
+            reactants[0], reactants[1], Species("X(l,r^1).X(l^1,r^2).X(l^2,r)"), 1.0)));
+        ECELL4_TEST_REACTION_RULE_GENERATION(rr, reactants, ans);
+    }
+    {
+        const ReactionRule rr = create_unbinding_reaction_rule(
+             Species("X(r^1).X(l^1)"),Species("X(r)"), Species("X(l)"), 1.0);
+        ReactionRule::reactant_container_type reactants(1, Species("X(l,r^1).X(l^1,r)"));
+        std::vector<ReactionRule> ans;
+        ans.push_back(format_reaction_rule_with_nosort(create_unbinding_reaction_rule(
+            reactants[0], Species("X(l,r)"), Species("X(l,r)"), 1.0)));
+        ECELL4_TEST_REACTION_RULE_GENERATION(rr, reactants, ans);
+    }
+    {
+        const ReactionRule rr = create_unbinding_reaction_rule(
+             Species("X(r^1).X(l^1)"),Species("X(r)"), Species("X(l)"), 1.0);
+        ReactionRule::reactant_container_type reactants(1, Species("X(l,r^1).X(l^1,r^2).X(l^2,r)"));
+        std::vector<ReactionRule> ans;
+        ans.push_back(format_reaction_rule_with_nosort(create_unbinding_reaction_rule(
+            reactants[0], Species("X(l,r^1).X(l^1,r)"), Species("X(l,r)"), 1.0)));
+        ans.push_back(format_reaction_rule_with_nosort(create_unbinding_reaction_rule(
+            reactants[0], Species("X(l,r)"), Species("X(l,r^1).X(l^1,r)"), 1.0)));
+        ECELL4_TEST_REACTION_RULE_GENERATION(rr, reactants, ans);
+    }
+}
+
+#undef ECELL4_TEST_REACTION_RULE_GENERATION

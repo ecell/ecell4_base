@@ -352,6 +352,15 @@ std::vector<Species> group_units(
             {
                 std::stringstream ss;
                 ss << "A bond in a product is not resolved [" << (*i).first << "].";
+                {
+                    Species sp;
+                    for (std::vector<UnitSpecies>::const_iterator j(units.begin());
+                        j != units.end(); ++j)
+                    {
+                        sp.add_unit((*j));
+                    }
+                    ss << " " << sp.serial();
+                }
                 throw IllegalState(ss.str());
             }
         }
@@ -489,21 +498,18 @@ bool is_correspondent(const UnitSpecies& usp1, const UnitSpecies& usp2)
 
 std::vector<Species> ReactionRuleExpressionMatcher::generate()
 {
+    return group_units(this->genunits(this->compile()), pttrn_.policy());
+}
+
+ReactionRuleExpressionMatcher::operation_type ReactionRuleExpressionMatcher::compile()
+{
     typedef std::vector<UnitSpecies>::size_type size_type;
     typedef std::vector<UnitSpecies>::const_iterator const_iterator;
 
-    if (itr_ != matchers_.end())
-    {
-        // Failed to match
-        return std::vector<Species>();
-    }
-    else if (pttrn_.reactants().size() == 0)
-    {
-        // Zero-th order
-        return pttrn_.products();  // XXX: zero-th order reaction
-    }
-
-    const context_type ctx(context());
+    operation_type res;
+    std::vector<UnitSpecies>& products = res.products;
+    std::vector<size_type>& correspo = res.correspo;
+    std::vector<size_type>& removed = res.removed;
 
     // 1. Concatenate units of a pattern
 
@@ -516,7 +522,8 @@ std::vector<Species> ReactionRuleExpressionMatcher::generate()
         std::copy(units.begin(), units.end(), std::back_inserter(reactants));
     }
 
-    std::vector<UnitSpecies> products;
+    res.reserved = reactants.size();
+
     int product_bond_stride = 0;
     for (ReactionRule::reactant_container_type::const_iterator
         i(pttrn_.products().begin()); i != pttrn_.products().end(); ++i)
@@ -526,7 +533,6 @@ std::vector<Species> ReactionRuleExpressionMatcher::generate()
 
     // 2. Check correspondences between reactant and product units
 
-    std::vector<size_type> correspo;
     correspo.reserve(products.size());
 
     {
@@ -569,13 +575,38 @@ std::vector<Species> ReactionRuleExpressionMatcher::generate()
     }
 
     // List reactants removed after reacting
-    std::vector<size_type> removed;
     for (size_type i(0); i < reactants.size(); ++i)
     {
         if (std::find(correspo.begin(), correspo.end(), i) == correspo.end())
         {
             removed.push_back(i);
         }
+    }
+
+    return res;
+}
+
+std::vector<UnitSpecies> ReactionRuleExpressionMatcher::genunits(const ReactionRuleExpressionMatcher::operation_type& operations)
+{
+    typedef std::vector<UnitSpecies>::size_type size_type;
+    typedef std::vector<UnitSpecies>::const_iterator const_iterator;
+
+    if (itr_ != matchers_.end())
+    {
+        // Failed to match
+        return std::vector<UnitSpecies>();
+    }
+
+    const context_type ctx(context());
+
+    const std::vector<UnitSpecies>& products = operations.products;
+    const std::vector<size_type>& correspo = operations.correspo;
+    const std::vector<size_type>& removed = operations.removed;
+    const size_type& reserved = operations.reserved;
+
+    if (pttrn_.reactants().size() == 0)
+    {
+        return products;  // Just for the compatibility. Zeroth-order reactions
     }
 
     // 3. Concatenate units given as reactants
@@ -598,24 +629,46 @@ std::vector<Species> ReactionRuleExpressionMatcher::generate()
     utils::get_mapper_mf<std::string, std::string>::type bond_cache;
 
     {
-        size_type idx1 = 0;
-        for (const_iterator itr1(products.begin()); itr1 != products.end(); ++itr1, ++idx1)
+        std::vector<std::pair<size_type, size_type> > priorities;
         {
-            size_type tgt = 0;
-            size_type idx2 = correspo[idx1];
-            if (idx2 >= reactants.size())
+            size_type idx = 0;
+            size_type next_idx = units.size();
+            for (std::vector<size_type>::const_iterator i(correspo.begin());
+                i != correspo.end(); ++i, ++idx)
+            {
+                if ((*i) < reserved)
+                {
+                    priorities.push_back(std::make_pair(ctx.iterators[(*i)], idx));
+                }
+                else
+                {
+                    priorities.push_back(std::make_pair(next_idx, idx));
+                    ++next_idx;
+                }
+            }
+            std::sort(priorities.begin(), priorities.end());
+        }
+
+        for (std::vector<std::pair<size_type, size_type> >::const_iterator itr1(priorities.begin());
+            itr1 != priorities.end(); ++itr1)
+        {
+            const UnitSpecies& op = products[(*itr1).second];
+            const size_type& tgt = (*itr1).first;
+
+            if (tgt >= units.size())
             {
                 // 4-1. Create a new unit
-                tgt = units.size();
-                units.push_back(*itr1);
-                if (rbex::is_named_wildcard((*itr1).name()))
+                assert(tgt == units.size());
+                // tgt = units.size();
+                units.push_back(op);
+                if (rbex::is_named_wildcard(op.name()))
                 {
                     context_type::variable_container_type::const_iterator
-                        itr(ctx.globals.find((*itr1).name()));
+                        itr(ctx.globals.find(op.name()));
                     if (itr == ctx.globals.end())
                     {
                         std::stringstream message;
-                        message << "A named wildcard [" << (*itr1).name() << "] cannot be resolved.";
+                        message << "A named wildcard [" << op.name() << "] cannot be resolved.";
                         throw IllegalState(message.str());
                     }
                     else
@@ -624,13 +677,13 @@ std::vector<Species> ReactionRuleExpressionMatcher::generate()
                     }
                 }
             }
-            else
-            {
-                tgt = ctx.iterators[idx2];
-            }
+            // else
+            // {
+            //     tgt = ctx.iterators[idx2];
+            // }
 
-            for (UnitSpecies::container_type::const_iterator i((*itr1).begin());
-                i != (*itr1).end(); ++i)
+            for (UnitSpecies::container_type::const_iterator i(op.begin());
+                i != op.end(); ++i)
             {
                 UnitSpecies::container_type::value_type&
                     site(units[tgt].at((*i).first));
@@ -712,35 +765,50 @@ std::vector<Species> ReactionRuleExpressionMatcher::generate()
         }
     }
 
-    // 6. Divide units into Species
-
-    return group_units(units, pttrn_.policy());
+    return units;
 }
 
 std::vector<ReactionRule> ReactionRuleExpressionMatcher::gen(const ReactionRule::reactant_container_type& reactants)
 {
-    std::vector<ReactionRule> retval;
+    typedef std::vector<ReactionRule> return_type;
+
     if (!this->match(reactants))
     {
-        return retval;
+        return return_type(0);
     }
+    else if (pttrn_.reactants().size() == 0)
+    {
+        return return_type(
+            1, ReactionRule(reactants, pttrn_.products(), pttrn_.k()));  // Zeroth-order reactions
+    }
+
+    std::vector<std::vector<UnitSpecies> > candidates;
+    const operation_type op = this->compile();
 
     do
     {
-        const ReactionRule rr(reactants, this->generate(), pttrn_.k());
-        std::vector<ReactionRule>::iterator
-            i(std::find(retval.begin(), retval.end(), rr));
-        if (i != retval.end())
+        const std::vector<UnitSpecies> units = this->genunits(op);
+
+        std::vector<std::vector<UnitSpecies> >::iterator i(std::find(candidates.begin(), candidates.end(), units));
+        if (i != candidates.end())
         {
             ; // (*i).set_k((*i).k() + rr.k());
         }
         else
         {
-            retval.push_back(rr);
+            candidates.push_back(units);
         }
     }
     while (this->next());
-    return retval;
+
+    return_type res;
+    res.reserve(candidates.size());
+    for (std::vector<std::vector<UnitSpecies> >::const_iterator i(candidates.begin());
+        i != candidates.end(); ++i)
+    {
+        res.push_back(ReactionRule(reactants, group_units(*i, pttrn_.policy()), pttrn_.k()));
+    }
+    return res;
 }
 
 std::pair<bool, MatchObject::context_type> MatchObject::next()
