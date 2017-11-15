@@ -499,6 +499,8 @@ public:
 
     std::vector<Species> generate();
 
+    std::vector<ReactionRule> gen(const ReactionRule::reactant_container_type& reactants);
+
     const reactant_container_type& reactants() const
     {
         return target_;

@@ -29,29 +29,7 @@ const std::string ReactionRule::as_string() const
 
 std::vector<ReactionRule> ReactionRule::generate(const reactant_container_type& reactants) const
 {
-    ReactionRuleExpressionMatcher rrexp(*this);
-    std::vector<ReactionRule> retval;
-    if (!rrexp.match(reactants))
-    {
-        return retval;
-    }
-
-    do
-    {
-        const ReactionRule rr(reactants, rrexp.generate(), this->k());
-        std::vector<ReactionRule>::iterator
-            i(std::find(retval.begin(), retval.end(), rr));
-        if (i != retval.end())
-        {
-            ; // (*i).set_k((*i).k() + rr.k());
-        }
-        else
-        {
-            retval.push_back(rr);
-        }
-    }
-    while (rrexp.next());
-    return retval;
+    return ReactionRuleExpressionMatcher(*this).gen(reactants);
 }
 
 ReactionRule format_reaction_rule_with_nosort(const ReactionRule& rr)

@@ -227,52 +227,6 @@ std::string itos(unsigned int val)
     return ss.str();
 }
 
-unsigned int __tag_units(
-    std::vector<unsigned int>& retval,
-    const unsigned int& group_id, const unsigned int& idx,
-    const std::vector<UnitSpecies>& units,
-    const std::vector<std::vector<std::vector<UnitSpecies>::size_type> >& adj)
-{
-    if (retval[idx] != units.size())
-    {
-        // assert(retval[idx] < group_id);
-        return group_id;
-    }
-
-    retval[idx] = group_id;
-    for (std::vector<std::vector<UnitSpecies>::size_type>::const_iterator
-        i(adj[idx].begin()); i != adj[idx].end(); ++i)
-    {
-        __tag_units(retval, group_id, *i, units, adj);
-    }
-
-    return group_id + 1;
-}
-
-std::pair<std::vector<unsigned int>, unsigned int> tag_units(
-    const std::vector<UnitSpecies>& units,
-    const std::vector<std::vector<std::vector<UnitSpecies>::size_type> >& adj)
-{
-    std::pair<std::vector<unsigned int>, unsigned int> retval;
-    retval.first.resize(units.size(), units.size());
-    retval.second = 0;
-    for (unsigned int idx(0); idx != units.size(); ++idx)
-    {
-        // std::cout << idx << " connects with ";
-        // for (std::vector<std::vector<UnitSpecies>::size_type>::const_iterator
-        //     i(adj[idx].begin()); i != adj[idx].end(); ++i)
-        // {
-        //     std::cout << *i;
-        // }
-        // std::cout << std::endl;
-
-        retval.second = __tag_units(
-            retval.first, retval.second, idx, units, adj);
-    }
-
-    return retval;
-}
-
 unsigned int concatenate_units(std::vector<UnitSpecies>& units1, const Species& sp, const unsigned int bond_stride)
 {
     const std::vector<UnitSpecies> units2 = sp.units();
@@ -309,44 +263,82 @@ unsigned int concatenate_units(std::vector<UnitSpecies>& units1, const Species& 
     return bond_cache.size();
 }
 
+unsigned int tag_units(
+    std::vector<unsigned int>& groups,
+    const unsigned int& group_id,
+    const unsigned int& idx,
+    const std::vector<std::vector<std::vector<UnitSpecies>::size_type> >& connections,
+    const unsigned int& notyet)
+{
+    if (groups[idx] != notyet)
+    {
+        // assert(groups[idx] < group_id);
+        return group_id;
+    }
+
+    groups[idx] = group_id;
+
+    for (std::vector<std::vector<UnitSpecies>::size_type>::const_iterator
+        i(connections[idx].begin()); i != connections[idx].end(); ++i)
+    {
+        const unsigned int _gid = tag_units(groups, group_id, *i, connections, notyet);
+        // assert(_gid == group_id);
+    }
+
+    return group_id + 1;
+}
+
 std::vector<Species> group_units(
     const std::vector<UnitSpecies>& units, const ReactionRule::policy_type& policy)
 {
-    const unsigned int maxidx = units.size();
-    utils::get_mapper_mf<std::string, std::pair<std::string, unsigned int> >::type tmp;
-    std::vector<std::vector<std::vector<UnitSpecies>::size_type> > adj;
-    adj.resize(maxidx);
+    utils::get_mapper_mf<std::string, std::pair<std::string, unsigned int> >::type bondinfo;
+    const unsigned int done = units.size();
 
-    for (std::vector<UnitSpecies>::const_iterator i(units.begin());
-        i != units.end(); ++i)
+    std::vector<std::vector<std::vector<UnitSpecies>::size_type> > connections;
+    connections.resize(units.size());
+
     {
-        const unsigned int idx(std::distance(units.begin(), i));
-
-        for (UnitSpecies::container_type::const_iterator j((*i).begin());
-            j != (*i).end(); ++j)
+        unsigned int idx = 0;
+        for (std::vector<UnitSpecies>::const_iterator i(units.begin());
+            i != units.end(); ++i, ++idx)
         {
-            const std::string bond((*j).second.second);
-            if (bond == "" || rbex::is_wildcard(bond))
+            for (UnitSpecies::container_type::const_iterator j((*i).begin());
+                j != (*i).end(); ++j)
             {
-                continue;
-            }
-
-            utils::get_mapper_mf<std::string, std::pair<std::string, unsigned int> >::type::iterator
-                itr(tmp.find(bond));
-            if (itr == tmp.end())
-            {
-                tmp[bond] = std::make_pair((*j).first, idx);
-            }
-            else
-            {
-                if (tmp[bond].second == maxidx)
+                const std::string bond((*j).second.second);
+                if (bond == "")
                 {
-                    ; //WARN: a duplicated bond found
+                    continue;
+                }
+                else if (rbex::is_wildcard(bond))
+                {
+                    std::stringstream ss;
+                    ss << "A bond in a product is a wildcard ["
+                        << (*i).name() << "(" << (*j).first << "^" << bond << ")].";
+                    throw IllegalState(ss.str());
                 }
 
-                adj[idx].push_back((*itr).second.second);
-                adj[(*itr).second.second].push_back(idx);
-                tmp[bond].second = units.size();  // This means the bond is already assigned.
+                utils::get_mapper_mf<std::string, std::pair<std::string, unsigned int> >::type::iterator
+                    itr(bondinfo.find(bond));
+                if (itr == bondinfo.end())
+                {
+                    bondinfo[bond] = std::make_pair((*j).first, idx);
+                }
+                else
+                {
+                    const unsigned int another = (*itr).second.second;
+                    if (another == done)
+                    {
+                        std::stringstream ss;
+                        ss << "A bond in a product is multiply connected ["
+                            << (*i).name() << "(" << (*j).first << "^" << bond << ")].";
+                        throw IllegalState(ss.str());
+                    }
+
+                    connections[idx].push_back(another);
+                    connections[another].push_back(idx);
+                    bondinfo[bond].second = done;  // This means the bond is already assigned.
+                }
             }
         }
     }
@@ -354,32 +346,65 @@ std::vector<Species> group_units(
     if ((policy & ReactionRule::STRICT) && !(policy & (ReactionRule::DESTROY | ReactionRule::IMPLICIT)))
     {
         for (utils::get_mapper_mf<std::string, std::pair<std::string, unsigned int> >::type::const_iterator
-            i(tmp.begin()); i != tmp.end(); ++i)
+            i(bondinfo.begin()); i != bondinfo.end(); ++i)
         {
-            if ((*i).second.second != maxidx)
+            if ((*i).second.second != done)
             {
-                throw IllegalState("A bond is not resolved.");
+                std::stringstream ss;
+                ss << "A bond in a product is not resolved [" << (*i).first << "].";
+                throw IllegalState(ss.str());
             }
         }
     }
 
-    std::pair<std::vector<unsigned int>, unsigned int>
-        group_ids_pair(tag_units(units, adj));
+    std::vector<unsigned int> groups;
+    unsigned int num_groups = 0;
+
+    {
+        const unsigned int notyet = units.size();
+        groups.resize(units.size(), notyet);
+
+        for (unsigned int idx(0); idx != units.size(); ++idx)
+        {
+            if (units[idx] == UnitSpecies())
+            {
+                continue;  // A removed unit
+            }
+
+            // std::cout << idx << " connects with ";
+            // for (std::vector<std::vector<UnitSpecies>::size_type>::const_iterator
+            //     i(connections[idx].begin()); i != connections[idx].end(); ++i)
+            // {
+            //     std::cout << *i;
+            // }
+            // std::cout << std::endl;
+
+            num_groups = tag_units(
+                groups, num_groups, idx, connections, notyet);
+        }
+
+        assert(num_groups <= notyet);
+    }
 
     std::vector<Species> products;
-    products.resize(group_ids_pair.second);
-    // for (std::vector<UnitSpecies>::iterator i(units.begin());
-    //     i != units.end(); ++i)
+    products.resize(num_groups);
+
     // {
-    //     products[group_ids_pair.first[std::distance(units.begin(), i)]].add_unit(*i);
+    //     std::vector<unsigned int>::size_type idx = 0;
+    //     for (std::vector<UnitSpecies>::iterator i(units.begin());
+    //         i != units.end(); ++i; ++idx)
+    //     {
+    //         products[groups[idx]].add_unit(*i);
+    //     }
     // }
-    for (unsigned int idx(0); idx != group_ids_pair.second; ++idx)
+
+    for (unsigned int idx(0); idx != num_groups; ++idx)
     {
         utils::get_mapper_mf<std::string, std::string>::type new_bonds;
         unsigned int stride(1);
 
         for (std::vector<unsigned int>::iterator
-            i(group_ids_pair.first.begin()); i != group_ids_pair.first.end(); ++i)
+            i(groups.begin()); i != groups.end(); ++i)
         {
             if (idx != *i)
             {
@@ -387,7 +412,7 @@ std::vector<Species> group_units(
             }
 
             UnitSpecies usp(
-                units[std::distance(group_ids_pair.first.begin(), i)]); //XXX: copy
+                units[std::distance(groups.begin(), i)]); //XXX: copy
             for (UnitSpecies::container_type::size_type j(0);
                 j != usp.num_sites(); ++j)
             {
@@ -399,7 +424,7 @@ std::vector<Species> group_units(
                     continue;
                 }
 
-                if ((policy & ReactionRule::IMPLICIT) && tmp[bond].second != maxidx)
+                if ((policy & ReactionRule::IMPLICIT) && bondinfo[bond].second != done)
                 {
                     site.second.second = "";
                 }
@@ -429,23 +454,16 @@ std::vector<Species> group_units(
 
     if (policy & ReactionRule::DESTROY)
     {
-        std::vector<unsigned int> removed;
         for (utils::get_mapper_mf<std::string, std::pair<std::string, unsigned int> >::type::const_iterator
-            i(tmp.begin()); i != tmp.end(); ++i)
+            i(bondinfo.begin()); i != bondinfo.end(); ++i)
         {
-            if ((*i).second.second != maxidx)
+            if ((*i).second.second != done)
             {
-                removed.push_back(group_ids_pair.first[(*i).second.second]);
+                products[groups[(*i).second.second]] = Species();
             }
         }
-        std::sort(removed.begin(), removed.end());
-        removed.erase(std::unique(removed.begin(), removed.end()), removed.end());
 
-        for (std::vector<unsigned int>::const_reverse_iterator
-            i(removed.rbegin()); i != removed.rend(); ++i)
-        {
-            products.erase(products.begin() + *i);
-        }
+        products.erase(std::remove(products.begin(), products.end(), Species()), products.end());
     }
 
     return products;
@@ -685,24 +703,44 @@ std::vector<Species> ReactionRuleExpressionMatcher::generate()
 
     // 5. Remove units deleted
 
-    std::vector<std::vector<UnitSpecies>::size_type> removed_new;
-    for (std::vector<std::vector<UnitSpecies>::size_type>::const_iterator
-        i(removed.begin()); i != removed.end(); ++i)
+    if (removed.size() > 0)
     {
-        removed_new.push_back(ctx.iterators[(*i)]);
-    }
-
-    std::sort(removed_new.begin(), removed_new.end());
-
-    for (std::vector<std::vector<UnitSpecies>::size_type>::const_reverse_iterator
-        i(removed_new.rbegin()); i != removed_new.rend(); ++i)
-    {
-        units.erase(units.begin() + *i);
+        for (std::vector<std::vector<UnitSpecies>::size_type>::const_iterator
+            i(removed.begin()); i != removed.end(); ++i)
+        {
+            units[ctx.iterators[(*i)]] = UnitSpecies();
+        }
     }
 
     // 6. Divide units into Species
 
     return group_units(units, pttrn_.policy());
+}
+
+std::vector<ReactionRule> ReactionRuleExpressionMatcher::gen(const ReactionRule::reactant_container_type& reactants)
+{
+    std::vector<ReactionRule> retval;
+    if (!this->match(reactants))
+    {
+        return retval;
+    }
+
+    do
+    {
+        const ReactionRule rr(reactants, this->generate(), pttrn_.k());
+        std::vector<ReactionRule>::iterator
+            i(std::find(retval.begin(), retval.end(), rr));
+        if (i != retval.end())
+        {
+            ; // (*i).set_k((*i).k() + rr.k());
+        }
+        else
+        {
+            retval.push_back(rr);
+        }
+    }
+    while (this->next());
+    return retval;
 }
 
 std::pair<bool, MatchObject::context_type> MatchObject::next()
