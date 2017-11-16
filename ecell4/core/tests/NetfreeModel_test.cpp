@@ -70,11 +70,14 @@ BOOST_AUTO_TEST_CASE(NetfreeModel_test_query_reaction_rules1)
     rr1.add_reactant(sp1);
     rr1.add_reactant(sp2);
     rr1.add_product(sp3);
+
     rr2.add_reactant(sp3);
     rr2.add_product(sp1);
     rr2.add_product(sp2);
+
     rr3.add_reactant(sp1);
     rr3.add_product(sp2);
+
     rr4.add_reactant(sp1);
     rr4.add_product(sp3);
 

@@ -175,6 +175,27 @@ inline bool operator!=(const ReactionRule& lhs, const ReactionRule& rhs)
 ReactionRule format_reaction_rule_with_nosort(const ReactionRule& rr);
 ReactionRule format_reaction_rule(const ReactionRule& rr);
 
+ReactionRule create_unimolecular_reaction_rule(
+    const Species& reactant1, const Species& product1, const Real& k);
+
+ReactionRule create_binding_reaction_rule(
+    const Species& reactant1, const Species& reactant2, const Species& product1,
+    const Real& k);
+
+ReactionRule create_unbinding_reaction_rule(
+    const Species& reactant1, const Species& product1, const Species& product2,
+    const Real& k);
+
+ReactionRule create_degradation_reaction_rule(
+    const Species& reactant1, const Real& k);
+
+ReactionRule create_synthesis_reaction_rule(
+    const Species& product1, const Real& k);
+
+// ReactionRule create_repulsive_reaction_rule(
+//     const Species& reactant1, const Species& reactant2);
+
+
 } // ecell4
 
 #endif /* ECELL4_REACTION_RULE_HPP */
