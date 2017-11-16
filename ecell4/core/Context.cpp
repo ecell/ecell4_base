@@ -442,13 +442,29 @@ ReactionRuleExpressionMatcher::unit_group_type ReactionRuleExpressionMatcher::ge
     {
         std::vector<std::pair<size_type, size_type> > priorities;
         {
-            size_type idx = 0;
+            std::cout << "correspo = ";
+            for (std::vector<size_type>::const_iterator i(correspo.begin());
+                i != correspo.end(); ++i)
+            {
+                std::cout << (*i) << " ";
+            }
+            std::cout << std::endl;
+            std::cout << "ctx.iterators = ";
+            for (std::vector<Species::container_type::difference_type>::const_iterator i(ctx.iterators.begin());
+                i != ctx.iterators.end(); ++i)
+            {
+                std::cout << (*i) << " ";
+            }
+            std::cout << std::endl;
+
             size_type next_idx = units.size();
+            size_type idx = 0;
             for (std::vector<size_type>::const_iterator i(correspo.begin());
                 i != correspo.end(); ++i, ++idx)
             {
                 if ((*i) < reserved)
                 {
+                    assert(ctx.iterators.size() > (*i));
                     priorities.push_back(std::make_pair(ctx.iterators[(*i)], idx));
                 }
                 else
@@ -457,8 +473,14 @@ ReactionRuleExpressionMatcher::unit_group_type ReactionRuleExpressionMatcher::ge
                     ++next_idx;
                 }
             }
+            std::cout << "priorities(before) = ";
+            for (std::vector<std::pair<size_type, size_type> >::const_iterator i(priorities.begin());
+                i != priorities.end(); ++i)
+            {
+                std::cout << "(" << (*i).first << "," << (*i).second << ") ";
+            }
             std::sort(priorities.begin(), priorities.end());
-            std::cout << "priorities = ";
+            std::cout << "priorities(after) = ";
             for (std::vector<std::pair<size_type, size_type> >::const_iterator i(priorities.begin());
                 i != priorities.end(); ++i)
             {
