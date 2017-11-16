@@ -494,7 +494,8 @@ public:
         //XXX:         ctx.iterators.push_back((*j) + stride);
         //XXX:     }
         //XXX: }
-        //XXX: return ctx;
+
+        return ctx;
     }
 
     std::vector<Species> generate();
