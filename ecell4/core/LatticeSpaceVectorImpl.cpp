@@ -7,6 +7,40 @@
 
 namespace ecell4 {
 
+inline std::string get_location_serial(const VoxelPool* vp)
+{
+    if (vp == NULL) {
+        return "";
+    }
+
+    if (vp->location() == NULL) {
+        return "";
+    }
+
+    if (vp->location()->is_vacant()) {
+        return "";
+    }
+
+    return vp->location()->species().serial();
+}
+
+inline std::string get_location_serial(const boost::shared_ptr<VoxelPool>& vp)
+{
+    if (vp == NULL) {
+        return "";
+    }
+
+    if (vp->location() == NULL) {
+        return "";
+    }
+
+    if (vp->location()->is_vacant()) {
+        return "";
+    }
+
+    return vp->location()->species().serial();
+}
+
 LatticeSpaceVectorImpl::LatticeSpaceVectorImpl(
     const Real3& edge_lengths, const Real& voxel_radius,
     const bool is_periodic) :
@@ -115,8 +149,7 @@ LatticeSpaceVectorImpl::get_voxel(const ParticleID& pid) const
         MoleculePool::container_type::const_iterator j(vp->find(pid));
         if (j != vp->end())
         {
-            const std::string loc((vp->location()->is_vacant())
-                ? "" : vp->location()->species().serial());
+            const std::string loc(get_location_serial(vp));
             return std::make_pair(pid,
                 Voxel((*itr).first, (*j).coordinate, vp->radius(), vp->D(), loc));
         }
@@ -128,8 +161,7 @@ std::pair<ParticleID, Voxel>
 LatticeSpaceVectorImpl::get_voxel_at(const coordinate_type& coord) const
 {
     const VoxelPool* vp(voxels_[coord]);
-    const std::string loc((vp->location()->is_vacant())
-        ? "" : vp->location()->species().serial());
+    const std::string loc(get_location_serial(vp));
     return std::make_pair(
         vp->get_particle_id(coord),
         Voxel(vp->species(), coord, vp->radius(), vp->D(), loc));
@@ -229,8 +261,7 @@ LatticeSpaceVectorImpl::list_voxels() const
     {
         const boost::shared_ptr<MoleculePool>& vp((*itr).second);
 
-        const std::string loc((vp->location()->is_vacant())
-            ? "" : vp->location()->species().serial());
+        const std::string loc(get_location_serial(vp));
         const Species& sp(vp->species());
 
         for (MoleculePool::const_iterator i(vp->begin());
@@ -247,8 +278,7 @@ LatticeSpaceVectorImpl::list_voxels() const
     {
         const boost::shared_ptr<VoxelPool>& vp((*itr).second);
 
-        const std::string loc((vp->location()->is_vacant())
-            ? "" : vp->location()->species().serial());
+        const std::string loc(get_location_serial(vp));
         const Species& sp(vp->species());
 
         for (voxel_container::const_iterator i(voxels_.begin());
@@ -279,8 +309,7 @@ LatticeSpaceVectorImpl::list_voxels_exact(const Species& sp) const
         if (itr != voxel_pools_.end())
         {
             const boost::shared_ptr<VoxelPool>& vp((*itr).second);
-            const std::string loc((vp->location()->is_vacant())
-                ? "" : vp->location()->species().serial());
+            const std::string loc(get_location_serial(vp));
             for (voxel_container::const_iterator i(voxels_.begin());
                  i != voxels_.end(); ++i)
             {
@@ -304,8 +333,7 @@ LatticeSpaceVectorImpl::list_voxels_exact(const Species& sp) const
         if (itr != molecule_pools_.end())
         {
             const boost::shared_ptr<MoleculePool>& vp((*itr).second);
-            const std::string loc((vp->location()->is_vacant())
-                ? "" : vp->location()->species().serial());
+            const std::string loc(get_location_serial(vp));
             for (MoleculePool::const_iterator i(vp->begin());
                  i != vp->end(); ++i)
             {
@@ -334,8 +362,7 @@ LatticeSpaceVectorImpl::list_voxels(const Species& sp) const
         }
 
         const boost::shared_ptr<VoxelPool>& vp((*itr).second);
-        const std::string loc((vp->location()->is_vacant())
-            ? "" : vp->location()->species().serial());
+        const std::string loc(get_location_serial(vp));
         for (voxel_container::const_iterator i(voxels_.begin());
              i != voxels_.end(); ++i)
         {
@@ -361,8 +388,7 @@ LatticeSpaceVectorImpl::list_voxels(const Species& sp) const
         }
 
         const boost::shared_ptr<MoleculePool>& vp((*itr).second);
-        const std::string loc((vp->location()->is_vacant())
-            ? "" : vp->location()->species().serial());
+        const std::string loc(get_location_serial(vp));
         for (MoleculePool::const_iterator i(vp->begin());
             i != vp->end(); ++i)
         {
