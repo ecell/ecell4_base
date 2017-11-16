@@ -41,6 +41,33 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_constructor)
     ;
 }
 
+BOOST_AUTO_TEST_CASE(GetVoxel)
+{
+    const Real3 position(1.25e-8, 1.25e-8, 1.25e-8);
+    const Integer coordinate(space.position2coordinate(position));
+
+    {
+        std::pair<ParticleID, Voxel> voxel(space.get_voxel_at(coordinate));
+        BOOST_CHECK_EQUAL(voxel.first, ParticleID());
+        BOOST_CHECK_EQUAL(voxel.second.species(), VacantType::getInstance().species());
+    }
+
+    ParticleID id(sidgen());
+    BOOST_CHECK(space.update_voxel(id, Voxel(sp, coordinate, radius, D)));
+
+    {
+        std::pair<ParticleID, Voxel> voxel(space.get_voxel_at(coordinate));
+        BOOST_CHECK_EQUAL(voxel.first, id);
+        BOOST_CHECK_EQUAL(voxel.second.species(), sp);
+    }
+
+    {
+        std::pair<ParticleID, Voxel> voxel(space.get_voxel(id));
+        BOOST_CHECK_EQUAL(voxel.first, id);
+        BOOST_CHECK_EQUAL(voxel.second.species(), sp);
+    }
+}
+
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_num_species)
 {
     BOOST_CHECK_EQUAL(space.num_species(), 0);
