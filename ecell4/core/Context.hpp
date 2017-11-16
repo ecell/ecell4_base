@@ -508,7 +508,15 @@ public:
     } operation_type;
 
     operation_type compile();
-    std::vector<UnitSpecies> genunits(const operation_type& op);
+
+    typedef struct
+    {
+        std::vector<UnitSpecies> units;
+        std::vector<unsigned int> groups;
+        unsigned int num_groups;
+    } unit_group_type;
+
+    unit_group_type genunits(const operation_type& op);
     std::vector<ReactionRule> gen(const ReactionRule::reactant_container_type& reactants);
 
     const reactant_container_type& reactants() const
@@ -524,6 +532,10 @@ protected:
     std::vector<SpeciesExpressionMatcher> matchers_;
     std::vector<SpeciesExpressionMatcher>::iterator itr_;
 };
+
+std::vector<Species> group_units(
+    const std::vector<UnitSpecies>& units,
+    const std::vector<unsigned int>& groups, const unsigned int num_groups);
 
 } // ecell4
 

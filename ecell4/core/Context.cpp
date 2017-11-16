@@ -288,196 +288,6 @@ unsigned int tag_units(
     return group_id + 1;
 }
 
-std::vector<Species> group_units(
-    const std::vector<UnitSpecies>& units, const ReactionRule::policy_type& policy)
-{
-    utils::get_mapper_mf<std::string, std::pair<std::string, unsigned int> >::type bondinfo;
-    const unsigned int done = units.size();
-
-    std::vector<std::vector<std::vector<UnitSpecies>::size_type> > connections;
-    connections.resize(units.size());
-
-    {
-        unsigned int idx = 0;
-        for (std::vector<UnitSpecies>::const_iterator i(units.begin());
-            i != units.end(); ++i, ++idx)
-        {
-            for (UnitSpecies::container_type::const_iterator j((*i).begin());
-                j != (*i).end(); ++j)
-            {
-                const std::string bond((*j).second.second);
-                if (bond == "")
-                {
-                    continue;
-                }
-                else if (rbex::is_wildcard(bond))
-                {
-                    std::stringstream ss;
-                    ss << "A bond in a product is a wildcard ["
-                        << (*i).name() << "(" << (*j).first << "^" << bond << ")].";
-                    throw IllegalState(ss.str());
-                }
-
-                utils::get_mapper_mf<std::string, std::pair<std::string, unsigned int> >::type::iterator
-                    itr(bondinfo.find(bond));
-                if (itr == bondinfo.end())
-                {
-                    bondinfo[bond] = std::make_pair((*j).first, idx);
-                }
-                else
-                {
-                    const unsigned int another = (*itr).second.second;
-                    if (another == done)
-                    {
-                        std::stringstream ss;
-                        ss << "A bond in a product is multiply connected ["
-                            << (*i).name() << "(" << (*j).first << "^" << bond << ")].";
-                        throw IllegalState(ss.str());
-                    }
-
-                    connections[idx].push_back(another);
-                    connections[another].push_back(idx);
-                    bondinfo[bond].second = done;  // This means the bond is already assigned.
-                }
-            }
-        }
-    }
-
-    if ((policy & ReactionRule::STRICT) && !(policy & (ReactionRule::DESTROY | ReactionRule::IMPLICIT)))
-    {
-        for (utils::get_mapper_mf<std::string, std::pair<std::string, unsigned int> >::type::const_iterator
-            i(bondinfo.begin()); i != bondinfo.end(); ++i)
-        {
-            if ((*i).second.second != done)
-            {
-                std::stringstream ss;
-                ss << "A bond in a product is not resolved [" << (*i).first << "].";
-                {
-                    Species sp;
-                    for (std::vector<UnitSpecies>::const_iterator j(units.begin());
-                        j != units.end(); ++j)
-                    {
-                        sp.add_unit((*j));
-                    }
-                    ss << " " << sp.serial();
-                }
-                throw IllegalState(ss.str());
-            }
-        }
-    }
-
-    std::vector<unsigned int> groups;
-    unsigned int num_groups = 0;
-
-    {
-        const unsigned int notyet = units.size();
-        groups.resize(units.size(), notyet);
-
-        for (unsigned int idx(0); idx != units.size(); ++idx)
-        {
-            if (units[idx] == UnitSpecies())
-            {
-                continue;  // A removed unit
-            }
-
-            // std::cout << idx << " connects with ";
-            // for (std::vector<std::vector<UnitSpecies>::size_type>::const_iterator
-            //     i(connections[idx].begin()); i != connections[idx].end(); ++i)
-            // {
-            //     std::cout << *i;
-            // }
-            // std::cout << std::endl;
-
-            num_groups = tag_units(
-                groups, num_groups, idx, connections, notyet);
-        }
-
-        assert(num_groups <= notyet);
-    }
-
-    std::vector<Species> products;
-    products.resize(num_groups);
-
-    // {
-    //     std::vector<unsigned int>::size_type idx = 0;
-    //     for (std::vector<UnitSpecies>::iterator i(units.begin());
-    //         i != units.end(); ++i; ++idx)
-    //     {
-    //         products[groups[idx]].add_unit(*i);
-    //     }
-    // }
-
-    for (unsigned int idx(0); idx != num_groups; ++idx)
-    {
-        utils::get_mapper_mf<std::string, std::string>::type new_bonds;
-        unsigned int stride(1);
-
-        for (std::vector<unsigned int>::iterator
-            i(groups.begin()); i != groups.end(); ++i)
-        {
-            if (idx != *i)
-            {
-                continue;
-            }
-
-            UnitSpecies usp(
-                units[std::distance(groups.begin(), i)]); //XXX: copy
-            for (UnitSpecies::container_type::size_type j(0);
-                j != usp.num_sites(); ++j)
-            {
-                UnitSpecies::container_type::value_type&
-                    site(usp.at(j));
-                const std::string bond(site.second.second);
-                if (bond == "" || rbex::is_wildcard(bond))
-                {
-                    continue;
-                }
-
-                if ((policy & ReactionRule::IMPLICIT) && bondinfo[bond].second != done)
-                {
-                    site.second.second = "";
-                }
-                else
-                {
-                    utils::get_mapper_mf<std::string, std::string>::type::const_iterator
-                        itr(new_bonds.find(bond));
-                    if (itr == new_bonds.end())
-                    {
-                        const std::string new_bond(itos(stride));
-                        ++stride;
-                        new_bonds[bond] = new_bond;
-                        site.second.second = new_bond;
-                    }
-                    else
-                    {
-                        site.second.second = (*itr).second;
-                    }
-                }
-            }
-
-            products[idx].add_unit(usp);
-        }
-
-        // products[idx] = format_species(products[idx]);
-    }
-
-    if (policy & ReactionRule::DESTROY)
-    {
-        for (utils::get_mapper_mf<std::string, std::pair<std::string, unsigned int> >::type::const_iterator
-            i(bondinfo.begin()); i != bondinfo.end(); ++i)
-        {
-            if ((*i).second.second != done)
-            {
-                products[groups[(*i).second.second]] = Species();
-            }
-        }
-
-        products.erase(std::remove(products.begin(), products.end(), Species()), products.end());
-    }
-
-    return products;
-}
-
 bool is_correspondent(const UnitSpecies& usp1, const UnitSpecies& usp2)
 {
     if (usp1.name() != usp2.name() || usp1.num_sites() != usp2.num_sites())
@@ -498,7 +308,8 @@ bool is_correspondent(const UnitSpecies& usp1, const UnitSpecies& usp2)
 
 std::vector<Species> ReactionRuleExpressionMatcher::generate()
 {
-    return group_units(this->genunits(this->compile()), pttrn_.policy());
+    const unit_group_type res = this->genunits(this->compile());
+    return group_units(res.units, res.groups, res.num_groups);
 }
 
 ReactionRuleExpressionMatcher::operation_type ReactionRuleExpressionMatcher::compile()
@@ -506,7 +317,7 @@ ReactionRuleExpressionMatcher::operation_type ReactionRuleExpressionMatcher::com
     typedef std::vector<UnitSpecies>::size_type size_type;
     typedef std::vector<UnitSpecies>::const_iterator const_iterator;
 
-    operation_type res;
+    operation_type res = {};
     std::vector<UnitSpecies>& products = res.products;
     std::vector<size_type>& correspo = res.correspo;
     std::vector<size_type>& removed = res.removed;
@@ -586,7 +397,7 @@ ReactionRuleExpressionMatcher::operation_type ReactionRuleExpressionMatcher::com
     return res;
 }
 
-std::vector<UnitSpecies> ReactionRuleExpressionMatcher::genunits(const ReactionRuleExpressionMatcher::operation_type& operations)
+ReactionRuleExpressionMatcher::unit_group_type ReactionRuleExpressionMatcher::genunits(const ReactionRuleExpressionMatcher::operation_type& operations)
 {
     typedef std::vector<UnitSpecies>::size_type size_type;
     typedef std::vector<UnitSpecies>::const_iterator const_iterator;
@@ -594,25 +405,25 @@ std::vector<UnitSpecies> ReactionRuleExpressionMatcher::genunits(const ReactionR
     if (itr_ != matchers_.end())
     {
         // Failed to match
-        return std::vector<UnitSpecies>();
+        return unit_group_type();;
     }
-
-    const context_type ctx(context());
 
     const std::vector<UnitSpecies>& products = operations.products;
     const std::vector<size_type>& correspo = operations.correspo;
     const std::vector<size_type>& removed = operations.removed;
     const size_type& reserved = operations.reserved;
 
-    if (pttrn_.reactants().size() == 0)
-    {
-        return products;  // Just for the compatibility. Zeroth-order reactions
-    }
+    unit_group_type res = {};
+    std::vector<UnitSpecies>& units = res.units;
+    std::vector<unsigned int>& groups = res.groups;
+    unsigned int& num_groups = res.num_groups;
 
     // 3. Concatenate units given as reactants
 
+    const context_type ctx(context());
+
     int bond_stride = 0;
-    std::vector<UnitSpecies> units;
+
     //XXX: for (std::vector<reactant_container_type::size_type>::const_iterator
     //XXX:     i(permutation_.begin()); i != permutation_.end(); ++i)
     //XXX: {
@@ -765,7 +576,234 @@ std::vector<UnitSpecies> ReactionRuleExpressionMatcher::genunits(const ReactionR
         }
     }
 
-    return units;
+    // The following is originally in group_units()
+
+    // 6. Check connections between bonds and units
+
+    utils::get_mapper_mf<std::string, std::pair<std::string, unsigned int> >::type bondinfo;
+    const unsigned int done = units.size();
+
+    std::vector<std::vector<std::vector<UnitSpecies>::size_type> > connections;
+    connections.resize(units.size());
+
+    {
+        unsigned int idx = 0;
+        for (std::vector<UnitSpecies>::const_iterator i(units.begin());
+            i != units.end(); ++i, ++idx)
+        {
+            for (UnitSpecies::container_type::const_iterator j((*i).begin());
+                j != (*i).end(); ++j)
+            {
+                const std::string bond((*j).second.second);
+                if (bond == "")
+                {
+                    continue;
+                }
+                else if (rbex::is_wildcard(bond))
+                {
+                    std::stringstream ss;
+                    ss << "A bond in a product is a wildcard ["
+                        << (*i).name() << "(" << (*j).first << "^" << bond << ")].";
+                    throw IllegalState(ss.str());
+                }
+
+                utils::get_mapper_mf<std::string, std::pair<std::string, unsigned int> >::type::iterator
+                    itr(bondinfo.find(bond));
+                if (itr == bondinfo.end())
+                {
+                    bondinfo[bond] = std::make_pair((*j).first, idx);
+                }
+                else
+                {
+                    const unsigned int another = (*itr).second.second;
+                    if (another == done)
+                    {
+                        std::stringstream ss;
+                        ss << "A bond in a product is multiply connected ["
+                            << (*i).name() << "(" << (*j).first << "^" << bond << ")].";
+                        throw IllegalState(ss.str());
+                    }
+
+                    connections[idx].push_back(another);
+                    connections[another].push_back(idx);
+                    bondinfo[bond].second = done;  // This means the bond is already assigned.
+                }
+            }
+        }
+    }
+
+    const ReactionRule::policy_type& policy(pttrn_.policy());
+
+    if ((policy & ReactionRule::STRICT) && !(policy & (ReactionRule::DESTROY | ReactionRule::IMPLICIT)))
+    {
+        for (utils::get_mapper_mf<std::string, std::pair<std::string, unsigned int> >::type::const_iterator
+            i(bondinfo.begin()); i != bondinfo.end(); ++i)
+        {
+            if ((*i).second.second != done)
+            {
+                std::stringstream ss;
+                ss << "A bond in a product is not resolved [" << (*i).first << "].";
+                {
+                    Species sp;
+                    for (std::vector<UnitSpecies>::const_iterator j(units.begin());
+                        j != units.end(); ++j)
+                    {
+                        sp.add_unit((*j));
+                    }
+                    ss << " " << sp.serial();
+                }
+                throw IllegalState(ss.str());
+            }
+        }
+    }
+
+    // 7. Group units based on the connections
+
+    const unsigned int notyet = units.size();
+    groups.resize(units.size(), notyet);
+
+    for (unsigned int idx(0); idx != units.size(); ++idx)
+    {
+        if (units[idx] == UnitSpecies())
+        {
+            continue;  // A removed unit
+        }
+
+        // std::cout << idx << " connects with ";
+        // for (std::vector<std::vector<UnitSpecies>::size_type>::const_iterator
+        //     i(connections[idx].begin()); i != connections[idx].end(); ++i)
+        // {
+        //     std::cout << *i;
+        // }
+        // std::cout << std::endl;
+
+        num_groups = tag_units(
+            groups, num_groups, idx, connections, notyet);
+    }
+
+    assert(num_groups <= notyet);
+
+    // 8. Resolve open bonds based on the policy
+
+    if (policy & ReactionRule::IMPLICIT)
+    {
+        for (std::vector<UnitSpecies>::iterator i(units.begin());
+            i != units.end(); ++i)
+        {
+            for (UnitSpecies::container_type::size_type j(0);
+                j != (*i).num_sites(); ++j)
+            {
+                UnitSpecies::container_type::value_type& site((*i).at(j));
+                const std::string bond(site.second.second);
+                if (bond != "" && !rbex::is_wildcard(bond) && bondinfo[bond].second != done)
+                {
+                    site.second.second = "";
+                }
+            }
+        }
+    }
+
+    if (policy & ReactionRule::DESTROY)
+    {
+        for (utils::get_mapper_mf<std::string, std::pair<std::string, unsigned int> >::type::const_iterator
+            i(bondinfo.begin()); i != bondinfo.end(); ++i)
+        {
+            if ((*i).second.second != done && units[(*i).second.second] != UnitSpecies())
+            {
+                const unsigned int group_id = groups[(*i).second.second];
+
+                // assert(num_groups > 0);
+                // --num_groups;
+                std::vector<unsigned int>::iterator j1(groups.begin());
+                for (std::vector<UnitSpecies>::iterator j2(units.begin());
+                    j2 != units.end(); ++j1, ++j2)
+                {
+                    if ((*j1) == group_id)
+                    {
+                        (*j2) = UnitSpecies();
+                        // (*j1) = notyet;
+                    }
+                }
+            }
+        }
+    }
+
+    return res;
+}
+
+std::vector<Species> group_units(
+    const std::vector<UnitSpecies>& units,
+    const std::vector<unsigned int>& groups, const unsigned int num_groups)
+{
+    // 8. Divide units into Species
+
+    std::vector<Species> products;
+    products.resize(num_groups);
+
+    // {
+    //     std::vector<unsigned int>::size_type idx = 0;
+    //     for (std::vector<UnitSpecies>::iterator i(units.begin());
+    //         i != units.end(); ++i; ++idx)
+    //     {
+    //         products[groups[idx]].add_unit(*i);
+    //     }
+    // }
+
+    for (unsigned int idx(0); idx != num_groups; ++idx)
+    {
+        utils::get_mapper_mf<std::string, std::string>::type new_bonds;
+        unsigned int stride(1);
+
+        for (std::vector<unsigned int>::const_iterator
+            i(groups.begin()); i != groups.end(); ++i)
+        {
+            if (idx != *i)
+            {
+                continue;
+            }
+
+            UnitSpecies usp(units[std::distance(groups.begin(), i)]); //XXX: copy
+
+            if (usp == UnitSpecies())
+            {
+                continue;
+            }
+
+            for (UnitSpecies::container_type::size_type j(0);
+                j != usp.num_sites(); ++j)
+            {
+                UnitSpecies::container_type::value_type&
+                    site(usp.at(j));
+                const std::string bond(site.second.second);
+                if (bond == "" || rbex::is_wildcard(bond))
+                {
+                    continue;
+                }
+
+                utils::get_mapper_mf<std::string, std::string>::type::const_iterator
+                    itr(new_bonds.find(bond));
+                if (itr == new_bonds.end())
+                {
+                    const std::string new_bond(itos(stride));
+                    ++stride;
+                    new_bonds[bond] = new_bond;
+                    site.second.second = new_bond;
+                }
+                else
+                {
+                    site.second.second = (*itr).second;
+                }
+            }
+
+            products[idx].add_unit(usp);
+        }
+
+        // products[idx] = format_species(products[idx]);
+    }
+
+    products.erase(std::remove(products.begin(), products.end(), Species()), products.end());
+
+    return products;
 }
 
 std::vector<ReactionRule> ReactionRuleExpressionMatcher::gen(const ReactionRule::reactant_container_type& reactants)
@@ -785,29 +823,32 @@ std::vector<ReactionRule> ReactionRuleExpressionMatcher::gen(const ReactionRule:
     std::vector<std::vector<UnitSpecies> > candidates;
     const operation_type op = this->compile();
 
+    return_type res;
+
     do
     {
-        const std::vector<UnitSpecies> units = this->genunits(op);
+        const unit_group_type _res = this->genunits(op);
 
-        std::vector<std::vector<UnitSpecies> >::iterator i(std::find(candidates.begin(), candidates.end(), units));
+        std::vector<std::vector<UnitSpecies> >::iterator i(std::find(candidates.begin(), candidates.end(), _res.units));
         if (i != candidates.end())
         {
             ; // (*i).set_k((*i).k() + rr.k());
         }
         else
         {
-            candidates.push_back(units);
+            candidates.push_back(_res.units);
+            res.push_back(ReactionRule(reactants, group_units(_res.units, _res.groups, _res.num_groups), pttrn_.k()));
         }
     }
     while (this->next());
 
-    return_type res;
-    res.reserve(candidates.size());
-    for (std::vector<std::vector<UnitSpecies> >::const_iterator i(candidates.begin());
-        i != candidates.end(); ++i)
-    {
-        res.push_back(ReactionRule(reactants, group_units(*i, pttrn_.policy()), pttrn_.k()));
-    }
+    // return_type res;
+    // res.reserve(candidates.size());
+    // for (std::vector<std::vector<UnitSpecies> >::const_iterator i(candidates.begin());
+    //     i != candidates.end(); ++i)
+    // {
+    //     res.push_back(ReactionRule(reactants, group_units(*i, pttrn_.policy()), pttrn_.k()));
+    // }
     return res;
 }
 
