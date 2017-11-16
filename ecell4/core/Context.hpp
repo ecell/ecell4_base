@@ -454,7 +454,7 @@ public:
                 j((*i).context().iterators.begin());
                 j != (*i).context().iterators.end(); ++j)
             {
-                const unsigned int idx3 = std::distance((*i).context().iterators.begin(), j);  // a position in context.iterators
+                // const unsigned int idx3 = std::distance((*i).context().iterators.begin(), j);  // a position in context.iterators
                 const unsigned int idx4 = (*j);  // a position in units of a Species
 
                 ctx.iterators.push_back(idx4 + stride);

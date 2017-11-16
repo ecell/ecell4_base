@@ -88,7 +88,6 @@ script:
     bash -c './ecell4/core/tests/ReactionRule_test';
     bash -c './ecell4/core/tests/NetfreeModel_test';
     bash -c 'make test && make install';
-    # bash -c 'cmake -DCMAKE_INSTALL_PREFIX=~/local . && make && make test && make install';
     rm CMakeCache.txt;
   fi
 - if [ "$TRAVIS_OS_NAME" == "osx" ]; then
@@ -97,14 +96,12 @@ script:
       sudo bash -c './ecell4/core/tests/ReactionRule_test';
       sudo bash -c './ecell4/core/tests/NetfreeModel_test';
       sudo bash -c 'make test && make install';
-      # sudo bash -c 'cmake -DCMAKE_INSTALL_PREFIX=/usr/local -DPYTHON_EXECUTABLE:FILEPATH=/usr/local/bin/python . && make && make test && make install';
     fi;
     if [[ $TRAVIS_PYTHON_VERSION == 3* ]]; then
       sudo bash -c 'cmake -DCMAKE_INSTALL_PREFIX=/usr/local -DPYTHON_EXECUTABLE:FILEPATH=/usr/local/bin/python . && make';
       sudo bash -c './ecell4/core/tests/ReactionRule_test';
       sudo bash -c './ecell4/core/tests/NetfreeModel_test';
       sudo bash -c 'make test && make install';
-      # sudo bash -c 'cmake -DCMAKE_INSTALL_PREFIX=/usr/local -DPYTHON_EXECUTABLE:FILEPATH=/usr/local/bin/python3 . && make && make test && make install';
     fi;
     rm CMakeCache.txt;
   fi
