@@ -458,6 +458,13 @@ ReactionRuleExpressionMatcher::unit_group_type ReactionRuleExpressionMatcher::ge
                 }
             }
             std::sort(priorities.begin(), priorities.end());
+            std::cout << "priorities = ";
+            for (std::vector<std::pair<size_type, size_type> >::const_iterator i(priorities.begin());
+                i != priorities.end(); ++i)
+            {
+                std::cout << "(" << (*i).first << "," << (*i).second << ") ";
+            }
+            std::cout << std::endl;
         }
 
         for (std::vector<std::pair<size_type, size_type> >::const_iterator itr1(priorities.begin());
@@ -469,6 +476,7 @@ ReactionRuleExpressionMatcher::unit_group_type ReactionRuleExpressionMatcher::ge
             if (tgt >= units.size())
             {
                 // 4-1. Create a new unit
+                std::cout << "tgt = " << tgt << ", units.size() = " << units.size() << std::endl;
                 assert(tgt == units.size());
                 // tgt = units.size();
                 units.push_back(op);
