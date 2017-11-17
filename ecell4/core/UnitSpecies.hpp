@@ -117,6 +117,11 @@ public:
         return (serial() == rhs.serial());
     }
 
+    bool operator!=(const UnitSpecies& rhs) const
+    {
+        return (serial() != rhs.serial());
+    }
+
     bool operator<(const UnitSpecies& rhs) const
     {
         return (serial() < rhs.serial());
