@@ -10,6 +10,151 @@ from ecell4.core cimport *
 
 from cpython cimport PyObject, Py_XINCREF, Py_XDECREF
 
+cdef class ODEWorld_New:
+    def __init__(self, edge_length = None):
+        pass
+
+    def __cinit__(self, edge_lengths=None):
+        cdef string filename
+
+        if edge_lengths is None:
+            self.thisptr = new shared_ptr[Cpp_ODEWorld_New](new Cpp_ODEWorld_New())
+        elif isinstance(edge_lengths, Real3):
+            self.thisptr = new shared_ptr[Cpp_ODEWorld_New](
+                new Cpp_ODEWorld_New(deref((<Real3>edge_lengths).thisptr)))
+        else:
+            #filename = tostring(edge_lengths)
+            #self.thisptr = new shared_ptr[Cpp_ODEWorld_New](new Cpp_ODEWorld_New(filename))
+            # FIXME
+            self.thisptr = new shared_ptr[Cpp_ODEWorld_New](new Cpp_ODEWorld_New())
+
+    def __dealloc__(self):
+        # XXX: Here, we release shared pointer,
+        #      and if reference count to the ODEWorld object become zero,
+        #      it will be released automatically.
+        del self.thisptr
+
+    def set_t(self, Real t):
+        """set_t(t)
+
+        Set the current time."""
+        self.thisptr.get().set_t(t)
+
+    def t(self):
+        """Return the current time."""
+        return self.thisptr.get().t()
+
+    def edge_lengths(self):
+        """edge_lengths() -> Real3
+
+        Return edge lengths for the space."""
+        cdef Cpp_Real3 lengths = self.thisptr.get().edge_lengths()
+        return Real3_from_Cpp_Real3(address(lengths))
+
+    def set_volume(self, Real vol):
+        """set_volume(volume)
+
+        Set a volume."""
+        self.thisptr.get().set_volume(vol)
+
+    def volume(self):
+        """Return a volume."""
+        return self.thisptr.get().volume()
+
+    def num_molecules(self, Species sp):
+        """num_molecules(sp) -> Integer
+
+        Return the number of molecules. A value is rounded to an integer.
+        See set_value also.
+
+        Parameters
+        ----------
+        sp : Species, optional
+            a species whose molecules you count
+
+        Returns
+        -------
+        Integer:
+            the number of molecules (of a given species)
+
+        """
+        return self.thisptr.get().num_molecules(deref(sp.thisptr))
+
+    def num_molecules_exact(self, Species sp):
+        """num_molecules_exact(sp) -> Integer
+
+        Return the number of molecules of a given species.
+        A value is rounded to an integer. See get_value_exact also.
+
+        Parameters
+        ----------
+        sp : Species
+            a species whose molecules you count
+
+        Returns
+        -------
+        Integer:
+            the number of molecules of a given species
+
+        """
+        return self.thisptr.get().num_molecules_exact(deref(sp.thisptr))
+
+    def list_species(self):
+        """Return a list of species."""
+        cdef vector[Cpp_Species] raw_list_species = self.thisptr.get().list_species()
+        retval = []
+        cdef vector[Cpp_Species].iterator it = raw_list_species.begin()
+        while it != raw_list_species.end():
+            retval.append(
+                Species_from_Cpp_Species(<Cpp_Species*> (address(deref(it)))))
+            inc(it)
+        return retval
+
+    def reserve_species(self, Species sp):
+        """reserve_species(sp)
+
+        Reserve a value for the given species. Use set_value.
+
+        Parameters
+        ----------
+        sp : Species
+            a species to be reserved.
+
+        """
+        self.thisptr.get().reserve_species(deref(sp.thisptr))
+
+    def release_species(self, Species sp):
+        """release_species(sp)
+
+        Release a value for the given species.
+        This function is mainly for developers.
+
+        Parameters
+        ----------
+        sp : Species
+            a species to be released.
+
+        """
+        self.thisptr.get().release_species(deref(sp.thisptr))
+
+    #def bind_to(self, m):
+    #    """bind_to(m)
+
+    #    Bind a model.
+
+    #    Parameters
+    #    ----------
+    #    m : ODENetworkModel or NetworkModel
+    #        a model to be bound
+
+    #    """
+    #    if isinstance(m, ODENetworkModel):
+    #        self.thisptr.get().bind_to(deref((<ODENetworkModel>m).thisptr))
+    #    else:
+    #        self.thisptr.get().bind_to(Cpp_Model_from_Model(m))
+
+
+    
 
 ## ODEWorld
 #  a python wrapper for Cpp_ODEWorld
