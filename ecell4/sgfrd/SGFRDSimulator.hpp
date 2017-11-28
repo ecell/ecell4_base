@@ -3,6 +3,7 @@
 
 #include <greens_functions/GreensFunction2DAbsSym.hpp>
 #include <greens_functions/GreensFunction2DRefWedgeAbs.hpp>
+#include <greens_functions/GreensFunction2DRadAbs.hpp>
 
 #include <ecell4/core/SimulatorBase.hpp>
 #include <ecell4/core/ReactionRule.hpp>
@@ -464,6 +465,67 @@ class SGFRDSimulator :
     {// TODO
         SGFRD_TRACE(tracer_.write("burst_pair has not been implemented yet."))
     }
+
+    Pair create_pair(const std::pair<ShellID, circle_type>& sh,
+                     const ParticleID& pid1, const Particle& p1,
+                     const ParticleID& pid2, const Particle& p2)
+    {
+        SGFRD_SCOPE(ns, create_circular_pair_domain, tracer_);
+
+        SGFRD_TRACE(tracer_.write("shell size = %1%", sh.second.size()))
+        SGFRD_TRACE(tracer_.write("D1  = %1%, D2 = %2%", p1.D(), p2.D()))
+        SGFRD_TRACE(tracer_.write("r1  = %1%, r2 = %2%", p1.radius(), p2.radius()))
+//         SGFRD_TRACE(tracer_.write("ipv r0 = %1%", length(p1.position() - p2.position())))
+
+        const greens_functions::GreensFunction2DAbsSym
+            gf_com(Pair::calc_D_com(p1.D(), p2.D()),
+                   Pair::calc_R_com(sh.second.size(), p1, p2));
+        const Real t_com_escape = gf_com.drawTime(this->uniform_real());
+
+        const Real len_ipv = ecell4::polygon::distance(this->polygon(),
+                std::make_pair(p1.position(), this->get_face_id(pid1)),
+                std::make_pair(p2.position(), this->get_face_id(pid2)));
+        const Real k_tot = this->calc_k_tot(this->model_->query_reaction_rules(
+                                           p1.species(), p2.species()));
+        const greens_functions::GreensFunction2DRadAbs
+            gf_ipv(Pair::calc_D_ipv(p1.D(), p2.D()),
+                   k_tot, len_ipv, p1.radius() + p2.radius(),
+                   Pair::calc_R_ipv(sh.second.size(), p1, p2));
+        const Real t_ipv_event = gf_ipv.drawTime(this->uniform_real());
+
+        const std::pair<Real, Pair::EventKind> gf_event =
+            (t_ipv_event < t_com_escape) ?
+            std::make_pair(t_ipv_event,  Pair::IV_UNDETERMINED) :
+            std::make_pair(t_com_escape, Pair::COM_ESCAPE);
+
+        SGFRD_TRACE(tracer_.write("com escape time = %1%", t_com_escape))
+        SGFRD_TRACE(tracer_.write("ipv event  time = %1%", t_ipv_event))
+
+        const Real t_single_reaction_1 = this->draw_reaction_time(
+            this->calc_k_tot(this->model_->query_reaction_rules(p1.species())));
+        const Real t_single_reaction_2 = this->draw_reaction_time(
+            this->calc_k_tot(this->model_->query_reaction_rules(p2.species())));
+        SGFRD_TRACE(tracer_.write("single reaction time 1 = %1%", t_single_reaction_1))
+        SGFRD_TRACE(tracer_.write("single reaction time 2 = %1%", t_single_reaction_2))
+        const std::pair<Real, Pair::EventKind> single_event =
+            (t_single_reaction_1 < t_single_reaction_2) ?
+            std::make_pair(t_single_reaction_1, Pair::SINGLE_REACTION_1) :
+            std::make_pair(t_single_reaction_2, Pair::SINGLE_REACTION_2);
+
+        if(gf_event.first < single_event.first)
+        {
+            return Pair(gf_event.second, gf_event.first, this->time(), sh.first,
+                        sh.second.size(), std::make_pair(pid1, p1),
+                        std::make_pair(pid2, p2));
+        }
+        else
+        {
+            return Pair(single_event.second, single_event.first, this->time(),
+                        sh.first, sh.second.size(),
+                        std::make_pair(pid1, p1), std::make_pair(pid2, p2));
+        }
+    }
+
 
 //----------------------------------- multi ------------------------------------
 
@@ -1115,8 +1177,11 @@ class SGFRDSimulator :
     ReactionRule const&
     determine_reaction_rule(const std::vector<ReactionRule>& rules)
     {
-        if(rules.size() == 1) return rules.front();
-        if(rules.empty()) throw std::invalid_argument("no reaction rule exists");
+        if(rules.size() == 1){return rules.front();}
+        if(rules.empty())
+        {
+            throw std::invalid_argument("no reaction rule exists");
+        }
 
         const Real ktot = calc_k_tot(rules);
         const Real thrs = ktot * this->uniform_real();
