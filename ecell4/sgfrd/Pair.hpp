@@ -58,14 +58,19 @@ class Pair
 
     Pair(const EventKind kind, const Real dt, const Real begin_time,
          const shell_id_type& sh, const Real shell_rad,
-         const particle_id_pair& p0, const particle_id_pair& p1)
-        : kind_(kind), dt_(dt), begin_time_(begin_time), shell_id_(sh)
+         const particle_id_pair& p0, const particle_id_pair& p1,
+         const Real r0, const Real kf)
+        : kind_(kind), dt_(dt), begin_time_(begin_time), shell_id_(sh),
+          r0_(r0), kf_(kf)
     {
         particles_[0] = p0;
         particles_[1] = p1;
         this->r_ipv_ = Pair::calc_R_ipv(shell_rad, p0.second, p1.second);
         this->r_com_ = Pair::calc_R_com(shell_rad, p0.second, p1.second);
     }
+
+    EventKind  eventkind() const {return kind_;}
+    EventKind& eventkind()       {return kind_;}
 
     shell_id_type&       shell_id()       throw() {return shell_id_;}
     shell_id_type const& shell_id() const throw() {return shell_id_;}
@@ -75,8 +80,22 @@ class Pair
     Real& begin_time()       throw() {return begin_time_;}
     Real  begin_time() const throw() {return begin_time_;}
 
+    Real r0()    const throw() {return this->r0_;}
+    Real kf()    const throw() {return this->kf_;}
+    Real sigma() const throw() {return this->particles_[0].second.radius() +
+                                       this->particles_[1].second.radius();}
     Real R_ipv() const throw() {return this->r_ipv_;}
     Real R_com() const throw() {return this->r_com_;}
+    Real D_ipv() const throw()
+    {
+        return Pair::calc_D_ipv(this->particles_[0].second.D(),
+                                this->particles_[1].second.D());
+    }
+    Real D_com() const throw()
+    {
+        return Pair::calc_D_com(this->particles_[0].second.D(),
+                                this->particles_[1].second.D());
+    }
 
     particle_id_pair&       operator[](std::size_t i)       throw()
     {return particles_[i];}
@@ -91,6 +110,8 @@ class Pair
     EventKind kind_;
     Real      dt_;
     Real      begin_time_;
+    Real      r0_;
+    Real      kf_;
     Real      r_ipv_;
     Real      r_com_;
     shell_id_type       shell_id_;
