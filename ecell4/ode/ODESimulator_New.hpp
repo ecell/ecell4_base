@@ -17,8 +17,14 @@
 #include <ecell4/core/get_mapper_mf.hpp>
 
 #include <ecell4/core/SimulatorBase.hpp>
-
-#include "ODEWorld.hpp"
+#include <ecell4/core/NetworkModel.hpp>
+//#include "ODEWorld.hpp"
+#include <ecell4/core/Species.hpp>
+#include <ecell4/core/Context.hpp>
+#include <ecell4/core/Real3.hpp>
+#include <ecell4/core/Space.hpp>
+#include <ecell4/core/Model.hpp>
+#include <ecell4/core/NetfreeModel.hpp>
 
 #include "ODESimulator.hpp"
 
@@ -42,12 +48,12 @@ public:
         reset(edge_lengths);
     }
 
-    //ODEWorld_New(const std::string& filename)
-    //    : t_(0.0)
-    //{
-    //    reset(Real3(1, 1, 1));
-    //    this->load(filename);
-    //}
+    ODEWorld_New(const std::string& filename)
+        : t_(0.0)
+    {
+        reset(Real3(1, 1, 1));
+        //this->load(filename);
+    }
 
     // Space Traints
     const Real t() const
