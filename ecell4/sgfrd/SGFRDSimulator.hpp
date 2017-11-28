@@ -457,13 +457,113 @@ class SGFRDSimulator :
 //------------------------------------ pair ------------------------------------
 
     void fire_pair(const Pair& dom, DomainID did)
-    {// TODO
-        SGFRD_TRACE(tracer_.write("fire_pair has not been implemented yet."))
+    {
+        Pair::EventKind evkd = dom.eventkind();
+        const greens_functions::GreensFunction2DRadAbs
+            gf_ipv(dom.D_ipv(), dom.kf(), dom.r0(), dom.sigma(), dom.R_ipv());
+        if(evkd == Pair::IV_UNDETERMINED)
+        {
+            const greens_functions::GreensFunction::EventKind iv_kind =
+                gf_ipv.drawEventType(this->uniform_real(), dom.dt());
+            if(iv_kind == greens_functions::GreensFunction::IV_ESCAPE)
+            {
+                evkd = Pair::IV_ESCAPE;
+            }
+            else
+            {
+                evkd = Pair::IV_REACTION;
+            }
+        }
+
+        const ShellID sid(dom.shell_id());
+        switch(dom.eventkind())
+        {
+            case Pair::SINGLE_REACTION_1 :
+            {
+                boost::array<boost::tuple<ParticleID, Particle, FaceID>, 2>
+                    propagated = this->propagate_pair(
+                        this->get_shell(sid), dom, this->time());
+                // attempt reaction for p1
+
+                const bool todo_attempt_reaction_1 = false;
+                assert(todo_attempt_reaction_1);
+            }
+            case Pair::SINGLE_REACTION_2 :
+            {
+                boost::array<boost::tuple<ParticleID, Particle, FaceID>, 2>
+                    propagated = this->propagate_pair(
+                        this->get_shell(sid), dom, this->time());
+                // attempt reaction for p2
+
+                const bool todo_attempt_reaction_2 = false;
+                assert(todo_attempt_reaction_2);
+            }
+            case Pair::COM_ESCAPE        :
+            {
+                // propagate pair: update p1 and p2
+                const bool TODO_escape_com = false;
+                assert(TODO_escape_com);
+            }
+            case Pair::IV_ESCAPE         :
+            {
+                // propagate pair: update p1 and p2
+                const bool TODO_escape_iv = false;
+                assert(TODO_escape_iv);
+            }
+            case Pair::IV_REACTION       :
+            {
+                // propagate pair: update one and remove the other one
+                const bool TODO_reaction_iv = false;
+                assert(TODO_reaction_iv);
+            }
+            default:
+            {
+                throw std::invalid_argument("fire_pair(): invalid event kind");
+            }
+        }
     }
 
     bursted_type burst_pair(const Pair& dom, const Real tm)
-    {// TODO
-        SGFRD_TRACE(tracer_.write("burst_pair has not been implemented yet."))
+    {
+        SGFRD_SCOPE(us, burst_pair, tracer_);
+        const ShellID sid(dom.shell_id());
+        SGFRD_TRACE(tracer_.write("shell id = %1%", sid));
+        bursted_type results;
+
+        boost::array<boost::tuple<ParticleID, Particle, FaceID>, 2>
+            propagated = this->propagate_pair(this->get_shell(sid), dom, tm);
+        results.push_back(propagated[0]);
+        results.push_back(propagated[1]);
+        this->remove_shell(sid);
+        SGFRD_TRACE(tracer_.write("shell(%1%) removed", sid));
+        return results;
+    }
+
+    boost::array<boost::tuple<ParticleID, Particle, FaceID>, 2>
+    propagate_pair(const shell_type& sh, const Pair& dom, const Real tm)
+    {
+        switch(sh.which())
+        {
+            case shell_container_type::circular_shell:
+            {
+                return propagate_pair_circular(
+                        boost::get<circular_shell_type>(sh), dom, tm);
+            }
+            default:
+            {
+                throw std::logic_error((boost::format(
+                    "propagate_pair: shell::which() returns invalid value(%1%)")
+                    % sh.which()).str());
+            }
+        }
+    }
+
+    boost::array<boost::tuple<ParticleID, Particle, FaceID>, 2>
+    propagate_pair_circular(const circular_shell_type& sh,
+            const Pair& dom, const Real tm)
+    {
+        const bool todo = false;
+        assert(todo);
     }
 
     Pair create_pair(const std::pair<ShellID, circle_type>& sh,
@@ -475,8 +575,8 @@ class SGFRDSimulator :
         SGFRD_TRACE(tracer_.write("shell size = %1%", sh.second.size()))
         SGFRD_TRACE(tracer_.write("D1  = %1%, D2 = %2%", p1.D(), p2.D()))
         SGFRD_TRACE(tracer_.write("r1  = %1%, r2 = %2%", p1.radius(), p2.radius()))
-//         SGFRD_TRACE(tracer_.write("ipv r0 = %1%", length(p1.position() - p2.position())))
 
+        // --------------------------------------------------------------------
         const greens_functions::GreensFunction2DAbsSym
             gf_com(Pair::calc_D_com(p1.D(), p2.D()),
                    Pair::calc_R_com(sh.second.size(), p1, p2));
@@ -501,28 +601,34 @@ class SGFRDSimulator :
         SGFRD_TRACE(tracer_.write("com escape time = %1%", t_com_escape))
         SGFRD_TRACE(tracer_.write("ipv event  time = %1%", t_ipv_event))
 
+        // --------------------------------------------------------------------
+
         const Real t_single_reaction_1 = this->draw_reaction_time(
             this->calc_k_tot(this->model_->query_reaction_rules(p1.species())));
         const Real t_single_reaction_2 = this->draw_reaction_time(
             this->calc_k_tot(this->model_->query_reaction_rules(p2.species())));
-        SGFRD_TRACE(tracer_.write("single reaction time 1 = %1%", t_single_reaction_1))
-        SGFRD_TRACE(tracer_.write("single reaction time 2 = %1%", t_single_reaction_2))
+
         const std::pair<Real, Pair::EventKind> single_event =
             (t_single_reaction_1 < t_single_reaction_2) ?
             std::make_pair(t_single_reaction_1, Pair::SINGLE_REACTION_1) :
             std::make_pair(t_single_reaction_2, Pair::SINGLE_REACTION_2);
 
+        SGFRD_TRACE(tracer_.write("single reaction time 1 = %1%", t_single_reaction_1))
+        SGFRD_TRACE(tracer_.write("single reaction time 2 = %1%", t_single_reaction_2))
+        // --------------------------------------------------------------------
+
         if(gf_event.first < single_event.first)
         {
             return Pair(gf_event.second, gf_event.first, this->time(), sh.first,
                         sh.second.size(), std::make_pair(pid1, p1),
-                        std::make_pair(pid2, p2));
+                        std::make_pair(pid2, p2), len_ipv, k_tot);
         }
         else
         {
             return Pair(single_event.second, single_event.first, this->time(),
                         sh.first, sh.second.size(),
-                        std::make_pair(pid1, p1), std::make_pair(pid2, p2));
+                        std::make_pair(pid1, p1), std::make_pair(pid2, p2),
+                        len_ipv, k_tot);
         }
     }
 
