@@ -3488,7 +3488,7 @@ protected:
             {
                 LOG_DEBUG(("=> iv_reaction"));
 
-//                 BOOST_ASSERT(::size(domain.reactions()) == 1);
+                BOOST_ASSERT(::size(domain.reactions()) >= 1);
 //                 reaction_rule_type const& r(domain.reactions()[0]);
 
                 Real k_tot = 0;
@@ -3497,7 +3497,8 @@ protected:
                     k_tot += rl.k();
                 }
 
-                boost::optional<reaction_rule_type const&> optr;
+                boost::optional<reaction_rule_type const&> optr(boost::none);
+                if(::size(domain.reactions()) != 1)
                 {
                     Real rndr = this->rng().uniform(0., k_tot);
                     BOOST_FOREACH(reaction_rule_type const& rl, domain.reactions())
@@ -3509,9 +3510,14 @@ protected:
                             break;
                         }
                     }
-                    BOOST_ASSERT(static_cast<bool>(optr));
+                    // optr maybe empty because of numerical error. in that case,
+                    // use domain.reactants().back().
+                    // if domain.reactions().size() == 1, it is okay to use
+                    // domain.reactants().back() because it is the only rule
+                    // that can be applied.
                 }
-                reaction_rule_type const& r = *optr;
+                reaction_rule_type const& r =
+                    (static_cast<bool>(optr)) ? *optr : domain.reactions().back();
 
                 switch (::size(r.get_products()))
                 {
