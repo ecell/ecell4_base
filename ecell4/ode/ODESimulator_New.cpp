@@ -3,6 +3,7 @@
 
 #include <boost/numeric/odeint.hpp>
 #include <algorithm>
+#include <functional>
 
 namespace odeint = boost::numeric::odeint;
 
@@ -13,31 +14,52 @@ namespace ode
 {
 
 
-//void ODEWorld_New::bind_to(boost::shared_ptr<Model> model)
+void ODEWorld_New::bind_to(boost::shared_ptr<Model> model)
+{
+    //if (generated_)
+    //{
+    //    std::cerr << "Warning: NetworkModel is already bound to ODEWorld."
+    //        << std::endl;
+    //}
+    //else if (model_.expired())
+    //{
+    //    std::cerr << "Warning: ODENetworkModel is already bound to ODEWorld."
+    //        << std::endl;
+    //}
+    //try
+    //{
+    //    boost::shared_ptr<NetworkModel> tmp(new NetworkModel(model));
+    //    generated_.swap(tmp);
+    //    model_.reset();
+    //}
+    //catch (NotSupported e)
+    //{
+    //    throw NotSupported(
+    //        "Not supported yet. Either ODENetworkModel or NetworkModel must be given.");
+    //}
+    model_ = model;
+}
+
+//void ODEWorld_New::bind_to(boost::shared_ptr<NetworkModel> model)
 //{
-//    if (generated_)
+//    if (boost::shared_ptr<NetworkModel> bound_model = model_.lock())
+//    {
+//        if (bound_model.get() != model.get())
+//        {
+//            std::cerr << "Warning: ODENetworkModel is already bound to ODEWorld."
+//                << std::endl;
+//        }
+//    }
+//    else if (generated_)
 //    {
 //        std::cerr << "Warning: NetworkModel is already bound to ODEWorld."
 //            << std::endl;
 //    }
-//    else if (model_.expired())
-//    {
-//        std::cerr << "Warning: ODENetworkModel is already bound to ODEWorld."
-//            << std::endl;
-//    }
 //
-//    try
-//    {
-//        boost::shared_ptr<NetworkModel> tmp(new NetworkModel(model));
-//        generated_.swap(tmp);
-//        model_.reset();
-//    }
-//    catch (NotSupported e)
-//    {
-//        throw NotSupported(
-//            "Not supported yet. Either ODENetworkModel or NetworkModel must be given.");
-//    }
+//    this->model_ = model;
+//    generated_.reset();
 //}
+
 
 void ODEWorld_New::save(const std::string& filename) const
 {
@@ -49,24 +71,51 @@ void ODEWorld_New::load(const std::string& filename)
     throw NotImplemented("ODEWorld_new::load not implemented");
 }
 
-void ODEWorld_New::bind_to(boost::shared_ptr<NetworkModel> model)
-{
-    if (boost::shared_ptr<NetworkModel> bound_model = model_.lock())
-    {
-        if (bound_model.get() != model.get())
-        {
-            std::cerr << "Warning: ODENetworkModel is already bound to ODEWorld."
-                << std::endl;
-        }
-    }
-    else if (generated_)
-    {
-        std::cerr << "Warning: NetworkModel is already bound to ODEWorld."
-            << std::endl;
-    }
 
-    this->model_ = model;
-    generated_.reset();
+ODESimulator_New::deriv_func 
+ODESimulator_New::generate_system()  const
+{
+
+    const std::vector<Species> species(world_->list_species());
+    const reaction_rule_container_type& reaction_rules(model_->reaction_rules());
+
+    // Step 1.  Assign index for each species.
+    //   These indices are the order of species in dxdt container.
+    typedef utils::get_mapper_mf<
+        Species, state_type::size_type>::type species_map_type;
+    species_map_type index_map;
+    state_type::size_type i(0);   
+    for(std::vector<Species>::const_iterator it(species.begin()); it != species.end(); it++) 
+    {
+        index_map[*it] = i; i++;
+    }
+    // Step 2. Create mapped_reaction_rule_container.
+    mapped_reaction_container_type mapped_reactions;
+    mapped_reactions.reserve(reaction_rules.size());
+    for(reaction_rule_container_type::const_iterator it(reaction_rules.begin());
+            it != reaction_rules.end(); it++) 
+    {
+        mapped_reaction_type mapped_rr;
+        const ReactionRule::reactant_container_type &reactants(it->reactants());
+        const ReactionRule::product_container_type  &products(it->products());
+        for(ReactionRule::reactant_container_type::const_iterator r_it = reactants.begin(); 
+                r_it != reactants.end(); r_it++) 
+        {   
+            mapped_rr.reactants.push_back(index_map[*r_it]);    
+        }
+        for(ReactionRule::product_container_type::const_iterator p_it = products.begin(); 
+                p_it != products.end(); p_it++) 
+        {
+            mapped_rr.products.push_back(index_map[*p_it]);
+        }
+        mapped_rr.k = it->k();
+        // Coefficients on both side
+        // Reaction Propensity such as ratelaw and
+
+        mapped_reactions.push_back(mapped_rr);
+    }
+    // Step 3. Create Derivative and Jacobian object that bind mapped_reaction_container.
+    return deriv_func(mapped_reactions, world_->volume() );
 }
 
 bool ODESimulator_New::step(const Real &upto)
@@ -86,8 +135,8 @@ bool ODESimulator_New::step(const Real &upto)
         i++;
     }
     //std::pair<deriv_func, jacobi_func> system(generate_system());
-    //StateAndTimeBackInserter::state_container_type x_vec;
-    //StateAndTimeBackInserter::time_container_type times;
+    StateAndTimeBackInserter::state_container_type x_vec;
+    StateAndTimeBackInserter::time_container_type times;
     return true;
 }
 

@@ -41,6 +41,7 @@ public:
     typedef std::vector<Species> species_container_type;
     typedef utils::get_mapper_mf<
         Species, num_molecules_container_type::size_type>::type species_map_type;
+
 public:
     ODEWorld_New(const Real3& edge_lengths = Real3(1, 1, 1))
         : t_(0.0)
@@ -245,19 +246,21 @@ public:
         index_map_.erase(sp);
     }
 
-    //void bind_to(boost::shared_ptr<Model> model);
-    void bind_to(boost::shared_ptr<NetworkModel> model);
+    void bind_to(boost::shared_ptr<Model> model);
+    //void bind_to(boost::shared_ptr<NetworkModel> model);
 
-    boost::shared_ptr<NetworkModel> lock_model() const
+    //boost::shared_ptr<NetworkModel> lock_model() const
+    boost::shared_ptr<Model> lock_model() const
     {
-        if (generated_)
-        {
-            return generated_;
-        }
-        else
-        {
-            return model_.lock();
-        }
+        //if (generated_)
+        //{
+        //    return generated_;
+        //}
+        //else
+        //{
+        //    return model_.lock();
+        //}
+        return model_.lock();
     }
     //
     void add_molecules(const Species& sp, const Integer& num,
@@ -297,35 +300,52 @@ protected:
     species_container_type species_;
     species_map_type index_map_;
 
-    boost::weak_ptr<NetworkModel> model_;
-    boost::shared_ptr<NetworkModel> generated_;
+    boost::weak_ptr<Model> model_;
+    //boost::shared_ptr<NetworkModel> generated_;
 };
 
 class ODESimulator_New
-    : public SimulatorBase<NetworkModel, ODEWorld_New>
+    : public SimulatorBase<Model, ODEWorld_New>
 {
 public:
-    typedef SimulatorBase<NetworkModel, ODEWorld_New> base_type;
+    typedef SimulatorBase<Model, ODEWorld_New> base_type;
 public:
     typedef boost::numeric::ublas::vector<Real> state_type;
     typedef boost::numeric::ublas::matrix<Real> matrix_type;
     typedef std::vector<state_type::size_type> index_container_type;
     typedef std::vector<Real> coefficient_container_type;
     typedef ReactionRule reaction_container_type;
+    typedef Model::reaction_rule_container_type reaction_rule_container_type;
+
+    struct mapped_reaction_type
+    {
+        index_container_type reactants;
+        coefficient_container_type reactant_coefficients;
+        index_container_type products;
+        coefficient_container_type product_coefficients;
+        Real k;
+        //boost::weak_ptr<ODERatelaw> ratelaw;
+        const ReactionRule *raw;
+    };
+    typedef std::vector<mapped_reaction_type> mapped_reaction_container_type;
 
     class deriv_func 
     {
     public:
-        deriv_func(const reaction_container_type &reactions, const Real &volume)
+        deriv_func(const mapped_reaction_container_type &reactions, const Real &volume)
             : reactions_(reactions), volume_(volume), vinv_(1./volume)
         {;}
         void operator()(const state_type &x, state_type &dxdt, const double &t)
         {
             std::fill(dxdt.begin(), dxdt.end(), 0.);
-
+            for(mapped_reaction_container_type::const_iterator i(reactions_.begin());
+                    i != reactions_.end(); i++) 
+            {
+                // FIXME
+            }
         }
     protected:
-        const reaction_container_type reactions_;
+        const mapped_reaction_container_type reactions_;
         const Real volume_;
         const Real vinv_;
     };
@@ -349,7 +369,7 @@ public:
     };
 
     ODESimulator_New(
-        const boost::shared_ptr<NetworkModel>& model,
+        const boost::shared_ptr<Model>& model,
         const boost::shared_ptr<ODEWorld_New> &world,
         const ODESolverType solver_type = ROSENBROCK4_CONTROLLER)
         :base_type(model, world), dt_(inf), 
@@ -484,6 +504,7 @@ public:
 
 protected:
     //std::pair<deriv_func, jacobi_func> generate_system() const;
+    deriv_func generate_system() const;
 
 protected:
     Real dt_;
