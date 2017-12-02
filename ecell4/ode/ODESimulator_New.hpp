@@ -338,11 +338,39 @@ public:
         void operator()(const state_type &x, state_type &dxdt, const double &t)
         {
             std::fill(dxdt.begin(), dxdt.end(), 0.);
-            for(mapped_reaction_container_type::const_iterator i(reactions_.begin());
-                    i != reactions_.end(); i++) 
-            {
-                // FIXME
+            for(mapped_reaction_container_type::const_iterator mapped_rr_it(reactions_.begin());
+                    mapped_rr_it != reactions_.end(); mapped_rr_it++) 
+            {   // Calculate the flux of each ReactionRule
+                //  FIXME.  Currently, this can handle only the mass action
+                Real flux = (mapped_rr_it->k * volume_);
+                for (index_container_type::const_iterator r = mapped_rr_it->reactants.begin(); 
+                        r != mapped_rr_it->reactants.end(); r++)
+                {
+                    //flux *= std::pow( x[*r] * vinv_, 1. );
+                    flux *=  x[*r] * vinv_;
+                }
+
+                // Merge each reactions's flux 
+                for(index_container_type::const_iterator r = mapped_rr_it->reactants.begin();
+                        r != mapped_rr_it->reactants.end(); r++) 
+                {
+                    dxdt[*r] -= (flux); // 
+                    //dxdt[*j] -= (flux * (double)i->reactant_coefficients[nth]);
+                }
+                for(index_container_type::const_iterator p = mapped_rr_it->products.begin();
+                        p != mapped_rr_it->products.end(); p++)
+                {
+                    dxdt[*p] += (flux);
+                }
             }
+            //std::cout << "========================================" << std::endl;
+            //std::cout << "dxdt dumping at t = " << t << std::endl;
+            //for (state_type::const_iterator it = dxdt.begin();
+            //        it != dxdt.end(); it++) 
+            //{
+            //    std::cout << *it << std::endl;
+            //}
+            return;
         }
     protected:
         const mapped_reaction_container_type reactions_;
