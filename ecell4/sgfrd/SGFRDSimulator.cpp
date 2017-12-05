@@ -105,6 +105,7 @@ boost::container::static_vector<
 SGFRDSimulator::reaction_single(
         const shell_type& sh, const Single& dom, const DomainID did)
 {
+    // considering shell remains
     SGFRD_SCOPE(us, reaction_single, tracer_)
     ParticleID pid; Particle p; FaceID fid;
     boost::tie(pid, p, fid) = this->propagate_single(sh, dom, this->time());
@@ -147,8 +148,8 @@ SGFRDSimulator::attempt_reaction_single(
             SGFRD_TRACE(tracer_.write("attempting 1 to 2 reaction."))
             return attempt_reaction_1_to_2(rule, sh, did, dom, pid, p, fid);
         }
-        default: throw NotImplemented("SGFRD Single Reaction:\
-            more than two products from one reactant are not allowed");
+        default: throw NotImplemented("SGFRD Single Reaction:"
+            "more than two products from one reactant are not allowed");
     }
 }
 
