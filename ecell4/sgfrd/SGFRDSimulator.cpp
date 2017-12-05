@@ -168,7 +168,8 @@ SGFRDSimulator::attempt_reaction_1_to_1(const ReactionRule& rule,
     const Real D_new      = mol_info.D;
     const Particle p_new(species_new, p.position(), radius_new, D_new);
 
-    inside_checker is_inside_of(p.position(), p.radius(), fid, this->polygon());
+    inside_checker is_inside_of(
+            p_new.position(), p_new.radius(), fid, this->polygon());
     if(!boost::apply_visitor(is_inside_of, sh))
     {
         SGFRD_SCOPE(us, particle_goes_outside, tracer_)
