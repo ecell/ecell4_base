@@ -675,13 +675,54 @@ class SGFRDSimulator :
     escape_com_pair(const shell_type& sh, const Pair& dom, const Real tm)
     {
         SGFRD_SCOPE(us, escape_com_pair, tracer_);
+        switch(sh.which())
+        {
+            case shell_container_type::circular_shell:
+            {
+                return escape_com_circular_pair(
+                    boost::get<circular_shell_type>(sh), dom, tm);
+            }
+            default:
+            {
+                throw std::logic_error((boost::format(
+                    "boost::variant<shells>::which(): invalid value(%1%)") %
+                    sh.which()).str());
+            }
+        }
+    }
+    boost::array<boost::tuple<ParticleID, Particle, FaceID>, 2>
+    escape_com_circular_pair(
+            const circular_shell_type& sh, const Pair& dom, const Real tm)
+    {
+        SGFRD_SCOPE(us, escape_com_pair, tracer_);
         const bool todo = false;
         assert(todo);
     }
+
     boost::array<boost::tuple<ParticleID, Particle, FaceID>, 2>
     escape_ipv_pair(const shell_type& sh, const Pair& dom, const Real tm)
     {
         SGFRD_SCOPE(us, escape_ipv_pair, tracer_);
+        switch(sh.which())
+        {
+            case shell_container_type::circular_shell:
+            {
+                return escape_ipv_circular_pair(
+                    boost::get<circular_shell_type>(sh), dom, tm);
+            }
+            default:
+            {
+                throw std::logic_error((boost::format(
+                    "boost::variant<shells>::which(): invalid value(%1%)") %
+                    sh.which()).str());
+            }
+        }
+    }
+    boost::array<boost::tuple<ParticleID, Particle, FaceID>, 2>
+    escape_ipv_circular_pair(
+            const circular_shell_type& sh, const Pair& dom, const Real tm)
+    {
+        SGFRD_SCOPE(us, escape_com_pair, tracer_);
         const bool todo = false;
         assert(todo);
     }
