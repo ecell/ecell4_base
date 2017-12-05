@@ -78,6 +78,18 @@ make_degradation_reaction_info(
 }
 
 inline ReactionInfo
+make_degradation_reaction_info(const Real t,
+        const ParticleID& pid1, const Particle& p1,
+        const ParticleID& pid2, const Particle& p2)
+{
+    typedef ReactionInfo::container_type container_type;
+    container_type cont(2);
+    cont[0] = std::make_pair(pid1, p1);
+    cont[1] = std::make_pair(pid2, p2);
+    return ReactionInfo(t, cont, container_type(0));
+}
+
+inline ReactionInfo
 make_synthesis_reaction_info(
         const Real t, const ParticleID& pid, const Particle& p)
 {
