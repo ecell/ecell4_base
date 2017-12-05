@@ -646,9 +646,47 @@ class SGFRDSimulator :
         }
     }
     boost::array<boost::tuple<ParticleID, Particle, FaceID>, 2>
-    escape_com_pair(const shell_type& sh, const Pair& dom, const Real tm);
+    escape_com_pair(const shell_type& sh, const Pair& dom, const Real tm)
+    {
+        const bool todo = false;
+        assert(todo);
+    }
     boost::array<boost::tuple<ParticleID, Particle, FaceID>, 2>
-    escape_ipv_pair(const shell_type& sh, const Pair& dom, const Real tm);
+    escape_ipv_pair(const shell_type& sh, const Pair& dom, const Real tm)
+    {
+        const bool todo = false;
+        assert(todo);
+    }
+
+    boost::small_vector<boost::tuple<ParticleID, Particle, FaceID>, 1>
+    attempt_pair_reaction(const shell_type& sh, const Pair& dom, const Real tm)
+    {
+        switch(sh.which())
+        {
+            case shell_container_type::circular_shell:
+            {
+                return attempt_circular_pair_reaction(
+                    boost::get<circular_shell_type>(sh), dom);
+            }
+            default:
+            {
+                throw std::logic_error((boost::format(
+                    "boost::variant<shells>::which(): invalid value(%1%)") %
+                    sh.which()).str());
+            }
+        }
+    }
+
+    boost::small_vector<boost::tuple<ParticleID, Particle, FaceID>, 1>
+    attempt_circular_pair_reaction(
+            const circular_shell_type& sh, const Pair& dom, const Real tm)
+    {
+        // 1. update one with com diffusion
+        // 2. mutate the particle to product
+        // 3. and remove the other one
+        const bool todo = false;
+        assert(todo);
+    }
 
     Pair create_pair(const std::pair<ShellID, circle_type>& sh,
                      const ParticleID& pid1, const Particle& p1,
