@@ -478,41 +478,51 @@ class SGFRDSimulator :
         const ShellID sid(dom.shell_id());
         switch(dom.eventkind())
         {
-            case Pair::SINGLE_REACTION_1 :
+            case Pair::SINGLE_REACTION_1:
             {
+                // first, update 2 particles
                 boost::array<boost::tuple<ParticleID, Particle, FaceID>, 2>
                     propagated = this->propagate_pair(
                         this->get_shell(sid), dom, this->time());
-                // attempt reaction for p1
+                // after that, attempt reaction for p1
 
                 const bool todo_attempt_reaction_1 = false;
                 assert(todo_attempt_reaction_1);
             }
-            case Pair::SINGLE_REACTION_2 :
+            case Pair::SINGLE_REACTION_2:
             {
+                // first, update 2 particles
                 boost::array<boost::tuple<ParticleID, Particle, FaceID>, 2>
                     propagated = this->propagate_pair(
                         this->get_shell(sid), dom, this->time());
-                // attempt reaction for p2
+                // after that, attempt reaction for p1
 
                 const bool todo_attempt_reaction_2 = false;
                 assert(todo_attempt_reaction_2);
             }
-            case Pair::COM_ESCAPE        :
+            case Pair::COM_ESCAPE:// or
+            case Pair::IV_ESCAPE:
             {
-                // propagate pair: update p1 and p2
-                const bool TODO_escape_com = false;
-                assert(TODO_escape_com);
+                boost::array<boost::tuple<ParticleID, Particle, FaceID>, 2>
+                    escaped = this->escape_pair(
+                        this->get_shell(sid), dom, this->time());
+
+                this->remove_shell(sid);
+
+                ParticleID pid; Particle p; FaceID fid;
+                BOOST_FOREACH(boost::tie(pid, p, fid), escaped)
+                {
+                    SGFRD_TRACE(tracer_.write("adding next event for %1%", pid))
+                    add_event(create_closely_fitted_domain(
+                                create_closely_fitted_shell(pid, p, fid), pid, p));
+                }
+                return;
             }
-            case Pair::IV_ESCAPE         :
+            case Pair::IV_REACTION:
             {
-                // propagate pair: update p1 and p2
-                const bool TODO_escape_iv = false;
-                assert(TODO_escape_iv);
-            }
-            case Pair::IV_REACTION       :
-            {
-                // propagate pair: update one and remove the other one
+                // 1. update one with com diffusion
+                // 2. mutate the particle to product
+                // 3. and remove the other one
                 const bool TODO_reaction_iv = false;
                 assert(TODO_reaction_iv);
             }
