@@ -573,7 +573,7 @@ class SGFRDSimulator :
             {
                 SGFRD_SCOPE(ns, case_IV_REACTION, tracer_);
                 boost::container::small_vector<
-                    boost::tuple<ParticleID, Particle, FaceID>, 1>
+                    boost::tuple<ParticleID, Particle, FaceID>, 2>
                         products = this->attempt_pair_reaction(
                                 this->get_shell(sid), dom, this->time());
                 SGFRD_TRACE(tracer_.write("iv reaction attempted"));
@@ -698,7 +698,7 @@ class SGFRDSimulator :
         if(0 == ecell4::polygon::travel(this->polygon(), pos_p2, disp_p2, 2))
         {
             SGFRD_TRACE(tracer_.write("escape_com_circular_pair "
-                        "p1 moving on face: precision lost"))
+                        "p2 moving on face: precision lost"))
         }
 
         p1.position() = pos_p1.first;
@@ -915,7 +915,7 @@ class SGFRDSimulator :
         return results;
     }
 
-    boost::container::small_vector<boost::tuple<ParticleID, Particle, FaceID>, 1>
+    boost::container::small_vector<boost::tuple<ParticleID, Particle, FaceID>, 2>
     attempt_pair_reaction(const shell_type& sh, const Pair& dom, const Real tm)
     {
         SGFRD_SCOPE(us, attempt_pair_reaction, tracer_);
@@ -935,7 +935,7 @@ class SGFRDSimulator :
         }
     }
 
-    boost::container::small_vector<boost::tuple<ParticleID, Particle, FaceID>, 1>
+    boost::container::small_vector<boost::tuple<ParticleID, Particle, FaceID>, 2>
     attempt_circular_pair_reaction(
             const circular_shell_type& sh, const Pair& dom, const Real tm)
     {
@@ -943,8 +943,173 @@ class SGFRDSimulator :
         // 1. update one with com diffusion
         // 2. mutate the particle to product
         // 3. and remove the other one
-        const bool todo = false;
-        assert(todo);
+
+        Particle p1 = dom.particle_at(0);
+        Particle p2 = dom.particle_at(1);
+        const ParticleID pid1 = dom.particle_id_at(0);
+        const ParticleID pid2 = dom.particle_id_at(1);
+        const FaceID fid1 = this->get_face_id(pid1);
+        const FaceID fid2 = this->get_face_id(pid2);
+
+        BOOST_AUTO(const& rules, this->model_->query_reaction_rules(
+                    p1.species(), p2.species()));
+        assert(false == rules.empty());
+
+        const Real k_tot = this->calc_k_tot(rules);
+        boost::optional<ReactionRule const&> optr(boost::none);
+        if(rules.size() != 1)
+        {
+            Real rndr = this->uniform_real() * k_tot;
+            BOOST_FOREACH(ReactionRule const& rl, rules)
+            {
+                rndr -= rl.k();
+                if(rndr < 0.0)
+                {
+                    optr = rl;
+                    break;
+                }
+            }
+            // optr maybe empty because of numerical error. in that case,
+            // use domain.reactants().back().
+            // if domain.reactions().size() == 1, it is okay to use
+            // domain.reactants().back() because it is the only rule
+            // that can be applied.
+        }
+        ReactionRule const& rule = static_cast<bool>(optr) ? *optr : (rules.back());
+
+        switch(rule.products().size())
+        {
+            case 0:
+            {
+                SGFRD_TRACE(tracer_.write("degradation reaction occurs."))
+                this->remove_particle(pid1, fid1);
+                this->remove_particle(pid2, fid2);
+                last_reactions_.push_back(std::make_pair(rule,
+                    make_degradation_reaction_info(tm, pid1, p1, pid2, p2)));
+
+                return boost::container::small_vector<
+                    boost::tuple<ParticleID, Particle, FaceID>, 2>(0ul);
+            }
+            case 1:
+            {
+                SGFRD_TRACE(tracer_.write("2->1 reaction occurs."))
+
+                // calculate next position of particle pair
+                const Real dt = tm - dom.begin_time();
+                const greens_functions::GreensFunction2DAbsSym
+                    gf_com(dom.D_com(), dom.R_com());
+                const Real l_com     = gf_com.drawR(this->uniform_real(), dt);
+                const Real theta_com = this->uniform_real() *
+                                       boost::math::constants::two_pi<Real>();
+
+                const FaceID       sh_fid = sh.structure_id();
+                const triangle_type&    f = this->polygon().triangle_at(sh_fid);
+                const Real3 direction_com =
+                    rotate(theta_com, f.normal(), f.represent());
+
+                Real3 disp_com = direction_com * (l_com / length(direction_com));
+                std::pair<Real3, FaceID> pos_com(sh.position(), sh_fid);
+                if(0 == ecell4::polygon::travel(
+                            this->polygon(), pos_com, disp_com, 2))
+                {
+                    SGFRD_TRACE(tracer_.write("escape_com_circular_pair "
+                                "p1 moving on face: precision lost"))
+                }
+                const Real3  pos_new = pos_com.first;
+                const FaceID fid_new = pos_com.second;
+
+                // make new particle
+                const Species species_new =
+                    this->model_->apply_species_attributes(rule.products().front());
+                const molecule_info_type mol_info =
+                    this->world_->get_molecule_info(species_new);
+                const Real radius_new = mol_info.radius;
+                const Real D_new      = mol_info.D;
+                const Particle p_new(species_new, pos_new, radius_new, D_new);
+
+                inside_checker is_inside_of(
+                    p_new.position(), p_new.radius(), fid_new, this->polygon());
+                if(false == is_inside_of(sh))
+                {
+                    SGFRD_SCOPE(us, particle_goes_outside, tracer_)
+                    const DomainID did = this->get_domain_id(dom);
+
+                    // particle sticks out from the shell.
+                    const bool no_overlap =
+                        this->burst_and_shrink_overlaps(p_new, fid_new, did);
+                    SGFRD_TRACE(tracer_.write("no_overlap = %1%", no_overlap))
+
+                    if(false == no_overlap)
+                    {
+                        SGFRD_TRACE(tracer_.write(
+                                    "reject the reaction because of no space"))
+                        const greens_functions::GreensFunction2DRadAbs
+                            gf_ipv(dom.D_ipv(), dom.kf(), dom.r0(), dom.sigma(),
+                                   dom.R_ipv());
+                        const Real theta_ipv = gf_ipv.drawTheta(
+                                this->uniform_real(), dom.sigma(), dt);
+                        const Real3 disp_ipv =
+                            rotate(theta_ipv, f.normal(), dom.ipv());
+
+                        // TODO make function like
+                        // propagate_pair(ipv0, disp_com, ipv1)
+                        const Real  ratio_p1     = -p1.D() / (p1.D() + p2.D());
+                        const Real  ratio_p2     =  p2.D() / (p1.D() + p2.D());
+                        const Real3 disp_ipv_p1  = disp_ipv  * ratio_p1;
+                        const Real3 disp_ipv_p2  = disp_ipv  * ratio_p2;
+                        const Real3 disp_ipv0_p1 = dom.ipv() * ratio_p1;
+                        const Real3 disp_ipv0_p2 = dom.ipv() * ratio_p2;
+
+                        Real3 disp_p1 = disp_com - disp_ipv0_p1 + disp_ipv_p1;
+                        Real3 disp_p2 = disp_com - disp_ipv0_p2 + disp_ipv_p2;
+                        disp_p1 *= (1. + minimum_separation_factor / 2);
+                        disp_p2 *= (1. + minimum_separation_factor / 2);
+                        std::pair<Real3, FaceID> pos_p1(p1.position(), fid1);
+                        std::pair<Real3, FaceID> pos_p2(p2.position(), fid2);
+                        if(0 == ecell4::polygon::travel(
+                                    this->polygon(), pos_p1, disp_p1, 2))
+                        {
+                            SGFRD_TRACE(tracer_.write("reaction_ipv_circular_pair "
+                                        "p1 moving on face: precision lost"))
+                        }
+                        if(0 == ecell4::polygon::travel(
+                                    this->polygon(), pos_p2, disp_p2, 2))
+                        {
+                            SGFRD_TRACE(tracer_.write("reaction_ipv_circular_pair "
+                                        "p2 moving on face: precision lost"))
+                        }
+                        p1.position() = pos_p1.first;
+                        p2.position() = pos_p2.first;
+                        this->update_particle(pid1, p1, pos_p1.second);
+                        this->update_particle(pid2, p2, pos_p2.second);
+
+                        boost::container::small_vector<
+                            boost::tuple<ParticleID, Particle, FaceID>, 2
+                            > results(2);
+                        results[0] = boost::make_tuple(pid1, p1, pos_p1.second);
+                        results[1] = boost::make_tuple(pid2, p2, pos_p2.second);
+                        return results;
+                    }
+                }
+                SGFRD_TRACE(tracer_.write("reaction is accepted."))
+                this->update_particle(pid1, p_new, fid_new);
+
+                this->remove_particle(pid2, fid2);
+                last_reactions_.push_back(std::make_pair(rule,
+                    make_binding_reaction_info(
+                        tm, pid1, p1, pid2, p2, pid1, p_new)));
+
+                boost::container::small_vector<
+                    boost::tuple<ParticleID, Particle, FaceID>, 2> retval(1ul);
+                retval[0] = boost::make_tuple(pid1, p_new, fid_new);
+                return retval;
+            }
+            default:
+            {
+                throw NotImplemented("SGFRD Pair Reaction: "
+                    "more than two products from one reactant are not allowed");
+            }
+        }
     }
 
     Pair create_pair(const std::pair<ShellID, circle_type>& sh,
