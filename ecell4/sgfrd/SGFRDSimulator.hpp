@@ -776,9 +776,10 @@ class SGFRDSimulator :
                    Pair::calc_R_com(sh.second.size(), p1, p2));
         const Real t_com_escape = gf_com.drawTime(this->uniform_real());
 
-        const Real len_ipv = ecell4::polygon::distance(this->polygon(),
+        const Real3 ipv = ecell4::polygon::distance(this->polygon(),
                 std::make_pair(p1.position(), this->get_face_id(pid1)),
                 std::make_pair(p2.position(), this->get_face_id(pid2)));
+        const Real len_ipv = length(ipv);
         const Real k_tot = this->calc_k_tot(this->model_->query_reaction_rules(
                                            p1.species(), p2.species()));
         SGFRD_TRACE(tracer_.write("ipv length = %1%", len_ipv))
@@ -822,7 +823,7 @@ class SGFRDSimulator :
             SGFRD_TRACE(tracer_.write("gf event occurs first"))
             return Pair(gf_event.second, gf_event.first, this->time(), sh.first,
                         sh.second.size(), std::make_pair(pid1, p1),
-                        std::make_pair(pid2, p2), len_ipv, k_tot);
+                        std::make_pair(pid2, p2), len_ipv, ipv, k_tot);
         }
         else
         {
@@ -830,7 +831,7 @@ class SGFRDSimulator :
             return Pair(single_event.second, single_event.first, this->time(),
                         sh.first, sh.second.size(),
                         std::make_pair(pid1, p1), std::make_pair(pid2, p2),
-                        len_ipv, k_tot);
+                        len_ipv, ipv, k_tot);
         }
     }
 

@@ -59,9 +59,9 @@ class Pair
     Pair(const EventKind kind, const Real dt, const Real begin_time,
          const shell_id_type& sh, const Real shell_rad,
          const particle_id_pair& p0, const particle_id_pair& p1,
-         const Real r0, const Real kf)
+         const Real r0, const Real3& ipv, const Real kf)
         : kind_(kind), dt_(dt), begin_time_(begin_time), shell_id_(sh),
-          r0_(r0), kf_(kf)
+          r0_(r0), kf_(kf), ipv_(ipv)
     {
         particles_[0] = p0;
         particles_[1] = p1;
@@ -97,10 +97,23 @@ class Pair
                                 this->particles_[1].second.D());
     }
 
+    Real3 const& ipv() const throw() {return this->ipv_;}
+
     particle_id_pair&       operator[](std::size_t i)       throw()
     {return particles_[i];}
     particle_id_pair const& operator[](std::size_t i) const throw()
     {return particles_[i];}
+
+    ParticleID const& particle_id_at(const std::size_t i) const throw()
+    {
+        return particles.at(i).first;
+    }
+
+    Particle const& particle_at(const std::size_t i) const throw()
+    {
+        return particles.at(i).second;
+    }
+
 
     std::size_t num_shells()   const throw() {return 1;}
     std::size_t multiplicity() const throw() {return 2;}
@@ -114,6 +127,7 @@ class Pair
     Real      kf_;
     Real      r_ipv_;
     Real      r_com_;
+    Real3     ipv_;
     shell_id_type       shell_id_;
     particle_array_type particles_;
 };
