@@ -695,13 +695,11 @@ class SGFRDSimulator :
             const circular_shell_type& sh, const Pair& dom, const Real tm)
     {
         SGFRD_SCOPE(us, escape_com_pair, tracer_);
-        boost::array<boost::tuple<ParticleID, Particle, FaceID>, 2> results;
 
-        // caucluate displacements
-
+        // calculate displacements
         const Real dt = tm - dom.begin_time();
         const greens_functions::GreensFunction2DRadAbs
-            gf_ipv(dom.D_ipv(), k_tot, len_ipv, dom.sigma(), dom.R_ipv());
+            gf_ipv(dom.D_ipv(), dom.kf(), dom.r0(), dom.sigma(), dom.R_ipv());
         const Real l_ipv     = gf_ipv.drawR    (this->uniform_real(), dt);
         const Real theta_ipv = gf_ipv.drawTheta(this->uniform_real(), l_ipv, dt);
         const Real l_com     = dom.R_com();
@@ -755,6 +753,7 @@ class SGFRDSimulator :
         this->update_particle(pid1, p1, pos_p1.second);
         this->update_particle(pid2, p2, pos_p2.second);
 
+        boost::array<boost::tuple<ParticleID, Particle, FaceID>, 2> results;
         results[0] = boost::make_tuple(pid1, p1, pos_p1.second);
         results[1] = boost::make_tuple(pid2, p2, pos_p2.second);
 
@@ -838,7 +837,7 @@ class SGFRDSimulator :
                    Pair::calc_R_com(sh.second.size(), p1, p2));
         const Real t_com_escape = gf_com.drawTime(this->uniform_real());
 
-        const Real3 ipv = ecell4::polygon::distance(this->polygon(),
+        const Real3 ipv = ecell4::polygon::direction(this->polygon(),
                 std::make_pair(p1.position(), this->get_face_id(pid1)),
                 std::make_pair(p2.position(), this->get_face_id(pid2)));
         const Real len_ipv = length(ipv);

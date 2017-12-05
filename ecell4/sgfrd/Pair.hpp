@@ -106,12 +106,12 @@ class Pair
 
     ParticleID const& particle_id_at(const std::size_t i) const throw()
     {
-        return particles.at(i).first;
+        return particles_.at(i).first;
     }
 
     Particle const& particle_at(const std::size_t i) const throw()
     {
-        return particles.at(i).second;
+        return particles_.at(i).second;
     }
 
 
