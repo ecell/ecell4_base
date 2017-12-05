@@ -537,13 +537,19 @@ class SGFRDSimulator :
     {
         SGFRD_SCOPE(us, burst_pair, tracer_);
         const ShellID sid(dom.shell_id());
-        SGFRD_TRACE(tracer_.write("shell id = %1%", sid));
-        bursted_type results;
+        SGFRD_TRACE(tracer_.write("pair shell id = %1%", sid));
 
+        // no reaction occurs because `burst` occurs before any other event.
+        bursted_type results;
         boost::array<boost::tuple<ParticleID, Particle, FaceID>, 2>
-            propagated = this->propagate_pair(this->get_shell(sid), dom, tm);
+            propagated(this->propagate_pair(this->get_shell(sid), dom, tm));
         results.push_back(propagated[0]);
         results.push_back(propagated[1]);
+
+        SGFRD_TRACE(tracer_.write(
+                    "particle %1% and %2% propagated but not updated",
+                    boost::get<0>(propagates[0]),boost::get<0>(propagates[1])));
+
         this->remove_shell(sid);
         SGFRD_TRACE(tracer_.write("shell(%1%) removed", sid));
         return results;
@@ -572,6 +578,7 @@ class SGFRDSimulator :
     propagate_pair_circular(const circular_shell_type& sh,
             const Pair& dom, const Real tm)
     {
+        // propagate, check collision, update and return
         const bool todo = false;
         assert(todo);
     }
@@ -586,7 +593,8 @@ class SGFRDSimulator :
         SGFRD_TRACE(tracer_.write("D1  = %1%, D2 = %2%", p1.D(), p2.D()))
         SGFRD_TRACE(tracer_.write("r1  = %1%, r2 = %2%", p1.radius(), p2.radius()))
 
-        // --------------------------------------------------------------------
+        // ------------------ GF event (escape | ipv) --------------------------
+
         const greens_functions::GreensFunction2DAbsSym
             gf_com(Pair::calc_D_com(p1.D(), p2.D()),
                    Pair::calc_R_com(sh.second.size(), p1, p2));
@@ -597,44 +605,52 @@ class SGFRDSimulator :
                 std::make_pair(p2.position(), this->get_face_id(pid2)));
         const Real k_tot = this->calc_k_tot(this->model_->query_reaction_rules(
                                            p1.species(), p2.species()));
+        SGFRD_TRACE(tracer_.write("ipv length = %1%", len_ipv))
+        SGFRD_TRACE(tracer_.write("total rate = %1%", k_tot))
+
         const greens_functions::GreensFunction2DRadAbs
             gf_ipv(Pair::calc_D_ipv(p1.D(), p2.D()),
                    k_tot, len_ipv, p1.radius() + p2.radius(),
                    Pair::calc_R_ipv(sh.second.size(), p1, p2));
         const Real t_ipv_event = gf_ipv.drawTime(this->uniform_real());
 
-        const std::pair<Real, Pair::EventKind> gf_event =
+        const std::pair<Real, Pair::EventKind> gf_event(
             (t_ipv_event < t_com_escape) ?
             std::make_pair(t_ipv_event,  Pair::IV_UNDETERMINED) :
-            std::make_pair(t_com_escape, Pair::COM_ESCAPE);
+            std::make_pair(t_com_escape, Pair::COM_ESCAPE));
 
         SGFRD_TRACE(tracer_.write("com escape time = %1%", t_com_escape))
         SGFRD_TRACE(tracer_.write("ipv event  time = %1%", t_ipv_event))
+        SGFRD_TRACE(tracer_.write("GF  event  time = %1%", gf_event.first))
 
-        // --------------------------------------------------------------------
+        // ------------------- single reaction event ---------------------------
 
         const Real t_single_reaction_1 = this->draw_reaction_time(
             this->calc_k_tot(this->model_->query_reaction_rules(p1.species())));
         const Real t_single_reaction_2 = this->draw_reaction_time(
             this->calc_k_tot(this->model_->query_reaction_rules(p2.species())));
 
-        const std::pair<Real, Pair::EventKind> single_event =
+        const std::pair<Real, Pair::EventKind> single_event(
             (t_single_reaction_1 < t_single_reaction_2) ?
             std::make_pair(t_single_reaction_1, Pair::SINGLE_REACTION_1) :
-            std::make_pair(t_single_reaction_2, Pair::SINGLE_REACTION_2);
+            std::make_pair(t_single_reaction_2, Pair::SINGLE_REACTION_2));
 
-        SGFRD_TRACE(tracer_.write("single reaction time 1 = %1%", t_single_reaction_1))
-        SGFRD_TRACE(tracer_.write("single reaction time 2 = %1%", t_single_reaction_2))
+        SGFRD_TRACE(tracer_.write("particle 1 single reaction time = %1%", t_single_reaction_1))
+        SGFRD_TRACE(tracer_.write("particle 1 single reaction time = %1%", t_single_reaction_2))
+        SGFRD_TRACE(tracer_.write("single reaction time   = %1%", single_event.first))
+
         // --------------------------------------------------------------------
 
         if(gf_event.first < single_event.first)
         {
+            SGFRD_TRACE(tracer_.write("gf event occurs first"))
             return Pair(gf_event.second, gf_event.first, this->time(), sh.first,
                         sh.second.size(), std::make_pair(pid1, p1),
                         std::make_pair(pid2, p2), len_ipv, k_tot);
         }
         else
         {
+            SGFRD_TRACE(tracer_.write("single reaction occurs first"))
             return Pair(single_event.second, single_event.first, this->time(),
                         sh.first, sh.second.size(),
                         std::make_pair(pid1, p1), std::make_pair(pid2, p2),
