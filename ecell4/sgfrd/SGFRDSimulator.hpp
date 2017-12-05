@@ -583,6 +583,30 @@ class SGFRDSimulator :
         assert(todo);
     }
 
+    boost::array<boost::tuple<ParticleID, Particle, FaceID>, 2>
+    escape_pair(const shell_type& sh, const Pair& dom, const Real tm)
+    {
+        switch(dom.eventkind())
+        {
+            case Pair::COM_ESCAPE:
+            {
+                return escape_com_pair(sh, dom, tm);
+            }
+            case Pair::IV_ESCAPE:
+            {
+                return escape_ipv_pair(sh, dom, tm);
+            }
+            default:
+            {
+                throw std::invalid_argument("escape_pair(): invalid event kind");
+            }
+        }
+    }
+    boost::array<boost::tuple<ParticleID, Particle, FaceID>, 2>
+    escape_com_pair(const shell_type& sh, const Pair& dom, const Real tm);
+    boost::array<boost::tuple<ParticleID, Particle, FaceID>, 2>
+    escape_ipv_pair(const shell_type& sh, const Pair& dom, const Real tm);
+
     Pair create_pair(const std::pair<ShellID, circle_type>& sh,
                      const ParticleID& pid1, const Particle& p1,
                      const ParticleID& pid2, const Particle& p2)
