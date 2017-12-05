@@ -458,20 +458,25 @@ class SGFRDSimulator :
 
     void fire_pair(const Pair& dom, DomainID did)
     {
+        SGFRD_SCOPE(us, fire_pair, tracer_);
         Pair::EventKind evkd = dom.eventkind();
         const greens_functions::GreensFunction2DRadAbs
             gf_ipv(dom.D_ipv(), dom.kf(), dom.r0(), dom.sigma(), dom.R_ipv());
         if(evkd == Pair::IV_UNDETERMINED)
         {
+            SGFRD_TRACE(tracer_.write("pair event is IV_UNDERTERMINED. "
+                        "determine iv event kind here."))
             const greens_functions::GreensFunction::EventKind iv_kind =
                 gf_ipv.drawEventType(this->uniform_real(), dom.dt());
             if(iv_kind == greens_functions::GreensFunction::IV_ESCAPE)
             {
                 evkd = Pair::IV_ESCAPE;
+                SGFRD_TRACE(tracer_.write("pair event kind = IV_ESCAPE"));
             }
             else
             {
                 evkd = Pair::IV_REACTION;
+                SGFRD_TRACE(tracer_.write("pair event kind = IV_REACTION"));
             }
         }
 
@@ -481,13 +486,18 @@ class SGFRDSimulator :
         {
             case Pair::SINGLE_REACTION_1:
             {
+                SGFRD_SCOPE(ns, case_SINGLE_REACTION_1, tracer_);
+                SGFRD_TRACE(tracer_.write("pair event kind = SINGLE_REACTION_1"));
                 reactant_index = 0;
                 // DO NOT BREAK SWITCH-CASE HERE!
             }
             case Pair::SINGLE_REACTION_2:
             {
+                SGFRD_SCOPE(ns, case_SINGLE_REACTION_2, tracer_);
                 if(!reactant_index)
                 {
+                    SGFRD_TRACE(tracer_.write(
+                                "pair event kind = SINGLE_REACTION_2"));
                     reactant_index = 1;
                 }
 
@@ -495,7 +505,10 @@ class SGFRDSimulator :
                 boost::array<boost::tuple<ParticleID, Particle, FaceID>, 2>
                     propagated = this->propagate_pair(
                         this->get_shell(sid), dom, this->time());
+                SGFRD_TRACE(tracer_.write("particles are propagated"));
+
                 this->remove_shell(sid);
+                SGFRD_TRACE(tracer_.write("shell %1% removed", sid));
 
                 // add tight-domain for them to detect overlap
                 boost::array<ShellID,    2> sids;
@@ -512,13 +525,18 @@ class SGFRDSimulator :
                     doms[i] = create_closely_fitted_domain(sids[i], pid, p);
                     dids[i] = add_event(doms[i]);
                 }
+                SGFRD_TRACE(tracer_.write("tight-domains assigned"));
 
                 // after that, attempt single reaction
                 const std::size_t ridx = *reactant_index;
+                SGFRD_TRACE(tracer_.write("reactant_index = %1%", ridx));
+
                 BOOST_AUTO(results, this->attempt_reaction_single(
                            this->get_shell(sids[ridx]), dids[ridx], doms[ridx],
                            pids[ridx], ps[ridx], fids[ridx]));
                 this->remove_shell(sids[ridx]);
+                SGFRD_TRACE(tracer_.write("shell %1% removed", sids[ridx]));
+                SGFRD_TRACE(tracer_.write("reaction attempted"));
 
                 // add domain to each reactant
                 ParticleID pid; Particle p; FaceID fid;
@@ -533,11 +551,14 @@ class SGFRDSimulator :
             case Pair::COM_ESCAPE:
             case Pair::IV_ESCAPE:
             {
+                SGFRD_SCOPE(ns, case_COM_OR_IV_ESCAPE, tracer_);
                 boost::array<boost::tuple<ParticleID, Particle, FaceID>, 2>
                     escaped = this->escape_pair(
                         this->get_shell(sid), dom, this->time());
+                SGFRD_TRACE(tracer_.write("particles escaped"));
 
                 this->remove_shell(sid);
+                SGFRD_TRACE(tracer_.write("shell %1% removed", sid));
 
                 ParticleID pid; Particle p; FaceID fid;
                 BOOST_FOREACH(boost::tie(pid, p, fid), escaped)
@@ -550,11 +571,14 @@ class SGFRDSimulator :
             }
             case Pair::IV_REACTION:
             {
+                SGFRD_SCOPE(ns, case_IV_REACTION, tracer_);
                 boost::small_vector<
                     boost::tuple<ParticleID, Particle, FaceID>, 1>
                         products = this->attempt_pair_reaction(
                                 this->get_shell(sid), dom, this->time());
+                SGFRD_TRACE(tracer_.write("iv reaction attempted"));
                 this->remove_shell(sid);
+                SGFRD_TRACE(tracer_.write("shell %1% removed", sid));
 
                 if(!products.empty())
                 {
@@ -589,9 +613,8 @@ class SGFRDSimulator :
         results.push_back(propagated[0]);
         results.push_back(propagated[1]);
 
-        SGFRD_TRACE(tracer_.write(
-                    "particle %1% and %2% propagated but not updated",
-                    boost::get<0>(propagates[0]),boost::get<0>(propagates[1])));
+        SGFRD_TRACE(tracer_.write("particle %1% and %2% propagated",
+            boost::get<0>(propagates[0]), boost::get<0>(propagates[1])));
 
         this->remove_shell(sid);
         SGFRD_TRACE(tracer_.write("shell(%1%) removed", sid));
@@ -601,6 +624,7 @@ class SGFRDSimulator :
     boost::array<boost::tuple<ParticleID, Particle, FaceID>, 2>
     propagate_pair(const shell_type& sh, const Pair& dom, const Real tm)
     {
+        SGFRD_SCOPE(us, propagate_pair, tracer_);
         switch(sh.which())
         {
             case shell_container_type::circular_shell:
@@ -621,6 +645,7 @@ class SGFRDSimulator :
     propagate_pair_circular(const circular_shell_type& sh,
             const Pair& dom, const Real tm)
     {
+        SGFRD_SCOPE(us, propagate_pair_circular, tracer_);
         // propagate, check collision, update and return
         const bool todo = false;
         assert(todo);
@@ -629,6 +654,7 @@ class SGFRDSimulator :
     boost::array<boost::tuple<ParticleID, Particle, FaceID>, 2>
     escape_pair(const shell_type& sh, const Pair& dom, const Real tm)
     {
+        SGFRD_SCOPE(us, escape_pair, tracer_);
         switch(dom.eventkind())
         {
             case Pair::COM_ESCAPE:
@@ -648,12 +674,14 @@ class SGFRDSimulator :
     boost::array<boost::tuple<ParticleID, Particle, FaceID>, 2>
     escape_com_pair(const shell_type& sh, const Pair& dom, const Real tm)
     {
+        SGFRD_SCOPE(us, escape_com_pair, tracer_);
         const bool todo = false;
         assert(todo);
     }
     boost::array<boost::tuple<ParticleID, Particle, FaceID>, 2>
     escape_ipv_pair(const shell_type& sh, const Pair& dom, const Real tm)
     {
+        SGFRD_SCOPE(us, escape_ipv_pair, tracer_);
         const bool todo = false;
         assert(todo);
     }
@@ -661,6 +689,7 @@ class SGFRDSimulator :
     boost::small_vector<boost::tuple<ParticleID, Particle, FaceID>, 1>
     attempt_pair_reaction(const shell_type& sh, const Pair& dom, const Real tm)
     {
+        SGFRD_SCOPE(us, attempt_pair_reaction, tracer_);
         switch(sh.which())
         {
             case shell_container_type::circular_shell:
@@ -681,6 +710,7 @@ class SGFRDSimulator :
     attempt_circular_pair_reaction(
             const circular_shell_type& sh, const Pair& dom, const Real tm)
     {
+        SGFRD_SCOPE(us, attempt_circular_pair_reaction, tracer_);
         // 1. update one with com diffusion
         // 2. mutate the particle to product
         // 3. and remove the other one
