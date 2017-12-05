@@ -475,32 +475,62 @@ class SGFRDSimulator :
             }
         }
 
+        boost::optional<std::size_t> reactant_index(boost::none);
         const ShellID sid(dom.shell_id());
         switch(dom.eventkind())
         {
             case Pair::SINGLE_REACTION_1:
             {
-                // first, update 2 particles
-                boost::array<boost::tuple<ParticleID, Particle, FaceID>, 2>
-                    propagated = this->propagate_pair(
-                        this->get_shell(sid), dom, this->time());
-                // after that, attempt reaction for p1
-
-                const bool todo_attempt_reaction_1 = false;
-                assert(todo_attempt_reaction_1);
+                reactant_index = 0;
+                // DO NOT BREAK SWITCH-CASE HERE!
             }
             case Pair::SINGLE_REACTION_2:
             {
+                if(!reactant_index)
+                {
+                    reactant_index = 1;
+                }
+
                 // first, update 2 particles
                 boost::array<boost::tuple<ParticleID, Particle, FaceID>, 2>
                     propagated = this->propagate_pair(
                         this->get_shell(sid), dom, this->time());
-                // after that, attempt reaction for p1
+                this->remove_shell(sid);
 
-                const bool todo_attempt_reaction_2 = false;
-                assert(todo_attempt_reaction_2);
+                // add tight-domain for them to detect overlap
+                boost::array<ShellID,    2> sids;
+                boost::array<DomainID,   2> dids;
+                boost::array<Single,     2> doms;
+                boost::array<ParticleID, 2> pids;
+                boost::array<Particle,   2> ps;
+                boost::array<FaceID,     2> fids;
+                for(std::size_t i=0; i<2; ++i)
+                {
+                    boost::tie(pids[i], ps[i], fids[i]) = propagated[i];
+                    SGFRD_TRACE(tracer_.write("adding tight domain > %1%", pid))
+                    sids[i] = create_closely_fitted_shell(pid, p, fid);
+                    doms[i] = create_closely_fitted_domain(sids[i], pid, p);
+                    dids[i] = add_event(doms[i]);
+                }
+
+                // after that, attempt single reaction
+                const std::size_t ridx = *reactant_index;
+                BOOST_AUTO(results, this->attempt_reaction_single(
+                           this->get_shell(sids[ridx]), dids[ridx], doms[ridx],
+                           pids[ridx], ps[ridx], fids[ridx]));
+                this->remove_shell(sids[ridx]);
+
+                // add domain to each reactant
+                ParticleID pid; Particle p; FaceID fid;
+                BOOST_FOREACH(boost::tie(pid, p, fid), results)
+                {
+                    SGFRD_TRACE(tracer_.write("adding next event for %1%", pid))
+                    add_event(create_closely_fitted_domain(
+                              create_closely_fitted_shell(pid, p, fid), pid, p));
+                }
+                return;
             }
-            case Pair::COM_ESCAPE:// or
+            case Pair::COM_ESCAPE:
             case Pair::IV_ESCAPE:
             {
                 boost::array<boost::tuple<ParticleID, Particle, FaceID>, 2>
@@ -520,11 +550,24 @@ class SGFRDSimulator :
             }
             case Pair::IV_REACTION:
             {
-                // 1. update one with com diffusion
-                // 2. mutate the particle to product
-                // 3. and remove the other one
-                const bool TODO_reaction_iv = false;
-                assert(TODO_reaction_iv);
+                boost::small_vector<
+                    boost::tuple<ParticleID, Particle, FaceID>, 1>
+                        products = this->attempt_pair_reaction(
+                                this->get_shell(sid), dom, this->time());
+                this->remove_shell(sid);
+
+                if(!products.empty())
+                {
+                    ParticleID pid; Particle p; FaceID fid;
+                    boost::tie(pid, p, fid) = products.front();
+
+                    SGFRD_TRACE(tracer_.write(
+                                "adding next event for particle %1%", pid))
+
+                    add_event(create_closely_fitted_domain(
+                                create_closely_fitted_shell(pid, p, fid), pid, p));
+                }
+                return;
             }
             default:
             {
