@@ -646,9 +646,72 @@ class SGFRDSimulator :
             const Pair& dom, const Real tm)
     {
         SGFRD_SCOPE(us, propagate_pair_circular, tracer_);
-        // propagate, check collision, update and return
-        const bool todo = false;
-        assert(todo);
+
+        // calculate displacements
+        const Real dt = tm - dom.begin_time();
+        const greens_functions::GreensFunction2DRadAbs
+            gf_ipv(dom.D_ipv(), dom.kf(), dom.r0(), dom.sigma(), dom.R_ipv());
+        const Real l_ipv     = gf_ipv.drawR(this->uniform_real(), dt);
+        const Real theta_ipv = gf_ipv.drawTheta(this->uniform_real(), l_ipv, dt);
+
+        const greens_functions::GreensFunction2DAbsSym
+            gf_com(dom.D_com(), dom.R_com());
+        const Real l_com     = gf_com.drawR(this->uniform_real(), dt);
+        const Real theta_com = this->uniform_real() *
+                               boost::math::constants::two_pi<Real>();
+
+        const FaceID       sh_fid = sh.structure_id();
+        const triangle_type&    f = this->polygon().triangle_at(sh_fid);
+        const Real3 direction_com = rotate(theta_com, f.normal(), f.represent());
+
+        const Real3 disp_com = direction_com * (l_com / length(direction_com));
+        const Real3 disp_ipv = rotate(theta_ipv, f.normal(), dom.ipv());
+
+        // update position
+        // XXX to treat polygon surface structure, calculate displacement for
+        // each partile without polygon information first
+        // and then apply it to each particle with structure
+
+        Particle         p1   = dom.particle_at(0);
+        Particle         p2   = dom.particle_at(1);
+        const ParticleID pid1 = dom.particle_id_at(0);
+        const ParticleID pid2 = dom.particle_id_at(1);
+
+        // ipv is a vector from p1 to p2
+        const Real  ratio_p1     = -p1.D() / (p1.D() + p2.D());
+        const Real  ratio_p2     =  p2.D() / (p1.D() + p2.D());
+        const Real3 disp_ipv_p1  = disp_ipv  * ratio_p1;
+        const Real3 disp_ipv_p2  = disp_ipv  * ratio_p2;
+        const Real3 disp_ipv0_p1 = dom.ipv() * ratio_p1;
+        const Real3 disp_ipv0_p2 = dom.ipv() * ratio_p2;
+
+        Real3 disp_p1 = disp_com - disp_ipv0_p1 + disp_ipv_p1;
+        Real3 disp_p2 = disp_com - disp_ipv0_p2 + disp_ipv_p2;
+        std::pair<Real3, FaceID> pos_p1(p1.position(), this->get_face_id(pid1));
+        std::pair<Real3, FaceID> pos_p2(p2.position(), this->get_face_id(pid2));
+
+        if(0 == ecell4::polygon::travel(this->polygon(), pos_p1, disp_p1, 2))
+        {
+            SGFRD_TRACE(tracer_.write("escape_com_circular_pair "
+                        "p1 moving on face: precision lost"))
+        }
+        if(0 == ecell4::polygon::travel(this->polygon(), pos_p2, disp_p2, 2))
+        {
+            SGFRD_TRACE(tracer_.write("escape_com_circular_pair "
+                        "p1 moving on face: precision lost"))
+        }
+
+        p1.position() = pos_p1.first;
+        p2.position() = pos_p2.first;
+
+        this->update_particle(pid1, p1, pos_p1.second);
+        this->update_particle(pid2, p2, pos_p2.second);
+
+        boost::array<boost::tuple<ParticleID, Particle, FaceID>, 2> results;
+        results[0] = boost::make_tuple(pid1, p1, pos_p1.second);
+        results[1] = boost::make_tuple(pid2, p2, pos_p2.second);
+
+        return results;
     }
 
     boost::array<boost::tuple<ParticleID, Particle, FaceID>, 2>
@@ -784,8 +847,72 @@ class SGFRDSimulator :
             const circular_shell_type& sh, const Pair& dom, const Real tm)
     {
         SGFRD_SCOPE(us, escape_com_pair, tracer_);
-        const bool todo = false;
-        assert(todo);
+
+        // calculate displacements
+        const Real dt = tm - dom.begin_time();
+        const greens_functions::GreensFunction2DRadAbs
+            gf_ipv(dom.D_ipv(), dom.kf(), dom.r0(), dom.sigma(), dom.R_ipv());
+        const Real l_ipv     = dom.R_ipv();
+        const Real theta_ipv = gf_ipv.drawTheta(this->uniform_real(), l_ipv, dt);
+
+        const greens_functions::GreensFunction2DAbsSym
+            gf_com(dom.D_com(), dom.R_com());
+        const Real l_com     = gf_com.drawR(this->uniform_real(), dt);
+        const Real theta_com = this->uniform_real() *
+                               boost::math::constants::two_pi<Real>();
+
+        const FaceID       sh_fid = sh.structure_id();
+        const triangle_type&    f = this->polygon().triangle_at(sh_fid);
+        const Real3 direction_com = rotate(theta_com, f.normal(), f.represent());
+
+        const Real3 disp_com = direction_com * (l_com / length(direction_com));
+        const Real3 disp_ipv = rotate(theta_ipv, f.normal(), dom.ipv());
+
+        // update position
+        // XXX to treat polygon surface structure, calculate displacement for
+        // each partile without polygon information first
+        // and then apply it to each particle with structure
+
+        Particle         p1   = dom.particle_at(0);
+        Particle         p2   = dom.particle_at(1);
+        const ParticleID pid1 = dom.particle_id_at(0);
+        const ParticleID pid2 = dom.particle_id_at(1);
+
+        // ipv is a vector from p1 to p2
+        const Real  ratio_p1     = -p1.D() / (p1.D() + p2.D());
+        const Real  ratio_p2     =  p2.D() / (p1.D() + p2.D());
+        const Real3 disp_ipv_p1  = disp_ipv  * ratio_p1;
+        const Real3 disp_ipv_p2  = disp_ipv  * ratio_p2;
+        const Real3 disp_ipv0_p1 = dom.ipv() * ratio_p1;
+        const Real3 disp_ipv0_p2 = dom.ipv() * ratio_p2;
+
+        Real3 disp_p1 = disp_com - disp_ipv0_p1 + disp_ipv_p1;
+        Real3 disp_p2 = disp_com - disp_ipv0_p2 + disp_ipv_p2;
+        std::pair<Real3, FaceID> pos_p1(p1.position(), this->get_face_id(pid1));
+        std::pair<Real3, FaceID> pos_p2(p2.position(), this->get_face_id(pid2));
+
+        if(0 == ecell4::polygon::travel(this->polygon(), pos_p1, disp_p1, 2))
+        {
+            SGFRD_TRACE(tracer_.write("escape_com_circular_pair "
+                        "p1 moving on face: precision lost"))
+        }
+        if(0 == ecell4::polygon::travel(this->polygon(), pos_p2, disp_p2, 2))
+        {
+            SGFRD_TRACE(tracer_.write("escape_com_circular_pair "
+                        "p1 moving on face: precision lost"))
+        }
+
+        p1.position() = pos_p1.first;
+        p2.position() = pos_p2.first;
+
+        this->update_particle(pid1, p1, pos_p1.second);
+        this->update_particle(pid2, p2, pos_p2.second);
+
+        boost::array<boost::tuple<ParticleID, Particle, FaceID>, 2> results;
+        results[0] = boost::make_tuple(pid1, p1, pos_p1.second);
+        results[1] = boost::make_tuple(pid2, p2, pos_p2.second);
+
+        return results;
     }
 
     boost::container::small_vector<boost::tuple<ParticleID, Particle, FaceID>, 1>
