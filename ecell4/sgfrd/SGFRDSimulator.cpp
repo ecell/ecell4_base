@@ -8,6 +8,7 @@ const Real SGFRDSimulator::single_circular_shell_factor        = 1.5;
 const Real SGFRDSimulator::single_circular_shell_mergin        = 1.0 - 1e-7;
 const Real SGFRDSimulator::single_conical_surface_shell_factor = 1.5;
 const Real SGFRDSimulator::single_conical_surface_shell_mergin = 1.0 - 1e-7;
+const Real SGFRDSimulator::minimum_separation_factor           = 1e-7;
 
 boost::tuple<ParticleID, Particle, SGFRDSimulator::FaceID>
 SGFRDSimulator::propagate_single_circular(

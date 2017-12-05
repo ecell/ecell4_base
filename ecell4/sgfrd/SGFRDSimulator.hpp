@@ -1712,6 +1712,7 @@ class SGFRDSimulator :
     static const Real single_circular_shell_mergin;
     static const Real single_conical_surface_shell_factor;
     static const Real single_conical_surface_shell_mergin;
+    static const Real minimum_separation_factor;
 
   private:
 
