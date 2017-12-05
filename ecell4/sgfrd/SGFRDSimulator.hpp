@@ -520,9 +520,9 @@ class SGFRDSimulator :
                 for(std::size_t i=0; i<2; ++i)
                 {
                     boost::tie(pids[i], ps[i], fids[i]) = propagated[i];
-                    SGFRD_TRACE(tracer_.write("adding tight domain > %1%", pid))
-                    sids[i] = create_closely_fitted_shell(pid, p, fid);
-                    doms[i] = create_closely_fitted_domain(sids[i], pid, p);
+                    SGFRD_TRACE(tracer_.write("adding tight domain > %1%", pids[i]))
+                    sids[i] = create_closely_fitted_shell(pids[i], ps[i], fids[i]);
+                    doms[i] = create_closely_fitted_domain(sids[i], pids[i], ps[i]);
                     dids[i] = add_event(doms[i]);
                 }
                 SGFRD_TRACE(tracer_.write("tight-domains assigned"));
@@ -572,7 +572,7 @@ class SGFRDSimulator :
             case Pair::IV_REACTION:
             {
                 SGFRD_SCOPE(ns, case_IV_REACTION, tracer_);
-                boost::small_vector<
+                boost::container::small_vector<
                     boost::tuple<ParticleID, Particle, FaceID>, 1>
                         products = this->attempt_pair_reaction(
                                 this->get_shell(sid), dom, this->time());
@@ -686,7 +686,7 @@ class SGFRDSimulator :
         assert(todo);
     }
 
-    boost::small_vector<boost::tuple<ParticleID, Particle, FaceID>, 1>
+    boost::container::small_vector<boost::tuple<ParticleID, Particle, FaceID>, 1>
     attempt_pair_reaction(const shell_type& sh, const Pair& dom, const Real tm)
     {
         SGFRD_SCOPE(us, attempt_pair_reaction, tracer_);
@@ -695,7 +695,7 @@ class SGFRDSimulator :
             case shell_container_type::circular_shell:
             {
                 return attempt_circular_pair_reaction(
-                    boost::get<circular_shell_type>(sh), dom);
+                    boost::get<circular_shell_type>(sh), dom, tm);
             }
             default:
             {
@@ -706,7 +706,7 @@ class SGFRDSimulator :
         }
     }
 
-    boost::small_vector<boost::tuple<ParticleID, Particle, FaceID>, 1>
+    boost::container::small_vector<boost::tuple<ParticleID, Particle, FaceID>, 1>
     attempt_circular_pair_reaction(
             const circular_shell_type& sh, const Pair& dom, const Real tm)
     {
