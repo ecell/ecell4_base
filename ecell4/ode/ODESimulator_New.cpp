@@ -109,9 +109,34 @@ ODESimulator_New::generate_system()  const
             mapped_rr.products.push_back(index_map[*p_it]);
         }
         mapped_rr.k = it->k();
-        // Coefficients on both side
-        // Reaction Propensity such as ratelaw and
-
+        // Set default value for coefficients.
+        //  These values may be over-written when reaction_rule_descriptor exist.
+        mapped_rr.reactant_coefficients.resize( reactants.size() );
+        mapped_rr.product_coefficients.resize( products.size() );
+        std::fill(mapped_rr.reactant_coefficients.begin(), mapped_rr.reactant_coefficients.end(), 1);
+        std::fill(mapped_rr.product_coefficients.begin(), mapped_rr.product_coefficients.end(), 1);
+        // Additilnal Information(Overwrite default values defined above)
+        if (it->has_descriptor()) {
+            boost::shared_ptr<ReactionRuleDescriptor> rr_desc = it->get_descriptor();
+            // Coefficients on both side
+            if (0 < rr_desc->reactant_coefficients().size()) {
+                mapped_rr.reactant_coefficients.clear();
+                const ReactionRuleDescriptor::reaction_coefficient_list_type &reactant_coefficients(
+                        rr_desc->reactant_coefficients());
+                std::copy(reactant_coefficients.begin(), reactant_coefficients.end(), 
+                        std::back_inserter(mapped_rr.reactant_coefficients) );
+            }
+            if (0 < rr_desc->product_coefficients().size()) {
+                mapped_rr.product_coefficients.clear();
+                const ReactionRuleDescriptor::reaction_coefficient_list_type &product_coefficients(
+                        rr_desc->product_coefficients());
+                std::copy(product_coefficients.begin(), product_coefficients.end(), 
+                        std::back_inserter(mapped_rr.product_coefficients) );
+            }
+            // Reaction Propensity such as ratelaw
+        } else {
+            ;
+        }
         mapped_reactions.push_back(mapped_rr);
     }
     // Step 3. Create Derivative and Jacobian object that bind mapped_reaction_container.

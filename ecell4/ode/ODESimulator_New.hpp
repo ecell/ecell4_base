@@ -326,6 +326,7 @@ public:
         Real k;
         //boost::weak_ptr<ODERatelaw> ratelaw;
         const ReactionRule *raw;
+        boost::weak_ptr<ReactionRuleDescriptor> rr_descriptor;
     };
     typedef std::vector<mapped_reaction_type> mapped_reaction_container_type;
 
@@ -343,24 +344,35 @@ public:
             {   // Calculate the flux of each ReactionRule
                 //  FIXME.  Currently, this can handle only the mass action
                 Real flux = (mapped_rr_it->k * volume_);
-                for (index_container_type::const_iterator r = mapped_rr_it->reactants.begin(); 
-                        r != mapped_rr_it->reactants.end(); r++)
-                {
-                    //flux *= std::pow( x[*r] * vinv_, 1. );
-                    flux *=  x[*r] * vinv_;
+                //for (index_container_type::const_iterator r = mapped_rr_it->reactants.begin(); 
+                //        r != mapped_rr_it->reactants.end(); r++) {
+                //    //flux *= std::pow( x[*r] * vinv_, 1. );
+                //    flux *=  x[*r] * vinv_;
+                //}
+                for( index_container_type::size_type i = 0; i < mapped_rr_it->reactants.size(); i++) {
+                    index_container_type::value_type reactant_index = mapped_rr_it->reactants[i];
+                    flux *= std::pow(x[reactant_index] * vinv_, mapped_rr_it->reactant_coefficients[i]);
                 }
 
                 // Merge each reactions's flux 
-                for(index_container_type::const_iterator r = mapped_rr_it->reactants.begin();
-                        r != mapped_rr_it->reactants.end(); r++) 
-                {
-                    dxdt[*r] -= (flux); // 
-                    //dxdt[*j] -= (flux * (double)i->reactant_coefficients[nth]);
+                //for(index_container_type::const_iterator r = mapped_rr_it->reactants.begin();
+                //        r != mapped_rr_it->reactants.end(); r++) 
+                //{
+                //    dxdt[*r] -= (flux); // 
+                //    //dxdt[*j] -= (flux * (double)i->reactant_coefficients[nth]);
+                //}
+                //for(index_container_type::const_iterator p = mapped_rr_it->products.begin();
+                //        p != mapped_rr_it->products.end(); p++)
+                //{
+                //    dxdt[*p] += (flux);
+                //}
+                for( index_container_type::size_type i = 0; i < mapped_rr_it->reactants.size(); i++) {
+                    index_container_type::value_type reactant_index = mapped_rr_it->reactants[i];
+                    dxdt[reactant_index] -= (flux * (double)mapped_rr_it->reactant_coefficients[i]);
                 }
-                for(index_container_type::const_iterator p = mapped_rr_it->products.begin();
-                        p != mapped_rr_it->products.end(); p++)
-                {
-                    dxdt[*p] += (flux);
+                for( index_container_type::size_type i = 0; i < mapped_rr_it->products.size(); i++) {
+                    index_container_type::value_type product_index = mapped_rr_it->products[i];
+                    dxdt[product_index] += (flux * (double)mapped_rr_it->product_coefficients[i]);
                 }
             }
             //std::cout << "========================================" << std::endl;
@@ -376,6 +388,79 @@ public:
         const mapped_reaction_container_type reactions_;
         const Real volume_;
         const Real vinv_;
+    };
+
+    class jacobi_func
+    {
+    public:
+        jacobi_func(
+            //const reaction_container_type &reactions, const Real& volume,
+            const mapped_reaction_container_type &reactions, const Real& volume,
+            const Real& abs_tol, const Real& rel_tol)
+            : reactions_(reactions), volume_(volume), vinv_(1.0 / volume), abs_tol_(abs_tol), rel_tol_(rel_tol)
+        {
+            ;
+        }
+        void operator()(
+                const state_type& x, matrix_type& jacobi, const double &t, state_type &dfdt) const
+        {
+            //fill 0 into jacobi and dfdt
+            std::fill(dfdt.begin(), dfdt.end(), 0.0);
+            std::fill(jacobi.data().begin(), jacobi.data().end(), 0.0);
+
+            // const Real ETA(2.2204460492503131e-16);
+            const Real SQRTETA(1.4901161193847656e-08);
+            const Real r0(1.0);
+            // XXX Following comment-outed code is derived from previous ODESimulator.hpp
+            //          Should be erased??????
+            // Real fac(0.0);
+            // for (std::size_t k(0); k < dfdt.size(); ++k)
+            // {
+            //     const Real ewtk(atol + rtol * x[k]);
+            //     fac = std::max(fac, dfdt[k] * ewtk);
+            // }
+            // const Real r0(1000.0 * h * ETA * dfdt.size() * fac);  //XXX: h means the step interval
+            // {
+            //     const Real ewtj(atol + rtol * x[j]);
+            //     const Real dyj(std::max(SQRTETA * abs(x[j]), r0 * ewtj));
+            // }
+
+            // const Real h(1.0e-8);
+            // const Real ht(1.0e-10);
+            const Real ht(1.0e-10);
+
+            //for(mapped_reaction_container_type::const_iterator mapped_rr_it = (reactions_.begin());
+            //        mapped_rr_it != reactions_.end(); mapped_rr_it++) 
+            //{
+            //    // 1. Calculate the current flux. This is the same as the flux calculated in deriv_func.
+            //    Real flux0 = (mapped_rr_it->k * volume_);
+            //    for (index_container_type::const_iterator r = mapped_rr_it->reactants.begin(); 
+            //            r != mapped_rr_it->reactants.end(); r++)
+            //    {
+            //        //flux *= std::pow( x[*r] * vinv_, 1. );
+            //        flux0 *=  x[*r] * vinv_;
+            //    }
+            //    // 2. Differentiate by time
+            //    {
+            //        // In the mass reactio, this become ZERO.
+            //        //  Currently, not implemented.
+            //    }
+            //    // Differentiate by each reactants
+            //    {
+            //        for(std::size_t i(0); i < mapped_rr_it->reactants.size(); i++) {
+
+            //        }
+            //            const Real ewt = abs_tol_ + rel_tol_ * abs(reactants_states[j]);
+            //            const Real h = std::max(SQRTETA * abs(reactants_states[j]), r0 * ewt);
+            //    }
+            //    // Differentiate by each products
+            //}
+        }
+    protected:
+        const mapped_reaction_container_type reactions_;
+        const Real volume_;
+        const Real vinv_;
+        const Real abs_tol_, rel_tol_;
     };
 
     struct StateAndTimeBackInserter

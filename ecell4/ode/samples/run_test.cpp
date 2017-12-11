@@ -19,8 +19,15 @@ using namespace ecell4::ode;
 /**
  * main function
  */
-int main(int argc, char** argv)
+int test(int type, int use_coefficients = 0)
 {
+    // type:
+    //   1: RUNGE_KUTTA
+    //   2: ROSENBLOCK
+    //   3: EULER
+    // method:
+    //   0: only mass action
+    //   1: use user-defined function.
     const Real L(1e-6);
     const Real3 edge_lengths(L, L, L);
     const Real volume(L * L * L);
@@ -44,15 +51,35 @@ int main(int argc, char** argv)
     rr3.add_reactant(sp1);
     rr3.add_product(sp3);
 
-    boost::shared_ptr<NetworkModel> model(new NetworkModel());
-    model->add_species_attribute(sp1);
-    model->add_species_attribute(sp2);
-    model->add_species_attribute(sp3);
-    model->add_reaction_rule(rr1);
-    model->add_reaction_rule(rr2);
-    model->add_reaction_rule(rr3);
-    //model->dump_reactions();
-    boost::shared_ptr<ODENetworkModel>  ode_model(new ODENetworkModel(model) );//XXX OLD one!
+    ODEReactionRule ode_rr1(rr1);
+    ODEReactionRule ode_rr2(rr2);
+    ODEReactionRule ode_rr3(rr3);
+
+    std::cout << rr1.as_string() << std::endl;
+    if (use_coefficients == 1)  {
+        ode_rr1.set_reactant_coefficient(0, 2.0);
+        //ode_rr1.set_product_coefficient(0, 2.0);
+        //ode_rr3.set_product_coefficient(0, 2.0);
+    }
+    std::cout << rr1.as_string() << std::endl;
+    // Setup NetworkModel
+    boost::shared_ptr<NetworkModel> new_model(new NetworkModel());
+    new_model->add_species_attribute(sp1);
+    new_model->add_species_attribute(sp2);
+    new_model->add_species_attribute(sp3);
+    new_model->add_reaction_rule(rr1);
+    new_model->add_reaction_rule(rr2);
+    new_model->add_reaction_rule(rr3);
+
+    // Setup ODENetworkModel
+    boost::shared_ptr<ODENetworkModel>  ode_model(new ODENetworkModel);
+    ode_model->add_species_attribute(sp1);
+    ode_model->add_species_attribute(sp2);
+    ode_model->add_species_attribute(sp3);
+    ode_model->add_reaction_rule(ode_rr1);
+    ode_model->add_reaction_rule(ode_rr2);
+    ode_model->add_reaction_rule(ode_rr3);
+    ode_model->dump_reactions();
 
     boost::shared_ptr<ODEWorld> world(new ODEWorld(edge_lengths));
     boost::shared_ptr<ODEWorld_New> new_world(new ODEWorld_New(edge_lengths));
@@ -61,11 +88,26 @@ int main(int argc, char** argv)
     new_world->add_molecules(sp1, N);
 
     //ODESimulator target(model, world, RUNGE_KUTTA_CASH_KARP54);
-    ODESimulator target(model, world, EULER);
+    ODESolverType soltype;
+    switch (type) {
+        case 1:
+            soltype = RUNGE_KUTTA_CASH_KARP54;
+            break;
+        case 2:
+            soltype = ROSENBROCK4_CONTROLLER;
+            break;
+        case 3:
+            soltype = EULER;
+            break;
+        default:
+            throw;
+    }
+
+    ODESimulator target(ode_model, world, soltype);
     target.initialize();
 
     //ODESimulator_New new_target(model, new_world, RUNGE_KUTTA_CASH_KARP54);
-    ODESimulator_New new_target(model, new_world, EULER);
+    ODESimulator_New new_target(new_model, new_world, soltype);
     new_target.initialize();
 
     Real next_time(0.0), dt(0.01);
@@ -110,4 +152,13 @@ int main(int argc, char** argv)
     if (ok_flag) {
         std::cout << "Exactly the same result with new and old ODESimulator" << std::endl;
     }
+    return ok_flag;
+}
+
+int main(int argc, char** argv)
+{
+    test(1,0);
+    //test(3,0);
+    //test(3,1);
+
 }
