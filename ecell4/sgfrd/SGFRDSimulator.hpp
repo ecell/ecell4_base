@@ -15,6 +15,7 @@
 #include <ecell4/sgfrd/ShellVisitors.hpp>
 #include <ecell4/sgfrd/Informations.hpp>
 #include <ecell4/sgfrd/SGFRDEvent.hpp>
+#include <ecell4/sgfrd/expected.hpp>
 
 #include <ecell4/sgfrd/tracer.hpp>
 
@@ -510,13 +511,14 @@ class SGFRDSimulator :
                 this->remove_shell(sid);
                 SGFRD_TRACE(tracer_.write("shell %1% removed", sid));
 
-                // add tight-domain for them to detect overlap
                 boost::array<ShellID,    2> sids;
                 boost::array<DomainID,   2> dids;
                 boost::array<Single,     2> doms;
                 boost::array<ParticleID, 2> pids;
                 boost::array<Particle,   2> ps;
                 boost::array<FaceID,     2> fids;
+
+                // add tight-domain for them to detect overlap
                 for(std::size_t i=0; i<2; ++i)
                 {
                     boost::tie(pids[i], ps[i], fids[i]) = propagated[i];
@@ -1653,6 +1655,18 @@ class SGFRDSimulator :
 
     //! make domain and call add_event
     DomainID create_event(const ParticleID&, const Particle&, const FaceID);
+
+    expected<DomainID, std::vector<std::pair<DomainID, Real> > >
+    form_single_circular_event(
+            const ParticleID&, const Particle&, const FaceID, const Real);
+
+    expected<DomainID, std::vector<std::pair<DomainID, Real> > >
+    form_single_conical_event(
+            const ParticleID&, const Particle&, const FaceID);
+
+//     boost::optional<DomainID>
+//     form_pair(const ParticleID&, const Particle&, const FaceID,
+//               const ParticleID&, const Particle&, const FaceID);
 
     std::vector<std::pair<vertex_id_type, Real> >
     get_intrusive_vertices(const std::pair<Real3, FaceID>& pos,
