@@ -516,7 +516,7 @@ SGFRDSimulator::form_pair(
     const Particle   partner     = sgl.particle();
     const FaceID     partner_fid = this->get_face_id(partner_id);
     const ShellID    partner_sid = sgl.shell_id();
-    const ShellID    partner_did = intruders.front().first;
+    const DomainID   partner_did = intruders.front().first;
 
     const Real r1(p.radius()), r2(partner.radius());
     const Real D1(p.D()), D2(partner.D());
@@ -585,7 +585,7 @@ SGFRDSimulator::form_pair(
         SGFRD_TRACE(tracer_.write("pair is formed"))
 
         this->remove_shell(partner_sid);
-        SGFRD_TRACE(tracer_.write("remove partner's shell, %1%", ))
+        SGFRD_TRACE(tracer_.write("remove partner's shell, %1%", partner_sid))
 
         this->remove_event(partner_did);
         SGFRD_TRACE(tracer_.write("remove partner's domain, %1%", partner_did))
