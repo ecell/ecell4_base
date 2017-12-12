@@ -496,6 +496,91 @@ bool SGFRDSimulator::burst_and_shrink_overlaps(
     return no_overlap;
 }
 
+boost::optional<DomainID>
+SGFRDSimulator::form_pair(
+        const ParticleID& pid, const Particle& p, const FaceID& fid,
+        const std::vector<std::pair<DomainID, Real> >& intruders)
+{
+    const boost::shared_ptr<event_type> nearest =
+        this->get_event(intruders.front().first);
+    if(nearest->which_domain() != event_type::single_domain)
+    {
+        SGFRD_TRACE(tracer_.write(
+                    "nearest intruder is not single. can't form pair."))
+        return boost::none;
+    }
+    const Single& sgl = boost::get<Single>(nearest->domain());
+    const ParticleID partner_id  = sgl.particle_id();
+    const Particle   partner     = sgl.particle();
+    const FaceID     partner_fid = this->get_face_id(partner_id);
+
+    const Real r1(p.radius()), r2(partner.radius());
+    const Real D1(p.D()), D2(partner.D());
+    const Real D12 = D1 + D2;
+    const Real r12 = r1 + r2;
+
+    const Real3 ipv = ecell4::polygon::direction(this->polygon(),
+        std::make_pair(p.position(), fid), // ->
+        std::make_pair(partner.position(), partner_fid));
+    const Real len_ipv = length(ipv);
+    const Real sh_minim =
+        std::max(len_ipv * D1 / D12 + r1, len_ipv * D2 / D12 + r2) * 3;
+    // XXX this `3` is just a parameter. it should be tuned later.
+
+    std::pair<Real3, FaceID> pos_com = std::make_pair(p.position(), fid);
+    Real3 disp = ipv * D1 / D12;
+    ecell4::polygon::travel(this->polygon(), pos_com, disp, 2);
+
+    Real max_dist = std::numeric_limits<Real>::infinity();
+    // the first element is the partner. ignore it.
+    for(std::vector<std::pair<DomainID, Real> >::const_iterator
+        iter(intruders.begin()+1), iend(intruders.end()); iter != iend; ++iter)
+    {
+        const boost::shared_ptr<event_type> intruder_ev =
+            this->get_event(iter->first);
+        if(intruder_ev->which_domain() != event_type::single_domain)
+        {
+            continue;
+        }
+        const Single&    intruder_dom = boost::get<Single>(nearest->domain());
+        const ParticleID intruder_pid = intruder_dom.particle_id();
+        const Particle&  intruder_p   = intruder_dom.particle();
+        const FaceID     intruder_fid = this->get_face_id(intruder_pid);
+
+        const Real d_to_sh = ecell4::polygon::distance(this->polygon(),
+            pos_com, std::make_pair(intruder_p.position(), intruder_fid)) -
+            calc_min_single_circular_shell_radius(intruder_p);
+
+        if(d_to_sh < sh_minim)
+        {
+            // multi should be formed.
+            return boost::none;
+        }
+        max_dist = std::min(max_dist, d_to_sh);
+    }
+
+    std::vector<std::pair<std::pair<ShellID, shell_type>, Real> >
+        other_shells(this->shell_container_.list_shells_within_radius(
+                     pos_com, max_dist));
+    const Real pair_shell_size =
+        other_shells.empty() ? max_dist : other_shells.front().second;
+
+    if(pair_shell_size >= sh_minim)
+    {
+        const ShellID shid(shell_id_gen());
+        const circle_type pair_circle(
+                pair_shell_size * single_circular_shell_mergin, pos_com.first,
+                this->polygon().triangle_at(pos_com.second).normal());
+        const circular_shell_type pair_shell(pair_circle, pos_com.second);
+        shell_container_.add_shell(shid, pair_shell, pos_com.second);
+
+        return add_event(create_pair(
+                    std::make_pair(shid, pair_circle),
+                    pid, p, partner_id, partner, ipv, len_ipv));
+    }
+    return boost::none;
+}
+
 /*XXX assuming doms are multi or shrinked single domain and are sorted by dist*/
 DomainID SGFRDSimulator::form_multi(
         const ParticleID& pid, const Particle& p, const FaceID& fid,
