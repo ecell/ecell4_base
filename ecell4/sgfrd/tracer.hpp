@@ -42,8 +42,8 @@ class basic_tracer<char, std::char_traits<char> >
     }
     ~basic_tracer(){}
 
-    basic_tracer& indent()   throw() {indent_ += 1;}
-    basic_tracer& unindent() throw() {indent_ -= 1;}
+    basic_tracer& indent()   throw() {indent_ += 1; return *this;}
+    basic_tracer& unindent() throw() {indent_ -= 1; return *this;}
 
     basic_tracer& write(const std::string& tr)
     {
