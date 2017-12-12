@@ -616,7 +616,7 @@ class SGFRDSimulator :
         results.push_back(propagated[1]);
 
         SGFRD_TRACE(tracer_.write("particle %1% and %2% propagated",
-            boost::get<0>(propagates[0]), boost::get<0>(propagates[1])));
+            boost::get<0>(propagated[0]), boost::get<0>(propagated[1])));
 
         this->remove_shell(sid);
         SGFRD_TRACE(tracer_.write("shell(%1%) removed", sid));
