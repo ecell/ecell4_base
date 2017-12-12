@@ -43,12 +43,16 @@ class Pair
     static Real calc_R_ipv(const Real r_shell,
                            const Particle& p1, const Particle& p2) throw()
     {
-        return r_shell / 2;
+        const Real Dipv = calc_D_ipv(p1.D(), p2.D());
+        const Real Dcom = calc_D_ipv(p1.D(), p2.D());
+        return r_shell * Dipv / (Dipv + Dcom);
     }
     static Real calc_R_com(const Real r_shell,
                            const Particle& p1, const Particle& p2) throw()
     {
-        return r_shell / 2;
+        const Real Dipv = calc_D_ipv(p1.D(), p2.D());
+        const Real Dcom = calc_D_ipv(p1.D(), p2.D());
+        return r_shell * Dcom / (Dipv + Dcom);
     }
 
   public:
