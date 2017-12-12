@@ -710,7 +710,7 @@ SGFRDSimulator::form_single_conical_event(
 
     Real dist_to_max_shell_intruder = max_cone_size;
     std::vector<std::pair<DomainID, Real> > min_shell_intruder;
-    for(typename std::vector<std::pair<DomainID, Real> >::const_iterator
+    for(std::vector<std::pair<DomainID, Real> >::const_iterator
         iter = intrusive_domains.begin(), iend = intrusive_domains.end();
         iter != iend; ++iter)
     {
@@ -822,7 +822,7 @@ SGFRDSimulator::form_single_circular_event(
 
     Real dist_to_max_shell_intruder = max_circle_size;
     std::vector<std::pair<DomainID, Real> > min_shell_intruder;
-    for(typename std::vector<std::pair<DomainID, Real> >::const_iterator
+    for(std::vector<std::pair<DomainID, Real> >::const_iterator
             iter = intrusive_domains.begin(), end = intrusive_domains.end();
             iter != end; ++iter)
     {
@@ -927,9 +927,10 @@ DomainID SGFRDSimulator::create_event(
             return single_circular.unwrap();
         }
         const std::vector<std::pair<DomainID, Real> >& intruders =
-            single_conical.unwrap_error();
+            single_circular.unwrap_error();
 
-        boost::optional<DomainID> pair_ = this->form_pair(intruders);
+        boost::optional<DomainID> pair_ =
+            this->form_pair(pid, p, fid, intruders);
         if(pair_)
         {
             return *pair_;
