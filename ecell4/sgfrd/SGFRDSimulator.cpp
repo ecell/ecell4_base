@@ -515,6 +515,8 @@ SGFRDSimulator::form_pair(
     const ParticleID partner_id  = sgl.particle_id();
     const Particle   partner     = sgl.particle();
     const FaceID     partner_fid = this->get_face_id(partner_id);
+    const ShellID    partner_sid = sgl.shell_id();
+    const ShellID    partner_did = intruders.front().first;
 
     const Real r1(p.radius()), r2(partner.radius());
     const Real D1(p.D()), D2(partner.D());
@@ -571,7 +573,7 @@ SGFRDSimulator::form_pair(
             iter = other_shells.begin(), iend = other_shells.end();
             iter != iend; ++iter)
     {
-        if(iter->first.first == sgl.shell_id())
+        if(iter->first.first == partner_sid)
         {
             continue;
         }
@@ -581,6 +583,13 @@ SGFRDSimulator::form_pair(
     if(pair_shell_size >= sh_minim)
     {
         SGFRD_TRACE(tracer_.write("pair is formed"))
+
+        this->remove_shell(partner_sid);
+        SGFRD_TRACE(tracer_.write("remove partner's shell, %1%", ))
+
+        this->remove_event(partner_did);
+        SGFRD_TRACE(tracer_.write("remove partner's domain, %1%", partner_did))
+
         const ShellID shid(shell_id_gen());
         const circle_type pair_circle(
                 pair_shell_size * single_circular_shell_mergin, pos_com.first,
