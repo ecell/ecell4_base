@@ -71,8 +71,8 @@ class Pair
         particles_[1] = p1;
         this->r_ipv_ = Pair::calc_R_ipv(shell_rad, p0.second, p1.second);
         this->r_com_ = Pair::calc_R_com(shell_rad, p0.second, p1.second);
-        this->D_ipv_ = Pair::calc_D_ipv(shell_rad, p0, p1);
-        this->D_com_ = Pair::calc_D_com(shell_rad, p0, p1);
+        this->D_ipv_ = Pair::calc_D_ipv(p0.second.D(), p1.second.D());
+        this->D_com_ = Pair::calc_D_com(p0.second.D(), p1.second.D());
     }
 
     EventKind  eventkind() const {return kind_;}
