@@ -506,13 +506,15 @@ DomainID SGFRDSimulator::form_multi(
     DomainID formed_multi_id;
     if(get_event(doms.front().first)->which_domain() == event_type::multi_domain)
     {
-        SGFRD_TRACE(tracer_.write("closest intruder is a multi domain. add all to this"))
+        SGFRD_TRACE(tracer_.write(
+                    "closest intruder is a multi domain. add all to this"))
         skip_first = true;
         formed_multi_id = doms.front().first;
     }
     else
     {
-        SGFRD_TRACE(tracer_.write("closest intruder is not a multi. make empty multi"))
+        SGFRD_TRACE(tracer_.write(
+                    "closest intruder is not a multi. make empty multi"))
 
         BOOST_AUTO(new_multi, create_empty_multi());
         formed_multi_id = add_event(new_multi);
@@ -910,7 +912,10 @@ DomainID SGFRDSimulator::create_event(
         {
             return single_conical.unwrap();
         }
-        return form_multi(pid, p, fid, single_conical.unwrap_error());
+        else
+        {
+            return form_multi(pid, p, fid, single_conical.unwrap_error());
+        }
     }
     else
     {
@@ -921,7 +926,15 @@ DomainID SGFRDSimulator::create_event(
         {
             return single_circular.unwrap();
         }
-        return form_multi(pid, p, fid, single_circular.unwrap_error());
+        const std::vector<std::pair<DomainID, Real> >& intruders =
+            single_conical.unwrap_error();
+
+        boost::optional<DomainID> pair_ = this->form_pair(intruders);
+        if(pair_)
+        {
+            return *pair_;
+        }
+        return form_multi(pid, p, fid, intruders);
     }
 }
 

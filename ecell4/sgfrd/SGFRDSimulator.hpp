@@ -1664,9 +1664,10 @@ class SGFRDSimulator :
     form_single_conical_event(
             const ParticleID&, const Particle&, const FaceID);
 
-//     boost::optional<DomainID>
-//     form_pair(const ParticleID&, const Particle&, const FaceID,
-//               const ParticleID&, const Particle&, const FaceID);
+    boost::optional<DomainID>
+    form_pair(const ParticleID& pid, const Particle& p, const FaceID& fid,
+              const std::vector<std::pair<DomainID, Real> >& intruders);
+
 
     std::vector<std::pair<vertex_id_type, Real> >
     get_intrusive_vertices(const std::pair<Real3, FaceID>& pos,
