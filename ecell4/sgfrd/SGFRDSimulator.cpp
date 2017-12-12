@@ -501,6 +501,8 @@ SGFRDSimulator::form_pair(
         const ParticleID& pid, const Particle& p, const FaceID& fid,
         const std::vector<std::pair<DomainID, Real> >& intruders)
 {
+    SGFRD_SCOPE(us, form_pair, tracer_);
+
     const boost::shared_ptr<event_type> nearest =
         this->get_event(intruders.front().first);
     if(nearest->which_domain() != event_type::single_domain)
@@ -553,6 +555,8 @@ SGFRDSimulator::form_pair(
 
         if(d_to_sh < sh_minim)
         {
+            SGFRD_TRACE(tracer_.write(
+                        "intrusive domains exists. multi should be formed"))
             // multi should be formed.
             return boost::none;
         }
@@ -562,11 +566,21 @@ SGFRDSimulator::form_pair(
     std::vector<std::pair<std::pair<ShellID, shell_type>, Real> >
         other_shells(this->shell_container_.list_shells_within_radius(
                      pos_com, max_dist));
-    const Real pair_shell_size =
-        other_shells.empty() ? max_dist : other_shells.front().second;
+    Real pair_shell_size = max_dist;
+    for(std::vector<std::pair<std::pair<ShellID, shell_type>, Real> >::iterator
+            iter = other_shells.begin(), iend = other_shells.end();
+            iter != iend; ++iter)
+    {
+        if(iter->first.first == sgl.shell_id())
+        {
+            continue;
+        }
+        pair_shell_size = std::min(pair_shell_size, iter->second);
+    }
 
     if(pair_shell_size >= sh_minim)
     {
+        SGFRD_TRACE(tracer_.write("pair is formed"))
         const ShellID shid(shell_id_gen());
         const circle_type pair_circle(
                 pair_shell_size * single_circular_shell_mergin, pos_com.first,
@@ -578,6 +592,9 @@ SGFRDSimulator::form_pair(
                     std::make_pair(shid, pair_circle),
                     pid, p, partner_id, partner, ipv, len_ipv));
     }
+    SGFRD_TRACE(tracer_.write("pair shell size = %1%, min_shell_size = %2%",
+                pair_shell_size, sh_minim);)
+    SGFRD_TRACE(tracer_.write("min-pair-intruder exists. multi should be formed"))
     return boost::none;
 }
 
