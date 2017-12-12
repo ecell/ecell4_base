@@ -71,6 +71,8 @@ class Pair
         particles_[1] = p1;
         this->r_ipv_ = Pair::calc_R_ipv(shell_rad, p0.second, p1.second);
         this->r_com_ = Pair::calc_R_com(shell_rad, p0.second, p1.second);
+        this->D_ipv_ = Pair::calc_D_ipv(shell_rad, p0, p1);
+        this->D_com_ = Pair::calc_D_com(shell_rad, p0, p1);
     }
 
     EventKind  eventkind() const {return kind_;}
@@ -90,16 +92,8 @@ class Pair
                                        this->particles_[1].second.radius();}
     Real R_ipv() const throw() {return this->r_ipv_;}
     Real R_com() const throw() {return this->r_com_;}
-    Real D_ipv() const throw()
-    {
-        return Pair::calc_D_ipv(this->particles_[0].second.D(),
-                                this->particles_[1].second.D());
-    }
-    Real D_com() const throw()
-    {
-        return Pair::calc_D_com(this->particles_[0].second.D(),
-                                this->particles_[1].second.D());
-    }
+    Real D_ipv() const throw() {return this->D_ipv_;}
+    Real D_com() const throw() {return this->D_com_;}
 
     Real3 const& ipv() const throw() {return this->ipv_;}
 
@@ -118,7 +112,6 @@ class Pair
         return particles_.at(i).second;
     }
 
-
     std::size_t num_shells()   const throw() {return 1;}
     std::size_t multiplicity() const throw() {return 2;}
 
@@ -131,6 +124,8 @@ class Pair
     Real      kf_;
     Real      r_ipv_;
     Real      r_com_;
+    Real      D_ipv_;
+    Real      D_com_;
     Real3     ipv_;
     shell_id_type       shell_id_;
     particle_array_type particles_;
