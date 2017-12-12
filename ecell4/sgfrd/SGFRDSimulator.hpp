@@ -1116,7 +1116,8 @@ class SGFRDSimulator :
 
     Pair create_pair(const std::pair<ShellID, circle_type>& sh,
                      const ParticleID& pid1, const Particle& p1,
-                     const ParticleID& pid2, const Particle& p2)
+                     const ParticleID& pid2, const Particle& p2,
+                     const Real3& ipv, const Real len_ipv)
     {
         SGFRD_SCOPE(ns, create_circular_pair_domain, tracer_);
 
@@ -1131,10 +1132,6 @@ class SGFRDSimulator :
                    Pair::calc_R_com(sh.second.size(), p1, p2));
         const Real t_com_escape = gf_com.drawTime(this->uniform_real());
 
-        const Real3 ipv = ecell4::polygon::direction(this->polygon(),
-                std::make_pair(p1.position(), this->get_face_id(pid1)),
-                std::make_pair(p2.position(), this->get_face_id(pid2)));
-        const Real len_ipv = length(ipv);
         const Real k_tot = this->calc_k_tot(this->model_->query_reaction_rules(
                                            p1.species(), p2.species()));
         SGFRD_TRACE(tracer_.write("ipv length = %1%", len_ipv))
