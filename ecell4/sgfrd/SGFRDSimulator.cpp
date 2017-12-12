@@ -673,146 +673,149 @@ void SGFRDSimulator::add_to_multi_recursive(Multi& multi_to_join)
     return;
 }
 
-DomainID SGFRDSimulator::create_event(
-            const ParticleID& pid, const Particle& p, const face_id_type fid)
+expected<DomainID, std::vector<std::pair<DomainID, Real> > >
+SGFRDSimulator::form_single_conical_event(
+        const ParticleID& pid, const Particle& p, const FaceID fid)
 {
-    SGFRD_SCOPE(us, create_event, tracer_);
-    const std::pair<Real3, face_id_type> pos = std::make_pair(p.position(), fid);
+    typedef expected<DomainID, std::vector<std::pair<DomainID, Real> > >
+            result_type;
+    SGFRD_SCOPE(us, form_single_conical_event, tracer_);
 
-    const Real min_circle_size = p.radius() * single_circular_shell_factor;
-          Real max_circle_size = get_max_circle_size(pos);
+    const std::pair<Real3, FaceID> pos = std::make_pair(p.position(), fid);
+    const std::vector<std::pair<VertexID, Real> > intrusive_vertices(
+            get_intrusive_vertices(pos, std::numeric_limits<Real>::infinity()));
 
-    SGFRD_TRACE(tracer_.write("min_circle_size = %1%, max_circle_size = %2%",
-                min_circle_size, max_circle_size));
+    const VertexID& vid = intrusive_vertices.front().first;
+    SGFRD_TRACE(tracer_.write("vertex id = %1%, distance = %2%",
+                vid, intrusive_vertices.front().second));
 
-    if(max_circle_size < min_circle_size)// draw conical shell
-    {
-        SGFRD_SCOPE(us, draw_conical_shell, tracer_);
-        const std::vector<std::pair<vertex_id_type, Real> > intrusive_vertices(
-                get_intrusive_vertices(pos, std::numeric_limits<Real>::infinity()));
-
-        const vertex_id_type& vid = intrusive_vertices.front().first;
-        SGFRD_TRACE(tracer_.write("vertex id = %1%, distance = %2%",
-                    vid, intrusive_vertices.front().second));
-
-        const Real min_cone_size =
-            (p.radius() + intrusive_vertices.front().second) *
-            single_conical_surface_shell_factor;
-        const Real max_cone_size = get_max_cone_size(vid);
-        SGFRD_TRACE(tracer_.write("min_cone_size = %1%, max_cone_size = %2%",
-                    min_cone_size, max_cone_size));
-
-        const std::vector<std::pair<DomainID, Real> > intrusive_domains(
-                get_intrusive_domains(vid, max_cone_size));
-        SGFRD_TRACE(tracer_.write("intrusive_domain_size = %1%", intrusive_domains.size()));
-
-        if(intrusive_domains.empty())
-        {
-            return add_event(create_single(create_single_conical_surface_shell(
-                                           vid, max_cone_size), pid, p));
-        }
-
-        Real dist_to_max_shell_intruder = max_cone_size;
-        std::vector<std::pair<DomainID, Real> > min_shell_intruder;
-        for(typename std::vector<std::pair<DomainID, Real> >::const_iterator
-                iter = intrusive_domains.begin(), end = intrusive_domains.end();
-                iter != end; ++iter)
-        {
-            if(iter->second <= min_cone_size)
-            {
-                min_shell_intruder.push_back(*iter);
-            }
-            else
-            {
-                // XXX because `intrusive_domains` are sorted by comparing the
-                // distance to them, once we found the element is far away, all
-                // the successors are much further.
-                dist_to_max_shell_intruder =
-                    std::min(iter->second, dist_to_max_shell_intruder);
-                break;
-            }
-        }
-
-        if(min_shell_intruder.empty())
-        {
-            SGFRD_TRACE(tracer_.write("intrusive domains exist but enough distant"));
-#ifndef ECELL4_SGFRD_NO_TRACE
-            for(std::size_t i=0; i<intrusive_domains.size(); ++i)
-            {
-                tracer_.write("domain %1%; dist = %2%;",
-                    intrusive_domains[i].first, intrusive_domains[i].second);
-            }
-#endif//ECELL4_SGFRD_NO_TRACE
-
-            const Real shell_size = dist_to_max_shell_intruder *
-                                    single_conical_surface_shell_mergin;
-
-            return add_event(create_single(
-                        create_single_conical_surface_shell(vid, shell_size),
-                        pid, p));
-        }
-
-        // burst intruder_domains and get new positions of particles
-        std::vector<std::pair<DomainID, Real> > shrinked_or_multi =
-            burst_and_shrink_non_multis(vid, min_shell_intruder);
-        SGFRD_TRACE(tracer_.write("close domains are bursted."));
-
-        if(shrinked_or_multi.front().second > min_cone_size)
-        {
-            SGFRD_TRACE(tracer_.write(
-                "after burst, no intruders exist in the min-range %1%",
-                min_cone_size));
-
-#ifndef ECELL4_SGFRD_NO_TRACE
-            for(std::size_t i=0; i<shrinked_or_multi.size(); ++i)
-            {
-                tracer_.write("domain %1%; dist = %2%;",
-                    shrinked_or_multi[i].first, shrinked_or_multi[i].second);
-            }
-#endif//ECELL4_SGFRD_NO_TRACE
-
-            const Real shell_size =
-                std::min(dist_to_max_shell_intruder,
-                         shrinked_or_multi.front().second) *
-                single_conical_surface_shell_mergin;
-
-            /* assertion */{
-            if(false == this->shell_container_.list_shells_within_radius(
-                std::make_pair(this->polygon().vertex_at(vid).position, vid),
-                shell_size).empty())
-            {
-                std::cout << "nearest shell: "
-                    << this->shell_container_.list_shells_within_radius(
-                        std::make_pair(this->polygon().vertex_at(vid).position, vid),
-                        shell_size).front().first.first << std::endl;
-                std::cout << "distance: "
-                    << this->shell_container_.list_shells_within_radius(
-                        std::make_pair(this->polygon().vertex_at(vid).position, vid),
-                        shell_size).front().second << std::endl;
-                std::cout << "shell size " << shell_size << std::endl;
-                assert(false);
-            }
-            }
-
-            return add_event(create_single(
-                        create_single_conical_surface_shell(vid, shell_size),
-                        pid, p));
-        }
-
-        SGFRD_TRACE(tracer_.write("forming multi"));
-        return form_multi(pid, p, fid, shrinked_or_multi);
-    }
-    SGFRD_SCOPE(us, draw_circular_shell, tracer_);
+    const Real min_cone_size =
+        (p.radius() + intrusive_vertices.front().second) *
+        single_conical_surface_shell_factor;
+    const Real max_cone_size = get_max_cone_size(vid);
+    SGFRD_TRACE(tracer_.write("min_cone_size = %1%, max_cone_size = %2%",
+                min_cone_size, max_cone_size));
 
     const std::vector<std::pair<DomainID, Real> > intrusive_domains(
+            get_intrusive_domains(vid, max_cone_size));
+    SGFRD_TRACE(tracer_.write("intrusive_domain_size = %1%", intrusive_domains.size()));
+
+    if(intrusive_domains.empty())
+    {
+        return result_type(add_event(create_single(
+            create_single_conical_surface_shell(vid, max_cone_size), pid, p)));
+    }
+
+    Real dist_to_max_shell_intruder = max_cone_size;
+    std::vector<std::pair<DomainID, Real> > min_shell_intruder;
+    for(typename std::vector<std::pair<DomainID, Real> >::const_iterator
+        iter = intrusive_domains.begin(), iend = intrusive_domains.end();
+        iter != iend; ++iter)
+    {
+        if(iter->second <= min_cone_size)
+        {
+            min_shell_intruder.push_back(*iter);
+        }
+        else
+        {
+            // XXX because `intrusive_domains` are sorted by comparing the
+            // distance to them, once we found the element is far away, all
+            // the successors are much further.
+            dist_to_max_shell_intruder =
+                std::min(iter->second, dist_to_max_shell_intruder);
+            break;
+        }
+    }
+
+    if(min_shell_intruder.empty())
+    {
+        SGFRD_TRACE(tracer_.write("intrusive domains exist but enough distant"));
+#ifndef ECELL4_SGFRD_NO_TRACE
+        for(std::size_t i=0; i<intrusive_domains.size(); ++i)
+        {
+            tracer_.write("domain %1%; dist = %2%;",
+                intrusive_domains[i].first, intrusive_domains[i].second);
+        }
+#endif//ECELL4_SGFRD_NO_TRACE
+
+        const Real shell_size = dist_to_max_shell_intruder *
+                                single_conical_surface_shell_mergin;
+
+        return result_type(add_event(create_single(
+            create_single_conical_surface_shell(vid, shell_size), pid, p)));
+    }
+
+    // burst intruder_domains and get new positions of particles
+    std::vector<std::pair<DomainID, Real> > shrinked_or_multi =
+        burst_and_shrink_non_multis(vid, min_shell_intruder);
+    SGFRD_TRACE(tracer_.write("close domains are bursted."));
+
+    if(shrinked_or_multi.front().second > min_cone_size)
+    {
+        SGFRD_TRACE(tracer_.write(
+            "after burst, no intruders exist in the min-range %1%",
+            min_cone_size));
+
+#ifndef ECELL4_SGFRD_NO_TRACE
+        for(std::size_t i=0; i<shrinked_or_multi.size(); ++i)
+        {
+            tracer_.write("domain %1%; dist = %2%;",
+                shrinked_or_multi[i].first, shrinked_or_multi[i].second);
+        }
+#endif//ECELL4_SGFRD_NO_TRACE
+
+        const Real shell_size =
+            std::min(dist_to_max_shell_intruder,
+                     shrinked_or_multi.front().second) *
+            single_conical_surface_shell_mergin;
+
+        /* assertion */{
+        if(false == this->shell_container_.list_shells_within_radius(
+            std::make_pair(this->polygon().vertex_at(vid).position, vid),
+            shell_size).empty())
+        {
+            std::cout << "nearest shell: "
+                << this->shell_container_.list_shells_within_radius(
+                    std::make_pair(this->polygon().vertex_at(vid).position, vid),
+                    shell_size).front().first.first << std::endl;
+            std::cout << "distance: "
+                << this->shell_container_.list_shells_within_radius(
+                    std::make_pair(this->polygon().vertex_at(vid).position, vid),
+                    shell_size).front().second << std::endl;
+            std::cout << "shell size " << shell_size << std::endl;
+            assert(false);
+        }
+        }
+
+        return result_type(add_event(create_single(
+            create_single_conical_surface_shell(vid, shell_size), pid, p)));
+    }
+
+    return result_type(shrinked_or_multi);
+}
+
+expected<DomainID, std::vector<std::pair<DomainID, Real> > >
+SGFRDSimulator::form_single_circular_event(
+    const ParticleID& pid, const Particle& p, const FaceID fid,
+    const Real max_circle_size)
+{
+    typedef expected<DomainID, std::vector<std::pair<DomainID, Real> > >
+            result_type;
+    SGFRD_SCOPE(us, form_single_circular_event, tracer_);
+
+    const Real min_circle_size = p.radius() * single_circular_shell_factor;
+
+    const std::pair<Real3, FaceID> pos = std::make_pair(p.position(), fid);
+    const std::vector<std::pair<DomainID, Real> > intrusive_domains(
             get_intrusive_domains(pos, max_circle_size));
-    SGFRD_TRACE(tracer_.write("intrusive_domain_size = %1%", intrusive_domains.size()))
+    SGFRD_TRACE(tracer_.write(
+                "intrusive_domain_size = %1%", intrusive_domains.size()))
 
     if(intrusive_domains.empty())
     {
         SGFRD_TRACE(tracer_.write("no intrusive domains exists"))
-        return add_event(create_single(create_single_circular_shell(
-                         pos, max_circle_size), pid, p));
+        return result_type(add_event(create_single(
+            create_single_circular_shell(pos, max_circle_size), pid, p)));
     }
 
     Real dist_to_max_shell_intruder = max_circle_size;
@@ -857,8 +860,8 @@ DomainID SGFRDSimulator::create_event(
         const Real shell_size =
             dist_to_max_shell_intruder * single_circular_shell_mergin;
 
-        return add_event(create_single(
-                    create_single_circular_shell(pos, shell_size), pid, p));
+        return result_type(add_event(create_single(
+            create_single_circular_shell(pos, shell_size), pid, p)));
     }
 
     std::vector<std::pair<DomainID, Real> > shrinked_or_multi =
@@ -880,12 +883,46 @@ DomainID SGFRDSimulator::create_event(
             std::min(dist_to_max_shell_intruder, shrinked_or_multi.front().second) *
             single_circular_shell_mergin;
 
-        return add_event(create_single(
-                    create_single_circular_shell(pos, shell_size), pid, p));
+        return result_type(add_event(create_single(
+            create_single_circular_shell(pos, shell_size), pid, p)));
     }
 
-    SGFRD_TRACE(tracer_.write("forming multi"))
-    return form_multi(pid, p, fid, shrinked_or_multi);
+    return result_type(shrinked_or_multi);
+}
+
+DomainID SGFRDSimulator::create_event(
+            const ParticleID& pid, const Particle& p, const face_id_type fid)
+{
+    SGFRD_SCOPE(us, create_event, tracer_);
+    const std::pair<Real3, face_id_type> pos = std::make_pair(p.position(), fid);
+
+    const Real min_circle_size = p.radius() * single_circular_shell_factor;
+    const Real max_circle_size = get_max_circle_size(pos);
+
+    SGFRD_TRACE(tracer_.write("min_circle_size = %1%, max_circle_size = %2%",
+                min_circle_size, max_circle_size));
+
+    if(max_circle_size < min_circle_size)// draw conical shell
+    {
+        expected<DomainID, std::vector<std::pair<DomainID, Real> >
+            > single_conical = this->form_single_conical_event(pid, p, fid);
+        if(single_conical.is_ok())
+        {
+            return single_conical.unwrap();
+        }
+        return form_multi(pid, p, fid, single_conical.unwrap_error());
+    }
+    else
+    {
+        expected<DomainID, std::vector<std::pair<DomainID, Real> >
+            > single_circular =
+                this->form_single_circular_event(pid, p, fid, max_circle_size);
+        if(single_circular.is_ok())
+        {
+            return single_circular.unwrap();
+        }
+        return form_multi(pid, p, fid, single_circular.unwrap_error());
+    }
 }
 
 } // sgfrd
