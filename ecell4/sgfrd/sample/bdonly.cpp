@@ -90,11 +90,11 @@ bool key_missing(
 
 int main(int argc, char **argv)
 {
-    typedef ecell4::sgfrd::polygon_traits       polygon_traits;
-    typedef ecell4::Polygon<polygon_traits>     polygon_type;
-    typedef ecell4::sgfrd::SGFRDWorld           world_type;
-    typedef ecell4::sgfrd::BDSimulator       simulator_type;
-    typedef typename polygon_type::face_id_type face_id_type;
+    typedef ecell4::sgfrd::polygon_traits   polygon_traits;
+    typedef ecell4::Polygon<polygon_traits> polygon_type;
+    typedef ecell4::sgfrd::SGFRDWorld       world_type;
+    typedef ecell4::sgfrd::BDSimulator      simulator_type;
+    typedef polygon_type::face_id_type      face_id_type;
 
     if(argc != 2)
     {
