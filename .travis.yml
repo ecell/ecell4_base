@@ -55,7 +55,7 @@ before_install:
     if [[ $TRAVIS_PYTHON_VERSION == 3* ]]; then
       brew install python3;
       which python3;
-      /usr/local/bin/python3 -V;
+      python3 -V
       brew install freetype;
     fi;
   fi
@@ -72,12 +72,12 @@ before_install:
 - if [ "$TRAVIS_OS_NAME" == "osx" ]; then
     curl -O https://bootstrap.pypa.io/get-pip.py;
     if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then
-      /usr/local/bin/python get-pip.py;
-      /usr/local/bin/python -m pip install -U cython numpy matplotlib jupyter;
+      python2 get-pip.py;
+      python2 -m pip install -U cython numpy matplotlib jupyter;
     fi;
     if [[ $TRAVIS_PYTHON_VERSION == 3* ]]; then
-      /usr/local/bin/python3 get-pip.py;
-      /usr/local/bin/python3 -m pip install -U cython numpy matplotlib jupyter;
+      python3 get-pip.py;
+      python3 -m pip install -U cython numpy matplotlib jupyter;
     fi;
   fi
 
@@ -89,12 +89,12 @@ script:
   fi
 - if [ "$TRAVIS_OS_NAME" == "osx" ]; then
     if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then
-      sudo bash -c 'cmake -DCMAKE_INSTALL_PREFIX=/usr/local -DPYTHON_EXECUTABLE:FILEPATH=/usr/local/bin/python . && make && make test && make install';
+      sudo bash -c 'cmake -DCMAKE_INSTALL_PREFIX=/usr/local -DPYTHON_EXECUTABLE:FILEPATH=python2 . && make && make test && make install';
     fi;
     if [[ $TRAVIS_PYTHON_VERSION == 3* ]]; then
-      sudo bash -c 'cmake -DCMAKE_INSTALL_PREFIX=/usr/local -DPYTHON_EXECUTABLE:FILEPATH=/usr/local/bin/python3 . && make && make test && make install';
+      sudo bash -c 'cmake -DCMAKE_INSTALL_PREFIX=/usr/local -DPYTHON_EXECUTABLE:FILEPATH=python3 . && make && make test && make install';
     fi;
-    rm CMakeCache.txt;
+    rm -f CMakeCache.txt;
   fi
 - set +e
 
