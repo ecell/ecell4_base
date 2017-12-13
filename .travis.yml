@@ -60,14 +60,14 @@ before_install:
     fi;
   fi
 
-- which python2
-- python2 -V
+- which python
+- python -V
 
 - if [ "$TRAVIS_OS_NAME" == "linux" ]; then
     mkdir ~/local;
     wget https://bootstrap.pypa.io/get-pip.py;
-    python2 get-pip.py;
-    python2 -m pip install -U cython numpy matplotlib jupyter;
+    python get-pip.py;
+    python -m pip install -U cython numpy matplotlib jupyter;
   fi
 - if [ "$TRAVIS_OS_NAME" == "osx" ]; then
     curl -O https://bootstrap.pypa.io/get-pip.py;
@@ -94,7 +94,7 @@ script:
     if [[ $TRAVIS_PYTHON_VERSION == 3* ]]; then
       sudo bash -c 'cmake -DCMAKE_INSTALL_PREFIX=/usr/local -DPYTHON_EXECUTABLE:FILEPATH=python3 . && make && make test && make install';
     fi;
-    rm CMakeCache.txt;
+    rm -f CMakeCache.txt;
   fi
 - set +e
 
