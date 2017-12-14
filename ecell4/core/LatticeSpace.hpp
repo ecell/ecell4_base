@@ -130,7 +130,7 @@ public:
         // return inner_size() * voxel_volume();
     }
 
-    virtual Real3 actual_lengths() const = 0; // XXX should be owned by LatticeSpaceBase?
+    virtual Real3 actual_lengths() const = 0; // XXX should be owned by HCPLatticeSpace?
 
     Real actual_volume() const
     {
@@ -208,11 +208,11 @@ public:
         make_interface_type(const Species& sp, Shape::dimension_kind dimension, const std::string loc);
 
     /**
-     Coordinate transformations: See LatticeSpaceBase for the implementation
+     Coordinate transformations: See HCPLatticeSpace for the implementation
      */
 
     /*
-     * for LatticeSpaceBase
+     * for HCPLatticeSpace
      */
     virtual coordinate_type inner2coordinate(const coordinate_type inner) const = 0;
 

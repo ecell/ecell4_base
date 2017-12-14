@@ -8,7 +8,7 @@
 #include <sstream>
 
 #include "comparators.hpp"
-#include "LatticeSpaceBase.hpp"
+#include "HCPLatticeSpace.hpp"
 
 namespace ecell4
 {
@@ -19,11 +19,11 @@ inline unsigned int ceilint(const unsigned int x, const unsigned int y)
 }
 
 class LatticeSpaceCellListImpl
-    : public LatticeSpaceBase
+    : public HCPLatticeSpace
 {
 public:
 
-    typedef LatticeSpaceBase base_type;
+    typedef HCPLatticeSpace base_type;
 
     typedef base_type::coordinate_id_pair_type coordinate_id_pair_type;
     typedef base_type::coordinate_type coordinate_type;

@@ -1,16 +1,16 @@
 #ifndef ECELL4_LATTICE_SPACE_VECTOR_IMPL_HPP
 #define ECELL4_LATTICE_SPACE_VECTOR_IMPL_HPP
 
-#include "LatticeSpaceBase.hpp"
+#include "HCPLatticeSpace.hpp"
 
 namespace ecell4 {
 
 class LatticeSpaceVectorImpl
-    : public LatticeSpaceBase
+    : public HCPLatticeSpace
 {
 public:
 
-    typedef LatticeSpaceBase base_type;
+    typedef HCPLatticeSpace base_type;
 
     typedef base_type::coordinate_id_pair_type coordinate_id_pair_type;
     typedef base_type::coordinate_type coordinate_type;

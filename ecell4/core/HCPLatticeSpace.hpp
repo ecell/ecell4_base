@@ -1,12 +1,12 @@
-#ifndef ECELL4_LATTICE_SPACE_BASE_HPP
-#define ECELL4_LATTICE_SPACE_BASE_HPP
+#ifndef ECELL4_HCP_LATTICE_SPACE_HPP
+#define ECELL4_HCP_LATTICE_SPACE_HPP
 
 #include "LatticeSpace.hpp"
 
 namespace ecell4
 {
 
-class LatticeSpaceBase
+class HCPLatticeSpace
     : public LatticeSpace
 {
 public:
@@ -15,13 +15,13 @@ public:
 
 public:
 
-    LatticeSpaceBase(const Real3& edge_lengths, const Real& voxel_radius, const bool is_periodic)
+    HCPLatticeSpace(const Real3& edge_lengths, const Real& voxel_radius, const bool is_periodic)
         : base_type(voxel_radius), edge_lengths_(edge_lengths)
     {
         set_lattice_properties(is_periodic);
     }
 
-    virtual ~LatticeSpaceBase()
+    virtual ~HCPLatticeSpace()
     {
         ; // do nothing
     }
