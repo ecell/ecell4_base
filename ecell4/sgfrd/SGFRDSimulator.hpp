@@ -1333,8 +1333,6 @@ class SGFRDSimulator :
             {
                 SGFRD_TRACE(tracer_.write(
                     "add closely-fitted domain to bursted particle %1%", pid_))
-
-                remove_event(did);
                 did_ = add_event(create_closely_fitted_domain(
                     create_closely_fitted_shell(pid_, p_, fid_), pid_, p_));
                 results.push_back(std::make_pair(did_,
@@ -1343,6 +1341,7 @@ class SGFRDSimulator :
                         std::make_pair(p_.position(), fid_)) -
                     (calc_min_single_circular_shell_radius(p_) * 1.1)));
             }
+            remove_event(did);
             SGFRD_TRACE(tracer_.write("domain %1% is bursted and shrinked", did))
         }
 
@@ -1385,7 +1384,6 @@ class SGFRDSimulator :
                 SGFRD_TRACE(tracer_.write(
                     "add closely-fitted domain to bursted particle %1%", pid_))
 
-                remove_event(did);
                 did_ = add_event(create_closely_fitted_domain(
                     create_closely_fitted_shell(pid_, p_, fid_), pid_, p_));
                 results.push_back(std::make_pair(did_,
@@ -1393,6 +1391,7 @@ class SGFRDSimulator :
                         vpos, std::make_pair(p_.position(), fid_)) -
                     (calc_min_single_circular_shell_radius(p_) * 1.1)));
             }
+            remove_event(did);
             SGFRD_TRACE(tracer_.write("domain %1% is bursted and shrinked", did))
         }
 
