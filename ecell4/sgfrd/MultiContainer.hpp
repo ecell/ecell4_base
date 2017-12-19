@@ -125,14 +125,15 @@ class MultiContainer
             const std::pair<Real3, face_id_type>& pos, const Real& radius) const
     {
         std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > retval;
-        const Real rad2 = radius * radius;
         Particle p; ParticleID pid;
         BOOST_FOREACH(boost::tie(pid, p), pcon_)
         {
             BOOST_AUTO(fid, registrator_.structure_on(pid));
-            const Real d2 = world_.distance_sq(std::make_pair(p.position(), fid), pos);
-            if(d2 <= rad2) retval.push_back(std::make_pair(
-                        std::make_pair(pid, p), std::sqrt(d2)));
+            const Real d = world_.distance(std::make_pair(p.position(), fid), pos);
+            if(d <= (radius + p.radius()))
+            {
+                retval.push_back(std::make_pair(std::make_pair(pid, p), d));
+            }
         }
         std::sort(retval.begin(), retval.end(),
             ecell4::utils::pair_second_element_comparator<
@@ -145,15 +146,16 @@ class MultiContainer
             const ParticleID& ignore) const
     {
         std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > retval;
-        const Real rad2 = radius * radius;
         Particle p; ParticleID pid;
         BOOST_FOREACH(boost::tie(pid, p), pcon_)
         {
-            if(pid == ignore) continue;
+            if(pid == ignore){continue;}
             BOOST_AUTO(fid, registrator_.structure_on(pid));
-            const Real d2 = world_.distance_sq(std::make_pair(p.position(), fid), pos);
-            if(d2 <= rad2) retval.push_back(std::make_pair(
-                        std::make_pair(pid, p), std::sqrt(d2)));
+            const Real d = world_.distance(std::make_pair(p.position(), fid), pos);
+            if(d <= (radius + p.radius()))
+            {
+                retval.push_back(std::make_pair(std::make_pair(pid, p), d));
+            }
         }
         std::sort(retval.begin(), retval.end(),
             ecell4::utils::pair_second_element_comparator<
@@ -170,11 +172,13 @@ class MultiContainer
         Particle p; ParticleID pid;
         BOOST_FOREACH(boost::tie(pid, p), pcon_)
         {
-            if(pid == ignore1 || pid == ignore2) continue;
+            if(pid == ignore1 || pid == ignore2){continue;}
             BOOST_AUTO(fid, registrator_.structure_on(pid));
-            const Real d2 = world_.distance_sq(std::make_pair(p.position(), fid), pos);
-            if(d2 <= rad2) retval.push_back(std::make_pair(
-                        std::make_pair(pid, p), std::sqrt(d2)));
+            const Real d = world_.distance(std::make_pair(p.position(), fid), pos);
+            if(d <= (radius + p.radius()))
+            {
+                retval.push_back(std::make_pair(std::make_pair(pid, p), d));
+            }
         }
         std::sort(retval.begin(), retval.end(),
             ecell4::utils::pair_second_element_comparator<
