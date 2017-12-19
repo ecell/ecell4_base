@@ -2,6 +2,7 @@ E-Cell System version 4
 =======================
 
 <a href="https://notebooks.azure.com/import/gh/ecell/ecell4-notebooks"><img src="https://notebooks.azure.com/launch.png" /></a>
+[![DOI](https://zenodo.org/badge/6348303.svg)](https://zenodo.org/badge/latestdoi/6348303)
 
 [![Build Status](https://travis-ci.org/ecell/ecell4.svg?branch=develop)](https://travis-ci.org/ecell/ecell4)
 [![CircleCI](https://circleci.com/gh/ecell/ecell4.svg?style=svg)](https://circleci.com/gh/ecell/ecell4)
