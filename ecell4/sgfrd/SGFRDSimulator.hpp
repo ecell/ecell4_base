@@ -535,8 +535,12 @@ class SGFRDSimulator :
                 BOOST_AUTO(results, this->attempt_reaction_single(
                            this->get_shell(sids[ridx]), dids[ridx], doms[ridx],
                            pids[ridx], ps[ridx], fids[ridx]));
+
                 this->remove_shell(sids[ridx]);
                 SGFRD_TRACE(tracer_.write("shell %1% removed", sids[ridx]));
+                this->remove_event(dids[ridx]);
+                SGFRD_TRACE(tracer_.write("event %1% removed", dids[ridx]));
+
                 SGFRD_TRACE(tracer_.write("reaction attempted"));
 
                 // add domain to each reactant
