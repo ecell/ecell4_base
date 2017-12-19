@@ -1064,7 +1064,7 @@ DomainID SGFRDSimulator::create_event(
 }
 
 bool SGFRDSimulator::diagnosis() const
-{
+{//{{{
     const boost::chrono::steady_clock::time_point start_ =
         boost::chrono::high_resolution_clock::now();
 
@@ -1124,7 +1124,9 @@ bool SGFRDSimulator::diagnosis() const
                 {
                     if(_shid == shid){continue;}
                     const Real dist = boost::apply_visitor(dist_calc, _sh);
-                    if(dist < ccl.size())
+                    const DomainID _did = boost::apply_visitor(
+                            domain_id_getter(), _sh);
+                    if(dist < ccl.size() && ccl.domain_id() != _did)
                     {
                         result = false;
                         std::cerr << "ERROR: shell " << shid << " and " << _shid
@@ -1146,7 +1148,9 @@ bool SGFRDSimulator::diagnosis() const
                 {
                     if(_shid == shid){continue;}
                     const Real dist = boost::apply_visitor(dist_calc, _sh);
-                    if(dist < con.size())
+                    const DomainID _did = boost::apply_visitor(
+                            domain_id_getter(), _sh);
+                    if(dist < con.size() && con.domain_id() != _did)
                     {
                         result = false;
                         std::cerr << "ERROR: shell " << shid << " and " << _shid
@@ -1428,7 +1432,7 @@ bool SGFRDSimulator::diagnosis() const
     }
     std::cerr << std::flush;
     return result;
-}
+}// }}}
 
 } // sgfrd
 } // ecell4
