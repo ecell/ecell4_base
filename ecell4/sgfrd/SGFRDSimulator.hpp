@@ -1325,13 +1325,14 @@ class SGFRDSimulator :
                 results.push_back(std::make_pair(did, dist));
                 continue;
             }
-            SGFRD_TRACE(tracer_.write("domain %1% is single", did))
+            SGFRD_TRACE(tracer_.write("domain %1% is not a multi", did))
 
             DomainID did_; ParticleID pid_; Particle p_; FaceID fid_;
             BOOST_FOREACH(boost::tie(pid_, p_, fid_),
                           burst_event(std::make_pair(did, ev), tm))
             {
-                SGFRD_TRACE(tracer_.write("add closely-fitted domain to bursted particle %1%", pid_))
+                SGFRD_TRACE(tracer_.write(
+                    "add closely-fitted domain to bursted particle %1%", pid_))
 
                 remove_event(did);
                 did_ = add_event(create_closely_fitted_domain(
@@ -1375,13 +1376,14 @@ class SGFRDSimulator :
                 results.push_back(std::make_pair(did, dist));
                 continue;
             }
-            SGFRD_TRACE(tracer_.write("domain %1% is single", did))
+            SGFRD_TRACE(tracer_.write("domain %1% is not a multi", did))
 
             DomainID did_; ParticleID pid_; Particle p_; FaceID fid_;
             BOOST_FOREACH(boost::tie(pid_, p_, fid_),
                           burst_event(std::make_pair(did, ev), tm))
             {
-                SGFRD_TRACE(tracer_.write("add closely-fitted domain to bursted particle %1%", pid_))
+                SGFRD_TRACE(tracer_.write(
+                    "add closely-fitted domain to bursted particle %1%", pid_))
 
                 remove_event(did);
                 did_ = add_event(create_closely_fitted_domain(
