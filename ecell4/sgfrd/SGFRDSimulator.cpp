@@ -535,7 +535,7 @@ SGFRDSimulator::form_pair(
     Real3 disp = ipv * D1 / D12;
     ecell4::polygon::travel(this->polygon(), pos_com, disp, 2);
 
-    Real max_dist = std::numeric_limits<Real>::infinity();
+    Real max_dist = get_max_circle_size(pos_com);
     // the first element is the partner. ignore it.
     for(std::vector<std::pair<DomainID, Real> >::const_iterator
         iter(intruders.begin()+1), iend(intruders.end()); iter != iend; ++iter)
