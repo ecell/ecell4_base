@@ -302,6 +302,8 @@ SGFRDSimulator::attempt_reaction_1_to_2(const ReactionRule& rule,
         pp2 = this->create_particle(particles_new[1], newpfs[1].second);
     assert(pp2.second);
     const ParticleID pid2(pp2.first.first);
+    SGFRD_TRACE(tracer_.write("ext particle %1% is updateed", pid))
+    SGFRD_TRACE(tracer_.write("new particle %1% is assigned", pid2))
 
     //------------------------ record reaction -----------------------------
     last_reactions_.push_back(std::make_pair(rule, make_unbinding_reaction_info(
@@ -1172,6 +1174,8 @@ bool SGFRDSimulator::diagnosis() const
     }
 
     // 3.
+    std::map<ParticleID, EventID> pid2evid;
+    std::map<ShellID,    EventID> sid2evid;
     EventID evid; boost::shared_ptr<event_type> ev_ptr;
     BOOST_FOREACH(boost::tie(evid, ev_ptr), this->scheduler_.events())
     {
@@ -1184,16 +1188,24 @@ bool SGFRDSimulator::diagnosis() const
                 const ShellID   _shid = sgl.shell_id();
                 const ParticleID _pid = sgl.particle_id();
 
+                if(pid2evid.count(_pid)  == 0){pid2evid[_pid]  = evid;}
+                if(sid2evid.count(_shid) == 0){sid2evid[_shid] = evid;}
+
                 BOOST_AUTO(found_p, std::find_if(particles.begin(), particles.end(),
                     ecell4::utils::pair_first_element_unary_predicator<
                         ParticleID, Particle>(_pid)));
                 if(found_p == particles.end())
                 {
                     result = false;
-                    std::cerr << "ERROR: particle might assigned to two"
+                    std::cerr << "ERROR: particle might assigned to two "
                               << "different domains\n";
                     std::cerr << "     : Single domain " << evid << " has particle "
                               << _pid << " but the particle is already erased\n";
+                    if(pid2evid.count(_pid) == 1)
+                    {
+                        std::cerr << "     : event " << pid2evid[_pid]
+                                  << " has particle " << _pid << '\n';
+                    }
                     break;
                 }
                 BOOST_AUTO(found_s, std::find_if(shells.begin(), shells.end(),
@@ -1206,6 +1218,12 @@ bool SGFRDSimulator::diagnosis() const
                               << "different domains\n";
                     std::cerr << "     : Single domain " << evid << " has shell "
                               << _shid << " but the shell is already erased\n";
+                    if(sid2evid.count(_shid) == 1)
+                    {
+                        std::cerr << "     : event " << sid2evid[_shid]
+                                  << " has shell " << _shid << '\n';
+                    }
+
                     break;
                 }
                 const FaceID fid_p = this->get_face_id(_pid);
@@ -1233,6 +1251,9 @@ bool SGFRDSimulator::diagnosis() const
                 const ShellID    _shid = pr.shell_id();
                 const ParticleID _pid0 = pr.particle_id_at(0);
                 const ParticleID _pid1 = pr.particle_id_at(1);
+                if(pid2evid.count(_pid0) == 0){pid2evid[_pid0] = evid;}
+                if(pid2evid.count(_pid1) == 0){pid2evid[_pid1] = evid;}
+                if(sid2evid.count(_shid) == 0){sid2evid[_shid] = evid;}
 
                 BOOST_AUTO(found_p0, std::find_if(particles.begin(), particles.end(),
                     ecell4::utils::pair_first_element_unary_predicator<
@@ -1244,6 +1265,11 @@ bool SGFRDSimulator::diagnosis() const
                               << "different domains\n";
                     std::cerr << "     : Pair domain " << evid << " has particle "
                               << _pid0 << " but the particle is already erased\n";
+                    if(pid2evid.count(_pid0) == 1)
+                    {
+                        std::cerr << "     : event " << pid2evid[_pid0]
+                                  << " has particle " << _pid0 << '\n';
+                    }
                     break;
                 }
                 BOOST_AUTO(found_p1, std::find_if(particles.begin(), particles.end(),
@@ -1256,6 +1282,11 @@ bool SGFRDSimulator::diagnosis() const
                               << "different domains\n";
                     std::cerr << "     : Pair domain " << evid << " has particle "
                               << _pid1 << " but the particle is already erased\n";
+                    if(pid2evid.count(_pid1) == 1)
+                    {
+                        std::cerr << "     : event " << pid2evid[_pid1]
+                                  << " has particle " << _pid1 << '\n';
+                    }
                     break;
                 }
                 BOOST_AUTO(found_s, std::find_if(shells.begin(), shells.end(),
@@ -1268,6 +1299,11 @@ bool SGFRDSimulator::diagnosis() const
                               << "different domains\n";
                     std::cerr << "     : Pair domain " << evid << " has shell "
                               << _shid << " but the shell is already erased\n";
+                    if(sid2evid.count(_shid) == 1)
+                    {
+                        std::cerr << "     : event " << sid2evid[_shid]
+                                  << " has shell " << _shid << '\n';
+                    }
                     break;
                 }
                 const FaceID fid_p0 = this->get_face_id(_pid0);
@@ -1310,6 +1346,10 @@ bool SGFRDSimulator::diagnosis() const
                               << '\n';
                 }
                 particles.erase(found_p0);
+                // to avoid iterator break
+                found_p1 = std::find_if(particles.begin(), particles.end(),
+                    ecell4::utils::pair_first_element_unary_predicator<
+                        ParticleID, Particle>(_pid1));
                 particles.erase(found_p1);
                 shells.erase(found_s);
                 break;
@@ -1321,6 +1361,7 @@ bool SGFRDSimulator::diagnosis() const
                 ParticleID _pid; Particle _p;
                 BOOST_FOREACH(boost::tie(_pid, _p), mul.particles())
                 {
+                    if(pid2evid.count(_pid) == 0){pid2evid[_pid] = evid;}
                     bool within = false;
                     BOOST_AUTO(found_p, std::find_if(particles.begin(), particles.end(),
                         ecell4::utils::pair_first_element_unary_predicator<
@@ -1328,10 +1369,15 @@ bool SGFRDSimulator::diagnosis() const
                     if(found_p == particles.end())
                     {
                         result = false;
-                        std::cerr << "ERROR: particle might assigned to two"
+                        std::cerr << "ERROR: particle might assigned to two "
                                   << "different domains\n";
                         std::cerr << "     : domain " << evid << " has particle "
                                   << _pid << " but the particle is already erased\n";
+                        if(pid2evid.count(_pid) == 1)
+                        {
+                            std::cerr << "     : event " << pid2evid[_pid]
+                                      << " has particle " << _pid << '\n';
+                        }
                         continue;
                     }
                     const FaceID fid_p = this->get_face_id(_pid);
@@ -1347,7 +1393,7 @@ bool SGFRDSimulator::diagnosis() const
                         if(found_s == shells.end())
                         {
                             result = false;
-                            std::cerr << "ERROR: shell might assigned to two"
+                            std::cerr << "ERROR: shell might assigned to two "
                                       << "different domains\n";
                             std::cerr << "     : Multi domain " << evid << " has shell "
                                       << _shid << " but the shell is already erased\n";
@@ -1372,6 +1418,8 @@ bool SGFRDSimulator::diagnosis() const
                 }
                 BOOST_FOREACH(_shid, mul.shell_ids())
                 {
+                    if(sid2evid.count(_shid) == 0){sid2evid[_shid] = evid;}
+
                     BOOST_AUTO(found_s, std::find_if(shells.begin(), shells.end(),
                         ecell4::utils::pair_first_element_unary_predicator<
                             ShellID, shell_type>(_shid)));
@@ -1382,6 +1430,11 @@ bool SGFRDSimulator::diagnosis() const
                                   << "different domains\n";
                         std::cerr << "     : Multi domain " << evid << " has shell "
                                   << _shid << " but the shell is already erased\n";
+                        if(sid2evid.count(_shid) == 1)
+                        {
+                            std::cerr << "     : event " << sid2evid[_shid]
+                                      << " has shell " << _shid << '\n';
+                        }
                         continue;
                     }
                     shells.erase(found_s);
@@ -1403,6 +1456,7 @@ bool SGFRDSimulator::diagnosis() const
             }
         }
     }
+
     if(!particles.empty())
     {
         std::cerr << "ERROR: some of particles are not assigned to Domain\n";
@@ -1419,6 +1473,8 @@ bool SGFRDSimulator::diagnosis() const
         {
             std::cerr << "     : shell id " << shid
                       << " is not assigned to any Domain\n";
+            const DomainID _did = boost::apply_visitor(domain_id_getter(), sh);
+            std::cerr << "     : it should be contained by " << _did << '\n';
         }
     }
     if(result)
