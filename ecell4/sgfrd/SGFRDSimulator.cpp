@@ -1021,10 +1021,13 @@ DomainID SGFRDSimulator::create_event(
             > single_conical = this->form_single_conical_event(pid, p, fid);
         if(single_conical.is_ok())
         {
+            SGFRD_TRACE(tracer_.write("single conical was successfully formed"))
             return single_conical.unwrap();
         }
         else
         {
+            SGFRD_TRACE(tracer_.write("single conical could not be formed"))
+            SGFRD_TRACE(tracer_.write("forming multi..."))
             return form_multi(pid, p, fid, single_conical.unwrap_error());
         }
     }
@@ -1035,8 +1038,12 @@ DomainID SGFRDSimulator::create_event(
                 this->form_single_circular_event(pid, p, fid, max_circle_size);
         if(single_circular.is_ok())
         {
+            SGFRD_TRACE(tracer_.write("single circular was successfully formed"))
             return single_circular.unwrap();
         }
+
+        SGFRD_TRACE(tracer_.write("single circular could not be formed"))
+
         const std::vector<std::pair<DomainID, Real> >& intruders =
             single_circular.unwrap_error();
 
@@ -1044,8 +1051,10 @@ DomainID SGFRDSimulator::create_event(
             this->form_pair(pid, p, fid, intruders);
         if(pair_)
         {
+            SGFRD_TRACE(tracer_.write("pair circular was formed"))
             return *pair_;
         }
+        SGFRD_TRACE(tracer_.write("forming multi..."))
         return form_multi(pid, p, fid, intruders);
     }
 }
