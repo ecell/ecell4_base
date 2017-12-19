@@ -457,13 +457,12 @@ class SGFRDSimulator :
 
 //------------------------------------ pair ------------------------------------
 
-    void fire_pair(const Pair& dom, DomainID did)
+    void fire_pair(Pair& dom, DomainID did)
     {
         SGFRD_SCOPE(us, fire_pair, tracer_);
-        Pair::EventKind evkd = dom.eventkind();
         const greens_functions::GreensFunction2DRadAbs
             gf_ipv(dom.D_ipv(), dom.kf(), dom.r0(), dom.sigma(), dom.R_ipv());
-        if(evkd == Pair::IV_UNDETERMINED)
+        if(dom.eventkind() == Pair::IV_UNDETERMINED)
         {
             SGFRD_TRACE(tracer_.write("pair event is IV_UNDERTERMINED. "
                         "determine iv event kind here."))
@@ -471,19 +470,19 @@ class SGFRDSimulator :
                 gf_ipv.drawEventType(this->uniform_real(), dom.dt());
             if(iv_kind == greens_functions::GreensFunction::IV_ESCAPE)
             {
-                evkd = Pair::IV_ESCAPE;
+                dom.eventkind() = Pair::IV_ESCAPE;
                 SGFRD_TRACE(tracer_.write("pair event kind = IV_ESCAPE"));
             }
             else
             {
-                evkd = Pair::IV_REACTION;
+                dom.eventkind() = Pair::IV_REACTION;
                 SGFRD_TRACE(tracer_.write("pair event kind = IV_REACTION"));
             }
         }
 
         boost::optional<std::size_t> reactant_index(boost::none);
         const ShellID sid(dom.shell_id());
-        switch(evkd)
+        switch(dom.eventkind())
         {
             case Pair::SINGLE_REACTION_1:
             {
