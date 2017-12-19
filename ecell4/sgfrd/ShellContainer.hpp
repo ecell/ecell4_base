@@ -102,6 +102,9 @@ public:
         list_shells_within_radius(const std::pair<Real3, strID>& pos,
             const Real radius, const ShellID& ignore1, const ShellID& ignore2) const;
 
+    std::vector<shell_id_pair_type>
+    list_shells() const {return container_;}
+
 private:
 
     const polygon_type&        polygon_;
