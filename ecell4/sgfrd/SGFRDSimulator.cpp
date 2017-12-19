@@ -1063,5 +1063,372 @@ DomainID SGFRDSimulator::create_event(
     }
 }
 
+bool SGFRDSimulator::diagnosis() const
+{
+    const boost::chrono::steady_clock::time_point start_ =
+        boost::chrono::high_resolution_clock::now();
+
+    bool result = true;
+    // 1. check overlap between particles
+    // 2. check overlap between shells
+    // 3. check all the particles are inside of its shell
+
+    BOOST_AUTO(particles, this->world_->list_particles());
+    BOOST_AUTO(shells,    this->shell_container_.list_shells());
+
+    // 1.
+    ParticleID pid; Particle p;
+    BOOST_FOREACH(boost::tie(pid, p), particles)
+    {
+        const FaceID fid = this->get_face_id(pid);
+        std::pair<Real3, FaceID> pos = std::make_pair(p.position(), fid);
+
+        ParticleID _pid; Particle _p;
+        BOOST_FOREACH(boost::tie(_pid, _p), particles)
+        {
+            if(pid == _pid) {continue;}
+            const FaceID _fid = this->get_face_id(_pid);
+            const Real dist = this->world_->distance(pos,
+                                  std::make_pair(_p.position(), _fid));
+            if(dist < p.radius() + _p.radius())
+            {
+                result = false;
+                std::cerr << "ERROR: particle " << pid << " and " << _pid
+                          << "overlaps!\n";
+                std::cerr << "     : distance = " << dist << " < sum of radii = "
+                          << p.radius() + _p.radius() << '\n';
+                std::cerr << "     : particle " << pid << " has radius "
+                          << p.radius() << " at " << p.position() << " on "
+                          << fid << '\n';
+                std::cerr << "     : particle " << _pid << " has radius "
+                          << _p.radius() << " at " << _p.position() << " on "
+                          << _fid << '\n';
+            }
+        }
+    }
+
+    // 2.
+    ShellID shid; shell_type sh;
+    BOOST_FOREACH(boost::tie(shid, sh), shells)
+    {
+        ShellID _shid; shell_type _sh;
+        switch(sh.which())
+        {
+            case shell_container_type::circular_shell:
+            {
+                circular_shell_type ccl = boost::get<circular_shell_type>(sh);
+                distance_calculator_on_surface<polygon_traits_type, FaceID>
+                    dist_calc(ccl.get_surface_position(), this->polygon());
+
+                BOOST_FOREACH(boost::tie(_shid, _sh), shells)
+                {
+                    if(_shid == shid){continue;}
+                    const Real dist = boost::apply_visitor(dist_calc, _sh);
+                    if(dist < ccl.size())
+                    {
+                        result = false;
+                        std::cerr << "ERROR: shell " << shid << " and " << _shid
+                                  << "overlaps\n";
+                        std::cerr << "     : distance = " << dist - ccl.size()
+                                  << "\n";
+                    }
+                }
+                break;
+            }
+            case shell_container_type::conical_shell:
+            {
+                conical_surface_shell_type con =
+                    boost::get<conical_surface_shell_type>(sh);
+                distance_calculator_on_surface<polygon_traits_type, VertexID>
+                    dist_calc(con.get_surface_position(), this->polygon());
+
+                BOOST_FOREACH(boost::tie(_shid, _sh), shells)
+                {
+                    if(_shid == shid){continue;}
+                    const Real dist = boost::apply_visitor(dist_calc, _sh);
+                    if(dist < con.size())
+                    {
+                        result = false;
+                        std::cerr << "ERROR: shell " << shid << " and " << _shid
+                                  << "overlaps\n";
+                        std::cerr << "     : distance = " << dist - con.size()
+                                  << "\n";
+                    }
+                }
+                break;
+            }
+            default:
+            {
+                result = false;
+                std::cerr << "ERROR: shell " << shid
+                          << " has invalid which() value " << sh.which() << '\n';
+                break;
+            }
+        }
+    }
+
+    // 3.
+    EventID evid; boost::shared_ptr<event_type> ev_ptr;
+    BOOST_FOREACH(boost::tie(evid, ev_ptr), this->scheduler_.events())
+    {
+        SGFRDEvent::domain_type const& dom = ev_ptr->domain();
+        switch(ev_ptr->which_domain())
+        {
+            case event_type::single_domain:
+            {
+                const Single&   sgl  = boost::get<Single>(dom);
+                const ShellID   _shid = sgl.shell_id();
+                const ParticleID _pid = sgl.particle_id();
+
+                BOOST_AUTO(found_p, std::find_if(particles.begin(), particles.end(),
+                    ecell4::utils::pair_first_element_unary_predicator<
+                        ParticleID, Particle>(_pid)));
+                if(found_p == particles.end())
+                {
+                    result = false;
+                    std::cerr << "ERROR: particle might assigned to two"
+                              << "different domains\n";
+                    std::cerr << "     : Single domain " << evid << " has particle "
+                              << _pid << " but the particle is already erased\n";
+                    break;
+                }
+                BOOST_AUTO(found_s, std::find_if(shells.begin(), shells.end(),
+                    ecell4::utils::pair_first_element_unary_predicator<
+                        ShellID, shell_type>(_shid)));
+                if(found_s == shells.end())
+                {
+                    result = false;
+                    std::cerr << "ERROR: shell might assigned to two"
+                              << "different domains\n";
+                    std::cerr << "     : Single domain " << evid << " has shell "
+                              << _shid << " but the shell is already erased\n";
+                    break;
+                }
+                const FaceID fid_p = this->get_face_id(_pid);
+                distance_calculator_on_surface<polygon_traits_type, FaceID>
+                    dist_calc(std::make_pair(found_p->second.position(), fid_p),
+                              this->polygon());
+                const Real dist = boost::apply_visitor(dist_calc, found_s->second) +
+                                  found_p->second.radius();
+                if(dist > 0)
+                {
+                    result = false;
+                    std::cerr << "ERROR: particle is not inside of the Single "
+                              << evid << "\n";
+                    std::cerr << "     : dist - r_shell + r_particle = " << dist
+                              << '\n';
+                }
+
+                particles.erase(found_p);
+                shells.erase(found_s);
+                break;
+            }
+            case event_type::pair_domain:
+            {
+                const Pair&      pr   = boost::get<Pair>(dom);
+                const ShellID    _shid = pr.shell_id();
+                const ParticleID _pid0 = pr.particle_id_at(0);
+                const ParticleID _pid1 = pr.particle_id_at(1);
+
+                BOOST_AUTO(found_p0, std::find_if(particles.begin(), particles.end(),
+                    ecell4::utils::pair_first_element_unary_predicator<
+                        ParticleID, Particle>(_pid0)));
+                if(found_p0 == particles.end())
+                {
+                    result = false;
+                    std::cerr << "ERROR: particle might assigned to two"
+                              << "different domains\n";
+                    std::cerr << "     : Pair domain " << evid << " has particle "
+                              << _pid0 << " but the particle is already erased\n";
+                    break;
+                }
+                BOOST_AUTO(found_p1, std::find_if(particles.begin(), particles.end(),
+                    ecell4::utils::pair_first_element_unary_predicator<
+                        ParticleID, Particle>(_pid1)));
+                if(found_p1 == particles.end())
+                {
+                    result = false;
+                    std::cerr << "ERROR: particle might assigned to two"
+                              << "different domains\n";
+                    std::cerr << "     : Pair domain " << evid << " has particle "
+                              << _pid1 << " but the particle is already erased\n";
+                    break;
+                }
+                BOOST_AUTO(found_s, std::find_if(shells.begin(), shells.end(),
+                    ecell4::utils::pair_first_element_unary_predicator<
+                        ShellID, shell_type>(_shid)));
+                if(found_s == shells.end())
+                {
+                    result = false;
+                    std::cerr << "ERROR: shell might assigned to two"
+                              << "different domains\n";
+                    std::cerr << "     : Pair domain " << evid << " has shell "
+                              << _shid << " but the shell is already erased\n";
+                    break;
+                }
+                const FaceID fid_p0 = this->get_face_id(_pid0);
+                const FaceID fid_p1 = this->get_face_id(_pid1);
+
+                if(found_s->second.which() != shell_container_type::circular_shell)
+                {
+                    std::cerr << "ERROR: currently, pair is only for circular\n";
+                    std::cerr << "     : domain " << evid << "has shell " << _shid
+                              << ", but it has invalid shape " << found_s->second.which()
+                              << '\n';
+                    break;
+                }
+
+                distance_calculator_on_surface<polygon_traits_type, FaceID>
+                    dist_calc0(std::make_pair(found_p0->second.position(), fid_p0),
+                               this->polygon());
+                distance_calculator_on_surface<polygon_traits_type, FaceID>
+                    dist_calc1(std::make_pair(found_p1->second.position(), fid_p1),
+                               this->polygon());
+
+                const Real dist0 = boost::apply_visitor(dist_calc0, found_s->second) +
+                                   found_p0->second.radius();
+                const Real dist1 = boost::apply_visitor(dist_calc1, found_s->second) +
+                                   found_p1->second.radius();
+                if(dist0 > 0)
+                {
+                    result = false;
+                    std::cerr << "ERROR: particle " << _pid0
+                              << " is not inside of the Pair " << evid << "\n";
+                    std::cerr << "     : dist - r_shell + r_particle = " << dist0
+                              << '\n';
+                }
+                if(dist1 > 0)
+                {
+                    result = false;
+                    std::cerr << "ERROR: particle " << _pid1
+                              << " is not inside of the Pair " << evid << "\n";
+                    std::cerr << "     : dist - r_shell + r_particle = " << dist1
+                              << '\n';
+                }
+                particles.erase(found_p0);
+                particles.erase(found_p1);
+                shells.erase(found_s);
+                break;
+            }
+            case event_type::multi_domain:
+            {
+                const Multi& mul = boost::get<Multi>(dom);
+                ShellID _shid;
+                ParticleID _pid; Particle _p;
+                BOOST_FOREACH(boost::tie(_pid, _p), mul.particles())
+                {
+                    bool within = false;
+                    BOOST_AUTO(found_p, std::find_if(particles.begin(), particles.end(),
+                        ecell4::utils::pair_first_element_unary_predicator<
+                            ParticleID, Particle>(_pid)));
+                    if(found_p == particles.end())
+                    {
+                        result = false;
+                        std::cerr << "ERROR: particle might assigned to two"
+                                  << "different domains\n";
+                        std::cerr << "     : domain " << evid << " has particle "
+                                  << _pid << " but the particle is already erased\n";
+                        continue;
+                    }
+                    const FaceID fid_p = this->get_face_id(_pid);
+                    distance_calculator_on_surface<polygon_traits_type, FaceID>
+                        dist_calc(std::make_pair(found_p->second.position(), fid_p),
+                                  this->polygon());
+
+                    BOOST_FOREACH(_shid, mul.shell_ids())
+                    {
+                        BOOST_AUTO(found_s, std::find_if(shells.begin(), shells.end(),
+                            ecell4::utils::pair_first_element_unary_predicator<
+                                ShellID, shell_type>(_shid)));
+                        if(found_s == shells.end())
+                        {
+                            result = false;
+                            std::cerr << "ERROR: shell might assigned to two"
+                                      << "different domains\n";
+                            std::cerr << "     : Multi domain " << evid << " has shell "
+                                      << _shid << " but the shell is already erased\n";
+                            continue;
+                        }
+                        const Real dist =
+                            boost::apply_visitor(dist_calc, found_s->second) +
+                            found_p->second.radius();
+                        if(dist < 0)
+                        {
+                            within = true;
+                        }
+                    }
+
+                    if(!within)
+                    {
+                        result = false;
+                        std::cerr << "ERROR: particle is not inside of any multi shell!\n";
+                        std::cerr << "PID = " << _pid << ", DID = " << evid << '\n';
+                    }
+                    particles.erase(found_p);
+                }
+                BOOST_FOREACH(_shid, mul.shell_ids())
+                {
+                    BOOST_AUTO(found_s, std::find_if(shells.begin(), shells.end(),
+                        ecell4::utils::pair_first_element_unary_predicator<
+                            ShellID, shell_type>(_shid)));
+                    if(found_s == shells.end())
+                    {
+                        result = false;
+                        std::cerr << "ERROR: shell might assigned to two"
+                                  << "different domains\n";
+                        std::cerr << "     : Multi domain " << evid << " has shell "
+                                  << _shid << " but the shell is already erased\n";
+                        continue;
+                    }
+                    shells.erase(found_s);
+                }
+                break;
+            }
+            case event_type::birth_domain:
+            {
+//                 std::cerr << "INFO : birth_domain is assigned\n";
+                break;
+            }
+            default:
+            {
+                result = false;
+                std::cerr << "ERROR: event " << evid
+                          << " has invalid domain_kind " << ev_ptr->which_domain()
+                          << '\n';
+                break;
+            }
+        }
+    }
+    if(!particles.empty())
+    {
+        std::cerr << "ERROR: some of particles are not assigned to Domain\n";
+        BOOST_FOREACH(boost::tie(pid, p), particles)
+        {
+            std::cerr << "     : particle id " << pid
+                      << " is not assigned to any Domain\n";
+        }
+    }
+    if(!shells.empty())
+    {
+        std::cerr << "ERROR: some of shells are not assigned to Domain\n";
+        BOOST_FOREACH(boost::tie(shid, sh), shells)
+        {
+            std::cerr << "     : shell id " << shid
+                      << " is not assigned to any Domain\n";
+        }
+    }
+    if(result)
+    {
+        const boost::chrono::steady_clock::time_point end_ =
+            boost::chrono::high_resolution_clock::now();
+        std::cerr << "time = " << this->time() << " simulator is sanitized."
+                  << "it took " << static_cast<double>(boost::chrono::duration_cast<
+                      boost::chrono::milliseconds>(end_ - start_).count()) / 1e3
+                  << " seconds.\n";
+    }
+    std::cerr << std::flush;
+    return result;
+}
+
 } // sgfrd
 } // ecell4

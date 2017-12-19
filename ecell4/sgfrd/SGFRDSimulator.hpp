@@ -151,6 +151,10 @@ class SGFRDSimulator :
         this->fire_event(this->scheduler_.pop());
         SGFRD_TRACE(tracer_.write("now %1% shells exists", shell_container_.num_shells()))
         SGFRD_TRACE(tracer_.write("now %1% events exists", scheduler_.size()))
+
+        //XXX
+        assert(this->diagnosis());
+
         return;
     }
     bool step(const Real& upto)
@@ -165,6 +169,8 @@ class SGFRDSimulator :
     bool check_reaction() const {return last_reactions_.size() > 0;}
     std::vector<std::pair<ReactionRule, reaction_info_type> > const&
     last_reactions() const {return last_reactions_;}
+
+    bool diagnosis() const;
 
   private:
 
