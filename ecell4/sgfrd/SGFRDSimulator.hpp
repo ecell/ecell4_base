@@ -483,7 +483,7 @@ class SGFRDSimulator :
 
         boost::optional<std::size_t> reactant_index(boost::none);
         const ShellID sid(dom.shell_id());
-        switch(dom.eventkind())
+        switch(evkd)
         {
             case Pair::SINGLE_REACTION_1:
             {
