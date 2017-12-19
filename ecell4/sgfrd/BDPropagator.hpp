@@ -65,6 +65,7 @@ public:
         SGFRD_SCOPE(ns, BDPropagator, this->vc_.access_tracer())
         if(queue_.empty()){return false;}
 
+        // make copy of the next particle
         ParticleID pid; Particle p;
         boost::tie(pid, p) = queue_.back(); queue_.pop_back();
         face_id_type fid = this->container_.get_face_id(pid);
@@ -86,7 +87,8 @@ public:
                 position.second = fid;
             }
         }
-        boost::tie(p.position(), fid) = position; // update position
+        // here, collision between multi particles are not considered
+        boost::tie(p.position(), fid) = position; // update position of copy
 
         BOOST_AUTO(overlapped, list_reaction_overlap(pid, p, fid));
         switch(overlapped.size())
@@ -96,13 +98,19 @@ public:
             {
                 ParticleID pid2; Particle p2;
                 boost::tie(pid2, p2) = overlapped.front().first;
-                attempt_reaction(pid, p, fid, pid2, p2, container_.get_face_id(pid2));
-                return true; // check and update is done in attempt_reaction().
+                if(this->attempt_reaction(
+                    pid, p, fid, pid2, p2, container_.get_face_id(pid2)))
+                {
+                    ;// check and update is done in attempt_reaction().
+                }
+                return true;
             }
             default: return true; // reject if more than 2 particles overlap
         }
 
-        if(clear_volume(p, fid, pid)){// return true if volume is cleared
+        // if overlap exists, this function already returned.
+        if(clear_volume(p, fid, pid))
+        {
             this->container_.update_particle(pid, p, fid);
         }
         return true;
@@ -169,7 +177,11 @@ public:
     {
         BOOST_AUTO(const& rules,
             this->model_.query_reaction_rules(p1.species(), p2.species()));
-        if(rules.empty()) return 0;
+        if(rules.empty())
+        {
+            // no reaction can occur because there is no rule
+            return false;
+        }
 
         const Real acceptance_coef = calc_acceptance_coef(p1, p2);
         const Real rnd(rng_.uniform(0., 1.));
