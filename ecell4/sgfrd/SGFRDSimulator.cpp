@@ -923,6 +923,9 @@ SGFRDSimulator::form_single_circular_event(
             get_intrusive_domains(pos, max_circle_size));
     SGFRD_TRACE(tracer_.write(
                 "intrusive_domain_size = %1%", intrusive_domains.size()))
+    /* XXX:TAKE CARE! the distance in the element of intrusive_domains, typed *
+     * as `std::pair<DomainID, Real>` is not a distance between particle and  *
+     * shell, but a distance between center point of particle and shell.      */
 
     if(intrusive_domains.empty())
     {
@@ -993,7 +996,8 @@ SGFRDSimulator::form_single_circular_event(
 #endif//ECELL4_SGFRD_NO_TRACE
 
         const Real shell_size =
-            std::min(dist_to_max_shell_intruder, shrinked_or_multi.front().second) *
+            std::min(dist_to_max_shell_intruder,
+                     shrinked_or_multi.front().second) *
             single_circular_shell_mergin;
 
         return result_type(add_event(create_single(
