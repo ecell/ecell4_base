@@ -1620,12 +1620,17 @@ class SGFRDSimulator :
             const ParticleID& pid, const Particle& p, const FaceID fid)
     {
         SGFRD_SCOPE(us, create_closely_fitted_shell, tracer_);
-        SGFRD_TRACE(tracer_.write("add close shell for %1%", pid))
+        SGFRD_TRACE(tracer_.write("add close shell for %1% @ face %2%", pid, fid))
+        SGFRD_TRACE(tracer_.write("species %1% has radius %2%",
+                    p.species_serial(), p.radius()))
+
         const ShellID sid(shell_id_gen());
         circular_shell_type sh(circle_type(p.radius(), p.position(),
                                this->polygon().triangle_at(fid).normal()), fid);
+        SGFRD_TRACE(tracer_.write("shell has size == %1%", sh.size()))
+
         shell_container_.add_shell(sid, sh, fid);
-        SGFRD_TRACE(tracer_.write("the shell id is %1%", sid))
+        SGFRD_TRACE(tracer_.write("new shell id is %1%", sid))
         return sid;
     }
     Single create_closely_fitted_domain(
