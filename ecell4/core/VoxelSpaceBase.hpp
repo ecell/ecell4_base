@@ -6,6 +6,25 @@
 namespace ecell4
 {
 
+static inline std::string get_location_serial(const VoxelPool* vp)
+{
+    if (vp == NULL || vp->location() == NULL || vp->location()->is_vacant()) {
+        return "";
+    }
+
+    return vp->location()->species().serial();
+}
+
+static inline std::string get_location_serial(const boost::shared_ptr<VoxelPool>& vp)
+{
+    if (vp == NULL || vp->location() == NULL || vp->location()->is_vacant()) {
+        return "";
+    }
+
+    return vp->location()->species().serial();
+}
+
+
 class VoxelSpaceBase : public LatticeSpace
 {
 protected:
@@ -69,7 +88,6 @@ public:
 protected:
 
     virtual Integer count_voxels(const boost::shared_ptr<VoxelPool>& vp) const = 0;
-    std::string get_location_serial(const boost::shared_ptr<MoleculePool>& voxel_pool) const;
     void push_voxels(std::vector<std::pair<ParticleID, Voxel> >& voxels,
             const boost::shared_ptr<MoleculePool>& voxel_pool,
             const Species& species) const;

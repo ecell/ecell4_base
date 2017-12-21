@@ -7,40 +7,6 @@
 
 namespace ecell4 {
 
-inline std::string get_location_serial(const VoxelPool* vp)
-{
-    if (vp == NULL) {
-        return "";
-    }
-
-    if (vp->location() == NULL) {
-        return "";
-    }
-
-    if (vp->location()->is_vacant()) {
-        return "";
-    }
-
-    return vp->location()->species().serial();
-}
-
-inline std::string get_location_serial(const boost::shared_ptr<VoxelPool>& vp)
-{
-    if (vp == NULL) {
-        return "";
-    }
-
-    if (vp->location() == NULL) {
-        return "";
-    }
-
-    if (vp->location()->is_vacant()) {
-        return "";
-    }
-
-    return vp->location()->species().serial();
-}
-
 LatticeSpaceVectorImpl::LatticeSpaceVectorImpl(
     const Real3& edge_lengths, const Real& voxel_radius,
     const bool is_periodic) :

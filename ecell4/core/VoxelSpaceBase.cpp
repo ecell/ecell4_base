@@ -103,13 +103,6 @@ bool VoxelSpaceBase::has_voxel(const ParticleID& pid) const
     return false;
 }
 
-std::string VoxelSpaceBase::get_location_serial(
-        const boost::shared_ptr<MoleculePool>& voxel_pool) const
-{
-    return voxel_pool->location()->is_vacant() ?
-        "" : voxel_pool->location()->species().serial();
-}
-
 void VoxelSpaceBase::push_voxels(std::vector<std::pair<ParticleID, Voxel> >& voxels,
         const boost::shared_ptr<MoleculePool>& voxel_pool,
         const Species& species) const

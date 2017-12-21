@@ -1,17 +1,17 @@
 #ifndef ECELL4_HCP_LATTICE_SPACE_HPP
 #define ECELL4_HCP_LATTICE_SPACE_HPP
 
-#include "LatticeSpace.hpp"
+#include "VoxelSpaceBase.hpp"
 
 namespace ecell4
 {
 
 class HCPLatticeSpace
-    : public LatticeSpace
+    : public VoxelSpaceBase
 {
 public:
 
-    typedef LatticeSpace base_type;
+    typedef VoxelSpaceBase base_type;
 
 public:
 
