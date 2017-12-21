@@ -5,7 +5,7 @@ namespace ecell4
 {
 
 VoxelSpaceBase::VoxelSpaceBase(const Real& voxel_radius)
-    : base_type(voxel_radius)
+    : t_(0.0), base_type(voxel_radius)
 {
 }
 

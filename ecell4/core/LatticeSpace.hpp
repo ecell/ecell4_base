@@ -37,7 +37,7 @@ public:
 public:
 
     LatticeSpace(const Real& voxel_radius)
-        : t_(0.0), voxel_radius_(voxel_radius)
+        : voxel_radius_(voxel_radius)
     {
         ;
     }
@@ -48,20 +48,6 @@ public:
     }
 
     // SpaceTraits
-
-    const Real t() const
-    {
-        return t_;
-    }
-
-    void set_t(const Real& t)
-    {
-        if (t < 0.0)
-        {
-            throw std::invalid_argument("the time must be positive.");
-        }
-        t_ = t;
-    }
 
     Real voxel_radius() const
     {
@@ -276,7 +262,6 @@ public:
 
 protected:
 
-    Real t_;
     Real voxel_radius_;
 };
 

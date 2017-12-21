@@ -40,6 +40,21 @@ public:
     VoxelSpaceBase(const Real& voxel_radius);
     virtual ~VoxelSpaceBase();
 
+    const Real t() const
+    {
+        return t_;
+    }
+
+    void set_t(const Real& t)
+    {
+        if (t < 0.0)
+        {
+            throw std::invalid_argument("the time must be positive.");
+        }
+        t_ = t;
+    }
+
+
     std::vector<Species> list_species() const;
 
     Integer num_voxels_exact(const Species& sp) const;
@@ -94,6 +109,7 @@ protected:
 
 protected:
 
+    Real t_;
     voxel_pool_map_type voxel_pools_;
     molecule_pool_map_type molecule_pools_;
 
