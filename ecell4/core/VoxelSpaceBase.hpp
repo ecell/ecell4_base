@@ -54,6 +54,33 @@ public:
         t_ = t;
     }
 
+    Real voxel_radius() const
+    {
+        return voxel_radius_;
+    }
+
+    Real voxel_volume() const
+    {
+        return calculate_voxel_volume(voxel_radius_);
+    }
+
+    Real get_volume(const Species& sp) const
+    {
+        return voxel_volume() * num_voxels_exact(sp);
+        // return inner_size() * voxel_volume();
+    }
+
+    Real actual_volume() const
+    {
+        return inner_size() * voxel_volume();
+    }
+
+    Real unit_area() const
+    {
+        const Real r(voxel_radius_);
+        return 2.0 * sqrt(3.0) * r * r;
+    }
+
 
     std::vector<Species> list_species() const;
 
@@ -110,6 +137,8 @@ protected:
 protected:
 
     Real t_;
+    Real voxel_radius_;
+
     voxel_pool_map_type voxel_pools_;
     molecule_pool_map_type molecule_pools_;
 

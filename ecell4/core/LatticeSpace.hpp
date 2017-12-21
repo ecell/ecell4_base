@@ -36,23 +36,7 @@ public:
 
 public:
 
-    LatticeSpace(const Real& voxel_radius)
-        : voxel_radius_(voxel_radius)
-    {
-        ;
-    }
-
-    virtual ~LatticeSpace()
-    {
-        ; // do nothing
-    }
-
     // SpaceTraits
-
-    Real voxel_radius() const
-    {
-        return voxel_radius_;
-    }
 
     /**
      * static members
@@ -97,30 +81,6 @@ public:
     {
         const Integer3 shape = calculate_shape(edge_lengths, voxel_radius, is_periodic);
         return static_cast<Real>(shape[0] * shape[1] * shape[2]) * calculate_voxel_volume(voxel_radius);
-    }
-
-    Real voxel_volume() const
-    {
-        return calculate_voxel_volume(voxel_radius_);
-    }
-
-    Real unit_area() const
-    {
-        const Real r(voxel_radius_);
-        return 2.0 * sqrt(3.0) * r * r;
-    }
-
-    Real get_volume(const Species& sp) const
-    {
-        return voxel_volume() * num_voxels_exact(sp);
-        // return inner_size() * voxel_volume();
-    }
-
-    virtual Real3 actual_lengths() const = 0; // XXX should be owned by HCPLatticeSpace?
-
-    Real actual_volume() const
-    {
-        return inner_size() * voxel_volume();
     }
 
     virtual void save(const std::string& filename) const
@@ -259,10 +219,6 @@ public:
     virtual Integer size() const = 0;
     virtual Integer3 shape() const = 0;
     virtual Integer inner_size() const = 0;
-
-protected:
-
-    Real voxel_radius_;
 };
 
 } // ecell4
