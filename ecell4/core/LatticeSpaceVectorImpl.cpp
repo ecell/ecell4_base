@@ -332,12 +332,6 @@ VoxelPool* LatticeSpaceVectorImpl::get_voxel_pool(const Voxel& v)
     return (*i).second.get();  // upcast
 }
 
-bool LatticeSpaceVectorImpl::on_structure(const Voxel& v)
-{
-    // return find_voxel_pool(v.coordinate()) != get_voxel_pool(v)->location();
-    return voxels_.at(v.coordinate()) != get_voxel_pool(v)->location();
-}
-
 /*
  * Protected functions
  */

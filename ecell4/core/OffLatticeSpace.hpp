@@ -46,11 +46,6 @@ public:
 
     virtual VoxelPool* get_voxel_pool_at(const coordinate_type& coord) const;
 
-    /*
-     * Structure
-     */
-    virtual bool on_structure(const Voxel& v);
-
     virtual coordinate_type inner2coordinate(const coordinate_type inner) const;
 
     virtual Real3 coordinate2position(const coordinate_type& coord) const;

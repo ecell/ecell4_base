@@ -281,7 +281,7 @@ public:
     virtual std::vector<std::pair<ParticleID, Voxel> > list_voxels(const Species& sp) const;
     virtual std::vector<std::pair<ParticleID, Voxel> > list_voxels_exact(const Species& sp) const;
 
-    virtual std::pair<ParticleID, Voxel> get_voxel(const ParticleID& pid) const;
+    std::pair<ParticleID, Voxel> get_voxel(const ParticleID& pid) const;
     virtual std::pair<ParticleID, Voxel> get_voxel_at(const coordinate_type& coord) const = 0;
 
     VoxelPool* find_voxel_pool(const Species& sp);
@@ -337,7 +337,11 @@ public:
     virtual Integer3 shape() const = 0;
     virtual Integer inner_size() const = 0;
 
-    virtual bool on_structure(const Voxel& v) = 0;
+    bool on_structure(const Voxel& v)
+    {
+        return get_voxel_pool_at(v.coordinate()) != get_voxel_pool(v)->location();
+    }
+
     virtual bool
     make_structure_type(const Species& sp, Shape::dimension_kind dimension, const std::string loc)
     {
@@ -352,6 +356,7 @@ public:
 
 protected:
 
+    virtual VoxelPool* get_voxel_pool(const Voxel& v) = 0;
     virtual Integer count_voxels(const boost::shared_ptr<VoxelPool>& vp) const = 0;
     void push_voxels(std::vector<std::pair<ParticleID, Voxel> >& voxels,
                      const boost::shared_ptr<MoleculePool>& voxel_pool,

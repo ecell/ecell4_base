@@ -140,8 +140,6 @@ public:
     bool make_molecular_type(const Species& sp,
         Real radius, Real D, const std::string loc);
 
-    virtual bool on_structure(const Voxel& v);
-
 protected:
 
     VoxelPool* get_voxel_pool(const Voxel& v);

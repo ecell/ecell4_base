@@ -365,12 +365,6 @@ public:
 
     VoxelPool* get_voxel_pool_at(const coordinate_type& coord) const;
 
-    virtual bool on_structure(const Voxel& v)
-    {
-        return (get_voxel_pool_at(v.coordinate())
-                != get_voxel_pool(v)->location()); //XXX: == ???
-    }
-
     coordinate_type get_neighbor_boundary(
         const coordinate_type& coord, const Integer& nrand) const
     {

@@ -361,12 +361,6 @@ VoxelPool* OffLatticeSpace::get_voxel_pool_at(const coordinate_type& coord) cons
     return voxels_.at(coord);
 }
 
-// Same as LatticeSpaceVectorImpl
-bool OffLatticeSpace::on_structure(const Voxel& v)
-{
-    return voxels_.at(v.coordinate()) != get_voxel_pool(v)->location();
-}
-
 OffLatticeSpace::coordinate_type OffLatticeSpace::inner2coordinate(const coordinate_type inner) const
 {
     throw NotSupported("OffLatticeSpace::inner2coordinate() is not supported.");
