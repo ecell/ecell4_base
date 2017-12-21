@@ -54,6 +54,26 @@ public:
         t_ = t;
     }
 
+    virtual void save(const std::string& filename) const
+    {
+        throw NotSupported(
+            "save(const std::string) is not supported by this space class");
+    }
+
+#ifdef WITH_HDF5
+    virtual void save_hdf5(H5::Group* root) const
+    {
+        throw NotSupported(
+            "save_hdf5(H5::Group* root) is not supported by this space class");
+    }
+
+    virtual void load_hdf5(const H5::Group& root)
+    {
+        throw NotSupported(
+            "load_hdf5(const H5::Group& root) is not supported by this space class");
+    }
+#endif
+
     Real voxel_radius() const
     {
         return voxel_radius_;
@@ -79,6 +99,109 @@ public:
     {
         const Real r(voxel_radius_);
         return 2.0 * sqrt(3.0) * r * r;
+    }
+
+    virtual Integer num_molecules(const Species& sp) const = 0;
+
+    virtual Integer num_molecules_exact(const Species& sp) const
+    {
+        return num_voxels_exact(sp);
+    }
+
+    Integer num_particles() const
+    {
+        return num_voxels();
+    }
+
+    Integer num_particles(const Species& sp) const
+    {
+        return num_voxels(sp);
+    }
+
+    Integer num_particles_exact(const Species& sp) const
+    {
+        return num_voxels_exact(sp);
+    }
+
+    bool has_particle(const ParticleID& pid) const
+    {
+        return has_voxel(pid);
+    }
+
+    virtual bool remove_particle(const ParticleID& pid)
+    {
+        return remove_voxel(pid);
+    }
+
+    virtual std::pair<ParticleID, Particle> get_particle(const ParticleID& pid) const
+    {
+        const Voxel v(get_voxel(pid).second);
+        return std::make_pair(pid, Particle(
+            v.species(), coordinate2position(v.coordinate()), v.radius(), v.D()));
+    }
+
+    virtual std::vector<std::pair<ParticleID, Particle> > list_particles() const
+    {
+        const std::vector<std::pair<ParticleID, Voxel> > voxels(list_voxels());
+
+        std::vector<std::pair<ParticleID, Particle> > retval;
+        retval.reserve(voxels.size());
+        for (std::vector<std::pair<ParticleID, Voxel> >::const_iterator
+            i(voxels.begin()); i != voxels.end(); ++i)
+        {
+            const ParticleID& pid((*i).first);
+            const Particle p(particle_at((*i).second.coordinate()));
+            retval.push_back(std::make_pair(pid, p));
+        }
+        return retval;
+    }
+
+    virtual std::vector<std::pair<ParticleID, Particle> > list_particles(const Species& sp) const
+    {
+        const std::vector<std::pair<ParticleID, Voxel> > voxels(list_voxels(sp));
+
+        std::vector<std::pair<ParticleID, Particle> > retval;
+        retval.reserve(voxels.size());
+        for (std::vector<std::pair<ParticleID, Voxel> >::const_iterator
+            i(voxels.begin()); i != voxels.end(); ++i)
+        {
+            const ParticleID& pid((*i).first);
+            const Particle p(particle_at((*i).second.coordinate()));
+            retval.push_back(std::make_pair(pid, p));
+        }
+        return retval;
+    }
+
+    virtual std::vector<std::pair<ParticleID, Particle> > list_particles_exact(const Species& sp) const
+    {
+        const std::vector<std::pair<ParticleID, Voxel> >
+            voxels(list_voxels_exact(sp));
+
+        std::vector<std::pair<ParticleID, Particle> > retval;
+        retval.reserve(voxels.size());
+        for (std::vector<std::pair<ParticleID, Voxel> >::const_iterator
+            i(voxels.begin()); i != voxels.end(); ++i)
+        {
+            const ParticleID& pid((*i).first);
+            const Particle p(particle_at((*i).second.coordinate()));
+            retval.push_back(std::make_pair(pid, p));
+        }
+        return retval;
+    }
+
+    virtual Integer size() const = 0;
+    virtual Integer3 shape() const = 0;
+    virtual Integer inner_size() const = 0;
+
+    virtual bool on_structure(const Voxel& v) = 0;
+    virtual bool make_structure_type(const Species& sp, Shape::dimension_kind dimension, const std::string loc)
+    {
+        throw NotImplemented("make_structure_type is not implemented.");
+    }
+
+    virtual bool make_interface_type(const Species& sp, Shape::dimension_kind dimension, const std::string loc)
+    {
+        throw NotImplemented("make_interface_type is not implemented.");
     }
 
 
@@ -121,11 +244,6 @@ public:
     virtual std::pair<coordinate_type, bool> move_to_neighbor(
         VoxelPool* const& from, VoxelPool* const& loc,
         coordinate_id_pair_type& info, const Integer nrand) = 0;
-
-#ifdef WITH_HDF5
-    virtual void save_hdf5(H5::Group* root) const = 0;
-    virtual void load_hdf5(const H5::Group& root) = 0;
-#endif
 
 protected:
 

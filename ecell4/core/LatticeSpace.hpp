@@ -83,25 +83,7 @@ public:
         return static_cast<Real>(shape[0] * shape[1] * shape[2]) * calculate_voxel_volume(voxel_radius);
     }
 
-    virtual void save(const std::string& filename) const
-    {
-        throw NotSupported(
-            "save(const std::string) is not supported by this space class");
-    }
-
-#ifdef WITH_HDF5
-    virtual void save_hdf5(H5::Group* root) const
-    {
-        throw NotSupported(
-            "load(H5::Group* root) is not supported by this space class");
-    }
-
-    virtual void load_hdf5(const H5::Group& root)
-    {
-        throw NotSupported(
-            "load(const H5::Group& root) is not supported by this space class");
-    }
-#endif
+    // Member function
 
     virtual std::vector<Species> list_species() const = 0;
 
@@ -144,20 +126,6 @@ public:
     virtual const MoleculePool* find_molecule_pool(const Species& sp) const = 0;
 
     /*
-     * Structure
-     */
-
-    virtual bool on_structure(const Voxel& v) = 0;
-    virtual bool
-        make_structure_type(const Species& sp, Shape::dimension_kind dimension, const std::string loc);
-    virtual bool
-        make_interface_type(const Species& sp, Shape::dimension_kind dimension, const std::string loc);
-
-    /**
-     Coordinate transformations: See HCPLatticeSpace for the implementation
-     */
-
-    /*
      * for HCPLatticeSpace
      */
     virtual coordinate_type inner2coordinate(const coordinate_type inner) const = 0;
@@ -170,55 +138,6 @@ public:
         const coordinate_type& coord, const Integer& nrand) const = 0;
     virtual coordinate_type get_neighbor_boundary(
         const coordinate_type& coord, const Integer& nrand) const = 0;
-
-    /**
-      */
-
-    virtual Integer num_molecules(const Species& sp) const = 0; //XXX:
-
-    virtual Integer num_molecules_exact(const Species& sp) const
-    {
-        return num_voxels_exact(sp);
-    }
-
-    Integer num_particles() const
-    {
-        return num_voxels();
-    }
-
-    Integer num_particles(const Species& sp) const
-    {
-        return num_voxels(sp);
-    }
-
-    Integer num_particles_exact(const Species& sp) const
-    {
-        return num_voxels_exact(sp);
-    }
-
-    bool has_particle(const ParticleID& pid) const
-    {
-        return has_voxel(pid);
-    }
-
-    virtual bool remove_particle(const ParticleID& pid)
-    {
-        return remove_voxel(pid);
-    }
-
-    virtual std::pair<ParticleID, Particle>
-        get_particle(const ParticleID& pid) const;
-
-    virtual std::vector<std::pair<ParticleID, Particle> >
-        list_particles() const;
-    virtual std::vector<std::pair<ParticleID, Particle> >
-        list_particles(const Species& sp) const;
-    virtual std::vector<std::pair<ParticleID, Particle> >
-        list_particles_exact(const Species& sp) const;
-
-    virtual Integer size() const = 0;
-    virtual Integer3 shape() const = 0;
-    virtual Integer inner_size() const = 0;
 };
 
 } // ecell4
