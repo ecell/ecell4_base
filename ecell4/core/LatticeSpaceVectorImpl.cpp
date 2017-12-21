@@ -63,24 +63,6 @@ Integer LatticeSpaceVectorImpl::num_species() const
 }
 
 std::pair<ParticleID, Voxel>
-LatticeSpaceVectorImpl::get_voxel(const ParticleID& pid) const
-{
-    for (molecule_pool_map_type::const_iterator itr(molecule_pools_.begin());
-         itr != molecule_pools_.end(); ++itr)
-    {
-        const boost::shared_ptr<MoleculePool>& vp((*itr).second);
-        MoleculePool::container_type::const_iterator j(vp->find(pid));
-        if (j != vp->end())
-        {
-            const std::string loc(get_location_serial(vp));
-            return std::make_pair(pid,
-                Voxel((*itr).first, (*j).coordinate, vp->radius(), vp->D(), loc));
-        }
-    }
-    throw NotFound("voxel not found.");
-}
-
-std::pair<ParticleID, Voxel>
 LatticeSpaceVectorImpl::get_voxel_at(const coordinate_type& coord) const
 {
     const VoxelPool* vp(voxels_[coord]);

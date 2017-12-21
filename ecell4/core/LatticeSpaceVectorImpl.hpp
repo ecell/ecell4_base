@@ -58,7 +58,6 @@ public:
     std::vector<std::pair<ParticleID, Voxel> >
         list_voxels_exact(const Species& sp) const;
 
-    virtual std::pair<ParticleID, Voxel> get_voxel(const ParticleID& pid) const;
     virtual std::pair<ParticleID, Voxel> get_voxel_at(const coordinate_type& coord) const;
 
     // virtual void update_voxel(const Voxel& v);
