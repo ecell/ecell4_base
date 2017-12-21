@@ -97,26 +97,10 @@ public:
     virtual std::vector<std::pair<ParticleID, Voxel> > list_voxels_exact(const Species& sp) const = 0;
 
     virtual std::pair<ParticleID, Voxel> get_voxel(const ParticleID& pid) const = 0;
-    virtual std::pair<ParticleID, Voxel> get_voxel_at(const coordinate_type& coord) const = 0;
-
-    virtual const Particle particle_at(const coordinate_type& coord) const = 0;
-
-    virtual bool update_voxel(const ParticleID& pid, const Voxel& v) = 0;
-    virtual bool remove_voxel(const ParticleID& pid) = 0;
-    virtual bool remove_voxel(const coordinate_type& coord) = 0;
-
-    virtual bool can_move(const coordinate_type& src, const coordinate_type& dest) const;
-    virtual bool move(
-        const coordinate_type& src, const coordinate_type& dest,
-        const std::size_t candidate=0) = 0;
-    virtual std::pair<coordinate_type, bool> move_to_neighbor(
-        VoxelPool* const& from, VoxelPool* const& loc,
-        coordinate_id_pair_type& info, const Integer nrand) = 0;
 
     /*
      * find_voxel_pool
      */
-    virtual VoxelPool* get_voxel_pool_at(const coordinate_type& coord) const = 0;
     virtual VoxelPool* find_voxel_pool(const Species& sp) = 0;
     virtual const VoxelPool* find_voxel_pool(const Species& sp) const = 0;
 
@@ -125,19 +109,6 @@ public:
     virtual MoleculePool* find_molecule_pool(const Species& sp) = 0;
     virtual const MoleculePool* find_molecule_pool(const Species& sp) const = 0;
 
-    /*
-     * for HCPLatticeSpace
-     */
-    virtual coordinate_type inner2coordinate(const coordinate_type inner) const = 0;
-
-    virtual Real3 coordinate2position(const coordinate_type& coord) const = 0;
-    virtual coordinate_type position2coordinate(const Real3& pos) const = 0;
-
-    virtual Integer num_neighbors(const coordinate_type& coord) const = 0;
-    virtual coordinate_type get_neighbor(
-        const coordinate_type& coord, const Integer& nrand) const = 0;
-    virtual coordinate_type get_neighbor_boundary(
-        const coordinate_type& coord, const Integer& nrand) const = 0;
 };
 
 } // ecell4
