@@ -10,6 +10,7 @@
 #include "Space.hpp"
 #include "Integer3.hpp"
 #include "get_mapper_mf.hpp"
+#include "Context.hpp"
 
 #ifdef WITH_HDF5
 #include "LatticeSpaceHDF5Writer.hpp"
@@ -98,6 +99,23 @@ public:
     }
 #endif
 
+    Real get_value(const Species& sp) const
+    {
+        return static_cast<Real>(num_molecules(sp));
+    }
+
+    Real get_value_exact(const Species& sp) const
+    {
+        return static_cast<Real>(num_molecules_exact(sp));
+    }
+
+    bool has_species(const Species& sp) const
+    {
+        return (voxel_pools_.find(sp) != voxel_pools_.end()
+                || molecule_pools_.find(sp) != molecule_pools_.end());
+    }
+
+
     /**
      * static members
      */
@@ -170,7 +188,34 @@ public:
         return 2.0 * sqrt(3.0) * r * r;
     }
 
-    virtual Integer num_molecules(const Species& sp) const = 0;
+    virtual Integer num_molecules(const Species& sp) const
+    {
+        Integer count(0);
+        SpeciesExpressionMatcher sexp(sp);
+
+        for (voxel_pool_map_type::const_iterator itr(voxel_pools_.begin());
+             itr != voxel_pools_.end(); ++itr)
+        {
+            const Integer cnt(sexp.count((*itr).first));
+            if (cnt > 0)
+            {
+                const boost::shared_ptr<VoxelPool>& vp((*itr).second);
+                count += count_voxels(vp) * cnt;
+            }
+        }
+
+        for (molecule_pool_map_type::const_iterator itr(molecule_pools_.begin());
+             itr != molecule_pools_.end(); ++itr)
+        {
+            const Integer cnt(sexp.count((*itr).first));
+            if (cnt > 0)
+            {
+                const boost::shared_ptr<MoleculePool>& vp((*itr).second);
+                count += vp->size() * cnt;
+            }
+        }
+        return count;
+    }
 
     virtual Integer num_molecules_exact(const Species& sp) const
     {
@@ -274,23 +319,23 @@ public:
     }
 
 
-    virtual std::vector<Species> list_species() const;
+    std::vector<Species> list_species() const;
 
-    virtual Integer num_voxels_exact(const Species& sp) const;
-    virtual Integer num_voxels(const Species& sp) const;
-    virtual Integer num_voxels() const;
-    virtual bool has_voxel(const ParticleID& pid) const;
+    Integer num_voxels_exact(const Species& sp) const;
+    Integer num_voxels(const Species& sp) const;
+    Integer num_voxels() const;
+    bool has_voxel(const ParticleID& pid) const;
 
     virtual std::vector<std::pair<ParticleID, Voxel> > list_voxels() const;
     virtual std::vector<std::pair<ParticleID, Voxel> > list_voxels(const Species& sp) const;
     virtual std::vector<std::pair<ParticleID, Voxel> > list_voxels_exact(const Species& sp) const;
 
     virtual std::pair<ParticleID, Voxel> get_voxel(const ParticleID& pid) const;
-    virtual VoxelPool* find_voxel_pool(const Species& sp);
-    virtual const VoxelPool* find_voxel_pool(const Species& sp) const;
-    virtual bool has_molecule_pool(const Species& sp) const;
-    virtual MoleculePool* find_molecule_pool(const Species& sp);
-    virtual const MoleculePool* find_molecule_pool(const Species& sp) const;
+    VoxelPool* find_voxel_pool(const Species& sp);
+    const VoxelPool* find_voxel_pool(const Species& sp) const;
+    bool has_molecule_pool(const Species& sp) const;
+    MoleculePool* find_molecule_pool(const Species& sp);
+    const MoleculePool* find_molecule_pool(const Species& sp) const;
 
     virtual coordinate_type inner2coordinate(const coordinate_type inner) const = 0;
 

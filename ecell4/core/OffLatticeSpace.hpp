@@ -62,8 +62,6 @@ public:
     virtual coordinate_type get_neighbor_boundary(const coordinate_type& coord,
                                                   const Integer& nrand) const;
 
-    virtual Integer num_molecules(const Species& sp) const;
-
     virtual Real3 actual_lengths() const;
 
     virtual Integer size() const;
