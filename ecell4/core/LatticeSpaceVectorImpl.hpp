@@ -191,8 +191,6 @@ protected:
 
     bool is_periodic_;
 
-    voxel_pool_map_type voxel_pools_;
-    molecule_pool_map_type molecule_pools_;
     voxel_container voxels_;
 
     VoxelPool* vacant_;
