@@ -20,12 +20,12 @@ jobs:
             /opt/python/$PY36/bin/python -m pip install cython
             /opt/python/$PY35/bin/python -m pip install cython
             /opt/python/$PY27/bin/python -m pip install cython
-            curl -O https://cmake.org/files/v3.9/cmake-3.9.4.tar.gz
+            curl -O https://cmake.org/files/v3.9/cmake-3.9.6.tar.gz
             wget --no-check-certificate ftp://ftp.gnu.org/gnu/gsl/gsl-2.4.tar.gz
             wget --no-check-certificate -O boost_1_65_1.tar.bz2 https://dl.bintray.com/boostorg/release/1.65.1/source/boost_1_65_1.tar.bz2
             curl -LO https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.8/hdf5-1.8.17/src/hdf5-1.8.17.tar.bz2
-            tar xf cmake-3.9.4.tar.gz && tar xf gsl-2.4.tar.gz && tar xf hdf5-1.8.17.tar.bz2 && tar xf boost_1_65_1.tar.bz2
-            cd cmake-3.9.4 && ./configure && make && make install
+            tar xf cmake-3.9.6.tar.gz && tar xf gsl-2.4.tar.gz && tar xf hdf5-1.8.17.tar.bz2 && tar xf boost_1_65_1.tar.bz2
+            cd cmake-3.9.6 && ./configure && make && make install
             cd ../gsl-2.4 && ./configure && make && make install
             cd ../hdf5-1.8.17 && ./configure --prefix=/usr/local --enable-cxx && make && make install
             cd ~/circle && export BOOST_INCLUDEDIR=/root/circle/boost_1_65_1
