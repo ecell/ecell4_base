@@ -6,7 +6,6 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
 
-// #include <ecell4/core/VoxelSpaceBase.hpp>
 #include <ecell4/core/LatticeSpaceCellListImpl.hpp>
 #include <ecell4/core/LatticeSpaceVectorImpl.hpp>
 #include <ecell4/core/VoxelPool.hpp>
@@ -34,7 +33,6 @@ class SpatiocyteWorld
 {
 public:
 
-    // typedef LatticeSpaceCellListImpl default_root_type;
     typedef LatticeSpaceVectorImpl default_root_type;
 
     typedef MoleculeInfo molecule_info_type;
@@ -44,6 +42,9 @@ public:
 
 public:
 
+    /*
+     * Constructors
+     */
     SpatiocyteWorld(const Real3& edge_lengths, const Real& voxel_radius,
         const boost::shared_ptr<RandomNumberGenerator>& rng)
         : root_(new default_root_type(edge_lengths, voxel_radius)), rng_(rng)
@@ -81,6 +82,269 @@ public:
     {
         ; // do nothing
     }
+
+    /*
+     * Space Traits
+     */
+    const Real t() const;
+    void set_t(const Real& t);
+
+    void save(const std::string& filename) const
+    {
+#ifdef WITH_HDF5
+        boost::scoped_ptr<H5::H5File>
+            fout(new H5::H5File(filename.c_str(), H5F_ACC_TRUNC));
+        rng_->save(fout.get());
+        sidgen_.save(fout.get());
+        boost::scoped_ptr<H5::Group>
+            group(new H5::Group(fout->createGroup("LatticeSpace")));
+        root_->save_hdf5(group.get());
+        extras::save_version_information(fout.get(), std::string("ecell4-spatiocyte-") + std::string(ECELL4_VERSION));
+#else
+        throw NotSupported(
+            "This method requires HDF5. The HDF5 support is turned off.");
+#endif
+    }
+
+    void load(const std::string& filename)
+    {
+#ifdef WITH_HDF5
+        boost::scoped_ptr<H5::H5File>
+            fin(new H5::H5File(filename.c_str(), H5F_ACC_RDONLY));
+
+        const std::string required = "ecell4-spatiocyte-4.1.0";
+        try
+        {
+            const std::string version = extras::load_version_information(*fin);
+            if (!extras::check_version_information(version, required))
+            {
+                std::stringstream ss;
+                ss << "The version of the given file [" << version
+                    << "] is too old. [" << required << "] or later is required.";
+                throw NotSupported(ss.str());
+            }
+        }
+        catch(H5::GroupIException not_found_error)
+        {
+            throw NotFound("No version information was found.");
+        }
+
+        const H5::Group group(fin->openGroup("LatticeSpace"));
+        root_->load_hdf5(group);
+        sidgen_.load(*fin);
+        rng_->load(*fin);
+#else
+        throw NotSupported(
+            "This method requires HDF5. The HDF5 support is turned off.");
+#endif
+    }
+
+    /*
+     * CompartmentSpace Traits
+     */
+    const Real volume() const;
+    Integer num_species() const;
+    bool has_species(const Species &sp) const;
+    Integer num_molecules(const Species& sp) const;
+    Integer num_molecules_exact(const Species& sp) const;
+
+    Real get_value(const Species& sp) const
+    {
+        return root_->get_value(sp);
+    }
+
+    Real get_value_exact(const Species& sp) const
+    {
+        return root_->get_value_exact(sp);
+    }
+
+    /*
+     * ParticleSpace Traits
+     */
+    const Real3& edge_lengths() const;
+
+    Real3 actual_lengths() const
+    {
+        return root_->actual_lengths();
+    }
+
+    Integer num_particles() const;
+    Integer num_particles(const Species& sp) const;
+    Integer num_particles_exact(const Species& sp) const;
+    bool has_particle(const ParticleID& pid) const;
+
+    std::pair<ParticleID, Particle> get_particle(const ParticleID& pid) const
+    {
+        return root_->get_particle(pid);
+    }
+
+    std::vector<std::pair<ParticleID, Particle> > list_particles() const;
+    std::vector<std::pair<ParticleID, Particle> > list_particles(const Species& sp) const;
+    std::vector<std::pair<ParticleID, Particle> > list_particles_exact(const Species& sp) const;
+
+    std::vector<std::pair<ParticleID, Particle> > list_structure_particles() const;
+    std::vector<std::pair<ParticleID, Particle> > list_non_structure_particles() const;
+
+    /*
+     * VoxelSpace Traits
+     */
+    Real voxel_radius() const
+    {
+        return root_->voxel_radius();
+    }
+
+    Real voxel_volume() const
+    {
+        return root_->voxel_volume();
+    }
+
+    Real get_volume(const Species& sp) const
+    {
+        if (!has_species(sp) || !find_molecule_pool(sp)->is_structure())
+        {
+            return 0.0;
+        }
+        return root_->get_volume(sp);
+    }
+
+    Real actual_volume() const
+    {
+        return root_->actual_volume();
+    }
+
+    Real unit_area() const
+    {
+        return root_->unit_area();
+    }
+
+    bool has_voxel(const ParticleID& pid) const;
+
+    Integer num_voxels() const;
+    Integer num_voxels(const Species& sp) const;
+    Integer num_voxels_exact(const Species& sp) const;
+
+    std::vector<std::pair<ParticleID, Voxel> > list_voxels() const;
+    std::vector<std::pair<ParticleID, Voxel> > list_voxels(const Species& sp) const;
+    std::vector<std::pair<ParticleID, Voxel> > list_voxels_exact(const Species& sp) const;
+
+    std::pair<ParticleID, Voxel> get_voxel(const ParticleID& pid) const
+    {
+        return root_->get_voxel(pid);
+    }
+
+    std::pair<ParticleID, Voxel> get_voxel_at(const coordinate_type& coord) const
+    {
+        return root_->get_voxel_at(coord);
+    }
+
+    VoxelPool* find_voxel_pool(const Species& species);
+    const VoxelPool* find_voxel_pool(const Species& species) const;
+
+    bool has_molecule_pool(const Species& sp) const
+    {
+        return root_->has_molecule_pool(sp);
+    }
+
+    MoleculePool* find_molecule_pool(const Species& species)
+    {
+        return root_->find_molecule_pool(species);
+    }
+
+    const MoleculePool* find_molecule_pool(const Species& species) const
+    {
+        return root_->find_molecule_pool(species);
+    }
+
+    VoxelPool* get_voxel_pool_at(const coordinate_type& coord) const;
+
+    /*
+     * Coordinate Transformation
+     */
+    const coordinate_type inner2coordinate(const coordinate_type inner)
+    {
+        return root_->inner2coordinate(inner);
+    }
+
+    const Real3 coordinate2position(const coordinate_type& coord) const
+    {
+        return root_->coordinate2position(coord);
+    }
+
+    coordinate_type position2coordinate(const Real3& pos) const
+    {
+        return root_->position2coordinate(pos);
+    }
+
+    /*
+     * Neighbor
+     */
+    // Integer num_neighbors(const coordinate_type& coord) const
+    // {
+    //     return root_->num_neighbors(coord);
+    // }
+
+    coordinate_type get_neighbor(coordinate_type coord, Integer nrand) const
+    {
+        return root_->get_neighbor(coord, nrand);
+    }
+
+    coordinate_type get_neighbor_boundary(
+            coordinate_type coord, Integer nrand) const
+    {
+        return root_->get_neighbor_boundary(coord, nrand);
+    }
+
+    /*
+     * Voxel Manipulation
+     */
+    bool update_voxel(const ParticleID& pid, const Voxel& v)
+    {
+        return root_->update_voxel(pid, v);
+    }
+
+    bool remove_voxel(const ParticleID& pid)
+    {
+        return root_->remove_voxel(pid);
+    }
+
+    bool remove_voxel(const coordinate_type coord);
+
+    bool can_move(const coordinate_type& src, const coordinate_type& dest) const;
+    bool move(const coordinate_type& src, const coordinate_type& dest,
+              const std::size_t candidate=0);
+    std::pair<coordinate_type, bool> move_to_neighbor(
+        VoxelPool* const& from_mt, VoxelPool* const& loc,
+        coordinate_id_pair_type& info, const Integer nrand);
+
+    const Integer size() const
+    {
+        return root_->size();
+    }
+
+    const Integer3 shape() const
+    {
+        return root_->shape();
+    }
+
+    const Integer inner_size() const
+    {
+        return root_->inner_size();
+    }
+
+    // TODO
+    // const Integer3 inner_shape() const
+    // {
+    //     return root_->inner_shape();
+    // }
+
+    bool on_structure(const Voxel& v)
+    {
+        return root_->on_structure(v);
+    }
+
+    /*
+     * SpatiocyteWorld API
+     */
 
     /**
      * draw attributes of species and return it as a molecule info.
@@ -138,40 +402,10 @@ public:
         return info;
     }
 
-    const Real t() const;
-    void set_t(const Real& t);
-
-    const Real3& edge_lengths() const;
-    const Real volume() const;
-    Integer num_species() const;
-    bool has_species(const Species &sp) const;
     // bool has_species_exact(const Species &sp) const;
-
-    Real actual_volume() const
-    {
-        return root_->actual_volume();
-    }
-
-    Integer num_molecules(const Species& sp) const;
-    Integer num_molecules_exact(const Species& sp) const;
-    Integer num_particles() const;
-    Integer num_particles(const Species& sp) const;
-    Integer num_particles_exact(const Species& sp) const;
-    Integer num_voxels() const;
-    Integer num_voxels(const Species& sp) const;
-    Integer num_voxels_exact(const Species& sp) const;
 
     void set_value(const Species& sp, const Real value);
 
-    Real get_value(const Species& sp) const
-    {
-        return root_->get_value(sp);
-    }
-
-    Real get_value_exact(const Species& sp) const
-    {
-        return root_->get_value_exact(sp);
-    }
 
     /**
      * create and add a new particle
@@ -203,41 +437,10 @@ public:
         return new_particle(Particle(sp, pos, info.radius, info.D));
     }
 
-    std::pair<ParticleID, Particle> get_particle(const ParticleID& pid) const
-    {
-        return root_->get_particle(pid);
-    }
-
-    std::pair<ParticleID, Voxel> get_voxel(const ParticleID& pid) const
-    {
-        return root_->get_voxel(pid);
-    }
-
-    std::pair<ParticleID, Voxel> get_voxel_at(const coordinate_type& coord) const
-    {
-        return root_->get_voxel_at(coord);
-    }
-
     bool remove_particle(const ParticleID& pid)
     {
         return root_->remove_particle(pid);
     }
-
-    bool remove_voxel(const ParticleID& pid)
-    {
-        return root_->remove_voxel(pid);
-    }
-
-    bool has_voxel(const ParticleID& pid) const;
-    bool has_particle(const ParticleID& pid) const;
-
-    std::vector<std::pair<ParticleID, Particle> > list_particles() const;
-    std::vector<std::pair<ParticleID, Particle> >
-        list_particles(const Species& sp) const;
-    std::vector<std::pair<ParticleID, Particle> >
-        list_particles_exact(const Species& sp) const;
-    std::vector<std::pair<ParticleID, Particle> > list_structure_particles() const;
-    std::vector<std::pair<ParticleID, Particle> > list_non_structure_particles() const;
 
     bool update_particle(const ParticleID& pid, const Particle& p)
     {
@@ -246,36 +449,10 @@ public:
             position2coordinate(p.position()), p.radius(), p.D(), minfo.loc));
     }
 
-    std::vector<std::pair<ParticleID, Voxel> >
-        list_voxels() const;
-    std::vector<std::pair<ParticleID, Voxel> >
-        list_voxels(const Species& sp) const;
-    std::vector<std::pair<ParticleID, Voxel> >
-        list_voxels_exact(const Species& sp) const;
-
     std::vector<Species> list_species() const;
     std::vector<Species> list_non_structure_species() const;
     std::vector<Species> list_structure_species() const;
     // std::vector<coordinate_type> list_coords(const Species& sp) const;
-
-    bool has_molecule_pool(const Species& sp) const
-    {
-        return root_->has_molecule_pool(sp);
-    }
-
-    MoleculePool* find_molecule_pool(const Species& species)
-    {
-        return root_->find_molecule_pool(species);
-    }
-
-    const MoleculePool* find_molecule_pool(const Species& species) const
-    {
-        return root_->find_molecule_pool(species);
-    }
-
-    VoxelPool* find_voxel_pool(const Species& species);
-    const VoxelPool* find_voxel_pool(const Species& species) const;
-    VoxelPool* get_voxel_pool_at(const coordinate_type& coord) const;
 
     std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel(const Voxel& v);
     std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel(const Species& sp, const coordinate_type& coord);
@@ -292,32 +469,6 @@ public:
 
     void remove_molecules(const Species& sp, const Integer& num);
     // void remove_molecules_exact(const Species& sp, const Integer& num);
-    bool remove_voxel(const coordinate_type coord);
-
-    bool move(const coordinate_type& src, const coordinate_type& dest,
-              const std::size_t candidate=0);
-    bool can_move(const coordinate_type& src, const coordinate_type& dest) const;
-
-    // std::pair<coordinate_type, bool> move_to_neighbor(
-    //     coordinate_type coord, Integer nrand);
-    // std::pair<coordinate_type, bool> move_to_neighbor(
-    //     coordinate_id_pair_type& info, Integer nrand);
-    // std::pair<std::pair<coordinate_id_pair_type, coordinate_type>, bool>
-    //     move_to_neighbor(VoxelPool* mtype, Integer index);
-    std::pair<coordinate_type, bool> move_to_neighbor(
-        VoxelPool* const& from_mt, VoxelPool* const& loc,
-        coordinate_id_pair_type& info, const Integer nrand);
-
-    coordinate_type get_neighbor(coordinate_type coord, Integer nrand) const
-    {
-        return root_->get_neighbor(coord, nrand);
-    }
-
-    coordinate_type get_neighbor_boundary(
-            coordinate_type coord, Integer nrand) const
-    {
-        return root_->get_neighbor_boundary(coord, nrand);
-    }
 
     std::pair<coordinate_type, bool> check_neighbor(
             const coordinate_type coord, const std::string& loc);
@@ -325,96 +476,10 @@ public:
 
     const Species& draw_species(const Species& pttrn) const;
 
-    // std::pair<std::pair<ParticleID, Voxel>, bool> place_voxel(
-    //     const Species& sp, const coordinate_type& coord)
-    // {
-    //     const molecule_info_type& info(get_molecule_info(sp));
-    //     return new_voxel(ecell4::Voxel(sp, coord, info.radius, info.D));
-    // }
-
-    // void update_voxel(const Voxel& v)
-    // {
-    //     root_->update_voxel(v);
-    // }
-
-    bool update_voxel(const ParticleID& pid, const Voxel& v)
-    {
-        return root_->update_voxel(pid, v);
-    }
-
-    Real voxel_radius() const
-    {
-        return root_->voxel_radius();
-    }
-
-    Real voxel_volume() const
-    {
-        return root_->voxel_volume();
-    }
-
-    Real unit_area() const
-    {
-        return root_->unit_area();
-    }
-
-    Real get_volume(const Species& sp) const
-    {
-        if (!has_species(sp) || !find_molecule_pool(sp)->is_structure())
-        {
-            return 0.0;
-        }
-        return root_->get_volume(sp);
-    }
-
-    Real3 actual_lengths() const
-    {
-        return root_->actual_lengths();
-    }
-
     boost::shared_ptr<RandomNumberGenerator> rng()
     {
         return rng_;
     }
-
-    const Integer size() const
-    {
-        return root_->size();
-    }
-
-    const Integer3 shape() const
-    {
-        return root_->shape();
-    }
-
-    const Integer inner_size() const
-    {
-        return root_->inner_size();
-    }
-
-    // TODO
-    // const Integer3 inner_shape() const
-    // {
-    //     return root_->inner_shape();
-    // }
-
-    const coordinate_type inner2coordinate(const coordinate_type inner)
-    {
-        return root_->inner2coordinate(inner);
-    }
-
-    coordinate_type position2coordinate(const Real3& pos) const
-    {
-        return root_->position2coordinate(pos);
-    }
-
-    const Real3 coordinate2position(const coordinate_type& coord) const
-    {
-        return root_->coordinate2position(coord);
-    }
-
-    /**
-     * temp
-     */
 
     const molecule_info_type get_molecule_info(const VoxelPool* mt) const
     {
@@ -450,70 +515,6 @@ public:
         return make_pid_voxel_pair(mt, info);
     }
 
-    // bool on_structure(const Species& sp, const coordinate_type& coord)
-    // {
-    //     const molecule_info_type minfo(get_molecule_info(sp));
-    //     return on_structure(
-    //         Voxel(sp, coord, minfo.radius, minfo.D, minfo.loc));
-    // }
-
-    bool on_structure(const Voxel& v)
-    {
-        return root_->on_structure(v);
-    }
-
-    /*
-     * HDF5 Save
-     */
-    void save(const std::string& filename) const
-    {
-#ifdef WITH_HDF5
-        boost::scoped_ptr<H5::H5File>
-            fout(new H5::H5File(filename.c_str(), H5F_ACC_TRUNC));
-        rng_->save(fout.get());
-        sidgen_.save(fout.get());
-        boost::scoped_ptr<H5::Group>
-            group(new H5::Group(fout->createGroup("LatticeSpace")));
-        root_->save_hdf5(group.get());
-        extras::save_version_information(fout.get(), std::string("ecell4-spatiocyte-") + std::string(ECELL4_VERSION));
-#else
-        throw NotSupported(
-            "This method requires HDF5. The HDF5 support is turned off.");
-#endif
-    }
-
-    void load(const std::string& filename)
-    {
-#ifdef WITH_HDF5
-        boost::scoped_ptr<H5::H5File>
-            fin(new H5::H5File(filename.c_str(), H5F_ACC_RDONLY));
-
-        const std::string required = "ecell4-spatiocyte-4.1.0";
-        try
-        {
-            const std::string version = extras::load_version_information(*fin);
-            if (!extras::check_version_information(version, required))
-            {
-                std::stringstream ss;
-                ss << "The version of the given file [" << version
-                    << "] is too old. [" << required << "] or later is required.";
-                throw NotSupported(ss.str());
-            }
-        }
-        catch(H5::GroupIException not_found_error)
-        {
-            throw NotFound("No version information was found.");
-        }
-
-        const H5::Group group(fin->openGroup("LatticeSpace"));
-        root_->load_hdf5(group);
-        sidgen_.load(*fin);
-        rng_->load(*fin);
-#else
-        throw NotSupported(
-            "This method requires HDF5. The HDF5 support is turned off.");
-#endif
-    }
 
     void bind_to(boost::shared_ptr<Model> model)
     {
