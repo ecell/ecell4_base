@@ -56,9 +56,10 @@ public:
 protected:
 
     typedef utils::get_mapper_mf<Species, boost::shared_ptr<VoxelPool> >::type
-        voxel_pool_map_type;
+            voxel_pool_map_type;
+
     typedef utils::get_mapper_mf<Species, boost::shared_ptr<MoleculePool> >::type
-        molecule_pool_map_type;
+            molecule_pool_map_type;
 
 public:
 

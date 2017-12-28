@@ -11,24 +11,13 @@ class LatticeSpaceVectorImpl
 public:
 
     typedef HCPLatticeSpace base_type;
-
-    typedef base_type::coordinate_id_pair_type coordinate_id_pair_type;
-    typedef base_type::coordinate_type coordinate_type;
-
     typedef std::vector<VoxelPool*> voxel_container;
-
-protected:
-
-    typedef utils::get_mapper_mf<
-        Species, boost::shared_ptr<VoxelPool> >::type voxel_pool_map_type;
-    typedef utils::get_mapper_mf<
-        Species, boost::shared_ptr<MoleculePool> >::type molecule_pool_map_type;
 
 public:
 
-    LatticeSpaceVectorImpl(
-        const Real3& edge_lengths, const Real& voxel_radius,
-        const bool is_periodic = true);
+    LatticeSpaceVectorImpl(const Real3& edge_lengths,
+                           const Real& voxel_radius,
+                           const bool is_periodic = true);
     ~LatticeSpaceVectorImpl();
 
     /*
@@ -39,10 +28,8 @@ public:
 
     Integer num_species() const;
 
-    // bool has_species_exact(const Species& sp) const;
-
-    virtual bool remove_voxel(const ParticleID& pid);
-    virtual bool remove_voxel(const coordinate_type& coord);
+    bool remove_voxel(const ParticleID& pid);
+    bool remove_voxel(const coordinate_type& coord);
 
     bool update_structure(const Particle& p);
 
@@ -51,51 +38,49 @@ public:
      *
      * using Species and coordinate_type
      */
-    std::vector<std::pair<ParticleID, Voxel> >
-        list_voxels() const;
-    std::vector<std::pair<ParticleID, Voxel> >
-        list_voxels(const Species& sp) const;
-    std::vector<std::pair<ParticleID, Voxel> >
-        list_voxels_exact(const Species& sp) const;
+    std::vector<std::pair<ParticleID, Voxel> > list_voxels() const;
+    std::vector<std::pair<ParticleID, Voxel> > list_voxels(const Species& sp) const;
+    std::vector<std::pair<ParticleID, Voxel> > list_voxels_exact(const Species& sp) const;
 
-    virtual std::pair<ParticleID, Voxel> get_voxel_at(const coordinate_type& coord) const;
+    std::pair<ParticleID, Voxel> get_voxel_at(const coordinate_type& coord) const;
 
-    // virtual void update_voxel(const Voxel& v);
-    virtual bool update_voxel(const ParticleID& pid, const Voxel& v);
+    bool update_voxel(const ParticleID& pid, const Voxel& v);
 
-    bool add_voxels(const Species species, std::vector<std::pair<ParticleID, coordinate_type> > voxels);
+    bool add_voxels(const Species species,
+                    std::vector<std::pair<ParticleID, coordinate_type> > voxels);
 
     const Species& find_species(std::string name) const;
     std::vector<coordinate_type> list_coords(const Species& sp) const;
     std::vector<coordinate_type> list_coords_exact(const Species& sp) const;
 
-    // VoxelPool* find_voxel_pool(const std::string name);
-    virtual VoxelPool* get_voxel_pool_at(const coordinate_type& coord) const;
+    VoxelPool* get_voxel_pool_at(const coordinate_type& coord) const;
 
-    // bool update_molecule(coordinate_type coord, const Species& species);
-    // bool add_molecule(const Species& sp, coordinate_type coord, const ParticleID& pid);
-    virtual bool move(
-        const coordinate_type& src, const coordinate_type& dest,
-        const std::size_t candidate=0);
-    virtual bool can_move(const coordinate_type& src, const coordinate_type& dest) const;
+    bool move(const coordinate_type& src,
+              const coordinate_type& dest,
+              const std::size_t candidate=0);
+    bool can_move(const coordinate_type& src, const coordinate_type& dest) const;
 
-    std::pair<coordinate_type, bool> move_to_neighbor(
-        coordinate_type coord, Integer nrand);
-    std::pair<coordinate_type, bool> move_to_neighbor(
-        coordinate_id_pair_type& info, Integer nrand);
-    std::pair<coordinate_type, bool> move_to_neighbor(
-        VoxelPool* const& from_vp, VoxelPool* const& loc,
-        coordinate_id_pair_type& info, const Integer nrand);
+    std::pair<coordinate_type, bool>
+    move_to_neighbor(coordinate_type coord, Integer nrand);
 
-    coordinate_type get_neighbor_boundary(
-        const coordinate_type& coord, const Integer& nrand) const
+    std::pair<coordinate_type, bool>
+    move_to_neighbor(coordinate_id_pair_type& info, Integer nrand);
+
+    std::pair<coordinate_type, bool>
+    move_to_neighbor(VoxelPool* const& from_vp,
+                     VoxelPool* const& loc,
+                     coordinate_id_pair_type& info,
+                     const Integer nrand);
+
+    coordinate_type
+    get_neighbor_boundary(const coordinate_type& coord, const Integer& nrand) const
     {
         coordinate_type const dest = get_neighbor(coord, nrand);
         VoxelPool* dest_vp(voxels_.at(dest));
         return (dest_vp != periodic_ ? dest : periodic_transpose(dest));
     }
 
-    inline bool is_periodic() const
+    bool is_periodic() const
     {
         return is_periodic_;
     }
@@ -112,12 +97,10 @@ public:
     void load_hdf5(const H5::Group& root)
     {
         load_lattice_space(root, this);
-        // load_lattice_space(root, this, "LatticeSpaceVectorImpl");
     }
 #endif
 
-    void reset(const Real3& edge_lengths, const Real& voxel_radius,
-        const bool is_periodic)
+    void reset(const Real3& edge_lengths, const Real& voxel_radius, const bool is_periodic)
     {
         base_type::reset(edge_lengths, voxel_radius, is_periodic);
 
@@ -125,22 +108,24 @@ public:
         initialize_voxels(is_periodic_);
     }
 
-    virtual const Particle particle_at(const coordinate_type& coord) const;
+    const Particle particle_at(const coordinate_type& coord) const;
 
-    coordinate_type apply_boundary_(
-        const coordinate_type& coord) const
+    bool make_structure_type(const Species& sp,
+                             Shape::dimension_kind dimension,
+                             const std::string loc);
+
+    bool make_interface_type(const Species& sp,
+                             Shape::dimension_kind dimension,
+                             const std::string loc);
+
+    bool make_molecular_type(const Species& sp, Real radius, Real D, const std::string loc);
+
+protected:
+
+    coordinate_type apply_boundary_(const coordinate_type& coord) const
     {
         return periodic_transpose(coord);
     }
-
-    virtual bool make_structure_type(const Species& sp,
-        Shape::dimension_kind dimension, const std::string loc);
-    virtual bool make_interface_type(const Species& sp,
-        Shape::dimension_kind dimension, const std::string loc);
-    bool make_molecular_type(const Species& sp,
-        Real radius, Real D, const std::string loc);
-
-protected:
 
     VoxelPool* get_voxel_pool(const Voxel& v);
 
@@ -149,8 +134,10 @@ protected:
     std::pair<coordinate_type, bool> move_(
             coordinate_type from, coordinate_type to,
             const std::size_t candidate=0);
+
     std::pair<coordinate_type, bool> move_(
             coordinate_id_pair_type& info, coordinate_type to);
+
     coordinate_type get_coord(const ParticleID& pid) const;
 
     Integer count_voxels(const boost::shared_ptr<VoxelPool>& vp) const;
