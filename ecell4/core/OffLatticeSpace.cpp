@@ -7,26 +7,29 @@
 namespace ecell4 {
 
 OffLatticeSpace::OffLatticeSpace(const Real& voxel_radius)
-    : base_type(voxel_radius), voxels_(), positions_(), adjoinings_(),
-    vacant_(&(VacantType::getInstance()))
-{
-}
+    : base_type(voxel_radius),
+      voxels_(),
+      positions_(),
+      adjoinings_(),
+      vacant_(&(VacantType::getInstance()))
+{}
 
-OffLatticeSpace::OffLatticeSpace(
-        const Real& voxel_radius,
-        const position_container& positions,
-        const coordinate_pair_list_type& adjoining_pairs)
-    : base_type(voxel_radius), voxels_(), positions_(), adjoinings_(),
-    vacant_(&(VacantType::getInstance()))
+OffLatticeSpace::OffLatticeSpace(const Real& voxel_radius,
+                                 const position_container& positions,
+                                 const coordinate_pair_list_type& adjoining_pairs)
+    : base_type(voxel_radius),
+      voxels_(),
+      positions_(),
+      adjoinings_(),
+      vacant_(&(VacantType::getInstance()))
 {
     reset(positions, adjoining_pairs);
 }
 
 OffLatticeSpace::~OffLatticeSpace() {}
 
-void OffLatticeSpace::reset(
-        const position_container& positions,
-        const coordinate_pair_list_type& adjoining_pairs)
+void OffLatticeSpace::reset(const position_container& positions,
+                            const coordinate_pair_list_type& adjoining_pairs)
 {
     voxels_.clear();
     positions_.clear();
@@ -41,7 +44,7 @@ void OffLatticeSpace::reset(
     std::copy(positions.begin(), positions.end(), positions_.begin());
 
     for (coordinate_pair_list_type::const_iterator itr(adjoining_pairs.begin());
-            itr != adjoining_pairs.end(); ++itr)
+         itr != adjoining_pairs.end(); ++itr)
     {
         const coordinate_type coord0((*itr).first);
         const coordinate_type coord1((*itr).second);
@@ -56,11 +59,6 @@ void OffLatticeSpace::reset(
             throw IllegalState("A given pair is invalid.");
         }
     }
-}
-
-bool OffLatticeSpace::is_in_range(const coordinate_type& coord) const
-{
-    return 0 <= coord && coord < voxels_.size();
 }
 
 VoxelPool* OffLatticeSpace::get_voxel_pool(const Voxel& v)
@@ -178,11 +176,6 @@ bool OffLatticeSpace::make_molecular_pool(
         throw AlreadyExists("never reach here.");
     }
     return retval.second;
-}
-
-Integer OffLatticeSpace::count_voxels(const boost::shared_ptr<VoxelPool>& vp) const
-{
-    return static_cast<Integer>(std::count(voxels_.begin(), voxels_.end(), vp.get()));
 }
 
 
@@ -355,22 +348,6 @@ OffLatticeSpace::move_to_neighbor(
     return std::make_pair(dest, true);
 }
 
-// Same as LatticeSpaceVectorImpl
-VoxelPool* OffLatticeSpace::get_voxel_pool_at(const coordinate_type& coord) const
-{
-    return voxels_.at(coord);
-}
-
-OffLatticeSpace::coordinate_type OffLatticeSpace::inner2coordinate(const coordinate_type inner) const
-{
-    throw NotSupported("OffLatticeSpace::inner2coordinate() is not supported.");
-}
-
-Real3 OffLatticeSpace::coordinate2position(const coordinate_type& coord) const
-{
-    return positions_.at(coord);
-}
-
 OffLatticeSpace::coordinate_type
 OffLatticeSpace::position2coordinate(const Real3& pos) const
 {
@@ -389,55 +366,5 @@ OffLatticeSpace::position2coordinate(const Real3& pos) const
 
     return coordinate;
 }
-
-Integer OffLatticeSpace::num_neighbors(const coordinate_type& coord) const
-{
-    return adjoinings_.at(coord).size();
-}
-
-// the second argument should be RandomNumberGenerator rather than Integer.
-OffLatticeSpace::coordinate_type
-OffLatticeSpace::get_neighbor(const coordinate_type& coord, const Integer& nrand) const
-{
-    return adjoinings_.at(coord).at(nrand);
-}
-
-OffLatticeSpace::coordinate_type
-OffLatticeSpace::get_neighbor_boundary(const coordinate_type& coord, const Integer& nrand) const
-{
-    return get_neighbor(coord, nrand);
-}
-
-Real3 OffLatticeSpace::actual_lengths() const
-{
-    throw NotSupported("OffLatticeSpace::actual_lengths() is not supported.");
-}
-
-Integer OffLatticeSpace::size() const
-{
-    return voxels_.size();
-}
-
-Integer3 OffLatticeSpace::shape() const
-{
-    throw NotSupported("OffLatticeSpace::shape() is not supported.");
-}
-
-Integer OffLatticeSpace::inner_size() const
-{
-    return size();
-}
-
-#ifdef WITH_HDF5
-void OffLatticeSpace::save_hdf5(H5::Group* root) const
-{
-    throw NotSupported("OffLatticeSpace::save_hdf5 is not supported yet.");
-}
-
-void OffLatticeSpace::load_hdf5(const H5::Group& root)
-{
-    throw NotSupported("OffLatticeSpace::load_hdf5 is not supported yet.");
-}
-#endif
 
 } // ecell4
