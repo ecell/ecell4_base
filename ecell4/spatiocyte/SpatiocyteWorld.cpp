@@ -28,27 +28,27 @@ SpatiocyteWorld* create_spatiocyte_world_vector_impl(
 
 const Real SpatiocyteWorld::t() const
 {
-    return (*space_).t();
+    return root_->t();
 }
 
 void SpatiocyteWorld::set_t(const Real& t)
 {
-    (*space_).set_t(t);
+    root_->set_t(t);
 }
 
 const Real3& SpatiocyteWorld::edge_lengths() const
 {
-    return (*space_).edge_lengths();
+    return root_->edge_lengths();
 }
 
 const Real SpatiocyteWorld::volume() const
 {
-    return (*space_).volume();
+    return root_->volume();
 }
 
 Integer SpatiocyteWorld::num_species() const
 {
-    return (*space_).num_species();
+    return root_->num_species();
 }
 
 void SpatiocyteWorld::set_value(const Species& sp, const Real value)
@@ -67,80 +67,80 @@ void SpatiocyteWorld::set_value(const Species& sp, const Real value)
 
 bool SpatiocyteWorld::has_species(const Species &sp) const
 {
-    return (*space_).has_species(sp);
+    return root_->has_species(sp);
 }
 
 // bool SpatiocyteWorld::has_species_exact(const Species &sp) const
 // {
-//     return (*space_).has_species_exact(sp);
+//     return root_->has_species_exact(sp);
 // }
 
 Integer SpatiocyteWorld::num_molecules(const Species& sp) const
 {
-    return (*space_).num_molecules(sp);
+    return root_->num_molecules(sp);
 }
 
 Integer SpatiocyteWorld::num_molecules_exact(const Species& sp) const
 {
-    return (*space_).num_molecules_exact(sp);
+    return root_->num_molecules_exact(sp);
 }
 
 Integer SpatiocyteWorld::num_particles(const Species& sp) const
 {
-    return (*space_).num_particles(sp);
+    return root_->num_particles(sp);
 }
 
 Integer SpatiocyteWorld::num_particles_exact(const Species& sp) const
 {
-    return (*space_).num_particles_exact(sp);
+    return root_->num_particles_exact(sp);
 }
 
 Integer SpatiocyteWorld::num_particles() const
 {
-    return (*space_).num_particles();
+    return root_->num_particles();
 }
 
 Integer SpatiocyteWorld::num_voxels() const
 {
-    return (*space_).num_voxels();
+    return root_->num_voxels();
 }
 
 Integer SpatiocyteWorld::num_voxels(const Species& sp) const
 {
-    return (*space_).num_voxels(sp);
+    return root_->num_voxels(sp);
 }
 
 Integer SpatiocyteWorld::num_voxels_exact(const Species& sp) const
 {
-    return (*space_).num_voxels_exact(sp);
+    return root_->num_voxels_exact(sp);
 }
 
 bool SpatiocyteWorld::has_particle(const ParticleID& pid) const
 {
-    return (*space_).has_particle(pid);
+    return root_->has_particle(pid);
 }
 
 bool SpatiocyteWorld::has_voxel(const ParticleID& pid) const
 {
-    return (*space_).has_voxel(pid);
+    return root_->has_voxel(pid);
 }
 
 std::vector<std::pair<ParticleID, Particle> >
 SpatiocyteWorld::list_particles() const
 {
-    return (*space_).list_particles();
+    return root_->list_particles();
 }
 
 std::vector<std::pair<ParticleID, Particle> >
 SpatiocyteWorld::list_particles(const Species& sp) const
 {
-    return (*space_).list_particles(sp);
+    return root_->list_particles(sp);
 }
 
 std::vector<std::pair<ParticleID, Particle> >
 SpatiocyteWorld::list_particles_exact(const Species& sp) const
 {
-    return (*space_).list_particles_exact(sp);
+    return root_->list_particles_exact(sp);
 }
 
 std::vector<std::pair<ParticleID, Particle> >
@@ -201,7 +201,7 @@ SpatiocyteWorld::list_non_structure_particles() const
 
 std::vector<Species> SpatiocyteWorld::list_species() const
 {
-    return (*space_).list_species();
+    return root_->list_species();
 }
 
 std::vector<Species> SpatiocyteWorld::list_non_structure_species() const
@@ -232,34 +232,34 @@ std::vector<Species> SpatiocyteWorld::list_structure_species() const
 
 std::vector<std::pair<ParticleID, Voxel> > SpatiocyteWorld::list_voxels() const
 {
-    return (*space_).list_voxels();
+    return root_->list_voxels();
 }
 
 std::vector<std::pair<ParticleID, Voxel> >
     SpatiocyteWorld::list_voxels(const Species& sp) const
 {
-    return (*space_).list_voxels(sp);
+    return root_->list_voxels(sp);
 }
 
 std::vector<std::pair<ParticleID, Voxel> >
     SpatiocyteWorld::list_voxels_exact(const Species& sp) const
 {
-    return (*space_).list_voxels_exact(sp);
+    return root_->list_voxels_exact(sp);
 }
 
 VoxelPool* SpatiocyteWorld::find_voxel_pool(const Species& species)
 {
-    return (*space_).find_voxel_pool(species);
+    return root_->find_voxel_pool(species);
 }
 
 const VoxelPool* SpatiocyteWorld::find_voxel_pool(const Species& species) const
 {
-    return (*space_).find_voxel_pool(species);
+    return root_->find_voxel_pool(species);
 }
 
 VoxelPool* SpatiocyteWorld::get_voxel_pool_at(const coordinate_type& coord) const
 {
-    return (*space_).get_voxel_pool_at(coord);
+    return root_->get_voxel_pool_at(coord);
 }
 
 std::pair<std::pair<ParticleID, Voxel>, bool>
@@ -371,7 +371,7 @@ Integer SpatiocyteWorld::add_structure(
     const Species& sp, const boost::shared_ptr<const Shape> shape)
 {
     const SpatiocyteWorld::molecule_info_type info(get_molecule_info(sp));
-    (*space_).make_structure_type(sp, shape->dimension(), info.loc);
+    root_->make_structure_type(sp, shape->dimension(), info.loc);
 
     switch (shape->dimension())
     {
@@ -423,7 +423,7 @@ Integer SpatiocyteWorld::add_structure2(const Species& sp, const boost::shared_p
 Integer SpatiocyteWorld::add_interface(const Species& sp)
 {
     const SpatiocyteWorld::molecule_info_type info(get_molecule_info(sp));
-    (*space_).make_interface_type(sp, Shape::UNDEF, info.loc);  //XXX: set the dimension properly
+    root_->make_interface_type(sp, Shape::UNDEF, info.loc);  //XXX: set the dimension properly
     return 0;  //XXX: dummpy
 }
 
@@ -504,19 +504,19 @@ void SpatiocyteWorld::remove_molecules(const Species& sp, const Integer& num)
 
 bool SpatiocyteWorld::remove_voxel(const coordinate_type coord)
 {
-    return (*space_).remove_voxel(coord);
+    return root_->remove_voxel(coord);
 }
 
 bool SpatiocyteWorld::move(
     const coordinate_type& src, const coordinate_type& dest, const std::size_t candidate)
 {
-    return (*space_).move(src, dest, candidate);
+    return root_->move(src, dest, candidate);
 }
 
 bool SpatiocyteWorld::can_move(const coordinate_type& src,
         const coordinate_type& dest) const
 {
-    return (*space_).can_move(src, dest);
+    return root_->can_move(src, dest);
 }
 
 std::pair<SpatiocyteWorld::coordinate_type, bool>
@@ -524,7 +524,7 @@ SpatiocyteWorld::move_to_neighbor(
     VoxelPool* const& from_mt, VoxelPool* const& loc,
     coordinate_id_pair_type& info, const Integer nrand)
 {
-    return (*space_).move_to_neighbor(from_mt, loc, info, nrand);
+    return root_->move_to_neighbor(from_mt, loc, info, nrand);
 }
 
 std::pair<SpatiocyteWorld::coordinate_type, bool>

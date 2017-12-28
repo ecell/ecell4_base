@@ -34,8 +34,8 @@ class SpatiocyteWorld
 {
 public:
 
-    // typedef LatticeSpaceCellListImpl default_space_type;
-    typedef LatticeSpaceVectorImpl default_space_type;
+    // typedef LatticeSpaceCellListImpl default_root_type;
+    typedef LatticeSpaceVectorImpl default_root_type;
 
     typedef MoleculeInfo molecule_info_type;
 
@@ -46,13 +46,13 @@ public:
 
     SpatiocyteWorld(const Real3& edge_lengths, const Real& voxel_radius,
         const boost::shared_ptr<RandomNumberGenerator>& rng)
-        : space_(new default_space_type(edge_lengths, voxel_radius)), rng_(rng)
+        : root_(new default_root_type(edge_lengths, voxel_radius)), rng_(rng)
     {
         ; // do nothing
     }
 
     SpatiocyteWorld(const Real3& edge_lengths, const Real& voxel_radius)
-        : space_(new default_space_type(edge_lengths, voxel_radius))
+        : root_(new default_root_type(edge_lengths, voxel_radius))
     {
         rng_ = boost::shared_ptr<RandomNumberGenerator>(
             new GSLRandomNumberGenerator());
@@ -60,7 +60,7 @@ public:
     }
 
     SpatiocyteWorld(const Real3& edge_lengths = Real3(1, 1, 1))
-        : space_(new default_space_type(edge_lengths, edge_lengths[0] / 100)) //XXX: sloppy default
+        : root_(new default_root_type(edge_lengths, edge_lengths[0] / 100)) //XXX: sloppy default
     {
         rng_ = boost::shared_ptr<RandomNumberGenerator>(
             new GSLRandomNumberGenerator());
@@ -68,7 +68,7 @@ public:
     }
 
     SpatiocyteWorld(const std::string filename)
-        : space_(new default_space_type(Real3(1, 1, 1), 1 / 100)) //XXX: sloppy default
+        : root_(new default_root_type(Real3(1, 1, 1), 1 / 100)) //XXX: sloppy default
     {
         rng_ = boost::shared_ptr<RandomNumberGenerator>(
             new GSLRandomNumberGenerator());
@@ -77,7 +77,7 @@ public:
 
     SpatiocyteWorld(VoxelSpaceBase* space,
         const boost::shared_ptr<RandomNumberGenerator>& rng)
-        : space_(space), rng_(rng)
+        : root_(space), rng_(rng)
     {
         ; // do nothing
     }
@@ -149,7 +149,7 @@ public:
 
     Real actual_volume() const
     {
-        return (*space_).actual_volume();
+        return root_->actual_volume();
     }
 
     Integer num_molecules(const Species& sp) const;
@@ -165,12 +165,12 @@ public:
 
     Real get_value(const Species& sp) const
     {
-        return (*space_).get_value(sp);
+        return root_->get_value(sp);
     }
 
     Real get_value_exact(const Species& sp) const
     {
-        return (*space_).get_value_exact(sp);
+        return root_->get_value_exact(sp);
     }
 
     /**
@@ -188,7 +188,7 @@ public:
         const molecule_info_type minfo(get_molecule_info(p.species()));
         const Voxel v(
             p.species(), position2coordinate(p.position()), p.radius(), p.D(), minfo.loc);
-        if ((*space_).on_structure(v))
+        if (root_->on_structure(v))
         {
             return std::make_pair(std::make_pair(ParticleID(), p), false);
         }
@@ -205,27 +205,27 @@ public:
 
     std::pair<ParticleID, Particle> get_particle(const ParticleID& pid) const
     {
-        return (*space_).get_particle(pid);
+        return root_->get_particle(pid);
     }
 
     std::pair<ParticleID, Voxel> get_voxel(const ParticleID& pid) const
     {
-        return (*space_).get_voxel(pid);
+        return root_->get_voxel(pid);
     }
 
     std::pair<ParticleID, Voxel> get_voxel_at(const coordinate_type& coord) const
     {
-        return (*space_).get_voxel_at(coord);
+        return root_->get_voxel_at(coord);
     }
 
     bool remove_particle(const ParticleID& pid)
     {
-        return (*space_).remove_particle(pid);
+        return root_->remove_particle(pid);
     }
 
     bool remove_voxel(const ParticleID& pid)
     {
-        return (*space_).remove_voxel(pid);
+        return root_->remove_voxel(pid);
     }
 
     bool has_voxel(const ParticleID& pid) const;
@@ -260,17 +260,17 @@ public:
 
     bool has_molecule_pool(const Species& sp) const
     {
-        return (*space_).has_molecule_pool(sp);
+        return root_->has_molecule_pool(sp);
     }
 
     MoleculePool* find_molecule_pool(const Species& species)
     {
-        return (*space_).find_molecule_pool(species);
+        return root_->find_molecule_pool(species);
     }
 
     const MoleculePool* find_molecule_pool(const Species& species) const
     {
-        return (*space_).find_molecule_pool(species);
+        return root_->find_molecule_pool(species);
     }
 
     VoxelPool* find_voxel_pool(const Species& species);
@@ -310,13 +310,13 @@ public:
 
     coordinate_type get_neighbor(coordinate_type coord, Integer nrand) const
     {
-        return (*space_).get_neighbor(coord, nrand);
+        return root_->get_neighbor(coord, nrand);
     }
 
     coordinate_type get_neighbor_boundary(
             coordinate_type coord, Integer nrand) const
     {
-        return (*space_).get_neighbor_boundary(coord, nrand);
+        return root_->get_neighbor_boundary(coord, nrand);
     }
 
     std::pair<coordinate_type, bool> check_neighbor(
@@ -334,27 +334,27 @@ public:
 
     // void update_voxel(const Voxel& v)
     // {
-    //     (*space_).update_voxel(v);
+    //     root_->update_voxel(v);
     // }
 
     bool update_voxel(const ParticleID& pid, const Voxel& v)
     {
-        return (*space_).update_voxel(pid, v);
+        return root_->update_voxel(pid, v);
     }
 
     Real voxel_radius() const
     {
-        return (*space_).voxel_radius();
+        return root_->voxel_radius();
     }
 
     Real voxel_volume() const
     {
-        return (*space_).voxel_volume();
+        return root_->voxel_volume();
     }
 
     Real unit_area() const
     {
-        return (*space_).unit_area();
+        return root_->unit_area();
     }
 
     Real get_volume(const Species& sp) const
@@ -363,12 +363,12 @@ public:
         {
             return 0.0;
         }
-        return (*space_).get_volume(sp);
+        return root_->get_volume(sp);
     }
 
     Real3 actual_lengths() const
     {
-        return (*space_).actual_lengths();
+        return root_->actual_lengths();
     }
 
     boost::shared_ptr<RandomNumberGenerator> rng()
@@ -378,38 +378,38 @@ public:
 
     const Integer size() const
     {
-        return (*space_).size();
+        return root_->size();
     }
 
     const Integer3 shape() const
     {
-        return (*space_).shape();
+        return root_->shape();
     }
 
     const Integer inner_size() const
     {
-        return (*space_).inner_size();
+        return root_->inner_size();
     }
 
     // TODO
     // const Integer3 inner_shape() const
     // {
-    //     return (*space_).inner_shape();
+    //     return root_->inner_shape();
     // }
 
     const coordinate_type inner2coordinate(const coordinate_type inner)
     {
-        return (*space_).inner2coordinate(inner);
+        return root_->inner2coordinate(inner);
     }
 
     coordinate_type position2coordinate(const Real3& pos) const
     {
-        return (*space_).position2coordinate(pos);
+        return root_->position2coordinate(pos);
     }
 
     const Real3 coordinate2position(const coordinate_type& coord) const
     {
-        return (*space_).coordinate2position(coord);
+        return root_->coordinate2position(coord);
     }
 
     /**
@@ -459,7 +459,7 @@ public:
 
     bool on_structure(const Voxel& v)
     {
-        return (*space_).on_structure(v);
+        return root_->on_structure(v);
     }
 
     /*
@@ -474,7 +474,7 @@ public:
         sidgen_.save(fout.get());
         boost::scoped_ptr<H5::Group>
             group(new H5::Group(fout->createGroup("LatticeSpace")));
-        (*space_).save_hdf5(group.get());
+        root_->save_hdf5(group.get());
         extras::save_version_information(fout.get(), std::string("ecell4-spatiocyte-") + std::string(ECELL4_VERSION));
 #else
         throw NotSupported(
@@ -506,7 +506,7 @@ public:
         }
 
         const H5::Group group(fin->openGroup("LatticeSpace"));
-        (*space_).load_hdf5(group);
+        root_->load_hdf5(group);
         sidgen_.load(*fin);
         rng_->load(*fin);
 #else
@@ -566,7 +566,7 @@ protected:
 
 protected:
 
-    boost::scoped_ptr<VoxelSpaceBase> space_;
+    boost::scoped_ptr<VoxelSpaceBase> root_;
     boost::shared_ptr<RandomNumberGenerator> rng_;
     SerialIDGenerator<ParticleID> sidgen_;
 
