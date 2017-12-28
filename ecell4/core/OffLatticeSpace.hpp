@@ -1,6 +1,7 @@
 #ifndef ECELL4_OFFLATTICE_SPACE_HPP
 #define ECELL4_OFFLATTICE_SPACE_HPP
 
+#include <boost/optional.hpp>
 #include "VoxelSpaceBase.hpp"
 
 namespace ecell4
@@ -147,7 +148,7 @@ protected:
 
     void reset(const position_container& positions,
                const coordinate_pair_list_type& adjoining_pairs);
-    coordinate_type get_coord(const ParticleID& pid) const;
+    boost::optional<coordinate_type> get_coord(const ParticleID& pid) const;
     bool make_molecular_pool(const Species& sp,
                              Real radius,
                              Real D,

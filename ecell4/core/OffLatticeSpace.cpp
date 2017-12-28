@@ -97,9 +97,12 @@ VoxelPool* OffLatticeSpace::get_voxel_pool(const Voxel& v)
     return (*i).second.get();  // upcast
 }
 
-OffLatticeSpace::coordinate_type
+boost::optional<OffLatticeSpace::coordinate_type>
 OffLatticeSpace::get_coord(const ParticleID& pid) const
 {
+    if (pid == ParticleID())
+        return boost::none;
+
     for (molecule_pool_map_type::const_iterator itr(molecule_pools_.begin());
          itr != molecule_pools_.end(); ++itr)
     {
@@ -114,7 +117,7 @@ OffLatticeSpace::get_coord(const ParticleID& pid) const
         }
     }
     // throw NotFound("A corresponding particle is not found");
-    return -1;
+    return boost::none;
 }
 
 bool OffLatticeSpace::make_molecular_pool(
@@ -222,16 +225,15 @@ bool OffLatticeSpace::update_voxel(const ParticleID& pid, const Voxel& v)
             + dest_vp->species().serial() + "'.");
     }
 
-    const coordinate_type from_coord(pid != ParticleID() ? get_coord(pid) : -1);
-    if (from_coord != -1)
+    if (boost::optional<coordinate_type> from_coord = get_coord(pid))
     {
         // move
-        VoxelPool* src_vp(voxels_.at(from_coord));
-        src_vp->remove_voxel_if_exists(from_coord);
+        VoxelPool* src_vp(voxels_.at(*from_coord));
+        src_vp->remove_voxel_if_exists(*from_coord);
 
         //XXX: use location?
-        dest_vp->replace_voxel(to_coord, from_coord);
-        voxel_container::iterator from_itr(voxels_.begin() + from_coord);
+        dest_vp->replace_voxel(to_coord, *from_coord);
+        voxel_container::iterator from_itr(voxels_.begin() + *from_coord);
         (*from_itr) = dest_vp;
 
         new_vp->add_voxel(coordinate_id_pair_type(pid, to_coord));
