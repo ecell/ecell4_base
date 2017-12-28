@@ -854,7 +854,7 @@ bool LatticeSpaceVectorImpl::make_molecular_type(const Species& sp, Real radius,
     return retval.second;
 }
 
-bool LatticeSpaceVectorImpl::add_voxels(const Species sp, std::vector<std::pair<ParticleID, coordinate_type> > voxels)
+bool LatticeSpaceVectorImpl::add_voxels(const Species& sp, std::vector<std::pair<ParticleID, coordinate_type> > voxels)
 {
     // this function doesn't check location.
     VoxelPool *mtb;

@@ -46,7 +46,7 @@ public:
 
     bool update_voxel(const ParticleID& pid, const Voxel& v);
 
-    bool add_voxels(const Species species,
+    bool add_voxels(const Species& species,
                     std::vector<std::pair<ParticleID, coordinate_type> > voxels);
 
     const Species& find_species(std::string name) const;
