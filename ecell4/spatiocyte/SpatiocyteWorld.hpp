@@ -483,9 +483,7 @@ public:
 
     const molecule_info_type get_molecule_info(const VoxelPool* mt) const
     {
-        const std::string loc(
-            mt->location()->is_vacant() ? "" : mt->location()->species().serial());
-        molecule_info_type info = {mt->radius(), mt->D(), loc};
+        const molecule_info_type info = {mt->radius(), mt->D(), get_location_serial(mt)};
         return info;
     }
 
@@ -500,11 +498,9 @@ public:
     std::pair<ParticleID, Voxel> make_pid_voxel_pair(
         const VoxelPool* mt, const coordinate_id_pair_type& info) const
     {
-        const std::string loc(
-            mt->location()->is_vacant() ? "" : mt->location()->species().serial());
         return std::make_pair<ParticleID, Voxel>(
             ParticleID(info.pid),
-            Voxel(mt->species(), info.coordinate, mt->radius(), mt->D(), loc));
+            Voxel(mt->species(), info.coordinate, mt->radius(), mt->D(), get_location_serial(mt)));
     }
 
     std::pair<ParticleID, Voxel> choice(const Species& sp)
