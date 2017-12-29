@@ -1,4 +1,4 @@
-#include "LatticeSpaceBase.hpp"
+#include "HCPLatticeSpace.hpp"
 
 #include <cmath>
 
@@ -20,7 +20,7 @@ double round(const double x)
 }
 #endif
 
-void LatticeSpaceBase::set_lattice_properties(const bool is_periodic)
+void HCPLatticeSpace::set_lattice_properties(const bool is_periodic)
 {
     //XXX: derived from SpatiocyteStepper::setLatticeProperties()
     HCP_L = voxel_radius_ / sqrt(3.0);

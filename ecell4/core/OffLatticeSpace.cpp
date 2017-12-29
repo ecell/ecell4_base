@@ -361,12 +361,6 @@ VoxelPool* OffLatticeSpace::get_voxel_pool_at(const coordinate_type& coord) cons
     return voxels_.at(coord);
 }
 
-// Same as LatticeSpaceVectorImpl
-bool OffLatticeSpace::on_structure(const Voxel& v)
-{
-    return voxels_.at(v.coordinate()) != get_voxel_pool(v)->location();
-}
-
 OffLatticeSpace::coordinate_type OffLatticeSpace::inner2coordinate(const coordinate_type inner) const
 {
     throw NotSupported("OffLatticeSpace::inner2coordinate() is not supported.");
@@ -412,35 +406,6 @@ OffLatticeSpace::coordinate_type
 OffLatticeSpace::get_neighbor_boundary(const coordinate_type& coord, const Integer& nrand) const
 {
     return get_neighbor(coord, nrand);
-}
-
-Integer OffLatticeSpace::num_molecules(const Species& sp) const
-{
-    Integer count(0);
-    SpeciesExpressionMatcher sexp(sp);
-
-    for (voxel_pool_map_type::const_iterator itr(voxel_pools_.begin());
-         itr != voxel_pools_.end(); ++itr)
-    {
-        const Integer cnt(sexp.count((*itr).first));
-        if (cnt > 0)
-        {
-            const boost::shared_ptr<VoxelPool>& vp((*itr).second);
-            count += count_voxels(vp) * cnt;
-        }
-    }
-
-    for (molecule_pool_map_type::const_iterator itr(molecule_pools_.begin());
-         itr != molecule_pools_.end(); ++itr)
-    {
-        const Integer cnt(sexp.count((*itr).first));
-        if (cnt > 0)
-        {
-            const boost::shared_ptr<MoleculePool>& vp((*itr).second);
-            count += vp->size() * cnt;
-        }
-    }
-    return count;
 }
 
 Real3 OffLatticeSpace::actual_lengths() const
