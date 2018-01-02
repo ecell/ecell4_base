@@ -257,6 +257,7 @@ def run_slurm(target, jobs, n=1, nproc=None, path='.', delete=True, wait=True, e
     else:
         raise ValueError("'wait' must be either 'int' or 'bool'.")
 
+    #XXX: nproc only limits the maximum count for 'each' job, but not for the whole jobs.
     jobids = slurm.run(cmds, n=n, path=path, delete=delete, sync=sync, max_running_tasks=nproc, **kwargs)
 
     if not (sync > 0):
