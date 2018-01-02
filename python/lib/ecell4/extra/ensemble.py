@@ -16,6 +16,7 @@ import copy
 import csv
 
 import ecell4.extra.sge as sge
+import ecell4.extra.slurm as slurm
 
 
 def run_serial(target, jobs, n=1, **kwargs):
@@ -163,6 +164,118 @@ def run_sge(target, jobs, n=1, nproc=None, path='.', delete=True, wait=True, env
 
     return retval
 
+def run_slurm(target, jobs, n=1, nproc=None, path='.', delete=True, wait=True, environ=None, modules=(), **kwargs):
+    logging.basicConfig(level=logging.DEBUG)
+
+    if isinstance(target, types.LambdaType) and target.__name__ == "<lambda>":
+        raise RuntimeError("A lambda function is not accepted")
+
+    # src = textwrap.dedent(inspect.getsource(singlerun)).replace(r'"', r'\"')
+    src = textwrap.dedent(inspect.getsource(target)).replace(r'"', r'\"')
+    if re.match('[\s\t]+', src.split('\n')[0]) is not None:
+        raise RuntimeError(
+            "Wrong indentation was found in the source translated")
+
+    if not os.path.isdir(path):
+        os.makedirs(path)  #XXX: MYOB
+
+    if environ is None:
+        environ = {}
+        keys = ("LD_LIBRARY_PATH", "PYTHONPATH")
+        for key in keys:
+            if key in os.environ.keys():
+                environ[key] = os.environ[key]
+        if "PYTHONPATH" in environ.keys() and environ["PYTHONPATH"].strip() != "":
+            environ["PYTHONPATH"] = "{}:{}".format(os.getcwd(), environ["PYTHONPATH"])
+        else:
+            environ["PYTHONPATH"] = os.getcwd()
+
+    cmds = []
+    pickleins = []
+    pickleouts = []
+    scripts = []
+    for i, job in enumerate(jobs):
+        (fd, picklein) = tempfile.mkstemp(suffix='.pickle', prefix='slurm-', dir=path)
+        with os.fdopen(fd, 'wb') as fout:
+            pickle.dump(job, fout)
+        pickleins.append(picklein)
+
+        pickleouts.append([])
+        for j in range(n):
+            fd, pickleout = tempfile.mkstemp(suffix='.pickle', prefix='slurm-', dir=path)
+            os.close(fd)
+            pickleouts[-1].append(pickleout)
+        # pickleouts.append(
+        #     [tempfile.mkstemp(suffix='.pickle', prefix='slurm-', dir=path)[1]
+        #      for j in range(n)])
+
+        code = 'import sys\n'
+        code += 'import os\n'
+        code += 'import pickle\n'
+        code += 'with open(\'{}\', \'rb\') as fin:\n'.format(picklein)
+        code += '    job = pickle.load(fin)\n'
+        code += 'pass\n'
+        for m in modules:
+            code += "from {} import *\n".format(m)
+        code += src
+        code += '\ntid = int(os.environ[\'SLURM_ARRAY_TASK_ID\'])'
+        # code += '\ntid = int(os.environ[\'SGE_TASK_ID\'])'
+        code += '\nretval = {:s}(job, {:d}, tid)'.format(target.__name__, i + 1)
+        code += '\nfilenames = {:s}'.format(str(pickleouts[-1]))
+        code += '\npickle.dump(retval, open(filenames[tid - 1], \'wb\'))\n'
+
+        (fd, script) = tempfile.mkstemp(suffix='.py', prefix='slurm-', dir=path, text=True)
+        with os.fdopen(fd, 'w') as fout:
+            fout.write(code)
+        scripts.append(script)
+
+        cmd = '#!/bin/bash\n'
+        for key, value in environ.items():
+            cmd += 'export {:s}={:s}\n'.format(key, value)
+        cmd += 'python3 {}'.format(script)  #XXX: Use the same executer, python
+        # cmd += 'python3 -c "\n'
+        # cmd += 'import sys\n'
+        # cmd += 'import os\n'
+        # cmd += 'import pickle\n'
+        # cmd += 'with open(sys.argv[1], \'rb\') as fin:\n'
+        # cmd += '    job = pickle.load(fin)\n'
+        # cmd += 'pass\n'
+        # for m in modules:
+        #     cmd += "from {} import *\n".format(m)
+        # cmd += src
+        # cmd += '\ntid = int(os.environ[\'SGE_TASK_ID\'])'
+        # cmd += '\nretval = {:s}(job, {:d}, tid)'.format(target.__name__, i + 1)
+        # cmd += '\nfilenames = {:s}'.format(str(pickleouts[-1]))
+        # cmd += '\npickle.dump(retval, open(filenames[tid - 1], \'wb\'))'
+        # cmd += '" {:s}\n'.format(picklein)
+        cmds.append(cmd)
+
+    if isinstance(wait, bool):
+        sync = 0 if not wait else 10
+    elif isinstance(wait, int):
+        sync = wait
+    else:
+        raise ValueError("'wait' must be either 'int' or 'bool'.")
+
+    jobids = slurm.run(cmds, n=n, path=path, delete=delete, sync=sync, max_running_tasks=nproc, **kwargs)
+
+    if not (sync > 0):
+        return None
+
+    for jobid, name in jobids:
+        outputs = slurm.collect(jobid, name, n=n, path=path, delete=delete)
+        for output in outputs:
+            print(output, end='')
+
+    retval = [[pickle.load(open(pickleout, 'rb')) for pickleout in tasks]
+              for tasks in pickleouts]
+
+    if delete:
+        for tmpname in itertools.chain(pickleins, scripts, *pickleouts):
+            os.remove(tmpname)
+
+    return retval
+
 def genseeds(n):
     """
     Return a random number generator seed for ensemble_simulations.
@@ -241,7 +354,7 @@ def ensemble_simulations(
         Default is None.
     method : str, optional
         The way for running multiple jobs.
-        Choose one from 'serial', 'sge' and 'multiprocessing'.
+        Choose one from 'serial', 'sge', 'slurm' and 'multiprocessing'.
         Default is None, which works as 'serial'.
     **kwargs : dict, optional
         Optional keyword arugments are passed through to `run_serial`,
@@ -263,6 +376,7 @@ def ensemble_simulations(
     ecell4.util.run_simulation
     ecell4.extra.run_serial
     ecell4.extra.run_sge
+    ecell4.extra.run_slurm
     ecell4.extra.run_multiprocessing
 
     """
@@ -301,11 +415,13 @@ def ensemble_simulations(
         retval = run_serial(singlerun, jobs, n=n, **kwargs)
     elif method.lower() == "sge":
         retval = run_sge(singlerun, jobs, n=n, nproc=nproc, **kwargs)
+    elif method.lower() == "slurm":
+        retval = run_slurm(singlerun, jobs, n=n, nproc=nproc, **kwargs)
     elif method.lower() == "multiprocessing":
         retval = run_multiprocessing(singlerun, jobs, n=n, nproc=nproc, **kwargs)
     else:
         raise ValueError(
-            'Argument "method" must be one of "serial", "multiprocessing" and "sge".')
+            'Argument "method" must be one of "serial", "multiprocessing", "slurm" and "sge".')
 
     if return_type is None or return_type in ("none", ):
         return
