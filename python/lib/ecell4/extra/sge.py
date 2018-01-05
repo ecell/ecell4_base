@@ -70,10 +70,16 @@ def collect(jobid, name, n=1, path='.', delete=True):
     return outputs
 
 def submit(job, n=1, epath='.', opath='.', extra_args=None, max_running_tasks=None):
-    output = subprocess.check_output(
-        [os.path.join(rcParams["PREFIX"], rcParams["QSUB"]), '-cwd']
+    cmd = ([os.path.join(rcParams["PREFIX"], rcParams["QSUB"]), '-cwd']
         + (['-tc', str(max_running_tasks)] if max_running_tasks is not None else []) + (extra_args or [])
         + ['-e', epath, '-o', opath, '-t', '1-{:d}'.format(n), job])
+
+    try:
+        output = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+    except subprocess.CalledProcessError as err:
+        get_logger().error(err.stdout.decode('utf-8').rstrip())
+        raise err
+
     output = output.decode('utf-8')
     get_logger().debug(output.strip())
 
