@@ -95,12 +95,18 @@ def submit(job, n=1, epath='.', opath='.', extra_args=None, max_running_tasks=No
     #     [os.path.join(rcParams["PREFIX"], rcParams["QSUB"]), '-cwd']
     #     + (['-tc', str(max_running_tasks)] if max_running_tasks is not None else []) + (extra_args or [])
     #     + ['-e', epath, '-o', opath, '-t', '1-{:d}'.format(n), job])
-    output = subprocess.check_output(
-        [os.path.join(rcParams["PREFIX"], rcParams["QSUB"])]
+    cmd = ([os.path.join(rcParams["PREFIX"], rcParams["QSUB"])]
         + (extra_args or [])
         + ['-e', os.path.join(epath, 'slurm-%A_e%a.out')]
         + ['-o', os.path.join(opath, 'slurm-%A_o%a.out')]
         + ['-a', '1-{:d}{}'.format(n, '%{}'.format(max_running_tasks) if max_running_tasks is not None else ''), job])
+
+    try:
+        output = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+    except subprocess.CalledProcessError as err:
+        get_logger().error(err.stdout.decode('utf-8').rstrip())
+        raise err
+
     output = output.decode('utf-8')
     get_logger().debug(output.strip())
 
