@@ -277,6 +277,11 @@ def run_slurm(target, jobs, n=1, nproc=None, path='.', delete=True, wait=True, e
 
     return retval
 
+def run_azure(target, jobs, n=1, nproc=None, path='.', delete=True, config=None, **kwargs):
+    #XXX: `nproc` is not supported yet. Just ignored here.
+    import ecell4.extra.azure_batch as azure_batch
+    return azure_batch.run_azure(target, jobs, n, path, delete, config)
+
 def genseeds(n):
     """
     Return a random number generator seed for ensemble_simulations.
@@ -355,7 +360,7 @@ def ensemble_simulations(
         Default is None.
     method : str, optional
         The way for running multiple jobs.
-        Choose one from 'serial', 'sge', 'slurm' and 'multiprocessing'.
+        Choose one from 'serial', 'multiprocessing', 'sge', 'slurm', 'azure'.
         Default is None, which works as 'serial'.
     **kwargs : dict, optional
         Optional keyword arugments are passed through to `run_serial`,
@@ -420,6 +425,8 @@ def ensemble_simulations(
         retval = run_slurm(singlerun, jobs, n=n, nproc=nproc, **kwargs)
     elif method.lower() == "multiprocessing":
         retval = run_multiprocessing(singlerun, jobs, n=n, nproc=nproc, **kwargs)
+    elif method.lower() == "azure":
+        retval = run_azure(singlerun, jobs, n=n, nproc=nproc, **kwargs)
     else:
         raise ValueError(
             'Argument "method" must be one of "serial", "multiprocessing", "slurm" and "sge".')

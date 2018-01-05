@@ -433,7 +433,7 @@ def print_task_output(batch_client, job_id, task_ids, encoding=None):
             task_id))
         print(file_text)
 
-def run_azure_batch(target, jobs, n=1, path='.', delete=True, config=None):
+def run_azure(target, jobs, n=1, path='.', delete=True, config=None):
     """Execute a function for multiple sets of arguments on Microsoft Azure,
     and return the results as a list.
 
@@ -776,7 +776,7 @@ if __name__ == '__main__':
 
     # jobs = [(n, n, n) for n in range(10, 70, 10)]
     jobs = [(30, 30, 30), (60, 60, 60)]
-    res = run_azure_batch(singlerun, jobs, n=2, path='tmp', config='example.ini')
+    res = run_azure(singlerun, jobs, n=2, path='tmp', config='example.ini')
     print(res)
 
     import numpy
