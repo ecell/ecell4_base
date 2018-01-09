@@ -35,6 +35,7 @@ public:
     typedef polygon_type::local_index_type  local_index_type;
     typedef polygon_type::barycentric_type  barycentric_type;
 
+    typedef face_id_type FaceID;
     typedef ecell4::Model   model_type;
     typedef ecell4::Species species_type;
     typedef typename container_type::particle_container_type queue_type;
@@ -76,25 +77,36 @@ public:
         BOOST_AUTO(position,     std::make_pair(p.position(), fid));
         BOOST_AUTO(displacement, draw_displacement(p, fid));
 
-        this->propagate(position, displacement);
-        /* checking whether the new position overlaps with other particles */{
-            Particle moved_particle(p);
-            moved_particle.position() = position.first;
-            if(false == clear_volume(moved_particle, position.second, pid))
+        this->propagate(position, displacement); // move `position`.
+
+        // checking whether the new position overlaps with other particles
+        {
+            // to restore the position, copy it.
+            const Real3  prev_pos(p.position());
+            const FaceID prev_fid(fid);
+
+            // update local copy of particle
+            boost::tie(p.position(), fid) = position;
+            if(false == clear_volume(p, fid, pid))
             {
-                // reject the move. restore.
+                // reject the move. restore position.
                 ++(this->rejected_move_count_);
-                position.first  = p.position();
-                position.second = fid;
+                p.position() = prev_pos;
+                fid          = prev_fid;
             }
-        } // here, collision between multi particles are not yet considered
+        }
+        // here, collision between multi particles are not yet considered
 
-        boost::tie(p.position(), fid) = position; // update position of copy
-
+        // check overlap between particles in the same multi domain.
         BOOST_AUTO(overlapped, list_reaction_overlap(pid, p, fid));
         switch(overlapped.size())
         {
-            case 0: break;
+            case 0:
+            {
+                // no overlap exists. volume is already cleared. update it.
+                this->container_.update_particle(pid, p, fid);
+                return true;
+            }
             case 1:
             {
                 ParticleID pid2; Particle p2;
@@ -114,13 +126,6 @@ public:
                 return true;
             }
         }
-
-        // if overlap exists, this function already returned.
-        if(clear_volume(p, fid, pid))
-        {
-            this->container_.update_particle(pid, p, fid);
-        }
-        return true;
     }
 
     Real                       dt()  const throw() {return dt_;}
