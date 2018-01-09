@@ -640,7 +640,7 @@ class SGFRDSimulator :
         {
             case shell_container_type::circular_shell:
             {
-                return propagate_pair_circular(
+                return propagate_circular_pair(
                         boost::get<circular_shell_type>(sh), dom, tm);
             }
             default:
@@ -653,10 +653,10 @@ class SGFRDSimulator :
     }
 
     boost::array<boost::tuple<ParticleID, Particle, FaceID>, 2>
-    propagate_pair_circular(const circular_shell_type& sh,
+    propagate_circular_pair(const circular_shell_type& sh,
             const Pair& dom, const Real tm)
     {
-        SGFRD_SCOPE(us, propagate_pair_circular, tracer_);
+        SGFRD_SCOPE(us, propagate_circular_pair, tracer_);
 
         // calculate displacements
         const Real dt = tm - dom.begin_time();
