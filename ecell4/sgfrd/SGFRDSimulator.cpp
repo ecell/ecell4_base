@@ -520,6 +520,9 @@ SGFRDSimulator::form_pair(
     const ShellID    partner_sid = sgl.shell_id();
     const DomainID   partner_did = intruders.front().first;
 
+    SGFRD_TRACE(tracer_.write(
+                "try to form pair domain for %1% and %2%", pid, partner_id))
+
     const Real r1(p.radius()), r2(partner.radius());
     const Real D1(p.D()), D2(partner.D());
     const Real D12 = D1 + D2;

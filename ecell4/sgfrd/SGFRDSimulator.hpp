@@ -768,7 +768,7 @@ class SGFRDSimulator :
     escape_com_circular_pair(
             const circular_shell_type& sh, const Pair& dom, const Real tm)
     {
-        SGFRD_SCOPE(us, escape_com_pair, tracer_);
+        SGFRD_SCOPE(us, escape_com_circular_pair, tracer_);
 
         // calculate displacements
         const Real dt = tm - dom.begin_time();
@@ -779,6 +779,10 @@ class SGFRDSimulator :
         const Real l_com     = dom.R_com();
         const Real theta_com = this->uniform_real() *
                                boost::math::constants::two_pi<Real>();
+
+        SGFRD_TRACE(tracer_.write("r_ipv = %1%, r_com = %2%", dom.R_ipv(), dom.R_com()));
+        SGFRD_TRACE(tracer_.write("l_ipv = %1%, theta_ipv = %2%", l_ipv, theta_ipv));
+        SGFRD_TRACE(tracer_.write("l_com = %1%, theta_com = %2%", l_com, theta_com));
 
         const FaceID       sh_fid = sh.structure_id();
         const triangle_type&    f = this->polygon().triangle_at(sh_fid);
@@ -814,12 +818,18 @@ class SGFRDSimulator :
         {
             SGFRD_TRACE(tracer_.write("escape_com_circular_pair "
                         "p1 moving on face: precision lost"))
+            SGFRD_TRACE(tracer_.write("displacement = %1%", disp_p1))
         }
         if(0 == ecell4::polygon::travel(this->polygon(), pos_p2, disp_p2, 2))
         {
             SGFRD_TRACE(tracer_.write("escape_com_circular_pair "
                         "p1 moving on face: precision lost"))
+            SGFRD_TRACE(tracer_.write("displacement = %1%", disp_p2))
         }
+        SGFRD_TRACE(tracer_.write("distance after travel = %1%",
+                    ecell4::polygon::distance(this->polygon(), pos_p1, pos_p2)))
+        SGFRD_TRACE(tracer_.write("now p1 is on face %1%, p2 is on face %2%",
+                                  pos_p1.second, pos_p2.second))
 
         p1.position() = pos_p1.first;
         p2.position() = pos_p2.first;
@@ -857,7 +867,7 @@ class SGFRDSimulator :
     escape_ipv_circular_pair(
             const circular_shell_type& sh, const Pair& dom, const Real tm)
     {
-        SGFRD_SCOPE(us, escape_com_pair, tracer_);
+        SGFRD_SCOPE(us, escape_ipv_circular_pair, tracer_);
 
         // calculate displacements
         const Real dt = tm - dom.begin_time();
@@ -871,6 +881,10 @@ class SGFRDSimulator :
         const Real l_com     = gf_com.drawR(this->uniform_real(), dt);
         const Real theta_com = this->uniform_real() *
                                boost::math::constants::two_pi<Real>();
+
+        SGFRD_TRACE(tracer_.write("r_ipv = %1%, r_com = %2%", dom.R_ipv(), dom.R_com()));
+        SGFRD_TRACE(tracer_.write("l_ipv = %1%, theta_ipv = %2%", l_ipv, theta_ipv));
+        SGFRD_TRACE(tracer_.write("l_com = %1%, theta_com = %2%", l_com, theta_com));
 
         const FaceID       sh_fid = sh.structure_id();
         const triangle_type&    f = this->polygon().triangle_at(sh_fid);
@@ -904,13 +918,15 @@ class SGFRDSimulator :
 
         if(0 == ecell4::polygon::travel(this->polygon(), pos_p1, disp_p1, 2))
         {
-            SGFRD_TRACE(tracer_.write("escape_com_circular_pair "
+            SGFRD_TRACE(tracer_.write("escape_ipv_circular_pair "
                         "p1 moving on face: precision lost"))
+            SGFRD_TRACE(tracer_.write("displacement = %1%", disp_p1))
         }
         if(0 == ecell4::polygon::travel(this->polygon(), pos_p2, disp_p2, 2))
         {
-            SGFRD_TRACE(tracer_.write("escape_com_circular_pair "
-                        "p1 moving on face: precision lost"))
+            SGFRD_TRACE(tracer_.write("escape_ipv_circular_pair "
+                        "p2 moving on face: precision lost"))
+            SGFRD_TRACE(tracer_.write("displacement = %1%", disp_p2))
         }
 
         p1.position() = pos_p1.first;
@@ -1568,6 +1584,8 @@ class SGFRDSimulator :
     void fire_event(event_id_pair_type ev)
     {
         SGFRD_SCOPE(us, fire_event, tracer_);
+        SGFRD_TRACE(tracer_.write("event %1% fired", ev.first))
+
         SGFRDEvent::domain_type& dom = ev.second->domain();
 
         switch(ev.second->which_domain())
