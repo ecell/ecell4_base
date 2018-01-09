@@ -53,8 +53,8 @@ public:
                  const Real dt, const Real rl,
                  reaction_archive_type& last_reactions,
                  volume_clearer_type vc)
-    : max_retry_count_(1), dt_(dt), reaction_length_(rl), model_(model),
-      container_(container), polygon_(p), rng_(rng),
+    : max_retry_count_(1), dt_(dt), reaction_length_(rl), rejected_move_count_(0),
+      model_(model), container_(container), polygon_(p), rng_(rng),
       last_reactions_(last_reactions), vc_(vc), queue_(container.list_particles())
     {
         shuffle(rng_, queue_);
@@ -83,11 +83,12 @@ public:
             if(false == clear_volume(moved_particle, position.second, pid))
             {
                 // reject the move. restore.
+                ++(this->rejected_move_count_);
                 position.first  = p.position();
                 position.second = fid;
             }
-        }
-        // here, collision between multi particles are not considered
+        } // here, collision between multi particles are not yet considered
+
         boost::tie(p.position(), fid) = position; // update position of copy
 
         BOOST_AUTO(overlapped, list_reaction_overlap(pid, p, fid));
@@ -98,14 +99,20 @@ public:
             {
                 ParticleID pid2; Particle p2;
                 boost::tie(pid2, p2) = overlapped.front().first;
-                if(this->attempt_reaction(
+                if(false == this->attempt_reaction(
                     pid, p, fid, pid2, p2, container_.get_face_id(pid2)))
                 {
-                    ;// check and update is done in attempt_reaction().
+                    ++(this->rejected_move_count_);
                 }
+                // checking/update has been done in attempt_reaction().
                 return true;
             }
-            default: return true; // reject if more than 2 particles overlap
+            default:
+            {
+                // reject if more than 2 particles overlap
+                ++(this->rejected_move_count_);
+                return true;
+            }
         }
 
         // if overlap exists, this function already returned.
@@ -116,9 +123,10 @@ public:
         return true;
     }
 
-    Real                   dt() const {return dt_;}
-    RandomNumberGenerator& rng()      {return rng_;}
-    volume_clearer_type const& vc() const {return vc_;}
+    Real                       dt()  const throw() {return dt_;}
+    RandomNumberGenerator&     rng()       throw() {return rng_;}
+    volume_clearer_type const& vc()  const throw() {return vc_;}
+    std::size_t rejected_moves() const throw() {return this->rejected_move_count_;}
 
   protected:
 
@@ -215,8 +223,8 @@ public:
 
     /*! @brief A -> B case.
      * particle does not move. but its radius may change. if overlap occur after
-     * reaction, the reaction rejected. if accepted, this function does both
-     * update and record reaction. */
+     * reaction, the reaction will be rejected. if accepted, this function does
+     * both update and record reaction. */
     bool attempt_reaction_1_to_1(
             const ParticleID& pid, const Particle& p, const face_id_type& fid,
             reaction_log_type rlog)
@@ -393,47 +401,6 @@ public:
         const std::pair<std::pair<ParticleID, Particle>, bool> pp_new =
             this->container_.new_particle(particle_new, pf1.second);
 
-//      for logging
-//         if(false == pp_new.second)
-//         {
-//             vc_.access_tracer().write(
-//                 "after calling clear_volume, particle overlaps with another particle");
-//             std::vector<std::pair<std::pair<ParticleID, Particle>, Real>
-//                 > overlap_ps =
-//                     this->container_.world().list_particles_within_radius(
-//                         pf1, radius_new, pid1, pid2);
-//             if(overlap_ps.empty())
-//             {
-//                 vc_.access_tracer().write("no overlapping particles...internal error.");
-//             }
-//             else
-//             {
-//                 vc_.access_tracer().write("reactant 1: id = %1%, pos = %2%, fid = %3%",
-//                     pid1, p1.position(), fid1);
-//                 vc_.access_tracer().write("reactant 2: id = %1%, pos = %2%, fid = %3%",
-//                     pid2, p2.position(), fid2);
-//
-//                 for(std::vector<std::pair<std::pair<ParticleID, Particle>, Real>
-//                     >::const_iterator i(overlap_ps.begin()), e(overlap_ps.end());
-//                     i!=e; ++i)
-//                 {
-//                     vc_.access_tracer().write(
-//                         "overlapping particle: id = %1%, pos = %2%, fid = %3%",
-//                         i->first.first, i->first.second.position(), i->second);
-//                 }
-//
-//                 vc_.access_tracer().write("currently, Multi has ...");
-//                 for(typename container_type::particle_container_type::const_iterator
-//                         i(container_.list_particles().begin()),
-//                         e(container_.list_particles().end()); i!=e; ++i)
-//                 {
-//                     vc_.access_tracer().write("particle: id = %1%, pos = %2%",
-//                         i->first, i->second.position());
-//                 }
-//                 vc_.access_tracer().write("particles.");
-//             }
-//         }
-
         rlog.second.add_product(pp_new.first);
         last_reactions_.push_back(rlog);
 
@@ -589,6 +556,7 @@ protected:
     Integer max_retry_count_;
     Real    dt_;
     Real    reaction_length_;
+    std::size_t rejected_move_count_;
     container_type&        container_;
     model_type const&      model_;
     polygon_type const&    polygon_;
