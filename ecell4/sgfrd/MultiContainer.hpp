@@ -247,6 +247,11 @@ class MultiContainer
 
     world_type const& world() const throw() {return world_;}
 
+    std::pair<ParticleID, Particle> get_particle(const ParticleID& pid) const
+    {
+        return this->world_.get_particle(pid);
+    }
+
   private:
 
     particle_container_type::iterator find_(const ParticleID& pid)
