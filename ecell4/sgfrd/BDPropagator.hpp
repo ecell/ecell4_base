@@ -311,7 +311,7 @@ public:
     }
 
     /*! @brief A -> B + C case.
-     * after reaction, one of the products will try to move. */
+     * after reaction, the products will try to move. */
     bool attempt_reaction_1_to_2(
             const ParticleID& pid, const Particle& p, const face_id_type& fid,
             reaction_log_type rlog)
@@ -329,6 +329,12 @@ public:
         const Real D1(mol1.D),      D2(mol2.D),      D12(mol1.D + mol2.D);
         const Real r1(mol1.radius), r2(mol2.radius), r12(mol1.radius + mol2.radius);
         const Real3 n = polygon_.triangle_at(fid).normal();
+
+        if(D1 == 0. && D2 == 0)
+        {
+            throw NotSupported("BDPropagator::1->2: "
+                    "reaction between immobile particles");
+        }
 
         boost::array<std::pair<Real3, face_id_type>, 2> newpfs;
         newpfs[0] = std::make_pair(p.position(), fid);
@@ -378,39 +384,48 @@ public:
         assert(pp2.second    == true);
 
         SGFRD_TRACE(this->vc_.access_tracer().write("1->2 reaction occured"))
+
         //----------------------------- trial move -----------------------------
 
-        if(D1 == 0. && D2 == 0)
+        Integer num_move_particle = rng_.uniform_int(1, 2);
+        bool move_first_particle = (rng_.uniform_int(0, 1) == 0);
+
+        while(num_move_particle != 0)
         {
-            throw std::invalid_argument("reaction between immobile particles");
+            const ParticleID pid_to_move = (move_first_particle) ? pid : pid2;
+            const face_id_type fid_to_move =
+                this->container_.get_face_id(pid_to_move);
+            Particle p_to_move =
+                this->container_.get_particle(pid_to_move).second;
+
+            std::pair<Real3, face_id_type> position = std::make_pair(
+                    p_to_move.position(), fid_to_move);
+            Real3 displacement = draw_displacement(p_to_move, fid_to_move);
+            this->propagate(position, displacement);
+
+            if(!is_overlapping(position, p_to_move.radius(), pid_to_move))
+            {
+                const Real3 backup = p_to_move.position();
+                p_to_move.position() = position.first;
+                if(clear_volume(p_to_move, position.second, pid_to_move))
+                {
+                    this->container_.update_particle(
+                            pid_to_move, p_to_move, position.second);
+                }
+                else
+                {
+                    p_to_move.position() = backup;
+                }
+            }
+
+            --num_move_particle;
+            move_first_particle = !move_first_particle;
         }
 
-        const std::size_t idx = // select particle that will move
-            (D2 == 0 || (D1 != 0 && rng_.uniform_int(0, 1) == 0)) ? 0 : 1;
-        const ParticleID pid_to_move = (idx==0) ? pid : pid2;
-
-        BOOST_AUTO(position,     newpfs[idx]);
-        BOOST_AUTO(displacement,
-                   draw_displacement(particles_new[idx], newpfs[idx].second));
-
-        this->propagate(position, displacement);
-        if(!is_overlapping(position, particles_new[idx].radius(), pid_to_move))
-        {
-            const Real3 tmp = particles_new[idx].position();
-            particles_new[idx].position() = position.first;
-            if(clear_volume(particles_new[idx], position.second, pid_to_move))
-            {
-                this->container_.update_particle(
-                        pid_to_move, particles_new[idx], position.second);
-            }
-            else
-            {
-                particles_new[idx].position() = tmp;
-            }
-        }
-
-        rlog.second.add_product(std::make_pair(pid,  particles_new[0]));
-        rlog.second.add_product(std::make_pair(pid2, particles_new[1]));
+        rlog.second.add_product(
+            std::make_pair(pid,  this->container_.get_particle(pid).second));
+        rlog.second.add_product(
+            std::make_pair(pid2, this->container_.get_particle(pid).second));
         last_reactions_.push_back(rlog);
 
         return true;
