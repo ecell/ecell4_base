@@ -5,7 +5,7 @@ endif()
 file(GLOB HPP_FILES *.hpp)
 set(CPP_FILES polygon_traits.cpp SGFRDWorld.cpp SGFRDSimulator.cpp)
 
-add_definitions(-DECELL4_SGFRD_NO_TRACE)
+# add_definitions(-DECELL4_SGFRD_NO_TRACE)
 
 if( Boost_LIBRARIES )
     set(SGFRD_LIBRARIES_TO_BE_LINKED ${Boost_LIBRARIES})
