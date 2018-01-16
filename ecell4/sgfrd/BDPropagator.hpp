@@ -5,7 +5,10 @@
 #include <ecell4/core/Model.hpp>
 #include <ecell4/core/geometry.hpp>
 #include <ecell4/sgfrd/tracer.hpp>
+#include <boost/type_traits/is_same.hpp>
+#include <boost/iterator/iterator_traits.hpp>
 #include <boost/foreach.hpp>
+#include <boost/static_assert.hpp>
 #include <ecell4/sgfrd/Informations.hpp>
 #include <ecell4/sgfrd/SGFRDWorld.hpp>
 
@@ -71,61 +74,65 @@ public:
         boost::tie(pid, p) = queue_.back(); queue_.pop_back();
         face_id_type fid = this->container_.get_face_id(pid);
 
+        // to restore the position, copy previous state.
+        const Real3  prev_pos(p.position());
+        const FaceID prev_fid(fid);
+
         if(this->attempt_reaction(pid, p, fid)){return true;}
         if(p.D() == 0.0)                       {return true;}
 
+        // no 1st kind reaction occured & particle is movable.
         BOOST_AUTO(position,     std::make_pair(p.position(), fid));
         BOOST_AUTO(displacement, draw_displacement(p, fid));
+        this->propagate(position, displacement);
 
-        this->propagate(position, displacement); // move `position`.
-
-        // checking whether the new position overlaps with other particles
+        // check escapement and clear volume if needed
         {
-            // to restore the position, copy it.
-            const Real3  prev_pos(p.position());
-            const FaceID prev_fid(fid);
-
             // update local copy of particle
             boost::tie(p.position(), fid) = position;
             if(false == clear_volume(p, fid, pid))
             {
-                // reject the move. restore position.
+                // rejected. restore position. previous position does not cause
+                // overlap because position and species are kept intact.
                 ++(this->rejected_move_count_);
                 p.position() = prev_pos;
                 fid          = prev_fid;
             }
         }
-        // here, collision between multi particles are not yet considered
 
-        // check overlap between particles in the same multi domain.
-        BOOST_AUTO(overlapped, list_reaction_overlap(pid, p, fid));
-        switch(overlapped.size())
+        // retrieve possible reactants (within r1+r2+reaction_length)
+        BOOST_AUTO(overlapped, this->list_reaction_overlap(pid, p, fid));
+
+        // check core-overlap
+        std::pair<ParticleID, Particle> pp; Real d;
+        BOOST_FOREACH(boost::tie(pp, d), overlapped)
         {
-            case 0:
+            if(d < p.radius() + pp.second.radius())
             {
-                // no overlap exists. volume is already cleared. update it.
-                this->container_.update_particle(pid, p, fid);
-                return true;
-            }
-            case 1:
-            {
-                ParticleID pid2; Particle p2;
-                boost::tie(pid2, p2) = overlapped.front().first;
-                if(false == this->attempt_reaction(
-                    pid, p, fid, pid2, p2, container_.get_face_id(pid2)))
-                {
-                    ++(this->rejected_move_count_);
-                }
-                // checking/update has been done in attempt_reaction().
-                return true;
-            }
-            default:
-            {
-                // reject if more than 2 particles overlap
-                ++(this->rejected_move_count_);
-                return true;
+                // core overlap!
+                // restore position and re-collect overlapped particles
+                p.position() = prev_pos;
+                fid          = prev_fid;
+                overlapped   = this->list_reaction_overlap(pid, p, fid);
+                break;
             }
         }
+
+        if(overlapped.empty())
+        {
+            // no reaction-partner exists. overlaps are already cleared. update.
+            this->container_.update_particle(pid, p, fid);
+            return true;
+        }
+
+        // attempt 2nd order reaction...
+        const bool react = this->attempt_reaction(
+                pid, p, fid, overlapped.begin(), overlapped.end());
+        if(!react)
+        {
+            ++(this->rejected_move_count_);
+        }
+        return true;
     }
 
     Real                       dt()  const throw() {return dt_;}
@@ -184,43 +191,81 @@ public:
         return false;
     }
 
+    template<typename Iterator>
     bool attempt_reaction(
         const ParticleID& pid1, const Particle& p1, const face_id_type& f1,
-        const ParticleID& pid2, const Particle& p2, const face_id_type& f2)
+        const Iterator first, const Iterator last)
     {
-        BOOST_AUTO(const& rules,
-            this->model_.query_reaction_rules(p1.species(), p2.species()));
-        if(rules.empty())
-        {
-            // no reaction can occur because there is no rule
-            return false;
-        }
+        // Iterator::value_type == pair<pair<ParticleID, Particle>, Real>;
+        BOOST_STATIC_ASSERT(boost::is_same<
+            typename boost::iterator_value<Iterator>::type,
+            std::pair<std::pair<ParticleID, Particle>, Real> >::value);
 
-        const Real acceptance_coef = calc_acceptance_coef(p1, p2);
         const Real rnd(rng_.uniform(0., 1.));
-        Real prob = 0.;
-        BOOST_FOREACH(reaction_rule_type const& rule, rules)
-        {
-            if((prob += rule.k() * acceptance_coef) <= rnd) continue;
-            if(prob >= 1.) std::cerr << "reaction prob exceeds 1" << std::endl;
+        Real acc_prob = 0.;
 
-            switch(rule.products().size())
+        for(Iterator iter(first); iter != last; ++iter)
+        {
+            const ParticleID& pid2 = iter->first.first;
+            const Particle&   p2   = iter->first.second;
+
+            BOOST_AUTO(const& rules,
+                this->model_.query_reaction_rules(p1.species(), p2.species()));
+            if(rules.empty())
             {
-                case 0:
+                // no reaction can occur because there is no rule.
+                continue;
+            }
+
+            Real acc_prob_local_increase(0.0);
+            const Real acceptance_coef = calc_acceptance_coef(p1, p2);
+            BOOST_FOREACH(reaction_rule_type const& rule, rules)
+            {
+                const Real inc = rule.k() * acceptance_coef;
+                acc_prob_local_increase += inc;
+
+                acc_prob += inc;
+                if(acc_prob <= rnd){continue;}
+                if(acc_prob > 1.0)
                 {
-                    remove_particle(pid1);
-                    remove_particle(pid2);
-                    last_reactions_.push_back(std::make_pair(rule,
-                         init_reaction_info(pid1, p1, pid2, p2)));
-                    return true;
+                    std::cerr << "WARNING: reaction probability exceeds 1\n";
                 }
-                case 1:
+
+                switch(rule.products().size())
                 {
-                    return attempt_reaction_2_to_1(pid1, p1, f1, pid2, p2, f2,
-                        std::make_pair(rule, init_reaction_info(pid1, p1, pid2, p2)));
+                    case 0: // 2->0 reaction
+                    {
+                        remove_particle(pid1);
+                        remove_particle(pid2);
+                        last_reactions_.push_back(std::make_pair(rule,
+                             init_reaction_info(pid1, p1, pid2, p2)));
+                        return true;
+                    }
+                    case 1:
+                    {
+                        const face_id_type& f2 =
+                            this->container_.get_face_id(pid2);
+                        const bool reacted = attempt_reaction_2_to_1(
+                            pid1, p1, f1, pid2, p2, f2, std::make_pair(rule,
+                                init_reaction_info(pid1, p1, pid2, p2)));
+                        if(reacted)
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            // try next partner
+                            // after restoring acceptance probability
+                            acc_prob -= acc_prob_local_increase;
+                            break;
+                        }
+                    }
+                    default:
+                    {
+                        throw NotSupported("BDPropagator: 2 -> N (N>1) "
+                                           "reaction is not allowed");
+                    }
                 }
-                default: throw NotImplemented("BDPropagator: "
-                    "more than one products from two reactants is not allowed");
             }
         }
         return false;
@@ -399,8 +444,6 @@ public:
             return false;
         }
 
-        //XXX here, p1 is not updated,
-        //    so fid1 may differ from the structure_registrator.
         remove_particle(pid2);
         remove_particle(pid1);
         const std::pair<std::pair<ParticleID, Particle>, bool> pp_new =
