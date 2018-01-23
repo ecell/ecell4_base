@@ -618,8 +618,10 @@ DomainID SGFRDSimulator::form_multi(
 {
     SGFRD_SCOPE(us, form_multi, tracer_);
 
-    Multi formed_multi(create_empty_multi());
-    const DomainID formed_multi_id = this->add_event(formed_multi);
+    Multi new_multi(create_empty_multi());
+    const DomainID formed_multi_id = this->add_event(new_multi);
+    Multi& formed_multi =
+        boost::get<Multi>(get_event(formed_multi_id)->domain());
     SGFRD_TRACE(tracer_.write("new multi(%1%) created", formed_multi_id))
 
     const domain_id_setter didset(formed_multi_id);
