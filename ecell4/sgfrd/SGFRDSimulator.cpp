@@ -814,6 +814,12 @@ SGFRDSimulator::form_single_conical_event(
     SGFRD_TRACE(tracer_.write("min_cone_size = %1%, max_cone_size = %2%",
                 min_cone_size, max_cone_size));
 
+    if(min_cone_size > max_cone_size)
+    {
+        // cannot form cone nor circle. use multi.
+        return result_type(std::vector<std::pair<DomainID, Real> >(0));
+    }
+
     const std::vector<std::pair<DomainID, Real> > intrusive_domains(
             get_intrusive_domains(vid, max_cone_size));
     SGFRD_TRACE(tracer_.write("intrusive_domain_size = %1%", intrusive_domains.size()));
