@@ -430,7 +430,9 @@ Polygon<T>::connect_vertices(const std::vector<local_index_type>& vtxs)
         const index_type   lidx = iter->second;
         const edge_id_type   eid = this->face_prop_at(fid).edges.at(lidx);
         if(eid == un_initialized<edge_id_type>())
+        {
             throw std::logic_error("edge connection is not specified");
+        }
 
         vp.faces.push_back(fid);
         vp.local_indices.push_back(lidx);
@@ -513,7 +515,9 @@ Polygon<T>::is_connected_by_vertex(
             this->vertices_.at(fp.vertices[i]).faces;
 
         if(std::find(fs.begin(), fs.end(), fid2) != fs.end())
+        {
             return std::make_pair(true, fp.vertices[i]);
+        }
     }
     return std::make_pair(false, un_initialized<vertex_id_type>());
 }
@@ -691,8 +695,12 @@ Real Polygon<T>::distance_sq(const std::pair<Real3, vertex_id_type>& lhs,
 {
     const face_property_type& fp = face_prop_at(rhs.second);
     for(std::size_t i=0; i<3; ++i)
+    {
         if(fp.vertices[i] == lhs.second)
+        {
             return length_sq(lhs.first - rhs.first);
+        }
+    }
 
     //XXX it is enough for sgfrd,
     //    but basically one can measure the distance from more distant vertex
@@ -709,7 +717,9 @@ Real Polygon<T>::distance_sq(const std::pair<Real3, vertex_id_type>& lhs,
     {
         const edge_property_type& ep = edge_prop_at(*iter);
         if(ep.vertices.first  == rhs.second || ep.vertices.second == rhs.second)
+        {
             return length_sq(lhs.first - rhs.first);
+        }
     }
     //XXX it is enough for sgfrd,
     //    but basically one can measure the distance from more distant vertex
@@ -896,8 +906,10 @@ Polygon<T>::move_next_face(const std::pair<Real3, face_id_type>& pos,
     const barycentric_type newpos = to_barycentric(pos.first + disp, t);
 
     if(::ecell4::is_inside(newpos))
+    {
         return std::make_pair(
             std::make_pair(to_absolute(newpos, t), pos.second), Real3(0.,0.,0.));
+    }
 
     // calculate partial displacement to the edge
     const barycentric_type bpos = to_barycentric(pos.first, t);
@@ -950,7 +962,7 @@ Polygon<T>::rotate_around_vertex(const std::pair<Real3, face_id_type>& pos,
     typename std::vector<face_id_type>::const_iterator iter = initial + 1;
     while(iter != initial)
     {
-        if(iter == fs.end()) iter = fs.begin();
+        if(iter == fs.end()){iter = fs.begin();}
 
         const std::size_t  i = std::distance(fs.begin(), iter);
         const std::size_t vi = vtx.local_indices.at(i);
