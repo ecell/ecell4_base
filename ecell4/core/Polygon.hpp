@@ -587,99 +587,82 @@ template<typename T>
 Real Polygon<T>::distance_sq(const std::pair<Real3, face_id_type>& lhs,
                              const std::pair<Real3, face_id_type>& rhs) const
 {
+    // lhs and rhs is on the same face.
     if(lhs.second == rhs.second)
-        return length_sq(lhs.first - rhs.first);
-
-    const std::pair<bool, edge_id_type> edg =
-        this->is_connected_by_edge(lhs.second, rhs.second);
-    if(edg.first)
     {
-        const edge_property_type& edge = this->edge_prop_at(edg.second);
-        index_type lidx;
-        if(edge.faces.first == lhs.second)
-        {
-            lidx = edge.local_indices.first;
-        }
-        else if(edge.faces.second == lhs.second)
-        {
-            lidx = edge.local_indices.second;
-        }
-        else
-        {
-            throw std::logic_error(
-                    "Polygon::distance_sq: edge is not connected!");
-        }
-
-        const triangle_type&     lhs_t = this->triangle_at(lhs.second);
-        const Real3 developped = lhs_t.vertex_at(lidx) +
-            rotate(-1. * edge.tilt_angle,
-                   lhs_t.edge_at(lidx) / lhs_t.length_of_edge_at(lidx),
-                   rhs.first - lhs_t.vertex_at(lidx));
-
-        return length_sq(lhs.first - developped);
+        return length_sq(lhs.first - rhs.first);
     }
 
+    // the other case. distance should be calculated by using angle between
+    // lhs-vtx-rhs.
     const std::pair<bool, vertex_id_type> is_c_vtx =
         this->is_connected_by_vertex(lhs.second, rhs.second);
-
-    if(is_c_vtx.first)
+    if(false == is_c_vtx.first)
     {
-        const vertex_property_type& vtx = this->vertex_prop_at(is_c_vtx.second);
-        const std::vector<face_id_type>& fs = vtx.faces;
-        const typename std::vector<face_id_type>::const_iterator result =
-            std::find(fs.begin(), fs.end(), lhs.second);
-        index_type idx = std::distance(fs.begin(), result);
-        const index_type lidx = vtx.local_indices.at(idx);
+        // lhs and rhs don't share vertex.
+        // distance calculation is extremely difficult.
+        return std::numeric_limits<Real>::infinity();
+    }
 
-        const Real3     vtx_position = triangle_at(lhs.second).vertex_at(lidx);
-        const Real3       lhs_to_vtx = vtx_position - lhs.first;
-        const Real3       vtx_to_rhs = rhs.first - vtx_position;
-        const Real  lhs_to_vtx_lensq = length_sq(lhs_to_vtx);
-        const Real  rhs_to_vtx_lensq = length_sq(vtx_to_rhs);
-        const Real        apex_angle = vertex_prop_at(is_c_vtx.second).apex_angle;
+    // minimum distance can be calculated!
+    const vertex_property_type& vtx = this->vertex_prop_at(is_c_vtx.second);
+    const std::vector<face_id_type>& fs = vtx.faces;
 
-        Real inter_angle = angle(lhs_to_vtx, triangle_at(lhs.second).edge_at(
-                           (lidx == 0) ? 2 : lidx-1));
+    const typename std::vector<face_id_type>::const_iterator result =
+        std::find(fs.begin(), fs.end(), lhs.second); // position of lhs
+    index_type idx = std::distance(fs.begin(), result);
+    const index_type lidx = vtx.local_indices.at(idx);
 
-        // XXX: order of face idx
-        bool round = false;
+    const Real3     vtx_position = triangle_at(lhs.second).vertex_at(lidx);
+    const Real3       lhs_to_vtx = vtx_position - lhs.first;
+    const Real3       vtx_to_rhs = rhs.first - vtx_position;
+    const Real  lhs_to_vtx_lensq = length_sq(lhs_to_vtx);
+    const Real  rhs_to_vtx_lensq = length_sq(vtx_to_rhs);
+    const Real        apex_angle = vertex_prop_at(is_c_vtx.second).apex_angle;
+
+    Real inter_angle = angle(lhs_to_vtx, triangle_at(lhs.second).edge_at(
+                       (lidx == 0) ? 2 : lidx-1));
+
+    // XXX: order of face idx
+    bool already_go_round = false;
+    ++idx;
+    if(idx == fs.size())
+    {
+        idx = 0;
+        already_go_round = true;
+    }
+
+    while(true)
+    {
+        const face_id_type fid(fs.at(idx));
+        const index_type   lvidx(vtx.local_indices.at(idx));
+        const triangle_type& f = this->triangle_at(fid);
+        if(fid == rhs.second)
+        {
+            // rhs position found. return.
+            inter_angle += angle(vtx_to_rhs, f.edge_at(lvidx));
+            break;
+        }
+        inter_angle += f.angle_at(lvidx);
+
         ++idx;
         if(idx == fs.size())
         {
+            if(already_go_round)
+            {
+                throw std::logic_error("Polygon::distance: rhs not found");
+            }
             idx = 0;
-            round = true;
+            already_go_round = true;
         }
-
-        while(true)
-        {
-            const face_id_type fid(fs.at(idx));
-            const index_type   lvidx(vtx.local_indices.at(idx));
-            const triangle_type& f = this->triangle_at(fid);
-            if(fid == rhs.second)
-            {
-                inter_angle += angle(vtx_to_rhs, f.edge_at(lvidx));
-                break;
-            }
-            inter_angle += f.angle_at(lvidx);
-
-            ++idx;
-            if(idx == fs.size())
-            {
-                if(round)
-                    throw std::logic_error("Polygon::distance: rhs not found");
-                idx = 0;
-                round = true;
-            }
-        }
-        assert(inter_angle <= apex_angle);
-
-        const Real min_angle = std::min(inter_angle, apex_angle - inter_angle);
-        return lhs_to_vtx_lensq + rhs_to_vtx_lensq - 2. *
-               std::sqrt(lhs_to_vtx_lensq * rhs_to_vtx_lensq) * std::cos(min_angle);
     }
+    assert(inter_angle <= apex_angle);
 
-    // lhs and rhs don't share edge nor vertex
-    return std::numeric_limits<Real>::infinity();
+    const Real min_angle = std::min(inter_angle, apex_angle - inter_angle);
+
+    // from cosine formula: d^2 = a^2 + b^2 - 2ab cos(theta)
+    return lhs_to_vtx_lensq + rhs_to_vtx_lensq - 2. *
+           std::sqrt(lhs_to_vtx_lensq * rhs_to_vtx_lensq) * std::cos(min_angle);
 }
 
 template<typename T>
@@ -732,98 +715,76 @@ Real3 Polygon<T>::developed_direction(
         const std::pair<Real3, face_id_type>& rhs) const
 {
     if(lhs.second == rhs.second)
-        return rhs.first - lhs.first;
-
-    const std::pair<bool, edge_id_type> edg =
-        this->is_connected_by_edge(lhs.second, rhs.second);
-    if(edg.first)
     {
-        const edge_property_type& edge = this->edge_prop_at(edg.second);
-        index_type lidx = std::numeric_limits<index_type>::max();
-        if(edge.faces.first == lhs.second)
-        {
-            lidx = edge.local_indices.first;
-        }
-        else if(edge.faces.second == lhs.second)
-        {
-            lidx = edge.local_indices.second;
-        }
-        else
-        {
-            throw std::logic_error(
-                    "Polygon::distance_sq: edge is not connected!");
-        }
-
-        const triangle_type&     lhs_t = this->triangle_at(lhs.second);
-        const Real3 developped = lhs_t.vertex_at(lidx) +
-            rotate(-1. * edge.tilt_angle,
-                   lhs_t.edge_at(lidx) / lhs_t.length_of_edge_at(lidx),
-                   rhs.first - lhs_t.vertex_at(lidx));
-
-        return developped - lhs.first;
+        return rhs.first - lhs.first;
     }
 
-    const std::pair<bool, vertex_id_type> is_vtx =
+    const std::pair<bool, vertex_id_type> sharing_vtx =
         this->is_connected_by_vertex(lhs.second, rhs.second);
 
-    if(is_vtx.first)
+    if(false == sharing_vtx.first)
     {
-        const vertex_property_type& vtx = this->vertex_prop_at(is_vtx.second);
-        const std::vector<face_id_type>& fs = vtx.faces;
-        const typename std::vector<face_id_type>::const_iterator result =
-            std::find(fs.begin(), fs.end(), lhs.second);
-        index_type idx = std::distance(fs.begin(), result);
-        const index_type lidx = vtx.local_indices.at(idx);
+        // lhs and rhs don't share vertex.
+        // developped direction calculation is extremely difficult.
+        throw NotSupported("Polygon::developped_direction couldn't determine the path");
+    }
 
-        const Real3     vtx_position = triangle_at(lhs.second).vertex_at(lidx);
-        const Real3       lhs_to_vtx = vtx_position - lhs.first;
-        const Real3       vtx_to_rhs = rhs.first - vtx_position;
-        const Real3           normal = this->triangle_at(lhs.second).normal();
-        const Real  lhs_to_vtx_lensq = length_sq(lhs_to_vtx);
-        const Real  rhs_to_vtx_lensq = length_sq(vtx_to_rhs);
-        const Real        apex_angle = vertex_prop_at(is_vtx.second).apex_angle;
+    const vertex_property_type& vtx = this->vertex_prop_at(sharing_vtx.second);
+    const std::vector<face_id_type>& fs = vtx.faces;
+    const typename std::vector<face_id_type>::const_iterator result =
+        std::find(fs.begin(), fs.end(), lhs.second);
+    index_type idx = std::distance(fs.begin(), result);
+    const index_type lidx = vtx.local_indices.at(idx);
 
-        Real inter_angle = angle(lhs_to_vtx, triangle_at(lhs.second).edge_at(
-                           (lidx == 0) ? 2 : lidx-1));
+    const Real3     vtx_position = triangle_at(lhs.second).vertex_at(lidx);
+    const Real3       lhs_to_vtx = vtx_position - lhs.first;
+    const Real3       vtx_to_rhs = rhs.first - vtx_position;
+    const Real3           normal = this->triangle_at(lhs.second).normal();
+    const Real  lhs_to_vtx_lensq = length_sq(lhs_to_vtx);
+    const Real  rhs_to_vtx_lensq = length_sq(vtx_to_rhs);
+    const Real        apex_angle = vertex_prop_at(sharing_vtx.second).apex_angle;
 
-        // XXX: order of face idx
-        bool round = false;
+    Real inter_angle = angle(lhs_to_vtx, triangle_at(lhs.second).edge_at(
+                       (lidx == 0) ? 2 : lidx-1));
+
+    // XXX: order of face idx
+    bool already_go_round = false;
+    ++idx;
+    if(idx == fs.size())
+    {
+        idx = 0;
+        already_go_round = true;
+    }
+
+    while(true)
+    {
+        const face_id_type fid(fs.at(idx));
+        const index_type   lvidx(vtx.local_indices.at(idx));
+        const triangle_type& f = this->triangle_at(fid);
+        if(fid == rhs.second)
+        {
+            inter_angle += angle(vtx_to_rhs, f.edge_at(lvidx));
+            break;
+        }
+        inter_angle += f.angle_at(lvidx);
+
         ++idx;
         if(idx == fs.size())
         {
+            if(already_go_round)
+            {
+                throw std::logic_error("Polygon::distance: rhs not found");
+            }
             idx = 0;
-            round = true;
+            already_go_round = true;
         }
-
-        while(true)
-        {
-            const face_id_type fid(fs.at(idx));
-            const index_type   lvidx(vtx.local_indices.at(idx));
-            const triangle_type& f = this->triangle_at(fid);
-            if(fid == rhs.second)
-            {
-                inter_angle += angle(vtx_to_rhs, f.edge_at(lvidx));
-                break;
-            }
-            inter_angle += f.angle_at(lvidx);
-
-            ++idx;
-            if(idx == fs.size())
-            {
-                if(round)
-                    throw std::logic_error("Polygon::distance: rhs not found");
-                idx = 0;
-                round = true;
-            }
-        }
-        assert(inter_angle <= apex_angle);
-
-        const Real min_angle = std::min(inter_angle, apex_angle - inter_angle);
-
-        return lhs_to_vtx + rotate(min_angle, normal, lhs_to_vtx * (-1.0)) *
-                         std::sqrt(rhs_to_vtx_lensq / lhs_to_vtx_lensq);
     }
-    throw NotSupported("Polygon::developped_direction couldn't determine the path");
+    assert(inter_angle <= apex_angle);
+
+    const Real min_angle = std::min(inter_angle, apex_angle - inter_angle);
+
+    return lhs_to_vtx + rotate(min_angle, normal, lhs_to_vtx * (-1.0)) *
+                     std::sqrt(rhs_to_vtx_lensq / lhs_to_vtx_lensq);
 }
 
 template<typename T>
