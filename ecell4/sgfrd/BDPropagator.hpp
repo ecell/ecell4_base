@@ -387,7 +387,7 @@ public:
 
         //----------------------------- trial move -----------------------------
 
-        Integer num_move_particle = rng_.uniform_int(0, 2);
+        Integer num_move_particle = rng_.uniform_int(1, 2);
         bool move_first_particle = (rng_.uniform_int(0, 1) == 0);
 
         while(num_move_particle != 0)
