@@ -612,32 +612,17 @@ SGFRDSimulator::form_pair(
     return boost::none;
 }
 
-/*XXX assuming doms are multi or shrinked single domain and are sorted by dist*/
 DomainID SGFRDSimulator::form_multi(
         const ParticleID& pid, const Particle& p, const FaceID& fid,
         const std::vector<std::pair<DomainID, Real> >& doms)
 {
     SGFRD_SCOPE(us, form_multi, tracer_);
-    bool skip_first = false;
-    DomainID formed_multi_id;
-    if(get_event(doms.front().first)->which_domain() == event_type::multi_domain)
-    {
-        SGFRD_TRACE(tracer_.write(
-                    "closest intruder is a multi domain. add all to this"))
-        skip_first = true;
-        formed_multi_id = doms.front().first;
-    }
-    else
-    {
-        SGFRD_TRACE(tracer_.write(
-                    "closest intruder is not a multi. make empty multi"))
 
-        BOOST_AUTO(new_multi, create_empty_multi());
-        formed_multi_id = add_event(new_multi);
-        SGFRD_TRACE(tracer_.write("new multi(%1%) created", formed_multi_id))
-    }
+    Multi formed_multi(create_empty_multi());
+    const DomainID formed_multi_id = this->add_event(formed_multi);
+    SGFRD_TRACE(tracer_.write("new multi(%1%) created", formed_multi_id))
+
     const domain_id_setter didset(formed_multi_id);
-    Multi& formed_multi = boost::get<Multi>(get_event(formed_multi_id)->domain());
 
     BOOST_AUTO(minsh, create_minimum_single_shell(pid, p, fid));
     const Real new_shell_radius = minsh.second.size();
@@ -652,7 +637,6 @@ DomainID SGFRDSimulator::form_multi(
     {
         SGFRD_SCOPE(us, intruder_domain, tracer_);
         SGFRD_TRACE(tracer_.write("for domain %1%", did));
-        if(skip_first){skip_first = false; continue;}
 
         if(dist < new_shell_radius) // add the domain to new multi
         {
@@ -1468,6 +1452,7 @@ bool SGFRDSimulator::diagnosis() const
 
     if(!particles.empty())
     {
+        result = false;
         std::cerr << "ERROR: some of particles are not assigned to Domain\n";
         BOOST_FOREACH(boost::tie(pid, p), particles)
         {
@@ -1477,6 +1462,7 @@ bool SGFRDSimulator::diagnosis() const
     }
     if(!shells.empty())
     {
+        result = false;
         std::cerr << "ERROR: some of shells are not assigned to Domain\n";
         BOOST_FOREACH(boost::tie(shid, sh), shells)
         {
