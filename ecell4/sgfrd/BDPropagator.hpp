@@ -380,14 +380,14 @@ public:
             this->container_.new_particle(particles_new[1], newpfs[1].second));
         const ParticleID pid2(pp2.first.first);
 
-        assert(update_result == false);
-        assert(pp2.second    == true);
+        assert(update_result == false); // no particle generation occured
+        assert(pp2.second    == true);  // new particle is generated
 
         SGFRD_TRACE(this->vc_.access_tracer().write("1->2 reaction occured"))
 
         //----------------------------- trial move -----------------------------
 
-        Integer num_move_particle = rng_.uniform_int(1, 2);
+        Integer num_move_particle = rng_.uniform_int(0, 2);
         bool move_first_particle = (rng_.uniform_int(0, 1) == 0);
 
         while(num_move_particle != 0)
