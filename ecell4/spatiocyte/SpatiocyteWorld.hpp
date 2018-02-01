@@ -86,8 +86,15 @@ public:
     /*
      * Space Traits
      */
-    const Real t() const;
-    void set_t(const Real& t);
+    const Real t() const
+    {
+        return root_->t();
+    }
+
+    void set_t(const Real& t)
+    {
+        root_->set_t(t);
+    }
 
     void save(const std::string& filename) const
     {
@@ -142,11 +149,30 @@ public:
     /*
      * CompartmentSpace Traits
      */
-    const Real volume() const;
-    Integer num_species() const;
-    bool has_species(const Species &sp) const;
-    Integer num_molecules(const Species& sp) const;
-    Integer num_molecules_exact(const Species& sp) const;
+    const Real volume() const
+    {
+        return root_->volume();
+    }
+
+    Integer num_species() const
+    {
+        return root_->num_species();
+    }
+
+    bool has_species(const Species &sp) const
+    {
+        return root_->has_species(sp);
+    }
+
+    Integer num_molecules(const Species& sp) const
+    {
+        return root_->num_molecules(sp);
+    }
+
+    Integer num_molecules_exact(const Species& sp) const
+    {
+        return root_->num_molecules_exact(sp);
+    }
 
     Real get_value(const Species& sp) const
     {
@@ -161,26 +187,55 @@ public:
     /*
      * ParticleSpace Traits
      */
-    const Real3& edge_lengths() const;
+    const Real3& edge_lengths() const
+    {
+        return root_->edge_lengths();
+    }
 
     Real3 actual_lengths() const
     {
         return root_->actual_lengths();
     }
 
-    Integer num_particles() const;
-    Integer num_particles(const Species& sp) const;
-    Integer num_particles_exact(const Species& sp) const;
-    bool has_particle(const ParticleID& pid) const;
+    Integer num_particles() const
+    {
+        return root_->num_particles();
+    }
+
+    Integer num_particles(const Species& sp) const
+    {
+        return root_->num_particles(sp);
+    }
+
+    Integer num_particles_exact(const Species& sp) const
+    {
+        return root_->num_particles_exact(sp);
+    }
+
+    bool has_particle(const ParticleID& pid) const
+    {
+        return root_->has_particle(pid);
+    }
 
     std::pair<ParticleID, Particle> get_particle(const ParticleID& pid) const
     {
         return root_->get_particle(pid);
     }
 
-    std::vector<std::pair<ParticleID, Particle> > list_particles() const;
-    std::vector<std::pair<ParticleID, Particle> > list_particles(const Species& sp) const;
-    std::vector<std::pair<ParticleID, Particle> > list_particles_exact(const Species& sp) const;
+    std::vector<std::pair<ParticleID, Particle> > list_particles() const
+    {
+        return root_->list_particles();
+    }
+
+    std::vector<std::pair<ParticleID, Particle> > list_particles(const Species& sp) const
+    {
+        return root_->list_particles(sp);
+    }
+
+    std::vector<std::pair<ParticleID, Particle> > list_particles_exact(const Species& sp) const
+    {
+        return root_->list_particles_exact(sp);
+    }
 
     std::vector<std::pair<ParticleID, Particle> > list_structure_particles() const;
     std::vector<std::pair<ParticleID, Particle> > list_non_structure_particles() const;
@@ -217,15 +272,40 @@ public:
         return root_->unit_area();
     }
 
-    bool has_voxel(const ParticleID& pid) const;
+    bool has_voxel(const ParticleID& pid) const
+    {
+        return root_->has_voxel(pid);
+    }
 
-    Integer num_voxels() const;
-    Integer num_voxels(const Species& sp) const;
-    Integer num_voxels_exact(const Species& sp) const;
+    Integer num_voxels() const
+    {
+        return root_->num_voxels();
+    }
 
-    std::vector<std::pair<ParticleID, Voxel> > list_voxels() const;
-    std::vector<std::pair<ParticleID, Voxel> > list_voxels(const Species& sp) const;
-    std::vector<std::pair<ParticleID, Voxel> > list_voxels_exact(const Species& sp) const;
+    Integer num_voxels(const Species& sp) const
+    {
+        return root_->num_voxels(sp);
+    }
+
+    Integer num_voxels_exact(const Species& sp) const
+    {
+        return root_->num_voxels_exact(sp);
+    }
+
+    std::vector<std::pair<ParticleID, Voxel> > list_voxels() const
+    {
+        return root_->list_voxels();
+    }
+
+    std::vector<std::pair<ParticleID, Voxel> > list_voxels(const Species& sp) const
+    {
+        return root_->list_voxels(sp);
+    }
+
+    std::vector<std::pair<ParticleID, Voxel> > list_voxels_exact(const Species& sp) const
+    {
+        return root_->list_voxels_exact(sp);
+    }
 
     std::pair<ParticleID, Voxel> get_voxel(const ParticleID& pid) const
     {
@@ -237,8 +317,15 @@ public:
         return root_->get_voxel_at(coord);
     }
 
-    VoxelPool* find_voxel_pool(const Species& species);
-    const VoxelPool* find_voxel_pool(const Species& species) const;
+    VoxelPool* find_voxel_pool(const Species& species)
+    {
+        return root_->find_voxel_pool(species);
+    }
+
+    const VoxelPool* find_voxel_pool(const Species& species) const
+    {
+        return root_->find_voxel_pool(species);
+    }
 
     bool has_molecule_pool(const Species& sp) const
     {
@@ -255,7 +342,10 @@ public:
         return root_->find_molecule_pool(species);
     }
 
-    VoxelPool* get_voxel_pool_at(const coordinate_type& coord) const;
+    VoxelPool* get_voxel_pool_at(const coordinate_type& coord) const
+    {
+        return root_->get_voxel_pool_at(coord);
+    }
 
     /*
      * Coordinate Transformation
@@ -307,14 +397,26 @@ public:
         return root_->remove_voxel(pid);
     }
 
-    bool remove_voxel(const coordinate_type coord);
+    bool remove_voxel(const coordinate_type coord)
+    {
+        return root_->remove_voxel(coord);
+    }
 
-    bool can_move(const coordinate_type& src, const coordinate_type& dest) const;
-    bool move(const coordinate_type& src, const coordinate_type& dest,
-              const std::size_t candidate=0);
-    std::pair<coordinate_type, bool> move_to_neighbor(
-        VoxelPool* const& from_mt, VoxelPool* const& loc,
-        coordinate_id_pair_type& info, const Integer nrand);
+    bool can_move(const coordinate_type& src, const coordinate_type& dest) const
+    {
+        return root_->can_move(src, dest);
+    }
+
+    bool move(const coordinate_type& src, const coordinate_type& dest, const std::size_t candidate=0)
+    {
+        return root_->move(src, dest, candidate);
+    }
+
+    std::pair<coordinate_type, bool>
+    move_to_neighbor(VoxelPool* const& from_mt, VoxelPool* const& loc, coordinate_id_pair_type& info, const Integer nrand)
+    {
+        return root_->move_to_neighbor(from_mt, loc, info, nrand);
+    }
 
     const Integer size() const
     {
@@ -402,7 +504,10 @@ public:
         return info;
     }
 
-    // bool has_species_exact(const Species &sp) const;
+    // bool has_species_exact(const Species &sp) const
+    // {
+    //     return root_->has_species_exact(sp);
+    // }
 
     void set_value(const Species& sp, const Real value);
 
@@ -449,17 +554,51 @@ public:
             position2coordinate(p.position()), p.radius(), p.D(), minfo.loc));
     }
 
-    std::vector<Species> list_species() const;
+    std::vector<Species> list_species() const
+    {
+        return root_->list_species();
+    }
+
     std::vector<Species> list_non_structure_species() const;
     std::vector<Species> list_structure_species() const;
     // std::vector<coordinate_type> list_coords(const Species& sp) const;
 
-    std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel(const Voxel& v);
-    std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel(const Species& sp, const coordinate_type& coord);
-    std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel_structure(const Species& sp, const coordinate_type& coord);
-    std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel_structure(const Voxel& v);
-    std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel_interface(const Species& sp, const coordinate_type& coord);
-    std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel_interface(const Voxel& v);
+    std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel(const Voxel& v)
+    {
+        ParticleID pid(sidgen_());
+        const bool is_succeeded(update_voxel(pid, v));
+        return std::make_pair(std::make_pair(pid, v), is_succeeded);
+    }
+
+    std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel(const Species& sp, const coordinate_type& coord)
+    {
+        const molecule_info_type minfo(get_molecule_info(sp));
+        return new_voxel(Voxel(sp, coord, minfo.radius, minfo.D, minfo.loc));
+    }
+
+    std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel_structure(const Species& sp, const coordinate_type& coord)
+    {
+        const molecule_info_type minfo(get_molecule_info(sp));
+        return new_voxel_structure(Voxel(sp, coord, minfo.radius, minfo.D, minfo.loc));
+    }
+
+    std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel_structure(const Voxel& v)
+    {
+        const bool is_succeeded(update_voxel(ParticleID(), v));
+        return std::make_pair(std::make_pair(ParticleID(), v), is_succeeded);
+    }
+
+    std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel_interface(const Species& sp, const coordinate_type& coord)
+    {
+        const molecule_info_type minfo(get_molecule_info(sp));
+        return new_voxel_interface(Voxel(sp, coord, minfo.radius, minfo.D, minfo.loc));
+    }
+
+    std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel_interface(const Voxel& v)
+    {
+        const bool is_succeeded(update_voxel(ParticleID(), v));
+        return std::make_pair(std::make_pair(ParticleID(), v), is_succeeded);
+    }
 
     bool add_molecules(const Species& sp, const Integer& num);
     bool add_molecules(const Species& sp, const Integer& num, const boost::shared_ptr<const Shape> shape);
@@ -570,13 +709,28 @@ protected:
     boost::weak_ptr<Model> model_;
 };
 
-SpatiocyteWorld* create_spatiocyte_world_cell_list_impl(
-    const Real3& edge_lengths, const Real& voxel_radius,
-    const Integer3& matrix_sizes,
-    const boost::shared_ptr<RandomNumberGenerator>& rng);
-SpatiocyteWorld* create_spatiocyte_world_vector_impl(
-    const Real3& edge_lengths, const Real& voxel_radius,
-    const boost::shared_ptr<RandomNumberGenerator>& rng);
+inline
+SpatiocyteWorld*
+create_spatiocyte_world_cell_list_impl(
+        const Real3& edge_lengths,
+        const Real& voxel_radius,
+        const Integer3& matrix_sizes,
+        const boost::shared_ptr<RandomNumberGenerator>& rng)
+{
+    return new SpatiocyteWorld(
+        new LatticeSpaceCellListImpl(edge_lengths, voxel_radius, matrix_sizes), rng);
+}
+
+inline
+SpatiocyteWorld*
+create_spatiocyte_world_vector_impl(
+        const Real3& edge_lengths,
+        const Real& voxel_radius,
+        const boost::shared_ptr<RandomNumberGenerator>& rng)
+{
+    return new SpatiocyteWorld(
+        new LatticeSpaceVectorImpl(edge_lengths, voxel_radius), rng);
+}
 
 /**
  * Alias functions for Cython
