@@ -1,9 +1,6 @@
 E-Cell System version 4
 =======================
 
-<a href="https://notebooks.azure.com/import/gh/ecell/ecell4-notebooks"><img src="https://notebooks.azure.com/launch.png" /></a>
-[![DOI](https://zenodo.org/badge/6348303.svg)](https://zenodo.org/badge/latestdoi/6348303)
-
 [![Build Status](https://travis-ci.org/ecell/ecell4.svg?branch=develop)](https://travis-ci.org/ecell/ecell4)
 [![CircleCI](https://circleci.com/gh/ecell/ecell4.svg?style=svg)](https://circleci.com/gh/ecell/ecell4)
 [![Build status](https://ci.appveyor.com/api/projects/status/github/ecell/ecell4?svg=true)](https://ci.appveyor.com/project/kaizu/ecell4)
@@ -27,12 +24,15 @@ Installation and usage
   - [Requirements](#requirements)
   - [Windows](#windows)
   - [Mac or Linux](#mac-or-linux)
+  - [Try online](#try-online)
 
 - [How to try E-Cell4 examples](#how-to-try-e-cell4-examples)
 
 - [Simple examples](#simple-examples)
   - [A reversible binding reaction](#a-reversible-binding-reaction)
   - [Particle tracking on a spherical surface](#particle-tracking-on-a-spherical-surface)
+
+- [Citation](#citation)
 
 - [Docker image for E-Cell4](#docker-image-for-e-cell4)
 
@@ -99,6 +99,12 @@ brew install ffmpeg
 # or if you use Ubuntu Linux
 # apt install ffmpeg
 ```
+
+### Try online
+
+You can try this package online from the following link:
+
+<a href="https://notebooks.azure.com/import/gh/ecell/ecell4-notebooks"><img src="https://notebooks.azure.com/launch.png" /></a>
 
 How to try E-Cell4 examples
 ---------------------------
@@ -190,6 +196,13 @@ docker run -d -p 8888:8888 ecell/ecell4 start-notebook.sh --NotebookApp.token=''
 and open a web browser to `http://localhost:8888` .
 
 Our Docker image is based on **Minimal Jupyter Notebook Stack**. See https://github.com/jupyter/docker-stacks/tree/master/base-notebook or [Our Wiki page](https://github.com/ecell/ecell4/wiki/Security-in-the-Docker-Jupyter-notebook-server) for more details on the Docker command options.
+
+Citation
+========
+
+If this package contributes to a project which leads to a scientific publication, I would appreciate a citation.
+
+[![DOI](https://zenodo.org/badge/6348303.svg)](https://zenodo.org/badge/latestdoi/6348303)
 
 Licensing terms
 ===============
