@@ -24,7 +24,9 @@ Installation and usage
   - [Requirements](#requirements)
   - [Windows](#windows)
   - [Mac or Linux](#mac-or-linux)
-  - [Try online](#try-online)
+  - [Docker](#docker-image-for-e-cell4)
+
+- [Try online](#try-online)
 
 - [How to try E-Cell4 examples](#how-to-try-e-cell4-examples)
 
@@ -33,8 +35,7 @@ Installation and usage
   - [Particle tracking on a spherical surface](#particle-tracking-on-a-spherical-surface)
 
 - [Citation](#citation)
-
-- [Docker image for E-Cell4](#docker-image-for-e-cell4)
+- [Licensing terms](#licensing-terms)
 
 Installation
 ------------
@@ -100,11 +101,27 @@ brew install ffmpeg
 # apt install ffmpeg
 ```
 
-### Try online
+### Docker
+
+If you're familiar with Docker, the following commands should work in most cases:
+
+```shell
+docker pull ecell/ecell4
+docker run -d -p 8888:8888 ecell/ecell4 start-notebook.sh --NotebookApp.token=''
+```
+
+and open a web browser to `http://localhost:8888` .
+
+Our Docker image is based on **Minimal Jupyter Notebook Stack**. See https://github.com/jupyter/docker-stacks/tree/master/base-notebook or [Our Wiki page](https://github.com/ecell/ecell4/wiki/Security-in-the-Docker-Jupyter-notebook-server) for more details on the Docker command options.
+
+Try online
+----------
 
 You can try this package online from the following link:
 
 <a href="https://notebooks.azure.com/import/gh/ecell/ecell4-notebooks"><img src="https://notebooks.azure.com/launch.png" /></a>
+
+[![Binder](http://mybinder.org/badge.svg)](http://beta.mybinder.org/v2/gh/ecell/ecell4-notebooks/master)
 
 How to try E-Cell4 examples
 ---------------------------
@@ -182,20 +199,6 @@ viz.plot_trajectory(obs, interactive=False)
 ```
 
 ![png](./readthedocs/images/hairball.png)
-
-Docker image for E-Cell4
-----------------------------
-
-If you're familiar with Docker, the following commands should work in most cases:
-
-```shell
-docker pull ecell/ecell4
-docker run -d -p 8888:8888 ecell/ecell4 start-notebook.sh --NotebookApp.token=''
-```
-
-and open a web browser to `http://localhost:8888` .
-
-Our Docker image is based on **Minimal Jupyter Notebook Stack**. See https://github.com/jupyter/docker-stacks/tree/master/base-notebook or [Our Wiki page](https://github.com/ecell/ecell4/wiki/Security-in-the-Docker-Jupyter-notebook-server) for more details on the Docker command options.
 
 Citation
 ========
