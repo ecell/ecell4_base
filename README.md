@@ -117,10 +117,9 @@ Our Docker image is based on **Minimal Jupyter Notebook Stack**. See https://git
 Try online
 ----------
 
-You can try this package online from the following link:
+You can try this package online from the following links:
 
 <a href="https://notebooks.azure.com/import/gh/ecell/ecell4-notebooks"><img src="https://notebooks.azure.com/launch.png" /></a>
-
 [![Binder](http://mybinder.org/badge.svg)](http://beta.mybinder.org/v2/gh/ecell/ecell4-notebooks/master)
 
 How to try E-Cell4 examples
