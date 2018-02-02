@@ -31,11 +31,8 @@ Installation and usage
 - [How to try E-Cell4 examples](#how-to-try-e-cell4-examples)
 
 - [Simple examples](#simple-examples)
-  - [A reversible binding reaction](#a-reversible-binding-reaction)
-  - [Particle tracking on a spherical surface](#particle-tracking-on-a-spherical-surface)
-
-- [Citation](#citation)
-- [Licensing terms](#licensing-terms)
+  - [Binding and unbinding reaction](#binding-and-unbinding-reactions)
+  - [Diffusion on a spherical surface](#diffusion-on-a-spherical-surface)
 
 Installation
 ------------
@@ -163,23 +160,21 @@ A.B.C
 >>>
 ```
 
-### A reversible binding reaction
+### Binding and unbinding reactions
 
 ```python
 %matplotlib inline
-import numpy
 from ecell4 import *
 
 with reaction_rules():
     A + B == C | (0.01, 0.3)
 
-y = run_simulation(
-    numpy.linspace(0, 10, 100), {'A': 60, 'B': 60}, solver='ode')
+run_simulation(100, {'A': 60, 'B': 60})
 ```
 
 ![png](./readthedocs/images/output_7_0.png)
 
-### Particle tracking on a spherical surface
+### Diffusion on a spherical surface
 
 ```python
 %matplotlib inline
