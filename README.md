@@ -30,8 +30,11 @@ Try online
 
 You can try this package online from the following links:
 
-<a href="https://notebooks.azure.com/import/gh/ecell/ecell4-notebooks"><img src="https://notebooks.azure.com/launch.png" /></a>
+<a href="https://notebooks.azure.com/import/gh/ecell/ecell4"><img src="https://notebooks.azure.com/launch.png" /></a>
 [![Binder](http://mybinder.org/badge.svg)](http://beta.mybinder.org/v2/gh/ecell/ecell4-notebooks/master)
+
+- Code fragments that depend on ffmpeg will not work with Azure Notebooks. If you use movie export, please try binder instead.
+- If you use Azure Notebooks, please move `readthedocs/tutorials` or `readthedocs/examples`. There are several Jupyter Notebooks.
 
 How to try E-Cell4 examples
 ---------------------------
