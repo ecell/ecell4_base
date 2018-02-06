@@ -909,26 +909,30 @@ SGFRDSimulator::form_single_circular_event(
     typedef expected<DomainID, std::vector<std::pair<DomainID, Real> > >
             result_type;
     SGFRD_SCOPE(us, form_single_circular_event, tracer_);
+    SGFRD_TRACE(tracer_.write("forming single domain for particle r = %1%",
+                p.radius()));
 
     const Real min_circle_size = p.radius() * single_circular_shell_factor;
-
     const std::pair<Real3, FaceID> pos = std::make_pair(p.position(), fid);
+
+    /* XXX:TAKE CARE! the distance in the element of intrusive_domains, typed *
+     * as `std::pair<DomainID, Real>` is not a distance between particle and  *
+     * shell, but a distance between center point of particle and shell.      */
     const std::vector<std::pair<DomainID, Real> > intrusive_domains(
             get_intrusive_domains(pos, max_circle_size));
     SGFRD_TRACE(tracer_.write(
                 "intrusive_domain_size = %1%", intrusive_domains.size()))
-    /* XXX:TAKE CARE! the distance in the element of intrusive_domains, typed *
-     * as `std::pair<DomainID, Real>` is not a distance between particle and  *
-     * shell, but a distance between center point of particle and shell.      */
 
     if(intrusive_domains.empty())
     {
-        SGFRD_TRACE(tracer_.write("no intrusive domains exists"))
+        SGFRD_TRACE(tracer_.write("no intrusive domains exists."))
+        SGFRD_TRACE(tracer_.write(
+            "creating single event; shell size = %1%", max_circle_size))
         return result_type(add_event(create_single(
             create_single_circular_shell(pos, max_circle_size), pid, p)));
     }
 
-    Real dist_to_max_shell_intruder = max_circle_size;
+    Real distance_to_nearest = max_circle_size; //XXX nearest (but not intruder)
     std::vector<std::pair<DomainID, Real> > min_shell_intruder;
     for(std::vector<std::pair<DomainID, Real> >::const_iterator
             iter = intrusive_domains.begin(), end = intrusive_domains.end();
@@ -947,11 +951,32 @@ SGFRDSimulator::form_single_circular_event(
             SGFRD_TRACE(tracer_.write(
                 "%1% does not intersect with minimum circle", iter->first));
 
-            // XXX because `intrusive_domains` are sorted by comparing the
-            // distance to them, once we found the element is far away, all
-            // the successors are much further.
-            dist_to_max_shell_intruder =
-                std::min(iter->second, dist_to_max_shell_intruder);
+            // calculate modest distance if this one is a single domain.
+            boost::shared_ptr<event_type> ev(this->get_event(iter->first));
+            if(ev->which_domain() == event_type::single_domain)
+            {
+                SGFRD_TRACE(tracer_.write("calculating modest r."))
+                const Single&     sgl       = boost::get<Single>(ev->domain());
+                const Particle&   nearest_p = sgl.particle();
+                const shell_type& sh        = this->get_shell(sgl.shell_id());
+                const Real sh_size = boost::apply_visitor(shell_size_getter(), sh);
+
+                SGFRD_TRACE(tracer_.write("raw distance = %1%", iter->second))
+                SGFRD_TRACE(tracer_.write("shell radius = %1%", sh_size))
+                SGFRD_TRACE(tracer_.write("nearp radius = %1%", nearest_p.radius()))
+
+                const Real modest_dist = calc_modest_shell_size(p, nearest_p,
+                    iter->second + sh_size - p.radius() - nearest_p.radius());
+                distance_to_nearest = std::min(iter->second, modest_dist);
+            }
+            else // nearest domain is not a single domain.
+            {
+                distance_to_nearest = iter->second;
+            }
+            SGFRD_TRACE(tracer_.write("distance_to_nearest = %1%",
+                        distance_to_nearest));
+            // XXX because `intrusive_domains` are sorted by their distance,
+            //     all the rests are more distant. so break.
             break;
         }
     }
@@ -967,7 +992,10 @@ SGFRDSimulator::form_single_circular_event(
             }
         )
         const Real shell_size =
-            dist_to_max_shell_intruder * single_circular_shell_mergin;
+            distance_to_nearest * single_circular_shell_mergin;
+
+        SGFRD_TRACE(tracer_.write(
+            "creating single event; shell size = %1%", shell_size))
 
         return result_type(add_event(create_single(
             create_single_circular_shell(pos, shell_size), pid, p)));
@@ -989,14 +1017,17 @@ SGFRDSimulator::form_single_circular_event(
         )
 
         const Real shell_size =
-            std::min(dist_to_max_shell_intruder,
-                     shrinked_or_multi.front().second) *
+            std::min(distance_to_nearest, shrinked_or_multi.front().second) *
             single_circular_shell_mergin;
+
+        SGFRD_TRACE(tracer_.write(
+            "creating single event; shell size = %1%", shell_size))
 
         return result_type(add_event(create_single(
             create_single_circular_shell(pos, shell_size), pid, p)));
     }
 
+    // failed to create single. return a list of shrinked domains.
     return result_type(shrinked_or_multi);
 }
 
@@ -1028,7 +1059,7 @@ DomainID SGFRDSimulator::create_event(
             return form_multi(pid, p, fid, single_conical.unwrap_error());
         }
     }
-    else
+    else // draw circluar shell
     {
         expected<DomainID, std::vector<std::pair<DomainID, Real> >
             > single_circular =

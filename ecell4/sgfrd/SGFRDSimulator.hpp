@@ -368,6 +368,7 @@ class SGFRDSimulator :
             const std::pair<Real3, FaceID>& pos, const Real size)
     {
         SGFRD_SCOPE(ns, create_single_circular_shell, tracer_);
+        SGFRD_TRACE(tracer_.write("shell size = %1%", size))
 
         const ShellID id(shell_id_gen());
         const circle_type shape(size, pos.first,
