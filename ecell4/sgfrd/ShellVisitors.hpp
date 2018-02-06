@@ -44,7 +44,7 @@ struct domain_id_getter : boost::static_visitor<DomainID>
 struct shell_size_getter : boost::static_visitor<Real>
 {
     template<typename shapeT, typename stridT>
-    DomainID operator()(const Shell<shapeT, stridT>& shell) const
+    Real operator()(const Shell<shapeT, stridT>& shell) const
     {
         return shell.size();
     }
