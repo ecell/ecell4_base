@@ -1333,6 +1333,7 @@ bool SGFRDSimulator::diagnosis() const
 
                 if(found_s->second.which() != shell_container_type::circular_shell)
                 {
+                    result = false;
                     std::cerr << "ERROR: currently, pair is only for circular\n";
                     std::cerr << "     : domain " << evid << "has shell " << _shid
                               << ", but it has invalid shape " << found_s->second.which()
