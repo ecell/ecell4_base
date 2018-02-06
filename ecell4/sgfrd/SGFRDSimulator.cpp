@@ -839,14 +839,14 @@ SGFRDSimulator::form_single_conical_event(
 
     if(min_shell_intruder.empty())
     {
-        SGFRD_TRACE(tracer_.write("intrusive domains exist but enough distant"));
-#ifndef ECELL4_SGFRD_NO_TRACE
-        for(std::size_t i=0; i<intrusive_domains.size(); ++i)
-        {
-            tracer_.write("domain %1%; dist = %2%;",
-                intrusive_domains[i].first, intrusive_domains[i].second);
-        }
-#endif//ECELL4_SGFRD_NO_TRACE
+        SGFRD_TRACE(
+            tracer_.write("intrusive domains exist but enough distant");
+            for(std::size_t i=0; i<intrusive_domains.size(); ++i)
+            {
+                tracer_.write("domain %1%; dist = %2%;",
+                    intrusive_domains[i].first, intrusive_domains[i].second);
+            }
+        )
 
         const Real shell_size = dist_to_max_shell_intruder *
                                 single_conical_surface_shell_mergin;
@@ -862,18 +862,15 @@ SGFRDSimulator::form_single_conical_event(
 
     if(shrinked_or_multi.front().second > min_cone_size)
     {
-        SGFRD_TRACE(tracer_.write(
-            "after burst, no intruders exist in the min-range %1%",
-            min_cone_size));
-
-#ifndef ECELL4_SGFRD_NO_TRACE
-        for(std::size_t i=0; i<shrinked_or_multi.size(); ++i)
-        {
-            tracer_.write("domain %1%; dist = %2%;",
-                shrinked_or_multi[i].first, shrinked_or_multi[i].second);
-        }
-#endif//ECELL4_SGFRD_NO_TRACE
-
+        SGFRD_TRACE(
+            tracer_.write("after burst, no intruder exist in the min-range %1%",
+                          min_cone_size);
+            for(std::size_t i=0; i<shrinked_or_multi.size(); ++i)
+            {
+                tracer_.write("domain %1%; dist = %2%;",
+                    shrinked_or_multi[i].first, shrinked_or_multi[i].second);
+            }
+        )
         const Real shell_size =
             std::min(dist_to_max_shell_intruder,
                      shrinked_or_multi.front().second) *
@@ -961,15 +958,14 @@ SGFRDSimulator::form_single_circular_event(
 
     if(min_shell_intruder.empty())
     {
-        SGFRD_TRACE(tracer_.write("intrusive domains exists but enough distant"))
-#ifndef ECELL4_SGFRD_NO_TRACE
-        for(std::size_t i=0; i<intrusive_domains.size(); ++i)
-        {
-            tracer_.write("domain %1%; dist = %2%;",
-                intrusive_domains[i].first, intrusive_domains[i].second);
-        }
-#endif//ECELL4_SGFRD_NO_TRACE
-
+        SGFRD_TRACE(
+            tracer_.write("intrusive domains exists but enough distant");
+            for(std::size_t i=0; i<intrusive_domains.size(); ++i)
+            {
+                tracer_.write("domain %1%; dist = %2%;",
+                    intrusive_domains[i].first, intrusive_domains[i].second);
+            }
+        )
         const Real shell_size =
             dist_to_max_shell_intruder * single_circular_shell_mergin;
 
@@ -983,14 +979,14 @@ SGFRDSimulator::form_single_circular_event(
 
     if(shrinked_or_multi.front().second > min_circle_size)
     {
-        SGFRD_TRACE(tracer_.write("after burst, no intruders exist"))
-#ifndef ECELL4_SGFRD_NO_TRACE
-        for(std::size_t i=0; i<shrinked_or_multi.size(); ++i)
-        {
-            tracer_.write("domain %1%; dist = %2%;",
-                shrinked_or_multi[i].first, shrinked_or_multi[i].second);
-        }
-#endif//ECELL4_SGFRD_NO_TRACE
+        SGFRD_TRACE(
+            tracer_.write("after burst, no intruders exist");
+            for(std::size_t i=0; i<shrinked_or_multi.size(); ++i)
+            {
+                tracer_.write("domain %1%; dist = %2%;",
+                    shrinked_or_multi[i].first, shrinked_or_multi[i].second);
+            }
+        )
 
         const Real shell_size =
             std::min(dist_to_max_shell_intruder,
