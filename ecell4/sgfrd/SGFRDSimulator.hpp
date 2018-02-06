@@ -1913,6 +1913,28 @@ class SGFRDSimulator :
         return rotate(tilt, axis * (1. / length(axis)), rnd);
     }
 
+    static Real calc_modest_shell_size(
+            const Particle& p, const Particle& nearest, const Real dist)
+    {
+        assert(dist >= 0.0);
+        const Real D1 = p.D();
+        const Real D2 = nearest.D();
+        if(D1 == 0.0)
+        {
+            return p.radius();
+        }
+        if(D2 == 0.0)
+        {
+            return p.radius() + dist;
+        }
+
+        const Real r1     = p.radius();
+        const Real r2     = nearest.radius();
+        const Real sqrtD1 = std::sqrt(D1);
+        const Real sqrtD2 = std::sqrt(D2);
+        return sqrtD1 / (sqrtD1 + sqrtD2) * dist + r1;
+    }
+
   private:
 
     static const Real single_circular_shell_factor;
