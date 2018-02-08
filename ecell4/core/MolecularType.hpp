@@ -2,7 +2,6 @@
 #define ECELL4_MOLECULAR_TYPE_HPP
 
 #include "VoxelPool.hpp"
-#include "VacantType.hpp"
 
 namespace ecell4
 {
@@ -22,14 +21,8 @@ public:
 
 public:
 
-    MolecularType(const std::string& name = "")
-        : base_type(Species(name), &(VacantType::getInstance()), 0, 0)
-    {
-        ;
-    }
-
-    MolecularType(const Species& species, const Real& radius = 0.0, const Real& D = 0.0)
-        : base_type(species, &(VacantType::getInstance()), radius, D)
+    MolecularType(const std::string& name, VoxelPool* location)
+        : base_type(Species(name), location, 0, 0)
     {
         ;
     }

@@ -57,11 +57,11 @@ public:
         cell_sizes_[1] = ceilint(row_size_, matrix_sizes_[1]);
         cell_sizes_[2] = ceilint(layer_size_, matrix_sizes_[2]);
 
-        vacant_ = &(VacantType::getInstance());
+        vacant_ = VacantType::allocate();
         std::stringstream ss;
         ss << voxel_radius_;
-        border_ = new MolecularType(Species("Border", ss.str(), "0"));
-        periodic_ = new MolecularType(Species("Periodic", ss.str(), "0"));
+        border_ = new MolecularType(Species("Border", ss.str(), "0"), vacant_.get());
+        periodic_ = new MolecularType(Species("Periodic", ss.str(), "0"), vacant_.get());
     }
 
     virtual ~LatticeSpaceCellListImpl()
@@ -276,7 +276,7 @@ public:
         if (vp->remove_voxel_if_exists(coord))
         {
             // ???
-            update_matrix(coord, vacant_);
+            update_matrix(coord, vacant_.get());
             return true;
         }
         return true;
@@ -422,7 +422,7 @@ protected:
 
     bool is_periodic_;
 
-    VoxelPool* vacant_;
+    boost::shared_ptr<VoxelPool> vacant_;
     VoxelPool* border_;
     VoxelPool* periodic_;
 

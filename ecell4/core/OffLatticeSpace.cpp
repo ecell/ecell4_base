@@ -11,7 +11,7 @@ OffLatticeSpace::OffLatticeSpace(const Real& voxel_radius)
       voxels_(),
       positions_(),
       adjoinings_(),
-      vacant_(&(VacantType::getInstance()))
+      vacant_(VacantType::allocate())
 {}
 
 OffLatticeSpace::OffLatticeSpace(const Real& voxel_radius,
@@ -21,7 +21,7 @@ OffLatticeSpace::OffLatticeSpace(const Real& voxel_radius,
       voxels_(),
       positions_(),
       adjoinings_(),
-      vacant_(&(VacantType::getInstance()))
+      vacant_(VacantType::allocate())
 {
     reset(positions, adjoining_pairs);
 }
@@ -37,7 +37,7 @@ void OffLatticeSpace::reset(const position_container& positions,
 
     const std::size_t size(positions.size());
 
-    voxels_.resize(size, vacant_);
+    voxels_.resize(size, vacant_.get());
     positions_.resize(size);
     adjoinings_.resize(size);
 
@@ -134,7 +134,7 @@ bool OffLatticeSpace::make_molecular_pool(
             "The given species is already assigned to the VoxelPool with no voxels.");
     }
 
-    VoxelPool* location;
+    boost::shared_ptr<VoxelPool> location;
     if (loc == "")
     {
         location = vacant_;
@@ -144,7 +144,7 @@ bool OffLatticeSpace::make_molecular_pool(
         const Species locsp(loc);
         try
         {
-            location = find_voxel_pool(locsp).get(); // XXX: remove .get()
+            location = find_voxel_pool(locsp);
         }
         catch (const NotFound& err)
         {
@@ -156,7 +156,7 @@ bool OffLatticeSpace::make_molecular_pool(
             // XXX: In this implementation, the VoxelPool for a structure is
             // XXX: created with default arguments.
             boost::shared_ptr<MoleculePool>
-                locmt(new MolecularType(locsp, vacant_, voxel_radius_, 0));
+                locmt(new MolecularType(locsp, vacant_.get(), voxel_radius_, 0)); // XXX: remove .get()
             std::pair<molecule_pool_map_type::iterator, bool>
                 locval(molecule_pools_.insert(
                     molecule_pool_map_type::value_type(locsp, locmt)));
@@ -165,12 +165,12 @@ bool OffLatticeSpace::make_molecular_pool(
                 throw AlreadyExists(
                     "never reach here. find_voxel_pool seems wrong.");
             }
-            location = (*locval.first).second.get();
+            location = (*locval.first).second;
         }
     }
 
     boost::shared_ptr<MoleculePool>
-        vp(new MolecularType(sp, location, radius, D));
+        vp(new MolecularType(sp, location.get(), radius, D)); // XXX: remove .get()
     std::pair<molecule_pool_map_type::iterator, bool>
         retval(molecule_pools_.insert(
             molecule_pool_map_type::value_type(sp, vp)));

@@ -12,11 +12,11 @@ LatticeSpaceVectorImpl::LatticeSpaceVectorImpl(
     const bool is_periodic) :
     base_type(edge_lengths, voxel_radius, is_periodic), is_periodic_(is_periodic)
 {
-    vacant_ = &(VacantType::getInstance());
+    vacant_ = VacantType::allocate();
     std::stringstream ss;
     ss << voxel_radius_;
-    border_ = new MolecularType(Species("Border", ss.str(), "0"));
-    periodic_ = new MolecularType(Species("Periodic", ss.str(), "0"));
+    border_ = new MolecularType(Species("Border", ss.str(), "0"), vacant_.get());
+    periodic_ = new MolecularType(Species("Periodic", ss.str(), "0"), vacant_.get());
 
     initialize_voxels(is_periodic_);
 }
@@ -52,7 +52,7 @@ void LatticeSpaceVectorImpl::initialize_voxels(const bool is_periodic)
         }
         else
         {
-            voxels_.push_back(vacant_);
+            voxels_.push_back(vacant_.get());
         }
     }
 }
@@ -691,7 +691,7 @@ bool LatticeSpaceVectorImpl::make_structure_type(const Species& sp,
     VoxelPool* location;
     if (loc == "")
     {
-        location = vacant_;
+        location = vacant_.get();
     }
     else
     {
@@ -710,7 +710,7 @@ bool LatticeSpaceVectorImpl::make_structure_type(const Species& sp,
             // XXX: In this implementation, the VoxelPool for a structure is
             // XXX: created with default arguments.
             boost::shared_ptr<MoleculePool>
-                locmt(new MolecularType(locsp, vacant_, voxel_radius_, 0));
+                locmt(new MolecularType(locsp, vacant_.get(), voxel_radius_, 0));
             std::pair<molecule_pool_map_type::iterator, bool>
                 locval(molecule_pools_.insert(
                     molecule_pool_map_type::value_type(locsp, locmt)));
@@ -751,7 +751,7 @@ bool LatticeSpaceVectorImpl::make_interface_type(const Species& sp,
     VoxelPool* location;
     if (loc == "")
     {
-        location = vacant_;
+        location = vacant_.get();
     }
     else
     {
@@ -770,7 +770,7 @@ bool LatticeSpaceVectorImpl::make_interface_type(const Species& sp,
             // XXX: In this implementation, the VoxelPool for a structure is
             // XXX: created with default arguments.
             boost::shared_ptr<MoleculePool>
-                locmt(new MolecularType(locsp, vacant_, voxel_radius_, 0));
+                locmt(new MolecularType(locsp, vacant_.get(), voxel_radius_, 0));
             std::pair<molecule_pool_map_type::iterator, bool>
                 locval(molecule_pools_.insert(
                     molecule_pool_map_type::value_type(locsp, locmt)));
@@ -810,7 +810,7 @@ bool LatticeSpaceVectorImpl::make_molecular_type(const Species& sp, Real radius,
     VoxelPool* location;
     if (loc == "")
     {
-        location = vacant_;
+        location = vacant_.get();
     }
     else
     {
@@ -829,7 +829,7 @@ bool LatticeSpaceVectorImpl::make_molecular_type(const Species& sp, Real radius,
             // XXX: In this implementation, the VoxelPool for a structure is
             // XXX: created with default arguments.
             boost::shared_ptr<MoleculePool>
-                locmt(new MolecularType(locsp, vacant_, voxel_radius_, 0));
+                locmt(new MolecularType(locsp, vacant_.get(), voxel_radius_, 0));
             std::pair<molecule_pool_map_type::iterator, bool>
                 locval(molecule_pools_.insert(
                     molecule_pool_map_type::value_type(locsp, locmt)));
