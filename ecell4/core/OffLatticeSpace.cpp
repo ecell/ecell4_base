@@ -191,10 +191,12 @@ std::pair<ParticleID, Voxel>
 OffLatticeSpace::get_voxel_at(const coordinate_type& coord) const
 {
     const VoxelPool* vp(voxels_.at(coord));
-    const std::string loc(vp->is_vacant() || vp->location()->is_vacant() ?
-                          "" : vp->location()->species().serial());
     return std::make_pair(vp->get_particle_id(coord),
-                          Voxel(vp->species(), coord, vp->radius(), vp->D(), loc));
+                          Voxel(vp->species(),
+                                coord,
+                                vp->radius(),
+                                vp->D(),
+                                get_location_serial(vp)));
 }
 
 // Same as LatticeSpaceVectorImpl
