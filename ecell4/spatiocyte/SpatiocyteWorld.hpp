@@ -319,12 +319,12 @@ public:
 
     VoxelPool* find_voxel_pool(const Species& species)
     {
-        return root_->find_voxel_pool(species);
+        return root_->find_voxel_pool(species).get(); // XXX: remove .get()
     }
 
     const VoxelPool* find_voxel_pool(const Species& species) const
     {
-        return root_->find_voxel_pool(species);
+        return root_->find_voxel_pool(species).get(); // XXX: remove .get()
     }
 
     bool has_molecule_pool(const Species& sp) const
@@ -334,12 +334,12 @@ public:
 
     MoleculePool* find_molecule_pool(const Species& species)
     {
-        return root_->find_molecule_pool(species);
+        return root_->find_molecule_pool(species).get(); // XXX: remove .get()
     }
 
     const MoleculePool* find_molecule_pool(const Species& species) const
     {
-        return root_->find_molecule_pool(species);
+        return root_->find_molecule_pool(species).get(); // XXX: remove .get()
     }
 
     VoxelPool* get_voxel_pool_at(const coordinate_type& coord) const

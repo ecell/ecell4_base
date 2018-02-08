@@ -285,12 +285,13 @@ public:
     std::pair<ParticleID, Voxel> get_voxel(const ParticleID& pid) const;
     virtual std::pair<ParticleID, Voxel> get_voxel_at(const coordinate_type& coord) const = 0;
 
-    VoxelPool* find_voxel_pool(const Species& sp);
-    const VoxelPool* find_voxel_pool(const Species& sp) const;
+    boost::shared_ptr<VoxelPool> find_voxel_pool(const Species& sp);
+    boost::shared_ptr<const VoxelPool> find_voxel_pool(const Species& sp) const;
 
     bool has_molecule_pool(const Species& sp) const;
-    MoleculePool* find_molecule_pool(const Species& sp);
-    const MoleculePool* find_molecule_pool(const Species& sp) const;
+
+    boost::shared_ptr<MoleculePool> find_molecule_pool(const Species& sp);
+    boost::shared_ptr<const MoleculePool> find_molecule_pool(const Species& sp) const;
 
     virtual VoxelPool* get_voxel_pool_at(const coordinate_type& coord) const = 0;
 

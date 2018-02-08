@@ -144,7 +144,7 @@ bool OffLatticeSpace::make_molecular_pool(
         const Species locsp(loc);
         try
         {
-            location = find_voxel_pool(locsp);
+            location = find_voxel_pool(locsp).get(); // XXX: remove .get()
         }
         catch (const NotFound& err)
         {

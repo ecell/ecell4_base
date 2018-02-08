@@ -153,9 +153,9 @@ void save_lattice_space(const Tspace_& space, H5::Group* root, const std::string
     for (std::vector<Species>::const_iterator itr(species.begin());
             itr != species.end(); ++itr)
     {
-        const VoxelPool *mtb(space.find_voxel_pool(*itr));
+        boost::shared_ptr<const VoxelPool> mtb(space.find_voxel_pool(*itr));
         Species location(mtb->location()->species());
-        location_map.insert(std::make_pair(location, mtb));
+        location_map.insert(std::make_pair(location, mtb.get())); // XXX: remove .get()
     }
     traits_type::save_voxel_pool_recursively(VacantType::getInstance().species(),
             location_map, space, spgroup.get());

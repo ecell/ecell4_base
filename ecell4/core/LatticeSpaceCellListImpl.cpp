@@ -237,7 +237,7 @@ bool LatticeSpaceCellListImpl::make_molecular_type(const Species& sp, Real radiu
         const Species locsp(loc);
         try
         {
-            location = find_voxel_pool(locsp);
+            location = find_voxel_pool(locsp).get(); // XXX: remove .get()
         }
         catch (const NotFound& err)
         {
@@ -345,7 +345,7 @@ bool LatticeSpaceCellListImpl::make_structure_type(
         const Species locsp(loc);
         try
         {
-            location = find_voxel_pool(locsp);
+            location = find_voxel_pool(locsp).get(); // XXX: remove .get()
         }
         catch (const NotFound& err)
         {

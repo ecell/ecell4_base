@@ -698,7 +698,7 @@ bool LatticeSpaceVectorImpl::make_structure_type(const Species& sp,
         const Species locsp(loc);
         try
         {
-            location = find_voxel_pool(locsp);
+            location = find_voxel_pool(locsp).get(); // XXX: remove .get()
         }
         catch (const NotFound& err)
         {
@@ -758,7 +758,7 @@ bool LatticeSpaceVectorImpl::make_interface_type(const Species& sp,
         const Species locsp(loc);
         try
         {
-            location = find_voxel_pool(locsp);
+            location = find_voxel_pool(locsp).get(); // XXX: remove .get()
         }
         catch (const NotFound& err)
         {
@@ -817,7 +817,7 @@ bool LatticeSpaceVectorImpl::make_molecular_type(const Species& sp, Real radius,
         const Species locsp(loc);
         try
         {
-            location = find_voxel_pool(locsp);
+            location = find_voxel_pool(locsp).get(); // XXX: remove .get()
         }
         catch (const NotFound& err)
         {
@@ -860,7 +860,7 @@ bool LatticeSpaceVectorImpl::add_voxels(const Species& sp, std::vector<std::pair
     VoxelPool *mtb;
     try
     {
-        mtb = find_voxel_pool(sp);
+        mtb = find_voxel_pool(sp).get(); // XXX: remove .get()
     }
     catch (NotFound &e)
     {
