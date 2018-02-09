@@ -50,15 +50,8 @@ public:
     }
 
     Species(const Species& another)
-        : serial_(another.serial()), attributes_()
-    {
-        const std::vector<std::pair<std::string, attribute_type> > attrs = another.list_attributes();
-        for (std::vector<std::pair<std::string, attribute_type> >::const_iterator
-            i(attrs.begin()); i != attrs.end(); i++)
-        {
-            set_attribute((*i).first, (*i).second);
-        }
-    }
+        : serial_(another.serial_), attributes_(another.attributes_)
+    {}
 
     Species(
         const serial_type& name, const Real& radius, const Real& D,
