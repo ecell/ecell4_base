@@ -1,6 +1,8 @@
 #ifndef ECELL4_SGFRD_MULTI_CONTAINER
 #define ECELL4_SGFRD_MULTI_CONTAINER
 #include <ecell4/sgfrd/SGFRDWorld.hpp>
+#include <boost/typeof/typeof.hpp>
+#include <boost/foreach.hpp>
 #include <algorithm>
 
 namespace ecell4

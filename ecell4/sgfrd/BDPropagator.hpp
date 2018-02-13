@@ -7,6 +7,7 @@
 #include <ecell4/sgfrd/tracer.hpp>
 #include <boost/type_traits/is_same.hpp>
 #include <boost/iterator/iterator_traits.hpp>
+#include <boost/typeof/typeof.hpp>
 #include <boost/foreach.hpp>
 #include <boost/static_assert.hpp>
 #include <ecell4/sgfrd/Informations.hpp>
