@@ -160,7 +160,6 @@ protected:
     position_container positions_;
     adjoining_container adjoinings_;
 
-    boost::shared_ptr<VoxelPool> vacant_;
 };
 
 } // ecell4

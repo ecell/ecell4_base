@@ -148,7 +148,6 @@ protected:
 
     voxel_container voxels_;
 
-    boost::shared_ptr<VoxelPool> vacant_;
     VoxelPool* border_;
     VoxelPool* periodic_;
 };

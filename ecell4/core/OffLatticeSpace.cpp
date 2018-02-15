@@ -10,8 +10,7 @@ OffLatticeSpace::OffLatticeSpace(const Real& voxel_radius)
     : base_type(voxel_radius),
       voxels_(),
       positions_(),
-      adjoinings_(),
-      vacant_(VacantType::allocate())
+      adjoinings_()
 {}
 
 OffLatticeSpace::OffLatticeSpace(const Real& voxel_radius,
@@ -20,8 +19,7 @@ OffLatticeSpace::OffLatticeSpace(const Real& voxel_radius,
     : base_type(voxel_radius),
       voxels_(),
       positions_(),
-      adjoinings_(),
-      vacant_(VacantType::allocate())
+      adjoinings_()
 {
     reset(positions, adjoining_pairs);
 }

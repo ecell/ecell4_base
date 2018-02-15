@@ -66,7 +66,10 @@ public:
     /*
      * Constructor and Destructor
      */
-    VoxelSpaceBase(const Real& voxel_radius) : t_(0.0), voxel_radius_(voxel_radius) {}
+    VoxelSpaceBase(const Real& voxel_radius) :
+        t_(0.0), voxel_radius_(voxel_radius), vacant_(VacantType::allocate())
+    {}
+
     virtual ~VoxelSpaceBase() {}
 
     /*
@@ -273,6 +276,10 @@ public:
         return 2.0 * sqrt(3.0) * r * r;
     }
 
+    boost::shared_ptr<const VoxelPool> vacant() const {
+        return vacant_;
+    }
+
     bool has_voxel(const ParticleID& pid) const;
     Integer num_voxels_exact(const Species& sp) const;
     Integer num_voxels(const Species& sp) const;
@@ -369,6 +376,7 @@ protected:
     Real t_;
     Real voxel_radius_;
 
+    boost::shared_ptr<VoxelPool> vacant_;
     voxel_pool_map_type voxel_pools_;
     molecule_pool_map_type molecule_pools_;
 

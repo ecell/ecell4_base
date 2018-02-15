@@ -12,7 +12,6 @@ LatticeSpaceVectorImpl::LatticeSpaceVectorImpl(
     const bool is_periodic) :
     base_type(edge_lengths, voxel_radius, is_periodic), is_periodic_(is_periodic)
 {
-    vacant_ = VacantType::allocate();
     std::stringstream ss;
     ss << voxel_radius_;
     border_ = new MolecularType(Species("Border", ss.str(), "0"), vacant_.get());
