@@ -53,14 +53,9 @@ public:
     std::vector<coordinate_type> list_coords(const Species& sp) const;
     std::vector<coordinate_type> list_coords_exact(const Species& sp) const;
 
-    boost::shared_ptr<VoxelPool> get_voxel_pool_at_(const coordinate_type& coord) const
+    boost::shared_ptr<VoxelPool> get_voxel_pool_at(const coordinate_type& coord) const
     {
         return voxels_.at(coord);
-    }
-
-    VoxelPool* get_voxel_pool_at(const coordinate_type& coord) const
-    {
-        return get_voxel_pool_at_(coord).get();
     }
 
     bool move(const coordinate_type& src,
@@ -75,8 +70,8 @@ public:
     move_to_neighbor(coordinate_id_pair_type& info, Integer nrand);
 
     std::pair<coordinate_type, bool>
-    move_to_neighbor(VoxelPool* const& from_vp,
-                     VoxelPool* const& loc,
+    move_to_neighbor(boost::shared_ptr<VoxelPool> from_vp,
+                     boost::shared_ptr<VoxelPool> loc,
                      coordinate_id_pair_type& info,
                      const Integer nrand);
 
@@ -142,12 +137,7 @@ protected:
         return periodic_transpose(coord);
     }
 
-    boost::shared_ptr<VoxelPool> get_voxel_pool_(const Voxel& v);
-
-    VoxelPool* get_voxel_pool(const Voxel& v)
-    {
-        return get_voxel_pool_(v).get();
-    }
+    boost::shared_ptr<VoxelPool> get_voxel_pool(const Voxel& v);
 
     void initialize_voxels(const bool is_periodic);
 

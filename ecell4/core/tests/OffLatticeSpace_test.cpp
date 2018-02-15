@@ -116,7 +116,7 @@ BOOST_AUTO_TEST_CASE(OffLatticeSpace_test_move)
     std::pair<OffLatticeSpace::coordinate_type, bool> result(
             space.move_to_neighbor(
                 /* src_vp = */ space.get_voxel_pool_at(4),
-                /* loc = */    space.get_voxel_pool_at(4)->location().get(), // XXX: remove .get()
+                /* loc = */    space.get_voxel_pool_at(4)->location(),
                 /* info = */   info,
                 /* nrand = */  1));
     BOOST_CHECK_EQUAL(result.first, 5);

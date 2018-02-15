@@ -8,7 +8,7 @@ namespace spatiocyte
 {
 
 const Real calculate_dimensional_factor(
-    const VoxelPool* mt0, const VoxelPool* mt1,
+    boost::shared_ptr<const VoxelPool> mt0, boost::shared_ptr<const VoxelPool> mt1,
     const boost::shared_ptr<const SpatiocyteWorld>& world)
 {
     const Real voxel_radius(world->voxel_radius());
@@ -75,8 +75,7 @@ const Real calculate_alpha(const ReactionRule& rr, const boost::shared_ptr<Spati
         world->get_molecule_info(species[0]),
         world->get_molecule_info(species[1])
     };
-    VoxelPool* mt[2];
-    bool is_created[2] = {false, false};
+    boost::shared_ptr<VoxelPool> mt[2];
     for (int i(0); i < 2; ++i) {
         try
         {
@@ -95,14 +94,10 @@ const Real calculate_alpha(const ReactionRule& rr, const boost::shared_ptr<Spati
                     ;
                 }
             }
-            mt[i] = new MolecularType(species[i], location, info[i].radius, info[i].D);
-            is_created[i] = true;
+            mt[i] = boost::shared_ptr<VoxelPool>(new MolecularType(species[i], location, info[i].radius, info[i].D));
         }
     }
     const Real factor(calculate_dimensional_factor(mt[0], mt[1], boost::const_pointer_cast<const SpatiocyteWorld>(world)));
-    for (int i(0); i < 2; ++i)
-        if (is_created[i])
-            delete mt[i];
     const Real alpha(1.0 / (factor * rr.k()));
     return alpha < 1.0 ? alpha : 1.0;
 }

@@ -59,7 +59,7 @@ void OffLatticeSpace::reset(const position_container& positions,
     }
 }
 
-boost::shared_ptr<VoxelPool> OffLatticeSpace::get_voxel_pool_(const Voxel& voxel)
+boost::shared_ptr<VoxelPool> OffLatticeSpace::get_voxel_pool(const Voxel& voxel)
 {
     const Species& sp(voxel.species());
 
@@ -93,11 +93,6 @@ boost::shared_ptr<VoxelPool> OffLatticeSpace::get_voxel_pool_(const Voxel& voxel
         throw IllegalState("never reach here");
     }
     return (*i).second;  // upcast
-}
-
-VoxelPool* OffLatticeSpace::get_voxel_pool(const Voxel& v)
-{
-    return get_voxel_pool_(v).get();
 }
 
 boost::optional<OffLatticeSpace::coordinate_type>
@@ -219,10 +214,9 @@ bool OffLatticeSpace::update_voxel(const ParticleID& pid, const Voxel& v)
     if (!is_in_range(to_coord))
         throw NotSupported("Out of bounds");
 
-    boost::shared_ptr<VoxelPool> new_vp(get_voxel_pool_(v));
+    boost::shared_ptr<VoxelPool> new_vp(get_voxel_pool(v));
     // VoxelPool* new_vp(get_voxel_pool(v)); //XXX: need MoleculeInfo
-    boost::shared_ptr<VoxelPool> dest_vp(voxels_.at(to_coord));
-    // VoxelPool* dest_vp(get_voxel_pool_at(to_coord));
+    boost::shared_ptr<VoxelPool> dest_vp(get_voxel_pool_at(to_coord));
 
     if (dest_vp != new_vp->location())
     {
@@ -334,7 +328,7 @@ bool OffLatticeSpace::move(const coordinate_type& src, const coordinate_type& de
 
 std::pair<OffLatticeSpace::coordinate_type, bool>
 OffLatticeSpace::move_to_neighbor(
-        VoxelPool* const& src_vp, VoxelPool* const& loc,
+        boost::shared_ptr<VoxelPool> src_vp, boost::shared_ptr<VoxelPool> loc,
         coordinate_id_pair_type& info, const Integer nrand)
 {
     const coordinate_type src(info.coordinate);
@@ -342,11 +336,11 @@ OffLatticeSpace::move_to_neighbor(
 
     boost::shared_ptr<VoxelPool> dest_vp(voxels_.at(dest));
 
-    if (dest_vp.get() != loc)
+    if (dest_vp != loc)
         return std::make_pair(dest, false);
 
     voxels_.at(src) = dest_vp;
-    voxels_.at(dest) = find_voxel_pool(src_vp->species());
+    voxels_.at(dest) = src_vp;
 
     src_vp->replace_voxel(src, dest);
     dest_vp->replace_voxel(dest, src);

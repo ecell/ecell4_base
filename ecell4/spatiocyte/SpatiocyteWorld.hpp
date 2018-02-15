@@ -326,14 +326,14 @@ public:
         return root_->find_voxel_pool(species);
     }
 
-    VoxelPool* find_voxel_pool(const Species& species)
+    boost::shared_ptr<VoxelPool> find_voxel_pool(const Species& species)
     {
-        return find_voxel_pool_(species).get(); // XXX: remove .get()
+        return find_voxel_pool_(species);
     }
 
-    const VoxelPool* find_voxel_pool(const Species& species) const
+    boost::shared_ptr<const VoxelPool> find_voxel_pool(const Species& species) const
     {
-        return root_->find_voxel_pool(species).get(); // XXX: remove .get()
+        return root_->find_voxel_pool(species);
     }
 
     bool has_molecule_pool(const Species& sp) const
@@ -341,17 +341,17 @@ public:
         return root_->has_molecule_pool(sp);
     }
 
-    MoleculePool* find_molecule_pool(const Species& species)
+    boost::shared_ptr<MoleculePool> find_molecule_pool(const Species& species)
     {
-        return root_->find_molecule_pool(species).get(); // XXX: remove .get()
+        return root_->find_molecule_pool(species);
     }
 
-    const MoleculePool* find_molecule_pool(const Species& species) const
+    boost::shared_ptr<const MoleculePool> find_molecule_pool(const Species& species) const
     {
-        return root_->find_molecule_pool(species).get(); // XXX: remove .get()
+        return root_->find_molecule_pool(species);
     }
 
-    VoxelPool* get_voxel_pool_at(const coordinate_type& coord) const
+    boost::shared_ptr<VoxelPool> get_voxel_pool_at(const coordinate_type& coord) const
     {
         return root_->get_voxel_pool_at(coord);
     }
@@ -422,7 +422,7 @@ public:
     }
 
     std::pair<coordinate_type, bool>
-    move_to_neighbor(VoxelPool* const& from_mt, VoxelPool* const& loc, coordinate_id_pair_type& info, const Integer nrand)
+    move_to_neighbor(boost::shared_ptr<VoxelPool> from_mt, boost::shared_ptr<VoxelPool> loc, coordinate_id_pair_type& info, const Integer nrand)
     {
         return root_->move_to_neighbor(from_mt, loc, info, nrand);
     }
@@ -629,14 +629,14 @@ public:
         return rng_;
     }
 
-    const molecule_info_type get_molecule_info(const VoxelPool* mt) const
+    const molecule_info_type get_molecule_info(boost::shared_ptr<const VoxelPool> mt) const
     {
         const molecule_info_type info = {mt->radius(), mt->D(), get_location_serial(mt)};
         return info;
     }
 
     std::pair<ParticleID, Voxel> make_pid_voxel_pair(
-        const VoxelPool* mt, const coordinate_type& coord) const
+        boost::shared_ptr<const VoxelPool> mt, const coordinate_type& coord) const
     {
         const ParticleID pid(mt->get_particle_id(coord));
         const coordinate_id_pair_type info(pid, coord);
@@ -644,7 +644,7 @@ public:
     }
 
     std::pair<ParticleID, Voxel> make_pid_voxel_pair(
-        const VoxelPool* mt, const coordinate_id_pair_type& info) const
+        boost::shared_ptr<const VoxelPool> mt, const coordinate_id_pair_type& info) const
     {
         return std::make_pair<ParticleID, Voxel>(
             ParticleID(info.pid),
@@ -653,7 +653,7 @@ public:
 
     std::pair<ParticleID, Voxel> choice(const Species& sp)
     {
-        const MoleculePool* mt(find_molecule_pool(sp));
+        boost::shared_ptr<const MoleculePool> mt(find_molecule_pool(sp));
         const Integer i(rng_->uniform_int(0, mt->size() - 1));
         const coordinate_id_pair_type& info(mt->at(i));
         return make_pid_voxel_pair(mt, info);

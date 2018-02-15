@@ -293,7 +293,7 @@ LatticeSpaceVectorImpl::list_voxels(const Species& sp) const
     return retval;
 }
 
-boost::shared_ptr<VoxelPool> LatticeSpaceVectorImpl::get_voxel_pool_(const Voxel& v)
+boost::shared_ptr<VoxelPool> LatticeSpaceVectorImpl::get_voxel_pool(const Voxel& v)
 {
     const Species& sp(v.species());
 
@@ -527,7 +527,7 @@ std::pair<LatticeSpaceVectorImpl::coordinate_type, bool>
 
 std::pair<LatticeSpaceVectorImpl::coordinate_type, bool>
     LatticeSpaceVectorImpl::move_to_neighbor(
-        VoxelPool* const& from_vp, VoxelPool* const& loc,
+        boost::shared_ptr<VoxelPool> from_vp, boost::shared_ptr<VoxelPool> loc,
         coordinate_id_pair_type& info, const Integer nrand)
 {
     const coordinate_type from(info.coordinate);
@@ -539,7 +539,7 @@ std::pair<LatticeSpaceVectorImpl::coordinate_type, bool>
 
     boost::shared_ptr<VoxelPool> to_vp(voxels_.at(to));
 
-    if (to_vp.get() != loc)
+    if (to_vp != loc)
     {
         if (to_vp == border_)
         {
@@ -554,14 +554,14 @@ std::pair<LatticeSpaceVectorImpl::coordinate_type, bool>
         to = apply_boundary_(to);
         to_vp = voxels_.at(to);
 
-        if (to_vp.get() != loc)
+        if (to_vp != loc)
         {
             return std::make_pair(to, false);
         }
     }
 
     voxels_.at(from) = to_vp;
-    voxels_.at(to) = find_voxel_pool(from_vp->species()); // XXX:
+    voxels_.at(to) = from_vp;
     info.coordinate = to; //XXX: updating data
 
     to_vp->replace_voxel(to, from);
@@ -597,8 +597,8 @@ bool LatticeSpaceVectorImpl::update_voxel(const ParticleID& pid, const Voxel& v)
         throw NotSupported("Out of bounds");
     }
 
-    boost::shared_ptr<VoxelPool> new_vp(get_voxel_pool_(v)); //XXX: need MoleculeInfo
-    boost::shared_ptr<VoxelPool> dest_vp(get_voxel_pool_at_(to_coord));
+    boost::shared_ptr<VoxelPool> new_vp(get_voxel_pool(v)); //XXX: need MoleculeInfo
+    boost::shared_ptr<VoxelPool> dest_vp(get_voxel_pool_at(to_coord));
 
     if (dest_vp != new_vp->location())
     {

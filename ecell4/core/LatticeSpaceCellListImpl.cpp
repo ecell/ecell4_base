@@ -47,8 +47,8 @@ bool LatticeSpaceCellListImpl::update_voxel(const ParticleID& pid, const Voxel& 
         throw NotSupported("Out of bounds");
     }
 
-    boost::shared_ptr<VoxelPool> new_vp(get_voxel_pool_(v)); //XXX: need MoleculeInfo
-    boost::shared_ptr<VoxelPool> dest_vp(get_voxel_pool_at_(to_coord));
+    boost::shared_ptr<VoxelPool> new_vp(get_voxel_pool(v)); //XXX: need MoleculeInfo
+    boost::shared_ptr<VoxelPool> dest_vp(get_voxel_pool_at(to_coord));
 
     if (dest_vp != new_vp->location())
     {
@@ -122,7 +122,7 @@ std::pair<boost::shared_ptr<const VoxelPool>, LatticeSpaceCellListImpl::coordina
     return std::make_pair(boost::shared_ptr<VoxelPool>(), -1); //XXX: a bit dirty way
 }
 
-boost::shared_ptr<VoxelPool> LatticeSpaceCellListImpl::get_voxel_pool_at_(
+boost::shared_ptr<VoxelPool> LatticeSpaceCellListImpl::get_voxel_pool_at(
     const LatticeSpaceCellListImpl::coordinate_type& coord) const
 {
     /**
@@ -176,7 +176,7 @@ boost::shared_ptr<VoxelPool> LatticeSpaceCellListImpl::get_voxel_pool_at_(
     return vacant_;
 }
 
-boost::shared_ptr<VoxelPool> LatticeSpaceCellListImpl::get_voxel_pool_(const Voxel& v)
+boost::shared_ptr<VoxelPool> LatticeSpaceCellListImpl::get_voxel_pool(const Voxel& v)
 {
     const Species& sp(v.species());
 
@@ -272,15 +272,15 @@ bool LatticeSpaceCellListImpl::make_molecular_type(const Species& sp, Real radiu
 
 std::pair<LatticeSpaceCellListImpl::coordinate_type, bool>
     LatticeSpaceCellListImpl::move_to_neighbor(
-        VoxelPool* const& from_vp, VoxelPool* const& loc,
+        boost::shared_ptr<VoxelPool> from_vp, boost::shared_ptr<VoxelPool> loc,
         LatticeSpaceCellListImpl::coordinate_id_pair_type& info, const Integer nrand)
 {
     const coordinate_type from(info.coordinate);
     coordinate_type to(get_neighbor(from, nrand));
 
-    boost::shared_ptr<VoxelPool> to_vp(get_voxel_pool_at_(to));
+    boost::shared_ptr<VoxelPool> to_vp(get_voxel_pool_at(to));
 
-    if (to_vp.get() != loc)
+    if (to_vp != loc)
     {
         if (to_vp == border_)
         {
@@ -293,9 +293,9 @@ std::pair<LatticeSpaceCellListImpl::coordinate_type, bool>
 
         // to_vp == periodic_
         to = periodic_transpose(to);
-        to_vp = get_voxel_pool_at_(to);
+        to_vp = get_voxel_pool_at(to);
 
-        if (to_vp.get() != loc)
+        if (to_vp != loc)
         {
             return std::make_pair(to, false);
         }
@@ -308,11 +308,11 @@ std::pair<LatticeSpaceCellListImpl::coordinate_type, bool>
     if (!to_vp->is_vacant())
     {
         update_matrix(from, to_vp);
-        update_matrix(to, find_voxel_pool(from_vp->species()));
+        update_matrix(to, from_vp);
     }
     else
     {
-        update_matrix(from, to, find_voxel_pool(from_vp->species()));
+        update_matrix(from, to, from_vp);
     }
     return std::make_pair(to, true);
 }

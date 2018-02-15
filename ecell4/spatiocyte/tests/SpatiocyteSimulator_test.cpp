@@ -438,10 +438,10 @@ BOOST_AUTO_TEST_CASE(LattiecSimulator_test_scheduler)
     BOOST_ASSERT(world->has_molecule_pool(sp2));
     BOOST_ASSERT(world->has_molecule_pool(sp3));
 
-    const MoleculePool
-        *mt1(world->find_molecule_pool(sp1)),
-        *mt2(world->find_molecule_pool(sp2)),
-        *mt3(world->find_molecule_pool(sp3));
+    boost::shared_ptr<const MoleculePool>
+        mt1(world->find_molecule_pool(sp1)),
+        mt2(world->find_molecule_pool(sp2)),
+        mt3(world->find_molecule_pool(sp3));
 
     MoleculePool::const_iterator
         itr1(mt1->begin()),

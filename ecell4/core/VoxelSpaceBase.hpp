@@ -292,7 +292,7 @@ public:
     boost::shared_ptr<MoleculePool> find_molecule_pool(const Species& sp);
     boost::shared_ptr<const MoleculePool> find_molecule_pool(const Species& sp) const;
 
-    virtual VoxelPool* get_voxel_pool_at(const coordinate_type& coord) const = 0;
+    virtual boost::shared_ptr<VoxelPool> get_voxel_pool_at(const coordinate_type& coord) const = 0;
 
     /*
      * Coordinate Transformation
@@ -330,7 +330,7 @@ public:
 
     virtual
     std::pair<coordinate_type, bool>
-    move_to_neighbor(VoxelPool* const& from, VoxelPool* const& loc,
+    move_to_neighbor(boost::shared_ptr<VoxelPool> from, boost::shared_ptr<VoxelPool> loc,
                      coordinate_id_pair_type& info, const Integer nrand)
     = 0;
 
@@ -340,7 +340,7 @@ public:
 
     bool on_structure(const Voxel& v)
     {
-        return get_voxel_pool_at(v.coordinate()) != get_voxel_pool(v)->location().get(); // XXX: remove .get()
+        return get_voxel_pool_at(v.coordinate()) != get_voxel_pool(v)->location();
     }
 
     virtual bool
@@ -357,7 +357,7 @@ public:
 
 protected:
 
-    virtual VoxelPool* get_voxel_pool(const Voxel& v) = 0;
+    virtual boost::shared_ptr<VoxelPool> get_voxel_pool(const Voxel& v) = 0;
     virtual Integer count_voxels(const boost::shared_ptr<VoxelPool>& vp) const = 0;
     void push_voxels(std::vector<std::pair<ParticleID, Voxel> >& voxels,
                      const boost::shared_ptr<MoleculePool>& voxel_pool,
