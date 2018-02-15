@@ -28,7 +28,7 @@ public:
     typedef base_type::coordinate_id_pair_type coordinate_id_pair_type;
     typedef base_type::coordinate_type coordinate_type;
 
-    typedef std::vector<std::pair<VoxelPool*, coordinate_type> >
+    typedef std::vector<std::pair<boost::shared_ptr<VoxelPool>, coordinate_type> >
         cell_type;
     typedef std::vector<cell_type> matrix_type;
     typedef std::map<Species, boost::shared_ptr<const Shape> > structure_container_type;
@@ -59,15 +59,13 @@ public:
 
         std::stringstream ss;
         ss << voxel_radius_;
-        border_ = new MolecularType(Species("Border", ss.str(), "0"), vacant_);
-        periodic_ = new MolecularType(Species("Periodic", ss.str(), "0"), vacant_);
+        border_ = boost::shared_ptr<VoxelPool>(
+                new MolecularType(Species("Border", ss.str(), "0"), vacant_));
+        periodic_ = boost::shared_ptr<VoxelPool>(
+                new MolecularType(Species("Periodic", ss.str(), "0"), vacant_));
     }
 
-    virtual ~LatticeSpaceCellListImpl()
-    {
-        delete border_;
-        delete periodic_;
-    }
+    virtual ~LatticeSpaceCellListImpl() {}
 
     /**
      */
@@ -87,7 +85,7 @@ public:
     {
         return std::find_if(cell.begin(), cell.end(),
             utils::pair_second_element_unary_predicator<
-                VoxelPool*, coordinate_type>(coord));
+                boost::shared_ptr<VoxelPool>, coordinate_type>(coord));
         // cell_type::iterator i(cell.begin());
         // for (; i != cell.end(); ++i)
         // {
@@ -104,7 +102,7 @@ public:
     {
         return std::find_if(cell.begin(), cell.end(),
             utils::pair_second_element_unary_predicator<
-                VoxelPool*, coordinate_type>(coord));
+                boost::shared_ptr<VoxelPool>, coordinate_type>(coord));
         // cell_type::const_iterator i(cell.begin());
         // for (; i != cell.end(); ++i)
         // {
@@ -116,7 +114,7 @@ public:
         // return i;
     }
 
-    void update_matrix(const coordinate_type& coord, VoxelPool* vp)
+    void update_matrix(const coordinate_type& coord, boost::shared_ptr<VoxelPool> vp)
     {
         cell_type& cell(matrix_[coordinate2index(coord)]);
         cell_type::iterator i(find_from_cell(coord, cell));
@@ -144,7 +142,7 @@ public:
 
     void update_matrix(const coordinate_type& from_coord,
         const coordinate_type& to_coord,
-        VoxelPool* vp)
+        boost::shared_ptr<VoxelPool> vp)
     {
         const matrix_type::size_type from_idx(coordinate2index(from_coord)),
             to_idx(coordinate2index(to_coord));
@@ -200,7 +198,7 @@ public:
         const boost::shared_ptr<VoxelPool>& vp) const
     {
         Integer count(0);
-        utils::pair_first_element_unary_predicator<VoxelPool*, coordinate_type> pred(vp.get());
+        utils::pair_first_element_unary_predicator<boost::shared_ptr<VoxelPool>, coordinate_type> pred(vp);
 
         for (matrix_type::const_iterator i(matrix_.begin());
             i != matrix_.end(); ++i)
@@ -235,21 +233,18 @@ public:
 
     virtual std::pair<ParticleID, Voxel> get_voxel_at(const coordinate_type& coord) const
     {
-        const VoxelPool* vp(get_voxel_pool_at(coord));
-        const std::string loc((vp->location()->is_vacant())
-            ? "" : vp->location()->species().serial());
+        boost::shared_ptr<const VoxelPool> vp(get_voxel_pool_at_(coord));
         return std::make_pair(
             vp->get_particle_id(coord),
-            Voxel(vp->species(), coord, vp->radius(), vp->D(), loc));
+            Voxel(vp->species(), coord, vp->radius(), vp->D(), get_location_serial(vp)));
     }
 
     virtual bool remove_voxel(const ParticleID& pid)
     {
-        std::pair<VoxelPool*, coordinate_type>
-            target(__get_coordinate(pid));
+        std::pair<boost::shared_ptr<VoxelPool>, coordinate_type> target(__get_coordinate(pid));
         if (target.second != -1)
         {
-            VoxelPool* vp(target.first);
+            boost::shared_ptr<VoxelPool> vp(target.first);
             const coordinate_type coord(target.second);
             if (!vp->remove_voxel_if_exists(coord))
             {
@@ -257,7 +252,7 @@ public:
             }
 
             vp->location()->add_voxel(coordinate_id_pair_type(ParticleID(), coord));
-            update_matrix(coord, vp->location().get()); // XXX: remove .get()
+            update_matrix(coord, vp->location());
             return true;
         }
         return false;
@@ -265,7 +260,7 @@ public:
 
     virtual bool remove_voxel(const coordinate_type& coord)
     {
-        VoxelPool* vp(get_voxel_pool_at(coord));
+        boost::shared_ptr<VoxelPool> vp(get_voxel_pool_at_(coord));
         if (vp->is_vacant())
         {
             return false;
@@ -274,7 +269,7 @@ public:
         if (vp->remove_voxel_if_exists(coord))
         {
             // ???
-            update_matrix(coord, vacant_.get());
+            update_matrix(coord, vacant_);
             return true;
         }
         return true;
@@ -290,13 +285,13 @@ public:
             return false;
         }
 
-        VoxelPool* src_vp(get_voxel_pool_at(src));
+        boost::shared_ptr<VoxelPool> src_vp(get_voxel_pool_at_(src));
         if (src_vp->is_vacant())
         {
             return true;
         }
 
-        VoxelPool* dest_vp(get_voxel_pool_at(tmp_dest));
+        boost::shared_ptr<VoxelPool> dest_vp(get_voxel_pool_at_(tmp_dest));
         if (dest_vp == border_)
         {
             return false;
@@ -304,10 +299,10 @@ public:
         else if (dest_vp == periodic_)
         {
             tmp_dest = periodic_transpose(tmp_dest);
-            dest_vp = get_voxel_pool_at(tmp_dest);
+            dest_vp = get_voxel_pool_at_(tmp_dest);
         }
 
-        if (dest_vp != src_vp->location().get()) // XXX: remove .get()
+        if (dest_vp != src_vp->location())
         {
             return false;
         }
@@ -333,13 +328,13 @@ public:
             return false;
         }
 
-        const VoxelPool* src_vp(get_voxel_pool_at(src));
+        boost::shared_ptr<const VoxelPool> src_vp(get_voxel_pool_at_(src));
         if (src_vp->is_vacant())
         {
             return false;
         }
 
-        VoxelPool* dest_vp(get_voxel_pool_at(dest));
+        boost::shared_ptr<VoxelPool> dest_vp(get_voxel_pool_at_(dest));
 
         if (dest_vp == border_)
         {
@@ -348,20 +343,24 @@ public:
 
         if (dest_vp == periodic_)
         {
-            dest_vp = get_voxel_pool_at(periodic_transpose(dest));
+            dest_vp = get_voxel_pool_at_(periodic_transpose(dest));
         }
 
-        return (dest_vp == src_vp->location().get()); // XXX: remove .get()
+        return (dest_vp == src_vp->location());
     }
 
     virtual const Particle particle_at(const coordinate_type& coord) const
     {
-        const VoxelPool* vp(get_voxel_pool_at(coord));
+        boost::shared_ptr<const VoxelPool> vp(get_voxel_pool_at_(coord));
         return Particle(
             vp->species(), coordinate2position(coord), vp->radius(), vp->D());
     }
 
-    VoxelPool* get_voxel_pool_at(const coordinate_type& coord) const;
+    boost::shared_ptr<VoxelPool> get_voxel_pool_at_(const coordinate_type& coord) const;
+    VoxelPool* get_voxel_pool_at(const coordinate_type& coord) const
+    {
+        return get_voxel_pool_at_(coord).get();
+    }
 
     coordinate_type get_neighbor_boundary(
         const coordinate_type& coord, const Integer& nrand) const
@@ -404,11 +403,16 @@ public:
 
 protected:
 
-    VoxelPool* get_voxel_pool(const Voxel& v);
+    boost::shared_ptr<VoxelPool> get_voxel_pool_(const Voxel& v);
 
-    std::pair<VoxelPool*, coordinate_type>
+    VoxelPool* get_voxel_pool(const Voxel& v)
+    {
+        return get_voxel_pool_(v).get();
+    }
+
+    std::pair<boost::shared_ptr<VoxelPool>, coordinate_type>
         __get_coordinate(const ParticleID& pid);
-    std::pair<const VoxelPool*, coordinate_type>
+    std::pair<boost::shared_ptr<const VoxelPool>, coordinate_type>
         __get_coordinate(const ParticleID& pid) const;
 
     bool make_molecular_type(
@@ -420,8 +424,8 @@ protected:
 
     bool is_periodic_;
 
-    VoxelPool* border_;
-    VoxelPool* periodic_;
+    boost::shared_ptr<VoxelPool> border_;
+    boost::shared_ptr<VoxelPool> periodic_;
 
     Integer3 matrix_sizes_, cell_sizes_;
     matrix_type matrix_;
