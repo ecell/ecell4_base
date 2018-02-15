@@ -379,8 +379,8 @@ bool LatticeSpaceVectorImpl::remove_voxel(const ParticleID& pid)
                 return false;
             }
 
-            voxel_container::iterator itr(voxels_.begin() + coord);
-            (*itr) = vp->location().get(); // XXX: remove .get()
+            voxels_.at(coord) = vp->location().get();
+
             vp->location()->add_voxel(
                 coordinate_id_pair_type(ParticleID(), coord));
             return true;
@@ -391,15 +391,14 @@ bool LatticeSpaceVectorImpl::remove_voxel(const ParticleID& pid)
 
 bool LatticeSpaceVectorImpl::remove_voxel(const coordinate_type& coord)
 {
-    voxel_container::iterator itr(voxels_.begin() + coord);
-    VoxelPool* vp(*itr);
+    VoxelPool* vp(voxels_.at(coord));
     if (vp->is_vacant())
     {
         return false;
     }
     if (vp->remove_voxel_if_exists(coord))
     {
-        (*itr) = vp->location().get(); // XXX: remove .get()
+        voxels_.at(coord) = vp->location().get(); // XXX: remove .get()
         vp->location()->add_voxel(
             coordinate_id_pair_type(ParticleID(), coord));
         return true;
@@ -487,13 +486,11 @@ std::pair<LatticeSpaceVectorImpl::coordinate_type, bool>
     }
 
     from_vp->replace_voxel(from, to, candidate);
-    voxel_container::iterator from_itr(voxels_.begin() + from);
-    (*from_itr) = to_vp;
+    voxels_.at(from) = to_vp;
 
     // to_vp->replace_voxel(to, coordinate_id_pair_type(ParticleID(), from));
     to_vp->replace_voxel(to, from);
-    voxel_container::iterator to_itr(voxels_.begin() + to);
-    (*to_itr) = from_vp;
+    voxels_.at(to) = from_vp;
 
     return std::pair<coordinate_type, bool>(to, true);
 }
@@ -532,13 +529,11 @@ std::pair<LatticeSpaceVectorImpl::coordinate_type, bool>
     }
 
     info.coordinate = to;
-    voxel_container::iterator from_itr(voxels_.begin() + from);
-    (*from_itr) = to_vp;
+    voxels_.at(from) = to_vp;
 
     // to_vp->replace_voxel(to, coordinate_id_pair_type(ParticleID(), from));
     to_vp->replace_voxel(to, from);
-    voxel_container::iterator to_itr(voxels_.begin() + to);
-    (*to_itr) = from_vp;
+    voxels_.at(to) = from_vp;
 
     return std::pair<coordinate_type, bool>(to, true);
 }
@@ -655,12 +650,10 @@ bool LatticeSpaceVectorImpl::update_voxel(const ParticleID& pid, const Voxel& v)
 
         //XXX: use location?
         dest_vp->replace_voxel(to_coord, from_coord);
-        voxel_container::iterator from_itr(voxels_.begin() + from_coord);
-        (*from_itr) = dest_vp;
+        voxels_.at(from_coord) = dest_vp;
 
         new_vp->add_voxel(coordinate_id_pair_type(pid, to_coord));
-        voxel_container::iterator to_itr(voxels_.begin() + to_coord);
-        (*to_itr) = new_vp;
+        voxels_.at(to_coord) = new_vp;
         return false;
     }
 
@@ -668,8 +661,7 @@ bool LatticeSpaceVectorImpl::update_voxel(const ParticleID& pid, const Voxel& v)
     dest_vp->remove_voxel_if_exists(to_coord);
 
     new_vp->add_voxel(coordinate_id_pair_type(pid, to_coord));
-    voxel_container::iterator to_itr(voxels_.begin() + to_coord);
-    (*to_itr) = new_vp;
+    voxels_.at(to_coord) = new_vp;
     return true;
 }
 
@@ -874,8 +866,7 @@ bool LatticeSpaceVectorImpl::add_voxels(const Species& sp, std::vector<std::pair
         VoxelPool* src_vp(get_voxel_pool_at(coord));
         src_vp->remove_voxel_if_exists(coord);
         mtb->add_voxel(coordinate_id_pair_type(pid, coord));
-        voxel_container::iterator vitr(voxels_.begin() + coord);
-        (*vitr) = mtb.get();
+        voxels_.at(coord) = mtb.get();
     }
     return true;
 }

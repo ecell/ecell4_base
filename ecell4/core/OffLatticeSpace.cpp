@@ -240,12 +240,11 @@ bool OffLatticeSpace::update_voxel(const ParticleID& pid, const Voxel& v)
 
         //XXX: use location?
         dest_vp->replace_voxel(to_coord, *from_coord);
-        voxel_container::iterator from_itr(voxels_.begin() + *from_coord);
-        (*from_itr) = dest_vp;
+        voxels_.at(*from_coord) = dest_vp;
 
         new_vp->add_voxel(coordinate_id_pair_type(pid, to_coord));
-        voxel_container::iterator to_itr(voxels_.begin() + to_coord);
-        (*to_itr) = new_vp;
+        voxels_.at(to_coord) = new_vp;
+
         return false;
     }
 
@@ -253,8 +252,8 @@ bool OffLatticeSpace::update_voxel(const ParticleID& pid, const Voxel& v)
     dest_vp->remove_voxel_if_exists(to_coord);
 
     new_vp->add_voxel(coordinate_id_pair_type(pid, to_coord));
-    voxel_container::iterator to_itr(voxels_.begin() + to_coord);
-    (*to_itr) = new_vp;
+    voxels_.at(to_coord) = new_vp;
+
     return true;
 }
 // Same as LatticeSpaceVectorImpl
@@ -273,9 +272,7 @@ bool OffLatticeSpace::remove_voxel(const ParticleID& pid)
                 return false;
             }
 
-            // voxels_.at(coord) = vp->location(); ???
-            voxel_container::iterator itr(voxels_.begin() + coord);
-            (*itr) = vp->location();
+            voxels_.at(coord) = vp->location();
 
             vp->location()->add_voxel(
                 coordinate_id_pair_type(ParticleID(), coord));
@@ -288,15 +285,14 @@ bool OffLatticeSpace::remove_voxel(const ParticleID& pid)
 // Same as LatticeSpaceVectorImpl
 bool OffLatticeSpace::remove_voxel(const coordinate_type& coord)
 {
-    voxel_container::iterator itr(voxels_.begin() + coord);
-    boost::shared_ptr<VoxelPool> vp(*itr);
+    boost::shared_ptr<VoxelPool> vp(voxels_.at(coord));
     if (vp->is_vacant())
     {
         return false;
     }
     if (vp->remove_voxel_if_exists(coord))
     {
-        (*itr) = vp->location(); // voxels_.at(coord) = vp->location(); ???
+        voxels_.at(coord) = vp->location();
         vp->location()->add_voxel(
             coordinate_id_pair_type(ParticleID(), coord));
         return true;
@@ -328,12 +324,10 @@ bool OffLatticeSpace::move(const coordinate_type& src, const coordinate_type& de
     if (dest_vp != src_vp->location()) return false;
 
     src_vp->replace_voxel(src, dest, candidate);
-    voxel_container::iterator src_itr(voxels_.begin() + src);
-    (*src_itr) = dest_vp;
+    voxels_.at(src) = dest_vp;
 
     dest_vp->replace_voxel(dest, src);
-    voxel_container::iterator dest_itr(voxels_.begin() + dest);
-    (*dest_itr) = src_vp;
+    voxels_.at(dest) = src_vp;
 
     return true;
 }
