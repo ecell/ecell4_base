@@ -29,12 +29,6 @@ public:
         return VACANT;
     }
 
-    static VacantType& getInstance()
-    {
-        static VacantType instance;
-        return instance;
-    }
-
     static boost::shared_ptr<VacantType> allocate()
     {
         return boost::shared_ptr<VacantType>(new VacantType());

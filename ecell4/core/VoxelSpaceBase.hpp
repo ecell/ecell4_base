@@ -272,6 +272,10 @@ public:
         return vacant_;
     }
 
+    boost::shared_ptr<const VoxelPool> vacant() const {
+        return vacant_;
+    }
+
     bool has_voxel(const ParticleID& pid) const;
     Integer num_voxels_exact(const Species& sp) const;
     Integer num_voxels(const Species& sp) const;

@@ -49,7 +49,7 @@ BOOST_AUTO_TEST_CASE(GetVoxel)
     {
         std::pair<ParticleID, Voxel> voxel(space.get_voxel_at(coordinate));
         BOOST_CHECK_EQUAL(voxel.first, ParticleID());
-        BOOST_CHECK_EQUAL(voxel.second.species(), VacantType::getInstance().species());
+        BOOST_CHECK_EQUAL(voxel.second.species(), space.vacant()->species());
     }
 
     ParticleID id(sidgen());

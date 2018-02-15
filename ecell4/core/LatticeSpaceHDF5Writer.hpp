@@ -19,6 +19,7 @@
 #include "MolecularType.hpp"
 #include "StructureType.hpp"
 #include "VacantType.hpp"
+#include "VoxelSpaceBase.hpp"
 
 
 namespace ecell4
@@ -157,7 +158,7 @@ void save_lattice_space(const Tspace_& space, H5::Group* root, const std::string
         Species location(mtb->location()->species());
         location_map.insert(std::make_pair(location, mtb.get())); // XXX: remove .get()
     }
-    traits_type::save_voxel_pool_recursively(VacantType::getInstance().species(),
+    traits_type::save_voxel_pool_recursively(space.vacant()->species(),
             location_map, space, spgroup.get());
 
     const hsize_t dims[] = {3};
