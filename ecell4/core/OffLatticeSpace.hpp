@@ -12,7 +12,7 @@ class OffLatticeSpace : public VoxelSpaceBase
 protected:
 
     typedef VoxelSpaceBase base_type;
-    typedef std::vector<VoxelPool*> voxel_container;
+    typedef std::vector<boost::shared_ptr<VoxelPool> > voxel_container;
     typedef std::vector<std::vector<coordinate_type> > adjoining_container;
 
 public:
@@ -60,7 +60,7 @@ public:
     std::pair<ParticleID, Voxel> get_voxel_at(const coordinate_type& coord) const;
     VoxelPool* get_voxel_pool_at(const coordinate_type& coord) const
     {
-        return voxels_.at(coord);
+        return voxels_.at(coord).get();
     }
 
     /*
@@ -135,10 +135,11 @@ public:
 
 protected:
 
+    boost::shared_ptr<VoxelPool> get_voxel_pool_(const Voxel& v);
     VoxelPool* get_voxel_pool(const Voxel& v);
     Integer count_voxels(const boost::shared_ptr<VoxelPool>& vp) const
     {
-        return static_cast<Integer>(std::count(voxels_.begin(), voxels_.end(), vp.get()));
+        return static_cast<Integer>(std::count(voxels_.begin(), voxels_.end(), vp));
     }
 
     bool is_in_range(const coordinate_type& coord) const

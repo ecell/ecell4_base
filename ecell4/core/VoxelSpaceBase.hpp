@@ -27,16 +27,8 @@ double rint(const double x);
 double round(const double x);
 #endif
 
-static inline std::string get_location_serial(const VoxelPool* vp)
-{
-    if (vp == NULL || vp->location() == NULL || vp->location()->is_vacant()) {
-        return "";
-    }
-
-    return vp->location()->species().serial();
-}
-
-static inline std::string get_location_serial(const boost::shared_ptr<VoxelPool>& vp)
+template <typename T>
+static inline std::string get_location_serial(T vp)
 {
     if (vp == NULL || vp->location() == NULL || vp->location()->is_vacant()) {
         return "";
