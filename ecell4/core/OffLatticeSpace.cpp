@@ -154,7 +154,7 @@ bool OffLatticeSpace::make_molecular_pool(
             // XXX: In this implementation, the VoxelPool for a structure is
             // XXX: created with default arguments.
             boost::shared_ptr<MoleculePool>
-                locmt(new MolecularType(locsp, vacant_.get(), voxel_radius_, 0)); // XXX: remove .get()
+                locmt(new MolecularType(locsp, vacant_, voxel_radius_, 0));
             std::pair<molecule_pool_map_type::iterator, bool>
                 locval(molecule_pools_.insert(
                     molecule_pool_map_type::value_type(locsp, locmt)));
@@ -168,7 +168,7 @@ bool OffLatticeSpace::make_molecular_pool(
     }
 
     boost::shared_ptr<MoleculePool>
-        vp(new MolecularType(sp, location.get(), radius, D)); // XXX: remove .get()
+        vp(new MolecularType(sp, location, radius, D));
     std::pair<molecule_pool_map_type::iterator, bool>
         retval(molecule_pools_.insert(
             molecule_pool_map_type::value_type(sp, vp)));
@@ -217,7 +217,7 @@ bool OffLatticeSpace::update_voxel(const ParticleID& pid, const Voxel& v)
     VoxelPool* new_vp(get_voxel_pool(v)); //XXX: need MoleculeInfo
     VoxelPool* dest_vp(get_voxel_pool_at(to_coord));
 
-    if (dest_vp != new_vp->location())
+    if (dest_vp != new_vp->location().get()) // XXX: remove .get()
     {
         throw NotSupported(
             "Mismatch in the location. Failed to place '"
@@ -267,7 +267,7 @@ bool OffLatticeSpace::remove_voxel(const ParticleID& pid)
             }
 
             voxel_container::iterator itr(voxels_.begin() + coord);
-            (*itr) = vp->location();
+            (*itr) = vp->location().get(); // XXX: remove .get()
             vp->location()->add_voxel(
                 coordinate_id_pair_type(ParticleID(), coord));
             return true;
@@ -287,7 +287,7 @@ bool OffLatticeSpace::remove_voxel(const coordinate_type& coord)
     }
     if (vp->remove_voxel_if_exists(coord))
     {
-        (*itr) = vp->location();
+        (*itr) = vp->location().get(); // XXX: remove .get()
         vp->location()->add_voxel(
             coordinate_id_pair_type(ParticleID(), coord));
         return true;
@@ -304,7 +304,7 @@ bool OffLatticeSpace::can_move(const coordinate_type& src, const coordinate_type
 
     VoxelPool* dest_vp(voxels_.at(dest));
 
-    return (voxels_.at(dest) == src_vp->location());
+    return (voxels_.at(dest) == src_vp->location().get()); // XXX: remove .get()
 }
 
 bool OffLatticeSpace::move(const coordinate_type& src, const coordinate_type& dest,
@@ -316,7 +316,7 @@ bool OffLatticeSpace::move(const coordinate_type& src, const coordinate_type& de
     if (src_vp->is_vacant()) return true;
 
     VoxelPool* dest_vp(voxels_.at(dest));
-    if (dest_vp != src_vp->location()) return false;
+    if (dest_vp != src_vp->location().get()) return false; // XXX: remove .get()
 
     src_vp->replace_voxel(src, dest, candidate);
     voxel_container::iterator src_itr(voxels_.begin() + src);

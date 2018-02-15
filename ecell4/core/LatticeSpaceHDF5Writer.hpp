@@ -64,7 +64,7 @@ struct LatticeSpaceHDF5Traits
         h5_species_struct property;
         property.radius = mtb->radius();
         property.D = mtb->D();
-        const VoxelPool* loc(mtb->location());
+        boost::shared_ptr<const VoxelPool> loc(mtb->location());
         // if (loc->is_vacant())
         //     property.location = H5std_string("");
         // else

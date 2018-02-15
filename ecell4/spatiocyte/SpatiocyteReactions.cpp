@@ -22,7 +22,7 @@ const std::string get_location(boost::shared_ptr<SpatiocyteWorld> world,
     const VoxelPool* mtype(world->get_voxel_pool_at(coord));
     if (mtype->is_vacant())
         return "";
-    const VoxelPool* ltype(mtype->location());
+    boost::shared_ptr<const VoxelPool> ltype(mtype->location());
     return ltype->is_vacant() ? "" : ltype->species().serial();
 }
 

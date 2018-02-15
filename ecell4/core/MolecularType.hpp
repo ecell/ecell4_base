@@ -21,13 +21,13 @@ public:
 
 public:
 
-    MolecularType(const std::string& name, VoxelPool* location)
+    MolecularType(const std::string& name, boost::weak_ptr<VoxelPool> location)
         : base_type(Species(name), location, 0, 0)
     {
         ;
     }
 
-    MolecularType(const Species& species, VoxelPool* location,
+    MolecularType(const Species& species, boost::weak_ptr<VoxelPool> location,
                   const Real& radius = 0.0, const Real& D = 0.0)
         : base_type(species, location, radius, D)
     {

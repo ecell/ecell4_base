@@ -272,6 +272,10 @@ public:
         return root_->unit_area();
     }
 
+    boost::shared_ptr<VoxelPool> vacant() const {
+        return root_->vacant();
+    }
+
     bool has_voxel(const ParticleID& pid) const
     {
         return root_->has_voxel(pid);
@@ -317,9 +321,14 @@ public:
         return root_->get_voxel_at(coord);
     }
 
+    boost::shared_ptr<VoxelPool> find_voxel_pool_(const Species& species)
+    {
+        return root_->find_voxel_pool(species);
+    }
+
     VoxelPool* find_voxel_pool(const Species& species)
     {
-        return root_->find_voxel_pool(species).get(); // XXX: remove .get()
+        return find_voxel_pool_(species).get(); // XXX: remove .get()
     }
 
     const VoxelPool* find_voxel_pool(const Species& species) const

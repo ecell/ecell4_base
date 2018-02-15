@@ -59,8 +59,8 @@ public:
 
         std::stringstream ss;
         ss << voxel_radius_;
-        border_ = new MolecularType(Species("Border", ss.str(), "0"), vacant_.get());
-        periodic_ = new MolecularType(Species("Periodic", ss.str(), "0"), vacant_.get());
+        border_ = new MolecularType(Species("Border", ss.str(), "0"), vacant_);
+        periodic_ = new MolecularType(Species("Periodic", ss.str(), "0"), vacant_);
     }
 
     virtual ~LatticeSpaceCellListImpl()
@@ -200,8 +200,7 @@ public:
         const boost::shared_ptr<VoxelPool>& vp) const
     {
         Integer count(0);
-        utils::pair_first_element_unary_predicator<
-            VoxelPool*, coordinate_type> pred(vp.get());
+        utils::pair_first_element_unary_predicator<VoxelPool*, coordinate_type> pred(vp.get());
 
         for (matrix_type::const_iterator i(matrix_.begin());
             i != matrix_.end(); ++i)
@@ -258,7 +257,7 @@ public:
             }
 
             vp->location()->add_voxel(coordinate_id_pair_type(ParticleID(), coord));
-            update_matrix(coord, vp->location());
+            update_matrix(coord, vp->location().get()); // XXX: remove .get()
             return true;
         }
         return false;
@@ -308,7 +307,7 @@ public:
             dest_vp = get_voxel_pool_at(tmp_dest);
         }
 
-        if (dest_vp != src_vp->location())
+        if (dest_vp != src_vp->location().get()) // XXX: remove .get()
         {
             return false;
         }
@@ -352,7 +351,7 @@ public:
             dest_vp = get_voxel_pool_at(periodic_transpose(dest));
         }
 
-        return (dest_vp == src_vp->location());
+        return (dest_vp == src_vp->location().get()); // XXX: remove .get()
     }
 
     virtual const Particle particle_at(const coordinate_type& coord) const

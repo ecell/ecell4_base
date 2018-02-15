@@ -276,7 +276,7 @@ public:
         return 2.0 * sqrt(3.0) * r * r;
     }
 
-    boost::shared_ptr<const VoxelPool> vacant() const {
+    boost::shared_ptr<VoxelPool> vacant() {
         return vacant_;
     }
 
@@ -348,7 +348,7 @@ public:
 
     bool on_structure(const Voxel& v)
     {
-        return get_voxel_pool_at(v.coordinate()) != get_voxel_pool(v)->location();
+        return get_voxel_pool_at(v.coordinate()) != get_voxel_pool(v)->location().get(); // XXX: remove .get()
     }
 
     virtual bool

@@ -48,7 +48,7 @@ public:
 private:
 
     VacantType()
-        : base_type(Species("VACANT", "0", "0"), NULL, 0, 0)
+        : base_type(Species("VACANT", "0", "0"), boost::weak_ptr<VoxelPool>(), 0, 0)
     {
         ; // do nothing
     }

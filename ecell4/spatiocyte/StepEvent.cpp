@@ -106,7 +106,6 @@ void StepEvent::walk_on_surface_(const MoleculePool* mtype, const Real& alpha)
     MoleculePool::container_type voxels;
     copy(mtype->begin(), mtype->end(), back_inserter(voxels));
 
-    const VoxelPool* location(mtype->location());
     std::size_t idx(0);
     for (MoleculePool::container_type::iterator itr(voxels.begin());
          itr != voxels.end(); ++itr)
