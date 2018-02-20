@@ -814,7 +814,7 @@ Polygon<T>::list_vertices_within_radius(
     }
 
     boost::array<vertex_id_type, 3> const& known = face_prop_at(pos.second).vertices;
-    boost::array<face_id_type, 3> const& adjs = face_prop_at(pos.second).adjacents;
+    boost::array<face_id_type,   3> const& adjs  = face_prop_at(pos.second).adjacents;
     for(std::size_t i=0; i<3; ++i)
     {
         face_property_type const& f = face_prop_at(adjs[i]);
@@ -824,13 +824,13 @@ Polygon<T>::list_vertices_within_radius(
                          boost::lambda::_1 != known[1] &&
                          boost::lambda::_1 != known[2]);
         const std::size_t idx = std::distance(f.vertices.begin(), unknown);
-        assert(idx != 3);
+        assert(idx < 3);
         const Real dist2 = this->distance_sq(
                 pos, std::make_pair(f.triangle.vertex_at(idx), adjs[i]));
 
         if(dist2 <= rad2)
         {
-            list.push_back(std::make_pair(*unknown, std::sqrt(dist2)));
+            uniquely_add(list, std::make_pair(*unknown, std::sqrt(dist2)));
         }
     }
 
