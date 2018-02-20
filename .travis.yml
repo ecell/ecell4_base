@@ -48,7 +48,7 @@ before_install:
 - if [ "$TRAVIS_OS_NAME" == "osx" ]; then
     brew update;
     brew install gsl ffmpeg;
-    brew install homebrew/science/hdf5@1.8;
+    brew install hdf5@1.8;
     brew list hdf5@1.8 | head -n 1 | sed 's/\(^.*\/hdf5\@1.8\/[^\/]*\).*/\1/';
     cp $(brew list hdf5@1.8 | head -n 1 | sed 's/\(^.*\/hdf5\@1.8\/[^\/]*\).*/\1/')/include/* /usr/local/include/ ;
     cp $(brew list hdf5@1.8 | head -n 1 | sed 's/\(^.*\/hdf5\@1.8\/[^\/]*\).*/\1/')/lib/* /usr/local/lib/ ;
