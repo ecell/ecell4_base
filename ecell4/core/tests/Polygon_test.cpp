@@ -561,65 +561,87 @@ BOOST_AUTO_TEST_CASE(Polygon_developped_direction_connected_by_edge)
     const polygon_type poly = make_cube();
     typedef polygon_type::face_id_type face_id_type;
 
-    const std::pair<Real3, face_id_type> start1 =
-            std::make_pair(Real3(0.3, 0.3, 0.), face_id_type(0));
-    const std::pair<Real3, face_id_type> term1  =
-            std::make_pair(Real3(0.7, 0.7, 0.), face_id_type(1));
+    {
+        const std::pair<Real3, face_id_type> start =
+                std::make_pair(Real3(0.3, 0.3, 0.), face_id_type(0));
+        const std::pair<Real3, face_id_type> term  =
+                std::make_pair(Real3(0.7, 0.7, 0.), face_id_type(1));
 
-    const Real3 dir1_1 = poly.developed_direction(start1, term1);
-    const Real dist1_1 = poly.distance(start1, term1);
-    BOOST_CHECK_CLOSE(dist1_1, length(dir1_1), 1e-12);
+        {
+            const Real3 dir  = ecell4::polygon::direction(poly, start, term);
+            const Real  dist = ecell4::polygon::distance( poly, start, term);
+            BOOST_CHECK_CLOSE(dist, length(dir), 1e-12);
 
-    const std::pair<std::pair<Real3, face_id_type>, Real3>
-        tmp1_1 = poly.move_next_face(start1, dir1_1);
-    const std::pair<std::pair<Real3, face_id_type>, Real3>
-        next1_1 = poly.move_next_face(tmp1_1.first, tmp1_1.second);
-    BOOST_CHECK_SMALL(length(next1_1.second), 1e-12);
-    BOOST_CHECK_EQUAL(next1_1.first.second, face_id_type(1));
-    BOOST_CHECK_SMALL(length(next1_1.first.first - term1.first), 1e-12);
+            Real3                          disp = dir;
+            std::pair<Real3, face_id_type> next = start;
+            ecell4::polygon::travel(poly, next, disp);
 
-    const Real3 dir1_2 = poly.developed_direction(term1, start1);
-    const Real dist1_2 = poly.distance(term1, start1);
-    BOOST_CHECK_CLOSE(dist1_2, length(dir1_2), 1e-12);
+            BOOST_CHECK_EQUAL(disp[0], 0.0);
+            BOOST_CHECK_EQUAL(disp[1], 0.0);
+            BOOST_CHECK_EQUAL(disp[2], 0.0);
 
-    const std::pair<std::pair<Real3, face_id_type>, Real3>
-        tmp1_2 = poly.move_next_face(term1, dir1_2);
-    const std::pair<std::pair<Real3, face_id_type>, Real3>
-        next1_2 = poly.move_next_face(tmp1_2.first, tmp1_2.second);
-    BOOST_CHECK_SMALL(length(next1_2.second), 1e-12);
-    BOOST_CHECK_EQUAL(next1_2.first.second, face_id_type(0));
-    BOOST_CHECK_SMALL(length(next1_2.first.first - start1.first), 1e-12);
+            BOOST_CHECK_EQUAL(next.second, term.second);
+            BOOST_CHECK_SMALL(length(next.first - term.first), 1e-12);
+        }
+        {
+            const Real3 dir  = ecell4::polygon::direction(poly, term, start);
+            const Real  dist = ecell4::polygon::distance( poly, term, start);
+            BOOST_CHECK_CLOSE(dist, length(dir), 1e-12);
+
+            Real3                          disp = dir;
+            std::pair<Real3, face_id_type> next = term;
+            ecell4::polygon::travel(poly, next, disp);
+
+            BOOST_CHECK_EQUAL(disp[0], 0.0);
+            BOOST_CHECK_EQUAL(disp[1], 0.0);
+            BOOST_CHECK_EQUAL(disp[2], 0.0);
+
+            BOOST_CHECK_EQUAL(next.second, start.second);
+            BOOST_CHECK_SMALL(length(next.first - start.first), 1e-12);
+        }
+    }
 
     // -------------------------------------------------------------------
 
-    const std::pair<Real3, face_id_type> start2 =
-            std::make_pair(Real3(0.3, 0.3, 0.), face_id_type(0));
-    const std::pair<Real3, face_id_type> term2  =
-            std::make_pair(Real3(0.3, 0.0, -0.3), face_id_type(7));
+    {
+        const std::pair<Real3, face_id_type> start =
+                std::make_pair(Real3(0.3, 0.3,  0.0), face_id_type(0));
+        const std::pair<Real3, face_id_type> term  =
+                std::make_pair(Real3(0.3, 0.0, -0.3), face_id_type(7));
 
-    const Real3 dir2_1 = poly.developed_direction(start2, term2);
-    const Real dist2_1 = poly.distance(start2, term2);
-    BOOST_CHECK_CLOSE(dist2_1, length(dir2_1), 1e-12);
+        {
+            const Real3 dir  = ecell4::polygon::direction(poly, start, term);
+            const Real  dist = ecell4::polygon::distance( poly, start, term);
+            BOOST_CHECK_CLOSE(dist, length(dir), 1e-12);
 
-    const std::pair<std::pair<Real3, face_id_type>, Real3>
-        tmp2_1 = poly.move_next_face(start2, dir2_1);
-    const std::pair<std::pair<Real3, face_id_type>, Real3>
-        next2_1 = poly.move_next_face(tmp2_1.first, tmp2_1.second);
-    BOOST_CHECK_SMALL(length(next2_1.second), 1e-12);
-    BOOST_CHECK_EQUAL(next2_1.first.second, term2.second);
-    BOOST_CHECK_SMALL(length(next2_1.first.first - term2.first), 1e-12);
+            Real3                          disp = dir;
+            std::pair<Real3, face_id_type> next = start;
+            ecell4::polygon::travel(poly, next, disp);
 
-    const Real3 dir2_2 = poly.developed_direction(term2, start2);
-    const Real dist2_2 = poly.distance(term2, start2);
-    BOOST_CHECK_CLOSE(dist2_2, length(dir2_2), 1e-12);
+            BOOST_CHECK_EQUAL(disp[0], 0.0);
+            BOOST_CHECK_EQUAL(disp[1], 0.0);
+            BOOST_CHECK_EQUAL(disp[2], 0.0);
 
-    const std::pair<std::pair<Real3, face_id_type>, Real3>
-        tmp2_2 = poly.move_next_face(term2, dir2_2);
-    const std::pair<std::pair<Real3, face_id_type>, Real3>
-        next2_2 = poly.move_next_face(tmp2_2.first, tmp2_2.second);
-    BOOST_CHECK_SMALL(length(next2_2.second), 1e-12);
-    BOOST_CHECK_EQUAL(next2_2.first.second, start2.second);
-    BOOST_CHECK_SMALL(length(next2_2.first.first - start2.first), 1e-12);
+            BOOST_CHECK_EQUAL(next.second, term.second);
+            BOOST_CHECK_SMALL(length(next.first - term.first), 1e-12);
+        }
+        {
+            const Real3 dir  = ecell4::polygon::direction(poly, term, start);
+            const Real  dist = ecell4::polygon::distance( poly, term, start);
+            BOOST_CHECK_CLOSE(dist, length(dir), 1e-12);
+
+            Real3                          disp = dir;
+            std::pair<Real3, face_id_type> next = term;
+            ecell4::polygon::travel(poly, next, disp);
+
+            BOOST_CHECK_EQUAL(disp[0], 0.0);
+            BOOST_CHECK_EQUAL(disp[1], 0.0);
+            BOOST_CHECK_EQUAL(disp[2], 0.0);
+
+            BOOST_CHECK_EQUAL(next.second, start.second);
+            BOOST_CHECK_SMALL(length(next.first - start.first), 1e-12);
+        }
+    }
 }
 
 BOOST_AUTO_TEST_CASE(Polygon_developped_direction_connected_by_vertex)
