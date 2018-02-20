@@ -50,8 +50,8 @@ before_install:
     brew install gsl ffmpeg;
     brew install hdf5@1.8;
     brew list hdf5@1.8 | head -n 1 | sed 's/\(^.*\/hdf5\@1.8\/[^\/]*\).*/\1/';
-    cp $(brew list hdf5@1.8 | head -n 1 | sed 's/\(^.*\/hdf5\@1.8\/[^\/]*\).*/\1/')/include/* /usr/local/include/ ;
-    cp $(brew list hdf5@1.8 | head -n 1 | sed 's/\(^.*\/hdf5\@1.8\/[^\/]*\).*/\1/')/lib/* /usr/local/lib/ ;
+    cp $(brew list hdf5@1.8 | head -n 1 | sed 's/\(^.*\/hdf5\@1.8\/[^\/]*\).*/\1/')/include/* /usr/local/include/;
+    cp $(brew list hdf5@1.8 | head -n 1 | sed 's/\(^.*\/hdf5\@1.8\/[^\/]*\).*/\1/')/lib/* /usr/local/lib/;
     if [[ $TRAVIS_PYTHON_VERSION == 3* ]]; then
       brew install python3;
       which python3;
