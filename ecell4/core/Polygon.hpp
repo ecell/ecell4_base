@@ -781,8 +781,11 @@ Real3 Polygon<T>::developed_direction(
     }
     assert(inter_angle <= apex_angle);
 
-    const Real min_angle = std::min(inter_angle, apex_angle - inter_angle);
-
+    Real min_angle = inter_angle;
+    if(min_angle > apex_angle - inter_angle)
+    {
+        min_angle = -(apex_angle - inter_angle);
+    }
     return lhs_to_vtx + rotate(min_angle, normal, lhs_to_vtx * (-1.0)) *
                      std::sqrt(rhs_to_vtx_lensq / lhs_to_vtx_lensq);
 }
