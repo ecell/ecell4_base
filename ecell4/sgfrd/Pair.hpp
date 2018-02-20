@@ -39,19 +39,18 @@ class Pair
         return D1 * D2 / (D1 + D2);
     }
 
-    // TODO: calculate more efficient R_*
     static Real calc_R_ipv(const Real r_shell,
                            const Particle& p1, const Particle& p2) throw()
     {
         const Real Dipv = calc_D_ipv(p1.D(), p2.D());
-        const Real Dcom = calc_D_ipv(p1.D(), p2.D());
+        const Real Dcom = calc_D_com(p1.D(), p2.D());
         return r_shell * Dipv / (Dipv + Dcom);
     }
     static Real calc_R_com(const Real r_shell,
                            const Particle& p1, const Particle& p2) throw()
     {
         const Real Dipv = calc_D_ipv(p1.D(), p2.D());
-        const Real Dcom = calc_D_ipv(p1.D(), p2.D());
+        const Real Dcom = calc_D_com(p1.D(), p2.D());
         return r_shell * Dcom / (Dipv + Dcom);
     }
 
