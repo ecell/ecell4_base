@@ -18,6 +18,7 @@
 #include <ecell4/sgfrd/expected.hpp>
 
 #include <ecell4/sgfrd/tracer.hpp>
+#include <ecell4/sgfrd/statistics.hpp>
 
 #include <boost/make_shared.hpp>
 #include <boost/tuple/tuple.hpp>
@@ -1220,6 +1221,8 @@ class SGFRDSimulator :
         SGFRD_SCOPE(us, fire_multi, tracer_);
         SGFRD_TRACE(tracer_.write("fire multi(%1%) for default dt(%2%)", did, dom.dt()));
 
+        STAT(stat_multi_size.add_count(dom.particles().size());)
+
         volume_clearer vc(did, dom, *this, this->imm_sh_vis_applier);
         dom.step(vc);
         switch(dom.eventkind())
@@ -1596,14 +1599,17 @@ class SGFRDSimulator :
             }
             case event_type::pair_domain:
             {
+                STAT(stat_fired_events.add_count(FirePair);)
                 return this->fire_pair(boost::get<Pair>(dom), ev.first);
             }
             case event_type::multi_domain:
             {
+                STAT(stat_fired_events.add_count(FireMulti);)
                 return this->fire_multi(boost::get<Multi>(dom), ev.first);
             }
             case event_type::birth_domain:
             {
+                STAT(stat_fired_events.add_count(FireBirth);)
                 return this->fire_birth(boost::get<Birth>(dom), ev.first);
             }
             default:
@@ -1964,6 +1970,10 @@ class SGFRDSimulator :
     std::vector<std::pair<reaction_rule_type, reaction_info_type> > last_reactions_;
     mutable tracer tracer_;
 
+  public:
+    STAT(mutable statistics<MultiReason> stat_multi_reason;)
+    STAT(mutable statistics<EventFired>  stat_fired_events;)
+    STAT(mutable statistics<std::size_t> stat_multi_size;)
 };
 
 

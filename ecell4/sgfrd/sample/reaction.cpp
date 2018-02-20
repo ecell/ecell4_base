@@ -231,5 +231,33 @@ int main(int argc, char **argv)
     species_output(spec, world, sp1, sp2, sp3);
     reaction_output(reac, sim);
 
+    std::cerr << "STAT: reason for forming multi:\n";
+    std::cerr << "Single Concical Shell Failed: "
+              << sim.stat_multi_reason.show_percent(ecell4::sgfrd::SingleConicalFailed) << '\n';
+    std::cerr << "Pair Shell Failed           : "
+              << sim.stat_multi_reason.show_percent(ecell4::sgfrd::PairFailed) << '\n';
+    std::cerr << '\n';
+    std::cerr << "STAT: fired events: total = " << sim.stat_fired_events.total() << '\n';
+    std::cerr << "Single Circular: "
+              << sim.stat_fired_events.show_percent(ecell4::sgfrd::FireSingleCircular) << '\n';
+    std::cerr << "Single Conical : "
+              << sim.stat_fired_events.show_percent(ecell4::sgfrd::FireSingleConical) << '\n';
+    std::cerr << "Pair           : "
+              << sim.stat_fired_events.show_percent(ecell4::sgfrd::FirePair) << '\n';
+    std::cerr << "Multi          : "
+              << sim.stat_fired_events.show_percent(ecell4::sgfrd::FireMulti) << '\n';
+    std::cerr << "Birth          : "
+              << sim.stat_fired_events.show_percent(ecell4::sgfrd::FireBirth) << '\n';
+    std::cerr << '\n';
+    std::cerr << "STAT: formed multi size:\n";
+    const std::vector<std::size_t> ks = sim.stat_multi_size.list_all_kinds();
+    for(typename std::vector<std::size_t>::const_iterator
+        i(ks.begin()), e(ks.end()); i!=e; ++i)
+    {
+        std::cerr << std::setw(8) << *i << " : "
+                  << sim.stat_multi_size.show_percent(*i) << '\n';
+    }
+    std::cerr << std::flush;
+
     return 0;
 }

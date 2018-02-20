@@ -410,6 +410,13 @@ SGFRDSimulator::burst_single(const Single& dom, const Real tm)
 
 void SGFRDSimulator::fire_single(const Single& dom, DomainID did)
 {
+    STAT(if(this->get_shell(dom.shell_id()).which() ==
+            shell_container_type::circular_shell){
+            stat_fired_events.add_count(FireSingleCircular);
+        } else {
+            stat_fired_events.add_count(FireSingleConical);
+        })
+
     SGFRD_SCOPE(us, fire_single, tracer_);
     SGFRD_TRACE(tracer_.write("fire single domain %1%", did))
 
@@ -1054,6 +1061,7 @@ DomainID SGFRDSimulator::create_event(
         }
         else
         {
+            STAT(stat_multi_reason.add_count(SingleConicalFailed);)
             SGFRD_TRACE(tracer_.write("single conical could not be formed"))
             SGFRD_TRACE(tracer_.write("forming multi..."))
             return form_multi(pid, p, fid, single_conical.unwrap_error());
@@ -1082,6 +1090,7 @@ DomainID SGFRDSimulator::create_event(
             SGFRD_TRACE(tracer_.write("pair circular was formed"))
             return *pair_;
         }
+        STAT(stat_multi_reason.add_count(PairFailed);)
         SGFRD_TRACE(tracer_.write("forming multi..."))
         return form_multi(pid, p, fid, intruders);
     }
