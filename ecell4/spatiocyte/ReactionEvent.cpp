@@ -55,7 +55,8 @@ void ZerothOrderReactionEvent::fire_()
 Real ZerothOrderReactionEvent::draw_dt()
 {
     const Real k(rule_.k());
-    const Real p = k * world_->volume();
+    //XXX: const Real p = k * world_->volume();
+    const Real p = k * world_->actual_volume();
     Real dt(inf);
     if (p != 0.)
     {
@@ -82,7 +83,6 @@ void FirstOrderReactionEvent::fire_()
             world_->choice(*(rule_.reactants().begin())));
     const ReactionRule::product_container_type& products(rule_.products());
 
-    time_ += draw_dt();
     switch (products.size())
     {
         case 0:
@@ -105,6 +105,7 @@ void FirstOrderReactionEvent::fire_()
             }
             break;
     }
+    time_ += draw_dt();
 }
 
 Real FirstOrderReactionEvent::draw_dt()

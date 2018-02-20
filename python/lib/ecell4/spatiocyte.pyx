@@ -183,6 +183,10 @@ cdef class SpatiocyteWorld:
         """Return the volume of the world."""
         return self.thisptr.get().volume()
 
+    def actual_volume(self):
+        """Return the actual volume of the world."""
+        return self.thisptr.get().actual_volume()
+
     def voxel_volume(self):
         """Return the volume of a voxel."""
         return self.thisptr.get().voxel_volume()

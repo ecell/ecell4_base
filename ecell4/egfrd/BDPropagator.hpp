@@ -114,14 +114,14 @@ public:
         position_type const new_pos    = tx_.apply_structure(pp.second.position(), displacement);
 //         position_type const new_pos      = tx_.apply_boundary(reflected);
 
-        typename potential_field_map_type::const_iterator it = potentials_.find(species_id);
-        if (it != potentials_.end())
-        {
-            if (!(*it).second->try_move(rng_, pp, new_pos, tx_))
-            {
-                return true;
-            }
-        }
+        // typename potential_field_map_type::const_iterator it = potentials_.find(species_id);
+        // if (it != potentials_.end())
+        // {
+        //     if (!(*it).second->try_move(rng_, pp, new_pos, tx_))
+        //     {
+        //         return true;
+        //     }
+        // }
 
         particle_id_pair particle_to_update(
                 pp.first, particle_type(species_id,

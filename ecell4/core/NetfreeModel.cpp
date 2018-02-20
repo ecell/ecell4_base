@@ -61,52 +61,24 @@ protected:
 std::vector<ReactionRule> generate_reaction_rules(
     const ReactionRule& org, const Species& sp1, const Species& sp2)
 {
-    std::vector<ReactionRule> retval;
+    if (org.reactants().size() != 2)
+    {
+        return std::vector<ReactionRule>(0);
+    }
+
     ReactionRule::reactant_container_type reactants(2);
     reactants[0] = sp1;
     reactants[1] = sp2;
-    ReactionRuleExpressionMatcher rrexp(org);
-    if (rrexp.match(sp1, sp2))
-    {
-        do
-        {
-            const ReactionRule rr(reactants, rrexp.generate(), org.k());
-            std::vector<ReactionRule>::const_iterator
-                i(std::find_if(retval.begin(), retval.end(),
-                               reaction_rule_product_unary_predicator(rr)));
-            if (i != retval.end())
-            {
-                ;
-            }
-            else
-            {
-                retval.push_back(rr);
-            }
-        }
-        while (rrexp.next());
-    }
+    std::vector<ReactionRule> res = org.generate(reactants);
 
-    if (rrexp.match_reversed(sp1, sp2))
+    if (org.reactants()[0] != org.reactants()[1])
     {
-        do
-        {
-            const ReactionRule rr(reactants, rrexp.generate(), org.k());
-            std::vector<ReactionRule>::const_iterator
-                i(std::find_if(retval.begin(), retval.end(),
-                               reaction_rule_product_unary_predicator(rr)));
-            if (i != retval.end())
-            {
-                ;
-            }
-            else
-            {
-                retval.push_back(rr);
-            }
-        }
-        while (rrexp.next());
+        reactants[0] = sp2;
+        reactants[1] = sp1;
+        std::vector<ReactionRule> _res = org.generate(reactants);
+        std::copy(_res.begin(), _res.end(), back_inserter(res));
     }
-
-    return retval;
+    return res;
 }
 
 std::vector<ReactionRule> NetfreeModel::query_reaction_rules(

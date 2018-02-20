@@ -46,11 +46,6 @@ public:
 
     virtual VoxelPool* get_voxel_pool_at(const coordinate_type& coord) const;
 
-    /*
-     * Structure
-     */
-    virtual bool on_structure(const Voxel& v);
-
     virtual coordinate_type inner2coordinate(const coordinate_type inner) const;
 
     virtual Real3 coordinate2position(const coordinate_type& coord) const;
@@ -61,8 +56,6 @@ public:
                                          const Integer& nrand) const;
     virtual coordinate_type get_neighbor_boundary(const coordinate_type& coord,
                                                   const Integer& nrand) const;
-
-    virtual Integer num_molecules(const Species& sp) const;
 
     virtual Real3 actual_lengths() const;
 

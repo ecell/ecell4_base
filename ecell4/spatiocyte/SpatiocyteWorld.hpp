@@ -6,7 +6,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
 
-// #include <ecell4/core/LatticeSpace.hpp>
+// #include <ecell4/core/VoxelSpaceBase.hpp>
 #include <ecell4/core/LatticeSpaceCellListImpl.hpp>
 #include <ecell4/core/LatticeSpaceVectorImpl.hpp>
 #include <ecell4/core/VoxelPool.hpp>
@@ -39,8 +39,8 @@ public:
 
     typedef MoleculeInfo molecule_info_type;
 
-    typedef LatticeSpace::coordinate_id_pair_type coordinate_id_pair_type;
-    typedef LatticeSpace::coordinate_type coordinate_type;
+    typedef VoxelSpaceBase::coordinate_id_pair_type coordinate_id_pair_type;
+    typedef VoxelSpaceBase::coordinate_type coordinate_type;
 
 public:
 
@@ -75,7 +75,7 @@ public:
         this->load(filename);
     }
 
-    SpatiocyteWorld(LatticeSpace* space,
+    SpatiocyteWorld(VoxelSpaceBase* space,
         const boost::shared_ptr<RandomNumberGenerator>& rng)
         : space_(space), rng_(rng)
     {
@@ -146,6 +146,11 @@ public:
     Integer num_species() const;
     bool has_species(const Species &sp) const;
     // bool has_species_exact(const Species &sp) const;
+
+    Real actual_volume() const
+    {
+        return (*space_).actual_volume();
+    }
 
     Integer num_molecules(const Species& sp) const;
     Integer num_molecules_exact(const Species& sp) const;
@@ -534,22 +539,22 @@ public:
      */
     static inline Real calculate_voxel_volume(const Real r)
     {
-        return LatticeSpace::calculate_voxel_volume(r);
+        return VoxelSpaceBase::calculate_voxel_volume(r);
     }
 
     static inline Real3 calculate_hcp_lengths(const Real voxel_radius)
     {
-        return LatticeSpace::calculate_hcp_lengths(voxel_radius);
+        return VoxelSpaceBase::calculate_hcp_lengths(voxel_radius);
     }
 
     static inline Integer3 calculate_shape(const Real3& edge_lengths, const Real& voxel_radius)
     {
-        return LatticeSpace::calculate_shape(edge_lengths, voxel_radius, true);
+        return VoxelSpaceBase::calculate_shape(edge_lengths, voxel_radius, true);
     }
 
     static inline Real calculate_volume(const Real3& edge_lengths, const Real& voxel_radius)
     {
-        return LatticeSpace::calculate_volume(edge_lengths, voxel_radius, true);
+        return VoxelSpaceBase::calculate_volume(edge_lengths, voxel_radius, true);
     }
 
 protected:
@@ -561,7 +566,7 @@ protected:
 
 protected:
 
-    boost::scoped_ptr<LatticeSpace> space_;
+    boost::scoped_ptr<VoxelSpaceBase> space_;
     boost::shared_ptr<RandomNumberGenerator> rng_;
     SerialIDGenerator<ParticleID> sidgen_;
 

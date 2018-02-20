@@ -10,26 +10,6 @@
 namespace ecell4
 {
 
-ReactionRule create_unimolecular_reaction_rule(
-    const Species& reactant1, const Species& product1, const Real& k);
-
-ReactionRule create_binding_reaction_rule(
-    const Species& reactant1, const Species& reactant2, const Species& product1,
-    const Real& k);
-
-ReactionRule create_unbinding_reaction_rule(
-    const Species& reactant1, const Species& product1, const Species& product2,
-    const Real& k);
-
-ReactionRule create_degradation_reaction_rule(
-    const Species& reactant1, const Real& k);
-
-ReactionRule create_synthesis_reaction_rule(
-    const Species& product1, const Real& k);
-
-// ReactionRule create_repulsive_reaction_rule(
-//     const Species& reactant1, const Species& reactant2);
-
 class Model
 {
 public:

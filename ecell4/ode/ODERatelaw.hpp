@@ -50,7 +50,7 @@ public:
 
     virtual Real deriv_func(
         state_container_type const &reactants_state_array,
-        state_container_type const &products_state_array, 
+        state_container_type const &products_state_array,
         Real const volume, Real const t,
         ODEReactionRule const &reaction) = 0;
 

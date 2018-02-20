@@ -1,0 +1,6 @@
+nbsphinx
+recommonmark
+numpydoc
+ipython
+pip>=8.1.2
+ecell

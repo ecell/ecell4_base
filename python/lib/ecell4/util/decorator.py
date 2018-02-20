@@ -4,6 +4,7 @@ import numbers
 import warnings
 import functools
 import itertools
+import math
 
 from . import parseobj
 from .decorator_base import Callback, JustParseCallback, ParseDecorator
@@ -15,6 +16,28 @@ ENABLE_IMPLICIT_DECLARATION = True
 
 SPECIES_ATTRIBUTES = []
 REACTION_RULES = []
+
+RATELAW_RESERVED_FUNCTIONS = {
+    'pow': pow, 'exp': math.exp, 'log': math.log,
+    'sin': math.sin, 'cos': math.cos, 'tan': math.tan,
+    'asin': math.asin, 'acos': math.acos, 'atan': math.atan
+    }
+RATELAW_RESERVED_CONSTANTS = {
+    '_t': None,  #XXX: just reserved
+    'pi': math.pi
+    }
+
+def define_ratelaw_function(key, val):
+    global RATELAW_RESERVED_FUNCTIONS
+    if not callable(val):
+        raise ValueError('A function must be callable [{}]'.format(type(val)))
+    RATELAW_RESERVED_FUNCTIONS[key] = val
+
+def define_ratelaw_constant(key, val):
+    global RATELAW_RESERVED_CONSTANTS
+    if not isinstance(val, numbers.Number):
+        raise ValueError('A constant must be a number [{}]'.format(type(val)))
+    RATELAW_RESERVED_CONSTANTS[key] = val
 
 def generate_Species(obj):
     if isinstance(obj, parseobj.AnyCallable):
@@ -83,8 +106,8 @@ def generate_ReactionRule(lhs, rhs, k=None):
         'parameter must be given as a number; "%s" given' % str(k))
 
 def traverse_ParseObj(obj, keys):
-    reserved_vars = ['_t', 'pi']
-    reserved_funcs = ['exp', 'log', 'sin', 'cos', 'tan', 'asin', 'acos', 'atan', 'pow']
+    reserved_vars = tuple(RATELAW_RESERVED_CONSTANTS.keys())
+    reserved_funcs = tuple(RATELAW_RESERVED_FUNCTIONS.keys())
 
     if isinstance(obj, parseobj.AnyCallable):
         obj = obj._as_ParseObj()
@@ -137,18 +160,10 @@ def generate_ratelaw(obj, rr, implicit=False):
                 'unknown variable [{}] was used.'.format(key))
     exp = exp.format(*names)
     # print(exp)
-    import math
     f = eval("lambda _r, _p, _v, _t, _rr: {0}".format(exp))
-    f.__globals__['exp'] = math.exp
-    f.__globals__['log'] = math.log
-    f.__globals__['sin'] = math.sin
-    f.__globals__['cos'] = math.cos
-    f.__globals__['tan'] = math.tan
-    f.__globals__['asin'] = math.asin
-    f.__globals__['acos'] = math.acos
-    f.__globals__['atan'] = math.atan
-    f.__globals__['pi'] = math.pi
-    f.__globals__['pow'] = pow
+    f.__globals__.update(RATELAW_RESERVED_FUNCTIONS)
+    f.__globals__.update((key, val) for key, val in RATELAW_RESERVED_CONSTANTS if val is not None)
+
     return f
     # return (lambda _r, _p, *args: eval(exp))
 
@@ -163,22 +178,27 @@ def parse_ReactionRule_options(elements):
         return opts
 
     for elem in elements:
-        if (isinstance(elem, parseobj.ParseObj) and len(elem._elems) > 0
-            and elem._elems[0].name == '_policy'):
-            policy = elem._elems[0]
-            if len(elem._elems) != 1:
-                raise RuntimeError(
-                    '_policy only accepts one argument; '
-                    + ' [{}] given'.format(len(elem._elems)))
-            elif policy.args is None or len(policy.args) != 1 or (policy.kwargs is not None and len(policy.kwargs) > 0) or policy.key is not None or policy.modification is not None:
-                raise RuntimeError(
-                    '_policy is not well-formed [{}]'.format(
-                        str(policy)))
-
+        if isinstance(elem, ecell4.core.ReactionRulePolicy):
             if 'policy' not in opts.keys():
-                opts['policy'] = policy.args[0]
+                opts['policy'] = elem.get()
             else:
-                opts['policy'] |= policy.args[0]
+                opts['policy'] |= elem.get()
+        # if (isinstance(elem, parseobj.ParseObj) and len(elem._elems) > 0
+        #     and elem._elems[0].name == '_policy'):
+        #     policy = elem._elems[0]
+        #     if len(elem._elems) != 1:
+        #         raise RuntimeError(
+        #             '_policy only accepts one argument; '
+        #             + ' [{}] given'.format(len(elem._elems)))
+        #     elif policy.args is None or len(policy.args) != 1 or (policy.kwargs is not None and len(policy.kwargs) > 0) or policy.key is not None or policy.modification is not None:
+        #         raise RuntimeError(
+        #             '_policy is not well-formed [{}]'.format(
+        #                 str(policy)))
+
+        #     if 'policy' not in opts.keys():
+        #         opts['policy'] = policy.args[0]
+        #     else:
+        #         opts['policy'] |= policy.args[0]
         # elif (isinstance(elem, parseobj.ParseObj) and len(elem._elems) > 0
         #     and elem._elems[0].name == '_tag'):
         #     tag = elem._elems[0]
