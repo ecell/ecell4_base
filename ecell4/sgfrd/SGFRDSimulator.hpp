@@ -1150,9 +1150,11 @@ class SGFRDSimulator :
 
         // ------------------ GF event (escape | ipv) --------------------------
 
+        const Real residual_shell_size = sh.second.size() - len_ipv;
+
         const greens_functions::GreensFunction2DAbsSym
             gf_com(Pair::calc_D_com(p1.D(), p2.D()),
-                   Pair::calc_R_com(sh.second.size(), p1, p2));
+                   Pair::calc_R_com(residual_shell_size, p1, p2));
         const Real t_com_escape = gf_com.drawTime(this->uniform_real());
 
         const Real k_tot = this->calc_k_tot(this->model_->query_reaction_rules(
@@ -1163,7 +1165,7 @@ class SGFRDSimulator :
         const greens_functions::GreensFunction2DRadAbs
             gf_ipv(Pair::calc_D_ipv(p1.D(), p2.D()),
                    k_tot, len_ipv, p1.radius() + p2.radius(),
-                   Pair::calc_R_ipv(sh.second.size(), p1, p2));
+                   Pair::calc_R_ipv(residual_shell_size, p1, p2));
         const Real t_ipv_event = gf_ipv.drawTime(this->uniform_real());
 
         const std::pair<Real, Pair::EventKind> gf_event(
