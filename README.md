@@ -36,6 +36,11 @@ You can try this package online from the following links:
 - Code fragments that depend on ffmpeg will not work with Azure Notebooks. If you use movie export, please try binder instead.
 - If you use Azure Notebooks, please move `readthedocs/tutorials` or `readthedocs/examples`. There are several Jupyter Notebooks.
 
+Installation
+-------------
+
+Please see [INSTALL.md](https://github.com/ecell/ecell4/blob/master/INSTALL.md).
+
 How to try E-Cell4 examples
 ---------------------------
 Here we download example notebooks from https://github.com/ecell/ecell4-notebooks and open it with Jupyter Notebook.
