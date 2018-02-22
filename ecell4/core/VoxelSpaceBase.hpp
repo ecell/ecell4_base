@@ -17,6 +17,7 @@
 #endif
 
 #include "VoxelPool.hpp"
+#include "VacantType.hpp"
 #include "Voxel.hpp"
 
 namespace ecell4

@@ -12,13 +12,6 @@ class VacantType
 {
 public:
 
-    typedef VoxelPool base_type;
-    typedef base_type::coordinate_id_pair_type coordinate_id_pair_type;
-    typedef base_type::coordinate_type coordinate_type;
-    typedef base_type::voxel_type_type voxel_type_type;
-
-public:
-
     ~VacantType()
     {
         ; // do nothing
@@ -40,6 +33,8 @@ public:
     }
 
 private:
+
+    typedef VoxelPool base_type;
 
     VacantType()
         : base_type(Species("VACANT", "0", "0"), boost::weak_ptr<VoxelPool>(), 0, 0)
