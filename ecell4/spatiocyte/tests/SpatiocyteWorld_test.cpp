@@ -227,8 +227,9 @@ BOOST_AUTO_TEST_CASE(SpatiocyteWorld_test_move)
     sp.set_attribute("radius", "2.5e-9");
     sp.set_attribute("D", "1e-12");
 
-    SpatiocyteWorld::coordinate_type from(world.inner2coordinate(1034));
-    SpatiocyteWorld::coordinate_type to(world.inner2coordinate(786420));
+    SpatiocyteWorld::coordinate_type
+        from(world.position2coordinate(Real3(0.3e-6, 0.5e-6, 0.5e-6))),
+        to(world.position2coordinate(Real3(0.5e-6, 0.5e-6, 0.5e-6)));
 
     BOOST_CHECK(world.new_voxel(sp, from).second);
     BOOST_CHECK(world.move(from, to));

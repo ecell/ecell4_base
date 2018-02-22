@@ -66,11 +66,6 @@ public:
     /*
      * Coordinate Transformation
      */
-    coordinate_type inner2coordinate(const coordinate_type inner) const
-    {
-        throw NotSupported("OffLatticeSpace::inner2coordinate() is not supported.");
-    }
-
     Real3 coordinate2position(const coordinate_type& coord) const
     {
         return positions_.at(coord);
@@ -116,7 +111,7 @@ public:
         throw NotSupported("OffLatticeSpace::shape() is not supported.");
     }
 
-    Integer inner_size() const
+    Integer actual_size() const
     {
         return size();
     }

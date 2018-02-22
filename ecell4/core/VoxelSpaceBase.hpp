@@ -255,12 +255,11 @@ public:
     Real get_volume(const Species& sp) const
     {
         return voxel_volume() * num_voxels_exact(sp);
-        // return inner_size() * voxel_volume();
     }
 
     Real actual_volume() const
     {
-        return inner_size() * voxel_volume();
+        return actual_size() * voxel_volume();
     }
 
     Real unit_area() const
@@ -302,8 +301,6 @@ public:
     /*
      * Coordinate Transformation
      */
-    virtual coordinate_type inner2coordinate(const coordinate_type inner) const = 0;
-
     virtual Real3 coordinate2position(const coordinate_type& coord) const = 0;
     virtual coordinate_type position2coordinate(const Real3& pos) const = 0;
 
@@ -332,7 +329,7 @@ public:
 
     virtual Integer size() const = 0;
     virtual Integer3 shape() const = 0;
-    virtual Integer inner_size() const = 0;
+    virtual Integer actual_size() const = 0;
 
     bool on_structure(const Voxel& v)
     {

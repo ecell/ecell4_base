@@ -76,20 +76,6 @@ public:
     /**
      Coordinate transformations
      */
-
-    coordinate_type inner2coordinate(const coordinate_type inner) const {
-        const Integer num_row(row_size());
-        const Integer num_col(col_size());
-
-        const Integer NUM_COLROW(num_row * num_col);
-        const Integer LAYER(inner / NUM_COLROW);
-        const Integer SURPLUS(inner - LAYER * NUM_COLROW);
-        const Integer COL(SURPLUS / num_row);
-        const Integer3 g(COL, SURPLUS - COL * num_row, LAYER);
-
-        return global2coordinate(g);
-    }
-
     coordinate_type global2coordinate(const Integer3& global) const
     {
         const Integer3 g(global.col + 1, global.row + 1, global.layer + 1);
@@ -229,16 +215,10 @@ public:
         return Integer3(col_size_, row_size_, layer_size_);
     }
 
-    virtual Integer inner_size() const
+    virtual Integer actual_size() const
     {
         return col_size() * row_size() * layer_size();
     }
-
-    inline Integer3 inner_shape() const
-    {
-        return Integer3(col_size(), row_size(), layer_size());
-    }
-
 
 protected:
 

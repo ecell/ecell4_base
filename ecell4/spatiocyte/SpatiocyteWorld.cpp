@@ -117,10 +117,7 @@ bool SpatiocyteWorld::add_molecules(const Species& sp, const Integer& num)
     Integer count(0);
     while (count < num)
     {
-        const coordinate_type coord(inner2coordinate(rng()->uniform_int(0, inner_size() - 1)));
-        //XXX: just for consistency. rather use below
-        // const coordinate_type coord(rng()->uniform_int(0, size() - 1));
-
+        const coordinate_type coord(rng()->uniform_int(0, size() - 1));
         const Voxel v(sp, coord, info.radius, info.D, info.loc);
 
         if (on_structure(v))
@@ -187,13 +184,18 @@ Integer SpatiocyteWorld::add_structure3(const Species& sp, const boost::shared_p
 {
     const SpatiocyteWorld::molecule_info_type info(get_molecule_info(sp));
     Integer count(0);
-    for (coordinate_type inner(0); inner < inner_size(); ++inner) {
-        const coordinate_type coord(inner2coordinate(inner));
+    for (coordinate_type coord(0); coord < size(); ++coord) {
         const Real L(shape->is_inside(coordinate2position(coord)));
         if (L > 0)
             continue;
 
+
         const Voxel v(sp, coord, info.radius, info.D, info.loc);
+        if (on_structure(v))
+        {
+            continue;
+        }
+
         if (new_voxel_structure(v).second)
             ++count;
     }
@@ -204,12 +206,16 @@ Integer SpatiocyteWorld::add_structure2(const Species& sp, const boost::shared_p
 {
     const SpatiocyteWorld::molecule_info_type info(get_molecule_info(sp));
     Integer count(0);
-    for (coordinate_type inner(0); inner < inner_size(); ++inner) {
-        const coordinate_type coord(inner2coordinate(inner));
+    for (coordinate_type coord(0); coord < size(); ++coord) {
         if (!is_surface_voxel(coord, shape))
             continue;
 
         const Voxel v(sp, coord, info.radius, info.D, info.loc);
+        if (on_structure(v))
+        {
+            continue;
+        }
+
         if (new_voxel_structure(v).second)
             ++count;
     }

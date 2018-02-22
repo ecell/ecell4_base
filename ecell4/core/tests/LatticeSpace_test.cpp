@@ -273,15 +273,17 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_update_molecule)
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_update_voxel)
 {
     const ParticleID pid(sidgen());
-    for (Integer inner_coord(0); inner_coord < space.inner_size(); ++inner_coord)
+    for (VoxelSpaceBase::coordinate_type coord(0); coord < space.size(); ++coord)
     {
-        const VoxelSpaceBase::coordinate_type
-            coord(space.inner2coordinate(inner_coord));
+        if (!space.is_inside(coord))
+        {
+            continue;
+        }
+
         const Real3 pos(space.coordinate2position(coord));
-        const bool succeeded(
-            space.update_voxel(pid, Voxel(sp, coord, radius, D)));
-        BOOST_CHECK(succeeded == (inner_coord == 0));
+        space.update_voxel(pid, Voxel(sp, coord, radius, D));
         BOOST_CHECK_EQUAL(space.num_particles(), 1);
+
         std::pair<ParticleID, Particle> pair(space.list_particles()[0]);
         BOOST_CHECK_EQUAL(pid, pair.first);
         BOOST_CHECK_EQUAL(pos, pair.second.position());
@@ -294,28 +296,35 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_update_voxel)
 
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_lattice_structure)
 {
-    for (Integer inner_coord(0); inner_coord < space.inner_size(); ++inner_coord)
+    for (VoxelSpaceBase::coordinate_type coord(0); coord < space.size(); ++coord)
     {
-        ParticleID pid(sidgen());
-        const VoxelSpaceBase::coordinate_type coord(
-                space.inner2coordinate(inner_coord));
-        BOOST_CHECK(space.update_voxel(
-            pid, Voxel(sp, coord, radius, D)));
+        if (space.is_inside(coord))
+        {
+            ParticleID pid(sidgen());
+            BOOST_CHECK(space.update_voxel(pid, Voxel(sp, coord, radius, D)));
+        }
     }
 }
 
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_neighbor)
 {
-    for (Integer inner_coord(0); inner_coord < space.inner_size(); ++inner_coord)
+    for (VoxelSpaceBase::coordinate_type coord(0); coord < space.size(); ++coord)
     {
-        Real3 center(space.coordinate2position(space.inner2coordinate(inner_coord)));
-        BOOST_ASSERT(space.num_neighbors(space.inner2coordinate(inner_coord)) == 12);
+        if (!space.is_inside(coord))
+        {
+            continue;
+        }
+
+        BOOST_ASSERT(space.num_neighbors(coord) == 12);
+        const Real3 center(space.coordinate2position(coord));
         for (int i(0); i < 12; ++i)
         {
-            VoxelSpaceBase::coordinate_type neighbor(
-                space.get_neighbor(space.inner2coordinate(inner_coord), i));
+            VoxelSpaceBase::coordinate_type neighbor(space.get_neighbor(coord, i));
             if (!space.is_inside(neighbor))
+            {
                 continue;
+            }
+
             Real3 pos(space.coordinate2position(neighbor));
             Real3 vec((pos-center)/voxel_radius/2);
             Real r_ratio(length(pos-center)/voxel_radius/2);

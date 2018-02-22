@@ -359,11 +359,6 @@ public:
     /*
      * Coordinate Transformation
      */
-    const coordinate_type inner2coordinate(const coordinate_type inner)
-    {
-        return root_->inner2coordinate(inner);
-    }
-
     const Real3 coordinate2position(const coordinate_type& coord) const
     {
         return root_->coordinate2position(coord);
@@ -424,17 +419,6 @@ public:
     {
         return root_->shape();
     }
-
-    const Integer inner_size() const
-    {
-        return root_->inner_size();
-    }
-
-    // TODO
-    // const Integer3 inner_shape() const
-    // {
-    //     return root_->inner_shape();
-    // }
 
     bool on_structure(const Voxel& v)
     {

@@ -27,11 +27,9 @@ void ZerothOrderReactionEvent::fire_()
 
         while (true) //TODO: Avoid an inifinite loop
         {
-            // const SpatiocyteWorld::coordinate_type
-            //     coord(world_->rng()->uniform_int(0, world_->size() - 1));
             const SpatiocyteWorld::coordinate_type
-                coord(world_->inner2coordinate(
-                            world_->rng()->uniform_int(0, world_->inner_size() - 1)));
+                coord(world_->rng()->uniform_int(0, world_->size() - 1));
+
             const Voxel v(sp, coord, info.radius, info.D, info.loc);
 
             if (world_->on_structure(v))
