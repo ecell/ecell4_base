@@ -20,10 +20,10 @@ public:
 public:
 
     StructureType(
-        const Species& species, VoxelPool* location,
+        const Species& species, boost::weak_ptr<VoxelPool> location,
         const Real& radius = 0.0, const Shape::dimension_kind& dimension=Shape::UNDEF)
         : base_type(species, location, radius, 0),
-          dimension_(std::min(dimension, location->get_dimension()))
+          dimension_(std::min(dimension, location.lock()->get_dimension()))
     {
         ;
     }

@@ -1,6 +1,7 @@
 #ifndef ECELL4_VACANT_TYPE_HPP
 #define ECELL4_VACANT_TYPE_HPP
 
+#include <boost/shared_ptr.hpp>
 #include "VoxelPool.hpp"
 
 namespace ecell4
@@ -9,13 +10,6 @@ namespace ecell4
 class VacantType
     : public VoxelPool
 {
-public:
-
-    typedef VoxelPool base_type;
-    typedef base_type::coordinate_id_pair_type coordinate_id_pair_type;
-    typedef base_type::coordinate_type coordinate_type;
-    typedef base_type::voxel_type_type voxel_type_type;
-
 public:
 
     ~VacantType()
@@ -28,10 +22,9 @@ public:
         return VACANT;
     }
 
-    static VacantType& getInstance()
+    static boost::shared_ptr<VacantType> allocate()
     {
-        static VacantType instance;
-        return instance;
+        return boost::shared_ptr<VacantType>(new VacantType());
     }
 
     const Shape::dimension_kind get_dimension() const
@@ -41,8 +34,10 @@ public:
 
 private:
 
+    typedef VoxelPool base_type;
+
     VacantType()
-        : base_type(Species("VACANT", "0", "0"), NULL, 0, 0)
+        : base_type(Species("VACANT", "0", "0"), boost::weak_ptr<VoxelPool>(), 0, 0)
     {
         ; // do nothing
     }

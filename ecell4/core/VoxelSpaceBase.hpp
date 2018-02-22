@@ -17,6 +17,7 @@
 #endif
 
 #include "VoxelPool.hpp"
+#include "VacantType.hpp"
 #include "Voxel.hpp"
 
 namespace ecell4
@@ -27,16 +28,8 @@ double rint(const double x);
 double round(const double x);
 #endif
 
-static inline std::string get_location_serial(const VoxelPool* vp)
-{
-    if (vp == NULL || vp->location() == NULL || vp->location()->is_vacant()) {
-        return "";
-    }
-
-    return vp->location()->species().serial();
-}
-
-static inline std::string get_location_serial(const boost::shared_ptr<VoxelPool>& vp)
+template <typename T>
+static inline std::string get_location_serial(T vp)
 {
     if (vp == NULL || vp->location() == NULL || vp->location()->is_vacant()) {
         return "";
@@ -66,7 +59,10 @@ public:
     /*
      * Constructor and Destructor
      */
-    VoxelSpaceBase(const Real& voxel_radius) : t_(0.0), voxel_radius_(voxel_radius) {}
+    VoxelSpaceBase(const Real& voxel_radius) :
+        t_(0.0), voxel_radius_(voxel_radius), vacant_(VacantType::allocate())
+    {}
+
     virtual ~VoxelSpaceBase() {}
 
     /*
@@ -273,6 +269,14 @@ public:
         return 2.0 * sqrt(3.0) * r * r;
     }
 
+    boost::shared_ptr<VoxelPool> vacant() {
+        return vacant_;
+    }
+
+    boost::shared_ptr<const VoxelPool> vacant() const {
+        return vacant_;
+    }
+
     bool has_voxel(const ParticleID& pid) const;
     Integer num_voxels_exact(const Species& sp) const;
     Integer num_voxels(const Species& sp) const;
@@ -285,14 +289,15 @@ public:
     std::pair<ParticleID, Voxel> get_voxel(const ParticleID& pid) const;
     virtual std::pair<ParticleID, Voxel> get_voxel_at(const coordinate_type& coord) const = 0;
 
-    VoxelPool* find_voxel_pool(const Species& sp);
-    const VoxelPool* find_voxel_pool(const Species& sp) const;
+    boost::shared_ptr<VoxelPool> find_voxel_pool(const Species& sp);
+    boost::shared_ptr<const VoxelPool> find_voxel_pool(const Species& sp) const;
 
     bool has_molecule_pool(const Species& sp) const;
-    MoleculePool* find_molecule_pool(const Species& sp);
-    const MoleculePool* find_molecule_pool(const Species& sp) const;
 
-    virtual VoxelPool* get_voxel_pool_at(const coordinate_type& coord) const = 0;
+    boost::shared_ptr<MoleculePool> find_molecule_pool(const Species& sp);
+    boost::shared_ptr<const MoleculePool> find_molecule_pool(const Species& sp) const;
+
+    virtual boost::shared_ptr<VoxelPool> get_voxel_pool_at(const coordinate_type& coord) const = 0;
 
     /*
      * Coordinate Transformation
@@ -330,7 +335,7 @@ public:
 
     virtual
     std::pair<coordinate_type, bool>
-    move_to_neighbor(VoxelPool* const& from, VoxelPool* const& loc,
+    move_to_neighbor(boost::shared_ptr<VoxelPool> from, boost::shared_ptr<VoxelPool> loc,
                      coordinate_id_pair_type& info, const Integer nrand)
     = 0;
 
@@ -357,7 +362,7 @@ public:
 
 protected:
 
-    virtual VoxelPool* get_voxel_pool(const Voxel& v) = 0;
+    virtual boost::shared_ptr<VoxelPool> get_voxel_pool(const Voxel& v) = 0;
     virtual Integer count_voxels(const boost::shared_ptr<VoxelPool>& vp) const = 0;
     void push_voxels(std::vector<std::pair<ParticleID, Voxel> >& voxels,
                      const boost::shared_ptr<MoleculePool>& voxel_pool,
@@ -368,6 +373,7 @@ protected:
     Real t_;
     Real voxel_radius_;
 
+    boost::shared_ptr<VoxelPool> vacant_;
     voxel_pool_map_type voxel_pools_;
     molecule_pool_map_type molecule_pools_;
 
