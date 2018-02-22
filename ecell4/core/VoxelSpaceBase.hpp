@@ -315,9 +315,6 @@ public:
     virtual coordinate_type
     get_neighbor(const coordinate_type& coord, const Integer& nrand) const = 0;
 
-    virtual coordinate_type
-    get_neighbor_boundary(const coordinate_type& coord, const Integer& nrand) const = 0;
-
     /*
      * Voxel Manipulation
      */

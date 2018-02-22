@@ -370,7 +370,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_periodic_col)
 
             const Integer nrnd((j&1)==1?2:3);
             const VoxelSpaceBase::coordinate_type
-                neighbor(space.get_neighbor_boundary(coord, nrnd));
+                neighbor(space.get_neighbor(coord, nrnd));
 
             BOOST_CHECK_EQUAL(space.coordinate2global(neighbor).col, col_size-1);
             BOOST_CHECK(space.move(coord, neighbor));
@@ -385,7 +385,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_periodic_col)
 
             const Integer nrnd((j&1)==1?4:5);
             const VoxelSpaceBase::coordinate_type
-                neighbor(space.get_neighbor_boundary(coord, nrnd));
+                neighbor(space.get_neighbor(coord, nrnd));
 
             BOOST_CHECK_EQUAL(space.coordinate2global(neighbor).col, 0);
             BOOST_CHECK(space.move(coord, neighbor));
@@ -415,7 +415,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_periodic_row)
 
             const Integer nrnd(0);
             const VoxelSpaceBase::coordinate_type
-                neighbor(space.get_neighbor_boundary(coord, nrnd));
+                neighbor(space.get_neighbor(coord, nrnd));
 
             BOOST_CHECK_EQUAL(space.coordinate2global(neighbor).row, row_size-1);
             BOOST_CHECK(space.move(coord, neighbor));
@@ -428,7 +428,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_periodic_row)
                     space.global2coordinate(Integer3(col, row_size-1, layer)));
             const Integer nrnd(1);
             const VoxelSpaceBase::coordinate_type
-                neighbor(space.get_neighbor_boundary(coord, nrnd));
+                neighbor(space.get_neighbor(coord, nrnd));
 
             BOOST_CHECK_EQUAL(space.coordinate2global(neighbor).row, 0);
             BOOST_CHECK(space.move(coord, neighbor));
@@ -459,7 +459,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_periodic_layer)
 
             const Integer nrnd((col&1)==1?8:9);
             const VoxelSpaceBase::coordinate_type
-                neighbor(space.get_neighbor_boundary(coord, nrnd));
+                neighbor(space.get_neighbor(coord, nrnd));
 
             BOOST_CHECK_EQUAL(space.coordinate2global(neighbor).layer, layer_size-1);
             BOOST_CHECK(space.move(coord, neighbor));
@@ -473,7 +473,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_periodic_layer)
                     space.global2coordinate(Integer3(col, row, layer_size-1)));
             const Integer nrnd((col&1)==1?10:11);
             const VoxelSpaceBase::coordinate_type
-                neighbor(space.get_neighbor_boundary(coord, nrnd));
+                neighbor(space.get_neighbor(coord, nrnd));
 
             BOOST_CHECK_EQUAL(space.coordinate2global(neighbor).layer, 0);
             BOOST_CHECK(space.move(coord, neighbor));

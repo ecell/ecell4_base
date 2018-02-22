@@ -145,7 +145,25 @@ public:
         return 12;
     }
 
-    coordinate_type get_neighbor(
+    coordinate_type periodic_transpose(
+        const coordinate_type& coord) const
+    {
+        Integer3 global(coordinate2global(coord));
+
+        global.col = global.col % col_size();
+        global.row = global.row % row_size();
+        global.layer = global.layer % layer_size();
+
+        global.col = global.col < 0 ? global.col + col_size() : global.col;
+        global.row = global.row < 0 ? global.row + row_size() : global.row;
+        global.layer = global.layer < 0 ? global.layer + layer_size() : global.layer;
+
+        return global2coordinate(global);
+    }
+
+protected:
+
+    coordinate_type get_neighbor_(
         const coordinate_type& coord, const Integer& nrand) const
     {
         const Integer NUM_COLROW(col_size_ * row_size_);
@@ -184,22 +202,6 @@ public:
             return coord + (odd_col ^ odd_lay) + NUM_COLROW;
         }
         throw NotFound("Invalid argument: nrand");
-    }
-
-    coordinate_type periodic_transpose(
-        const coordinate_type& coord) const
-    {
-        Integer3 global(coordinate2global(coord));
-
-        global.col = global.col % col_size();
-        global.row = global.row % row_size();
-        global.layer = global.layer % layer_size();
-
-        global.col = global.col < 0 ? global.col + col_size() : global.col;
-        global.row = global.row < 0 ? global.row + row_size() : global.row;
-        global.layer = global.layer < 0 ? global.layer + layer_size() : global.layer;
-
-        return global2coordinate(global);
     }
 
 public:

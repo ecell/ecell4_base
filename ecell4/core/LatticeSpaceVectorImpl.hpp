@@ -64,9 +64,9 @@ public:
     bool can_move(const coordinate_type& src, const coordinate_type& dest) const;
 
     coordinate_type
-    get_neighbor_boundary(const coordinate_type& coord, const Integer& nrand) const
+    get_neighbor(const coordinate_type& coord, const Integer& nrand) const
     {
-        coordinate_type const dest = get_neighbor(coord, nrand);
+        coordinate_type const dest = get_neighbor_(coord, nrand);
 
         if (voxels_.at(dest) != periodic_)
         {

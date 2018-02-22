@@ -92,12 +92,6 @@ public:
         return adjoinings_.at(coord).at(nrand);
     }
 
-    coordinate_type
-    get_neighbor_boundary(const coordinate_type& coord, const Integer& nrand) const
-    {
-        return get_neighbor(coord, nrand);
-    }
-
     /*
      * Voxel Manipulation
      */

@@ -86,7 +86,7 @@ void StepEvent::walk_in_space_(boost::shared_ptr<const MoleculePool> mtype, cons
             continue;
         }
         const SpatiocyteWorld::coordinate_type neighbor(
-                world_->get_neighbor_boundary(info.coordinate, rnd));
+                world_->get_neighbor(info.coordinate, rnd));
         if (world_->can_move(info.coordinate, neighbor))
         {
             if (rng->uniform(0,1) <= alpha)
@@ -123,7 +123,7 @@ void StepEvent::walk_on_surface_(boost::shared_ptr<const MoleculePool> mtype, co
              itr != nids_.end(); ++itr)
         {
             const SpatiocyteWorld::coordinate_type neighbor(
-                    world_->get_neighbor_boundary(info.coordinate, *itr));
+                    world_->get_neighbor(info.coordinate, *itr));
             boost::shared_ptr<const VoxelPool> target(world_->get_voxel_pool_at(neighbor));
 
             if (target->get_dimension() > mtype->get_dimension())

@@ -387,12 +387,6 @@ public:
         return root_->get_neighbor(coord, nrand);
     }
 
-    coordinate_type get_neighbor_boundary(
-            coordinate_type coord, Integer nrand) const
-    {
-        return root_->get_neighbor_boundary(coord, nrand);
-    }
-
     /*
      * Voxel Manipulation
      */

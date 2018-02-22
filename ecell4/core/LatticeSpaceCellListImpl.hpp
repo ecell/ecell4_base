@@ -358,10 +358,10 @@ public:
 
     boost::shared_ptr<VoxelPool> get_voxel_pool_at(const coordinate_type& coord) const;
 
-    coordinate_type get_neighbor_boundary(
+    coordinate_type get_neighbor(
         const coordinate_type& coord, const Integer& nrand) const
     {
-        coordinate_type const dest = get_neighbor(coord, nrand);
+        coordinate_type const dest = get_neighbor_(coord, nrand);
         return (!is_periodic_ || is_inside(dest) ? dest : periodic_transpose(dest));
     }
 
