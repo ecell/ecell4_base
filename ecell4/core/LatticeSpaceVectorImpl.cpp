@@ -7,6 +7,8 @@
 
 namespace ecell4 {
 
+typedef LatticeSpaceVectorImpl::coordinate_type coordinate_type;
+
 LatticeSpaceVectorImpl::LatticeSpaceVectorImpl(
     const Real3& edge_lengths, const Real& voxel_radius,
     const bool is_periodic) :
@@ -26,8 +28,7 @@ LatticeSpaceVectorImpl::~LatticeSpaceVectorImpl() {}
 
 void LatticeSpaceVectorImpl::initialize_voxels(const bool is_periodic)
 {
-    const coordinate_type voxel_size(
-        col_size_ * row_size_ * layer_size_);
+    const coordinate_type voxel_size(col_size_ * row_size_ * layer_size_);
     // std::cout << "voxel_size = " << voxel_size << std::endl;
 
     voxel_pools_.clear();
@@ -106,7 +107,7 @@ const Species& LatticeSpaceVectorImpl::find_species(std::string name) const
     throw NotFound(name);
 }
 
-std::vector<LatticeSpaceVectorImpl::coordinate_type>
+std::vector<coordinate_type>
 LatticeSpaceVectorImpl::list_coords_exact(const Species& sp) const
 {
     std::vector<coordinate_type> retval;
@@ -126,7 +127,7 @@ LatticeSpaceVectorImpl::list_coords_exact(const Species& sp) const
     return retval;
 }
 
-std::vector<LatticeSpaceVectorImpl::coordinate_type>
+std::vector<coordinate_type>
 LatticeSpaceVectorImpl::list_coords(const Species& sp) const
 {
     std::vector<coordinate_type> retval;
@@ -331,7 +332,7 @@ boost::shared_ptr<VoxelPool> LatticeSpaceVectorImpl::get_voxel_pool(const Voxel&
  * Protected functions
  */
 
-LatticeSpaceVectorImpl::coordinate_type LatticeSpaceVectorImpl::get_coord(
+coordinate_type LatticeSpaceVectorImpl::get_coord(
     const ParticleID& pid) const
 {
     for (molecule_pool_map_type::const_iterator itr(molecule_pools_.begin());
@@ -397,8 +398,11 @@ bool LatticeSpaceVectorImpl::remove_voxel(const coordinate_type& coord)
     return false;
 }
 
-bool LatticeSpaceVectorImpl::move(
-    const coordinate_type& src, const coordinate_type& dest, const std::size_t candidate)
+bool
+LatticeSpaceVectorImpl::move(
+        const coordinate_type& src,
+        const coordinate_type& dest,
+        const std::size_t candidate)
 {
     return move_(src, dest, candidate).second;
 }
@@ -424,25 +428,10 @@ bool LatticeSpaceVectorImpl::can_move(
     return (dest_vp == src_vp->location());
 }
 
-std::pair<LatticeSpaceVectorImpl::coordinate_type, bool>
-    LatticeSpaceVectorImpl::move_to_neighbor(
-        coordinate_type coord, Integer nrand)
-{
-    const coordinate_type neighbor(get_neighbor(coord, nrand));
-    return move_(coord, neighbor);
-}
-
-std::pair<LatticeSpaceVectorImpl::coordinate_type, bool>
-    LatticeSpaceVectorImpl::move_to_neighbor(
-        coordinate_id_pair_type& info, Integer nrand)
-{
-    const coordinate_type neighbor(get_neighbor(info.coordinate, nrand));
-    return move_(info, neighbor);
-}
-
-std::pair<LatticeSpaceVectorImpl::coordinate_type, bool>
-    LatticeSpaceVectorImpl::move_(
-        coordinate_type from, coordinate_type to,
+std::pair<coordinate_type, bool>
+LatticeSpaceVectorImpl::move_(
+        coordinate_type from,
+        coordinate_type to,
         const std::size_t candidate)
 {
     if (from == to)
@@ -482,9 +471,10 @@ std::pair<LatticeSpaceVectorImpl::coordinate_type, bool>
     return std::pair<coordinate_type, bool>(to, true);
 }
 
-std::pair<LatticeSpaceVectorImpl::coordinate_type, bool>
-    LatticeSpaceVectorImpl::move_(
-        coordinate_id_pair_type& info, coordinate_type to)
+std::pair<coordinate_type, bool>
+LatticeSpaceVectorImpl::move_(
+        coordinate_id_pair_type& info,
+        coordinate_type to)
 {
     const coordinate_type from(info.coordinate);
     if (from == to)
@@ -525,54 +515,6 @@ std::pair<LatticeSpaceVectorImpl::coordinate_type, bool>
     return std::pair<coordinate_type, bool>(to, true);
 }
 
-std::pair<LatticeSpaceVectorImpl::coordinate_type, bool>
-    LatticeSpaceVectorImpl::move_to_neighbor(
-        boost::shared_ptr<VoxelPool> from_vp, boost::shared_ptr<VoxelPool> loc,
-        coordinate_id_pair_type& info, const Integer nrand)
-{
-    const coordinate_type from(info.coordinate);
-    coordinate_type to(get_neighbor(from, nrand));
-
-    //XXX: assert(from != to);
-    //XXX: assert(from_vp == voxels_[from]);
-    //XXX: assert(from_vp != vacant_);
-
-    boost::shared_ptr<VoxelPool> to_vp(voxels_.at(to));
-
-    if (to_vp != loc)
-    {
-        if (to_vp == border_)
-        {
-            return std::make_pair(from, false);
-        }
-        else if (to_vp != periodic_)
-        {
-            return std::make_pair(to, false);
-        }
-
-        // to_vp == periodic_
-        to = apply_boundary_(to);
-        to_vp = voxels_.at(to);
-
-        if (to_vp != loc)
-        {
-            return std::make_pair(to, false);
-        }
-    }
-
-    voxels_.at(from) = to_vp;
-    voxels_.at(to) = from_vp;
-    info.coordinate = to; //XXX: updating data
-
-    to_vp->replace_voxel(to, from);
-    // if (to_vp != vacant_) // (!to_vp->is_vacant())
-    // {
-    //     to_vp->replace_voxel(
-    //         to, coordinate_id_pair_type(ParticleID(), from));
-    // }
-    return std::make_pair(to, true);
-}
-
 const Particle LatticeSpaceVectorImpl::particle_at(
     const coordinate_type& coord) const
 {
@@ -591,7 +533,7 @@ const Particle LatticeSpaceVectorImpl::particle_at(
  */
 bool LatticeSpaceVectorImpl::update_voxel(const ParticleID& pid, const Voxel& v)
 {
-    const LatticeSpaceVectorImpl::coordinate_type& to_coord(v.coordinate());
+    const coordinate_type& to_coord(v.coordinate());
     if (!is_in_range(to_coord))
     {
         throw NotSupported("Out of bounds");
@@ -608,7 +550,7 @@ bool LatticeSpaceVectorImpl::update_voxel(const ParticleID& pid, const Voxel& v)
             + dest_vp->species().serial() + "'.");
     }
 
-    const LatticeSpaceVectorImpl::coordinate_type
+    const coordinate_type
         from_coord(pid != ParticleID() ? get_coord(pid) : -1);
     if (from_coord != -1)
     {
@@ -813,7 +755,10 @@ bool LatticeSpaceVectorImpl::make_molecular_type(const Species& sp, Real radius,
     return retval.second;
 }
 
-bool LatticeSpaceVectorImpl::add_voxels(const Species& sp, std::vector<std::pair<ParticleID, coordinate_type> > voxels)
+bool
+LatticeSpaceVectorImpl::add_voxels(
+        const Species& sp,
+        std::vector<std::pair<ParticleID, coordinate_type> > voxels)
 {
     // this function doesn't check location.
     boost::shared_ptr<VoxelPool> mtb;

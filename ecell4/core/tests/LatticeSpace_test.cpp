@@ -355,37 +355,40 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_periodic_col)
     for (int i(0); i < row_size; ++i)
         for (int j(0); j < layer_size; ++j)
         {
-            const VoxelSpaceBase::coordinate_type coord(
-                    space.global2coordinate(Integer3(0, i, j)));
-            BOOST_CHECK(space.update_voxel(
-                sidgen(), Voxel(sp, coord, radius, D)));
+            const VoxelSpaceBase::coordinate_type
+                coord(space.global2coordinate(Integer3(0, i, j)));
+
+            BOOST_CHECK(space.update_voxel(sidgen(), Voxel(sp, coord, radius, D)));
         }
 
     // from 0 to col_size-1
     for (int i(0); i < row_size; ++i)
         for (int j(0); j < layer_size; ++j)
         {
-            const VoxelSpaceBase::coordinate_type coord(
-                    space.global2coordinate(Integer3(0, i, j)));
+            const VoxelSpaceBase::coordinate_type
+                coord(space.global2coordinate(Integer3(0, i, j)));
+
             const Integer nrnd((j&1)==1?2:3);
-            std::pair<VoxelSpaceBase::coordinate_type, bool> retval(
-                    space.move_to_neighbor(coord, nrnd));
-            BOOST_CHECK(retval.second);
-            BOOST_CHECK_EQUAL(space.coordinate2global(retval.first).col,
-                    col_size-1);
+            const VoxelSpaceBase::coordinate_type
+                neighbor(space.get_neighbor_boundary(coord, nrnd));
+
+            BOOST_CHECK_EQUAL(space.coordinate2global(neighbor).col, col_size-1);
+            BOOST_CHECK(space.move(coord, neighbor));
         }
 
     // from col_size-1 to 0
     for (int i(0); i < row_size; ++i)
         for (int j(0); j < layer_size; ++j)
         {
-            const VoxelSpaceBase::coordinate_type coord(
-                    space.global2coordinate(Integer3(col_size-1, i, j)));
+            const VoxelSpaceBase::coordinate_type
+                coord(space.global2coordinate(Integer3(col_size-1, i, j)));
+
             const Integer nrnd((j&1)==1?4:5);
-            std::pair<VoxelSpaceBase::coordinate_type, bool> retval(
-                    space.move_to_neighbor(coord, nrnd));
-            BOOST_CHECK(retval.second);
-            BOOST_CHECK_EQUAL(space.coordinate2global(retval.first).col, 0);
+            const VoxelSpaceBase::coordinate_type
+                neighbor(space.get_neighbor_boundary(coord, nrnd));
+
+            BOOST_CHECK_EQUAL(space.coordinate2global(neighbor).col, 0);
+            BOOST_CHECK(space.move(coord, neighbor));
         }
 }
 
@@ -397,37 +400,38 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_periodic_row)
     for (int layer(0); layer < layer_size; ++layer)
         for (int col(0); col < col_size; ++col)
         {
-            const VoxelSpaceBase::coordinate_type coord(
-                    space.global2coordinate(Integer3(col, 0, layer)));
-            BOOST_CHECK(space.update_voxel(
-                sidgen(), Voxel(sp, coord, radius, D)));
+            const VoxelSpaceBase::coordinate_type
+                coord(space.global2coordinate(Integer3(col, 0, layer)));
+
+            BOOST_CHECK(space.update_voxel(sidgen(), Voxel(sp, coord, radius, D)));
         }
+
     // from 0 to row_size-1
-    int row(0);
     for (int layer(0); layer < layer_size; ++layer)
         for (int col(0); col < col_size; ++col)
         {
-            const VoxelSpaceBase::coordinate_type coord(
-                    space.global2coordinate(Integer3(col, row, layer)));
+            const VoxelSpaceBase::coordinate_type
+                coord(space.global2coordinate(Integer3(col, 0, layer)));
+
             const Integer nrnd(0);
-            std::pair<VoxelSpaceBase::coordinate_type, bool> retval(
-                    space.move_to_neighbor(coord, nrnd));
-            BOOST_CHECK(retval.second);
-            BOOST_CHECK_EQUAL(space.coordinate2global(retval.first).row,
-                    row_size-1);
+            const VoxelSpaceBase::coordinate_type
+                neighbor(space.get_neighbor_boundary(coord, nrnd));
+
+            BOOST_CHECK_EQUAL(space.coordinate2global(neighbor).row, row_size-1);
+            BOOST_CHECK(space.move(coord, neighbor));
         }
     // from row_size-1 to 0
-    row = row_size - 1;
     for (int layer(0); layer < layer_size; ++layer)
         for (int col(0); col < col_size; ++col)
         {
             const VoxelSpaceBase::coordinate_type coord(
-                    space.global2coordinate(Integer3(col, row, layer)));
+                    space.global2coordinate(Integer3(col, row_size-1, layer)));
             const Integer nrnd(1);
-            std::pair<VoxelSpaceBase::coordinate_type, bool> retval(
-                    space.move_to_neighbor(coord, nrnd));
-            BOOST_CHECK(retval.second);
-            BOOST_CHECK_EQUAL(space.coordinate2global(retval.first).row, 0);
+            const VoxelSpaceBase::coordinate_type
+                neighbor(space.get_neighbor_boundary(coord, nrnd));
+
+            BOOST_CHECK_EQUAL(space.coordinate2global(neighbor).row, 0);
+            BOOST_CHECK(space.move(coord, neighbor));
         }
 }
 
@@ -436,40 +440,43 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_periodic_layer)
     const int col_size(space.col_size()),
               row_size(space.row_size()),
               layer_size(space.layer_size());
-    int layer(0);
+
     for (int row(0); row < row_size; ++row)
         for (int col(0); col < col_size; ++col)
         {
-            const VoxelSpaceBase::coordinate_type coord(
-                    space.global2coordinate(Integer3(col, row, layer)));
-            BOOST_CHECK(space.update_voxel(
-                sidgen(), Voxel(sp, coord, radius, D)));
+            const VoxelSpaceBase::coordinate_type
+                coord(space.global2coordinate(Integer3(col, row, 0)));
+
+            BOOST_CHECK(space.update_voxel(sidgen(), Voxel(sp, coord, radius, D)));
         }
+
     // from 0 to layer_size-1
     for (int row(0); row < row_size; ++row)
         for (int col(0); col < col_size; ++col)
         {
-            const VoxelSpaceBase::coordinate_type coord(
-                    space.global2coordinate(Integer3(col, row, layer)));
+            const VoxelSpaceBase::coordinate_type
+                coord(space.global2coordinate(Integer3(col, row, 0)));
+
             const Integer nrnd((col&1)==1?8:9);
-            std::pair<VoxelSpaceBase::coordinate_type, bool> retval(
-                    space.move_to_neighbor(coord, nrnd));
-            BOOST_CHECK(retval.second);
-            BOOST_CHECK_EQUAL(space.coordinate2global(retval.first).layer,
-                    layer_size-1);
+            const VoxelSpaceBase::coordinate_type
+                neighbor(space.get_neighbor_boundary(coord, nrnd));
+
+            BOOST_CHECK_EQUAL(space.coordinate2global(neighbor).layer, layer_size-1);
+            BOOST_CHECK(space.move(coord, neighbor));
         }
+
     // from layer_size-1 to 0
-    layer = layer_size - 1;
     for (int row(0); row < row_size; ++row)
         for (int col(0); col < col_size; ++col)
         {
             const VoxelSpaceBase::coordinate_type coord(
-                    space.global2coordinate(Integer3(col, row, layer)));
+                    space.global2coordinate(Integer3(col, row, layer_size-1)));
             const Integer nrnd((col&1)==1?10:11);
-            std::pair<VoxelSpaceBase::coordinate_type, bool> retval(
-                    space.move_to_neighbor(coord, nrnd));
-            BOOST_CHECK(retval.second);
-            BOOST_CHECK_EQUAL(space.coordinate2global(retval.first).layer, 0);
+            const VoxelSpaceBase::coordinate_type
+                neighbor(space.get_neighbor_boundary(coord, nrnd));
+
+            BOOST_CHECK_EQUAL(space.coordinate2global(neighbor).layer, 0);
+            BOOST_CHECK(space.move(coord, neighbor));
         }
 }
 

@@ -333,12 +333,6 @@ public:
          const std::size_t candidate=0)
     = 0;
 
-    virtual
-    std::pair<coordinate_type, bool>
-    move_to_neighbor(boost::shared_ptr<VoxelPool> from, boost::shared_ptr<VoxelPool> loc,
-                     coordinate_id_pair_type& info, const Integer nrand)
-    = 0;
-
     virtual Integer size() const = 0;
     virtual Integer3 shape() const = 0;
     virtual Integer inner_size() const = 0;

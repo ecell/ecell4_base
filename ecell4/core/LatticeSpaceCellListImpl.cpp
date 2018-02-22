@@ -270,53 +270,6 @@ bool LatticeSpaceCellListImpl::make_molecular_type(const Species& sp, Real radiu
     return retval.second;
 }
 
-std::pair<LatticeSpaceCellListImpl::coordinate_type, bool>
-    LatticeSpaceCellListImpl::move_to_neighbor(
-        boost::shared_ptr<VoxelPool> from_vp, boost::shared_ptr<VoxelPool> loc,
-        LatticeSpaceCellListImpl::coordinate_id_pair_type& info, const Integer nrand)
-{
-    const coordinate_type from(info.coordinate);
-    coordinate_type to(get_neighbor(from, nrand));
-
-    boost::shared_ptr<VoxelPool> to_vp(get_voxel_pool_at(to));
-
-    if (to_vp != loc)
-    {
-        if (to_vp == border_)
-        {
-            return std::make_pair(from, false);
-        }
-        else if (to_vp != periodic_)
-        {
-            return std::make_pair(to, false);
-        }
-
-        // to_vp == periodic_
-        to = periodic_transpose(to);
-        to_vp = get_voxel_pool_at(to);
-
-        if (to_vp != loc)
-        {
-            return std::make_pair(to, false);
-        }
-    }
-
-    info.coordinate = to; //XXX: updating data
-
-    to_vp->replace_voxel(to, from);
-
-    if (!to_vp->is_vacant())
-    {
-        update_matrix(from, to_vp);
-        update_matrix(to, from_vp);
-    }
-    else
-    {
-        update_matrix(from, to, from_vp);
-    }
-    return std::make_pair(to, true);
-}
-
 bool LatticeSpaceCellListImpl::make_structure_type(
     const Species& sp, Shape::dimension_kind dimension, const std::string loc)
 {

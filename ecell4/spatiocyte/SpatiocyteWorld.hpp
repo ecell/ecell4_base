@@ -421,12 +421,6 @@ public:
         return root_->move(src, dest, candidate);
     }
 
-    std::pair<coordinate_type, bool>
-    move_to_neighbor(boost::shared_ptr<VoxelPool> from_mt, boost::shared_ptr<VoxelPool> loc, coordinate_id_pair_type& info, const Integer nrand)
-    {
-        return root_->move_to_neighbor(from_mt, loc, info, nrand);
-    }
-
     const Integer size() const
     {
         return root_->size();

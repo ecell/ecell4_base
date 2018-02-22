@@ -110,19 +110,6 @@ BOOST_AUTO_TEST_CASE(OffLatticeSpace_test_move)
     BOOST_CHECK_EQUAL(space.get_voxel_at(4).first, pid);
 
     BOOST_CHECK(!space.can_move(3, 4));
-
-    BOOST_CHECK(space.can_move(4, 5));
-    OffLatticeSpace::coordinate_id_pair_type info(pid, 4);
-    std::pair<OffLatticeSpace::coordinate_type, bool> result(
-            space.move_to_neighbor(
-                /* src_vp = */ space.get_voxel_pool_at(4),
-                /* loc = */    space.get_voxel_pool_at(4)->location(),
-                /* info = */   info,
-                /* nrand = */  1));
-    BOOST_CHECK_EQUAL(result.first, 5);
-    BOOST_CHECK(result.second);
-    BOOST_CHECK_EQUAL(space.get_voxel_at(4).first, ParticleID());
-    BOOST_CHECK_EQUAL(space.get_voxel_at(5).first, pid);
 }
 
 BOOST_AUTO_TEST_CASE(OffLatticeSpace_test_at)

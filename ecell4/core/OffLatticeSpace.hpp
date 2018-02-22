@@ -112,12 +112,6 @@ public:
               const coordinate_type& dest,
               const std::size_t candidate=0);
 
-    std::pair<coordinate_type, bool>
-    move_to_neighbor(boost::shared_ptr<VoxelPool> from,
-                     boost::shared_ptr<VoxelPool> loc,
-                     coordinate_id_pair_type& info,
-                     const Integer nrand);
-
     Integer size() const
     {
         return voxels_.size();

@@ -326,27 +326,6 @@ bool OffLatticeSpace::move(const coordinate_type& src, const coordinate_type& de
     return true;
 }
 
-std::pair<OffLatticeSpace::coordinate_type, bool>
-OffLatticeSpace::move_to_neighbor(
-        boost::shared_ptr<VoxelPool> src_vp, boost::shared_ptr<VoxelPool> loc,
-        coordinate_id_pair_type& info, const Integer nrand)
-{
-    const coordinate_type src(info.coordinate);
-    coordinate_type dest(get_neighbor(src, nrand));
-
-    boost::shared_ptr<VoxelPool> dest_vp(voxels_.at(dest));
-
-    if (dest_vp != loc)
-        return std::make_pair(dest, false);
-
-    voxels_.at(src) = dest_vp;
-    voxels_.at(dest) = src_vp;
-
-    src_vp->replace_voxel(src, dest);
-    dest_vp->replace_voxel(dest, src);
-    return std::make_pair(dest, true);
-}
-
 OffLatticeSpace::coordinate_type
 OffLatticeSpace::position2coordinate(const Real3& pos) const
 {

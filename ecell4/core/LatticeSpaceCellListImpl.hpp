@@ -370,11 +370,6 @@ public:
     virtual const boost::shared_ptr<const Shape>& get_structure(const Species& sp) const;
     virtual const Shape::dimension_kind get_structure_dimension(const Species& sp) const;
 
-    virtual std::pair<coordinate_type, bool> move_to_neighbor(
-        boost::shared_ptr<VoxelPool> from_vp,
-        boost::shared_ptr<VoxelPool> loc,
-        coordinate_id_pair_type& info, const Integer nrand);
-
     virtual Integer num_molecules(const Species& sp) const;
 
     /**
