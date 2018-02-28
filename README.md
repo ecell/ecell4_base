@@ -1,4 +1,4 @@
-E-Cell System version 4
+The E-Cell System version 4
 =======================
 
 [![Build Status](https://travis-ci.org/ecell/ecell4.svg?branch=develop)](https://travis-ci.org/ecell/ecell4)
@@ -15,13 +15,14 @@ What is E-Cell System?
 ----------------------
 
 E-Cell System is, a software platform for modeling, simulation and analysis of complex, heterogeneous and multi-scale systems like the cell.
-E-Cell has multi-algorithm, multi-timescale and multi-spatial-representation as its central feature.
+
+E-Cell4 accepts multi-algorithms, multi-timescales and multi-spatial-representations as its central feature.
 
 Features
 --------
 
 - Single particle simulations ([The enhanced Green's Function Reaction Dynamics (eGFRD) method](http://gfrd.org), [Spatiocyte](http://spatiocyte.org), and the Reaction Brownian Dynamics (RBD) method)
-- Multi-algorithm support
+- Ordinary differential equations, Gillespie algorithm (the direct method), and spatial Gillespie algorithm (the next subvolume method)
 - Rule-based modeling
 - Python programmable
 
