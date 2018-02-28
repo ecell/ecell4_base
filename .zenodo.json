@@ -1,44 +1,47 @@
 {
-    "description": "An integrated software environment for multi-algorithm, multi-timescale, multi-spatial-representation simulation of various cellular phenomena", 
+    "description": "An integrated software environment for multi-algorithm, multi-timescale, multi-spatial-representation simulation of various cellular phenomena",
     "license":  {
         "id": "GPL-2.0"
     },
-    "access_right": "open", 
-    "title": "The E-Cell System version 4", 
-    "upload_type": "software", 
+    "access_right": "open",
+    "title": "E-Cell System version 4",
+    "upload_type": "software",
+    "keywords": [
+        "Systems Biology"
+    ],
     "creators": [
         {
-            "affiliation": "RIKEN",
-            "name": "Kazunari Kaizu"
-        }, 
+            "name": "Kaizu, Kazunari",
+            "affiliation": "RIKEN"
+        },
         {
-            "affiliation": "RIKEN", 
-            "name": "Kozo Nishida"
-        }, 
+            "name": "Nishida, Kozo",
+            "affiliation": "RIKEN"
+        },
         {
-            "name": "Yuki Sakamoto"
-        }, 
+            "name": "Sakamoto, Yuki"
+        },
         {
-            "affiliation": "Kyoto University", 
-            "name": "Suguru Kato"
-        }, 
+            "name": "Kato, Suguru",
+            "affiliation": "Kyoto University"
+        },
         {
-            "affiliation": "Kyoto University", 
-            "name": "Toru Niina"
-        }, 
+            "name": "Niina, Toru",
+            "affiliation": "Kyoto University"
+        },
         {
-            "name": "Naoki Nishida"
-        }, 
+            "name": "Nishida, Naoki"
+        },
         {
-            "name": "Naohiro Aota"
-        }, 
+            "name": "Aota, Naohiro"
+        },
         {
-            "affiliation": "Open Collector, Inc.", 
-            "name": "Moriyoshi Koizumi"
-        }, 
+            "name": "Koizumi, Moriyoshi",
+            "affiliation": "Open Collector,Inc."
+        },
         {
-            "affiliation": "RIKEN", 
-            "name": "Koichi Takahashi"
-        }, 
-    ], 
+            "name": "Takahashi, Koichi",
+            "affiliation": "RIKEN"
+        }
+    ]
 }
