@@ -9,32 +9,33 @@ namespace spatiocyte
 
 StepEvent::StepEvent(boost::shared_ptr<Model> model, boost::shared_ptr<SpatiocyteWorld> world,
         const Species& species, const Real& t, const Real alpha)
-    : SpatiocyteEvent(t), model_(model), world_(world), species_(species), alpha_(alpha)
+    : SpatiocyteEvent(t),
+      model_(model),
+      world_(world),
+      mpool_(world_->find_molecule_pool(species)),
+      alpha_(alpha)
 {
-    const SpatiocyteWorld::molecule_info_type
-        minfo(world_->get_molecule_info(species));
+    const SpatiocyteWorld::molecule_info_type minfo(world_->get_molecule_info(species));
     const Real R(minfo.radius);
     const Real D(minfo.D);
-    boost::shared_ptr<const VoxelPool> mtype(world_->find_voxel_pool(species));
     // const Real R(world_->voxel_radius());
     // Real D = boost::lexical_cast<Real>(species.get_attribute("D"));
     if (D <= 0)
     {
         dt_ = inf;
-    } else if(mtype->get_dimension() == Shape::THREE) {
+    } else if(mpool_->get_dimension() == Shape::THREE) {
         dt_ = 2 * R * R / 3 / D * alpha_;
-    } else if(mtype->get_dimension() == Shape::TWO) {
+    } else if(mpool_->get_dimension() == Shape::TWO) {
         // TODO: Regular Lattice
         // dt_  = pow((2*sqrt(2.0)+4*sqrt(3.0)+3*sqrt(6.0)+sqrt(22.0))/
         //           (6*sqrt(2.0)+4*sqrt(3.0)+3*sqrt(6.0)), 2) * R * R / D * alpha_;
         dt_ = R * R / D * alpha_;
-    } else if(mtype->get_dimension() == Shape::ONE) {
+    } else if(mpool_->get_dimension() == Shape::ONE) {
         dt_ = 2 * R * R / D * alpha_;
     }
     else
     {
-        throw NotSupported(
-            "The dimension of a structure must be two or three.");
+        throw NotSupported("The dimension of a structure must be two or three.");
     }
 
     time_ = t + dt_;
@@ -59,12 +60,11 @@ void StepEvent::walk(const Real& alpha)
     }
 
     const boost::shared_ptr<RandomNumberGenerator>& rng(world_->rng());
-    boost::shared_ptr<const MoleculePool> mtype(world_->find_molecule_pool(species_));
 
-    if (mtype->get_dimension() == Shape::THREE)
-        walk_in_space_(mtype, alpha);
+    if (mpool_->get_dimension() == Shape::THREE)
+        walk_in_space_(mpool_, alpha);
     else // dimension == TWO, etc.
-        walk_on_surface_(mtype, alpha);
+        walk_on_surface_(mpool_, alpha);
 }
 
 void StepEvent::walk_in_space_(boost::shared_ptr<const MoleculePool> mtype, const Real& alpha)
@@ -79,14 +79,17 @@ void StepEvent::walk_in_space_(boost::shared_ptr<const MoleculePool> mtype, cons
     {
         const Integer rnd(rng->uniform_int(0, 11));
         const SpatiocyteWorld::coordinate_id_pair_type& info(*itr);
+
         if (world_->get_voxel_pool_at(info.coordinate) != mtype)
         {
             // should skip if a voxel is not the target species.
             // when reaction has occured before, a voxel can be changed.
             continue;
         }
-        const SpatiocyteWorld::coordinate_type neighbor(
-                world_->get_neighbor(info.coordinate, rnd));
+
+        const SpatiocyteWorld::coordinate_type
+            neighbor(world_->get_neighbor(info.coordinate, rnd));
+
         if (world_->can_move(info.coordinate, neighbor))
         {
             if (rng->uniform(0,1) <= alpha)
@@ -96,6 +99,7 @@ void StepEvent::walk_in_space_(boost::shared_ptr<const MoleculePool> mtype, cons
         {
             attempt_reaction_(info, neighbor, alpha);
         }
+
         ++idx;
     }
 }

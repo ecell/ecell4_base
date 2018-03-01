@@ -52,7 +52,7 @@ struct StepEvent : SpatiocyteEvent
 
     Species const& species() const
     {
-        return species_;
+        return mpool_->species();
     }
 
     Real const& alpha() const
@@ -79,7 +79,8 @@ protected:
 
     boost::shared_ptr<Model> model_;
     boost::shared_ptr<SpatiocyteWorld> world_;
-    Species species_;
+    boost::shared_ptr<MoleculePool> mpool_;
+
     VoxelPool* mt_;
     const Real alpha_;
     std::vector<unsigned int> nids_; // neighbor indexes
