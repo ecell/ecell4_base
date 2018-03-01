@@ -487,7 +487,9 @@ public:
             if (itr->has_species(species))
                 return itr->find_voxel_pool(species);
         }
-        throw "No VoxelPool corresponding to a given Species is found";
+        // create VoxelPool TODO
+        return spaces_.at(0).find_voxel_pool(species);
+        // throw "No VoxelPool corresponding to a given Species is found";
     }
 
     boost::shared_ptr<const VoxelPool> find_voxel_pool(const Species& species) const
@@ -576,7 +578,7 @@ public:
             if (itr->has_voxel(pid))
                 return itr->update_voxel(pid, v);
         }
-        return false;
+        return get_space_mut(v.coordinate()).update_voxel(pid, v);
     }
 
     bool remove_voxel(const ParticleID& pid)
@@ -607,7 +609,7 @@ public:
 
     const Integer size() const
     {
-        Integer total;
+        Integer total(0);
         for (space_container_type::const_iterator itr(spaces_.begin());
              itr != spaces_.end(); ++itr)
         {
