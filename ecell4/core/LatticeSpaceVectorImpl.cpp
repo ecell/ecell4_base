@@ -294,7 +294,7 @@ LatticeSpaceVectorImpl::list_voxels(const Species& sp) const
     return retval;
 }
 
-boost::shared_ptr<VoxelPool> LatticeSpaceVectorImpl::get_voxel_pool(const Voxel& v)
+boost::shared_ptr<VoxelPool> LatticeSpaceVectorImpl::get_voxel_pool(Voxel v)
 {
     const Species& sp(v.species());
 
@@ -531,7 +531,7 @@ const Particle LatticeSpaceVectorImpl::particle_at(
  * v.species() and v.coordinate() respectively and return false.
  * If no Voxel with pid is found, create a new Voxel at v.coordiante() and return ture.
  */
-bool LatticeSpaceVectorImpl::update_voxel(const ParticleID& pid, const Voxel& v)
+bool LatticeSpaceVectorImpl::update_voxel(const ParticleID& pid, Voxel v)
 {
     const coordinate_type& to_coord(v.coordinate());
     if (!is_in_range(to_coord))

@@ -568,7 +568,7 @@ public:
     /*
      * Voxel Manipulation
      */
-    bool update_voxel(const ParticleID& pid, const Voxel& v)
+    bool update_voxel(const ParticleID& pid, Voxel v)
     {
         for (space_container_type::iterator itr(spaces_.begin());
              itr != spaces_.end(); ++itr)
@@ -621,7 +621,7 @@ public:
         return spaces_.at(0).shape();
     }
 
-    bool on_structure(const Voxel& v)
+    bool on_structure(Voxel v)
     {
         for (space_container_type::iterator itr(spaces_.begin());
              itr != spaces_.end(); ++itr)
@@ -767,7 +767,7 @@ public:
     std::vector<Species> list_structure_species() const;
     // std::vector<coordinate_type> list_coords(const Species& sp) const;
 
-    std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel(const Voxel& v)
+    std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel(Voxel v)
     {
         ParticleID pid(sidgen_());
         const bool is_succeeded(update_voxel(pid, v));
@@ -786,7 +786,7 @@ public:
         return new_voxel_structure(Voxel(sp, coord, minfo.radius, minfo.D, minfo.loc));
     }
 
-    std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel_structure(const Voxel& v)
+    std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel_structure(Voxel v)
     {
         const bool is_succeeded(update_voxel(ParticleID(), v));
         return std::make_pair(std::make_pair(ParticleID(), v), is_succeeded);
@@ -798,7 +798,7 @@ public:
         return new_voxel_interface(Voxel(sp, coord, minfo.radius, minfo.D, minfo.loc));
     }
 
-    std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel_interface(const Voxel& v)
+    std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel_interface(Voxel v)
     {
         const bool is_succeeded(update_voxel(ParticleID(), v));
         return std::make_pair(std::make_pair(ParticleID(), v), is_succeeded);

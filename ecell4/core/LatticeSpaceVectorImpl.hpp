@@ -44,7 +44,7 @@ public:
 
     std::pair<ParticleID, Voxel> get_voxel_at(const coordinate_type& coord) const;
 
-    bool update_voxel(const ParticleID& pid, const Voxel& v);
+    bool update_voxel(const ParticleID& pid, Voxel v);
 
     bool add_voxels(const Species& species,
                     std::vector<std::pair<ParticleID, coordinate_type> > voxels);
@@ -125,7 +125,7 @@ protected:
         return periodic_transpose(coord);
     }
 
-    boost::shared_ptr<VoxelPool> get_voxel_pool(const Voxel& v);
+    boost::shared_ptr<VoxelPool> get_voxel_pool(Voxel v);
 
     void initialize_voxels(const bool is_periodic);
 

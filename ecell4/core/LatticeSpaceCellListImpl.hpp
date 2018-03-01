@@ -229,7 +229,7 @@ public:
     //     update_matrix(coord, new_vp);
     // }
 
-    virtual bool update_voxel(const ParticleID& pid, const Voxel& v);
+    virtual bool update_voxel(const ParticleID& pid, Voxel v);
 
     virtual std::pair<ParticleID, Voxel> get_voxel_at(const coordinate_type& coord) const
     {
@@ -395,7 +395,7 @@ public:
 
 protected:
 
-    boost::shared_ptr<VoxelPool> get_voxel_pool(const Voxel& v);
+    boost::shared_ptr<VoxelPool> get_voxel_pool(Voxel v);
 
     std::pair<boost::shared_ptr<VoxelPool>, coordinate_type>
         __get_coordinate(const ParticleID& pid);

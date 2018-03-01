@@ -39,7 +39,7 @@ Integer LatticeSpaceCellListImpl::num_molecules(const Species& sp) const
  * v.species() and v.coordinate() respectively and return false.
  * If no Voxel with pid is found, create a new Voxel at v.coordiante() and return ture.
  */
-bool LatticeSpaceCellListImpl::update_voxel(const ParticleID& pid, const Voxel& v)
+bool LatticeSpaceCellListImpl::update_voxel(const ParticleID& pid, Voxel v)
 {
     const coordinate_type& to_coord(v.coordinate());
     if (!is_in_range(to_coord))
@@ -176,7 +176,7 @@ boost::shared_ptr<VoxelPool> LatticeSpaceCellListImpl::get_voxel_pool_at(
     return vacant_;
 }
 
-boost::shared_ptr<VoxelPool> LatticeSpaceCellListImpl::get_voxel_pool(const Voxel& v)
+boost::shared_ptr<VoxelPool> LatticeSpaceCellListImpl::get_voxel_pool(Voxel v)
 {
     const Species& sp(v.species());
 

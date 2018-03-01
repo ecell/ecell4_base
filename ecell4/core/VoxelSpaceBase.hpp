@@ -315,7 +315,7 @@ public:
     /*
      * Voxel Manipulation
      */
-    virtual bool update_voxel(const ParticleID& pid, const Voxel& v) = 0;
+    virtual bool update_voxel(const ParticleID& pid, Voxel v) = 0;
     virtual bool remove_voxel(const ParticleID& pid) = 0;
     virtual bool remove_voxel(const coordinate_type& coord) = 0;
 
@@ -331,7 +331,7 @@ public:
     virtual Integer3 shape() const = 0;
     virtual Integer actual_size() const = 0;
 
-    bool on_structure(const Voxel& v)
+    bool on_structure(Voxel v)
     {
         return get_voxel_pool_at(v.coordinate()) != get_voxel_pool(v)->location();
     }
@@ -350,7 +350,7 @@ public:
 
 protected:
 
-    virtual boost::shared_ptr<VoxelPool> get_voxel_pool(const Voxel& v) = 0;
+    virtual boost::shared_ptr<VoxelPool> get_voxel_pool(Voxel v) = 0;
     virtual Integer count_voxels(const boost::shared_ptr<VoxelPool>& vp) const = 0;
     void push_voxels(std::vector<std::pair<ParticleID, Voxel> >& voxels,
                      const boost::shared_ptr<MoleculePool>& voxel_pool,

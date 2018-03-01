@@ -90,7 +90,7 @@ public:
     /*
      * Voxel Manipulation
      */
-    bool update_voxel(const ParticleID& pid, const Voxel& v);
+    bool update_voxel(const ParticleID& pid, Voxel v);
     bool remove_voxel(const ParticleID& pid);
     bool remove_voxel(const coordinate_type& coord);
 
@@ -118,7 +118,7 @@ public:
 
 protected:
 
-    boost::shared_ptr<VoxelPool> get_voxel_pool(const Voxel& v);
+    boost::shared_ptr<VoxelPool> get_voxel_pool(Voxel v);
     Integer count_voxels(const boost::shared_ptr<VoxelPool>& vp) const
     {
         return static_cast<Integer>(std::count(voxels_.begin(), voxels_.end(), vp));
