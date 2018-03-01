@@ -87,7 +87,7 @@ const Real calculate_alpha(const ReactionRule& rr, const boost::shared_ptr<Spati
             if (info[i].loc != "") {
                 try
                 {
-                    location = world->find_voxel_pool_(Species(info[i].loc));
+                    location = world->find_voxel_pool(Species(info[i].loc));
                 }
                 catch(NotFound e)
                 {

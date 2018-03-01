@@ -164,7 +164,7 @@ Integer SpatiocyteWorld::add_structure(
     const Species& sp, const boost::shared_ptr<const Shape> shape)
 {
     const SpatiocyteWorld::molecule_info_type info(get_molecule_info(sp));
-    root_->make_structure_type(sp, shape->dimension(), info.loc);
+    spaces_.at(0).make_structure_type(sp, shape->dimension(), info.loc);
 
     switch (shape->dimension())
     {
@@ -225,7 +225,7 @@ Integer SpatiocyteWorld::add_structure2(const Species& sp, const boost::shared_p
 Integer SpatiocyteWorld::add_interface(const Species& sp)
 {
     const SpatiocyteWorld::molecule_info_type info(get_molecule_info(sp));
-    root_->make_interface_type(sp, Shape::UNDEF, info.loc);  //XXX: set the dimension properly
+    spaces_.at(0).make_interface_type(sp, Shape::UNDEF, info.loc);  //XXX: set the dimension properly
     return 0;  //XXX: dummpy
 }
 
