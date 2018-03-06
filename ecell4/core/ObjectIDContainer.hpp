@@ -124,7 +124,7 @@ public:
                 boost::format("%1%::at: no element with id (%2%)") %
                 (utils::type_name_of<self_type>::value()) % id).str());
         }
-        return objects_.at(found->second);
+        return objects_[found->second];
     }
     value_type const& at(const identifier_type& id) const
     {
@@ -139,14 +139,19 @@ public:
         return objects_.at(found->second);
     }
 
-    value_type& operator[](const identifier_type& id) throw()
+    value_type& operator[](const identifier_type& id)
     {
-        return objects_[idxmap_[id]];
+        return objects_[idxmap_.at(id)];
     }
-    value_type const& operator[](const identifier_type& id) const throw()
+    value_type const& operator[](const identifier_type& id) const
     {
-        return objects_[idxmap_[id]];
+        return objects_[idxmap_.at(id)];
     }
+
+    value_type&       front()       throw() {return objects_.front();}
+    value_type const& front() const throw() {return objects_.front();}
+    value_type&       back()        throw() {return objects_.back();}
+    value_type const& back()  const throw() {return objects_.back();}
 
     iterator       begin()        throw() {return objects_.begin();}
     iterator       end()          throw() {return objects_.end();}
