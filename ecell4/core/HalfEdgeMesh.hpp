@@ -144,7 +144,7 @@ class Polygon : public Shape
         Real3          direction;
         vertex_id_type destination;
         face_id_type   face;
-        boost::optional<edge_id_type> next_edge;
+        edge_id_type   next_edge;
         boost::optional<edge_id_type> opposite_edge;
     };
     struct face_data
@@ -245,8 +245,7 @@ class Polygon : public Shape
 
     // half-edge traverse
 
-    boost::optional<edge_id_type>
-    next_of(const edge_id_type eid) const
+    edge_id_type next_of(const edge_id_type eid) const
     {
         return this->edge_at(eid).next_edge;
     }
@@ -718,7 +717,7 @@ Real Polygon<T_fid, T_vid, T_eid>::distance_sq_connected_by_vertex(
 
     if(eid) // found. *eid now belongs FaceID(pos2.second).
     {
-        const edge_data& last_edge = this->edge_at(*(this->next_of(*eid)));
+        const edge_data& last_edge = this->edge_at(this->next_of(*eid));
         theta += std::acos(
             dot_product(v2, last_edge.direction) / v2_len * last_edge.length);
 
@@ -745,7 +744,7 @@ Real Polygon<T_fid, T_vid, T_eid>::distance_sq_connected_by_vertex(
     eid = this->find_face_around_vtx(start, pos1.second, theta);
     if(eid) // found. *eid now belongs FaceID(pos1.second).
     {
-        const edge_data& last_edge = this->edge_at(*(this->next_of(*eid)));
+        const edge_data& last_edge = this->edge_at(this->next_of(*eid));
         theta += std::acos(
             dot_product(v1, last_edge.direction) / v1_len * last_edge.length);
 
