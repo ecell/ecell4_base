@@ -238,7 +238,10 @@ Integer SpatiocyteWorld::add_structure3(const Species& sp, const boost::shared_p
     return count;
 }
 
-Integer SpatiocyteWorld::add_structure2(const Species& sp, const boost::shared_ptr<const Shape> shape)
+Integer
+SpatiocyteWorld::add_structure2(
+        const Species& sp,
+        const boost::shared_ptr<const Shape> shape)
 {
     const SpatiocyteWorld::molecule_info_type info(get_molecule_info(sp));
     Integer count(0);
@@ -258,21 +261,25 @@ Integer SpatiocyteWorld::add_structure2(const Species& sp, const boost::shared_p
     return count;
 }
 
-Integer SpatiocyteWorld::add_interface(const Species& sp)
+Integer
+SpatiocyteWorld::add_interface(const Species& sp)
 {
     const SpatiocyteWorld::molecule_info_type info(get_molecule_info(sp));
-    spaces_.at(0).make_interface_type(sp, Shape::UNDEF, info.loc);  //XXX: set the dimension properly
+    //XXX: set the dimension properly
+    spaces_.at(0).make_interface_type(sp, Shape::UNDEF, info.loc);
     return 0;  //XXX: dummpy
 }
 
-bool SpatiocyteWorld::is_surface_voxel(
-    const coordinate_type coord, const boost::shared_ptr<const Shape> shape) const
+bool
+SpatiocyteWorld::is_surface_voxel(
+        const coordinate_type coord,
+        const boost::shared_ptr<const Shape> shape) const
 {
     const Real L(shape->is_inside(coordinate2position(coord)));
     if (L > 0 || L < -2 * voxel_radius())
         return false;
 
-    for (Integer i(0); i < 12; ++i)
+    for (Integer i(0); i < get_space(coord)->num_neighbors(coord); ++i)
         if (shape->is_inside(coordinate2position(get_neighbor(coord, i))) > 0)
             return true;
 
