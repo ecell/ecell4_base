@@ -16,6 +16,7 @@
 #include <ecell4/core/extras.hpp>
 
 #include "OffsetSpace.hpp"
+#include "OneToManyMap.hpp"
 
 namespace ecell4
 {
@@ -55,6 +56,7 @@ public:
         : rng_(rng)
     {
         spaces_.push_back(space_type(new default_root_type(edge_lengths, voxel_radius), 0));
+        size_ = get_root()->size();
     }
 
     SpatiocyteWorld(const Real3& edge_lengths, const Real& voxel_radius)
@@ -63,6 +65,7 @@ public:
         rng_ = boost::shared_ptr<RandomNumberGenerator>(
             new GSLRandomNumberGenerator());
         (*rng_).seed();
+        size_ = get_root()->size();
     }
 
     SpatiocyteWorld(const Real3& edge_lengths = Real3(1, 1, 1))
@@ -70,6 +73,7 @@ public:
         // XXX: sloppy default
         spaces_.push_back(
                 space_type(new default_root_type(edge_lengths, edge_lengths[0] / 100), 0));
+        size_ = get_root()->size();
         rng_ = boost::shared_ptr<RandomNumberGenerator>(new GSLRandomNumberGenerator());
         (*rng_).seed();
     }
@@ -87,7 +91,10 @@ public:
         : rng_(rng)
     {
         spaces_.push_back(space_type(space, 0));
+        size_ = get_root()->size();
     }
+
+    void add_space(VoxelSpaceBase *space);
 
     /*
      * Space Traits
@@ -625,13 +632,7 @@ public:
 
     const Integer size() const
     {
-        Integer total(0);
-        for (space_container_type::const_iterator itr(spaces_.begin());
-             itr != spaces_.end(); ++itr)
-        {
-            total += itr->size();
-        }
-        return total;
+        return size_;
     }
 
     const Integer3 shape() const
@@ -956,7 +957,11 @@ protected:
 
 protected:
 
+    std::size_t size_;
     space_container_type spaces_;
+
+    OneToManyMap<coordinate_type> interfaces_;
+    OneToManyMap<coordinate_type> neighbors_;
 
     boost::shared_ptr<RandomNumberGenerator> rng_;
     SerialIDGenerator<ParticleID> sidgen_;

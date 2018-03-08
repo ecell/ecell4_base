@@ -9,6 +9,42 @@ namespace ecell4
 namespace spatiocyte
 {
 
+void SpatiocyteWorld::add_space(VoxelSpaceBase *space)
+{
+    for (std::size_t i(0); i < space->size(); ++i)
+    {
+        const Real3 position(space->coordinate2position(i));
+        const coordinate_type nearest(get_root()->position2coordinate(position));
+
+        for (Integer j(0); j < get_root()->num_neighbors(nearest); ++j)
+        {
+            const coordinate_type neighbor(get_root()->get_neighbor(nearest, j));
+            if (length(get_root()->coordinate2position(neighbor) - position) < voxel_radius() * 2)
+                interfaces_.add(neighbor, i + size_);
+        }
+    }
+
+    for (OneToManyMap<coordinate_type>::const_iterator itr(interfaces_.begin());
+         itr != interfaces_.end(); ++itr)
+    {
+        std::vector<coordinate_type> neighbors;
+        for (Integer i(0); i < get_root()->num_neighbors((*itr).first); ++i)
+        {
+            const coordinate_type neighbor(get_root()->get_neighbor((*itr).first, i));
+            if (! interfaces_.find(neighbor))
+                neighbors.push_back(neighbor);
+        }
+
+        for (std::vector<coordinate_type>::const_iterator jtr((*itr).second.begin());
+             jtr != (*itr).second.end(); ++jtr)
+            neighbors_.extend(*jtr, neighbors);
+    }
+
+    spaces_.push_back(space_type(space, size_));
+
+    size_ += space->size();
+}
+
 void SpatiocyteWorld::set_value(const Species& sp, const Real value)
 {
     const Integer num1 = static_cast<Integer>(value);
