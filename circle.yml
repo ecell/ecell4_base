@@ -12,7 +12,7 @@ jobs:
           name: Build E-Cell4
           command: |
             set -x
-            ECELLVER="4.1.3"
+            ECELLVER="4.1.4"
             PY27="cp27-cp27mu"
             PY35="cp35-cp35m"
             PY36="cp36-cp36m"
