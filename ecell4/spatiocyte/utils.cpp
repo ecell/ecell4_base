@@ -9,7 +9,7 @@ namespace spatiocyte
 
 const Real calculate_dimensional_factor(
     boost::shared_ptr<const VoxelPool> mt0, boost::shared_ptr<const VoxelPool> mt1,
-    const boost::shared_ptr<const SpatiocyteWorld>& world)
+    boost::shared_ptr<const SpatiocyteWorld> world)
 {
     const Real voxel_radius(world->voxel_radius());
     const Real unit_area(world->unit_area());

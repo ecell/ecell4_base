@@ -15,44 +15,29 @@ StepEvent::StepEvent(boost::shared_ptr<Model> model, boost::shared_ptr<Spatiocyt
       mpool_(world_->find_molecule_pool(species)),
       alpha_(alpha)
 {
+    time_ = t;
+}
+
+StepEvent3D::StepEvent3D(boost::shared_ptr<Model> model,
+                         boost::shared_ptr<SpatiocyteWorld> world,
+                         const Species& species,
+                         const Real& t,
+                         const Real alpha)
+    : StepEvent(model, world, species, t, alpha)
+{
     const SpatiocyteWorld::molecule_info_type minfo(world_->get_molecule_info(species));
-    const Real R(minfo.radius);
     const Real D(minfo.D);
-    // const Real R(world_->voxel_radius());
-    // Real D = boost::lexical_cast<Real>(species.get_attribute("D"));
+    const Real R(world_->voxel_radius());
+
     if (D <= 0)
-    {
         dt_ = inf;
-    } else if(mpool_->get_dimension() == Shape::THREE) {
-        dt_ = 2 * R * R / 3 / D * alpha_;
-    } else if(mpool_->get_dimension() == Shape::TWO) {
-        // TODO: Regular Lattice
-        // dt_  = pow((2*sqrt(2.0)+4*sqrt(3.0)+3*sqrt(6.0)+sqrt(22.0))/
-        //           (6*sqrt(2.0)+4*sqrt(3.0)+3*sqrt(6.0)), 2) * R * R / D * alpha_;
-        dt_ = R * R / D * alpha_;
-    } else if(mpool_->get_dimension() == Shape::ONE) {
-        dt_ = 2 * R * R / D * alpha_;
-    }
     else
-    {
-        throw NotSupported("The dimension of a structure must be two or three.");
-    }
+        dt_ = 2 * R * R / 3 / D * alpha_;
 
     time_ = t + dt_;
-    // time_ = t;
-
-    nids_.clear();
-    for (unsigned int i(0); i < 12; ++i)
-        nids_.push_back(i);
 }
 
-void StepEvent::fire_()
-{
-    walk(alpha_);
-    time_ += dt_;
-}
-
-void StepEvent::walk(const Real& alpha)
+void StepEvent3D::walk(const Real& alpha)
 {
     if (alpha < 0 || alpha > 1)
     {
@@ -60,18 +45,8 @@ void StepEvent::walk(const Real& alpha)
     }
 
     const boost::shared_ptr<RandomNumberGenerator>& rng(world_->rng());
-
-    if (mpool_->get_dimension() == Shape::THREE)
-        walk_in_space_(mpool_, alpha);
-    else // dimension == TWO, etc.
-        walk_on_surface_(mpool_, alpha);
-}
-
-void StepEvent::walk_in_space_(boost::shared_ptr<const MoleculePool> mtype, const Real& alpha)
-{
-    const boost::shared_ptr<RandomNumberGenerator>& rng(world_->rng());
     MoleculePool::container_type voxels;
-    copy(mtype->begin(), mtype->end(), back_inserter(voxels));
+    copy(mpool_->begin(), mpool_->end(), back_inserter(voxels));
 
     std::size_t idx(0);
     for (MoleculePool::container_type::iterator itr(voxels.begin());
@@ -80,7 +55,7 @@ void StepEvent::walk_in_space_(boost::shared_ptr<const MoleculePool> mtype, cons
         const SpatiocyteWorld::coordinate_id_pair_type& info(*itr);
         const Integer rnd(rng->uniform_int(0, world_->num_neighbors(info.coordinate)-1));
 
-        if (world_->get_voxel_pool_at(info.coordinate) != mtype)
+        if (world_->get_voxel_pool_at(info.coordinate) != mpool_)
         {
             // should skip if a voxel is not the target species.
             // when reaction has occured before, a voxel can be changed.
@@ -104,18 +79,46 @@ void StepEvent::walk_in_space_(boost::shared_ptr<const MoleculePool> mtype, cons
     }
 }
 
-void StepEvent::walk_on_surface_(boost::shared_ptr<const MoleculePool> mtype, const Real& alpha)
+StepEvent2D::StepEvent2D(boost::shared_ptr<Model> model,
+                         boost::shared_ptr<SpatiocyteWorld> world,
+                         const Species& species,
+                         const Real& t,
+                         const Real alpha)
+    : StepEvent(model, world, species, t, alpha)
 {
+    const SpatiocyteWorld::molecule_info_type minfo(world_->get_molecule_info(species));
+    const Real D(minfo.D);
+    const Real R(world_->voxel_radius());
+
+    if (D <= 0)
+        dt_ = inf;
+    else
+        dt_ = R * R / D * alpha_;
+
+    time_ = t + dt_;
+
+    nids_.clear();
+    for (unsigned int i(0); i < 12; ++i)
+        nids_.push_back(i);
+}
+
+void StepEvent2D::walk(const Real& alpha)
+{
+    if (alpha < 0 || alpha > 1)
+    {
+        return; // INVALID ALPHA VALUE
+    }
+
     const boost::shared_ptr<RandomNumberGenerator>& rng(world_->rng());
     MoleculePool::container_type voxels;
-    copy(mtype->begin(), mtype->end(), back_inserter(voxels));
+    copy(mpool_->begin(), mpool_->end(), back_inserter(voxels));
 
     std::size_t idx(0);
     for (MoleculePool::container_type::iterator itr(voxels.begin());
          itr != voxels.end(); ++itr)
     {
         const SpatiocyteWorld::coordinate_id_pair_type& info(*itr);
-        if (world_->get_voxel_pool_at(info.coordinate) != mtype)
+        if (world_->get_voxel_pool_at(info.coordinate) != mpool_)
         {
             // should skip if a voxel is not the target species.
             // when reaction has occured before, a voxel can be changed.
@@ -135,7 +138,7 @@ void StepEvent::walk_on_surface_(boost::shared_ptr<const MoleculePool> mtype, co
                     world_->get_neighbor(info.coordinate, *itr));
             boost::shared_ptr<const VoxelPool> target(world_->get_voxel_pool_at(neighbor));
 
-            if (target->get_dimension() > mtype->get_dimension())
+            if (target->get_dimension() > mpool_->get_dimension())
                 continue;
 
             if (world_->can_move(info.coordinate, neighbor))
@@ -153,8 +156,7 @@ void StepEvent::walk_on_surface_(boost::shared_ptr<const MoleculePool> mtype, co
     }
 }
 
-std::pair<StepEvent::attempt_reaction_result_type, StepEvent::reaction_type>
-StepEvent::attempt_reaction_(
+void StepEvent::attempt_reaction_(
     const SpatiocyteWorld::coordinate_id_pair_type& info,
     const SpatiocyteWorld::coordinate_type to_coord,
     const Real& alpha)
@@ -164,25 +166,23 @@ StepEvent::attempt_reaction_(
 
     if (to_mt->is_vacant())
     {
-        return std::make_pair(NO_REACTION, reaction_type());
+        return;
     }
 
     const Species& speciesA(from_mt->species());
     const Species& speciesB(to_mt->species());
 
-    const std::vector<ReactionRule> rules(
-        model_->query_reaction_rules(speciesA, speciesB));
+    const std::vector<ReactionRule> rules(model_->query_reaction_rules(speciesA, speciesB));
 
     if (rules.empty())
     {
-        return std::make_pair(NO_REACTION, reaction_type());
+        return;
     }
 
-    const Real factor(calculate_dimensional_factor(from_mt, to_mt,
-                boost::const_pointer_cast<const SpatiocyteWorld>(world_)));
-
+    const Real factor(calculate_dimensional_factor(from_mt, to_mt, world_));
     const Real rnd(world_->rng()->uniform(0,1));
     Real accp(0.0);
+
     for (std::vector<ReactionRule>::const_iterator itr(rules.begin()); itr != rules.end(); ++itr)
     {
         const Real k((*itr).k());
@@ -204,12 +204,10 @@ StepEvent::attempt_reaction_(
             {
                 reaction_type reaction(std::make_pair(*itr, rinfo));
                 push_reaction(reaction);
-                return std::make_pair(REACTION_SUCCEEDED, reaction);
             }
-            return std::make_pair(REACTION_FAILED, std::make_pair(*itr, rinfo));
+            return;
         }
     }
-    return std::make_pair(REACTION_FAILED, reaction_type());
 }
 
 } // spatiocyte
