@@ -8,6 +8,7 @@
 
 #include <ecell4/core/LatticeSpaceCellListImpl.hpp>
 #include <ecell4/core/LatticeSpaceVectorImpl.hpp>
+#include <ecell4/core/OffLatticeSpace.hpp>
 #include <ecell4/core/VoxelPool.hpp>
 #include <ecell4/core/RandomNumberGenerator.hpp>
 #include <ecell4/core/SerialIDGenerator.hpp>
@@ -565,10 +566,10 @@ public:
     /*
      * Neighbor
      */
-    // Integer num_neighbors(const coordinate_type& coord) const
-    // {
-    //     return get_root()->num_neighbors(coord);
-    // }
+    Integer num_neighbors(const coordinate_type& coord) const
+    {
+        return get_space(coord)->num_neighbors(coord);
+    }
 
     coordinate_type get_neighbor(coordinate_type coord, Integer nrand) const
     {
@@ -990,6 +991,55 @@ create_spatiocyte_world_vector_impl(
 {
     return new SpatiocyteWorld(
         new LatticeSpaceVectorImpl(edge_lengths, voxel_radius), rng);
+}
+
+inline
+SpatiocyteWorld*
+allocate_spatiocyte_world_square_offlattice_impl(
+        const Real edge_length,
+        const Real& voxel_radius,
+        const boost::shared_ptr<RandomNumberGenerator>& rng)
+{
+    OffLatticeSpace::position_container positions;
+    OffLatticeSpace::coordinate_pair_list_type adjoining_pairs;
+
+    // const std::size_t num_row(int((edge_length - (2 + sqrt(3)) * voxel_radius) /
+    //                          (2 * sqrt(3) * voxel_radius)) + 1);
+    const std::size_t num_row(int(edge_length / (2 * sqrt(3) * voxel_radius)));
+    const std::size_t num_col(int(edge_length / (2 * voxel_radius)));
+
+    for (std::size_t row(0); row < num_row; ++row)
+        for (std::size_t col(0); col < num_col; ++col)
+        {
+            // 2 * (row * num_col + col)
+            positions.push_back(
+                    Real3(2*col, 2*row*sqrt(3), 0) * voxel_radius);
+
+            // 2 * (row * num_col + col + 1)
+            positions.push_back(
+                    Real3(2*col, (2*row+1)*sqrt(3), 0) * voxel_radius);
+
+            const int index(2 * (row * num_col + col));
+
+            const std::size_t next_col((col + 1) % num_col);
+            const std::size_t next_row((row + 1) % num_row);
+
+            const int right(2 * (row * num_col + next_col));
+            const int bottom(2 * (next_row * num_col + col));
+            const int right_bottom(2 * (next_row * num_col + next_col));
+
+            adjoining_pairs.push_back(std::make_pair(index,   index+1));
+            adjoining_pairs.push_back(std::make_pair(index,   right));
+            adjoining_pairs.push_back(std::make_pair(index+1, right));
+            adjoining_pairs.push_back(std::make_pair(index+1, right+1));
+            adjoining_pairs.push_back(std::make_pair(index+1, bottom));
+            adjoining_pairs.push_back(std::make_pair(index+1, right_bottom));
+        }
+
+    OffLatticeSpace *space = new OffLatticeSpace(voxel_radius, positions, adjoining_pairs, Shape::TWO);
+    space->set_actual_lengths(Real3(2*num_col, 2*sqrt(3)*num_row, 2) * voxel_radius);
+
+    return new SpatiocyteWorld(space, rng);
 }
 
 /**

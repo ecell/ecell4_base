@@ -63,6 +63,10 @@ public:
         t_(0.0), voxel_radius_(voxel_radius), vacant_(VacantType::allocate())
     {}
 
+    VoxelSpaceBase(const Real& voxel_radius, const Shape::dimension_kind& dimension) :
+        t_(0.0), voxel_radius_(voxel_radius), vacant_(VacantType::allocate(dimension))
+    {}
+
     virtual ~VoxelSpaceBase() {}
 
     /*

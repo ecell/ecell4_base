@@ -26,7 +26,8 @@ public:
     OffLatticeSpace(const Real& voxel_radius);
     OffLatticeSpace(const Real& voxel_radius,
                     const position_container& positions,
-                    const coordinate_pair_list_type& adjoining_pairs);
+                    const coordinate_pair_list_type& adjoining_pairs,
+                    const Shape::dimension_kind& dimension=Shape::THREE);
     ~OffLatticeSpace();
 
     /*
@@ -49,7 +50,14 @@ public:
      */
     Real3 actual_lengths() const
     {
+        return actual_lengths_;
         throw NotSupported("OffLatticeSpace::actual_lengths() is not supported.");
+    }
+
+    // tmp
+    void set_actual_lengths(const Real3& actual_lengths)
+    {
+        actual_lengths_ = actual_lengths;
     }
 
     const Particle particle_at(const coordinate_type& coord) const;
@@ -142,6 +150,8 @@ protected:
     voxel_container voxels_;
     position_container positions_;
     adjoining_container adjoinings_;
+
+    Real3 actual_lengths_;
 
 };
 

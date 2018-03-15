@@ -352,8 +352,9 @@ SpatiocyteWorld::check_neighbor(
     const coordinate_type coord, const std::string& loc)
 {
     std::vector<coordinate_type> tmp;
-    tmp.reserve(12);
-    for (unsigned int rnd(0); rnd < 12; ++rnd)
+    const std::size_t num_neighbors(get_space(coord)->num_neighbors(coord));
+    tmp.reserve(num_neighbors);
+    for (unsigned int rnd(0); rnd < num_neighbors; ++rnd)
     {
         const coordinate_type neighbor(get_neighbor(coord, rnd));
         boost::shared_ptr<const VoxelPool> mt(get_voxel_pool_at(neighbor));

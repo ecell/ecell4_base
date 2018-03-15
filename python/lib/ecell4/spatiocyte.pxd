@@ -137,6 +137,8 @@ cdef extern from "ecell4/spatiocyte/SpatiocyteWorld.hpp" namespace "ecell4::spat
         Cpp_Real3&, Real, Cpp_Integer3&, shared_ptr[Cpp_RandomNumberGenerator]&)
     cdef Cpp_SpatiocyteWorld* create_spatiocyte_world_vector_impl_alias(
         Cpp_Real3&, Real, shared_ptr[Cpp_RandomNumberGenerator]&)
+    cdef Cpp_SpatiocyteWorld* allocate_spatiocyte_world_square_offlattice_impl(
+        Real, Real, shared_ptr[Cpp_RandomNumberGenerator]&)
 
 ## SpatiocyteWorld
 #  a python wrapper for Cpp_SpatiocyteWorld

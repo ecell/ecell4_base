@@ -77,8 +77,8 @@ void StepEvent::walk_in_space_(boost::shared_ptr<const MoleculePool> mtype, cons
     for (MoleculePool::container_type::iterator itr(voxels.begin());
          itr != voxels.end(); ++itr)
     {
-        const Integer rnd(rng->uniform_int(0, 11));
         const SpatiocyteWorld::coordinate_id_pair_type& info(*itr);
+        const Integer rnd(rng->uniform_int(0, world_->num_neighbors(info.coordinate)-1));
 
         if (world_->get_voxel_pool_at(info.coordinate) != mtype)
         {
@@ -122,10 +122,15 @@ void StepEvent::walk_on_surface_(boost::shared_ptr<const MoleculePool> mtype, co
             continue;
         }
 
+        const std::size_t num_neighbors(world_->num_neighbors(info.coordinate));
+
         ecell4::shuffle(*(rng.get()), nids_);
         for (std::vector<unsigned int>::const_iterator itr(nids_.begin());
              itr != nids_.end(); ++itr)
         {
+            if (*itr >= num_neighbors)
+                continue;
+
             const SpatiocyteWorld::coordinate_type neighbor(
                     world_->get_neighbor(info.coordinate, *itr));
             boost::shared_ptr<const VoxelPool> target(world_->get_voxel_pool_at(neighbor));

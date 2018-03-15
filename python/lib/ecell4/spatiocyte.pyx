@@ -1262,6 +1262,13 @@ def create_spatiocyte_world_vector_impl(edge_lengths, voxel_radius, rng):
             deref((<GSLRandomNumberGenerator>rng).thisptr)))
     return SpatiocyteWorld_from_Cpp_SpatiocyteWorld(deref(w))
 
+def create_spatiocyte_world_square_offlattice_impl(edge_length, voxel_radius, rng):
+    cdef shared_ptr[Cpp_SpatiocyteWorld]* world = new shared_ptr[Cpp_SpatiocyteWorld](
+        allocate_spatiocyte_world_square_offlattice_impl(
+            <Real>edge_length, <Real>voxel_radius,
+            deref((<GSLRandomNumberGenerator>rng).thisptr)))
+    return SpatiocyteWorld_from_Cpp_SpatiocyteWorld(deref(world))
+
 ## SpatiocyteSimulator
 #  a python wrapper for Cpp_SpatiocyteSimulator
 cdef class SpatiocyteSimulator:
