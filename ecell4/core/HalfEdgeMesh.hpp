@@ -10,7 +10,7 @@
 #include <ecell4/core/geometry.hpp>
 #include <ecell4/core/triangle_geometry.hpp>
 #include <ecell4/core/Barycentric.hpp>
-#include <ecell4/core/ObjectIDContainer.hpp>
+#include <ecell4/core/IndexedContainer.hpp>
 
 #include <boost/utility.hpp>
 #include <boost/type_traits.hpp>
@@ -18,6 +18,7 @@
 #include <boost/optional.hpp>
 #include <boost/lambda/lambda.hpp>
 #include <boost/array.hpp>
+#include <boost/container/flat_map.hpp>
 #include <boost/math/constants/constants.hpp>
 #include <boost/math/special_functions/sign.hpp>
 #include <boost/cstdint.hpp>
@@ -29,145 +30,59 @@
 
 namespace ecell4
 {
-// Identifiers {{{
-struct VertexID : public Identifier<VertexID, boost::uint64_t, boost::uint8_t>
-{
-    typedef Identifier<VertexID, boost::uint64_t, boost::uint8_t> base_type;
-    VertexID(const value_type& v = value_type(0, 0)) : base_type(v){}
-};
-template<typename Tstrm_, typename Ttraits_>
-inline std::basic_ostream<Tstrm_, Ttraits_>&
-operator<<(std::basic_ostream<Tstrm_, Ttraits_>& strm, const VertexID& v)
-{
-    strm << "VtxID(" << static_cast<boost::uint32_t>(v.lot())
-         << ':' << v.serial() << ')';
-    return strm;
-}
-
-struct FaceID : public Identifier<FaceID, boost::uint64_t, boost::uint8_t>
-{
-    typedef Identifier<FaceID, boost::uint64_t, boost::uint8_t> base_type;
-    FaceID(const value_type& v = value_type(0, 0)) : base_type(v){}
-};
-template<typename Tstrm_, typename Ttraits_>
-inline std::basic_ostream<Tstrm_, Ttraits_>&
-operator<<(std::basic_ostream<Tstrm_, Ttraits_>& strm, const FaceID& v)
-{
-    strm << "FaceID(" << static_cast<boost::uint32_t>(v.lot())
-         << ':' << v.serial() << ')';
-    return strm;
-}
-
-struct EdgeID : public Identifier<EdgeID, boost::uint64_t, boost::uint8_t>
-{
-    typedef Identifier<EdgeID, boost::uint64_t, boost::uint8_t> base_type;
-    EdgeID(const value_type& v = value_type(0, 0)) : base_type(v){}
-};
-template<typename Tstrm_, typename Ttraits_>
-inline std::basic_ostream<Tstrm_, Ttraits_>&
-operator<<(std::basic_ostream<Tstrm_, Ttraits_>& strm, const EdgeID& v)
-{
-    strm << "EdgeID(" << static_cast<boost::uint32_t>(v.lot())
-         << ':' << v.serial() << ')';
-    return strm;
-}
-} // ecell4
-
-ECELL4_DEFINE_HASH_BEGIN()
-template<>
-struct hash<ecell4::FaceID>
-{
-    std::size_t operator()(const ecell4::FaceID& val) const
-    {
-        return static_cast<std::size_t>(val().first ^ val().second);
-    }
-};
-
-template<>
-struct hash<ecell4::VertexID>
-{
-    std::size_t operator()(const ecell4::VertexID& val) const
-    {
-        return static_cast<std::size_t>(val().first ^ val().second);
-    }
-};
-
-template<>
-struct hash<ecell4::EdgeID>
-{
-    std::size_t operator()(const ecell4::EdgeID& val) const
-    {
-        return static_cast<std::size_t>(val().first ^ val().second);
-    }
-};
-ECELL4_DEFINE_HASH_END()
-// }}} Identifiers
-
-namespace ecell4
-{
 
 // Static Polygon. once made, the shape never change.
-template<typename T_face_id,
-         typename T_vertex_id = VertexID,
-         typename T_edge_id   = EdgeID>
+// (Face|Edge|Vertex)ID are just std::size_t.
 class Polygon : public Shape
 {
   public:
 
-    static const Real tolerance_absolute;
-    static const Real tolerance_relative;
+    static const Real absolute_tolerance;
+    static const Real relative_tolerance;
 
-    typedef T_vertex_id vertex_id_type;
-    typedef T_face_id   face_id_type;
-    typedef T_edge_id   edge_id_type;
-    typedef SerialIDGenerator<T_vertex_id> vertex_id_generator_type;
-    typedef SerialIDGenerator<T_face_id>   face_id_generator_type;
-    typedef SerialIDGenerator<T_edge_id>   edge_id_generator_type;
-
-    BOOST_STATIC_ASSERT(boost::is_same<
-        typename T_vertex_id::lot_type, typename T_face_id::lot_type>::value);
-    BOOST_STATIC_ASSERT(boost::is_same<
-        typename T_vertex_id::lot_type, typename T_edge_id::lot_type>::value);
-    typedef T_vertex_id::lot_type lot_type;
+    typedef std::size_t   face_id_type;
+    typedef std::size_t   edge_id_type;
+    typedef std::size_t vertex_id_type;
 
     struct vertex_data
     {
-        bool  is_contiguous; // there are faces successively <=> there is no hole
-        Real  angle;
-        Real3 position;
+        bool  is_contiguous; // there are faces successively around the vertex
+        Real  angle;         // total angle around this vertex
+        Real3 position;      // position of this vertex
         std::vector<edge_id_type> outgoing_edges;
     };
     struct edge_data
     {
-        Real           length;
-        Real           tilt;
-        Real3          direction;
-        vertex_id_type destination;
-        face_id_type   face;
-        edge_id_type   next_edge;
+        Real           length;    // length of this edge
+        Real           tilt;      // tilt from this->face to opposite face
+        Real3          direction; // direction independent from boundary
+        vertex_id_type target;    // destination vertex
+        face_id_type   face;      // belonging face
+        edge_id_type   next;      // edge on the same face, starting from target
         boost::optional<edge_id_type> opposite_edge;
     };
     struct face_data
     {
-        Triangle triangle;
-        std::array<edge_id_type, 3>   edges;    // consistent w/ triangle.edges
-        std::array<vertex_id_type, 3> vertices; // consistent w/ triangle.vertices
+        Triangle triangle; // not considering Boundary, contains just the shape
+        std::array<  edge_id_type, 3> edges;    // idx consistent with triangle
+        std::array<vertex_id_type, 3> vertices; // idx consistent with triangle
     };
 
-    typedef ObjectIDContainer<vertex_id_type, vertex_data> vertex_container_type;
-    typedef ObjectIDContainer<face_id_type,   face_data>   face_container_type;
-    typedef ObjectIDContainer<edge_id_type,   edge_data>   edge_container_type;
+    typedef std::vector<vertex_data> vertex_container_type;
+    typedef std::vector<  face_data>   face_container_type;
+    typedef std::vector<  edge_data>   edge_container_type;
+
+    // neighbor list (of faces) implementation
+    typedef std::vector<std::size_t>                          nlist_idxs_type;
+    typedef std::vector<std::pair<std::size_t, std::size_t> > nlist_ranges_type;
 
   public:
 
-    Polygon(const Real3& edge_length, const lot_type lot = lot_type())
+    Polygon(const Real3& edge_length)
         : edge_length_(edge_length), total_area(0.0),
-          vidgen_(lot), fidgen_(lot), eidgen_(lot)
     {}
-    Polygon(const Real3& edge_length, const std::vector<Triangle>& ts,
-            const lot_type lot = lot_type())
+    Polygon(const Real3& edge_length, const std::vector<Triangle>& ts)
         : edge_length_(edge_length), total_area(0.0),
-          vidgen_(lot), fidgen_(lot), eidgen_(lot)
     {
         this->assign(ts, tol_abs, tol_rel);
     }
@@ -218,99 +133,91 @@ class Polygon : public Shape
     {return this->std::sqrt(distance_sq(pos1, pos2));}
 
     bool is_contiguous(const vertex_id_type& vid) const
-    {
-        return this->vertex_at(vid).is_contiguous;
-    }
+    {return this->vertices_.at(vid).is_contiguous;}
 
     boost::optional<vertex_id_type>
-    find_vertex(const Real& pos, const Real tolerance_abs = 1e-8,
-                                 const Real tolerance_rel = 1e-8) const
+    find_vertex(const Real& pos) const
     {
-        const Real tolerance_rel2 = tolerance_rel * tolerance_rel;
-        const Real tolerance_abs2 = tolerance_abs * tolerance_abs;
+        const Real tol_rel2 = relative_tolerance_rel * relative_tolerance;
+        const Real tol_abs2 = absolute_tolerance_abs * absolute_tolerance;
 
-        for(typename vertex_container_type::const_iterator
-            i(this->vertices_.begin()), e(this->vertices_.end()); i!=e; ++i)
+        for(std::size_t i=0; i<vertices_.size(); ++i)
         {
+            const vertex_data& vd = vertices_[i];
             const Real dist_sq = length_sq(
-                    this->periodic_transpose(i->second.position, pos) - pos);
-            if(dist_sq < tolerance_abs2 ||
-               dist_sq < length_sq(pos) * tolerance_rel2)
+                this->periodic_transpose(vd.position, pos) - pos);
+
+            if(dist_sq < tol_abs2 || dist_sq < length_sq(pos) * tol_rel2)
             {
-                return i->first;
+                return i;
             }
         }
         return boost::none;
     }
 
     // half-edge traverse
+    // next edge: the edge belonging the same face,
+    //            starting from the target of current edge
+    edge_id_type
+    next_of(const edge_id_type eid) const
+    {return this->edge_at(eid).next;}
 
-    edge_id_type next_of(const edge_id_type eid) const
-    {
-        return this->edge_at(eid).next_edge;
-    }
     boost::optional<edge_id_type>
     next_of(const boost::optional<edge_id_type>& eid) const
-    {
-        return (eid) ? (this->edge_at(*eid).next_edge) : (boost::none);
-    }
+    {return (eid) ? (this->edge_at(*eid).next) : (boost::none);}
 
+    // opposite edge: the edge that starts from the target of current edge,
+    //                ends at the starting point of current edge.
     boost::optional<edge_id_type>
     opposite_of(const edge_id_type eid) const
-    {
-        return this->edge_at(eid).opposite_edge;
-    }
+    {return this->edge_at(eid).opposite_edge;}
+
     boost::optional<edge_id_type>
     opposite_of(const boost::optional<edge_id_type>& eid) const
-    {
-        return (eid) ? (this->edge_at(*eid).opposite_edge) : (boost::none);
-    }
+    {return (eid) ? (this->edge_at(*eid).opposite_edge) : (boost::none);}
 
-    vertex_id_type destination_of(const edge_id_type eid) const
-    {
-        return this->edge_at(eid).destination;
-    }
+    // target vertex: the vertex that current edge stops at.
+    vertex_id_type
+    target_of(const edge_id_type eid) const
+    {return this->edge_at(eid).target;}
+
     boost::optional<vertex_id_type>
-    destination_of(const boost::optional<edge_id_type>& eid) const
-    {
-        return (eid) ? (this->edge_at(*eid).destination) : (boost::none);
-    }
+    target_of(const boost::optional<edge_id_type>& eid) const
+    {return (eid) ? (this->edge_at(*eid).target) : (boost::none);}
 
-    face_id_type belonging_face(const edge_id_type eid) const
-    {
-        return this->edge_at(eid).face;
-    }
+    // belonging face: the face that corresponds to the current edge.
+    face_id_type
+    face_of(const edge_id_type eid) const
+    {return this->edge_at(eid).face;}
+
     boost::optional<face_id_type>
-    belonging_face(const boost::optional<edge_id_type>& eid) const
-    {
-        return (eid) ? (this->edge_at(*eid).face) : (boost::none);
-    }
+    face_of(const boost::optional<edge_id_type>& eid) const
+    {return (eid) ? (this->edge_at(*eid).face) : (boost::none);}
 
+    // edge ids that are corresponds to the face
     boost::array<edge_id_type, 3> const&
     edges_of(const face_id_type fid) const
-    {
-        return this->face_at(fid).edges;
-    }
-    boost::array<edge_id_type, 3> const&
+    {return this->face_at(fid).edges;}
+
+    // vertex ids that are corresponds to the face
+    boost::array<vertex_id_type, 3> const&
     vertices_of(const face_id_type fid) const
-    {
-        return this->face_at(fid).vertices;
-    }
+    {return this->face_at(fid).vertices;}
+
+    // edge ids that starts from the vertex
     std::vector<edge_id_type> const&
     outgoing_edges(const vertex_id_type vid) const
-    {
-        return this->vertex_at(vid).outgoing_edges;
-    }
+    {return this->vertices_.at(vid).outgoing_edges;}
 
     // accessor ---------------------------------------------------------------
 
     Real apex_angle_at(const vertex_id_type& vid) const
     {
-        return this->vertex_at(vid).angle;
+        return this->vertices_.at(vid).angle;
     }
     Real position_at(const vertex_id_type& vid) const
     {
-        return this->vertex_at(vid).position;
+        return this->vertices_.at(vid).position;
     }
     std::vector<face_id_type>
     connecting_faces(const vertex_id_type& vid) const
@@ -341,14 +248,14 @@ class Polygon : public Shape
         const std::array<edge_id_type>& sides = this->edges_of(fid);
         for(std::size_t i=0; i<3; ++i)
         {
-            retval[i] = this->belonging_face(this->opposite_of(sides[i]));
+            retval[i] = this->face_of(this->opposite_of(sides[i]));
         }
         return retval;
     }
     boost::optional<face_id_type>
     connecting_faces(const face_id_type& fid, const std::size_t i) const
     {
-        return this->belonging_face(this->opposite_of(this->edges_of(fid)[i]));
+        return this->face_of(this->opposite_of(this->edges_of(fid)[i]));
     }
 
     /* inherited from shape --------------------------------------------------*/
@@ -397,14 +304,15 @@ class Polygon : public Shape
     {
         Real draw_triangle = rng->uniform(0.0, total_area_);
 
-        for(typename face_container_type::const_iterator
-            i(this->faces_.begin()), e(this->faces_.end()); i!=e; ++i)
+        for(std::size_t i=0; i<this->faces_.size(); ++i)
         {
-            draw_triangle -= i->second.triangle.area();
+            const face_data& fd = this->faces_[i];
+
+            draw_triangle -= fd.triangle.area();
             if(draw_triangle <= 0.0)
             {
-                fid = i->first;
-                return i->second.triangle.draw_position(rng);
+                fid = i;
+                return fd.triangle.draw_position(rng);
             }
         }
         // if draw_triangle was positive throughout the loop,
@@ -413,6 +321,9 @@ class Polygon : public Shape
         return faces_.back().second.triangle.draw_position(rng);
     }
 
+    // Boundary condition stuff ----------------------------------------------//
+
+    // restrict position inside of the boundary.
     Real3 apply_boundary(const Real3& pos) const
     {
         return modulo(pos, edge_length_);
@@ -431,35 +342,9 @@ class Polygon : public Shape
         return pos1;
     }
 
-    std::vector<face_id_type> list_face_id() const
-    {
-        std::vector<face_id_type> list(this->faces_.size());
-        for(std::size_t i=0; i<list.size(); ++i)
-        {
-            list[i] = this->faces_[i].first;
-        }
-        return list;
-    }
-
-    std::vector<edge_id_type> list_edge_id() const
-    {
-        std::vector<edge_id_type> list(this->edges_.size());
-        for(std::size_t i=0; i<list.size(); ++i)
-        {
-            list[i] = this->edges_[i].first;
-        }
-        return list;
-    }
-
-    std::vector<vertex_id_type> list_vertex_id() const
-    {
-        std::vector<vertex_id_type> list(this->vertices_.size());
-        for(std::size_t i=0; i<list.size(); ++i)
-        {
-            list[i] = this->vertices_[i].first;
-        }
-        return list;
-    }
+    std::size_t   face_size() const throw() {return    faces_.size();}
+    std::size_t   edge_size() const throw() {return    edges_.size();}
+    std::size_t vertex_size() const throw() {return vertices_.size();}
 
   private:
 
@@ -483,7 +368,8 @@ class Polygon : public Shape
     Real distance_sq_connected_by_edges_impl(
             const std::pair<Real3, face_id_type>& pos1,
             const std::pair<Real3, face_id_type>& pos2,
-            const edge_id_type eid, const vertex_data& vdata) const;
+            const edge_id_type eid,
+            const vertex_data& vdata) const;
 
     Real distance_sq_connected_by_vertex(
             const std::pair<Real3, face_id_type>& pos1,
@@ -491,8 +377,10 @@ class Polygon : public Shape
             const vertex_id_type vid) const;
 
     boost::optional<edge_id_type>
-    find_face_around_vtx(const edge_id_type start, const face_id_type goal,
-                         Real& theta) const;
+    find_face_around_vtx(
+            const edge_id_type start,
+            const face_id_type goal,
+            Real& theta) const;
 
     Real direction_connected_by_edges(
             const std::pair<Real3, face_id_type>& pos1,
@@ -513,18 +401,12 @@ class Polygon : public Shape
     Real  total_area_;
     Real3 edge_length_; // boundary({0,0,0}, {edge_length})
 
-    vertex_id_generator_type vidgen_;
-    vertex_container_type    vertices_;
-    face_id_generator_type   fidgen_;
-    face_container_type      faces_;
-    edge_id_generator_type   eidgen_;
-    edge_container_type      edges_;
+    vertex_container_type vertices_;
+    face_container_type   faces_;
+    edge_container_type   edges_;
+    nlist_idxs_type       neighbor_list_;
+    nlist_ranges_type     neighbor_list_range_;
 };
-
-template<typename T_fid, typename T_vid, typename T_eid>
-const Real Polygon<T_fid, T_vid, T_eid>::tolerance_absolute = 1e-12;
-template<typename T_fid, typename T_vid, typename T_eid>
-const Real Polygon<T_fid, T_vid, T_eid>::tolerance_relative = 1e-8;
 
 template<typename T_fid, typename T_vid, typename T_eid>
 Real Polygon<T_fid, T_vid, T_eid>::distance_sq(
@@ -542,7 +424,7 @@ Real Polygon<T_fid, T_vid, T_eid>::distance_sq(
     for(std::size_t i=0; i<3; ++i)
     {
         const edge_id_type eid = this->edges_of(pos1.second, i);
-        if(this->belonging_face(this->opposite_of(eid)) == pos2.second)
+        if(this->face_of(this->opposite_of(eid)) == pos2.second)
         {
             return this->distance_sq_connected_by_edges(pos1, pos2, eid);
         }
@@ -556,7 +438,7 @@ Real Polygon<T_fid, T_vid, T_eid>::distance_sq(
         for(typename std::vector<edge_id_type>::const_iterator
                 ei(es.begin()), ee(es.end()); ei!=ee; ++ei)
         {
-            if(this->belonging_face(*ei) == pos2.second)
+            if(this->face_of(*ei) == pos2.second)
             {
                 return this->distance_sq_connected_by_vertex(pos1, pos2, vs[i]);
             }
@@ -579,8 +461,8 @@ Real Polygon<T_fid, T_vid, T_eid>::distance_sq_connected_by_edges(
             "invalid polygon structure");
     }
 
-    const vertex_data& vdata1 = this->vertex_at(this->destination_of(eid));
-    const vertex_data& vdata2 = this->vertex_at(this->destination_of(*opp));
+    const vertex_data& vdata1 = this->vertices_.at(this->target_of(eid));
+    const vertex_data& vdata2 = this->vertices_.at(this->target_of(*opp));
 
     return std::min(
         this->distance_sq_connected_by_edges_impl(pos1, pos2,  eid, vdata1),
@@ -636,14 +518,14 @@ Polygon<T_fid, T_vid, T_eid>::find_face_around_vtx(
     for(std::size_t i=0; i<10000; ++i)
     {
         eid = this->next_of(this->next_of(this->opposite_of(eid)));
-        const face_id_type belonging_face_id = this->belonging_face(*eid);
+        const face_id_type belonging_face_id = this->face_of(*eid);
         if(!eid || belonging_face_id == goal)
         {
             return eid;
         }
 
         bool found = false;
-        const face_data& belonging_face_data = this->face_at(belonging_face_id);
+        const face_data& belonging_face_data = this->faces_.at(belonging_face_id);
         for(std::size_t i=0; i<3; ++i)
         {
             if(belonging_face_data.vertices[i] == vid)
@@ -676,7 +558,7 @@ Real Polygon<T_fid, T_vid, T_eid>::distance_sq_connected_by_vertex(
         const std::pair<Real3, face_id_type>& pos2,
         const vertex_id_type vid) const
 {
-    const vertex_data& vdata = this->vertex_at(vid);
+    const vertex_data& vdata = this->vertices_.at(vid);
     const Real3 v1    =
         this->periodic_transpose(vdata.position, pos1.first) - pos1.first;
     const Real3 v2    =
@@ -697,13 +579,13 @@ Real Polygon<T_fid, T_vid, T_eid>::distance_sq_connected_by_vertex(
     const Real v2_len = std::sqrt(v2_sq);
 
     // ------------------------------------------------------------------------
-    const face_data& f1data = this->face_at(pos1.second);
+    const face_data& f1data = this->faces_.at(pos1.second);
 
     edge_id_type start;
     for(std::size_t i=0; i<3; ++i)
     {
         start = f1data.edges[i];
-        if(this->destination_of(start) == vid)
+        if(this->target_of(start) == vid)
         {
             break;
         }
@@ -733,7 +615,7 @@ Real Polygon<T_fid, T_vid, T_eid>::distance_sq_connected_by_vertex(
     for(std::size_t i=0; i<3; ++i)
     {
         start = f2data.edges[i];
-        if(this->destination_of(start) == vid)
+        if(this->target_of(start) == vid)
         {
             break;
         }
@@ -776,7 +658,7 @@ Real Polygon<T_fid, T_vid, T_eid>::distance_sq(
     for(typename std::vector<edge_id_type>::const_iterator
             i(outs.begin()), e(outs.end()); i!=e; ++i)
     {
-        if(this->belonging_face(*i) == pos2.second)
+        if(this->face_of(*i) == pos2.second)
         {
             return length_sq(this->periodic_transpose(pos1, pos2) - pos2);
         }
@@ -795,7 +677,7 @@ Real Polygon<T_fid, T_vid, T_eid>::distance_sq(
     for(typename std::vector<edge_id_type>::const_iterator
             i(outs.begin()), e(outs.end()); i!=e; ++i)
     {
-        if(this->destination_of(*i) == pos2.second)
+        if(this->target_of(*i) == pos2.second)
         {
             const Real d = this->edge_at(*i).length;
             return d * d;
@@ -821,7 +703,7 @@ Real3 Polygon<T_fid, T_vid, T_eid>::direction(
     for(std::size_t i=0; i<3; ++i)
     {
         const edge_id_type eid = this->edges_of(pos1.second, i);
-        if(this->belonging_face(this->opposite_of(eid)) == pos2.second)
+        if(this->face_of(this->opposite_of(eid)) == pos2.second)
         {
             return this->direction_connected_by_edges(pos1, pos2, eid);
         }
@@ -835,7 +717,7 @@ Real3 Polygon<T_fid, T_vid, T_eid>::direction(
         for(typename std::vector<edge_id_type>::const_iterator
                 ei(es.begin()), ee(es.end()); ei!=ee; ++ei)
         {
-            if(this->belonging_face(*ei) == pos2.second)
+            if(this->face_of(*ei) == pos2.second)
             {
                 return this->direction_connected_by_vertex(pos1, pos2, vs[i]);
             }
@@ -857,8 +739,8 @@ Real Polygon<T_fid, T_vid, T_eid>::direction_connected_by_edges(
             "invalid polygon structure");
     }
 
-    const vertex_data& vdata1 = this->vertex_at(this->destination_of(eid));
-    const vertex_data& vdata2 = this->vertex_at(this->destination_of(*opp));
+    const vertex_data& vdata1 = this->vertices_.at(this->target_of(eid));
+    const vertex_data& vdata2 = this->vertices_.at(this->target_of(*opp));
 
     const Real3 d1 =
         this->direction_connected_by_edges_impl(pos1, pos2,  eid, vdata1);
@@ -888,7 +770,7 @@ Real3 Polygon<T_fid, T_vid, T_eid>::direction(
     for(typename std::vector<edge_id_type>::const_iterator
             i(outs.begin()), e(outs.end()); i!=e; ++i)
     {
-        if(this->belonging_face(*i) == pos2.second)
+        if(this->face_of(*i) == pos2.second)
         {
             return this->periodic_transpose(pos2, pos1) - pos1;
         }
@@ -907,7 +789,7 @@ Real Polygon<T_fid, T_vid, T_eid>::direction(
     for(typename std::vector<edge_id_type>::const_iterator
             i(outs.begin()), e(outs.end()); i!=e; ++i)
     {
-        if(this->destination_of(*i) == pos2.second)
+        if(this->target_of(*i) == pos2.second)
         {
             return this->edge_at(*i).direction;
         }
