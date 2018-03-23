@@ -65,7 +65,7 @@ public:
     /*
      * VoxelSpace Traits
      */
-    std::pair<ParticleID, Voxel> get_voxel_at(const coordinate_type& coord) const;
+    std::pair<ParticleID, ParticleVoxel> get_voxel_at(const coordinate_type& coord) const;
     boost::shared_ptr<VoxelPool> get_voxel_pool_at(const coordinate_type& coord) const
     {
         return voxels_.at(coord);
@@ -96,9 +96,9 @@ public:
     }
 
     /*
-     * Voxel Manipulation
+     * ParticleVoxel Manipulation
      */
-    bool update_voxel(const ParticleID& pid, Voxel v);
+    bool update_voxel(const ParticleID& pid, ParticleVoxel v);
     bool remove_voxel(const ParticleID& pid);
     bool remove_voxel(const coordinate_type& coord);
 
@@ -126,7 +126,7 @@ public:
 
 protected:
 
-    boost::shared_ptr<VoxelPool> get_voxel_pool(Voxel v);
+    boost::shared_ptr<VoxelPool> get_voxel_pool(ParticleVoxel v);
     Integer count_voxels(const boost::shared_ptr<VoxelPool>& vp) const
     {
         return static_cast<Integer>(std::count(voxels_.begin(), voxels_.end(), vp));

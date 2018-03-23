@@ -18,7 +18,7 @@
 
 #include "VoxelPool.hpp"
 #include "VacantType.hpp"
-#include "Voxel.hpp"
+#include "ParticleVoxel.hpp"
 
 namespace ecell4
 {
@@ -43,7 +43,7 @@ class VoxelSpaceBase : public Space
 {
 public:
 
-    typedef Voxel::coordinate_type coordinate_type;
+    typedef ParticleVoxel::coordinate_type coordinate_type;
     typedef VoxelPool::coordinate_id_pair_type coordinate_id_pair_type;
 
 protected:
@@ -231,7 +231,7 @@ public:
     std::pair<ParticleID, Particle>
     get_particle(const ParticleID& pid) const
     {
-        const Voxel v(get_voxel(pid).second);
+        const ParticleVoxel v(get_voxel(pid).second);
         return std::make_pair(pid, Particle(
             v.species(), coordinate2position(v.coordinate()), v.radius(), v.D()));
     }
@@ -285,12 +285,12 @@ public:
     Integer num_voxels(const Species& sp) const;
     Integer num_voxels() const;
 
-    virtual std::vector<std::pair<ParticleID, Voxel> > list_voxels() const;
-    virtual std::vector<std::pair<ParticleID, Voxel> > list_voxels(const Species& sp) const;
-    virtual std::vector<std::pair<ParticleID, Voxel> > list_voxels_exact(const Species& sp) const;
+    virtual std::vector<std::pair<ParticleID, ParticleVoxel> > list_voxels() const;
+    virtual std::vector<std::pair<ParticleID, ParticleVoxel> > list_voxels(const Species& sp) const;
+    virtual std::vector<std::pair<ParticleID, ParticleVoxel> > list_voxels_exact(const Species& sp) const;
 
-    std::pair<ParticleID, Voxel> get_voxel(const ParticleID& pid) const;
-    virtual std::pair<ParticleID, Voxel> get_voxel_at(const coordinate_type& coord) const = 0;
+    std::pair<ParticleID, ParticleVoxel> get_voxel(const ParticleID& pid) const;
+    virtual std::pair<ParticleID, ParticleVoxel> get_voxel_at(const coordinate_type& coord) const = 0;
 
     boost::shared_ptr<VoxelPool> find_voxel_pool(const Species& sp);
     boost::shared_ptr<const VoxelPool> find_voxel_pool(const Species& sp) const;
@@ -317,9 +317,9 @@ public:
     get_neighbor(const coordinate_type& coord, const Integer& nrand) const = 0;
 
     /*
-     * Voxel Manipulation
+     * ParticleVoxel Manipulation
      */
-    virtual bool update_voxel(const ParticleID& pid, Voxel v) = 0;
+    virtual bool update_voxel(const ParticleID& pid, ParticleVoxel v) = 0;
     virtual bool remove_voxel(const ParticleID& pid) = 0;
     virtual bool remove_voxel(const coordinate_type& coord) = 0;
 
@@ -335,7 +335,7 @@ public:
     virtual Integer3 shape() const = 0;
     virtual Integer actual_size() const = 0;
 
-    bool on_structure(Voxel v)
+    bool on_structure(ParticleVoxel v)
     {
         return get_voxel_pool_at(v.coordinate()) != get_voxel_pool(v)->location();
     }
@@ -354,9 +354,9 @@ public:
 
 protected:
 
-    virtual boost::shared_ptr<VoxelPool> get_voxel_pool(Voxel v) = 0;
+    virtual boost::shared_ptr<VoxelPool> get_voxel_pool(ParticleVoxel v) = 0;
     virtual Integer count_voxels(const boost::shared_ptr<VoxelPool>& vp) const = 0;
-    void push_voxels(std::vector<std::pair<ParticleID, Voxel> >& voxels,
+    void push_voxels(std::vector<std::pair<ParticleID, ParticleVoxel> >& voxels,
                      const boost::shared_ptr<MoleculePool>& voxel_pool,
                      const Species& species) const;
 

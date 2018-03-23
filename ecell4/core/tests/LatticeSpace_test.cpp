@@ -47,22 +47,22 @@ BOOST_AUTO_TEST_CASE(GetVoxel)
     const Integer coordinate(space.position2coordinate(position));
 
     {
-        std::pair<ParticleID, Voxel> voxel(space.get_voxel_at(coordinate));
+        std::pair<ParticleID, ParticleVoxel> voxel(space.get_voxel_at(coordinate));
         BOOST_CHECK_EQUAL(voxel.first, ParticleID());
         BOOST_CHECK_EQUAL(voxel.second.species(), space.vacant()->species());
     }
 
     ParticleID id(sidgen());
-    BOOST_CHECK(space.update_voxel(id, Voxel(sp, coordinate, radius, D)));
+    BOOST_CHECK(space.update_voxel(id, ParticleVoxel(sp, coordinate, radius, D)));
 
     {
-        std::pair<ParticleID, Voxel> voxel(space.get_voxel_at(coordinate));
+        std::pair<ParticleID, ParticleVoxel> voxel(space.get_voxel_at(coordinate));
         BOOST_CHECK_EQUAL(voxel.first, id);
         BOOST_CHECK_EQUAL(voxel.second.species(), sp);
     }
 
     {
-        std::pair<ParticleID, Voxel> voxel(space.get_voxel(id));
+        std::pair<ParticleID, ParticleVoxel> voxel(space.get_voxel(id));
         BOOST_CHECK_EQUAL(voxel.first, id);
         BOOST_CHECK_EQUAL(voxel.second.species(), sp);
     }
@@ -86,7 +86,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_update_particle)
     Real r(1.0);
     Real d(2.3);
     // Particle particle(sp, pos, r, d);
-    Voxel v(sp, space.position2coordinate(pos), r, D);
+    ParticleVoxel v(sp, space.position2coordinate(pos), r, D);
 
     // BOOST_CHECK(space.update_particle(id, particle));
     BOOST_CHECK(space.update_voxel(id, v));
@@ -99,7 +99,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_num_particles)
     Real3 pos(2e-8, 1.7e-8, 1.5e-8);
     Real r(1.0), d(2.3);
     // Particle particle(sp, pos, r, d);
-    Voxel v(sp, space.position2coordinate(pos), r, D);
+    ParticleVoxel v(sp, space.position2coordinate(pos), r, D);
 
     ParticleID a_id(sidgen());
     Species a(std::string("ANOTHER"));
@@ -107,7 +107,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_num_particles)
     Real r1(1.1);
     Real d1(4.3);
     // Particle another(a, pos1, r1, d1);
-    Voxel another(a, space.position2coordinate(pos1), r1, d1);
+    ParticleVoxel another(a, space.position2coordinate(pos1), r1, d1);
 
     BOOST_CHECK(space.update_voxel(id, v));
     BOOST_CHECK(space.update_voxel(a_id, another));
@@ -123,7 +123,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_list_particles)
     Real3 pos(2e-8, 1.7e-8, 1.5e-8);
     Real r(1.0), d(2.3);
     // Particle particle(sp, pos, r, d);
-    Voxel v(sp, space.position2coordinate(pos), r, D);
+    ParticleVoxel v(sp, space.position2coordinate(pos), r, D);
 
     ParticleID a_id(sidgen());
     Species a(std::string("ANOTHER"));
@@ -131,7 +131,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_list_particles)
     Real r1(1.1);
     Real d1(4.3);
     // Particle another(a, pos1, r1, d1);
-    Voxel another(a, space.position2coordinate(pos1), r1, d1);
+    ParticleVoxel another(a, space.position2coordinate(pos1), r1, d1);
 
     BOOST_CHECK(space.update_voxel(id, v));
     BOOST_CHECK(space.update_voxel(a_id, another));
@@ -210,7 +210,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_add_remove_molecule)
             space.global2coordinate(Integer3(3,4,5)));
     ParticleID pid(sidgen());
     BOOST_CHECK(space.update_voxel(
-        pid, Voxel(sp, coord, radius, D)));
+        pid, ParticleVoxel(sp, coord, radius, D)));
     BOOST_CHECK_EQUAL(space.num_particles(sp), 1);
 
     boost::shared_ptr<const VoxelPool> mt(space.get_voxel_pool_at(coord));
@@ -229,7 +229,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_move)
 
     ParticleID pid(sidgen());
     BOOST_CHECK(space.update_voxel(
-        pid, Voxel(sp, coord, radius, D)));
+        pid, ParticleVoxel(sp, coord, radius, D)));
 
     boost::shared_ptr<VoxelPool> from_mt(space.get_voxel_pool_at(coord));
     BOOST_CHECK(!from_mt->is_vacant());
@@ -244,7 +244,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_move)
     BOOST_CHECK(!mt->is_vacant());
 
     BOOST_CHECK(space.update_voxel(
-        sidgen(), Voxel(sp, coord, radius, D)));
+        sidgen(), ParticleVoxel(sp, coord, radius, D)));
     BOOST_CHECK(!space.move(coord, to_coord));
 }
 
@@ -259,12 +259,12 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_update_molecule)
 
     ParticleID pid(sidgen());
     BOOST_CHECK(space.update_voxel(
-        pid, Voxel(reactant, coord, radius, D)));
+        pid, ParticleVoxel(reactant, coord, radius, D)));
     // space.update_voxel(
-    //     Voxel(product, coord, radius, D));
+    //     ParticleVoxel(product, coord, radius, D));
     BOOST_CHECK(space.remove_voxel(coord));
     BOOST_CHECK(space.update_voxel(
-        pid, Voxel(product, coord, radius, D)));
+        pid, ParticleVoxel(product, coord, radius, D)));
 
     boost::shared_ptr<const VoxelPool> mt(space.get_voxel_pool_at(coord));
     BOOST_ASSERT(mt->species() == product);
@@ -281,7 +281,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_update_voxel)
         }
 
         const Real3 pos(space.coordinate2position(coord));
-        space.update_voxel(pid, Voxel(sp, coord, radius, D));
+        space.update_voxel(pid, ParticleVoxel(sp, coord, radius, D));
         BOOST_CHECK_EQUAL(space.num_particles(), 1);
 
         std::pair<ParticleID, Particle> pair(space.list_particles()[0]);
@@ -301,7 +301,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_lattice_structure)
         if (space.is_inside(coord))
         {
             ParticleID pid(sidgen());
-            BOOST_CHECK(space.update_voxel(pid, Voxel(sp, coord, radius, D)));
+            BOOST_CHECK(space.update_voxel(pid, ParticleVoxel(sp, coord, radius, D)));
         }
     }
 }
@@ -367,7 +367,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_periodic_col)
             const VoxelSpaceBase::coordinate_type
                 coord(space.global2coordinate(Integer3(0, i, j)));
 
-            BOOST_CHECK(space.update_voxel(sidgen(), Voxel(sp, coord, radius, D)));
+            BOOST_CHECK(space.update_voxel(sidgen(), ParticleVoxel(sp, coord, radius, D)));
         }
 
     // from 0 to col_size-1
@@ -412,7 +412,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_periodic_row)
             const VoxelSpaceBase::coordinate_type
                 coord(space.global2coordinate(Integer3(col, 0, layer)));
 
-            BOOST_CHECK(space.update_voxel(sidgen(), Voxel(sp, coord, radius, D)));
+            BOOST_CHECK(space.update_voxel(sidgen(), ParticleVoxel(sp, coord, radius, D)));
         }
 
     // from 0 to row_size-1
@@ -456,7 +456,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_periodic_layer)
             const VoxelSpaceBase::coordinate_type
                 coord(space.global2coordinate(Integer3(col, row, 0)));
 
-            BOOST_CHECK(space.update_voxel(sidgen(), Voxel(sp, coord, radius, D)));
+            BOOST_CHECK(space.update_voxel(sidgen(), ParticleVoxel(sp, coord, radius, D)));
         }
 
     // from 0 to layer_size-1
@@ -539,7 +539,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_structure_update)
     //XXX: Particle has no information about the location.
     //XXX: BOOST_CHECK(space.update_particle(pid, Particle(sp, pos, radius, D)));
     BOOST_CHECK(space.update_voxel(
-        pid, Voxel(sp, space.position2coordinate(pos), radius, D, structure.serial())));
+        pid, ParticleVoxel(sp, space.position2coordinate(pos), radius, D, structure.serial())));
     BOOST_CHECK_EQUAL(space.list_particles().size(), 1);
     BOOST_CHECK_EQUAL(space.list_particles(sp).size(), 1);
     BOOST_CHECK(space.remove_particle(pid));
@@ -548,7 +548,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_structure_update)
 
     Species sp2("B", "2.5e-9", "1e-12");
     BOOST_CHECK_THROW(
-        space.update_voxel(sidgen(), Voxel(sp2, space.position2coordinate(pos), radius, D)),
+        space.update_voxel(sidgen(), ParticleVoxel(sp2, space.position2coordinate(pos), radius, D)),
         NotSupported);
     // BOOST_CHECK_THROW(
     //     space.update_particle(sidgen(), Particle(sp2, pos, radius, D)),
@@ -567,7 +567,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_structure_move)
     ParticleID pid(sidgen());
     //XXX: BOOST_CHECK(space.update_particle(pid, Particle(sp, pos1, radius, D)));
     BOOST_CHECK(space.update_voxel(
-        pid, Voxel(sp, space.position2coordinate(pos1), radius, D, structure.serial())));
+        pid, ParticleVoxel(sp, space.position2coordinate(pos1), radius, D, structure.serial())));
     BOOST_CHECK_EQUAL(space.list_particles(sp).size(), 1);
     BOOST_CHECK_EQUAL(space.list_particles(structure).size(), 1);
     BOOST_CHECK_EQUAL(space.list_particles().size(), 2); // TODO -> 1
@@ -596,9 +596,9 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_save_and_load)
     const VoxelSpaceBase::coordinate_type
         center(space.global2coordinate(Integer3(space.col_size()/2, space.row_size()/2, l))),
         point(space.global2coordinate(Integer3(space.col_size()/2, space.row_size()/2, l-2)));
-    BOOST_ASSERT(space.update_voxel(sidgen(), Voxel(sp, center, radius, D, structure.serial())));
+    BOOST_ASSERT(space.update_voxel(sidgen(), ParticleVoxel(sp, center, radius, D, structure.serial())));
     // #XXX !!!Warning!!! Ideally, not necessary to give structure.serial() explicitly
-    BOOST_ASSERT(space.update_voxel(sidgen(), Voxel(
+    BOOST_ASSERT(space.update_voxel(sidgen(), ParticleVoxel(
             Species("B", "2.5e-9", "1e-12"), point, 2.5e-9, 1e-12)));
 
     H5::H5File fout("data.h5", H5F_ACC_TRUNC);

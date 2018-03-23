@@ -18,7 +18,7 @@ struct Fixture
 {
     const Real voxel_radius;
     const Species species;
-    const Voxel voxel;
+    const ParticleVoxel voxel;
     OffLatticeSpace space;
     SerialIDGenerator<ParticleID> sidgen;
 

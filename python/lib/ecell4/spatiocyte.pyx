@@ -22,9 +22,9 @@ cdef class ReactionInfo:
         Args:
           t (Real): A time when a reaction occurred
           reactants (list): A list of reactants.
-            Reactants are given as a pair of ``ParticleID`` and ``Voxel``.
+            Reactants are given as a pair of ``ParticleID`` and ``ParticleVoxel``.
           products (list): A list of products.
-            Products are given as a pair of ``ParticleID`` and ``Voxel``.
+            Products are given as a pair of ``ParticleID`` and ``ParticleVoxel``.
 
         """
         pass  #XXX: only used for doc string
@@ -37,11 +37,11 @@ cdef class ReactionInfo:
         for pid, p in reactants:
             reactants_.push_back(
                 pair[Cpp_ParticleID, Cpp_Voxel](
-                    deref((<ParticleID>pid).thisptr), deref((<Voxel>p).thisptr)))
+                    deref((<ParticleID>pid).thisptr), deref((<ParticleVoxel>p).thisptr)))
         for pid, p in products:
             products_.push_back(
                 pair[Cpp_ParticleID, Cpp_Voxel](
-                    deref((<ParticleID>pid).thisptr), deref((<Voxel>p).thisptr)))
+                    deref((<ParticleID>pid).thisptr), deref((<ParticleVoxel>p).thisptr)))
 
         self.thisptr = new Cpp_ReactionInfo(t, reactants_, products_)
 
@@ -56,7 +56,7 @@ cdef class ReactionInfo:
         """Return a list of reactants
 
         Returns:
-            list: A list of pairs of ``ParticleID`` and ``Voxel``.
+            list: A list of pairs of ``ParticleID`` and ``ParticleVoxel``.
 
         """
         cdef vector[pair[Cpp_ParticleID, Cpp_Voxel]] particles
@@ -78,7 +78,7 @@ cdef class ReactionInfo:
         """Return a list of products
 
         Returns:
-            list: A list of pairs of ``ParticleID`` and ``Voxel``.
+            list: A list of pairs of ``ParticleID`` and ``ParticleVoxel``.
 
         """
         cdef vector[pair[Cpp_ParticleID, Cpp_Voxel]] particles
@@ -274,7 +274,7 @@ cdef class SpatiocyteWorld:
                 Particle_from_Cpp_Particle(address(pid_particle_pair.second)))
 
     def get_voxel(self, ParticleID pid):
-        """get_voxel(pid) -> (ParticleID, Voxel)
+        """get_voxel(pid) -> (ParticleID, ParticleVoxel)
 
         Return the voxel having a particle associated with a given ParticleID.
 
@@ -286,7 +286,7 @@ cdef class SpatiocyteWorld:
         Returns
         -------
         tuple:
-            A pair of ParticleID and Voxel
+            A pair of ParticleID and ParticleVoxel
 
         """
         cdef pair[Cpp_ParticleID, Cpp_Voxel] pid_voxel_pair
@@ -295,7 +295,7 @@ cdef class SpatiocyteWorld:
                 Voxel_from_Cpp_Voxel(address(pid_voxel_pair.second)))
 
     def get_voxel_at(self, Integer coord):
-        """get_voxel_at(coord) -> (ParticleID, Voxel)
+        """get_voxel_at(coord) -> (ParticleID, ParticleVoxel)
 
         Return the voxel at a given coordinate.
 
@@ -307,7 +307,7 @@ cdef class SpatiocyteWorld:
         Returns
         -------
         tuple:
-            A pair of ParticleID and Voxel
+            A pair of ParticleID and ParticleVoxel
 
         """
         cdef pair[Cpp_ParticleID, Cpp_Voxel] pid_voxel_pair
@@ -315,14 +315,14 @@ cdef class SpatiocyteWorld:
         return (ParticleID_from_Cpp_ParticleID(address(pid_voxel_pair.first)),
                 Voxel_from_Cpp_Voxel(address(pid_voxel_pair.second)))
 
-    def on_structure(self, Voxel v):
+    def on_structure(self, ParticleVoxel v):
         """Check if the given voxel would be on the proper structure at the coordinate
         Args:
-            v (Voxel): a voxel scheduled to be placed
+            v (ParticleVoxel): a voxel scheduled to be placed
         Returns:
             bool: if it is on the proper structure, or not
         """
-        return self.thisptr.get().on_structure(deref((<Voxel>v).thisptr))
+        return self.thisptr.get().on_structure(deref((<ParticleVoxel>v).thisptr))
 
     # def on_structure(self, Species sp, Integer coord):
     #     """on_structure(sp, coord) -> bool
@@ -846,13 +846,13 @@ cdef class SpatiocyteWorld:
         self.thisptr.get().load(tostring(filename))
 
     def new_voxel(self, arg1, arg2=None):
-        """new_voxel(arg1, arg2) -> (ParticleID, Voxel)
+        """new_voxel(arg1, arg2) -> (ParticleID, ParticleVoxel)
 
         Create a particle.
 
         Parameters
         ----------
-        arg1 : Voxel
+        arg1 : ParticleVoxel
             The information to create
 
         or
@@ -865,19 +865,19 @@ cdef class SpatiocyteWorld:
         Returns
         -------
         tuple:
-            A pair of ParticleID and Voxel
+            A pair of ParticleID and ParticleVoxel
 
         """
         cdef pair[pair[Cpp_ParticleID, Cpp_Voxel], bool] retval
 
         if arg2 is None:
-            retval = self.thisptr.get().new_voxel(deref((<Voxel> arg1).thisptr))
+            retval = self.thisptr.get().new_voxel(deref((<ParticleVoxel> arg1).thisptr))
         else:
             retval = self.thisptr.get().new_voxel(deref((<Species> arg1).thisptr), <Integer> arg2)
         return ((ParticleID_from_Cpp_ParticleID(address(retval.first.first)), Voxel_from_Cpp_Voxel(address(retval.first.second))), retval.second)
 
     def new_voxel_structure(self, arg1, arg2):
-        """new_voxel_structure(arg1, arg2) -> (ParticleID, Voxel)
+        """new_voxel_structure(arg1, arg2) -> (ParticleID, ParticleVoxel)
 
         Create a particle.
 
@@ -891,7 +891,7 @@ cdef class SpatiocyteWorld:
         Returns
         -------
         tuple:
-            A pair of ParticleID and Voxel
+            A pair of ParticleID and ParticleVoxel
 
         """
         cdef pair[pair[Cpp_ParticleID, Cpp_Voxel], bool] retval
@@ -899,7 +899,7 @@ cdef class SpatiocyteWorld:
         retval = self.thisptr.get().new_voxel_structure(deref((<Species> arg1).thisptr), <Integer> arg2)
         return ((ParticleID_from_Cpp_ParticleID(address(retval.first.first)), Voxel_from_Cpp_Voxel(address(retval.first.second))), retval.second)
 
-    def update_voxel(self, ParticleID pid, Voxel v):
+    def update_voxel(self, ParticleID pid, ParticleVoxel v):
         """update_voxel(pid, v) -> bool
 
         Update a particle.
@@ -908,7 +908,7 @@ cdef class SpatiocyteWorld:
         ----------
         pid : ParticleID
             A particle id of the particle to update
-        v : Voxel
+        v : ParticleVoxel
             The information to update
 
         Returns
@@ -920,7 +920,7 @@ cdef class SpatiocyteWorld:
         return self.thisptr.get().update_voxel(deref(pid.thisptr), deref(v.thisptr))
 
     def list_voxels(self, Species sp = None):
-        """list_voxels(sp=None) -> [ParitcleID, Voxel]
+        """list_voxels(sp=None) -> [ParitcleID, ParticleVoxel]
 
         Returns the list of voxels.
 
@@ -933,7 +933,7 @@ cdef class SpatiocyteWorld:
         Returns
         -------
         list:
-            The list of the pair of ParticleID and Voxel
+            The list of the pair of ParticleID and ParticleVoxel
 
         """
         cdef vector[pair[Cpp_ParticleID, Cpp_Voxel]] voxels
@@ -955,7 +955,7 @@ cdef class SpatiocyteWorld:
         return retval
 
     def list_voxels_exact(self, Species sp):
-        """list_voxels_exact(sp) -> [ParitcleID, Voxel]
+        """list_voxels_exact(sp) -> [ParitcleID, ParticleVoxel]
 
         Returns the list of voxels.
 
@@ -968,7 +968,7 @@ cdef class SpatiocyteWorld:
         Returns
         -------
         list:
-            The list of the pair of ParticleID and Voxel
+            The list of the pair of ParticleID and ParticleVoxel
 
         """
         cdef vector[pair[Cpp_ParticleID, Cpp_Voxel]] voxels
@@ -1169,7 +1169,7 @@ cdef class SpatiocyteWorld:
         return self.thisptr.get().add_interface(deref(sp.thisptr))
 
     def new_voxel_interface(self, arg1, arg2):
-        """new_voxel_interface(arg1, arg2) -> (ParticleID, Voxel)
+        """new_voxel_interface(arg1, arg2) -> (ParticleID, ParticleVoxel)
 
         Create a particle.
 
@@ -1183,7 +1183,7 @@ cdef class SpatiocyteWorld:
         Returns
         -------
         tuple:
-            A pair of ParticleID and Voxel
+            A pair of ParticleID and ParticleVoxel
 
         """
         cdef pair[pair[Cpp_ParticleID, Cpp_Voxel], bool] retval

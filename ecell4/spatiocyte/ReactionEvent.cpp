@@ -30,14 +30,14 @@ void ZerothOrderReactionEvent::fire_()
             const SpatiocyteWorld::coordinate_type
                 coord(world_->rng()->uniform_int(0, world_->size() - 1));
 
-            const Voxel v(sp, coord, info.radius, info.D, info.loc);
+            const ParticleVoxel v(sp, coord, info.radius, info.D, info.loc);
 
             if (world_->on_structure(v))
             {
                 continue;
             }
 
-            const std::pair<std::pair<ParticleID, Voxel>, bool>
+            const std::pair<std::pair<ParticleID, ParticleVoxel>, bool>
                 retval(world_->new_voxel(v));
             if (retval.second)
             {

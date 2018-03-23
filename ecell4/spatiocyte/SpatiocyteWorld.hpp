@@ -435,44 +435,44 @@ public:
         return total;
     }
 
-    std::vector<std::pair<ParticleID, Voxel> > list_voxels() const
+    std::vector<std::pair<ParticleID, ParticleVoxel> > list_voxels() const
     {
-        std::vector<std::pair<ParticleID, Voxel> > list;
+        std::vector<std::pair<ParticleID, ParticleVoxel> > list;
         for (space_container_type::const_iterator itr(spaces_.begin());
              itr != spaces_.end(); ++itr)
         {
-            std::vector<std::pair<ParticleID, Voxel> > voxels(itr->list_voxels());
+            std::vector<std::pair<ParticleID, ParticleVoxel> > voxels(itr->list_voxels());
             list.insert(list.end(), voxels.begin(), voxels.end());
         }
         return list;
     }
 
-    std::vector<std::pair<ParticleID, Voxel> > list_voxels(const Species& sp) const
+    std::vector<std::pair<ParticleID, ParticleVoxel> > list_voxels(const Species& sp) const
     {
-        std::vector<std::pair<ParticleID, Voxel> > list;
+        std::vector<std::pair<ParticleID, ParticleVoxel> > list;
         for (space_container_type::const_iterator itr(spaces_.begin());
              itr != spaces_.end(); ++itr)
         {
-            std::vector<std::pair<ParticleID, Voxel> > voxels(itr->list_voxels(sp));
+            std::vector<std::pair<ParticleID, ParticleVoxel> > voxels(itr->list_voxels(sp));
             list.insert(list.end(), voxels.begin(), voxels.end());
         }
         return list;
     }
 
-    std::vector<std::pair<ParticleID, Voxel> > list_voxels_exact(const Species& sp) const
+    std::vector<std::pair<ParticleID, ParticleVoxel> > list_voxels_exact(const Species& sp) const
     {
-        std::vector<std::pair<ParticleID, Voxel> > list;
+        std::vector<std::pair<ParticleID, ParticleVoxel> > list;
         for (space_container_type::const_iterator itr(spaces_.begin());
              itr != spaces_.end(); ++itr)
         {
-            std::vector<std::pair<ParticleID, Voxel> > voxels(itr->list_voxels_exact(sp));
+            std::vector<std::pair<ParticleID, ParticleVoxel> > voxels(itr->list_voxels_exact(sp));
             list.insert(list.end(), voxels.begin(), voxels.end());
         }
         return list;
     }
 
     // Suggests: Rename to 'find_voxel'
-    std::pair<ParticleID, Voxel> get_voxel(const ParticleID& pid) const
+    std::pair<ParticleID, ParticleVoxel> get_voxel(const ParticleID& pid) const
     {
         for (space_container_type::const_iterator itr(spaces_.begin());
              itr != spaces_.end(); ++itr)
@@ -483,7 +483,7 @@ public:
         throw "No voxel corresponding to a given ParticleID is found.";
     }
 
-    std::pair<ParticleID, Voxel> get_voxel_at(const coordinate_type& coord) const
+    std::pair<ParticleID, ParticleVoxel> get_voxel_at(const coordinate_type& coord) const
     {
         return get_space(coord)->get_voxel_at(coord);
     }
@@ -577,9 +577,9 @@ public:
     }
 
     /*
-     * Voxel Manipulation
+     * ParticleVoxel Manipulation
      */
-    bool update_voxel(const ParticleID& pid, Voxel v)
+    bool update_voxel(const ParticleID& pid, ParticleVoxel v)
     {
         for (space_container_type::iterator itr(spaces_.begin());
              itr != spaces_.end(); ++itr)
@@ -641,7 +641,7 @@ public:
         return get_root()->shape();
     }
 
-    bool on_structure(Voxel v)
+    bool on_structure(ParticleVoxel v)
     {
         for (space_container_type::iterator itr(spaces_.begin());
              itr != spaces_.end(); ++itr)
@@ -733,7 +733,7 @@ public:
         // const bool is_succeeded(update_particle(pid, p));
         // return std::make_pair(get_particle(pid), is_succeeded);
         const molecule_info_type minfo(get_molecule_info(p.species()));
-        const Voxel v(
+        const ParticleVoxel v(
             p.species(), position2coordinate(p.position()), p.radius(), p.D(), minfo.loc);
 
         for (space_container_type::iterator itr(spaces_.begin());
@@ -742,7 +742,7 @@ public:
             if (itr->on_structure(v))
                 return std::make_pair(std::make_pair(ParticleID(), p), false);
         }
-        const std::pair<std::pair<ParticleID, Voxel>, bool> retval = new_voxel(v);
+        const std::pair<std::pair<ParticleID, ParticleVoxel>, bool> retval = new_voxel(v);
         return std::make_pair(std::make_pair(retval.first.first, p), retval.second);
     }
 
@@ -767,7 +767,7 @@ public:
     bool update_particle(const ParticleID& pid, const Particle& p)
     {
         const molecule_info_type minfo(get_molecule_info(p.species()));
-        return update_voxel(pid, Voxel(p.species(),
+        return update_voxel(pid, ParticleVoxel(p.species(),
             position2coordinate(p.position()), p.radius(), p.D(), minfo.loc));
     }
 
@@ -787,38 +787,38 @@ public:
     std::vector<Species> list_structure_species() const;
     // std::vector<coordinate_type> list_coords(const Species& sp) const;
 
-    std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel(Voxel v)
+    std::pair<std::pair<ParticleID, ParticleVoxel>, bool> new_voxel(ParticleVoxel v)
     {
         ParticleID pid(sidgen_());
         const bool is_succeeded(update_voxel(pid, v));
         return std::make_pair(std::make_pair(pid, v), is_succeeded);
     }
 
-    std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel(const Species& sp, const coordinate_type& coord)
+    std::pair<std::pair<ParticleID, ParticleVoxel>, bool> new_voxel(const Species& sp, const coordinate_type& coord)
     {
         const molecule_info_type minfo(get_molecule_info(sp));
-        return new_voxel(Voxel(sp, coord, minfo.radius, minfo.D, minfo.loc));
+        return new_voxel(ParticleVoxel(sp, coord, minfo.radius, minfo.D, minfo.loc));
     }
 
-    std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel_structure(const Species& sp, const coordinate_type& coord)
+    std::pair<std::pair<ParticleID, ParticleVoxel>, bool> new_voxel_structure(const Species& sp, const coordinate_type& coord)
     {
         const molecule_info_type minfo(get_molecule_info(sp));
-        return new_voxel_structure(Voxel(sp, coord, minfo.radius, minfo.D, minfo.loc));
+        return new_voxel_structure(ParticleVoxel(sp, coord, minfo.radius, minfo.D, minfo.loc));
     }
 
-    std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel_structure(Voxel v)
+    std::pair<std::pair<ParticleID, ParticleVoxel>, bool> new_voxel_structure(ParticleVoxel v)
     {
         const bool is_succeeded(update_voxel(ParticleID(), v));
         return std::make_pair(std::make_pair(ParticleID(), v), is_succeeded);
     }
 
-    std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel_interface(const Species& sp, const coordinate_type& coord)
+    std::pair<std::pair<ParticleID, ParticleVoxel>, bool> new_voxel_interface(const Species& sp, const coordinate_type& coord)
     {
         const molecule_info_type minfo(get_molecule_info(sp));
-        return new_voxel_interface(Voxel(sp, coord, minfo.radius, minfo.D, minfo.loc));
+        return new_voxel_interface(ParticleVoxel(sp, coord, minfo.radius, minfo.D, minfo.loc));
     }
 
-    std::pair<std::pair<ParticleID, Voxel>, bool> new_voxel_interface(Voxel v)
+    std::pair<std::pair<ParticleID, ParticleVoxel>, bool> new_voxel_interface(ParticleVoxel v)
     {
         const bool is_succeeded(update_voxel(ParticleID(), v));
         return std::make_pair(std::make_pair(ParticleID(), v), is_succeeded);
@@ -850,7 +850,7 @@ public:
         return info;
     }
 
-    std::pair<ParticleID, Voxel> make_pid_voxel_pair(
+    std::pair<ParticleID, ParticleVoxel> make_pid_voxel_pair(
         boost::shared_ptr<const VoxelPool> mt, const coordinate_type& coord) const
     {
         const ParticleID pid(mt->get_particle_id(coord));
@@ -858,15 +858,15 @@ public:
         return make_pid_voxel_pair(mt, info);
     }
 
-    std::pair<ParticleID, Voxel> make_pid_voxel_pair(
+    std::pair<ParticleID, ParticleVoxel> make_pid_voxel_pair(
         boost::shared_ptr<const VoxelPool> mt, const coordinate_id_pair_type& info) const
     {
-        return std::make_pair<ParticleID, Voxel>(
+        return std::make_pair<ParticleID, ParticleVoxel>(
             ParticleID(info.pid),
-            Voxel(mt->species(), info.coordinate, mt->radius(), mt->D(), get_location_serial(mt)));
+            ParticleVoxel(mt->species(), info.coordinate, mt->radius(), mt->D(), get_location_serial(mt)));
     }
 
-    std::pair<ParticleID, Voxel> choice(const Species& sp)
+    std::pair<ParticleID, ParticleVoxel> choice(const Species& sp)
     {
         boost::shared_ptr<const MoleculePool> mt(find_molecule_pool(sp));
         const Integer i(rng_->uniform_int(0, mt->size() - 1));

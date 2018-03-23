@@ -57,7 +57,7 @@ ReactionInfo apply_a2b(
         if (aloc != bserial)
         {
             // Place a new B-molecule at the position of A
-            std::pair<std::pair<ParticleID, Voxel>, bool> new_mol(
+            std::pair<std::pair<ParticleID, ParticleVoxel>, bool> new_mol(
                 world->new_voxel(product_species, coord));
             rinfo.add_product(new_mol.first);
         }
@@ -81,7 +81,7 @@ ReactionInfo apply_a2b(
             rinfo.add_reactant(p);
 
             world->remove_voxel(p.second.coordinate());
-            std::pair<std::pair<ParticleID, Voxel>, bool> new_mol(
+            std::pair<std::pair<ParticleID, ParticleVoxel>, bool> new_mol(
                 world->new_voxel(product_species, neighbor.first));
 
             rinfo.add_product(new_mol.first);
@@ -141,7 +141,7 @@ ReactionInfo apply_a2bc(
         if (aloc != bserial)
         {
             // Place a new B-molecule at the position of A
-            std::pair<std::pair<ParticleID, Voxel>, bool> new_mol0(
+            std::pair<std::pair<ParticleID, ParticleVoxel>, bool> new_mol0(
                     world->new_voxel(product_species0, coord));
             rinfo.add_product(new_mol0.first);
         }
@@ -152,7 +152,7 @@ ReactionInfo apply_a2bc(
         }
 
         // Place a new C-molecule at the neighbor
-        std::pair<std::pair<ParticleID, Voxel>, bool> new_mol1(
+        std::pair<std::pair<ParticleID, ParticleVoxel>, bool> new_mol1(
             world->new_voxel(product_species1, neighbor.first));
         rinfo.add_product(new_mol1.first);
         return rinfo;
@@ -186,14 +186,14 @@ ReactionInfo apply_a2bc(
         // world->remove_voxel(neighbor.first);
 
         // Place a new B-molecule at the neighbor
-        std::pair<std::pair<ParticleID, Voxel>, bool> new_mol0(
+        std::pair<std::pair<ParticleID, ParticleVoxel>, bool> new_mol0(
             world->new_voxel(product_species0, neighbor.first));
         rinfo.add_product(new_mol0.first);
 
         if (aloc != cserial)
         {
             // Place a new C-molecule at the position of A
-            std::pair<std::pair<ParticleID, Voxel>, bool> new_mol1(
+            std::pair<std::pair<ParticleID, ParticleVoxel>, bool> new_mol1(
                 world->new_voxel(product_species1, coord));
             rinfo.add_product(new_mol1.first);
         }
@@ -250,7 +250,7 @@ ReactionInfo apply_ab2c(
         }
 
         world->remove_voxel(p0.second.coordinate());
-        std::pair<std::pair<ParticleID, Voxel>, bool> new_mol(
+        std::pair<std::pair<ParticleID, ParticleVoxel>, bool> new_mol(
             world->new_voxel(product_species, p1.second.coordinate()));
 
         rinfo.add_product(new_mol.first);
@@ -268,7 +268,7 @@ ReactionInfo apply_ab2c(
         }
 
         world->remove_voxel(p1.second.coordinate());
-        std::pair<std::pair<ParticleID, Voxel>, bool> new_mol(
+        std::pair<std::pair<ParticleID, ParticleVoxel>, bool> new_mol(
             world->new_voxel(product_species, p0.second.coordinate()));
 
         rinfo.add_product(new_mol.first);
@@ -290,13 +290,13 @@ ReactionInfo apply_ab2cd_in_order(
     rinfo.add_reactant(p0);
     rinfo.add_reactant(p1);
 
-    std::pair<std::pair<ParticleID, Voxel>, bool> new_mol0(
+    std::pair<std::pair<ParticleID, ParticleVoxel>, bool> new_mol0(
         world->new_voxel(product_species0, coord0));
     if (!new_mol0.second)
     {
         throw IllegalState("no place for " + product_species0.serial());
     }
-    std::pair<std::pair<ParticleID, Voxel>, bool> new_mol1(
+    std::pair<std::pair<ParticleID, ParticleVoxel>, bool> new_mol1(
         world->new_voxel(product_species1, coord1));
     if (!new_mol1.second)
     {

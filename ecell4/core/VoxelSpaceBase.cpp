@@ -53,11 +53,11 @@ Integer VoxelSpaceBase::num_molecules(const Species& sp) const
 std::vector<std::pair<ParticleID, Particle> >
 VoxelSpaceBase::list_particles() const
 {
-    const std::vector<std::pair<ParticleID, Voxel> > voxels(list_voxels());
+    const std::vector<std::pair<ParticleID, ParticleVoxel> > voxels(list_voxels());
 
     std::vector<std::pair<ParticleID, Particle> > retval;
     retval.reserve(voxels.size());
-    for (std::vector<std::pair<ParticleID, Voxel> >::const_iterator
+    for (std::vector<std::pair<ParticleID, ParticleVoxel> >::const_iterator
         i(voxels.begin()); i != voxels.end(); ++i)
     {
         const ParticleID& pid((*i).first);
@@ -70,11 +70,11 @@ VoxelSpaceBase::list_particles() const
 std::vector<std::pair<ParticleID, Particle> >
 VoxelSpaceBase::list_particles(const Species& sp) const
 {
-    const std::vector<std::pair<ParticleID, Voxel> > voxels(list_voxels(sp));
+    const std::vector<std::pair<ParticleID, ParticleVoxel> > voxels(list_voxels(sp));
 
     std::vector<std::pair<ParticleID, Particle> > retval;
     retval.reserve(voxels.size());
-    for (std::vector<std::pair<ParticleID, Voxel> >::const_iterator
+    for (std::vector<std::pair<ParticleID, ParticleVoxel> >::const_iterator
         i(voxels.begin()); i != voxels.end(); ++i)
     {
         const ParticleID& pid((*i).first);
@@ -87,12 +87,12 @@ VoxelSpaceBase::list_particles(const Species& sp) const
 std::vector<std::pair<ParticleID, Particle> >
 VoxelSpaceBase::list_particles_exact(const Species& sp) const
 {
-    const std::vector<std::pair<ParticleID, Voxel> >
+    const std::vector<std::pair<ParticleID, ParticleVoxel> >
         voxels(list_voxels_exact(sp));
 
     std::vector<std::pair<ParticleID, Particle> > retval;
     retval.reserve(voxels.size());
-    for (std::vector<std::pair<ParticleID, Voxel> >::const_iterator
+    for (std::vector<std::pair<ParticleID, ParticleVoxel> >::const_iterator
         i(voxels.begin()); i != voxels.end(); ++i)
     {
         const ParticleID& pid((*i).first);
@@ -189,7 +189,7 @@ Integer VoxelSpaceBase::num_voxels() const
     return count;
 }
 
-void VoxelSpaceBase::push_voxels(std::vector<std::pair<ParticleID, Voxel> >& voxels,
+void VoxelSpaceBase::push_voxels(std::vector<std::pair<ParticleID, ParticleVoxel> >& voxels,
         const boost::shared_ptr<MoleculePool>& voxel_pool,
         const Species& species) const
 {
@@ -198,14 +198,14 @@ void VoxelSpaceBase::push_voxels(std::vector<std::pair<ParticleID, Voxel> >& vox
         voxels.push_back(
                 std::make_pair(
                     (*i).pid,
-                    Voxel(species, (*i).coordinate, voxel_pool->radius(),
+                    ParticleVoxel(species, (*i).coordinate, voxel_pool->radius(),
                         voxel_pool->D(), location_serial)));
 }
 
-std::vector<std::pair<ParticleID, Voxel> >
+std::vector<std::pair<ParticleID, ParticleVoxel> >
 VoxelSpaceBase::list_voxels() const
 {
-    std::vector<std::pair<ParticleID, Voxel> > retval;
+    std::vector<std::pair<ParticleID, ParticleVoxel> > retval;
 
     for (molecule_pool_map_type::const_iterator itr(molecule_pools_.begin());
          itr != molecule_pools_.end(); ++itr)
@@ -217,10 +217,10 @@ VoxelSpaceBase::list_voxels() const
     return retval;
 }
 
-std::vector<std::pair<ParticleID, Voxel> >
+std::vector<std::pair<ParticleID, ParticleVoxel> >
 VoxelSpaceBase::list_voxels(const Species& sp) const
 {
-    std::vector<std::pair<ParticleID, Voxel> > retval;
+    std::vector<std::pair<ParticleID, ParticleVoxel> > retval;
     SpeciesExpressionMatcher sexp(sp);
 
     for (molecule_pool_map_type::const_iterator itr(molecule_pools_.begin());
@@ -231,10 +231,10 @@ VoxelSpaceBase::list_voxels(const Species& sp) const
     return retval;
 }
 
-std::vector<std::pair<ParticleID, Voxel> >
+std::vector<std::pair<ParticleID, ParticleVoxel> >
 VoxelSpaceBase::list_voxels_exact(const Species& sp) const
 {
-    std::vector<std::pair<ParticleID, Voxel> > retval;
+    std::vector<std::pair<ParticleID, ParticleVoxel> > retval;
 
     molecule_pool_map_type::const_iterator itr(molecule_pools_.find(sp));
     if (itr != molecule_pools_.end())
@@ -242,7 +242,7 @@ VoxelSpaceBase::list_voxels_exact(const Species& sp) const
     return retval;
 }
 
-std::pair<ParticleID, Voxel>
+std::pair<ParticleID, ParticleVoxel>
 VoxelSpaceBase::get_voxel(const ParticleID& pid) const
 {
     for (molecule_pool_map_type::const_iterator itr(molecule_pools_.begin());
@@ -253,7 +253,7 @@ VoxelSpaceBase::get_voxel(const ParticleID& pid) const
         if (j != vp->end())
             return std::make_pair(
                     pid,
-                    Voxel((*itr).first, (*j).coordinate, vp->radius(),
+                    ParticleVoxel((*itr).first, (*j).coordinate, vp->radius(),
                         vp->D(), get_location_serial(vp)));
     }
     throw NotFound("voxel not found.");

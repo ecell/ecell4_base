@@ -213,7 +213,7 @@ public:
     //  * Change the Species at v.coordinate() to v.species.
     //  * The ParticleID must be kept after this update.
     //  */
-    // virtual void update_voxel(const Voxel& v)
+    // virtual void update_voxel(const ParticleVoxel& v)
     // {
     //     const coordinate_type coord(v.coordinate());
     //     // VoxelPool* src_vp(get_voxel_pool(coord));
@@ -229,14 +229,14 @@ public:
     //     update_matrix(coord, new_vp);
     // }
 
-    virtual bool update_voxel(const ParticleID& pid, Voxel v);
+    virtual bool update_voxel(const ParticleID& pid, ParticleVoxel v);
 
-    virtual std::pair<ParticleID, Voxel> get_voxel_at(const coordinate_type& coord) const
+    virtual std::pair<ParticleID, ParticleVoxel> get_voxel_at(const coordinate_type& coord) const
     {
         boost::shared_ptr<const VoxelPool> vp(get_voxel_pool_at(coord));
         return std::make_pair(
             vp->get_particle_id(coord),
-            Voxel(vp->species(), coord, vp->radius(), vp->D(), get_location_serial(vp)));
+            ParticleVoxel(vp->species(), coord, vp->radius(), vp->D(), get_location_serial(vp)));
     }
 
     virtual bool remove_voxel(const ParticleID& pid)
@@ -395,7 +395,7 @@ public:
 
 protected:
 
-    boost::shared_ptr<VoxelPool> get_voxel_pool(Voxel v);
+    boost::shared_ptr<VoxelPool> get_voxel_pool(ParticleVoxel v);
 
     std::pair<boost::shared_ptr<VoxelPool>, coordinate_type>
         __get_coordinate(const ParticleID& pid);

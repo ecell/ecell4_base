@@ -19,7 +19,7 @@ include "NetfreeModel.pxi"
 include "Real3.pxi"
 include "Integer3.pxi"
 include "Particle.pxi"
-include "Voxel.pxi"
+include "ParticleVoxel.pxi"
 include "observers.pxi"
 include "shapes.pxi"
 

@@ -38,13 +38,13 @@ public:
      *
      * using Species and coordinate_type
      */
-    std::vector<std::pair<ParticleID, Voxel> > list_voxels() const;
-    std::vector<std::pair<ParticleID, Voxel> > list_voxels(const Species& sp) const;
-    std::vector<std::pair<ParticleID, Voxel> > list_voxels_exact(const Species& sp) const;
+    std::vector<std::pair<ParticleID, ParticleVoxel> > list_voxels() const;
+    std::vector<std::pair<ParticleID, ParticleVoxel> > list_voxels(const Species& sp) const;
+    std::vector<std::pair<ParticleID, ParticleVoxel> > list_voxels_exact(const Species& sp) const;
 
-    std::pair<ParticleID, Voxel> get_voxel_at(const coordinate_type& coord) const;
+    std::pair<ParticleID, ParticleVoxel> get_voxel_at(const coordinate_type& coord) const;
 
-    bool update_voxel(const ParticleID& pid, Voxel v);
+    bool update_voxel(const ParticleID& pid, ParticleVoxel v);
 
     bool add_voxels(const Species& species,
                     std::vector<std::pair<ParticleID, coordinate_type> > voxels);
@@ -125,7 +125,7 @@ protected:
         return periodic_transpose(coord);
     }
 
-    boost::shared_ptr<VoxelPool> get_voxel_pool(Voxel v);
+    boost::shared_ptr<VoxelPool> get_voxel_pool(ParticleVoxel v);
 
     void initialize_voxels(const bool is_periodic);
 

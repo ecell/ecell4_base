@@ -15,7 +15,7 @@ class ReactionInfo
 {
 public:
 
-    typedef std::pair<ParticleID, Voxel> particle_id_pair_type;
+    typedef std::pair<ParticleID, ParticleVoxel> particle_id_pair_type;
     typedef std::vector<particle_id_pair_type> container_type;
 
 public:

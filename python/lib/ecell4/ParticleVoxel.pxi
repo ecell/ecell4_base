@@ -5,10 +5,10 @@ from libcpp.pair cimport pair
 from libcpp.string cimport string
 
 
-cdef class Voxel:
+cdef class ParticleVoxel:
     """A class representing a voxel in LatticeSpace.
 
-    Voxel(Species sp, Integer coord, Real radius, Real D, loc=None)
+    ParticleVoxel(Species sp, Integer coord, Real radius, Real D, loc=None)
 
     """
 
@@ -71,11 +71,11 @@ cdef class Voxel:
         return self.thisptr.loc().decode('UTF-8')
 
     def __reduce__(self):
-        return (Voxel, (self.species(), self.coordinate(), self.radius(), self.D(), self.loc()))
+        return (ParticleVoxel, (self.species(), self.coordinate(), self.radius(), self.D(), self.loc()))
 
-cdef Voxel Voxel_from_Cpp_Voxel(Cpp_Voxel* p):
+cdef ParticleVoxel Voxel_from_Cpp_Voxel(Cpp_Voxel* p):
     cdef Cpp_Voxel *new_obj = new Cpp_Voxel(<Cpp_Voxel> deref(p))
-    r = Voxel(Species(), 0, 0, 0)
+    r = ParticleVoxel(Species(), 0, 0, 0)
     del r.thisptr
     r.thisptr = new_obj
     return r

@@ -8,7 +8,7 @@
 #include "Shape.hpp"
 #include "Identifier.hpp"
 #include "RandomNumberGenerator.hpp"
-#include "Voxel.hpp"
+#include "ParticleVoxel.hpp"
 
 
 namespace ecell4
@@ -18,7 +18,7 @@ class VoxelPool
 {
 public:
 
-    typedef Voxel::coordinate_type coordinate_type;
+    typedef ParticleVoxel::coordinate_type coordinate_type;
 
     // typedef std::pair<coordinate_type, ParticleID> coordinate_id_pair_type;
     typedef struct coordinate_id_pair_type

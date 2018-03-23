@@ -6,7 +6,7 @@
 #include <ecell4/core/Particle.hpp>
 #include <ecell4/core/Real3.hpp>
 #include <ecell4/core/Species.hpp>
-#include <ecell4/core/Voxel.hpp>
+#include <ecell4/core/ParticleVoxel.hpp>
 
 namespace ecell4
 {
@@ -20,7 +20,7 @@ class OffsetSpace
 protected:
     typedef typename T::coordinate_type coord_type;
     typedef std::pair<ParticleID, Particle> identified_particle;
-    typedef std::pair<ParticleID, Voxel>    identified_voxel;
+    typedef std::pair<ParticleID, ParticleVoxel>    identified_voxel;
 
     boost::shared_ptr<T> space_;
     coord_type           offset_;
@@ -75,14 +75,14 @@ public:
         return space_->coordinate2position(coordinate - offset_);
     }
 
-    std::pair<ParticleID, Voxel> get_voxel(const ParticleID& pid) const
+    std::pair<ParticleID, ParticleVoxel> get_voxel(const ParticleID& pid) const
     {
-        std::pair<ParticleID, Voxel> retval(space_->get_voxel(pid));
+        std::pair<ParticleID, ParticleVoxel> retval(space_->get_voxel(pid));
         retval.second.coordinate() -= offset_;
         return retval;
     }
 
-    std::pair<ParticleID, Voxel> get_voxel_at(const coord_type& coordinate) const
+    std::pair<ParticleID, ParticleVoxel> get_voxel_at(const coord_type& coordinate) const
     {
         return space_->get_voxel_at(coordinate - offset_);
     }
@@ -101,13 +101,13 @@ public:
     // Mutable functions
     //
 
-    bool on_structure(Voxel voxel)
+    bool on_structure(ParticleVoxel voxel)
     {
         voxel.coordinate() -= offset_;
         return space_->on_structure(voxel);
     }
 
-    bool update_voxel(const ParticleID& pid, Voxel voxel)
+    bool update_voxel(const ParticleID& pid, ParticleVoxel voxel)
     {
         voxel.coordinate() -= offset_;
         return space_->update_voxel(pid, voxel);

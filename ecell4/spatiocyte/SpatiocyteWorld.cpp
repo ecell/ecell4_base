@@ -154,7 +154,7 @@ bool SpatiocyteWorld::add_molecules(const Species& sp, const Integer& num)
     while (count < num)
     {
         const coordinate_type coord(rng()->uniform_int(0, size() - 1));
-        const Voxel v(sp, coord, info.radius, info.D, info.loc);
+        const ParticleVoxel v(sp, coord, info.radius, info.D, info.loc);
 
         if (on_structure(v))
         {
@@ -182,7 +182,7 @@ bool SpatiocyteWorld::add_molecules(
     while (count < num)
     {
         const Real3 pos(shape->draw_position(rng_));
-        const Voxel v(sp, position2coordinate(pos), info.radius, info.D, info.loc);
+        const ParticleVoxel v(sp, position2coordinate(pos), info.radius, info.D, info.loc);
 
         if (on_structure(v))
         {
@@ -226,7 +226,7 @@ Integer SpatiocyteWorld::add_structure3(const Species& sp, const boost::shared_p
             continue;
 
 
-        const Voxel v(sp, coord, info.radius, info.D, info.loc);
+        const ParticleVoxel v(sp, coord, info.radius, info.D, info.loc);
         if (on_structure(v))
         {
             continue;
@@ -249,7 +249,7 @@ SpatiocyteWorld::add_structure2(
         if (!is_surface_voxel(coord, shape))
             continue;
 
-        const Voxel v(sp, coord, info.radius, info.D, info.loc);
+        const ParticleVoxel v(sp, coord, info.radius, info.D, info.loc);
         if (on_structure(v))
         {
             continue;
@@ -295,7 +295,7 @@ Integer SpatiocyteWorld::add_neighbors(const Species& sp,
     for (Integer i(0); i < 12; ++i)
     {
         const coordinate_type n(get_neighbor(center, i));
-        if (new_voxel(Voxel(sp, n, info.radius, info.D, info.loc)).second)
+        if (new_voxel(ParticleVoxel(sp, n, info.radius, info.D, info.loc)).second)
         {
             ++count;
         }
@@ -313,7 +313,7 @@ Integer SpatiocyteWorld::add_neighbors(const Species& sp,
     // for (std::vector<SpatiocyteWorld::coordinate_type>::iterator itr(
     //             neighbors.begin()); itr != neighbors.end(); itr++)
     // {
-    //     if (new_voxel(Voxel(sp, *itr, info.radius, info.D, info.loc)).second)
+    //     if (new_voxel(ParticleVoxel(sp, *itr, info.radius, info.D, info.loc)).second)
     //         ++count;
     //     else
     //         throw "Error in add_neighbors()";

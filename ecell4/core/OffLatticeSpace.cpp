@@ -60,7 +60,7 @@ void OffLatticeSpace::reset(const position_container& positions,
     }
 }
 
-boost::shared_ptr<VoxelPool> OffLatticeSpace::get_voxel_pool(Voxel voxel)
+boost::shared_ptr<VoxelPool> OffLatticeSpace::get_voxel_pool(ParticleVoxel voxel)
 {
     const Species& sp(voxel.species());
 
@@ -186,12 +186,12 @@ bool OffLatticeSpace::make_molecular_pool(
  */
 
 // Same as LatticeSpaceVectorImpl
-std::pair<ParticleID, Voxel>
+std::pair<ParticleID, ParticleVoxel>
 OffLatticeSpace::get_voxel_at(const coordinate_type& coord) const
 {
     boost::shared_ptr<const VoxelPool> vp(voxels_.at(coord));
     return std::make_pair(vp->get_particle_id(coord),
-                          Voxel(vp->species(),
+                          ParticleVoxel(vp->species(),
                                 coord,
                                 vp->radius(),
                                 vp->D(),
@@ -209,7 +209,7 @@ const Particle OffLatticeSpace::particle_at(const coordinate_type& coord) const
 }
 
 // Same as LatticeSpaceVectorImpl
-bool OffLatticeSpace::update_voxel(const ParticleID& pid, Voxel v)
+bool OffLatticeSpace::update_voxel(const ParticleID& pid, ParticleVoxel v)
 {
     const coordinate_type& to_coord(v.coordinate());
     if (!is_in_range(to_coord))
