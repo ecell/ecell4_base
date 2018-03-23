@@ -99,7 +99,7 @@ struct LatticeSpaceHDF5Traits
         {
             h5_voxel_array[vidx].lot = (*itr).first.lot();
             h5_voxel_array[vidx].serial = (*itr).first.serial();
-            h5_voxel_array[vidx].coordinate = (*itr).second.coordinate();
+            h5_voxel_array[vidx].coordinate = (*itr).second.coordinate;
             ++vidx;
         }
 

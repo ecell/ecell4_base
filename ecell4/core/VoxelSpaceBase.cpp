@@ -61,7 +61,7 @@ VoxelSpaceBase::list_particles() const
         i(voxels.begin()); i != voxels.end(); ++i)
     {
         const ParticleID& pid((*i).first);
-        const Particle p(particle_at((*i).second.coordinate()));
+        const Particle p(particle_at((*i).second.coordinate));
         retval.push_back(std::make_pair(pid, p));
     }
     return retval;
@@ -78,7 +78,7 @@ VoxelSpaceBase::list_particles(const Species& sp) const
         i(voxels.begin()); i != voxels.end(); ++i)
     {
         const ParticleID& pid((*i).first);
-        const Particle p(particle_at((*i).second.coordinate()));
+        const Particle p(particle_at((*i).second.coordinate));
         retval.push_back(std::make_pair(pid, p));
     }
     return retval;
@@ -96,7 +96,7 @@ VoxelSpaceBase::list_particles_exact(const Species& sp) const
         i(voxels.begin()); i != voxels.end(); ++i)
     {
         const ParticleID& pid((*i).first);
-        const Particle p(particle_at((*i).second.coordinate()));
+        const Particle p(particle_at((*i).second.coordinate));
         retval.push_back(std::make_pair(pid, p));
     }
     return retval;

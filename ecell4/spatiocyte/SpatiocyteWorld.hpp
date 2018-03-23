@@ -587,7 +587,7 @@ public:
             if (itr->has_voxel(pid))
                 return itr->update_voxel(pid, v);
         }
-        return get_space_mut(v.coordinate())->update_voxel(pid, v);
+        return get_space_mut(v.coordinate)->update_voxel(pid, v);
     }
 
     bool remove_voxel(const ParticleID& pid)

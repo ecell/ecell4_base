@@ -196,7 +196,7 @@ void SpatiocyteSimulator::step_()
                 product((*itr).second.products().begin());
                 product != (*itr).second.products().end(); ++product)
         {
-            const Species& species((*product).second.species());
+            const Species& species((*product).second.species);
             if (!world_->has_species(species))
                 new_species.push_back(species);
         }

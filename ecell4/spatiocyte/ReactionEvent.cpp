@@ -85,7 +85,7 @@ void FirstOrderReactionEvent::fire_()
     {
         case 0:
             {
-                world_->remove_voxel(p.second.coordinate());
+                world_->remove_voxel(p.second.coordinate);
                 ReactionInfo rinfo(world_->t());
                 rinfo.add_reactant(p);
                 push_reaction(std::make_pair(rule_, rinfo));

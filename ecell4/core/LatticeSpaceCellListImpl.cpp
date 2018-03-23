@@ -41,7 +41,7 @@ Integer LatticeSpaceCellListImpl::num_molecules(const Species& sp) const
  */
 bool LatticeSpaceCellListImpl::update_voxel(const ParticleID& pid, ParticleVoxel v)
 {
-    const coordinate_type& to_coord(v.coordinate());
+    const coordinate_type& to_coord(v.coordinate);
     if (!is_in_range(to_coord))
     {
         throw NotSupported("Out of bounds");
@@ -178,7 +178,7 @@ boost::shared_ptr<VoxelPool> LatticeSpaceCellListImpl::get_voxel_pool_at(
 
 boost::shared_ptr<VoxelPool> LatticeSpaceCellListImpl::get_voxel_pool(ParticleVoxel v)
 {
-    const Species& sp(v.species());
+    const Species& sp(v.species);
 
     {
         voxel_pool_map_type::iterator itr(voxel_pools_.find(sp));
@@ -196,7 +196,7 @@ boost::shared_ptr<VoxelPool> LatticeSpaceCellListImpl::get_voxel_pool(ParticleVo
         }
     }
 
-    const bool suc = make_molecular_type(sp, v.radius(), v.D(), v.loc());
+    const bool suc = make_molecular_type(sp, v.radius, v.D, v.loc);
     if (!suc)
     {
         throw IllegalState("never reach here");

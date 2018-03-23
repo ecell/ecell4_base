@@ -62,7 +62,7 @@ void OffLatticeSpace::reset(const position_container& positions,
 
 boost::shared_ptr<VoxelPool> OffLatticeSpace::get_voxel_pool(ParticleVoxel voxel)
 {
-    const Species& sp(voxel.species());
+    const Species& sp(voxel.species);
 
     {
         voxel_pool_map_type::iterator itr(voxel_pools_.find(sp));
@@ -82,7 +82,7 @@ boost::shared_ptr<VoxelPool> OffLatticeSpace::get_voxel_pool(ParticleVoxel voxel
 
     // Create a new molecular pool
 
-    const bool suc = make_molecular_pool(sp, voxel.radius(), voxel.D(), voxel.loc());
+    const bool suc = make_molecular_pool(sp, voxel.radius, voxel.D, voxel.loc);
     if (!suc)
     {
         throw IllegalState("never reach here");
@@ -211,7 +211,7 @@ const Particle OffLatticeSpace::particle_at(const coordinate_type& coord) const
 // Same as LatticeSpaceVectorImpl
 bool OffLatticeSpace::update_voxel(const ParticleID& pid, ParticleVoxel v)
 {
-    const coordinate_type& to_coord(v.coordinate());
+    const coordinate_type& to_coord(v.coordinate);
     if (!is_in_range(to_coord))
         throw NotSupported("Out of bounds");
 

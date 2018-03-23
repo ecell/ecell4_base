@@ -233,7 +233,7 @@ public:
     {
         const ParticleVoxel v(get_voxel(pid).second);
         return std::make_pair(pid, Particle(
-            v.species(), coordinate2position(v.coordinate()), v.radius(), v.D()));
+            v.species, coordinate2position(v.coordinate), v.radius, v.D));
     }
 
     virtual const Particle particle_at(const coordinate_type& coord) const = 0;
@@ -337,7 +337,7 @@ public:
 
     bool on_structure(ParticleVoxel v)
     {
-        return get_voxel_pool_at(v.coordinate()) != get_voxel_pool(v)->location();
+        return get_voxel_pool_at(v.coordinate) != get_voxel_pool(v)->location();
     }
 
     virtual bool

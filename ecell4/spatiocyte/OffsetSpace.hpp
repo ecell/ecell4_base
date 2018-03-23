@@ -78,7 +78,7 @@ public:
     std::pair<ParticleID, ParticleVoxel> get_voxel(const ParticleID& pid) const
     {
         std::pair<ParticleID, ParticleVoxel> retval(space_->get_voxel(pid));
-        retval.second.coordinate() -= offset_;
+        retval.second.coordinate -= offset_;
         return retval;
     }
 
@@ -103,13 +103,13 @@ public:
 
     bool on_structure(ParticleVoxel voxel)
     {
-        voxel.coordinate() -= offset_;
+        voxel.coordinate -= offset_;
         return space_->on_structure(voxel);
     }
 
     bool update_voxel(const ParticleID& pid, ParticleVoxel voxel)
     {
-        voxel.coordinate() -= offset_;
+        voxel.coordinate -= offset_;
         return space_->update_voxel(pid, voxel);
     }
 

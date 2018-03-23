@@ -49,7 +49,7 @@ BOOST_AUTO_TEST_CASE(GetVoxel)
     {
         std::pair<ParticleID, ParticleVoxel> voxel(space.get_voxel_at(coordinate));
         BOOST_CHECK_EQUAL(voxel.first, ParticleID());
-        BOOST_CHECK_EQUAL(voxel.second.species(), space.vacant()->species());
+        BOOST_CHECK_EQUAL(voxel.second.species, space.vacant()->species());
     }
 
     ParticleID id(sidgen());
@@ -58,13 +58,13 @@ BOOST_AUTO_TEST_CASE(GetVoxel)
     {
         std::pair<ParticleID, ParticleVoxel> voxel(space.get_voxel_at(coordinate));
         BOOST_CHECK_EQUAL(voxel.first, id);
-        BOOST_CHECK_EQUAL(voxel.second.species(), sp);
+        BOOST_CHECK_EQUAL(voxel.second.species, sp);
     }
 
     {
         std::pair<ParticleID, ParticleVoxel> voxel(space.get_voxel(id));
         BOOST_CHECK_EQUAL(voxel.first, id);
-        BOOST_CHECK_EQUAL(voxel.second.species(), sp);
+        BOOST_CHECK_EQUAL(voxel.second.species, sp);
     }
 }
 
