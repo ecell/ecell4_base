@@ -429,26 +429,26 @@ cdef class Particle:
 
 cdef Particle Particle_from_Cpp_Particle(Cpp_Particle* p)
 
-## Cpp_Voxel
+## Cpp_ParticleVoxel
 #  ecell4::ParticleVoxel
 cdef extern from "ecell4/core/ParticleVoxel.hpp" namespace "ecell4":
-    cdef cppclass Cpp_Voxel "ecell4::ParticleVoxel":
-        Cpp_Voxel() except +
-        Cpp_Voxel(Cpp_Species, Integer, Real radius, Real D) except +
-        Cpp_Voxel(Cpp_Species, Integer, Real radius, Real D, string loc) except +
-        Cpp_Voxel(Cpp_Voxel &rhs) except+
-        Integer coordinate()
-        Real D()
-        Real radius()
-        Cpp_Species &species()
-        string loc()
+    cdef cppclass Cpp_ParticleVoxel "ecell4::ParticleVoxel":
+        Cpp_ParticleVoxel() except +
+        Cpp_ParticleVoxel(Cpp_Species, Integer, Real radius, Real D) except +
+        Cpp_ParticleVoxel(Cpp_Species, Integer, Real radius, Real D, string loc) except +
+        Cpp_ParticleVoxel(Cpp_ParticleVoxel &rhs) except+
+        Integer coordinate
+        Real D
+        Real radius
+        Cpp_Species &species
+        string loc
 
 ## ParticleVoxel
-#  a python wrapper for Cpp_Voxel
+#  a python wrapper for Cpp_ParticleVoxel
 cdef class ParticleVoxel:
-    cdef Cpp_Voxel* thisptr
+    cdef Cpp_ParticleVoxel* thisptr
 
-cdef ParticleVoxel Voxel_from_Cpp_Voxel(Cpp_Voxel* p)
+cdef ParticleVoxel Voxel_from_Cpp_Voxel(Cpp_ParticleVoxel* p)
 
 ## Cpp_FixedIntervalNumberObserver
 #  ecell4::FixedIntervalNumberObserver

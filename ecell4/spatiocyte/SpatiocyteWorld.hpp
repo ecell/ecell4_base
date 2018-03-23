@@ -32,6 +32,18 @@ struct MoleculeInfo
     const std::string loc;
 };
 
+struct Voxel
+{
+    typedef Integer coordinate_type;
+
+    Voxel(coordinate_type coordinate)
+        : coordinate(coordinate)
+    {
+    }
+
+    coordinate_type coordinate;
+};
+
 class SpatiocyteWorld
     : public Space
 {

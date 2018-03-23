@@ -10,11 +10,11 @@ from ecell4.core cimport *
 ## Cpp_ReactionInfo
 cdef extern from "ecell4/spatiocyte/SpatiocyteSimulator.hpp" namespace "ecell4::spatiocyte":
     cdef cppclass Cpp_ReactionInfo "ecell4::spatiocyte::ReactionInfo":
-        Cpp_ReactionInfo(Real, vector[pair[Cpp_ParticleID, Cpp_Voxel]], vector[pair[Cpp_ParticleID, Cpp_Voxel]])
+        Cpp_ReactionInfo(Real, vector[pair[Cpp_ParticleID, Cpp_ParticleVoxel]], vector[pair[Cpp_ParticleID, Cpp_ParticleVoxel]])
         Cpp_ReactionInfo(Cpp_ReactionInfo&)
         Real t()
-        vector[pair[Cpp_ParticleID, Cpp_Voxel]] reactants()
-        vector[pair[Cpp_ParticleID, Cpp_Voxel]] products()
+        vector[pair[Cpp_ParticleID, Cpp_ParticleVoxel]] reactants()
+        vector[pair[Cpp_ParticleID, Cpp_ParticleVoxel]] products()
 
 ## ReactionInfo
 #  a python wrapper for Cpp_ReactionInfo
@@ -26,6 +26,11 @@ cdef ReactionInfo ReactionInfo_from_Cpp_ReactionInfo(Cpp_ReactionInfo* ri)
 ## Cpp_SpatiocyteWorld
 #  ecell4::spatiocyte::SpatiocyteWorld
 cdef extern from "ecell4/spatiocyte/SpatiocyteWorld.hpp" namespace "ecell4::spatiocyte":
+
+    cdef cppclass CppVoxel "ecell4::spatiocyte::Voxel":
+        CppVoxel(Integer coordinate)
+        Integer coordinate
+
     cdef cppclass Cpp_SpatiocyteWorld "ecell4::spatiocyte::SpatiocyteWorld":
         Cpp_SpatiocyteWorld(
             Cpp_Real3& edge_lengths, const Real& voxel_radius,
@@ -50,9 +55,9 @@ cdef extern from "ecell4/spatiocyte/SpatiocyteWorld.hpp" namespace "ecell4::spat
         bool remove_particle(Cpp_ParticleID& pid)
         bool remove_voxel(Cpp_ParticleID& pid)
         pair[Cpp_ParticleID, Cpp_Particle] get_particle(Cpp_ParticleID& pid)
-        pair[Cpp_ParticleID, Cpp_Voxel] get_voxel(Cpp_ParticleID& pid)
-        pair[Cpp_ParticleID, Cpp_Voxel] get_voxel_at(Integer)
-        bool on_structure(Cpp_Voxel&)
+        pair[Cpp_ParticleID, Cpp_ParticleVoxel] get_voxel(Cpp_ParticleID& pid)
+        pair[Cpp_ParticleID, Cpp_ParticleVoxel] get_voxel_at(Integer)
+        bool on_structure(Cpp_ParticleVoxel&)
         # bool on_structure(Cpp_Species&, Integer)
 
         void set_value(Cpp_Species&, Real)
@@ -91,13 +96,13 @@ cdef extern from "ecell4/spatiocyte/SpatiocyteWorld.hpp" namespace "ecell4::spat
         Integer get_neighbor(Integer, Integer)
         void save(string filename) except +
         void load(string filename)
-        pair[pair[Cpp_ParticleID, Cpp_Voxel], bool] new_voxel(Cpp_Voxel& p)
-        pair[pair[Cpp_ParticleID, Cpp_Voxel], bool] new_voxel(Cpp_Species& sp, Integer pos)
-        pair[pair[Cpp_ParticleID, Cpp_Voxel], bool] new_voxel_structure(Cpp_Species& sp, Integer pos)
-        vector[pair[Cpp_ParticleID, Cpp_Voxel]] list_voxels()
-        vector[pair[Cpp_ParticleID, Cpp_Voxel]] list_voxels(Cpp_Species& sp)
-        vector[pair[Cpp_ParticleID, Cpp_Voxel]] list_voxels_exact(Cpp_Species& sp)
-        bool update_voxel(Cpp_ParticleID, Cpp_Voxel)
+        pair[pair[Cpp_ParticleID, Cpp_ParticleVoxel], bool] new_voxel(Cpp_ParticleVoxel& p)
+        pair[pair[Cpp_ParticleID, Cpp_ParticleVoxel], bool] new_voxel(Cpp_Species& sp, Integer pos)
+        pair[pair[Cpp_ParticleID, Cpp_ParticleVoxel], bool] new_voxel_structure(Cpp_Species& sp, Integer pos)
+        vector[pair[Cpp_ParticleID, Cpp_ParticleVoxel]] list_voxels()
+        vector[pair[Cpp_ParticleID, Cpp_ParticleVoxel]] list_voxels(Cpp_Species& sp)
+        vector[pair[Cpp_ParticleID, Cpp_ParticleVoxel]] list_voxels_exact(Cpp_Species& sp)
+        bool update_voxel(Cpp_ParticleID, Cpp_ParticleVoxel)
         bool has_voxel(Cpp_ParticleID)
         Real voxel_radius()
 
@@ -130,7 +135,7 @@ cdef extern from "ecell4/spatiocyte/SpatiocyteWorld.hpp" namespace "ecell4::spat
         @staticmethod
         Real calculate_volume(Cpp_Real3&, Real)
 
-        pair[pair[Cpp_ParticleID, Cpp_Voxel], bool] new_voxel_interface(Cpp_Species& sp, Integer pos)
+        pair[pair[Cpp_ParticleID, Cpp_ParticleVoxel], bool] new_voxel_interface(Cpp_Species& sp, Integer pos)
         Integer add_interface(Cpp_Species&) except +
 
     cdef Cpp_SpatiocyteWorld* create_spatiocyte_world_cell_list_impl_alias(

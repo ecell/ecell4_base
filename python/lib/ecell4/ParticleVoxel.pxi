@@ -33,10 +33,10 @@ cdef class ParticleVoxel:
 
     def __cinit__(self, Species sp, Integer coord, Real radius, Real D, loc=None):
         if loc is None:
-            self.thisptr = new Cpp_Voxel(
+            self.thisptr = new Cpp_ParticleVoxel(
                 deref(sp.thisptr), coord, radius, D)
         else:
-            self.thisptr = new Cpp_Voxel(
+            self.thisptr = new Cpp_ParticleVoxel(
                 deref(sp.thisptr), coord, radius, D, tostring(loc))
 
     def __dealloc__(self):
@@ -44,15 +44,15 @@ cdef class ParticleVoxel:
 
     def coordinate(self):
         """Return the coordinate."""
-        return self.thisptr.coordinate()
+        return self.thisptr.coordinate
 
     def D(self):
         """Return the diffusion coefficient."""
-        return self.thisptr.D()
+        return self.thisptr.D
 
     def radius(self):
         """Return the radius."""
-        return self.thisptr.radius()
+        return self.thisptr.radius
 
     def species(self):
         """species() -> Species
@@ -60,7 +60,7 @@ cdef class ParticleVoxel:
         Return the species.
 
         """
-        return Species_from_Cpp_Species(address(self.thisptr.species()))
+        return Species_from_Cpp_Species(address(self.thisptr.species))
 
     def loc(self):
         """loc() -> str
@@ -68,13 +68,13 @@ cdef class ParticleVoxel:
         Return the location information as a string.
 
         """
-        return self.thisptr.loc().decode('UTF-8')
+        return self.thisptr.loc.decode('UTF-8')
 
     def __reduce__(self):
         return (ParticleVoxel, (self.species(), self.coordinate(), self.radius(), self.D(), self.loc()))
 
-cdef ParticleVoxel Voxel_from_Cpp_Voxel(Cpp_Voxel* p):
-    cdef Cpp_Voxel *new_obj = new Cpp_Voxel(<Cpp_Voxel> deref(p))
+cdef ParticleVoxel Voxel_from_Cpp_Voxel(Cpp_ParticleVoxel* p):
+    cdef Cpp_ParticleVoxel *new_obj = new Cpp_ParticleVoxel(<Cpp_ParticleVoxel> deref(p))
     r = ParticleVoxel(Species(), 0, 0, 0)
     del r.thisptr
     r.thisptr = new_obj
