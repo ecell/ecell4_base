@@ -54,11 +54,11 @@ void HalfEdgePolygon::assign(const std::vector<Triangle>& ts)
                     found_vtx = vi->first;
 
                     // calculating mean position...
-                    vi->second.first = (v2 * vi->second.second.size() + v1) /
+                    vi->second.first = (v2 * vi->second.second.size() +
+                                        this->apply_boundary(v1)) /
                                        (vi->second.second.size() + 1);
                     // assign face-id to the vertex
                     vi->second.second.push_back(std::make_pair(fid, i));
-
                     break;
                 }
             }
