@@ -1,9 +1,14 @@
-#include <ecell4/core/Polygon.hpp>
+#include <ecell4/core/HalfEdgeMesh.hpp>
+#include <boost/container/flat_map.hpp>
+#include <boost/algorithm/cxx11/all_of.hpp>
 
-const Real Polygon<T_fid, T_vid, T_eid>::absolute_tolerance = 1e-12;
-const Real Polygon<T_fid, T_vid, T_eid>::relative_tolerance = 1e-8;
+namespace ecell4
+{
 
-void Polygon::assign(const std::vector<Triangle>& ts)
+const Real HalfEdgePolygon::absolute_tolerance = 1e-12;
+const Real HalfEdgePolygon::relative_tolerance = 1e-8;
+
+void HalfEdgePolygon::assign(const std::vector<Triangle>& ts)
 {
     const Real tol_abs2 = absolute_tolerance * absolute_tolerance;
     const Real tol_rel2 = relative_tolerance * relative_tolerance;
@@ -11,12 +16,12 @@ void Polygon::assign(const std::vector<Triangle>& ts)
     vertices_.clear();
        faces_.clear();
        edges_.clear();
-    this->total_area = 0.0;
+    this->total_area_ = 0.0;
 
     // prepair temporal data storage
     typedef std::pair<face_id_type, std::size_t>          fid_vidx_pair;
     typedef std::pair<Real3, std::vector<fid_vidx_pair> > tmp_vtx_type;
-    typedef boost::flat_map<vertex_id_type, tmp_vtx_type> tmp_vertex_map;
+    typedef boost::container::flat_map<vertex_id_type, tmp_vtx_type> tmp_vertex_map;
     tmp_vertex_map tmp_vtxs;
 
     // first, generate (FaceIDs for all triangles) and (EdgeIDs for all Edges).
@@ -36,7 +41,7 @@ void Polygon::assign(const std::vector<Triangle>& ts)
             boost::optional<vertex_id_type> found_vtx = boost::none;
 
             // find near vertex
-            for(typename tmp_vertex_map::const_iterator
+            for(typename tmp_vertex_map::iterator
                     vi(tmp_vtxs.begin()), ve(tmp_vtxs.end()); vi != ve; ++vi)
             {
                 const Real3&  v2 = vi->second.first;
@@ -53,14 +58,15 @@ void Polygon::assign(const std::vector<Triangle>& ts)
                                        (vi->second.second.size() + 1);
                     // assign face-id to the vertex
                     vi->second.second.push_back(std::make_pair(fid, i));
+
                     break;
                 }
             }
             if(!found_vtx) // new vertices! add VertexID.
             {
-                const vertex_id_type new_vid = vertices_.size();
-                tmp_vtxs.push_back(std::make_pair(v1,
-                        std::vector<fid_vidx_pair>(1, std::make_pair(fid, i))));
+                const vertex_id_type new_vid = tmp_vtxs.size();
+                tmp_vtxs[new_vid] = std::make_pair(v1,
+                        std::vector<fid_vidx_pair>(1, std::make_pair(fid, i)));
                 found_vtx = new_vid;
             }
             fd.vertices[i] = *found_vtx; // store vertex id to face data
@@ -75,21 +81,20 @@ void Polygon::assign(const std::vector<Triangle>& ts)
             edge_data ed;
             ed.face   = fid;
             ed.target = fd.vertices[i==2?0:i+1];
-            this->edges_.update(eid, ed);
+            this->edges_.push_back(ed);
 
             fd.edges[i] = eid;
         }
-        // set next of these 3 edges
+        // set `next` of these 3 edges
         for(std::size_t i=0; i<3; ++i)
         {
             this->edges_.at(fd.edges[i]).next = fd.edges[i==2?0:i+1];
         }
-        faces_.update(fid, fd);
+        faces_.push_back(fd);
     }
 
     // assign tmp_vtxs to this->vertices_.
     // by using tmp_vtxs, correct positions of the vertices.
-    // here, face_datas are completed.
     for(typename tmp_vertex_map::const_iterator
             vi(tmp_vtxs.begin()), ve(tmp_vtxs.end()); vi != ve; ++vi)
     {
@@ -99,7 +104,6 @@ void Polygon::assign(const std::vector<Triangle>& ts)
 
         vertex_data vd;
         vd.position = pos;
-        this->vertices_.update(vid, vd);
 
         // * correct faces_ by using mean position
         // * set vertex.outgoing_edges
@@ -118,13 +122,14 @@ void Polygon::assign(const std::vector<Triangle>& ts)
             vs[idx] = pos; // update coordinate of Triangle
             this->faces_.at(fid).triangle = Triangle(vs);
         }
+        this->vertices_.push_back(vd);
     }
 
     // set edge.length, edge.direction by using face.traingle
     for(typename face_container_type::const_iterator
             fi(this->faces_.begin()), fe(this->faces_.end()); fi != fe; ++fi)
     {
-        const face_data& fd = fi->second;
+        const face_data& fd = *fi;
         for(std::size_t i=0; i<3; ++i)
         {
             const edge_id_type eid = fd.edges[i];
@@ -134,22 +139,24 @@ void Polygon::assign(const std::vector<Triangle>& ts)
     }
 
     // search pairs of opposite edges & calculate edge.tilt.
-    // here, edge_datas are completed.
     for(edge_id_type i=0; i<edges_.size(); ++i)
     {
-        const vertex_id_type start  = target_of(i);
-        const vertex_id_type target = target_of(next_of(next_of(i)));
+        const vertex_id_type start  = this->target_of(i);
+        const vertex_id_type target = this->target_of(
+                this->next_of(this->next_of(i)));
 
+        bool opposite_found = false;
         const std::vector<edge_id_type>& vd =
-            this->vertices_[start].outgoing_edges;
+            this->vertices_.at(start).outgoing_edges;
+
         for(typename std::vector<edge_id_type>::const_iterator
                 iter(vd.begin()), iend(vd.end()); iter != iend; ++iter)
         {
             const edge_id_type outgoing = *iter;
-            if(target_of(outgoing) == target)
+            if(this->target_of(outgoing) == target)
             {
                 // found opposite edge! calculate tilt...
-                this->edges_.at(i).opposite = outgoing;
+                this->edges_.at(i).opposite_edge = outgoing;
 
                 const face_id_type fid1 = face_of(i);
                 const face_id_type fid2 = face_of(outgoing);
@@ -162,16 +169,53 @@ void Polygon::assign(const std::vector<Triangle>& ts)
                 this->edges_.at(i       ).tilt = ang;
                 this->edges_.at(outgoing).tilt = ang;
 
+                opposite_found = true;
                 break;
             }
         }
+        assert(opposite_found);
     }
 
-    // set vertex_data.is_contiguous, angle by traversing edges.
-    // here, vertex_data are completed.
+    // set vertex_data.angle by traversing edges.
     for(std::size_t i=0; i<vertices_.size(); ++i)
     {
-        //TODO;
+        const vertex_data& vtx = this->vertices_[i];
+        std::vector<bool> is_found(vtx.outgoing_edges.size(), false);
+
+        Real total_angle = 0.0;
+        const edge_id_type start = vtx.outgoing_edges.front();
+        edge_id_type current = start;
+        do
+        {
+            for(std::size_t idx=0; idx<vtx.outgoing_edges.size(); ++idx)
+            {
+                if(vtx.outgoing_edges[idx] == current)
+                {
+                    is_found[idx] = true;
+                    break;
+                }
+            }
+
+            const face_data& f = this->faces_.at(this->face_of(current));
+            bool angle_found = false;
+            for(std::size_t idx=0; idx<3; ++idx)
+            {
+                if(f.edges[idx] == current)
+                {
+                    angle_found = true;
+                    total_angle += f.triangle.angle_at(idx);
+                    break;
+                }
+            }
+            assert(angle_found);
+
+            current = this->opposite_of(this->next_of(this->next_of(current)));
+        }
+        while(current != start);
+
+        this->vertices_[i].apex_angle = total_angle;
+        assert(boost::algorithm::all_of(
+                    is_found.begin(), is_found.end(), boost::lambda::_1));
     }
 
     // make neighbor list for faces!
@@ -180,5 +224,4 @@ void Polygon::assign(const std::vector<Triangle>& ts)
 }
 
 
-
-
+} // ecell4
