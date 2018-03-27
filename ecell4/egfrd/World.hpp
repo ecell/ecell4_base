@@ -409,6 +409,11 @@ public:
         return rng_;
     }
 
+    void set_rng(const boost::shared_ptr<rng_type>& rng)
+    {
+        rng_ = rng;
+    }
+
     virtual void save(const std::string& filename) const
     {
 #ifdef WITH_HDF5
