@@ -151,6 +151,22 @@ class HalfEdgePolygon : public Shape
         return boost::none;
     }
 
+    boost::optional<edge_id_type>
+    find_edge(const vertex_id_type start, const vertex_id_type stop) const
+    {
+        const vertex_data& vd = this->vertices_.at(start);
+        for(std::vector<edge_id_type>::const_iterator
+            i(vd.outgoing_edges.begin()), e(vd.outgoing_edges.end()); i!=e; ++i)
+        {
+            const edge_id_type eid = *i;
+            if(edges_.at(eid).target == stop)
+            {
+                return eid;
+            }
+        }
+        return boost::none;
+    }
+
     // half-edge traverse
     // next edge: the edge belonging the same face,
     //            starting from the target of current edge
