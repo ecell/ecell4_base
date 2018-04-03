@@ -27,6 +27,33 @@
 #include <vector>
 #include <limits>
 
+#ifndef ECELL4_STRONG_TYPEDEF // {{{
+#  if __cplusplus < 201103L
+#    define ECELL4_STRONG_TYPEDEF(UNDERLYING, NAME)                     \
+      struct NAME {                                                     \
+        UNDERLYING v_;                                                  \
+        NAME(){}                                                        \
+        ~NAME(){}                                                       \
+        NAME(const NAME& rhs): v_(rhs.v_) {}                            \
+        explicit NAME(UNDERLYING const& v): v_(v){}                     \
+        NAME& operator=(const NAME& rhs){v_ = rhs.v_; return *this;}    \
+        NAME& operator=(const UNDERLYING& rhs){v_ = rhs; return *this;} \
+        operator UNDERLYING  () const {return v_;}                      \
+        operator UNDERLYING& ()       {return v_;}                      \
+        bool operator==(const NAME& rhs) const {return v_ == rhs.v_;}   \
+        bool operator!=(const NAME& rhs) const {return v_ != rhs.v_;}   \
+        bool operator< (const NAME& rhs) const {return v_ <  rhs.v_;}   \
+        bool operator> (const NAME& rhs) const {return v_ >  rhs.v_;}   \
+        bool operator<=(const NAME& rhs) const {return v_ <= rhs.v_;}   \
+        bool operator>=(const NAME& rhs) const {return v_ >= rhs.v_;}   \
+      };                                                                \
+      /**/
+#  else // c++11 enabled
+#    define ECELL4_STRONG_TYPEDEF(UNDERLYING, NAME)\
+       enum class NAME : UNDERLYING {};
+#  endif
+#endif// }}} ECELL4_STRONG_TYPEDEF
+
 namespace ecell4
 {
 
@@ -40,15 +67,19 @@ class HalfEdgePolygon : public Shape
     static const Real absolute_tolerance;
     static const Real relative_tolerance;
 
-    typedef std::size_t   face_id_type;
-    typedef std::size_t   edge_id_type;
-    typedef std::size_t vertex_id_type;
+    // (strong|opaque) typedef
+    ECELL4_STRONG_TYPEDEF(std::size_t,   face_id_type)
+    ECELL4_STRONG_TYPEDEF(std::size_t,   edge_id_type)
+    ECELL4_STRONG_TYPEDEF(std::size_t, vertex_id_type)
 
     struct vertex_data
     {
         Real  apex_angle; // total angle around this vertex
         Real3 position;   // position of this vertex
         std::vector<edge_id_type> outgoing_edges;
+//         std::vector<std::pair<edge_id_type, Real> > outgoing_edges;
+        // the outgoing_edges are sorted around the vertex in the ccw manner
+        // (next of next of opposite of one edge on Halfedge polygon).
     };
     struct edge_data
     {
@@ -65,15 +96,34 @@ class HalfEdgePolygon : public Shape
         Triangle triangle; // not considering Boundary, contains just the shape
         boost::array<  edge_id_type, 3> edges;    // idx consistent with triangle
         boost::array<vertex_id_type, 3> vertices; // idx consistent with triangle
+
+        // neighbor list; that has pairs of {Fid, developped Triangle}.
+        std::vector<std::pair<face_id_type, Triangle> > neighbor_ccw;
+        std::vector<std::pair<face_id_type, Triangle> > neighbor_cw;
+        // XXX: distance calculation between points on a polygon is complicated.
+        // 1. there are several `local-minima` between any combination of points.
+        //    so all the minima should be calculated and the shortest path
+        //    should be found from them.
+        // 2. each `local-minima` corresponds to a straight line along the
+        //    unfolded triangles around corresponding vertices (excluding the
+        //    case that is described in `3`).
+        //    * if the two faces that two positions locates on are not connected
+        //      by one vertices, it is not able to find the shortest path w/o
+        //      employing some costly minimization technique.
+        // 3. if the angle between p1-v-p2 exceeds pi, the shortest path become
+        //    the path that goes through the vertex.
+        //    * this means that before calculating distance, the angle should be
+        //      calculated and checked whether it exceeds pi or not.
+        // 4. an apex angle around a vertex can be any value (includeing inf).
+        //    * by adding a pyramid instead of one face around a vertex, the
+        //      angle will increase. We can put the pyramid that infinitely thin.
+        //      it enables us to put any number of pyramids around one vertex,
+        //      increasing the apex angle between the vertex.
     };
 
     typedef std::vector<vertex_data> vertex_container_type;
     typedef std::vector<  face_data>   face_container_type;
     typedef std::vector<  edge_data>   edge_container_type;
-
-    // neighbor list (of faces) implementation
-    typedef std::vector<face_id_type>                         nlist_type;
-    typedef std::vector<std::pair<std::size_t, std::size_t> > nlist_ranges_type;
 
   public:
 
@@ -91,87 +141,23 @@ class HalfEdgePolygon : public Shape
     // tolerances are used to detect the same vertices in different triangles.
     void assign(const std::vector<Triangle>& ts);
 
-//     std::pair<Real3, face_id_type>
-//     move_on_surface(const std::pair<Real3, face_id_type>& pos,
-//         const Real3& disp, std::size_t& max_edges_traversed) const;
-//
-//     std::pair<Real3, face_id_type>
-//     roll_around_vertex(const std::pair<Real3, face_id_type>& pos,
-//         const Real r, const Real theta, const vertex_id_type& vid) const;
-//
+    // move `pos` to `pos + disp`.
+    std::pair<Real3, face_id_type>
+    travel(const std::pair<Real3, face_id_type>& pos, const Real3& disp) const;
+
 //     // pos1 -> pos2 <=> pos2 - pos1
 //     Real3 direction(const std::pair<Real3,   face_id_type>& pos1,
 //                     const std::pair<Real3,   face_id_type>& pos2) const;
-//     Real3 direction(const std::pair<Real3, vertex_id_type>& pos1,
-//                     const std::pair<Real3, vertex_id_type>& pos2) const;
-//     Real3 direction(const std::pair<Real3,   face_id_type>& pos1,
-//                     const std::pair<Real3, vertex_id_type>& pos2) const;
-//     Real3 direction(const std::pair<Real3, vertex_id_type>& pos1,
-//                     const std::pair<Real3,   face_id_type>& pos2) const;
-//
 //     Real distance_sq(const std::pair<Real3,   face_id_type>& pos1,
 //                      const std::pair<Real3,   face_id_type>& pos2) const;
-//     Real distance_sq(const std::pair<Real3, vertex_id_type>& pos1,
-//                      const std::pair<Real3, vertex_id_type>& pos2) const;
-//     Real distance_sq(const std::pair<Real3,   face_id_type>& pos1,
-//                      const std::pair<Real3, vertex_id_type>& pos2) const;
-//     Real distance_sq(const std::pair<Real3, vertex_id_type>& pos1,
-//                      const std::pair<Real3,   face_id_type>& pos2) const;
-//
 //     Real distance(const std::pair<Real3,   face_id_type>& pos1,
 //                   const std::pair<Real3,   face_id_type>& pos2) const
 //     {return this->std::sqrt(distance_sq(pos1, pos2));}
-//     Real distance(const std::pair<Real3, vertex_id_type>& pos1,
-//                   const std::pair<Real3, vertex_id_type>& pos2) const
-//     {return this->std::sqrt(distance_sq(pos1, pos2));}
-//     Real distance(const std::pair<Real3,   face_id_type>& pos1,
-//                   const std::pair<Real3, vertex_id_type>& pos2) const
-//     {return this->std::sqrt(distance_sq(pos1, pos2));}
-//     Real distance(const std::pair<Real3, vertex_id_type>& pos1,
-//                   const std::pair<Real3,   face_id_type>& pos2) const
-//     {return this->std::sqrt(distance_sq(pos1, pos2));}
-
-    boost::optional<vertex_id_type>
-    find_vertex(const Real3& pos) const
-    {
-        const Real tol_rel2 = relative_tolerance * relative_tolerance;
-        const Real tol_abs2 = absolute_tolerance * absolute_tolerance;
-
-        for(std::size_t i=0; i<vertices_.size(); ++i)
-        {
-            const vertex_data& vd = vertices_[i];
-            const Real dist_sq = length_sq(
-                this->periodic_transpose(vd.position, pos) - pos);
-
-            if(dist_sq < tol_abs2 || dist_sq < length_sq(pos) * tol_rel2)
-            {
-                return i;
-            }
-        }
-        return boost::none;
-    }
-
-    boost::optional<edge_id_type>
-    find_edge(const vertex_id_type start, const vertex_id_type stop) const
-    {
-        const vertex_data& vd = this->vertices_.at(start);
-        for(std::vector<edge_id_type>::const_iterator
-            i(vd.outgoing_edges.begin()), e(vd.outgoing_edges.end()); i!=e; ++i)
-        {
-            const edge_id_type eid = *i;
-            if(edges_.at(eid).target == stop)
-            {
-                return eid;
-            }
-        }
-        return boost::none;
-    }
 
     // half-edge traverse
     // next edge: the edge belonging the same face,
     //            starting from the target of current edge
-    edge_id_type
-    next_of(const edge_id_type eid) const
+    edge_id_type next_of(const edge_id_type eid) const
     {return this->edge_at(eid).next;}
 
     // opposite edge: the edge that starts from the target of current edge,
@@ -200,17 +186,17 @@ class HalfEdgePolygon : public Shape
     // edge ids that starts from the vertex
     std::vector<edge_id_type> const&
     outgoing_edges(const vertex_id_type vid) const
-    {return this->vertices_.at(vid).outgoing_edges;}
+    {return this->vertex_at(vid).outgoing_edges;}
 
     // accessor ---------------------------------------------------------------
 
     Real apex_angle_at(const vertex_id_type& vid) const
     {
-        return this->vertices_.at(vid).apex_angle;
+        return this->vertex_at(vid).apex_angle;
     }
     Real3 position_at(const vertex_id_type& vid) const
     {
-        return this->vertices_.at(vid).position;
+        return this->vertex_at(vid).position;
     }
     std::vector<face_id_type>
     connecting_faces(const vertex_id_type& vid) const
@@ -218,7 +204,7 @@ class HalfEdgePolygon : public Shape
         std::vector<face_id_type> retval;
         const std::vector<edge_id_type>& outs = this->outgoing_edges(vid);
         for(typename std::vector<edge_id_type>::const_iterator
-            i(outs.begin()), e(outs.end()); i!=e; ++i)
+                i(outs.begin()), e(outs.end()); i!=e; ++i)
         {
             retval.push_back(this->face_of(*i));
         }
@@ -266,8 +252,8 @@ class HalfEdgePolygon : public Shape
         lower = Real3( maxr,  maxr,  maxr);
         upper = Real3(-maxr, -maxr, -maxr);
 
-        for(typename vertex_container_type::const_iterator
-            i(this->vertices_.begin()), e(this->vertices_.end()); i!=e; ++i)
+        for(vertex_container_type::const_iterator
+                i(this->vertices_.begin()), e(this->vertices_.end()); i!=e; ++i)
         {
             lower[0] = std::min(lower[0], i->position[0]);
             lower[1] = std::min(lower[1], i->position[1]);
@@ -292,13 +278,13 @@ class HalfEdgePolygon : public Shape
             draw_triangle -= fd.triangle.area();
             if(draw_triangle <= 0.0)
             {
-                fid = i;
+                fid = face_id_type(i);
                 return fd.triangle.draw_position(rng);
             }
         }
         // if draw_triangle was positive throughout the loop,
         // maybe because of numerical error, put it on the last face.
-        fid = faces_.size() - 1;
+        fid = face_id_type(faces_.size() - 1);
         return faces_.back().triangle.draw_position(rng);
     }
 
@@ -324,43 +310,101 @@ class HalfEdgePolygon : public Shape
     }
 
     Real        total_area()  const throw() {return total_area_;}
-    std::size_t   face_size() const throw() {return    faces_.size();}
-    std::size_t   edge_size() const throw() {return    edges_.size();}
+    std::size_t   face_size() const throw() {return faces_.size();}
+    std::size_t   edge_size() const throw() {return edges_.size();}
     std::size_t vertex_size() const throw() {return vertices_.size();}
 
     std::vector<vertex_id_type> list_vertex_ids() const
     {
-        return std::vector<vertex_id_type>(
-            boost::make_counting_iterator<std::size_t>(0),
-            boost::make_counting_iterator<std::size_t>(this->vertices_.size()));
+        std::vector<vertex_id_type> retval; retval.reserve(this->vertex_size());
+        for(std::size_t i=0; i<this->vertex_size(); ++i)
+        {
+            retval.push_back(vertex_id_type(i));
+        }
+        return retval;
     }
     std::vector<face_id_type> list_face_ids() const
     {
-        return std::vector<face_id_type>(
-            boost::make_counting_iterator<std::size_t>(0),
-            boost::make_counting_iterator<std::size_t>(this->faces_.size()));
+        std::vector<face_id_type> retval; retval.reserve(this->face_size());
+        for(std::size_t i=0; i<this->face_size(); ++i)
+        {
+            retval.push_back(face_id_type(i));
+        }
+        return retval;
     }
     std::vector<edge_id_type> list_edge_ids() const
     {
-        return std::vector<edge_id_type>(
-            boost::make_counting_iterator<std::size_t>(0),
-            boost::make_counting_iterator<std::size_t>(this->edges_.size()));
+        std::vector<edge_id_type> retval; retval.reserve(this->edge_size());
+        for(std::size_t i=0; i<this->edge_size(); ++i)
+        {
+            retval.push_back(edge_id_type(i));
+        }
+        return retval;
     }
 
     vertex_data const& vertex_at(const vertex_id_type& vid) const
     {
-        return this->vertices_[vid];
+        return this->vertices_.at(static_cast<std::size_t>(vid));
     }
     face_data const& face_at(const face_id_type& fid) const
     {
-        return this->faces_[fid];
+        return this->faces_.at(static_cast<std::size_t>(fid));
     }
     edge_data const& edge_at(const edge_id_type& eid) const
     {
-        return this->edges_[eid];
+        return this->edges_.at(static_cast<std::size_t>(eid));
+    }
+
+    boost::optional<vertex_id_type>
+    find_vertex(const Real3& pos) const
+    {
+        const Real tol_rel2 = relative_tolerance * relative_tolerance;
+        const Real tol_abs2 = absolute_tolerance * absolute_tolerance;
+
+        for(std::size_t i=0; i<vertices_.size(); ++i)
+        {
+            const vertex_data& vd = vertices_[i];
+            const Real dist_sq = length_sq(
+                this->periodic_transpose(vd.position, pos) - pos);
+
+            if(dist_sq < tol_abs2 || dist_sq < length_sq(pos) * tol_rel2)
+            {
+                return vertex_id_type(i);
+            }
+        }
+        return boost::none;
+    }
+
+    boost::optional<edge_id_type>
+    find_edge(const vertex_id_type start, const vertex_id_type stop) const
+    {
+        const vertex_data& vd = this->vertices_.at(start);
+        for(std::vector<edge_id_type>::const_iterator
+            i(vd.outgoing_edges.begin()), e(vd.outgoing_edges.end()); i!=e; ++i)
+        {
+            const edge_id_type eid = *i;
+            if(edges_.at(eid).target == stop)
+            {
+                return eid;
+            }
+        }
+        return boost::none;
     }
 
   private:
+
+    vertex_data& vertex_at(const vertex_id_type& vid)
+    {
+        return this->vertices_.at(static_cast<std::size_t>(vid));
+    }
+    face_data& face_at(const face_id_type& fid)
+    {
+        return this->faces_.at(static_cast<std::size_t>(fid));
+    }
+    edge_data& edge_at(const edge_id_type& eid)
+    {
+        return this->edges_.at(static_cast<std::size_t>(eid));
+    }
 
 //     Real distance_sq_connected_by_edges(
 //             const std::pair<Real3, face_id_type>& pos1,
@@ -405,8 +449,6 @@ class HalfEdgePolygon : public Shape
     vertex_container_type vertices_;
     face_container_type   faces_;
     edge_container_type   edges_;
-    nlist_type            neighbor_list_;
-    nlist_ranges_type     neighbor_list_range_;
 };
 
 // template<typename T_fid, typename T_vid, typename T_eid>
@@ -843,4 +885,5 @@ class HalfEdgePolygon : public Shape
 //
 // } // polygon
 } // ecell4
+#undef ECELL4_STRONG_TYPEDEF
 #endif// ECELL4_POLYGON

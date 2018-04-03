@@ -26,13 +26,13 @@ void HalfEdgePolygon::assign(const std::vector<Triangle>& ts)
 
     // first, generate (FaceIDs for all triangles) and (EdgeIDs for all Edges).
     // and collect vertices that are at the same position.
-    for(typename std::vector<Triangle>::const_iterator
+    for(std::vector<Triangle>::const_iterator
             t_iter(ts.begin()), t_end(ts.end()); t_iter != t_end; ++t_iter)
     {
         const Triangle& triangle = *t_iter;
         this->total_area_ += triangle.area();
 
-        const face_id_type fid = faces_.size();
+        const face_id_type fid(faces_.size());
         face_data fd;
         fd.triangle = triangle;
 
@@ -42,7 +42,7 @@ void HalfEdgePolygon::assign(const std::vector<Triangle>& ts)
             boost::optional<vertex_id_type> found_vtx = boost::none;
 
             // find near vertex
-            for(typename tmp_vertex_map::iterator
+            for(tmp_vertex_map::iterator
                     vi(tmp_vtxs.begin()), ve(tmp_vtxs.end()); vi != ve; ++vi)
             {
                 const Real3&  v2 = vi->second.first;
@@ -65,7 +65,7 @@ void HalfEdgePolygon::assign(const std::vector<Triangle>& ts)
             }
             if(!found_vtx) // new vertices! add VertexID.
             {
-                const vertex_id_type new_vid = tmp_vtxs.size();
+                const vertex_id_type new_vid(tmp_vtxs.size());
                 tmp_vtxs[new_vid] = std::make_pair(v1,
                         std::vector<fid_vidx_pair>(1, std::make_pair(fid, i)));
                 found_vtx = new_vid;
@@ -78,7 +78,7 @@ void HalfEdgePolygon::assign(const std::vector<Triangle>& ts)
         {
             // in this point, edge length and direction are not fixed (because
             // vertex positions are corrected after all the faces are assigned).
-            const edge_id_type eid = edges_.size();
+            const edge_id_type eid(edges_.size());
             edge_data ed;
             ed.face   = fid;
             ed.target = fd.vertices[i==2?0:i+1];
@@ -96,7 +96,7 @@ void HalfEdgePolygon::assign(const std::vector<Triangle>& ts)
 
     // * assign tmp_vtxs to this->vertices_
     // * set outgoing_edges
-    for(typename tmp_vertex_map::const_iterator
+    for(tmp_vertex_map::const_iterator
             vi(tmp_vtxs.begin()), ve(tmp_vtxs.end()); vi != ve; ++vi)
     {
         const vertex_id_type vid = vi->first;
@@ -107,7 +107,7 @@ void HalfEdgePolygon::assign(const std::vector<Triangle>& ts)
         vd.position = pos;
 
         // * set vertex.outgoing_edges
-        for(typename std::vector<fid_vidx_pair>::const_iterator
+        for(std::vector<fid_vidx_pair>::const_iterator
                 i(face_pos.begin()), e(face_pos.end()); i!=e; ++i)
         {
             const face_id_type fid = i->first;
@@ -121,7 +121,7 @@ void HalfEdgePolygon::assign(const std::vector<Triangle>& ts)
     }
 
     // * refine vertex positions
-    for(typename face_container_type::iterator
+    for(face_container_type::iterator
             fi(this->faces_.begin()), fe(this->faces_.end()); fi != fe; ++fi)
     {
         face_data& fd = *fi;
@@ -137,7 +137,7 @@ void HalfEdgePolygon::assign(const std::vector<Triangle>& ts)
     }
 
     // set edge.length, edge.direction by using face.traingle
-    for(typename face_container_type::const_iterator
+    for(face_container_type::const_iterator
             fi(this->faces_.begin()), fe(this->faces_.end()); fi != fe; ++fi)
     {
         const face_data& fd = *fi;
@@ -150,30 +150,31 @@ void HalfEdgePolygon::assign(const std::vector<Triangle>& ts)
     }
 
     // search pairs of opposite edges & calculate edge.tilt.
-    for(edge_id_type i=0; i<edges_.size(); ++i)
+    for(std::size_t i=0; i<edges_.size(); ++i)
     {
-        const vertex_id_type start  = this->target_of(i);
+        const edge_id_type   eid(i);
+        const vertex_id_type start  = this->target_of(eid);
         const vertex_id_type target = this->target_of(
-                this->next_of(this->next_of(i)));
+                this->next_of(this->next_of(eid)));
 
         bool opposite_found = false;
         const std::vector<edge_id_type>& vd =
             this->vertices_.at(start).outgoing_edges;
 
-        for(typename std::vector<edge_id_type>::const_iterator
+        for(std::vector<edge_id_type>::const_iterator
                 iter(vd.begin()), iend(vd.end()); iter != iend; ++iter)
         {
             const edge_id_type outgoing = *iter;
             if(this->target_of(outgoing) == target)
             {
                 // found opposite edge! calculate tilt...
-                this->edges_.at(i).opposite_edge = outgoing;
+                this->edge_at(eid).opposite_edge = outgoing;
 
-                const face_id_type fid1 = face_of(i);
+                const face_id_type fid1 = face_of(eid);
                 const face_id_type fid2 = face_of(outgoing);
                 const Real3 n1 = this->faces_.at(fid1).triangle.normal();
                 const Real3 n2 = this->faces_.at(fid2).triangle.normal();
-                const Real3 cr = cross_product(edges_.at(i).direction, n1);
+                const Real3 cr = cross_product(this->edge_at(eid).direction, n1);
                 const Real  sg = dot_product(cr, n2);
                 const Real ang = angle(n1, n2) * (sg > 0 ? 1 : -1);
 
