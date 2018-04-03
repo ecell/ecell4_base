@@ -81,9 +81,9 @@ BOOST_AUTO_TEST_CASE(Polygon_tetrahedron_construction_from_triangles)
     const Polygon poly = tetrahedron::make();
 
     // check shape detection
-    BOOST_CHECK_EQUAL(poly.face_size(), 4);
-    BOOST_CHECK_EQUAL(poly.edge_size(), 6 * 2);
-    BOOST_CHECK_EQUAL(poly.vertex_size(), 4);
+    BOOST_CHECK_EQUAL(poly.face_size(), 4u);
+    BOOST_CHECK_EQUAL(poly.edge_size(), 6u * 2u);
+    BOOST_CHECK_EQUAL(poly.vertex_size(), 4u);
     BOOST_CHECK_CLOSE(poly.total_area(), 1.5 + std::sqrt(3) / 2, 1e-8);
 
     // check vertex position
@@ -121,7 +121,7 @@ BOOST_AUTO_TEST_CASE(Polygon_tetrahedron_construction_from_triangles)
         const std::vector<vertex_id_type> ans = boost::assign::list_of(v2)(v3)(v4);
 
         std::vector<vertex_id_type> result; result.reserve(3);
-        for(typename std::vector<vertex_id_type>::const_iterator
+        for(typename std::vector<edge_id_type>::const_iterator
             i(poly.outgoing_edges(v1).begin()), e(poly.outgoing_edges(v1).end());
             i != e; ++i)
         {
@@ -135,7 +135,7 @@ BOOST_AUTO_TEST_CASE(Polygon_tetrahedron_construction_from_triangles)
         const std::vector<vertex_id_type> ans = boost::assign::list_of(v1)(v3)(v4);
 
         std::vector<vertex_id_type> result; result.reserve(3);
-        for(typename std::vector<vertex_id_type>::const_iterator
+        for(typename std::vector<edge_id_type>::const_iterator
             i(poly.outgoing_edges(v2).begin()), e(poly.outgoing_edges(v2).end());
             i != e; ++i)
         {
@@ -149,7 +149,7 @@ BOOST_AUTO_TEST_CASE(Polygon_tetrahedron_construction_from_triangles)
         const std::vector<vertex_id_type> ans = boost::assign::list_of(v1)(v2)(v4);
 
         std::vector<vertex_id_type> result; result.reserve(3);
-        for(typename std::vector<vertex_id_type>::const_iterator
+        for(typename std::vector<edge_id_type>::const_iterator
             i(poly.outgoing_edges(v3).begin()), e(poly.outgoing_edges(v3).end());
             i != e; ++i)
         {
@@ -163,7 +163,7 @@ BOOST_AUTO_TEST_CASE(Polygon_tetrahedron_construction_from_triangles)
         const std::vector<vertex_id_type> ans = boost::assign::list_of(v1)(v2)(v3);
 
         std::vector<vertex_id_type> result; result.reserve(3);
-        for(typename std::vector<vertex_id_type>::const_iterator
+        for(typename std::vector<edge_id_type>::const_iterator
             i(poly.outgoing_edges(v4).begin()), e(poly.outgoing_edges(v4).end());
             i != e; ++i)
         {
@@ -176,10 +176,10 @@ BOOST_AUTO_TEST_CASE(Polygon_tetrahedron_construction_from_triangles)
 
     // check all the vertex are in contact with the correct set of faces.
     {
-        const std::vector<face_id_type> ans = boost::assign::list_of(v1)(v2)(v3);
+        const std::vector<vertex_id_type> ans = boost::assign::list_of(v1)(v2)(v3);
 
         std::vector<vertex_id_type> result; result.reserve(3);
-        for(typename std::vector<vertex_id_type>::const_iterator
+        for(typename std::vector<edge_id_type>::const_iterator
             i(poly.outgoing_edges(v4).begin()), e(poly.outgoing_edges(v4).end());
             i != e; ++i)
         {
@@ -373,9 +373,9 @@ BOOST_AUTO_TEST_CASE(Polygon_octahedron_construction_from_triangles)
     const Polygon poly = octahedron::make();
 
     // check shape detection
-    BOOST_CHECK_EQUAL(poly.face_size(), 8);
-    BOOST_CHECK_EQUAL(poly.edge_size(), 8 * 3);
-    BOOST_CHECK_EQUAL(poly.vertex_size(), 6);
+    BOOST_CHECK_EQUAL(poly.face_size(), 8u);
+    BOOST_CHECK_EQUAL(poly.edge_size(), 8u * 3u);
+    BOOST_CHECK_EQUAL(poly.vertex_size(), 6u);
     BOOST_CHECK_CLOSE(poly.total_area(), 8 * std::sqrt(3.0) / 2, 1e-8);
 
     // check vertex position
@@ -426,7 +426,7 @@ BOOST_AUTO_TEST_CASE(Polygon_octahedron_construction_from_triangles)
             boost::assign::list_of(v2)(v3)(v4)(v5);
 
         std::vector<vertex_id_type> result; result.reserve(4);
-        for(typename std::vector<vertex_id_type>::const_iterator
+        for(typename std::vector<edge_id_type>::const_iterator
             i(poly.outgoing_edges(v1).begin()), e(poly.outgoing_edges(v1).end());
             i != e; ++i)
         {
@@ -441,7 +441,7 @@ BOOST_AUTO_TEST_CASE(Polygon_octahedron_construction_from_triangles)
             boost::assign::list_of(v1)(v3)(v5)(v6);
 
         std::vector<vertex_id_type> result; result.reserve(4);
-        for(typename std::vector<vertex_id_type>::const_iterator
+        for(typename std::vector<edge_id_type>::const_iterator
             i(poly.outgoing_edges(v2).begin()), e(poly.outgoing_edges(v2).end());
             i != e; ++i)
         {
@@ -456,7 +456,7 @@ BOOST_AUTO_TEST_CASE(Polygon_octahedron_construction_from_triangles)
             boost::assign::list_of(v1)(v2)(v4)(v6);
 
         std::vector<vertex_id_type> result; result.reserve(4);
-        for(typename std::vector<vertex_id_type>::const_iterator
+        for(typename std::vector<edge_id_type>::const_iterator
             i(poly.outgoing_edges(v3).begin()), e(poly.outgoing_edges(v3).end());
             i != e; ++i)
         {
@@ -471,7 +471,7 @@ BOOST_AUTO_TEST_CASE(Polygon_octahedron_construction_from_triangles)
             boost::assign::list_of(v1)(v3)(v5)(v6);
 
         std::vector<vertex_id_type> result; result.reserve(4);
-        for(typename std::vector<vertex_id_type>::const_iterator
+        for(typename std::vector<edge_id_type>::const_iterator
             i(poly.outgoing_edges(v4).begin()), e(poly.outgoing_edges(v4).end());
             i != e; ++i)
         {
@@ -486,7 +486,7 @@ BOOST_AUTO_TEST_CASE(Polygon_octahedron_construction_from_triangles)
             boost::assign::list_of(v1)(v2)(v4)(v6);
 
         std::vector<vertex_id_type> result; result.reserve(4);
-        for(typename std::vector<vertex_id_type>::const_iterator
+        for(typename std::vector<edge_id_type>::const_iterator
             i(poly.outgoing_edges(v5).begin()), e(poly.outgoing_edges(v5).end());
             i != e; ++i)
         {
@@ -501,7 +501,7 @@ BOOST_AUTO_TEST_CASE(Polygon_octahedron_construction_from_triangles)
             boost::assign::list_of(v2)(v3)(v4)(v5);
 
         std::vector<vertex_id_type> result; result.reserve(4);
-        for(typename std::vector<vertex_id_type>::const_iterator
+        for(typename std::vector<edge_id_type>::const_iterator
             i(poly.outgoing_edges(v6).begin()), e(poly.outgoing_edges(v6).end());
             i != e; ++i)
         {
@@ -518,17 +518,18 @@ BOOST_AUTO_TEST_CASE(Polygon_octahedron_construction_from_triangles)
 //
 // each edge has length 2.
 // +--> x
-// | 0 __1__2__3__4__ 5
+// | 0 __1__2__3__4__ 0
 // |  |\ |\ |\ |\ |\ |
-// v 6|_\|_\|_\|_\|_\|11
+// v 5|_\|_\|_\|_\9_\|6
 // y  |\ |\ |\ |\ |\ |
 //   .|_\|_\|_\|_\|_\| .
 //   .|\ |\ |\ |\ |\ | .
 //   .|_\|_\|_\|_\|_\| .
 //    |\ |\ |\ |\ |\ |
-//  24|_\|_\|_\|_\|_\|29
+//  20|_\|_\|_\|_\24\|20
 //    |\ |\ |\ |\ |\ |
-//  30|_\|_\|_\|_\|_\|35
+//   0|_\|_\|_\|_\|_\|0
+//
 struct plane
 {
     const static Real3 edge_length;
@@ -565,9 +566,9 @@ BOOST_AUTO_TEST_CASE(Polygon_plane_construction_from_triangles)
     const Polygon poly = plane::make();
 
     // check shape detection
-    BOOST_CHECK_EQUAL(poly.face_size(),   50);
-    BOOST_CHECK_EQUAL(poly.edge_size(),   50 * 3);
-    BOOST_CHECK_EQUAL(poly.vertex_size(), 25);
+    BOOST_CHECK_EQUAL(poly.face_size(),   50u);
+    BOOST_CHECK_EQUAL(poly.edge_size(),   50u * 3u);
+    BOOST_CHECK_EQUAL(poly.vertex_size(), 25u);
     BOOST_CHECK_CLOSE(poly.total_area(),  10 * 10, 1e-8);
 
     // check vertex positions
@@ -589,7 +590,7 @@ BOOST_AUTO_TEST_CASE(Polygon_plane_construction_from_triangles)
         for(std::vector<vertex_id_type>::const_iterator
                 i(vids.begin()), e(vids.end()); i!=e; ++i)
         {
-            BOOST_CHECK_EQUAL(poly.outgoing_edges(*i).size(), 6);
+            BOOST_CHECK_EQUAL(poly.outgoing_edges(*i).size(), 6u);
         }
     }
 
