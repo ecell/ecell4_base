@@ -141,9 +141,9 @@ class HalfEdgePolygon : public Shape
     // tolerances are used to detect the same vertices in different triangles.
     void assign(const std::vector<Triangle>& ts);
 
-    // move `pos` to `pos + disp`.
-    std::pair<Real3, face_id_type>
-    travel(const std::pair<Real3, face_id_type>& pos, const Real3& disp) const;
+//     // move `pos` to `pos + disp`.
+//     std::pair<Real3, face_id_type>
+//     travel(const std::pair<Real3, face_id_type>& pos, const Real3& disp) const;
 
 //     // pos1 -> pos2 <=> pos2 - pos1
 //     Real3 direction(const std::pair<Real3,   face_id_type>& pos1,
@@ -222,6 +222,11 @@ class HalfEdgePolygon : public Shape
     Real3 direction_of(const edge_id_type& eid) const
     {
         return this->edge_at(eid).direction;
+    }
+
+    Triangle const& triangle_at(const face_id_type& fid) const
+    {
+        return this->face_at(fid).triangle;
     }
 
 
@@ -309,6 +314,8 @@ class HalfEdgePolygon : public Shape
         return pos1;
     }
 
+    // size stuff
+
     Real        total_area()  const throw() {return total_area_;}
     std::size_t   face_size() const throw() {return faces_.size();}
     std::size_t   edge_size() const throw() {return edges_.size();}
@@ -340,19 +347,6 @@ class HalfEdgePolygon : public Shape
             retval.push_back(edge_id_type(i));
         }
         return retval;
-    }
-
-    vertex_data const& vertex_at(const vertex_id_type& vid) const
-    {
-        return this->vertices_.at(static_cast<std::size_t>(vid));
-    }
-    face_data const& face_at(const face_id_type& fid) const
-    {
-        return this->faces_.at(static_cast<std::size_t>(fid));
-    }
-    edge_data const& edge_at(const edge_id_type& eid) const
-    {
-        return this->edges_.at(static_cast<std::size_t>(eid));
     }
 
     boost::optional<vertex_id_type>
@@ -393,6 +387,19 @@ class HalfEdgePolygon : public Shape
 
   private:
 
+    vertex_data const& vertex_at(const vertex_id_type& vid) const
+    {
+        return this->vertices_.at(static_cast<std::size_t>(vid));
+    }
+    face_data const& face_at(const face_id_type& fid) const
+    {
+        return this->faces_.at(static_cast<std::size_t>(fid));
+    }
+    edge_data const& edge_at(const edge_id_type& eid) const
+    {
+        return this->edges_.at(static_cast<std::size_t>(eid));
+    }
+
     vertex_data& vertex_at(const vertex_id_type& vid)
     {
         return this->vertices_.at(static_cast<std::size_t>(vid));
@@ -405,41 +412,6 @@ class HalfEdgePolygon : public Shape
     {
         return this->edges_.at(static_cast<std::size_t>(eid));
     }
-
-//     Real distance_sq_connected_by_edges(
-//             const std::pair<Real3, face_id_type>& pos1,
-//             const std::pair<Real3, face_id_type>& pos2,
-//             const edge_id_type eid) const;
-//     Real distance_sq_connected_by_edges_impl(
-//             const std::pair<Real3, face_id_type>& pos1,
-//             const std::pair<Real3, face_id_type>& pos2,
-//             const edge_id_type eid,
-//             const vertex_data& vdata) const;
-//
-//     Real distance_sq_connected_by_vertex(
-//             const std::pair<Real3, face_id_type>& pos1,
-//             const std::pair<Real3, face_id_type>& pos2,
-//             const vertex_id_type vid) const;
-//
-//     boost::optional<edge_id_type>
-//     find_face_around_vtx(
-//             const edge_id_type start,
-//             const face_id_type goal,
-//             Real& theta) const;
-//
-//     Real direction_connected_by_edges(
-//             const std::pair<Real3, face_id_type>& pos1,
-//             const std::pair<Real3, face_id_type>& pos2,
-//             const edge_id_type eid) const;
-//     Real direction_connected_by_edges_impl(
-//             const std::pair<Real3, face_id_type>& pos1,
-//             const std::pair<Real3, face_id_type>& pos2,
-//             const edge_id_type eid, const vertex_data& vdata) const;
-//
-//     Real direction_connected_by_vertex(
-//             const std::pair<Real3, face_id_type>& pos1,
-//             const std::pair<Real3, face_id_type>& pos2,
-//             const vertex_id_type vid) const;
 
   private:
 
