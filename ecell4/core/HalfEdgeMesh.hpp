@@ -233,6 +233,11 @@ class HalfEdgePolygon : public Shape
     {
         return this->edge_at(eid).tilt;
     }
+    Real3 direction_of(const edge_id_type& eid) const
+    {
+        return this->edge_at(eid).direction;
+    }
+
 
     /* inherited from shape --------------------------------------------------*/
     dimension_kind dimension() const {return THREE;} // TWO?
