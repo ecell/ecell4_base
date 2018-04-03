@@ -19,6 +19,7 @@
 #include <boost/array.hpp>
 #include <boost/math/constants/constants.hpp>
 #include <boost/math/special_functions/sign.hpp>
+#include <boost/iterator/counting_iterator.hpp>
 #include <boost/cstdint.hpp>
 
 #include <algorithm>
@@ -306,7 +307,24 @@ class HalfEdgePolygon : public Shape
     std::size_t   edge_size() const throw() {return    edges_.size();}
     std::size_t vertex_size() const throw() {return vertices_.size();}
 
-  private:
+    std::vector<vertex_id_type> list_vertex_ids() const
+    {
+        return std::vector<vertex_id_type>(
+            boost::make_counting_iterator<std::size_t>(0),
+            boost::make_counting_iterator<std::size_t>(this->vertices_.size()));
+    }
+    std::vector<face_id_type> list_face_ids() const
+    {
+        return std::vector<face_id_type>(
+            boost::make_counting_iterator<std::size_t>(0),
+            boost::make_counting_iterator<std::size_t>(this->faces_.size()));
+    }
+    std::vector<edge_id_type> list_edge_ids() const
+    {
+        return std::vector<edge_id_type>(
+            boost::make_counting_iterator<std::size_t>(0),
+            boost::make_counting_iterator<std::size_t>(this->edges_.size()));
+    }
 
     vertex_data const& vertex_at(const vertex_id_type& vid) const
     {
@@ -320,6 +338,8 @@ class HalfEdgePolygon : public Shape
     {
         return this->edges_[eid];
     }
+
+  private:
 
 //     Real distance_sq_connected_by_edges(
 //             const std::pair<Real3, face_id_type>& pos1,
