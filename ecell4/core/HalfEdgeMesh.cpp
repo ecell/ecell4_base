@@ -34,6 +34,7 @@ void HalfEdgePolygon::assign(const std::vector<Triangle>& ts)
 
         const face_id_type fid = faces_.size();
         face_data fd;
+        fd.triangle = triangle;
 
         for(std::size_t i=0; i<3; ++i)
         {
@@ -93,8 +94,8 @@ void HalfEdgePolygon::assign(const std::vector<Triangle>& ts)
         faces_.push_back(fd);
     }
 
-    // assign tmp_vtxs to this->vertices_.
-    // by using tmp_vtxs, correct positions of the vertices.
+    // * assign tmp_vtxs to this->vertices_
+    // * set outgoing_edges
     for(typename tmp_vertex_map::const_iterator
             vi(tmp_vtxs.begin()), ve(tmp_vtxs.end()); vi != ve; ++vi)
     {
@@ -105,7 +106,6 @@ void HalfEdgePolygon::assign(const std::vector<Triangle>& ts)
         vertex_data vd;
         vd.position = pos;
 
-        // * correct faces_ by using mean position
         // * set vertex.outgoing_edges
         for(typename std::vector<fid_vidx_pair>::const_iterator
                 i(face_pos.begin()), e(face_pos.end()); i!=e; ++i)
@@ -115,14 +115,25 @@ void HalfEdgePolygon::assign(const std::vector<Triangle>& ts)
             face_data& fd = this->faces_.at(fid);
 
             assert(vid == fd.vertices[idx]);
-
             vd.outgoing_edges.push_back(fd.edges[idx]);
-
-            boost::array<Real3, 3> vs = this->faces_.at(fid).triangle.vertices();
-            vs[idx] = pos; // update coordinate of Triangle
-            this->faces_.at(fid).triangle = Triangle(vs);
         }
         this->vertices_.push_back(vd);
+    }
+
+    // * refine vertex positions
+    for(typename face_container_type::iterator
+            fi(this->faces_.begin()), fe(this->faces_.end()); fi != fe; ++fi)
+    {
+        face_data& fd = *fi;
+
+        boost::array<Real3, 3> vs = fd.triangle.vertices();
+        vs[0] = this->periodic_transpose(
+                this->vertices_.at(fd.vertices[0]).position, vs[0]);
+        vs[1] = this->periodic_transpose(
+                this->vertices_.at(fd.vertices[1]).position, vs[1]);
+        vs[2] = this->periodic_transpose(
+                this->vertices_.at(fd.vertices[2]).position, vs[2]);
+        fd.triangle = Triangle(vs);
     }
 
     // set edge.length, edge.direction by using face.traingle
