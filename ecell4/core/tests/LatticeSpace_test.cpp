@@ -62,9 +62,9 @@ BOOST_AUTO_TEST_CASE(GetVoxel)
     }
 
     {
-        std::pair<ParticleID, ParticleVoxel> voxel(space.get_voxel(id));
-        BOOST_CHECK_EQUAL(voxel.first, id);
-        BOOST_CHECK_EQUAL(voxel.second.species, sp);
+        boost::optional<ParticleVoxel> voxel(space.find_voxel(id));
+        BOOST_ASSERT(voxel != boost::none);
+        BOOST_CHECK_EQUAL(voxel->species, sp);
     }
 }
 

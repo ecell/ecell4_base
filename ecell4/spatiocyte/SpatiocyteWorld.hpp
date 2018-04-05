@@ -483,16 +483,18 @@ public:
         return list;
     }
 
-    // Suggests: Rename to 'find_voxel'
-    std::pair<ParticleID, ParticleVoxel> get_voxel(const ParticleID& pid) const
+    boost::optional<ParticleVoxel> find_voxel(const ParticleID& pid) const
     {
         for (space_container_type::const_iterator itr(spaces_.begin());
              itr != spaces_.end(); ++itr)
         {
-            if (itr->has_voxel(pid))
-                return itr->get_voxel(pid);
+            if (boost::optional<ParticleVoxel> voxel = itr->find_voxel(pid))
+            {
+                return voxel;
+            }
         }
-        throw "No voxel corresponding to a given ParticleID is found.";
+
+        return boost::none;
     }
 
     std::pair<ParticleID, ParticleVoxel> get_voxel_at(const coordinate_type& coord) const

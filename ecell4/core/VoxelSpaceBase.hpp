@@ -5,6 +5,7 @@
 #include <set>
 #include <map>
 #include <stdexcept>
+#include <boost/optional.hpp>
 
 #include "Shape.hpp"
 #include "Space.hpp"
@@ -231,9 +232,16 @@ public:
     std::pair<ParticleID, Particle>
     get_particle(const ParticleID& pid) const
     {
-        const ParticleVoxel v(get_voxel(pid).second);
-        return std::make_pair(pid, Particle(
-            v.species, coordinate2position(v.coordinate), v.radius, v.D));
+        if (boost::optional<ParticleVoxel> v = find_voxel(pid))
+        {
+            ParticleVoxel voxel(v.get());
+            return std::make_pair(pid, Particle(
+                voxel.species, coordinate2position(voxel.coordinate), voxel.radius, voxel.D));
+        }
+        else
+        {
+            throw NotFound("");
+        }
     }
 
     virtual const Particle particle_at(const coordinate_type& coord) const = 0;
@@ -289,7 +297,7 @@ public:
     virtual std::vector<std::pair<ParticleID, ParticleVoxel> > list_voxels(const Species& sp) const;
     virtual std::vector<std::pair<ParticleID, ParticleVoxel> > list_voxels_exact(const Species& sp) const;
 
-    std::pair<ParticleID, ParticleVoxel> get_voxel(const ParticleID& pid) const;
+    boost::optional<ParticleVoxel> find_voxel(const ParticleID& pid) const;
     virtual std::pair<ParticleID, ParticleVoxel> get_voxel_at(const coordinate_type& coord) const = 0;
 
     boost::shared_ptr<VoxelPool> find_voxel_pool(const Species& sp);

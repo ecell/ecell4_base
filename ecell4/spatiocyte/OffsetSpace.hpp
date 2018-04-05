@@ -75,11 +75,15 @@ public:
         return space_->coordinate2position(coordinate - offset_);
     }
 
-    std::pair<ParticleID, ParticleVoxel> get_voxel(const ParticleID& pid) const
+    boost::optional<ParticleVoxel> find_voxel(const ParticleID& pid) const
     {
-        std::pair<ParticleID, ParticleVoxel> retval(space_->get_voxel(pid));
-        retval.second.coordinate -= offset_;
-        return retval;
+        if (boost::optional<ParticleVoxel> voxel = space_->find_voxel(pid))
+        {
+            voxel->coordinate -= offset_;
+            return voxel;
+        }
+
+        return boost::none;
     }
 
     std::pair<ParticleID, ParticleVoxel> get_voxel_at(const coord_type& coordinate) const
