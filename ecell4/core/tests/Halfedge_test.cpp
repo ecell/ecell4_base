@@ -8,11 +8,11 @@
 #endif
 
 #include <boost/serialization/strong_typedef.hpp>
-#include <boost/algorithm/cxx11/is_permutation.hpp>
 #include <boost/assign.hpp>
 #include <ecell4/core/HalfEdgeMesh.hpp>
 #include <ecell4/core/Real3.hpp>
 #include <ecell4/core/Triangle.hpp>
+#include <algorithm>
 #include <utility>
 
 using ecell4::Real;
@@ -28,6 +28,30 @@ bool check_equal(const Real3& lhs, const Real3& rhs, const Real tol)
     return std::abs(lhs[0] - rhs[0]) < tol &&
            std::abs(lhs[1] - rhs[1]) < tol &&
            std::abs(lhs[2] - rhs[2]) < tol;
+}
+
+// Boost 1.54 (Travis.CI default) uses boost/tr1/tuple to use std::tr1::tie in
+// boost::algorithm::is_permutation. But ecell4 uses <tr1/tuple> through
+// <tr1/functional>, and each library(GCC C++ standard library and Boost) has
+// its original implementation for std::tr1::tuple. It cause multiple-definition
+// problem! To avoid this, impelement is_permutation without std::tr1::tuple.
+template<typename Iterator1, typename Iterator2>
+bool is_permutation(const Iterator1 first1, const Iterator1 last1,
+                    const Iterator2 first2, const Iterator2 last2)
+{
+    if(std::distance(first1, last1) != std::distance(first2, last2))
+    {
+        return false;
+    }
+    if(first1 == last1) {return true;}
+
+    for(Iterator1 i(first1); i != last1; ++i)
+    {
+        const std::size_t num_in_1 = std::count(first1, last1, *i);
+        const std::size_t num_in_2 = std::count(first2, last2, *i);
+        if(num_in_1 != num_in_2) {return false;}
+    }
+    return true;
 }
 
 //! test data 1: tetrahedron
@@ -128,8 +152,8 @@ BOOST_AUTO_TEST_CASE(Polygon_tetrahedron_construction_from_triangles)
             result.push_back(poly.target_of(*i));
         }
         BOOST_CHECK(ans.size() == result.size());
-        BOOST_CHECK(boost::algorithm::is_permutation(
-                    ans.begin(), ans.end(), result.begin()));
+        BOOST_CHECK(is_permutation(
+                    ans.begin(), ans.end(), result.begin(), result.end()));
     }
     {
         const std::vector<vertex_id_type> ans = boost::assign::list_of(v1)(v3)(v4);
@@ -142,8 +166,8 @@ BOOST_AUTO_TEST_CASE(Polygon_tetrahedron_construction_from_triangles)
             result.push_back(poly.target_of(*i));
         }
         BOOST_CHECK(ans.size() == result.size());
-        BOOST_CHECK(boost::algorithm::is_permutation(
-                    ans.begin(), ans.end(), result.begin()));
+        BOOST_CHECK(is_permutation(
+                    ans.begin(), ans.end(), result.begin(), result.end()));
     }
     {
         const std::vector<vertex_id_type> ans = boost::assign::list_of(v1)(v2)(v4);
@@ -156,8 +180,8 @@ BOOST_AUTO_TEST_CASE(Polygon_tetrahedron_construction_from_triangles)
             result.push_back(poly.target_of(*i));
         }
         BOOST_CHECK(ans.size() == result.size());
-        BOOST_CHECK(boost::algorithm::is_permutation(
-                    ans.begin(), ans.end(), result.begin()));
+        BOOST_CHECK(is_permutation(
+                    ans.begin(), ans.end(), result.begin(), result.end()));
     }
     {
         const std::vector<vertex_id_type> ans = boost::assign::list_of(v1)(v2)(v3);
@@ -170,8 +194,8 @@ BOOST_AUTO_TEST_CASE(Polygon_tetrahedron_construction_from_triangles)
             result.push_back(poly.target_of(*i));
         }
         BOOST_CHECK(ans.size() == result.size());
-        BOOST_CHECK(boost::algorithm::is_permutation(
-                    ans.begin(), ans.end(), result.begin()));
+        BOOST_CHECK(is_permutation(
+                    ans.begin(), ans.end(), result.begin(), result.end()));
     }
 
     // check all the vertex are in contact with the correct set of faces.
@@ -186,8 +210,8 @@ BOOST_AUTO_TEST_CASE(Polygon_tetrahedron_construction_from_triangles)
             result.push_back(poly.target_of(*i));
         }
         BOOST_CHECK(ans.size() == result.size());
-        BOOST_CHECK(boost::algorithm::is_permutation(
-                    ans.begin(), ans.end(), result.begin()));
+        BOOST_CHECK(is_permutation(
+                    ans.begin(), ans.end(), result.begin(), result.end()));
     }
 
     // check all the edges exist and has correct next-edge
@@ -433,8 +457,8 @@ BOOST_AUTO_TEST_CASE(Polygon_octahedron_construction_from_triangles)
             result.push_back(poly.target_of(*i));
         }
         BOOST_CHECK(ans.size() == result.size());
-        BOOST_CHECK(boost::algorithm::is_permutation(
-                    ans.begin(), ans.end(), result.begin()));
+        BOOST_CHECK(is_permutation(
+                    ans.begin(), ans.end(), result.begin(), result.end()));
     }
     /* v2 */{
         const std::vector<vertex_id_type> ans =
@@ -448,8 +472,8 @@ BOOST_AUTO_TEST_CASE(Polygon_octahedron_construction_from_triangles)
             result.push_back(poly.target_of(*i));
         }
         BOOST_CHECK(ans.size() == result.size());
-        BOOST_CHECK(boost::algorithm::is_permutation(
-                    ans.begin(), ans.end(), result.begin()));
+        BOOST_CHECK(is_permutation(
+                    ans.begin(), ans.end(), result.begin(), result.end()));
     }
     /* v3 */{
         const std::vector<vertex_id_type> ans =
@@ -463,8 +487,8 @@ BOOST_AUTO_TEST_CASE(Polygon_octahedron_construction_from_triangles)
             result.push_back(poly.target_of(*i));
         }
         BOOST_CHECK(ans.size() == result.size());
-        BOOST_CHECK(boost::algorithm::is_permutation(
-                    ans.begin(), ans.end(), result.begin()));
+        BOOST_CHECK(is_permutation(
+                    ans.begin(), ans.end(), result.begin(), result.end()));
     }
     /* v4 */{
         const std::vector<vertex_id_type> ans =
@@ -478,8 +502,8 @@ BOOST_AUTO_TEST_CASE(Polygon_octahedron_construction_from_triangles)
             result.push_back(poly.target_of(*i));
         }
         BOOST_CHECK(ans.size() == result.size());
-        BOOST_CHECK(boost::algorithm::is_permutation(
-                    ans.begin(), ans.end(), result.begin()));
+        BOOST_CHECK(is_permutation(
+                    ans.begin(), ans.end(), result.begin(), result.end()));
     }
     /* v5 */{
         const std::vector<vertex_id_type> ans =
@@ -493,8 +517,8 @@ BOOST_AUTO_TEST_CASE(Polygon_octahedron_construction_from_triangles)
             result.push_back(poly.target_of(*i));
         }
         BOOST_CHECK(ans.size() == result.size());
-        BOOST_CHECK(boost::algorithm::is_permutation(
-                    ans.begin(), ans.end(), result.begin()));
+        BOOST_CHECK(is_permutation(
+                    ans.begin(), ans.end(), result.begin(), result.end()));
     }
     /* v6 */{
         const std::vector<vertex_id_type> ans =
@@ -508,8 +532,8 @@ BOOST_AUTO_TEST_CASE(Polygon_octahedron_construction_from_triangles)
             result.push_back(poly.target_of(*i));
         }
         BOOST_CHECK(ans.size() == result.size());
-        BOOST_CHECK(boost::algorithm::is_permutation(
-                    ans.begin(), ans.end(), result.begin()));
+        BOOST_CHECK(is_permutation(
+                    ans.begin(), ans.end(), result.begin(), result.end()));
     }
 }
 

@@ -8,13 +8,37 @@
 #endif
 
 #include <boost/serialization/strong_typedef.hpp>
-#include <boost/algorithm/cxx11/is_permutation.hpp>
 #include <boost/assign.hpp>
 #include <ecell4/core/Polygon.hpp>
 #include <ecell4/core/STLPolygonAdapter.hpp>
 #include <ecell4/core/Real3.hpp>
 #include <ecell4/core/Triangle.hpp>
+#include <algorithm>
 #include <utility>
+
+// Boost 1.54 (Travis.CI default) uses boost/tr1/tuple to use std::tr1::tie in
+// boost::algorithm::is_permutation. But ecell4 uses <tr1/tuple> through
+// <tr1/functional>, and each library(GCC C++ standard library and Boost) has
+// its original implementation for std::tr1::tuple. It cause multiple-definition
+// problem! To avoid this, impelement is_permutation without std::tr1::tuple.
+template<typename Iterator1, typename Iterator2>
+bool is_permutation(const Iterator1 first1, const Iterator1 last1,
+                    const Iterator2 first2, const Iterator2 last2)
+{
+    if(std::distance(first1, last1) != std::distance(first2, last2))
+    {
+        return false;
+    }
+    if(first1 == last1) {return true;}
+
+    for(Iterator1 i(first1); i != last1; ++i)
+    {
+        const std::size_t num_in_1 = std::count(first1, last1, *i);
+        const std::size_t num_in_2 = std::count(first2, last2, *i);
+        if(num_in_1 != num_in_2) {return false;}
+    }
+    return true;
+}
 
 struct dummy{};
 
@@ -167,8 +191,8 @@ BOOST_AUTO_TEST_CASE(Polygon_neighbor_faces)
         std::vector<face_id_type> expects;
         expects += f(1),f(2),f(3),f(6),f(7),f(8),f(9),f(10),f(11);
         BOOST_CHECK_EQUAL(neighbors.size(), expects.size());
-        const bool result = boost::algorithm::is_permutation(
-                neighbors.begin(), neighbors.end(), expects.begin());
+        const bool result = is_permutation(
+            neighbors.begin(), neighbors.end(), expects.begin(), expects.end());
         BOOST_CHECK(result);
     }
     {
@@ -176,8 +200,8 @@ BOOST_AUTO_TEST_CASE(Polygon_neighbor_faces)
         std::vector<face_id_type> expects;
         expects += f(0),f(2),f(3),f(6),f(7),f(8),f(9),f(10),f(11);
         BOOST_CHECK_EQUAL(neighbors.size(), expects.size());
-        const bool result = boost::algorithm::is_permutation(
-                neighbors.begin(), neighbors.end(), expects.begin());
+        const bool result = is_permutation(
+            neighbors.begin(), neighbors.end(), expects.begin(), expects.end());
         BOOST_CHECK(result);
     }
     {
@@ -185,8 +209,8 @@ BOOST_AUTO_TEST_CASE(Polygon_neighbor_faces)
         std::vector<face_id_type> expects;
         expects += f(0),f(1),f(3),f(4),f(5),f(8),f(9),f(10),f(11);
         BOOST_CHECK_EQUAL(neighbors.size(), expects.size());
-        const bool result = boost::algorithm::is_permutation(
-                neighbors.begin(), neighbors.end(), expects.begin());
+        const bool result = is_permutation(
+            neighbors.begin(), neighbors.end(), expects.begin(), expects.end());
         BOOST_CHECK(result);
     }
     {
@@ -194,8 +218,8 @@ BOOST_AUTO_TEST_CASE(Polygon_neighbor_faces)
         std::vector<face_id_type> expects;
         expects += f(0),f(1),f(2),f(4),f(5),f(8),f(9),f(10),f(11);
         BOOST_CHECK_EQUAL(neighbors.size(), expects.size());
-        const bool result = boost::algorithm::is_permutation(
-                neighbors.begin(), neighbors.end(), expects.begin());
+        const bool result = is_permutation(
+            neighbors.begin(), neighbors.end(), expects.begin(), expects.end());
         BOOST_CHECK(result);
     }
     {
@@ -203,8 +227,8 @@ BOOST_AUTO_TEST_CASE(Polygon_neighbor_faces)
         std::vector<face_id_type> expects;
         expects += f(2),f(3),f(5),f(6),f(7),f(8),f(9),f(10),f(11);
         BOOST_CHECK_EQUAL(neighbors.size(), expects.size());
-        const bool result = boost::algorithm::is_permutation(
-                neighbors.begin(), neighbors.end(), expects.begin());
+        const bool result = is_permutation(
+            neighbors.begin(), neighbors.end(), expects.begin(), expects.end());
         BOOST_CHECK(result);
     }
     {
@@ -212,8 +236,8 @@ BOOST_AUTO_TEST_CASE(Polygon_neighbor_faces)
         std::vector<face_id_type> expects;
         expects += f(2),f(3),f(4),f(6),f(7),f(8),f(9),f(10),f(11);
         BOOST_CHECK_EQUAL(neighbors.size(), expects.size());
-        const bool result = boost::algorithm::is_permutation(
-                neighbors.begin(), neighbors.end(), expects.begin());
+        const bool result = is_permutation(
+            neighbors.begin(), neighbors.end(), expects.begin(), expects.end());
         BOOST_CHECK(result);
     }
     {
@@ -221,8 +245,8 @@ BOOST_AUTO_TEST_CASE(Polygon_neighbor_faces)
         std::vector<face_id_type> expects;
         expects += f(0),f(1),f(4),f(5),f(7),f(8),f(9),f(10),f(11);
         BOOST_CHECK_EQUAL(neighbors.size(), expects.size());
-        const bool result = boost::algorithm::is_permutation(
-                neighbors.begin(), neighbors.end(), expects.begin());
+        const bool result = is_permutation(
+            neighbors.begin(), neighbors.end(), expects.begin(), expects.end());
         BOOST_CHECK(result);
     }
     {
@@ -230,8 +254,8 @@ BOOST_AUTO_TEST_CASE(Polygon_neighbor_faces)
         std::vector<face_id_type> expects;
         expects += f(0),f(1),f(4),f(5),f(6),f(8),f(9),f(10),f(11);
         BOOST_CHECK_EQUAL(neighbors.size(), expects.size());
-        const bool result = boost::algorithm::is_permutation(
-                neighbors.begin(), neighbors.end(), expects.begin());
+        const bool result = is_permutation(
+            neighbors.begin(), neighbors.end(), expects.begin(), expects.end());
         BOOST_CHECK(result);
     }
     {
@@ -239,8 +263,8 @@ BOOST_AUTO_TEST_CASE(Polygon_neighbor_faces)
         std::vector<face_id_type> expects;
         expects += f(0),f(1),f(2),f(3),f(4),f(5),f(6),f(7),f(9);
         BOOST_CHECK_EQUAL(neighbors.size(), expects.size());
-        const bool result = boost::algorithm::is_permutation(
-                neighbors.begin(), neighbors.end(), expects.begin());
+        const bool result = is_permutation(
+            neighbors.begin(), neighbors.end(), expects.begin(), expects.end());
         BOOST_CHECK(result);
     }
     {
@@ -248,8 +272,8 @@ BOOST_AUTO_TEST_CASE(Polygon_neighbor_faces)
         std::vector<face_id_type> expects;
         expects += f(0),f(1),f(2),f(3),f(4),f(5),f(6),f(7),f(8);
         BOOST_CHECK_EQUAL(neighbors.size(), expects.size());
-        const bool result = boost::algorithm::is_permutation(
-                neighbors.begin(), neighbors.end(), expects.begin());
+        const bool result = is_permutation(
+            neighbors.begin(), neighbors.end(), expects.begin(), expects.end());
         BOOST_CHECK(result);
     }
     {
@@ -257,8 +281,8 @@ BOOST_AUTO_TEST_CASE(Polygon_neighbor_faces)
         std::vector<face_id_type> expects;
         expects += f(0),f(1),f(2),f(3),f(4),f(5),f(6),f(7),f(11);
         BOOST_CHECK_EQUAL(neighbors.size(), expects.size());
-        const bool result = boost::algorithm::is_permutation(
-                neighbors.begin(), neighbors.end(), expects.begin());
+        const bool result = is_permutation(
+            neighbors.begin(), neighbors.end(), expects.begin(), expects.end());
         BOOST_CHECK(result);
     }
     {
@@ -266,8 +290,8 @@ BOOST_AUTO_TEST_CASE(Polygon_neighbor_faces)
         std::vector<face_id_type> expects;
         expects += f(0),f(1),f(2),f(3),f(4),f(5),f(6),f(7),f(10);
         BOOST_CHECK_EQUAL(neighbors.size(), expects.size());
-        const bool result = boost::algorithm::is_permutation(
-                neighbors.begin(), neighbors.end(), expects.begin());
+        const bool result = is_permutation(
+            neighbors.begin(), neighbors.end(), expects.begin(), expects.end());
         BOOST_CHECK(result);
     }
 }
