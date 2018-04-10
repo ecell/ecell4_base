@@ -384,8 +384,8 @@ Polygon<T>::connect_edges(const local_index_type& lhs, const local_index_type& r
     ep.local_indices = std::make_pair(lhs.second, rhs.second);
     ep.vertices      = std::make_pair(un_initialized<vertex_id_type>(),
                                       un_initialized<vertex_id_type>());
-    ep.tilt_angle    = angle(this->triangle_at(fid1).normal(),
-                             this->triangle_at(fid2).normal());
+    ep.tilt_angle    = calc_angle(this->triangle_at(fid1).normal(),
+                                  this->triangle_at(fid2).normal());
     this->edges_.push_back(ep);
 
     //XXX update faces
@@ -620,7 +620,7 @@ Real Polygon<T>::distance_sq(const std::pair<Real3, face_id_type>& lhs,
     const Real  rhs_to_vtx_lensq = length_sq(vtx_to_rhs);
     const Real        apex_angle = vertex_prop_at(is_c_vtx.second).apex_angle;
 
-    Real inter_angle = angle(lhs_to_vtx, triangle_at(lhs.second).edge_at(
+    Real inter_angle = calc_angle(lhs_to_vtx, triangle_at(lhs.second).edge_at(
                        (lidx == 0) ? 2 : lidx-1));
 
     // XXX: order of face idx
@@ -640,7 +640,7 @@ Real Polygon<T>::distance_sq(const std::pair<Real3, face_id_type>& lhs,
         if(fid == rhs.second)
         {
             // rhs position found. return.
-            inter_angle += angle(vtx_to_rhs, f.edge_at(lvidx));
+            inter_angle += calc_angle(vtx_to_rhs, f.edge_at(lvidx));
             break;
         }
         inter_angle += f.angle_at(lvidx);
@@ -744,7 +744,7 @@ Real3 Polygon<T>::developed_direction(
     const Real  rhs_to_vtx_lensq = length_sq(vtx_to_rhs);
     const Real        apex_angle = vertex_prop_at(sharing_vtx.second).apex_angle;
 
-    Real inter_angle = angle(lhs_to_vtx, triangle_at(lhs.second).edge_at(
+    Real inter_angle = calc_angle(lhs_to_vtx, triangle_at(lhs.second).edge_at(
                        (lidx == 0) ? 2 : lidx-1));
 
     // XXX: order of face idx
@@ -763,7 +763,7 @@ Real3 Polygon<T>::developed_direction(
         const triangle_type& f = this->triangle_at(fid);
         if(fid == rhs.second)
         {
-            inter_angle += angle(vtx_to_rhs, f.edge_at(lvidx));
+            inter_angle += calc_angle(vtx_to_rhs, f.edge_at(lvidx));
             break;
         }
         inter_angle += f.angle_at(lvidx);
@@ -911,7 +911,7 @@ Polygon<T>::rotate_around_vertex(const std::pair<Real3, face_id_type>& pos,
     const std::size_t      lidx = vtx.local_indices.at(idx);
     const triangle_type& initri = this->triangle_at(pos.second);
     const Real3    vtx_position = initri.vertex_at(lidx);
-    const Real      inter_angle = angle(vtx_position - pos.first,
+    const Real      inter_angle = calc_angle(vtx_position - pos.first,
             initri.edge_at((lidx==0)?2:lidx-1));
 
     if(inter_angle >= theta)

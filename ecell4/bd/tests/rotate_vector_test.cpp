@@ -52,7 +52,7 @@ BOOST_AUTO_TEST_CASE(angle_test)
         const Real theta = i * dtheta;
         const Real3 vec(rotate(theta, n, x));
 
-        const Real phi = angle(x, vec);
+        const Real phi = calc_angle(x, vec);
         BOOST_CHECK_CLOSE_FRACTION(phi, theta, 1e-8);
     }
 
@@ -61,7 +61,7 @@ BOOST_AUTO_TEST_CASE(angle_test)
         const Real theta = i * dtheta;
         const Real3 vec(rotate(theta, n, x));
 
-        const Real phi = angle(x, vec);
+        const Real phi = calc_angle(x, vec);
         BOOST_CHECK_CLOSE_FRACTION(phi, 2 * M_PI - theta, 1e-8);
     }
 }

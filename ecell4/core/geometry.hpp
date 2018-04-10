@@ -7,7 +7,7 @@
 namespace ecell4
 {
 
-inline Real angle(const Real3& lhs, const Real3& rhs)
+inline Real calc_angle(const Real3& lhs, const Real3& rhs)
 {
     const Real cosine  = dot_product(lhs, rhs) /
                          std::sqrt(length_sq(lhs) * length_sq(rhs));

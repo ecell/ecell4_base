@@ -1913,7 +1913,7 @@ class SGFRDSimulator :
         const Real theta = this->rng_.uniform(0., 2 * M_PI);
         const Real3 rnd(r * std::cos(theta), r * std::sin(theta), 0.);
         const Real3& normal = this->polygon().triangle_at(fid).normal();
-        const Real tilt  = angle(Real3(0, 0, 1), normal);
+        const Real tilt  = calc_angle(Real3(0, 0, 1), normal);
 
              if(std::abs(tilt - M_PI) < 1e-8){return rnd;}
         else if(std::abs(tilt + M_PI) < 1e-8){return rnd * (-1.0);}

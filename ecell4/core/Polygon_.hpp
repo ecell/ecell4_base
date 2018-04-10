@@ -474,7 +474,7 @@ Polygon<T_fid, T_fidgen, T_vid, T_vidgen>::Polygon(const Real3& el,
                         //
                         // to consider local convex / concave, use copysign.
                         Real agl =
-                            angle(fi1->second.triangle.normal(), partner.normal());
+                            calc_angle(fi1->second.triangle.normal(), partner.normal());
                         agl = boost::math::copysign(agl, -1 * dot_product(
                             fi1->second.triangle.normal(),
                             partner.edges()[(vidx2==2) ? 0 : vidx2+1]));

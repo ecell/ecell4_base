@@ -69,7 +69,7 @@ struct TriangleView : public Shape
 
     Real angle_at(const std::size_t i) const
     {
-        return this->angle(this->edges(i), this->edges(i==0?2:i-1) * -1.0);
+        return calc_angle(this->edges(i), this->edges(i==0?2:i-1) * -1.0);
     }
 
     Real area() const
@@ -108,13 +108,6 @@ struct TriangleView : public Shape
     }
 
     boost::array<Real3*, 3> const& get_vertices() const {return vertices_;}
-
-  private:
-
-    Real angle(const Real3& a, const Real3& b) const
-    {
-        return acos(dot_product(a, b) / std::sqrt(length_sq(a) * length_sq(b)));
-    }
 
   private:
     boost::array<Real3*, 3> vertices_;
@@ -194,7 +187,7 @@ struct TriangleConstView : public Shape
 
     Real angle_at(const std::size_t i) const
     {
-        return this->angle(this->edges(i), this->edges(i==0?2:i-1) * -1.0);
+        return calc_angle(this->edges(i), this->edges(i==0?2:i-1) * -1.0);
     }
 
     Real area() const
@@ -233,13 +226,6 @@ struct TriangleConstView : public Shape
     }
 
     boost::array<const Real3*, 3> const& get_vertices() const {return vertices_;}
-
-  private:
-
-    Real angle(const Real3& a, const Real3& b) const
-    {
-        return acos(dot_product(a, b) / std::sqrt(length_sq(a) * length_sq(b)));
-    }
 
   private:
     boost::array<const Real3*, 3> vertices_;

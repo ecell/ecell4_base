@@ -559,7 +559,7 @@ public:
     Real3 random_circular_uniform(const Real r, const Real3& normal)
     {
         const Real3 rnd = random_circular_uniform(r);
-        const Real tilt = angle(Real3(0, 0, 1), normal);
+        const Real tilt = calc_angle(Real3(0, 0, 1), normal);
 
              if(std::abs(tilt - M_PI) < 1e-10) return rnd;
         else if(std::abs(tilt + M_PI) < 1e-10) return rnd * (-1.0);
