@@ -76,9 +76,8 @@ class HalfEdgePolygon : public Shape
     {
         Real  apex_angle; // total angle around this vertex
         Real3 position;   // position of this vertex
-        std::vector<edge_id_type> outgoing_edges;
-//         std::vector<std::pair<edge_id_type, Real> > outgoing_edges;
-        // the outgoing_edges are sorted around the vertex in the ccw manner
+        std::vector<std::pair<edge_id_type, Real> > outgoing_edges;
+        // these are garanteed to be sorted in the order that
         // (next of next of opposite of one edge on Halfedge polygon).
     };
     struct edge_data
@@ -184,9 +183,26 @@ class HalfEdgePolygon : public Shape
     {return this->face_at(fid).vertices;}
 
     // edge ids that starts from the vertex
-    std::vector<edge_id_type> const&
+    // XXX: it returns rvalue, you cannot use it with the following form
+    // for(std::vector<edge_id_type>::const_iterator
+    //     i(poly.outgoing_edges().begin()), e(poly.outgoing_edges().end();
+    //     i!=e; ++i)
+    // {
+    //     /* do some stuff ...*/;
+    // }
+    std::vector<edge_id_type>
     outgoing_edges(const vertex_id_type vid) const
-    {return this->vertex_at(vid).outgoing_edges;}
+    {
+        const std::vector<std::pair<edge_id_type, Real> >&
+            oedges = this->vertex_at(vid).outgoing_edges;
+
+        std::vector<edge_id_type> retval(oedges.size());
+        for(std::size_t i=0; i<oedges.size(); ++i)
+        {
+            retval[i] = oedges[i].first;
+        }
+        return retval;
+    }
 
     // accessor ---------------------------------------------------------------
 
@@ -373,10 +389,10 @@ class HalfEdgePolygon : public Shape
     find_edge(const vertex_id_type start, const vertex_id_type stop) const
     {
         const vertex_data& vd = this->vertices_.at(start);
-        for(std::vector<edge_id_type>::const_iterator
+        for(std::vector<std::pair<edge_id_type, Real> >::const_iterator
             i(vd.outgoing_edges.begin()), e(vd.outgoing_edges.end()); i!=e; ++i)
         {
-            const edge_id_type eid = *i;
+            const edge_id_type eid = i->first;
             if(edges_.at(eid).target == stop)
             {
                 return eid;
@@ -857,5 +873,6 @@ class HalfEdgePolygon : public Shape
 //
 // } // polygon
 } // ecell4
+
 #undef ECELL4_STRONG_TYPEDEF
 #endif// ECELL4_POLYGON

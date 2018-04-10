@@ -95,7 +95,7 @@ void HalfEdgePolygon::assign(const std::vector<Triangle>& ts)
     }
 
     // * assign tmp_vtxs to this->vertices_
-    // * set outgoing_edges
+    // * set outgoing_edges without order
     for(tmp_vertex_map::const_iterator
             vi(tmp_vtxs.begin()), ve(tmp_vtxs.end()); vi != ve; ++vi)
     {
@@ -106,7 +106,7 @@ void HalfEdgePolygon::assign(const std::vector<Triangle>& ts)
         vertex_data vd;
         vd.position = pos;
 
-        // * set vertex.outgoing_edges
+        // * set vertex.outgoing_edges, but not sorted.
         for(std::vector<fid_vidx_pair>::const_iterator
                 i(face_pos.begin()), e(face_pos.end()); i!=e; ++i)
         {
@@ -115,7 +115,7 @@ void HalfEdgePolygon::assign(const std::vector<Triangle>& ts)
             face_data& fd = this->faces_.at(fid);
 
             assert(vid == fd.vertices[idx]);
-            vd.outgoing_edges.push_back(fd.edges[idx]);
+            vd.outgoing_edges.push_back(std::make_pair(fd.edges[idx], 0.0));
         }
         this->vertices_.push_back(vd);
     }
@@ -158,13 +158,13 @@ void HalfEdgePolygon::assign(const std::vector<Triangle>& ts)
                 this->next_of(this->next_of(eid)));
 
         bool opposite_found = false;
-        const std::vector<edge_id_type>& vd =
+        const std::vector<std::pair<edge_id_type, Real> >& vd =
             this->vertices_.at(start).outgoing_edges;
 
-        for(std::vector<edge_id_type>::const_iterator
+        for(std::vector<std::pair<edge_id_type, Real> >::const_iterator
                 iter(vd.begin()), iend(vd.end()); iter != iend; ++iter)
         {
-            const edge_id_type outgoing = *iter;
+            const edge_id_type outgoing = iter->first;
             if(this->target_of(outgoing) == target)
             {
                 // found opposite edge! calculate tilt...
@@ -176,7 +176,7 @@ void HalfEdgePolygon::assign(const std::vector<Triangle>& ts)
                 const Real3 n2 = this->faces_.at(fid2).triangle.normal();
                 const Real3 cr = cross_product(this->edge_at(eid).direction, n1);
                 const Real  sg = dot_product(cr, n2);
-                const Real ang = angle(n1, n2) * (sg > 0 ? 1 : -1);
+                const Real ang = calc_angle(n1, n2) * (sg > 0 ? 1 : -1);
 
                 this->edges_.at(i       ).tilt = ang;
                 this->edges_.at(outgoing).tilt = ang;
@@ -191,43 +191,49 @@ void HalfEdgePolygon::assign(const std::vector<Triangle>& ts)
     // set vertex_data.angle by traversing edges.
     for(std::size_t i=0; i<vertices_.size(); ++i)
     {
-        const vertex_data& vtx = this->vertices_[i];
-        std::vector<bool> is_found(vtx.outgoing_edges.size(), false);
+        vertex_data& vtx = this->vertices_[i];
+
+        const std::size_t num_edges = vtx.outgoing_edges.size();
+        std::vector<edge_id_type> outgoing_edges_tmp(vtx.outgoing_edges.size());
+        for(std::size_t idx=0; idx<vtx.outgoing_edges.size(); ++idx)
+        {
+            outgoing_edges_tmp[idx] = vtx.outgoing_edges[idx].first;
+        }
+        vtx.outgoing_edges.clear();
 
         Real total_angle = 0.0;
-        const edge_id_type start = vtx.outgoing_edges.front();
+        const edge_id_type start = outgoing_edges_tmp.front();
         edge_id_type current = start;
         do
         {
-            for(std::size_t idx=0; idx<vtx.outgoing_edges.size(); ++idx)
             {
-                if(vtx.outgoing_edges[idx] == current)
-                {
-                    is_found[idx] = true;
-                    break;
-                }
+                const std::vector<edge_id_type>::iterator found = std::find(
+                    outgoing_edges_tmp.begin(), outgoing_edges_tmp.end(), current);
+                outgoing_edges_tmp.erase(found);
             }
 
             const face_data& f = this->faces_.at(this->face_of(current));
-            bool angle_found = false;
+            Real angle = std::numeric_limits<Real>::infinity();
             for(std::size_t idx=0; idx<3; ++idx)
             {
                 if(f.edges[idx] == current)
                 {
-                    angle_found = true;
-                    total_angle += f.triangle.angle_at(idx);
+                    angle = f.triangle.angle_at(idx);
                     break;
                 }
             }
-            assert(angle_found);
+            assert(angle != std::numeric_limits<Real>::infinity());
 
+            total_angle += angle;
+            vtx.outgoing_edges.push_back(std::make_pair(current, angle));
             current = this->opposite_of(this->next_of(this->next_of(current)));
         }
         while(current != start);
 
         this->vertices_[i].apex_angle = total_angle;
-        assert(boost::algorithm::all_of(
-                    is_found.begin(), is_found.end(), boost::lambda::_1));
+
+        assert(outgoing_edges_tmp.empty());
+        assert(vtx.outgoing_edges.size() == num_edges);
     }
 
     // make neighbor list for faces!
