@@ -121,9 +121,9 @@ BOOST_AUTO_TEST_CASE(Polygon_tetrahedron_construction_from_triangles)
         const std::vector<vertex_id_type> ans = boost::assign::list_of(v2)(v3)(v4);
 
         std::vector<vertex_id_type> result; result.reserve(3);
+        const std::vector<edge_id_type> es = poly.outgoing_edges(v1);
         for(typename std::vector<edge_id_type>::const_iterator
-            i(poly.outgoing_edges(v1).begin()), e(poly.outgoing_edges(v1).end());
-            i != e; ++i)
+                i(es.begin()), e(es.end()); i != e; ++i)
         {
             result.push_back(poly.target_of(*i));
         }
@@ -135,9 +135,9 @@ BOOST_AUTO_TEST_CASE(Polygon_tetrahedron_construction_from_triangles)
         const std::vector<vertex_id_type> ans = boost::assign::list_of(v1)(v3)(v4);
 
         std::vector<vertex_id_type> result; result.reserve(3);
+        const std::vector<edge_id_type> es = poly.outgoing_edges(v2);
         for(typename std::vector<edge_id_type>::const_iterator
-            i(poly.outgoing_edges(v2).begin()), e(poly.outgoing_edges(v2).end());
-            i != e; ++i)
+                i(es.begin()), e(es.end()); i != e; ++i)
         {
             result.push_back(poly.target_of(*i));
         }
@@ -149,9 +149,9 @@ BOOST_AUTO_TEST_CASE(Polygon_tetrahedron_construction_from_triangles)
         const std::vector<vertex_id_type> ans = boost::assign::list_of(v1)(v2)(v4);
 
         std::vector<vertex_id_type> result; result.reserve(3);
+        const std::vector<edge_id_type> es = poly.outgoing_edges(v3);
         for(typename std::vector<edge_id_type>::const_iterator
-            i(poly.outgoing_edges(v3).begin()), e(poly.outgoing_edges(v3).end());
-            i != e; ++i)
+                i(es.begin()), e(es.end()); i != e; ++i)
         {
             result.push_back(poly.target_of(*i));
         }
@@ -163,9 +163,9 @@ BOOST_AUTO_TEST_CASE(Polygon_tetrahedron_construction_from_triangles)
         const std::vector<vertex_id_type> ans = boost::assign::list_of(v1)(v2)(v3);
 
         std::vector<vertex_id_type> result; result.reserve(3);
+        const std::vector<edge_id_type> es = poly.outgoing_edges(v4);
         for(typename std::vector<edge_id_type>::const_iterator
-            i(poly.outgoing_edges(v4).begin()), e(poly.outgoing_edges(v4).end());
-            i != e; ++i)
+                i(es.begin()), e(es.end()); i != e; ++i)
         {
             result.push_back(poly.target_of(*i));
         }
@@ -179,9 +179,9 @@ BOOST_AUTO_TEST_CASE(Polygon_tetrahedron_construction_from_triangles)
         const std::vector<vertex_id_type> ans = boost::assign::list_of(v1)(v2)(v3);
 
         std::vector<vertex_id_type> result; result.reserve(3);
+        const std::vector<edge_id_type> es = poly.outgoing_edges(v4);
         for(typename std::vector<edge_id_type>::const_iterator
-            i(poly.outgoing_edges(v4).begin()), e(poly.outgoing_edges(v4).end());
-            i != e; ++i)
+                i(es.begin()), e(es.end()); i != e; ++i)
         {
             result.push_back(poly.target_of(*i));
         }
@@ -426,9 +426,9 @@ BOOST_AUTO_TEST_CASE(Polygon_octahedron_construction_from_triangles)
             boost::assign::list_of(v2)(v3)(v4)(v5);
 
         std::vector<vertex_id_type> result; result.reserve(4);
+        const std::vector<edge_id_type> es = poly.outgoing_edges(v1);
         for(typename std::vector<edge_id_type>::const_iterator
-            i(poly.outgoing_edges(v1).begin()), e(poly.outgoing_edges(v1).end());
-            i != e; ++i)
+                i(es.begin()), e(es.end()); i != e; ++i)
         {
             result.push_back(poly.target_of(*i));
         }
@@ -441,9 +441,9 @@ BOOST_AUTO_TEST_CASE(Polygon_octahedron_construction_from_triangles)
             boost::assign::list_of(v1)(v3)(v5)(v6);
 
         std::vector<vertex_id_type> result; result.reserve(4);
+        const std::vector<edge_id_type> es = poly.outgoing_edges(v2);
         for(typename std::vector<edge_id_type>::const_iterator
-            i(poly.outgoing_edges(v2).begin()), e(poly.outgoing_edges(v2).end());
-            i != e; ++i)
+                i(es.begin()), e(es.end()); i != e; ++i)
         {
             result.push_back(poly.target_of(*i));
         }
@@ -456,9 +456,9 @@ BOOST_AUTO_TEST_CASE(Polygon_octahedron_construction_from_triangles)
             boost::assign::list_of(v1)(v2)(v4)(v6);
 
         std::vector<vertex_id_type> result; result.reserve(4);
+        const std::vector<edge_id_type> es = poly.outgoing_edges(v3);
         for(typename std::vector<edge_id_type>::const_iterator
-            i(poly.outgoing_edges(v3).begin()), e(poly.outgoing_edges(v3).end());
-            i != e; ++i)
+                i(es.begin()), e(es.end()); i != e; ++i)
         {
             result.push_back(poly.target_of(*i));
         }
@@ -471,9 +471,9 @@ BOOST_AUTO_TEST_CASE(Polygon_octahedron_construction_from_triangles)
             boost::assign::list_of(v1)(v3)(v5)(v6);
 
         std::vector<vertex_id_type> result; result.reserve(4);
+        const std::vector<edge_id_type> es = poly.outgoing_edges(v4);
         for(typename std::vector<edge_id_type>::const_iterator
-            i(poly.outgoing_edges(v4).begin()), e(poly.outgoing_edges(v4).end());
-            i != e; ++i)
+                i(es.begin()), e(es.end()); i != e; ++i)
         {
             result.push_back(poly.target_of(*i));
         }
@@ -486,9 +486,9 @@ BOOST_AUTO_TEST_CASE(Polygon_octahedron_construction_from_triangles)
             boost::assign::list_of(v1)(v2)(v4)(v6);
 
         std::vector<vertex_id_type> result; result.reserve(4);
+        const std::vector<edge_id_type> es = poly.outgoing_edges(v5);
         for(typename std::vector<edge_id_type>::const_iterator
-            i(poly.outgoing_edges(v5).begin()), e(poly.outgoing_edges(v5).end());
-            i != e; ++i)
+                i(es.begin()), e(es.end()); i != e; ++i)
         {
             result.push_back(poly.target_of(*i));
         }
@@ -501,9 +501,9 @@ BOOST_AUTO_TEST_CASE(Polygon_octahedron_construction_from_triangles)
             boost::assign::list_of(v2)(v3)(v4)(v5);
 
         std::vector<vertex_id_type> result; result.reserve(4);
+        const std::vector<edge_id_type> es = poly.outgoing_edges(v6);
         for(typename std::vector<edge_id_type>::const_iterator
-            i(poly.outgoing_edges(v6).begin()), e(poly.outgoing_edges(v6).end());
-            i != e; ++i)
+                i(es.begin()), e(es.end()); i != e; ++i)
         {
             result.push_back(poly.target_of(*i));
         }
