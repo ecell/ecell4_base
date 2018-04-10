@@ -181,13 +181,13 @@ inline Real distance_point_cone(    const Real3& p, const Cone& c)
 }
 
 bool intersect_segment_triangle(const Real3& p, const Real3& q,
-                                const Triangle& t, Barycentric<Real>& b, Real& s);
+                                const Triangle& t, Barycentric& b, Real& s);
 bool intersect_segment_circle(const Real3& p, const Real3& q,
                               const Circle& c, Real& s);
 bool intersect_segment_cone(const Real3& p, const Real3& q,
                             const Cone& c, Real& s);
 bool intersect_ray_triangle(const Real3& pos, const Real3& disp,
-                            const Triangle& t, Barycentric<Real>& b, Real3& q);
+                            const Triangle& t, Barycentric& b, Real3& q);
 bool intersect_ray_circle(const Real3& pos, const Real3& disp,
                           const Circle& c, Real& t, Real3& q);
 bool intersect_ray_cone(const Real3& pos, const Real3& disp,

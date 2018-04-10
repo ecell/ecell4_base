@@ -328,10 +328,12 @@ ParticleContainer2D::apply_surface(
         std::cerr << "Warning: particle floats over tolerance: " << dist << std::endl;
     newpos = newpos - face.normal() * dist;
 
-    Barycentric<Real> bary(to_barycentric(newpos, face));
+    Barycentric bary(to_barycentric(newpos, face));
     if(!is_inside(bary, 1e-8))
+    {
         std::cerr << "Warning: particle is not in triangle: barycentric("
                   << bary << ")" << std::endl;
+    }
     bary = force_put_inside(bary);
     newpos = to_absolute(bary, face);
 

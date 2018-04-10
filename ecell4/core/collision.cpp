@@ -461,7 +461,7 @@ Real3 closest_point_point_cone(const Real3&, const Cone&)
 }
 
 bool intersect_segment_triangle(const Real3& p, const Real3& q,
-        const Triangle& tri, ecell4::Barycentric<Real>& b, Real& s)
+        const Triangle& tri, ecell4::Barycentric& b, Real& s)
 {
     // this implementation is from Real-Time Collision Detection by Christer Ericson,
     // published by Morgan Kaufmann Publishers, (c) 2005 Elsevier Inc.
@@ -510,7 +510,7 @@ bool intersect_segment_cone(const Real3& pos, const Real3& disp,
     throw NotImplemented("intersect_segment_cone");
 }
 bool intersect_ray_triangle(const Real3& position, const Real3& direction,
-                            const Triangle& tri, ecell4::Barycentric<Real>& b, Real3& q)
+                            const Triangle& tri, ecell4::Barycentric& b, Real3& q)
 {
     // this implementation is based on
     // "Real-Time Collision Detection" by Christer Ericson,

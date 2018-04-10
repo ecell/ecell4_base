@@ -56,7 +56,7 @@ class Polygon : public Shape
     typedef typename traits_type::converter_type    converter_type;
     typedef typename traits_type::id_generator_type id_generator_type;
     typedef std::pair<face_id_type, index_type>     local_index_type;
-    typedef Barycentric<Real>                       barycentric_type;
+    typedef Barycentric                             barycentric_type;
     typedef vertex_property<vertex_descripter>      vertex_property_type;
     typedef edge_property<edge_descripter>          edge_property_type;
     typedef face_property<face_descripter>          face_property_type;
