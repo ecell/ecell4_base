@@ -249,7 +249,7 @@ void HalfEdgePolygon::assign(const std::vector<Triangle>& ts)
             const Real  offset_angle = face.triangle.angle_at(i);
             const Real3 normal       = face.triangle.normal();
 
-            // counter crock wise
+            // counter clock wise
             {
                 const Real3 ref_edge = face.triangle.edge_at(i==0?2:i-1) /
                     (-length(face.triangle.edge_at(i==0?2:i-1)));
@@ -287,7 +287,7 @@ void HalfEdgePolygon::assign(const std::vector<Triangle>& ts)
                 while(current_angle + offset_angle <= pi);
             }
 
-            // crock wise
+            // clock wise
             {
                 const Real3 ref_edge = face.triangle.edge_at(i) /
                     (-length(face.triangle.edge_at(i)));
@@ -350,7 +350,7 @@ Real HalfEdgePolygon::distance_sq(
         const Real3& vpos(position_at(vid));
         const Real3 vtop1(p1 - vpos);
 
-        { // counter crock wise
+        { // counter clock wise
             for(std::vector<std::pair<face_id_type, Triangle> >::const_iterator
                     iter(face.neighbor_ccw[i].begin()),
                     iend(face.neighbor_ccw[i].end()); iter != iend; ++iter)
@@ -369,7 +369,7 @@ Real HalfEdgePolygon::distance_sq(
                 }
             }
         }
-        { // crock wise
+        { // clock wise
             for(std::vector<std::pair<face_id_type, Triangle> >::const_iterator
                     iter(face.neighbor_cw[i].begin()),
                     iend(face.neighbor_cw[i].end()); iter != iend; ++iter)
