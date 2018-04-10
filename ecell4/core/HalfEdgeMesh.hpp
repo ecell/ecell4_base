@@ -419,6 +419,27 @@ class HalfEdgePolygon : public Shape
         return boost::none;
     }
 
+    boost::optional<face_id_type>
+    find_face(const vertex_id_type v1, const vertex_id_type v2,
+              const vertex_id_type v3) const
+    {
+        const std::vector<edge_id_type>& outs = this->outgoing_edges(v1);
+        for(typename std::vector<edge_id_type>::const_iterator
+                i(outs.begin()), e(outs.end()); i!=e; ++i)
+        {
+            if(target_of(*i) == v2 && target_of(next_of(*i)) == v3)
+            {
+                return face_of(*i);
+            }
+            if(target_of(*i) == v3 && target_of(next_of(*i)) == v2)
+            {
+                return face_of(*i);
+            }
+        }
+        return boost::none;
+    }
+
+
   private:
 
     vertex_data const& vertex_at(const vertex_id_type& vid) const
