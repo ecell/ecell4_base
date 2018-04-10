@@ -1,6 +1,5 @@
 #include <ecell4/core/HalfEdgeMesh.hpp>
 #include <boost/container/flat_map.hpp>
-#include <boost/algorithm/cxx11/all_of.hpp>
 
 namespace ecell4
 {
@@ -10,6 +9,7 @@ const Real HalfEdgePolygon::relative_tolerance = 1e-8;
 
 void HalfEdgePolygon::assign(const std::vector<Triangle>& ts)
 {
+    const Real pi = boost::math::constants::pi<Real>();
     const Real tol_abs2 = absolute_tolerance * absolute_tolerance;
     const Real tol_rel2 = relative_tolerance * relative_tolerance;
 
@@ -237,7 +237,95 @@ void HalfEdgePolygon::assign(const std::vector<Triangle>& ts)
     }
 
     // make neighbor list for faces!
-    // TODO
+
+    for(std::vector<face_data>::iterator
+            fi(this->faces_.begin()), fe(this->faces_.end()); fi != fe; ++fi)
+    {
+        face_data& face = *fi;
+        for(std::size_t i=0; i<3; ++i)
+        {
+            const vertex_id_type vid = face.vertices[i];
+            const Real3 v_pos        = face.triangle.vertex_at(i);
+            const Real  offset_angle = face.triangle.angle_at(i);
+            const Real3 normal       = face.triangle.normal();
+
+            // counter crock wise
+            {
+                const Real3 ref_edge = face.triangle.edge_at(i==0?2:i-1) /
+                    (-length(face.triangle.edge_at(i==0?2:i-1)));
+
+                edge_id_type current_edge  = face.edges[i];
+                Real         current_angle = 0.0;
+                do
+                {
+                    current_edge = opposite_of(next_of(next_of(current_edge)));
+                    const face_id_type fid  = face_of(current_edge);
+
+                    const std::size_t vidx0 = this->face_at(fid).index_of(vid);
+                    const std::size_t vidx1 = this->face_at(fid).index_of(
+                                              target_of(current_edge));
+                    const std::size_t vidx2 = this->face_at(fid).index_of(
+                                              target_of(next_of(current_edge)));
+
+                    const Real next_angle = current_angle +
+                        this->face_at(fid).triangle.angle_at(vidx0);
+
+                    boost::array<Real3, 3> unfolded;
+                    unfolded[vidx0] = v_pos;
+                    unfolded[vidx1] = v_pos +
+                        rotate(current_angle, normal, ref_edge) *
+                        length_of(current_edge);
+                    unfolded[vidx2] = v_pos +
+                        rotate(next_angle,    normal, ref_edge) *
+                        length_of(next_of(next_of(current_edge)));
+
+                    face.neighbor_ccw[i].push_back(
+                            std::make_pair(fid, Triangle(unfolded)));
+
+                    current_angle = next_angle;
+                }
+                while(current_angle + offset_angle <= pi);
+            }
+
+            // crock wise
+            {
+                const Real3 ref_edge = face.triangle.edge_at(i) /
+                    (-length(face.triangle.edge_at(i)));
+
+                edge_id_type current_edge  = face.edges[i];
+                Real         current_angle = 0.0;
+                do
+                {
+                    current_edge  = next_of(opposite_of(current_edge));
+                    const face_id_type fid  = face_of(current_edge);
+
+                    const std::size_t vidx0 = this->face_at(fid).index_of(vid);
+                    const std::size_t vidx1 = this->face_at(fid).index_of(
+                                              target_of(current_edge));
+                    const std::size_t vidx2 = this->face_at(fid).index_of(
+                                              target_of(next_of(current_edge)));
+
+                    const Real next_angle = current_angle +
+                        this->face_at(fid).triangle.angle_at(vidx0);
+
+                    boost::array<Real3, 3> unfolded;
+                    unfolded[vidx0] = v_pos;
+                    unfolded[vidx1] = v_pos +
+                        rotate(current_angle, normal, ref_edge) *
+                        length_of(current_edge);
+                    unfolded[vidx2] = v_pos +
+                        rotate(next_angle,    normal, ref_edge) *
+                        length_of(next_of(next_of(current_edge)));
+
+                    face.neighbor_cw[i].push_back(
+                            std::make_pair(fid, Triangle(unfolded)));
+
+                    current_angle = next_angle;
+                }
+                while(current_angle + offset_angle <= pi);
+            }
+        }
+    }
     return;
 }
 
