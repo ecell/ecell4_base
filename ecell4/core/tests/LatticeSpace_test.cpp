@@ -49,7 +49,7 @@ BOOST_AUTO_TEST_CASE(GetVoxel)
     {
         std::pair<ParticleID, Voxel> voxel(space.get_voxel_at(coordinate));
         BOOST_CHECK_EQUAL(voxel.first, ParticleID());
-        BOOST_CHECK_EQUAL(voxel.second.species(), VacantType::getInstance().species());
+        BOOST_CHECK_EQUAL(voxel.second.species(), space.vacant()->species());
     }
 
     ParticleID id(sidgen());
@@ -213,11 +213,11 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_add_remove_molecule)
         pid, Voxel(sp, coord, radius, D)));
     BOOST_CHECK_EQUAL(space.num_particles(sp), 1);
 
-    const VoxelPool* mt(space.get_voxel_pool_at(coord));
+    boost::shared_ptr<const VoxelPool> mt(space.get_voxel_pool_at(coord));
     BOOST_CHECK(!mt->is_vacant());
 
     BOOST_CHECK(space.remove_voxel(coord));
-    const VoxelPool* vacant(space.get_voxel_pool_at(coord));
+    boost::shared_ptr<const VoxelPool> vacant(space.get_voxel_pool_at(coord));
     BOOST_CHECK(vacant->is_vacant());
 }
 
@@ -231,7 +231,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_move)
     BOOST_CHECK(space.update_voxel(
         pid, Voxel(sp, coord, radius, D)));
 
-    VoxelPool* from_mt(space.get_voxel_pool_at(coord));
+    boost::shared_ptr<VoxelPool> from_mt(space.get_voxel_pool_at(coord));
     BOOST_CHECK(!from_mt->is_vacant());
 
     const Integer3 global1(3,5,5);
@@ -240,7 +240,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_move)
 
     BOOST_CHECK(space.move(coord, to_coord));
 
-    VoxelPool* mt(space.get_voxel_pool_at(to_coord));
+    boost::shared_ptr<VoxelPool> mt(space.get_voxel_pool_at(to_coord));
     BOOST_CHECK(!mt->is_vacant());
 
     BOOST_CHECK(space.update_voxel(
@@ -266,7 +266,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_update_molecule)
     BOOST_CHECK(space.update_voxel(
         pid, Voxel(product, coord, radius, D)));
 
-    const VoxelPool* mt(space.get_voxel_pool_at(coord));
+    boost::shared_ptr<const VoxelPool> mt(space.get_voxel_pool_at(coord));
     BOOST_ASSERT(mt->species() == product);
 }
 
@@ -610,15 +610,15 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_save_and_load)
     {
         const Species species((*itr).serial());
 
-        const VoxelPool *vp1(space.find_voxel_pool(species));
-        const VoxelPool *vp2(space2.find_voxel_pool(species));
+        boost::shared_ptr<const VoxelPool> vp1(space.find_voxel_pool(species));
+        boost::shared_ptr<const VoxelPool> vp2(space2.find_voxel_pool(species));
 
         BOOST_CHECK_EQUAL(vp1->radius(), vp2->radius());
         BOOST_CHECK_EQUAL(vp1->D(), vp2->D());
         BOOST_CHECK_EQUAL(vp1->get_dimension(), vp2->get_dimension());
 
-        const MolecularType* mtb1(dynamic_cast<const MolecularType*>(vp1));
-        const MolecularType* mtb2(dynamic_cast<const MolecularType*>(vp2));
+        const MolecularType* mtb1(dynamic_cast<const MolecularType*>(vp1.get()));
+        const MolecularType* mtb2(dynamic_cast<const MolecularType*>(vp2.get()));
         BOOST_ASSERT((mtb1 && mtb2) || (!mtb1 && !mtb2));
 
         if (!mtb1 || !mtb2)

@@ -71,8 +71,8 @@ protected:
         REACTION_SUCCEEDED = 2
     } attempt_reaction_result_type;
 
-    void walk_in_space_(const MoleculePool* mtype, const Real& alpha);
-    void walk_on_surface_(const MoleculePool* mtype, const Real& alpha);
+    void walk_in_space_(boost::shared_ptr<const MoleculePool> mtype, const Real& alpha);
+    void walk_on_surface_(boost::shared_ptr<const MoleculePool> mtype, const Real& alpha);
     std::pair<attempt_reaction_result_type, reaction_type> attempt_reaction_(
         const SpatiocyteWorld::coordinate_id_pair_type& info,
         const SpatiocyteWorld::coordinate_type to_coord, const Real& alpha);

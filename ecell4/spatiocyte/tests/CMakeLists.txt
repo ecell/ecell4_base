@@ -1,5 +1,7 @@
 set(TEST_NAMES
-    SpatiocyteSimulator_test SpatiocyteWorld_test)
+    OneToManyMap_test
+    SpatiocyteSimulator_test
+    SpatiocyteWorld_test)
 
 set(test_library_dependencies)
 find_library(BOOST_UNITTEST_FRAMEWORK_LIBRARY boost_unit_test_framework)

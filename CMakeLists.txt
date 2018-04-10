@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.6)
 # cmake_minimum_required(VERSION 3.0)
 project(ecell4)
-set(PROJECT_VERSION 4.1.3)
+set(PROJECT_VERSION 4.1.4)
 
 if(ECELL4_ENABLE_PROFILING)
     add_definitions(-pg -O0)
