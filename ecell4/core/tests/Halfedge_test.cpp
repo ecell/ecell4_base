@@ -602,9 +602,9 @@ BOOST_AUTO_TEST_CASE(Polygon_plane_construction_from_triangles)
         for(std::vector<face_id_type>::const_iterator
                 i(fids.begin()), e(fids.end()); i!=e; ++i)
         {
-            BOOST_CHECK_SMALL(poly.face_at(*i).triangle.normal()[0], 1e-8);
-            BOOST_CHECK_SMALL(poly.face_at(*i).triangle.normal()[1], 1e-8);
-            BOOST_CHECK_CLOSE(poly.face_at(*i).triangle.normal()[2], 1.0, 1e-8);
+            BOOST_CHECK_SMALL(poly.triangle_at(*i).normal()[0], 1e-8);
+            BOOST_CHECK_SMALL(poly.triangle_at(*i).normal()[1], 1e-8);
+            BOOST_CHECK_CLOSE(poly.triangle_at(*i).normal()[2], 1.0, 1e-8);
         }
     }
     // check areas
@@ -615,7 +615,7 @@ BOOST_AUTO_TEST_CASE(Polygon_plane_construction_from_triangles)
         for(std::vector<face_id_type>::const_iterator
                 i(fids.begin()), e(fids.end()); i!=e; ++i)
         {
-            BOOST_CHECK_CLOSE(poly.face_at(*i).triangle.area(), 2.0, 1e-8);
+            BOOST_CHECK_CLOSE(poly.triangle_at(*i).area(), 2.0, 1e-8);
         }
     }
 
