@@ -329,5 +329,99 @@ void HalfEdgePolygon::assign(const std::vector<Triangle>& ts)
     return;
 }
 
+Real HalfEdgePolygon::distance_sq(
+        const std::pair<Real3, face_id_type>& pos1,
+        const std::pair<Real3, face_id_type>& pos2) const
+{
+    const Real3&       p1 = pos1.first;
+    const face_id_type f1 = pos1.second;
+    const face_id_type f2 = pos2.second;
+    const Barycentric  b2 = to_barycentric(pos2.first, face_at(f2).triangle);
+
+    const face_data& face = face_at(f1);
+    const Real3&   normal = face.triangle.normal();
+
+    boost::array<Real, 3> possible_solutions;
+    possible_solutions.fill(std::numeric_limits<Real>::infinity());
+
+    for(std::size_t i=0; i<3; ++i)
+    {
+        const vertex_id_type vid = face.vertices[i];
+        const Real3& vpos(position_at(vid));
+        const Real3 vtop1(p1 - vpos);
+
+        { // counter crock wise
+            for(std::vector<std::pair<face_id_type, Triangle> >::const_iterator
+                    iter(face.neighbor_ccw[i].begin()),
+                    iend(face.neighbor_ccw[i].end()); iter != iend; ++iter)
+            {
+                if(iter->first == f2)
+                {
+                    // unfolded place of p2
+                    const Real3 p2 = to_absolute(b2, iter->second);
+                    const Real3 vtop2(p2 - vpos);
+                    // check the angle between p1-v-p2 does not exceeds PI
+                    if(dot_product(normal, cross_product(vtop1, vtop2)) >= 0)
+                    {
+                        possible_solutions[i] = length_sq(p1 - p2);
+                    }
+                    break;
+                }
+            }
+        }
+        { // crock wise
+            for(std::vector<std::pair<face_id_type, Triangle> >::const_iterator
+                    iter(face.neighbor_cw[i].begin()),
+                    iend(face.neighbor_cw[i].end()); iter != iend; ++iter)
+            {
+                if(iter->first == f2)
+                {
+                    // unfolded place of p2
+                    const Real3 p2 = to_absolute(b2, iter->second);
+                    const Real3 vtop2(p2 - vpos);
+                    // check the angle between p1-v-p2 does not exceeds PI
+                    if(dot_product(normal, cross_product(vtop1, vtop2)) <= 0)
+                    {
+                        possible_solutions[i] =
+                            std::min(length_sq(p1 - p2), possible_solutions[i]);
+                    }
+                    break;
+                }
+            }
+        }
+    }
+    const boost::array<Real, 3>::const_iterator min_dist =
+        std::min_element(possible_solutions.begin(), possible_solutions.end());
+    if(*min_dist != std::numeric_limits<Real>::infinity())
+    {
+        return *min_dist;
+    }
+
+    boost::optional<vertex_id_type> connected = boost::none;
+    // search f2 in the connected faces (if the apex angle of the vertex
+    // exceeded 2PI, the minimum path can be the path that goes through
+    // the vertex).
+    const std::vector<std::pair<edge_id_type, Real> >&
+        oes = this->vertex_at(vid).outgoing_edges;
+    for(std::vector<std::pair<edge_id_type, Real> >::const_iterator
+            iter(oes.begin()), iend(oes.end()); iter!=iend; ++iter)
+    {
+        if(face_of(iter->first) == f2)
+        {
+            assert(!connected);
+            connected = vid;
+        }
+    }
+
+    if(connected)
+    {
+        const Real3& vpos = position_at(*connected);
+        const Real   lsq1 = length_sq(p1 - vpos);
+        const Real   lsq2 = length_sq(p2 - vpos);
+        // (x+y)^2 = x^2 + y^2 + 2xy = x^2 + y^2 + 2 * sqrt(x^2y^2)
+        return lsq1 + lsq2 + 2 * std::sqrt(lsq1 * lsq2);
+    }
+    return std::numeric_limits<Real>::infinity();
+}
 
 } // ecell4
