@@ -1,7 +1,7 @@
 #ifndef GFRD_POLYGON_FACE_TRIANGLE
 #define GFRD_POLYGON_FACE_TRIANGLE
-#include "geometry.hpp"
 #include "TriangleOperation.hpp"
+#include <ecell4/core/geometry.hpp>
 #include <boost/array.hpp>
 
 template<typename coordT>

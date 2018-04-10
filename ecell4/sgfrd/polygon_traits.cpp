@@ -123,7 +123,7 @@ make_face_information(const ecell4::Polygon<polygon_traits>& poly,
 
         const Triangle& tri = poly.triangle_at(*iter);
         const Real3 vpos   = tri.vertex_at(vtx_idx);
-        const Real  tilt   = ecell4::angle(target.normal(), tri.normal());
+        const Real  tilt   = ecell4::calc_angle(target.normal(), tri.normal());
         const Real3 axis   = tri.edge_at(vtx_idx==2?0:vtx_idx+1);
         const Real3 origin = tri.vertex_at(vtx_idx==2?0:vtx_idx+1);
         const Real3 developped_vtx = origin + ecell4::rotate(tilt, axis, vpos - origin);
