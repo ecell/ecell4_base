@@ -401,23 +401,27 @@ Real HalfEdgePolygon::distance_sq(
     // search f2 in the connected faces (if the apex angle of the vertex
     // exceeded 2PI, the minimum path can be the path that goes through
     // the vertex).
-    const std::vector<std::pair<edge_id_type, Real> >&
-        oes = this->vertex_at(vid).outgoing_edges;
-    for(std::vector<std::pair<edge_id_type, Real> >::const_iterator
-            iter(oes.begin()), iend(oes.end()); iter!=iend; ++iter)
+    for(std::size_t i=0; i<3; ++i)
     {
-        if(face_of(iter->first) == f2)
+        const vertex_id_type vid = face.vertices[i];
+        const std::vector<std::pair<edge_id_type, Real> >&
+            oes = this->vertex_at(vid).outgoing_edges;
+        for(std::vector<std::pair<edge_id_type, Real> >::const_iterator
+                iter(oes.begin()), iend(oes.end()); iter!=iend; ++iter)
         {
-            assert(!connected);
-            connected = vid;
+            if(face_of(iter->first) == f2)
+            {
+                assert(!connected);
+                connected = vid;
+            }
         }
     }
 
     if(connected)
     {
         const Real3& vpos = position_at(*connected);
-        const Real   lsq1 = length_sq(p1 - vpos);
-        const Real   lsq2 = length_sq(p2 - vpos);
+        const Real   lsq1 = length_sq(p1         - vpos);
+        const Real   lsq2 = length_sq(pos2.first - vpos);
         // (x+y)^2 = x^2 + y^2 + 2xy = x^2 + y^2 + 2 * sqrt(x^2y^2)
         return lsq1 + lsq2 + 2 * std::sqrt(lsq1 * lsq2);
     }
