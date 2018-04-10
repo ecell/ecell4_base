@@ -96,9 +96,25 @@ class HalfEdgePolygon : public Shape
         boost::array<  edge_id_type, 3> edges;    // idx consistent with triangle
         boost::array<vertex_id_type, 3> vertices; // idx consistent with triangle
 
-        // neighbor list; that has pairs of {Fid, developped Triangle}.
-        std::vector<std::pair<face_id_type, Triangle> > neighbor_ccw;
-        std::vector<std::pair<face_id_type, Triangle> > neighbor_cw;
+        std::size_t index_of(const vertex_id_type& vid) const
+        {
+            if(vertices[0] == vid){return 0;}
+            if(vertices[1] == vid){return 1;}
+            if(vertices[2] == vid){return 2;}
+            return 3;
+        }
+        std::size_t index_of(const edge_id_type& eid) const
+        {
+            if(edges[0] == eid){return 0;}
+            if(edges[1] == eid){return 1;}
+            if(edges[2] == eid){return 2;}
+            return 3;
+        }
+
+        // neighbor list; that has pairs of {Fid, unfolded Triangle}.
+        // each index corresponds to that of vertices.
+        boost::array<std::vector<std::pair<face_id_type, Triangle> >, 3> neighbor_ccw;
+        boost::array<std::vector<std::pair<face_id_type, Triangle> >, 3> neighbor_cw;
         // XXX: distance calculation between points on a polygon is complicated.
         // 1. there are several `local-minima` between any combination of points.
         //    so all the minima should be calculated and the shortest path
@@ -144,14 +160,16 @@ class HalfEdgePolygon : public Shape
 //     std::pair<Real3, face_id_type>
 //     travel(const std::pair<Real3, face_id_type>& pos, const Real3& disp) const;
 
-//     // pos1 -> pos2 <=> pos2 - pos1
-//     Real3 direction(const std::pair<Real3,   face_id_type>& pos1,
-//                     const std::pair<Real3,   face_id_type>& pos2) const;
-//     Real distance_sq(const std::pair<Real3,   face_id_type>& pos1,
-//                      const std::pair<Real3,   face_id_type>& pos2) const;
-//     Real distance(const std::pair<Real3,   face_id_type>& pos1,
-//                   const std::pair<Real3,   face_id_type>& pos2) const
-//     {return this->std::sqrt(distance_sq(pos1, pos2));}
+    // pos1 -> pos2 <=> pos2 - pos1
+//     Real3 direction (const std::pair<Real3, face_id_type>& pos1,
+//                      const std::pair<Real3, face_id_type>& pos2) const;
+    Real distance_sq(const std::pair<Real3, face_id_type>& pos1,
+                     const std::pair<Real3, face_id_type>& pos2) const;
+    Real distance   (const std::pair<Real3, face_id_type>& pos1,
+                     const std::pair<Real3, face_id_type>& pos2) const
+    {
+        return std::sqrt(this->distance_sq(pos1, pos2));
+    }
 
     // half-edge traverse
     // next edge: the edge belonging the same face,
