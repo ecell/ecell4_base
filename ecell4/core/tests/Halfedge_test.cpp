@@ -344,10 +344,21 @@ BOOST_AUTO_TEST_CASE(Polygon_tetrahedron_construction_from_triangles)
                 poly.distance(std::make_pair(p1, f1), std::make_pair(p2, f2)),
                 1.0, 1e-8);
         BOOST_CHECK_CLOSE_FRACTION(
+                poly.distance(std::make_pair(p2, f2), std::make_pair(p1, f1)),
+                1.0, 1e-8);
+
+        BOOST_CHECK_CLOSE_FRACTION(
                 poly.distance(std::make_pair(p1, f1), std::make_pair(p2, f3)),
                 1.0, 1e-8);
         BOOST_CHECK_CLOSE_FRACTION(
+                poly.distance(std::make_pair(p2, f3), std::make_pair(p1, f1)),
+                1.0, 1e-8);
+
+        BOOST_CHECK_CLOSE_FRACTION(
                 poly.distance(std::make_pair(p1, f1), std::make_pair(p2, f4)),
+                1.0, 1e-8);
+        BOOST_CHECK_CLOSE_FRACTION(
+                poly.distance(std::make_pair(p2, f4), std::make_pair(p1, f1)),
                 1.0, 1e-8);
     }
 
@@ -358,21 +369,29 @@ BOOST_AUTO_TEST_CASE(Polygon_tetrahedron_construction_from_triangles)
         BOOST_CHECK_CLOSE_FRACTION(
                 poly.distance(std::make_pair(p1, f1), std::make_pair(p2, f4)),
                 (std::sqrt(2) + std::sqrt(6)) / 6.0, 1e-8);
+        BOOST_CHECK_CLOSE_FRACTION(
+                poly.distance(std::make_pair(p2, f4), std::make_pair(p1, f1)),
+                (std::sqrt(2) + std::sqrt(6)) / 6.0, 1e-8);
+
     }
 }
 
 //! test data 2: octahedron
 // below, the normal vector towords the depth of your display.
-//
-//       3
-//       /\
-// 3___1/__\4__3
-//  \  /\  /\  /\
-//   \/__\/__\/__\
-//   2   5\  /6   2
-//         \/
-//          2
-//
+//            3
+//            ^
+//           / \
+//          / 2 \
+// 3______1/_____\4______3
+//  \     /\     /\     /\
+//   \ 1 /  \ 3 /  \ 7 /  \
+//    \ / 4  \ /  6 \ /  8 \
+//     v______v______v______\
+//    2       5\     /6      2
+//              \ 5 /
+//               \ /
+//                v
+//                2
 // p1 = {1, 1, 2}
 // p2 = {2, 1, 1}
 // p3 = {1, 2, 1}
@@ -565,6 +584,72 @@ BOOST_AUTO_TEST_CASE(Polygon_octahedron_construction_from_triangles)
         BOOST_CHECK(is_permutation(
                     ans.begin(), ans.end(), result.begin(), result.end()));
     }
+
+    // test of distance
+    const face_id_type f1 = *(poly.find_face(v1, v2, v3));
+    const face_id_type f2 = *(poly.find_face(v1, v3, v4));
+    const face_id_type f3 = *(poly.find_face(v1, v4, v5));
+    const face_id_type f4 = *(poly.find_face(v1, v5, v2));
+    const face_id_type f5 = *(poly.find_face(v6, v2, v5));
+    const face_id_type f6 = *(poly.find_face(v6, v5, v4));
+    const face_id_type f7 = *(poly.find_face(v6, v4, v3));
+    const face_id_type f8 = *(poly.find_face(v6, v3, v2));
+    {
+        const Real3 p1 = (octahedron::p1 + octahedron::p2 + octahedron::p3) / 3.0;
+        const Real3 p2 = (octahedron::p1 + octahedron::p4 + octahedron::p5) / 3.0;
+
+        BOOST_CHECK_CLOSE_FRACTION(
+                poly.distance(std::make_pair(p1, f1), std::make_pair(p2, f3)),
+                std::sqrt(2.0), 1e-8);
+        BOOST_CHECK_CLOSE_FRACTION(
+                poly.distance(std::make_pair(p2, f3), std::make_pair(p1, f1)),
+                std::sqrt(2.0), 1e-8);
+    }
+    {
+        const Real3 p1 = (octahedron::p1 + octahedron::p3 + octahedron::p4) / 3.0;
+        const Real3 p2 = (octahedron::p1 + octahedron::p2 + octahedron::p5) / 3.0;
+
+        BOOST_CHECK_CLOSE_FRACTION(
+                poly.distance(std::make_pair(p1, f2), std::make_pair(p2, f4)),
+                std::sqrt(2.0), 1e-8);
+        BOOST_CHECK_CLOSE_FRACTION(
+                poly.distance(std::make_pair(p2, f4), std::make_pair(p1, f2)),
+                std::sqrt(2.0), 1e-8);
+    }
+    {
+        const Real3 p1 = (octahedron::p2 + octahedron::p6 + octahedron::p5) / 3.0;
+        const Real3 p2 = (octahedron::p3 + octahedron::p4 + octahedron::p6) / 3.0;
+
+        BOOST_CHECK_CLOSE_FRACTION(
+                poly.distance(std::make_pair(p1, f5), std::make_pair(p2, f7)),
+                std::sqrt(2.0), 1e-8);
+        BOOST_CHECK_CLOSE_FRACTION(
+                poly.distance(std::make_pair(p2, f7), std::make_pair(p1, f5)),
+                std::sqrt(2.0), 1e-8);
+    }
+    {
+        const Real3 p1 = (octahedron::p4 + octahedron::p5 + octahedron::p6) / 3.0;
+        const Real3 p2 = (octahedron::p2 + octahedron::p3 + octahedron::p6) / 3.0;
+
+        BOOST_CHECK_CLOSE_FRACTION(
+                poly.distance(std::make_pair(p1, f6), std::make_pair(p2, f8)),
+                std::sqrt(2.0), 1e-8);
+        BOOST_CHECK_CLOSE_FRACTION(
+                poly.distance(std::make_pair(p2, f8), std::make_pair(p1, f6)),
+                std::sqrt(2.0), 1e-8);
+    }
+
+    {
+        const Real3 p1 = (octahedron::p1 + octahedron::p2 + octahedron::p3) / 3.0;
+        const Real3 p2 = (octahedron::p4 + octahedron::p5 + octahedron::p6) / 3.0;
+
+        BOOST_CHECK_EQUAL(
+                poly.distance(std::make_pair(p1, f1), std::make_pair(p2, f6)),
+                std::numeric_limits<Real>::infinity());
+        BOOST_CHECK_EQUAL(
+                poly.distance(std::make_pair(p2, f6), std::make_pair(p1, f1)),
+                std::numeric_limits<Real>::infinity());
+    }
 }
 
 //! test data 3: plane
@@ -574,7 +659,7 @@ BOOST_AUTO_TEST_CASE(Polygon_octahedron_construction_from_triangles)
 // +--> x
 // | 0 __1__2__3__4__ 0
 // |  |\ |\ |\ |\ |\ |
-// v 5|_\|_\|_\|_\9_\|6
+// v 5|_\|_\|_\|_\9_\|5
 // y  |\ |\ |\ |\ |\ |
 //   .|_\|_\|_\|_\|_\| .
 //   .|\ |\ |\ |\ |\ | .
@@ -733,5 +818,84 @@ BOOST_AUTO_TEST_CASE(Polygon_plane_construction_from_triangles)
         {
             BOOST_CHECK_SMALL(poly.tilt_angle_at(*i), 1e-8);
         }
+    }
+
+    // distance stuff
+    //
+    // 24___20____21
+    //  |\   |\   |
+    //  | \12| \14|
+    //  |11\ |13\ |
+    // 4|___\0___\1____2
+    //  |\   |\   |\   |
+    //  | \6 | \2 | \4 |
+    //  | 5\ | 1\ | 3\ |
+    // 9|___\5___\6___\7
+    //       |\   |\   |
+    //       | \8 | \10|
+    //       | 7\ | 9\ |
+    //     10|___\11__\|12
+
+    const vertex_id_type v0  = *poly.find_vertex(Real3(0.0, 0.0, 5.0));
+    const vertex_id_type v1  = *poly.find_vertex(Real3(2.0, 0.0, 5.0));
+    const vertex_id_type v2  = *poly.find_vertex(Real3(4.0, 0.0, 5.0));
+    const vertex_id_type v4  = *poly.find_vertex(Real3(8.0, 0.0, 5.0));
+
+    const vertex_id_type v5  = *poly.find_vertex(Real3(0.0, 2.0, 5.0));
+    const vertex_id_type v6  = *poly.find_vertex(Real3(2.0, 2.0, 5.0));
+    const vertex_id_type v7  = *poly.find_vertex(Real3(4.0, 2.0, 5.0));
+    const vertex_id_type v9  = *poly.find_vertex(Real3(8.0, 2.0, 5.0));
+
+    const vertex_id_type v10 = *poly.find_vertex(Real3(0.0, 4.0, 5.0));
+    const vertex_id_type v11 = *poly.find_vertex(Real3(2.0, 4.0, 5.0));
+    const vertex_id_type v12 = *poly.find_vertex(Real3(4.0, 4.0, 5.0));
+
+    const vertex_id_type v20 = *poly.find_vertex(Real3(0.0, 8.0, 5.0));
+    const vertex_id_type v21 = *poly.find_vertex(Real3(2.0, 8.0, 5.0));
+    const vertex_id_type v24 = *poly.find_vertex(Real3(8.0, 8.0, 5.0));
+
+    const face_id_type f1 = *poly.find_face(v0, v5, v6);
+    const face_id_type f2 = *poly.find_face(v0, v1, v6);
+
+    const face_id_type f3 = *poly.find_face(v1, v6, v7);
+    const face_id_type f4 = *poly.find_face(v1, v2, v7);
+
+    const face_id_type f5 = *poly.find_face(v4, v5, v9);
+    const face_id_type f6 = *poly.find_face(v0, v4, v5);
+
+    const face_id_type f7 = *poly.find_face(v5, v10, v11);
+    const face_id_type f8 = *poly.find_face(v5, v6,  v11);
+
+    const face_id_type f9  = *poly.find_face(v6, v11, v12);
+    const face_id_type f10 = *poly.find_face(v6, v7,  v12);
+
+    const face_id_type f11 = *poly.find_face(v0, v4,  v24);
+    const face_id_type f12 = *poly.find_face(v0, v20, v24);
+
+    const face_id_type f13 = *poly.find_face(v0, v1,  v20);
+    const face_id_type f14 = *poly.find_face(v1, v20, v21);
+
+    {
+        const Real3 p1(0.5, 1.5, 5.0);
+        const Real3 p2(1.5, 0.5, 5.0);
+        BOOST_CHECK_CLOSE_FRACTION(poly.distance(
+            std::make_pair(p1, f1), std::make_pair(p2, f2)),
+            length(poly.periodic_transpose(p1, p2) - p2), 1e-8);
+        BOOST_CHECK_CLOSE_FRACTION(poly.distance(
+            std::make_pair(p2, f2), std::make_pair(p1, f1)),
+            length(poly.periodic_transpose(p1, p2) - p2), 1e-8);
+    }
+
+    {
+        const Real3 p1(0.5, 1.5, 5.0);
+        const Real3 p2(8.5, 9.5, 5.0);
+        BOOST_CHECK_CLOSE_FRACTION(poly.distance(
+            std::make_pair(p1, f1), std::make_pair(p2, f11)),
+            length(poly.periodic_transpose(p1, p2) - p2), 1e-8);
+
+        // failed!
+        BOOST_CHECK_CLOSE_FRACTION(poly.distance(
+            std::make_pair(p2, f11), std::make_pair(p1, f1)),
+            length(poly.periodic_transpose(p1, p2) - p2), 1e-8);
     }
 }
