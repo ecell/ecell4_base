@@ -18,6 +18,7 @@
 
 #include "OffsetSpace.hpp"
 #include "OneToManyMap.hpp"
+#include "Voxel.hpp"
 
 namespace ecell4
 {
@@ -30,18 +31,6 @@ struct MoleculeInfo
     const Real radius;
     const Real D;
     const std::string loc;
-};
-
-struct Voxel
-{
-    typedef Integer coordinate_type;
-
-    Voxel(coordinate_type coordinate)
-        : coordinate(coordinate)
-    {
-    }
-
-    coordinate_type coordinate;
 };
 
 class SpatiocyteWorld
