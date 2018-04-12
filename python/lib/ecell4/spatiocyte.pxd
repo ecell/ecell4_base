@@ -4,6 +4,7 @@ from libcpp.vector cimport vector
 
 from ecell4.types cimport *
 from ecell4.shared_ptr cimport shared_ptr
+from ecell4.optional cimport optional
 from ecell4.core cimport *
 
 
@@ -55,7 +56,7 @@ cdef extern from "ecell4/spatiocyte/SpatiocyteWorld.hpp" namespace "ecell4::spat
         bool remove_particle(Cpp_ParticleID& pid)
         bool remove_voxel(Cpp_ParticleID& pid)
         pair[Cpp_ParticleID, Cpp_Particle] get_particle(Cpp_ParticleID& pid)
-        pair[Cpp_ParticleID, Cpp_ParticleVoxel] get_voxel(Cpp_ParticleID& pid)
+        optional[Cpp_ParticleVoxel] find_voxel(Cpp_ParticleID& pid)
         pair[Cpp_ParticleID, Cpp_ParticleVoxel] get_voxel_at(Integer)
         bool on_structure(Cpp_ParticleVoxel&)
         # bool on_structure(Cpp_Species&, Integer)

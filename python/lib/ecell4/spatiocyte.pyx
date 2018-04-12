@@ -6,6 +6,7 @@ from libcpp.vector cimport vector
 
 from ecell4.types cimport *
 from ecell4.shared_ptr cimport shared_ptr
+from ecell4.optional cimport optional
 from ecell4.core cimport *
 
 ## ReactionInfo
@@ -302,10 +303,12 @@ cdef class SpatiocyteWorld:
             A pair of ParticleID and ParticleVoxel
 
         """
-        cdef pair[Cpp_ParticleID, Cpp_ParticleVoxel] pid_voxel_pair
-        pid_voxel_pair = self.thisptr.get().get_voxel(deref(pid.thisptr))
-        return (ParticleID_from_Cpp_ParticleID(address(pid_voxel_pair.first)),
-                Voxel_from_Cpp_Voxel(address(pid_voxel_pair.second)))
+        voxel = self.thisptr.get().find_voxel(deref(pid.thisptr))
+
+        if voxel.is_initialized():
+            return (pid, Voxel_from_Cpp_Voxel(address(voxel.get())))
+
+        return None
 
     def get_voxel_at(self, Voxel voxel):
         """get_voxel_at(voxel) -> (ParticleID, ParticleVoxel)
