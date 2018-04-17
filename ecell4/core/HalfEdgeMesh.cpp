@@ -290,7 +290,7 @@ void HalfEdgePolygon::assign(const std::vector<Triangle>& ts)
             // clock wise
             {
                 const Real3 ref_edge = face.triangle.edge_at(i) /
-                    (-length(face.triangle.edge_at(i)));
+                    length(face.triangle.edge_at(i));
 
                 edge_id_type current_edge  = face.edges[i];
                 Real         current_angle = 0.0;
@@ -305,22 +305,20 @@ void HalfEdgePolygon::assign(const std::vector<Triangle>& ts)
                     const std::size_t vidx2 = this->face_at(fid).index_of(
                                               target_of(next_of(current_edge)));
 
-                    const Real next_angle = current_angle +
-                        this->face_at(fid).triangle.angle_at(vidx0);
+                    const Real prev_angle = current_angle;
+                    current_angle += this->face_at(fid).triangle.angle_at(vidx0);
 
                     boost::array<Real3, 3> unfolded;
                     unfolded[vidx0] = v_pos;
                     unfolded[vidx1] = v_pos +
-                        rotate(current_angle, normal, ref_edge) *
+                        rotate(-current_angle, normal, ref_edge) *
                         length_of(current_edge);
                     unfolded[vidx2] = v_pos +
-                        rotate(next_angle,    normal, ref_edge) *
+                        rotate(-prev_angle,    normal, ref_edge) *
                         length_of(next_of(next_of(current_edge)));
 
                     face.neighbor_cw[i].push_back(
                             std::make_pair(fid, Triangle(unfolded)));
-
-                    current_angle = next_angle;
                 }
                 while(current_angle + offset_angle <= pi);
             }
@@ -378,6 +376,7 @@ Real HalfEdgePolygon::distance_sq(
                 {
                     // unfolded place of p2
                     const Real3 p2 = to_absolute(b2, iter->second);
+
                     const Real3 vtop2(p2 - vpos);
                     // check the angle between p1-v-p2 does not exceeds PI
                     if(dot_product(normal, cross_product(vtop1, vtop2)) <= 0)
