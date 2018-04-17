@@ -703,6 +703,91 @@ BOOST_AUTO_TEST_CASE(Polygon_octahedron_construction_from_triangles)
         const Real dist = poly.distance(std::make_pair(p1, f1), p2_);
         BOOST_CHECK_CLOSE(dist, length(p2 - p1), 1e-6);
     }
+
+    // roll
+    {
+        const VertexID vid = v1;
+        const Real       r = std::sqrt(2.0 / 3.0);
+        const Real3 p1 = (octahedron::p1 + octahedron::p2 + octahedron::p3) / 3.0;
+        const Real3 p2 = (octahedron::p1 + octahedron::p3 + octahedron::p4) / 3.0;
+        const Real3 p3 = (octahedron::p1 + octahedron::p4 + octahedron::p5) / 3.0;
+        const Real3 p4 = (octahedron::p1 + octahedron::p2 + octahedron::p5) / 3.0;
+
+        {
+            const std::pair<Real3, FaceID> no_move =
+                ::ecell4::polygon::roll(poly, std::make_pair(p1, f1), v1, r, 0.0);
+            BOOST_CHECK_EQUAL(no_move.second, f1);
+            BOOST_CHECK_CLOSE(no_move.first[0], p1[0], 1e-6);
+            BOOST_CHECK_CLOSE(no_move.first[1], p1[1], 1e-6);
+            BOOST_CHECK_CLOSE(no_move.first[2], p1[2], 1e-6);
+        }
+        const std::pair<Real3, FaceID> p2_ = ::ecell4::polygon::roll(poly, std::make_pair(p1, f1), v1, r,  60.0 / 180.0 * pi);
+        const std::pair<Real3, FaceID> p3_ = ::ecell4::polygon::roll(poly, std::make_pair(p1, f1), v1, r, 120.0 / 180.0 * pi);
+        const std::pair<Real3, FaceID> p4_ = ::ecell4::polygon::roll(poly, std::make_pair(p1, f1), v1, r, 180.0 / 180.0 * pi);
+        const std::pair<Real3, FaceID> p1_ = ::ecell4::polygon::roll(poly, std::make_pair(p1, f1), v1, r, 240.0 / 180.0 * pi);
+        BOOST_CHECK_EQUAL(p2_.second, f2);
+        BOOST_CHECK_EQUAL(p3_.second, f3);
+        BOOST_CHECK_EQUAL(p4_.second, f4);
+        BOOST_CHECK_EQUAL(p1_.second, f1);
+
+        BOOST_CHECK_CLOSE(p1_.first[0], p1[0], 1e-6);
+        BOOST_CHECK_CLOSE(p1_.first[1], p1[1], 1e-6);
+        BOOST_CHECK_CLOSE(p1_.first[2], p1[2], 1e-6);
+
+        BOOST_CHECK_CLOSE(p2_.first[0], p2[0], 1e-6);
+        BOOST_CHECK_CLOSE(p2_.first[1], p2[1], 1e-6);
+        BOOST_CHECK_CLOSE(p2_.first[2], p2[2], 1e-6);
+
+        BOOST_CHECK_CLOSE(p3_.first[0], p3[0], 1e-6);
+        BOOST_CHECK_CLOSE(p3_.first[1], p3[1], 1e-6);
+        BOOST_CHECK_CLOSE(p3_.first[2], p3[2], 1e-6);
+
+        BOOST_CHECK_CLOSE(p4_.first[0], p4[0], 1e-6);
+        BOOST_CHECK_CLOSE(p4_.first[1], p4[1], 1e-6);
+        BOOST_CHECK_CLOSE(p4_.first[2], p4[2], 1e-6);
+    }
+
+    {
+        const VertexID vid = v1;
+        const Real       r = std::sqrt(2.0 / 3.0);
+        const Real3 p1 = (octahedron::p1 + octahedron::p2 + octahedron::p3) / 3.0;
+        const Real3 p2 = (octahedron::p1 + octahedron::p3 + octahedron::p4) / 3.0;
+        const Real3 p3 = (octahedron::p1 + octahedron::p4 + octahedron::p5) / 3.0;
+        const Real3 p4 = (octahedron::p1 + octahedron::p2 + octahedron::p5) / 3.0;
+
+        {
+            const std::pair<Real3, FaceID> no_move =
+                ::ecell4::polygon::roll(poly, std::make_pair(p3, f3), v1, r, 0.0);
+            BOOST_CHECK_EQUAL(no_move.second, f3);
+            BOOST_CHECK_CLOSE(no_move.first[0], p3[0], 1e-6);
+            BOOST_CHECK_CLOSE(no_move.first[1], p3[1], 1e-6);
+            BOOST_CHECK_CLOSE(no_move.first[2], p3[2], 1e-6);
+        }
+        const std::pair<Real3, FaceID> p4_ = ::ecell4::polygon::roll(poly, std::make_pair(p3, f3), v1, r,  60.0 / 180.0 * pi);
+        const std::pair<Real3, FaceID> p1_ = ::ecell4::polygon::roll(poly, std::make_pair(p3, f3), v1, r, 120.0 / 180.0 * pi);
+        const std::pair<Real3, FaceID> p2_ = ::ecell4::polygon::roll(poly, std::make_pair(p3, f3), v1, r, 180.0 / 180.0 * pi);
+        const std::pair<Real3, FaceID> p3_ = ::ecell4::polygon::roll(poly, std::make_pair(p3, f3), v1, r, 240.0 / 180.0 * pi);
+        BOOST_CHECK_EQUAL(p2_.second, f2);
+        BOOST_CHECK_EQUAL(p3_.second, f3);
+        BOOST_CHECK_EQUAL(p4_.second, f4);
+        BOOST_CHECK_EQUAL(p1_.second, f1);
+
+        BOOST_CHECK_CLOSE(p1_.first[0], p1[0], 1e-6);
+        BOOST_CHECK_CLOSE(p1_.first[1], p1[1], 1e-6);
+        BOOST_CHECK_CLOSE(p1_.first[2], p1[2], 1e-6);
+
+        BOOST_CHECK_CLOSE(p2_.first[0], p2[0], 1e-6);
+        BOOST_CHECK_CLOSE(p2_.first[1], p2[1], 1e-6);
+        BOOST_CHECK_CLOSE(p2_.first[2], p2[2], 1e-6);
+
+        BOOST_CHECK_CLOSE(p3_.first[0], p3[0], 1e-6);
+        BOOST_CHECK_CLOSE(p3_.first[1], p3[1], 1e-6);
+        BOOST_CHECK_CLOSE(p3_.first[2], p3[2], 1e-6);
+
+        BOOST_CHECK_CLOSE(p4_.first[0], p4[0], 1e-6);
+        BOOST_CHECK_CLOSE(p4_.first[1], p4[1], 1e-6);
+        BOOST_CHECK_CLOSE(p4_.first[2], p4[2], 1e-6);
+    }
 }
 
 //! test data 3: plane
@@ -1040,5 +1125,44 @@ BOOST_AUTO_TEST_CASE(Polygon_plane_construction_from_triangles)
         BOOST_CHECK_CLOSE(p2_.first[0], p2[0], 1e-6);
         BOOST_CHECK_CLOSE(p2_.first[1], p2[1], 1e-6);
         BOOST_CHECK_CLOSE(p2_.first[2], p2[2], 1e-6);
+    }
+
+    // roll ----------------------------------------------------------
+
+    {
+        // around v6, far from Boundary
+        const Real3 p1(2.0 - std::sqrt(3.0), 1.0, 5.0);
+        const std::pair<Real3, FaceID> p2 =
+            ::ecell4::polygon::roll(poly, std::make_pair(p1, f1), v6, 2, 30.0 / 180.0 * pi);
+
+        BOOST_CHECK_EQUAL(p2.second, f2);
+        BOOST_CHECK_CLOSE(p2.first[0], 1.0,                  1e-6);
+        BOOST_CHECK_CLOSE(p2.first[1], 2.0 - std::sqrt(3.0), 1e-6);
+        BOOST_CHECK_CLOSE(p2.first[2], 5.0, 1e-6);
+
+        const std::pair<Real3, FaceID> p10 =
+            ::ecell4::polygon::roll(poly, std::make_pair(p1, f1), v6, 2, pi);
+        BOOST_CHECK_EQUAL(p10.second, f10);
+        BOOST_CHECK_CLOSE(p10.first[0], 2.0 + std::sqrt(3.0), 1e-6);
+        BOOST_CHECK_CLOSE(p10.first[1], 3.0, 1e-6);
+        BOOST_CHECK_CLOSE(p10.first[2], 5.0, 1e-6);
+    }
+    {
+        const Real3 p1(1.0, std::sqrt(3.0), 5.0);
+        const Real3 p2(std::sqrt(3.0), 1.0, 5.0);
+
+        const std::pair<Real3, FaceID> p11 =
+            ::ecell4::polygon::roll(poly, std::make_pair(p2, f2), v0, 2, pi);
+        BOOST_CHECK_EQUAL(p11.second, f11);
+        BOOST_CHECK_CLOSE(p11.first[0], 10.0 - std::sqrt(3.0), 1e-6);
+        BOOST_CHECK_CLOSE(p11.first[1], 9.0, 1e-6);
+        BOOST_CHECK_CLOSE(p11.first[2], 5.0, 1e-6);
+
+        const std::pair<Real3, FaceID> p12 =
+            ::ecell4::polygon::roll(poly, std::make_pair(p1, f1), v0, 2, pi);
+        BOOST_CHECK_EQUAL(p12.second, f12);
+        BOOST_CHECK_CLOSE(p12.first[0], 9.0, 1e-6);
+        BOOST_CHECK_CLOSE(p12.first[1], 10.0 - std::sqrt(3.0), 1e-6);
+        BOOST_CHECK_CLOSE(p12.first[2], 5.0, 1e-6);
     }
 }
