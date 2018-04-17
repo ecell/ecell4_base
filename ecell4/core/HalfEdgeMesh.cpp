@@ -331,7 +331,10 @@ Real HalfEdgePolygon::distance_sq(
         const std::pair<Real3, FaceID>& pos1,
         const std::pair<Real3, FaceID>& pos2) const
 {
-    const Real3&       p1 = pos1.first;
+    typedef utils::pair_first_element_unary_predicator<FaceID, Triangle>
+            face_finder_type;
+
+    const Real3& p1 = pos1.first;
     const FaceID f1 = pos1.second;
     const FaceID f2 = pos2.second;
     const Barycentric  b2 = to_barycentric(pos2.first, face_at(f2).triangle);
@@ -339,9 +342,7 @@ Real HalfEdgePolygon::distance_sq(
     const face_data& face = face_at(f1);
     const Real3&   normal = face.triangle.normal();
 
-    boost::array<Real, 3> possible_solutions;
-    possible_solutions.fill(std::numeric_limits<Real>::infinity());
-
+    Real solution = std::numeric_limits<Real>::infinity();
     for(std::size_t i=0; i<3; ++i)
     {
         const VertexID vid = face.vertices[i];
@@ -349,51 +350,42 @@ Real HalfEdgePolygon::distance_sq(
         const Real3 vtop1(p1 - vpos);
 
         { // counter clock wise
-            for(std::vector<std::pair<FaceID, Triangle> >::const_iterator
-                    iter(face.neighbor_ccw[i].begin()),
-                    iend(face.neighbor_ccw[i].end()); iter != iend; ++iter)
+            const std::vector<std::pair<FaceID, Triangle> >::const_iterator fi =
+                std::find_if(face.neighbor_ccw[i].begin(),
+                             face.neighbor_ccw[i].end(), face_finder_type(f2));
+            if(fi != face.neighbor_ccw[i].end())
             {
-                if(iter->first == f2)
+                // unfolded place of p2
+                const Real3 p2 = to_absolute(b2, fi->second);
+                const Real3 vtop2(p2 - vpos);
+                // check the angle between p1-v-p2 does not exceeds PI
+                if(dot_product(normal, cross_product(vtop1, vtop2)) >= 0)
                 {
-                    // unfolded place of p2
-                    const Real3 p2 = to_absolute(b2, iter->second);
-                    const Real3 vtop2(p2 - vpos);
-                    // check the angle between p1-v-p2 does not exceeds PI
-                    if(dot_product(normal, cross_product(vtop1, vtop2)) >= 0)
-                    {
-                        possible_solutions[i] = length_sq(p1 - p2);
-                    }
-                    break;
+                    solution = std::min(length_sq(p1 - p2), solution);
                 }
             }
         }
         { // clock wise
-            for(std::vector<std::pair<FaceID, Triangle> >::const_iterator
-                    iter(face.neighbor_cw[i].begin()),
-                    iend(face.neighbor_cw[i].end()); iter != iend; ++iter)
+            const std::vector<std::pair<FaceID, Triangle> >::const_iterator fi =
+                std::find_if(face.neighbor_cw[i].begin(),
+                             face.neighbor_cw[i].end(), face_finder_type(f2));
+            if(fi != face.neighbor_cw[i].end())
             {
-                if(iter->first == f2)
+                // unfolded place of p2
+                const Real3 p2 = to_absolute(b2, fi->second);
+                const Real3 vtop2(p2 - vpos);
+                // check the angle between p1-v-p2 does not exceeds PI
+                if(dot_product(normal, cross_product(vtop1, vtop2)) <= 0)
                 {
-                    // unfolded place of p2
-                    const Real3 p2 = to_absolute(b2, iter->second);
-
-                    const Real3 vtop2(p2 - vpos);
-                    // check the angle between p1-v-p2 does not exceeds PI
-                    if(dot_product(normal, cross_product(vtop1, vtop2)) <= 0)
-                    {
-                        possible_solutions[i] =
-                            std::min(length_sq(p1 - p2), possible_solutions[i]);
-                    }
-                    break;
+                    solution = std::min(length_sq(p1 - p2), solution);
                 }
+                break;
             }
         }
     }
-    const boost::array<Real, 3>::const_iterator min_dist =
-        std::min_element(possible_solutions.begin(), possible_solutions.end());
-    if(*min_dist != std::numeric_limits<Real>::infinity())
+    if(solution != std::numeric_limits<Real>::infinity())
     {
-        return *min_dist;
+        return solution;
     }
 
     boost::optional<VertexID> connected = boost::none;
@@ -427,76 +419,81 @@ Real HalfEdgePolygon::distance_sq(
     return std::numeric_limits<Real>::infinity();
 }
 
-// Real HalfEdgePolygon::direction(
-//         const std::pair<Real3, FaceID>& pos1,
-//         const std::pair<Real3, FaceID>& pos2) const
-// {
-//     const Real3&       p1 = pos1.first;
-//     const FaceID f1 = pos1.second;
-//     const FaceID f2 = pos2.second;
-//     const Barycentric  b2 = to_barycentric(pos2.first, face_at(f2).triangle);
-//
-//     const face_data& face = face_at(f1);
-//     const Real3&   normal = face.triangle.normal();
-//
-//     boost::array<Real, 3> possible_solutions;
-//     possible_solutions.fill(std::numeric_limits<Real>::infinity());
-//
-//     for(std::size_t i=0; i<3; ++i)
-//     {
-//         const VertexID vid = face.vertices[i];
-//         const Real3& vpos(position_at(vid));
-//         const Real3 vtop1(p1 - vpos);
-//
-//         { // counter clock wise
-//             const std::vector<std::pair<FaceID, Triangle>
-//                 >::const_iterator f = std::find_if(
-//                     face.neighbor_ccw[i].begin(), face.neighbor_ccw[i].end(),
-//                     utils::pair_first_element_unary_predicator<FaceID, Triangle>(f2)
-//                     );
-//             {
-//                 if(iter->first == f2)
-//                 {
-//                     // unfolded place of p2
-//                     const Real3 p2 = to_absolute(b2, iter->second);
-//                     const Real3 vtop2(p2 - vpos);
-//                     // check the angle between p1-v-p2 does not exceeds PI
-//                     if(dot_product(normal, cross_product(vtop1, vtop2)) >= 0)
-//                     {
-//                         possible_solutions[i] = length_sq(p1 - p2);
-//                     }
-//                     break;
-//                 }
-//             }
-//         }
-//         { // clock wise
-//             for(std::vector<std::pair<FaceID, Triangle> >::const_iterator
-//                     iter(face.neighbor_cw[i].begin()),
-//                     iend(face.neighbor_cw[i].end()); iter != iend; ++iter)
-//             {
-//                 if(iter->first == f2)
-//                 {
-//                     // unfolded place of p2
-//                     const Real3 p2 = to_absolute(b2, iter->second);
-//
-//                     const Real3 vtop2(p2 - vpos);
-//                     // check the angle between p1-v-p2 does not exceeds PI
-//                     if(dot_product(normal, cross_product(vtop1, vtop2)) <= 0)
-//                     {
-//                         possible_solutions[i] =
-//                             std::min(length_sq(p1 - p2), possible_solutions[i]);
-//                     }
-//                     break;
-//                 }
-//             }
-//         }
-//     }
-//     const boost::array<Real, 3>::const_iterator min_dist =
-//         std::min_element(possible_solutions.begin(), possible_solutions.end());
-//     if(*min_dist != std::numeric_limits<Real>::infinity())
-//     {
-//         return *min_dist;
-//     }
-// }
+Real3 HalfEdgePolygon::direction(
+        const std::pair<Real3, FaceID>& pos1,
+        const std::pair<Real3, FaceID>& pos2) const
+{
+    typedef utils::pair_first_element_unary_predicator<FaceID, Triangle>
+            face_finder_type;
+
+    const Real3& p1 = pos1.first;
+    const FaceID f1 = pos1.second;
+    const FaceID f2 = pos2.second;
+    const Barycentric b2 = to_barycentric(pos2.first, face_at(f2).triangle);
+
+    const face_data& face = face_at(f1);
+    const Real3&   normal = face.triangle.normal();
+
+    Real mindist2 = std::numeric_limits<Real>::infinity();
+    Real3 direction(0,0,0);
+    for(std::size_t i=0; i<3; ++i)
+    {
+        const VertexID vid = face.vertices[i];
+        const Real3& vpos(position_at(vid));
+        const Real3 vtop1(p1 - vpos);
+
+        { // counter clock wise
+            const std::vector<std::pair<FaceID, Triangle> >::const_iterator fi =
+                std::find_if(face.neighbor_ccw[i].begin(),
+                             face.neighbor_ccw[i].end(), face_finder_type(f2));
+            if(fi != face.neighbor_ccw[i].end())
+            {
+                // unfolded place of p2
+                const Real3 p2 = to_absolute(b2, fi->second);
+                const Real3 vtop2(p2 - vpos);
+                // check the angle between p1-v-p2 does not exceeds PI
+                if(dot_product(normal, cross_product(vtop1, vtop2)) >= 0)
+                {
+                    const Real3 dr = p2 - p1;
+                    const Real  d2 = length_sq(dr);
+                    if(d2 < mindist2)
+                    {
+                        mindist2  = d2;
+                        direction = dr;
+                    }
+                }
+                break;
+            }
+        }
+        { // clock wise
+            const std::vector<std::pair<FaceID, Triangle> >::const_iterator fi =
+                std::find_if(face.neighbor_cw[i].begin(),
+                             face.neighbor_cw[i].end(), face_finder_type(f2));
+            if(fi != face.neighbor_cw[i].end())
+            {
+                // unfolded place of p2
+                const Real3 p2 = to_absolute(b2, fi->second);
+                const Real3 vtop2(p2 - vpos);
+                // check the angle between p1-v-p2 does not exceeds PI
+                if(dot_product(normal, cross_product(vtop1, vtop2)) <= 0)
+                {
+                    const Real3 dr = p2 - p1;
+                    const Real  d2 = length_sq(dr);
+                    if(d2 < mindist2)
+                    {
+                        mindist2  = d2;
+                        direction = dr;
+                    }
+                }
+                break;
+            }
+        }
+    }
+    if(mindist2 == std::numeric_limits<Real>::infinity())
+    {
+        throw std::runtime_error("polygon::direction: couldn't find the min path");
+    }
+    return direction;
+}
 
 } // ecell4
