@@ -876,6 +876,21 @@ BOOST_AUTO_TEST_CASE(Polygon_plane_construction_from_triangles)
     const face_id_type f14 = *poly.find_face(v1, v20, v21);
 
     {
+        const edge_id_type e0_01 = *poly.find_edge(v0, v1);
+        const edge_id_type e0_20 = *poly.find_edge(v0, v20);
+        const edge_id_type e0_24 = *poly.find_edge(v0, v24);
+        const edge_id_type e0_04 = *poly.find_edge(v0, v4);
+        const edge_id_type e0_05 = *poly.find_edge(v0, v5);
+        const edge_id_type e0_06 = *poly.find_edge(v0, v6);
+        BOOST_CHECK_EQUAL(poly.opposite_of(poly.next_of(poly.next_of(e0_01))), e0_06);
+        BOOST_CHECK_EQUAL(poly.opposite_of(poly.next_of(poly.next_of(e0_06))), e0_05);
+        BOOST_CHECK_EQUAL(poly.opposite_of(poly.next_of(poly.next_of(e0_05))), e0_04);
+        BOOST_CHECK_EQUAL(poly.opposite_of(poly.next_of(poly.next_of(e0_04))), e0_24);
+        BOOST_CHECK_EQUAL(poly.opposite_of(poly.next_of(poly.next_of(e0_24))), e0_20);
+        BOOST_CHECK_EQUAL(poly.opposite_of(poly.next_of(poly.next_of(e0_20))), e0_01);
+    }
+
+    {
         const Real3 p1(0.5, 1.5, 5.0);
         const Real3 p2(1.5, 0.5, 5.0);
         BOOST_CHECK_CLOSE_FRACTION(poly.distance(
