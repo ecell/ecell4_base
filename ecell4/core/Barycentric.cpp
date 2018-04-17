@@ -6,9 +6,9 @@ namespace ecell4
 namespace detail
 {
 
-inline Real cross_section(const Barycentric& pos,
-                          const Barycentric& displacement,
-                          const std::size_t edge_idx)
+static inline Real cross_section(const Barycentric& pos,
+                                 const Barycentric& displacement,
+                                 const std::size_t edge_idx)
 {
     const std::size_t idx = (edge_idx==0) ? 2 : edge_idx-1;
     return -pos[idx] / displacement[idx];
@@ -36,12 +36,14 @@ first_cross_edge(const Barycentric& pos, const Barycentric& disp)
         {return std::make_pair(2, detail::cross_section(pos, disp, 2));}
         else if(npos[2] < 0.)
         {return std::make_pair(0, detail::cross_section(pos, disp, 0));}
-        else {throw std::logic_error("Polygon::crossed_edge: never reach here");}
+        else {throw std::logic_error("Polygon::cross_edge: never reach here");}
     }
     else // (+, -, -) or one of its permutations
     {
         if(npos[0] > 0. && npos[1] > 0. && npos[2] > 0) // not (+, +, +) case
-            throw std::invalid_argument("BDPolygon::crossed_edge");
+        {
+            throw std::invalid_argument("BDPolygon::cross_edge");
+        }
 
         if(npos[0] > 0.)
         {
