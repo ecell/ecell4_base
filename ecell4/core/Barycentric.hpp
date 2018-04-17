@@ -63,6 +63,11 @@ operator-(const Barycentric& lhs, const Barycentric& rhs) throw()
 {
     return Barycentric(lhs[0] - rhs[0], lhs[1] - rhs[1], lhs[2] - rhs[2]);
 }
+inline Barycentric
+operator*(const Barycentric& lhs, const Real rhs) throw()
+{
+    return Barycentric(lhs[0] * rhs, lhs[1] * rhs, lhs[2] * rhs);
+}
 
 // utility functions...
 
