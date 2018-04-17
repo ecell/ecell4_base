@@ -19,9 +19,9 @@ using ecell4::Real;
 using ecell4::Real3;
 using ecell4::Triangle;
 typedef ecell4::HalfEdgePolygon Polygon;
-typedef Polygon::face_id_type face_id_type;
-typedef Polygon::edge_id_type edge_id_type;
-typedef Polygon::vertex_id_type vertex_id_type;
+typedef Polygon::FaceID FaceID;
+typedef Polygon::EdgeID EdgeID;
+typedef Polygon::VertexID VertexID;
 
 bool check_equal(const Real3& lhs, const Real3& rhs, const Real tol)
 {
@@ -116,10 +116,10 @@ BOOST_AUTO_TEST_CASE(Polygon_tetrahedron_construction_from_triangles)
     BOOST_CHECK(static_cast<bool>(poly.find_vertex(tetrahedron::p3)));
     BOOST_CHECK(static_cast<bool>(poly.find_vertex(tetrahedron::p4)));
 
-    const vertex_id_type v1 = *poly.find_vertex(tetrahedron::p1);
-    const vertex_id_type v2 = *poly.find_vertex(tetrahedron::p2);
-    const vertex_id_type v3 = *poly.find_vertex(tetrahedron::p3);
-    const vertex_id_type v4 = *poly.find_vertex(tetrahedron::p4);
+    const VertexID v1 = *poly.find_vertex(tetrahedron::p1);
+    const VertexID v2 = *poly.find_vertex(tetrahedron::p2);
+    const VertexID v3 = *poly.find_vertex(tetrahedron::p3);
+    const VertexID v4 = *poly.find_vertex(tetrahedron::p4);
 
     BOOST_CHECK_SMALL(ecell4::length(
             poly.periodic_transpose(poly.position_at(v1), tetrahedron::p1) -
@@ -142,11 +142,11 @@ BOOST_AUTO_TEST_CASE(Polygon_tetrahedron_construction_from_triangles)
 
     // check all the outgoing_edges are terminated at the correct vertex.
     {
-        const std::vector<vertex_id_type> ans = boost::assign::list_of(v2)(v3)(v4);
+        const std::vector<VertexID> ans = boost::assign::list_of(v2)(v3)(v4);
 
-        std::vector<vertex_id_type> result; result.reserve(3);
-        const std::vector<edge_id_type> es = poly.outgoing_edges(v1);
-        for(typename std::vector<edge_id_type>::const_iterator
+        std::vector<VertexID> result; result.reserve(3);
+        const std::vector<EdgeID> es = poly.outgoing_edges(v1);
+        for(typename std::vector<EdgeID>::const_iterator
                 i(es.begin()), e(es.end()); i != e; ++i)
         {
             result.push_back(poly.target_of(*i));
@@ -156,11 +156,11 @@ BOOST_AUTO_TEST_CASE(Polygon_tetrahedron_construction_from_triangles)
                     ans.begin(), ans.end(), result.begin(), result.end()));
     }
     {
-        const std::vector<vertex_id_type> ans = boost::assign::list_of(v1)(v3)(v4);
+        const std::vector<VertexID> ans = boost::assign::list_of(v1)(v3)(v4);
 
-        std::vector<vertex_id_type> result; result.reserve(3);
-        const std::vector<edge_id_type> es = poly.outgoing_edges(v2);
-        for(typename std::vector<edge_id_type>::const_iterator
+        std::vector<VertexID> result; result.reserve(3);
+        const std::vector<EdgeID> es = poly.outgoing_edges(v2);
+        for(typename std::vector<EdgeID>::const_iterator
                 i(es.begin()), e(es.end()); i != e; ++i)
         {
             result.push_back(poly.target_of(*i));
@@ -170,11 +170,11 @@ BOOST_AUTO_TEST_CASE(Polygon_tetrahedron_construction_from_triangles)
                     ans.begin(), ans.end(), result.begin(), result.end()));
     }
     {
-        const std::vector<vertex_id_type> ans = boost::assign::list_of(v1)(v2)(v4);
+        const std::vector<VertexID> ans = boost::assign::list_of(v1)(v2)(v4);
 
-        std::vector<vertex_id_type> result; result.reserve(3);
-        const std::vector<edge_id_type> es = poly.outgoing_edges(v3);
-        for(typename std::vector<edge_id_type>::const_iterator
+        std::vector<VertexID> result; result.reserve(3);
+        const std::vector<EdgeID> es = poly.outgoing_edges(v3);
+        for(typename std::vector<EdgeID>::const_iterator
                 i(es.begin()), e(es.end()); i != e; ++i)
         {
             result.push_back(poly.target_of(*i));
@@ -184,11 +184,11 @@ BOOST_AUTO_TEST_CASE(Polygon_tetrahedron_construction_from_triangles)
                     ans.begin(), ans.end(), result.begin(), result.end()));
     }
     {
-        const std::vector<vertex_id_type> ans = boost::assign::list_of(v1)(v2)(v3);
+        const std::vector<VertexID> ans = boost::assign::list_of(v1)(v2)(v3);
 
-        std::vector<vertex_id_type> result; result.reserve(3);
-        const std::vector<edge_id_type> es = poly.outgoing_edges(v4);
-        for(typename std::vector<edge_id_type>::const_iterator
+        std::vector<VertexID> result; result.reserve(3);
+        const std::vector<EdgeID> es = poly.outgoing_edges(v4);
+        for(typename std::vector<EdgeID>::const_iterator
                 i(es.begin()), e(es.end()); i != e; ++i)
         {
             result.push_back(poly.target_of(*i));
@@ -200,11 +200,11 @@ BOOST_AUTO_TEST_CASE(Polygon_tetrahedron_construction_from_triangles)
 
     // check all the vertex are in contact with the correct set of faces.
     {
-        const std::vector<vertex_id_type> ans = boost::assign::list_of(v1)(v2)(v3);
+        const std::vector<VertexID> ans = boost::assign::list_of(v1)(v2)(v3);
 
-        std::vector<vertex_id_type> result; result.reserve(3);
-        const std::vector<edge_id_type> es = poly.outgoing_edges(v4);
-        for(typename std::vector<edge_id_type>::const_iterator
+        std::vector<VertexID> result; result.reserve(3);
+        const std::vector<EdgeID> es = poly.outgoing_edges(v4);
+        for(typename std::vector<EdgeID>::const_iterator
                 i(es.begin()), e(es.end()); i != e; ++i)
         {
             result.push_back(poly.target_of(*i));
@@ -228,30 +228,30 @@ BOOST_AUTO_TEST_CASE(Polygon_tetrahedron_construction_from_triangles)
     BOOST_CHECK(static_cast<bool>(poly.find_edge(v4, v2)));
     BOOST_CHECK(static_cast<bool>(poly.find_edge(v4, v3)));
 
-    const edge_id_type e12 = *poly.find_edge(v1, v2);
-    const edge_id_type e13 = *poly.find_edge(v1, v3);
-    const edge_id_type e14 = *poly.find_edge(v1, v4);
+    const EdgeID e12 = *poly.find_edge(v1, v2);
+    const EdgeID e13 = *poly.find_edge(v1, v3);
+    const EdgeID e14 = *poly.find_edge(v1, v4);
     BOOST_CHECK_EQUAL(poly.target_of(poly.next_of(poly.next_of(e12))), v1);
     BOOST_CHECK_EQUAL(poly.target_of(poly.next_of(poly.next_of(e13))), v1);
     BOOST_CHECK_EQUAL(poly.target_of(poly.next_of(poly.next_of(e14))), v1);
 
-    const edge_id_type e21 = *poly.find_edge(v2, v1);
-    const edge_id_type e23 = *poly.find_edge(v2, v3);
-    const edge_id_type e24 = *poly.find_edge(v2, v4);
+    const EdgeID e21 = *poly.find_edge(v2, v1);
+    const EdgeID e23 = *poly.find_edge(v2, v3);
+    const EdgeID e24 = *poly.find_edge(v2, v4);
     BOOST_CHECK_EQUAL(poly.target_of(poly.next_of(poly.next_of(e21))), v2);
     BOOST_CHECK_EQUAL(poly.target_of(poly.next_of(poly.next_of(e23))), v2);
     BOOST_CHECK_EQUAL(poly.target_of(poly.next_of(poly.next_of(e24))), v2);
 
-    const edge_id_type e31 = *poly.find_edge(v3, v1);
-    const edge_id_type e32 = *poly.find_edge(v3, v2);
-    const edge_id_type e34 = *poly.find_edge(v3, v4);
+    const EdgeID e31 = *poly.find_edge(v3, v1);
+    const EdgeID e32 = *poly.find_edge(v3, v2);
+    const EdgeID e34 = *poly.find_edge(v3, v4);
     BOOST_CHECK_EQUAL(poly.target_of(poly.next_of(poly.next_of(e31))), v3);
     BOOST_CHECK_EQUAL(poly.target_of(poly.next_of(poly.next_of(e32))), v3);
     BOOST_CHECK_EQUAL(poly.target_of(poly.next_of(poly.next_of(e34))), v3);
 
-    const edge_id_type e41 = *poly.find_edge(v4, v1);
-    const edge_id_type e42 = *poly.find_edge(v4, v2);
-    const edge_id_type e43 = *poly.find_edge(v4, v3);
+    const EdgeID e41 = *poly.find_edge(v4, v1);
+    const EdgeID e42 = *poly.find_edge(v4, v2);
+    const EdgeID e43 = *poly.find_edge(v4, v3);
     BOOST_CHECK_EQUAL(poly.target_of(poly.next_of(poly.next_of(e41))), v4);
     BOOST_CHECK_EQUAL(poly.target_of(poly.next_of(poly.next_of(e42))), v4);
     BOOST_CHECK_EQUAL(poly.target_of(poly.next_of(poly.next_of(e43))), v4);
@@ -332,10 +332,10 @@ BOOST_AUTO_TEST_CASE(Polygon_tetrahedron_construction_from_triangles)
 
 
     // test of distance
-    const face_id_type f1 = *(poly.find_face(v1, v2, v3));
-    const face_id_type f2 = *(poly.find_face(v1, v2, v4));
-    const face_id_type f3 = *(poly.find_face(v1, v3, v4));
-    const face_id_type f4 = *(poly.find_face(v2, v3, v4));
+    const FaceID f1 = *(poly.find_face(v1, v2, v3));
+    const FaceID f2 = *(poly.find_face(v1, v2, v4));
+    const FaceID f3 = *(poly.find_face(v1, v3, v4));
+    const FaceID f4 = *(poly.find_face(v2, v3, v4));
     {
         const Real3 p1(0, 0, 0);
         const Real3 p2(0, 0, 1);
@@ -459,12 +459,12 @@ BOOST_AUTO_TEST_CASE(Polygon_octahedron_construction_from_triangles)
     BOOST_CHECK(static_cast<bool>(poly.find_vertex(octahedron::p5)));
     BOOST_CHECK(static_cast<bool>(poly.find_vertex(octahedron::p6)));
 
-    const vertex_id_type v1 = *poly.find_vertex(octahedron::p1);
-    const vertex_id_type v2 = *poly.find_vertex(octahedron::p2);
-    const vertex_id_type v3 = *poly.find_vertex(octahedron::p3);
-    const vertex_id_type v4 = *poly.find_vertex(octahedron::p4);
-    const vertex_id_type v5 = *poly.find_vertex(octahedron::p5);
-    const vertex_id_type v6 = *poly.find_vertex(octahedron::p6);
+    const VertexID v1 = *poly.find_vertex(octahedron::p1);
+    const VertexID v2 = *poly.find_vertex(octahedron::p2);
+    const VertexID v3 = *poly.find_vertex(octahedron::p3);
+    const VertexID v4 = *poly.find_vertex(octahedron::p4);
+    const VertexID v5 = *poly.find_vertex(octahedron::p5);
+    const VertexID v6 = *poly.find_vertex(octahedron::p6);
 
     BOOST_CHECK_SMALL(ecell4::length(
             poly.periodic_transpose(poly.position_at(v1), octahedron::p1) -
@@ -495,12 +495,12 @@ BOOST_AUTO_TEST_CASE(Polygon_octahedron_construction_from_triangles)
 
     // check all the outgoing_edges are terminated at the correct vertex.
     /* v1 */{
-        const std::vector<vertex_id_type> ans =
+        const std::vector<VertexID> ans =
             boost::assign::list_of(v2)(v3)(v4)(v5);
 
-        std::vector<vertex_id_type> result; result.reserve(4);
-        const std::vector<edge_id_type> es = poly.outgoing_edges(v1);
-        for(typename std::vector<edge_id_type>::const_iterator
+        std::vector<VertexID> result; result.reserve(4);
+        const std::vector<EdgeID> es = poly.outgoing_edges(v1);
+        for(typename std::vector<EdgeID>::const_iterator
                 i(es.begin()), e(es.end()); i != e; ++i)
         {
             result.push_back(poly.target_of(*i));
@@ -510,12 +510,12 @@ BOOST_AUTO_TEST_CASE(Polygon_octahedron_construction_from_triangles)
                     ans.begin(), ans.end(), result.begin(), result.end()));
     }
     /* v2 */{
-        const std::vector<vertex_id_type> ans =
+        const std::vector<VertexID> ans =
             boost::assign::list_of(v1)(v3)(v5)(v6);
 
-        std::vector<vertex_id_type> result; result.reserve(4);
-        const std::vector<edge_id_type> es = poly.outgoing_edges(v2);
-        for(typename std::vector<edge_id_type>::const_iterator
+        std::vector<VertexID> result; result.reserve(4);
+        const std::vector<EdgeID> es = poly.outgoing_edges(v2);
+        for(typename std::vector<EdgeID>::const_iterator
                 i(es.begin()), e(es.end()); i != e; ++i)
         {
             result.push_back(poly.target_of(*i));
@@ -525,12 +525,12 @@ BOOST_AUTO_TEST_CASE(Polygon_octahedron_construction_from_triangles)
                     ans.begin(), ans.end(), result.begin(), result.end()));
     }
     /* v3 */{
-        const std::vector<vertex_id_type> ans =
+        const std::vector<VertexID> ans =
             boost::assign::list_of(v1)(v2)(v4)(v6);
 
-        std::vector<vertex_id_type> result; result.reserve(4);
-        const std::vector<edge_id_type> es = poly.outgoing_edges(v3);
-        for(typename std::vector<edge_id_type>::const_iterator
+        std::vector<VertexID> result; result.reserve(4);
+        const std::vector<EdgeID> es = poly.outgoing_edges(v3);
+        for(typename std::vector<EdgeID>::const_iterator
                 i(es.begin()), e(es.end()); i != e; ++i)
         {
             result.push_back(poly.target_of(*i));
@@ -540,12 +540,12 @@ BOOST_AUTO_TEST_CASE(Polygon_octahedron_construction_from_triangles)
                     ans.begin(), ans.end(), result.begin(), result.end()));
     }
     /* v4 */{
-        const std::vector<vertex_id_type> ans =
+        const std::vector<VertexID> ans =
             boost::assign::list_of(v1)(v3)(v5)(v6);
 
-        std::vector<vertex_id_type> result; result.reserve(4);
-        const std::vector<edge_id_type> es = poly.outgoing_edges(v4);
-        for(typename std::vector<edge_id_type>::const_iterator
+        std::vector<VertexID> result; result.reserve(4);
+        const std::vector<EdgeID> es = poly.outgoing_edges(v4);
+        for(typename std::vector<EdgeID>::const_iterator
                 i(es.begin()), e(es.end()); i != e; ++i)
         {
             result.push_back(poly.target_of(*i));
@@ -555,12 +555,12 @@ BOOST_AUTO_TEST_CASE(Polygon_octahedron_construction_from_triangles)
                     ans.begin(), ans.end(), result.begin(), result.end()));
     }
     /* v5 */{
-        const std::vector<vertex_id_type> ans =
+        const std::vector<VertexID> ans =
             boost::assign::list_of(v1)(v2)(v4)(v6);
 
-        std::vector<vertex_id_type> result; result.reserve(4);
-        const std::vector<edge_id_type> es = poly.outgoing_edges(v5);
-        for(typename std::vector<edge_id_type>::const_iterator
+        std::vector<VertexID> result; result.reserve(4);
+        const std::vector<EdgeID> es = poly.outgoing_edges(v5);
+        for(typename std::vector<EdgeID>::const_iterator
                 i(es.begin()), e(es.end()); i != e; ++i)
         {
             result.push_back(poly.target_of(*i));
@@ -570,12 +570,12 @@ BOOST_AUTO_TEST_CASE(Polygon_octahedron_construction_from_triangles)
                     ans.begin(), ans.end(), result.begin(), result.end()));
     }
     /* v6 */{
-        const std::vector<vertex_id_type> ans =
+        const std::vector<VertexID> ans =
             boost::assign::list_of(v2)(v3)(v4)(v5);
 
-        std::vector<vertex_id_type> result; result.reserve(4);
-        const std::vector<edge_id_type> es = poly.outgoing_edges(v6);
-        for(typename std::vector<edge_id_type>::const_iterator
+        std::vector<VertexID> result; result.reserve(4);
+        const std::vector<EdgeID> es = poly.outgoing_edges(v6);
+        for(typename std::vector<EdgeID>::const_iterator
                 i(es.begin()), e(es.end()); i != e; ++i)
         {
             result.push_back(poly.target_of(*i));
@@ -586,14 +586,14 @@ BOOST_AUTO_TEST_CASE(Polygon_octahedron_construction_from_triangles)
     }
 
     // test of distance
-    const face_id_type f1 = *(poly.find_face(v1, v2, v3));
-    const face_id_type f2 = *(poly.find_face(v1, v3, v4));
-    const face_id_type f3 = *(poly.find_face(v1, v4, v5));
-    const face_id_type f4 = *(poly.find_face(v1, v5, v2));
-    const face_id_type f5 = *(poly.find_face(v6, v2, v5));
-    const face_id_type f6 = *(poly.find_face(v6, v5, v4));
-    const face_id_type f7 = *(poly.find_face(v6, v4, v3));
-    const face_id_type f8 = *(poly.find_face(v6, v3, v2));
+    const FaceID f1 = *(poly.find_face(v1, v2, v3));
+    const FaceID f2 = *(poly.find_face(v1, v3, v4));
+    const FaceID f3 = *(poly.find_face(v1, v4, v5));
+    const FaceID f4 = *(poly.find_face(v1, v5, v2));
+    const FaceID f5 = *(poly.find_face(v6, v2, v5));
+    const FaceID f6 = *(poly.find_face(v6, v5, v4));
+    const FaceID f7 = *(poly.find_face(v6, v4, v3));
+    const FaceID f8 = *(poly.find_face(v6, v3, v2));
     {
         const Real3 p1 = (octahedron::p1 + octahedron::p2 + octahedron::p3) / 3.0;
         const Real3 p2 = (octahedron::p1 + octahedron::p4 + octahedron::p5) / 3.0;
@@ -723,10 +723,10 @@ BOOST_AUTO_TEST_CASE(Polygon_plane_construction_from_triangles)
 
     // check all the vertices has 6 outgoing-edges under the PBC
     {
-        const std::vector<vertex_id_type> vids = poly.list_vertex_ids();
+        const std::vector<VertexID> vids = poly.list_vertex_ids();
         assert(vids.size() == poly.vertex_size());
 
-        for(std::vector<vertex_id_type>::const_iterator
+        for(std::vector<VertexID>::const_iterator
                 i(vids.begin()), e(vids.end()); i!=e; ++i)
         {
             BOOST_CHECK_EQUAL(poly.outgoing_edges(*i).size(), 6u);
@@ -735,10 +735,10 @@ BOOST_AUTO_TEST_CASE(Polygon_plane_construction_from_triangles)
 
     // check normal vector
     {
-        const std::vector<face_id_type> fids = poly.list_face_ids();
+        const std::vector<FaceID> fids = poly.list_face_ids();
         assert(fids.size() == poly.face_size());
 
-        for(std::vector<face_id_type>::const_iterator
+        for(std::vector<FaceID>::const_iterator
                 i(fids.begin()), e(fids.end()); i!=e; ++i)
         {
             BOOST_CHECK_SMALL(poly.triangle_at(*i).normal()[0], 1e-8);
@@ -748,10 +748,10 @@ BOOST_AUTO_TEST_CASE(Polygon_plane_construction_from_triangles)
     }
     // check areas
     {
-        const std::vector<face_id_type> fids = poly.list_face_ids();
+        const std::vector<FaceID> fids = poly.list_face_ids();
         assert(fids.size() == poly.face_size());
 
-        for(std::vector<face_id_type>::const_iterator
+        for(std::vector<FaceID>::const_iterator
                 i(fids.begin()), e(fids.end()); i!=e; ++i)
         {
             BOOST_CHECK_CLOSE(poly.triangle_at(*i).area(), 2.0, 1e-8);
@@ -761,15 +761,15 @@ BOOST_AUTO_TEST_CASE(Polygon_plane_construction_from_triangles)
 
     // check opposite edges
     {
-        const std::vector<vertex_id_type> vids = poly.list_vertex_ids();
+        const std::vector<VertexID> vids = poly.list_vertex_ids();
         assert(vids.size() == poly.vertex_size());
 
-        for(std::vector<vertex_id_type>::const_iterator
+        for(std::vector<VertexID>::const_iterator
                 i(vids.begin()), e(vids.end()); i!=e; ++i)
         {
-            const vertex_id_type vid = *i;
-            std::vector<edge_id_type> const& outs = poly.outgoing_edges(vid);
-            for(std::vector<edge_id_type>::const_iterator
+            const VertexID vid = *i;
+            std::vector<EdgeID> const& outs = poly.outgoing_edges(vid);
+            for(std::vector<EdgeID>::const_iterator
                     oi(outs.begin()), oe(outs.end()); oi != oe; ++oi)
             {
                 BOOST_CHECK_EQUAL(poly.target_of(poly.opposite_of(*oi)), vid);
@@ -779,15 +779,15 @@ BOOST_AUTO_TEST_CASE(Polygon_plane_construction_from_triangles)
 
     // check next edges
     {
-        const std::vector<vertex_id_type> vids = poly.list_vertex_ids();
+        const std::vector<VertexID> vids = poly.list_vertex_ids();
         assert(vids.size() == poly.vertex_size());
 
-        for(std::vector<vertex_id_type>::const_iterator
+        for(std::vector<VertexID>::const_iterator
                 i(vids.begin()), e(vids.end()); i!=e; ++i)
         {
-            const vertex_id_type vid = *i;
-            std::vector<edge_id_type> const& outs = poly.outgoing_edges(vid);
-            for(std::vector<edge_id_type>::const_iterator
+            const VertexID vid = *i;
+            std::vector<EdgeID> const& outs = poly.outgoing_edges(vid);
+            for(std::vector<EdgeID>::const_iterator
                     oi(outs.begin()), oe(outs.end()); oi != oe; ++oi)
             {
                 BOOST_CHECK_EQUAL(
@@ -798,10 +798,10 @@ BOOST_AUTO_TEST_CASE(Polygon_plane_construction_from_triangles)
 
     // check apex angle; everywhere is flat
     {
-        const std::vector<vertex_id_type> vids = poly.list_vertex_ids();
+        const std::vector<VertexID> vids = poly.list_vertex_ids();
         assert(vids.size() == poly.vertex_size());
 
-        for(std::vector<vertex_id_type>::const_iterator
+        for(std::vector<VertexID>::const_iterator
                 i(vids.begin()), e(vids.end()); i!=e; ++i)
         {
             BOOST_CHECK_CLOSE(poly.apex_angle_at(*i), 2.0 * pi, 1e-8);
@@ -810,10 +810,10 @@ BOOST_AUTO_TEST_CASE(Polygon_plane_construction_from_triangles)
 
     // check tilt angle
     {
-        const std::vector<edge_id_type> eids = poly.list_edge_ids();
+        const std::vector<EdgeID> eids = poly.list_edge_ids();
         assert(eids.size() == poly.edge_size());
 
-        for(std::vector<edge_id_type>::const_iterator
+        for(std::vector<EdgeID>::const_iterator
                 i(eids.begin()), e(eids.end()); i!=e; ++i)
         {
             BOOST_CHECK_SMALL(poly.tilt_angle_at(*i), 1e-8);
@@ -836,52 +836,52 @@ BOOST_AUTO_TEST_CASE(Polygon_plane_construction_from_triangles)
     //       | 7\ | 9\ |
     //     10|___\11__\|12
 
-    const vertex_id_type v0  = *poly.find_vertex(Real3(0.0, 0.0, 5.0));
-    const vertex_id_type v1  = *poly.find_vertex(Real3(2.0, 0.0, 5.0));
-    const vertex_id_type v2  = *poly.find_vertex(Real3(4.0, 0.0, 5.0));
-    const vertex_id_type v4  = *poly.find_vertex(Real3(8.0, 0.0, 5.0));
+    const VertexID v0  = *poly.find_vertex(Real3(0.0, 0.0, 5.0));
+    const VertexID v1  = *poly.find_vertex(Real3(2.0, 0.0, 5.0));
+    const VertexID v2  = *poly.find_vertex(Real3(4.0, 0.0, 5.0));
+    const VertexID v4  = *poly.find_vertex(Real3(8.0, 0.0, 5.0));
 
-    const vertex_id_type v5  = *poly.find_vertex(Real3(0.0, 2.0, 5.0));
-    const vertex_id_type v6  = *poly.find_vertex(Real3(2.0, 2.0, 5.0));
-    const vertex_id_type v7  = *poly.find_vertex(Real3(4.0, 2.0, 5.0));
-    const vertex_id_type v9  = *poly.find_vertex(Real3(8.0, 2.0, 5.0));
+    const VertexID v5  = *poly.find_vertex(Real3(0.0, 2.0, 5.0));
+    const VertexID v6  = *poly.find_vertex(Real3(2.0, 2.0, 5.0));
+    const VertexID v7  = *poly.find_vertex(Real3(4.0, 2.0, 5.0));
+    const VertexID v9  = *poly.find_vertex(Real3(8.0, 2.0, 5.0));
 
-    const vertex_id_type v10 = *poly.find_vertex(Real3(0.0, 4.0, 5.0));
-    const vertex_id_type v11 = *poly.find_vertex(Real3(2.0, 4.0, 5.0));
-    const vertex_id_type v12 = *poly.find_vertex(Real3(4.0, 4.0, 5.0));
+    const VertexID v10 = *poly.find_vertex(Real3(0.0, 4.0, 5.0));
+    const VertexID v11 = *poly.find_vertex(Real3(2.0, 4.0, 5.0));
+    const VertexID v12 = *poly.find_vertex(Real3(4.0, 4.0, 5.0));
 
-    const vertex_id_type v20 = *poly.find_vertex(Real3(0.0, 8.0, 5.0));
-    const vertex_id_type v21 = *poly.find_vertex(Real3(2.0, 8.0, 5.0));
-    const vertex_id_type v24 = *poly.find_vertex(Real3(8.0, 8.0, 5.0));
+    const VertexID v20 = *poly.find_vertex(Real3(0.0, 8.0, 5.0));
+    const VertexID v21 = *poly.find_vertex(Real3(2.0, 8.0, 5.0));
+    const VertexID v24 = *poly.find_vertex(Real3(8.0, 8.0, 5.0));
 
-    const face_id_type f1 = *poly.find_face(v0, v5, v6);
-    const face_id_type f2 = *poly.find_face(v0, v1, v6);
+    const FaceID f1 = *poly.find_face(v0, v5, v6);
+    const FaceID f2 = *poly.find_face(v0, v1, v6);
 
-    const face_id_type f3 = *poly.find_face(v1, v6, v7);
-    const face_id_type f4 = *poly.find_face(v1, v2, v7);
+    const FaceID f3 = *poly.find_face(v1, v6, v7);
+    const FaceID f4 = *poly.find_face(v1, v2, v7);
 
-    const face_id_type f5 = *poly.find_face(v4, v5, v9);
-    const face_id_type f6 = *poly.find_face(v0, v4, v5);
+    const FaceID f5 = *poly.find_face(v4, v5, v9);
+    const FaceID f6 = *poly.find_face(v0, v4, v5);
 
-    const face_id_type f7 = *poly.find_face(v5, v10, v11);
-    const face_id_type f8 = *poly.find_face(v5, v6,  v11);
+    const FaceID f7 = *poly.find_face(v5, v10, v11);
+    const FaceID f8 = *poly.find_face(v5, v6,  v11);
 
-    const face_id_type f9  = *poly.find_face(v6, v11, v12);
-    const face_id_type f10 = *poly.find_face(v6, v7,  v12);
+    const FaceID f9  = *poly.find_face(v6, v11, v12);
+    const FaceID f10 = *poly.find_face(v6, v7,  v12);
 
-    const face_id_type f11 = *poly.find_face(v0, v4,  v24);
-    const face_id_type f12 = *poly.find_face(v0, v20, v24);
+    const FaceID f11 = *poly.find_face(v0, v4,  v24);
+    const FaceID f12 = *poly.find_face(v0, v20, v24);
 
-    const face_id_type f13 = *poly.find_face(v0, v1,  v20);
-    const face_id_type f14 = *poly.find_face(v1, v20, v21);
+    const FaceID f13 = *poly.find_face(v0, v1,  v20);
+    const FaceID f14 = *poly.find_face(v1, v20, v21);
 
     {
-        const edge_id_type e0_01 = *poly.find_edge(v0, v1);
-        const edge_id_type e0_20 = *poly.find_edge(v0, v20);
-        const edge_id_type e0_24 = *poly.find_edge(v0, v24);
-        const edge_id_type e0_04 = *poly.find_edge(v0, v4);
-        const edge_id_type e0_05 = *poly.find_edge(v0, v5);
-        const edge_id_type e0_06 = *poly.find_edge(v0, v6);
+        const EdgeID e0_01 = *poly.find_edge(v0, v1);
+        const EdgeID e0_20 = *poly.find_edge(v0, v20);
+        const EdgeID e0_24 = *poly.find_edge(v0, v24);
+        const EdgeID e0_04 = *poly.find_edge(v0, v4);
+        const EdgeID e0_05 = *poly.find_edge(v0, v5);
+        const EdgeID e0_06 = *poly.find_edge(v0, v6);
         BOOST_CHECK_EQUAL(poly.opposite_of(poly.next_of(poly.next_of(e0_01))), e0_06);
         BOOST_CHECK_EQUAL(poly.opposite_of(poly.next_of(poly.next_of(e0_06))), e0_05);
         BOOST_CHECK_EQUAL(poly.opposite_of(poly.next_of(poly.next_of(e0_05))), e0_04);

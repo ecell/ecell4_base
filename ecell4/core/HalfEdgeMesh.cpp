@@ -19,9 +19,9 @@ void HalfEdgePolygon::assign(const std::vector<Triangle>& ts)
     this->total_area_ = 0.0;
 
     // prepair temporal data storage
-    typedef std::pair<face_id_type, std::size_t>          fid_vidx_pair;
+    typedef std::pair<FaceID, std::size_t>          fid_vidx_pair;
     typedef std::pair<Real3, std::vector<fid_vidx_pair> > tmp_vtx_type;
-    typedef boost::container::flat_map<vertex_id_type, tmp_vtx_type> tmp_vertex_map;
+    typedef boost::container::flat_map<VertexID, tmp_vtx_type> tmp_vertex_map;
     tmp_vertex_map tmp_vtxs;
 
     // first, generate (FaceIDs for all triangles) and (EdgeIDs for all Edges).
@@ -32,14 +32,14 @@ void HalfEdgePolygon::assign(const std::vector<Triangle>& ts)
         const Triangle& triangle = *t_iter;
         this->total_area_ += triangle.area();
 
-        const face_id_type fid(faces_.size());
+        const FaceID fid(faces_.size());
         face_data fd;
         fd.triangle = triangle;
 
         for(std::size_t i=0; i<3; ++i)
         {
             const Real3& v1 = triangle.vertices()[i];
-            boost::optional<vertex_id_type> found_vtx = boost::none;
+            boost::optional<VertexID> found_vtx = boost::none;
 
             // find near vertex
             for(tmp_vertex_map::iterator
@@ -65,7 +65,7 @@ void HalfEdgePolygon::assign(const std::vector<Triangle>& ts)
             }
             if(!found_vtx) // new vertices! add VertexID.
             {
-                const vertex_id_type new_vid(tmp_vtxs.size());
+                const VertexID new_vid(tmp_vtxs.size());
                 tmp_vtxs[new_vid] = std::make_pair(v1,
                         std::vector<fid_vidx_pair>(1, std::make_pair(fid, i)));
                 found_vtx = new_vid;
@@ -78,7 +78,7 @@ void HalfEdgePolygon::assign(const std::vector<Triangle>& ts)
         {
             // in this point, edge length and direction are not fixed (because
             // vertex positions are corrected after all the faces are assigned).
-            const edge_id_type eid(edges_.size());
+            const EdgeID eid(edges_.size());
             edge_data ed;
             ed.face   = fid;
             ed.target = fd.vertices[i==2?0:i+1];
@@ -99,7 +99,7 @@ void HalfEdgePolygon::assign(const std::vector<Triangle>& ts)
     for(tmp_vertex_map::const_iterator
             vi(tmp_vtxs.begin()), ve(tmp_vtxs.end()); vi != ve; ++vi)
     {
-        const vertex_id_type vid = vi->first;
+        const VertexID vid = vi->first;
         const Real3          pos = vi->second.first;
         const std::vector<fid_vidx_pair>& face_pos = vi->second.second;
 
@@ -110,7 +110,7 @@ void HalfEdgePolygon::assign(const std::vector<Triangle>& ts)
         for(std::vector<fid_vidx_pair>::const_iterator
                 i(face_pos.begin()), e(face_pos.end()); i!=e; ++i)
         {
-            const face_id_type fid = i->first;
+            const FaceID fid = i->first;
             const std::size_t  idx = i->second;
             face_data& fd = this->faces_.at(fid);
 
@@ -143,7 +143,7 @@ void HalfEdgePolygon::assign(const std::vector<Triangle>& ts)
         const face_data& fd = *fi;
         for(std::size_t i=0; i<3; ++i)
         {
-            const edge_id_type eid = fd.edges[i];
+            const EdgeID eid = fd.edges[i];
             this->edges_.at(eid).length    = fd.triangle.length_of_edge_at(i);
             this->edges_.at(eid).direction = fd.triangle.edge_at(i);
         }
@@ -152,26 +152,26 @@ void HalfEdgePolygon::assign(const std::vector<Triangle>& ts)
     // search pairs of opposite edges & calculate edge.tilt.
     for(std::size_t i=0; i<edges_.size(); ++i)
     {
-        const edge_id_type   eid(i);
-        const vertex_id_type start  = this->target_of(eid);
-        const vertex_id_type target = this->target_of(
+        const EdgeID   eid(i);
+        const VertexID start  = this->target_of(eid);
+        const VertexID target = this->target_of(
                 this->next_of(this->next_of(eid)));
 
         bool opposite_found = false;
-        const std::vector<std::pair<edge_id_type, Real> >& vd =
+        const std::vector<std::pair<EdgeID, Real> >& vd =
             this->vertices_.at(start).outgoing_edges;
 
-        for(std::vector<std::pair<edge_id_type, Real> >::const_iterator
+        for(std::vector<std::pair<EdgeID, Real> >::const_iterator
                 iter(vd.begin()), iend(vd.end()); iter != iend; ++iter)
         {
-            const edge_id_type outgoing = iter->first;
+            const EdgeID outgoing = iter->first;
             if(this->target_of(outgoing) == target)
             {
                 // found opposite edge! calculate tilt...
                 this->edge_at(eid).opposite_edge = outgoing;
 
-                const face_id_type fid1 = face_of(eid);
-                const face_id_type fid2 = face_of(outgoing);
+                const FaceID fid1 = face_of(eid);
+                const FaceID fid2 = face_of(outgoing);
                 const Real3 n1 = this->faces_.at(fid1).triangle.normal();
                 const Real3 n2 = this->faces_.at(fid2).triangle.normal();
                 const Real3 cr = cross_product(this->edge_at(eid).direction, n1);
@@ -194,7 +194,7 @@ void HalfEdgePolygon::assign(const std::vector<Triangle>& ts)
         vertex_data& vtx = this->vertices_[i];
 
         const std::size_t num_edges = vtx.outgoing_edges.size();
-        std::vector<edge_id_type> outgoing_edges_tmp(vtx.outgoing_edges.size());
+        std::vector<EdgeID> outgoing_edges_tmp(vtx.outgoing_edges.size());
         for(std::size_t idx=0; idx<vtx.outgoing_edges.size(); ++idx)
         {
             outgoing_edges_tmp[idx] = vtx.outgoing_edges[idx].first;
@@ -202,12 +202,12 @@ void HalfEdgePolygon::assign(const std::vector<Triangle>& ts)
         vtx.outgoing_edges.clear();
 
         Real total_angle = 0.0;
-        const edge_id_type start = outgoing_edges_tmp.front();
-        edge_id_type current = start;
+        const EdgeID start = outgoing_edges_tmp.front();
+        EdgeID current = start;
         do
         {
             {
-                const std::vector<edge_id_type>::iterator found = std::find(
+                const std::vector<EdgeID>::iterator found = std::find(
                     outgoing_edges_tmp.begin(), outgoing_edges_tmp.end(), current);
                 outgoing_edges_tmp.erase(found);
             }
@@ -244,7 +244,7 @@ void HalfEdgePolygon::assign(const std::vector<Triangle>& ts)
         face_data& face = *fi;
         for(std::size_t i=0; i<3; ++i)
         {
-            const vertex_id_type vid = face.vertices[i];
+            const VertexID vid = face.vertices[i];
             const Real3 v_pos        = face.triangle.vertex_at(i);
             const Real  offset_angle = face.triangle.angle_at(i);
             const Real3 normal       = face.triangle.normal();
@@ -254,12 +254,12 @@ void HalfEdgePolygon::assign(const std::vector<Triangle>& ts)
                 const Real3 ref_edge = face.triangle.edge_at(i==0?2:i-1) /
                     (-length(face.triangle.edge_at(i==0?2:i-1)));
 
-                edge_id_type current_edge  = face.edges[i];
+                EdgeID current_edge  = face.edges[i];
                 Real         current_angle = 0.0;
                 do
                 {
                     current_edge = opposite_of(next_of(next_of(current_edge)));
-                    const face_id_type fid  = face_of(current_edge);
+                    const FaceID fid  = face_of(current_edge);
 
                     const std::size_t vidx0 = this->face_at(fid).index_of(vid);
                     const std::size_t vidx1 = this->face_at(fid).index_of(
@@ -292,12 +292,12 @@ void HalfEdgePolygon::assign(const std::vector<Triangle>& ts)
                 const Real3 ref_edge = face.triangle.edge_at(i) /
                     length(face.triangle.edge_at(i));
 
-                edge_id_type current_edge  = face.edges[i];
+                EdgeID current_edge  = face.edges[i];
                 Real         current_angle = 0.0;
                 do
                 {
                     current_edge  = next_of(opposite_of(current_edge));
-                    const face_id_type fid  = face_of(current_edge);
+                    const FaceID fid  = face_of(current_edge);
 
                     const std::size_t vidx0 = this->face_at(fid).index_of(vid);
                     const std::size_t vidx1 = this->face_at(fid).index_of(
@@ -328,12 +328,12 @@ void HalfEdgePolygon::assign(const std::vector<Triangle>& ts)
 }
 
 Real HalfEdgePolygon::distance_sq(
-        const std::pair<Real3, face_id_type>& pos1,
-        const std::pair<Real3, face_id_type>& pos2) const
+        const std::pair<Real3, FaceID>& pos1,
+        const std::pair<Real3, FaceID>& pos2) const
 {
     const Real3&       p1 = pos1.first;
-    const face_id_type f1 = pos1.second;
-    const face_id_type f2 = pos2.second;
+    const FaceID f1 = pos1.second;
+    const FaceID f2 = pos2.second;
     const Barycentric  b2 = to_barycentric(pos2.first, face_at(f2).triangle);
 
     const face_data& face = face_at(f1);
@@ -344,12 +344,12 @@ Real HalfEdgePolygon::distance_sq(
 
     for(std::size_t i=0; i<3; ++i)
     {
-        const vertex_id_type vid = face.vertices[i];
+        const VertexID vid = face.vertices[i];
         const Real3& vpos(position_at(vid));
         const Real3 vtop1(p1 - vpos);
 
         { // counter clock wise
-            for(std::vector<std::pair<face_id_type, Triangle> >::const_iterator
+            for(std::vector<std::pair<FaceID, Triangle> >::const_iterator
                     iter(face.neighbor_ccw[i].begin()),
                     iend(face.neighbor_ccw[i].end()); iter != iend; ++iter)
             {
@@ -368,7 +368,7 @@ Real HalfEdgePolygon::distance_sq(
             }
         }
         { // clock wise
-            for(std::vector<std::pair<face_id_type, Triangle> >::const_iterator
+            for(std::vector<std::pair<FaceID, Triangle> >::const_iterator
                     iter(face.neighbor_cw[i].begin()),
                     iend(face.neighbor_cw[i].end()); iter != iend; ++iter)
             {
@@ -396,16 +396,16 @@ Real HalfEdgePolygon::distance_sq(
         return *min_dist;
     }
 
-    boost::optional<vertex_id_type> connected = boost::none;
+    boost::optional<VertexID> connected = boost::none;
     // search f2 in the connected faces (if the apex angle of the vertex
     // exceeded 2PI, the minimum path can be the path that goes through
     // the vertex).
     for(std::size_t i=0; i<3; ++i)
     {
-        const vertex_id_type vid = face.vertices[i];
-        const std::vector<std::pair<edge_id_type, Real> >&
+        const VertexID vid = face.vertices[i];
+        const std::vector<std::pair<EdgeID, Real> >&
             oes = this->vertex_at(vid).outgoing_edges;
-        for(std::vector<std::pair<edge_id_type, Real> >::const_iterator
+        for(std::vector<std::pair<EdgeID, Real> >::const_iterator
                 iter(oes.begin()), iend(oes.end()); iter!=iend; ++iter)
         {
             if(face_of(iter->first) == f2)
@@ -426,5 +426,77 @@ Real HalfEdgePolygon::distance_sq(
     }
     return std::numeric_limits<Real>::infinity();
 }
+
+// Real HalfEdgePolygon::direction(
+//         const std::pair<Real3, FaceID>& pos1,
+//         const std::pair<Real3, FaceID>& pos2) const
+// {
+//     const Real3&       p1 = pos1.first;
+//     const FaceID f1 = pos1.second;
+//     const FaceID f2 = pos2.second;
+//     const Barycentric  b2 = to_barycentric(pos2.first, face_at(f2).triangle);
+//
+//     const face_data& face = face_at(f1);
+//     const Real3&   normal = face.triangle.normal();
+//
+//     boost::array<Real, 3> possible_solutions;
+//     possible_solutions.fill(std::numeric_limits<Real>::infinity());
+//
+//     for(std::size_t i=0; i<3; ++i)
+//     {
+//         const VertexID vid = face.vertices[i];
+//         const Real3& vpos(position_at(vid));
+//         const Real3 vtop1(p1 - vpos);
+//
+//         { // counter clock wise
+//             const std::vector<std::pair<FaceID, Triangle>
+//                 >::const_iterator f = std::find_if(
+//                     face.neighbor_ccw[i].begin(), face.neighbor_ccw[i].end(),
+//                     utils::pair_first_element_unary_predicator<FaceID, Triangle>(f2)
+//                     );
+//             {
+//                 if(iter->first == f2)
+//                 {
+//                     // unfolded place of p2
+//                     const Real3 p2 = to_absolute(b2, iter->second);
+//                     const Real3 vtop2(p2 - vpos);
+//                     // check the angle between p1-v-p2 does not exceeds PI
+//                     if(dot_product(normal, cross_product(vtop1, vtop2)) >= 0)
+//                     {
+//                         possible_solutions[i] = length_sq(p1 - p2);
+//                     }
+//                     break;
+//                 }
+//             }
+//         }
+//         { // clock wise
+//             for(std::vector<std::pair<FaceID, Triangle> >::const_iterator
+//                     iter(face.neighbor_cw[i].begin()),
+//                     iend(face.neighbor_cw[i].end()); iter != iend; ++iter)
+//             {
+//                 if(iter->first == f2)
+//                 {
+//                     // unfolded place of p2
+//                     const Real3 p2 = to_absolute(b2, iter->second);
+//
+//                     const Real3 vtop2(p2 - vpos);
+//                     // check the angle between p1-v-p2 does not exceeds PI
+//                     if(dot_product(normal, cross_product(vtop1, vtop2)) <= 0)
+//                     {
+//                         possible_solutions[i] =
+//                             std::min(length_sq(p1 - p2), possible_solutions[i]);
+//                     }
+//                     break;
+//                 }
+//             }
+//         }
+//     }
+//     const boost::array<Real, 3>::const_iterator min_dist =
+//         std::min_element(possible_solutions.begin(), possible_solutions.end());
+//     if(*min_dist != std::numeric_limits<Real>::infinity())
+//     {
+//         return *min_dist;
+//     }
+// }
 
 } // ecell4
