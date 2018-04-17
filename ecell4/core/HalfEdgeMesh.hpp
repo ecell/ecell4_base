@@ -213,6 +213,12 @@ class HalfEdgePolygon : public Shape
         return retval;
     }
 
+    std::vector<std::pair<EdgeID, Real> > const&
+    outgoing_edge_and_angles(const VertexID vid) const
+    {
+        return this->vertex_at(vid).outgoing_edges;
+    }
+
     // accessor ---------------------------------------------------------------
 
     Real apex_angle_at(const VertexID& vid) const
@@ -469,51 +475,107 @@ class HalfEdgePolygon : public Shape
 };
 
 
-// /********************** free functions to use a Polygon **********************/
-//
-// namespace polygon
-// {
-//
-// template<typename T1, typename T2, typename T3, typename s1idT, typename s2idT>
-// inline Real distance(const Polygon<T1, T2, T3>& p,
-//         const std::pair<Real3, s1idT>& p1, const std::pair<Real3, s2idT>& p2)
-// {
-//     return p.distance(p1, p2);
-// }
-// template<typename T1, typename T2, typename T3, typename s1idT, typename s2idT>
-// inline Real distance_sq(const Polygon<T1, T2, T3>& p,
-//         const std::pair<Real3, s1idT>& p1, const std::pair<Real3, s2idT>& p2)
-// {
-//     return p.distance_sq(p1, p2);
-// }
-// template<typename T1, typename T2, typename T3, typename s1idT, typename s2idT>
-// inline Real3 direction(const Polygon<T1, T2, T3>& p,
-//         const std::pair<Real3, sidT1>& p1, const std::pair<Real3, sidT2>& p2)
-// {
-//     return p.direction(p1, p2);
-// }
-//
-// template<typename T1, typename T2, typename T3>
-// std::size_t travel(const Polygon<T1, T2, T3>& p,
-//         std::pair<Real3, typename Polygon<T1, T2, T3>::FaceID>& pos,
-//         Real3& disp, std::size_t max_move_count = 10)
-// {
-//     pos = p.move_on_surface(pos, disp, max_move_count);
-//     return max_move_count;
-// }
-//
-// template<typename T1, typename T2, typename T3>
-// inline std::pair<Real3, typename Polygon<T1, T2, T3>::FaceID>
-// roll(const Polygon<T1, T2, T3>& p,
-//      const std::pair<Real3, typename Polygon<T1, T2, T3>::FaceID>& pos,
-//      const typename Polygon<T1, T2, T3>::VertexID vid,
-//      const Real r, const Real theta)
-// {
-//     return p.roll_around_vertex(pos, r, theta, vid);
-// }
-//
-// } // polygon
-} // ecell4
+/********************** free functions to use a Polygon **********************/
 
+namespace polygon
+{
+
+inline Real distance(const HalfEdgePolygon& p,
+        const std::pair<Real3, HalfEdgePolygon::FaceID>& p1,
+        const std::pair<Real3, HalfEdgePolygon::FaceID>& p2)
+{
+    return p.distance(p1, p2);
+}
+inline Real distance_sq(const HalfEdgePolygon& p,
+        const std::pair<Real3, HalfEdgePolygon::FaceID>& p1,
+        const std::pair<Real3, HalfEdgePolygon::FaceID>& p2)
+{
+    return p.distance_sq(p1, p2);
+}
+inline Real3 direction(const HalfEdgePolygon& p,
+        const std::pair<Real3, HalfEdgePolygon::FaceID>& p1,
+        const std::pair<Real3, HalfEdgePolygon::FaceID>& p2)
+{
+    return p.direction(p1, p2);
+}
+
+template<typename T1, typename T2, typename T3>
+std::pair<Real3, HalfEdgePolygon::FaceID> travel(const HalfEdgePolygon& p,
+        const std::pair<Real3, HalfEdgePolygon::FaceID>& pos, const Real3& disp)
+{
+    return p.travel(pos, disp);
+}
+
+// for sGFRD
+inline std::pair<Real3, HalfEdgePolygon::FaceID>
+roll(const HalfEdgePolygon& poly,
+     const std::pair<Real3, HalfEdgePolygon::FaceID>& pos,
+     const HalfEdgePolygon::VertexID vid, const Real r, const Real theta_)
+{
+    if(theta_ == 0.0)
+    {
+        return pos;
+    }
+    const Real apex_angle = poly.apex_angle_at(vid);
+    const Real3&     vpos = poly.position_at(vid);
+    const Real      theta = (theta_ > 0) ? theta_ : theta_ + apex_angle;
+
+    typedef HalfEdgePolygon::FaceID   FaceID;
+    typedef HalfEdgePolygon::EdgeID   EdgeID;
+    typedef HalfEdgePolygon::VertexID VertexID;
+
+    std::vector<std::pair<EdgeID, Real> > const& outedges =
+        poly.outgoing_edge_and_angles(vid);
+
+    std::vector<std::pair<EdgeID, Real> >::const_iterator current_edge;
+    Real   current_angle = 0.0;
+    for(std::vector<std::pair<EdgeID, Real> >::const_iterator
+            i(outedges.begin()), e(outedges.end()); i!=e; ++i)
+    {
+        if(poly.face_of(i->first) == pos.second)
+        {
+            current_edge = i;
+            break;
+        }
+        current_angle += i->second;
+    }
+    assert(theta <= apex_angle);
+
+    const Real pre_angle =
+        calc_angle(poly.direction_of(current_edge->first), pos.first - vpos);
+    current_angle += pre_angle;
+
+    Real current_theta = std::numeric_limits<Real>::infinity();
+    if(theta > apex_angle - current_angle)
+    {
+        // retrace
+        current_theta = theta - apex_angle + pre_angle;
+        while(current_theta < 0)
+        {
+            --current_edge;
+            current_theta += current_edge->second;
+        }
+    }
+    else
+    {
+        // advance
+        current_theta = theta + pre_angle;
+        while(current_theta - current_edge->second > 0)
+        {
+            current_theta -= current_edge->second;
+            ++current_edge;
+        }
+    }
+    const FaceID new_fid = poly.face_of(current_edge->first);
+    const Real3& normal  = poly.triangle_at(new_fid).normal();
+
+    Real3 direction =
+        rotate(current_theta, normal, poly.direction_of(current_edge->first));
+    direction *= (1.0 / length(direction));
+    return std::make_pair(poly.apply_boundary(vpos + direction * r), new_fid);
+}
+
+} // polygon
+} // ecell4
 #undef ECELL4_STRONG_TYPEDEF
 #endif// ECELL4_POLYGON
