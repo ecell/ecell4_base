@@ -907,10 +907,42 @@ BOOST_AUTO_TEST_CASE(Polygon_plane_construction_from_triangles)
         BOOST_CHECK_CLOSE_FRACTION(poly.distance(
             std::make_pair(p1, f1), std::make_pair(p2, f11)),
             length(poly.periodic_transpose(p1, p2) - p2), 1e-8);
-
-        // failed!
         BOOST_CHECK_CLOSE_FRACTION(poly.distance(
             std::make_pair(p2, f11), std::make_pair(p1, f1)),
             length(poly.periodic_transpose(p1, p2) - p2), 1e-8);
+    }
+
+    {
+        const Real3 p1(0.5, 1.5, 5.0);
+        const Real3 p2(1.5, 0.5, 5.0);
+
+        const Real3 v1to2 = poly.direction(
+                std::make_pair(p1, f1), std::make_pair(p2, f2));
+        const Real3 v2to1 = poly.direction(
+                std::make_pair(p2, f2), std::make_pair(p1, f1));
+        BOOST_CHECK_CLOSE(v1to2[0],  1.0, 1e-6);
+        BOOST_CHECK_CLOSE(v1to2[1], -1.0, 1e-6);
+        BOOST_CHECK_SMALL(v1to2[2], 1e-6);
+
+        BOOST_CHECK_CLOSE(v2to1[0], -1.0, 1e-6);
+        BOOST_CHECK_CLOSE(v2to1[1],  1.0, 1e-6);
+        BOOST_CHECK_SMALL(v2to1[2], 1e-6);
+    }
+
+    {
+        const Real3 p1(0.5, 1.5, 5.0);
+        const Real3 p2(8.5, 9.5, 5.0);
+        const Real3 v1to2 = poly.direction(
+            std::make_pair(p1, f1), std::make_pair(p2, f11));
+        const Real3 v2to1 = poly.direction(
+            std::make_pair(p2, f11), std::make_pair(p1, f1));
+
+        BOOST_CHECK_CLOSE(v1to2[0], -2.0, 1e-6);
+        BOOST_CHECK_CLOSE(v1to2[1], -2.0, 1e-6);
+        BOOST_CHECK_SMALL(v1to2[2], 1e-6);
+
+        BOOST_CHECK_CLOSE(v2to1[0], 2.0, 1e-6);
+        BOOST_CHECK_CLOSE(v2to1[1], 2.0, 1e-6);
+        BOOST_CHECK_SMALL(v2to1[2], 1e-6);
     }
 }
