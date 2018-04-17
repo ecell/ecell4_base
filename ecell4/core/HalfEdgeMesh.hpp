@@ -156,9 +156,9 @@ class HalfEdgePolygon : public Shape
     // tolerances are used to detect the same vertices in different triangles.
     void assign(const std::vector<Triangle>& ts);
 
-//     // move `pos` to `pos + disp`.
-//     std::pair<Real3, FaceID>
-//     travel(const std::pair<Real3, FaceID>& pos, const Real3& disp) const;
+    // move `pos` to `pos + disp`.
+    std::pair<Real3, FaceID>
+    travel(const std::pair<Real3, FaceID>& pos, const Real3& disp) const;
 
     // pos1 -> pos2 <=> pos2 - pos1
     Real3 direction (const std::pair<Real3, FaceID>& pos1,
@@ -199,13 +199,7 @@ class HalfEdgePolygon : public Shape
     {return this->face_at(fid).vertices;}
 
     // edge ids that starts from the vertex
-    // XXX: it returns rvalue, you cannot use it with the following form
-    // for(std::vector<EdgeID>::const_iterator
-    //     i(poly.outgoing_edges().begin()), e(poly.outgoing_edges().end();
-    //     i!=e; ++i)
-    // {
-    //     /* do some stuff ...*/;
-    // }
+    // XXX: it returns rvalue, so the iterator cannot be used
     std::vector<EdgeID> outgoing_edges(const VertexID vid) const
     {
         const std::vector<std::pair<EdgeID, Real> >&
