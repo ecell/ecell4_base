@@ -650,6 +650,59 @@ BOOST_AUTO_TEST_CASE(Polygon_octahedron_construction_from_triangles)
                 poly.distance(std::make_pair(p2, f6), std::make_pair(p1, f1)),
                 std::numeric_limits<Real>::infinity());
     }
+
+    // travel
+    {
+        const Real3 p1 = (octahedron::p1 + octahedron::p2 + octahedron::p3) / 3.0;
+        const Real3 p2 = (octahedron::p2 * 2 + octahedron::p3 * 2 - octahedron::p1) / 3.0;
+
+        const std::pair<Real3, FaceID> p2_ =
+            poly.travel(std::make_pair(p1, f1), p2 - p1);
+
+        BOOST_CHECK_EQUAL(p2_.second, f8);
+
+        const Real3 dst = (octahedron::p2 + octahedron::p3 + octahedron::p6) / 3.0;
+        BOOST_CHECK_CLOSE(p2_.first[0], dst[0], 1e-6);
+        BOOST_CHECK_CLOSE(p2_.first[1], dst[1], 1e-6);
+        BOOST_CHECK_CLOSE(p2_.first[2], dst[2], 1e-6);
+
+        const Real dist = poly.distance(std::make_pair(p1, f1), p2_);
+        BOOST_CHECK_CLOSE(dist, length(p2 - p1), 1e-6);
+    }
+    {
+        const Real3 p1 = (octahedron::p1 + octahedron::p2 + octahedron::p3) / 3.0;
+        const Real3 p2 = (octahedron::p1 * 2 + octahedron::p2 * 2 - octahedron::p3) / 3.0;
+
+        const std::pair<Real3, FaceID> p2_ =
+            poly.travel(std::make_pair(p1, f1), p2 - p1);
+
+        BOOST_CHECK_EQUAL(p2_.second, f4);
+
+        const Real3 dst = (octahedron::p1 + octahedron::p2 + octahedron::p5) / 3.0;
+        BOOST_CHECK_CLOSE(p2_.first[0], dst[0], 1e-6);
+        BOOST_CHECK_CLOSE(p2_.first[1], dst[1], 1e-6);
+        BOOST_CHECK_CLOSE(p2_.first[2], dst[2], 1e-6);
+
+        const Real dist = poly.distance(std::make_pair(p1, f1), p2_);
+        BOOST_CHECK_CLOSE(dist, length(p2 - p1), 1e-6);
+    }
+    {
+        const Real3 p1 = (octahedron::p1 + octahedron::p2 + octahedron::p3) / 3.0;
+        const Real3 p2 = (octahedron::p1 * 2 + octahedron::p3 * 2 - octahedron::p2) / 3.0;
+
+        const std::pair<Real3, FaceID> p2_ =
+            poly.travel(std::make_pair(p1, f1), p2 - p1);
+
+        BOOST_CHECK_EQUAL(p2_.second, f2);
+
+        const Real3 dst = (octahedron::p1 + octahedron::p3 + octahedron::p4) / 3.0;
+        BOOST_CHECK_CLOSE(p2_.first[0], dst[0], 1e-6);
+        BOOST_CHECK_CLOSE(p2_.first[1], dst[1], 1e-6);
+        BOOST_CHECK_CLOSE(p2_.first[2], dst[2], 1e-6);
+
+        const Real dist = poly.distance(std::make_pair(p1, f1), p2_);
+        BOOST_CHECK_CLOSE(dist, length(p2 - p1), 1e-6);
+    }
 }
 
 //! test data 3: plane
@@ -944,5 +997,48 @@ BOOST_AUTO_TEST_CASE(Polygon_plane_construction_from_triangles)
         BOOST_CHECK_CLOSE(v2to1[0], 2.0, 1e-6);
         BOOST_CHECK_CLOSE(v2to1[1], 2.0, 1e-6);
         BOOST_CHECK_SMALL(v2to1[2], 1e-6);
+    }
+
+    // traveling ----------------------------------------------------------
+
+    {
+        const Real3 p1(0.5, 1.5, 5.0);
+        const Real3 p2(1.5, 0.5, 5.0);
+
+        const std::pair<Real3, FaceID> p2_ =
+            poly.travel(std::make_pair(p1, f1), Real3(1.0, -1.0, 0.0));
+        const std::pair<Real3, FaceID> p1_ =
+            poly.travel(std::make_pair(p2, f2), Real3(-1.0, 1.0, 0.0));
+
+        BOOST_CHECK_EQUAL(p1_.second, f1);
+        BOOST_CHECK_EQUAL(p2_.second, f2);
+
+        BOOST_CHECK_CLOSE(p1_.first[0], p1[0], 1e-6);
+        BOOST_CHECK_CLOSE(p1_.first[1], p1[1], 1e-6);
+        BOOST_CHECK_CLOSE(p1_.first[2], p1[2], 1e-6);
+        BOOST_CHECK_CLOSE(p2_.first[0], p2[0], 1e-6);
+        BOOST_CHECK_CLOSE(p2_.first[1], p2[1], 1e-6);
+        BOOST_CHECK_CLOSE(p2_.first[2], p2[2], 1e-6);
+
+    }
+
+    {
+        const Real3 p1(0.5, 1.5, 5.0);
+        const Real3 p2(8.5, 9.5, 5.0);
+
+        const std::pair<Real3, FaceID> p2_ =
+            poly.travel(std::make_pair(p1, f1),  Real3(-2.0, -2.0, 0.0));
+        const std::pair<Real3, FaceID> p1_ =
+            poly.travel(std::make_pair(p2, f11), Real3( 2.0,  2.0, 0.0));
+
+        BOOST_CHECK_EQUAL(p1_.second, f1);
+        BOOST_CHECK_EQUAL(p2_.second, f11);
+
+        BOOST_CHECK_CLOSE(p1_.first[0], p1[0], 1e-6);
+        BOOST_CHECK_CLOSE(p1_.first[1], p1[1], 1e-6);
+        BOOST_CHECK_CLOSE(p1_.first[2], p1[2], 1e-6);
+        BOOST_CHECK_CLOSE(p2_.first[0], p2[0], 1e-6);
+        BOOST_CHECK_CLOSE(p2_.first[1], p2[1], 1e-6);
+        BOOST_CHECK_CLOSE(p2_.first[2], p2[2], 1e-6);
     }
 }
