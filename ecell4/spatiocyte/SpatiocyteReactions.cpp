@@ -250,10 +250,19 @@ ReactionInfo apply_ab2c(
         }
 
         world->remove_voxel(p0.second.coordinate());
-        std::pair<std::pair<ParticleID, Voxel>, bool> new_mol(
-            world->new_voxel(product_species, p1.second.coordinate()));
 
-        rinfo.add_product(new_mol.first);
+        if (!world->has_species(product_species) || !world->find_voxel_pool(product_species)->is_structure())
+        {
+            std::pair<std::pair<ParticleID, Voxel>, bool> new_mol(
+                world->new_voxel(product_species, p1.second.coordinate()));
+            rinfo.add_product(new_mol.first);
+        }
+        else
+        {
+            std::pair<std::pair<ParticleID, Voxel>, bool> new_mol(
+                world->new_voxel_structure(product_species, p1.second.coordinate()));
+            rinfo.add_product(new_mol.first);
+        }
     }
     else if (fserial == location || floc == location)
     {
@@ -267,11 +276,18 @@ ReactionInfo apply_ab2c(
             world->remove_voxel(p0.second.coordinate());
         }
 
-        world->remove_voxel(p1.second.coordinate());
-        std::pair<std::pair<ParticleID, Voxel>, bool> new_mol(
-            world->new_voxel(product_species, p0.second.coordinate()));
-
-        rinfo.add_product(new_mol.first);
+        if (!world->has_species(product_species) || !world->find_voxel_pool(product_species)->is_structure())
+        {
+            std::pair<std::pair<ParticleID, Voxel>, bool> new_mol(
+                world->new_voxel(product_species, p0.second.coordinate()));
+            rinfo.add_product(new_mol.first);
+        }
+        else
+        {
+            std::pair<std::pair<ParticleID, Voxel>, bool> new_mol(
+                world->new_voxel_structure(product_species, p0.second.coordinate()));
+            rinfo.add_product(new_mol.first);
+        }
     }
     return rinfo;
 }
