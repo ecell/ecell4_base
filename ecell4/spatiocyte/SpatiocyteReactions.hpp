@@ -101,15 +101,6 @@ ReactionInfo apply_ab2c(
         const ReactionInfo::particle_id_pair_type& p1,
         const Species& product_species);
 
-// ReactionInfo apply_ab2cd_in_order(
-//         boost::shared_ptr<SpatiocyteWorld> world,
-//         const ReactionInfo::particle_id_pair_type& p0,
-//         const ReactionInfo::particle_id_pair_type& p1,
-//         const Species& product_species0,
-//         const Species& product_species1,
-//         const SpatiocyteWorld::coordinate_type coord0,
-//         const SpatiocyteWorld::coordinate_type coord1);
-
 ReactionInfo apply_ab2cd(
         boost::shared_ptr<SpatiocyteWorld> world,
         const ReactionInfo::particle_id_pair_type& p0,
