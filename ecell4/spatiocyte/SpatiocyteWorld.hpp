@@ -805,16 +805,24 @@ public:
         const molecule_info_type minfo(get_molecule_info(sp));
         std::pair<std::pair<ParticleID, ParticleVoxel>, bool> voxel(
                 new_voxel(ParticleVoxel(sp, coord, minfo.radius, minfo.D, minfo.loc)));
+
         if (voxel.second)
             return voxel.first.first;
-        else
-            return boost::none;
+
+        return boost::none;
     }
 
-    std::pair<std::pair<ParticleID, ParticleVoxel>, bool> new_voxel_structure(const Species& sp, const coordinate_type& coord)
+    boost::optional<ParticleID>
+    new_voxel_structure(const Species& sp, const coordinate_type& coord)
     {
         const molecule_info_type minfo(get_molecule_info(sp));
-        return new_voxel_structure(ParticleVoxel(sp, coord, minfo.radius, minfo.D, minfo.loc));
+        std::pair<std::pair<ParticleID, ParticleVoxel>, bool> voxel(
+                new_voxel_structure(ParticleVoxel(sp, coord, minfo.radius, minfo.D, minfo.loc)));
+
+        if (voxel.second)
+            return voxel.first.first;
+
+        return boost::none;
     }
 
     std::pair<std::pair<ParticleID, ParticleVoxel>, bool> new_voxel_structure(ParticleVoxel v)

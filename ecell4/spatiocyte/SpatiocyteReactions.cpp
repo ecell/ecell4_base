@@ -32,9 +32,19 @@ make_product(boost::shared_ptr<SpatiocyteWorld> world,
              const Species& species,
              const SpatiocyteWorld::coordinate_type coord)
 {
-    if (boost::optional<ParticleID> new_pid = world->new_voxel(species, coord))
+    if (world->has_species(species) && world->find_voxel_pool(species)->is_structure())
     {
-        rinfo.add_product(ReactionInfo::Item(*new_pid, species, coord));
+        if (boost::optional<ParticleID> new_pid = world->new_voxel_structure(species, coord))
+        {
+            rinfo.add_product(ReactionInfo::Item(*new_pid, species, coord));
+        }
+    }
+    else
+    {
+        if (boost::optional<ParticleID> new_pid = world->new_voxel(species, coord))
+        {
+            rinfo.add_product(ReactionInfo::Item(*new_pid, species, coord));
+        }
     }
 }
 
@@ -278,6 +288,7 @@ ReactionInfo apply_ab2c(
         }
 
         world->remove_voxel(coord1);
+
         make_product(world, rinfo, product_species, coord0);
     }
     return rinfo;

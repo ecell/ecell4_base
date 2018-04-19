@@ -91,8 +91,9 @@ install:
   - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
   - "python --version"
   - "python -c \"import struct; print(struct.calcsize('P') * 8)\""
-  - curl -O https://bootstrap.pypa.io/get-pip.py
-  - "python get-pip.py"
+  # - curl -O https://bootstrap.pypa.io/get-pip.py
+  # - "python get-pip.py"
+  - "python -m pip install --upgrade pip"
   - if "%PYTHON_VERSION%" == "2.7.14" python -m pip install cython
   # - if "%PYTHON_VERSION%" == "3.5.2" python -m pip install https://pypi.python.org/packages/cp35/C/Cython/Cython-0.23.4-cp35-none-win32.whl
   - if NOT "%PYTHON_VERSION%" == "2.7.14" python -m pip install Cython --install-option="--no-cython-compile"
