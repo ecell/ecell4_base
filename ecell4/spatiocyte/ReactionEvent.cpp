@@ -38,9 +38,9 @@ void ZerothOrderReactionEvent::fire_()
 
             const std::pair<std::pair<ParticleID, ParticleVoxel>, bool>
                 retval(world_->new_voxel(v));
-            if (retval.second)
+            if (boost::optional<ParticleID> pid = world_->new_voxel(sp, coord))
             {
-                rinfo.add_product(retval.first);
+                rinfo.add_product(ReactionInfo::Item(*pid, sp, coord));
                 break;
             }
         }
@@ -76,26 +76,26 @@ FirstOrderReactionEvent::FirstOrderReactionEvent(
 
 void FirstOrderReactionEvent::fire_()
 {
-    const ReactionInfo::particle_id_pair_type& p(
-            world_->choice(*(rule_.reactants().begin())));
+    const ReactionInfo::Item reactant_item(world_->choice(rule_.reactants().at(0)));
     const ReactionRule::product_container_type& products(rule_.products());
 
     switch (products.size())
     {
         case 0:
             {
-                world_->remove_voxel(p.second.coordinate);
+                world_->remove_voxel(reactant_item.voxel.coordinate);
                 ReactionInfo rinfo(world_->t());
-                rinfo.add_reactant(p);
+                rinfo.add_reactant(reactant_item);
                 push_reaction(std::make_pair(rule_, rinfo));
             }
             break;
         case 1:
-            push_reaction(std::make_pair(rule_, apply_a2b(world_, p, *(products.begin()))));
+            push_reaction(std::make_pair(rule_,
+                                         apply_a2b(world_, reactant_item, *(products.begin()))));
             break;
         case 2:
             {
-                ReactionInfo rinfo(apply_a2bc(world_, p,
+                ReactionInfo rinfo(apply_a2bc(world_, reactant_item,
                             *(products.begin()), (*(++products.begin()))));
                 if (rinfo.has_occurred())
                     push_reaction(std::make_pair(rule_, rinfo));

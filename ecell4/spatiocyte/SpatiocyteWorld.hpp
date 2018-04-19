@@ -19,6 +19,7 @@
 #include "OffsetSpace.hpp"
 #include "OneToManyMap.hpp"
 #include "Voxel.hpp"
+#include "SpatiocyteReactions.hpp"
 
 namespace ecell4
 {
@@ -335,6 +336,7 @@ public:
             std::vector<std::pair<ParticleID, Particle> > particles(itr->list_particles(sp));
             list.insert(list.end(), particles.begin(), particles.end());
         }
+
         return list;
     }
 
@@ -486,9 +488,10 @@ public:
         return boost::none;
     }
 
-    std::pair<ParticleID, ParticleVoxel> get_voxel_at(const coordinate_type& coord) const
+    std::pair<ParticleID, Species> get_voxel_at(const coordinate_type& coord) const
     {
-        return get_space(coord)->get_voxel_at(coord);
+        std::pair<ParticleID, ParticleVoxel> id_voxel_pair(get_space(coord)->get_voxel_at(coord));
+        return std::make_pair(id_voxel_pair.first, id_voxel_pair.second.species);
     }
 
     boost::shared_ptr<VoxelPool> find_voxel_pool(const Species& species)
@@ -797,10 +800,15 @@ public:
         return std::make_pair(std::make_pair(pid, v), is_succeeded);
     }
 
-    std::pair<std::pair<ParticleID, ParticleVoxel>, bool> new_voxel(const Species& sp, const coordinate_type& coord)
+    boost::optional<ParticleID> new_voxel(const Species& sp, const coordinate_type& coord)
     {
         const molecule_info_type minfo(get_molecule_info(sp));
-        return new_voxel(ParticleVoxel(sp, coord, minfo.radius, minfo.D, minfo.loc));
+        std::pair<std::pair<ParticleID, ParticleVoxel>, bool> voxel(
+                new_voxel(ParticleVoxel(sp, coord, minfo.radius, minfo.D, minfo.loc)));
+        if (voxel.second)
+            return voxel.first.first;
+        else
+            return boost::none;
     }
 
     std::pair<std::pair<ParticleID, ParticleVoxel>, bool> new_voxel_structure(const Species& sp, const coordinate_type& coord)
@@ -853,28 +861,14 @@ public:
         return info;
     }
 
-    std::pair<ParticleID, ParticleVoxel> make_pid_voxel_pair(
-        boost::shared_ptr<const VoxelPool> mt, const coordinate_type& coord) const
-    {
-        const ParticleID pid(mt->get_particle_id(coord));
-        const coordinate_id_pair_type info(pid, coord);
-        return make_pid_voxel_pair(mt, info);
-    }
-
-    std::pair<ParticleID, ParticleVoxel> make_pid_voxel_pair(
-        boost::shared_ptr<const VoxelPool> mt, const coordinate_id_pair_type& info) const
-    {
-        return std::make_pair<ParticleID, ParticleVoxel>(
-            ParticleID(info.pid),
-            ParticleVoxel(mt->species(), info.coordinate, mt->radius(), mt->D(), get_location_serial(mt)));
-    }
-
-    std::pair<ParticleID, ParticleVoxel> choice(const Species& sp)
+    ReactionInfo::Item choice(const Species& sp)
     {
         boost::shared_ptr<const MoleculePool> mt(find_molecule_pool(sp));
+
         const Integer i(rng_->uniform_int(0, mt->size() - 1));
         const coordinate_id_pair_type& info(mt->at(i));
-        return make_pid_voxel_pair(mt, info);
+
+        return ReactionInfo::Item(info.pid, sp, Voxel(info.coordinate));
     }
 
 

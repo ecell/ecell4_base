@@ -23,28 +23,25 @@ cdef class ReactionInfo:
         Args:
           t (Real): A time when a reaction occurred
           reactants (list): A list of reactants.
-            Reactants are given as a pair of ``ParticleID`` and ``ParticleVoxel``.
+            Reactants are given as ``ReactionInfoItem``.
           products (list): A list of products.
-            Products are given as a pair of ``ParticleID`` and ``ParticleVoxel``.
+            Products are given as ``ReactionInfoItem``.
 
         """
         pass  #XXX: only used for doc string
 
 
     def __cinit__(self, Real t, reactants, products):
-        cdef vector[pair[Cpp_ParticleID, Cpp_ParticleVoxel]] reactants_
-        cdef vector[pair[Cpp_ParticleID, Cpp_ParticleVoxel]] products_
+        cdef vector[CppReactionInfoItem] cpp_reactants
+        cdef vector[CppReactionInfoItem] cpp_products
 
-        for pid, p in reactants:
-            reactants_.push_back(
-                pair[Cpp_ParticleID, Cpp_ParticleVoxel](
-                    deref((<ParticleID>pid).thisptr), deref((<ParticleVoxel>p).thisptr)))
-        for pid, p in products:
-            products_.push_back(
-                pair[Cpp_ParticleID, Cpp_ParticleVoxel](
-                    deref((<ParticleID>pid).thisptr), deref((<ParticleVoxel>p).thisptr)))
+        for item in reactants:
+            cpp_reactants.push_back(deref((<ReactionInfoItem>item).thisptr))
 
-        self.thisptr = new Cpp_ReactionInfo(t, reactants_, products_)
+        for item in products:
+            cpp_products.push_back(deref((<ReactionInfoItem>item).thisptr))
+
+        self.thisptr = new CppReactionInfo(t, cpp_reactants, cpp_products)
 
     def __dealloc__(self):
         del self.thisptr
@@ -60,19 +57,14 @@ cdef class ReactionInfo:
             list: A list of pairs of ``ParticleID`` and ``ParticleVoxel``.
 
         """
-        cdef vector[pair[Cpp_ParticleID, Cpp_ParticleVoxel]] particles
-        particles = self.thisptr.reactants()
+        cdef vector[CppReactionInfoItem] particles = self.thisptr.reactants()
 
         retval = []
-        cdef vector[pair[Cpp_ParticleID, Cpp_ParticleVoxel]].iterator \
-            it = particles.begin()
-        while it != particles.end():
-            retval.append(
-                (ParticleID_from_Cpp_ParticleID(
-                     <Cpp_ParticleID*>(address(deref(it).first))),
-                 Voxel_from_Cpp_Voxel(
-                     <Cpp_ParticleVoxel*>(address(deref(it).second)))))
-            inc(it)
+        cdef vector[CppReactionInfoItem].iterator itr = particles.begin()
+        while itr != particles.end():
+            retval.append(wrap_reaction_info_item(deref(itr)))
+            inc(itr)
+
         return retval
 
     def products(self):
@@ -82,30 +74,31 @@ cdef class ReactionInfo:
             list: A list of pairs of ``ParticleID`` and ``ParticleVoxel``.
 
         """
-        cdef vector[pair[Cpp_ParticleID, Cpp_ParticleVoxel]] particles
-        particles = self.thisptr.products()
+        cdef vector[CppReactionInfoItem] particles = self.thisptr.products()
 
         retval = []
-        cdef vector[pair[Cpp_ParticleID, Cpp_ParticleVoxel]].iterator \
-            it = particles.begin()
-        while it != particles.end():
-            retval.append(
-                (ParticleID_from_Cpp_ParticleID(
-                     <Cpp_ParticleID*>(address(deref(it).first))),
-                 Voxel_from_Cpp_Voxel(
-                     <Cpp_ParticleVoxel*>(address(deref(it).second)))))
-            inc(it)
+        cdef vector[CppReactionInfoItem].iterator itr = particles.begin()
+        while itr != particles.end():
+            retval.append(wrap_reaction_info_item(deref(itr)))
+            inc(itr)
+
         return retval
 
     def __reduce__(self):
         return (ReactionInfo, (self.t(), self.reactants(), self.products()))
 
-cdef ReactionInfo ReactionInfo_from_Cpp_ReactionInfo(Cpp_ReactionInfo* ri):
-    cdef Cpp_ReactionInfo *new_obj = new Cpp_ReactionInfo(<Cpp_ReactionInfo> deref(ri))
+cdef ReactionInfo ReactionInfo_from_Cpp_ReactionInfo(CppReactionInfo* ri):
+    cdef CppReactionInfo *new_obj = new CppReactionInfo(<CppReactionInfo> deref(ri))
     r = ReactionInfo(0, [], [])
     del r.thisptr
     r.thisptr = new_obj
     return r
+
+cdef ReactionInfoItem wrap_reaction_info_item(CppReactionInfoItem item):
+    retval = ReactionInfoItem()
+    del retval.thisptr
+    retval.thisptr = new CppReactionInfoItem(item.pid, item.species, item.voxel)
+    return retval
 
 ## Voxel
 cdef class Voxel:
@@ -323,13 +316,13 @@ cdef class SpatiocyteWorld:
         Returns
         -------
         tuple:
-            A pair of ParticleID and ParticleVoxel
+            A pair of ParticleID and Species
 
         """
-        cdef pair[Cpp_ParticleID, Cpp_ParticleVoxel] pid_voxel_pair
-        pid_voxel_pair = self.thisptr.get().get_voxel_at(voxel.thisptr.coordinate)
-        return (ParticleID_from_Cpp_ParticleID(address(pid_voxel_pair.first)),
-                Voxel_from_Cpp_Voxel(address(pid_voxel_pair.second)))
+
+        pid_species_pair = self.thisptr.get().get_voxel_at(voxel.thisptr.coordinate)
+        return (ParticleID_from_Cpp_ParticleID(address(pid_species_pair.first)),
+                Species_from_Cpp_Species(address(pid_species_pair.second)))
 
     def on_structure(self, ParticleVoxel v):
         """Check if the given voxel would be on the proper structure at the coordinate
@@ -860,17 +853,23 @@ cdef class SpatiocyteWorld:
 
         Returns
         -------
-        tuple:
-            A pair of ParticleID and ParticleVoxel
-
+        ParticleID or None
         """
-        cdef pair[pair[Cpp_ParticleID, Cpp_ParticleVoxel], bool] retval
 
         if arg2 is None:
-            retval = self.thisptr.get().new_voxel(deref((<ParticleVoxel> arg1).thisptr))
+            # cdef pair[pair[Cpp_ParticleID, Cpp_ParticleVoxel], bool] new_mol
+            new_mol = self.thisptr.get().new_voxel(deref((<ParticleVoxel>arg1).thisptr))
+
+            if new_mol.second:
+                return ParticleID_from_Cpp_ParticleID(address(new_mol.first.first))
         else:
-            retval = self.thisptr.get().new_voxel(deref((<Species> arg1).thisptr), <Integer> arg2)
-        return ((ParticleID_from_Cpp_ParticleID(address(retval.first.first)), Voxel_from_Cpp_Voxel(address(retval.first.second))), retval.second)
+            # cdef optional[Cpp_ParticleID] pid
+            pid = self.thisptr.get().new_voxel(deref((<Species>arg1).thisptr), <Integer>arg2)
+
+            if pid.is_initialized():
+                return ParticleID_from_Cpp_ParticleID(address(pid.get()))
+
+        return None
 
     def new_voxel_structure(self, Species species, Voxel voxel):
         """new_voxel_structure(species, voxel) -> (ParticleID, ParticleVoxel)
@@ -1325,15 +1324,15 @@ cdef class SpatiocyteSimulator:
             The list of reaction rules and infos.
 
         """
-        cdef vector[pair[Cpp_ReactionRule, Cpp_ReactionInfo]] reactions = self.thisptr.last_reactions()
-        cdef vector[pair[Cpp_ReactionRule, Cpp_ReactionInfo]].iterator it = reactions.begin()
+        cdef vector[pair[Cpp_ReactionRule, CppReactionInfo]] reactions = self.thisptr.last_reactions()
+        cdef vector[pair[Cpp_ReactionRule, CppReactionInfo]].iterator it = reactions.begin()
         retval = []
         while it != reactions.end():
             retval.append((
                 ReactionRule_from_Cpp_ReactionRule(
                     <Cpp_ReactionRule*>(address(deref(it).first))),
                 ReactionInfo_from_Cpp_ReactionInfo(
-                    <Cpp_ReactionInfo*>(address(deref(it).second)))))
+                    <CppReactionInfo*>(address(deref(it).second)))))
             inc(it)
         return retval
 

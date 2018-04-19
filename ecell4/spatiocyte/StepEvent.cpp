@@ -198,8 +198,9 @@ void StepEvent::attempt_reaction_(
         {
             ReactionInfo rinfo(apply_second_order_reaction(
                         world_, *itr,
-                        world_->make_pid_voxel_pair(from_mt, info),
-                        world_->make_pid_voxel_pair(to_mt, to_coord)));
+                        ReactionInfo::Item(info.pid, from_mt->species(), info.coordinate),
+                        ReactionInfo::Item(to_mt->get_particle_id(to_coord),
+                                           to_mt->species(), to_coord)));
             if (rinfo.has_occurred())
             {
                 reaction_type reaction(std::make_pair(*itr, rinfo));

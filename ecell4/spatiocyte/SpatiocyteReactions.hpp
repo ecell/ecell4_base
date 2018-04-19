@@ -4,6 +4,7 @@
 #include <boost/shared_ptr.hpp>
 #include <ecell4/core/VoxelPool.hpp>
 #include <ecell4/core/ReactionRule.hpp>
+#include "Voxel.hpp"
 
 namespace ecell4
 {
@@ -15,8 +16,19 @@ class ReactionInfo
 {
 public:
 
-    typedef std::pair<ParticleID, ParticleVoxel> particle_id_pair_type;
-    typedef std::vector<particle_id_pair_type> container_type;
+    struct Item
+    {
+        Item(ParticleID pid, const Species& species, const Voxel& voxel)
+            : pid(pid), species(species), voxel(voxel)
+        {
+        }
+
+        ParticleID pid;
+        Species    species;
+        Voxel      voxel;
+    };
+
+    typedef std::vector<Item> container_type;
 
 public:
 
@@ -48,9 +60,9 @@ public:
         return reactants_;
     }
 
-    void add_reactant(const particle_id_pair_type& pid_pair)
+    void add_reactant(const Item& item)
     {
-        reactants_.push_back(pid_pair);
+        reactants_.push_back(item);
     }
 
     const container_type& products() const
@@ -58,9 +70,9 @@ public:
         return products_;
     }
 
-    void add_product(const particle_id_pair_type& pid_pair)
+    void add_product(const Item& item)
     {
-        products_.push_back(pid_pair);
+        products_.push_back(item);
     }
 
 protected:
@@ -75,36 +87,36 @@ class SpatiocyteWorld;
 
 ReactionInfo apply_a2b(
         boost::shared_ptr<SpatiocyteWorld> world,
-        const ReactionInfo::particle_id_pair_type& p,
+        const ReactionInfo::Item& reactant_item,
         const Species& product_species);
 
 ReactionInfo apply_a2bc(
         boost::shared_ptr<SpatiocyteWorld> world,
-        const ReactionInfo::particle_id_pair_type& p,
+        const ReactionInfo::Item& reactant_item,
         const Species& product_species0,
         const Species& product_species1);
 
 ReactionInfo apply_second_order_reaction(
         boost::shared_ptr<SpatiocyteWorld> world,
         const ReactionRule& reaction_rule,
-        const ReactionInfo::particle_id_pair_type& p0,
-        const ReactionInfo::particle_id_pair_type& p1);
+        const ReactionInfo::Item& reactant_item0,
+        const ReactionInfo::Item& reactant_item1);
 
 ReactionInfo apply_vanishment(
         boost::shared_ptr<SpatiocyteWorld> world,
-        const ReactionInfo::particle_id_pair_type& p0,
-        const ReactionInfo::particle_id_pair_type& p1);
+        const ReactionInfo::Item& reactant_item0,
+        const ReactionInfo::Item& reactant_item1);
 
 ReactionInfo apply_ab2c(
         boost::shared_ptr<SpatiocyteWorld> world,
-        const ReactionInfo::particle_id_pair_type& p0,
-        const ReactionInfo::particle_id_pair_type& p1,
+        const ReactionInfo::Item& reactant_item0,
+        const ReactionInfo::Item& reactant_item1,
         const Species& product_species);
 
 ReactionInfo apply_ab2cd(
         boost::shared_ptr<SpatiocyteWorld> world,
-        const ReactionInfo::particle_id_pair_type& p0,
-        const ReactionInfo::particle_id_pair_type& p1,
+        const ReactionInfo::Item& reactant_item0,
+        const ReactionInfo::Item& reactant_item1,
         const Species& product_species0,
         const Species& product_species1);
 

@@ -8,21 +8,32 @@ from ecell4.optional cimport optional
 from ecell4.core cimport *
 
 
-## Cpp_ReactionInfo
-cdef extern from "ecell4/spatiocyte/SpatiocyteSimulator.hpp" namespace "ecell4::spatiocyte":
-    cdef cppclass Cpp_ReactionInfo "ecell4::spatiocyte::ReactionInfo":
-        Cpp_ReactionInfo(Real, vector[pair[Cpp_ParticleID, Cpp_ParticleVoxel]], vector[pair[Cpp_ParticleID, Cpp_ParticleVoxel]])
-        Cpp_ReactionInfo(Cpp_ReactionInfo&)
+## CppReactionInfo
+cdef extern from "ecell4/spatiocyte/SpatiocyteReactions.hpp" namespace "ecell4::spatiocyte":
+    cdef cppclass CppReactionInfoItem "ecell4::spatiocyte::ReactionInfo::Item":
+        CppReactionInfoItem(Cpp_ParticleID, Cpp_Species, CppVoxel)
+        Cpp_ParticleID pid
+        Cpp_Species species
+        CppVoxel voxel
+
+    cdef cppclass CppReactionInfo "ecell4::spatiocyte::ReactionInfo":
+        CppReactionInfo(Real, vector[CppReactionInfoItem], vector[CppReactionInfoItem])
+        CppReactionInfo(CppReactionInfo&)
         Real t()
-        vector[pair[Cpp_ParticleID, Cpp_ParticleVoxel]] reactants()
-        vector[pair[Cpp_ParticleID, Cpp_ParticleVoxel]] products()
+        vector[CppReactionInfoItem] reactants()
+        vector[CppReactionInfoItem] products()
 
 ## ReactionInfo
-#  a python wrapper for Cpp_ReactionInfo
+#  a python wrapper for CppReactionInfo
 cdef class ReactionInfo:
-    cdef Cpp_ReactionInfo* thisptr
+    cdef CppReactionInfo* thisptr
 
-cdef ReactionInfo ReactionInfo_from_Cpp_ReactionInfo(Cpp_ReactionInfo* ri)
+cdef ReactionInfo ReactionInfo_from_Cpp_ReactionInfo(CppReactionInfo* ri)
+
+cdef class ReactionInfoItem:
+    cdef CppReactionInfoItem* thisptr
+
+cdef ReactionInfoItem wrap_reaction_info_item(CppReactionInfoItem item)
 
 ## Cpp_SpatiocyteWorld
 #  ecell4::spatiocyte::SpatiocyteWorld
@@ -57,7 +68,7 @@ cdef extern from "ecell4/spatiocyte/SpatiocyteWorld.hpp" namespace "ecell4::spat
         bool remove_voxel(Cpp_ParticleID& pid)
         pair[Cpp_ParticleID, Cpp_Particle] get_particle(Cpp_ParticleID& pid)
         optional[Cpp_ParticleVoxel] find_voxel(Cpp_ParticleID& pid)
-        pair[Cpp_ParticleID, Cpp_ParticleVoxel] get_voxel_at(Integer)
+        pair[Cpp_ParticleID, Cpp_Species] get_voxel_at(Integer)
         bool on_structure(Cpp_ParticleVoxel&)
         # bool on_structure(Cpp_Species&, Integer)
 
@@ -98,7 +109,7 @@ cdef extern from "ecell4/spatiocyte/SpatiocyteWorld.hpp" namespace "ecell4::spat
         void save(string filename) except +
         void load(string filename)
         pair[pair[Cpp_ParticleID, Cpp_ParticleVoxel], bool] new_voxel(Cpp_ParticleVoxel& p)
-        pair[pair[Cpp_ParticleID, Cpp_ParticleVoxel], bool] new_voxel(Cpp_Species& sp, Integer pos)
+        optional[Cpp_ParticleID] new_voxel(Cpp_Species& sp, Integer pos)
         pair[pair[Cpp_ParticleID, Cpp_ParticleVoxel], bool] new_voxel_structure(Cpp_Species& sp, Integer pos)
         vector[pair[Cpp_ParticleID, Cpp_ParticleVoxel]] list_voxels()
         vector[pair[Cpp_ParticleID, Cpp_ParticleVoxel]] list_voxels(Cpp_Species& sp)
@@ -175,7 +186,7 @@ cdef extern from "ecell4/spatiocyte/SpatiocyteSimulator.hpp" namespace "ecell4::
         # Real get_alpha()
         # Real calculate_alpha(Cpp_ReactionRule)
         bool check_reaction()
-        vector[pair[Cpp_ReactionRule, Cpp_ReactionInfo]] last_reactions()
+        vector[pair[Cpp_ReactionRule, CppReactionInfo]] last_reactions()
         shared_ptr[Cpp_Model] model()
         shared_ptr[Cpp_SpatiocyteWorld] world()
         void run(Real) except +

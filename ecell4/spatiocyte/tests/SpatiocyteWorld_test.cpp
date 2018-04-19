@@ -129,7 +129,7 @@ BOOST_AUTO_TEST_CASE(SpatiocyteWorld_test_add_molecule)
 
     SpatiocyteWorld::coordinate_type coord(486420);
     // BOOST_CHECK(world.place_voxel(sp, coord).second);
-    BOOST_CHECK(world.new_voxel(sp, coord).second);
+    BOOST_CHECK(world.new_voxel(sp, coord) != boost::none);
     BOOST_CHECK_EQUAL(world.num_particles(sp), 1);
 
     boost::shared_ptr<const VoxelPool> mt(world.get_voxel_pool_at(coord));
@@ -231,7 +231,7 @@ BOOST_AUTO_TEST_CASE(SpatiocyteWorld_test_move)
         from(world.position2coordinate(Real3(0.3e-6, 0.5e-6, 0.5e-6))),
         to(world.position2coordinate(Real3(0.5e-6, 0.5e-6, 0.5e-6)));
 
-    BOOST_CHECK(world.new_voxel(sp, from).second);
+    BOOST_CHECK(world.new_voxel(sp, from) != boost::none);
     BOOST_CHECK(world.move(from, to));
 
     boost::shared_ptr<const VoxelPool> mt(world.get_voxel_pool_at(to));
