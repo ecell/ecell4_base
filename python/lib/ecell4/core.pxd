@@ -840,3 +840,8 @@ cdef SphericalSurface SphericalSurface_from_Cpp_SphericalSurface(Cpp_SphericalSu
 cdef Cylinder Cylinder_from_Cpp_Cylinder(Cpp_Cylinder* p)
 cdef CylindricalSurface CylindricalSurface_from_Cpp_CylindricalSurface(Cpp_CylindricalSurface* p)
 cdef AABB AABB_from_Cpp_AABB(Cpp_AABB* p)
+
+cdef extern from "ecell4/core/BDMLWriter.hpp" namespace "ecell4":
+    # void Cpp_save_bdml "save_bdml" (shared_ptr[Cpp_Space]&, string)
+    void Cpp_save_bdml "save_bdml" (Cpp_Space&, string, string, string, string, string, bool) except +
+
