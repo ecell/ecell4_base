@@ -111,6 +111,7 @@ class Polygon : public Shape
             return 3;
         }
 
+        std::vector<FaceID> neighbors; // for searching objects on it
         // neighbor list; that has pairs of {Fid, unfolded Triangle}.
         // each index corresponds to that of vertices.
         boost::array<std::vector<std::pair<FaceID, Triangle> >, 3> neighbor_ccw;
@@ -272,7 +273,10 @@ class Polygon : public Shape
     {
         return this->face_at(fid).triangle;
     }
-
+    std::vector<FaceID> const& neighbors(const FaceID& fid) const
+    {
+        return this->face_at(fid).neighbors;
+    }
 
     /* inherited from shape --------------------------------------------------*/
     dimension_kind dimension() const {return THREE;} // TWO?

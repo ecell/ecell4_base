@@ -279,6 +279,7 @@ void Polygon::assign(const std::vector<Triangle>& ts)
                         rotate(next_angle,    normal, ref_edge) *
                         length_of(next_of(next_of(current_edge)));
 
+                    face.neighbors.push_back(fid);
                     face.neighbor_ccw[i].push_back(
                             std::make_pair(fid, Triangle(unfolded)));
 
@@ -317,12 +318,17 @@ void Polygon::assign(const std::vector<Triangle>& ts)
                         rotate(-prev_angle,    normal, ref_edge) *
                         length_of(next_of(next_of(current_edge)));
 
+                    face.neighbors.push_back(fid);
                     face.neighbor_cw[i].push_back(
                             std::make_pair(fid, Triangle(unfolded)));
                 }
                 while(current_angle + offset_angle <= pi);
             }
         }
+        std::sort(face.neighbors.begin(), face.neighbors.end());
+        const std::vector<FaceID>::iterator last =
+            std::unique(face.neighbors.begin(), face.neighbors.end());
+        face.neighbors.erase(last, face.neighbors.end());
     }
     return;
 }
