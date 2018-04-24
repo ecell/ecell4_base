@@ -376,6 +376,7 @@ Real Polygon::distance_sq(
                 if(dot_product(normal, cross_product(vtop1, vtop2)) >= 0)
                 {
                     solution = std::min(length_sq(p1 - p2), solution);
+                    continue;
                 }
             }
         }
@@ -393,7 +394,6 @@ Real Polygon::distance_sq(
                 {
                     solution = std::min(length_sq(p1 - p2), solution);
                 }
-                break;
             }
         }
     }
@@ -475,8 +475,8 @@ Real3 Polygon::direction(
                         mindist2  = d2;
                         direction = dr;
                     }
+                    continue;
                 }
-                break;
             }
         }
         { // clock wise
@@ -499,7 +499,6 @@ Real3 Polygon::direction(
                         direction = dr;
                     }
                 }
-                break;
             }
         }
     }
