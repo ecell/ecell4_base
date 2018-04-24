@@ -3,7 +3,7 @@ set(TEST_NAMES
     ReactionRule_test NetworkModel_test NetfreeModel_test get_mapper_mf_test
     EventScheduler_test Shape_test SubvolumeSpace_test extras_test
     LatticeSpace_test OffLatticeSpace_test ParticleSpace_test
-    Polygon_test Barycentric_test Halfedge_test
+    Barycentric_test Halfedge_test
     )
 
 set(test_library_dependencies)
