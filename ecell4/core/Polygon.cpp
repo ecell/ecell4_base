@@ -348,6 +348,11 @@ Real Polygon::distance_sq(
     typedef utils::pair_first_element_unary_predicator<FaceID, Triangle>
             face_finder_type;
 
+    if(pos1.second == pos2.second)
+    {
+        return length_sq(pos2.first - pos1.first);
+    }
+
     const Real3& p1 = pos1.first;
     const FaceID f1 = pos1.second;
     const FaceID f2 = pos2.second;
@@ -439,6 +444,11 @@ Real3 Polygon::direction(
 {
     typedef utils::pair_first_element_unary_predicator<FaceID, Triangle>
             face_finder_type;
+
+    if(pos1.second == pos2.second)
+    {
+        return pos2.first - pos1.first;
+    }
 
     const Real3& p1 = pos1.first;
     const FaceID f1 = pos1.second;
