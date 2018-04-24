@@ -45,7 +45,7 @@ static Real3 read_ascii_stl_normal(const std::string& line)
 
 static Triangle read_ascii_stl_triangle(std::ifstream& ifs)
 {
-    Triangle retval;
+    boost::array<Real3, 3> vs;
     bool normal_read = false;
     std::size_t vertex_index = 0;
     while(!ifs.eof())
@@ -63,7 +63,8 @@ static Triangle read_ascii_stl_triangle(std::ifstream& ifs)
                 throw std::runtime_error("syntax error: duplicated `normal`");
             }
             normal_read = true;
-            retval.normal = read_ascii_stl_normal(line);
+            // XXX ignore normal written in the file
+            const volatile Real3 normal = read_ascii_stl_normal(line);
         }
         else if(prefix == "outer")
         {
@@ -75,7 +76,7 @@ static Triangle read_ascii_stl_triangle(std::ifstream& ifs)
             {
                 throw NotSupported("STL contains more than 3 vertices");
             }
-            retval.vertex_at(vertex_index) = read_ascii_stl_vertex(line);
+            vs.at(vertex_index) = read_ascii_stl_vertex(line);
             ++vertex_index;
         }
         else if(prefix == "endloop")
@@ -84,7 +85,7 @@ static Triangle read_ascii_stl_triangle(std::ifstream& ifs)
         }
         else if(prefix == "endfacet")
         {
-            return retval;
+            return Triangle(vs);
         }
         else if(prefix == "endsolid")
         {
@@ -134,7 +135,7 @@ static std::vector<Triangle> read_ascii_stl(const std::string& filename)
         {
             retval.push_back(read_ascii_stl_triangle(ifs));
         }
-        catch(endsolid_exception& esl)
+        catch(endsolid_appeared& esl)
         {
             break;
         }
@@ -154,27 +155,18 @@ static Real3 read_binary_stl_vector(std::ifstream& ifs)
 
 static Triangle read_binary_stl_triangle(std::ifstream& ifs)
 {
-    const Real3 normal = read_binary_stl_vector(ifs);
+    // ignore normal vector written in the file
+    const volatile Real3 normal = read_binary_stl_vector(ifs);
     boost::array<Real3, 3> vs;
     vs[0] = read_binary_stl_vector(ifs);
     vs[1] = read_binary_stl_vector(ifs);
     vs[2] = read_binary_stl_vector(ifs);
     ifs.ignore(2);
-
-    const Real3 v01(vs[1] - vs[0]);
-    const Real3 v02(vs[2] - vs[0]);
-    const Real3 n(cross_product(v01, v02));
-    if(dot_product(n, normal) < 0)
-    {
-        const Real3 tmp(vs[2]);
-        vs[2] = vs[1];
-        vs[1] = tmp;
-    }
-    return Triangle(vertices);
+    return Triangle(vs);
 }
 
 static std::vector<Triangle>
-read_binary_stl(const std::string& filename) const
+read_binary_stl(const std::string& filename)
 {
     std::ifstream ifs(filename.c_str(), std::ios::in | std::ios::binary);
     if(!ifs.good())
@@ -203,7 +195,7 @@ read_binary_stl(const std::string& filename) const
     }
 
     std::vector<Triangle> retval(num_triangle);
-    for(boost::uint32_t i=0; i < num_Triangle; ++i)
+    for(boost::uint32_t i=0; i < num_triangle; ++i)
     {
         retval.at(i) = read_binary_stl_triangle(ifs);
     }
@@ -222,7 +214,7 @@ read_stl_format(const std::string& filename, const STLFormat::Kind kind)
 }
 
 static void write_binary_stl(
-    const std::string& filename, const std::vector<Triangle>& tri) const
+    const std::string& filename, const std::vector<Triangle>& tri)
 {
     std::ofstream ofs(filename.c_str(), std::ios::out | std::ios::binary);
     if(!ofs.good())
@@ -276,7 +268,7 @@ static void write_binary_stl(
 }
 
 static void write_ascii_stl(
-    const std::string& filename, const std::vector<Triangle>& tri) const
+    const std::string& filename, const std::vector<Triangle>& tri)
 {
     std::ofstream ofs(filename.c_str());
     if(!ofs.good())
@@ -308,8 +300,8 @@ static void write_ascii_stl(
     return;
 }
 
-void write_stl_format(const std::string& filename, const STLFormat::Kind kind,
-                      const std::vector<Triangle>& tri)
+void write_stl_format(const std::string& filename,
+        const std::vector<Triangle>& tri, const STLFormat::Kind kind)
 {
     switch(kind)
     {
