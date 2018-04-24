@@ -185,6 +185,13 @@ void Polygon::assign(const std::vector<Triangle>& ts)
                 break;
             }
         }
+//         if(!opposite_found)
+//         {
+//             std::cerr << "edge " << this->edge_at(eid).direction << std::endl;
+//             std::cerr << "towards: "
+//                 << this->vertex_at(this->edge_at(eid).target).position << std::endl;
+//             std::cerr << "does not have any opposite pair." << std::endl;
+//         }
         assert(opposite_found);
     }
 
