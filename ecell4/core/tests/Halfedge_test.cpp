@@ -15,7 +15,7 @@
 using ecell4::Real;
 using ecell4::Real3;
 using ecell4::Triangle;
-typedef ecell4::HalfEdgePolygon Polygon;
+using ecell4::Polygon;
 typedef Polygon::FaceID FaceID;
 typedef Polygon::EdgeID EdgeID;
 typedef Polygon::VertexID VertexID;

@@ -4,10 +4,10 @@
 namespace ecell4
 {
 
-const Real HalfEdgePolygon::absolute_tolerance = 1e-12;
-const Real HalfEdgePolygon::relative_tolerance = 1e-8;
+const Real Polygon::absolute_tolerance = 1e-12;
+const Real Polygon::relative_tolerance = 1e-8;
 
-void HalfEdgePolygon::assign(const std::vector<Triangle>& ts)
+void Polygon::assign(const std::vector<Triangle>& ts)
 {
     const Real pi = boost::math::constants::pi<Real>();
     const Real tol_abs2 = absolute_tolerance * absolute_tolerance;
@@ -327,7 +327,7 @@ void HalfEdgePolygon::assign(const std::vector<Triangle>& ts)
     return;
 }
 
-Real HalfEdgePolygon::distance_sq(
+Real Polygon::distance_sq(
         const std::pair<Real3, FaceID>& pos1,
         const std::pair<Real3, FaceID>& pos2) const
 {
@@ -419,7 +419,7 @@ Real HalfEdgePolygon::distance_sq(
     return std::numeric_limits<Real>::infinity();
 }
 
-Real3 HalfEdgePolygon::direction(
+Real3 Polygon::direction(
         const std::pair<Real3, FaceID>& pos1,
         const std::pair<Real3, FaceID>& pos2) const
 {
@@ -496,7 +496,7 @@ Real3 HalfEdgePolygon::direction(
     return direction;
 }
 
-std::pair<Real3, HalfEdgePolygon::FaceID> HalfEdgePolygon::travel(
+std::pair<Real3, Polygon::FaceID> Polygon::travel(
         const std::pair<Real3, FaceID>& pos, const Real3& disp) const
 {
     const Real3& p = pos.first;

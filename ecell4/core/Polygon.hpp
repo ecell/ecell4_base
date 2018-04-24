@@ -60,7 +60,7 @@ namespace ecell4
 // Static Polygon. once made, the shape never change.
 // (Face|Edge|Vertex)ID are just std::size_t.
 // Any hole or duplicated vertex will be treated as invalid structure.
-class HalfEdgePolygon : public Shape
+class Polygon : public Shape
 {
   public:
 
@@ -142,15 +142,15 @@ class HalfEdgePolygon : public Shape
 
   public:
 
-    HalfEdgePolygon(const Real3& edge_length)
+    Polygon(const Real3& edge_length)
         : total_area_(0.0), edge_length_(edge_length)
     {}
-    HalfEdgePolygon(const Real3& edge_length, const std::vector<Triangle>& ts)
+    Polygon(const Real3& edge_length, const std::vector<Triangle>& ts)
         : total_area_(0.0), edge_length_(edge_length)
     {
         this->assign(ts);
     }
-    ~HalfEdgePolygon(){}
+    ~Polygon(){}
 
     // clear current polygon and assign different one.
     // tolerances are used to detect the same vertices in different triangles.
@@ -480,37 +480,37 @@ class HalfEdgePolygon : public Shape
 namespace polygon
 {
 
-inline Real distance(const HalfEdgePolygon& p,
-        const std::pair<Real3, HalfEdgePolygon::FaceID>& p1,
-        const std::pair<Real3, HalfEdgePolygon::FaceID>& p2)
+inline Real distance(const Polygon& p,
+        const std::pair<Real3, Polygon::FaceID>& p1,
+        const std::pair<Real3, Polygon::FaceID>& p2)
 {
     return p.distance(p1, p2);
 }
-inline Real distance_sq(const HalfEdgePolygon& p,
-        const std::pair<Real3, HalfEdgePolygon::FaceID>& p1,
-        const std::pair<Real3, HalfEdgePolygon::FaceID>& p2)
+inline Real distance_sq(const Polygon& p,
+        const std::pair<Real3, Polygon::FaceID>& p1,
+        const std::pair<Real3, Polygon::FaceID>& p2)
 {
     return p.distance_sq(p1, p2);
 }
-inline Real3 direction(const HalfEdgePolygon& p,
-        const std::pair<Real3, HalfEdgePolygon::FaceID>& p1,
-        const std::pair<Real3, HalfEdgePolygon::FaceID>& p2)
+inline Real3 direction(const Polygon& p,
+        const std::pair<Real3, Polygon::FaceID>& p1,
+        const std::pair<Real3, Polygon::FaceID>& p2)
 {
     return p.direction(p1, p2);
 }
 
 template<typename T1, typename T2, typename T3>
-std::pair<Real3, HalfEdgePolygon::FaceID> travel(const HalfEdgePolygon& p,
-        const std::pair<Real3, HalfEdgePolygon::FaceID>& pos, const Real3& disp)
+std::pair<Real3, Polygon::FaceID> travel(const Polygon& p,
+        const std::pair<Real3, Polygon::FaceID>& pos, const Real3& disp)
 {
     return p.travel(pos, disp);
 }
 
 // for sGFRD
-inline std::pair<Real3, HalfEdgePolygon::FaceID>
-roll(const HalfEdgePolygon& poly,
-     const std::pair<Real3, HalfEdgePolygon::FaceID>& pos,
-     const HalfEdgePolygon::VertexID vid, const Real r, const Real theta_)
+inline std::pair<Real3, Polygon::FaceID>
+roll(const Polygon& poly,
+     const std::pair<Real3, Polygon::FaceID>& pos,
+     const Polygon::VertexID vid, const Real r, const Real theta_)
 {
     if(theta_ == 0.0)
     {
@@ -520,9 +520,9 @@ roll(const HalfEdgePolygon& poly,
     const Real3&     vpos = poly.position_at(vid);
     const Real      theta = (theta_ > 0) ? theta_ : theta_ + apex_angle;
 
-    typedef HalfEdgePolygon::FaceID   FaceID;
-    typedef HalfEdgePolygon::EdgeID   EdgeID;
-    typedef HalfEdgePolygon::VertexID VertexID;
+    typedef Polygon::FaceID   FaceID;
+    typedef Polygon::EdgeID   EdgeID;
+    typedef Polygon::VertexID VertexID;
 
     std::vector<std::pair<EdgeID, Real> > const& outedges =
         poly.outgoing_edge_and_angles(vid);
