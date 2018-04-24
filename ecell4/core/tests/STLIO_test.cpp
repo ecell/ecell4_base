@@ -20,7 +20,7 @@ BOOST_AUTO_TEST_CASE(test_io_ascii)
     boost::random::mt19937 mt(123456789);
     boost::random::uniform_real_distribution<Real> uni(0.0, 100.0);
 
-    std::vector<Triangle> triangles(100);
+    std::vector<Triangle> triangles;
     for(std::size_t i=0; i<100; ++i)
     {
         const Real3 v0(uni(mt), uni(mt), uni(mt));
@@ -66,7 +66,7 @@ BOOST_AUTO_TEST_CASE(test_io_binary)
     boost::random::mt19937 mt(123456789);
     boost::random::uniform_real_distribution<Real> uni(0.0, 100.0);
 
-    std::vector<Triangle> triangles(100);
+    std::vector<Triangle> triangles;
     for(std::size_t i=0; i<100; ++i)
     {
         const Real3 v0(uni(mt), uni(mt), uni(mt));
