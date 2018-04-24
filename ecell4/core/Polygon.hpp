@@ -339,6 +339,8 @@ class Polygon : public Shape
 
     // Boundary condition stuff ----------------------------------------------//
 
+    Real3 const& edge_lengths() const throw() {return this->edge_length_;}
+
     // restrict position inside of the boundary.
     Real3 apply_boundary(const Real3& pos) const
     {
