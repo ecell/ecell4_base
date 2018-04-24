@@ -1,5 +1,6 @@
 #include <ecell4/core/Polygon.hpp>
 #include <boost/container/flat_map.hpp>
+#include <boost/format.hpp>
 
 namespace ecell4
 {
@@ -504,7 +505,10 @@ Real3 Polygon::direction(
     }
     if(mindist2 == std::numeric_limits<Real>::infinity())
     {
-        throw std::runtime_error("polygon::direction: couldn't find the min path");
+        throw std::runtime_error((boost::format(
+            "polygon::direction: couldn't find the min path between "
+            "%1% @ %2% <-> %3% @ %4%") % pos1.first % pos1.second %
+            pos2.first % pos2.second).str());
     }
     return direction;
 }
@@ -523,7 +527,9 @@ std::pair<Real3, Polygon::FaceID> Polygon::travel(
     // if pos + disp is inside of the current face, just return the sum.
     if(::ecell4::is_inside(b2))
     {
-        return std::make_pair(np, f);
+        // to avoid numerical error that make the particle goes outside of the
+        // face that the particle belongs, use `to_absolute`.
+        return std::make_pair(to_absolute(b2, tri), f);
     }
 
     const Barycentric b1(to_barycentric(p, tri));
@@ -534,10 +540,12 @@ std::pair<Real3, Polygon::FaceID> Polygon::travel(
     // if the position is inside of the adjacent face, return the position
     // reconstructed from unfolded-Barycentric by using folded Triangle.
     const Barycentric unfolded_b(to_barycentric(np, next.second));
-    if(::ecell4::is_inside(unfolded_b))
+    if(::ecell4::is_inside(unfolded_b, 1e-8))
     {
-        return std::make_pair(// use folded (normal) Triangle, NOT next.second
-            to_absolute(unfolded_b, this->triangle_at(next.first)), next.first);
+        const Real3 nxt = to_absolute(
+                force_put_inside(unfolded_b), this->triangle_at(next.first));
+        return std::make_pair(nxt, next.first);
+        // use folded (normal) Triangle, NOT next.second
     }
 
     // stride over not only the edge but adjacent face.
