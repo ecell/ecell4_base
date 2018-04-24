@@ -8,7 +8,7 @@
 namespace ecell4
 {
 
-class STLFormat {enum Kind {Ascii, Binary};};
+struct STLFormat {enum Kind {Ascii, Binary};};
 
 std::vector<Triangle>
 read_stl_format(const std::string& filename, STLFormat::Kind);
