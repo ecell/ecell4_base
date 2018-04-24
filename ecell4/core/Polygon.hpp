@@ -152,6 +152,20 @@ class Polygon : public Shape
     }
     ~Polygon(){}
 
+    Polygon(const Polygon& rhs)
+        : total_area_(rhs.total_area_), edge_length_(rhs.edge_length_),
+          vertices_(rhs.vertices_), faces_(rhs.faces_), edges_(rhs.edges_)
+    {}
+    Polygon& operator=(const Polygon& rhs)
+    {
+        this->total_area_  = rhs.total_area_;
+        this->edge_length_ = rhs.edge_length_;
+        this->vertices_    = rhs.vertices_;
+        this->faces_       = rhs.faces_;
+        this->edges_       = rhs.edges_;
+        return *this;
+    }
+
     // clear current polygon and assign different one.
     // tolerances are used to detect the same vertices in different triangles.
     void assign(const std::vector<Triangle>& ts);
