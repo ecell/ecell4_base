@@ -592,4 +592,40 @@ roll(const Polygon& poly,
 } // polygon
 } // ecell4
 #undef ECELL4_STRONG_TYPEDEF
+
+
+ECELL4_DEFINE_HASH_BEGIN()
+
+template<>
+struct hash<ecell4::Polygon::FaceID>
+{
+    typedef std::size_t result_type;
+    typedef ecell4::Polygon::FaceID argument_type;
+    result_type operator()(const argument_type& val) const
+    {
+        return static_cast<std::size_t>(val);
+    }
+};
+template<>
+struct hash<ecell4::Polygon::EdgeID>
+{
+    typedef std::size_t result_type;
+    typedef ecell4::Polygon::EdgeID argument_type;
+    result_type operator()(const argument_type& val) const
+    {
+        return static_cast<std::size_t>(val);
+    }
+};
+template<>
+struct hash<ecell4::Polygon::VertexID>
+{
+    typedef std::size_t result_type;
+    typedef ecell4::Polygon::VertexID argument_type;
+    result_type operator()(const argument_type& val) const
+    {
+        return static_cast<std::size_t>(val);
+    }
+};
+ECELL4_DEFINE_HASH_END()
+
 #endif// ECELL4_POLYGON
