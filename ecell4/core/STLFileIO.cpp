@@ -1,4 +1,4 @@
-#include <ecell4/core/STLFileReader.hpp>
+#include <ecell4/core/STLFileIO.hpp>
 #include <boost/cstdint.hpp>
 #include <boost/format.hpp>
 #include <stdexcept>
