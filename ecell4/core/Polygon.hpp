@@ -519,8 +519,7 @@ inline Real3 direction(const Polygon& p,
     return p.direction(p1, p2);
 }
 
-template<typename T1, typename T2, typename T3>
-std::pair<Real3, Polygon::FaceID> travel(const Polygon& p,
+inline std::pair<Real3, Polygon::FaceID> travel(const Polygon& p,
         const std::pair<Real3, Polygon::FaceID>& pos, const Real3& disp)
 {
     return p.travel(pos, disp);
