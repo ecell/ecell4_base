@@ -1,4 +1,6 @@
-#include "STLFileReader.hpp"
+#include <ecell4/core/STLFileReader.hpp>
+#include <boost/cstdint.hpp>
+#include <boost/format.hpp>
 #include <stdexcept>
 #include <sstream>
 #include <iostream>
@@ -7,64 +9,43 @@
 namespace ecell4
 {
 
-std::vector<STLTriangle>
-STLFileReader::read(const std::string& filename,
-                    const STLFileReader::FileType type) const
+struct endsolid_appeared{};
+
+static Real3 read_ascii_stl_vertex(const std::string& line)
 {
-    switch(type)
+    std::istringstream iss(line);
+
+    std::string prefix;
+    iss >> prefix;
+    if(prefix != "vertex")
     {
-        case Ascii:
-            return this->read_ascii(filename);
-        case Binary:
-            return this->read_binary(filename);
-        default:
-            throw std::invalid_argument("stl unknown type");
+        throw std::runtime_error("syntax error: missing vertex line");
     }
+
+    Real x, y, z;
+    iss >> x >> y >> z;
+    return Real3(x, y, z);
 }
 
-std::vector<STLTriangle>
-STLFileReader::read_ascii(const std::string& filename) const
+static Real3 read_ascii_stl_normal(const std::string& line)
 {
-    std::ifstream ifs(filename.c_str());
-    if(!ifs.good())
-        throw std::runtime_error("file open error");
+    std::istringstream iss(line);
 
-    while(!ifs.eof())
+    std::string facet, normal;
+    iss >> facet >> normal;
+    if(facet != "facet" || normal != "normal")
     {
-        std::string line;
-        std::getline(ifs, line);
-        std::istringstream iss(line);
-        std::string prefix;
-        iss >> prefix;
-        if(prefix == "solid")
-        {
-            std::cerr << "found solid." << std::endl;
-            std::cerr << line << std::endl;
-            break;
-        }
+        throw std::runtime_error("syntax error: missing `facet normal`");
     }
-    if(ifs.eof())
-        throw std::runtime_error("could not find solid line");
 
-    std::vector<STLTriangle> retval;
-    while(!ifs.eof())
-    {
-        try
-        {
-            retval.push_back(this->read_ascii_triangle(ifs));
-        }
-        catch(endsolid_exception& esl)
-        {
-            break;
-        }
-    }
-    return retval;
+    Real x, y, z;
+    iss >> x >> y >> z;
+    return Real3(x, y, z);
 }
 
-STLTriangle
-STLFileReader::read_ascii_triangle(std::ifstream& ifs) const
+static Triangle read_ascii_stl_triangle(std::ifstream& ifs)
 {
-    STLTriangle retval;
+    Triangle retval;
     bool normal_read = false;
     std::size_t vertex_index = 0;
     while(!ifs.eof())
@@ -78,22 +59,26 @@ STLFileReader::read_ascii_triangle(std::ifstream& ifs) const
         if(prefix == "facet")
         {
             if(normal_read)
-                throw std::runtime_error("invalid syntax");
+            {
+                throw std::runtime_error("syntax error: duplicated `normal`");
+            }
             normal_read = true;
-            retval.normal = this->read_ascii_normal(line);
+            retval.normal = read_ascii_stl_normal(line);
         }
         else if(prefix == "outer")
         {
-            ; // outer loop
+            ; // outer loop. ignore.
         }
         else if(prefix == "vertex")
         {
             if(vertex_index > 2)
-                throw std::runtime_error("invalid syntax");
-            retval.vertices.at(vertex_index) = this->read_ascii_vertex(line);
+            {
+                throw NotSupported("STL contains more than 3 vertices");
+            }
+            retval.vertex_at(vertex_index) = read_ascii_stl_vertex(line);
             ++vertex_index;
         }
-        else if(prefix == "endloop") 
+        else if(prefix == "endloop")
         {
             ;
         }
@@ -103,46 +88,99 @@ STLFileReader::read_ascii_triangle(std::ifstream& ifs) const
         }
         else if(prefix == "endsolid")
         {
-            throw endsolid_exception();
+            throw endsolid_appeared();
         }
         else
         {
-            continue; // comment line?
+            // comment line? do nothing.
         }
+        ifs.peek();
     }
     throw std::runtime_error("invalid syntax");
 }
 
-
-Real3 STLFileReader::read_ascii_vertex(const std::string& line) const
+static std::vector<Triangle> read_ascii_stl(const std::string& filename)
 {
-    std::istringstream iss(line);
-    std::string prefix;
-    iss >> prefix;
-    if(prefix != "vertex") throw std::invalid_argument("not vertex line");
-    Real x, y, z;
-    iss >> x >> y >> z;
+    std::ifstream ifs(filename.c_str());
+    if(!ifs.good())
+    {
+        throw std::runtime_error("file open error: " + filename);
+    }
+
+    while(!ifs.eof())
+    {
+        std::string line;
+        std::getline(ifs, line);
+        std::istringstream iss(line);
+        std::string prefix;
+        iss >> prefix;
+        if(prefix == "solid")
+        {
+//             std::cerr << "found solid." << std::endl;
+//             std::cerr << line << std::endl;
+            break;
+        }
+        ifs.peek();
+    }
+    if(ifs.eof())
+    {
+        throw std::runtime_error("could not find solid line");
+    }
+
+    std::vector<Triangle> retval;
+    while(!ifs.eof())
+    {
+        try
+        {
+            retval.push_back(read_ascii_stl_triangle(ifs));
+        }
+        catch(endsolid_exception& esl)
+        {
+            break;
+        }
+        ifs.peek();
+    }
+    return retval;
+}
+
+static Real3 read_binary_stl_vector(std::ifstream& ifs)
+{
+    float x, y, z;
+    ifs.read(reinterpret_cast<char*>(&x), sizeof(float));
+    ifs.read(reinterpret_cast<char*>(&y), sizeof(float));
+    ifs.read(reinterpret_cast<char*>(&z), sizeof(float));
     return Real3(x, y, z);
 }
 
-Real3 STLFileReader::read_ascii_normal(const std::string& line) const
+static Triangle read_binary_stl_triangle(std::ifstream& ifs)
 {
-    std::istringstream iss(line);
-    std::string facet, normal;
-    iss >> facet >> normal;
-    if(facet != "facet" || normal != "normal")
-        throw std::invalid_argument("not vertex line");
-    Real x, y, z;
-    iss >> x >> y >> z;
-    return Real3(x, y, z);
+    const Real3 normal = read_binary_stl_vector(ifs);
+    boost::array<Real3, 3> vs;
+    vs[0] = read_binary_stl_vector(ifs);
+    vs[1] = read_binary_stl_vector(ifs);
+    vs[2] = read_binary_stl_vector(ifs);
+    ifs.ignore(2);
+
+    const Real3 v01(vs[1] - vs[0]);
+    const Real3 v02(vs[2] - vs[0]);
+    const Real3 n(cross_product(v01, v02));
+    if(dot_product(n, normal) < 0)
+    {
+        const Real3 tmp(vs[2]);
+        vs[2] = vs[1];
+        vs[1] = tmp;
+    }
+    return Triangle(vertices);
 }
 
-std::vector<STLTriangle>
-STLFileReader::read_binary(const std::string& filename) const
+static std::vector<Triangle>
+read_binary_stl(const std::string& filename) const
 {
     std::ifstream ifs(filename.c_str(), std::ios::in | std::ios::binary);
-    if(not ifs.good())
-        throw std::runtime_error("file open error");
+    if(!ifs.good())
+    {
+        throw std::runtime_error("file open error: " + filename);
+    }
 
     ifs.seekg(0, ifs.end);
     const std::size_t size_of_file = ifs.tellg();
@@ -151,92 +189,134 @@ STLFileReader::read_binary(const std::string& filename) const
     char ch_header[81];
     ifs.read(ch_header, 80);
     ch_header[80] = '\0';
-    const std::string header(ch_header);
-    std::cerr << "header   : " << header << std::endl;
+//     std::cerr << "header   : " << ch_header << std::endl;
 
-    char ch_numTriangle[sizeof(unsigned int)];
-    ifs.read(ch_numTriangle, sizeof(unsigned int));
-    const std::size_t num_Triangle = *reinterpret_cast<unsigned int*>(ch_numTriangle);
-    std::cerr << "# of face: " << num_Triangle << std::endl;
+    boost::uint32_t num_triangle = 0;
+    ifs.read(reinterpret_cast<char*>(&num_triangle), 4);
+//     std::cerr << "# of face: " << num_triangle << std::endl;
 
-    if(50 * num_Triangle + 80 + sizeof(unsigned int) != size_of_file)
+    if(50 * num_triangle + 84 != size_of_file)
     {
-        std::cerr << "file size must be 50 * number of triangle + 80 + 4" << std::endl;
-        std::cerr << " = " << 50 * num_Triangle + 80 + sizeof(unsigned int) << std::endl;
-        throw std::runtime_error("invalid filesize");
+        throw std::runtime_error((boost::format("ecell4::read_binary_stl: "
+            "invalid filesize: %1% != %2% triagnles * 50 + header(84)") %
+            size_of_file % num_triangle).str());
     }
 
-    std::vector<STLTriangle> retval(num_Triangle);
-    for(std::size_t i=0; i < num_Triangle; ++i)
+    std::vector<Triangle> retval(num_triangle);
+    for(boost::uint32_t i=0; i < num_Triangle; ++i)
     {
-        retval.at(i) = this->read_binary_triangle(ifs);
+        retval.at(i) = read_binary_stl_triangle(ifs);
     }
     return retval;
 }
 
-Real3 STLFileReader::read_binary_vector(std::ifstream& ifs) const
+std::vector<Triangle>
+read_stl_format(const std::string& filename, const STLFormat::Kind kind)
 {
-    char float0[sizeof(float)];
-    char float1[sizeof(float)];
-    char float2[sizeof(float)];
-
-    ifs.read(float0, sizeof(float));
-    ifs.read(float1, sizeof(float));
-    ifs.read(float2, sizeof(float));
-
-    const float x = *reinterpret_cast<float*>(float0);
-    const float y = *reinterpret_cast<float*>(float1);
-    const float z = *reinterpret_cast<float*>(float2);
-
-    return Real3(x, y, z);
+    switch(kind)
+    {
+        case STLFormat::Ascii:  return read_ascii_stl(filename);
+        case STLFormat::Binary: return read_binary_stl(filename);
+        default: throw std::invalid_argument("read_stl_format: unknown format");
+    }
 }
 
-STLTriangle
-STLFileReader::read_binary_triangle(std::ifstream& ifs) const
+static void write_binary_stl(
+    const std::string& filename, const std::vector<Triangle>& tri) const
 {
-    const Real3 normal = read_binary_vector(ifs);
-    boost::array<Real3, 3> vertices;
-    vertices[0] = this->read_binary_vector(ifs);
-    vertices[1] = this->read_binary_vector(ifs);
-    vertices[2] = this->read_binary_vector(ifs);
-    ifs.ignore(2);
+    std::ofstream ofs(filename.c_str(), std::ios::out | std::ios::binary);
+    if(!ofs.good())
+    {
+        throw std::runtime_error(
+            "ecell4::write_stl_format: file open error: " + filename);
+    }
 
-    return STLTriangle(normal, vertices);
+    const std::string header("this file is generated by ecell4::write_"
+                             "stl_format.                             ");
+    assert(header.size() == 80);
+    ofs.write(header.c_str(), 80);
+
+    const boost::uint32_t num_triangle = tri.size();
+    ofs.write(reinterpret_cast<const char*>(&num_triangle), 4);
+
+    for(typename std::vector<Triangle>::const_iterator
+            iter = tri.begin(); iter != tri.end(); ++iter)
+    {
+        const float nx(iter->normal()[0]);
+        const float ny(iter->normal()[1]);
+        const float nz(iter->normal()[2]);
+        const float v0x(iter->vertex_at(0)[0]);
+        const float v0y(iter->vertex_at(0)[1]);
+        const float v0z(iter->vertex_at(0)[2]);
+        const float v1x(iter->vertex_at(1)[0]);
+        const float v1y(iter->vertex_at(1)[1]);
+        const float v1z(iter->vertex_at(1)[2]);
+        const float v2x(iter->vertex_at(2)[0]);
+        const float v2y(iter->vertex_at(2)[1]);
+        const float v2z(iter->vertex_at(2)[2]);
+
+        ofs.write(reinterpret_cast<const char*>(&nx),  4);
+        ofs.write(reinterpret_cast<const char*>(&ny),  4);
+        ofs.write(reinterpret_cast<const char*>(&nz),  4);
+        ofs.write(reinterpret_cast<const char*>(&v0x), 4);
+        ofs.write(reinterpret_cast<const char*>(&v0y), 4);
+        ofs.write(reinterpret_cast<const char*>(&v0z), 4);
+        ofs.write(reinterpret_cast<const char*>(&v1x), 4);
+        ofs.write(reinterpret_cast<const char*>(&v1y), 4);
+        ofs.write(reinterpret_cast<const char*>(&v1z), 4);
+        ofs.write(reinterpret_cast<const char*>(&v2x), 4);
+        ofs.write(reinterpret_cast<const char*>(&v2y), 4);
+        ofs.write(reinterpret_cast<const char*>(&v2z), 4);
+
+        const boost::uint16_t attr(0);
+        ofs.write(reinterpret_cast<const char*>(&attr), 2);
+    }
+    ofs.close();
+    return;
 }
 
-void STLFileReader::dump(const std::string& filename,
-        const std::vector<triangle_type>& tri) const
+static void write_ascii_stl(
+    const std::string& filename, const std::vector<Triangle>& tri) const
 {
     std::ofstream ofs(filename.c_str());
     if(!ofs.good())
     {
-        std::cerr << "file " << filename << " open error" << std::endl;
-        return;
+        throw std::runtime_error(
+            "ecell4::write_stl_format: file open error: " + filename);
     }
 
-    ofs << "solid dumped" << std::endl;
+    ofs << "solid ecell4\n";
     ofs << std::setprecision(16);
-    for(typename std::vector<triangle_type>::const_iterator
-        iter = tri.begin(); iter != tri.end(); ++iter)
+    for(typename std::vector<Triangle>::const_iterator
+            iter = tri.begin(); iter != tri.end(); ++iter)
     {
-        ofs << "facet normal " << iter->normal[0] << " "
-            << iter->normal[1] << " " << iter->normal[1] << std::endl;
-        ofs << "outer loop" << std::endl;
-        ofs << "vertex " << iter->vertices.at(0)[0] << " "
-            << iter->vertices.at(0)[1] << " "
-            << iter->vertices.at(0)[2] << std::endl;
-        ofs << "vertex " << iter->vertices.at(1)[0] << " "
-            << iter->vertices.at(1)[1] << " "
-            << iter->vertices.at(1)[2] << std::endl;
-        ofs << "vertex " << iter->vertices.at(2)[0] << " "
-            << iter->vertices.at(2)[1] << " "
-            << iter->vertices.at(2)[2] << std::endl;
-        ofs << "endloop" << std::endl;
-        ofs << "endfacet" << std::endl;
+        const Real3  n  = iter->normal();
+        const Real3& v0 = iter->vertex_at(0);
+        const Real3& v1 = iter->vertex_at(1);
+        const Real3& v2 = iter->vertex_at(2);
+
+        ofs << "facet normal " << n[0] << ' ' << n[1] << ' ' <<  n[1] << '\n';
+        ofs << "  outer loop\n";
+        ofs << "    vertex " << v0[0] << ' ' << v0[1] << ' ' << v0[2] << '\n';
+        ofs << "    vertex " << v1[0] << ' ' << v1[1] << ' ' << v1[2] << '\n';
+        ofs << "    vertex " << v2[0] << ' ' << v2[1] << ' ' << v2[2] << '\n';
+        ofs << "  endloop\n";
+        ofs << "endfacet\n";
     }
-    ofs << "endsolid dumped" << std::endl;
+    ofs << "endsolid ecell4\n";
     ofs.close();
     return;
+}
+
+void write_stl_format(const std::string& filename, const STLFormat::Kind kind,
+                      const std::vector<Triangle>& tri)
+{
+    switch(kind)
+    {
+        case STLFormat::Ascii:  return write_ascii_stl (filename, tri);
+        case STLFormat::Binary: return write_binary_stl(filename, tri);
+        default: throw std::invalid_argument("write_stl_format: unknown format");
+    }
 }
 
 }// ecell4
