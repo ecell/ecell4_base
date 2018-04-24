@@ -11,11 +11,11 @@ namespace ecell4
 struct STLFormat {enum Kind {Ascii, Binary};};
 
 std::vector<Triangle>
-read_stl_format(const std::string& filename, STLFormat::Kind);
+read_stl_format(const std::string& filename, const STLFormat::Kind);
 
 void
 write_stl_format(const std::string& filename,
-                 const std::vector<Triangle>& triangles, STLFormat::Kind);
+                 const std::vector<Triangle>& triangles, const STLFormat::Kind);
 
 }// ecell4
 #endif /* ECELL4_STL_FILE_READER */
