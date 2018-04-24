@@ -7,11 +7,8 @@
 #   include <boost/test/included/unit_test.hpp>
 #endif
 
-#include <boost/serialization/strong_typedef.hpp>
+#include <ecell4/core/Polygon.hpp>
 #include <boost/assign.hpp>
-#include <ecell4/core/HalfEdgeMesh.hpp>
-#include <ecell4/core/Real3.hpp>
-#include <ecell4/core/Triangle.hpp>
 #include <algorithm>
 #include <utility>
 

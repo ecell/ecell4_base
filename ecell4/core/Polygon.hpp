@@ -1,5 +1,5 @@
-#ifndef ECELL4_HALFEDGE_POLYGON
-#define ECELL4_HALFEDGE_POLYGON
+#ifndef ECELL4_HALFEDGE_POLYGON_HPP
+#define ECELL4_HALFEDGE_POLYGON_HPP
 
 #include <utility>
 #include <functional>

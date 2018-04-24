@@ -1,4 +1,4 @@
-#include <ecell4/core/HalfEdgeMesh.hpp>
+#include <ecell4/core/Polygon.hpp>
 #include <boost/container/flat_map.hpp>
 
 namespace ecell4
