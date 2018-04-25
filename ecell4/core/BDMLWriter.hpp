@@ -253,16 +253,21 @@ void save_bd5(
                 data_table(new traits_type::bdml_sphere_struct[NUM_MOL]);
             for (unsigned int i(0); i < NUM_MOL; ++i)
             {
+                const ParticleID& pid(particles[i].first);
                 const Particle& p(particles[i].second);
 
-                std::strcpy(data_table[i].ID, "1");
+                // std::strcpy(data_table[i].ID, "1");
+                std::strcpy(data_table[i].ID,
+                    static_cast<std::ostringstream&>(
+                        std::ostringstream() << std::dec << group_name << ":" << i
+                            << ":" << pid.lot() << ":" << pid.serial()).str().c_str());
                 data_table[i].t = space.t();
                 std::strcpy(data_table[i].entity, "sphere");
                 data_table[i].x = p.position()[0];
                 data_table[i].y = p.position()[1];
                 data_table[i].z = p.position()[2];
                 data_table[i].radius = p.radius();
-                std::strcpy(data_table[i].label, "none");
+                std::strcpy(data_table[i].label, p.species().serial().c_str());
             }
 
             const int RANK = 1;
@@ -279,15 +284,20 @@ void save_bd5(
                 data_table(new traits_type::bdml_point_struct[NUM_MOL]);
             for (unsigned int i(0); i < NUM_MOL; ++i)
             {
+                const ParticleID& pid(particles[i].first);
                 const Particle& p(particles[i].second);
 
-                std::strcpy(data_table[i].ID, "1");
+                // std::strcpy(data_table[i].ID, "1");
+                std::strcpy(data_table[i].ID,
+                    static_cast<std::ostringstream&>(
+                        std::ostringstream() << std::dec << group_name << ":" << i
+                            << ":" << pid.lot() << ":" << pid.serial()).str().c_str());
                 data_table[i].t = space.t();
                 std::strcpy(data_table[i].entity, "point");
                 data_table[i].x = p.position()[0];
                 data_table[i].y = p.position()[1];
                 data_table[i].z = p.position()[2];
-                std::strcpy(data_table[i].label, "none");
+                std::strcpy(data_table[i].label, p.species().serial().c_str());
             }
 
             const int RANK = 1;
