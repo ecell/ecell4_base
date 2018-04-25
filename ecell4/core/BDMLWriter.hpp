@@ -100,22 +100,23 @@ struct BDMLTraits
 // template <typename Tspace_>
 void save_bd5(
     const Space& space, const std::string& filename,
-    const std::string& group_name,
+    const int group_index,
     const std::string& object_name,
     const std::string& spatial_unit,
     const std::string& time_unit,
     const bool trunc
     )
 {
-    //XXX: group_name = "0"
+    //XXX: group_index = 0
     //XXX: object_name = "molecule"
     //XXX: spatial_unit = "meter"
     //XXX: time_unit = "second"
 
     typedef BDMLTraits traits_type;
 
-    // boost::scoped_ptr<H5::H5File>
-    //     fout(new H5::H5File(filename.c_str(), H5F_ACC_TRUNC));
+    assert(group_index >= 0);
+    const std::string group_name
+        = static_cast<std::ostringstream&>(std::ostringstream() << std::dec << group_index).str();
 
     H5E_auto2_t func;
     void* client_data;

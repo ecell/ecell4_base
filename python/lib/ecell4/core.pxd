@@ -842,5 +842,5 @@ cdef CylindricalSurface CylindricalSurface_from_Cpp_CylindricalSurface(Cpp_Cylin
 cdef AABB AABB_from_Cpp_AABB(Cpp_AABB* p)
 
 cdef extern from "ecell4/core/BDMLWriter.hpp" namespace "ecell4":
-    void Cpp_save_bd5 "save_bd5" (Cpp_Space&, string, string, string, string, string, bool) except +
+    void Cpp_save_bd5 "save_bd5" (Cpp_Space&, string, int, string, string, string, bool) except +
 
