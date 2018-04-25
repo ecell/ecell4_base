@@ -3,7 +3,7 @@ from ecell4.core import _save_bd5
 def save_bd5(
         space, filename,
         group_index=0, object_name="molecule", spatial_unit="meter", time_unit="second",
-        trunc=False):
+        trunc=False, with_radius=False):
     """Save a space in the BDML-BD5 format (https://github.com/openssbd/BDML-BD5).
 
     Open file for read/write, if it already exists, and create a new file, otherwise.
@@ -28,6 +28,8 @@ def save_bd5(
     trunc : bool, optional
         Whether truncate file or not. If True, always overwrite the file when open it.
         Defaults to False.
+    with_radius : bool, optional
+        Defaults to False.
 
     Returns
     -------
@@ -35,4 +37,4 @@ def save_bd5(
         Return one from ``BDWorld``, ``EGFRDWorld``, ``MesoscopicWorld``,
         ``ODEWorld``, ``GillespieWorld`` and ``SpatiocyteWorld``.
     """
-    _save_bd5(space.as_base(), filename, group_index, object_name, spatial_unit, time_unit, trunc)
+    _save_bd5(space.as_base(), filename, group_index, object_name, spatial_unit, time_unit, trunc, with_radius)

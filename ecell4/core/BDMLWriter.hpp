@@ -24,8 +24,8 @@ namespace ecell4
 struct BDMLTraits
 {
     typedef struct bdml_objectDef_struct {
-        uint32_t oid;
-        char name[32];
+        uint32_t oID;
+        char name[128];
     } bdml_objectDef_struct;
 
     static H5::CompType get_bdml_objectDef_comp_type()
@@ -34,20 +34,20 @@ struct BDMLTraits
 #define INSERT_MEMBER(member, type) \
         H5Tinsert(comp_type.getId(), #member,\
                 HOFFSET(bdml_objectDef_struct, member), type.getId())
-        INSERT_MEMBER(oid, H5::PredType::STD_I32LE);
-        INSERT_MEMBER(name, H5::StrType(H5::PredType::C_S1, 32));
+        INSERT_MEMBER(oID, H5::PredType::STD_I32LE);
+        INSERT_MEMBER(name, H5::StrType(H5::PredType::C_S1, 128));
 #undef INSERT_MEMBER
         return comp_type;
     }
 
     typedef struct bdml_scaleUnit_struct {
-        char dimension[32];
-        double xscale;
-        double yscale;
-        double zscale;
-        char sunit[32];
-        double tscale;
-        char tunit[32];
+        char dimension[8];
+        double xScale;
+        double yScale;
+        double zScale;
+        char sUnit[16];
+        double tScale;
+        char tUnit[16];
     } bdml_scaleUnit_struct;
 
     static H5::CompType get_bdml_scaleUnit_comp_type()
@@ -56,26 +56,26 @@ struct BDMLTraits
 #define INSERT_MEMBER(member, type) \
         H5Tinsert(comp_type.getId(), #member,\
                 HOFFSET(bdml_scaleUnit_struct, member), type.getId())
-        INSERT_MEMBER(dimension, H5::StrType(H5::PredType::C_S1, 32));
-        INSERT_MEMBER(xscale, H5::PredType::NATIVE_DOUBLE);
-        INSERT_MEMBER(yscale, H5::PredType::NATIVE_DOUBLE);
-        INSERT_MEMBER(zscale, H5::PredType::NATIVE_DOUBLE);
-        INSERT_MEMBER(sunit, H5::StrType(H5::PredType::C_S1, 32));
-        INSERT_MEMBER(tscale, H5::PredType::NATIVE_DOUBLE);
-        INSERT_MEMBER(tunit, H5::StrType(H5::PredType::C_S1, 32));
+        INSERT_MEMBER(dimension, H5::StrType(H5::PredType::C_S1, 8));
+        INSERT_MEMBER(xScale, H5::PredType::NATIVE_DOUBLE);
+        INSERT_MEMBER(yScale, H5::PredType::NATIVE_DOUBLE);
+        INSERT_MEMBER(zScale, H5::PredType::NATIVE_DOUBLE);
+        INSERT_MEMBER(sUnit, H5::StrType(H5::PredType::C_S1, 16));
+        INSERT_MEMBER(tScale, H5::PredType::NATIVE_DOUBLE);
+        INSERT_MEMBER(tUnit, H5::StrType(H5::PredType::C_S1, 16));
 #undef INSERT_MEMBER
         return comp_type;
     }
 
     typedef struct bdml_sphere_struct {
-        char id[32];
+        char ID[16];
         double t;
-        char entity[32];
+        char entity[8];
         double x;
         double y;
         double z;
         double radius;
-        char optional[32];
+        char label[16];
     } bdml_sphere_struct;
 
     static H5::CompType get_bdml_sphere_comp_type()
@@ -84,14 +84,41 @@ struct BDMLTraits
 #define INSERT_MEMBER(member, type) \
         H5Tinsert(comp_type.getId(), #member,\
                 HOFFSET(bdml_sphere_struct, member), type.getId())
-        INSERT_MEMBER(id, H5::StrType(H5::PredType::C_S1, 32));
+        INSERT_MEMBER(ID, H5::StrType(H5::PredType::C_S1, 16));
         INSERT_MEMBER(t, H5::PredType::NATIVE_DOUBLE);
-        INSERT_MEMBER(entity, H5::StrType(H5::PredType::C_S1, 32));
+        INSERT_MEMBER(entity, H5::StrType(H5::PredType::C_S1, 8));
         INSERT_MEMBER(x, H5::PredType::NATIVE_DOUBLE);
         INSERT_MEMBER(y, H5::PredType::NATIVE_DOUBLE);
         INSERT_MEMBER(z, H5::PredType::NATIVE_DOUBLE);
         INSERT_MEMBER(radius, H5::PredType::NATIVE_DOUBLE);
-        INSERT_MEMBER(optional, H5::StrType(H5::PredType::C_S1, 32));
+        INSERT_MEMBER(label, H5::StrType(H5::PredType::C_S1, 16));
+#undef INSERT_MEMBER
+        return comp_type;
+    }
+
+    typedef struct bdml_point_struct {
+        char ID[16];
+        double t;
+        char entity[8];
+        double x;
+        double y;
+        double z;
+        char label[16];
+    } bdml_point_struct;
+
+    static H5::CompType get_bdml_point_comp_type()
+    {
+        H5::CompType comp_type(sizeof(bdml_point_struct));
+#define INSERT_MEMBER(member, type) \
+        H5Tinsert(comp_type.getId(), #member,\
+                HOFFSET(bdml_point_struct, member), type.getId())
+        INSERT_MEMBER(ID, H5::StrType(H5::PredType::C_S1, 16));
+        INSERT_MEMBER(t, H5::PredType::NATIVE_DOUBLE);
+        INSERT_MEMBER(entity, H5::StrType(H5::PredType::C_S1, 8));
+        INSERT_MEMBER(x, H5::PredType::NATIVE_DOUBLE);
+        INSERT_MEMBER(y, H5::PredType::NATIVE_DOUBLE);
+        INSERT_MEMBER(z, H5::PredType::NATIVE_DOUBLE);
+        INSERT_MEMBER(label, H5::StrType(H5::PredType::C_S1, 16));
 #undef INSERT_MEMBER
         return comp_type;
     }
@@ -104,7 +131,8 @@ void save_bd5(
     const std::string& object_name,
     const std::string& spatial_unit,
     const std::string& time_unit,
-    const bool trunc
+    const bool trunc,
+    const bool with_radius
     )
 {
     //XXX: group_index = 0
@@ -158,7 +186,7 @@ void save_bd5(
         {
             boost::scoped_array<traits_type::bdml_objectDef_struct>
                 objectDef_table(new traits_type::bdml_objectDef_struct[1]);
-            objectDef_table[0].oid = 0;
+            objectDef_table[0].oID = 0;
             std::strcpy(objectDef_table[0].name, object_name.c_str());
 
             const int RANK = 1;
@@ -173,12 +201,12 @@ void save_bd5(
             boost::scoped_array<traits_type::bdml_scaleUnit_struct>
                 scaleUnit_table(new traits_type::bdml_scaleUnit_struct[1]);
             std::strcpy(scaleUnit_table[0].dimension, "3D+T");
-            scaleUnit_table[0].xscale = 1.0;
-            scaleUnit_table[0].yscale = 1.0;
-            scaleUnit_table[0].zscale = 1.0;
-            std::strcpy(scaleUnit_table[0].sunit, spatial_unit.c_str());
-            scaleUnit_table[0].tscale = 1.0;
-            std::strcpy(scaleUnit_table[0].tunit, time_unit.c_str());
+            scaleUnit_table[0].xScale = 1.0;
+            scaleUnit_table[0].yScale = 1.0;
+            scaleUnit_table[0].zScale = 1.0;
+            std::strcpy(scaleUnit_table[0].sUnit, spatial_unit.c_str());
+            scaleUnit_table[0].tScale = 1.0;
+            std::strcpy(scaleUnit_table[0].tUnit, time_unit.c_str());
 
             const int RANK = 1;
             hsize_t dim[] = {1};
@@ -219,28 +247,57 @@ void save_bd5(
         // const particle_container_type& particles(space.list_particles());
         const unsigned int NUM_MOL = space.num_particles();
 
-        boost::scoped_array<traits_type::bdml_sphere_struct>
-            data_table(new traits_type::bdml_sphere_struct[NUM_MOL]);
-        for (unsigned int i(0); i < NUM_MOL; ++i)
+        if (with_radius)
         {
-            const Particle& p(particles[i].second);
+            boost::scoped_array<traits_type::bdml_sphere_struct>
+                data_table(new traits_type::bdml_sphere_struct[NUM_MOL]);
+            for (unsigned int i(0); i < NUM_MOL; ++i)
+            {
+                const Particle& p(particles[i].second);
 
-            std::strcpy(data_table[i].id, "1");
-            data_table[i].t = space.t();
-            std::strcpy(data_table[i].entity, "sphere");
-            data_table[i].x = p.position()[0];
-            data_table[i].y = p.position()[1];
-            data_table[i].z = p.position()[2];
-            data_table[i].radius = p.radius();
-            std::strcpy(data_table[i].optional, "none");
+                std::strcpy(data_table[i].ID, "1");
+                data_table[i].t = space.t();
+                std::strcpy(data_table[i].entity, "sphere");
+                data_table[i].x = p.position()[0];
+                data_table[i].y = p.position()[1];
+                data_table[i].z = p.position()[2];
+                data_table[i].radius = p.radius();
+                std::strcpy(data_table[i].label, "none");
+            }
+
+            const int RANK = 1;
+            hsize_t dim[] = {NUM_MOL};
+            H5::DataSpace dataspace(RANK, dim);
+            boost::scoped_ptr<H5::DataSet> data_zero_object_zero(
+                new H5::DataSet(data_zero_object->createDataSet(
+                    "0", traits_type::get_bdml_sphere_comp_type(), dataspace)));
+            data_zero_object_zero->write(data_table.get(), data_zero_object_zero->getDataType());
         }
+        else
+        {
+            boost::scoped_array<traits_type::bdml_point_struct>
+                data_table(new traits_type::bdml_point_struct[NUM_MOL]);
+            for (unsigned int i(0); i < NUM_MOL; ++i)
+            {
+                const Particle& p(particles[i].second);
 
-        const int RANK = 1;
-        hsize_t dim[] = {NUM_MOL};
-        H5::DataSpace dataspace(RANK, dim);
-        boost::scoped_ptr<H5::DataSet> data_zero_object_zero(
-            new H5::DataSet(data_zero_object->createDataSet("0", traits_type::get_bdml_sphere_comp_type(), dataspace)));
-        data_zero_object_zero->write(data_table.get(), data_zero_object_zero->getDataType());
+                std::strcpy(data_table[i].ID, "1");
+                data_table[i].t = space.t();
+                std::strcpy(data_table[i].entity, "point");
+                data_table[i].x = p.position()[0];
+                data_table[i].y = p.position()[1];
+                data_table[i].z = p.position()[2];
+                std::strcpy(data_table[i].label, "none");
+            }
+
+            const int RANK = 1;
+            hsize_t dim[] = {NUM_MOL};
+            H5::DataSpace dataspace(RANK, dim);
+            boost::scoped_ptr<H5::DataSet> data_zero_object_zero(
+                new H5::DataSet(data_zero_object->createDataSet(
+                    "0", traits_type::get_bdml_point_comp_type(), dataspace)));
+            data_zero_object_zero->write(data_table.get(), data_zero_object_zero->getDataType());
+        }
     }
 }
 
