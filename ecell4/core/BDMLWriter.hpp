@@ -98,7 +98,7 @@ struct BDMLTraits
 };
 
 // template <typename Tspace_>
-void save_bdml(
+void save_bd5(
     const Space& space, const std::string& filename,
     const std::string& group_name,
     const std::string& object_name,

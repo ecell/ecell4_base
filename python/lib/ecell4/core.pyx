@@ -98,13 +98,18 @@ cimport types
 N_A = types.N_A
 epsilon = types.epsilon
 
-def save_bdml(space, filename, group_name=None, object_name=None, spatial_unit=None, time_unit=None, trunc=False):
-    cdef shared_ptr[Cpp_Space] _space = deref((<Space>space.as_base()).thisptr)
-    cdef string cpp_filename = tostring(filename)
+# def save_bdml(space, filename, group_name=None, object_name=None, spatial_unit=None, time_unit=None, trunc=False):
+#     cdef shared_ptr[Cpp_Space] _space = deref((<Space>space.as_base()).thisptr)
+#     cdef string cpp_filename = tostring(filename)
+# 
+#     cdef string cpp_group_name = "0" if group_name is None else tostring(group_name)
+#     cdef string cpp_object_name = "molecule" if object_name is None else tostring(object_name)
+#     cdef string cpp_spatial_unit = "meter" if spatial_unit is None else tostring(spatial_unit)
+#     cdef string cpp_time_unit = "second" if time_unit is None else tostring(time_unit)
+# 
+#     Cpp_save_bdml(deref(_space.get()), cpp_filename, cpp_group_name, cpp_object_name, cpp_spatial_unit, cpp_time_unit, trunc)
 
-    cdef string cpp_group_name = "0" if group_name is None else tostring(group_name)
-    cdef string cpp_object_name = "molecule" if object_name is None else tostring(object_name)
-    cdef string cpp_spatial_unit = "meter" if spatial_unit is None else tostring(spatial_unit)
-    cdef string cpp_time_unit = "second" if time_unit is None else tostring(time_unit)
-
-    Cpp_save_bdml(deref(_space.get()), cpp_filename, cpp_group_name, cpp_object_name, cpp_spatial_unit, cpp_time_unit, trunc)
+def _save_bd5(Space space, filename, group_name, object_name, spatial_unit, time_unit, bool trunc):
+    """This is a private function. See ecell4.extra.bdml.save_bd5"""
+    cdef shared_ptr[Cpp_Space] _space = deref(space.thisptr)
+    Cpp_save_bd5(deref(_space.get()), tostring(filename), tostring(group_name), tostring(object_name), tostring(spatial_unit), tostring(time_unit), trunc)
