@@ -181,12 +181,12 @@ bool BDPropagator2D::attempt_reaction(
                             std::make_pair(particle.position(), fid),
                             ipv * (-D2 / D12));
 
-                    if(ecell4::polygon::distance_sq(
-                                world_.polygon(), newpf1, newpf2) < r12 * r12)
+                    const Real dist12 = ecell4::polygon::distance(
+                                            world_.polygon(), newpf1, newpf2);
+                    if(dist12 <= r12)
                     {
                         // on polygon, it is not guaranteed that there is no
                         // overlap after particle is splitted
-//                         std::cerr << "after splitted, the particles overlap each other." << std::endl;
                         continue;
                     }
 
@@ -194,23 +194,22 @@ bool BDPropagator2D::attempt_reaction(
                         std::pair<std::pair<ParticleID, Particle>, Real> >
                         overlapped1(world_.list_particles_within_radius(
                             newpf1, r1, pid));
-                    if(overlapped1.size() > 0)
+                    if(!overlapped1.empty())
                     {
-//                         std::cerr << "after splitted, one of the particle overlaps." << std::endl;
                         continue;
                     }
                     const std::vector<
                         std::pair<std::pair<ParticleID, Particle>, Real> >
                         overlapped2(world_.list_particles_within_radius(
                             newpf2, r2, pid));
-                    if(overlapped2.size() > 0)
+                    if(!overlapped2.empty())
                     {
-//                         std::cerr << "after splitted, one of the particle overlaps." << std::endl;
                         continue;
                     }
 
                     break;
                 }
+
 
                 Particle particle_to_update1(sp1, newpf1.first, r1, D1);
                 Particle particle_to_update2(sp2, newpf2.first, r2, D2);
