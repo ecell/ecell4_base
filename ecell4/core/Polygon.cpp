@@ -569,4 +569,59 @@ std::pair<Real3, Polygon::FaceID> Polygon::travel(
                disp * (1 - cs.second)));          // the rest of displacement
 }
 
+std::pair<Real3, Polygon::FaceID> Polygon::travel(
+        const std::pair<Real3, FaceID>& pos, const Real3& disp,
+        const std::size_t restraint) const
+{
+    if(restraint == 0)
+    {
+        std::cerr << "movement along surface of a Polygon: "
+                     "restraint hits 0. tolerance violated!" << std::endl;
+        std::cerr << "the rest of displacement: " << disp    << std::endl;
+        return pos;
+    }
+    const Real3& p = pos.first;
+    const FaceID f = pos.second;
+    const Real3 np = p + disp;
+
+    const face_data& fd = this->face_at(f);
+    const Triangle& tri = fd.triangle;
+    const Barycentric b2(to_barycentric(np, tri));
+
+    // if pos + disp is inside of the current face, just return the sum.
+    if(::ecell4::is_inside(b2))
+    {
+        // to avoid numerical error that make the particle goes outside of the
+        // face that the particle belongs, use `to_absolute`.
+        return std::make_pair(to_absolute(b2, tri), f);
+    }
+
+    const Barycentric b1(to_barycentric(p, tri));
+    const Barycentric db(b2 - b1);
+    const std::pair<std::size_t, Real> cs   = first_cross_edge(b1, db);
+    const std::pair<FaceID, Triangle>& next = fd.neighbor_cw[cs.first].front();
+
+    // if the position is inside of the adjacent face, return the position
+    // reconstructed from unfolded-Barycentric by using folded Triangle.
+    const Barycentric unfolded_b(to_barycentric(np, next.second));
+    if(::ecell4::is_inside(unfolded_b, 1e-8))
+    {
+        const Real3 nxt = to_absolute(
+                force_put_inside(unfolded_b), this->triangle_at(next.first));
+        return std::make_pair(nxt, next.first);
+        // use folded (normal) Triangle, NOT next.second
+    }
+
+    // stride over not only the edge but adjacent face.
+    // XXX to make it sure that `on_edge` should be on the edge under the PBC,
+    //     to_absolute is used with the next triangle.
+    const Barycentric on_edge_b(to_barycentric(p + disp * cs.second, next.second));
+    return this->travel(std::make_pair(
+        to_absolute(on_edge_b, this->triangle_at(next.first)), next.first),
+        rotate(tilt_angle_at(fd.edges[cs.first]), // rotate disp by tilt_angle
+               direction_of(fd.edges[cs.first]),  // around the edge
+               disp * (1 - cs.second)),           // the rest of displacement
+        restraint - 1);
+}
+
 } // ecell4

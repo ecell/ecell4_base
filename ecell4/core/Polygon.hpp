@@ -174,6 +174,9 @@ class Polygon : public Shape
     // move `pos` to `pos + disp`.
     std::pair<Real3, FaceID>
     travel(const std::pair<Real3, FaceID>& pos, const Real3& disp) const;
+    std::pair<Real3, FaceID>
+    travel(const std::pair<Real3, FaceID>& pos, const Real3& disp,
+           const std::size_t restraint) const;
 
     // pos1 -> pos2 <=> pos2 - pos1
     Real3 direction (const std::pair<Real3, FaceID>& pos1,
@@ -523,6 +526,13 @@ inline std::pair<Real3, Polygon::FaceID> travel(const Polygon& p,
         const std::pair<Real3, Polygon::FaceID>& pos, const Real3& disp)
 {
     return p.travel(pos, disp);
+}
+
+inline std::pair<Real3, Polygon::FaceID> travel(const Polygon& p,
+        const std::pair<Real3, Polygon::FaceID>& pos, const Real3& disp,
+        const std::size_t edge_restraint)
+{
+    return p.travel(pos, disp, edge_restraint);
 }
 
 // for sGFRD
