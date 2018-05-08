@@ -46,8 +46,7 @@ SGFRDSimulator::propagate_single_circular(
 
     SGFRD_TRACE(tracer_.write("pos = %1%, fid = %2%", state.first.first, state.first.second));
 
-    std::size_t continue_count =
-        ecell4::polygon::travel(this->polygon(), state.first, state.second, 2);
+    state.first = ecell4::polygon::travel(this->polygon(), state.first, state.second, 2);
     if(continue_count == 0)
     {
         SGFRD_TRACE(tracer_.write("moving on face: precision lost"))
@@ -236,14 +235,8 @@ SGFRDSimulator::attempt_reaction_1_to_2(const ReactionRule& rule,
 
         Real3 disp1(ipv * ( r1 / r12)), disp2(ipv * (-r2 / r12));
 
-        if(0 == ecell4::polygon::travel(this->polygon(), newpfs[0], disp1, 100))
-        {
-            std::cerr << "[WARNING] moving on face by BD: precision lost\n";
-        }
-        if(0 == ecell4::polygon::travel(this->polygon(), newpfs[1], disp2, 100))
-        {
-            std::cerr << "[WARNING] moving on face by BD: precision lost\n";
-        }
+        newpfs[0] = ecell4::polygon::travel(this->polygon(), newpfs[0], disp1);
+        newpfs[1] = ecell4::polygon::travel(this->polygon(), newpfs[1], disp2);
 
         // if two particle overlaps...
         const Real dist =
@@ -348,12 +341,8 @@ SGFRDSimulator::escape_single_circular(
 
     SGFRD_TRACE(tracer_.write("pos = %1%, fid = %2%", state.first.first, state.first.second))
 
-    const std::size_t continue_count =
-        ecell4::polygon::travel(this->polygon(), state.first, state.second, 2);
-    if(continue_count == 0)
-    {
-        SGFRD_TRACE(tracer_.write("moving on face: precision lost"))
-    }
+    state.first = ecell4::polygon::travel(this->polygon(), state.first, state.second, 2);
+
     SGFRD_TRACE(tracer_.write("escaped"))
     SGFRD_TRACE(tracer_.write("pos = %1%, fid = %2%",
                               state.first.first, state.first.second))
@@ -545,7 +534,7 @@ SGFRDSimulator::form_pair(
 
     std::pair<Real3, FaceID> pos_com = std::make_pair(p.position(), fid);
     Real3 disp = ipv * D1 / D12;
-    ecell4::polygon::travel(this->polygon(), pos_com, disp, 2);
+    pos_com = ecell4::polygon::travel(this->polygon(), pos_com, disp, 2);
 
     Real max_dist = get_max_circle_size(pos_com);
     // the first element is the partner. ignore it.

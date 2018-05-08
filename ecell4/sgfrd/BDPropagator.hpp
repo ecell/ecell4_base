@@ -515,12 +515,7 @@ public:
 
     void propagate(std::pair<Real3, FaceID>& pos, Real3& disp) const
     {
-        const std::size_t continue_count =
-            ecell4::polygon::travel(this->polygon_, pos, disp, 100);
-        if(continue_count == 0)
-        {
-            std::cerr << "[WARNING] moving on face by BD: precision lost\n";
-        }
+        pos = ecell4::polygon::travel(this->polygon_, pos, disp);
         return ;
     }
 

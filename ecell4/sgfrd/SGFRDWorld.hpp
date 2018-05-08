@@ -4,7 +4,7 @@
 #include "Informations.hpp"
 #include <ecell4/core/ParticleSpaceCellListImpl.hpp>
 #include <ecell4/core/SerialIDGenerator.hpp>
-#include <ecell4/core/HalfEdgeMesh.hpp>
+#include <ecell4/core/Polygon.hpp>
 #include <ecell4/core/Context.hpp>
 #include <ecell4/core/Model.hpp>
 #include <boost/scoped_ptr.hpp>

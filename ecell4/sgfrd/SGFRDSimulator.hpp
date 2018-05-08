@@ -695,16 +695,8 @@ class SGFRDSimulator :
         std::pair<Real3, FaceID> pos_p1(p1.position(), this->get_face_id(pid1));
         std::pair<Real3, FaceID> pos_p2(p2.position(), this->get_face_id(pid2));
 
-        if(0 == ecell4::polygon::travel(this->polygon(), pos_p1, disp_p1, 2))
-        {
-            SGFRD_TRACE(tracer_.write("escape_com_circular_pair "
-                        "p1 moving on face: precision lost"))
-        }
-        if(0 == ecell4::polygon::travel(this->polygon(), pos_p2, disp_p2, 2))
-        {
-            SGFRD_TRACE(tracer_.write("escape_com_circular_pair "
-                        "p2 moving on face: precision lost"))
-        }
+        pos_p1 = ecell4::polygon::travel(this->polygon(), pos_p1, disp_p1, 2);
+        pos_p2 = ecell4::polygon::travel(this->polygon(), pos_p2, disp_p2, 2);
 
         p1.position() = pos_p1.first;
         p2.position() = pos_p2.first;
@@ -807,18 +799,9 @@ class SGFRDSimulator :
         SGFRD_TRACE(tracer_.write("p1 is on face %1%, p2 is on face %2%",
                                   get_face_id(pid1), get_face_id(pid2)))
 
-        if(0 == ecell4::polygon::travel(this->polygon(), pos_p1, disp_p1, 2))
-        {
-            SGFRD_TRACE(tracer_.write("escape_com_circular_pair "
-                        "p1 moving on face: precision lost"))
-            SGFRD_TRACE(tracer_.write("displacement = %1%", disp_p1))
-        }
-        if(0 == ecell4::polygon::travel(this->polygon(), pos_p2, disp_p2, 2))
-        {
-            SGFRD_TRACE(tracer_.write("escape_com_circular_pair "
-                        "p1 moving on face: precision lost"))
-            SGFRD_TRACE(tracer_.write("displacement = %1%", disp_p2))
-        }
+        pos_p1 = ecell4::polygon::travel(this->polygon(), pos_p1, disp_p1, 2);
+        pos_p2 = ecell4::polygon::travel(this->polygon(), pos_p2, disp_p2, 2);
+
         SGFRD_TRACE(tracer_.write("distance after travel = %1%",
                     ecell4::polygon::distance(this->polygon(), pos_p1, pos_p2)))
         SGFRD_TRACE(tracer_.write("now p1 is on face %1%, p2 is on face %2%",
@@ -906,18 +889,8 @@ class SGFRDSimulator :
         std::pair<Real3, FaceID> pos_p1(pos_com, fid_com);
         std::pair<Real3, FaceID> pos_p2(pos_com, fid_com);
 
-        if(0 == ecell4::polygon::travel(this->polygon(), pos_p1, disp_p1, 2))
-        {
-            SGFRD_TRACE(tracer_.write("escape_ipv_circular_pair "
-                        "p1 moving on face: precision lost"))
-            SGFRD_TRACE(tracer_.write("displacement = %1%", disp_p1))
-        }
-        if(0 == ecell4::polygon::travel(this->polygon(), pos_p2, disp_p2, 2))
-        {
-            SGFRD_TRACE(tracer_.write("escape_ipv_circular_pair "
-                        "p2 moving on face: precision lost"))
-            SGFRD_TRACE(tracer_.write("displacement = %1%", disp_p2))
-        }
+        pos_p1 = ecell4::polygon::travel(this->polygon(), pos_p1, disp_p1, 2);
+        pos_p2 = ecell4::polygon::travel(this->polygon(), pos_p2, disp_p2, 2);
 
         p1.position() = pos_p1.first;
         p2.position() = pos_p2.first;
@@ -1026,12 +999,9 @@ class SGFRDSimulator :
 
                 Real3 disp_com = direction_com * (l_com / length(direction_com));
                 std::pair<Real3, FaceID> pos_com(sh.position(), sh_fid);
-                if(0 == ecell4::polygon::travel(
-                            this->polygon(), pos_com, disp_com, 2))
-                {
-                    SGFRD_TRACE(tracer_.write("escape_com_circular_pair "
-                                "p1 moving on face: precision lost"))
-                }
+
+                pos_com = ecell4::polygon::travel(this->polygon(), pos_com, disp_com, 2);
+
                 const Real3  pos_new = pos_com.first;
                 const FaceID fid_new = pos_com.second;
 
@@ -1081,20 +1051,12 @@ class SGFRDSimulator :
                         Real3 disp_p2 = disp_com - disp_ipv0_p2 + disp_ipv_p2;
                         disp_p1 *= (1. + minimum_separation_factor / 2);
                         disp_p2 *= (1. + minimum_separation_factor / 2);
+
                         std::pair<Real3, FaceID> pos_p1(p1.position(), fid1);
                         std::pair<Real3, FaceID> pos_p2(p2.position(), fid2);
-                        if(0 == ecell4::polygon::travel(
-                                    this->polygon(), pos_p1, disp_p1, 2))
-                        {
-                            SGFRD_TRACE(tracer_.write("reaction_ipv_circular_pair "
-                                        "p1 moving on face: precision lost"))
-                        }
-                        if(0 == ecell4::polygon::travel(
-                                    this->polygon(), pos_p2, disp_p2, 2))
-                        {
-                            SGFRD_TRACE(tracer_.write("reaction_ipv_circular_pair "
-                                        "p2 moving on face: precision lost"))
-                        }
+                        pos_p1 = ecell4::polygon::travel(this->polygon(), pos_p1, disp_p1, 2);
+                        pos_p2 = ecell4::polygon::travel(this->polygon(), pos_p2, disp_p2, 2);
+
                         p1.position() = pos_p1.first;
                         p2.position() = pos_p2.first;
                         this->update_particle(pid1, p1, pos_p1.second);
