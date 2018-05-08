@@ -24,13 +24,11 @@ public:
     typedef std::map<Species::serial_type, particle_id_set>
             species_to_particle_id_set_map_type;
 
-    typedef BDPolygon polygon_type;
-    typedef polygon_type::triangle_type face_type;
-    typedef polygon_type::face_id_type face_id_type;
-    typedef std::vector<face_id_type> face_id_list;
-    typedef utils::get_mapper_mf<ParticleID, face_id_type>::type
+    typedef Polygon::FaceID FaceID;
+    typedef std::vector<FaceID> face_id_list;
+    typedef utils::get_mapper_mf<ParticleID, FaceID>::type
             pid_to_faceid_map_type;
-    typedef utils::get_mapper_mf<face_id_type, particle_id_set>::type
+    typedef utils::get_mapper_mf<FaceID, particle_id_set>::type
             face_id_to_particle_id_set_map_type;
 
 public:
@@ -65,33 +63,32 @@ public:
 
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
         list_particles_within_radius(
-            const std::pair<Real3, face_id_type>& pos, const Real& radius) const;
+            const std::pair<Real3, FaceID>& pos, const Real& radius) const;
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
         list_particles_within_radius(
-            const std::pair<Real3, face_id_type>& pos, const Real& radius,
+            const std::pair<Real3, FaceID>& pos, const Real& radius,
             const ParticleID& ignore) const;
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
         list_particles_within_radius(
-            const std::pair<Real3, face_id_type>& pos, const Real& radius,
+            const std::pair<Real3, FaceID>& pos, const Real& radius,
             const ParticleID& ignore1, const ParticleID& ignore2) const;
 
-    inline Real distance_sq(const Real3& pos1, const face_id_type& fid1,
-                            const Real3& pos2, const face_id_type& fid2) const
+    inline Real distance_sq(const Real3& pos1, const FaceID& fid1,
+                            const Real3& pos2, const FaceID& fid2) const
     {
         return polygon_.distance_sq(
                 std::make_pair(pos1, fid1), std::make_pair(pos2, fid2));
     }
 
-    inline Real distance(const Real3& pos1, const face_id_type& fid1,
-                         const Real3& pos2, const face_id_type& fid2) const
+    inline Real distance(const Real3& pos1, const FaceID& fid1,
+                         const Real3& pos2, const FaceID& fid2) const
     {
         return polygon_.distance(
                 std::make_pair(pos1, fid1), std::make_pair(pos2, fid2));
     }
 
-    Real3 get_inter_position_vector(
-            const std::pair<Real3, face_id_type>& lhs,
-            const std::pair<Real3, face_id_type>& rhs) const
+    Real3 get_inter_position_vector(const std::pair<Real3, FaceID>& lhs,
+                                    const std::pair<Real3, FaceID>& rhs) const
     {
         return polygon_.developed_direction(lhs, rhs);
     }
@@ -102,15 +99,15 @@ public:
         throw NotImplemented("2D::update_particle(pid, p)");
     }
     bool update_particle(const ParticleID& pid, const Particle& p,
-                         const face_id_type& fid);
+                         const FaceID& fid);
 
     std::pair<ParticleID, Particle> get_particle(const ParticleID& pid) const;
     void remove_particle(const ParticleID& pid);
     const particle_container_type& particles() const {return particles_;}
 
     // polygon
-    std::pair<Real3, face_id_type>
-    apply_surface(const std::pair<Real3, face_id_type>& position,
+    std::pair<Real3, FaceID>
+    apply_surface(const std::pair<Real3, FaceID>& position,
                   const Real3& displacement) const;
 
     polygon_type&       polygon()       {return polygon_;}
@@ -123,12 +120,12 @@ public:
         return polygon_.triangle_at(const_at(pid_to_fid_, pid));
     }
 
-    face_id_type const& belonging_faceid(const ParticleID& pid) const
+    FaceID const& belonging_faceid(const ParticleID& pid) const
     {
         return const_at(pid_to_fid_, pid);
     }
 
-    particle_id_set const& particles_on_face(const face_id_type& fid) const
+    particle_id_set const& particles_on_face(const FaceID& fid) const
     {
         return const_at(particle_on_face_, fid);
     }
@@ -168,11 +165,11 @@ private:
     particle_container_type::iterator
     update(const particle_container_type::iterator& old,
            const std::pair<ParticleID, Particle>& pid,
-           const face_id_type fid);
+           const FaceID fid);
 
     std::pair<particle_container_type::iterator, bool>
     update(const std::pair<ParticleID, Particle>& pid,
-           const face_id_type fid);
+           const FaceID fid);
 
     bool erase(const particle_container_type::iterator& pid);
     bool erase(const ParticleID& pid);
@@ -209,7 +206,7 @@ ParticleContainer2D::find(const ParticleID& pid) const
 inline ParticleContainer2D::particle_container_type::iterator
 ParticleContainer2D::update(const particle_container_type::iterator& old,
                             const std::pair<ParticleID, Particle>& p,
-                            const face_id_type fid)
+                            const FaceID fid)
 {
     if(old == particles_.end())
     {
@@ -222,7 +219,7 @@ ParticleContainer2D::update(const particle_container_type::iterator& old,
     }
 
     *old = p;
-    const face_id_type old_face(pid_to_fid_[p.first]);
+    const FaceID old_face(pid_to_fid_[p.first]);
 
     if(old_face != fid)
     {
@@ -235,7 +232,7 @@ ParticleContainer2D::update(const particle_container_type::iterator& old,
 
 inline std::pair<ParticleContainer2D::particle_container_type::iterator, bool>
 ParticleContainer2D::update(
-        const std::pair<ParticleID, Particle>& pid, const face_id_type fid)
+        const std::pair<ParticleID, Particle>& pid, const FaceID fid)
 {
     const pid_to_particle_index_map_type::const_iterator
         iter(this->pid_to_pidx_.find(pid.first));
@@ -254,7 +251,7 @@ ParticleContainer2D::erase(const particle_container_type::iterator& iter)
         return false;
 
     const container_index_type old_idx(std::distance(particles_.begin(), iter));
-    const face_id_type old_face(this->pid_to_fid_[iter->first]);
+    const FaceID old_face(this->pid_to_fid_[iter->first]);
 
     this->pid_to_pidx_.erase(iter->first);
     this->pid_to_fid_.erase(iter->first);

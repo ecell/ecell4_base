@@ -38,8 +38,7 @@ public:
     // typedef ParticleSpaceVectorImpl particle_space_type;
     typedef particle_space_type::particle_container_type particle_container_type;
 
-    typedef BDPolygon::triangle_type    face_type;
-    typedef BDPolygon::face_id_type face_id_type;
+    typedef ecell4::Polygon::FaceID FaceID;
 
 public:
 
@@ -113,7 +112,7 @@ public:
      * and bool (if it's succeeded or not)
      */
     std::pair<std::pair<ParticleID, Particle>, bool>
-    new_particle(const Particle& p, const face_id_type& fid)
+    new_particle(const Particle& p, const FaceID& fid)
     {
         const ParticleID pid(pidgen_());
         // if (has_particle(pid)) throw AlreadyExists("particle already exists");
@@ -131,7 +130,7 @@ public:
     }
 
     std::pair<std::pair<ParticleID, Particle>, bool>
-    new_particle(const Species& sp, const Real3& pos, const face_id_type& fid)
+    new_particle(const Species& sp, const Real3& pos, const FaceID& fid)
     {
         const MoleculeInfo info(get_molecule_info(sp));
         return new_particle(Particle(sp, pos, info.radius, info.D), fid);
@@ -252,7 +251,7 @@ public:
     }
 
     bool update_particle_without_checking(
-            const ParticleID& pid, const Particle& p, const face_id_type& fid)
+            const ParticleID& pid, const Particle& p, const FaceID& fid)
     {
         return (*ps2d_).update_particle(pid, p, fid);
     }
@@ -271,7 +270,7 @@ public:
     }
 
     bool update_particle(
-            const ParticleID& pid, const Particle& p, const face_id_type& fid)
+            const ParticleID& pid, const Particle& p, const FaceID& fid)
     {
         // XXX: checking overlap in 3D spherical region
         if (list_particles_within_radius(std::make_pair(p.position(), fid),
@@ -339,14 +338,14 @@ public:
     // list-up 2D particles using 2D distance(along surface).
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
     list_particles_within_radius(
-        const std::pair<Real3, face_id_type>& pos, const Real& radius) const
+        const std::pair<Real3, FaceID>& pos, const Real& radius) const
     {
         return (*ps2d_).list_particles_within_radius(pos, radius);
     }
 
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
     list_particles_within_radius(
-        const std::pair<Real3, face_id_type>& pos, const Real& radius,
+        const std::pair<Real3, FaceID>& pos, const Real& radius,
         const ParticleID& ignore) const
     {
         return (*ps2d_).list_particles_within_radius(pos, radius, ignore);
@@ -354,7 +353,7 @@ public:
 
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
     list_particles_within_radius(
-        const std::pair<Real3, face_id_type>& pos, const Real& radius,
+        const std::pair<Real3, FaceID>& pos, const Real& radius,
         const ParticleID& ignore1, const ParticleID& ignore2) const
     {
         return (*ps2d_).list_particles_within_radius(
@@ -376,8 +375,8 @@ public:
         return (*ps3d_).apply_boundary(pos);
     }
 
-    inline std::pair<Real3, face_id_type>
-    apply_surface(const std::pair<Real3, face_id_type>& position,
+    inline std::pair<Real3, FaceID>
+    apply_surface(const std::pair<Real3, FaceID>& position,
                   const Real3& displacement) const
     {
         return (*ps2d_).apply_surface(position, displacement);
@@ -396,15 +395,15 @@ public:
     }
 
     //! @brief square distance along the surface. If inaccessible, return infty.
-    inline Real distance_sq(const Real3& pos1, const face_id_type& fid1,
-                            const Real3& pos2, const face_id_type& fid2) const
+    inline Real distance_sq(const Real3& pos1, const FaceID& fid1,
+                            const Real3& pos2, const FaceID& fid2) const
     {
         return (*ps2d_).distance_sq(pos1, fid1, pos2, fid2);
     }
 
     //! @brief distance along the surface. If inaccessible, return infty.
-    inline Real distance(const Real3& pos1, const face_id_type& fid1,
-                         const Real3& pos2, const face_id_type& fid2) const
+    inline Real distance(const Real3& pos1, const FaceID& fid1,
+                         const Real3& pos2, const FaceID& fid2) const
     {
         return (*ps2d_).distance(pos1, fid1, pos2, fid2);
     }
@@ -596,8 +595,8 @@ public:
     }
 
     Real3 get_inter_position_vector(
-            const std::pair<Real3, face_id_type>& lhs,
-            const std::pair<Real3, face_id_type>& rhs) const
+            const std::pair<Real3, FaceID>& lhs,
+            const std::pair<Real3, FaceID>& rhs) const
     {
         return (*ps2d_).get_inter_position_vector(lhs, rhs);
     }

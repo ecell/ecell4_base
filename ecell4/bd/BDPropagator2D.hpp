@@ -20,9 +20,7 @@ public:
 
     typedef ReactionInfo reaction_info_type;
     typedef BDWorld::molecule_info_type molecule_info_type;
-    typedef BDPolygon polygon_type;
-    typedef BDPolygon::triangle_type face_type;
-    typedef BDPolygon::face_id_type face_id_type;
+    typedef ecell4::Polygon::FaceID FaceID;
 
 public:
 
@@ -51,10 +49,10 @@ public:
     }
 
     bool attempt_reaction(const ParticleID& pid, const Particle& particle,
-                          const face_id_type& fid);
+                          const FaceID& fid);
     bool attempt_reaction(
-        const ParticleID& pid1, const Particle& particle1, const face_id_type& f1,
-        const ParticleID& pid2, const Particle& particle2, const face_id_type& f2);
+        const ParticleID& pid1, const Particle& particle1, const FaceID& f1,
+        const ParticleID& pid2, const Particle& particle2, const FaceID& f2);
 
     void remove_particle(const ParticleID& pid);
 

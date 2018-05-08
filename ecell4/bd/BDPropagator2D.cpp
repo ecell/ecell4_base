@@ -23,9 +23,9 @@ bool BDPropagator2D::operator()()
 
     const ParticleID pid(queue_.back().first);
     queue_.pop_back();
-    const Particle particle = container2D.get_particle(pid).second;
-    const face_id_type  fid = container2D.belonging_faceid(pid);
-    const Triangle&    face = container2D.belonging_face(pid);
+    const Particle  particle = container2D.get_particle(pid).second;
+    const FaceID    fid      = container2D.belonging_faceid(pid);
+    const Triangle& face     = container2D.belonging_face(pid);
 
     if(attempt_reaction(pid, particle, fid))
     {
@@ -39,9 +39,10 @@ bool BDPropagator2D::operator()()
                      // -> change acceptance coef in attempt_reaction(p1, p2)
     }
 
-    std::pair<Real3, face_id_type> newpf(world_.apply_surface(
-        std::make_pair(particle.position(), fid),
-        draw_displacement(particle, face.normal())));
+    const Real3 disp = draw_displacement(particle, face.normal());
+    std::pair<Real3, FaceID> newpf(world_.apply_surface(
+        std::make_pair(particle.position(), fid), disp
+        ));
 
     Particle particle_to_update(
         particle.species(), newpf.first, particle.radius(), particle.D());
@@ -70,7 +71,7 @@ bool BDPropagator2D::operator()()
         {
             std::pair<std::pair<ParticleID, Particle>, Real> closest =
                 overlapped.front();
-            const face_id_type closest_fid =
+            const FaceID closest_fid =
                 container2D.belonging_faceid(closest.first.first);
 
             if (attempt_reaction(pid, particle_to_update, newpf.second,
@@ -86,7 +87,7 @@ bool BDPropagator2D::operator()()
 }
 
 bool BDPropagator2D::attempt_reaction(
-    const ParticleID& pid, const Particle& particle, const face_id_type& fid)
+    const ParticleID& pid, const Particle& particle, const FaceID& fid)
 {
     std::vector<ReactionRule> const& reaction_rules =
         model_.query_reaction_rules(particle.species());
@@ -160,7 +161,7 @@ bool BDPropagator2D::attempt_reaction(
                 const Real3 n = this->poly_.triangle_at(fid).normal();
 
                 Integer retry(max_retry_count_);
-                std::pair<Real3, face_id_type> newpf1, newpf2;
+                std::pair<Real3, FaceID> newpf1, newpf2;
                 while(true)
                 {
                     if(--retry < 0)
@@ -214,7 +215,7 @@ bool BDPropagator2D::attempt_reaction(
                     const Real3& normal = this->poly_.triangle_at(newpf1.second).normal();
                     const ParticleContainer2D& container2D = world_.container_2D();
 
-                    std::pair<Real3, face_id_type> newpf(world_.apply_surface(
+                    std::pair<Real3, FaceID> newpf(world_.apply_surface(
                         newpf1, draw_displacement(particle_to_update1, normal)));
 
                     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
@@ -234,7 +235,7 @@ bool BDPropagator2D::attempt_reaction(
                     const Real3& normal = this->poly_.triangle_at(newpf2.second).normal();
                     const ParticleContainer2D& container2D = world_.container_2D();
 
-                    std::pair<Real3, face_id_type> newpf(world_.apply_surface(
+                    std::pair<Real3, FaceID> newpf(world_.apply_surface(
                         newpf2, draw_displacement(particle_to_update2, normal)));
 
                     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
@@ -268,8 +269,8 @@ bool BDPropagator2D::attempt_reaction(
 }
 
 bool BDPropagator2D::attempt_reaction(
-        const ParticleID& pid1, const Particle& particle1, const face_id_type& f1,
-        const ParticleID& pid2, const Particle& particle2, const face_id_type& f2)
+        const ParticleID& pid1, const Particle& particle1, const FaceID& f1,
+        const ParticleID& pid2, const Particle& particle2, const FaceID& f2)
 {
     std::vector<ReactionRule> reaction_rules(
         model_.query_reaction_rules(
@@ -341,7 +342,7 @@ bool BDPropagator2D::attempt_reaction(
                 const Real3 dp = world_.get_inter_position_vector(
                         std::make_pair(pos1, f1), std::make_pair(pos2, f2));
                 const Real3 dp1 = dp * (D1 / D12);
-                const std::pair<Real3, face_id_type> newpf(
+                const std::pair<Real3, FaceID> newpf(
                         world_.apply_surface(std::make_pair(pos1, f1), dp1));
 
                 std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
