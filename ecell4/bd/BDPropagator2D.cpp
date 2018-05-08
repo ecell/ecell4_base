@@ -181,17 +181,35 @@ bool BDPropagator2D::attempt_reaction(
                             std::make_pair(particle.position(), fid),
                             ipv * (-D2 / D12));
 
+                    if(ecell4::polygon::distance_sq(
+                                world_.polygon(), newpf1, newpf2) < r12 * r12)
+                    {
+                        // on polygon, it is not guaranteed that there is no
+                        // overlap after particle is splitted
+//                         std::cerr << "after splitted, the particles overlap each other." << std::endl;
+                        continue;
+                    }
+
                     const std::vector<
                         std::pair<std::pair<ParticleID, Particle>, Real> >
                         overlapped1(world_.list_particles_within_radius(
                             newpf1, r1, pid));
-                    if(overlapped1.size() > 0) continue;
-
+                    if(overlapped1.size() > 0)
+                    {
+//                         std::cerr << "after splitted, one of the particle overlaps." << std::endl;
+                        continue;
+                    }
                     const std::vector<
                         std::pair<std::pair<ParticleID, Particle>, Real> >
                         overlapped2(world_.list_particles_within_radius(
                             newpf2, r2, pid));
-                    if(overlapped2.size() == 0) break;
+                    if(overlapped2.size() > 0)
+                    {
+//                         std::cerr << "after splitted, one of the particle overlaps." << std::endl;
+                        continue;
+                    }
+
+                    break;
                 }
 
                 Particle particle_to_update1(sp1, newpf1.first, r1, D1);
@@ -199,13 +217,18 @@ bool BDPropagator2D::attempt_reaction(
 
                 const bool update_result = world_.update_particle(
                         pid, particle_to_update1, newpf1.second);
+                // `pid` already exists. so this does not add a new particle.
                 assert(!update_result);
 
                 std::pair<std::pair<ParticleID, Particle>, bool>
                     p2_added = world_.new_particle(
                             particle_to_update2, newpf2.second);
+                // `p2` does not exist, so new particle should be added.
                 assert(p2_added.second);
+
                 const ParticleID p2_id(p2_added.first.first);
+                // of course, world has a particle corresponding to `p2_id`.
+                assert(world_.has_particle(p2_id));
 
                 // move one particle.
                 // if rejected, particles are left at the position
@@ -215,16 +238,15 @@ bool BDPropagator2D::attempt_reaction(
                 if(D2 == 0 || (D1 != 0 && rng_.uniform_int(0, 1) == 0))
                 {
                     const Real3& normal = this->poly_.triangle_at(newpf1.second).normal();
-                    const ParticleContainer2D& container2D = world_.container_2D();
 
                     std::pair<Real3, FaceID> newpf(world_.apply_surface(
                         newpf1, draw_displacement(particle_to_update1, normal)));
 
                     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
-                        overlapped(container2D.list_particles_within_radius(
+                        overlapped(world_.list_particles_within_radius(
                                 newpf, particle_to_update1.radius(), pid));
 
-                    if(overlapped.size() == 0)
+                    if(overlapped.empty())
                     {
                         particle_to_update1.position() = newpf.first;
                         const bool update_1 = world_.update_particle(
@@ -235,28 +257,26 @@ bool BDPropagator2D::attempt_reaction(
                 else
                 {
                     const Real3& normal = this->poly_.triangle_at(newpf2.second).normal();
-                    const ParticleContainer2D& container2D = world_.container_2D();
 
                     std::pair<Real3, FaceID> newpf(world_.apply_surface(
                         newpf2, draw_displacement(particle_to_update2, normal)));
 
                     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
-                        overlapped(container2D.list_particles_within_radius(
-                                newpf, particle_to_update2.radius(), pid));
+                        overlapped(world_.list_particles_within_radius(
+                                newpf, particle_to_update2.radius(), p2_id));
 
-                    if(overlapped.size() == 0)
+                    if(overlapped.empty())
                     {
                         particle_to_update2.position() = newpf.first;
                         const bool update_2 = world_.update_particle(
                                 p2_id, particle_to_update2, newpf.second);
-                        assert(!update_2);
+                        assert(!update_2); // it should be found!
                     }
                 }
 
                 r_info.add_product(std::make_pair(pid,   particle_to_update1));
                 r_info.add_product(std::make_pair(p2_id, particle_to_update2));
                 last_reactions_.push_back(std::make_pair(rule, r_info));
-
 
                 return true;
             }
