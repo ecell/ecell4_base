@@ -2,7 +2,7 @@
 #define ECELL4_BD_CONTAINER_2D
 #include <ecell4/core/ParticleSpace.hpp>
 #include <ecell4/core/exceptions.hpp>
-#include "BDPolygon.hpp"
+#include <ecell4/core/Polygon.hpp>
 #include "map_const_at.hpp"
 #include <set>
 
@@ -110,10 +110,8 @@ public:
     apply_surface(const std::pair<Real3, FaceID>& position,
                   const Real3& displacement) const;
 
-    polygon_type&       polygon()       {return polygon_;}
-    polygon_type const& polygon() const {return polygon_;}
-
-    void setup_polygon();
+    ecell4::Polygon&       polygon()       {return polygon_;}
+    ecell4::Polygon const& polygon() const {return polygon_;}
 
     face_type const& belonging_face(const ParticleID& pid) const
     {
@@ -177,7 +175,7 @@ private:
 private:
 
     Real3                               edge_lengths_;
-    polygon_type                        polygon_;
+    ecell4::Polygon                     polygon_;
     pid_to_particle_index_map_type      pid_to_pidx_;
     pid_to_faceid_map_type              pid_to_fid_;
     species_to_particle_id_set_map_type particle_pool_;

@@ -3,10 +3,9 @@
 
 #include <ecell4/core/RandomNumberGenerator.hpp>
 #include <ecell4/core/Model.hpp>
-
-#include "BDPropagator.hpp"
-#include "BDPolygon.hpp"
-#include "functions2d.hpp"
+#include <ecell4/core/Polygon.hpp>
+#include <ecell4/bd/BDPropagator.hpp>
+#include <ecell4/bd/functions2d.hpp>
 
 namespace ecell4
 {
@@ -104,7 +103,7 @@ protected:
 
     Model& model_;
     BDWorld& world_;
-    const BDPolygon& poly_; // XXX additional
+    const Polygon& poly_; // XXX additional
     RandomNumberGenerator& rng_;
     Real dt_;
     std::vector<std::pair<ReactionRule, reaction_info_type> >& last_reactions_;

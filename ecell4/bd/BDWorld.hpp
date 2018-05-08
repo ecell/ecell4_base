@@ -12,8 +12,7 @@
 #include <ecell4/core/ParticleSpace.hpp>
 #include <ecell4/core/ParticleSpaceCellListImpl.hpp>
 #include <ecell4/core/Model.hpp>
-#include "BDPolygon.hpp"
-#include "BDContainer2D.hpp"
+#include <ecell4/bd/BDContainer2D.hpp>
 
 
 namespace ecell4
@@ -565,12 +564,11 @@ public:
     ParticleContainer2D& container_2D(){return *ps2d_;}
 
     // TODO make return type Shape*
-//     BDPolygon const& polygon() const {return (*ps2d_).polygon();}
+    const ecell4::Polygon& polygon() const {return ps2d_->polygon();}
 
-    void set_polygon(const BDPolygon& poly)
+    void set_polygon(const ecell4::Polygon& poly)
     {
-        (*ps2d_).polygon() = poly;
-        (*ps2d_).setup_polygon();
+        ps2d_.reset(new ParticleContainer2D(poly));
         return;
     }
 
@@ -579,7 +577,7 @@ public:
         return (*ps2d_).belonging_face(pid);
     }
 
-    const face_id_type& belonging_faceid(const ParticleID& pid)
+    const FaceID& belonging_faceid(const ParticleID& pid)
     {
         return (*ps2d_).belonging_faceid(pid);
     }

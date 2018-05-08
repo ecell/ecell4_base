@@ -2,8 +2,7 @@
 
 #include <ecell4/core/exceptions.hpp>
 #include <ecell4/core/Species.hpp>
-
-#include "BDPropagator.hpp"
+#include <ecell4/bd/BDPropagator.hpp>
 
 
 namespace ecell4
