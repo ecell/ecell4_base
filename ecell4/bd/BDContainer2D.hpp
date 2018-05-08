@@ -33,8 +33,16 @@ public:
 
 public:
 
-    ParticleContainer2D(){}
-    ParticleContainer2D(const Real3& edge_lengths): edge_lengths_(edge_lengths){}
+    ParticleContainer2D(const ecell4::Polygon& poly)
+        : edge_lengths_(poly.edge_lengths()), polygon_(poly)
+    {
+        std::vector<FaceID> face_ids = this->polygon_.list_face_ids();
+        for(std::vector<FaceID>::const_iterator
+                iter = face_ids.begin(); iter != face_ids.end(); ++iter)
+        {
+            particle_on_face_[*iter] = particle_id_set();
+        }
+    }
     ~ParticleContainer2D(){}
 
     const Real3& edge_lengths() const {return edge_lengths_;}
@@ -76,24 +84,27 @@ public:
     inline Real distance_sq(const Real3& pos1, const FaceID& fid1,
                             const Real3& pos2, const FaceID& fid2) const
     {
-        return polygon_.distance_sq(
+        return ecell4::polygon::distance_sq(this->polygon_,
                 std::make_pair(pos1, fid1), std::make_pair(pos2, fid2));
     }
 
     inline Real distance(const Real3& pos1, const FaceID& fid1,
                          const Real3& pos2, const FaceID& fid2) const
     {
-        return polygon_.distance(
+        return ecell4::polygon::distance(this->polygon_,
                 std::make_pair(pos1, fid1), std::make_pair(pos2, fid2));
     }
 
     Real3 get_inter_position_vector(const std::pair<Real3, FaceID>& lhs,
                                     const std::pair<Real3, FaceID>& rhs) const
     {
-        return polygon_.developed_direction(lhs, rhs);
+        return ecell4::polygon::direction(this->polygon_, lhs, rhs);
     }
 
-    bool has_particle(const ParticleID& pid) const;
+    bool has_particle(const ParticleID& pid) const
+    {
+        return (this->pid_to_pidx_.find(pid) != this->pid_to_pidx_.end());
+    }
     bool update_particle(const ParticleID& pid, const Particle& p)
     {
         throw NotImplemented("2D::update_particle(pid, p)");
@@ -113,7 +124,7 @@ public:
     ecell4::Polygon&       polygon()       {return polygon_;}
     ecell4::Polygon const& polygon() const {return polygon_;}
 
-    face_type const& belonging_face(const ParticleID& pid) const
+    Triangle const& belonging_face(const ParticleID& pid) const
     {
         return polygon_.triangle_at(const_at(pid_to_fid_, pid));
     }

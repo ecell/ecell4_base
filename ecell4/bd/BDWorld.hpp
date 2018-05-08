@@ -43,19 +43,36 @@ public:
 
     BDWorld(const Real3& edge_lengths = Real3(1, 1, 1),
         const Integer3& matrix_sizes = Integer3(3, 3, 3))
-        : ps3d_(new particle_space_type(edge_lengths, matrix_sizes)),
-          ps2d_(new ParticleContainer2D(edge_lengths))
+        : ps3d_(new particle_space_type(edge_lengths, matrix_sizes))
     {
         rng_ = boost::shared_ptr<RandomNumberGenerator>(
             new GSLRandomNumberGenerator());
         (*rng_).seed();
     }
 
-    BDWorld(
-        const Real3& edge_lengths, const Integer3& matrix_sizes,
-        boost::shared_ptr<RandomNumberGenerator> rng)
-        : ps3d_(new particle_space_type(edge_lengths, matrix_sizes)),
-          ps2d_(new ParticleContainer2D(edge_lengths)), rng_(rng)
+    BDWorld(const Real3& edge_lengths, const Integer3& matrix_sizes,
+            boost::shared_ptr<RandomNumberGenerator> rng)
+        : ps3d_(new particle_space_type(edge_lengths, matrix_sizes)), rng_(rng)
+    {
+        ;
+    }
+
+    // for 2D
+    BDWorld(const Polygon& polygon,
+            const Integer3& matrix_sizes = Integer3(3, 3, 3))
+        : ps3d_(new particle_space_type(polygon.edge_lengths(), matrix_sizes)),
+          ps2d_(new ParticleContainer2D(polygon))
+    {
+        rng_ = boost::shared_ptr<RandomNumberGenerator>(
+            new GSLRandomNumberGenerator());
+        (*rng_).seed();
+    }
+
+    BDWorld(const Polygon& polygon,
+            const Integer3& matrix_sizes,
+            boost::shared_ptr<RandomNumberGenerator> rng)
+        : ps3d_(new particle_space_type(polygon.edge_lengths(), matrix_sizes)),
+          ps2d_(new ParticleContainer2D(polygon)), rng_(rng)
     {
         ;
     }
@@ -113,17 +130,24 @@ public:
     std::pair<std::pair<ParticleID, Particle>, bool>
     new_particle(const Particle& p, const FaceID& fid)
     {
+        if(!ps2d_)
+        {
+            throw std::invalid_argument("BDWorld: polygon is not initialized");
+        }
         const ParticleID pid(pidgen_());
         // if (has_particle(pid)) throw AlreadyExists("particle already exists");
 
         if(list_particles_within_radius(
                 std::make_pair(p.position(), fid), p.radius()).size() == 0)
         {
-            (*ps2d_).update_particle(pid, p, fid);
+            std::cerr << "BDWorld::new_particle: no collision" << std::endl;
+            this->ps2d_->update_particle(pid, p, fid);
             return std::make_pair(std::make_pair(pid, p), true);
         }
         else
         {
+            std::cerr << "BDWorld::new_particle: collision ";
+            std::cerr << p.position() << " @ " << fid << std::endl;
             return std::make_pair(std::make_pair(pid, p), false);
         }
     }
@@ -339,7 +363,7 @@ public:
     list_particles_within_radius(
         const std::pair<Real3, FaceID>& pos, const Real& radius) const
     {
-        return (*ps2d_).list_particles_within_radius(pos, radius);
+        return this->ps2d_->list_particles_within_radius(pos, radius);
     }
 
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
@@ -347,7 +371,7 @@ public:
         const std::pair<Real3, FaceID>& pos, const Real& radius,
         const ParticleID& ignore) const
     {
-        return (*ps2d_).list_particles_within_radius(pos, radius, ignore);
+        return this->ps2d_->list_particles_within_radius(pos, radius, ignore);
     }
 
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
@@ -355,7 +379,7 @@ public:
         const std::pair<Real3, FaceID>& pos, const Real& radius,
         const ParticleID& ignore1, const ParticleID& ignore2) const
     {
-        return (*ps2d_).list_particles_within_radius(
+        return this->ps2d_->list_particles_within_radius(
                 pos, radius, ignore1, ignore2);
     }
 
@@ -572,19 +596,19 @@ public:
         return;
     }
 
-    const face_type& belonging_face(const ParticleID& pid)
+    const Triangle& belonging_face(const ParticleID& pid)
     {
-        return (*ps2d_).belonging_face(pid);
+        return ps2d_->belonging_face(pid);
     }
 
     const FaceID& belonging_faceid(const ParticleID& pid)
     {
-        return (*ps2d_).belonging_faceid(pid);
+        return ps2d_->belonging_faceid(pid);
     }
 
-    face_type const& get_face(const std::size_t i)
+    Triangle const& get_face(const FaceID i)
     {
-        return (*ps2d_).polygon().triangle_at(face_id_type(i));
+        return ps2d_->polygon().triangle_at(i);
     }
 
     Real3 get_inter_position_vector(const Real3& lhs, const Real3& rhs) const

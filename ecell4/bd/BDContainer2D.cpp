@@ -144,7 +144,7 @@ ParticleContainer2D::list_particles_within_radius(
         const Real3 dpos = pos - iter->second.position();
         const Real l2 = length_sq(dpos);
 
-        const face_type& face = this->belonging_face(iter->first);
+        const Triangle& face = this->belonging_face(iter->first);
         // XXX: slow...
         const Real phi = std::acos(dot_product(dpos, face.normal()) / std::sqrt(l2));
         const Real theta = (phi < M_PI * 0.5) ? M_PI * 0.5 - phi : phi - M_PI * 0.5;
@@ -170,7 +170,7 @@ ParticleContainer2D::list_particles_within_radius(
         const Real3 dpos = pos - iter->second.position();
         const Real l2 = length_sq(dpos);
 
-        const face_type& face = this->belonging_face(iter->first);
+        const Triangle& face = this->belonging_face(iter->first);
         // XXX: slow...
         const Real phi = std::acos(dot_product(dpos, face.normal()) / std::sqrt(l2));
         const Real theta = (phi < M_PI * 0.5) ? M_PI * 0.5 - phi : phi - M_PI * 0.5;
@@ -197,7 +197,7 @@ ParticleContainer2D::list_particles_within_radius(
         const Real3 dpos = pos - iter->second.position();
         const Real l2 = length_sq(dpos);
 
-        const face_type& face = this->belonging_face(iter->first);
+        const Triangle& face = this->belonging_face(iter->first);
         // XXX: slow...
         const Real phi = std::acos(dot_product(dpos, face.normal()) / std::sqrt(l2));
         const Real theta = (phi < M_PI * 0.5) ? M_PI * 0.5 - phi : phi - M_PI * 0.5;
@@ -216,7 +216,7 @@ ParticleContainer2D::list_particles_within_radius(
 {
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > retval;
 
-    const face_id_list& neighbors = polygon_.neighbor_faces(pos.second);
+    const face_id_list& neighbors = polygon_.neighbors(pos.second);
     for(face_id_list::const_iterator
             iter = neighbors.begin(); iter != neighbors.end(); ++iter)
     {
@@ -244,7 +244,7 @@ ParticleContainer2D::list_particles_within_radius(
 {
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > retval;
 
-    const face_id_list& neighbors = polygon_.neighbor_faces(pos.second);
+    const face_id_list& neighbors = polygon_.neighbors(pos.second);
     for(face_id_list::const_iterator
             iter = neighbors.begin(); iter != neighbors.end(); ++iter)
     {
@@ -273,7 +273,7 @@ ParticleContainer2D::list_particles_within_radius(
 {
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > retval;
 
-    const face_id_list& neighbors = polygon_.neighbor_faces(pos.second);
+    const face_id_list& neighbors = polygon_.neighbors(pos.second);
     for(face_id_list::const_iterator
             iter = neighbors.begin(); iter != neighbors.end(); ++iter)
     {
@@ -299,53 +299,7 @@ ParticleContainer2D::apply_surface(
         const std::pair<Real3, FaceID>& position,
         const Real3& displacement) const
 {
-    std::pair<std::pair<Real3, face_id_type>, Real3>
-        state = std::make_pair(position, displacement);
-    const Real cutoff = length_sq(displacement) * 1e-4;//tolerance 1e-8
-
-    Integer retry_count = 100;
-    while(--retry_count > 0 && length_sq(state.second) > cutoff)
-    {
-        state = polygon_.move_next_face(state.first, state.second);
-    }
-    if(retry_count == 0)
-        std::cerr << "Warning: max move_next_face count exceeded" << std::endl;
-//     else if(length_sq(state.second) != 0.0)
-//         std::cerr << "Warning: displacement length cut." << std::endl;
-
-    const face_id_type fid = state.first.second;
-    Real3 newpos = state.first.first;
-
-    const Triangle& face = this->polygon_.triangle_at(fid);
-    const Real      dist = dot_product(face.normal(), newpos - face.vertex_at(0));
-    if(std::abs(dist) > 1e-8)
-        std::cerr << "Warning: particle floats over tolerance: " << dist << std::endl;
-    newpos = newpos - face.normal() * dist;
-
-    Barycentric bary(to_barycentric(newpos, face));
-    if(!is_inside(bary, 1e-8))
-    {
-        std::cerr << "Warning: particle is not in triangle: barycentric("
-                  << bary << ")" << std::endl;
-    }
-    bary = force_put_inside(bary);
-    newpos = to_absolute(bary, face);
-
-    return std::make_pair(newpos, fid);
-}
-
-void ParticleContainer2D::setup_polygon()
-{
-//     this->polygon_.detect_connectivity();
-    std::vector<face_id_type> face_ids; face_ids.reserve(polygon_.num_faces());
-    for(std::size_t i=0; i<polygon_.num_faces(); ++i)
-        face_ids.push_back(face_id_type(i));
-
-    for(std::vector<face_id_type>::const_iterator
-            iter = face_ids.begin(); iter != face_ids.end(); ++iter)
-        particle_on_face_[*iter] = particle_id_set();
-
-    return;
+    return ecell4::polygon::travel(this->polygon_, position, displacement);
 }
 
 }// bd
