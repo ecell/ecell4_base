@@ -381,7 +381,8 @@ Real Polygon::distance_sq(
                 if(dot_product(normal, cross_product(vtop1, vtop2)) >= 0)
                 {
                     solution = std::min(length_sq(p1 - p2), solution);
-                    continue;
+                    //XXX the opposite way cannot be skipped in some situation...
+//                     continue;
                 }
             }
         }
