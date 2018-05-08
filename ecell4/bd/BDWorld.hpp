@@ -137,17 +137,24 @@ public:
         const ParticleID pid(pidgen_());
         // if (has_particle(pid)) throw AlreadyExists("particle already exists");
 
-        if(list_particles_within_radius(
-                std::make_pair(p.position(), fid), p.radius()).size() == 0)
+        const std::vector<std::pair<std::pair<ParticleID, Particle>, Real>
+            > collides = this->list_particles_within_radius(
+                std::make_pair(p.position(), fid), p.radius());
+        if(collides.empty())
         {
-            std::cerr << "BDWorld::new_particle: no collision" << std::endl;
+//             std::cerr << "BDWorld::new_particle: no collision" << std::endl;
             this->ps2d_->update_particle(pid, p, fid);
             return std::make_pair(std::make_pair(pid, p), true);
         }
         else
         {
-            std::cerr << "BDWorld::new_particle: collision ";
-            std::cerr << p.position() << " @ " << fid << std::endl;
+//             std::cerr << "BDWorld::new_particle: new particle collides with {";
+//             for(std::size_t i=0; i<collides.size(); ++i)
+//             {
+//                 std::cerr << '{' << collides.at(i).first.first << ", "
+//                           << collides.at(i).second << "},";
+//             }
+//             std::cerr << '}' << std::endl;
             return std::make_pair(std::make_pair(pid, p), false);
         }
     }
@@ -295,14 +302,26 @@ public:
     bool update_particle(
             const ParticleID& pid, const Particle& p, const FaceID& fid)
     {
-        // XXX: checking overlap in 3D spherical region
-        if (list_particles_within_radius(std::make_pair(p.position(), fid),
-                    p.radius(), pid).size() == 0)
+        // XXX: checking overlap in 2D region.
+        const std::vector<std::pair<std::pair<ParticleID, Particle>, Real>
+            > collides = this->list_particles_within_radius(
+                std::make_pair(p.position(), fid), p.radius(), pid);
+        if(collides.empty())
         {
+//             std::cerr << "BDWorld::update_particle: particle " << pid
+//                       << " successfully updated." << std::endl;
             return (*ps2d_).update_particle(pid, p, fid);
         }
         else
         {
+//             std::cerr << "BDWorld::update_particle: collision detected! particle "
+//                       << pid << " collides with {";
+//             for(std::size_t i=0; i<collides.size(); ++i)
+//             {
+//                 std::cerr << '{' << collides.at(i).first.first << ", "
+//                           << collides.at(i).second << "},";
+//             }
+//             std::cerr << "}" << std::endl;
             return true;
         }
     }
