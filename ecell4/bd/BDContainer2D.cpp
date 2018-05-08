@@ -226,12 +226,14 @@ ParticleContainer2D::list_particles_within_radius(
         {
             const ParticleID pid = *jter;
             const FaceID fid = this->belonging_faceid(pid);
-            const particle_container_type::const_iterator piter =
-                this->find(pid);
-            const Real l = polygon_.distance(pos, std::make_pair(
-                        piter->second.position(), fid)) - piter->second.radius();
+            const particle_container_type::const_iterator piter = this->find(pid);
+            const Real l = ecell4::polygon::distance(polygon_, pos,
+                    std::make_pair(piter->second.position(), fid)) -
+                piter->second.radius();
             if(l <= radius)
+            {
                 retval.push_back(std::make_pair(*piter, l));
+            }
         }
     }
     return retval;
@@ -253,17 +255,19 @@ ParticleContainer2D::list_particles_within_radius(
                 jter = ps_on_face.begin(); jter != ps_on_face.end(); ++jter)
         {
             const ParticleID pid = *jter;
-            if(pid == ignore) continue;
+            if(pid == ignore){continue;}
             const FaceID fid = this->belonging_faceid(pid);
-            const particle_container_type::const_iterator piter =
-                this->find(pid);
-            const Real l = polygon_.distance(pos, std::make_pair(
-                        piter->second.position(), fid)) - piter->second.radius();
+            const particle_container_type::const_iterator piter = this->find(pid);
+            const Real l = ecell4::polygon::distance(polygon_, pos,
+                    std::make_pair(piter->second.position(), fid)) -
+                piter->second.radius();
             if(l <= radius)
+            {
                 retval.push_back(std::make_pair(*piter, l));
+            }
         }
     }
-    return retval;    return retval;
+    return retval;
 }
 
 std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
@@ -282,16 +286,19 @@ ParticleContainer2D::list_particles_within_radius(
                 jter = ps_on_face.begin(); jter != ps_on_face.end(); ++jter)
         {
             const ParticleID pid = *jter;
-            if(pid == ignore1 || pid == ignore2) continue;
+            if(pid == ignore1 || pid == ignore2){continue;}
             const FaceID fid = this->belonging_faceid(pid);
-            const particle_container_type::const_iterator piter =
-                this->find(pid);
-            const Real l = polygon_.distance(pos, std::make_pair(
-                        piter->second.position(), fid)) - piter->second.radius();
+            const particle_container_type::const_iterator piter = this->find(pid);
+            const Real l = ecell4::polygon::distance(polygon_, pos,
+                    std::make_pair(piter->second.position(), fid)) -
+                piter->second.radius();
             if(l <= radius)
+            {
                 retval.push_back(std::make_pair(*piter, l));
+            }
         }
-    }    return retval;
+    }
+    return retval;
 }
 
 std::pair<Real3, ParticleContainer2D::FaceID>
