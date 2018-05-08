@@ -181,12 +181,64 @@ class Polygon : public Shape
     // pos1 -> pos2 <=> pos2 - pos1
     Real3 direction (const std::pair<Real3, FaceID>& pos1,
                      const std::pair<Real3, FaceID>& pos2) const;
+
     Real distance_sq(const std::pair<Real3, FaceID>& pos1,
                      const std::pair<Real3, FaceID>& pos2) const;
     Real distance   (const std::pair<Real3, FaceID>& pos1,
                      const std::pair<Real3, FaceID>& pos2) const
     {
         return std::sqrt(this->distance_sq(pos1, pos2));
+    }
+
+    Real distance_sq(const std::pair<Real3, VertexID>& pos1,
+                     const std::pair<Real3, FaceID>&   pos2) const
+    {
+        const face_data& fd = this->face_at(pos2.second);
+        if(pos1.second == fd.vertices[0] ||
+           pos1.second == fd.vertices[1] ||
+           pos1.second == fd.vertices[2])
+        {
+            return length_sq(pos1.first - pos2.first);
+        }
+        return std::numeric_limits<Real>::infinity();
+    }
+    Real distance   (const std::pair<Real3, VertexID>& pos1,
+                     const std::pair<Real3, FaceID>&   pos2) const
+    {
+        return std::sqrt(this->distance_sq(pos1, pos2));
+    }
+
+    Real distance_sq(const std::pair<Real3, FaceID>& pos1,
+                     const std::pair<Real3, VertexID>& pos2) const
+    {
+        return this->distance_sq(pos2, pos1);
+    }
+    Real distance   (const std::pair<Real3, FaceID>&   pos1,
+                     const std::pair<Real3, VertexID>& pos2) const
+    {
+        return this->distance(pos2, pos1);
+    }
+
+    Real distance_sq(const std::pair<Real3, VertexID>& pos1,
+                     const std::pair<Real3, VertexID>& pos2) const
+    {
+        const Real dist = this->distance(pos1, pos2);
+        return dist * dist;
+    }
+    Real distance(const std::pair<Real3, VertexID>& pos1,
+                  const std::pair<Real3, VertexID>& pos2) const
+    {
+        const std::vector<std::pair<EdgeID, Real> >& outs =
+            this->vertex_at(pos1.second).outgoing_edges;
+        for(std::vector<std::pair<EdgeID, Real> >::const_iterator
+            i(outs.begin()), e(outs.end()); i!=e; ++i)
+        {
+            if(target_of(i->first) == pos2.second)
+            {
+                return length_of(i->first);
+            }
+        }
+        return std::numeric_limits<Real>::infinity();
     }
 
     // half-edge traverse
