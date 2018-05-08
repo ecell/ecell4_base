@@ -93,7 +93,9 @@ bool BDPropagator2D::attempt_reaction(
         model_.query_reaction_rules(particle.species());
 
     if (reaction_rules.size() == 0)
+    {
         return false;
+    }
 
     const Real rnd(rng_.uniform(0., 1.));
     Real prob = 0.;
@@ -102,7 +104,7 @@ bool BDPropagator2D::attempt_reaction(
     {
         const ReactionRule& rule(*iter);
         prob += rule.k() * dt();
-        if(prob <= rnd) continue;
+        if(prob <= rnd){continue;}
 
         ReactionRule::product_container_type const& products = rule.products();
         reaction_info_type r_info(world_.t() + dt_,
