@@ -19,7 +19,7 @@ SGFRDWorld::new_particle(const Particle& p)
 }
 
 std::pair<std::pair<ParticleID, Particle>, bool>
-SGFRDWorld::new_particle(const Particle& p, const face_id_type& fid)
+SGFRDWorld::new_particle(const Particle& p, const FaceID& fid)
 {
     const ParticleID pid = pidgen_();
     // now this consider only 2D particles
@@ -43,7 +43,7 @@ std::pair<std::pair<ParticleID, Particle>, bool>
 SGFRDWorld::throw_in_particle(const Species& sp)
 {
     const molecule_info_type molinfo = this->get_molecule_info(sp);
-    Real3 pos; face_id_type fid;
+    Real3 pos; FaceID fid;
     boost::tie(pos, fid) = this->polygon_->draw_random_position(this->rng_);
     const Particle p(sp, pos, molinfo.radius, molinfo.D);
     return this->new_particle(p, fid);
@@ -63,7 +63,7 @@ void SGFRDWorld::add_molecule(const Species& sp, const std::size_t N)
 
 std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
 SGFRDWorld::list_particles_within_radius(
-        const std::pair<Real3, face_id_type>& pos, const Real& radius) const
+        const std::pair<Real3, FaceID>& pos, const Real& radius) const
 {
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > retval;
 
@@ -79,9 +79,9 @@ SGFRDWorld::list_particles_within_radius(
         }
     }
 
-    std::vector<face_id_type> const& neighbors =
+    std::vector<FaceID> const& neighbors =
         polygon_->neighbor_faces(pos.second);
-    for(std::vector<face_id_type>::const_iterator
+    for(std::vector<FaceID>::const_iterator
         iter = neighbors.begin(); iter != neighbors.end(); ++iter)
     {
         const std::vector<ParticleID>& ids = registrator_.elements_over(*iter);
@@ -103,7 +103,7 @@ SGFRDWorld::list_particles_within_radius(
 
 std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
 SGFRDWorld::list_particles_within_radius(
-        const std::pair<Real3, face_id_type>& pos, const Real& radius,
+        const std::pair<Real3, FaceID>& pos, const Real& radius,
         const ParticleID& ignore) const
 {
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > retval;
@@ -120,9 +120,9 @@ SGFRDWorld::list_particles_within_radius(
         }
     }
 
-    std::vector<face_id_type> const& neighbors =
+    std::vector<FaceID> const& neighbors =
         polygon_->neighbor_faces(pos.second);
-    for(std::vector<face_id_type>::const_iterator
+    for(std::vector<FaceID>::const_iterator
         iter = neighbors.begin(); iter != neighbors.end(); ++iter)
     {
         const std::vector<ParticleID>& ids = this->list_particleIDs(*iter);
@@ -145,7 +145,7 @@ SGFRDWorld::list_particles_within_radius(
 
 std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
 SGFRDWorld::list_particles_within_radius(
-        const std::pair<Real3, face_id_type>& pos, const Real& radius,
+        const std::pair<Real3, FaceID>& pos, const Real& radius,
         const ParticleID& ignore1, const ParticleID& ignore2) const
 {
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > retval;
@@ -162,9 +162,9 @@ SGFRDWorld::list_particles_within_radius(
         }
     }
 
-    std::vector<face_id_type> const& neighbors =
+    std::vector<FaceID> const& neighbors =
         polygon_->neighbor_faces(pos.second);
-    for(std::vector<face_id_type>::const_iterator
+    for(std::vector<FaceID>::const_iterator
         iter = neighbors.begin(); iter != neighbors.end(); ++iter)
     {
         const std::vector<ParticleID>& ids = this->list_particleIDs(*iter);
@@ -187,7 +187,7 @@ SGFRDWorld::list_particles_within_radius(
 
 
 bool SGFRDWorld::check_no_overlap(
-        const std::pair<Real3, face_id_type>& pos, const Real& radius) const
+        const std::pair<Real3, FaceID>& pos, const Real& radius) const
 {
     {// same face
         const std::vector<ParticleID>& ids = this->list_particleIDs(pos.second);
@@ -201,9 +201,9 @@ bool SGFRDWorld::check_no_overlap(
         }
     }
 
-    std::vector<face_id_type> const& neighbors =
+    std::vector<FaceID> const& neighbors =
         polygon_->neighbor_faces(pos.second);
-    for(std::vector<face_id_type>::const_iterator
+    for(std::vector<FaceID>::const_iterator
         iter = neighbors.begin(); iter != neighbors.end(); ++iter)
     {
         const std::vector<ParticleID>& ids = registrator_.elements_over(*iter);
@@ -221,7 +221,7 @@ bool SGFRDWorld::check_no_overlap(
 }
 
 bool SGFRDWorld::check_no_overlap(
-        const std::pair<Real3, face_id_type>& pos, const Real& radius,
+        const std::pair<Real3, FaceID>& pos, const Real& radius,
         const ParticleID& ignore) const
 {
     {// same face
@@ -237,9 +237,9 @@ bool SGFRDWorld::check_no_overlap(
         }
     }
 
-    std::vector<face_id_type> const& neighbors =
+    std::vector<FaceID> const& neighbors =
         polygon_->neighbor_faces(pos.second);
-    for(std::vector<face_id_type>::const_iterator
+    for(std::vector<FaceID>::const_iterator
         iter = neighbors.begin(); iter != neighbors.end(); ++iter)
     {
         const std::vector<ParticleID>& ids = this->list_particleIDs(*iter);
@@ -258,7 +258,7 @@ bool SGFRDWorld::check_no_overlap(
 }
 
 bool SGFRDWorld::check_no_overlap(
-        const std::pair<Real3, face_id_type>& pos, const Real& radius,
+        const std::pair<Real3, FaceID>& pos, const Real& radius,
         const ParticleID& ignore1, const ParticleID& ignore2) const
 {
     {// same face
@@ -274,9 +274,9 @@ bool SGFRDWorld::check_no_overlap(
         }
     }
 
-    std::vector<face_id_type> const& neighbors =
+    std::vector<FaceID> const& neighbors =
         polygon_->neighbor_faces(pos.second);
-    for(std::vector<face_id_type>::const_iterator
+    for(std::vector<FaceID>::const_iterator
         iter = neighbors.begin(); iter != neighbors.end(); ++iter)
     {
         const std::vector<ParticleID>& ids = this->list_particleIDs(*iter);

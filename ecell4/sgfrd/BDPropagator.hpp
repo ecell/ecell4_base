@@ -27,19 +27,12 @@ class BDPropagator
 public:
     typedef containerT container_type;
     typedef volume_clearerT volume_clearer_type;
-    typedef ecell4::sgfrd::polygon_traits   polygon_traits_type;
-    typedef Polygon<polygon_traits_type>    polygon_type;
-    typedef polygon_type::triangle_type     triangle_type;
-    typedef polygon_type::face_id_type      face_id_type;
-    typedef polygon_type::edge_id_type      edge_id_type;
-    typedef polygon_type::vertex_id_type    vertex_id_type;
-    typedef polygon_type::face_descripter   face_descripter;
-    typedef polygon_type::edge_descripter   edge_descripter;
-    typedef polygon_type::vertex_descripter vertex_descripter;
-    typedef polygon_type::local_index_type  local_index_type;
-    typedef polygon_type::barycentric_type  barycentric_type;
+    typedef ecell4::Polygon  polygon_type;
+    typedef ecell4::Triangle triangle_type;
+    typedef polygon_type::FaceID   FaceID;
+    typedef polygon_type::EdgeID   EdgeID;
+    typedef polygon_type::VertexID VertexID;
 
-    typedef face_id_type FaceID;
     typedef ecell4::Model   model_type;
     typedef ecell4::Species species_type;
     typedef typename container_type::particle_container_type queue_type;
@@ -73,7 +66,7 @@ public:
         // make copy of the next particle
         ParticleID pid; Particle p;
         boost::tie(pid, p) = queue_.back(); queue_.pop_back();
-        face_id_type fid = this->container_.get_face_id(pid);
+        FaceID fid = this->container_.get_face_id(pid);
 
         // to restore the position, copy previous state.
         const Real3  prev_pos(p.position());
@@ -144,7 +137,7 @@ public:
   protected:
 
     bool attempt_reaction(const ParticleID& pid, const Particle& p,
-                          const face_id_type& fid)
+                          const FaceID& fid)
     {
         SGFRD_SCOPE(ns, BD_attempt_single_reaction, this->vc_.access_tracer())
 
@@ -194,7 +187,7 @@ public:
 
     template<typename Iterator>
     bool attempt_reaction(
-        const ParticleID& pid1, const Particle& p1, const face_id_type& f1,
+        const ParticleID& pid1, const Particle& p1, const FaceID& f1,
         const Iterator first, const Iterator last)
     {
         // Iterator::value_type == pair<pair<ParticleID, Particle>, Real>;
@@ -244,7 +237,7 @@ public:
                     }
                     case 1:
                     {
-                        const face_id_type& f2 =
+                        const FaceID& f2 =
                             this->container_.get_face_id(pid2);
                         const bool reacted = attempt_reaction_2_to_1(
                             pid1, p1, f1, pid2, p2, f2, std::make_pair(rule,
@@ -277,7 +270,7 @@ public:
      * reaction, the reaction will be rejected. if accepted, this function does
      * both update and record reaction. */
     bool attempt_reaction_1_to_1(
-            const ParticleID& pid, const Particle& p, const face_id_type& fid,
+            const ParticleID& pid, const Particle& p, const FaceID& fid,
             reaction_log_type rlog)
     {
         SGFRD_SCOPE(ns, BD_attempt_1to1_reaction, this->vc_.access_tracer())
@@ -314,7 +307,7 @@ public:
     /*! @brief A -> B + C case.
      * after reaction, the products will try to move. */
     bool attempt_reaction_1_to_2(
-            const ParticleID& pid, const Particle& p, const face_id_type& fid,
+            const ParticleID& pid, const Particle& p, const FaceID& fid,
             reaction_log_type rlog)
     {
         SGFRD_SCOPE(ns, BD_attempt_1to2_reaction, this->vc_.access_tracer())
@@ -337,7 +330,7 @@ public:
                     "reaction between immobile particles");
         }
 
-        boost::array<std::pair<Real3, face_id_type>, 2> newpfs;
+        boost::array<std::pair<Real3, FaceID>, 2> newpfs;
         newpfs[0] = std::make_pair(p.position(), fid);
         newpfs[1] = std::make_pair(p.position(), fid);
 
@@ -394,12 +387,12 @@ public:
         while(num_move_particle != 0)
         {
             const ParticleID pid_to_move = (move_first_particle) ? pid : pid2;
-            const face_id_type fid_to_move =
+            const FaceID fid_to_move =
                 this->container_.get_face_id(pid_to_move);
             Particle p_to_move =
                 this->container_.get_particle(pid_to_move).second;
 
-            std::pair<Real3, face_id_type> position = std::make_pair(
+            std::pair<Real3, FaceID> position = std::make_pair(
                     p_to_move.position(), fid_to_move);
             Real3 displacement = draw_displacement(p_to_move, fid_to_move);
             this->propagate(position, displacement);
@@ -433,8 +426,8 @@ public:
     }
 
     bool attempt_reaction_2_to_1(// XXX consider using boost::tuple
-            const ParticleID& pid1, const Particle& p1, const face_id_type& fid1,
-            const ParticleID& pid2, const Particle& p2, const face_id_type& fid2,
+            const ParticleID& pid1, const Particle& p1, const FaceID& fid1,
+            const ParticleID& pid2, const Particle& p2, const FaceID& fid2,
             reaction_log_type rlog)
     {
         const species_type     sp_new(rlog.first.products().front());
@@ -449,7 +442,7 @@ public:
         Real3 dp = ecell4::polygon::direction(this->polygon_,
             std::make_pair(pos1, fid1), std::make_pair(pos2, fid2)) * (D1 / D12);
 
-        std::pair<Real3, face_id_type> pf1(pos1, fid1);
+        std::pair<Real3, FaceID> pf1(pos1, fid1);
         this->propagate(pf1, dp);
 
         if(is_overlapping(pf1, radius_new, pid1, pid2)){return false;}
@@ -485,7 +478,7 @@ public:
         return;
     }
 
-    void remove_particle(const ParticleID& pid, const face_id_type& fid)
+    void remove_particle(const ParticleID& pid, const FaceID& fid)
     {
         container_.remove_particle(pid, fid);
         const typename std::vector<std::pair<ParticleID, Particle> >::iterator i(
@@ -500,13 +493,13 @@ public:
     }
 
     bool is_overlapping(
-            const std::pair<Real3, face_id_type>& pos, const Real& rad,
+            const std::pair<Real3, FaceID>& pos, const Real& rad,
             const ParticleID& pid) const
     {
         return !(this->container_.check_no_overlap(pos, rad, pid));
     }
     bool is_overlapping(
-            const std::pair<Real3, face_id_type>& pos, const Real& rad,
+            const std::pair<Real3, FaceID>& pos, const Real& rad,
             const ParticleID& pid1, const ParticleID& pid2) const
     {
         return !(this->container_.check_no_overlap(pos, rad, pid1, pid2));
@@ -514,13 +507,13 @@ public:
 
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
     list_reaction_overlap(const ParticleID& pid, const Particle& p,
-                          const face_id_type& fid) const
+                          const FaceID& fid) const
     {
         return this->container_.list_particles_within_radius(
             std::make_pair(p.position(), fid), p.radius() + reaction_length_, pid);
     }
 
-    void propagate(std::pair<Real3, face_id_type>& pos, Real3& disp) const
+    void propagate(std::pair<Real3, FaceID>& pos, Real3& disp) const
     {
         const std::size_t continue_count =
             ecell4::polygon::travel(this->polygon_, pos, disp, 100);
@@ -533,18 +526,18 @@ public:
 
     /*! clear the region that particle will occupy. returns if succeed.
      *  this may burst some domains that overlap with particle. */
-    bool clear_volume(const Particle& p, const face_id_type& fid)
+    bool clear_volume(const Particle& p, const FaceID& fid)
     {
         return vc_(p, fid);
     }
 
-    bool clear_volume(const Particle& p, const face_id_type& fid,
+    bool clear_volume(const Particle& p, const FaceID& fid,
                       const ParticleID& ignore)
     {
         return vc_(p, fid, ignore);
     }
 
-    bool clear_volume(const Particle& p, const face_id_type& fid,
+    bool clear_volume(const Particle& p, const FaceID& fid,
                       const ParticleID& ignore1, const ParticleID& ignore2)
     {
         return vc_(p, fid, ignore1, ignore2);
@@ -568,7 +561,7 @@ public:
         return rotate(tilt, axis * (1. / length(axis)), rnd);
     }
 
-    Real3 draw_displacement(const Particle& p, const face_id_type& fid)
+    Real3 draw_displacement(const Particle& p, const FaceID& fid)
     {
         return random_circular_uniform(rng_.gaussian(std::sqrt(4*p.D()*dt_)),
                                        polygon_.triangle_at(fid).normal());

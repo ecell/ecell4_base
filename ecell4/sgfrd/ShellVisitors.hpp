@@ -2,7 +2,6 @@
 #define ECELL4_SGFRD_SHELL_VISITORS
 #include "Shell.hpp"
 #include "SGFRDEvent.hpp"
-#include "polygon_traits.hpp"
 #include <boost/type_traits.hpp>
 
 namespace ecell4
@@ -53,11 +52,11 @@ struct shell_size_getter : boost::static_visitor<Real>
 struct inside_checker : boost::static_visitor<bool>
 {
     typedef minimal_eval_or eval_manner;
-    typedef ecell4::Polygon<polygon_traits> polygon_type;
-    typedef polygon_type::face_id_type      face_id_type;
+    typedef ecell4::Polygon polygon_type;
+    typedef polygon_type::FaceID FaceID;
 
 
-    inside_checker(Real3 pos, Real rad, face_id_type f, polygon_type const& p)
+    inside_checker(Real3 pos, Real rad, FaceID f, polygon_type const& p)
         : radius(rad), position(pos), fid(f), poly(p)
     {}
 
@@ -72,9 +71,9 @@ struct inside_checker : boost::static_visitor<bool>
 
   private:
 
-    Real         radius;
-    Real3        position;
-    face_id_type fid;
+    Real   radius;
+    Real3  position;
+    FaceID fid;
     polygon_type const& poly;
 };
 

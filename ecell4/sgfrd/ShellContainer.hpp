@@ -12,21 +12,19 @@ namespace ecell4
 namespace sgfrd
 {
 
-template<typename T_polygon_traits>
 class ShellContainer
 {
 public:
 
-    typedef T_polygon_traits traits_type;
-    typedef Polygon<traits_type> polygon_type;
-    typedef typename polygon_type::face_id_type   face_id_type;
-    typedef typename polygon_type::edge_id_type   edge_id_type;
-    typedef typename polygon_type::vertex_id_type vertex_id_type;
+    typedef ::ecell4::Polygon polygon_type;
+    typedef typename polygon_type::FaceID   FaceID;
+    typedef typename polygon_type::EdgeID   EdgeID;
+    typedef typename polygon_type::VertexID VertexID;
 
     typedef ecell4::Circle         circle_type;
     typedef ecell4::ConicalSurface conical_surface_type;
-    typedef Shell<circle_type, face_id_type>            circular_shell_type;
-    typedef Shell<conical_surface_type, vertex_id_type> conical_surface_shell_type;
+    typedef Shell<circle_type, FaceID>            circular_shell_type;
+    typedef Shell<conical_surface_type, VertexID> conical_surface_shell_type;
 
     static const int circular_shell = 0;
     static const int conical_shell  = 1;
@@ -40,9 +38,9 @@ public:
     typedef typename ecell4::utils::get_mapper_mf<ShellID, std::size_t>::type
         shell_id_to_index_map_type;
 
-    typedef StructureRegistrator<ShellID, face_id_type, traits_type>
+    typedef StructureRegistrator<ShellID, FaceID, traits_type>
         face_registrator_type;
-    typedef StructureRegistrator<ShellID, vertex_id_type, traits_type>
+    typedef StructureRegistrator<ShellID, VertexID, traits_type>
         vertex_registrator_type;
 
     struct face_register_updater;
@@ -57,24 +55,24 @@ public:
     ~ShellContainer(){}
 
     template<typename shellT>
-    void add_shell(const ShellID& id, const shellT& sh, const face_id_type&   fid);
+    void add_shell(const ShellID& id, const shellT& sh, const FaceID&   fid);
     template<typename shellT>
-    void add_shell(const ShellID& id, const shellT& sh, const vertex_id_type& vid);
+    void add_shell(const ShellID& id, const shellT& sh, const VertexID& vid);
 
     template<typename shellT>
     void update_shell(const ShellID& id, const shellT& sh,
-                      const face_id_type& fid);
+                      const FaceID& fid);
     template<typename shellT>
     void update_shell(const ShellID& id, const shellT& sh,
-                      const vertex_id_type& vid);
+                      const VertexID& vid);
 
     storage_type const& get_shell(const ShellID& id) const;
     storage_type&       get_shell(const ShellID& id);
 
     void remove_shell(const ShellID& id);
 
-    std::vector<ShellID> const& list_shells_on(const face_id_type&) const;
-    std::vector<ShellID> const& list_shells_on(const vertex_id_type&) const;
+    std::vector<ShellID> const& list_shells_on(const FaceID&) const;
+    std::vector<ShellID> const& list_shells_on(const VertexID&) const;
 
     std::size_t num_shells() const {return container_.size();}
 
@@ -114,52 +112,50 @@ private:
     vertex_registrator_type    vertex_registrator_;
 };
 
-template<typename T_pt>
-struct ShellContainer<T_pt>::register_cleaner
+struct ShellContainer::register_cleaner
     : public boost::static_visitor<void>
 {
-    ShellContainer<T_pt>& scon;
+    ShellContainer& scon;
     ShellID sid;
 
-    register_cleaner(ShellContainer<T_pt>& self, const ShellID& si)
+    register_cleaner(ShellContainer& self, const ShellID& si)
         : scon(self), sid(si){}
 
     template<typename shapeT>
-    void operator()(const Shell<shapeT, face_id_type>& sh) const
+    void operator()(const Shell<shapeT, FaceID>& sh) const
     {
         scon.face_registrator_.remove(sid);
         return;
     }
 
     template<typename shapeT>
-    void operator()(const Shell<shapeT, vertex_id_type>& sh) const
+    void operator()(const Shell<shapeT, VertexID>& sh) const
     {
         scon.vertex_registrator_.remove(sid);
         return;
     }
 };
 
-template<typename T_pt>
-struct ShellContainer<T_pt>::face_register_updater
+struct ShellContainer::face_register_updater
     : public boost::static_visitor<void>
 {
-    ShellContainer<T_pt>& scon;
-    ShellID      sid;
-    face_id_type fid;
+    ShellContainer& scon;
+    ShellID       sid;
+    FaceID  fid;
 
-    face_register_updater(ShellContainer<T_pt>& self, ShellID s, face_id_type f)
+    face_register_updater(ShellContainer& self, ShellID s, FaceID f)
         : scon(self), sid(s), fid(f)
     {}
 
     template<typename shapeT>
-    void operator()(const Shell<shapeT, face_id_type>& sh) const
+    void operator()(const Shell<shapeT, FaceID>& sh) const
     {
         scon.face_registrator_.update(sid, fid);
         return;
     }
 
     template<typename shapeT>
-    void operator()(const Shell<shapeT, vertex_id_type>& sh) const
+    void operator()(const Shell<shapeT, VertexID>& sh) const
     {
         scon.vertex_registrator_.remove(sid, sh.structure_id());
         scon.face_registrator_.emplace(sid, fid);
@@ -167,20 +163,19 @@ struct ShellContainer<T_pt>::face_register_updater
     }
 };
 
-template<typename T_pt>
-struct ShellContainer<T_pt>::vertex_register_updater
+struct ShellContainer::vertex_register_updater
     : public boost::static_visitor<void>
 {
-    ShellContainer<T_pt>& scon;
-    ShellID        sid;
-    vertex_id_type vid;
+    ShellContainer& scon;
+    ShellID         sid;
+    VertexID  vid;
 
-    vertex_register_updater(ShellContainer<T_pt>& self, ShellID s, vertex_id_type v)
+    vertex_register_updater(ShellContainer& self, ShellID s, VertexID v)
         : scon(self), sid(s), vid(v)
     {}
 
     template<typename shapeT>
-    void operator()(const Shell<shapeT, face_id_type>& sh) const
+    void operator()(const Shell<shapeT, FaceID>& sh) const
     {
         scon.face_registrator_.remove(sid, sh.structure_id());
         scon.vertex_registrator_.emplace(sid, vid);
@@ -188,17 +183,16 @@ struct ShellContainer<T_pt>::vertex_register_updater
     }
 
     template<typename shapeT>
-    void operator()(const Shell<shapeT, vertex_id_type>& sh) const
+    void operator()(const Shell<shapeT, VertexID>& sh) const
     {
         scon.vertex_registrator_.update(sid, vid);
         return;
     }
 };
 
-template<typename T_pt>
 template<typename shellT>
-void ShellContainer<T_pt>::add_shell(
-        const ShellID& id, const shellT& sh, const face_id_type& fid)
+void ShellContainer::add_shell(
+        const ShellID& id, const shellT& sh, const FaceID& fid)
 {
     if(shell_id_to_index_map_.count(id) == 1)
         throw std::invalid_argument("shellcontianer already have the shell");
@@ -220,10 +214,9 @@ void ShellContainer<T_pt>::add_shell(
     return;
 }
 
-template<typename T_pt>
 template<typename shellT>
-void ShellContainer<T_pt>::add_shell(
-        const ShellID& id, const shellT& sh, const vertex_id_type& vid)
+void ShellContainer::add_shell(
+        const ShellID& id, const shellT& sh, const VertexID& vid)
 {
     if(shell_id_to_index_map_.count(id) == 1)
         throw std::invalid_argument("shellcontianer already have the shell");
@@ -245,10 +238,9 @@ void ShellContainer<T_pt>::add_shell(
     return;
 }
 
-template<typename T_pt>
 template<typename shellT>
-void ShellContainer<T_pt>::update_shell(
-        const ShellID& id, const shellT& sh, const face_id_type& fid)
+void ShellContainer::update_shell(
+        const ShellID& id, const shellT& sh, const FaceID& fid)
 {
     if(shell_id_to_index_map_.count(id) == 0)
         throw std::invalid_argument("shellcontianer doesnt have the shell");
@@ -270,10 +262,9 @@ void ShellContainer<T_pt>::update_shell(
     return;
 }
 
-template<typename T_pt>
 template<typename shellT>
-void ShellContainer<T_pt>::update_shell(
-        const ShellID& id, const shellT& sh, const vertex_id_type& vid)
+void ShellContainer::update_shell(
+        const ShellID& id, const shellT& sh, const VertexID& vid)
 {
     if(shell_id_to_index_map_.count(id) == 0)
         throw std::invalid_argument("shellcontianer doesnt have the shell");
@@ -295,22 +286,19 @@ void ShellContainer<T_pt>::update_shell(
     return;
 }
 
-template<typename T_pt>
-typename ShellContainer<T_pt>::storage_type const&
-ShellContainer<T_pt>::get_shell(const ShellID& id) const
+inline ShellContainer::storage_type const&
+ShellContainer::get_shell(const ShellID& id) const
 {
     return container_.at(shell_id_to_index_map_.find(id)->second).second;
 }
 
-template<typename T_pt>
-typename ShellContainer<T_pt>::storage_type&
-ShellContainer<T_pt>::get_shell(const ShellID& id)
+inline ShellContainer::storage_type&
+ShellContainer::get_shell(const ShellID& id)
 {
     return container_.at(shell_id_to_index_map_[id]).second;
 }
 
-template<typename T_pt>
-void ShellContainer<T_pt>::remove_shell(const ShellID& id)
+inline void ShellContainer::remove_shell(const ShellID& id)
 {
     if(shell_id_to_index_map_.count(id) == 0)
         throw std::invalid_argument("shellcontianer doesnt have the shell");
@@ -324,25 +312,22 @@ void ShellContainer<T_pt>::remove_shell(const ShellID& id)
     return ;
 }
 
-template<typename T_pt>
 inline std::vector<ShellID> const&
-ShellContainer<T_pt>::list_shells_on(const face_id_type& fid) const
+ShellContainer::list_shells_on(const FaceID& fid) const
 {
     return face_registrator_.elements_over(fid);
 }
 
-template<typename T_pt>
 inline std::vector<ShellID> const&
-ShellContainer<T_pt>::list_shells_on(const vertex_id_type& vid) const
+ShellContainer::list_shells_on(const VertexID& vid) const
 {
     return vertex_registrator_.elements_over(vid);
 }
 
-template<typename T_pt>
-std::vector<std::pair<
-    std::pair<ShellID, typename ShellContainer<T_pt>::storage_type>, Real> >
-ShellContainer<T_pt>::list_shells_within_radius(
-        const Real3& pos, const Real radius) const
+inline std::vector<std::pair<
+    std::pair<ShellID, ShellContainer::storage_type>, Real> >
+ShellContainer::list_shells_within_radius(
+    const Real3& pos, const Real radius) const
 {
     std::vector<std::pair<std::pair<ShellID, storage_type>, Real> > retval;
     const distance_calculator distance(pos);
@@ -363,10 +348,9 @@ ShellContainer<T_pt>::list_shells_within_radius(
     return retval;
 }
 
-template<typename T_pt>
-std::vector<std::pair<
-    std::pair<ShellID, typename ShellContainer<T_pt>::storage_type>, Real> >
-ShellContainer<T_pt>::list_shells_within_radius(
+inline std::vector<std::pair<
+    std::pair<ShellID, ShellContainer::storage_type>, Real> >
+ShellContainer::list_shells_within_radius(
         const Real3& pos, const Real radius, const ShellID& ignore) const
 {
     std::vector<std::pair<std::pair<ShellID, storage_type>, Real> > retval;
@@ -389,10 +373,9 @@ ShellContainer<T_pt>::list_shells_within_radius(
     return retval;
 }
 
-template<typename T_pt>
 std::vector<std::pair<
-    std::pair<ShellID, typename ShellContainer<T_pt>::storage_type>, Real> >
-ShellContainer<T_pt>::list_shells_within_radius(
+    std::pair<ShellID, ShellContainer::storage_type>, Real> >
+ShellContainer::list_shells_within_radius(
         const Real3& pos, const Real radius,
         const ShellID& ignore1, const ShellID& ignore2) const
 {
@@ -416,11 +399,10 @@ ShellContainer<T_pt>::list_shells_within_radius(
     return retval;
 }
 
-template<typename T_pt>
 template<typename strID>
 std::vector<std::pair<
-    std::pair<ShellID, typename ShellContainer<T_pt>::storage_type>, Real> >
-ShellContainer<T_pt>::list_shells_within_radius(
+    std::pair<ShellID, ShellContainer::storage_type>, Real> >
+ShellContainer::list_shells_within_radius(
         const std::pair<Real3, strID>& pos, const Real radius) const
 {
     std::vector<std::pair<std::pair<ShellID, storage_type>, Real> > retval;
@@ -442,10 +424,10 @@ ShellContainer<T_pt>::list_shells_within_radius(
         }
     }
 
-    const std::vector<face_id_type>   neighborf = polygon_.at(pos.second).neighbor_faces;
-    const std::vector<vertex_id_type> neighborv = polygon_.at(pos.second).neighbor_vertices;
+    const std::vector<FaceID>   neighborf = polygon_.at(pos.second).neighbor_faces;
+    const std::vector<VertexID> neighborv = polygon_.at(pos.second).neighbor_vertices;
 
-    for(typename std::vector<face_id_type>::const_iterator
+    for(typename std::vector<FaceID>::const_iterator
         iter = neighborf.begin(); iter != neighborf.end(); ++iter)
     {
         const std::vector<ShellID>& shells = list_shells_on(*iter);
@@ -465,7 +447,7 @@ ShellContainer<T_pt>::list_shells_within_radius(
                         std::cerr << "Error: broken consistency in structure id\n";
                         std::cerr << "ShellContainer::list_shells_within_radius\n";
                         std::cerr << "FaceID " << pos.second << " has ...\n";
-                        for(typename std::vector<face_id_type>::const_iterator
+                        for(typename std::vector<FaceID>::const_iterator
                             nfi(neighborf.begin()), nfe(neighborf.end());
                             nfi != nfe; ++nfi)
                         {
@@ -486,7 +468,7 @@ ShellContainer<T_pt>::list_shells_within_radius(
         }
     }
 
-    for(typename std::vector<vertex_id_type>::const_iterator
+    for(typename std::vector<VertexID>::const_iterator
         iter = neighborv.begin(); iter != neighborv.end(); ++iter)
     {
         const std::vector<ShellID>& shells = list_shells_on(*iter);
@@ -504,7 +486,7 @@ ShellContainer<T_pt>::list_shells_within_radius(
                         std::cerr << "Error: broken consistency in structure id\n";
                         std::cerr << "ShellContainer::list_shells_within_radius\n";
                         std::cerr << "Vertex " << pos.second << " has ...\n";
-                        for(typename std::vector<vertex_id_type>::const_iterator
+                        for(typename std::vector<VertexID>::const_iterator
                             nvi(neighborv.begin()), nve(neighborv.end());
                             nvi != nve; ++nvi)
                         {
@@ -530,11 +512,10 @@ ShellContainer<T_pt>::list_shells_within_radius(
     return retval;
 }
 
-template<typename T_pt>
 template<typename strID>
 std::vector<std::pair<
-    std::pair<ShellID, typename ShellContainer<T_pt>::storage_type>, Real> >
-ShellContainer<T_pt>::list_shells_within_radius(
+    std::pair<ShellID, ShellContainer::storage_type>, Real> >
+ShellContainer::list_shells_within_radius(
         const std::pair<Real3, strID>& pos, const Real radius,
         const ShellID& ignore) const
 {
@@ -557,10 +538,10 @@ ShellContainer<T_pt>::list_shells_within_radius(
         }
     }
 
-    std::vector<face_id_type>   neighborf = polygon_.at(pos.second).neighbor_faces;
-    std::vector<vertex_id_type> neighborv = polygon_.at(pos.second).neighbor_vertices;
+    std::vector<FaceID>   neighborf = polygon_.at(pos.second).neighbor_faces;
+    std::vector<VertexID> neighborv = polygon_.at(pos.second).neighbor_vertices;
 
-    for(typename std::vector<face_id_type>::const_iterator
+    for(typename std::vector<FaceID>::const_iterator
         iter = neighborf.begin(); iter != neighborf.end(); ++iter)
     {
         const std::vector<ShellID>& shells = list_shells_on(*iter);
@@ -579,7 +560,7 @@ ShellContainer<T_pt>::list_shells_within_radius(
                         std::cerr << "Error: broken consistency in structure id\n";
                         std::cerr << "ShellContainer::list_shells_within_radius\n";
                         std::cerr << "FaceID " << pos.second << " has ...\n";
-                        for(typename std::vector<face_id_type>::const_iterator
+                        for(typename std::vector<FaceID>::const_iterator
                             nfi(neighborf.begin()), nfe(neighborf.end());
                             nfi != nfe; ++nfi)
                         {
@@ -600,7 +581,7 @@ ShellContainer<T_pt>::list_shells_within_radius(
         }
     }
 
-    for(typename std::vector<vertex_id_type>::const_iterator
+    for(typename std::vector<VertexID>::const_iterator
         iter = neighborv.begin(); iter != neighborv.end(); ++iter)
     {
         const std::vector<ShellID>& shells = list_shells_on(*iter);
@@ -619,7 +600,7 @@ ShellContainer<T_pt>::list_shells_within_radius(
                         std::cerr << "Error: broken consistency in structure id\n";
                         std::cerr << "ShellContainer::list_shells_within_radius\n";
                         std::cerr << "Vertex " << pos.second << " has ...\n";
-                        for(typename std::vector<vertex_id_type>::const_iterator
+                        for(typename std::vector<VertexID>::const_iterator
                             nvi(neighborv.begin()), nve(neighborv.end());
                             nvi != nve; ++nvi)
                         {
@@ -646,11 +627,10 @@ ShellContainer<T_pt>::list_shells_within_radius(
     return retval;
 }
 
-template<typename T_pt>
 template<typename strID>
 std::vector<std::pair<
-    std::pair<ShellID, typename ShellContainer<T_pt>::storage_type>, Real> >
-ShellContainer<T_pt>::list_shells_within_radius(
+    std::pair<ShellID, ShellContainer::storage_type>, Real> >
+ShellContainer::list_shells_within_radius(
         const std::pair<Real3, strID>& pos, const Real radius,
         const ShellID& ignore1, const ShellID& ignore2) const
 {
@@ -673,10 +653,10 @@ ShellContainer<T_pt>::list_shells_within_radius(
         }
     }
 
-    std::vector<face_id_type>   neighborf = polygon_.at(pos.second).neighbor_faces;
-    std::vector<vertex_id_type> neighborv = polygon_.at(pos.second).neighbor_vertices;
+    std::vector<FaceID>   neighborf = polygon_.at(pos.second).neighbor_faces;
+    std::vector<VertexID> neighborv = polygon_.at(pos.second).neighbor_vertices;
 
-    for(typename std::vector<face_id_type>::const_iterator
+    for(typename std::vector<FaceID>::const_iterator
         iter = neighborf.begin(); iter != neighborf.end(); ++iter)
     {
         const std::vector<ShellID>& shells = list_shells_on(*iter);
@@ -695,7 +675,7 @@ ShellContainer<T_pt>::list_shells_within_radius(
                         std::cerr << "Error: broken consistency in structure id\n";
                         std::cerr << "ShellContainer::list_shells_within_radius\n";
                         std::cerr << "FaceID " << pos.second << " has ...\n";
-                        for(typename std::vector<face_id_type>::const_iterator
+                        for(typename std::vector<FaceID>::const_iterator
                             nfi(neighborf.begin()), nfe(neighborf.end());
                             nfi != nfe; ++nfi)
                         {
@@ -716,7 +696,7 @@ ShellContainer<T_pt>::list_shells_within_radius(
         }
     }
 
-    for(typename std::vector<vertex_id_type>::const_iterator
+    for(typename std::vector<VertexID>::const_iterator
         iter = neighborv.begin(); iter != neighborv.end(); ++iter)
     {
         const std::vector<ShellID>& shells = list_shells_on(*iter);
@@ -736,7 +716,7 @@ ShellContainer<T_pt>::list_shells_within_radius(
                         std::cerr << "Error: broken consistency in structure id\n";
                         std::cerr << "ShellContainer::list_shells_within_radius\n";
                         std::cerr << "Vertex " << pos.second << " has ...\n";
-                        for(typename std::vector<vertex_id_type>::const_iterator
+                        for(typename std::vector<VertexID>::const_iterator
                             nvi(neighborv.begin()), nve(neighborv.end());
                             nvi != nve; ++nvi)
                         {

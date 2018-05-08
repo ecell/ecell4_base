@@ -24,12 +24,9 @@ class Multi
         REACTION,
     };
 
-    typedef Particle   particle_type;
-    typedef ParticleID particle_id_type;
-    typedef ShellID    shell_id_type;
     typedef std::pair<ParticleID, Particle>    particle_id_pair_type;
     typedef std::vector<particle_id_pair_type> particles_type;
-    typedef std::vector<shell_id_type>         shell_ids_type;
+    typedef std::vector<ShellID>               shell_ids_type;
 
     typedef SGFRDWorld               world_type;
     typedef world_type::polygon_type polygon_type;
@@ -105,11 +102,11 @@ class Multi
     void determine_reaction_length(){return;}
     void determine_delta_t(){return;}
 
-    bool add_particle(particle_id_type const& pid)
+    bool add_particle(ParticleID const& pid)
     {
         return container_.make_entry(pid);
     }
-    bool add_shell   (shell_id_type    const& sid)
+    bool add_shell(ShellID const& sid)
     {
         if(std::find(shells_.begin(), shells_.end(), sid) != shells_.end())
             return false;

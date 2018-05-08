@@ -8,22 +8,20 @@ namespace ecell4
 namespace sgfrd
 {
 
-template<typename T_element_id, typename T_structure_id,
-         typename T_polygon_traits>
+template<typename T_element_id, typename T_structure_id>
 struct StructureRegistrator
 {
 public:
 
     typedef T_element_id     element_id_type;
     typedef T_structure_id   structure_id_type;
-    typedef T_polygon_traits polygon_traits_type;
     typedef std::vector<element_id_type> element_id_array_type;
     typedef std::pair<structure_id_type, element_id_array_type> value_type;
     typedef std::vector<value_type>                 container_type;
     typedef typename container_type::iterator       iterator;
     typedef typename container_type::const_iterator const_iterator;
 
-    typedef ecell4::Polygon<polygon_traits_type> polygon_type;
+    typedef ecell4::Polygon polygon_type;
     typedef typename polygon_traits_type::converter_type
         structure_id_converter_type;
     typedef typename utils::get_mapper_mf<element_id_type, structure_id_type>::type
@@ -97,8 +95,8 @@ protected:
 };
 
 
-template<typename Te, typename Ts, typename Tp>
-void StructureRegistrator<Te, Ts, Tp>::emplace(
+template<typename Te, typename Ts>
+void StructureRegistrator<Te, Ts>::emplace(
         const element_id_type& eid, const structure_id_type& sid)
 {
     if(this->have(eid))
@@ -114,8 +112,8 @@ void StructureRegistrator<Te, Ts, Tp>::emplace(
     return;
 }
 
-template<typename Te, typename Ts, typename Tp>
-void StructureRegistrator<Te, Ts, Tp>::update(
+template<typename Te, typename Ts>
+void StructureRegistrator<Te, Ts>::update(
         const element_id_type& eid, const structure_id_type& sid)
 {
     const std::size_t idx = this->to_index(sid);
@@ -138,8 +136,8 @@ void StructureRegistrator<Te, Ts, Tp>::update(
     return;
 }
 
-template<typename Te, typename Ts, typename Tp>
-void StructureRegistrator<Te, Ts, Tp>::remove(
+template<typename Te, typename Ts>
+void StructureRegistrator<Te, Ts>::remove(
         const element_id_type& eid, const structure_id_type& sid)
 {
     const std::size_t idx = this->to_index(sid);
@@ -154,77 +152,77 @@ void StructureRegistrator<Te, Ts, Tp>::remove(
     return;
 }
 
-template<typename Te, typename Ts, typename Tp>
-void StructureRegistrator<Te, Ts, Tp>::remove(const element_id_type& eid)
+template<typename Te, typename Ts>
+void StructureRegistrator<Te, Ts>::remove(const element_id_type& eid)
 {
     remove(eid, structure_id_at(to_index(eid)));
     return;
 }
 
-template<typename Te, typename Ts, typename Tp>
-inline bool StructureRegistrator<Te, Ts, Tp>::have(const element_id_type& eid) const
+template<typename Te, typename Ts>
+inline bool StructureRegistrator<Te, Ts>::have(const element_id_type& eid) const
 {
     return elemid_to_strid_map_.count(eid) == 1;
 }
 
-template<typename Te, typename Ts, typename Tp>
-inline typename StructureRegistrator<Te, Ts, Tp>::element_id_array_type&
-StructureRegistrator<Te, Ts, Tp>::elements_over(const structure_id_type& sid)
+template<typename Te, typename Ts>
+inline typename StructureRegistrator<Te, Ts>::element_id_array_type&
+StructureRegistrator<Te, Ts>::elements_over(const structure_id_type& sid)
 {
     return element_ids_at(this->to_index(sid));
 }
 
-template<typename Te, typename Ts, typename Tp>
-inline typename StructureRegistrator<Te, Ts, Tp>::element_id_array_type const&
-StructureRegistrator<Te, Ts, Tp>::elements_over(const structure_id_type& sid) const
+template<typename Te, typename Ts>
+inline typename StructureRegistrator<Te, Ts>::element_id_array_type const&
+StructureRegistrator<Te, Ts>::elements_over(const structure_id_type& sid) const
 {
     return element_ids_at(this->to_index(sid));
 }
 
-template<typename Te, typename Ts, typename Tp>
-inline typename StructureRegistrator<Te, Ts, Tp>::structure_id_type&
-StructureRegistrator<Te, Ts, Tp>::structure_on(const element_id_type& eid)
+template<typename Te, typename Ts>
+inline typename StructureRegistrator<Te, Ts>::structure_id_type&
+StructureRegistrator<Te, Ts>::structure_on(const element_id_type& eid)
 {
     return structure_id_at(this->to_index(eid));
 }
 
-template<typename Te, typename Ts, typename Tp>
-inline typename StructureRegistrator<Te, Ts, Tp>::structure_id_type const&
-StructureRegistrator<Te, Ts, Tp>::structure_on(const element_id_type& eid) const
+template<typename Te, typename Ts>
+inline typename StructureRegistrator<Te, Ts>::structure_id_type const&
+StructureRegistrator<Te, Ts>::structure_on(const element_id_type& eid) const
 {
     return structure_id_at(this->to_index(eid));
 }
 
-template<typename Te, typename Ts, typename Tp>
-inline typename StructureRegistrator<Te, Ts, Tp>::element_id_array_type&
-StructureRegistrator<Te, Ts, Tp>::element_ids_at(std::size_t i)
+template<typename Te, typename Ts>
+inline typename StructureRegistrator<Te, Ts>::element_id_array_type&
+StructureRegistrator<Te, Ts>::element_ids_at(std::size_t i)
 {
     return container_.at(i).second;
 }
 
-template<typename Te, typename Ts, typename Tp>
-inline typename StructureRegistrator<Te, Ts, Tp>::element_id_array_type const&
-StructureRegistrator<Te, Ts, Tp>::element_ids_at(std::size_t i) const
+template<typename Te, typename Ts>
+inline typename StructureRegistrator<Te, Ts>::element_id_array_type const&
+StructureRegistrator<Te, Ts>::element_ids_at(std::size_t i) const
 {
     return container_.at(i).second;
 }
 
-template<typename Te, typename Ts, typename Tp>
-inline typename StructureRegistrator<Te, Ts, Tp>::structure_id_type&
-StructureRegistrator<Te, Ts, Tp>::structure_id_at(std::size_t i)
+template<typename Te, typename Ts>
+inline typename StructureRegistrator<Te, Ts>::structure_id_type&
+StructureRegistrator<Te, Ts>::structure_id_at(std::size_t i)
 {
     return container_.at(i).first;
 }
 
-template<typename Te, typename Ts, typename Tp>
-inline typename StructureRegistrator<Te, Ts, Tp>::structure_id_type const&
-StructureRegistrator<Te, Ts, Tp>::structure_id_at(std::size_t i) const
+template<typename Te, typename Ts>
+inline typename StructureRegistrator<Te, Ts>::structure_id_type const&
+StructureRegistrator<Te, Ts>::structure_id_at(std::size_t i) const
 {
     return container_.at(i).first;
 }
 
-template<typename Te, typename Ts, typename Tp>
-void StructureRegistrator<Te, Ts, Tp>::dump(std::ostream& os) const
+template<typename Te, typename Ts>
+void StructureRegistrator<Te, Ts>::dump(std::ostream& os) const
 {
 //     elemid_to_strid_map_type           elemid_to_strid_map_;   //ex {pID -> fID}
 //     container_type                     container_;  //ex {<fid, {pid,...}>, ...}

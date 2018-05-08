@@ -29,15 +29,14 @@ struct distance_calculator : public boost::static_visitor<Real>
     Real3 pos_;
 };
 
-template<typename T_polygon_traits, typename strID>
+template<typename strID>
 struct distance_calculator_on_surface : public boost::static_visitor<Real>
 {
 public:
-    typedef T_polygon_traits polygon_traits;
     typedef strID structure_id_type;
-    typedef ecell4::Polygon<polygon_traits> polygon_type;
-    typedef typename polygon_type::face_id_type   face_id_type;
-    typedef typename polygon_type::vertex_id_type vertex_id_type;
+    typedef ecell4::Polygon polygon_type;
+    typedef typename polygon_type::FaceID   FaceID;
+    typedef typename polygon_type::VertexID VertexID;
 
 private:
 
@@ -45,11 +44,11 @@ private:
     struct is_2d_shell : boost::mpl::or_<
         boost::mpl::and_<
             boost::is_same<shapeT, ecell4::Circle>,
-            boost::is_same<stridT, face_id_type>
+            boost::is_same<stridT, FaceID>
             >,
         boost::mpl::and_<
             boost::is_same<shapeT, ecell4::ConicalSurface>,
-            boost::is_same<stridT, vertex_id_type>
+            boost::is_same<stridT, VertexID>
             >
         >
     {};

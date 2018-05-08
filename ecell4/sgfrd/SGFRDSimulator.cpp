@@ -215,7 +215,7 @@ SGFRDSimulator::attempt_reaction_1_to_2(const ReactionRule& rule,
     const Real D1(mol1.D),      D2(mol2.D);
     const Real r1(mol1.radius), r2(mol2.radius), r12(mol1.radius + mol2.radius);
 
-    boost::array<std::pair<Real3, face_id_type>, 2> newpfs;
+    boost::array<std::pair<Real3, FaceID>, 2> newpfs;
     newpfs[0] = std::make_pair(p.position(), fid);
     newpfs[1] = std::make_pair(p.position(), fid);
 
@@ -468,7 +468,7 @@ void SGFRDSimulator::fire_single(const Single& dom, DomainID did)
 }
 
 bool SGFRDSimulator::burst_and_shrink_overlaps(
-        const Particle& p, const face_id_type& fid, const DomainID& did)
+        const Particle& p, const FaceID& fid, const DomainID& did)
 {
     SGFRD_SCOPE(us, burst_and_shrink_overlaps, tracer_);
     const Real tm = this->time();
@@ -1039,10 +1039,10 @@ SGFRDSimulator::form_single_circular_event(
 }
 
 DomainID SGFRDSimulator::create_event(
-            const ParticleID& pid, const Particle& p, const face_id_type fid)
+            const ParticleID& pid, const Particle& p, const FaceID fid)
 {
     SGFRD_SCOPE(us, create_event, tracer_);
-    const std::pair<Real3, face_id_type> pos = std::make_pair(p.position(), fid);
+    const std::pair<Real3, FaceID> pos = std::make_pair(p.position(), fid);
 
     const Real min_circle_size = p.radius() * single_circular_shell_factor;
     const Real max_circle_size = get_max_circle_size(pos);

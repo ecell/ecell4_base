@@ -1,11 +1,10 @@
 #ifndef ECELL4_SGFRD_WORLD
 #define ECELL4_SGFRD_WORLD
-#include "polygon_traits.hpp"
 #include "StructureRegistrator.hpp"
 #include "Informations.hpp"
 #include <ecell4/core/ParticleSpaceCellListImpl.hpp>
 #include <ecell4/core/SerialIDGenerator.hpp>
-#include <ecell4/core/Polygon.hpp>
+#include <ecell4/core/HalfEdgeMesh.hpp>
 #include <ecell4/core/Context.hpp>
 #include <ecell4/core/Model.hpp>
 #include <boost/scoped_ptr.hpp>
@@ -22,17 +21,12 @@ namespace sgfrd
 class SGFRDWorld : public ecell4::Space
 {
   public:
-    typedef polygon_traits traits_type;
-    typedef Polygon<traits_type> polygon_type;
-    typedef polygon_type::triangle_type     triangle_type;
-    typedef polygon_type::face_id_type      face_id_type;
-    typedef polygon_type::edge_id_type      edge_id_type;
-    typedef polygon_type::vertex_id_type    vertex_id_type;
-    typedef polygon_type::face_descripter   face_descripter;
-    typedef polygon_type::edge_descripter   edge_descripter;
-    typedef polygon_type::vertex_descripter vertex_descripter;
-    typedef polygon_type::local_index_type  local_index_type;
-    typedef polygon_type::barycentric_type  barycentric_type;
+    typedef ecell4::Polygon  polygon_type;
+    typedef ecell4::Triangle triangle_type;
+    typedef polygon_type::FaceID   FaceID;
+    typedef polygon_type::EdgeID   EdgeID;
+    typedef polygon_type::VertexID VertexID;
+    typedef Barycentric barycentric_type;
 
     typedef ecell4::Model model_type;
     typedef ecell4::sgfrd::MoleculeInfo molecule_info_type;
@@ -42,7 +36,7 @@ class SGFRDWorld : public ecell4::Space
     typedef particle_space_type::particle_container_type
         particle_container_type;
     typedef ecell4::SerialIDGenerator<ParticleID> particle_id_generator_type;
-    typedef StructureRegistrator<ParticleID, face_id_type, traits_type>
+    typedef StructureRegistrator<ParticleID, FaceID, traits_type>
         structure_registrator_type;
 
   public:
@@ -92,7 +86,7 @@ class SGFRDWorld : public ecell4::Space
     std::pair<std::pair<ParticleID, Particle>, bool>
     new_particle(const Particle& p);
     std::pair<std::pair<ParticleID, Particle>, bool>
-    new_particle(const Particle& p, const face_id_type& fid);
+    new_particle(const Particle& p, const FaceID& fid);
 
     std::pair<std::pair<ParticleID, Particle>, bool>
     throw_in_particle(const Species& sp);
@@ -104,7 +98,7 @@ class SGFRDWorld : public ecell4::Space
         return ps_->update_particle(pid, p);
     }
     bool update_particle(const ParticleID& pid, const Particle& p,
-                         const face_id_type& fid)
+                         const FaceID& fid)
     {
         if(registrator_.have(pid))
         {
@@ -123,7 +117,7 @@ class SGFRDWorld : public ecell4::Space
         if(registrator_.have(pid)) registrator_.remove(pid);
         return ps_->remove_particle(pid);
     }
-    void remove_particle(const ParticleID& pid, const face_id_type& fid)
+    void remove_particle(const ParticleID& pid, const FaceID& fid)
     {
         registrator_.remove(pid, fid);
         return ps_->remove_particle(pid);
@@ -134,12 +128,12 @@ class SGFRDWorld : public ecell4::Space
     bool
     has_particle(const ParticleID& pid) const {return ps_->has_particle(pid);}
     bool
-    has_particle(const face_id_type& fid) const
+    has_particle(const FaceID& fid) const
     {
         return registrator_.elements_over(fid).size() > 0;
     }
     Integer
-    num_particle(const face_id_type& fid) const
+    num_particle(const FaceID& fid) const
     {
         return registrator_.elements_over(fid).size();
     }
@@ -163,7 +157,7 @@ class SGFRDWorld : public ecell4::Space
     list_particles_exact(const Species& sp) const {return ps_->list_particles_exact(sp);}
 
     std::vector<std::pair<ParticleID, Particle> >
-    list_particles(const face_id_type& fid) const
+    list_particles(const FaceID& fid) const
     {
         std::vector<ParticleID> const& pids = registrator_.elements_over(fid);
         std::vector<std::pair<ParticleID, Particle> > retval(pids.size());
@@ -172,7 +166,7 @@ class SGFRDWorld : public ecell4::Space
         return retval;
     }
     std::vector<ParticleID> const&
-    list_particleIDs(const face_id_type& fid) const
+    list_particleIDs(const FaceID& fid) const
     {
         return registrator_.elements_over(fid);
     }
@@ -182,7 +176,7 @@ class SGFRDWorld : public ecell4::Space
         return registrator_.have(pid);
     }
 
-    face_id_type get_face_id(const ParticleID& pid) const
+    FaceID get_face_id(const ParticleID& pid) const
     {
         return registrator_.structure_on(pid);
     }
@@ -255,14 +249,14 @@ class SGFRDWorld : public ecell4::Space
     // for 2D
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
         list_particles_within_radius(
-            const std::pair<Real3, face_id_type>& pos, const Real& radius) const;
+            const std::pair<Real3, FaceID>& pos, const Real& radius) const;
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
         list_particles_within_radius(
-            const std::pair<Real3, face_id_type>& pos, const Real& radius,
+            const std::pair<Real3, FaceID>& pos, const Real& radius,
             const ParticleID& ignore) const;
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
         list_particles_within_radius(
-            const std::pair<Real3, face_id_type>& pos, const Real& radius,
+            const std::pair<Real3, FaceID>& pos, const Real& radius,
             const ParticleID& ignore1, const ParticleID& ignore2) const;
 
     // return false if overlap exists. for 3D. FIXME: speedup
@@ -284,12 +278,12 @@ class SGFRDWorld : public ecell4::Space
 
     // return false if overlap exists.
     bool check_no_overlap(
-            const std::pair<Real3, face_id_type>& pos, const Real& radius) const;
+            const std::pair<Real3, FaceID>& pos, const Real& radius) const;
     bool check_no_overlap(
-            const std::pair<Real3, face_id_type>& pos, const Real& radius,
+            const std::pair<Real3, FaceID>& pos, const Real& radius,
             const ParticleID& ignore) const;
     bool check_no_overlap(
-            const std::pair<Real3, face_id_type>& pos, const Real& radius,
+            const std::pair<Real3, FaceID>& pos, const Real& radius,
             const ParticleID& ignore1, const ParticleID& ignore2) const;
 
     particle_container_type const& particles() const {return ps_->particles();}

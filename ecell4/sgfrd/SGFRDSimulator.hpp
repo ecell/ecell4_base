@@ -43,20 +43,11 @@ class SGFRDSimulator :
     typedef SGFRDSimulator self_type;
 
     // polygon
-    typedef polygon_traits polygon_traits_type;
-    typedef ecell4::Polygon<polygon_traits_type>     polygon_type;
-    typedef polygon_type::triangle_type     triangle_type;
-    typedef polygon_type::face_id_type      face_id_type;
-    typedef polygon_type::edge_id_type      edge_id_type;
-    typedef polygon_type::vertex_id_type    vertex_id_type;
-    typedef polygon_type::face_descripter   face_descripter;
-    typedef polygon_type::edge_descripter   edge_descripter;
-    typedef polygon_type::vertex_descripter vertex_descripter;
-    typedef polygon_type::local_index_type  local_index_type;
-    typedef polygon_type::barycentric_type  barycentric_type;
-    typedef face_id_type   FaceID;// just for looks same as ParticleID
-    typedef edge_id_type   EdgeID;
-    typedef vertex_id_type VertexID;
+    typedef ecell4::Polygon  polygon_type;
+    typedef ecell4::Triangle Triangle;
+    typedef polygon_type::FaceID   FaceID;
+    typedef polygon_type::EdgeID   EdgeID;
+    typedef polygon_type::VertexID VertexID;
 
     // Event & Domain
     typedef SGFRDEvent                      event_type;
@@ -77,7 +68,7 @@ class SGFRDSimulator :
 
     // ShellContainer
     typedef ecell4::SerialIDGenerator<ShellID> shell_id_generator_type;
-    typedef ShellContainer<polygon_traits_type> shell_container_type;
+    typedef ShellContainer                             shell_container_type;
     typedef shell_container_type::shell_type           shell_type;
     typedef shell_container_type::shell_id_pair_type   shell_id_pair_type;
     typedef shell_container_type::circle_type          circle_type;
@@ -381,7 +372,7 @@ class SGFRDSimulator :
     }
     std::pair<ShellID, conical_surface_type>
     create_single_conical_surface_shell(
-            const vertex_id_type& vid, const Real size)
+            const VertexID& vid, const Real size)
     {
         SGFRD_SCOPE(ns, create_single_conical_shell, tracer_);
 
@@ -1381,11 +1372,11 @@ class SGFRDSimulator :
     }
 
     std::vector<std::pair<DomainID, Real> >
-    burst_and_shrink_non_multis(const vertex_id_type& vid,
+    burst_and_shrink_non_multis(const VertexID& vid,
         const std::vector<std::pair<DomainID, Real> >& intruders)
     {
         SGFRD_SCOPE(us, burst_and_shrink_non_multis_vertex, tracer_)
-        const std::pair<Real3, vertex_id_type> vpos = std::make_pair(
+        const std::pair<Real3, VertexID> vpos = std::make_pair(
                 polygon().vertex_at(vid).position, vid);
 
         const Real tm(this->time());
@@ -1705,7 +1696,7 @@ class SGFRDSimulator :
               const std::vector<std::pair<DomainID, Real> >& intruders);
 
 
-    std::vector<std::pair<vertex_id_type, Real> >
+    std::vector<std::pair<VertexID, Real> >
     get_intrusive_vertices(const std::pair<Real3, FaceID>& pos,
                            const Real radius) const
     {
@@ -1771,11 +1762,11 @@ class SGFRDSimulator :
     }
 
     std::vector<std::pair<DomainID, Real> >
-    get_intrusive_domains(const vertex_id_type& vid, const Real radius) const
+    get_intrusive_domains(const VertexID& vid, const Real radius) const
     {
         SGFRD_SCOPE(us, get_intrusive_domains_vid, tracer_);
 
-        const std::pair<Real3, vertex_id_type> vpos = std::make_pair(
+        const std::pair<Real3, VertexID> vpos = std::make_pair(
                 polygon().vertex_at(vid).position, vid);
         const std::vector<std::pair<std::pair<ShellID, shell_type>, Real>
             > shells(shell_container_.list_shells_within_radius(vpos, radius));
@@ -1844,7 +1835,7 @@ class SGFRDSimulator :
         }
         return std::sqrt(lensq);
     }
-    Real get_max_cone_size(const vertex_id_type& vid) const
+    Real get_max_cone_size(const VertexID& vid) const
     {
         return polygon().vertex_at(vid).max_conical_shell_size * 0.5;
     }

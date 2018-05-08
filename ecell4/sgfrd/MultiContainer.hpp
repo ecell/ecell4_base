@@ -14,16 +14,11 @@ class MultiContainer
 {
   public:
     typedef SGFRDWorld world_type;
-    typedef world_type::polygon_type       polygon_type;
-    typedef world_type::triangle_type      triangle_type;
-    typedef world_type::face_id_type       face_id_type;
-    typedef world_type::edge_id_type       edge_id_type;
-    typedef world_type::vertex_id_type     vertex_id_type;
-    typedef world_type::face_descripter    face_descripter;
-    typedef world_type::edge_descripter    edge_descripter;
-    typedef world_type::vertex_descripter  vertex_descripter;
-    typedef world_type::local_index_type   local_index_type;
-    typedef world_type::barycentric_type   barycentric_type;
+    typedef world_type::polygon_type  polygon_type;
+    typedef world_type::triangle_type triangle_type;
+    typedef world_type::FaceID   FaceID;
+    typedef world_type::EdgeID   EdgeID;
+    typedef world_type::VertexID VertexID;
     typedef world_type::molecule_info_type molecule_info_type;
     typedef world_type::structure_registrator_type structure_registrator_type;
     typedef world_type::particle_space_type        particle_space_type;
@@ -51,7 +46,7 @@ class MultiContainer
 
     Real t() const {return world_.t();}
 
-    face_id_type get_face_id(const ParticleID& pid) const
+    FaceID get_face_id(const ParticleID& pid) const
     {return world_.get_face_id(pid);}
 
     molecule_info_type get_molecule_info(const Species& sp) const
@@ -63,7 +58,7 @@ class MultiContainer
         return world_.update_particle(pid, p);
     }
     bool update_particle(const ParticleID& pid, const Particle& p,
-                         const face_id_type fid)
+                         const FaceID fid)
     {
         if(registrator_.have(pid))
         {
@@ -90,7 +85,7 @@ class MultiContainer
         return result;
     }
     std::pair<std::pair<ParticleID, Particle>, bool>
-    new_particle(const Particle& p, const face_id_type& fid)
+    new_particle(const Particle& p, const FaceID& fid)
     {
         const std::pair<std::pair<ParticleID, Particle>, bool> result =
             world_.new_particle(p, fid);
@@ -113,7 +108,7 @@ class MultiContainer
 
         return world_.remove_particle(pid);
     }
-    void remove_particle(const ParticleID& pid, const face_id_type& fid)
+    void remove_particle(const ParticleID& pid, const FaceID& fid)
     {
         registrator_.remove(pid, fid);
         const particle_container_type::iterator to_be_removed = this->find_(pid);
@@ -124,7 +119,7 @@ class MultiContainer
     // check particles associated with this Multi domain only.
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
     list_particles_within_radius(
-            const std::pair<Real3, face_id_type>& pos, const Real& radius) const
+            const std::pair<Real3, FaceID>& pos, const Real& radius) const
     {
         std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > retval;
         Particle p; ParticleID pid;
@@ -144,7 +139,7 @@ class MultiContainer
     }
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
     list_particles_within_radius(
-            const std::pair<Real3, face_id_type>& pos, const Real& radius,
+            const std::pair<Real3, FaceID>& pos, const Real& radius,
             const ParticleID& ignore) const
     {
         std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > retval;
@@ -166,7 +161,7 @@ class MultiContainer
     }
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
     list_particles_within_radius(
-            const std::pair<Real3, face_id_type>& pos, const Real& radius,
+            const std::pair<Real3, FaceID>& pos, const Real& radius,
             const ParticleID& ignore1, const ParticleID& ignore2) const
     {
         std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > retval;
@@ -189,7 +184,7 @@ class MultiContainer
     }
 
     // return false if overlap exists.
-    bool check_no_overlap(const std::pair<Real3, face_id_type>& pos,
+    bool check_no_overlap(const std::pair<Real3, FaceID>& pos,
             const Real& radius) const
     {
         std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > retval;
@@ -206,7 +201,7 @@ class MultiContainer
         }
         return true; // no overlap!
     }
-    bool check_no_overlap(const std::pair<Real3, face_id_type>& pos,
+    bool check_no_overlap(const std::pair<Real3, FaceID>& pos,
             const Real& radius, const ParticleID& ignore) const
     {
         std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > retval;
@@ -225,7 +220,7 @@ class MultiContainer
         }
         return true; // no overlap!
     }
-    bool check_no_overlap(const std::pair<Real3, face_id_type>& pos,
+    bool check_no_overlap(const std::pair<Real3, FaceID>& pos,
             const Real& radius, const ParticleID& ignore1,
             const ParticleID& ignore2) const
     {

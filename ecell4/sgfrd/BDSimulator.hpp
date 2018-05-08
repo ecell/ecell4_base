@@ -21,20 +21,11 @@ class BDSimulator :
   public:
 
     // polygon
-    typedef polygon_traits polygon_traits_type;
-    typedef ecell4::Polygon<polygon_traits_type>     polygon_type;
-    typedef polygon_type::triangle_type     triangle_type;
-    typedef polygon_type::face_id_type      face_id_type;
-    typedef polygon_type::edge_id_type      edge_id_type;
-    typedef polygon_type::vertex_id_type    vertex_id_type;
-    typedef polygon_type::face_descripter   face_descripter;
-    typedef polygon_type::edge_descripter   edge_descripter;
-    typedef polygon_type::vertex_descripter vertex_descripter;
-    typedef polygon_type::local_index_type  local_index_type;
-    typedef polygon_type::barycentric_type  barycentric_type;
-    typedef face_id_type   FaceID;// just for looks same as ParticleID
-    typedef edge_id_type   EdgeID;
-    typedef vertex_id_type VertexID;
+    typedef ecell4::Polygon  polygon_type;
+    typedef ecell4::Triangle triangle_type;
+    typedef polygon_type::FaceID   FaceID;
+    typedef polygon_type::EdgeID   EdgeID;
+    typedef polygon_type::VertexID VertexID;
 
     // world & particles
     typedef ecell4::SimulatorBase<ecell4::Model, SGFRDWorld> base_type;
