@@ -36,8 +36,6 @@ void ZerothOrderReactionEvent::fire_()
                 continue;
             }
 
-            const std::pair<std::pair<ParticleID, ParticleVoxel>, bool>
-                retval(world_->new_voxel(v));
             if (boost::optional<ParticleID> pid = world_->new_voxel(sp, coord))
             {
                 rinfo.add_product(ReactionInfo::Item(*pid, sp, coord));
