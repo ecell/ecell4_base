@@ -73,7 +73,7 @@ cdef class ParticleVoxel:
     def __reduce__(self):
         return (ParticleVoxel, (self.species(), self.coordinate(), self.radius(), self.D(), self.loc()))
 
-cdef ParticleVoxel Voxel_from_Cpp_Voxel(Cpp_ParticleVoxel* p):
+cdef ParticleVoxel ParticleVoxel_from_Cpp_ParticleVoxel(Cpp_ParticleVoxel* p):
     cdef Cpp_ParticleVoxel *new_obj = new Cpp_ParticleVoxel(<Cpp_ParticleVoxel> deref(p))
     r = ParticleVoxel(Species(), 0, 0, 0)
     del r.thisptr

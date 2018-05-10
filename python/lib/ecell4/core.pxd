@@ -448,7 +448,7 @@ cdef extern from "ecell4/core/ParticleVoxel.hpp" namespace "ecell4":
 cdef class ParticleVoxel:
     cdef Cpp_ParticleVoxel* thisptr
 
-cdef ParticleVoxel Voxel_from_Cpp_Voxel(Cpp_ParticleVoxel* p)
+cdef ParticleVoxel ParticleVoxel_from_Cpp_ParticleVoxel(Cpp_ParticleVoxel* p)
 
 ## Cpp_FixedIntervalNumberObserver
 #  ecell4::FixedIntervalNumberObserver

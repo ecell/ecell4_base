@@ -296,10 +296,11 @@ cdef class SpatiocyteWorld:
             A pair of ParticleID and ParticleVoxel
 
         """
+        cdef optional[Cpp_ParticleVoxel] voxel
         voxel = self.thisptr.get().find_voxel(deref(pid.thisptr))
 
         if voxel.is_initialized():
-            return (pid, Voxel_from_Cpp_Voxel(address(voxel.get())))
+            return ParticleVoxel_from_Cpp_ParticleVoxel(address(voxel.get()))
 
         return None
 
@@ -946,7 +947,7 @@ cdef class SpatiocyteWorld:
             retval.append(
                 (ParticleID_from_Cpp_ParticleID(
                      <Cpp_ParticleID*>(address(deref(it).first))),
-                 Voxel_from_Cpp_Voxel(
+                 ParticleVoxel_from_Cpp_ParticleVoxel(
                      <Cpp_ParticleVoxel*>(address(deref(it).second)))))
             inc(it)
         return retval
@@ -978,7 +979,7 @@ cdef class SpatiocyteWorld:
             retval.append(
                 (ParticleID_from_Cpp_ParticleID(
                      <Cpp_ParticleID*>(address(deref(it).first))),
-                 Voxel_from_Cpp_Voxel(
+                 ParticleVoxel_from_Cpp_ParticleVoxel(
                      <Cpp_ParticleVoxel*>(address(deref(it).second)))))
             inc(it)
         return retval
@@ -1123,8 +1124,7 @@ cdef class SpatiocyteWorld:
         retval = self.thisptr.get().new_voxel_interface(
                 deref(species.thisptr), voxel.thisptr.coordinate)
 
-        return ((ParticleID_from_Cpp_ParticleID(address(retval.first.first)),
-                 Voxel_from_Cpp_Voxel(address(retval.first.second))),
+        return ((ParticleID_from_Cpp_ParticleID(address(retval.first.first)), ParticleVoxel_from_Cpp_ParticleVoxel(address(retval.first.second))),
                 retval.second)
 
     def rng(self):
