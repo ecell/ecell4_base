@@ -69,8 +69,6 @@ cdef extern from "ecell4/spatiocyte/SpatiocyteWorld.hpp" namespace "ecell4::spat
         pair[Cpp_ParticleID, Cpp_Particle] get_particle(Cpp_ParticleID& pid)
         optional[Cpp_ParticleVoxel] find_voxel(Cpp_ParticleID& pid)
         pair[Cpp_ParticleID, Cpp_Species] get_voxel_at(Integer)
-        bool on_structure(Cpp_ParticleVoxel&)
-        # bool on_structure(Cpp_Species&, Integer)
 
         void set_value(Cpp_Species&, Real)
         Real get_value(Cpp_Species&)

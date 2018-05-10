@@ -327,23 +327,6 @@ cdef class SpatiocyteWorld:
         return (ParticleID_from_Cpp_ParticleID(address(pid_species_pair.first)),
                 Species_from_Cpp_Species(address(pid_species_pair.second)))
 
-    def on_structure(self, ParticleVoxel v):
-        """on_structure(v)
-
-        Check if the given voxel would be on the proper structure at the coordinate
-
-        Parameters
-        ----------
-        v: ParticleVoxel
-            a voxel scheduled to be placed
-
-        Returns
-        -------
-        output: bool
-            if it is on the proper structure, or not
-        """
-        return self.thisptr.get().on_structure(deref((<ParticleVoxel>v).thisptr))
-
     def remove_particle(self, ParticleID pid):
         """remove_particle(pid)
 

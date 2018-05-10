@@ -343,11 +343,6 @@ public:
     virtual Integer3 shape() const = 0;
     virtual Integer actual_size() const = 0;
 
-    bool on_structure(ParticleVoxel v)
-    {
-        return get_voxel_pool_at(v.coordinate) != get_voxel_pool(v)->location();
-    }
-
     virtual bool
     make_structure_type(const Species& sp, Shape::dimension_kind dimension, const std::string loc)
     {

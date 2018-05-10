@@ -156,7 +156,7 @@ bool SpatiocyteWorld::add_molecules(const Species& sp, const Integer& num)
         const coordinate_type coord(rng()->uniform_int(0, size() - 1));
         const ParticleVoxel v(sp, coord, info.radius, info.D, info.loc);
 
-        if (on_structure(v))
+        if (get_voxel_pool_at(coord)->species().serial() != info.loc)
         {
             continue;
         }
@@ -184,7 +184,7 @@ bool SpatiocyteWorld::add_molecules(
         const Real3 pos(shape->draw_position(rng_));
         const ParticleVoxel v(sp, position2coordinate(pos), info.radius, info.D, info.loc);
 
-        if (on_structure(v))
+        if (get_voxel_pool_at(position2coordinate(pos))->species().serial() != info.loc)
         {
             continue;
         }
@@ -225,9 +225,8 @@ Integer SpatiocyteWorld::add_structure3(const Species& sp, const boost::shared_p
         if (L > 0)
             continue;
 
-
         const ParticleVoxel v(sp, coord, info.radius, info.D, info.loc);
-        if (on_structure(v))
+        if (get_voxel_pool_at(coord)->species().serial() != info.loc)
         {
             continue;
         }
@@ -250,7 +249,7 @@ SpatiocyteWorld::add_structure2(
             continue;
 
         const ParticleVoxel v(sp, coord, info.radius, info.D, info.loc);
-        if (on_structure(v))
+        if (get_voxel_pool_at(coord)->species().serial() != info.loc)
         {
             continue;
         }

@@ -647,11 +647,6 @@ public:
         return get_root()->shape();
     }
 
-    bool on_structure(ParticleVoxel v)
-    {
-        return get_space_mut(v.coordinate)->on_structure(v);
-    }
-
     /*
      * SpatiocyteWorld API
      */
@@ -736,11 +731,8 @@ public:
         const ParticleVoxel v(
             p.species(), position2coordinate(p.position()), p.radius(), p.D(), minfo.loc);
 
-        for (space_container_type::iterator itr(spaces_.begin()); itr != spaces_.end(); ++itr)
-        {
-            if (itr->on_structure(v))
-                return boost::none;
-        }
+        if (get_voxel_pool_at(position2coordinate(p.position()))->species().serial() != minfo.loc)
+            return boost::none;
 
         if (boost::optional<ParticleID> pid = new_voxel(v))
             return *pid;

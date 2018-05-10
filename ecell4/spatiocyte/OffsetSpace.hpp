@@ -105,12 +105,6 @@ public:
     // Mutable functions
     //
 
-    bool on_structure(ParticleVoxel voxel)
-    {
-        voxel.coordinate -= offset_;
-        return space_->on_structure(voxel);
-    }
-
     bool update_voxel(const ParticleID& pid, ParticleVoxel voxel)
     {
         voxel.coordinate -= offset_;
