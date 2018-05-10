@@ -41,31 +41,20 @@ Installation
 -------------
 
 Please see [INSTALL.md](https://github.com/ecell/ecell4/blob/master/INSTALL.md).
-
-How to try E-Cell4 examples
----------------------------
-Here we download example notebooks from https://github.com/ecell/ecell4-notebooks and open it with Jupyter Notebook.
-
-### Windows
-Open powershell and run these commands.
-Here we assume that you installed Miniconda(Python3.5) to C:¥Miniconda3
-
-```shell
-cd C:¥Miniconda3¥Scripts
-wget https://github.com/ecell/ecell4-notebooks/archive/master.zip -OutFile master.zip
-Expand-Archive master.zip
-.¥jupyter-notebook.exe .¥master¥ecell4-notebooks-master¥
+Basically you can install E-Cell4 on any OS just by running
+```
+pip install ecell
 ```
 
-### Mac or Linux
-Here we assume that you installed Miniconda(Python3.5) to ~/miniconda3
+Tutorials
+----------
 
-```shell
-wget https://github.com/ecell/ecell4-notebooks/archive/master.zip
-unzip master.zip
-cd ecell4-notebooks-master
-~/miniconda3/bin/jupyter-notebook
-```
+Please see [tutorials](https://github.com/ecell/ecell4/tree/master/readthedocs/tutorials).
+
+Examples
+---------
+
+Please see [examples](https://github.com/ecell/ecell4/tree/master/readthedocs/examples).
 
 Simple examples
 ---------------
