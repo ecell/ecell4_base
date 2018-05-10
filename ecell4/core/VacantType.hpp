@@ -42,7 +42,7 @@ private:
     typedef VoxelPool base_type;
 
     VacantType(const Shape::dimension_kind& dimension)
-        : base_type(Species("VACANT", "0", "0"), boost::weak_ptr<VoxelPool>(), 0, 0),
+        : base_type(Species("", "0", "0"), boost::weak_ptr<VoxelPool>(), 0, 0),
           dimension_(dimension)
     {
         ; // do nothing
