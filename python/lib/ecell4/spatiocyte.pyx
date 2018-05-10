@@ -20,13 +20,14 @@ cdef class ReactionInfo:
     def __init__(self, Real t, reactants, products):
         """Constructor.
 
-        Args:
-          t (Real): A time when a reaction occurred
-          reactants (list): A list of reactants.
-            Reactants are given as ``ReactionInfoItem``.
-          products (list): A list of products.
-            Products are given as ``ReactionInfoItem``.
-
+        Parameters
+        ----------
+        t : Real
+            A time when a reaction occurred
+        reactants : [ReactionInfoItem]
+            A list of reactants.
+        products : [ReactionInfoItem]
+            A list of products.
         """
         pass  #XXX: only used for doc string
 
@@ -47,15 +48,16 @@ cdef class ReactionInfo:
         del self.thisptr
 
     def t(self):
-        """Return a time when a reaction occurred."""
+        """Return time when the reaction occurred."""
         return self.thisptr.t()
 
     def reactants(self):
         """Return a list of reactants
 
-        Returns:
-            list: A list of pairs of ``ParticleID`` and ``ParticleVoxel``.
-
+        Returns
+        -------
+        [ReactionInfoItem]:
+            A list of information of the reactants
         """
         cdef vector[CppReactionInfoItem] particles = self.thisptr.reactants()
 
@@ -70,9 +72,10 @@ cdef class ReactionInfo:
     def products(self):
         """Return a list of products
 
-        Returns:
-            list: A list of pairs of ``ParticleID`` and ``ParticleVoxel``.
-
+        Returns
+        -------
+        [ReactionInfoItem]:
+            A list of information of the products
         """
         cdef vector[CppReactionInfoItem] particles = self.thisptr.products()
 
@@ -281,20 +284,18 @@ cdef class SpatiocyteWorld:
                 Particle_from_Cpp_Particle(address(pid_particle_pair.second)))
 
     def get_voxel(self, ParticleID pid):
-        """get_voxel(pid) -> (ParticleID, ParticleVoxel)
+        """get_voxel(pid)
 
-        Return the voxel having a particle associated with a given ParticleID.
+        Return a voxel occupied with the particle associated with the given ParticleID.
 
         Parameters
         ----------
         pid : ParticleID
-            An id of the particle in the voxel you want
+            An id of the particle occupying the voxel
 
         Returns
         -------
-        tuple:
-            A pair of ParticleID and ParticleVoxel
-
+        output: ParticleVoxel or None
         """
         cdef optional[Cpp_ParticleVoxel] voxel
         voxel = self.thisptr.get().find_voxel(deref(pid.thisptr))
@@ -305,20 +306,18 @@ cdef class SpatiocyteWorld:
         return None
 
     def get_voxel_at(self, Voxel voxel):
-        """get_voxel_at(voxel) -> (ParticleID, ParticleVoxel)
+        """get_voxel_at(voxel)
 
-        Return the voxel at a given coordinate.
+        Return a voxel at the given coordinate.
 
         Parameters
         ----------
         voxel: Voxel
-            A voxel
+            A voxel coordinate
 
         Returns
         -------
-        tuple:
-            A pair of ParticleID and Species
-
+        output: (ParticleID, Species)
         """
 
         pid_species_pair = self.thisptr.get().get_voxel_at(voxel.thisptr.coordinate)
@@ -326,11 +325,19 @@ cdef class SpatiocyteWorld:
                 Species_from_Cpp_Species(address(pid_species_pair.second)))
 
     def on_structure(self, ParticleVoxel v):
-        """Check if the given voxel would be on the proper structure at the coordinate
-        Args:
-            v (ParticleVoxel): a voxel scheduled to be placed
-        Returns:
-            bool: if it is on the proper structure, or not
+        """on_structure(v)
+
+        Check if the given voxel would be on the proper structure at the coordinate
+
+        Parameters
+        ----------
+        v: ParticleVoxel
+            a voxel scheduled to be placed
+
+        Returns
+        -------
+        output: bool
+            if it is on the proper structure, or not
         """
         return self.thisptr.get().on_structure(deref((<ParticleVoxel>v).thisptr))
 
@@ -836,7 +843,7 @@ cdef class SpatiocyteWorld:
         self.thisptr.get().load(tostring(filename))
 
     def new_voxel(self, arg1, arg2=None):
-        """new_voxel(arg1, arg2) -> (ParticleID, ParticleVoxel)
+        """new_voxel(arg1, arg2)
 
         Create a particle.
 
@@ -854,17 +861,18 @@ cdef class SpatiocyteWorld:
 
         Returns
         -------
-        ParticleID or None
+        output: ParticleID or None
         """
 
+        cdef pair[pair[Cpp_ParticleID, Cpp_ParticleVoxel], bool] new_mol
+        cdef optional[Cpp_ParticleID] pid
+
         if arg2 is None:
-            # cdef pair[pair[Cpp_ParticleID, Cpp_ParticleVoxel], bool] new_mol
             new_mol = self.thisptr.get().new_voxel(deref((<ParticleVoxel>arg1).thisptr))
 
             if new_mol.second:
                 return ParticleID_from_Cpp_ParticleID(address(new_mol.first.first))
         else:
-            # cdef optional[Cpp_ParticleID] pid
             pid = self.thisptr.get().new_voxel(deref((<Species>arg1).thisptr), <Integer>arg2)
 
             if pid.is_initialized():
@@ -873,7 +881,7 @@ cdef class SpatiocyteWorld:
         return None
 
     def new_voxel_structure(self, Species species, Voxel voxel):
-        """new_voxel_structure(species, voxel) -> (ParticleID, ParticleVoxel)
+        """new_voxel_structure(species, voxel)
 
         Create a particle.
 
@@ -886,7 +894,7 @@ cdef class SpatiocyteWorld:
 
         Returns
         -------
-        ParticleID or None
+        output: ParticleID or None
 
         """
         cdef optional[Cpp_ParticleID] pid
@@ -898,7 +906,7 @@ cdef class SpatiocyteWorld:
         return None
 
     def update_voxel(self, ParticleID pid, ParticleVoxel v):
-        """update_voxel(pid, v) -> bool
+        """update_voxel(pid, v)
 
         Update a particle.
 
@@ -911,14 +919,14 @@ cdef class SpatiocyteWorld:
 
         Returns
         -------
-        bool:
+        output: bool
             whether to succeed to update the particle
 
         """
         return self.thisptr.get().update_voxel(deref(pid.thisptr), deref(v.thisptr))
 
     def list_voxels(self, Species sp = None):
-        """list_voxels(sp=None) -> [ParitcleID, ParticleVoxel]
+        """list_voxels(sp=None)
 
         Returns the list of voxels.
 
@@ -930,7 +938,7 @@ cdef class SpatiocyteWorld:
 
         Returns
         -------
-        list:
+        list: [(ParticleID, ParticleVoxel)]
             The list of the pair of ParticleID and ParticleVoxel
 
         """
@@ -953,7 +961,7 @@ cdef class SpatiocyteWorld:
         return retval
 
     def list_voxels_exact(self, Species sp):
-        """list_voxels_exact(sp) -> [ParitcleID, ParticleVoxel]
+        """list_voxels_exact(sp)
 
         Returns the list of voxels.
 
@@ -965,7 +973,7 @@ cdef class SpatiocyteWorld:
 
         Returns
         -------
-        list:
+        list: [(ParticleID, ParticleVoxel)]
             The list of the pair of ParticleID and ParticleVoxel
 
         """
@@ -985,7 +993,7 @@ cdef class SpatiocyteWorld:
         return retval
 
     def has_voxel(self, ParticleID pid):
-        """has_voxel(pid) -> bool
+        """has_voxel(pid)
 
         Check if a particle exists.
 
@@ -996,7 +1004,7 @@ cdef class SpatiocyteWorld:
 
         Returns
         -------
-        bool:
+        output : bool
             whether a particle associated with a given particle id exists
 
         """
