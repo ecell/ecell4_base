@@ -732,7 +732,7 @@ public:
      * @return a pair of a pair of pid (a particle id) and p (a particle)
      * and bool (if it's succeeded or not)
      */
-    std::pair<std::pair<ParticleID, Particle>, bool>
+    boost::optional<ParticleID>
     new_particle(const Particle& p)
     {
         // ParticleID pid(sidgen_());
@@ -742,17 +742,21 @@ public:
         const ParticleVoxel v(
             p.species(), position2coordinate(p.position()), p.radius(), p.D(), minfo.loc);
 
-        for (space_container_type::iterator itr(spaces_.begin());
-             itr != spaces_.end(); ++itr)
+        for (space_container_type::iterator itr(spaces_.begin()); itr != spaces_.end(); ++itr)
         {
             if (itr->on_structure(v))
-                return std::make_pair(std::make_pair(ParticleID(), p), false);
+                return boost::none;
         }
+
         const std::pair<std::pair<ParticleID, ParticleVoxel>, bool> retval = new_voxel(v);
-        return std::make_pair(std::make_pair(retval.first.first, p), retval.second);
+
+        if (retval.second)
+            return retval.first.first;
+
+        return boost::none;
     }
 
-    std::pair<std::pair<ParticleID, Particle>, bool>
+    boost::optional<ParticleID>
     new_particle(const Species& sp, const Real3& pos)
     {
         const MoleculeInfo info(get_molecule_info(sp));

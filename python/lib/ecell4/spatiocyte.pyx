@@ -250,17 +250,20 @@ cdef class SpatiocyteWorld:
 
         Returns
         -------
-        tuple:
-            A pair of ParticleID and Particle of a new particle
+        output: ParticleID or None
+            A ParticleID of the new particle
 
         """
-        cdef pair[pair[Cpp_ParticleID, Cpp_Particle], bool] retval
+        cdef optional[Cpp_ParticleID] pid
 
         if arg2 is None:
-            retval = self.thisptr.get().new_particle(deref((<Particle> arg1).thisptr))
+            pid = self.thisptr.get().new_particle(deref((<Particle> arg1).thisptr))
         else:
-            retval = self.thisptr.get().new_particle(deref((<Species> arg1).thisptr), deref(arg2.thisptr))
-        return ((ParticleID_from_Cpp_ParticleID(address(retval.first.first)), Particle_from_Cpp_Particle(address(retval.first.second))), retval.second)
+            pid = self.thisptr.get().new_particle(deref((<Species> arg1).thisptr), deref(arg2.thisptr))
+        if pid.is_initialized():
+            return ParticleID_from_Cpp_ParticleID(address(pid.get()))
+
+        return None
 
     def get_particle(self, ParticleID pid):
         """get_particle(pid) -> (ParticleID, Particle)
