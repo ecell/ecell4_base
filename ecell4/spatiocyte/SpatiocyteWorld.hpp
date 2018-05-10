@@ -748,10 +748,8 @@ public:
                 return boost::none;
         }
 
-        const std::pair<std::pair<ParticleID, ParticleVoxel>, bool> retval = new_voxel(v);
-
-        if (retval.second)
-            return retval.first.first;
+        if (boost::optional<ParticleID> pid = new_voxel(v))
+            return *pid;
 
         return boost::none;
     }
@@ -797,23 +795,18 @@ public:
     std::vector<Species> list_structure_species() const;
     // std::vector<coordinate_type> list_coords(const Species& sp) const;
 
-    std::pair<std::pair<ParticleID, ParticleVoxel>, bool> new_voxel(ParticleVoxel v)
+    boost::optional<ParticleID> new_voxel(ParticleVoxel v)
     {
         ParticleID pid(sidgen_());
-        const bool is_succeeded(update_voxel(pid, v));
-        return std::make_pair(std::make_pair(pid, v), is_succeeded);
+        if (update_voxel(pid, v))
+            return pid;
+        return boost::none;
     }
 
     boost::optional<ParticleID> new_voxel(const Species& sp, const coordinate_type& coord)
     {
         const molecule_info_type minfo(get_molecule_info(sp));
-        std::pair<std::pair<ParticleID, ParticleVoxel>, bool> voxel(
-                new_voxel(ParticleVoxel(sp, coord, minfo.radius, minfo.D, minfo.loc)));
-
-        if (voxel.second)
-            return voxel.first.first;
-
-        return boost::none;
+        return new_voxel(ParticleVoxel(sp, coord, minfo.radius, minfo.D, minfo.loc));
     }
 
     boost::optional<ParticleID>

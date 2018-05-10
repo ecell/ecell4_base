@@ -867,19 +867,15 @@ cdef class SpatiocyteWorld:
         output: ParticleID or None
         """
 
-        cdef pair[pair[Cpp_ParticleID, Cpp_ParticleVoxel], bool] new_mol
         cdef optional[Cpp_ParticleID] pid
 
         if arg2 is None:
-            new_mol = self.thisptr.get().new_voxel(deref((<ParticleVoxel>arg1).thisptr))
-
-            if new_mol.second:
-                return ParticleID_from_Cpp_ParticleID(address(new_mol.first.first))
+            pid = self.thisptr.get().new_voxel(deref((<ParticleVoxel>arg1).thisptr))
         else:
             pid = self.thisptr.get().new_voxel(deref((<Species>arg1).thisptr), <Integer>arg2)
 
-            if pid.is_initialized():
-                return ParticleID_from_Cpp_ParticleID(address(pid.get()))
+        if pid.is_initialized():
+            return ParticleID_from_Cpp_ParticleID(address(pid.get()))
 
         return None
 

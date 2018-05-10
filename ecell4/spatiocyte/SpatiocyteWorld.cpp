@@ -160,7 +160,7 @@ bool SpatiocyteWorld::add_molecules(const Species& sp, const Integer& num)
         {
             continue;
         }
-        else if (new_voxel(v).second)
+        else if (new_voxel(v) != boost::none)
         {
             ++count;
         }
@@ -188,7 +188,7 @@ bool SpatiocyteWorld::add_molecules(
         {
             continue;
         }
-        else if (new_voxel(v).second)
+        else if (new_voxel(v) != boost::none)
         {
             ++count;
         }
@@ -295,7 +295,7 @@ Integer SpatiocyteWorld::add_neighbors(const Species& sp,
     for (Integer i(0); i < 12; ++i)
     {
         const coordinate_type n(get_neighbor(center, i));
-        if (new_voxel(ParticleVoxel(sp, n, info.radius, info.D, info.loc)).second)
+        if (new_voxel(ParticleVoxel(sp, n, info.radius, info.D, info.loc)) != boost::none)
         {
             ++count;
         }

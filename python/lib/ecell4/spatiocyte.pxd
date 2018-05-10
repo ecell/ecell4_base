@@ -108,7 +108,7 @@ cdef extern from "ecell4/spatiocyte/SpatiocyteWorld.hpp" namespace "ecell4::spat
         Integer get_neighbor(Integer, Integer)
         void save(string filename) except +
         void load(string filename)
-        pair[pair[Cpp_ParticleID, Cpp_ParticleVoxel], bool] new_voxel(Cpp_ParticleVoxel& p)
+        optional[Cpp_ParticleID] new_voxel(Cpp_ParticleVoxel& p)
         optional[Cpp_ParticleID] new_voxel(Cpp_Species& sp, Integer pos)
         optional[Cpp_ParticleID] new_voxel_structure(Cpp_Species& sp, Integer pos)
         vector[pair[Cpp_ParticleID, Cpp_ParticleVoxel]] list_voxels()
