@@ -154,13 +154,12 @@ bool SpatiocyteWorld::add_molecules(const Species& sp, const Integer& num)
     while (count < num)
     {
         const coordinate_type coord(rng()->uniform_int(0, size() - 1));
-        const ParticleVoxel v(sp, coord, info.radius, info.D, info.loc);
 
         if (get_voxel_pool_at(coord)->species().serial() != info.loc)
         {
             continue;
         }
-        else if (new_voxel(v) != boost::none)
+        else if (new_voxel(sp, coord) != boost::none)
         {
             ++count;
         }
@@ -182,13 +181,13 @@ bool SpatiocyteWorld::add_molecules(
     while (count < num)
     {
         const Real3 pos(shape->draw_position(rng_));
-        const ParticleVoxel v(sp, position2coordinate(pos), info.radius, info.D, info.loc);
+        const coordinate_type coord(position2coordinate(pos));
 
-        if (get_voxel_pool_at(position2coordinate(pos))->species().serial() != info.loc)
+        if (get_voxel_pool_at(coord)->species().serial() != info.loc)
         {
             continue;
         }
-        else if (new_voxel(v) != boost::none)
+        else if (new_voxel(sp, coord) != boost::none)
         {
             ++count;
         }
@@ -293,8 +292,8 @@ Integer SpatiocyteWorld::add_neighbors(const Species& sp,
     const SpatiocyteWorld::molecule_info_type info(get_molecule_info(sp));
     for (Integer i(0); i < 12; ++i)
     {
-        const coordinate_type n(get_neighbor(center, i));
-        if (new_voxel(ParticleVoxel(sp, n, info.radius, info.D, info.loc)) != boost::none)
+        const coordinate_type neighbor(get_neighbor(center, i));
+        if (new_voxel(sp, neighbor) != boost::none)
         {
             ++count;
         }
@@ -304,22 +303,7 @@ Integer SpatiocyteWorld::add_neighbors(const Species& sp,
         }
     }
     return count;
-
-    // Integer count(0);
-    // const SpatiocyteWorld::molecule_info_type info(get_molecule_info(sp));
-    // std::vector<SpatiocyteWorld::coordinate_type> neighbors(
-    //         get_neighbors(center));
-    // for (std::vector<SpatiocyteWorld::coordinate_type>::iterator itr(
-    //             neighbors.begin()); itr != neighbors.end(); itr++)
-    // {
-    //     if (new_voxel(ParticleVoxel(sp, *itr, info.radius, info.D, info.loc)).second)
-    //         ++count;
-    //     else
-    //         throw "Error in add_neighbors()";
-    // }
-    // return count;
 }
-// TODO
 
 void SpatiocyteWorld::remove_molecules(const Species& sp, const Integer& num)
 {

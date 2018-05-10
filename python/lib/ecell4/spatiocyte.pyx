@@ -828,22 +828,17 @@ cdef class SpatiocyteWorld:
         """
         self.thisptr.get().load(tostring(filename))
 
-    def new_voxel(self, arg1, arg2=None):
-        """new_voxel(arg1, arg2)
+    def new_voxel(self, Species sp, Voxel voxel):
+        """new_voxel(sp, voxel)
 
         Create a particle.
 
         Parameters
         ----------
-        arg1 : ParticleVoxel
-            The information to create
-
-        or
-
-        arg1 : Species
-            The Species of particles to create
-        arg2 : Integer
-            The number of particles(voxels)
+        sp : Species
+            A Species to put
+        voxel : Voxel
+            A location to put on
 
         Returns
         -------
@@ -851,11 +846,7 @@ cdef class SpatiocyteWorld:
         """
 
         cdef optional[Cpp_ParticleID] pid
-
-        if arg2 is None:
-            pid = self.thisptr.get().new_voxel(deref((<ParticleVoxel>arg1).thisptr))
-        else:
-            pid = self.thisptr.get().new_voxel(deref((<Species>arg1).thisptr), <Integer>arg2)
+        pid = self.thisptr.get().new_voxel(deref(sp.thisptr), voxel.thisptr.coordinate);
 
         if pid.is_initialized():
             return ParticleID_from_Cpp_ParticleID(address(pid.get()))
