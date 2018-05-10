@@ -649,13 +649,7 @@ public:
 
     bool on_structure(ParticleVoxel v)
     {
-        for (space_container_type::iterator itr(spaces_.begin());
-             itr != spaces_.end(); ++itr)
-        {
-            if (itr->on_structure(v))
-                return true;
-        }
-        return false;
+        return get_space_mut(v.coordinate)->on_structure(v);
     }
 
     /*
