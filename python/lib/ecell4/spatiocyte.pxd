@@ -110,7 +110,7 @@ cdef extern from "ecell4/spatiocyte/SpatiocyteWorld.hpp" namespace "ecell4::spat
         void load(string filename)
         pair[pair[Cpp_ParticleID, Cpp_ParticleVoxel], bool] new_voxel(Cpp_ParticleVoxel& p)
         optional[Cpp_ParticleID] new_voxel(Cpp_Species& sp, Integer pos)
-        pair[pair[Cpp_ParticleID, Cpp_ParticleVoxel], bool] new_voxel_structure(Cpp_Species& sp, Integer pos)
+        optional[Cpp_ParticleID] new_voxel_structure(Cpp_Species& sp, Integer pos)
         vector[pair[Cpp_ParticleID, Cpp_ParticleVoxel]] list_voxels()
         vector[pair[Cpp_ParticleID, Cpp_ParticleVoxel]] list_voxels(Cpp_Species& sp)
         vector[pair[Cpp_ParticleID, Cpp_ParticleVoxel]] list_voxels_exact(Cpp_Species& sp)

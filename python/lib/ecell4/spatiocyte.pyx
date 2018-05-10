@@ -885,15 +885,16 @@ cdef class SpatiocyteWorld:
 
         Returns
         -------
-        tuple:
-            A pair of ParticleID and ParticleVoxel
+        ParticleID or None
 
         """
-        cdef pair[pair[Cpp_ParticleID, Cpp_ParticleVoxel], bool] retval
+        cdef optional[Cpp_ParticleID] pid
+        pid = self.thisptr.get().new_voxel_structure(deref(species.thisptr), voxel.thisptr.coordinate)
 
-        retval = self.thisptr.get().new_voxel_structure(deref(species.thisptr), voxel.thisptr.coordinate)
+        if pid.is_initialized():
+            return ParticleID_from_Cpp_ParticleID(address(pid.get()))
 
-        return ((ParticleID_from_Cpp_ParticleID(address(retval.first.first)), Voxel_from_Cpp_Voxel(address(retval.first.second))), retval.second)
+        return None
 
     def update_voxel(self, ParticleID pid, ParticleVoxel v):
         """update_voxel(pid, v) -> bool
