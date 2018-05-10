@@ -32,10 +32,11 @@ Try online
 You can try this package online from the following links:
 
 <a href="https://notebooks.azure.com/import/gh/ecell/ecell4"><img src="https://notebooks.azure.com/launch.png" /></a>
-[![Binder](http://mybinder.org/badge.svg)](http://beta.mybinder.org/v2/gh/ecell/ecell4-notebooks/master)
+[![Binder](http://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/ecell/ecell4/master?filepath=ecell4-master%2Freadthedocs)
 
-- Code fragments that depend on ffmpeg will not work with Azure Notebooks. If you use movie export, please try binder instead.
-- If you use Azure Notebooks, please move `readthedocs/tutorials` or `readthedocs/examples`. There are several Jupyter Notebooks.
+- Code fragments that depend on ffmpeg will not work with Azure Notebooks. If you use movie export, please try Binder instead.
+- If you use Binder, please go down to `tutorials` or `examples`.
+- If you use Azure Notebooks, please go down to `readthedocs/tutorials` or `readthedocs/examples`.
 
 Installation
 -------------
