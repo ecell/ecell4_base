@@ -51,10 +51,10 @@ After installing Miniconda, run the following commands in your terminal.
 
 ```shell
 # After installing Miniconda2 or Miniconda3 (Here we assume that you installed Miniconda3).
-~/miniconda2/bin/conda install matplotlib notebook
+~/miniconda3/bin/conda install matplotlib notebook
 
 # Download E-Cell4 whl file for your Python version from https://github.com/ecell/ecell4/releases before running this command.
-~/miniconda2/bin/pip install ecell
+~/miniconda3/bin/pip install ecell
 
 # If you want animation support, install ffmpeg with homebrew
 brew install ffmpeg
