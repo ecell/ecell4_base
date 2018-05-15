@@ -26,11 +26,20 @@ bool check_equal(const Real3& lhs, const Real3& rhs, const Real tol)
            std::abs(lhs[2] - rhs[2]) < tol;
 }
 
-// Boost 1.54 (Travis.CI default) uses boost/tr1/tuple to use std::tr1::tie in
-// boost::algorithm::is_permutation. But ecell4 uses <tr1/tuple> through
+namespace ecell
+{
+// Q1. Why is this here? use boost::algorithm or c++11 is_permutation.
+// A1. Boost 1.54 (Travis.CI default) uses boost/tr1/tuple to use std::tr1::tie
+// in boost::algorithm::is_permutation. But ecell4 uses <tr1/tuple> through
 // <tr1/functional>, and each library(GCC C++ standard library and Boost) has
 // its original implementation for std::tr1::tuple. It cause multiple-definition
 // problem! To avoid this, impelement is_permutation without std::tr1::tuple.
+//
+// Q2. Why is this in the `ecell` namespace?
+// A2. If the environment has c++11 standard library, std::is_permutation become
+// a candidate because of the ADL. The argument will be a std::vector::iterator,
+// and std::is_permutation is found in the `std` namespace. To avoid this
+// ambiguity, put it in the namespace ecell.
 template<typename Iterator1, typename Iterator2>
 bool is_permutation(const Iterator1 first1, const Iterator1 last1,
                     const Iterator2 first2, const Iterator2 last2)
@@ -49,6 +58,7 @@ bool is_permutation(const Iterator1 first1, const Iterator1 last1,
     }
     return true;
 }
+} // detail
 
 //! test data 1: tetrahedron
 // below, the normal vector towords the depth of your display.
@@ -148,7 +158,7 @@ BOOST_AUTO_TEST_CASE(Polygon_tetrahedron_construction_from_triangles)
             result.push_back(poly.target_of(*i));
         }
         BOOST_CHECK(ans.size() == result.size());
-        BOOST_CHECK(is_permutation(
+        BOOST_CHECK(ecell::is_permutation(
                     ans.begin(), ans.end(), result.begin(), result.end()));
     }
     {
@@ -162,7 +172,7 @@ BOOST_AUTO_TEST_CASE(Polygon_tetrahedron_construction_from_triangles)
             result.push_back(poly.target_of(*i));
         }
         BOOST_CHECK(ans.size() == result.size());
-        BOOST_CHECK(is_permutation(
+        BOOST_CHECK(ecell::is_permutation(
                     ans.begin(), ans.end(), result.begin(), result.end()));
     }
     {
@@ -176,7 +186,7 @@ BOOST_AUTO_TEST_CASE(Polygon_tetrahedron_construction_from_triangles)
             result.push_back(poly.target_of(*i));
         }
         BOOST_CHECK(ans.size() == result.size());
-        BOOST_CHECK(is_permutation(
+        BOOST_CHECK(ecell::is_permutation(
                     ans.begin(), ans.end(), result.begin(), result.end()));
     }
     {
@@ -190,7 +200,7 @@ BOOST_AUTO_TEST_CASE(Polygon_tetrahedron_construction_from_triangles)
             result.push_back(poly.target_of(*i));
         }
         BOOST_CHECK(ans.size() == result.size());
-        BOOST_CHECK(is_permutation(
+        BOOST_CHECK(ecell::is_permutation(
                     ans.begin(), ans.end(), result.begin(), result.end()));
     }
 
@@ -206,7 +216,7 @@ BOOST_AUTO_TEST_CASE(Polygon_tetrahedron_construction_from_triangles)
             result.push_back(poly.target_of(*i));
         }
         BOOST_CHECK(ans.size() == result.size());
-        BOOST_CHECK(is_permutation(
+        BOOST_CHECK(ecell::is_permutation(
                     ans.begin(), ans.end(), result.begin(), result.end()));
     }
 
@@ -502,7 +512,7 @@ BOOST_AUTO_TEST_CASE(Polygon_octahedron_construction_from_triangles)
             result.push_back(poly.target_of(*i));
         }
         BOOST_CHECK(ans.size() == result.size());
-        BOOST_CHECK(is_permutation(
+        BOOST_CHECK(ecell::is_permutation(
                     ans.begin(), ans.end(), result.begin(), result.end()));
     }
     /* v2 */{
@@ -517,7 +527,7 @@ BOOST_AUTO_TEST_CASE(Polygon_octahedron_construction_from_triangles)
             result.push_back(poly.target_of(*i));
         }
         BOOST_CHECK(ans.size() == result.size());
-        BOOST_CHECK(is_permutation(
+        BOOST_CHECK(ecell::is_permutation(
                     ans.begin(), ans.end(), result.begin(), result.end()));
     }
     /* v3 */{
@@ -532,7 +542,7 @@ BOOST_AUTO_TEST_CASE(Polygon_octahedron_construction_from_triangles)
             result.push_back(poly.target_of(*i));
         }
         BOOST_CHECK(ans.size() == result.size());
-        BOOST_CHECK(is_permutation(
+        BOOST_CHECK(ecell::is_permutation(
                     ans.begin(), ans.end(), result.begin(), result.end()));
     }
     /* v4 */{
@@ -547,7 +557,7 @@ BOOST_AUTO_TEST_CASE(Polygon_octahedron_construction_from_triangles)
             result.push_back(poly.target_of(*i));
         }
         BOOST_CHECK(ans.size() == result.size());
-        BOOST_CHECK(is_permutation(
+        BOOST_CHECK(ecell::is_permutation(
                     ans.begin(), ans.end(), result.begin(), result.end()));
     }
     /* v5 */{
@@ -562,7 +572,7 @@ BOOST_AUTO_TEST_CASE(Polygon_octahedron_construction_from_triangles)
             result.push_back(poly.target_of(*i));
         }
         BOOST_CHECK(ans.size() == result.size());
-        BOOST_CHECK(is_permutation(
+        BOOST_CHECK(ecell::is_permutation(
                     ans.begin(), ans.end(), result.begin(), result.end()));
     }
     /* v6 */{
@@ -577,7 +587,7 @@ BOOST_AUTO_TEST_CASE(Polygon_octahedron_construction_from_triangles)
             result.push_back(poly.target_of(*i));
         }
         BOOST_CHECK(ans.size() == result.size());
-        BOOST_CHECK(is_permutation(
+        BOOST_CHECK(ecell::is_permutation(
                     ans.begin(), ans.end(), result.begin(), result.end()));
     }
 
