@@ -24,6 +24,7 @@
 
 #include <algorithm>
 #include <stdexcept>
+#include <ostream>
 #include <vector>
 #include <limits>
 
@@ -587,6 +588,30 @@ Polygon::neighbor_vertices_of(const VertexID& vid) const
         retval[i] = this->target_of(outs[i].first);
     }
     return retval;
+}
+
+template<typename charT, typename traits>
+std::basic_ostream<charT, traits>&
+operator<<(std::basic_ostream<charT, traits>& os, const Polygon::FaceID& fid)
+{
+    os << "FID(" << fid << ")";
+    return os;
+}
+
+template<typename charT, typename traits>
+std::basic_ostream<charT, traits>&
+operator<<(std::basic_ostream<charT, traits>& os, const Polygon::EdgeID& eid)
+{
+    os << "EID(" << eid << ")";
+    return os;
+}
+
+template<typename charT, typename traits>
+std::basic_ostream<charT, traits>&
+operator<<(std::basic_ostream<charT, traits>& os, const Polygon::VertexID& vid)
+{
+    os << "VID(" << vid << ")";
+    return os;
 }
 
 /********************** free functions to use a Polygon **********************/
