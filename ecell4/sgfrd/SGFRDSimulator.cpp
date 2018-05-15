@@ -33,8 +33,8 @@ SGFRDSimulator::propagate_single_circular(
 
     SGFRD_TRACE(tracer_.write("r = %1%, theta = %2%", r, theta));
 
-    const FaceID         fid  = this->get_face_id(pid);
-    const triangle_type& face = this->polygon().triangle_at(fid);
+    const FaceID    fid  = this->get_face_id(pid);
+    const Triangle& face = this->polygon().triangle_at(fid);
     const Real3 direction = rotate(theta, face.normal(), face.represent());
     const Real  len_direction = length(direction);
 
@@ -47,13 +47,9 @@ SGFRDSimulator::propagate_single_circular(
     SGFRD_TRACE(tracer_.write("pos = %1%, fid = %2%", state.first.first, state.first.second));
 
     state.first = ecell4::polygon::travel(this->polygon(), state.first, state.second, 2);
-    if(continue_count == 0)
-    {
-        SGFRD_TRACE(tracer_.write("moving on face: precision lost"))
-    }
 
-    SGFRD_TRACE(tracer_.write("pos = %1%, fid = %2%, dsp = %3%, count = %4%",
-                state.first.first, state.first.second, state.second, continue_count))
+    SGFRD_TRACE(tracer_.write("pos = %1%, fid = %2%, dsp = %3%",
+                state.first.first, state.first.second, state.second))
 
     p.position() = state.first.first;
     this->update_particle(pid, p, state.first.second);
@@ -329,8 +325,8 @@ SGFRDSimulator::escape_single_circular(
 
     SGFRD_TRACE(tracer_.write("r = %1%, theta = %2%", r, theta))
 
-    const FaceID         fid  = this->get_face_id(pid);
-    const triangle_type& face = this->polygon().triangle_at(fid);
+    const FaceID    fid  = this->get_face_id(pid);
+    const Triangle& face = this->polygon().triangle_at(fid);
     const Real3 direction = rotate(theta, face.normal(), face.represent());
 
     SGFRD_TRACE(tracer_.write("dir = %1%, len = %2%", direction, length(direction)))
@@ -874,16 +870,16 @@ SGFRDSimulator::form_single_conical_event(
 
         /* assertion */{
         if(false == this->shell_container_.list_shells_within_radius(
-            std::make_pair(this->polygon().vertex_at(vid).position, vid),
+            std::make_pair(this->polygon().position_at(vid), vid),
             shell_size).empty())
         {
             std::cout << "nearest shell: "
                 << this->shell_container_.list_shells_within_radius(
-                    std::make_pair(this->polygon().vertex_at(vid).position, vid),
+                    std::make_pair(this->polygon().position_at(vid), vid),
                     shell_size).front().first.first << std::endl;
             std::cout << "distance: "
                 << this->shell_container_.list_shells_within_radius(
-                    std::make_pair(this->polygon().vertex_at(vid).position, vid),
+                    std::make_pair(this->polygon().position_at(vid), vid),
                     shell_size).front().second << std::endl;
             std::cout << "shell size " << shell_size << std::endl;
             assert(false);
@@ -1139,7 +1135,7 @@ bool SGFRDSimulator::diagnosis() const
             case shell_container_type::circular_shell:
             {
                 circular_shell_type ccl = boost::get<circular_shell_type>(sh);
-                distance_calculator_on_surface<polygon_traits_type, FaceID>
+                distance_calculator_on_surface<FaceID>
                     dist_calc(ccl.get_surface_position(), this->polygon());
 
                 BOOST_FOREACH(boost::tie(_shid, _sh), shells)
@@ -1163,7 +1159,7 @@ bool SGFRDSimulator::diagnosis() const
             {
                 conical_surface_shell_type con =
                     boost::get<conical_surface_shell_type>(sh);
-                distance_calculator_on_surface<polygon_traits_type, VertexID>
+                distance_calculator_on_surface<VertexID>
                     dist_calc(con.get_surface_position(), this->polygon());
 
                 BOOST_FOREACH(boost::tie(_shid, _sh), shells)
@@ -1247,7 +1243,7 @@ bool SGFRDSimulator::diagnosis() const
                     break;
                 }
                 const FaceID fid_p = this->get_face_id(_pid);
-                distance_calculator_on_surface<polygon_traits_type, FaceID>
+                distance_calculator_on_surface<FaceID>
                     dist_calc(std::make_pair(found_p->second.position(), fid_p),
                               this->polygon());
                 const Real dist = boost::apply_visitor(dist_calc, found_s->second) +
@@ -1339,10 +1335,10 @@ bool SGFRDSimulator::diagnosis() const
                     break;
                 }
 
-                distance_calculator_on_surface<polygon_traits_type, FaceID>
+                distance_calculator_on_surface<FaceID>
                     dist_calc0(std::make_pair(found_p0->second.position(), fid_p0),
                                this->polygon());
-                distance_calculator_on_surface<polygon_traits_type, FaceID>
+                distance_calculator_on_surface<FaceID>
                     dist_calc1(std::make_pair(found_p1->second.position(), fid_p1),
                                this->polygon());
 
@@ -1402,7 +1398,7 @@ bool SGFRDSimulator::diagnosis() const
                         continue;
                     }
                     const FaceID fid_p = this->get_face_id(_pid);
-                    distance_calculator_on_surface<polygon_traits_type, FaceID>
+                    distance_calculator_on_surface<FaceID>
                         dist_calc(std::make_pair(found_p->second.position(), fid_p),
                                   this->polygon());
 

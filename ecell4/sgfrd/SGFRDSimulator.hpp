@@ -377,8 +377,8 @@ class SGFRDSimulator :
         SGFRD_SCOPE(ns, create_single_conical_shell, tracer_);
 
         const ShellID id(shell_id_gen());
-        const conical_surface_type shape(polygon().vertex_at(vid).position,
-                                         polygon().apex_angle(vid), size);
+        const conical_surface_type shape(polygon().position_at(vid),
+                                         polygon().apex_angle_at(vid), size);
         shell_container_.add_shell(
                 id, conical_surface_shell_type(shape, vid), vid);
         SGFRD_TRACE(tracer_.write("the shell id is %1%", id));
@@ -665,7 +665,7 @@ class SGFRDSimulator :
                                boost::math::constants::two_pi<Real>();
 
         const FaceID       sh_fid = sh.structure_id();
-        const triangle_type&    f = this->polygon().triangle_at(sh_fid);
+        const Triangle&         f = this->polygon().triangle_at(sh_fid);
         const Real3 direction_com = rotate(theta_com, f.normal(), f.represent());
 
         const Real3 disp_com = direction_com * (l_com / length(direction_com));
@@ -770,8 +770,8 @@ class SGFRDSimulator :
         SGFRD_TRACE(tracer_.write("l_ipv = %1%, theta_ipv = %2%", l_ipv, theta_ipv));
         SGFRD_TRACE(tracer_.write("l_com = %1%, theta_com = %2%", l_com, theta_com));
 
-        const FaceID       sh_fid = sh.structure_id();
-        const triangle_type&    f = this->polygon().triangle_at(sh_fid);
+        const FaceID sh_fid = sh.structure_id();
+        const Triangle&   f = this->polygon().triangle_at(sh_fid);
         const Real3 direction_com = rotate(theta_com, f.normal(), f.represent());
 
         const Real3 disp_com = direction_com * (l_com / length(direction_com));
@@ -862,8 +862,8 @@ class SGFRDSimulator :
         SGFRD_TRACE(tracer_.write("l_ipv = %1%, theta_ipv = %2%", l_ipv, theta_ipv));
         SGFRD_TRACE(tracer_.write("l_com = %1%, theta_com = %2%", l_com, theta_com));
 
-        const FaceID       sh_fid = sh.structure_id();
-        const triangle_type&    f = this->polygon().triangle_at(sh_fid);
+        const FaceID sh_fid = sh.structure_id();
+        const Triangle&   f = this->polygon().triangle_at(sh_fid);
         const Real3 direction_com = rotate(theta_com, f.normal(), f.represent());
 
         const Real3 disp_com = direction_com * (l_com / length(direction_com));
@@ -992,8 +992,8 @@ class SGFRDSimulator :
                 const Real theta_com = this->uniform_real() *
                                        boost::math::constants::two_pi<Real>();
 
-                const FaceID       sh_fid = sh.structure_id();
-                const triangle_type&    f = this->polygon().triangle_at(sh_fid);
+                const FaceID sh_fid = sh.structure_id();
+                const Triangle&   f = this->polygon().triangle_at(sh_fid);
                 const Real3 direction_com =
                     rotate(theta_com, f.normal(), f.represent());
 
@@ -1339,7 +1339,7 @@ class SGFRDSimulator :
     {
         SGFRD_SCOPE(us, burst_and_shrink_non_multis_vertex, tracer_)
         const std::pair<Real3, VertexID> vpos = std::make_pair(
-                polygon().vertex_at(vid).position, vid);
+                polygon().position_at(vid), vid);
 
         const Real tm(this->time());
         std::vector<std::pair<DomainID, Real> > results;
@@ -1662,7 +1662,7 @@ class SGFRDSimulator :
     get_intrusive_vertices(const std::pair<Real3, FaceID>& pos,
                            const Real radius) const
     {
-        return polygon().list_vertices_within_radius(pos, radius);
+        return this->world_->list_vertices_within_radius(pos, radius);
     }
 
     std::vector<std::pair<DomainID, Real> >
@@ -1728,8 +1728,7 @@ class SGFRDSimulator :
     {
         SGFRD_SCOPE(us, get_intrusive_domains_vid, tracer_);
 
-        const std::pair<Real3, VertexID> vpos = std::make_pair(
-                polygon().vertex_at(vid).position, vid);
+        const std::pair<Real3, VertexID> vpos(polygon().position_at(vid), vid);
         const std::vector<std::pair<std::pair<ShellID, shell_type>, Real>
             > shells(shell_container_.list_shells_within_radius(vpos, radius));
 
@@ -1785,7 +1784,7 @@ class SGFRDSimulator :
     {
         Real lensq = std::numeric_limits<Real>::max();
         const boost::array<ecell4::Segment, 6>& barrier =
-            polygon().face_at(pos.second).barrier;
+            world_->barrier_at(pos.second);
 
         for(std::size_t i=0; i<6; ++i)
         {
@@ -1799,7 +1798,14 @@ class SGFRDSimulator :
     }
     Real get_max_cone_size(const VertexID& vid) const
     {
-        return polygon().vertex_at(vid).max_conical_shell_size * 0.5;
+        Real min_len = std::numeric_limits<Real>::max();
+        std::vector<Polygon::EdgeID> outs = this->polygon().outgoing_edges(vid);
+        for(typename std::vector<Polygon::EdgeID>::const_iterator
+                i(outs.begin()), e(outs.end()); i!=e; ++i)
+        {
+            min_len = std::min(min_len, this->polygon().length_of(*i));
+        }
+        return min_len * 0.5;
     }
 
     Real calc_min_single_circular_shell_radius(const Particle& p) const

@@ -44,7 +44,7 @@ SGFRDWorld::throw_in_particle(const Species& sp)
 {
     const molecule_info_type molinfo = this->get_molecule_info(sp);
     Real3 pos; FaceID fid;
-    boost::tie(pos, fid) = this->polygon_->draw_random_position(this->rng_);
+    pos = this->polygon_->draw_position(this->rng_, fid);
     const Particle p(sp, pos, molinfo.radius, molinfo.D);
     return this->new_particle(p, fid);
 }
@@ -80,7 +80,7 @@ SGFRDWorld::list_particles_within_radius(
     }
 
     std::vector<FaceID> const& neighbors =
-        polygon_->neighbor_faces(pos.second);
+        polygon_->neighbor_faces_of(pos.second);
     for(std::vector<FaceID>::const_iterator
         iter = neighbors.begin(); iter != neighbors.end(); ++iter)
     {
@@ -121,7 +121,7 @@ SGFRDWorld::list_particles_within_radius(
     }
 
     std::vector<FaceID> const& neighbors =
-        polygon_->neighbor_faces(pos.second);
+        polygon_->neighbor_faces_of(pos.second);
     for(std::vector<FaceID>::const_iterator
         iter = neighbors.begin(); iter != neighbors.end(); ++iter)
     {
@@ -163,7 +163,7 @@ SGFRDWorld::list_particles_within_radius(
     }
 
     std::vector<FaceID> const& neighbors =
-        polygon_->neighbor_faces(pos.second);
+        polygon_->neighbor_faces_of(pos.second);
     for(std::vector<FaceID>::const_iterator
         iter = neighbors.begin(); iter != neighbors.end(); ++iter)
     {
@@ -202,7 +202,7 @@ bool SGFRDWorld::check_no_overlap(
     }
 
     std::vector<FaceID> const& neighbors =
-        polygon_->neighbor_faces(pos.second);
+        polygon_->neighbor_faces_of(pos.second);
     for(std::vector<FaceID>::const_iterator
         iter = neighbors.begin(); iter != neighbors.end(); ++iter)
     {
@@ -238,7 +238,7 @@ bool SGFRDWorld::check_no_overlap(
     }
 
     std::vector<FaceID> const& neighbors =
-        polygon_->neighbor_faces(pos.second);
+        polygon_->neighbor_faces_of(pos.second);
     for(std::vector<FaceID>::const_iterator
         iter = neighbors.begin(); iter != neighbors.end(); ++iter)
     {
@@ -275,7 +275,7 @@ bool SGFRDWorld::check_no_overlap(
     }
 
     std::vector<FaceID> const& neighbors =
-        polygon_->neighbor_faces(pos.second);
+        polygon_->neighbor_faces_of(pos.second);
     for(std::vector<FaceID>::const_iterator
         iter = neighbors.begin(); iter != neighbors.end(); ++iter)
     {

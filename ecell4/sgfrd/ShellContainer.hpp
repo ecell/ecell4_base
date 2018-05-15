@@ -371,7 +371,7 @@ ShellContainer::list_shells_within_radius(
     return retval;
 }
 
-std::vector<std::pair<
+inline std::vector<std::pair<
     std::pair<ShellID, ShellContainer::storage_type>, Real> >
 ShellContainer::list_shells_within_radius(
         const Real3& pos, const Real radius,
@@ -422,8 +422,8 @@ ShellContainer::list_shells_within_radius(
         }
     }
 
-    const std::vector<FaceID>   neighborf = polygon_.at(pos.second).neighbor_faces;
-    const std::vector<VertexID> neighborv = polygon_.at(pos.second).neighbor_vertices;
+    const std::vector<FaceID>   neighborf(polygon_.neighbor_faces_of   (pos.second));
+    const std::vector<VertexID> neighborv(polygon_.neighbor_vertices_of(pos.second));
 
     for(typename std::vector<FaceID>::const_iterator
         iter = neighborf.begin(); iter != neighborf.end(); ++iter)
@@ -536,8 +536,8 @@ ShellContainer::list_shells_within_radius(
         }
     }
 
-    std::vector<FaceID>   neighborf = polygon_.at(pos.second).neighbor_faces;
-    std::vector<VertexID> neighborv = polygon_.at(pos.second).neighbor_vertices;
+    const std::vector<FaceID>   neighborf(polygon_.neighbor_faces_of   (pos.second));
+    const std::vector<VertexID> neighborv(polygon_.neighbor_vertices_of(pos.second));
 
     for(typename std::vector<FaceID>::const_iterator
         iter = neighborf.begin(); iter != neighborf.end(); ++iter)
@@ -651,8 +651,8 @@ ShellContainer::list_shells_within_radius(
         }
     }
 
-    std::vector<FaceID>   neighborf = polygon_.at(pos.second).neighbor_faces;
-    std::vector<VertexID> neighborv = polygon_.at(pos.second).neighbor_vertices;
+    const std::vector<FaceID>   neighborf(polygon_.neighbor_faces_of   (pos.second));
+    const std::vector<VertexID> neighborv(polygon_.neighbor_vertices_of(pos.second));
 
     for(typename std::vector<FaceID>::const_iterator
         iter = neighborf.begin(); iter != neighborf.end(); ++iter)

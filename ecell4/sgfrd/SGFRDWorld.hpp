@@ -258,6 +258,29 @@ class SGFRDWorld : public ecell4::Space
             const std::pair<Real3, FaceID>& pos, const Real& radius,
             const ParticleID& ignore1, const ParticleID& ignore2) const;
 
+    std::vector<std::pair<VertexID, Real> > list_vertices_within_radius(
+            const std::pair<Real3, FaceID>& pos, const Real& radius) const
+    {
+        const Real threshold_sq = radius * radius;
+        std::vector<std::pair<VertexID, Real> > retval;
+        const std::vector<VertexID> candidates =
+            this->polygon_->neighbor_vertices_of(pos.second);
+        for(std::vector<VertexID>::const_iterator
+                i(candidates.begin()), e(candidates.end()); i!=e; ++i)
+        {
+            const VertexID vid = *i;
+            const Real dist_sq = polygon_->distance_sq(pos,
+                    std::make_pair(this->polygon_->position_at(vid), vid));
+            if(dist_sq < threshold_sq)
+            {
+                retval.push_back(std::make_pair(vid, std::sqrt(dist_sq)));
+            }
+        }
+        std::sort(retval.begin(), retval.end(),
+              ecell4::utils::pair_second_element_comparator<VertexID, Real>());
+        return retval;
+    }
+
     // return false if overlap exists. for 3D. FIXME: speedup
     bool check_no_overlap(const Real3& pos, const Real& radius) const
     {
