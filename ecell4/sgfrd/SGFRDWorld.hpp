@@ -6,7 +6,9 @@
 #include <ecell4/core/SerialIDGenerator.hpp>
 #include <ecell4/core/Polygon.hpp>
 #include <ecell4/core/Context.hpp>
+#include <ecell4/core/Segment.hpp>
 #include <ecell4/core/Model.hpp>
+#include <boost/container/flat_map.hpp>
 #include <boost/scoped_ptr.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
@@ -45,11 +47,11 @@ class SGFRDWorld : public ecell4::Space
         : ps_(new default_particle_space_type(edge_lengths, matrix_sizes)),
           polygon_(polygon), registrator_(*polygon)
     {
-        setup_descriptors(*polygon_);
-
         rng_ = boost::shared_ptr<RandomNumberGenerator>(
             new GSLRandomNumberGenerator());
         rng_->seed();
+
+        this->prepair_barriers();
     }
 
     SGFRDWorld(const Real3& edge_lengths, const Integer3& matrix_sizes,
@@ -57,9 +59,7 @@ class SGFRDWorld : public ecell4::Space
                boost::shared_ptr<RandomNumberGenerator> rng)
         : ps_(new default_particle_space_type(edge_lengths, matrix_sizes)),
           rng_(rng), polygon_(polygon), registrator_(*polygon)
-    {
-        setup_descriptors(*polygon_);
-    }
+    {this->prepair_barriers();}
 
     ~SGFRDWorld(){}
 
@@ -350,6 +350,42 @@ class SGFRDWorld : public ecell4::Space
         return MoleculeInfo(0., 0.);
     }
 
+    boost::array<ecell4::Segment, 6> const& barrier_at(const FaceID& fid) const
+    {
+        return this->barriers_.at(fid);
+    }
+
+  private:
+
+    void prepair_barriers()
+    {
+        const std::vector<FaceID> faces = polygon_->list_face_ids();
+        for(std::vector<FaceID>::const_iterator
+                i(faces.begin()), e(faces.end()); i!=e; ++i)
+        {
+            const FaceID fid = *i;
+            boost::array<Segment, 6> segments;
+            boost::array<EdgeID, 3> const& edges = polygon_->edges_of(fid);
+            for(std::size_t i=0; i<3; ++i)
+            {
+                const EdgeID eid = edges[i];
+                const Real3 orig = this->polygon_->position_at(
+                    this->polygon_->target_of(this->polygon_->opposite_of(eid)));
+                const Real3  vtx = orig + rotate(
+                    -1 * this->polygon_->tilt_angle_at(eid),
+                    this->polygon_->direction_of(eid),
+                    this->polygon_->direction_of(this->polygon_->next_of(
+                            this->polygon_->opposite_of(eid))));
+
+                segments[i*2    ] = Segment(orig, vtx);
+                segments[i*2 + 1] = Segment(this->polygon_->position_at(
+                    this->polygon_->target_of(eid)), vtx);
+            }
+            this->barriers_[fid] = segments;
+        }
+        return;
+    }
+
   private:
 
     boost::scoped_ptr<particle_space_type>   ps_;
@@ -358,6 +394,16 @@ class SGFRDWorld : public ecell4::Space
     boost::shared_ptr<polygon_type>          polygon_;
     structure_registrator_type               registrator_;
     particle_id_generator_type               pidgen_;
+
+    // XXX consider moving this to the other place
+    // this contains the edges that correspond to the developed neighbor faces.
+    //
+    //        /\
+    //     > /__\ <
+    //      /\* /\
+    //   > /__\/__\ < these edges
+    //      ^    ^
+    boost::container::flat_map<FaceID, boost::array<ecell4::Segment, 6> > barriers_;
 };
 
 
