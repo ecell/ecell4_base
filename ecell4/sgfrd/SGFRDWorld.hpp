@@ -35,7 +35,7 @@ class SGFRDWorld : public ecell4::Space
     typedef particle_space_type::particle_container_type
         particle_container_type;
     typedef ecell4::SerialIDGenerator<ParticleID> particle_id_generator_type;
-    typedef StructureRegistrator<ParticleID, FaceID, traits_type>
+    typedef StructureRegistrator<ParticleID, FaceID>
         structure_registrator_type;
 
   public:

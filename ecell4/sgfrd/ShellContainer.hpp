@@ -38,10 +38,8 @@ public:
     typedef typename ecell4::utils::get_mapper_mf<ShellID, std::size_t>::type
         shell_id_to_index_map_type;
 
-    typedef StructureRegistrator<ShellID, FaceID, traits_type>
-        face_registrator_type;
-    typedef StructureRegistrator<ShellID, VertexID, traits_type>
-        vertex_registrator_type;
+    typedef StructureRegistrator<ShellID, FaceID>   face_registrator_type;
+    typedef StructureRegistrator<ShellID, VertexID> vertex_registrator_type;
 
     struct face_register_updater;
     struct vertex_register_updater;
@@ -406,7 +404,7 @@ ShellContainer::list_shells_within_radius(
         const std::pair<Real3, strID>& pos, const Real radius) const
 {
     std::vector<std::pair<std::pair<ShellID, storage_type>, Real> > retval;
-    const distance_calculator_on_surface<T_pt, strID>
+    const distance_calculator_on_surface<strID>
         distance_on_surf(pos, this->polygon_);
 
     {
@@ -520,7 +518,7 @@ ShellContainer::list_shells_within_radius(
         const ShellID& ignore) const
 {
     std::vector<std::pair<std::pair<ShellID, storage_type>, Real> > retval;
-    const distance_calculator_on_surface<T_pt, strID>
+    const distance_calculator_on_surface<strID>
         distance_on_surf(pos, this->polygon_);
 
     {
@@ -635,7 +633,7 @@ ShellContainer::list_shells_within_radius(
         const ShellID& ignore1, const ShellID& ignore2) const
 {
     std::vector<std::pair<std::pair<ShellID, storage_type>, Real> > retval;
-    const distance_calculator_on_surface<T_pt, strID>
+    const distance_calculator_on_surface<strID>
         distance_on_surf(pos, this->polygon_);
 
     {
