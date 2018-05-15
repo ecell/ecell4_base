@@ -484,12 +484,12 @@ class Polygon : public Shape
     boost::optional<EdgeID>
     find_edge(const VertexID start, const VertexID stop) const
     {
-        const vertex_data& vd = this->vertices_.at(start);
+        const vertex_data& vd = this->vertex_at(start);
         for(std::vector<std::pair<EdgeID, Real> >::const_iterator
             i(vd.outgoing_edges.begin()), e(vd.outgoing_edges.end()); i!=e; ++i)
         {
             const EdgeID eid = i->first;
-            if(edges_.at(eid).target == stop)
+            if(this->target_of(eid) == stop)
             {
                 return eid;
             }

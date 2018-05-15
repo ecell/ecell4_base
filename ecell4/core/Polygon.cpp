@@ -33,7 +33,7 @@ void Polygon::assign(const std::vector<Triangle>& ts)
         const Triangle& triangle = *t_iter;
         this->total_area_ += triangle.area();
 
-        const FaceID fid(faces_.size());
+        const FaceID fid = FaceID(faces_.size());
         face_data fd;
         fd.triangle = triangle;
 
@@ -66,7 +66,7 @@ void Polygon::assign(const std::vector<Triangle>& ts)
             }
             if(!found_vtx) // new vertices! add VertexID.
             {
-                const VertexID new_vid(tmp_vtxs.size());
+                const VertexID new_vid = VertexID(tmp_vtxs.size());
                 tmp_vtxs[new_vid] = std::make_pair(v1,
                         std::vector<fid_vidx_pair>(1, std::make_pair(fid, i)));
                 found_vtx = new_vid;
@@ -79,7 +79,7 @@ void Polygon::assign(const std::vector<Triangle>& ts)
         {
             // in this point, edge length and direction are not fixed (because
             // vertex positions are corrected after all the faces are assigned).
-            const EdgeID eid(edges_.size());
+            const EdgeID eid = EdgeID(edges_.size());
             edge_data ed;
             ed.face   = fid;
             ed.target = fd.vertices[i==2?0:i+1];
@@ -90,7 +90,7 @@ void Polygon::assign(const std::vector<Triangle>& ts)
         // set `next` of these 3 edges
         for(std::size_t i=0; i<3; ++i)
         {
-            this->edges_.at(fd.edges[i]).next = fd.edges[i==2?0:i+1];
+            this->edge_at(fd.edges[i]).next = fd.edges[i==2?0:i+1];
         }
         faces_.push_back(fd);
     }
@@ -113,7 +113,7 @@ void Polygon::assign(const std::vector<Triangle>& ts)
         {
             const FaceID fid = i->first;
             const std::size_t  idx = i->second;
-            face_data& fd = this->faces_.at(fid);
+            face_data& fd = this->face_at(fid);
 
             assert(vid == fd.vertices[idx]);
             vd.outgoing_edges.push_back(std::make_pair(fd.edges[idx], 0.0));
@@ -129,11 +129,11 @@ void Polygon::assign(const std::vector<Triangle>& ts)
 
         boost::array<Real3, 3> vs = fd.triangle.vertices();
         vs[0] = this->periodic_transpose(
-                this->vertices_.at(fd.vertices[0]).position, vs[0]);
+                this->vertex_at(fd.vertices[0]).position, vs[0]);
         vs[1] = this->periodic_transpose(
-                this->vertices_.at(fd.vertices[1]).position, vs[1]);
+                this->vertex_at(fd.vertices[1]).position, vs[1]);
         vs[2] = this->periodic_transpose(
-                this->vertices_.at(fd.vertices[2]).position, vs[2]);
+                this->vertex_at(fd.vertices[2]).position, vs[2]);
         fd.triangle = Triangle(vs);
     }
 
@@ -145,22 +145,22 @@ void Polygon::assign(const std::vector<Triangle>& ts)
         for(std::size_t i=0; i<3; ++i)
         {
             const EdgeID eid = fd.edges[i];
-            this->edges_.at(eid).length    = fd.triangle.length_of_edge_at(i);
-            this->edges_.at(eid).direction = fd.triangle.edge_at(i);
+            this->edge_at(eid).length    = fd.triangle.length_of_edge_at(i);
+            this->edge_at(eid).direction = fd.triangle.edge_at(i);
         }
     }
 
     // search pairs of opposite edges & calculate edge.tilt.
     for(std::size_t i=0; i<edges_.size(); ++i)
     {
-        const EdgeID   eid(i);
+        const EdgeID   eid = EdgeID(i);
         const VertexID start  = this->target_of(eid);
         const VertexID target = this->target_of(
                 this->next_of(this->next_of(eid)));
 
         bool opposite_found = false;
         const std::vector<std::pair<EdgeID, Real> >& vd =
-            this->vertices_.at(start).outgoing_edges;
+            this->vertex_at(start).outgoing_edges;
 
         for(std::vector<std::pair<EdgeID, Real> >::const_iterator
                 iter(vd.begin()), iend(vd.end()); iter != iend; ++iter)
@@ -173,14 +173,14 @@ void Polygon::assign(const std::vector<Triangle>& ts)
 
                 const FaceID fid1 = face_of(eid);
                 const FaceID fid2 = face_of(outgoing);
-                const Real3 n1 = this->faces_.at(fid1).triangle.normal();
-                const Real3 n2 = this->faces_.at(fid2).triangle.normal();
+                const Real3 n1 = this->face_at(fid1).triangle.normal();
+                const Real3 n2 = this->face_at(fid2).triangle.normal();
                 const Real3 cr = cross_product(this->edge_at(eid).direction, n1);
                 const Real  sg = dot_product(cr, n2);
                 const Real ang = calc_angle(n1, n2) * (sg > 0 ? 1 : -1);
 
                 this->edges_.at(i       ).tilt = ang;
-                this->edges_.at(outgoing).tilt = ang;
+                this->edge_at(outgoing).tilt = ang;
 
                 opposite_found = true;
                 break;
@@ -220,7 +220,7 @@ void Polygon::assign(const std::vector<Triangle>& ts)
                 outgoing_edges_tmp.erase(found);
             }
 
-            const face_data& f = this->faces_.at(this->face_of(current));
+            const face_data& f = this->face_at(this->face_of(current));
             Real angle = std::numeric_limits<Real>::infinity();
             for(std::size_t idx=0; idx<3; ++idx)
             {
@@ -517,7 +517,7 @@ Real3 Polygon::direction(
     {
         throw std::runtime_error((boost::format(
             "polygon::direction: couldn't find the min path between "
-            "%1% @ %2% <-> %3% @ %4%") % pos1.first % pos1.second %
+            "%1% on %2% <-> %3% on %4%") % pos1.first % pos1.second %
             pos2.first % pos2.second).str());
     }
     return direction;
