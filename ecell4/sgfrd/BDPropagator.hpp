@@ -28,7 +28,6 @@ public:
     typedef containerT container_type;
     typedef volume_clearerT volume_clearer_type;
     typedef ecell4::Polygon  polygon_type;
-    typedef ecell4::Triangle triangle_type;
     typedef polygon_type::FaceID   FaceID;
     typedef polygon_type::EdgeID   EdgeID;
     typedef polygon_type::VertexID VertexID;
