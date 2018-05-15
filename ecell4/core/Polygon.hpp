@@ -130,7 +130,7 @@ class Polygon : public Shape
         //    the path that goes through the vertex.
         //    * this means that before calculating distance, the angle should be
         //      calculated and checked whether it exceeds pi or not.
-        // 4. an apex angle around a vertex can be any value (includeing inf).
+        // 4. an apex angle around a vertex can be any value.
         //    * by adding a pyramid instead of one face around a vertex, the
         //      angle will increase. We can put the pyramid that infinitely thin.
         //      it enables us to put any number of pyramids around one vertex,
@@ -289,6 +289,12 @@ class Polygon : public Shape
         return this->vertex_at(vid).outgoing_edges;
     }
 
+    // XXX: reconsider the design of sGFRD and Polygon API that needs this.
+    std::vector<FaceID>   neighbor_faces_of   (const FaceID&   fid) const;
+    std::vector<VertexID> neighbor_vertices_of(const FaceID&   fid) const;
+    std::vector<FaceID>   neighbor_faces_of   (const VertexID& vid) const;
+    std::vector<VertexID> neighbor_vertices_of(const VertexID& vid) const;
+
     // accessor ---------------------------------------------------------------
 
     Real apex_angle_at(const VertexID& vid) const
@@ -302,11 +308,12 @@ class Polygon : public Shape
     std::vector<FaceID> connecting_faces(const VertexID& vid) const
     {
         std::vector<FaceID> retval;
-        const std::vector<EdgeID>& outs = this->outgoing_edges(vid);
-        for(typename std::vector<EdgeID>::const_iterator
+        const std::vector<std::pair<EdgeID, Real> >&
+            outs = this->outgoing_edge_and_angles(vid);
+        for(typename std::vector<std::pair<EdgeID, Real> >::const_iterator
                 i(outs.begin()), e(outs.end()); i!=e; ++i)
         {
-            retval.push_back(this->face_of(*i));
+            retval.push_back(this->face_of(i->first));
         }
         return retval;
     }
@@ -549,27 +556,61 @@ class Polygon : public Shape
     edge_container_type   edges_;
 };
 
+inline std::vector<Polygon::FaceID>
+Polygon::neighbor_faces_of(const FaceID& fid) const
+{
+    return this->face_at(fid).neighbors;
+}
+
+inline std::vector<Polygon::VertexID>
+Polygon::neighbor_vertices_of(const FaceID& fid) const
+{
+    return std::vector<Polygon::VertexID>(this->face_at(fid).vertices.begin(),
+                                          this->face_at(fid).vertices.end());
+}
+
+inline std::vector<Polygon::FaceID>
+Polygon::neighbor_faces_of(const VertexID& vid) const
+{
+    return this->connecting_faces(vid);
+}
+
+inline std::vector<Polygon::VertexID>
+Polygon::neighbor_vertices_of(const VertexID& vid) const
+{
+    const std::vector<std::pair<EdgeID, Real> >&
+        outs = this->outgoing_edge_and_angles(vid);
+
+    std::vector<VertexID> retval(outs.size());
+    for(std::size_t i=0; i<retval.size(); ++i)
+    {
+        retval[i] = this->target_of(outs[i].first);
+    }
+    return retval;
+}
 
 /********************** free functions to use a Polygon **********************/
 
 namespace polygon
 {
 
+template<typename ID1, typename ID2>
 inline Real distance(const Polygon& p,
-        const std::pair<Real3, Polygon::FaceID>& p1,
-        const std::pair<Real3, Polygon::FaceID>& p2)
+        const std::pair<Real3, ID1>& p1, const std::pair<Real3, ID2>& p2)
 {
     return p.distance(p1, p2);
 }
+
+template<typename ID1, typename ID2>
 inline Real distance_sq(const Polygon& p,
-        const std::pair<Real3, Polygon::FaceID>& p1,
-        const std::pair<Real3, Polygon::FaceID>& p2)
+        const std::pair<Real3, ID1>& p1, const std::pair<Real3, ID2>& p2)
 {
     return p.distance_sq(p1, p2);
 }
+
+template<typename ID1, typename ID2>
 inline Real3 direction(const Polygon& p,
-        const std::pair<Real3, Polygon::FaceID>& p1,
-        const std::pair<Real3, Polygon::FaceID>& p2)
+        const std::pair<Real3, ID1>& p1, const std::pair<Real3, ID2>& p2)
 {
     return p.direction(p1, p2);
 }
