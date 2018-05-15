@@ -22,16 +22,13 @@ public:
     typedef typename container_type::const_iterator const_iterator;
 
     typedef ecell4::Polygon polygon_type;
-    typedef typename polygon_traits_type::converter_type
-        structure_id_converter_type;
-    typedef typename utils::get_mapper_mf<element_id_type, structure_id_type>::type
-        elemid_to_strid_map_type;
+    typedef typename utils::get_mapper_mf<
+        element_id_type, structure_id_type>::type elemid_to_strid_map_type;
 
 public:
 
     StructureRegistrator(const polygon_type& poly)
-        : structure_id_converter_(poly.converter()),
-          container_(poly.num_faces())
+        : container_(poly.face_size())
     {}
     ~StructureRegistrator(){}
 
@@ -75,7 +72,7 @@ protected:
 
     std::size_t to_index(const structure_id_type& sid) const
     {
-        return structure_id_converter_.to_index(sid);
+        return static_cast<std::size_t>(sid);
     }
 
     std::size_t to_index(const element_id_type& eid) const
@@ -89,9 +86,8 @@ protected:
 
 protected:
 
-    structure_id_converter_type const& structure_id_converter_;//ex {fID -> idx}
-    elemid_to_strid_map_type           elemid_to_strid_map_;   //ex {pID -> fID}
-    container_type                     container_;  //ex {<fid, {pid,...}>, ...}
+    elemid_to_strid_map_type elemid_to_strid_map_;   //ex {pID -> fID}
+    container_type           container_;  //ex {<fid, {pid,...}>, ...}
 };
 
 
