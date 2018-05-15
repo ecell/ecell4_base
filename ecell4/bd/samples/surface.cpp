@@ -7,10 +7,9 @@
 #include <ecell4/core/Species.hpp>
 #include <ecell4/core/Real3.hpp>
 #include <ecell4/core/NetworkModel.hpp>
-#include <ecell4/core/STLFileReader.hpp>
-#include <ecell4/core/STLPolygonAdapter.hpp>
+#include <ecell4/core/STLFileIO.hpp>
 
-#include <ecell4/bd/BDPolygon.hpp>
+#include <ecell4/bd/BDWorld.hpp>
 #include <ecell4/bd/BDSimulator.hpp>
 
 using namespace ecell4;
@@ -45,8 +44,8 @@ int main(int argc, char** argv)
     }
 
     /// simulation parameters
-    const Real L(1e-6);
-    std::string D("5e0"), radius("1e-1");
+    const Real L(10);
+    std::string D("0.5"), radius("1e-2");
     const Real3 edge_lengths(L, L, L);
     const Integer3 matrix_sizes(3, 3, 3);
 
@@ -56,11 +55,15 @@ int main(int argc, char** argv)
         std::cerr << "usage: " << argv[0] << " -stl=[bin|asc] [filename.stl]" << std::endl;
         return 1;
     }
-    STLFileReader::FileType ft;
+    STLFormat::Kind kind;
     if(stltype.substr(5, 3) == "asc")
-        ft = STLFileReader::Ascii;
+    {
+        kind = STLFormat::Ascii;
+    }
     else if(stltype.substr(5, 3) == "bin")
-        ft = STLFileReader::Binary;
+    {
+        kind = STLFormat::Binary;
+    }
     else
     {
         std::cerr << "usage: " << argv[0] << " -stl=[bin|asc] [filename.stl]" << std::endl;
@@ -80,50 +83,49 @@ int main(int argc, char** argv)
     sp2.set_attribute("radius", radius);
 
     // A -> A + A
-    ReactionRule rr1;
-    rr1.set_k(1.);
-    rr1.add_reactant(sp1);
-    rr1.add_product(sp1);
-    rr1.add_product(sp1);
-
-    // A + A -> B
-    ReactionRule rr2;
-    rr2.set_k(1.);
-    rr2.add_reactant(sp1);
-    rr2.add_reactant(sp1);
-    rr2.add_product(sp2);
+//     ReactionRule rr1;
+//     rr1.set_k(1.0);
+//     rr1.add_reactant(sp1);
+//     rr1.add_product(sp1);
+//     rr1.add_product(sp1);
+//
+//     // A + A -> B
+//     ReactionRule rr2;
+//     rr2.set_k(1.0);
+//     rr2.add_reactant(sp1);
+//     rr2.add_reactant(sp1);
+//     rr2.add_product(sp2);
 
     (*model).add_species_attribute(sp1);
-    (*model).add_reaction_rule(rr1);
-    (*model).add_reaction_rule(rr2);
+//     (*model).add_species_attribute(sp2);
+//     (*model).add_reaction_rule(rr1);
+//     (*model).add_reaction_rule(rr2);
 
     boost::shared_ptr<RandomNumberGenerator> rng(new GSLRandomNumberGenerator());
 
     /// instantiate BDWorld
-    boost::shared_ptr<BDWorld> world(new BDWorld(edge_lengths, matrix_sizes, rng));
+    const std::string stlname(argv[2]);
+    boost::shared_ptr<BDWorld> world(
+        new BDWorld(Polygon(edge_lengths, read_stl_format(stlname, kind)),
+                    matrix_sizes, rng));
     world->bind_to(model);
 
-    // create polygon
-
-    const std::string fname(argv[2]);
-    STLFileReader reader;
-    const std::vector<STLTriangle> stl_data = reader.read(fname, ft);
-
-    STLPolygonAdapter<polygon_traits> adapter;
-    boost::shared_ptr<BDPolygon> polygon = adapter.make_polygon(stl_data);
-    world->set_polygon(*polygon);
-
-    const BDPolygon::face_id_type fid(0);
-    Triangle f = world->get_face(fid);
-    const Real3 initial = (f.vertex_at(0) + f.vertex_at(1) + f.vertex_at(2)) / 3.;
-    std::cerr << "initial position = " << initial << std::endl;
+    std::cout << "world instanciated" << std::endl;
+    std::cout << "polygon has " << world->polygon().face_size()   << " faces\n";
+    std::cout << "        and " << world->polygon().edge_size()   << " edges\n";
+    std::cout << "        and " << world->polygon().vertex_size() << " vertices\n";
 
     /// create a Particle, and inject it into BDWorld
     std::cerr << "begin create/inject particle to BDWorld";
-    BDWorld::molecule_info_type info1((*world).get_molecule_info(Species("A")));
-    const Particle p1(sp1, initial, info1.radius, info1.D);
-    const ParticleID pid1((*world).new_particle(p1, fid).first.first);
-//     world->save("test_bd.h5");
+    for(std::size_t i=0; i<100; ++i)
+    {
+        BDWorld::molecule_info_type info1((*world).get_molecule_info(Species("A")));
+
+        Polygon::FaceID fid;
+        const Real3     pos = world->polygon().draw_position(rng, fid);
+        Particle p(sp1, pos, info1.radius, info1.D);
+        world->new_particle(p, fid);
+    }
     std::cerr << "... end!" << std::endl;
 
     std::cerr << "begin simulator setup";
@@ -134,11 +136,11 @@ int main(int argc, char** argv)
 
     /// run and log
     std::cerr << "begin simulation..." << std::endl;
-    for(unsigned int i(0); i <= 150; ++i)
+    for(unsigned int i(0); i <= 100; ++i)
     {
-        while(sim.step(5e-2*i))
+        while(sim.step(1e-4*i))
         {
-            // do nothing
+            // do nothing!
         }
         print_particle_position(*world);
     }
