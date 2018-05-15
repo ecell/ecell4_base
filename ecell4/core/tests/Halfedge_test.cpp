@@ -9,7 +9,6 @@
 
 #include <ecell4/core/Polygon.hpp>
 #include <boost/assign.hpp>
-#include <algorithm>
 #include <utility>
 
 using ecell4::Real;
