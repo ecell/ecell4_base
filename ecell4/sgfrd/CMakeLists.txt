@@ -3,7 +3,7 @@ if (NO_SHARED)
 endif()
 
 file(GLOB HPP_FILES *.hpp)
-set(CPP_FILES polygon_traits.cpp SGFRDWorld.cpp SGFRDSimulator.cpp)
+set(CPP_FILES SGFRDWorld.cpp SGFRDSimulator.cpp)
 
 # add_definitions(-DECELL4_SGFRD_NO_TRACE)
 
