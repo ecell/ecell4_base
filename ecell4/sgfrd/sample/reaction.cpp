@@ -4,10 +4,7 @@
 #include <ecell4/core/Species.hpp>
 #include <ecell4/core/ReactionRule.hpp>
 #include <ecell4/core/Polygon.hpp>
-#include <ecell4/core/STLFileReader.hpp>
-#include <ecell4/core/STLPolygonAdapter.hpp>
-
-#include <ecell4/sgfrd/polygon_traits.hpp>
+#include <ecell4/core/STLFileIO.hpp>
 #include <ecell4/sgfrd/SGFRDWorld.hpp>
 #include <ecell4/sgfrd/SGFRDSimulator.hpp>
 
@@ -90,11 +87,9 @@ bool key_missing(
 
 int main(int argc, char **argv)
 {
-    typedef ecell4::sgfrd::polygon_traits       polygon_traits;
-    typedef ecell4::Polygon<polygon_traits>     polygon_type;
-    typedef ecell4::sgfrd::SGFRDWorld           world_type;
-    typedef ecell4::sgfrd::SGFRDSimulator       simulator_type;
-    typedef typename polygon_type::face_id_type face_id_type;
+    typedef ecell4::Polygon polygon_type;
+    typedef ecell4::sgfrd::SGFRDWorld     world_type;
+    typedef ecell4::sgfrd::SGFRDSimulator simulator_type;
 
     if(argc != 2)
     {
@@ -129,18 +124,15 @@ int main(int argc, char **argv)
         ifs.peek();
     }
 
-    ecell4::STLFileReader reader;
-    ecell4::STLPolygonAdapter<polygon_traits> adapter;
-
-    if(key_missing(input, "polygon")){return 1;}
-    boost::shared_ptr<polygon_type> polygon =
-        adapter.make_polygon(reader.read(input["polygon"], ecell4::STLFileReader::Ascii));
-
     if(key_missing(input, "system_size")) return 1;
     const ecell4::Real     L(boost::lexical_cast<ecell4::Real>(input["system_size"]));
     const ecell4::Real3    edge_lengths(L, L, L);
     const ecell4::Integer3 matrix_sizes(3, 3, 3);
     const ecell4::Real     volume(L * L * L);
+
+    if(key_missing(input, "polygon")){return 1;}
+    boost::shared_ptr<polygon_type> polygon = boost::make_shared<polygon_type>(
+        polygon_type(edge_lengths, ecell4::read_stl_format(input["polygon"], ecell4::STLFormat::Ascii)));
 
     boost::shared_ptr<ecell4::NetworkModel>
         model(new ecell4::NetworkModel());
