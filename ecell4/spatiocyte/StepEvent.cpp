@@ -53,26 +53,25 @@ void StepEvent3D::walk(const Real& alpha)
          itr != voxels.end(); ++itr)
     {
         const SpatiocyteWorld::coordinate_id_pair_type& info(*itr);
-        const Integer rnd(rng->uniform_int(0, world_->num_neighbors(info.coordinate)-1));
+        const Integer rnd(rng->uniform_int(0, world_->num_neighbors(Voxel(info.coordinate))-1));
 
-        if (world_->get_voxel_pool_at(info.coordinate) != mpool_)
+        if (world_->get_voxel_pool_at(Voxel(info.coordinate)) != mpool_)
         {
             // should skip if a voxel is not the target species.
             // when reaction has occured before, a voxel can be changed.
             continue;
         }
 
-        const SpatiocyteWorld::coordinate_type
-            neighbor(world_->get_neighbor(info.coordinate, rnd));
+        const Voxel neighbor(world_->get_neighbor(Voxel(info.coordinate), rnd));
 
-        if (world_->can_move(info.coordinate, neighbor))
+        if (world_->can_move(Voxel(info.coordinate), neighbor))
         {
             if (rng->uniform(0,1) <= alpha)
-                world_->move(info.coordinate, neighbor, /*candidate=*/idx);
+                world_->move(Voxel(info.coordinate), neighbor, /*candidate=*/idx);
         }
         else
         {
-            attempt_reaction_(info, neighbor, alpha);
+            attempt_reaction_(info, neighbor.coordinate, alpha);
         }
 
         ++idx;
@@ -118,14 +117,14 @@ void StepEvent2D::walk(const Real& alpha)
          itr != voxels.end(); ++itr)
     {
         const SpatiocyteWorld::coordinate_id_pair_type& info(*itr);
-        if (world_->get_voxel_pool_at(info.coordinate) != mpool_)
+        if (world_->get_voxel_pool_at(Voxel(info.coordinate)) != mpool_)
         {
             // should skip if a voxel is not the target species.
             // when reaction has occured before, a voxel can be changed.
             continue;
         }
 
-        const std::size_t num_neighbors(world_->num_neighbors(info.coordinate));
+        const std::size_t num_neighbors(world_->num_neighbors(Voxel(info.coordinate)));
 
         ecell4::shuffle(*(rng.get()), nids_);
         for (std::vector<unsigned int>::const_iterator itr(nids_.begin());
@@ -134,21 +133,20 @@ void StepEvent2D::walk(const Real& alpha)
             if (*itr >= num_neighbors)
                 continue;
 
-            const SpatiocyteWorld::coordinate_type neighbor(
-                    world_->get_neighbor(info.coordinate, *itr));
+            const Voxel neighbor(world_->get_neighbor(Voxel(info.coordinate), *itr));
             boost::shared_ptr<const VoxelPool> target(world_->get_voxel_pool_at(neighbor));
 
             if (target->get_dimension() > mpool_->get_dimension())
                 continue;
 
-            if (world_->can_move(info.coordinate, neighbor))
+            if (world_->can_move(Voxel(info.coordinate), neighbor))
             {
                 if (rng->uniform(0,1) <= alpha)
-                    world_->move(info.coordinate, neighbor, /*candidate=*/idx);
+                    world_->move(Voxel(info.coordinate), neighbor, /*candidate=*/idx);
             }
             else
             {
-                attempt_reaction_(info, neighbor, alpha);
+                attempt_reaction_(info, neighbor.coordinate, alpha);
             }
             break;
         }
@@ -158,11 +156,11 @@ void StepEvent2D::walk(const Real& alpha)
 
 void StepEvent::attempt_reaction_(
     const SpatiocyteWorld::coordinate_id_pair_type& info,
-    const SpatiocyteWorld::coordinate_type to_coord,
+    const Voxel& dst,
     const Real& alpha)
 {
-    boost::shared_ptr<const VoxelPool> from_mt(world_->get_voxel_pool_at(info.coordinate));
-    boost::shared_ptr<const VoxelPool> to_mt(world_->get_voxel_pool_at(to_coord));
+    boost::shared_ptr<const VoxelPool> from_mt(world_->get_voxel_pool_at(Voxel(info.coordinate)));
+    boost::shared_ptr<const VoxelPool> to_mt(world_->get_voxel_pool_at(dst));
 
     if (to_mt->is_vacant())
     {
@@ -199,8 +197,8 @@ void StepEvent::attempt_reaction_(
             ReactionInfo rinfo(apply_second_order_reaction(
                         world_, *itr,
                         ReactionInfo::Item(info.pid, from_mt->species(), info.coordinate),
-                        ReactionInfo::Item(to_mt->get_particle_id(to_coord),
-                                           to_mt->species(), to_coord)));
+                        ReactionInfo::Item(to_mt->get_particle_id(dst.coordinate),
+                                           to_mt->species(), dst.coordinate)));
             if (rinfo.has_occurred())
             {
                 reaction_type reaction(std::make_pair(*itr, rinfo));

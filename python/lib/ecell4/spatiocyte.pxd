@@ -68,7 +68,7 @@ cdef extern from "ecell4/spatiocyte/SpatiocyteWorld.hpp" namespace "ecell4::spat
         bool remove_voxel(Cpp_ParticleID& pid)
         pair[Cpp_ParticleID, Cpp_Particle] get_particle(Cpp_ParticleID& pid)
         optional[Cpp_ParticleVoxel] find_voxel(Cpp_ParticleID& pid)
-        pair[Cpp_ParticleID, Cpp_Species] get_voxel_at(Integer)
+        pair[Cpp_ParticleID, Cpp_Species] get_voxel_at(CppVoxel)
 
         void set_value(Cpp_Species&, Real)
         Real get_value(Cpp_Species&)
@@ -103,11 +103,11 @@ cdef extern from "ecell4/spatiocyte/SpatiocyteWorld.hpp" namespace "ecell4::spat
         void remove_molecules(Cpp_Species& sp, Integer num)
         # shared_ptr[Cpp_GSLRandomNumberGenerator] rng()
         # Integer get_neighbor(Integer, Integer)
-        Integer get_neighbor(Integer, Integer)
+        CppVoxel get_neighbor(CppVoxel, Integer)
         void save(string filename) except +
         void load(string filename)
-        optional[Cpp_ParticleID] new_voxel(Cpp_Species& sp, Integer pos)
-        optional[Cpp_ParticleID] new_voxel_structure(Cpp_Species& sp, Integer pos)
+        optional[Cpp_ParticleID] new_voxel(Cpp_Species& sp, CppVoxel pos)
+        optional[Cpp_ParticleID] new_voxel_structure(Cpp_Species& sp, CppVoxel pos)
         vector[pair[Cpp_ParticleID, Cpp_ParticleVoxel]] list_voxels()
         vector[pair[Cpp_ParticleID, Cpp_ParticleVoxel]] list_voxels(Cpp_Species& sp)
         vector[pair[Cpp_ParticleID, Cpp_ParticleVoxel]] list_voxels_exact(Cpp_Species& sp)
@@ -125,12 +125,12 @@ cdef extern from "ecell4/spatiocyte/SpatiocyteWorld.hpp" namespace "ecell4::spat
         # Integer position2coordinate(Cpp_Real3)
         shared_ptr[Cpp_RandomNumberGenerator] rng()
 
-        Cpp_Real3 coordinate2position(Integer)
+        Cpp_Real3 voxel2position(CppVoxel)
         # Cpp_Integer3 coordinate2global(Integer)
         # Integer global2coordinate(Cpp_Integer3)
         # Cpp_Real3 global2position(Cpp_Integer3)
         # Cpp_Integer3 position2global(Cpp_Real3)
-        Integer position2coordinate(Cpp_Real3)
+        CppVoxel position2voxel(Cpp_Real3)
 
         Integer add_structure(Cpp_Species&, shared_ptr[Cpp_Shape]) except +
         void add_molecules(Cpp_Species& sp, Integer num, shared_ptr[Cpp_Shape])
@@ -144,7 +144,7 @@ cdef extern from "ecell4/spatiocyte/SpatiocyteWorld.hpp" namespace "ecell4::spat
         @staticmethod
         Real calculate_volume(Cpp_Real3&, Real)
 
-        pair[pair[Cpp_ParticleID, Cpp_ParticleVoxel], bool] new_voxel_interface(Cpp_Species& sp, Integer pos)
+        pair[pair[Cpp_ParticleID, Cpp_ParticleVoxel], bool] new_voxel_interface(Cpp_Species& sp, CppVoxel pos)
         Integer add_interface(Cpp_Species&) except +
 
     cdef Cpp_SpatiocyteWorld* create_spatiocyte_world_cell_list_impl_alias(

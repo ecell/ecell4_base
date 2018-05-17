@@ -74,7 +74,7 @@ protected:
 
     void attempt_reaction_(
         const SpatiocyteWorld::coordinate_id_pair_type& info,
-        const SpatiocyteWorld::coordinate_type to_coord,
+        const Voxel& dst,
         const Real& alpha);
 
 protected:

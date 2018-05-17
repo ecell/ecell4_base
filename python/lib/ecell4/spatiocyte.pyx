@@ -113,7 +113,7 @@ cdef class Voxel:
     def __dealloc__(self):
         del self.thisptr
 
-cdef Voxel wrap_voxel(CppVoxel* ptr):
+cdef Voxel wrap_voxel(CppVoxel ptr):
     return Voxel(ptr.coordinate)
 
 ## SpatiocyteWorld
@@ -323,7 +323,7 @@ cdef class SpatiocyteWorld:
         output: (ParticleID, Species)
         """
 
-        pid_species_pair = self.thisptr.get().get_voxel_at(voxel.thisptr.coordinate)
+        pid_species_pair = self.thisptr.get().get_voxel_at(deref(voxel.thisptr))
         return (ParticleID_from_Cpp_ParticleID(address(pid_species_pair.first)),
                 Species_from_Cpp_Species(address(pid_species_pair.second)))
 
@@ -686,7 +686,7 @@ cdef class SpatiocyteWorld:
             The neighbor voxel
 
         """
-        return Voxel(self.thisptr.get().get_neighbor(voxel.thisptr.coordinate, nrand))
+        return wrap_voxel(self.thisptr.get().get_neighbor(deref(voxel.thisptr), nrand))
 
     def has_particle(self, ParticleID pid):
         """has_particle(pid) -> bool
@@ -846,7 +846,7 @@ cdef class SpatiocyteWorld:
         """
 
         cdef optional[Cpp_ParticleID] pid
-        pid = self.thisptr.get().new_voxel(deref(sp.thisptr), voxel.thisptr.coordinate);
+        pid = self.thisptr.get().new_voxel(deref(sp.thisptr), deref(voxel.thisptr));
 
         if pid.is_initialized():
             return ParticleID_from_Cpp_ParticleID(address(pid.get()))
@@ -871,7 +871,7 @@ cdef class SpatiocyteWorld:
 
         """
         cdef optional[Cpp_ParticleID] pid
-        pid = self.thisptr.get().new_voxel_structure(deref(species.thisptr), voxel.thisptr.coordinate)
+        pid = self.thisptr.get().new_voxel_structure(deref(species.thisptr), deref(voxel.thisptr))
 
         if pid.is_initialized():
             return ParticleID_from_Cpp_ParticleID(address(pid.get()))
@@ -1032,7 +1032,7 @@ cdef class SpatiocyteWorld:
         Transform a coordinate to a position.
 
         """
-        cdef Cpp_Real3 pos = self.thisptr.get().coordinate2position(voxel.thisptr.coordinate)
+        cdef Cpp_Real3 pos = self.thisptr.get().voxel2position(deref(voxel.thisptr))
         return Real3_from_Cpp_Real3(address(pos))
 
     def position2coordinate(self, Real3 pos):
@@ -1051,7 +1051,7 @@ cdef class SpatiocyteWorld:
             A voxel
 
         """
-        return Voxel(self.thisptr.get().position2coordinate(deref(pos.thisptr)))
+        return wrap_voxel(self.thisptr.get().position2voxel(deref(pos.thisptr)))
 
     def add_structure(self, Species sp, shape):
         """add_structure(sp, shape)
@@ -1103,7 +1103,7 @@ cdef class SpatiocyteWorld:
         cdef pair[pair[Cpp_ParticleID, Cpp_ParticleVoxel], bool] retval
 
         retval = self.thisptr.get().new_voxel_interface(
-                deref(species.thisptr), voxel.thisptr.coordinate)
+                deref(species.thisptr), deref(voxel.thisptr))
 
         return ((ParticleID_from_Cpp_ParticleID(address(retval.first.first)), ParticleVoxel_from_Cpp_ParticleVoxel(address(retval.first.second))),
                 retval.second)
