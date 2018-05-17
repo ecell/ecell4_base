@@ -129,7 +129,7 @@ BOOST_AUTO_TEST_CASE(SpatiocyteWorld_test_add_molecule)
 
     SpatiocyteWorld::coordinate_type coord(486420);
     // BOOST_CHECK(world.place_voxel(sp, coord).second);
-    BOOST_CHECK(world.new_voxel(sp, coord) != boost::none);
+    BOOST_CHECK(world.new_voxel(sp, coord));
     BOOST_CHECK_EQUAL(world.num_particles(sp), 1);
 
     boost::shared_ptr<const VoxelPool> mt(world.get_voxel_pool_at(coord));
@@ -231,7 +231,7 @@ BOOST_AUTO_TEST_CASE(SpatiocyteWorld_test_move)
         from(world.position2coordinate(Real3(0.3e-6, 0.5e-6, 0.5e-6))),
         to(world.position2coordinate(Real3(0.5e-6, 0.5e-6, 0.5e-6)));
 
-    BOOST_CHECK(world.new_voxel(sp, from) != boost::none);
+    BOOST_CHECK(world.new_voxel(sp, from));
     BOOST_CHECK(world.move(from, to));
 
     boost::shared_ptr<const VoxelPool> mt(world.get_voxel_pool_at(to));
@@ -256,10 +256,8 @@ BOOST_AUTO_TEST_CASE(SpatiocyteWorld_test_structure)
     boost::shared_ptr<const Sphere> sphere(new Sphere(Real3(2.5e-7, 2.5e-7, 2.5e-7), 2e-7));
 
     BOOST_CHECK(world.add_structure(membrane, sphere) == 5892);
-    BOOST_CHECK(world.new_particle(Particle(sp, Real3(2.5e-7, 2.5e-7, 4.5e-7), 2.5e-9, 1e-12))
-                == boost::none);
-    BOOST_CHECK(world.new_particle(Particle(sp, Real3(2.5e-7, 2.5e-7, 4.5e-7 - voxel_radius * 2), 2.5e-9, 1e-12))
-                != boost::none);
+    BOOST_CHECK(!world.new_particle(Particle(sp, Real3(2.5e-7, 2.5e-7, 4.5e-7), 2.5e-9, 1e-12)));
+    BOOST_CHECK(world.new_particle(Particle(sp, Real3(2.5e-7, 2.5e-7, 4.5e-7 - voxel_radius * 2), 2.5e-9, 1e-12)));
 
 #ifdef WITH_HDF5
     world.save("structure.h5");

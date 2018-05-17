@@ -86,8 +86,7 @@ BOOST_AUTO_TEST_CASE(SpatiocyteSimulator_test_step_with_single_particle)
     boost::shared_ptr<SpatiocyteWorld> world(
             new SpatiocyteWorld(edge_lengths, voxel_radius, rng));
 
-    BOOST_CHECK(world->new_voxel(sp, world->position2coordinate(Real3(1.0e-8, 1.0e-8, 1.0e-8)))
-                != boost::none);
+    BOOST_CHECK(world->new_voxel(sp, world->position2coordinate(Real3(1.0e-8, 1.0e-8, 1.0e-8))));
 
     SpatiocyteSimulator sim(model, world);
 
@@ -427,9 +426,9 @@ BOOST_AUTO_TEST_CASE(LattiecSimulator_test_scheduler)
         c1(world->position2coordinate(Real3(0.3e-6, 0.5e-6, 0.5e-6))),
         c2(world->position2coordinate(Real3(0.4e-6, 0.5e-6, 0.5e-6))),
         c3(world->position2coordinate(Real3(0.6e-6, 0.5e-6, 0.5e-6)));
-    BOOST_CHECK(world->new_voxel(sp1, c1) != boost::none);
-    BOOST_CHECK(world->new_voxel(sp2, c2) != boost::none);
-    BOOST_CHECK(world->new_voxel(sp3, c3) != boost::none);
+    BOOST_CHECK(world->new_voxel(sp1, c1));
+    BOOST_CHECK(world->new_voxel(sp2, c2));
+    BOOST_CHECK(world->new_voxel(sp3, c3));
 
     SpatiocyteSimulator sim(model, world);
 
@@ -544,10 +543,8 @@ BOOST_AUTO_TEST_CASE(SpatiocyteSimulator_test_shape)
     boost::shared_ptr<const Sphere> sphere(new Sphere(Real3(L/2, L/2, L/2), L*1/3));
 
     BOOST_CHECK(world->add_structure(membrane, sphere) > 0);
-    BOOST_CHECK(world->new_particle(Particle(sp, Real3(L/2, L/2, L*5/6), 2.5e-9, 1e-12))
-                == boost::none);  // This should fail
-    BOOST_CHECK(world->new_particle(Particle(sp, Real3(L/2, L/2, L*5/6 - voxel_radius), 2.5e-9, 1e-12))
-                != boost::none);
+    BOOST_CHECK(!world->new_particle(Particle(sp, Real3(L/2, L/2, L*5/6), 2.5e-9, 1e-12)));  // This should fail
+    BOOST_CHECK(world->new_particle(Particle(sp, Real3(L/2, L/2, L*5/6 - voxel_radius), 2.5e-9, 1e-12)));
 
     sim.initialize();
 #ifdef WITH_HDF5
