@@ -79,7 +79,7 @@ BOOST_AUTO_TEST_CASE(OffLatticeSpace_test_voxelspacebase)
     BOOST_CHECK_EQUAL(space.list_voxels(species).at(0).first, pid);
     BOOST_CHECK_EQUAL(space.list_voxels_exact(species).at(0).first, pid);
 
-    BOOST_CHECK(space.find_voxel(pid) != boost::none);
+    BOOST_CHECK(space.find_voxel(pid));
 
     BOOST_CHECK_NO_THROW(space.find_voxel_pool(species));
     BOOST_CHECK(space.has_molecule_pool(species));
