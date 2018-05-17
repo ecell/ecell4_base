@@ -63,7 +63,7 @@ BOOST_AUTO_TEST_CASE(GetVoxel)
 
     {
         boost::optional<ParticleVoxel> voxel(space.find_voxel(id));
-        BOOST_ASSERT(voxel != boost::none);
+        BOOST_ASSERT(voxel);
         BOOST_CHECK_EQUAL(voxel->species, sp);
     }
 }
