@@ -254,7 +254,6 @@ void Polygon::assign(const std::vector<Triangle>& ts)
         {
             const VertexID vid = face.vertices[i];
             const Real3 v_pos        = face.triangle.vertex_at(i);
-            const Real  offset_angle = face.triangle.angle_at(i);
             const Real3 normal       = face.triangle.normal();
 
             // counter clock wise
@@ -263,7 +262,7 @@ void Polygon::assign(const std::vector<Triangle>& ts)
                     (-length(face.triangle.edge_at(i==0?2:i-1)));
 
                 EdgeID current_edge  = face.edges[i];
-                Real         current_angle = 0.0;
+                Real   current_angle = 0.0;
                 do
                 {
                     current_edge = opposite_of(next_of(next_of(current_edge)));
@@ -274,6 +273,9 @@ void Polygon::assign(const std::vector<Triangle>& ts)
                                               target_of(current_edge));
                     const std::size_t vidx2 = this->face_at(fid).index_of(
                                               target_of(next_of(current_edge)));
+                    assert(vidx0 < 3);
+                    assert(vidx1 < 3);
+                    assert(vidx2 < 3);
 
                     const Real next_angle = current_angle +
                         this->face_at(fid).triangle.angle_at(vidx0);
@@ -293,7 +295,7 @@ void Polygon::assign(const std::vector<Triangle>& ts)
 
                     current_angle = next_angle;
                 }
-                while(current_angle + offset_angle <= pi);
+                while(current_angle <= pi);
             }
 
             // clock wise
@@ -302,7 +304,7 @@ void Polygon::assign(const std::vector<Triangle>& ts)
                     length(face.triangle.edge_at(i));
 
                 EdgeID current_edge  = face.edges[i];
-                Real         current_angle = 0.0;
+                Real   current_angle = 0.0;
                 do
                 {
                     current_edge  = next_of(opposite_of(current_edge));
@@ -313,24 +315,29 @@ void Polygon::assign(const std::vector<Triangle>& ts)
                                               target_of(current_edge));
                     const std::size_t vidx2 = this->face_at(fid).index_of(
                                               target_of(next_of(current_edge)));
+                    assert(vidx0 < 3);
+                    assert(vidx1 < 3);
+                    assert(vidx2 < 3);
 
-                    const Real prev_angle = current_angle;
-                    current_angle += this->face_at(fid).triangle.angle_at(vidx0);
+                    const Real next_angle = current_angle +
+                        this->face_at(fid).triangle.angle_at(vidx0);
 
                     boost::array<Real3, 3> unfolded;
                     unfolded[vidx0] = v_pos;
                     unfolded[vidx1] = v_pos +
-                        rotate(-current_angle, normal, ref_edge) *
+                        rotate(-next_angle, normal, ref_edge) *
                         length_of(current_edge);
                     unfolded[vidx2] = v_pos +
-                        rotate(-prev_angle,    normal, ref_edge) *
+                        rotate(-current_angle, normal, ref_edge) *
                         length_of(next_of(next_of(current_edge)));
 
                     face.neighbors.push_back(fid);
                     face.neighbor_cw[i].push_back(
                             std::make_pair(fid, Triangle(unfolded)));
+
+                    current_angle = next_angle;
                 }
-                while(current_angle + offset_angle <= pi);
+                while(current_angle <= pi);
             }
         }
         std::sort(face.neighbors.begin(), face.neighbors.end());
@@ -405,6 +412,7 @@ Real Polygon::distance_sq(
     }
     if(solution != std::numeric_limits<Real>::infinity())
     {
+//         std::cerr << "path does not go through vertex.  dist_sq = " << solution << std::endl;
         return solution;
     }
 
@@ -435,6 +443,10 @@ Real Polygon::distance_sq(
         const Real   lsq2 = length_sq(pos2.first - vpos);
         // (x+y)^2 = x^2 + y^2 + 2xy = x^2 + y^2 + 2 * sqrt(x^2y^2)
         return lsq1 + lsq2 + 2 * std::sqrt(lsq1 * lsq2);
+
+//         const Real solution = lsq1 + lsq2 + 2 * std::sqrt(lsq1 * lsq2);
+//         std::cerr << "minimum path goes through vertex. dist_sq = " << solution << std::endl;
+//         return solution;
     }
     return std::numeric_limits<Real>::infinity();
 }
