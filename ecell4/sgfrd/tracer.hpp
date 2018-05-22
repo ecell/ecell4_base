@@ -42,82 +42,86 @@ class basic_tracer<char, std::char_traits<char> >
     }
     ~basic_tracer(){}
 
-    basic_tracer& indent()   throw() {indent_ += 1; return *this;}
-    basic_tracer& unindent() throw() {indent_ -= 1; return *this;}
+    void indent()   throw() {indent_ += 1; return;}
+    void unindent() throw() {indent_ -= 1; return;}
 
-    basic_tracer& write(const std::string& tr)
+    void write(const std::string& tr)
     {
-        std::ofstream ofs(fnames[current].c_str(),
+        {
+            std::ofstream ofs(fnames.at(current).c_str(),
                 std::ios_base::in | std::ios_base::out | std::ios_base::ate);
-        const std::string idt(indent_size_ * indent_, ' ');
-        ofs << idt << tr << std::endl;
+            const std::string idt(indent_size_ * indent_, ' ');
+            ofs << idt << tr << std::endl;
+            ofs.close();
+        }
 
-        ofs.seekp(0, std::ios::beg);
-        std::ofstream::streampos init = ofs.tellp();
-        ofs.seekp(0, std::ios::end);
-        std::ofstream::streampos last = ofs.tellp();
-        ofs.close();
+        std::ifstream ifs(fnames.at(current).c_str());
+        ifs.seekg(0, std::ios::beg);
+        std::ifstream::streampos init = ifs.tellg();
+        ifs.seekg(0, std::ios::end);
+        std::ifstream::streampos last = ifs.tellg();
+        ifs.close();
 
-        std::ofstream::streampos sz = last - init;
+        std::ifstream::streampos sz = last - init;
         if(sz > 50000000)
         {
             current = (current == 0) ? 1 : 0;
             // clear the next file
-            std::ofstream nxt(fnames[current].c_str(), std::ios_base::trunc);
+            std::ofstream nxt(fnames.at(current).c_str(), std::ios_base::trunc);
             nxt.close();
         }
-        return *this;
+        return;
     }
 
     template<typename formT, typename T1>
-    basic_tracer& write(const formT& tr, const T1& a1)
+    void write(const formT& tr, const T1& a1)
     {
-        return this->write((boost::format(tr) % a1).str());
+        this->write((boost::format(tr) % a1).str());
     }
     template<typename formT, typename T1, typename T2>
-    basic_tracer& write(const formT& tr, const T1& a1, const T2& a2)
+    void write(const formT& tr, const T1& a1, const T2& a2)
     {
-        return this->write((boost::format(tr) % a1 % a2).str());
+        this->write((boost::format(tr) % a1 % a2).str());
     }
     template<typename formT, typename T1, typename T2, typename T3>
-    basic_tracer& write(const formT& tr, const T1& a1, const T2& a2, const T3& a3)
+    void write(const formT& tr, const T1& a1, const T2& a2, const T3& a3)
     {
-        return this->write((boost::format(tr) % a1 % a2 % a3).str());
+        this->write((boost::format(tr) % a1 % a2 % a3).str());
     }
     template<typename formT, typename T1, typename T2, typename T3, typename T4>
-    basic_tracer& write(const formT& tr, const T1& a1, const T2& a2, const T3& a3, const T4& a4)
+    void write(const formT& tr, const T1& a1, const T2& a2, const T3& a3, const T4& a4)
     {
-        return this->write((boost::format(tr) % a1 % a2 % a3 % a4).str());
+        this->write((boost::format(tr) % a1 % a2 % a3 % a4).str());
     }
     template<typename formT, typename T1, typename T2, typename T3, typename T4, typename T5>
-    basic_tracer& write(const formT& tr, const T1& a1, const T2& a2, const T3& a3, const T4& a4, const T5& a5)
+    void write(const formT& tr, const T1& a1, const T2& a2, const T3& a3, const T4& a4, const T5& a5)
     {
-        return this->write((boost::format(tr) % a1 % a2 % a3 % a4 % a5).str());
+        this->write((boost::format(tr) % a1 % a2 % a3 % a4 % a5).str());
     }
     template<typename formT, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6>
-    basic_tracer& write(const formT& tr, const T1& a1, const T2& a2, const T3& a3, const T4& a4, const T5& a5, const T6& a6)
+    void write(const formT& tr, const T1& a1, const T2& a2, const T3& a3, const T4& a4, const T5& a5, const T6& a6)
     {
-        return this->write((boost::format(tr) % a1 % a2 % a3 % a4 % a5 % a6).str());
+        this->write((boost::format(tr) % a1 % a2 % a3 % a4 % a5 % a6).str());
     }
     template<typename formT, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7>
-    basic_tracer& write(const formT& tr, const T1& a1, const T2& a2, const T3& a3, const T4& a4, const T5& a5, const T6& a6, const T7& a7)
+    void write(const formT& tr, const T1& a1, const T2& a2, const T3& a3, const T4& a4, const T5& a5, const T6& a6, const T7& a7)
     {
-        return this->write((boost::format(tr) % a1 % a2 % a3 % a4 % a5 % a6 % a7).str());
+        this->write((boost::format(tr) % a1 % a2 % a3 % a4 % a5 % a6 % a7).str());
     }
     template<typename formT, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8>
-    basic_tracer& write(const formT& tr, const T1& a1, const T2& a2, const T3& a3, const T4& a4, const T5& a5, const T6& a6, const T7& a7, const T8& a8)
+    void write(const formT& tr, const T1& a1, const T2& a2, const T3& a3, const T4& a4, const T5& a5, const T6& a6, const T7& a7, const T8& a8)
     {
-        return this->write((boost::format(tr) % a1 % a2 % a3 % a4 % a5 % a6 % a7 % a8).str());
+        this->write((boost::format(tr) % a1 % a2 % a3 % a4 % a5 % a6 % a7 % a8).str());
     }
     template<typename formT, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8, typename T9>
-    basic_tracer& write(const formT& tr, const T1& a1, const T2& a2, const T3& a3, const T4& a4, const T5& a5, const T6& a6, const T7& a7, const T8& a8, const T9& a9)
+    void write(const formT& tr, const T1& a1, const T2& a2, const T3& a3, const T4& a4, const T5& a5, const T6& a6, const T7& a7, const T8& a8, const T9& a9)
     {
-        return this->write((boost::format(tr) % a1 % a2 % a3 % a4 % a5 % a6 % a7 % a8 % a9).str());
+        this->write((boost::format(tr) % a1 % a2 % a3 % a4 % a5 % a6 % a7 % a8 % a9).str());
     }
     template<typename formT, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8, typename T9, typename T10>
-    basic_tracer& write(const formT& tr, const T1& a1, const T2& a2, const T3& a3, const T4& a4, const T5& a5, const T6& a6, const T7& a7, const T8& a8, const T9& a9, const T10& a10)
+    void write(const formT& tr, const T1& a1, const T2& a2, const T3& a3, const T4& a4, const T5& a5, const T6& a6, const T7& a7, const T8& a8, const T9& a9, const T10& a10)
     {
-        return this->write((boost::format(tr) % a1 % a2 % a3 % a4 % a5 % a6 % a7 % a8 % a9 % a10).str());
+        this->write((boost::format(tr) % a1 % a2 % a3 % a4 % a5 % a6 % a7 % a8 % a9 % a10).str());
     }
 
   private:
