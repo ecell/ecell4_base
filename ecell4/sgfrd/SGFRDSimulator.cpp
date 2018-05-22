@@ -901,8 +901,8 @@ SGFRDSimulator::form_single_circular_event(
     typedef expected<DomainID, std::vector<std::pair<DomainID, Real> > >
             result_type;
     SGFRD_SCOPE(us, form_single_circular_event, tracer_);
-    SGFRD_TRACE(tracer_.write("forming single domain for particle r = %1%",
-                p.radius()));
+    SGFRD_TRACE(tracer_.write("forming single domain for particle %1% r = %2%",
+                pid, p.radius()));
 
     const Real min_circle_size = p.radius() * single_circular_shell_factor;
     const std::pair<Real3, FaceID> pos = std::make_pair(p.position(), fid);
@@ -1147,7 +1147,7 @@ bool SGFRDSimulator::diagnosis() const
                     if(dist < ccl.size() && ccl.domain_id() != _did)
                     {
                         result = false;
-                        std::cerr << "ERROR: shell " << shid << " and " << _shid
+                        std::cerr << "ERROR: circular shell " << shid << " and shell " << _shid
                                   << "overlaps\n";
                         std::cerr << "     : distance = " << dist - ccl.size()
                                   << "\n";
@@ -1171,7 +1171,7 @@ bool SGFRDSimulator::diagnosis() const
                     if(dist < con.size() && con.domain_id() != _did)
                     {
                         result = false;
-                        std::cerr << "ERROR: shell " << shid << " and " << _shid
+                        std::cerr << "ERROR: conical shell " << shid << " and shell " << _shid
                                   << "overlaps\n";
                         std::cerr << "     : distance = " << dist - con.size()
                                   << "\n";
