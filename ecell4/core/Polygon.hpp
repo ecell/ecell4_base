@@ -594,7 +594,7 @@ template<typename charT, typename traits>
 std::basic_ostream<charT, traits>&
 operator<<(std::basic_ostream<charT, traits>& os, const Polygon::FaceID& fid)
 {
-    os << "FID(" << fid << ")";
+    os << "FID(" << static_cast<std::size_t>(fid) << ")";
     return os;
 }
 
@@ -602,7 +602,7 @@ template<typename charT, typename traits>
 std::basic_ostream<charT, traits>&
 operator<<(std::basic_ostream<charT, traits>& os, const Polygon::EdgeID& eid)
 {
-    os << "EID(" << eid << ")";
+    os << "EID(" << static_cast<std::size_t>(eid) << ")";
     return os;
 }
 
@@ -610,7 +610,7 @@ template<typename charT, typename traits>
 std::basic_ostream<charT, traits>&
 operator<<(std::basic_ostream<charT, traits>& os, const Polygon::VertexID& vid)
 {
-    os << "VID(" << vid << ")";
+    os << "VID(" << static_cast<std::size_t>(vid) << ")";
     return os;
 }
 
