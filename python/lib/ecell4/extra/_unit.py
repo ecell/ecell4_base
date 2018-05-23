@@ -21,7 +21,15 @@ def wrapped_binary_operator(op1, op2):
         return op1(self, other)
     return wrapped
 
-def getUnitRegistry(length="meter", time="second", substance="item", other=()):
+def wrap_quantity(cls):
+    cls.__add__ = wrapped_binary_operator(cls.__add__, ExpBase.__radd__)
+    cls.__mul__ = wrapped_binary_operator(cls.__mul__, ExpBase.__rmul__)
+    cls.__div__ = wrapped_binary_operator(cls.__div__, ExpBase.__rdiv__)
+    cls.__truediv__ = wrapped_binary_operator(cls.__truediv__, ExpBase.__rtruediv__)
+    cls.__pow__ = wrapped_binary_operator(cls.__pow__, ExpBase.__rpow__)
+    return cls
+
+def getUnitRegistry(length="meter", time="second", substance="item", volume=None, other=()):
     ureg = pint.UnitRegistry()
     ureg.define('item = mole / (avogadro_number * 1 mole)')
 
@@ -33,34 +41,23 @@ def getUnitRegistry(length="meter", time="second", substance="item", other=()):
         ureg.define('[concentration] = [substance] / [volume]')
         ureg.define('molar = mol / (1e-3 * m ** 3) = M')
 
-    conf = textwrap.dedent("""\
-        @system local using international
-        {}
-        {}
-        {}""".format(length, time, substance)).split('\n')
-    conf.extend(other)
-    s = ureg.System.from_lines(conf, ureg.get_base_units)
+    base_units = [unit for unit in (length, time, substance, volume) if unit is not None]
+    base_units.extend(other)
+    s = ureg.System.from_lines(
+        ["@system local using international"] + base_units,
+        ureg.get_base_units)
     ureg.default_system = 'local'
 
-    ureg.Quantity.__add__ = wrapped_binary_operator(ureg.Quantity.__add__, ExpBase.__radd__)
-    ureg.Quantity.__mul__ = wrapped_binary_operator(ureg.Quantity.__mul__, ExpBase.__rmul__)
-    ureg.Quantity.__div__ = wrapped_binary_operator(ureg.Quantity.__div__, ExpBase.__rdiv__)
-    ureg.Quantity.__truediv__ = wrapped_binary_operator(ureg.Quantity.__truediv__, ExpBase.__rtruediv__)
-    ureg.Quantity.__pow__ = wrapped_binary_operator(ureg.Quantity.__pow__, ExpBase.__rpow__)
-
+    wrap_quantity(ureg.Quantity)
     return ureg
-
-# def Quantity(value, unit):
-#     q = value * ureg.parse_units(unit)
-#     _log.debug("{} => {}".format(q, q.to_base_units()))  #XXX: Just for debugging
-#     return q.to_base_units().magnitude
-# 
-# Q_ = Quantity
 
 
 if __name__ == '__main__':
-    ureg = getUnitRegistry(length='micrometer')
+    ureg = getUnitRegistry(length='micrometer', volume='liter')
     Q_ = ureg.Quantity
     q = Q_(1.0, "ml")
+    print(q)
+    print(q.to_base_units())
+    q = Q_(1.0, "M")
     print(q)
     print(q.to_base_units())
