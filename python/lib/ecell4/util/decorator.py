@@ -8,6 +8,7 @@ import math
 
 from . import parseobj
 from .decorator_base import Callback, JustParseCallback, ParseDecorator
+from ..extra import unit
 
 import ecell4.core
 
@@ -73,6 +74,9 @@ def generate_Species(obj):
         raise RuntimeError('invalid expression; "%s" given' % str(obj))
 
 def generate_ReactionRule(lhs, rhs, k=None):
+    if unit.HAS_PINT and isinstance(k, unit._Quantity):
+        k = k.to_base_units().magnitude
+
     if k is None:
         raise RuntimeError('no parameter is specified')
 
@@ -133,9 +137,14 @@ def traverse_ParseObj(obj, keys):
                 return "{{{0:d}}}".format(keys.index(serial))
             keys.append(serial)
             return "{{{0:d}}}".format(len(keys) - 1)
+
     elif isinstance(obj, parseobj.ExpBase):
         for i in range(len(obj._elems)):
             obj._elems[i] = traverse_ParseObj(obj._elems[i], keys)
+
+    elif unit.HAS_PINT and isinstance(obj, unit._Quantity):
+        return obj.to_base_units().magnitude
+
     return obj
 
 def generate_ratelaw(obj, rr, implicit=False):
@@ -285,7 +294,10 @@ class SpeciesAttributesCallback(Callback):
                     #         'attributes must be given as a pair of strings;'
                     #         + ' "%s" and "%s" given'
                     #         % (str(key), str(value)))
-                    sp.set_attribute(key, value)
+                    if unit.HAS_PINT and isinstance(value, unit._Quantity):
+                        sp.set_attribute(key, value.to_base_units().magnitude)
+                    else:
+                        sp.set_attribute(key, value)
             else:
                 if not isinstance(rhs, (tuple, list)):
                     if len(self.keys) == 1:
@@ -304,7 +316,10 @@ class SpeciesAttributesCallback(Callback):
                         #     raise RuntimeError(
                         #         'paramter must be given as a string; "%s" given'
                         #         % str(value))
-                        sp.set_attribute(key, value)
+                        if unit.HAS_PINT and isinstance(value, unit._Quantity):
+                            sp.set_attribute(key, value.to_base_units().magnitude)
+                        else:
+                            sp.set_attribute(key, value)
 
             self.bitwise_operations.append(sp)
 

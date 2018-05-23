@@ -374,7 +374,7 @@ class ParseObj(ExpBase):
     # @log_call #XXX: donot wrap
     def __getattr__(self, key):
         if key[0] == "_" and len(key) > 1 and not key[1: ].isdigit():
-            raise RuntimeError(
+            raise AttributeError(
                 "'%s' object has no attribute '%s'"
                     % (self.__class__.__name__, key))
 
