@@ -41,6 +41,11 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_constructor)
     ;
 }
 
+BOOST_AUTO_TEST_CASE(CheckVacantSize)
+{
+    BOOST_CHECK_EQUAL(space.actual_size(), space.vacant()->size());
+}
+
 BOOST_AUTO_TEST_CASE(GetVoxel)
 {
     const Real3 position(1.25e-8, 1.25e-8, 1.25e-8);

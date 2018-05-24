@@ -57,6 +57,11 @@ public:
         cell_sizes_[1] = ceilint(row_size_, matrix_sizes_[1]);
         cell_sizes_[2] = ceilint(layer_size_, matrix_sizes_[2]);
 
+        for (coordinate_type coord(0); coord < actual_size(); ++coord)
+        {
+            vacant_->add_voxel(coordinate_id_pair_type(ParticleID(), coord));
+        }
+
         std::stringstream ss;
         ss << voxel_radius_;
         border_ = boost::shared_ptr<VoxelPool>(

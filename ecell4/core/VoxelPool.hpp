@@ -154,15 +154,9 @@ public:
 
 public:
 
-    virtual void add_voxel(const coordinate_id_pair_type& info)
-    {
-        if (info.pid != ParticleID())
-        {
-            throw NotSupported("No ParticleID is allowed.");
-        }
+    virtual const Integer size() const = 0;
 
-        ; // do nothing
-    }
+    virtual void add_voxel(const coordinate_id_pair_type& info) = 0;
 
     virtual void replace_voxel(
         const coordinate_type& from_coord, const coordinate_type& to_coord,
@@ -171,15 +165,9 @@ public:
         ; // do nothing
     }
 
-    virtual coordinate_id_pair_type pop(const coordinate_type& coord)
-    {
-        return coordinate_id_pair_type(ParticleID(), coord);
-    }
+    virtual coordinate_id_pair_type pop(const coordinate_type& coord) = 0;
 
-    virtual bool remove_voxel_if_exists(const coordinate_type& coord)
-    {
-        return true;
-    }
+    virtual bool remove_voxel_if_exists(const coordinate_type& coord) = 0;
 
     virtual const ParticleID get_particle_id(const coordinate_type& coord) const
     {

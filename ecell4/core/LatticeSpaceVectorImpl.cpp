@@ -42,15 +42,18 @@ void LatticeSpaceVectorImpl::initialize_voxels(const bool is_periodic)
             if (is_periodic)
             {
                 voxels_.push_back(periodic_);
+                periodic_->add_voxel(coordinate_id_pair_type(ParticleID(), coord));
             }
             else
             {
                 voxels_.push_back(border_);
+                border_->add_voxel(coordinate_id_pair_type(ParticleID(), coord));
             }
         }
         else
         {
             voxels_.push_back(vacant_);
+            vacant_->add_voxel(coordinate_id_pair_type(ParticleID(), coord));
         }
     }
 }

@@ -50,6 +50,11 @@ BOOST_FIXTURE_TEST_SUITE(suite, Fixture)
 
 BOOST_AUTO_TEST_CASE(OffLatticeSpace_test_constructor) {}
 
+BOOST_AUTO_TEST_CASE(CheckVacantSize)
+{
+    BOOST_CHECK_EQUAL(space.actual_size(), space.vacant()->size());
+}
+
 BOOST_AUTO_TEST_CASE(OffLatticeSpace_test_molecules)
 {
     const ParticleID pid(sidgen());
