@@ -108,14 +108,6 @@ public:
 
     const Particle particle_at(const coordinate_type& coord) const;
 
-    bool make_structure_type(const Species& sp,
-                             Shape::dimension_kind dimension,
-                             const std::string loc);
-
-    bool make_interface_type(const Species& sp,
-                             Shape::dimension_kind dimension,
-                             const std::string loc);
-
 protected:
 
     coordinate_type apply_boundary_(const coordinate_type& coord) const

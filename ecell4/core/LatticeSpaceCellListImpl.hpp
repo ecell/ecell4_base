@@ -402,9 +402,6 @@ protected:
     std::pair<boost::shared_ptr<const VoxelPool>, coordinate_type>
         __get_coordinate(const ParticleID& pid) const;
 
-    bool make_structure_type(
-        const Species& sp, Shape::dimension_kind dimension, const std::string loc);
-
 protected:
 
     bool is_periodic_;

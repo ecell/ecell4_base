@@ -210,64 +210,6 @@ boost::shared_ptr<VoxelPool> LatticeSpaceCellListImpl::get_voxel_pool(ParticleVo
     return (*i).second;  // upcast
 }
 
-bool LatticeSpaceCellListImpl::make_structure_type(
-    const Species& sp, Shape::dimension_kind dimension, const std::string loc)
-{
-    voxel_pool_map_type::iterator itr(voxel_pools_.find(sp));
-    if (itr != voxel_pools_.end())
-    {
-        return false;
-    }
-    else if (molecule_pools_.find(sp) != molecule_pools_.end())
-    {
-        throw IllegalState(
-            "The given species is already assigned to the MoleculePool.");
-    }
-
-    boost::shared_ptr<VoxelPool> location;
-    if (loc == "")
-    {
-        location = vacant_;
-    }
-    else
-    {
-        const Species locsp(loc);
-        try
-        {
-            location = find_voxel_pool(locsp);
-        }
-        catch (const NotFound& err)
-        {
-            // XXX: A VoxelPool for the structure (location) must be allocated
-            // XXX: before the allocation of a Species on the structure.
-            // XXX: The VoxelPool cannot be automatically allocated at the time
-            // XXX: because its MoleculeInfo is unknown.
-            // XXX: LatticeSpaceVectorImpl::load will raise a problem about this issue.
-            // XXX: In this implementation, the VoxelPool for a structure is
-            // XXX: created with default arguments.
-            boost::shared_ptr<MoleculePool> locmt(new MolecularType(locsp, vacant_, voxel_radius_, 0));
-            std::pair<molecule_pool_map_type::iterator, bool>
-                locval(molecule_pools_.insert(
-                    molecule_pool_map_type::value_type(locsp, locmt)));
-            if (!locval.second)
-            {
-                throw AlreadyExists(
-                    "never reach here. make_structure_type seems wrong.");
-            }
-            location = (*locval.first).second;
-        }
-    }
-
-    boost::shared_ptr<VoxelPool> vp(new StructureType(sp, location, voxel_radius_, dimension));
-    std::pair<voxel_pool_map_type::iterator, bool>
-        retval(voxel_pools_.insert(voxel_pool_map_type::value_type(sp, vp)));
-    if (!retval.second)
-    {
-        throw AlreadyExists("never reach here.");
-    }
-    return retval.second;
-}
-
 void LatticeSpaceCellListImpl::add_structure(const Species& sp,
     const boost::shared_ptr<const Shape>& s, const std::string loc)
 {

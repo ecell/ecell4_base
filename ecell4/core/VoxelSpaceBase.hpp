@@ -346,17 +346,11 @@ public:
     bool
     make_molecular_type(const Species& sp, Real radius, Real D, const std::string loc);
 
-    virtual bool
-    make_structure_type(const Species& sp, Shape::dimension_kind dimension, const std::string loc)
-    {
-        throw NotImplemented("make_structure_type is not implemented.");
-    }
+    bool
+    make_structure_type(const Species& sp, Shape::dimension_kind dimension, const std::string loc);
 
-    virtual bool
-    make_interface_type(const Species& sp, Shape::dimension_kind dimension, const std::string loc)
-    {
-        throw NotImplemented("make_interface_type is not implemented.");
-    }
+    bool
+    make_interface_type(const Species& sp, Shape::dimension_kind dimension, const std::string loc);
 
 protected:
 
@@ -406,7 +400,8 @@ protected:
     Real voxel_radius_;
 
     boost::shared_ptr<VoxelPool> vacant_;
-    voxel_pool_map_type voxel_pools_;
+
+    voxel_pool_map_type    voxel_pools_;
     molecule_pool_map_type molecule_pools_;
 
 };
