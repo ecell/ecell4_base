@@ -171,14 +171,6 @@ def run_simulation(
                 raise ValueError("Cannot convert [t] from '{}' ({}) to '[time]'".format(t.dimensionality, t.u))
             t = t.to_base_units().magnitude
 
-        for key, value in y0.items():
-            if isinstance(value, unit._Quantity):
-                if unit.STRICT and not unit.check_dimensionality(value, '[substance]'):
-                    raise ValueError(
-                        "Cannot convert a quantity for [{}] from '{}' ({}) to '[substance]'".format(
-                            key, value.dimensionality, value.u))
-                y0[key] = value.to_base_units().magnitude
-
         if isinstance(volume, unit._Quantity):
             if unit.STRICT:
                 if isinstance(volume.magnitude, ecell4.core.Real3) and not unit.check_dimensionality(volume, '[length]'):
@@ -191,7 +183,7 @@ def run_simulation(
 
         if not isinstance(solver, str) and isinstance(solver, collections.Iterable):
             solver = [
-                value.to_base_untis().magnitude if isinstance(value, unit._Quantity) else value
+                value.to_base_units().magnitude if isinstance(value, unit._Quantity) else value
                 for value in solver]
 
     if factory is not None:
@@ -218,6 +210,21 @@ def run_simulation(
         edge_lengths = ecell4.Real3(L, L, L)
 
     w = f.create_world(edge_lengths)
+
+    if unit.HAS_PINT:
+        for key, value in y0.items():
+            if isinstance(value, unit._Quantity):
+                if not unit.STRICT:
+                    y0[key] = value.to_base_units().magnitude
+                elif unit.check_dimensionality(value, '[substance]'):
+                    y0[key] = value.to_base_units().magnitude
+                elif unit.check_dimensionality(value, '[concentration]'):
+                    volume = w.volume() if not isinstance(w, ecell4.spatiocyte.SpatiocyteWorld) else w.actual_volume()
+                    y0[key] = value.to_base_units().magnitude * volume
+                else:
+                    raise ValueError(
+                        "Cannot convert a quantity for [{}] from '{}' ({}) to '[substance]'".format(
+                            key, value.dimensionality, value.u))
 
     for (name, shape) in structures.items():
         w.add_structure(ecell4.Species(name), shape)

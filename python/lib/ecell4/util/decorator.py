@@ -126,7 +126,7 @@ def parse_dimensionality(obj, ureg):
     operator_map = {
         parseobj.PosExp: operator.pos,
         parseobj.NegExp: operator.neg,
-        parseobj.SubExp: lambda *args: reduce(operator.sub, args[1: ], args[0]), # operator.sub,
+        parseobj.SubExp: lambda *args: operator.sub, # reduce(operator.sub, args[1: ], args[0]),
         parseobj.DivExp: operator.truediv, # lambda *args: reduce(operator.truediv, args[1: ], args[0]),
         parseobj.PowExp: operator.pow,
         parseobj.AddExp: lambda *args: reduce(operator.add, args[1: ], args[0]), # operator.add,
