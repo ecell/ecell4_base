@@ -355,7 +355,6 @@ public:
 protected:
 
     virtual boost::shared_ptr<VoxelPool> get_voxel_pool(ParticleVoxel v) = 0;
-    virtual Integer count_voxels(const boost::shared_ptr<VoxelPool>& vp) const = 0;
     void push_voxels(std::vector<std::pair<ParticleID, ParticleVoxel> >& voxels,
                      const boost::shared_ptr<MoleculePool>& voxel_pool,
                      const Species& species) const;

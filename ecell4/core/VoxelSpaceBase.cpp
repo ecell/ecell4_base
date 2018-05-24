@@ -28,8 +28,7 @@ Integer VoxelSpaceBase::num_molecules(const Species& sp) const
         const Integer cnt(sexp.count((*itr).first));
         if (cnt > 0)
         {
-            const boost::shared_ptr<VoxelPool>& vp((*itr).second);
-            count += count_voxels(vp) * cnt;
+            count += itr->second->size() * cnt;
         }
     }
 
@@ -126,7 +125,7 @@ Integer VoxelSpaceBase::num_voxels_exact(const Species& sp) const
         voxel_pool_map_type::const_iterator itr(voxel_pools_.find(sp));
         if (itr != voxel_pools_.end())
         {
-            return count_voxels((*itr).second);
+            return itr->second->size();
         }
     }
 
@@ -135,7 +134,7 @@ Integer VoxelSpaceBase::num_voxels_exact(const Species& sp) const
         if (itr != molecule_pools_.end())
         {
             const boost::shared_ptr<MoleculePool>& vp((*itr).second);
-            return vp->size();  // upcast
+            return itr->second->size();
         }
     }
 
@@ -152,8 +151,7 @@ Integer VoxelSpaceBase::num_voxels(const Species& sp) const
     {
         if (sexp.match((*itr).first))
         {
-            const boost::shared_ptr<VoxelPool>& vp((*itr).second);
-            count += count_voxels(vp);
+            count += itr->second->size();
         }
     }
 
@@ -176,8 +174,7 @@ Integer VoxelSpaceBase::num_voxels() const
     for (voxel_pool_map_type::const_iterator itr(voxel_pools_.begin());
          itr != voxel_pools_.end(); ++itr)
     {
-        const boost::shared_ptr<VoxelPool>& vp((*itr).second);
-        count += count_voxels(vp);
+        count += itr->second->size();
     }
 
     for (molecule_pool_map_type::const_iterator itr(molecule_pools_.begin());

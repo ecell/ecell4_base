@@ -199,21 +199,6 @@ public:
     /**
      */
 
-    Integer count_voxels(
-        const boost::shared_ptr<VoxelPool>& vp) const
-    {
-        Integer count(0);
-        utils::pair_first_element_unary_predicator<boost::shared_ptr<VoxelPool>, coordinate_type> pred(vp);
-
-        for (matrix_type::const_iterator i(matrix_.begin());
-            i != matrix_.end(); ++i)
-        {
-            count += static_cast<Integer>(
-                std::count_if((*i).begin(), (*i).end(), pred));
-        }
-        return count;
-    }
-
     // /**
     //  * Change the Species at v.coordinate() to v.species.
     //  * The ParticleID must be kept after this update.

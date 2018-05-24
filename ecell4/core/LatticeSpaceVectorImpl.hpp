@@ -130,8 +130,6 @@ protected:
 
     coordinate_type get_coord(const ParticleID& pid) const;
 
-    Integer count_voxels(const boost::shared_ptr<VoxelPool>& vp) const;
-
 protected:
 
     bool is_periodic_;

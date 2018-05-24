@@ -606,10 +606,4 @@ LatticeSpaceVectorImpl::add_voxels(
     return true;
 }
 
-Integer LatticeSpaceVectorImpl::count_voxels(const boost::shared_ptr<VoxelPool>& vp) const
-{
-    return static_cast<Integer>(
-        std::count(voxels_.begin(), voxels_.end(), vp));
-}
-
 } // ecell4
