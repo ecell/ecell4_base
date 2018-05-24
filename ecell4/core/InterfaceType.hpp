@@ -1,29 +1,25 @@
 #ifndef ECELL4_INTERFACE_TYPE_HPP
 #define ECELL4_INTERFACE_TYPE_HPP
 
-#include "VoxelPool.hpp"
+#include "StructureType.hpp"
 
 
 namespace ecell4
 {
 
 class InterfaceType
-    : public VoxelPool
+    : public StructureType
 {
-public:
+private:
 
-    typedef VoxelPool base_type;
-    typedef base_type::coordinate_id_pair_type coordinate_id_pair_type;
-    typedef base_type::coordinate_type coordinate_type;
-    typedef base_type::voxel_type_type voxel_type_type;
+    typedef StructureType base_type;
 
 public:
 
     InterfaceType(
         const Species& sp, boost::weak_ptr<VoxelPool> location,
         const Real& radius = 0, const Shape::dimension_kind& dimension=Shape::UNDEF)
-        : base_type(sp, location, radius, 0),
-        dimension_(std::min(dimension, location.lock()->get_dimension()))
+        : base_type(sp, location, radius, dimension)
     {
         ;
     }
@@ -38,14 +34,6 @@ public:
         return INTERFACE;
     }
 
-    const Shape::dimension_kind get_dimension() const
-    {
-        return dimension_;
-    }
-
-private:
-
-    const Shape::dimension_kind dimension_;
 };
 
 } // ecell4
