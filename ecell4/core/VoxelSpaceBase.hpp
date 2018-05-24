@@ -343,6 +343,9 @@ public:
     virtual Integer3 shape() const = 0;
     virtual Integer actual_size() const = 0;
 
+    bool
+    make_molecular_type(const Species& sp, Real radius, Real D, const std::string loc);
+
     virtual bool
     make_structure_type(const Species& sp, Shape::dimension_kind dimension, const std::string loc)
     {
@@ -362,6 +365,40 @@ protected:
     void push_voxels(std::vector<std::pair<ParticleID, ParticleVoxel> >& voxels,
                      const boost::shared_ptr<MoleculePool>& voxel_pool,
                      const Species& species) const;
+
+    inline boost::weak_ptr<VoxelPool>
+    get_location(const std::string& location)
+    {
+        if (location == "")
+            return vacant_;
+
+        const Species species(location);
+
+        try
+        {
+            return find_voxel_pool(species);
+        }
+        catch (const NotFound& err)
+        {
+            // XXX: A VoxelPool for the structure (location) must be allocated
+            // XXX: before the allocation of a Species on the structure.
+            // XXX: The VoxelPool cannot be automatically allocated at the time
+            // XXX: because its MoleculeInfo is unknown.
+            // XXX: LatticeSpaceVectorImpl::load will raise a problem about this issue.
+            // XXX: In this implementation, the VoxelPool for a structure is
+            // XXX: created with default arguments.
+            boost::shared_ptr<MoleculePool>
+                locmt(new MolecularType(species, vacant_, voxel_radius_, 0));
+            std::pair<molecule_pool_map_type::iterator, bool>
+                locval(molecule_pools_.insert(
+                    molecule_pool_map_type::value_type(species, locmt)));
+            if (!locval.second)
+            {
+                throw AlreadyExists("never reach here. find_voxel_pool seems wrong.");
+            }
+            return locval.first->second;
+        }
+    }
 
 protected:
 

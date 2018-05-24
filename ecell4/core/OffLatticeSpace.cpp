@@ -82,7 +82,7 @@ boost::shared_ptr<VoxelPool> OffLatticeSpace::get_voxel_pool(ParticleVoxel voxel
 
     // Create a new molecular pool
 
-    const bool suc = make_molecular_pool(sp, voxel.radius, voxel.D, voxel.loc);
+    const bool suc = make_molecular_type(sp, voxel.radius, voxel.D, voxel.loc);
     if (!suc)
     {
         throw IllegalState("never reach here");
@@ -117,67 +117,6 @@ OffLatticeSpace::get_coord(const ParticleID& pid) const
     }
     // throw NotFound("A corresponding particle is not found");
     return boost::none;
-}
-
-bool OffLatticeSpace::make_molecular_pool(
-        const Species& sp, Real radius, Real D, const std::string loc)
-{
-    molecule_pool_map_type::iterator itr(molecule_pools_.find(sp));
-    if (itr != molecule_pools_.end())
-    {
-        return false;
-    }
-    else if (voxel_pools_.find(sp) != voxel_pools_.end())
-    {
-        throw IllegalState(
-            "The given species is already assigned to the VoxelPool with no voxels.");
-    }
-
-    boost::shared_ptr<VoxelPool> location;
-    if (loc == "")
-    {
-        location = vacant_;
-    }
-    else
-    {
-        const Species locsp(loc);
-        try
-        {
-            location = find_voxel_pool(locsp);
-        }
-        catch (const NotFound& err)
-        {
-            // XXX: A VoxelPool for the structure (location) must be allocated
-            // XXX: before the allocation of a Species on the structure.
-            // XXX: The VoxelPool cannot be automatically allocated at the time
-            // XXX: because its MoleculeInfo is unknown.
-            // XXX: LatticeSpaceVectorImpl::load will raise a problem about this issue.
-            // XXX: In this implementation, the VoxelPool for a structure is
-            // XXX: created with default arguments.
-            boost::shared_ptr<MoleculePool>
-                locmt(new MolecularType(locsp, vacant_, voxel_radius_, 0));
-            std::pair<molecule_pool_map_type::iterator, bool>
-                locval(molecule_pools_.insert(
-                    molecule_pool_map_type::value_type(locsp, locmt)));
-            if (!locval.second)
-            {
-                throw AlreadyExists(
-                    "never reach here. find_voxel_pool seems wrong.");
-            }
-            location = (*locval.first).second;
-        }
-    }
-
-    boost::shared_ptr<MoleculePool>
-        vp(new MolecularType(sp, location, radius, D));
-    std::pair<molecule_pool_map_type::iterator, bool>
-        retval(molecule_pools_.insert(
-            molecule_pool_map_type::value_type(sp, vp)));
-    if (!retval.second)
-    {
-        throw AlreadyExists("never reach here.");
-    }
-    return retval.second;
 }
 
 

@@ -116,8 +116,6 @@ public:
                              Shape::dimension_kind dimension,
                              const std::string loc);
 
-    bool make_molecular_type(const Species& sp, Real radius, Real D, const std::string loc);
-
 protected:
 
     coordinate_type apply_boundary_(const coordinate_type& coord) const

@@ -140,10 +140,6 @@ protected:
     void reset(const position_container& positions,
                const coordinate_pair_list_type& adjoining_pairs);
     boost::optional<coordinate_type> get_coord(const ParticleID& pid) const;
-    bool make_molecular_pool(const Species& sp,
-                             Real radius,
-                             Real D,
-                             const std::string loc);
 
 protected:
 

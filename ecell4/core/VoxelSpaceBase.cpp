@@ -310,4 +310,30 @@ boost::shared_ptr<const MoleculePool> VoxelSpaceBase::find_molecule_pool(const S
     throw NotFound("MoleculePool not found.");
 }
 
+bool VoxelSpaceBase::make_molecular_type(
+        const Species& sp, Real radius, Real D, const std::string loc)
+{
+    molecule_pool_map_type::iterator itr(molecule_pools_.find(sp));
+    if (itr != molecule_pools_.end())
+    {
+        return false;
+    }
+    else if (voxel_pools_.find(sp) != voxel_pools_.end())
+    {
+        throw IllegalState(
+            "The given species is already assigned to the VoxelPool with no voxels.");
+    }
+
+    boost::shared_ptr<MoleculePool> vp(new MolecularType(sp, get_location(loc), radius, D));
+
+    std::pair<molecule_pool_map_type::iterator, bool>
+        retval(molecule_pools_.insert(molecule_pool_map_type::value_type(sp, vp)));
+
+    if (!retval.second)
+    {
+        throw AlreadyExists("never reach here.");
+    }
+    return retval.second;
+}
+
 } // ecell4
