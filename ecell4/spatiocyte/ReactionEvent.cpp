@@ -24,20 +24,29 @@ void ZerothOrderReactionEvent::fire_()
         const Species& sp(*i);
         const SpatiocyteWorld::molecule_info_type info(world_->get_molecule_info(sp));
 
-        while (true) //TODO: Avoid an inifinite loop
+        if (boost::shared_ptr<VoxelPool> location = world_->find_voxel_pool(Species(info.loc)))
         {
-            const SpatiocyteWorld::coordinate_type
-                coord(world_->rng()->uniform_int(0, world_->size() - 1));
-
-            if (world_->get_voxel_pool_at(coord)->species().serial() != info.loc)
+            if (location->size() == 0)
             {
-                continue;
+                time_ =+ draw_dt();
+                return;
             }
 
-            if (boost::optional<ParticleID> pid = world_->new_voxel(sp, coord))
+            while (true)
             {
-                rinfo.add_product(ReactionInfo::Item(*pid, sp, coord));
-                break;
+                const SpatiocyteWorld::coordinate_type
+                    coord(world_->rng()->uniform_int(0, world_->size() - 1));
+
+                if (world_->get_voxel_pool_at(coord) != location)
+                {
+                    continue;
+                }
+
+                if (boost::optional<ParticleID> pid = world_->new_voxel(sp, coord))
+                {
+                    rinfo.add_product(ReactionInfo::Item(*pid, sp, coord));
+                    break;
+                }
             }
         }
     }
