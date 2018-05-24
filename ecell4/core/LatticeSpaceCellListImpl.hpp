@@ -2,7 +2,7 @@
 #define ECELL4_LATTICE_SPACE_CELL_LIST_IMPL_HPP
 
 #include "Context.hpp"
-#include "MolecularType.hpp"
+#include "MoleculePool.hpp"
 #include "VacantType.hpp"
 // #include <cmath>
 #include <sstream>
@@ -60,9 +60,9 @@ public:
         std::stringstream ss;
         ss << voxel_radius_;
         border_ = boost::shared_ptr<VoxelPool>(
-                new MolecularType(Species("Border", ss.str(), "0"), vacant_));
+                new MoleculePool(Species("Border", ss.str(), "0"), vacant_));
         periodic_ = boost::shared_ptr<VoxelPool>(
-                new MolecularType(Species("Periodic", ss.str(), "0"), vacant_));
+                new MoleculePool(Species("Periodic", ss.str(), "0"), vacant_));
     }
 
     virtual ~LatticeSpaceCellListImpl() {}

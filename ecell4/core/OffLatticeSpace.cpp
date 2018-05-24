@@ -1,7 +1,7 @@
 #include <algorithm>
 #include "Context.hpp"
 #include "VacantType.hpp"
-#include "MolecularType.hpp"
+#include "MoleculePool.hpp"
 #include "OffLatticeSpace.hpp"
 
 namespace ecell4 {

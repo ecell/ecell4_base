@@ -325,7 +325,7 @@ bool VoxelSpaceBase::make_molecular_type(
             "The given species is already assigned to the VoxelPool with no voxels.");
     }
 
-    boost::shared_ptr<MoleculePool> vp(new MolecularType(sp, get_location(loc), radius, D));
+    boost::shared_ptr<MoleculePool> vp(new MoleculePool(sp, get_location(loc), radius, D));
 
     std::pair<molecule_pool_map_type::iterator, bool>
         retval(molecule_pools_.insert(molecule_pool_map_type::value_type(sp, vp)));

@@ -9,7 +9,7 @@
 
 #include <boost/test/floating_point_comparison.hpp>
 
-#include <ecell4/core/MolecularType.hpp>
+#include <ecell4/core/MoleculePool.hpp>
 #include <ecell4/core/VacantType.hpp>
 #include <ecell4/core/LatticeSpaceVectorImpl.hpp>
 #include <ecell4/core/SerialIDGenerator.hpp>
@@ -633,8 +633,8 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_save_and_load)
         BOOST_CHECK_EQUAL(vp1->D(), vp2->D());
         BOOST_CHECK_EQUAL(vp1->get_dimension(), vp2->get_dimension());
 
-        const MolecularType* mtb1(dynamic_cast<const MolecularType*>(vp1.get()));
-        const MolecularType* mtb2(dynamic_cast<const MolecularType*>(vp2.get()));
+        const MoleculePool* mtb1(dynamic_cast<const MoleculePool*>(vp1.get()));
+        const MoleculePool* mtb2(dynamic_cast<const MoleculePool*>(vp2.get()));
         BOOST_ASSERT((mtb1 && mtb2) || (!mtb1 && !mtb2));
 
         if (!mtb1 || !mtb2)

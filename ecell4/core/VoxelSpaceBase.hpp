@@ -382,7 +382,7 @@ protected:
             // XXX: In this implementation, the VoxelPool for a structure is
             // XXX: created with default arguments.
             boost::shared_ptr<MoleculePool>
-                locmt(new MolecularType(species, vacant_, voxel_radius_, 0));
+                locmt(new MoleculePool(species, vacant_, voxel_radius_, 0));
             std::pair<molecule_pool_map_type::iterator, bool>
                 locval(molecule_pools_.insert(
                     molecule_pool_map_type::value_type(species, locmt)));

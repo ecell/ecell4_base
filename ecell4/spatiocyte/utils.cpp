@@ -94,7 +94,7 @@ const Real calculate_alpha(const ReactionRule& rr, const boost::shared_ptr<Spati
                     ;
                 }
             }
-            mt[i] = boost::shared_ptr<VoxelPool>(new MolecularType(species[i], location, info[i].radius, info[i].D));
+            mt[i] = boost::shared_ptr<VoxelPool>(new MoleculePool(species[i], location, info[i].radius, info[i].D));
         }
     }
     const Real factor(calculate_dimensional_factor(mt[0], mt[1], boost::const_pointer_cast<const SpatiocyteWorld>(world)));
