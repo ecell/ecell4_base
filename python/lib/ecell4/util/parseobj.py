@@ -513,8 +513,8 @@ class DivExp(ExpBase):
     def __append(self, obj):
         if isinstance(obj, AnyCallable):
             self._elems.append(obj._as_ParseObj())
-        elif len(self._elems) > 0 and isinstance(obj, DivExp):
-            self._elems.extend(obj._elements())
+        # elif len(self._elems) > 0 and isinstance(obj, DivExp):
+        #     self._elems.extend(obj._elements())
         else:
             self._elems.append(obj)
 
