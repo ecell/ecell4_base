@@ -6,17 +6,18 @@ from ..util.parseobj import AnyCallable, ExpBase
 
 import pint
 from pint.quantity import _Quantity
+from pint.unit import _Unit
 from pint.errors import UndefinedUnitError
 
-__all__ = ['getUnitRegistry', '_Quantity', 'check_dimensionality', 'wrap_quantity']
+__all__ = ['getUnitRegistry', '_Quantity', '_Unit', 'check_dimensionality', 'wrap_quantity', 'get_application_registry']
 
 def wrapped_binary_operator(op1, op2):
     def wrapped(self, other):
         if isinstance(other, ExpBase):
-            print('wrapped:', self, other, type(self), type(other))
+            # print('wrapped:', self, other, type(self), type(other))
             return op2(other, self)
         elif isinstance(other, AnyCallable):
-            print('wrapped:', self, other, type(self), type(other))
+            # print('wrapped:', self, other, type(self), type(other))
             return op2(other._as_ParseObj(), self)
         return op1(self, other)
     return wrapped
@@ -49,10 +50,15 @@ def getUnitRegistry(length="meter", time="second", substance="item", volume=None
     ureg.default_system = 'local'
 
     wrap_quantity(ureg.Quantity)
+
+    pint.set_application_registry(ureg)  # for pickling
     return ureg
 
 def check_dimensionality(q, dim):
     return (q._REGISTRY.get_dimensionality(dim) == q.dimensionality)
+
+def get_application_registry():
+    return pint._APP_REGISTRY
 
 
 if __name__ == '__main__':

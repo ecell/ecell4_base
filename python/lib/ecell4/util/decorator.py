@@ -4,7 +4,10 @@ import numbers
 import warnings
 import functools
 import itertools
+import operator
 import math
+
+from functools import reduce
 
 from . import parseobj
 from .decorator_base import Callback, JustParseCallback, ParseDecorator
@@ -115,7 +118,71 @@ def generate_ReactionRule(lhs, rhs, k=None):
     raise RuntimeError(
         'parameter must be given as a number; "%s" given' % str(k))
 
-def traverse_ParseObj(obj, keys):
+def parse_dimensionality(obj, ureg):
+    # import pint
+
+    # print('=>', obj)
+
+    operator_map = {
+        parseobj.PosExp: operator.pos,
+        parseobj.NegExp: operator.neg,
+        parseobj.SubExp: lambda *args: reduce(operator.sub, args[1: ], args[0]), # operator.sub,
+        parseobj.DivExp: operator.truediv, # lambda *args: reduce(operator.truediv, args[1: ], args[0]),
+        parseobj.PowExp: operator.pow,
+        parseobj.AddExp: lambda *args: reduce(operator.add, args[1: ], args[0]), # operator.add,
+        parseobj.MulExp: lambda *args: reduce(operator.mul, args[1: ], args[0]), # operator.mul,
+        # parseobj.InvExp: operator.inv,
+        # parseobj.AndExp: operator.and_,
+        # parseobj.GtExp: operator.gt,
+        # parseobj.NeExp: operator.ne,
+        # parseobj.EqExp: operator.eq,
+        }
+
+    if isinstance(obj, parseobj.AnyCallable):
+        obj = obj._as_ParseObj()
+
+    if isinstance(obj, parseobj.ParseObj):
+        if obj._size() == 1 and obj._elems[0].name in RATELAW_RESERVED_FUNCTIONS:
+            # function
+            subobj = obj._elems[0]
+            assert subobj.key is None
+            assert subobj.modification is None
+            if subobj.args is not None:
+                return RATELAW_RESERVED_FUNCTIONS[obj._elems[0].name](*[1.0 * parse_dimensionality(subobj.args[i], ureg) for i in range(len(subobj.args))]).to_base_units().u
+                # try:
+                #     return RATELAW_RESERVED_FUNCTIONS[obj._elems[0].name](*[1.0 * parse_dimensionality(subobj.args[i], ureg) for i in range(len(subobj.args))]).u
+                # except pint.errors.DimensionalityError as e:
+                #     raise RuntimeError("{} [{}]".format(str(e), str(obj)))
+            else:
+                assert subobj.kwargs is None
+                return RATELAW_RESERVED_FUNCTIONS[obj._elems[0].name]()
+        elif obj._size() == 1 and obj._elems[0].name in RATELAW_RESERVED_CONSTANTS:
+            # constant
+            key = obj._elems[0].name
+            if key == '_t':
+                return ureg.Quantity(1.0, "second").to_base_units().u
+            else:
+                return RATELAW_RESERVED_CONSTANTS[key]
+        else:
+            # species
+            return ureg.Quantity(1.0, "molar").to_base_units().u
+
+    elif isinstance(obj, parseobj.ExpBase):
+        for cls, op in operator_map.items():
+            if isinstance(obj, cls):
+                return op(*[1.0 * parse_dimensionality(obj._elems[i], ureg) for i in range(len(obj._elems))]).to_base_units().u
+                # try:
+                #     return op(*[1.0 * parse_dimensionality(obj._elems[i], ureg) for i in range(len(obj._elems))]).u
+                # except pint.errors.DimensionalityError as e:
+                #     raise RuntimeError("{} [{}]".format(str(e), str(obj)))
+
+    elif isinstance(obj, unit._Quantity):
+        # return ureg.Unit(str(obj.u))
+        return obj.to_base_units().u
+
+    return obj
+
+def traverse_ParseObj(obj, keys, quantities=None):
     reserved_vars = tuple(RATELAW_RESERVED_CONSTANTS.keys())
     reserved_funcs = tuple(RATELAW_RESERVED_FUNCTIONS.keys())
 
@@ -133,7 +200,7 @@ def traverse_ParseObj(obj, keys):
                 assert subobj.name not in reserved_vars
                 assert subobj.kwargs == {}
                 subobj.args = tuple([
-                    traverse_ParseObj(subobj.args[i], keys)
+                    traverse_ParseObj(subobj.args[i], keys, quantities)
                     for i in range(len(subobj.args))])
             else:
                 assert subobj.kwargs is None
@@ -146,16 +213,32 @@ def traverse_ParseObj(obj, keys):
 
     elif isinstance(obj, parseobj.ExpBase):
         for i in range(len(obj._elems)):
-            obj._elems[i] = traverse_ParseObj(obj._elems[i], keys)
+            obj._elems[i] = traverse_ParseObj(obj._elems[i], keys, quantities)
 
     elif unit.HAS_PINT and isinstance(obj, unit._Quantity):
+        if quantities is not None:
+            quantities.append(obj)
         return obj.to_base_units().magnitude
 
     return obj
 
 def generate_ratelaw(obj, rr, implicit=False):
     keys = []
-    exp = str(traverse_ParseObj(copy.deepcopy(obj), keys))
+    quantities = []
+    exp = str(traverse_ParseObj(copy.deepcopy(obj), keys, quantities))
+
+    if unit.STRICT and len(quantities) > 0:
+        ureg = quantities[0]._REGISTRY
+        if any([q._REGISTRY != ureg for q in quantities[1: ]]):
+            raise ValueError('Cannot operate with Quantity and Quantity of different registries.')
+        ret = parse_dimensionality(obj, ureg)
+        if not isinstance(ret, unit._Unit):
+            ret = ureg.Unit('dimensionless')
+        if not unit.check_dimensionality(ret, '[concentration]/[time]'):
+            raise RuntimeError(
+                "A rate law must have dimension '{}'. '{}' was given.".format(
+                    ureg.get_dimensionality("[concentration]/[time]"), ret.dimensionality))
+
     aliases = {}
     for i, sp in enumerate(rr.reactants()):
         aliases[sp.serial()] = "_r[{0:d}]".format(i)
