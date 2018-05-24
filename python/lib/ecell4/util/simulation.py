@@ -2,6 +2,7 @@ import collections
 
 from .decorator import get_model, reset_model
 from . import viz
+from ..extra import unit
 
 
 def load_world(filename):
@@ -163,6 +164,35 @@ def run_simulation(
                 "An unknown keyword argument was given [{}={}]".format(key, value))
 
     import ecell4
+
+    if unit.HAS_PINT:
+        if isinstance(t, unit._Quantity):
+            if unit.STRICT and not unit.check_dimensionality(t, '[time]'):
+                raise ValueError("Cannot convert [t] from '{}' ({}) to '[time]'".format(t.dimensionality, t.u))
+            t = t.to_base_units().magnitude
+
+        for key, value in y0.items():
+            if isinstance(value, unit._Quantity):
+                if unit.STRICT and not unit.check_dimensionality(value, '[substance]'):
+                    raise ValueError(
+                        "Cannot convert a quantity for [{}] from '{}' ({}) to '[substance]'".format(
+                            key, value.dimensionality, value.u))
+                y0[key] = value.to_base_units().magnitude
+
+        if isinstance(volume, unit._Quantity):
+            if unit.STRICT:
+                if isinstance(volume.magnitude, ecell4.core.Real3) and not unit.check_dimensionality(volume, '[length]'):
+                    raise ValueError("Cannot convert [volume] from '{}' ({}) to '[length]'".format(
+                        volume.dimensionality, volume.u))
+                elif not unit.check_dimensionality(volume, '[volume]'):
+                    raise ValueError("Cannot convert [volume] from '{}' ({}) to '[volume]'".format(
+                        volume.dimensionality, volume.u))
+            volume = volume.to_base_units().magnitude
+
+        if not isinstance(solver, str) and isinstance(solver, collections.Iterable):
+            solver = [
+                value.to_base_untis().magnitude if isinstance(value, unit._Quantity) else value
+                for value in solver]
 
     if factory is not None:
         # f = factory  #XXX: will be deprecated in the future. just use solver

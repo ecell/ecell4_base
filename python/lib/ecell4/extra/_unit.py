@@ -8,7 +8,7 @@ import pint
 from pint.quantity import _Quantity
 from pint.errors import UndefinedUnitError
 
-__all__ = ['getUnitRegistry', '_Quantity']
+__all__ = ['getUnitRegistry', '_Quantity', 'check_dimensionality', 'wrap_quantity']
 
 def wrapped_binary_operator(op1, op2):
     def wrapped(self, other):
@@ -50,6 +50,9 @@ def getUnitRegistry(length="meter", time="second", substance="item", volume=None
 
     wrap_quantity(ureg.Quantity)
     return ureg
+
+def check_dimensionality(q, dim):
+    return (q._REGISTRY.get_dimensionality(dim) == q.dimensionality)
 
 
 if __name__ == '__main__':

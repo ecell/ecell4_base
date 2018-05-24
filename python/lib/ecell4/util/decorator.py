@@ -74,9 +74,6 @@ def generate_Species(obj):
         raise RuntimeError('invalid expression; "%s" given' % str(obj))
 
 def generate_ReactionRule(lhs, rhs, k=None):
-    if unit.HAS_PINT and isinstance(k, unit._Quantity):
-        k = k.to_base_units().magnitude
-
     if k is None:
         raise RuntimeError('no parameter is specified')
 
@@ -105,6 +102,15 @@ def generate_ReactionRule(lhs, rhs, k=None):
 
     elif isinstance(k, numbers.Number):  # Kinetic rate
         return ecell4.core.ReactionRule([sp for (sp, _) in lhs], [sp for (sp, _) in rhs], k)
+
+    elif unit.HAS_PINT and isinstance(k, unit._Quantity):  # Kinetic rate given as a quantity
+        if unit.STRICT:
+            if len(lhs) == 0 and not unit.check_dimensionality(k, '1/[time]/[volume]'):
+                raise ValueError("Cannot convert [k] from '{}' ({}) to '1/[time]/[volume]'".format(k.dimensionality, k.u))
+            elif not unit.check_dimensionality(k, '1/[time]' + '/[concentration]' * (len(lhs) - 1)):
+                raise ValueError("Cannot convert [k] from '{}' ({}) to '{}'".format(
+                    k.dimensionality, k.u, '1/[time]' + '/[concentration]' * (len(lhs) - 1)))
+        return ecell4.core.ReactionRule([sp for (sp, _) in lhs], [sp for (sp, _) in rhs], k.to_base_units().magnitude)
 
     raise RuntimeError(
         'parameter must be given as a number; "%s" given' % str(k))
@@ -257,6 +263,8 @@ class SpeciesAttributesCallback(Callback):
         SPECIES_ATTRIBUTES.extend(self.bitwise_operations)
 
     def notify_bitwise_operations(self, obj):
+        attribute_dimensionality = {'D': '[length]**2/[time]', 'radius': '[length]'}
+
         if not isinstance(obj, parseobj.OrExp):
             raise RuntimeError('an invalid object was given [%s]' % (repr(obj)))
         # elif len(obj._elements()) != 2:
@@ -295,6 +303,10 @@ class SpeciesAttributesCallback(Callback):
                     #         + ' "%s" and "%s" given'
                     #         % (str(key), str(value)))
                     if unit.HAS_PINT and isinstance(value, unit._Quantity):
+                        if (unit.STRICT and key in attribute_dimensionality
+                            and not unit.check_dimensionality(value, attribute_dimensionality[key])):
+                                raise ValueError("Cannot convert [{}] from '{}' ({}) to '{}'".format(
+                                    key, value.dimensionality, value.u, attribute_dimensionality[key]))
                         sp.set_attribute(key, value.to_base_units().magnitude)
                     else:
                         sp.set_attribute(key, value)
@@ -317,6 +329,10 @@ class SpeciesAttributesCallback(Callback):
                         #         'paramter must be given as a string; "%s" given'
                         #         % str(value))
                         if unit.HAS_PINT and isinstance(value, unit._Quantity):
+                            if (unit.STRICT and key in attribute_dimensionality
+                                and not unit.check_dimensionality(value, attribute_dimensionality[key])):
+                                    raise ValueError("Cannot convert [{}] from '{}' ({}) to '{}'".format(
+                                        key, value.dimensionality, value.u, attribute_dimensionality[key]))
                             sp.set_attribute(key, value.to_base_units().magnitude)
                         else:
                             sp.set_attribute(key, value)
