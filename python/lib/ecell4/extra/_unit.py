@@ -9,15 +9,15 @@ from pint.quantity import _Quantity
 from pint.unit import _Unit
 from pint.errors import UndefinedUnitError
 
-__all__ = ['getUnitRegistry', '_Quantity', '_Unit', 'check_dimensionality', 'wrap_quantity', 'get_application_registry']
+__all__ = [
+    'getUnitRegistry', '_Quantity', '_Unit', 'check_dimensionality', 'wrap_quantity',
+    'get_application_registry']
 
 def wrapped_binary_operator(op1, op2):
     def wrapped(self, other):
         if isinstance(other, ExpBase):
-            # print('wrapped:', self, other, type(self), type(other))
             return op2(other, self)
         elif isinstance(other, AnyCallable):
-            # print('wrapped:', self, other, type(self), type(other))
             return op2(other._as_ParseObj(), self)
         return op1(self, other)
     return wrapped
@@ -31,6 +31,26 @@ def wrap_quantity(cls):
     return cls
 
 def getUnitRegistry(length="meter", time="second", substance="item", volume=None, other=()):
+    """Return a pint.UnitRegistry made compatible with ecell4.
+
+    Parameters
+    ----------
+    length : str, optional
+        A default unit for '[length]'. 'meter' is its default.
+    time : str, optional
+        A default unit for '[time]'. 'second' is its default.
+    substance : str, optional
+        A default unit for '[substance]' (the number of molecules). 'item' is its default.
+    volume : str, optional
+        A default unit for '[volume]'. Its default is None, thus '[length]**3'.
+    other : tuple, optional
+        A list of user-defined default units other than the above.
+
+    Returns
+    -------
+    ureg : pint.UnitRegistry
+
+    """
     ureg = pint.UnitRegistry()
     ureg.define('item = mole / (avogadro_number * 1 mole)')
 
@@ -55,9 +75,22 @@ def getUnitRegistry(length="meter", time="second", substance="item", volume=None
     return ureg
 
 def check_dimensionality(q, dim):
+    """Return whether the quantity has the dimensionality given.
+
+    Parameters
+    ----------
+    q : pint._Quantity
+    dim : pint.util.UnitsContainer
+
+    Returns
+    -------
+    value : bool
+
+    """
     return (q._REGISTRY.get_dimensionality(dim) == q.dimensionality)
 
 def get_application_registry():
+    """Just return `pint._APP_REGISTRY`."""
     return pint._APP_REGISTRY
 
 
