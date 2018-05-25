@@ -61,6 +61,36 @@ def get_factory(solver, *args):
             'unknown solver name was given: ' + repr(solver)
             + '. use ode, gillespie, spatiocyte, meso, bd or egfrd')
 
+def get_shape(shape, *args):
+    if not isinstance(shape, str):
+        raise ValueError("Invalid shape was given [{}]. This must be 'str'".format(repr(shape)))
+
+    import ecell4
+    shape = shape.lower()
+    shape_map = {
+        'aabb': ecell4.core.AABB,
+        # 'affinetransformation': ecell4.core.AffineTransformation,
+        'cylinder': ecell4.core.Cylinder,
+        'cylindricalsurface': ecell4.core.CylindricalSurface,
+        'meshsurface': ecell4.core.MeshSurface,
+        'planarsurface': ecell4.core.PlanarSurface,
+        'rod': ecell4.core.Rod,
+        'rodsurface': ecell4.core.RodSurface,
+        'sphere': ecell4.core.Sphere,
+        'sphericalsurface': ecell4.core.SphericalSurface,
+        # 'complement': ecell4.core.Complement,
+        # 'union': ecell4.core.Union,
+        }
+    if shape in shape_map:
+        args = [
+            value.to_base_units().magnitude if isinstance(value, unit._Quantity) else value
+            for value in args]
+        return shape_map[shape](*args)
+    else:
+        raise ValueError(
+            'unknown shape type was given: ' + repr(shape)
+            + '. use {}'.format(', '.join(sorted(shape_map.keys()))))
+
 def list_species(model, seeds=None):
     seeds = None or []
 
@@ -227,7 +257,12 @@ def run_simulation(
                             key, value.dimensionality, value.u))
 
     for (name, shape) in structures.items():
-        w.add_structure(ecell4.Species(name), shape)
+        if isinstance(shape, str):
+            w.add_structure(ecell4.Species(name), get_shape(shape))
+        elif isinstance(shape, collections.Iterable):
+            w.add_structure(ecell4.Species(name), get_shape(*shape))
+        else:
+            w.add_structure(ecell4.Species(name), shape)
 
     if isinstance(w, ecell4.ode.ODEWorld):
         # w.bind_to(model)  # stop binding for ode
