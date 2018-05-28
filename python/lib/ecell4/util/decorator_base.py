@@ -4,6 +4,7 @@ import warnings
 import functools
 import inspect
 import re
+import traceback
 
 from . import parseobj
 
@@ -44,6 +45,65 @@ class JustParseCallback(Callback):
             warnings.warn('"<>" is deprecated; use "==" instead',
                           DeprecationWarning)
         self.comparisons.append(obj)
+
+class DispatcherCallback(Callback):
+
+    def __init__(self, children):
+        Callback.__init__(self)
+        self.__children = children
+
+    def set(self):
+        for child in self.__children:
+            child.set()
+
+    def get(self):
+        return [child.get() for child in self.__children]
+
+    def notify_unary_operations(self, obj):
+        for child in self.__children:
+            child.notify_unary_operations(obj)
+
+    def notify_bitwise_operations(self, obj):
+        for child in self.__children:
+            child.notify_bitwise_operations(obj)
+
+    def notify_comparisons(self, obj):
+        for child in self.__children:
+            child.notify_comparisons(obj)
+
+def callback_dispatcher(callback_classes):
+    def wrapper():
+        return DispatcherCallback([cls() for cls in callback_classes])
+    return wrapper
+
+class EchoCallback(Callback):
+
+    def __init__(self):
+        Callback.__init__(self)
+
+    def set(self):
+        pass
+
+    def get(self):
+        return None
+
+    def notify_unary_operations(self, obj):
+        stack = traceback.extract_stack()
+        filename, codeline, funcname, text = stack[-2]
+        self.say(funcname, obj)
+
+    def notify_bitwise_operations(self, obj):
+        stack = traceback.extract_stack()
+        filename, codeline, funcname, text = stack[-2]
+        self.say(funcname, obj)
+
+    def notify_comparisons(self, obj):
+        stack = traceback.extract_stack()
+        filename, codeline, funcname, text = stack[-2]
+        self.say(funcname, obj)
+
+    def say(self, method, *args, **kwargs):
+        print('{} [{}] method={}, args={}, kwargs={}'.format(self.__class__.__name__, id(self), method, args, kwargs))
 
 class TransparentCallback(Callback):
 
