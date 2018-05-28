@@ -266,110 +266,6 @@ class DimensionalityCheckingVisitor(Visitor):
     def visit_default(self, obj):
         return (obj, obj)
 
-# def parse_dimensionality(obj, ureg):
-#     # import pint
-# 
-#     # print('=>', obj)
-# 
-#     operator_map = {
-#         parseobj.PosExp: operator.pos,
-#         parseobj.NegExp: operator.neg,
-#         parseobj.SubExp: lambda *args: operator.sub, # reduce(operator.sub, args[1: ], args[0]),
-#         parseobj.DivExp: operator.truediv, # lambda *args: reduce(operator.truediv, args[1: ], args[0]),
-#         parseobj.PowExp: operator.pow,
-#         parseobj.AddExp: lambda *args: reduce(operator.add, args[1: ], args[0]), # operator.add,
-#         parseobj.MulExp: lambda *args: reduce(operator.mul, args[1: ], args[0]), # operator.mul,
-#         # parseobj.InvExp: operator.inv,
-#         # parseobj.AndExp: operator.and_,
-#         # parseobj.GtExp: operator.gt,
-#         # parseobj.NeExp: operator.ne,
-#         # parseobj.EqExp: operator.eq,
-#         }
-# 
-#     if isinstance(obj, parseobj.AnyCallable):
-#         obj = obj._as_ParseObj()
-# 
-#     if isinstance(obj, parseobj.ParseObj):
-#         if obj._size() == 1 and obj._elems[0].name in RATELAW_RESERVED_FUNCTIONS:
-#             # function
-#             subobj = obj._elems[0]
-#             assert subobj.key is None
-#             assert subobj.modification is None
-#             if subobj.args is not None:
-#                 return RATELAW_RESERVED_FUNCTIONS[obj._elems[0].name](*[1.0 * parse_dimensionality(subobj.args[i], ureg) for i in range(len(subobj.args))]).to_base_units().u
-#                 # try:
-#                 #     return RATELAW_RESERVED_FUNCTIONS[obj._elems[0].name](*[1.0 * parse_dimensionality(subobj.args[i], ureg) for i in range(len(subobj.args))]).u
-#                 # except pint.errors.DimensionalityError as e:
-#                 #     raise RuntimeError("{} [{}]".format(str(e), str(obj)))
-#             else:
-#                 assert subobj.kwargs is None
-#                 return RATELAW_RESERVED_FUNCTIONS[obj._elems[0].name]()
-#         elif obj._size() == 1 and obj._elems[0].name in RATELAW_RESERVED_CONSTANTS:
-#             # constant
-#             key = obj._elems[0].name
-#             if key == '_t':
-#                 return ureg.Quantity(1.0, "second").to_base_units().u
-#             else:
-#                 return RATELAW_RESERVED_CONSTANTS[key]
-#         else:
-#             # species
-#             return ureg.Quantity(1.0, "molar").to_base_units().u
-# 
-#     elif isinstance(obj, parseobj.ExpBase):
-#         for cls, op in operator_map.items():
-#             if isinstance(obj, cls):
-#                 return op(*[1.0 * parse_dimensionality(obj._elems[i], ureg) for i in range(len(obj._elems))]).to_base_units().u
-#                 # try:
-#                 #     return op(*[1.0 * parse_dimensionality(obj._elems[i], ureg) for i in range(len(obj._elems))]).u
-#                 # except pint.errors.DimensionalityError as e:
-#                 #     raise RuntimeError("{} [{}]".format(str(e), str(obj)))
-# 
-#     elif isinstance(obj, unit._Quantity):
-#         # return ureg.Unit(str(obj.u))
-#         return obj.to_base_units().u
-# 
-#     return obj
-# 
-# def traverse_ParseObj(obj, keys, quantities=None):
-#     reserved_vars = tuple(RATELAW_RESERVED_CONSTANTS.keys())
-#     reserved_funcs = tuple(RATELAW_RESERVED_FUNCTIONS.keys())
-# 
-#     if isinstance(obj, parseobj.AnyCallable):
-#         obj = obj._as_ParseObj()
-# 
-#     if isinstance(obj, parseobj.ParseObj):
-#         if obj._size() == 1 and (
-#                 obj._elems[0].name in reserved_funcs or
-#                 obj._elems[0].name in reserved_vars):
-#             subobj = obj._elems[0]
-#             assert subobj.key is None
-#             assert subobj.modification is None
-#             if subobj.args is not None:
-#                 assert subobj.name not in reserved_vars
-#                 assert subobj.kwargs == {}
-#                 subobj.args = tuple([
-#                     traverse_ParseObj(subobj.args[i], keys, quantities)
-#                     for i in range(len(subobj.args))])
-#             else:
-#                 assert subobj.kwargs is None
-#         else:
-#             serial = ecell4.core.Species(str(obj)).serial()
-#             if serial in keys:
-#                 return "{{{0:d}}}".format(keys.index(serial))
-#             keys.append(serial)
-#             return "{{{0:d}}}".format(len(keys) - 1)
-# 
-#     elif isinstance(obj, parseobj.ExpBase):
-#         for i in range(len(obj._elems)):
-#             obj._elems[i] = traverse_ParseObj(obj._elems[i], keys, quantities)
-# 
-#     elif unit.HAS_PINT and isinstance(obj, unit._Quantity):
-#         if quantities is not None:
-#             quantities.append(obj)
-#         return obj.to_base_units().magnitude
-# 
-#     return obj
-
 def generate_ratelaw(obj, rr, implicit=False):
     label = str(obj)
     visitor = SpeciesParsingVisitor()
@@ -476,15 +372,8 @@ def parse_ReactionRule_options(elements):
 
 class SpeciesAttributesCallback(Callback):
 
-    def __init__(self, *args):
+    def __init__(self):
         Callback.__init__(self)
-
-        self.keys = None
-        if len(args) > 0:
-            for key in args:
-                if not isinstance(key, (str, bytes)):
-                    raise RuntimeError('non string key "%s" was given' % key)
-            self.keys = args
 
         self.bitwise_operations = []
 
@@ -523,52 +412,19 @@ class SpeciesAttributesCallback(Callback):
 
             sp = species_list[0][0]
 
-            if self.keys is None:
-                if not isinstance(rhs, dict):
-                    raise RuntimeError(
-                        'parameter must be given as a dict; "%s" given'
-                        % str(rhs))
-                for key, value in rhs.items():
-                    # if not (isinstance(key, (str, bytes))
-                    #     and isinstance(value, (str, bytes))):
-                    #     raise RuntimeError(
-                    #         'attributes must be given as a pair of strings;'
-                    #         + ' "%s" and "%s" given'
-                    #         % (str(key), str(value)))
-                    if unit.HAS_PINT and isinstance(value, unit._Quantity):
-                        if (unit.STRICT and key in attribute_dimensionality
-                            and not unit.check_dimensionality(value, attribute_dimensionality[key])):
-                                raise ValueError("Cannot convert [{}] from '{}' ({}) to '{}'".format(
-                                    key, value.dimensionality, value.u, attribute_dimensionality[key]))
-                        sp.set_attribute(key, value.to_base_units().magnitude)
-                    else:
-                        sp.set_attribute(key, value)
-            else:
-                if not isinstance(rhs, (tuple, list)):
-                    if len(self.keys) == 1:
-                        rhs = (rhs, )
-                    else:
-                        raise RuntimeError(
-                            'parameters must be given as a tuple or list; "%s" given'
-                            % str(rhs))
-                if len(rhs) != len(self.keys):
-                    raise RuntimeError(
-                        'the number of parameters must be %d; %d given'
-                        % (len(self.keys), len(rhs)))
+            if not isinstance(rhs, dict):
+                raise RuntimeError(
+                    'parameter must be given as a dict; "%s" given'
+                    % str(rhs))
+            for key, value in rhs.items():
+                if unit.HAS_PINT and isinstance(value, unit._Quantity):
+                    if (unit.STRICT and key in attribute_dimensionality
+                        and not unit.check_dimensionality(value, attribute_dimensionality[key])):
+                            raise ValueError("Cannot convert [{}] from '{}' ({}) to '{}'".format(
+                                key, value.dimensionality, value.u, attribute_dimensionality[key]))
+                    sp.set_attribute(key, value.to_base_units().magnitude)
                 else:
-                    for key, value in zip(self.keys, rhs):
-                        # if not isinstance(value, (str, bytes)):
-                        #     raise RuntimeError(
-                        #         'paramter must be given as a string; "%s" given'
-                        #         % str(value))
-                        if unit.HAS_PINT and isinstance(value, unit._Quantity):
-                            if (unit.STRICT and key in attribute_dimensionality
-                                and not unit.check_dimensionality(value, attribute_dimensionality[key])):
-                                    raise ValueError("Cannot convert [{}] from '{}' ({}) to '{}'".format(
-                                        key, value.dimensionality, value.u, attribute_dimensionality[key]))
-                            sp.set_attribute(key, value.to_base_units().magnitude)
-                        else:
-                            sp.set_attribute(key, value)
+                    sp.set_attribute(key, value)
 
             self.bitwise_operations.append(sp)
 
