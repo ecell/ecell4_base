@@ -474,6 +474,15 @@ bool SGFRDSimulator::burst_and_shrink_overlaps(
             continue;
         }
 
+        if(!(this->event_exists(did_)))
+        {
+            SGFRD_TRACE(tracer_.write("domain %1% does not exist. it may have "
+                        "already been fired.", did_));
+            // TODO consider how to handle this
+            no_overlap = false;
+            continue;
+        }
+
         ParticleID pid_; Particle p_; FaceID fid_;
         BOOST_FOREACH(boost::tie(pid_, p_, fid_),
                       burst_event(std::make_pair(did_, get_event(did_)), tm))
