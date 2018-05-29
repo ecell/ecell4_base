@@ -241,6 +241,20 @@ class SGFRDSimulator :
     Real time() const {return this->world_->t();}
     void set_time(const Real t) {return this->world_->set_t(t);}
 
+    bool event_exists(const event_id_type& id)
+    {
+        SGFRD_TRACE(tracer_.write("  checking event %1% exists or not", id));
+        try
+        {
+            boost::shared_ptr<event_type> ev = scheduler_.get(id);
+            return static_cast<bool>(ev);
+        }
+        catch(std::out_of_range const& oor)
+        {
+            return false;
+        }
+    }
+
     boost::shared_ptr<event_type> get_event(const event_id_type& id)
     {
         SGFRD_TRACE(tracer_.write("  getting event %1%", id));
