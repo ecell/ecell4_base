@@ -2,6 +2,7 @@ from __future__ import print_function
 from collections import defaultdict
 
 import numbers
+import pandas
 
 from ecell4 import Species, ReactionRule
 from ecell4.ode import ODEReactionRule
@@ -76,6 +77,20 @@ def convert_parseobj(obj, params):
         params[k] = (idx, obj)
         return k
     return str(obj)
+
+def species(m):
+    sers = []
+    pandas.options.display.float_format = '{:.1f}'.format
+    # indices = []
+    for s in m.species_attributes():
+        dic = {}
+        # indices.append(s.serial())
+        for d in s.list_attributes():
+            dic[d[0]] = d[1]
+        ser = pandas.Series(dic, name=s.serial())
+        sers.append(ser)
+    df = pandas.DataFrame(sers)
+    return df
 
 def equations(m, inline=False, constants=True):
     derivatives = defaultdict(list)
