@@ -49,8 +49,8 @@ before_install:
     brew update;
     brew install gsl ffmpeg hdf5@1.8;
     brew info hdf5;
-    cp /usr/local/Cellar/hdf5\@1.8/1.8.20/include/* /usr/local/include/;
-    cp /usr/local/Cellar/hdf5\@1.8/1.8.20/lib/* /usr/local/lib/;
+    cp /usr/local/Cellar/hdf5\@1.8/1.8.20_1/include/* /usr/local/include/;
+    cp /usr/local/Cellar/hdf5\@1.8/1.8.20_1/lib/* /usr/local/lib/;
     if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then
       brew install python2;
       which python2;

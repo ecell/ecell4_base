@@ -23,21 +23,17 @@ Some E-Cell4 functions (for visualization, datastore) optionally depend on
 We recommend that you install [Miniconda](http://conda.pydata.org/miniconda.html) to manage Python packages.
 **Note that we do not support Python2.7 64bit for Windows.**
 
+(**Important**) E-Cell4 for Windows needs `HDF5` version **1.8.17**.
+
 - Install Miniconda for Windows from http://conda.pydata.org/miniconda.html
 - Run the following commands on command prompt
-
-    ```shell
-    conda install hdf5=1.8.17
-    conda install matplotlib notebook
-    pip install ecell
-    ```
-
-- (**Important**) E-Cell4 for Windows needs `HDF5` version **1.8.17**. If there's any problem, please run the following commands.
 
     ```shell
     conda uninstall hdf5
     conda clean -a
     conda install hdf5=1.8.17
+    conda install matplotlib notebook
+    pip install ecell
     ```
 
 If you use animated visualization with E-Cell4, please install [ffmpeg windows build](http://ffmpeg.zeranoe.com/builds/) and add its path to your **USER** PATH enviromental variable.
@@ -51,10 +47,10 @@ After installing Miniconda, run the following commands in your terminal.
 
 ```shell
 # After installing Miniconda2 or Miniconda3 (Here we assume that you installed Miniconda3).
-~/miniconda2/bin/conda install matplotlib notebook
+~/miniconda3/bin/conda install matplotlib notebook
 
 # Download E-Cell4 whl file for your Python version from https://github.com/ecell/ecell4/releases before running this command.
-~/miniconda2/bin/pip install ecell
+~/miniconda3/bin/pip install ecell
 
 # If you want animation support, install ffmpeg with homebrew
 brew install ffmpeg

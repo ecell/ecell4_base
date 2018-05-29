@@ -206,59 +206,6 @@ class ParseDecorator:
         return eval(expr, globals(), AnyCallableLocals(self.__callback, l))
 
     def __evaluate(self, expr, params=None):
-        # if "-" in expr:
-        #     print(expr, "NOTICE: - can not be used in Species descriptor, we replaced it with _")
-        #     expr = expr.replace("-", "_")
-        # if "|" in expr:
-        #     print(expr, "NOTICE: | can not be used in Species descriptor, we remove it")
-        #     expr = expr.replace("|", "")
-        # prog = re.compile("^[0-9]")
-        # if prog.match(expr):
-        #     print(expr, "NOTICE: Species name that begins with numbers is not allowed, we put x to the head")
-        #     expr = "x" + expr
         return self.eval(expr, params)
 
-# def parse_decorator(callback_class, func):
-#     @functools.wraps(func)
-#     def wrapped(*args, **kwargs):
-#         cache = callback_class()
-#         try:
-#             vardict = copy.copy(self.__func.func_globals)
-#             func_code = func.func_code
-#             name = self.__func.func_name
-#             defaults = self.__func.func_defaults
-#         except AttributeError:
-#             vardict = copy.copy(self.__func.__globals__)
-#             func_code = func.__code__
-#             name = self.__func.__name__
-#             defaults = self.__func.__defaults__
-#         for ignore in ("_", "__", "___", "_i", "_ii", "_iii",
-#             "_i1", "_i2", "_i3", "_dh", "_sh", "_oh"):
-#             if ignore in vardict.keys():
-#                 del vardict[ignore]
-#         for k in func_code.co_names:
-#             if (not k in vardict.keys()
-#                 and not k in keys_from_builtins(vardict)): # is this enough?
-#                 vardict[k] = parseobj.AnyCallable(cache, k)
-#         g = types.FunctionType(func_code, vardict, name=name, argdefs=defaults)
-#         with warnings.catch_warnings():
-#             # warnings.simplefilter("always")
-#             g(*args, **kwargs)
-#         return cache.get()
-#     return wrapped
-
-# def transparent(func):
-#     @functools.wraps(func)
-#     def wrapped(*args, **kwargs):
-#         calling_frame = inspect.currentframe().f_back
-#         if '_callback' not in calling_frame.f_globals.keys():
-#             raise RuntimeError(
-#                 'transparent functions are only callable in the parse_decorater scope')
-#         cache = calling_frame.f_globals["_callback"]  # callback_class()
-#         decorator = ParseDecorator(None, func)
-#         decorator.set_callback(cache)
-#         return decorator.wrapper(*args, **kwargs)
-#     return wrapped
-
-# just_parse = functools.partial(parse_decorator, JustParseCallback)
 just_parse = functools.partial(ParseDecorator, JustParseCallback)
