@@ -8,6 +8,7 @@
 #endif
 
 #include <ecell4/core/Polygon.hpp>
+#include <ecell4/core/STLFileIO.hpp>
 #include <boost/assign.hpp>
 #include <utility>
 
@@ -657,6 +658,60 @@ BOOST_AUTO_TEST_CASE(Polygon_octahedron_construction_from_triangles)
                 std::numeric_limits<Real>::infinity());
     }
 
+    // distance between vtx and (face|vertex)
+
+    {
+        const Real d12   = ::ecell4::polygon::distance(poly,
+                std::make_pair(octahedron::p1, v1),
+                std::make_pair(octahedron::p2, v2));
+        const Real dsq12 = ::ecell4::polygon::distance_sq(poly,
+                std::make_pair(octahedron::p1, v1),
+                std::make_pair(octahedron::p2, v2));
+
+        const Real ex_d12   = ::ecell4::length(octahedron::p1 - octahedron::p2);
+        const Real ex_dsq12 = ::ecell4::length_sq(octahedron::p1 - octahedron::p2);
+
+        BOOST_CHECK_CLOSE_FRACTION(d12,   ex_d12,   1e-8);
+        BOOST_CHECK_CLOSE_FRACTION(dsq12, ex_dsq12, 1e-8);
+    }
+
+    {
+        const Real d16   = ::ecell4::polygon::distance(poly,
+                std::make_pair(octahedron::p1, v1),
+                std::make_pair(octahedron::p6, v6));
+        const Real dsq16 = ::ecell4::polygon::distance_sq(poly,
+                std::make_pair(octahedron::p1, v1),
+                std::make_pair(octahedron::p6, v6));
+
+        const Real ex_d16   = std::sqrt(6.0);
+        const Real ex_dsq16 = 6.0;
+
+        BOOST_CHECK_CLOSE_FRACTION(d16,   ex_d16,   1e-8);
+        BOOST_CHECK_CLOSE_FRACTION(dsq16, ex_dsq16, 1e-8);
+    }
+
+    {
+        const Real3 p456 = (octahedron::p4 + octahedron::p5 + octahedron::p6) / 3.0;
+
+        const Real d1   = ::ecell4::polygon::distance(poly,
+                std::make_pair(octahedron::p1, v1), std::make_pair(p456, f6));
+        const Real d2   = ::ecell4::polygon::distance(poly,
+                std::make_pair(p456, f6), std::make_pair(octahedron::p1, v1));
+        BOOST_CHECK_EQUAL(d1, d2);
+
+        const Real dsq1 = ::ecell4::polygon::distance_sq(poly,
+                std::make_pair(octahedron::p1, v1), std::make_pair(p456, f6));
+        const Real dsq2 = ::ecell4::polygon::distance_sq(poly,
+                std::make_pair(p456, f6), std::make_pair(octahedron::p1, v1));
+        BOOST_CHECK_EQUAL(dsq1, dsq2);
+
+        const Real ex_d1   = 2.0 * std::sqrt(2.0 / 3.0);
+        const Real ex_dsq1 = 8.0 / 3.0;
+
+        BOOST_CHECK_CLOSE_FRACTION(d1,   ex_d1,   1e-8);
+        BOOST_CHECK_CLOSE_FRACTION(dsq1, ex_dsq1, 1e-8);
+    }
+
     // travel
     {
         const Real3 p1 = (octahedron::p1 + octahedron::p2 + octahedron::p3) / 3.0;
@@ -755,7 +810,7 @@ BOOST_AUTO_TEST_CASE(Polygon_octahedron_construction_from_triangles)
 
     {
         const VertexID vid = v1;
-        const Real       r = std::sqrt(2.0 / 3.0);
+        const Real  r  = std::sqrt(2.0 / 3.0);
         const Real3 p1 = (octahedron::p1 + octahedron::p2 + octahedron::p3) / 3.0;
         const Real3 p2 = (octahedron::p1 + octahedron::p3 + octahedron::p4) / 3.0;
         const Real3 p3 = (octahedron::p1 + octahedron::p4 + octahedron::p5) / 3.0;
@@ -1172,3 +1227,55 @@ BOOST_AUTO_TEST_CASE(Polygon_plane_construction_from_triangles)
         BOOST_CHECK_CLOSE(p12.first[2], 5.0, 1e-6);
     }
 }
+
+// // Real world problem...
+// BOOST_AUTO_TEST_CASE(Polygon_sphere)
+// {
+//     const Real pi = boost::math::constants::pi<Real>();
+//     const Polygon poly(Real3(3.0, 3.0, 3.0), ecell4::read_stl_format(
+//             "sphere_10_1.stl", ecell4::STLFormat::Ascii));
+//
+//     {
+//         const Real3  p1(1.34310478666, 1.42170991008, 1.83241879606);
+//         const FaceID f1(16);
+//         const Real3  p2(1.20703052616, 1.28021780783, 1.93186546646);
+//         const FaceID f2(5);
+//         const Real d12 = poly.distance(std::make_pair(p1, f1), std::make_pair(p2, f2));
+//         const Real d21 = poly.distance(std::make_pair(p2, f2), std::make_pair(p1, f1));
+//
+//         BOOST_CHECK_CLOSE_FRACTION(d12, d21, 1e-10);
+//     }
+//
+//     {
+//         const Real3  p1(0.216954618908, 1.54754261336, 1.28609734905);
+//         const FaceID f1(165);
+//         const Real3  p2(0.202865357377, 1.60021912314, 1.01625141016);
+//         const FaceID f2(195);
+//         const Real d12 = poly.distance(std::make_pair(p1, f1), std::make_pair(p2, f2));
+//         const Real d21 = poly.distance(std::make_pair(p2, f2), std::make_pair(p1, f1));
+//
+//         BOOST_CHECK_CLOSE_FRACTION(d12, d21, 1e-10);
+//     }
+//
+//     {
+//         const Real3  p1(0.771779745781, 0.639621053762, 1.90135882614);
+//         const FaceID f1(208);
+//         const Real3  p2(0.879340452507, 0.818451788503, 1.96865922542);
+//         const FaceID f2(201);
+//         const Real d12 = poly.distance(std::make_pair(p1, f1), std::make_pair(p2, f2));
+//         const Real d21 = poly.distance(std::make_pair(p2, f2), std::make_pair(p1, f1));
+//
+//         BOOST_CHECK_CLOSE_FRACTION(d12, d21, 1e-10);
+//     }
+//
+//     {
+//         const Real3  p1(1.48150367687, 1.23271169258, 1.84012986238);
+//         const FaceID f1(14);
+//         const Real3  p2(1.28676156908, 1.05784594793, 1.95048631711);
+//         const FaceID f2(3);
+//         const Real d12 = poly.distance(std::make_pair(p1, f1), std::make_pair(p2, f2));
+//         const Real d21 = poly.distance(std::make_pair(p2, f2), std::make_pair(p1, f1));
+//
+//         BOOST_CHECK_CLOSE_FRACTION(d12, d21, 1e-10);
+//     }
+// }
