@@ -262,11 +262,56 @@ class Polygon : public Shape
         return this->vertex_at(vid).outgoing_edges;
     }
 
-    // XXX: reconsider the design of sGFRD and Polygon API that needs this.
-    std::vector<FaceID>   neighbor_faces_of   (const FaceID&   fid) const;
-    std::vector<VertexID> neighbor_vertices_of(const FaceID&   fid) const;
-    std::vector<FaceID>   neighbor_faces_of   (const VertexID& vid) const;
-    std::vector<VertexID> neighbor_vertices_of(const VertexID& vid) const;
+    std::vector<FaceID> neighbor_faces_of(const FaceID&   fid) const
+    {
+        return this->face_at(fid).neighbors;
+    }
+    std::vector<FaceID> neighbor_faces_of(const VertexID& vid) const
+    {
+        const std::vector<std::pair<EdgeID, Real> >&
+            outs = this->vertex_at(vid).outgoing_edges;
+
+        std::vector<FaceID> fids;
+        fids.reserve(outs.size() * 2);
+        for(std::vector<std::pair<EdgeID, Real> >::const_iterator
+                i(outs.begin()), e(outs.end()); i!=e; ++i)
+        {
+            fids.push_back(this->face_of(i->first));
+            fids.push_back(this->face_of(
+                this->opposite_of(this->next_of(i->first))));
+        }
+        return fids;
+    }
+
+    std::vector<VertexID> neighbor_vertices_of(const FaceID&   fid) const
+    {
+        std::vector<VertexID> vids;
+        vids.reserve(6);
+
+        boost::array<EdgeID, 3> const& eids = this->edges_of(fid);
+        for(std::size_t i=0; i<3; ++i)
+        {
+            vids.push_back(this->target_of(eids[i]));
+            vids.push_back(this->target_of(
+                this->next_of(this->opposite_of(eids[i]))));
+        }
+        return vids;
+    }
+    std::vector<VertexID> neighbor_vertices_of(const VertexID& vid) const
+    {
+        const std::vector<std::pair<EdgeID, Real> >&
+            outs = this->vertex_at(vid).outgoing_edges;
+        std::vector<VertexID> vids;
+        vids.reserve(outs.size() * 2);
+        for(std::vector<std::pair<EdgeID, Real> >::const_iterator
+                i(outs.begin()), e(outs.end()); i!=e; ++i)
+        {
+            vids.push_back(this->target_of(i->first));
+            vids.push_back(this->target_of(
+                this->next_of(this->opposite_of(this->next_of(i->first)))));
+        }
+        return vids;
+    }
 
     // accessor ---------------------------------------------------------------
 
@@ -528,39 +573,6 @@ class Polygon : public Shape
     face_container_type   faces_;
     edge_container_type   edges_;
 };
-
-inline std::vector<Polygon::FaceID>
-Polygon::neighbor_faces_of(const FaceID& fid) const
-{
-    return this->face_at(fid).neighbors;
-}
-
-inline std::vector<Polygon::VertexID>
-Polygon::neighbor_vertices_of(const FaceID& fid) const
-{
-    return std::vector<Polygon::VertexID>(this->face_at(fid).vertices.begin(),
-                                          this->face_at(fid).vertices.end());
-}
-
-inline std::vector<Polygon::FaceID>
-Polygon::neighbor_faces_of(const VertexID& vid) const
-{
-    return this->connecting_faces(vid);
-}
-
-inline std::vector<Polygon::VertexID>
-Polygon::neighbor_vertices_of(const VertexID& vid) const
-{
-    const std::vector<std::pair<EdgeID, Real> >&
-        outs = this->outgoing_edge_and_angles(vid);
-
-    std::vector<VertexID> retval(outs.size());
-    for(std::size_t i=0; i<retval.size(); ++i)
-    {
-        retval[i] = this->target_of(outs[i].first);
-    }
-    return retval;
-}
 
 template<typename charT, typename traits>
 std::basic_ostream<charT, traits>&
