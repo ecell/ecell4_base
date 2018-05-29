@@ -451,6 +451,114 @@ Real Polygon::distance_sq(
     return std::numeric_limits<Real>::infinity();
 }
 
+Real Polygon::distance_sq(const std::pair<Real3, VertexID>& pos1,
+                          const std::pair<Real3, FaceID>&   pos2) const
+{
+    const std::vector<std::pair<EdgeID, Real> >& outs =
+        this->vertex_at(pos1.second).outgoing_edges;
+
+    for(std::vector<std::pair<EdgeID, Real> >::const_iterator
+            i(outs.begin()), e(outs.end()); i!=e; ++i)
+    {
+        const EdgeID eid(i->first);
+        const FaceID fid = this->face_of(eid); // face that connects to the vtx
+        if(fid == pos2.second)
+        {
+            // on the same face.
+            return length_sq(pos1.first - pos2.first);
+        }
+        const FaceID adj = this->face_of(this->opposite_of(this->next_of(eid)));
+        if(adj == pos2.second)
+        {
+            const face_data& fd = this->face_at(fid);
+            const std::pair<FaceID, Triangle>& fp =
+                fd.neighbor_cw.at(fd.index_of(target_of(eid))).front();
+            assert(fp.first == pos2.second);
+
+            const Barycentric b2 =
+                to_barycentric(pos2.first, this->face_at(pos2.second).triangle);
+            const Real3 pos2rot = to_absolute(b2, fp.second);
+
+            return length_sq(pos1.first - pos2rot);
+        }
+    }
+    return std::numeric_limits<Real>::infinity();
+}
+
+Real Polygon::distance_sq(const std::pair<Real3, VertexID>& pos1,
+                          const std::pair<Real3, VertexID>& pos2) const
+{
+    const std::vector<std::pair<EdgeID, Real> >& outs =
+        this->vertex_at(pos1.second).outgoing_edges;
+
+    for(std::vector<std::pair<EdgeID, Real> >::const_iterator
+            i(outs.begin()), e(outs.end()); i!=e; ++i)
+    {
+        const EdgeID eid(i->first);
+        if(this->target_of(eid) == pos2.second)
+        {
+            // directly connected.
+            const Real l = length_of(eid);
+            return l * l;
+        }
+        const EdgeID inbetween = this->opposite_of(this->next_of(eid));
+        if(this->target_of(this->next_of(inbetween)) == pos2.second)
+        {
+            const FaceID fid = this->face_of(eid);
+            const FaceID adj = this->face_of(inbetween);
+
+            const face_data& fd = this->face_at(fid);
+            const std::pair<FaceID, Triangle>& fp =
+                fd.neighbor_cw.at(fd.index_of(target_of(eid))).front();
+            assert(fp.first == adj);
+
+            const Barycentric b2 =
+                to_barycentric(pos2.first, this->face_at(adj).triangle);
+            const Real3 pos2rot = to_absolute(b2, fp.second);
+
+            return length_sq(pos1.first - pos2rot);
+        }
+    }
+    return std::numeric_limits<Real>::infinity();
+}
+
+Real Polygon::distance(const std::pair<Real3, VertexID>& pos1,
+                       const std::pair<Real3, VertexID>& pos2) const
+{
+    const std::vector<std::pair<EdgeID, Real> >& outs =
+        this->vertex_at(pos1.second).outgoing_edges;
+
+    for(std::vector<std::pair<EdgeID, Real> >::const_iterator
+            i(outs.begin()), e(outs.end()); i!=e; ++i)
+    {
+        const EdgeID eid(i->first);
+        if(this->target_of(eid) == pos2.second)
+        {
+            // directly connected.
+            return length_of(eid);
+        }
+        const EdgeID inbetween = this->opposite_of(this->next_of(eid));
+        if(this->target_of(this->next_of(inbetween)) == pos2.second)
+        {
+            const FaceID fid = this->face_of(eid);
+            const FaceID adj = this->face_of(inbetween);
+
+            const face_data& fd = this->face_at(fid);
+            const std::pair<FaceID, Triangle>& fp =
+                fd.neighbor_cw[fd.index_of(target_of(eid))].front();
+            assert(fp.first == adj);
+
+            const Barycentric b2 =
+                to_barycentric(pos2.first, this->face_at(adj).triangle);
+            const Real3 pos2rot = to_absolute(b2, fp.second);
+
+            return length(pos1.first - pos2rot);
+        }
+    }
+    return std::numeric_limits<Real>::infinity();
+}
+
+
 Real3 Polygon::direction(
         const std::pair<Real3, FaceID>& pos1,
         const std::pair<Real3, FaceID>& pos2) const

@@ -192,23 +192,12 @@ class Polygon : public Shape
     }
 
     Real distance_sq(const std::pair<Real3, VertexID>& pos1,
-                     const std::pair<Real3, FaceID>&   pos2) const
-    {
-        const face_data& fd = this->face_at(pos2.second);
-        if(pos1.second == fd.vertices[0] ||
-           pos1.second == fd.vertices[1] ||
-           pos1.second == fd.vertices[2])
-        {
-            return length_sq(pos1.first - pos2.first);
-        }
-        return std::numeric_limits<Real>::infinity();
-    }
+                     const std::pair<Real3, FaceID>&   pos2) const;
     Real distance   (const std::pair<Real3, VertexID>& pos1,
                      const std::pair<Real3, FaceID>&   pos2) const
     {
         return std::sqrt(this->distance_sq(pos1, pos2));
     }
-
     Real distance_sq(const std::pair<Real3, FaceID>& pos1,
                      const std::pair<Real3, VertexID>& pos2) const
     {
@@ -221,26 +210,9 @@ class Polygon : public Shape
     }
 
     Real distance_sq(const std::pair<Real3, VertexID>& pos1,
-                     const std::pair<Real3, VertexID>& pos2) const
-    {
-        const Real dist = this->distance(pos1, pos2);
-        return dist * dist;
-    }
+                     const std::pair<Real3, VertexID>& pos2) const;
     Real distance(const std::pair<Real3, VertexID>& pos1,
-                  const std::pair<Real3, VertexID>& pos2) const
-    {
-        const std::vector<std::pair<EdgeID, Real> >& outs =
-            this->vertex_at(pos1.second).outgoing_edges;
-        for(std::vector<std::pair<EdgeID, Real> >::const_iterator
-            i(outs.begin()), e(outs.end()); i!=e; ++i)
-        {
-            if(target_of(i->first) == pos2.second)
-            {
-                return length_of(i->first);
-            }
-        }
-        return std::numeric_limits<Real>::infinity();
-    }
+                  const std::pair<Real3, VertexID>& pos2) const;
 
     // half-edge traverse
     // next edge: the edge belonging the same face,
@@ -624,6 +596,17 @@ inline Real distance(const Polygon& p,
         const std::pair<Real3, ID1>& p1, const std::pair<Real3, ID2>& p2)
 {
     return p.distance(p1, p2);
+//     const Real d12 = p.distance(p1, p2);
+//     const Real d21 = p.distance(p2, p1);
+//     if(std::abs(d12 / d21) - 1.0 > 1e-12)
+//     {
+//         std::cerr << "distance btw 1-2 = " << std::setw(20) << d12 << ", 2-1 = " << std::setw(20) << d21
+//                   << ", the difference = " << std::setw(20) << std::abs(d12 / d21 - 1.0);
+//         std::cerr << ",  p1 = (" << p1.first << ", " << p1.second
+//                   << "), p2 = (" << p2.first << ", " << p2.second
+//                   << ')' << std::endl;
+//     }
+//     return std::min(d12, d21);
 }
 
 template<typename ID1, typename ID2>
@@ -631,6 +614,17 @@ inline Real distance_sq(const Polygon& p,
         const std::pair<Real3, ID1>& p1, const std::pair<Real3, ID2>& p2)
 {
     return p.distance_sq(p1, p2);
+//     const Real d12 = p.distance_sq(p1, p2);
+//     const Real d21 = p.distance_sq(p2, p1);
+//     if(std::abs(d12 / d21) - 1.0 > 1e-12)
+//     {
+//         std::cerr << "distance_sq btw 1-2 = " << std::setw(20) << d12 << ", 2-1 = " << std::setw(20) << d21
+//                   << ", the difference = " << std::setw(20) << std::abs(d12 / d21 - 1.0);
+//         std::cerr << ",  p1 = (" << p1.first << ", " << p1.second
+//                   << "), p2 = (" << p2.first << ", " << p2.second
+//                   << ')' << std::endl;
+//     }
+//     return std::min(d12, d21);
 }
 
 template<typename ID1, typename ID2>
