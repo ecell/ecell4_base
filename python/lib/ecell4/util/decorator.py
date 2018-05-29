@@ -108,14 +108,15 @@ def generate_ReactionRule(lhs, rhs, k=None):
     elif unit.HAS_PINT and isinstance(k, unit._Quantity):  # Kinetic rate given as a quantity
         if unit.STRICT:
             if len(lhs) == 0 and not unit.check_dimensionality(k, '1/[time]/[volume]'):
-                raise ValueError("Cannot convert [k] from '{}' ({}) to '1/[time]/[volume]'".format(k.dimensionality, k.u))
+                raise ValueError(
+                    "Cannot convert [k] from '{}' ({}) to '1/[time]/[volume]'".format(k.dimensionality, k.u))
             elif not unit.check_dimensionality(k, '1/[time]' + '/[concentration]' * (len(lhs) - 1)):
-                raise ValueError("Cannot convert [k] from '{}' ({}) to '{}'".format(
-                    k.dimensionality, k.u, '1/[time]' + '/[concentration]' * (len(lhs) - 1)))
+                raise ValueError(
+                    "Cannot convert [k] from '{}' ({}) to '{}'".format(
+                        k.dimensionality, k.u, '1/[time]' + '/[concentration]' * (len(lhs) - 1)))
         return ecell4.core.ReactionRule([sp for (sp, _) in lhs], [sp for (sp, _) in rhs], k.to_base_units().magnitude)
 
-    raise RuntimeError(
-        'parameter must be given as a number; "%s" given' % str(k))
+    raise ValueError('parameter must be given as a number; "%s" given' % str(k))
 
 class Visitor(object):
 
@@ -327,38 +328,6 @@ def parse_ReactionRule_options(elements):
                 opts['policy'] = elem.get()
             else:
                 opts['policy'] |= elem.get()
-        # if (isinstance(elem, parseobj.ParseObj) and len(elem._elems) > 0
-        #     and elem._elems[0].name == '_policy'):
-        #     policy = elem._elems[0]
-        #     if len(elem._elems) != 1:
-        #         raise RuntimeError(
-        #             '_policy only accepts one argument; '
-        #             + ' [{}] given'.format(len(elem._elems)))
-        #     elif policy.args is None or len(policy.args) != 1 or (policy.kwargs is not None and len(policy.kwargs) > 0) or policy.key is not None or policy.modification is not None:
-        #         raise RuntimeError(
-        #             '_policy is not well-formed [{}]'.format(
-        #                 str(policy)))
-
-        #     if 'policy' not in opts.keys():
-        #         opts['policy'] = policy.args[0]
-        #     else:
-        #         opts['policy'] |= policy.args[0]
-        # elif (isinstance(elem, parseobj.ParseObj) and len(elem._elems) > 0
-        #     and elem._elems[0].name == '_tag'):
-        #     tag = elem._elems[0]
-        #     if len(elem._elems) != 1:
-        #         raise RuntimeError(
-        #             '_tag only accepts one argument; '
-        #             + ' [{}] given'.format(len(elem._elems)))
-        #     elif tag.args is None or len(tag.args) == 0 or (tag.kwargs is not None and len(tag.kwargs) > 0) or tag.key is not None or tag.modification is not None:
-        #         raise RuntimeError(
-        #             '_tag is not well-formed [{}]'.format(
-        #                 str(tag)))
-
-        #     if 'tag' not in opts.keys():
-        #         opts['tag'] = copy.copy(tag.args)
-        #     else:
-        #         opts['tag'].extend(tag.args)
         else:
             if 'k' in opts.keys():
                 raise RuntimeError('only one attribute is allowed. [%d] given' % (
@@ -388,34 +357,27 @@ class SpeciesAttributesCallback(Callback):
         attribute_dimensionality = {'D': '[length]**2/[time]', 'radius': '[length]'}
 
         if not isinstance(obj, parseobj.OrExp):
-            raise RuntimeError('an invalid object was given [%s]' % (repr(obj)))
-        # elif len(obj._elements()) != 2:
-        #     raise RuntimeError, 'only one attribute is allowed. [%d] given' % (
-        #         len(obj._elements()))
+            raise TypeError('An invalid object was given [{}]'.format(repr(obj)))
 
         elems = obj._elements()
         rhs = elems[-1]
         if isinstance(rhs, parseobj.ExpBase):
             return
+        elif not isinstance(rhs, dict):
+            raise TypeError('parameter must be given as a dict; "{}" given'.format(type(rhs)))
 
         for lhs in elems[: -1]:
             species_list = generate_Species(lhs)
             if len(species_list) != 1:
-                raise RuntimeError(
-                    'only a single species must be given; %d given'
-                    % len(species_list))
+                raise ValueError(
+                    'Only a single Species must be given; {:d} was given'.format(len(species_list))
             elif species_list[0] is None:
-                raise RuntimeError("no species given [%s]" % (repr(obj)))
+                raise ValueError("No species given [{}]".format(repr(obj)))
             elif species_list[0][1] is not None:
-                raise RuntimeError(
-                    "stoichiometry is not available here [%s]" % (repr(obj)))
+                raise ValueError("Stoichiometry is not available here [{}]".format(repr(obj)))
 
             sp = species_list[0][0]
 
-            if not isinstance(rhs, dict):
-                raise RuntimeError(
-                    'parameter must be given as a dict; "%s" given'
-                    % str(rhs))
             for key, value in rhs.items():
                 if unit.HAS_PINT and isinstance(value, unit._Quantity):
                     if (unit.STRICT and key in attribute_dimensionality
