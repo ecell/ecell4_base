@@ -1,4 +1,3 @@
-import textwrap
 from logging import getLogger
 _log = getLogger(__name__)
 
@@ -7,7 +6,7 @@ from ..util.parseobj import AnyCallable, ExpBase
 import pint
 from pint.quantity import _Quantity
 from pint.unit import _Unit
-from pint.errors import UndefinedUnitError
+# from pint.errors import UndefinedUnitError
 
 __all__ = [
     'getUnitRegistry', '_Quantity', '_Unit', 'check_dimensionality', 'wrap_quantity',
@@ -64,7 +63,7 @@ def getUnitRegistry(length="meter", time="second", substance="item", volume=None
 
     base_units = [unit for unit in (length, time, substance, volume) if unit is not None]
     base_units.extend(other)
-    s = ureg.System.from_lines(
+    _ = ureg.System.from_lines(
         ["@system local using international"] + base_units,
         ureg.get_base_units)
     ureg.default_system = 'local'
