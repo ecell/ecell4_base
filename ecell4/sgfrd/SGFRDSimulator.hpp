@@ -118,7 +118,7 @@ class SGFRDSimulator :
         ParticleID pid; Particle p;
         BOOST_FOREACH(boost::tie(pid, p), this->world_->list_particles())
         {
-            add_event(create_closely_fitted_domain(create_closely_fitted_shell(
+            add_event(create_tight_domain(create_tight_shell(
                       pid, p, this->get_face_id(pid)), pid, p));
         }
         return ;
@@ -535,8 +535,8 @@ class SGFRDSimulator :
                 {
                     boost::tie(pids[i], ps[i], fids[i]) = propagated[i];
                     SGFRD_TRACE(tracer_.write("adding tight domain > %1%", pids[i]))
-                    sids[i] = create_closely_fitted_shell(pids[i], ps[i], fids[i]);
-                    doms[i] = create_closely_fitted_domain(sids[i], pids[i], ps[i]);
+                    sids[i] = create_tight_shell(pids[i], ps[i], fids[i]);
+                    doms[i] = create_tight_domain(sids[i], pids[i], ps[i]);
                     dids[i] = add_event(doms[i]);
                 }
                 SGFRD_TRACE(tracer_.write("tight-domains assigned"));
@@ -561,8 +561,8 @@ class SGFRDSimulator :
                 BOOST_FOREACH(boost::tie(pid, p, fid), results)
                 {
                     SGFRD_TRACE(tracer_.write("adding next event for %1%", pid))
-                    add_event(create_closely_fitted_domain(
-                              create_closely_fitted_shell(pid, p, fid), pid, p));
+                    add_event(create_tight_domain(
+                              create_tight_shell(pid, p, fid), pid, p));
                 }
                 return;
             }
@@ -582,8 +582,8 @@ class SGFRDSimulator :
                 BOOST_FOREACH(boost::tie(pid, p, fid), escaped)
                 {
                     SGFRD_TRACE(tracer_.write("adding next event for %1%", pid))
-                    add_event(create_closely_fitted_domain(
-                                create_closely_fitted_shell(pid, p, fid), pid, p));
+                    add_event(create_tight_domain(
+                                create_tight_shell(pid, p, fid), pid, p));
                 }
                 return;
             }
@@ -606,8 +606,8 @@ class SGFRDSimulator :
                     SGFRD_TRACE(tracer_.write(
                                 "adding next event for particle %1%", pid))
 
-                    add_event(create_closely_fitted_domain(
-                                create_closely_fitted_shell(pid, p, fid), pid, p));
+                    add_event(create_tight_domain(
+                                create_tight_shell(pid, p, fid), pid, p));
                 }
                 return;
             }
@@ -1208,11 +1208,10 @@ class SGFRDSimulator :
                 std::copy(dom.last_reactions().begin(), dom.last_reactions().end(),
                           std::back_inserter(this->last_reactions_));
                 ParticleID pid; Particle p; FaceID fid;
-                BOOST_FOREACH(boost::tie(pid, p, fid),
-                              this->remove_multi(dom))
+                BOOST_FOREACH(boost::tie(pid, p, fid), this->remove_multi(dom))
                 {
-                    this->add_event(this->create_closely_fitted_domain(
-                        this->create_closely_fitted_shell(pid, p, fid), pid, p));
+                    this->add_event(this->create_tight_domain(
+                        this->create_tight_shell(pid, p, fid), pid, p));
                 }
                 SGFRD_TRACE(tracer_.write("multi domain (id = %1%) removed.", did))
                 return;
@@ -1225,8 +1224,8 @@ class SGFRDSimulator :
                 BOOST_FOREACH(boost::tie(pid, p, fid),
                               this->remove_multi(dom))
                 {
-                    this->add_event(this->create_closely_fitted_domain(
-                        this->create_closely_fitted_shell(pid, p, fid), pid, p));
+                    this->add_event(this->create_tight_domain(
+                        this->create_tight_shell(pid, p, fid), pid, p));
                 }
                 SGFRD_TRACE(tracer_.write("multi domain (id = %1%) removed.", did))
                 return;
@@ -1328,8 +1327,8 @@ class SGFRDSimulator :
             {
                 SGFRD_TRACE(tracer_.write(
                     "add closely-fitted domain to bursted particle %1%", pid_))
-                did_ = add_event(create_closely_fitted_domain(
-                    create_closely_fitted_shell(pid_, p_, fid_), pid_, p_));
+                did_ = add_event(create_tight_domain(
+                    create_tight_shell(pid_, p_, fid_), pid_, p_));
                 results.push_back(std::make_pair(did_,
                     ecell4::polygon::distance(this->polygon(),
                         std::make_pair(p.position(), fid),
@@ -1379,8 +1378,8 @@ class SGFRDSimulator :
                 SGFRD_TRACE(tracer_.write(
                     "add closely-fitted domain to bursted particle %1%", pid_))
 
-                did_ = add_event(create_closely_fitted_domain(
-                    create_closely_fitted_shell(pid_, p_, fid_), pid_, p_));
+                did_ = add_event(create_tight_domain(
+                    create_tight_shell(pid_, p_, fid_), pid_, p_));
                 results.push_back(std::make_pair(did_,
                     ecell4::polygon::distance(this->polygon(),
                         vpos, std::make_pair(p_.position(), fid_)) -
@@ -1617,10 +1616,10 @@ class SGFRDSimulator :
         }
     }
 
-    ShellID create_closely_fitted_shell(
+    ShellID create_tight_shell(
             const ParticleID& pid, const Particle& p, const FaceID fid)
     {
-        SGFRD_SCOPE(us, create_closely_fitted_shell, tracer_);
+        SGFRD_SCOPE(us, create_tight_shell, tracer_);
         SGFRD_TRACE(tracer_.write("add close shell for %1% @ face %2%", pid, fid))
         SGFRD_TRACE(tracer_.write("species %1% has radius %2%",
                     p.species_serial(), p.radius()))
@@ -1634,10 +1633,10 @@ class SGFRDSimulator :
         SGFRD_TRACE(tracer_.write("new shell id is %1%", sid))
         return sid;
     }
-    Single create_closely_fitted_domain(
+    Single create_tight_domain(
             const ShellID& sid, const ParticleID& pid, const Particle& p)
     {
-        SGFRD_SCOPE(us, create_closely_fitted_domain, tracer_);
+        SGFRD_SCOPE(us, create_tight_domain, tracer_);
         SGFRD_TRACE(tracer_.write("for particle %1%, shell %2%", pid, sid))
         return Single(Single::ESCAPE, 0., this->time(), sid, std::make_pair(pid, p));
     }

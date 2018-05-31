@@ -436,8 +436,8 @@ void SGFRDSimulator::fire_single(const Single& dom, DomainID did)
                 SGFRD_TRACE(tracer_.write("adding next event for %1%", pid))
                 // here, by calling create_event, the first domain might include
                 // the other particle that is one of the result of 1->2 reaction
-                add_event(create_closely_fitted_domain(
-                            create_closely_fitted_shell(pid, p, fid), pid, p));
+                add_event(create_tight_domain(
+                            create_tight_shell(pid, p, fid), pid, p));
             }
             return;
         }
@@ -491,8 +491,8 @@ bool SGFRDSimulator::burst_and_shrink_overlaps(
                 std::make_pair(p.position(), fid),
                 std::make_pair(p_.position(), fid_));
             no_overlap = no_overlap && (dist > p.radius() + p_.radius());
-            add_event(create_closely_fitted_domain(
-                create_closely_fitted_shell(pid_, p_, fid_), pid_, p_));
+            add_event(create_tight_domain(
+                create_tight_shell(pid_, p_, fid_), pid_, p_));
         }
         remove_event(did_);
     }
@@ -756,13 +756,9 @@ void SGFRDSimulator::add_to_multi_recursive(Multi& multi_to_join)
                     else // enough distant. add closely-fitted shell
                     {
                         SGFRD_TRACE(tracer_.write("add tight shell to the particle"))
-                        add_event(
-                            create_closely_fitted_domain(
-                                create_closely_fitted_shell(
-                                    pid, p, this->get_face_id(pid)
-                                    ), pid, p
-                                )
-                            );
+                        add_event(create_tight_domain(
+                            create_tight_shell(pid, p, this->get_face_id(pid)),
+                            pid, p));
                     }
                 }
                 remove_event(did);
