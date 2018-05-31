@@ -199,14 +199,19 @@ public:
 
     const Real t() const
     {
-        // check synchro
-        assert((*ps3d_).t() == (*ps2d_).t());
+        if(ps2d_)
+        {
+            assert((*ps3d_).t() == (*ps2d_).t());
+        }
         return (*ps3d_).t();
     }
 
     void set_t(const Real& t)
     {
-        (*ps2d_).set_t(t);
+        if(ps2d_)
+        {
+            (*ps2d_).set_t(t);
+        }
         (*ps3d_).set_t(t);
     }
 
@@ -214,53 +219,62 @@ public:
 
     const Real3& edge_lengths() const
     {
-        // check
-//         assert((*ps3d_).edge_lengths() == (*ps2d_).edge_lengths());
+        if(ps2d_)
+        {
+            assert((*ps3d_).edge_lengths() == (*ps2d_).edge_lengths());
+        }
         return (*ps3d_).edge_lengths();
     }
 
     Integer num_particles() const
     {
-        return (*ps2d_).num_particles() + (*ps3d_).num_particles();
+        return (*ps3d_).num_particles() +
+            (static_cast<bool>(ps2d_) ? (*ps2d_).num_particles() : 0);
     }
 
     Integer num_particles(const Species& species) const
     {
-        return (*ps2d_).num_particles(species) + (*ps3d_).num_particles(species);
+        return (*ps3d_).num_particles(species) +
+            (static_cast<bool>(ps2d_) ? (*ps2d_).num_particles(species) : 0);
     }
 
     Integer num_particles_exact(const Species& species) const
     {
-        return (*ps2d_).num_particles_exact(species) +
-               (*ps3d_).num_particles_exact(species);
+        return (*ps3d_).num_particles_exact(species) +
+            (static_cast<bool>(ps2d_) ? (*ps2d_).num_particles_exact(species) : 0);
     }
 
     bool has_particle(const ParticleID& pid) const
     {
-        return (*ps2d_).has_particle(pid) || (*ps3d_).has_particle(pid);
+        return (*ps3d_).has_particle(pid) ||
+           (static_cast<bool>(ps2d_) ? (*ps2d_).has_particle(pid) : false);
     }
 
     std::vector<std::pair<ParticleID, Particle> > list_particles() const
     {
-        return concat((*ps3d_).list_particles(), (*ps2d_).list_particles());
+        return (!ps2d_) ? (*ps3d_).list_particles() :
+            concat((*ps3d_).list_particles(), (*ps2d_).list_particles());
     }
 
     std::vector<std::pair<ParticleID, Particle> >
     list_particles(const Species& sp) const
     {
-        return concat((*ps3d_).list_particles(sp), (*ps2d_).list_particles(sp));
+        return (!ps2d_) ? (*ps3d_).list_particles() :
+            concat((*ps3d_).list_particles(sp), (*ps2d_).list_particles(sp));
     }
 
     std::vector<std::pair<ParticleID, Particle> >
     list_particles_exact(const Species& sp) const
     {
-        return concat((*ps3d_).list_particles_exact(sp),
-                      (*ps2d_).list_particles_exact(sp));
+        return (!ps2d_) ? (*ps3d_).list_particles_exact(sp) :
+            concat((*ps3d_).list_particles_exact(sp),
+                   (*ps2d_).list_particles_exact(sp));
     }
 
     std::vector<Species> list_species() const
     {
-        return concat((*ps3d_).list_species(), (*ps2d_).list_species());
+        return (!ps2d_) ? (*ps3d_).list_species() :
+            concat((*ps3d_).list_species(), (*ps2d_).list_species());
     }
 
     virtual Real get_value(const Species& sp) const
@@ -283,6 +297,7 @@ public:
     bool update_particle_without_checking(
             const ParticleID& pid, const Particle& p, const FaceID& fid)
     {
+        assert(ps2d_);
         return (*ps2d_).update_particle(pid, p, fid);
     }
 
@@ -330,21 +345,33 @@ public:
     get_particle(const ParticleID& pid) const
     {
         if((*ps3d_).has_particle(pid))
+        {
             return (*ps3d_).get_particle(pid);
-        else if((*ps2d_).has_particle(pid))
+        }
+        else if(ps2d_ && (*ps2d_).has_particle(pid))
+        {
             return (*ps2d_).get_particle(pid);
+        }
         else
+        {
             throw NotFound("BDWorld: no such particle");
+        }
     }
 
     void remove_particle(const ParticleID& pid)
     {
         if((*ps3d_).has_particle(pid))
+        {
             (*ps3d_).remove_particle(pid);
-        else if((*ps2d_).has_particle(pid))
+        }
+        else if(ps2d_ && (*ps2d_).has_particle(pid))
+        {
             (*ps2d_).remove_particle(pid);
+        }
         else
+        {
             throw NotFound("BDWorld: no such particle");
+        }
     }
 
     // list-up all the particles using 3D distance.
@@ -352,18 +379,19 @@ public:
     list_particles_within_radius(
         const Real3& pos, const Real& radius) const
     {
-        return concat((*ps3d_).list_particles_within_radius(pos, radius),
-                      (*ps2d_).list_particles_within_radius(pos, radius));
+        return (!ps2d_) ? (*ps3d_).list_particles_within_radius(pos, radius) :
+            concat((*ps3d_).list_particles_within_radius(pos, radius),
+                   (*ps2d_).list_particles_within_radius(pos, radius));
     }
 
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
     list_particles_within_radius(
         const Real3& pos, const Real& radius, const ParticleID& ignore) const
     {
-        return concat(
-            (*ps3d_).list_particles_within_radius(pos, radius, ignore),
-            (*ps2d_).list_particles_within_radius(pos, radius, ignore)
-            );
+        return (!ps2d_) ?
+            (*ps3d_).list_particles_within_radius(pos, radius, ignore) :
+            concat((*ps3d_).list_particles_within_radius(pos, radius, ignore),
+                   (*ps2d_).list_particles_within_radius(pos, radius, ignore));
     }
 
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
@@ -371,9 +399,11 @@ public:
         const Real3& pos, const Real& radius,
         const ParticleID& ignore1, const ParticleID& ignore2) const
     {
-        return concat(
-            (*ps3d_).list_particles_within_radius(pos, radius, ignore1, ignore2),
-            (*ps2d_).list_particles_within_radius(pos, radius, ignore1, ignore2)
+        return (!ps2d_) ?
+            (*ps3d_).list_particles_within_radius(pos, radius, ignore1, ignore2) :
+            concat(
+                (*ps3d_).list_particles_within_radius(pos, radius, ignore1, ignore2),
+                (*ps2d_).list_particles_within_radius(pos, radius, ignore1, ignore2)
             );
     }
 
@@ -382,6 +412,7 @@ public:
     list_particles_within_radius(
         const std::pair<Real3, FaceID>& pos, const Real& radius) const
     {
+        assert(ps2d_);
         return this->ps2d_->list_particles_within_radius(pos, radius);
     }
 
@@ -390,6 +421,7 @@ public:
         const std::pair<Real3, FaceID>& pos, const Real& radius,
         const ParticleID& ignore) const
     {
+        assert(ps2d_);
         return this->ps2d_->list_particles_within_radius(pos, radius, ignore);
     }
 
@@ -398,6 +430,7 @@ public:
         const std::pair<Real3, FaceID>& pos, const Real& radius,
         const ParticleID& ignore1, const ParticleID& ignore2) const
     {
+        assert(ps2d_);
         return this->ps2d_->list_particles_within_radius(
                 pos, radius, ignore1, ignore2);
     }
@@ -421,6 +454,7 @@ public:
     apply_surface(const std::pair<Real3, FaceID>& position,
                   const Real3& displacement) const
     {
+        assert(ps2d_);
         return (*ps2d_).apply_surface(position, displacement);
     }
 
@@ -440,6 +474,7 @@ public:
     inline Real distance_sq(const Real3& pos1, const FaceID& fid1,
                             const Real3& pos2, const FaceID& fid2) const
     {
+        assert(ps2d_);
         return (*ps2d_).distance_sq(pos1, fid1, pos2, fid2);
     }
 
@@ -447,6 +482,7 @@ public:
     inline Real distance(const Real3& pos1, const FaceID& fid1,
                          const Real3& pos2, const FaceID& fid2) const
     {
+        assert(ps2d_);
         return (*ps2d_).distance(pos1, fid1, pos2, fid2);
     }
 
@@ -454,13 +490,14 @@ public:
 
     Integer num_molecules(const Species& sp) const
     {
-        return (*ps3d_).num_molecules(sp) + (*ps2d_).num_molecules(sp);
+        return (*ps3d_).num_molecules(sp) +
+            (static_cast<bool>(ps2d_) ? (*ps2d_).num_molecules(sp) : 0);
     }
 
     Integer num_molecules_exact(const Species& sp) const
     {
         return (*ps3d_).num_molecules_exact(sp) +
-               (*ps2d_).num_molecules_exact(sp);
+            (static_cast<bool>(ps2d_) ? (*ps2d_).num_molecules_exact(sp) : 0);
     }
 
     //XXX only 3D-molecules are available yet.
@@ -605,6 +642,8 @@ public:
     // XXX
     ParticleSpace&       container_3D(){return *ps3d_;}
     ParticleContainer2D& container_2D(){return *ps2d_;}
+
+    bool has_2D() const {return static_cast<bool>(ps2d_);}
 
     // TODO make return type Shape*
     const ecell4::Polygon& polygon() const {return ps2d_->polygon();}
