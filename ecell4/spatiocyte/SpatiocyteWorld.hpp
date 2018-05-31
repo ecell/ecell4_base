@@ -802,20 +802,19 @@ public:
     boost::optional<ParticleID>
     new_voxel_structure(const Species& sp, const Voxel& voxel)
     {
-        const molecule_info_type minfo(get_molecule_info(sp));
-        std::pair<std::pair<ParticleID, ParticleVoxel>, bool> new_voxel(new_voxel_structure(
-                    ParticleVoxel(sp, voxel.coordinate, minfo.radius, minfo.D, minfo.loc)));
+        space_container_type::iterator space(get_space_mut(voxel));
+        if (!space->has_species(sp))
+        {
+            const molecule_info_type minfo(get_molecule_info(sp));
+            space->make_molecular_type(sp, minfo.radius, minfo.D, minfo.loc);
+        }
 
-        if (new_voxel.second)
-            return new_voxel.first.first;
+        ParticleID pid;
+
+        if (space->add_voxel(sp, pid, voxel.coordinate))
+            return pid;
 
         return boost::none;
-    }
-
-    std::pair<std::pair<ParticleID, ParticleVoxel>, bool> new_voxel_structure(ParticleVoxel v)
-    {
-        const bool is_succeeded(update_voxel(ParticleID(), v));
-        return std::make_pair(std::make_pair(ParticleID(), v), is_succeeded);
     }
 
     bool add_molecules(const Species& sp, const Integer& num);

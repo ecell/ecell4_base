@@ -224,13 +224,12 @@ Integer SpatiocyteWorld::add_structure3(const Species& sp, const boost::shared_p
         if (L > 0)
             continue;
 
-        const ParticleVoxel v(sp, coord, info.radius, info.D, info.loc);
         if (get_voxel_pool_at(Voxel(coord))->species().serial() != info.loc)
         {
             continue;
         }
 
-        if (new_voxel_structure(v).second)
+        if (new_voxel_structure(sp, coord))
             ++count;
     }
     return count;
@@ -247,13 +246,12 @@ SpatiocyteWorld::add_structure2(
         if (!is_surface_voxel(coord, shape))
             continue;
 
-        const ParticleVoxel v(sp, coord, info.radius, info.D, info.loc);
         if (get_voxel_pool_at(Voxel(coord))->species().serial() != info.loc)
         {
             continue;
         }
 
-        if (new_voxel_structure(v).second)
+        if (new_voxel_structure(sp, coord))
             ++count;
     }
     return count;
