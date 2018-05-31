@@ -455,6 +455,9 @@ void SGFRDSimulator::fire_single(const Single& dom, DomainID did)
 bool SGFRDSimulator::burst_and_shrink_overlaps(
         const Particle& p, const FaceID& fid, const DomainID& did)
 {
+    // Here, particle is being outside of a shell, by reaction or BDstep.
+    // But before bursting, the particle is not assigned to World.
+    // So it has no ID.
     SGFRD_SCOPE(us, burst_and_shrink_overlaps, tracer_);
     const Real tm = this->time();
     BOOST_AUTO(intruders, this->get_intrusive_domains(
@@ -473,19 +476,26 @@ bool SGFRDSimulator::burst_and_shrink_overlaps(
             SGFRD_TRACE(tracer_.write("domain %1% was ignored", did_))
             continue;
         }
-
         if(!(this->event_exists(did_)))
         {
             SGFRD_TRACE(tracer_.write("domain %1% does not exist. it may have "
                         "already been fired.", did_));
-            // TODO consider how to handle this
+            assert(false);
+        }
+
+        boost::shared_ptr<event_type> ev_(get_event(did_));
+
+        if(ev_->which_domain() == SGFRDEvent::multi_domain)
+        {
+            // Multi overlaps with Multi. it rarely causes recursive bursting.
+            // in this case, it is considered as a collision.
             no_overlap = false;
             continue;
         }
 
         ParticleID pid_; Particle p_; FaceID fid_;
         BOOST_FOREACH(boost::tie(pid_, p_, fid_),
-                      burst_event(std::make_pair(did_, get_event(did_)), tm))
+                      burst_event(std::make_pair(did_, ev_), tm))
         {
             const Real dist = this->polygon().distance(
                 std::make_pair(p.position(), fid),
