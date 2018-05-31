@@ -65,42 +65,6 @@ void OffLatticeSpace::reset(const position_container& positions,
     }
 }
 
-boost::shared_ptr<VoxelPool> OffLatticeSpace::get_voxel_pool(ParticleVoxel voxel)
-{
-    const Species& sp(voxel.species);
-
-    {
-        voxel_pool_map_type::iterator itr(voxel_pools_.find(sp));
-        if (itr != voxel_pools_.end())
-        {
-            return (*itr).second;
-        }
-    }
-
-    {
-        molecule_pool_map_type::iterator itr(molecule_pools_.find(sp));
-        if (itr != molecule_pools_.end())
-        {
-            return (*itr).second;  // upcast
-        }
-    }
-
-    // Create a new molecular pool
-
-    const bool suc = make_molecular_type(sp, voxel.radius, voxel.D, voxel.loc);
-    if (!suc)
-    {
-        throw IllegalState("never reach here");
-    }
-
-    molecule_pool_map_type::iterator i = molecule_pools_.find(sp);
-    if (i == molecule_pools_.end())
-    {
-        throw IllegalState("never reach here");
-    }
-    return (*i).second;  // upcast
-}
-
 boost::optional<OffLatticeSpace::coordinate_type>
 OffLatticeSpace::get_coord(const ParticleID& pid) const
 {
@@ -160,7 +124,6 @@ bool OffLatticeSpace::update_voxel(const ParticleID& pid, ParticleVoxel v)
         throw NotSupported("Out of bounds");
 
     boost::shared_ptr<VoxelPool> new_vp(get_voxel_pool(v));
-    // VoxelPool* new_vp(get_voxel_pool(v)); //XXX: need MoleculeInfo
     boost::shared_ptr<VoxelPool> dest_vp(get_voxel_pool_at(to_coord));
 
     if (dest_vp != new_vp->location())

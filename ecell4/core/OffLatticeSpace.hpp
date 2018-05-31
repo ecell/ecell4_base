@@ -127,8 +127,6 @@ public:
 
 protected:
 
-    boost::shared_ptr<VoxelPool> get_voxel_pool(ParticleVoxel v);
-
     bool is_in_range(const coordinate_type& coord) const
     {
         return 0 <= coord && coord < voxels_.size();

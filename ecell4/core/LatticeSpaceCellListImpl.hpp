@@ -386,8 +386,6 @@ public:
 
 protected:
 
-    boost::shared_ptr<VoxelPool> get_voxel_pool(ParticleVoxel v);
-
     std::pair<boost::shared_ptr<VoxelPool>, coordinate_type>
         __get_coordinate(const ParticleID& pid);
     std::pair<boost::shared_ptr<const VoxelPool>, coordinate_type>

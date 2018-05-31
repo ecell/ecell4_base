@@ -116,8 +116,6 @@ protected:
         return periodic_transpose(coord);
     }
 
-    boost::shared_ptr<VoxelPool> get_voxel_pool(ParticleVoxel v);
-
     void initialize_voxels(const bool is_periodic);
 
     std::pair<coordinate_type, bool>

@@ -181,40 +181,6 @@ boost::shared_ptr<VoxelPool> LatticeSpaceCellListImpl::get_voxel_pool_at(
     return vacant_;
 }
 
-boost::shared_ptr<VoxelPool> LatticeSpaceCellListImpl::get_voxel_pool(ParticleVoxel v)
-{
-    const Species& sp(v.species);
-
-    {
-        voxel_pool_map_type::iterator itr(voxel_pools_.find(sp));
-        if (itr != voxel_pools_.end())
-        {
-            return (*itr).second;
-        }
-    }
-
-    {
-        molecule_pool_map_type::iterator itr(molecule_pools_.find(sp));
-        if (itr != molecule_pools_.end())
-        {
-            return (*itr).second;  // upcast
-        }
-    }
-
-    const bool suc = make_molecular_type(sp, v.radius, v.D, v.loc);
-    if (!suc)
-    {
-        throw IllegalState("never reach here");
-    }
-
-    molecule_pool_map_type::iterator i = molecule_pools_.find(sp);
-    if (i == molecule_pools_.end())
-    {
-        throw IllegalState("never reach here");
-    }
-    return (*i).second;  // upcast
-}
-
 void LatticeSpaceCellListImpl::add_structure(const Species& sp,
     const boost::shared_ptr<const Shape>& s, const std::string loc)
 {
