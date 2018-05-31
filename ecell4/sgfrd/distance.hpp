@@ -20,9 +20,8 @@ struct distance_sq_impl
 
     Real operator()(const shape1& s1, const shape2& s2) const
     {
-        throw ecell4::NotSupported((boost::format(
-                    "distance_sq between <%s> and <%s> is not supported") %
-                    type_name_of<shape1>()() % type_name_of<shape2>()()).str());
+        throw ecell4::NotSupported(
+                "distance_sq for this specific shapes is not supported");
     }
 };
 
@@ -110,9 +109,8 @@ struct distance_impl
 
     Real operator()(shape1 s1, shape2 s2) const
     {
-        throw ecell4::NotSupported((boost::format(
-                    "distance between <%s> and <%s> is not supported") %
-                    type_name_of<shape1>()() % type_name_of<shape2>()()).str());
+        throw ecell4::NotSupported(
+                "distance for this specific shapes is not supported");
     }
 };
 
