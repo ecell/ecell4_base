@@ -1,7 +1,6 @@
 #ifndef ECELL4_SGFRD_TRACER
 #define ECELL4_SGFRD_TRACER
 #include <boost/format.hpp>
-#include <boost/chrono.hpp>
 #include <boost/array.hpp>
 #include <boost/preprocessor/cat.hpp>
 #include <boost/preprocessor/stringize.hpp>
@@ -133,79 +132,23 @@ class basic_tracer<char, std::char_traits<char> >
 
 typedef basic_tracer<char, std::char_traits<char> > tracer;
 
-/* ---------------------------- tracer impl end ---------------------------- */
-
-
-namespace detail
-{
-
-template<typename durT>
-struct stringize_impl;
-
-template<>
-struct stringize_impl<boost::chrono::nanoseconds>
-{
-    static const char* invoke() throw() {return "ns";}
-};
-
-template<>
-struct stringize_impl<boost::chrono::microseconds>
-{
-    static const char* invoke() throw() {return "us";}
-};
-
-template<>
-struct stringize_impl<boost::chrono::milliseconds>
-{
-    static const char* invoke() throw() {return "ms";}
-};
-
-template<>
-struct stringize_impl<boost::chrono::seconds>
-{
-    static const char* invoke() throw() {return "s";}
-};
-
-template<>
-struct stringize_impl<boost::chrono::minutes>
-{
-    static const char* invoke() throw() {return "m";}
-};
-
-template<>
-struct stringize_impl<boost::chrono::hours>
-{
-    static const char* invoke() throw() {return "h";}
-};
-
-} // detail
-
-template<typename durT>
-inline const char* stringize() throw()
-{
-    return detail::stringize_impl<durT>::invoke();
-}
-
-template<typename durationT, typename charT = char, typename traitsT = std::char_traits<charT> >
+template<typename charT = char, typename traitsT = std::char_traits<charT> >
 class scope
 {
   public:
-    typedef charT     char_type;
-    typedef traitsT   traits_type;
-    typedef durationT duration_type;
+    typedef charT   char_type;
+    typedef traitsT traits_type;
     typedef basic_tracer<char_type, traits_type> tracer_type;
 
   public:
     scope(tracer_type& trc)
-      : tracer_(trc), start_(boost::chrono::high_resolution_clock::now()),
-        name_("")
+      : tracer_(trc), name_("")
     {
         tracer_.write("{");
         tracer_.indent();
     }
     scope(tracer_type& trc, const std::string& name)
-      : tracer_(trc), start_(boost::chrono::high_resolution_clock::now()),
-        name_(name)
+      : tracer_(trc), name_(name)
     {
         tracer_.write("%s {", name_);
         tracer_.indent();
@@ -213,26 +156,22 @@ class scope
     ~scope()
     {
         tracer_.unindent();
-        tracer_.write("} %1% [%2%]",
-            boost::chrono::duration_cast<durationT>(
-                boost::chrono::high_resolution_clock::now() - start_).count(),
-            stringize<durationT>());
+        tracer_.write("}");
     }
 
     std::string const& name() const throw() {return name_;}
 
   private:
     tracer_type& tracer_;
-    boost::chrono::steady_clock::time_point start_;
     const std::string name_;
 };
 
-typedef scope<boost::chrono::nanoseconds,  char, std::char_traits<char> > scope_ns;
-typedef scope<boost::chrono::microseconds, char, std::char_traits<char> > scope_us;
-typedef scope<boost::chrono::milliseconds, char, std::char_traits<char> > scope_ms;
-typedef scope<boost::chrono::seconds,      char, std::char_traits<char> > scope_s;
-typedef scope<boost::chrono::minutes,      char, std::char_traits<char> > scope_m;
-typedef scope<boost::chrono::hours,        char, std::char_traits<char> > scope_h;
+typedef scope</*boost::chrono::nanoseconds, */ char, std::char_traits<char> > scope_ns;
+typedef scope</*boost::chrono::microseconds,*/ char, std::char_traits<char> > scope_us;
+typedef scope</*boost::chrono::milliseconds,*/ char, std::char_traits<char> > scope_ms;
+typedef scope</*boost::chrono::seconds,     */ char, std::char_traits<char> > scope_s;
+typedef scope</*boost::chrono::minutes,     */ char, std::char_traits<char> > scope_m;
+typedef scope</*boost::chrono::hours,       */ char, std::char_traits<char> > scope_h;
 
 /* ----------------------------- scope impl end ----------------------------- */
 
