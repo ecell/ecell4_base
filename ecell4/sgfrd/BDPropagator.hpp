@@ -548,8 +548,9 @@ public:
         const Real3 rnd = random_circular_uniform(r);
         const Real tilt = calc_angle(Real3(0, 0, 1), normal);
 
-             if(std::abs(tilt - M_PI) < 1e-10) return rnd;
-        else if(std::abs(tilt + M_PI) < 1e-10) return rnd * (-1.0);
+        if     (std::abs(tilt)        < 1e-10) {return rnd;}
+        else if(std::abs(tilt - M_PI) < 1e-10) {return rnd * (-1.0);}
+        else if(std::abs(tilt + M_PI) < 1e-10) {return rnd * (-1.0);}
 
         const Real3 axis = cross_product(Real3(0., 0., 1.), normal);
         return rotate(tilt, axis * (1. / length(axis)), rnd);
@@ -557,8 +558,8 @@ public:
 
     Real3 draw_displacement(const Particle& p, const FaceID& fid)
     {
-        return random_circular_uniform(rng_.gaussian(std::sqrt(4*p.D()*dt_)),
-                                       polygon_.triangle_at(fid).normal());
+        const Real r = rng_.gaussian(std::sqrt(4 * p.D() * dt_));
+        return random_circular_uniform(r, polygon_.triangle_at(fid).normal());
     }
 
     Real3 draw_ipv(const Real r, const Real D, const Real3& normal)

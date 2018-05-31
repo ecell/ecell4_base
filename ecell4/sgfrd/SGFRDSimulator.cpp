@@ -210,6 +210,9 @@ SGFRDSimulator::attempt_reaction_1_to_2(const ReactionRule& rule,
     const Real D1(mol1.D),      D2(mol2.D);
     const Real r1(mol1.radius), r2(mol2.radius), r12(mol1.radius + mol2.radius);
 
+    SGFRD_TRACE(tracer_.write("products has D1(%1%), D2(%2%), r1(%3%), r2(%4%)",
+                D1, D2, r1, r2));
+
     boost::array<std::pair<Real3, FaceID>, 2> newpfs;
     newpfs[0] = std::make_pair(p.position(), fid);
     newpfs[1] = std::make_pair(p.position(), fid);
@@ -224,7 +227,9 @@ SGFRDSimulator::attempt_reaction_1_to_2(const ReactionRule& rule,
     while(separation_count != 0)
     {
         --separation_count;
-        SGFRD_SCOPE(us, try_to_split, tracer_)
+        SGFRD_SCOPE(us, try_to_split, tracer_);
+
+        SGFRD_TRACE(tracer_.write("separation count = %1%", separation_count));
 
         const Real3 ipv(random_circular_uniform(r12 + separation_factor, fid));
         SGFRD_TRACE(tracer_.write("length of ipv drawn now is %1%", length(ipv)));

@@ -1882,13 +1882,25 @@ class SGFRDSimulator :
     // for BD part...
     Real3 random_circular_uniform(const Real r, const FaceID& fid)
     {
-        const Real theta = this->rng_.uniform(0., 2 * M_PI);
-        const Real3 rnd(r * std::cos(theta), r * std::sin(theta), 0.);
-        const Real3& normal = this->polygon().triangle_at(fid).normal();
-        const Real tilt  = calc_angle(Real3(0, 0, 1), normal);
+        SGFRD_SCOPE(ns, sgfrd_random_circular_uniform, tracer_);
 
-             if(std::abs(tilt - M_PI) < 1e-8){return rnd;}
-        else if(std::abs(tilt + M_PI) < 1e-8){return rnd * (-1.0);}
+        const Real   theta = this->rng_.uniform(0., 2 * M_PI);
+        SGFRD_TRACE(tracer_.write("theta = %1%", theta));
+
+        const Real3  rnd(r * std::cos(theta), r * std::sin(theta), 0.);
+        SGFRD_TRACE(tracer_.write("random displacement = %1%", rnd));
+
+        const Real3& normal = this->polygon().triangle_at(fid).normal();
+        SGFRD_TRACE(tracer_.write("normal vector on face(%1%) = %2%", fid, normal));
+
+        const Real   tilt   = calc_angle(Real3(0, 0, 1), normal);
+        SGFRD_TRACE(tracer_.write("tilt angle = %1%", tilt));
+
+        if     (std::abs(tilt)        < 1e-10) {return rnd;}
+        else if(std::abs(tilt - M_PI) < 1e-10) {return rnd * (-1.0);}
+        else if(std::abs(tilt + M_PI) < 1e-10) {return rnd * (-1.0);}
+
+        SGFRD_TRACE(tracer_.write("tilt angle is not 0 or +-pi. rotating..."));
 
         const Real3 axis = cross_product(Real3(0., 0., 1.), normal);
         return rotate(tilt, axis * (1. / length(axis)), rnd);
