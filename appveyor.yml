@@ -73,6 +73,10 @@ install:
 
   # - msbuild GSL.sln /p:Configuration=Release /v:d
 
+  - ls C:/Libraries
+  - ls C:/Libraries/boost
+  - ls C:/Libraries/boost/boost
+
   - if "%PYTHON_VERSION%" == "2.7.14" if "%PYTHON_ARCH%" == "32" cmake -G "Visual Studio 9 2008" -D CMAKE_CXX_FLAGS_RELEASE="/MT" -D CMAKE_CXX_FLAGS_DEBUG="/MTd" -DBOOST_REGEX_LIBRARIES=C:/Libraries/boost/libs -DBoost_INCLUDE_DIR=C:/Libraries/boost -DGSL_INCLUDE_DIR=C:/projects/ecell4/gsl/include -DGSL_CBLAS_LIBRARIES=C:/projects/ecell4/gsl/lib -DGSL_LIBRARIES=C:/projects/ecell4/gsl/lib -DNO_SHARED:BOOL=1 -DNO_BESSEL_TABLE:BOOL=1 .
   # - if "%PYTHON_VERSION%" == "2.7.12" if "%PYTHON_ARCH%" == "64" "C:\Users\appveyor\AppData\Local\Programs\Common\Microsoft\Visual C++ for Python\9.0\vcvarsall.bat" amd64
   # - if "%PYTHON_VERSION%" == "2.7.12" if "%PYTHON_ARCH%" == "64" cmake -G "Visual Studio 9 2008 Win64" -D CMAKE_C_COMPILER="C:/Users/appveyor/AppData/Local/Programs/Common/Microsoft/Visual C++ for Python/9.0/VC/bin/amd64/cl.exe" -D CMAKE_CXX_COMPILER="C:/Users/appveyor/AppData/Local/Programs/Common/Microsoft/Visual C++ for Python/9.0/VC/bin/amd64/cl.exe" -D CMAKE_CXX_FLAGS_RELEASE="/MT" -D CMAKE_CXX_FLAGS_DEBUG="/MTd" -DBOOST_REGEX_LIBRARIES=C:/Libraries/boost/libs -DBoost_INCLUDE_DIR=C:/Libraries/boost -DGSL_INCLUDE_DIR=C:/projects/ecell4/gsl/include -DGSL_CBLAS_LIBRARIES=C:/projects/ecell4/gsl/lib -DGSL_LIBRARIES=C:/projects/ecell4/gsl/lib -DNO_SHARED:BOOL=1 .
