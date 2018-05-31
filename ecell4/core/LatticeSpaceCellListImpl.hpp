@@ -220,6 +220,7 @@ public:
     // }
 
     virtual bool update_voxel(const ParticleID& pid, ParticleVoxel v);
+    virtual bool add_voxel(const Species& sp, const ParticleID& pid, const coordinate_type& coord);
 
     virtual std::pair<ParticleID, ParticleVoxel> get_voxel_at(const coordinate_type& coord) const
     {

@@ -195,6 +195,23 @@ bool OffLatticeSpace::update_voxel(const ParticleID& pid, ParticleVoxel v)
 
     return true;
 }
+
+bool OffLatticeSpace::add_voxel(
+        const Species& species, const ParticleID& pid, const coordinate_type& coord)
+{
+    boost::shared_ptr<VoxelPool> vpool(find_voxel_pool(species));
+    boost::shared_ptr<VoxelPool> location(get_voxel_pool_at(coord));
+
+    if (vpool->location() != location)
+        return false;
+
+    location->remove_voxel_if_exists(coord);
+    vpool->add_voxel(coordinate_id_pair_type(pid, coord));
+    voxels_.at(coord) = vpool;
+
+    return true;
+}
+
 // Same as LatticeSpaceVectorImpl
 bool OffLatticeSpace::remove_voxel(const ParticleID& pid)
 {

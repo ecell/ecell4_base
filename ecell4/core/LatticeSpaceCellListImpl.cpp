@@ -80,6 +80,22 @@ bool LatticeSpaceCellListImpl::update_voxel(const ParticleID& pid, ParticleVoxel
     return true;
 }
 
+bool LatticeSpaceCellListImpl::add_voxel(
+        const Species& sp, const ParticleID& pid, const coordinate_type& coord)
+{
+    boost::shared_ptr<VoxelPool> vpool(find_voxel_pool(sp));
+    boost::shared_ptr<VoxelPool> location(get_voxel_pool_at(coord));
+
+    if (vpool->location() != location)
+        return false;
+
+    location->remove_voxel_if_exists(coord);
+    vpool->add_voxel(coordinate_id_pair_type(pid, coord));
+    update_matrix(coord, vpool);
+
+    return true;
+}
+
 std::pair<boost::shared_ptr<VoxelPool>, LatticeSpaceCellListImpl::coordinate_type>
     LatticeSpaceCellListImpl::__get_coordinate(const ParticleID& pid)
 {

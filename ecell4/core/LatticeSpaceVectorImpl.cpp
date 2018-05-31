@@ -578,6 +578,25 @@ bool LatticeSpaceVectorImpl::update_voxel(const ParticleID& pid, ParticleVoxel v
 }
 
 bool
+LatticeSpaceVectorImpl::add_voxel(
+        const Species& sp,
+        const ParticleID& pid,
+        const coordinate_type& coordinate)
+{
+    boost::shared_ptr<VoxelPool> vpool(find_voxel_pool(sp));
+    boost::shared_ptr<VoxelPool> location(get_voxel_pool_at(coordinate));
+
+    if (vpool->location() != location)
+        return false;
+
+    location->remove_voxel_if_exists(coordinate);
+    vpool->add_voxel(coordinate_id_pair_type(pid, coordinate));
+    voxels_.at(coordinate) = vpool;
+
+    return true;
+}
+
+bool
 LatticeSpaceVectorImpl::add_voxels(
         const Species& sp,
         std::vector<std::pair<ParticleID, coordinate_type> > voxels)
