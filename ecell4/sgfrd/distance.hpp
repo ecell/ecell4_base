@@ -6,7 +6,6 @@
 #include <boost/mpl/and.hpp>
 #include <boost/mpl/or.hpp>
 #include <boost/format.hpp>
-#include <ecell4/sgfrd/type_name_of.hpp>
 
 namespace ecell4
 {
