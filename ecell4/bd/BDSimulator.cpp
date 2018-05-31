@@ -21,6 +21,8 @@ void BDSimulator::step()
             ; // do nothing here
         }
     }
+
+    if((*world_).has_2D())
     {
         BDPropagator2D propagator(*model_, *world_, *rng(), dt(),
                                   reaction_length_, last_reactions_);
