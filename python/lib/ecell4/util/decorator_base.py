@@ -94,12 +94,12 @@ class EchoCallback(Callback):
 
     def notify_bitwise_operations(self, obj):
         stack = traceback.extract_stack()
-        filename, codeline, funcname, text = stack[-2]
+        _, _, funcname, _ = stack[-2]
         self.say(funcname, obj)
 
     def notify_comparisons(self, obj):
         stack = traceback.extract_stack()
-        filename, codeline, funcname, text = stack[-2]
+        _, _, funcname, _ = stack[-2]
         self.say(funcname, obj)
 
     def say(self, method, *args, **kwargs):
