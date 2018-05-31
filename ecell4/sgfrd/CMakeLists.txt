@@ -7,29 +7,8 @@ set(CPP_FILES SGFRDWorld.cpp SGFRDSimulator.cpp)
 
 # add_definitions(-DECELL4_SGFRD_NO_TRACE)
 
-if( Boost_SYSTEM_FOUND AND Boost_CHRONO_FOUND )
-    message(STATUS "Boost system and chrono found.")
-    set(SGFRD_LIBRARIES_TO_BE_LINKED
-        ${Boost_SYSTEM_LIBRARY} ${Boost_CHRONO_LIBRARY})
-else( Boost_SYSTEM_FOUND AND Boost_CHRONO_FOUND )
-    message(STATUS "Boost chrono and system is not found.")
-    message(STATUS "Now trying to compile with some macros to force it inline")
-    message(STATUS "But in some case it fails ")
-    message(STATUS "(e.g. binary distribution does not have any source code, so it doesn't work)")
-    # sometimes ${Boost_LIBRARIES} become empty so here make Boost.Chrono and
-    # Boost.System header-only.
-    add_definitions(-DBOOST_CHRONO_HEADER_ONLY)
-    add_definitions(-DBOOST_SYSTEM_NO_DEPRECATED)
-    add_definitions(-DBOOST_ERROR_CODE_HEADER_ONLY)
-    add_definitions(-DBOOST_SYSTEM_NO_LIB)
-endif( Boost_SYSTEM_FOUND AND Boost_CHRONO_FOUND )
-
 add_executable(sgfrd-sample-reaction sample/reaction.cpp ${CPP_FILES})
-
-if(SGFRD_LIBRARIES_TO_BE_LINKED)
-    target_link_libraries(sgfrd-sample-reaction ecell4-egfrd ecell4-core ecell4-bd
-        ${SGFRD_LIBRARIES_TO_BE_LINKED})
-endif()
+target_link_libraries(sgfrd-sample-reaction ecell4-egfrd ecell4-core ecell4-bd)
 
 # add_library(ecell4-sgfrd SHARED ${CPP_FILES} ${HPP_FILES})
 # target_link_libraries(ecell4-sgfrd ecell4-core ecell4-egfrd)

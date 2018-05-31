@@ -1103,8 +1103,8 @@ DomainID SGFRDSimulator::create_event(
 
 bool SGFRDSimulator::diagnosis() const
 {//{{{
-    const boost::chrono::steady_clock::time_point start_ =
-        boost::chrono::high_resolution_clock::now();
+//     const boost::chrono::steady_clock::time_point start_ =
+//         boost::chrono::high_resolution_clock::now();
 
     bool result = true;
     // 1. check overlap between particles
@@ -1518,12 +1518,12 @@ bool SGFRDSimulator::diagnosis() const
     }
     if(result)
     {
-        const boost::chrono::steady_clock::time_point end_ =
-            boost::chrono::high_resolution_clock::now();
-        std::cerr << "time = " << this->time() << " simulator is sanitized."
-                  << "it took " << static_cast<double>(boost::chrono::duration_cast<
-                      boost::chrono::milliseconds>(end_ - start_).count()) / 1e3
-                  << " seconds.\n";
+//         const boost::chrono::steady_clock::time_point end_ =
+//             boost::chrono::high_resolution_clock::now();
+        std::cerr << "time = " << this->time() << " simulator is sanitized.\n";
+//                   << "it took " << static_cast<double>(boost::chrono::duration_cast<
+//                       boost::chrono::milliseconds>(end_ - start_).count()) / 1e3
+//                   << " seconds.\n";
     }
     std::cerr << std::flush;
     return result;
