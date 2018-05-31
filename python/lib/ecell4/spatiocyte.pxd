@@ -144,8 +144,6 @@ cdef extern from "ecell4/spatiocyte/SpatiocyteWorld.hpp" namespace "ecell4::spat
         @staticmethod
         Real calculate_volume(Cpp_Real3&, Real)
 
-        pair[pair[Cpp_ParticleID, Cpp_ParticleVoxel], bool] new_voxel_interface(Cpp_Species& sp, CppVoxel pos)
-
     cdef Cpp_SpatiocyteWorld* create_spatiocyte_world_cell_list_impl_alias(
         Cpp_Real3&, Real, Cpp_Integer3&, shared_ptr[Cpp_RandomNumberGenerator]&)
     cdef Cpp_SpatiocyteWorld* create_spatiocyte_world_vector_impl_alias(

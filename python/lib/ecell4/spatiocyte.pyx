@@ -1069,32 +1069,6 @@ cdef class SpatiocyteWorld:
         return self.thisptr.get().add_structure(
             deref(sp.thisptr), deref((<Shape>(shape.as_base())).thisptr))
 
-    def new_voxel_interface(self, Species species, Voxel voxel):
-        """new_voxel_interface(species, voxel) -> (ParticleID, ParticleVoxel)
-
-        Create a particle.
-
-        Parameters
-        ----------
-        species : Species
-            The Species of particles to create
-        voxel : Voxel
-            A voxel to place the structure
-
-        Returns
-        -------
-        tuple:
-            A pair of ParticleID and ParticleVoxel
-
-        """
-        cdef pair[pair[Cpp_ParticleID, Cpp_ParticleVoxel], bool] retval
-
-        retval = self.thisptr.get().new_voxel_interface(
-                deref(species.thisptr), deref(voxel.thisptr))
-
-        return ((ParticleID_from_Cpp_ParticleID(address(retval.first.first)), ParticleVoxel_from_Cpp_ParticleVoxel(address(retval.first.second))),
-                retval.second)
-
     def rng(self):
         """Return a random number generator object."""
         return GSLRandomNumberGenerator_from_Cpp_RandomNumberGenerator(

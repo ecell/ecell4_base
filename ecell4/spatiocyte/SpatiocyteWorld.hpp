@@ -818,20 +818,6 @@ public:
         return std::make_pair(std::make_pair(ParticleID(), v), is_succeeded);
     }
 
-    std::pair<std::pair<ParticleID, ParticleVoxel>, bool>
-    new_voxel_interface(const Species& sp, const Voxel& voxel)
-    {
-        const molecule_info_type minfo(get_molecule_info(sp));
-        return new_voxel_interface(
-                ParticleVoxel(sp, voxel.coordinate, minfo.radius, minfo.D, minfo.loc));
-    }
-
-    std::pair<std::pair<ParticleID, ParticleVoxel>, bool> new_voxel_interface(ParticleVoxel v)
-    {
-        const bool is_succeeded(update_voxel(ParticleID(), v));
-        return std::make_pair(std::make_pair(ParticleID(), v), is_succeeded);
-    }
-
     bool add_molecules(const Species& sp, const Integer& num);
     bool add_molecules(const Species& sp, const Integer& num, const boost::shared_ptr<const Shape> shape);
     Integer add_structure(const Species& sp, const boost::shared_ptr<const Shape> shape);
