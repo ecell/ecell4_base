@@ -264,6 +264,9 @@ VoxelSpaceBase::find_voxel(const ParticleID& pid) const
 
 boost::shared_ptr<VoxelPool> VoxelSpaceBase::find_voxel_pool(const Species& sp)
 {
+    if (sp.serial() == "")
+        return vacant_;
+
     voxel_pool_map_type::iterator itr(voxel_pools_.find(sp));
     if (itr != voxel_pools_.end())
     {
@@ -274,6 +277,9 @@ boost::shared_ptr<VoxelPool> VoxelSpaceBase::find_voxel_pool(const Species& sp)
 
 boost::shared_ptr<const VoxelPool> VoxelSpaceBase::find_voxel_pool(const Species& sp) const
 {
+    if (sp.serial() == "")
+        return vacant_;
+
     voxel_pool_map_type::const_iterator itr(voxel_pools_.find(sp));
     if (itr != voxel_pools_.end())
     {
