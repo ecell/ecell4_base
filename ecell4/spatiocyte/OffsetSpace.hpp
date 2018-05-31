@@ -111,6 +111,11 @@ public:
         return space_->update_voxel(pid, voxel);
     }
 
+    bool add_voxel(const Species& sp, const ParticleID& pid, const coord_type& coord)
+    {
+        return space_->add_voxel(sp, pid, coord - offset_);
+    }
+
     bool remove_voxel(const ParticleID& pid)
     {
         return space_->remove_voxel(pid);
@@ -198,6 +203,12 @@ public:
     boost::shared_ptr<MoleculePool> find_molecule_pool(const Species& species)
     {
         return space_->find_molecule_pool(species);
+    }
+
+    bool
+    make_molecular_type(const Species& sp, Real radius, Real D, const std::string loc)
+    {
+        return space_->make_molecular_type(sp, radius, D, loc);
     }
 
     bool

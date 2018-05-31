@@ -595,6 +595,7 @@ public:
             if (itr->has_voxel(pid))
                 return itr->update_voxel(pid, v);
         }
+
         return get_space_mut(Voxel(v.coordinate))->update_voxel(pid, v);
     }
 
@@ -783,11 +784,18 @@ public:
 
     boost::optional<ParticleID> new_voxel(const Species& sp, const Voxel& voxel)
     {
-        const molecule_info_type minfo(get_molecule_info(sp));
+        space_container_type::iterator space(get_space_mut(voxel));
+        if (!space->has_species(sp))
+        {
+            const molecule_info_type minfo(get_molecule_info(sp));
+            space->make_molecular_type(sp, minfo.radius, minfo.D, minfo.loc);
+        }
+
         ParticleID pid(sidgen_());
-        if (update_voxel(pid,
-                    ParticleVoxel(sp, voxel.coordinate, minfo.radius, minfo.D, minfo.loc)))
+
+        if (space->add_voxel(sp, pid, voxel.coordinate))
             return pid;
+
         return boost::none;
     }
 
