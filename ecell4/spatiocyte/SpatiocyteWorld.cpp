@@ -220,16 +220,17 @@ Integer SpatiocyteWorld::add_structure3(const Species& sp, const boost::shared_p
     const SpatiocyteWorld::molecule_info_type info(get_molecule_info(sp));
     Integer count(0);
     for (coordinate_type coord(0); coord < size(); ++coord) {
-        const Real L(shape->is_inside(voxel2position(Voxel(coord))));
+        const Voxel voxel(coord);
+        const Real L(shape->is_inside(voxel2position(voxel)));
         if (L > 0)
             continue;
 
-        if (get_voxel_pool_at(Voxel(coord))->species().serial() != info.loc)
+        if (get_voxel_pool_at(voxel)->species().serial() != info.loc)
         {
             continue;
         }
 
-        if (new_voxel_structure(sp, coord))
+        if (new_voxel_structure(sp, voxel))
             ++count;
     }
     return count;
@@ -243,15 +244,16 @@ SpatiocyteWorld::add_structure2(
     const SpatiocyteWorld::molecule_info_type info(get_molecule_info(sp));
     Integer count(0);
     for (coordinate_type coord(0); coord < size(); ++coord) {
-        if (!is_surface_voxel(coord, shape))
+        const Voxel voxel(coord);
+        if (!is_surface_voxel(voxel, shape))
             continue;
 
-        if (get_voxel_pool_at(Voxel(coord))->species().serial() != info.loc)
+        if (get_voxel_pool_at(voxel)->species().serial() != info.loc)
         {
             continue;
         }
 
-        if (new_voxel_structure(sp, coord))
+        if (new_voxel_structure(sp, voxel))
             ++count;
     }
     return count;

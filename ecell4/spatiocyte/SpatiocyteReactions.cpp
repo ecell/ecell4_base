@@ -34,20 +34,20 @@ static inline void
 make_product(boost::shared_ptr<SpatiocyteWorld> world,
              ReactionInfo& rinfo,
              const Species& species,
-             const SpatiocyteWorld::coordinate_type coord)
+             const Voxel voxel)
 {
     if (world->has_species(species) && world->find_voxel_pool(species)->is_structure())
     {
-        if (boost::optional<ParticleID> new_pid = world->new_voxel_structure(species, Voxel(coord)))
+        if (boost::optional<ParticleID> new_pid = world->new_voxel_structure(species, voxel))
         {
-            rinfo.add_product(ReactionInfo::Item(*new_pid, species, coord));
+            rinfo.add_product(ReactionInfo::Item(*new_pid, species, voxel));
         }
     }
     else
     {
-        if (boost::optional<ParticleID> new_pid = world->new_voxel(species, Voxel(coord)))
+        if (boost::optional<ParticleID> new_pid = world->new_voxel(species, voxel))
         {
-            rinfo.add_product(ReactionInfo::Item(*new_pid, species, coord));
+            rinfo.add_product(ReactionInfo::Item(*new_pid, species, voxel));
         }
     }
 }
@@ -83,7 +83,7 @@ apply_a2b(boost::shared_ptr<SpatiocyteWorld> world,
         if (aloc != bserial)
         {
             // Place a new B-molecule at the position of A
-            make_product(world, rinfo, product_species, voxel.coordinate);
+            make_product(world, rinfo, product_species, voxel);
         }
         else
         {
@@ -106,7 +106,7 @@ apply_a2b(boost::shared_ptr<SpatiocyteWorld> world,
 
             world->remove_voxel(voxel);
 
-            make_product(world, rinfo, product_species, (*neighbor).coordinate);
+            make_product(world, rinfo, product_species, *neighbor);
         }
     }
     return rinfo;
@@ -120,7 +120,7 @@ ReactionInfo apply_a2bc(
 {
     // A (pinfo) becomes B and C (product_species0 and product_species1)
     // At least, one of A and B must be placed at the neighbor.
-    const Voxel voxel(reactant_item.voxel.coordinate);
+    const Voxel voxel(reactant_item.voxel);
     const std::string bserial(product_species0.serial()),
                       cserial(product_species1.serial()),
                       bloc(world->get_molecule_info(product_species0).loc),
@@ -162,7 +162,7 @@ ReactionInfo apply_a2bc(
         if (aloc != bserial)
         {
             // Place a new B-molecule at the position of A
-            make_product(world, rinfo, product_species0, voxel.coordinate);
+            make_product(world, rinfo, product_species0, voxel);
         }
         else
         {
@@ -174,7 +174,7 @@ ReactionInfo apply_a2bc(
         }
 
         // Place a new C-molecule at the neighbor
-        make_product(world, rinfo, product_species1, (*neighbor).coordinate);
+        make_product(world, rinfo, product_species1, *neighbor);
 
         return rinfo;
     }
@@ -207,12 +207,12 @@ ReactionInfo apply_a2bc(
         // world->remove_voxel(neighbor.first);
 
         // Place a new B-molecule at the neighbor
-        make_product(world, rinfo, product_species0, (*neighbor).coordinate);
+        make_product(world, rinfo, product_species0, *neighbor);
 
         if (aloc != cserial)
         {
             // Place a new C-molecule at the position of A
-            make_product(world, rinfo, product_species1, voxel.coordinate);
+            make_product(world, rinfo, product_species1, voxel);
         }
         else
         {
@@ -274,7 +274,7 @@ ReactionInfo apply_ab2c(
 
         world->remove_voxel(voxel0);
 
-        make_product(world, rinfo, product_species, voxel1.coordinate);
+        make_product(world, rinfo, product_species, voxel1);
     }
     else if (fserial == location || floc == location)
     {
@@ -290,7 +290,7 @@ ReactionInfo apply_ab2c(
 
         world->remove_voxel(voxel1);
 
-        make_product(world, rinfo, product_species, voxel0.coordinate);
+        make_product(world, rinfo, product_species, voxel0);
     }
     return rinfo;
 }
@@ -302,15 +302,15 @@ ReactionInfo apply_ab2cd_in_order(
         const ReactionInfo::Item& reactant_item1,
         const Species& product_species0,
         const Species& product_species1,
-        const SpatiocyteWorld::coordinate_type coord0,
-        const SpatiocyteWorld::coordinate_type coord1)
+        const Voxel& voxel0,
+        const Voxel& voxel1)
 {
     ReactionInfo rinfo(world->t());
     rinfo.add_reactant(reactant_item0);
     rinfo.add_reactant(reactant_item1);
 
-    make_product(world, rinfo, product_species0, coord0);
-    make_product(world, rinfo, product_species1, coord1);
+    make_product(world, rinfo, product_species0, voxel0);
+    make_product(world, rinfo, product_species1, voxel1);
 
     return rinfo;
 }
@@ -346,9 +346,7 @@ ReactionInfo apply_ab2cd(
                 // Remove B once if B is not the location of D
                 world->remove_voxel(dst);
             }
-            return apply_ab2cd_in_order(
-                world, reactant_item0, reactant_item1, product_species0, product_species1,
-                src.coordinate, dst.coordinate);
+            return apply_ab2cd_in_order(world, reactant_item0, reactant_item1, product_species0, product_species1, src, dst);
         }
         else
         {
@@ -362,9 +360,7 @@ ReactionInfo apply_ab2cd(
                     // Remove A once if A is not the location of C
                     world->remove_voxel(src);
                 }
-                return apply_ab2cd_in_order(
-                    world, reactant_item0, reactant_item1, product_species0, product_species1,
-                    src.coordinate, (*neighbor).coordinate);
+                return apply_ab2cd_in_order(world, reactant_item0, reactant_item1, product_species0, product_species1, src, *neighbor);
             }
         }
     }
@@ -382,9 +378,7 @@ ReactionInfo apply_ab2cd(
                 // Remove B once if B is not the location of C
                 world->remove_voxel(dst);
             }
-            return apply_ab2cd_in_order(
-                world, reactant_item0, reactant_item1, product_species0, product_species1,
-                dst.coordinate, src.coordinate);
+            return apply_ab2cd_in_order(world, reactant_item0, reactant_item1, product_species0, product_species1, dst, src);
         }
         else
         {
@@ -398,9 +392,7 @@ ReactionInfo apply_ab2cd(
                     // Remove A once if A is not the location of D
                     world->remove_voxel(src);
                 }
-                return apply_ab2cd_in_order(
-                    world, reactant_item0, reactant_item1, product_species0, product_species1,
-                    (*neighbor).coordinate, src.coordinate);
+                return apply_ab2cd_in_order(world, reactant_item0, reactant_item1, product_species0, product_species1, *neighbor, src);
             }
         }
     }
@@ -414,14 +406,12 @@ ReactionInfo apply_ab2cd(
                 // Remove B once if B is not the location of C
                 world->remove_voxel(dst);
             }
-            return apply_ab2cd_in_order(
-                world, reactant_item0, reactant_item1, product_species0, product_species1,
-                dst.coordinate, (*neighbor).coordinate);
+            return apply_ab2cd_in_order(world, reactant_item0, reactant_item1, product_species0, product_species1, dst, *neighbor);
         }
     }
     else if (bserial == dloc || bloc == dloc)
     {
-        if (boost::optional<Voxel> neighbor = world->check_neighbor(dst.coordinate, dloc))
+        if (boost::optional<Voxel> neighbor = world->check_neighbor(dst, dloc))
         {
             world->remove_voxel(src);
             if (bserial != dloc)
@@ -429,9 +419,7 @@ ReactionInfo apply_ab2cd(
                 // remove b once if b is not the location of d
                 world->remove_voxel(dst);
             }
-            return apply_ab2cd_in_order(
-                world, reactant_item0, reactant_item1, product_species0, product_species1,
-                (*neighbor).coordinate, dst.coordinate);
+            return apply_ab2cd_in_order(world, reactant_item0, reactant_item1, product_species0, product_species1, *neighbor, dst);
         }
     }
     return ReactionInfo(world->t());

@@ -71,7 +71,7 @@ void StepEvent3D::walk(const Real& alpha)
         }
         else
         {
-            attempt_reaction_(info, neighbor.coordinate, alpha);
+            attempt_reaction_(info, neighbor, alpha);
         }
 
         ++idx;
@@ -146,7 +146,7 @@ void StepEvent2D::walk(const Real& alpha)
             }
             else
             {
-                attempt_reaction_(info, neighbor.coordinate, alpha);
+                attempt_reaction_(info, neighbor, alpha);
             }
             break;
         }
@@ -196,9 +196,9 @@ void StepEvent::attempt_reaction_(
         {
             ReactionInfo rinfo(apply_second_order_reaction(
                         world_, *itr,
-                        ReactionInfo::Item(info.pid, from_mt->species(), info.coordinate),
+                        ReactionInfo::Item(info.pid, from_mt->species(), Voxel(info.coordinate)),
                         ReactionInfo::Item(to_mt->get_particle_id(dst.coordinate),
-                                           to_mt->species(), dst.coordinate)));
+                                           to_mt->species(), dst)));
             if (rinfo.has_occurred())
             {
                 reaction_type reaction(std::make_pair(*itr, rinfo));

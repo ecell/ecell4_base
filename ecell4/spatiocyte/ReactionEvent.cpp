@@ -34,17 +34,16 @@ void ZerothOrderReactionEvent::fire_()
 
             while (true)
             {
-                const SpatiocyteWorld::coordinate_type
-                    coord(world_->rng()->uniform_int(0, world_->size() - 1));
+                const Voxel voxel(world_->rng()->uniform_int(0, world_->size()-1));
 
-                if (world_->get_voxel_pool_at(coord) != location)
+                if (world_->get_voxel_pool_at(voxel) != location)
                 {
                     continue;
                 }
 
-                if (boost::optional<ParticleID> pid = world_->new_voxel(sp, coord))
+                if (boost::optional<ParticleID> pid = world_->new_voxel(sp, voxel))
                 {
-                    rinfo.add_product(ReactionInfo::Item(*pid, sp, coord));
+                    rinfo.add_product(ReactionInfo::Item(*pid, sp, voxel));
                     break;
                 }
             }

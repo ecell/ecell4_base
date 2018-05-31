@@ -127,12 +127,12 @@ BOOST_AUTO_TEST_CASE(SpatiocyteWorld_test_add_molecule)
     sp.set_attribute("radius", "2.5e-9");
     sp.set_attribute("D", "1e-12");
 
-    SpatiocyteWorld::coordinate_type coord(486420);
+    const Voxel voxel(486420);
     // BOOST_CHECK(world.place_voxel(sp, coord).second);
-    BOOST_CHECK(world.new_voxel(sp, Voxel(coord)));
+    BOOST_CHECK(world.new_voxel(sp, voxel));
     BOOST_CHECK_EQUAL(world.num_particles(sp), 1);
 
-    boost::shared_ptr<const VoxelPool> mt(world.get_voxel_pool_at(coord));
+    boost::shared_ptr<const VoxelPool> mt(world.get_voxel_pool_at(voxel));
     BOOST_CHECK(!mt->is_vacant());
 }
 
@@ -227,17 +227,16 @@ BOOST_AUTO_TEST_CASE(SpatiocyteWorld_test_move)
     sp.set_attribute("radius", "2.5e-9");
     sp.set_attribute("D", "1e-12");
 
-    SpatiocyteWorld::coordinate_type
-        from(world.position2voxel(Real3(0.3e-6, 0.5e-6, 0.5e-6)).coordinate),
-        to(world.position2voxel(Real3(0.5e-6, 0.5e-6, 0.5e-6)).coordinate);
+    const Voxel from(world.position2voxel(Real3(0.3e-6, 0.5e-6, 0.5e-6)));
+    const Voxel to(world.position2voxel(Real3(0.5e-6, 0.5e-6, 0.5e-6)));
 
-    BOOST_CHECK(world.new_voxel(sp, Voxel(from)));
-    BOOST_CHECK(world.move(Voxel(from), Voxel(to)));
+    BOOST_CHECK(world.new_voxel(sp, from));
+    BOOST_CHECK(world.move(from, to));
 
     boost::shared_ptr<const VoxelPool> mt(world.get_voxel_pool_at(to));
     BOOST_CHECK(!mt->is_vacant());
 
-    BOOST_CHECK(world.move(Voxel(from), Voxel(to)));
+    BOOST_CHECK(world.move(from, to));
 }
 
 BOOST_AUTO_TEST_CASE(SpatiocyteWorld_test_structure)
