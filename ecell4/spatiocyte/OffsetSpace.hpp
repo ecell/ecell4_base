@@ -206,12 +206,6 @@ public:
         return space_->make_structure_type(sp, dimension, loc);
     }
 
-    bool
-    make_interface_type(const Species& sp, Shape::dimension_kind dimension, const std::string loc)
-    {
-        return space_->make_interface_type(sp, dimension, loc);
-    }
-
 #ifdef WITH_HDF5
     void save_hdf5(H5::Group* root) const
     {

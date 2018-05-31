@@ -259,15 +259,6 @@ SpatiocyteWorld::add_structure2(
     return count;
 }
 
-Integer
-SpatiocyteWorld::add_interface(const Species& sp)
-{
-    const SpatiocyteWorld::molecule_info_type info(get_molecule_info(sp));
-    //XXX: set the dimension properly
-    spaces_.at(0).make_interface_type(sp, Shape::UNDEF, info.loc);
-    return 0;  //XXX: dummpy
-}
-
 bool
 SpatiocyteWorld::is_surface_voxel(
         const Voxel& voxel,

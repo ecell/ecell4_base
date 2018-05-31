@@ -1,6 +1,5 @@
 #include "VoxelSpaceBase.hpp"
 #include "Context.hpp"
-#include "InterfaceType.hpp"
 
 namespace ecell4
 {
@@ -350,31 +349,6 @@ bool VoxelSpaceBase::make_structure_type(const Species& sp,
 
     boost::shared_ptr<VoxelPool>
         vp(new StructureType(sp, get_location(loc), voxel_radius_, dimension));
-    std::pair<voxel_pool_map_type::iterator, bool>
-        retval(voxel_pools_.insert(voxel_pool_map_type::value_type(sp, vp)));
-    if (!retval.second)
-    {
-        throw AlreadyExists("never reach here.");
-    }
-    return retval.second;
-}
-
-bool VoxelSpaceBase::make_interface_type(const Species& sp,
-    Shape::dimension_kind dimension, const std::string loc)
-{
-    voxel_pool_map_type::iterator itr(voxel_pools_.find(sp));
-    if (itr != voxel_pools_.end())
-    {
-        return false;
-    }
-    else if (molecule_pools_.find(sp) != molecule_pools_.end())
-    {
-        throw IllegalState(
-            "The given species is already assigned to the MoleculePool.");
-    }
-
-    boost::shared_ptr<VoxelPool>
-        vp(new InterfaceType(sp, get_location(loc), voxel_radius_, dimension));
     std::pair<voxel_pool_map_type::iterator, bool>
         retval(voxel_pools_.insert(voxel_pool_map_type::value_type(sp, vp)));
     if (!retval.second)

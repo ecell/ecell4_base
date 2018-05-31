@@ -349,9 +349,6 @@ public:
     bool
     make_structure_type(const Species& sp, Shape::dimension_kind dimension, const std::string loc);
 
-    bool
-    make_interface_type(const Species& sp, Shape::dimension_kind dimension, const std::string loc);
-
 protected:
 
     virtual boost::shared_ptr<VoxelPool> get_voxel_pool(ParticleVoxel v) = 0;

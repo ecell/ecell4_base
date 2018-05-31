@@ -2,7 +2,6 @@
 #include "MoleculePool.hpp"
 #include "VacantType.hpp"
 #include "StructureType.hpp"
-#include "InterfaceType.hpp"
 #include "LatticeSpaceVectorImpl.hpp"
 
 namespace ecell4 {

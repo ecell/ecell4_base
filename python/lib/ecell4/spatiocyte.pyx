@@ -1069,19 +1069,6 @@ cdef class SpatiocyteWorld:
         return self.thisptr.get().add_structure(
             deref(sp.thisptr), deref((<Shape>(shape.as_base())).thisptr))
 
-    def add_interface(self, Species sp):
-        """add_interface(sp, shape)
-
-        Add a interface.
-
-        Parameters
-        ----------
-        sp : Species
-            A species suggesting the interface.
-
-        """
-        return self.thisptr.get().add_interface(deref(sp.thisptr))
-
     def new_voxel_interface(self, Species species, Voxel voxel):
         """new_voxel_interface(species, voxel) -> (ParticleID, ParticleVoxel)
 
