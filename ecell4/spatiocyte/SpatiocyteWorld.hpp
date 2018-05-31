@@ -596,7 +596,7 @@ public:
                 return itr->update_voxel(pid, v);
         }
 
-        return get_space_mut(Voxel(v.coordinate))->update_voxel(pid, v);
+        return get_space_mut(v.coordinate)->update_voxel(pid, v);
     }
 
     bool remove_voxel(const ParticleID& pid)
@@ -914,6 +914,17 @@ protected:
              itr != spaces_.end(); ++itr)
         {
             if (itr->is_in_range(voxel.coordinate))
+                return itr;
+        }
+        return spaces_.end();
+    }
+
+    space_container_type::iterator get_space_mut(const coordinate_type& coordinate)
+    {
+        for (space_container_type::iterator itr(spaces_.begin());
+             itr != spaces_.end(); ++itr)
+        {
+            if (itr->is_in_range(coordinate))
                 return itr;
         }
         return spaces_.end();
