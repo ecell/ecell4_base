@@ -148,7 +148,19 @@ struct FirstOrderReactionEvent : SpatiocyteEvent
 
 protected:
 
+    ReactionInfo::Item choice()
+    {
+        const Species& species(rule_.reactants().at(0));
+        boost::shared_ptr<const MoleculePool> mt(world_->find_molecule_pool(species));
+
+        const Integer i(rng_.lock()->uniform_int(0, mt->size() - 1));
+        const SpatiocyteWorld::coordinate_id_pair_type& info(mt->at(i));
+
+        return ReactionInfo::Item(info.pid, species, Voxel(info.coordinate));
+    }
+
     boost::shared_ptr<SpatiocyteWorld> world_;
+    boost::weak_ptr<RandomNumberGenerator> rng_;
     ReactionRule rule_;
 };
 

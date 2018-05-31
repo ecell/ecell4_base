@@ -843,17 +843,6 @@ public:
         return info;
     }
 
-    ReactionInfo::Item choice(const Species& sp)
-    {
-        boost::shared_ptr<const MoleculePool> mt(find_molecule_pool(sp));
-
-        const Integer i(rng_->uniform_int(0, mt->size() - 1));
-        const coordinate_id_pair_type& info(mt->at(i));
-
-        return ReactionInfo::Item(info.pid, sp, Voxel(info.coordinate));
-    }
-
-
     void bind_to(boost::shared_ptr<Model> model)
     {
         if (boost::shared_ptr<Model> bound_model = lock_model())

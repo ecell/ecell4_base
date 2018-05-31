@@ -73,7 +73,7 @@ Real ZerothOrderReactionEvent::draw_dt()
 
 FirstOrderReactionEvent::FirstOrderReactionEvent(
     boost::shared_ptr<SpatiocyteWorld> world, const ReactionRule& rule, const Real& t)
-    : SpatiocyteEvent(t), world_(world), rule_(rule)
+    : SpatiocyteEvent(t), world_(world), rng_(world->rng()), rule_(rule)
 {
     //assert(rule_.reactants().size() == 1);
     time_ = t + draw_dt();
@@ -81,7 +81,7 @@ FirstOrderReactionEvent::FirstOrderReactionEvent(
 
 void FirstOrderReactionEvent::fire_()
 {
-    const ReactionInfo::Item reactant_item(world_->choice(rule_.reactants().at(0)));
+    const ReactionInfo::Item reactant_item(choice());
     const ReactionRule::product_container_type& products(rule_.products());
 
     switch (products.size())
