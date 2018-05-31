@@ -38,7 +38,7 @@ endif()
 
 # find_package(Boost COMPONENTS regex)
 if(NOT Boost_FOUND)
-  find_package(Boost REQUIRED)
+  find_package(Boost REQUIRED COMPONENTS chrono system)
 else()
   set(HAVE_BOOST_REGEX 1)
 endif()
