@@ -20,10 +20,10 @@ public:
 public:
 
     InterfaceType(
-        const Species& sp, VoxelPool* location,
+        const Species& sp, boost::weak_ptr<VoxelPool> location,
         const Real& radius = 0, const Shape::dimension_kind& dimension=Shape::UNDEF)
         : base_type(sp, location, radius, 0),
-        dimension_(std::min(dimension, location->get_dimension()))
+        dimension_(std::min(dimension, location.lock()->get_dimension()))
     {
         ;
     }

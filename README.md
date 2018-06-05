@@ -14,14 +14,15 @@ E-Cell System version 4
 What is E-Cell System?
 ----------------------
 
-E-Cell System is, a software platform for modeling, simulation and analysis of complex, heterogeneous and multi-scale systems like the cell.
-E-Cell has multi-algorithm, multi-timescale and multi-spatial-representation as its central feature.
+E-Cell System is a software platform for modeling, simulation and analysis of complex, heterogeneous and multi-scale systems like a cell.
+
+E-Cell4 accepts multi-algorithms, multi-timescales and multi-spatial-representations as its central feature.
 
 Features
 --------
 
-- Single particle simulations ([The enhanced Green's Function Reaction Dynamics (eGFRD) method](http://gfrd.org), [Spatiocyte](http://spatiocyte.org), and the Reaction Brownian Dynamics (RBD) method)
-- Multi-algorithm support
+- Single particle simulations, i.e. [The enhanced Green's Function Reaction Dynamics (eGFRD) method](http://gfrd.org), [Spatiocyte](http://spatiocyte.org) (a lattice-based method), and the Reaction Brownian Dynamics (RBD) method
+- Ordinary differential equations, Gillespie algorithm (the direct method), and spatial Gillespie algorithm (the next subvolume method)
 - Rule-based modeling
 - Python programmable
 
@@ -31,35 +32,30 @@ Try online
 You can try this package online from the following links:
 
 <a href="https://notebooks.azure.com/import/gh/ecell/ecell4"><img src="https://notebooks.azure.com/launch.png" /></a>
-[![Binder](http://mybinder.org/badge.svg)](http://beta.mybinder.org/v2/gh/ecell/ecell4-notebooks/master)
+[![Binder](http://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/ecell/ecell4/master?filepath=ecell4-master%2Freadthedocs)
 
-- Code fragments that depend on ffmpeg will not work with Azure Notebooks. If you use movie export, please try binder instead.
-- If you use Azure Notebooks, please move `readthedocs/tutorials` or `readthedocs/examples`. There are several Jupyter Notebooks.
+- Code fragments that depend on ffmpeg will not work with Azure Notebooks. If you use movie export, please try Binder instead.
+- If you use Binder, please go down to `tutorials` or `examples`.
+- If you use Azure Notebooks, please go down to `readthedocs/tutorials` or `readthedocs/examples`.
 
-How to try E-Cell4 examples
----------------------------
-Here we download example notebooks from https://github.com/ecell/ecell4-notebooks and open it with Jupyter Notebook.
+Installation
+-------------
 
-### Windows
-Open powershell and run these commands.
-Here we assume that you installed Miniconda(Python3.5) to C:¥Miniconda3
-
-```shell
-cd C:¥Miniconda3¥Scripts
-wget https://github.com/ecell/ecell4-notebooks/archive/master.zip -OutFile master.zip
-Expand-Archive master.zip
-.¥jupyter-notebook.exe .¥master¥ecell4-notebooks-master¥
+Please see [INSTALL.md](https://github.com/ecell/ecell4/blob/master/INSTALL.md).
+Basically you can install E-Cell4 on any OS just by running
+```
+pip install ecell
 ```
 
-### Mac or Linux
-Here we assume that you installed Miniconda(Python3.5) to ~/miniconda3
+Tutorials
+----------
 
-```shell
-wget https://github.com/ecell/ecell4-notebooks/archive/master.zip
-unzip master.zip
-cd ecell4-notebooks-master
-~/miniconda3/bin/jupyter-notebook
-```
+Please see [tutorials](https://github.com/ecell/ecell4/tree/master/readthedocs/tutorials).
+
+Examples
+---------
+
+Please see [examples](https://github.com/ecell/ecell4/tree/master/readthedocs/examples).
 
 Simple examples
 ---------------

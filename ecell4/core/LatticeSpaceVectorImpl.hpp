@@ -11,7 +11,7 @@ class LatticeSpaceVectorImpl
 public:
 
     typedef HCPLatticeSpace base_type;
-    typedef std::vector<VoxelPool*> voxel_container;
+    typedef std::vector<boost::shared_ptr<VoxelPool> > voxel_container;
 
 public:
 
@@ -53,7 +53,10 @@ public:
     std::vector<coordinate_type> list_coords(const Species& sp) const;
     std::vector<coordinate_type> list_coords_exact(const Species& sp) const;
 
-    VoxelPool* get_voxel_pool_at(const coordinate_type& coord) const;
+    boost::shared_ptr<VoxelPool> get_voxel_pool_at(const coordinate_type& coord) const
+    {
+        return voxels_.at(coord);
+    }
 
     bool move(const coordinate_type& src,
               const coordinate_type& dest,
@@ -67,8 +70,8 @@ public:
     move_to_neighbor(coordinate_id_pair_type& info, Integer nrand);
 
     std::pair<coordinate_type, bool>
-    move_to_neighbor(VoxelPool* const& from_vp,
-                     VoxelPool* const& loc,
+    move_to_neighbor(boost::shared_ptr<VoxelPool> from_vp,
+                     boost::shared_ptr<VoxelPool> loc,
                      coordinate_id_pair_type& info,
                      const Integer nrand);
 
@@ -76,8 +79,15 @@ public:
     get_neighbor_boundary(const coordinate_type& coord, const Integer& nrand) const
     {
         coordinate_type const dest = get_neighbor(coord, nrand);
-        VoxelPool* dest_vp(voxels_.at(dest));
-        return (dest_vp != periodic_ ? dest : periodic_transpose(dest));
+
+        if (voxels_.at(dest) != periodic_)
+        {
+            return dest;
+        }
+        else
+        {
+            return periodic_transpose(dest);
+        }
     }
 
     bool is_periodic() const
@@ -127,7 +137,7 @@ protected:
         return periodic_transpose(coord);
     }
 
-    VoxelPool* get_voxel_pool(const Voxel& v);
+    boost::shared_ptr<VoxelPool> get_voxel_pool(const Voxel& v);
 
     void initialize_voxels(const bool is_periodic);
 
@@ -148,9 +158,8 @@ protected:
 
     voxel_container voxels_;
 
-    VoxelPool* vacant_;
-    VoxelPool* border_;
-    VoxelPool* periodic_;
+    boost::shared_ptr<VoxelPool> border_;
+    boost::shared_ptr<VoxelPool> periodic_;
 };
 
 } // ecell4

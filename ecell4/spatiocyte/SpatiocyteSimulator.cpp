@@ -14,6 +14,8 @@ namespace spatiocyte
 void SpatiocyteSimulator::initialize()
 {
     last_reactions_.clear();
+    species_list_.clear();  //XXX:FIXME: Messy patch
+
 
     scheduler_.clear();
     update_alpha_map();
@@ -23,7 +25,6 @@ void SpatiocyteSimulator::initialize()
     {
         register_events(*itr);
     }
-
 
     const std::vector<ReactionRule>& rules(model_->reaction_rules());
     for (std::vector<ReactionRule>::const_iterator i(rules.begin());
@@ -71,6 +72,8 @@ void SpatiocyteSimulator::update_alpha_map()
 
 void SpatiocyteSimulator::register_events(const Species& sp)
 {
+    species_list_.push_back(sp);  //XXX:FIXME: Messy patch
+
     if (world_->has_molecule_pool(sp))
     {
         //TODO: Call steps only if sp is assigned not to StructureType.
@@ -167,7 +170,6 @@ bool SpatiocyteSimulator::step(const Real& upto)
 
 void SpatiocyteSimulator::step_()
 {
-
     scheduler_type::value_type top(scheduler_.pop());
     const Real time(top.second->time());
     world_->set_t(time);
@@ -184,7 +186,8 @@ void SpatiocyteSimulator::step_()
                 product != (*itr).second.products().end(); ++product)
         {
             const Species& species((*product).second.species());
-            if (!world_->has_species(species))
+            // if (!world_->has_species(species))
+            if (std::find(species_list_.begin(), species_list_.end(), species) == species_list_.end())  //XXX:FIXME: Messy patch
                 new_species.push_back(species);
         }
 

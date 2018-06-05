@@ -259,22 +259,22 @@ VoxelSpaceBase::get_voxel(const ParticleID& pid) const
     throw NotFound("voxel not found.");
 }
 
-VoxelPool* VoxelSpaceBase::find_voxel_pool(const Species& sp)
+boost::shared_ptr<VoxelPool> VoxelSpaceBase::find_voxel_pool(const Species& sp)
 {
     voxel_pool_map_type::iterator itr(voxel_pools_.find(sp));
     if (itr != voxel_pools_.end())
     {
-        return (*itr).second.get();
+        return (*itr).second;
     }
     return find_molecule_pool(sp);  // upcast
 }
 
-const VoxelPool* VoxelSpaceBase::find_voxel_pool(const Species& sp) const
+boost::shared_ptr<const VoxelPool> VoxelSpaceBase::find_voxel_pool(const Species& sp) const
 {
     voxel_pool_map_type::const_iterator itr(voxel_pools_.find(sp));
     if (itr != voxel_pools_.end())
     {
-        return (*itr).second.get();
+        return (*itr).second;
     }
     return find_molecule_pool(sp);  // upcast
 }
@@ -284,22 +284,22 @@ bool VoxelSpaceBase::has_molecule_pool(const Species& sp) const
     return (molecule_pools_.find(sp) != molecule_pools_.end());
 }
 
-MoleculePool* VoxelSpaceBase::find_molecule_pool(const Species& sp)
+boost::shared_ptr<MoleculePool> VoxelSpaceBase::find_molecule_pool(const Species& sp)
 {
     molecule_pool_map_type::iterator itr(molecule_pools_.find(sp));
     if (itr != molecule_pools_.end())
     {
-        return (*itr).second.get();  // upcast
+        return (*itr).second;  // upcast
     }
     throw NotFound("MoleculePool not found.");
 }
 
-const MoleculePool* VoxelSpaceBase::find_molecule_pool(const Species& sp) const
+boost::shared_ptr<const MoleculePool> VoxelSpaceBase::find_molecule_pool(const Species& sp) const
 {
     molecule_pool_map_type::const_iterator itr(molecule_pools_.find(sp));
     if (itr != molecule_pools_.end())
     {
-        return (*itr).second.get();  // upcast
+        return (*itr).second;  // upcast
     }
     throw NotFound("MoleculePool not found.");
 }

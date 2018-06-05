@@ -93,10 +93,17 @@ public:
     {
         if (rng_)
         {
-            return new EGFRDWorld(edge_lengths, matrix_sizes_, rng_);
+            if (matrix_sizes_ != default_matrix_sizes())
+            {
+                return new EGFRDWorld(edge_lengths, matrix_sizes_, rng_);
+            }
+            else
+            {
+                EGFRDWorld* ret = new EGFRDWorld(edge_lengths);
+                (*ret).set_rng(rng_);
+                return ret;
+            }
         }
-        // else if (matrix_sizes_[0] >= 3 && matrix_sizes_[1] >= 3
-        //     && matrix_sizes_[2] >= 3)
         else if (matrix_sizes_ != default_matrix_sizes())
         {
             return new EGFRDWorld(edge_lengths, matrix_sizes_);
@@ -223,10 +230,17 @@ public:
     {
         if (rng_)
         {
-            return new EGFRDWorld(edge_lengths, matrix_sizes_, rng_);
+            if (matrix_sizes_ != default_matrix_sizes())
+            {
+                return new EGFRDWorld(edge_lengths, matrix_sizes_, rng_);
+            }
+            else
+            {
+                EGFRDWorld* ret = new EGFRDWorld(edge_lengths);
+                (*ret).set_rng(rng_);
+                return ret;
+            }
         }
-        // else if (matrix_sizes_[0] >= 3 && matrix_sizes_[1] >= 3
-        //     && matrix_sizes_[2] >= 3)
         else if (matrix_sizes_ != default_matrix_sizes())
         {
             return new EGFRDWorld(edge_lengths, matrix_sizes_);

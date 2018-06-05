@@ -20,9 +20,102 @@ import ecell4.extra.slurm as slurm
 
 
 def run_serial(target, jobs, n=1, **kwargs):
+    """
+    Evaluate the given function with each set of arguments, and return a list of results.
+    This function does in series.
+
+    Parameters
+    ----------
+    target : function
+        A function to be evaluated. The function must accepts three arguments,
+        which are a list of arguments given as `jobs`, a job and task id (int).
+    jobs : list
+        A list of arguments passed to the function.
+    n : int, optional
+        A number of tasks. Repeat the evaluation `n` times for each job.
+        1 for default.
+
+    Returns
+    -------
+    results : list
+        A list of results. Each element is a list containing `n` results.
+
+    Examples
+    --------
+    >>> jobs = ((1, 'spam'), (2, 'ham'), (3, 'eggs'))
+
+    >>> target = lambda args, job_id, task_id: (args[1] * args[0])
+    >>> run_serial(target, jobs)
+    [['spam'], ['hamham'], ['eggseggseggs']]
+
+    >>> target = lambda args, job_id, task_id: "{:d} {}".format(task_id, args[1] * args[0])
+    >>> run_serial(target, jobs, n=2)
+    [['1 spam', '2 spam'], ['1 hamham', '2 hamham'], ['1 eggseggseggs', '2 eggseggseggs']]
+
+    >>> seeds = genseeds(3)
+    >>> def target(arg, job_id, task_id):
+    ...     from ecell4.extra.ensemble import getseed
+    ...     return getseed(arg, task_id)
+    >>> run_serial(target, (seeds, ), n=3)  # doctest: +SKIP
+    [[127152315, 2028054913, 253611282]]
+
+    See Also
+    --------
+    ecell4.extra.ensemble.run_serial
+    ecell4.extra.ensemble.run_sge
+    ecell4.extra.ensemble.run_slurm
+    ecell4.extra.ensemble.run_multiprocessing
+    ecell4.extra.ensemble.run_azure
+
+    """
     return [[target(copy.copy(job), i + 1, j + 1) for j in range(n)] for i, job in enumerate(jobs)]
 
 def run_multiprocessing(target, jobs, n=1, nproc=None, **kwargs):
+    """
+    Evaluate the given function with each set of arguments, and return a list of results.
+    This function does in parallel by using `multiprocessing`.
+
+    Parameters
+    ----------
+    target : function
+        A function to be evaluated. The function must accepts three arguments,
+        which are a list of arguments given as `jobs`, a job and task id (int).
+    jobs : list
+        A list of arguments passed to the function.
+        All the argument must be picklable.
+    n : int, optional
+        A number of tasks. Repeat the evaluation `n` times for each job.
+        1 for default.
+    nproc : int, optional
+        A number of cores available once.
+        If nothing is given, all available cores are used.
+
+    Returns
+    -------
+    results : list
+        A list of results. Each element is a list containing `n` results.
+
+    Examples
+    --------
+    >>> jobs = ((1, 'spam'), (2, 'ham'), (3, 'eggs'))
+
+    >>> target = lambda args, job_id, task_id: (args[1] * args[0])
+    >>> run_multiprocessing(target, jobs, nproc=2)
+    [['spam'], ['hamham'], ['eggseggseggs']]
+
+    >>> target = lambda args, job_id, task_id: "{:d} {}".format(task_id, args[1] * args[0])
+    >>> run_multiprocessing(target, jobs, n=2, nproc=2)
+    [['1 spam', '2 spam'], ['1 hamham', '2 hamham'], ['1 eggseggseggs', '2 eggseggseggs']]
+
+    See Also
+    --------
+    ecell4.extra.ensemble.run_serial
+    ecell4.extra.ensemble.run_sge
+    ecell4.extra.ensemble.run_slurm
+    ecell4.extra.ensemble.run_multiprocessing
+    ecell4.extra.ensemble.run_azure
+
+    """
     def consumer(f, q_in, q_out):
         while True:
             val = q_in.get()
@@ -54,6 +147,71 @@ def run_multiprocessing(target, jobs, n=1, nproc=None, **kwargs):
     return [res[i: i + n] for i in range(0, len(res), n)]
 
 def run_sge(target, jobs, n=1, nproc=None, path='.', delete=True, wait=True, environ=None, modules=(), **kwargs):
+    """
+    Evaluate the given function with each set of arguments, and return a list of results.
+    This function does in parallel on the Sun Grid Engine einvironment.
+
+    Parameters
+    ----------
+    target : function
+        A function to be evaluated. The function must accepts three arguments,
+        which are a list of arguments given as `jobs`, a job and task id (int).
+        This function can not be a lambda.
+    jobs : list
+        A list of arguments passed to the function.
+        All the argument must be picklable.
+    n : int, optional
+        A number of tasks. Repeat the evaluation `n` times for each job.
+        1 for default.
+    nproc : int, optional
+        A number of cores available once.
+        If nothing is given, it runs with no limit.
+    path : str, optional
+        A path for temporary files to be saved. The path is created if not exists.
+        The current directory is used as its default.
+    delete : bool, optional
+        Whether it removes temporary files after the successful execution.
+        True for default.
+    wait : bool, optional
+        Whether it waits until all jobs are finished. If False, it just submits jobs.
+        True for default.
+    environ : dict, optional
+        An environment variables used when running jobs.
+        "PYTHONPATH" and "LD_LIBRARY_PATH" is inherited when no `environ` is given.
+    modules : list, optional
+        A list of module names imported before evaluating the given function.
+        The modules are loaded as: `from [module] import *`.
+
+    Returns
+    -------
+    results : list
+        A list of results. Each element is a list containing `n` results.
+
+    Examples
+    --------
+    >>> jobs = ((1, 'spam'), (2, 'ham'), (3, 'eggs'))
+
+    >>> def target(args, job_id, task_id):
+    ...     return (args[1] * args[0])
+    ...
+    >>> run_sge(target, jobs, nproc=2, path='.tmp')
+    [['spam'], ['hamham'], ['eggseggseggs']]
+
+    >>> def target(args, job_id, task_id):
+    ...     return "{:d} {}".format(task_id, args[1] * args[0])
+    ...
+    >>> run_sge(target, jobs, n=2, nproc=2, path='.tmp')
+    [['1 spam', '2 spam'], ['1 hamham', '2 hamham'], ['1 eggseggseggs', '2 eggseggseggs']]
+
+    See Also
+    --------
+    ecell4.extra.ensemble.run_serial
+    ecell4.extra.ensemble.run_sge
+    ecell4.extra.ensemble.run_slurm
+    ecell4.extra.ensemble.run_multiprocessing
+    ecell4.extra.ensemble.run_azure
+
+    """
     logging.basicConfig(level=logging.DEBUG)
 
     if isinstance(target, types.LambdaType) and target.__name__ == "<lambda>":
@@ -165,6 +323,71 @@ def run_sge(target, jobs, n=1, nproc=None, path='.', delete=True, wait=True, env
     return retval
 
 def run_slurm(target, jobs, n=1, nproc=None, path='.', delete=True, wait=True, environ=None, modules=(), **kwargs):
+    """
+    Evaluate the given function with each set of arguments, and return a list of results.
+    This function does in parallel with Slurm Workload Manager.
+
+    Parameters
+    ----------
+    target : function
+        A function to be evaluated. The function must accepts three arguments,
+        which are a list of arguments given as `jobs`, a job and task id (int).
+        This function can not be a lambda.
+    jobs : list
+        A list of arguments passed to the function.
+        All the argument must be picklable.
+    n : int, optional
+        A number of tasks. Repeat the evaluation `n` times for each job.
+        1 for default.
+    nproc : int, optional
+        A number of cores available once.
+        If nothing is given, it runs with no limit.
+    path : str, optional
+        A path for temporary files to be saved. The path is created if not exists.
+        The current directory is used as its default.
+    delete : bool, optional
+        Whether it removes temporary files after the successful execution.
+        True for default.
+    wait : bool, optional
+        Whether it waits until all jobs are finished. If False, it just submits jobs.
+        True for default.
+    environ : dict, optional
+        An environment variables used when running jobs.
+        "PYTHONPATH" and "LD_LIBRARY_PATH" is inherited when no `environ` is given.
+    modules : list, optional
+        A list of module names imported before evaluating the given function.
+        The modules are loaded as: `from [module] import *`.
+
+    Returns
+    -------
+    results : list
+        A list of results. Each element is a list containing `n` results.
+
+    Examples
+    --------
+    >>> jobs = ((1, 'spam'), (2, 'ham'), (3, 'eggs'))
+
+    >>> def target(args, job_id, task_id):
+    ...     return (args[1] * args[0])
+    ...
+    >>> run_slurm(target, jobs, nproc=2, path='.tmp')
+    [['spam'], ['hamham'], ['eggseggseggs']]
+
+    >>> def target(args, job_id, task_id):
+    ...     return "{:d} {}".format(task_id, args[1] * args[0])
+    ...
+    >>> run_slurm(target, jobs, n=2, nproc=2, path='.tmp')
+    [['1 spam', '2 spam'], ['1 hamham', '2 hamham'], ['1 eggseggseggs', '2 eggseggseggs']]
+
+    See Also
+    --------
+    ecell4.extra.ensemble.run_serial
+    ecell4.extra.ensemble.run_sge
+    ecell4.extra.ensemble.run_slurm
+    ecell4.extra.ensemble.run_multiprocessing
+    ecell4.extra.ensemble.run_azure
+
+    """
     logging.basicConfig(level=logging.DEBUG)
 
     if isinstance(target, types.LambdaType) and target.__name__ == "<lambda>":
@@ -277,6 +500,28 @@ def run_slurm(target, jobs, n=1, nproc=None, path='.', delete=True, wait=True, e
 
     return retval
 
+def run_azure(target, jobs, n=1, nproc=None, path='.', delete=True, config=None, **kwargs):
+    """
+    Evaluate the given function with each set of arguments, and return a list of results.
+    This function does in parallel with Microsoft Azure Batch.
+
+    This function is the work in progress.
+    The argument `nproc` doesn't work yet.
+    See `ecell4.extra.azure_batch.run_azure` for details.
+
+    See Also
+    --------
+    ecell4.extra.ensemble.run_serial
+    ecell4.extra.ensemble.run_sge
+    ecell4.extra.ensemble.run_slurm
+    ecell4.extra.ensemble.run_multiprocessing
+    ecell4.extra.ensemble.run_azure
+    ecell4.extra.azure_batch.run_azure
+
+    """
+    import ecell4.extra.azure_batch as azure_batch
+    return azure_batch.run_azure(target, jobs, n, path, delete, config)
+
 def genseeds(n):
     """
     Return a random number generator seed for ensemble_simulations.
@@ -355,7 +600,7 @@ def ensemble_simulations(
         Default is None.
     method : str, optional
         The way for running multiple jobs.
-        Choose one from 'serial', 'sge', 'slurm' and 'multiprocessing'.
+        Choose one from 'serial', 'multiprocessing', 'sge', 'slurm', 'azure'.
         Default is None, which works as 'serial'.
     **kwargs : dict, optional
         Optional keyword arugments are passed through to `run_serial`,
@@ -375,10 +620,11 @@ def ensemble_simulations(
     See Also
     --------
     ecell4.util.run_simulation
-    ecell4.extra.run_serial
-    ecell4.extra.run_sge
-    ecell4.extra.run_slurm
-    ecell4.extra.run_multiprocessing
+    ecell4.extra.ensemble.run_serial
+    ecell4.extra.ensemble.run_sge
+    ecell4.extra.ensemble.run_slurm
+    ecell4.extra.ensemble.run_multiprocessing
+    ecell4.extra.ensemble.run_azure
 
     """
     y0 = y0 or {}
@@ -420,6 +666,8 @@ def ensemble_simulations(
         retval = run_slurm(singlerun, jobs, n=n, nproc=nproc, **kwargs)
     elif method.lower() == "multiprocessing":
         retval = run_multiprocessing(singlerun, jobs, n=n, nproc=nproc, **kwargs)
+    elif method.lower() == "azure":
+        retval = run_azure(singlerun, jobs, n=n, nproc=nproc, **kwargs)
     else:
         raise ValueError(
             'Argument "method" must be one of "serial", "multiprocessing", "slurm" and "sge".')
