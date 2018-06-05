@@ -59,6 +59,15 @@ cdef class ReactionRuleDescriptor:
             cpp_coefficients.push_back(c)
         self.thisptr.get().set_product_coefficients(cpp_coefficients)
 
+class ReactionRulePolicy(object):
+    """A wrapper of ReactionRule::policy_type"""
+
+    def __init__(self, value):
+        self.__value = value
+
+    def get(self):
+        return self.__value
+
 cdef class ReactionRule:
     """A class representing a reaction rule between ``Species``.
 
@@ -66,9 +75,12 @@ cdef class ReactionRule:
 
     """
 
-    STRICT = Cpp_STRICT
-    IMPLICIT = Cpp_IMPLICIT
-    DESTROY = Cpp_DESTROY
+    # STRICT = Cpp_STRICT
+    # IMPLICIT = Cpp_IMPLICIT
+    # DESTROY = Cpp_DESTROY
+    STRICT = ReactionRulePolicy(Cpp_STRICT)
+    IMPLICIT = ReactionRulePolicy(Cpp_IMPLICIT)
+    DESTROY = ReactionRulePolicy(Cpp_DESTROY)
 
     def __init__(self, reactants=None, products=None, k=None):
         """Constructor.

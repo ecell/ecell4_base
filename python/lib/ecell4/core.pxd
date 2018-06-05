@@ -918,7 +918,6 @@ cdef Cylinder Cylinder_from_Cpp_Cylinder(Cpp_Cylinder* p)
 cdef CylindricalSurface CylindricalSurface_from_Cpp_CylindricalSurface(Cpp_CylindricalSurface* p)
 cdef AABB AABB_from_Cpp_AABB(Cpp_AABB* p)
 
-
 #cdef class CallbackWrapper:
 #    cdef Cpp_CallbackWrapper* thisptr
 #    cdef object pyfunc_
@@ -946,4 +945,5 @@ cdef AABB AABB_from_Cpp_AABB(Cpp_AABB* p)
 #    cdef PythonHook_1arg[shared_ptr[Cpp_Space]]* thisptr
 #    cdef object pyfunc_
 
-
+cdef extern from "ecell4/core/BDMLWriter.hpp" namespace "ecell4":
+    void Cpp_save_bd5 "save_bd5" (Cpp_Space&, string, int, string, string, string, bool, bool) except +

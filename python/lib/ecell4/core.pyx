@@ -98,3 +98,8 @@ cimport types
 
 N_A = types.N_A
 epsilon = types.epsilon
+
+def _save_bd5(Space space, filename, group_index, object_name, spatial_unit, time_unit, bool trunc, bool with_radius):
+    """This is a private function. See ecell4.extra.bdml.save_bd5"""
+    cdef shared_ptr[Cpp_Space] _space = deref(space.thisptr)
+    Cpp_save_bd5(deref(_space.get()), tostring(filename), group_index, tostring(object_name), tostring(spatial_unit), tostring(time_unit), trunc, with_radius)

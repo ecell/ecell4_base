@@ -29,29 +29,7 @@ const std::string ReactionRule::as_string() const
 
 std::vector<ReactionRule> ReactionRule::generate(const reactant_container_type& reactants) const
 {
-    ReactionRuleExpressionMatcher rrexp(*this);
-    std::vector<ReactionRule> retval;
-    if (!rrexp.match(reactants))
-    {
-        return retval;
-    }
-
-    do
-    {
-        const ReactionRule rr(reactants, rrexp.generate(), this->k());
-        std::vector<ReactionRule>::iterator
-            i(std::find(retval.begin(), retval.end(), rr));
-        if (i != retval.end())
-        {
-            ;
-        }
-        else
-        {
-            retval.push_back(rr);
-        }
-    }
-    while (rrexp.next());
-    return retval;
+    return ReactionRuleExpressionMatcher(*this).gen(reactants);
 }
 
 ReactionRule format_reaction_rule_with_nosort(const ReactionRule& rr)
@@ -103,5 +81,67 @@ ReactionRule format_reaction_rule(const ReactionRule& rr)
     // return ReactionRule(reactants, products, rr.k());
     // return rr;
 }
+
+ReactionRule create_degradation_reaction_rule(
+    const Species& reactant1, const Real& k)
+{
+    ReactionRule rr;
+    rr.set_k(k);
+    rr.add_reactant(reactant1);
+    return rr;
+}
+
+ReactionRule create_synthesis_reaction_rule(
+    const Species& product1, const Real& k)
+{
+    ReactionRule rr;
+    rr.set_k(k);
+    rr.add_product(product1);
+    return rr;
+}
+
+ReactionRule create_unimolecular_reaction_rule(
+    const Species& reactant1, const Species& product1, const Real& k)
+{
+    ReactionRule rr;
+    rr.set_k(k);
+    rr.add_reactant(reactant1);
+    rr.add_product(product1);
+    return rr;
+}
+
+ReactionRule create_binding_reaction_rule(
+    const Species& reactant1, const Species& reactant2, const Species& product1,
+    const Real& k)
+{
+    ReactionRule rr;
+    rr.set_k(k);
+    rr.add_reactant(reactant1);
+    rr.add_reactant(reactant2);
+    rr.add_product(product1);
+    return rr;
+}
+
+ReactionRule create_unbinding_reaction_rule(
+    const Species& reactant1, const Species& product1, const Species& product2,
+    const Real& k)
+{
+    ReactionRule rr;
+    rr.set_k(k);
+    rr.add_reactant(reactant1);
+    rr.add_product(product1);
+    rr.add_product(product2);
+    return rr;
+}
+
+// ReactionRule create_repulsive_reaction_rule(
+//     const Species& reactant1, const Species& reactant2)
+// {
+//     ReactionRule rr;
+//     rr.set_k(0.0);
+//     rr.add_reactant(reactant1);
+//     rr.add_reactant(reactant2);
+//     return rr;
+// }
 
 }// ecell4

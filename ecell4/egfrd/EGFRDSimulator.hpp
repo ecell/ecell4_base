@@ -2504,11 +2504,17 @@ protected:
         typedef typename detail::get_pair_greens_function<shape_type> pair_greens_functions;
         typedef typename pair_greens_functions::iv_type iv_greens_function;
         typedef typename pair_greens_functions::com_type com_greens_function;
-        BOOST_ASSERT(::size(domain.reactions()) == 1);
+//         BOOST_ASSERT(::size(domain.reactions()) == 1);
         time_type const dt_com(
             com_greens_function(domain.D_R(), domain.a_R()).drawTime(this->rng().uniform(0., 1.)));
+
+        Real k_tot = 0;
+        BOOST_FOREACH(reaction_rule_type const& rule, domain.reactions())
+        {
+            k_tot += rule.k();
+        }
         time_type const dt_iv(
-            iv_greens_function(domain.D_tot(), domain.reactions()[0].k(),
+            iv_greens_function(domain.D_tot(), k_tot,
                            domain.r0(), domain.sigma(), domain.a_r()).drawTime(this->rng().uniform(0., 1.)));
         if (dt_com < dt_iv)
         {
@@ -3481,8 +3487,37 @@ protected:
         case PAIR_EVENT_IV_REACTION:
             {
                 LOG_DEBUG(("=> iv_reaction"));
-                BOOST_ASSERT(::size(domain.reactions()) == 1);
-                reaction_rule_type const& r(domain.reactions()[0]);
+
+                BOOST_ASSERT(::size(domain.reactions()) >= 1);
+//                 reaction_rule_type const& r(domain.reactions()[0]);
+
+                Real k_tot = 0;
+                BOOST_FOREACH(reaction_rule_type const& rl, domain.reactions())
+                {
+                    k_tot += rl.k();
+                }
+
+                boost::optional<reaction_rule_type const&> optr(boost::none);
+                if(::size(domain.reactions()) != 1)
+                {
+                    Real rndr = this->rng().uniform(0., k_tot);
+                    BOOST_FOREACH(reaction_rule_type const& rl, domain.reactions())
+                    {
+                        rndr -= rl.k();
+                        if(rndr < 0.0)
+                        {
+                            optr = rl;
+                            break;
+                        }
+                    }
+                    // optr maybe empty because of numerical error. in that case,
+                    // use domain.reactants().back().
+                    // if domain.reactions().size() == 1, it is okay to use
+                    // domain.reactants().back() because it is the only rule
+                    // that can be applied.
+                }
+                reaction_rule_type const& r =
+                    (static_cast<bool>(optr)) ? *optr : domain.reactions().back();
 
                 switch (::size(r.get_products()))
                 {
@@ -3603,20 +3638,32 @@ protected:
             molecule_info_type const minfo(
                 (*base_type::world_).get_molecule_info(sp));
 
-            //XXX: A cuboidal region is expected here.
-            const position_type new_pos(
-                this->rng().uniform(0, (*base_type::world_).edge_lengths()[0]),
-                this->rng().uniform(0, (*base_type::world_).edge_lengths()[1]),
-                this->rng().uniform(0, (*base_type::world_).edge_lengths()[2]));
-
-            const particle_shape_type new_particle(new_pos, minfo.radius);
-
-            clear_volume(new_particle);
-
-            if (!(*base_type::world_).no_overlap(new_particle))
+            position_type new_pos;
+            const unsigned int max_retry_position = 1000;  // 1 means no retry.
+            for (unsigned int i = 0; i < max_retry_position; ++i)
             {
-                LOG_INFO(("no space for product particle."));
-                throw no_space();
+                //XXX: A cuboidal region is expected here.
+                new_pos[0] = this->rng().uniform(0, (*base_type::world_).edge_lengths()[0]);
+                new_pos[1] = this->rng().uniform(0, (*base_type::world_).edge_lengths()[1]);
+                new_pos[2] = this->rng().uniform(0, (*base_type::world_).edge_lengths()[2]);
+
+                const particle_shape_type new_particle(new_pos, minfo.radius);
+
+                clear_volume(new_particle);
+
+                if (!(*base_type::world_).no_overlap(new_particle))
+                {
+                    if (i != max_retry_position - 1)
+                    {
+                        continue;
+                    }
+                    LOG_INFO(("no space for product particle."));
+                    throw no_space();
+                }
+                else
+                {
+                    break;
+                }
             }
 
             particle_id_pair pp(

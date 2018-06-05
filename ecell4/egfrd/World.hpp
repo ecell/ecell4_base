@@ -409,6 +409,11 @@ public:
         return rng_;
     }
 
+    void set_rng(const boost::shared_ptr<rng_type>& rng)
+    {
+        rng_ = rng;
+    }
+
     virtual void save(const std::string& filename) const
     {
 #ifdef WITH_HDF5
@@ -945,7 +950,7 @@ public:
 //     }
 
     virtual position_type
-    apply_structure(const position_type& pos, const position_type& disp)
+    apply_structure(const position_type& pos, const position_type& disp) const
     {
         return this->apply_structure_rec(pos, disp, Polygon<position_type>::make_nonsence_id());
     }
@@ -955,7 +960,7 @@ protected:
     // for polygon
     position_type
     apply_structure_rec(const position_type& pos, const position_type& disp,
-            const typename Polygon<position_type>::face_id_type ignore)
+            const typename Polygon<position_type>::face_id_type ignore) const
     {
         typedef typename Polygon<position_type>::face_id_type face_id_t;
 
@@ -1006,7 +1011,7 @@ protected:
 
     std::pair<position_type, position_type>
     apply_periodic_only_once(const position_type& pos, const position_type& disp,
-                             const length_type tmin, const ecell4::AABBSurface& aabb)
+            const length_type tmin, const ecell4::AABBSurface& aabb) const
     {
         //XXX: this function assumes the conditions described below is satisfied.
         // - aabb.lower = (0, 0, 0)

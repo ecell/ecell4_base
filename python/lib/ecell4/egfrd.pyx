@@ -224,6 +224,15 @@ cdef class EGFRDWorld:
         cdef Cpp_Real3 lengths = self.thisptr.get().actual_lengths()
         return Real3_from_Cpp_Real3(address(lengths))
 
+    def matrix_sizes(self):
+        """matrix_sizes() -> Integer3
+
+        Return the matrix sizes of the world.
+
+        """
+        cdef Cpp_Integer3 sizes = self.thisptr.get().matrix_sizes()
+        return Integer3_from_Cpp_Integer3(address(sizes))
+
     def set_value(self, Species sp, Real value):
         """set_value(sp, value)
 

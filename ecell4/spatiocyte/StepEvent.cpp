@@ -15,7 +15,7 @@ StepEvent::StepEvent(boost::shared_ptr<Model> model, boost::shared_ptr<Spatiocyt
         minfo(world_->get_molecule_info(species));
     const Real R(minfo.radius);
     const Real D(minfo.D);
-    const VoxelPool* mtype(world_->find_voxel_pool(species));
+    boost::shared_ptr<const VoxelPool> mtype(world_->find_voxel_pool(species));
     // const Real R(world_->voxel_radius());
     // Real D = boost::lexical_cast<Real>(species.get_attribute("D"));
     if (D <= 0)
@@ -59,7 +59,7 @@ void StepEvent::walk(const Real& alpha)
     }
 
     const boost::shared_ptr<RandomNumberGenerator>& rng(world_->rng());
-    const MoleculePool* mtype(world_->find_molecule_pool(species_));
+    boost::shared_ptr<const MoleculePool> mtype(world_->find_molecule_pool(species_));
 
     if (mtype->get_dimension() == Shape::THREE)
         walk_in_space_(mtype, alpha);
@@ -67,7 +67,7 @@ void StepEvent::walk(const Real& alpha)
         walk_on_surface_(mtype, alpha);
 }
 
-void StepEvent::walk_in_space_(const MoleculePool* mtype, const Real& alpha)
+void StepEvent::walk_in_space_(boost::shared_ptr<const MoleculePool> mtype, const Real& alpha)
 {
     const boost::shared_ptr<RandomNumberGenerator>& rng(world_->rng());
     MoleculePool::container_type voxels;
@@ -100,13 +100,12 @@ void StepEvent::walk_in_space_(const MoleculePool* mtype, const Real& alpha)
     }
 }
 
-void StepEvent::walk_on_surface_(const MoleculePool* mtype, const Real& alpha)
+void StepEvent::walk_on_surface_(boost::shared_ptr<const MoleculePool> mtype, const Real& alpha)
 {
     const boost::shared_ptr<RandomNumberGenerator>& rng(world_->rng());
     MoleculePool::container_type voxels;
     copy(mtype->begin(), mtype->end(), back_inserter(voxels));
 
-    const VoxelPool* location(mtype->location());
     std::size_t idx(0);
     for (MoleculePool::container_type::iterator itr(voxels.begin());
          itr != voxels.end(); ++itr)
@@ -125,7 +124,7 @@ void StepEvent::walk_on_surface_(const MoleculePool* mtype, const Real& alpha)
         {
             const SpatiocyteWorld::coordinate_type neighbor(
                     world_->get_neighbor_boundary(info.coordinate, *itr));
-            const VoxelPool* target(world_->get_voxel_pool_at(neighbor));
+            boost::shared_ptr<const VoxelPool> target(world_->get_voxel_pool_at(neighbor));
 
             if (target->get_dimension() > mtype->get_dimension())
                 continue;
@@ -151,10 +150,8 @@ StepEvent::attempt_reaction_(
     const SpatiocyteWorld::coordinate_type to_coord,
     const Real& alpha)
 {
-    const VoxelPool* from_mt(
-        world_->get_voxel_pool_at(info.coordinate));
-    const VoxelPool* to_mt(
-        world_->get_voxel_pool_at(to_coord));
+    boost::shared_ptr<const VoxelPool> from_mt(world_->get_voxel_pool_at(info.coordinate));
+    boost::shared_ptr<const VoxelPool> to_mt(world_->get_voxel_pool_at(to_coord));
 
     if (to_mt->is_vacant())
     {

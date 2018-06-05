@@ -58,7 +58,7 @@ class SBMLDataSource(object):
     def initial_concentration(self):
         for sp in self.model.species:
             if sp.isSetInitialConcentration():
-                yield (sp.id, sp.initial_concentration)
+                yield (sp.id, sp.initial_concentration, sp.compartment)
 
     def initial_assignments(self, evalfunc=None, kwargs=None):
         evalfunc = evalfunc or None

@@ -19,6 +19,7 @@
 #include "MolecularType.hpp"
 #include "StructureType.hpp"
 #include "VacantType.hpp"
+#include "VoxelSpaceBase.hpp"
 
 
 namespace ecell4
@@ -64,7 +65,7 @@ struct LatticeSpaceHDF5Traits
         h5_species_struct property;
         property.radius = mtb->radius();
         property.D = mtb->D();
-        const VoxelPool* loc(mtb->location());
+        boost::shared_ptr<const VoxelPool> loc(mtb->location());
         // if (loc->is_vacant())
         //     property.location = H5std_string("");
         // else
@@ -153,11 +154,11 @@ void save_lattice_space(const Tspace_& space, H5::Group* root, const std::string
     for (std::vector<Species>::const_iterator itr(species.begin());
             itr != species.end(); ++itr)
     {
-        const VoxelPool *mtb(space.find_voxel_pool(*itr));
+        boost::shared_ptr<const VoxelPool> mtb(space.find_voxel_pool(*itr));
         Species location(mtb->location()->species());
-        location_map.insert(std::make_pair(location, mtb));
+        location_map.insert(std::make_pair(location, mtb.get())); // XXX: remove .get()
     }
-    traits_type::save_voxel_pool_recursively(VacantType::getInstance().species(),
+    traits_type::save_voxel_pool_recursively(space.vacant()->species(),
             location_map, space, spgroup.get());
 
     const hsize_t dims[] = {3};

@@ -1,6 +1,7 @@
 from __future__ import print_function
 
 import os
+import os.path
 import logging
 import tempfile
 import pickle
@@ -12,37 +13,205 @@ import itertools
 import binascii
 import multiprocessing
 import copy
+import csv
 
 import ecell4.extra.sge as sge
+import ecell4.extra.slurm as slurm
 
 
 def run_serial(target, jobs, n=1, **kwargs):
+    """
+    Evaluate the given function with each set of arguments, and return a list of results.
+    This function does in series.
+
+    Parameters
+    ----------
+    target : function
+        A function to be evaluated. The function must accepts three arguments,
+        which are a list of arguments given as `jobs`, a job and task id (int).
+    jobs : list
+        A list of arguments passed to the function.
+    n : int, optional
+        A number of tasks. Repeat the evaluation `n` times for each job.
+        1 for default.
+
+    Returns
+    -------
+    results : list
+        A list of results. Each element is a list containing `n` results.
+
+    Examples
+    --------
+    >>> jobs = ((1, 'spam'), (2, 'ham'), (3, 'eggs'))
+
+    >>> target = lambda args, job_id, task_id: (args[1] * args[0])
+    >>> run_serial(target, jobs)
+    [['spam'], ['hamham'], ['eggseggseggs']]
+
+    >>> target = lambda args, job_id, task_id: "{:d} {}".format(task_id, args[1] * args[0])
+    >>> run_serial(target, jobs, n=2)
+    [['1 spam', '2 spam'], ['1 hamham', '2 hamham'], ['1 eggseggseggs', '2 eggseggseggs']]
+
+    >>> seeds = genseeds(3)
+    >>> def target(arg, job_id, task_id):
+    ...     from ecell4.extra.ensemble import getseed
+    ...     return getseed(arg, task_id)
+    >>> run_serial(target, (seeds, ), n=3)  # doctest: +SKIP
+    [[127152315, 2028054913, 253611282]]
+
+    See Also
+    --------
+    ecell4.extra.ensemble.run_serial
+    ecell4.extra.ensemble.run_sge
+    ecell4.extra.ensemble.run_slurm
+    ecell4.extra.ensemble.run_multiprocessing
+    ecell4.extra.ensemble.run_azure
+
+    """
     return [[target(copy.copy(job), i + 1, j + 1) for j in range(n)] for i, job in enumerate(jobs)]
 
-def run_multiprocessing(target, jobs, n=1, **kwargs):
-    def target_wrapper(f, end_send):
-        def wf(*_args, **_kwargs):
-            end_send.send(f(*_args, **_kwargs))
-        return wf
+def run_multiprocessing(target, jobs, n=1, nproc=None, **kwargs):
+    """
+    Evaluate the given function with each set of arguments, and return a list of results.
+    This function does in parallel by using `multiprocessing`.
 
-    processes = []
-    end_recvs = []
-    for i, job in enumerate(jobs):
-        for j in range(n):
-            end_recv, end_send = multiprocessing.Pipe(False)
-            end_recvs.append(end_recv)
-            p = multiprocessing.Process(
-                target=target_wrapper(target, end_send), args=(job, i + 1, j + 1))
-            p.start()
-            processes.append(p)
+    Parameters
+    ----------
+    target : function
+        A function to be evaluated. The function must accepts three arguments,
+        which are a list of arguments given as `jobs`, a job and task id (int).
+    jobs : list
+        A list of arguments passed to the function.
+        All the argument must be picklable.
+    n : int, optional
+        A number of tasks. Repeat the evaluation `n` times for each job.
+        1 for default.
+    nproc : int, optional
+        A number of cores available once.
+        If nothing is given, all available cores are used.
 
-    for p in processes:
-        p.join()
+    Returns
+    -------
+    results : list
+        A list of results. Each element is a list containing `n` results.
 
-    retval = [end_recv.recv() for end_recv in end_recvs]
-    return [retval[i: i + n] for i in range(0, len(retval), n)]
+    Examples
+    --------
+    >>> jobs = ((1, 'spam'), (2, 'ham'), (3, 'eggs'))
 
-def run_sge(target, jobs, n=1, path='.', delete=True, wait=True, environ=None, modules=(), **kwargs):
+    >>> target = lambda args, job_id, task_id: (args[1] * args[0])
+    >>> run_multiprocessing(target, jobs, nproc=2)
+    [['spam'], ['hamham'], ['eggseggseggs']]
+
+    >>> target = lambda args, job_id, task_id: "{:d} {}".format(task_id, args[1] * args[0])
+    >>> run_multiprocessing(target, jobs, n=2, nproc=2)
+    [['1 spam', '2 spam'], ['1 hamham', '2 hamham'], ['1 eggseggseggs', '2 eggseggseggs']]
+
+    See Also
+    --------
+    ecell4.extra.ensemble.run_serial
+    ecell4.extra.ensemble.run_sge
+    ecell4.extra.ensemble.run_slurm
+    ecell4.extra.ensemble.run_multiprocessing
+    ecell4.extra.ensemble.run_azure
+
+    """
+    def consumer(f, q_in, q_out):
+        while True:
+            val = q_in.get()
+            if val is None:
+                q_in.task_done()
+                break
+            i, x = val
+            res = (i, f(*x))
+            q_in.task_done()
+            q_out.put(res)
+
+    def mulpmap(f, X, nproc):
+        nproc = nproc or multiprocessing.cpu_count()
+
+        q_in = multiprocessing.JoinableQueue()
+        q_out = multiprocessing.Queue()
+        workers = [multiprocessing.Process(target=consumer, args=(f, q_in, q_out), daemon=True) for _ in range(nproc)]
+        sent = [q_in.put((i, x)) for i, x in enumerate(X)]
+        num_tasks = len(sent)
+        [q_in.put(None) for _ in range(nproc)]  #XXX: poison pill
+        [w.start() for w in workers]
+        # [w.join() for w in workers]
+        q_in.join()
+        res = [q_out.get() for _ in range(num_tasks)]
+        return [x for (_, x) in sorted(res)]
+
+    res = mulpmap(
+        target, ((job, i + 1, j + 1) for (i, job), j in itertools.product(enumerate(jobs), range(n))), nproc)
+    return [res[i: i + n] for i in range(0, len(res), n)]
+
+def run_sge(target, jobs, n=1, nproc=None, path='.', delete=True, wait=True, environ=None, modules=(), **kwargs):
+    """
+    Evaluate the given function with each set of arguments, and return a list of results.
+    This function does in parallel on the Sun Grid Engine einvironment.
+
+    Parameters
+    ----------
+    target : function
+        A function to be evaluated. The function must accepts three arguments,
+        which are a list of arguments given as `jobs`, a job and task id (int).
+        This function can not be a lambda.
+    jobs : list
+        A list of arguments passed to the function.
+        All the argument must be picklable.
+    n : int, optional
+        A number of tasks. Repeat the evaluation `n` times for each job.
+        1 for default.
+    nproc : int, optional
+        A number of cores available once.
+        If nothing is given, it runs with no limit.
+    path : str, optional
+        A path for temporary files to be saved. The path is created if not exists.
+        The current directory is used as its default.
+    delete : bool, optional
+        Whether it removes temporary files after the successful execution.
+        True for default.
+    wait : bool, optional
+        Whether it waits until all jobs are finished. If False, it just submits jobs.
+        True for default.
+    environ : dict, optional
+        An environment variables used when running jobs.
+        "PYTHONPATH" and "LD_LIBRARY_PATH" is inherited when no `environ` is given.
+    modules : list, optional
+        A list of module names imported before evaluating the given function.
+        The modules are loaded as: `from [module] import *`.
+
+    Returns
+    -------
+    results : list
+        A list of results. Each element is a list containing `n` results.
+
+    Examples
+    --------
+    >>> jobs = ((1, 'spam'), (2, 'ham'), (3, 'eggs'))
+
+    >>> def target(args, job_id, task_id):
+    ...     return (args[1] * args[0])
+    ...
+    >>> run_sge(target, jobs, nproc=2, path='.tmp')
+    [['spam'], ['hamham'], ['eggseggseggs']]
+
+    >>> def target(args, job_id, task_id):
+    ...     return "{:d} {}".format(task_id, args[1] * args[0])
+    ...
+    >>> run_sge(target, jobs, n=2, nproc=2, path='.tmp')
+    [['1 spam', '2 spam'], ['1 hamham', '2 hamham'], ['1 eggseggseggs', '2 eggseggseggs']]
+
+    See Also
+    --------
+    ecell4.extra.ensemble.run_serial
+    ecell4.extra.ensemble.run_sge
+    ecell4.extra.ensemble.run_slurm
+    ecell4.extra.ensemble.run_multiprocessing
+    ecell4.extra.ensemble.run_azure
+
+    """
     logging.basicConfig(level=logging.DEBUG)
 
     if isinstance(target, types.LambdaType) and target.__name__ == "<lambda>":
@@ -71,6 +240,7 @@ def run_sge(target, jobs, n=1, path='.', delete=True, wait=True, environ=None, m
     cmds = []
     pickleins = []
     pickleouts = []
+    scripts = []
     for i, job in enumerate(jobs):
         (fd, picklein) = tempfile.mkstemp(suffix='.pickle', prefix='sge-', dir=path)
         with os.fdopen(fd, 'wb') as fout:
@@ -86,24 +256,44 @@ def run_sge(target, jobs, n=1, path='.', delete=True, wait=True, environ=None, m
         #     [tempfile.mkstemp(suffix='.pickle', prefix='sge-', dir=path)[1]
         #      for j in range(n)])
 
+        code = 'import sys\n'
+        code += 'import os\n'
+        code += 'import pickle\n'
+        code += 'with open(\'{}\', \'rb\') as fin:\n'.format(picklein)
+        code += '    job = pickle.load(fin)\n'
+        code += 'pass\n'
+        for m in modules:
+            code += "from {} import *\n".format(m)
+        code += src
+        code += '\ntid = int(os.environ[\'SGE_TASK_ID\'])'
+        code += '\nretval = {:s}(job, {:d}, tid)'.format(target.__name__, i + 1)
+        code += '\nfilenames = {:s}'.format(str(pickleouts[-1]))
+        code += '\npickle.dump(retval, open(filenames[tid - 1], \'wb\'))\n'
+
+        (fd, script) = tempfile.mkstemp(suffix='.py', prefix='sge-', dir=path, text=True)
+        with os.fdopen(fd, 'w') as fout:
+            fout.write(code)
+        scripts.append(script)
+
         cmd = '#!/bin/bash\n'
         for key, value in environ.items():
             cmd += 'export {:s}={:s}\n'.format(key, value)
-        cmd += 'python3 -c "\n'
-        cmd += 'import sys\n'
-        cmd += 'import os\n'
-        cmd += 'import pickle\n'
-        cmd += 'with open(sys.argv[1], \'rb\') as fin:\n'
-        cmd += '    job = pickle.load(fin)\n'
-        cmd += 'pass\n'
-        for m in modules:
-            cmd += "from {} import *\n".format(m)
-        cmd += src
-        cmd += '\ntid = int(os.environ[\'SGE_TASK_ID\'])'
-        cmd += '\nretval = {:s}(job, {:d}, tid)'.format(target.__name__, i + 1)
-        cmd += '\nfilenames = {:s}'.format(str(pickleouts[-1]))
-        cmd += '\npickle.dump(retval, open(filenames[tid - 1], \'wb\'))'
-        cmd += '" {:s}\n'.format(picklein)
+        cmd += 'python3 {}'.format(script)  #XXX: Use the same executer, python
+        # cmd += 'python3 -c "\n'
+        # cmd += 'import sys\n'
+        # cmd += 'import os\n'
+        # cmd += 'import pickle\n'
+        # cmd += 'with open(sys.argv[1], \'rb\') as fin:\n'
+        # cmd += '    job = pickle.load(fin)\n'
+        # cmd += 'pass\n'
+        # for m in modules:
+        #     cmd += "from {} import *\n".format(m)
+        # cmd += src
+        # cmd += '\ntid = int(os.environ[\'SGE_TASK_ID\'])'
+        # cmd += '\nretval = {:s}(job, {:d}, tid)'.format(target.__name__, i + 1)
+        # cmd += '\nfilenames = {:s}'.format(str(pickleouts[-1]))
+        # cmd += '\npickle.dump(retval, open(filenames[tid - 1], \'wb\'))'
+        # cmd += '" {:s}\n'.format(picklein)
         cmds.append(cmd)
 
     if isinstance(wait, bool):
@@ -113,7 +303,7 @@ def run_sge(target, jobs, n=1, path='.', delete=True, wait=True, environ=None, m
     else:
         raise ValueError("'wait' must be either 'int' or 'bool'.")
 
-    jobids = sge.run(cmds, n=n, path=path, delete=delete, sync=sync, **kwargs)
+    jobids = sge.run(cmds, n=n, path=path, delete=delete, sync=sync, max_running_tasks=nproc, **kwargs)
 
     if not (sync > 0):
         return None
@@ -127,10 +317,210 @@ def run_sge(target, jobs, n=1, path='.', delete=True, wait=True, environ=None, m
               for tasks in pickleouts]
 
     if delete:
-        for picklename in itertools.chain(pickleins, *pickleouts):
-            os.remove(picklename)
+        for tmpname in itertools.chain(pickleins, scripts, *pickleouts):
+            os.remove(tmpname)
 
     return retval
+
+def run_slurm(target, jobs, n=1, nproc=None, path='.', delete=True, wait=True, environ=None, modules=(), **kwargs):
+    """
+    Evaluate the given function with each set of arguments, and return a list of results.
+    This function does in parallel with Slurm Workload Manager.
+
+    Parameters
+    ----------
+    target : function
+        A function to be evaluated. The function must accepts three arguments,
+        which are a list of arguments given as `jobs`, a job and task id (int).
+        This function can not be a lambda.
+    jobs : list
+        A list of arguments passed to the function.
+        All the argument must be picklable.
+    n : int, optional
+        A number of tasks. Repeat the evaluation `n` times for each job.
+        1 for default.
+    nproc : int, optional
+        A number of cores available once.
+        If nothing is given, it runs with no limit.
+    path : str, optional
+        A path for temporary files to be saved. The path is created if not exists.
+        The current directory is used as its default.
+    delete : bool, optional
+        Whether it removes temporary files after the successful execution.
+        True for default.
+    wait : bool, optional
+        Whether it waits until all jobs are finished. If False, it just submits jobs.
+        True for default.
+    environ : dict, optional
+        An environment variables used when running jobs.
+        "PYTHONPATH" and "LD_LIBRARY_PATH" is inherited when no `environ` is given.
+    modules : list, optional
+        A list of module names imported before evaluating the given function.
+        The modules are loaded as: `from [module] import *`.
+
+    Returns
+    -------
+    results : list
+        A list of results. Each element is a list containing `n` results.
+
+    Examples
+    --------
+    >>> jobs = ((1, 'spam'), (2, 'ham'), (3, 'eggs'))
+
+    >>> def target(args, job_id, task_id):
+    ...     return (args[1] * args[0])
+    ...
+    >>> run_slurm(target, jobs, nproc=2, path='.tmp')
+    [['spam'], ['hamham'], ['eggseggseggs']]
+
+    >>> def target(args, job_id, task_id):
+    ...     return "{:d} {}".format(task_id, args[1] * args[0])
+    ...
+    >>> run_slurm(target, jobs, n=2, nproc=2, path='.tmp')
+    [['1 spam', '2 spam'], ['1 hamham', '2 hamham'], ['1 eggseggseggs', '2 eggseggseggs']]
+
+    See Also
+    --------
+    ecell4.extra.ensemble.run_serial
+    ecell4.extra.ensemble.run_sge
+    ecell4.extra.ensemble.run_slurm
+    ecell4.extra.ensemble.run_multiprocessing
+    ecell4.extra.ensemble.run_azure
+
+    """
+    logging.basicConfig(level=logging.DEBUG)
+
+    if isinstance(target, types.LambdaType) and target.__name__ == "<lambda>":
+        raise RuntimeError("A lambda function is not accepted")
+
+    # src = textwrap.dedent(inspect.getsource(singlerun)).replace(r'"', r'\"')
+    src = textwrap.dedent(inspect.getsource(target)).replace(r'"', r'\"')
+    if re.match('[\s\t]+', src.split('\n')[0]) is not None:
+        raise RuntimeError(
+            "Wrong indentation was found in the source translated")
+
+    if not os.path.isdir(path):
+        os.makedirs(path)  #XXX: MYOB
+
+    if environ is None:
+        environ = {}
+        keys = ("LD_LIBRARY_PATH", "PYTHONPATH")
+        for key in keys:
+            if key in os.environ.keys():
+                environ[key] = os.environ[key]
+        if "PYTHONPATH" in environ.keys() and environ["PYTHONPATH"].strip() != "":
+            environ["PYTHONPATH"] = "{}:{}".format(os.getcwd(), environ["PYTHONPATH"])
+        else:
+            environ["PYTHONPATH"] = os.getcwd()
+
+    cmds = []
+    pickleins = []
+    pickleouts = []
+    scripts = []
+    for i, job in enumerate(jobs):
+        (fd, picklein) = tempfile.mkstemp(suffix='.pickle', prefix='slurm-', dir=path)
+        with os.fdopen(fd, 'wb') as fout:
+            pickle.dump(job, fout)
+        pickleins.append(picklein)
+
+        pickleouts.append([])
+        for j in range(n):
+            fd, pickleout = tempfile.mkstemp(suffix='.pickle', prefix='slurm-', dir=path)
+            os.close(fd)
+            pickleouts[-1].append(pickleout)
+        # pickleouts.append(
+        #     [tempfile.mkstemp(suffix='.pickle', prefix='slurm-', dir=path)[1]
+        #      for j in range(n)])
+
+        code = 'import sys\n'
+        code += 'import os\n'
+        code += 'import pickle\n'
+        code += 'with open(\'{}\', \'rb\') as fin:\n'.format(picklein)
+        code += '    job = pickle.load(fin)\n'
+        code += 'pass\n'
+        for m in modules:
+            code += "from {} import *\n".format(m)
+        code += src
+        code += '\ntid = int(os.environ[\'SLURM_ARRAY_TASK_ID\'])'
+        # code += '\ntid = int(os.environ[\'SGE_TASK_ID\'])'
+        code += '\nretval = {:s}(job, {:d}, tid)'.format(target.__name__, i + 1)
+        code += '\nfilenames = {:s}'.format(str(pickleouts[-1]))
+        code += '\npickle.dump(retval, open(filenames[tid - 1], \'wb\'))\n'
+
+        (fd, script) = tempfile.mkstemp(suffix='.py', prefix='slurm-', dir=path, text=True)
+        with os.fdopen(fd, 'w') as fout:
+            fout.write(code)
+        scripts.append(script)
+
+        cmd = '#!/bin/bash\n'
+        for key, value in environ.items():
+            cmd += 'export {:s}={:s}\n'.format(key, value)
+        cmd += 'python3 {}'.format(script)  #XXX: Use the same executer, python
+        # cmd += 'python3 -c "\n'
+        # cmd += 'import sys\n'
+        # cmd += 'import os\n'
+        # cmd += 'import pickle\n'
+        # cmd += 'with open(sys.argv[1], \'rb\') as fin:\n'
+        # cmd += '    job = pickle.load(fin)\n'
+        # cmd += 'pass\n'
+        # for m in modules:
+        #     cmd += "from {} import *\n".format(m)
+        # cmd += src
+        # cmd += '\ntid = int(os.environ[\'SGE_TASK_ID\'])'
+        # cmd += '\nretval = {:s}(job, {:d}, tid)'.format(target.__name__, i + 1)
+        # cmd += '\nfilenames = {:s}'.format(str(pickleouts[-1]))
+        # cmd += '\npickle.dump(retval, open(filenames[tid - 1], \'wb\'))'
+        # cmd += '" {:s}\n'.format(picklein)
+        cmds.append(cmd)
+
+    if isinstance(wait, bool):
+        sync = 0 if not wait else 10
+    elif isinstance(wait, int):
+        sync = wait
+    else:
+        raise ValueError("'wait' must be either 'int' or 'bool'.")
+
+    #XXX: nproc only limits the maximum count for 'each' job, but not for the whole jobs.
+    jobids = slurm.run(cmds, n=n, path=path, delete=delete, sync=sync, max_running_tasks=nproc, **kwargs)
+
+    if not (sync > 0):
+        return None
+
+    for jobid, name in jobids:
+        outputs = slurm.collect(jobid, name, n=n, path=path, delete=delete)
+        for output in outputs:
+            print(output, end='')
+
+    retval = [[pickle.load(open(pickleout, 'rb')) for pickleout in tasks]
+              for tasks in pickleouts]
+
+    if delete:
+        for tmpname in itertools.chain(pickleins, scripts, *pickleouts):
+            os.remove(tmpname)
+
+    return retval
+
+def run_azure(target, jobs, n=1, nproc=None, path='.', delete=True, config=None, **kwargs):
+    """
+    Evaluate the given function with each set of arguments, and return a list of results.
+    This function does in parallel with Microsoft Azure Batch.
+
+    This function is the work in progress.
+    The argument `nproc` doesn't work yet.
+    See `ecell4.extra.azure_batch.run_azure` for details.
+
+    See Also
+    --------
+    ecell4.extra.ensemble.run_serial
+    ecell4.extra.ensemble.run_sge
+    ecell4.extra.ensemble.run_slurm
+    ecell4.extra.ensemble.run_multiprocessing
+    ecell4.extra.ensemble.run_azure
+    ecell4.extra.azure_batch.run_azure
+
+    """
+    import ecell4.extra.azure_batch as azure_batch
+    return azure_batch.run_azure(target, jobs, n, path, delete, config)
 
 def genseeds(n):
     """
@@ -194,7 +584,7 @@ def ensemble_simulations(
     is_netfree=False, species_list=None, without_reset=False,
     return_type='matplotlib', opt_args=(), opt_kwargs=None,
     structures=None, rndseed=None,
-    n=1, nproc=1, method=None, errorbar=True,
+    n=1, nproc=None, method=None, errorbar=True,
     **kwargs):
     """
     Run simulations multiple times and return its ensemble.
@@ -207,10 +597,10 @@ def ensemble_simulations(
         A number of runs. Default is 1.
     nproc : int, optional
         A number of processors. Ignored when method='serial'.
-        Default is 1.
+        Default is None.
     method : str, optional
         The way for running multiple jobs.
-        Choose one from 'serial', 'sge' and 'multiprocessing'.
+        Choose one from 'serial', 'multiprocessing', 'sge', 'slurm', 'azure'.
         Default is None, which works as 'serial'.
     **kwargs : dict, optional
         Optional keyword arugments are passed through to `run_serial`,
@@ -230,9 +620,11 @@ def ensemble_simulations(
     See Also
     --------
     ecell4.util.run_simulation
-    ecell4.extra.run_serial
-    ecell4.extra.run_sge
-    ecell4.extra.run_multiprocessing
+    ecell4.extra.ensemble.run_serial
+    ecell4.extra.ensemble.run_sge
+    ecell4.extra.ensemble.run_slurm
+    ecell4.extra.ensemble.run_multiprocessing
+    ecell4.extra.ensemble.run_azure
 
     """
     y0 = y0 or {}
@@ -269,12 +661,16 @@ def ensemble_simulations(
     if method is None or method.lower() == "serial":
         retval = run_serial(singlerun, jobs, n=n, **kwargs)
     elif method.lower() == "sge":
-        retval = run_sge(singlerun, jobs, n=n, **kwargs)
+        retval = run_sge(singlerun, jobs, n=n, nproc=nproc, **kwargs)
+    elif method.lower() == "slurm":
+        retval = run_slurm(singlerun, jobs, n=n, nproc=nproc, **kwargs)
     elif method.lower() == "multiprocessing":
-        retval = run_multiprocessing(singlerun, jobs, n=n, **kwargs)
+        retval = run_multiprocessing(singlerun, jobs, n=n, nproc=nproc, **kwargs)
+    elif method.lower() == "azure":
+        retval = run_azure(singlerun, jobs, n=n, nproc=nproc, **kwargs)
     else:
         raise ValueError(
-            'Argument "method" must be one of "serial", "multiprocessing" and "sge".')
+            'Argument "method" must be one of "serial", "multiprocessing", "slurm" and "sge".')
 
     if return_type is None or return_type in ("none", ):
         return
@@ -299,11 +695,12 @@ def ensemble_simulations(
             self.__data = numpy.vstack([t, mean]).T
 
             if errorbar:
-                std = sum([(numpy.array(data, numpy.float64).T[1: ] - mean) ** 2
-                           for data in inputs])
-                std /= len(inputs)
-                std = numpy.sqrt(std)
-                self.__error = numpy.vstack([t, std]).T
+                var = sum([(numpy.array(data, numpy.float64).T[1: ] - mean) ** 2
+                             for data in inputs]) / len(inputs)
+                stdev = numpy.sqrt(var)
+                stder = stdev / numpy.sqrt(len(inputs))
+                # self.__error = numpy.vstack([t, stdev]).T
+                self.__error = numpy.vstack([t, stder]).T
             else:
                 self.__error = None
 
@@ -320,6 +717,12 @@ def ensemble_simulations(
 
         def error(self):
             return self.__error
+
+        def save(self, filename):
+            with open(filename, 'w') as fout:
+                writer = csv.writer(fout, delimiter=',', lineterminator='\n')
+                writer.writerow(['"{}"'.format(sp.serial()) for sp in self.__species_list])
+                writer.writerows(self.data())
 
     if return_type in ("matplotlib", 'm'):
         if isinstance(opt_args, (list, tuple)):
