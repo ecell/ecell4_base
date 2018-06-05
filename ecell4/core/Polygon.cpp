@@ -221,7 +221,7 @@ void Polygon::assign(const std::vector<Triangle>& ts)
             }
 
             const face_data& f = this->face_at(this->face_of(current));
-            Real angle = std::numeric_limits<Real>::infinity();
+            Real angle = std::numeric_limits<Real>::max();
             for(std::size_t idx=0; idx<3; ++idx)
             {
                 if(f.edges[idx] == current)
@@ -230,7 +230,7 @@ void Polygon::assign(const std::vector<Triangle>& ts)
                     break;
                 }
             }
-            assert(angle != std::numeric_limits<Real>::infinity());
+            assert(angle != std::numeric_limits<Real>::max());
 
             total_angle += angle;
             vtx.outgoing_edges.push_back(std::make_pair(current, angle));
@@ -368,7 +368,7 @@ Real Polygon::distance_sq(
     const face_data& face = face_at(f1);
     const Real3&   normal = face.triangle.normal();
 
-    Real solution = std::numeric_limits<Real>::infinity();
+    Real solution = std::numeric_limits<Real>::max();
     for(std::size_t i=0; i<3; ++i)
     {
         const VertexID vid = face.vertices[i];
@@ -410,7 +410,7 @@ Real Polygon::distance_sq(
             }
         }
     }
-    if(solution != std::numeric_limits<Real>::infinity())
+    if(solution != std::numeric_limits<Real>::max())
     {
 //         std::cerr << "path does not go through vertex.  dist_sq = " << solution << std::endl;
         return solution;
@@ -579,7 +579,7 @@ Real3 Polygon::direction(
     const face_data& face = face_at(f1);
     const Real3&   normal = face.triangle.normal();
 
-    Real mindist2 = std::numeric_limits<Real>::infinity();
+    Real mindist2 = std::numeric_limits<Real>::max();
     Real3 direction(0,0,0);
     for(std::size_t i=0; i<3; ++i)
     {
@@ -633,7 +633,7 @@ Real3 Polygon::direction(
             }
         }
     }
-    if(mindist2 == std::numeric_limits<Real>::infinity())
+    if(mindist2 == std::numeric_limits<Real>::max())
     {
         throw std::runtime_error((boost::format(
             "polygon::direction: couldn't find the min path between "
