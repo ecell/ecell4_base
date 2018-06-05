@@ -370,7 +370,7 @@ class SpeciesAttributesCallback(Callback):
             species_list = generate_Species(lhs)
             if len(species_list) != 1:
                 raise ValueError(
-                    'Only a single Species must be given; {:d} was given'.format(len(species_list))
+                    'Only a single Species must be given; {:d} was given'.format(len(species_list)))
             elif species_list[0] is None:
                 raise ValueError("No species given [{}]".format(repr(obj)))
             elif species_list[0][1] is not None:
