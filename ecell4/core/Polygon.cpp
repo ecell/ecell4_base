@@ -373,7 +373,7 @@ Real Polygon::distance_sq(
     {
         const VertexID vid = face.vertices[i];
         const Real3& vpos(position_at(vid));
-        const Real3 vtop1(p1 - vpos);
+        const Real3 vtop1(this->periodic_transpose(p1, vpos) - vpos);
 
         { // counter clock wise
             const std::vector<std::pair<FaceID, Triangle> >::const_iterator fi =
@@ -383,7 +383,7 @@ Real Polygon::distance_sq(
             {
                 // unfolded place of p2
                 const Real3 p2 = to_absolute(b2, fi->second);
-                const Real3 vtop2(p2 - vpos);
+                const Real3 vtop2(this->periodic_transpose(p2, vpos) - vpos);
                 // check the angle between p1-v-p2 does not exceeds PI
                 if(dot_product(normal, cross_product(vtop1, vtop2)) >= 0)
                 {
@@ -401,7 +401,7 @@ Real Polygon::distance_sq(
             {
                 // unfolded place of p2
                 const Real3 p2 = to_absolute(b2, fi->second);
-                const Real3 vtop2(p2 - vpos);
+                const Real3 vtop2(this->periodic_transpose(p2, vpos) - vpos);
                 // check the angle between p1-v-p2 does not exceeds PI
                 if(dot_product(normal, cross_product(vtop1, vtop2)) <= 0)
                 {
@@ -439,8 +439,10 @@ Real Polygon::distance_sq(
     if(connected)
     {
         const Real3& vpos = position_at(*connected);
-        const Real   lsq1 = length_sq(p1         - vpos);
-        const Real   lsq2 = length_sq(pos2.first - vpos);
+        const Real   lsq1 =
+            length_sq(this->periodic_transpose(p1, vpos)         - vpos);
+        const Real   lsq2 =
+            length_sq(this->periodic_transpose(pos2.first, vpos) - vpos);
         // (x+y)^2 = x^2 + y^2 + 2xy = x^2 + y^2 + 2 * sqrt(x^2y^2)
         return lsq1 + lsq2 + 2 * std::sqrt(lsq1 * lsq2);
 
@@ -465,7 +467,8 @@ Real Polygon::distance_sq(const std::pair<Real3, VertexID>& pos1,
         if(fid == pos2.second)
         {
             // on the same face.
-            return length_sq(pos1.first - pos2.first);
+            return length_sq(
+                this->periodic_transpose(pos1.first, pos2.first) - pos2.first);
         }
         const FaceID adj = this->face_of(this->opposite_of(this->next_of(eid)));
         if(adj == pos2.second)
@@ -479,7 +482,8 @@ Real Polygon::distance_sq(const std::pair<Real3, VertexID>& pos1,
                 to_barycentric(pos2.first, this->face_at(pos2.second).triangle);
             const Real3 pos2rot = to_absolute(b2, fp.second);
 
-            return length_sq(pos1.first - pos2rot);
+            return length_sq(
+                    this->periodic_transpose(pos1.first, pos2rot) - pos2rot);
         }
     }
     return std::numeric_limits<Real>::infinity();
@@ -516,7 +520,8 @@ Real Polygon::distance_sq(const std::pair<Real3, VertexID>& pos1,
                 to_barycentric(pos2.first, this->face_at(adj).triangle);
             const Real3 pos2rot = to_absolute(b2, fp.second);
 
-            return length_sq(pos1.first - pos2rot);
+            return length_sq(
+                    this->periodic_transpose(pos1.first, pos2rot) - pos2rot);
         }
     }
     return std::numeric_limits<Real>::infinity();
@@ -552,7 +557,8 @@ Real Polygon::distance(const std::pair<Real3, VertexID>& pos1,
                 to_barycentric(pos2.first, this->face_at(adj).triangle);
             const Real3 pos2rot = to_absolute(b2, fp.second);
 
-            return length(pos1.first - pos2rot);
+            return length(
+                    this->periodic_transpose(pos1.first, pos2rot) - pos2rot);
         }
     }
     return std::numeric_limits<Real>::infinity();
@@ -585,7 +591,7 @@ Real3 Polygon::direction(
     {
         const VertexID vid = face.vertices[i];
         const Real3& vpos(position_at(vid));
-        const Real3 vtop1(p1 - vpos);
+        const Real3 vtop1(this->periodic_transpose(p1, vpos) - vpos);
 
         { // counter clock wise
             const std::vector<std::pair<FaceID, Triangle> >::const_iterator fi =
@@ -595,11 +601,11 @@ Real3 Polygon::direction(
             {
                 // unfolded place of p2
                 const Real3 p2 = to_absolute(b2, fi->second);
-                const Real3 vtop2(p2 - vpos);
+                const Real3 vtop2(this->periodic_transpose(p2, vpos) - vpos);
                 // check the angle between p1-v-p2 does not exceeds PI
                 if(dot_product(normal, cross_product(vtop1, vtop2)) >= 0)
                 {
-                    const Real3 dr = p2 - p1;
+                    const Real3 dr = this->periodic_transpose(p2, p1) - p1;
                     const Real  d2 = length_sq(dr);
                     if(d2 < mindist2)
                     {
@@ -618,11 +624,11 @@ Real3 Polygon::direction(
             {
                 // unfolded place of p2
                 const Real3 p2 = to_absolute(b2, fi->second);
-                const Real3 vtop2(p2 - vpos);
+                const Real3 vtop2(this->periodic_transpose(p2, vpos) - vpos);
                 // check the angle between p1-v-p2 does not exceeds PI
                 if(dot_product(normal, cross_product(vtop1, vtop2)) <= 0)
                 {
-                    const Real3 dr = p2 - p1;
+                    const Real3 dr = this->periodic_transpose(p2, p1) - p1;
                     const Real  d2 = length_sq(dr);
                     if(d2 < mindist2)
                     {
