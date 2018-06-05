@@ -1,3 +1,5 @@
+from cpython.ref cimport PyObject
+
 from libcpp.string cimport string
 from libcpp cimport bool
 
@@ -15,21 +17,9 @@ from shared_ptr cimport shared_ptr
 
 cdef string tostring(ustr)
 
-## Python object handler for C++ layer
-ctypedef void (*PyObjectHandler_1arg)(void*)
-cdef extern from "ecell4/core/pyhandler.hpp" namespace "ecell4":
-    cdef cppclass Cpp_PyObjectHandler "ecell4::PyObjectHandler":
-        Cpp_PyObjectHandler(PyObjectHandler_1arg, PyObjectHandler_1arg)
-        bool is_available()
-
-cdef class PyObjectHandler:
-    cdef shared_ptr[Cpp_PyObjectHandler] thisptr
-
-
 cdef extern from "gsl/gsl_rng.h":
     ctypedef struct gsl_rng:
         pass
-
 
 ## Cpp_GSLRandomNumberGenerator
 #  ecell4::GSLRandomNumberGenerator
@@ -140,9 +130,19 @@ cdef class Species:
 
 cdef Species Species_from_Cpp_Species(Cpp_Species *sp)
 
+## Python object handler for C++ layer
+ctypedef void (*PyObjectHandler_single_argument_func_type)(void*)
+cdef extern from "ecell4/core/pyhandler.hpp" namespace "ecell4":
+    cdef cppclass Cpp_PyObjectHandler "ecell4::PyObjectHandler":
+        Cpp_PyObjectHandler(PyObjectHandler_single_argument_func_type, PyObjectHandler_single_argument_func_type)
+        bool is_available()
 
-ctypedef void* pyfunc_type_rrdesc
-ctypedef double (*stepladder_type_rrdescriptor)(pyfunc_type_rrdesc, vector[Real], vector[Real], Real)
+cdef class PyObjectHandler:
+    cdef shared_ptr[Cpp_PyObjectHandler] thisptr
+
+# ctypedef void* ReactionRuleDescriptor_pyfunc_type
+ctypedef PyObject* ReactionRuleDescriptor_pyfunc_type
+ctypedef double (*ReactionRuleDescriptor_stepladder_type)(ReactionRuleDescriptor_pyfunc_type, vector[Real], vector[Real], Real)
 
 # Cpp_ReactionRuleDescriptor
 #ecell4::ReactionRuleDescriptorPyfunc
@@ -150,17 +150,18 @@ cdef extern from "ecell4/core/ReactionRule.hpp" namespace "ecell4":
     cdef cppclass Cpp_ReactionRuleDescriptor "ecell4::ReactionRuleDescriptorPyfunc":
         Cpp_ReactionRuleDescriptor() except +
         Cpp_ReactionRuleDescriptor(
-                stepladder_type_rrdescriptor, pyfunc_type_rrdesc, shared_ptr[Cpp_PyObjectHandler]) 
-        #Real flux()
+                ReactionRuleDescriptor_stepladder_type,
+                ReactionRuleDescriptor_pyfunc_type)
         void set_reactant_coefficients(vector[Real])
         void set_product_coefficients(vector[Real])
         bool has_coefficients()
         vector[Real] reactant_coefficients()
         vector[Real] product_coefficients()
+        Real propensity(vector[Real], vector[Real], Real)
+        # bool is_available()
 
 cdef class ReactionRuleDescriptor:
     cdef shared_ptr[Cpp_ReactionRuleDescriptor] thisptr
-    #cdef object pyfunc_
 
 ## Cpp_ReactionRule
 #  ecell4::ReactionRule
@@ -189,10 +190,10 @@ cdef extern from "ecell4/core/ReactionRule.hpp" namespace "ecell4":
         void set_policy(Cpp_ReactionRulePolicyType)
         Integer count(vector[Cpp_Species]) except +
         vector[Cpp_ReactionRule] generate(vector[Cpp_Species]) except +
+
         void set_descriptor(shared_ptr[Cpp_ReactionRuleDescriptor])
         bool has_descriptor()
         Real propensity(vector[Real], vector[Real], Real)
-
 
 ## ReactionRule
 #  a python wrapper for Cpp_ReactionRule
@@ -494,7 +495,7 @@ cdef Voxel Voxel_from_Cpp_Voxel(Cpp_Voxel* p)
 ## Callback Related
 ctypedef void* pyfunc_type
 ctypedef int (*stepladder_type)(pyfunc_type pyfunc, vector[Real])
-    
+
 cdef extern from "ecell4/core/callback.hpp" namespace "ecell4":
     cdef cppclass Cpp_CallbackWrapper "ecell4::CallbackWrapper":
         Cpp_CallbackWrapper(stepladder_type, pyfunc_type)
@@ -512,7 +513,6 @@ cdef extern from "ecell4/core/callback.hpp" namespace "ecell4":
 cdef class PythonSpaceHooker:
     cdef PythonHook_Space* thisptr
     cdef object pyfunc_
-
 
 ## Cpp_FixedIntervalNumberObserver
 #  ecell4::FixedIntervalNumberObserver
@@ -881,7 +881,6 @@ cdef class Rod:
 cdef class RodSurface:
     cdef shared_ptr[Cpp_RodSurface]* thisptr
 
-
 ## MeshSurface
 # a python wrapper for Cpp_MeshSurface
 cdef class MeshSurface:
@@ -932,7 +931,7 @@ cdef AABB AABB_from_Cpp_AABB(Cpp_AABB* p)
 #cdef class PythonNumberHooker:
 #    cdef Cpp_PythonNumberHooker* thisptr
 #    cdef object pyfunc_
-#    
+#
 #cdef extern from "ecell4/core/callback.hpp" namespace "ecell4":
 #    cdef cppclass PythonHook_1arg[T1]:
 #        #PythonHook_1arg( "(*)(pyfunc_type, T1)" , pyfunc_type)

@@ -12,6 +12,8 @@
 #include "boost/tuple/tuple.hpp"
 #include "boost/tuple/tuple_io.hpp"
 
+#include <Python.h>
+
 
 namespace ecell4
 {
@@ -123,48 +125,45 @@ class ReactionRuleDescriptorPyfunc
 public:
 
     typedef ReactionRuleDescriptor base_type;
-    typedef void *pyfunc_type;
-    typedef Real (*stepladder_type_rrdescriptor)(
-        pyfunc_type, std::vector<Real>, std::vector<Real>, Real t);
+    typedef PyObject* pyfunc_type;
+    typedef Real (*stepladder_func_type)(pyfunc_type, std::vector<Real>, std::vector<Real>, Real t);
 
 public:
 
-    ReactionRuleDescriptorPyfunc(
-        stepladder_type_rrdescriptor stepladder, pyfunc_type pyfunc, boost::shared_ptr<PyObjectHandler> py_handler)
-        : stepladder_(stepladder), pyfunc_(pyfunc), pyobject_handler_(py_handler)
+    ReactionRuleDescriptorPyfunc(stepladder_func_type stepladder, pyfunc_type pyfunc)
+        : stepladder_(stepladder), pyfunc_(pyfunc)
     {
-        this->pyobject_handler_->inc_ref(this->pyfunc_);
+        Py_INCREF(this->pyfunc_);
     }
 
     virtual ~ReactionRuleDescriptorPyfunc()
     {
-        this->pyobject_handler_->dec_ref(this->pyfunc_);
+        Py_DECREF(this->pyfunc_);
     }
 
-    bool is_available() const
-    {
-        return (pyfunc_ != 0 && stepladder_ != 0);
-    }
+    //XXX: The following implementation doesn't work.
+    // bool is_available() const
+    // {
+    //     return (pyfunc_ != 0 && stepladder_ != 0);
+    // }
 
-    virtual Real propensity(const std::vector<Real> &r, const std::vector<Real> &p, Real time) const
+    virtual Real propensity(const std::vector<Real>& reactants, const std::vector<Real>& products, Real t) const
     {
-        if (stepladder_ == NULL)
-        {
-            throw IllegalState("stepladder is not registered");
-        }
-        if (pyfunc_ == NULL)
-        {
-            throw IllegalState("pyfunc is not registered");
-        }
-        Real ret = stepladder_(this->pyfunc_, r, p, time);
-        return ret;
+        // if (stepladder_ == NULL)
+        // {
+        //     throw IllegalState("stepladder is not registered");
+        // }
+        // if (pyfunc_ == NULL)
+        // {
+        //     throw IllegalState("pyfunc is not registered");
+        // }
+        return this->stepladder_(this->pyfunc_, reactants, products, t);
     }
 
 private:
 
     pyfunc_type pyfunc_;
-    stepladder_type_rrdescriptor stepladder_;
-    boost::shared_ptr<PyObjectHandler> pyobject_handler_;
+    stepladder_func_type stepladder_;
 };
 
 } // ecell4

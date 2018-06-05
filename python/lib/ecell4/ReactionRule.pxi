@@ -1,10 +1,11 @@
+from cpython.ref cimport PyObject
 from cython.operator cimport dereference as deref, preincrement as inc
 from cython cimport address
 
 cimport create_reaction_rule as crr
 
 cdef double indirect_function_rrd(
-    void *pyfunc, vector[Real] reactants, vector[Real] products, Real t):
+    PyObject* pyfunc, vector[Real] reactants, vector[Real] products, Real t):
     py_reactants = []
     cdef vector[Real].iterator it1 = reactants.begin()
     while it1 != reactants.end():
@@ -16,18 +17,25 @@ cdef double indirect_function_rrd(
         py_products.append(deref(it2))
         inc(it2)
     ret = (<object>pyfunc)(py_reactants, py_products, t)
-    #if not isinstance(ret, float):
-    #    #XXX: Show some warning here
-    #    # print('indirect_function: {} {} {} {} {} => {}'.format(py_reactants, py_products, volume, t, rr.as_string(), ret))
-    #    return 0.0
+    # try:
+    #     ret = (<object>pyfunc)(py_reactants, py_products, t)
+    # except Exception as e:
+    #     print("Catch '{:s}'".format(str(e)))
+    #     raise e
+    # if not isinstance(ret, float):
+    #     #XXX: Show some warning here
+    #     # print('indirect_function: {} {} {} {} {} => {}'.format(py_reactants, py_products, volume, t, rr.as_string(), ret))
+    #     return 0.0
     return ret
 
 cdef class ReactionRuleDescriptor:
-    def __init__(self, pyfunc):
-        a = PyObjectHandler()
-        self.thisptr = shared_ptr[Cpp_ReactionRuleDescriptor](
-                new Cpp_ReactionRuleDescriptor(<stepladder_type_rrdescriptor>indirect_function_rrd, <void*>pyfunc, a.thisptr) )
 
+    def __init__(self, pyfunc):
+        # a = PyObjectHandler()
+        self.thisptr = shared_ptr[Cpp_ReactionRuleDescriptor](
+            new Cpp_ReactionRuleDescriptor(
+                <ReactionRuleDescriptor_stepladder_type>indirect_function_rrd,
+                <PyObject*>pyfunc))
 
     def reactant_coefficients(self):
         cdef vector[Real] cpp_coefficients = self.thisptr.get().reactant_coefficients()
@@ -46,7 +54,7 @@ cdef class ReactionRuleDescriptor:
             py_product_coefficients.append(deref(it))
             inc(it)
         return py_product_coefficients
-    
+
     def set_reactant_coefficients(self, coefficients):
         cdef vector[Real] cpp_coefficients
         for c in coefficients:
@@ -58,6 +66,18 @@ cdef class ReactionRuleDescriptor:
         for c in coefficients:
             cpp_coefficients.push_back(c)
         self.thisptr.get().set_product_coefficients(cpp_coefficients)
+
+    def propensity(self, r, p, Real t):
+        cdef vector[Real] cpp_r
+        for val in r:
+            cpp_r.push_back(val)
+        cdef vector[Real] cpp_p
+        for val in p:
+            cpp_p.push_back(val)
+        return self.thisptr.get().propensity(cpp_r, cpp_p, t)
+
+    # def is_available(self):
+    #     return self.thisptr.get().is_available()
 
 class ReactionRulePolicy(object):
     """A wrapper of ReactionRule::policy_type"""
