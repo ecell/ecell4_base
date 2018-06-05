@@ -1,6 +1,7 @@
 #include "pyhandler.hpp"
 
-namespace ecell4 {
+namespace ecell4
+{
 
 PyObjectHandler::~PyObjectHandler()
 {

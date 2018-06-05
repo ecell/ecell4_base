@@ -5,7 +5,6 @@
 #include "types.hpp"
 #include "Species.hpp"
 
-#include "pyhandler.hpp"
 #include "ReactionRuleDescriptor.hpp"
 #include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
