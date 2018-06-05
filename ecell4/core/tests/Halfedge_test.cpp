@@ -956,6 +956,23 @@ BOOST_AUTO_TEST_CASE(Polygon_plane_construction_from_triangles)
             BOOST_CHECK_CLOSE(poly.triangle_at(*i).area(), 2.0, 1e-8);
         }
     }
+    // check angles
+    {
+        const std::vector<FaceID> fids = poly.list_face_ids();
+        assert(fids.size() == poly.face_size());
+
+        for(std::vector<FaceID>::const_iterator
+                i(fids.begin()), e(fids.end()); i!=e; ++i)
+        {
+            const Triangle& t = poly.triangle_at(*i);
+            for(std::size_t idx=0; idx<3; ++idx)
+            {
+                const Real d45 = std::abs(t.angle_at(idx) - pi / 4.0);
+                const Real d90 = std::abs(t.angle_at(idx) - pi / 2.0);
+                BOOST_CHECK(d45 < 1e-8 || d90 < 1e-8);
+            }
+        }
+    }
 
 
     // check opposite edges
@@ -1017,6 +1034,61 @@ BOOST_AUTO_TEST_CASE(Polygon_plane_construction_from_triangles)
         {
             BOOST_CHECK_SMALL(poly.tilt_angle_at(*i), 1e-8);
         }
+    }
+
+    // check neighbor list
+    {
+        const std::vector<FaceID> fids = poly.list_face_ids();
+        assert(fids.size() == poly.face_size());
+
+        for(std::vector<FaceID>::const_iterator
+                i(fids.begin()), e(fids.end()); i!=e; ++i)
+        {
+            BOOST_CHECK_EQUAL(poly.neighbor_faces_of(*i).size(), 12);
+        }
+
+        const std::vector<VertexID> vids = poly.list_vertex_ids();
+        assert(vids.size() == poly.vertex_size());
+
+        for(std::vector<VertexID>::const_iterator
+                i(vids.begin()), e(vids.end()); i!=e; ++i)
+        {
+            BOOST_CHECK_EQUAL(poly.neighbor_faces_of(*i).size(), 12);
+        }
+    }
+
+    {
+        const std::vector<FaceID> fids = poly.list_face_ids();
+        assert(fids.size() == poly.face_size());
+
+        for(std::vector<FaceID>::const_iterator
+                i(fids.begin()), e(fids.end()); i!=e; ++i)
+        {
+            std::vector<FaceID> vneighbors;
+            for(std::size_t idx=0; idx<3; ++idx)
+            {
+                const std::vector<EdgeID> es = poly.outgoing_edges(
+                        poly.vertices_of(*i).at(idx));
+                for(std::vector<EdgeID>::const_iterator
+                        ie(es.begin()), ee(es.end()); ie!=ee; ++ie)
+                {
+                    vneighbors.push_back(poly.face_of(*ie));
+                }
+            }
+            std::sort(vneighbors.begin(), vneighbors.end());
+            const std::vector<FaceID>::iterator uniq =
+                std::unique(vneighbors.begin(), vneighbors.end());
+            vneighbors.erase(uniq, vneighbors.end());
+            const std::vector<FaceID>::iterator self =
+                std::find(vneighbors.begin(), vneighbors.end(), *i);
+            vneighbors.erase(self);
+
+            const std::vector<FaceID> fneighbors = poly.neighbor_faces_of(*i);
+            BOOST_CHECK(ecell::is_permutation(
+                        fneighbors.begin(), fneighbors.end(),
+                        vneighbors.begin(), vneighbors.end()));
+        }
+
     }
 
     // distance stuff
