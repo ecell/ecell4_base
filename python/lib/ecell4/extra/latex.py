@@ -90,6 +90,11 @@ def species(m):
         ser = pandas.Series(dic, name=s.serial())
         sers.append(ser)
     df = pandas.DataFrame(sers)
+    numvalpat = r'([0-9]+|e-[0-9]+)'
+    for colname in df.columns:
+        if df[colname].str.contains(numvalpat).all():
+            df[colname] = df[colname].map(float)
+    pandas.options.display.float_format = '{:.1e}'.format
     return df
 
 def equations(m, inline=False, constants=True):
