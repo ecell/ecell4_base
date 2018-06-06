@@ -60,11 +60,13 @@ public:
         ;
     }
 
-    ReactionRule(
-        const ReactionRule& rr)
-        : k_(rr.k()), reactants_(rr.reactants()), products_(rr.products()), policy_(rr.policy())
+    ReactionRule(const ReactionRule& rr)
+        : k_(rr.k()), reactants_(rr.reactants()), products_(rr.products()), policy_(rr.policy()), rr_descriptor_()
     {
-        ;
+        if (rr.has_descriptor())
+        {
+            set_descriptor(boost::shared_ptr<ReactionRuleDescriptor>(rr.get_descriptor()->clone()));
+        }
     }
 
     Real k() const

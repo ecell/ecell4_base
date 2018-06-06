@@ -31,8 +31,13 @@ public:
 
 public:
 
-    ReactionRuleDescriptor(const std::string& name)
-        : name_(name)
+    ReactionRuleDescriptor(const reaction_coefficient_list_type &reactant_coefficients, const reaction_coefficient_list_type &product_coefficients)
+        : reactant_coefficients_(reactant_coefficients), product_coefficients_(product_coefficients)
+    {
+        ;
+    }
+
+    ReactionRuleDescriptor()
     {
         ;
     }
@@ -50,14 +55,9 @@ public:
 
     virtual Real propensity(const std::vector<Real> &r, const std::vector<Real> &p, Real time) const = 0;
 
-    void set_name(const std::string& name)
+    virtual ReactionRuleDescriptor* clone() const
     {
-        name_ = name;
-    }
-
-    const std::string& as_string() const
-    {
-        return name_;
+        return 0;
     }
 
     // Accessor of coefficients;
@@ -108,7 +108,6 @@ private:
 
     reaction_coefficient_list_type reactant_coefficients_;
     reaction_coefficient_list_type product_coefficients_;
-    std::string name_;
 };
 
 class ReactionRuleDescriptorMassAction
@@ -121,11 +120,21 @@ public:
 public:
 
     ReactionRuleDescriptorMassAction(const Real k)
-        : base_type(""), k_(k)
+        : base_type(), k_(k)
     {
         ;
     }
 
+    ReactionRuleDescriptorMassAction(const Real k, const reaction_coefficient_list_type &reactant_coefficients, const reaction_coefficient_list_type &product_coefficients)
+        : base_type(reactant_coefficients, product_coefficients), k_(k)
+    {
+        ;
+    }
+
+    virtual ReactionRuleDescriptor* clone() const
+    {
+        return new ReactionRuleDescriptorMassAction(k_, reactant_coefficients(), product_coefficients());
+    }
 
     const Real k() const
     {
@@ -163,9 +172,20 @@ public:
 public:
 
     ReactionRuleDescriptorCPPfunc(func_type pf)
-        : base_type(""), pf_(pf)
+        : base_type(), pf_(pf)
     {
         ;
+    }
+
+    ReactionRuleDescriptorCPPfunc(func_type pf, const reaction_coefficient_list_type &reactant_coefficients, const reaction_coefficient_list_type &product_coefficients)
+        : base_type(reactant_coefficients, product_coefficients), pf_(pf)
+    {
+        ;
+    }
+
+    virtual ReactionRuleDescriptor* clone() const
+    {
+        return new ReactionRuleDescriptorCPPfunc(pf_, reactant_coefficients(), product_coefficients());
     }
 
     bool is_available() const
@@ -207,7 +227,13 @@ public:
 public:
 
     ReactionRuleDescriptorPyfunc(stepladder_func_type stepladder, pyfunc_type pyfunc, const std::string& name)
-        : base_type(name), stepladder_(stepladder), pyfunc_(pyfunc)
+        : base_type(), stepladder_(stepladder), pyfunc_(pyfunc), name_(name)
+    {
+        Py_INCREF(this->pyfunc_);
+    }
+
+    ReactionRuleDescriptorPyfunc(stepladder_func_type stepladder, pyfunc_type pyfunc, const std::string& name, const reaction_coefficient_list_type &reactant_coefficients, const reaction_coefficient_list_type &product_coefficients)
+        : base_type(reactant_coefficients, product_coefficients), stepladder_(stepladder), pyfunc_(pyfunc), name_(name)
     {
         Py_INCREF(this->pyfunc_);
     }
@@ -215,6 +241,11 @@ public:
     virtual ~ReactionRuleDescriptorPyfunc()
     {
         Py_DECREF(this->pyfunc_);
+    }
+
+    virtual ReactionRuleDescriptor* clone() const
+    {
+        return new ReactionRuleDescriptorPyfunc(stepladder_, pyfunc_, as_string(), reactant_coefficients(), product_coefficients());
     }
 
     pyfunc_type get() const
@@ -241,10 +272,22 @@ public:
         return this->stepladder_(this->pyfunc_, reactants, products, t);
     }
 
+    void set_name(const std::string& name)
+    {
+        name_ = name;
+    }
+
+    const std::string& as_string() const
+    {
+        return name_;
+    }
+
+
 private:
 
-    pyfunc_type pyfunc_;
     stepladder_func_type stepladder_;
+    pyfunc_type pyfunc_;
+    std::string name_;
 };
 
 } // ecell4
