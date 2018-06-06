@@ -55,6 +55,16 @@ public:
         return this->product_coefficients_;
     }
 
+    void set_reactant_coefficient(const std::size_t num, const Real new_coeff)
+    {
+        this->reactant_coefficients_[num] = new_coeff;
+    }
+
+    void set_product_coefficient(const std::size_t num, const Real new_coeff)
+    {
+        this->product_coefficients_[num] = new_coeff;
+    }
+
     void set_reactant_coefficients(const reaction_coefficient_list_type &new_reactant_coefficients)
     {
         this->reactant_coefficients_.clear();
@@ -139,6 +149,11 @@ public:
     virtual ~ReactionRuleDescriptorPyfunc()
     {
         Py_DECREF(this->pyfunc_);
+    }
+
+    pyfunc_type get() const
+    {
+        return pyfunc_;
     }
 
     //XXX: The following implementation doesn't work.

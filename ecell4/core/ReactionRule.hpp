@@ -140,28 +140,49 @@ public:
 
     /** ReactionRule Descriptor related functions.
       */
-    void set_descriptor(const boost::shared_ptr<ReactionRuleDescriptor> rrd)
-    {
-        this->rr_descriptor_ = rrd;
-    }
+    // void set_descriptor(const boost::shared_ptr<ReactionRuleDescriptor> rrd)
+    // {
+    //     this->rr_descriptor_ = rrd;
+    // }
+
+    // bool has_descriptor() const
+    // {
+    //     return !(this->rr_descriptor_.expired());
+    // }
+
+    // boost::shared_ptr<ReactionRuleDescriptor> get_descriptor() const
+    // {
+    //     return this->rr_descriptor_.lock();
+    // }
+
+    // Real propensity(const std::vector<Real> &r, const std::vector<Real> &p, Real t) const
+    // {
+    //     if (!has_descriptor())
+    //     {
+    //         throw IllegalState("ReactionRule Descriptor has not been registered");
+    //     }
+    //     return this->get_descriptor()->propensity(r, p, t);
+    // }
 
     bool has_descriptor() const
     {
-        return !(this->rr_descriptor_.expired());
+        return (rr_descriptor_.get() != NULL);
     }
 
-    boost::shared_ptr<ReactionRuleDescriptor> get_descriptor() const
+    void set_descriptor(const boost::shared_ptr<ReactionRuleDescriptor>& descriptor)
     {
-        return this->rr_descriptor_.lock();
+        rr_descriptor_ = descriptor;
     }
 
-    Real propensity(const std::vector<Real> &r, const std::vector<Real> &p, Real t) const
+    const boost::shared_ptr<ReactionRuleDescriptor>& get_descriptor() const
     {
-        if (!has_descriptor())
-        {
-            throw IllegalState("ReactionRule Descriptor has not been registered");
-        }
-        return this->get_descriptor()->propensity(r, p, t);
+        return rr_descriptor_;
+    }
+
+    void reset_descriptor()
+    {
+        boost::shared_ptr<ReactionRuleDescriptor> tmp;
+        rr_descriptor_.swap(tmp);
     }
 
 protected:
@@ -172,7 +193,8 @@ protected:
 
     policy_type policy_;
 
-    boost::weak_ptr<ReactionRuleDescriptor> rr_descriptor_;
+    boost::shared_ptr<ReactionRuleDescriptor> rr_descriptor_;
+    // boost::weak_ptr<ReactionRuleDescriptor> rr_descriptor_;
 };
 
 inline bool operator<(const ReactionRule& lhs, const ReactionRule& rhs)

@@ -12,7 +12,7 @@ from libcpp.map cimport map
 
 from types cimport Real, Integer
 from multiset cimport multiset
-from shared_ptr cimport shared_ptr
+from shared_ptr cimport shared_ptr, dynamic_pointer_cast, static_pointer_cast
 
 
 cdef string tostring(ustr)
@@ -145,11 +145,17 @@ ctypedef PyObject* ReactionRuleDescriptor_pyfunc_type
 ctypedef double (*ReactionRuleDescriptor_stepladder_type)(ReactionRuleDescriptor_pyfunc_type, vector[Real], vector[Real], Real)
 
 # Cpp_ReactionRuleDescriptor
+#ecell4::ReactionRuleDescriptor
+cdef extern from "ecell4/core/ReactionRuleDescriptor.hpp" namespace "ecell4":
+    cdef cppclass Cpp_ReactionRuleDescriptor "ecell4::ReactionRuleDescriptor":
+        pass
+
+# Cpp_ReactionRuleDescriptorPyfunc
 #ecell4::ReactionRuleDescriptorPyfunc
-cdef extern from "ecell4/core/ReactionRule.hpp" namespace "ecell4":
-    cdef cppclass Cpp_ReactionRuleDescriptor "ecell4::ReactionRuleDescriptorPyfunc":
-        Cpp_ReactionRuleDescriptor() except +
-        Cpp_ReactionRuleDescriptor(
+cdef extern from "ecell4/core/ReactionRuleDescriptor.hpp" namespace "ecell4":
+    cdef cppclass Cpp_ReactionRuleDescriptorPyfunc "ecell4::ReactionRuleDescriptorPyfunc":
+        Cpp_ReactionRuleDescriptorPyfunc() except +
+        Cpp_ReactionRuleDescriptorPyfunc(
                 ReactionRuleDescriptor_stepladder_type,
                 ReactionRuleDescriptor_pyfunc_type)
         void set_reactant_coefficients(vector[Real])
@@ -159,9 +165,12 @@ cdef extern from "ecell4/core/ReactionRule.hpp" namespace "ecell4":
         vector[Real] product_coefficients()
         Real propensity(vector[Real], vector[Real], Real)
         # bool is_available()
+        ReactionRuleDescriptor_pyfunc_type get()
 
 cdef class ReactionRuleDescriptor:
-    cdef shared_ptr[Cpp_ReactionRuleDescriptor] thisptr
+    cdef shared_ptr[Cpp_ReactionRuleDescriptorPyfunc] thisptr
+
+cdef ReactionRuleDescriptor ReactionRuleDescriptor_from_Cpp_ReactionRuleDescriptorPyfunc(shared_ptr[Cpp_ReactionRuleDescriptorPyfunc] rrd)
 
 ## Cpp_ReactionRule
 #  ecell4::ReactionRule
@@ -191,9 +200,10 @@ cdef extern from "ecell4/core/ReactionRule.hpp" namespace "ecell4":
         Integer count(vector[Cpp_Species]) except +
         vector[Cpp_ReactionRule] generate(vector[Cpp_Species]) except +
 
-        void set_descriptor(shared_ptr[Cpp_ReactionRuleDescriptor])
+        void set_descriptor(shared_ptr[Cpp_ReactionRuleDescriptor]&)
+        shared_ptr[Cpp_ReactionRuleDescriptor]& get_descriptor()
         bool has_descriptor()
-        Real propensity(vector[Real], vector[Real], Real)
+        void reset_descriptor()
 
 ## ReactionRule
 #  a python wrapper for Cpp_ReactionRule

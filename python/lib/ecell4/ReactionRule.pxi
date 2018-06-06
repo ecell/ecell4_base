@@ -32,8 +32,8 @@ cdef class ReactionRuleDescriptor:
 
     def __init__(self, pyfunc):
         # a = PyObjectHandler()
-        self.thisptr = shared_ptr[Cpp_ReactionRuleDescriptor](
-            new Cpp_ReactionRuleDescriptor(
+        self.thisptr = shared_ptr[Cpp_ReactionRuleDescriptorPyfunc](
+            new Cpp_ReactionRuleDescriptorPyfunc(
                 <ReactionRuleDescriptor_stepladder_type>indirect_function_rrd,
                 <PyObject*>pyfunc))
 
@@ -78,6 +78,14 @@ cdef class ReactionRuleDescriptor:
 
     # def is_available(self):
     #     return self.thisptr.get().is_available()
+
+    def get(self):
+        return <object>(self.thisptr.get().get())
+
+cdef ReactionRuleDescriptor ReactionRuleDescriptor_from_Cpp_ReactionRuleDescriptorPyfunc(shared_ptr[Cpp_ReactionRuleDescriptorPyfunc] rrd):
+    r = ReactionRuleDescriptor(lambda x: x)  # dummy
+    r.thisptr.swap(rrd)
+    return r
 
 class ReactionRulePolicy(object):
     """A wrapper of ReactionRule::policy_type"""
@@ -324,17 +332,16 @@ cdef class ReactionRule:
         return (ReactionRule, (self.reactants(), self.products(), self.k()))
 
     def set_descriptor(self, ReactionRuleDescriptor rrd):
-        self.thisptr.set_descriptor(rrd.thisptr) 
+        self.thisptr.set_descriptor(static_pointer_cast[Cpp_ReactionRuleDescriptor, Cpp_ReactionRuleDescriptorPyfunc](rrd.thisptr))
+
+    def get_descriptor(self):
+        return ReactionRuleDescriptor_from_Cpp_ReactionRuleDescriptorPyfunc(dynamic_pointer_cast[Cpp_ReactionRuleDescriptorPyfunc, Cpp_ReactionRuleDescriptor](self.thisptr.get_descriptor()))  #XXX: This may fail
+
     def has_descriptor(self):
         return self.thisptr.has_descriptor()
-    def propensity(self, reactants_amount, products_amount, time):
-        cdef vector[Real] cpp_reactants_amount
-        cdef vector[Real] cpp_products_amount
-        for i in reactants_amount:
-            cpp_reactants_amount.push_back(i)
-        for i in products_amount:
-            cpp_products_amount.push_back(i)
-        return self.thisptr.propensity(cpp_reactants_amount, cpp_products_amount, time)
+
+    def reset_descriptor(self):
+        self.thisptr.reset_descriptor()
 
 cdef ReactionRule ReactionRule_from_Cpp_ReactionRule(Cpp_ReactionRule *rr):
     cdef Cpp_ReactionRule *new_obj = new Cpp_ReactionRule(deref(rr))
