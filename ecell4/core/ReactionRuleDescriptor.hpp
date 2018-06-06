@@ -2,6 +2,7 @@
 #define ECELL4_REACTION_RULE_DESCRIPTOR_HPP
 
 #include <stdexcept>
+#include <cmath>
 #include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
 
@@ -53,7 +54,7 @@ public:
             this->is_available(), reactant_coefficients_.size(), product_coefficients_.size());
     }
 
-    virtual Real propensity(const std::vector<Real> &r, const std::vector<Real> &p, Real time) const = 0;
+    virtual Real propensity(const std::vector<Real> &r, const std::vector<Real> &p, Real volume, Real time) const = 0;
 
     virtual ReactionRuleDescriptor* clone() const
     {
@@ -154,12 +155,14 @@ public:
         k_ = k;
     }
 
-    virtual Real propensity(const std::vector<Real>& reactants, const std::vector<Real>& products, Real t) const
+    virtual Real propensity(const std::vector<Real>& reactants, const std::vector<Real>& products, Real volume, Real t) const
     {
-        Real ret = k_;
-        for (std::vector<Real>::const_iterator i(reactants.begin()); i != reactants.end(); ++i)
+        Real ret = k_ * volume;
+        std::vector<Real>::const_iterator i(reactants.begin());
+        reaction_coefficient_list_type::const_iterator j(reactant_coefficients().begin());
+        for (; i != reactants.end() && j != reactant_coefficients().end(); ++i, ++j)
         {
-            ret *= (*i);
+            ret *= std::pow((*i) / volume, (*j));
         }
         return ret;
     }
@@ -206,7 +209,7 @@ public:
         return this->pf_;
     }
 
-    virtual Real propensity(const std::vector<Real> &reactants, const std::vector<Real> &products, Real time) const
+    virtual Real propensity(const std::vector<Real> &reactants, const std::vector<Real> &products, Real volume, Real time) const
     {
         if (this->is_available())
         {
@@ -267,7 +270,7 @@ public:
     //     return (pyfunc_ != 0 && stepladder_ != 0);
     // }
 
-    virtual Real propensity(const std::vector<Real>& reactants, const std::vector<Real>& products, Real t) const
+    virtual Real propensity(const std::vector<Real>& reactants, const std::vector<Real>& products, Real volume, Real t) const
     {
         // if (stepladder_ == NULL)
         // {

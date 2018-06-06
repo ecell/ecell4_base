@@ -166,7 +166,7 @@ cdef extern from "ecell4/core/ReactionRuleDescriptor.hpp" namespace "ecell4":
         bool has_coefficients()
         vector[Real] reactant_coefficients()
         vector[Real] product_coefficients()
-        Real propensity(vector[Real], vector[Real], Real)
+        Real propensity(vector[Real], vector[Real], Real, Real)
         # bool is_available()
         string& as_string()
         void set_name(string&)

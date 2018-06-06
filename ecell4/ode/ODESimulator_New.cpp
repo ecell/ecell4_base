@@ -17,6 +17,7 @@ ODESimulator_New::generate_system() const
     const std::vector<Species> species(world_->list_species());
     const ODENetworkModel::ode_reaction_rule_container_type& ode_reaction_rules = ode_reaction_rules_;
     // const ODENetworkModel::ode_reaction_rule_container_type& ode_reaction_rules(model_->ode_reaction_rules());
+    const Model::reaction_rule_container_type& reaction_rules = model_->reaction_rules();
     typedef utils::get_mapper_mf<
         Species, state_type::size_type>::type species_map_type;
 
@@ -28,41 +29,60 @@ ODESimulator_New::generate_system() const
         index_map[*it] = i;
         i++;
     }
+
     std::vector<reaction_type> reactions;
-    reactions.reserve(ode_reaction_rules.size());
-    for(ODENetworkModel::ode_reaction_rule_container_type::const_iterator
-        i(ode_reaction_rules.begin()); i != ode_reaction_rules.end(); i++)
+    reactions.reserve(reaction_rules.size());
+    // reactions.reserve(ode_reaction_rules.size());
+    assert(reaction_rules.size() == ode_reaction_rules.size());
+    for (size_t i = 0; i < reaction_rules.size(); ++i)
+    // for(ODENetworkModel::ode_reaction_rule_container_type::const_iterator
+    //     i(ode_reaction_rules.begin()); i != ode_reaction_rules.end(); i++)
     {
-        const ODEReactionRule::reactant_container_type reactants(i->reactants());
-        const ODEReactionRule::product_container_type products(i->products());
+        const ReactionRule& rr = reaction_rules[i];
+        const ODEReactionRule& orr = ode_reaction_rules[i];
+
+        const ReactionRule::reactant_container_type reactants(rr.reactants());
+        const ReactionRule::product_container_type products(rr.products());
+
         reaction_type r;
-        r.raw = &(*i);
-        // r.k = i->k();
+
+        // r.raw = &(orr);
+        r.k = rr.k();
+        // if (orr.has_ratelaw())
+        // {
+        //     r.ratelaw = orr.get_ratelaw();
+        // }
+
         r.reactants.reserve(reactants.size());
-        r.products.reserve(products.size());
-        if (i->has_ratelaw())
-        {
-            r.ratelaw = i->get_ratelaw();
-        }
-        for(ODEReactionRule::reactant_container_type::const_iterator j(reactants.begin());
+        for(ReactionRule::reactant_container_type::const_iterator j(reactants.begin());
             j != reactants.end(); j++)
         {
             r.reactants.push_back(index_map[*j]);
         }
 
-        {
-            coefficient_container_type reactants_coeff = i->reactants_coefficients();
-            std::copy(reactants_coeff.begin(), reactants_coeff.end(), std::back_inserter(r.reactant_coefficients));
-        }
-        for(ODEReactionRule::product_container_type::const_iterator j(products.begin());
+        r.products.reserve(products.size());
+        for(ReactionRule::product_container_type::const_iterator j(products.begin());
             j != products.end(); j++)
         {
             r.products.push_back(index_map[*j]);
         }
 
+        if (rr.has_descriptor() && rr.get_descriptor()->has_coefficients())
         {
-            coefficient_container_type products_coeff = i->products_coefficients();
+            const boost::shared_ptr<ReactionRuleDescriptor>& rrd(rr.get_descriptor());
+
+            r.ratelaw = rr.get_descriptor();
+
+            const ReactionRuleDescriptor::reaction_coefficient_list_type& reactants_coeff = rrd->reactant_coefficients();
+            std::copy(reactants_coeff.begin(), reactants_coeff.end(), std::back_inserter(r.reactant_coefficients));
+
+            const ReactionRuleDescriptor::reaction_coefficient_list_type& products_coeff = rrd->product_coefficients();
             std::copy(products_coeff.begin(), products_coeff.end(), std::back_inserter(r.product_coefficients));
+        }
+        else
+        {
+            r.reactant_coefficients.resize(reactants.size(), 1.0);
+            r.product_coefficients.resize(products.size(), 1.0);
         }
 
         reactions.push_back(r);

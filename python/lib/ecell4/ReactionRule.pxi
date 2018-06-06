@@ -74,14 +74,14 @@ cdef class ReactionRuleDescriptorPyfunc:
             cpp_coefficients.push_back(c)
         self.thisptr.get().set_product_coefficients(cpp_coefficients)
 
-    def propensity(self, r, p, Real t):
+    def propensity(self, r, p, Real volume, Real t):
         cdef vector[Real] cpp_r
         for val in r:
             cpp_r.push_back(val)
         cdef vector[Real] cpp_p
         for val in p:
             cpp_p.push_back(val)
-        return self.thisptr.get().propensity(cpp_r, cpp_p, t)
+        return self.thisptr.get().propensity(cpp_r, cpp_p, volume, t)
 
     def set_name(self, name):
         self.thisptr.get().set_name(tostring(name))
