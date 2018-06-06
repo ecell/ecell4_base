@@ -10,149 +10,149 @@ from ecell4.core cimport *
 
 from cpython cimport PyObject, Py_XINCREF, Py_XDECREF
 
-cdef class ODEWorld_New:
-    def __init__(self, edge_length = None):
-        pass
-
-    def __cinit__(self, edge_lengths=None):
-        cdef string filename
-
-        if edge_lengths is None:
-            self.thisptr = new shared_ptr[Cpp_ODEWorld_New](new Cpp_ODEWorld_New())
-        elif isinstance(edge_lengths, Real3):
-            self.thisptr = new shared_ptr[Cpp_ODEWorld_New](
-                new Cpp_ODEWorld_New(deref((<Real3>edge_lengths).thisptr)))
-        else:
-            #filename = tostring(edge_lengths)
-            #self.thisptr = new shared_ptr[Cpp_ODEWorld_New](new Cpp_ODEWorld_New(filename))
-            # FIXME
-            self.thisptr = new shared_ptr[Cpp_ODEWorld_New](new Cpp_ODEWorld_New())
-
-    def __dealloc__(self):
-        # XXX: Here, we release shared pointer,
-        #      and if reference count to the ODEWorld object become zero,
-        #      it will be released automatically.
-        del self.thisptr
-
-    def set_t(self, Real t):
-        """set_t(t)
-
-        Set the current time."""
-        self.thisptr.get().set_t(t)
-
-    def t(self):
-        """Return the current time."""
-        return self.thisptr.get().t()
-
-    def edge_lengths(self):
-        """edge_lengths() -> Real3
-
-        Return edge lengths for the space."""
-        cdef Cpp_Real3 lengths = self.thisptr.get().edge_lengths()
-        return Real3_from_Cpp_Real3(address(lengths))
-
-    def set_volume(self, Real vol):
-        """set_volume(volume)
-
-        Set a volume."""
-        self.thisptr.get().set_volume(vol)
-
-    def volume(self):
-        """Return a volume."""
-        return self.thisptr.get().volume()
-
-    def num_molecules(self, Species sp):
-        """num_molecules(sp) -> Integer
-
-        Return the number of molecules. A value is rounded to an integer.
-        See set_value also.
-
-        Parameters
-        ----------
-        sp : Species, optional
-            a species whose molecules you count
-
-        Returns
-        -------
-        Integer:
-            the number of molecules (of a given species)
-
-        """
-        return self.thisptr.get().num_molecules(deref(sp.thisptr))
-
-    def num_molecules_exact(self, Species sp):
-        """num_molecules_exact(sp) -> Integer
-
-        Return the number of molecules of a given species.
-        A value is rounded to an integer. See get_value_exact also.
-
-        Parameters
-        ----------
-        sp : Species
-            a species whose molecules you count
-
-        Returns
-        -------
-        Integer:
-            the number of molecules of a given species
-
-        """
-        return self.thisptr.get().num_molecules_exact(deref(sp.thisptr))
-
-    def list_species(self):
-        """Return a list of species."""
-        cdef vector[Cpp_Species] raw_list_species = self.thisptr.get().list_species()
-        retval = []
-        cdef vector[Cpp_Species].iterator it = raw_list_species.begin()
-        while it != raw_list_species.end():
-            retval.append(
-                Species_from_Cpp_Species(<Cpp_Species*> (address(deref(it)))))
-            inc(it)
-        return retval
-
-    def reserve_species(self, Species sp):
-        """reserve_species(sp)
-
-        Reserve a value for the given species. Use set_value.
-
-        Parameters
-        ----------
-        sp : Species
-            a species to be reserved.
-
-        """
-        self.thisptr.get().reserve_species(deref(sp.thisptr))
-
-    def release_species(self, Species sp):
-        """release_species(sp)
-
-        Release a value for the given species.
-        This function is mainly for developers.
-
-        Parameters
-        ----------
-        sp : Species
-            a species to be released.
-
-        """
-        self.thisptr.get().release_species(deref(sp.thisptr))
-
-    #def bind_to(self, m):
-    #    """bind_to(m)
-
-    #    Bind a model.
-
-    #    Parameters
-    #    ----------
-    #    m : ODENetworkModel or NetworkModel
-    #        a model to be bound
-
-    #    """
-    #    if isinstance(m, ODENetworkModel):
-    #        self.thisptr.get().bind_to(deref((<ODENetworkModel>m).thisptr))
-    #    else:
-    #        self.thisptr.get().bind_to(Cpp_Model_from_Model(m))
-
+# cdef class ODEWorld_New:
+#     def __init__(self, edge_length = None):
+#         pass
+# 
+#     def __cinit__(self, edge_lengths=None):
+#         cdef string filename
+# 
+#         if edge_lengths is None:
+#             self.thisptr = new shared_ptr[Cpp_ODEWorld_New](new Cpp_ODEWorld_New())
+#         elif isinstance(edge_lengths, Real3):
+#             self.thisptr = new shared_ptr[Cpp_ODEWorld_New](
+#                 new Cpp_ODEWorld_New(deref((<Real3>edge_lengths).thisptr)))
+#         else:
+#             #filename = tostring(edge_lengths)
+#             #self.thisptr = new shared_ptr[Cpp_ODEWorld_New](new Cpp_ODEWorld_New(filename))
+#             # FIXME
+#             self.thisptr = new shared_ptr[Cpp_ODEWorld_New](new Cpp_ODEWorld_New())
+# 
+#     def __dealloc__(self):
+#         # XXX: Here, we release shared pointer,
+#         #      and if reference count to the ODEWorld object become zero,
+#         #      it will be released automatically.
+#         del self.thisptr
+# 
+#     def set_t(self, Real t):
+#         """set_t(t)
+# 
+#         Set the current time."""
+#         self.thisptr.get().set_t(t)
+# 
+#     def t(self):
+#         """Return the current time."""
+#         return self.thisptr.get().t()
+# 
+#     def edge_lengths(self):
+#         """edge_lengths() -> Real3
+# 
+#         Return edge lengths for the space."""
+#         cdef Cpp_Real3 lengths = self.thisptr.get().edge_lengths()
+#         return Real3_from_Cpp_Real3(address(lengths))
+# 
+#     def set_volume(self, Real vol):
+#         """set_volume(volume)
+# 
+#         Set a volume."""
+#         self.thisptr.get().set_volume(vol)
+# 
+#     def volume(self):
+#         """Return a volume."""
+#         return self.thisptr.get().volume()
+# 
+#     def num_molecules(self, Species sp):
+#         """num_molecules(sp) -> Integer
+# 
+#         Return the number of molecules. A value is rounded to an integer.
+#         See set_value also.
+# 
+#         Parameters
+#         ----------
+#         sp : Species, optional
+#             a species whose molecules you count
+# 
+#         Returns
+#         -------
+#         Integer:
+#             the number of molecules (of a given species)
+# 
+#         """
+#         return self.thisptr.get().num_molecules(deref(sp.thisptr))
+# 
+#     def num_molecules_exact(self, Species sp):
+#         """num_molecules_exact(sp) -> Integer
+# 
+#         Return the number of molecules of a given species.
+#         A value is rounded to an integer. See get_value_exact also.
+# 
+#         Parameters
+#         ----------
+#         sp : Species
+#             a species whose molecules you count
+# 
+#         Returns
+#         -------
+#         Integer:
+#             the number of molecules of a given species
+# 
+#         """
+#         return self.thisptr.get().num_molecules_exact(deref(sp.thisptr))
+# 
+#     def list_species(self):
+#         """Return a list of species."""
+#         cdef vector[Cpp_Species] raw_list_species = self.thisptr.get().list_species()
+#         retval = []
+#         cdef vector[Cpp_Species].iterator it = raw_list_species.begin()
+#         while it != raw_list_species.end():
+#             retval.append(
+#                 Species_from_Cpp_Species(<Cpp_Species*> (address(deref(it)))))
+#             inc(it)
+#         return retval
+# 
+#     def reserve_species(self, Species sp):
+#         """reserve_species(sp)
+# 
+#         Reserve a value for the given species. Use set_value.
+# 
+#         Parameters
+#         ----------
+#         sp : Species
+#             a species to be reserved.
+# 
+#         """
+#         self.thisptr.get().reserve_species(deref(sp.thisptr))
+# 
+#     def release_species(self, Species sp):
+#         """release_species(sp)
+# 
+#         Release a value for the given species.
+#         This function is mainly for developers.
+# 
+#         Parameters
+#         ----------
+#         sp : Species
+#             a species to be released.
+# 
+#         """
+#         self.thisptr.get().release_species(deref(sp.thisptr))
+# 
+#     #def bind_to(self, m):
+#     #    """bind_to(m)
+# 
+#     #    Bind a model.
+# 
+#     #    Parameters
+#     #    ----------
+#     #    m : ODENetworkModel or NetworkModel
+#     #        a model to be bound
+# 
+#     #    """
+#     #    if isinstance(m, ODENetworkModel):
+#     #        self.thisptr.get().bind_to(deref((<ODENetworkModel>m).thisptr))
+#     #    else:
+#     #        self.thisptr.get().bind_to(Cpp_Model_from_Model(m))
+# 
 
     
 
@@ -1191,6 +1191,244 @@ cdef Cpp_ODESolverType translate_solver_type(solvertype_constant):
     PYTHON_CALLBACK_TYPE,
     CPP_CALLBACK_TYPE,
 ) = (0, 1, 2, 3)
+
+# cdef class ODESimulator_New:
+#     """ A class running the simulation with the ode algorithm.
+# 
+#     ODESimulator_New(m, w, solver_type)
+# 
+#     """
+# 
+#     def __init__(self, arg1, arg2=None, arg3=None):
+#         """Constructor.
+# 
+#         Parameters
+#         ----------
+#         m : ODENetworkModel or Model
+#             A model
+#         w : ODEWorld
+#             A world
+#         solver_type : int, optional
+#             a type of the ode solver.
+#             Choose one from RUNGE_KUTTA_CASH_KARP54, ROSENBROCK4_CONTROLLER and EULER.
+# 
+#         """
+#         pass
+# 
+#     def __cinit__(self, arg1, arg2=None, arg3=None):
+#         if arg2 is None or not isinstance(arg2, ODEWorld):
+#             if not isinstance(arg1, ODEWorld):
+#                 raise ValueError(
+#                     "An invalid value [{}] for the first argument.".format(repr(arg1))
+#                     + " ODEWorld is needed.")
+# 
+#             if arg2 is None:
+#                 self.thisptr = new Cpp_ODESimulator_New(
+#                     deref((<ODEWorld>arg1).thisptr))
+#             else:
+#                 self.thisptr = new Cpp_ODESimulator_New(
+#                     deref((<ODEWorld>arg1).thisptr),
+#                     translate_solver_type(arg2))
+#         else:
+#             if isinstance(arg1, ODENetworkModel):
+#                 if arg3 is None:
+#                     self.thisptr = new Cpp_ODESimulator_New(
+#                         deref((<ODENetworkModel>arg1).thisptr),
+#                         deref((<ODEWorld>arg2).thisptr))
+#                 else:
+#                     self.thisptr = new Cpp_ODESimulator_New(
+#                         deref((<ODENetworkModel>arg1).thisptr),
+#                         deref((<ODEWorld>arg2).thisptr),
+#                         translate_solver_type(arg3))
+#             # elif isinstance(arg1, Model):
+#             else:
+#                 if arg3 is None:
+#                     self.thisptr = new Cpp_ODESimulator_New(
+#                         Cpp_Model_from_Model(arg1),
+#                         deref((<ODEWorld>arg2).thisptr))
+#                 else:
+#                     self.thisptr = new Cpp_ODESimulator_New(
+#                         Cpp_Model_from_Model(arg1),
+#                         deref((<ODEWorld>arg2).thisptr),
+#                         translate_solver_type(arg3))
+#             # else:
+#             #     raise ValueError(
+#             #         "An invalid value [{}] for the first argument.".format(repr(arg1))
+#             #         + " ODENetworkModel or Model is needed.")
+# 
+#     def __dealloc__(self):
+#         del self.thisptr
+# 
+#     def initialize(self):
+#         """Initialize the simulator."""
+#         self.thisptr.initialize()
+# 
+#     def step(self, upto=None):
+#         """step(upto=None) -> bool
+# 
+#         Step the simulation.
+# 
+#         Parameters
+#         ----------
+#         upto : Real, optional
+#             the time which to step the simulation up to
+# 
+#         Returns
+#         -------
+#         bool:
+#             True if the simulation did not reach the given time.
+#             When upto is not given, nothing will be returned.
+# 
+#         """
+#         if upto is None:
+#             self.thisptr.step()
+#         else:
+#             return self.thisptr.step(upto)
+# 
+#     def next_time(self):
+#         """Return the scheduled time for the next step."""
+#         return self.thisptr.next_time()
+# 
+#     def t(self):
+#         """Return the time."""
+#         return self.thisptr.t()
+# 
+#     def set_t(self, Real t_new):
+#         """set_t(t)
+# 
+#         Set the current time.
+# 
+#         Parameters
+#         ----------
+#         t : Real
+#             a current time.
+# 
+#         """
+#         self.thisptr.set_t(t_new)
+# 
+#     def dt(self):
+#         """Return the step interval."""
+#         return self.thisptr.dt()
+# 
+#     def set_dt(self, dt_new):
+#         """set_dt(dt)
+# 
+#         Set a step interval.
+# 
+#         Parameters
+#         ----------
+#         dt : Real
+#             a step interval
+# 
+#         """
+#         self.thisptr.set_dt(dt_new)
+# 
+#     def num_steps(self):
+#         """Return the number of steps."""
+#         return self.thisptr.num_steps()
+# 
+#     def check_reaction(self):
+#         """Return if any reaction occurred at the last step, or not.
+#         This function always returns False."""
+#         return self.thisptr.check_reaction()
+# 
+#     def absolute_tolerance(self):
+#         """Return the absolute tolerance."""
+#         return self.thisptr.absolute_tolerance()
+# 
+#     def set_absolute_tolerance(self, Real abs_tol):
+#         """set_absolute_tolerance(abs_tol)
+# 
+#         Set the absolute tolerance.
+# 
+#         Parameters
+#         ----------
+#         abs_tol : Real
+#             an absolute tolerance.
+# 
+#         """
+#         self.thisptr.set_absolute_tolerance(abs_tol)
+# 
+#     def relative_tolerance(self):
+#         """Return the relative tolerance."""
+#         return self.thisptr.relative_tolerance()
+# 
+#     def set_relative_tolerance(self, Real rel_tol):
+#         """set_relative_tolerance(rel_tol)
+# 
+#         Set the relative tolerance.
+# 
+#         Parameters
+#         ----------
+#         rel_tol : Real
+#             an relative tolerance.
+# 
+#         """
+#         self.thisptr.set_relative_tolerance(rel_tol)
+# 
+#     def model(self):
+#         """Return the model bound."""
+#         return ODENetworkModel_from_Cpp_ODENetworkModel(self.thisptr.model())
+# 
+#     def world(self):
+#         """Return the world bound."""
+#         return ODEWorld_from_Cpp_ODEWorld(self.thisptr.world())
+# 
+#     def run(self, Real duration, observers=None):
+#         """run(duration, observers)
+# 
+#         Run the simulation.
+# 
+#         Parameters
+#         ----------
+#         duration : Real
+#             a duration for running a simulation.
+#                 A simulation is expected to be stopped at t() + duration.
+#         observers : list of Obeservers, optional
+#             observers
+# 
+#         """
+#         cdef vector[shared_ptr[Cpp_Observer]] tmp
+# 
+#         if observers is None:
+#             self.thisptr.run(duration)
+#         elif isinstance(observers, collections.Iterable):
+#             for obs in observers:
+#                 tmp.push_back(deref((<Observer>(obs.as_base())).thisptr))
+#             self.thisptr.run(duration, tmp)
+#         else:
+#             self.thisptr.run(duration,
+#                 deref((<Observer>(observers.as_base())).thisptr))
+# 
+#     def evaluate(self, rr):
+#         """evaluate(rr) -> Real
+# 
+#         Evaluate the given reaction rule, and return the value.
+# 
+#         Parameters
+#         ----------
+#         rr : ODEReactionRule
+#             a reaction rule
+# 
+#         Returns
+#         -------
+#         Real:
+#             a propensity of the given reaction rule
+# 
+#         """
+#         if isinstance(rr, ODEReactionRule):
+#             return self.thisptr.evaluate(deref((<ODEReactionRule>rr).thisptr))
+#         elif isinstance(rr, ReactionRule):
+#             return self.thisptr.evaluate(deref((<ReactionRule>rr).thisptr))
+#         raise TypeError('A reaction rule is required.')
+# 
+# cdef ODESimulator_New ODESimulator_New_from_Cpp_ODESimulator_New(Cpp_ODESimulator_New* s):
+#     r = ODESimulator_New(
+#         ODENetworkModel_from_Cpp_ODENetworkModel(s.model()),
+#         ODEWorld_from_Cpp_ODEWorld(s.world()))
+#     del r.thisptr
+#     r.thisptr = s
+#     return r
 
 
 cdef class ODESimulator:

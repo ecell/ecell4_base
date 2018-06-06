@@ -167,37 +167,55 @@ cdef extern from "ecell4/ode/ODEWorld.hpp" namespace "ecell4::ode":
 cdef class ODEWorld:
     cdef shared_ptr[Cpp_ODEWorld]* thisptr
 
-### ODEWorld_new
-cdef extern from "ecell4/ode/ODESimulator_New.hpp" namespace "ecell4::ode":
-    cdef cppclass Cpp_ODEWorld_New "ecell4::ode::ODEWorld_New":
-        Cpp_ODEWorld_New() except +
-        Cpp_ODEWorld_New(Cpp_Real3&) except +
-        Cpp_ODEWorld_New(string&) except +
-        Real t()
-        void set_t(Real)
-        Cpp_Real3 edge_lengths()
-        void reset(Real3)
-        void set_volume(Real)
-        Integer num_molecules(Cpp_Species)
-        Integer num_molecules_exact(Cpp_Species)
-        vector[Cpp_Species] list_species()
-        void add_molecules(Cpp_Species, Real)
-        void remove_molecules(Cpp_Species, Real)
-        Real get_value(Cpp_Species)
-        Real get_value_exact(Cpp_Species) 
-        Real volume()
-        void set_value(Cpp_Species, Real)
-        bool has_species(Cpp_Species)
-        void reserve_species(Cpp_Species)
-        void release_species(Cpp_Species)
-        void bind_to(shared_ptr[Cpp_NetworkModel])
-
-## ODEWorld
-#  a python wrapper for Cpp_ODEWorld
-cdef class ODEWorld_New:
-    cdef shared_ptr[Cpp_ODEWorld_New]* thisptr
-
 cdef ODEWorld ODEWorld_from_Cpp_ODEWorld(shared_ptr[Cpp_ODEWorld] m)
+
+# ## Cpp_ODEWorld_New
+# #  ecell4::ode::ODEWorld_New
+# cdef extern from "ecell4/ode/ODEWorld_New.hpp" namespace "ecell4::ode":
+#     cdef cppclass Cpp_ODEWorld_New "ecell4::ode::ODEWorld_New":
+#         pass
+# 
+# ## Cpp_ODESimulator_New
+# cdef extern from "ecell4/ode/ODESimulator_New.hpp" namespace "ecell4::ode":
+#     cdef cppclass Cpp_ODESimulator_New "ecell4::ode::ODESimulator_New":
+#         Cpp_ODESimulator_New(shared_ptr[Cpp_ODENetworkModel], shared_ptr[Cpp_ODEWorld_New], Cpp_ODESolverType) except+
+#         Cpp_ODESimulator_New(shared_ptr[Cpp_ODENetworkModel], shared_ptr[Cpp_ODEWorld_New]) except+
+# 
+#         Cpp_ODESimulator_New(shared_ptr[Cpp_Model], shared_ptr[Cpp_ODEWorld_New], Cpp_ODESolverType) except+
+#         Cpp_ODESimulator_New(shared_ptr[Cpp_Model], shared_ptr[Cpp_ODEWorld_New]) except+
+# 
+#         Cpp_ODESimulator_New(shared_ptr[Cpp_ODEWorld_New], Cpp_ODESolverType) except+
+#         Cpp_ODESimulator_New(shared_ptr[Cpp_ODEWorld_New]) except+
+# 
+#         void initialize()
+#         void step() except +
+#         bool step(Real) except +
+#         Real next_time()
+#         Real t()
+#         void set_t(Real)
+#         Real dt()
+#         void set_dt(Real)
+#         Integer num_steps()
+#         bool check_reaction()
+#         Real absolute_tolerance() const
+#         Real relative_tolerance() const
+#         void set_absolute_tolerance(Real)
+#         void set_relative_tolerance(Real)
+# 
+#         shared_ptr[Cpp_ODENetworkModel] model()
+#         shared_ptr[Cpp_ODEWorld_New] world()
+# 
+#         void run(Real) except +
+#         void run(Real, shared_ptr[Cpp_Observer]) except +
+#         void run(Real, vector[shared_ptr[Cpp_Observer]]) except +
+# 
+#         Real evaluate(Cpp_ODEReactionRule&)
+#         Real evaluate(Cpp_ReactionRule&)
+# 
+# cdef class ODESimulator_New:
+#     cdef Cpp_ODESimulator_New *thisptr
+# 
+# cdef ODESimulator_New ODESimulator_New_from_Cpp_ODESimulator_New(Cpp_ODESimulator_New* s)
 
 ## Cpp_ODESimulator
 cdef extern from "ecell4/ode/ODESimulator.hpp" namespace "ecell4::ode":
