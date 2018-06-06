@@ -10,11 +10,13 @@ namespace ecell4
 
 namespace ode
 {
+
 std::pair<ODESimulator_New::deriv_func, ODESimulator_New::jacobi_func>
 ODESimulator_New::generate_system() const
 {
     const std::vector<Species> species(world_->list_species());
-    const ODENetworkModel::ode_reaction_rule_container_type& ode_reaction_rules(model_->ode_reaction_rules());
+    const ODENetworkModel::ode_reaction_rule_container_type& ode_reaction_rules = ode_reaction_rules_;
+    // const ODENetworkModel::ode_reaction_rule_container_type& ode_reaction_rules(model_->ode_reaction_rules());
     typedef utils::get_mapper_mf<
         Species, state_type::size_type>::type species_map_type;
 

@@ -37,7 +37,8 @@ int test(int type, int use_coefficients = 0)
     const Real3 edge_lengths(L, L, L);
     const Real volume(L * L * L);
     const Real N(60);
-    const Real ka(0.1), U(0.5);
+    const Real U(0.5);
+    const Real ka(use_coefficients == 0 ? 0.1 : 0.1 / (N * U / volume));
 
     Species sp1("A"), sp2("B"), sp3("C");
     ReactionRule rr1, rr2;
@@ -46,29 +47,35 @@ int test(int type, int use_coefficients = 0)
     rr1.add_product(sp2);
     rr1.add_product(sp3);
 
-    const Real kd(ka * volume * (1 - U) / (U * U * N));
+    const Real kd(use_coefficients == 0 ? ka * volume * (1 - U) / (U * U * N) : ka * 4);
     rr2.set_k(kd);
     rr2.add_reactant(sp2);
     rr2.add_reactant(sp3);
     rr2.add_product(sp1);
 
-    ReactionRule rr3;
-    rr3.add_reactant(sp1);
-    rr3.add_product(sp3);
+    // ReactionRule rr3;
+    // rr3.add_reactant(sp1);
+    // rr3.add_product(sp3);
 
     ODEReactionRule ode_rr1(rr1);
     ODEReactionRule ode_rr2(rr2);
-    ODEReactionRule ode_rr3(rr3);
+    // ODEReactionRule ode_rr3(rr3);
 
     std::cout << rr1.as_string() << std::endl;
     if (use_coefficients == 1)  {
         ode_rr1.set_reactant_coefficient(0, 2.0);
+        ode_rr2.set_product_coefficient(0, 2.0);
         //ode_rr1.set_product_coefficient(0, 2.0);
         //ode_rr3.set_product_coefficient(0, 2.0);
 
-        boost::shared_ptr<ReactionRuleDescriptor> rrd(new ReactionRuleDescriptorMassAction(rr1.k()));
-        rrd->set_reactant_coefficient(0, 2.0);
-        rr1.set_descriptor(rrd);
+        boost::shared_ptr<ReactionRuleDescriptor> rrd1(new ReactionRuleDescriptorMassAction(rr1.k()));
+        rrd1->set_reactant_coefficient(0, 2.0);
+        rrd1->set_product_coefficient(1, 1.0);
+        rr1.set_descriptor(rrd1);
+        boost::shared_ptr<ReactionRuleDescriptor> rrd2(new ReactionRuleDescriptorMassAction(rr2.k()));
+        rrd2->set_reactant_coefficient(1, 1.0);
+        rrd2->set_product_coefficient(0, 2.0);
+        rr2.set_descriptor(rrd2);
     }
     std::cout << rr1.as_string() << std::endl;
     // Setup NetworkModel
@@ -78,7 +85,7 @@ int test(int type, int use_coefficients = 0)
     // new_model->add_species_attribute(sp3);
     new_model->add_reaction_rule(rr1);
     new_model->add_reaction_rule(rr2);
-    new_model->add_reaction_rule(rr3);
+    // new_model->add_reaction_rule(rr3);
 
     // Setup ODENetworkModel
     boost::shared_ptr<ODENetworkModel>  ode_model(new ODENetworkModel);
@@ -87,7 +94,7 @@ int test(int type, int use_coefficients = 0)
     // ode_model->add_species_attribute(sp3);
     ode_model->add_reaction_rule(ode_rr1);
     ode_model->add_reaction_rule(ode_rr2);
-    ode_model->add_reaction_rule(ode_rr3);
+    // ode_model->add_reaction_rule(ode_rr3);
     ode_model->dump_reactions();
 
     boost::shared_ptr<ODEWorld> world(new ODEWorld(edge_lengths));
@@ -116,8 +123,8 @@ int test(int type, int use_coefficients = 0)
     target.initialize();
 
     //ODESimulator_New new_target(model, new_world, RUNGE_KUTTA_CASH_KARP54);
-    // ODESimulator_New new_target(new_model, new_world, soltype);
-    ODESimulator_New new_target(ode_model, new_world, soltype);
+    ODESimulator_New new_target(new_model, new_world, soltype);
+    // ODESimulator_New new_target(ode_model, new_world, soltype);
     new_target.initialize();
 
     Real next_time(0.0), dt(0.01);
@@ -169,6 +176,7 @@ int test(int type, int use_coefficients = 0)
 int main(int argc, char** argv)
 {
     test(1,0);
+    test(2,1);
     //test(3,0);
     //test(3,1);
 

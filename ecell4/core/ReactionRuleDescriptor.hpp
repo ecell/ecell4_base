@@ -73,11 +73,19 @@ public:
 
     void set_reactant_coefficient(const std::size_t num, const Real new_coeff)
     {
+        if (num >= reactant_coefficients_.size())
+        {
+            this->reactant_coefficients_.resize(num + 1, 1.0);
+        }
         this->reactant_coefficients_[num] = new_coeff;
     }
 
     void set_product_coefficient(const std::size_t num, const Real new_coeff)
     {
+        if (num >= product_coefficients_.size())
+        {
+            this->product_coefficients_.resize(num + 1, 1.0);
+        }
         this->product_coefficients_[num] = new_coeff;
     }
 

@@ -35,12 +35,44 @@ namespace ode
 //     EULER = 2,
 // };
 
+ODENetworkModel::ode_reaction_rule_container_type convert_ode_reaction_rules(const boost::shared_ptr<Model>& m)
+{
+    ODENetworkModel::ode_reaction_rule_container_type ret;
+    const Model::reaction_rule_container_type& reaction_rules(m->reaction_rules());
+    for (Model::reaction_rule_container_type::const_iterator i(reaction_rules.begin()); i != reaction_rules.end(); ++i)
+    {
+        const ReactionRule rr(*i);
+        if (rr.has_descriptor() && rr.get_descriptor()->has_coefficients())
+        {
+            ODEReactionRule orr;
+            const boost::shared_ptr<ReactionRuleDescriptor>& rrd(rr.get_descriptor());
+            assert(rr.reactants().size() == rrd->reactant_coefficients().size());
+            for (size_t j = 0; j < rrd->reactant_coefficients().size(); ++j)
+            {
+                orr.add_reactant(rr.reactants()[j], rrd->reactant_coefficients()[j]);
+            }
+            assert(rr.products().size() == rrd->product_coefficients().size());
+            for (size_t j = 0; j < rrd->product_coefficients().size(); ++j)
+            {
+                orr.add_product(rr.products()[j], rrd->product_coefficients()[j]);
+            }
+            orr.set_k(rr.k());
+            ret.push_back(orr);
+        }
+        else
+        {
+            ret.push_back(ODEReactionRule(rr));
+        }
+    }
+    return ret;
+}
+
 class ODESimulator_New
-    : public SimulatorBase<ODENetworkModel, ODEWorld_New>
+    : public SimulatorBase<Model, ODEWorld_New>
 {
 public:
 
-    typedef SimulatorBase<ODENetworkModel, ODEWorld_New> base_type;
+    typedef SimulatorBase<Model, ODEWorld_New> base_type;
 
 public:
 
@@ -362,7 +394,7 @@ public:
 public:
 
     ODESimulator_New(
-        const boost::shared_ptr<ODENetworkModel>& model,
+        const boost::shared_ptr<Model>& model,
         const boost::shared_ptr<ODEWorld_New>& world,
         const ODESolverType solver_type = ROSENBROCK4_CONTROLLER)
         : base_type(model, world), dt_(inf), abs_tol_(1e-6), rel_tol_(1e-6),
@@ -380,16 +412,6 @@ public:
         initialize();
     }
 
-    ODESimulator_New(
-        const boost::shared_ptr<Model>& model,
-        const boost::shared_ptr<ODEWorld_New>& world,
-        const ODESolverType solver_type = ROSENBROCK4_CONTROLLER)
-        : base_type(boost::shared_ptr<ODENetworkModel>(new ODENetworkModel(model)), world),
-          dt_(inf), abs_tol_(1e-6), rel_tol_(1e-6), solver_type_(solver_type)
-    {
-        initialize();
-    }
-
     void initialize()
     {
         const std::vector<Species> species(model_->list_species());
@@ -401,15 +423,13 @@ public:
                 world_->reserve_species(*it);
             }
         }
+
+        ode_reaction_rules_ = convert_ode_reaction_rules(model_);
     }
 
     void step(void)
     {
         step(next_time());
-        if ( this->model_->has_network_model() )
-        {
-            this->model_->update_model();
-        }
     }
     bool step(const Real &upto);
 
@@ -519,6 +539,8 @@ protected:
     // Integer num_steps_;
     Real abs_tol_, rel_tol_;
     ODESolverType solver_type_;
+
+    ODENetworkModel::ode_reaction_rule_container_type ode_reaction_rules_;
 };
 
 } // ode
