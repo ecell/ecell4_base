@@ -28,13 +28,13 @@ cdef double indirect_function_rrd(
     #     return 0.0
     return ret
 
-cdef class ReactionRuleDescriptor:
+cdef class ReactionRuleDescriptorPyfunc:
 
     def __init__(self, pyfunc, name):
         # a = PyObjectHandler()
         self.thisptr = shared_ptr[Cpp_ReactionRuleDescriptorPyfunc](
             new Cpp_ReactionRuleDescriptorPyfunc(
-                <ReactionRuleDescriptor_stepladder_type>indirect_function_rrd,
+                <ReactionRuleDescriptorPyfunc_stepladder_type>indirect_function_rrd,
                 <PyObject*>pyfunc,
                 tostring(name)))
 
@@ -105,8 +105,8 @@ cdef class ReactionRuleDescriptor:
     def get(self):
         return <object>(self.thisptr.get().get())
 
-cdef ReactionRuleDescriptor ReactionRuleDescriptor_from_Cpp_ReactionRuleDescriptorPyfunc(shared_ptr[Cpp_ReactionRuleDescriptorPyfunc] rrd):
-    r = ReactionRuleDescriptor(lambda x: x, "")  # dummy
+cdef ReactionRuleDescriptorPyfunc ReactionRuleDescriptorPyfunc_from_Cpp_ReactionRuleDescriptorPyfunc(shared_ptr[Cpp_ReactionRuleDescriptorPyfunc] rrd):
+    r = ReactionRuleDescriptorPyfunc(lambda x: x, "")  # dummy
     r.thisptr.swap(rrd)
     return r
 
@@ -354,11 +354,11 @@ cdef class ReactionRule:
     def __reduce__(self):
         return (ReactionRule, (self.reactants(), self.products(), self.k()))
 
-    def set_descriptor(self, ReactionRuleDescriptor rrd):
+    def set_descriptor(self, ReactionRuleDescriptorPyfunc rrd):
         self.thisptr.set_descriptor(static_pointer_cast[Cpp_ReactionRuleDescriptor, Cpp_ReactionRuleDescriptorPyfunc](rrd.thisptr))
 
     def get_descriptor(self):
-        return ReactionRuleDescriptor_from_Cpp_ReactionRuleDescriptorPyfunc(dynamic_pointer_cast[Cpp_ReactionRuleDescriptorPyfunc, Cpp_ReactionRuleDescriptor](self.thisptr.get_descriptor()))  #XXX: This may fail
+        return ReactionRuleDescriptorPyfunc_from_Cpp_ReactionRuleDescriptorPyfunc(dynamic_pointer_cast[Cpp_ReactionRuleDescriptorPyfunc, Cpp_ReactionRuleDescriptor](self.thisptr.get_descriptor()))  #XXX: This may fail
 
     def has_descriptor(self):
         return self.thisptr.has_descriptor()

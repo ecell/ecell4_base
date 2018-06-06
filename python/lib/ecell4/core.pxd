@@ -140,9 +140,9 @@ cdef extern from "ecell4/core/pyhandler.hpp" namespace "ecell4":
 cdef class PyObjectHandler:
     cdef shared_ptr[Cpp_PyObjectHandler] thisptr
 
-# ctypedef void* ReactionRuleDescriptor_pyfunc_type
-ctypedef PyObject* ReactionRuleDescriptor_pyfunc_type
-ctypedef double (*ReactionRuleDescriptor_stepladder_type)(ReactionRuleDescriptor_pyfunc_type, vector[Real], vector[Real], Real)
+# ctypedef void* ReactionRuleDescriptorPyfunc_pyfunc_type
+ctypedef PyObject* ReactionRuleDescriptorPyfunc_pyfunc_type
+ctypedef double (*ReactionRuleDescriptorPyfunc_stepladder_type)(ReactionRuleDescriptorPyfunc_pyfunc_type, vector[Real], vector[Real], Real)
 
 # Cpp_ReactionRuleDescriptor
 #ecell4::ReactionRuleDescriptor
@@ -156,8 +156,8 @@ cdef extern from "ecell4/core/ReactionRuleDescriptor.hpp" namespace "ecell4":
     cdef cppclass Cpp_ReactionRuleDescriptorPyfunc "ecell4::ReactionRuleDescriptorPyfunc":
         Cpp_ReactionRuleDescriptorPyfunc() except +
         Cpp_ReactionRuleDescriptorPyfunc(
-                ReactionRuleDescriptor_stepladder_type,
-                ReactionRuleDescriptor_pyfunc_type,
+                ReactionRuleDescriptorPyfunc_stepladder_type,
+                ReactionRuleDescriptorPyfunc_pyfunc_type,
                 string name)
         void set_reactant_coefficients(vector[Real])
         void set_product_coefficients(vector[Real])
@@ -168,14 +168,14 @@ cdef extern from "ecell4/core/ReactionRuleDescriptor.hpp" namespace "ecell4":
         vector[Real] product_coefficients()
         Real propensity(vector[Real], vector[Real], Real)
         # bool is_available()
-        string as_string()
+        string& as_string()
         void set_name(string&)
-        ReactionRuleDescriptor_pyfunc_type get()
+        ReactionRuleDescriptorPyfunc_pyfunc_type get()
 
-cdef class ReactionRuleDescriptor:
+cdef class ReactionRuleDescriptorPyfunc:
     cdef shared_ptr[Cpp_ReactionRuleDescriptorPyfunc] thisptr
 
-cdef ReactionRuleDescriptor ReactionRuleDescriptor_from_Cpp_ReactionRuleDescriptorPyfunc(shared_ptr[Cpp_ReactionRuleDescriptorPyfunc] rrd)
+cdef ReactionRuleDescriptorPyfunc ReactionRuleDescriptorPyfunc_from_Cpp_ReactionRuleDescriptorPyfunc(shared_ptr[Cpp_ReactionRuleDescriptorPyfunc] rrd)
 
 ## Cpp_ReactionRule
 #  ecell4::ReactionRule

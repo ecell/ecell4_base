@@ -31,6 +31,12 @@ public:
 
 public:
 
+    ReactionRuleDescriptor(const std::string& name)
+        : name_(name)
+    {
+        ;
+    }
+
     virtual bool is_available() const
     {
         return true;
@@ -44,9 +50,14 @@ public:
 
     virtual Real propensity(const std::vector<Real> &r, const std::vector<Real> &p, Real time) const = 0;
 
-    virtual std::string as_string() const
+    void set_name(const std::string& name)
     {
-        return "";
+        name_ = name;
+    }
+
+    const std::string& as_string() const
+    {
+        return name_;
     }
 
     // Accessor of coefficients;
@@ -97,6 +108,48 @@ private:
 
     reaction_coefficient_list_type reactant_coefficients_;
     reaction_coefficient_list_type product_coefficients_;
+    std::string name_;
+};
+
+class ReactionRuleDescriptorMassAction
+    : public ReactionRuleDescriptor
+{
+public:
+
+    typedef ReactionRuleDescriptor base_type;
+
+public:
+
+    ReactionRuleDescriptorMassAction(const Real k)
+        : base_type(""), k_(k)
+    {
+        ;
+    }
+
+
+    const Real k() const
+    {
+        return k_;
+    }
+
+    void set_k(const Real k)
+    {
+        k_ = k;
+    }
+
+    virtual Real propensity(const std::vector<Real>& reactants, const std::vector<Real>& products, Real t) const
+    {
+        Real ret = k_;
+        for (std::vector<Real>::const_iterator i(reactants.begin()); i != reactants.end(); ++i)
+        {
+            ret *= (*i);
+        }
+        return ret;
+    }
+
+private:
+
+    Real k_;
 };
 
 class ReactionRuleDescriptorCPPfunc
@@ -104,10 +157,13 @@ class ReactionRuleDescriptorCPPfunc
 {
 public:
 
+    typedef ReactionRuleDescriptor base_type;
     typedef Real (*func_type)(const std::vector<Real> &r, const std::vector<Real> &p, Real t);
 
+public:
+
     ReactionRuleDescriptorCPPfunc(func_type pf)
-        : pf_(pf)
+        : base_type(""), pf_(pf)
     {
         ;
     }
@@ -115,6 +171,11 @@ public:
     bool is_available() const
     {
         return (this->pf_ != 0);
+    }
+
+    func_type get() const
+    {
+        return this->pf_;
     }
 
     virtual Real propensity(const std::vector<Real> &reactants, const std::vector<Real> &products, Real time) const
@@ -146,7 +207,7 @@ public:
 public:
 
     ReactionRuleDescriptorPyfunc(stepladder_func_type stepladder, pyfunc_type pyfunc, const std::string& name)
-        : stepladder_(stepladder), pyfunc_(pyfunc), name_(name)
+        : base_type(name), stepladder_(stepladder), pyfunc_(pyfunc)
     {
         Py_INCREF(this->pyfunc_);
     }
@@ -159,16 +220,6 @@ public:
     pyfunc_type get() const
     {
         return pyfunc_;
-    }
-
-    void set_name(const std::string& name)
-    {
-        name_ = name;
-    }
-
-    virtual std::string as_string() const
-    {
-        return name_;
     }
 
     //XXX: The following implementation doesn't work.
@@ -194,7 +245,6 @@ private:
 
     pyfunc_type pyfunc_;
     stepladder_func_type stepladder_;
-    std::string name_;
 };
 
 } // ecell4
