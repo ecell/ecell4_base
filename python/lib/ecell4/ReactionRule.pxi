@@ -30,12 +30,13 @@ cdef double indirect_function_rrd(
 
 cdef class ReactionRuleDescriptor:
 
-    def __init__(self, pyfunc):
+    def __init__(self, pyfunc, name):
         # a = PyObjectHandler()
         self.thisptr = shared_ptr[Cpp_ReactionRuleDescriptorPyfunc](
             new Cpp_ReactionRuleDescriptorPyfunc(
                 <ReactionRuleDescriptor_stepladder_type>indirect_function_rrd,
-                <PyObject*>pyfunc))
+                <PyObject*>pyfunc,
+                tostring(name)))
 
     def reactant_coefficients(self):
         cdef vector[Real] cpp_coefficients = self.thisptr.get().reactant_coefficients()
@@ -54,6 +55,12 @@ cdef class ReactionRuleDescriptor:
             py_product_coefficients.append(deref(it))
             inc(it)
         return py_product_coefficients
+
+    def set_reactant_coefficient(self, int idx, Real val):
+        self.thisptr.get().set_reactant_coefficient(idx, val)
+
+    def set_product_coefficient(self, int idx, Real val):
+        self.thisptr.get().set_product_coefficient(idx, val)
 
     def set_reactant_coefficients(self, coefficients):
         cdef vector[Real] cpp_coefficients
@@ -76,6 +83,22 @@ cdef class ReactionRuleDescriptor:
             cpp_p.push_back(val)
         return self.thisptr.get().propensity(cpp_r, cpp_p, t)
 
+    def set_name(self, name):
+        self.thisptr.get().set_name(tostring(name))
+
+    def as_string(self):
+        """as_string() -> str
+
+        Return an unicode string describing this object.
+
+        Returns
+        -------
+        str:
+            An unicode string describing this object.
+
+        """
+        return self.thisptr.get().as_string().decode('UTF-8')
+
     # def is_available(self):
     #     return self.thisptr.get().is_available()
 
@@ -83,7 +106,7 @@ cdef class ReactionRuleDescriptor:
         return <object>(self.thisptr.get().get())
 
 cdef ReactionRuleDescriptor ReactionRuleDescriptor_from_Cpp_ReactionRuleDescriptorPyfunc(shared_ptr[Cpp_ReactionRuleDescriptorPyfunc] rrd):
-    r = ReactionRuleDescriptor(lambda x: x)  # dummy
+    r = ReactionRuleDescriptor(lambda x: x, "")  # dummy
     r.thisptr.swap(rrd)
     return r
 

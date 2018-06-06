@@ -44,6 +44,11 @@ public:
 
     virtual Real propensity(const std::vector<Real> &r, const std::vector<Real> &p, Real time) const = 0;
 
+    virtual std::string as_string() const
+    {
+        return "";
+    }
+
     // Accessor of coefficients;
     const reaction_coefficient_list_type &reactant_coefficients(void) const
     {
@@ -140,8 +145,8 @@ public:
 
 public:
 
-    ReactionRuleDescriptorPyfunc(stepladder_func_type stepladder, pyfunc_type pyfunc)
-        : stepladder_(stepladder), pyfunc_(pyfunc)
+    ReactionRuleDescriptorPyfunc(stepladder_func_type stepladder, pyfunc_type pyfunc, const std::string& name)
+        : stepladder_(stepladder), pyfunc_(pyfunc), name_(name)
     {
         Py_INCREF(this->pyfunc_);
     }
@@ -154,6 +159,16 @@ public:
     pyfunc_type get() const
     {
         return pyfunc_;
+    }
+
+    void set_name(const std::string& name)
+    {
+        name_ = name;
+    }
+
+    virtual std::string as_string() const
+    {
+        return name_;
     }
 
     //XXX: The following implementation doesn't work.
@@ -179,6 +194,7 @@ private:
 
     pyfunc_type pyfunc_;
     stepladder_func_type stepladder_;
+    std::string name_;
 };
 
 } // ecell4
