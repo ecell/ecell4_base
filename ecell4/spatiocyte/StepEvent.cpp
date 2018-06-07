@@ -54,7 +54,7 @@ void StepEvent3D::walk(const Real& alpha)
     {
         const SpatiocyteWorld::coordinate_id_pair_type& info(*itr);
         const Voxel voxel(world_->coordinate2voxel(info.coordinate));
-        const Integer rnd(rng->uniform_int(0, world_->num_neighbors(voxel)-1));
+        const Integer rnd(rng->uniform_int(0, voxel.num_neighbors()-1));
 
         if (world_->get_voxel_pool_at(voxel) != mpool_)
         {
@@ -63,7 +63,7 @@ void StepEvent3D::walk(const Real& alpha)
             continue;
         }
 
-        const Voxel neighbor(world_->get_neighbor(voxel, rnd));
+        const Voxel neighbor(voxel.get_neighbor(rnd));
 
         if (world_->can_move(voxel, neighbor))
         {
@@ -129,7 +129,7 @@ void StepEvent2D::walk(const Real& alpha)
             continue;
         }
 
-        const std::size_t num_neighbors(world_->num_neighbors(voxel));
+        const std::size_t num_neighbors(voxel.num_neighbors());
 
         ecell4::shuffle(*(rng.get()), nids_);
         for (std::vector<unsigned int>::const_iterator itr(nids_.begin());
@@ -138,7 +138,7 @@ void StepEvent2D::walk(const Real& alpha)
             if (*itr >= num_neighbors)
                 continue;
 
-            const Voxel neighbor(world_->get_neighbor(voxel, *itr));
+            const Voxel neighbor(voxel.get_neighbor(*itr));
             boost::shared_ptr<const VoxelPool> target(world_->get_voxel_pool_at(neighbor));
 
             if (target->get_dimension() > mpool_->get_dimension())

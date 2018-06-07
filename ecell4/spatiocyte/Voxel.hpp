@@ -29,6 +29,16 @@ public:
     {
         return space.lock()->coordinate2position(coordinate);
     }
+
+    Integer num_neighbors() const
+    {
+        return space.lock()->num_neighbors(coordinate);
+    }
+
+    Voxel get_neighbor(Integer nrand) const
+    {
+        return Voxel(space, space.lock()->get_neighbor(coordinate, nrand));
+    }
 };
 
 }

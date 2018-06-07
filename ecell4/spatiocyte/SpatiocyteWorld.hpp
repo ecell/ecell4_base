@@ -568,20 +568,6 @@ public:
     }
 
     /*
-     * Neighbor
-     */
-    Integer num_neighbors(const Voxel& voxel) const
-    {
-        return voxel.space.lock()->num_neighbors(voxel.coordinate);
-    }
-
-    Voxel get_neighbor(const Voxel& voxel, Integer nrand) const
-    {
-        return Voxel(voxel.space,
-                     voxel.space.lock()->get_neighbor(voxel.coordinate, nrand));
-    }
-
-    /*
      * ParticleVoxel Manipulation
      */
     bool update_voxel(const ParticleID& pid, ParticleVoxel v)
