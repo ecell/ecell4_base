@@ -30,6 +30,11 @@ public:
         return space.lock()->coordinate2position(coordinate);
     }
 
+    bool clear() const
+    {
+        return space.lock()->remove_voxel(coordinate);
+    }
+
     Integer num_neighbors() const
     {
         return space.lock()->num_neighbors(coordinate);

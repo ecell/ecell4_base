@@ -593,11 +593,6 @@ public:
         return false;
     }
 
-    bool remove_voxel(const Voxel& voxel)
-    {
-        return get_space_mut(voxel)->remove_voxel(voxel.coordinate);
-    }
-
     // Deprecated
     bool can_move(const Voxel& src, const Voxel& dst) const
     {

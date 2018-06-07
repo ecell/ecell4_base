@@ -131,11 +131,6 @@ public:
         return space_->remove_particle(pid);
     }
 
-    bool remove_voxel(const coord_type& coordinate)
-    {
-        return space_->remove_voxel(coordinate - offset_);
-    }
-
     bool move(const coord_type& src, const coord_type& dest, const std::size_t candidate)
     {
         return space_->move(src - offset_, dest - offset_, candidate);

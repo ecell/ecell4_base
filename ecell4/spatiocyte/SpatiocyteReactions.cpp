@@ -77,7 +77,7 @@ apply_a2b(boost::shared_ptr<SpatiocyteWorld> world,
         if (aserial != bloc)
         {
             // Remove A once if A is not the location of B
-            world->remove_voxel(voxel);
+            voxel.clear();
         }
 
         if (aloc != bserial)
@@ -104,7 +104,7 @@ apply_a2b(boost::shared_ptr<SpatiocyteWorld> world,
             // Place B at the neighbor, and remove A.
             rinfo.add_reactant(reactant_item);
 
-            world->remove_voxel(voxel);
+            voxel.clear();
 
             make_product(world, rinfo, product_species, *neighbor);
         }
@@ -153,11 +153,11 @@ ReactionInfo apply_a2bc(
         if (aserial != bloc)
         {
             // Remove A once if A is not the location of a new B-molecule
-            world->remove_voxel(voxel);
+            voxel.clear();
         }
 
         // No need to remove the neighbor because it's the location of C
-        // world->remove_voxel(neighbor.first);
+        // neighbor.first.clear();
 
         if (aloc != bserial)
         {
@@ -200,11 +200,11 @@ ReactionInfo apply_a2bc(
         if (aserial != cloc)
         {
             // Remove A once if A is not the location of a new C-molecule
-            world->remove_voxel(voxel);
+            voxel.clear();
         }
 
         // No need to remove the neighbor because it's the location of B
-        // world->remove_voxel(neighbor.first);
+        // neighbor.first.clear();
 
         // Place a new B-molecule at the neighbor
         make_product(world, rinfo, product_species0, *neighbor);
@@ -236,8 +236,8 @@ ReactionInfo apply_vanishment(
     rinfo.add_reactant(reactant_item0);
     rinfo.add_reactant(reactant_item1);
 
-    world->remove_voxel(reactant_item0.voxel);
-    world->remove_voxel(reactant_item1.voxel);
+    reactant_item0.voxel.clear();
+    reactant_item1.voxel.clear();
 
     return rinfo;
 }
@@ -269,10 +269,10 @@ ReactionInfo apply_ab2c(
 
         if (tserial != location)
         {
-            world->remove_voxel(voxel1);
+            voxel1.clear();
         }
 
-        world->remove_voxel(voxel0);
+        voxel0.clear();
 
         make_product(world, rinfo, product_species, voxel1);
     }
@@ -285,10 +285,10 @@ ReactionInfo apply_ab2c(
 
         if (fserial != location)
         {
-            world->remove_voxel(voxel0);
+            voxel0.clear();
         }
 
-        world->remove_voxel(voxel1);
+        voxel1.clear();
 
         make_product(world, rinfo, product_species, voxel0);
     }
@@ -339,12 +339,12 @@ ReactionInfo apply_ab2cd(
             if (aserial != cloc)
             {
                 // Remove A once if A is not the location of C
-                world->remove_voxel(src);
+                src.clear();
             }
             if (bserial != dloc)
             {
                 // Remove B once if B is not the location of D
-                world->remove_voxel(dst);
+                dst.clear();
             }
             return apply_ab2cd_in_order(world, reactant_item0, reactant_item1, product_species0, product_species1, src, dst);
         }
@@ -354,11 +354,11 @@ ReactionInfo apply_ab2cd(
 
             if (neighbor)
             {
-                world->remove_voxel(dst);
+                dst.clear();
                 if (aserial != cloc)
                 {
                     // Remove A once if A is not the location of C
-                    world->remove_voxel(src);
+                    src.clear();
                 }
                 return apply_ab2cd_in_order(world, reactant_item0, reactant_item1, product_species0, product_species1, src, *neighbor);
             }
@@ -371,12 +371,12 @@ ReactionInfo apply_ab2cd(
             if (aserial != dloc)
             {
                 // Remove A once if A is not the location of D
-                world->remove_voxel(src);
+                src.clear();
             }
             if (bserial != cloc)
             {
                 // Remove B once if B is not the location of C
-                world->remove_voxel(dst);
+                dst.clear();
             }
             return apply_ab2cd_in_order(world, reactant_item0, reactant_item1, product_species0, product_species1, dst, src);
         }
@@ -386,11 +386,11 @@ ReactionInfo apply_ab2cd(
 
             if (neighbor)
             {
-                world->remove_voxel(dst);
+                dst.clear();
                 if (aserial != dloc)
                 {
                     // Remove A once if A is not the location of D
-                    world->remove_voxel(src);
+                    src.clear();
                 }
                 return apply_ab2cd_in_order(world, reactant_item0, reactant_item1, product_species0, product_species1, *neighbor, src);
             }
@@ -400,11 +400,11 @@ ReactionInfo apply_ab2cd(
     {
         if (boost::optional<Voxel> neighbor = (world->check_neighbor(dst, dloc)))
         {
-            world->remove_voxel(src);
+            src.clear();
             if (bserial != cloc)
             {
                 // Remove B once if B is not the location of C
-                world->remove_voxel(dst);
+                dst.clear();
             }
             return apply_ab2cd_in_order(world, reactant_item0, reactant_item1, product_species0, product_species1, dst, *neighbor);
         }
@@ -413,11 +413,11 @@ ReactionInfo apply_ab2cd(
     {
         if (boost::optional<Voxel> neighbor = world->check_neighbor(dst, dloc))
         {
-            world->remove_voxel(src);
+            src.clear();
             if (bserial != dloc)
             {
                 // remove b once if b is not the location of d
-                world->remove_voxel(dst);
+                dst.clear();
             }
             return apply_ab2cd_in_order(world, reactant_item0, reactant_item1, product_species0, product_species1, *neighbor, dst);
         }
