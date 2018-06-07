@@ -491,7 +491,7 @@ public:
     std::pair<ParticleID, Species> get_voxel_at(const Voxel& voxel) const
     {
         std::pair<ParticleID, ParticleVoxel> id_voxel_pair(
-                get_space(voxel)->get_voxel_at(voxel.coordinate));
+                voxel.space.lock()->get_voxel_at(voxel.coordinate));
         return std::make_pair(id_voxel_pair.first, id_voxel_pair.second.species);
     }
 
@@ -590,23 +590,20 @@ public:
     // Deprecated
     bool can_move(const Voxel& src, const Voxel& dst) const
     {
-        space_container_type::const_iterator itr(get_space(src));
+        if (!(src.space < dst.space) && !(dst.space < src.space))
+            return src.space.lock()->can_move(src.coordinate, dst.coordinate);
 
-        if (itr != get_space(dst))
-            return false;
-
-        return itr->can_move(src.coordinate, dst.coordinate);
+        return false;
     }
 
     // Deprecated
     bool move(const Voxel& src, const Voxel& dst, const std::size_t candidate=0)
     {
-        space_container_type::iterator itr(get_space_mut(src));
+        if (!(src.space < dst.space) && !(dst.space < src.space))
+            return src.space.lock()->move(src.coordinate, dst.coordinate, candidate);
 
-        if (itr != get_space_mut(dst))
-            return false;
+        return false;
 
-        return itr->move(src.coordinate, dst.coordinate, candidate);
     }
 
     const Integer size() const
@@ -756,7 +753,7 @@ public:
 
     boost::optional<ParticleID> new_voxel(const Species& sp, const Voxel& voxel)
     {
-        space_container_type::iterator space(get_space_mut(voxel));
+        boost::shared_ptr<VoxelSpaceBase> space(voxel.space.lock());
         if (!space->has_species(sp))
         {
             const molecule_info_type minfo(get_molecule_info(sp));
@@ -774,7 +771,7 @@ public:
     boost::optional<ParticleID>
     new_voxel_structure(const Species& sp, const Voxel& voxel)
     {
-        space_container_type::iterator space(get_space_mut(voxel));
+        boost::shared_ptr<VoxelSpaceBase> space(voxel.space.lock());
         if (!space->has_species(sp))
         {
             const molecule_info_type minfo(get_molecule_info(sp));
@@ -867,28 +864,6 @@ protected:
     space_container_type::iterator get_root_mut()
     {
         return spaces_.begin();
-    }
-
-    space_container_type::const_iterator get_space(const Voxel& voxel) const
-    {
-        for (space_container_type::const_iterator itr(spaces_.begin());
-             itr != spaces_.end(); ++itr)
-        {
-            if (itr->is_in_range(voxel.coordinate))
-                return itr;
-        }
-        return spaces_.end();
-    }
-
-    space_container_type::iterator get_space_mut(const Voxel& voxel)
-    {
-        for (space_container_type::iterator itr(spaces_.begin());
-             itr != spaces_.end(); ++itr)
-        {
-            if (itr->is_in_range(voxel.coordinate))
-                return itr;
-        }
-        return spaces_.end();
     }
 
     space_container_type::iterator get_space_mut(const coordinate_type& coordinate)
