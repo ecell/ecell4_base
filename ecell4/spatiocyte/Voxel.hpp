@@ -35,6 +35,11 @@ public:
         return space.lock()->remove_voxel(coordinate);
     }
 
+    boost::shared_ptr<VoxelPool> get_voxel_pool() const
+    {
+        return space.lock()->get_voxel_pool_at(coordinate);
+    }
+
     Integer num_neighbors() const
     {
         return space.lock()->num_neighbors(coordinate);

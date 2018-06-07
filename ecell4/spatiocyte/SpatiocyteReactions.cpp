@@ -14,7 +14,7 @@ const std::string
 get_serial(boost::shared_ptr<SpatiocyteWorld> world,
            const Voxel& voxel)
 {
-    boost::shared_ptr<const VoxelPool> mtype(world->get_voxel_pool_at(voxel));
+    boost::shared_ptr<const VoxelPool> mtype(voxel.get_voxel_pool());
     return mtype->is_vacant() ? "" : mtype->species().serial();
 }
 
@@ -23,7 +23,7 @@ const std::string
 get_location(boost::shared_ptr<SpatiocyteWorld> world,
              const Voxel& voxel)
 {
-    boost::shared_ptr<const VoxelPool> mtype(world->get_voxel_pool_at(voxel));
+    boost::shared_ptr<const VoxelPool> mtype(voxel.get_voxel_pool());
     if (mtype->is_vacant())
         return "";
     boost::shared_ptr<const VoxelPool> ltype(mtype->location());

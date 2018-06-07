@@ -36,7 +36,7 @@ void ZerothOrderReactionEvent::fire_()
             {
                 const Voxel voxel(world_->coordinate2voxel(world_->rng()->uniform_int(0, world_->size()-1)));
 
-                if (world_->get_voxel_pool_at(voxel) != location)
+                if (voxel.get_voxel_pool() != location)
                 {
                     continue;
                 }

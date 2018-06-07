@@ -155,7 +155,7 @@ bool SpatiocyteWorld::add_molecules(const Species& sp, const Integer& num)
     {
         const Voxel voxel(coordinate2voxel(rng()->uniform_int(0, size()-1)));
 
-        if (get_voxel_pool_at(voxel)->species().serial() != info.loc)
+        if (voxel.get_voxel_pool()->species().serial() != info.loc)
         {
             continue;
         }
@@ -183,7 +183,7 @@ bool SpatiocyteWorld::add_molecules(
         const Real3 pos(shape->draw_position(rng_));
         const Voxel voxel(position2voxel(pos));
 
-        if (get_voxel_pool_at(voxel)->species().serial() != info.loc)
+        if (voxel.get_voxel_pool()->species().serial() != info.loc)
         {
             continue;
         }
@@ -225,7 +225,7 @@ Integer SpatiocyteWorld::add_structure3(const Species& sp, const boost::shared_p
         if (L > 0)
             continue;
 
-        if (get_voxel_pool_at(voxel)->species().serial() != info.loc)
+        if (voxel.get_voxel_pool()->species().serial() != info.loc)
         {
             continue;
         }
@@ -248,7 +248,7 @@ SpatiocyteWorld::add_structure2(
         if (!is_surface_voxel(voxel, shape))
             continue;
 
-        if (get_voxel_pool_at(voxel)->species().serial() != info.loc)
+        if (voxel.get_voxel_pool()->species().serial() != info.loc)
         {
             continue;
         }
@@ -331,7 +331,7 @@ SpatiocyteWorld::check_neighbor(const Voxel& voxel, const std::string& loc)
     for (unsigned int rnd(0); rnd < num_neighbors; ++rnd)
     {
         const Voxel neighbor(voxel.get_neighbor(rnd));
-        boost::shared_ptr<const VoxelPool> mt(get_voxel_pool_at(neighbor));
+        boost::shared_ptr<const VoxelPool> mt(neighbor.get_voxel_pool());
         const std::string serial(mt->is_vacant() ? "" : mt->species().serial());
         if (serial == loc)
         {

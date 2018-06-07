@@ -552,12 +552,6 @@ public:
         throw "No MoleculePool corresponding to a given Species is found";
     }
 
-    boost::shared_ptr<const VoxelPool>
-    get_voxel_pool_at(const Voxel& voxel) const
-    {
-        return voxel.space.lock()->get_voxel_pool_at(voxel.coordinate);
-    }
-
     /*
      * Coordinate Transformation
      */
@@ -708,7 +702,7 @@ public:
         const molecule_info_type minfo(get_molecule_info(p.species()));
         const Voxel voxel(position2voxel(p.position()));
 
-        if (get_voxel_pool_at(voxel)->species().serial() != minfo.loc)
+        if (voxel.get_voxel_pool()->species().serial() != minfo.loc)
             return boost::none;
 
         if (boost::optional<ParticleID> pid = new_voxel(p.species(), voxel))

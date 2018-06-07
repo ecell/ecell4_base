@@ -132,7 +132,7 @@ BOOST_AUTO_TEST_CASE(SpatiocyteWorld_test_add_molecule)
     BOOST_CHECK(world.new_voxel(sp, voxel));
     BOOST_CHECK_EQUAL(world.num_particles(sp), 1);
 
-    boost::shared_ptr<const VoxelPool> mt(world.get_voxel_pool_at(voxel));
+    boost::shared_ptr<const VoxelPool> mt(voxel.get_voxel_pool());
     BOOST_CHECK(!mt->is_vacant());
 }
 
@@ -222,7 +222,7 @@ BOOST_AUTO_TEST_CASE(SpatiocyteWorld_test_move)
     BOOST_CHECK(world.new_voxel(sp, from));
     BOOST_CHECK(world.move(from, to));
 
-    boost::shared_ptr<const VoxelPool> mt(world.get_voxel_pool_at(to));
+    boost::shared_ptr<const VoxelPool> mt(to.get_voxel_pool());
     BOOST_CHECK(!mt->is_vacant());
 
     BOOST_CHECK(world.move(from, to));

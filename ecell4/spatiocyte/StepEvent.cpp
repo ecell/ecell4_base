@@ -56,7 +56,7 @@ void StepEvent3D::walk(const Real& alpha)
         const Voxel voxel(world_->coordinate2voxel(info.coordinate));
         const Integer rnd(rng->uniform_int(0, voxel.num_neighbors()-1));
 
-        if (world_->get_voxel_pool_at(voxel) != mpool_)
+        if (voxel.get_voxel_pool() != mpool_)
         {
             // should skip if a voxel is not the target species.
             // when reaction has occured before, a voxel can be changed.
@@ -122,7 +122,7 @@ void StepEvent2D::walk(const Real& alpha)
         // TODO: Calling coordinate2voxel is invalid
         const Voxel voxel(world_->coordinate2voxel(info.coordinate));
 
-        if (world_->get_voxel_pool_at(voxel) != mpool_)
+        if (voxel.get_voxel_pool() != mpool_)
         {
             // should skip if a voxel is not the target species.
             // when reaction has occured before, a voxel can be changed.
@@ -139,7 +139,7 @@ void StepEvent2D::walk(const Real& alpha)
                 continue;
 
             const Voxel neighbor(voxel.get_neighbor(*itr));
-            boost::shared_ptr<const VoxelPool> target(world_->get_voxel_pool_at(neighbor));
+            boost::shared_ptr<const VoxelPool> target(neighbor.get_voxel_pool());
 
             if (target->get_dimension() > mpool_->get_dimension())
                 continue;
@@ -166,8 +166,8 @@ void StepEvent::attempt_reaction_(
 {
     // TODO: Calling coordiante2voxel is invalid
     const Voxel voxel(world_->coordinate2voxel(info.coordinate));
-    boost::shared_ptr<const VoxelPool> from_mt(world_->get_voxel_pool_at(voxel));
-    boost::shared_ptr<const VoxelPool> to_mt(world_->get_voxel_pool_at(dst));
+    boost::shared_ptr<const VoxelPool> from_mt(voxel.get_voxel_pool());
+    boost::shared_ptr<const VoxelPool> to_mt(dst.get_voxel_pool());
 
     if (to_mt->is_vacant())
     {
