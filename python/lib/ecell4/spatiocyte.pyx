@@ -105,16 +105,18 @@ cdef ReactionInfoItem wrap_reaction_info_item(CppReactionInfoItem item):
 
 ## Voxel
 cdef class Voxel:
-    cdef CppVoxel *thisptr
 
-    def __cinit__(self, Integer coordinate):
-        self.thisptr = new CppVoxel(coordinate)
+    def __cinit__(self):
+        pass
 
     def __dealloc__(self):
-        del self.thisptr
+        if self.thisptr:
+            del self.thisptr
 
-cdef Voxel wrap_voxel(CppVoxel ptr):
-    return Voxel(ptr.coordinate)
+cdef Voxel wrap_voxel(CppVoxel voxel):
+    cdef Voxel retval = Voxel()
+    retval.thisptr = new CppVoxel(voxel)
+    return retval
 
 ## SpatiocyteWorld
 #  a python wrapper for Cpp_SpatiocyteWorld
@@ -686,7 +688,7 @@ cdef class SpatiocyteWorld:
             The neighbor voxel
 
         """
-        return wrap_voxel(self.thisptr.get().get_neighbor(deref(voxel.thisptr), nrand))
+        return wrap_voxel(voxel.thisptr.get_neighbor(nrand))
 
     def has_particle(self, ParticleID pid):
         """has_particle(pid) -> bool
@@ -1032,7 +1034,7 @@ cdef class SpatiocyteWorld:
         Transform a coordinate to a position.
 
         """
-        cdef Cpp_Real3 pos = self.thisptr.get().voxel2position(deref(voxel.thisptr))
+        cdef Cpp_Real3 pos = voxel.thisptr.position()
         return Real3_from_Cpp_Real3(address(pos))
 
     def position2coordinate(self, Real3 pos):

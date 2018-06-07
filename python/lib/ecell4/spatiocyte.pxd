@@ -40,8 +40,9 @@ cdef ReactionInfoItem wrap_reaction_info_item(CppReactionInfoItem item)
 cdef extern from "ecell4/spatiocyte/SpatiocyteWorld.hpp" namespace "ecell4::spatiocyte":
 
     cdef cppclass CppVoxel "ecell4::spatiocyte::Voxel":
-        CppVoxel(Integer coordinate)
-        Integer coordinate
+        CppVoxel(CppVoxel& voxel)
+        CppVoxel get_neighbor(Integer)
+        Cpp_Real3 position()
 
     cdef cppclass Cpp_SpatiocyteWorld "ecell4::spatiocyte::SpatiocyteWorld":
         Cpp_SpatiocyteWorld(
@@ -103,7 +104,6 @@ cdef extern from "ecell4/spatiocyte/SpatiocyteWorld.hpp" namespace "ecell4::spat
         void remove_molecules(Cpp_Species& sp, Integer num)
         # shared_ptr[Cpp_GSLRandomNumberGenerator] rng()
         # Integer get_neighbor(Integer, Integer)
-        CppVoxel get_neighbor(CppVoxel, Integer)
         void save(string filename) except +
         void load(string filename)
         optional[Cpp_ParticleID] new_voxel(Cpp_Species& sp, CppVoxel pos)
@@ -125,7 +125,6 @@ cdef extern from "ecell4/spatiocyte/SpatiocyteWorld.hpp" namespace "ecell4::spat
         # Integer position2coordinate(Cpp_Real3)
         shared_ptr[Cpp_RandomNumberGenerator] rng()
 
-        Cpp_Real3 voxel2position(CppVoxel)
         # Cpp_Integer3 coordinate2global(Integer)
         # Integer global2coordinate(Cpp_Integer3)
         # Cpp_Real3 global2position(Cpp_Integer3)
@@ -150,6 +149,12 @@ cdef extern from "ecell4/spatiocyte/SpatiocyteWorld.hpp" namespace "ecell4::spat
         Cpp_Real3&, Real, shared_ptr[Cpp_RandomNumberGenerator]&)
     cdef Cpp_SpatiocyteWorld* allocate_spatiocyte_world_square_offlattice_impl(
         Real, Real, shared_ptr[Cpp_RandomNumberGenerator]&)
+
+## Voxel
+cdef class Voxel:
+    cdef CppVoxel *thisptr
+
+cdef Voxel wrap_voxel(CppVoxel voxel)
 
 ## SpatiocyteWorld
 #  a python wrapper for Cpp_SpatiocyteWorld
