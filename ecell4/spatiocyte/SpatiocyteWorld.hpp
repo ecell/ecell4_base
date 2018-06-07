@@ -561,11 +561,6 @@ public:
     /*
      * Coordinate Transformation
      */
-    const Real3 voxel2position(const Voxel& voxel) const
-    {
-        return get_space(voxel)->coordinate2position(voxel.coordinate);
-    }
-
     Voxel position2voxel(const Real3& pos) const
     {
         return Voxel(get_root()->get_weak_ptr(),

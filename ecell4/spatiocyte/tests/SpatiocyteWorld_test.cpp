@@ -162,7 +162,7 @@ BOOST_AUTO_TEST_CASE(SpatiocyteWorld_test_neighbor)
     SpatiocyteWorld world(edge_lengths, voxel_radius, rng);
 
     const Voxel voxel(world.position2voxel(edge_lengths / 2.0));
-    const Real3 cp(world.voxel2position(voxel));
+    const Real3 cp(voxel.position());
 
     Species sp(std::string("TEST"));
     sp.set_attribute("radius", "2.5e-9");

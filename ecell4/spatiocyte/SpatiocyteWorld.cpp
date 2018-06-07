@@ -221,7 +221,7 @@ Integer SpatiocyteWorld::add_structure3(const Species& sp, const boost::shared_p
     Integer count(0);
     for (coordinate_type coord(0); coord < size(); ++coord) {
         const Voxel voxel(coordinate2voxel(coord));
-        const Real L(shape->is_inside(voxel2position(voxel)));
+        const Real L(shape->is_inside(voxel.position()));
         if (L > 0)
             continue;
 
@@ -264,12 +264,12 @@ SpatiocyteWorld::is_surface_voxel(
         const Voxel& voxel,
         const boost::shared_ptr<const Shape> shape) const
 {
-    const Real L(shape->is_inside(voxel2position(voxel)));
+    const Real L(shape->is_inside(voxel.position()));
     if (L > 0 || L < -2 * voxel_radius())
         return false;
 
     for (Integer i(0); i < get_space(voxel)->num_neighbors(voxel.coordinate); ++i)
-        if (shape->is_inside(voxel2position(get_neighbor(voxel, i))) > 0)
+        if (shape->is_inside(get_neighbor(voxel, i).position()) > 0)
             return true;
 
     return false;

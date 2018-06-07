@@ -22,6 +22,13 @@ struct Voxel
 
     boost::weak_ptr<VoxelSpaceBase> space;
     coordinate_type coordinate;
+
+public:
+
+    const Real3 position() const
+    {
+        return space.lock()->coordinate2position(coordinate);
+    }
 };
 
 }
