@@ -45,6 +45,11 @@ public:
         return offset_;
     }
 
+    boost::weak_ptr<T> get_weak_ptr() const
+    {
+        return space_;
+    }
+
     void set_t(const Real& t)
     {
         space_->set_t(t);

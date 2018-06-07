@@ -156,7 +156,8 @@ protected:
         const Integer i(rng_.lock()->uniform_int(0, mt->size() - 1));
         const SpatiocyteWorld::coordinate_id_pair_type& info(mt->at(i));
 
-        return ReactionInfo::Item(info.pid, species, Voxel(info.coordinate));
+        // TODO: Calling coordinate2voxel() is invalid
+        return ReactionInfo::Item(info.pid, species, world_->coordinate2voxel(info.coordinate));
     }
 
     boost::shared_ptr<SpatiocyteWorld> world_;

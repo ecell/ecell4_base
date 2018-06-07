@@ -555,7 +555,7 @@ public:
     boost::shared_ptr<const VoxelPool>
     get_voxel_pool_at(const Voxel& voxel) const
     {
-        return get_space(voxel)->get_voxel_pool_at(voxel.coordinate);
+        return voxel.space.lock()->get_voxel_pool_at(voxel.coordinate);
     }
 
     /*
@@ -568,7 +568,8 @@ public:
 
     Voxel position2voxel(const Real3& pos) const
     {
-        return Voxel(get_root()->position2coordinate(pos));
+        return Voxel(get_root()->get_weak_ptr(),
+                     get_root()->position2coordinate(pos));
     }
 
     /*
@@ -576,12 +577,13 @@ public:
      */
     Integer num_neighbors(const Voxel& voxel) const
     {
-        return get_space(voxel)->num_neighbors(voxel.coordinate);
+        return voxel.space.lock()->num_neighbors(voxel.coordinate);
     }
 
     Voxel get_neighbor(const Voxel& voxel, Integer nrand) const
     {
-        return Voxel(get_space(voxel)->get_neighbor(voxel.coordinate, nrand));
+        return Voxel(voxel.space,
+                     voxel.space.lock()->get_neighbor(voxel.coordinate, nrand));
     }
 
     /*
@@ -933,6 +935,15 @@ protected:
     Integer add_structure2(const Species& sp, const boost::shared_ptr<const Shape> shape);
     Integer add_structure3(const Species& sp, const boost::shared_ptr<const Shape> shape);
     bool is_surface_voxel(const Voxel& voxel, const boost::shared_ptr<const Shape> shape) const;
+
+public:
+
+    // TODO: Calling this function is invalid, and this should be removed.
+    Voxel coordinate2voxel(const coordinate_type& coordinate)
+    {
+        space_container_type::iterator space(get_space_mut(coordinate));
+        return Voxel(space->get_weak_ptr(), coordinate - space->offset());
+    }
 
 protected:
 

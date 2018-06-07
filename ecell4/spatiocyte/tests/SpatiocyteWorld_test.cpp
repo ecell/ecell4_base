@@ -127,7 +127,7 @@ BOOST_AUTO_TEST_CASE(SpatiocyteWorld_test_add_molecule)
     sp.set_attribute("radius", "2.5e-9");
     sp.set_attribute("D", "1e-12");
 
-    const Voxel voxel(486420);
+    const Voxel voxel(world.position2voxel(edge_lengths / 2.0));
     // BOOST_CHECK(world.place_voxel(sp, coord).second);
     BOOST_CHECK(world.new_voxel(sp, voxel));
     BOOST_CHECK_EQUAL(world.num_particles(sp), 1);
@@ -161,31 +161,20 @@ BOOST_AUTO_TEST_CASE(SpatiocyteWorld_test_neighbor)
         rng(new GSLRandomNumberGenerator());
     SpatiocyteWorld world(edge_lengths, voxel_radius, rng);
 
-    const SpatiocyteWorld::coordinate_type coord(26 + 52 * 26 + 52 * 52 * 26);
-    const Real3 cp(world.voxel2position(Voxel(coord)));
+    const Voxel voxel(world.position2voxel(edge_lengths / 2.0));
+    const Real3 cp(world.voxel2position(voxel));
 
     Species sp(std::string("TEST"));
     sp.set_attribute("radius", "2.5e-9");
     sp.set_attribute("D", "1e-12");
-    const Integer n(world.add_neighbors(sp, coord));
-    std::vector<std::pair<ParticleID, Particle> > particles(
-            world.list_particles());
-    std::ofstream ofs("neighbor.txt");
-    ofs << "center" << std::endl;
-    // ofs << "(" << cp[0] << "," << cp[1] << "," << cp[2] << ") "
-    //     << world.coordinate2coord(coord) << std::endl;
-    ofs << "(" << cp[0] << "," << cp[1] << "," << cp[2] << ") " << coord << std::endl;
+    const Integer n(world.add_neighbors(sp, voxel.coordinate));
+    std::vector<std::pair<ParticleID, Particle> > particles(world.list_particles());
     for (std::vector<std::pair<ParticleID, Particle> >::iterator itr(
                 particles.begin()); itr != particles.end(); ++itr)
     {
         Real3 pos((*itr).second.position());
         BOOST_ASSERT(length(pos-cp) < voxel_radius*2.1);
-        const SpatiocyteWorld::coordinate_type coord(world.position2voxel(pos).coordinate);
-        //pos /= voxel_radius * 2;
-        ofs << "(" << pos[0] << "," << pos[1] << "," << pos[2] << ") "
-            << coord << std::endl;
     }
-    ofs.close();
 
 #ifdef WITH_HDF5
     world.save("neighbor.h5");

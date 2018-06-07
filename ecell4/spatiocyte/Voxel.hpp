@@ -2,6 +2,8 @@
 #define ECELL4_SPATIOCYTE_VOXEL_HPP
 
 #include <ecell4/core/types.hpp>
+#include <ecell4/core/VoxelSpaceBase.hpp>
+#include <boost/weak_ptr.hpp>
 
 namespace ecell4
 {
@@ -13,11 +15,12 @@ struct Voxel
 {
     typedef Integer coordinate_type;
 
-    Voxel(coordinate_type coordinate)
-        : coordinate(coordinate)
+    Voxel(boost::weak_ptr<VoxelSpaceBase> space, coordinate_type coordinate)
+        : space(space), coordinate(coordinate)
     {
     }
 
+    boost::weak_ptr<VoxelSpaceBase> space;
     coordinate_type coordinate;
 };
 

@@ -153,13 +153,13 @@ bool SpatiocyteWorld::add_molecules(const Species& sp, const Integer& num)
     Integer count(0);
     while (count < num)
     {
-        const coordinate_type coord(rng()->uniform_int(0, size() - 1));
+        const Voxel voxel(coordinate2voxel(rng()->uniform_int(0, size()-1)));
 
-        if (get_voxel_pool_at(Voxel(coord))->species().serial() != info.loc)
+        if (get_voxel_pool_at(voxel)->species().serial() != info.loc)
         {
             continue;
         }
-        else if (new_voxel(sp, Voxel(coord)))
+        else if (new_voxel(sp, voxel))
         {
             ++count;
         }
@@ -220,7 +220,7 @@ Integer SpatiocyteWorld::add_structure3(const Species& sp, const boost::shared_p
     const SpatiocyteWorld::molecule_info_type info(get_molecule_info(sp));
     Integer count(0);
     for (coordinate_type coord(0); coord < size(); ++coord) {
-        const Voxel voxel(coord);
+        const Voxel voxel(coordinate2voxel(coord));
         const Real L(shape->is_inside(voxel2position(voxel)));
         if (L > 0)
             continue;
@@ -244,7 +244,7 @@ SpatiocyteWorld::add_structure2(
     const SpatiocyteWorld::molecule_info_type info(get_molecule_info(sp));
     Integer count(0);
     for (coordinate_type coord(0); coord < size(); ++coord) {
-        const Voxel voxel(coord);
+        const Voxel voxel(coordinate2voxel(coord));
         if (!is_surface_voxel(voxel, shape))
             continue;
 
@@ -283,7 +283,7 @@ Integer SpatiocyteWorld::add_neighbors(const Species& sp,
     const SpatiocyteWorld::molecule_info_type info(get_molecule_info(sp));
     for (Integer i(0); i < 12; ++i)
     {
-        if (new_voxel(sp, get_neighbor(Voxel(center), i)))
+        if (new_voxel(sp, get_neighbor(coordinate2voxel(center), i)))
         {
             ++count;
         }
@@ -313,7 +313,7 @@ void SpatiocyteWorld::remove_molecules(const Species& sp, const Integer& num)
     while (count < num)
     {
         const Integer idx(rng_->uniform_int(0, mtype->size() - 1));
-        if (remove_voxel(Voxel(mtype->at(idx).coordinate)))
+        if (remove_voxel(coordinate2voxel(mtype->at(idx).coordinate)))
         {
             ++count;
         }
@@ -323,17 +323,19 @@ void SpatiocyteWorld::remove_molecules(const Species& sp, const Integer& num)
 boost::optional<Voxel>
 SpatiocyteWorld::check_neighbor(const Voxel& voxel, const std::string& loc)
 {
-    std::vector<coordinate_type> tmp;
-    const std::size_t num_neighbors(get_space(voxel)->num_neighbors(voxel.coordinate));
-    tmp.reserve(num_neighbors);
-    for (unsigned int rnd(0); rnd < num_neighbors; ++rnd)
+    const std::size_t num(num_neighbors(voxel));
+
+    std::vector<Voxel> tmp;
+    tmp.reserve(num);
+
+    for (unsigned int rnd(0); rnd < num; ++rnd)
     {
         const Voxel neighbor(get_neighbor(voxel, rnd));
         boost::shared_ptr<const VoxelPool> mt(get_voxel_pool_at(neighbor));
         const std::string serial(mt->is_vacant() ? "" : mt->species().serial());
         if (serial == loc)
         {
-            tmp.push_back(neighbor.coordinate);
+            tmp.push_back(neighbor);
         }
     }
 
@@ -342,7 +344,7 @@ SpatiocyteWorld::check_neighbor(const Voxel& voxel, const std::string& loc)
         return boost::none;
     }
 
-    return Voxel(tmp[rng()->uniform_int(0, tmp.size()-1)]);
+    return tmp[rng()->uniform_int(0, tmp.size()-1)];
 }
 
 } // spatiocyte
