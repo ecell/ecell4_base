@@ -192,7 +192,7 @@ public:
 
     typedef ReactionRuleDescriptor base_type;
     typedef base_type::state_container_type state_container_type;
-    typedef Real (*func_type)(const state_container_type& r, const state_container_type& p, Real t);
+    typedef Real (*func_type)(const state_container_type& r, const state_container_type& p, Real volume, Real t, const ReactionRuleDescriptorCPPfunc& rd);
 
 public:
 
@@ -227,11 +227,12 @@ public:
     {
         if (this->is_available())
         {
-            return (this->pf_)(reactants, products, time);
+            return (this->pf_)(reactants, products, volume, time, *this);
         }
         else
         {
-            throw IllegalState("Pointer to the user-defined propensity function is NULL");
+            // throw IllegalState("Pointer to the user-defined propensity function is NULL");
+            return 0.0;
         }
     }
 
