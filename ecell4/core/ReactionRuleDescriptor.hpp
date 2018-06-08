@@ -27,6 +27,8 @@ public:
     typedef std::vector<Species> product_container_type;
     typedef std::vector<Real> reaction_coefficient_list_type;
 
+    typedef std::vector<Real> state_container_type;
+
     // The following stores propensity_func, number of reactant coefficients, number of product_coefficients
     typedef boost::tuple<bool, int, int> descriptor_attribute;
 
@@ -54,7 +56,7 @@ public:
             this->is_available(), reactant_coefficients_.size(), product_coefficients_.size());
     }
 
-    virtual Real propensity(const std::vector<Real> &r, const std::vector<Real> &p, Real volume, Real time) const = 0;
+    virtual Real propensity(const state_container_type& r, const state_container_type& p, Real volume, Real time) const = 0;
 
     virtual ReactionRuleDescriptor* clone() const
     {
@@ -72,11 +74,21 @@ public:
         return this->product_coefficients_;
     }
 
+    void resize_reactants(const std::size_t size)
+    {
+        this->reactant_coefficients_.resize(size, 1.0);
+    }
+
+    void resize_products(const std::size_t size)
+    {
+        this->product_coefficients_.resize(size, 1.0);
+    }
+
     void set_reactant_coefficient(const std::size_t num, const Real new_coeff)
     {
         if (num >= reactant_coefficients_.size())
         {
-            this->reactant_coefficients_.resize(num + 1, 1.0);
+            this->resize_reactants(num + 1);
         }
         this->reactant_coefficients_[num] = new_coeff;
     }
@@ -85,7 +97,7 @@ public:
     {
         if (num >= product_coefficients_.size())
         {
-            this->product_coefficients_.resize(num + 1, 1.0);
+            this->resize_products(num + 1);
         }
         this->product_coefficients_[num] = new_coeff;
     }
@@ -125,6 +137,7 @@ class ReactionRuleDescriptorMassAction
 public:
 
     typedef ReactionRuleDescriptor base_type;
+    typedef base_type::state_container_type state_container_type;
 
 public:
 
@@ -155,10 +168,10 @@ public:
         k_ = k;
     }
 
-    virtual Real propensity(const std::vector<Real>& reactants, const std::vector<Real>& products, Real volume, Real t) const
+    virtual Real propensity(const state_container_type& reactants, const state_container_type& products, Real volume, Real t) const
     {
         Real ret = k_ * volume;
-        std::vector<Real>::const_iterator i(reactants.begin());
+        state_container_type::const_iterator i(reactants.begin());
         reaction_coefficient_list_type::const_iterator j(reactant_coefficients().begin());
         for (; i != reactants.end() && j != reactant_coefficients().end(); ++i, ++j)
         {
@@ -178,7 +191,8 @@ class ReactionRuleDescriptorCPPfunc
 public:
 
     typedef ReactionRuleDescriptor base_type;
-    typedef Real (*func_type)(const std::vector<Real> &r, const std::vector<Real> &p, Real t);
+    typedef base_type::state_container_type state_container_type;
+    typedef Real (*func_type)(const state_container_type& r, const state_container_type& p, Real t);
 
 public:
 
@@ -209,7 +223,7 @@ public:
         return this->pf_;
     }
 
-    virtual Real propensity(const std::vector<Real> &reactants, const std::vector<Real> &products, Real volume, Real time) const
+    virtual Real propensity(const state_container_type& reactants, const state_container_type& products, Real volume, Real time) const
     {
         if (this->is_available())
         {
@@ -232,8 +246,9 @@ class ReactionRuleDescriptorPyfunc
 public:
 
     typedef ReactionRuleDescriptor base_type;
+    typedef base_type::state_container_type state_container_type;
     typedef PyObject* pyfunc_type;
-    typedef Real (*stepladder_func_type)(pyfunc_type, std::vector<Real>, std::vector<Real>, Real t);
+    typedef Real (*stepladder_func_type)(pyfunc_type, state_container_type, state_container_type, Real t);
 
 public:
 
@@ -270,7 +285,7 @@ public:
     //     return (pyfunc_ != 0 && stepladder_ != 0);
     // }
 
-    virtual Real propensity(const std::vector<Real>& reactants, const std::vector<Real>& products, Real volume, Real t) const
+    virtual Real propensity(const state_container_type& reactants, const state_container_type& products, Real volume, Real t) const
     {
         // if (stepladder_ == NULL)
         // {
@@ -292,7 +307,6 @@ public:
     {
         return name_;
     }
-
 
 private:
 

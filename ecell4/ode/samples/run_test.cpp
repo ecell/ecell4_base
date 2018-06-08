@@ -167,6 +167,8 @@ int test(int type, int use_coefficients = 0)
             ok_flag = false;
         }
     }
+    std::cout << world->evaluate(ode_rr1) << " " << new_world->evaluate(rr1) << std::endl;
+    std::cout << world->evaluate(ode_rr2) << " " << new_world->evaluate(rr2) << std::endl;
     if (ok_flag) {
         std::cout << "Exactly the same result with new and old ODESimulator" << std::endl;
     }

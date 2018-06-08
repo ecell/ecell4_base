@@ -15,7 +15,7 @@ std::pair<ODESimulator_New::deriv_func, ODESimulator_New::jacobi_func>
 ODESimulator_New::generate_system() const
 {
     const std::vector<Species> species(world_->list_species());
-    const ODENetworkModel::ode_reaction_rule_container_type& ode_reaction_rules = ode_reaction_rules_;
+    // const ODENetworkModel::ode_reaction_rule_container_type& ode_reaction_rules = ode_reaction_rules_;
     // const ODENetworkModel::ode_reaction_rule_container_type& ode_reaction_rules(model_->ode_reaction_rules());
     const Model::reaction_rule_container_type& reaction_rules = model_->reaction_rules();
     typedef utils::get_mapper_mf<
@@ -33,13 +33,12 @@ ODESimulator_New::generate_system() const
     std::vector<reaction_type> reactions;
     reactions.reserve(reaction_rules.size());
     // reactions.reserve(ode_reaction_rules.size());
-    assert(reaction_rules.size() == ode_reaction_rules.size());
+    // assert(reaction_rules.size() == ode_reaction_rules.size());
     for (size_t i = 0; i < reaction_rules.size(); ++i)
     // for(ODENetworkModel::ode_reaction_rule_container_type::const_iterator
     //     i(ode_reaction_rules.begin()); i != ode_reaction_rules.end(); i++)
     {
         const ReactionRule& rr = reaction_rules[i];
-        const ODEReactionRule& orr = ode_reaction_rules[i];
 
         const ReactionRule::reactant_container_type reactants(rr.reactants());
         const ReactionRule::product_container_type products(rr.products());
