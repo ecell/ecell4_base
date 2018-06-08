@@ -5,18 +5,18 @@ from cython cimport address
 cimport create_reaction_rule as crr
 
 cdef double indirect_function_rrd(
-    PyObject* pyfunc, vector[Real] reactants, vector[Real] products, Real t):
+    PyObject* pyfunc, const vector[Real]& reactants, const vector[Real]& products, Real volume, Real t, const vector[Real]& reactant_coefficients, const vector[Real]& product_coefficients):
     py_reactants = []
-    cdef vector[Real].iterator it1 = reactants.begin()
-    while it1 != reactants.end():
+    cdef vector[Real].const_iterator it1 = reactants.const_begin()
+    while it1 != reactants.const_end():
         py_reactants.append(deref(it1))
         inc(it1)
     py_products = []
-    cdef vector[Real].iterator it2 = products.begin()
-    while it2 != products.end():
+    cdef vector[Real].const_iterator it2 = products.const_begin()
+    while it2 != products.const_end():
         py_products.append(deref(it2))
         inc(it2)
-    ret = (<object>pyfunc)(py_reactants, py_products, t)
+    ret = (<object>pyfunc)(py_reactants, py_products, volume, t, reactant_coefficients, product_coefficients)
     # try:
     #     ret = (<object>pyfunc)(py_reactants, py_products, t)
     # except Exception as e:

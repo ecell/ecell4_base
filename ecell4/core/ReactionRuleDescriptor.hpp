@@ -248,8 +248,9 @@ public:
 
     typedef ReactionRuleDescriptor base_type;
     typedef base_type::state_container_type state_container_type;
+    typedef base_type::reaction_coefficient_list_type reaction_coefficient_list_type;
     typedef PyObject* pyfunc_type;
-    typedef Real (*stepladder_func_type)(pyfunc_type, state_container_type, state_container_type, Real t);
+    typedef Real (*stepladder_func_type)(pyfunc_type, const state_container_type&, const state_container_type&, Real volume, Real t, const reaction_coefficient_list_type&, const reaction_coefficient_list_type&);
 
 public:
 
@@ -296,7 +297,7 @@ public:
         // {
         //     throw IllegalState("pyfunc is not registered");
         // }
-        return this->stepladder_(this->pyfunc_, reactants, products, t);
+        return this->stepladder_(this->pyfunc_, reactants, products, volume, t, this->reactant_coefficients(), this->product_coefficients());
     }
 
     void set_name(const std::string& name)

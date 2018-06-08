@@ -142,7 +142,7 @@ cdef class PyObjectHandler:
 
 # ctypedef void* ReactionRuleDescriptorPyfunc_pyfunc_type
 ctypedef PyObject* ReactionRuleDescriptorPyfunc_pyfunc_type
-ctypedef double (*ReactionRuleDescriptorPyfunc_stepladder_type)(ReactionRuleDescriptorPyfunc_pyfunc_type, vector[Real], vector[Real], Real)
+ctypedef double (*ReactionRuleDescriptorPyfunc_stepladder_type)(ReactionRuleDescriptorPyfunc_pyfunc_type, const vector[Real]&, const vector[Real]&, Real, Real, const vector[Real]&, const vector[Real]&)
 
 # Cpp_ReactionRuleDescriptor
 #ecell4::ReactionRuleDescriptor
