@@ -25,7 +25,7 @@ public:
 
     typedef std::vector<Species> reactant_container_type;
     typedef std::vector<Species> product_container_type;
-    typedef std::vector<Real> reaction_coefficient_list_type;
+    typedef std::vector<Real> coefficient_container_type;
 
     typedef std::vector<Real> state_container_type;
 
@@ -34,7 +34,7 @@ public:
 
 public:
 
-    ReactionRuleDescriptor(const reaction_coefficient_list_type &reactant_coefficients, const reaction_coefficient_list_type &product_coefficients)
+    ReactionRuleDescriptor(const coefficient_container_type &reactant_coefficients, const coefficient_container_type &product_coefficients)
         : reactant_coefficients_(reactant_coefficients), product_coefficients_(product_coefficients)
     {
         ;
@@ -64,12 +64,12 @@ public:
     }
 
     // Accessor of coefficients;
-    const reaction_coefficient_list_type &reactant_coefficients(void) const
+    const coefficient_container_type &reactant_coefficients(void) const
     {
         return this->reactant_coefficients_;
     }
 
-    const reaction_coefficient_list_type &product_coefficients(void) const
+    const coefficient_container_type &product_coefficients(void) const
     {
         return this->product_coefficients_;
     }
@@ -102,7 +102,7 @@ public:
         this->product_coefficients_[num] = new_coeff;
     }
 
-    void set_reactant_coefficients(const reaction_coefficient_list_type &new_reactant_coefficients)
+    void set_reactant_coefficients(const coefficient_container_type &new_reactant_coefficients)
     {
         this->reactant_coefficients_.clear();
         for(int i = 0; i < new_reactant_coefficients.size(); i++)
@@ -111,7 +111,7 @@ public:
         }
     }
 
-    void set_product_coefficients(const reaction_coefficient_list_type &new_product_coefficients)
+    void set_product_coefficients(const coefficient_container_type &new_product_coefficients)
     {
         this->product_coefficients_.clear();
         for(int i = 0; i < new_product_coefficients.size(); i++)
@@ -127,8 +127,8 @@ public:
 
 private:
 
-    reaction_coefficient_list_type reactant_coefficients_;
-    reaction_coefficient_list_type product_coefficients_;
+    coefficient_container_type reactant_coefficients_;
+    coefficient_container_type product_coefficients_;
 };
 
 class ReactionRuleDescriptorMassAction
@@ -147,7 +147,7 @@ public:
         ;
     }
 
-    ReactionRuleDescriptorMassAction(const Real k, const reaction_coefficient_list_type &reactant_coefficients, const reaction_coefficient_list_type &product_coefficients)
+    ReactionRuleDescriptorMassAction(const Real k, const coefficient_container_type &reactant_coefficients, const coefficient_container_type &product_coefficients)
         : base_type(reactant_coefficients, product_coefficients), k_(k)
     {
         ;
@@ -172,7 +172,7 @@ public:
     {
         Real ret = k_ * volume;
         state_container_type::const_iterator i(reactants.begin());
-        reaction_coefficient_list_type::const_iterator j(reactant_coefficients().begin());
+        coefficient_container_type::const_iterator j(reactant_coefficients().begin());
         for (; i != reactants.end() && j != reactant_coefficients().end(); ++i, ++j)
         {
             ret *= std::pow((*i) / volume, (*j));
@@ -202,7 +202,7 @@ public:
         ;
     }
 
-    ReactionRuleDescriptorCPPfunc(func_type pf, const reaction_coefficient_list_type &reactant_coefficients, const reaction_coefficient_list_type &product_coefficients)
+    ReactionRuleDescriptorCPPfunc(func_type pf, const coefficient_container_type &reactant_coefficients, const coefficient_container_type &product_coefficients)
         : base_type(reactant_coefficients, product_coefficients), pf_(pf)
     {
         ;
@@ -248,9 +248,9 @@ public:
 
     typedef ReactionRuleDescriptor base_type;
     typedef base_type::state_container_type state_container_type;
-    typedef base_type::reaction_coefficient_list_type reaction_coefficient_list_type;
+    typedef base_type::coefficient_container_type coefficient_container_type;
     typedef PyObject* pyfunc_type;
-    typedef Real (*stepladder_func_type)(pyfunc_type, const state_container_type&, const state_container_type&, Real volume, Real t, const reaction_coefficient_list_type&, const reaction_coefficient_list_type&);
+    typedef Real (*stepladder_func_type)(pyfunc_type, const state_container_type&, const state_container_type&, Real volume, Real t, const coefficient_container_type&, const coefficient_container_type&);
 
 public:
 
@@ -260,7 +260,7 @@ public:
         Py_INCREF(this->pyfunc_);
     }
 
-    ReactionRuleDescriptorPyfunc(stepladder_func_type stepladder, pyfunc_type pyfunc, const std::string& name, const reaction_coefficient_list_type &reactant_coefficients, const reaction_coefficient_list_type &product_coefficients)
+    ReactionRuleDescriptorPyfunc(stepladder_func_type stepladder, pyfunc_type pyfunc, const std::string& name, const coefficient_container_type &reactant_coefficients, const coefficient_container_type &product_coefficients)
         : base_type(reactant_coefficients, product_coefficients), stepladder_(stepladder), pyfunc_(pyfunc), name_(name)
     {
         Py_INCREF(this->pyfunc_);

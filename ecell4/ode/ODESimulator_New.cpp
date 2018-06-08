@@ -62,10 +62,10 @@ ODESimulator_New::generate_system() const
 
             r.ratelaw = rr.get_descriptor();
 
-            const ReactionRuleDescriptor::reaction_coefficient_list_type& reactants_coeff = rrd->reactant_coefficients();
+            const ReactionRuleDescriptor::coefficient_container_type& reactants_coeff = rrd->reactant_coefficients();
             std::copy(reactants_coeff.begin(), reactants_coeff.end(), std::back_inserter(r.reactant_coefficients));
 
-            const ReactionRuleDescriptor::reaction_coefficient_list_type& products_coeff = rrd->product_coefficients();
+            const ReactionRuleDescriptor::coefficient_container_type& products_coeff = rrd->product_coefficients();
             std::copy(products_coeff.begin(), products_coeff.end(), std::back_inserter(r.product_coefficients));
         }
         else
