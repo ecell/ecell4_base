@@ -298,8 +298,8 @@ def generate_ratelaw(obj, rr, implicit=False):
         elif implicit:
             names.append("_r[{0:d}]".format(len(rr.reactants())))
             aliases[key] = names[-1]
-            rr.add_reactant(ecell4.core.Species(key), 1)
-            rr.add_product(ecell4.core.Species(key), 1)
+            rr.add_reactant(ecell4.core.Species(key))
+            rr.add_product(ecell4.core.Species(key))
         else:
             raise RuntimeError(
                 'unknown variable [{}] was used.'.format(key))

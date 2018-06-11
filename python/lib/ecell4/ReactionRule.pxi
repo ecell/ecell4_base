@@ -105,6 +105,14 @@ cdef class ReactionRuleDescriptorPyfunc:
     def get(self):
         return <object>(self.thisptr.get().get())
 
+    def __reduce__(self):
+        import sys
+        loaded_modules = sys.modules.keys()
+        if not  "dill" in loaded_modules:
+            raise RuntimeError(
+                "dill module is required for pickling user-defined function. Use dill instead of pickle")
+        return (__rebuild_ReactionRuleDescriptor, (ReactionRuleDescriptorPyfunc, self.reactant_coefficients(), self.product_coefficients(), self.get(), self.as_string()))
+
 cdef ReactionRuleDescriptorPyfunc ReactionRuleDescriptorPyfunc_from_Cpp_ReactionRuleDescriptorPyfunc(shared_ptr[Cpp_ReactionRuleDescriptorPyfunc] rrd):
     r = ReactionRuleDescriptorPyfunc(lambda *args: 0.0, "")  # dummy
     r.thisptr.swap(rrd)
@@ -184,6 +192,15 @@ cdef class ReactionRuleDescriptorMassAction:
     # def is_available(self):
     #     return self.thisptr.get().is_available()
 
+    def __reduce__(self):
+        return (__rebuild_ReactionRuleDescriptor, (ReactionRuleDescriptorMassAction, self.reactant_coefficients(), self.product_coefficients(), self.k()))
+
+def __rebuild_ReactionRuleDescriptor(cls, reactant_coefficients, product_coefficients, *args):
+    ret = cls(*args)
+    ret.set_reactant_coefficients(reactant_coefficients)
+    ret.set_product_coefficients(product_coefficients)
+    return ret
+
 cdef ReactionRuleDescriptorMassAction ReactionRuleDescriptorMassAction_from_Cpp_ReactionRuleDescriptorMassAction(shared_ptr[Cpp_ReactionRuleDescriptorMassAction] rrd):
     r = ReactionRuleDescriptorMassAction(0.0)  # dummy
     r.thisptr.swap(rrd)
@@ -212,7 +229,7 @@ cdef class ReactionRule:
     IMPLICIT = ReactionRulePolicy(Cpp_IMPLICIT)
     DESTROY = ReactionRulePolicy(Cpp_DESTROY)
 
-    def __init__(self, reactants=None, products=None, k=None):
+    def __init__(self, reactants=None, products=None, k=None, descriptor=None):
         """Constructor.
 
         Parameters
@@ -227,7 +244,7 @@ cdef class ReactionRule:
         """
         pass  # XXX: Only used for doc string
 
-    def __cinit__(self, reactants=None, products=None, k=None):
+    def __cinit__(self, reactants=None, products=None, k=None, descriptor=None):
         cdef vector[Cpp_Species] cpp_reactants
         cdef vector[Cpp_Species] cpp_products
 
@@ -243,6 +260,9 @@ cdef class ReactionRule:
                 self.thisptr = new Cpp_ReactionRule(cpp_reactants, cpp_products)
             else:
                 self.thisptr = new Cpp_ReactionRule(cpp_reactants, cpp_products, k)
+
+            if descriptor is not None:
+                self.set_descriptor(descriptor)
 
     def __dealloc__(self):
         del self.thisptr
@@ -430,9 +450,6 @@ cdef class ReactionRule:
             inc(it1)
         return retval
 
-    def __reduce__(self):
-        return (ReactionRule, (self.reactants(), self.products(), self.k()))
-
     def set_descriptor(self, rrd):
         if isinstance(rrd, ReactionRuleDescriptorPyfunc):
             self.thisptr.set_descriptor(
@@ -466,6 +483,9 @@ cdef class ReactionRule:
 
     def reset_descriptor(self):
         self.thisptr.reset_descriptor()
+
+    def __reduce__(self):
+        return (ReactionRule, (self.reactants(), self.products(), self.k(), self.get_descriptor()))
 
 cdef ReactionRule ReactionRule_from_Cpp_ReactionRule(Cpp_ReactionRule *rr):
     cdef Cpp_ReactionRule *new_obj = new Cpp_ReactionRule(deref(rr))
