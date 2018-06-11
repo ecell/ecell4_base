@@ -172,10 +172,30 @@ cdef extern from "ecell4/core/ReactionRuleDescriptor.hpp" namespace "ecell4":
         void set_name(string&)
         ReactionRuleDescriptorPyfunc_pyfunc_type get()
 
+    cdef cppclass Cpp_ReactionRuleDescriptorMassAction "ecell4::ReactionRuleDescriptorMassAction":
+        Cpp_ReactionRuleDescriptorMassAction() except +
+        Cpp_ReactionRuleDescriptorMassAction(Real)
+        void set_reactant_coefficients(vector[Real])
+        void set_product_coefficients(vector[Real])
+        void set_reactant_coefficient(int, Real)
+        void set_product_coefficient(int, Real)
+        bool has_coefficients()
+        vector[Real] reactant_coefficients()
+        vector[Real] product_coefficients()
+        Real propensity(vector[Real], vector[Real], Real, Real)
+        # bool is_available()
+        Real k()
+        void set_k(Real)
+
 cdef class ReactionRuleDescriptorPyfunc:
     cdef shared_ptr[Cpp_ReactionRuleDescriptorPyfunc] thisptr
 
 cdef ReactionRuleDescriptorPyfunc ReactionRuleDescriptorPyfunc_from_Cpp_ReactionRuleDescriptorPyfunc(shared_ptr[Cpp_ReactionRuleDescriptorPyfunc] rrd)
+
+cdef class ReactionRuleDescriptorMassAction:
+    cdef shared_ptr[Cpp_ReactionRuleDescriptorMassAction] thisptr
+
+cdef ReactionRuleDescriptorMassAction ReactionRuleDescriptorMassAction_from_Cpp_ReactionRuleDescriptorMassAction(shared_ptr[Cpp_ReactionRuleDescriptorMassAction] rrd)
 
 ## Cpp_ReactionRule
 #  ecell4::ReactionRule

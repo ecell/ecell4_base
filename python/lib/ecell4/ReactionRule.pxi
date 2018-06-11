@@ -110,6 +110,85 @@ cdef ReactionRuleDescriptorPyfunc ReactionRuleDescriptorPyfunc_from_Cpp_Reaction
     r.thisptr.swap(rrd)
     return r
 
+cdef class ReactionRuleDescriptorMassAction:
+
+    def __init__(self, Real k):
+        # a = PyObjectHandler()
+        self.thisptr = shared_ptr[Cpp_ReactionRuleDescriptorMassAction](
+            new Cpp_ReactionRuleDescriptorMassAction(k))
+
+    def reactant_coefficients(self):
+        cdef vector[Real] cpp_coefficients = self.thisptr.get().reactant_coefficients()
+        py_reactant_coefficients = []
+        cdef vector[Real].iterator it = cpp_coefficients.begin()
+        while it != cpp_coefficients.end():
+            py_reactant_coefficients.append(deref(it))
+            inc(it)
+        return py_reactant_coefficients
+
+    def product_coefficients(self):
+        cdef vector[Real] cpp_coefficients = self.thisptr.get().product_coefficients()
+        py_product_coefficients = []
+        cdef vector[Real].iterator it = cpp_coefficients.begin()
+        while it != cpp_coefficients.end():
+            py_product_coefficients.append(deref(it))
+            inc(it)
+        return py_product_coefficients
+
+    def set_reactant_coefficient(self, int idx, Real val):
+        self.thisptr.get().set_reactant_coefficient(idx, val)
+
+    def set_product_coefficient(self, int idx, Real val):
+        self.thisptr.get().set_product_coefficient(idx, val)
+
+    def set_reactant_coefficients(self, coefficients):
+        cdef vector[Real] cpp_coefficients
+        for c in coefficients:
+            cpp_coefficients.push_back(c)
+        self.thisptr.get().set_reactant_coefficients(cpp_coefficients)
+
+    def set_product_coefficients(self, coefficients):
+        cdef vector[Real] cpp_coefficients
+        for c in coefficients:
+            cpp_coefficients.push_back(c)
+        self.thisptr.get().set_product_coefficients(cpp_coefficients)
+
+    def propensity(self, r, p, Real volume, Real t):
+        cdef vector[Real] cpp_r
+        for val in r:
+            cpp_r.push_back(val)
+        cdef vector[Real] cpp_p
+        for val in p:
+            cpp_p.push_back(val)
+        return self.thisptr.get().propensity(cpp_r, cpp_p, volume, t)
+
+    def k(self):
+        return self.thisptr.get().k()
+
+    def set_k(self, Real val):
+        self.thisptr.get().set_k(val)
+
+    # def as_string(self):
+    #     """as_string() -> str
+
+    #     Return an unicode string describing this object.
+
+    #     Returns
+    #     -------
+    #     str:
+    #         An unicode string describing this object.
+
+    #     """
+    #     return self.thisptr.get().as_string().decode('UTF-8')
+
+    # def is_available(self):
+    #     return self.thisptr.get().is_available()
+
+cdef ReactionRuleDescriptorMassAction ReactionRuleDescriptorMassAction_from_Cpp_ReactionRuleDescriptorMassAction(shared_ptr[Cpp_ReactionRuleDescriptorMassAction] rrd):
+    r = ReactionRuleDescriptorMassAction(0.0)  # dummy
+    r.thisptr.swap(rrd)
+    return r
+
 class ReactionRulePolicy(object):
     """A wrapper of ReactionRule::policy_type"""
 
@@ -354,11 +433,33 @@ cdef class ReactionRule:
     def __reduce__(self):
         return (ReactionRule, (self.reactants(), self.products(), self.k()))
 
-    def set_descriptor(self, ReactionRuleDescriptorPyfunc rrd):
-        self.thisptr.set_descriptor(static_pointer_cast[Cpp_ReactionRuleDescriptor, Cpp_ReactionRuleDescriptorPyfunc](rrd.thisptr))
+    def set_descriptor(self, rrd):
+        if isinstance(rrd, ReactionRuleDescriptorPyfunc):
+            self.thisptr.set_descriptor(
+                static_pointer_cast[Cpp_ReactionRuleDescriptor, Cpp_ReactionRuleDescriptorPyfunc](
+                    (<ReactionRuleDescriptorPyfunc> rrd).thisptr))
+        elif isinstance(rrd, ReactionRuleDescriptorMassAction):
+            self.thisptr.set_descriptor(
+                static_pointer_cast[Cpp_ReactionRuleDescriptor, Cpp_ReactionRuleDescriptorMassAction](
+                    (<ReactionRuleDescriptorMassAction> rrd).thisptr))
+        else:
+            raise TypeError('ReactionRuleDescriptor is required here [{}].'.format(type(rrd)))
 
     def get_descriptor(self):
-        return ReactionRuleDescriptorPyfunc_from_Cpp_ReactionRuleDescriptorPyfunc(dynamic_pointer_cast[Cpp_ReactionRuleDescriptorPyfunc, Cpp_ReactionRuleDescriptor](self.thisptr.get_descriptor()))  #XXX: This may fail
+        cdef shared_ptr[Cpp_ReactionRuleDescriptor] desc = self.thisptr.get_descriptor()
+
+        if desc.get() == NULL:
+            return None
+
+        cdef shared_ptr[Cpp_ReactionRuleDescriptorPyfunc] desc_pyfunc = dynamic_pointer_cast[Cpp_ReactionRuleDescriptorPyfunc, Cpp_ReactionRuleDescriptor](desc);
+        if desc_pyfunc.get() != NULL:
+            return ReactionRuleDescriptorPyfunc_from_Cpp_ReactionRuleDescriptorPyfunc(desc_pyfunc)
+
+        cdef shared_ptr[Cpp_ReactionRuleDescriptorMassAction] desc_massaction = dynamic_pointer_cast[Cpp_ReactionRuleDescriptorMassAction, Cpp_ReactionRuleDescriptor](desc);
+        if desc_massaction.get() != NULL:
+            return ReactionRuleDescriptorMassAction_from_Cpp_ReactionRuleDescriptorMassAction(desc_massaction)
+
+        raise RuntimeError('Unknown derived type of ReactionRuleDescriptor was returned.')
 
     def has_descriptor(self):
         return self.thisptr.has_descriptor()

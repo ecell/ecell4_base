@@ -94,11 +94,11 @@ def get_shape(shape, *args):
 def list_species(model, seeds=None):
     seeds = None or []
 
-    from ecell4.ode import ODENetworkModel
+    # from ecell4.ode import ODENetworkModel
     from ecell4 import Species
-    if isinstance(model, ODENetworkModel):
-        #XXX: A bit messy way
-        return sorted([sp.serial() for sp in model.list_species()])
+    # if isinstance(model, ODENetworkModel):
+    #     #XXX: A bit messy way
+    #     return sorted([sp.serial() for sp in model.list_species()])
 
     if not isinstance(seeds, list):
         seeds = list(seeds)
