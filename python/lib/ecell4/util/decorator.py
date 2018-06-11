@@ -494,10 +494,6 @@ def get_model(is_netfree=False, without_reset=False, seeds=None, effective=False
 
     """
     try:
-        # if any([not isinstance(rr, ecell4.core.ReactionRule) for rr in REACTION_RULES]):
-        #    from ecell4.ode import ODENetworkModel
-        #    m = ODENetworkModel()
-        # elif seeds is not None or is_netfree:
         if seeds is not None or is_netfree:
             m = ecell4.core.NetfreeModel()
         else:

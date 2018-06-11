@@ -4,7 +4,6 @@ from collections import defaultdict
 import numbers
 
 from ecell4 import Species, ReactionRule, ReactionRuleDescriptorMassAction, ReactionRuleDescriptorPyfunc
-# from ecell4.ode import ODEReactionRule
 
 from ecell4.util import parseobj
 from ecell4.util.decorator_base import just_parse
@@ -85,7 +84,6 @@ def equations(m, inline=False, constants=True):
         name = "v_{{{}}}".format(i + 1)
         desc = rr.get_descriptor()
 
-        # if isinstance(rr, ReactionRule) or (isinstance(rr, ODEReactionRule) and rr.is_massaction()):
         if desc is None:
             if constants:
                 idx = len(params) + 1
@@ -157,7 +155,6 @@ def equations(m, inline=False, constants=True):
                     # coef < 0
                     derivatives[serial].append("{}{}".format(pref, eq))
 
-        # elif isinstance(rr, ODEReactionRule):
         else:
             for sp, coef in zip(rr.reactants(), desc.reactant_coefficients()):
                 stoich[escape_serial(sp)] -= coef
