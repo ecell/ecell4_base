@@ -16,7 +16,6 @@
 
 #include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
-#include <ecell4/ode/ODENetworkModel.hpp>
 
 namespace ecell4
 {
@@ -264,18 +263,10 @@ public:
     }
 
     void bind_to(boost::shared_ptr<Model> model);
-    void bind_to(boost::shared_ptr<ODENetworkModel> model);
 
-    boost::shared_ptr<ODENetworkModel> lock_model() const
+    boost::shared_ptr<Model> lock_model() const
     {
-        if (generated_)
-        {
-            return generated_;
-        }
-        else
-        {
-            return model_.lock();
-        }
+        return model_.lock();
     }
 
     void add_molecules(const Species& sp, const Integer& num,
@@ -300,11 +291,46 @@ public:
 
     Real evaluate(const ReactionRule& rr) const
     {
-        ODEReactionRule oderr(rr);
-        return evaluate(oderr);
+        if (rr.has_descriptor())
+        {
+            const boost::shared_ptr<ReactionRuleDescriptor> rrd = rr.get_descriptor();
+            return __evaluate(rr, rrd);
+        }
+        else
+        {
+            const boost::shared_ptr<ReactionRuleDescriptorMassAction>
+                rrd(new ReactionRuleDescriptorMassAction(rr.k()));
+            rrd->resize_reactants(rr.reactants().size());
+            rrd->resize_products(rr.products().size());
+            return __evaluate(rr, rrd);
+        }
     }
 
-    Real evaluate(ODEReactionRule& rr) const;
+    Real __evaluate(const ReactionRule& rr, const boost::shared_ptr<ReactionRuleDescriptor>& rrd) const
+    {
+        const ReactionRule::reactant_container_type reactants = rr.reactants();
+        const ReactionRule::product_container_type products = rr.products();
+
+        ReactionRuleDescriptor::state_container_type::size_type cnt(0);
+
+        ReactionRuleDescriptor::state_container_type r(reactants.size());
+        for(ReactionRule::reactant_container_type::const_iterator j(reactants.begin());
+            j != reactants.end(); j++, cnt++)
+        {
+            r[cnt] = static_cast<double>(this->get_value_exact(*j));
+        }
+
+        cnt = 0;
+
+        ReactionRuleDescriptor::state_container_type p(products.size());
+        for(ReactionRule::reactant_container_type::const_iterator j(products.begin());
+            j != products.end(); j++, cnt++)
+        {
+            p[cnt] = static_cast<double>(this->get_value_exact(*j));
+        }
+
+        return rrd->propensity(r, p, this->volume(), this->t());
+    }
 
 protected:
 
@@ -316,13 +342,11 @@ protected:
     species_container_type species_;
     species_map_type index_map_;
 
-    boost::weak_ptr<ODENetworkModel> model_;
-    boost::shared_ptr<ODENetworkModel> generated_;
-    // bool is_netfree_;
+    boost::weak_ptr<Model> model_;
 };
 
 } // ode
 
 } // ecell4
 
-#endif /* ECELL4_ODE_ODE_WORLD_HPP */
+#endif /* ECELL4_ODE_ODE_WORLD_NEW_HPP */

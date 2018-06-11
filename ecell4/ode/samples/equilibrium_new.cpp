@@ -4,7 +4,7 @@
 #include <ecell4/core/Species.hpp>
 #include <ecell4/core/ReactionRule.hpp>
 #include <ecell4/core/NetworkModel.hpp>
-#include <ecell4/ode/ODESimulator_New.hpp>
+#include <ecell4/ode/ODESimulator.hpp>
 
 
 using namespace ecell4;
@@ -109,10 +109,10 @@ int main(int argc, char** argv)
 
     // model->dump_reactions();
 
-    boost::shared_ptr<ODEWorld_New> world(new ODEWorld_New(edge_lengths));
+    boost::shared_ptr<ODEWorld> world(new ODEWorld(edge_lengths));
     world->add_molecules(sp1, N);
 
-    ODESimulator_New target(model, world, RUNGE_KUTTA_CASH_KARP54);
+    ODESimulator target(model, world, RUNGE_KUTTA_CASH_KARP54);
     target.initialize();
 
     std::cout << world->evaluate(model->reaction_rules()[0]) << std::endl;

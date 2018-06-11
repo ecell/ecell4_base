@@ -3,10 +3,12 @@ if (NO_SHARED)
 endif()
 
 set(CPP_FILES
-	ODEWorld.cpp ODENetworkModel.cpp ODEReactionRule.cpp ODESimulator.cpp ODERatelaw.cpp ODESimulator_New.cpp ODEWorld_New.cpp)
+	ODEWorld.cpp ODESimulator.cpp)
+	# ODEWorld.cpp ODENetworkModel.cpp ODEReactionRule.cpp ODESimulator.cpp ODERatelaw.cpp)
 
 set(HPP_FILES
-	ODEWorld.hpp ODEFactory.hpp ODEReactionRule.hpp ODERatelaw.hpp ODENetworkModel.hpp ODESimulator.hpp ODEFactory.hpp ODESimulator_New.hpp ODEWorld_New.hpp)
+	ODEWorld.hpp ODEFactory.hpp ODESimulator.hpp)
+	# ODEWorld.hpp ODEFactory.hpp ODEReactionRule.hpp ODERatelaw.hpp ODENetworkModel.hpp ODESimulator.hpp ODEFactory.hpp)
 
 add_library(ecell4-ode SHARED ${CPP_FILES} ${HPP_FILES})
 target_link_libraries(ecell4-ode ecell4-core)

@@ -106,7 +106,7 @@ cdef class ReactionRuleDescriptorPyfunc:
         return <object>(self.thisptr.get().get())
 
 cdef ReactionRuleDescriptorPyfunc ReactionRuleDescriptorPyfunc_from_Cpp_ReactionRuleDescriptorPyfunc(shared_ptr[Cpp_ReactionRuleDescriptorPyfunc] rrd):
-    r = ReactionRuleDescriptorPyfunc(lambda x: x, "")  # dummy
+    r = ReactionRuleDescriptorPyfunc(lambda *args: 0.0, "")  # dummy
     r.thisptr.swap(rrd)
     return r
 
