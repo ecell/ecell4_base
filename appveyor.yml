@@ -2,7 +2,7 @@
 
 environment:
   global:
-    HDF_DIR: "C:/Program Files (x86)/HDF_Group/HDF5/1.8.17/lib"
+    HDF_DIR: "C:/Program Files (x86)/HDF_Group/HDF5/1.8.18/lib"
     BOOST_ROOT: C:\Libraries\boost_1_67_0
 
   matrix:
@@ -20,11 +20,11 @@ install:
   # install hdf5
   - mkdir hdf5lib
   - cd hdf5lib
-  - curl -LvkO https://anaconda.org/anaconda/hdf5/1.8.17/download/win-64/hdf5-1.8.17-vc14_0.tar.bz2
-  - 7z x -y hdf5-1.8.17-vc14_0.tar.bz2
-  - 7z x -y hdf5-1.8.17-vc14_0.tar
-  - mkdir "C:/Program Files (x86)/HDF_Group/HDF5/1.8.17"
-  - xcopy Library "C:/Program Files (x86)/HDF_Group/HDF5/1.8.17" /s /e /y
+  - curl -LvkO https://anaconda.org/anaconda/hdf5/1.8.18/download/win-64/hdf5-1.8.18-vc14h7a021fe_0.tar.bz2
+  - 7z x -y hdf5-1.8.18-vc14h7a021fe_0.tar.bz2
+  - 7z x -y hdf5-1.8.18-vc14h7a021fe_0.tar
+  - mkdir "C:/Program Files (x86)/HDF_Group/HDF5/1.8.18"
+  - xcopy Library "C:/Program Files (x86)/HDF_Group/HDF5/1.8.18" /s /e /y
   - cd ..
 
   # install gsl for build_ext
@@ -54,7 +54,7 @@ install:
   - ECHO "ls boost_1_67_0:"
   - ps: "ls \"C:/Libraries/boost_1_67_0\""
   - echo %CD%
-  - python setup.py build_ext -I"C:\Program Files (x86)\HDF_Group\HDF5\1.8.17\include";C:/Libraries/boost_1_67_0;c:/tools/vcpkg/installed/x64-windows/include -Lc:/tools/vcpkg/installed/x64-windows/lib;"C:\Program Files (x86)\HDF_Group\HDF5\1.8.17\lib"
+  - python setup.py build_ext -I"C:\Program Files (x86)\HDF_Group\HDF5\1.8.18\include";C:/Libraries/boost_1_67_0;c:/tools/vcpkg/installed/x64-windows/include -Lc:/tools/vcpkg/installed/x64-windows/lib;"C:\Program Files (x86)\HDF_Group\HDF5\1.8.18\lib"
   - "pip install wheel"
   - "python setup.py bdist_wheel -v"
   # - "pip install dist/ecell4-4.0.0b2-cp35-none-win32.whl"
