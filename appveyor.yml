@@ -6,29 +6,8 @@ environment:
     BOOST_ROOT: C:\Libraries\boost_1_67_0
 
   matrix:
-    - PYTHON: "C:\\Python27"
-      PYTHON_VERSION: "2.7.14"
-      PYTHON_ARCH: "32"
-
-    # - PYTHON: "C:\\Python27-x64"
-    #   PYTHON_VERSION: "2.7.12"
-    #   PYTHON_ARCH: "64"
-
-    - PYTHON: "C:\\Python35"
-      PYTHON_VERSION: "3.5.3"
-      PYTHON_ARCH: "32"
-
-    - PYTHON: "C:\\Python35-x64"
-      PYTHON_VERSION: "3.5.3"
-      PYTHON_ARCH: "64"
-
-    - PYTHON: "C:\\Python36"
-      PYTHON_VERSION: "3.6.4"
-      PYTHON_ARCH: "32"
-#      VCVARSALL: "x86"
-
     - PYTHON: "C:\\Python36-x64"
-      PYTHON_VERSION: "3.6.4"
+      PYTHON_VERSION: "3.6.5"
       PYTHON_ARCH: "64"
 #      VCVARSALL: "x64"
       
@@ -41,44 +20,25 @@ install:
   # install hdf5
   - mkdir hdf5lib
   - cd hdf5lib
-  - if "%PYTHON_VERSION%" == "2.7.14" if "%PYTHON_ARCH%" == "32" curl -LvkO https://anaconda.org/anaconda/hdf5/1.8.17/download/win-32/hdf5-1.8.17-vc9_0.tar.bz2
-  #- if "%PYTHON_VERSION%" == "2.7.12" if "%PYTHON_ARCH%" == "64" curl -LvkO https://anaconda.org/anaconda/hdf5/1.8.16/download/win-64/hdf5-1.8.16-vc9_0.tar.bz2
-  - if "%PYTHON_VERSION%" == "2.7.14" 7z x -y hdf5-1.8.17-vc9_0.tar.bz2
-  - if "%PYTHON_VERSION%" == "2.7.14" 7z x -y hdf5-1.8.17-vc9_0.tar
-  - if NOT "%PYTHON_VERSION%" == "2.7.14" if "%PYTHON_ARCH%" == "32" curl -LvkO https://anaconda.org/anaconda/hdf5/1.8.17/download/win-32/hdf5-1.8.17-vc14_0.tar.bz2
-  - if NOT "%PYTHON_VERSION%" == "2.7.14" if "%PYTHON_ARCH%" == "64" curl -LvkO https://anaconda.org/anaconda/hdf5/1.8.17/download/win-64/hdf5-1.8.17-vc14_0.tar.bz2
-  - if NOT "%PYTHON_VERSION%" == "2.7.14" 7z x -y hdf5-1.8.17-vc14_0.tar.bz2
-  - if NOT "%PYTHON_VERSION%" == "2.7.14" 7z x -y hdf5-1.8.17-vc14_0.tar
+  - curl -LvkO https://anaconda.org/anaconda/hdf5/1.8.17/download/win-64/hdf5-1.8.17-vc14_0.tar.bz2
+  - 7z x -y hdf5-1.8.17-vc14_0.tar.bz2
+  - 7z x -y hdf5-1.8.17-vc14_0.tar
   - mkdir "C:/Program Files (x86)/HDF_Group/HDF5/1.8.17"
   - xcopy Library "C:/Program Files (x86)/HDF_Group/HDF5/1.8.17" /s /e /y
   - cd ..
 
-  # install stdint
-  - if "%PYTHON_VERSION%" == "2.7.14" curl -O http://ftp.vector.co.jp/43/28/2114/stdint-20070624.zip
-  - if "%PYTHON_VERSION%" == "2.7.14" unzip stdint-20070624.zip
-
   # install gsl for build_ext
 
-  - if "%PYTHON_VERSION%" == "2.7.14" curl -O http://r2d3.geldreich.net/downloads/gsl-1.13-windows-binaries.zip
-  - if "%PYTHON_VERSION%" == "2.7.14" unzip gsl-1.13-windows-binaries.zip
-  # - if "%PYTHON_VERSION%" == "2.7.12" cmake -G "Visual Studio 9 2008" -D CMAKE_CXX_FLAGS_RELEASE="/MD" -D CMAKE_CXX_FLAGS_DEBUG="/MDd" -D CMAKE_C_FLAGS_RELEASE="/MD" -D CMAKE_C_FLAGS_DEBUG="/MDd" .
-  # - if "%PYTHON_VERSION%" == "2.7.12" msbuild GSL.sln /p:Configuration=Release /toolsversion:3.5
-
-  - if NOT "%PYTHON_VERSION%" == "2.7.14" git clone git://github.com/ampl/gsl.git
-  - if NOT "%PYTHON_VERSION%" == "2.7.14" cd gsl
-  - if NOT "%PYTHON_VERSION%" == "2.7.14" if "%PYTHON_ARCH%" == "32" cmake -G "Visual Studio 14 2015" -D CMAKE_CXX_FLAGS_RELEASE="/MD" -D CMAKE_CXX_FLAGS_DEBUG="/MDd" -D CMAKE_C_FLAGS_RELEASE="/MD" -D CMAKE_C_FLAGS_DEBUG="/MDd" .
-  - if NOT "%PYTHON_VERSION%" == "2.7.14" if "%PYTHON_ARCH%" == "64" cmake -G "Visual Studio 14 2015 Win64" -D CMAKE_CXX_FLAGS_RELEASE="/MD" -D CMAKE_CXX_FLAGS_DEBUG="/MDd" -D CMAKE_C_FLAGS_RELEASE="/MD" -D CMAKE_C_FLAGS_DEBUG="/MDd" .
-  - if NOT "%PYTHON_VERSION%" == "2.7.14" msbuild GSL.sln /p:Configuration=Release
-  - if NOT "%PYTHON_VERSION%" == "2.7.14" cd ..
+  - git clone git://github.com/ampl/gsl.git
+  - cd gsl
+  - if "%PYTHON_ARCH%" == "32" cmake -G "Visual Studio 14 2015" -D CMAKE_CXX_FLAGS_RELEASE="/MD" -D CMAKE_CXX_FLAGS_DEBUG="/MDd" -D CMAKE_C_FLAGS_RELEASE="/MD" -D CMAKE_C_FLAGS_DEBUG="/MDd" .
+  - if "%PYTHON_ARCH%" == "64" cmake -G "Visual Studio 14 2015 Win64" -D CMAKE_CXX_FLAGS_RELEASE="/MD" -D CMAKE_CXX_FLAGS_DEBUG="/MDd" -D CMAKE_C_FLAGS_RELEASE="/MD" -D CMAKE_C_FLAGS_DEBUG="/MDd" .
+  - msbuild GSL.sln /p:Configuration=Release
+  - cd ..
 
   # - msbuild GSL.sln /p:Configuration=Release /v:d
 
-  - if "%PYTHON_VERSION%" == "2.7.14" if "%PYTHON_ARCH%" == "32" cmake -G "Visual Studio 9 2008" -D CMAKE_CXX_FLAGS_RELEASE="/MT" -D CMAKE_CXX_FLAGS_DEBUG="/MTd" -DBOOST_REGEX_LIBRARIES=C:/Libraries/boost_1_67_0/libs -DBoost_INCLUDE_DIR=C:/Libraries/boost_1_67_0 -DGSL_INCLUDE_DIR=C:/projects/ecell4/gsl/include -DGSL_CBLAS_LIBRARIES=C:/projects/ecell4/gsl/lib -DGSL_LIBRARIES=C:/projects/ecell4/gsl/lib -DNO_SHARED:BOOL=1 -DNO_BESSEL_TABLE:BOOL=1 .
-  # - if "%PYTHON_VERSION%" == "2.7.12" if "%PYTHON_ARCH%" == "64" "C:\Users\appveyor\AppData\Local\Programs\Common\Microsoft\Visual C++ for Python\9.0\vcvarsall.bat" amd64
-  # - if "%PYTHON_VERSION%" == "2.7.12" if "%PYTHON_ARCH%" == "64" cmake -G "Visual Studio 9 2008 Win64" -D CMAKE_C_COMPILER="C:/Users/appveyor/AppData/Local/Programs/Common/Microsoft/Visual C++ for Python/9.0/VC/bin/amd64/cl.exe" -D CMAKE_CXX_COMPILER="C:/Users/appveyor/AppData/Local/Programs/Common/Microsoft/Visual C++ for Python/9.0/VC/bin/amd64/cl.exe" -D CMAKE_CXX_FLAGS_RELEASE="/MT" -D CMAKE_CXX_FLAGS_DEBUG="/MTd" -DBOOST_REGEX_LIBRARIES=C:/Libraries/boost_1_67_0/libs -DBoost_INCLUDE_DIR=C:/Libraries/boost_1_67_0 -DGSL_INCLUDE_DIR=C:/projects/ecell4/gsl/include -DGSL_CBLAS_LIBRARIES=C:/projects/ecell4/gsl/lib -DGSL_LIBRARIES=C:/projects/ecell4/gsl/lib -DNO_SHARED:BOOL=1 .
-  - if "%PYTHON_VERSION%" == "2.7.14" if "%PYTHON_ARCH%" == "64" cmake -G "Visual Studio 9 2008 Win64" -D CMAKE_CXX_FLAGS_RELEASE="/MT" -D CMAKE_CXX_FLAGS_DEBUG="/MTd" -DBOOST_REGEX_LIBRARIES=C:/Libraries/boost_1_67_0/libs -DBoost_INCLUDE_DIR=C:/Libraries/boost_1_67_0 -DGSL_INCLUDE_DIR=C:/projects/ecell4/gsl/include -DGSL_CBLAS_LIBRARIES=C:/projects/ecell4/gsl/lib -DGSL_LIBRARIES=C:/projects/ecell4/gsl/lib -DNO_SHARED:BOOL=1 -DNO_BESSEL_TABLE:BOOL=1 .
-  - if NOT "%PYTHON_VERSION%" == "2.7.14" if "%PYTHON_ARCH%" == "32" cmake -G "Visual Studio 14 2015" -D CMAKE_CXX_FLAGS_RELEASE="/MD" -D CMAKE_CXX_FLAGS_DEBUG="/MDd" -D CMAKE_C_FLAGS_DEBUG="/MDd" -DBoost_INCLUDE_DIR=C:/Libraries/boost_1_67_0 -DGSL_INCLUDE_DIR=C:/projects/ecell4/gsl -DGSL_CBLAS_LIBRARIES=C:/projects/ecell4/gsl/Release -DGSL_LIBRARIES=C:/projects/ecell4/gsl/Release -DNO_SHARED:BOOL=1 -DNO_BESSEL_TABLE:BOOL=1 .
-  - if NOT "%PYTHON_VERSION%" == "2.7.14" if "%PYTHON_ARCH%" == "64" cmake -G "Visual Studio 14 2015 Win64" -D CMAKE_CXX_FLAGS_RELEASE="/MD" -D CMAKE_CXX_FLAGS_DEBUG="/MDd" -D CMAKE_C_FLAGS_DEBUG="/MDd" -DBoost_INCLUDE_DIR=C:/Libraries/boost_1_67_0 -DGSL_INCLUDE_DIR=C:/projects/ecell4/gsl -DGSL_CBLAS_LIBRARIES=C:/projects/ecell4/gsl/Release -DGSL_LIBRARIES=C:/projects/ecell4/gsl/Release -DNO_SHARED:BOOL=1 -DNO_BESSEL_TABLE:BOOL=1 .
+  - cmake -G "Visual Studio 14 2015 Win64" -D CMAKE_CXX_FLAGS_RELEASE="/MD" -D CMAKE_CXX_FLAGS_DEBUG="/MDd" -D CMAKE_C_FLAGS_DEBUG="/MDd" -DBoost_INCLUDE_DIR=C:/Libraries/boost_1_67_0 -DGSL_INCLUDE_DIR=C:/projects/ecell4/gsl -DGSL_CBLAS_LIBRARIES=C:/projects/ecell4/gsl/Release -DGSL_LIBRARIES=C:/projects/ecell4/gsl/Release -DNO_SHARED:BOOL=1 -DNO_BESSEL_TABLE:BOOL=1 .
 
   # config.h
   - cd ecell4/core
@@ -94,15 +54,12 @@ install:
   # - curl -O https://bootstrap.pypa.io/get-pip.py
   # - "python get-pip.py"
   - "python -m pip install --upgrade pip"
-  - if "%PYTHON_VERSION%" == "2.7.14" python -m pip install cython
-  # - if "%PYTHON_VERSION%" == "3.5.2" python -m pip install https://pypi.python.org/packages/cp35/C/Cython/Cython-0.23.4-cp35-none-win32.whl
-  - if NOT "%PYTHON_VERSION%" == "2.7.14" python -m pip install Cython --install-option="--no-cython-compile"
+  - python -m pip install Cython --install-option="--no-cython-compile"
   - cd python
   - ECHO "ls boost_1_67_0:"
   - ps: "ls \"C:/Libraries/boost_1_67_0\""
   - echo %CD%
-  - if "%PYTHON_VERSION%" == "2.7.14" python setup.py build_ext -I"C:\Program Files (x86)\HDF_Group\HDF5\1.8.17\include";C:/Libraries/boost_1_67_0;C:/projects/ecell4;C:/projects/ecell4/stdint-20070624;C:/projects/ecell4/gsl/include -LC:/projects/ecell4/gsl/lib;"C:\Program Files (x86)\HDF_Group\HDF5\1.8.17\lib"
-  - if NOT "%PYTHON_VERSION%" == "2.7.14" python setup.py build_ext -I"C:\Program Files (x86)\HDF_Group\HDF5\1.8.17\include";C:/Libraries/boost_1_67_0;C:/projects/ecell4/gsl -LC:/projects/ecell4/gsl/Release;"C:\Program Files (x86)\HDF_Group\HDF5\1.8.17\lib"
+  - python setup.py build_ext -I"C:\Program Files (x86)\HDF_Group\HDF5\1.8.17\include";C:/Libraries/boost_1_67_0;C:/projects/ecell4/gsl -LC:/projects/ecell4/gsl/Release;"C:\Program Files (x86)\HDF_Group\HDF5\1.8.17\lib"
   - "pip install wheel"
   - "python setup.py bdist_wheel -v"
   # - "pip install dist/ecell4-4.0.0b2-cp35-none-win32.whl"
