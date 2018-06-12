@@ -175,7 +175,12 @@ void NetfreeModel::add_reaction_rule(const ReactionRule& rr)
 
 void NetfreeModel::remove_reaction_rule(const ReactionRule& rr)
 {
-    reaction_rules_.erase(std::remove(reaction_rules_.begin(), reaction_rules_.end(), rr), reaction_rules_.end());
+    reaction_rule_container_type::iterator i(std::remove(reaction_rules_.begin(), reaction_rules_.end(), rr));
+    if (i == reaction_rules_.end())
+    {
+        throw NotFound("The given reaction rule was not found.");
+    }
+    reaction_rules_.erase(i, reaction_rules_.end());
 }
 
 bool NetfreeModel::has_reaction_rule(const ReactionRule& rr) const

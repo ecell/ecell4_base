@@ -105,13 +105,24 @@ bool NetworkModel::has_species_attribute(const Species& sp) const
 
 void NetworkModel::add_reaction_rule(const ReactionRule& rr)
 {
-    const reaction_rule_container_type::size_type idx(reaction_rules_.size());
-    reaction_rules_.push_back(rr);
-
     if (rr.has_descriptor())
     {
+        reaction_rules_.push_back(rr);
         return;
     }
+
+    for (reaction_rule_container_type::iterator i(reaction_rules_.begin());
+        i != reaction_rules_.end(); ++i)
+    {
+        if ((*i) == rr && !(*i).has_descriptor())
+        {
+            (*i).set_k((*i).k() + rr.k());  // Merging
+            return;
+        }
+    }
+
+    const reaction_rule_container_type::size_type idx(reaction_rules_.size());
+    reaction_rules_.push_back(rr);
 
     if (rr.reactants().size() == 1)
     {
@@ -137,6 +148,7 @@ void NetworkModel::add_reaction_rule(const ReactionRule& rr)
 
 void NetworkModel::remove_reaction_rule(const ReactionRule& rr)
 {
+    reaction_rule_container_type::size_type removed = 0;
     while (true)
     {
         reaction_rule_container_type::iterator
@@ -146,6 +158,12 @@ void NetworkModel::remove_reaction_rule(const ReactionRule& rr)
             break;
         }
         remove_reaction_rule(i);
+        ++removed;
+    }
+
+    if (removed == 0)
+    {
+        throw NotFound("The given reaction rule was not found.");
     }
 }
 
