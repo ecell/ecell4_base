@@ -82,7 +82,7 @@ from ecell4 import *
 with reaction_rules():
     A + B == C | (0.01, 0.3)
 
-run_simulation(100, {'A': 60, 'B': 60})
+run_simulation(10, {'A': 60, 'B': 60})
 ```
 
 ![png](./readthedocs/images/output_7_0.png)
