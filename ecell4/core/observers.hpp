@@ -13,6 +13,8 @@
 #include <boost/format.hpp>
 #include <time.h>
 
+#include <Python.h>
+
 
 namespace ecell4
 {
@@ -164,25 +166,35 @@ protected:
 class FixedIntervalNumberHooker
     : public FixedIntervalObserver
 {
-    typedef FixedIntervalObserver base_type;
-    typedef PythonHook_Space::pyfunc_type pyfunc_type;
-    typedef PythonHook_Space::stepladder_type_space stepladder_type_space;
 public:
-    FixedIntervalNumberHooker(const Real &dt, stepladder_type_space stepladder, pyfunc_type pyfunc, boost::shared_ptr<PyObjectHandler> py_handler)
-        :base_type(dt), hooker_(stepladder, pyfunc, py_handler)
+
+    typedef FixedIntervalObserver base_type;
+
+    typedef PyObject* pyfunc_type;
+    typedef bool (*stepladder_func_type)(pyfunc_type, const boost::shared_ptr<Space>& space, bool check_reaction);
+
+public:
+
+    FixedIntervalNumberHooker(
+        const Real &dt, stepladder_func_type stepladder, pyfunc_type pyfunc)
+        : base_type(dt), stepladder_(stepladder), pyfunc_(pyfunc)
     {
-        ;
+        Py_INCREF(this->pyfunc_);
     }
+
     ~FixedIntervalNumberHooker()
     {
-        ;
+        Py_DECREF(this->pyfunc_);
     }
+
     virtual void initialize(const boost::shared_ptr<Space>& space);
     virtual bool fire(const Simulator* sim, const boost::shared_ptr<Space>& space);
     virtual void reset();
 
 protected:
-    PythonHook_Space hooker_;
+
+    stepladder_func_type stepladder_;
+    pyfunc_type pyfunc_;
 };
 
 class NumberObserver

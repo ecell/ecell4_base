@@ -27,26 +27,56 @@ cdef class Observer:
     def reset(self):
         """Reset the internal state."""
         self.thisptr.get().reset()
-    
 
-cdef bool indirect_func_space(
-        void *pyfunc, shared_ptr[Cpp_Space] sp, bool check_reaction):
-    sp_obj = Space_from_Cpp_Space(sp)
-    cdef bool ret = (<object>pyfunc)(sp_obj, check_reaction)
-    if ret == False:
-        return False
-    else:
-        return True
-
+cdef bool indirect_func_finh(
+        FixedIntervalNumberHooker_pyfunc_type pyfunc,
+        const shared_ptr[Cpp_Space]& space, bool check_reaction):
+    space_obj = Space_from_Cpp_Space(space)
+    cdef bool ret = (<object>pyfunc)(space_obj, check_reaction)
+    return ret
 
 cdef class FixedIntervalNumberHooker:
-    def __cinit__(self, Real dt,  pyfunc):
-        a = PyObjectHandler()
+    """An ``Observer``class to callback to some Python function with the fixed
+    step interval.
+    This ``Observer`` logs at the current time first, and then keeps logging
+    every after the interval.
+
+    FixedIntervalNumberHooker(dt, species)
+
+    """
+
+    def __cinit__(self, Real dt, pyfunc):
+        """Constructor.
+
+        Parameters
+        ----------
+        dt : float
+            A step interval for logging.
+        pyfunc : obj
+            A callback function, which is required to accept two arguments,
+            a Space and bool (whether a reaction happens or not).
+            The return value must be a bool. If True, a simulator continues
+            to run.
+
+        Examples
+        --------
+        >>> hook = lambda space, check_reaction: print(space.t())
+        >>> obs = FixedIntervalNumberHooker(1.0, hook)
+
+
+        """
+        pass  # XXX: Only used for doc string
+
+    def __cinit__(self, Real dt, pyfunc):
         self.thisptr = new shared_ptr[Cpp_FixedIntervalNumberHooker](
-                new Cpp_FixedIntervalNumberHooker(dt, 
-                    <stepladder_type_space>indirect_func_space, <void*>pyfunc, a.thisptr  ))
+            new Cpp_FixedIntervalNumberHooker(
+                dt,
+                <FixedIntervalNumberHooker_stepladder_type>indirect_func_finh,
+                <FixedIntervalNumberHooker_pyfunc_type>pyfunc))
+
     def __dealloc__(self):
         del self.thisptr
+
     def as_base(self):
         """Clone self as a base class. This function is for developers."""
         retval = Observer()
@@ -54,7 +84,6 @@ cdef class FixedIntervalNumberHooker:
         retval.thisptr = new shared_ptr[Cpp_Observer](
             <shared_ptr[Cpp_Observer]>deref(self.thisptr))
         return retval
-
 
 cdef class FixedIntervalNumberObserver:
     """An ``Observer``class to log the number of molecules with the fixed
