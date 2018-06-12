@@ -33,7 +33,7 @@ install:
 
   # - msbuild GSL.sln /p:Configuration=Release /v:d
 
-  - cmake -G "Visual Studio 14 2015 Win64" -D CMAKE_CXX_FLAGS_RELEASE="/MD" -D CMAKE_CXX_FLAGS_DEBUG="/MDd" -D CMAKE_C_FLAGS_DEBUG="/MDd" -DBoost_INCLUDE_DIR=C:/Libraries/boost_1_67_0 -DGSL_INCLUDE_DIR=c:/tools/vcpkg/installed/x64-windows/include/gsl -DGSL_CBLAS_LIBRARIES=c:/tools/vcpkg/installed/x64-windows/lib -DGSL_LIBRARIES=c:/tools/vcpkg/installed/x64-windows/lib -DNO_SHARED:BOOL=1 -DNO_BESSEL_TABLE:BOOL=1 .
+  - cmake -G "Visual Studio 14 2015 Win64" -D CMAKE_CXX_FLAGS_RELEASE="/MD" -D CMAKE_CXX_FLAGS_DEBUG="/MDd" -D CMAKE_C_FLAGS_DEBUG="/MDd" -DBoost_INCLUDE_DIR=C:/Libraries/boost_1_67_0 -DGSL_INCLUDE_DIR=c:/tools/vcpkg/installed/x64-windows/include -DGSL_CBLAS_LIBRARIES=c:/tools/vcpkg/installed/x64-windows/lib -DGSL_LIBRARIES=c:/tools/vcpkg/installed/x64-windows/lib -DNO_SHARED:BOOL=1 -DNO_BESSEL_TABLE:BOOL=1 .
 
   # config.h
   - cd ecell4/core
@@ -54,7 +54,7 @@ install:
   - ECHO "ls boost_1_67_0:"
   - ps: "ls \"C:/Libraries/boost_1_67_0\""
   - echo %CD%
-  - python setup.py build_ext -I"C:\Program Files (x86)\HDF_Group\HDF5\1.8.17\include";C:/Libraries/boost_1_67_0;c:/tools/vcpkg/installed/x64-windows/include/gsl  -Lc:/tools/vcpkg/installed/x64-windows/lib;"C:\Program Files (x86)\HDF_Group\HDF5\1.8.17\lib"
+  - python setup.py build_ext -I"C:\Program Files (x86)\HDF_Group\HDF5\1.8.17\include";C:/Libraries/boost_1_67_0;c:/tools/vcpkg/installed/x64-windows/include -Lc:/tools/vcpkg/installed/x64-windows/lib;"C:\Program Files (x86)\HDF_Group\HDF5\1.8.17\lib"
   - "pip install wheel"
   - "python setup.py bdist_wheel -v"
   # - "pip install dist/ecell4-4.0.0b2-cp35-none-win32.whl"
