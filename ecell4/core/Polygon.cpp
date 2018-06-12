@@ -492,6 +492,11 @@ Real Polygon::distance_sq(const std::pair<Real3, VertexID>& pos1,
 Real Polygon::distance_sq(const std::pair<Real3, VertexID>& pos1,
                           const std::pair<Real3, VertexID>& pos2) const
 {
+    if(pos1.second == pos2.second)
+    {
+        return 0.0;
+    }
+
     const std::vector<std::pair<EdgeID, Real> >& outs =
         this->vertex_at(pos1.second).outgoing_edges;
 
@@ -530,6 +535,11 @@ Real Polygon::distance_sq(const std::pair<Real3, VertexID>& pos1,
 Real Polygon::distance(const std::pair<Real3, VertexID>& pos1,
                        const std::pair<Real3, VertexID>& pos2) const
 {
+    if(pos1.second == pos2.second)
+    {
+        return 0.0;
+    }
+
     const std::vector<std::pair<EdgeID, Real> >& outs =
         this->vertex_at(pos1.second).outgoing_edges;
 
