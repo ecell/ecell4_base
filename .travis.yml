@@ -37,8 +37,8 @@ addons:
     - libboost-dev
     - libgsl0-dev
     - libhdf5-serial-dev
-    - python-setuptools
-    - python3-setuptools
+    # - python-setuptools
+    # - python3-setuptools
     - python-dev
     - python3-dev
     - python3
@@ -90,8 +90,9 @@ before_install:
 
 script:
 - set -ev
+- PYTHON_EXECUTABLE=`which python`
 - if [ "$TRAVIS_OS_NAME" == "linux" ]; then
-    bash -c 'cmake -DCMAKE_INSTALL_PREFIX=~/local . && make && make test && make install';
+    bash -c 'cmake -DCMAKE_INSTALL_PREFIX=~/local -DPYTHON_EXECUTABLE=${PYTHON_EXECUTABLE} . && make && make test && make install';
     rm CMakeCache.txt;
   fi
 - if [ "$TRAVIS_OS_NAME" == "osx" ]; then
