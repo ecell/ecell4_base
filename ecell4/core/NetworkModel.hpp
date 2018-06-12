@@ -125,6 +125,10 @@ public:
 
 protected:
 
+    void remove_reaction_rule(const reaction_rule_container_type::iterator i);
+
+protected:
+
     species_container_type species_attributes_;
     reaction_rule_container_type reaction_rules_;
 
