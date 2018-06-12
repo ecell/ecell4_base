@@ -17,7 +17,7 @@ jobs:
             GSLVER="2.4"
             BOOSTVER="1.67.0"
             BOOSTFILE="boost_1_67_0"
-            HDF5VER="1.8.17"            
+            HDF5VER="1.8.20"            
             PY27="cp27-cp27mu"
             PY35="cp35-cp35m"
             PY36="cp36-cp36m"
