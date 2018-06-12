@@ -6,9 +6,6 @@
 #include "Space.hpp"
 #include "Simulator.hpp"
 
-#include "pyhandler.hpp"
-#include "callback.hpp"
-
 #include <fstream>
 #include <boost/format.hpp>
 #include <time.h>
@@ -163,7 +160,7 @@ protected:
     NumberLogger logger_;
 };
 
-class FixedIntervalNumberHooker
+class FixedIntervalPythonHooker
     : public FixedIntervalObserver
 {
 public:
@@ -175,14 +172,14 @@ public:
 
 public:
 
-    FixedIntervalNumberHooker(
+    FixedIntervalPythonHooker(
         const Real &dt, stepladder_func_type stepladder, pyfunc_type pyfunc)
         : base_type(dt), stepladder_(stepladder), pyfunc_(pyfunc)
     {
         Py_INCREF(this->pyfunc_);
     }
 
-    ~FixedIntervalNumberHooker()
+    ~FixedIntervalPythonHooker()
     {
         Py_DECREF(this->pyfunc_);
     }

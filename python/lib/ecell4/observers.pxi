@@ -29,19 +29,19 @@ cdef class Observer:
         self.thisptr.get().reset()
 
 cdef bool indirect_func_finh(
-        FixedIntervalNumberHooker_pyfunc_type pyfunc,
+        FixedIntervalPythonHooker_pyfunc_type pyfunc,
         const shared_ptr[Cpp_Space]& space, bool check_reaction):
     space_obj = Space_from_Cpp_Space(space)
     cdef bool ret = (<object>pyfunc)(space_obj, check_reaction)
     return ret
 
-cdef class FixedIntervalNumberHooker:
+cdef class FixedIntervalPythonHooker:
     """An ``Observer``class to callback to some Python function with the fixed
     step interval.
     This ``Observer`` logs at the current time first, and then keeps logging
     every after the interval.
 
-    FixedIntervalNumberHooker(dt, species)
+    FixedIntervalPythonHooker(dt, species)
 
     """
 
@@ -61,18 +61,18 @@ cdef class FixedIntervalNumberHooker:
         Examples
         --------
         >>> hook = lambda space, check_reaction: print(space.t())
-        >>> obs = FixedIntervalNumberHooker(1.0, hook)
+        >>> obs = FixedIntervalPythonHooker(1.0, hook)
 
 
         """
         pass  # XXX: Only used for doc string
 
     def __cinit__(self, Real dt, pyfunc):
-        self.thisptr = new shared_ptr[Cpp_FixedIntervalNumberHooker](
-            new Cpp_FixedIntervalNumberHooker(
+        self.thisptr = new shared_ptr[Cpp_FixedIntervalPythonHooker](
+            new Cpp_FixedIntervalPythonHooker(
                 dt,
-                <FixedIntervalNumberHooker_stepladder_type>indirect_func_finh,
-                <FixedIntervalNumberHooker_pyfunc_type>pyfunc))
+                <FixedIntervalPythonHooker_stepladder_type>indirect_func_finh,
+                <FixedIntervalPythonHooker_pyfunc_type>pyfunc))
 
     def __dealloc__(self):
         del self.thisptr

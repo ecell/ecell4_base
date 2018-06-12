@@ -146,19 +146,19 @@ void FixedIntervalNumberObserver::reset()
     base_type::reset();
 }
 
-void FixedIntervalNumberHooker::initialize(const boost::shared_ptr<Space>& space)
+void FixedIntervalPythonHooker::initialize(const boost::shared_ptr<Space>& space)
 {
     base_type::initialize(space);
 }
 
-bool FixedIntervalNumberHooker::fire(const Simulator* sim, const boost::shared_ptr<Space>& space)
+bool FixedIntervalPythonHooker::fire(const Simulator* sim, const boost::shared_ptr<Space>& space)
 {
     const bool ret1 = this->stepladder_(this->pyfunc_, space, sim->check_reaction());
     const bool ret2 = base_type::fire(sim, space);
     return (ret1 & ret2);
 }
 
-void FixedIntervalNumberHooker::reset()
+void FixedIntervalPythonHooker::reset()
 {
     base_type::reset();
 }

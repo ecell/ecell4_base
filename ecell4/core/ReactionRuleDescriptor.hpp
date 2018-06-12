@@ -8,7 +8,6 @@
 
 #include "types.hpp"
 #include "Species.hpp"
-#include "pyhandler.hpp"
 
 #include "boost/tuple/tuple.hpp"
 #include "boost/tuple/tuple_io.hpp"

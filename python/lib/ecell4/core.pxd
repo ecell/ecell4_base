@@ -130,16 +130,6 @@ cdef class Species:
 
 cdef Species Species_from_Cpp_Species(Cpp_Species *sp)
 
-## Python object handler for C++ layer
-ctypedef void (*PyObjectHandler_single_argument_func_type)(void*)
-cdef extern from "ecell4/core/pyhandler.hpp" namespace "ecell4":
-    cdef cppclass Cpp_PyObjectHandler "ecell4::PyObjectHandler":
-        Cpp_PyObjectHandler(PyObjectHandler_single_argument_func_type, PyObjectHandler_single_argument_func_type)
-        bool is_available()
-
-cdef class PyObjectHandler:
-    cdef shared_ptr[Cpp_PyObjectHandler] thisptr
-
 # ctypedef void* ReactionRuleDescriptorPyfunc_pyfunc_type
 ctypedef PyObject* ReactionRuleDescriptorPyfunc_pyfunc_type
 ctypedef double (*ReactionRuleDescriptorPyfunc_stepladder_type)(ReactionRuleDescriptorPyfunc_pyfunc_type, const vector[Real]&, const vector[Real]&, Real, Real, const vector[Real]&, const vector[Real]&)
@@ -527,31 +517,8 @@ cdef class Voxel:
 
 cdef Voxel Voxel_from_Cpp_Voxel(Cpp_Voxel* p)
 
-# ## Callback Related
-# ctypedef void* pyfunc_type
-# ctypedef int (*stepladder_type)(pyfunc_type pyfunc, vector[Real])
-# 
-# cdef extern from "ecell4/core/callback.hpp" namespace "ecell4":
-#     cdef cppclass Cpp_CallbackWrapper "ecell4::CallbackWrapper":
-#         Cpp_CallbackWrapper(stepladder_type, pyfunc_type)
-#         bool is_available()
-#         void call()
-# 
-# ctypedef bool (*stepladder_type_space)(pyfunc_type pyfunc, shared_ptr[Cpp_Space], bool)
-# cdef extern from "ecell4/core/callback.hpp" namespace "ecell4":
-#     cdef cppclass PythonHook_Space:
-#         #PythonHook_1arg( "(*)(pyfunc_type, T1)" , pyfunc_type)
-#         PythonHook_Space( stepladder_type_space, pyfunc_type)
-#         bool is_available()
-#         bool call(shared_ptr[Cpp_Space] space, bool check_reaction )
-# 
-# cdef class PythonSpaceHooker:
-#     cdef PythonHook_Space* thisptr
-#     cdef object pyfunc_
-
-# ctypedef void* FixedIntervalNumberHooker_pyfunc_type
-ctypedef PyObject* FixedIntervalNumberHooker_pyfunc_type
-ctypedef bool (*FixedIntervalNumberHooker_stepladder_type)(FixedIntervalNumberHooker_pyfunc_type, const shared_ptr[Cpp_Space]& space, bool check_reaction)
+ctypedef PyObject* FixedIntervalPythonHooker_pyfunc_type
+ctypedef bool (*FixedIntervalPythonHooker_stepladder_type)(FixedIntervalPythonHooker_pyfunc_type, const shared_ptr[Cpp_Space]& space, bool check_reaction)
 
 ## Cpp_FixedIntervalNumberObserver
 #  ecell4::FixedIntervalNumberObserver
@@ -569,8 +536,8 @@ cdef extern from "ecell4/core/observers.hpp" namespace "ecell4":
         void reset()
         void save(string)
 
-    cdef cppclass Cpp_FixedIntervalNumberHooker "ecell4::FixedIntervalNumberHooker":
-        Cpp_FixedIntervalNumberHooker(Real, FixedIntervalNumberHooker_stepladder_type, FixedIntervalNumberHooker_pyfunc_type)
+    cdef cppclass Cpp_FixedIntervalPythonHooker "ecell4::FixedIntervalPythonHooker":
+        Cpp_FixedIntervalPythonHooker(Real, FixedIntervalPythonHooker_stepladder_type, FixedIntervalPythonHooker_pyfunc_type)
         Real next_time()
         Integer num_steps()
         void reset()
@@ -685,8 +652,8 @@ cdef class Observer:
 cdef class FixedIntervalNumberObserver:
     cdef shared_ptr[Cpp_FixedIntervalNumberObserver]* thisptr
 
-cdef class FixedIntervalNumberHooker:
-    cdef shared_ptr[Cpp_FixedIntervalNumberHooker]* thisptr
+cdef class FixedIntervalPythonHooker:
+    cdef shared_ptr[Cpp_FixedIntervalPythonHooker]* thisptr
 
 cdef class NumberObserver:
     cdef shared_ptr[Cpp_NumberObserver]* thisptr
@@ -951,33 +918,6 @@ cdef SphericalSurface SphericalSurface_from_Cpp_SphericalSurface(Cpp_SphericalSu
 cdef Cylinder Cylinder_from_Cpp_Cylinder(Cpp_Cylinder* p)
 cdef CylindricalSurface CylindricalSurface_from_Cpp_CylindricalSurface(Cpp_CylindricalSurface* p)
 cdef AABB AABB_from_Cpp_AABB(Cpp_AABB* p)
-
-#cdef class CallbackWrapper:
-#    cdef Cpp_CallbackWrapper* thisptr
-#    cdef object pyfunc_
-#
-#ctypedef bool (*stepladder_type_space)(pyfunc_type pyfunc, shared_ptr[Cpp_CompartmentSpaceVectorImpl])
-#cdef extern from "ecell4/core/callback.hpp" namespace "ecell4":
-#    cdef cppclass Cpp_PythonNumberHooker "ecell4::PythonNumberHooker":
-#        Cpp_PythonNumberHooker(stepladder_type_space, pyfunc_type)
-#        bool is_available()
-#        bool call(shared_ptr[Cpp_CompartmentSpaceVectorImpl])
-#
-#cdef class PythonNumberHooker:
-#    cdef Cpp_PythonNumberHooker* thisptr
-#    cdef object pyfunc_
-#
-#cdef extern from "ecell4/core/callback.hpp" namespace "ecell4":
-#    cdef cppclass PythonHook_1arg[T1]:
-#        #PythonHook_1arg( "(*)(pyfunc_type, T1)" , pyfunc_type)
-#        PythonHook_1arg( stepladder_type_space, pyfunc_type)
-#        bool is_available()
-#        bool call(T1)
-#
-#ctypedef bool (*stepladder_type_abstract_space)(pyfunc_type pyfunc, shared_ptr[Cpp_Space])
-#cdef class PythonSpaceHooker:
-#    cdef PythonHook_1arg[shared_ptr[Cpp_Space]]* thisptr
-#    cdef object pyfunc_
 
 cdef extern from "ecell4/core/BDMLWriter.hpp" namespace "ecell4":
     void Cpp_save_bd5 "save_bd5" (Cpp_Space&, string, int, string, string, string, bool, bool) except +
