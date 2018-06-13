@@ -1,9 +1,10 @@
 version: 2
 jobs:
+
   build:
     docker:
       - image: quay.io/pypa/manylinux1_x86_64
-      
+
     working_directory: ~/circle
     steps:
       - checkout
@@ -11,6 +12,11 @@ jobs:
       - run:
           name: Build E-Cell4
           command: |
+            sudo apt-get update
+            sudo apt-get install python-dev
+            sudo apt-get install python3-dev
+            ls -d /usr/include/python*
+            ls /opt/python/$PY36/include
             set -x
             ECELLVER="4.1.4"
             PY27="cp27-cp27mu"
