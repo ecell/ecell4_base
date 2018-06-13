@@ -94,11 +94,7 @@ script:
 - echo ${PYTHON_EXECUTABLE}
 - ls -d /usr/include/python*
 - if [ "$TRAVIS_OS_NAME" == "linux" ]; then
-    # bash -c 'cmake -DCMAKE_INSTALL_PREFIX=~/local -DPYTHON_INCLUDE_DIR:FILEPATH=/usr/include/python3.4 -DPYTHON_EXECUTABLE:FILEPATH=${PYTHON_EXECUTABLE} . && make && make test && make install';
-    cmake -DCMAKE_INSTALL_PREFIX=~/local -DPYTHON_INCLUDE_DIR:FILEPATH=/usr/include/python3.4 -DPYTHON_EXECUTABLE:FILEPATH=${PYTHON_EXECUTABLE} .;
-    make;
-    make test;
-    make install;
+    bash -c "cmake -DCMAKE_INSTALL_PREFIX=~/local -DPYTHON_INCLUDE_DIR:FILEPATH=/usr/include/python3.4 -DPYTHON_EXECUTABLE:FILEPATH=${PYTHON_EXECUTABLE} . && make && make test && make install";
     rm CMakeCache.txt;
   fi
 - if [ "$TRAVIS_OS_NAME" == "osx" ]; then
