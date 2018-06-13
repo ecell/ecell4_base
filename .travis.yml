@@ -91,6 +91,7 @@ before_install:
 script:
 - set -ev
 - PYTHON_EXECUTABLE=`which python`
+- ls -d /usr/include/python*
 - if [ "$TRAVIS_OS_NAME" == "linux" ]; then
     bash -c 'cmake -DCMAKE_INSTALL_PREFIX=~/local -DPYTHON_EXECUTABLE=${PYTHON_EXECUTABLE} . && make && make test && make install';
     rm CMakeCache.txt;
