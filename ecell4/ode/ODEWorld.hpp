@@ -4,6 +4,7 @@
 #include <ecell4/core/Species.hpp>
 #include <ecell4/core/Context.hpp>
 #include <ecell4/core/Real3.hpp>
+#include <ecell4/core/WorldInterface.hpp>
 #include <ecell4/core/Space.hpp>
 #include <ecell4/core/Model.hpp>
 #include <ecell4/core/NetworkModel.hpp>
@@ -46,7 +47,7 @@ struct ODEWorldHDF5Traits
 #endif
 
 class ODEWorld
-    : public Space
+    : public WorldInterface
 {
 protected:
 
@@ -127,8 +128,6 @@ public:
         edge_lengths_ = Real3(L, L, L);
     }
 
-    // CompartmentSpaceTraits
-
     Integer num_molecules(const Species& sp) const
     {
         return static_cast<Integer>(get_value(sp));
@@ -143,8 +142,6 @@ public:
     {
         return species_;
     }
-
-    // CompartmentSpace member functions
 
     void add_molecules(const Species& sp, const Real& num)
     {
@@ -168,8 +165,6 @@ public:
 
         num_molecules_[(*i).second] -= num;
     }
-
-    // Optional members
 
     Real get_value(const Species& sp) const
     {

@@ -30,9 +30,9 @@ cdef class Observer:
 
 cdef bool indirect_func_finh(
         FixedIntervalPythonHooker_pyfunc_type pyfunc,
-        const shared_ptr[Cpp_Space]& space, bool check_reaction):
-    space_obj = Space_from_Cpp_Space(space)
-    cdef bool ret = (<object>pyfunc)(space_obj, check_reaction)
+        const shared_ptr[Cpp_WorldInterface]& world, bool check_reaction):
+    world_obj = WorldInterface_from_Cpp_WorldInterface(world)
+    cdef bool ret = (<object>pyfunc)(world_obj, check_reaction)
     return ret
 
 cdef class FixedIntervalPythonHooker:
@@ -54,13 +54,13 @@ cdef class FixedIntervalPythonHooker:
             A step interval for logging.
         pyfunc : obj
             A callback function, which is required to accept two arguments,
-            a Space and bool (whether a reaction happens or not).
+            a WorldInterface and bool (whether a reaction happens or not).
             The return value must be a bool. If True, a simulator continues
             to run.
 
         Examples
         --------
-        >>> hook = lambda space, check_reaction: print(space.t())
+        >>> hook = lambda world, check_reaction: print(world.t())
         >>> obs = FixedIntervalPythonHooker(1.0, hook)
 
 
@@ -507,8 +507,8 @@ cdef class FixedIntervalCSVObserver:
 
         Parameters
         ----------
-        w : Space
-            A ``Space`` (``World``) to be logged.
+        w : WorldInterface
+            A ``WorldInterface`` (``World``) to be logged.
 
         Examples
         --------
@@ -525,9 +525,9 @@ cdef class FixedIntervalCSVObserver:
         0.38375339303603129,0.37527767497325676,0.23999999999999999,0.0050000000000000001,0
         0.25311394008759508,0.05484827557301445,0.495,0.0050000000000000001,0
         """
-        cdef Space space = w.as_base()
-        # self.thisptr.get().log(space.thisptr.get())
-        self.thisptr.get().log(deref(space.thisptr))
+        cdef WorldInterface world = w.as_base()
+        # self.thisptr.get().log(world.thisptr.get())
+        self.thisptr.get().log(deref(world.thisptr))
 
     def filename(self):
         """Return a file name to be saved at the next time"""
@@ -619,8 +619,8 @@ cdef class CSVObserver:
 
         Parameters
         ----------
-        w : Space
-            A ``Space`` (``World``) to be logged.
+        w : WorldInterface
+            A ``WorldInterface`` (``World``) to be logged.
 
         Examples
         --------
@@ -637,9 +637,9 @@ cdef class CSVObserver:
         0.38375339303603129,0.37527767497325676,0.23999999999999999,0.0050000000000000001,0
         0.25311394008759508,0.05484827557301445,0.495,0.0050000000000000001,0
         """
-        cdef Space space = w.as_base()
-        # self.thisptr.get().log(space.thisptr.get())
-        self.thisptr.get().log(deref(space.thisptr))
+        cdef WorldInterface world = w.as_base()
+        # self.thisptr.get().log(world.thisptr.get())
+        self.thisptr.get().log(deref(world.thisptr))
 
     def filename(self):
         """Return a file name to be saved at the next time"""

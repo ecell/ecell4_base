@@ -1,7 +1,7 @@
-cdef class Space:
+cdef class WorldInterface:
     """An abstract base class of all worlds. This is for developers.
 
-    Space()
+    WorldInterface()
 
     """
 
@@ -10,8 +10,8 @@ cdef class Space:
         pass
 
     def __cinit__(self):
-        self.thisptr = new shared_ptr[Cpp_Space](
-            <Cpp_Space*>(new Cpp_CompartmentSpaceVectorImpl(
+        self.thisptr = new shared_ptr[Cpp_WorldInterface](
+            <Cpp_WorldInterface*>(new Cpp_CompartmentSpaceVectorImpl(
                 Cpp_Real3(1, 1, 1)))) #XXX: DUMMY
 
     def __dealloc__(self):
@@ -19,7 +19,7 @@ cdef class Space:
 
     def volume(self):
         return self.thisptr.get().volume()
-    
+
     def t(self):
         return self.thisptr.get().t()
 
@@ -27,7 +27,7 @@ cdef class Space:
         return self.thisptr.get().num_molecules(deref(sp.thisptr))
 
 
-cdef Space Space_from_Cpp_Space(shared_ptr[Cpp_Space] space):
-    r = Space()
-    r.thisptr.swap(space)
+cdef WorldInterface WorldInterface_from_Cpp_WorldInterface(shared_ptr[Cpp_WorldInterface] world):
+    r = WorldInterface()
+    r.thisptr.swap(world)
     return r

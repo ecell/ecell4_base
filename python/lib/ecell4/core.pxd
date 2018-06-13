@@ -227,19 +227,19 @@ cdef class ReactionRule:
 
 cdef ReactionRule ReactionRule_from_Cpp_ReactionRule(Cpp_ReactionRule *rr)
 
-## Cpp_Space
-#  ecell4::Space
-cdef extern from "ecell4/core/Space.hpp" namespace "ecell4":
-    cdef cppclass Cpp_Space "ecell4::Space":
+## Cpp_WorldInterface
+#  ecell4::WorldInterface
+cdef extern from "ecell4/core/WorldInterface.hpp" namespace "ecell4":
+    cdef cppclass Cpp_WorldInterface "ecell4::WorldInterface":
         Real volume()
         Real get_value(Cpp_Species &sp)
         Real t()
         Integer num_molecules(Cpp_Species &sp)
 
-## Space
-#  a python wrapper for Cpp_Space
-cdef class Space:
-    cdef shared_ptr[Cpp_Space]* thisptr
+## WorldInterface
+#  a python wrapper for Cpp_WorldInterface
+cdef class WorldInterface:
+    cdef shared_ptr[Cpp_WorldInterface]* thisptr
 
 ## Cpp_CompartmentSpaceVectorImpl
 #  ecell4::CompartmentSpaceVectorImpl
@@ -518,7 +518,7 @@ cdef class Voxel:
 cdef Voxel Voxel_from_Cpp_Voxel(Cpp_Voxel* p)
 
 ctypedef PyObject* FixedIntervalPythonHooker_pyfunc_type
-ctypedef bool (*FixedIntervalPythonHooker_stepladder_type)(FixedIntervalPythonHooker_pyfunc_type, const shared_ptr[Cpp_Space]& space, bool check_reaction)
+ctypedef bool (*FixedIntervalPythonHooker_stepladder_type)(FixedIntervalPythonHooker_pyfunc_type, const shared_ptr[Cpp_WorldInterface]& space, bool check_reaction)
 
 ## Cpp_FixedIntervalNumberObserver
 #  ecell4::FixedIntervalNumberObserver
@@ -566,8 +566,8 @@ cdef extern from "ecell4/core/observers.hpp" namespace "ecell4":
         Real next_time()
         Integer num_steps()
         string filename()
-        # void log(Cpp_Space*)
-        void log(shared_ptr[Cpp_Space]&)
+        # void log(Cpp_WorldInterface*)
+        void log(shared_ptr[Cpp_WorldInterface]&)
         void reset()
         void set_header(string&)
         void set_formatter(string&)
@@ -578,8 +578,8 @@ cdef extern from "ecell4/core/observers.hpp" namespace "ecell4":
         Real next_time()
         Integer num_steps()
         string filename()
-        # void log(Cpp_Space*)
-        void log(shared_ptr[Cpp_Space]&)
+        # void log(Cpp_WorldInterface*)
+        void log(shared_ptr[Cpp_WorldInterface]&)
         void reset()
         void set_header(string&)
         void set_formatter(string&)
@@ -920,4 +920,4 @@ cdef CylindricalSurface CylindricalSurface_from_Cpp_CylindricalSurface(Cpp_Cylin
 cdef AABB AABB_from_Cpp_AABB(Cpp_AABB* p)
 
 cdef extern from "ecell4/core/BDMLWriter.hpp" namespace "ecell4":
-    void Cpp_save_bd5 "save_bd5" (Cpp_Space&, string, int, string, string, string, bool, bool) except +
+    void Cpp_save_bd5 "save_bd5" (Cpp_WorldInterface&, string, int, string, string, string, bool, bool) except +
