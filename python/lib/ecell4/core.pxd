@@ -231,10 +231,27 @@ cdef ReactionRule ReactionRule_from_Cpp_ReactionRule(Cpp_ReactionRule *rr)
 #  ecell4::WorldInterface
 cdef extern from "ecell4/core/WorldInterface.hpp" namespace "ecell4":
     cdef cppclass Cpp_WorldInterface "ecell4::WorldInterface":
-        Real volume()
-        Real get_value(Cpp_Species &sp)
         Real t()
-        Integer num_molecules(Cpp_Species &sp)
+        void set_t(Real&)
+        void save(string&)
+        void load(string&)
+        Real volume()
+        # Integer num_species()
+        bool has_species(Cpp_Species&)
+        Integer num_molecules(Cpp_Species&)
+        Integer num_molecules_exact(Cpp_Species&)
+        Real get_value(Cpp_Species &sp)
+        Real get_value_exact(Cpp_Species &sp)
+        Cpp_Real3 edge_lengths()
+        Cpp_Real3 actual_lengths()
+        Integer num_particles()
+        Integer num_particles(Cpp_Species&)
+        Integer num_particles_exact(Cpp_Species&)
+        bool has_particle(Cpp_ParticleID&)
+        pair[Cpp_ParticleID, Cpp_Particle] get_particle(Cpp_ParticleID&)
+        vector[pair[Cpp_ParticleID, Cpp_Particle]] list_particles()
+        vector[pair[Cpp_ParticleID, Cpp_Particle]] list_particles(Cpp_Species&)
+        vector[pair[Cpp_ParticleID, Cpp_Particle]] list_particles_exact(Cpp_Species&)
 
 ## WorldInterface
 #  a python wrapper for Cpp_WorldInterface

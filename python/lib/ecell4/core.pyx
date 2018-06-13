@@ -10,7 +10,7 @@ include "RandomNumberGenerator.pxi"
 include "UnitSpecies.pxi"
 include "Species.pxi"
 include "ReactionRule.pxi"
-include "Space.pxi"
+include "WorldInterface.pxi"
 include "CompartmentSpace.pxi"  #XXX
 include "ParticleSpace.pxi"  #XXX
 include "Model.pxi"
