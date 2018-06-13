@@ -12,6 +12,8 @@
 #include "types.hpp"
 #include "Species.hpp"
 
+#include "Space.hpp"  // just for Space::space_kind
+
 
 namespace ecell4
 {

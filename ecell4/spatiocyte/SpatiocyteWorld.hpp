@@ -154,10 +154,10 @@ public:
         return root_->volume();
     }
 
-    Integer num_species() const
-    {
-        return root_->num_species();
-    }
+    // Integer num_species() const
+    // {
+    //     return root_->num_species();
+    // }
 
     bool has_species(const Species &sp) const
     {
