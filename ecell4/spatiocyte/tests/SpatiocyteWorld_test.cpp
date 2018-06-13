@@ -47,7 +47,7 @@ BOOST_AUTO_TEST_CASE(SpatiocyteWorld_test_num_species)
     const Real3 edge_lengths(1e-6, 1e-6, 1e-6);
     const Real voxel_radius(DEFAULT_VOXEL_RADIUS);
     SpatiocyteWorld world(edge_lengths, voxel_radius, rng);
-    BOOST_CHECK_EQUAL(world.num_species(), 0);
+    BOOST_CHECK_EQUAL(world.list_species().size(), 0);
 }
 
 BOOST_AUTO_TEST_CASE(SpatiocyteWorld_test_has_species)
