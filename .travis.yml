@@ -99,15 +99,17 @@ script:
 - ls -d /usr/include/python*
 - if [ "$TRAVIS_OS_NAME" == "linux" ]; then
     if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then
-      export PYTHON_INCLUDE_DIR=/usr/include/python2.7;
+      export PYTHON_LIBRARY=/opt/python/2.7.14/lib;
+      export PYTHON_INCLUDE_DIR=/opt/python/2.7.14/include/python2.7;
     fi;
     if [[ $TRAVIS_PYTHON_VERSION == 3* ]]; then
-      export PYTHON_INCLUDE_DIR=/usr/include/python3.4;
+      export PYTHON_LIBRARY=/opt/python/3.5.5/lib;
+      export PYTHON_INCLUDE_DIR=/opt/python/3.5.5/include/python3.5m;
     fi;
     echo ${PYTHON_INCLUDE_DIR};
   fi
 - if [ "$TRAVIS_OS_NAME" == "linux" ]; then
-    bash -c "cmake -DCMAKE_INSTALL_PREFIX=~/local -DPYTHON_INCLUDE_DIR:FILEPATH=${PYTHON_INCLUDE_DIR} -DPYTHON_EXECUTABLE:FILEPATH=${PYTHON_EXECUTABLE} . && make && make test && make install";
+    bash -c "cmake -DCMAKE_INSTALL_PREFIX=~/local -DPYTHON_LIBRARY:FILEPATH=${PYTHON_LIBRARY} -DPYTHON_INCLUDE_DIR:FILEPATH=${PYTHON_INCLUDE_DIR} -DPYTHON_EXECUTABLE:FILEPATH=${PYTHON_EXECUTABLE} . && make && make test && make install";
     rm CMakeCache.txt;
   fi
 - if [ "$TRAVIS_OS_NAME" == "osx" ]; then
