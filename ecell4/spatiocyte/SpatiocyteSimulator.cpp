@@ -198,7 +198,7 @@ void SpatiocyteSimulator::step_()
                 product((*itr).second.products().begin());
                 product != (*itr).second.products().end(); ++product)
         {
-            const Species& species((*product).second.species());
+            const Species& species((*product).species);
             // if (!world_->has_species(species))
             if (std::find(species_list_.begin(), species_list_.end(), species) == species_list_.end())  //XXX:FIXME: Messy patch
                 new_species.push_back(species);
