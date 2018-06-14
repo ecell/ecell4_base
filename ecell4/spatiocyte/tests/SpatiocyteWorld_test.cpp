@@ -167,7 +167,10 @@ BOOST_AUTO_TEST_CASE(SpatiocyteWorld_test_neighbor)
     Species sp(std::string("TEST"));
     sp.set_attribute("radius", "2.5e-9");
     sp.set_attribute("D", "1e-12");
-    const Integer n(world.add_neighbors(sp, voxel.coordinate));
+    for (Integer i(0); i < voxel.num_neighbors(); ++i)
+    {
+        world.new_voxel(sp, voxel.get_neighbor(i));
+    }
     std::vector<std::pair<ParticleID, Particle> > particles(world.list_particles());
     for (std::vector<std::pair<ParticleID, Particle> >::iterator itr(
                 particles.begin()); itr != particles.end(); ++itr)

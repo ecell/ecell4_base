@@ -275,26 +275,6 @@ SpatiocyteWorld::is_surface_voxel(
     return false;
 }
 
-// TODO
-Integer SpatiocyteWorld::add_neighbors(const Species& sp,
-    const SpatiocyteWorld::coordinate_type center)
-{
-    Integer count(0);
-    const SpatiocyteWorld::molecule_info_type info(get_molecule_info(sp));
-    for (Integer i(0); i < 12; ++i)
-    {
-        if (new_voxel(sp, coordinate2voxel(center).get_neighbor(i)))
-        {
-            ++count;
-        }
-        else
-        {
-            throw "Error in add_neighbors()";
-        }
-    }
-    return count;
-}
-
 void SpatiocyteWorld::remove_molecules(const Species& sp, const Integer& num)
 {
     if (num < 0)

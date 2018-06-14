@@ -788,7 +788,6 @@ public:
     bool add_molecules(const Species& sp, const Integer& num);
     bool add_molecules(const Species& sp, const Integer& num, const boost::shared_ptr<const Shape> shape);
     Integer add_structure(const Species& sp, const boost::shared_ptr<const Shape> shape);
-    Integer add_neighbors(const Species& sp, const coordinate_type center); // TODO
 
     void remove_molecules(const Species& sp, const Integer& num);
     // void remove_molecules_exact(const Species& sp, const Integer& num);
