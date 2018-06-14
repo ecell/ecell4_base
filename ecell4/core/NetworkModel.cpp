@@ -7,6 +7,32 @@
 namespace ecell4
 {
 
+Species NetworkModel::apply_species_attributes(const Species& sp) const
+{
+    typedef std::vector<std::pair<std::string, Species::attribute_type> >
+        attribute_container_type;
+
+    Species ret(sp);
+    for (species_container_type::const_iterator
+        i(species_attributes_.begin()); i != species_attributes_.end(); ++i)
+    {
+        const Species& pttrn = (*i);
+        if (pttrn.serial() == "_" || sp == pttrn)
+        {
+            const attribute_container_type attrs = pttrn.list_attributes();
+            for (attribute_container_type::const_iterator j(attrs.begin());
+                j != attrs.end(); ++j)
+            {
+                if (!ret.has_attribute((*j).first))
+                {
+                    ret.set_attribute((*j).first, (*j).second);
+                }
+            }
+        }
+    }
+    return ret;
+}
+
 std::vector<ReactionRule> NetworkModel::query_reaction_rules(
     const Species& sp) const
 {
@@ -76,24 +102,23 @@ std::vector<ReactionRule> NetworkModel::apply(
 
 void NetworkModel::add_species_attribute(const Species& sp)
 {
-    if (has_species_attribute(sp))
-    {
-        throw AlreadyExists("species already exists");
-    }
+    // if (has_species_attribute(sp))
+    // {
+    //     throw AlreadyExists("species already exists");
+    // }
     species_attributes_.push_back(sp);
 }
 
 void NetworkModel::remove_species_attribute(const Species& sp)
 {
-    species_container_type::iterator i(
-        std::find(species_attributes_.begin(), species_attributes_.end(), sp));
+    species_container_type::iterator i(std::remove(species_attributes_.begin(), species_attributes_.end(), sp));
     if (i == species_attributes_.end())
     {
         std::ostringstream message;
-        message << "Speices [" << sp.serial() << "] not found";
+        message << "The given Speices [" << sp.serial() << "] was not found";
         throw NotFound(message.str()); // use boost::format if it's allowed
     }
-    species_attributes_.erase(i);
+    species_attributes_.erase(i, species_attributes_.end());
 }
 
 bool NetworkModel::has_species_attribute(const Species& sp) const

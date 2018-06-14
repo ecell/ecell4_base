@@ -63,20 +63,7 @@ public:
         const ReactionRule& rr,
         const ReactionRule::reactant_container_type& reactants) const;
 
-    Species apply_species_attributes(const Species& sp) const
-    {
-        for (species_container_type::const_iterator
-            i(species_attributes_.begin()); i != species_attributes_.end(); ++i)
-        {
-            if (sp == *i)
-            {
-                Species retval(sp);
-                retval.set_attributes(*i);
-                return retval;
-            }
-        }
-        return sp;
-    }
+    Species apply_species_attributes(const Species& sp) const;
 
     boost::shared_ptr<Model> expand(
         const std::vector<Species>& sp, const Integer max_itr,
