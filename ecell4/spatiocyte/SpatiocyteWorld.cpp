@@ -40,7 +40,7 @@ void SpatiocyteWorld::add_space(VoxelSpaceBase *space)
             neighbors_.extend(*jtr, neighbors);
     }
 
-    spaces_.push_back(space_type(space, size_));
+    spaces_.push_back(space_type(space));
 
     size_ += space->size();
 }
@@ -199,7 +199,7 @@ Integer SpatiocyteWorld::add_structure(
     const Species& sp, const boost::shared_ptr<const Shape> shape)
 {
     const SpatiocyteWorld::molecule_info_type info(get_molecule_info(sp));
-    spaces_.at(0).make_structure_type(sp, shape->dimension(), info.loc);
+    get_root()->make_structure_type(sp, shape->dimension(), info.loc);
 
     switch (shape->dimension())
     {

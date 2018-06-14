@@ -16,7 +16,6 @@
 #include <ecell4/core/Shape.hpp>
 #include <ecell4/core/extras.hpp>
 
-#include "OffsetSpace.hpp"
 #include "OneToManyMap.hpp"
 #include "Voxel.hpp"
 #include "SpatiocyteReactions.hpp"
@@ -46,7 +45,7 @@ public:
     typedef VoxelSpaceBase::coordinate_id_pair_type coordinate_id_pair_type;
     typedef VoxelSpaceBase::coordinate_type coordinate_type;
 
-    typedef OffsetSpace<VoxelSpaceBase> space_type;
+    typedef boost::shared_ptr<VoxelSpaceBase> space_type;
     typedef std::vector<space_type> space_container_type;
 
 public:
@@ -58,13 +57,13 @@ public:
         const boost::shared_ptr<RandomNumberGenerator>& rng)
         : rng_(rng)
     {
-        spaces_.push_back(space_type(new default_root_type(edge_lengths, voxel_radius), 0));
+        spaces_.push_back(space_type(new default_root_type(edge_lengths, voxel_radius)));
         size_ = get_root()->size();
     }
 
     SpatiocyteWorld(const Real3& edge_lengths, const Real& voxel_radius)
     {
-        spaces_.push_back(space_type(new default_root_type(edge_lengths, voxel_radius), 0));
+        spaces_.push_back(space_type(new default_root_type(edge_lengths, voxel_radius)));
         rng_ = boost::shared_ptr<RandomNumberGenerator>(
             new GSLRandomNumberGenerator());
         (*rng_).seed();
@@ -74,8 +73,7 @@ public:
     SpatiocyteWorld(const Real3& edge_lengths = Real3(1, 1, 1))
     {
         // XXX: sloppy default
-        spaces_.push_back(
-                space_type(new default_root_type(edge_lengths, edge_lengths[0] / 100), 0));
+        spaces_.push_back(space_type(new default_root_type(edge_lengths, edge_lengths[0] / 100)));
         size_ = get_root()->size();
         rng_ = boost::shared_ptr<RandomNumberGenerator>(new GSLRandomNumberGenerator());
         (*rng_).seed();
@@ -84,7 +82,7 @@ public:
     SpatiocyteWorld(const std::string filename)
     {
         // XXX: sloppy default
-        spaces_.push_back(space_type(new default_root_type(Real3(1, 1, 1), 1 / 100), 0));
+        spaces_.push_back(space_type(new default_root_type(Real3(1, 1, 1), 1 / 100)));
         rng_ = boost::shared_ptr<RandomNumberGenerator>(
             new GSLRandomNumberGenerator());
         this->load(filename);
@@ -93,7 +91,7 @@ public:
     SpatiocyteWorld(VoxelSpaceBase* space, const boost::shared_ptr<RandomNumberGenerator>& rng)
         : rng_(rng)
     {
-        spaces_.push_back(space_type(space, 0));
+        spaces_.push_back(space_type(space));
         size_ = get_root()->size();
     }
 
@@ -109,7 +107,7 @@ public:
         for (space_container_type::const_iterator itr(spaces_.begin());
              itr != spaces_.end(); ++itr)
         {
-            time = std::max(time, itr->t());
+            time = std::max(time, (*itr)->t());
         }
 
         return time;
@@ -120,7 +118,7 @@ public:
         for (space_container_type::iterator itr(spaces_.begin());
              itr != spaces_.end(); ++itr)
         {
-            itr->set_t(t);
+            (*itr)->set_t(t);
         }
     }
 
@@ -163,7 +161,7 @@ public:
         }
 
         const H5::Group group(fin->openGroup("LatticeSpace"));
-        get_root_mut()->load_hdf5(group); // TODO
+        get_root()->load_hdf5(group); // TODO
         sidgen_.load(*fin);
         rng_->load(*fin);
 #else
@@ -186,7 +184,7 @@ public:
         for (space_container_type::const_iterator itr(spaces_.begin());
              itr != spaces_.end(); ++itr)
         {
-            total += itr->num_species();
+            total += (*itr)->num_species();
         }
         return total;
     }
@@ -196,7 +194,7 @@ public:
         for (space_container_type::const_iterator itr(spaces_.begin());
              itr != spaces_.end(); ++itr)
         {
-            if (itr->has_species(sp))
+            if ((*itr)->has_species(sp))
                 return true;
         }
         return false;
@@ -208,7 +206,7 @@ public:
         for (space_container_type::const_iterator itr(spaces_.begin());
              itr != spaces_.end(); ++itr)
         {
-            total += itr->num_molecules(sp);
+            total += (*itr)->num_molecules(sp);
         }
         return total;
     }
@@ -219,7 +217,7 @@ public:
         for (space_container_type::const_iterator itr(spaces_.begin());
              itr != spaces_.end(); ++itr)
         {
-            total += itr->num_molecules_exact(sp);
+            total += (*itr)->num_molecules_exact(sp);
         }
         return total;
     }
@@ -230,7 +228,7 @@ public:
         for (space_container_type::const_iterator itr(spaces_.begin());
              itr != spaces_.end(); ++itr)
         {
-            value += itr->get_value(sp);
+            value += (*itr)->get_value(sp);
         }
         return value;
     }
@@ -241,7 +239,7 @@ public:
         for (space_container_type::const_iterator itr(spaces_.begin());
              itr != spaces_.end(); ++itr)
         {
-            value += itr->get_value_exact(sp);
+            value += (*itr)->get_value_exact(sp);
         }
         return value;
     }
@@ -265,7 +263,7 @@ public:
         for (space_container_type::const_iterator itr(spaces_.begin());
              itr != spaces_.end(); ++itr)
         {
-            total += itr->num_particles();
+            total += (*itr)->num_particles();
         }
         return total;
     }
@@ -276,7 +274,7 @@ public:
         for (space_container_type::const_iterator itr(spaces_.begin());
              itr != spaces_.end(); ++itr)
         {
-            total += itr->num_particles(sp);
+            total += (*itr)->num_particles(sp);
         }
         return total;
     }
@@ -287,7 +285,7 @@ public:
         for (space_container_type::const_iterator itr(spaces_.begin());
              itr != spaces_.end(); ++itr)
         {
-            total += itr->num_particles_exact(sp);
+            total += (*itr)->num_particles_exact(sp);
         }
         return total;
     }
@@ -297,7 +295,7 @@ public:
         for (space_container_type::const_iterator itr(spaces_.begin());
              itr != spaces_.end(); ++itr)
         {
-            if (itr->has_particle(pid))
+            if ((*itr)->has_particle(pid))
                 return true;
         }
         return false;
@@ -309,8 +307,8 @@ public:
         for (space_container_type::const_iterator itr(spaces_.begin());
              itr != spaces_.end(); ++itr)
         {
-            if (itr->has_particle(pid))
-                return itr->get_particle(pid);
+            if ((*itr)->has_particle(pid))
+                return (*itr)->get_particle(pid);
         }
         throw "No particle corresponding to a given ParticleID is found.";
     }
@@ -321,7 +319,7 @@ public:
         for (space_container_type::const_iterator itr(spaces_.begin());
              itr != spaces_.end(); ++itr)
         {
-            std::vector<std::pair<ParticleID, Particle> > particles(itr->list_particles());
+            std::vector<std::pair<ParticleID, Particle> > particles((*itr)->list_particles());
             list.insert(list.end(), particles.begin(), particles.end());
         }
         return list;
@@ -333,7 +331,7 @@ public:
         for (space_container_type::const_iterator itr(spaces_.begin());
              itr != spaces_.end(); ++itr)
         {
-            std::vector<std::pair<ParticleID, Particle> > particles(itr->list_particles(sp));
+            std::vector<std::pair<ParticleID, Particle> > particles((*itr)->list_particles(sp));
             list.insert(list.end(), particles.begin(), particles.end());
         }
 
@@ -346,7 +344,8 @@ public:
         for (space_container_type::const_iterator itr(spaces_.begin());
              itr != spaces_.end(); ++itr)
         {
-            std::vector<std::pair<ParticleID, Particle> > particles(itr->list_particles_exact(sp));
+            std::vector<std::pair<ParticleID, Particle> > particles(
+                    (*itr)->list_particles_exact(sp));
             list.insert(list.end(), particles.begin(), particles.end());
         }
         return list;
@@ -373,8 +372,8 @@ public:
         for (space_container_type::const_iterator itr(spaces_.begin());
              itr != spaces_.end(); ++itr)
         {
-            if (itr->has_species(sp) && itr->find_molecule_pool(sp)->is_structure())
-                return itr->get_volume(sp);
+            if ((*itr)->has_species(sp) && (*itr)->find_molecule_pool(sp)->is_structure())
+                return (*itr)->get_volume(sp);
         }
         return 0.0;
     }
@@ -399,7 +398,7 @@ public:
         for (space_container_type::const_iterator itr(spaces_.begin());
              itr != spaces_.end(); ++itr)
         {
-            if (itr->has_voxel(pid))
+            if ((*itr)->has_voxel(pid))
                 return true;
         }
         return false;
@@ -411,7 +410,7 @@ public:
         for (space_container_type::const_iterator itr(spaces_.begin());
              itr != spaces_.end(); ++itr)
         {
-            total += itr->num_voxels();
+            total += (*itr)->num_voxels();
         }
         return total;
     }
@@ -422,7 +421,7 @@ public:
         for (space_container_type::const_iterator itr(spaces_.begin());
              itr != spaces_.end(); ++itr)
         {
-            total += itr->num_voxels(sp);
+            total += (*itr)->num_voxels(sp);
         }
         return total;
     }
@@ -433,7 +432,7 @@ public:
         for (space_container_type::const_iterator itr(spaces_.begin());
              itr != spaces_.end(); ++itr)
         {
-            total += itr->num_voxels_exact(sp);
+            total += (*itr)->num_voxels_exact(sp);
         }
         return total;
     }
@@ -444,7 +443,7 @@ public:
         for (space_container_type::const_iterator itr(spaces_.begin());
              itr != spaces_.end(); ++itr)
         {
-            std::vector<std::pair<ParticleID, ParticleVoxel> > voxels(itr->list_voxels());
+            std::vector<std::pair<ParticleID, ParticleVoxel> > voxels((*itr)->list_voxels());
             list.insert(list.end(), voxels.begin(), voxels.end());
         }
         return list;
@@ -456,7 +455,7 @@ public:
         for (space_container_type::const_iterator itr(spaces_.begin());
              itr != spaces_.end(); ++itr)
         {
-            std::vector<std::pair<ParticleID, ParticleVoxel> > voxels(itr->list_voxels(sp));
+            std::vector<std::pair<ParticleID, ParticleVoxel> > voxels((*itr)->list_voxels(sp));
             list.insert(list.end(), voxels.begin(), voxels.end());
         }
         return list;
@@ -468,7 +467,8 @@ public:
         for (space_container_type::const_iterator itr(spaces_.begin());
              itr != spaces_.end(); ++itr)
         {
-            std::vector<std::pair<ParticleID, ParticleVoxel> > voxels(itr->list_voxels_exact(sp));
+            std::vector<std::pair<ParticleID, ParticleVoxel> > voxels(
+                    (*itr)->list_voxels_exact(sp));
             list.insert(list.end(), voxels.begin(), voxels.end());
         }
         return list;
@@ -479,7 +479,7 @@ public:
         for (space_container_type::const_iterator itr(spaces_.begin());
              itr != spaces_.end(); ++itr)
         {
-            if (boost::optional<ParticleVoxel> voxel = itr->find_voxel(pid))
+            if (boost::optional<ParticleVoxel> voxel = (*itr)->find_voxel(pid))
             {
                 return voxel;
             }
@@ -500,11 +500,11 @@ public:
         for (space_container_type::iterator itr(spaces_.begin());
              itr != spaces_.end(); ++itr)
         {
-            if (itr->has_species(species))
-                return itr->find_voxel_pool(species);
+            if ((*itr)->has_species(species))
+                return (*itr)->find_voxel_pool(species);
         }
         // create VoxelPool TODO
-        return get_root_mut()->find_voxel_pool(species);
+        return get_root()->find_voxel_pool(species);
         // throw "No VoxelPool corresponding to a given Species is found";
     }
 
@@ -513,8 +513,8 @@ public:
         for (space_container_type::const_iterator itr(spaces_.begin());
              itr != spaces_.end(); ++itr)
         {
-            if (itr->has_species(species))
-                return itr->find_voxel_pool(species);
+            if ((*itr)->has_species(species))
+                return (*itr)->find_voxel_pool(species);
         }
         throw "No VoxelPool corresponding to a given Species is found";
     }
@@ -524,7 +524,7 @@ public:
         for (space_container_type::const_iterator itr(spaces_.begin());
              itr != spaces_.end(); ++itr)
         {
-            if (itr->has_molecule_pool(species))
+            if ((*itr)->has_molecule_pool(species))
                 return true;
         }
         return false;
@@ -535,8 +535,8 @@ public:
         for (space_container_type::iterator itr(spaces_.begin());
              itr != spaces_.end(); ++itr)
         {
-            if (itr->has_molecule_pool(species))
-                return itr->find_molecule_pool(species);
+            if ((*itr)->has_molecule_pool(species))
+                return (*itr)->find_molecule_pool(species);
         }
         throw "No MoleculePool corresponding to a given Species is found";
     }
@@ -546,8 +546,8 @@ public:
         for (space_container_type::const_iterator itr(spaces_.begin());
              itr != spaces_.end(); ++itr)
         {
-            if (itr->has_molecule_pool(species))
-                return itr->find_molecule_pool(species);
+            if ((*itr)->has_molecule_pool(species))
+                return (*itr)->find_molecule_pool(species);
         }
         throw "No MoleculePool corresponding to a given Species is found";
     }
@@ -557,8 +557,7 @@ public:
      */
     Voxel position2voxel(const Real3& pos) const
     {
-        return Voxel(get_root()->get_weak_ptr(),
-                     get_root()->position2coordinate(pos));
+        return Voxel(get_root(), get_root()->position2coordinate(pos));
     }
 
     /*
@@ -569,11 +568,11 @@ public:
         for (space_container_type::iterator itr(spaces_.begin());
              itr != spaces_.end(); ++itr)
         {
-            if (itr->has_voxel(pid))
-                return itr->update_voxel(pid, v);
+            if ((*itr)->has_voxel(pid))
+                return (*itr)->update_voxel(pid, v);
         }
 
-        return get_space_mut(v.coordinate)->update_voxel(pid, v);
+        return get_space(v.coordinate)->update_voxel(pid, v);
     }
 
     bool remove_voxel(const ParticleID& pid)
@@ -581,8 +580,8 @@ public:
         for (space_container_type::iterator itr(spaces_.begin());
              itr != spaces_.end(); ++itr)
         {
-            if (itr->has_voxel(pid))
-                return itr->remove_voxel(pid);
+            if ((*itr)->has_voxel(pid))
+                return (*itr)->remove_voxel(pid);
         }
         return false;
     }
@@ -720,8 +719,8 @@ public:
         for (space_container_type::iterator itr(spaces_.begin());
              itr != spaces_.end(); ++itr)
         {
-            if (itr->has_particle(pid))
-                return itr->remove_particle(pid);
+            if ((*itr)->has_particle(pid))
+                return (*itr)->remove_particle(pid);
         }
         return false;
     }
@@ -741,7 +740,7 @@ public:
         for (space_container_type::const_iterator itr(spaces_.begin());
              itr != spaces_.end(); ++itr)
         {
-            std::vector<Species> species(itr->list_species());
+            std::vector<Species> species((*itr)->list_species());
             list.insert(list.end(), species.begin(), species.end());
         }
         return list;
@@ -856,25 +855,22 @@ public:
 
 protected:
 
-    space_container_type::const_iterator get_root() const
+    space_type get_root() const
     {
-        return spaces_.begin();
+        return spaces_.at(0);
     }
 
-    space_container_type::iterator get_root_mut()
-    {
-        return spaces_.begin();
-    }
-
-    space_container_type::iterator get_space_mut(const coordinate_type& coordinate)
+    space_type get_space(coordinate_type& coordinate)
     {
         for (space_container_type::iterator itr(spaces_.begin());
              itr != spaces_.end(); ++itr)
         {
-            if (itr->is_in_range(coordinate))
-                return itr;
+            if (coordinate < (*itr)->size())
+                return *itr;
+
+            coordinate -= (*itr)->size();
         }
-        return spaces_.end();
+        return space_type();
     }
 
     Integer add_structure2(const Species& sp, const boost::shared_ptr<const Shape> shape);
@@ -886,8 +882,8 @@ public:
     // TODO: Calling this function is invalid, and this should be removed.
     Voxel coordinate2voxel(const coordinate_type& coordinate)
     {
-        space_container_type::iterator space(get_space_mut(coordinate));
-        return Voxel(space->get_weak_ptr(), coordinate - space->offset());
+        coordinate_type coord(coordinate);
+        return Voxel(get_space(coord), coord);
     }
 
 protected:
