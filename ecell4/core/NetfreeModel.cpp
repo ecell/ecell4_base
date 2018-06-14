@@ -13,8 +13,8 @@ Species NetfreeModel::apply_species_attributes(const Species& sp) const
         attribute_container_type;
 
     Species ret(sp);
-    for (species_container_type::const_iterator
-        i(species_attributes_.begin()); i != species_attributes_.end(); ++i)
+    for (species_container_type::const_reverse_iterator
+        i(species_attributes_.rbegin()); i != species_attributes_.rend(); ++i)
     {
         const Species& pttrn = (*i);
         if (spmatch(pttrn, sp))

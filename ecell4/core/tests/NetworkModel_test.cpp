@@ -24,25 +24,25 @@ BOOST_AUTO_TEST_CASE(NetworkModel_test_species)
     NetworkModel model;
 
     {
+        Species sp0("_");
+        sp0.set_attribute("key1", "value0");
         Species sp1("A");
         sp1.set_attribute("key1", "value1");
         Species sp2("B");
         sp2.set_attribute("key1", "value2");
-        Species sp3("_");
-        sp3.set_attribute("key1", "value3");
 
+        model.add_species_attribute(sp0);
         model.add_species_attribute(sp1);
         model.add_species_attribute(sp2);
-        model.add_species_attribute(sp3);
 
+        BOOST_CHECK(model.has_species_attribute(Species("_")));
         BOOST_CHECK(model.has_species_attribute(Species("A")));
         BOOST_CHECK(model.has_species_attribute(Species("B")));
-        BOOST_CHECK(model.has_species_attribute(Species("_")));
         BOOST_CHECK(!model.has_species_attribute(Species("C")));
 
-        Species sp4("A");
-        sp4.set_attribute("key2", "value4");
-        model.add_species_attribute(sp4);
+        Species sp3("A");
+        sp3.set_attribute("key2", "value3");
+        model.add_species_attribute(sp3);
     }
 
     {
@@ -50,7 +50,7 @@ BOOST_AUTO_TEST_CASE(NetworkModel_test_species)
         BOOST_CHECK(sp1.has_attribute("key1"));
         BOOST_CHECK_EQUAL(sp1.get_attribute_as<std::string>("key1"), "value1");
         BOOST_CHECK(sp1.has_attribute("key2"));
-        BOOST_CHECK_EQUAL(sp1.get_attribute_as<std::string>("key2"), "value4");
+        BOOST_CHECK_EQUAL(sp1.get_attribute_as<std::string>("key2"), "value3");
 
         const Species sp2 = model.apply_species_attributes(Species("B"));
         BOOST_CHECK(sp2.has_attribute("key1"));
@@ -59,7 +59,7 @@ BOOST_AUTO_TEST_CASE(NetworkModel_test_species)
 
         const Species sp3 = model.apply_species_attributes(Species("C"));
         BOOST_CHECK(sp3.has_attribute("key1"));
-        BOOST_CHECK_EQUAL(sp3.get_attribute_as<std::string>("key1"), "value3");
+        BOOST_CHECK_EQUAL(sp3.get_attribute_as<std::string>("key1"), "value0");
         BOOST_CHECK(!sp3.has_attribute("key2"));
     }
 
