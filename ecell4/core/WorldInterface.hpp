@@ -52,14 +52,14 @@ struct WorldInterface
         throw NotSupported("volume() is not supported by this space class");
     }
 
-    /**
-     * get the number of species in this space.
-     * @return a number of species Integer
-     */
-    virtual Integer num_species() const
-    {
-        throw NotSupported("num_species() is not supported by this space class");
-    }
+    // /**
+    //  * get the number of species in this space.
+    //  * @return a number of species Integer
+    //  */
+    // virtual Integer num_species() const
+    // {
+    //     throw NotSupported("num_species() is not supported by this space class");
+    // }
 
     /**
      * return if the species is in this space or not.
