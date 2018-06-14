@@ -7,18 +7,22 @@ matrix:
     compiler: gcc
     language: python
     python: "2.7"
+    env: TRAVIS_PYTHON_VERSION="2.7"
   - os: linux
     compiler: clang
     language: python
     python: "2.7"
+    env: TRAVIS_PYTHON_VERSION="2.7"
   - os: linux
     compiler: gcc
     language: python
     python: "3.5"
+    env: TRAVIS_PYTHON_VERSION="3.5"
   - os: linux
     compiler: clang
     language: python
     python: "3.5"
+    env: TRAVIS_PYTHON_VERSION="3.5"
   - os: osx
     compiler: clang
     env: TRAVIS_PYTHON_VERSION="2.7"
@@ -94,7 +98,16 @@ script:
 - echo ${PYTHON_EXECUTABLE}
 - ls -d /usr/include/python*
 - if [ "$TRAVIS_OS_NAME" == "linux" ]; then
-    bash -c "cmake -DCMAKE_INSTALL_PREFIX=~/local -DPYTHON_INCLUDE_DIR:FILEPATH=/usr/include/python3.4 -DPYTHON_EXECUTABLE:FILEPATH=${PYTHON_EXECUTABLE} . && make && make test && make install";
+    if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then
+      export PYTHON_INCLUDE_DIR=/usr/include/python2.7;
+    fi;
+    if [[ $TRAVIS_PYTHON_VERSION == 3* ]]; then
+      export PYTHON_INCLUDE_DIR=/usr/include/python3.4;
+    fi;
+    echo ${PYTHON_INCLUDE_DIR};
+  fi
+- if [ "$TRAVIS_OS_NAME" == "linux" ]; then
+    bash -c "cmake -DCMAKE_INSTALL_PREFIX=~/local -DPYTHON_INCLUDE_DIR:FILEPATH=${PYTHON_INCLUDE_DIR} -DPYTHON_EXECUTABLE:FILEPATH=${PYTHON_EXECUTABLE} . && make && make test && make install";
     rm CMakeCache.txt;
   fi
 - if [ "$TRAVIS_OS_NAME" == "osx" ]; then
