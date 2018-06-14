@@ -374,7 +374,7 @@ class ParseObj(ExpBase):
     # @log_call #XXX: donot wrap
     def __getattr__(self, key):
         if key[0] == "_" and len(key) > 1 and not key[1: ].isdigit():
-            raise RuntimeError(
+            raise AttributeError(
                 "'%s' object has no attribute '%s'"
                     % (self.__class__.__name__, key))
 
@@ -485,8 +485,8 @@ class SubExp(ExpBase):
     def __append(self, obj):
         if isinstance(obj, AnyCallable):
             self._elems.append(obj._as_ParseObj())
-        elif len(self._elems) > 0 and isinstance(obj, SubExp):
-            self._elems.extend(obj._elements())
+        # elif len(self._elems) > 0 and isinstance(obj, SubExp):
+        #     self._elems.extend(obj._elements())
         else:
             self._elems.append(obj)
 
@@ -513,8 +513,8 @@ class DivExp(ExpBase):
     def __append(self, obj):
         if isinstance(obj, AnyCallable):
             self._elems.append(obj._as_ParseObj())
-        elif len(self._elems) > 0 and isinstance(obj, DivExp):
-            self._elems.extend(obj._elements())
+        # elif len(self._elems) > 0 and isinstance(obj, DivExp):
+        #     self._elems.extend(obj._elements())
         else:
             self._elems.append(obj)
 
