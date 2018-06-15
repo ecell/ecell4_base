@@ -1,6 +1,8 @@
 #ifndef ECELL4_REACTION_RULE_DESCRIPTOR_HPP
 #define ECELL4_REACTION_RULE_DESCRIPTOR_HPP
 
+#include "Python.h"
+
 #include <stdexcept>
 #include <cmath>
 #include <boost/shared_ptr.hpp>
@@ -11,8 +13,6 @@
 
 #include "boost/tuple/tuple.hpp"
 #include "boost/tuple/tuple_io.hpp"
-
-#include <Python.h>
 
 
 namespace ecell4
