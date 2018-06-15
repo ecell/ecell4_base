@@ -10,7 +10,7 @@ environment:
       PYTHON_VERSION: "3.6.5"
       PYTHON_ARCH: "64"
 #      VCVARSALL: "x64"
-      
+
 init:
   - cmd: cmake --version
 
@@ -67,6 +67,7 @@ build: false
 branches:
   only:
     - master
+    - v4.2
 
 artifacts:
   # bdist_wheel puts your built wheel in the dist directory
@@ -77,4 +78,3 @@ notifications:
     auth_token:
       secure: xoxp-2152083718-2152083720-57117007011-a566bc1aa4
     channel: '#github'
-    
