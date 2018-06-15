@@ -653,7 +653,7 @@ cdef class CylindricalSurface:
         """
         pass  # XXX: Only used for doc string
 
-    def __init__(self, Real3 center, Real radius, Real3 axis, Real half_height):
+    def __cinit__(self, Real3 center, Real radius, Real3 axis, Real half_height):
         self.thisptr = new shared_ptr[Cpp_CylindricalSurface](
             new Cpp_CylindricalSurface(deref(center.thisptr), radius, deref(axis.thisptr), half_height))
 

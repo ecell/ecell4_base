@@ -93,8 +93,8 @@ public:
 
 protected:
 
-    Real voxel_radius_;
     boost::shared_ptr<RandomNumberGenerator> rng_;
+    Real voxel_radius_;
 };
 
 } // spatiocyte

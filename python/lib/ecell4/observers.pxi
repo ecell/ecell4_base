@@ -45,7 +45,7 @@ cdef class FixedIntervalPythonHooker:
 
     """
 
-    def __cinit__(self, Real dt, pyfunc):
+    def __init__(self, Real dt, pyfunc):
         """Constructor.
 
         Parameters
@@ -923,7 +923,7 @@ cdef class FixedIntervalTrackingObserver:
         """
         pass  # XXX: Only used for doc string
 
-    def __init__(self, Real dt, species, resolve_boundary=None, subdt=None, threshold=None):
+    def __cinit__(self, Real dt, species, resolve_boundary=None, subdt=None, threshold=None):
         cdef vector[Cpp_Species] tmp
 
         for sp in species:

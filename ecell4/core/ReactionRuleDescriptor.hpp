@@ -104,7 +104,7 @@ public:
     void set_reactant_coefficients(const coefficient_container_type &new_reactant_coefficients)
     {
         this->reactant_coefficients_.clear();
-        for(int i = 0; i < new_reactant_coefficients.size(); i++)
+        for (coefficient_container_type::size_type i = 0; i < new_reactant_coefficients.size(); i++)
         {
             this->reactant_coefficients_.push_back(new_reactant_coefficients[i]);
         }
@@ -113,7 +113,7 @@ public:
     void set_product_coefficients(const coefficient_container_type &new_product_coefficients)
     {
         this->product_coefficients_.clear();
-        for(int i = 0; i < new_product_coefficients.size(); i++)
+        for (coefficient_container_type::size_type i = 0; i < new_product_coefficients.size(); i++)
         {
             this->product_coefficients_.push_back(new_product_coefficients[i]);
         }
