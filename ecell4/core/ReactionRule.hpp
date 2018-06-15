@@ -1,11 +1,12 @@
 #ifndef ECELL4_REACTION_RULE_HPP
 #define ECELL4_REACTION_RULE_HPP
 
-#include <stdexcept>
+#include "ReactionRuleDescriptor.hpp"
+
 #include "types.hpp"
 #include "Species.hpp"
+#include <stdexcept>
 
-#include "ReactionRuleDescriptor.hpp"
 #include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
 

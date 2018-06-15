@@ -142,7 +142,7 @@ cdef extern from "ecell4/core/ReactionRuleDescriptor.hpp" namespace "ecell4":
 
 # Cpp_ReactionRuleDescriptorPyfunc
 #ecell4::ReactionRuleDescriptorPyfunc
-cdef extern from "ecell4/core/ReactionRuleDescriptor.hpp" namespace "ecell4":
+cdef extern from "ecell4/core/ReactionRuleDescriptorPyfunc.hpp" namespace "ecell4":
     cdef cppclass Cpp_ReactionRuleDescriptorPyfunc "ecell4::ReactionRuleDescriptorPyfunc":
         Cpp_ReactionRuleDescriptorPyfunc() except +
         Cpp_ReactionRuleDescriptorPyfunc(
@@ -162,6 +162,9 @@ cdef extern from "ecell4/core/ReactionRuleDescriptor.hpp" namespace "ecell4":
         void set_name(string&)
         ReactionRuleDescriptorPyfunc_pyfunc_type get()
 
+# Cpp_ReactionRuleDescriptorMassAction
+#ecell4::ReactionRuleDescriptorMassAction
+cdef extern from "ecell4/core/ReactionRuleDescriptor.hpp" namespace "ecell4":
     cdef cppclass Cpp_ReactionRuleDescriptorMassAction "ecell4::ReactionRuleDescriptorMassAction":
         Cpp_ReactionRuleDescriptorMassAction() except +
         Cpp_ReactionRuleDescriptorMassAction(Real)
