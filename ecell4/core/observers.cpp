@@ -146,23 +146,6 @@ void FixedIntervalNumberObserver::reset()
     base_type::reset();
 }
 
-void FixedIntervalPythonHooker::initialize(const boost::shared_ptr<WorldInterface>& world)
-{
-    base_type::initialize(world);
-}
-
-bool FixedIntervalPythonHooker::fire(const Simulator* sim, const boost::shared_ptr<WorldInterface>& world)
-{
-    const bool ret1 = this->stepladder_(this->pyfunc_, world, sim->check_reaction());
-    const bool ret2 = base_type::fire(sim, world);
-    return (ret1 & ret2);
-}
-
-void FixedIntervalPythonHooker::reset()
-{
-    base_type::reset();
-}
-
 NumberLogger::data_container_type FixedIntervalNumberObserver::data() const
 {
     return logger_.data;

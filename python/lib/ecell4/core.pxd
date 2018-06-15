@@ -537,9 +537,6 @@ cdef class Voxel:
 
 cdef Voxel Voxel_from_Cpp_Voxel(Cpp_Voxel* p)
 
-ctypedef PyObject* FixedIntervalPythonHooker_pyfunc_type
-ctypedef bool (*FixedIntervalPythonHooker_stepladder_type)(FixedIntervalPythonHooker_pyfunc_type, const shared_ptr[Cpp_WorldInterface]& space, bool check_reaction)
-
 ## Cpp_FixedIntervalNumberObserver
 #  ecell4::FixedIntervalNumberObserver
 cdef extern from "ecell4/core/observers.hpp" namespace "ecell4":
@@ -555,12 +552,6 @@ cdef extern from "ecell4/core/observers.hpp" namespace "ecell4":
         vector[Cpp_Species] targets()
         void reset()
         void save(string)
-
-    cdef cppclass Cpp_FixedIntervalPythonHooker "ecell4::FixedIntervalPythonHooker":
-        Cpp_FixedIntervalPythonHooker(Real, FixedIntervalPythonHooker_stepladder_type, FixedIntervalPythonHooker_pyfunc_type)
-        Real next_time()
-        Integer num_steps()
-        void reset()
 
     cdef cppclass Cpp_NumberObserver "ecell4::NumberObserver":
         Cpp_NumberObserver(vector[string]) except +
@@ -663,6 +654,18 @@ cdef extern from "ecell4/core/observers.hpp" namespace "ecell4":
         Real default_subdt()
         @staticmethod
         Real default_threshold()
+
+ctypedef PyObject* FixedIntervalPythonHooker_pyfunc_type
+ctypedef bool (*FixedIntervalPythonHooker_stepladder_type)(FixedIntervalPythonHooker_pyfunc_type, const shared_ptr[Cpp_WorldInterface]& space, bool check_reaction)
+
+## Cpp_FixedIntervalPythonHooker
+#  ecell4::FixedIntervalPythonHooker
+cdef extern from "ecell4/core/PythonHooker.hpp" namespace "ecell4":
+    cdef cppclass Cpp_FixedIntervalPythonHooker "ecell4::FixedIntervalPythonHooker":
+        Cpp_FixedIntervalPythonHooker(Real, FixedIntervalPythonHooker_stepladder_type, FixedIntervalPythonHooker_pyfunc_type)
+        Real next_time()
+        Integer num_steps()
+        void reset()
 
 ## FixedIntervalNumberObserver
 #  a python wrapper for Cpp_FixedIntervalNumberObserver
