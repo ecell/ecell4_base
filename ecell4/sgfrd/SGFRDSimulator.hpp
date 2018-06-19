@@ -389,6 +389,8 @@ class SGFRDSimulator :
             const VertexID& vid, const Real size)
     {
         SGFRD_SCOPE(ns, create_single_conical_shell, tracer_);
+        SGFRD_TRACE(tracer_.write("vertex ID  = %1%", vid));
+        SGFRD_TRACE(tracer_.write("shell size = %1%", size));
 
         const ShellID id(shell_id_gen());
         const conical_surface_type shape(polygon().position_at(vid),
@@ -434,18 +436,23 @@ class SGFRDSimulator :
                          const ParticleID& pid, const Particle& p)
     {
         SGFRD_SCOPE(ns, create_single_conical_domain, tracer_);
+        SGFRD_TRACE(tracer_.write("arguments: shell ID = %2%, shell size = %2%"
+            ", particle ID = %3%, Particle position = %4%",
+            sh.first, sh.second.size(), pid, p.position()))
 
-        SGFRD_TRACE(tracer_.write("shell size = %1%", sh.second.size()))
-        SGFRD_TRACE(tracer_.write("D   = %1%", p.D()))
-        SGFRD_TRACE(tracer_.write("r0  = %1%", length(p.position() - sh.second.apex())))
-        SGFRD_TRACE(tracer_.write("a   = %1%", sh.second.size() - p.radius()))
-        SGFRD_TRACE(tracer_.write("phi = %1%", sh.second.apex_angle()))
+        const Real D   = p.D();
+        const Real a   = sh.second.size() - p.radius();
+        const Real phi = sh.second.apex_angle();
+        const Real r0  = length(
+                this->polygon().periodic_transpose(p.position(), sh.second.apex()) -
+                sh.second.apex());
 
-        const greens_functions::GreensFunction2DRefWedgeAbs
-            gf(/* D   = */ p.D(),
-               /* r0  = */ length(p.position() - sh.second.apex()),
-               /* a   = */ sh.second.size() - p.radius(),
-               /* phi = */ sh.second.apex_angle());
+        SGFRD_TRACE(tracer_.write("D   = %1%", D  ))
+        SGFRD_TRACE(tracer_.write("r0  = %1%", r0 ))
+        SGFRD_TRACE(tracer_.write("a   = %1%", a  ))
+        SGFRD_TRACE(tracer_.write("phi = %1%", phi))
+
+        const greens_functions::GreensFunction2DRefWedgeAbs gf(D, r0, a, phi);
         const Real t_escape = gf.drawTime(uniform_real());
 
         SGFRD_TRACE(tracer_.write("calculated escape_time = %1%", t_escape))

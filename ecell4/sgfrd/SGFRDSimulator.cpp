@@ -70,12 +70,14 @@ SGFRDSimulator::propagate_single_conical(
 
     SGFRD_TRACE(tracer_.write("pos = %1%, fid = %2%", p.position(), fid));
 
-    const Real r_max = sh.size() - p.radius();
-    greens_functions::GreensFunction2DRefWedgeAbs
-        gf(/* D   = */ p.D(),
-           /* r0  = */ length(p.position() - sh.position()),
-           /* a   = */ r_max,
-           /* phi = */ sh.shape().apex_angle());
+    const Real D   = p.D();
+    const Real a   = sh.size() - p.radius();
+    const Real phi = sh.shape().apex_angle();
+    const Real r0  = length(
+        this->polygon().periodic_transpose(p.position(), sh.shape().apex()) -
+        sh.shape().apex());
+
+    greens_functions::GreensFunction2DRefWedgeAbs gf(D, r0, a, phi);
 
     const Real del_t = tm - dom.begin_time();
     const Real r     = gf.drawR(this->uniform_real(), del_t);
@@ -836,6 +838,7 @@ SGFRDSimulator::form_single_conical_event(
     {
         if(iter->second <= min_cone_size)
         {
+            SGFRD_TRACE(tracer_.write("%1% <= %2%, min shell intruder found!", iter->second, min_cone_size));
             min_shell_intruder.push_back(*iter);
         }
         else
