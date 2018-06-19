@@ -105,6 +105,14 @@ struct Triangle : public Shape
     boost::array<Real3, 3> edges_;
 };
 
+template<typename charT, typename traits>
+std::basic_ostream<charT, traits>&
+operator<<(std::basic_ostream<charT, traits>& os, const Triangle& tri)
+{
+    os << "Triangle(" << tri.vertex_at(0) << ", " << tri.vertex_at(1) << ", "
+       << tri.vertex_at(2) << ')';
+    return os;
 }
 
+} // ecell
 #endif /*ECELL_CORE_TRIANGLE*/
