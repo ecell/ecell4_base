@@ -53,6 +53,13 @@ protected:
     Real3 stop_;
 };
 
-
+template<typename charT, typename traits>
+std::basic_ostream<charT, traits>&
+operator<<(std::basic_ostream<charT, traits>& os, const Segment& sgm)
+{
+    os << "Segment(" << sgm.start() << ", " << sgm.stop() << ')';
+    return os;
 }
+
+} // ecell4
 #endif// ECELL4_CORE_SEGMENT
