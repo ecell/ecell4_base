@@ -11,9 +11,11 @@ def replace_parseobj(expr, substitutes=None):
     import ecell4.util.decorator_base
     obj = ecell4.util.decorator_base.just_parse().eval(expr)
 
-    from ecell4.util.decorator import traverse_ParseObj
-    keys = []
-    newexpr = str(traverse_ParseObj(copy.deepcopy(obj), keys))
+    from ecell4.util.decorator import dispatch, SpeciesParsingVisitor
+    visitor = SpeciesParsingVisitor()
+    newexpr = str(dispatch(copy.deepcopy(obj), visitor))
+    keys = visitor.keys
+
     names = []
     for key in keys:
         if key in substitutes.keys():
@@ -29,7 +31,7 @@ def export_sbml(model, y0=None, volume=1.0, is_valid=True):
 
     Parameters
     ----------
-    model : NetworkModel or ODENetworkModel
+    model : NetworkModel
     y0 : dict
         Initial condition.
     volume : Real or Real3, optional
@@ -87,125 +89,85 @@ def export_sbml(model, y0=None, volume=1.0, is_valid=True):
 
         # s1.appendAnnotation('<annotation><ecell4:extension><ecell4:species serial="{:s}"/></ecell4:extension></annotation>'.format(sp.serial()))
 
-    if isinstance(model, (ecell4.NetworkModel, ecell4.Model)):
-        for cnt, rr in enumerate(model.reaction_rules()):
-            r1 = m.createReaction()
-            r1.setId("r{:d}".format(cnt))
-            r1.setReversible(False)
-            r1.setFast(False)
+    for cnt, rr in enumerate(model.reaction_rules()):
+        desc = rr.get_descriptor()
 
-            kinetic_law = r1.createKineticLaw()
-            # p1 = kinetic_law.createLocalParameter()
-            # p1.setId("k")
-            p1 = m.createParameter()
-            p1.setId("k{:d}".format(cnt))
-            p1.setConstant(True)
-            p1.setValue(rr.k())
+        r1 = m.createReaction()
+        r1.setId("r{:d}".format(cnt))
+        r1.setReversible(True)
+        r1.setFast(False)
 
-            species_coef_map = {}
+        kinetic_law = r1.createKineticLaw()
+
+        species_coef_map = {}
+        if desc is None:
             for sp in rr.reactants():
                 if sp not in species_coef_map.keys():
                     species_coef_map[sp] = 1
                 else:
                     species_coef_map[sp] += 1
+        else:
+            for sp, coef in zip(rr.reactants(), desc.reactant_coefficients()):
+                if sp not in species_coef_map.keys():
+                    species_coef_map[sp] = coef
+                else:
+                    species_coef_map[sp] += coef
 
+        if desc is None or isinstance(desc, ecell4.core.ReactionRuleDescriptorMassAction):
+            p1 = m.createParameter()
+            p1.setId("k{:d}".format(cnt))
+            # p1 = kinetic_law.createLocalParameter()
+            # p1.setId("k")
+            p1.setConstant(True)
+            p1.setValue(rr.k() if desc is None else desc.k())
             # math_exp = "k"
             math_exp = "k{:d}".format(cnt)
             for sp, coef in species_coef_map.items():
                 sid = sid_map[sp.serial()]
-                s1 = r1.createReactant()
-                s1.setSpecies(sid)
-                s1.setConstant(False)
-                s1.setStoichiometry(coef)
-                if coef == 1:
+                if coef == 1.0:
                     math_exp += "*{:s}".format(sid)
                 else:
                     math_exp += "*pow({:s},{:g})".format(sid, coef)
+        elif isinstance(desc, ecell4.core.ReactionRuleDescriptorPyfunc):
+            math_exp = desc.as_string()
+            if math_exp in ('', '<lambda>'):
+                warnings.warn(
+                    "The given ReactionRuleDescriptorPyfunc [{:s}] might be invalid.".format(
+                        rr.as_string()))
+            math_exp = replace_parseobj(math_exp, sid_map)
+        else:
+            raise RuntimeError('Unknown derived type of ReactionRuleDescriptor was given [{}].'.format(type(desc)))
 
-            species_coef_map = {}
+        for sp, coef in species_coef_map.items():
+            sid = sid_map[sp.serial()]
+            s1 = r1.createReactant()
+            s1.setSpecies(sid)
+            s1.setConstant(False)
+            s1.setStoichiometry(coef)
+
+        if desc is None:
             for sp in rr.products():
                 if sp not in species_coef_map.keys():
                     species_coef_map[sp] = 1
                 else:
                     species_coef_map[sp] += 1
-
-            for sp, coef in species_coef_map.items():
-                sid = sid_map[sp.serial()]
-                s1 = r1.createProduct()
-                s1.setSpecies(sid)
-                s1.setConstant(False)
-                s1.setStoichiometry(coef)
-
-            math_ast = libsbml.parseL3Formula(math_exp)
-            kinetic_law.setMath(math_ast)
-
-    elif isinstance(model, ecell4.ode.ODENetworkModel):
-        for cnt, rr in enumerate(model.reaction_rules()):
-            r1 = m.createReaction()
-            r1.setId("r{:d}".format(cnt))
-            r1.setReversible(True)
-            r1.setFast(False)
-
-            kinetic_law = r1.createKineticLaw()
-
+        else:
             species_coef_map = {}
-            for sp, coef in zip(rr.reactants(), rr.reactants_coefficients()):
+            for sp, coef in zip(rr.products(), desc.product_coefficients()):
                 if sp not in species_coef_map.keys():
                     species_coef_map[sp] = coef
                 else:
                     species_coef_map[sp] += coef
 
-            if rr.is_massaction():
-                p1 = m.createParameter()
-                p1.setId("k{:d}".format(cnt))
-                # p1 = kinetic_law.createLocalParameter()
-                # p1.setId("k")
-                p1.setConstant(True)
-                p1.setValue(rr.k())
-                # math_exp = "k"
-                math_exp = "k{:d}".format(cnt)
-                for sp, coef in species_coef_map.items():
-                    sid = sid_map[sp.serial()]
-                    if coef == 1.0:
-                        math_exp += "*{:s}".format(sid)
-                    else:
-                        math_exp += "*pow({:s},{:g})".format(sid, coef)
-            else:
-                math_exp = rr.get_ratelaw().as_string()
-                if math_exp in ('', '<lambda>'):
-                    warnings.warn(
-                        "The given ODEReactionRule [{:s}] might be invalid.".format(
-                            rr.as_string()))
-                math_exp = replace_parseobj(math_exp, sid_map)
+        for sp, coef in species_coef_map.items():
+            sid = sid_map[sp.serial()]
+            s1 = r1.createProduct()
+            s1.setSpecies(sid)
+            s1.setConstant(False)
+            s1.setStoichiometry(coef)
 
-            for sp, coef in species_coef_map.items():
-                sid = sid_map[sp.serial()]
-                s1 = r1.createReactant()
-                s1.setSpecies(sid)
-                s1.setConstant(False)
-                s1.setStoichiometry(coef)
-
-            species_coef_map = {}
-            for sp, coef in zip(rr.products(), rr.products_coefficients()):
-                if sp not in species_coef_map.keys():
-                    species_coef_map[sp] = coef
-                else:
-                    species_coef_map[sp] += coef
-
-            for sp, coef in species_coef_map.items():
-                sid = sid_map[sp.serial()]
-                s1 = r1.createProduct()
-                s1.setSpecies(sid)
-                s1.setConstant(False)
-                s1.setStoichiometry(coef)
-
-            math_ast = libsbml.parseL3Formula(math_exp)
-            kinetic_law.setMath(math_ast)
-
-    else:
-        raise ValueError(
-            "The invalid type of a Model was given [{:s}].".format(str(model))
-            + " NetworkModel or ODENetworkModel must be given.")
+        math_ast = libsbml.parseL3Formula(math_exp)
+        kinetic_law.setMath(math_ast)
 
     if is_valid:
         document.validateSBML()
@@ -230,7 +192,7 @@ def save_sbml(filename, model, y0=None, volume=1.0, is_valid=True):
 
     Parameters
     ----------
-    model : NetworkModel or ODENetworkModel
+    model : NetworkModel
     y0 : dict
         Initial condition.
     volume : Real or Real3, optional
@@ -266,7 +228,7 @@ def import_sbml(document):
 
     Returns
     -------
-    model : NetworkModel or ODENetworkModel
+    model : NetworkModel
     y0 : dict
         Initial condition.
     volume : Real or Real3, optional
@@ -311,6 +273,7 @@ def import_sbml(document):
 
     for r1 in m.getListOfReactions():
         rid = r1.getId()
+        print(rid)
 
         is_massaction = (rid in kmap.keys())
         if is_massaction:
@@ -347,19 +310,18 @@ def import_sbml(document):
             or any([coef not in (1, 2) for sp, coef in reactants])
             or any([not coef.is_integer() for sp, coef in products])
             or (len(reactants) == 2 and (reactants[0][1] == 2 or reactants[1][1] == 2))):
-            is_ode = True
-            rr = ecell4.ode.ODEReactionRule()
-
-            for serial, coef in reactants:
-                rr.add_reactant(ecell4.Species(serial), coef)
-            for serial, coef in products:
-                rr.add_product(ecell4.Species(serial), coef)
+            rr = ecell4.core.ReactionRule()
 
             if is_massaction:
-                rr.set_k(k)
+                desc = ecell4.core.ReactionRuleDescriptorMassAction(k)
             else:
                 func = generate_ratelaw(k, rr)
-                rr.set_ratelaw(ecell4.ode.ODERatelawCallback(func, k))
+                desc = ecell4.core.ReactionRuleDescriptorPyfunc(func, k)
+
+            desc.set_reactant_coefficients([coef for _, coef in reactants])
+            desc.set_product_coefficients([coef for _, coef in products])
+
+            rr.set_descriptor(desc)
         else:
             if len(reactants) == 1 and reactants[0][1] == 2:
                 reactants[0] = (reactants[0][0], 1)
@@ -375,7 +337,7 @@ def import_sbml(document):
 
         rrs.append(rr)
 
-    m = ecell4.ode.ODENetworkModel() if is_ode else ecell4.NetworkModel()
+    m = ecell4.NetworkModel()
     for rr in rrs:
         m.add_reaction_rule(rr)
 
@@ -392,7 +354,7 @@ def load_sbml(filename):
 
     Returns
     -------
-    model : NetworkModel or ODENetworkModel
+    model : NetworkModel
     y0 : dict
         Initial condition.
     volume : Real or Real3, optional

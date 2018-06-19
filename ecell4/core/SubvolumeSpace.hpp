@@ -5,7 +5,7 @@
 #include "types.hpp"
 #include "exceptions.hpp"
 #include "Species.hpp"
-#include "Space.hpp"
+// #include "Space.hpp"
 #include "Integer3.hpp"
 #include "Shape.hpp"
 #include <numeric>
@@ -19,7 +19,7 @@ namespace ecell4
 {
 
 class SubvolumeSpace
-    : public Space
+    // : public Space
 {
 public:
 
@@ -97,6 +97,37 @@ public:
             throw std::invalid_argument("the time must be positive.");
         }
         t_ = t;
+    }
+
+    /**
+     * get the axes lengths of a cuboidal region.
+     * @return edge lengths Real3
+     */
+    virtual const Real3& edge_lengths() const
+    {
+        throw NotSupported(
+            "edge_lengths() is not supported by this space class");
+    }
+
+    /**
+     * get the actual axes lengths of a cuboidal region.
+     * return edge lengths as a default.
+     * overload this function if the actual size is not equal to
+     * edge lengths.
+     * @return actual edge lengths Real3
+     */
+    virtual Real3 actual_lengths() const
+    {
+        return edge_lengths();
+    }
+
+    /**
+     * get volume.
+     * @return a volume (m^3) Real
+     */
+    virtual const Real volume() const
+    {
+        throw NotSupported("volume() is not supported by this space class");
     }
 
     virtual Integer num_molecules(const Species& sp) const

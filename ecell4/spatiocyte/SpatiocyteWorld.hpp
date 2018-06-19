@@ -14,6 +14,7 @@
 #include <ecell4/core/Model.hpp>
 #include <ecell4/core/Shape.hpp>
 #include <ecell4/core/extras.hpp>
+#include <ecell4/core/WorldInterface.hpp>
 
 namespace ecell4
 {
@@ -29,7 +30,7 @@ struct MoleculeInfo
 };
 
 class SpatiocyteWorld
-    : public Space
+    : public WorldInterface
 {
 public:
 
@@ -83,9 +84,6 @@ public:
         ; // do nothing
     }
 
-    /*
-     * Space Traits
-     */
     const Real t() const
     {
         return root_->t();
@@ -146,18 +144,15 @@ public:
 #endif
     }
 
-    /*
-     * CompartmentSpace Traits
-     */
     const Real volume() const
     {
         return root_->volume();
     }
 
-    Integer num_species() const
-    {
-        return root_->num_species();
-    }
+    // Integer num_species() const
+    // {
+    //     return root_->num_species();
+    // }
 
     bool has_species(const Species &sp) const
     {
@@ -184,9 +179,6 @@ public:
         return root_->get_value_exact(sp);
     }
 
-    /*
-     * ParticleSpace Traits
-     */
     const Real3& edge_lengths() const
     {
         return root_->edge_lengths();
@@ -240,9 +232,6 @@ public:
     std::vector<std::pair<ParticleID, Particle> > list_structure_particles() const;
     std::vector<std::pair<ParticleID, Particle> > list_non_structure_particles() const;
 
-    /*
-     * VoxelSpace Traits
-     */
     Real voxel_radius() const
     {
         return root_->voxel_radius();

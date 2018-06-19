@@ -21,6 +21,8 @@
 #include "VacantType.hpp"
 #include "VoxelSpaceBase.hpp"
 
+#include "Space.hpp"  // just for Space::space_kind
+
 
 namespace ecell4
 {

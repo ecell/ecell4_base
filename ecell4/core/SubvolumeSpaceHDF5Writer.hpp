@@ -16,6 +16,8 @@
 #include "Species.hpp"
 #include "Voxel.hpp"
 
+#include "Space.hpp"  // just for Space::space_kind
+
 
 namespace ecell4
 {

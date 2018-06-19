@@ -10,7 +10,7 @@
 #include "get_mapper_mf.hpp"
 #include "Species.hpp"
 #include "Particle.hpp"
-#include "Space.hpp"
+#include "WorldInterface.hpp"
 #include "exceptions.hpp"
 
 #ifdef WITH_HDF5
@@ -124,9 +124,9 @@ struct BDMLTraits
     }
 };
 
-// template <typename Tspace_>
+// template <typename Tworld_>
 void save_bd5(
-    const Space& space, const std::string& filename,
+    const WorldInterface& world, const std::string& filename,
     const int group_index,
     const std::string& object_name,
     const std::string& spatial_unit,
@@ -243,9 +243,9 @@ void save_bd5(
 
         typedef std::vector<std::pair<ParticleID, Particle> >
             particle_container_type;
-        const particle_container_type particles(space.list_particles());
-        // const particle_container_type& particles(space.list_particles());
-        const unsigned int NUM_MOL = space.num_particles();
+        const particle_container_type particles(world.list_particles());
+        // const particle_container_type& particles(world.list_particles());
+        const unsigned int NUM_MOL = world.num_particles();
 
         if (with_radius)
         {
@@ -261,7 +261,7 @@ void save_bd5(
                     static_cast<std::ostringstream&>(
                         std::ostringstream() << std::dec << group_name << ":" << i
                             << ":" << pid.lot() << ":" << pid.serial()).str().c_str());
-                data_table[i].t = space.t();
+                data_table[i].t = world.t();
                 std::strcpy(data_table[i].entity, "sphere");
                 data_table[i].x = p.position()[0];
                 data_table[i].y = p.position()[1];
@@ -292,7 +292,7 @@ void save_bd5(
                     static_cast<std::ostringstream&>(
                         std::ostringstream() << std::dec << group_name << ":" << i
                             << ":" << pid.lot() << ":" << pid.serial()).str().c_str());
-                data_table[i].t = space.t();
+                data_table[i].t = world.t();
                 std::strcpy(data_table[i].entity, "point");
                 data_table[i].x = p.position()[0];
                 data_table[i].y = p.position()[1];
@@ -319,7 +319,7 @@ namespace ecell4
 {
 
 void save_bdml(
-    const Space& space, const std::string& filename,
+    const WorldInterface& world, const std::string& filename,
     const std::string& group_name,
     const std::string& object_name,
     const std::string& spatial_unit,

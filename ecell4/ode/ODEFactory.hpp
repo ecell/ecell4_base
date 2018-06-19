@@ -128,24 +128,24 @@ public:
     //     return sim;
     // }
 
-    ODESimulator* create_simulator(
-        const boost::shared_ptr<ODENetworkModel>& model,
-        const boost::shared_ptr<world_type>& world) const
-    {
-        ODESimulator* sim = new ODESimulator(model, world, solver_type_);
-        sim->set_dt(dt_);
+    // ODESimulator* create_simulator(
+    //     const boost::shared_ptr<ODENetworkModel>& model,
+    //     const boost::shared_ptr<world_type>& world) const
+    // {
+    //     ODESimulator* sim = new ODESimulator(model, world, solver_type_);
+    //     sim->set_dt(dt_);
 
-        if (abs_tol_ > 0)
-        {
-            sim->set_absolute_tolerance(abs_tol_);
-        }
+    //     if (abs_tol_ > 0)
+    //     {
+    //         sim->set_absolute_tolerance(abs_tol_);
+    //     }
 
-        if (rel_tol_ > 0)
-        {
-            sim->set_relative_tolerance(rel_tol_);
-        }
-        return sim;
-    }
+    //     if (rel_tol_ > 0)
+    //     {
+    //         sim->set_relative_tolerance(rel_tol_);
+    //     }
+    //     return sim;
+    // }
 
 protected:
 

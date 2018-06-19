@@ -460,10 +460,10 @@ cdef class GillespieWorld:
 
     def as_base(self):
         """Return self as a base class. Only for developmental use."""
-        retval = Space()
+        retval = WorldInterface()
         del retval.thisptr
-        retval.thisptr = new shared_ptr[Cpp_Space](
-            <shared_ptr[Cpp_Space]>deref(self.thisptr))
+        retval.thisptr = new shared_ptr[Cpp_WorldInterface](
+            <shared_ptr[Cpp_WorldInterface]>deref(self.thisptr))
         return retval
 
 cdef GillespieWorld GillespieWorld_from_Cpp_GillespieWorld(

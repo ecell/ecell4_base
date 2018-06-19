@@ -3,8 +3,7 @@ from collections import defaultdict
 
 import numbers
 
-from ecell4 import Species, ReactionRule
-from ecell4.ode import ODEReactionRule
+from ecell4 import Species, ReactionRule, ReactionRuleDescriptorMassAction, ReactionRuleDescriptorPyfunc
 
 from ecell4.util import parseobj
 from ecell4.util.decorator_base import just_parse
@@ -83,8 +82,9 @@ def equations(m, inline=False, constants=True):
     params = {} if constants else None
     for i, rr in enumerate(m.reaction_rules()):
         name = "v_{{{}}}".format(i + 1)
+        desc = rr.get_descriptor()
 
-        if isinstance(rr, ReactionRule) or (isinstance(rr, ODEReactionRule) and rr.is_massaction()):
+        if desc is None:
             if constants:
                 idx = len(params) + 1
                 k = "k_{{{}}}".format(idx)
@@ -94,17 +94,32 @@ def equations(m, inline=False, constants=True):
             else:
                 k = ""
             equations[name] = (i + 1, "{}{}".format(k, "".join([escape_serial(sp) for sp in rr.reactants()])))
-        elif isinstance(rr, ODEReactionRule):
-            #XXX: rr.is_massaction() is False
-            rl = rr.get_ratelaw()
+
+        elif isinstance(desc, ReactionRuleDescriptorMassAction):
+            if constants:
+                idx = len(params) + 1
+                k = "k_{{{}}}".format(idx)
+                params[k] = (idx, desc.k())
+            elif desc.k() != 1:
+                k = "{:g}".format(desc.k())
+            else:
+                k = ""
+
+            coefficients = desc.reactant_coefficients()
+            equations[name] = (i + 1, "{}{}".format(k, "".join(["{}{}".format(escape_serial(sp), ("^{:g}".format(coef) if coef != 1 else "")) for sp, coef in zip(rr.reactants(), coefficients)])))
+
+        elif isinstance(desc, ReactionRuleDescriptorPyfunc):
             parser = just_parse()
             parser.set_callback()
-            obj = parser.eval(rl.as_string(), params={'pow': pow})
-            # obj = just_parse()._ParseDecorator__evaluate(rl.as_string())
+            obj = parser.eval(desc.as_string(), params={'pow': pow})
+            # obj = just_parse()._ParseDecorator__evaluate(desc.as_string())
             if inline:
                 equations[name] = (i + 1, wrap_parseobj(obj, params))
             else:
                 equations[name] = (i + 1, convert_parseobj(obj, params))
+
+        else:
+            raise RuntimeError('Unknown derived type of ReactionRuleDescriptor was given [{}].'.format(type(desc)))
 
         if inline:
             if name not in equations:
@@ -115,7 +130,8 @@ def equations(m, inline=False, constants=True):
 
         stoich = defaultdict(int)
 
-        if isinstance(rr, ReactionRule):
+        # if isinstance(rr, ReactionRule):
+        if desc is None:
             for sp in rr.reactants():
                 stoich[escape_serial(sp)] -= 1
             for sp in rr.products():
@@ -138,10 +154,11 @@ def equations(m, inline=False, constants=True):
                 else:
                     # coef < 0
                     derivatives[serial].append("{}{}".format(pref, eq))
-        elif isinstance(rr, ODEReactionRule):
-            for sp, coef in zip(rr.reactants(), rr.reactants_coefficients()):
+
+        else:
+            for sp, coef in zip(rr.reactants(), desc.reactant_coefficients()):
                 stoich[escape_serial(sp)] -= coef
-            for sp, coef in zip(rr.products(), rr.products_coefficients()):
+            for sp, coef in zip(rr.products(), desc.product_coefficients()):
                 stoich[escape_serial(sp)] += coef
 
             for serial, coef in stoich.items():

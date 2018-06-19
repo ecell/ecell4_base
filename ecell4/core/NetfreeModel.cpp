@@ -7,6 +7,32 @@
 namespace ecell4
 {
 
+Species NetfreeModel::apply_species_attributes(const Species& sp) const
+{
+    typedef std::vector<std::pair<std::string, Species::attribute_type> >
+        attribute_container_type;
+
+    Species ret(sp);
+    for (species_container_type::const_reverse_iterator
+        i(species_attributes_.rbegin()); i != species_attributes_.rend(); ++i)
+    {
+        const Species& pttrn = (*i);
+        if (spmatch(pttrn, sp))
+        {
+            const attribute_container_type attrs = pttrn.list_attributes();
+            for (attribute_container_type::const_iterator j(attrs.begin());
+                j != attrs.end(); ++j)
+            {
+                if (!ret.has_attribute((*j).first))
+                {
+                    ret.set_attribute((*j).first, (*j).second);
+                }
+            }
+        }
+    }
+    return ret;
+}
+
 std::vector<ReactionRule> NetfreeModel::query_reaction_rules(
     const Species& sp) const
 {
@@ -136,24 +162,23 @@ std::vector<ReactionRule> NetfreeModel::apply(
 
 void NetfreeModel::add_species_attribute(const Species& sp)
 {
-    if (has_species_attribute_exact(sp))
-    {
-        throw AlreadyExists("species already exists");
-    }
+    // if (has_species_attribute_exact(sp))
+    // {
+    //     throw AlreadyExists("species already exists");
+    // }
     species_attributes_.push_back(sp);
 }
 
 void NetfreeModel::remove_species_attribute(const Species& sp)
 {
-    species_container_type::iterator i(
-        std::find(species_attributes_.begin(), species_attributes_.end(), sp));
+    species_container_type::iterator i(std::remove(species_attributes_.begin(), species_attributes_.end(), sp));
     if (i == species_attributes_.end())
     {
         std::ostringstream message;
-        message << "Speices [" << sp.serial() << "] not found";
+        message << "The given Speices [" << sp.serial() << "] was not found";
         throw NotFound(message.str()); // use boost::format if it's allowed
     }
-    species_attributes_.erase(i);
+    species_attributes_.erase(i, species_attributes_.end());
 }
 
 bool NetfreeModel::has_species_attribute(const Species& sp) const
@@ -170,144 +195,17 @@ bool NetfreeModel::has_species_attribute_exact(const Species& sp) const
 
 void NetfreeModel::add_reaction_rule(const ReactionRule& rr)
 {
-    reaction_rule_container_type::const_iterator
-        i(std::find(reaction_rules_.begin(), reaction_rules_.end(), rr));
-    if (i != reaction_rules_.end())
-    {
-        throw AlreadyExists("reaction rule already exists");
-    }
-
-    // const reaction_rule_container_type::size_type idx(reaction_rules_.size());
     reaction_rules_.push_back(rr);
-
-    // if (rr.reactants().size() == 1)
-    // {
-    //     first_order_reaction_rules_map_[rr.reactants()[0].serial()].push_back(idx);
-    // }
-    // else if (rr.reactants().size() == 2)
-    // {
-    //     const Species::serial_type
-    //         serial1(rr.reactants()[0].serial()),
-    //         serial2(rr.reactants()[1].serial());
-    //     const std::pair<Species::serial_type, Species::serial_type>
-    //         key(serial1 < serial2?
-    //             std::make_pair(serial1, serial2):
-    //             std::make_pair(serial2, serial1));
-    //     second_order_reaction_rules_map_[key].push_back(idx);
-    // }
-    // else
-    // {
-    //     ;
-    // }
 }
 
 void NetfreeModel::remove_reaction_rule(const ReactionRule& rr)
 {
-    reaction_rule_container_type::iterator
-        i(std::find(reaction_rules_.begin(), reaction_rules_.end(), rr));
+    reaction_rule_container_type::iterator i(std::remove(reaction_rules_.begin(), reaction_rules_.end(), rr));
     if (i == reaction_rules_.end())
     {
-        throw NotFound("reaction rule not found");
+        throw NotFound("The given reaction rule was not found.");
     }
-    reaction_rules_.erase(i);
-
-    // reaction_rule_container_type::size_type const
-    //     idx(i - reaction_rules_.begin()), last_idx(reaction_rules_.size() - 1);
-    // if (rr.reactants().size() == 1)
-    // {
-    //     first_order_reaction_rules_map_type::iterator
-    //         j(first_order_reaction_rules_map_.find(rr.reactants()[0].serial()));
-    //     if (j == first_order_reaction_rules_map_.end())
-    //     {
-    //         throw IllegalState("no corresponding map key found");
-    //     }
-
-    //     first_order_reaction_rules_map_type::mapped_type::iterator
-    //         k(std::remove((*j).second.begin(), (*j).second.end(), idx));
-    //     if (k == (*j).second.end())
-    //     {
-    //         throw IllegalState("no corresponding map value found");
-    //     }
-    //     else
-    //     {
-    //         (*j).second.erase(k, (*j).second.end());
-    //     }
-    // }
-    // else if (rr.reactants().size() == 2)
-    // {
-    //     second_order_reaction_rules_map_type::iterator
-    //         j(second_order_reaction_rules_map_.find(std::make_pair(
-    //             rr.reactants()[0].serial(), rr.reactants()[1].serial())));
-    //     if (j == second_order_reaction_rules_map_.end())
-    //     {
-    //         throw IllegalState("no corresponding map key found");
-    //     }
-
-    //     second_order_reaction_rules_map_type::mapped_type::iterator
-    //         k(std::remove((*j).second.begin(), (*j).second.end(), idx));
-    //     if (k == (*j).second.end())
-    //     {
-    //         throw IllegalState("no corresponding map value found");
-    //     }
-    //     else
-    //     {
-    //         (*j).second.erase(k, (*j).second.end());
-    //     }
-    // }
-
-    // if (idx < last_idx)
-    // {
-    //     reaction_rule_container_type::value_type const
-    //         last_value(reaction_rules_[last_idx]);
-    //     (*i) = last_value;
-
-    //     if (last_value.reactants().size() == 1)
-    //     {
-    //         first_order_reaction_rules_map_type::iterator
-    //             j(first_order_reaction_rules_map_.find(
-    //                 last_value.reactants()[0].serial()));
-    //         if (j == first_order_reaction_rules_map_.end())
-    //         {
-    //             throw IllegalState("no corresponding map key for the last found");
-    //         }
-
-    //         first_order_reaction_rules_map_type::mapped_type::iterator
-    //             k(std::remove((*j).second.begin(), (*j).second.end(), last_idx));
-    //         if (k == (*j).second.end())
-    //         {
-    //             throw IllegalState("no corresponding map value found");
-    //         }
-    //         else
-    //         {
-    //             (*j).second.erase(k, (*j).second.end());
-    //         }
-    //         (*j).second.push_back(idx);
-    //     }
-    //     else if (last_value.reactants().size() == 2)
-    //     {
-    //         second_order_reaction_rules_map_type::iterator
-    //             j(second_order_reaction_rules_map_.find(std::make_pair(
-    //                 last_value.reactants()[0].serial(),
-    //                 last_value.reactants()[1].serial())));
-    //         if (j == second_order_reaction_rules_map_.end())
-    //         {
-    //             throw IllegalState("no corresponding map key for the last found");
-    //         }
-    //         second_order_reaction_rules_map_type::mapped_type::iterator
-    //             k(std::remove((*j).second.begin(), (*j).second.end(), last_idx));
-    //         if (k == (*j).second.end())
-    //         {
-    //             throw IllegalState("no corresponding map value found");
-    //         }
-    //         else
-    //         {
-    //             (*j).second.erase(k, (*j).second.end());
-    //         }
-    //         (*j).second.push_back(idx);
-    //     }
-    // }
-
-    // reaction_rules_.pop_back();
+    reaction_rules_.erase(i, reaction_rules_.end());
 }
 
 bool NetfreeModel::has_reaction_rule(const ReactionRule& rr) const

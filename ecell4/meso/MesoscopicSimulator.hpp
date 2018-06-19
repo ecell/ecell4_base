@@ -765,7 +765,7 @@ protected:
         void set_dependency(ReactionRuleProxy* proxy)
         {
             const std::vector<Integer> coefs = proxy->check_dependency(pool_->species());
-            if (std::count(coefs.begin(), coefs.end(), 0) < coefs.size())
+            if (std::count(coefs.begin(), coefs.end(), 0) < std::distance(coefs.begin(), coefs.end()))
             {
                 dependencies_.push_back(std::make_pair(proxy, coefs));
             }

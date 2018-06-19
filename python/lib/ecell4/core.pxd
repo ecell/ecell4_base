@@ -1,3 +1,5 @@
+from cpython.ref cimport PyObject
+
 from libcpp.string cimport string
 from libcpp cimport bool
 
@@ -10,7 +12,7 @@ from libcpp.map cimport map
 
 from types cimport Real, Integer
 from multiset cimport multiset
-from shared_ptr cimport shared_ptr
+from shared_ptr cimport shared_ptr, dynamic_pointer_cast, static_pointer_cast
 
 
 cdef string tostring(ustr)
@@ -128,6 +130,66 @@ cdef class Species:
 
 cdef Species Species_from_Cpp_Species(Cpp_Species *sp)
 
+# ctypedef void* ReactionRuleDescriptorPyfunc_pyfunc_type
+ctypedef PyObject* ReactionRuleDescriptorPyfunc_pyfunc_type
+ctypedef double (*ReactionRuleDescriptorPyfunc_stepladder_type)(ReactionRuleDescriptorPyfunc_pyfunc_type, const vector[Real]&, const vector[Real]&, Real, Real, const vector[Real]&, const vector[Real]&)
+
+# Cpp_ReactionRuleDescriptor
+#ecell4::ReactionRuleDescriptor
+cdef extern from "ecell4/core/ReactionRuleDescriptor.hpp" namespace "ecell4":
+    cdef cppclass Cpp_ReactionRuleDescriptor "ecell4::ReactionRuleDescriptor":
+        pass
+
+# Cpp_ReactionRuleDescriptorPyfunc
+#ecell4::ReactionRuleDescriptorPyfunc
+cdef extern from "ecell4/core/ReactionRuleDescriptorPyfunc.hpp" namespace "ecell4":
+    cdef cppclass Cpp_ReactionRuleDescriptorPyfunc "ecell4::ReactionRuleDescriptorPyfunc":
+        Cpp_ReactionRuleDescriptorPyfunc() except +
+        Cpp_ReactionRuleDescriptorPyfunc(
+                ReactionRuleDescriptorPyfunc_stepladder_type,
+                ReactionRuleDescriptorPyfunc_pyfunc_type,
+                string name)
+        void set_reactant_coefficients(vector[Real])
+        void set_product_coefficients(vector[Real])
+        void set_reactant_coefficient(int, Real)
+        void set_product_coefficient(int, Real)
+        bool has_coefficients()
+        vector[Real] reactant_coefficients()
+        vector[Real] product_coefficients()
+        Real propensity(vector[Real], vector[Real], Real, Real)
+        # bool is_available()
+        string& as_string()
+        void set_name(string&)
+        ReactionRuleDescriptorPyfunc_pyfunc_type get()
+
+# Cpp_ReactionRuleDescriptorMassAction
+#ecell4::ReactionRuleDescriptorMassAction
+cdef extern from "ecell4/core/ReactionRuleDescriptor.hpp" namespace "ecell4":
+    cdef cppclass Cpp_ReactionRuleDescriptorMassAction "ecell4::ReactionRuleDescriptorMassAction":
+        Cpp_ReactionRuleDescriptorMassAction() except +
+        Cpp_ReactionRuleDescriptorMassAction(Real)
+        void set_reactant_coefficients(vector[Real])
+        void set_product_coefficients(vector[Real])
+        void set_reactant_coefficient(int, Real)
+        void set_product_coefficient(int, Real)
+        bool has_coefficients()
+        vector[Real] reactant_coefficients()
+        vector[Real] product_coefficients()
+        Real propensity(vector[Real], vector[Real], Real, Real)
+        # bool is_available()
+        Real k()
+        void set_k(Real)
+
+cdef class ReactionRuleDescriptorPyfunc:
+    cdef shared_ptr[Cpp_ReactionRuleDescriptorPyfunc] thisptr
+
+cdef ReactionRuleDescriptorPyfunc ReactionRuleDescriptorPyfunc_from_Cpp_ReactionRuleDescriptorPyfunc(shared_ptr[Cpp_ReactionRuleDescriptorPyfunc] rrd)
+
+cdef class ReactionRuleDescriptorMassAction:
+    cdef shared_ptr[Cpp_ReactionRuleDescriptorMassAction] thisptr
+
+cdef ReactionRuleDescriptorMassAction ReactionRuleDescriptorMassAction_from_Cpp_ReactionRuleDescriptorMassAction(shared_ptr[Cpp_ReactionRuleDescriptorMassAction] rrd)
+
 ## Cpp_ReactionRule
 #  ecell4::ReactionRule
 cdef extern from "ecell4/core/ReactionRule.hpp" namespace "ecell4":
@@ -156,6 +218,11 @@ cdef extern from "ecell4/core/ReactionRule.hpp" namespace "ecell4":
         Integer count(vector[Cpp_Species]) except +
         vector[Cpp_ReactionRule] generate(vector[Cpp_Species]) except +
 
+        void set_descriptor(shared_ptr[Cpp_ReactionRuleDescriptor]&)
+        shared_ptr[Cpp_ReactionRuleDescriptor]& get_descriptor()
+        bool has_descriptor()
+        void reset_descriptor()
+
 ## ReactionRule
 #  a python wrapper for Cpp_ReactionRule
 cdef class ReactionRule:
@@ -163,16 +230,36 @@ cdef class ReactionRule:
 
 cdef ReactionRule ReactionRule_from_Cpp_ReactionRule(Cpp_ReactionRule *rr)
 
-## Cpp_Space
-#  ecell4::Space
-cdef extern from "ecell4/core/Space.hpp" namespace "ecell4":
-    cdef cppclass Cpp_Space "ecell4::Space":
-        pass
+## Cpp_WorldInterface
+#  ecell4::WorldInterface
+cdef extern from "ecell4/core/WorldInterface.hpp" namespace "ecell4":
+    cdef cppclass Cpp_WorldInterface "ecell4::WorldInterface":
+        Real t()
+        void set_t(Real&)
+        void save(string&)
+        void load(string&)
+        Real volume()
+        # Integer num_species()
+        bool has_species(Cpp_Species&)
+        Integer num_molecules(Cpp_Species&)
+        Integer num_molecules_exact(Cpp_Species&)
+        Real get_value(Cpp_Species &sp)
+        Real get_value_exact(Cpp_Species &sp)
+        Cpp_Real3 edge_lengths()
+        Cpp_Real3 actual_lengths()
+        Integer num_particles()
+        Integer num_particles(Cpp_Species&)
+        Integer num_particles_exact(Cpp_Species&)
+        bool has_particle(Cpp_ParticleID&)
+        pair[Cpp_ParticleID, Cpp_Particle] get_particle(Cpp_ParticleID&)
+        vector[pair[Cpp_ParticleID, Cpp_Particle]] list_particles()
+        vector[pair[Cpp_ParticleID, Cpp_Particle]] list_particles(Cpp_Species&)
+        vector[pair[Cpp_ParticleID, Cpp_Particle]] list_particles_exact(Cpp_Species&)
 
-## Space
-#  a python wrapper for Cpp_Space
-cdef class Space:
-    cdef shared_ptr[Cpp_Space]* thisptr
+## WorldInterface
+#  a python wrapper for Cpp_WorldInterface
+cdef class WorldInterface:
+    cdef shared_ptr[Cpp_WorldInterface]* thisptr
 
 ## Cpp_CompartmentSpaceVectorImpl
 #  ecell4::CompartmentSpaceVectorImpl
@@ -490,8 +577,8 @@ cdef extern from "ecell4/core/observers.hpp" namespace "ecell4":
         Real next_time()
         Integer num_steps()
         string filename()
-        # void log(Cpp_Space*)
-        void log(shared_ptr[Cpp_Space]&)
+        # void log(Cpp_WorldInterface*)
+        void log(shared_ptr[Cpp_WorldInterface]&)
         void reset()
         void set_header(string&)
         void set_formatter(string&)
@@ -502,8 +589,8 @@ cdef extern from "ecell4/core/observers.hpp" namespace "ecell4":
         Real next_time()
         Integer num_steps()
         string filename()
-        # void log(Cpp_Space*)
-        void log(shared_ptr[Cpp_Space]&)
+        # void log(Cpp_WorldInterface*)
+        void log(shared_ptr[Cpp_WorldInterface]&)
         void reset()
         void set_header(string&)
         void set_formatter(string&)
@@ -568,6 +655,18 @@ cdef extern from "ecell4/core/observers.hpp" namespace "ecell4":
         @staticmethod
         Real default_threshold()
 
+ctypedef PyObject* FixedIntervalPythonHooker_pyfunc_type
+ctypedef bool (*FixedIntervalPythonHooker_stepladder_type)(FixedIntervalPythonHooker_pyfunc_type, const shared_ptr[Cpp_WorldInterface]& space, bool check_reaction)
+
+## Cpp_FixedIntervalPythonHooker
+#  ecell4::FixedIntervalPythonHooker
+cdef extern from "ecell4/core/PythonHooker.hpp" namespace "ecell4":
+    cdef cppclass Cpp_FixedIntervalPythonHooker "ecell4::FixedIntervalPythonHooker":
+        Cpp_FixedIntervalPythonHooker(Real, FixedIntervalPythonHooker_stepladder_type, FixedIntervalPythonHooker_pyfunc_type)
+        Real next_time()
+        Integer num_steps()
+        void reset()
+
 ## FixedIntervalNumberObserver
 #  a python wrapper for Cpp_FixedIntervalNumberObserver
 cdef class Observer:
@@ -575,6 +674,9 @@ cdef class Observer:
 
 cdef class FixedIntervalNumberObserver:
     cdef shared_ptr[Cpp_FixedIntervalNumberObserver]* thisptr
+
+cdef class FixedIntervalPythonHooker:
+    cdef shared_ptr[Cpp_FixedIntervalPythonHooker]* thisptr
 
 cdef class NumberObserver:
     cdef shared_ptr[Cpp_NumberObserver]* thisptr
@@ -804,7 +906,6 @@ cdef class Rod:
 cdef class RodSurface:
     cdef shared_ptr[Cpp_RodSurface]* thisptr
 
-
 ## MeshSurface
 # a python wrapper for Cpp_MeshSurface
 cdef class MeshSurface:
@@ -842,5 +943,4 @@ cdef CylindricalSurface CylindricalSurface_from_Cpp_CylindricalSurface(Cpp_Cylin
 cdef AABB AABB_from_Cpp_AABB(Cpp_AABB* p)
 
 cdef extern from "ecell4/core/BDMLWriter.hpp" namespace "ecell4":
-    void Cpp_save_bd5 "save_bd5" (Cpp_Space&, string, int, string, string, string, bool, bool) except +
-
+    void Cpp_save_bd5 "save_bd5" (Cpp_WorldInterface&, string, int, string, string, string, bool, bool) except +

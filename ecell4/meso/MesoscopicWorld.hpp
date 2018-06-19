@@ -12,6 +12,7 @@
 #include <ecell4/core/Model.hpp>
 #include <ecell4/core/Shape.hpp>
 #include <ecell4/core/extras.hpp>
+#include <ecell4/core/WorldInterface.hpp>
 
 namespace ecell4
 {
@@ -26,7 +27,7 @@ struct MoleculeInfo
 };
 
 class MesoscopicWorld
-    : public Space
+    : public WorldInterface
 {
 public:
 

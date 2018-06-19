@@ -5,7 +5,7 @@
 #include "types.hpp"
 #include "exceptions.hpp"
 #include "Species.hpp"
-#include "Space.hpp"
+// #include "Space.hpp"
 
 #ifdef WITH_HDF5
 #include "CompartmentSpaceHDF5Writer.hpp"
@@ -15,7 +15,7 @@ namespace ecell4
 {
 
 class CompartmentSpace
-    : public Space
+    // : public Space
 {
 public:
 
