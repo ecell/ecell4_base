@@ -359,29 +359,61 @@ class SGFRDWorld : public ecell4::Space
 
     void prepair_barriers()
     {
+        // this contains the edges that correspond to the developed neighbor faces.
+        //
+        //        /\
+        //     > /__\ <
+        //      /\* /\
+        //   > /__\/__\ < these edges
+        //      ^    ^
         const std::vector<FaceID> faces = polygon_->list_face_ids();
         for(std::vector<FaceID>::const_iterator
-                i(faces.begin()), e(faces.end()); i!=e; ++i)
+                iter(faces.begin()), iend(faces.end()); iter!=iend; ++iter)
         {
-            const FaceID fid = *i;
+            const FaceID fid = *iter;
+            const Triangle& tri = polygon_->triangle_at(fid);
+
             boost::array<Segment, 6> segments;
             boost::array<EdgeID, 3> const& edges = polygon_->edges_of(fid);
             for(std::size_t i=0; i<3; ++i)
             {
                 const EdgeID eid = edges[i];
-                const Real3 orig = this->polygon_->position_at(
-                    this->polygon_->target_of(this->polygon_->opposite_of(eid)));
+                const Real3 orig = tri.vertex_at(i);
                 const Real3  vtx = orig + rotate(
                     -1 * this->polygon_->tilt_angle_at(eid),
                     this->polygon_->direction_of(eid),
                     this->polygon_->direction_of(this->polygon_->next_of(
                             this->polygon_->opposite_of(eid))));
 
+                const Real3  vtx_ = orig + rotate(
+                    -1 * this->polygon_->tilt_angle_at(eid),
+                    this->polygon_->direction_of(this->polygon_->opposite_of(
+                            this->polygon_->next_of(eid))),
+                    this->polygon_->direction_of(this->polygon_->next_of(
+                            this->polygon_->opposite_of(eid))));
+
+                const Real dist = length(vtx - vtx_);
+                if(dist > 1e-12)
+                {
+                    std::cerr << "[World::prepair_barriers]: "
+                              << "dist between first calculation " << vtx
+                              << " and second calculation " << vtx_
+                              << " is too large = " << dist << std::endl;
+                    assert(false);
+                }
+
                 segments[i*2    ] = Segment(orig, vtx);
                 segments[i*2 + 1] = Segment(this->polygon_->position_at(
                     this->polygon_->target_of(eid)), vtx);
             }
             this->barriers_[fid] = segments;
+
+//             std::cerr << "[World::prepair_barriers]: barriers = {";
+//             for(std::size_t i=0; i<6; ++i)
+//             {
+//                 std::cerr << this->barriers_[fid][i] << ", ";
+//             }
+//             std::cerr << std::endl;
         }
         return;
     }
