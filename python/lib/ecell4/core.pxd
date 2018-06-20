@@ -760,6 +760,8 @@ cdef extern from "ecell4/core/Sphere.hpp" namespace "ecell4":
         Real is_inside(Cpp_Real3&)
         Cpp_SphericalSurface surface()
         Integer dimension()
+        Cpp_Real3 center()
+        Real radius()
 
 ## Cpp_SphericalSurface
 #  ecell4::SphericalSurface
@@ -772,6 +774,8 @@ cdef extern from "ecell4/core/Sphere.hpp" namespace "ecell4":
         Real is_inside(Cpp_Real3&)
         Cpp_Sphere inside()
         Integer dimension()
+        Cpp_Real3 center()
+        Real radius()
 
 ## Cpp_Cylinder
 #  ecell4::Cylinder
@@ -784,6 +788,10 @@ cdef extern from "ecell4/core/Cylinder.hpp" namespace "ecell4":
         Real is_inside(Cpp_Real3&)
         Cpp_CylindricalSurface surface()
         Integer dimension()
+        Cpp_Real3 center()
+        Real radius()
+        Cpp_Real3 axis()
+        Real half_height()
 
 ## Cpp_CylindricalSurface
 #  ecell4::CylindricalSurface
@@ -796,6 +804,10 @@ cdef extern from "ecell4/core/Cylinder.hpp" namespace "ecell4":
         Real is_inside(Cpp_Real3&)
         Cpp_Cylinder inside()
         Integer dimension()
+        Cpp_Real3 center()
+        Real radius()
+        Cpp_Real3 axis()
+        Real half_height()
 
 ## Cpp_PlanarSurface
 # ecell4::PlanarSurface
@@ -807,6 +819,10 @@ cdef extern from "ecell4/core/PlanarSurface.hpp" namespace "ecell4":
         # Real distance(Cpp_Real3&)
         Real is_inside(Cpp_Real3&)
         Integer dimension()
+        Cpp_Real3& origin()
+        Cpp_Real3& e0()
+        Cpp_Real3& e1()
+        Cpp_Real3& normal()
 
 ## Cpp_Rod
 # ecell4::Rod
@@ -865,6 +881,8 @@ cdef extern from "ecell4/core/Mesh.hpp" namespace "ecell4":
         # Real distance(Cpp_Real3&)
         Real is_inside(Cpp_Real3&)
         Integer dimension()
+        string filename()
+        Cpp_Real3 edge_lengths()
 
 ## Shape
 #  a python wrapper for Cpp_Shape

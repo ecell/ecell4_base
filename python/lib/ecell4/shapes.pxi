@@ -450,6 +450,18 @@ cdef class Sphere:
         retval.thisptr = new_obj
         return retval
 
+    def center(self):
+        """Return a center of this shape"""
+        cdef Cpp_Real3 x = self.thisptr.get().center()
+        return Real3_from_Cpp_Real3(address(x))
+
+    def radius(self):
+        """Return a radius of this shape"""
+        return self.thisptr.get().radius()
+
+    def __reduce__(self):
+        return (self.__class__, (self.center(), self.radius()))
+
 cdef class SphericalSurface:
     """A class representing a hollow spherical surface, which is
     available to define structures.
@@ -536,6 +548,18 @@ cdef class SphericalSurface:
         del retval.thisptr
         retval.thisptr = new_obj
         return retval
+
+    def center(self):
+        """Return a center of this shape"""
+        cdef Cpp_Real3 x = self.thisptr.get().center()
+        return Real3_from_Cpp_Real3(address(x))
+
+    def radius(self):
+        """Return a radius of this shape"""
+        return self.thisptr.get().radius()
+
+    def __reduce__(self):
+        return (self.__class__, (self.center(), self.radius()))
 
 cdef class Cylinder:
     """A class representing a cylinder shape, which is available to define
@@ -628,6 +652,27 @@ cdef class Cylinder:
         retval.thisptr = new_obj
         return retval
 
+    def center(self):
+        """Return a center of this shape"""
+        cdef Cpp_Real3 x = self.thisptr.get().center()
+        return Real3_from_Cpp_Real3(address(x))
+
+    def radius(self):
+        """Return a radius of this shape"""
+        return self.thisptr.get().radius()
+
+    def axis(self):
+        """Return an axis of this shape"""
+        cdef Cpp_Real3 x = self.thisptr.get().axis()
+        return Real3_from_Cpp_Real3(address(x))
+
+    def half_height(self):
+        """Return a half of the height"""
+        return self.thisptr.get().half_height()
+
+    def __reduce__(self):
+        return (self.__class__, (self.center(), self.radius(), self.axis(), self.half_height()))
+
 cdef class CylindricalSurface:
     """A class representing a hollow cylindrical surface, which is
     available to define structures.
@@ -719,6 +764,27 @@ cdef class CylindricalSurface:
         retval.thisptr = new_obj
         return retval
 
+    def center(self):
+        """Return a center of this shape"""
+        cdef Cpp_Real3 x = self.thisptr.get().center()
+        return Real3_from_Cpp_Real3(address(x))
+
+    def radius(self):
+        """Return a radius of this shape"""
+        return self.thisptr.get().radius()
+
+    def axis(self):
+        """Return an axis of this shape"""
+        cdef Cpp_Real3 x = self.thisptr.get().axis()
+        return Real3_from_Cpp_Real3(address(x))
+
+    def half_height(self):
+        """Return a half of the height"""
+        return self.thisptr.get().half_height()
+
+    def __reduce__(self):
+        return (self.__class__, (self.center(), self.radius(), self.axis(), self.half_height()))
+
 cdef class PlanarSurface:
     """A class representing a planar surface, which is available to define
     structures.
@@ -794,6 +860,29 @@ cdef class PlanarSurface:
         del retval.thisptr
         retval.thisptr = new_obj
         return retval
+
+    def origin(self):
+        """Return an origin of this shape"""
+        cdef Cpp_Real3 x = self.thisptr.get().origin()
+        return Real3_from_Cpp_Real3(address(x))
+
+    def e0(self):
+        """Return one of the axes of this shape"""
+        cdef Cpp_Real3 x = self.thisptr.get().e0()
+        return Real3_from_Cpp_Real3(address(x))
+
+    def e1(self):
+        """Return one of the axes of this shape"""
+        cdef Cpp_Real3 x = self.thisptr.get().e1()
+        return Real3_from_Cpp_Real3(address(x))
+
+    def normal(self):
+        """Return a normal vector of this shape"""
+        cdef Cpp_Real3 x = self.thisptr.get().normal()
+        return Real3_from_Cpp_Real3(address(x))
+
+    def __reduce__(self):
+        return (self.__class__, (self.origin(), self.e0(), self.e1()))
 
 def create_x_plane(Real x):
     """Return PlanarSurface(Real3(x, 0, 0), Real3(0, 1, 0), Real3(0, 0, 1))."""
@@ -924,6 +1013,9 @@ cdef class Rod:
         retval.thisptr = new_obj
         return retval
 
+    def __reduce__(self):
+        return (self.__class__, (self.length(), self.radius(), self.origin()))
+
 cdef class RodSurface:
     """A class representing a hollow rod surface shape, which is
     available to define structures. The cylinder is aligned to x-axis.
@@ -1040,6 +1132,9 @@ cdef class RodSurface:
         retval.thisptr = new_obj
         return retval
 
+    def __reduce__(self):
+        return (self.__class__, (self.length(), self.radius(), self.origin()))
+
 cdef class AABB:
     """A class representing an axis aligned bounding box (AABB),
     which is available to define structures.
@@ -1140,6 +1235,9 @@ cdef class AABB:
         retval.thisptr = new_obj
         return retval
 
+    def __reduce__(self):
+        return (self.__class__, (self.lower(), self.upper()))
+
 cdef class MeshSurface:
     """A class representing a triangular mesh surface, which is
     available to define structures.
@@ -1209,6 +1307,17 @@ cdef class MeshSurface:
         retval.thisptr = new_obj
         return retval
 
+    def filename(self):
+        """Return a name of the original input file"""
+        return self.thisptr.get().filename().decode('UTF-8')
+
+    def edge_lengths(self):
+        """Return bounds"""
+        cdef Cpp_Real3 x = self.thisptr.get().edge_lengths()
+        return Real3_from_Cpp_Real3(address(x))
+
+    def __reduce__(self):
+        return (self.__class__, (self.filename(), self.edge_lengths()))
 
 cdef Sphere Sphere_from_Cpp_Sphere(Cpp_Sphere* shape):
     cdef shared_ptr[Cpp_Sphere] *new_obj = new shared_ptr[Cpp_Sphere](
