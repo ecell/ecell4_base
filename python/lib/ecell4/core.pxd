@@ -12,7 +12,7 @@ from libcpp.map cimport map
 
 from types cimport Real, Integer
 from multiset cimport multiset
-from shared_ptr cimport shared_ptr, dynamic_pointer_cast, static_pointer_cast
+from shared_ptr cimport shared_ptr, dynamic_pointer_cast, static_pointer_cast, const_pointer_cast
 
 
 cdef string tostring(ustr)
@@ -721,6 +721,7 @@ cdef extern from "ecell4/core/shape_operators.hpp" namespace "ecell4":
         Cpp_Surface(Cpp_Surface&)
         Real is_inside(Cpp_Real3&)
         Integer dimension()
+        shared_ptr[Cpp_Shape]& root()
 
     cdef cppclass Cpp_Union "ecell4::Union":
         Cpp_Union(shared_ptr[Cpp_Shape]&, shared_ptr[Cpp_Shape]&)
@@ -728,6 +729,8 @@ cdef extern from "ecell4/core/shape_operators.hpp" namespace "ecell4":
         Real is_inside(Cpp_Real3&)
         Integer dimension()
         Cpp_Surface surface()
+        shared_ptr[Cpp_Shape]& one()
+        shared_ptr[Cpp_Shape]& another()
 
     cdef cppclass Cpp_Complement "ecell4::Complement":
         Cpp_Complement(shared_ptr[Cpp_Shape]&, shared_ptr[Cpp_Shape]&)
@@ -735,10 +738,13 @@ cdef extern from "ecell4/core/shape_operators.hpp" namespace "ecell4":
         Real is_inside(Cpp_Real3&)
         Integer dimension()
         Cpp_Surface surface()
+        shared_ptr[Cpp_Shape]& one()
+        shared_ptr[Cpp_Shape]& another()
 
     cdef cppclass Cpp_AffineTransformation "ecell4::AffineTransformation":
         Cpp_AffineTransformation()
         Cpp_AffineTransformation(shared_ptr[Cpp_Shape]&)
+        Cpp_AffineTransformation(shared_ptr[Cpp_Shape]&, Cpp_Real3&, Cpp_Real3&, Cpp_Real3&, Cpp_Real3&)
         Cpp_AffineTransformation(Cpp_AffineTransformation&)
         Real is_inside(Cpp_Real3&)
         Integer dimension()
@@ -748,6 +754,11 @@ cdef extern from "ecell4/core/shape_operators.hpp" namespace "ecell4":
         void xroll(Real&)
         void yroll(Real&)
         void zroll(Real&)
+        Cpp_Real3& first()
+        Cpp_Real3& second()
+        Cpp_Real3& third()
+        Cpp_Real3& shift()
+        shared_ptr[Cpp_Shape]& root()
 
 ## Cpp_Sphere
 #  ecell4::Sphere
@@ -958,7 +969,14 @@ cdef Sphere Sphere_from_Cpp_Sphere(Cpp_Sphere* p)
 cdef SphericalSurface SphericalSurface_from_Cpp_SphericalSurface(Cpp_SphericalSurface* p)
 cdef Cylinder Cylinder_from_Cpp_Cylinder(Cpp_Cylinder* p)
 cdef CylindricalSurface CylindricalSurface_from_Cpp_CylindricalSurface(Cpp_CylindricalSurface* p)
+cdef Rod Rod_from_Cpp_Rod(Cpp_Rod* p)
+cdef RodSurface RodSurface_from_Cpp_RodSurface(Cpp_RodSurface* p)
 cdef AABB AABB_from_Cpp_AABB(Cpp_AABB* p)
+cdef MeshSurface MeshSurface_from_Cpp_MeshSurface(Cpp_MeshSurface* p)
+cdef Surface Surface_from_Cpp_Surface(Cpp_Surface* p)
+cdef Union Union_from_Cpp_Union(Cpp_Union* p)
+cdef Complement Complement_from_Cpp_Complement(Cpp_Complement* p)
+cdef AffineTransformation AffineTransformation_from_Cpp_AffineTransformation(Cpp_AffineTransformation* p)
 
 cdef extern from "ecell4/core/BDMLWriter.hpp" namespace "ecell4":
     void Cpp_save_bd5 "save_bd5" (Cpp_WorldInterface&, string, int, string, string, string, bool, bool) except +
