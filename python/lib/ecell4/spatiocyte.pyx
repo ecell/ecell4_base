@@ -1002,18 +1002,6 @@ cdef class SpatiocyteWorld:
         cdef Cpp_Integer3 sizes = self.thisptr.get().shape()
         return Integer3_from_Cpp_Integer3(address(sizes))
 
-    # def inner_size(self):
-    #     """Return the size of inner voxels."""
-    #     return self.thisptr.get().inner_size()
-
-    # def inner_shape(self):
-    #     """inner_shape() -> Integer3
-    #
-    #     Return the triplet of inner sizes of column, row and layer.
-    #
-    #     """
-    #     cdef Cpp_Integer3 sizes = self.thisptr.get().inner_shape()
-    #     return Integer3_from_Cpp_Integer3(address(sizes))
 
     def bind_to(self, m):
         """bind_to(m)
@@ -1280,41 +1268,6 @@ cdef class SpatiocyteSimulator:
                     <CppReactionInfo*>(address(deref(it).second)))))
             inc(it)
         return retval
-
-    # def set_alpha(self, Real alpha):
-    #     """set_alpha(alpha)
-
-    #     Set the value of alpha.
-
-    #     Parameters
-    #     ----------
-    #     alpha : Real
-    #         The value of alpha
-
-    #     """
-    #     self.thisptr.set_alpha(alpha)
-
-    # def get_alpha(self):
-    #     """Return the value of alpha."""
-    #     return self.thisptr.get_alpha()
-
-    # def calculate_alpha(self, ReactionRule rule):
-    #     """calculate_alpha(rule) -> Real
-
-    #     Return the recommended value of alpha
-
-    #     Parameters
-    #     ----------
-    #     rule : ReactionRule
-    #         A reaction rule.
-
-    #     Returns
-    #     -------
-    #     Real:
-    #         The recommneded value of alpha
-
-    #     """
-    #     return self.thisptr.calculate_alpha(deref(rule.thisptr))
 
     def model(self):
         """Return the model bound."""
