@@ -85,21 +85,21 @@ def generate_ReactionRule(lhs, rhs, k=None):
               and isinstance(k, (parseobj.ExpBase, parseobj.AnyCallable)))  # Formula
           or any([coef is not None
                   for (sp, coef) in itertools.chain(lhs, rhs)])):  # Stoichiometry
-        from ecell4.ode import ODEReactionRule, ODERatelawCallback
-
-        rr = ODEReactionRule()
-        for sp, coef in lhs:
-            rr.add_reactant(sp, coef or 1)
-        for sp, coef in rhs:
-            rr.add_product(sp, coef or 1)
+        rr = ecell4.core.ReactionRule([sp for (sp, _) in lhs], [sp for (sp, _) in rhs], 0.0)
 
         if ENABLE_RATELAW and isinstance(k, (parseobj.ExpBase, parseobj.AnyCallable)):
             func, name = generate_ratelaw(k, rr, ENABLE_IMPLICIT_DECLARATION)
-            rr.set_ratelaw(ODERatelawCallback(func, name))
+            desc = ecell4.core.ReactionRuleDescriptorPyfunc(func, name)
         elif callable(k):
-            rr.set_ratelaw(ODERatelawCallback(k))
+            desc = ecell4.core.ReactionRuleDescriptorPyfunc(k, "")
         else:
-            rr.set_k(k)
+            #TODO: k might be a Quantity
+            desc = ecell4.core.ReactionRuleDescriptorMassAction(k)
+
+        desc.set_reactant_coefficients([coef or 1 for (_, coef) in lhs])
+        desc.set_product_coefficients([coef or 1 for (_, coef) in rhs])
+
+        rr.set_descriptor(desc)
         return rr
 
     elif isinstance(k, numbers.Number):  # Kinetic rate
@@ -298,14 +298,14 @@ def generate_ratelaw(obj, rr, implicit=False):
         elif implicit:
             names.append("_r[{0:d}]".format(len(rr.reactants())))
             aliases[key] = names[-1]
-            rr.add_reactant(ecell4.core.Species(key), 1)
-            rr.add_product(ecell4.core.Species(key), 1)
+            rr.add_reactant(ecell4.core.Species(key))
+            rr.add_product(ecell4.core.Species(key))
         else:
             raise RuntimeError(
                 'unknown variable [{}] was used.'.format(key))
     exp = exp.format(*names)
     # print(exp)
-    f = eval("lambda _r, _p, _v, _t, _rr: {0}".format(exp))
+    f = eval("lambda _r, _p, _v, _t, _rc, _pc: {0}".format(exp))
     f.__globals__.update(RATELAW_RESERVED_FUNCTIONS)
     f.__globals__.update((key, val) for key, val in RATELAW_RESERVED_CONSTANTS if val is not None)
 
@@ -490,14 +490,11 @@ def get_model(is_netfree=False, without_reset=False, seeds=None, effective=False
 
     Returns
     -------
-    model : NetworkModel, NetfreeModel, or ODENetworkModel
+    model : NetworkModel, NetfreeModel
 
     """
     try:
-        if any([not isinstance(rr, ecell4.core.ReactionRule) for rr in REACTION_RULES]):
-           from ecell4.ode import ODENetworkModel
-           m = ODENetworkModel()
-        elif seeds is not None or is_netfree:
+        if seeds is not None or is_netfree:
             m = ecell4.core.NetfreeModel()
         else:
             m = ecell4.core.NetworkModel()

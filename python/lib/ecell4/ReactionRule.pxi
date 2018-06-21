@@ -1,8 +1,210 @@
+from cpython.ref cimport PyObject
 from cython.operator cimport dereference as deref, preincrement as inc
 from cython cimport address
 
 cimport create_reaction_rule as crr
 
+cdef double indirect_function_rrd(
+    PyObject* pyfunc, const vector[Real]& reactants, const vector[Real]& products, Real volume, Real t, const vector[Real]& reactant_coefficients, const vector[Real]& product_coefficients):
+    py_reactants = []
+    cdef vector[Real].const_iterator it1 = reactants.const_begin()
+    while it1 != reactants.const_end():
+        py_reactants.append(deref(it1))
+        inc(it1)
+    py_products = []
+    cdef vector[Real].const_iterator it2 = products.const_begin()
+    while it2 != products.const_end():
+        py_products.append(deref(it2))
+        inc(it2)
+    ret = (<object>pyfunc)(py_reactants, py_products, volume, t, reactant_coefficients, product_coefficients)
+    # try:
+    #     ret = (<object>pyfunc)(py_reactants, py_products, t)
+    # except Exception as e:
+    #     print("Catch '{:s}'".format(str(e)))
+    #     raise e
+    # if not isinstance(ret, float):
+    #     #XXX: Show some warning here
+    #     # print('indirect_function: {} {} {} {} {} => {}'.format(py_reactants, py_products, volume, t, rr.as_string(), ret))
+    #     return 0.0
+    return ret
+
+cdef class ReactionRuleDescriptorPyfunc:
+
+    def __init__(self, pyfunc, name):
+        # a = PyObjectHandler()
+        self.thisptr = shared_ptr[Cpp_ReactionRuleDescriptorPyfunc](
+            new Cpp_ReactionRuleDescriptorPyfunc(
+                <ReactionRuleDescriptorPyfunc_stepladder_type>indirect_function_rrd,
+                <PyObject*>pyfunc,
+                tostring(name)))
+
+    def reactant_coefficients(self):
+        cdef vector[Real] cpp_coefficients = self.thisptr.get().reactant_coefficients()
+        py_reactant_coefficients = []
+        cdef vector[Real].iterator it = cpp_coefficients.begin()
+        while it != cpp_coefficients.end():
+            py_reactant_coefficients.append(deref(it))
+            inc(it)
+        return py_reactant_coefficients
+
+    def product_coefficients(self):
+        cdef vector[Real] cpp_coefficients = self.thisptr.get().product_coefficients()
+        py_product_coefficients = []
+        cdef vector[Real].iterator it = cpp_coefficients.begin()
+        while it != cpp_coefficients.end():
+            py_product_coefficients.append(deref(it))
+            inc(it)
+        return py_product_coefficients
+
+    def set_reactant_coefficient(self, int idx, Real val):
+        self.thisptr.get().set_reactant_coefficient(idx, val)
+
+    def set_product_coefficient(self, int idx, Real val):
+        self.thisptr.get().set_product_coefficient(idx, val)
+
+    def set_reactant_coefficients(self, coefficients):
+        cdef vector[Real] cpp_coefficients
+        for c in coefficients:
+            cpp_coefficients.push_back(c)
+        self.thisptr.get().set_reactant_coefficients(cpp_coefficients)
+
+    def set_product_coefficients(self, coefficients):
+        cdef vector[Real] cpp_coefficients
+        for c in coefficients:
+            cpp_coefficients.push_back(c)
+        self.thisptr.get().set_product_coefficients(cpp_coefficients)
+
+    def propensity(self, r, p, Real volume, Real t):
+        cdef vector[Real] cpp_r
+        for val in r:
+            cpp_r.push_back(val)
+        cdef vector[Real] cpp_p
+        for val in p:
+            cpp_p.push_back(val)
+        return self.thisptr.get().propensity(cpp_r, cpp_p, volume, t)
+
+    def set_name(self, name):
+        self.thisptr.get().set_name(tostring(name))
+
+    def as_string(self):
+        """as_string() -> str
+
+        Return an unicode string describing this object.
+
+        Returns
+        -------
+        str:
+            An unicode string describing this object.
+
+        """
+        return self.thisptr.get().as_string().decode('UTF-8')
+
+    # def is_available(self):
+    #     return self.thisptr.get().is_available()
+
+    def get(self):
+        return <object>(self.thisptr.get().get())
+
+    def __reduce__(self):
+        import sys
+        loaded_modules = sys.modules.keys()
+        if not  "dill" in loaded_modules:
+            raise RuntimeError(
+                "dill module is required for pickling user-defined function. Use dill instead of pickle")
+        return (__rebuild_ReactionRuleDescriptor, (ReactionRuleDescriptorPyfunc, self.reactant_coefficients(), self.product_coefficients(), self.get(), self.as_string()))
+
+cdef ReactionRuleDescriptorPyfunc ReactionRuleDescriptorPyfunc_from_Cpp_ReactionRuleDescriptorPyfunc(shared_ptr[Cpp_ReactionRuleDescriptorPyfunc] rrd):
+    r = ReactionRuleDescriptorPyfunc(lambda *args: 0.0, "")  # dummy
+    r.thisptr.swap(rrd)
+    return r
+
+cdef class ReactionRuleDescriptorMassAction:
+
+    def __init__(self, Real k):
+        # a = PyObjectHandler()
+        self.thisptr = shared_ptr[Cpp_ReactionRuleDescriptorMassAction](
+            new Cpp_ReactionRuleDescriptorMassAction(k))
+
+    def reactant_coefficients(self):
+        cdef vector[Real] cpp_coefficients = self.thisptr.get().reactant_coefficients()
+        py_reactant_coefficients = []
+        cdef vector[Real].iterator it = cpp_coefficients.begin()
+        while it != cpp_coefficients.end():
+            py_reactant_coefficients.append(deref(it))
+            inc(it)
+        return py_reactant_coefficients
+
+    def product_coefficients(self):
+        cdef vector[Real] cpp_coefficients = self.thisptr.get().product_coefficients()
+        py_product_coefficients = []
+        cdef vector[Real].iterator it = cpp_coefficients.begin()
+        while it != cpp_coefficients.end():
+            py_product_coefficients.append(deref(it))
+            inc(it)
+        return py_product_coefficients
+
+    def set_reactant_coefficient(self, int idx, Real val):
+        self.thisptr.get().set_reactant_coefficient(idx, val)
+
+    def set_product_coefficient(self, int idx, Real val):
+        self.thisptr.get().set_product_coefficient(idx, val)
+
+    def set_reactant_coefficients(self, coefficients):
+        cdef vector[Real] cpp_coefficients
+        for c in coefficients:
+            cpp_coefficients.push_back(c)
+        self.thisptr.get().set_reactant_coefficients(cpp_coefficients)
+
+    def set_product_coefficients(self, coefficients):
+        cdef vector[Real] cpp_coefficients
+        for c in coefficients:
+            cpp_coefficients.push_back(c)
+        self.thisptr.get().set_product_coefficients(cpp_coefficients)
+
+    def propensity(self, r, p, Real volume, Real t):
+        cdef vector[Real] cpp_r
+        for val in r:
+            cpp_r.push_back(val)
+        cdef vector[Real] cpp_p
+        for val in p:
+            cpp_p.push_back(val)
+        return self.thisptr.get().propensity(cpp_r, cpp_p, volume, t)
+
+    def k(self):
+        return self.thisptr.get().k()
+
+    def set_k(self, Real val):
+        self.thisptr.get().set_k(val)
+
+    # def as_string(self):
+    #     """as_string() -> str
+
+    #     Return an unicode string describing this object.
+
+    #     Returns
+    #     -------
+    #     str:
+    #         An unicode string describing this object.
+
+    #     """
+    #     return self.thisptr.get().as_string().decode('UTF-8')
+
+    # def is_available(self):
+    #     return self.thisptr.get().is_available()
+
+    def __reduce__(self):
+        return (__rebuild_ReactionRuleDescriptor, (ReactionRuleDescriptorMassAction, self.reactant_coefficients(), self.product_coefficients(), self.k()))
+
+def __rebuild_ReactionRuleDescriptor(cls, reactant_coefficients, product_coefficients, *args):
+    ret = cls(*args)
+    ret.set_reactant_coefficients(reactant_coefficients)
+    ret.set_product_coefficients(product_coefficients)
+    return ret
+
+cdef ReactionRuleDescriptorMassAction ReactionRuleDescriptorMassAction_from_Cpp_ReactionRuleDescriptorMassAction(shared_ptr[Cpp_ReactionRuleDescriptorMassAction] rrd):
+    r = ReactionRuleDescriptorMassAction(0.0)  # dummy
+    r.thisptr.swap(rrd)
+    return r
 
 class ReactionRulePolicy(object):
     """A wrapper of ReactionRule::policy_type"""
@@ -27,7 +229,7 @@ cdef class ReactionRule:
     IMPLICIT = ReactionRulePolicy(Cpp_IMPLICIT)
     DESTROY = ReactionRulePolicy(Cpp_DESTROY)
 
-    def __init__(self, reactants=None, products=None, k=None):
+    def __init__(self, reactants=None, products=None, k=None, descriptor=None):
         """Constructor.
 
         Parameters
@@ -42,7 +244,7 @@ cdef class ReactionRule:
         """
         pass  # XXX: Only used for doc string
 
-    def __cinit__(self, reactants=None, products=None, k=None):
+    def __cinit__(self, reactants=None, products=None, k=None, descriptor=None):
         cdef vector[Cpp_Species] cpp_reactants
         cdef vector[Cpp_Species] cpp_products
 
@@ -58,6 +260,9 @@ cdef class ReactionRule:
                 self.thisptr = new Cpp_ReactionRule(cpp_reactants, cpp_products)
             else:
                 self.thisptr = new Cpp_ReactionRule(cpp_reactants, cpp_products, k)
+
+            if descriptor is not None:
+                self.set_descriptor(descriptor)
 
     def __dealloc__(self):
         del self.thisptr
@@ -245,8 +450,42 @@ cdef class ReactionRule:
             inc(it1)
         return retval
 
+    def set_descriptor(self, rrd):
+        if isinstance(rrd, ReactionRuleDescriptorPyfunc):
+            self.thisptr.set_descriptor(
+                static_pointer_cast[Cpp_ReactionRuleDescriptor, Cpp_ReactionRuleDescriptorPyfunc](
+                    (<ReactionRuleDescriptorPyfunc> rrd).thisptr))
+        elif isinstance(rrd, ReactionRuleDescriptorMassAction):
+            self.thisptr.set_descriptor(
+                static_pointer_cast[Cpp_ReactionRuleDescriptor, Cpp_ReactionRuleDescriptorMassAction](
+                    (<ReactionRuleDescriptorMassAction> rrd).thisptr))
+        else:
+            raise TypeError('ReactionRuleDescriptor is required here [{}].'.format(type(rrd)))
+
+    def get_descriptor(self):
+        cdef shared_ptr[Cpp_ReactionRuleDescriptor] desc = self.thisptr.get_descriptor()
+
+        if desc.get() == NULL:
+            return None
+
+        cdef shared_ptr[Cpp_ReactionRuleDescriptorPyfunc] desc_pyfunc = dynamic_pointer_cast[Cpp_ReactionRuleDescriptorPyfunc, Cpp_ReactionRuleDescriptor](desc);
+        if desc_pyfunc.get() != NULL:
+            return ReactionRuleDescriptorPyfunc_from_Cpp_ReactionRuleDescriptorPyfunc(desc_pyfunc)
+
+        cdef shared_ptr[Cpp_ReactionRuleDescriptorMassAction] desc_massaction = dynamic_pointer_cast[Cpp_ReactionRuleDescriptorMassAction, Cpp_ReactionRuleDescriptor](desc);
+        if desc_massaction.get() != NULL:
+            return ReactionRuleDescriptorMassAction_from_Cpp_ReactionRuleDescriptorMassAction(desc_massaction)
+
+        raise RuntimeError('Unknown derived type of ReactionRuleDescriptor was returned.')
+
+    def has_descriptor(self):
+        return self.thisptr.has_descriptor()
+
+    def reset_descriptor(self):
+        self.thisptr.reset_descriptor()
+
     def __reduce__(self):
-        return (ReactionRule, (self.reactants(), self.products(), self.k()))
+        return (ReactionRule, (self.reactants(), self.products(), self.k(), self.get_descriptor()))
 
 cdef ReactionRule ReactionRule_from_Cpp_ReactionRule(Cpp_ReactionRule *rr):
     cdef Cpp_ReactionRule *new_obj = new Cpp_ReactionRule(deref(rr))

@@ -10,7 +10,7 @@ environment:
       PYTHON_VERSION: "3.6.5"
       PYTHON_ARCH: "64"
 #      VCVARSALL: "x64"
-      
+
 init:
   - cmd: cmake --version
 
@@ -33,6 +33,8 @@ install:
 
   # - msbuild GSL.sln /p:Configuration=Release /v:d
 
+  - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
+
   - cmake -G "Visual Studio 14 2015 Win64" -D CMAKE_CXX_FLAGS_RELEASE="/MD" -D CMAKE_CXX_FLAGS_DEBUG="/MDd" -D CMAKE_C_FLAGS_DEBUG="/MDd" -DBoost_INCLUDE_DIR=C:/Libraries/boost_1_67_0 -DGSL_INCLUDE_DIR=c:/tools/vcpkg/installed/x64-windows/include -DGSL_CBLAS_LIBRARIES=c:/tools/vcpkg/installed/x64-windows/lib -DGSL_LIBRARIES=c:/tools/vcpkg/installed/x64-windows/lib -DNO_SHARED:BOOL=1 -DNO_BESSEL_TABLE:BOOL=1 .
 
   # config.h
@@ -43,7 +45,6 @@ install:
   - cd ..
 
   # go into ecell4/python
-  - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
   - "python --version"
   - "python -c \"import struct; print(struct.calcsize('P') * 8)\""
   # - curl -O https://bootstrap.pypa.io/get-pip.py
@@ -67,6 +68,7 @@ build: false
 branches:
   only:
     - master
+    - v4.2
 
 artifacts:
   # bdist_wheel puts your built wheel in the dist directory
@@ -77,4 +79,3 @@ notifications:
     auth_token:
       secure: xoxp-2152083718-2152083720-57117007011-a566bc1aa4
     channel: '#github'
-    

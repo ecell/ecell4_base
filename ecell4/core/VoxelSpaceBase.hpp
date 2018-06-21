@@ -8,7 +8,7 @@
 #include <boost/optional.hpp>
 
 #include "Shape.hpp"
-#include "Space.hpp"
+// #include "Space.hpp"
 #include "Integer3.hpp"
 #include "get_mapper_mf.hpp"
 #include "Context.hpp"
@@ -20,6 +20,7 @@
 #include "VoxelPool.hpp"
 #include "VacantType.hpp"
 #include "ParticleVoxel.hpp"
+#include "Particle.hpp"
 
 namespace ecell4
 {
@@ -40,7 +41,8 @@ static inline std::string get_location_serial(T vp)
 }
 
 
-class VoxelSpaceBase : public Space
+class VoxelSpaceBase
+    // : public Space
 {
 public:
 
@@ -141,6 +143,37 @@ public:
             throw std::invalid_argument("the time must be positive.");
         }
         t_ = t;
+    }
+
+    /**
+     * get the axes lengths of a cuboidal region.
+     * @return edge lengths Real3
+     */
+    virtual const Real3& edge_lengths() const
+    {
+        throw NotSupported(
+            "edge_lengths() is not supported by this space class");
+    }
+
+    /**
+     * get the actual axes lengths of a cuboidal region.
+     * return edge lengths as a default.
+     * overload this function if the actual size is not equal to
+     * edge lengths.
+     * @return actual edge lengths Real3
+     */
+    virtual Real3 actual_lengths() const
+    {
+        return edge_lengths();
+    }
+
+    /**
+     * get volume.
+     * @return a volume (m^3) Real
+     */
+    virtual const Real volume() const
+    {
+        throw NotSupported("volume() is not supported by this space class");
     }
 
     virtual void save(const std::string& filename) const

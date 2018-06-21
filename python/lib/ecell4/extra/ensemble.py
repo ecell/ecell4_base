@@ -644,9 +644,6 @@ def ensemble_simulations(
     if model is None:
         model = ecell4.util.decorator.get_model(is_netfree, without_reset)
 
-    if isinstance(model, ecell4.ode.ODENetworkModel):
-        raise ValueError('A model with ratelaws is not supported yet.')
-
     if species_list is None:
         species_list = ecell4.util.simulation.list_species(model, y0.keys())
 

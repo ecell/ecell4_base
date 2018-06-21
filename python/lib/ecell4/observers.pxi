@@ -28,6 +28,63 @@ cdef class Observer:
         """Reset the internal state."""
         self.thisptr.get().reset()
 
+cdef bool indirect_func_finh(
+        FixedIntervalPythonHooker_pyfunc_type pyfunc,
+        const shared_ptr[Cpp_WorldInterface]& world, bool check_reaction):
+    world_obj = WorldInterface_from_Cpp_WorldInterface(world)
+    cdef bool ret = (<object>pyfunc)(world_obj, check_reaction)
+    return ret
+
+cdef class FixedIntervalPythonHooker:
+    """An ``Observer``class to callback to some Python function with the fixed
+    step interval.
+    This ``Observer`` logs at the current time first, and then keeps logging
+    every after the interval.
+
+    FixedIntervalPythonHooker(dt, species)
+
+    """
+
+    def __init__(self, Real dt, pyfunc):
+        """Constructor.
+
+        Parameters
+        ----------
+        dt : float
+            A step interval for logging.
+        pyfunc : obj
+            A callback function, which is required to accept two arguments,
+            a WorldInterface and bool (whether a reaction happens or not).
+            The return value must be a bool. If True, a simulator continues
+            to run.
+
+        Examples
+        --------
+        >>> hook = lambda world, check_reaction: print(world.t())
+        >>> obs = FixedIntervalPythonHooker(1.0, hook)
+
+
+        """
+        pass  # XXX: Only used for doc string
+
+    def __cinit__(self, Real dt, pyfunc):
+        self.thisptr = new shared_ptr[Cpp_FixedIntervalPythonHooker](
+            new Cpp_FixedIntervalPythonHooker(
+                dt,
+                <FixedIntervalPythonHooker_stepladder_type>indirect_func_finh,
+                <FixedIntervalPythonHooker_pyfunc_type>pyfunc))
+
+    def __dealloc__(self):
+        del self.thisptr
+
+    def as_base(self):
+        """Clone self as a base class. This function is for developers."""
+        retval = Observer()
+        del retval.thisptr
+        retval.thisptr = new shared_ptr[Cpp_Observer](
+            <shared_ptr[Cpp_Observer]>deref(self.thisptr))
+        return retval
+
 cdef class FixedIntervalNumberObserver:
     """An ``Observer``class to log the number of molecules with the fixed
     step interval.
@@ -450,8 +507,8 @@ cdef class FixedIntervalCSVObserver:
 
         Parameters
         ----------
-        w : Space
-            A ``Space`` (``World``) to be logged.
+        w : WorldInterface
+            A ``WorldInterface`` (``World``) to be logged.
 
         Examples
         --------
@@ -468,9 +525,9 @@ cdef class FixedIntervalCSVObserver:
         0.38375339303603129,0.37527767497325676,0.23999999999999999,0.0050000000000000001,0
         0.25311394008759508,0.05484827557301445,0.495,0.0050000000000000001,0
         """
-        cdef Space space = w.as_base()
-        # self.thisptr.get().log(space.thisptr.get())
-        self.thisptr.get().log(deref(space.thisptr))
+        cdef WorldInterface world = w.as_base()
+        # self.thisptr.get().log(world.thisptr.get())
+        self.thisptr.get().log(deref(world.thisptr))
 
     def filename(self):
         """Return a file name to be saved at the next time"""
@@ -562,8 +619,8 @@ cdef class CSVObserver:
 
         Parameters
         ----------
-        w : Space
-            A ``Space`` (``World``) to be logged.
+        w : WorldInterface
+            A ``WorldInterface`` (``World``) to be logged.
 
         Examples
         --------
@@ -580,9 +637,9 @@ cdef class CSVObserver:
         0.38375339303603129,0.37527767497325676,0.23999999999999999,0.0050000000000000001,0
         0.25311394008759508,0.05484827557301445,0.495,0.0050000000000000001,0
         """
-        cdef Space space = w.as_base()
-        # self.thisptr.get().log(space.thisptr.get())
-        self.thisptr.get().log(deref(space.thisptr))
+        cdef WorldInterface world = w.as_base()
+        # self.thisptr.get().log(world.thisptr.get())
+        self.thisptr.get().log(deref(world.thisptr))
 
     def filename(self):
         """Return a file name to be saved at the next time"""
@@ -866,7 +923,7 @@ cdef class FixedIntervalTrackingObserver:
         """
         pass  # XXX: Only used for doc string
 
-    def __init__(self, Real dt, species, resolve_boundary=None, subdt=None, threshold=None):
+    def __cinit__(self, Real dt, species, resolve_boundary=None, subdt=None, threshold=None):
         cdef vector[Cpp_Species] tmp
 
         for sp in species:

@@ -1,13 +1,14 @@
 #ifndef ECELL4_REACTION_RULE_HPP
 #define ECELL4_REACTION_RULE_HPP
 
-// #include <set>
-#include <stdexcept>
+#include "ReactionRuleDescriptor.hpp"
 
 #include "types.hpp"
 #include "Species.hpp"
-//#include "Ratelaw.hpp"
+#include <stdexcept>
 
+#include <boost/shared_ptr.hpp>
+#include <boost/weak_ptr.hpp>
 
 namespace ecell4
 {
@@ -60,11 +61,13 @@ public:
         ;
     }
 
-    ReactionRule(
-        const ReactionRule& rr)
-        : k_(rr.k()), reactants_(rr.reactants()), products_(rr.products()), policy_(rr.policy())
+    ReactionRule(const ReactionRule& rr)
+        : k_(rr.k()), reactants_(rr.reactants()), products_(rr.products()), policy_(rr.policy()), rr_descriptor_()
     {
-        ;
+        if (rr.has_descriptor())
+        {
+            set_descriptor(boost::shared_ptr<ReactionRuleDescriptor>(rr.get_descriptor()->clone()));
+        }
     }
 
     Real k() const
@@ -138,6 +141,53 @@ public:
         return !(this->ratelaw_.expired());
     }*/
 
+    /** ReactionRule Descriptor related functions.
+      */
+    // void set_descriptor(const boost::shared_ptr<ReactionRuleDescriptor> rrd)
+    // {
+    //     this->rr_descriptor_ = rrd;
+    // }
+
+    // bool has_descriptor() const
+    // {
+    //     return !(this->rr_descriptor_.expired());
+    // }
+
+    // boost::shared_ptr<ReactionRuleDescriptor> get_descriptor() const
+    // {
+    //     return this->rr_descriptor_.lock();
+    // }
+
+    // Real propensity(const std::vector<Real> &r, const std::vector<Real> &p, Real t) const
+    // {
+    //     if (!has_descriptor())
+    //     {
+    //         throw IllegalState("ReactionRule Descriptor has not been registered");
+    //     }
+    //     return this->get_descriptor()->propensity(r, p, t);
+    // }
+
+    bool has_descriptor() const
+    {
+        return (rr_descriptor_.get() != NULL);
+    }
+
+    void set_descriptor(const boost::shared_ptr<ReactionRuleDescriptor>& descriptor)
+    {
+        rr_descriptor_ = descriptor;
+    }
+
+    const boost::shared_ptr<ReactionRuleDescriptor>& get_descriptor() const
+    {
+        return rr_descriptor_;
+    }
+
+    void reset_descriptor()
+    {
+        boost::shared_ptr<ReactionRuleDescriptor> tmp;
+        rr_descriptor_.swap(tmp);
+    }
+
 protected:
 
     Real k_;
@@ -145,7 +195,9 @@ protected:
     product_container_type products_;
 
     policy_type policy_;
-    //boost::weak_ptr<Ratelaw> ratelaw_;
+
+    boost::shared_ptr<ReactionRuleDescriptor> rr_descriptor_;
+    // boost::weak_ptr<ReactionRuleDescriptor> rr_descriptor_;
 };
 
 inline bool operator<(const ReactionRule& lhs, const ReactionRule& rhs)
@@ -194,7 +246,6 @@ ReactionRule create_synthesis_reaction_rule(
 
 // ReactionRule create_repulsive_reaction_rule(
 //     const Species& reactant1, const Species& reactant2);
-
 
 } // ecell4
 

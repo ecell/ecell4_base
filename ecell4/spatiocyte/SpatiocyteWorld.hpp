@@ -15,6 +15,7 @@
 #include <ecell4/core/Model.hpp>
 #include <ecell4/core/Shape.hpp>
 #include <ecell4/core/extras.hpp>
+#include <ecell4/core/WorldInterface.hpp>
 
 #include "OneToManyMap.hpp"
 #include "Voxel.hpp"
@@ -34,7 +35,7 @@ struct MoleculeInfo
 };
 
 class SpatiocyteWorld
-    : public Space
+    : public WorldInterface
 {
 public:
 
@@ -97,9 +98,6 @@ public:
 
     void add_space(VoxelSpaceBase *space);
 
-    /*
-     * Space Traits
-     */
     const Real t() const
     {
         Real time(0.0);
@@ -170,24 +168,21 @@ public:
 #endif
     }
 
-    /*
-     * CompartmentSpace Traits
-     */
     const Real volume() const
     {
         return get_root()->volume();
     }
 
-    Integer num_species() const
-    {
-        Integer total(0);
-        for (space_container_type::const_iterator itr(spaces_.begin());
-             itr != spaces_.end(); ++itr)
-        {
-            total += (*itr)->num_species();
-        }
-        return total;
-    }
+    // Integer num_species() const
+    // {
+    //     Integer total(0);
+    //     for (space_container_type::const_iterator itr(spaces_.begin());
+    //          itr != spaces_.end(); ++itr)
+    //     {
+    //         total += (*itr)->num_species();
+    //     }
+    //     return total;
+    // }
 
     bool has_species(const Species &sp) const
     {
@@ -244,9 +239,6 @@ public:
         return value;
     }
 
-    /*
-     * ParticleSpace Traits
-     */
     const Real3& edge_lengths() const
     {
         return get_root()->edge_lengths();
@@ -354,9 +346,6 @@ public:
     std::vector<std::pair<ParticleID, Particle> > list_structure_particles() const;
     std::vector<std::pair<ParticleID, Particle> > list_non_structure_particles() const;
 
-    /*
-     * VoxelSpace Traits
-     */
     Real voxel_radius() const
     {
         return get_root()->voxel_radius();
