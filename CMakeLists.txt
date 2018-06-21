@@ -73,6 +73,7 @@ include_directories(${CMAKE_BINARY_DIR})
   add_subdirectory(greens_functions)  #XXX: submodule
 # endif()
 
+find_package(PythonInterp ${PY_VERSION})
 find_package(PythonLibs REQUIRED)
 if (PYTHONLIBS_FOUND)
   include_directories(${PYTHON_INCLUDE_DIRS})
