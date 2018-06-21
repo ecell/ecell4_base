@@ -41,6 +41,7 @@ cdef extern from "ecell4/spatiocyte/SpatiocyteWorld.hpp" namespace "ecell4::spat
 
     cdef cppclass CppVoxel "ecell4::spatiocyte::Voxel":
         CppVoxel(CppVoxel& voxel)
+        Integer num_neighbors()
         CppVoxel get_neighbor(Integer)
         Cpp_Real3 position()
 

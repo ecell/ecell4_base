@@ -9,6 +9,8 @@ from ecell4.shared_ptr cimport shared_ptr
 from ecell4.optional cimport optional
 from ecell4.core cimport *
 
+from deprecated import deprecated
+
 ## ReactionInfo
 cdef class ReactionInfo:
     """A class stores detailed information about a reaction in spatiocyte.
@@ -112,6 +114,19 @@ cdef class Voxel:
     def __dealloc__(self):
         if self.thisptr:
             del self.thisptr
+
+    def list_neighbors(self):
+        ls = []
+        for i in range(self.thisptr.num_neighbors()):
+            ls.append(wrap_voxel(self.thisptr.get_neighbor(i)))
+        return ls
+
+    def position(self):
+        cdef Cpp_Real3 position
+        if self.thisptr:
+            position = self.thisptr.position()
+            return Real3_from_Cpp_Real3(address(position))
+        return None
 
 cdef Voxel wrap_voxel(CppVoxel voxel):
     cdef Voxel retval = Voxel()
@@ -699,17 +714,9 @@ cdef class SpatiocyteWorld:
         return (ParticleID_from_Cpp_ParticleID(address(pid_species_pair.first)),
                 Species_from_Cpp_Species(address(pid_species_pair.second)))
 
+    @deprecated
     def remove_voxel(self, ParticleID pid):
-        """remove_voxel(pid)
-
-        Remove the particle associated with a given ParticleID.
-
-        Parameters
-        ----------
-        pid : ParticleID
-            A id of particle to remove
-
-        """
+        """ Deprecated: use 'remove_particle(pid)' instead"""
         self.thisptr.get().remove_voxel(deref(pid.thisptr))
 
     def set_value(self, Species sp, Real value):
@@ -747,16 +754,9 @@ cdef class SpatiocyteWorld:
             inc(it)
         return retval
 
+    @deprecated
     def list_structure_species(self):
-        """list_structure_species() -> [Species]
-
-        Return the list of structure species.
-
-        Returns
-        -------
-        list:
-            The list of species constructing structure
-        """
+        """ Deprecated """
         cdef vector[Cpp_Species] species = self.thisptr.get().list_structure_species()
         retval = []
         cdef vector[Cpp_Species].iterator it = species.begin()
@@ -767,16 +767,9 @@ cdef class SpatiocyteWorld:
             inc(it)
         return retval
 
+    @deprecated
     def list_non_structure_species(self):
-        """list_non_structure_species() -> [Species]
-
-        Return the list of non-structure species.
-
-        Returns
-        -------
-        list:
-            The list of species not constructing structure
-        """
+        """ Deprecated """
         cdef vector[Cpp_Species] species = self.thisptr.get().list_non_structure_species()
         retval = []
         cdef vector[Cpp_Species].iterator it = species.begin()
@@ -787,63 +780,22 @@ cdef class SpatiocyteWorld:
             inc(it)
         return retval
 
+    @deprecated
     def num_voxels(self, Species sp = None):
-        """num_voxels(sp=None) -> Integer
-
-        Return the number of voxels.
-
-        Parameters
-        ----------
-        sp : Species, optional
-            The species of particles to count
-
-        Returns
-        -------
-        Integer:
-            The number of voxels (of the given species)
-
-        """
+        """ Deprecated: use 'num_particles(sp)' instead """
         if sp is None:
             return self.thisptr.get().num_voxels()
         else:
             return self.thisptr.get().num_voxels(deref(sp.thisptr))
 
+    @deprecated
     def num_voxels_exact(self, Species sp):
-        """num_voxels_exact(sp) -> Integer
-
-        Return the number of voxels of a given species.
-
-        Parameters
-        ----------
-        sp : Species
-            The species of particles to count
-
-        Returns
-        -------
-        Integer:
-            The number of voxels of a given species
-
-        """
+        """ Deprecated: use 'num_particles_exact(sp)' instead """
         return self.thisptr.get().num_voxels_exact(deref(sp.thisptr))
 
+    @deprecated
     def get_neighbor(self, Voxel voxel, nrand):
-        """get_neighbor(coord, nrand) -> Voxel
-
-        Return the neighbor coordinate of a given coordinate.
-
-        Parameters
-        ----------
-        voxel : Voxel
-            A voxel
-        nrand : Integer
-            A key in the range from 0 to 11 to assign a neighbor voxel
-
-        Returns
-        -------
-        Voxel:
-            The neighbor voxel
-
-        """
+        """ Deprecated: use 'voxel.list_neighbors()' """
         return wrap_voxel(voxel.thisptr.get_neighbor(nrand))
 
     def new_voxel(self, Species sp, Voxel voxel):
@@ -896,43 +848,14 @@ cdef class SpatiocyteWorld:
 
         return None
 
+    @deprecated
     def update_voxel(self, ParticleID pid, ParticleVoxel v):
-        """update_voxel(pid, v)
-
-        Update a particle.
-
-        Parameters
-        ----------
-        pid : ParticleID
-            A particle id of the particle to update
-        v : ParticleVoxel
-            The information to update
-
-        Returns
-        -------
-        output: bool
-            whether to succeed to update the particle
-
-        """
+        """ Deprecated """
         return self.thisptr.get().update_voxel(deref(pid.thisptr), deref(v.thisptr))
 
+    @deprecated
     def list_voxels(self, Species sp = None):
-        """list_voxels(sp=None)
-
-        Returns the list of voxels.
-
-        Parameters
-        ----------
-        sp : Species, optional
-            A species of particles to list up.
-            If no species is given, return a list of all voxels.
-
-        Returns
-        -------
-        list: [(ParticleID, ParticleVoxel)]
-            The list of the pair of ParticleID and ParticleVoxel
-
-        """
+        """ Deprecated """
         cdef vector[pair[Cpp_ParticleID, Cpp_ParticleVoxel]] voxels
         if sp is None:
             voxels = self.thisptr.get().list_voxels()
@@ -951,23 +874,9 @@ cdef class SpatiocyteWorld:
             inc(it)
         return retval
 
+    @deprecated
     def list_voxels_exact(self, Species sp):
-        """list_voxels_exact(sp)
-
-        Returns the list of voxels.
-
-        Parameters
-        ----------
-        sp : Species, optional
-            A species of particles to list up.
-            If no species is given, return a list of all voxels.
-
-        Returns
-        -------
-        list: [(ParticleID, ParticleVoxel)]
-            The list of the pair of ParticleID and ParticleVoxel
-
-        """
+        """ Deprecated """
         cdef vector[pair[Cpp_ParticleID, Cpp_ParticleVoxel]] voxels
         voxels = self.thisptr.get().list_voxels_exact(deref(sp.thisptr))
 
@@ -983,22 +892,9 @@ cdef class SpatiocyteWorld:
             inc(it)
         return retval
 
+    @deprecated
     def has_voxel(self, ParticleID pid):
-        """has_voxel(pid)
-
-        Check if a particle exists.
-
-        Parameters
-        ----------
-        pid : ParticleID
-            A particle id of the particle to check
-
-        Returns
-        -------
-        output : bool
-            whether a particle associated with a given particle id exists
-
-        """
+        """ Deprecated: use 'has_particle' instead"""
         return self.thisptr.get().has_voxel(deref(pid.thisptr))
 
     def voxel_radius(self):
@@ -1032,19 +928,20 @@ cdef class SpatiocyteWorld:
         """
         self.thisptr.get().bind_to(Cpp_Model_from_Model(m))
 
+    @deprecated
     def coordinate2position(self, Voxel voxel):
-        """coordinate2position(voxel) -> Real3
+        """ Deprecated: use 'voxel.position()' instead """
+        return voxel.position()
 
-        Transform a coordinate to a position.
-
-        """
-        cdef Cpp_Real3 pos = voxel.thisptr.position()
-        return Real3_from_Cpp_Real3(address(pos))
-
+    @deprecated
     def position2coordinate(self, Real3 pos):
-        """position2coordinate(pos) -> Voxel
+        """ Deprecated: use 'get_voxel_near_by(pos)' instead """
+        return self.get_voxel_near(pos)
 
-        Transform a position to a coordinate.
+    def get_voxel_near_by(self, Real3 pos):
+        """get_voxel_near_by(pos) -> Voxel
+
+        Get a voxel near by a given position.
 
         Parameters
         ----------
