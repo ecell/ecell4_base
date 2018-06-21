@@ -228,7 +228,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_add_remove_molecule)
 
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_move)
 {
-    const Integer3 global0(3,4,5);
+    const Integer3 global0(2,3,4);
     const VoxelSpaceBase::coordinate_type coord(
             space.global2coordinate(global0));
 
@@ -239,7 +239,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_move)
     boost::shared_ptr<VoxelPool> from_mt(space.get_voxel_pool_at(coord));
     BOOST_CHECK(!from_mt->is_vacant());
 
-    const Integer3 global1(3,5,5);
+    const Integer3 global1(2,4,4);
     const VoxelSpaceBase::coordinate_type to_coord(
             space.global2coordinate(global1));
 
