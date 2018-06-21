@@ -55,6 +55,8 @@ cdef extern from "ecell4/spatiocyte/SpatiocyteWorld.hpp" namespace "ecell4::spat
         Cpp_SpatiocyteWorld(string&) except +
         Cpp_SpatiocyteWorld() except +
 
+        bool has_species(Cpp_Species)
+
         void set_t(Real t)
         Real t()
         Cpp_Real3& edge_lengths()

@@ -239,9 +239,22 @@ cdef class SpatiocyteWorld:
         """Return the volume of the world."""
         return self.thisptr.get().volume()
 
-    # TODO
-    # def has_species(self, species):
-    #     pass
+    def has_species(self, Species species):
+        """has_species(species)
+
+        Check if the world has a given species
+
+        Parameters
+        ----------
+        species: Species
+            A species to check existance in the world.
+
+        Returns
+        -------
+        bool:
+            if a species exists, this is true. Otherwise false
+        """
+        return self.thisptr.get().has_species(deref(species.thisptr))
 
     def num_molecules(self, Species sp):
         """num_molecules(sp) -> Integer
