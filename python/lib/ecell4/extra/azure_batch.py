@@ -21,10 +21,16 @@ import io
 from logging import getLogger
 _log = getLogger(__name__)
 
-import azure.storage.blob as azureblob
-import azure.batch.batch_service_client as batch
-import azure.batch.batch_auth as batchauth
-import azure.batch.models as batchmodels
+try:
+    import azure.storage.blob as azureblob
+    import azure.batch.batch_service_client as batch
+    import azure.batch.batch_auth as batchauth
+    import azure.batch.models as batchmodels
+except ImportError as e:
+    _log.error(
+        "No module named 'azure' was found."
+        " Install it with 'pip install azure'")
+    raise e
 
 _STANDARD_OUT_FILE_NAME = 'stdout.txt'
 _STANDARD_ERROR_FILE_NAME = 'stderr.txt'
@@ -559,7 +565,8 @@ blob_client.create_blob_from_path(args.storagecontainer,
                                   output_file_path)
 """
 
-    src = textwrap.dedent(inspect.getsource(target)).replace(r'"', r'\"')
+    # src = textwrap.dedent(inspect.getsource(target)).replace(r'"', r'\"')
+    src = textwrap.dedent(inspect.getsource(target))
     if re.match('[\s\t]+', src.split('\n')[0]) is not None:
         raise RuntimeError(
             "Wrong indentation was found in the source translated")
@@ -608,9 +615,12 @@ blob_client.create_blob_from_path(args.storagecontainer,
     try:
         # Use the blob client to create the containers in Azure Storage if they
         # don't yet exist.
-        app_container_name = 'application'
-        input_container_name = 'input'
-        output_container_name = 'output'
+        app_container_name = 'application-{}'.format(suffix)
+        input_container_name = 'input-{}'.format(suffix)
+        output_container_name = 'output-{}'.format(suffix)
+        # app_container_name = 'application'
+        # input_container_name = 'input'
+        # output_container_name = 'output'
         blob_client.create_container(app_container_name, fail_on_exist=False)
         blob_client.create_container(input_container_name, fail_on_exist=False)
         blob_client.create_container(output_container_name, fail_on_exist=False)
