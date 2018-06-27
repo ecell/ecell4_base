@@ -31,9 +31,9 @@ void HCPLatticeSpace::set_lattice_properties(const bool is_periodic)
     const Real lengthY = edge_lengths_[1];
     const Real lengthZ = edge_lengths_[2];
 
-    col_size_ = (Integer)rint(lengthX / HCP_X) + 1;
-    layer_size_ = (Integer)rint(lengthY / HCP_Y) + 1;
-    row_size_ = (Integer)rint((lengthZ / 2) / voxel_radius_) + 1;
+    col_size_ = (Integer)rint(lengthX / HCP_X);
+    layer_size_ = (Integer)rint(lengthY / HCP_Y);
+    row_size_ = (Integer)rint((lengthZ / 2) / voxel_radius_);
 
     if (is_periodic)
     {

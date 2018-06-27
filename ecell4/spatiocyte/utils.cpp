@@ -9,7 +9,7 @@ namespace spatiocyte
 
 const Real calculate_dimensional_factor(
     boost::shared_ptr<const VoxelPool> mt0, boost::shared_ptr<const VoxelPool> mt1,
-    const boost::shared_ptr<const SpatiocyteWorld>& world)
+    boost::shared_ptr<const SpatiocyteWorld> world)
 {
     const Real voxel_radius(world->voxel_radius());
     const Real unit_area(world->unit_area());
@@ -87,14 +87,14 @@ const Real calculate_alpha(const ReactionRule& rr, const boost::shared_ptr<Spati
             if (info[i].loc != "") {
                 try
                 {
-                    location = world->find_voxel_pool_(Species(info[i].loc));
+                    location = world->find_voxel_pool(Species(info[i].loc));
                 }
                 catch(NotFound e)
                 {
                     ;
                 }
             }
-            mt[i] = boost::shared_ptr<VoxelPool>(new MolecularType(species[i], location, info[i].radius, info[i].D));
+            mt[i] = boost::shared_ptr<VoxelPool>(new MoleculePool(species[i], location, info[i].radius, info[i].D));
         }
     }
     const Real factor(calculate_dimensional_factor(mt[0], mt[1], boost::const_pointer_cast<const SpatiocyteWorld>(world)));

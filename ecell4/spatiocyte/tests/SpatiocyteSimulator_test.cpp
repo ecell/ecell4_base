@@ -86,7 +86,7 @@ BOOST_AUTO_TEST_CASE(SpatiocyteSimulator_test_step_with_single_particle)
     boost::shared_ptr<SpatiocyteWorld> world(
             new SpatiocyteWorld(edge_lengths, voxel_radius, rng));
 
-    BOOST_CHECK(world->new_voxel(sp, world->inner2coordinate(36)).second);
+    BOOST_CHECK(world->new_voxel(sp, world->position2voxel(Real3(1.0e-8, 1.0e-8, 1.0e-8))));
 
     SpatiocyteSimulator sim(model, world);
 
@@ -398,93 +398,6 @@ BOOST_AUTO_TEST_CASE(SpatiocyteSimulator_test_degradation_reaction)
 #endif
 }
 
-BOOST_AUTO_TEST_CASE(LattiecSimulator_test_scheduler)
-{
-    const Real L(1e-6);
-    const Real3 edge_lengths(L, L, L);
-    const Real voxel_radius(2.5e-9);
-
-    const std::string D1("1.0e-12"),
-          D2("1.1e-12"),
-          D3("1.2e-12"),
-          radius("2.5e-9");
-
-    const ecell4::Species sp1("A", radius, D1),
-        sp2("B", radius, D2),
-        sp3("C", radius, D3);
-    boost::shared_ptr<NetworkModel> model(new NetworkModel());
-    (*model).add_species_attribute(sp1);
-    (*model).add_species_attribute(sp2);
-    (*model).add_species_attribute(sp3);
-
-    boost::shared_ptr<GSLRandomNumberGenerator>
-        rng(new GSLRandomNumberGenerator());
-    boost::shared_ptr<SpatiocyteWorld> world(
-            new SpatiocyteWorld(edge_lengths, voxel_radius, rng));
-
-    SpatiocyteWorld::coordinate_type
-        c1(world->inner2coordinate(41*400*400+35*400+56)),
-        c2(world->inner2coordinate(33*400*400+51*400+25)),
-        c3(world->inner2coordinate(61*400*400+37*400+90));
-    BOOST_CHECK(world->new_voxel(sp1, c1).second);
-    BOOST_CHECK(world->new_voxel(sp2, c2).second);
-    BOOST_CHECK(world->new_voxel(sp3, c3).second);
-
-    SpatiocyteSimulator sim(model, world);
-
-    sim.initialize();
-
-    BOOST_ASSERT(world->has_molecule_pool(sp1));
-    BOOST_ASSERT(world->has_molecule_pool(sp2));
-    BOOST_ASSERT(world->has_molecule_pool(sp3));
-
-    boost::shared_ptr<const MoleculePool>
-        mt1(world->find_molecule_pool(sp1)),
-        mt2(world->find_molecule_pool(sp2)),
-        mt3(world->find_molecule_pool(sp3));
-
-    MoleculePool::const_iterator
-        itr1(mt1->begin()),
-        itr2(mt2->begin()),
-        itr3(mt3->begin());
-
-    BOOST_ASSERT(itr1 != mt1->end());
-    BOOST_ASSERT(itr2 != mt2->end());
-    BOOST_ASSERT(itr3 != mt3->end());
-
-    c1 = (*itr1).coordinate;
-    c2 = (*itr2).coordinate;
-    c3 = (*itr3).coordinate;
-
-    sim.step();
-    itr1 = mt1->begin();
-    itr2 = mt2->begin();
-    itr3 = mt3->begin();
-    BOOST_ASSERT((*itr1).coordinate == c1);
-    BOOST_ASSERT((*itr2).coordinate == c2);
-    BOOST_ASSERT((*itr3).coordinate != c3);
-    c3 = (*itr3).coordinate;
-
-    sim.step();
-    itr1 = mt1->begin();
-    itr2 = mt2->begin();
-    itr3 = mt3->begin();
-    BOOST_ASSERT((*itr1).coordinate == c1);
-    BOOST_ASSERT((*itr2).coordinate != c2);
-    BOOST_ASSERT((*itr3).coordinate == c3);
-    c2 = (*itr2).coordinate;
-
-    sim.step();
-    itr1 = mt1->begin();
-    itr2 = mt2->begin();
-    itr3 = mt3->begin();
-    BOOST_ASSERT((*itr1).coordinate != c1);
-    BOOST_ASSERT((*itr2).coordinate == c2);
-    BOOST_ASSERT((*itr3).coordinate == c3);
-    c1 = (*itr1).coordinate;
-
-}
-
 BOOST_AUTO_TEST_CASE(SpatiocyteSimulator_test_finalize)
 {
     const Real L(1e-6);
@@ -543,10 +456,8 @@ BOOST_AUTO_TEST_CASE(SpatiocyteSimulator_test_shape)
     boost::shared_ptr<const Sphere> sphere(new Sphere(Real3(L/2, L/2, L/2), L*1/3));
 
     BOOST_CHECK(world->add_structure(membrane, sphere) > 0);
-    BOOST_CHECK(!world->new_particle(Particle(sp, Real3(L/2, L/2, L*5/6),
-                    2.5e-9, 1e-12)).second);  // This should fail
-    BOOST_CHECK(world->new_particle(Particle(sp, Real3(L/2, L/2, L*5/6 - voxel_radius),
-                    2.5e-9, 1e-12)).second);
+    BOOST_CHECK(!world->new_particle(Particle(sp, Real3(L/2, L/2, L*5/6), 2.5e-9, 1e-12)));  // This should fail
+    BOOST_CHECK(world->new_particle(Particle(sp, Real3(L/2, L/2, L*5/6 - voxel_radius), 2.5e-9, 1e-12)));
 
     sim.initialize();
 #ifdef WITH_HDF5
