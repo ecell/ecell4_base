@@ -31,7 +31,7 @@ jobs:
             /opt/python/$PY27/bin/python -m pip install cython
             curl -O https://cmake.org/files/v3.11/cmake-$CMAKEVER.tar.gz
             wget --no-check-certificate ftp://ftp.gnu.org/gnu/gsl/gsl-$GSLVER.tar.gz
-            wget --no-check-certificate -O $BOOSTFILE.tar.bz2 https://dl.bintray.com/boostorg/release/$BOOSTVER/source/$BOOSTFILE.tar.bz2
+            wget --secure-protocol=TLSv1_2 --no-check-certificate -O $BOOSTFILE.tar.bz2 https://dl.bintray.com/boostorg/release/$BOOSTVER/source/$BOOSTFILE.tar.bz2
             curl -LO https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.8/hdf5-$HDF5VER/src/hdf5-$HDF5VER.tar.bz2
             tar xf cmake-$CMAKEVER.tar.gz && tar xf gsl-$GSLVER.tar.gz && tar xf hdf5-$HDF5VER.tar.bz2 && tar xf $BOOSTFILE.tar.bz2
             cd cmake-$CMAKEVER && ./configure && make && make install
