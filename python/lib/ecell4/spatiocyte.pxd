@@ -41,6 +41,7 @@ cdef extern from "ecell4/spatiocyte/SpatiocyteWorld.hpp" namespace "ecell4::spat
 
     cdef cppclass CppVoxel "ecell4::spatiocyte::Voxel":
         CppVoxel(CppVoxel& voxel)
+        Integer num_neighbors()
         CppVoxel get_neighbor(Integer)
         Cpp_Real3 position()
 
@@ -53,6 +54,8 @@ cdef extern from "ecell4/spatiocyte/SpatiocyteWorld.hpp" namespace "ecell4::spat
         Cpp_SpatiocyteWorld(Cpp_Real3& edge_lengths) except +
         Cpp_SpatiocyteWorld(string&) except +
         Cpp_SpatiocyteWorld() except +
+
+        bool has_species(Cpp_Species)
 
         void set_t(Real t)
         Real t()
@@ -90,20 +93,10 @@ cdef extern from "ecell4/spatiocyte/SpatiocyteWorld.hpp" namespace "ecell4::spat
         vector[pair[Cpp_ParticleID, Cpp_Particle]] list_non_structure_particles()
         bool has_particle(Cpp_ParticleID& pid)
         bool update_particle(Cpp_ParticleID& pid, Cpp_Particle& p)
-        # vector[pair[pair[Cpp_ParticleID, Cpp_Particle], Real]] list_particles_within_radius(Cpp_Real3& pos, Real& radius)
-        # vector[pair[pair[Cpp_ParticleID, Cpp_Particle], Real]] list_particles_within_radius(Cpp_Real3& pos, Real& radius, Cpp_ParticleID& ignore)
-        # vector[pair[pair[Cpp_ParticleID, Cpp_Particle], Real]] list_particles_within_radius(Cpp_Real3& pos, Real& radius, Cpp_ParticleID& ignore1, Cpp_ParticleID& ignore2)
-        # Cpp_Real3 periodic_transpose(Cpp_Real3& pos1, Cpp_Real3& pos2)
-        # Cpp_Real3 apply_boundary(Cpp_Real3& pos)
-        # Real distance_sq(Cpp_Real3& pos1, Cpp_Real3& pos2)
-        # Real distance(Cpp_Real3& pos1, Cpp_Real3& pos2)
-        # # bool has_species(Cpp_Species& sp)
         Integer num_molecules(Cpp_Species& sp)
         Integer num_molecules_exact(Cpp_Species& sp)
         void add_molecules(Cpp_Species& sp, Integer num)
         void remove_molecules(Cpp_Species& sp, Integer num)
-        # shared_ptr[Cpp_GSLRandomNumberGenerator] rng()
-        # Integer get_neighbor(Integer, Integer)
         void save(string filename) except +
         void load(string filename)
         optional[Cpp_ParticleID] new_voxel(Cpp_Species& sp, CppVoxel pos)
@@ -117,18 +110,10 @@ cdef extern from "ecell4/spatiocyte/SpatiocyteWorld.hpp" namespace "ecell4::spat
 
         Integer size()
         Cpp_Integer3 shape()
-        # Integer inner_size()
-        # Cpp_Integer3 inner_shape()
 
         void bind_to(shared_ptr[Cpp_Model])
-        # Cpp_Real3 coordinate2position(Integer)
-        # Integer position2coordinate(Cpp_Real3)
         shared_ptr[Cpp_RandomNumberGenerator] rng()
 
-        # Cpp_Integer3 coordinate2global(Integer)
-        # Integer global2coordinate(Cpp_Integer3)
-        # Cpp_Real3 global2position(Cpp_Integer3)
-        # Cpp_Integer3 position2global(Cpp_Real3)
         CppVoxel position2voxel(Cpp_Real3)
 
         Integer add_structure(Cpp_Species&, shared_ptr[Cpp_Shape]) except +
@@ -181,9 +166,6 @@ cdef extern from "ecell4/spatiocyte/SpatiocyteSimulator.hpp" namespace "ecell4::
         Real dt()
         void set_dt(Real)
         void initialize()
-        # void set_alpha(Real)
-        # Real get_alpha()
-        # Real calculate_alpha(Cpp_ReactionRule)
         bool check_reaction()
         vector[pair[Cpp_ReactionRule, CppReactionInfo]] last_reactions()
         shared_ptr[Cpp_Model] model()
