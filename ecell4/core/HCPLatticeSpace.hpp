@@ -18,7 +18,7 @@ public:
     HCPLatticeSpace(const Real3& edge_lengths, const Real& voxel_radius, const bool is_periodic)
         : base_type(voxel_radius)
     {
-        set_lattice_properties(is_periodic);
+        set_lattice_properties(edge_lengths, is_periodic);
     }
 
     virtual ~HCPLatticeSpace()
@@ -30,15 +30,10 @@ public:
     {
         voxel_radius_ = voxel_radius;
 
-        set_lattice_properties(is_periodic);
-
-        edge_lengths_ = Real3(
-            col_size() * HCP_X,
-            layer_size() * HCP_Y,
-            row_size() * voxel_radius_ * 2);
+        set_lattice_properties(edge_lengths, is_periodic);
     }
 
-    void set_lattice_properties(const bool is_periodic);
+    void set_lattice_properties(const Real3& edge_lengths, const bool is_periodic);
 
     /**
      * Primitives

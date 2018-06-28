@@ -20,16 +20,16 @@ double round(const double x)
 }
 #endif
 
-void HCPLatticeSpace::set_lattice_properties(const bool is_periodic)
+void HCPLatticeSpace::set_lattice_properties(const Real3& edge_lengths, const bool is_periodic)
 {
     //XXX: derived from SpatiocyteStepper::setLatticeProperties()
     HCP_L = voxel_radius_ / sqrt(3.0);
     HCP_X = voxel_radius_ * sqrt(8.0 / 3.0); // Lx
     HCP_Y = voxel_radius_ * sqrt(3.0); // Ly
 
-    const Real lengthX = edge_lengths_[0];
-    const Real lengthY = edge_lengths_[1];
-    const Real lengthZ = edge_lengths_[2];
+    const Real& lengthX = edge_lengths[0];
+    const Real& lengthY = edge_lengths[1];
+    const Real& lengthZ = edge_lengths[2];
 
     col_size_ = (Integer)rint(lengthX / HCP_X);
     layer_size_ = (Integer)rint(lengthY / HCP_Y);
@@ -42,6 +42,11 @@ void HCPLatticeSpace::set_lattice_properties(const bool is_periodic)
         layer_size_ = (layer_size_ % 2 == 0 ? layer_size_ : layer_size_ + 1);
         row_size_ = (row_size_ % 2 == 0 ? row_size_ : row_size_ + 1);
     }
+
+    edge_lengths_ = Real3(
+        col_size_ * HCP_X,
+        layer_size_ * HCP_Y,
+        row_size_ * voxel_radius_ * 2);
 
     row_size_ += 2;
     layer_size_ += 2;
