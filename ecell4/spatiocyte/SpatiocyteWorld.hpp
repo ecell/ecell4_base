@@ -168,11 +168,6 @@ public:
 #endif
     }
 
-    const Real volume() const
-    {
-        return get_root()->volume();
-    }
-
     // Integer num_species() const
     // {
     //     Integer total(0);
@@ -367,9 +362,9 @@ public:
         return 0.0;
     }
 
-    Real actual_volume() const
+    const Real volume() const
     {
-        return get_root()->actual_volume();
+        return get_root()->volume();
     }
 
     Real unit_area() const

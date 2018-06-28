@@ -45,11 +45,6 @@ public:
         return edge_lengths_;
     }
 
-    const Real volume() const
-    {
-        return edge_lengths_[0] * edge_lengths_[1] * edge_lengths_[2];
-    }
-
     virtual const Integer col_size() const
     {
         return col_size_ - 2;
