@@ -48,16 +48,15 @@ public:
     /*
      * ParticleSpace Traits
      */
-    Real3 actual_lengths() const
+    const Real3& edge_lengths() const
     {
-        return actual_lengths_;
-        throw NotSupported("OffLatticeSpace::actual_lengths() is not supported.");
+        return edge_lengths_;
     }
 
     // tmp
-    void set_actual_lengths(const Real3& actual_lengths)
+    void set_lengths(const Real3& edge_lengths)
     {
-        actual_lengths_ = actual_lengths;
+        edge_lengths_ = edge_lengths;
     }
 
     const Particle particle_at(const coordinate_type& coord) const;
@@ -142,7 +141,7 @@ protected:
     position_container positions_;
     adjoining_container adjoinings_;
 
-    Real3 actual_lengths_;
+    Real3 edge_lengths_;
 
 };
 

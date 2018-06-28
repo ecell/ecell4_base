@@ -10,6 +10,8 @@ from ecell4.core cimport *
 
 from cpython cimport PyObject, Py_XINCREF, Py_XDECREF
 
+from deprecated import deprecated
+
 
 ## ODEWorld
 #  a python wrapper for Cpp_ODEWorld
@@ -66,14 +68,10 @@ cdef class ODEWorld:
         cdef Cpp_Real3 lengths = self.thisptr.get().edge_lengths()
         return Real3_from_Cpp_Real3(address(lengths))
 
+    @deprecated
     def actual_lengths(self):
-        """actual_lengths() -> Real3
-
-        Return the actual edge lengths of the world.
-        Same as ``edge_lengths``.
-        """
-        cdef Cpp_Real3 lengths = self.thisptr.get().actual_lengths()
-        return Real3_from_Cpp_Real3(address(lengths))
+        """ Deprecated: Use edge_lengths instead """
+        return self.edge_lengths()
 
     def set_volume(self, Real vol):
         """set_volume(volume)

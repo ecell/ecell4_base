@@ -33,7 +33,6 @@ cdef extern from "ecell4/gillespie/GillespieWorld.hpp" namespace "ecell4::gilles
         Real volume()
         void reset(Cpp_Real3&)
         Cpp_Real3& edge_lengths()
-        Cpp_Real3 actual_lengths()
         Real get_value(Cpp_Species&)
         Real get_value_exact(Cpp_Species&)
         void set_value(Cpp_Species&, Real)

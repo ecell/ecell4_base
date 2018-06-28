@@ -3,6 +3,8 @@ from cython cimport address
 from cython.operator cimport dereference as deref, preincrement as inc
 from ecell4.core cimport *
 
+from deprecated import deprecated
+
 
 ## ReactionInfo
 cdef class ReactionInfo:
@@ -162,14 +164,10 @@ cdef class GillespieWorld:
         cdef Cpp_Real3 lengths = self.thisptr.get().edge_lengths()
         return Real3_from_Cpp_Real3(address(lengths))
 
+    @deprecated
     def actual_lengths(self):
-        """actual_lengths() -> Real3
-
-        Return the actual edge lengths of the world.
-        Same as ``edge_lengths``.
-        """
-        cdef Cpp_Real3 lengths = self.thisptr.get().actual_lengths()
-        return Real3_from_Cpp_Real3(address(lengths))
+        """ Deprecated: Use edge_lengths instead """
+        return self.edge_lengths()
 
     def volume(self):
         """Return the volume of the world."""

@@ -62,7 +62,6 @@ cdef extern from "ecell4/spatiocyte/SpatiocyteWorld.hpp" namespace "ecell4::spat
         Cpp_Real3& edge_lengths()
         Real volume()
         Real voxel_volume()
-        Cpp_Real3 actual_lengths()
         Real get_volume(Cpp_Species)
 
         optional[Cpp_ParticleID] new_particle(Cpp_Particle& p)

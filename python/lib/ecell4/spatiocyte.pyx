@@ -341,17 +341,10 @@ cdef class SpatiocyteWorld:
         cdef Cpp_Real3 lengths = self.thisptr.get().edge_lengths()
         return Real3_from_Cpp_Real3(address(lengths))
 
+    @deprecated
     def actual_lengths(self):
-        """Return the actual edge lengths of the world.
-
-        Returns
-        -------
-        Real3:
-            The actual edge lengths of the world
-
-        """
-        cdef Cpp_Real3 lengths = self.thisptr.get().actual_lengths()
-        return Real3_from_Cpp_Real3(address(lengths))
+        """ Deprecated: Use edge_lengths() instead """
+        return self.edge_lengths()
 
     def num_particles(self, Species sp = None):
         """num_particles(sp=None) -> Integer

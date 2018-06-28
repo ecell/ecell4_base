@@ -46,7 +46,6 @@ cdef extern from "ecell4/meso/MesoscopicWorld.hpp" namespace "ecell4::meso":
         Cpp_Integer3 position2global(Cpp_Real3&)
         Integer position2coordinate(Cpp_Real3&)
         Cpp_Real3& edge_lengths()
-        Cpp_Real3 actual_lengths()
         Cpp_Integer3 matrix_sizes()
         Cpp_Real3 subvolume_edge_lengths()
         void set_value(Cpp_Species&, Real)

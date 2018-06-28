@@ -8,6 +8,8 @@ from ecell4.types cimport *
 from ecell4.shared_ptr cimport shared_ptr
 from ecell4.core cimport *
 
+from deprecated import deprecated
+
 
 ## ReactionInfo
 cdef class ReactionInfo:
@@ -217,14 +219,10 @@ cdef class BDWorld:
         cdef Cpp_Real3 lengths = self.thisptr.get().edge_lengths()
         return Real3_from_Cpp_Real3(address(lengths))
 
+    @deprecated
     def actual_lengths(self):
-        """actual_lengths() -> Real3
-
-        Return the actual edge lengths of the world.
-        Same as ``edge_lengths``.
-        """
-        cdef Cpp_Real3 lengths = self.thisptr.get().actual_lengths()
-        return Real3_from_Cpp_Real3(address(lengths))
+        """ Deprecated: Use edge_lengths instead """
+        return self.edge_lengths()
 
     def list_species(self):
         """Return a list of species."""
