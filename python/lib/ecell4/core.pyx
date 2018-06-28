@@ -1,4 +1,5 @@
 from libcpp.string cimport string
+from deprecated import deprecated
 
 cdef string tostring(ustr):
     if isinstance(ustr, unicode):

@@ -168,11 +168,6 @@ public:
 #endif
     }
 
-    const Real volume() const
-    {
-        return get_root()->volume();
-    }
-
     // Integer num_species() const
     // {
     //     Integer total(0);
@@ -242,11 +237,6 @@ public:
     const Real3& edge_lengths() const
     {
         return get_root()->edge_lengths();
-    }
-
-    Real3 actual_lengths() const
-    {
-        return get_root()->actual_lengths();
     }
 
     Integer num_particles() const
@@ -367,9 +357,9 @@ public:
         return 0.0;
     }
 
-    Real actual_volume() const
+    const Real volume() const
     {
-        return get_root()->actual_volume();
+        return get_root()->volume();
     }
 
     Real unit_area() const
@@ -955,7 +945,7 @@ allocate_spatiocyte_world_square_offlattice_impl(
         }
 
     OffLatticeSpace *space = new OffLatticeSpace(voxel_radius, positions, adjoining_pairs, Shape::TWO);
-    space->set_actual_lengths(Real3(2*num_col, 2*sqrt(3)*num_row, 2) * voxel_radius);
+    space->set_lengths(Real3(2*num_col, 2*sqrt(3)*num_row, 2) * voxel_radius);
 
     return new SpatiocyteWorld(space, rng);
 }

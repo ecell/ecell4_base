@@ -56,8 +56,7 @@ void ZerothOrderReactionEvent::fire_()
 Real ZerothOrderReactionEvent::draw_dt()
 {
     const Real k(rule_.k());
-    //XXX: const Real p = k * world_->volume();
-    const Real p = k * world_->actual_volume();
+    const Real p = k * world_->volume();
     Real dt(inf);
     if (p != 0.)
     {

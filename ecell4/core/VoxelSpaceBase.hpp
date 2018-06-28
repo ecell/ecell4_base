@@ -156,24 +156,12 @@ public:
     }
 
     /**
-     * get the actual axes lengths of a cuboidal region.
-     * return edge lengths as a default.
-     * overload this function if the actual size is not equal to
-     * edge lengths.
-     * @return actual edge lengths Real3
-     */
-    virtual Real3 actual_lengths() const
-    {
-        return edge_lengths();
-    }
-
-    /**
      * get volume.
      * @return a volume (m^3) Real
      */
-    virtual const Real volume() const
+    const Real volume() const
     {
-        throw NotSupported("volume() is not supported by this space class");
+        return actual_size() * voxel_volume();
     }
 
     virtual void save(const std::string& filename) const
@@ -300,11 +288,6 @@ public:
     Real get_volume(const Species& sp) const
     {
         return voxel_volume() * num_voxels_exact(sp);
-    }
-
-    Real actual_volume() const
-    {
-        return actual_size() * voxel_volume();
     }
 
     Real unit_area() const

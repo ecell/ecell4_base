@@ -64,9 +64,6 @@ BOOST_AUTO_TEST_CASE(SpatiocyteSimulator_test_hdf5_save)
     BOOST_ASSERT(world->num_molecules(sp) == N);
 
     SpatiocyteSimulator sim(model, world);
-#ifdef WITH_HDF5
-    world->save("data.h5");
-#endif
 }
 
 BOOST_AUTO_TEST_CASE(SpatiocyteSimulator_test_step_with_single_particle)
@@ -94,21 +91,7 @@ BOOST_AUTO_TEST_CASE(SpatiocyteSimulator_test_step_with_single_particle)
 
     for (int i(0); i < 50; ++i)
     {
-        std::ostringstream oss;
-        oss << "data_with_single_particle_";
-        if (i < 10)
-        {
-            oss << "0" << i;
-        }
-        else
-        {
-            oss << i;
-        }
-        oss << ".h5";
         sim.step();
-#ifdef WITH_HDF5
-        world->save(oss.str());
-#endif
     }
 }
 
@@ -170,21 +153,7 @@ BOOST_AUTO_TEST_CASE(SpatiocyteSimulator_test_save_step_with_single_species)
 
     for (int i(0); i < 50; ++i)
     {
-        std::ostringstream oss;
-        oss << "data_with_single_species_";
-        if (i < 10)
-        {
-            oss << "0" << i;
-        }
-        else
-        {
-            oss << i;
-        }
-        oss << ".h5";
         sim.step();
-#ifdef WITH_HDF5
-        world->save(oss.str());
-#endif
     }
 }
 
@@ -215,21 +184,7 @@ BOOST_AUTO_TEST_CASE(SpatiocyteSimulator_test_save_step_with_periodic)
 
     for (int i(0); i < 50; ++i)
     {
-        std::ostringstream oss;
-        oss << "data_with_single_species_";
-        if (i < 10)
-        {
-            oss << "0" << i;
-        }
-        else
-        {
-            oss << i;
-        }
-        oss << ".h5";
         sim.step();
-#ifdef WITH_HDF5
-        world->save(oss.str());
-#endif
     }
 }
 
@@ -261,18 +216,12 @@ BOOST_AUTO_TEST_CASE(SpatiocyteSimulator_test_unimolecular_reaction)
     BOOST_CHECK(world->add_molecules(sp2, 25));
     sim.initialize();
 
-#ifdef WITH_HDF5
-    world->save("data_unimolecular_reaction_single0.h5");
-#endif
     for (Integer i(0); i < 10; ++i)
     {
         sim.step();
     }
     BOOST_ASSERT(world->num_molecules(sp3) > 0);
     BOOST_ASSERT(25 - world->num_molecules(sp1) == world->num_molecules(sp3));
-#ifdef WITH_HDF5
-    world->save("data_unimolecular_reaction_single1.h5");
-#endif
 }
 
 BOOST_AUTO_TEST_CASE(SpatiocyteSimulator_test_binding_reaction)
@@ -303,16 +252,10 @@ BOOST_AUTO_TEST_CASE(SpatiocyteSimulator_test_binding_reaction)
     BOOST_CHECK(world->add_molecules(sp2, 25));
     sim.initialize();
 
-#ifdef WITH_HDF5
-    world->save("data_binging_reaction0.h5");
-#endif
     for (Integer i(0); i < 20; ++i)
     {
         sim.step();
     }
-#ifdef WITH_HDF5
-    world->save("data_binding_reaction1.h5");
-#endif
     Integer num_sp3(world->num_molecules(sp3));
     BOOST_ASSERT(num_sp3 > 0);
     BOOST_CHECK_EQUAL(25 - world->num_molecules(sp1), num_sp3);
@@ -346,9 +289,6 @@ BOOST_AUTO_TEST_CASE(SpatiocyteSimulator_test_unbinding_reaction)
     BOOST_CHECK(world->add_molecules(sp1, 25));
     sim.initialize();
 
-#ifdef WITH_HDF5
-    world->save("data_unbinding_reaction0.h5");
-#endif
     for (Integer i(0); i < 10; ++i)
     {
         sim.step();
@@ -357,9 +297,6 @@ BOOST_AUTO_TEST_CASE(SpatiocyteSimulator_test_unbinding_reaction)
     BOOST_ASSERT(num_sp1 < 25);
     BOOST_CHECK_EQUAL(25 - num_sp1, world->num_molecules(sp2));
     BOOST_CHECK_EQUAL(25 - num_sp1, world->num_molecules(sp3));
-#ifdef WITH_HDF5
-    world->save("data_unbinding_reaction1.h5");
-#endif
 }
 
 BOOST_AUTO_TEST_CASE(SpatiocyteSimulator_test_degradation_reaction)
@@ -385,17 +322,11 @@ BOOST_AUTO_TEST_CASE(SpatiocyteSimulator_test_degradation_reaction)
     BOOST_CHECK(world->add_molecules(sp1, 25));
     sim.initialize();
 
-#ifdef WITH_HDF5
-    world->save("data_degradation_reaction0.h5");
-#endif
     for (Integer i(0); i < 10; ++i)
     {
         sim.step();
     }
     BOOST_ASSERT(world->num_molecules(sp1) < 25);
-#ifdef WITH_HDF5
-    world->save("data_degradation_reaction1.h5");
-#endif
 }
 
 BOOST_AUTO_TEST_CASE(SpatiocyteSimulator_test_finalize)
@@ -424,13 +355,7 @@ BOOST_AUTO_TEST_CASE(SpatiocyteSimulator_test_finalize)
     while(sim.step(0.311111111))
         ;
 
-#ifdef WITH_HDF5
-    world->save("data_finalize_before.h5");
-#endif
     sim.finalize();
-#ifdef WITH_HDF5
-    world->save("data_finalize_after.h5");
-#endif
 }
 
 BOOST_AUTO_TEST_CASE(SpatiocyteSimulator_test_shape)
@@ -460,9 +385,6 @@ BOOST_AUTO_TEST_CASE(SpatiocyteSimulator_test_shape)
     BOOST_CHECK(world->new_particle(Particle(sp, Real3(L/2, L/2, L*5/6 - voxel_radius), 2.5e-9, 1e-12)));
 
     sim.initialize();
-#ifdef WITH_HDF5
-    world->save("structure_before.h5");
-#endif
 
     sim.step();
     sim.step();
@@ -475,8 +397,4 @@ BOOST_AUTO_TEST_CASE(SpatiocyteSimulator_test_shape)
     sim.step();
     sim.step();
     sim.step();
-
-#ifdef WITH_HDF5
-    world->save("structure_after.h5");
-#endif
 }

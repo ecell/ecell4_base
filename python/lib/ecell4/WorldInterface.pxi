@@ -173,14 +173,9 @@ cdef class WorldInterface:
         return Real3_from_Cpp_Real3(address(lengths))
 
     # Cpp_Real3 actual_lengths()
+    @deprecated(suggest="edge_lengths()")
     def actual_lengths(self):
-        """actual_lengths() -> Real3
-
-        Return the actual edge lengths of the world.
-        Same as ``edge_lengths``.
-        """
-        cdef Cpp_Real3 lengths = self.thisptr.get().actual_lengths()
-        return Real3_from_Cpp_Real3(address(lengths))
+        return self.edge_lengths()
 
     # Integer num_particles()
     # Integer num_particles(Cpp_Species&)

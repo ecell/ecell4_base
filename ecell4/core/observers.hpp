@@ -777,7 +777,7 @@ protected:
     {
         t_.push_back(world->t());
 
-        const Real3 edge_lengths(world->actual_lengths());
+        const Real3 edge_lengths(world->edge_lengths());
         std::vector<Real3>::const_iterator j(prev_positions_.begin());
         std::vector<Real3>::const_iterator k(strides_.begin());
         std::vector<std::vector<Real3> >::iterator l(trajectories_.begin());
@@ -821,7 +821,7 @@ protected:
     {
         if (resolve_boundary_)
         {
-            const Real3 edge_lengths(world->actual_lengths());
+            const Real3 edge_lengths(world->edge_lengths());
             std::vector<Real3>::iterator j(prev_positions_.begin());
             std::vector<Real3>::iterator k(strides_.begin());
             for (std::vector<ParticleID>::const_iterator i(pids_.begin());
