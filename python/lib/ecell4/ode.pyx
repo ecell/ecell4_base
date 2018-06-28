@@ -68,9 +68,8 @@ cdef class ODEWorld:
         cdef Cpp_Real3 lengths = self.thisptr.get().edge_lengths()
         return Real3_from_Cpp_Real3(address(lengths))
 
-    @deprecated
+    @deprecated(suggest="edge_lengths()")
     def actual_lengths(self):
-        """ Deprecated: Use edge_lengths instead """
         return self.edge_lengths()
 
     def set_volume(self, Real vol):

@@ -341,9 +341,8 @@ cdef class SpatiocyteWorld:
         cdef Cpp_Real3 lengths = self.thisptr.get().edge_lengths()
         return Real3_from_Cpp_Real3(address(lengths))
 
-    @deprecated
+    @deprecated(suggest="edge_lengths()")
     def actual_lengths(self):
-        """ Deprecated: Use edge_lengths() instead """
         return self.edge_lengths()
 
     def num_particles(self, Species sp = None):
@@ -653,9 +652,8 @@ cdef class SpatiocyteWorld:
 
     # SpatiocyteWorld API
 
-    @deprecated
+    @deprecated(suggest="volume()")
     def actual_volume(self):
-        """ Deprecated: Use volume() instead """
         return self.volume()
 
     def voxel_volume(self):
@@ -721,9 +719,8 @@ cdef class SpatiocyteWorld:
         return (ParticleID_from_Cpp_ParticleID(address(pid_species_pair.first)),
                 Species_from_Cpp_Species(address(pid_species_pair.second)))
 
-    @deprecated
+    @deprecated(suggest="remove_particle(pid)")
     def remove_voxel(self, ParticleID pid):
-        """ Deprecated: use 'remove_particle(pid)' instead"""
         self.thisptr.get().remove_voxel(deref(pid.thisptr))
 
     def set_value(self, Species sp, Real value):
@@ -763,7 +760,6 @@ cdef class SpatiocyteWorld:
 
     @deprecated
     def list_structure_species(self):
-        """ Deprecated """
         cdef vector[Cpp_Species] species = self.thisptr.get().list_structure_species()
         retval = []
         cdef vector[Cpp_Species].iterator it = species.begin()
@@ -776,7 +772,6 @@ cdef class SpatiocyteWorld:
 
     @deprecated
     def list_non_structure_species(self):
-        """ Deprecated """
         cdef vector[Cpp_Species] species = self.thisptr.get().list_non_structure_species()
         retval = []
         cdef vector[Cpp_Species].iterator it = species.begin()
@@ -787,22 +782,19 @@ cdef class SpatiocyteWorld:
             inc(it)
         return retval
 
-    @deprecated
+    @deprecated(suggest="num_particles(sp)")
     def num_voxels(self, Species sp = None):
-        """ Deprecated: use 'num_particles(sp)' instead """
         if sp is None:
             return self.thisptr.get().num_voxels()
         else:
             return self.thisptr.get().num_voxels(deref(sp.thisptr))
 
-    @deprecated
+    @deprecated(suggest="num_particles_exact(sp)")
     def num_voxels_exact(self, Species sp):
-        """ Deprecated: use 'num_particles_exact(sp)' instead """
         return self.thisptr.get().num_voxels_exact(deref(sp.thisptr))
 
-    @deprecated
+    @deprecated(suggest="voxel.list_neighbors()")
     def get_neighbor(self, Voxel voxel, nrand):
-        """ Deprecated: use 'voxel.list_neighbors()' """
         return wrap_voxel(voxel.thisptr.get_neighbor(nrand))
 
     def new_voxel(self, Species sp, Voxel voxel):
@@ -857,12 +849,10 @@ cdef class SpatiocyteWorld:
 
     @deprecated
     def update_voxel(self, ParticleID pid, ParticleVoxel v):
-        """ Deprecated """
         return self.thisptr.get().update_voxel(deref(pid.thisptr), deref(v.thisptr))
 
     @deprecated
     def list_voxels(self, Species sp = None):
-        """ Deprecated """
         cdef vector[pair[Cpp_ParticleID, Cpp_ParticleVoxel]] voxels
         if sp is None:
             voxels = self.thisptr.get().list_voxels()
@@ -883,7 +873,6 @@ cdef class SpatiocyteWorld:
 
     @deprecated
     def list_voxels_exact(self, Species sp):
-        """ Deprecated """
         cdef vector[pair[Cpp_ParticleID, Cpp_ParticleVoxel]] voxels
         voxels = self.thisptr.get().list_voxels_exact(deref(sp.thisptr))
 
@@ -899,9 +888,8 @@ cdef class SpatiocyteWorld:
             inc(it)
         return retval
 
-    @deprecated
+    @deprecated(suggest="has_particle(pid)")
     def has_voxel(self, ParticleID pid):
-        """ Deprecated: use 'has_particle' instead"""
         return self.thisptr.get().has_voxel(deref(pid.thisptr))
 
     def voxel_radius(self):
@@ -935,14 +923,12 @@ cdef class SpatiocyteWorld:
         """
         self.thisptr.get().bind_to(Cpp_Model_from_Model(m))
 
-    @deprecated
+    @deprecated(suggest="voxel.position()")
     def coordinate2position(self, Voxel voxel):
-        """ Deprecated: use 'voxel.position()' instead """
         return voxel.position()
 
-    @deprecated
+    @deprecated(suggest="get_voxel_near_by(pos)")
     def position2coordinate(self, Real3 pos):
-        """ Deprecated: use 'get_voxel_near_by(pos)' instead """
         return self.get_voxel_near(pos)
 
     def get_voxel_near_by(self, Real3 pos):

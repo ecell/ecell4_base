@@ -173,9 +173,8 @@ cdef class WorldInterface:
         return Real3_from_Cpp_Real3(address(lengths))
 
     # Cpp_Real3 actual_lengths()
-    @deprecated
+    @deprecated(suggest="edge_lengths()")
     def actual_lengths(self):
-        """ Deprecated: Use edge_lengths() instead """
         return self.edge_lengths()
 
     # Integer num_particles()
