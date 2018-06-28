@@ -16,7 +16,11 @@ def deprecated(suggest=None):
             doc = "[Deprecated]\n"
         else:
             doc = "[Deprecated] Use '" + suggest + "' instead.\n"
-        wrapper.__doc__ = doc + wrapper.__doc__
+
+        if wrapper.__doc__ is None:
+            wrapper.__doc__ = doc
+        else:
+            wrapper.__doc__ = doc + wrapper.__doc__
 
         return wrapper
     return decorator
