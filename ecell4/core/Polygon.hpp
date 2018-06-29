@@ -444,6 +444,18 @@ class Polygon : public Shape
         return pos1;
     }
 
+    bool is_inside_of_boundary(const Real3& pos) const
+    {
+        const Real3& edge = this->edge_length_;
+        if     (edge[0] < pos[0]) {return false;}
+        else if( pos[0] <    0.0) {return false;}
+        if     (edge[1] < pos[1]) {return false;}
+        else if( pos[1] <    0.0) {return false;}
+        if     (edge[2] < pos[2]) {return false;}
+        else if( pos[2] <    0.0) {return false;}
+        return true;
+    }
+
     // size stuff
 
     Real        total_area()  const throw() {return total_area_;}
