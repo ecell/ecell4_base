@@ -179,7 +179,7 @@ void Polygon::assign(const std::vector<Triangle>& ts)
                 const Real  sg = dot_product(cr, n2);
                 const Real ang = calc_angle(n1, n2) * (sg > 0 ? 1 : -1);
 
-                this->edges_.at(i       ).tilt = ang;
+                this->edges_.at(i     ).tilt = ang;
                 this->edge_at(outgoing).tilt = ang;
 
                 opposite_found = true;
@@ -217,9 +217,9 @@ void Polygon::assign(const std::vector<Triangle>& ts)
             {
                 const std::vector<EdgeID>::iterator found = std::find(
                     outgoing_edges_tmp.begin(), outgoing_edges_tmp.end(), current);
+                assert(found != outgoing_edges_tmp.end());
                 outgoing_edges_tmp.erase(found);
             }
-
             const face_data& f = this->face_at(this->face_of(current));
             Real angle = std::numeric_limits<Real>::max();
             for(std::size_t idx=0; idx<3; ++idx)
@@ -253,8 +253,8 @@ void Polygon::assign(const std::vector<Triangle>& ts)
         for(std::size_t i=0; i<3; ++i)
         {
             const VertexID vid = face.vertices[i];
-            const Real3 v_pos        = face.triangle.vertex_at(i);
-            const Real3 normal       = face.triangle.normal();
+            const Real3 v_pos  = face.triangle.vertex_at(i);
+            const Real3 normal = face.triangle.normal();
 
             // counter clock wise
             {
@@ -438,6 +438,7 @@ Real Polygon::distance_sq(
 
     if(connected)
     {
+        assert(false);
         const Real3& vpos = position_at(*connected);
         const Real   lsq1 =
             length_sq(this->periodic_transpose(p1, vpos)         - vpos);
@@ -450,6 +451,7 @@ Real Polygon::distance_sq(
 //         std::cerr << "minimum path goes through vertex. dist_sq = " << solution << std::endl;
 //         return solution;
     }
+
     return std::numeric_limits<Real>::infinity();
 }
 
@@ -690,6 +692,18 @@ std::pair<Real3, Polygon::FaceID> Polygon::travel(
     {
         const Real3 nxt = to_absolute(
                 force_put_inside(unfolded_b), this->triangle_at(next.first));
+
+        if(!this->is_inside_of_boundary(nxt))
+        {
+            std::cerr << "travel: initial pos          = " << p   << " on " << f            << std::endl;
+            std::cerr << "travel: initial face         = " << f << " -> " << this->triangle_at(f) << std::endl;
+            std::cerr << "travel: initial disp         = " << disp                          << std::endl;
+            std::cerr << "travel: next face (unfolded) = " << next.second                   << std::endl;
+            std::cerr << "travel: next barycentric crd = " << unfolded_b                    << std::endl;
+            std::cerr << "travel: next bary (inside)   = " << force_put_inside(unfolded_b)  << std::endl;
+            std::cerr << "travel: next face            = " << this->triangle_at(next.first) << std::endl;
+            std::cerr << "travel: next pos             = " << nxt << " on " << next.first   << std::endl;
+        }
         return std::make_pair(nxt, next.first);
         // use folded (normal) Triangle, NOT next.second
     }
@@ -698,11 +712,24 @@ std::pair<Real3, Polygon::FaceID> Polygon::travel(
     // XXX to make it sure that `on_edge` should be on the edge under the PBC,
     //     to_absolute is used with the next triangle.
     const Barycentric on_edge_b(to_barycentric(p + disp * cs.second, next.second));
-    return this->travel(std::make_pair(
-        to_absolute(on_edge_b, this->triangle_at(next.first)), next.first),
-        rotate(tilt_angle_at(fd.edges[cs.first]), // rotate disp by tilt_angle
-               direction_of(fd.edges[cs.first]),  // around the edge
-               disp * (1 - cs.second)));          // the rest of displacement
+    const Real3 edge_over = direction_of(fd.edges[cs.first]);
+    const Real3 next_pos  = to_absolute(on_edge_b, this->triangle_at(next.first));
+
+    if(!this->is_inside_of_boundary(next_pos))
+    {
+        std::cerr << "travel: initial  pos               = " << p        << " on " << f          << std::endl;
+        std::cerr << "travel: initial face               = " << f << " -> " << this->triangle_at(f)             << std::endl;
+        std::cerr << "travel: initial disp               = " << disp                          << std::endl;
+        std::cerr << "travel: next face (unfolded)       = " << next.second                      << std::endl;
+        std::cerr << "travel: next barycnetric (on edge) = " << on_edge_b                        << std::endl;
+        std::cerr << "travel: next face                  = " << this->triangle_at(next.first)    << std::endl;
+        std::cerr << "travel: next  pos                  = " << next_pos << " on " << next.first << std::endl;
+    }
+
+    return this->travel(std::make_pair(next_pos, next.first),
+        rotate(tilt_angle_at(fd.edges[cs.first]),     // rotate disp by tilt_angle
+               edge_over * (1.0 / length(edge_over)), // around the edge
+               disp * (1 - cs.second)));              // the rest of displacement
 }
 
 std::pair<Real3, Polygon::FaceID> Polygon::travel(
@@ -744,6 +771,18 @@ std::pair<Real3, Polygon::FaceID> Polygon::travel(
     {
         const Real3 nxt = to_absolute(
                 force_put_inside(unfolded_b), this->triangle_at(next.first));
+
+        if(!this->is_inside_of_boundary(nxt))
+        {
+            std::cerr << "travel: initial  pos         = " << p   << " on " << f            << std::endl;
+            std::cerr << "travel: initial face         = " << f << " -> " << this->triangle_at(f)          << std::endl;
+            std::cerr << "travel: initial disp         = " << disp                          << std::endl;
+            std::cerr << "travel: next face (unfolded) = " << next.second                   << std::endl;
+            std::cerr << "travel: next barycentric crd = " << unfolded_b                    << std::endl;
+            std::cerr << "travel: next bary (inside)   = " << force_put_inside(unfolded_b)  << std::endl;
+            std::cerr << "travel: next face            = " << this->triangle_at(next.first) << std::endl;
+            std::cerr << "travel: next  pos            = " << nxt << " on " << next.first   << std::endl;
+        }
         return std::make_pair(nxt, next.first);
         // use folded (normal) Triangle, NOT next.second
     }
@@ -752,11 +791,23 @@ std::pair<Real3, Polygon::FaceID> Polygon::travel(
     // XXX to make it sure that `on_edge` should be on the edge under the PBC,
     //     to_absolute is used with the next triangle.
     const Barycentric on_edge_b(to_barycentric(p + disp * cs.second, next.second));
-    return this->travel(std::make_pair(
-        to_absolute(on_edge_b, this->triangle_at(next.first)), next.first),
-        rotate(tilt_angle_at(fd.edges[cs.first]), // rotate disp by tilt_angle
-               direction_of(fd.edges[cs.first]),  // around the edge
-               disp * (1 - cs.second)),           // the rest of displacement
+    const Real3 edge_over = direction_of(fd.edges[cs.first]);
+    const Real3 next_pos  = to_absolute(on_edge_b, this->triangle_at(next.first));
+
+    if(!this->is_inside_of_boundary(next_pos))
+    {
+        std::cerr << "travel: initial  pos               = " << p        << " on " << f          << std::endl;
+        std::cerr << "travel: initial face               = " << f << " -> " << this->triangle_at(f)             << std::endl;
+        std::cerr << "travel: initial disp               = " << disp                          << std::endl;
+        std::cerr << "travel: next face (unfolded)       = " << next.second                      << std::endl;
+        std::cerr << "travel: next barycnetric (on edge) = " << on_edge_b                        << std::endl;
+        std::cerr << "travel: next face                  = " << this->triangle_at(next.first)    << std::endl;
+        std::cerr << "travel: next  pos                  = " << next_pos << " on " << next.first << std::endl;
+    }
+    return this->travel(std::make_pair(next_pos, next.first),
+        rotate(tilt_angle_at(fd.edges[cs.first]),     // rotate disp by tilt_angle
+               edge_over * (1.0 / length(edge_over)), // around the edge
+               disp * (1 - cs.second)),               // the rest of displacement
         restraint - 1);
 }
 
