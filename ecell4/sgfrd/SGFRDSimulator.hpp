@@ -406,6 +406,7 @@ class SGFRDSimulator :
                          const ParticleID& pid, const Particle& p)
     {
         SGFRD_SCOPE(ns, create_single_circular_domain, tracer_);
+        SGFRD_TRACE(tracer_.write("shell shape = %1%", sh.second))
 
         const greens_functions::GreensFunction2DAbsSym
             gf(/* D = */ p.D(),
@@ -436,6 +437,7 @@ class SGFRDSimulator :
                          const ParticleID& pid, const Particle& p)
     {
         SGFRD_SCOPE(ns, create_single_conical_domain, tracer_);
+        SGFRD_TRACE(tracer_.write("shell shape = %1%", sh.second))
         SGFRD_TRACE(tracer_.write("arguments: shell ID = %2%, shell size = %2%"
             ", particle ID = %3%, Particle position = %4%",
             sh.first, sh.second.size(), pid, p.position()))

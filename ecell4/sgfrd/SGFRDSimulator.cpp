@@ -338,16 +338,16 @@ SGFRDSimulator::escape_single_circular(
 
     SGFRD_TRACE(tracer_.write("dir = %1%, len = %2%", direction, length(direction)))
 
+    const Real3 displacement = direction * r / length(direction);
+    SGFRD_TRACE(tracer_.write("displacement = %1%", displacement))
+
     std::pair<std::pair<Real3, FaceID>, Real3> state =
-        std::make_pair(/*position = */std::make_pair(p.position(), fid),
-                   /*displacement = */direction * r / length(direction));
+        std::make_pair(std::make_pair(p.position(), fid), displacement);
 
     SGFRD_TRACE(tracer_.write("pos = %1%, fid = %2%", state.first.first, state.first.second))
 
     state.first = ecell4::polygon::travel(this->polygon(), state.first, state.second, 2);
-
-    SGFRD_TRACE(tracer_.write("escaped"))
-    SGFRD_TRACE(tracer_.write("pos = %1%, fid = %2%",
+    SGFRD_TRACE(tracer_.write("escaped. pos = %1%, fid = %2%",
                               state.first.first, state.first.second))
 
     p.position() = state.first.first;
@@ -379,7 +379,8 @@ SGFRDSimulator::escape_single_conical(
     const std::pair<Real3, FaceID> state =
         ecell4::polygon::roll(this->polygon(), std::make_pair(p.position(), fid),
                       sh.structure_id(), r, theta);
-    SGFRD_TRACE(tracer_.write("escaped. pos = %1%, fid = %2%", p.position(), fid));
+    SGFRD_TRACE(tracer_.write("escaped. pos = %1%, fid = %2%",
+                              state.first, state.second));
 
     p.position() = state.first;
     this->update_particle(pid, p, state.second);
@@ -1145,6 +1146,23 @@ bool SGFRDSimulator::diagnosis() const
                           << _p.radius() << " at " << _p.position() << " on "
                           << _fid << '\n';
             }
+        }
+
+        if(!this->polygon().is_inside_of_boundary(p.position()))
+        {
+            std::cerr << "ERROR: particle " << pid << " is outside of the boundary!\n";
+            std::cerr << "     : position = " << p.position() << ", boundary = " << polygon().edge_lengths() << "\n";
+            result = false;
+        }
+
+        const Triangle&   tri  = this->polygon().triangle_at(fid);
+        const Barycentric bary = ::ecell4::to_barycentric(p.position(), tri);
+        if(!is_inside(bary))
+        {
+            std::cerr << "ERROR: particle " << pid << " is not on the face " << fid << "\n";
+            std::cerr << "     : position    = " << p.position() << ", face = " << tri << "\n";
+            std::cerr << "     : barycentric = " << bary << ", face = " << tri << "\n";
+            result = false;
         }
     }
 
