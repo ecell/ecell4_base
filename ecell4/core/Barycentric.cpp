@@ -6,13 +6,13 @@ namespace ecell4
 namespace detail
 {
 
-static inline Real cross_section(const Barycentric& pos,
-                                 const Barycentric& displacement,
-                                 const std::size_t edge_idx)
-{
-    const std::size_t idx = (edge_idx==0) ? 2 : edge_idx-1;
-    return -pos[idx] / displacement[idx];
-}
+// static inline Real cross_section(const Barycentric& pos,
+//                                  const Barycentric& displacement,
+//                                  const std::size_t edge_idx)
+// {
+//     const std::size_t idx = (edge_idx==0) ? 2 : edge_idx-1;
+//     return -pos[idx] / displacement[idx];
+// }
 
 static inline Real triangle_area_2D(const Real x1, const Real y1,
                                     const Real x2, const Real y2,
@@ -26,41 +26,63 @@ static inline Real triangle_area_2D(const Real x1, const Real y1,
 std::pair<std::size_t, Real>
 first_cross_edge(const Barycentric& pos, const Barycentric& disp)
 {
-    const Barycentric npos = pos + disp;
+    Barycentric npos = pos + disp;
+    if(std::abs(npos[0]) < 1e-10){npos[0] = 0.0;}
+    if(std::abs(npos[1]) < 1e-10){npos[1] = 0.0;}
+    if(std::abs(npos[2]) < 1e-10){npos[2] = 0.0;}
 
-    if(npos[0] * npos[1] * npos[2] < 0.) // (+, +, -) or one of its permutations
+    const Real multiply = npos[0] * npos[1] * npos[2];
+    if(multiply < 0.) // (+, +, -) or one of its permutations
     {
-        if     (npos[0] < 0.)
-        {return std::make_pair(1, detail::cross_section(pos, disp, 1));}
-        else if(npos[1] < 0.)
-        {return std::make_pair(2, detail::cross_section(pos, disp, 2));}
-        else if(npos[2] < 0.)
-        {return std::make_pair(0, detail::cross_section(pos, disp, 0));}
-        else {throw std::logic_error("Polygon::cross_edge: never reach here");}
+        if     (npos[0] < 0.0 && npos[1] > 0.0 && npos[2] > 0.0)
+        {
+            return std::make_pair(1, -pos[0] / disp[0]);
+        }
+        else if(npos[0] > 0.0 && npos[1] < 0.0 && npos[2] > 0.0)
+        {
+            return std::make_pair(2, -pos[1] / disp[1]);
+        }
+        else if(npos[0] > 0.0 && npos[1] > 0.0 && npos[2] < 0.0)
+        {
+            return std::make_pair(0, -pos[2] / disp[2]);
+        }
+        else
+        {
+            std::cerr << "pos  = " << pos  << std::endl;
+            std::cerr << "disp = " << disp << std::endl;
+            std::cerr << "npos = " << npos << std::endl;
+            throw std::logic_error("Polygon::cross_edge: never reach here");
+        }
+    }
+    else if(multiply == 0.0) // include 0. already on the edge.
+    {
+        if     (npos[0] == 0.0) {return std::make_pair(1, 1.0);}
+        else if(npos[1] == 0.0) {return std::make_pair(2, 1.0);}
+        else if(npos[2] == 0.0) {return std::make_pair(0, 1.0);}
     }
     else // (+, -, -) or one of its permutations
     {
-        if(npos[0] > 0. && npos[1] > 0. && npos[2] > 0) // not (+, +, +) case
+        if(npos[0] > 0.0 && npos[1] > 0.0 && npos[2] > 0.0) // (+, +, +) case
         {
             throw std::invalid_argument("BDPolygon::cross_edge");
         }
 
         if(npos[0] > 0.)
         {
-            const Real ab = detail::cross_section(pos, disp, 0);
-            const Real ca = detail::cross_section(pos, disp, 2);
+            const Real ab = -pos[2] / disp[2];
+            const Real ca = -pos[1] / disp[1];
             return (ab > ca) ? std::make_pair(2, ca) : std::make_pair(0, ab);
         }
         else if(npos[1] > 0.)
         {
-            const Real ab = detail::cross_section(pos, disp, 0);
-            const Real bc = detail::cross_section(pos, disp, 1);
+            const Real ab = -pos[2] / disp[2];
+            const Real bc = -pos[0] / disp[0];
             return (bc > ab) ? std::make_pair(0, ab) : std::make_pair(1, bc);
         }
         else // if(npos[2] > 0.)
         {
-            const Real bc = detail::cross_section(pos, disp, 1);
-            const Real ca = detail::cross_section(pos, disp, 2);
+            const Real bc = -pos[0] / disp[0];
+            const Real ca = -pos[1] / disp[1];
             return (ca > bc) ? std::make_pair(1, bc) : std::make_pair(2, ca);
         }
     }
