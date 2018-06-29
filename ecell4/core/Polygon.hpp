@@ -677,13 +677,18 @@ roll(const Polygon& poly,
      const std::pair<Real3, Polygon::FaceID>& pos,
      const Polygon::VertexID vid, const Real r, const Real theta_)
 {
+    const Real3 vpos = poly.periodic_transpose(poly.position_at(vid), pos.first);
     if(theta_ == 0.0)
     {
-        return pos;
+        const Real3  disp = pos.first - vpos;
+        const Real3 nwpos = poly.apply_boundary(vpos + disp * (r / length(disp)));
+        assert(::ecell4::is_inside(
+               ::ecell4::to_barycentric(nwpos, poly.triangle_at(pos.second))));
+        return std::make_pair(nwpos, pos.second);
     }
+
     const Real apex_angle = poly.apex_angle_at(vid);
-    const Real3&     vpos = poly.position_at(vid);
-    const Real      theta = (theta_ > 0) ? theta_ : theta_ + apex_angle;
+    assert(std::abs(theta_) < apex_angle);
 
     typedef Polygon::FaceID   FaceID;
     typedef Polygon::EdgeID   EdgeID;
@@ -693,7 +698,7 @@ roll(const Polygon& poly,
         poly.outgoing_edge_and_angles(vid);
 
     std::vector<std::pair<EdgeID, Real> >::const_iterator current_edge;
-    Real   current_angle = 0.0;
+    Real current_angle = 0.0;
     for(std::vector<std::pair<EdgeID, Real> >::const_iterator
             i(outedges.begin()), e(outedges.end()); i!=e; ++i)
     {
@@ -704,40 +709,50 @@ roll(const Polygon& poly,
         }
         current_angle += i->second;
     }
-    assert(theta <= apex_angle);
+    current_angle += calc_angle(
+            poly.direction_of(current_edge->first), pos.first - vpos);
 
-    const Real pre_angle =
-        calc_angle(poly.direction_of(current_edge->first), pos.first - vpos);
-    current_angle += pre_angle;
+    std::cerr << "initial position = " << pos.first << std::endl;
+    std::cerr << "initial first    = " << pos.second << ", " << poly.triangle_at(pos.second) << std::endl;
+    std::cerr << "current_angle    = " << current_angle << ", theta_ = " << theta_
+              << ", apex_angle = "  <<    apex_angle << std::endl;
+    const Real theta = ::ecell4::modulo(current_angle + theta_, apex_angle);
+    std::cerr << "theta = " << theta << std::endl;
 
-    Real current_theta = std::numeric_limits<Real>::infinity();
-    if(theta > apex_angle - current_angle)
+    current_angle = 0.0;
+    for(std::vector<std::pair<EdgeID, Real> >::const_iterator
+            i(outedges.begin()), e(outedges.end()); i!=e; ++i)
     {
-        // retrace
-        current_theta = theta - apex_angle + pre_angle;
-        while(current_theta < 0)
         {
-            --current_edge;
-            current_theta += current_edge->second;
+            std::cerr << "face " << poly.face_of(i->first) << " = "
+                      << poly.triangle_at(poly.face_of(i->first)) << std::endl;
+            std::cerr << "angle around vtx " << vid << " at " << vpos << " = "
+                      << i->second << std::endl;
         }
-    }
-    else
-    {
-        // advance
-        current_theta = theta + pre_angle;
-        while(current_theta - current_edge->second > 0)
-        {
-            current_theta -= current_edge->second;
-            ++current_edge;
-        }
-    }
-    const FaceID new_fid = poly.face_of(current_edge->first);
-    const Real3& normal  = poly.triangle_at(new_fid).normal();
 
-    Real3 direction =
-        rotate(current_theta, normal, poly.direction_of(current_edge->first));
-    direction *= (1.0 / length(direction));
-    return std::make_pair(poly.apply_boundary(vpos + direction * r), new_fid);
+        const Real next_angle = current_angle + i->second;
+        if(theta < next_angle)
+        {
+            const FaceID next_fid = poly.face_of(i->first);
+            const Real3& normal   = poly.triangle_at(next_fid).normal();
+            const Real diff_angle = theta - current_angle;
+            const Real3 direction = rotate(
+                    diff_angle, normal, poly.direction_of(i->first));
+            const Real3 next_pos  = poly.apply_boundary(
+                    vpos + direction * (r / length(direction)));
+
+            if(!::ecell4::is_inside(
+                        to_barycentric(next_pos, poly.triangle_at(next_fid))))
+            {
+                std::cerr << "position = " << next_pos << ", face " << next_fid
+                          << " = " <<  poly.triangle_at(next_fid) << std::endl;
+                assert(false);
+            }
+            return std::make_pair(next_pos, next_fid);
+        }
+        current_angle = next_angle;
+    }
+    throw std::logic_error("ecell4::polygon::roll never reach here");
 }
 
 } // polygon
