@@ -333,13 +333,30 @@ public:
         newpfs[0] = std::make_pair(p.position(), fid);
         newpfs[1] = std::make_pair(p.position(), fid);
 
+        Real        separation_factor = r12 * 1e-7;
+        std::size_t separation_count  = 10u;
+        while(separation_count != 0)
         {
-            const Real3 ipv(draw_ipv(r12, D12, n));
-            Real3 disp1(ipv * ( D1 / D12)), disp2(ipv * (-D2 / D12));
+            --separation_count;
+            SGFRD_TRACE(this->vc_.access_tracer().write(
+                        "separation count = %1%", separation_count));
+
+            const Real3 ipv(draw_ipv(r12 + separation_factor, D12, n));
+            Real3 disp1(ipv * (D1 / D12)), disp2(ipv * (-D2 / D12));
 
             // put two particles next to each other
             this->propagate(newpfs[0], disp1);
             this->propagate(newpfs[1], disp2);
+
+            const Real dist = ecell4::polygon::distance(this->polygon_,
+                    newpfs[0], newpfs[1]);
+            if(dist <= r12) // check the new positions
+            {
+                newpfs[0] = std::make_pair(p.position(), fid); //rollback
+                newpfs[1] = std::make_pair(p.position(), fid);
+                separation_factor *= 2.0;
+                continue;
+            }
 
             if(is_overlapping(newpfs[0], r1, pid) ||
                is_overlapping(newpfs[1], r2, pid))
