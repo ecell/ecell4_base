@@ -246,6 +246,8 @@ SGFRDSimulator::attempt_reaction_1_to_2(const ReactionRule& rule,
             ecell4::polygon::distance(this->polygon(), newpfs[0], newpfs[1]);
         if(dist <= r12)
         {
+            newpfs[0] = std::make_pair(p.position(), fid); // rollback
+            newpfs[1] = std::make_pair(p.position(), fid);
             separation_factor *= 2.0;
             continue;
         }
