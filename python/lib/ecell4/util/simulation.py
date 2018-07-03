@@ -2,6 +2,7 @@ import collections
 
 from .decorator import get_model, reset_model
 from . import viz
+from ..extra import unit
 
 
 def load_world(filename):
@@ -59,6 +60,36 @@ def get_factory(solver, *args):
         raise ValueError(
             'unknown solver name was given: ' + repr(solver)
             + '. use ode, gillespie, spatiocyte, meso, bd or egfrd')
+
+def get_shape(shape, *args):
+    if not isinstance(shape, str):
+        raise ValueError("Invalid shape was given [{}]. This must be 'str'".format(repr(shape)))
+
+    import ecell4
+    shape = shape.lower()
+    shape_map = {
+        'aabb': ecell4.core.AABB,
+        # 'affinetransformation': ecell4.core.AffineTransformation,
+        'cylinder': ecell4.core.Cylinder,
+        'cylindricalsurface': ecell4.core.CylindricalSurface,
+        'meshsurface': ecell4.core.MeshSurface,
+        'planarsurface': ecell4.core.PlanarSurface,
+        'rod': ecell4.core.Rod,
+        'rodsurface': ecell4.core.RodSurface,
+        'sphere': ecell4.core.Sphere,
+        'sphericalsurface': ecell4.core.SphericalSurface,
+        # 'complement': ecell4.core.Complement,
+        # 'union': ecell4.core.Union,
+        }
+    if shape in shape_map:
+        args = [
+            value.to_base_units().magnitude if isinstance(value, unit._Quantity) else value
+            for value in args]
+        return shape_map[shape](*args)
+    else:
+        raise ValueError(
+            'unknown shape type was given: ' + repr(shape)
+            + '. use {}'.format(', '.join(sorted(shape_map.keys()))))
 
 def list_species(model, seeds=None):
     seeds = None or []
@@ -164,6 +195,27 @@ def run_simulation(
 
     import ecell4
 
+    if unit.HAS_PINT:
+        if isinstance(t, unit._Quantity):
+            if unit.STRICT and not unit.check_dimensionality(t, '[time]'):
+                raise ValueError("Cannot convert [t] from '{}' ({}) to '[time]'".format(t.dimensionality, t.u))
+            t = t.to_base_units().magnitude
+
+        if isinstance(volume, unit._Quantity):
+            if unit.STRICT:
+                if isinstance(volume.magnitude, ecell4.core.Real3) and not unit.check_dimensionality(volume, '[length]'):
+                    raise ValueError("Cannot convert [volume] from '{}' ({}) to '[length]'".format(
+                        volume.dimensionality, volume.u))
+                elif not unit.check_dimensionality(volume, '[volume]'):
+                    raise ValueError("Cannot convert [volume] from '{}' ({}) to '[volume]'".format(
+                        volume.dimensionality, volume.u))
+            volume = volume.to_base_units().magnitude
+
+        if not isinstance(solver, str) and isinstance(solver, collections.Iterable):
+            solver = [
+                value.to_base_units().magnitude if isinstance(value, unit._Quantity) else value
+                for value in solver]
+
     if factory is not None:
         # f = factory  #XXX: will be deprecated in the future. just use solver
         raise ValueError(
@@ -189,8 +241,28 @@ def run_simulation(
 
     w = f.create_world(edge_lengths)
 
+    if unit.HAS_PINT:
+        for key, value in y0.items():
+            if isinstance(value, unit._Quantity):
+                if not unit.STRICT:
+                    y0[key] = value.to_base_units().magnitude
+                elif unit.check_dimensionality(value, '[substance]'):
+                    y0[key] = value.to_base_units().magnitude
+                elif unit.check_dimensionality(value, '[concentration]'):
+                    volume = w.volume() if not isinstance(w, ecell4.spatiocyte.SpatiocyteWorld) else w.actual_volume()
+                    y0[key] = value.to_base_units().magnitude * volume
+                else:
+                    raise ValueError(
+                        "Cannot convert a quantity for [{}] from '{}' ({}) to '[substance]'".format(
+                            key, value.dimensionality, value.u))
+
     for (name, shape) in structures.items():
-        w.add_structure(ecell4.Species(name), shape)
+        if isinstance(shape, str):
+            w.add_structure(ecell4.Species(name), get_shape(shape))
+        elif isinstance(shape, collections.Iterable):
+            w.add_structure(ecell4.Species(name), get_shape(*shape))
+        else:
+            w.add_structure(ecell4.Species(name), shape)
 
     if isinstance(w, ecell4.ode.ODEWorld):
         # w.bind_to(model)  # stop binding for ode

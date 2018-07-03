@@ -77,6 +77,14 @@ struct DefaultLot
     }
 };
 
+template<typename Tstrm_, typename Ttraits_>
+inline std::basic_ostream<Tstrm_, Ttraits_>&
+operator<<(std::basic_ostream<Tstrm_, Ttraits_>& strm, const DefaultLot&)
+{
+    strm << '0';
+    return strm;
+}
+
 template<typename Tbase_, typename Tserial_, typename Tlot_ = DefaultLot>
 struct Identifier
 {
