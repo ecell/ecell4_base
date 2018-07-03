@@ -1183,15 +1183,16 @@ bool SGFRDSimulator::diagnosis() const
                 {
                     if(_shid == shid){continue;}
                     const Real dist = boost::apply_visitor(dist_calc, _sh);
-                    const DomainID _did = boost::apply_visitor(
-                            domain_id_getter(), _sh);
+                    const DomainID _did = boost::apply_visitor(domain_id_getter(), _sh);
                     if(dist < ccl.size() && ccl.domain_id() != _did)
                     {
                         result = false;
-                        std::cerr << "ERROR: circular shell " << shid << " and shell " << _shid
-                                  << "overlaps\n";
+                        std::cerr << "ERROR: circular shell " << shid
+                                  << " and shell " << _shid << "overlaps\n";
                         std::cerr << "     : distance = " << dist - ccl.size()
-                                  << "\n";
+                                  << '\n';
+                        std::cerr <<  shid << " -> " <<  sh << '\n';
+                        std::cerr << _shid << " -> " << _sh << '\n';
                     }
                 }
                 break;
@@ -1212,10 +1213,12 @@ bool SGFRDSimulator::diagnosis() const
                     if(dist < con.size() && con.domain_id() != _did)
                     {
                         result = false;
-                        std::cerr << "ERROR: conical shell " << shid << " and shell " << _shid
-                                  << "overlaps\n";
+                        std::cerr << "ERROR: conical shell " << shid
+                                  << " and shell " << _shid << "overlaps\n";
                         std::cerr << "     : distance = " << dist - con.size()
                                   << "\n";
+                        std::cerr <<  shid << " -> " <<  sh << '\n';
+                        std::cerr << _shid << " -> " << _sh << '\n';
                     }
                 }
                 break;
