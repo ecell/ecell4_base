@@ -92,10 +92,12 @@ struct distance_sq_impl<Real3, ecell4::Segment>
         const Real3 ac = p - s.start();
         const Real3 bc = p - s.stop();
         const Real dot = dot_product(ac, ab);
-        if(dot <= 0.0) return length_sq(ac);
+        if(dot <= 0.0){return length_sq(ac);}
         const Real len = length_sq(ab);
-        if(dot >= len) return length_sq(bc);
-        return length_sq(ac) - (dot * dot) / len;
+        if(dot >= len){return length_sq(bc);}
+        const Real ans = length_sq(ac) - (dot * dot) / len;
+        // for numerical robustness, distance never be negative
+        return std::max(ans, 0.0);
     }
 };
 
