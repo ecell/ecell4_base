@@ -1804,6 +1804,9 @@ class SGFRDSimulator :
     //! just a geometric restriction
     Real get_max_circle_size(const std::pair<Real3, FaceID>& pos) const
     {
+        SGFRD_SCOPE(us, get_max_circle_size, tracer_);
+        SGFRD_TRACE(tracer_.write("position = %1%, %2%", pos.first, pos.second));
+
         Real lensq = std::numeric_limits<Real>::max();
         const boost::array<ecell4::Segment, 6>& barrier =
             world_->barrier_at(pos.second);
@@ -1816,6 +1819,7 @@ class SGFRDSimulator :
                 lensq = dist2;
             }
         }
+        SGFRD_TRACE(tracer_.write("distance to barrier = %1%", lensq));
         return std::sqrt(lensq);
     }
     Real get_max_cone_size(const VertexID& vid) const
