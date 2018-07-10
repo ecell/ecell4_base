@@ -310,6 +310,10 @@ class SGFRDWorld : public ecell4::Space
 
     particle_container_type const& particles() const {return ps_->particles();}
 
+    Real3 periodic_transpose(const Real3& pos1, const Real3& pos2) const
+    {
+        return this->polygon_->periodic_transpose(pos1, pos2);
+    }
 
     void bind_to(boost::shared_ptr<model_type> model)
     {
@@ -357,6 +361,11 @@ class SGFRDWorld : public ecell4::Space
 
   private:
 
+    inline static Real3 normalize(const Real3& v) throw()
+    {
+        return v * (1.0 / std::sqrt(length_sq(v)));
+    }
+
     void prepair_barriers()
     {
         // this contains the edges that correspond to the developed neighbor faces.
@@ -374,37 +383,41 @@ class SGFRDWorld : public ecell4::Space
             const Triangle& tri = polygon_->triangle_at(fid);
 
             boost::array<Segment, 6> segments;
+            segments.fill(Segment(Real3(0,0,0), Real3(0,0,0)));
+
             boost::array<EdgeID, 3> const& edges = polygon_->edges_of(fid);
             for(std::size_t i=0; i<3; ++i)
             {
                 const EdgeID eid = edges[i];
                 const Real3 orig = tri.vertex_at(i);
                 const Real3  vtx = orig + rotate(
-                    -1 * this->polygon_->tilt_angle_at(eid),
-                    this->polygon_->direction_of(eid),
-                    this->polygon_->direction_of(this->polygon_->next_of(
-                            this->polygon_->opposite_of(eid))));
+                    -1 * polygon_->tilt_angle_at(eid),
+                    normalize(polygon_->direction_of(eid)),
+                    polygon_->direction_of(polygon_->next_of(
+                        polygon_->opposite_of(eid))));
 
                 const Real3  vtx_ = orig + rotate(
-                    -1 * this->polygon_->tilt_angle_at(eid),
-                    this->polygon_->direction_of(this->polygon_->opposite_of(
-                            this->polygon_->next_of(eid))),
-                    this->polygon_->direction_of(this->polygon_->next_of(
-                            this->polygon_->opposite_of(eid))));
+                    -1 * polygon_->tilt_angle_at(eid),
+                    normalize(polygon_->direction_of(
+                        polygon_->opposite_of(polygon_->next_of(eid)))),
+                    polygon_->direction_of(polygon_->next_of(
+                        polygon_->opposite_of(eid))));
 
                 const Real dist = length(vtx - vtx_);
-                if(dist > 1e-12)
+                if(!(dist < 1e-12))
                 {
-                    std::cerr << "[World::prepair_barriers]: "
-                              << "dist between first calculation " << vtx
+                    std::cerr << "[World::prepair_barriers]: the difference"
+                              << " between first calculation " << vtx
                               << " and second calculation " << vtx_
                               << " is too large = " << dist << std::endl;
                     assert(false);
                 }
 
-                segments[i*2    ] = Segment(orig, vtx);
-                segments[i*2 + 1] = Segment(this->polygon_->position_at(
-                    this->polygon_->target_of(eid)), vtx);
+                segments[i*2  ] = Segment(this->periodic_transpose(orig, vtx),
+                    vtx);
+                segments[i*2+1] = Segment(this->periodic_transpose(
+                    this->polygon_->position_at(this->polygon_->target_of(eid)),
+                    vtx), vtx);
             }
             this->barriers_[fid] = segments;
 
@@ -412,8 +425,24 @@ class SGFRDWorld : public ecell4::Space
 //             for(std::size_t i=0; i<6; ++i)
 //             {
 //                 std::cerr << this->barriers_[fid][i] << ", ";
+//                 const Real3 start = this->barriers_[fid][i].start();
+//                 const Real3 stop  = this->barriers_[fid][i].stop();
+//                 const Real dist = length(start - stop);
+//
+//                 if(dist - 1.0 < 1e-12)
+//                 {
+//                     std::cerr << "[[length = 1.0]] ";
+//                 }
+//                 else if(dist - std::sqrt(2.0) < 1e-12)
+//                 {
+//                     std::cerr << "[[length = sqrt(2)]] ";
+//                 }
+//                 else
+//                 {
+//                     std::cerr << "[[length = " << dist << "]] ";
+//                 }
 //             }
-//             std::cerr << std::endl;
+//             std::cerr << "}\n";
         }
         return;
     }
