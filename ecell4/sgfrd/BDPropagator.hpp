@@ -333,7 +333,7 @@ public:
         newpfs[0] = std::make_pair(p.position(), fid);
         newpfs[1] = std::make_pair(p.position(), fid);
 
-        Real        separation_factor = r12 * 1e-7;
+        const Real  separation_factor = r12 * 1e-7;
         std::size_t separation_count  = 10u;
         while(separation_count != 0)
         {
@@ -354,7 +354,6 @@ public:
             {
                 newpfs[0] = std::make_pair(p.position(), fid); //rollback
                 newpfs[1] = std::make_pair(p.position(), fid);
-                separation_factor *= 2.0;
                 continue;
             }
 
