@@ -36,14 +36,21 @@ else()
   set(WITH_HDF5 0)
 endif()
 
-# find_package(Boost COMPONENTS regex)
-if(NOT Boost_FOUND)
-  find_package(Boost REQUIRED)
+find_package(Boost COMPONENTS regex unit_test_framework)
+if(NOT DEFINED Boost_VERSION)
+    message(FATAL_ERROR
+        "ecell4 requires Boost C++ Library. "
+        "If you have already installed it, try `-DBOOST_ROOT=/path/to/boost`")
 else()
-  set(HAVE_BOOST_REGEX 1)
+    include_directories(${Boost_INCLUDE_DIRS})
+    link_directories(${Boost_LIBRARY_DIRS})
 endif()
 
-include_directories(${Boost_INCLUDE_DIRS})
+if(Boost_REGEX_FOUND)
+  set(HAVE_BOOST_REGEX 1)
+else()
+  set(HAVE_BOOST_REGEX 0)
+endif()
 
 find_library(GSL_LIBRARIES gsl)
 find_library(GSL_CBLAS_LIBRARIES gslcblas)
