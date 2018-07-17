@@ -132,6 +132,23 @@ class SGFRDSimulator :
         }
         return ;
     }
+    void finalize(const Real t)
+    {
+        assert(t < this->next_event_time());
+        const Real tm(t);
+        this->set_time(t);
+        while(this->scheduler_.size() != 0)
+        {
+            this->burst_event(this->scheduler_.pop(), tm);
+        }
+        return ;
+    }
+
+    Real next_event_time() const
+    {
+        return this->scheduler_.next_time();
+    }
+
     void step()
     {
         SGFRD_SCOPE(us, step, tracer_);
