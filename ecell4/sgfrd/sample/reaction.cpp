@@ -214,9 +214,14 @@ int main(int argc, char **argv)
     const std::size_t  num_step = boost::lexical_cast<std::size_t>(input["gfrd_step"]);
     for(std::size_t i=0; i<num_step; ++i)
     {
-        while(sim.step(i * dt)){}
+        while(sim.next_event_time() <= i * dt){sim.step();}
+        assert(sim.next_event_time() > i * dt);
+        sim.finalize(i * dt);
+
         snapshot_output(traj, world);
         species_output(spec, world, sp1, sp2, sp3);
+
+        sim.initialize();
     }
     sim.finalize();
     snapshot_output(traj, world);
