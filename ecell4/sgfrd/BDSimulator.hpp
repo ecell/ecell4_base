@@ -5,7 +5,7 @@
 #include <ecell4/core/ReactionRule.hpp>
 #include <ecell4/core/SerialIDGenerator.hpp>
 #include <ecell4/core/geometry.hpp>
-#include <ecell4/sgfrd/Informations.hpp>
+#include <ecell4/sgfrd/ReactionInfo.hpp>
 #include <ecell4/sgfrd/SGFRDWorld.hpp>
 #include <ecell4/sgfrd/BDPropagator.hpp>
 #include <ecell4/sgfrd/tracer.hpp>

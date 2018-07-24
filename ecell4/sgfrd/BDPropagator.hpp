@@ -10,7 +10,7 @@
 #include <boost/typeof/typeof.hpp>
 #include <boost/foreach.hpp>
 #include <boost/static_assert.hpp>
-#include <ecell4/sgfrd/Informations.hpp>
+#include <ecell4/sgfrd/ReactionInfo.hpp>
 #include <ecell4/sgfrd/SGFRDWorld.hpp>
 
 namespace ecell4

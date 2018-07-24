@@ -1,7 +1,7 @@
 #ifndef ECELL4_SGFRD_WORLD
 #define ECELL4_SGFRD_WORLD
 #include "StructureRegistrator.hpp"
-#include "Informations.hpp"
+#include "ReactionInfo.hpp"
 #include <ecell4/core/WorldInterface.hpp>
 #include <ecell4/core/ParticleSpaceCellListImpl.hpp>
 #include <ecell4/core/SerialIDGenerator.hpp>

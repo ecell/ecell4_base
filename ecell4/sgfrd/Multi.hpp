@@ -2,7 +2,7 @@
 #define ECELL4_SGFRD_MULTI_DOMAIN
 #include <ecell4/sgfrd/ShellID.hpp>
 #include <ecell4/sgfrd/BDPropagator.hpp>
-#include <ecell4/sgfrd/Informations.hpp>
+#include <ecell4/sgfrd/ReactionInfo.hpp>
 #include <ecell4/sgfrd/MultiContainer.hpp>
 #include <ecell4/core/Particle.hpp>
 

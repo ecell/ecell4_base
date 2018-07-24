@@ -13,7 +13,7 @@
 #include <ecell4/sgfrd/ShellContainer.hpp>
 #include <ecell4/sgfrd/ShellVisitorApplier.hpp>
 #include <ecell4/sgfrd/ShellVisitors.hpp>
-#include <ecell4/sgfrd/Informations.hpp>
+#include <ecell4/sgfrd/ReactionInfo.hpp>
 #include <ecell4/sgfrd/SGFRDEvent.hpp>
 #include <ecell4/sgfrd/expected.hpp>
 
