@@ -445,18 +445,20 @@ class SGFRDWorld
             {
                 const EdgeID eid = edges[i];
                 const Real3 orig = tri.vertex_at(i);
+
                 const Real3  vtx = orig + rotate(
                     -1 * polygon_->tilt_angle_at(eid),
                     normalize(polygon_->direction_of(eid)),
                     polygon_->direction_of(polygon_->next_of(
-                        polygon_->opposite_of(eid))));
-
-                const Real3  vtx_ = orig + rotate(
+                        polygon_->opposite_of(eid)))
+                    );
+                const Real3  vtx_ = tri.vertex_at(i==2?0:i+1) + rotate(
                     -1 * polygon_->tilt_angle_at(eid),
-                    normalize(polygon_->direction_of(
-                        polygon_->opposite_of(polygon_->next_of(eid)))),
-                    polygon_->direction_of(polygon_->next_of(
-                        polygon_->opposite_of(eid))));
+                    normalize(polygon_->direction_of(eid)),
+                    polygon_->direction_of(polygon_->opposite_of(
+                            polygon_->next_of(polygon_->next_of(
+                                    polygon_->opposite_of(eid)))))
+                    );
 
                 const Real dist = length(vtx - vtx_);
                 if(!(dist < 1e-12))
