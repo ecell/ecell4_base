@@ -2,6 +2,7 @@
 #define ECELL4_SGFRD_WORLD
 #include "StructureRegistrator.hpp"
 #include "Informations.hpp"
+#include <ecell4/core/WorldInterface.hpp>
 #include <ecell4/core/ParticleSpaceCellListImpl.hpp>
 #include <ecell4/core/SerialIDGenerator.hpp>
 #include <ecell4/core/Polygon.hpp>
@@ -20,7 +21,8 @@ namespace ecell4
 namespace sgfrd
 {
 
-class SGFRDWorld : public ecell4::Space
+class SGFRDWorld
+    : public ecell4::WorldInterface
 {
   public:
     typedef ecell4::Polygon  polygon_type;
@@ -61,26 +63,122 @@ class SGFRDWorld : public ecell4::Space
           rng_(rng), polygon_(polygon), registrator_(*polygon)
     {this->prepair_barriers();}
 
-    ~SGFRDWorld(){}
+    ~SGFRDWorld() override = default;
 
     boost::shared_ptr<RandomNumberGenerator> const& rng() {return this->rng_;}
     boost::shared_ptr<polygon_type> const& polygon() const {return polygon_;}
 
-    const Real t()                  const {return ps_->t();}
-    void       set_t(const Real& t)       {return ps_->set_t(t);}
-    const Real volume()             const {return ps_->volume();}
-    Real get_value(const Species& sp)       const {return ps_->get_value(sp);}
-    Real get_value_exact(const Species& sp) const {return ps_->get_value_exact(sp);}
+    // -----------------------------------------------------------------------
+    // WorldInterface
 
-//     Integer num_species() const {return ps_->num_species();}
-//     bool has_species(const Species& sp) const {return ps_->has_species(sp);}
-//     std::vector<Species> list_species() const {return ps_->list_species();}
+    const Real t() const override
+    {
+        return ps_->t();
+    }
+    void set_t(const Real& t) override
+    {
+        return ps_->set_t(t);
+    }
 
-// CellListImpl stuff
-//     Real3 const& edge_lengths() const {return ps_->edge_lengths();}
-//     Real3 const& cell_sizes()   const {return ps_->cell_sizes();}
-//     Integer3     matrix_sizes() const {return ps_->matrix_sizes();}
-//     void reset(const Real3& edge_lengths) {ps_->reset(edge_lengths);}
+    void save(const std::string& fname) const override
+    {
+        throw NotImplemented("SGFRDWorld::save");
+    }
+    void load(const std::string& fname)       override
+    {
+        throw NotImplemented("SGFRDWorld::load");
+    }
+
+#ifdef WITH_HDF5
+    void save_hdf5(H5::Group* root) const
+    {
+        throw NotImplemented("SGFRDWorld::save_hdf5");
+    }
+
+    void load_hdf5(const H5::Group& root)
+    {
+        throw NotImplemented("SGFRDWorld::load_hdf5");
+    }
+#endif
+
+    const Real volume() const override
+    {
+        return ps_->volume();
+    }
+
+    bool has_species(const Species& sp) const override
+    {
+        for(auto&& item : ps_->list_species())
+        {
+            if(item == sp){return true;}
+        }
+        return false;
+    }
+
+    Integer num_molecules(const Species& sp) const override
+    {
+        return ps_->num_molecules(sp);
+    }
+
+    Integer num_molecules_exact(const Species& sp) const override
+    {
+        return ps_->num_molecules_exact(sp);
+    }
+
+    Real get_value(const Species& sp)       const override
+    {
+        return ps_->get_value(sp);
+    }
+    Real get_value_exact(const Species& sp) const override
+    {
+        return ps_->get_value_exact(sp);
+    }
+
+    const Real3& edge_lengths() const override
+    {
+        return ps_->edge_lengths();
+    }
+
+    Integer num_particles() const override
+    {
+        return ps_->num_particles();
+    }
+    Integer num_particles(const Species& sp) const override
+    {
+        return ps_->num_particles(sp);
+    }
+    Integer num_particles_exact(const Species& sp) const override
+    {
+        return ps_->num_particles_exact(sp);
+    }
+
+    bool has_particle(const ParticleID& pid) const override
+    {
+        return ps_->has_particle(pid);
+    }
+    std::pair<ParticleID, Particle> get_particle(const ParticleID& pid) const override
+    {
+        return ps_->get_particle(pid);
+    }
+
+    std::vector<std::pair<ParticleID, Particle> >
+    list_particles() const override
+    {
+        return ps_->list_particles();
+    }
+    std::vector<std::pair<ParticleID, Particle> >
+    list_particles(const Species& sp) const override
+    {
+        return ps_->list_particles(sp);
+    }
+    std::vector<std::pair<ParticleID, Particle> >
+    list_particles_exact(const Species& sp) const override
+    {
+        return ps_->list_particles_exact(sp);
+    }
+
+    // -----------------------------------------------------------------------
+    // ParticleSpaceInterface
 
     std::pair<std::pair<ParticleID, Particle>, bool>
     new_particle(const Particle& p);
@@ -121,11 +219,6 @@ class SGFRDWorld : public ecell4::Space
         registrator_.remove(pid, fid);
         return ps_->remove_particle(pid);
     }
-
-    std::pair<ParticleID, Particle>
-    get_particle(const ParticleID& pid) const {return ps_->get_particle(pid);}
-    bool
-    has_particle(const ParticleID& pid) const {return ps_->has_particle(pid);}
     bool
     has_particle(const FaceID& fid) const
     {
@@ -136,24 +229,6 @@ class SGFRDWorld : public ecell4::Space
     {
         return registrator_.elements_over(fid).size();
     }
-
-    Integer
-    num_particles()                        const {return ps_->num_particles();}
-    Integer
-    num_particles(const Species& sp)       const {return ps_->num_particles(sp);}
-    Integer
-    num_particles_exact(const Species& sp) const {return ps_->num_particles_exact(sp);}
-    Integer
-    num_molecules(const Species& sp)       const {return ps_->num_molecules(sp);}
-    Integer
-    num_molecules_exact(const Species& sp) const {return ps_->num_molecules_exact(sp);}
-
-    std::vector<std::pair<ParticleID, Particle> >
-    list_particles() const {return ps_->list_particles();}
-    std::vector<std::pair<ParticleID, Particle> >
-    list_particles(const Species& sp) const {return ps_->list_particles(sp);}
-    std::vector<std::pair<ParticleID, Particle> >
-    list_particles_exact(const Species& sp) const {return ps_->list_particles_exact(sp);}
 
     std::vector<std::pair<ParticleID, Particle> >
     list_particles(const FaceID& fid) const
@@ -180,26 +255,6 @@ class SGFRDWorld : public ecell4::Space
         return registrator_.structure_on(pid);
     }
 
-    void save(const std::string& fname) const
-    {
-        throw NotImplemented("SGFRDWorld::save");
-    }
-    void load(const std::string& fname) const
-    {
-        throw NotImplemented("SGFRDWorld::load");
-    }
-
-#ifdef WITH_HDF5
-    void save_hdf5(H5::Group* root) const
-    {
-        throw NotImplemented("SGFRDWorld::save_hdf5");
-    }
-
-    void load_hdf5(const H5::Group& root)
-    {
-        throw NotImplemented("SGFRDWorld::load_hdf5");
-    }
-#endif
 
     //TODO: consider periodic transpose in the same way as ParticleSpaceCellListImpl
     Real distance_sq(const Real3& lhs, const Real3& rhs)
