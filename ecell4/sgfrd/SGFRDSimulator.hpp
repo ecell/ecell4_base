@@ -83,7 +83,6 @@ class SGFRDSimulator :
 
     // reaction
     typedef ecell4::ReactionRule           reaction_rule_type;
-    typedef MoleculeInfo                   molecule_info_type;
     typedef ReactionInfo                   reaction_info_type;
     typedef std::pair<reaction_rule_type, reaction_info_type> reaction_log_type;
     typedef std::vector<reaction_log_type> reaction_archive_type;
@@ -1048,10 +1047,8 @@ class SGFRDSimulator :
                 // make new particle
                 const Species species_new =
                     this->model_->apply_species_attributes(rule.products().front());
-                const molecule_info_type mol_info =
-                    this->world_->get_molecule_info(species_new);
-                const Real radius_new = mol_info.radius;
-                const Real D_new      = mol_info.D;
+                const Real radius_new = species_new.get_attribute_as<Real>("radius");
+                const Real D_new      = species_new.get_attribute_as<Real>("D");
                 const Particle p_new(species_new, pos_new, radius_new, D_new);
 
                 inside_checker is_inside_of(

@@ -42,10 +42,12 @@ SGFRDWorld::new_particle(const Particle& p, const FaceID& fid)
 std::pair<std::pair<ParticleID, Particle>, bool>
 SGFRDWorld::throw_in_particle(const Species& sp)
 {
-    const molecule_info_type molinfo = this->get_molecule_info(sp);
+    const Real r = sp.get_attribute_as<Real>("radius");
+    const Real D = sp.get_attribute_as<Real>("D");
+
     Real3 pos; FaceID fid;
     pos = this->polygon_->draw_position(this->rng_, fid);
-    const Particle p(sp, pos, molinfo.radius, molinfo.D);
+    const Particle p(sp, pos, r, D);
     return this->new_particle(p, fid);
 }
 

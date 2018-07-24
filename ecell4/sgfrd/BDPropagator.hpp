@@ -38,7 +38,6 @@ public:
 
     // reaction stuff
     typedef ecell4::ReactionRule reaction_rule_type;
-    typedef ecell4::sgfrd::MoleculeInfo molecule_info_type;
     typedef ecell4::sgfrd::ReactionInfo reaction_info_type;
     typedef std::pair<reaction_rule_type, reaction_info_type> reaction_log_type;
     typedef std::vector<reaction_log_type>                reaction_archive_type;
@@ -275,10 +274,8 @@ public:
         SGFRD_SCOPE(ns, BD_attempt_1to1_reaction, this->vc_.access_tracer())
         const species_type species_new =
             this->model_.apply_species_attributes(rlog.first.products().front());
-        const molecule_info_type mol_info =
-            this->container_.get_molecule_info(species_new);
-        const Real radius_new = mol_info.radius;
-        const Real D_new      = mol_info.D;
+        const Real radius_new = species_new.get_attribute_as<Real>("radius");
+        const Real D_new      = species_new.get_attribute_as<Real>("D");
 
         if(is_overlapping(std::make_pair(p.position(), fid), radius_new, pid))
         {
@@ -316,18 +313,20 @@ public:
         const Species sp2 =
             model_.apply_species_attributes(rlog.first.products().at(1));
 
-        const molecule_info_type mol1 = container_.get_molecule_info(sp1);
-        const molecule_info_type mol2 = container_.get_molecule_info(sp2);
-
-        const Real D1(mol1.D),      D2(mol2.D),      D12(mol1.D + mol2.D);
-        const Real r1(mol1.radius), r2(mol2.radius), r12(mol1.radius + mol2.radius);
-        const Real3 n = polygon_.triangle_at(fid).normal();
+        const Real D1  = sp1.get_attribute_as<Real>("D");
+        const Real D2  = sp2.get_attribute_as<Real>("D");
+        const Real D12 = D1 + D2;
+        const Real r1  = sp1.get_attribute_as<Real>("radius");
+        const Real r2  = sp2.get_attribute_as<Real>("radius");
+        const Real r12 = r1 + r2;
 
         if(D1 == 0. && D2 == 0)
         {
             throw NotSupported("BDPropagator::1->2: "
                     "reaction between immobile particles");
         }
+
+        const Real3 n = polygon_.triangle_at(fid).normal();
 
         boost::array<std::pair<Real3, FaceID>, 2> newpfs;
         newpfs[0] = std::make_pair(p.position(), fid);
@@ -445,9 +444,9 @@ public:
             const ParticleID& pid2, const Particle& p2, const FaceID& fid2,
             reaction_log_type rlog)
     {
-        const species_type     sp_new(rlog.first.products().front());
-        const molecule_info_type info(container_.get_molecule_info(sp_new));
-        const Real radius_new(info.radius), D_new(info.D);
+        const species_type sp_new(rlog.first.products().front());
+        const Real radius_new = sp_new.get_attribute_as<Real>("radius");
+        const Real D_new      = sp_new.get_attribute_as<Real>("D");
 
         const Real3 pos1(p1.position()), pos2(p2.position());
         const Real D1(p1.D()), D2(p2.D());

@@ -32,7 +32,6 @@ class SGFRDWorld
     typedef Barycentric barycentric_type;
 
     typedef ecell4::Model model_type;
-    typedef ecell4::sgfrd::MoleculeInfo molecule_info_type;
 
     typedef ParticleSpaceCellListImpl default_particle_space_type;
     typedef ParticleSpace particle_space_type;
@@ -386,27 +385,6 @@ class SGFRDWorld
     boost::shared_ptr<model_type> lock_model() const
     {
         return model_.lock();
-    }
-
-    molecule_info_type get_molecule_info(const Species& sp) const
-    {
-        if(sp.has_attribute("radius") && sp.has_attribute("D"))
-        {
-            return MoleculeInfo(
-                    boost::lexical_cast<Real>(sp.get_attribute("radius")),
-                    boost::lexical_cast<Real>(sp.get_attribute("D")));
-        }
-        else if(boost::shared_ptr<Model> bound_model = lock_model())
-        {
-            Species attr(bound_model->apply_species_attributes(sp));
-            if (attr.has_attribute("radius") && attr.has_attribute("D"))
-            {
-                return MoleculeInfo(
-                        boost::lexical_cast<Real>(attr.get_attribute("radius")),
-                        boost::lexical_cast<Real>(attr.get_attribute("D")));
-            }
-        }
-        return MoleculeInfo(0., 0.);
     }
 
     boost::array<ecell4::Segment, 6> const& barrier_at(const FaceID& fid) const

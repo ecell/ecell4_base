@@ -18,7 +18,6 @@ class MultiContainer
     typedef world_type::FaceID   FaceID;
     typedef world_type::EdgeID   EdgeID;
     typedef world_type::VertexID VertexID;
-    typedef world_type::molecule_info_type molecule_info_type;
     typedef world_type::structure_registrator_type structure_registrator_type;
     typedef world_type::particle_space_type        particle_space_type;
     typedef world_type::particle_container_type    particle_container_type;
@@ -47,9 +46,6 @@ class MultiContainer
 
     FaceID get_face_id(const ParticleID& pid) const
     {return world_.get_face_id(pid);}
-
-    molecule_info_type get_molecule_info(const Species& sp) const
-    {return world_.get_molecule_info(sp);}
 
     bool update_particle(const ParticleID& pid, const Particle& p)
     {

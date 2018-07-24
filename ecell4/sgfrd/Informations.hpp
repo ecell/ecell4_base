@@ -1,5 +1,5 @@
-#ifndef ECELL4_SGFRD_REACTION_AND_MOLECULE_INFO
-#define ECELL4_SGFRD_REACTION_AND_MOLECULE_INFO
+#ifndef ECELL4_SGFRD_REACTION_INFO
+#define ECELL4_SGFRD_REACTION_INFO
 #include <ecell4/core/Particle.hpp>
 #include <ecell4/core/Identifier.hpp>
 #include <ecell4/core/ReactionRule.hpp>
@@ -8,14 +8,6 @@ namespace ecell4
 {
 namespace sgfrd
 {
-
-struct MoleculeInfo
-{
-    MoleculeInfo(const Real r, const Real d): radius(r), D(d){}
-    MoleculeInfo(MoleculeInfo const& rhs): radius(rhs.radius), D(rhs.D){}
-    const Real radius;
-    const Real D;
-};
 
 class ReactionInfo
 {

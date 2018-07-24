@@ -35,7 +35,6 @@ class Multi
     typedef MultiContainer           container_type;
 
     typedef ecell4::ReactionRule reaction_rule_type;
-    typedef ecell4::sgfrd::MoleculeInfo molecule_info_type;
     typedef ecell4::sgfrd::ReactionInfo reaction_info_type;
     typedef std::pair<reaction_rule_type, reaction_info_type> reaction_log_type;
     typedef std::vector<reaction_log_type>                reaction_archive_type;
