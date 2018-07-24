@@ -1,7 +1,7 @@
 #include <algorithm>
 #include "Context.hpp"
 #include "VacantType.hpp"
-#include "MolecularType.hpp"
+#include "MoleculePool.hpp"
 #include "OffLatticeSpace.hpp"
 
 namespace ecell4 {
@@ -15,8 +15,9 @@ OffLatticeSpace::OffLatticeSpace(const Real& voxel_radius)
 
 OffLatticeSpace::OffLatticeSpace(const Real& voxel_radius,
                                  const position_container& positions,
-                                 const coordinate_pair_list_type& adjoining_pairs)
-    : base_type(voxel_radius),
+                                 const coordinate_pair_list_type& adjoining_pairs,
+                                 const Shape::dimension_kind& dimension)
+    : base_type(voxel_radius, dimension),
       voxels_(),
       positions_(),
       adjoinings_()
@@ -39,6 +40,11 @@ void OffLatticeSpace::reset(const position_container& positions,
     positions_.resize(size);
     adjoinings_.resize(size);
 
+    for (coordinate_type coord(0); coord < size; ++coord)
+    {
+        vacant_->add_voxel(coordinate_id_pair_type(ParticleID(), coord));
+    }
+
     std::copy(positions.begin(), positions.end(), positions_.begin());
 
     for (coordinate_pair_list_type::const_iterator itr(adjoining_pairs.begin());
@@ -57,42 +63,6 @@ void OffLatticeSpace::reset(const position_container& positions,
             throw IllegalState("A given pair is invalid.");
         }
     }
-}
-
-boost::shared_ptr<VoxelPool> OffLatticeSpace::get_voxel_pool(const Voxel& voxel)
-{
-    const Species& sp(voxel.species());
-
-    {
-        voxel_pool_map_type::iterator itr(voxel_pools_.find(sp));
-        if (itr != voxel_pools_.end())
-        {
-            return (*itr).second;
-        }
-    }
-
-    {
-        molecule_pool_map_type::iterator itr(molecule_pools_.find(sp));
-        if (itr != molecule_pools_.end())
-        {
-            return (*itr).second;  // upcast
-        }
-    }
-
-    // Create a new molecular pool
-
-    const bool suc = make_molecular_pool(sp, voxel.radius(), voxel.D(), voxel.loc());
-    if (!suc)
-    {
-        throw IllegalState("never reach here");
-    }
-
-    molecule_pool_map_type::iterator i = molecule_pools_.find(sp);
-    if (i == molecule_pools_.end())
-    {
-        throw IllegalState("never reach here");
-    }
-    return (*i).second;  // upcast
 }
 
 boost::optional<OffLatticeSpace::coordinate_type>
@@ -118,79 +88,18 @@ OffLatticeSpace::get_coord(const ParticleID& pid) const
     return boost::none;
 }
 
-bool OffLatticeSpace::make_molecular_pool(
-        const Species& sp, Real radius, Real D, const std::string loc)
-{
-    molecule_pool_map_type::iterator itr(molecule_pools_.find(sp));
-    if (itr != molecule_pools_.end())
-    {
-        return false;
-    }
-    else if (voxel_pools_.find(sp) != voxel_pools_.end())
-    {
-        throw IllegalState(
-            "The given species is already assigned to the VoxelPool with no voxels.");
-    }
-
-    boost::shared_ptr<VoxelPool> location;
-    if (loc == "")
-    {
-        location = vacant_;
-    }
-    else
-    {
-        const Species locsp(loc);
-        try
-        {
-            location = find_voxel_pool(locsp);
-        }
-        catch (const NotFound& err)
-        {
-            // XXX: A VoxelPool for the structure (location) must be allocated
-            // XXX: before the allocation of a Species on the structure.
-            // XXX: The VoxelPool cannot be automatically allocated at the time
-            // XXX: because its MoleculeInfo is unknown.
-            // XXX: LatticeSpaceVectorImpl::load will raise a problem about this issue.
-            // XXX: In this implementation, the VoxelPool for a structure is
-            // XXX: created with default arguments.
-            boost::shared_ptr<MoleculePool>
-                locmt(new MolecularType(locsp, vacant_, voxel_radius_, 0));
-            std::pair<molecule_pool_map_type::iterator, bool>
-                locval(molecule_pools_.insert(
-                    molecule_pool_map_type::value_type(locsp, locmt)));
-            if (!locval.second)
-            {
-                throw AlreadyExists(
-                    "never reach here. find_voxel_pool seems wrong.");
-            }
-            location = (*locval.first).second;
-        }
-    }
-
-    boost::shared_ptr<MoleculePool>
-        vp(new MolecularType(sp, location, radius, D));
-    std::pair<molecule_pool_map_type::iterator, bool>
-        retval(molecule_pools_.insert(
-            molecule_pool_map_type::value_type(sp, vp)));
-    if (!retval.second)
-    {
-        throw AlreadyExists("never reach here.");
-    }
-    return retval.second;
-}
-
 
 /*
  * public functions
  */
 
 // Same as LatticeSpaceVectorImpl
-std::pair<ParticleID, Voxel>
+std::pair<ParticleID, ParticleVoxel>
 OffLatticeSpace::get_voxel_at(const coordinate_type& coord) const
 {
     boost::shared_ptr<const VoxelPool> vp(voxels_.at(coord));
     return std::make_pair(vp->get_particle_id(coord),
-                          Voxel(vp->species(),
+                          ParticleVoxel(vp->species(),
                                 coord,
                                 vp->radius(),
                                 vp->D(),
@@ -208,14 +117,13 @@ const Particle OffLatticeSpace::particle_at(const coordinate_type& coord) const
 }
 
 // Same as LatticeSpaceVectorImpl
-bool OffLatticeSpace::update_voxel(const ParticleID& pid, const Voxel& v)
+bool OffLatticeSpace::update_voxel(const ParticleID& pid, ParticleVoxel v)
 {
-    const coordinate_type& to_coord(v.coordinate());
+    const coordinate_type& to_coord(v.coordinate);
     if (!is_in_range(to_coord))
         throw NotSupported("Out of bounds");
 
     boost::shared_ptr<VoxelPool> new_vp(get_voxel_pool(v));
-    // VoxelPool* new_vp(get_voxel_pool(v)); //XXX: need MoleculeInfo
     boost::shared_ptr<VoxelPool> dest_vp(get_voxel_pool_at(to_coord));
 
     if (dest_vp != new_vp->location())
@@ -250,6 +158,23 @@ bool OffLatticeSpace::update_voxel(const ParticleID& pid, const Voxel& v)
 
     return true;
 }
+
+bool OffLatticeSpace::add_voxel(
+        const Species& species, const ParticleID& pid, const coordinate_type& coord)
+{
+    boost::shared_ptr<VoxelPool> vpool(find_voxel_pool(species));
+    boost::shared_ptr<VoxelPool> location(get_voxel_pool_at(coord));
+
+    if (vpool->location() != location)
+        return false;
+
+    location->remove_voxel_if_exists(coord);
+    vpool->add_voxel(coordinate_id_pair_type(pid, coord));
+    voxels_.at(coord) = vpool;
+
+    return true;
+}
+
 // Same as LatticeSpaceVectorImpl
 bool OffLatticeSpace::remove_voxel(const ParticleID& pid)
 {
@@ -324,27 +249,6 @@ bool OffLatticeSpace::move(const coordinate_type& src, const coordinate_type& de
     voxels_.at(dest) = src_vp;
 
     return true;
-}
-
-std::pair<OffLatticeSpace::coordinate_type, bool>
-OffLatticeSpace::move_to_neighbor(
-        boost::shared_ptr<VoxelPool> src_vp, boost::shared_ptr<VoxelPool> loc,
-        coordinate_id_pair_type& info, const Integer nrand)
-{
-    const coordinate_type src(info.coordinate);
-    coordinate_type dest(get_neighbor(src, nrand));
-
-    boost::shared_ptr<VoxelPool> dest_vp(voxels_.at(dest));
-
-    if (dest_vp != loc)
-        return std::make_pair(dest, false);
-
-    voxels_.at(src) = dest_vp;
-    voxels_.at(dest) = src_vp;
-
-    src_vp->replace_voxel(src, dest);
-    dest_vp->replace_voxel(dest, src);
-    return std::make_pair(dest, true);
 }
 
 OffLatticeSpace::coordinate_type

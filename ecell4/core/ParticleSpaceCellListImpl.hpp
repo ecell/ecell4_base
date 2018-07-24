@@ -400,7 +400,10 @@ protected:
         particle_container_type::size_type old_idx(i - particles_.begin());
         cell_type& old_cell(cell(index((*i).second.position())));
         const bool succeeded(erase_from_cell(&old_cell, old_idx));
-        assert(succeeded);
+        if (!succeeded)
+        {
+            throw IllegalState("never get here");
+        }
         // BOOST_ASSERT(succeeded);
         rmap_.erase((*i).first);
 
@@ -411,8 +414,11 @@ protected:
             const std::pair<ParticleID, Particle>& last(particles_[last_idx]);
             cell_type& last_cell(cell(index(last.second.position())));
             const bool tmp(erase_from_cell(&last_cell, last_idx));
+            if (!tmp)
+            {
+                throw IllegalState("never get here");
+            }
             // BOOST_ASSERT(tmp);
-            assert(succeeded);
             push_into_cell(&last_cell, old_idx);
             rmap_[last.first] = old_idx;
             // reinterpret_cast<nonconst_value_type&>(*i) = last;

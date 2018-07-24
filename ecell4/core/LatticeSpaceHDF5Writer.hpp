@@ -14,12 +14,14 @@
 
 #include "types.hpp"
 #include "Species.hpp"
-#include "Voxel.hpp"
+#include "ParticleVoxel.hpp"
 #include "VoxelPool.hpp"
-#include "MolecularType.hpp"
+#include "MoleculePool.hpp"
 #include "StructureType.hpp"
 #include "VacantType.hpp"
 #include "VoxelSpaceBase.hpp"
+
+#include "Space.hpp"  // just for Space::space_kind
 
 
 namespace ecell4
@@ -56,7 +58,7 @@ struct LatticeSpaceHDF5Traits
     }
 
     static void save_voxel_pool(const VoxelPool* mtb,
-            std::vector<std::pair<ParticleID, Voxel> > voxels, H5::Group* group)
+            std::vector<std::pair<ParticleID, ParticleVoxel> > voxels, H5::Group* group)
     {
         const Species species(mtb->species());
         boost::scoped_ptr<H5::Group> mtgroup(
@@ -94,12 +96,12 @@ struct LatticeSpaceHDF5Traits
         const Integer num_voxels(voxels.size());
         std::size_t vidx(0);
         boost::scoped_array<h5_voxel_struct> h5_voxel_array(new h5_voxel_struct[num_voxels]);
-        for (std::vector<std::pair<ParticleID, Voxel> >::const_iterator itr(voxels.begin());
+        for (std::vector<std::pair<ParticleID, ParticleVoxel> >::const_iterator itr(voxels.begin());
                 itr != voxels.end(); ++itr)
         {
             h5_voxel_array[vidx].lot = (*itr).first.lot();
             h5_voxel_array[vidx].serial = (*itr).first.serial();
-            h5_voxel_array[vidx].coordinate = (*itr).second.coordinate();
+            h5_voxel_array[vidx].coordinate = (*itr).second.coordinate;
             ++vidx;
         }
 

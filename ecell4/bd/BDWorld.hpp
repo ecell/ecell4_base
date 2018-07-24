@@ -13,6 +13,7 @@
 #include <ecell4/core/ParticleSpaceCellListImpl.hpp>
 #include <ecell4/core/Model.hpp>
 #include <ecell4/bd/BDContainer2D.hpp>
+#include <ecell4/core/WorldInterface.hpp>
 
 
 namespace ecell4
@@ -28,7 +29,7 @@ struct MoleculeInfo
 };
 
 class BDWorld
-    : public Space
+    : public WorldInterface
 {
 public:
 
@@ -195,8 +196,6 @@ public:
         return info;
     }
 
-    // SpaceTraits
-
     const Real t() const
     {
         if(ps2d_)
@@ -214,8 +213,6 @@ public:
         }
         (*ps3d_).set_t(t);
     }
-
-    // ParticleSpaceTraits
 
     const Real3& edge_lengths() const
     {
@@ -286,8 +283,6 @@ public:
     {
         return static_cast<Real>(num_molecules_exact(sp));
     }
-
-    // ParticleSpace member functions
 
     bool update_particle_without_checking(const ParticleID& pid, const Particle& p)
     {
@@ -486,8 +481,6 @@ public:
         return (*ps2d_).distance(pos1, fid1, pos2, fid2);
     }
 
-    // CompartmentSpaceTraits
-
     Integer num_molecules(const Species& sp) const
     {
         return (*ps3d_).num_molecules(sp) +
@@ -546,8 +539,6 @@ public:
         const Real3& lengths(edge_lengths());
         return lengths[0] * lengths[1] * lengths[2];
     }
-
-    // Optional members
 
     inline boost::shared_ptr<RandomNumberGenerator>& rng()
     {

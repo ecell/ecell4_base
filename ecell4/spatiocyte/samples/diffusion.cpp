@@ -39,8 +39,6 @@ void run()
         ecell4::spatiocyte::create_spatiocyte_world_cell_list_impl(
             edge_lengths, voxel_radius, Integer3(5, 5, 5), rng));
 
-    std::cout << "total size = " << world->inner_size() << std::endl;
-
     world->add_molecules(sp, N);
 
     simulator_type sim(model, world);

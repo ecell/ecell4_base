@@ -61,6 +61,8 @@ class UniProtDataSourceBase(rdf.RDFDataSourceBase):
     UNIPROT = Namespace("http://purl.uniprot.org/core/")
     UPDB = Namespace("http://purl.uniprot.org/database/")
 
+    UNIPROT_RDF_SCHEMA_ONTOLOGY_URL = "ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/rdf/core.owl"
+
     def __init__(self, url=None, cache=True):
         rdf.RDFDataSourceBase.__init__(self, url, cache)
 
@@ -167,7 +169,9 @@ class UniProtLocationDataSource(UniProtDataSourceBase):
             """)
         uri = [str(row[0]) for row in qres]
         assert len(uri) == 1
-        label = [str(obj) for obj in rdf.RDFDataSourceBase(uri[0]).graph.objects(subject=URIRef(uri[0]), predicate=RDFS.label)]
+        url = self.UNIPROT_RDF_SCHEMA_ONTOLOGY_URL
+        # url = uri[0]
+        label = [str(obj) for obj in rdf.RDFDataSourceBase(url).graph.objects(subject=URIRef(uri[0]), predicate=RDFS.label)]
         assert len(label) == 1
         return label[0]
 
@@ -238,7 +242,9 @@ class UniProtDataSource(UniProtDataSourceBase):
     def sequence_annotation(self, uri=UniProtDataSourceBase.UNIPROT.Sequence_Annotation):
         # http://www.uniprot.org/core/
         # http://www.uniprot.org/help/sequence_annotation
-        qres = rdf.RDFDataSourceBase(str(self.UNIPROT)).query(
+        # url = str(self.UNIPROT)
+        url = self.UNIPROT_RDF_SCHEMA_ONTOLOGY_URL
+        qres = rdf.RDFDataSourceBase(url).query(
             """prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
             prefix uniprot: <http://purl.uniprot.org/core/>
             select ?s ?label ?comment ?see_also where
@@ -394,9 +400,9 @@ class UniProtDataSource(UniProtDataSourceBase):
             mobj = re.match("http:\/\/purl\.uniprot\.org\/taxonomy\/([0-9]+)", str(obj1))
             if mobj is None:
                 continue
-            # taxon_id = mobj.group(1)
-            # retval.extend(UniProtTaxonDataSource(taxon_id).scientific_name())
-            retval.extend(UniProtTaxonDataSource(url=str(obj1)).scientific_name())
+            taxon_id = mobj.group(1)  #TODO: Use UniProtTaxonDataSource.parse_entity here to get id
+            retval.extend(UniProtTaxonDataSource(taxon_id).scientific_name())
+            # retval.extend(UniProtTaxonDataSource(url=str(obj1)).scientific_name())
         return retval
 
     def structured_name(self):

@@ -2,7 +2,7 @@
 #define ECELL4_LATTICE_SPACE_CELL_LIST_IMPL_HPP
 
 #include "Context.hpp"
-#include "MolecularType.hpp"
+#include "MoleculePool.hpp"
 #include "VacantType.hpp"
 // #include <cmath>
 #include <sstream>
@@ -57,12 +57,17 @@ public:
         cell_sizes_[1] = ceilint(row_size_, matrix_sizes_[1]);
         cell_sizes_[2] = ceilint(layer_size_, matrix_sizes_[2]);
 
+        for (coordinate_type coord(0); coord < actual_size(); ++coord)
+        {
+            vacant_->add_voxel(coordinate_id_pair_type(ParticleID(), coord));
+        }
+
         std::stringstream ss;
         ss << voxel_radius_;
         border_ = boost::shared_ptr<VoxelPool>(
-                new MolecularType(Species("Border", ss.str(), "0"), vacant_));
+                new MoleculePool(Species("Border", ss.str(), "0"), vacant_));
         periodic_ = boost::shared_ptr<VoxelPool>(
-                new MolecularType(Species("Periodic", ss.str(), "0"), vacant_));
+                new MoleculePool(Species("Periodic", ss.str(), "0"), vacant_));
     }
 
     virtual ~LatticeSpaceCellListImpl() {}
@@ -194,26 +199,11 @@ public:
     /**
      */
 
-    Integer count_voxels(
-        const boost::shared_ptr<VoxelPool>& vp) const
-    {
-        Integer count(0);
-        utils::pair_first_element_unary_predicator<boost::shared_ptr<VoxelPool>, coordinate_type> pred(vp);
-
-        for (matrix_type::const_iterator i(matrix_.begin());
-            i != matrix_.end(); ++i)
-        {
-            count += static_cast<Integer>(
-                std::count_if((*i).begin(), (*i).end(), pred));
-        }
-        return count;
-    }
-
     // /**
     //  * Change the Species at v.coordinate() to v.species.
     //  * The ParticleID must be kept after this update.
     //  */
-    // virtual void update_voxel(const Voxel& v)
+    // virtual void update_voxel(const ParticleVoxel& v)
     // {
     //     const coordinate_type coord(v.coordinate());
     //     // VoxelPool* src_vp(get_voxel_pool(coord));
@@ -229,14 +219,15 @@ public:
     //     update_matrix(coord, new_vp);
     // }
 
-    virtual bool update_voxel(const ParticleID& pid, const Voxel& v);
+    virtual bool update_voxel(const ParticleID& pid, ParticleVoxel v);
+    virtual bool add_voxel(const Species& sp, const ParticleID& pid, const coordinate_type& coord);
 
-    virtual std::pair<ParticleID, Voxel> get_voxel_at(const coordinate_type& coord) const
+    virtual std::pair<ParticleID, ParticleVoxel> get_voxel_at(const coordinate_type& coord) const
     {
         boost::shared_ptr<const VoxelPool> vp(get_voxel_pool_at(coord));
         return std::make_pair(
             vp->get_particle_id(coord),
-            Voxel(vp->species(), coord, vp->radius(), vp->D(), get_location_serial(vp)));
+            ParticleVoxel(vp->species(), coord, vp->radius(), vp->D(), get_location_serial(vp)));
     }
 
     virtual bool remove_voxel(const ParticleID& pid)
@@ -358,10 +349,10 @@ public:
 
     boost::shared_ptr<VoxelPool> get_voxel_pool_at(const coordinate_type& coord) const;
 
-    coordinate_type get_neighbor_boundary(
+    coordinate_type get_neighbor(
         const coordinate_type& coord, const Integer& nrand) const
     {
-        coordinate_type const dest = get_neighbor(coord, nrand);
+        coordinate_type const dest = get_neighbor_(coord, nrand);
         return (!is_periodic_ || is_inside(dest) ? dest : periodic_transpose(dest));
     }
 
@@ -369,11 +360,6 @@ public:
         const boost::shared_ptr<const Shape>& s, const std::string loc);
     virtual const boost::shared_ptr<const Shape>& get_structure(const Species& sp) const;
     virtual const Shape::dimension_kind get_structure_dimension(const Species& sp) const;
-
-    virtual std::pair<coordinate_type, bool> move_to_neighbor(
-        boost::shared_ptr<VoxelPool> from_vp,
-        boost::shared_ptr<VoxelPool> loc,
-        coordinate_id_pair_type& info, const Integer nrand);
 
     virtual Integer num_molecules(const Species& sp) const;
 
@@ -400,17 +386,10 @@ public:
 
 protected:
 
-    boost::shared_ptr<VoxelPool> get_voxel_pool(const Voxel& v);
-
     std::pair<boost::shared_ptr<VoxelPool>, coordinate_type>
         __get_coordinate(const ParticleID& pid);
     std::pair<boost::shared_ptr<const VoxelPool>, coordinate_type>
         __get_coordinate(const ParticleID& pid) const;
-
-    bool make_molecular_type(
-        const Species& sp, Real radius, Real D, const std::string loc);
-    bool make_structure_type(
-        const Species& sp, Shape::dimension_kind dimension, const std::string loc);
 
 protected:
 

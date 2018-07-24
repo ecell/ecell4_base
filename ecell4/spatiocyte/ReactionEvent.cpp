@@ -22,29 +22,30 @@ void ZerothOrderReactionEvent::fire_()
         i != rule_.products().end(); ++i)
     {
         const Species& sp(*i);
-        const SpatiocyteWorld::molecule_info_type
-            info(world_->get_molecule_info(sp));
+        const SpatiocyteWorld::molecule_info_type info(world_->get_molecule_info(sp));
 
-        while (true) //TODO: Avoid an inifinite loop
+        if (boost::shared_ptr<VoxelPool> location = world_->find_voxel_pool(Species(info.loc)))
         {
-            // const SpatiocyteWorld::coordinate_type
-            //     coord(world_->rng()->uniform_int(0, world_->size() - 1));
-            const SpatiocyteWorld::coordinate_type
-                coord(world_->inner2coordinate(
-                            world_->rng()->uniform_int(0, world_->inner_size() - 1)));
-            const Voxel v(sp, coord, info.radius, info.D, info.loc);
-
-            if (world_->on_structure(v))
+            if (location->size() == 0)
             {
-                continue;
+                time_ =+ draw_dt();
+                return;
             }
 
-            const std::pair<std::pair<ParticleID, Voxel>, bool>
-                retval(world_->new_voxel(v));
-            if (retval.second)
+            while (true)
             {
-                rinfo.add_product(retval.first);
-                break;
+                const Voxel voxel(world_->coordinate2voxel(world_->rng()->uniform_int(0, world_->size()-1)));
+
+                if (voxel.get_voxel_pool() != location)
+                {
+                    continue;
+                }
+
+                if (boost::optional<ParticleID> pid = world_->new_voxel(sp, voxel))
+                {
+                    rinfo.add_product(ReactionInfo::Item(*pid, sp, voxel));
+                    break;
+                }
             }
         }
     }
@@ -55,8 +56,7 @@ void ZerothOrderReactionEvent::fire_()
 Real ZerothOrderReactionEvent::draw_dt()
 {
     const Real k(rule_.k());
-    //XXX: const Real p = k * world_->volume();
-    const Real p = k * world_->actual_volume();
+    const Real p = k * world_->volume();
     Real dt(inf);
     if (p != 0.)
     {
@@ -71,7 +71,7 @@ Real ZerothOrderReactionEvent::draw_dt()
 
 FirstOrderReactionEvent::FirstOrderReactionEvent(
     boost::shared_ptr<SpatiocyteWorld> world, const ReactionRule& rule, const Real& t)
-    : SpatiocyteEvent(t), world_(world), rule_(rule)
+    : SpatiocyteEvent(t), world_(world), rng_(world->rng()), rule_(rule)
 {
     //assert(rule_.reactants().size() == 1);
     time_ = t + draw_dt();
@@ -79,26 +79,26 @@ FirstOrderReactionEvent::FirstOrderReactionEvent(
 
 void FirstOrderReactionEvent::fire_()
 {
-    const ReactionInfo::particle_id_pair_type& p(
-            world_->choice(*(rule_.reactants().begin())));
+    const ReactionInfo::Item reactant_item(choice());
     const ReactionRule::product_container_type& products(rule_.products());
 
     switch (products.size())
     {
         case 0:
             {
-                world_->remove_voxel(p.second.coordinate());
+                reactant_item.voxel.clear();
                 ReactionInfo rinfo(world_->t());
-                rinfo.add_reactant(p);
+                rinfo.add_reactant(reactant_item);
                 push_reaction(std::make_pair(rule_, rinfo));
             }
             break;
         case 1:
-            push_reaction(std::make_pair(rule_, apply_a2b(world_, p, *(products.begin()))));
+            push_reaction(std::make_pair(rule_,
+                                         apply_a2b(world_, reactant_item, *(products.begin()))));
             break;
         case 2:
             {
-                ReactionInfo rinfo(apply_a2bc(world_, p,
+                ReactionInfo rinfo(apply_a2bc(world_, reactant_item,
                             *(products.begin()), (*(++products.begin()))));
                 if (rinfo.has_occurred())
                     push_reaction(std::make_pair(rule_, rinfo));

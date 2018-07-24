@@ -41,6 +41,62 @@ cdef class Shape:
         """Return a dimension of this shape."""
         return self.thisptr.get().dimension()
 
+    def downcast(self):
+        """For developers"""
+        cdef shared_ptr[Cpp_Sphere] sphere = dynamic_pointer_cast[Cpp_Sphere, Cpp_Shape](deref(self.thisptr))
+        if sphere.get() != NULL:
+            return Sphere_from_Cpp_Sphere(sphere.get())
+
+        cdef shared_ptr[Cpp_SphericalSurface] spherical_surface = dynamic_pointer_cast[Cpp_SphericalSurface, Cpp_Shape](deref(self.thisptr))
+        if spherical_surface.get() != NULL:
+            return SphericalSurface_from_Cpp_SphericalSurface(spherical_surface.get())
+
+        cdef shared_ptr[Cpp_Cylinder] cylinder = dynamic_pointer_cast[Cpp_Cylinder, Cpp_Shape](deref(self.thisptr))
+        if cylinder.get() != NULL:
+            return Cylinder_from_Cpp_Cylinder(cylinder.get())
+
+        cdef shared_ptr[Cpp_CylindricalSurface] cylindrical_surface = dynamic_pointer_cast[Cpp_CylindricalSurface, Cpp_Shape](deref(self.thisptr))
+        if cylindrical_surface.get() != NULL:
+            return CylindricalSurface_from_Cpp_CylindricalSurface(cylindrical_surface.get())
+
+        cdef shared_ptr[Cpp_Rod] rod = dynamic_pointer_cast[Cpp_Rod, Cpp_Shape](deref(self.thisptr))
+        if rod.get() != NULL:
+            return Rod_from_Cpp_Rod(rod.get())
+
+        cdef shared_ptr[Cpp_RodSurface] rod_surface = dynamic_pointer_cast[Cpp_RodSurface, Cpp_Shape](deref(self.thisptr))
+        if rod_surface.get() != NULL:
+            return RodSurface_from_Cpp_RodSurface(rod_surface.get())
+
+        cdef shared_ptr[Cpp_PlanarSurface] planar_surface = dynamic_pointer_cast[Cpp_PlanarSurface, Cpp_Shape](deref(self.thisptr))
+        if planar_surface.get() != NULL:
+            return PlanarSurface_from_Cpp_PlanarSurface(planar_surface.get())
+
+        cdef shared_ptr[Cpp_MeshSurface] mesh_surface = dynamic_pointer_cast[Cpp_MeshSurface, Cpp_Shape](deref(self.thisptr))
+        if mesh_surface.get() != NULL:
+            return MeshSurface_from_Cpp_MeshSurface(mesh_surface.get())
+
+        cdef shared_ptr[Cpp_AABB] aabb = dynamic_pointer_cast[Cpp_AABB, Cpp_Shape](deref(self.thisptr))
+        if aabb.get() != NULL:
+            return AABB_from_Cpp_AABB(aabb.get())
+
+        cdef shared_ptr[Cpp_Surface] surface_obj = dynamic_pointer_cast[Cpp_Surface, Cpp_Shape](deref(self.thisptr))
+        if surface_obj.get() != NULL:
+            return Surface_from_Cpp_Surface(surface_obj.get())
+
+        cdef shared_ptr[Cpp_Union] union_obj = dynamic_pointer_cast[Cpp_Union, Cpp_Shape](deref(self.thisptr))
+        if union_obj.get() != NULL:
+            return Union_from_Cpp_Union(union_obj.get())
+
+        cdef shared_ptr[Cpp_Complement] complement_obj = dynamic_pointer_cast[Cpp_Complement, Cpp_Shape](deref(self.thisptr))
+        if complement_obj.get() != NULL:
+            return Complement_from_Cpp_Complement(complement_obj.get())
+
+        cdef shared_ptr[Cpp_AffineTransformation] affine_transform = dynamic_pointer_cast[Cpp_AffineTransformation, Cpp_Shape](deref(self.thisptr))
+        if affine_transform.get() != NULL:
+            return AffineTransformation_from_Cpp_AffineTransformation(affine_transform.get())
+
+        raise RuntimeError('This shape has unknown derived type.')
+
 cdef class Surface:
     """
     """
@@ -95,6 +151,18 @@ cdef class Surface:
         del retval.thisptr
         retval.thisptr = new_obj
         return retval
+
+    def root(self):
+        """Return the volume shape"""
+        cdef shared_ptr[Cpp_Shape] *new_obj = new shared_ptr[Cpp_Shape](
+            self.thisptr.get().root())
+        retval = Shape()
+        del retval.thisptr
+        retval.thisptr = new_obj
+        return retval
+
+    def __reduce__(self):
+        return (self.__class__, (self.root().downcast(), ))
 
 cdef class Union:
 
@@ -166,6 +234,27 @@ cdef class Union:
         retval.thisptr = new_obj
         return retval
 
+    def one(self):
+        """Return one of shapes"""
+        cdef shared_ptr[Cpp_Shape] *new_obj = new shared_ptr[Cpp_Shape](
+            self.thisptr.get().one())
+        retval = Shape()
+        del retval.thisptr
+        retval.thisptr = new_obj
+        return retval
+
+    def another(self):
+        """Return one of shapes"""
+        cdef shared_ptr[Cpp_Shape] *new_obj = new shared_ptr[Cpp_Shape](
+            self.thisptr.get().another())
+        retval = Shape()
+        del retval.thisptr
+        retval.thisptr = new_obj
+        return retval
+
+    def __reduce__(self):
+        return (self.__class__, (self.one().downcast(), self.another().downcast()))
+
 cdef class Complement:
 
     def __init__(self, a, b):
@@ -236,11 +325,32 @@ cdef class Complement:
         retval.thisptr = new_obj
         return retval
 
+    def one(self):
+        """Return one of shapes"""
+        cdef shared_ptr[Cpp_Shape] *new_obj = new shared_ptr[Cpp_Shape](
+            self.thisptr.get().one())
+        retval = Shape()
+        del retval.thisptr
+        retval.thisptr = new_obj
+        return retval
+
+    def another(self):
+        """Return one of shapes"""
+        cdef shared_ptr[Cpp_Shape] *new_obj = new shared_ptr[Cpp_Shape](
+            self.thisptr.get().another())
+        retval = Shape()
+        del retval.thisptr
+        retval.thisptr = new_obj
+        return retval
+
+    def __reduce__(self):
+        return (self.__class__, (self.one().downcast(), self.another().downcast()))
+
 cdef class AffineTransformation:
     """
     """
 
-    def __init__(self, root=None):
+    def __init__(self, root=None, first=None, second=None, third=None, shift=None):
         """Constructor.
 
         Parameters
@@ -251,10 +361,16 @@ cdef class AffineTransformation:
         """
         pass  # XXX: Only used for doc string
 
-    def __cinit__(self, root=None):
+    def __cinit__(self, root=None, Real3 first=None, Real3 second=None, Real3 third=None, Real3 shift=None):
         if root is None:
             self.thisptr = new shared_ptr[Cpp_AffineTransformation](
                     new Cpp_AffineTransformation())
+        elif first is not None:
+            assert second is not None
+            assert third is not None
+            assert shift is not None
+            self.thisptr = new shared_ptr[Cpp_AffineTransformation](
+                new Cpp_AffineTransformation(deref((<Shape>root.as_base()).thisptr), deref(first.thisptr), deref(second.thisptr), deref(third.thisptr), deref(shift.thisptr)))
         else:
             self.thisptr = new shared_ptr[Cpp_AffineTransformation](
                 new Cpp_AffineTransformation(deref((<Shape>root.as_base()).thisptr)))
@@ -363,6 +479,38 @@ cdef class AffineTransformation:
         retval.thisptr = new_obj
         return retval
 
+    def root(self):
+        """Return the target shape"""
+        cdef shared_ptr[Cpp_Shape] *new_obj = new shared_ptr[Cpp_Shape](
+            self.thisptr.get().root())
+        retval = Shape()
+        del retval.thisptr
+        retval.thisptr = new_obj
+        return retval
+
+    def first(self):
+        """Return the first axis"""
+        cdef Cpp_Real3 x = self.thisptr.get().first()
+        return Real3_from_Cpp_Real3(address(x))
+
+    def second(self):
+        """Return the second axis"""
+        cdef Cpp_Real3 x = self.thisptr.get().second()
+        return Real3_from_Cpp_Real3(address(x))
+
+    def third(self):
+        """Return the third axis"""
+        cdef Cpp_Real3 x = self.thisptr.get().third()
+        return Real3_from_Cpp_Real3(address(x))
+
+    def shift(self):
+        """Return the shift"""
+        cdef Cpp_Real3 x = self.thisptr.get().shift()
+        return Real3_from_Cpp_Real3(address(x))
+
+    def __reduce__(self):
+        return (self.__class__, (self.root().downcast(), self.first(), self.second(), self.third(), self.shift()))
+
 cdef class Sphere:
     """A class representing a sphere shape, which is available to define
     structures.
@@ -450,6 +598,18 @@ cdef class Sphere:
         retval.thisptr = new_obj
         return retval
 
+    def center(self):
+        """Return a center of this shape"""
+        cdef Cpp_Real3 x = self.thisptr.get().center()
+        return Real3_from_Cpp_Real3(address(x))
+
+    def radius(self):
+        """Return a radius of this shape"""
+        return self.thisptr.get().radius()
+
+    def __reduce__(self):
+        return (self.__class__, (self.center(), self.radius()))
+
 cdef class SphericalSurface:
     """A class representing a hollow spherical surface, which is
     available to define structures.
@@ -536,6 +696,18 @@ cdef class SphericalSurface:
         del retval.thisptr
         retval.thisptr = new_obj
         return retval
+
+    def center(self):
+        """Return a center of this shape"""
+        cdef Cpp_Real3 x = self.thisptr.get().center()
+        return Real3_from_Cpp_Real3(address(x))
+
+    def radius(self):
+        """Return a radius of this shape"""
+        return self.thisptr.get().radius()
+
+    def __reduce__(self):
+        return (self.__class__, (self.center(), self.radius()))
 
 cdef class Cylinder:
     """A class representing a cylinder shape, which is available to define
@@ -628,6 +800,27 @@ cdef class Cylinder:
         retval.thisptr = new_obj
         return retval
 
+    def center(self):
+        """Return a center of this shape"""
+        cdef Cpp_Real3 x = self.thisptr.get().center()
+        return Real3_from_Cpp_Real3(address(x))
+
+    def radius(self):
+        """Return a radius of this shape"""
+        return self.thisptr.get().radius()
+
+    def axis(self):
+        """Return an axis of this shape"""
+        cdef Cpp_Real3 x = self.thisptr.get().axis()
+        return Real3_from_Cpp_Real3(address(x))
+
+    def half_height(self):
+        """Return a half of the height"""
+        return self.thisptr.get().half_height()
+
+    def __reduce__(self):
+        return (self.__class__, (self.center(), self.radius(), self.axis(), self.half_height()))
+
 cdef class CylindricalSurface:
     """A class representing a hollow cylindrical surface, which is
     available to define structures.
@@ -653,7 +846,7 @@ cdef class CylindricalSurface:
         """
         pass  # XXX: Only used for doc string
 
-    def __init__(self, Real3 center, Real radius, Real3 axis, Real half_height):
+    def __cinit__(self, Real3 center, Real radius, Real3 axis, Real half_height):
         self.thisptr = new shared_ptr[Cpp_CylindricalSurface](
             new Cpp_CylindricalSurface(deref(center.thisptr), radius, deref(axis.thisptr), half_height))
 
@@ -718,6 +911,27 @@ cdef class CylindricalSurface:
         del retval.thisptr
         retval.thisptr = new_obj
         return retval
+
+    def center(self):
+        """Return a center of this shape"""
+        cdef Cpp_Real3 x = self.thisptr.get().center()
+        return Real3_from_Cpp_Real3(address(x))
+
+    def radius(self):
+        """Return a radius of this shape"""
+        return self.thisptr.get().radius()
+
+    def axis(self):
+        """Return an axis of this shape"""
+        cdef Cpp_Real3 x = self.thisptr.get().axis()
+        return Real3_from_Cpp_Real3(address(x))
+
+    def half_height(self):
+        """Return a half of the height"""
+        return self.thisptr.get().half_height()
+
+    def __reduce__(self):
+        return (self.__class__, (self.center(), self.radius(), self.axis(), self.half_height()))
 
 cdef class PlanarSurface:
     """A class representing a planar surface, which is available to define
@@ -794,6 +1008,29 @@ cdef class PlanarSurface:
         del retval.thisptr
         retval.thisptr = new_obj
         return retval
+
+    def origin(self):
+        """Return an origin of this shape"""
+        cdef Cpp_Real3 x = self.thisptr.get().origin()
+        return Real3_from_Cpp_Real3(address(x))
+
+    def e0(self):
+        """Return one of the axes of this shape"""
+        cdef Cpp_Real3 x = self.thisptr.get().e0()
+        return Real3_from_Cpp_Real3(address(x))
+
+    def e1(self):
+        """Return one of the axes of this shape"""
+        cdef Cpp_Real3 x = self.thisptr.get().e1()
+        return Real3_from_Cpp_Real3(address(x))
+
+    def normal(self):
+        """Return a normal vector of this shape"""
+        cdef Cpp_Real3 x = self.thisptr.get().normal()
+        return Real3_from_Cpp_Real3(address(x))
+
+    def __reduce__(self):
+        return (self.__class__, (self.origin(), self.e0(), self.e1()))
 
 def create_x_plane(Real x):
     """Return PlanarSurface(Real3(x, 0, 0), Real3(0, 1, 0), Real3(0, 0, 1))."""
@@ -924,6 +1161,9 @@ cdef class Rod:
         retval.thisptr = new_obj
         return retval
 
+    def __reduce__(self):
+        return (self.__class__, (self.length(), self.radius(), self.origin()))
+
 cdef class RodSurface:
     """A class representing a hollow rod surface shape, which is
     available to define structures. The cylinder is aligned to x-axis.
@@ -1040,6 +1280,9 @@ cdef class RodSurface:
         retval.thisptr = new_obj
         return retval
 
+    def __reduce__(self):
+        return (self.__class__, (self.length(), self.radius(), self.origin()))
+
 cdef class AABB:
     """A class representing an axis aligned bounding box (AABB),
     which is available to define structures.
@@ -1140,6 +1383,9 @@ cdef class AABB:
         retval.thisptr = new_obj
         return retval
 
+    def __reduce__(self):
+        return (self.__class__, (self.lower(), self.upper()))
+
 cdef class MeshSurface:
     """A class representing a triangular mesh surface, which is
     available to define structures.
@@ -1209,6 +1455,17 @@ cdef class MeshSurface:
         retval.thisptr = new_obj
         return retval
 
+    def filename(self):
+        """Return a name of the original input file"""
+        return self.thisptr.get().filename().decode('UTF-8')
+
+    def edge_lengths(self):
+        """Return bounds"""
+        cdef Cpp_Real3 x = self.thisptr.get().edge_lengths()
+        return Real3_from_Cpp_Real3(address(x))
+
+    def __reduce__(self):
+        return (self.__class__, (self.filename(), self.edge_lengths()))
 
 cdef Sphere Sphere_from_Cpp_Sphere(Cpp_Sphere* shape):
     cdef shared_ptr[Cpp_Sphere] *new_obj = new shared_ptr[Cpp_Sphere](
@@ -1275,3 +1532,44 @@ cdef PlanarSurface PlanarSurface_from_Cpp_PlanarSurface(Cpp_PlanarSurface* shape
     del retval.thisptr
     retval.thisptr = new_obj
     return retval
+
+cdef MeshSurface MeshSurface_from_Cpp_MeshSurface(Cpp_MeshSurface* shape):
+    cdef shared_ptr[Cpp_MeshSurface] *new_obj = new shared_ptr[Cpp_MeshSurface](
+        new Cpp_MeshSurface(<Cpp_MeshSurface> deref(shape)))
+    retval = MeshSurface("", Real3(0, 0, 0))
+    del retval.thisptr
+    retval.thisptr = new_obj
+    return retval
+
+cdef Surface Surface_from_Cpp_Surface(Cpp_Surface* shape):
+    cdef shared_ptr[Cpp_Surface] *new_obj = new shared_ptr[Cpp_Surface](
+        new Cpp_Surface(<Cpp_Surface> deref(shape)))
+    retval = Surface(Sphere(Real3(0, 0, 0), 0))
+    del retval.thisptr
+    retval.thisptr = new_obj
+    return retval
+
+cdef Union Union_from_Cpp_Union(Cpp_Union* shape):
+    cdef shared_ptr[Cpp_Union] *new_obj = new shared_ptr[Cpp_Union](
+        new Cpp_Union(<Cpp_Union> deref(shape)))
+    retval = Union(Sphere(Real3(0, 0, 0), 0), Sphere(Real3(0, 0, 0), 0))
+    del retval.thisptr
+    retval.thisptr = new_obj
+    return retval
+
+cdef Complement Complement_from_Cpp_Complement(Cpp_Complement* shape):
+    cdef shared_ptr[Cpp_Complement] *new_obj = new shared_ptr[Cpp_Complement](
+        new Cpp_Complement(<Cpp_Complement> deref(shape)))
+    retval = Complement(Sphere(Real3(0, 0, 0), 0), Sphere(Real3(0, 0, 0), 0))
+    del retval.thisptr
+    retval.thisptr = new_obj
+    return retval
+
+cdef AffineTransformation AffineTransformation_from_Cpp_AffineTransformation(Cpp_AffineTransformation* shape):
+    cdef shared_ptr[Cpp_AffineTransformation] *new_obj = new shared_ptr[Cpp_AffineTransformation](
+        new Cpp_AffineTransformation(<Cpp_AffineTransformation> deref(shape)))
+    retval = AffineTransformation(Sphere(Real3(0, 0, 0), 0))
+    del retval.thisptr
+    retval.thisptr = new_obj
+    return retval
+

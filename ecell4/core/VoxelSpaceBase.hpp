@@ -5,9 +5,10 @@
 #include <set>
 #include <map>
 #include <stdexcept>
+#include <boost/optional.hpp>
 
 #include "Shape.hpp"
-#include "Space.hpp"
+// #include "Space.hpp"
 #include "Integer3.hpp"
 #include "get_mapper_mf.hpp"
 #include "Context.hpp"
@@ -18,7 +19,8 @@
 
 #include "VoxelPool.hpp"
 #include "VacantType.hpp"
-#include "Voxel.hpp"
+#include "ParticleVoxel.hpp"
+#include "Particle.hpp"
 
 namespace ecell4
 {
@@ -39,11 +41,12 @@ static inline std::string get_location_serial(T vp)
 }
 
 
-class VoxelSpaceBase : public Space
+class VoxelSpaceBase
+    // : public Space
 {
 public:
 
-    typedef Voxel::coordinate_type coordinate_type;
+    typedef ParticleVoxel::coordinate_type coordinate_type;
     typedef VoxelPool::coordinate_id_pair_type coordinate_id_pair_type;
 
 protected:
@@ -61,6 +64,10 @@ public:
      */
     VoxelSpaceBase(const Real& voxel_radius) :
         t_(0.0), voxel_radius_(voxel_radius), vacant_(VacantType::allocate())
+    {}
+
+    VoxelSpaceBase(const Real& voxel_radius, const Shape::dimension_kind& dimension) :
+        t_(0.0), voxel_radius_(voxel_radius), vacant_(VacantType::allocate(dimension))
     {}
 
     virtual ~VoxelSpaceBase() {}
@@ -136,6 +143,25 @@ public:
             throw std::invalid_argument("the time must be positive.");
         }
         t_ = t;
+    }
+
+    /**
+     * get the axes lengths of a cuboidal region.
+     * @return edge lengths Real3
+     */
+    virtual const Real3& edge_lengths() const
+    {
+        throw NotSupported(
+            "edge_lengths() is not supported by this space class");
+    }
+
+    /**
+     * get volume.
+     * @return a volume (m^3) Real
+     */
+    const Real volume() const
+    {
+        return actual_size() * voxel_volume();
     }
 
     virtual void save(const std::string& filename) const
@@ -227,9 +253,16 @@ public:
     std::pair<ParticleID, Particle>
     get_particle(const ParticleID& pid) const
     {
-        const Voxel v(get_voxel(pid).second);
-        return std::make_pair(pid, Particle(
-            v.species(), coordinate2position(v.coordinate()), v.radius(), v.D()));
+        if (boost::optional<ParticleVoxel> v = find_voxel(pid))
+        {
+            ParticleVoxel voxel(v.get());
+            return std::make_pair(pid, Particle(
+                voxel.species, coordinate2position(voxel.coordinate), voxel.radius, voxel.D));
+        }
+        else
+        {
+            throw NotFound("");
+        }
     }
 
     virtual const Particle particle_at(const coordinate_type& coord) const = 0;
@@ -255,12 +288,6 @@ public:
     Real get_volume(const Species& sp) const
     {
         return voxel_volume() * num_voxels_exact(sp);
-        // return inner_size() * voxel_volume();
-    }
-
-    Real actual_volume() const
-    {
-        return inner_size() * voxel_volume();
     }
 
     Real unit_area() const
@@ -282,12 +309,12 @@ public:
     Integer num_voxels(const Species& sp) const;
     Integer num_voxels() const;
 
-    virtual std::vector<std::pair<ParticleID, Voxel> > list_voxels() const;
-    virtual std::vector<std::pair<ParticleID, Voxel> > list_voxels(const Species& sp) const;
-    virtual std::vector<std::pair<ParticleID, Voxel> > list_voxels_exact(const Species& sp) const;
+    virtual std::vector<std::pair<ParticleID, ParticleVoxel> > list_voxels() const;
+    virtual std::vector<std::pair<ParticleID, ParticleVoxel> > list_voxels(const Species& sp) const;
+    virtual std::vector<std::pair<ParticleID, ParticleVoxel> > list_voxels_exact(const Species& sp) const;
 
-    std::pair<ParticleID, Voxel> get_voxel(const ParticleID& pid) const;
-    virtual std::pair<ParticleID, Voxel> get_voxel_at(const coordinate_type& coord) const = 0;
+    boost::optional<ParticleVoxel> find_voxel(const ParticleID& pid) const;
+    virtual std::pair<ParticleID, ParticleVoxel> get_voxel_at(const coordinate_type& coord) const = 0;
 
     boost::shared_ptr<VoxelPool> find_voxel_pool(const Species& sp);
     boost::shared_ptr<const VoxelPool> find_voxel_pool(const Species& sp) const;
@@ -302,8 +329,6 @@ public:
     /*
      * Coordinate Transformation
      */
-    virtual coordinate_type inner2coordinate(const coordinate_type inner) const = 0;
-
     virtual Real3 coordinate2position(const coordinate_type& coord) const = 0;
     virtual coordinate_type position2coordinate(const Real3& pos) const = 0;
 
@@ -315,13 +340,11 @@ public:
     virtual coordinate_type
     get_neighbor(const coordinate_type& coord, const Integer& nrand) const = 0;
 
-    virtual coordinate_type
-    get_neighbor_boundary(const coordinate_type& coord, const Integer& nrand) const = 0;
-
     /*
-     * Voxel Manipulation
+     * ParticleVoxel Manipulation
      */
-    virtual bool update_voxel(const ParticleID& pid, const Voxel& v) = 0;
+    virtual bool update_voxel(const ParticleID& pid, ParticleVoxel v) = 0;
+    virtual bool add_voxel(const Species& species, const ParticleID& pid, const coordinate_type& coord) = 0;
     virtual bool remove_voxel(const ParticleID& pid) = 0;
     virtual bool remove_voxel(const coordinate_type& coord) = 0;
 
@@ -333,38 +356,21 @@ public:
          const std::size_t candidate=0)
     = 0;
 
-    virtual
-    std::pair<coordinate_type, bool>
-    move_to_neighbor(boost::shared_ptr<VoxelPool> from, boost::shared_ptr<VoxelPool> loc,
-                     coordinate_id_pair_type& info, const Integer nrand)
-    = 0;
-
     virtual Integer size() const = 0;
     virtual Integer3 shape() const = 0;
-    virtual Integer inner_size() const = 0;
+    virtual Integer actual_size() const = 0;
 
-    bool on_structure(const Voxel& v)
-    {
-        return get_voxel_pool_at(v.coordinate()) != get_voxel_pool(v)->location();
-    }
+    bool
+    make_molecular_type(const Species& sp, Real radius, Real D, const std::string loc);
 
-    virtual bool
-    make_structure_type(const Species& sp, Shape::dimension_kind dimension, const std::string loc)
-    {
-        throw NotImplemented("make_structure_type is not implemented.");
-    }
-
-    virtual bool
-    make_interface_type(const Species& sp, Shape::dimension_kind dimension, const std::string loc)
-    {
-        throw NotImplemented("make_interface_type is not implemented.");
-    }
+    bool
+    make_structure_type(const Species& sp, Shape::dimension_kind dimension, const std::string loc);
 
 protected:
 
-    virtual boost::shared_ptr<VoxelPool> get_voxel_pool(const Voxel& v) = 0;
-    virtual Integer count_voxels(const boost::shared_ptr<VoxelPool>& vp) const = 0;
-    void push_voxels(std::vector<std::pair<ParticleID, Voxel> >& voxels,
+    boost::shared_ptr<VoxelPool> get_voxel_pool(ParticleVoxel v);
+
+    void push_voxels(std::vector<std::pair<ParticleID, ParticleVoxel> >& voxels,
                      const boost::shared_ptr<MoleculePool>& voxel_pool,
                      const Species& species) const;
 
@@ -374,7 +380,8 @@ protected:
     Real voxel_radius_;
 
     boost::shared_ptr<VoxelPool> vacant_;
-    voxel_pool_map_type voxel_pools_;
+
+    voxel_pool_map_type    voxel_pools_;
     molecule_pool_map_type molecule_pools_;
 
 };
