@@ -72,9 +72,9 @@ class SGFRDWorld : public ecell4::Space
     Real get_value(const Species& sp)       const {return ps_->get_value(sp);}
     Real get_value_exact(const Species& sp) const {return ps_->get_value_exact(sp);}
 
-    Integer num_species() const {return ps_->num_species();}
-    bool has_species(const Species& sp) const {return ps_->has_species(sp);}
-    std::vector<Species> list_species() const {return ps_->list_species();}
+//     Integer num_species() const {return ps_->num_species();}
+//     bool has_species(const Species& sp) const {return ps_->has_species(sp);}
+//     std::vector<Species> list_species() const {return ps_->list_species();}
 
 // CellListImpl stuff
 //     Real3 const& edge_lengths() const {return ps_->edge_lengths();}
