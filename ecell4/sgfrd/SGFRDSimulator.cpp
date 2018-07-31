@@ -705,6 +705,9 @@ DomainID SGFRDSimulator::form_multi(
 
     // search intruders on the new multi, burst them all and add to multi if needed
     add_to_multi_recursive(formed_multi);
+    formed_multi.determine_reaction_length();
+    formed_multi.determine_delta_t();
+
     return formed_multi_id;
 }
 
