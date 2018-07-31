@@ -149,7 +149,7 @@ class expected
 
     const error_type& unwrap_error() const
     {
-        if(!this->is_ok())
+        if(!this->is_err())
         {
             throw std::runtime_error(
                     "ecell4::expected::unwrap_error: not an error");
