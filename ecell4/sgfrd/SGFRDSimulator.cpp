@@ -1040,7 +1040,7 @@ SGFRDSimulator::form_single_circular_event(
             create_single_circular_shell(pos, shell_size), pid, p)));
     }
 
-    // failed to create single. return a list of shrinked domains.
+    SGFRD_TRACE(tracer_.write("failed to create single."))
     return err(shrinked_or_multi);
 }
 
