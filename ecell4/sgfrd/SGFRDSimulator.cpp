@@ -797,8 +797,6 @@ expected<DomainID, std::vector<std::pair<DomainID, Real> > >
 SGFRDSimulator::form_single_conical_event(
         const ParticleID& pid, const Particle& p, const FaceID fid)
 {
-    typedef expected<DomainID, std::vector<std::pair<DomainID, Real> > >
-            result_type;
     SGFRD_SCOPE(us, form_single_conical_event, tracer_);
 
     const std::pair<Real3, FaceID> pos = std::make_pair(p.position(), fid);
@@ -819,7 +817,7 @@ SGFRDSimulator::form_single_conical_event(
     if(min_cone_size > max_cone_size)
     {
         // cannot form cone nor circle. use multi.
-        return result_type(std::vector<std::pair<DomainID, Real> >(0));
+        return err(std::vector<std::pair<DomainID, Real> >(0));
     }
 
     const std::vector<std::pair<DomainID, Real> > intrusive_domains(
@@ -828,7 +826,7 @@ SGFRDSimulator::form_single_conical_event(
 
     if(intrusive_domains.empty())
     {
-        return result_type(add_event(create_single(
+        return ok(add_event(create_single(
             create_single_conical_surface_shell(vid, max_cone_size), pid, p)));
     }
 
@@ -868,7 +866,7 @@ SGFRDSimulator::form_single_conical_event(
         const Real shell_size = dist_to_max_shell_intruder *
                                 single_conical_surface_shell_mergin;
 
-        return result_type(add_event(create_single(
+        return ok(add_event(create_single(
             create_single_conical_surface_shell(vid, shell_size), pid, p)));
     }
 
@@ -911,11 +909,11 @@ SGFRDSimulator::form_single_conical_event(
         }
         }
 
-        return result_type(add_event(create_single(
+        return ok(add_event(create_single(
             create_single_conical_surface_shell(vid, shell_size), pid, p)));
     }
 
-    return result_type(shrinked_or_multi);
+    return err(shrinked_or_multi);
 }
 
 expected<DomainID, std::vector<std::pair<DomainID, Real> > >
@@ -923,8 +921,6 @@ SGFRDSimulator::form_single_circular_event(
     const ParticleID& pid, const Particle& p, const FaceID fid,
     const Real max_circle_size)
 {
-    typedef expected<DomainID, std::vector<std::pair<DomainID, Real> > >
-            result_type;
     SGFRD_SCOPE(us, form_single_circular_event, tracer_);
     SGFRD_TRACE(tracer_.write("forming single domain for particle %1% r = %2%",
                 pid, p.radius()));
@@ -945,7 +941,7 @@ SGFRDSimulator::form_single_circular_event(
         SGFRD_TRACE(tracer_.write("no intrusive domains exists."))
         SGFRD_TRACE(tracer_.write(
             "creating single event; shell size = %1%", max_circle_size))
-        return result_type(add_event(create_single(
+        return ok(add_event(create_single(
             create_single_circular_shell(pos, max_circle_size), pid, p)));
     }
 
@@ -1014,7 +1010,7 @@ SGFRDSimulator::form_single_circular_event(
         SGFRD_TRACE(tracer_.write(
             "creating single event; shell size = %1%", shell_size))
 
-        return result_type(add_event(create_single(
+        return ok(add_event(create_single(
             create_single_circular_shell(pos, shell_size), pid, p)));
     }
 
@@ -1040,12 +1036,12 @@ SGFRDSimulator::form_single_circular_event(
         SGFRD_TRACE(tracer_.write(
             "creating single event; shell size = %1%", shell_size))
 
-        return result_type(add_event(create_single(
+        return ok(add_event(create_single(
             create_single_circular_shell(pos, shell_size), pid, p)));
     }
 
     // failed to create single. return a list of shrinked domains.
-    return result_type(shrinked_or_multi);
+    return err(shrinked_or_multi);
 }
 
 DomainID SGFRDSimulator::create_event(
