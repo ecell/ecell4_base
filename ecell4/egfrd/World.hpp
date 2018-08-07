@@ -949,15 +949,26 @@ public:
 //                 this->edge_lengths());
 //     }
 
+    //XXX: this function is for BD (Multi Domain), with polygon. this reflects
+    //     particle if particle collides with polygon surface.
     virtual position_type
     apply_structure(const position_type& pos, const position_type& disp) const
     {
+        if(this->polygon_.faces.empty())
+        {
+            // if there is no polygon face, particle never collides.
+            // to avoid overhead because of calling apply_structure_rec,
+            // just skip it and use normal `apply_boundary`.
+            return this->apply_boundary(pos + disp);
+        }
         return this->apply_structure_rec(pos, disp, Polygon<position_type>::make_nonsence_id());
     }
 
 protected:
 
-    // for polygon
+    //XXX: this code is for BD (Multi Domain), with polygon.
+    //     To deal with the collision between particle and polygon under the
+    //     Periodic Boundary Condition, it recursively applies PBC and collision.
     position_type
     apply_structure_rec(const position_type& pos, const position_type& disp,
             const typename Polygon<position_type>::face_id_type ignore) const
@@ -975,7 +986,9 @@ protected:
                 this->polygon_.intersect_ray(pos, disp, ignore);
 
         if(!test_unitcell.first && !test_polygon.first)
+        {
             return pos + disp;
+        }
 
         if(test_polygon.first && test_polygon.second.first < dist_to_unit_cell)
         {
@@ -987,76 +1000,123 @@ protected:
         }
         else if(test_unitcell.first)
         {
-            if(test_unitcell.second <= 0.0 || 1.0 < test_unitcell.second)
+            // XXX: test_unitcell.second means the distance between the particle
+            //      and the unitcell relative to the length of the displacement
+            //      (`disp` in this code).
+            //      it never be negative.
+            //      if it's 0.0, that means the particle is on the surface of
+            //      the unitcell.
+            //      if it is larger than 1.0, that means that particle does not
+            //      intersect and unitcell.first never be true.
+            if(test_unitcell.second < 0.0 || 1.0 < test_unitcell.second)
             {
-                std::cerr << "aabb.is_inside(begin) = " << unitcell._is_inside(pos) << std::endl;
-                std::cerr << "begin = " << pos << std::endl;
-                std::cerr << "edge_length = " << this->edge_lengths() << std::endl;
-                std::cerr << "test_unitcell.first = " << test_unitcell.first << std::endl;
-                std::cerr << "test_unitcell.second = " <<  test_unitcell.second  << std::endl;
-                std::cerr << "test_polygon.first = " << test_polygon.first << std::endl;
-                std::cerr << "test_polygon.second.first = "  << test_polygon.second.first << std::endl;
-                std::cerr << "test_polygon.second.second = " << test_polygon.second.second << std::endl;
-                assert(0);
+                std::cerr << "aabb.is_inside(begin)      = " << unitcell._is_inside(pos)   << '\n';
+                std::cerr << "begin                      = " << pos                        << '\n';
+                std::cerr << "edge_length                = " << this->edge_lengths()       << '\n';
+                std::cerr << "test_unitcell.first        = " << test_unitcell.first        << '\n';
+                std::cerr << "test_unitcell.second       = " << test_unitcell.second       << '\n';
+                std::cerr << "test_polygon.first         = " << test_polygon.first         << '\n';
+                std::cerr << "test_polygon.second.first  = " << test_polygon.second.first  << '\n';
+                std::cerr << "test_polygon.second.second = " << test_polygon.second.second << '\n';
+                assert(false);
             }
             const std::pair<position_type, position_type> next_segment =
                 apply_periodic_only_once(pos, disp, test_unitcell.second, unitcell);
+
             return this->apply_structure_rec(
-                    next_segment.first, next_segment.second - next_segment.first,
+                    next_segment.first, next_segment.second,
                     Polygon<position_type>::make_nonsence_id());
         }
         else
+        {
             throw std::logic_error("never reach here");
+        }
     }
 
     std::pair<position_type, position_type>
-    apply_periodic_only_once(const position_type& pos, const position_type& disp,
-            const length_type tmin, const ecell4::AABBSurface& aabb) const
+    apply_periodic_only_once(
+            const position_type& pos, const position_type& disp,
+            const length_type   tmin, const ecell4::AABBSurface& aabb) const
     {
         //XXX: this function assumes the conditions described below is satisfied.
         // - aabb.lower = (0, 0, 0)
         // - periodic boundary is applied
-        assert(0. < tmin && tmin <= 1.0);
-        position_type next_begin = pos + disp * tmin;
-        position_type next_end   = pos + disp;
-        position_type pullback;
-             if(std::abs(next_begin[0] - aabb.upper()[0]) < 1e-12)
-        {
-            next_begin[0] = aabb.lower()[0];
-            next_end[0] -= (aabb.upper()[0] - aabb.lower()[0]);
-        }
-        else if(std::abs(next_begin[0] - aabb.lower()[0]) < 1e-12)
-        {
-            next_begin[0] = aabb.upper()[0];
-            next_end[0] += (aabb.upper()[0] - aabb.lower()[0]);
-        }
-        else if(std::abs(next_begin[1] - aabb.upper()[1]) < 1e-12)
-        {
-            next_begin[1] = aabb.lower()[1];
-            next_end[1] -= (aabb.upper()[1] - aabb.lower()[1]);
-        }
-        else if(std::abs(next_begin[1] - aabb.lower()[1]) < 1e-12)
-        {
-            next_begin[1] = aabb.upper()[1];
-            next_end[1] += (aabb.upper()[1] - aabb.lower()[1]);
-        }
-        else if(std::abs(next_begin[2] - aabb.upper()[2]) < 1e-12)
-        {
-            next_begin[2] = aabb.lower()[2];
-            next_end[2] -= (aabb.upper()[2] - aabb.lower()[2]);
-        }
-        else if(std::abs(next_begin[2] - aabb.lower()[2]) < 1e-12)
-        {
-            next_begin[2] = aabb.upper()[2];
-            next_end[2] += (aabb.upper()[2] - aabb.lower()[2]);
-        }
-        else
-        {
-            throw std::logic_error("never reach here");
-        }
-        assert(aabb._is_inside(next_begin));
+        assert(0.0 <= tmin && tmin <= 1.0);
 
-        return std::make_pair(next_begin, next_end);
+        //       disp__    _____________________________________________________
+        //           |\   / particle starts here (initial position). it's at
+        //    _________\ <  the edge of the simulation box. in order to consider
+        //    |         | | collisions between particle and polygon collectly,
+        //    |         | | we need to put our particle at somewhere else where
+        // __ |     x__ | \ the particle does not escape from the box by `disp`.
+        // |\ |      |\ | ________________________________________________
+        //   \|________\|< paritcle should be here with this displacement!
+        //    ^   _____________________________________________________________
+        //    |  / particle always come here after transposing initial position
+        //    +-<  according to the PBC because in both dimension it locates at
+        //       | the boundary. after this transposition, particle will escape
+        //       | boundary one more time. and in the next transposition, it
+        //       | goes back to the initial position! we need to consider the
+        //       | direction of the displacement in order to transpose particle
+        //       \ into the correct position to avoid infinite loop here.
+
+        const position_type width = aabb.upper() - aabb.lower();
+
+        const Real min_width = std::min(width[0], std::min(width[1], width[2]));
+
+              position_type next_pos  = pos  + disp * tmin;
+        const position_type next_disp = disp * (1.0 - tmin);
+
+        // a temporal position to determine where should particle be put
+        const position_type probe =
+            next_pos + next_disp * (min_width * 0.01 / length(next_disp));
+
+        if     (probe[0] < aabb.lower()[0]) {next_pos[0] += width[0];}
+        else if(probe[0] > aabb.upper()[0]) {next_pos[0] -= width[0];}
+        if     (probe[1] < aabb.lower()[1]) {next_pos[1] += width[1];}
+        else if(probe[1] > aabb.upper()[1]) {next_pos[1] -= width[1];}
+        if     (probe[2] < aabb.lower()[2]) {next_pos[2] += width[2];}
+        else if(probe[2] > aabb.upper()[2]) {next_pos[2] -= width[2];}
+
+        if(!aabb._is_inside(next_pos))
+        {
+            // here, next_pos should be at the edge of boundary.
+            // but above calculation might introduces numerical error.
+            // to avoid the error, check it and put back.
+            if     (next_pos[0] < aabb.lower()[0])
+            {
+                assert(std::abs(next_pos[0] - aabb.lower()[0]) < 1e-12);
+                next_pos[0] = aabb.lower()[0];
+            }
+            else if(next_pos[0] > aabb.upper()[0])
+            {
+                assert(std::abs(next_pos[0] - aabb.upper()[0]) < 1e-12);
+                next_pos[0] = aabb.upper()[0];
+            }
+            if     (next_pos[1] < aabb.lower()[1])
+            {
+                assert(std::abs(next_pos[1] - aabb.lower()[1]) < 1e-12);
+                next_pos[1] = aabb.lower()[1];
+            }
+            else if(next_pos[1] > aabb.upper()[1])
+            {
+                assert(std::abs(next_pos[1] - aabb.lower()[1]) < 1e-12);
+                next_pos[1] = aabb.upper()[1];
+            }
+            if     (next_pos[2] < aabb.lower()[2])
+            {
+                assert(std::abs(next_pos[2] - aabb.lower()[2]) < 1e-12);
+                next_pos[2] = aabb.lower()[2];
+            }
+            else if(next_pos[2] > aabb.upper()[2])
+            {
+                assert(std::abs(next_pos[2] - aabb.lower()[2]) < 1e-12);
+                next_pos[2] = aabb.upper()[2];
+            }
+        }
+        assert(aabb._is_inside(next_pos));
+
+        return std::make_pair(next_pos, next_disp);
     }
 
 private:
