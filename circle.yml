@@ -14,7 +14,7 @@ jobs:
           command: |
             set -x
             ECELLVER="4.2.0"
-            CMAKEVER="3.11.3"
+            CMAKEVER="3.12.1"
             GSLVER="2.4"
             BOOSTVER="1.67.0"
             BOOSTFILE="boost_1_67_0"
@@ -29,7 +29,7 @@ jobs:
             /opt/python/$PY36/bin/python -m pip install cython
             /opt/python/$PY35/bin/python -m pip install cython
             /opt/python/$PY27/bin/python -m pip install cython
-            curl -O https://cmake.org/files/v3.11/cmake-$CMAKEVER.tar.gz
+            curl -O https://cmake.org/files/v3.12/cmake-$CMAKEVER.tar.gz
             wget --no-check-certificate ftp://ftp.gnu.org/gnu/gsl/gsl-$GSLVER.tar.gz
             curl -L -o $BOOSTFILE.tar.bz2 https://dl.bintray.com/boostorg/release/$BOOSTVER/source/$BOOSTFILE.tar.bz2
             curl -LO https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.8/hdf5-$HDF5VER/src/hdf5-$HDF5VER.tar.bz2
