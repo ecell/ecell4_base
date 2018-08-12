@@ -36,7 +36,6 @@ addons:
 #    - sourceline: 'ppa:mc3man/trusty-media'
     - ubuntu-toolchain-r-test
     packages:
-    - cmake
     - clang
     - libboost-dev
     - libgsl0-dev
@@ -109,7 +108,7 @@ script:
     echo ${PYTHON_INCLUDE_DIR};
   fi
 - if [ "$TRAVIS_OS_NAME" == "linux" ]; then
-    bash -c "cmake -DCMAKE_INSTALL_PREFIX=~/local -DPYTHON_LIBRARY:FILEPATH=${PYTHON_LIBRARY} -DPYTHON_INCLUDE_DIR:FILEPATH=${PYTHON_INCLUDE_DIR} -DPYTHON_EXECUTABLE:FILEPATH=${PYTHON_EXECUTABLE} . && make && make test && make install";
+    bash -c 'wget https://cmake.org/files/v3.12/cmake-3.12.1-Linux-x86_64.tar.gz && tar xf cmake-3.12.1-Linux-x86_64.tar.gz && ./cmake-3.12.1-Linux-x86_64/bin/cmake -DCMAKE_INSTALL_PREFIX=~/local . && make && make test && make install';
     rm CMakeCache.txt;
   fi
 - if [ "$TRAVIS_OS_NAME" == "osx" ]; then
