@@ -101,25 +101,25 @@ class Multi
 
     void determine_reaction_length()
     {
-        Real r_min =  std::numeric_limits<Real>::max();
-        for(const auto& p : this->particles())
-        {
-            r_min = std::min(p.second.radius(), r_min);
-        }
-        reaction_length_ = bd_factor() * r_min;
-        return;
+//        Real r_min =  std::numeric_limits<Real>::max();
+//        for(const auto& p : this->particles())
+//        {
+//            r_min = std::min(p.second.radius(), r_min);
+//        }
+//        reaction_length_ = bd_factor() * r_min;
+//        return;
     }
     void determine_delta_t()
     {
-        Real r_min =  std::numeric_limits<Real>::max();
-        Real D_max = -std::numeric_limits<Real>::max();
-        for(const auto& p : this->particles())
-        {
-            r_min = std::min(p.second.radius(), r_min);
-            D_max = std::max(p.second.D(), D_max);
-        }
-        dt_ = (bd_factor() * r_min) * (bd_factor() * r_min) / D_max;
-        return;
+//        Real r_min =  std::numeric_limits<Real>::max();
+//        Real D_max = -std::numeric_limits<Real>::max();
+//        for(const auto& p : this->particles())
+//        {
+//            r_min = std::min(p.second.radius(), r_min);
+//            D_max = std::max(p.second.D(), D_max);
+//        }
+//        dt_ = (bd_factor() * r_min) * (bd_factor() * r_min) / D_max;
+//        return;
     }
 
     bool add_particle(ParticleID const& pid)
