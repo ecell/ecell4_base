@@ -656,6 +656,13 @@ public:
             }
         }
 
+        if (radius <= 0.0)
+        {
+            std::stringstream msg;
+            msg << "A particle with invalid size [" << radius << "] was given.";
+            throw ecell4::IllegalArgument(msg.str());
+        }
+
         molecule_info_type info = {radius, D, structure_id};
         return info;
     }
