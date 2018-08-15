@@ -32,8 +32,8 @@ cdef extern from "ecell4/egfrd/egfrd.hpp" namespace "ecell4::egfrd":
             shared_ptr[Cpp_RandomNumberGenerator]&) except +
         #     shared_ptr[Cpp_GSLRandomNumberGenerator]&) except +
         Cpp_EGFRDWorld(string&) except +
-        pair[pair[Cpp_ParticleID, Cpp_Particle], bool] new_particle(Cpp_Particle& p)
-        pair[pair[Cpp_ParticleID, Cpp_Particle], bool] new_particle(Cpp_Species& sp, Cpp_Real3& pos)
+        pair[pair[Cpp_ParticleID, Cpp_Particle], bool] new_particle(Cpp_Particle& p) except+
+        pair[pair[Cpp_ParticleID, Cpp_Particle], bool] new_particle(Cpp_Species& sp, Cpp_Real3& pos) except+
         void set_t(Real t)
         Real t()
         Cpp_Real3& edge_lengths()
@@ -64,8 +64,8 @@ cdef extern from "ecell4/egfrd/egfrd.hpp" namespace "ecell4::egfrd":
         vector[Cpp_Species] list_species()
         Integer num_molecules(Cpp_Species& sp)
         Integer num_molecules_exact(Cpp_Species& sp)
-        void add_molecules(Cpp_Species& sp, Integer num)
-        void add_molecules(Cpp_Species& sp, Integer num, shared_ptr[Cpp_Shape])
+        void add_molecules(Cpp_Species& sp, Integer num) except+
+        void add_molecules(Cpp_Species& sp, Integer num, shared_ptr[Cpp_Shape]) except+
         void remove_molecules(Cpp_Species& sp, Integer num)
         void save(string filename) except +
         void load(string filename) except +
