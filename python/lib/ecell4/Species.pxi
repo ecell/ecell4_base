@@ -358,11 +358,11 @@ def format_species(Species sp):
     cdef Cpp_Species newsp = context.format_species(deref(sp.thisptr))
     return Species_from_Cpp_Species(address(newsp))
 
-def unique_serial(Species sp):
-    """unique_serial(sp) -> str
-
-    Return a serial of a species uniquely reformatted.
-    This is equivalent to call ``format_species(sp).serial()``
-
-    """
-    return context.unique_serial(deref(sp.thisptr)).decode('UTF-8')
+# def unique_serial(Species sp):
+#     """unique_serial(sp) -> str
+# 
+#     Return a serial of a species uniquely reformatted.
+#     This is equivalent to call ``format_species(sp).serial()``
+# 
+#     """
+#     return context.unique_serial(deref(sp.thisptr)).decode('UTF-8')

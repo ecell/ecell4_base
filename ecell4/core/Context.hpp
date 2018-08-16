@@ -739,6 +739,11 @@ protected:
 
 Species format_species(const Species& sp);
 
+inline Species::serial_type unique_serial(const Species& sp)
+{
+    return format_species(sp).serial();
+}
+
 }  // context
 
 
@@ -749,11 +754,6 @@ Species format_species(const Species& sp);
 inline Species format_species(const Species& sp)
 {
     return context::format_species(sp);
-}
-
-inline Species::serial_type unique_serial(const Species& sp)
-{
-    return format_species(sp).serial();
 }
 
 struct SpeciesExpressionMatcher
