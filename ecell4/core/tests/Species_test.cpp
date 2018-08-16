@@ -149,12 +149,12 @@ BOOST_AUTO_TEST_CASE(Species_test_serialization)
 
 BOOST_AUTO_TEST_CASE(Species_test_match3)
 {
-    BOOST_CHECK_EQUAL(count_spmatches(Species("A"), Species("A.A.A")), 3);
+    BOOST_CHECK_EQUAL(SpeciesExpressionMatcher(Species("A")).count(Species("A.A.A")), 3);
 
-    BOOST_CHECK_EQUAL(count_spmatches(Species("_1._2"), Species("A.B.C")), 6);
+    BOOST_CHECK_EQUAL(SpeciesExpressionMatcher(Species("_1._2")).count(Species("A.B.C")), 6);
 
-    MatchObject::context_type::variable_container_type globals;
-    globals["_1"] = "A";
-    BOOST_CHECK_EQUAL(
-        count_spmatches(Species("_1._2"), Species("A.B.C"), globals), 2);
+    // MatchObject::context_type::variable_container_type globals;
+    // globals["_1"] = "A";
+    // BOOST_CHECK_EQUAL(
+    //     SpeciesExpressionMatcher((Species("_1._2")).count(Species("A.B.C"), globals), 2);
 }

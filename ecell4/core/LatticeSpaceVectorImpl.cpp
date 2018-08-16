@@ -133,7 +133,7 @@ LatticeSpaceVectorImpl::list_coords(const Species& sp) const
     for (molecule_pool_map_type::const_iterator itr(molecule_pools_.begin());
          itr != molecule_pools_.end(); ++itr)
     {
-        if (!spmatch(sp, (*itr).first))
+        if (!SpeciesExpressionMatcher(sp).match((*itr).first))
         {
             continue;
         }

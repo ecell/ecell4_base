@@ -68,7 +68,7 @@ public:
         for (species_container_type::const_iterator
             i(species_attributes_.begin()); i != species_attributes_.end(); ++i)
         {
-            if (spmatch(*i, sp))
+            if (SpeciesExpressionMatcher(*i).match(sp))
             {
                 Species retval(sp);
                 retval.set_attributes(*i);

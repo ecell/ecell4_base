@@ -6,6 +6,9 @@
 namespace ecell4
 {
 
+namespace context
+{
+
 std::pair<bool, MatchObject::context_type> uspmatch(
     const UnitSpecies& pttrn, const UnitSpecies& usp,
     const MatchObject::context_type& org)
@@ -306,13 +309,13 @@ bool is_correspondent(const UnitSpecies& usp1, const UnitSpecies& usp2)
     return true;
 }
 
-std::vector<Species> ReactionRuleExpressionMatcher::generate()
+std::vector<Species> _ReactionRuleExpressionMatcher::generate()
 {
     const unit_group_type res = this->genunits(this->compile());
     return group_units(res.units, res.groups, res.num_groups);
 }
 
-ReactionRuleExpressionMatcher::operation_type ReactionRuleExpressionMatcher::compile()
+_ReactionRuleExpressionMatcher::operation_type _ReactionRuleExpressionMatcher::compile()
 {
     typedef std::vector<UnitSpecies>::size_type size_type;
     typedef std::vector<UnitSpecies>::const_iterator const_iterator;
@@ -397,7 +400,7 @@ ReactionRuleExpressionMatcher::operation_type ReactionRuleExpressionMatcher::com
     return res;
 }
 
-ReactionRuleExpressionMatcher::unit_group_type ReactionRuleExpressionMatcher::genunits(const ReactionRuleExpressionMatcher::operation_type& operations)
+_ReactionRuleExpressionMatcher::unit_group_type _ReactionRuleExpressionMatcher::genunits(const _ReactionRuleExpressionMatcher::operation_type& operations)
 {
     typedef std::vector<UnitSpecies>::size_type size_type;
     typedef std::vector<UnitSpecies>::const_iterator const_iterator;
@@ -807,7 +810,7 @@ std::vector<Species> group_units(
     return products;
 }
 
-std::vector<ReactionRule> ReactionRuleExpressionMatcher::gen(const ReactionRule::reactant_container_type& reactants)
+std::vector<ReactionRule> _ReactionRuleExpressionMatcher::gen(const ReactionRule::reactant_container_type& reactants)
 {
     typedef std::vector<ReactionRule> return_type;
 
@@ -878,5 +881,71 @@ std::pair<bool, MatchObject::context_type> MatchObject::next()
     }
     return std::make_pair(false, MatchObject::context_type());
 }
+
+Species format_species(const Species& sp)
+{
+    unit_species_comparerator comp(sp);
+    const std::vector<UnitSpecies>::size_type num_units = comp.units().size();
+
+    std::vector<unit_species_comparerator::index_type> units;
+    for (unit_species_comparerator::index_type i(0); i < num_units; ++i)
+    {
+        units.push_back(i);
+    }
+
+    std::sort(units.begin(), units.end(), comp);
+
+    std::vector<unit_species_comparerator::index_type>
+        next(num_units, num_units);
+    unsigned int stride(0);
+    for (unit_species_comparerator::index_type i(0); i < num_units; ++i)
+    {
+        const unit_species_comparerator::index_type idx(units[i]);
+        comp.reorder_units(next, idx, stride);
+    }
+    for (unsigned int i(0); i < num_units; ++i)
+    {
+        units[next[i]] = i;
+    }
+
+    Species newsp;
+    utils::get_mapper_mf<std::string, std::string>::type cache;
+    stride = 1;
+    std::stringstream ss;
+    for (std::vector<unit_species_comparerator::index_type>::const_iterator
+        i(units.begin()); i != units.end(); ++i)
+    {
+        UnitSpecies usp(sp.units().at(*i));
+        for (UnitSpecies::container_type::size_type j(0);
+            j < static_cast<UnitSpecies::container_type::size_type>(usp.num_sites()); ++j)
+        {
+            UnitSpecies::container_type::value_type& site(usp.at(j));
+            if (site.second.second == "" || rbex::is_wildcard(site.second.second))
+            {
+                continue;
+            }
+
+            utils::get_mapper_mf<std::string, std::string>::type::const_iterator
+                it(cache.find(site.second.second));
+            if (it == cache.end())
+            {
+                ss << stride;
+                cache.insert(std::make_pair(site.second.second, ss.str()));
+                site.second.second = ss.str();
+                ++stride;
+                ss.clear();
+                ss.str("");
+            }
+            else
+            {
+                site.second.second = (*it).second;
+            }
+        }
+        newsp.add_unit(usp);
+    }
+    return newsp;
+}
+
+} // context
 
 } // ecell4

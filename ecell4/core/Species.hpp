@@ -16,6 +16,7 @@
 #include "types.hpp"
 #include "exceptions.hpp"
 #include "UnitSpecies.hpp"
+// #include "Context.hpp"
 
 
 namespace ecell4
@@ -218,13 +219,6 @@ template <>
 inline void Species::set_attribute(const std::string& name_attr, const char* value)
 {
     attributes_[name_attr] = std::string(value);
-}
-
-Species format_species(const Species& sp);
-
-inline Species::serial_type unique_serial(const Species& sp)
-{
-    return format_species(sp).serial();
 }
 
 template<typename Tstrm_, typename Ttraits_>
