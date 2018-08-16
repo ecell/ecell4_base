@@ -402,14 +402,19 @@ _ReactionRuleExpressionMatcher::operation_type _ReactionRuleExpressionMatcher::c
 
 _ReactionRuleExpressionMatcher::unit_group_type _ReactionRuleExpressionMatcher::genunits(const _ReactionRuleExpressionMatcher::operation_type& operations)
 {
-    typedef std::vector<UnitSpecies>::size_type size_type;
-    typedef std::vector<UnitSpecies>::const_iterator const_iterator;
-
     if (itr_ != matchers_.end())
     {
         // Failed to match
         return unit_group_type();;
     }
+
+    return this->genunits(operations, this->context());
+}
+
+_ReactionRuleExpressionMatcher::unit_group_type _ReactionRuleExpressionMatcher::genunits(const _ReactionRuleExpressionMatcher::operation_type& operations, const context_type& ctx)
+{
+    typedef std::vector<UnitSpecies>::size_type size_type;
+    typedef std::vector<UnitSpecies>::const_iterator const_iterator;
 
     const std::vector<UnitSpecies>& products = operations.products;
     const std::vector<size_type>& correspo = operations.correspo;
@@ -423,7 +428,7 @@ _ReactionRuleExpressionMatcher::unit_group_type _ReactionRuleExpressionMatcher::
 
     // 3. Concatenate units given as reactants
 
-    const context_type ctx(context());
+    // const context_type ctx(context());
 
     int bond_stride = 0;
 
@@ -812,9 +817,12 @@ std::vector<Species> group_units(
 
 std::vector<ReactionRule> _ReactionRuleExpressionMatcher::gen(const ReactionRule::reactant_container_type& reactants)
 {
+    ecell4::_context::rule_based_expression_matcher<std::vector<Species> > matcher(this->pttrn_.reactants());
+    this->match(reactants);
+
     typedef std::vector<ReactionRule> return_type;
 
-    if (!this->match(reactants))
+    if (!matcher.match(reactants))
     {
         return return_type(0);
     }
@@ -831,7 +839,8 @@ std::vector<ReactionRule> _ReactionRuleExpressionMatcher::gen(const ReactionRule
 
     do
     {
-        const unit_group_type _res = this->genunits(op);
+        const unit_group_type _res = this->genunits(op, matcher.context());
+        // const unit_group_type _res = this->genunits(op);
 
         std::vector<std::vector<UnitSpecies> >::iterator i(std::find(candidates.begin(), candidates.end(), _res.units));
         if (i != candidates.end())
@@ -844,7 +853,7 @@ std::vector<ReactionRule> _ReactionRuleExpressionMatcher::gen(const ReactionRule
             res.push_back(ReactionRule(reactants, group_units(_res.units, _res.groups, _res.num_groups), pttrn_.k()));
         }
     }
-    while (this->next());
+    while (matcher.next());
 
     // return_type res;
     // res.reserve(candidates.size());

@@ -521,6 +521,7 @@ public:
     } unit_group_type;
 
     unit_group_type genunits(const operation_type& op);
+    unit_group_type genunits(const _ReactionRuleExpressionMatcher::operation_type& operations, const context_type& ctx);
     std::vector<ReactionRule> gen(const ReactionRule::reactant_container_type& reactants);
 
     const reactant_container_type& reactants() const
@@ -745,6 +746,186 @@ inline Species::serial_type unique_serial(const Species& sp)
 }
 
 }  // context
+
+namespace _context
+{
+
+template <typename T>
+class rule_based_expression_matcher {};
+
+template <>
+class rule_based_expression_matcher<std::vector<Species> >
+{
+public:
+
+    typedef std::vector<Species> value_type;
+
+    rule_based_expression_matcher(const value_type& pttrn)
+        : pttrn_(pttrn)
+    {
+        ;
+    }
+
+    bool match(const value_type& another)
+    {
+        return __match(another);
+    }
+
+    bool next()
+    {
+        return __next();
+    }
+
+    typedef ecell4::context::MatchObject::context_type context_type;
+
+    //TODO: HERE
+    context_type context() const
+    {
+        context_type ctx;
+        if (matchers_.size() == 0)
+        {
+            return ctx;
+        }
+
+        ctx.globals = matchers_.back().context().globals;
+
+        std::vector<unsigned int> strides;
+        strides.reserve(another_.size());
+        {
+            unsigned int stride = 0;
+            for (std::vector<Species>::const_iterator
+                i(another_.begin()); i != another_.end(); ++i)
+            {
+                strides.push_back(stride);
+                stride += (*i).units().size();
+            }
+        }
+
+        for (std::vector<ecell4::context::SpeciesExpressionMatcher>::const_iterator
+            i(matchers_.begin()); i != matchers_.end(); ++i)
+        {
+            const unsigned int idx1 = std::distance(matchers_.begin(), i);  // a position in matcher_
+            const unsigned int idx2 = permutation_[idx1];  // a position in reactants
+            const unsigned int stride = strides[idx2];
+
+            for (context_type::iterator_container_type::const_iterator
+                j((*i).context().iterators.begin());
+                j != (*i).context().iterators.end(); ++j)
+            {
+                // // a position in context.iterators
+                // const unsigned int idx3 = std::distance((*i).context().iterators.begin(), j);
+                const unsigned int idx4 = (*j);  // a position in units of a Species
+
+                ctx.iterators.push_back(idx4 + stride);
+            }
+        }
+
+        return ctx;
+    }
+    //TODO: THERE
+
+protected:
+
+    typedef std::vector<value_type::size_type> permutation_type;
+
+    bool __match(const value_type& another)
+    {
+        permutation_type permutation;
+        permutation.reserve(pttrn_.size());
+        for (size_t i(0); i != pttrn_.size(); ++i)
+        {
+            permutation.push_back(i);
+        }
+        return __match(another, permutation);
+    }
+
+    bool __match(const value_type& another, const permutation_type& permutation)
+    {
+        assert(0 <= pttrn_.size() < 3);
+        assert(pttrn_.size() == permutation.size());
+
+        another_ = another; //XXX: copy?
+        permutation_ = permutation;
+        size_t pos = 0;
+
+        if (pttrn_.size() != another.size())
+        {
+            return false;
+        }
+
+        matchers_.clear();
+        for (value_type::const_iterator i(pttrn_.begin()); i != pttrn_.end(); ++i)
+        {
+            matchers_.push_back(ecell4::context::SpeciesExpressionMatcher(*i));
+        }
+
+        context_type::variable_container_type globals;
+        return this->advance(0, globals);
+    }
+
+    bool __next()
+    {
+        //XXX: Make sure match was already called..
+        size_t pos = matchers_.size();
+
+        do
+        {
+            --pos;
+
+            ecell4::context::SpeciesExpressionMatcher& matcher_at_pos(matchers_[pos]);
+            const Species& another_at_pos(another_[pos]);
+
+            if (matcher_at_pos.next())
+            {
+                do
+                {
+                    if (this->advance(pos + 1, matcher_at_pos.context().globals))
+                    {
+                        return true;
+                    }
+                } while (matcher_at_pos.next());
+            }
+        }
+        while (pos > 0);
+
+        return false;
+    }
+
+    bool advance(const size_t pos, const context_type::variable_container_type& globals)
+    {
+        if (pos == matchers_.size())
+        {
+            return true;
+        }
+
+        ecell4::context::SpeciesExpressionMatcher& matcher_at_pos(matchers_[pos]);
+        const Species& another_at_pos(another_[pos]);
+
+        if (!matcher_at_pos.match(another_at_pos, globals))
+        {
+            return false;
+        }
+
+        do
+        {
+            if (this->advance(pos + 1, matcher_at_pos.context().globals))
+            {
+                return true;
+            }
+        } while (matcher_at_pos.next());
+
+        return false;
+    }
+
+    value_type pttrn_;
+
+    value_type another_;
+    permutation_type permutation_;
+
+    std::vector<ecell4::context::SpeciesExpressionMatcher> matchers_;
+};
+
+} // _context
 
 
 /**
