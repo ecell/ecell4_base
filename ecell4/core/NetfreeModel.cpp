@@ -125,7 +125,7 @@ std::vector<ReactionRule> NetfreeModel::query_reaction_rules(
 
 Integer NetfreeModel::apply(const Species& pttrn, const Species& sp) const
 {
-    return pttrn.count(sp);
+    return SpeciesExpressionMatcher(pttrn).count(sp);
 }
 
 std::vector<ReactionRule> NetfreeModel::apply(
@@ -358,7 +358,7 @@ bool check_stoichiometry(const Species& sp,
     for (std::map<Species, Integer>::const_iterator i(max_stoich.begin());
         i != max_stoich.end(); ++i)
     {
-        if ((*i).first.count(sp) > (*i).second)
+        if (SpeciesExpressionMatcher((*i).first).count(sp) > (*i).second)
         {
             return false;
         }
