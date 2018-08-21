@@ -1010,7 +1010,7 @@ def anim_to_html(anim, filename=None, fps=6, crf=10, bitrate='1M'):
             filename = f.name
             f.close()
             # anim.save(filename, fps=fps, extra_args=['-vcodec', 'libvpx'])
-            anim.save(filename, fps=fps, codec='libvpx', extra_args=['-crf', str(crf), '-b:v', bitrate])
+            anim.save(filename, fps=fps, codec='libvpx', extra_args=['-auto-alt-ref', '0', '-crf', str(crf), '-b:v', bitrate])
             # anim.save(filename, writer='mencoder', fps=fps, extra_args=['-lavcopts', 'vcodec=libvpx'])
             video = open(filename, "rb").read()
             os.remove(filename)
@@ -1030,7 +1030,7 @@ def display_anim(ani, output=None, fps=6, crf=10, bitrate='1M'):
         from IPython.display import display, HTML
         display(HTML(anim_to_html(ani, output, fps=fps, crf=crf, bitrate=bitrate)))
     elif os.path.splitext(output.lower())[1] == '.webm':
-        ani.save(output, fps=fps, codec='libvpx', extra_args=['-crf', str(crf), '-b:v', bitrate])
+        ani.save(output, fps=fps, codec='libvpx', extra_args=['-auto-alt-ref', '0', '-crf', str(crf), '-b:v', bitrate])
     elif os.path.splitext(output.lower())[1] == '.mp4':
         ani.save(output, fps=fps, codec='mpeg4', extra_args=['-crf', str(crf), '-b:v', bitrate])
     else:
