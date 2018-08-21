@@ -712,23 +712,23 @@ roll(const Polygon& poly,
     current_angle += calc_angle(
             poly.direction_of(current_edge->first), pos.first - vpos);
 
-    std::cerr << "initial position = " << pos.first << std::endl;
-    std::cerr << "initial first    = " << pos.second << ", " << poly.triangle_at(pos.second) << std::endl;
-    std::cerr << "current_angle    = " << current_angle << ", theta_ = " << theta_
-              << ", apex_angle = "  <<    apex_angle << std::endl;
     const Real theta = ::ecell4::modulo(current_angle + theta_, apex_angle);
-    std::cerr << "theta = " << theta << std::endl;
+//     std::cerr << "initial position = " << pos.first << std::endl;
+//     std::cerr << "initial first    = " << pos.second << ", " << poly.triangle_at(pos.second) << std::endl;
+//     std::cerr << "current_angle    = " << current_angle << ", theta_ = " << theta_
+//               << ", apex_angle = "  <<    apex_angle << std::endl;
+//     std::cerr << "theta = " << theta << std::endl;
 
     current_angle = 0.0;
     for(std::vector<std::pair<EdgeID, Real> >::const_iterator
             i(outedges.begin()), e(outedges.end()); i!=e; ++i)
     {
-        {
-            std::cerr << "face " << poly.face_of(i->first) << " = "
-                      << poly.triangle_at(poly.face_of(i->first)) << std::endl;
-            std::cerr << "angle around vtx " << vid << " at " << vpos << " = "
-                      << i->second << std::endl;
-        }
+//         {
+//             std::cerr << "face " << poly.face_of(i->first) << " = "
+//                       << poly.triangle_at(poly.face_of(i->first)) << std::endl;
+//             std::cerr << "angle around vtx " << vid << " at " << vpos << " = "
+//                       << i->second << std::endl;
+//         }
 
         const Real next_angle = current_angle + i->second;
         if(theta < next_angle)
