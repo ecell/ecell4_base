@@ -10,6 +10,7 @@
 
 #include <boost/lexical_cast.hpp>
 #include <fstream>
+#include <iomanip>
 
 void snapshot_output(std::ofstream& outstr,
         const boost::shared_ptr<ecell4::sgfrd::SGFRDWorld>& world)
@@ -53,7 +54,8 @@ void reaction_output(
             iter != end_; ++iter)
     {
         outstr << "rule: " << iter->first.as_string() << " : ";
-        outstr << "t = " << iter->second.t() << ", reactant = { ";
+        outstr << "t = " << std::setprecision(17) << iter->second.t()
+               << ", reactant = { ";
         for(reaction_info_type::container_type::const_iterator
                 r_iter = iter->second.reactants().begin(),
                 r_end = iter->second.reactants().end(); r_iter != r_end; ++r_iter)
@@ -220,12 +222,18 @@ int main(int argc, char **argv)
 
         snapshot_output(traj, world);
         species_output(spec, world, sp1, sp2, sp3);
+        reac.close();
+        reac.open(input["reaction"].c_str(), std::ios::trunc);
+        reaction_output(reac, sim);
 
         sim.initialize();
     }
     sim.finalize();
     snapshot_output(traj, world);
     species_output(spec, world, sp1, sp2, sp3);
+
+    reac.close();
+    reac.open(input["reaction"].c_str(), std::ios::trunc);
     reaction_output(reac, sim);
 
     std::cerr << "STAT: reason for forming multi:\n";
