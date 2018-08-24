@@ -2047,8 +2047,6 @@ def plot_movie2d_with_matplotlib(
     from ecell4 import Species, FixedIntervalHDF5Observer
     from .simulation import load_world
 
-    # print("Start generating species_list ...")
-
     plane = plane.lower()
     if len(plane) != 2 or plane[0] not in ('x', 'y', 'z') or plane[1] not in ('x', 'y', 'z'):
         raise ValueError("invalid 'plane' argument [{}] was given.".format(repr(plane)))
@@ -2075,58 +2073,62 @@ def plot_movie2d_with_matplotlib(
             species_list = sorted(
                 set(species_list), key=species_list.index)  # XXX: pick unique ones
 
-    # print("Start preparing mplot3d ...")
-
-    # fig, ax = __prepare_mplot3d_with_matplotlib(
-    #     __get_range_of_world(worlds[0]), figsize, grid, wireframe, angle, noaxis)
     wrange = __get_range_of_world(worlds[0], scale)
     wrange = (wrange['x'], wrange['y'], wrange['z'])
     wrange = {'x': wrange[xidx], 'y': wrange[yidx]}
 
-    fig, ax = __prepare_plot_with_matplotlib(
-        wrange, figsize, grid, wireframe, noaxis)
-    ax.set_xlabel(plane[0].upper())
-    ax.set_ylabel(plane[1].upper())
+    fig = plt.figure(figsize=(figsize, figsize))
+    ax = fig.gca()
 
-    from mpl_toolkits.mplot3d.art3d import juggle_axes
+    color_scale = matplotlib_color_scale()
 
-    def _update_plot(i, scatters, worlds, species_list):
+    def _update_plot(i, worlds, species_list):
+        ax.cla()
+
+        ax.set_aspect('equal')
+        ax.grid(grid)
+        ax.set_xlim(*wrange['x'])
+        ax.set_ylim(*wrange['y'])
+        ax.set_xlabel(plane[0].upper())
+        ax.set_ylabel(plane[1].upper())
+
+        if noaxis:
+            ax.set_axis_off()
+
+        _legend = False
+
         world = worlds[i]
         for i, name in enumerate(species_list):
-            offsets = []
+            offsets = ([], [])
             particles = world.list_particles_exact(Species(name))
+            if len(particles) == 0:
+                continue
+            _legend = True
+
             if max_count is not None and len(particles) > max_count:
                 particles = random.sample(particles, max_count)
             for pid, p in particles:
                 pos = p.position() * scale
-                offsets.append((pos[xidx], pos[yidx]))
-            scatters[i].set_offsets(offsets)
+                offsets[0].append(pos[xidx])
+                offsets[1].append(pos[yidx])
+
+            ax.scatter(
+                offsets[0], offsets[1], marker='o', s=(2 ** marker_size),
+               lw=0, c=color_scale.get_color(name), label=name)
+
+        if legend is not None and legend is not False and _legend:
+            legend_opts = {"loc": "upper right", "shadow": True}
+            if isinstance(legend, dict):
+                legend_opts.update(legend)
+            ax.legend(**legend_opts)
 
         fig.canvas.draw()
 
-    # print("Start making animation ...")
-
-    color_scale = matplotlib_color_scale()
-    scatters = []
-    for i, name in enumerate(species_list):
-        scatters.append(
-            ax.scatter([], [], marker='o', s=(2 ** marker_size),
-                       lw=0, c=color_scale.get_color(name), label=name))
-
-    # if legend:
-    #     ax.legend(loc='best', shadow=True)
-    if legend is not None and legend is not False:
-        legend_opts = {"loc": "best", "shadow": True}
-        if isinstance(legend, dict):
-            legend_opts.update(legend)
-        ax.legend(**legend_opts)
-
     ani = animation.FuncAnimation(
-        fig, _update_plot, fargs=(scatters, worlds, species_list),
+        fig, _update_plot, fargs=(worlds, species_list),
         frames=len(worlds), interval=interval, blit=False)
 
     plt.close(ani._fig)
-    # print("Start generating a movie ...")
     display_anim(ani, output, fps=1.0 / interval, crf=crf, bitrate=bitrate)
 
 def plot_world_with_plotly(world, species_list=None, max_count=1000):
