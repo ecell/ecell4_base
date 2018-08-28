@@ -1227,9 +1227,27 @@ class SGFRDSimulator :
             }
             case Multi::REACTION:
             {
-                SGFRD_TRACE(tracer_.write("reaction occurs"))
+                SGFRD_TRACE(tracer_.write("reaction occurs {");
+                    for(auto rrec : dom.last_reactions())
+                    {
+                        tracer_.write("rule: %1% t: %2% reactant: { ",
+                                      rrec.first.as_string(), rrec.second.t());
+                        for(auto reactant : rrec.second.reactants())
+                        {
+                            tracer_.write("%1% ", reactant.first);
+                        }
+                        tracer_.write("} products: { ");
+                        for(auto product: rrec.second.products())
+                        {
+                            tracer_.write("%1% ", product.first);
+                        }
+                        tracer_.write("}");
+                    }
+                    tracer_.write("}");)
+
                 std::copy(dom.last_reactions().begin(), dom.last_reactions().end(),
                           std::back_inserter(this->last_reactions_));
+
                 ParticleID pid; Particle p; FaceID fid;
                 BOOST_FOREACH(boost::tie(pid, p, fid), this->remove_multi(dom))
                 {
