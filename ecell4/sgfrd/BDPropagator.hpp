@@ -601,7 +601,7 @@ public:
 
     reaction_info_type init_reaction_info(const ParticleID& pid, const Particle& p)
     {
-        return reaction_info_type(container_.t() + dt_,
+        return reaction_info_type(container_.t(),
                 reaction_info_type::container_type(1, std::make_pair(pid, p)),
                 reaction_info_type::container_type());
     }
@@ -614,7 +614,7 @@ public:
         typename reaction_info_type::container_type products;
         reactants[0] = std::make_pair(pid1, p1);
         reactants[1] = std::make_pair(pid2, p2);
-        return reaction_info_type(container_.t() + dt_, reactants, products);
+        return reaction_info_type(container_.t(), reactants, products);
     }
 
 
