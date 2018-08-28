@@ -20,8 +20,8 @@ void Polygon::assign(const std::vector<Triangle>& ts)
     this->total_area_ = 0.0;
 
     // prepair temporal data storage
-    typedef std::pair<FaceID, std::size_t>          fid_vidx_pair;
-    typedef std::pair<Real3, std::vector<fid_vidx_pair> > tmp_vtx_type;
+    typedef std::pair<FaceID, std::size_t>                     fid_vidx_pair;
+    typedef std::pair<Real3, std::vector<fid_vidx_pair>>       tmp_vtx_type;
     typedef boost::container::flat_map<VertexID, tmp_vtx_type> tmp_vertex_map;
     tmp_vertex_map tmp_vtxs;
 
@@ -101,7 +101,7 @@ void Polygon::assign(const std::vector<Triangle>& ts)
             vi(tmp_vtxs.begin()), ve(tmp_vtxs.end()); vi != ve; ++vi)
     {
         const VertexID vid = vi->first;
-        const Real3          pos = vi->second.first;
+        const Real3    pos = vi->second.first;
         const std::vector<fid_vidx_pair>& face_pos = vi->second.second;
 
         vertex_data vd;
@@ -240,6 +240,32 @@ void Polygon::assign(const std::vector<Triangle>& ts)
 
         this->vertices_[i].apex_angle = total_angle;
 
+        if(!outgoing_edges_tmp.empty())
+        {
+            std::cout << outgoing_edges_tmp.size() << std::endl;
+            for(const auto& oet: outgoing_edges_tmp)
+            {
+                const auto fid = this->face_of(oet);
+                std::cout << oet << ": on " << fid << ", {";
+                const face_data& f = this->face_at(fid);
+                for(std::size_t idx=0; idx<3; ++idx)
+                {
+                    std::cout << f.triangle.vertex_at(idx);
+                    if(idx != 2) {std::cout << ", ";}
+                }
+                std::cout << "}, ";
+                for(std::size_t idx=0; idx<3; ++idx)
+                {
+                    if(f.edges[idx] == oet)
+                    {
+                        std::cout << f.triangle.vertex_at(idx) << " -> ";
+                        std::cout << f.triangle.vertex_at(idx==2?0:idx+1);
+                        std::cout << std::endl;
+                        break;
+                    }
+                }
+            }
+        }
         assert(outgoing_edges_tmp.empty());
         assert(vtx.outgoing_edges.size() == num_edges);
     }
