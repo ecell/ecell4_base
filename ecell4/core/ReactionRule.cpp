@@ -29,7 +29,8 @@ const std::string ReactionRule::as_string() const
 
 std::vector<ReactionRule> ReactionRule::generate(const reactant_container_type& reactants) const
 {
-    return ReactionRuleExpressionMatcher(*this).gen(reactants);
+    return generate_reaction_rules(*this, reactants);
+    // return ReactionRuleExpressionMatcher(*this).gen(reactants);
 }
 
 ReactionRule format_reaction_rule_with_nosort(const ReactionRule& rr)
