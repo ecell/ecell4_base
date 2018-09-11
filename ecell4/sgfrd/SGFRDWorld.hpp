@@ -323,7 +323,7 @@ class SGFRDWorld
                 i(candidates.begin()), e(candidates.end()); i!=e; ++i)
         {
             const VertexID vid = *i;
-            const Real dist_sq = ecell4::polygon::distance_sq(this->polygon_,
+            const Real dist_sq = ecell4::polygon::distance_sq(*(this->polygon_),
                     pos, std::make_pair(this->polygon_->position_at(vid), vid));
             if(dist_sq < threshold_sq)
             {
