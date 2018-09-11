@@ -6,6 +6,7 @@
 #include <boost/weak_ptr.hpp>
 #include <sstream>
 
+#include <ecell4/core/exceptions.hpp>
 #include <ecell4/core/extras.hpp>
 #include <ecell4/core/RandomNumberGenerator.hpp>
 #include <ecell4/core/SerialIDGenerator.hpp>
@@ -190,6 +191,13 @@ public:
                 radius = newsp.get_attribute_as<Real>("radius");
                 D = newsp.get_attribute_as<Real>("D");
             }
+        }
+
+        if (radius <= 0.0)
+        {
+            std::stringstream msg;
+            msg << "A particle with invalid size [" << radius << "] was given.";
+            throw IllegalArgument(msg.str());
         }
 
         MoleculeInfo info = {radius, D};
