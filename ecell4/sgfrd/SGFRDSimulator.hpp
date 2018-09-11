@@ -1497,15 +1497,14 @@ class SGFRDSimulator :
             SGFRD_SCOPE(us, volume_clearer, sim.tracer_)
             SGFRD_TRACE(sim.tracer_.write("ignoring nothing"))
 
-            escaped_ = false;
+            this->escaped_ = false;
             inside_checker is_inside(p.position(), p.radius(), fid, sim.polygon());
             if(applier(is_inside, domain))
             {
                 SGFRD_TRACE(sim.tracer_.write("particle is inside of the shell"))
                 return true;
             }
-
-            SGFRD_TRACE(sim.tracer_.write("particle escaped"));
+            SGFRD_TRACE(sim.tracer_.write("particle escaped. checking overlapping..."));
 
             const bool no_overlap = sim.burst_and_shrink_overlaps(p, fid, did);
             escaped_ = no_overlap;
@@ -1525,8 +1524,7 @@ class SGFRDSimulator :
                 SGFRD_TRACE(sim.tracer_.write("particle is inside of the shell"))
                 return true;
             }
-
-            SGFRD_TRACE(sim.tracer_.write("particle escaped"))
+            SGFRD_TRACE(sim.tracer_.write("particle escaped. checking overlapping..."));
 
             const bool no_overlap = sim.burst_and_shrink_overlaps(p, fid, did);
             escaped_ = no_overlap;
@@ -1546,8 +1544,7 @@ class SGFRDSimulator :
                 SGFRD_TRACE(sim.tracer_.write("particle is inside of the shell"))
                 return true;
             }
-
-            SGFRD_TRACE(sim.tracer_.write("particle escaped"))
+            SGFRD_TRACE(sim.tracer_.write("particle escaped. checking overlapping..."));
 
             const bool no_overlap = sim.burst_and_shrink_overlaps(p, fid, did);
             escaped_ = no_overlap;

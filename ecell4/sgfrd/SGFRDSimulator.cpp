@@ -496,7 +496,7 @@ bool SGFRDSimulator::burst_and_shrink_overlaps(
 
         if(ev_->which_domain() == SGFRDEvent::multi_domain)
         {
-            // Multi overlaps with Multi. it rarely causes recursive bursting.
+            // Multi overlaps with Multi. it sometimes causes recursive bursting.
             // in this case, it is considered as a collision.
             no_overlap = false;
             continue;
@@ -506,7 +506,7 @@ bool SGFRDSimulator::burst_and_shrink_overlaps(
         BOOST_FOREACH(boost::tie(pid_, p_, fid_),
                       burst_event(std::make_pair(did_, ev_), tm))
         {
-            const Real dist = this->polygon().distance(
+            const Real dist = ecell4::polygon::distance(this->polygon(),
                 std::make_pair(p.position(), fid),
                 std::make_pair(p_.position(), fid_));
             no_overlap = no_overlap && (dist > p.radius() + p_.radius());
@@ -753,7 +753,7 @@ void SGFRDSimulator::add_to_multi_recursive(Multi& multi_to_join)
                 BOOST_FOREACH(boost::tie(pid, p, fid),
                               burst_event(std::make_pair(did, ev), tm))
                 {
-                    const Real dist = this->polygon().distance(
+                    const Real dist = ecell4::polygon::distance(this->polygon(),
                             sh_pos, std::make_pair(p.position(), fid)
                             ) - sh.size() - p.radius();
                     const Real min_shell_radius =
