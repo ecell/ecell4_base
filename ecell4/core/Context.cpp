@@ -134,41 +134,10 @@ std::pair<bool, MatchObject::context_type> uspmatch(
     return retval;
 }
 
-// bool __spmatch(
-//     Species::container_type::const_iterator itr,
-//     const Species::container_type::const_iterator& end,
-//     const Species& sp, const MatchObject::context_type& ctx)
-// {
-//     if (itr == end)
-//     {
-//         // for (MatchObject::context_type::iterator_container_type::const_iterator
-//         //     i(ctx.iterators.begin()); i != ctx.iterators.end(); ++i)
-//         //     std::cout << *i << " ";
-//         // std::cout << std::endl;
-//         return true;
-//     }
-// 
-//     MatchObject obj(*itr);
-//     ++itr;
-// 
-//     std::pair<bool, MatchObject::context_type> retval(obj.match(sp, ctx));
-//     while (retval.first)
-//     {
-//         if (__spmatch(itr, end, sp, retval.second))
-//         {
-//             return true;
-//         }
-//         retval = obj.next();
-//     }
-//     return false;
-// }
-
 bool spmatch(const Species& pttrn, const Species& sp)
 {
     ecell4::_context::rule_based_expression_matcher<Species> sexp(pttrn);
     return sexp.match(sp);
-    // MatchObject::context_type ctx;
-    // return __spmatch(pttrn.begin(), pttrn.end(), sp, ctx);
 }
 
 Integer count_spmatches(const Species& pttrn, const Species& sp)
@@ -308,32 +277,6 @@ bool is_correspondent(const UnitSpecies& usp1, const UnitSpecies& usp2)
     }
     return true;
 }
-
-// std::pair<bool, MatchObject::context_type> MatchObject::next()
-// {
-//     std::vector<UnitSpecies>::const_iterator itr_start = target_.begin();
-//     for (; itr_ != target_.end(); ++itr_)
-//     {
-//         const Species::container_type::difference_type
-//             pos(distance(itr_start, itr_));
-//         if (std::find(ctx_.iterators.begin(), ctx_.iterators.end(), pos)
-//             != ctx_.iterators.end())
-//         {
-//             continue;
-//         }
-// 
-//         const UnitSpecies& usp(*itr_);
-//         std::pair<bool, MatchObject::context_type>
-//             retval(uspmatch(pttrn_, usp, ctx_));
-//         if (retval.first)
-//         {
-//             retval.second.iterators.push_back(pos);
-//             ++itr_;
-//             return retval;
-//         }
-//     }
-//     return std::make_pair(false, MatchObject::context_type());
-// }
 
 Species format_species(const Species& sp)
 {
