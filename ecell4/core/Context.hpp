@@ -110,143 +110,6 @@ Integer count_spmatches(
     const Species& pttrn, const Species& sp,
     const MatchObject::context_type::variable_container_type& globals);
 
-// ReactionRule create_reaction_rule_formatted(
-//     const ReactionRule::reactant_container_type& reactants,
-//     const ReactionRule::product_container_type& products, const Real k);
-
-// inline ReactionRule create_reaction_rule_formatted(const ReactionRule& rr)
-// {
-//     return create_reaction_rule_formatted(rr.reactants(), rr.products(), rr.k());
-// }
-
-// class SpeciesExpressionMatcher
-// {
-// public:
-// 
-//     typedef MatchObject::context_type context_type;
-// 
-// public:
-// 
-//     SpeciesExpressionMatcher(const Species& pttrn)
-//         : pttrn_(pttrn.units())
-//     {
-//         ;
-//     }
-// 
-//     virtual ~SpeciesExpressionMatcher()
-//     {
-//         ;
-//     }
-// 
-//     bool match(const Species& sp)
-//     {
-//         context_type::variable_container_type globals;
-//         return match(sp, globals);
-//     }
-// 
-//     bool match(
-//         const Species& sp, const context_type::variable_container_type& globals)
-//     {
-//         matches_.clear();
-//         for (Species::container_type::const_iterator i(pttrn_.begin());
-//             i != pttrn_.end(); ++i)
-//         {
-//             matches_.push_back(MatchObject(*i));
-//         }
-// 
-//         // target_ = sp;
-//         target_ = sp.units();
-//         itr_ = matches_.begin();
-//         context_type ctx;
-//         ctx.globals = globals;
-//         return __match(ctx);
-//     }
-// 
-//     bool __match(const context_type& ctx)
-//     {
-//         if (itr_ == matches_.end())
-//         {
-//             ctx_ = ctx;
-//             return true;
-//         }
-// 
-//         std::pair<bool, context_type> retval((*itr_).match(target_, ctx));
-//         while (retval.first)
-//         {
-//             ++itr_;
-//             const bool succeeded(__match(retval.second));
-//             if (succeeded)
-//             {
-//                 return true;
-//             }
-//             --itr_;
-//             retval = (*itr_).next();
-//         }
-//         return false;
-//     }
-// 
-//     bool next()
-//     {
-//         if (itr_ != matches_.end())
-//         {
-//             return false;
-//         }
-//         else if (matches_.size() == 0)
-//         {
-//             return true;
-//         }
-// 
-//         do
-//         {
-//             --itr_;
-//             std::pair<bool, context_type> retval((*itr_).next());
-//             while (retval.first)
-//             {
-//                 ++itr_;
-//                 const bool succeeded(__match(retval.second));
-//                 if (succeeded)
-//                 {
-//                     return true;
-//                 }
-//                 --itr_;
-//                 retval = (*itr_).next();
-//             }
-//         }
-//         while (itr_ != matches_.begin());
-//         return false;
-//     }
-// 
-//     Integer count(const Species& sp)
-//     {
-//         context_type::variable_container_type globals;
-//         if (!match(sp, globals))
-//         {
-//             return 0;
-//         }
-//         Integer n(1);
-//         while (next())
-//         {
-//             ++n;
-//         }
-//         return n;
-//     }
-// 
-//     const context_type& context() const
-//     {
-//         return ctx_;
-//     }
-// 
-// protected:
-// 
-//     // Species pttrn_;
-//     // Species target_;
-//     std::vector<UnitSpecies> pttrn_;
-//     std::vector<UnitSpecies> target_;
-//     std::vector<MatchObject> matches_;
-//     std::vector<MatchObject>::iterator itr_;
-//     context_type ctx_;
-// };
-
 class unit_species_comparerator
 {
 public:
@@ -459,6 +322,131 @@ template <typename T>
 class rule_based_expression_matcher {};
 
 template <>
+class rule_based_expression_matcher<UnitSpecies>
+{
+public:
+
+    typedef UnitSpecies value_type;
+
+    typedef ecell4::context::MatchObject::context_type context_type;
+    // typedef struct
+    //     {
+    //         typedef std::vector<Species::container_type::difference_type>
+    //             iterator_container_type;
+    //         typedef utils::get_mapper_mf<std::string, std::string>::type
+    //             variable_container_type;
+
+    //         iterator_container_type iterators;
+    //         variable_container_type locals;
+    //         variable_container_type globals;
+    //     } context_type;
+
+public:
+
+    rule_based_expression_matcher(const value_type& pttrn)
+        : pttrn_(pttrn)
+    {
+        ;
+    }
+
+    bool match(const value_type& another)
+    {
+        return match(another, context_type());
+    }
+
+    bool match(const value_type& another, const context_type& ctx)
+    {
+        another_ = another;
+
+        const std::pair<bool, context_type> retval
+            = ecell4::context::uspmatch(pttrn_, another_, ctx);
+        ctx_ = (retval.first ? retval.second : context_type());
+        return retval.first;
+    }
+
+    bool next()
+    {
+        return false;
+    }
+
+    const context_type& context() const
+    {
+        return ctx_;
+    }
+
+protected:
+
+    value_type pttrn_;
+    value_type another_;
+    context_type ctx_;
+};
+
+class _MatchObject
+{
+public:
+
+    typedef rule_based_expression_matcher<UnitSpecies> submatcher_type;
+    typedef submatcher_type::context_type context_type;
+
+public:
+
+    _MatchObject(const UnitSpecies& pttrn)
+        : base_(pttrn)
+    {
+        ;
+    }
+
+    std::pair<bool, context_type> match(
+        const Species& sp, const context_type& ctx)
+    {
+        return match(sp.units(), ctx);
+    }
+
+    std::pair<bool, context_type> match(
+        const std::vector<UnitSpecies>& target, const context_type& ctx)
+    {
+        target_ = target;
+        itr_ = target_.begin();
+        ctx_ = ctx;
+        return next();
+    }
+
+    std::pair<bool, context_type> next()
+    {
+        std::vector<UnitSpecies>::const_iterator itr_start = target_.begin();
+        for (; itr_ != target_.end(); ++itr_)
+        {
+            const Species::container_type::difference_type
+                pos(distance(itr_start, itr_));
+            if (std::find(ctx_.iterators.begin(), ctx_.iterators.end(), pos)
+                != ctx_.iterators.end())
+            {
+                continue;
+            }
+
+            const UnitSpecies& usp(*itr_);
+            if (base_.match(usp, ctx_))
+            {
+                std::pair<bool, context_type> retval = std::make_pair(true, base_.context());
+                retval.second.iterators.push_back(pos);
+                ++itr_;
+                return retval;
+            }
+        }
+        return std::make_pair(false, context_type());
+    }
+
+protected:
+
+    submatcher_type base_;
+
+    std::vector<UnitSpecies> target_;
+    std::vector<UnitSpecies>::const_iterator itr_;
+    context_type ctx_;
+};
+
+
+template <>
 class rule_based_expression_matcher<std::vector<UnitSpecies> >
 {
 public:
@@ -485,14 +473,14 @@ public:
     bool match(
         const value_type& another, const context_type::variable_container_type& globals)
     {
-        matches_.clear();
+        matchers_.clear();
         for (value_type::const_iterator i(pttrn_.begin());
             i != pttrn_.end(); ++i)
         {
-            matches_.push_back(submatcher_type(*i));
+            matchers_.push_back(submatcher_type(*i));
         }
 
-        target_ = another;
+        another_ = another;
         context_type ctx;
         ctx.globals = globals;
         return advance(0, ctx);
@@ -500,7 +488,7 @@ public:
 
     bool next()
     {
-        if (matches_.size() == 0)
+        if (matchers_.size() == 0)
         {
             return true;
         }
@@ -534,13 +522,13 @@ protected:
     bool __next()
     {
         //XXX: Make sure match was already called..
-        size_t pos = matches_.size();
+        size_t pos = matchers_.size();
 
         do
         {
             --pos;
 
-            submatcher_type& matcher_at_pos(matches_[pos]);
+            submatcher_type& matcher_at_pos(matchers_[pos]);
             std::pair<bool, context_type> retval(matcher_at_pos.next());
 
             if (retval.first)
@@ -562,14 +550,14 @@ protected:
 
     bool advance(const size_t pos, const context_type& ctx)
     {
-        if (pos == matches_.size())
+        if (pos == matchers_.size())
         {
             ctx_ = ctx;
             return true;
         }
 
-        submatcher_type& matcher_at_pos(matches_[pos]);
-        std::pair<bool, context_type> retval(matcher_at_pos.match(target_, ctx));
+        submatcher_type& matcher_at_pos(matchers_[pos]);
+        std::pair<bool, context_type> retval(matcher_at_pos.match(another_, ctx));
 
         if (!retval.first)
         {
@@ -591,9 +579,8 @@ protected:
 protected:
 
     value_type pttrn_;
-    value_type target_;
-    std::vector<submatcher_type> matches_;
-    std::vector<submatcher_type>::iterator itr_;
+    value_type another_;
+    std::vector<submatcher_type> matchers_;
     context_type ctx_;
 };
 
