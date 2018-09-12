@@ -38,10 +38,8 @@ inline bool is_named_wildcard(const std::string& name)
 
 } // rbex
 
-class MatchObject
+struct MatchObject
 {
-public:
-
     typedef struct
     {
         typedef std::vector<Species::container_type::difference_type>
@@ -53,57 +51,74 @@ public:
         variable_container_type locals;
         variable_container_type globals;
     } context_type;
-
-public:
-
-    MatchObject(const UnitSpecies& pttrn)
-        : pttrn_(pttrn)
-    {
-        ;
-    }
-
-    virtual ~MatchObject()
-    {
-        ;
-    }
-
-    std::pair<bool, context_type> match(
-        const Species& sp, const context_type& ctx)
-    {
-        // target_ = sp;
-        target_ = sp.units();
-        itr_ = target_.begin();
-        ctx_ = ctx;
-        return next();
-    }
-
-    std::pair<bool, context_type> match(
-        const std::vector<UnitSpecies>& target, const context_type& ctx)
-    {
-        target_ = target;
-        itr_ = target_.begin();
-        ctx_ = ctx;
-        return next();
-    }
-
-    std::pair<bool, context_type> next();
-
-protected:
-
-    UnitSpecies pttrn_;
-    // Species target_;
-    std::vector<UnitSpecies> target_;
-    Species::container_type::const_iterator itr_;
-    context_type ctx_;
 };
+
+// class MatchObject
+// {
+// public:
+// 
+//     typedef struct
+//     {
+//         typedef std::vector<Species::container_type::difference_type>
+//             iterator_container_type;
+//         typedef utils::get_mapper_mf<std::string, std::string>::type
+//             variable_container_type;
+// 
+//         iterator_container_type iterators;
+//         variable_container_type locals;
+//         variable_container_type globals;
+//     } context_type;
+// 
+// public:
+// 
+//     MatchObject(const UnitSpecies& pttrn)
+//         : pttrn_(pttrn)
+//     {
+//         ;
+//     }
+// 
+//     virtual ~MatchObject()
+//     {
+//         ;
+//     }
+// 
+//     std::pair<bool, context_type> match(
+//         const Species& sp, const context_type& ctx)
+//     {
+//         // target_ = sp;
+//         target_ = sp.units();
+//         itr_ = target_.begin();
+//         ctx_ = ctx;
+//         return next();
+//     }
+// 
+//     std::pair<bool, context_type> match(
+//         const std::vector<UnitSpecies>& target, const context_type& ctx)
+//     {
+//         target_ = target;
+//         itr_ = target_.begin();
+//         ctx_ = ctx;
+//         return next();
+//     }
+// 
+//     std::pair<bool, context_type> next();
+// 
+// protected:
+// 
+//     UnitSpecies pttrn_;
+//     // Species target_;
+//     std::vector<UnitSpecies> target_;
+//     Species::container_type::const_iterator itr_;
+//     context_type ctx_;
+// };
 
 std::pair<bool, MatchObject::context_type>
 uspmatch(const UnitSpecies& pttrn, const UnitSpecies& sp,
     const MatchObject::context_type& org);
-bool __spmatch(
-    Species::container_type::const_iterator itr,
-    const Species::container_type::const_iterator& end,
-    const Species& sp, const MatchObject::context_type& ctx);
+// bool __spmatch(
+//     Species::container_type::const_iterator itr,
+//     const Species::container_type::const_iterator& end,
+//     const Species& sp, const MatchObject::context_type& ctx);
 bool spmatch(const Species& pttrn, const Species& sp);
 Integer count_spmatches(const Species& pttrn, const Species& sp);
 Integer count_spmatches(
@@ -381,78 +396,13 @@ protected:
     context_type ctx_;
 };
 
-class _MatchObject
-{
-public:
-
-    typedef rule_based_expression_matcher<UnitSpecies> submatcher_type;
-    typedef submatcher_type::context_type context_type;
-
-public:
-
-    _MatchObject(const UnitSpecies& pttrn)
-        : base_(pttrn)
-    {
-        ;
-    }
-
-    std::pair<bool, context_type> match(
-        const Species& sp, const context_type& ctx)
-    {
-        return match(sp.units(), ctx);
-    }
-
-    std::pair<bool, context_type> match(
-        const std::vector<UnitSpecies>& target, const context_type& ctx)
-    {
-        target_ = target;
-        itr_ = target_.begin();
-        ctx_ = ctx;
-        return next();
-    }
-
-    std::pair<bool, context_type> next()
-    {
-        std::vector<UnitSpecies>::const_iterator itr_start = target_.begin();
-        for (; itr_ != target_.end(); ++itr_)
-        {
-            const Species::container_type::difference_type
-                pos(distance(itr_start, itr_));
-            if (std::find(ctx_.iterators.begin(), ctx_.iterators.end(), pos)
-                != ctx_.iterators.end())
-            {
-                continue;
-            }
-
-            const UnitSpecies& usp(*itr_);
-            if (base_.match(usp, ctx_))
-            {
-                std::pair<bool, context_type> retval = std::make_pair(true, base_.context());
-                retval.second.iterators.push_back(pos);
-                ++itr_;
-                return retval;
-            }
-        }
-        return std::make_pair(false, context_type());
-    }
-
-protected:
-
-    submatcher_type base_;
-
-    std::vector<UnitSpecies> target_;
-    std::vector<UnitSpecies>::const_iterator itr_;
-    context_type ctx_;
-};
-
-
 template <>
 class rule_based_expression_matcher<std::vector<UnitSpecies> >
 {
 public:
 
     typedef std::vector<UnitSpecies> value_type;
-    typedef ecell4::context::MatchObject submatcher_type;
+    typedef rule_based_expression_matcher<UnitSpecies> submatcher_type;
 
     typedef submatcher_type::context_type context_type;
 
@@ -483,7 +433,8 @@ public:
         another_ = another;
         context_type ctx;
         ctx.globals = globals;
-        return advance(0, ctx);
+        ctx_given_ = ctx;
+        return advance(0, 0, ctx);
     }
 
     bool next()
@@ -492,7 +443,6 @@ public:
         {
             return true;
         }
-
         return __next();
     }
 
@@ -522,58 +472,60 @@ protected:
     bool __next()
     {
         //XXX: Make sure match was already called..
-        size_t pos = matchers_.size();
+        size_t src = matchers_.size();
 
         do
         {
-            --pos;
+            --src;
+            submatcher_type& matcher_at_src(matchers_[src]);
+            const size_t dst = ctx_.iterators[src];
 
-            submatcher_type& matcher_at_pos(matchers_[pos]);
-            std::pair<bool, context_type> retval(matcher_at_pos.next());
-
-            if (retval.first)
+            if (src == 0)
             {
-                do
-                {
-                    if (this->advance(pos + 1, retval.second))
-                    {
-                        return true;
-                    }
-                    retval = matcher_at_pos.next();
-                } while (retval.first);
+                return this->advance(src, dst + 1, ctx_given_);
+            }
+
+            context_type new_ctx = matchers_[src - 1].context();
+            new_ctx.iterators.push_back(ctx_.iterators[src - 1]);
+
+            if (this->advance(src, dst + 1, new_ctx))
+            {
+                return true;
             }
         }
-        while (pos > 0);
+        while (src > 0);
 
         return false;
     }
 
-    bool advance(const size_t pos, const context_type& ctx)
+    bool advance(const size_t src, const size_t dst, const context_type& ctx)
     {
-        if (pos == matchers_.size())
+        if (src == matchers_.size())
         {
             ctx_ = ctx;
             return true;
         }
-
-        submatcher_type& matcher_at_pos(matchers_[pos]);
-        std::pair<bool, context_type> retval(matcher_at_pos.match(another_, ctx));
-
-        if (!retval.first)
+        else if (dst == another_.size())
         {
             return false;
         }
-
-        do
+        else if (std::find(ctx.iterators.begin(), ctx.iterators.end(), dst)
+                 != ctx.iterators.end())
         {
-            if (this->advance(pos + 1, retval.second))
+            return this->advance(src, dst + 1, ctx);
+        }
+
+        submatcher_type& matcher_at_src(matchers_[src]);
+        if (matcher_at_src.match(another_[dst], ctx))
+        {
+            context_type new_ctx = matcher_at_src.context();
+            new_ctx.iterators.push_back(dst);
+            if (this->advance(src + 1, 0, new_ctx))
             {
                 return true;
             }
-            retval = matcher_at_pos.next();
-        } while (retval.first);
-
-        return false;
+        }
+        return this->advance(src, dst + 1, ctx);
     }
 
 protected:
@@ -581,8 +533,146 @@ protected:
     value_type pttrn_;
     value_type another_;
     std::vector<submatcher_type> matchers_;
-    context_type ctx_;
+    context_type ctx_, ctx_given_;
 };
+
+// template <>
+// class rule_based_expression_matcher<std::vector<UnitSpecies> >
+// {
+// public:
+// 
+//     typedef std::vector<UnitSpecies> value_type;
+//     typedef ecell4::context::MatchObject submatcher_type;
+// 
+//     typedef submatcher_type::context_type context_type;
+// 
+// public:
+// 
+//     rule_based_expression_matcher(const value_type& pttrn)
+//         : pttrn_(pttrn)
+//     {
+//         ;
+//     }
+// 
+//     bool match(const value_type& another)
+//     {
+//         context_type::variable_container_type globals;
+//         return match(another, globals);
+//     }
+// 
+//     bool match(
+//         const value_type& another, const context_type::variable_container_type& globals)
+//     {
+//         matchers_.clear();
+//         for (value_type::const_iterator i(pttrn_.begin());
+//             i != pttrn_.end(); ++i)
+//         {
+//             matchers_.push_back(submatcher_type(*i));
+//         }
+// 
+//         another_ = another;
+//         context_type ctx;
+//         ctx.globals = globals;
+//         return advance(0, ctx);
+//     }
+// 
+//     bool next()
+//     {
+//         if (matchers_.size() == 0)
+//         {
+//             return true;
+//         }
+// 
+//         return __next();
+//     }
+// 
+//     Integer count(const value_type& another)
+//     {
+//         context_type::variable_container_type globals;
+//         if (!match(another, globals))
+//         {
+//             return 0;
+//         }
+// 
+//         Integer n(1);
+//         while (next())
+//         {
+//             ++n;
+//         }
+//         return n;
+//     }
+// 
+//     const context_type& context() const
+//     {
+//         return ctx_;
+//     }
+// 
+// protected:
+// 
+//     bool __next()
+//     {
+//         //XXX: Make sure match was already called..
+//         size_t pos = matchers_.size();
+// 
+//         do
+//         {
+//             --pos;
+// 
+//             submatcher_type& matcher_at_pos(matchers_[pos]);
+//             std::pair<bool, context_type> retval(matcher_at_pos.next());
+// 
+//             if (retval.first)
+//             {
+//                 do
+//                 {
+//                     if (this->advance(pos + 1, retval.second))
+//                     {
+//                         return true;
+//                     }
+//                     retval = matcher_at_pos.next();
+//                 } while (retval.first);
+//             }
+//         }
+//         while (pos > 0);
+// 
+//         return false;
+//     }
+// 
+//     bool advance(const size_t pos, const context_type& ctx)
+//     {
+//         if (pos == matchers_.size())
+//         {
+//             ctx_ = ctx;
+//             return true;
+//         }
+// 
+//         submatcher_type& matcher_at_pos(matchers_[pos]);
+//         std::pair<bool, context_type> retval(matcher_at_pos.match(another_, ctx));
+// 
+//         if (!retval.first)
+//         {
+//             return false;
+//         }
+// 
+//         do
+//         {
+//             if (this->advance(pos + 1, retval.second))
+//             {
+//                 return true;
+//             }
+//             retval = matcher_at_pos.next();
+//         } while (retval.first);
+// 
+//         return false;
+//     }
+// 
+// protected:
+// 
+//     value_type pttrn_;
+//     value_type another_;
+//     std::vector<submatcher_type> matchers_;
+//     context_type ctx_;
+// };
 
 template <>
 class rule_based_expression_matcher<Species>

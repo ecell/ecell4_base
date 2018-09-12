@@ -159,20 +159,20 @@ BOOST_AUTO_TEST_CASE(Species_test_match3)
     //     SpeciesExpressionMatcher((Species("_1._2")).count(Species("A.B.C"), globals), 2);
 }
 
-BOOST_AUTO_TEST_CASE(Species_debug_match_object)
-{
-    Species sp1("A(a^1).A(a^1)");
-    context::MatchObject mobj(sp1.units()[0]);
-    context::MatchObject::context_type ctx;
-    std::pair<bool, context::MatchObject::context_type> res;
-    res = mobj.match(sp1, ctx);
-    BOOST_ASSERT(res.first);
-    BOOST_CHECK_EQUAL(res.second.iterators.size(), 1);
-    BOOST_CHECK_EQUAL(res.second.iterators[0], 0);
-    res = mobj.next();
-    BOOST_ASSERT(res.first);
-    BOOST_CHECK_EQUAL(res.second.iterators.size(), 1);
-    BOOST_CHECK_EQUAL(res.second.iterators[0], 1);
-    res = mobj.next();
-    BOOST_ASSERT(!res.first);
-}
+// BOOST_AUTO_TEST_CASE(Species_debug_match_object)
+// {
+//     Species sp1("A(a^1).A(a^1)");
+//     context::MatchObject mobj(sp1.units()[0]);
+//     context::MatchObject::context_type ctx;
+//     std::pair<bool, context::MatchObject::context_type> res;
+//     res = mobj.match(sp1, ctx);
+//     BOOST_ASSERT(res.first);
+//     BOOST_CHECK_EQUAL(res.second.iterators.size(), 1);
+//     BOOST_CHECK_EQUAL(res.second.iterators[0], 0);
+//     res = mobj.next();
+//     BOOST_ASSERT(res.first);
+//     BOOST_CHECK_EQUAL(res.second.iterators.size(), 1);
+//     BOOST_CHECK_EQUAL(res.second.iterators[0], 1);
+//     res = mobj.next();
+//     BOOST_ASSERT(!res.first);
+// }
