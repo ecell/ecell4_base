@@ -9,188 +9,63 @@ namespace ecell4
 namespace context
 {
 
-std::pair<bool, MatchObject::context_type> uspmatch(
-    const UnitSpecies& pttrn, const UnitSpecies& usp,
-    const MatchObject::context_type& org)
-{
-    std::pair<bool, MatchObject::context_type>
-        retval(std::make_pair(false, org));
-    MatchObject::context_type& ctx(retval.second);
+// bool spmatch(const Species& pttrn, const Species& sp)
+// {
+//     ecell4::_context::rule_based_expression_matcher<Species> sexp(pttrn);
+//     return sexp.match(sp);
+// }
+// 
+// Integer count_spmatches(const Species& pttrn, const Species& sp)
+// {
+//     MatchObject::context_type::variable_container_type globals;
+//     return count_spmatches(pttrn, sp, globals);
+// }
+// 
+// Integer count_spmatches(const Species& pttrn, const Species& sp,
+//     const MatchObject::context_type::variable_container_type& globals)
+// {
+//     ecell4::_context::rule_based_expression_matcher<Species> sexp(pttrn);
+//     if (!sexp.match(sp, globals))
+//     {
+//         return 0;
+//     }
+//     Integer n(1);
+//     while (sexp.next())
+//     {
+//         ++n;
+//     }
+//     return n;
+// }
 
-    if (rbex::is_wildcard(pttrn.name()))
-    {
-        if (rbex::is_pass_wildcard(pttrn.name()))
-        {
-            throw NotSupported(
-                "A pass wildcard '_0' is not allowed to be a name of Species.");
-        }
-        else if (rbex::is_named_wildcard(pttrn.name()))
-        {
-            MatchObject::context_type::variable_container_type::const_iterator
-                itr(ctx.globals.find(pttrn.name()));
-            if (itr == ctx.globals.end())
-            {
-                ctx.globals[pttrn.name()] = usp.name();
-            }
-            else if ((*itr).second != usp.name())
-            {
-                return retval;
-            }
-        }
-    }
-    else if (pttrn.name() != usp.name())
-    {
-        return retval;
-    }
-
-    for (UnitSpecies::container_type::const_iterator j(pttrn.begin());
-        j != pttrn.end(); ++j)
-    {
-        if (usp.has_site((*j).first))
-        {
-            const UnitSpecies::site_type& site(usp.get_site((*j).first));
-
-            if ((*j).second.first != "")
-            {
-                if (site.first == "")
-                {
-                    return retval;
-                }
-                else if (rbex::is_pass_wildcard((*j).second.first))
-                {
-                    throw NotSupported(
-                        "A pass wildcard '_0' is not allowed to be a state.");
-                }
-                else if (rbex::is_unnamed_wildcard((*j).second.first))
-                {
-                    ; // do nothing
-                }
-                else if (rbex::is_named_wildcard((*j).second.first))
-                {
-                    MatchObject::context_type::variable_container_type::const_iterator
-                        itr(ctx.globals.find((*j).second.first));
-                    if (itr == ctx.globals.end())
-                    {
-                        ctx.globals[(*j).second.first] = site.first;
-                    }
-                    else if ((*itr).second != site.first)
-                    {
-                        return retval;
-                    }
-                }
-                else if ((*j).second.first != site.first)
-                {
-                    return retval;
-                }
-            }
-
-            if (rbex::is_pass_wildcard((*j).second.second))
-            {
-                ; // just skip checking
-            }
-            else if ((*j).second.second == "")
-            {
-                if (site.second != "")
-                {
-                    return retval;
-                }
-            }
-            else
-            {
-                if (site.second == "")
-                {
-                    return retval;
-                }
-                else if (rbex::is_unnamed_wildcard((*j).second.second))
-                {
-                    continue;
-                }
-                else if (rbex::is_named_wildcard((*j).second.second))
-                {
-                    throw NotSupported(
-                        "A named wildcard is not allowed to be a bond.");
-                }
-
-                MatchObject::context_type::variable_container_type::const_iterator
-                    itr(ctx.locals.find((*j).second.second));
-                if (itr == ctx.locals.end())
-                {
-                    ctx.locals[(*j).second.second] = site.second;
-                }
-                else if ((*itr).second != site.second)
-                {
-                    return retval;
-                }
-
-            }
-        }
-        else
-        {
-            return retval;
-        }
-    }
-
-    retval.first = true;
-    return retval;
-}
-
-bool spmatch(const Species& pttrn, const Species& sp)
-{
-    ecell4::_context::rule_based_expression_matcher<Species> sexp(pttrn);
-    return sexp.match(sp);
-}
-
-Integer count_spmatches(const Species& pttrn, const Species& sp)
-{
-    MatchObject::context_type::variable_container_type globals;
-    return count_spmatches(pttrn, sp, globals);
-}
-
-Integer count_spmatches(const Species& pttrn, const Species& sp,
-    const MatchObject::context_type::variable_container_type& globals)
-{
-    ecell4::_context::rule_based_expression_matcher<Species> sexp(pttrn);
-    if (!sexp.match(sp, globals))
-    {
-        return 0;
-    }
-    Integer n(1);
-    while (sexp.next())
-    {
-        ++n;
-    }
-    return n;
-}
-
-std::pair<bool, MatchObject::context_type> __rrmatch(
-    const ReactionRule& rr,
-    const ReactionRule::reactant_container_type& reactants,
-    const MatchObject::context_type::variable_container_type& globals,
-    ReactionRule::reactant_container_type::const_iterator i,
-    ReactionRule::reactant_container_type::const_iterator j)
-{
-    ecell4::_context::rule_based_expression_matcher<Species> m(*i);
-    if (!m.match(*j, globals))
-    {
-        return std::make_pair(false, MatchObject::context_type());
-    }
-
-    ++i;
-    ++j;
-    if (i == rr.reactants().end() || j == reactants.end())
-    {
-        return std::make_pair(true, m.context());
-    }
-
-    do
-    {
-        if (__rrmatch(rr, reactants, m.context().globals, i, j).first)
-        {
-            return std::make_pair(true, m.context());
-        }
-    } while (m.next());
-    return std::make_pair(false, MatchObject::context_type());
-}
+// std::pair<bool, MatchObject::context_type> __rrmatch(
+//     const ReactionRule& rr,
+//     const ReactionRule::reactant_container_type& reactants,
+//     const MatchObject::context_type::variable_container_type& globals,
+//     ReactionRule::reactant_container_type::const_iterator i,
+//     ReactionRule::reactant_container_type::const_iterator j)
+// {
+//     ecell4::_context::rule_based_expression_matcher<Species> m(*i);
+//     if (!m.match(*j, globals))
+//     {
+//         return std::make_pair(false, MatchObject::context_type());
+//     }
+// 
+//     ++i;
+//     ++j;
+//     if (i == rr.reactants().end() || j == reactants.end())
+//     {
+//         return std::make_pair(true, m.context());
+//     }
+// 
+//     do
+//     {
+//         if (__rrmatch(rr, reactants, m.context().globals, i, j).first)
+//         {
+//             return std::make_pair(true, m.context());
+//         }
+//     } while (m.next());
+//     return std::make_pair(false, MatchObject::context_type());
+// }
 
 std::string itos(unsigned int val)
 {
@@ -353,7 +228,7 @@ namespace context
 
 struct _ReactionRuleExpressionMatcher
 {
-    typedef MatchObject::context_type context_type;
+    typedef ecell4::_context::rule_based_expression_matcher<UnitSpecies>::context_type context_type;
     typedef ReactionRule::reactant_container_type reactant_container_type;
 
     typedef struct

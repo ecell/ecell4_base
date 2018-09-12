@@ -38,29 +38,29 @@ inline bool is_named_wildcard(const std::string& name)
 
 } // rbex
 
-struct MatchObject
-{
-    typedef struct
-    {
-        typedef std::vector<Species::container_type::difference_type>
-            iterator_container_type;
-        typedef utils::get_mapper_mf<std::string, std::string>::type
-            variable_container_type;
+// struct MatchObject
+// {
+//     typedef struct
+//     {
+//         typedef std::vector<Species::container_type::difference_type>
+//             iterator_container_type;
+//         typedef utils::get_mapper_mf<std::string, std::string>::type
+//             variable_container_type;
+// 
+//         iterator_container_type iterators;
+//         variable_container_type locals;
+//         variable_container_type globals;
+//     } context_type;
+// };
 
-        iterator_container_type iterators;
-        variable_container_type locals;
-        variable_container_type globals;
-    } context_type;
-};
-
-std::pair<bool, MatchObject::context_type>
-uspmatch(const UnitSpecies& pttrn, const UnitSpecies& sp,
-    const MatchObject::context_type& org);
-bool spmatch(const Species& pttrn, const Species& sp);
-Integer count_spmatches(const Species& pttrn, const Species& sp);
-Integer count_spmatches(
-    const Species& pttrn, const Species& sp,
-    const MatchObject::context_type::variable_container_type& globals);
+// std::pair<bool, MatchObject::context_type>
+// uspmatch(const UnitSpecies& pttrn, const UnitSpecies& sp,
+//     const MatchObject::context_type& org);
+// bool spmatch(const Species& pttrn, const Species& sp);
+// Integer count_spmatches(const Species& pttrn, const Species& sp);
+// Integer count_spmatches(
+//     const Species& pttrn, const Species& sp,
+//     const MatchObject::context_type::variable_container_type& globals);
 
 class unit_species_comparerator
 {
@@ -271,6 +271,132 @@ namespace _context
 {
 
 template <typename T>
+std::pair<bool, T> uspmatch(const UnitSpecies& pttrn, const UnitSpecies& usp, const T& org)
+{
+    typedef T context_type;
+
+    std::pair<bool, context_type>
+        retval(std::make_pair(false, org));
+    context_type& ctx(retval.second);
+
+    if (ecell4::context::rbex::is_wildcard(pttrn.name()))
+    {
+        if (ecell4::context::rbex::is_pass_wildcard(pttrn.name()))
+        {
+            throw NotSupported(
+                "A pass wildcard '_0' is not allowed to be a name of Species.");
+        }
+        else if (ecell4::context::rbex::is_named_wildcard(pttrn.name()))
+        {
+            typename context_type::variable_container_type::const_iterator
+                itr(ctx.globals.find(pttrn.name()));
+            if (itr == ctx.globals.end())
+            {
+                ctx.globals[pttrn.name()] = usp.name();
+            }
+            else if ((*itr).second != usp.name())
+            {
+                return retval;
+            }
+        }
+    }
+    else if (pttrn.name() != usp.name())
+    {
+        return retval;
+    }
+
+    for (UnitSpecies::container_type::const_iterator j(pttrn.begin());
+        j != pttrn.end(); ++j)
+    {
+        if (usp.has_site((*j).first))
+        {
+            const UnitSpecies::site_type& site(usp.get_site((*j).first));
+
+            if ((*j).second.first != "")
+            {
+                if (site.first == "")
+                {
+                    return retval;
+                }
+                else if (ecell4::context::rbex::is_pass_wildcard((*j).second.first))
+                {
+                    throw NotSupported(
+                        "A pass wildcard '_0' is not allowed to be a state.");
+                }
+                else if (ecell4::context::rbex::is_unnamed_wildcard((*j).second.first))
+                {
+                    ; // do nothing
+                }
+                else if (ecell4::context::rbex::is_named_wildcard((*j).second.first))
+                {
+                    typename context_type::variable_container_type::const_iterator
+                        itr(ctx.globals.find((*j).second.first));
+                    if (itr == ctx.globals.end())
+                    {
+                        ctx.globals[(*j).second.first] = site.first;
+                    }
+                    else if ((*itr).second != site.first)
+                    {
+                        return retval;
+                    }
+                }
+                else if ((*j).second.first != site.first)
+                {
+                    return retval;
+                }
+            }
+
+            if (ecell4::context::rbex::is_pass_wildcard((*j).second.second))
+            {
+                ; // just skip checking
+            }
+            else if ((*j).second.second == "")
+            {
+                if (site.second != "")
+                {
+                    return retval;
+                }
+            }
+            else
+            {
+                if (site.second == "")
+                {
+                    return retval;
+                }
+                else if (ecell4::context::rbex::is_unnamed_wildcard((*j).second.second))
+                {
+                    continue;
+                }
+                else if (ecell4::context::rbex::is_named_wildcard((*j).second.second))
+                {
+                    throw NotSupported(
+                        "A named wildcard is not allowed to be a bond.");
+                }
+
+                typename context_type::variable_container_type::const_iterator
+                    itr(ctx.locals.find((*j).second.second));
+                if (itr == ctx.locals.end())
+                {
+                    ctx.locals[(*j).second.second] = site.second;
+                }
+                else if ((*itr).second != site.second)
+                {
+                    return retval;
+                }
+
+            }
+        }
+        else
+        {
+            return retval;
+        }
+    }
+
+    retval.first = true;
+    return retval;
+}
+
+template <typename T>
 class rule_based_expression_matcher {};
 
 template <>
@@ -280,18 +406,17 @@ public:
 
     typedef UnitSpecies value_type;
 
-    typedef ecell4::context::MatchObject::context_type context_type;
-    // typedef struct
-    //     {
-    //         typedef std::vector<Species::container_type::difference_type>
-    //             iterator_container_type;
-    //         typedef utils::get_mapper_mf<std::string, std::string>::type
-    //             variable_container_type;
+    typedef struct
+        {
+            typedef std::vector<Species::container_type::difference_type>
+                iterator_container_type;
+            typedef utils::get_mapper_mf<std::string, std::string>::type
+                variable_container_type;
 
-    //         iterator_container_type iterators;
-    //         variable_container_type locals;
-    //         variable_container_type globals;
-    //     } context_type;
+            iterator_container_type iterators;
+            variable_container_type locals;
+            variable_container_type globals;
+        } context_type;
 
 public:
 
@@ -311,7 +436,7 @@ public:
         another_ = another;
 
         const std::pair<bool, context_type> retval
-            = ecell4::context::uspmatch(pttrn_, another_, ctx);
+            = uspmatch(pttrn_, another_, ctx);
         ctx_ = (retval.first ? retval.second : context_type());
         return retval.first;
     }
