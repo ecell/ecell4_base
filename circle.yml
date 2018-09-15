@@ -16,7 +16,9 @@ jobs:
             PY27="cp27-cp27mu"
             PY35="cp35-cp35m"
             PY36="cp36-cp36m"
+            PY37="cp37-cp37m"
             git submodule init && git submodule update
+            /opt/python/$PY37/bin/python -m pip install cython
             /opt/python/$PY36/bin/python -m pip install cython
             /opt/python/$PY35/bin/python -m pip install cython
             /opt/python/$PY27/bin/python -m pip install cython
@@ -29,9 +31,11 @@ jobs:
             cd ../gsl-2.4 && ./configure && make && make install
             cd ../hdf5-1.8.17 && ./configure --prefix=/usr/local --enable-cxx && make && make install
             cd ~/circle && export BOOST_INCLUDEDIR=/root/circle/boost_1_65_1
+            cmake -DNO_SHARED:BOOL=1 -DPYTHON_EXECUTABLE:FILEPATH=/opt/python/$PY37/bin/python . && make && rm -f CMakeCache.txt
             cmake -DNO_SHARED:BOOL=1 -DPYTHON_EXECUTABLE:FILEPATH=/opt/python/$PY36/bin/python . && make && rm -f CMakeCache.txt
             cmake -DNO_SHARED:BOOL=1 -DPYTHON_EXECUTABLE:FILEPATH=/opt/python/$PY35/bin/python . && make && rm -f CMakeCache.txt
             cmake -DNO_SHARED:BOOL=1 -DPYTHON_EXECUTABLE:FILEPATH=/opt/python/$PY27/bin/python . && make && rm -f CMakeCache.txt
+            auditwheel repair /root/circle/python/dist/ecell-$ECELLVER-$PY37-linux_x86_64.whl
             auditwheel repair /root/circle/python/dist/ecell-$ECELLVER-$PY36-linux_x86_64.whl
             auditwheel repair /root/circle/python/dist/ecell-$ECELLVER-$PY35-linux_x86_64.whl
             auditwheel repair /root/circle/python/dist/ecell-$ECELLVER-$PY27-linux_x86_64.whl
