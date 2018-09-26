@@ -9,64 +9,6 @@ namespace ecell4
 namespace context
 {
 
-// bool spmatch(const Species& pttrn, const Species& sp)
-// {
-//     ecell4::_context::rule_based_expression_matcher<Species> sexp(pttrn);
-//     return sexp.match(sp);
-// }
-// 
-// Integer count_spmatches(const Species& pttrn, const Species& sp)
-// {
-//     MatchObject::context_type::variable_container_type globals;
-//     return count_spmatches(pttrn, sp, globals);
-// }
-// 
-// Integer count_spmatches(const Species& pttrn, const Species& sp,
-//     const MatchObject::context_type::variable_container_type& globals)
-// {
-//     ecell4::_context::rule_based_expression_matcher<Species> sexp(pttrn);
-//     if (!sexp.match(sp, globals))
-//     {
-//         return 0;
-//     }
-//     Integer n(1);
-//     while (sexp.next())
-//     {
-//         ++n;
-//     }
-//     return n;
-// }
-
-// std::pair<bool, MatchObject::context_type> __rrmatch(
-//     const ReactionRule& rr,
-//     const ReactionRule::reactant_container_type& reactants,
-//     const MatchObject::context_type::variable_container_type& globals,
-//     ReactionRule::reactant_container_type::const_iterator i,
-//     ReactionRule::reactant_container_type::const_iterator j)
-// {
-//     ecell4::_context::rule_based_expression_matcher<Species> m(*i);
-//     if (!m.match(*j, globals))
-//     {
-//         return std::make_pair(false, MatchObject::context_type());
-//     }
-// 
-//     ++i;
-//     ++j;
-//     if (i == rr.reactants().end() || j == reactants.end())
-//     {
-//         return std::make_pair(true, m.context());
-//     }
-// 
-//     do
-//     {
-//         if (__rrmatch(rr, reactants, m.context().globals, i, j).first)
-//         {
-//             return std::make_pair(true, m.context());
-//         }
-//     } while (m.next());
-//     return std::make_pair(false, MatchObject::context_type());
-// }
-
 std::string itos(unsigned int val)
 {
     std::stringstream ss;
@@ -218,6 +160,137 @@ Species format_species(const Species& sp)
 }
 
 } // context
+
+namespace _context
+{
+
+boost::optional<rule_based_expression_matcher<UnitSpecies>::context_type>
+    rule_based_expression_matcher<UnitSpecies>::match_unit_species(
+        const UnitSpecies& pttrn,
+        const UnitSpecies& usp,
+        const rule_based_expression_matcher<UnitSpecies>::context_type& org)
+{
+    typedef rule_based_expression_matcher<UnitSpecies>::context_type context_type;
+
+    context_type ctx = org;
+
+    if (ecell4::context::rbex::is_wildcard(pttrn.name()))
+    {
+        if (ecell4::context::rbex::is_pass_wildcard(pttrn.name()))
+        {
+            throw NotSupported(
+                "A pass wildcard '_0' is not allowed to be a name of Species.");
+        }
+        else if (ecell4::context::rbex::is_named_wildcard(pttrn.name()))
+        {
+            typename context_type::variable_container_type::const_iterator
+                itr(ctx.globals.find(pttrn.name()));
+            if (itr == ctx.globals.end())
+            {
+                ctx.globals[pttrn.name()] = usp.name();
+            }
+            else if ((*itr).second != usp.name())
+            {
+                return boost::none;
+            }
+        }
+    }
+    else if (pttrn.name() != usp.name())
+    {
+        return boost::none;
+    }
+
+    for (UnitSpecies::container_type::const_iterator j(pttrn.begin());
+        j != pttrn.end(); ++j)
+    {
+        if (usp.has_site((*j).first))
+        {
+            const UnitSpecies::site_type& site(usp.get_site((*j).first));
+
+            if ((*j).second.first != "")
+            {
+                if (site.first == "")
+                {
+                    return boost::none;
+                }
+                else if (ecell4::context::rbex::is_pass_wildcard((*j).second.first))
+                {
+                    throw NotSupported(
+                        "A pass wildcard '_0' is not allowed to be a state.");
+                }
+                else if (ecell4::context::rbex::is_unnamed_wildcard((*j).second.first))
+                {
+                    ; // do nothing
+                }
+                else if (ecell4::context::rbex::is_named_wildcard((*j).second.first))
+                {
+                    typename context_type::variable_container_type::const_iterator
+                        itr(ctx.globals.find((*j).second.first));
+                    if (itr == ctx.globals.end())
+                    {
+                        ctx.globals[(*j).second.first] = site.first;
+                    }
+                    else if ((*itr).second != site.first)
+                    {
+                        return boost::none;
+                    }
+                }
+                else if ((*j).second.first != site.first)
+                {
+                    return boost::none;
+                }
+            }
+
+            if (ecell4::context::rbex::is_pass_wildcard((*j).second.second))
+            {
+                ; // just skip checking
+            }
+            else if ((*j).second.second == "")
+            {
+                if (site.second != "")
+                {
+                    return boost::none;
+                }
+            }
+            else
+            {
+                if (site.second == "")
+                {
+                    return boost::none;
+                }
+                else if (ecell4::context::rbex::is_unnamed_wildcard((*j).second.second))
+                {
+                    continue;
+                }
+                else if (ecell4::context::rbex::is_named_wildcard((*j).second.second))
+                {
+                    throw NotSupported(
+                        "A named wildcard is not allowed to be a bond.");
+                }
+
+                typename context_type::variable_container_type::const_iterator
+                    itr(ctx.locals.find((*j).second.second));
+                if (itr == ctx.locals.end())
+                {
+                    ctx.locals[(*j).second.second] = site.second;
+                }
+                else if ((*itr).second != site.second)
+                {
+                    return boost::none;
+                }
+
+            }
+        }
+        else
+        {
+            return boost::none;
+        }
+    }
+
+    return ctx;
+}
+
+}  // _context
 
 /*
  * Apply a ReactionRule to the given set of reactants and return ReactionRules.
@@ -752,17 +825,10 @@ std::vector<ReactionRule> generate_reaction_rules(
 {
     typedef context::_ReactionRuleExpressionMatcher::operation_type operation_type;
     typedef context::_ReactionRuleExpressionMatcher::unit_group_type unit_group_type;
-
-    _context::rule_based_expression_matcher<std::vector<Species> > matcher(pttrn.reactants());
-    matcher.match(reactants);
-
+    typedef _context::rule_based_expression_matcher<std::vector<Species> >::context_type context_type;
     typedef std::vector<ReactionRule> return_type;
 
-    if (!matcher.match(reactants))
-    {
-        return return_type(0);
-    }
-    else if (pttrn.reactants().size() == 0)
+    if (pttrn.reactants().size() == 0)
     {
         return return_type(
             1, ReactionRule(reactants, pttrn.products(), pttrn.k()));  // Zeroth-order reactions
@@ -771,12 +837,12 @@ std::vector<ReactionRule> generate_reaction_rules(
     std::vector<std::vector<UnitSpecies> > candidates;
     const operation_type op = context::compile_reaction_rule(pttrn);
 
-    return_type res;
-
-    do
+    return_type reactions;
+    _context::rule_based_expression_matcher<std::vector<Species> > matcher(pttrn.reactants());
+    for (boost::optional<context_type> ctx = matcher.match(reactants); ctx; ctx = matcher.next())
     {
         const unit_group_type _res
-            = context::generate_units(op, matcher.context(), reactants, pttrn.policy());
+            = context::generate_units(op, (*ctx), reactants, pttrn.policy());
 
         std::vector<std::vector<UnitSpecies> >::iterator
             i(std::find(candidates.begin(), candidates.end(), _res.units));
@@ -787,16 +853,14 @@ std::vector<ReactionRule> generate_reaction_rules(
         else
         {
             candidates.push_back(_res.units);
-            res.push_back(
+            reactions.push_back(
                 ReactionRule(
                     reactants,
                     context::group_units(_res.units, _res.groups, _res.num_groups),
                     pttrn.k()));
         }
     }
-    while (matcher.next());
-
-    return res;
+    return reactions;
 }
 
 } // ecell4
