@@ -113,14 +113,21 @@ Real FirstOrderReactionEvent::draw_dt()
     const Species& reactant(*(rule_.reactants().begin()));
     const Integer num_r(world_->num_voxels_exact(reactant));
     const Real k(rule_.k());
-    const Real p = k * num_r;
-    Real dt(inf);
-    if (p != 0.)
+    if (num_r > 0)
     {
-        const Real rnd(world_->rng()->uniform(0.,1.));
-        dt = - log(1 - rnd) / p;
+        const Real p = k * num_r;
+        Real dt(inf);
+        if (p != 0.)
+        {
+            const Real rnd(world_->rng()->uniform(0., 1.));
+            dt = - log(1 - rnd) / p;
+        }
+        return dt;
     }
-    return dt;
+    else
+    {
+        return inf;
+    }
 }
 
 } // spatiocyte

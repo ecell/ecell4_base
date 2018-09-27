@@ -179,7 +179,7 @@ StepEvent::attempt_reaction_(
         const Real k((*itr).k());
         const Real P(k * factor * alpha);
         accp += P;
-        if (accp > 1)
+        if (accp > 1 && !std::isinf(k))
         {
             std::cerr << "The total acceptance probability [" << accp
                 << "] exceeds 1 for '" << speciesA.serial()
