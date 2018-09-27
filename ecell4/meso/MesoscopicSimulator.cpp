@@ -86,12 +86,12 @@ MesoscopicSimulator::draw_next_reaction(const coordinate_type& c)
         return std::make_pair(inf, (ReactionRuleProxyBase*)NULL);
     }
 
-    if (std::isinf(atot))
+    if (atot == std::numeric_limits<Real>::infinity())
     {
         std::vector<unsigned int> selected;
         for (unsigned int i(0); i < a.size(); ++i)
         {
-            if (std::isinf(a[i]))
+            if (a[i] == std::numeric_limits<Real>::infinity())
             {
                 selected.push_back(i);
             }

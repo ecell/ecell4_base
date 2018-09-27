@@ -1,7 +1,7 @@
 #ifndef ECELL4_GILLESPIE_GILLESPIE_SIMULATOR_HPP
 #define ECELL4_GILLESPIE_GILLESPIE_SIMULATOR_HPP
 
-#include <cmath>
+#include <limits>
 #include <stdexcept>
 #include <boost/shared_ptr.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>

@@ -60,12 +60,12 @@ bool GillespieSimulator::__draw_next_reaction(void)
     double dt = 0.0;
     unsigned int idx = 0;
 
-    if (std::isinf(atot))
+    if (atot == std::numeric_limits<double>::infinity())
     {
         std::vector<unsigned int> selected;
         for (unsigned int i(0); i < a.size(); ++i)
         {
-            if (std::isinf(a[i]))
+            if (a[i] == std::numeric_limits<double>::infinity())
             {
                 selected.push_back(i);
             }
