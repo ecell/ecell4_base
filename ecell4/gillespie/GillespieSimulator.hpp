@@ -1,6 +1,7 @@
 #ifndef ECELL4_GILLESPIE_GILLESPIE_SIMULATOR_HPP
 #define ECELL4_GILLESPIE_GILLESPIE_SIMULATOR_HPP
 
+#include <cmath>
 #include <stdexcept>
 #include <boost/shared_ptr.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
@@ -297,7 +298,7 @@ protected:
 
         const Real propensity() const
         {
-            return num_tot1_ * rr_.k();
+            return (num_tot1_ > 0 ? num_tot1_ * rr_.k() : 0.0);
         }
 
     protected:
@@ -412,7 +413,8 @@ protected:
 
         const Real propensity() const
         {
-            return (num_tot1_ * num_tot2_ - num_tot12_) * rr_.k() / world().volume();
+            const Integer num = num_tot1_ * num_tot2_ - num_tot12_;
+            return (num > 0 ? num * rr_.k() / world().volume() : 0.0);
         }
 
     protected:

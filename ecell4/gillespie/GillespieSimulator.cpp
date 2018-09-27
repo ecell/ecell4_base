@@ -42,51 +42,62 @@ void GillespieSimulator::decrement_molecules(const Species& sp)
 bool GillespieSimulator::__draw_next_reaction(void)
 {
     std::vector<double> a(events_.size());
-    // const Real V(world_->volume());
-    for (unsigned int idx(0); idx < events_.size(); ++idx)
+    for (unsigned int i(0); i < events_.size(); ++i)
     {
-        // events_[idx].initialize(world_.get());
-        a[idx] = events_[idx].propensity();
+        // events_[i].initialize(world_.get());
+        a[i] = events_[i].propensity();
     }
 
     const double atot(std::accumulate(a.begin(), a.end(), double(0.0)));
+
     if (atot == 0.0)
     {
-        // Any reactions cannot occur.
+        // no reaction occurs
         this->dt_ = inf;
         return true;
     }
 
-    const double rnd1(rng()->uniform(0, 1));
-    const double dt(gsl_sf_log(1.0 / rnd1) / double(atot));
-    const double rnd2(rng()->uniform(0, atot));
+    double dt = 0.0;
+    unsigned int idx = 0;
 
-    int u(-1);
-    double acc(0.0);
-    const int len_a(a.size());
-    do
+    if (std::isinf(atot))
     {
-        u++;
-        acc += a[u];
-    } while (acc < rnd2 && u < len_a - 1);
+        std::vector<unsigned int> selected;
+        for (unsigned int i(0); i < a.size(); ++i)
+        {
+            if (std::isinf(a[i]))
+            {
+                selected.push_back(i);
+            }
+        }
 
-    if (len_a == u)
+        dt = 0.0;
+        idx = selected[(selected.size() == 1 ? 0 : rng()->uniform_int(0, selected.size() - 1))];
+    }
+    else
     {
-        // Any reactions cannot occur.
-        this->dt_ = inf;
-        return true;
+        const double rnd1(rng()->uniform(0, 1));
+        const double rnd2(rng()->uniform(0, atot));
+
+        dt = gsl_sf_log(1.0 / rnd1) / double(atot);
+
+        double acc(0.0);
+
+        for (idx = 0; idx < a.size(); ++idx)
+        {
+            acc += a[idx];
+            if (acc >= rnd2)
+            {
+                break;
+            }
+        }
     }
 
-    next_reaction_rule_ = events_[u].reaction_rule();
-    next_reaction_ = events_[u].draw();
-    if (next_reaction_.k() <= 0.0)
-    {
-        this->dt_ += dt; // skip a reaction
-        return false;
-    }
+    next_reaction_rule_ = events_[idx].reaction_rule();
+    next_reaction_ = events_[idx].draw();
 
     this->dt_ += dt;
-    return true;
+    return (next_reaction_.k() > 0.0);  // Skip the reaction if false
 }
 
 void GillespieSimulator::draw_next_reaction(void)
@@ -111,13 +122,14 @@ void GillespieSimulator::step(void)
 
     if (this->dt_ == inf)
     {
-        // Any reactions cannot occur.
+        // No reaction occurs.
         return;
     }
 
     const Real t0(t()), dt0(dt());
 
-    if (dt0 == 0.0 || next_reaction_.k() <= 0.0)
+    // if (dt0 == 0.0 || next_reaction_.k() <= 0.0)
+    if (next_reaction_.k() <= 0.0)
     {
         // Any reactions cannot occur.
         return;
@@ -141,7 +153,10 @@ void GillespieSimulator::step(void)
     this->set_t(t0 + dt0);
     num_steps_++;
 
-    last_reactions_.push_back(std::make_pair(next_reaction_rule_, reaction_info_type(t(), next_reaction_.reactants(), next_reaction_.products())));
+    last_reactions_.push_back(
+        std::make_pair(
+            next_reaction_rule_,
+            reaction_info_type(t(), next_reaction_.reactants(), next_reaction_.products())));
 
     this->draw_next_reaction();
 }
@@ -160,7 +175,7 @@ bool GillespieSimulator::step(const Real &upto)
     }
     else
     {
-        // no reaction occurs
+        // No reaction occurs.
         // set_dt(next_time() - upto);
         set_t(upto);
         last_reactions_.clear();
