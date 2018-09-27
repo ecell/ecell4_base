@@ -86,6 +86,21 @@ MesoscopicSimulator::draw_next_reaction(const coordinate_type& c)
         return std::make_pair(inf, (ReactionRuleProxyBase*)NULL);
     }
 
+    if (std::isinf(atot))
+    {
+        std::vector<unsigned int> selected;
+        for (unsigned int i(0); i < a.size(); ++i)
+        {
+            if (std::isinf(a[i]))
+            {
+                selected.push_back(i);
+            }
+        }
+
+        const unsigned int idx = selected[(selected.size() == 1 ? 0 : rng()->uniform_int(0, selected.size() - 1))];
+        return std::make_pair(0.0, &proxies_[idx]);
+    }
+
     const double rnd1(rng()->uniform(0, 1));
     const double dt(gsl_sf_log(1.0 / rnd1) / double(atot));
     const double rnd2(rng()->uniform(0, atot));
