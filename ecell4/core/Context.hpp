@@ -284,10 +284,10 @@ public:
 
     boost::optional<context_type> match(const value_type& another, const context_type& ctx)
     {
-        another_ = another;
+        // another_ = another;
         ctx_ = ctx;
 
-        if (const boost::optional<context_type> retval = match_unit_species(pttrn_, another_, ctx))
+        if (const boost::optional<context_type> retval = match_unit_species(pttrn_, another, ctx))
         {
             return retval;
         }
@@ -313,7 +313,7 @@ protected:
 protected:
 
     value_type pttrn_;
-    value_type another_;
+    // value_type another_;
     context_type ctx_;
 };
 
@@ -330,9 +330,13 @@ public:
 public:
 
     rule_based_expression_matcher(const value_type& pttrn)
-        : pttrn_(pttrn)
     {
-        ;
+        matchers_.clear();
+        for (value_type::const_iterator i(pttrn.begin());
+            i != pttrn.end(); ++i)
+        {
+            matchers_.push_back(submatcher_type(*i));
+        }
     }
 
     boost::optional<context_type> match(const value_type& another)
@@ -344,13 +348,6 @@ public:
     boost::optional<context_type> match(
         const value_type& another, const context_type::variable_container_type& globals)
     {
-        matchers_.clear();
-        for (value_type::const_iterator i(pttrn_.begin());
-            i != pttrn_.end(); ++i)
-        {
-            matchers_.push_back(submatcher_type(*i));
-        }
-
         another_ = another;
         context_type ctx;
         ctx.globals = globals;
@@ -361,7 +358,7 @@ public:
     {
         if (matchers_.size() == 0)
         {
-            return ctx_;
+            return context_type();
         }
         return __next();
     }
@@ -382,10 +379,10 @@ public:
         return n;
     }
 
-    const context_type& context() const
-    {
-        return ctx_;
-    }
+    // const context_type& context() const
+    // {
+    //     return ctx_;
+    // }
 
 protected:
 
@@ -398,13 +395,12 @@ protected:
             --src;
 
             submatcher_type& matcher_at_src(matchers_[src]);
-            const size_t dst = ctx_.iterators[src];
+            const size_t dst = iterators_[src];
             if (const boost::optional<context_type> res = this->advance(src, dst + 1, matcher_at_src.context()))
             {
                 return res;
             }
         }
-
         return boost::none;
     }
 
@@ -412,8 +408,8 @@ protected:
     {
         if (src == matchers_.size())
         {
-            ctx_ = ctx;
-            return ctx_;
+            iterators_ = ctx.iterators;
+            return ctx;
         }
         else if (dst == another_.size())
         {
@@ -441,10 +437,9 @@ protected:
 
 protected:
 
-    value_type pttrn_;
     value_type another_;
     std::vector<submatcher_type> matchers_;
-    context_type ctx_;
+    context_type::iterator_container_type iterators_;
 };
 
 template <>
@@ -483,10 +478,10 @@ public:
         return base_.count(another.units());
     }
 
-    const context_type& context() const
-    {
-        return base_.context();
-    }
+    // const context_type& context() const
+    // {
+    //     return base_.context();
+    // }
 
 protected:
 
@@ -505,9 +500,15 @@ public:
 public:
 
     rule_based_expression_matcher(const value_type& pttrn)
-        : pttrn_(pttrn)
     {
-        ;
+        matchers_.clear();
+        for (value_type::const_iterator i(pttrn.begin()); i != pttrn.end(); ++i)
+        {
+            matchers_.push_back(submatcher_type(*i));
+        }
+
+        iterators_.resize(matchers_.size());
+        // contexts_.resize(matchers_.size());
     }
 
     boost::optional<context_type> match(const value_type& another)
@@ -524,7 +525,24 @@ public:
 
     boost::optional<context_type> next()
     {
-        return __next();
+        //XXX: Make sure match was already called..
+        size_t pos = matchers_.size();
+        while (pos > 0)
+        {
+            --pos;
+
+            submatcher_type& matcher_at_pos(matchers_[pos]);
+            while (const boost::optional<context_type> res = matcher_at_pos.next())
+            {
+                // contexts_[pos] = (*res);
+                iterators_[pos] = (*res).iterators;
+                if (const boost::optional<context_type> newres = this->advance(pos + 1, (*res).globals))
+                {
+                    return newres;
+                }
+            }
+        }
+        return boost::none;
     }
 
     //TODO: HERE
@@ -536,7 +554,8 @@ public:
             return ctx;
         }
 
-        ctx.globals = contexts_.back().globals;
+        // ctx.globals = contexts_.back().globals;
+        ctx.globals = globals_;
 
         std::vector<unsigned int> strides;
         strides.reserve(another_.size());
@@ -555,11 +574,14 @@ public:
             const unsigned int idx1 = std::distance(matchers_.begin(), i);  // a position in matcher_
             const unsigned int idx2 = permutation_[idx1];  // a position in reactants
             const unsigned int stride = strides[idx2];
-            const context_type& ctx_at_idx1 = contexts_[idx1];
+            // const context_type& ctx_at_idx1 = contexts_[idx1];
+            const context_type::iterator_container_type& it = iterators_[idx1];
 
+            // for (context_type::iterator_container_type::const_iterator
+            //     j(ctx_at_idx1.iterators.begin());
+            //     j != ctx_at_idx1.iterators.end(); ++j)
             for (context_type::iterator_container_type::const_iterator
-                j(ctx_at_idx1.iterators.begin());
-                j != ctx_at_idx1.iterators.end(); ++j)
+                j(it.begin()); j != it.end(); ++j)
             {
                 // // a position in context.iterators
                 // const unsigned int idx3 = std::distance((*i).context().iterators.begin(), j);
@@ -580,8 +602,8 @@ protected:
     boost::optional<context_type> __match(const value_type& another)
     {
         permutation_type permutation;
-        permutation.reserve(pttrn_.size());
-        for (size_t i(0); i != pttrn_.size(); ++i)
+        permutation.reserve(matchers_.size());
+        for (size_t i(0); i != matchers_.size(); ++i)
         {
             permutation.push_back(i);
         }
@@ -590,55 +612,26 @@ protected:
 
     boost::optional<context_type> __match(const value_type& another, const permutation_type& permutation)
     {
-        assert(0 <= pttrn_.size() < 3);
-        assert(pttrn_.size() == permutation.size());
+        assert(0 <= matchers_.size() < 3);
+        assert(matchers_.size() == permutation.size());
 
         another_ = another; //XXX: copy?
         permutation_ = permutation;
 
-        if (pttrn_.size() != another.size())
+        if (matchers_.size() != another.size())
         {
             return boost::none;
         }
 
-        matchers_.clear();
-        for (value_type::const_iterator i(pttrn_.begin()); i != pttrn_.end(); ++i)
-        {
-            matchers_.push_back(submatcher_type(*i));
-        }
-
-        contexts_.resize(matchers_.size());
-
         context_type::variable_container_type globals;
         return this->advance(0, globals);
-    }
-
-    boost::optional<context_type> __next()
-    {
-        //XXX: Make sure match was already called..
-        size_t pos = matchers_.size();
-        while (pos > 0)
-        {
-            --pos;
-
-            submatcher_type& matcher_at_pos(matchers_[pos]);
-            while (const boost::optional<context_type> res = matcher_at_pos.next())
-            {
-                contexts_[pos] = (*res);
-                if (const boost::optional<context_type> newres = this->advance(pos + 1, (*res).globals))
-                {
-                    return newres;
-                }
-            }
-        }
-
-        return boost::none;
     }
 
     boost::optional<context_type> advance(const size_t pos, const context_type::variable_container_type& globals)
     {
         if (pos == matchers_.size())
         {
+            globals_ = globals;
             return this->context();
         }
 
@@ -647,7 +640,8 @@ protected:
         for (boost::optional<context_type> res = matcher_at_pos.match(another_at_pos, globals);
              res; res = matcher_at_pos.next())
         {
-            contexts_[pos] = (*res);
+            // contexts_[pos] = (*res);
+            iterators_[pos] = (*res).iterators;
             if (const boost::optional<context_type> newres = this->advance(pos + 1, (*res).globals))
             {
                 return newres;
@@ -658,12 +652,15 @@ protected:
 
 protected:
 
-    value_type pttrn_;
+    // value_type pttrn_;
     value_type another_;
     permutation_type permutation_;
 
     std::vector<submatcher_type> matchers_;
-    std::vector<context_type> contexts_;
+
+    // std::vector<context_type> contexts_;
+    std::vector<context_type::iterator_container_type> iterators_;
+    context_type::variable_container_type globals_;
 };
 
 } // _context
