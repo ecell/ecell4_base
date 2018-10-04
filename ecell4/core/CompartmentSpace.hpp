@@ -5,6 +5,7 @@
 #include "types.hpp"
 #include "exceptions.hpp"
 #include "Species.hpp"
+#include "Real3.hpp"
 // #include "Space.hpp"
 
 #ifdef WITH_HDF5
