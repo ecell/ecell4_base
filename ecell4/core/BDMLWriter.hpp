@@ -331,6 +331,20 @@ void save_bdml(
         "This method requires HDF5. The HDF5 support is turned off.");
 }
 
+void save_bd5(
+    const WorldInterface& world, const std::string& filename,
+    const int group_index,
+    const std::string& object_name,
+    const std::string& spatial_unit,
+    const std::string& time_unit,
+    const bool trunc,
+    const bool with_radius
+    )
+{
+    throw NotSupported(
+        "This method requires HDF5. The HDF5 support is turned off.");
+}
+
 }; // ecell4
 
 #endif // WITH_HDF5

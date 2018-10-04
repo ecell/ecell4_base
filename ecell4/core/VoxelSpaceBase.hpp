@@ -18,6 +18,7 @@
 #endif
 
 #include "VoxelPool.hpp"
+#include "MoleculePool.hpp"
 #include "VacantType.hpp"
 #include "ParticleVoxel.hpp"
 #include "Particle.hpp"
