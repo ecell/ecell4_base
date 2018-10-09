@@ -367,6 +367,11 @@ public:
     bool
     make_structure_type(const Species& sp, Shape::dimension_kind dimension, const std::string loc);
 
+    virtual bool is_inside(const coordinate_type& coord) const
+    {
+        return true;
+    }
+
 protected:
 
     boost::shared_ptr<VoxelPool> get_voxel_pool(ParticleVoxel v);

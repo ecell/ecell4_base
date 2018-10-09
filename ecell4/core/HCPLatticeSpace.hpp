@@ -183,7 +183,7 @@ public:
         return coord >= 0 && coord < row_size_ * col_size_ * layer_size_;
     }
 
-    bool is_inside(const coordinate_type& coord) const
+    virtual bool is_inside(const coordinate_type& coord) const
     {
         const Integer3 global(coordinate2global(coord));
         return global.col >= 0 && global.col < col_size()
