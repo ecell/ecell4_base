@@ -41,7 +41,6 @@ BOOST_AUTO_TEST_CASE(ODESimulator_test_step1)
 
 BOOST_AUTO_TEST_CASE(ODESimulator_test_step2)
 {
-    std::cerr << "ODESimulator_test_step2 entry" << std::endl;
     const Real L(1e-6);
     const Real3 edge_lengths(L, L, L);
 
@@ -52,25 +51,17 @@ BOOST_AUTO_TEST_CASE(ODESimulator_test_step2)
     rr1.add_product(sp2);
     rr1.add_product(sp3);
 
-    std::cerr << "ODESimulator_test_step2: start building a model" << std::endl;
-
     boost::shared_ptr<NetworkModel> model(new NetworkModel());
     model->add_species_attribute(sp1);
     model->add_species_attribute(sp2);
     model->add_species_attribute(sp3);
     model->add_reaction_rule(rr1);
 
-    std::cerr << "ODESimulator_test_step2: start building a world" << std::endl;
-
     boost::shared_ptr<ODEWorld> world(new ODEWorld(edge_lengths));
     world->reserve_species(sp1);
     world->set_value(sp1, 60);
 
-    std::cerr << "ODESimulator_test_step2: start building a simulator" << std::endl;
-
     ODESimulator target(model, world);
-
-    std::cerr << "ODESimulator_test_step2: running a simulation" << std::endl;
 
     // std::cout << target.t() << ":" << world->num_molecules(sp1)
     //           << ":" << world->num_molecules(sp2) << std::endl;
@@ -79,6 +70,4 @@ BOOST_AUTO_TEST_CASE(ODESimulator_test_step2)
     //           << ":" << world->num_molecules(sp2) << std::endl;
 
     // BOOST_ASSERT(false);
-
-    std::cerr << "ODESimulator_test_step2 done" << std::endl;
 }
