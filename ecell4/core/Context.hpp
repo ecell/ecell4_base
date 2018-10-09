@@ -486,12 +486,12 @@ struct SpeciesExpressionMatcher
 
     bool match(const Species& sp)
     {
-        return pttrn.match(sp);
+        return (pttrn.match(sp) ? true : false);
     }
 
     bool next()
     {
-        return pttrn.next();
+        return (pttrn.next() ? true : false);
     }
 
     size_t count(const Species& sp)
