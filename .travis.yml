@@ -3,16 +3,16 @@ dist: trusty
 language: cpp
 matrix:
   include:
-  - os: linux
-    compiler: gcc
-    language: python
-    python: "2.7"
-    env: TRAVIS_PYTHON_VERSION="2.7"
-  - os: linux
-    compiler: clang
-    language: python
-    python: "2.7"
-    env: TRAVIS_PYTHON_VERSION="2.7"
+  # - os: linux
+  #   compiler: gcc
+  #   language: python
+  #   python: "2.7"
+  #   env: TRAVIS_PYTHON_VERSION="2.7"
+  # - os: linux
+  #   compiler: clang
+  #   language: python
+  #   python: "2.7"
+  #   env: TRAVIS_PYTHON_VERSION="2.7"
   - os: linux
     compiler: gcc
     language: python
@@ -23,9 +23,9 @@ matrix:
     language: python
     python: "3.5"
     env: TRAVIS_PYTHON_VERSION="3.5"
-  - os: osx
-    compiler: clang
-    env: TRAVIS_PYTHON_VERSION="2.7"
+  # - os: osx
+  #   compiler: clang
+  #   env: TRAVIS_PYTHON_VERSION="2.7"
   - os: osx
     compiler: clang
     env: TRAVIS_PYTHON_VERSION="3.6"
@@ -116,7 +116,7 @@ script:
       sudo bash -c 'cmake -DCMAKE_INSTALL_PREFIX=/usr/local -DPYTHON_EXECUTABLE:FILEPATH=python2 . && make && make test && make install';
     fi;
     if [[ $TRAVIS_PYTHON_VERSION == 3* ]]; then
-      sudo bash -c 'cmake -DCMAKE_INSTALL_PREFIX=/usr/local -DPYTHON_EXECUTABLE:FILEPATH=python3 . && make && make test && make install';
+      sudo bash -c 'cmake -DCMAKE_INSTALL_PREFIX=/usr/local -DPYTHON_EXECUTABLE:FILEPATH=python3 . && make && ./ecell4/ode/tests/ODESimulator_test && make test && make install';
     fi;
     rm -f CMakeCache.txt;
   fi
