@@ -227,6 +227,11 @@ Integer SpatiocyteWorld::add_structure3(const Species& sp, const boost::shared_p
 
         if (voxel.get_voxel_pool()->species().serial() != info.loc)
         {
+            throw NotSupported(
+                "Mismatch in the location. Failed to place '"
+                + sp.serial() + "' to '"
+                + voxel.get_voxel_pool()->species().serial() + "'. "
+                + "'" + info.loc + "' is expected.");
             continue;
         }
 
@@ -250,6 +255,11 @@ SpatiocyteWorld::add_structure2(
 
         if (voxel.get_voxel_pool()->species().serial() != info.loc)
         {
+            throw NotSupported(
+                "Mismatch in the location. Failed to place '"
+                + sp.serial() + "' to '"
+                + voxel.get_voxel_pool()->species().serial() + "'. "
+                + "'" + info.loc + "' is expected.");
             continue;
         }
 
