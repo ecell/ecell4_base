@@ -70,7 +70,8 @@ unsigned int tag_units(
     for (std::vector<std::vector<UnitSpecies>::size_type>::const_iterator
         i(connections[idx].begin()); i != connections[idx].end(); ++i)
     {
-        const unsigned int _gid = tag_units(groups, group_id, *i, connections, notyet);
+        tag_units(groups, group_id, *i, connections, notyet);
+        // const unsigned int _gid = tag_units(groups, group_id, *i, connections, notyet);
         // assert(_gid == group_id);
     }
 
@@ -838,7 +839,6 @@ _ReactionRuleExpressionMatcher::unit_group_type generate_units(
     typedef _ReactionRuleExpressionMatcher::context_type context_type;
     typedef _ReactionRuleExpressionMatcher::unit_group_type unit_group_type;
     typedef std::vector<UnitSpecies>::size_type size_type;
-    typedef std::vector<UnitSpecies>::const_iterator const_iterator;
 
     const std::vector<UnitSpecies>& products = operations.products;
     const std::vector<size_type>& correspo = operations.correspo;

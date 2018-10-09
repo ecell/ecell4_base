@@ -133,7 +133,7 @@ Integer VoxelSpaceBase::num_voxels_exact(const Species& sp) const
         if (itr != molecule_pools_.end())
         {
             const boost::shared_ptr<MoleculePool>& vp((*itr).second);
-            return itr->second->size();
+            return vp->size();
         }
     }
 

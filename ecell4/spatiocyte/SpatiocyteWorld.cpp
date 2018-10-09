@@ -66,7 +66,7 @@ SpatiocyteWorld::list_structure_particles() const
 
     typedef std::vector<std::vector<std::pair<ParticleID, Particle> > > tmp_type;
     tmp_type tmp_vector(structure_species.size());
-    Integer num_elements;
+    Integer num_elements(0);
 
     for (std::vector<Species>::const_iterator itr(structure_species.begin());
             itr != structure_species.end(); ++itr)
@@ -94,7 +94,7 @@ SpatiocyteWorld::list_non_structure_particles() const
 
     typedef std::vector<std::vector<std::pair<ParticleID, Particle> > > tmp_type;
     tmp_type tmp_vector(non_structure_species.size());
-    Integer num_elements;
+    Integer num_elements(0);
 
     for (std::vector<Species>::const_iterator itr(non_structure_species.begin());
             itr != non_structure_species.end(); ++itr)
