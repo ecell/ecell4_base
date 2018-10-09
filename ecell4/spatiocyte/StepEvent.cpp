@@ -193,7 +193,7 @@ void StepEvent::attempt_reaction_(
         const Real k((*itr).k());
         const Real P(k * factor * alpha);
         accp += P;
-        if (accp > 1)
+        if (accp > 1 && k != std::numeric_limits<Real>::infinity())
         {
             std::cerr << "The total acceptance probability [" << accp
                 << "] exceeds 1 for '" << speciesA.serial()

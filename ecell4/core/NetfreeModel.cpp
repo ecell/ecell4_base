@@ -7,32 +7,6 @@
 namespace ecell4
 {
 
-Species NetfreeModel::apply_species_attributes(const Species& sp) const
-{
-    typedef std::vector<std::pair<std::string, Species::attribute_type> >
-        attribute_container_type;
-
-    Species ret(sp);
-    for (species_container_type::const_reverse_iterator
-        i(species_attributes_.rbegin()); i != species_attributes_.rend(); ++i)
-    {
-        const Species& pttrn = (*i);
-        if (spmatch(pttrn, sp))
-        {
-            const attribute_container_type attrs = pttrn.list_attributes();
-            for (attribute_container_type::const_iterator j(attrs.begin());
-                j != attrs.end(); ++j)
-            {
-                if (!ret.has_attribute((*j).first))
-                {
-                    ret.set_attribute((*j).first, (*j).second);
-                }
-            }
-        }
-    }
-    return ret;
-}
-
 std::vector<ReactionRule> NetfreeModel::query_reaction_rules(
     const Species& sp) const
 {
@@ -151,7 +125,7 @@ std::vector<ReactionRule> NetfreeModel::query_reaction_rules(
 
 Integer NetfreeModel::apply(const Species& pttrn, const Species& sp) const
 {
-    return pttrn.count(sp);
+    return SpeciesExpressionMatcher(pttrn).count(sp);
 }
 
 std::vector<ReactionRule> NetfreeModel::apply(
@@ -256,7 +230,7 @@ bool check_stoichiometry(const Species& sp,
     for (std::map<Species, Integer>::const_iterator i(max_stoich.begin());
         i != max_stoich.end(); ++i)
     {
-        if ((*i).first.count(sp) > (*i).second)
+        if (SpeciesExpressionMatcher((*i).first).count(sp) > (*i).second)
         {
             return false;
         }

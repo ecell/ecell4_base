@@ -305,49 +305,49 @@ cdef Species Species_from_Cpp_Species(Cpp_Species *sp):
     r.thisptr = new_obj
     return r
 
-def spmatch(Species pttrn, Species sp):
-    """spmatch(pttrn, sp) -> bool
-
-    Return if a pattern matches the target ``Species`` or not.
-
-    Parameters
-    ----------
-    pttrn : Species
-        A pattern.
-    sp : Species
-        A target.
-
-    Returns
-    -------
-    bool:
-        True if ``pttrn`` matches ``sp`` at least one time, False otherwise.
-
-    """
-    return context.spmatch(deref(pttrn.thisptr), deref(sp.thisptr))
-
-def count_spmatches(Species pttrn, Species sp):
-    """count_spmatches(pttrn, sp) -> Integer
-
-    Count the number of matches for a pattern given as a ``Species``.
-
-    Parameters
-    ----------
-    pttrn : Species
-        A pattern.
-    sp : Species
-        A target.
-
-    Returns
-    -------
-    Integer:
-        The number of matches.
-
-    Notes
-    -----
-    Rather use ``Species.count``.
-
-    """
-    return context.count_spmatches(deref(pttrn.thisptr), deref(sp.thisptr))
+# def spmatch(Species pttrn, Species sp):
+#     """spmatch(pttrn, sp) -> bool
+# 
+#     Return if a pattern matches the target ``Species`` or not.
+# 
+#     Parameters
+#     ----------
+#     pttrn : Species
+#         A pattern.
+#     sp : Species
+#         A target.
+# 
+#     Returns
+#     -------
+#     bool:
+#         True if ``pttrn`` matches ``sp`` at least one time, False otherwise.
+# 
+#     """
+#     return context.spmatch(deref(pttrn.thisptr), deref(sp.thisptr))
+# 
+# def count_spmatches(Species pttrn, Species sp):
+#     """count_spmatches(pttrn, sp) -> Integer
+# 
+#     Count the number of matches for a pattern given as a ``Species``.
+# 
+#     Parameters
+#     ----------
+#     pttrn : Species
+#         A pattern.
+#     sp : Species
+#         A target.
+# 
+#     Returns
+#     -------
+#     Integer:
+#         The number of matches.
+# 
+#     Notes
+#     -----
+#     Rather use ``Species.count``.
+# 
+#     """
+#     return context.count_spmatches(deref(pttrn.thisptr), deref(sp.thisptr))
 
 def format_species(Species sp):
     """format_species(sp) -> Species
@@ -358,11 +358,11 @@ def format_species(Species sp):
     cdef Cpp_Species newsp = context.format_species(deref(sp.thisptr))
     return Species_from_Cpp_Species(address(newsp))
 
-def unique_serial(Species sp):
-    """unique_serial(sp) -> str
-
-    Return a serial of a species uniquely reformatted.
-    This is equivalent to call ``format_species(sp).serial()``
-
-    """
-    return context.unique_serial(deref(sp.thisptr)).decode('UTF-8')
+# def unique_serial(Species sp):
+#     """unique_serial(sp) -> str
+# 
+#     Return a serial of a species uniquely reformatted.
+#     This is equivalent to call ``format_species(sp).serial()``
+# 
+#     """
+#     return context.unique_serial(deref(sp.thisptr)).decode('UTF-8')

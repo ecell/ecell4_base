@@ -238,6 +238,7 @@ def run_simulation(
     w = f.create_world(edge_lengths)
 
     if unit.HAS_PINT:
+        y0 = y0.copy()
         for key, value in y0.items():
             if isinstance(value, unit._Quantity):
                 if not unit.STRICT:

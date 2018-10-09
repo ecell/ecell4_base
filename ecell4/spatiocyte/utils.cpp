@@ -69,6 +69,8 @@ const Real calculate_alpha(const ReactionRule& rr, const boost::shared_ptr<Spati
     const ReactionRule::reactant_container_type& reactants(rr.reactants());
     if (reactants.size() != 2)
         return 1.0;
+    else if (rr.k() == std::numeric_limits<Real>::infinity())
+        return 1.0;
 
     const Species species[2] = {reactants.at(0), reactants.at(1)};
     const MoleculeInfo info[2] = {
