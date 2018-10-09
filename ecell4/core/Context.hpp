@@ -2,6 +2,7 @@
 #define ECELL4_CONTEXT_HPP
 
 #include "get_mapper_mf.hpp"
+#include "UnitSpecies.hpp"
 #include "Species.hpp"
 #include "ReactionRule.hpp"
 #include <boost/array.hpp>
@@ -12,9 +13,6 @@ namespace ecell4
 {
 
 namespace context
-{
-
-namespace rbex
 {
 
 inline bool is_empty(const std::string& name)
@@ -42,19 +40,12 @@ inline bool is_named_wildcard(const std::string& name)
     return (name.size() > 1 && name[0] == '_' && !is_pass_wildcard(name));
 }
 
-} // rbex
-
 Species format_species(const Species& sp);
 
 inline Species::serial_type unique_serial(const Species& sp)
 {
     return format_species(sp).serial();
 }
-
-}  // context
-
-namespace _context
-{
 
 template <typename T>
 class rule_based_expression_matcher {};
@@ -472,7 +463,7 @@ protected:
     context_type::variable_container_type globals_;
 };
 
-} // _context
+} // context
 
 /**
  * New interfaces for the rule-based modeling
@@ -485,7 +476,7 @@ inline Species format_species(const Species& sp)
 
 struct SpeciesExpressionMatcher
 {
-    _context::rule_based_expression_matcher<Species> pttrn;
+    context::rule_based_expression_matcher<Species> pttrn;
 
     SpeciesExpressionMatcher(const Species& pttrn)
         : pttrn(pttrn)

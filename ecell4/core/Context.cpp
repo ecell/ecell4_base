@@ -32,7 +32,7 @@ unsigned int concatenate_units(std::vector<UnitSpecies>& units1, const Species& 
             k((*j).begin()); k != (*j).end(); ++k)
         {
             const std::string& bond((*k).second.second);
-            if (bond != "" && !rbex::is_wildcard(bond))
+            if (bond != "" && !is_wildcard(bond))
             {
                 utils::get_mapper_mf<std::string, std::string>::type::const_iterator
                     it = bond_cache.find(bond);
@@ -127,7 +127,7 @@ bool is_correspondent(const UnitSpecies& usp1, const UnitSpecies& usp2)
 //             {
 //                 const std::string& bond = (*i).second.second;
 // 
-//                 if (rbex::is_empty(bond) || rbex::is_wildcard(bond))
+//                 if (is_empty(bond) || is_wildcard(bond))
 //                 {
 //                     continue;
 //                 }
@@ -191,7 +191,7 @@ bool is_correspondent(const UnitSpecies& usp1, const UnitSpecies& usp2)
 //         {
 //             const std::string& bond = (*i).second.second;
 // 
-//             if (rbex::is_empty(bond) || rbex::is_wildcard(bond))
+//             if (is_empty(bond) || is_wildcard(bond))
 //             {
 //                 continue;
 //             }
@@ -233,7 +233,7 @@ bool is_correspondent(const UnitSpecies& usp1, const UnitSpecies& usp2)
 //             {
 //                 std::string& bond = (*k).second.second;
 // 
-//                 if (rbex::is_empty(bond) || rbex::is_wildcard(bond))
+//                 if (is_empty(bond) || is_wildcard(bond))
 //                 {
 //                     continue;
 //                 }
@@ -294,7 +294,7 @@ public:
             for (UnitSpecies::container_type::const_iterator i(usp.begin());
                  i != usp.end(); ++i)
             {
-                if ((*i).second.second == "" || rbex::is_wildcard((*i).second.second))
+                if ((*i).second.second == "" || is_wildcard((*i).second.second))
                 {
                     continue;
                 }
@@ -434,7 +434,7 @@ public:
         for (UnitSpecies::container_type::const_iterator i(usp.begin());
             i != usp.end(); ++i)
         {
-            if ((*i).second.second == "" || rbex::is_wildcard((*i).second.second))
+            if ((*i).second.second == "" || is_wildcard((*i).second.second))
             {
                 continue;
             }
@@ -567,7 +567,7 @@ Species format_species(const Species& sp)
             j < static_cast<UnitSpecies::container_type::size_type>(usp.num_sites()); ++j)
         {
             UnitSpecies::container_type::value_type& site(usp.at(j));
-            if (site.second.second == "" || rbex::is_wildcard(site.second.second))
+            if (site.second.second == "" || is_wildcard(site.second.second))
             {
                 continue;
             }
@@ -593,11 +593,6 @@ Species format_species(const Species& sp)
     return newsp;
 }
 
-} // context
-
-namespace _context
-{
-
 boost::optional<rule_based_expression_matcher<UnitSpecies>::context_type>
     rule_based_expression_matcher<UnitSpecies>::match_unit_species(
         const UnitSpecies& pttrn,
@@ -608,14 +603,14 @@ boost::optional<rule_based_expression_matcher<UnitSpecies>::context_type>
 
     context_type ctx = org;
 
-    if (ecell4::context::rbex::is_wildcard(pttrn.name()))
+    if (is_wildcard(pttrn.name()))
     {
-        if (ecell4::context::rbex::is_pass_wildcard(pttrn.name()))
+        if (is_pass_wildcard(pttrn.name()))
         {
             throw NotSupported(
                 "A pass wildcard '_0' is not allowed to be a name of Species.");
         }
-        else if (ecell4::context::rbex::is_named_wildcard(pttrn.name()))
+        else if (is_named_wildcard(pttrn.name()))
         {
             typename context_type::variable_container_type::const_iterator
                 itr(ctx.globals.find(pttrn.name()));
@@ -647,16 +642,16 @@ boost::optional<rule_based_expression_matcher<UnitSpecies>::context_type>
                 {
                     return boost::none;
                 }
-                else if (ecell4::context::rbex::is_pass_wildcard((*j).second.first))
+                else if (is_pass_wildcard((*j).second.first))
                 {
                     throw NotSupported(
                         "A pass wildcard '_0' is not allowed to be a state.");
                 }
-                else if (ecell4::context::rbex::is_unnamed_wildcard((*j).second.first))
+                else if (is_unnamed_wildcard((*j).second.first))
                 {
                     ; // do nothing
                 }
-                else if (ecell4::context::rbex::is_named_wildcard((*j).second.first))
+                else if (is_named_wildcard((*j).second.first))
                 {
                     typename context_type::variable_container_type::const_iterator
                         itr(ctx.globals.find((*j).second.first));
@@ -675,7 +670,7 @@ boost::optional<rule_based_expression_matcher<UnitSpecies>::context_type>
                 }
             }
 
-            if (ecell4::context::rbex::is_pass_wildcard((*j).second.second))
+            if (is_pass_wildcard((*j).second.second))
             {
                 ; // just skip checking
             }
@@ -692,11 +687,11 @@ boost::optional<rule_based_expression_matcher<UnitSpecies>::context_type>
                 {
                     return boost::none;
                 }
-                else if (ecell4::context::rbex::is_unnamed_wildcard((*j).second.second))
+                else if (is_unnamed_wildcard((*j).second.second))
                 {
                     continue;
                 }
-                else if (ecell4::context::rbex::is_named_wildcard((*j).second.second))
+                else if (is_named_wildcard((*j).second.second))
                 {
                     throw NotSupported(
                         "A named wildcard is not allowed to be a bond.");
@@ -724,18 +719,13 @@ boost::optional<rule_based_expression_matcher<UnitSpecies>::context_type>
     return ctx;
 }
 
-}  // _context
-
 /*
  * Apply a ReactionRule to the given set of reactants and return ReactionRules.
  */
 
-namespace context
-{
-
 struct _ReactionRuleExpressionMatcher
 {
-    typedef ecell4::_context::rule_based_expression_matcher<UnitSpecies>::context_type context_type;
+    typedef rule_based_expression_matcher<UnitSpecies>::context_type context_type;
     typedef ReactionRule::reactant_container_type reactant_container_type;
 
     typedef struct
@@ -915,7 +905,7 @@ _ReactionRuleExpressionMatcher::unit_group_type generate_units(
                 assert(tgt == units.size());
                 // tgt = units.size();
                 units.push_back(op);
-                if (rbex::is_named_wildcard(op.name()))
+                if (is_named_wildcard(op.name()))
                 {
                     context_type::variable_container_type::const_iterator
                         itr(ctx.globals.find(op.name()));
@@ -947,7 +937,7 @@ _ReactionRuleExpressionMatcher::unit_group_type generate_units(
                 {
                     ; // do nothing
                 }
-                else if (rbex::is_wildcard((*i).second.first))
+                else if (is_wildcard((*i).second.first))
                 {
                     if ((*i).second.first.size() != 1)
                     {
@@ -976,9 +966,9 @@ _ReactionRuleExpressionMatcher::unit_group_type generate_units(
                     // Just cut the bond
                     site.second.second = "";
                 }
-                else if (rbex::is_wildcard((*i).second.second))
+                else if (is_wildcard((*i).second.second))
                 {
-                    if (rbex::is_named_wildcard((*i).second.second))
+                    if (is_named_wildcard((*i).second.second))
                     {
                         std::stringstream message;
                         message << "A named wildcard [" << (*i).second.second << "cannot be a bond."
@@ -1042,7 +1032,7 @@ _ReactionRuleExpressionMatcher::unit_group_type generate_units(
                 {
                     continue;
                 }
-                else if (rbex::is_wildcard(bond))
+                else if (is_wildcard(bond))
                 {
                     std::stringstream ss;
                     ss << "A bond in a product is a wildcard ["
@@ -1139,7 +1129,7 @@ _ReactionRuleExpressionMatcher::unit_group_type generate_units(
             {
                 UnitSpecies::container_type::value_type& site((*i).at(j));
                 const std::string bond(site.second.second);
-                if (bond != "" && !rbex::is_wildcard(bond) && bondinfo[bond].second != done)
+                if (bond != "" && !is_wildcard(bond) && bondinfo[bond].second != done)
                 {
                     site.second.second = "";
                 }
@@ -1220,7 +1210,7 @@ std::vector<Species> group_units(
                 UnitSpecies::container_type::value_type&
                     site(usp.at(j));
                 const std::string bond(site.second.second);
-                if (bond == "" || rbex::is_wildcard(bond))
+                if (bond == "" || is_wildcard(bond))
                 {
                     continue;
                 }
@@ -1259,7 +1249,7 @@ std::vector<ReactionRule> generate_reaction_rules(
 {
     typedef context::_ReactionRuleExpressionMatcher::operation_type operation_type;
     typedef context::_ReactionRuleExpressionMatcher::unit_group_type unit_group_type;
-    typedef _context::rule_based_expression_matcher<std::vector<Species> >::context_type context_type;
+    typedef context::rule_based_expression_matcher<std::vector<Species> >::context_type context_type;
     typedef std::vector<ReactionRule> return_type;
 
     if (pttrn.reactants().size() == 0)
@@ -1272,7 +1262,7 @@ std::vector<ReactionRule> generate_reaction_rules(
     const operation_type op = context::compile_reaction_rule(pttrn);
 
     return_type reactions;
-    _context::rule_based_expression_matcher<std::vector<Species> > matcher(pttrn.reactants());
+    context::rule_based_expression_matcher<std::vector<Species> > matcher(pttrn.reactants());
     for (boost::optional<context_type> ctx = matcher.match(reactants); ctx; ctx = matcher.next())
     {
         const unit_group_type _res
