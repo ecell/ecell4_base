@@ -149,7 +149,7 @@ def run_simulation(
     is_netfree: bool, optional
         Whether the model is netfree or not. When a model is given as an
         argument, just ignored. Default is False.
-    structures : dict, optional
+    structures : list or dict, optional
         A dictionary which gives pairs of a name and shape of structures.
         Not fully supported yet.
     observers : Observer or list, optional
@@ -252,7 +252,10 @@ def run_simulation(
                         "Cannot convert a quantity for [{}] from '{}' ({}) to '[substance]'".format(
                             key, value.dimensionality, value.u))
 
-    for (name, shape) in structures.items():
+    if not isinstance(w, ecell4.ode.ODEWorld):
+        w.bind_to(model)
+
+    for (name, shape) in (structures.items() if isinstance(structures, dict) else structures):
         if isinstance(shape, str):
             w.add_structure(ecell4.Species(name), get_shape(shape))
         elif isinstance(shape, collections.Iterable):
@@ -265,7 +268,7 @@ def run_simulation(
         for serial, n in y0.items():
             w.set_value(ecell4.Species(serial), n)
     else:
-        w.bind_to(model)
+        # w.bind_to(model)
         for serial, n in y0.items():
             w.add_molecules(ecell4.Species(serial), n)
 
