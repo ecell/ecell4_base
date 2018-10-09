@@ -112,6 +112,16 @@ public:
         return sites_.end();
     }
 
+    inline container_type::iterator begin()
+    {
+        return sites_.begin();
+    }
+
+    inline container_type::iterator end()
+    {
+        return sites_.end();
+    }
+
     bool operator==(const UnitSpecies& rhs) const
     {
         return (serial() == rhs.serial());
