@@ -412,7 +412,7 @@ protected:
 
     boost::optional<context_type> __match(const value_type& another, const permutation_type& permutation)
     {
-        assert(0 <= matchers_.size() < 3);
+        assert(matchers_.size() < 3);
         assert(matchers_.size() == permutation.size());
 
         another_ = another; //XXX: copy?

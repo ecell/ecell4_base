@@ -547,7 +547,7 @@ struct TimingEvent
 
     const Real next_time() const
     {
-        if (0 <= count && count < times.size())
+        if (count < times.size())
         {
             return times[count];
         }
