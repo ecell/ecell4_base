@@ -42,6 +42,11 @@ public:
         ;
     }
 
+    virtual ~ReactionRuleDescriptor()
+    {
+        ;
+    }
+
     virtual bool is_available() const
     {
         return true;
