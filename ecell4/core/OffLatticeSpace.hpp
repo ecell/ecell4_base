@@ -128,7 +128,7 @@ protected:
 
     bool is_in_range(const coordinate_type& coord) const
     {
-        return 0 <= coord && coord < voxels_.size();
+        return 0 <= coord && coord < static_cast<Integer>(voxels_.size());
     }
 
     void reset(const position_container& positions,

@@ -148,7 +148,7 @@ void MesoscopicSimulator::step(void)
     this->set_t(tnext);
     scheduler_.update(top);
 
-    if (interrupted_ < event_ids_.size())
+    if (interrupted_ < static_cast<coordinate_type>(event_ids_.size()))
     {
         EventScheduler::identifier_type evid(event_ids_[interrupted_]);
         boost::shared_ptr<Event> ev(scheduler_.get(evid));

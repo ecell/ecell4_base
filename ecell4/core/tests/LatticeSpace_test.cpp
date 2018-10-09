@@ -89,7 +89,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_update_particle)
 
     Real3 pos(2e-8, 1.7e-8, 1.5e-8);
     Real r(1.0);
-    Real d(2.3);
+    // Real d(2.3);
     // Particle particle(sp, pos, r, d);
     ParticleVoxel v(sp, space.position2coordinate(pos), r, D);
 
@@ -102,7 +102,8 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_num_particles)
 {
     ParticleID id(sidgen());
     Real3 pos(2e-8, 1.7e-8, 1.5e-8);
-    Real r(1.0), d(2.3);
+    Real r(1.0);
+    // Real d(2.3);
     // Particle particle(sp, pos, r, d);
     ParticleVoxel v(sp, space.position2coordinate(pos), r, D);
 
@@ -126,7 +127,8 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_list_particles)
 {
     ParticleID id(sidgen());
     Real3 pos(2e-8, 1.7e-8, 1.5e-8);
-    Real r(1.0), d(2.3);
+    Real r(1.0);
+    // Real d(2.3);
     // Particle particle(sp, pos, r, d);
     ParticleVoxel v(sp, space.position2coordinate(pos), r, D);
 
@@ -653,7 +655,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_save_and_load)
         BOOST_ASSERT(voxels1.size() == voxels2.size());
         std::sort(voxels1.begin(), voxels1.end());
         std::sort(voxels2.begin(), voxels2.end());
-        for (int i(0); i < voxels1.size(); ++i)
+        for (MoleculePool::container_type::size_type i(0); i < voxels1.size(); ++i)
         {
             BOOST_CHECK_EQUAL(voxels1.at(i).pid, voxels2.at(i).pid);
             BOOST_CHECK_EQUAL(voxels1.at(i).coordinate, voxels2.at(i).coordinate);

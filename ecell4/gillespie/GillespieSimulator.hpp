@@ -138,7 +138,7 @@ protected:
             const std::vector<ReactionRule> reactions(generate(retval.first));
 
             assert(retval.second > 0);
-            assert(retval.second >= reactions.size());
+            assert(retval.second >= static_cast<Integer>(reactions.size()));
 
             if (reactions.size() == 0)
             {

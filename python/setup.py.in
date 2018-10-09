@@ -24,6 +24,19 @@ except ImportError:
     logger.error("copy from www.cython.org and install it")
     sys.exit(1)
 
+# Avoid a gcc warning below:
+# cc1plus: warning: command line option ‘-Wstrict-prototypes’ is valid
+# for C/ObjC but not for C++
+class my_build_ext(build_ext):
+
+    def build_extensions(self):
+        self.compiler.compiler_so.remove('-Wstrict-prototypes')
+        #XXX:STRICT: self.compiler.compiler_so.remove('-Werror=format-security')
+        #XXX:STRICT: self.compiler.compiler_so.append('-Werror')
+        # print("compiler_so:", self.compiler.compiler_so)
+        # ['/usr/bin/cc', '-DNDEBUG', '-g', '-fwrapv', '-O2', '-Wall', '-g', '-fstack-protector-strong', '-Wformat', '-Werror=format-security', '-Wdate-time', '-D_FORTIFY_SOURCE=2', '-fPIC']
+        super(my_build_ext, self).build_extensions()
+
 os.environ["CC"] = "${CMAKE_C_COMPILER}"
 os.environ["CXX"] = "${CMAKE_CXX_COMPILER}"
 source_dir = "${PROJECT_SOURCE_DIR}"
@@ -206,7 +219,7 @@ setup(
         "templates/*.tmpl", "templates/ecelllogo/*.png"]},
     data_files = [('ecell4-licenses', glob.glob(os.path.join(convert_path(source_dir), 'licenses/*')))],
     packages = ["ecell4", "ecell4.util", "ecell4.extra", "ecell4.datasource"],
-    cmdclass = {'build_ext': build_ext, 'test': run_tests},
+    cmdclass = {'build_ext': my_build_ext, 'test': run_tests},
     license = "the GNU General Public License v2",
     author = "Kazunari Kaizu",
     author_email = "kaizu@riken.jp",

@@ -40,7 +40,7 @@ void OffLatticeSpace::reset(const position_container& positions,
     positions_.resize(size);
     adjoinings_.resize(size);
 
-    for (coordinate_type coord(0); coord < size; ++coord)
+    for (coordinate_type coord(0); coord < static_cast<Integer>(size); ++coord)
     {
         vacant_->add_voxel(coordinate_id_pair_type(ParticleID(), coord));
     }

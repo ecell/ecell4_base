@@ -1125,7 +1125,7 @@ _ReactionRuleExpressionMatcher::unit_group_type generate_units(
             i != units.end(); ++i)
         {
             for (UnitSpecies::container_type::size_type j(0);
-                j != (*i).num_sites(); ++j)
+                static_cast<Integer>(j) != (*i).num_sites(); ++j)
             {
                 UnitSpecies::container_type::value_type& site((*i).at(j));
                 const std::string bond(site.second.second);
@@ -1205,7 +1205,7 @@ std::vector<Species> group_units(
             }
 
             for (UnitSpecies::container_type::size_type j(0);
-                j != usp.num_sites(); ++j)
+                static_cast<Integer>(j) != usp.num_sites(); ++j)
             {
                 UnitSpecies::container_type::value_type&
                     site(usp.at(j));

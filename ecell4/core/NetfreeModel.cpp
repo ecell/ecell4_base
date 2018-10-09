@@ -230,7 +230,7 @@ bool check_stoichiometry(const Species& sp,
     for (std::map<Species, Integer>::const_iterator i(max_stoich.begin());
         i != max_stoich.end(); ++i)
     {
-        if (SpeciesExpressionMatcher((*i).first).count(sp) > (*i).second)
+        if (static_cast<Integer>(SpeciesExpressionMatcher((*i).first).count(sp)) > (*i).second)
         {
             return false;
         }

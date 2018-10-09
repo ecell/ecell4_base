@@ -11,7 +11,7 @@ namespace spatiocyte
 
 void SpatiocyteWorld::add_space(VoxelSpaceBase *space)
 {
-    for (std::size_t i(0); i < space->size(); ++i)
+    for (coordinate_type i(0); i < space->size(); ++i)
     {
         const Real3 position(space->coordinate2position(i));
         const coordinate_type nearest(get_root()->position2coordinate(position));
