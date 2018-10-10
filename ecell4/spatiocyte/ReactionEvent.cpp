@@ -28,7 +28,7 @@ void ZerothOrderReactionEvent::fire_()
         {
             if (location->size() == 0)
             {
-                time_ =+ draw_dt();
+                time_ += draw_dt();
                 return;
             }
 
