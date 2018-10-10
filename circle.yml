@@ -23,7 +23,9 @@ jobs:
             PY35="cp35-cp35m"
             PY36="cp36-cp36m"
             PY37="cp37-cp37m"
-            git submodule init && git submodule update
+            git submodule init
+            git submodule sync
+            git submodule update --remote
             /opt/python/$PY37/bin/python -m pip install cython
             /opt/python/$PY36/bin/python -m pip install cython
             /opt/python/$PY35/bin/python -m pip install cython
