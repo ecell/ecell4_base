@@ -6,15 +6,10 @@ jobs:
     working_directory: ~/circle
     steps:
       - setup_remote_docker
-      - run:
-          name: Install System Dependencies
-          # See also https://circleci.com/docs/2.0/custom-images/#required-tools
-          command: |
-            apt-get update
-            apt-get install -y git
       - checkout
-      - run: git submodule sync
-      - run: git submodule update --init --remote
+      - run: |
+          git submodule sync
+          git submodule update --init --remote
       - run:
           name: Build E-Cell4
           command: |
