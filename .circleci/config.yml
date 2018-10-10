@@ -5,7 +5,3 @@ jobs:
       - image: quay.io/pypa/manylinux1_x86_64
     steps:
       - checkout
-      - run: |
-          pwd
-          ls -al
-          git
