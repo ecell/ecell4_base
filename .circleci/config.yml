@@ -10,8 +10,8 @@ jobs:
           name: Install System Dependencies
           # See also https://circleci.com/docs/2.0/custom-images/#required-tools
           command: |
-            sudo apt-get update
-            sudo apt-get install -y git
+            apt-get update
+            apt-get install -y git
       - checkout
       - run: git submodule sync
       - run: git submodule update --init --remote
