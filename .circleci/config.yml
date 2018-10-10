@@ -8,5 +8,4 @@ jobs:
       - run: |
           pwd
           ls -al
-          git submodule init
-          git submodule update
+          git
