@@ -7,10 +7,10 @@
 #include <boost/lexical_cast.hpp>
 
 template<typename Ttraits_>
-class ImmutativeDomainVisitor;
+struct ImmutativeDomainVisitor;
 
 template<typename Ttraits_>
-class MutativeDomainVisitor;
+struct MutativeDomainVisitor;
 
 template<typename Ttraits_>
 class Domain

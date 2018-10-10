@@ -204,7 +204,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_coordinate_position_translation)
     for (VoxelSpaceBase::coordinate_type coord(0); coord < size; ++coord)
     {
         const Real3 pos(space.coordinate2position(coord));
-        const Integer3 global(space.position2global(pos));
+        // const Integer3 global(space.position2global(pos));
         const VoxelSpaceBase::coordinate_type created_coord(
                 space.position2coordinate(pos));
         BOOST_CHECK_EQUAL(coord, created_coord);
@@ -333,7 +333,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_neighbor)
             }
 
             Real3 pos(space.coordinate2position(neighbor));
-            Real3 vec((pos-center)/voxel_radius/2);
+            // Real3 vec((pos-center)/voxel_radius/2);
             Real r_ratio(length(pos-center)/voxel_radius/2);
             BOOST_ASSERT(r_ratio < 1.0001);
         }

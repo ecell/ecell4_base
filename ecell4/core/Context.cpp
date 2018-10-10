@@ -613,7 +613,7 @@ boost::optional<rule_based_expression_matcher<UnitSpecies>::context_type>
         }
         else if (is_named_wildcard(pttrn.name()))
         {
-            typename context_type::variable_container_type::const_iterator
+            context_type::variable_container_type::const_iterator
                 itr(ctx.globals.find(pttrn.name()));
             if (itr == ctx.globals.end())
             {
@@ -654,7 +654,7 @@ boost::optional<rule_based_expression_matcher<UnitSpecies>::context_type>
                 }
                 else if (is_named_wildcard((*j).second.first))
                 {
-                    typename context_type::variable_container_type::const_iterator
+                    context_type::variable_container_type::const_iterator
                         itr(ctx.globals.find((*j).second.first));
                     if (itr == ctx.globals.end())
                     {
@@ -698,7 +698,7 @@ boost::optional<rule_based_expression_matcher<UnitSpecies>::context_type>
                         "A named wildcard is not allowed to be a bond.");
                 }
 
-                typename context_type::variable_container_type::const_iterator
+                context_type::variable_container_type::const_iterator
                     itr(ctx.locals.find((*j).second.second));
                 if (itr == ctx.locals.end())
                 {
