@@ -1,10 +1,8 @@
 version: 2
 jobs:
-
   build:
     docker:
       - image: quay.io/pypa/manylinux1_x86_64
-
     working_directory: ~/circle
     steps:
       - checkout
@@ -51,6 +49,5 @@ jobs:
             auditwheel repair /root/circle/python/dist/ecell-$ECELLVER-$PY36-linux_x86_64.whl
             auditwheel repair /root/circle/python/dist/ecell-$ECELLVER-$PY35-linux_x86_64.whl
             auditwheel repair /root/circle/python/dist/ecell-$ECELLVER-$PY27-linux_x86_64.whl
-
       - store_artifacts:
           path: /root/circle/wheelhouse
