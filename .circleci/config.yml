@@ -5,12 +5,16 @@ jobs:
       - image: quay.io/pypa/manylinux1_x86_64
     working_directory: ~/circle
     steps:
-      - checkout
       - setup_remote_docker
       - run:
           name: Install System Dependencies
           # See also https://circleci.com/docs/2.0/custom-images/#required-tools
-          command: sudo apt-get update && sudo apt-get install -y git
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y git
+      - checkout
+      - run: git submodule sync
+      - run: git submodule update --init --remote
       - run:
           name: Build E-Cell4
           command: |
@@ -25,9 +29,6 @@ jobs:
             PY35="cp35-cp35m"
             PY36="cp36-cp36m"
             PY37="cp37-cp37m"
-            git submodule init
-            git submodule sync
-            git submodule update --remote
             /opt/python/$PY37/bin/python -m pip install cython
             /opt/python/$PY36/bin/python -m pip install cython
             /opt/python/$PY35/bin/python -m pip install cython
