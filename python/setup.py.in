@@ -25,7 +25,7 @@ except ImportError:
     sys.exit(1)
 
 # Avoid a gcc warning below:
-# cc1plus: warning: command line option ‘-Wstrict-prototypes’ is valid
+# cc1plus: warning: command line option '-Wstrict-prototypes' is valid
 # for C/ObjC but not for C++
 class my_build_ext(build_ext):
     def build_extensions(self):
@@ -122,6 +122,8 @@ elif sys.platform == "darwin":
 else: # for linux
     libraries.extend(['gsl', 'gslcblas', 'm'])
     extra_compile_args = ["-DNO_BESSEL_TABLE", "-DHAVE_CONFIG_H"]
+
+# extra_compile_args.extend(["-std=c++11", "-fext-numeric-literals"])  #XXX: c++11
 
 logger.debug("with_hdf5={}".format(with_hdf5))
 
