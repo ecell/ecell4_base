@@ -28,13 +28,16 @@ except ImportError:
 # cc1plus: warning: command line option ‘-Wstrict-prototypes’ is valid
 # for C/ObjC but not for C++
 class my_build_ext(build_ext):
-
     def build_extensions(self):
-        self.compiler.compiler_so.remove('-Wstrict-prototypes')
-        #XXX:STRICT: self.compiler.compiler_so.remove('-Werror=format-security')
-        #XXX:STRICT: self.compiler.compiler_so.append('-Werror')
-        # print("compiler_so:", self.compiler.compiler_so)
-        # ['/usr/bin/cc', '-DNDEBUG', '-g', '-fwrapv', '-O2', '-Wall', '-g', '-fstack-protector-strong', '-Wformat', '-Werror=format-security', '-Wdate-time', '-D_FORTIFY_SOURCE=2', '-fPIC']
+        import platform
+        logger.debug("platform.system() = ['{}']".format(platform.system()))
+        if platform.system() in ('Linux', ):
+            if '-Wstrict-prototypes' in self.compiler.compiler_so:
+                self.compiler.compiler_so.remove('-Wstrict-prototypes')
+            #XXX:STRICT: self.compiler.compiler_so.remove('-Werror=format-security')
+            #XXX:STRICT: self.compiler.compiler_so.append('-Werror')
+            # print("compiler_so:", self.compiler.compiler_so)
+            # ['/usr/bin/cc', '-DNDEBUG', '-g', '-fwrapv', '-O2', '-Wall', '-g', '-fstack-protector-strong', '-Wformat', '-Werror=format-security', '-Wdate-time', '-D_FORTIFY_SOURCE=2', '-fPIC']
         super(my_build_ext, self).build_extensions()
 
 os.environ["CC"] = "${CMAKE_C_COMPILER}"
@@ -51,8 +54,11 @@ logger.debug("include_dirs={}".format(include_dirs))
 
 sys.path.append(python_dir)
 
-DESCRIPTION = ("A software platform for modeling, simulation and analysis of complex, heterogeneous and multi-scale systems like the cell. "
-               "E-Cell has multi-algorithm, multi-timescale and multi-spatial-representation as its central feature.")
+DESCRIPTION = (
+    "A software platform for modeling, simulation and analysis of complex, "
+    "heterogeneous and multi-scale systems like the cell. E-Cell has "
+    "multi-algorithm, multi-timescale and multi-spatial-representation as "
+    "its central feature.")
 
 class run_tests(Command):
     user_options = []
