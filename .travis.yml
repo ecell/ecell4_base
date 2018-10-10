@@ -29,11 +29,21 @@ matrix:
   - os: osx
     compiler: clang
     env: TRAVIS_PYTHON_VERSION="3.6"
+  - os: linux
+    compiler: clang
+    language: python
+    python: "3.6"
+    env: TRAVIS_PYTHON_VERSION="3.6"
+  - os: linux
+    compiler: clang
+    language: python
+    python: "3.7-dev"
+    env: TRAVIS_PYTHON_VERSION="3.7"
 
 addons:
   apt:
     sources:
-#    - sourceline: 'ppa:mc3man/trusty-media'
+    # - sourceline: 'ppa:mc3man/trusty-media'
     - ubuntu-toolchain-r-test
     packages:
     - clang
