@@ -10,6 +10,10 @@ jobs:
       - checkout
       - setup_remote_docker
       - run:
+          name: Install System Dependencies
+          # See also https://circleci.com/docs/2.0/custom-images/#required-tools
+          command: sudo apt-get update && sudo apt-get install -y git
+      - run:
           name: Build E-Cell4
           command: |
             set -x
