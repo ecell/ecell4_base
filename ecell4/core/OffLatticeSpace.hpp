@@ -26,8 +26,7 @@ public:
     OffLatticeSpace(const Real& voxel_radius);
     OffLatticeSpace(const Real& voxel_radius,
                     const position_container& positions,
-                    const coordinate_pair_list_type& adjoining_pairs,
-                    const Shape::dimension_kind& dimension=Shape::THREE);
+                    const coordinate_pair_list_type& adjoining_pairs);
     ~OffLatticeSpace();
 
     /*

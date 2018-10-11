@@ -15,9 +15,8 @@ OffLatticeSpace::OffLatticeSpace(const Real& voxel_radius)
 
 OffLatticeSpace::OffLatticeSpace(const Real& voxel_radius,
                                  const position_container& positions,
-                                 const coordinate_pair_list_type& adjoining_pairs,
-                                 const Shape::dimension_kind& dimension)
-    : base_type(voxel_radius, dimension),
+                                 const coordinate_pair_list_type& adjoining_pairs)
+    : base_type(voxel_radius),
       voxels_(),
       positions_(),
       adjoinings_()

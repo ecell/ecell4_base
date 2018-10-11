@@ -199,7 +199,7 @@ Integer SpatiocyteWorld::add_structure(
     const Species& sp, const boost::shared_ptr<const Shape> shape)
 {
     const SpatiocyteWorld::molecule_info_type info(get_molecule_info(sp));
-    get_root()->make_structure_type(sp, shape->dimension(), info.loc);
+    get_root()->make_structure_type(sp, info.loc);
 
     switch (shape->dimension())
     {

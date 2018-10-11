@@ -67,10 +67,6 @@ public:
         t_(0.0), voxel_radius_(voxel_radius), vacant_(VacantType::allocate())
     {}
 
-    VoxelSpaceBase(const Real& voxel_radius, const Shape::dimension_kind& dimension) :
-        t_(0.0), voxel_radius_(voxel_radius), vacant_(VacantType::allocate(dimension))
-    {}
-
     virtual ~VoxelSpaceBase() {}
 
     /*
@@ -365,7 +361,7 @@ public:
     make_molecular_type(const Species& sp, Real radius, Real D, const std::string loc);
 
     bool
-    make_structure_type(const Species& sp, Shape::dimension_kind dimension, const std::string loc);
+    make_structure_type(const Species& sp, const std::string loc);
 
     virtual bool is_inside(const coordinate_type& coord) const
     {

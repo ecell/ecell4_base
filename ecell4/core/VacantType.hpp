@@ -13,8 +13,8 @@ private:
 
     typedef StructureType base_type;
 
-    VacantType(const Shape::dimension_kind& dimension)
-        : base_type(Species("", "0", "0"), boost::weak_ptr<VoxelPool>(), 0, dimension)
+    VacantType()
+        : base_type(Species("", "0", "0"), boost::weak_ptr<VoxelPool>(), 0)
     {
         ; // do nothing
     }
@@ -33,9 +33,9 @@ public:
 
     static
     boost::shared_ptr<VacantType>
-    allocate(const Shape::dimension_kind& dimension=Shape::THREE)
+    allocate()
     {
-        return boost::shared_ptr<VacantType>(new VacantType(dimension));
+        return boost::shared_ptr<VacantType>(new VacantType());
     }
 };
 

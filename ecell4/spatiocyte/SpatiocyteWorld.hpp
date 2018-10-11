@@ -954,7 +954,7 @@ allocate_spatiocyte_world_square_offlattice_impl(
             adjoining_pairs.push_back(std::make_pair(index+1, right_bottom));
         }
 
-    OffLatticeSpace *space = new OffLatticeSpace(voxel_radius, positions, adjoining_pairs, Shape::TWO);
+    OffLatticeSpace *space = new OffLatticeSpace(voxel_radius, positions, adjoining_pairs);
     space->set_lengths(Real3(2*num_col, 2*sqrt(3)*num_row, 2) * voxel_radius);
 
     return new SpatiocyteWorld(space, rng);
