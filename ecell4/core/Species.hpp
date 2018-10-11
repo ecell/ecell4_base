@@ -63,12 +63,13 @@ public:
 
     Species(
         const serial_type& name, const Real& radius, const Real& D,
-        const std::string location = "")
+        const std::string location = "", const Integer& dimension = 0)
         : serial_(name), attributes_()
     {
         set_attribute("radius", radius);
         set_attribute("D", D);
         set_attribute("location", location);
+        set_attribute("dimension", dimension);
     }
 
     /*
@@ -76,12 +77,13 @@ public:
      */
     Species(
         const serial_type& name, const std::string& radius, const std::string& D,
-        const std::string location = "")
+        const std::string location = "", const std::string dimension = "")
         : serial_(name), attributes_()
     {
         set_attribute("radius", radius);
         set_attribute("D", D);
         set_attribute("location", location);
+        set_attribute("dimension", dimension);
     }
 
     const serial_type serial() const
@@ -183,6 +185,17 @@ public:
         return &(this->location(value));
     }
 
+    Species& dimension(const std::string& value)
+    {
+        set_attribute("dimension", value);
+        return (*this);
+    }
+
+    inline Species* dimension_ptr(const std::string& value)
+    {
+        return &(this->location(value));
+    }
+
     /** for epdp
      */
     serial_type name() const
@@ -213,6 +226,21 @@ inline Real Species::get_attribute_as<Real>(const std::string& name_attr) const
         return std::atof((*x).c_str());
     }
     throw NotSupported("An attribute has incorrect type. Real is expected");
+}
+
+template <>
+inline Integer Species::get_attribute_as<Integer>(const std::string& name_attr) const
+{
+    attribute_type val = get_attribute(name_attr);
+    if (Integer* x = boost::get<Integer>(&val))
+    {
+        return (*x);
+    }
+    else if (std::string* x = boost::get<std::string>(&val))
+    {
+        return std::atoi((*x).c_str());
+    }
+    throw NotSupported("An attribute has incorrect type. Integer is expected");
 }
 
 template <>
