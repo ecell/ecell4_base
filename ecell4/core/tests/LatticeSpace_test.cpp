@@ -591,7 +591,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_structure_move)
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_save_and_load)
 {
 
-    space.make_structure_type(structure, Shape::TWO, "");
+    space.make_structure_type(structure, "");
     const Integer l(space.layer_size()/2);
     for (int c(0); c < space.col_size(); ++c)
         for (int r(0); r < space.row_size(); ++r)
@@ -638,7 +638,6 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_save_and_load)
 
         BOOST_CHECK_EQUAL(vp1->radius(), vp2->radius());
         BOOST_CHECK_EQUAL(vp1->D(), vp2->D());
-        BOOST_CHECK_EQUAL(vp1->get_dimension(), vp2->get_dimension());
 
         const MoleculePool* mtb1(dynamic_cast<const MoleculePool*>(vp1.get()));
         const MoleculePool* mtb2(dynamic_cast<const MoleculePool*>(vp2.get()));
