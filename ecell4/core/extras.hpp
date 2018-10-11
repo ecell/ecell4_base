@@ -17,6 +17,7 @@
 #include "Particle.hpp"
 #include "AABB.hpp"
 #include "Model.hpp"
+#include "Shape.hpp"
 
 
 namespace ecell4
@@ -82,6 +83,9 @@ typename Tfactory_::world_type* generate_world_from_model(
     w->bind_to(m);
     return w;
 }
+
+Shape::dimension_kind
+get_dimension_from_model(const Species& species, const boost::shared_ptr<Model>& model);
 
 struct VersionInformation
 {

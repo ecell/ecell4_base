@@ -21,8 +21,8 @@ const Real calculate_dimensional_factor(
         D_A(mt0->D()),
         D_B(mt1->D());
     const Shape::dimension_kind
-        dimensionA(mt0->get_dimension()),
-        dimensionB(mt1->get_dimension());
+        dimensionA(world->get_dimension(speciesA)),
+        dimensionB(world->get_dimension(speciesB));
     const Real Dtot(D_A + D_B);
     const Real gamma(pow(2 * sqrt(2.0) + 4 * sqrt(3.0) + 3 * sqrt(6.0) + sqrt(22.0), 2) /
         (72 * (6 * sqrt(2.0) + 4 * sqrt(3.0) + 3 * sqrt(6.0))));

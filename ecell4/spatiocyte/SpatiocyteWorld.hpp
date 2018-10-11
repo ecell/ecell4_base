@@ -808,6 +808,11 @@ public:
         return model_.lock();
     }
 
+    Shape::dimension_kind get_dimension(const Species& species) const
+    {
+        return extras::get_dimension_from_model(species, lock_model());
+    }
+
     /**
      * static members
      */

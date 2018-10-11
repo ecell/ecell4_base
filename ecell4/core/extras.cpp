@@ -17,6 +17,33 @@ namespace ecell4
 namespace extras
 {
 
+Shape::dimension_kind
+get_dimension_from_model(const Species& species, const boost::shared_ptr<Model>& model)
+{
+    const Species& attribute(model->apply_species_attributes(species));
+
+    if (attribute.has_attribute("dimension"))
+    {
+        switch (attribute.get_attribute_as<Integer>("dimension"))
+        {
+            case 1: return Shape::ONE;
+            case 2: return Shape::TWO;
+            case 3: return Shape::THREE;
+        }
+    }
+
+    if (attribute.has_attribute("location"))
+    {
+        return get_dimension_from_model(
+            Species(attribute.get_attribute_as<std::string>("location")),
+            model
+        );
+    }
+
+    // The default dimension is three.
+    return Shape::THREE;
+}
+
 #ifdef WITH_HDF5
 void save_version_information(H5::CommonFG* root, const std::string& version)
 {
