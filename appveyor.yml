@@ -55,7 +55,7 @@ install:
   # install gsl for build_ext
   - vcpkg install gsl:x64-windows-static
   # - vcpkg install gsl:x64-windows
-  - dir "C:/tools/vcpkg/installed/x64-windows/include"
+  # - dir "C:/tools/vcpkg/installed/x64-windows/include"
 
   # - msbuild GSL.sln /p:Configuration=Release /v:d
 
