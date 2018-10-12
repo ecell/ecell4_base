@@ -93,6 +93,7 @@ branches:
   only:
     - master
     - v4.2
+    - issue300 
 
 artifacts:
   # bdist_wheel puts your built wheel in the dist directory
