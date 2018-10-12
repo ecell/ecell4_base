@@ -38,13 +38,14 @@ public:
      *
      * using Species and coordinate_type
      */
-    std::vector<std::pair<ParticleID, Voxel> > list_voxels() const;
-    std::vector<std::pair<ParticleID, Voxel> > list_voxels(const Species& sp) const;
-    std::vector<std::pair<ParticleID, Voxel> > list_voxels_exact(const Species& sp) const;
+    std::vector<std::pair<ParticleID, ParticleVoxel> > list_voxels() const;
+    std::vector<std::pair<ParticleID, ParticleVoxel> > list_voxels(const Species& sp) const;
+    std::vector<std::pair<ParticleID, ParticleVoxel> > list_voxels_exact(const Species& sp) const;
 
-    std::pair<ParticleID, Voxel> get_voxel_at(const coordinate_type& coord) const;
+    std::pair<ParticleID, ParticleVoxel> get_voxel_at(const coordinate_type& coord) const;
 
-    bool update_voxel(const ParticleID& pid, const Voxel& v);
+    bool update_voxel(const ParticleID& pid, ParticleVoxel v);
+    bool add_voxel(const Species& species, const ParticleID& pid, const coordinate_type& coord);
 
     bool add_voxels(const Species& species,
                     std::vector<std::pair<ParticleID, coordinate_type> > voxels);
@@ -63,22 +64,10 @@ public:
               const std::size_t candidate=0);
     bool can_move(const coordinate_type& src, const coordinate_type& dest) const;
 
-    std::pair<coordinate_type, bool>
-    move_to_neighbor(coordinate_type coord, Integer nrand);
-
-    std::pair<coordinate_type, bool>
-    move_to_neighbor(coordinate_id_pair_type& info, Integer nrand);
-
-    std::pair<coordinate_type, bool>
-    move_to_neighbor(boost::shared_ptr<VoxelPool> from_vp,
-                     boost::shared_ptr<VoxelPool> loc,
-                     coordinate_id_pair_type& info,
-                     const Integer nrand);
-
     coordinate_type
-    get_neighbor_boundary(const coordinate_type& coord, const Integer& nrand) const
+    get_neighbor(const coordinate_type& coord, const Integer& nrand) const
     {
-        coordinate_type const dest = get_neighbor(coord, nrand);
+        coordinate_type const dest = get_neighbor_(coord, nrand);
 
         if (voxels_.at(dest) != periodic_)
         {
@@ -120,16 +109,6 @@ public:
 
     const Particle particle_at(const coordinate_type& coord) const;
 
-    bool make_structure_type(const Species& sp,
-                             Shape::dimension_kind dimension,
-                             const std::string loc);
-
-    bool make_interface_type(const Species& sp,
-                             Shape::dimension_kind dimension,
-                             const std::string loc);
-
-    bool make_molecular_type(const Species& sp, Real radius, Real D, const std::string loc);
-
 protected:
 
     coordinate_type apply_boundary_(const coordinate_type& coord) const
@@ -137,20 +116,18 @@ protected:
         return periodic_transpose(coord);
     }
 
-    boost::shared_ptr<VoxelPool> get_voxel_pool(const Voxel& v);
-
     void initialize_voxels(const bool is_periodic);
 
-    std::pair<coordinate_type, bool> move_(
-            coordinate_type from, coordinate_type to,
-            const std::size_t candidate=0);
+    std::pair<coordinate_type, bool>
+    move_(coordinate_type from,
+          coordinate_type to,
+          const std::size_t candidate=0);
 
-    std::pair<coordinate_type, bool> move_(
-            coordinate_id_pair_type& info, coordinate_type to);
+    std::pair<coordinate_type, bool>
+    move_(coordinate_id_pair_type& info,
+          coordinate_type to);
 
     coordinate_type get_coord(const ParticleID& pid) const;
-
-    Integer count_voxels(const boost::shared_ptr<VoxelPool>& vp) const;
 
 protected:
 

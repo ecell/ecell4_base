@@ -6,7 +6,10 @@ from libcpp.vector cimport vector
 
 from ecell4.types cimport *
 from ecell4.shared_ptr cimport shared_ptr
+from ecell4.optional cimport optional
 from ecell4.core cimport *
+
+from deprecated import deprecated
 
 ## ReactionInfo
 cdef class ReactionInfo:
@@ -19,92 +22,116 @@ cdef class ReactionInfo:
     def __init__(self, Real t, reactants, products):
         """Constructor.
 
-        Args:
-          t (Real): A time when a reaction occurred
-          reactants (list): A list of reactants.
-            Reactants are given as a pair of ``ParticleID`` and ``Voxel``.
-          products (list): A list of products.
-            Products are given as a pair of ``ParticleID`` and ``Voxel``.
-
+        Parameters
+        ----------
+        t : Real
+            A time when a reaction occurred
+        reactants : [ReactionInfoItem]
+            A list of reactants.
+        products : [ReactionInfoItem]
+            A list of products.
         """
         pass  #XXX: only used for doc string
 
 
     def __cinit__(self, Real t, reactants, products):
-        cdef vector[pair[Cpp_ParticleID, Cpp_Voxel]] reactants_
-        cdef vector[pair[Cpp_ParticleID, Cpp_Voxel]] products_
+        cdef vector[CppReactionInfoItem] cpp_reactants
+        cdef vector[CppReactionInfoItem] cpp_products
 
-        for pid, p in reactants:
-            reactants_.push_back(
-                pair[Cpp_ParticleID, Cpp_Voxel](
-                    deref((<ParticleID>pid).thisptr), deref((<Voxel>p).thisptr)))
-        for pid, p in products:
-            products_.push_back(
-                pair[Cpp_ParticleID, Cpp_Voxel](
-                    deref((<ParticleID>pid).thisptr), deref((<Voxel>p).thisptr)))
+        for item in reactants:
+            cpp_reactants.push_back(deref((<ReactionInfoItem>item).thisptr))
 
-        self.thisptr = new Cpp_ReactionInfo(t, reactants_, products_)
+        for item in products:
+            cpp_products.push_back(deref((<ReactionInfoItem>item).thisptr))
+
+        self.thisptr = new CppReactionInfo(t, cpp_reactants, cpp_products)
 
     def __dealloc__(self):
         del self.thisptr
 
     def t(self):
-        """Return a time when a reaction occurred."""
+        """Return time when the reaction occurred."""
         return self.thisptr.t()
 
     def reactants(self):
         """Return a list of reactants
 
-        Returns:
-            list: A list of pairs of ``ParticleID`` and ``Voxel``.
-
+        Returns
+        -------
+        [ReactionInfoItem]:
+            A list of information of the reactants
         """
-        cdef vector[pair[Cpp_ParticleID, Cpp_Voxel]] particles
-        particles = self.thisptr.reactants()
+        cdef vector[CppReactionInfoItem] particles = self.thisptr.reactants()
 
         retval = []
-        cdef vector[pair[Cpp_ParticleID, Cpp_Voxel]].iterator \
-            it = particles.begin()
-        while it != particles.end():
-            retval.append(
-                (ParticleID_from_Cpp_ParticleID(
-                     <Cpp_ParticleID*>(address(deref(it).first))),
-                 Voxel_from_Cpp_Voxel(
-                     <Cpp_Voxel*>(address(deref(it).second)))))
-            inc(it)
+        cdef vector[CppReactionInfoItem].iterator itr = particles.begin()
+        while itr != particles.end():
+            retval.append(wrap_reaction_info_item(deref(itr)))
+            inc(itr)
+
         return retval
 
     def products(self):
         """Return a list of products
 
-        Returns:
-            list: A list of pairs of ``ParticleID`` and ``Voxel``.
-
+        Returns
+        -------
+        [ReactionInfoItem]:
+            A list of information of the products
         """
-        cdef vector[pair[Cpp_ParticleID, Cpp_Voxel]] particles
-        particles = self.thisptr.products()
+        cdef vector[CppReactionInfoItem] particles = self.thisptr.products()
 
         retval = []
-        cdef vector[pair[Cpp_ParticleID, Cpp_Voxel]].iterator \
-            it = particles.begin()
-        while it != particles.end():
-            retval.append(
-                (ParticleID_from_Cpp_ParticleID(
-                     <Cpp_ParticleID*>(address(deref(it).first))),
-                 Voxel_from_Cpp_Voxel(
-                     <Cpp_Voxel*>(address(deref(it).second)))))
-            inc(it)
+        cdef vector[CppReactionInfoItem].iterator itr = particles.begin()
+        while itr != particles.end():
+            retval.append(wrap_reaction_info_item(deref(itr)))
+            inc(itr)
+
         return retval
 
     def __reduce__(self):
         return (ReactionInfo, (self.t(), self.reactants(), self.products()))
 
-cdef ReactionInfo ReactionInfo_from_Cpp_ReactionInfo(Cpp_ReactionInfo* ri):
-    cdef Cpp_ReactionInfo *new_obj = new Cpp_ReactionInfo(<Cpp_ReactionInfo> deref(ri))
+cdef ReactionInfo ReactionInfo_from_Cpp_ReactionInfo(CppReactionInfo* ri):
+    cdef CppReactionInfo *new_obj = new CppReactionInfo(<CppReactionInfo> deref(ri))
     r = ReactionInfo(0, [], [])
     del r.thisptr
     r.thisptr = new_obj
     return r
+
+cdef ReactionInfoItem wrap_reaction_info_item(CppReactionInfoItem item):
+    retval = ReactionInfoItem()
+    del retval.thisptr
+    retval.thisptr = new CppReactionInfoItem(item.pid, item.species, item.voxel)
+    return retval
+
+## Voxel
+cdef class Voxel:
+
+    def __cinit__(self):
+        pass
+
+    def __dealloc__(self):
+        if self.thisptr:
+            del self.thisptr
+
+    def list_neighbors(self):
+        ls = []
+        for i in range(self.thisptr.num_neighbors()):
+            ls.append(wrap_voxel(self.thisptr.get_neighbor(i)))
+        return ls
+
+    def position(self):
+        cdef Cpp_Real3 position
+        if self.thisptr:
+            position = self.thisptr.position()
+            return Real3_from_Cpp_Real3(address(position))
+        return None
+
+cdef Voxel wrap_voxel(CppVoxel voxel):
+    cdef Voxel retval = Voxel()
+    retval.thisptr = new CppVoxel(voxel)
+    return retval
 
 ## SpatiocyteWorld
 #  a python wrapper for Cpp_SpatiocyteWorld
@@ -162,6 +189,13 @@ cdef class SpatiocyteWorld:
         #      it will be released automatically.
         del self.thisptr
 
+
+    # WorldInterface
+
+    def t(self):
+        """Return the time of the world."""
+        return self.thisptr.get().t()
+
     def set_t(self, Real t):
         """set_t(t)
 
@@ -175,224 +209,92 @@ cdef class SpatiocyteWorld:
         """
         self.thisptr.get().set_t(t)
 
-    def t(self):
-        """Return the time of the world."""
-        return self.thisptr.get().t()
+    def save(self, filename):
+        """save(filename)
+
+        Save the world to a file.
+
+        Parameters
+        ----------
+        filename : str
+            A filename to save to
+
+        """
+        self.thisptr.get().save(tostring(filename))
+
+    def load(self, filename):
+        """load(filename)
+
+        Load the world from a file.
+
+        Parameters
+        ----------
+        filename : str
+            A filename to load from
+
+        """
+        self.thisptr.get().load(tostring(filename))
 
     def volume(self):
         """Return the volume of the world."""
         return self.thisptr.get().volume()
 
-    def actual_volume(self):
-        """Return the actual volume of the world."""
-        return self.thisptr.get().actual_volume()
+    def has_species(self, Species species):
+        """has_species(species)
 
-    def voxel_volume(self):
-        """Return the volume of a voxel."""
-        return self.thisptr.get().voxel_volume()
+        Check if the world has a given species
 
-    def get_volume(self, Species sp):
-        """get_volume(sp) -> Real
+        Parameters
+        ----------
+        species: Species
+            A species to check existance in the world.
 
-        Return a volume of the given structure.
+        Returns
+        -------
+        bool:
+            if a species exists, this is true. Otherwise false
+        """
+        return self.thisptr.get().has_species(deref(species.thisptr))
+
+    def num_molecules(self, Species sp):
+        """num_molecules(sp) -> Integer
+
+        Return the number of molecules.
 
         Parameters
         ----------
         sp : Species
-            A species for the target structure.
+            A species whose molecules you count
 
         Returns
         -------
-        Real:
-            A total volume of voxels belonging to the structure.
+        Integer:
+            The number of molecules (of a given species)
 
         """
-        return self.thisptr.get().get_volume(deref(sp.thisptr))
+        # if sp is None:
+        #     return self.thisptr.get().num_molecules()
+        # else:
+        #     return self.thisptr.get().num_molecules(deref(sp.thisptr))
+        return self.thisptr.get().num_molecules(deref(sp.thisptr))
 
-    def actual_lengths(self):
-        """Return the actual edge lengths of the world.
+    def num_molecules_exact(self, Species sp):
+        """num_molecules_exact(sp) -> Integer
 
-        Returns
-        -------
-        Real3:
-            The actual edge lengths of the world
-
-        """
-        cdef Cpp_Real3 lengths = self.thisptr.get().actual_lengths()
-        return Real3_from_Cpp_Real3(address(lengths))
-
-    def new_particle(self, arg1, Real3 arg2=None):
-        """new_particle(arg1, arg2=None) -> (ParticleID, Particle)
-
-        Create a new particle.
-
-        Parameters
-        ----------
-        arg1 : Particle
-            A particle to be placed.
-
-        or
-
-        arg1 : Species
-            A species of a particle
-        arg2 : Real3
-            A coordinate to place a particle
-
-        Returns
-        -------
-        tuple:
-            A pair of ParticleID and Particle of a new particle
-
-        """
-        cdef pair[pair[Cpp_ParticleID, Cpp_Particle], bool] retval
-
-        if arg2 is None:
-            retval = self.thisptr.get().new_particle(deref((<Particle> arg1).thisptr))
-        else:
-            retval = self.thisptr.get().new_particle(deref((<Species> arg1).thisptr), deref(arg2.thisptr))
-        return ((ParticleID_from_Cpp_ParticleID(address(retval.first.first)), Particle_from_Cpp_Particle(address(retval.first.second))), retval.second)
-
-    def get_particle(self, ParticleID pid):
-        """get_particle(pid) -> (ParticleID, Particle)
-
-        Return the particle associated a given ParticleID.
-
-        Parameters
-        ----------
-        pid : ParticleID
-            A id of the particle you want
-
-        Returns
-        -------
-        tuple:
-            A pair of ParticleID and Particle
-
-        """
-        cdef pair[Cpp_ParticleID, Cpp_Particle] \
-            pid_particle_pair = self.thisptr.get().get_particle(deref(pid.thisptr))
-        return (ParticleID_from_Cpp_ParticleID(address(pid_particle_pair.first)),
-                Particle_from_Cpp_Particle(address(pid_particle_pair.second)))
-
-    def get_voxel(self, ParticleID pid):
-        """get_voxel(pid) -> (ParticleID, Voxel)
-
-        Return the voxel having a particle associated with a given ParticleID.
-
-        Parameters
-        ----------
-        pid : ParticleID
-            An id of the particle in the voxel you want
-
-        Returns
-        -------
-        tuple:
-            A pair of ParticleID and Voxel
-
-        """
-        cdef pair[Cpp_ParticleID, Cpp_Voxel] pid_voxel_pair
-        pid_voxel_pair = self.thisptr.get().get_voxel(deref(pid.thisptr))
-        return (ParticleID_from_Cpp_ParticleID(address(pid_voxel_pair.first)),
-                Voxel_from_Cpp_Voxel(address(pid_voxel_pair.second)))
-
-    def get_voxel_at(self, Integer coord):
-        """get_voxel_at(coord) -> (ParticleID, Voxel)
-
-        Return the voxel at a given coordinate.
-
-        Parameters
-        ----------
-        coord: Integer
-            A coordinate of the voxel you want
-
-        Returns
-        -------
-        tuple:
-            A pair of ParticleID and Voxel
-
-        """
-        cdef pair[Cpp_ParticleID, Cpp_Voxel] pid_voxel_pair
-        pid_voxel_pair = self.thisptr.get().get_voxel_at(coord)
-        return (ParticleID_from_Cpp_ParticleID(address(pid_voxel_pair.first)),
-                Voxel_from_Cpp_Voxel(address(pid_voxel_pair.second)))
-
-    def on_structure(self, Voxel v):
-        """Check if the given voxel would be on the proper structure at the coordinate
-        Args:
-            v (Voxel): a voxel scheduled to be placed
-        Returns:
-            bool: if it is on the proper structure, or not
-        """
-        return self.thisptr.get().on_structure(deref((<Voxel>v).thisptr))
-
-    # def on_structure(self, Species sp, Integer coord):
-    #     """on_structure(sp, coord) -> bool
-
-    #     Check if the given species would be on the proper structure at the coordinate.
-
-    #     Parameters
-    #     ----------
-    #     sp : Species
-    #         A species scheduled to be placed
-    #     coord : Integer
-    #         A coordinate to be occupied
-
-    #     Returns
-    #     -------
-    #     bool:
-    #         if it is on the proper structure, or not
-
-    #     """
-    #     return self.thisptr.get().on_structure(deref(sp.thisptr), coord)
-
-    def remove_particle(self, ParticleID pid):
-        """remove_particle(pid)
-
-        Remove the particle associated with a given ParticleID.
-
-        Parameters
-        ----------
-        pid : ParticleID
-            A id of particle to remove
-
-        """
-        self.thisptr.get().remove_particle(deref(pid.thisptr))
-
-    def remove_voxel(self, ParticleID pid):
-        """remove_voxel(pid)
-
-        Remove the particle associated with a given ParticleID.
-
-        Parameters
-        ----------
-        pid : ParticleID
-            A id of particle to remove
-
-        """
-        self.thisptr.get().remove_voxel(deref(pid.thisptr))
-
-    def edge_lengths(self):
-        """edge_lengths() -> Real3
-
-        Return the edge lengths of the world.
-
-        """
-        cdef Cpp_Real3 lengths = self.thisptr.get().edge_lengths()
-        return Real3_from_Cpp_Real3(address(lengths))
-
-    def set_value(self, Species sp, Real value):
-        """set_value(sp, value)
-
-        Set the value of the given species.
+        Return the number of molecules of a given species.
 
         Parameters
         ----------
         sp : Species
-            a species whose value you set
-        value : Real
-            a value set
+            A species whose molecules you count
+
+        Returns
+        -------
+        Integer:
+            The number of molecules of a given species
 
         """
-        self.thisptr.get().set_value(deref(sp.thisptr), value)
+        return self.thisptr.get().num_molecules_exact(deref(sp.thisptr))
 
     def get_value(self, Species sp):
         """get_value(sp) -> Real
@@ -430,65 +332,18 @@ cdef class SpatiocyteWorld:
         """
         return self.thisptr.get().get_value_exact(deref(sp.thisptr))
 
-    def list_species(self):
-        """list_species() -> [Species]
+    def edge_lengths(self):
+        """edge_lengths() -> Real3
 
-        Return the list of species.
+        Return the edge lengths of the world.
 
-        Returns
-        -------
-        list:
-            The list of species
         """
-        cdef vector[Cpp_Species] species = self.thisptr.get().list_species()
-        retval = []
-        cdef vector[Cpp_Species].iterator it = species.begin()
-        while it != species.end():
-            retval.append(
-                 Species_from_Cpp_Species(
-                     <Cpp_Species*>(address(deref(it)))))
-            inc(it)
-        return retval
+        cdef Cpp_Real3 lengths = self.thisptr.get().edge_lengths()
+        return Real3_from_Cpp_Real3(address(lengths))
 
-    def list_structure_species(self):
-        """list_structure_species() -> [Species]
-
-        Return the list of structure species.
-
-        Returns
-        -------
-        list:
-            The list of species constructing structure
-        """
-        cdef vector[Cpp_Species] species = self.thisptr.get().list_structure_species()
-        retval = []
-        cdef vector[Cpp_Species].iterator it = species.begin()
-        while it != species.end():
-            retval.append(
-                 Species_from_Cpp_Species(
-                     <Cpp_Species*>(address(deref(it)))))
-            inc(it)
-        return retval
-
-    def list_non_structure_species(self):
-        """list_non_structure_species() -> [Species]
-
-        Return the list of non-structure species.
-
-        Returns
-        -------
-        list:
-            The list of species not constructing structure
-        """
-        cdef vector[Cpp_Species] species = self.thisptr.get().list_non_structure_species()
-        retval = []
-        cdef vector[Cpp_Species].iterator it = species.begin()
-        while it != species.end():
-            retval.append(
-                 Species_from_Cpp_Species(
-                     <Cpp_Species*>(address(deref(it)))))
-            inc(it)
-        return retval
+    @deprecated(suggest="edge_lengths()")
+    def actual_lengths(self):
+        return self.edge_lengths()
 
     def num_particles(self, Species sp = None):
         """num_particles(sp=None) -> Integer
@@ -530,44 +385,44 @@ cdef class SpatiocyteWorld:
         """
         return self.thisptr.get().num_particles_exact(deref(sp.thisptr))
 
-    def num_voxels(self, Species sp = None):
-        """num_voxels(sp=None) -> Integer
+    def has_particle(self, ParticleID pid):
+        """has_particle(pid) -> bool
 
-        Return the number of voxels.
-
-        Parameters
-        ----------
-        sp : Species, optional
-            The species of particles to count
-
-        Returns
-        -------
-        Integer:
-            The number of voxels (of the given species)
-
-        """
-        if sp is None:
-            return self.thisptr.get().num_voxels()
-        else:
-            return self.thisptr.get().num_voxels(deref(sp.thisptr))
-
-    def num_voxels_exact(self, Species sp):
-        """num_voxels_exact(sp) -> Integer
-
-        Return the number of voxels of a given species.
+        Check if a particle associated with a given particle id exists.
 
         Parameters
         ----------
-        sp : Species
-            The species of particles to count
+        pid : ParticleID
+            A particle id to check
 
         Returns
         -------
-        Integer:
-            The number of voxels of a given species
+        bool:
+            if a particle exists, this is true. Otherwise false
 
         """
-        return self.thisptr.get().num_voxels_exact(deref(sp.thisptr))
+        return self.thisptr.get().has_particle(deref(pid.thisptr))
+
+    def get_particle(self, ParticleID pid):
+        """get_particle(pid) -> (ParticleID, Particle)
+
+        Return the particle associated a given ParticleID.
+
+        Parameters
+        ----------
+        pid : ParticleID
+            A id of the particle you want
+
+        Returns
+        -------
+        tuple:
+            A pair of ParticleID and Particle
+
+        """
+        cdef pair[Cpp_ParticleID, Cpp_Particle] \
+            pid_particle_pair = self.thisptr.get().get_particle(deref(pid.thisptr))
+        return (ParticleID_from_Cpp_ParticleID(address(pid_particle_pair.first)),
+                Particle_from_Cpp_Particle(address(pid_particle_pair.second)))
 
     def list_particles(self, Species sp = None):
         """list_particles(sp) -> [(ParticleID, Particle)]
@@ -635,6 +490,56 @@ cdef class SpatiocyteWorld:
             inc(it)
         return retval
 
+
+    # Particle Manipulation
+
+    def new_particle(self, arg1, Real3 arg2=None):
+        """new_particle(arg1, arg2=None) -> (ParticleID, Particle)
+
+        Create a new particle.
+
+        Parameters
+        ----------
+        arg1 : Particle
+            A particle to be placed.
+
+        or
+
+        arg1 : Species
+            A species of a particle
+        arg2 : Real3
+            A coordinate to place a particle
+
+        Returns
+        -------
+        output: ParticleID or None
+            A ParticleID of the new particle
+
+        """
+        cdef optional[Cpp_ParticleID] pid
+
+        if arg2 is None:
+            pid = self.thisptr.get().new_particle(deref((<Particle> arg1).thisptr))
+        else:
+            pid = self.thisptr.get().new_particle(deref((<Species> arg1).thisptr), deref(arg2.thisptr))
+        if pid.is_initialized():
+            return ParticleID_from_Cpp_ParticleID(address(pid.get()))
+
+        return None
+
+    def remove_particle(self, ParticleID pid):
+        """remove_particle(pid)
+
+        Remove the particle associated with a given ParticleID.
+
+        Parameters
+        ----------
+        pid : ParticleID
+            A id of particle to remove
+
+        """
+        self.thisptr.get().remove_particle(deref(pid.thisptr))
+
     def list_structure_particles(self):
         """list_strucutre_particles() -> [(ParticleID, Particle)]
 
@@ -685,44 +590,6 @@ cdef class SpatiocyteWorld:
             inc(it)
         return retval
 
-    def get_neighbor(self, coord, nrand):
-        """get_neighbor(coord, nrand) -> Integer
-
-        Return the neighbor coordinate of a given coordinate.
-
-        Parameters
-        ----------
-        coord : Integer
-            A coordinate of a voxel
-        nrand : Integer
-            A key in the range from 0 to 11 to assign a neighbor voxel
-
-        Returns
-        -------
-        Integer:
-            The coordinate of the neighbor voxel
-
-        """
-        return self.thisptr.get().get_neighbor(coord, nrand)
-
-    def has_particle(self, ParticleID pid):
-        """has_particle(pid) -> bool
-
-        Check if a particle associated with a given particle id exists.
-
-        Parameters
-        ----------
-        pid : ParticleID
-            A particle id to check
-
-        Returns
-        -------
-        bool:
-            if a particle exists, this is true. Otherwise false
-
-        """
-        return self.thisptr.get().has_particle(deref(pid.thisptr))
-
     def update_particle(self, ParticleID pid, Particle p):
         """update_particle(pid, p)
 
@@ -743,45 +610,8 @@ cdef class SpatiocyteWorld:
         """
         return self.thisptr.get().update_particle(deref(pid.thisptr), deref(p.thisptr))
 
-    def num_molecules(self, Species sp):
-        """num_molecules(sp) -> Integer
 
-        Return the number of molecules.
-
-        Parameters
-        ----------
-        sp : Species
-            A species whose molecules you count
-
-        Returns
-        -------
-        Integer:
-            The number of molecules (of a given species)
-
-        """
-        # if sp is None:
-        #     return self.thisptr.get().num_molecules()
-        # else:
-        #     return self.thisptr.get().num_molecules(deref(sp.thisptr))
-        return self.thisptr.get().num_molecules(deref(sp.thisptr))
-
-    def num_molecules_exact(self, Species sp):
-        """num_molecules_exact(sp) -> Integer
-
-        Return the number of molecules of a given species.
-
-        Parameters
-        ----------
-        sp : Species
-            A species whose molecules you count
-
-        Returns
-        -------
-        Integer:
-            The number of molecules of a given species
-
-        """
-        return self.thisptr.get().num_molecules_exact(deref(sp.thisptr))
+    # Molecule Manipulation
 
     def add_molecules(self, Species sp, Integer num, shape=None):
         """add_molecules(sp, num, shape=None)
@@ -819,189 +649,247 @@ cdef class SpatiocyteWorld:
         """
         self.thisptr.get().remove_molecules(deref(sp.thisptr), num)
 
-    def save(self, filename):
-        """save(filename)
 
-        Save the world to a file.
+    # SpatiocyteWorld API
 
-        Parameters
-        ----------
-        filename : str
-            A filename to save to
+    @deprecated(suggest="volume()")
+    def actual_volume(self):
+        return self.volume()
 
-        """
-        self.thisptr.get().save(tostring(filename))
+    def voxel_volume(self):
+        """Return the volume of a voxel."""
+        return self.thisptr.get().voxel_volume()
 
-    def load(self, filename):
-        """load(filename)
+    def get_volume(self, Species sp):
+        """get_volume(sp) -> Real
 
-        Load the world from a file.
+        Return a volume of the given structure.
 
         Parameters
         ----------
-        filename : str
-            A filename to load from
-
-        """
-        self.thisptr.get().load(tostring(filename))
-
-    def new_voxel(self, arg1, arg2=None):
-        """new_voxel(arg1, arg2) -> (ParticleID, Voxel)
-
-        Create a particle.
-
-        Parameters
-        ----------
-        arg1 : Voxel
-            The information to create
-
-        or
-
-        arg1 : Species
-            The Species of particles to create
-        arg2 : Integer
-            The number of particles(voxels)
+        sp : Species
+            A species for the target structure.
 
         Returns
         -------
-        tuple:
-            A pair of ParticleID and Voxel
+        Real:
+            A total volume of voxels belonging to the structure.
 
         """
-        cdef pair[pair[Cpp_ParticleID, Cpp_Voxel], bool] retval
+        return self.thisptr.get().get_volume(deref(sp.thisptr))
 
-        if arg2 is None:
-            retval = self.thisptr.get().new_voxel(deref((<Voxel> arg1).thisptr))
-        else:
-            retval = self.thisptr.get().new_voxel(deref((<Species> arg1).thisptr), <Integer> arg2)
-        return ((ParticleID_from_Cpp_ParticleID(address(retval.first.first)), Voxel_from_Cpp_Voxel(address(retval.first.second))), retval.second)
+    def get_voxel(self, ParticleID pid):
+        """get_voxel(pid)
 
-    def new_voxel_structure(self, arg1, arg2):
-        """new_voxel_structure(arg1, arg2) -> (ParticleID, Voxel)
-
-        Create a particle.
-
-        Parameters
-        ----------
-        arg1 : Species
-            The Species of particles to create
-        arg2 : Integer
-            A coordinate to place the structure
-
-        Returns
-        -------
-        tuple:
-            A pair of ParticleID and Voxel
-
-        """
-        cdef pair[pair[Cpp_ParticleID, Cpp_Voxel], bool] retval
-
-        retval = self.thisptr.get().new_voxel_structure(deref((<Species> arg1).thisptr), <Integer> arg2)
-        return ((ParticleID_from_Cpp_ParticleID(address(retval.first.first)), Voxel_from_Cpp_Voxel(address(retval.first.second))), retval.second)
-
-    def update_voxel(self, ParticleID pid, Voxel v):
-        """update_voxel(pid, v) -> bool
-
-        Update a particle.
+        Return a voxel occupied with the particle associated with the given ParticleID.
 
         Parameters
         ----------
         pid : ParticleID
-            A particle id of the particle to update
-        v : Voxel
-            The information to update
+            An id of the particle occupying the voxel
 
         Returns
         -------
-        bool:
-            whether to succeed to update the particle
-
+        output: ParticleVoxel or None
         """
-        return self.thisptr.get().update_voxel(deref(pid.thisptr), deref(v.thisptr))
+        cdef optional[Cpp_ParticleVoxel] voxel
+        voxel = self.thisptr.get().find_voxel(deref(pid.thisptr))
 
-    def list_voxels(self, Species sp = None):
-        """list_voxels(sp=None) -> [ParitcleID, Voxel]
+        if voxel.is_initialized():
+            return ParticleVoxel_from_Cpp_ParticleVoxel(address(voxel.get()))
 
-        Returns the list of voxels.
+        return None
+
+    def get_voxel_at(self, Voxel voxel):
+        """get_voxel_at(voxel)
+
+        Return a voxel at the given coordinate.
 
         Parameters
         ----------
-        sp : Species, optional
-            A species of particles to list up.
-            If no species is given, return a list of all voxels.
+        voxel: Voxel
+            A voxel coordinate
+
+        Returns
+        -------
+        output: (ParticleID, Species)
+        """
+
+        pid_species_pair = self.thisptr.get().get_voxel_at(deref(voxel.thisptr))
+        return (ParticleID_from_Cpp_ParticleID(address(pid_species_pair.first)),
+                Species_from_Cpp_Species(address(pid_species_pair.second)))
+
+    @deprecated(suggest="remove_particle(pid)")
+    def remove_voxel(self, ParticleID pid):
+        self.thisptr.get().remove_voxel(deref(pid.thisptr))
+
+    def set_value(self, Species sp, Real value):
+        """set_value(sp, value)
+
+        Set the value of the given species.
+
+        Parameters
+        ----------
+        sp : Species
+            a species whose value you set
+        value : Real
+            a value set
+
+        """
+        self.thisptr.get().set_value(deref(sp.thisptr), value)
+
+    def list_species(self):
+        """list_species() -> [Species]
+
+        Return the list of species.
 
         Returns
         -------
         list:
-            The list of the pair of ParticleID and Voxel
+            The list of species
+        """
+        cdef vector[Cpp_Species] species = self.thisptr.get().list_species()
+        retval = []
+        cdef vector[Cpp_Species].iterator it = species.begin()
+        while it != species.end():
+            retval.append(
+                 Species_from_Cpp_Species(
+                     <Cpp_Species*>(address(deref(it)))))
+            inc(it)
+        return retval
+
+    @deprecated
+    def list_structure_species(self):
+        cdef vector[Cpp_Species] species = self.thisptr.get().list_structure_species()
+        retval = []
+        cdef vector[Cpp_Species].iterator it = species.begin()
+        while it != species.end():
+            retval.append(
+                 Species_from_Cpp_Species(
+                     <Cpp_Species*>(address(deref(it)))))
+            inc(it)
+        return retval
+
+    @deprecated
+    def list_non_structure_species(self):
+        cdef vector[Cpp_Species] species = self.thisptr.get().list_non_structure_species()
+        retval = []
+        cdef vector[Cpp_Species].iterator it = species.begin()
+        while it != species.end():
+            retval.append(
+                 Species_from_Cpp_Species(
+                     <Cpp_Species*>(address(deref(it)))))
+            inc(it)
+        return retval
+
+    @deprecated(suggest="num_particles(sp)")
+    def num_voxels(self, Species sp = None):
+        if sp is None:
+            return self.thisptr.get().num_voxels()
+        else:
+            return self.thisptr.get().num_voxels(deref(sp.thisptr))
+
+    @deprecated(suggest="num_particles_exact(sp)")
+    def num_voxels_exact(self, Species sp):
+        return self.thisptr.get().num_voxels_exact(deref(sp.thisptr))
+
+    @deprecated(suggest="voxel.list_neighbors()")
+    def get_neighbor(self, Voxel voxel, nrand):
+        return wrap_voxel(voxel.thisptr.get_neighbor(nrand))
+
+    def new_voxel(self, Species sp, Voxel voxel):
+        """new_voxel(sp, voxel)
+
+        Create a particle.
+
+        Parameters
+        ----------
+        sp : Species
+            A Species to put
+        voxel : Voxel
+            A location to put on
+
+        Returns
+        -------
+        output: ParticleID or None
+        """
+
+        cdef optional[Cpp_ParticleID] pid
+        pid = self.thisptr.get().new_voxel(deref(sp.thisptr), deref(voxel.thisptr));
+
+        if pid.is_initialized():
+            return ParticleID_from_Cpp_ParticleID(address(pid.get()))
+
+        return None
+
+    def new_voxel_structure(self, Species species, Voxel voxel):
+        """new_voxel_structure(species, voxel)
+
+        Create a particle.
+
+        Parameters
+        ----------
+        species : Species
+            The Species of particles to create
+        voxel : Voxel
+            A voxel to place the structure
+
+        Returns
+        -------
+        output: ParticleID or None
 
         """
-        cdef vector[pair[Cpp_ParticleID, Cpp_Voxel]] voxels
+        cdef optional[Cpp_ParticleID] pid
+        pid = self.thisptr.get().new_voxel_structure(deref(species.thisptr), deref(voxel.thisptr))
+
+        if pid.is_initialized():
+            return ParticleID_from_Cpp_ParticleID(address(pid.get()))
+
+        return None
+
+    @deprecated
+    def update_voxel(self, ParticleID pid, ParticleVoxel v):
+        return self.thisptr.get().update_voxel(deref(pid.thisptr), deref(v.thisptr))
+
+    @deprecated
+    def list_voxels(self, Species sp = None):
+        cdef vector[pair[Cpp_ParticleID, Cpp_ParticleVoxel]] voxels
         if sp is None:
             voxels = self.thisptr.get().list_voxels()
         else:
             voxels = self.thisptr.get().list_voxels(deref(sp.thisptr))
 
         retval = []
-        cdef vector[pair[Cpp_ParticleID, Cpp_Voxel]].iterator \
+        cdef vector[pair[Cpp_ParticleID, Cpp_ParticleVoxel]].iterator \
             it = voxels.begin()
         while it != voxels.end():
             retval.append(
                 (ParticleID_from_Cpp_ParticleID(
                      <Cpp_ParticleID*>(address(deref(it).first))),
-                 Voxel_from_Cpp_Voxel(
-                     <Cpp_Voxel*>(address(deref(it).second)))))
+                 ParticleVoxel_from_Cpp_ParticleVoxel(
+                     <Cpp_ParticleVoxel*>(address(deref(it).second)))))
             inc(it)
         return retval
 
+    @deprecated
     def list_voxels_exact(self, Species sp):
-        """list_voxels_exact(sp) -> [ParitcleID, Voxel]
-
-        Returns the list of voxels.
-
-        Parameters
-        ----------
-        sp : Species, optional
-            A species of particles to list up.
-            If no species is given, return a list of all voxels.
-
-        Returns
-        -------
-        list:
-            The list of the pair of ParticleID and Voxel
-
-        """
-        cdef vector[pair[Cpp_ParticleID, Cpp_Voxel]] voxels
+        cdef vector[pair[Cpp_ParticleID, Cpp_ParticleVoxel]] voxels
         voxels = self.thisptr.get().list_voxels_exact(deref(sp.thisptr))
 
         retval = []
-        cdef vector[pair[Cpp_ParticleID, Cpp_Voxel]].iterator \
+        cdef vector[pair[Cpp_ParticleID, Cpp_ParticleVoxel]].iterator \
             it = voxels.begin()
         while it != voxels.end():
             retval.append(
                 (ParticleID_from_Cpp_ParticleID(
                      <Cpp_ParticleID*>(address(deref(it).first))),
-                 Voxel_from_Cpp_Voxel(
-                     <Cpp_Voxel*>(address(deref(it).second)))))
+                 ParticleVoxel_from_Cpp_ParticleVoxel(
+                     <Cpp_ParticleVoxel*>(address(deref(it).second)))))
             inc(it)
         return retval
 
+    @deprecated(suggest="has_particle(pid)")
     def has_voxel(self, ParticleID pid):
-        """has_voxel(pid) -> bool
-
-        Check if a particle exists.
-
-        Parameters
-        ----------
-        pid : ParticleID
-            A particle id of the particle to check
-
-        Returns
-        -------
-        bool:
-            whether a particle associated with a given particle id exists
-
-        """
         return self.thisptr.get().has_voxel(deref(pid.thisptr))
 
     def voxel_radius(self):
@@ -1021,18 +909,6 @@ cdef class SpatiocyteWorld:
         cdef Cpp_Integer3 sizes = self.thisptr.get().shape()
         return Integer3_from_Cpp_Integer3(address(sizes))
 
-    # def inner_size(self):
-    #     """Return the size of inner voxels."""
-    #     return self.thisptr.get().inner_size()
-
-    # def inner_shape(self):
-    #     """inner_shape() -> Integer3
-    #
-    #     Return the triplet of inner sizes of column, row and layer.
-    #
-    #     """
-    #     cdef Cpp_Integer3 sizes = self.thisptr.get().inner_shape()
-    #     return Integer3_from_Cpp_Integer3(address(sizes))
 
     def bind_to(self, m):
         """bind_to(m)
@@ -1047,84 +923,18 @@ cdef class SpatiocyteWorld:
         """
         self.thisptr.get().bind_to(Cpp_Model_from_Model(m))
 
-    def coordinate2position(self, Integer coord):
-        """coordinate2position(coord) -> Real3
+    @deprecated(suggest="voxel.position()")
+    def coordinate2position(self, Voxel voxel):
+        return voxel.position()
 
-        Transform a coordinate to a position.
-
-        """
-        cdef Cpp_Real3 pos = self.thisptr.get().coordinate2position(coord)
-        return Real3_from_Cpp_Real3(address(pos))
-
-    # def coordinate2global(self, Integer coord):
-    #     """coordinate2global(coord) -> Integer3
-    #
-    #     Transform a coordinate to a global coordinate.
-    #
-    #     """
-    #     cdef Cpp_Integer3 g = self.thisptr.get().coordinate2global(coord)
-    #     return Integer3_from_Cpp_Integer3(address(g))
-
-    # def global2coordinate(self, Integer3 coord):
-    #     """global2coordinate(g) -> Integer
-    #
-    #     Transform a global coordinate to a coordinate.
-    #
-    #     Parameters
-    #     ----------
-    #     g : Integer3
-    #         A global coordinate
-    #
-    #     Returns
-    #     -------
-    #     Integer:
-    #         A coordinate
-    #
-    #     """
-    #     return self.thisptr.get().global2coordinate(deref(coord.thisptr))
-
-    # def global2position(self, Integer3 g):
-    #     """global2position(g) -> Real3
-    #
-    #     Transform a global coordinate to a position.
-    #
-    #     Parameters
-    #     ----------
-    #     g : Integer3
-    #         A global coordinate
-    #
-    #     Returns
-    #     -------
-    #     Real3:
-    #         A position
-    #
-    #     """
-    #     cdef Cpp_Real3 pos = self.thisptr.get().global2position(deref(g.thisptr))
-    #     return Real3_from_Cpp_Real3(address(pos))
-
-    # def position2global(self, Real3 pos):
-    #     """position2global(pos) -> Integer3
-    #
-    #     Transform a position to a global coordinate.
-    #
-    #     Parameters
-    #     ----------
-    #     pos : Real3
-    #         A position
-    #
-    #     Returns
-    #     -------
-    #     Integer3:
-    #         A global coordinate
-    #
-    #     """
-    #     cdef Cpp_Integer3 g = self.thisptr.get().position2global(deref(pos.thisptr))
-    #     return Integer3_from_Cpp_Integer3(address(g))
-
+    @deprecated(suggest="get_voxel_near_by(pos)")
     def position2coordinate(self, Real3 pos):
-        """position2coordinate(pos) -> Integer
+        return self.get_voxel_near(pos)
 
-        Transform a position to a coordinate.
+    def get_voxel_near_by(self, Real3 pos):
+        """get_voxel_near_by(pos) -> Voxel
+
+        Get a voxel near by a given position.
 
         Parameters
         ----------
@@ -1133,11 +943,11 @@ cdef class SpatiocyteWorld:
 
         Returns
         -------
-        Integer:
-            A coordinate
+        Voxel:
+            A voxel
 
         """
-        return self.thisptr.get().position2coordinate(deref(pos.thisptr))
+        return wrap_voxel(self.thisptr.get().position2voxel(deref(pos.thisptr)))
 
     def add_structure(self, Species sp, shape):
         """add_structure(sp, shape)
@@ -1154,42 +964,6 @@ cdef class SpatiocyteWorld:
         """
         return self.thisptr.get().add_structure(
             deref(sp.thisptr), deref((<Shape>(shape.as_base())).thisptr))
-
-    def add_interface(self, Species sp):
-        """add_interface(sp, shape)
-
-        Add a interface.
-
-        Parameters
-        ----------
-        sp : Species
-            A species suggesting the interface.
-
-        """
-        return self.thisptr.get().add_interface(deref(sp.thisptr))
-
-    def new_voxel_interface(self, arg1, arg2):
-        """new_voxel_interface(arg1, arg2) -> (ParticleID, Voxel)
-
-        Create a particle.
-
-        Parameters
-        ----------
-        arg1 : Species
-            The Species of particles to create
-        arg2 : Integer
-            A coordinate to place the structure
-
-        Returns
-        -------
-        tuple:
-            A pair of ParticleID and Voxel
-
-        """
-        cdef pair[pair[Cpp_ParticleID, Cpp_Voxel], bool] retval
-
-        retval = self.thisptr.get().new_voxel_interface(deref((<Species> arg1).thisptr), <Integer> arg2)
-        return ((ParticleID_from_Cpp_ParticleID(address(retval.first.first)), Voxel_from_Cpp_Voxel(address(retval.first.second))), retval.second)
 
     def rng(self):
         """Return a random number generator object."""
@@ -1234,10 +1008,10 @@ cdef class SpatiocyteWorld:
 
     def as_base(self):
         """Return self as a base class. Only for developmental use."""
-        retval = Space()
+        retval = WorldInterface()
         del retval.thisptr
-        retval.thisptr = new shared_ptr[Cpp_Space](
-            <shared_ptr[Cpp_Space]>deref(self.thisptr))
+        retval.thisptr = new shared_ptr[Cpp_WorldInterface](
+            <shared_ptr[Cpp_WorldInterface]>deref(self.thisptr))
         return retval
 
 cdef SpatiocyteWorld SpatiocyteWorld_from_Cpp_SpatiocyteWorld(
@@ -1261,6 +1035,13 @@ def create_spatiocyte_world_vector_impl(edge_lengths, voxel_radius, rng):
             deref((<Real3>edge_lengths).thisptr), <Real>voxel_radius,
             deref((<GSLRandomNumberGenerator>rng).thisptr)))
     return SpatiocyteWorld_from_Cpp_SpatiocyteWorld(deref(w))
+
+def create_spatiocyte_world_square_offlattice_impl(edge_length, voxel_radius, rng):
+    cdef shared_ptr[Cpp_SpatiocyteWorld]* world = new shared_ptr[Cpp_SpatiocyteWorld](
+        allocate_spatiocyte_world_square_offlattice_impl(
+            <Real>edge_length, <Real>voxel_radius,
+            deref((<GSLRandomNumberGenerator>rng).thisptr)))
+    return SpatiocyteWorld_from_Cpp_SpatiocyteWorld(deref(world))
 
 ## SpatiocyteSimulator
 #  a python wrapper for Cpp_SpatiocyteSimulator
@@ -1382,52 +1163,17 @@ cdef class SpatiocyteSimulator:
             The list of reaction rules and infos.
 
         """
-        cdef vector[pair[Cpp_ReactionRule, Cpp_ReactionInfo]] reactions = self.thisptr.last_reactions()
-        cdef vector[pair[Cpp_ReactionRule, Cpp_ReactionInfo]].iterator it = reactions.begin()
+        cdef vector[pair[Cpp_ReactionRule, CppReactionInfo]] reactions = self.thisptr.last_reactions()
+        cdef vector[pair[Cpp_ReactionRule, CppReactionInfo]].iterator it = reactions.begin()
         retval = []
         while it != reactions.end():
             retval.append((
                 ReactionRule_from_Cpp_ReactionRule(
                     <Cpp_ReactionRule*>(address(deref(it).first))),
                 ReactionInfo_from_Cpp_ReactionInfo(
-                    <Cpp_ReactionInfo*>(address(deref(it).second)))))
+                    <CppReactionInfo*>(address(deref(it).second)))))
             inc(it)
         return retval
-
-    # def set_alpha(self, Real alpha):
-    #     """set_alpha(alpha)
-
-    #     Set the value of alpha.
-
-    #     Parameters
-    #     ----------
-    #     alpha : Real
-    #         The value of alpha
-
-    #     """
-    #     self.thisptr.set_alpha(alpha)
-
-    # def get_alpha(self):
-    #     """Return the value of alpha."""
-    #     return self.thisptr.get_alpha()
-
-    # def calculate_alpha(self, ReactionRule rule):
-    #     """calculate_alpha(rule) -> Real
-
-    #     Return the recommended value of alpha
-
-    #     Parameters
-    #     ----------
-    #     rule : ReactionRule
-    #         A reaction rule.
-
-    #     Returns
-    #     -------
-    #     Real:
-    #         The recommneded value of alpha
-
-    #     """
-    #     return self.thisptr.calculate_alpha(deref(rule.thisptr))
 
     def model(self):
         """Return the model bound."""

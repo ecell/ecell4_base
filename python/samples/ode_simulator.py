@@ -19,6 +19,10 @@ def ratelaw_func2(reactants, products, volume, t, rr):
         flux *= c/volume
     return flux
 
+def test(Space):
+    print Space.t()
+    return True
+
 def singlerun1():
     L = 1e-16
     edge_length = Real3(L, L, L)
@@ -75,6 +79,20 @@ def singlerun1():
         print("{}\t{}\t{}\t{}".format(
             sim.t(), w.get_value(sp1), w.get_value(sp2), w.get_value(sp3)))
 
+test_list = []
+
+def hoge(space, check_reaction):
+    # When this function returns False, the simulation will be stopped. 
+    #   Please return True to continue the calculation.
+    retval = True
+    global test_list
+    if space.t() > 10.0:
+        print "Oops! 10 seconds expired! Stop!!!"
+        retval = False
+    print ("{}  {}  {} {} reaction: {}".format(space.t(), space.num_molecules(Species("A")), space.num_molecules(Species("B")), space.num_molecules(Species("C")), check_reaction ) )
+    test_list.append(space.t())
+    return retval
+
 def singlerun2():
     L = 1e-16
     edge_length = Real3(L, L, L)
@@ -92,13 +110,17 @@ def singlerun2():
     w = ODEWorld(edge_length)
     w.add_molecules(Species("A"), N)
 
-    sim = ODESimulator(m, w, Explicit_Euler)
-    obs = FixedIntervalNumberObserver(0.01, ["A", "B", "C"])
+    #sim = ODESimulator(m, w, Explicit_Euler)
+    sim = ODESimulator(m, w)
+    #obs = FixedIntervalNumberObserver(0.01, ["A", "B", "C"])
+    obs = FixedIntervalNumberHooker(0.10, hoge)
     sim.run(20.0, obs)
 
-    for data in obs.data():
-        print("{}\t{}\t{}\t{}".format(*data))
+    #for data in obs.data():
+    #    print("{}\t{}\t{}\t{}".format(*data))
 
 # singlerun1()
 singlerun2()
 print("# done")
+print test_list
+    

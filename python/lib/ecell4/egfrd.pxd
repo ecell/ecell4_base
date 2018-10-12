@@ -37,7 +37,6 @@ cdef extern from "ecell4/egfrd/egfrd.hpp" namespace "ecell4::egfrd":
         void set_t(Real t)
         Real t()
         Cpp_Real3& edge_lengths()
-        Cpp_Real3 actual_lengths()
         Cpp_Integer3 matrix_sizes()
         void set_value(Cpp_Species&, Real)
         Real get_value(Cpp_Species&)

@@ -501,8 +501,8 @@ public:
         boost::scoped_ptr<
             typename multi_particle_container_type::transaction_type>
                 tx(pc_.create_transaction());
-        typedef typename multi_particle_container_type::transaction_type::particle_id_pair_generator particle_id_pair_generator;
-        typedef typename multi_particle_container_type::transaction_type::particle_id_pair_and_distance_list particle_id_pair_and_distance_list;
+        // typedef typename multi_particle_container_type::transaction_type::particle_id_pair_generator particle_id_pair_generator;
+        // typedef typename multi_particle_container_type::transaction_type::particle_id_pair_and_distance_list particle_id_pair_and_distance_list;
         last_reaction_setter rs(*this);
         volume_clearer vc(*this);
         BDPropagator<traits_type> ppg(

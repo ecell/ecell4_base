@@ -65,17 +65,28 @@ public:
 
     Species apply_species_attributes(const Species& sp) const
     {
-        for (species_container_type::const_iterator
-            i(species_attributes_.begin()); i != species_attributes_.end(); ++i)
+        typedef std::vector<std::pair<std::string, Species::attribute_type> >
+            attribute_container_type;
+
+        Species ret(sp);
+        for (species_container_type::const_reverse_iterator
+            i(species_attributes_.rbegin()); i != species_attributes_.rend(); ++i)
         {
-            if (spmatch(*i, sp))
+            const Species& pttrn = (*i);
+            if (SpeciesExpressionMatcher(pttrn).match(sp))
             {
-                Species retval(sp);
-                retval.set_attributes(*i);
-                return retval;
+                const attribute_container_type attrs = pttrn.list_attributes();
+                for (attribute_container_type::const_iterator j(attrs.begin());
+                    j != attrs.end(); ++j)
+                {
+                    if (!ret.has_attribute((*j).first))
+                    {
+                        ret.set_attribute((*j).first, (*j).second);
+                    }
+                }
             }
         }
-        return sp;
+        return ret;
     }
 
     // NetfreeModelTraits

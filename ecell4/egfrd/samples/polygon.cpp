@@ -57,11 +57,11 @@ int main(int argc, char **argv)
     const ecell4::Real L(1e2);
     const ecell4::Real3 edge_lengths(L, L, L);
     const ecell4::Integer3 matrix_sizes(3, 3, 3);
-    const ecell4::Real volume(L * L * L);
+    // const ecell4::Real volume(L * L * L);
     const ecell4::Integer N(60);
-    const ecell4::Real kd(0.1), U(0.5);
-    const ecell4::Real ka(kd * volume * (1 - U) / (U * U * N));
-    const ecell4::Real k2(ka), k1(kd);
+    // const ecell4::Real kd(0.1), U(0.5);
+    // const ecell4::Real ka(kd * volume * (1 - U) / (U * U * N));
+    // const ecell4::Real k2(ka), k1(kd);
     // }}}
 
     boost::shared_ptr<ecell4::NetworkModel>

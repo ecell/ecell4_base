@@ -434,7 +434,11 @@ public:
         H5::Attribute attr_sizes(
             group->createAttribute(
                 "matrix_sizes", sizes_type, H5::DataSpace(H5S_SCALAR)));
-        int data[] = {sizes[0], sizes[1], sizes[2]};
+        int data[] = {
+            static_cast<int>(sizes[0]),
+            static_cast<int>(sizes[1]),
+            static_cast<int>(sizes[2])
+            };
         attr_sizes.write(sizes_type, data);
 
         ecell4::extras::save_version_information(fout.get(), std::string("ecell4-egfrd-") + std::string(ECELL4_VERSION));
@@ -1126,6 +1130,12 @@ protected:
         return std::make_pair(next_pos, next_disp);
     }
 
+protected:
+
+    boost::scoped_ptr<particle_space_type> ps_;
+
+    Polygon<position_type> polygon_;
+
 private:
 
     particle_id_generator pidgen_;
@@ -1136,12 +1146,6 @@ private:
      */
     boost::shared_ptr<rng_type> rng_;
     boost::weak_ptr<model_type> model_;
-
-protected:
-
-    boost::scoped_ptr<particle_space_type> ps_;
-
-    Polygon<position_type> polygon_;
 };
 
 template<typename Ttraits_>

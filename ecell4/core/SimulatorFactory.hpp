@@ -1,7 +1,7 @@
 #ifndef ECELL4_SIMULATOR_FACTORY_HPP
 #define ECELL4_SIMULATOR_FACTORY_HPP
 
-#include "Space.hpp"
+#include "WorldInterface.hpp"
 #include "Model.hpp"
 #include "Simulator.hpp"
 
@@ -29,10 +29,10 @@ public:
         ; // do nothing
     }
 
-    virtual Space* create_world(const std::string filename) const = 0;
-    virtual Space* create_world(const Real3& edge_lengths) const = 0;
+    virtual WorldInterface* create_world(const std::string filename) const = 0;
+    virtual WorldInterface* create_world(const Real3& edge_lengths) const = 0;
 
-    virtual Space* create_world(const boost::shared_ptr<Model>& m) const
+    virtual WorldInterface* create_world(const boost::shared_ptr<Model>& m) const
     {
         throw NotSupported("not supported yet");
     }

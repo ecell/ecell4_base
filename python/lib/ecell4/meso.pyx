@@ -3,6 +3,8 @@ from cython cimport address
 from cython.operator cimport dereference as deref, preincrement as inc
 from ecell4.core cimport *
 
+from deprecated import deprecated
+
 
 ## ReactionInfo
 cdef class ReactionInfo:
@@ -192,14 +194,9 @@ cdef class MesoscopicWorld:
         cdef Cpp_Real3 lengths = self.thisptr.get().edge_lengths()
         return Real3_from_Cpp_Real3(address(lengths))
 
+    @deprecated(suggest="edge_lengths()")
     def actual_lengths(self):
-        """actual_lengths() -> Real3
-
-        Return the actual edge lengths of the world.
-        Same as ``edge_lengths``.
-        """
-        cdef Cpp_Real3 lengths = self.thisptr.get().actual_lengths()
-        return Real3_from_Cpp_Real3(address(lengths))
+        return self.edge_lengths()
 
     def matrix_sizes(self):
         """matrix_sizes() -> Integer3
@@ -767,10 +764,10 @@ cdef class MesoscopicWorld:
 
     def as_base(self):
         """Return self as a base class. Only for developmental use."""
-        retval = Space()
+        retval = WorldInterface()
         del retval.thisptr
-        retval.thisptr = new shared_ptr[Cpp_Space](
-            <shared_ptr[Cpp_Space]>deref(self.thisptr))
+        retval.thisptr = new shared_ptr[Cpp_WorldInterface](
+            <shared_ptr[Cpp_WorldInterface]>deref(self.thisptr))
         return retval
 
 cdef MesoscopicWorld MesoscopicWorld_from_Cpp_MesoscopicWorld(

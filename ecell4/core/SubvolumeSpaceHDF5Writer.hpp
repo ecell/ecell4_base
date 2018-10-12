@@ -14,7 +14,9 @@
 
 #include "types.hpp"
 #include "Species.hpp"
-#include "Voxel.hpp"
+#include "ParticleVoxel.hpp"
+
+#include "Space.hpp"  // just for Space::space_kind
 
 
 namespace ecell4
@@ -92,7 +94,7 @@ void save_subvolume_space(const Tspace_& space, H5::Group* root)
     // typedef typename traits_type::h5_voxel_struct h5_voxel_struct;
     typedef typename traits_type::h5_structures_struct h5_structures_struct;
 
-    // typedef std::vector<std::pair<ParticleID, Voxel> >
+    // typedef std::vector<std::pair<ParticleID, ParticleVoxel> >
     //     voxel_container_type;
 
     const unsigned int num_subvolumes(space.num_subvolumes());

@@ -43,7 +43,6 @@ cdef extern from "ecell4/bd/BDWorld.hpp" namespace "ecell4::bd":
         void set_t(Real t)
         Real t()
         Cpp_Real3& edge_lengths()
-        Cpp_Real3 actual_lengths()
         Real get_value(Cpp_Species&)
         Real get_value_exact(Cpp_Species&)
         vector[Cpp_Species] list_species()

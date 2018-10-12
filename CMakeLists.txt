@@ -1,7 +1,9 @@
 cmake_minimum_required(VERSION 2.6)
 # cmake_minimum_required(VERSION 3.0)
 project(ecell4)
-set(PROJECT_VERSION 4.1.4)
+set(PROJECT_VERSION 4.2.0)
+
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fext-numeric-literals")  #XXX: c++11
 
 if(ECELL4_ENABLE_PROFILING)
     add_definitions(-pg -O0)
@@ -9,10 +11,14 @@ if(ECELL4_ENABLE_PROFILING)
     set(CMAKE_SHARED_LINKER_FLAGS "-pg -O0 ${CMAKE_SHARED_LINKER_FLAGS}")
     set(CMAKE_MODULE_LINKER_FLAGS "-pg -O0 ${CMAKE_MODULE_LINKER_FLAGS}")
 else(ECELL4_ENABLE_PROFILING)
-    add_definitions(-O2)
-    set(CMAKE_EXE_LINKER_FLAGS "-O2 ${CMAKE_EXE_LINKER_FLAGS}")
-    set(CMAKE_SHARED_LINKER_FLAGS "-O2 ${CMAKE_SHARED_LINKER_FLAGS}")
-    set(CMAKE_MODULE_LINKER_FLAGS "-O2 ${CMAKE_MODULE_LINKER_FLAGS}")
+    add_definitions(-O2 -Wall)
+    set(CMAKE_EXE_LINKER_FLAGS "-O2 -Wall ${CMAKE_EXE_LINKER_FLAGS}")
+    set(CMAKE_SHARED_LINKER_FLAGS "-O2 -Wall ${CMAKE_SHARED_LINKER_FLAGS}")
+    set(CMAKE_MODULE_LINKER_FLAGS "-O2 -Wall ${CMAKE_MODULE_LINKER_FLAGS}")
+    #XXX:STRICT: add_definitions(-O2 -Wall -Werror)
+    #XXX:STRICT: set(CMAKE_EXE_LINKER_FLAGS "-O2 -Wall -Werror ${CMAKE_EXE_LINKER_FLAGS}")
+    #XXX:STRICT: set(CMAKE_SHARED_LINKER_FLAGS "-O2 -Wall -Werror ${CMAKE_SHARED_LINKER_FLAGS}")
+    #XXX:STRICT: set(CMAKE_MODULE_LINKER_FLAGS "-O2 -Wall -Werror ${CMAKE_MODULE_LINKER_FLAGS}")
 endif(ECELL4_ENABLE_PROFILING)
 include_directories(${PROJECT_SOURCE_DIR})
 include_directories(${PROJECT_BINARY_DIR})
@@ -36,14 +42,21 @@ else()
   set(WITH_HDF5 0)
 endif()
 
-# find_package(Boost COMPONENTS regex)
-if(NOT Boost_FOUND)
-  find_package(Boost REQUIRED)
+find_package(Boost COMPONENTS regex unit_test_framework)
+if(NOT DEFINED Boost_VERSION)
+    message(FATAL_ERROR
+        "ecell4 requires Boost C++ Library. "
+        "If you have already installed it, try `-DBOOST_ROOT=/path/to/boost`")
 else()
-  set(HAVE_BOOST_REGEX 1)
+    include_directories(${Boost_INCLUDE_DIRS})
+    link_directories(${Boost_LIBRARY_DIRS})
 endif()
 
-include_directories(${Boost_INCLUDE_DIRS})
+if(Boost_REGEX_FOUND)
+  set(HAVE_BOOST_REGEX 1)
+else()
+  set(HAVE_BOOST_REGEX 0)
+endif()
 
 find_library(GSL_LIBRARIES gsl)
 find_library(GSL_CBLAS_LIBRARIES gslcblas)
@@ -67,11 +80,19 @@ int main() { std::hash<int>(); return 0; }"
     HAVE_STD_HASH)
 check_include_file_cxx("boost/functional/hash.hpp" HAVE_BOOST_FUNCTIONAL_HASH_HPP)
 
+check_include_file_cxx(chrono HAVE_CHRONO)
+
 include_directories(${CMAKE_BINARY_DIR})
 
 # if (NOT NO_SHARED)
   add_subdirectory(greens_functions)  #XXX: submodule
 # endif()
+
+find_package(PythonInterp ${PY_VERSION})
+find_package(PythonLibs REQUIRED)
+if (PYTHONLIBS_FOUND)
+  include_directories(${PYTHON_INCLUDE_DIRS})
+endif()
 
 add_subdirectory(ecell4)
 add_subdirectory(python)
