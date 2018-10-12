@@ -18,23 +18,26 @@ environment:
     #   PYTHON_VERSION: "3.5.3"
     #   PYTHON_ARCH: "32"
 
-    - PYTHON: "C:\\Python35-x64"
-      PYTHON_VERSION: "3.5.3"
-      PYTHON_ARCH: "64"
-
     # - PYTHON: "C:\\Python36"
     #   PYTHON_VERSION: "3.6.6"
     #   PYTHON_ARCH: "32"
     #   # VCVARSALL: "x86"
+
+    - PYTHON: "C:\\Python37-x64"
+      PYTHON_VERSION: "3.7.0"
+      PYTHON_ARCH: "64"
 
     - PYTHON: "C:\\Python36-x64"
       PYTHON_VERSION: "3.6.6"
       PYTHON_ARCH: "64"
       # VCVARSALL: "x64"
 
-    - PYTHON: "C:\\Python37-x64"
-      PYTHON_VERSION: "3.7.0"
+    - PYTHON: "C:\\Python35-x64"
+      PYTHON_VERSION: "3.5.3"
       PYTHON_ARCH: "64"
+
+cache:
+  - c:\tools\vcpkg\installed\
 
 init:
   - cmd: cmake --version
@@ -54,12 +57,6 @@ install:
 
   # install gsl for build_ext
   - vcpkg install gsl:x64-windows-static
-  # - vcpkg install gsl:x64-windows
-  - dir "C:/tools/vcpkg/"
-  - dir "C:/tools/vcpkg/installed"
-  - dir "C:/tools/vcpkg/installed/x64-windows-static"
-  - dir "C:/tools/vcpkg/installed/x64-windows-static/include"
-  - dir "C:/tools/vcpkg/installed/x64-windows-static/lib"
 
   # - msbuild GSL.sln /p:Configuration=Release /v:d
 
@@ -87,7 +84,6 @@ install:
   - ps: "ls \"C:/Libraries/boost_1_67_0\""
   - echo %CD%
   - python setup.py build_ext -I"C:\Program Files (x86)\HDF_Group\HDF5\1.8.18\include";C:/Libraries/boost_1_67_0;c:/tools/vcpkg/installed/x64-windows-static/include -Lc:/tools/vcpkg/installed/x64-windows-static/lib;"C:\Program Files (x86)\HDF_Group\HDF5\1.8.18\lib"
-  # - python setup.py build_ext -I"C:\Program Files (x86)\HDF_Group\HDF5\1.8.18\include";C:/Libraries/boost_1_67_0;c:/tools/vcpkg/installed/x64-windows/include -Lc:/tools/vcpkg/installed/x64-windows/lib;"C:\Program Files (x86)\HDF_Group\HDF5\1.8.18\lib"
   - "pip install wheel"
   - "python setup.py bdist_wheel -v"
   # - "pip install dist/ecell4-4.0.0b2-cp35-none-win32.whl"
