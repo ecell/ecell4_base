@@ -47,6 +47,11 @@ Basically you can install E-Cell4 on any OS just by running
 pip install ecell
 ```
 
+### Note about Windows
+In Windows environment, all commands should be executed from **Anaconda Prompt** (Not from Command Prompt or PowerShell. You can run Anaconda Prompt from Windows Start Menu).
+This in particular solves the problem of failing to load the DLL used from E-Cell4.
+
+
 Tutorials
 ----------
 
