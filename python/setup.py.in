@@ -59,6 +59,8 @@ DESCRIPTION = (
     "heterogeneous and multi-scale systems like the cell. E-Cell has "
     "multi-algorithm, multi-timescale and multi-spatial-representation as "
     "its central feature.")
+    
+LONG_DESCRIPTION = open(os.path.join("..", "README.md")).read()
 
 class run_tests(Command):
     user_options = []
@@ -232,5 +234,6 @@ setup(
     author_email = "kaizu@riken.jp",
     url = "https://github.com/ecell/ecell4",
     ext_modules = ext_modules,
-    description=DESCRIPTION
+    description=DESCRIPTION,
+    long_description=LONG_DESCRIPTION
     )
