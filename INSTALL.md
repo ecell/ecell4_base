@@ -26,7 +26,7 @@ We recommend that you install [Miniconda](http://conda.pydata.org/miniconda.html
 (**Important**) E-Cell4 for Windows needs `HDF5` version **1.8.17**.
 
 - Install Miniconda for Windows from http://conda.pydata.org/miniconda.html
-- Run the following commands on command prompt
+- Run the following commands on **Anaconda Prompt** (You can run Anaconda Prompt from Windows Start Menu).
 
     ```shell
     conda uninstall hdf5
