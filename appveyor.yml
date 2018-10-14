@@ -18,23 +18,26 @@ environment:
     #   PYTHON_VERSION: "3.5.3"
     #   PYTHON_ARCH: "32"
 
-    - PYTHON: "C:\\Python35-x64"
-      PYTHON_VERSION: "3.5.3"
-      PYTHON_ARCH: "64"
-
     # - PYTHON: "C:\\Python36"
     #   PYTHON_VERSION: "3.6.6"
     #   PYTHON_ARCH: "32"
     #   # VCVARSALL: "x86"
+
+    - PYTHON: "C:\\Python37-x64"
+      PYTHON_VERSION: "3.7.0"
+      PYTHON_ARCH: "64"
 
     - PYTHON: "C:\\Python36-x64"
       PYTHON_VERSION: "3.6.6"
       PYTHON_ARCH: "64"
       # VCVARSALL: "x64"
 
-    - PYTHON: "C:\\Python37-x64"
-      PYTHON_VERSION: "3.7.0"
+    - PYTHON: "C:\\Python35-x64"
+      PYTHON_VERSION: "3.5.3"
       PYTHON_ARCH: "64"
+
+cache:
+  - c:\tools\vcpkg\installed\
 
 init:
   - cmd: cmake --version
@@ -53,13 +56,14 @@ install:
   - cd ..
 
   # install gsl for build_ext
-  - vcpkg install gsl:x64-windows
+  - vcpkg install gsl:x64-windows-static
 
   # - msbuild GSL.sln /p:Configuration=Release /v:d
 
   - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
 
-  - cmake -G "Visual Studio 14 2015 Win64" -D CMAKE_CXX_FLAGS_RELEASE="/MD" -D CMAKE_CXX_FLAGS_DEBUG="/MDd" -D CMAKE_C_FLAGS_DEBUG="/MDd" -DBoost_INCLUDE_DIR=C:/Libraries/boost_1_67_0 -DGSL_INCLUDE_DIR=c:/tools/vcpkg/installed/x64-windows/include -DGSL_CBLAS_LIBRARIES=c:/tools/vcpkg/installed/x64-windows/lib -DGSL_LIBRARIES=c:/tools/vcpkg/installed/x64-windows/lib -DNO_SHARED:BOOL=1 -DNO_BESSEL_TABLE:BOOL=1 .
+  - cmake -G "Visual Studio 14 2015 Win64" -D CMAKE_CXX_FLAGS_RELEASE="/MD" -D CMAKE_CXX_FLAGS_DEBUG="/MDd" -D CMAKE_C_FLAGS_DEBUG="/MDd" -DBoost_INCLUDE_DIR=C:/Libraries/boost_1_67_0 -DGSL_INCLUDE_DIR=c:/tools/vcpkg/installed/x64-windows-static/include -DGSL_CBLAS_LIBRARIES=c:/tools/vcpkg/installed/x64-windows-static/lib -DGSL_LIBRARIES=c:/tools/vcpkg/installed/x64-windows-static/lib -DNO_SHARED:BOOL=1 -DNO_BESSEL_TABLE:BOOL=1 .
+  # - cmake -G "Visual Studio 14 2015 Win64" -D CMAKE_CXX_FLAGS_RELEASE="/MD" -D CMAKE_CXX_FLAGS_DEBUG="/MDd" -D CMAKE_C_FLAGS_DEBUG="/MDd" -DBoost_INCLUDE_DIR=C:/Libraries/boost_1_67_0 -DCMAKE_TOOLCHAIN_FILE=c:/tools/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x86-windows-static -DNO_SHARED:BOOL=1 -DNO_BESSEL_TABLE:BOOL=1 .
 
   # config.h
   - cd ecell4/core
@@ -79,7 +83,7 @@ install:
   - ECHO "ls boost_1_67_0:"
   - ps: "ls \"C:/Libraries/boost_1_67_0\""
   - echo %CD%
-  - python setup.py build_ext -I"C:\Program Files (x86)\HDF_Group\HDF5\1.8.18\include";C:/Libraries/boost_1_67_0;c:/tools/vcpkg/installed/x64-windows/include -Lc:/tools/vcpkg/installed/x64-windows/lib;"C:\Program Files (x86)\HDF_Group\HDF5\1.8.18\lib"
+  - python setup.py build_ext -I"C:\Program Files (x86)\HDF_Group\HDF5\1.8.18\include";C:/Libraries/boost_1_67_0;c:/tools/vcpkg/installed/x64-windows-static/include -Lc:/tools/vcpkg/installed/x64-windows-static/lib;"C:\Program Files (x86)\HDF_Group\HDF5\1.8.18\lib"
   - "pip install wheel"
   - "python setup.py bdist_wheel -v"
   # - "pip install dist/ecell4-4.0.0b2-cp35-none-win32.whl"

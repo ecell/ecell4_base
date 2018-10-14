@@ -108,11 +108,10 @@ if "--disable_hdf5" in sys.argv:
     with_hdf5 = False
     sys.argv.remove("--disable-hdf5")
 
-if sys.platform == "win32" and sys.version_info.major == 2:
-    libraries.extend(['gsl', 'cblas'])
-    extra_compile_args = ["/EHsc", "-DWIN32_MSC", "-DHAVE_CONFIG_H", "-DHAVE_INLINE"]
-    # extra_compile_args.append('-DNO_BESSEL_TABLE')
-elif sys.platform == "win32" and sys.version_info.major == 3:
+if sys.version_info.major < 3:
+    raise RuntimeError("The version must be later than 3. [{}] was given.".format(sys.version))
+
+if sys.platform == "win32":
     libraries.extend(['gsl', 'gslcblas'])
     extra_compile_args = ["/EHsc", "/w", "-DWIN32_MSC", "-DHAVE_CONFIG_H"]  # "-DHAVE_INLINE"
     # extra_compile_args.append('-DNO_BESSEL_TABLE')
