@@ -3,16 +3,6 @@ dist: trusty
 language: cpp
 matrix:
   include:
-  # - os: linux
-  #   compiler: gcc
-  #   language: python
-  #   python: "2.7"
-  #   env: TRAVIS_PYTHON_VERSION="2.7"
-  # - os: linux
-  #   compiler: clang
-  #   language: python
-  #   python: "2.7"
-  #   env: TRAVIS_PYTHON_VERSION="2.7"
   - os: linux
     compiler: gcc
     language: python
@@ -23,9 +13,6 @@ matrix:
     language: python
     python: "3.5"
     env: TRAVIS_PYTHON_VERSION="3.5"
-  # - os: osx
-  #   compiler: clang
-  #   env: TRAVIS_PYTHON_VERSION="2.7"
   - os: osx
     compiler: clang
     env: TRAVIS_PYTHON_VERSION="3.6"
@@ -49,7 +36,7 @@ addons:
     - clang
     - libboost-dev
     - libgsl0-dev
-    - libhdf5-serial-dev
+    # - libhdf5-serial-dev
     # - python-setuptools
     # - python3-setuptools
     - python-dev
@@ -57,27 +44,33 @@ addons:
     - python3
     - python
     - wget
-#    - ffmpeg
+    # - ffmpeg
 
 before_install:
 - if [ "$TRAVIS_OS_NAME" == "osx" ]; then
     brew update;
-    brew install gsl ffmpeg hdf5@1.8;
+    brew install gsl ffmpeg hdf5@1.10;
     brew info hdf5;
-    cp /usr/local/Cellar/hdf5\@1.8/1.8.20_1/include/* /usr/local/include/;
-    cp /usr/local/Cellar/hdf5\@1.8/1.8.20_1/lib/* /usr/local/lib/;
-    if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then
-      brew install python2;
-      which python2;
-      python2 -V
-      brew install freetype;
-    fi;
-    if [[ $TRAVIS_PYTHON_VERSION == 3* ]]; then
-      brew upgrade python;
-      which python3;
-      python3 -V
-      brew install freetype;
-    fi;
+    ls /usr/local/Cellar/;
+    ls /usr/local/Cellar/hdf5;
+    cp /usr/local/Cellar/hdf5/1.10.3/include/* /usr/local/include/;
+    cp /usr/local/Cellar/hdf5/1.10.3/lib/* /usr/local/lib/;
+    brew upgrade python;
+    which python3;
+    python3 -V
+    brew install freetype;
+  fi
+- if [ "$TRAVIS_OS_NAME" == "linux" ]; then
+    ls /opt;
+    pushd /opt;
+    curl -LO https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.4/src/hdf5-1.10.4.tar.bz2;
+    tar xf hdf5-1.10.4.tar.bz2;
+    cd hdf5-1.10.4;
+    ./configure --enable-cxx;
+    make;
+    make install;
+    popd;
+    pwd;
   fi
 
 - which python
@@ -91,14 +84,8 @@ before_install:
   fi
 - if [ "$TRAVIS_OS_NAME" == "osx" ]; then
     curl -O https://bootstrap.pypa.io/get-pip.py;
-    if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then
-      python2 get-pip.py;
-      python2 -m pip install -U cython numpy matplotlib jupyter;
-    fi;
-    if [[ $TRAVIS_PYTHON_VERSION == 3* ]]; then
-      python3 get-pip.py;
-      python3 -m pip install -U cython numpy matplotlib jupyter;
-    fi;
+    python3 get-pip.py;
+    python3 -m pip install -U cython numpy matplotlib jupyter;
   fi
 
 script:
@@ -107,27 +94,15 @@ script:
 - echo ${PYTHON_EXECUTABLE}
 - ls -d /usr/include/python*
 - if [ "$TRAVIS_OS_NAME" == "linux" ]; then
-    if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then
-      export PYTHON_LIBRARY=/opt/python/2.7.14/lib;
-      export PYTHON_INCLUDE_DIR=/opt/python/2.7.14/include/python2.7;
-    fi;
-    if [[ $TRAVIS_PYTHON_VERSION == 3* ]]; then
-      export PYTHON_LIBRARY=/opt/python/3.5.5/lib;
-      export PYTHON_INCLUDE_DIR=/opt/python/3.5.5/include/python3.5m;
-    fi;
+    ls -l /opt/python;
+    export PYTHON_LIBRARY=/opt/python/3.5.5/lib;
+    export PYTHON_INCLUDE_DIR=/opt/python/3.5.5/include/python3.5m;
     echo ${PYTHON_INCLUDE_DIR};
-  fi
-- if [ "$TRAVIS_OS_NAME" == "linux" ]; then
-    bash -c 'wget https://cmake.org/files/v3.12/cmake-3.12.1-Linux-x86_64.tar.gz && tar xf cmake-3.12.1-Linux-x86_64.tar.gz && ./cmake-3.12.1-Linux-x86_64/bin/cmake -DCMAKE_INSTALL_PREFIX=~/local . && make && make test && make install';
+    bash -c 'wget https://cmake.org/files/v3.12/cmake-3.12.1-Linux-x86_64.tar.gz && tar xf cmake-3.12.1-Linux-x86_64.tar.gz && ./cmake-3.12.1-Linux-x86_64/bin/cmake -DCMAKE_POLICY_DEFAULT_CMP0074=NEW -DHDF5_ROOT=/opt/hdf5-1.10.4/hdf5 -DCMAKE_INSTALL_PREFIX=~/local . && make && make test && make install';
     rm CMakeCache.txt;
   fi
 - if [ "$TRAVIS_OS_NAME" == "osx" ]; then
-    if [[ $TRAVIS_PYTHON_VERSION == 2* ]]; then
-      sudo bash -c 'cmake -DCMAKE_INSTALL_PREFIX=/usr/local -DPYTHON_EXECUTABLE:FILEPATH=python2 . && make && make test && make install';
-    fi;
-    if [[ $TRAVIS_PYTHON_VERSION == 3* ]]; then
-      sudo bash -c 'cmake -DCMAKE_INSTALL_PREFIX=/usr/local -DPYTHON_EXECUTABLE:FILEPATH=python3 . && make && ./ecell4/ode/tests/ODESimulator_test && make test && make install';
-    fi;
+    sudo bash -c 'cmake -DCMAKE_INSTALL_PREFIX=/usr/local -DPYTHON_EXECUTABLE:FILEPATH=python3 . && make && make test && make install';
     rm -f CMakeCache.txt;
   fi
 - set +e
