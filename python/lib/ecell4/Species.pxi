@@ -289,6 +289,16 @@ cdef class Species:
         assert sp == self.thisptr
         return self
 
+    def dimension(self, value):
+        """dimension(string) -> Species
+
+        set attribute 'dimension', and return self.
+
+        """
+        cdef Cpp_Species *sp = self.thisptr.dimension_ptr(tostring(value))
+        assert sp == self.thisptr
+        return self
+
     def __reduce__(self):
         return (__rebuild_species, (self.serial(), self.list_attributes()))
 
