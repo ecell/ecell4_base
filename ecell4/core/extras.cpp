@@ -1,4 +1,5 @@
 #include "extras.hpp"
+#include "exceptions.hpp"
 #include <iostream>
 #include <sstream>
 
@@ -20,6 +21,18 @@ namespace extras
 Shape::dimension_kind
 get_dimension_from_model(const Species& species, const boost::shared_ptr<Model>& model)
 {
+    const Shape::dimension_kind DEFAULT_DIMENSION(Shape::THREE);
+
+    if (species.serial().empty())
+        return DEFAULT_DIMENSION;
+
+    if (!model->has_species_attribute(species))
+    {
+        std::stringstream ss;
+        ss << "The model has no attribute for Specis(\"" << species.serial() << "\")";
+        throw NotFound(ss.str());
+    }
+
     const Species& attribute(model->apply_species_attributes(species));
 
     if (attribute.has_attribute("dimension"))
@@ -40,8 +53,7 @@ get_dimension_from_model(const Species& species, const boost::shared_ptr<Model>&
         );
     }
 
-    // The default dimension is three.
-    return Shape::THREE;
+    return DEFAULT_DIMENSION;
 }
 
 #ifdef WITH_HDF5
