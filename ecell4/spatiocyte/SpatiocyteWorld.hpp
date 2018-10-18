@@ -808,9 +808,15 @@ public:
         return model_.lock();
     }
 
-    Shape::dimension_kind get_dimension(const Species& species) const
+    Shape::dimension_kind get_dimension(const Species& species)
     {
-        return extras::get_dimension_from_model(species, lock_model());
+        const dim_map_t::const_iterator itr(dim_map_.find(species));
+        if (itr != dim_map_.end())
+            return itr->second;
+
+        const Shape::dimension_kind dim(extras::get_dimension_from_model(species, lock_model()));
+        dim_map_.insert(dim_map_t::value_type(species, dim));
+        return dim;
     }
 
     /**
@@ -876,6 +882,8 @@ public:
 
 protected:
 
+    typedef utils::get_mapper_mf<Species, Shape::dimension_kind>::type dim_map_t;
+
     std::size_t size_;
     space_container_type spaces_;
 
@@ -886,6 +894,7 @@ protected:
     SerialIDGenerator<ParticleID> sidgen_;
 
     boost::weak_ptr<Model> model_;
+    dim_map_t dim_map_;
 };
 
 inline
