@@ -141,7 +141,7 @@ void StepEvent2D::walk(const Real& alpha)
             const Voxel neighbor(voxel.get_neighbor(*itr));
             boost::shared_ptr<const VoxelPool> target(neighbor.get_voxel_pool());
 
-            if (target->get_dimension() > mpool_->get_dimension())
+            if (world_->get_dimension(target->species()) > Shape::TWO)
                 continue;
 
             if (world_->can_move(voxel, neighbor))

@@ -32,10 +32,8 @@ struct LatticeSpaceHDF5Traits
     struct h5_species_struct {
         double radius;
         double D;
-        // H5std_string location;
         char location[32];
         uint32_t is_structure;
-        uint32_t dimension;
     };
 
     struct h5_voxel_struct {
@@ -77,7 +75,6 @@ struct LatticeSpaceHDF5Traits
         else
             std::strcpy(property.location, loc->species().serial().c_str());
         property.is_structure = mtb->is_structure() ? 1 : 0;
-        property.dimension = mtb->get_dimension();
 
         mtgroup->createAttribute("radius", H5::PredType::IEEE_F64LE, H5::DataSpace(H5S_SCALAR)
             ).write(H5::PredType::IEEE_F64LE, &property.radius);
@@ -89,8 +86,6 @@ struct LatticeSpaceHDF5Traits
         //     ).write(H5::StrType(0, H5T_VARIABLE), &property.location);
         mtgroup->createAttribute("is_structure", H5::PredType::STD_I32LE, H5::DataSpace(H5S_SCALAR)
             ).write(H5::PredType::STD_I32LE, &property.is_structure);
-        mtgroup->createAttribute("dimension", H5::PredType::STD_I32LE, H5::DataSpace(H5S_SCALAR)
-            ).write(H5::PredType::STD_I32LE, &property.dimension);
 
         // Save voxels
         const Integer num_voxels(voxels.size());
@@ -281,7 +276,6 @@ void load_lattice_space(const H5::Group& root, Tspace_* space, const std::string
         // group.openAttribute("location").read(H5::StrType(0, H5T_VARIABLE), property.location);  //XXX: NEVER use "&" for H5std_string when reading.
         group.openAttribute("location").read(H5::StrType(H5::PredType::C_S1, 32), property.location);
         group.openAttribute("is_structure").read(H5::PredType::STD_I32LE, &property.is_structure);
-        group.openAttribute("dimension").read(H5::PredType::STD_I32LE, &property.dimension);
 
         // std::cout << "load_property(" << name << "," << property.radius << "," << property.D << "," << property.location << ");" << std::endl;
 
@@ -318,14 +312,10 @@ void load_lattice_space(const H5::Group& root, Tspace_* space, const std::string
         Species species(*itr);
         traits_type::h5_species_struct property((*struct_map.find(species)).second);
         std::vector<std::pair<ParticleID, Integer> > voxels((*voxels_map.find(species)).second);
-        // if (property.is_structure == 0)
-        //     space->make_molecular_type(species, property.radius, property.D, property.location);
-        // else
-        //     space->make_structure_type(species, static_cast<Shape::dimension_kind>(property.dimension), property.location);
         if (property.is_structure == 0)
             space->make_molecular_type(species, property.radius, property.D, std::string(property.location));
         else
-            space->make_structure_type(species, static_cast<Shape::dimension_kind>(property.dimension), std::string(property.location));
+            space->make_structure_type(species, std::string(property.location));
         space->add_voxels(species, voxels);
     }
 }

@@ -339,8 +339,7 @@ bool VoxelSpaceBase::make_molecular_type(
     return retval.second;
 }
 
-bool VoxelSpaceBase::make_structure_type(const Species& sp,
-    Shape::dimension_kind dimension, const std::string loc)
+bool VoxelSpaceBase::make_structure_type(const Species& sp, const std::string loc)
 {
     voxel_pool_map_type::iterator itr(voxel_pools_.find(sp));
     if (itr != voxel_pools_.end())
@@ -354,7 +353,7 @@ bool VoxelSpaceBase::make_structure_type(const Species& sp,
     }
 
     boost::shared_ptr<VoxelPool>
-        vp(new StructureType(sp, find_voxel_pool(Species(loc)), voxel_radius_, dimension));
+        vp(new StructureType(sp, find_voxel_pool(Species(loc)), voxel_radius_));
     std::pair<voxel_pool_map_type::iterator, bool>
         retval(voxel_pools_.insert(voxel_pool_map_type::value_type(sp, vp)));
     if (!retval.second)

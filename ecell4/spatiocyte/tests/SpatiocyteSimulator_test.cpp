@@ -370,7 +370,8 @@ BOOST_AUTO_TEST_CASE(SpatiocyteSimulator_test_shape)
     sp.set_attribute("location", "Membrane");
 
     boost::shared_ptr<NetworkModel> model(new NetworkModel());
-    (*model).add_species_attribute(sp);
+    model->add_species_attribute(membrane);
+    model->add_species_attribute(sp);
     boost::shared_ptr<GSLRandomNumberGenerator>
         rng(new GSLRandomNumberGenerator());
     boost::shared_ptr<SpatiocyteWorld> world(

@@ -184,7 +184,7 @@ boost::shared_ptr<VoxelPool> LatticeSpaceCellListImpl::get_voxel_pool_at(
 void LatticeSpaceCellListImpl::add_structure(const Species& sp,
     const boost::shared_ptr<const Shape>& s, const std::string loc)
 {
-    make_structure_type(sp, s->dimension(), loc);
+    make_structure_type(sp, loc);
 
     structure_container_type::const_iterator i(structures_.find(sp));
     if (i != structures_.end())

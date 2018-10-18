@@ -122,6 +122,7 @@ cdef extern from "ecell4/core/Species.hpp" namespace "ecell4":
         Cpp_Species* D_ptr(string)
         Cpp_Species* radius_ptr(string)
         Cpp_Species* location_ptr(string)
+        Cpp_Species* dimension_ptr(string)
 
 ## Species
 #  a python wrapper for Cpp_Species

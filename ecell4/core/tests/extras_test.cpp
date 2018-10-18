@@ -8,6 +8,7 @@
 #endif
 
 #include <ecell4/core/extras.hpp>
+#include <ecell4/core/NetworkModel.hpp>
 
 using namespace ecell4;
 
@@ -20,4 +21,19 @@ BOOST_AUTO_TEST_CASE(extras_test_)
     BOOST_CHECK_EQUAL(vinfo.majorno, 1);
     BOOST_CHECK_EQUAL(vinfo.minorno, 2);
     BOOST_CHECK_EQUAL(vinfo.patchno, 3);
+}
+
+BOOST_AUTO_TEST_CASE(DimensionAttributeTest)
+{
+    boost::shared_ptr<NetworkModel> model(new NetworkModel());
+    model->add_species_attribute(Species("A"));
+    model->add_species_attribute(Species("B", 1.0, 0.0, "A"));
+    model->add_species_attribute(Species("C", 1.0, 0.0, "", 2));
+    model->add_species_attribute(Species("D", 1.0, 0.0, "C"));
+
+    BOOST_CHECK_EQUAL(extras::get_dimension_from_model(Species("A"), model), Shape::THREE);
+    BOOST_CHECK_EQUAL(extras::get_dimension_from_model(Species("B"), model), Shape::THREE);
+    BOOST_CHECK_EQUAL(extras::get_dimension_from_model(Species("C"), model), Shape::TWO);
+    BOOST_CHECK_EQUAL(extras::get_dimension_from_model(Species("D"), model), Shape::TWO);
+    BOOST_CHECK_THROW(extras::get_dimension_from_model(Species("E"), model), NotFound);
 }
