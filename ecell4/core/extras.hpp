@@ -104,8 +104,8 @@ VersionInformation parse_version_information(const std::string& version);
 bool check_version_information(const std::string& version, const std::string& required);
 
 #ifdef WITH_HDF5
-void save_version_information(H5::CommonFG* root, const std::string& version);
-std::string load_version_information(const H5::CommonFG& root);
+void save_version_information(H5::H5Location* root, const std::string& version);
+std::string load_version_information(const H5::H5Location& root);
 #endif
 std::string load_version_information(const std::string& filename);
 

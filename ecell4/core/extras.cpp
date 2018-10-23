@@ -57,7 +57,7 @@ get_dimension_from_model(const Species& species, const boost::shared_ptr<Model>&
 }
 
 #ifdef WITH_HDF5
-void save_version_information(H5::CommonFG* root, const std::string& version)
+void save_version_information(H5::H5Location* root, const std::string& version)
 {
     if (version.size() > 32)
     {
@@ -69,7 +69,7 @@ void save_version_information(H5::CommonFG* root, const std::string& version)
     dataset->write(version.c_str(), dataset->getDataType());
 }
 
-std::string load_version_information(const H5::CommonFG& root)
+std::string load_version_information(const H5::H5Location& root)
 {
     using namespace H5;
     char buf[32];
