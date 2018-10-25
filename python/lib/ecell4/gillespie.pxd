@@ -85,6 +85,9 @@ cdef extern from "ecell4/gillespie/GillespieSimulator.hpp" namespace "ecell4::gi
         void run(Real) except +
         void run(Real, shared_ptr[Cpp_Observer]) except +
         void run(Real, vector[shared_ptr[Cpp_Observer]]) except +
+        void run(Real, is_dirty) except +
+        void run(Real, shared_ptr[Cpp_Observer], is_dirty) except +
+        void run(Real, vector[shared_ptr[Cpp_Observer]], is_dirty) except +
 
 ## GillespieSimulator
 #  a python wrapper for Cpp_GillespieSimulator

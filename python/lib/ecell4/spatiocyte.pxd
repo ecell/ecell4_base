@@ -171,6 +171,9 @@ cdef extern from "ecell4/spatiocyte/SpatiocyteSimulator.hpp" namespace "ecell4::
         void run(Real) except +
         void run(Real, shared_ptr[Cpp_Observer]) except +
         void run(Real, vector[shared_ptr[Cpp_Observer]]) except +
+        void run(Real, is_dirty) except +
+        void run(Real, shared_ptr[Cpp_Observer], is_dirty) except +
+        void run(Real, vector[shared_ptr[Cpp_Observer]], is_dirty) except +
 
 ## SpatiocyteSimulator
 #  a python wrapper for Cpp_SpatiocyteSimulator

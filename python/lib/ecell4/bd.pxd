@@ -113,6 +113,9 @@ cdef extern from "ecell4/bd/BDSimulator.hpp" namespace "ecell4::bd":
         void run(Real) except +
         void run(Real, shared_ptr[Cpp_Observer]) except +
         void run(Real, vector[shared_ptr[Cpp_Observer]]) except +
+        void run(Real, is_dirty) except +
+        void run(Real, shared_ptr[Cpp_Observer], is_dirty) except +
+        void run(Real, vector[shared_ptr[Cpp_Observer]], is_dirty) except +
 
 ## BDSimulator
 #  a python wrapper for Cpp_BDSimulator

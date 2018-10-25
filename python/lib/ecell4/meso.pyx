@@ -915,8 +915,8 @@ cdef class MesoscopicSimulator:
         """Return the world bound."""
         return MesoscopicWorld_from_Cpp_MesoscopicWorld(self.thisptr.world())
 
-    def run(self, Real duration, observers=None):
-        """run(duration, observers)
+    def run(self, Real duration, observers=None, is_dirty=None):
+        """run(duration, observers, is_dirty)
 
         Run the simulation.
 
@@ -926,20 +926,34 @@ cdef class MesoscopicSimulator:
             A duration for running a simulation.
             A simulation is expected to be stopped at t() + duration.
         observers : list of Obeservers, optional
-            Observers
+            observers
+        is_dirty : bool, default True
+            If True, call initialize before running.
 
         """
         cdef vector[shared_ptr[Cpp_Observer]] tmp
 
-        if observers is None:
-            self.thisptr.run(duration)
-        elif isinstance(observers, collections.Iterable):
-            for obs in observers:
-                tmp.push_back(deref((<Observer>(obs.as_base())).thisptr))
-            self.thisptr.run(duration, tmp)
+        if is_dirty is None:
+            if observers is None:
+                self.thisptr.run(duration)
+            elif isinstance(observers, collections.Iterable):
+                for obs in observers:
+                    tmp.push_back(deref((<Observer>(obs.as_base())).thisptr))
+                self.thisptr.run(duration, tmp)
+            else:
+                self.thisptr.run(duration,
+                    deref((<Observer>(observers.as_base())).thisptr))
         else:
-            self.thisptr.run(duration,
-                deref((<Observer>(observers.as_base())).thisptr))
+            if observers is None:
+                self.thisptr.run(duration, is_dirty)
+            elif isinstance(observers, collections.Iterable):
+                for obs in observers:
+                    tmp.push_back(deref((<Observer>(obs.as_base())).thisptr))
+                self.thisptr.run(duration, tmp, is_dirty)
+            else:
+                self.thisptr.run(duration,
+                    deref((<Observer>(observers.as_base())).thisptr), is_dirty)
+
 
 cdef MesoscopicSimulator MesoscopicSimulator_from_Cpp_MesoscopicSimulator(
     Cpp_MesoscopicSimulator* s):

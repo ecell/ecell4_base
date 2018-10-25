@@ -129,8 +129,13 @@ public:
         std::cerr << "WARN: set_dt(const Real&) was just ignored." << std::endl;
     }
 
-    void run(const Real& duration)
+    void run(const Real& duration, const bool is_dirty=true)
     {
+        if (is_dirty)
+        {
+            initialize();
+        }
+
         const Real upto(t() + duration);
         while (step(upto))
         {
@@ -138,11 +143,11 @@ public:
         }
     }
 
-    void run(const Real& duration, const boost::shared_ptr<Observer>& observer)
+    void run(const Real& duration, const boost::shared_ptr<Observer>& observer, const bool is_dirty=true)
     {
         std::vector<boost::shared_ptr<Observer> > observers;
         observers.push_back(observer);
-        run(duration, observers);
+        run(duration, observers, is_dirty);
     }
 
     bool fire_observers(
@@ -162,8 +167,13 @@ public:
         return retval;
     }
 
-    void run(const Real& duration, std::vector<boost::shared_ptr<Observer> > observers)
+    void run(const Real& duration, std::vector<boost::shared_ptr<Observer> > observers, const bool is_dirty=true)
     {
+        if (is_dirty)
+        {
+            initialize();
+        }
+
         const Real upto(t() + duration);
 
         std::vector<boost::shared_ptr<Observer> >::iterator
