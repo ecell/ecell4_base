@@ -4,6 +4,7 @@
 #include "WorldInterface.hpp"
 #include "Model.hpp"
 #include "Simulator.hpp"
+#include "extras.hpp"
 
 
 namespace ecell4
@@ -29,19 +30,57 @@ public:
         ; // do nothing
     }
 
-    virtual WorldInterface* create_world(const std::string filename) const = 0;
-    virtual WorldInterface* create_world(const Real3& edge_lengths) const = 0;
-
-    virtual WorldInterface* create_world(const boost::shared_ptr<Model>& m) const
+    virtual world_type* world(const Real3& edge_lengths = ones()) const
     {
-        throw NotSupported("not supported yet");
+        return new world_type(edge_lengths);
     }
 
-    virtual Simulator* create_simulator(
-        const boost::shared_ptr<Model>& model,
-        const boost::shared_ptr<world_type>& world) const = 0;
-    virtual Simulator* create_simulator(
-        const boost::shared_ptr<world_type>& world) const = 0;
+    virtual world_type* world(const std::string filename) const
+    {
+        return new world_type(filename);
+    }
+
+    virtual world_type* world(const boost::shared_ptr<Model>& m) const
+    {
+        return extras::generate_world_from_model(*this, m);
+    }
+
+    virtual simulator_type* simulator(
+        const boost::shared_ptr<world_type>& w, const boost::shared_ptr<Model>& m) const
+    {
+        return new simulator_type(w, m);
+    }
+
+    virtual simulator_type* simulator(const boost::shared_ptr<world_type>& w) const
+    {
+        return new simulator_type(w);
+    }
+
+    world_type* create_world(const std::string filename) const
+    {
+        return this->world(filename);
+    }
+
+    world_type* create_world(const Real3& edge_lengths = ones()) const
+    {
+        return this->world(edge_lengths);
+    }
+
+    world_type* create_world(const boost::shared_ptr<Model>& m) const
+    {
+        return this->world(m);
+    }
+
+    simulator_type* create_simulator(
+        const boost::shared_ptr<world_type>& w, const boost::shared_ptr<Model>& m) const
+    {
+        return this->simulator(w, m);
+    }
+
+    simulator_type* create_simulator(const boost::shared_ptr<world_type>& w) const
+    {
+        return this->simulator(w);
+    }
 };
 
 } // ecell4

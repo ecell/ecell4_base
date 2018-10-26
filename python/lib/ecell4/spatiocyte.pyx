@@ -1052,7 +1052,7 @@ cdef class SpatiocyteSimulator:
 
     """
 
-    def __init__(self, m, w=None):
+    def __init__(self, SpatiocyteWorld w, m=None):
         """SpatiocyteSimulator(m, w)
         SpatiocyteSimulator(w)
 
@@ -1060,22 +1060,20 @@ cdef class SpatiocyteSimulator:
 
         Parameters
         ----------
-        m : Model
-            A model
         w : SpatiocyteWorld
             A world
+        m : Model, optional
+            A model
 
         """
         pass
 
-    def __cinit__(self, m, w=None):
-        if w is None:
-            # Cpp_SpatiocyteSimulator(shared_ptr[Cpp_SpatiocyteWorld])
-            self.thisptr = new Cpp_SpatiocyteSimulator(
-                deref((<SpatiocyteWorld>m).thisptr))
+    def __cinit__(self, SpatiocyteWorld w, m=None):
+        if m is None:
+            self.thisptr = new Cpp_SpatiocyteSimulator(deref(w.thisptr))
         else:
             self.thisptr = new Cpp_SpatiocyteSimulator(
-                Cpp_Model_from_Model(m), deref((<SpatiocyteWorld>w).thisptr))
+                 deref(w.thisptr), Cpp_Model_from_Model(m))
 
     def __dealloc__(self):
         del self.thisptr
@@ -1304,7 +1302,7 @@ cdef class SpatiocyteFactory:
                 shared_ptr[Cpp_SpatiocyteWorld](self.thisptr.create_world(
                     Cpp_Model_from_Model(arg1))))
 
-    def create_simulator(self, arg1, SpatiocyteWorld arg2=None):
+    def create_simulator(self, SpatiocyteWorld arg1, arg2=None):
         """create_simulator(arg1, arg2) -> SpatiocyteSimulator
 
         Return a SpatiocyteSimulator instance.
@@ -1313,13 +1311,8 @@ cdef class SpatiocyteFactory:
         ----------
         arg1 : SpatiocyteWorld
             A world
-
-        or
-
-        arg1 : Model
+        arg2 : Model, optional
             A simulation model
-        arg2 : SpatiocyteWorld
-            A world
 
         Returns
         -------
@@ -1329,8 +1322,8 @@ cdef class SpatiocyteFactory:
         """
         if arg2 is None:
             return SpatiocyteSimulator_from_Cpp_SpatiocyteSimulator(
-                self.thisptr.create_simulator(deref((<SpatiocyteWorld>arg1).thisptr)))
+                self.thisptr.create_simulator(deref(arg1.thisptr)))
         else:
             return SpatiocyteSimulator_from_Cpp_SpatiocyteSimulator(
                 self.thisptr.create_simulator(
-                    Cpp_Model_from_Model(arg1), deref(arg2.thisptr)))
+                    deref(arg1.thisptr), Cpp_Model_from_Model(arg2)))

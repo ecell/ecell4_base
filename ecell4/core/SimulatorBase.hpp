@@ -3,6 +3,7 @@
 
 #include <time.h>
 
+#include "Model.hpp"
 #include "Simulator.hpp"
 #include "EventScheduler.hpp"
 #include "observers.hpp"
@@ -11,7 +12,7 @@
 namespace ecell4
 {
 
-template <typename Tmodel_, typename Tworld_>
+template <typename Tworld_, typename Tmodel_ = Model>
 class SimulatorBase
     : public Simulator
 {
@@ -19,13 +20,14 @@ public:
 
     typedef Tmodel_ model_type;
     typedef Tworld_ world_type;
+    typedef SimulatorBase<world_type, model_type> this_type;
 
 protected:
 
     struct ObserverEvent: Event
     {
         ObserverEvent(
-            SimulatorBase<model_type, world_type>* sim, Observer* obs, const Real& t)
+            this_type* sim, Observer* obs, const Real& t)
             : Event(t), sim_(sim), obs_(obs), running_(true)
         {
             time_ = obs_->next_time();
@@ -52,7 +54,7 @@ protected:
 
     protected:
 
-        SimulatorBase<model_type, world_type>* sim_;
+        this_type* sim_;
         Observer* obs_;
         bool running_;
     };
@@ -67,9 +69,10 @@ protected:
 
 public:
 
-    SimulatorBase(const boost::shared_ptr<model_type>& model,
-        const boost::shared_ptr<world_type>& world)
-        : model_(model), world_(world), num_steps_(0)
+    SimulatorBase(
+        const boost::shared_ptr<world_type>& world,
+        const boost::shared_ptr<model_type>& model)
+        : world_(world), model_(model), num_steps_(0)
     {
         world_->bind_to(model_);
     }
@@ -250,8 +253,8 @@ public:
 
 protected:
 
-    boost::shared_ptr<model_type> model_;
     boost::shared_ptr<world_type> world_;
+    boost::shared_ptr<model_type> model_;
     Integer num_steps_;
 };
 

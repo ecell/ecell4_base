@@ -280,7 +280,7 @@ def run_simulation(
         t = [float(t) * i / 100 for i in range(101)]
 
     obs = ecell4.TimingNumberObserver(t, species_list)
-    sim = f.create_simulator(model, w)
+    sim = f.create_simulator(w, m)
     # sim = f.create_simulator(w)
 
     if not isinstance(observers, collections.Iterable):

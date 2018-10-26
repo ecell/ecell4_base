@@ -39,7 +39,7 @@ BOOST_AUTO_TEST_CASE(MesoscopicSimulator_test_step)
     world->add_molecules(sp1, 10, 0);
     world->add_molecules(sp2, 10, 23);
 
-    MesoscopicSimulator sim(model, world);
+    MesoscopicSimulator sim(world, model);
 
     // sim.set_t(0.0);
     sim.step();

@@ -478,29 +478,28 @@ cdef class GillespieSimulator:
 
     """
 
-    def __init__(self, m, GillespieWorld w=None):
-        """GillespieSimulator(m, w)
-        GillespieSimulator(w)
+    def __init__(self, GillespieWorld w, m=None):
+        """GillespieSimulator(w, m)
 
         Constructor.
 
         Parameters
         ----------
-        m : Model
-            A model
         w : GillespieWorld
             A world
+        m : Model, optional
+            A model
 
         """
         pass
 
-    def __cinit__(self, m, GillespieWorld w=None):
-        if w is None:
+    def __cinit__(self, GillespieWorld w, m=None):
+        if m is None:
             self.thisptr = new Cpp_GillespieSimulator(
-                deref((<GillespieWorld>m).thisptr))
+                deref(w.thisptr))
         else:
             self.thisptr = new Cpp_GillespieSimulator(
-                Cpp_Model_from_Model(m), deref(w.thisptr))
+                deref(w.thisptr), Cpp_Model_from_Model(m))
 
     def __dealloc__(self):
         del self.thisptr
@@ -719,7 +718,7 @@ cdef class GillespieFactory:
                 shared_ptr[Cpp_GillespieWorld](self.thisptr.create_world(
                     Cpp_Model_from_Model(arg1))))
 
-    def create_simulator(self, arg1, GillespieWorld arg2=None):
+    def create_simulator(self, GillespieWorld arg1, arg2=None):
         """create_simulator(arg1, arg2) -> GillespieSimulator
 
         Return a GillespieSimulator instance.
@@ -728,13 +727,8 @@ cdef class GillespieFactory:
         ----------
         arg1 : GillespieWorld
             a world
-
-        or
-
-        arg1 : Model
+        arg2 : Model
             a simulation model
-        arg2 : GillespieWorld
-            a world
 
         Returns
         -------
@@ -744,8 +738,8 @@ cdef class GillespieFactory:
         """
         if arg2 is None:
             return GillespieSimulator_from_Cpp_GillespieSimulator(
-                self.thisptr.create_simulator(deref((<GillespieWorld>arg1).thisptr)))
+                self.thisptr.create_simulator(deref(arg1.thisptr)))
         else:
             return GillespieSimulator_from_Cpp_GillespieSimulator(
                 self.thisptr.create_simulator(
-                    Cpp_Model_from_Model(arg1), deref(arg2.thisptr)))
+                    deref(arg1.thisptr), Cpp_Model_from_Model(arg2)))

@@ -65,7 +65,7 @@ cdef GillespieWorld GillespieWorld_from_Cpp_GillespieWorld(
 cdef extern from "ecell4/gillespie/GillespieSimulator.hpp" namespace "ecell4::gillespie":
     cdef cppclass Cpp_GillespieSimulator "ecell4::gillespie::GillespieSimulator":
         Cpp_GillespieSimulator(
-            shared_ptr[Cpp_Model], shared_ptr[Cpp_GillespieWorld]) except +
+            shared_ptr[Cpp_GillespieWorld], shared_ptr[Cpp_Model]) except +
         Cpp_GillespieSimulator(
             shared_ptr[Cpp_GillespieWorld]) except +
         Integer num_steps()
@@ -105,7 +105,7 @@ cdef extern from "ecell4/gillespie/GillespieFactory.hpp" namespace "ecell4::gill
         Cpp_GillespieWorld* create_world(string)
         Cpp_GillespieWorld* create_world(Cpp_Real3&)
         Cpp_GillespieWorld* create_world(shared_ptr[Cpp_Model])
-        Cpp_GillespieSimulator* create_simulator(shared_ptr[Cpp_Model], shared_ptr[Cpp_GillespieWorld])
+        Cpp_GillespieSimulator* create_simulator(shared_ptr[Cpp_GillespieWorld], shared_ptr[Cpp_Model])
         Cpp_GillespieSimulator* create_simulator(shared_ptr[Cpp_GillespieWorld])
         Cpp_GillespieFactory* rng_ptr(shared_ptr[Cpp_RandomNumberGenerator]&)
 

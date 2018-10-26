@@ -704,38 +704,37 @@ cdef class BDSimulator:
 
     """
 
-    def __init__(self, m, BDWorld w=None, bd_dt_factor=None):
-        """BDSimulator(m, w, bd_dt_factor)
-        BDSimulator(w, bd_dt_factor)
+    def __init__(self, BDWorld w, m=None, bd_dt_factor=None):
+        """BDSimulator(w, m, bd_dt_factor)
 
         Constructor.
 
         Parameters
         ----------
-        m : Model
-            A model
         w : BDWorld
             A world
+        m : Model, optional
+            A model
         bd_dt_factor : Real
 
         """
         pass
 
-    def __cinit__(self, m, BDWorld w=None, bd_dt_factor=None):
-        if w is None:
+    def __cinit__(self, BDWorld w, m=None, bd_dt_factor=None):
+        if m is None:
             if bd_dt_factor is None:
                 self.thisptr = new Cpp_BDSimulator(
-                    deref((<BDWorld>m).thisptr))
+                    deref(w.thisptr))
             else:
                 self.thisptr = new Cpp_BDSimulator(
-                    deref((<BDWorld>m).thisptr), <Real>bd_dt_factor)
+                    deref(w.thisptr), <Real>bd_dt_factor)
         else:
             if bd_dt_factor is None:
                 self.thisptr = new Cpp_BDSimulator(
-                    Cpp_Model_from_Model(m), deref(w.thisptr))
+                    deref(w.thisptr), Cpp_Model_from_Model(m))
             else:
                 self.thisptr = new Cpp_BDSimulator(
-                    Cpp_Model_from_Model(m), deref(w.thisptr),
+                    deref(w.thisptr), Cpp_Model_from_Model(m),
                     <Real>bd_dt_factor)
 
     def __dealloc__(self):
@@ -966,7 +965,7 @@ cdef class BDFactory:
                 shared_ptr[Cpp_BDWorld](self.thisptr.create_world(
                     Cpp_Model_from_Model(arg1))))
 
-    def create_simulator(self, arg1, BDWorld arg2=None):
+    def create_simulator(self, BDWorld arg1, arg2=None):
         """create_simulator(arg1, arg2=None) -> BDSimulator
 
         Return a ``BDSimulator`` instance.
@@ -975,13 +974,8 @@ cdef class BDFactory:
         ----------
         arg1 : BDWorld
             A world
-
-        or
-
-        arg1 : Model
+        arg2 : Model, optional
             A simulation model
-        arg2 : BDWorld
-            A world
 
         Returns
         -------
@@ -991,8 +985,8 @@ cdef class BDFactory:
         """
         if arg2 is None:
             return BDSimulator_from_Cpp_BDSimulator(
-                self.thisptr.create_simulator(deref((<BDWorld>arg1).thisptr)))
+                self.thisptr.create_simulator(deref(arg1.thisptr)))
         else:
             return BDSimulator_from_Cpp_BDSimulator(
                 self.thisptr.create_simulator(
-                    Cpp_Model_from_Model(arg1), deref(arg2.thisptr)))
+                    deref(arg1.thisptr), Cpp_Model_from_Model(arg2)))

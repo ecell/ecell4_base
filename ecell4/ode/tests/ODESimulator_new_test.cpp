@@ -74,7 +74,7 @@ BOOST_AUTO_TEST_CASE(ODESimulator_test_ClasicRR)
     }
 
     ODESolverType type = RUNGE_KUTTA_CASH_KARP54;
-    ODESimulator_New target(new_model, world, type);
+    ODESimulator_New target(world, new_model, type);
 
     Real dt = 0.1;
     target.set_dt(dt);

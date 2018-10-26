@@ -152,7 +152,7 @@ cdef SpatiocyteWorld SpatiocyteWorld_from_Cpp_SpatiocyteWorld(
 cdef extern from "ecell4/spatiocyte/SpatiocyteSimulator.hpp" namespace "ecell4::spatiocyte":
     cdef cppclass Cpp_SpatiocyteSimulator "ecell4::spatiocyte::SpatiocyteSimulator":
         Cpp_SpatiocyteSimulator(
-            shared_ptr[Cpp_Model], shared_ptr[Cpp_SpatiocyteWorld]) except +
+            shared_ptr[Cpp_SpatiocyteWorld], shared_ptr[Cpp_Model]) except +
         Cpp_SpatiocyteSimulator(
             shared_ptr[Cpp_SpatiocyteWorld]) except +
         Integer num_steps()
@@ -191,7 +191,7 @@ cdef extern from "ecell4/spatiocyte/SpatiocyteFactory.hpp" namespace "ecell4::sp
         Cpp_SpatiocyteWorld* create_world(string)
         Cpp_SpatiocyteWorld* create_world(Cpp_Real3&)
         Cpp_SpatiocyteWorld* create_world(shared_ptr[Cpp_Model])
-        Cpp_SpatiocyteSimulator* create_simulator(shared_ptr[Cpp_Model], shared_ptr[Cpp_SpatiocyteWorld])
+        Cpp_SpatiocyteSimulator* create_simulator(shared_ptr[Cpp_SpatiocyteWorld], shared_ptr[Cpp_Model])
         Cpp_SpatiocyteSimulator* create_simulator(shared_ptr[Cpp_SpatiocyteWorld])
         Cpp_SpatiocyteFactory* rng_ptr(shared_ptr[Cpp_RandomNumberGenerator]&)
         @staticmethod

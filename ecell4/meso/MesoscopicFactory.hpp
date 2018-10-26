@@ -21,11 +21,21 @@ class MesoscopicFactory:
 public:
 
     typedef SimulatorFactory<MesoscopicWorld, MesoscopicSimulator> base_type;
+    typedef base_type::world_type world_type;
+    typedef base_type::simulator_type simulator_type;
+    typedef MesoscopicFactory this_type;
 
 public:
 
-    MesoscopicFactory(const Integer3& matrix_sizes = default_matrix_sizes(), const Real subvolume_length = default_subvolume_length())
+    MesoscopicFactory(
+        const Integer3& matrix_sizes = default_matrix_sizes(),
+        const Real subvolume_length = default_subvolume_length())
         : base_type(), rng_(), matrix_sizes_(matrix_sizes), subvolume_length_(subvolume_length)
+    {
+        ; // do nothing
+    }
+
+    virtual ~MesoscopicFactory()
     {
         ; // do nothing
     }
@@ -40,39 +50,29 @@ public:
         return 0.0;
     }
 
-    virtual ~MesoscopicFactory()
-    {
-        ; // do nothing
-    }
-
-    MesoscopicFactory& rng(const boost::shared_ptr<RandomNumberGenerator>& rng)
+    this_type& rng(const boost::shared_ptr<RandomNumberGenerator>& rng)
     {
         rng_ = rng;
         return (*this);
     }
 
-    inline MesoscopicFactory* rng_ptr(const boost::shared_ptr<RandomNumberGenerator>& rng)
+    inline this_type* rng_ptr(const boost::shared_ptr<RandomNumberGenerator>& rng)
     {
         return &(this->rng(rng));  //XXX: == this
     }
 
-    virtual MesoscopicWorld* create_world(const std::string filename) const
-    {
-        return new MesoscopicWorld(filename);
-    }
-
-    virtual MesoscopicWorld* create_world(
+    virtual world_type* world(
         const Real3& edge_lengths = Real3(1, 1, 1)) const
     {
         if (rng_)
         {
             if (matrix_sizes_ != default_matrix_sizes())
             {
-                return new MesoscopicWorld(edge_lengths, matrix_sizes_, rng_);
+                return new world_type(edge_lengths, matrix_sizes_, rng_);
             }
             else if (subvolume_length_ != default_subvolume_length())
             {
-                return new MesoscopicWorld(edge_lengths, subvolume_length_, rng_);
+                return new world_type(edge_lengths, subvolume_length_, rng_);
             }
             else
             {
@@ -82,31 +82,13 @@ public:
         }
         if (matrix_sizes_ != default_matrix_sizes())
         {
-            return new MesoscopicWorld(edge_lengths, matrix_sizes_);
+            return new world_type(edge_lengths, matrix_sizes_);
         }
         else if (subvolume_length_ != default_subvolume_length())
         {
-            return new MesoscopicWorld(edge_lengths, subvolume_length_);
+            return new world_type(edge_lengths, subvolume_length_);
         }
-        return new MesoscopicWorld(edge_lengths);
-    }
-
-    virtual MesoscopicWorld* create_world(const boost::shared_ptr<Model>& m) const
-    {
-        return extras::generate_world_from_model(*this, m);
-    }
-
-    virtual MesoscopicSimulator* create_simulator(
-        const boost::shared_ptr<Model>& model,
-        const boost::shared_ptr<world_type>& world) const
-    {
-        return new MesoscopicSimulator(model, world);
-    }
-
-    virtual MesoscopicSimulator* create_simulator(
-        const boost::shared_ptr<world_type>& world) const
-    {
-        return new MesoscopicSimulator(world);
+        return new world_type(edge_lengths);
     }
 
 protected:

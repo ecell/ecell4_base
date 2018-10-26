@@ -112,7 +112,7 @@ int main(int argc, char** argv)
     boost::shared_ptr<ODEWorld> world(new ODEWorld(edge_lengths));
     world->add_molecules(sp1, N);
 
-    ODESimulator target(model, world, RUNGE_KUTTA_CASH_KARP54);
+    ODESimulator target(world, model, RUNGE_KUTTA_CASH_KARP54);
     target.initialize();
 
     std::cout << world->evaluate(model->reaction_rules()[0]) << std::endl;

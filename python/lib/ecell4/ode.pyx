@@ -379,15 +379,15 @@ cdef class ODESimulator:
 
     """
 
-    def __init__(self, arg1, arg2=None, arg3=None):
+    def __init__(self, ODEWorld w, m=None, solver_type=None):
         """Constructor.
 
         Parameters
         ----------
-        m : Model
-            A model
         w : ODEWorld
             A world
+        m : Model, optional
+            A model
         solver_type : int, optional
             a type of the ode solver.
             Choose one from RUNGE_KUTTA_CASH_KARP54, ROSENBROCK4_CONTROLLER and EULER.
@@ -395,30 +395,16 @@ cdef class ODESimulator:
         """
         pass
 
-    def __cinit__(self, arg1, arg2=None, arg3=None):
-        if arg2 is None or not isinstance(arg2, ODEWorld):
-            if not isinstance(arg1, ODEWorld):
-                raise ValueError(
-                    "An invalid value [{}] for the first argument.".format(repr(arg1))
-                    + " ODEWorld is needed.")
-
-            if arg2 is None:
-                self.thisptr = new Cpp_ODESimulator(
-                    deref((<ODEWorld>arg1).thisptr))
-            else:
-                self.thisptr = new Cpp_ODESimulator(
-                    deref((<ODEWorld>arg1).thisptr),
-                    translate_solver_type(arg2))
+    def __cinit__(self, ODEWorld w, m=None, solver_type=None):
+        if m is None and solver_type is None:
+            self.thisptr = new Cpp_ODESimulator(deref(w.thisptr))
+        elif m is not None and solver_type is None:
+            self.thisptr = new Cpp_ODESimulator(deref(w.thisptr), Cpp_Model_from_Model(m))
+        elif m is None and solver_type is not None:
+            self.thisptr = new Cpp_ODESimulator(deref(w.thisptr), translate_solver_type(solver_type))
         else:
-            if arg3 is None:
-                self.thisptr = new Cpp_ODESimulator(
-                    Cpp_Model_from_Model(arg1),
-                    deref((<ODEWorld>arg2).thisptr))
-            else:
-                self.thisptr = new Cpp_ODESimulator(
-                    Cpp_Model_from_Model(arg1),
-                    deref((<ODEWorld>arg2).thisptr),
-                    translate_solver_type(arg3))
+            self.thisptr = new Cpp_ODESimulator(
+                deref(w.thisptr), Cpp_Model_from_Model(m), translate_solver_type(solver_type))
 
     def __dealloc__(self):
         del self.thisptr
@@ -666,7 +652,7 @@ cdef class ODEFactory:
                 shared_ptr[Cpp_ODEWorld](self.thisptr.create_world(tostring(arg1))))
         raise ValueError("invalid argument")
 
-    def create_simulator(self, arg1, arg2=None):
+    def create_simulator(self, ODEWorld arg1, arg2=None):
         """create_simulator(arg1, arg2) -> ODESimulator
 
         Return a ODESimulator instance.
@@ -675,13 +661,8 @@ cdef class ODEFactory:
         ----------
         arg1 : ODEWorld
             a world
-
-        or
-
-        arg1 : Model
+        arg2 : Model, optional
             a simulation model
-        arg2 : ODEWorld
-            a world
 
         Returns
         -------
@@ -690,16 +671,10 @@ cdef class ODEFactory:
 
         """
         if arg2 is None:
-            if isinstance(arg1, ODEWorld):
-                return ODESimulator_from_Cpp_ODESimulator(
-                    self.thisptr.create_simulator(
-                        deref((<ODEWorld>arg1).thisptr)))
-            else:
-                raise ValueError(
-                    "invalid argument {}.".format(repr(arg1))
-                    + " ODEWorld is needed.")
+            return ODESimulator_from_Cpp_ODESimulator(
+                self.thisptr.create_simulator(deref(arg1.thisptr)))
         else:
             return ODESimulator_from_Cpp_ODESimulator(
                 self.thisptr.create_simulator(
-                    Cpp_Model_from_Model(arg1), # (<NetworkModel>arg1).thisptr,
-                    deref((<ODEWorld>arg2).thisptr)))
+                    deref(arg1.thisptr),
+                    Cpp_Model_from_Model(arg2)))

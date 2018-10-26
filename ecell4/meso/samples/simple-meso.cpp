@@ -42,7 +42,7 @@ void run()
 
     world->add_molecules(Species("A"), 1800);
 
-    simulator_type sim(model, world);
+    simulator_type sim(world, model);
     sim.run(1.0);
 }
 

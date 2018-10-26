@@ -33,7 +33,7 @@ int main(int argc, char **argv)
     world->add_molecules(sp3, 10);
     world->save("test_gillespie.h5");
 
-    GillespieSimulator sim(model, world);
+    GillespieSimulator sim(world, model);
 
     std::cout << "t = " << sim.t()
               << ", A: " << world->num_molecules(sp1)

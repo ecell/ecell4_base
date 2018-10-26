@@ -71,11 +71,11 @@ protected:
 };
 
 class GillespieSimulator
-    : public SimulatorBase<Model, GillespieWorld>
+    : public SimulatorBase<GillespieWorld>
 {
 public:
 
-    typedef SimulatorBase<Model, GillespieWorld> base_type;
+    typedef SimulatorBase<GillespieWorld> base_type;
     typedef ReactionInfo reaction_info_type;
 
 protected:
@@ -425,9 +425,9 @@ protected:
 public:
 
     GillespieSimulator(
-        boost::shared_ptr<Model> model,
-        boost::shared_ptr<GillespieWorld> world)
-        : base_type(model, world)
+        boost::shared_ptr<GillespieWorld> world,
+        boost::shared_ptr<Model> model)
+        : base_type(world, model)
     {
         initialize();
     }

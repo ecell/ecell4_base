@@ -97,7 +97,7 @@ cdef MesoscopicWorld MesoscopicWorld_from_Cpp_MesoscopicWorld(
 cdef extern from "ecell4/meso/MesoscopicSimulator.hpp" namespace "ecell4::meso":
     cdef cppclass Cpp_MesoscopicSimulator "ecell4::meso::MesoscopicSimulator":
         Cpp_MesoscopicSimulator(
-            shared_ptr[Cpp_Model], shared_ptr[Cpp_MesoscopicWorld]) except +
+            shared_ptr[Cpp_MesoscopicWorld], shared_ptr[Cpp_Model]) except +
         Cpp_MesoscopicSimulator(
             shared_ptr[Cpp_MesoscopicWorld]) except +
         Integer num_steps()
@@ -137,7 +137,7 @@ cdef extern from "ecell4/meso/MesoscopicFactory.hpp" namespace "ecell4::meso":
         Cpp_MesoscopicWorld* create_world(string)
         Cpp_MesoscopicWorld* create_world(Cpp_Real3&)
         Cpp_MesoscopicWorld* create_world(shared_ptr[Cpp_Model])
-        Cpp_MesoscopicSimulator* create_simulator(shared_ptr[Cpp_Model], shared_ptr[Cpp_MesoscopicWorld])
+        Cpp_MesoscopicSimulator* create_simulator(shared_ptr[Cpp_MesoscopicWorld], shared_ptr[Cpp_Model])
         Cpp_MesoscopicSimulator* create_simulator(shared_ptr[Cpp_MesoscopicWorld])
         Cpp_MesoscopicFactory* rng_ptr(shared_ptr[Cpp_RandomNumberGenerator]&)
         @staticmethod
