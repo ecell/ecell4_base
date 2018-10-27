@@ -279,10 +279,6 @@ def run_simulation(
     if not isinstance(t, collections.Iterable):
         t = [float(t) * i / 100 for i in range(101)]
 
-    virtual world_type* create_world(const Real3& edge_lengths) const
-    {
-        return new world_type(edge_lengths);
-    }
     obs = ecell4.TimingNumberObserver(t, species_list)
     sim = f.simulator(w, m)
     # sim = f.simulator(w)
