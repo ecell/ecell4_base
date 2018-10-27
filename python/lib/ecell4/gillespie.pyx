@@ -682,8 +682,8 @@ cdef class GillespieFactory:
         assert ptr == self.thisptr
         return self
 
-    def create_world(self, arg1=None):
-        """create_world(arg1=None) -> GillespieWorld
+    def world(self, arg1=None):
+        """world(arg1=None) -> GillespieWorld
 
         Return a GillespieWorld instance.
 
@@ -705,18 +705,67 @@ cdef class GillespieFactory:
         """
         if arg1 is None:
             return GillespieWorld_from_Cpp_GillespieWorld(
-                shared_ptr[Cpp_GillespieWorld](self.thisptr.create_world()))
+                shared_ptr[Cpp_GillespieWorld](self.thisptr.world()))
         elif isinstance(arg1, Real3):
             return GillespieWorld_from_Cpp_GillespieWorld(
                 shared_ptr[Cpp_GillespieWorld](
-                    self.thisptr.create_world(deref((<Real3>arg1).thisptr))))
+                    self.thisptr.world(deref((<Real3>arg1).thisptr))))
         elif isinstance(arg1, str):
             return GillespieWorld_from_Cpp_GillespieWorld(
-                shared_ptr[Cpp_GillespieWorld](self.thisptr.create_world(<string>(arg1))))
+                shared_ptr[Cpp_GillespieWorld](self.thisptr.world(<string>(arg1))))
         else:
             return GillespieWorld_from_Cpp_GillespieWorld(
-                shared_ptr[Cpp_GillespieWorld](self.thisptr.create_world(
+                shared_ptr[Cpp_GillespieWorld](self.thisptr.world(
                     Cpp_Model_from_Model(arg1))))
+
+    def simulator(self, GillespieWorld arg1, arg2=None):
+        """simulator(arg1, arg2) -> GillespieSimulator
+
+        Return a GillespieSimulator instance.
+
+        Parameters
+        ----------
+        arg1 : GillespieWorld
+            a world
+        arg2 : Model
+            a simulation model
+
+        Returns
+        -------
+        GillespieSimulator:
+            the created simulator
+
+        """
+        if arg2 is None:
+            return GillespieSimulator_from_Cpp_GillespieSimulator(
+                self.thisptr.simulator(deref(arg1.thisptr)))
+        else:
+            return GillespieSimulator_from_Cpp_GillespieSimulator(
+                self.thisptr.simulator(
+                    deref(arg1.thisptr), Cpp_Model_from_Model(arg2)))
+
+    def create_world(self, arg1=None):
+        """create_world(arg1=None) -> GillespieWorld
+
+        Return a GillespieWorld instance.
+
+        Parameters
+        ----------
+        arg1 : Real3
+            The lengths of edges of a GillespieWorld created
+
+        or
+
+        arg1 : str
+            The path of a HDF5 file for GillespieWorld
+
+        Returns
+        -------
+        GillespieWorld:
+            the created world
+
+        """
+        return self.world(arg1)
 
     def create_simulator(self, GillespieWorld arg1, arg2=None):
         """create_simulator(arg1, arg2) -> GillespieSimulator
@@ -736,10 +785,4 @@ cdef class GillespieFactory:
             the created simulator
 
         """
-        if arg2 is None:
-            return GillespieSimulator_from_Cpp_GillespieSimulator(
-                self.thisptr.create_simulator(deref(arg1.thisptr)))
-        else:
-            return GillespieSimulator_from_Cpp_GillespieSimulator(
-                self.thisptr.create_simulator(
-                    deref(arg1.thisptr), Cpp_Model_from_Model(arg2)))
+        return self.simulator(arg1, arg2)

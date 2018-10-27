@@ -982,8 +982,8 @@ cdef class EGFRDFactory:
         assert ptr == self.thisptr
         return self
 
-    def create_world(self, arg1=None):
-        """create_world(arg1=None) -> EGFRDWorld
+    def world(self, arg1=None):
+        """world(arg1=None) -> EGFRDWorld
 
         Return a EGFRDWorld instance.
 
@@ -1005,18 +1005,67 @@ cdef class EGFRDFactory:
         """
         if arg1 is None:
             return EGFRDWorld_from_Cpp_EGFRDWorld(
-                shared_ptr[Cpp_EGFRDWorld](self.thisptr.create_world()))
+                shared_ptr[Cpp_EGFRDWorld](self.thisptr.world()))
         elif isinstance(arg1, Real3):
             return EGFRDWorld_from_Cpp_EGFRDWorld(
                 shared_ptr[Cpp_EGFRDWorld](
-                    self.thisptr.create_world(deref((<Real3>arg1).thisptr))))
+                    self.thisptr.world(deref((<Real3>arg1).thisptr))))
         elif isinstance(arg1, str):
             return EGFRDWorld_from_Cpp_EGFRDWorld(
-                shared_ptr[Cpp_EGFRDWorld](self.thisptr.create_world(<string>(arg1))))
+                shared_ptr[Cpp_EGFRDWorld](self.thisptr.world(<string>(arg1))))
         else:
             return EGFRDWorld_from_Cpp_EGFRDWorld(
-                shared_ptr[Cpp_EGFRDWorld](self.thisptr.create_world(
+                shared_ptr[Cpp_EGFRDWorld](self.thisptr.world(
                     Cpp_Model_from_Model(arg1))))
+
+    def simulator(self, EGFRDWorld arg1, arg2=None):
+        """simulator(arg1, arg2) -> EGFRDSimulator
+
+        Return a EGFRDSimulator instance.
+
+        Parameters
+        ----------
+        arg1 : EGFRDWorld
+            A world
+        arg2 : Model, optional
+            A simulation model
+
+        Returns
+        -------
+        EGFRDSimulator:
+            The created simulator
+
+        """
+        if arg2 is None:
+            return EGFRDSimulator_from_Cpp_EGFRDSimulator(
+                self.thisptr.simulator(deref(arg1.thisptr)))
+        else:
+            return EGFRDSimulator_from_Cpp_EGFRDSimulator(
+                self.thisptr.simulator(
+                    deref(arg1.thisptr), Cpp_Model_from_Model(arg2)))
+
+    def create_world(self, arg1=None):
+        """create_world(arg1=None) -> EGFRDWorld
+
+        Return a EGFRDWorld instance.
+
+        Parameters
+        ----------
+        arg1 : Real3
+            The lengths of edges of a EGFRDWorld created
+
+        or
+
+        arg1 : str
+            The path of a HDF5 file for EGFRDWorld
+
+        Returns
+        -------
+        EGFRDWorld:
+            The created world
+
+        """
+        return self.world(arg1)
 
     def create_simulator(self, EGFRDWorld arg1, arg2=None):
         """create_simulator(arg1, arg2) -> EGFRDSimulator
@@ -1036,13 +1085,7 @@ cdef class EGFRDFactory:
             The created simulator
 
         """
-        if arg2 is None:
-            return EGFRDSimulator_from_Cpp_EGFRDSimulator(
-                self.thisptr.create_simulator(deref(arg1.thisptr)))
-        else:
-            return EGFRDSimulator_from_Cpp_EGFRDSimulator(
-                self.thisptr.create_simulator(
-                    deref(arg1.thisptr), Cpp_Model_from_Model(arg2)))
+        return self.simulator(arg1, arg2)
 
 ## BDSimulator
 #  a python wrapper for Cpp_BDSimulator
@@ -1333,7 +1376,70 @@ cdef class BDFactory:
         assert ptr == self.thisptr
         return self
 
-    def create_world(self, arg1):
+    def world(self, arg1=None):
+        """world(arg1=None) -> EGFRDWorld
+
+        Return a EGFRDWorld instance.
+
+        Parameters
+        ----------
+        arg1 : Real3
+            The lengths of edges of a EGFRDWorld created
+
+        or
+
+        arg1 : str
+            The path of a HDF5 file for EGFRDWorld
+
+        Returns
+        -------
+        EGFRDWorld:
+            The created world
+
+        """
+        if arg1 is None:
+            return EGFRDWorld_from_Cpp_EGFRDWorld(
+                shared_ptr[Cpp_EGFRDWorld](
+                    self.thisptr.world()))
+        elif isinstance(arg1, Real3):
+            return EGFRDWorld_from_Cpp_EGFRDWorld(
+                shared_ptr[Cpp_EGFRDWorld](
+                    self.thisptr.world(deref((<Real3>arg1).thisptr))))
+        elif isinstance(arg1, str):
+            return EGFRDWorld_from_Cpp_EGFRDWorld(
+                shared_ptr[Cpp_EGFRDWorld](self.thisptr.world(<string>(arg1))))
+        else:
+            return EGFRDWorld_from_Cpp_EGFRDWorld(
+                shared_ptr[Cpp_EGFRDWorld](self.thisptr.world(
+                    Cpp_Model_from_Model(arg1))))
+
+    def simulator(self, EGFRDWorld arg1, arg2=None):
+        """simulator(arg1, arg2) -> BDSimulator
+
+        Return a BDSimulator instance.
+
+        Parameters
+        ----------
+        arg1 : EGFRDWorld
+            A world
+        arg2 : Model
+            A simulation model
+
+        Returns
+        -------
+        BDSimulator:
+            The created simulator
+
+        """
+        if arg2 is None:
+            return BDSimulator_from_Cpp_BDSimulator(
+                self.thisptr.simulator(deref(arg1.thisptr)))
+        else:
+            return BDSimulator_from_Cpp_BDSimulator(
+                self.thisptr.simulator(
+                    deref(arg1.thisptr), Cpp_Model_from_Model(arg2)))
+
+    def create_world(self, arg1=None):
         """create_world(arg1=None) -> EGFRDWorld
 
         Return a EGFRDWorld instance.
@@ -1354,17 +1460,7 @@ cdef class BDFactory:
             The created world
 
         """
-        if isinstance(arg1, Real3):
-            return EGFRDWorld_from_Cpp_EGFRDWorld(
-                shared_ptr[Cpp_EGFRDWorld](
-                    self.thisptr.create_world(deref((<Real3>arg1).thisptr))))
-        elif isinstance(arg1, str):
-            return EGFRDWorld_from_Cpp_EGFRDWorld(
-                shared_ptr[Cpp_EGFRDWorld](self.thisptr.create_world(<string>(arg1))))
-        else:
-            return EGFRDWorld_from_Cpp_EGFRDWorld(
-                shared_ptr[Cpp_EGFRDWorld](self.thisptr.create_world(
-                    Cpp_Model_from_Model(arg1))))
+        return self.world(arg1)
 
     def create_simulator(self, EGFRDWorld arg1, arg2=None):
         """create_simulator(arg1, arg2) -> BDSimulator
@@ -1384,10 +1480,4 @@ cdef class BDFactory:
             The created simulator
 
         """
-        if arg2 is None:
-            return BDSimulator_from_Cpp_BDSimulator(
-                self.thisptr.create_simulator(deref(arg1.thisptr)))
-        else:
-            return BDSimulator_from_Cpp_BDSimulator(
-                self.thisptr.create_simulator(
-                    deref(arg1.thisptr), Cpp_Model_from_Model(arg2)))
+        return self.simulator(arg1, arg2)

@@ -929,8 +929,8 @@ cdef class BDFactory:
         assert ptr == self.thisptr
         return self
 
-    def create_world(self, arg1=None):
-        """create_world(arg1=None) -> BDWorld
+    def world(self, arg1=None):
+        """world(arg1=None) -> BDWorld
 
         Return a ``BDWorld`` instance.
 
@@ -952,18 +952,67 @@ cdef class BDFactory:
         """
         if arg1 is None:
             return BDWorld_from_Cpp_BDWorld(
-                shared_ptr[Cpp_BDWorld](self.thisptr.create_world()))
+                shared_ptr[Cpp_BDWorld](self.thisptr.world()))
         elif isinstance(arg1, Real3):
             return BDWorld_from_Cpp_BDWorld(
                 shared_ptr[Cpp_BDWorld](
-                    self.thisptr.create_world(deref((<Real3>arg1).thisptr))))
+                    self.thisptr.world(deref((<Real3>arg1).thisptr))))
         elif isinstance(arg1, str):
             return BDWorld_from_Cpp_BDWorld(
-                shared_ptr[Cpp_BDWorld](self.thisptr.create_world(<string>(arg1))))
+                shared_ptr[Cpp_BDWorld](self.thisptr.world(<string>(arg1))))
         else:
             return BDWorld_from_Cpp_BDWorld(
-                shared_ptr[Cpp_BDWorld](self.thisptr.create_world(
+                shared_ptr[Cpp_BDWorld](self.thisptr.world(
                     Cpp_Model_from_Model(arg1))))
+
+    def simulator(self, BDWorld arg1, arg2=None):
+        """simulator(arg1, arg2=None) -> BDSimulator
+
+        Return a ``BDSimulator`` instance.
+
+        Parameters
+        ----------
+        arg1 : BDWorld
+            A world
+        arg2 : Model, optional
+            A simulation model
+
+        Returns
+        -------
+        BDSimulator:
+            The created simulator
+
+        """
+        if arg2 is None:
+            return BDSimulator_from_Cpp_BDSimulator(
+                self.thisptr.simulator(deref(arg1.thisptr)))
+        else:
+            return BDSimulator_from_Cpp_BDSimulator(
+                self.thisptr.simulator(
+                    deref(arg1.thisptr), Cpp_Model_from_Model(arg2)))
+
+    def create_world(self, arg1=None):
+        """create_world(arg1=None) -> BDWorld
+
+        Return a ``BDWorld`` instance.
+
+        Parameters
+        ----------
+        arg1 : Real3
+            The lengths of edges of a ``BDWorld`` created
+
+        or
+
+        arg1 : str
+            The path of a HDF5 file for ``BDWorld``
+
+        Returns
+        -------
+        BDWorld:
+            The created world
+
+        """
+        return self.world(arg1)
 
     def create_simulator(self, BDWorld arg1, arg2=None):
         """create_simulator(arg1, arg2=None) -> BDSimulator
@@ -983,10 +1032,4 @@ cdef class BDFactory:
             The created simulator
 
         """
-        if arg2 is None:
-            return BDSimulator_from_Cpp_BDSimulator(
-                self.thisptr.create_simulator(deref(arg1.thisptr)))
-        else:
-            return BDSimulator_from_Cpp_BDSimulator(
-                self.thisptr.create_simulator(
-                    deref(arg1.thisptr), Cpp_Model_from_Model(arg2)))
+        return self.simulator(arg1, arg2)

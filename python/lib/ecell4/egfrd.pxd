@@ -116,12 +116,12 @@ cdef extern from "ecell4/egfrd/egfrd.hpp" namespace "ecell4::egfrd":
 
     cdef cppclass Cpp_EGFRDFactory "ecell4::egfrd::EGFRDFactory":
         Cpp_EGFRDFactory(Cpp_Integer3&, Real, Integer, Real) except +
-        Cpp_EGFRDWorld* create_world()
-        Cpp_EGFRDWorld* create_world(string)
-        Cpp_EGFRDWorld* create_world(Cpp_Real3&)
-        Cpp_EGFRDWorld* create_world(shared_ptr[Cpp_Model])
-        Cpp_EGFRDSimulator* create_simulator(shared_ptr[Cpp_EGFRDWorld], shared_ptr[Cpp_Model])
-        Cpp_EGFRDSimulator* create_simulator(shared_ptr[Cpp_EGFRDWorld])
+        Cpp_EGFRDWorld* world()
+        Cpp_EGFRDWorld* world(string)
+        Cpp_EGFRDWorld* world(Cpp_Real3&)
+        Cpp_EGFRDWorld* world(shared_ptr[Cpp_Model])
+        Cpp_EGFRDSimulator* simulator(shared_ptr[Cpp_EGFRDWorld], shared_ptr[Cpp_Model])
+        Cpp_EGFRDSimulator* simulator(shared_ptr[Cpp_EGFRDWorld])
         Cpp_EGFRDFactory* rng_ptr(shared_ptr[Cpp_RandomNumberGenerator]&)
         @staticmethod
         Cpp_Integer3 default_matrix_sizes()
@@ -134,12 +134,12 @@ cdef extern from "ecell4/egfrd/egfrd.hpp" namespace "ecell4::egfrd":
 
     cdef cppclass Cpp_BDFactory "ecell4::egfrd::BDFactory":
         Cpp_BDFactory(Cpp_Integer3&, Real, Integer) except +
-        Cpp_EGFRDWorld* create_world()
-        Cpp_EGFRDWorld* create_world(string)
-        Cpp_EGFRDWorld* create_world(Cpp_Real3&)
-        Cpp_EGFRDWorld* create_world(shared_ptr[Cpp_Model])
-        Cpp_BDSimulator* create_simulator(shared_ptr[Cpp_EGFRDWorld], shared_ptr[Cpp_Model])
-        Cpp_BDSimulator* create_simulator(shared_ptr[Cpp_EGFRDWorld])
+        Cpp_EGFRDWorld* world()
+        Cpp_EGFRDWorld* world(string)
+        Cpp_EGFRDWorld* world(Cpp_Real3&)
+        Cpp_EGFRDWorld* world(shared_ptr[Cpp_Model])
+        Cpp_BDSimulator* simulator(shared_ptr[Cpp_EGFRDWorld], shared_ptr[Cpp_Model])
+        Cpp_BDSimulator* simulator(shared_ptr[Cpp_EGFRDWorld])
         Cpp_BDFactory* rng_ptr(shared_ptr[Cpp_RandomNumberGenerator]&)
         @staticmethod
         Cpp_Integer3 default_matrix_sizes()

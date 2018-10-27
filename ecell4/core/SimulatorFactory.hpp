@@ -30,56 +30,50 @@ public:
         ; // do nothing
     }
 
-    virtual world_type* world(const Real3& edge_lengths = ones()) const
+    world_type* world(const Real3& edge_lengths = ones()) const
     {
-        return new world_type(edge_lengths);
+        return create_world(edge_lengths);
     }
 
-    virtual world_type* world(const std::string filename) const
+    world_type* world(const std::string& filename) const
     {
         return new world_type(filename);
     }
 
-    virtual world_type* world(const boost::shared_ptr<Model>& m) const
+    world_type* world(const boost::shared_ptr<Model>& m) const
     {
         return extras::generate_world_from_model(*this, m);
     }
 
-    virtual simulator_type* simulator(
+    simulator_type* simulator(
+        const boost::shared_ptr<world_type>& w, const boost::shared_ptr<Model>& m) const
+    {
+        return create_simulator(w, m);
+    }
+
+    simulator_type* simulator(const boost::shared_ptr<world_type>& w) const
+    {
+        if (boost::shared_ptr<Model> bound_model = w->lock_model())
+        {
+            return create_simulator(w, bound_model);
+        }
+        else
+        {
+            throw std::invalid_argument("A world must be bound to a model.");
+        }
+    }
+
+protected:
+
+    virtual world_type* create_world(const Real3& edge_lengths) const
+    {
+        return new world_type(edge_lengths);
+    }
+
+    virtual simulator_type* create_simulator(
         const boost::shared_ptr<world_type>& w, const boost::shared_ptr<Model>& m) const
     {
         return new simulator_type(w, m);
-    }
-
-    virtual simulator_type* simulator(const boost::shared_ptr<world_type>& w) const
-    {
-        return new simulator_type(w);
-    }
-
-    world_type* create_world(const std::string filename) const
-    {
-        return this->world(filename);
-    }
-
-    world_type* create_world(const Real3& edge_lengths = ones()) const
-    {
-        return this->world(edge_lengths);
-    }
-
-    world_type* create_world(const boost::shared_ptr<Model>& m) const
-    {
-        return this->world(m);
-    }
-
-    simulator_type* create_simulator(
-        const boost::shared_ptr<world_type>& w, const boost::shared_ptr<Model>& m) const
-    {
-        return this->simulator(w, m);
-    }
-
-    simulator_type* create_simulator(const boost::shared_ptr<world_type>& w) const
-    {
-        return this->simulator(w);
     }
 };
 

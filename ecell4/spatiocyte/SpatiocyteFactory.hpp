@@ -54,7 +54,9 @@ public:
         return &(this->rng(rng));  //XXX: == this
     }
 
-    virtual world_type* world(const Real3& edge_lengths = ones()) const
+protected:
+
+    virtual world_type* create_world(const Real3& edge_lengths) const
     {
         if (rng_)
         {

@@ -1266,8 +1266,8 @@ cdef class SpatiocyteFactory:
         assert ptr == self.thisptr
         return self
 
-    def create_world(self, arg1=None):
-        """create_world(arg1=None) -> SpatiocyteWorld
+    def world(self, arg1=None):
+        """world(arg1=None) -> SpatiocyteWorld
 
         Return a SpatiocyteWorld instance.
 
@@ -1289,18 +1289,67 @@ cdef class SpatiocyteFactory:
         """
         if arg1 is None:
             return SpatiocyteWorld_from_Cpp_SpatiocyteWorld(
-                shared_ptr[Cpp_SpatiocyteWorld](self.thisptr.create_world()))
+                shared_ptr[Cpp_SpatiocyteWorld](self.thisptr.world()))
         elif isinstance(arg1, Real3):
             return SpatiocyteWorld_from_Cpp_SpatiocyteWorld(
                 shared_ptr[Cpp_SpatiocyteWorld](
-                    self.thisptr.create_world(deref((<Real3>arg1).thisptr))))
+                    self.thisptr.world(deref((<Real3>arg1).thisptr))))
         elif isinstance(arg1, str):
             return SpatiocyteWorld_from_Cpp_SpatiocyteWorld(
-                shared_ptr[Cpp_SpatiocyteWorld](self.thisptr.create_world(<string>(arg1))))
+                shared_ptr[Cpp_SpatiocyteWorld](self.thisptr.world(<string>(arg1))))
         else:
             return SpatiocyteWorld_from_Cpp_SpatiocyteWorld(
-                shared_ptr[Cpp_SpatiocyteWorld](self.thisptr.create_world(
+                shared_ptr[Cpp_SpatiocyteWorld](self.thisptr.world(
                     Cpp_Model_from_Model(arg1))))
+
+    def simulator(self, SpatiocyteWorld arg1, arg2=None):
+        """simulator(arg1, arg2) -> SpatiocyteSimulator
+
+        Return a SpatiocyteSimulator instance.
+
+        Parameters
+        ----------
+        arg1 : SpatiocyteWorld
+            A world
+        arg2 : Model, optional
+            A simulation model
+
+        Returns
+        -------
+        SpatiocyteSimulator:
+            The created simulator
+
+        """
+        if arg2 is None:
+            return SpatiocyteSimulator_from_Cpp_SpatiocyteSimulator(
+                self.thisptr.simulator(deref(arg1.thisptr)))
+        else:
+            return SpatiocyteSimulator_from_Cpp_SpatiocyteSimulator(
+                self.thisptr.simulator(
+                    deref(arg1.thisptr), Cpp_Model_from_Model(arg2)))
+
+    def create_world(self, arg1=None):
+        """create_world(arg1=None) -> SpatiocyteWorld
+
+        Return a SpatiocyteWorld instance.
+
+        Parameters
+        ----------
+        arg1 : Real3
+            The lengths of edges of a SpatiocyteWorld created
+
+        or
+
+        arg1 : str
+            The path of a HDF5 file for SpatiocyteWorld
+
+        Returns
+        -------
+        SpatiocyteWorld:
+            The created world
+
+        """
+        return self.world(arg1)
 
     def create_simulator(self, SpatiocyteWorld arg1, arg2=None):
         """create_simulator(arg1, arg2) -> SpatiocyteSimulator
@@ -1320,10 +1369,4 @@ cdef class SpatiocyteFactory:
             The created simulator
 
         """
-        if arg2 is None:
-            return SpatiocyteSimulator_from_Cpp_SpatiocyteSimulator(
-                self.thisptr.create_simulator(deref(arg1.thisptr)))
-        else:
-            return SpatiocyteSimulator_from_Cpp_SpatiocyteSimulator(
-                self.thisptr.create_simulator(
-                    deref(arg1.thisptr), Cpp_Model_from_Model(arg2)))
+        return self.simulator(arg1, arg2)

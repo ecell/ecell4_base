@@ -187,12 +187,12 @@ cdef SpatiocyteSimulator SpatiocyteSimulator_from_Cpp_SpatiocyteSimulator(Cpp_Sp
 cdef extern from "ecell4/spatiocyte/SpatiocyteFactory.hpp" namespace "ecell4::spatiocyte":
     cdef cppclass Cpp_SpatiocyteFactory "ecell4::spatiocyte::SpatiocyteFactory":
         Cpp_SpatiocyteFactory(Real) except +
-        Cpp_SpatiocyteWorld* create_world()
-        Cpp_SpatiocyteWorld* create_world(string)
-        Cpp_SpatiocyteWorld* create_world(Cpp_Real3&)
-        Cpp_SpatiocyteWorld* create_world(shared_ptr[Cpp_Model])
-        Cpp_SpatiocyteSimulator* create_simulator(shared_ptr[Cpp_SpatiocyteWorld], shared_ptr[Cpp_Model])
-        Cpp_SpatiocyteSimulator* create_simulator(shared_ptr[Cpp_SpatiocyteWorld])
+        Cpp_SpatiocyteWorld* world()
+        Cpp_SpatiocyteWorld* world(string)
+        Cpp_SpatiocyteWorld* world(Cpp_Real3&)
+        Cpp_SpatiocyteWorld* world(shared_ptr[Cpp_Model])
+        Cpp_SpatiocyteSimulator* simulator(shared_ptr[Cpp_SpatiocyteWorld], shared_ptr[Cpp_Model])
+        Cpp_SpatiocyteSimulator* simulator(shared_ptr[Cpp_SpatiocyteWorld])
         Cpp_SpatiocyteFactory* rng_ptr(shared_ptr[Cpp_RandomNumberGenerator]&)
         @staticmethod
         Real default_voxel_radius()

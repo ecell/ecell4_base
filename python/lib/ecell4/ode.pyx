@@ -619,8 +619,8 @@ cdef class ODEFactory:
     def __dealloc__(self):
         del self.thisptr
 
-    def create_world(self, arg1=None):
-        """create_world(arg1=None) -> ODEWorld
+    def world(self, arg1=None):
+        """world(arg1=None) -> ODEWorld
 
         Return a ODEWorld instance.
 
@@ -642,15 +642,65 @@ cdef class ODEFactory:
         """
         if arg1 is None:
             return ODEWorld_from_Cpp_ODEWorld(
-                shared_ptr[Cpp_ODEWorld](self.thisptr.create_world()))
+                shared_ptr[Cpp_ODEWorld](self.thisptr.world()))
         elif isinstance(arg1, Real3):
             return ODEWorld_from_Cpp_ODEWorld(
                 shared_ptr[Cpp_ODEWorld](
-                    self.thisptr.create_world(deref((<Real3>arg1).thisptr))))
+                    self.thisptr.world(deref((<Real3>arg1).thisptr))))
         elif isinstance(arg1, str):
             return ODEWorld_from_Cpp_ODEWorld(
-                shared_ptr[Cpp_ODEWorld](self.thisptr.create_world(tostring(arg1))))
+                shared_ptr[Cpp_ODEWorld](self.thisptr.world(tostring(arg1))))
         raise ValueError("invalid argument")
+
+    def simulator(self, ODEWorld arg1, arg2=None):
+        """simulator(arg1, arg2) -> ODESimulator
+
+        Return a ODESimulator instance.
+
+        Parameters
+        ----------
+        arg1 : ODEWorld
+            a world
+        arg2 : Model, optional
+            a simulation model
+
+        Returns
+        -------
+        ODESimulator:
+            the created simulator
+
+        """
+        if arg2 is None:
+            return ODESimulator_from_Cpp_ODESimulator(
+                self.thisptr.simulator(deref(arg1.thisptr)))
+        else:
+            return ODESimulator_from_Cpp_ODESimulator(
+                self.thisptr.simulator(
+                    deref(arg1.thisptr),
+                    Cpp_Model_from_Model(arg2)))
+
+    def create_world(self, arg1=None):
+        """create_world(arg1=None) -> ODEWorld
+
+        Return a ODEWorld instance.
+
+        Parameters
+        ----------
+        arg1 : Real3
+            The lengths of edges of a ODEWorld created
+
+        or
+
+        arg1 : str
+            The path of a HDF5 file for ODEWorld
+
+        Returns
+        -------
+        ODEWorld:
+            the created world
+
+        """
+        return self.world(arg1)
 
     def create_simulator(self, ODEWorld arg1, arg2=None):
         """create_simulator(arg1, arg2) -> ODESimulator
@@ -670,11 +720,4 @@ cdef class ODEFactory:
             the created simulator
 
         """
-        if arg2 is None:
-            return ODESimulator_from_Cpp_ODESimulator(
-                self.thisptr.create_simulator(deref(arg1.thisptr)))
-        else:
-            return ODESimulator_from_Cpp_ODESimulator(
-                self.thisptr.create_simulator(
-                    deref(arg1.thisptr),
-                    Cpp_Model_from_Model(arg2)))
+        return self.simulator(arg1, arg2)

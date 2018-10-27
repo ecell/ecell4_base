@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.6)
 project(ecell4)
 set(PROJECT_VERSION 4.2.0)
 
-# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fext-numeric-literals")  #XXX: c++11
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11 -fext-numeric-literals")  #XXX: c++11
 
 if(ECELL4_ENABLE_PROFILING)
     add_definitions(-pg -O0)

@@ -235,7 +235,7 @@ def run_simulation(
         L = ecell4.cbrt(volume)
         edge_lengths = ecell4.Real3(L, L, L)
 
-    w = f.create_world(edge_lengths)
+    w = f.world(edge_lengths)
 
     if unit.HAS_PINT:
         y0 = y0.copy()
@@ -279,9 +279,13 @@ def run_simulation(
     if not isinstance(t, collections.Iterable):
         t = [float(t) * i / 100 for i in range(101)]
 
+    virtual world_type* create_world(const Real3& edge_lengths) const
+    {
+        return new world_type(edge_lengths);
+    }
     obs = ecell4.TimingNumberObserver(t, species_list)
-    sim = f.create_simulator(w, m)
-    # sim = f.create_simulator(w)
+    sim = f.simulator(w, m)
+    # sim = f.simulator(w)
 
     if not isinstance(observers, collections.Iterable):
         observers = (observers, )

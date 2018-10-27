@@ -79,7 +79,7 @@ template<typename Tfactory_>
 typename Tfactory_::world_type* generate_world_from_model(
     const Tfactory_& f, const boost::shared_ptr<Model>& m)
 {
-    typename Tfactory_::world_type* w = f.create_world();
+    typename Tfactory_::world_type* w = f.world();
     w->bind_to(m);
     return w;
 }

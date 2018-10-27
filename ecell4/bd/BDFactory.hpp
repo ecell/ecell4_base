@@ -58,7 +58,9 @@ public:
         return &(this->rng(rng));  //XXX: == this
     }
 
-    virtual world_type* world(const Real3& edge_lengths = ones()) const
+protected:
+
+    virtual world_type* create_world(const Real3& edge_lengths) const
     {
         if (rng_)
         {
@@ -70,7 +72,7 @@ public:
         }
     }
 
-    virtual simulator_type* simulator(
+    virtual simulator_type* create_simulator(
         const boost::shared_ptr<world_type>& w, const boost::shared_ptr<Model>& m) const
     {
         if (bd_dt_factor_ > 0)
@@ -80,18 +82,6 @@ public:
         else
         {
             return new simulator_type(w, m);
-        }
-    }
-
-    virtual simulator_type* simulator(const boost::shared_ptr<world_type>& w) const
-    {
-        if (bd_dt_factor_ > 0)
-        {
-            return new simulator_type(w, bd_dt_factor_);
-        }
-        else
-        {
-            return new simulator_type(w);
         }
     }
 

@@ -86,7 +86,9 @@ public:
         return &(this->rng(rng));  //XXX: == this
     }
 
-    virtual world_type* world(const Real3& edge_lengths = ones()) const
+protected:
+
+    virtual world_type* create_world(const Real3& edge_lengths) const override
     {
         if (rng_)
         {
@@ -111,7 +113,7 @@ public:
         }
     }
 
-    virtual simulator_type* simulator(
+    virtual simulator_type* create_simulator(
         const boost::shared_ptr<world_type>& w, const boost::shared_ptr<Model>& m) const
     {
         if (user_max_shell_size_ != default_user_max_shell_size())
@@ -131,18 +133,6 @@ public:
         else
         {
             return new simulator_type(w, m);
-        }
-    }
-
-    virtual simulator_type* simulator(const boost::shared_ptr<world_type>& w) const
-    {
-        if (boost::shared_ptr<Model> bound_model = w->lock_model())
-        {
-            return simulator(w, bound_model);
-        }
-        else
-        {
-            throw std::invalid_argument("A world must be bound to a model.");
         }
     }
 
@@ -213,7 +203,9 @@ public:
         return &(this->rng(rng));  //XXX: == this
     }
 
-    virtual world_type* world(const Real3& edge_lengths = ones()) const
+protected:
+
+    virtual world_type* create_world(const Real3& edge_lengths) const
     {
         if (rng_)
         {
@@ -238,7 +230,7 @@ public:
         }
     }
 
-    virtual simulator_type* simulator(
+    virtual simulator_type* create_simulator(
         const boost::shared_ptr<world_type>& w, const boost::shared_ptr<Model>& m) const
     {
         if (dissociation_retry_moves_ != default_dissociation_retry_moves())
@@ -253,18 +245,6 @@ public:
         else
         {
             return new simulator_type(w, m);
-        }
-    }
-
-    virtual simulator_type* simulator(const boost::shared_ptr<world_type>& w) const
-    {
-        if (boost::shared_ptr<Model> bound_model = w->lock_model())
-        {
-            return simulator(w, bound_model);
-        }
-        else
-        {
-            throw std::invalid_argument("A world must be bound to a model.");
         }
     }
 

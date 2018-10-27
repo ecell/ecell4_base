@@ -69,27 +69,12 @@ public:
         return &(this->rng(rng));  //XXX: == this
     }
 
-    simulator_type* simulator(
+protected:
+
+    virtual simulator_type* create_simulator(
         const boost::shared_ptr<world_type>& w, const boost::shared_ptr<Model>& m) const
     {
         simulator_type* sim = new simulator_type(w, m, solver_type_);
-        sim->set_dt(dt_);
-
-        if (abs_tol_ > 0)
-        {
-            sim->set_absolute_tolerance(abs_tol_);
-        }
-
-        if (rel_tol_ > 0)
-        {
-            sim->set_relative_tolerance(rel_tol_);
-        }
-        return sim;
-    }
-
-    virtual simulator_type* simulator(const boost::shared_ptr<world_type>& w) const
-    {
-        simulator_type* sim = new simulator_type(w, solver_type_);
         sim->set_dt(dt_);
 
         if (abs_tol_ > 0)
