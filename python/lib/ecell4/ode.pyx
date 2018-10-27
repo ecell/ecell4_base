@@ -700,6 +700,7 @@ cdef class ODEFactory:
             the created world
 
         """
+        import warnings; warnings.warn("Function 'create_world()' has moved to 'world()'", DeprecationWarning)
         return self.world(arg1)
 
     def create_simulator(self, ODEWorld arg1, arg2=None):
@@ -720,4 +721,5 @@ cdef class ODEFactory:
             the created simulator
 
         """
+        import warnings; warnings.warn("Function 'create_simulator()' has moved to 'simulator()'", DeprecationWarning)
         return self.simulator(arg1, arg2)
