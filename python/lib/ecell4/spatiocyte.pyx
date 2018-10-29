@@ -1372,3 +1372,5 @@ cdef class SpatiocyteFactory:
         """
         import warnings; warnings.warn("Function 'create_simulator()' has moved to 'simulator()'", DeprecationWarning)
         return self.simulator(arg1, arg2)
+
+Factory = SpatiocyteFactory  # This is an alias
