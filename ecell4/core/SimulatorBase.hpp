@@ -80,6 +80,8 @@ public:
     SimulatorBase(const boost::shared_ptr<world_type>& world)
         : world_(world), num_steps_(0)
     {
+        std::cerr << "WARNING: Using constructor is deprecated and will be removed."
+            " Give both World and Model." << std::endl;
         if (boost::shared_ptr<model_type> bound_model = world_->lock_model())
         {
             model_ = bound_model;
