@@ -1,4 +1,5 @@
 import collections
+import numbers
 
 from .decorator import get_model, reset_model
 from . import viz
@@ -337,3 +338,31 @@ def ensemble_simulations(N=1, *args, **kwargs):
     """Deprecated"""
     raise RuntimeError(
         "This function was deprecated. Use ecell4.extra.ensemble.ensemble_simulations instread.")
+
+def number_observer(species_list, t=None):
+    """
+    Return a number observer. If t is None, return NumberObserver. If t is a number,
+    return FixedIntervalNumberObserver. If t is an iterable (a list of numbers), return
+    TimingNumberObserver.
+
+    Parameters
+    ----------
+    species_list : list or tuple
+        A list of strings suggesting Species observed.
+    t : float, list or tuple, optional. default None
+        A timing of the observation. See above.
+
+    Returns
+    -------
+    obs : NumberObserver, FixedIntervalNumberObserver or TimingNumberObserver
+    """
+    from ecell4 import NumberObserver, FixedIntervalNumberObserver, TimingNumberObserver
+
+    if t is None:
+        return NumberObserver(species_list)
+    elif isinstance(t, numbers.Number):
+        return FixedIntervalNumberObserver(t, species_list)
+    elif hasattr(t, '__iter__'):
+        return TimingNumberObserver(t, species_list)
+    else:
+        raise TypeError("An invalid type was given. Either number or iterable is required.")
