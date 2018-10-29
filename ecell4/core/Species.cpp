@@ -29,7 +29,7 @@ bool Species::operator>(const Species& rhs) const
 Integer Species::count(const Species& sp) const
 {
     // return count_spmatches(*this, sp);
-    throw NotSupported("deprecated");
+    throw NotSupported("Function 'Species::count' is deprecated. Rather use 'count_species_matches'");
 }
 
 void Species::add_unit(const UnitSpecies& usp)

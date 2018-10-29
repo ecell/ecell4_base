@@ -12,6 +12,7 @@ from core cimport Cpp_Species, Cpp_ReactionRule
 
 cdef extern from "ecell4/core/Context.hpp" namespace "ecell4":
     Cpp_Species format_species(Cpp_Species&)
+    Integer count_species_matches(Cpp_Species, Cpp_Species)
     # string unique_serial(Cpp_Species&)
 
     # bool spmatch(Cpp_Species, Cpp_Species)

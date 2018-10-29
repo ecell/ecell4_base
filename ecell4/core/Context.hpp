@@ -469,6 +469,12 @@ protected:
  * New interfaces for the rule-based modeling
  */
 
+inline Integer count_species_matches(const Species& pttrn, const Species& sp)
+{
+    return static_cast<Integer>(
+        context::rule_based_expression_matcher<Species>(pttrn).count(sp));
+}
+
 inline Species format_species(const Species& sp)
 {
     return context::format_species(sp);

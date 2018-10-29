@@ -334,30 +334,26 @@ cdef Species Species_from_Cpp_Species(Cpp_Species *sp):
 # 
 #     """
 #     return context.spmatch(deref(pttrn.thisptr), deref(sp.thisptr))
-# 
-# def count_spmatches(Species pttrn, Species sp):
-#     """count_spmatches(pttrn, sp) -> Integer
-# 
-#     Count the number of matches for a pattern given as a ``Species``.
-# 
-#     Parameters
-#     ----------
-#     pttrn : Species
-#         A pattern.
-#     sp : Species
-#         A target.
-# 
-#     Returns
-#     -------
-#     Integer:
-#         The number of matches.
-# 
-#     Notes
-#     -----
-#     Rather use ``Species.count``.
-# 
-#     """
-#     return context.count_spmatches(deref(pttrn.thisptr), deref(sp.thisptr))
+
+def count_species_matches(Species pttrn, Species sp):
+    """count_species_matches(pttrn, sp) -> Integer
+
+    Count the number of matches for a pattern given as a ``Species``.
+
+    Parameters
+    ----------
+    pttrn : Species
+        A pattern.
+    sp : Species
+        A target.
+
+    Returns
+    -------
+    Integer:
+        The number of matches.
+
+    """
+    return context.count_species_matches(deref(pttrn.thisptr), deref(sp.thisptr))
 
 def format_species(Species sp):
     """format_species(sp) -> Species

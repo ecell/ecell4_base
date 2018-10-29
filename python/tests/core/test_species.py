@@ -18,7 +18,7 @@ class SpeciesTest(unittest.TestCase):
         sp.add_unit(UnitSpecies('C'))
         sp.add_unit(UnitSpecies('A'))
         self.assertEqual(sp.serial(), 'B.C.A')
-        self.assertEqual(sp.num_units(), 3)
+        self.assertEqual(len(sp.units()), 3)
 
     def test3(self):
         sp = Species('A')
@@ -47,14 +47,13 @@ class SpeciesTest(unittest.TestCase):
                 or (key == 'hoge' and value == 'hage'))
 
     def test4(self):
-        sp = Species()
-        sp.deserialize('A.B.C')
+        sp = Species('A.B.C')
         self.assertEqual(sp.serial(), 'A.B.C')
-        self.assertEqual(sp.num_units(), 3)
+        self.assertEqual(len(sp.units()), 3)
 
         sp.add_unit(UnitSpecies('D'))
         self.assertEqual(sp.serial(), 'A.B.C.D')
-        self.assertEqual(sp.num_units(), 4)
+        self.assertEqual(len(sp.units()), 4)
 
         units = sp.units()
         self.assertEqual(len(units), 4)
@@ -63,7 +62,7 @@ class SpeciesTest(unittest.TestCase):
         sp = Species('X(a,b=c^1).Y(d=e^1,f=g)')
         units = sp.units()
 
-        self.assertEqual(sp.num_units(), 2)
+        self.assertEqual(len(sp.units()), 2)
         self.assertEqual(len(units), 2)
 
         self.assertEqual(units[0].name(), 'X')
