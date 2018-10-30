@@ -546,6 +546,7 @@ cdef extern from "ecell4/core/observers.hpp" namespace "ecell4":
 
     cdef cppclass Cpp_FixedIntervalNumberObserver "ecell4::FixedIntervalNumberObserver":
         Cpp_FixedIntervalNumberObserver(Real, vector[string]) except +
+        Cpp_FixedIntervalNumberObserver(Real) except +
         Real next_time()
         Integer num_steps()
         vector[vector[Real]] data()
@@ -555,6 +556,7 @@ cdef extern from "ecell4/core/observers.hpp" namespace "ecell4":
 
     cdef cppclass Cpp_NumberObserver "ecell4::NumberObserver":
         Cpp_NumberObserver(vector[string]) except +
+        Cpp_NumberObserver() except +
         Real next_time()
         Integer num_steps()
         vector[vector[Real]] data()
@@ -625,6 +627,7 @@ cdef extern from "ecell4/core/observers.hpp" namespace "ecell4":
 
     cdef cppclass Cpp_TimingNumberObserver "ecell4::TimingNumberObserver":
         Cpp_TimingNumberObserver(vector[double], vector[string]) except +  #XXX: vector[Real]
+        Cpp_TimingNumberObserver(vector[double]) except +  #XXX: vector[Real]
         Real next_time()
         Integer num_steps()
         vector[vector[Real]] data()

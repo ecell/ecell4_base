@@ -189,7 +189,7 @@ public:
             i != observers.end(); ++i)
         {
             // (*i)->initialize(world_.get());
-            (*i)->initialize(world_);
+            (*i)->initialize(world_, model_);
         }
 
         EventScheduler scheduler;

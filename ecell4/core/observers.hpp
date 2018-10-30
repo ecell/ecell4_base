@@ -8,6 +8,7 @@
 #include "Space.hpp"
 #include "Species.hpp"
 #include "Real3.hpp"
+#include "Model.hpp"
 #include "Simulator.hpp"
 #include "WorldInterface.hpp"
 
@@ -40,7 +41,7 @@ public:
     }
 
     virtual const Real next_time() const;
-    virtual void initialize(const boost::shared_ptr<WorldInterface>& world);
+    virtual void initialize(const boost::shared_ptr<WorldInterface>& world, const boost::shared_ptr<Model>& model);
     virtual void finalize(const boost::shared_ptr<WorldInterface>& world);
     virtual void reset();
 
@@ -85,7 +86,7 @@ public:
 
     const Real next_time() const;
     const Integer count() const;
-    virtual void initialize(const boost::shared_ptr<WorldInterface>& world);
+    virtual void initialize(const boost::shared_ptr<WorldInterface>& world, const boost::shared_ptr<Model>& model);
     virtual bool fire(const Simulator* sim, const boost::shared_ptr<WorldInterface>& world);
     virtual void reset();
 
@@ -100,7 +101,14 @@ struct NumberLogger
     typedef std::vector<std::vector<Real> > data_container_type;
     typedef std::vector<Species> species_container_type;
 
+    NumberLogger()
+        : all_species(true)
+    {
+        ;
+    }
+
     NumberLogger(const std::vector<std::string>& species)
+        : all_species(species.size() == 0)
     {
         targets.reserve(species.size());
         for (std::vector<std::string>::const_iterator i(species.begin());
@@ -130,6 +138,7 @@ struct NumberLogger
 
     data_container_type data;
     species_container_type targets;
+    const bool all_species;
 };
 
 class FixedIntervalNumberObserver
@@ -147,12 +156,18 @@ public:
         ;
     }
 
+    FixedIntervalNumberObserver(const Real& dt)
+        : base_type(dt), logger_()
+    {
+        ;
+    }
+
     virtual ~FixedIntervalNumberObserver()
     {
         ;
     }
 
-    virtual void initialize(const boost::shared_ptr<WorldInterface>& world);
+    virtual void initialize(const boost::shared_ptr<WorldInterface>& world, const boost::shared_ptr<Model>& model);
     virtual bool fire(const Simulator* sim, const boost::shared_ptr<WorldInterface>& world);
     virtual void reset();
     NumberLogger::data_container_type data() const;
@@ -183,12 +198,18 @@ public:
         ;
     }
 
+    NumberObserver()
+        : base_type(true), logger_()
+    {
+        ;
+    }
+
     virtual ~NumberObserver()
     {
         ;
     }
 
-    virtual void initialize(const boost::shared_ptr<WorldInterface>& world);
+    virtual void initialize(const boost::shared_ptr<WorldInterface>& world, const boost::shared_ptr<Model>& model);
     virtual void finalize(const boost::shared_ptr<WorldInterface>& world);
     virtual bool fire(const Simulator* sim, const boost::shared_ptr<WorldInterface>& world);
     virtual void reset();
@@ -232,7 +253,7 @@ public:
         return num_steps_;
     }
 
-    virtual void initialize(const boost::shared_ptr<WorldInterface>& world);
+    virtual void initialize(const boost::shared_ptr<WorldInterface>& world, const boost::shared_ptr<Model>& model);
     virtual bool fire(const Simulator* sim, const boost::shared_ptr<WorldInterface>& world);
     virtual void reset();
 
@@ -259,12 +280,18 @@ public:
         ;
     }
 
+    TimingNumberObserver(const std::vector<Real>& t)
+        : base_type(t), logger_()
+    {
+        ;
+    }
+
     virtual ~TimingNumberObserver()
     {
         ;
     }
 
-    virtual void initialize(const boost::shared_ptr<WorldInterface>& world);
+    virtual void initialize(const boost::shared_ptr<WorldInterface>& world, const boost::shared_ptr<Model>& model);
     virtual bool fire(const Simulator* sim, const boost::shared_ptr<WorldInterface>& world);
     virtual void reset();
     NumberLogger::data_container_type data() const;
@@ -300,7 +327,7 @@ public:
         ;
     }
 
-    virtual void initialize(const boost::shared_ptr<WorldInterface>& world);
+    virtual void initialize(const boost::shared_ptr<WorldInterface>& world, const boost::shared_ptr<Model>& model);
     virtual bool fire(const Simulator* sim, const boost::shared_ptr<WorldInterface>& world);
 
     inline const std::string filename() const
@@ -450,7 +477,7 @@ public:
         ;
     }
 
-    virtual void initialize(const boost::shared_ptr<WorldInterface>& world);
+    virtual void initialize(const boost::shared_ptr<WorldInterface>& world, const boost::shared_ptr<Model>& model);
     virtual bool fire(const Simulator* sim, const boost::shared_ptr<WorldInterface>& world);
     void log(const boost::shared_ptr<WorldInterface>& world);
     const std::string filename() const;
@@ -506,7 +533,7 @@ public:
         ;
     }
 
-    virtual void initialize(const boost::shared_ptr<WorldInterface>& world);
+    virtual void initialize(const boost::shared_ptr<WorldInterface>& world, const boost::shared_ptr<Model>& model);
     virtual bool fire(const Simulator* sim, const boost::shared_ptr<WorldInterface>& world);
     void log(const boost::shared_ptr<WorldInterface>& world);
     const std::string filename() const;
@@ -714,7 +741,7 @@ public:
         return event_.count;
     }
 
-    void initialize(const boost::shared_ptr<WorldInterface>& world)
+    void initialize(const boost::shared_ptr<WorldInterface>& world, const boost::shared_ptr<Model>& model)
     {
         event_.initialize(world->t());
         subevent_.initialize(world->t());
@@ -971,7 +998,7 @@ public:
         ;
     }
 
-    virtual void initialize(const boost::shared_ptr<WorldInterface>& world);
+    virtual void initialize(const boost::shared_ptr<WorldInterface>& world, const boost::shared_ptr<Model>& model);
     virtual void finalize(const boost::shared_ptr<WorldInterface>& world);
     virtual bool fire(const Simulator* sim, const boost::shared_ptr<WorldInterface>& world);
     virtual void reset();
@@ -1048,7 +1075,7 @@ public:
     const Integer num_steps() const;
     const Integer count() const;
     const Integer num_tracers() const;
-    virtual void initialize(const boost::shared_ptr<WorldInterface>& world);
+    virtual void initialize(const boost::shared_ptr<WorldInterface>& world, const boost::shared_ptr<Model>& model);
     virtual bool fire(const Simulator* sim, const boost::shared_ptr<WorldInterface>& world);
     virtual void reset();
 

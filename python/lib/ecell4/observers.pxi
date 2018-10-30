@@ -14,8 +14,7 @@ cdef class Observer:
 
     def __cinit__(self):
         self.thisptr = new shared_ptr[Cpp_Observer](
-            <Cpp_Observer*>(new Cpp_FixedIntervalNumberObserver(
-                0.0, vector[string]()))) #XXX: DUMMY
+            <Cpp_Observer*>(new Cpp_FixedIntervalNumberObserver(0.0))) #XXX: DUMMY
 
     def __dealloc__(self):
         del self.thisptr
@@ -95,26 +94,31 @@ cdef class FixedIntervalNumberObserver:
 
     """
 
-    def __init__(self, Real dt, species):
+    def __init__(self, Real dt, species=None):
         """Constructor.
 
         Parameters
         ----------
         dt : float
             A step interval for logging.
-        species : list
+        species : list, optional. default None
             A list of strings, but not of ``Species``.
             The strings suggest serials of ``Species`` to be observed.
+            If None, all the species will be logged.
 
         """
         pass  # XXX: Only used for doc string
 
-    def __cinit__(self, Real dt, species):
+    def __cinit__(self, Real dt, species=None):
         cdef vector[string] cpp_species
-        for serial in species:
-            cpp_species.push_back(tostring(serial))
-        self.thisptr = new shared_ptr[Cpp_FixedIntervalNumberObserver](
-            new Cpp_FixedIntervalNumberObserver(dt, cpp_species))
+        if species is None:
+            self.thisptr = new shared_ptr[Cpp_FixedIntervalNumberObserver](
+                new Cpp_FixedIntervalNumberObserver(dt))
+        else:
+            for serial in species:
+                cpp_species.push_back(tostring(serial))
+            self.thisptr = new shared_ptr[Cpp_FixedIntervalNumberObserver](
+                new Cpp_FixedIntervalNumberObserver(dt, cpp_species))
 
     def __dealloc__(self):
         del self.thisptr
@@ -194,24 +198,29 @@ cdef class NumberObserver:
 
     """
 
-    def __init__(self, species):
+    def __init__(self, species=None):
         """Constructor.
 
         Parameters
         ----------
-        species : list
+        species : list, optional. default None
             A list of strings, but not of ``Species``.
             The strings suggest serials of ``Species`` to be observed.
+            If None, all the species will be logged.
 
         """
         pass  # XXX: Only used for doc string
 
-    def __cinit__(self, species):
+    def __cinit__(self, species=None):
         cdef vector[string] cpp_species
-        for serial in species:
-            cpp_species.push_back(tostring(serial))
-        self.thisptr = new shared_ptr[Cpp_NumberObserver](
-            new Cpp_NumberObserver(cpp_species))
+        if species is None:
+            self.thisptr = new shared_ptr[Cpp_NumberObserver](
+                new Cpp_NumberObserver())
+        else:
+            for serial in species:
+                cpp_species.push_back(tostring(serial))
+            self.thisptr = new shared_ptr[Cpp_NumberObserver](
+                new Cpp_NumberObserver(cpp_species))
 
     def __dealloc__(self):
         del self.thisptr
@@ -289,7 +298,7 @@ cdef class TimingNumberObserver:
 
     """
 
-    def __init__(self, vector[double] t, species):  #XXX: vector[Real]
+    def __init__(self, vector[double] t, species=None):  #XXX: vector[Real]
         """Constructor.
 
         Parameters
@@ -300,16 +309,21 @@ cdef class TimingNumberObserver:
         species : list
             A list of strings, but not of ``Species``.
             The strings suggest serials of ``Species`` to be observed.
+            If None, all the species will be logged.
 
         """
         pass  # XXX: Only used for doc string
 
-    def __cinit__(self, vector[double] t, species):  #XXX: vector[Real]
+    def __cinit__(self, vector[double] t, species=None):  #XXX: vector[Real]
         cdef vector[string] cpp_species
-        for serial in species:
-            cpp_species.push_back(tostring(serial))
-        self.thisptr = new shared_ptr[Cpp_TimingNumberObserver](
-            new Cpp_TimingNumberObserver(t, cpp_species))
+        if species is None:
+            self.thisptr = new shared_ptr[Cpp_TimingNumberObserver](
+                new Cpp_TimingNumberObserver(t))
+        else:
+            for serial in species:
+                cpp_species.push_back(tostring(serial))
+            self.thisptr = new shared_ptr[Cpp_TimingNumberObserver](
+                new Cpp_TimingNumberObserver(t, cpp_species))
 
     def __dealloc__(self):
         del self.thisptr

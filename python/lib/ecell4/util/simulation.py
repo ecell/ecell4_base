@@ -335,7 +335,7 @@ def run_simulation(
             'An invald value for "return_type" was given [{}].'.format(str(return_type))
             + 'Use "none" if you need nothing to be returned.')
 
-def number_observer(t, species_list):
+def number_observer(t=None, targets=None):
     """
     Return a number observer. If t is None, return NumberObserver. If t is a number,
     return FixedIntervalNumberObserver. If t is an iterable (a list of numbers), return
@@ -343,9 +343,9 @@ def number_observer(t, species_list):
 
     Parameters
     ----------
-    t : float, list or tuple
+    t : float, list or tuple, optional. default None
         A timing of the observation. See above.
-    species_list : list or tuple
+    targets : list or tuple, optional. default None
         A list of strings suggesting Species observed.
 
     Returns
@@ -355,10 +355,10 @@ def number_observer(t, species_list):
     from ecell4 import NumberObserver, FixedIntervalNumberObserver, TimingNumberObserver
 
     if t is None:
-        return NumberObserver(species_list)
+        return NumberObserver(targets)
     elif isinstance(t, numbers.Number):
-        return FixedIntervalNumberObserver(t, species_list)
+        return FixedIntervalNumberObserver(t, targets)
     elif hasattr(t, '__iter__'):
-        return TimingNumberObserver(t, species_list)
+        return TimingNumberObserver(t, targets)
     else:
         raise TypeError("An invalid type was given. Either number or iterable is required.")
