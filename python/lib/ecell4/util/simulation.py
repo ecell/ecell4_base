@@ -218,13 +218,8 @@ def run_simulation(
     if model is None:
         model = ecell4.util.decorator.get_model(is_netfree, without_reset)
 
-    if isinstance(volume, ecell4.Real3):
-        edge_lengths = volume
-    else:
-        L = ecell4.cbrt(volume)
-        edge_lengths = ecell4.Real3(L, L, L)
-
-    w = f.world(edge_lengths)
+    w = f.world(volume)
+    edge_lengths = w.edge_lengths()
 
     if unit.HAS_PINT:
         y0 = y0.copy()

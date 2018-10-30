@@ -5,6 +5,7 @@
 #include "Model.hpp"
 #include "Simulator.hpp"
 #include "extras.hpp"
+#include "functions.hpp"
 
 
 namespace ecell4
@@ -33,6 +34,11 @@ public:
     world_type* world(const Real3& edge_lengths = ones()) const
     {
         return create_world(edge_lengths);
+    }
+
+    world_type* world(const Real volume) const
+    {
+        return world(ones() * cbrt(volume));
     }
 
     world_type* world(const std::string& filename) const

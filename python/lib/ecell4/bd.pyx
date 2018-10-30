@@ -1,4 +1,6 @@
 import collections
+import numbers
+
 from cython.operator cimport dereference as deref, preincrement as inc
 from cython cimport address
 from libcpp.string cimport string
@@ -936,13 +938,10 @@ cdef class BDFactory:
 
         Parameters
         ----------
-        arg1 : Real3
-            The lengths of edges of a ``BDWorld`` created
-
-        or
-
-        arg1 : str
-            The path of a HDF5 file for ``BDWorld``
+        arg1 : Real3, Real, str, optional. default None
+            If Real3, it suggests the lengths of edges of a ``BDWorld`` created.
+            If Real, it suggests the volume.
+            If str, it suggests the path of a HDF5 file loaded.
 
         Returns
         -------
@@ -957,9 +956,12 @@ cdef class BDFactory:
             return BDWorld_from_Cpp_BDWorld(
                 shared_ptr[Cpp_BDWorld](
                     self.thisptr.world(deref((<Real3>arg1).thisptr))))
+        elif isinstance(arg1, numbers.Number):
+            return BDWorld_from_Cpp_BDWorld(
+                shared_ptr[Cpp_BDWorld](self.thisptr.world(<Real>arg1)))
         elif isinstance(arg1, str):
             return BDWorld_from_Cpp_BDWorld(
-                shared_ptr[Cpp_BDWorld](self.thisptr.world(<string>(arg1))))
+                shared_ptr[Cpp_BDWorld](self.thisptr.world(tostring(arg1))))
         else:
             return BDWorld_from_Cpp_BDWorld(
                 shared_ptr[Cpp_BDWorld](self.thisptr.world(

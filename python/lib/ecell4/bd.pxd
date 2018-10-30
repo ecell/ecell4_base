@@ -130,6 +130,7 @@ cdef extern from "ecell4/bd/BDFactory.hpp" namespace "ecell4::bd":
     cdef cppclass Cpp_BDFactory "ecell4::bd::BDFactory":
         Cpp_BDFactory(Cpp_Integer3&, Real) except +
         Cpp_BDWorld* world()
+        Cpp_BDWorld* world(Real)
         Cpp_BDWorld* world(string)
         Cpp_BDWorld* world(Cpp_Real3&)
         Cpp_BDWorld* world(shared_ptr[Cpp_Model])

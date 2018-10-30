@@ -104,6 +104,7 @@ cdef extern from "ecell4/ode/ODEFactory.hpp" namespace "ecell4::ode":
         Cpp_ODEFactory(Cpp_ODESolverType, Real, Real, Real) except +
         Cpp_ODEFactory() except +
         Cpp_ODEWorld* world()
+        Cpp_ODEWorld* world(Real)
         Cpp_ODEWorld* world(string)
         Cpp_ODEWorld* world(Cpp_Real3&)
         Cpp_ODESimulator* simulator(shared_ptr[Cpp_ODEWorld], shared_ptr[Cpp_Model])

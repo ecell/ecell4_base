@@ -134,6 +134,7 @@ cdef extern from "ecell4/meso/MesoscopicFactory.hpp" namespace "ecell4::meso":
     cdef cppclass Cpp_MesoscopicFactory "ecell4::meso::MesoscopicFactory":
         Cpp_MesoscopicFactory(Cpp_Integer3&, Real) except +
         Cpp_MesoscopicWorld* world()
+        Cpp_MesoscopicWorld* world(Real)
         Cpp_MesoscopicWorld* world(string)
         Cpp_MesoscopicWorld* world(Cpp_Real3&)
         Cpp_MesoscopicWorld* world(shared_ptr[Cpp_Model])

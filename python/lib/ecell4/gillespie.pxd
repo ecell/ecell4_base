@@ -102,6 +102,7 @@ cdef extern from "ecell4/gillespie/GillespieFactory.hpp" namespace "ecell4::gill
     cdef cppclass Cpp_GillespieFactory "ecell4::gillespie::GillespieFactory":
         Cpp_GillespieFactory() except +
         Cpp_GillespieWorld* world()
+        Cpp_GillespieWorld* world(Real)
         Cpp_GillespieWorld* world(string)
         Cpp_GillespieWorld* world(Cpp_Real3&)
         Cpp_GillespieWorld* world(shared_ptr[Cpp_Model])

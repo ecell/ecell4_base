@@ -117,6 +117,7 @@ cdef extern from "ecell4/egfrd/egfrd.hpp" namespace "ecell4::egfrd":
     cdef cppclass Cpp_EGFRDFactory "ecell4::egfrd::EGFRDFactory":
         Cpp_EGFRDFactory(Cpp_Integer3&, Real, Integer, Real) except +
         Cpp_EGFRDWorld* world()
+        Cpp_EGFRDWorld* world(Real)
         Cpp_EGFRDWorld* world(string)
         Cpp_EGFRDWorld* world(Cpp_Real3&)
         Cpp_EGFRDWorld* world(shared_ptr[Cpp_Model])
@@ -135,6 +136,7 @@ cdef extern from "ecell4/egfrd/egfrd.hpp" namespace "ecell4::egfrd":
     cdef cppclass Cpp_BDFactory "ecell4::egfrd::BDFactory":
         Cpp_BDFactory(Cpp_Integer3&, Real, Integer) except +
         Cpp_EGFRDWorld* world()
+        Cpp_EGFRDWorld* world(Real)
         Cpp_EGFRDWorld* world(string)
         Cpp_EGFRDWorld* world(Cpp_Real3&)
         Cpp_EGFRDWorld* world(shared_ptr[Cpp_Model])

@@ -188,6 +188,7 @@ cdef extern from "ecell4/spatiocyte/SpatiocyteFactory.hpp" namespace "ecell4::sp
     cdef cppclass Cpp_SpatiocyteFactory "ecell4::spatiocyte::SpatiocyteFactory":
         Cpp_SpatiocyteFactory(Real) except +
         Cpp_SpatiocyteWorld* world()
+        Cpp_SpatiocyteWorld* world(Real)
         Cpp_SpatiocyteWorld* world(string)
         Cpp_SpatiocyteWorld* world(Cpp_Real3&)
         Cpp_SpatiocyteWorld* world(shared_ptr[Cpp_Model])
