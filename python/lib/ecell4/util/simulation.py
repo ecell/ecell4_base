@@ -4,6 +4,7 @@ import numbers
 from .decorator import get_model, reset_model
 from . import viz
 from ..extra import unit
+from ..extra.ensemble import ensemble_simulations
 
 
 def load_world(filename):
@@ -333,11 +334,6 @@ def run_simulation(
         raise ValueError(
             'An invald value for "return_type" was given [{}].'.format(str(return_type))
             + 'Use "none" if you need nothing to be returned.')
-
-def ensemble_simulations(N=1, *args, **kwargs):
-    """Deprecated"""
-    raise RuntimeError(
-        "This function was deprecated. Use ecell4.extra.ensemble.ensemble_simulations instread.")
 
 def number_observer(t, species_list):
     """
