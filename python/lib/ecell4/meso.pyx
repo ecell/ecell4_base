@@ -956,8 +956,8 @@ cdef class MesoscopicSimulator:
 cdef MesoscopicSimulator MesoscopicSimulator_from_Cpp_MesoscopicSimulator(
     Cpp_MesoscopicSimulator* s):
     r = MesoscopicSimulator(
-        Model_from_Cpp_Model(s.model()),
-        MesoscopicWorld_from_Cpp_MesoscopicWorld(s.world()))
+        MesoscopicWorld_from_Cpp_MesoscopicWorld(s.world()),
+        Model_from_Cpp_Model(s.model()))
     del r.thisptr
     r.thisptr = s
     return r

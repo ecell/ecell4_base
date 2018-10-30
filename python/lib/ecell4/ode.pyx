@@ -566,8 +566,8 @@ cdef class ODESimulator:
 
 cdef ODESimulator ODESimulator_from_Cpp_ODESimulator(Cpp_ODESimulator* s):
     r = ODESimulator(
-        Model_from_Cpp_Model(s.model()),
-        ODEWorld_from_Cpp_ODEWorld(s.world()))
+        ODEWorld_from_Cpp_ODEWorld(s.world()),
+        Model_from_Cpp_Model(s.model()))
     del r.thisptr
     r.thisptr = s
     return r

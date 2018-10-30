@@ -925,7 +925,7 @@ cdef class EGFRDSimulator:
 
 cdef EGFRDSimulator EGFRDSimulator_from_Cpp_EGFRDSimulator(Cpp_EGFRDSimulator* s):
     r = EGFRDSimulator(
-        Model_from_Cpp_Model(s.model()), EGFRDWorld_from_Cpp_EGFRDWorld(s.world()))
+        EGFRDWorld_from_Cpp_EGFRDWorld(s.world()), Model_from_Cpp_Model(s.model()))
     del r.thisptr
     r.thisptr = s
     return r
@@ -1324,7 +1324,7 @@ cdef class BDSimulator:
 
 cdef BDSimulator BDSimulator_from_Cpp_BDSimulator(Cpp_BDSimulator* s):
     r = BDSimulator(
-        Model_from_Cpp_Model(s.model()), EGFRDWorld_from_Cpp_EGFRDWorld(s.world()))
+        EGFRDWorld_from_Cpp_EGFRDWorld(s.world()), Model_from_Cpp_Model(s.model()))
     del r.thisptr
     r.thisptr = s
     return r

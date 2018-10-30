@@ -884,7 +884,7 @@ cdef class BDSimulator:
 
 cdef BDSimulator BDSimulator_from_Cpp_BDSimulator(Cpp_BDSimulator* s):
     r = BDSimulator(
-        Model_from_Cpp_Model(s.model()), BDWorld_from_Cpp_BDWorld(s.world()))
+        BDWorld_from_Cpp_BDWorld(s.world()), Model_from_Cpp_Model(s.model()))
     del r.thisptr
     r.thisptr = s
     return r

@@ -648,7 +648,7 @@ cdef class GillespieSimulator:
 
 cdef GillespieSimulator GillespieSimulator_from_Cpp_GillespieSimulator(Cpp_GillespieSimulator* s):
     r = GillespieSimulator(
-        Model_from_Cpp_Model(s.model()), GillespieWorld_from_Cpp_GillespieWorld(s.world()))
+        GillespieWorld_from_Cpp_GillespieWorld(s.world()), Model_from_Cpp_Model(s.model()))
     del r.thisptr
     r.thisptr = s
     return r

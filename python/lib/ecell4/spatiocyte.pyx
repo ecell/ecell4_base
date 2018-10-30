@@ -1222,7 +1222,7 @@ cdef class SpatiocyteSimulator:
 
 cdef SpatiocyteSimulator SpatiocyteSimulator_from_Cpp_SpatiocyteSimulator(Cpp_SpatiocyteSimulator* s):
     r = SpatiocyteSimulator(
-        Model_from_Cpp_Model(s.model()), SpatiocyteWorld_from_Cpp_SpatiocyteWorld(s.world()))
+        SpatiocyteWorld_from_Cpp_SpatiocyteWorld(s.world()), Model_from_Cpp_Model(s.model()))
     del r.thisptr
     r.thisptr = s
     return r
