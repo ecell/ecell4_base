@@ -93,19 +93,6 @@ def get_shape(shape, *args):
             'unknown shape type was given: ' + repr(shape)
             + '. use {}'.format(', '.join(sorted(shape_map.keys()))))
 
-def list_species(model, seeds=None):
-    seeds = None or []
-
-    from ecell4 import Species
-
-    if not isinstance(seeds, list):
-        seeds = list(seeds)
-
-    expanded = model.expand([Species(serial) for serial in seeds])
-    species_list = [sp.serial() for sp in expanded.list_species()]
-    species_list = sorted(set(seeds + species_list))
-    return species_list
-
 def run_simulation(
         t, y0=None, volume=1.0, model=None, solver='ode',
         is_netfree=False, species_list=None, without_reset=False,
@@ -274,9 +261,6 @@ def run_simulation(
         # w.bind_to(model)
         for serial, n in y0.items():
             w.add_molecules(ecell4.Species(serial), n)
-
-    if species_list is None:
-        species_list = list_species(model, y0.keys())
 
     if not isinstance(t, collections.Iterable):
         t = [float(t) * i / 100 for i in range(101)]
