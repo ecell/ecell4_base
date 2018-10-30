@@ -28,17 +28,17 @@ def load_world(filename):
 
     vinfo = ecell4.core.load_version_information(filename)
     if vinfo.startswith("ecell4-bd"):
-        return ecell4.bd.BDWorld(filename)
+        return ecell4.bd.World(filename)
     elif vinfo.startswith("ecell4-egfrd"):
-        return ecell4.egfrd.EGFRDWorld(filename)
+        return ecell4.egfrd.World(filename)
     elif vinfo.startswith("ecell4-meso"):
-        return ecell4.meso.MesoscopicWorld(filename)
+        return ecell4.meso.World(filename)
     elif vinfo.startswith("ecell4-ode"):
-        return ecell4.ode.ODEWorld(filename)
+        return ecell4.ode.World(filename)
     elif vinfo.startswith("ecell4-gillespie"):
-        return ecell4.gillespie.GillespieWorld(filename)
+        return ecell4.gillespie.World(filename)
     elif vinfo.startswith("ecell4-spatiocyte"):
-        return ecell4.spatiocyte.SpatiocyteWorld(filename)
+        return ecell4.spatiocyte.World(filename)
     elif vinfo == "":
         raise RuntimeError("No version information was found in [{0}]".format(filename))
     raise RuntimeError("Unkown version information [{0}]".format(vinfo))
@@ -47,17 +47,17 @@ def get_factory(solver, *args):
     import ecell4
 
     if solver == 'ode':
-        return ecell4.ode.ODEFactory(*args)
+        return ecell4.ode.Factory(*args)
     elif solver == 'gillespie':
-        return ecell4.gillespie.GillespieFactory(*args)
+        return ecell4.gillespie.Factory(*args)
     elif solver == 'spatiocyte':
-        return ecell4.spatiocyte.SpatiocyteFactory(*args)
+        return ecell4.spatiocyte.Factory(*args)
     elif solver == 'meso':
-        return ecell4.meso.MesoscopicFactory(*args)
+        return ecell4.meso.Factory(*args)
     elif solver == 'bd':
-        return ecell4.bd.BDFactory(*args)
+        return ecell4.bd.Factory(*args)
     elif solver == 'egfrd':
-        return ecell4.egfrd.EGFRDFactory(*args)
+        return ecell4.egfrd.Factory(*args)
     else:
         raise ValueError(
             'unknown solver name was given: ' + repr(solver)
