@@ -339,7 +339,7 @@ def ensemble_simulations(N=1, *args, **kwargs):
     raise RuntimeError(
         "This function was deprecated. Use ecell4.extra.ensemble.ensemble_simulations instread.")
 
-def number_observer(species_list, t=None):
+def number_observer(t, species_list):
     """
     Return a number observer. If t is None, return NumberObserver. If t is a number,
     return FixedIntervalNumberObserver. If t is an iterable (a list of numbers), return
@@ -347,10 +347,10 @@ def number_observer(species_list, t=None):
 
     Parameters
     ----------
+    t : float, list or tuple
+        A timing of the observation. See above.
     species_list : list or tuple
         A list of strings suggesting Species observed.
-    t : float, list or tuple, optional. default None
-        A timing of the observation. See above.
 
     Returns
     -------
