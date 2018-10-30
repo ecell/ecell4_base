@@ -1114,3 +1114,7 @@ cdef class MesoscopicFactory:
         return self.simulator(arg1, arg2)
 
 Factory = MesoscopicFactory  # This is an alias
+World = MesoscopicWorld  # This is an alias
+Simulator = MesoscopicSimulator  # This is an alias
+
+__all__ = ["MesoscopicWorld", "MesoscopicSimulator", "MesoscopicFactory"]

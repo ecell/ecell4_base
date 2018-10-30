@@ -1037,3 +1037,7 @@ cdef class BDFactory:
         return self.simulator(arg1, arg2)
 
 Factory = BDFactory  # This is an alias
+World = BDWorld  # This is an alias
+Simulator = BDSimulator  # This is an alias
+
+__all__ = ["BDWorld", "BDSimulator", "BDFactory"]

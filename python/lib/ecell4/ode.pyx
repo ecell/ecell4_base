@@ -725,3 +725,9 @@ cdef class ODEFactory:
         return self.simulator(arg1, arg2)
 
 Factory = ODEFactory  # This is an alias
+World = ODEWorld  # This is an alias
+Simulator = ODESimulator  # This is an alias
+
+__all__ = [
+    "ODEWorld", "ODESimulator", "ODEFactory",
+    "RUNGE_KUTTA_CASH_KARP54", "ROSENBROCK4_CONTROLLER", "EULER"]

@@ -1374,3 +1374,10 @@ cdef class SpatiocyteFactory:
         return self.simulator(arg1, arg2)
 
 Factory = SpatiocyteFactory  # This is an alias
+World = SpatiocyteWorld  # This is an alias
+Simulator = SpatiocyteSimulator  # This is an alias
+
+__all__ = [
+    "SpatiocyteWorld", "SpatiocyteSimulator", "SpatiocyteFactory", "Voxel",
+    "create_spatiocyte_world_cell_list_impl", "create_spatiocyte_world_vector_impl",
+    "create_spatiocyte_world_square_offlattice_impl"]

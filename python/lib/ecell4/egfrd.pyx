@@ -1487,3 +1487,7 @@ cdef class BDFactory:
         return self.simulator(arg1, arg2)
 
 Factory = EGFRDFactory  # This is an alias
+World = EGFRDWorld  # This is an alias
+Simulator = EGFRDSimulator  # This is an alias
+
+__all__ = ["EGFRDWorld", "EGFRDSimulator", "EGFRDFactory", "BDSimulator", "BDFactory"]
