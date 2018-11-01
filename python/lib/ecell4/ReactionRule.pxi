@@ -252,7 +252,9 @@ cdef class ReactionRule:
             self.thisptr = new Cpp_ReactionRule()
         elif reactants is not None and products is None and k is None:
             if not isinstance(reactants, ReactionRule):
-                raise TypeError('Argument 1 must be ReactionRule or None.')
+                raise TypeError(
+                    'Argument 1 must be ReactionRule or None.'
+                    " '{}' was given [{}]".format(type(reactants).__name__, reactants))
             self.thisptr = new Cpp_ReactionRule(deref((<ReactionRule>reactants).thisptr))
         elif reactants is not None and products is not None:
             for sp in reactants:
@@ -269,7 +271,9 @@ cdef class ReactionRule:
                 elif isinstance(k, numbers.Real):
                     self.thisptr = new Cpp_ReactionRule(cpp_reactants, cpp_products, <Real> k)
                 else:
-                    raise TypeError('k must be float, Quantity or None.')
+                    raise TypeError(
+                        'k must be float, Quantity or None.'
+                        " '{}' was given [{}]".format(type(k).__name__, k))
         else:
             raise TypeError('A wrong list of arguments was given. See help(ReactionRule).')
 

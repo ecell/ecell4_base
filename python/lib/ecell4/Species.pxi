@@ -79,20 +79,26 @@ cdef class Species:
             elif isinstance(serial, (str, bytes)):
                 self.thisptr = new Cpp_Species(tostring(serial))
             else:
-                raise TypeError('Argument 1 must be string, Species or None.')
+                raise TypeError(
+                    'Argument 1 must be string, Species or None.'
+                    " '{}' was given [{}].".format(type(serial).__name__, serial))
         elif serial is not None and radius is not None and D is not None:
             if not isinstance(serial, (str, bytes)):
-                raise TypeError('serial must be string.')
+                raise TypeError(
+                    "serial must be string. '{}' was given [{}].".format(type(serial).__name__, serial))
             if not isinstance(radius, numbers.Real):
-                raise TypeError('radius must be float.')
+                raise TypeError(
+                    "radius must be float. '{}' was given [{}].".format(type(radius).__name__, radius))
             if not isinstance(D, numbers.Real):
-                raise TypeError('D must be float.')
+                raise TypeError("D must be float. '{}' was given [{}].".format(type(D).__name__, D))
             if location is None:
                 self.thisptr = new Cpp_Species(
                     tostring(serial), <Real>radius, <Real>D)
             else:
                 if isinstance(location, (str, bytes)):
-                    raise TypeError('location must be string')
+                    raise TypeError(
+                        'location must be string.'
+                        " '{}' was given [{}].".format(type(location).__name__, location))
                 self.thisptr = new Cpp_Species(
                     tostring(serial), <Real>radius, <Real>D, tostring(location))
         else:
