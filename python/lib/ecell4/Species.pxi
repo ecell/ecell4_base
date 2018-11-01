@@ -86,21 +86,34 @@ cdef class Species:
             if not isinstance(serial, (str, bytes)):
                 raise TypeError(
                     "serial must be string. '{}' was given [{}].".format(type(serial).__name__, serial))
-            if not isinstance(radius, numbers.Real):
+            if not isinstance(radius, (numbers.Real, Quantity)):
                 raise TypeError(
                     "radius must be float. '{}' was given [{}].".format(type(radius).__name__, radius))
-            if not isinstance(D, numbers.Real):
+            if not isinstance(D, (numbers.Real, Quantity)):
                 raise TypeError("D must be float. '{}' was given [{}].".format(type(D).__name__, D))
-            if location is None:
-                self.thisptr = new Cpp_Species(
-                    tostring(serial), <Real>radius, <Real>D)
+            if not type(radius) is type(D):
+                raise TypeError(
+                    "radius [{}] and D [{}] must have a same type ['{}' != '{}'].".format(
+                        radius, D, type(radius).__name__, type(D).__name__))
+            if location is not None and not isinstance(location, (str, bytes)):
+                raise TypeError(
+                    'location must be string.'
+                    " '{}' was given [{}].".format(type(location).__name__, location))
+
+            if isinstance(radius, Quantity):
+                if location is None:
+                    self.thisptr = new Cpp_Species(
+                        tostring(serial), Cpp_Quantity_from_Quantity_Real(radius), Cpp_Quantity_from_Quantity_Real(D))
+                else:
+                    self.thisptr = new Cpp_Species(
+                        tostring(serial), Cpp_Quantity_from_Quantity_Real(radius), Cpp_Quantity_from_Quantity_Real(D), tostring(location))
             else:
-                if isinstance(location, (str, bytes)):
-                    raise TypeError(
-                        'location must be string.'
-                        " '{}' was given [{}].".format(type(location).__name__, location))
-                self.thisptr = new Cpp_Species(
-                    tostring(serial), <Real>radius, <Real>D, tostring(location))
+                if location is None:
+                    self.thisptr = new Cpp_Species(
+                        tostring(serial), <Real>radius, <Real>D)
+                else:
+                    self.thisptr = new Cpp_Species(
+                        tostring(serial), <Real>radius, <Real>D, tostring(location))
         else:
             raise TypeError('A wrong list of arguments was given. See help(Species).')
 

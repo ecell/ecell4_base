@@ -40,6 +40,17 @@ Species::Species(
     set_attribute("dimension", dimension);
 }
 
+Species::Species(
+    const serial_type& name, const Quantity<Real>& radius, const Quantity<Real>& D,
+    const std::string location, const Integer& dimension)
+    : serial_(name), attributes_()
+{
+    set_attribute("radius", radius);
+    set_attribute("D", D);
+    set_attribute("location", location);
+    set_attribute("dimension", dimension);
+}
+
 const Species::serial_type Species::serial() const
 {
     return serial_;
