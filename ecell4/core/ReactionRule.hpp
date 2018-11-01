@@ -4,6 +4,7 @@
 #include "ReactionRuleDescriptor.hpp"
 
 #include "types.hpp"
+#include "Quantity.hpp"
 #include "Species.hpp"
 #include <stdexcept>
 
@@ -44,10 +45,15 @@ public:
     ReactionRule(const reactant_container_type& reactants,
                  const product_container_type& products,
                  const Real& k);
+    ReactionRule(const reactant_container_type& reactants,
+                 const product_container_type& products,
+                 const Quantity<Real>& k);
     ReactionRule(const ReactionRule& rr);
 
     Real k() const;
     void set_k(const Real& k);
+    void set_k(const Quantity<Real>& k);
+    Quantity<Real> get_k() const;
 
     const reactant_container_type& reactants() const;
     const product_container_type& products() const;
@@ -69,7 +75,7 @@ public:
 
 protected:
 
-    Real k_;
+    Quantity<Real> k_;
     reactant_container_type reactants_;
     product_container_type products_;
 

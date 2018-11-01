@@ -86,6 +86,8 @@ cdef UnitSpecies UnitSpecies_from_Cpp_UnitSpecies(Cpp_UnitSpecies *sp)
 
 cdef extern from "ecell4/core/Quantity.hpp" namespace "ecell4":
     cdef cppclass Cpp_Quantity "ecell4::Quantity" [T]:
+        Cpp_Quantity()
+        Cpp_Quantity(T m)
         Cpp_Quantity(T m, string u)
         T magnitude
         string units
@@ -213,6 +215,7 @@ cdef extern from "ecell4/core/ReactionRule.hpp" namespace "ecell4":
         Cpp_ReactionRule() except +
         Cpp_ReactionRule(vector[Cpp_Species]&, vector[Cpp_Species]&)
         Cpp_ReactionRule(vector[Cpp_Species]&, vector[Cpp_Species]&, Real)
+        Cpp_ReactionRule(vector[Cpp_Species]&, vector[Cpp_Species]&, Cpp_Quantity[Real])
         Cpp_ReactionRule(Cpp_ReactionRule&) except +
         Real k()
         vector[Cpp_Species]& reactants()
@@ -220,6 +223,8 @@ cdef extern from "ecell4/core/ReactionRule.hpp" namespace "ecell4":
         # multiset[Cpp_Species]& reactants()
         # multiset[Cpp_Species]& products()
         void set_k(Real)
+        void set_k(Cpp_Quantity[Real])
+        Cpp_Quantity[Real] get_k()
         void add_reactant(Cpp_Species)
         void add_product(Cpp_Species)
         string as_string()

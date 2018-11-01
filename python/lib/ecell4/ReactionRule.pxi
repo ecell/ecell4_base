@@ -248,9 +248,13 @@ cdef class ReactionRule:
         cdef vector[Cpp_Species] cpp_reactants
         cdef vector[Cpp_Species] cpp_products
 
-        if products is None:
+        if reactants is None and products is None and k is None:
             self.thisptr = new Cpp_ReactionRule()
-        else:
+        elif reactants is not None and products is None and k is None:
+            if not isinstance(reactants, ReactionRule):
+                raise TypeError('Argument 1 must be ReactionRule or None.')
+            self.thisptr = new Cpp_ReactionRule(deref((<ReactionRule>reactants).thisptr))
+        elif reactants is not None and products is not None:
             for sp in reactants:
                 cpp_reactants.push_back(deref((<Species>sp).thisptr))
             for sp in products:
@@ -258,11 +262,20 @@ cdef class ReactionRule:
 
             if k is None:
                 self.thisptr = new Cpp_ReactionRule(cpp_reactants, cpp_products)
-            else:
-                self.thisptr = new Cpp_ReactionRule(cpp_reactants, cpp_products, k)
+            elif k is not None:
+                if isinstance(k, Quantity):
+                    self.thisptr = new Cpp_ReactionRule(
+                        cpp_reactants, cpp_products, Cpp_Quantity_from_Quantity_Real(k))
+                elif isinstance(k, numbers.Real):
+                    self.thisptr = new Cpp_ReactionRule(cpp_reactants, cpp_products, <Real> k)
+                else:
+                    raise TypeError('k must be float, Quantity or None.')
+        else:
+            raise TypeError('A wrong list of arguments was given. See help(ReactionRule).')
 
-            if descriptor is not None:
-                self.set_descriptor(descriptor)
+        #XXX: The following operation is Python-wrapper specific.
+        if descriptor is not None:
+            self.set_descriptor(descriptor)
 
     def __dealloc__(self):
         del self.thisptr
@@ -271,18 +284,26 @@ cdef class ReactionRule:
         """Return the kinetic rate constant as a float value."""
         return self.thisptr.k()
 
-    def set_k(self, Real k):
+    def set_k(self, k):
         """set_k(k)
 
         Set a kinetic rate constant.
 
         Parameters
         ----------
-        k : float
+        k : float or Quantity
             A kinetic rate constant.
 
         """
-        self.thisptr.set_k(k)
+        if isinstance(k, Quantity):
+            self.thisptr.set_k(Cpp_Quantity_from_Quantity_Real(k))
+        else:
+            self.thisptr.set_k(<Real> k)
+
+    def get_k(self):
+        """Return the kinetic rate constant as a Quantity."""
+        cdef Cpp_Quantity[Real] k = self.thisptr.get_k()
+        return Quantity_from_Cpp_Quantity_Real(address(k))
 
     def reactants(self):
         """List all reactants.

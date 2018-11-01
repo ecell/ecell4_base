@@ -30,8 +30,17 @@ ReactionRule::ReactionRule(
     ;
 }
 
+ReactionRule::ReactionRule(
+    const reactant_container_type& reactants,
+    const product_container_type& products,
+    const Quantity<Real>& k)
+    : k_(k), reactants_(reactants), products_(products), policy_(STRICT)
+{
+    ;
+}
+
 ReactionRule::ReactionRule(const ReactionRule& rr)
-    : k_(rr.k()), reactants_(rr.reactants()), products_(rr.products()), policy_(rr.policy()), rr_descriptor_()
+    : k_(rr.k_), reactants_(rr.reactants_), products_(rr.products_), policy_(rr.policy_), rr_descriptor_()
 {
     if (rr.has_descriptor())
     {
@@ -40,6 +49,25 @@ ReactionRule::ReactionRule(const ReactionRule& rr)
 }
 
 Real ReactionRule::k() const
+{
+    return k_.magnitude;
+}
+
+void ReactionRule::set_k(const Real& k)
+{
+    set_k(Quantity<Real>(k));
+}
+
+void ReactionRule::set_k(const Quantity<Real>& k)
+{
+    if (k.magnitude < 0)
+    {
+        throw std::invalid_argument("a kinetic rate must be positive.");
+    }
+    k_ = k;
+}
+
+Quantity<Real> ReactionRule::get_k() const
 {
     return k_;
 }
@@ -52,15 +80,6 @@ const ReactionRule::reactant_container_type& ReactionRule::reactants() const
 const ReactionRule::product_container_type& ReactionRule::products() const
 {
     return products_;
-}
-
-void ReactionRule::set_k(const Real& k)
-{
-    if (k < 0)
-    {
-        throw std::invalid_argument("a kinetic rate must be positive.");
-    }
-    k_ = k;
 }
 
 void ReactionRule::add_reactant(const Species& sp)
@@ -102,7 +121,7 @@ const std::string ReactionRule::as_string() const
         {
             tmp.push_back((*i).serial());
         }
-        oss << boost::algorithm::join(tmp, "+") << "|" << k_;
+        oss << boost::algorithm::join(tmp, "+") << "|" << k();
     }
     else
     {
@@ -129,7 +148,7 @@ const std::string ReactionRule::as_string() const
                 oss_ << (*j) << "*" << (*i).serial();
                 tmp.push_back(oss_.str());
             }
-            oss << boost::algorithm::join(tmp, "+") << "|" << k_;
+            oss << boost::algorithm::join(tmp, "+") << "|" << k();
         }
     }
     return oss.str();

@@ -20,6 +20,14 @@ cdef Quantity_from_Cpp_Quantity_Real(Cpp_Quantity[Real] *value):
 cdef Quantity_from_Cpp_Quantity_Integer(Cpp_Quantity[Integer] *value):
     return Quantity(value.magnitude, value.units.decode('UTF-8'))
 
+cdef Cpp_Quantity[Real] Cpp_Quantity_from_Quantity_Real(value):
+    assert(isinstance(value, Quantity))
+    return Cpp_Quantity[Real](<Real> value.magnitude, tostring(value.units))
+
+cdef Cpp_Quantity[Integer] Cpp_Quantity_from_Quantity_Integer(value):
+    assert(isinstance(value, Quantity))
+    return Cpp_Quantity[Integer](<Integer> value.magnitude, tostring(value.units))
+
 cdef boost_get_from_Cpp_Species_value_type(Cpp_Species_value_type value):
     cdef string* value_str = boost_get[string, string, Cpp_Quantity[Real], Cpp_Quantity[Integer], bool](address(value))
     if value_str != NULL:
@@ -63,25 +71,32 @@ cdef class Species:
         pass  # XXX: Only used for doc string
 
     def __cinit__(self, serial=None, radius=None, D=None, location=None):
-        if serial is None:
+        if serial is None and radius is None and D is None and location is None:
             self.thisptr = new Cpp_Species()
-        elif radius is None:
-            self.thisptr = new Cpp_Species(tostring(serial)) #XXX:
-        elif D is None:
-            raise ValueError(
-                'D must be given. D is not optional when radius is given.')
-        elif location is None:
-            if isinstance(radius, numbers.Real) and isinstance(D, numbers.Real):
+        elif serial is not None and radius is None and D is None and location is None:
+            if isinstance(serial, Species):
+                self.thisptr = new Cpp_Species(deref((<Species> serial).thisptr))
+            elif isinstance(serial, (str, bytes)):
+                self.thisptr = new Cpp_Species(tostring(serial))
+            else:
+                raise TypeError('Argument 1 must be string, Species or None.')
+        elif serial is not None and radius is not None and D is not None:
+            if not isinstance(serial, (str, bytes)):
+                raise TypeError('serial must be string.')
+            if not isinstance(radius, numbers.Real):
+                raise TypeError('radius must be float.')
+            if not isinstance(D, numbers.Real):
+                raise TypeError('D must be float.')
+            if location is None:
                 self.thisptr = new Cpp_Species(
                     tostring(serial), <Real>radius, <Real>D)
             else:
-                raise TypeError('radius and D must be float.')
-        else:
-            if isinstance(radius, numbers.Real) and isinstance(D, numbers.Real):
+                if isinstance(location, (str, bytes)):
+                    raise TypeError('location must be string')
                 self.thisptr = new Cpp_Species(
                     tostring(serial), <Real>radius, <Real>D, tostring(location))
-            else:
-                raise TypeError('radius and D must be float.')
+        else:
+            raise TypeError('A wrong list of arguments was given. See help(Species).')
 
     def __dealloc__(self):
         del self.thisptr
@@ -102,26 +117,6 @@ cdef class Species:
     def serial(self):
         """Return the serial name as an unicode string."""
         return self.thisptr.serial().decode('UTF-8')
-
-    # def get_attribute(self, name):
-    #     """get_attribute(name) -> str
-
-    #     Return an attribute as an unicode string.
-    #     If no corresponding attribute is found, raise an error.
-
-    #     Parameters
-    #     ----------
-    #     name : str
-    #         The name of an attribute.
-
-    #     Returns
-    #     -------
-    #     value : str
-    #         The value of the attribute.
-
-    #     """
-    #     return self.thisptr.get_attribute(
-    #         tostring(name)).decode('UTF-8')
 
     def get_attribute(self, name):
         """get_attribute(name) -> str, float, int, or bool
@@ -165,9 +160,9 @@ cdef class Species:
         elif isinstance(value, numbers.Real):
             self.thisptr.set_attribute(tostring(name), <Real> value)
         elif isinstance(value, Quantity) and isinstance(value.magnitude, numbers.Integral):
-            self.thisptr.set_attribute(tostring(name), Cpp_Quantity[Integer](<Integer> value.magnitude, tostring(value.units)))
+            self.thisptr.set_attribute(tostring(name), Cpp_Quantity_from_Quantity_Integer(value))
         elif isinstance(value, Quantity) and isinstance(value.magnitude, numbers.Real):
-            self.thisptr.set_attribute(tostring(name), Cpp_Quantity[Real](<Real> value.magnitude, tostring(value.units)))
+            self.thisptr.set_attribute(tostring(name), Cpp_Quantity_from_Quantity_Real(value))
         else:
             raise TypeError(
                 'Type [{}] is not supported. str, int, float or bool must be given.'.format(
