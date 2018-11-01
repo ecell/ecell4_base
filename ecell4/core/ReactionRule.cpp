@@ -11,19 +11,50 @@ const std::string ReactionRule::as_string() const
 {
     std::stringstream oss;
     std::vector<std::string> tmp;
-    for (reactant_container_type::const_iterator i(reactants_.begin());
-        i != reactants_.end(); ++i)
+    if (!has_descriptor())
     {
-        tmp.push_back((*i).serial());
+        for (reactant_container_type::const_iterator i(reactants_.begin());
+            i != reactants_.end(); ++i)
+        {
+            tmp.push_back((*i).serial());
+        }
+        oss << boost::algorithm::join(tmp, "+") << ">";
+        tmp.clear();
+        for (product_container_type::const_iterator i(products_.begin());
+            i != products_.end(); ++i)
+        {
+            tmp.push_back((*i).serial());
+        }
+        oss << boost::algorithm::join(tmp, "+") << "|" << k_;
     }
-    oss << boost::algorithm::join(tmp, "+") << ">";
-    tmp.clear();
-    for (product_container_type::const_iterator i(products_.begin());
-        i != products_.end(); ++i)
+    else
     {
-        tmp.push_back((*i).serial());
+        {
+            reactant_container_type::const_iterator i(reactants_.begin());
+            ReactionRuleDescriptor::coefficient_container_type::const_iterator
+                j(rr_descriptor_->reactant_coefficients().begin());
+            for (; i != reactants_.end() && j != rr_descriptor_->reactant_coefficients().end(); ++i, ++j)
+            {
+                std::stringstream oss_;
+                oss_ << (*j) << "*" << (*i).serial();
+                tmp.push_back(oss_.str());
+            }
+            oss << boost::algorithm::join(tmp, "+") << ">";
+        }
+        tmp.clear();
+        {
+            product_container_type::const_iterator i(products_.begin());
+            ReactionRuleDescriptor::coefficient_container_type::const_iterator
+                j(rr_descriptor_->product_coefficients().begin());
+            for (; i != products_.end() && j != rr_descriptor_->product_coefficients().end(); ++i, ++j)
+            {
+                std::stringstream oss_;
+                oss_ << (*j) << "*" << (*i).serial();
+                tmp.push_back(oss_.str());
+            }
+            oss << boost::algorithm::join(tmp, "+") << "|" << k_;
+        }
     }
-    oss << boost::algorithm::join(tmp, "+") << "|" << k_;
     return oss.str();
 }
 
