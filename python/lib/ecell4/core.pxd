@@ -86,8 +86,12 @@ cdef UnitSpecies UnitSpecies_from_Cpp_UnitSpecies(Cpp_UnitSpecies *sp)
 
 cdef extern from "ecell4/core/Quantity.hpp" namespace "ecell4":
     cdef cppclass Cpp_Quantity "ecell4::Quantity" [T]:
+        Cpp_Quantity(T m, string u)
         T magnitude
         string units
+
+cdef Quantity_from_Cpp_Quantity_Real(Cpp_Quantity[Real] *value)
+cdef Quantity_from_Cpp_Quantity_Integer(Cpp_Quantity[Integer] *value)
 
 cdef extern from "boost/variant.hpp" namespace "boost":
     cdef cppclass boost_variant "boost::variant" [T1, T2, T3, T4]:

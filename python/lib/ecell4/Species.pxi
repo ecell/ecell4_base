@@ -8,16 +8,30 @@ cimport context
 import numbers
 from cpython cimport bool as bool_t
 
+class Quantity(object):
+
+    def __init__(self, magnitude, units=""):
+        self.magnitude = magnitude
+        self.units = units
+
+cdef Quantity_from_Cpp_Quantity_Real(Cpp_Quantity[Real] *value):
+    return Quantity(value.magnitude, value.units.decode('UTF-8'))
+
+cdef Quantity_from_Cpp_Quantity_Integer(Cpp_Quantity[Integer] *value):
+    return Quantity(value.magnitude, value.units.decode('UTF-8'))
+
 cdef boost_get_from_Cpp_Species_value_type(Cpp_Species_value_type value):
     cdef string* value_str = boost_get[string, string, Cpp_Quantity[Real], Cpp_Quantity[Integer], bool](address(value))
     if value_str != NULL:
         return deref(value_str).decode('UTF-8')
     cdef Cpp_Quantity[Real]* value_real = boost_get[Cpp_Quantity[Real], string, Cpp_Quantity[Real], Cpp_Quantity[Integer], bool](address(value))
     if value_real != NULL:
-        return deref(value_real).magnitude
+        # return deref(value_real).magnitude
+        return Quantity_from_Cpp_Quantity_Real(value_real)
     cdef Cpp_Quantity[Integer]* value_int = boost_get[Cpp_Quantity[Integer], string, Cpp_Quantity[Real], Cpp_Quantity[Integer], bool](address(value))
     if value_int != NULL:
-        return deref(value_int).magnitude
+        # return deref(value_int).magnitude
+        return Quantity_from_Cpp_Quantity_Integer(value_int)
     cdef bool* value_bool = boost_get[bool, string, Cpp_Quantity[Real], Cpp_Quantity[Integer], bool](address(value))
     if value_bool != NULL:
         return deref(value_bool)
@@ -150,6 +164,10 @@ cdef class Species:
             self.thisptr.set_attribute(tostring(name), <Integer> value)
         elif isinstance(value, numbers.Real):
             self.thisptr.set_attribute(tostring(name), <Real> value)
+        elif isinstance(value, Quantity) and isinstance(value.magnitude, numbers.Integral):
+            self.thisptr.set_attribute(tostring(name), Cpp_Quantity[Integer](<Integer> value.magnitude, tostring(value.units)))
+        elif isinstance(value, Quantity) and isinstance(value.magnitude, numbers.Real):
+            self.thisptr.set_attribute(tostring(name), Cpp_Quantity[Real](<Real> value.magnitude, tostring(value.units)))
         else:
             raise TypeError(
                 'Type [{}] is not supported. str, int, float or bool must be given.'.format(
