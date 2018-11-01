@@ -60,6 +60,9 @@ All the members must start with '_'."""
     def __gt__(self, rhs):
         return operator.gt(self._as_ParseObj(), rhs)
 
+    def __lt__(self, rhs):
+        return operator.lt(self._as_ParseObj(), rhs)
+
     def __eq__(self, rhs):
         return operator.eq(self._as_ParseObj(), rhs)
 
@@ -211,6 +214,11 @@ class ExpBase(object):
 
     def __gt__(self, rhs):
         retval = GtExp(self.__root, self, rhs)
+        self.__root.notify_comparisons(retval)
+        return retval
+
+    def __lt__(self, rhs):
+        retval = LtExp(self.__root, self, rhs)
         self.__root.notify_comparisons(retval)
         return retval
 
@@ -685,6 +693,14 @@ class GtExp(CmpExp):
 
     def __deepcopy__(self, memo):
         return GtExp(self._root, copy.deepcopy(self._lhs), copy.deepcopy(self._rhs))
+
+class LtExp(CmpExp):
+
+    def __init__(self, root, lhs, rhs):
+        CmpExp.__init__(self, root, lhs, rhs, "<")
+
+    def __deepcopy__(self, memo):
+        return LtExp(self._root, copy.deepcopy(self._lhs), copy.deepcopy(self._rhs))
 
 class NeExp(CmpExp):
 
