@@ -462,6 +462,12 @@ class ReactionRulesCallback(Callback):
             if 'policy' in opts.keys():
                 rr.set_policy(opts['policy'])
             self.comparisons.append(rr)
+        elif isinstance(obj, parseobj.LtExp):
+            # self.comparisons.append(generate_ReactionRule(rhs, lhs, params))
+            rr = generate_ReactionRule(rhs, lhs, params)
+            if 'policy' in opts.keys():
+                rr.set_policy(opts['policy'])
+            self.comparisons.append(rr)
         else:
             raise RuntimeError('an invalid object was given [%s]' % (repr(obj)))
 
