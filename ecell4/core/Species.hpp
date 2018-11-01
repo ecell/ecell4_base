@@ -17,6 +17,7 @@
 #include "exceptions.hpp"
 #include "UnitSpecies.hpp"
 // #include "Context.hpp"
+#include "Quantity.hpp"
 
 
 namespace ecell4

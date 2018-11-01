@@ -28,7 +28,7 @@ endif()
 #     VacantType.hpp extras.hpp linear_algebra.hpp CompartmentSpaceHDF5Writer.hpp
 #     EventScheduler.hpp Identifier.hpp LatticeSpaceHDF5Writer.hpp
 #     SubvolumeSpace.hpp SubvolumeSpaceHDF5Writer.hpp
-#     MolecularTypeBase.hpp ParticleSpace.hpp RandomNumberGenerator.hpp
+#     MolecularTypeBase.hpp ParticleSpace.hpp Quantity.hpp RandomNumberGenerator.hpp
 #     SerialIDGenerator.hpp Species.hpp Voxel.hpp functions.hpp swap.hpp ModelWrapper.hpp
 #     Context.hpp Integer3.hpp Journal.hpp Model.hpp NetworkModel.hpp NetfreeModel.hpp
 #     ParticleSpaceHDF5Writer.hpp Reaction.hpp Simulator.hpp SimulatorBase.hpp

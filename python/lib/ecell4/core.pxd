@@ -94,6 +94,11 @@ ctypedef boost_variant[string, Real, Integer, bool] Cpp_Species_value_type
 
 cdef boost_get_from_Cpp_Species_value_type(Cpp_Species_value_type value)
 
+cdef extern from "ecell4/core/Quantity.hpp" namespace "ecell4":
+    cdef cppclass Cpp_Quantity "ecell4::Quantity" [T]:
+        T magnitude
+        string units
+
 ## Cpp_Species
 #  ecell4::Species
 cdef extern from "ecell4/core/Species.hpp" namespace "ecell4":
