@@ -21,7 +21,7 @@ void run()
 
     const Integer N(60);
 
-    const std::string D("1.0"), radius("0.0025");
+    const Real D(1.0), radius(0.0025);
 
     Species sp("A", radius, D);
 

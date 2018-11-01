@@ -84,20 +84,20 @@ cdef class UnitSpecies:
 
 cdef UnitSpecies UnitSpecies_from_Cpp_UnitSpecies(Cpp_UnitSpecies *sp)
 
+cdef extern from "ecell4/core/Quantity.hpp" namespace "ecell4":
+    cdef cppclass Cpp_Quantity "ecell4::Quantity" [T]:
+        T magnitude
+        string units
+
 cdef extern from "boost/variant.hpp" namespace "boost":
     cdef cppclass boost_variant "boost::variant" [T1, T2, T3, T4]:
         pass
 
     U* boost_get "boost::get" [U, T1, T2, T3, T4] (boost_variant[T1, T2, T3, T4]*) except +
 
-ctypedef boost_variant[string, Real, Integer, bool] Cpp_Species_value_type
+ctypedef boost_variant[string, Cpp_Quantity[Real], Cpp_Quantity[Integer], bool] Cpp_Species_value_type
 
 cdef boost_get_from_Cpp_Species_value_type(Cpp_Species_value_type value)
-
-cdef extern from "ecell4/core/Quantity.hpp" namespace "ecell4":
-    cdef cppclass Cpp_Quantity "ecell4::Quantity" [T]:
-        T magnitude
-        string units
 
 ## Cpp_Species
 #  ecell4::Species
@@ -108,8 +108,8 @@ cdef extern from "ecell4/core/Species.hpp" namespace "ecell4":
         Cpp_Species(string, Real, Real) except +
         Cpp_Species(string, Real, Real, string) except +
         # Cpp_Species(string, string) except +
-        Cpp_Species(string, string, string) except +
-        Cpp_Species(string, string, string, string) except +
+        # Cpp_Species(string, string, string) except +
+        # Cpp_Species(string, string, string, string) except +
         Cpp_Species(Cpp_Species&) except+
         bool operator==(Cpp_Species& rhs)
         bool operator<(Cpp_Species& rhs)

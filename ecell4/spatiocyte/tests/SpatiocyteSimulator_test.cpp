@@ -24,7 +24,7 @@ BOOST_AUTO_TEST_CASE(SpatiocyteSimulator_test_constructor)
     const Real3 edge_lengths(L, L, L);
     const Real voxel_radius(DEFAULT_VOXEL_RADIUS);
 
-    const std::string D("1e-12"), radius("2.5e-9");
+    const Real D(1e-12), radius(2.5e-9);
 
     ecell4::Species sp1("A", radius, D),
         sp2("B", radius, D),
@@ -49,7 +49,7 @@ BOOST_AUTO_TEST_CASE(SpatiocyteSimulator_test_hdf5_save)
     const Real voxel_radius(DEFAULT_VOXEL_RADIUS);
     const Integer N(60);
 
-    const std::string D("1e-12"), radius("2.5e-9");
+    const Real D(1e-12), radius(2.5e-9);
 
     ecell4::Species sp("A", radius, D);
     boost::shared_ptr<NetworkModel> model(new NetworkModel());
@@ -72,7 +72,7 @@ BOOST_AUTO_TEST_CASE(SpatiocyteSimulator_test_step_with_single_particle)
     const Real3 edge_lengths(L, L, L);
     const Real voxel_radius(2.5e-9);
 
-    const std::string D("1e-12"), radius("2.5e-9");
+    const Real D(1e-12), radius(2.5e-9);
 
     ecell4::Species sp("A", radius, D);
     boost::shared_ptr<NetworkModel> model(new NetworkModel());
@@ -102,7 +102,7 @@ BOOST_AUTO_TEST_CASE(SpatiocyteSimulator_test_step_with_single_species)
     const Real voxel_radius(2.5e-9);
     const Integer N(60);
 
-    const std::string D("1e-12"), radius("2.5e-9");
+    const Real D(1e-12), radius(2.5e-9);
 
     ecell4::Species sp("A", radius, D);
     boost::shared_ptr<NetworkModel> model(new NetworkModel());
@@ -133,7 +133,7 @@ BOOST_AUTO_TEST_CASE(SpatiocyteSimulator_test_save_step_with_single_species)
     const Real voxel_radius(2.5e-9);
     const Integer N(60);
 
-    const std::string D("1e-12"), radius("2.5e-9");
+    const Real D(1e-12), radius(2.5e-9);
 
     ecell4::Species sp("A", radius, D);
     boost::shared_ptr<NetworkModel> model(new NetworkModel());
@@ -164,7 +164,7 @@ BOOST_AUTO_TEST_CASE(SpatiocyteSimulator_test_save_step_with_periodic)
     const Real voxel_radius(2.5e-9);
     const Integer N(60);
 
-    const std::string D("1e-12"), radius("2.5e-9");
+    const Real D(1e-12), radius(2.5e-9);
 
     ecell4::Species sp("A", radius, D);
     boost::shared_ptr<NetworkModel> model(new NetworkModel());
@@ -193,10 +193,10 @@ BOOST_AUTO_TEST_CASE(SpatiocyteSimulator_test_unimolecular_reaction)
     const Real L(2.5e-8);
     const Real3 edge_lengths(L, L, L);
     const Real voxel_radius(2.5e-9);
-    const std::string radius("1.25e-9");
-    const ecell4::Species sp1("A", radius, "1.0e-12"),
-          sp2("B", radius, "1.1e-12"),
-          sp3("C", "2.5e-9", "1.2e-12");
+    const Real radius(1.25e-9);
+    const ecell4::Species sp1("A", radius, 1.0e-12),
+          sp2("B", radius, 1.1e-12),
+          sp3("C", 2.5e-9, 1.2e-12);
 
     boost::shared_ptr<NetworkModel> model(new NetworkModel());
     model->add_species_attribute(sp1);
@@ -229,10 +229,10 @@ BOOST_AUTO_TEST_CASE(SpatiocyteSimulator_test_binding_reaction)
     const Real L(2.5e-8);
     const Real3 edge_lengths(L, L, L);
     const Real voxel_radius(2.5e-9);
-    const std::string radius("1.25e-9");
-    const ecell4::Species sp1("A", radius, "1.0e-12"),
-          sp2("B", radius, "1.1e-12"),
-          sp3("C", "2.5e-9", "1.2e-12");
+    const Real radius(1.25e-9);
+    const ecell4::Species sp1("A", radius, 1.0e-12),
+          sp2("B", radius, 1.1e-12),
+          sp3("C", 2.5e-9, 1.2e-12);
 
     boost::shared_ptr<NetworkModel> model(new NetworkModel());
     model->add_species_attribute(sp1);
@@ -267,10 +267,10 @@ BOOST_AUTO_TEST_CASE(SpatiocyteSimulator_test_unbinding_reaction)
     const Real L(2.5e-8);
     const Real3 edge_lengths(L, L, L);
     const Real voxel_radius(2.5e-9);
-    const std::string radius("1.25e-9");
-    const ecell4::Species sp1("A", radius, "1.0e-12"),
-          sp2("B", radius, "1.1e-12"),
-          sp3("C", "2.5e-9", "1.2e-12");
+    const Real radius(1.25e-9);
+    const ecell4::Species sp1("A", radius, 1.0e-12),
+          sp2("B", radius, 1.1e-12),
+          sp3("C", 2.5e-9, 1.2e-12);
 
     boost::shared_ptr<NetworkModel> model(new NetworkModel());
     model->add_species_attribute(sp1);
@@ -304,8 +304,8 @@ BOOST_AUTO_TEST_CASE(SpatiocyteSimulator_test_degradation_reaction)
     const Real L(2.5e-8);
     const Real3 edge_lengths(L, L, L);
     const Real voxel_radius(2.5e-9);
-    const std::string radius("1.25e-9");
-    const ecell4::Species sp1("A", radius, "1.0e-12");
+    const Real radius(1.25e-9);
+    const ecell4::Species sp1("A", radius, 1.0e-12);
 
     boost::shared_ptr<NetworkModel> model(new NetworkModel());
     model->add_species_attribute(sp1);
@@ -336,7 +336,7 @@ BOOST_AUTO_TEST_CASE(SpatiocyteSimulator_test_finalize)
     const Real voxel_radius(2.5e-9);
     const Integer N(60);
 
-    const std::string D("1e-12"), radius("2.5e-9");
+    const Real D(1e-12), radius(2.5e-9);
 
     ecell4::Species sp("A", radius, D);
     boost::shared_ptr<NetworkModel> model(new NetworkModel());
@@ -363,10 +363,9 @@ BOOST_AUTO_TEST_CASE(SpatiocyteSimulator_test_shape)
     const Real L(2.5e-8);
     const Real3 edge_lengths(L, L, L);
     const Real voxel_radius(1e-9);
-    const std::string D("1e-12"), radius("2.5e-9");
-    Species membrane("Membrane", "2.5e-9", "0");
+    Species membrane("Membrane", 2.5e-9, 0);
 
-    Species sp("SpeciesA", "2.5e-9", "1e-12");
+    Species sp("SpeciesA", 2.5e-9, 1e-12);
     sp.set_attribute("location", "Membrane");
 
     boost::shared_ptr<NetworkModel> model(new NetworkModel());

@@ -29,7 +29,7 @@ struct Fixture
         voxel_radius(2.5e-9),
         space(edge_lengths, voxel_radius, false),
         sidgen(), D(1e-12), radius(2.5e-9),
-        sp("A", "2.5e-9", "1e-12")
+        sp("A", 2.5e-9, 1e-12)
     {
     }
 };
@@ -355,7 +355,7 @@ struct PeriodicFixture
         voxel_radius(2.5e-9),
         space(edge_lengths, voxel_radius, true),
         sidgen(), D(1e-12), radius(2.5e-9),
-        sp(std::string("A"), "2.5e-9", "1e-12")
+        sp(std::string("A"), 2.5e-9, 1e-12)
     {
     }
 };
@@ -529,8 +529,8 @@ struct StructureFixture
         voxel_radius(2.5e-9),
         space(edge_lengths, voxel_radius, false),
         sidgen(), D(1e-12), radius(2.5e-9),
-        structure("Structure", "2.5e-9", "0"),
-        sp("A", "2.5e-9", "1e-12", "Structure")
+        structure("Structure", 2.5e-9, 0),
+        sp("A", 2.5e-9, 1e-12, "Structure")
     {
     }
 };
@@ -553,7 +553,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_structure_update)
     BOOST_CHECK_EQUAL(space.list_particles().size(), 1); // TODO -> 0
     BOOST_CHECK_EQUAL(space.list_particles(sp).size(), 0);
 
-    Species sp2("B", "2.5e-9", "1e-12");
+    Species sp2("B", 2.5e-9, 1e-12);
     BOOST_CHECK_THROW(
         space.update_voxel(sidgen(), ParticleVoxel(sp2, space.position2coordinate(pos), radius, D)),
         NotSupported);
@@ -606,7 +606,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_save_and_load)
     BOOST_ASSERT(space.update_voxel(sidgen(), ParticleVoxel(sp, center, radius, D, structure.serial())));
     // #XXX !!!Warning!!! Ideally, not necessary to give structure.serial() explicitly
     BOOST_ASSERT(space.update_voxel(sidgen(), ParticleVoxel(
-            Species("B", "2.5e-9", "1e-12"), point, 2.5e-9, 1e-12)));
+            Species("B", 2.5e-9, 1e-12), point, 2.5e-9, 1e-12)));
 
     H5::H5File fout("data.h5", H5F_ACC_TRUNC);
     boost::scoped_ptr<H5::Group>

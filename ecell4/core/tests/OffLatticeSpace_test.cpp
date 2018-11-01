@@ -25,8 +25,8 @@ struct Fixture
     Fixture() :
         voxel_radius(2.5e-9),
         species(/* serial = */ "SpeciesA",
-                /* radius = */ "2.5e-9",
-                /* D = */      "1e-12"),
+                /* radius = */ 2.5e-9,
+                /* D = */      1e-12),
         voxel(/* species = */    species,
               /* coordinate = */ 3,
               /* radius = */     2.5e-9,

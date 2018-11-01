@@ -70,10 +70,10 @@ int main(int argc, char **argv)
     // add ::SpeciesType to ::ParticleModel
     // {{{
     ecell4::Species sp1(
-        std::string("C"), std::string("2.5"), std::string("1e3"));
+        std::string("C"), 2.5, 1e3);
     model->add_species_attribute(sp1);
     ecell4::Species sp2(
-        std::string("N"), std::string("2.5"), std::string("1e3"));
+        std::string("N"), 2.5, 1e3);
     model->add_species_attribute(sp2);
  
     // }}}

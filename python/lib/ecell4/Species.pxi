@@ -9,16 +9,16 @@ import numbers
 from cpython cimport bool as bool_t
 
 cdef boost_get_from_Cpp_Species_value_type(Cpp_Species_value_type value):
-    cdef string* value_str = boost_get[string, string, Real, Integer, bool](address(value))
+    cdef string* value_str = boost_get[string, string, Cpp_Quantity[Real], Cpp_Quantity[Integer], bool](address(value))
     if value_str != NULL:
         return deref(value_str).decode('UTF-8')
-    cdef Real* value_real = boost_get[Real, string, Real, Integer, bool](address(value))
+    cdef Cpp_Quantity[Real]* value_real = boost_get[Cpp_Quantity[Real], string, Cpp_Quantity[Real], Cpp_Quantity[Integer], bool](address(value))
     if value_real != NULL:
-        return deref(value_real)
-    cdef Integer* value_int = boost_get[Integer, string, Real, Integer, bool](address(value))
+        return deref(value_real).magnitude
+    cdef Cpp_Quantity[Integer]* value_int = boost_get[Cpp_Quantity[Integer], string, Cpp_Quantity[Real], Cpp_Quantity[Integer], bool](address(value))
     if value_int != NULL:
-        return deref(value_int)
-    cdef bool* value_bool = boost_get[bool, string, Real, Integer, bool](address(value))
+        return deref(value_int).magnitude
+    cdef bool* value_bool = boost_get[bool, string, Cpp_Quantity[Real], Cpp_Quantity[Integer], bool](address(value))
     if value_bool != NULL:
         return deref(value_bool)
 
@@ -57,19 +57,13 @@ cdef class Species:
             raise ValueError(
                 'D must be given. D is not optional when radius is given.')
         elif location is None:
-            if isinstance(radius, str) and isinstance(D, str):
-                self.thisptr = new Cpp_Species(
-                    tostring(serial), tostring(radius), tostring(D))
-            elif isinstance(radius, numbers.Real) and isinstance(D, numbers.Real):
+            if isinstance(radius, numbers.Real) and isinstance(D, numbers.Real):
                 self.thisptr = new Cpp_Species(
                     tostring(serial), <Real>radius, <Real>D)
             else:
                 raise TypeError('radius and D must be float.')
         else:
-            if isinstance(radius, str) and isinstance(D, str):
-                self.thisptr = new Cpp_Species(
-                    tostring(serial), tostring(radius), tostring(D), tostring(location))
-            elif isinstance(radius, numbers.Real) and isinstance(D, numbers.Real):
+            if isinstance(radius, numbers.Real) and isinstance(D, numbers.Real):
                 self.thisptr = new Cpp_Species(
                     tostring(serial), <Real>radius, <Real>D, tostring(location))
             else:

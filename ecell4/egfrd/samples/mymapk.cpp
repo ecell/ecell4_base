@@ -69,15 +69,15 @@ int main(int argc, char **argv)
     // add ::SpeciesType to ::ParticleModel
     // {{{
     ecell4::Species sp1(
-        std::string("A"), std::string("2.5e-09"), std::string("1e-12"));
+        std::string("A"), 2.5e-09, 1e-12);
     model->add_species_attribute(sp1);
 
     ecell4::Species sp2(
-        std::string("B"), std::string("2.5e-09"), std::string("1e-12"));
+        std::string("B"), 2.5e-09, 1e-12);
     model->add_species_attribute(sp2);
 
     ecell4::Species sp3(
-        std::string("C"), std::string("2.5e-09"), std::string("1e-12"));
+        std::string("C"), 2.5e-09, 1e-12);
     model->add_species_attribute(sp3);
     // }}}
 

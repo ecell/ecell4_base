@@ -14,7 +14,7 @@ private:
     typedef StructureType base_type;
 
     VacantType()
-        : base_type(Species("", "0", "0"), boost::weak_ptr<VoxelPool>(), 0)
+        : base_type(Species("", 0, 0), boost::weak_ptr<VoxelPool>(), 0)
     {
         ; // do nothing
     }
