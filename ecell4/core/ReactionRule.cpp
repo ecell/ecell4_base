@@ -7,6 +7,83 @@
 namespace ecell4
 {
 
+ReactionRule::ReactionRule()
+    : k_(0), reactants_(), products_(), policy_(STRICT)
+{
+    ;
+}
+
+ReactionRule::ReactionRule(
+    const reactant_container_type& reactants,
+    const product_container_type& products)
+    : k_(0), reactants_(reactants), products_(products), policy_(STRICT)
+{
+    ;
+}
+
+ReactionRule::ReactionRule(
+    const reactant_container_type& reactants,
+    const product_container_type& products,
+    const Real& k)
+    : k_(k), reactants_(reactants), products_(products), policy_(STRICT)
+{
+    ;
+}
+
+ReactionRule::ReactionRule(const ReactionRule& rr)
+    : k_(rr.k()), reactants_(rr.reactants()), products_(rr.products()), policy_(rr.policy()), rr_descriptor_()
+{
+    if (rr.has_descriptor())
+    {
+        set_descriptor(boost::shared_ptr<ReactionRuleDescriptor>(rr.get_descriptor()->clone()));
+    }
+}
+
+Real ReactionRule::k() const
+{
+    return k_;
+}
+
+const ReactionRule::reactant_container_type& ReactionRule::reactants() const
+{
+    return reactants_;
+}
+
+const ReactionRule::product_container_type& ReactionRule::products() const
+{
+    return products_;
+}
+
+void ReactionRule::set_k(const Real& k)
+{
+    if (k < 0)
+    {
+        throw std::invalid_argument("a kinetic rate must be positive.");
+    }
+    k_ = k;
+}
+
+void ReactionRule::add_reactant(const Species& sp)
+{
+    reactants_.push_back(sp);
+}
+
+void ReactionRule::add_product(const Species& sp)
+{
+    products_.push_back(sp);
+}
+
+const ReactionRule::policy_type ReactionRule::policy() const
+{
+    return policy_;
+}
+
+void ReactionRule::set_policy(const ReactionRule::policy_type policy)
+{
+    policy_ = policy;
+}
+
+
 const std::string ReactionRule::as_string() const
 {
     std::stringstream oss;
@@ -58,9 +135,35 @@ const std::string ReactionRule::as_string() const
     return oss.str();
 }
 
+Integer ReactionRule::count(const ReactionRule::reactant_container_type& reactants) const
+{
+    return this->generate(reactants).size();
+}
+
 std::vector<ReactionRule> ReactionRule::generate(const reactant_container_type& reactants) const
 {
     return generate_reaction_rules(*this, reactants);
+}
+
+bool ReactionRule::has_descriptor() const
+{
+    return (rr_descriptor_.get() != NULL);
+}
+
+void ReactionRule::set_descriptor(const boost::shared_ptr<ReactionRuleDescriptor>& descriptor)
+{
+    rr_descriptor_ = descriptor;
+}
+
+const boost::shared_ptr<ReactionRuleDescriptor>& ReactionRule::get_descriptor() const
+{
+    return rr_descriptor_;
+}
+
+void ReactionRule::reset_descriptor()
+{
+    boost::shared_ptr<ReactionRuleDescriptor> tmp;
+    rr_descriptor_.swap(tmp);
 }
 
 ReactionRule format_reaction_rule_with_nosort(const ReactionRule& rr)
