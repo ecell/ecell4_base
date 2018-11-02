@@ -7,7 +7,7 @@ import math
 # from functools import reduce
 
 from . import parseobj
-# from ..extra import unit
+from ..extra import unit
 
 import ecell4.core
 
@@ -36,6 +36,16 @@ def define_ratelaw_constant(key, val):
     if not isinstance(val, numbers.Number):
         raise ValueError('A constant must be a number [{}]'.format(type(val)))
     RATELAW_RESERVED_CONSTANTS[key] = val
+
+def as_quantity(value):
+    if unit.HAS_PINT and isinstance(value, unit._Quantity):
+        value = value.to_base_units()
+        if not isinstance(value.magnitude, numbers.Real):
+            raise TypeError(
+                "Magnitude must be float. '{}' was given [{}]".format(
+                    type(value.magnitude).__name__, value.magnitude))
+        value = ecell4.core.Quantity(value.magnitude, str(value.units))
+    return value
 
 def generate_species(obj):
     if not isinstance(obj, (parseobj.AnyCallable, parseobj.ParseObj)):
@@ -166,38 +176,6 @@ class Visitor(object):
     def visit_default(self, obj):
         return obj
 
-def dispatch(obj, visitor):
-    if isinstance(obj, parseobj.AnyCallable):
-        obj = obj._as_ParseObj()
-
-    if isinstance(obj, parseobj.ParseObj):
-        if obj._size() == 1 and obj._elems[0].name in RATELAW_RESERVED_FUNCTIONS:
-            # function
-            subobj = obj._elems[0]
-            assert subobj.key is None
-            assert subobj.modification is None
-            assert (subobj.args is not None and subobj.kwargs == {}) or (subobj.args is None and subobj.kwargs is None)
-            args = [dispatch(subobj.args[i], visitor) for i in range(len(subobj.args))]
-            return visitor.visit_func(obj, *args)
-        elif obj._size() == 1 and obj._elems[0].name in RATELAW_RESERVED_CONSTANTS:
-            # constant
-            subobj = obj._elems[0]
-            assert subobj.key is None
-            assert subobj.modification is None
-            assert subobj.args is None
-            assert subobj.kwargs is None
-            return visitor.visit_const(obj)
-        else:
-            # species
-            return visitor.visit_species(obj)
-    elif isinstance(obj, parseobj.ExpBase):
-        args = [dispatch(obj._elems[i], visitor) for i in range(len(obj._elems))]
-        return visitor.visit_expression(obj, *args)
-    # elif isinstance(obj, unit._Quantity):
-    #     return visitor.visit_quantity(obj)
-    else:
-        return visitor.visit_default(obj)
-
 class SpeciesParsingVisitor(Visitor):
 
     def __init__(self):
@@ -214,6 +192,7 @@ class SpeciesParsingVisitor(Visitor):
     #     return self.__quantities
 
     def visit_species(self, obj):
+        assert isinstance(obj, (parseobj.AnyCallable, parseobj.ParseObj))
         serial = ecell4.core.Species(str(obj)).serial()
         if serial in self.__keys:
             return "{{{0:d}}}".format(self.__keys.index(serial))
@@ -295,6 +274,39 @@ class SpeciesParsingVisitor(Visitor):
 #     def visit_default(self, obj):
 #         return (obj, obj)
 
+def dispatch(obj, visitor):
+    if isinstance(obj, parseobj.AnyCallable):
+        obj = obj._as_ParseObj()
+
+    if isinstance(obj, parseobj.ParseObj):
+        if obj._size() == 1 and obj._elems[0].name in RATELAW_RESERVED_FUNCTIONS:
+            # function
+            subobj = obj._elems[0]
+            assert subobj.key is None
+            assert subobj.modification is None
+            assert ((subobj.args is not None and subobj.kwargs == {})
+                    or (subobj.args is None and subobj.kwargs is None))
+            args = [dispatch(subobj.args[i], visitor) for i in range(len(subobj.args))]
+            return visitor.visit_func(obj, *args)
+        elif obj._size() == 1 and obj._elems[0].name in RATELAW_RESERVED_CONSTANTS:
+            # constant
+            subobj = obj._elems[0]
+            assert subobj.key is None
+            assert subobj.modification is None
+            assert subobj.args is None
+            assert subobj.kwargs is None
+            return visitor.visit_const(obj)
+        else:
+            # species
+            return visitor.visit_species(obj)
+    elif isinstance(obj, parseobj.ExpBase):
+        args = [dispatch(obj._elems[i], visitor) for i in range(len(obj._elems))]
+        return visitor.visit_expression(obj, *args)
+    # elif isinstance(obj, unit._Quantity):
+    #     return visitor.visit_quantity(obj)
+    else:
+        return visitor.visit_default(obj)
+
 def generate_ratelaw(obj, rr, implicit=False):
     label = str(obj)
     visitor = SpeciesParsingVisitor()
@@ -319,6 +331,7 @@ def generate_ratelaw(obj, rr, implicit=False):
         aliases[sp.serial()] = "_r[{0:d}]".format(i)
     for i, sp in enumerate(rr.products()):
         aliases[sp.serial()] = "_p[{0:d}]".format(i)
+
     names = []
     for key in visitor.keys:
         if key in aliases.keys():
@@ -329,13 +342,10 @@ def generate_ratelaw(obj, rr, implicit=False):
             rr.add_reactant(ecell4.core.Species(key))
             rr.add_product(ecell4.core.Species(key))
         else:
-            raise RuntimeError(
-                'unknown variable [{}] was used.'.format(key))
+            raise RuntimeError('[{}] is unknown [{}].'.format(key, obj))
+
     exp = exp.format(*names)
-    # print(exp)
-    f = eval("lambda _r, _p, _v, _t, _rc, _pc: {0}".format(exp))
+    f = eval("lambda _r, _p, _v, _t, _rc, _pc: {}".format(exp))
     f.__globals__.update(RATELAW_RESERVED_FUNCTIONS)
     f.__globals__.update((key, val) for key, val in RATELAW_RESERVED_CONSTANTS if val is not None)
-
     return (f, label)
-    # return (lambda _r, _p, *args: eval(exp))

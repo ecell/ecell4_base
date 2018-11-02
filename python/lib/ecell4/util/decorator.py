@@ -4,13 +4,13 @@ import functools
 
 from . import parseobj
 from .decorator_base import Callback, JustParseCallback, ParseDecorator
-# from ..extra import unit
 
 from .model_parser import (
     generate_species,
     generate_list_of_species_with_coefficient,
     generate_reaction_rule_options,
     generate_reaction_rule,
+    as_quantity
     )
 
 import ecell4.core
@@ -52,28 +52,18 @@ class SpeciesAttributesCallback(Callback):
         species_list = []
         for lhs in elems[: -1]:
             sp = generate_species(lhs)
-
             for key, value in rhs.items():
                 if not isinstance(key, str):
                     raise TypeError(
                         "Attribute key must be string."
                         " '{}' was given [{}].".format(type(key).__name__, key))
+
+                value = as_quantity(value)
                 if not isinstance(value, (numbers.Real, str, bool, ecell4.core.Quantity)):
                     raise TypeError(
                         "Attribute value must be int, float, string, boolean or Quantity."
                         " '{}' was given [{}].".format(type(value).__name__, value))
-
                 sp.set_attribute(key, value)
-
-                # if unit.HAS_PINT and isinstance(value, unit._Quantity):
-                #     if (unit.STRICT and key in attribute_dimensionality
-                #         and not unit.check_dimensionality(value, attribute_dimensionality[key])):
-                #             raise ValueError("Cannot convert [{}] from '{}' ({}) to '{}'".format(
-                #                 key, value.dimensionality, value.u, attribute_dimensionality[key]))
-                #     sp.set_attribute(key, value.to_base_units().magnitude)
-                # else:
-                #     sp.set_attribute(key, value)
-
             species_list.append(sp)
         return species_list
 
@@ -140,12 +130,12 @@ class ReactionRulesCallback(Callback):
                     "Parameter must have size, 2."
                     " '{}' was given [{}].".format(len(params), params))
 
-            return (generate_reaction_rule(reactants, products, params[0], opts.get('policy')),
-                    generate_reaction_rule(products, reactants, params[1], opts.get('policy')))
+            return (generate_reaction_rule(reactants, products, as_quantity(params[0]), opts.get('policy')),
+                    generate_reaction_rule(products, reactants, as_quantity(params[1]), opts.get('policy')))
         elif isinstance(obj, parseobj.GtExp):
-            return (generate_reaction_rule(reactants, products, params, opts.get('policy')), )
+            return (generate_reaction_rule(reactants, products, as_quantity(params), opts.get('policy')), )
         elif isinstance(obj, parseobj.LtExp):
-            return (generate_reaction_rule(products, reactants, params, opts.get('policy')), )
+            return (generate_reaction_rule(products, reactants, as_quantity(params), opts.get('policy')), )
 
 def get_model(is_netfree=False, without_reset=False, seeds=None, effective=False):
     """
