@@ -138,10 +138,7 @@ def generate_reaction_rule(lhs, rhs, k=None, policy=None):
     #             raise ValueError(
     #                 "Cannot convert [k] from '{}' ({}) to '{}'".format(
     #                     k.dimensionality, k.u, '1/[time]' + '/[concentration]' * (len(lhs) - 1)))
-    #     rr = ecell4.core.ReactionRule([sp for (sp, _) in lhs], [sp for (sp, _) in rhs], k.to_base_units().magnitude)
-    #     if policy is not None:
-    #         rr.set_policy(policy)
-    #     return rr
+    #     rr.set_k(k.to_base_units().magnitude)
     else:
         raise TypeError(
             "A kinetic rate must be float, Quantity or function."
@@ -175,6 +172,23 @@ class Visitor(object):
 
     def visit_default(self, obj):
         return obj
+
+class PreprocessVisitor(Visitor):
+
+    def visit_func(self, obj, *args):
+        subobj = obj._elems[0]
+        subobj.args = tuple(args)
+        return obj
+
+    def visit_expression(self, obj, *args):
+        assert len(obj._elems) == len(args)
+        obj._elems = list(args)
+        return obj
+
+    def visit_default(self, obj):
+        if unit.HAS_PINT and isinstance(obj, unit._Quantity):
+            obj = as_quantity(obj).magnitude
+        return Visitor.visit_default(self, obj)
 
 class SpeciesParsingVisitor(Visitor):
 
@@ -213,6 +227,11 @@ class SpeciesParsingVisitor(Visitor):
         assert len(obj._elems) == len(args)
         obj._elems = list(args)
         return obj
+
+    def visit_default(self, obj):
+        if not isinstance(obj, (numbers.Real, ecell4.core.Quantity)):
+            raise TypeError("An invalid type '{}' was given [{}].".format(type(obj).__name__, obj))
+        return Visitor.visit_default(self, obj)
 
 # class DimensionalityCheckingVisitor(Visitor):
 # 
@@ -308,9 +327,10 @@ def dispatch(obj, visitor):
         return visitor.visit_default(obj)
 
 def generate_ratelaw(obj, rr, implicit=False):
+    obj = dispatch(copy.deepcopy(obj), PreprocessVisitor())
     label = str(obj)
     visitor = SpeciesParsingVisitor()
-    exp = str(dispatch(copy.deepcopy(obj), visitor))
+    exp = str(dispatch(obj, visitor))
 
     # if unit.STRICT and len(visitor.quantities) > 0:
     #     ureg = visitor.quantities[0]._REGISTRY
