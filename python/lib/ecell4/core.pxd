@@ -179,6 +179,7 @@ cdef extern from "ecell4/core/ReactionRuleDescriptor.hpp" namespace "ecell4":
     cdef cppclass Cpp_ReactionRuleDescriptorMassAction "ecell4::ReactionRuleDescriptorMassAction":
         Cpp_ReactionRuleDescriptorMassAction() except +
         Cpp_ReactionRuleDescriptorMassAction(Real)
+        Cpp_ReactionRuleDescriptorMassAction(Cpp_Quantity[Real]&)
         void set_reactant_coefficients(vector[Real])
         void set_product_coefficients(vector[Real])
         void set_reactant_coefficient(int, Real)
@@ -189,7 +190,9 @@ cdef extern from "ecell4/core/ReactionRuleDescriptor.hpp" namespace "ecell4":
         Real propensity(vector[Real], vector[Real], Real, Real)
         # bool is_available()
         Real k()
+        Cpp_Quantity[Real] get_k()
         void set_k(Real)
+        void set_k(Cpp_Quantity[Real]&)
 
 cdef class ReactionRuleDescriptorPyfunc:
     cdef shared_ptr[Cpp_ReactionRuleDescriptorPyfunc] thisptr

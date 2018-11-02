@@ -120,10 +120,18 @@ cdef ReactionRuleDescriptorPyfunc ReactionRuleDescriptorPyfunc_from_Cpp_Reaction
 
 cdef class ReactionRuleDescriptorMassAction:
 
-    def __init__(self, Real k):
+    def __init__(self, k):
         # a = PyObjectHandler()
-        self.thisptr = shared_ptr[Cpp_ReactionRuleDescriptorMassAction](
-            new Cpp_ReactionRuleDescriptorMassAction(k))
+        if isinstance(k, numbers.Real):
+            self.thisptr = shared_ptr[Cpp_ReactionRuleDescriptorMassAction](
+                new Cpp_ReactionRuleDescriptorMassAction(<Real> k))
+        elif isinstance(k, Quantity):
+            self.thisptr = shared_ptr[Cpp_ReactionRuleDescriptorMassAction](
+                new Cpp_ReactionRuleDescriptorMassAction(Cpp_Quantity_from_Quantity_Real(k)))
+        else:
+            raise TypeError(
+                "Argument 1 must be float or Quantity."
+                "'{}' was given [{}].".format(type(k).__name__, k))
 
     def reactant_coefficients(self):
         cdef vector[Real] cpp_coefficients = self.thisptr.get().reactant_coefficients()
@@ -173,8 +181,20 @@ cdef class ReactionRuleDescriptorMassAction:
     def k(self):
         return self.thisptr.get().k()
 
-    def set_k(self, Real val):
-        self.thisptr.get().set_k(val)
+    def get_k(self):
+        """Return the kinetic rate constant as a Quantity."""
+        cdef Cpp_Quantity[Real] k = self.thisptr.get().get_k()
+        return Quantity_from_Cpp_Quantity_Real(address(k))
+
+    def set_k(self, k):
+        if isinstance(k, numbers.Real):
+            self.thisptr.get().set_k(<Real> k)
+        elif isinstance(k, Quantity):
+            self.thisptr.get().set_k(Cpp_Quantity_from_Quantity_Real(k))
+        else:
+            raise TypeError(
+                "Argument 1 must be float or Quantity."
+                "'{}' was given [{}].".format(type(k).__name__, k))
 
     # def as_string(self):
     #     """as_string() -> str

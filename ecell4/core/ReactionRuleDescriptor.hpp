@@ -143,6 +143,18 @@ public:
 
 public:
 
+    ReactionRuleDescriptorMassAction(const Quantity<Real>& k)
+        : base_type(), k_(k)
+    {
+        ;
+    }
+
+    ReactionRuleDescriptorMassAction(const Quantity<Real>& k, const coefficient_container_type &reactant_coefficients, const coefficient_container_type &product_coefficients)
+        : base_type(reactant_coefficients, product_coefficients), k_(k)
+    {
+        ;
+    }
+
     ReactionRuleDescriptorMassAction(const Real k)
         : base_type(), k_(k)
     {
@@ -162,17 +174,27 @@ public:
 
     const Real k() const
     {
+        return k_.magnitude;
+    }
+
+    Quantity<Real> get_k() const
+    {
         return k_;
     }
 
     void set_k(const Real k)
+    {
+        k_ = Quantity<Real>(k);
+    }
+
+    void set_k(const Quantity<Real>& k)
     {
         k_ = k;
     }
 
     virtual Real propensity(const state_container_type& reactants, const state_container_type& products, Real volume, Real t) const
     {
-        Real ret = k_ * volume;
+        Real ret = k_.magnitude * volume;
         state_container_type::const_iterator i(reactants.begin());
         coefficient_container_type::const_iterator j(reactant_coefficients().begin());
         for (; i != reactants.end() && j != reactant_coefficients().end(); ++i, ++j)
@@ -184,7 +206,7 @@ public:
 
 private:
 
-    Real k_;
+    Quantity<Real> k_;
 };
 
 class ReactionRuleDescriptorCPPfunc
