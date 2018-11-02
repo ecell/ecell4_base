@@ -11,7 +11,7 @@ from functools import reduce
 
 from . import parseobj
 from .decorator_base import Callback, JustParseCallback, ParseDecorator
-from ..extra import unit
+# from ..extra import unit
 
 import ecell4.core
 
@@ -43,12 +43,19 @@ def define_ratelaw_constant(key, val):
         raise ValueError('A constant must be a number [{}]'.format(type(val)))
     RATELAW_RESERVED_CONSTANTS[key] = val
 
+def parse_species(obj):
+    if not isinstance(obj, (parseobj.AnyCallable, parseobj.ParseObj)):
+        raise TypeError(
+            "Argument 1 must be AnyCallable or ParseObj."
+            " '{}' was given [{}].".format(type(obj).__name__, obj))
+    return ecell4.core.Species(str(obj))
+
 def generate_Species(obj):
     if isinstance(obj, parseobj.AnyCallable):
         obj = obj._as_ParseObj()
 
     if isinstance(obj, parseobj.ParseObj):
-        return ((ecell4.core.Species(str(obj)), None), )
+        return ((parse_species(obj), None), )
     elif isinstance(obj, parseobj.InvExp):
         return (None, )
     elif isinstance(obj, parseobj.MulExp):
@@ -76,16 +83,15 @@ def generate_Species(obj):
     else:
         raise RuntimeError('invalid expression; "%s" given' % str(obj))
 
-def generate_ReactionRule(lhs, rhs, k=None):
+def generate_ReactionRule(lhs, rhs, k=None, policy=None):
     if k is None:
-        raise RuntimeError('no parameter is specified')
+        raise RuntimeError('A kinetic rate must be given.')
 
-    elif (callable(k)  # Function
-          or (ENABLE_RATELAW
-              and isinstance(k, (parseobj.ExpBase, parseobj.AnyCallable)))  # Formula
-          or any([coef is not None
-                  for (sp, coef) in itertools.chain(lhs, rhs)])):  # Stoichiometry
-        rr = ecell4.core.ReactionRule([sp for (sp, _) in lhs], [sp for (sp, _) in rhs], 0.0)
+    rr = ecell4.core.ReactionRule([sp for (sp, _) in lhs], [sp for (sp, _) in rhs])
+
+    if (callable(k)  # Function
+            or (ENABLE_RATELAW and isinstance(k, (parseobj.ExpBase, parseobj.AnyCallable)))  # Formula
+            or any([coef is not None for (_, coef) in itertools.chain(lhs, rhs)])):  # Stoichiometry
 
         if ENABLE_RATELAW and isinstance(k, (parseobj.ExpBase, parseobj.AnyCallable)):
             func, name = generate_ratelaw(k, rr, ENABLE_IMPLICIT_DECLARATION)
@@ -100,23 +106,34 @@ def generate_ReactionRule(lhs, rhs, k=None):
         desc.set_product_coefficients([coef or 1 for (_, coef) in rhs])
 
         rr.set_descriptor(desc)
-        return rr
+    elif isinstance(k, (numbers.Real, ecell4.core.Quantity)):
+        rr.set_k(k)
+    # elif unit.HAS_PINT and isinstance(k, unit._Quantity):  # Kinetic rate given as a quantity
+    #     if unit.STRICT:
+    #         if len(lhs) == 0 and not unit.check_dimensionality(k, '1/[time]/[volume]'):
+    #             raise ValueError(
+    #                 "Cannot convert [k] from '{}' ({}) to '1/[time]/[volume]'".format(k.dimensionality, k.u))
+    #         elif not unit.check_dimensionality(k, '1/[time]' + '/[concentration]' * (len(lhs) - 1)):
+    #             raise ValueError(
+    #                 "Cannot convert [k] from '{}' ({}) to '{}'".format(
+    #                     k.dimensionality, k.u, '1/[time]' + '/[concentration]' * (len(lhs) - 1)))
+    #     rr = ecell4.core.ReactionRule([sp for (sp, _) in lhs], [sp for (sp, _) in rhs], k.to_base_units().magnitude)
+    #     if policy is not None:
+    #         rr.set_policy(policy)
+    #     return rr
+    else:
+        raise TypeError(
+            "A kinetic rate must be float, Quantity or function."
+            " '{}' was given [{}].".format(type(k).__name__, k))
 
-    elif isinstance(k, numbers.Number):  # Kinetic rate
-        return ecell4.core.ReactionRule([sp for (sp, _) in lhs], [sp for (sp, _) in rhs], k)
+    if policy is not None:
+        if not isinstance(policy, ecell4.core.ReactionRulePolicy):
+            raise TypeError(
+                "policy must be ReactionRulePolicy."
+                " '{}' was given [{}].".format(type(policy).__name__, policy))
+        rr.set_policy(policy)
 
-    elif unit.HAS_PINT and isinstance(k, unit._Quantity):  # Kinetic rate given as a quantity
-        if unit.STRICT:
-            if len(lhs) == 0 and not unit.check_dimensionality(k, '1/[time]/[volume]'):
-                raise ValueError(
-                    "Cannot convert [k] from '{}' ({}) to '1/[time]/[volume]'".format(k.dimensionality, k.u))
-            elif not unit.check_dimensionality(k, '1/[time]' + '/[concentration]' * (len(lhs) - 1)):
-                raise ValueError(
-                    "Cannot convert [k] from '{}' ({}) to '{}'".format(
-                        k.dimensionality, k.u, '1/[time]' + '/[concentration]' * (len(lhs) - 1)))
-        return ecell4.core.ReactionRule([sp for (sp, _) in lhs], [sp for (sp, _) in rhs], k.to_base_units().magnitude)
-
-    raise ValueError('parameter must be given as a number; "%s" given' % str(k))
+    return rr
 
 class Visitor(object):
 
@@ -165,8 +182,8 @@ def dispatch(obj, visitor):
     elif isinstance(obj, parseobj.ExpBase):
         args = [dispatch(obj._elems[i], visitor) for i in range(len(obj._elems))]
         return visitor.visit_expression(obj, *args)
-    elif isinstance(obj, unit._Quantity):
-        return visitor.visit_quantity(obj)
+    # elif isinstance(obj, unit._Quantity):
+    #     return visitor.visit_quantity(obj)
     else:
         return visitor.visit_default(obj)
 
@@ -175,15 +192,15 @@ class SpeciesParsingVisitor(Visitor):
     def __init__(self):
         Visitor.__init__(self)
         self.__keys = []
-        self.__quantities = []
+        # self.__quantities = []
 
     @property
     def keys(self):
         return self.__keys
 
-    @property
-    def quantities(self):
-        return self.__quantities
+    # @property
+    # def quantities(self):
+    #     return self.__quantities
 
     def visit_species(self, obj):
         serial = ecell4.core.Species(str(obj)).serial()
@@ -192,10 +209,10 @@ class SpeciesParsingVisitor(Visitor):
         self.__keys.append(serial)
         return "{{{0:d}}}".format(len(self.__keys) - 1)
 
-    def visit_quantity(self, obj):
-        assert not isinstance(obj.magnitude, (parseobj.AnyCallable, parseobj.ExpBase))
-        self.__quantities.append(obj)
-        return obj.to_base_units().magnitude
+    # def visit_quantity(self, obj):
+    #     assert not isinstance(obj.magnitude, (parseobj.AnyCallable, parseobj.ExpBase))
+    #     self.__quantities.append(obj)
+    #     return obj.to_base_units().magnitude
 
     def visit_func(self, obj, *args):
         subobj = obj._elems[0]
@@ -207,84 +224,84 @@ class SpeciesParsingVisitor(Visitor):
         obj._elems = list(args)
         return obj
 
-class DimensionalityCheckingVisitor(Visitor):
-
-    OPERATORS = {
-        parseobj.PosExp: operator.pos,
-        parseobj.NegExp: operator.neg,
-        parseobj.SubExp: lambda *args: operator.sub, # reduce(operator.sub, args[1: ], args[0]),
-        parseobj.DivExp: operator.truediv, # lambda *args: reduce(operator.truediv, args[1: ], args[0]),
-        parseobj.PowExp: operator.pow,
-        parseobj.AddExp: lambda *args: reduce(operator.add, args[1: ], args[0]), # operator.add,
-        parseobj.MulExp: lambda *args: reduce(operator.mul, args[1: ], args[0]), # operator.mul,
-        # parseobj.InvExp: operator.inv,
-        # parseobj.AndExp: operator.and_,
-        # parseobj.GtExp: operator.gt,
-        # parseobj.NeExp: operator.ne,
-        # parseobj.EqExp: operator.eq,
-        }
-
-    def __init__(self, ureg):
-        Visitor.__init__(self)
-        self.__ureg = ureg
-
-    def visit_const(self, obj):
-        key = obj._elems[0].name
-        if key == '_t':
-            dim = self.__ureg.Quantity(1.0, "second").to_base_units().u
-        else:
-            dim = RATELAW_RESERVED_CONSTANTS[key]
-        return (obj, dim)
-
-    def visit_species(self, obj):
-        dim = self.__ureg.Quantity(1.0, "molar").to_base_units().u
-        return (obj, dim)
-
-    def visit_quantity(self, obj):
-        assert not isinstance(obj.magnitude, (parseobj.AnyCallable, parseobj.ExpBase))
-        val = obj.to_base_units()
-        val, dim = val.magnitude, val.u
-        return (val, dim)
-
-    def visit_func(self, obj, *args):
-        func = RATELAW_RESERVED_FUNCTIONS[obj._elems[0].name]
-        val = func(*[1.0 * x for _, x in args])
-        dim = val.to_base_units().u
-        subobj = obj._elems[0]
-        subobj.args = tuple([x for x, _ in args])
-        return (obj, dim)
-
-    def visit_expression(self, obj, *args):
-        assert len(obj._elems) == len(args)
-        for cls, op in self.OPERATORS.items():
-            if isinstance(obj, cls):
-                val = op(*[1.0 * x for _, x in args])
-                dim = val.to_base_units().u
-                obj._elems = list([x for x, _ in args])
-                return (obj, dim)
-        raise ValueError('Unknown dimensionality for the given object [{}]'.format(str(obj)))
-
-    def visit_default(self, obj):
-        return (obj, obj)
+# class DimensionalityCheckingVisitor(Visitor):
+# 
+#     OPERATORS = {
+#         parseobj.PosExp: operator.pos,
+#         parseobj.NegExp: operator.neg,
+#         parseobj.SubExp: lambda *args: operator.sub, # reduce(operator.sub, args[1: ], args[0]),
+#         parseobj.DivExp: operator.truediv, # lambda *args: reduce(operator.truediv, args[1: ], args[0]),
+#         parseobj.PowExp: operator.pow,
+#         parseobj.AddExp: lambda *args: reduce(operator.add, args[1: ], args[0]), # operator.add,
+#         parseobj.MulExp: lambda *args: reduce(operator.mul, args[1: ], args[0]), # operator.mul,
+#         # parseobj.InvExp: operator.inv,
+#         # parseobj.AndExp: operator.and_,
+#         # parseobj.GtExp: operator.gt,
+#         # parseobj.NeExp: operator.ne,
+#         # parseobj.EqExp: operator.eq,
+#         }
+# 
+#     def __init__(self, ureg):
+#         Visitor.__init__(self)
+#         self.__ureg = ureg
+# 
+#     def visit_const(self, obj):
+#         key = obj._elems[0].name
+#         if key == '_t':
+#             dim = self.__ureg.Quantity(1.0, "second").to_base_units().u
+#         else:
+#             dim = RATELAW_RESERVED_CONSTANTS[key]
+#         return (obj, dim)
+# 
+#     def visit_species(self, obj):
+#         dim = self.__ureg.Quantity(1.0, "molar").to_base_units().u
+#         return (obj, dim)
+# 
+#     def visit_quantity(self, obj):
+#         assert not isinstance(obj.magnitude, (parseobj.AnyCallable, parseobj.ExpBase))
+#         val = obj.to_base_units()
+#         val, dim = val.magnitude, val.u
+#         return (val, dim)
+# 
+#     def visit_func(self, obj, *args):
+#         func = RATELAW_RESERVED_FUNCTIONS[obj._elems[0].name]
+#         val = func(*[1.0 * x for _, x in args])
+#         dim = val.to_base_units().u
+#         subobj = obj._elems[0]
+#         subobj.args = tuple([x for x, _ in args])
+#         return (obj, dim)
+# 
+#     def visit_expression(self, obj, *args):
+#         assert len(obj._elems) == len(args)
+#         for cls, op in self.OPERATORS.items():
+#             if isinstance(obj, cls):
+#                 val = op(*[1.0 * x for _, x in args])
+#                 dim = val.to_base_units().u
+#                 obj._elems = list([x for x, _ in args])
+#                 return (obj, dim)
+#         raise ValueError('Unknown dimensionality for the given object [{}]'.format(str(obj)))
+# 
+#     def visit_default(self, obj):
+#         return (obj, obj)
 
 def generate_ratelaw(obj, rr, implicit=False):
     label = str(obj)
     visitor = SpeciesParsingVisitor()
     exp = str(dispatch(copy.deepcopy(obj), visitor))
 
-    if unit.STRICT and len(visitor.quantities) > 0:
-        ureg = visitor.quantities[0]._REGISTRY
-        if any([q._REGISTRY != ureg for q in visitor.quantities[1: ]]):
-            raise ValueError('Cannot operate with Quantity and Quantity of different registries.')
-        label, ret = dispatch(copy.deepcopy(obj), DimensionalityCheckingVisitor(ureg))
-        label = str(label)
+    # if unit.STRICT and len(visitor.quantities) > 0:
+    #     ureg = visitor.quantities[0]._REGISTRY
+    #     if any([q._REGISTRY != ureg for q in visitor.quantities[1: ]]):
+    #         raise ValueError('Cannot operate with Quantity and Quantity of different registries.')
+    #     label, ret = dispatch(copy.deepcopy(obj), DimensionalityCheckingVisitor(ureg))
+    #     label = str(label)
 
-        if not isinstance(ret, unit._Unit):
-            ret = ureg.Unit('dimensionless')
-        if not unit.check_dimensionality(ret, '[concentration]/[time]'):
-            raise RuntimeError(
-                "A rate law must have dimension '{}'. '{}' was given.".format(
-                    ureg.get_dimensionality("[concentration]/[time]"), ret.dimensionality))
+    #     if not isinstance(ret, unit._Unit):
+    #         ret = ureg.Unit('dimensionless')
+    #     if not unit.check_dimensionality(ret, '[concentration]/[time]'):
+    #         raise RuntimeError(
+    #             "A rate law must have dimension '{}'. '{}' was given.".format(
+    #                 ureg.get_dimensionality("[concentration]/[time]"), ret.dimensionality))
 
     aliases = {}
     for i, sp in enumerate(rr.reactants()):
@@ -313,15 +330,10 @@ def generate_ratelaw(obj, rr, implicit=False):
     # return (lambda _r, _p, *args: eval(exp))
 
 def parse_ReactionRule_options(elements):
+    if elements is None or len(elements) == 0:
+        return {}
+
     opts = {}
-
-    if len(elements) == 0:
-        raise RuntimeError(
-            'only one attribute is allowed. [{:d}] given'.format(len(elements)))
-    elif len(elements) == 1:
-        opts['k'] = elements[0]
-        return opts
-
     for elem in elements:
         if isinstance(elem, ecell4.core.ReactionRulePolicy):
             if 'policy' not in opts.keys():
@@ -330,13 +342,10 @@ def parse_ReactionRule_options(elements):
                 opts['policy'] |= elem.get()
         else:
             if 'k' in opts.keys():
-                raise RuntimeError('only one attribute is allowed. [%d] given' % (
-                    len(elements)))
+                raise RuntimeError(
+                    "A kinetic rate is already assigned [{}].".format(opts['k'])
+                    + " [{}] was given duplicately.".format(elem))
             opts['k'] = elem
-
-    if 'k' not in opts.keys():
-        raise RuntimeError('no kinetic rate or law is given.')
-
     return opts
 
 class SpeciesAttributesCallback(Callback):
@@ -354,7 +363,7 @@ class SpeciesAttributesCallback(Callback):
         SPECIES_ATTRIBUTES.extend(self.bitwise_operations)
 
     def notify_bitwise_operations(self, obj):
-        attribute_dimensionality = {'D': '[length]**2/[time]', 'radius': '[length]'}
+        # attribute_dimensionality = {'D': '[length]**2/[time]', 'radius': '[length]'}
 
         if not isinstance(obj, parseobj.OrExp):
             raise TypeError('An invalid object was given [{}]'.format(repr(obj)))
@@ -367,26 +376,28 @@ class SpeciesAttributesCallback(Callback):
             raise TypeError('parameter must be given as a dict; "{}" given'.format(type(rhs)))
 
         for lhs in elems[: -1]:
-            species_list = generate_Species(lhs)
-            if len(species_list) != 1:
-                raise ValueError(
-                    'Only a single Species must be given; {:d} was given'.format(len(species_list)))
-            elif species_list[0] is None:
-                raise ValueError("No species given [{}]".format(repr(obj)))
-            elif species_list[0][1] is not None:
-                raise ValueError("Stoichiometry is not available here [{}]".format(repr(obj)))
-
-            sp = species_list[0][0]
+            sp = parse_species(lhs)
 
             for key, value in rhs.items():
-                if unit.HAS_PINT and isinstance(value, unit._Quantity):
-                    if (unit.STRICT and key in attribute_dimensionality
-                        and not unit.check_dimensionality(value, attribute_dimensionality[key])):
-                            raise ValueError("Cannot convert [{}] from '{}' ({}) to '{}'".format(
-                                key, value.dimensionality, value.u, attribute_dimensionality[key]))
-                    sp.set_attribute(key, value.to_base_units().magnitude)
-                else:
-                    sp.set_attribute(key, value)
+                if not isinstance(key, str):
+                    raise TypeError(
+                        "Attribute key must be string."
+                        " '{}' was given [{}].".format(type(key).__name__, key))
+                if not isinstance(value, (numbers.Real, str, bool, ecell4.core.Quantity)):
+                    raise TypeError(
+                        "Attribute value must be int, float, string, boolean or Quantity."
+                        " '{}' was given [{}].".format(type(value).__name__, value))
+
+                sp.set_attribute(key, value)
+
+                # if unit.HAS_PINT and isinstance(value, unit._Quantity):
+                #     if (unit.STRICT and key in attribute_dimensionality
+                #         and not unit.check_dimensionality(value, attribute_dimensionality[key])):
+                #             raise ValueError("Cannot convert [{}] from '{}' ({}) to '{}'".format(
+                #                 key, value.dimensionality, value.u, attribute_dimensionality[key]))
+                #     sp.set_attribute(key, value.to_base_units().magnitude)
+                # else:
+                #     sp.set_attribute(key, value)
 
             self.bitwise_operations.append(sp)
 
@@ -410,66 +421,54 @@ class ReactionRulesCallback(Callback):
         REACTION_RULES.extend(self.comparisons)
 
     def notify_comparisons(self, obj):
-        if not isinstance(obj, parseobj.CmpExp):
-            raise RuntimeError('an invalid object was given [%s]' % (repr(obj)))
-        elif isinstance(obj, parseobj.NeExp):
-            warnings.warn('"<>" is deprecated; use "==" instead',
-                          DeprecationWarning)
+        if not isinstance(obj, (parseobj.EqExp, parseobj.GtExp, parseobj.LtExp)):
+            raise RuntimeError('An ivalid operation was given [{!r}].'.format(obj))
 
         lhs, rhs = obj._lhs, obj._rhs
 
-        if isinstance(lhs, parseobj.OrExp):
-            lhs = lhs._elements()[0]
+        if isinstance(obj._lhs, parseobj.OrExp):
+            lhs = obj._lhs._elements()[0]
+        else:
+            lhs = obj._lhs
 
-        if not isinstance(rhs, parseobj.OrExp):
-            raise RuntimeError('an invalid object was given'
-                + ' as a right-hand-side [%s].' % (repr(rhs))
-                + ' OrExp must be given')
+        if not isinstance(obj._rhs, parseobj.OrExp):
+            raise RuntimeError(
+                "A right-hand-side is ill-formed. OrExp must be given [{!r}].".format(obj._rhs))
+        elif len(obj._rhs._elements()) == 0:
+            raise RuntimeError('No product was given in the right-hand-side.')
+        else:
+            rhs = obj._rhs._elements()[0]
+            opts = obj._rhs._elements()[1: ]
 
-        if len(rhs._elements()) == 0:
-            raise RuntimeError('no product is given')
+        reactants, products = generate_Species(lhs), generate_Species(rhs)
+        reactants = tuple(sp for sp in reactants if sp is not None)
+        products = tuple(sp for sp in products if sp is not None)
 
-        opts = parse_ReactionRule_options(rhs._elements()[1: ])
-        rhs = rhs._elements()[0]
+        opts = parse_ReactionRule_options(opts)
+        if 'k' not in opts.keys():
+            raise RuntimeError('No kinetic rate or law was given.')
         params = opts['k']
 
-        lhs, rhs = generate_Species(lhs), generate_Species(rhs)
-        lhs = tuple(sp for sp in lhs if sp is not None)
-        rhs = tuple(sp for sp in rhs if sp is not None)
-
-        if isinstance(obj, (parseobj.EqExp, parseobj.NeExp)):
+        if isinstance(obj, parseobj.EqExp):
             if not isinstance(params, (tuple, list)):
                 raise RuntimeError(
-                    'parameter must be a list or tuple with length 2; "%s" given'
-                    % str(params))
+                    "Parameter must be list or tuple."
+                    " '{}' was given [{}].".format(type(params).__name__, params))
             elif len(params) != 2:
                 raise RuntimeError(
-                    "parameter must be a list or tuple with length 2;"
-                    + " length %d given" % len(params))
-            # self.comparisons.append(generate_ReactionRule(lhs, rhs, params[0]))
-            # self.comparisons.append(generate_ReactionRule(rhs, lhs, params[1]))
-            rr = generate_ReactionRule(lhs, rhs, params[0])
-            if 'policy' in opts.keys():
-                rr.set_policy(opts['policy'])
-            self.comparisons.append(rr)
-            rr = generate_ReactionRule(rhs, lhs, params[1])
-            if 'policy' in opts.keys():
-                rr.set_policy(opts['policy'])
-            self.comparisons.append(rr)
+                    "Parameter must have size, 2."
+                    " '{}' was given [{}].".format(len(params), params))
+
+            self.comparisons.append(
+                generate_ReactionRule(reactants, products, params[0], opts.get('policy')))
+            self.comparisons.append(
+                generate_ReactionRule(products, reactants, params[1], opts.get('policy')))
         elif isinstance(obj, parseobj.GtExp):
-            # self.comparisons.append(generate_ReactionRule(lhs, rhs, params))
-            rr = generate_ReactionRule(lhs, rhs, params)
-            if 'policy' in opts.keys():
-                rr.set_policy(opts['policy'])
-            self.comparisons.append(rr)
+            self.comparisons.append(
+                generate_ReactionRule(reactants, products, params, opts.get('policy')))
         elif isinstance(obj, parseobj.LtExp):
-            # self.comparisons.append(generate_ReactionRule(rhs, lhs, params))
-            rr = generate_ReactionRule(rhs, lhs, params)
-            if 'policy' in opts.keys():
-                rr.set_policy(opts['policy'])
-            self.comparisons.append(rr)
-        else:
-            raise RuntimeError('an invalid object was given [%s]' % (repr(obj)))
+            self.comparisons.append(
+                generate_ReactionRule(products, reactants, params, opts.get('policy')))
 
 def get_model(is_netfree=False, without_reset=False, seeds=None, effective=False):
     """
