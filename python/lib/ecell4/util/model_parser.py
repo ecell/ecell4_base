@@ -11,9 +11,6 @@ from ..extra import unit
 
 import ecell4.core
 
-ENABLE_RATELAW = True
-ENABLE_IMPLICIT_DECLARATION = True
-
 RATELAW_RESERVED_FUNCTIONS = {
     'pow': pow, 'exp': math.exp, 'log': math.log,
     'sin': math.sin, 'cos': math.cos, 'tan': math.tan,
@@ -101,18 +98,18 @@ def generate_reaction_rule_options(elements):
             opts['k'] = elem
     return opts
 
-def generate_reaction_rule(lhs, rhs, k=None, policy=None):
+def generate_reaction_rule(lhs, rhs, k=None, policy=None, ratelaw=True, implicit=True):
     if k is None:
         raise RuntimeError('A kinetic rate must be given.')
 
     rr = ecell4.core.ReactionRule([sp for (sp, _) in lhs], [sp for (sp, _) in rhs])
 
     if (callable(k)  # Function
-            or (ENABLE_RATELAW and isinstance(k, (parseobj.ExpBase, parseobj.AnyCallable)))  # Formula
+            or (ratelaw and isinstance(k, (parseobj.ExpBase, parseobj.AnyCallable)))  # Formula
             or any([coef is not None for (_, coef) in itertools.chain(lhs, rhs)])):  # Stoichiometry
 
-        if ENABLE_RATELAW and isinstance(k, (parseobj.ExpBase, parseobj.AnyCallable)):
-            func, name = generate_ratelaw(k, rr, ENABLE_IMPLICIT_DECLARATION)
+        if ratelaw and isinstance(k, (parseobj.ExpBase, parseobj.AnyCallable)):
+            func, name = generate_ratelaw(k, rr, implicit)
             desc = ecell4.core.ReactionRuleDescriptorPyfunc(func, name)
         elif callable(k):
             desc = ecell4.core.ReactionRuleDescriptorPyfunc(k, "")
