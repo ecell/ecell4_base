@@ -26,6 +26,7 @@ RATELAW_RESERVED_FUNCTIONS = {
     'sin': math.sin, 'cos': math.cos, 'tan': math.tan,
     'asin': math.asin, 'acos': math.acos, 'atan': math.atan
     }
+
 RATELAW_RESERVED_CONSTANTS = {
     '_t': None,  #XXX: just reserved
     'pi': math.pi
@@ -50,40 +51,112 @@ def parse_species(obj):
             " '{}' was given [{}].".format(type(obj).__name__, obj))
     return ecell4.core.Species(str(obj))
 
-def generate_Species(obj):
-    if isinstance(obj, parseobj.AnyCallable):
-        obj = obj._as_ParseObj()
+class SpeciesAttributesCallback(Callback):
 
-    if isinstance(obj, parseobj.ParseObj):
-        return ((parse_species(obj), None), )
+    def __init__(self):
+        Callback.__init__(self)
+
+        self.bitwise_operations = []
+
+    def get(self):
+        return copy.copy(self.bitwise_operations)
+
+    def set(self):
+        global SPECIES_ATTRIBUTES
+        SPECIES_ATTRIBUTES.extend(self.bitwise_operations)
+
+    def notify_bitwise_operations(self, obj):
+        # attribute_dimensionality = {'D': '[length]**2/[time]', 'radius': '[length]'}
+
+        if not isinstance(obj, parseobj.OrExp):
+            raise TypeError('An invalid object was given [{}]'.format(repr(obj)))
+
+        elems = obj._elements()
+        rhs = elems[-1]
+        if isinstance(rhs, parseobj.ExpBase):
+            return
+        elif not isinstance(rhs, dict):
+            raise TypeError('parameter must be given as a dict; "{}" given'.format(type(rhs)))
+
+        for lhs in elems[: -1]:
+            sp = parse_species(lhs)
+
+            for key, value in rhs.items():
+                if not isinstance(key, str):
+                    raise TypeError(
+                        "Attribute key must be string."
+                        " '{}' was given [{}].".format(type(key).__name__, key))
+                if not isinstance(value, (numbers.Real, str, bool, ecell4.core.Quantity)):
+                    raise TypeError(
+                        "Attribute value must be int, float, string, boolean or Quantity."
+                        " '{}' was given [{}].".format(type(value).__name__, value))
+
+                sp.set_attribute(key, value)
+
+                # if unit.HAS_PINT and isinstance(value, unit._Quantity):
+                #     if (unit.STRICT and key in attribute_dimensionality
+                #         and not unit.check_dimensionality(value, attribute_dimensionality[key])):
+                #             raise ValueError("Cannot convert [{}] from '{}' ({}) to '{}'".format(
+                #                 key, value.dimensionality, value.u, attribute_dimensionality[key]))
+                #     sp.set_attribute(key, value.to_base_units().magnitude)
+                # else:
+                #     sp.set_attribute(key, value)
+
+            self.bitwise_operations.append(sp)
+
+    def notify_comparisons(self, obj):
+        raise RuntimeError(
+            'ReactionRule definitions are not allowed'
+            + ' in "species_attributes"')
+
+def parse_species_with_coefficient(obj):
+    if isinstance(obj, (parseobj.AnyCallable, parseobj.ParseObj)):
+        return (parse_species(obj), None)
     elif isinstance(obj, parseobj.InvExp):
-        return (None, )
+        return (parse_species(obj._target), 0)
     elif isinstance(obj, parseobj.MulExp):
-        subobjs = obj._elements()
-
-        retval, coef = None, 1
-        for subobj in subobjs:
-            if isinstance(subobj, numbers.Number):
-                coef *= subobj
-            elif retval is not None:
+        sp, coef = None, 1.0
+        for elem in obj._elements():
+            if isinstance(elem, numbers.Real):
+                coef *= elem
+                continue
+            if sp is not None:
                 raise RuntimeError(
-                    'only a single species must be given; %s given'
-                    % (repr(obj)))
-            else:
-                retval = generate_Species(subobj)
-
-        return [(sp[0], coef if sp[1] is None else sp[1] * coef)
-                if sp is not None else None
-                    for sp in retval]
-
-    elif isinstance(obj, parseobj.AddExp):
-        subobjs = obj._elements()
-        return tuple(itertools.chain(*[
-            generate_Species(subobj) for subobj in subobjs]))
+                    "Species is already assigned [{}].".format(sp.serila())
+                    + " [{!r}] was given duplicately.".format(elem))
+            sp = parse_species(elem)
+        return (sp, coef)
     else:
-        raise RuntimeError('invalid expression; "%s" given' % str(obj))
+        raise TypeError(
+            "Argument 1 must be AnyCallable, ParseObj, InvExp or MulExp."
+            " '{}' was given [{}].".format(type(obj).__name__, obj))
 
-def generate_ReactionRule(lhs, rhs, k=None, policy=None):
+def parse_list_of_species_with_coefficient(obj):
+    if isinstance(obj, parseobj.AddExp):
+        return [parse_species_with_coefficient(elem) for elem in obj._elements()]
+    else:
+        return [parse_species_with_coefficient(obj)]
+
+def parse_reaction_rule_options(elements):
+    if elements is None or len(elements) == 0:
+        return {}
+
+    opts = {}
+    for elem in elements:
+        if isinstance(elem, ecell4.core.ReactionRulePolicy):
+            if 'policy' not in opts.keys():
+                opts['policy'] = elem.get()
+            else:
+                opts['policy'] |= elem.get()
+        else:
+            if 'k' in opts.keys():
+                raise RuntimeError(
+                    "A kinetic rate is already assigned [{}].".format(opts['k'])
+                    + " [{}] was given duplicately.".format(elem))
+            opts['k'] = elem
+    return opts
+
+def parse_reaction_rule(lhs, rhs, k=None, policy=None):
     if k is None:
         raise RuntimeError('A kinetic rate must be given.')
 
@@ -99,7 +172,10 @@ def generate_ReactionRule(lhs, rhs, k=None, policy=None):
         elif callable(k):
             desc = ecell4.core.ReactionRuleDescriptorPyfunc(k, "")
         else:
-            #TODO: k might be a Quantity
+            if not isinstance(k, (numbers.Real, ecell4.core.Quantity)):
+                raise TypeError(
+                    "A kinetic rate must be float or Quantity."
+                    "'{}' was given [{}].".format(type(k).__name__, k))
             desc = ecell4.core.ReactionRuleDescriptorMassAction(k)
 
         desc.set_reactant_coefficients([coef or 1 for (_, coef) in lhs])
@@ -329,83 +405,6 @@ def generate_ratelaw(obj, rr, implicit=False):
     return (f, label)
     # return (lambda _r, _p, *args: eval(exp))
 
-def parse_ReactionRule_options(elements):
-    if elements is None or len(elements) == 0:
-        return {}
-
-    opts = {}
-    for elem in elements:
-        if isinstance(elem, ecell4.core.ReactionRulePolicy):
-            if 'policy' not in opts.keys():
-                opts['policy'] = elem.get()
-            else:
-                opts['policy'] |= elem.get()
-        else:
-            if 'k' in opts.keys():
-                raise RuntimeError(
-                    "A kinetic rate is already assigned [{}].".format(opts['k'])
-                    + " [{}] was given duplicately.".format(elem))
-            opts['k'] = elem
-    return opts
-
-class SpeciesAttributesCallback(Callback):
-
-    def __init__(self):
-        Callback.__init__(self)
-
-        self.bitwise_operations = []
-
-    def get(self):
-        return copy.copy(self.bitwise_operations)
-
-    def set(self):
-        global SPECIES_ATTRIBUTES
-        SPECIES_ATTRIBUTES.extend(self.bitwise_operations)
-
-    def notify_bitwise_operations(self, obj):
-        # attribute_dimensionality = {'D': '[length]**2/[time]', 'radius': '[length]'}
-
-        if not isinstance(obj, parseobj.OrExp):
-            raise TypeError('An invalid object was given [{}]'.format(repr(obj)))
-
-        elems = obj._elements()
-        rhs = elems[-1]
-        if isinstance(rhs, parseobj.ExpBase):
-            return
-        elif not isinstance(rhs, dict):
-            raise TypeError('parameter must be given as a dict; "{}" given'.format(type(rhs)))
-
-        for lhs in elems[: -1]:
-            sp = parse_species(lhs)
-
-            for key, value in rhs.items():
-                if not isinstance(key, str):
-                    raise TypeError(
-                        "Attribute key must be string."
-                        " '{}' was given [{}].".format(type(key).__name__, key))
-                if not isinstance(value, (numbers.Real, str, bool, ecell4.core.Quantity)):
-                    raise TypeError(
-                        "Attribute value must be int, float, string, boolean or Quantity."
-                        " '{}' was given [{}].".format(type(value).__name__, value))
-
-                sp.set_attribute(key, value)
-
-                # if unit.HAS_PINT and isinstance(value, unit._Quantity):
-                #     if (unit.STRICT and key in attribute_dimensionality
-                #         and not unit.check_dimensionality(value, attribute_dimensionality[key])):
-                #             raise ValueError("Cannot convert [{}] from '{}' ({}) to '{}'".format(
-                #                 key, value.dimensionality, value.u, attribute_dimensionality[key]))
-                #     sp.set_attribute(key, value.to_base_units().magnitude)
-                # else:
-                #     sp.set_attribute(key, value)
-
-            self.bitwise_operations.append(sp)
-
-    def notify_comparisons(self, obj):
-        raise RuntimeError(
-            'ReactionRule definitions are not allowed'
-            + ' in "species_attributes"')
-
 class ReactionRulesCallback(Callback):
 
     def __init__(self):
@@ -440,11 +439,12 @@ class ReactionRulesCallback(Callback):
             rhs = obj._rhs._elements()[0]
             opts = obj._rhs._elements()[1: ]
 
-        reactants, products = generate_Species(lhs), generate_Species(rhs)
-        reactants = tuple(sp for sp in reactants if sp is not None)
-        products = tuple(sp for sp in products if sp is not None)
+        reactants = parse_list_of_species_with_coefficient(lhs)
+        products = parse_list_of_species_with_coefficient(rhs)
+        reactants = tuple((sp, coef) for sp, coef in reactants if coef != 0)
+        products = tuple((sp, coef) for sp, coef in products if coef != 0)
 
-        opts = parse_ReactionRule_options(opts)
+        opts = parse_reaction_rule_options(opts)
         if 'k' not in opts.keys():
             raise RuntimeError('No kinetic rate or law was given.')
         params = opts['k']
@@ -460,15 +460,15 @@ class ReactionRulesCallback(Callback):
                     " '{}' was given [{}].".format(len(params), params))
 
             self.comparisons.append(
-                generate_ReactionRule(reactants, products, params[0], opts.get('policy')))
+                parse_reaction_rule(reactants, products, params[0], opts.get('policy')))
             self.comparisons.append(
-                generate_ReactionRule(products, reactants, params[1], opts.get('policy')))
+                parse_reaction_rule(products, reactants, params[1], opts.get('policy')))
         elif isinstance(obj, parseobj.GtExp):
             self.comparisons.append(
-                generate_ReactionRule(reactants, products, params, opts.get('policy')))
+                parse_reaction_rule(reactants, products, params, opts.get('policy')))
         elif isinstance(obj, parseobj.LtExp):
             self.comparisons.append(
-                generate_ReactionRule(products, reactants, params, opts.get('policy')))
+                parse_reaction_rule(products, reactants, params, opts.get('policy')))
 
 def get_model(is_netfree=False, without_reset=False, seeds=None, effective=False):
     """
