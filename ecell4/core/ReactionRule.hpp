@@ -4,6 +4,7 @@
 #include "ReactionRuleDescriptor.hpp"
 
 #include "types.hpp"
+#include "Quantity.hpp"
 #include "Species.hpp"
 #include <stdexcept>
 
@@ -38,159 +39,43 @@ public:
 
 public:
 
-    ReactionRule()
-        : k_(0), reactants_(), products_(), policy_(STRICT)
-    {
-        ;
-    }
+    ReactionRule();
+    ReactionRule(const reactant_container_type& reactants,
+                 const product_container_type& products);
+    ReactionRule(const reactant_container_type& reactants,
+                 const product_container_type& products,
+                 const Real& k);
+    ReactionRule(const reactant_container_type& reactants,
+                 const product_container_type& products,
+                 const Quantity<Real>& k);
+    ReactionRule(const ReactionRule& rr);
 
-    ReactionRule(
-        const reactant_container_type& reactants,
-        const product_container_type& products)
-        : k_(0), reactants_(reactants), products_(products), policy_(STRICT)
-    {
-        ;
-    }
+    Real k() const;
+    void set_k(const Real& k);
+    void set_k(const Quantity<Real>& k);
+    Quantity<Real> get_k() const;
 
-    ReactionRule(
-        const reactant_container_type& reactants,
-        const product_container_type& products,
-        const Real& k)
-        : k_(k), reactants_(reactants), products_(products), policy_(STRICT)
-    {
-        ;
-    }
+    const reactant_container_type& reactants() const;
+    const product_container_type& products() const;
+    void add_reactant(const Species& sp);
+    void add_product(const Species& sp);
 
-    ReactionRule(const ReactionRule& rr)
-        : k_(rr.k()), reactants_(rr.reactants()), products_(rr.products()), policy_(rr.policy()), rr_descriptor_()
-    {
-        if (rr.has_descriptor())
-        {
-            set_descriptor(boost::shared_ptr<ReactionRuleDescriptor>(rr.get_descriptor()->clone()));
-        }
-    }
-
-    Real k() const
-    {
-        return k_;
-    }
-
-    const reactant_container_type& reactants() const
-    {
-        return reactants_;
-    }
-
-    const product_container_type& products() const
-    {
-        return products_;
-    }
-
-    void set_k(const Real& k)
-    {
-        if (k < 0)
-        {
-            throw std::invalid_argument("a kinetic rate must be positive.");
-        }
-        k_ = k;
-    }
-
-    void add_reactant(const Species& sp)
-    {
-        reactants_.push_back(sp);
-    }
-
-    void add_product(const Species& sp)
-    {
-        products_.push_back(sp);
-    }
-
-    const policy_type policy() const
-    {
-        return policy_;
-    }
-
-    void set_policy(const policy_type policy)
-    {
-        policy_ = policy;
-    }
+    const policy_type policy() const;
+    void set_policy(const policy_type policy);
 
     const std::string as_string() const;
 
-    inline Integer count(const reactant_container_type& reactants) const
-    {
-        return this->generate(reactants).size();
-    }
-
+    Integer count(const reactant_container_type& reactants) const;
     std::vector<ReactionRule> generate(const reactant_container_type& reactants) const;
 
-    /** Ratelaw related functions.
-      */
-    /*
-    void set_ratelaw(const boost::shared_ptr<Ratelaw> ratelaw)
-    {
-        this->ratelaw_ = ratelaw;
-    }
-
-    boost::shared_ptr<Ratelaw> get_ratelaw() const
-    {
-        return this->ratelaw_.lock();
-    }
-
-    bool has_ratelaw() const
-    {
-        return !(this->ratelaw_.expired());
-    }*/
-
-    /** ReactionRule Descriptor related functions.
-      */
-    // void set_descriptor(const boost::shared_ptr<ReactionRuleDescriptor> rrd)
-    // {
-    //     this->rr_descriptor_ = rrd;
-    // }
-
-    // bool has_descriptor() const
-    // {
-    //     return !(this->rr_descriptor_.expired());
-    // }
-
-    // boost::shared_ptr<ReactionRuleDescriptor> get_descriptor() const
-    // {
-    //     return this->rr_descriptor_.lock();
-    // }
-
-    // Real propensity(const std::vector<Real> &r, const std::vector<Real> &p, Real t) const
-    // {
-    //     if (!has_descriptor())
-    //     {
-    //         throw IllegalState("ReactionRule Descriptor has not been registered");
-    //     }
-    //     return this->get_descriptor()->propensity(r, p, t);
-    // }
-
-    bool has_descriptor() const
-    {
-        return (rr_descriptor_.get() != NULL);
-    }
-
-    void set_descriptor(const boost::shared_ptr<ReactionRuleDescriptor>& descriptor)
-    {
-        rr_descriptor_ = descriptor;
-    }
-
-    const boost::shared_ptr<ReactionRuleDescriptor>& get_descriptor() const
-    {
-        return rr_descriptor_;
-    }
-
-    void reset_descriptor()
-    {
-        boost::shared_ptr<ReactionRuleDescriptor> tmp;
-        rr_descriptor_.swap(tmp);
-    }
+    bool has_descriptor() const;
+    void set_descriptor(const boost::shared_ptr<ReactionRuleDescriptor>& descriptor);
+    const boost::shared_ptr<ReactionRuleDescriptor>& get_descriptor() const;
+    void reset_descriptor();
 
 protected:
 
-    Real k_;
+    Quantity<Real> k_;
     reactant_container_type reactants_;
     product_container_type products_;
 

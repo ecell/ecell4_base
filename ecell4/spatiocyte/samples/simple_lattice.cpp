@@ -21,7 +21,7 @@ void run()
 
     const Integer N(60);
 
-    const std::string D("1e-12"), radius("2.5e-9");
+    const Real D(1e-12), radius(2.5e-9);
 
     //const Real kd(0.1), U(0.5);
     const Real kd(0.5), U(0.5);

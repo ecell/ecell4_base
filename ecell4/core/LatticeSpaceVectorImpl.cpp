@@ -13,12 +13,10 @@ LatticeSpaceVectorImpl::LatticeSpaceVectorImpl(
     const bool is_periodic) :
     base_type(edge_lengths, voxel_radius, is_periodic), is_periodic_(is_periodic)
 {
-    std::stringstream ss;
-    ss << voxel_radius_;
     border_ = boost::shared_ptr<VoxelPool>(
-            new MoleculePool(Species("Border", ss.str(), "0"), vacant_));
+            new MoleculePool(Species("Border", voxel_radius_, 0), vacant_));
     periodic_ = boost::shared_ptr<VoxelPool>(
-            new MoleculePool(Species("Periodic", ss.str(), "0"), vacant_));
+            new MoleculePool(Species("Periodic", voxel_radius, 0), vacant_));
 
     initialize_voxels(is_periodic_);
 }

@@ -49,7 +49,7 @@ BOOST_AUTO_TEST_CASE(BDSimulator_test_step2)
     boost::shared_ptr<RandomNumberGenerator> rng(new GSLRandomNumberGenerator());
 
     boost::shared_ptr<NetworkModel> model(new NetworkModel());
-    Species sp1("A", "2.5e-9", "1e-12");
+    Species sp1("A", 2.5e-9, 1e-12);
     model->add_species_attribute(sp1);
 
     boost::shared_ptr<BDWorld> world(new BDWorld(edge_lengths, matrix_sizes, rng));

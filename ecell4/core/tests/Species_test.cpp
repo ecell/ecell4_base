@@ -61,14 +61,14 @@ BOOST_AUTO_TEST_CASE(Species_test_attributes)
     const Species::attribute_type attr5 = sp.get_attribute("attr5");
 
     BOOST_ASSERT(attr1.type() == typeid(std::string));
-    BOOST_ASSERT(attr2.type() == typeid(Real));
-    BOOST_ASSERT(attr3.type() == typeid(Integer));
+    BOOST_ASSERT(attr2.type() == typeid(Quantity<Real>));
+    BOOST_ASSERT(attr3.type() == typeid(Quantity<Integer>));
     BOOST_ASSERT(attr4.type() == typeid(bool));
     BOOST_ASSERT(attr5.type() == typeid(std::string));
 
     BOOST_CHECK_EQUAL(boost::get<std::string>(attr1), val1);
-    BOOST_CHECK_EQUAL(boost::get<Real>(attr2), val2);
-    BOOST_CHECK_EQUAL(boost::get<Integer>(attr3), val3);
+    BOOST_CHECK_EQUAL(boost::get<Quantity<Real> >(attr2).magnitude, val2);
+    BOOST_CHECK_EQUAL(boost::get<Quantity<Integer> >(attr3).magnitude, val3);
     BOOST_CHECK_EQUAL(boost::get<bool>(attr4), val4);
     BOOST_CHECK_EQUAL(boost::get<std::string>(attr5), "bar");
 
