@@ -578,6 +578,20 @@ import ecell4.util.simulation
 import ecell4.util.viz
 import ecell4.ode
 
+def list_species(model, seeds=None):
+    """This function is deprecated."""
+    seeds = None or []
+
+    from ecell4 import Species
+
+    if not isinstance(seeds, list):
+        seeds = list(seeds)
+
+    expanded = model.expand([Species(serial) for serial in seeds])
+    species_list = [sp.serial() for sp in expanded.list_species()]
+    species_list = sorted(set(seeds + species_list))
+    return species_list
+
 ## observers=(), progressbar=0
 def ensemble_simulations(
     t, y0=None, volume=1.0, model=None, solver='ode',
@@ -645,7 +659,7 @@ def ensemble_simulations(
         model = ecell4.util.decorator.get_model(is_netfree, without_reset)
 
     if species_list is None:
-        species_list = ecell4.util.simulation.list_species(model, y0.keys())
+        species_list = list_species(model, y0.keys())
 
     if rndseed is None:
         myseed = genseeds(n)

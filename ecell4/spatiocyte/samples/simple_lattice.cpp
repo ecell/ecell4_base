@@ -47,7 +47,7 @@ void run()
 
     world->add_molecules(sp1, N);
 
-    simulator_type sim(model, world);
+    simulator_type sim(world, model);
 
     Real next_time(0.0), dt(0.02);
     std::cout << sim.t()

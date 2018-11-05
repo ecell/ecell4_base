@@ -53,7 +53,7 @@ int main(int argc, char** argv)
     world->save("test_bd.h5");
 
     /// instatiate BDSimulator
-    BDSimulator sim(model, world);
+    BDSimulator sim(world, model);
     sim.set_dt(1e-6);
 
     /// run and log by the millisecond

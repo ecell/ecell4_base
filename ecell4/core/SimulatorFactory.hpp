@@ -4,6 +4,8 @@
 #include "WorldInterface.hpp"
 #include "Model.hpp"
 #include "Simulator.hpp"
+#include "extras.hpp"
+#include "functions.hpp"
 
 
 namespace ecell4
@@ -29,19 +31,56 @@ public:
         ; // do nothing
     }
 
-    virtual WorldInterface* create_world(const std::string filename) const = 0;
-    virtual WorldInterface* create_world(const Real3& edge_lengths) const = 0;
-
-    virtual WorldInterface* create_world(const boost::shared_ptr<Model>& m) const
+    world_type* world(const Real3& edge_lengths = ones()) const
     {
-        throw NotSupported("not supported yet");
+        return create_world(edge_lengths);
     }
 
-    virtual Simulator* create_simulator(
-        const boost::shared_ptr<Model>& model,
-        const boost::shared_ptr<world_type>& world) const = 0;
-    virtual Simulator* create_simulator(
-        const boost::shared_ptr<world_type>& world) const = 0;
+    world_type* world(const Real volume) const
+    {
+        return world(ones() * cbrt(volume));
+    }
+
+    world_type* world(const std::string& filename) const
+    {
+        return new world_type(filename);
+    }
+
+    world_type* world(const boost::shared_ptr<Model>& m) const
+    {
+        return extras::generate_world_from_model(*this, m);
+    }
+
+    simulator_type* simulator(
+        const boost::shared_ptr<world_type>& w, const boost::shared_ptr<Model>& m) const
+    {
+        return create_simulator(w, m);
+    }
+
+    simulator_type* simulator(const boost::shared_ptr<world_type>& w) const
+    {
+        if (boost::shared_ptr<Model> bound_model = w->lock_model())
+        {
+            return create_simulator(w, bound_model);
+        }
+        else
+        {
+            throw std::invalid_argument("A world must be bound to a model.");
+        }
+    }
+
+protected:
+
+    virtual world_type* create_world(const Real3& edge_lengths) const
+    {
+        return new world_type(edge_lengths);
+    }
+
+    virtual simulator_type* create_simulator(
+        const boost::shared_ptr<world_type>& w, const boost::shared_ptr<Model>& m) const
+    {
+        return new simulator_type(w, m);
+    }
 };
 
 } // ecell4

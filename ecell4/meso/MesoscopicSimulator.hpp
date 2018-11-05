@@ -78,11 +78,11 @@ protected:
 };
 
 class MesoscopicSimulator
-    : public SimulatorBase<Model, MesoscopicWorld>
+    : public SimulatorBase<MesoscopicWorld>
 {
 public:
 
-    typedef SimulatorBase<Model, MesoscopicWorld> base_type;
+    typedef SimulatorBase<MesoscopicWorld> base_type;
     typedef SubvolumeSpace::coordinate_type coordinate_type;
     typedef ReactionInfo reaction_info_type;
 
@@ -832,9 +832,9 @@ protected:
 public:
 
     MesoscopicSimulator(
-        boost::shared_ptr<Model> model,
-        boost::shared_ptr<MesoscopicWorld> world)
-        : base_type(model, world)
+        boost::shared_ptr<MesoscopicWorld> world,
+        boost::shared_ptr<Model> model)
+        : base_type(world, model)
     {
         initialize();
     }

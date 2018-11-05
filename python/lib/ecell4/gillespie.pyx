@@ -1,4 +1,6 @@
 import collections
+import numbers
+
 from cython cimport address
 from cython.operator cimport dereference as deref, preincrement as inc
 from ecell4.core cimport *
@@ -478,29 +480,28 @@ cdef class GillespieSimulator:
 
     """
 
-    def __init__(self, m, GillespieWorld w=None):
-        """GillespieSimulator(m, w)
-        GillespieSimulator(w)
+    def __init__(self, GillespieWorld w, m=None):
+        """GillespieSimulator(w, m)
 
         Constructor.
 
         Parameters
         ----------
-        m : Model
-            A model
         w : GillespieWorld
             A world
+        m : Model, optional
+            A model
 
         """
         pass
 
-    def __cinit__(self, m, GillespieWorld w=None):
-        if w is None:
+    def __cinit__(self, GillespieWorld w, m=None):
+        if m is None:
             self.thisptr = new Cpp_GillespieSimulator(
-                deref((<GillespieWorld>m).thisptr))
+                deref(w.thisptr))
         else:
             self.thisptr = new Cpp_GillespieSimulator(
-                Cpp_Model_from_Model(m), deref(w.thisptr))
+                deref(w.thisptr), Cpp_Model_from_Model(m))
 
     def __dealloc__(self):
         del self.thisptr
@@ -608,35 +609,48 @@ cdef class GillespieSimulator:
         """Return the world bound."""
         return GillespieWorld_from_Cpp_GillespieWorld(self.thisptr.world())
 
-    def run(self, Real duration, observers=None):
-        """run(duration, observers)
+    def run(self, Real duration, observers=None, is_dirty=None):
+        """run(duration, observers, is_dirty)
 
         Run the simulation.
 
         Parameters
         ----------
         duration : Real
-            a duration for running a simulation.
-                A simulation is expected to be stopped at t() + duration.
+            A duration for running a simulation.
+            A simulation is expected to be stopped at t() + duration.
         observers : list of Obeservers, optional
             observers
+        is_dirty : bool, default True
+            If True, call initialize before running.
 
         """
         cdef vector[shared_ptr[Cpp_Observer]] tmp
 
-        if observers is None:
-            self.thisptr.run(duration)
-        elif isinstance(observers, collections.Iterable):
-            for obs in observers:
-                tmp.push_back(deref((<Observer>(obs.as_base())).thisptr))
-            self.thisptr.run(duration, tmp)
+        if is_dirty is None:
+            if observers is None:
+                self.thisptr.run(duration)
+            elif isinstance(observers, collections.Iterable):
+                for obs in observers:
+                    tmp.push_back(deref((<Observer>(obs.as_base())).thisptr))
+                self.thisptr.run(duration, tmp)
+            else:
+                self.thisptr.run(duration,
+                    deref((<Observer>(observers.as_base())).thisptr))
         else:
-            self.thisptr.run(duration,
-                deref((<Observer>(observers.as_base())).thisptr))
+            if observers is None:
+                self.thisptr.run(duration, is_dirty)
+            elif isinstance(observers, collections.Iterable):
+                for obs in observers:
+                    tmp.push_back(deref((<Observer>(obs.as_base())).thisptr))
+                self.thisptr.run(duration, tmp, is_dirty)
+            else:
+                self.thisptr.run(duration,
+                    deref((<Observer>(observers.as_base())).thisptr), is_dirty)
 
 cdef GillespieSimulator GillespieSimulator_from_Cpp_GillespieSimulator(Cpp_GillespieSimulator* s):
     r = GillespieSimulator(
-        Model_from_Cpp_Model(s.model()), GillespieWorld_from_Cpp_GillespieWorld(s.world()))
+        GillespieWorld_from_Cpp_GillespieWorld(s.world()), Model_from_Cpp_Model(s.model()))
     del r.thisptr
     r.thisptr = s
     return r
@@ -670,6 +684,68 @@ cdef class GillespieFactory:
         assert ptr == self.thisptr
         return self
 
+    def world(self, arg1=None):
+        """world(arg1=None) -> GillespieWorld
+
+        Return a GillespieWorld instance.
+
+        Parameters
+        ----------
+        arg1 : Real3, Real, str, optional. default None
+            If Real3, it suggests the lengths of edges of a ``BDWorld`` created.
+            If Real, it suggests the volume.
+            If str, it suggests the path of a HDF5 file loaded.
+
+        Returns
+        -------
+        GillespieWorld:
+            the created world
+
+        """
+        if arg1 is None:
+            return GillespieWorld_from_Cpp_GillespieWorld(
+                shared_ptr[Cpp_GillespieWorld](self.thisptr.world()))
+        elif isinstance(arg1, Real3):
+            return GillespieWorld_from_Cpp_GillespieWorld(
+                shared_ptr[Cpp_GillespieWorld](
+                    self.thisptr.world(deref((<Real3>arg1).thisptr))))
+        elif isinstance(arg1, numbers.Number):
+            return GillespieWorld_from_Cpp_GillespieWorld(
+                shared_ptr[Cpp_GillespieWorld](self.thisptr.world(<Real>(arg1))))
+        elif isinstance(arg1, str):
+            return GillespieWorld_from_Cpp_GillespieWorld(
+                shared_ptr[Cpp_GillespieWorld](self.thisptr.world(tostring(arg1))))
+        else:
+            return GillespieWorld_from_Cpp_GillespieWorld(
+                shared_ptr[Cpp_GillespieWorld](self.thisptr.world(
+                    Cpp_Model_from_Model(arg1))))
+
+    def simulator(self, GillespieWorld arg1, arg2=None):
+        """simulator(arg1, arg2) -> GillespieSimulator
+
+        Return a GillespieSimulator instance.
+
+        Parameters
+        ----------
+        arg1 : GillespieWorld
+            a world
+        arg2 : Model
+            a simulation model
+
+        Returns
+        -------
+        GillespieSimulator:
+            the created simulator
+
+        """
+        if arg2 is None:
+            return GillespieSimulator_from_Cpp_GillespieSimulator(
+                self.thisptr.simulator(deref(arg1.thisptr)))
+        else:
+            return GillespieSimulator_from_Cpp_GillespieSimulator(
+                self.thisptr.simulator(
+                    deref(arg1.thisptr), Cpp_Model_from_Model(arg2)))
+
     def create_world(self, arg1=None):
         """create_world(arg1=None) -> GillespieWorld
 
@@ -691,22 +767,10 @@ cdef class GillespieFactory:
             the created world
 
         """
-        if arg1 is None:
-            return GillespieWorld_from_Cpp_GillespieWorld(
-                shared_ptr[Cpp_GillespieWorld](self.thisptr.create_world()))
-        elif isinstance(arg1, Real3):
-            return GillespieWorld_from_Cpp_GillespieWorld(
-                shared_ptr[Cpp_GillespieWorld](
-                    self.thisptr.create_world(deref((<Real3>arg1).thisptr))))
-        elif isinstance(arg1, str):
-            return GillespieWorld_from_Cpp_GillespieWorld(
-                shared_ptr[Cpp_GillespieWorld](self.thisptr.create_world(<string>(arg1))))
-        else:
-            return GillespieWorld_from_Cpp_GillespieWorld(
-                shared_ptr[Cpp_GillespieWorld](self.thisptr.create_world(
-                    Cpp_Model_from_Model(arg1))))
+        import warnings; warnings.warn("Function 'create_world()' has moved to 'world()'", DeprecationWarning)
+        return self.world(arg1)
 
-    def create_simulator(self, arg1, GillespieWorld arg2=None):
+    def create_simulator(self, GillespieWorld arg1, arg2=None):
         """create_simulator(arg1, arg2) -> GillespieSimulator
 
         Return a GillespieSimulator instance.
@@ -715,13 +779,8 @@ cdef class GillespieFactory:
         ----------
         arg1 : GillespieWorld
             a world
-
-        or
-
-        arg1 : Model
+        arg2 : Model
             a simulation model
-        arg2 : GillespieWorld
-            a world
 
         Returns
         -------
@@ -729,10 +788,11 @@ cdef class GillespieFactory:
             the created simulator
 
         """
-        if arg2 is None:
-            return GillespieSimulator_from_Cpp_GillespieSimulator(
-                self.thisptr.create_simulator(deref((<GillespieWorld>arg1).thisptr)))
-        else:
-            return GillespieSimulator_from_Cpp_GillespieSimulator(
-                self.thisptr.create_simulator(
-                    Cpp_Model_from_Model(arg1), deref(arg2.thisptr)))
+        import warnings; warnings.warn("Function 'create_simulator()' has moved to 'simulator()'", DeprecationWarning)
+        return self.simulator(arg1, arg2)
+
+World = GillespieWorld  # This is an alias
+Simulator = GillespieSimulator  # This is an alias
+Factory = GillespieFactory  # This is an alias
+
+__all__ = ["GillespieWorld", "GillespieSimulator", "GillespieFactory"]

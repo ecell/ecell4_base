@@ -90,11 +90,11 @@ cdef extern from "ecell4/bd/BDSimulator.hpp" namespace "ecell4::bd":
         #     shared_ptr[Cpp_NetworkModel], shared_ptr[Cpp_BDWorld],
         #     Integer dissociation_retry_moves) except +
         Cpp_BDSimulator(
-            shared_ptr[Cpp_Model], shared_ptr[Cpp_BDWorld]) except +
+            shared_ptr[Cpp_BDWorld], shared_ptr[Cpp_Model]) except +
         Cpp_BDSimulator(
             shared_ptr[Cpp_BDWorld]) except +
         Cpp_BDSimulator(
-            shared_ptr[Cpp_Model], shared_ptr[Cpp_BDWorld], Real) except +
+            shared_ptr[Cpp_BDWorld], shared_ptr[Cpp_Model], Real) except +
         Cpp_BDSimulator(
             shared_ptr[Cpp_BDWorld], Real) except +
         Integer num_steps()
@@ -113,6 +113,9 @@ cdef extern from "ecell4/bd/BDSimulator.hpp" namespace "ecell4::bd":
         void run(Real) except +
         void run(Real, shared_ptr[Cpp_Observer]) except +
         void run(Real, vector[shared_ptr[Cpp_Observer]]) except +
+        void run(Real, is_dirty) except +
+        void run(Real, shared_ptr[Cpp_Observer], is_dirty) except +
+        void run(Real, vector[shared_ptr[Cpp_Observer]], is_dirty) except +
 
 ## BDSimulator
 #  a python wrapper for Cpp_BDSimulator
@@ -126,12 +129,13 @@ cdef BDSimulator BDSimulator_from_Cpp_BDSimulator(Cpp_BDSimulator* s)
 cdef extern from "ecell4/bd/BDFactory.hpp" namespace "ecell4::bd":
     cdef cppclass Cpp_BDFactory "ecell4::bd::BDFactory":
         Cpp_BDFactory(Cpp_Integer3&, Real) except +
-        Cpp_BDWorld* create_world()
-        Cpp_BDWorld* create_world(string)
-        Cpp_BDWorld* create_world(Cpp_Real3&)
-        Cpp_BDWorld* create_world(shared_ptr[Cpp_Model])
-        Cpp_BDSimulator* create_simulator(shared_ptr[Cpp_Model], shared_ptr[Cpp_BDWorld])
-        Cpp_BDSimulator* create_simulator(shared_ptr[Cpp_BDWorld])
+        Cpp_BDWorld* world()
+        Cpp_BDWorld* world(Real)
+        Cpp_BDWorld* world(string)
+        Cpp_BDWorld* world(Cpp_Real3&)
+        Cpp_BDWorld* world(shared_ptr[Cpp_Model])
+        Cpp_BDSimulator* simulator(shared_ptr[Cpp_BDWorld], shared_ptr[Cpp_Model])
+        Cpp_BDSimulator* simulator(shared_ptr[Cpp_BDWorld])
         Cpp_BDFactory* rng_ptr(shared_ptr[Cpp_RandomNumberGenerator]&)
         @staticmethod
         Cpp_Integer3 default_matrix_sizes()

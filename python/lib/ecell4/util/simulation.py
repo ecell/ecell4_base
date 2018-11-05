@@ -1,8 +1,10 @@
 import collections
+import numbers
 
 from .decorator import get_model, reset_model
 from . import viz
 from ..extra import unit
+from ..extra.ensemble import ensemble_simulations
 
 
 def load_world(filename):
@@ -26,17 +28,17 @@ def load_world(filename):
 
     vinfo = ecell4.core.load_version_information(filename)
     if vinfo.startswith("ecell4-bd"):
-        return ecell4.bd.BDWorld(filename)
+        return ecell4.bd.World(filename)
     elif vinfo.startswith("ecell4-egfrd"):
-        return ecell4.egfrd.EGFRDWorld(filename)
+        return ecell4.egfrd.World(filename)
     elif vinfo.startswith("ecell4-meso"):
-        return ecell4.meso.MesoscopicWorld(filename)
+        return ecell4.meso.World(filename)
     elif vinfo.startswith("ecell4-ode"):
-        return ecell4.ode.ODEWorld(filename)
+        return ecell4.ode.World(filename)
     elif vinfo.startswith("ecell4-gillespie"):
-        return ecell4.gillespie.GillespieWorld(filename)
+        return ecell4.gillespie.World(filename)
     elif vinfo.startswith("ecell4-spatiocyte"):
-        return ecell4.spatiocyte.SpatiocyteWorld(filename)
+        return ecell4.spatiocyte.World(filename)
     elif vinfo == "":
         raise RuntimeError("No version information was found in [{0}]".format(filename))
     raise RuntimeError("Unkown version information [{0}]".format(vinfo))
@@ -45,17 +47,17 @@ def get_factory(solver, *args):
     import ecell4
 
     if solver == 'ode':
-        return ecell4.ode.ODEFactory(*args)
+        return ecell4.ode.Factory(*args)
     elif solver == 'gillespie':
-        return ecell4.gillespie.GillespieFactory(*args)
+        return ecell4.gillespie.Factory(*args)
     elif solver == 'spatiocyte':
-        return ecell4.spatiocyte.SpatiocyteFactory(*args)
+        return ecell4.spatiocyte.Factory(*args)
     elif solver == 'meso':
-        return ecell4.meso.MesoscopicFactory(*args)
+        return ecell4.meso.Factory(*args)
     elif solver == 'bd':
-        return ecell4.bd.BDFactory(*args)
+        return ecell4.bd.Factory(*args)
     elif solver == 'egfrd':
-        return ecell4.egfrd.EGFRDFactory(*args)
+        return ecell4.egfrd.Factory(*args)
     else:
         raise ValueError(
             'unknown solver name was given: ' + repr(solver)
@@ -90,19 +92,6 @@ def get_shape(shape, *args):
         raise ValueError(
             'unknown shape type was given: ' + repr(shape)
             + '. use {}'.format(', '.join(sorted(shape_map.keys()))))
-
-def list_species(model, seeds=None):
-    seeds = None or []
-
-    from ecell4 import Species
-
-    if not isinstance(seeds, list):
-        seeds = list(seeds)
-
-    expanded = model.expand([Species(serial) for serial in seeds])
-    species_list = [sp.serial() for sp in expanded.list_species()]
-    species_list = sorted(set(seeds + species_list))
-    return species_list
 
 def run_simulation(
         t, y0=None, volume=1.0, model=None, solver='ode',
@@ -229,13 +218,8 @@ def run_simulation(
     if model is None:
         model = ecell4.util.decorator.get_model(is_netfree, without_reset)
 
-    if isinstance(volume, ecell4.Real3):
-        edge_lengths = volume
-    else:
-        L = ecell4.cbrt(volume)
-        edge_lengths = ecell4.Real3(L, L, L)
-
-    w = f.create_world(edge_lengths)
+    w = f.world(volume)
+    edge_lengths = w.edge_lengths()
 
     if unit.HAS_PINT:
         y0 = y0.copy()
@@ -273,15 +257,12 @@ def run_simulation(
         for serial, n in y0.items():
             w.add_molecules(ecell4.Species(serial), n)
 
-    if species_list is None:
-        species_list = list_species(model, y0.keys())
-
     if not isinstance(t, collections.Iterable):
         t = [float(t) * i / 100 for i in range(101)]
 
     obs = ecell4.TimingNumberObserver(t, species_list)
-    sim = f.create_simulator(model, w)
-    # sim = f.create_simulator(w)
+    sim = f.simulator(w, model)
+    # sim = f.simulator(w)
 
     if not isinstance(observers, collections.Iterable):
         observers = (observers, )
@@ -333,7 +314,30 @@ def run_simulation(
             'An invald value for "return_type" was given [{}].'.format(str(return_type))
             + 'Use "none" if you need nothing to be returned.')
 
-def ensemble_simulations(N=1, *args, **kwargs):
-    """Deprecated"""
-    raise RuntimeError(
-        "This function was deprecated. Use ecell4.extra.ensemble.ensemble_simulations instread.")
+def number_observer(t=None, targets=None):
+    """
+    Return a number observer. If t is None, return NumberObserver. If t is a number,
+    return FixedIntervalNumberObserver. If t is an iterable (a list of numbers), return
+    TimingNumberObserver.
+
+    Parameters
+    ----------
+    t : float, list or tuple, optional. default None
+        A timing of the observation. See above.
+    targets : list or tuple, optional. default None
+        A list of strings suggesting Species observed.
+
+    Returns
+    -------
+    obs : NumberObserver, FixedIntervalNumberObserver or TimingNumberObserver
+    """
+    from ecell4 import NumberObserver, FixedIntervalNumberObserver, TimingNumberObserver
+
+    if t is None:
+        return NumberObserver(targets)
+    elif isinstance(t, numbers.Number):
+        return FixedIntervalNumberObserver(t, targets)
+    elif hasattr(t, '__iter__'):
+        return TimingNumberObserver(t, targets)
+    else:
+        raise TypeError("An invalid type was given. Either number or iterable is required.")

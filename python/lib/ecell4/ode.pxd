@@ -62,8 +62,8 @@ cdef ODEWorld ODEWorld_from_Cpp_ODEWorld(shared_ptr[Cpp_ODEWorld] m)
 ## Cpp_ODESimulator
 cdef extern from "ecell4/ode/ODESimulator.hpp" namespace "ecell4::ode":
     cdef cppclass Cpp_ODESimulator "ecell4::ode::ODESimulator":
-        Cpp_ODESimulator(shared_ptr[Cpp_Model], shared_ptr[Cpp_ODEWorld], Cpp_ODESolverType) except+
-        Cpp_ODESimulator(shared_ptr[Cpp_Model], shared_ptr[Cpp_ODEWorld]) except+
+        Cpp_ODESimulator(shared_ptr[Cpp_ODEWorld], shared_ptr[Cpp_Model], Cpp_ODESolverType) except+
+        Cpp_ODESimulator(shared_ptr[Cpp_ODEWorld], shared_ptr[Cpp_Model]) except+
         Cpp_ODESimulator(shared_ptr[Cpp_ODEWorld], Cpp_ODESolverType) except+
         Cpp_ODESimulator(shared_ptr[Cpp_ODEWorld]) except+
 
@@ -88,6 +88,9 @@ cdef extern from "ecell4/ode/ODESimulator.hpp" namespace "ecell4::ode":
         void run(Real) except +
         void run(Real, shared_ptr[Cpp_Observer]) except +
         void run(Real, vector[shared_ptr[Cpp_Observer]]) except +
+        void run(Real, is_dirty) except +
+        void run(Real, shared_ptr[Cpp_Observer], is_dirty) except +
+        void run(Real, vector[shared_ptr[Cpp_Observer]], is_dirty) except +
 
 cdef class ODESimulator:
     cdef Cpp_ODESimulator *thisptr
@@ -100,11 +103,12 @@ cdef extern from "ecell4/ode/ODEFactory.hpp" namespace "ecell4::ode":
     cdef cppclass Cpp_ODEFactory "ecell4::ode::ODEFactory":
         Cpp_ODEFactory(Cpp_ODESolverType, Real, Real, Real) except +
         Cpp_ODEFactory() except +
-        Cpp_ODEWorld* create_world()
-        Cpp_ODEWorld* create_world(string)
-        Cpp_ODEWorld* create_world(Cpp_Real3&)
-        Cpp_ODESimulator* create_simulator(shared_ptr[Cpp_Model], shared_ptr[Cpp_ODEWorld])
-        Cpp_ODESimulator* create_simulator(shared_ptr[Cpp_ODEWorld])
+        Cpp_ODEWorld* world()
+        Cpp_ODEWorld* world(Real)
+        Cpp_ODEWorld* world(string)
+        Cpp_ODEWorld* world(Cpp_Real3&)
+        Cpp_ODESimulator* simulator(shared_ptr[Cpp_ODEWorld], shared_ptr[Cpp_Model])
+        Cpp_ODESimulator* simulator(shared_ptr[Cpp_ODEWorld])
         Cpp_ODEFactory* rng_ptr(shared_ptr[Cpp_RandomNumberGenerator]&)
         @staticmethod
         Cpp_ODESolverType default_solver_type()

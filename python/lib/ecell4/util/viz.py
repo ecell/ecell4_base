@@ -217,7 +217,7 @@ def plot_number_observer_with_matplotlib(*args, **kwargs):
         else:
             targets = [sp.serial() for sp in obs.targets()]
             targets = list(enumerate(targets))
-            targets.sort(key=lambda x: x[1])
+            # targets.sort(key=lambda x: x[1])
 
         for idx, serial in targets:
             opts = plot_opts.copy()
@@ -313,7 +313,7 @@ def plot_number_observer_with_nya(obs, config=None, width=600, height=400, x=Non
     if y is None:
         targets = [sp.serial() for sp in obs.targets()]
         targets = list(enumerate(targets))
-        targets.sort(key=lambda x: x[1])
+        # targets.sort(key=lambda x: x[1])
     else:
         if isinstance(y, str):
             y = (y, )

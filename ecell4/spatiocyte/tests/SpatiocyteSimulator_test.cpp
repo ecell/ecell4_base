@@ -39,7 +39,7 @@ BOOST_AUTO_TEST_CASE(SpatiocyteSimulator_test_constructor)
     boost::shared_ptr<SpatiocyteWorld> world(
             new SpatiocyteWorld(edge_lengths, voxel_radius, rng));
 
-    SpatiocyteSimulator sim(model, world);
+    SpatiocyteSimulator sim(world, model);
 }
 
 BOOST_AUTO_TEST_CASE(SpatiocyteSimulator_test_hdf5_save)
@@ -63,7 +63,7 @@ BOOST_AUTO_TEST_CASE(SpatiocyteSimulator_test_hdf5_save)
     world->add_molecules(sp, N);
     BOOST_ASSERT(world->num_molecules(sp) == N);
 
-    SpatiocyteSimulator sim(model, world);
+    SpatiocyteSimulator sim(world, model);
 }
 
 BOOST_AUTO_TEST_CASE(SpatiocyteSimulator_test_step_with_single_particle)
@@ -85,7 +85,7 @@ BOOST_AUTO_TEST_CASE(SpatiocyteSimulator_test_step_with_single_particle)
 
     BOOST_CHECK(world->new_voxel(sp, world->position2voxel(Real3(1.0e-8, 1.0e-8, 1.0e-8))));
 
-    SpatiocyteSimulator sim(model, world);
+    SpatiocyteSimulator sim(world, model);
 
     const std::string hdf5path("/");
 
@@ -117,7 +117,7 @@ BOOST_AUTO_TEST_CASE(SpatiocyteSimulator_test_step_with_single_species)
 
     BOOST_ASSERT(world->num_molecules(sp) == N / 2);
 
-    SpatiocyteSimulator sim(model, world);
+    SpatiocyteSimulator sim(world, model);
 
     world->add_molecules(sp, N / 2);
     BOOST_ASSERT(world->num_molecules(sp) == N);
@@ -144,7 +144,7 @@ BOOST_AUTO_TEST_CASE(SpatiocyteSimulator_test_save_step_with_single_species)
     boost::shared_ptr<SpatiocyteWorld> world(
             new SpatiocyteWorld(edge_lengths, voxel_radius, rng));
 
-    SpatiocyteSimulator sim(model, world);
+    SpatiocyteSimulator sim(world, model);
 
     world->add_molecules(sp, N);
     sim.initialize();
@@ -175,7 +175,7 @@ BOOST_AUTO_TEST_CASE(SpatiocyteSimulator_test_save_step_with_periodic)
     boost::shared_ptr<SpatiocyteWorld> world(
             new SpatiocyteWorld(edge_lengths, voxel_radius, rng));
 
-    SpatiocyteSimulator sim(model, world);
+    SpatiocyteSimulator sim(world, model);
 
     world->add_molecules(sp, N);
     sim.initialize();
@@ -210,7 +210,7 @@ BOOST_AUTO_TEST_CASE(SpatiocyteSimulator_test_unimolecular_reaction)
     boost::shared_ptr<SpatiocyteWorld> world(
             new SpatiocyteWorld(edge_lengths, voxel_radius, rng));
 
-    SpatiocyteSimulator sim(model, world);
+    SpatiocyteSimulator sim(world, model);
 
     BOOST_CHECK(world->add_molecules(sp1, 25));
     BOOST_CHECK(world->add_molecules(sp2, 25));
@@ -246,7 +246,7 @@ BOOST_AUTO_TEST_CASE(SpatiocyteSimulator_test_binding_reaction)
     boost::shared_ptr<SpatiocyteWorld> world(
             new SpatiocyteWorld(edge_lengths, voxel_radius, rng));
 
-    SpatiocyteSimulator sim(model, world);
+    SpatiocyteSimulator sim(world, model);
 
     BOOST_CHECK(world->add_molecules(sp1, 25));
     BOOST_CHECK(world->add_molecules(sp2, 25));
@@ -284,7 +284,7 @@ BOOST_AUTO_TEST_CASE(SpatiocyteSimulator_test_unbinding_reaction)
     boost::shared_ptr<SpatiocyteWorld> world(
             new SpatiocyteWorld(edge_lengths, voxel_radius, rng));
 
-    SpatiocyteSimulator sim(model, world);
+    SpatiocyteSimulator sim(world, model);
 
     BOOST_CHECK(world->add_molecules(sp1, 25));
     sim.initialize();
@@ -317,7 +317,7 @@ BOOST_AUTO_TEST_CASE(SpatiocyteSimulator_test_degradation_reaction)
     boost::shared_ptr<SpatiocyteWorld> world(
             new SpatiocyteWorld(edge_lengths, voxel_radius, rng));
 
-    SpatiocyteSimulator sim(model, world);
+    SpatiocyteSimulator sim(world, model);
 
     BOOST_CHECK(world->add_molecules(sp1, 25));
     sim.initialize();
@@ -347,7 +347,7 @@ BOOST_AUTO_TEST_CASE(SpatiocyteSimulator_test_finalize)
     boost::shared_ptr<SpatiocyteWorld> world(
             new SpatiocyteWorld(edge_lengths, voxel_radius, rng));
 
-    SpatiocyteSimulator sim(model, world);
+    SpatiocyteSimulator sim(world, model);
 
     world->add_molecules(sp, N);
     sim.initialize();
@@ -377,7 +377,7 @@ BOOST_AUTO_TEST_CASE(SpatiocyteSimulator_test_shape)
     boost::shared_ptr<SpatiocyteWorld> world(
             new SpatiocyteWorld(edge_lengths, voxel_radius, rng));
 
-    SpatiocyteSimulator sim(model, world);
+    SpatiocyteSimulator sim(world, model);
 
     boost::shared_ptr<const Sphere> sphere(new Sphere(Real3(L/2, L/2, L/2), L*1/3));
 

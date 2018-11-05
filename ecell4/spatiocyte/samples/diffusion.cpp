@@ -41,7 +41,7 @@ void run()
 
     world->add_molecules(sp, N);
 
-    simulator_type sim(model, world);
+    simulator_type sim(world, model);
     std::cout << "dt = " << sim.dt() << std::endl;
     for (unsigned int i(0); i != 1000; ++i)
     {

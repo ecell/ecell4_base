@@ -1,4 +1,6 @@
 import collections
+import numbers
+
 from cython.operator cimport dereference as deref, preincrement as inc
 from cython cimport address
 from libcpp.string cimport string
@@ -1052,7 +1054,7 @@ cdef class SpatiocyteSimulator:
 
     """
 
-    def __init__(self, m, w=None):
+    def __init__(self, SpatiocyteWorld w, m=None):
         """SpatiocyteSimulator(m, w)
         SpatiocyteSimulator(w)
 
@@ -1060,22 +1062,20 @@ cdef class SpatiocyteSimulator:
 
         Parameters
         ----------
-        m : Model
-            A model
         w : SpatiocyteWorld
             A world
+        m : Model, optional
+            A model
 
         """
         pass
 
-    def __cinit__(self, m, w=None):
-        if w is None:
-            # Cpp_SpatiocyteSimulator(shared_ptr[Cpp_SpatiocyteWorld])
-            self.thisptr = new Cpp_SpatiocyteSimulator(
-                deref((<SpatiocyteWorld>m).thisptr))
+    def __cinit__(self, SpatiocyteWorld w, m=None):
+        if m is None:
+            self.thisptr = new Cpp_SpatiocyteSimulator(deref(w.thisptr))
         else:
             self.thisptr = new Cpp_SpatiocyteSimulator(
-                Cpp_Model_from_Model(m), deref((<SpatiocyteWorld>w).thisptr))
+                 deref(w.thisptr), Cpp_Model_from_Model(m))
 
     def __dealloc__(self):
         del self.thisptr
@@ -1183,8 +1183,8 @@ cdef class SpatiocyteSimulator:
         """Return the world bound."""
         return SpatiocyteWorld_from_Cpp_SpatiocyteWorld(self.thisptr.world())
 
-    def run(self, Real duration, observers=None):
-        """run(duration, observers)
+    def run(self, Real duration, observers=None, is_dirty=None):
+        """run(duration, observers, is_dirty)
 
         Run the simulation.
 
@@ -1195,23 +1195,36 @@ cdef class SpatiocyteSimulator:
             A simulation is expected to be stopped at t() + duration.
         observers : list of Obeservers, optional
             observers
+        is_dirty : bool, default True
+            If True, call initialize before running.
 
         """
         cdef vector[shared_ptr[Cpp_Observer]] tmp
 
-        if observers is None:
-            self.thisptr.run(duration)
-        elif isinstance(observers, collections.Iterable):
-            for obs in observers:
-                tmp.push_back(deref((<Observer>(obs.as_base())).thisptr))
-            self.thisptr.run(duration, tmp)
+        if is_dirty is None:
+            if observers is None:
+                self.thisptr.run(duration)
+            elif isinstance(observers, collections.Iterable):
+                for obs in observers:
+                    tmp.push_back(deref((<Observer>(obs.as_base())).thisptr))
+                self.thisptr.run(duration, tmp)
+            else:
+                self.thisptr.run(duration,
+                    deref((<Observer>(observers.as_base())).thisptr))
         else:
-            self.thisptr.run(duration,
-                deref((<Observer>(observers.as_base())).thisptr))
+            if observers is None:
+                self.thisptr.run(duration, is_dirty)
+            elif isinstance(observers, collections.Iterable):
+                for obs in observers:
+                    tmp.push_back(deref((<Observer>(obs.as_base())).thisptr))
+                self.thisptr.run(duration, tmp, is_dirty)
+            else:
+                self.thisptr.run(duration,
+                    deref((<Observer>(observers.as_base())).thisptr), is_dirty)
 
 cdef SpatiocyteSimulator SpatiocyteSimulator_from_Cpp_SpatiocyteSimulator(Cpp_SpatiocyteSimulator* s):
     r = SpatiocyteSimulator(
-        Model_from_Cpp_Model(s.model()), SpatiocyteWorld_from_Cpp_SpatiocyteWorld(s.world()))
+        SpatiocyteWorld_from_Cpp_SpatiocyteWorld(s.world()), Model_from_Cpp_Model(s.model()))
     del r.thisptr
     r.thisptr = s
     return r
@@ -1255,6 +1268,68 @@ cdef class SpatiocyteFactory:
         assert ptr == self.thisptr
         return self
 
+    def world(self, arg1=None):
+        """world(arg1=None) -> SpatiocyteWorld
+
+        Return a SpatiocyteWorld instance.
+
+        Parameters
+        ----------
+        arg1 : Real3, Real, str, optional. default None
+            If Real3, it suggests the lengths of edges of a ``BDWorld`` created.
+            If Real, it suggests the volume.
+            If str, it suggests the path of a HDF5 file loaded.
+
+        Returns
+        -------
+        SpatiocyteWorld:
+            The created world
+
+        """
+        if arg1 is None:
+            return SpatiocyteWorld_from_Cpp_SpatiocyteWorld(
+                shared_ptr[Cpp_SpatiocyteWorld](self.thisptr.world()))
+        elif isinstance(arg1, Real3):
+            return SpatiocyteWorld_from_Cpp_SpatiocyteWorld(
+                shared_ptr[Cpp_SpatiocyteWorld](
+                    self.thisptr.world(deref((<Real3>arg1).thisptr))))
+        elif isinstance(arg1, numbers.Number):
+            return SpatiocyteWorld_from_Cpp_SpatiocyteWorld(
+                shared_ptr[Cpp_SpatiocyteWorld](self.thisptr.world(<Real>(arg1))))
+        elif isinstance(arg1, str):
+            return SpatiocyteWorld_from_Cpp_SpatiocyteWorld(
+                shared_ptr[Cpp_SpatiocyteWorld](self.thisptr.world(tostring(arg1))))
+        else:
+            return SpatiocyteWorld_from_Cpp_SpatiocyteWorld(
+                shared_ptr[Cpp_SpatiocyteWorld](self.thisptr.world(
+                    Cpp_Model_from_Model(arg1))))
+
+    def simulator(self, SpatiocyteWorld arg1, arg2=None):
+        """simulator(arg1, arg2) -> SpatiocyteSimulator
+
+        Return a SpatiocyteSimulator instance.
+
+        Parameters
+        ----------
+        arg1 : SpatiocyteWorld
+            A world
+        arg2 : Model, optional
+            A simulation model
+
+        Returns
+        -------
+        SpatiocyteSimulator:
+            The created simulator
+
+        """
+        if arg2 is None:
+            return SpatiocyteSimulator_from_Cpp_SpatiocyteSimulator(
+                self.thisptr.simulator(deref(arg1.thisptr)))
+        else:
+            return SpatiocyteSimulator_from_Cpp_SpatiocyteSimulator(
+                self.thisptr.simulator(
+                    deref(arg1.thisptr), Cpp_Model_from_Model(arg2)))
+
     def create_world(self, arg1=None):
         """create_world(arg1=None) -> SpatiocyteWorld
 
@@ -1276,22 +1351,10 @@ cdef class SpatiocyteFactory:
             The created world
 
         """
-        if arg1 is None:
-            return SpatiocyteWorld_from_Cpp_SpatiocyteWorld(
-                shared_ptr[Cpp_SpatiocyteWorld](self.thisptr.create_world()))
-        elif isinstance(arg1, Real3):
-            return SpatiocyteWorld_from_Cpp_SpatiocyteWorld(
-                shared_ptr[Cpp_SpatiocyteWorld](
-                    self.thisptr.create_world(deref((<Real3>arg1).thisptr))))
-        elif isinstance(arg1, str):
-            return SpatiocyteWorld_from_Cpp_SpatiocyteWorld(
-                shared_ptr[Cpp_SpatiocyteWorld](self.thisptr.create_world(<string>(arg1))))
-        else:
-            return SpatiocyteWorld_from_Cpp_SpatiocyteWorld(
-                shared_ptr[Cpp_SpatiocyteWorld](self.thisptr.create_world(
-                    Cpp_Model_from_Model(arg1))))
+        import warnings; warnings.warn("Function 'create_world()' has moved to 'world()'", DeprecationWarning)
+        return self.world(arg1)
 
-    def create_simulator(self, arg1, SpatiocyteWorld arg2=None):
+    def create_simulator(self, SpatiocyteWorld arg1, arg2=None):
         """create_simulator(arg1, arg2) -> SpatiocyteSimulator
 
         Return a SpatiocyteSimulator instance.
@@ -1300,13 +1363,8 @@ cdef class SpatiocyteFactory:
         ----------
         arg1 : SpatiocyteWorld
             A world
-
-        or
-
-        arg1 : Model
+        arg2 : Model, optional
             A simulation model
-        arg2 : SpatiocyteWorld
-            A world
 
         Returns
         -------
@@ -1314,10 +1372,14 @@ cdef class SpatiocyteFactory:
             The created simulator
 
         """
-        if arg2 is None:
-            return SpatiocyteSimulator_from_Cpp_SpatiocyteSimulator(
-                self.thisptr.create_simulator(deref((<SpatiocyteWorld>arg1).thisptr)))
-        else:
-            return SpatiocyteSimulator_from_Cpp_SpatiocyteSimulator(
-                self.thisptr.create_simulator(
-                    Cpp_Model_from_Model(arg1), deref(arg2.thisptr)))
+        import warnings; warnings.warn("Function 'create_simulator()' has moved to 'simulator()'", DeprecationWarning)
+        return self.simulator(arg1, arg2)
+
+Factory = SpatiocyteFactory  # This is an alias
+World = SpatiocyteWorld  # This is an alias
+Simulator = SpatiocyteSimulator  # This is an alias
+
+__all__ = [
+    "SpatiocyteWorld", "SpatiocyteSimulator", "SpatiocyteFactory", "Voxel",
+    "create_spatiocyte_world_cell_list_impl", "create_spatiocyte_world_vector_impl",
+    "create_spatiocyte_world_square_offlattice_impl"]

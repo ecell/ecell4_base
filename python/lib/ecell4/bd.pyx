@@ -1,4 +1,6 @@
 import collections
+import numbers
+
 from cython.operator cimport dereference as deref, preincrement as inc
 from cython cimport address
 from libcpp.string cimport string
@@ -704,38 +706,37 @@ cdef class BDSimulator:
 
     """
 
-    def __init__(self, m, BDWorld w=None, bd_dt_factor=None):
-        """BDSimulator(m, w, bd_dt_factor)
-        BDSimulator(w, bd_dt_factor)
+    def __init__(self, BDWorld w, m=None, bd_dt_factor=None):
+        """BDSimulator(w, m, bd_dt_factor)
 
         Constructor.
 
         Parameters
         ----------
-        m : Model
-            A model
         w : BDWorld
             A world
+        m : Model, optional
+            A model
         bd_dt_factor : Real
 
         """
         pass
 
-    def __cinit__(self, m, BDWorld w=None, bd_dt_factor=None):
-        if w is None:
+    def __cinit__(self, BDWorld w, m=None, bd_dt_factor=None):
+        if m is None:
             if bd_dt_factor is None:
                 self.thisptr = new Cpp_BDSimulator(
-                    deref((<BDWorld>m).thisptr))
+                    deref(w.thisptr))
             else:
                 self.thisptr = new Cpp_BDSimulator(
-                    deref((<BDWorld>m).thisptr), <Real>bd_dt_factor)
+                    deref(w.thisptr), <Real>bd_dt_factor)
         else:
             if bd_dt_factor is None:
                 self.thisptr = new Cpp_BDSimulator(
-                    Cpp_Model_from_Model(m), deref(w.thisptr))
+                    deref(w.thisptr), Cpp_Model_from_Model(m))
             else:
                 self.thisptr = new Cpp_BDSimulator(
-                    Cpp_Model_from_Model(m), deref(w.thisptr),
+                    deref(w.thisptr), Cpp_Model_from_Model(m),
                     <Real>bd_dt_factor)
 
     def __dealloc__(self):
@@ -844,35 +845,48 @@ cdef class BDSimulator:
         """Return the world bound."""
         return BDWorld_from_Cpp_BDWorld(self.thisptr.world())
 
-    def run(self, Real duration, observers=None):
-        """run(duration, observers)
+    def run(self, Real duration, observers=None, is_dirty=None):
+        """run(duration, observers, is_dirty)
 
         Run the simulation.
 
         Parameters
         ----------
         duration : Real
-            a duration for running a simulation.
-            A simulation is expected to be stopped at ``t() + duration``.
+            A duration for running a simulation.
+            A simulation is expected to be stopped at t() + duration.
         observers : list of Obeservers, optional
             observers
+        is_dirty : bool, default True
+            If True, call initialize before running.
 
         """
         cdef vector[shared_ptr[Cpp_Observer]] tmp
 
-        if observers is None:
-            self.thisptr.run(duration)
-        elif isinstance(observers, collections.Iterable):
-            for obs in observers:
-                tmp.push_back(deref((<Observer>(obs.as_base())).thisptr))
-            self.thisptr.run(duration, tmp)
+        if is_dirty is None:
+            if observers is None:
+                self.thisptr.run(duration)
+            elif isinstance(observers, collections.Iterable):
+                for obs in observers:
+                    tmp.push_back(deref((<Observer>(obs.as_base())).thisptr))
+                self.thisptr.run(duration, tmp)
+            else:
+                self.thisptr.run(duration,
+                    deref((<Observer>(observers.as_base())).thisptr))
         else:
-            self.thisptr.run(duration,
-                deref((<Observer>(observers.as_base())).thisptr))
+            if observers is None:
+                self.thisptr.run(duration, is_dirty)
+            elif isinstance(observers, collections.Iterable):
+                for obs in observers:
+                    tmp.push_back(deref((<Observer>(obs.as_base())).thisptr))
+                self.thisptr.run(duration, tmp, is_dirty)
+            else:
+                self.thisptr.run(duration,
+                    deref((<Observer>(observers.as_base())).thisptr), is_dirty)
 
 cdef BDSimulator BDSimulator_from_Cpp_BDSimulator(Cpp_BDSimulator* s):
     r = BDSimulator(
-        Model_from_Cpp_Model(s.model()), BDWorld_from_Cpp_BDWorld(s.world()))
+        BDWorld_from_Cpp_BDWorld(s.world()), Model_from_Cpp_Model(s.model()))
     del r.thisptr
     r.thisptr = s
     return r
@@ -917,6 +931,68 @@ cdef class BDFactory:
         assert ptr == self.thisptr
         return self
 
+    def world(self, arg1=None):
+        """world(arg1=None) -> BDWorld
+
+        Return a ``BDWorld`` instance.
+
+        Parameters
+        ----------
+        arg1 : Real3, Real, str, optional. default None
+            If Real3, it suggests the lengths of edges of a ``BDWorld`` created.
+            If Real, it suggests the volume.
+            If str, it suggests the path of a HDF5 file loaded.
+
+        Returns
+        -------
+        BDWorld:
+            The created world
+
+        """
+        if arg1 is None:
+            return BDWorld_from_Cpp_BDWorld(
+                shared_ptr[Cpp_BDWorld](self.thisptr.world()))
+        elif isinstance(arg1, Real3):
+            return BDWorld_from_Cpp_BDWorld(
+                shared_ptr[Cpp_BDWorld](
+                    self.thisptr.world(deref((<Real3>arg1).thisptr))))
+        elif isinstance(arg1, numbers.Number):
+            return BDWorld_from_Cpp_BDWorld(
+                shared_ptr[Cpp_BDWorld](self.thisptr.world(<Real>arg1)))
+        elif isinstance(arg1, str):
+            return BDWorld_from_Cpp_BDWorld(
+                shared_ptr[Cpp_BDWorld](self.thisptr.world(tostring(arg1))))
+        else:
+            return BDWorld_from_Cpp_BDWorld(
+                shared_ptr[Cpp_BDWorld](self.thisptr.world(
+                    Cpp_Model_from_Model(arg1))))
+
+    def simulator(self, BDWorld arg1, arg2=None):
+        """simulator(arg1, arg2=None) -> BDSimulator
+
+        Return a ``BDSimulator`` instance.
+
+        Parameters
+        ----------
+        arg1 : BDWorld
+            A world
+        arg2 : Model, optional
+            A simulation model
+
+        Returns
+        -------
+        BDSimulator:
+            The created simulator
+
+        """
+        if arg2 is None:
+            return BDSimulator_from_Cpp_BDSimulator(
+                self.thisptr.simulator(deref(arg1.thisptr)))
+        else:
+            return BDSimulator_from_Cpp_BDSimulator(
+                self.thisptr.simulator(
+                    deref(arg1.thisptr), Cpp_Model_from_Model(arg2)))
+
     def create_world(self, arg1=None):
         """create_world(arg1=None) -> BDWorld
 
@@ -938,22 +1014,10 @@ cdef class BDFactory:
             The created world
 
         """
-        if arg1 is None:
-            return BDWorld_from_Cpp_BDWorld(
-                shared_ptr[Cpp_BDWorld](self.thisptr.create_world()))
-        elif isinstance(arg1, Real3):
-            return BDWorld_from_Cpp_BDWorld(
-                shared_ptr[Cpp_BDWorld](
-                    self.thisptr.create_world(deref((<Real3>arg1).thisptr))))
-        elif isinstance(arg1, str):
-            return BDWorld_from_Cpp_BDWorld(
-                shared_ptr[Cpp_BDWorld](self.thisptr.create_world(<string>(arg1))))
-        else:
-            return BDWorld_from_Cpp_BDWorld(
-                shared_ptr[Cpp_BDWorld](self.thisptr.create_world(
-                    Cpp_Model_from_Model(arg1))))
+        import warnings; warnings.warn("Function 'create_world()' has moved to 'world()'", DeprecationWarning)
+        return self.world(arg1)
 
-    def create_simulator(self, arg1, BDWorld arg2=None):
+    def create_simulator(self, BDWorld arg1, arg2=None):
         """create_simulator(arg1, arg2=None) -> BDSimulator
 
         Return a ``BDSimulator`` instance.
@@ -962,13 +1026,8 @@ cdef class BDFactory:
         ----------
         arg1 : BDWorld
             A world
-
-        or
-
-        arg1 : Model
+        arg2 : Model, optional
             A simulation model
-        arg2 : BDWorld
-            A world
 
         Returns
         -------
@@ -976,10 +1035,11 @@ cdef class BDFactory:
             The created simulator
 
         """
-        if arg2 is None:
-            return BDSimulator_from_Cpp_BDSimulator(
-                self.thisptr.create_simulator(deref((<BDWorld>arg1).thisptr)))
-        else:
-            return BDSimulator_from_Cpp_BDSimulator(
-                self.thisptr.create_simulator(
-                    Cpp_Model_from_Model(arg1), deref(arg2.thisptr)))
+        import warnings; warnings.warn("Function 'create_simulator()' has moved to 'simulator()'", DeprecationWarning)
+        return self.simulator(arg1, arg2)
+
+Factory = BDFactory  # This is an alias
+World = BDWorld  # This is an alias
+Simulator = BDSimulator  # This is an alias
+
+__all__ = ["BDWorld", "BDSimulator", "BDFactory"]
