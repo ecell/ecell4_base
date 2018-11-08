@@ -328,6 +328,7 @@ cdef class ParticleSpaceVectorImpl:
 cdef extern from "ecell4/core/Model.hpp" namespace "ecell4":
     cdef cppclass Cpp_Model "ecell4::Model":
         Cpp_Model() except +
+        bool update_species_attribute(Cpp_Species sp) except +
         void add_species_attribute(Cpp_Species sp) except +
         bool has_species_attribute(Cpp_Species sp)
         void remove_species_attribute(Cpp_Species sp) except +
@@ -365,6 +366,7 @@ cdef Model Model_from_Cpp_Model(shared_ptr[Cpp_Model] m)
 cdef extern from "ecell4/core/NetworkModel.hpp" namespace "ecell4":
     cdef cppclass Cpp_NetworkModel "ecell4::NetworkModel":
         Cpp_NetworkModel() except +
+        bool update_species_attribute(Cpp_Species sp) except +
         void add_species_attribute(Cpp_Species sp) except +
         bool has_species_attribute(Cpp_Species sp)
         void remove_species_attribute(Cpp_Species sp) except +
@@ -402,6 +404,7 @@ cdef NetworkModel NetworkModel_from_Cpp_NetworkModel(
 cdef extern from "ecell4/core/NetfreeModel.hpp" namespace "ecell4":
     cdef cppclass Cpp_NetfreeModel "ecell4::NetfreeModel":
         Cpp_NetfreeModel() except +
+        bool update_species_attribute(Cpp_Species sp) except +
         void add_species_attribute(Cpp_Species sp) except +
         bool has_species_attribute(Cpp_Species sp)
         void remove_species_attribute(Cpp_Species sp) except +

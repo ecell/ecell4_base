@@ -24,6 +24,24 @@ cdef class Model:
     # def __dealloc__(self):
     #     del self.thisptr
 
+    def update_species_attribute(self, Species sp):
+        """update_species_attribute(sp)
+
+        Update or add a species attribute.
+
+        Parameters
+        ----------
+        sp : Species
+            A new species with attributes.
+
+        Returns
+        -------
+        bool :
+            Return True if the given species did not exist yet.
+
+        """
+        return self.thisptr.get().update_species_attribute(deref(sp.thisptr))
+
     def add_species_attribute(self, Species sp):
         """add_species_attribute(sp)
 
