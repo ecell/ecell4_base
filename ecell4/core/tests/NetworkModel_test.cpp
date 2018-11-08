@@ -26,7 +26,6 @@ BOOST_AUTO_TEST_CASE(NetworkModel_test_species)
     {
         Species sp1("A");
         sp1.set_attribute("key1", "value1");
-        sp1.set_attribute("key2", "value3");
         Species sp2("B");
         sp2.set_attribute("key1", "value2");
         Species sp3("_");
@@ -40,6 +39,10 @@ BOOST_AUTO_TEST_CASE(NetworkModel_test_species)
         BOOST_CHECK(model.has_species_attribute(Species("A")));
         BOOST_CHECK(model.has_species_attribute(Species("B")));
         BOOST_CHECK(!model.has_species_attribute(Species("C")));
+
+        Species sp4("A");
+        sp4.set_attribute("key2", "value3");
+        BOOST_CHECK(!model.update_species_attribute(sp4));
     }
 
     {

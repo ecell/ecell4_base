@@ -67,6 +67,7 @@ public:
 
     // NetfreeModelTraits
 
+    bool update_species_attribute(const Species& sp);
     void add_species_attribute(const Species& sp);
     bool has_species_attribute(const Species& sp) const;
     bool has_species_attribute_exact(const Species& sp) const;

@@ -7,6 +7,31 @@
 namespace ecell4
 {
 
+bool NetworkModel::update_species_attribute(const Species& sp)
+{
+    species_container_type::iterator i(std::find(species_attributes_.begin(), species_attributes_.end(), sp));
+    if (i == species_attributes_.end())
+    {
+        add_species_attribute(sp);
+        return true;
+    }
+    // for (Species::attributes_container_type::const_iterator
+    //     j(sp.attributes().begin()); j != sp.attributes().end(); ++j)
+    // {
+    //     if ((*i).has_attribute((*j).first))
+    //     {
+    //         std::ostringstream message;
+    //         message << "Attribute '" << (*j).first << "' of '" << sp.serial()
+    //             << "' is going to be updated from '" << (*i).get_attribute((*j).first)
+    //             << "' to '" << (*j).second << "'";
+    //         throw AlreadyExists(message.str()); // use boost::format if it's allowed
+    //     }
+    //     (*i).set_attribute((*j).first, (*j).second);
+    // }
+    (*i).overwrite_attributes(sp);
+    return false;
+}
+
 void NetworkModel::add_species_attribute(const Species& sp)
 {
     if (has_species_attribute(sp))
