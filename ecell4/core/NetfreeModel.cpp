@@ -7,6 +7,59 @@
 namespace ecell4
 {
 
+void NetfreeModel::add_species_attribute(const Species& sp)
+{
+    if (has_species_attribute_exact(sp))
+    {
+        throw AlreadyExists("species already exists");
+    }
+    species_attributes_.push_back(sp);
+}
+
+void NetfreeModel::remove_species_attribute(const Species& sp)
+{
+    species_container_type::iterator i(std::remove(species_attributes_.begin(), species_attributes_.end(), sp));
+    if (i == species_attributes_.end())
+    {
+        std::ostringstream message;
+        message << "The given Speices [" << sp.serial() << "] was not found";
+        throw NotFound(message.str()); // use boost::format if it's allowed
+    }
+    species_attributes_.erase(i, species_attributes_.end());
+}
+
+bool NetfreeModel::has_species_attribute(const Species& sp) const
+{
+    return has_species_attribute_exact(sp);
+}
+
+bool NetfreeModel::has_species_attribute_exact(const Species& sp) const
+{
+    species_container_type::const_iterator i(
+        std::find(species_attributes_.begin(), species_attributes_.end(), sp));
+    return (i != species_attributes_.end());
+}
+
+Species NetfreeModel::apply_species_attributes(const Species& sp) const
+{
+    for (species_container_type::const_iterator
+        i(species_attributes_.begin()); i != species_attributes_.end(); ++i)
+    {
+        if (SpeciesExpressionMatcher(*i).match(sp))
+        {
+            Species ret(sp);
+            ret.set_attributes(*i);
+            return ret;
+        }
+    }
+    return sp;
+}
+
+Integer NetfreeModel::apply(const Species& pttrn, const Species& sp) const
+{
+    return SpeciesExpressionMatcher(pttrn).count(sp);
+}
+
 std::vector<ReactionRule> NetfreeModel::query_reaction_rules(
     const Species& sp) const
 {
@@ -123,48 +176,10 @@ std::vector<ReactionRule> NetfreeModel::query_reaction_rules(
     return retval;
 }
 
-Integer NetfreeModel::apply(const Species& pttrn, const Species& sp) const
-{
-    return SpeciesExpressionMatcher(pttrn).count(sp);
-}
-
 std::vector<ReactionRule> NetfreeModel::apply(
     const ReactionRule& rr, const ReactionRule::reactant_container_type& reactants) const
 {
     return rr.generate(reactants);
-}
-
-void NetfreeModel::add_species_attribute(const Species& sp)
-{
-    // if (has_species_attribute_exact(sp))
-    // {
-    //     throw AlreadyExists("species already exists");
-    // }
-    species_attributes_.push_back(sp);
-}
-
-void NetfreeModel::remove_species_attribute(const Species& sp)
-{
-    species_container_type::iterator i(std::remove(species_attributes_.begin(), species_attributes_.end(), sp));
-    if (i == species_attributes_.end())
-    {
-        std::ostringstream message;
-        message << "The given Speices [" << sp.serial() << "] was not found";
-        throw NotFound(message.str()); // use boost::format if it's allowed
-    }
-    species_attributes_.erase(i, species_attributes_.end());
-}
-
-bool NetfreeModel::has_species_attribute(const Species& sp) const
-{
-    return has_species_attribute_exact(sp);
-}
-
-bool NetfreeModel::has_species_attribute_exact(const Species& sp) const
-{
-    species_container_type::const_iterator i(
-        std::find(species_attributes_.begin(), species_attributes_.end(), sp));
-    return (i != species_attributes_.end());
 }
 
 void NetfreeModel::add_reaction_rule(const ReactionRule& rr)
