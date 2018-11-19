@@ -94,11 +94,7 @@ script:
 - echo ${PYTHON_EXECUTABLE}
 - ls -d /usr/include/python*
 - if [ "$TRAVIS_OS_NAME" == "linux" ]; then
-    ls -l /opt/python;
-    export PYTHON_LIBRARY=/opt/python/3.5.5/lib;
-    export PYTHON_INCLUDE_DIR=/opt/python/3.5.5/include/python3.5m;
-    echo ${PYTHON_INCLUDE_DIR};
-    bash -c 'wget https://cmake.org/files/v3.12/cmake-3.12.1-Linux-x86_64.tar.gz && tar xf cmake-3.12.1-Linux-x86_64.tar.gz && ./cmake-3.12.1-Linux-x86_64/bin/cmake -DCMAKE_POLICY_DEFAULT_CMP0074=NEW -DHDF5_ROOT=/opt/hdf5-1.10.4/hdf5 -DCMAKE_INSTALL_PREFIX=~/local . && make && make test && make install';
+    bash -c 'wget https://cmake.org/files/v3.12/cmake-3.12.1-Linux-x86_64.tar.gz && tar xf cmake-3.12.1-Linux-x86_64.tar.gz && ./cmake-3.12.1-Linux-x86_64/bin/cmake -DCMAKE_POLICY_DEFAULT_CMP0074=NEW -DHDF5_ROOT=/opt/hdf5-1.10.4/hdf5 -DCMAKE_INSTALL_PREFIX=~/local . && make && make install && cd python/tests && python -m unittest';
     rm CMakeCache.txt;
   fi
 - if [ "$TRAVIS_OS_NAME" == "osx" ]; then
