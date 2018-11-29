@@ -80,13 +80,12 @@ before_install:
     mkdir ~/local;
     wget https://bootstrap.pypa.io/get-pip.py;
     python get-pip.py;
-    python -m pip install -U cython numpy matplotlib jupyter;
   fi
 - if [ "$TRAVIS_OS_NAME" == "osx" ]; then
     curl -O https://bootstrap.pypa.io/get-pip.py;
     python3 get-pip.py;
-    python3 -m pip install -U cython numpy matplotlib jupyter;
   fi
+- python3 -m pip install -U cython numpy matplotlib jupyter setuptools
 
 script:
 - set -ev
