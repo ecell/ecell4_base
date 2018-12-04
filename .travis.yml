@@ -7,25 +7,20 @@ matrix:
     compiler: gcc
     language: python
     python: "3.5"
-    env: TRAVIS_PYTHON_VERSION="3.5"
   - os: linux
     compiler: clang
     language: python
     python: "3.5"
-    env: TRAVIS_PYTHON_VERSION="3.5"
   - os: osx
     compiler: clang
-    env: TRAVIS_PYTHON_VERSION="3.6"
   - os: linux
     compiler: clang
     language: python
     python: "3.6"
-    env: TRAVIS_PYTHON_VERSION="3.6"
   - os: linux
     compiler: clang
     language: python
     python: "3.7-dev"
-    env: TRAVIS_PYTHON_VERSION="3.7"
 
 addons:
   apt:
@@ -99,7 +94,8 @@ script:
     make;
     make install;
     pushd python/tests;
-    PYTHONPATH=~/local/lib/python${TRAVIS_PYTHON_VERSION}/site-packages LD_LIBRARY_PATH=~/local/lib:/opt/hdf5/lib python -m unittest;
+    PYTHON_VERSION=`python -c 'import sysconfig; print(sysconfig.get_python_version())'`
+    PYTHONPATH=~/local/lib/python${PYTHON_VERSION}/site-packages LD_LIBRARY_PATH=~/local/lib:/opt/hdf5/lib python -m unittest;
     popd;
     rm CMakeCache.txt;
   fi
