@@ -92,11 +92,11 @@ script:
     rm CMakeCache.txt;
   fi
 - if [ "$TRAVIS_OS_NAME" == "osx" ]; then
-    cmake -DCMAKE_INSTALL_PREFIX=/usr/local -DPYTHON_EXECUTABLE:FILEPATH=python3 .
-    make
-    make test
-    make install
-    rm -f CMakeCache.txt
+    cmake -DCMAKE_INSTALL_PREFIX=/usr/local -DPYTHON_EXECUTABLE:FILEPATH=python3 .;
+    make;
+    make test;
+    make install;
+    rm -f CMakeCache.txt;
   fi
 - set +e
 
