@@ -100,11 +100,10 @@ script:
     rm CMakeCache.txt;
   fi
 - if [ "$TRAVIS_OS_NAME" == "osx" ]; then
-    ls -l /opt/python;
-    export PYTHON_LIBRARY=/opt/python/3.5.5/lib;
-    export PYTHON_INCLUDE_DIR=/opt/python/3.5.5/include/python3.5m;
-    echo ${PYTHON_INCLUDE_DIR};
-    sudo bash -c 'cmake -DCMAKE_INSTALL_PREFIX=/usr/local -DPYTHON_EXECUTABLE:FILEPATH=python3 . && make && make test && make install';
+    cmake -DCMAKE_INSTALL_PREFIX=/usr/local -DPYTHON_EXECUTABLE:FILEPATH=python3 .
+    make
+    make test
+    make install';
     rm -f CMakeCache.txt;
   fi
 - set +e
