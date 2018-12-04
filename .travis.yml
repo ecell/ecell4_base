@@ -25,21 +25,16 @@ matrix:
 addons:
   apt:
     sources:
-    # - sourceline: 'ppa:mc3man/trusty-media'
     - ubuntu-toolchain-r-test
     packages:
     - clang
     - libboost-dev
     - libgsl0-dev
-    # - libhdf5-serial-dev
-    # - python-setuptools
-    # - python3-setuptools
     - python-dev
     - python3-dev
     - python3
     - python
     - wget
-    # - ffmpeg
 
 before_install:
 - if [ "$TRAVIS_OS_NAME" == "osx" ]; then
@@ -68,13 +63,12 @@ before_install:
     pwd;
   fi
 
-- which python
-- python -V
-
 - if [ "$TRAVIS_OS_NAME" == "linux" ]; then
     mkdir ~/local;
     wget https://bootstrap.pypa.io/get-pip.py;
     python get-pip.py;
+    wget https://cmake.org/files/v3.12/cmake-3.12.1-Linux-x86_64.tar.gz;
+    tar xf cmake-3.12.1-Linux-x86_64.tar.gz;
   fi
 - if [ "$TRAVIS_OS_NAME" == "osx" ]; then
     curl -O https://bootstrap.pypa.io/get-pip.py;
@@ -88,8 +82,6 @@ script:
 - echo ${PYTHON_EXECUTABLE}
 - ls -d /usr/include/python*
 - if [ "$TRAVIS_OS_NAME" == "linux" ]; then
-    wget https://cmake.org/files/v3.12/cmake-3.12.1-Linux-x86_64.tar.gz;
-    tar xf cmake-3.12.1-Linux-x86_64.tar.gz;
     ./cmake-3.12.1-Linux-x86_64/bin/cmake -DCMAKE_POLICY_DEFAULT_CMP0074=NEW -DHDF5_ROOT=/opt/hdf5 -DCMAKE_INSTALL_PREFIX=~/local .;
     make;
     make install;
@@ -103,8 +95,8 @@ script:
     cmake -DCMAKE_INSTALL_PREFIX=/usr/local -DPYTHON_EXECUTABLE:FILEPATH=python3 .
     make
     make test
-    make install';
-    rm -f CMakeCache.txt;
+    make install
+    rm -f CMakeCache.txt
   fi
 - set +e
 
