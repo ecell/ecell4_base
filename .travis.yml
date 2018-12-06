@@ -96,9 +96,8 @@ script:
     make;
     make test;
     make install;
-    pushd python/tests;
+    cd python/tests;
     python -m unittest;
-    popd;
   fi
 - set +e
 
