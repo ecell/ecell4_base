@@ -105,6 +105,6 @@ notifications:
   webhooks:
     urls:
     - http://dev.e-cell.org/ecell-bot/travis/notification
-  # slack:
-  #   secure: kCN8PCrinRfaDFKn93TMrYY5LberBt8GHDHOtSbR7B1Zmo9Pr/uHxxqoXlu1g9XYxgs2lud/AKo0gKMu8n+QHWeAXaOwe8GSccEqBdilXDVp4fzO96jT2R82RYljQ2wAR5ug1YIACRq06mtFn6U7GRZRnpRI4VsEUFLJPljZ+UM=
-  #   slack: ecell-project:LvsPrINO4bNonZNTNw3IqMhV
+  slack:
+    secure: kCN8PCrinRfaDFKn93TMrYY5LberBt8GHDHOtSbR7B1Zmo9Pr/uHxxqoXlu1g9XYxgs2lud/AKo0gKMu8n+QHWeAXaOwe8GSccEqBdilXDVp4fzO96jT2R82RYljQ2wAR5ug1YIACRq06mtFn6U7GRZRnpRI4VsEUFLJPljZ+UM=
+    slack: ecell-project:LvsPrINO4bNonZNTNw3IqMhV
