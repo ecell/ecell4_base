@@ -84,7 +84,6 @@ class run_tests(Command):
         # suite.addTest(load_tests("bd"))
         # suite.addTest(load_tests("ode"))
         # suite.addTest(load_tests("spatiocyte"))
-        suite.addTest(load_tests("util"))
         test_runner = unittest.TextTestRunner()
         test_runner.run(suite)
 
