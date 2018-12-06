@@ -84,19 +84,21 @@ script:
 - if [ "$TRAVIS_OS_NAME" == "linux" ]; then
     ./cmake-3.12.1-Linux-x86_64/bin/cmake -DCMAKE_POLICY_DEFAULT_CMP0074=NEW -DHDF5_ROOT=/opt/hdf5 -DCMAKE_INSTALL_PREFIX=~/local .;
     make;
+    make test;
     make install;
     pushd python/tests;
     PYTHON_VERSION=`python -c 'import sysconfig; print(sysconfig.get_python_version())'`
     PYTHONPATH=~/local/lib/python${PYTHON_VERSION}/site-packages LD_LIBRARY_PATH=~/local/lib:/opt/hdf5/lib python -m unittest;
     popd;
-    rm CMakeCache.txt;
   fi
 - if [ "$TRAVIS_OS_NAME" == "osx" ]; then
     cmake -DCMAKE_INSTALL_PREFIX=/usr/local -DPYTHON_EXECUTABLE:FILEPATH=python3 .;
     make;
     make test;
     make install;
-    rm -f CMakeCache.txt;
+    pushd python/tests;
+    python -m unittest;
+    popd;
   fi
 - set +e
 
