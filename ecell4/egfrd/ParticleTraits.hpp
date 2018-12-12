@@ -43,7 +43,7 @@ ecell4::Sphere shape(const ecell4::Particle &p)
 inline ecell4::Sphere::length_type
 distance(const ecell4::Sphere& obj, const ecell4::Sphere::position_type& pos)
 {
-    return distance(pos, obj.position()) - obj.radius();
+    return ::distance(pos, obj.position()) - obj.radius();  //XXX: ecell4::egfrd::distance
 }
 
 template<typename T_>
@@ -91,7 +91,7 @@ struct shape_position_type<ecell4::Sphere> {
 inline ecell4::Cylinder::length_type
 distance(const ecell4::Cylinder& obj, const ecell4::Cylinder::position_type& pos)
 {
-    return distance(pos, obj.position()) - obj.radius();
+    return ::distance(pos, obj.position()) - obj.radius();  //XXX: ecell4::egfrd::distance
 }
 
 template<typename T_>

@@ -452,7 +452,7 @@ public:
         {
             spherical_shell_id_pair const& sp(*i);
             position_type ppos(main_.world()->periodic_transpose(sphere.position(), (sp).second.position()));
-            if (distance(ppos, (sp).second.shape().position()) < (sp).second.shape().radius() - sphere.radius())
+            if (::distance(ppos, (sp).second.shape().position()) < (sp).second.shape().radius() - sphere.radius())  //XXX: ecell4::egfrd::distance
             {
                 return true;
             }

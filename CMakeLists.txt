@@ -93,10 +93,13 @@ include_directories(${CMAKE_BINARY_DIR})
 # endif()
 
 find_package(PythonInterp ${PY_VERSION})
-find_package(PythonLibs REQUIRED)
-if (PYTHONLIBS_FOUND)
-  include_directories(${PYTHON_INCLUDE_DIRS})
-endif()
+
+execute_process(
+    COMMAND ${PYTHON_EXECUTABLE} -c "from distutils import sysconfig; print(sysconfig.get_python_inc())"
+    OUTPUT_VARIABLE PYTHON_INCLUDE_DIR)
+
+include_directories(${PYTHON_INCLUDE_DIR})
+unset(PYTHON_INCLUDE_DIR)
 
 add_subdirectory(ecell4)
 add_subdirectory(python)
