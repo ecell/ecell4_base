@@ -160,7 +160,6 @@ class MultiContainer
             const ParticleID& ignore1, const ParticleID& ignore2) const
     {
         std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > retval;
-        const Real rad2 = radius * radius;
         Particle p; ParticleID pid;
         BOOST_FOREACH(boost::tie(pid, p), pcon_)
         {
@@ -220,7 +219,6 @@ class MultiContainer
             const ParticleID& ignore2) const
     {
         std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > retval;
-        const Real rad2 = radius * radius;
         Particle p; ParticleID pid;
         BOOST_FOREACH(boost::tie(pid, p), pcon_)
         {
