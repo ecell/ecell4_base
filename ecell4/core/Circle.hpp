@@ -20,7 +20,7 @@ public:
         : radius_(radius), center_(center), normal_(normal)
     {}
     Circle(const Circle& rhs)
-        : center_(rhs.center_), radius_(rhs.radius_), normal_(rhs.normal_)
+        : radius_(rhs.radius_), center_(rhs.center_), normal_(rhs.normal_)
     {}
     Circle& operator=(const Circle& rhs)
     {

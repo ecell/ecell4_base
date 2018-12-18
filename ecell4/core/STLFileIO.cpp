@@ -64,7 +64,7 @@ static Triangle read_ascii_stl_triangle(std::ifstream& ifs)
             }
             normal_read = true;
             // XXX ignore normal written in the file
-            const volatile Real3 normal = read_ascii_stl_normal(line);
+            read_ascii_stl_normal(line);
         }
         else if(prefix == "outer")
         {
@@ -156,7 +156,7 @@ static Real3 read_binary_stl_vector(std::ifstream& ifs)
 static Triangle read_binary_stl_triangle(std::ifstream& ifs)
 {
     // ignore normal vector written in the file
-    const volatile Real3 normal = read_binary_stl_vector(ifs);
+    read_binary_stl_vector(ifs);
     boost::array<Real3, 3> vs;
     vs[0] = read_binary_stl_vector(ifs);
     vs[1] = read_binary_stl_vector(ifs);

@@ -86,6 +86,7 @@ first_cross_edge(const Barycentric& pos, const Barycentric& disp)
             return (ca > bc) ? std::make_pair(1, bc) : std::make_pair(2, ca);
         }
     }
+    throw std::logic_error("never reach here"); // to supress warning message
 }
 
 Barycentric force_put_inside(const Barycentric& bary)

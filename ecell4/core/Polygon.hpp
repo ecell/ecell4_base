@@ -690,9 +690,8 @@ roll(const Polygon& poly,
     const Real apex_angle = poly.apex_angle_at(vid);
     assert(std::abs(theta_) < apex_angle);
 
-    typedef Polygon::FaceID   FaceID;
-    typedef Polygon::EdgeID   EdgeID;
-    typedef Polygon::VertexID VertexID;
+    typedef Polygon::FaceID FaceID;
+    typedef Polygon::EdgeID EdgeID;
 
     std::vector<std::pair<EdgeID, Real> > const& outedges =
         poly.outgoing_edge_and_angles(vid);
