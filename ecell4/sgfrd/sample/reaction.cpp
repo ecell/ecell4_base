@@ -141,15 +141,15 @@ int main(int argc, char **argv)
 
     if(key_missing(input, "DA")){return 1;}
     if(key_missing(input, "RA")){return 1;}
-    ecell4::Species sp1(std::string("A"), input["RA"], input["DA"]);
+    ecell4::Species sp1(std::string("A"), boost::lexical_cast<ecell4::Real>(input["RA"]), boost::lexical_cast<ecell4::Real>(input["DA"]));
     model->add_species_attribute(sp1);
     if(key_missing(input, "DB")){return 1;}
     if(key_missing(input, "RB")){return 1;}
-    ecell4::Species sp2(std::string("B"), input["RB"], input["DB"]);
+    ecell4::Species sp2(std::string("B"), boost::lexical_cast<ecell4::Real>(input["RB"]), boost::lexical_cast<ecell4::Real>(input["DB"]));
     model->add_species_attribute(sp2);
     if(key_missing(input, "DC")){return 1;}
     if(key_missing(input, "RC")){return 1;}
-    ecell4::Species sp3(std::string("C"), input["RC"], input["DC"]);
+    ecell4::Species sp3(std::string("C"), boost::lexical_cast<ecell4::Real>(input["RC"]), boost::lexical_cast<ecell4::Real>(input["DC"]));
     model->add_species_attribute(sp3);
 
     if(key_missing(input, "k_bind"))  {return 1;}
