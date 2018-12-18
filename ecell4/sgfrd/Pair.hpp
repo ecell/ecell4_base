@@ -63,8 +63,8 @@ class Pair
          const shell_id_type& sh, const Real shell_rad,
          const particle_id_pair& p0, const particle_id_pair& p1,
          const Real r0, const Real3& ipv, const Real kf)
-        : kind_(kind), dt_(dt), begin_time_(begin_time), shell_id_(sh),
-          r0_(r0), kf_(kf), ipv_(ipv)
+        : kind_(kind), dt_(dt), begin_time_(begin_time),
+          r0_(r0), kf_(kf), ipv_(ipv), shell_id_(sh)
     {
         particles_[0] = p0;
         particles_[1] = p1;

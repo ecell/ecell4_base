@@ -50,7 +50,7 @@ public:
                  reaction_archive_type& last_reactions,
                  volume_clearer_type vc)
     : max_retry_count_(1), dt_(dt), reaction_length_(rl), rejected_move_count_(0),
-      model_(model), container_(container), polygon_(p), rng_(rng),
+      container_(container), model_(model), polygon_(p), rng_(rng),
       last_reactions_(last_reactions), vc_(vc), queue_(container.list_particles())
     {
         shuffle(rng_, queue_);
