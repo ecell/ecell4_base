@@ -1464,7 +1464,7 @@ class SGFRDSimulator :
 
 
         // move particle
-        ParticleID pid; Particle p; FaceID fid;
+        ParticleID pid; Particle p;
         BOOST_FOREACH(boost::tie(pid, p), from.particles())
         {
             const bool addp_result = to.add_particle(pid);
@@ -1964,7 +1964,6 @@ class SGFRDSimulator :
         }
 
         const Real r1     = p.radius();
-        const Real r2     = nearest.radius();
         const Real sqrtD1 = std::sqrt(D1);
         const Real sqrtD2 = std::sqrt(D2);
         return sqrtD1 / (sqrtD1 + sqrtD2) * dist + r1;
