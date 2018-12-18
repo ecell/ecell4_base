@@ -130,7 +130,7 @@ int main(int argc, char** argv)
 
     std::cerr << "begin simulator setup";
     /// instatiate BDSimulator
-    BDSimulator sim(model, world);
+    BDSimulator sim(world, model);
     sim.set_dt(1e-6);
     std::cerr << "... end!" << std::endl;
 
