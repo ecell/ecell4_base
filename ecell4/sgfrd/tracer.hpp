@@ -24,7 +24,7 @@ class basic_tracer<char, std::char_traits<char> >
 
   public:
     basic_tracer(const std::string& fname)
-        : indent_(0), indent_size_(2), current(0)
+        : indent_size_(2), indent_(0), current(0)
     {
         fnames[0] = fname + std::string("01.log");
         fnames[1] = fname + std::string("02.log");
@@ -32,7 +32,7 @@ class basic_tracer<char, std::char_traits<char> >
         std::ofstream f1(fnames[1].c_str()); f1.close();
     }
     basic_tracer(const std::string& fname, const std::size_t indent_size)
-        : indent_(0), indent_size_(indent_size), current(0)
+        : indent_size_(indent_size), indent_(0), current(0)
     {
         fnames[0] = fname + std::string("01.log");
         fnames[1] = fname + std::string("02.log");
@@ -124,9 +124,9 @@ class basic_tracer<char, std::char_traits<char> >
     }
 
   private:
-    const std::size_t indent_size_;
-    std::size_t       indent_;
-    std::size_t       current;
+    std::size_t indent_size_;
+    std::size_t indent_;
+    std::size_t current;
     boost::array<std::string, 2> fnames;
 };
 
