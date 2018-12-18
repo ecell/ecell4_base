@@ -84,13 +84,24 @@ cdef class UnitSpecies:
 
 cdef UnitSpecies UnitSpecies_from_Cpp_UnitSpecies(Cpp_UnitSpecies *sp)
 
+cdef extern from "ecell4/core/Quantity.hpp" namespace "ecell4":
+    cdef cppclass Cpp_Quantity "ecell4::Quantity" [T]:
+        Cpp_Quantity()
+        Cpp_Quantity(T m)
+        Cpp_Quantity(T m, string u)
+        T magnitude
+        string units
+
+cdef Quantity_from_Cpp_Quantity_Real(Cpp_Quantity[Real] *value)
+cdef Quantity_from_Cpp_Quantity_Integer(Cpp_Quantity[Integer] *value)
+
 cdef extern from "boost/variant.hpp" namespace "boost":
     cdef cppclass boost_variant "boost::variant" [T1, T2, T3, T4]:
         pass
 
     U* boost_get "boost::get" [U, T1, T2, T3, T4] (boost_variant[T1, T2, T3, T4]*) except +
 
-ctypedef boost_variant[string, Real, Integer, bool] Cpp_Species_value_type
+ctypedef boost_variant[string, Cpp_Quantity[Real], Cpp_Quantity[Integer], bool] Cpp_Species_value_type
 
 cdef boost_get_from_Cpp_Species_value_type(Cpp_Species_value_type value)
 
@@ -102,9 +113,8 @@ cdef extern from "ecell4/core/Species.hpp" namespace "ecell4":
         Cpp_Species(string) except +
         Cpp_Species(string, Real, Real) except +
         Cpp_Species(string, Real, Real, string) except +
-        # Cpp_Species(string, string) except +
-        Cpp_Species(string, string, string) except +
-        Cpp_Species(string, string, string, string) except +
+        Cpp_Species(string, Cpp_Quantity[Real], Cpp_Quantity[Real]) except +
+        Cpp_Species(string, Cpp_Quantity[Real], Cpp_Quantity[Real], string) except +
         Cpp_Species(Cpp_Species&) except+
         bool operator==(Cpp_Species& rhs)
         bool operator<(Cpp_Species& rhs)
@@ -122,6 +132,7 @@ cdef extern from "ecell4/core/Species.hpp" namespace "ecell4":
         Cpp_Species* D_ptr(string)
         Cpp_Species* radius_ptr(string)
         Cpp_Species* location_ptr(string)
+        Cpp_Species* dimension_ptr(string)
 
 ## Species
 #  a python wrapper for Cpp_Species
@@ -168,6 +179,7 @@ cdef extern from "ecell4/core/ReactionRuleDescriptor.hpp" namespace "ecell4":
     cdef cppclass Cpp_ReactionRuleDescriptorMassAction "ecell4::ReactionRuleDescriptorMassAction":
         Cpp_ReactionRuleDescriptorMassAction() except +
         Cpp_ReactionRuleDescriptorMassAction(Real)
+        Cpp_ReactionRuleDescriptorMassAction(Cpp_Quantity[Real]&)
         void set_reactant_coefficients(vector[Real])
         void set_product_coefficients(vector[Real])
         void set_reactant_coefficient(int, Real)
@@ -178,7 +190,9 @@ cdef extern from "ecell4/core/ReactionRuleDescriptor.hpp" namespace "ecell4":
         Real propensity(vector[Real], vector[Real], Real, Real)
         # bool is_available()
         Real k()
+        Cpp_Quantity[Real] get_k()
         void set_k(Real)
+        void set_k(Cpp_Quantity[Real]&)
 
 cdef class ReactionRuleDescriptorPyfunc:
     cdef shared_ptr[Cpp_ReactionRuleDescriptorPyfunc] thisptr
@@ -203,6 +217,7 @@ cdef extern from "ecell4/core/ReactionRule.hpp" namespace "ecell4":
         Cpp_ReactionRule() except +
         Cpp_ReactionRule(vector[Cpp_Species]&, vector[Cpp_Species]&)
         Cpp_ReactionRule(vector[Cpp_Species]&, vector[Cpp_Species]&, Real)
+        Cpp_ReactionRule(vector[Cpp_Species]&, vector[Cpp_Species]&, Cpp_Quantity[Real])
         Cpp_ReactionRule(Cpp_ReactionRule&) except +
         Real k()
         vector[Cpp_Species]& reactants()
@@ -210,6 +225,8 @@ cdef extern from "ecell4/core/ReactionRule.hpp" namespace "ecell4":
         # multiset[Cpp_Species]& reactants()
         # multiset[Cpp_Species]& products()
         void set_k(Real)
+        void set_k(Cpp_Quantity[Real])
+        Cpp_Quantity[Real] get_k()
         void add_reactant(Cpp_Species)
         void add_product(Cpp_Species)
         string as_string()
@@ -311,6 +328,7 @@ cdef class ParticleSpaceVectorImpl:
 cdef extern from "ecell4/core/Model.hpp" namespace "ecell4":
     cdef cppclass Cpp_Model "ecell4::Model":
         Cpp_Model() except +
+        bool update_species_attribute(Cpp_Species sp) except +
         void add_species_attribute(Cpp_Species sp) except +
         bool has_species_attribute(Cpp_Species sp)
         void remove_species_attribute(Cpp_Species sp) except +
@@ -348,6 +366,7 @@ cdef Model Model_from_Cpp_Model(shared_ptr[Cpp_Model] m)
 cdef extern from "ecell4/core/NetworkModel.hpp" namespace "ecell4":
     cdef cppclass Cpp_NetworkModel "ecell4::NetworkModel":
         Cpp_NetworkModel() except +
+        bool update_species_attribute(Cpp_Species sp) except +
         void add_species_attribute(Cpp_Species sp) except +
         bool has_species_attribute(Cpp_Species sp)
         void remove_species_attribute(Cpp_Species sp) except +
@@ -385,6 +404,7 @@ cdef NetworkModel NetworkModel_from_Cpp_NetworkModel(
 cdef extern from "ecell4/core/NetfreeModel.hpp" namespace "ecell4":
     cdef cppclass Cpp_NetfreeModel "ecell4::NetfreeModel":
         Cpp_NetfreeModel() except +
+        bool update_species_attribute(Cpp_Species sp) except +
         void add_species_attribute(Cpp_Species sp) except +
         bool has_species_attribute(Cpp_Species sp)
         void remove_species_attribute(Cpp_Species sp) except +
@@ -545,6 +565,7 @@ cdef extern from "ecell4/core/observers.hpp" namespace "ecell4":
 
     cdef cppclass Cpp_FixedIntervalNumberObserver "ecell4::FixedIntervalNumberObserver":
         Cpp_FixedIntervalNumberObserver(Real, vector[string]) except +
+        Cpp_FixedIntervalNumberObserver(Real) except +
         Real next_time()
         Integer num_steps()
         vector[vector[Real]] data()
@@ -554,6 +575,7 @@ cdef extern from "ecell4/core/observers.hpp" namespace "ecell4":
 
     cdef cppclass Cpp_NumberObserver "ecell4::NumberObserver":
         Cpp_NumberObserver(vector[string]) except +
+        Cpp_NumberObserver() except +
         Real next_time()
         Integer num_steps()
         vector[vector[Real]] data()
@@ -624,6 +646,7 @@ cdef extern from "ecell4/core/observers.hpp" namespace "ecell4":
 
     cdef cppclass Cpp_TimingNumberObserver "ecell4::TimingNumberObserver":
         Cpp_TimingNumberObserver(vector[double], vector[string]) except +  #XXX: vector[Real]
+        Cpp_TimingNumberObserver(vector[double]) except +  #XXX: vector[Real]
         Real next_time()
         Integer num_steps()
         vector[vector[Real]] data()

@@ -21,7 +21,7 @@ void run()
 
     const Integer N(60);
 
-    const std::string D("1e-12"), radius("2.5e-9");
+    const Real D(1e-12), radius(2.5e-9);
 
     //const Real kd(0.1), U(0.5);
     const Real kd(0.5), U(0.5);
@@ -47,7 +47,7 @@ void run()
 
     world->add_molecules(sp1, N);
 
-    simulator_type sim(model, world);
+    simulator_type sim(world, model);
 
     Real next_time(0.0), dt(0.02);
     std::cout << sim.t()

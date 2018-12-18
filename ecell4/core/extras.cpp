@@ -1,4 +1,5 @@
 #include "extras.hpp"
+#include "exceptions.hpp"
 #include <iostream>
 #include <sstream>
 
@@ -17,8 +18,46 @@ namespace ecell4
 namespace extras
 {
 
+Shape::dimension_kind
+get_dimension_from_model(const Species& species, const boost::shared_ptr<Model>& model)
+{
+    const Shape::dimension_kind DEFAULT_DIMENSION(Shape::THREE);
+
+    if (species.serial().empty())
+        return DEFAULT_DIMENSION;
+
+    if (!model->has_species_attribute(species))
+    {
+        std::stringstream ss;
+        ss << "The model has no attribute for Specis(\"" << species.serial() << "\")";
+        throw NotFound(ss.str());
+    }
+
+    const Species& attribute(model->apply_species_attributes(species));
+
+    if (attribute.has_attribute("dimension"))
+    {
+        switch (attribute.get_attribute_as<Integer>("dimension"))
+        {
+            case 1: return Shape::ONE;
+            case 2: return Shape::TWO;
+            case 3: return Shape::THREE;
+        }
+    }
+
+    if (attribute.has_attribute("location"))
+    {
+        return get_dimension_from_model(
+            Species(attribute.get_attribute_as<std::string>("location")),
+            model
+        );
+    }
+
+    return DEFAULT_DIMENSION;
+}
+
 #ifdef WITH_HDF5
-void save_version_information(H5::CommonFG* root, const std::string& version)
+void save_version_information(H5::H5Location* root, const std::string& version)
 {
     if (version.size() > 32)
     {
@@ -30,7 +69,7 @@ void save_version_information(H5::CommonFG* root, const std::string& version)
     dataset->write(version.c_str(), dataset->getDataType());
 }
 
-std::string load_version_information(const H5::CommonFG& root)
+std::string load_version_information(const H5::H5Location& root)
 {
     using namespace H5;
     char buf[32];

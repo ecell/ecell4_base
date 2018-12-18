@@ -44,7 +44,7 @@ public:
         Py_DECREF(this->pyfunc_);
     }
 
-    virtual void initialize(const boost::shared_ptr<WorldInterface>& world);
+    virtual void initialize(const boost::shared_ptr<WorldInterface>& world, const boost::shared_ptr<Model>& model);
     virtual bool fire(const Simulator* sim, const boost::shared_ptr<WorldInterface>& world);
     virtual void reset();
 

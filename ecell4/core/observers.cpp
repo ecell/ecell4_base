@@ -9,7 +9,7 @@ const Real Observer::next_time() const
     return inf;
 }
 
-void Observer::initialize(const boost::shared_ptr<WorldInterface>& world)
+void Observer::initialize(const boost::shared_ptr<WorldInterface>& world, const boost::shared_ptr<Model>& model)
 {
     ;
 }
@@ -45,9 +45,9 @@ const Integer FixedIntervalObserver::count() const
     return count_;
 }
 
-void FixedIntervalObserver::initialize(const boost::shared_ptr<WorldInterface>& world)
+void FixedIntervalObserver::initialize(const boost::shared_ptr<WorldInterface>& world, const boost::shared_ptr<Model>& model)
 {
-    base_type::initialize(world);
+    base_type::initialize(world, model);
 
     if (dt_ <= 0.0)
     {
@@ -128,9 +128,44 @@ void NumberLogger::save(const std::string& filename) const
     ofs.close();
 }
 
-void FixedIntervalNumberObserver::initialize(const boost::shared_ptr<WorldInterface>& world)
+void reserve_species_list(
+    NumberLogger& logger, const boost::shared_ptr<WorldInterface>& world, const boost::shared_ptr<Model>& model)
 {
-    base_type::initialize(world);
+    if (!logger.all_species)
+        return;
+
+    const std::vector<Species> species_list = world->list_species();
+    boost::shared_ptr<Model> expanded(model->is_static() ? model : model->expand(species_list));
+    std::vector<Species> targets(expanded->list_species());
+    std::copy(species_list.begin(), species_list.end(), std::back_inserter(targets));
+    std::sort(targets.begin(), targets.end());
+    targets.erase(std::unique(targets.begin(), targets.end()), targets.end());
+
+    std::size_t inc = 0;
+    for (std::vector<Species>::const_iterator i(targets.begin()); i != targets.end(); ++i)
+    {
+        if (std::find(logger.targets.begin(), logger.targets.end(), *i)
+            == logger.targets.end())
+        {
+            logger.targets.push_back(*i);
+            inc++;
+        }
+    }
+
+    if (inc > 0)
+    {
+        for (NumberLogger::data_container_type::iterator i(logger.data.begin());
+            i != logger.data.end(); ++i)
+        {
+            (*i).resize(logger.targets.size() + 1, 0.0);
+        }
+    }
+}
+
+void FixedIntervalNumberObserver::initialize(const boost::shared_ptr<WorldInterface>& world, const boost::shared_ptr<Model>& model)
+{
+    base_type::initialize(world, model);
+    reserve_species_list(logger_, world, model);
     logger_.initialize();
 }
 
@@ -156,9 +191,10 @@ NumberLogger::species_container_type FixedIntervalNumberObserver::targets() cons
     return logger_.targets;
 }
 
-void NumberObserver::initialize(const boost::shared_ptr<WorldInterface>& world)
+void NumberObserver::initialize(const boost::shared_ptr<WorldInterface>& world, const boost::shared_ptr<Model>& model)
 {
-    base_type::initialize(world);
+    base_type::initialize(world, model);
+    reserve_species_list(logger_, world, model);
     logger_.initialize();
     logger_.log(world);
 }
@@ -207,7 +243,7 @@ const Real TimingObserver::next_time() const
     return t_[count_];
 }
 
-void TimingObserver::initialize(const boost::shared_ptr<WorldInterface>& world)
+void TimingObserver::initialize(const boost::shared_ptr<WorldInterface>& world, const boost::shared_ptr<Model>& model)
 {
     while (next_time() < world->t())
     {
@@ -228,9 +264,10 @@ void TimingObserver::reset()
     count_ = 0;
 }
 
-void TimingNumberObserver::initialize(const boost::shared_ptr<WorldInterface>& world)
+void TimingNumberObserver::initialize(const boost::shared_ptr<WorldInterface>& world, const boost::shared_ptr<Model>& model)
 {
-    base_type::initialize(world);
+    base_type::initialize(world, model);
+    reserve_species_list(logger_, world, model);
     logger_.initialize();
 }
 
@@ -256,9 +293,9 @@ NumberLogger::species_container_type TimingNumberObserver::targets() const
     return logger_.targets;
 }
 
-void FixedIntervalHDF5Observer::initialize(const boost::shared_ptr<WorldInterface>& world)
+void FixedIntervalHDF5Observer::initialize(const boost::shared_ptr<WorldInterface>& world, const boost::shared_ptr<Model>& model)
 {
-    base_type::initialize(world);
+    base_type::initialize(world, model);
 }
 
 bool FixedIntervalHDF5Observer::fire(const Simulator* sim, const boost::shared_ptr<WorldInterface>& world)
@@ -287,9 +324,9 @@ const std::string FixedIntervalHDF5Observer::filename(const Integer idx) const
     }
 }
 
-void FixedIntervalCSVObserver::initialize(const boost::shared_ptr<WorldInterface>& world)
+void FixedIntervalCSVObserver::initialize(const boost::shared_ptr<WorldInterface>& world, const boost::shared_ptr<Model>& model)
 {
-    base_type::initialize(world);
+    base_type::initialize(world, model);
     logger_.initialize();
 }
 
@@ -331,9 +368,9 @@ void FixedIntervalCSVObserver::reset()
     base_type::reset();
 }
 
-void CSVObserver::initialize(const boost::shared_ptr<WorldInterface>& world)
+void CSVObserver::initialize(const boost::shared_ptr<WorldInterface>& world, const boost::shared_ptr<Model>& model)
 {
-    base_type::initialize(world);
+    base_type::initialize(world, model);
     logger_.initialize();
     log(world);
 }
@@ -377,11 +414,15 @@ void CSVObserver::reset()
     base_type::reset();
 }
 
-void TimeoutObserver::initialize(const boost::shared_ptr<WorldInterface>& world)
+void TimeoutObserver::initialize(const boost::shared_ptr<WorldInterface>& world, const boost::shared_ptr<Model>& model)
 {
-    base_type::initialize(world);
+    base_type::initialize(world, model);
     duration_ = 0.0;
+#ifndef HAVE_CHRONO
     time(&tstart_);
+#else
+    tstart_ = std::chrono::system_clock::now();
+#endif
 }
 
 void TimeoutObserver::finalize(const boost::shared_ptr<WorldInterface>& world)
@@ -392,9 +433,15 @@ void TimeoutObserver::finalize(const boost::shared_ptr<WorldInterface>& world)
 
 bool TimeoutObserver::fire(const Simulator* sim, const boost::shared_ptr<WorldInterface>& world)
 {
+#ifndef HAVE_CHRONO
     time_t tnow;
     time(&tnow);
     duration_ = difftime(tnow, tstart_);
+#else
+    const std::chrono::system_clock::time_point tnow = std::chrono::system_clock::now();
+    duration_ = std::chrono::duration_cast<std::chrono::milliseconds>(tnow - tstart_).count() * 1e-3;
+#endif
+
     if (duration_ >= interval_)
     {
         return false;
@@ -407,7 +454,11 @@ void TimeoutObserver::reset()
     base_type::reset();
     duration_ = 0.0;
     acc_ = 0.0;
+#ifndef HAVE_CHRONO
     time(&tstart_);
+#else
+    tstart_ = std::chrono::system_clock::now();
+#endif
 }
 
 const Real FixedIntervalTrackingObserver::next_time() const
@@ -425,7 +476,7 @@ const Integer FixedIntervalTrackingObserver::count() const
     return event_.count;
 }
 
-void FixedIntervalTrackingObserver::initialize(const boost::shared_ptr<WorldInterface>& world)
+void FixedIntervalTrackingObserver::initialize(const boost::shared_ptr<WorldInterface>& world, const boost::shared_ptr<Model>& model)
 {
     event_.initialize(world->t());
     subevent_.initialize(world->t());

@@ -324,7 +324,7 @@ public:
     }
 
 #ifdef WITH_HDF5
-    void save(H5::CommonFG* root) const
+    void save(H5::H5Location* root) const
     {
         using namespace H5;
 
@@ -337,7 +337,7 @@ public:
         dataset->write((unsigned char*)(&next_), *optype);
     }
 
-    void load(const H5::CommonFG& root)
+    void load(const H5::H5Location& root)
     {
         using namespace H5;
 

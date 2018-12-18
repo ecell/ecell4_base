@@ -5,9 +5,11 @@ Installation
 
 #### Minimum requirements
 
-- Python (2.7 and 3.4, 3.5, 3.6 both major versions are supported [3.4 is supported only on Linux, Mac does not support 3.4 and 3.5])
+**Note that we do NOT support Python2.7 and 32bit versions.**
+
+- Python (3.4, 3.5, 3.6 both major versions are supported [3.4 is supported only on Linux, Mac does not support 3.4 and 3.5])
 - pip (8.1 or later)
-- HDF5 (1.8.17, required only on **Windows**.)
+- HDF5 (1.10.2, required only on **Windows**.)
 
 #### Optional requirements
 
@@ -21,9 +23,8 @@ Some E-Cell4 functions (for visualization, datastore) optionally depend on
 ### Windows
 
 We recommend that you install [Miniconda](http://conda.pydata.org/miniconda.html) to manage Python packages.
-**Note that we do not support Python2.7 64bit for Windows.**
 
-(**Important**) E-Cell4 for Windows needs `HDF5` version **1.8.17**.
+(**Important**) E-Cell4 for Windows needs `HDF5` version **1.10.2**.
 
 - Install Miniconda for Windows from http://conda.pydata.org/miniconda.html
 - Run the following commands on command prompt
@@ -31,7 +32,7 @@ We recommend that you install [Miniconda](http://conda.pydata.org/miniconda.html
     ```shell
     conda uninstall hdf5
     conda clean -a
-    conda install hdf5=1.8.17
+    conda install hdf5=1.10.2
     conda install matplotlib notebook
     pip install ecell
     ```

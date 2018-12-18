@@ -1,4 +1,6 @@
 import collections
+import numbers
+
 from cython cimport address
 from cython.operator cimport dereference as deref, preincrement as inc
 from ecell4.core cimport *
@@ -715,64 +717,62 @@ cdef class EGFRDSimulator:
     """
 
     def __init__(self, *args):
-        """EGFRDSimulator(m, w, bd_dt_factor, dissociation_retry_moves, user_max_shell_size)
+        """EGFRDSimulator(w, m, bd_dt_factor, dissociation_retry_moves, user_max_shell_size)
         EGFRDSimulator(w, bd_dt_factor, dissociation_retry_moves, user_max_shell_size)
 
         Constructor.
 
         Parameters
         ----------
-        m : Model
-            A model
         w : EGFRDWorld
             A world
-        bd_dt_factor : Real
-        dissociation_retry_moves : Integer
-        user_max_shell_size : Real
+        m : Model, optional
+            A model
+        bd_dt_factor : Real, optional
+        dissociation_retry_moves : Integer, optional
+        user_max_shell_size : Real, optional
 
         """
         pass
 
-    def __cinit__(self, *args):
-        if len(args) == 1:
-            self.thisptr = new Cpp_EGFRDSimulator(deref((<EGFRDWorld>args[0]).thisptr))
-        elif len(args) == 2:
-            if isinstance(args[1], EGFRDWorld):
+    def __cinit__(self, EGFRDWorld w, *args):
+        if len(args) == 0:
+            self.thisptr = new Cpp_EGFRDSimulator(deref(w.thisptr))
+        elif isinstance(args[0], (Model, NetworkModel, NetfreeModel)):
+            if len(args) == 1:
                 self.thisptr = new Cpp_EGFRDSimulator(
-                    deref((<EGFRDWorld>args[1]).thisptr),
-                    Cpp_Model_from_Model(args[0]))
-            else:
+                    deref(w.thisptr), Cpp_Model_from_Model(args[0]))
+            elif len(args) == 2:
                 self.thisptr = new Cpp_EGFRDSimulator(
-                    deref((<EGFRDWorld>args[0]).thisptr),
+                    deref(w.thisptr), Cpp_Model_from_Model(args[0]),
                     <Real>args[1])
-        elif len(args) == 3:
-            if isinstance(args[1], EGFRDWorld):
+            elif len(args) == 3:
                 self.thisptr = new Cpp_EGFRDSimulator(
-                    deref((<EGFRDWorld>args[1]).thisptr),
-                    Cpp_Model_from_Model(args[0]),
-                    <Real>args[2])
-            else:
-                self.thisptr = new Cpp_EGFRDSimulator(
-                    deref((<EGFRDWorld>args[0]).thisptr),
+                    deref(w.thisptr), Cpp_Model_from_Model(args[0]),
                     <Real>args[1], <Integer>args[2])
-        elif len(args) == 4:
-            if isinstance(args[1], EGFRDWorld):
+            elif len(args) == 4:
                 self.thisptr = new Cpp_EGFRDSimulator(
-                    deref((<EGFRDWorld>args[1]).thisptr),
-                    Cpp_Model_from_Model(args[0]),
-                    <Real>args[2], <Integer>args[3])
-            else:
-                self.thisptr = new Cpp_EGFRDSimulator(
-                    deref((<EGFRDWorld>args[0]).thisptr),
+                    deref(w.thisptr), Cpp_Model_from_Model(args[0]),
                     <Real>args[1], <Integer>args[2], <Real>args[3])
-        elif len(args) == 5:
-            self.thisptr = new Cpp_EGFRDSimulator(
-                deref((<EGFRDWorld>args[1]).thisptr),
-                Cpp_Model_from_Model(args[0]),
-                <Real>args[2], <Integer>args[3], <Real>args[4])
+            else:
+                raise ValueError(
+                    "The number of arguments is invalid [{}].".format(len(args) + 1))
         else:
-            raise ValueError(
-                "The invalid number of arguments was given [{}].".format(len(args)))
+            if len(args) == 1:
+                self.thisptr = new Cpp_EGFRDSimulator(
+                    deref(w.thisptr),
+                    <Real>args[0])
+            elif len(args) == 2:
+                self.thisptr = new Cpp_EGFRDSimulator(
+                    deref(w.thisptr),
+                    <Real>args[0], <Integer>args[1])
+            elif len(args) == 3:
+                self.thisptr = new Cpp_EGFRDSimulator(
+                    deref(w.thisptr), Cpp_Model_from_Model(args[0]),
+                    <Real>args[1], <Integer>args[2], <Real>args[3])
+            else:
+                raise ValueError(
+                    "The number of arguments is invalid [{}].".format(len(args) + 1))
 
     def __dealloc__(self):
         del self.thisptr
@@ -881,38 +881,51 @@ cdef class EGFRDSimulator:
         """Return the world bound."""
         return EGFRDWorld_from_Cpp_EGFRDWorld(self.thisptr.world())
 
-    def run(self, Real duration, observers=None):
-        """run(duration, observers)
+    def run(self, Real duration, observers=None, is_dirty=None):
+        """run(duration, observers, is_dirty)
 
         Run the simulation.
 
         Parameters
         ----------
         duration : Real
-            a duration for running a simulation.
+            A duration for running a simulation.
             A simulation is expected to be stopped at t() + duration.
         observers : list of Obeservers, optional
             observers
+        is_dirty : bool, default True
+            If True, call initialize before running.
 
         """
         cdef vector[shared_ptr[Cpp_Observer]] tmp
 
-        if observers is None:
-            self.thisptr.run(duration)
-        elif isinstance(observers, collections.Iterable):
-            for obs in observers:
-                tmp.push_back(deref((<Observer>(obs.as_base())).thisptr))
-            self.thisptr.run(duration, tmp)
+        if is_dirty is None:
+            if observers is None:
+                self.thisptr.run(duration)
+            elif isinstance(observers, collections.Iterable):
+                for obs in observers:
+                    tmp.push_back(deref((<Observer>(obs.as_base())).thisptr))
+                self.thisptr.run(duration, tmp)
+            else:
+                self.thisptr.run(duration,
+                    deref((<Observer>(observers.as_base())).thisptr))
         else:
-            self.thisptr.run(duration,
-                deref((<Observer>(observers.as_base())).thisptr))
+            if observers is None:
+                self.thisptr.run(duration, is_dirty)
+            elif isinstance(observers, collections.Iterable):
+                for obs in observers:
+                    tmp.push_back(deref((<Observer>(obs.as_base())).thisptr))
+                self.thisptr.run(duration, tmp, is_dirty)
+            else:
+                self.thisptr.run(duration,
+                    deref((<Observer>(observers.as_base())).thisptr), is_dirty)
 
     def set_paranoiac(self, val):
         self.thisptr.set_paranoiac(<bool>val)
 
 cdef EGFRDSimulator EGFRDSimulator_from_Cpp_EGFRDSimulator(Cpp_EGFRDSimulator* s):
     r = EGFRDSimulator(
-        Model_from_Cpp_Model(s.model()), EGFRDWorld_from_Cpp_EGFRDWorld(s.world()))
+        EGFRDWorld_from_Cpp_EGFRDWorld(s.world()), Model_from_Cpp_Model(s.model()))
     del r.thisptr
     r.thisptr = s
     return r
@@ -969,6 +982,68 @@ cdef class EGFRDFactory:
         assert ptr == self.thisptr
         return self
 
+    def world(self, arg1=None):
+        """world(arg1=None) -> EGFRDWorld
+
+        Return a EGFRDWorld instance.
+
+        Parameters
+        ----------
+        arg1 : Real3, Real, str, optional. default None
+            If Real3, it suggests the lengths of edges of a ``BDWorld`` created.
+            If Real, it suggests the volume.
+            If str, it suggests the path of a HDF5 file loaded.
+
+        Returns
+        -------
+        EGFRDWorld:
+            The created world
+
+        """
+        if arg1 is None:
+            return EGFRDWorld_from_Cpp_EGFRDWorld(
+                shared_ptr[Cpp_EGFRDWorld](self.thisptr.world()))
+        elif isinstance(arg1, Real3):
+            return EGFRDWorld_from_Cpp_EGFRDWorld(
+                shared_ptr[Cpp_EGFRDWorld](
+                    self.thisptr.world(deref((<Real3>arg1).thisptr))))
+        elif isinstance(arg1, numbers.Number):
+            return EGFRDWorld_from_Cpp_EGFRDWorld(
+                shared_ptr[Cpp_EGFRDWorld](self.thisptr.world(<Real>(arg1))))
+        elif isinstance(arg1, str):
+            return EGFRDWorld_from_Cpp_EGFRDWorld(
+                shared_ptr[Cpp_EGFRDWorld](self.thisptr.world(tostring(arg1))))
+        else:
+            return EGFRDWorld_from_Cpp_EGFRDWorld(
+                shared_ptr[Cpp_EGFRDWorld](self.thisptr.world(
+                    Cpp_Model_from_Model(arg1))))
+
+    def simulator(self, EGFRDWorld arg1, arg2=None):
+        """simulator(arg1, arg2) -> EGFRDSimulator
+
+        Return a EGFRDSimulator instance.
+
+        Parameters
+        ----------
+        arg1 : EGFRDWorld
+            A world
+        arg2 : Model, optional
+            A simulation model
+
+        Returns
+        -------
+        EGFRDSimulator:
+            The created simulator
+
+        """
+        if arg2 is None:
+            return EGFRDSimulator_from_Cpp_EGFRDSimulator(
+                self.thisptr.simulator(deref(arg1.thisptr)))
+        else:
+            return EGFRDSimulator_from_Cpp_EGFRDSimulator(
+                self.thisptr.simulator(
+                    deref(arg1.thisptr), Cpp_Model_from_Model(arg2)))
+
     def create_world(self, arg1=None):
         """create_world(arg1=None) -> EGFRDWorld
 
@@ -990,22 +1065,10 @@ cdef class EGFRDFactory:
             The created world
 
         """
-        if arg1 is None:
-            return EGFRDWorld_from_Cpp_EGFRDWorld(
-                shared_ptr[Cpp_EGFRDWorld](self.thisptr.create_world()))
-        elif isinstance(arg1, Real3):
-            return EGFRDWorld_from_Cpp_EGFRDWorld(
-                shared_ptr[Cpp_EGFRDWorld](
-                    self.thisptr.create_world(deref((<Real3>arg1).thisptr))))
-        elif isinstance(arg1, str):
-            return EGFRDWorld_from_Cpp_EGFRDWorld(
-                shared_ptr[Cpp_EGFRDWorld](self.thisptr.create_world(<string>(arg1))))
-        else:
-            return EGFRDWorld_from_Cpp_EGFRDWorld(
-                shared_ptr[Cpp_EGFRDWorld](self.thisptr.create_world(
-                    Cpp_Model_from_Model(arg1))))
+        import warnings; warnings.warn("Function 'create_world()' has moved to 'world()'", DeprecationWarning)
+        return self.world(arg1)
 
-    def create_simulator(self, arg1, EGFRDWorld arg2=None):
+    def create_simulator(self, EGFRDWorld arg1, arg2=None):
         """create_simulator(arg1, arg2) -> EGFRDSimulator
 
         Return a EGFRDSimulator instance.
@@ -1014,13 +1077,8 @@ cdef class EGFRDFactory:
         ----------
         arg1 : EGFRDWorld
             A world
-
-        or
-
-        arg1 : Model
+        arg2 : Model, optional
             A simulation model
-        arg2 : EGFRDWorld
-            A world
 
         Returns
         -------
@@ -1028,13 +1086,8 @@ cdef class EGFRDFactory:
             The created simulator
 
         """
-        if arg2 is None:
-            return EGFRDSimulator_from_Cpp_EGFRDSimulator(
-                self.thisptr.create_simulator(deref((<EGFRDWorld>arg1).thisptr)))
-        else:
-            return EGFRDSimulator_from_Cpp_EGFRDSimulator(
-                self.thisptr.create_simulator(
-                    Cpp_Model_from_Model(arg1), deref(arg2.thisptr)))
+        import warnings; warnings.warn("Function 'create_simulator()' has moved to 'simulator()'", DeprecationWarning)
+        return self.simulator(arg1, arg2)
 
 ## BDSimulator
 #  a python wrapper for Cpp_BDSimulator
@@ -1046,53 +1099,53 @@ cdef class BDSimulator:
     """
 
     def __init__(self, *args):
-        """BDSimulator(m, w, bd_dt_factor, dissociation_retry_moves)
+        """BDSimulator(w, m, bd_dt_factor, dissociation_retry_moves)
         BDSimulator(w, bd_dt_factor, dissociation_retry_moves)
 
         Constructor.
 
         Parameters
         ----------
-        m : Model
-            A model
         w : EGFRDWorld
             A world
-        bd_dt_factor : Real
-        dissociation_retry_moves : Integer
+        m : Model, optional
+            A model
+        bd_dt_factor : Real, optional
+        dissociation_retry_moves : Integer, optional
 
         """
         pass
 
-    def __cinit__(self, *args):
-        if len(args) == 1:
-            self.thisptr = new Cpp_BDSimulator(deref((<EGFRDWorld>args[0]).thisptr))
-        elif len(args) == 2:
-            if isinstance(args[1], EGFRDWorld):
+    def __cinit__(self, EGFRDWorld w, *args):
+        if len(args) == 0:
+            self.thisptr = new Cpp_BDSimulator(deref(w.thisptr))
+        elif isinstance(args[0], (Model, NetworkModel, NetfreeModel)):
+            if len(args) == 1:
                 self.thisptr = new Cpp_BDSimulator(
-                    deref((<EGFRDWorld>args[1]).thisptr),
-                    Cpp_Model_from_Model(args[0]))
-            else:
+                    deref(w.thisptr), Cpp_Model_from_Model(args[0]))
+            elif len(args) == 2:
                 self.thisptr = new Cpp_BDSimulator(
-                    deref((<EGFRDWorld>args[0]).thisptr),
+                    deref(w.thisptr), Cpp_Model_from_Model(args[0]),
                     <Real>args[1])
-        elif len(args) == 3:
-            if isinstance(args[1], EGFRDWorld):
+            elif len(args) == 3:
                 self.thisptr = new Cpp_BDSimulator(
-                    deref((<EGFRDWorld>args[1]).thisptr),
-                    Cpp_Model_from_Model(args[0]),
-                    <Real>args[2])
-            else:
-                self.thisptr = new Cpp_BDSimulator(
-                    deref((<EGFRDWorld>args[0]).thisptr),
+                    deref(w.thisptr), Cpp_Model_from_Model(args[0]),
                     <Real>args[1], <Integer>args[2])
-        elif len(args) == 4:
-            self.thisptr = new Cpp_BDSimulator(
-                deref((<EGFRDWorld>args[1]).thisptr),
-                Cpp_Model_from_Model(args[0]),
-                <Real>args[2], <Integer>args[3])
+            else:
+                raise ValueError(
+                    "The number of arguments is invalid [{}].".format(len(args) + 1))
         else:
-            raise ValueError(
-                "The invalid number of arguments was given [{}].".format(len(args)))
+            if len(args) == 1:
+                self.thisptr = new Cpp_BDSimulator(
+                    deref(w.thisptr),
+                    <Real>args[0])
+            elif len(args) == 2:
+                self.thisptr = new Cpp_BDSimulator(
+                    deref(w.thisptr),
+                    <Real>args[0], <Integer>args[1])
+            else:
+                raise ValueError(
+                    "The number of arguments is invalid [{}].".format(len(args) + 1))
 
     def __dealloc__(self):
         del self.thisptr
@@ -1200,31 +1253,44 @@ cdef class BDSimulator:
         """Return the world bound."""
         return EGFRDWorld_from_Cpp_EGFRDWorld(self.thisptr.world())
 
-    def run(self, Real duration, observers=None):
-        """run(duration, observers)
+    def run(self, Real duration, observers=None, is_dirty=None):
+        """run(duration, observers, is_dirty)
 
         Run the simulation.
 
         Parameters
         ----------
         duration : Real
-            a duration for running a simulation.
+            A duration for running a simulation.
             A simulation is expected to be stopped at t() + duration.
         observers : list of Obeservers, optional
             observers
+        is_dirty : bool, default True
+            If True, call initialize before running.
 
         """
         cdef vector[shared_ptr[Cpp_Observer]] tmp
 
-        if observers is None:
-            self.thisptr.run(duration)
-        elif isinstance(observers, collections.Iterable):
-            for obs in observers:
-                tmp.push_back(deref((<Observer>(obs.as_base())).thisptr))
-            self.thisptr.run(duration, tmp)
+        if is_dirty is None:
+            if observers is None:
+                self.thisptr.run(duration)
+            elif isinstance(observers, collections.Iterable):
+                for obs in observers:
+                    tmp.push_back(deref((<Observer>(obs.as_base())).thisptr))
+                self.thisptr.run(duration, tmp)
+            else:
+                self.thisptr.run(duration,
+                    deref((<Observer>(observers.as_base())).thisptr))
         else:
-            self.thisptr.run(duration,
-                deref((<Observer>(observers.as_base())).thisptr))
+            if observers is None:
+                self.thisptr.run(duration, is_dirty)
+            elif isinstance(observers, collections.Iterable):
+                for obs in observers:
+                    tmp.push_back(deref((<Observer>(obs.as_base())).thisptr))
+                self.thisptr.run(duration, tmp, is_dirty)
+            else:
+                self.thisptr.run(duration,
+                    deref((<Observer>(observers.as_base())).thisptr), is_dirty)
 
     def dt_factor(self):
         return self.thisptr.dt_factor()
@@ -1258,7 +1324,7 @@ cdef class BDSimulator:
 
 cdef BDSimulator BDSimulator_from_Cpp_BDSimulator(Cpp_BDSimulator* s):
     r = BDSimulator(
-        Model_from_Cpp_Model(s.model()), EGFRDWorld_from_Cpp_EGFRDWorld(s.world()))
+        EGFRDWorld_from_Cpp_EGFRDWorld(s.world()), Model_from_Cpp_Model(s.model()))
     del r.thisptr
     r.thisptr = s
     return r
@@ -1312,7 +1378,70 @@ cdef class BDFactory:
         assert ptr == self.thisptr
         return self
 
-    def create_world(self, arg1):
+    def world(self, arg1=None):
+        """world(arg1=None) -> EGFRDWorld
+
+        Return a EGFRDWorld instance.
+
+        Parameters
+        ----------
+        arg1 : Real3, Real, str, optional. default None
+            If Real3, it suggests the lengths of edges of a ``BDWorld`` created.
+            If Real, it suggests the volume.
+            If str, it suggests the path of a HDF5 file loaded.
+
+        Returns
+        -------
+        EGFRDWorld:
+            The created world
+
+        """
+        if arg1 is None:
+            return EGFRDWorld_from_Cpp_EGFRDWorld(
+                shared_ptr[Cpp_EGFRDWorld](
+                    self.thisptr.world()))
+        elif isinstance(arg1, Real3):
+            return EGFRDWorld_from_Cpp_EGFRDWorld(
+                shared_ptr[Cpp_EGFRDWorld](
+                    self.thisptr.world(deref((<Real3>arg1).thisptr))))
+        elif isinstance(arg1, numbers.Number):
+            return EGFRDWorld_from_Cpp_EGFRDWorld(
+                shared_ptr[Cpp_EGFRDWorld](self.thisptr.world(<Real>(arg1))))
+        elif isinstance(arg1, str):
+            return EGFRDWorld_from_Cpp_EGFRDWorld(
+                shared_ptr[Cpp_EGFRDWorld](self.thisptr.world(tostring(arg1))))
+        else:
+            return EGFRDWorld_from_Cpp_EGFRDWorld(
+                shared_ptr[Cpp_EGFRDWorld](self.thisptr.world(
+                    Cpp_Model_from_Model(arg1))))
+
+    def simulator(self, EGFRDWorld arg1, arg2=None):
+        """simulator(arg1, arg2) -> BDSimulator
+
+        Return a BDSimulator instance.
+
+        Parameters
+        ----------
+        arg1 : EGFRDWorld
+            A world
+        arg2 : Model
+            A simulation model
+
+        Returns
+        -------
+        BDSimulator:
+            The created simulator
+
+        """
+        if arg2 is None:
+            return BDSimulator_from_Cpp_BDSimulator(
+                self.thisptr.simulator(deref(arg1.thisptr)))
+        else:
+            return BDSimulator_from_Cpp_BDSimulator(
+                self.thisptr.simulator(
+                    deref(arg1.thisptr), Cpp_Model_from_Model(arg2)))
+
+    def create_world(self, arg1=None):
         """create_world(arg1=None) -> EGFRDWorld
 
         Return a EGFRDWorld instance.
@@ -1333,19 +1462,10 @@ cdef class BDFactory:
             The created world
 
         """
-        if isinstance(arg1, Real3):
-            return EGFRDWorld_from_Cpp_EGFRDWorld(
-                shared_ptr[Cpp_EGFRDWorld](
-                    self.thisptr.create_world(deref((<Real3>arg1).thisptr))))
-        elif isinstance(arg1, str):
-            return EGFRDWorld_from_Cpp_EGFRDWorld(
-                shared_ptr[Cpp_EGFRDWorld](self.thisptr.create_world(<string>(arg1))))
-        else:
-            return EGFRDWorld_from_Cpp_EGFRDWorld(
-                shared_ptr[Cpp_EGFRDWorld](self.thisptr.create_world(
-                    Cpp_Model_from_Model(arg1))))
+        import warnings; warnings.warn("Function 'create_world()' has moved to 'world()'", DeprecationWarning)
+        return self.world(arg1)
 
-    def create_simulator(self, arg1, EGFRDWorld arg2=None):
+    def create_simulator(self, EGFRDWorld arg1, arg2=None):
         """create_simulator(arg1, arg2) -> BDSimulator
 
         Return a BDSimulator instance.
@@ -1354,13 +1474,8 @@ cdef class BDFactory:
         ----------
         arg1 : BDWorld
             A world
-
-        or
-
-        arg1 : Model
+        arg2 : Model
             A simulation model
-        arg2 : BDWorld
-            A world
 
         Returns
         -------
@@ -1368,10 +1483,11 @@ cdef class BDFactory:
             The created simulator
 
         """
-        if arg2 is None:
-            return BDSimulator_from_Cpp_BDSimulator(
-                self.thisptr.create_simulator(deref((<EGFRDWorld>arg1).thisptr)))
-        else:
-            return BDSimulator_from_Cpp_BDSimulator(
-                self.thisptr.create_simulator(
-                    Cpp_Model_from_Model(arg1), deref(arg2.thisptr)))
+        import warnings; warnings.warn("Function 'create_simulator()' has moved to 'simulator()'", DeprecationWarning)
+        return self.simulator(arg1, arg2)
+
+Factory = EGFRDFactory  # This is an alias
+World = EGFRDWorld  # This is an alias
+Simulator = EGFRDSimulator  # This is an alias
+
+__all__ = ["EGFRDWorld", "EGFRDSimulator", "EGFRDFactory", "BDSimulator", "BDFactory"]

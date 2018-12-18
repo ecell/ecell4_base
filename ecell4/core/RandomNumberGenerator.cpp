@@ -12,7 +12,7 @@ namespace ecell4
 {
 
 #ifdef WITH_HDF5
-void GSLRandomNumberGenerator::save(H5::CommonFG* root) const
+void GSLRandomNumberGenerator::save(H5::H5Location* root) const
 {
     using namespace H5;
 
@@ -25,7 +25,7 @@ void GSLRandomNumberGenerator::save(H5::CommonFG* root) const
     dataset->write((unsigned char*)(gsl_rng_state(rng_.get())), *optype);
 }
 
-void GSLRandomNumberGenerator::load(const H5::CommonFG& root)
+void GSLRandomNumberGenerator::load(const H5::H5Location& root)
 {
     using namespace H5;
 

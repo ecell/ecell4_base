@@ -124,8 +124,8 @@ BOOST_AUTO_TEST_CASE(SpatiocyteWorld_test_add_molecule)
     SpatiocyteWorld world(edge_lengths, voxel_radius, rng);
 
     Species sp(std::string("TEST"));
-    sp.set_attribute("radius", "2.5e-9");
-    sp.set_attribute("D", "1e-12");
+    sp.set_attribute("radius", 2.5e-9);
+    sp.set_attribute("D", 1e-12);
 
     const Voxel voxel(world.position2voxel(edge_lengths / 2.0));
     // BOOST_CHECK(world.place_voxel(sp, coord).second);
@@ -145,8 +145,8 @@ BOOST_AUTO_TEST_CASE(SpatiocyteWorld_test_add_molecules)
     SpatiocyteWorld world(edge_lengths, voxel_radius, rng);
 
     Species sp(std::string("TEST"));
-    sp.set_attribute("radius", "2.5e-9");
-    sp.set_attribute("D", "1e-12");
+    sp.set_attribute("radius", 2.5e-9);
+    sp.set_attribute("D", 1e-12);
     const Integer N(60);
 
     BOOST_CHECK(world.add_molecules(sp, N));
@@ -165,8 +165,8 @@ BOOST_AUTO_TEST_CASE(SpatiocyteWorld_test_neighbor)
     const Real3 cp(voxel.position());
 
     Species sp(std::string("TEST"));
-    sp.set_attribute("radius", "2.5e-9");
-    sp.set_attribute("D", "1e-12");
+    sp.set_attribute("radius", 2.5e-9);
+    sp.set_attribute("D", 1e-12);
     for (Integer i(0); i < voxel.num_neighbors(); ++i)
     {
         world.new_voxel(sp, voxel.get_neighbor(i));
@@ -193,8 +193,8 @@ BOOST_AUTO_TEST_CASE(SpatiocyteWorld_test_add_shape)
     SpatiocyteWorld world(edge_lengths, voxel_radius, rng);
 
     Species sp(std::string("TEST"));
-    sp.set_attribute("radius", "2.5e-9");
-    sp.set_attribute("D", "1e-12");
+    sp.set_attribute("radius", 2.5e-9);
+    sp.set_attribute("D", 1e-12);
 
     boost::shared_ptr<const Sphere> sphere(new Sphere(Real3(5e-7, 5e-7, 5e-7), 5e-7*1.5));
 
@@ -216,8 +216,8 @@ BOOST_AUTO_TEST_CASE(SpatiocyteWorld_test_move)
     SpatiocyteWorld world(edge_lengths, voxel_radius, rng);
 
     Species sp(std::string("TEST"));
-    sp.set_attribute("radius", "2.5e-9");
-    sp.set_attribute("D", "1e-12");
+    sp.set_attribute("radius", 2.5e-9);
+    sp.set_attribute("D", 1e-12);
 
     const Voxel from(world.position2voxel(Real3(0.3e-6, 0.5e-6, 0.5e-6)));
     const Voxel to(world.position2voxel(Real3(0.5e-6, 0.5e-6, 0.5e-6)));
@@ -239,9 +239,9 @@ BOOST_AUTO_TEST_CASE(SpatiocyteWorld_test_structure)
         rng(new GSLRandomNumberGenerator());
     SpatiocyteWorld world(edge_lengths, voxel_radius, rng);
 
-    Species membrane("Membrane", "2.5e-9", "0");
+    Species membrane("Membrane", 2.5e-9, 0);
 
-    Species sp("SpeciesA", "2.5e-9", "1e-12");
+    Species sp("SpeciesA", 2.5e-9, 1e-12);
     sp.set_attribute("location", "Membrane");
 
     boost::shared_ptr<const Sphere> sphere(new Sphere(Real3(2.5e-7, 2.5e-7, 2.5e-7), 2e-7));

@@ -21,7 +21,7 @@ void run()
 
     const Integer N(60);
 
-    const std::string D("1.0"), radius("0.0025");
+    const Real D(1.0), radius(0.0025);
 
     Species sp("A", radius, D);
 
@@ -41,7 +41,7 @@ void run()
 
     world->add_molecules(sp, N);
 
-    simulator_type sim(model, world);
+    simulator_type sim(world, model);
     std::cout << "dt = " << sim.dt() << std::endl;
     for (unsigned int i(0); i != 1000; ++i)
     {

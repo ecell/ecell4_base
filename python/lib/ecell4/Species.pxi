@@ -8,17 +8,39 @@ cimport context
 import numbers
 from cpython cimport bool as bool_t
 
+class Quantity(object):
+
+    def __init__(self, magnitude, units=""):
+        self.magnitude = magnitude
+        self.units = units
+
+cdef Quantity_from_Cpp_Quantity_Real(Cpp_Quantity[Real] *value):
+    return Quantity(value.magnitude, value.units.decode('UTF-8'))
+
+cdef Quantity_from_Cpp_Quantity_Integer(Cpp_Quantity[Integer] *value):
+    return Quantity(value.magnitude, value.units.decode('UTF-8'))
+
+cdef Cpp_Quantity[Real] Cpp_Quantity_from_Quantity_Real(value):
+    assert(isinstance(value, Quantity))
+    return Cpp_Quantity[Real](<Real> value.magnitude, tostring(value.units))
+
+cdef Cpp_Quantity[Integer] Cpp_Quantity_from_Quantity_Integer(value):
+    assert(isinstance(value, Quantity))
+    return Cpp_Quantity[Integer](<Integer> value.magnitude, tostring(value.units))
+
 cdef boost_get_from_Cpp_Species_value_type(Cpp_Species_value_type value):
-    cdef string* value_str = boost_get[string, string, Real, Integer, bool](address(value))
+    cdef string* value_str = boost_get[string, string, Cpp_Quantity[Real], Cpp_Quantity[Integer], bool](address(value))
     if value_str != NULL:
         return deref(value_str).decode('UTF-8')
-    cdef Real* value_real = boost_get[Real, string, Real, Integer, bool](address(value))
+    cdef Cpp_Quantity[Real]* value_real = boost_get[Cpp_Quantity[Real], string, Cpp_Quantity[Real], Cpp_Quantity[Integer], bool](address(value))
     if value_real != NULL:
-        return deref(value_real)
-    cdef Integer* value_int = boost_get[Integer, string, Real, Integer, bool](address(value))
+        # return deref(value_real).magnitude
+        return Quantity_from_Cpp_Quantity_Real(value_real)
+    cdef Cpp_Quantity[Integer]* value_int = boost_get[Cpp_Quantity[Integer], string, Cpp_Quantity[Real], Cpp_Quantity[Integer], bool](address(value))
     if value_int != NULL:
-        return deref(value_int)
-    cdef bool* value_bool = boost_get[bool, string, Real, Integer, bool](address(value))
+        # return deref(value_int).magnitude
+        return Quantity_from_Cpp_Quantity_Integer(value_int)
+    cdef bool* value_bool = boost_get[bool, string, Cpp_Quantity[Real], Cpp_Quantity[Integer], bool](address(value))
     if value_bool != NULL:
         return deref(value_bool)
 
@@ -49,31 +71,51 @@ cdef class Species:
         pass  # XXX: Only used for doc string
 
     def __cinit__(self, serial=None, radius=None, D=None, location=None):
-        if serial is None:
+        if serial is None and radius is None and D is None and location is None:
             self.thisptr = new Cpp_Species()
-        elif radius is None:
-            self.thisptr = new Cpp_Species(tostring(serial)) #XXX:
-        elif D is None:
-            raise ValueError(
-                'D must be given. D is not optional when radius is given.')
-        elif location is None:
-            if isinstance(radius, str) and isinstance(D, str):
-                self.thisptr = new Cpp_Species(
-                    tostring(serial), tostring(radius), tostring(D))
-            elif isinstance(radius, numbers.Real) and isinstance(D, numbers.Real):
-                self.thisptr = new Cpp_Species(
-                    tostring(serial), <Real>radius, <Real>D)
+        elif serial is not None and radius is None and D is None and location is None:
+            if isinstance(serial, Species):
+                self.thisptr = new Cpp_Species(deref((<Species> serial).thisptr))
+            elif isinstance(serial, (str, bytes)):
+                self.thisptr = new Cpp_Species(tostring(serial))
             else:
-                raise TypeError('radius and D must be float.')
+                raise TypeError(
+                    'Argument 1 must be string, Species or None.'
+                    " '{}' was given [{}].".format(type(serial).__name__, serial))
+        elif serial is not None and radius is not None and D is not None:
+            if not isinstance(serial, (str, bytes)):
+                raise TypeError(
+                    "serial must be string. '{}' was given [{}].".format(type(serial).__name__, serial))
+            if not isinstance(radius, (numbers.Real, Quantity)):
+                raise TypeError(
+                    "radius must be float. '{}' was given [{}].".format(type(radius).__name__, radius))
+            if not isinstance(D, (numbers.Real, Quantity)):
+                raise TypeError("D must be float. '{}' was given [{}].".format(type(D).__name__, D))
+            if not type(radius) is type(D):
+                raise TypeError(
+                    "radius [{}] and D [{}] must have a same type ['{}' != '{}'].".format(
+                        radius, D, type(radius).__name__, type(D).__name__))
+            if location is not None and not isinstance(location, (str, bytes)):
+                raise TypeError(
+                    'location must be string.'
+                    " '{}' was given [{}].".format(type(location).__name__, location))
+
+            if isinstance(radius, Quantity):
+                if location is None:
+                    self.thisptr = new Cpp_Species(
+                        tostring(serial), Cpp_Quantity_from_Quantity_Real(radius), Cpp_Quantity_from_Quantity_Real(D))
+                else:
+                    self.thisptr = new Cpp_Species(
+                        tostring(serial), Cpp_Quantity_from_Quantity_Real(radius), Cpp_Quantity_from_Quantity_Real(D), tostring(location))
+            else:
+                if location is None:
+                    self.thisptr = new Cpp_Species(
+                        tostring(serial), <Real>radius, <Real>D)
+                else:
+                    self.thisptr = new Cpp_Species(
+                        tostring(serial), <Real>radius, <Real>D, tostring(location))
         else:
-            if isinstance(radius, str) and isinstance(D, str):
-                self.thisptr = new Cpp_Species(
-                    tostring(serial), tostring(radius), tostring(D), tostring(location))
-            elif isinstance(radius, numbers.Real) and isinstance(D, numbers.Real):
-                self.thisptr = new Cpp_Species(
-                    tostring(serial), <Real>radius, <Real>D, tostring(location))
-            else:
-                raise TypeError('radius and D must be float.')
+            raise TypeError('A wrong list of arguments was given. See help(Species).')
 
     def __dealloc__(self):
         del self.thisptr
@@ -94,26 +136,6 @@ cdef class Species:
     def serial(self):
         """Return the serial name as an unicode string."""
         return self.thisptr.serial().decode('UTF-8')
-
-    # def get_attribute(self, name):
-    #     """get_attribute(name) -> str
-
-    #     Return an attribute as an unicode string.
-    #     If no corresponding attribute is found, raise an error.
-
-    #     Parameters
-    #     ----------
-    #     name : str
-    #         The name of an attribute.
-
-    #     Returns
-    #     -------
-    #     value : str
-    #         The value of the attribute.
-
-    #     """
-    #     return self.thisptr.get_attribute(
-    #         tostring(name)).decode('UTF-8')
 
     def get_attribute(self, name):
         """get_attribute(name) -> str, float, int, or bool
@@ -156,6 +178,10 @@ cdef class Species:
             self.thisptr.set_attribute(tostring(name), <Integer> value)
         elif isinstance(value, numbers.Real):
             self.thisptr.set_attribute(tostring(name), <Real> value)
+        elif isinstance(value, Quantity) and isinstance(value.magnitude, numbers.Integral):
+            self.thisptr.set_attribute(tostring(name), Cpp_Quantity_from_Quantity_Integer(value))
+        elif isinstance(value, Quantity) and isinstance(value.magnitude, numbers.Real):
+            self.thisptr.set_attribute(tostring(name), Cpp_Quantity_from_Quantity_Real(value))
         else:
             raise TypeError(
                 'Type [{}] is not supported. str, int, float or bool must be given.'.format(
@@ -289,6 +315,16 @@ cdef class Species:
         assert sp == self.thisptr
         return self
 
+    def dimension(self, value):
+        """dimension(string) -> Species
+
+        set attribute 'dimension', and return self.
+
+        """
+        cdef Cpp_Species *sp = self.thisptr.dimension_ptr(tostring(value))
+        assert sp == self.thisptr
+        return self
+
     def __reduce__(self):
         return (__rebuild_species, (self.serial(), self.list_attributes()))
 
@@ -305,28 +341,28 @@ cdef Species Species_from_Cpp_Species(Cpp_Species *sp):
     r.thisptr = new_obj
     return r
 
-def spmatch(Species pttrn, Species sp):
-    """spmatch(pttrn, sp) -> bool
+# def spmatch(Species pttrn, Species sp):
+#     """spmatch(pttrn, sp) -> bool
+# 
+#     Return if a pattern matches the target ``Species`` or not.
+# 
+#     Parameters
+#     ----------
+#     pttrn : Species
+#         A pattern.
+#     sp : Species
+#         A target.
+# 
+#     Returns
+#     -------
+#     bool:
+#         True if ``pttrn`` matches ``sp`` at least one time, False otherwise.
+# 
+#     """
+#     return context.spmatch(deref(pttrn.thisptr), deref(sp.thisptr))
 
-    Return if a pattern matches the target ``Species`` or not.
-
-    Parameters
-    ----------
-    pttrn : Species
-        A pattern.
-    sp : Species
-        A target.
-
-    Returns
-    -------
-    bool:
-        True if ``pttrn`` matches ``sp`` at least one time, False otherwise.
-
-    """
-    return context.spmatch(deref(pttrn.thisptr), deref(sp.thisptr))
-
-def count_spmatches(Species pttrn, Species sp):
-    """count_spmatches(pttrn, sp) -> Integer
+def count_species_matches(Species pttrn, Species sp):
+    """count_species_matches(pttrn, sp) -> Integer
 
     Count the number of matches for a pattern given as a ``Species``.
 
@@ -342,12 +378,8 @@ def count_spmatches(Species pttrn, Species sp):
     Integer:
         The number of matches.
 
-    Notes
-    -----
-    Rather use ``Species.count``.
-
     """
-    return context.count_spmatches(deref(pttrn.thisptr), deref(sp.thisptr))
+    return context.count_species_matches(deref(pttrn.thisptr), deref(sp.thisptr))
 
 def format_species(Species sp):
     """format_species(sp) -> Species
@@ -358,11 +390,11 @@ def format_species(Species sp):
     cdef Cpp_Species newsp = context.format_species(deref(sp.thisptr))
     return Species_from_Cpp_Species(address(newsp))
 
-def unique_serial(Species sp):
-    """unique_serial(sp) -> str
-
-    Return a serial of a species uniquely reformatted.
-    This is equivalent to call ``format_species(sp).serial()``
-
-    """
-    return context.unique_serial(deref(sp.thisptr)).decode('UTF-8')
+# def unique_serial(Species sp):
+#     """unique_serial(sp) -> str
+# 
+#     Return a serial of a species uniquely reformatted.
+#     This is equivalent to call ``format_species(sp).serial()``
+# 
+#     """
+#     return context.unique_serial(deref(sp.thisptr)).decode('UTF-8')

@@ -2,14 +2,42 @@
 
 environment:
   global:
-    HDF_DIR: "C:/Program Files (x86)/HDF_Group/HDF5/1.8.18/lib"
+    HDF_DIR: "C:/Program Files (x86)/HDF_Group/HDF5/1.10.2/lib"
     BOOST_ROOT: C:\Libraries\boost_1_67_0
 
   matrix:
-    - PYTHON: "C:\\Python36-x64"
-      PYTHON_VERSION: "3.6.5"
+    # - PYTHON: "C:\\Python27"
+    #   PYTHON_VERSION: "2.7.15"
+    #   PYTHON_ARCH: "32"
+
+    # - PYTHON: "C:\\Python27-x64"
+    #   PYTHON_VERSION: "2.7.15"
+    #   PYTHON_ARCH: "64"
+
+    # - PYTHON: "C:\\Python35"
+    #   PYTHON_VERSION: "3.5.3"
+    #   PYTHON_ARCH: "32"
+
+    # - PYTHON: "C:\\Python36"
+    #   PYTHON_VERSION: "3.6.6"
+    #   PYTHON_ARCH: "32"
+    #   # VCVARSALL: "x86"
+
+    - PYTHON: "C:\\Python37-x64"
+      PYTHON_VERSION: "3.7.0"
       PYTHON_ARCH: "64"
-#      VCVARSALL: "x64"
+
+    - PYTHON: "C:\\Python36-x64"
+      PYTHON_VERSION: "3.6.6"
+      PYTHON_ARCH: "64"
+      # VCVARSALL: "x64"
+
+    - PYTHON: "C:\\Python35-x64"
+      PYTHON_VERSION: "3.5.3"
+      PYTHON_ARCH: "64"
+
+cache:
+  - c:\tools\vcpkg\installed\
 
 init:
   - cmd: cmake --version
@@ -20,22 +48,25 @@ install:
   # install hdf5
   - mkdir hdf5lib
   - cd hdf5lib
-  - curl -LvkO https://anaconda.org/anaconda/hdf5/1.8.18/download/win-64/hdf5-1.8.18-vc14h7a021fe_0.tar.bz2
-  - 7z x -y hdf5-1.8.18-vc14h7a021fe_0.tar.bz2
-  - 7z x -y hdf5-1.8.18-vc14h7a021fe_0.tar
-  - mkdir "C:/Program Files (x86)/HDF_Group/HDF5/1.8.18"
-  - xcopy Library "C:/Program Files (x86)/HDF_Group/HDF5/1.8.18" /s /e /y
+  # - curl -LvkO https://anaconda.org/anaconda/hdf5/1.8.18/download/win-64/hdf5-1.8.18-vc14h7a021fe_0.tar.bz2
+  # - 7z x -y hdf5-1.8.18-vc14h7a021fe_0.tar.bz2
+  # - 7z x -y hdf5-1.8.18-vc14h7a021fe_0.tar
+  - curl -LvkO https://anaconda.org/anaconda/hdf5/1.10.2/download/win-64/hdf5-1.10.2-h530792d_2.tar.bz2
+  - 7z x -y hdf5-1.10.2-h530792d_2.tar.bz2
+  - 7z x -y hdf5-1.10.2-h530792d_2.tar
+  - mkdir "C:/Program Files (x86)/HDF_Group/HDF5/1.10.2"
+  - xcopy Library "C:/Program Files (x86)/HDF_Group/HDF5/1.10.2" /s /e /y
   - cd ..
 
   # install gsl for build_ext
-
-  - vcpkg install gsl:x64-windows
+  - vcpkg install gsl:x64-windows-static
 
   # - msbuild GSL.sln /p:Configuration=Release /v:d
 
   - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
 
-  - cmake -G "Visual Studio 14 2015 Win64" -D CMAKE_CXX_FLAGS_RELEASE="/MD" -D CMAKE_CXX_FLAGS_DEBUG="/MDd" -D CMAKE_C_FLAGS_DEBUG="/MDd" -DBoost_INCLUDE_DIR=C:/Libraries/boost_1_67_0 -DGSL_INCLUDE_DIR=c:/tools/vcpkg/installed/x64-windows/include -DGSL_CBLAS_LIBRARIES=c:/tools/vcpkg/installed/x64-windows/lib -DGSL_LIBRARIES=c:/tools/vcpkg/installed/x64-windows/lib -DNO_SHARED:BOOL=1 -DNO_BESSEL_TABLE:BOOL=1 .
+  - cmake -G "Visual Studio 14 2015 Win64" -D CMAKE_CXX_FLAGS_RELEASE="/MD" -D CMAKE_CXX_FLAGS_DEBUG="/MDd" -D CMAKE_C_FLAGS_DEBUG="/MDd" -D HDF5_ROOT="C:/Program Files (x86)/HDF_Group/HDF5/1.10.2" -DBoost_INCLUDE_DIR=C:/Libraries/boost_1_67_0 -DGSL_INCLUDE_DIR=c:/tools/vcpkg/installed/x64-windows-static/include -DGSL_CBLAS_LIBRARIES=c:/tools/vcpkg/installed/x64-windows-static/lib -DGSL_LIBRARIES=c:/tools/vcpkg/installed/x64-windows-static/lib -DNO_SHARED:BOOL=1 -DNO_BESSEL_TABLE:BOOL=1 .
+  # - cmake -G "Visual Studio 14 2015 Win64" -D CMAKE_CXX_FLAGS_RELEASE="/MD" -D CMAKE_CXX_FLAGS_DEBUG="/MDd" -D CMAKE_C_FLAGS_DEBUG="/MDd" -DBoost_INCLUDE_DIR=C:/Libraries/boost_1_67_0 -DCMAKE_TOOLCHAIN_FILE=c:/tools/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x86-windows-static -DNO_SHARED:BOOL=1 -DNO_BESSEL_TABLE:BOOL=1 .
 
   # config.h
   - cd ecell4/core
@@ -55,7 +86,7 @@ install:
   - ECHO "ls boost_1_67_0:"
   - ps: "ls \"C:/Libraries/boost_1_67_0\""
   - echo %CD%
-  - python setup.py build_ext -I"C:\Program Files (x86)\HDF_Group\HDF5\1.8.18\include";C:/Libraries/boost_1_67_0;c:/tools/vcpkg/installed/x64-windows/include -Lc:/tools/vcpkg/installed/x64-windows/lib;"C:\Program Files (x86)\HDF_Group\HDF5\1.8.18\lib"
+  - python setup.py build_ext -I"C:\Program Files (x86)\HDF_Group\HDF5\1.10.2\include";C:/Libraries/boost_1_67_0;c:/tools/vcpkg/installed/x64-windows-static/include -Lc:/tools/vcpkg/installed/x64-windows-static/lib;"C:\Program Files (x86)\HDF_Group\HDF5\1.10.2\lib"
   - "pip install wheel"
   - "python setup.py bdist_wheel -v"
   # - "pip install dist/ecell4-4.0.0b2-cp35-none-win32.whl"
@@ -69,6 +100,7 @@ branches:
   only:
     - master
     - v4.2
+    - issue192
 
 artifacts:
   # bdist_wheel puts your built wheel in the dist directory

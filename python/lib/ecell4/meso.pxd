@@ -97,7 +97,7 @@ cdef MesoscopicWorld MesoscopicWorld_from_Cpp_MesoscopicWorld(
 cdef extern from "ecell4/meso/MesoscopicSimulator.hpp" namespace "ecell4::meso":
     cdef cppclass Cpp_MesoscopicSimulator "ecell4::meso::MesoscopicSimulator":
         Cpp_MesoscopicSimulator(
-            shared_ptr[Cpp_Model], shared_ptr[Cpp_MesoscopicWorld]) except +
+            shared_ptr[Cpp_MesoscopicWorld], shared_ptr[Cpp_Model]) except +
         Cpp_MesoscopicSimulator(
             shared_ptr[Cpp_MesoscopicWorld]) except +
         Integer num_steps()
@@ -117,6 +117,9 @@ cdef extern from "ecell4/meso/MesoscopicSimulator.hpp" namespace "ecell4::meso":
         void run(Real) except +
         void run(Real, shared_ptr[Cpp_Observer]) except +
         void run(Real, vector[shared_ptr[Cpp_Observer]]) except +
+        void run(Real, is_dirty) except +
+        void run(Real, shared_ptr[Cpp_Observer], is_dirty) except +
+        void run(Real, vector[shared_ptr[Cpp_Observer]], is_dirty) except +
 
 ## MesoscopicSimulator
 #  a python wrapper for Cpp_MesoscopicSimulator
@@ -130,12 +133,13 @@ cdef MesoscopicSimulator MesoscopicSimulator_from_Cpp_MesoscopicSimulator(Cpp_Me
 cdef extern from "ecell4/meso/MesoscopicFactory.hpp" namespace "ecell4::meso":
     cdef cppclass Cpp_MesoscopicFactory "ecell4::meso::MesoscopicFactory":
         Cpp_MesoscopicFactory(Cpp_Integer3&, Real) except +
-        Cpp_MesoscopicWorld* create_world()
-        Cpp_MesoscopicWorld* create_world(string)
-        Cpp_MesoscopicWorld* create_world(Cpp_Real3&)
-        Cpp_MesoscopicWorld* create_world(shared_ptr[Cpp_Model])
-        Cpp_MesoscopicSimulator* create_simulator(shared_ptr[Cpp_Model], shared_ptr[Cpp_MesoscopicWorld])
-        Cpp_MesoscopicSimulator* create_simulator(shared_ptr[Cpp_MesoscopicWorld])
+        Cpp_MesoscopicWorld* world()
+        Cpp_MesoscopicWorld* world(Real)
+        Cpp_MesoscopicWorld* world(string)
+        Cpp_MesoscopicWorld* world(Cpp_Real3&)
+        Cpp_MesoscopicWorld* world(shared_ptr[Cpp_Model])
+        Cpp_MesoscopicSimulator* simulator(shared_ptr[Cpp_MesoscopicWorld], shared_ptr[Cpp_Model])
+        Cpp_MesoscopicSimulator* simulator(shared_ptr[Cpp_MesoscopicWorld])
         Cpp_MesoscopicFactory* rng_ptr(shared_ptr[Cpp_RandomNumberGenerator]&)
         @staticmethod
         Cpp_Integer3 default_matrix_sizes()

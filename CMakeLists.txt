@@ -3,16 +3,22 @@ cmake_minimum_required(VERSION 2.6)
 project(ecell4)
 set(PROJECT_VERSION 4.2.0)
 
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11 -fext-numeric-literals")  #XXX: c++11
+
 if(ECELL4_ENABLE_PROFILING)
     add_definitions(-pg -O0)
     set(CMAKE_EXE_LINKER_FLAGS "-pg -O0 ${CMAKE_EXE_LINKER_FLAGS}")
     set(CMAKE_SHARED_LINKER_FLAGS "-pg -O0 ${CMAKE_SHARED_LINKER_FLAGS}")
     set(CMAKE_MODULE_LINKER_FLAGS "-pg -O0 ${CMAKE_MODULE_LINKER_FLAGS}")
 else(ECELL4_ENABLE_PROFILING)
-    add_definitions(-O2)
-    set(CMAKE_EXE_LINKER_FLAGS "-O2 ${CMAKE_EXE_LINKER_FLAGS}")
-    set(CMAKE_SHARED_LINKER_FLAGS "-O2 ${CMAKE_SHARED_LINKER_FLAGS}")
-    set(CMAKE_MODULE_LINKER_FLAGS "-O2 ${CMAKE_MODULE_LINKER_FLAGS}")
+    add_definitions(-O2 -Wall)
+    set(CMAKE_EXE_LINKER_FLAGS "-O2 -Wall ${CMAKE_EXE_LINKER_FLAGS}")
+    set(CMAKE_SHARED_LINKER_FLAGS "-O2 -Wall ${CMAKE_SHARED_LINKER_FLAGS}")
+    set(CMAKE_MODULE_LINKER_FLAGS "-O2 -Wall ${CMAKE_MODULE_LINKER_FLAGS}")
+    #XXX:STRICT: add_definitions(-O2 -Wall -Werror)
+    #XXX:STRICT: set(CMAKE_EXE_LINKER_FLAGS "-O2 -Wall -Werror ${CMAKE_EXE_LINKER_FLAGS}")
+    #XXX:STRICT: set(CMAKE_SHARED_LINKER_FLAGS "-O2 -Wall -Werror ${CMAKE_SHARED_LINKER_FLAGS}")
+    #XXX:STRICT: set(CMAKE_MODULE_LINKER_FLAGS "-O2 -Wall -Werror ${CMAKE_MODULE_LINKER_FLAGS}")
 endif(ECELL4_ENABLE_PROFILING)
 include_directories(${PROJECT_SOURCE_DIR})
 include_directories(${PROJECT_BINARY_DIR})
@@ -27,11 +33,15 @@ else()
   set(WITH_VTK 0)
 endif()
 
-find_package(HDF5 COMPONENTS C CXX HL QUIET)
+message("Looking for HDF5")
+find_package(HDF5 COMPONENTS C CXX HL REQUIRED)
+# find_package(HDF5 COMPONENTS C CXX HL QUIET)
 if (HDF5_FOUND)
+  message("HDF5 was found ... ${HDF5_VERSION}")
   include_directories(${HDF5_INCLUDE_DIRS})
   set(WITH_HDF5 1)
 else()
+  message("Could NOT find HDF5")
   set(HDF5_LIBRARIES)
   set(WITH_HDF5 0)
 endif()
@@ -74,6 +84,8 @@ int main() { std::hash<int>(); return 0; }"
     HAVE_STD_HASH)
 check_include_file_cxx("boost/functional/hash.hpp" HAVE_BOOST_FUNCTIONAL_HASH_HPP)
 
+check_include_file_cxx(chrono HAVE_CHRONO)
+
 include_directories(${CMAKE_BINARY_DIR})
 
 # if (NOT NO_SHARED)
@@ -81,10 +93,13 @@ include_directories(${CMAKE_BINARY_DIR})
 # endif()
 
 find_package(PythonInterp ${PY_VERSION})
-find_package(PythonLibs REQUIRED)
-if (PYTHONLIBS_FOUND)
-  include_directories(${PYTHON_INCLUDE_DIRS})
-endif()
+
+execute_process(
+    COMMAND ${PYTHON_EXECUTABLE} -c "from distutils import sysconfig; print(sysconfig.get_python_inc())"
+    OUTPUT_VARIABLE PYTHON_INCLUDE_DIR)
+
+include_directories(${PYTHON_INCLUDE_DIR})
+unset(PYTHON_INCLUDE_DIR)
 
 add_subdirectory(ecell4)
 add_subdirectory(python)

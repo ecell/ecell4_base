@@ -57,6 +57,12 @@ public:
         return false;
     }
 
+    virtual bool update_species_attribute(const Species& sp)
+    {
+        throw NotSupported(
+            "update_species_attribute is not supported in this model class");
+    }
+
     /**
      * add attributes of species to the model.
      * this function is a part of the trait of Model.

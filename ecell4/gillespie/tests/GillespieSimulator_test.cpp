@@ -38,7 +38,7 @@ BOOST_AUTO_TEST_CASE(GillespieSimulator_test_step)
     world->add_molecules(sp1, 10);
     world->add_molecules(sp2, 10);
 
-    GillespieSimulator sim(model, world);
+    GillespieSimulator sim(world, model);
 
     sim.set_t(0.0);
     sim.step();

@@ -11,7 +11,7 @@ namespace spatiocyte
 
 void SpatiocyteWorld::add_space(VoxelSpaceBase *space)
 {
-    for (std::size_t i(0); i < space->size(); ++i)
+    for (coordinate_type i(0); i < space->size(); ++i)
     {
         const Real3 position(space->coordinate2position(i));
         const coordinate_type nearest(get_root()->position2coordinate(position));
@@ -66,7 +66,7 @@ SpatiocyteWorld::list_structure_particles() const
 
     typedef std::vector<std::vector<std::pair<ParticleID, Particle> > > tmp_type;
     tmp_type tmp_vector(structure_species.size());
-    Integer num_elements;
+    Integer num_elements(0);
 
     for (std::vector<Species>::const_iterator itr(structure_species.begin());
             itr != structure_species.end(); ++itr)
@@ -94,7 +94,7 @@ SpatiocyteWorld::list_non_structure_particles() const
 
     typedef std::vector<std::vector<std::pair<ParticleID, Particle> > > tmp_type;
     tmp_type tmp_vector(non_structure_species.size());
-    Integer num_elements;
+    Integer num_elements(0);
 
     for (std::vector<Species>::const_iterator itr(non_structure_species.begin());
             itr != non_structure_species.end(); ++itr)
@@ -199,7 +199,7 @@ Integer SpatiocyteWorld::add_structure(
     const Species& sp, const boost::shared_ptr<const Shape> shape)
 {
     const SpatiocyteWorld::molecule_info_type info(get_molecule_info(sp));
-    get_root()->make_structure_type(sp, shape->dimension(), info.loc);
+    get_root()->make_structure_type(sp, info.loc);
 
     switch (shape->dimension())
     {
@@ -219,14 +219,22 @@ Integer SpatiocyteWorld::add_structure3(const Species& sp, const boost::shared_p
 {
     const SpatiocyteWorld::molecule_info_type info(get_molecule_info(sp));
     Integer count(0);
-    for (coordinate_type coord(0); coord < size(); ++coord) {
+    for (coordinate_type coord(0); coord < size(); ++coord)
+    {
         const Voxel voxel(coordinate2voxel(coord));
-        const Real L(shape->is_inside(voxel.position()));
-        if (L > 0)
+
+        if (!this->is_inside(coord) || shape->is_inside(voxel.position()) > 0)
+        {
             continue;
+        }
 
         if (voxel.get_voxel_pool()->species().serial() != info.loc)
         {
+            throw NotSupported(
+                "Mismatch in the location. Failed to place '"
+                + sp.serial() + "' to '"
+                + voxel.get_voxel_pool()->species().serial() + "'. "
+                + "'" + info.loc + "' is expected.");
             continue;
         }
 
@@ -243,13 +251,21 @@ SpatiocyteWorld::add_structure2(
 {
     const SpatiocyteWorld::molecule_info_type info(get_molecule_info(sp));
     Integer count(0);
-    for (coordinate_type coord(0); coord < size(); ++coord) {
+    for (coordinate_type coord(0); coord < size(); ++coord)
+    {
         const Voxel voxel(coordinate2voxel(coord));
-        if (!is_surface_voxel(voxel, shape))
+        if (!this->is_inside(coord) || !is_surface_voxel(voxel, shape))
+        {
             continue;
+        }
 
         if (voxel.get_voxel_pool()->species().serial() != info.loc)
         {
+            throw NotSupported(
+                "Mismatch in the location. Failed to place '"
+                + sp.serial() + "' to '"
+                + voxel.get_voxel_pool()->species().serial() + "'. "
+                + "'" + info.loc + "' is expected.");
             continue;
         }
 

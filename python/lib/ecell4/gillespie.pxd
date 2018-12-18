@@ -65,7 +65,7 @@ cdef GillespieWorld GillespieWorld_from_Cpp_GillespieWorld(
 cdef extern from "ecell4/gillespie/GillespieSimulator.hpp" namespace "ecell4::gillespie":
     cdef cppclass Cpp_GillespieSimulator "ecell4::gillespie::GillespieSimulator":
         Cpp_GillespieSimulator(
-            shared_ptr[Cpp_Model], shared_ptr[Cpp_GillespieWorld]) except +
+            shared_ptr[Cpp_GillespieWorld], shared_ptr[Cpp_Model]) except +
         Cpp_GillespieSimulator(
             shared_ptr[Cpp_GillespieWorld]) except +
         Integer num_steps()
@@ -85,6 +85,9 @@ cdef extern from "ecell4/gillespie/GillespieSimulator.hpp" namespace "ecell4::gi
         void run(Real) except +
         void run(Real, shared_ptr[Cpp_Observer]) except +
         void run(Real, vector[shared_ptr[Cpp_Observer]]) except +
+        void run(Real, is_dirty) except +
+        void run(Real, shared_ptr[Cpp_Observer], is_dirty) except +
+        void run(Real, vector[shared_ptr[Cpp_Observer]], is_dirty) except +
 
 ## GillespieSimulator
 #  a python wrapper for Cpp_GillespieSimulator
@@ -98,12 +101,13 @@ cdef GillespieSimulator GillespieSimulator_from_Cpp_GillespieSimulator(Cpp_Gille
 cdef extern from "ecell4/gillespie/GillespieFactory.hpp" namespace "ecell4::gillespie":
     cdef cppclass Cpp_GillespieFactory "ecell4::gillespie::GillespieFactory":
         Cpp_GillespieFactory() except +
-        Cpp_GillespieWorld* create_world()
-        Cpp_GillespieWorld* create_world(string)
-        Cpp_GillespieWorld* create_world(Cpp_Real3&)
-        Cpp_GillespieWorld* create_world(shared_ptr[Cpp_Model])
-        Cpp_GillespieSimulator* create_simulator(shared_ptr[Cpp_Model], shared_ptr[Cpp_GillespieWorld])
-        Cpp_GillespieSimulator* create_simulator(shared_ptr[Cpp_GillespieWorld])
+        Cpp_GillespieWorld* world()
+        Cpp_GillespieWorld* world(Real)
+        Cpp_GillespieWorld* world(string)
+        Cpp_GillespieWorld* world(Cpp_Real3&)
+        Cpp_GillespieWorld* world(shared_ptr[Cpp_Model])
+        Cpp_GillespieSimulator* simulator(shared_ptr[Cpp_GillespieWorld], shared_ptr[Cpp_Model])
+        Cpp_GillespieSimulator* simulator(shared_ptr[Cpp_GillespieWorld])
         Cpp_GillespieFactory* rng_ptr(shared_ptr[Cpp_RandomNumberGenerator]&)
 
 ## GillespieFactory

@@ -19,18 +19,19 @@ namespace bd
 {
 
 class BDSimulator
-    : public SimulatorBase<Model, BDWorld>
+    : public SimulatorBase<BDWorld>
 {
 public:
 
-    typedef SimulatorBase<Model, BDWorld> base_type;
+    typedef SimulatorBase<BDWorld> base_type;
     typedef BDPropagator::reaction_info_type reaction_info_type;
 
 public:
 
-    BDSimulator(boost::shared_ptr<Model> model,
-        boost::shared_ptr<BDWorld> world, Real bd_dt_factor = 1e-5)
-        : base_type(model, world), dt_(0), bd_dt_factor_(bd_dt_factor)
+    BDSimulator(
+        boost::shared_ptr<BDWorld> world, boost::shared_ptr<Model> model,
+        Real bd_dt_factor = 1e-5)
+        : base_type(world, model), dt_(0), bd_dt_factor_(bd_dt_factor)
     {
         initialize();
     }

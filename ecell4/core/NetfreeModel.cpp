@@ -7,30 +7,82 @@
 namespace ecell4
 {
 
+bool NetfreeModel::update_species_attribute(const Species& sp)
+{
+    species_container_type::iterator i(std::find(species_attributes_.begin(), species_attributes_.end(), sp));
+    if (i == species_attributes_.end())
+    {
+        add_species_attribute(sp);
+        return true;
+    }
+    // for (Species::attributes_container_type::const_iterator
+    //     j(sp.attributes().begin()); j != sp.attributes().end(); ++j)
+    // {
+    //     if ((*i).has_attribute((*j).first))
+    //     {
+    //         std::ostringstream message;
+    //         message << "Attribute '" << (*j).first << "' of '" << sp.serial()
+    //             << "' is going to be updated from '" << (*i).get_attribute((*j).first)
+    //             << "' to '" << (*j).second << "'";
+    //         throw AlreadyExists(message.str()); // use boost::format if it's allowed
+    //     }
+    //     (*i).set_attribute((*j).first, (*j).second);
+    // }
+    (*i).overwrite_attributes(sp);
+    return false;
+}
+
+void NetfreeModel::add_species_attribute(const Species& sp)
+{
+    if (has_species_attribute_exact(sp))
+    {
+        throw AlreadyExists("species already exists");
+    }
+    species_attributes_.push_back(sp);
+}
+
+void NetfreeModel::remove_species_attribute(const Species& sp)
+{
+    species_container_type::iterator i(std::remove(species_attributes_.begin(), species_attributes_.end(), sp));
+    if (i == species_attributes_.end())
+    {
+        std::ostringstream message;
+        message << "The given Speices [" << sp.serial() << "] was not found";
+        throw NotFound(message.str()); // use boost::format if it's allowed
+    }
+    species_attributes_.erase(i, species_attributes_.end());
+}
+
+bool NetfreeModel::has_species_attribute(const Species& sp) const
+{
+    return has_species_attribute_exact(sp);
+}
+
+bool NetfreeModel::has_species_attribute_exact(const Species& sp) const
+{
+    species_container_type::const_iterator i(
+        std::find(species_attributes_.begin(), species_attributes_.end(), sp));
+    return (i != species_attributes_.end());
+}
+
 Species NetfreeModel::apply_species_attributes(const Species& sp) const
 {
-    typedef std::vector<std::pair<std::string, Species::attribute_type> >
-        attribute_container_type;
-
-    Species ret(sp);
-    for (species_container_type::const_reverse_iterator
-        i(species_attributes_.rbegin()); i != species_attributes_.rend(); ++i)
+    for (species_container_type::const_iterator
+        i(species_attributes_.begin()); i != species_attributes_.end(); ++i)
     {
-        const Species& pttrn = (*i);
-        if (spmatch(pttrn, sp))
+        if (SpeciesExpressionMatcher(*i).match(sp))
         {
-            const attribute_container_type attrs = pttrn.list_attributes();
-            for (attribute_container_type::const_iterator j(attrs.begin());
-                j != attrs.end(); ++j)
-            {
-                if (!ret.has_attribute((*j).first))
-                {
-                    ret.set_attribute((*j).first, (*j).second);
-                }
-            }
+            Species ret(sp);
+            ret.set_attributes(*i);
+            return ret;
         }
     }
-    return ret;
+    return sp;
+}
+
+Integer NetfreeModel::apply(const Species& pttrn, const Species& sp) const
+{
+    return SpeciesExpressionMatcher(pttrn).count(sp);
 }
 
 std::vector<ReactionRule> NetfreeModel::query_reaction_rules(
@@ -149,48 +201,10 @@ std::vector<ReactionRule> NetfreeModel::query_reaction_rules(
     return retval;
 }
 
-Integer NetfreeModel::apply(const Species& pttrn, const Species& sp) const
-{
-    return pttrn.count(sp);
-}
-
 std::vector<ReactionRule> NetfreeModel::apply(
     const ReactionRule& rr, const ReactionRule::reactant_container_type& reactants) const
 {
     return rr.generate(reactants);
-}
-
-void NetfreeModel::add_species_attribute(const Species& sp)
-{
-    // if (has_species_attribute_exact(sp))
-    // {
-    //     throw AlreadyExists("species already exists");
-    // }
-    species_attributes_.push_back(sp);
-}
-
-void NetfreeModel::remove_species_attribute(const Species& sp)
-{
-    species_container_type::iterator i(std::remove(species_attributes_.begin(), species_attributes_.end(), sp));
-    if (i == species_attributes_.end())
-    {
-        std::ostringstream message;
-        message << "The given Speices [" << sp.serial() << "] was not found";
-        throw NotFound(message.str()); // use boost::format if it's allowed
-    }
-    species_attributes_.erase(i, species_attributes_.end());
-}
-
-bool NetfreeModel::has_species_attribute(const Species& sp) const
-{
-    return has_species_attribute_exact(sp);
-}
-
-bool NetfreeModel::has_species_attribute_exact(const Species& sp) const
-{
-    species_container_type::const_iterator i(
-        std::find(species_attributes_.begin(), species_attributes_.end(), sp));
-    return (i != species_attributes_.end());
 }
 
 void NetfreeModel::add_reaction_rule(const ReactionRule& rr)
@@ -256,7 +270,7 @@ bool check_stoichiometry(const Species& sp,
     for (std::map<Species, Integer>::const_iterator i(max_stoich.begin());
         i != max_stoich.end(); ++i)
     {
-        if ((*i).first.count(sp) > (*i).second)
+        if (static_cast<Integer>(SpeciesExpressionMatcher((*i).first).count(sp)) > (*i).second)
         {
             return false;
         }

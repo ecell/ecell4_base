@@ -36,11 +36,6 @@ public:
         return DEFAULT;
     }
 
-    virtual const Shape::dimension_kind get_dimension() const
-    {
-        return location()->get_dimension();
-    }
-
 public:
 
     virtual void add_voxel(const coordinate_id_pair_type& info)

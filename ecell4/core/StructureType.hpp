@@ -7,15 +7,6 @@
 namespace ecell4
 {
 
-static inline Shape::dimension_kind
-calc_dimension(boost::weak_ptr<VoxelPool> location, const Shape::dimension_kind& dimension)
-{
-    if (location.expired())
-        return dimension;
-
-    return std::min(dimension, location.lock()->get_dimension());
-}
-
 class StructureType
     : public VoxelPool
 {
@@ -27,9 +18,8 @@ public:
 
     StructureType(
         const Species& species, boost::weak_ptr<VoxelPool> location,
-        const Real& radius = 0.0, const Shape::dimension_kind& dimension=Shape::UNDEF)
+        const Real& radius = 0.0)
         : base_type(species, location, radius, 0),
-          dimension_(calc_dimension(location, dimension)),
           size_(0)
     {
         ;
@@ -43,11 +33,6 @@ public:
     virtual voxel_type_type const voxel_type() const
     {
         return STRUCTURE;
-    }
-
-    const Shape::dimension_kind get_dimension() const
-    {
-        return dimension_;
     }
 
     const Integer size() const
@@ -79,7 +64,6 @@ public:
 
 private:
 
-    const Shape::dimension_kind dimension_;
     Integer size_;
 
 };

@@ -1,4 +1,6 @@
 import collections
+import numbers
+
 from cython.operator cimport dereference as deref, preincrement as inc
 from cython cimport address
 from libcpp.string cimport string
@@ -379,15 +381,15 @@ cdef class ODESimulator:
 
     """
 
-    def __init__(self, arg1, arg2=None, arg3=None):
+    def __init__(self, ODEWorld w, m=None, solver_type=None):
         """Constructor.
 
         Parameters
         ----------
-        m : Model
-            A model
         w : ODEWorld
             A world
+        m : Model, optional
+            A model
         solver_type : int, optional
             a type of the ode solver.
             Choose one from RUNGE_KUTTA_CASH_KARP54, ROSENBROCK4_CONTROLLER and EULER.
@@ -395,30 +397,16 @@ cdef class ODESimulator:
         """
         pass
 
-    def __cinit__(self, arg1, arg2=None, arg3=None):
-        if arg2 is None or not isinstance(arg2, ODEWorld):
-            if not isinstance(arg1, ODEWorld):
-                raise ValueError(
-                    "An invalid value [{}] for the first argument.".format(repr(arg1))
-                    + " ODEWorld is needed.")
-
-            if arg2 is None:
-                self.thisptr = new Cpp_ODESimulator(
-                    deref((<ODEWorld>arg1).thisptr))
-            else:
-                self.thisptr = new Cpp_ODESimulator(
-                    deref((<ODEWorld>arg1).thisptr),
-                    translate_solver_type(arg2))
+    def __cinit__(self, ODEWorld w, m=None, solver_type=None):
+        if m is None and solver_type is None:
+            self.thisptr = new Cpp_ODESimulator(deref(w.thisptr))
+        elif m is not None and solver_type is None:
+            self.thisptr = new Cpp_ODESimulator(deref(w.thisptr), Cpp_Model_from_Model(m))
+        elif m is None and solver_type is not None:
+            self.thisptr = new Cpp_ODESimulator(deref(w.thisptr), translate_solver_type(solver_type))
         else:
-            if arg3 is None:
-                self.thisptr = new Cpp_ODESimulator(
-                    Cpp_Model_from_Model(arg1),
-                    deref((<ODEWorld>arg2).thisptr))
-            else:
-                self.thisptr = new Cpp_ODESimulator(
-                    Cpp_Model_from_Model(arg1),
-                    deref((<ODEWorld>arg2).thisptr),
-                    translate_solver_type(arg3))
+            self.thisptr = new Cpp_ODESimulator(
+                deref(w.thisptr), Cpp_Model_from_Model(m), translate_solver_type(solver_type))
 
     def __dealloc__(self):
         del self.thisptr
@@ -538,36 +526,50 @@ cdef class ODESimulator:
         """Return the world bound."""
         return ODEWorld_from_Cpp_ODEWorld(self.thisptr.world())
 
-    def run(self, Real duration, observers=None):
-        """run(duration, observers)
+    def run(self, Real duration, observers=None, is_dirty=None):
+        """run(duration, observers, is_dirty)
 
         Run the simulation.
 
         Parameters
         ----------
         duration : Real
-            a duration for running a simulation.
-                A simulation is expected to be stopped at t() + duration.
+            A duration for running a simulation.
+            A simulation is expected to be stopped at t() + duration.
         observers : list of Obeservers, optional
             observers
+        is_dirty : bool, default True
+            If True, call initialize before running.
 
         """
         cdef vector[shared_ptr[Cpp_Observer]] tmp
 
-        if observers is None:
-            self.thisptr.run(duration)
-        elif isinstance(observers, collections.Iterable):
-            for obs in observers:
-                tmp.push_back(deref((<Observer>(obs.as_base())).thisptr))
-            self.thisptr.run(duration, tmp)
+        if is_dirty is None:
+            if observers is None:
+                self.thisptr.run(duration)
+            elif isinstance(observers, collections.Iterable):
+                for obs in observers:
+                    tmp.push_back(deref((<Observer>(obs.as_base())).thisptr))
+                self.thisptr.run(duration, tmp)
+            else:
+                self.thisptr.run(duration,
+                    deref((<Observer>(observers.as_base())).thisptr))
         else:
-            self.thisptr.run(duration,
-                deref((<Observer>(observers.as_base())).thisptr))
+            if observers is None:
+                self.thisptr.run(duration, is_dirty)
+            elif isinstance(observers, collections.Iterable):
+                for obs in observers:
+                    tmp.push_back(deref((<Observer>(obs.as_base())).thisptr))
+                self.thisptr.run(duration, tmp, is_dirty)
+            else:
+                self.thisptr.run(duration,
+                    deref((<Observer>(observers.as_base())).thisptr), is_dirty)
+
 
 cdef ODESimulator ODESimulator_from_Cpp_ODESimulator(Cpp_ODESimulator* s):
     r = ODESimulator(
-        Model_from_Cpp_Model(s.model()),
-        ODEWorld_from_Cpp_ODEWorld(s.world()))
+        ODEWorld_from_Cpp_ODEWorld(s.world()),
+        Model_from_Cpp_Model(s.model()))
     del r.thisptr
     r.thisptr = s
     return r
@@ -619,6 +621,66 @@ cdef class ODEFactory:
     def __dealloc__(self):
         del self.thisptr
 
+    def world(self, arg1=None):
+        """world(arg1=None) -> ODEWorld
+
+        Return a ODEWorld instance.
+
+        Parameters
+        ----------
+        arg1 : Real3, Real, str, optional. default None
+            If Real3, it suggests the lengths of edges of a ``BDWorld`` created.
+            If Real, it suggests the volume.
+            If str, it suggests the path of a HDF5 file loaded.
+
+        Returns
+        -------
+        ODEWorld:
+            the created world
+
+        """
+        if arg1 is None:
+            return ODEWorld_from_Cpp_ODEWorld(
+                shared_ptr[Cpp_ODEWorld](self.thisptr.world()))
+        elif isinstance(arg1, Real3):
+            return ODEWorld_from_Cpp_ODEWorld(
+                shared_ptr[Cpp_ODEWorld](
+                    self.thisptr.world(deref((<Real3>arg1).thisptr))))
+        elif isinstance(arg1, numbers.Number):
+            return ODEWorld_from_Cpp_ODEWorld(
+                shared_ptr[Cpp_ODEWorld](self.thisptr.world(<Real>arg1)))
+        elif isinstance(arg1, str):
+            return ODEWorld_from_Cpp_ODEWorld(
+                shared_ptr[Cpp_ODEWorld](self.thisptr.world(tostring(arg1))))
+        raise ValueError("invalid argument")
+
+    def simulator(self, ODEWorld arg1, arg2=None):
+        """simulator(arg1, arg2) -> ODESimulator
+
+        Return a ODESimulator instance.
+
+        Parameters
+        ----------
+        arg1 : ODEWorld
+            a world
+        arg2 : Model, optional
+            a simulation model
+
+        Returns
+        -------
+        ODESimulator:
+            the created simulator
+
+        """
+        if arg2 is None:
+            return ODESimulator_from_Cpp_ODESimulator(
+                self.thisptr.simulator(deref(arg1.thisptr)))
+        else:
+            return ODESimulator_from_Cpp_ODESimulator(
+                self.thisptr.simulator(
+                    deref(arg1.thisptr),
+                    Cpp_Model_from_Model(arg2)))
+
     def create_world(self, arg1=None):
         """create_world(arg1=None) -> ODEWorld
 
@@ -640,19 +702,10 @@ cdef class ODEFactory:
             the created world
 
         """
-        if arg1 is None:
-            return ODEWorld_from_Cpp_ODEWorld(
-                shared_ptr[Cpp_ODEWorld](self.thisptr.create_world()))
-        elif isinstance(arg1, Real3):
-            return ODEWorld_from_Cpp_ODEWorld(
-                shared_ptr[Cpp_ODEWorld](
-                    self.thisptr.create_world(deref((<Real3>arg1).thisptr))))
-        elif isinstance(arg1, str):
-            return ODEWorld_from_Cpp_ODEWorld(
-                shared_ptr[Cpp_ODEWorld](self.thisptr.create_world(tostring(arg1))))
-        raise ValueError("invalid argument")
+        import warnings; warnings.warn("Function 'create_world()' has moved to 'world()'", DeprecationWarning)
+        return self.world(arg1)
 
-    def create_simulator(self, arg1, arg2=None):
+    def create_simulator(self, ODEWorld arg1, arg2=None):
         """create_simulator(arg1, arg2) -> ODESimulator
 
         Return a ODESimulator instance.
@@ -661,13 +714,8 @@ cdef class ODEFactory:
         ----------
         arg1 : ODEWorld
             a world
-
-        or
-
-        arg1 : Model
+        arg2 : Model, optional
             a simulation model
-        arg2 : ODEWorld
-            a world
 
         Returns
         -------
@@ -675,17 +723,13 @@ cdef class ODEFactory:
             the created simulator
 
         """
-        if arg2 is None:
-            if isinstance(arg1, ODEWorld):
-                return ODESimulator_from_Cpp_ODESimulator(
-                    self.thisptr.create_simulator(
-                        deref((<ODEWorld>arg1).thisptr)))
-            else:
-                raise ValueError(
-                    "invalid argument {}.".format(repr(arg1))
-                    + " ODEWorld is needed.")
-        else:
-            return ODESimulator_from_Cpp_ODESimulator(
-                self.thisptr.create_simulator(
-                    Cpp_Model_from_Model(arg1), # (<NetworkModel>arg1).thisptr,
-                    deref((<ODEWorld>arg2).thisptr)))
+        import warnings; warnings.warn("Function 'create_simulator()' has moved to 'simulator()'", DeprecationWarning)
+        return self.simulator(arg1, arg2)
+
+Factory = ODEFactory  # This is an alias
+World = ODEWorld  # This is an alias
+Simulator = ODESimulator  # This is an alias
+
+__all__ = [
+    "ODEWorld", "ODESimulator", "ODEFactory",
+    "RUNGE_KUTTA_CASH_KARP54", "ROSENBROCK4_CONTROLLER", "EULER"]

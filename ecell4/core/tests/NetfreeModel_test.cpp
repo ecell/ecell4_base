@@ -25,25 +25,25 @@ BOOST_AUTO_TEST_CASE(NetfreeModel_test_species)
     NetworkModel model;
 
     {
-        Species sp0("_");
-        sp0.set_attribute("key1", "value0");
         Species sp1("A");
         sp1.set_attribute("key1", "value1");
         Species sp2("B");
         sp2.set_attribute("key1", "value2");
+        Species sp3("_");
+        sp3.set_attribute("key1", "value0");
 
-        model.add_species_attribute(sp0);
         model.add_species_attribute(sp1);
         model.add_species_attribute(sp2);
+        model.add_species_attribute(sp3);
 
         BOOST_CHECK(model.has_species_attribute(Species("_")));
         BOOST_CHECK(model.has_species_attribute(Species("A")));
         BOOST_CHECK(model.has_species_attribute(Species("B")));
         BOOST_CHECK(!model.has_species_attribute(Species("C")));
 
-        Species sp3("A");
-        sp3.set_attribute("key2", "value3");
-        model.add_species_attribute(sp3);
+        Species sp4("A");
+        sp4.set_attribute("key2", "value3");
+        BOOST_CHECK(!model.update_species_attribute(sp4));
     }
 
     {

@@ -90,6 +90,7 @@ public:
         return true;
     }
 
+    bool update_species_attribute(const Species& sp);
     void add_species_attribute(const Species& sp);
     bool has_species_attribute(const Species& sp) const;
     void remove_species_attribute(const Species& sp);

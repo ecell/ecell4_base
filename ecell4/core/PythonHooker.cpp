@@ -3,9 +3,9 @@
 namespace ecell4
 {
 
-void FixedIntervalPythonHooker::initialize(const boost::shared_ptr<WorldInterface>& world)
+void FixedIntervalPythonHooker::initialize(const boost::shared_ptr<WorldInterface>& world, const boost::shared_ptr<Model>& model)
 {
-    base_type::initialize(world);
+    base_type::initialize(world, model);
 }
 
 bool FixedIntervalPythonHooker::fire(const Simulator* sim, const boost::shared_ptr<WorldInterface>& world)

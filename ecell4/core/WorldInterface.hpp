@@ -72,6 +72,12 @@ struct WorldInterface
             "has_species(const Species&) is not supported by this space class");
     }
 
+    virtual std::vector<Species> list_species() const
+    {
+        throw NotSupported(
+            "list_species() is not supported by this space class");
+    }
+
     /**
      * get the number of molecules
      * @param sp a species

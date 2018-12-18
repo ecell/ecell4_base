@@ -141,7 +141,7 @@ void StepEvent2D::walk(const Real& alpha)
             const Voxel neighbor(voxel.get_neighbor(*itr));
             boost::shared_ptr<const VoxelPool> target(neighbor.get_voxel_pool());
 
-            if (target->get_dimension() > mpool_->get_dimension())
+            if (world_->get_dimension(target->species()) > Shape::TWO)
                 continue;
 
             if (world_->can_move(voxel, neighbor))
@@ -193,7 +193,7 @@ void StepEvent::attempt_reaction_(
         const Real k((*itr).k());
         const Real P(k * factor * alpha);
         accp += P;
-        if (accp > 1)
+        if (accp > 1 && k != std::numeric_limits<Real>::infinity())
         {
             std::cerr << "The total acceptance probability [" << accp
                 << "] exceeds 1 for '" << speciesA.serial()

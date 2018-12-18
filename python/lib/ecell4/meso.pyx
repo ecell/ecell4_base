@@ -1,4 +1,6 @@
 import collections
+import numbers
+
 from cython cimport address
 from cython.operator cimport dereference as deref, preincrement as inc
 from ecell4.core cimport *
@@ -785,29 +787,27 @@ cdef class MesoscopicSimulator:
 
     """
 
-    def __init__(self, m, MesoscopicWorld w=None):
-        """MesoscopicSimulator(m, w)
-        MesoscopicSimulator(w)
+    def __init__(self, MesoscopicWorld w, m=None):
+        """MesoscopicSimulator(w, m)
 
         Constructor.
 
         Parameters
         ----------
-        m : Model
-            A model
         w : MesoscopicWorld
             A world
+        m : Model, optional
+            A model
 
         """
         pass
 
-    def __cinit__(self, m, MesoscopicWorld w=None):
-        if w is None:
-            self.thisptr = new Cpp_MesoscopicSimulator(
-                deref((<MesoscopicWorld>m).thisptr))
+    def __cinit__(self, MesoscopicWorld w, m=None):
+        if m is None:
+            self.thisptr = new Cpp_MesoscopicSimulator(deref(w.thisptr))
         else:
             self.thisptr = new Cpp_MesoscopicSimulator(
-                Cpp_Model_from_Model(m), deref(w.thisptr))
+                deref(w.thisptr), Cpp_Model_from_Model(m))
 
     def __dealloc__(self):
         del self.thisptr
@@ -915,8 +915,8 @@ cdef class MesoscopicSimulator:
         """Return the world bound."""
         return MesoscopicWorld_from_Cpp_MesoscopicWorld(self.thisptr.world())
 
-    def run(self, Real duration, observers=None):
-        """run(duration, observers)
+    def run(self, Real duration, observers=None, is_dirty=None):
+        """run(duration, observers, is_dirty)
 
         Run the simulation.
 
@@ -926,26 +926,40 @@ cdef class MesoscopicSimulator:
             A duration for running a simulation.
             A simulation is expected to be stopped at t() + duration.
         observers : list of Obeservers, optional
-            Observers
+            observers
+        is_dirty : bool, default True
+            If True, call initialize before running.
 
         """
         cdef vector[shared_ptr[Cpp_Observer]] tmp
 
-        if observers is None:
-            self.thisptr.run(duration)
-        elif isinstance(observers, collections.Iterable):
-            for obs in observers:
-                tmp.push_back(deref((<Observer>(obs.as_base())).thisptr))
-            self.thisptr.run(duration, tmp)
+        if is_dirty is None:
+            if observers is None:
+                self.thisptr.run(duration)
+            elif isinstance(observers, collections.Iterable):
+                for obs in observers:
+                    tmp.push_back(deref((<Observer>(obs.as_base())).thisptr))
+                self.thisptr.run(duration, tmp)
+            else:
+                self.thisptr.run(duration,
+                    deref((<Observer>(observers.as_base())).thisptr))
         else:
-            self.thisptr.run(duration,
-                deref((<Observer>(observers.as_base())).thisptr))
+            if observers is None:
+                self.thisptr.run(duration, is_dirty)
+            elif isinstance(observers, collections.Iterable):
+                for obs in observers:
+                    tmp.push_back(deref((<Observer>(obs.as_base())).thisptr))
+                self.thisptr.run(duration, tmp, is_dirty)
+            else:
+                self.thisptr.run(duration,
+                    deref((<Observer>(observers.as_base())).thisptr), is_dirty)
+
 
 cdef MesoscopicSimulator MesoscopicSimulator_from_Cpp_MesoscopicSimulator(
     Cpp_MesoscopicSimulator* s):
     r = MesoscopicSimulator(
-        Model_from_Cpp_Model(s.model()),
-        MesoscopicWorld_from_Cpp_MesoscopicWorld(s.world()))
+        MesoscopicWorld_from_Cpp_MesoscopicWorld(s.world()),
+        Model_from_Cpp_Model(s.model()))
     del r.thisptr
     r.thisptr = s
     return r
@@ -993,6 +1007,69 @@ cdef class MesoscopicFactory:
         assert ptr == self.thisptr
         return self
 
+    def world(self, arg1=None):
+        """world(arg1=None) -> MesoscopicWorld
+
+        Return a MesoscopicWorld instance.
+
+        Parameters
+        ----------
+        arg1 : Real3, Real, str, optional. default None
+            If Real3, it suggests the lengths of edges of a ``BDWorld`` created.
+            If Real, it suggests the volume.
+            If str, it suggests the path of a HDF5 file loaded.
+
+        Returns
+        -------
+        MesoscopicWorld:
+            the created world
+
+        """
+        if arg1 is None:
+            return MesoscopicWorld_from_Cpp_MesoscopicWorld(
+                shared_ptr[Cpp_MesoscopicWorld](
+                    self.thisptr.world()))
+        elif isinstance(arg1, Real3):
+            return MesoscopicWorld_from_Cpp_MesoscopicWorld(
+                shared_ptr[Cpp_MesoscopicWorld](
+                    self.thisptr.world(deref((<Real3>arg1).thisptr))))
+        elif isinstance(arg1, numbers.Number):
+            return MesoscopicWorld_from_Cpp_MesoscopicWorld(
+                shared_ptr[Cpp_MesoscopicWorld](self.thisptr.world(<Real>(arg1))))
+        elif isinstance(arg1, str):
+            return MesoscopicWorld_from_Cpp_MesoscopicWorld(
+                shared_ptr[Cpp_MesoscopicWorld](self.thisptr.world(tostring(arg1))))
+        else:
+            return MesoscopicWorld_from_Cpp_MesoscopicWorld(
+                shared_ptr[Cpp_MesoscopicWorld](self.thisptr.world(
+                    Cpp_Model_from_Model(arg1))))
+
+    def simulator(self, MesoscopicWorld arg1, arg2=None):
+        """simulator(arg1, arg2) -> MesoscopicSimulator
+
+        Return a MesoscopicSimulator instance.
+
+        Parameters
+        ----------
+        arg1 : MesoscopicWorld
+            A world
+        arg2 : Model, optional
+            A simulation model
+
+        Returns
+        -------
+        MesoscopicSimulator:
+            the created simulator
+
+        """
+        if arg2 is None:
+            return MesoscopicSimulator_from_Cpp_MesoscopicSimulator(
+                self.thisptr.simulator(deref(arg1.thisptr)))
+        else:
+            return MesoscopicSimulator_from_Cpp_MesoscopicSimulator(
+                self.thisptr.simulator(
+                    deref(arg1.thisptr), Cpp_Model_from_Model(arg2)))
+
     def create_world(self, arg1=None):
         """create_world(arg1=None) -> MesoscopicWorld
 
@@ -1014,23 +1091,10 @@ cdef class MesoscopicFactory:
             the created world
 
         """
-        if arg1 is None:
-            return MesoscopicWorld_from_Cpp_MesoscopicWorld(
-                shared_ptr[Cpp_MesoscopicWorld](
-                    self.thisptr.create_world()))
-        elif isinstance(arg1, Real3):
-            return MesoscopicWorld_from_Cpp_MesoscopicWorld(
-                shared_ptr[Cpp_MesoscopicWorld](
-                    self.thisptr.create_world(deref((<Real3>arg1).thisptr))))
-        elif isinstance(arg1, str):
-            return MesoscopicWorld_from_Cpp_MesoscopicWorld(
-                shared_ptr[Cpp_MesoscopicWorld](self.thisptr.create_world(<string>(arg1))))
-        else:
-            return MesoscopicWorld_from_Cpp_MesoscopicWorld(
-                shared_ptr[Cpp_MesoscopicWorld](self.thisptr.create_world(
-                    Cpp_Model_from_Model(arg1))))
+        import warnings; warnings.warn("Function 'create_world()' has moved to 'world()'", DeprecationWarning)
+        return self.world(arg1)
 
-    def create_simulator(self, arg1, MesoscopicWorld arg2=None):
+    def create_simulator(self, MesoscopicWorld arg1, arg2=None):
         """create_simulator(arg1, arg2) -> MesoscopicSimulator
 
         Return a MesoscopicSimulator instance.
@@ -1039,13 +1103,8 @@ cdef class MesoscopicFactory:
         ----------
         arg1 : MesoscopicWorld
             A world
-
-        or
-
-        arg1 : Model
+        arg2 : Model, optional
             A simulation model
-        arg2 : MesoscopicWorld
-            A world
 
         Returns
         -------
@@ -1053,10 +1112,11 @@ cdef class MesoscopicFactory:
             the created simulator
 
         """
-        if arg2 is None:
-            return MesoscopicSimulator_from_Cpp_MesoscopicSimulator(
-                self.thisptr.create_simulator(deref((<MesoscopicWorld>arg1).thisptr)))
-        else:
-            return MesoscopicSimulator_from_Cpp_MesoscopicSimulator(
-                self.thisptr.create_simulator(
-                    Cpp_Model_from_Model(arg1), deref(arg2.thisptr)))
+        import warnings; warnings.warn("Function 'create_simulator()' has moved to 'simulator()'", DeprecationWarning)
+        return self.simulator(arg1, arg2)
+
+Factory = MesoscopicFactory  # This is an alias
+World = MesoscopicWorld  # This is an alias
+Simulator = MesoscopicSimulator  # This is an alias
+
+__all__ = ["MesoscopicWorld", "MesoscopicSimulator", "MesoscopicFactory"]
