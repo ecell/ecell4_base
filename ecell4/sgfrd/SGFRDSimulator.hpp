@@ -37,7 +37,7 @@ namespace sgfrd
 {
 
 class SGFRDSimulator :
-    public ecell4::SimulatorBase<ecell4::Model, SGFRDWorld>
+    public ecell4::SimulatorBase<SGFRDWorld, ecell4::Model>
 {
   public:
     typedef SGFRDSimulator self_type;
@@ -58,7 +58,7 @@ class SGFRDSimulator :
     typedef SGFRDEventScheduler::value_type event_id_pair_type;
 
     // Simulator
-    typedef ecell4::SimulatorBase<ecell4::Model, SGFRDWorld> base_type;
+    typedef ecell4::SimulatorBase<SGFRDWorld, ecell4::Model> base_type;
     typedef base_type::world_type world_type;
     typedef base_type::model_type model_type;
     typedef std::pair<ParticleID, Particle> particle_id_pair_type;
@@ -93,7 +93,7 @@ class SGFRDSimulator :
                    const boost::shared_ptr<model_type>& model,
                    Real bd_dt_factor = 1e-5, Real reaction_length = 1e-3,
                    const std::string& trace_fname = "sgfrd_trace.log")
-        : base_type(model, world), dt_(0),
+        : base_type(world, model), dt_(0),
           bd_dt_factor_(bd_dt_factor), reaction_length_(reaction_length),
           rng_(*(world->rng())), shell_container_(*(world->polygon())),
           mut_sh_vis_applier(shell_container_), imm_sh_vis_applier(shell_container_),
