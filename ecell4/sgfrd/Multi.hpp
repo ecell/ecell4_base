@@ -44,15 +44,15 @@ class Multi
   public:
 
     Multi(simulator_type& sim, world_type& world, Real dt, Real rl)
-        : dt_(dt), begin_time_(0.), reaction_length_(rl),
-          simulator_(sim), world_(world),
-          container_(world), model_(*world.lock_model())
+        : kind_(NONE), dt_(dt), begin_time_(0.), reaction_length_(rl),
+          simulator_(sim), world_(world), model_(*world.lock_model()),
+          container_(world)
     {}
 
     Multi(simulator_type& sim, world_type& world, Real begin_t, Real dt, Real rl)
-        : dt_(dt), begin_time_(begin_t), reaction_length_(rl),
-          simulator_(sim), world_(world),
-          container_(world), model_(*world.lock_model())
+        : kind_(NONE), dt_(dt), begin_time_(begin_t), reaction_length_(rl),
+          simulator_(sim), world_(world), model_(*world.lock_model()),
+          container_(world)
     {}
     ~Multi(){}
 
