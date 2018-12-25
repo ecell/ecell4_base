@@ -29,6 +29,19 @@ Species::Species(const Species& another)
     }
 }
 
+Species& Species::operator=(const Species& another)
+{
+    this->serial_ = another.serial();
+    attributes_.clear();
+    const std::vector<std::pair<std::string, attribute_type> > attrs = another.list_attributes();
+    for (std::vector<std::pair<std::string, attribute_type> >::const_iterator
+        i(attrs.begin()); i != attrs.end(); i++)
+    {
+        set_attribute((*i).first, (*i).second);
+    }
+    return *this;
+}
+
 Species::Species(
     const serial_type& name, const Real& radius, const Real& D,
     const std::string location, const Integer& dimension)

@@ -43,6 +43,7 @@ public:
     Species();
     explicit Species(const serial_type& name);
     Species(const Species& another);
+    Species& operator=(const Species& another);
     Species(const serial_type& name, const Real& radius, const Real& D,
             const std::string location = "", const Integer& dimension = 0);
     Species(const serial_type& name, const Quantity<Real>& radius, const Quantity<Real>& D,
