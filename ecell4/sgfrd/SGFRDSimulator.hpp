@@ -591,12 +591,12 @@ class SGFRDSimulator :
                 }
                 return;
             }
-            case Pair::COM_ESCAPE:
+            case Pair::COM_ESCAPE: // fallthrough
             case Pair::IV_ESCAPE:
             {
                 SGFRD_SCOPE(ns, case_COM_OR_IV_ESCAPE, tracer_);
                 boost::array<boost::tuple<ParticleID, Particle, FaceID>, 2>
-                    escaped = this->escape_pair(
+                    escaped = this->escape_pair( // dispatch com/ipv here
                         this->get_shell(sid), dom, this->time());
                 SGFRD_TRACE(tracer_.write("particles escaped"));
 
@@ -799,8 +799,11 @@ class SGFRDSimulator :
         const Real dt = tm - dom.begin_time();
         const greens_functions::GreensFunction2DRadAbs
             gf_ipv(dom.D_ipv(), dom.kf(), dom.r0(), dom.sigma(), dom.R_ipv());
+
         const Real l_ipv     = gf_ipv.drawR    (this->uniform_real(), dt);
-        const Real theta_ipv = gf_ipv.drawTheta(this->uniform_real(), l_ipv, dt);
+        const Real theta_ipv = gf_ipv.drawTheta(this->uniform_real(), l_ipv, dt) *
+                               (uniform_real() < 0.5 ? -1 : 1) ;
+        // drawTheta returns value in [0, pi]. we need to determine the directionality.
         const Real l_com     = dom.R_com();
         const Real theta_com = this->uniform_real() *
                                boost::math::constants::two_pi<Real>();
@@ -1181,7 +1184,7 @@ class SGFRDSimulator :
             std::make_pair(t_single_reaction_2, Pair::SINGLE_REACTION_2));
 
         SGFRD_TRACE(tracer_.write("particle 1 single reaction time = %1%", t_single_reaction_1))
-        SGFRD_TRACE(tracer_.write("particle 1 single reaction time = %1%", t_single_reaction_2))
+        SGFRD_TRACE(tracer_.write("particle 2 single reaction time = %1%", t_single_reaction_2))
         SGFRD_TRACE(tracer_.write("single reaction time   = %1%", single_event.first))
 
         // --------------------------------------------------------------------
