@@ -87,7 +87,7 @@ class run_tests(Command):
         test_runner = unittest.TextTestRunner()
         test_runner.run(suite)
 
-libraries = []
+libraries = ["boost_regex"]
 library_dirs = []
 
 with_cpp_shared_libraries = False
