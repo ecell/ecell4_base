@@ -98,6 +98,7 @@ if "--prefer-shared" in sys.argv:
     sys.argv.remove("--prefer-shared")
 
 with_hdf5 = (sys.platform in ("win32", "darwin") or not with_cpp_shared_libraries)
+with_boost_regex = with_cpp_shared_libraries
 
 if "--hdf5" in sys.argv:
     #XXX: This might be not a proper way to give a user defined parameter
@@ -134,6 +135,10 @@ if with_hdf5:
     if sys.platform == "win32":
         extra_compile_args.extend(
             ["-D_HDF5USEDLL_", "-DHDF5CPP_USEDLL", "-DH5_BUILT_AS_DYNAMIC_LIB"])
+
+if with_boost_regex:
+    libraries.extend(['boost_regex'])
+    library_dirs.extend("${Boost_LIBRARY_DIRS}".split(";"))
 
 if True: # with_vtk
     libraries.extend("${VTK_LIBRARIES}".split(";"))
