@@ -8,3 +8,10 @@ target_link_libraries(ecell4 PRIVATE
     ecell4-ode
     ecell4-spatiocyte)
 
+set_target_properties(ecell4 PROPERTIES BUILD_WITH_INSTALL_RPATH TRUE)
+
+if (UNIX AND NOT APPLE)
+    set_target_properties(ecell4 PROPERTIES INSTALL_RPATH "$ORIGIN")
+elseif (APPLE)
+    set_target_properties(ecell4 PROPERTIES INSTALL_RPATH "@loader_path")
+endif ()
