@@ -53,7 +53,7 @@ before_install:
     curl -LO https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.4/src/hdf5-1.10.4.tar.bz2;
     tar xf hdf5-1.10.4.tar.bz2;
     cd hdf5-1.10.4;
-    ./configure --enable-cxx;
+    ./configure --enable-cxx --prefix=/usr/local;
     make;
     make install;
     cd /opt/src;
