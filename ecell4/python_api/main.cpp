@@ -1,13 +1,13 @@
 #include <pybind11/pybind11.h>
 #include <ecell4/spatiocyte/SpatiocyteWorld.hpp>
+#include "core.hpp"
 
 namespace py = pybind11;
 
-namespace spatiocyte
-{
+namespace {
     using namespace ecell4::spatiocyte;
 
-    void setup_module(py::module& m)
+    void setup_spatiocyte_module(py::module& m)
     {
         py::class_<SpatiocyteWorld>(m, "SpatiocyteWorld")
             .def(py::init<>())
@@ -29,5 +29,6 @@ PYBIND11_MODULE(ecell4, m) {
     py::module m_ode        = m.def_submodule("ode",        "A submodule of ecell4");
     py::module m_spatiocyte = m.def_submodule("spatiocyte", "A submodule of ecell4");
 
-    spatiocyte::setup_module(m_spatiocyte);
+    setup_module(m);
+    setup_spatiocyte_module(m_spatiocyte);
 }
