@@ -51,6 +51,10 @@ namespace {
         m.def("real3_length_sq", (Real3::value_type (*)(const Real3&)) &length_sq);
         m.def("real3_length", (Real3::value_type (*)(const Real3&)) &length);
 
+        m.def("length_sq", (Real3::value_type (*)(const Real3&)) &length_sq);
+        m.def("length", (Real3::value_type (*)(const Real3&)) &length);
+        m.def("dot_product", (Real3::value_type (*)(const Real3&, const Real3&)) &dot_product);
+
         m.def("ones", &ones);
         m.def("unitx", &unitx);
         m.def("unity", &unity);
@@ -99,6 +103,10 @@ namespace {
 
         m.def("integer3_dot_product", (Integer3::value_type (*)(const Integer3&, const Integer3&)) &dot_product);
         m.def("integer3_abs", (Integer3 (*)(const Integer3&)) &abs);
+
+        m.def("length_sq", (Integer3::value_type (*)(const Integer3&)) &length_sq);
+        m.def("length", (Real (*)(const Integer3&)) &length);
+        m.def("dot_product", (Integer3::value_type (*)(const Integer3&, const Integer3&)) &dot_product);
     }
 
     void setup_module(py::module& m)
