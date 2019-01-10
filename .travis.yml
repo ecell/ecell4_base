@@ -58,12 +58,12 @@ before_install:
     make install;
     cd /opt/src;
     wget https://bootstrap.pypa.io/get-pip.py;
-    python get-pip.py;
+    python3 get-pip.py;
     cd /opt;
     wget https://cmake.org/files/v3.12/cmake-3.12.1-Linux-x86_64.tar.gz;
     tar xf cmake-3.12.1-Linux-x86_64.tar.gz;
     export PATH=/opt/cmake-3.12.1-Linux-x86_64/bin:${PATH};
-    popd
+    popd;
   fi
 - python3 -m pip install -U setuptools
 
