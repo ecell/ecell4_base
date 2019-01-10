@@ -22,7 +22,22 @@ namespace {
             .def(py::self / Real3::value_type())
             .def("__setitem__", [](Real3 &x, std::size_t i, Real3::value_type value) { x[i] = value; })
             .def("__getitem__", [](const Real3 &x, std::size_t i) { return x[i]; })
-            .def("__abs__", [](const Real3& x) { return abs(x); });
+            .def("__abs__", [](const Real3& x) { return abs(x); })
+            .def(py::pickle(
+                [](const Real3& x)
+                {
+                    return py::make_tuple(x[0], x[1], x[2]);
+                },
+                [](py::tuple t)
+                {
+                    if (t.size() != 3)
+                        throw std::runtime_error("Invalid state");
+                    return Real3(
+                        t[0].cast<Real3::value_type>(),
+                        t[1].cast<Real3::value_type>(),
+                        t[2].cast<Real3::value_type>());
+                }
+            ));
 
         m.def("real3_add", (Real3 (*)(const Real3&, const Real3&)) &add);
         m.def("real3_subtract", (Real3 (*)(const Real3&, const Real3&)) &subtract);
@@ -58,7 +73,22 @@ namespace {
             .def("__mul__", [](Integer3::value_type y, const Integer3& x) { return multiply(x, y); })
             .def("__setitem__", [](Integer3& x, Integer3::size_type i, Integer3::value_type value) { x[i] = value; })
             .def("__getitem__", [](const Integer3& x, Integer3::size_type i) { return x[i]; })
-            .def("__abs__", [](const Integer3& x) { return abs(x); });
+            .def("__abs__", [](const Integer3& x) { return abs(x); })
+            .def(py::pickle(
+                [](const Integer3& x)
+                {
+                    return py::make_tuple(x.col, x.row, x.layer);
+                },
+                [](py::tuple t)
+                {
+                    if (t.size() != 3)
+                        throw std::runtime_error("Invalid state");
+                    return Integer3(
+                        t[0].cast<Integer3::value_type>(),
+                        t[1].cast<Integer3::value_type>(),
+                        t[2].cast<Integer3::value_type>());
+                }
+            ));
 
         m.def("integer3_add", [](const Integer3& x, const Integer3& y) { return x + y; });
         m.def("integer3_subtract", [](const Integer3& x, const Integer3& y) { return x - y; });
