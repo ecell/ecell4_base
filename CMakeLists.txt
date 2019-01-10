@@ -4,6 +4,7 @@ project(ecell4)
 set(PROJECT_VERSION 4.2.0)
 
 set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -pg -O0 -Wall")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2")
 
@@ -70,5 +71,6 @@ check_include_file_cxx("boost/functional/hash.hpp" HAVE_BOOST_FUNCTIONAL_HASH_HP
 
 check_include_file_cxx(chrono HAVE_CHRONO)
 
-add_subdirectory(greens_functions)  #XXX: submodule
+add_subdirectory(greens_functions)
+add_subdirectory(pybind11)
 add_subdirectory(ecell4)
