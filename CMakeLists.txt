@@ -1,25 +1,12 @@
-cmake_minimum_required(VERSION 2.6)
-# cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.1)
+
 project(ecell4)
 set(PROJECT_VERSION 4.2.0)
 
-# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11 -fext-numeric-literals")  #XXX: c++11
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -pg -O0 -Wall")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2")
 
-if(ECELL4_ENABLE_PROFILING)
-    add_definitions(-pg -O0)
-    set(CMAKE_EXE_LINKER_FLAGS "-pg -O0 ${CMAKE_EXE_LINKER_FLAGS}")
-    set(CMAKE_SHARED_LINKER_FLAGS "-pg -O0 ${CMAKE_SHARED_LINKER_FLAGS}")
-    set(CMAKE_MODULE_LINKER_FLAGS "-pg -O0 ${CMAKE_MODULE_LINKER_FLAGS}")
-else(ECELL4_ENABLE_PROFILING)
-    add_definitions(-O2 -Wall)
-    set(CMAKE_EXE_LINKER_FLAGS "-O2 -Wall ${CMAKE_EXE_LINKER_FLAGS}")
-    set(CMAKE_SHARED_LINKER_FLAGS "-O2 -Wall ${CMAKE_SHARED_LINKER_FLAGS}")
-    set(CMAKE_MODULE_LINKER_FLAGS "-O2 -Wall ${CMAKE_MODULE_LINKER_FLAGS}")
-    #XXX:STRICT: add_definitions(-O2 -Wall -Werror)
-    #XXX:STRICT: set(CMAKE_EXE_LINKER_FLAGS "-O2 -Wall -Werror ${CMAKE_EXE_LINKER_FLAGS}")
-    #XXX:STRICT: set(CMAKE_SHARED_LINKER_FLAGS "-O2 -Wall -Werror ${CMAKE_SHARED_LINKER_FLAGS}")
-    #XXX:STRICT: set(CMAKE_MODULE_LINKER_FLAGS "-O2 -Wall -Werror ${CMAKE_MODULE_LINKER_FLAGS}")
-endif(ECELL4_ENABLE_PROFILING)
 include_directories(${PROJECT_SOURCE_DIR})
 include_directories(${PROJECT_BINARY_DIR})
 enable_testing()
@@ -34,8 +21,7 @@ else()
 endif()
 
 message("Looking for HDF5")
-find_package(HDF5 COMPONENTS C CXX HL REQUIRED)
-# find_package(HDF5 COMPONENTS C CXX HL QUIET)
+find_package(HDF5 1.10 COMPONENTS C CXX HL REQUIRED)
 if (HDF5_FOUND)
   message("HDF5 was found ... ${HDF5_VERSION}")
   include_directories(${HDF5_INCLUDE_DIRS})
@@ -66,7 +52,6 @@ find_library(GSL_LIBRARIES gsl)
 find_library(GSL_CBLAS_LIBRARIES gslcblas)
 
 include(CheckIncludeFileCXX)
-# set(CMAKE_REQUIRED_INCLUDES "/usr/include")
 include(CheckCXXSourceCompiles)
 
 check_include_file_cxx(unordered_map HAVE_UNORDERED_MAP)
@@ -78,7 +63,6 @@ check_include_file_cxx("boost/unordered_map.hpp" HAVE_BOOST_UNORDERED_MAP_HPP)
 check_cxx_source_compiles("#include <tr1/functional>
 int main() { std::tr1::hash<int>(); return 0; }"
     HAVE_TR1_FUNCTIONAL)
-# check_include_file_cxx(functional HAVE_STD_HASH)
 check_cxx_source_compiles("#include <functional>
 int main() { std::hash<int>(); return 0; }"
     HAVE_STD_HASH)
@@ -86,6 +70,5 @@ check_include_file_cxx("boost/functional/hash.hpp" HAVE_BOOST_FUNCTIONAL_HASH_HP
 
 check_include_file_cxx(chrono HAVE_CHRONO)
 
-include_directories(${CMAKE_BINARY_DIR})
 add_subdirectory(greens_functions)  #XXX: submodule
 add_subdirectory(ecell4)
