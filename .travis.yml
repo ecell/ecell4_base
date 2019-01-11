@@ -53,7 +53,10 @@ before_install:
     curl -LO https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.4/src/hdf5-1.10.4.tar.bz2;
     tar xf hdf5-1.10.4.tar.bz2;
     cd hdf5-1.10.4;
-    ./configure --enable-cxx --prefix=/usr/local && make && sudo make install;
+    ./configure --enable-cxx --prefix=/opt/hdf5 && make && sudo make install;
+    export PATH=/opt/hdf5/bin:${PATH};
+    export LD_LIBRARY_PATH=/opt/hdf5/lib:${LD_LIBRARY_PATH};
+    export INCLUDE_PATH=/opt/hdf5/include:${INCLUDE_PATH};
     cd /opt/src;
     wget https://bootstrap.pypa.io/get-pip.py;
     python3 get-pip.py;
