@@ -1,6 +1,7 @@
 import os
 import re
 import sys
+import glob
 import platform
 import sysconfig
 import subprocess
@@ -66,12 +67,11 @@ class CMakeBuild(build_ext):
 setup(
     name='ecell',
     version = '4.2.0',
-    packages = ['ecell4'],
     license = "the GNU General Public License v2",
     author = "Kazunari Kaizu",
     author_email = "kaizu@riken.jp",
     url = "https://github.com/ecell/ecell4",
-    data_files = [('ecell4-licenses', 'licenses/*')],
+    data_files = [('ecell4-licenses', glob.glob('licenses/*'))],
     ext_modules=[CMakeExtension('ecell4')],
     cmdclass=dict(build_ext=CMakeBuild),
     zip_safe=False,
