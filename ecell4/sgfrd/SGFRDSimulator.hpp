@@ -924,9 +924,8 @@ class SGFRDSimulator :
         const ParticleID pid2 = dom.particle_id_at(1);
 
         assert(!(p1.D() == 0.0 && p2.D() == 0.0));
-
-        SGFRD_TRACE(tracer_.write("previous position of p1 = %1%", pos_p1.first));
-        SGFRD_TRACE(tracer_.write("previous position of p2 = %1%", pos_p2.first));
+        SGFRD_TRACE(tracer_.write("previous position of p1 = %1%", p1.posiiton()));
+        SGFRD_TRACE(tracer_.write("previous position of p2 = %1%", p2.posiiton()));
 
         const Real3&  pos_com(sh.position());
         const FaceID& fid_com(sh.structure_id());
