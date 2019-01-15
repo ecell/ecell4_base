@@ -49,6 +49,15 @@ struct shell_size_getter : boost::static_visitor<Real>
     }
 };
 
+struct shell_position_getter : boost::static_visitor<Real3>
+{
+    template<typename shapeT, typename stridT>
+    Real3 operator()(const Shell<shapeT, stridT>& shell) const
+    {
+        return shell.position();
+    }
+};
+
 struct inside_checker : boost::static_visitor<bool>
 {
     typedef minimal_eval_or eval_manner;
