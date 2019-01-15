@@ -1770,6 +1770,8 @@ class SGFRDSimulator :
             }
             else
             {
+                // choose the nearer one from the domain that contains multiple
+                // shells.
                 found->second = std::min(found->second, dist);
 
                 SGFRD_TRACE(tracer_.write("domain %1% is already assigned", did));
@@ -1961,18 +1963,16 @@ class SGFRDSimulator :
     static Real calc_modest_shell_size(
             const Particle& p, const Particle& nearest, const Real dist)
     {
+        // Here, `dist` represents the distance between the surface of particles.
+        // So the following relationship should be satisfied.
+        // > p.radius() + nearest.radius() + dist ==
+        // > distance(p.position(), nearest.position())
+        // Note: This function does not recieve the ID of faces on which particles
+        //       belong. Therefore, the distance on polygon cannot be calculated.
+        assert(dist >= 0.0);
         assert(dist >= 0.0);
         const Real D1 = p.D();
         const Real D2 = nearest.D();
-        if(D1 == 0.0)
-        {
-            return p.radius();
-        }
-        if(D2 == 0.0)
-        {
-            return p.radius() + dist;
-        }
-
         const Real r1     = p.radius();
         const Real sqrtD1 = std::sqrt(D1);
         const Real sqrtD2 = std::sqrt(D2);

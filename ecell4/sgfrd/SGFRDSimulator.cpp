@@ -841,7 +841,15 @@ SGFRDSimulator::form_single_conical_event(
     {
         if(iter->second <= min_cone_size)
         {
-            SGFRD_TRACE(tracer_.write("%1% <= %2%, min shell intruder found!", iter->second, min_cone_size));
+            SGFRD_TRACE(tracer_.write("%1% <= %2%, min shell intruder found!",
+                        iter->second, min_cone_size));
+            if(iter->second < p.radius())
+            {
+                throw std::runtime_error((boost::format("form_single_conical_event: "
+                    "particle %1% collides with domain %2% (distance between "
+                    "particle position (%3%) and domain surface = %4%)") % pid %
+                    iter->first % p.position() % iter->second).str());
+            }
             min_shell_intruder.push_back(*iter);
         }
         else
@@ -933,7 +941,7 @@ SGFRDSimulator::form_single_circular_event(
 
     /* XXX:TAKE CARE! the distance in the element of intrusive_domains, typed *
      * as `std::pair<DomainID, Real>` is not a distance between particle and  *
-     * shell, but a distance between center point of particle and shell.      */
+     * shell, but a distance between center of particle and shell surface.    */
     const std::vector<std::pair<DomainID, Real> > intrusive_domains(
             get_intrusive_domains(pos, max_circle_size));
     SGFRD_TRACE(tracer_.write(
@@ -960,6 +968,14 @@ SGFRDSimulator::form_single_circular_event(
         {
             SGFRD_TRACE(tracer_.write("%1% is inside of minimum circle size",
                         iter->first));
+            if(iter->second < p.radius())
+            {
+                throw std::runtime_error((boost::format("form_single_circular_event: "
+                    "particle %1% collides with domain %2% (distance between "
+                    "particle position (%3%) and domain surface = %4%)") % pid %
+                    iter->first % p.position() % iter->second).str());
+            }
+
             min_shell_intruder.push_back(*iter);
         }
         else
@@ -1292,7 +1308,7 @@ bool SGFRDSimulator::diagnosis() const
                               this->polygon());
                 const Real dist = boost::apply_visitor(dist_calc, found_s->second) +
                                   found_p->second.radius();
-                if(dist > 0)
+                if(dist > 1e-8)
                 {
                     result = false;
                     std::cerr << "ERROR: particle is not inside of the Single "
