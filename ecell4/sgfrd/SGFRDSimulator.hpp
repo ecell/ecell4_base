@@ -925,8 +925,8 @@ class SGFRDSimulator :
 
         assert(!(p1.D() == 0.0 && p2.D() == 0.0));
 
-        SGFRD_TRACE(tracer_.write("previous position of p1 = %1%", pos_p1.first);
-        SGFRD_TRACE(tracer_.write("previous position of p2 = %1%", pos_p2.first);
+        SGFRD_TRACE(tracer_.write("previous position of p1 = %1%", pos_p1.first));
+        SGFRD_TRACE(tracer_.write("previous position of p2 = %1%", pos_p2.first));
 
         const Real3&  pos_com(sh.position());
         const FaceID& fid_com(sh.structure_id());
@@ -939,8 +939,8 @@ class SGFRDSimulator :
         pos_p1 = ecell4::polygon::travel(this->polygon(), pos_p1, disp_p1, 2);
         pos_p2 = ecell4::polygon::travel(this->polygon(), pos_p2, disp_p2, 2);
 
-        SGFRD_TRACE(tracer_.write("position of p1 after reaction = %1%", pos_p1.first);
-        SGFRD_TRACE(tracer_.write("position of p2 after reaction = %1%", pos_p2.first);
+        SGFRD_TRACE(tracer_.write("position of p1 after reaction = %1%", pos_p1.first));
+        SGFRD_TRACE(tracer_.write("position of p2 after reaction = %1%", pos_p2.first));
 
         p1.position() = pos_p1.first;
         p2.position() = pos_p2.first;
