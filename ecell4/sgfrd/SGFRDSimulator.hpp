@@ -886,7 +886,6 @@ class SGFRDSimulator :
             const circular_shell_type& sh, const Pair& dom, const Real tm)
     {
         SGFRD_SCOPE(us, escape_ipv_circular_pair, tracer_);
-
         // calculate displacements
         const Real dt = tm - dom.begin_time();
         const greens_functions::GreensFunction2DRadAbs
@@ -911,6 +910,7 @@ class SGFRDSimulator :
         const Real3 disp_com = direction_com * (l_com / length(direction_com));
         const Real3 disp_ipv = rotate(theta_ipv, f.normal(), dom.ipv()) *
                                (l_ipv / length(dom.ipv()));
+        SGFRD_TRACE(tracer_.write("length of disp_com = %1%", length(disp_com)));
         SGFRD_TRACE(tracer_.write("length of disp_ipv = %1%", length(disp_ipv)));
 
         // update position
@@ -923,6 +923,11 @@ class SGFRDSimulator :
         const ParticleID pid1 = dom.particle_id_at(0);
         const ParticleID pid2 = dom.particle_id_at(1);
 
+        assert(!(p1.D() == 0.0 && p2.D() == 0.0));
+
+        SGFRD_TRACE(tracer_.write("previous position of p1 = %1%", pos_p1.first);
+        SGFRD_TRACE(tracer_.write("previous position of p2 = %1%", pos_p2.first);
+
         const Real3&  pos_com(sh.position());
         const FaceID& fid_com(sh.structure_id());
         // ipv is a vector from p1 to p2
@@ -933,6 +938,9 @@ class SGFRDSimulator :
 
         pos_p1 = ecell4::polygon::travel(this->polygon(), pos_p1, disp_p1, 2);
         pos_p2 = ecell4::polygon::travel(this->polygon(), pos_p2, disp_p2, 2);
+
+        SGFRD_TRACE(tracer_.write("position of p1 after reaction = %1%", pos_p1.first);
+        SGFRD_TRACE(tracer_.write("position of p2 after reaction = %1%", pos_p2.first);
 
         p1.position() = pos_p1.first;
         p2.position() = pos_p2.first;
