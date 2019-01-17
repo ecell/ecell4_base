@@ -138,7 +138,13 @@ if with_hdf5:
 
 if with_boost_regex:
     if sys.platform == "win32":
-        libraries.extend(map("${Boost_LIBRARIES}".split(";"), lambda x: os.path.splitext(os.path.basename(x))[0]))
+        libs = "${Boost_LIBRARIES}".split(";")
+        for i in range(0,len(libs),2):
+            if libs[i] != "optimized":
+                continue
+            libname = os.path.splitext(os.path.basename(libs[i+1]))[0]
+            if libname.find("boost_regex") != -1:
+                libraries.append(libname)
     else:
         libraries.extend(['boost_regex'])
     library_dirs.extend("${Boost_LIBRARY_DIRS}".split(";"))
