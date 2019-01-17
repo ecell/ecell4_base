@@ -83,8 +83,8 @@ install:
   - "python -m pip install --upgrade pip"
   - python -m pip install Cython --install-option="--no-cython-compile"
   - cd python
-  - ECHO "ls boost_1_67_0:"
-  - ps: "ls \"C:/Libraries/boost_1_67_0\""
+  - ECHO "ls boost_1_67_0/lib64-msvc-14.0:"
+  - ps: "ls \"C:/Libraries/boost_1_67_0/lib64-msvc-14.0\""
   - echo %CD%
   - python setup.py build_ext -I"C:\Program Files (x86)\HDF_Group\HDF5\1.10.2\include";C:/Libraries/boost_1_67_0;c:/tools/vcpkg/installed/x64-windows-static/include -Lc:/tools/vcpkg/installed/x64-windows-static/lib;"C:\Program Files (x86)\HDF_Group\HDF5\1.10.2\lib"
   - "pip install wheel"
