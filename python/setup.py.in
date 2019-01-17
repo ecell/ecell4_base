@@ -98,7 +98,7 @@ if "--prefer-shared" in sys.argv:
     sys.argv.remove("--prefer-shared")
 
 with_hdf5 = (sys.platform in ("win32", "darwin") or not with_cpp_shared_libraries)
-with_boost_regex = with_cpp_shared_libraries
+with_boost_regex = ${HAVE_BOOST_REGEX} == 1
 
 if "--hdf5" in sys.argv:
     #XXX: This might be not a proper way to give a user defined parameter
