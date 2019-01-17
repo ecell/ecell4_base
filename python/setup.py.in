@@ -137,7 +137,10 @@ if with_hdf5:
             ["-D_HDF5USEDLL_", "-DHDF5CPP_USEDLL", "-DH5_BUILT_AS_DYNAMIC_LIB"])
 
 if with_boost_regex:
-    libraries.extend(['boost_regex'])
+    if sys.platform == "win32":
+        libraries.extend(map("${Boost_LIBRARIES}".split(";"), lambda x: os.path.splitext(os.path.basename(x))[0]))
+    else:
+        libraries.extend(['boost_regex'])
     library_dirs.extend("${Boost_LIBRARY_DIRS}".split(";"))
 
 if True: # with_vtk
