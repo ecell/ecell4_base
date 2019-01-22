@@ -548,14 +548,18 @@ SGFRDSimulator::form_pair(
 {
     SGFRD_SCOPE(us, form_pair, tracer_);
 
+    // the first (nearest) domain in the intruders is the partner to form pair.
     const boost::shared_ptr<event_type> nearest =
         this->get_event(intruders.front().first);
     if(nearest->which_domain() != event_type::single_domain)
     {
+        // if the partner is Pair of Multi, pair cannot be formed.
         SGFRD_TRACE(tracer_.write(
                     "nearest intruder is not single. can't form pair."))
         return boost::none;
     }
+
+    // the domain that will be consumed to form a pair.
     const Single& sgl = boost::get<Single>(nearest->domain());
     const ParticleID partner_id  = sgl.particle_id();
     const Particle   partner     = sgl.particle();
@@ -565,9 +569,9 @@ SGFRDSimulator::form_pair(
         return boost::none;
     }
 
-    const FaceID     partner_fid = this->get_face_id(partner_id);
-    const ShellID    partner_sid = sgl.shell_id();
-    const DomainID   partner_did = intruders.front().first;
+    const FaceID   partner_fid = this->get_face_id(partner_id);
+    const ShellID  partner_sid = sgl.shell_id();
+    const DomainID partner_did = intruders.front().first;
 
     SGFRD_TRACE(tracer_.write(
                 "try to form pair domain for %1% and %2%", pid, partner_id))
@@ -596,13 +600,11 @@ SGFRDSimulator::form_pair(
             ).str());
     }
 
+    const std::pair<Real3, FaceID> pos_com = ecell4::polygon::travel(
+        this->polygon(), std::make_pair(p.position(), fid), ipv * D1 / D12, 2);
 
-    std::pair<Real3, FaceID> pos_com = std::make_pair(p.position(), fid);
-    Real3 disp = ipv * D1 / D12;
-    pos_com = ecell4::polygon::travel(this->polygon(), pos_com, disp, 2);
-
+    // check other shells are not in the range...
     Real max_dist = get_max_circle_size(pos_com);
-    // the first element is the partner. ignore it.
     for(std::vector<std::pair<DomainID, Real> >::const_iterator
         iter(intruders.begin()+1), iend(intruders.end()); iter != iend; ++iter)
     {
@@ -625,7 +627,7 @@ SGFRDSimulator::form_pair(
         {
             SGFRD_TRACE(tracer_.write(
                         "intrusive domains exists. multi should be formed"))
-            // multi should be formed.
+            // other shells overlap to the pair. multi should be formed.
             return boost::none;
         }
         max_dist = std::min(max_dist, d_to_sh);
