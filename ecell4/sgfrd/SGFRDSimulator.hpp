@@ -1726,6 +1726,8 @@ class SGFRDSimulator :
         return this->world_->list_vertices_within_radius(pos, radius);
     }
 
+    // the second value is distance between
+    // the point `pos` and the surface of a domain
     std::vector<std::pair<DomainID, Real> >
     get_intrusive_domains(const std::pair<Real3, FaceID>& pos,
                           const Real radius) const
@@ -1775,12 +1777,13 @@ class SGFRDSimulator :
                 found->second = std::min(found->second, dist);
 
                 SGFRD_TRACE(tracer_.write("domain %1% is already assigned", did));
-                for(std::size_t i=0; i < domains.size(); ++i)
-                {
-                    SGFRD_TRACE(tracer_.write("%1%, ", domains.at(i).first));
-                }
             }
         }
+        for(std::size_t i=0; i < domains.size(); ++i)
+        {
+            SGFRD_TRACE(tracer_.write("%1%, ", domains.at(i).first));
+        }
+
         std::sort(domains.begin(), domains.end(),
                   utils::pair_second_element_comparator<DomainID, Real>());
         return domains;
@@ -1963,16 +1966,18 @@ class SGFRDSimulator :
     static Real calc_modest_shell_size(
             const Particle& p, const Particle& nearest, const Real dist)
     {
-        // Here, `dist` represents the distance between the surface of particles.
-        // So the following relationship should be satisfied.
-        // > p.radius() + nearest.radius() + dist ==
-        // > distance(p.position(), nearest.position())
-        // Note: This function does not recieve the ID of faces on which particles
-        //       belong. Therefore, the distance on polygon cannot be calculated.
-        assert(dist >= 0.0);
-        assert(dist >= 0.0);
-        const Real D1 = p.D();
-        const Real D2 = nearest.D();
+        // here, `dist` means the distance between shell surfaces.
+        // so the following relationship should be satisfied.
+        // >> p.radius() + nearest.radius() + dist ==
+        // >> distance_on_polygon(p.position(), nearest.position())
+
+        // However, this function does not take the face information,
+        // we cannot calculate the distance between p and nearest.
+        assert(0.0 <= dist);
+
+        const Real D1     = p.D();
+        const Real D2     = nearest.D();
+        assert(!(D1 == 0.0 && D2 == 0.0));
         const Real r1     = p.radius();
         const Real sqrtD1 = std::sqrt(D1);
         const Real sqrtD2 = std::sqrt(D2);

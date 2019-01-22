@@ -556,6 +556,18 @@ SGFRDSimulator::form_pair(
         std::max(len_ipv * D1 / D12 + r1, len_ipv * D2 / D12 + r2) * 3;
     // XXX this `3` is just a parameter. it should be tuned later.
 
+    if(len_ipv < r12)
+    {
+        throw std::runtime_error((boost::format(
+            "form_pair: particle %1% and %2% already collides!\n"
+            "len_ipv  = %3%\n"
+            "r1       = %4%\n"
+            "r2       = %5%\n"
+            "r12      = %6%\n") % pid % partner_id % len_ipv % r1 % r2 % r12
+            ).str());
+    }
+
+
     std::pair<Real3, FaceID> pos_com = std::make_pair(p.position(), fid);
     Real3 disp = ipv * D1 / D12;
     pos_com = ecell4::polygon::travel(this->polygon(), pos_com, disp, 2);
@@ -806,13 +818,27 @@ SGFRDSimulator::form_single_conical_event(
     const std::vector<std::pair<VertexID, Real> > intrusive_vertices(
             get_intrusive_vertices(pos, std::numeric_limits<Real>::infinity()));
 
-    const VertexID& vid = intrusive_vertices.front().first;
-    SGFRD_TRACE(tracer_.write("vertex id = %1%, distance = %2%",
-                vid, intrusive_vertices.front().second));
+    const VertexID& vid  = intrusive_vertices.front().first;
+    const Real dist_to_v = intrusive_vertices.front().second;
+    SGFRD_TRACE(tracer_.write("vertex id = %1%, distance = %2%", vid, dist_to_v));
 
-    const Real min_cone_size =
-        (p.radius() + intrusive_vertices.front().second) *
-        single_conical_surface_shell_factor;
+    if(p.D() == 0.0)
+    {
+        SGFRD_TRACE(tracer_.write("diffusion coefficient is 0."))
+        SGFRD_TRACE(tracer_.write("creating tight conical single event"))
+
+        const Real shell_size = (p.radius() + dist_to_v) *
+                                (1.0 + minimum_separation_factor);
+
+        // check particle does not overlap with any others.
+        assert(get_intrusive_domains(vid, shell_size).empty());
+
+        return ok(add_event(create_single(
+            create_single_conical_surface_shell(vid, shell_size), pid, p)));
+    }
+
+    const Real min_cone_size = (p.radius() + dist_to_v) *
+                               single_conical_surface_shell_factor;
     const Real max_cone_size = get_max_cone_size(vid);
     SGFRD_TRACE(tracer_.write("min_cone_size = %1%, max_cone_size = %2%",
                 min_cone_size, max_cone_size));
@@ -845,10 +871,12 @@ SGFRDSimulator::form_single_conical_event(
                         iter->second, min_cone_size));
             if(iter->second < p.radius())
             {
-                throw std::runtime_error((boost::format("form_single_conical_event: "
-                    "particle %1% collides with domain %2% (distance between "
-                    "particle position (%3%) and domain surface = %4%)") % pid %
-                    iter->first % p.position() % iter->second).str());
+                throw std::runtime_error((
+                    boost::format("form_single_circular_event: nearest domain "
+                        "%1% overlaps with particle %2%. distance from point = "
+                        "%3%, radius = %4%") % iter->first % pid %
+                        iter->second % p.radius()
+                    ).str());
             }
             min_shell_intruder.push_back(*iter);
         }
@@ -939,6 +967,19 @@ SGFRDSimulator::form_single_circular_event(
     const Real min_circle_size = p.radius() * single_circular_shell_factor;
     const std::pair<Real3, FaceID> pos = std::make_pair(p.position(), fid);
 
+    if(p.D() == 0.0)
+    {
+        SGFRD_TRACE(tracer_.write("diffusion coefficient is 0."))
+        SGFRD_TRACE(tracer_.write("creating tight single event"))
+        const Real shell_size = p.radius() * (1.0 + minimum_separation_factor);
+
+        // check the particle does not overlap with any others.
+        assert(get_intrusive_domains(pos, shell_size).empty());
+
+        return ok(add_event(create_single(
+                create_single_circular_shell(pos, shell_size), pid, p)));
+    }
+
     /* XXX:TAKE CARE! the distance in the element of intrusive_domains, typed *
      * as `std::pair<DomainID, Real>` is not a distance between particle and  *
      * shell, but a distance between center of particle and shell surface.    */
@@ -970,12 +1011,13 @@ SGFRDSimulator::form_single_circular_event(
                         iter->first));
             if(iter->second < p.radius())
             {
-                throw std::runtime_error((boost::format("form_single_circular_event: "
-                    "particle %1% collides with domain %2% (distance between "
-                    "particle position (%3%) and domain surface = %4%)") % pid %
-                    iter->first % p.position() % iter->second).str());
+                throw std::runtime_error((
+                    boost::format("form_single_circular_event: nearest domain "
+                        "%1% overlaps with particle %2%. distance from point = "
+                        "%3%, radius = %4%") % iter->first % pid %
+                        iter->second % p.radius()
+                    ).str());
             }
-
             min_shell_intruder.push_back(*iter);
         }
         else
@@ -1006,7 +1048,7 @@ SGFRDSimulator::form_single_circular_event(
                 distance_to_nearest = iter->second;
             }
             SGFRD_TRACE(tracer_.write("distance_to_nearest = %1%",
-                        distance_to_nearest));
+                                      distance_to_nearest));
             // XXX because `intrusive_domains` are sorted by their distance,
             //     all the rests are more distant. so break.
             break;
@@ -1303,16 +1345,26 @@ bool SGFRDSimulator::diagnosis() const
                     break;
                 }
                 const FaceID fid_p = this->get_face_id(_pid);
-                distance_calculator_on_surface<FaceID>
-                    dist_calc(std::make_pair(found_p->second.position(), fid_p),
-                              this->polygon());
+
+                distance_calculator_on_surface<FaceID> dist_calc(
+                    std::make_pair(found_p->second.position(), fid_p),
+                    this->polygon());
+
                 const Real dist = boost::apply_visitor(dist_calc, found_s->second) +
                                   found_p->second.radius();
                 if(dist > 1e-8)
                 {
                     result = false;
-                    std::cerr << "ERROR: particle is not inside of the Single "
-                              << evid << "\n";
+                    std::cerr << "ERROR: particle is not inside of the Single (ID="
+                              << evid << ")\n";
+                    std::cerr << "     : shell size   = "
+                              << boost::apply_visitor(shell_size_getter(), found_s->second)
+                              << '\n';
+                    std::cerr << "     : shell pos    = "
+                              << boost::apply_visitor(shell_position_getter(), found_s->second)
+                              << '\n';
+                    std::cerr << "     : particle pos = " << found_p->second.position()
+                              << '\n';
                     std::cerr << "     : dist - r_shell + r_particle = " << dist
                               << '\n';
                 }
