@@ -61,6 +61,12 @@ SGFRDSimulator::propagate_single_circular(
     this->update_particle(pid, p, state.first.second);
     SGFRD_TRACE(tracer_.write("particle updated"))
 
+    assert(// check particle is still inside of the shell after this propagation
+        ecell4::polygon::distance(this->polygon(), state.first,
+            std::make_pair(sh.position(), sh.structure_id())) <=
+        sh.size() - p.radius()
+    );
+
     return boost::make_tuple(pid, p, state.first.second);
 }
 
@@ -106,6 +112,11 @@ SGFRDSimulator::propagate_single_conical(
     p.position() = state.first;
     this->update_particle(pid, p, state.second);
     SGFRD_TRACE(tracer_.write("particle updated"))
+
+    assert(// check particle is still inside of the shell after this propagation
+        length(polygon().periodic_transpose(p.position(), sh.shape().apex()) -
+               sh.shape().apex()) <= sh.size() - p.radius()
+    );
 
     return boost::make_tuple(pid, p, state.second);
 }
@@ -645,6 +656,9 @@ SGFRDSimulator::form_pair(
                 this->polygon().triangle_at(pos_com.second).normal());
         const circular_shell_type pair_shell(pair_circle, pos_com.second);
         shell_container_.add_shell(shid, pair_shell, pos_com.second);
+
+        // check that the pair shell does not overlap with other particles
+        assert(get_intrusive_domains(pos_com, pair_shell.size()).empty());
 
         return add_event(create_pair(
                     std::make_pair(shid, pair_circle),
