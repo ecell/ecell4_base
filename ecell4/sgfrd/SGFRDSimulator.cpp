@@ -559,6 +559,12 @@ SGFRDSimulator::form_pair(
     const Single& sgl = boost::get<Single>(nearest->domain());
     const ParticleID partner_id  = sgl.particle_id();
     const Particle   partner     = sgl.particle();
+
+    if(p.D() == 0.0 && partner.D() == 0.0)
+    {
+        return boost::none;
+    }
+
     const FaceID     partner_fid = this->get_face_id(partner_id);
     const ShellID    partner_sid = sgl.shell_id();
     const DomainID   partner_did = intruders.front().first;
