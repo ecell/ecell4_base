@@ -16,8 +16,15 @@ SGFRDSimulator::propagate_single_circular(
 {
     SGFRD_SCOPE(us, propagate_single_circular, tracer_);
 
-    Particle   p   = dom.particle();
-    ParticleID pid = dom.particle_id();
+    Particle     p   = dom.particle();
+    ParticleID   pid = dom.particle_id();
+    const FaceID fid = this->get_face_id(pid);
+
+    if(p.D() == 0.0)
+    {
+        // it never moves.
+        return boost::make_tuple(pid, p, fid);
+    }
 
     greens_functions::GreensFunction2DAbsSym gf(p.D(), sh.size() - p.radius());
 
@@ -33,7 +40,6 @@ SGFRDSimulator::propagate_single_circular(
 
     SGFRD_TRACE(tracer_.write("r = %1%, theta = %2%", r, theta));
 
-    const FaceID    fid  = this->get_face_id(pid);
     const Triangle& face = this->polygon().triangle_at(fid);
     const Real3 direction = rotate(theta, face.normal(), face.represent());
     const Real  len_direction = length(direction);
@@ -67,6 +73,12 @@ SGFRDSimulator::propagate_single_conical(
     Particle         p   = dom.particle();
     const ParticleID pid = dom.particle_id();
     const FaceID     fid = this->get_face_id(pid);
+
+    if(p.D() == 0.0)
+    {
+        // it never moves.
+        return boost::make_tuple(pid, p, fid);
+    }
 
     SGFRD_TRACE(tracer_.write("pos = %1%, fid = %2%", p.position(), fid));
 
