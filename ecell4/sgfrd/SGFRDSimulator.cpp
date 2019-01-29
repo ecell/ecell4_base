@@ -377,6 +377,13 @@ SGFRDSimulator::escape_single_circular(
     p.position() = state.first.first;
     this->update_particle(pid, p, state.first.second);
     SGFRD_TRACE(tracer_.write("particle updated"))
+
+    assert(// check particle is still inside of the shell after this propagation
+        ecell4::polygon::distance(this->polygon(), state.first,
+            std::make_pair(sh.position(), sh.structure_id())) <=
+        sh.size() - p.radius()
+    );
+
     return boost::make_tuple(pid, p, state.first.second);
 }
 
@@ -409,6 +416,12 @@ SGFRDSimulator::escape_single_conical(
     p.position() = state.first;
     this->update_particle(pid, p, state.second);
     SGFRD_TRACE(tracer_.write("particle updated"))
+
+    assert(// check particle is still inside of the shell after this propagation
+        length(polygon().periodic_transpose(p.position(), sh.shape().apex()) -
+               sh.shape().apex()) <= sh.size() - p.radius()
+    );
+
     return boost::make_tuple(pid, p, state.second);
 }
 
