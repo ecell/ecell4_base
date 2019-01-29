@@ -42,16 +42,18 @@ class Pair
     static Real calc_R_ipv(const Real r_shell,
                            const Particle& p1, const Particle& p2) throw()
     {
+        const Real r_sep = r_shell * (1.0-1e-7);
         const Real Dipv = calc_D_ipv(p1.D(), p2.D());
         const Real Dcom = calc_D_com(p1.D(), p2.D());
-        return r_shell * Dipv / (Dipv + Dcom);
+        return r_sep * Dipv / (Dipv + Dcom);
     }
     static Real calc_R_com(const Real r_shell,
                            const Particle& p1, const Particle& p2) throw()
     {
+        const Real r_sep = r_shell * (1.0-1e-7);
         const Real Dipv = calc_D_ipv(p1.D(), p2.D());
         const Real Dcom = calc_D_com(p1.D(), p2.D());
-        return r_shell * Dcom / (Dipv + Dcom);
+        return r_sep * Dcom / (Dipv + Dcom);
     }
 
   public:
@@ -72,6 +74,7 @@ class Pair
         this->r_com_ = Pair::calc_R_com(shell_rad, p0.second, p1.second);
         this->D_ipv_ = Pair::calc_D_ipv(p0.second.D(), p1.second.D());
         this->D_com_ = Pair::calc_D_com(p0.second.D(), p1.second.D());
+        assert(this->r_ipv_ + this->r_com_ < shell_rad);
     }
 
     EventKind  eventkind() const {return kind_;}
