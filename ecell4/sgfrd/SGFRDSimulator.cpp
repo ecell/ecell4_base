@@ -666,6 +666,9 @@ SGFRDSimulator::form_pair(
         this->remove_event(partner_did);
         SGFRD_TRACE(tracer_.write("remove partner's domain, %1%", partner_did))
 
+        // check that the pair shell does not overlap with other particles
+        assert(get_intrusive_domains(pos_com, pair_shell_size).empty());
+
         const ShellID shid(shell_id_gen());
         const circle_type pair_circle(
                 pair_shell_size * single_circular_shell_mergin, pos_com.first,
