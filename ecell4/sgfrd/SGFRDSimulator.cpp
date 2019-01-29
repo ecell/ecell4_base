@@ -62,10 +62,9 @@ SGFRDSimulator::propagate_single_circular(
     SGFRD_TRACE(tracer_.write("particle updated"))
 
     assert(// check particle is still inside of the shell after this propagation
-        ecell4::polygon::distance(this->polygon(), state.first,
-            std::make_pair(sh.position(), sh.structure_id())) <=
-        sh.size() - p.radius()
-    );
+        p.radius() + ecell4::polygon::distance(this->polygon(),
+                state.first, std::make_pair(sh.position(), sh.structure_id()))
+        <= sh.size() * (1.0+1e-8) /* <- tolerance */);
 
     return boost::make_tuple(pid, p, state.first.second);
 }
@@ -115,7 +114,7 @@ SGFRDSimulator::propagate_single_conical(
 
     assert(// check particle is still inside of the shell after this propagation
         length(polygon().periodic_transpose(p.position(), sh.shape().apex()) -
-               sh.shape().apex()) <= sh.size() - p.radius()
+               sh.shape().apex()) + p.radius() <= sh.size() * (1.0+1e-8)
     );
 
     return boost::make_tuple(pid, p, state.second);
@@ -379,10 +378,9 @@ SGFRDSimulator::escape_single_circular(
     SGFRD_TRACE(tracer_.write("particle updated"))
 
     assert(// check particle is still inside of the shell after this propagation
-        ecell4::polygon::distance(this->polygon(), state.first,
-            std::make_pair(sh.position(), sh.structure_id())) <=
-        sh.size() - p.radius()
-    );
+        p.radius() + ecell4::polygon::distance(this->polygon(),
+                state.first, std::make_pair(sh.position(), sh.structure_id()))
+        <= sh.size() * (1.0+1e-8) /* <- tolerance */);
 
     return boost::make_tuple(pid, p, state.first.second);
 }
@@ -419,7 +417,7 @@ SGFRDSimulator::escape_single_conical(
 
     assert(// check particle is still inside of the shell after this propagation
         length(polygon().periodic_transpose(p.position(), sh.shape().apex()) -
-               sh.shape().apex()) <= sh.size() - p.radius()
+               sh.shape().apex()) + p.radius() <= sh.size() * (1.0+1e-8)
     );
 
     return boost::make_tuple(pid, p, state.second);
