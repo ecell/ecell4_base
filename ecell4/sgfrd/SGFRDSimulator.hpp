@@ -747,6 +747,17 @@ class SGFRDSimulator :
         results[0] = boost::make_tuple(pid1, p1, pos_p1.second);
         results[1] = boost::make_tuple(pid2, p2, pos_p2.second);
 
+        // check particles are still inside of the shell after this propagation
+        assert(
+            ecell4::polygon::distance(this->polygon(), pos_p1,
+                std::make_pair(sh.position(), sh.structure_id())) <=
+            sh.size() - p1.radius()
+        );
+        assert(
+            ecell4::polygon::distance(this->polygon(), pos_p2,
+                std::make_pair(sh.position(), sh.structure_id())) <=
+            sh.size() - p2.radius()
+        );
         return results;
     }
 
@@ -859,6 +870,18 @@ class SGFRDSimulator :
         results[0] = boost::make_tuple(pid1, p1, pos_p1.second);
         results[1] = boost::make_tuple(pid2, p2, pos_p2.second);
 
+        // check particles are still inside of the shell after this propagation
+        assert(
+            ecell4::polygon::distance(this->polygon(), pos_p1,
+                std::make_pair(sh.position(), sh.structure_id())) <=
+            sh.size() - p1.radius()
+        );
+        assert(
+            ecell4::polygon::distance(this->polygon(), pos_p2,
+                std::make_pair(sh.position(), sh.structure_id())) <=
+            sh.size() - p2.radius()
+        );
+
         return results;
     }
 
@@ -950,6 +973,18 @@ class SGFRDSimulator :
         boost::array<boost::tuple<ParticleID, Particle, FaceID>, 2> results;
         results[0] = boost::make_tuple(pid1, p1, pos_p1.second);
         results[1] = boost::make_tuple(pid2, p2, pos_p2.second);
+
+        // check particles are still inside of the shell after this propagation
+        assert(
+            ecell4::polygon::distance(this->polygon(), pos_p1,
+                std::make_pair(sh.position(), sh.structure_id())) <=
+            sh.size() - p1.radius()
+        );
+        assert(
+            ecell4::polygon::distance(this->polygon(), pos_p2,
+                std::make_pair(sh.position(), sh.structure_id())) <=
+            sh.size() - p2.radius()
+        );
 
         return results;
     }
@@ -1065,14 +1100,18 @@ class SGFRDSimulator :
                     p_new.position(), p_new.radius(), fid_new, this->polygon());
                 if(false == is_inside_of(sh))
                 {
+                    // particle sticks out from the shell after reaction
+                    // because of its radius.
+
                     SGFRD_SCOPE(us, particle_goes_outside, tracer_)
                     const DomainID did = this->get_domain_id(dom);
 
-                    // particle sticks out from the shell.
                     const bool no_overlap =
                         this->burst_and_shrink_overlaps(p_new, fid_new, did);
                     SGFRD_TRACE(tracer_.write("no_overlap = %1%", no_overlap))
 
+                    // particle overlaps with other particle/domain outside the
+                    // shell. rollback the state.
                     if(false == no_overlap)
                     {
                         SGFRD_TRACE(tracer_.write(
