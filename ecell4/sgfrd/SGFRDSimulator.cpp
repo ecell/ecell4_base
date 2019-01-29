@@ -568,6 +568,13 @@ SGFRDSimulator::form_pair(
     {
         return boost::none;
     }
+    if(sgl.dt() != 0.0)
+    {
+        SGFRD_TRACE(tracer_.write(
+                    "nearest intruder is not tight. first we need to burst it"));
+        return boost::none;
+    }
+
 
     const FaceID   partner_fid = this->get_face_id(partner_id);
     const ShellID  partner_sid = sgl.shell_id();
@@ -650,7 +657,8 @@ SGFRDSimulator::form_pair(
 
     if(pair_shell_size >= sh_minim)
     {
-        SGFRD_TRACE(tracer_.write("pair is formed"))
+        SGFRD_TRACE(tracer_.write("pair shell size is larger than the minimum. "
+                                  "pair can be formed"))
 
         this->remove_shell(partner_sid);
         SGFRD_TRACE(tracer_.write("remove partner's shell, %1%", partner_sid))
