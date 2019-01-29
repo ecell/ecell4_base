@@ -57,6 +57,14 @@ public:
     template<typename shellT>
     void add_shell(const ShellID& id, const shellT& sh, const VertexID& vid);
 
+    // add a shell, with overlap checking.
+    // Generally, it cannot be performed because Multi allows its shells to
+    // overlap each other. These functions are for Single/Pair cases only.
+    template<typename shellT>
+    void check_add_shell(const ShellID& id, const shellT& sh, const FaceID&   fid);
+    template<typename shellT>
+    void check_add_shell(const ShellID& id, const shellT& sh, const VertexID& vid);
+
     template<typename shellT>
     void update_shell(const ShellID& id, const shellT& sh,
                       const FaceID& fid);
@@ -193,17 +201,9 @@ void ShellContainer::add_shell(
         const ShellID& id, const shellT& sh, const FaceID& fid)
 {
     if(shell_id_to_index_map_.count(id) == 1)
+    {
         throw std::invalid_argument("shellcontianer already have the shell");
-
-//     /* overlap check */{
-//         std::vector<std::pair<std::pair<ShellID, storage_type>, Real>
-//             > ovlp = this->list_shells_within_radius(
-//                     std::make_pair(sh.position(), fid), sh.size());
-//         if(!ovlp.empty())
-//         {
-//             std::cout << "WARNING: circular shells overlap!" << std::endl;
-//         }
-//     }
+    }
 
     const std::size_t idx = container_.size();
     shell_id_to_index_map_[id] = idx;
@@ -219,15 +219,56 @@ void ShellContainer::add_shell(
     if(shell_id_to_index_map_.count(id) == 1)
         throw std::invalid_argument("shellcontianer already have the shell");
 
-//     /* overlap check */{
-//         std::vector<std::pair<std::pair<ShellID, storage_type>, Real>
-//             > ovlp = this->list_shells_within_radius(
-//                     std::make_pair(sh.position(), vid), sh.size());
-//         if(!ovlp.empty())
-//         {
-//             std::cout << "WARNING: conical shells overlap!" << std::endl;
-//         }
-//     }
+    const std::size_t idx = container_.size();
+    shell_id_to_index_map_[id] = idx;
+    vertex_registrator_.emplace(id, vid);
+    container_.push_back(std::make_pair(id, storage_type(sh)));
+    return;
+}
+
+
+template<typename shellT>
+void ShellContainer::check_add_shell(
+        const ShellID& id, const shellT& sh, const FaceID& fid)
+{
+    if(shell_id_to_index_map_.count(id) == 1)
+    {
+        throw std::invalid_argument("shellcontianer already have the shell");
+    }
+
+    /* overlap check */ {
+        std::vector<std::pair<std::pair<ShellID, storage_type>, Real>
+            > ovlp = this->list_shells_within_radius(
+                    std::make_pair(sh.position(), fid), sh.size());
+        if(!ovlp.empty())
+        {
+            std::cout << "WARNING: circular shells overlap!" << std::endl;
+        }
+    }
+
+    const std::size_t idx = container_.size();
+    shell_id_to_index_map_[id] = idx;
+    face_registrator_.emplace(id, fid);
+    container_.push_back(std::make_pair(id, storage_type(sh)));
+    return;
+}
+
+template<typename shellT>
+void ShellContainer::check_add_shell(
+        const ShellID& id, const shellT& sh, const VertexID& vid)
+{
+    if(shell_id_to_index_map_.count(id) == 1)
+        throw std::invalid_argument("shellcontianer already have the shell");
+
+    /* overlap check */{
+        std::vector<std::pair<std::pair<ShellID, storage_type>, Real>
+            > ovlp = this->list_shells_within_radius(
+                    std::make_pair(sh.position(), vid), sh.size());
+        if(!ovlp.empty())
+        {
+            std::cout << "WARNING: conical shells overlap!" << std::endl;
+        }
+    }
 
     const std::size_t idx = container_.size();
     shell_id_to_index_map_[id] = idx;
@@ -235,6 +276,7 @@ void ShellContainer::add_shell(
     container_.push_back(std::make_pair(id, storage_type(sh)));
     return;
 }
+
 
 template<typename shellT>
 void ShellContainer::update_shell(

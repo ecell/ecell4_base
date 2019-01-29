@@ -671,10 +671,7 @@ SGFRDSimulator::form_pair(
                 pair_shell_size * single_circular_shell_mergin, pos_com.first,
                 this->polygon().triangle_at(pos_com.second).normal());
         const circular_shell_type pair_shell(pair_circle, pos_com.second);
-        shell_container_.add_shell(shid, pair_shell, pos_com.second);
-
-        // check that the pair shell does not overlap with other particles
-        assert(get_intrusive_domains(pos_com, pair_shell.size()).empty());
+        shell_container_.check_add_shell(shid, pair_shell, pos_com.second);
 
         return add_event(create_pair(
                     std::make_pair(shid, pair_circle),
@@ -744,7 +741,7 @@ DomainID SGFRDSimulator::form_multi(
                 clsh.shape().size() =
                     calc_min_single_circular_shell_radius(p_);
                 clsh.domain_id() = formed_multi_id;
-                update_shell(sid, clsh, clsh.structure_id());
+                this->update_shell(sid, clsh, clsh.structure_id());
                 SGFRD_TRACE(tracer_.write("shell(%1%) size updated to %2%.",
                             sid, clsh.shape().size()));
 
