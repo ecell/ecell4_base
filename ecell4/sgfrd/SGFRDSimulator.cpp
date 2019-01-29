@@ -907,19 +907,17 @@ SGFRDSimulator::form_single_conical_event(
         iter = intrusive_domains.begin(), iend = intrusive_domains.end();
         iter != iend; ++iter)
     {
+        // here, it calculates the distance between domain edges and the vertex.
+        // the value `iter->second` is not the distance between particles,
+        // it is a distance between domain and vertex.
+        //
+        // So it is not a problem that the value `iter->second` is shorter than
+        // the raidus of the particle.
+
         if(iter->second <= min_cone_size)
         {
             SGFRD_TRACE(tracer_.write("%1% <= %2%, min shell intruder found!",
                         iter->second, min_cone_size));
-            if(iter->second < p.radius())
-            {
-                throw std::runtime_error((
-                    boost::format("form_single_circular_event: nearest domain "
-                        "%1% overlaps with particle %2%. distance from point = "
-                        "%3%, radius = %4%") % iter->first % pid %
-                        iter->second % p.radius()
-                    ).str());
-            }
             min_shell_intruder.push_back(*iter);
         }
         else
