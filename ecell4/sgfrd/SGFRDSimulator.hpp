@@ -781,6 +781,7 @@ class SGFRDSimulator :
             }
         }
     }
+    // center of mass escapes from inner-domain
     boost::array<boost::tuple<ParticleID, Particle, FaceID>, 2>
     escape_com_pair(const shell_type& sh, const Pair& dom, const Real tm)
     {
@@ -800,6 +801,7 @@ class SGFRDSimulator :
             }
         }
     }
+    // inter particle vector become too long to react each other
     boost::array<boost::tuple<ParticleID, Particle, FaceID>, 2>
     escape_com_circular_pair(
             const circular_shell_type& sh, const Pair& dom, const Real tm)
@@ -909,18 +911,21 @@ class SGFRDSimulator :
             const circular_shell_type& sh, const Pair& dom, const Real tm)
     {
         SGFRD_SCOPE(us, escape_ipv_circular_pair, tracer_);
-        // calculate displacements
+        // calculate length and direction of inter particle vector
         const Real dt = tm - dom.begin_time();
         const greens_functions::GreensFunction2DRadAbs
             gf_ipv(dom.D_ipv(), dom.kf(), dom.r0(), dom.sigma(), dom.R_ipv());
         const Real l_ipv     = dom.R_ipv();
         const Real theta_ipv = gf_ipv.drawTheta(this->uniform_real(), l_ipv, dt);
 
+        // calculate position of the center of mass
         const greens_functions::GreensFunction2DAbsSym
             gf_com(dom.D_com(), dom.R_com());
         const Real l_com     = gf_com.drawR(this->uniform_real(), dt);
         const Real theta_com = this->uniform_real() *
                                boost::math::constants::two_pi<Real>();
+
+        assert(l_com <= dom.R_com());
 
         SGFRD_TRACE(tracer_.write("r_ipv = %1%, r_com = %2%", dom.R_ipv(), dom.R_com()));
         SGFRD_TRACE(tracer_.write("l_ipv = %1%, theta_ipv = %2%", l_ipv, theta_ipv));
@@ -1202,6 +1207,7 @@ class SGFRDSimulator :
         SGFRD_TRACE(tracer_.write("ipv length = %1%", len_ipv))
         SGFRD_TRACE(tracer_.write("total rate = %1%", k_tot))
 
+        // TODO: [perf] if k_tot == 0.0 then we don't need GF.
         const greens_functions::GreensFunction2DRadAbs
             gf_ipv(Pair::calc_D_ipv(p1.D(), p2.D()),
                    k_tot, len_ipv, p1.radius() + p2.radius(),
@@ -1237,17 +1243,22 @@ class SGFRDSimulator :
 
         if(gf_event.first < single_event.first)
         {
+            // reduce the "effective" shell size by the radius.
             SGFRD_TRACE(tracer_.write("gf event occurs first"))
             return Pair(gf_event.second, gf_event.first, this->time(), sh.first,
-                        sh.second.size(), std::make_pair(pid1, p1),
-                        std::make_pair(pid2, p2), len_ipv, ipv, k_tot);
+                        sh.second.size() - std::max(p1.radius(), p2.radius()),
+                        std::make_pair(pid1, p1),
+                        std::make_pair(pid2, p2),
+                        len_ipv, ipv, k_tot);
         }
         else
         {
             SGFRD_TRACE(tracer_.write("single reaction occurs first"))
             return Pair(single_event.second, single_event.first, this->time(),
-                        sh.first, sh.second.size(),
-                        std::make_pair(pid1, p1), std::make_pair(pid2, p2),
+                        sh.first,
+                        sh.second.size() - std::max(p1.radius(), p2.radius()),
+                        std::make_pair(pid1, p1),
+                        std::make_pair(pid2, p2),
                         len_ipv, ipv, k_tot);
         }
     }
