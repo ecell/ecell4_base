@@ -1,5 +1,6 @@
 #include <pybind11/pybind11.h>
 #include <ecell4/spatiocyte/SpatiocyteWorld.hpp>
+#include "type_caster.hpp"
 #include "core.hpp"
 
 namespace py = pybind11;
