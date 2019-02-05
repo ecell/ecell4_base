@@ -685,7 +685,8 @@ SGFRDSimulator::form_pair(
                 pair_shell_size * single_circular_shell_mergin, pos_com.first,
                 this->polygon().triangle_at(pos_com.second).normal());
         const circular_shell_type pair_shell(pair_circle, pos_com.second);
-        shell_container_.check_add_shell(shid, pair_shell, pos_com.second);
+        shell_container_.check_add_shell(shid, pair_shell, pos_com.second,
+                                         "create pair shell");
 
         return add_event(create_pair(
                     std::make_pair(shid, pair_circle),

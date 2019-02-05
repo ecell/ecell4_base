@@ -387,7 +387,8 @@ class SGFRDSimulator :
 
     std::pair<ShellID, circle_type>
     create_single_circular_shell(
-            const std::pair<Real3, FaceID>& pos, const Real size)
+            const std::pair<Real3, FaceID>& pos, const Real size,
+            bool check = true)
     {
         SGFRD_SCOPE(ns, create_single_circular_shell, tracer_);
         SGFRD_TRACE(tracer_.write("shell size = %1%", size))
@@ -395,14 +396,23 @@ class SGFRDSimulator :
         const ShellID id(shell_id_gen());
         const circle_type shape(size, pos.first,
                                 polygon().triangle_at(pos.second).normal());
-        shell_container_.check_add_shell(
-            id, circular_shell_type(shape, pos.second), pos.second);
+        if(check)
+        {
+            shell_container_.check_add_shell(
+                id, circular_shell_type(shape, pos.second), pos.second,
+                "create_single_circular_shell");
+        }
+        else
+        {
+             shell_container_.add_shell(
+                id, circular_shell_type(shape, pos.second), pos.second);
+        }
         SGFRD_TRACE(tracer_.write("the shell id is %1%", id))
         return std::make_pair(id, shape);
     }
     std::pair<ShellID, conical_surface_type>
     create_single_conical_surface_shell(
-            const VertexID& vid, const Real size)
+            const VertexID& vid, const Real size, bool check = true)
     {
         SGFRD_SCOPE(ns, create_single_conical_shell, tracer_);
         SGFRD_TRACE(tracer_.write("vertex ID  = %1%", vid));
@@ -411,8 +421,17 @@ class SGFRDSimulator :
         const ShellID id(shell_id_gen());
         const conical_surface_type shape(polygon().position_at(vid),
                                          polygon().apex_angle_at(vid), size);
-        shell_container_.check_add_shell(
-                id, conical_surface_shell_type(shape, vid), vid);
+        if(check)
+        {
+            shell_container_.check_add_shell(
+                    id, conical_surface_shell_type(shape, vid), vid,
+                    "create_single_conical_shell");
+        }
+        else // no check required.
+        {
+            shell_container_.add_shell(
+                    id, conical_surface_shell_type(shape, vid), vid);
+        }
         SGFRD_TRACE(tracer_.write("the shell id is %1%", id));
 
         return std::make_pair(id, shape);
@@ -1727,7 +1746,7 @@ class SGFRDSimulator :
                                this->polygon().triangle_at(fid).normal()), fid);
         SGFRD_TRACE(tracer_.write("shell has size == %1%", sh.size()))
 
-        shell_container_.check_add_shell(sid, sh, fid);
+        shell_container_.check_add_shell(sid, sh, fid, "create tight shell");
         SGFRD_TRACE(tracer_.write("new shell id is %1%", sid))
         return sid;
     }
@@ -1743,8 +1762,10 @@ class SGFRDSimulator :
     create_minimum_single_shell(
             const ParticleID& pid, const Particle& p, const FaceID fid)
     {
+        // this function is used to create shells for multi.
+        // multi domain allows its shells to overlap each other.
         return create_single_circular_shell(std::make_pair(p.position(), fid),
-            calc_min_single_circular_shell_radius(p));
+            calc_min_single_circular_shell_radius(p), false);
     }
 
     Multi create_empty_multi()
