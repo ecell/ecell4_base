@@ -469,11 +469,20 @@ void SGFRDSimulator::fire_single(const Single& dom, DomainID did)
         case Single::REACTION:
         {
             SGFRD_SCOPE(us, single_reaction, tracer_);
+            const ParticleID old_pid = dom.particle_id();
+
             BOOST_AUTO(results,
                        this->reaction_single(this->get_shell(sid), dom, did));
             this->remove_shell(sid);
 
-            STAT(stat_reaction_condition.add_count(SingleFirstOrder));
+            if(results.size() != 1 || boost::get<0>(results.front()) != old_pid)
+            {
+                STAT(stat_reaction_condition.add_count(SingleFirstOrder));
+            }
+            else
+            {
+                STAT(stat_reaction_condition.add_count(SingleFirstOrderFailed));
+            }
 
             ParticleID pid; Particle p; FaceID fid;
             BOOST_FOREACH(boost::tie(pid, p, fid), results)

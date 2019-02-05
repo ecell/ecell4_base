@@ -69,8 +69,11 @@ class statistics
 enum ReactionKind
 {
     SingleFirstOrder,
+    SingleFirstOrderFailed,
     PairFirstOrder,
+    PairFirstOrderFailed,
     PairSecondOrder,
+    PairSecondOrderFailed,
     MultiFirstOrder,
     MultiSecondOrder
 };

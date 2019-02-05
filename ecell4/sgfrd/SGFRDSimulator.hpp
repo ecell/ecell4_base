@@ -550,7 +550,6 @@ class SGFRDSimulator :
             }
             case Pair::SINGLE_REACTION_2:
             {
-                STAT(stat_reaction_condition.add_count(PairFirstOrder));
                 SGFRD_SCOPE(ns, case_SINGLE_REACTION_2, tracer_);
                 if(!reactant_index)
                 {
@@ -594,6 +593,16 @@ class SGFRDSimulator :
                            this->get_shell(sids[ridx]), dids[ridx], doms[ridx],
                            pids[ridx], ps[ridx], fids[ridx]));
 
+                if(results.size() != 1 || // otherwise, reaction fails.
+                   boost::get<0>(results.front()) != pids[ridx])
+                {
+                    STAT(stat_reaction_condition.add_count(PairFirstOrder));
+                }
+                else
+                {
+                    STAT(stat_reaction_condition.add_count(PairFirstOrderFailed));
+                }
+
                 this->remove_shell(sids[ridx]);
                 SGFRD_TRACE(tracer_.write("shell %1% removed", sids[ridx]));
                 this->remove_event(dids[ridx]);
@@ -634,7 +643,6 @@ class SGFRDSimulator :
             }
             case Pair::IV_REACTION:
             {
-                STAT(stat_reaction_condition.add_count(PairSecondOrder));
                 SGFRD_SCOPE(ns, case_IV_REACTION, tracer_);
                 boost::container::small_vector<
                     boost::tuple<ParticleID, Particle, FaceID>, 2>
@@ -1082,10 +1090,13 @@ class SGFRDSimulator :
             case 0:
             {
                 SGFRD_TRACE(tracer_.write("degradation reaction occurs."))
+
                 this->remove_particle(pid1, fid1);
                 this->remove_particle(pid2, fid2);
                 last_reactions_.push_back(std::make_pair(rule,
                     make_degradation_reaction_info(tm, pid1, p1, pid2, p2)));
+
+                STAT(stat_reaction_condition.add_count(PairSecondOrder));
 
                 return boost::container::small_vector<
                     boost::tuple<ParticleID, Particle, FaceID>, 2>(0ul);
@@ -1179,6 +1190,8 @@ class SGFRDSimulator :
                             > results(2);
                         results[0] = boost::make_tuple(pid1, p1, pos_p1.second);
                         results[1] = boost::make_tuple(pid2, p2, pos_p2.second);
+
+                        STAT(stat_reaction_condition.add_count(PairSecondOrderFailed));
                         return results;
                     }
                 }
@@ -1189,6 +1202,9 @@ class SGFRDSimulator :
                 last_reactions_.push_back(std::make_pair(rule,
                     make_binding_reaction_info(
                         tm, pid1, p1, pid2, p2, pid1, p_new)));
+
+                // reaction succeed.
+                STAT(stat_reaction_condition.add_count(PairSecondOrder));
 
                 boost::container::small_vector<
                     boost::tuple<ParticleID, Particle, FaceID>, 2> retval(1ul);
@@ -1326,6 +1342,10 @@ class SGFRDSimulator :
                     }
                     tracer_.write("}");)
 
+                std::copy(dom.last_reactions().begin(), dom.last_reactions().end(),
+                          std::back_inserter(this->last_reactions_));
+
+                // record statistics
                 for(const auto& rrec : dom.last_reactions())
                 {
                     if(rrec.second.reactants().size() == 1)
@@ -1339,11 +1359,9 @@ class SGFRDSimulator :
                     else
                     {
                         std::cerr << "unknown reaction record found" << std::endl;
+                        assert(false);
                     }
                 }
-
-                std::copy(dom.last_reactions().begin(), dom.last_reactions().end(),
-                          std::back_inserter(this->last_reactions_));
 
                 ParticleID pid; Particle p; FaceID fid;
                 BOOST_FOREACH(boost::tie(pid, p, fid), this->remove_multi(dom))
