@@ -1027,7 +1027,6 @@ SGFRDSimulator::form_single_circular_event(
 
         // check the particle does not overlap with any others.
         assert(get_intrusive_domains(pos, shell_size).empty());
-
         return ok(add_event(create_single(
                 create_single_circular_shell(pos, shell_size), pid, p)));
     }
@@ -1071,6 +1070,8 @@ SGFRDSimulator::form_single_circular_event(
                     ).str());
             }
             min_shell_intruder.push_back(*iter);
+            // collect all the min-shell-intruders.
+            continue;
         }
         else
         {
@@ -1101,8 +1102,9 @@ SGFRDSimulator::form_single_circular_event(
             }
             SGFRD_TRACE(tracer_.write("distance_to_nearest = %1%",
                                       distance_to_nearest));
+
             // XXX because `intrusive_domains` are sorted by their distance,
-            //     all the rests are more distant. so break.
+            //     from nearest to distant, all the rests are far away.
             break;
         }
     }
@@ -1119,6 +1121,8 @@ SGFRDSimulator::form_single_circular_event(
         )
         const Real shell_size =
             distance_to_nearest * single_circular_shell_mergin;
+
+        assert(get_intrusive_domains(pos, shell_size).empty());
 
         SGFRD_TRACE(tracer_.write(
             "creating single event; shell size = %1%", shell_size))
@@ -1145,6 +1149,8 @@ SGFRDSimulator::form_single_circular_event(
         const Real shell_size =
             std::min(distance_to_nearest, shrinked_or_multi.front().second) *
             single_circular_shell_mergin;
+
+        assert(get_intrusive_domains(pos, shell_size).empty());
 
         SGFRD_TRACE(tracer_.write(
             "creating single event; shell size = %1%", shell_size))
