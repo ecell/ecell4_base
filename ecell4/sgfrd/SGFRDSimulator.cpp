@@ -473,6 +473,8 @@ void SGFRDSimulator::fire_single(const Single& dom, DomainID did)
                        this->reaction_single(this->get_shell(sid), dom, did));
             this->remove_shell(sid);
 
+            STAT(stat_reaction_condition.add_count(SingleFirstOrder));
+
             ParticleID pid; Particle p; FaceID fid;
             BOOST_FOREACH(boost::tie(pid, p, fid), results)
             {

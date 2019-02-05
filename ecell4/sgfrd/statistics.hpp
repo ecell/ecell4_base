@@ -66,6 +66,15 @@ class statistics
     container_type values_;
 };
 
+enum ReactionKind
+{
+    SingleFirstOrder,
+    PairFirstOrder,
+    PairSecondOrder,
+    MultiFirstOrder,
+    MultiSecondOrder
+};
+
 enum EventFired
 {
     FireSingleCircular,

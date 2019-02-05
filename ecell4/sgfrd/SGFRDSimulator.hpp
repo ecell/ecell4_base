@@ -550,6 +550,7 @@ class SGFRDSimulator :
             }
             case Pair::SINGLE_REACTION_2:
             {
+                STAT(stat_reaction_condition.add_count(PairFirstOrder));
                 SGFRD_SCOPE(ns, case_SINGLE_REACTION_2, tracer_);
                 if(!reactant_index)
                 {
@@ -633,6 +634,7 @@ class SGFRDSimulator :
             }
             case Pair::IV_REACTION:
             {
+                STAT(stat_reaction_condition.add_count(PairSecondOrder));
                 SGFRD_SCOPE(ns, case_IV_REACTION, tracer_);
                 boost::container::small_vector<
                     boost::tuple<ParticleID, Particle, FaceID>, 2>
@@ -1323,6 +1325,22 @@ class SGFRDSimulator :
                         tracer_.write("}");
                     }
                     tracer_.write("}");)
+
+                for(const auto& rrec : dom.last_reactions())
+                {
+                    if(rrec.second.reactants().size() == 1)
+                    {
+                        STAT(stat_reaction_condition.add_count(MultiFirstOrder));
+                    }
+                    else if(rrec.second.reactants().size() == 2)
+                    {
+                        STAT(stat_reaction_condition.add_count(MultiSecondOrder));
+                    }
+                    else
+                    {
+                        std::cerr << "unknown reaction record found" << std::endl;
+                    }
+                }
 
                 std::copy(dom.last_reactions().begin(), dom.last_reactions().end(),
                           std::back_inserter(this->last_reactions_));
@@ -2082,6 +2100,7 @@ class SGFRDSimulator :
     mutable tracer tracer_;
 
   public:
+    STAT(mutable statistics<ReactionKind> stat_reaction_condition;)
     STAT(mutable statistics<MultiReason> stat_multi_reason;)
     STAT(mutable statistics<EventFired>  stat_fired_events;)
     STAT(mutable statistics<std::size_t> stat_multi_size;)
