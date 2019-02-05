@@ -61,9 +61,11 @@ public:
     // Generally, it cannot be performed because Multi allows its shells to
     // overlap each other. These functions are for Single/Pair cases only.
     template<typename shellT>
-    void check_add_shell(const ShellID& id, const shellT& sh, const FaceID&   fid);
+    void check_add_shell(const ShellID& id, const shellT& sh, const FaceID&   fid,
+                         const std::string& context);
     template<typename shellT>
-    void check_add_shell(const ShellID& id, const shellT& sh, const VertexID& vid);
+    void check_add_shell(const ShellID& id, const shellT& sh, const VertexID& vid,
+                         const std::string& context);
 
     template<typename shellT>
     void update_shell(const ShellID& id, const shellT& sh,
@@ -229,7 +231,8 @@ void ShellContainer::add_shell(
 
 template<typename shellT>
 void ShellContainer::check_add_shell(
-        const ShellID& id, const shellT& sh, const FaceID& fid)
+        const ShellID& id, const shellT& sh, const FaceID& fid,
+        const std::string& context)
 {
     if(shell_id_to_index_map_.count(id) == 1)
     {
@@ -242,7 +245,14 @@ void ShellContainer::check_add_shell(
                     std::make_pair(sh.position(), fid), sh.size());
         if(!ovlp.empty())
         {
-            std::cout << "WARNING: circular shells overlap!" << std::endl;
+            std::cerr << "WARNING: circular shells overlap!\n";
+            std::cerr << "context: " << context << '\n';
+            for(const auto& ov: ovlp)
+            {
+                std::cerr << "       : shell " << ov.first.first << " at "
+                          << ov.second - sh.size() << "distant.\n";
+            }
+            std::cerr << std::flush;
         }
     }
 
@@ -255,7 +265,8 @@ void ShellContainer::check_add_shell(
 
 template<typename shellT>
 void ShellContainer::check_add_shell(
-        const ShellID& id, const shellT& sh, const VertexID& vid)
+        const ShellID& id, const shellT& sh, const VertexID& vid,
+        const std::string& context)
 {
     if(shell_id_to_index_map_.count(id) == 1)
         throw std::invalid_argument("shellcontianer already have the shell");
@@ -266,7 +277,14 @@ void ShellContainer::check_add_shell(
                     std::make_pair(sh.position(), vid), sh.size());
         if(!ovlp.empty())
         {
-            std::cout << "WARNING: conical shells overlap!" << std::endl;
+            std::cerr << "WARNING: conical shells overlap!\n";
+            std::cerr << "context: " << context << '\n';
+            for(const auto& ov: ovlp)
+            {
+                std::cerr << "       : shell " << ov.first.first << " at "
+                          << ov.second << "distant.\n";
+            }
+            std::cerr << std::flush;
         }
     }
 
@@ -283,17 +301,9 @@ void ShellContainer::update_shell(
         const ShellID& id, const shellT& sh, const FaceID& fid)
 {
     if(shell_id_to_index_map_.count(id) == 0)
+    {
         throw std::invalid_argument("shellcontianer doesnt have the shell");
-
-//     /* overlap check */{
-//         std::vector<std::pair<std::pair<ShellID, storage_type>, Real>
-//             > ovlp = this->list_shells_within_radius(
-//                     std::make_pair(sh.position(), fid), sh.size(), id);
-//         if(!ovlp.empty())
-//         {
-//             std::cout << "WARNING: circular shells overlap!" << std::endl;
-//         }
-//     }
+    }
 
     const std::size_t idx = shell_id_to_index_map_[id];
     boost::apply_visitor(face_register_updater(*this, id, fid),
@@ -307,17 +317,9 @@ void ShellContainer::update_shell(
         const ShellID& id, const shellT& sh, const VertexID& vid)
 {
     if(shell_id_to_index_map_.count(id) == 0)
+    {
         throw std::invalid_argument("shellcontianer doesnt have the shell");
-
-//     /* overlap check */{
-//         std::vector<std::pair<std::pair<ShellID, storage_type>, Real>
-//             > ovlp = this->list_shells_within_radius(
-//                     std::make_pair(sh.position(), vid), sh.size(), id);
-//         if(!ovlp.empty())
-//         {
-//             std::cout << "WARNING: circular shell overlaps!" << std::endl;
-//         }
-//     }
+    }
 
     const std::size_t idx = shell_id_to_index_map_[id];
     boost::apply_visitor(vertex_register_updater(*this, id, vid),
