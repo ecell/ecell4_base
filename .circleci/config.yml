@@ -43,9 +43,9 @@ jobs:
             # cmake -DNO_SHARED:BOOL=1 -DPYTHON_INCLUDE_DIR:FILEPATH=/opt/python/$PY35/include -DPYTHON_EXECUTABLE:FILEPATH=/opt/python/$PY35/bin/python . && make && rm -f CMakeCache.txt
             cmake -DNO_SHARED:BOOL=1 -DPYTHON_INCLUDE_DIR:FILEPATH=/opt/python/$PY36/include -DPYTHON_EXECUTABLE:FILEPATH=/opt/python/$PY36/bin/python . && make && rm -f CMakeCache.txt
             # cmake -DNO_SHARED:BOOL=1 -DPYTHON_INCLUDE_DIR:FILEPATH=/opt/python/$PY37/include -DPYTHON_EXECUTABLE:FILEPATH=/opt/python/$PY37/bin/python . && make && rm -f CMakeCache.txt
-            # auditwheel repair /root/circle/python/dist/ecell-$ECELLVER-$PY27-linux_x86_64.whl
-            # auditwheel repair /root/circle/python/dist/ecell-$ECELLVER-$PY35-linux_x86_64.whl
-            auditwheel repair /root/circle/python/dist/ecell-$ECELLVER-$PY36-linux_x86_64.whl
-            # auditwheel repair /root/circle/python/dist/ecell-$ECELLVER-$PY37-linux_x86_64.whl
+            # auditwheel repair /root/circle/python/dist/ecell4-base-$ECELLVER-$PY27-linux_x86_64.whl
+            # auditwheel repair /root/circle/python/dist/ecell4-base-$ECELLVER-$PY35-linux_x86_64.whl
+            auditwheel repair /root/circle/python/dist/ecell4-base-$ECELLVER-$PY36-linux_x86_64.whl
+            # auditwheel repair /root/circle/python/dist/ecell4-base-$ECELLVER-$PY37-linux_x86_64.whl
       - store_artifacts:
           path: /root/circle/wheelhouse
