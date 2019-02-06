@@ -14,7 +14,7 @@ jobs:
           name: Build E-Cell4
           command: |
             set -x
-            ECELLVER="1.0dev1"
+            ECELLVER="1.0.dev1"
             CMAKEVER="3.13.3"
             GSLVER="2.4"
             BOOSTVER="1.68.0"
