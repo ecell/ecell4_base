@@ -233,7 +233,7 @@ def convert_path(pathname):
     return pathname.replace('/', os.sep)  #XXX: This is a workaround for Windows
 
 setup(
-    name = "ecell",
+    name = "ecell4-base",
     version = "${PROJECT_VERSION}",
     package_dir = {"": convert_path(python_dir)},
     package_data = {"ecell4.util": [
