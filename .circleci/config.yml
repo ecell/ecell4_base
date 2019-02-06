@@ -14,38 +14,36 @@ jobs:
           name: Build E-Cell4
           command: |
             set -x
-            ECELLVER="4.2b1"
+            ECELLVER="1.0dev1"
             CMAKEVER="3.13.3"
             GSLVER="2.4"
             BOOSTVER="1.68.0"
             BOOSTFILE="boost_1_68_0"
-            # HDF5VER="1.8.20"
             HDF5VER="1.10.4"
-            # PY27="cp27-cp27mu"
-            # PY35="cp35-cp35m"
+            PY27="cp27-cp27mu"
+            PY35="cp35-cp35m"
             PY36="cp36-cp36m"
-            # PY37="cp37-cp37m"
-            # /opt/python/$PY27/bin/python -m pip install cython
-            # /opt/python/$PY35/bin/python -m pip install cython
+            PY37="cp37-cp37m"
+            /opt/python/$PY27/bin/python -m pip install cython
+            /opt/python/$PY35/bin/python -m pip install cython
             /opt/python/$PY36/bin/python -m pip install cython
-            # /opt/python/$PY37/bin/python -m pip install cython
+            /opt/python/$PY37/bin/python -m pip install cython
             curl -O https://cmake.org/files/v3.13/cmake-$CMAKEVER.tar.gz
             curl -O ftp://ftp.gnu.org/gnu/gsl/gsl-$GSLVER.tar.gz
             curl -L -o $BOOSTFILE.tar.bz2 https://dl.bintray.com/boostorg/release/$BOOSTVER/source/$BOOSTFILE.tar.bz2
-            # curl -LO https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.8/hdf5-$HDF5VER/src/hdf5-$HDF5VER.tar.bz2
             curl -LO https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-$HDF5VER/src/hdf5-$HDF5VER.tar.bz2
             tar xf cmake-$CMAKEVER.tar.gz && tar xf gsl-$GSLVER.tar.gz && tar xf hdf5-$HDF5VER.tar.bz2 && tar xf $BOOSTFILE.tar.bz2
             cd cmake-$CMAKEVER && ./configure && make && make install
             cd ../gsl-$GSLVER && ./configure && make && make install
             cd ../hdf5-$HDF5VER && ./configure --prefix=/usr/local --enable-cxx && make && make install
             cd ~/circle && export BOOST_INCLUDEDIR=/root/circle/$BOOSTFILE
-            # cmake -DNO_SHARED:BOOL=1 -DPYTHON_INCLUDE_DIR:FILEPATH=/opt/python/$PY27/include -DPYTHON_EXECUTABLE:FILEPATH=/opt/python/$PY27/bin/python . && make && rm -f CMakeCache.txt
-            # cmake -DNO_SHARED:BOOL=1 -DPYTHON_INCLUDE_DIR:FILEPATH=/opt/python/$PY35/include -DPYTHON_EXECUTABLE:FILEPATH=/opt/python/$PY35/bin/python . && make && rm -f CMakeCache.txt
+            cmake -DNO_SHARED:BOOL=1 -DPYTHON_INCLUDE_DIR:FILEPATH=/opt/python/$PY27/include -DPYTHON_EXECUTABLE:FILEPATH=/opt/python/$PY27/bin/python . && make && rm -f CMakeCache.txt
+            cmake -DNO_SHARED:BOOL=1 -DPYTHON_INCLUDE_DIR:FILEPATH=/opt/python/$PY35/include -DPYTHON_EXECUTABLE:FILEPATH=/opt/python/$PY35/bin/python . && make && rm -f CMakeCache.txt
             cmake -DNO_SHARED:BOOL=1 -DPYTHON_INCLUDE_DIR:FILEPATH=/opt/python/$PY36/include -DPYTHON_EXECUTABLE:FILEPATH=/opt/python/$PY36/bin/python . && make && rm -f CMakeCache.txt
-            # cmake -DNO_SHARED:BOOL=1 -DPYTHON_INCLUDE_DIR:FILEPATH=/opt/python/$PY37/include -DPYTHON_EXECUTABLE:FILEPATH=/opt/python/$PY37/bin/python . && make && rm -f CMakeCache.txt
-            # auditwheel repair /root/circle/python/dist/ecell4_base-$ECELLVER-$PY27-linux_x86_64.whl
-            # auditwheel repair /root/circle/python/dist/ecell4_base-$ECELLVER-$PY35-linux_x86_64.whl
+            cmake -DNO_SHARED:BOOL=1 -DPYTHON_INCLUDE_DIR:FILEPATH=/opt/python/$PY37/include -DPYTHON_EXECUTABLE:FILEPATH=/opt/python/$PY37/bin/python . && make && rm -f CMakeCache.txt
+            auditwheel repair /root/circle/python/dist/ecell4_base-$ECELLVER-$PY27-linux_x86_64.whl
+            auditwheel repair /root/circle/python/dist/ecell4_base-$ECELLVER-$PY35-linux_x86_64.whl
             auditwheel repair /root/circle/python/dist/ecell4_base-$ECELLVER-$PY36-linux_x86_64.whl
-            # auditwheel repair /root/circle/python/dist/ecell4_base-$ECELLVER-$PY37-linux_x86_64.whl
+            auditwheel repair /root/circle/python/dist/ecell4_base-$ECELLVER-$PY37-linux_x86_64.whl
       - store_artifacts:
           path: /root/circle/wheelhouse
