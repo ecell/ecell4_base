@@ -280,6 +280,67 @@ namespace {
             .def("load", (void (GSLRandomNumberGenerator::*)(const std::string&)) &GSLRandomNumberGenerator::load);
     }
 
+    void define_reaction_rule(py::module& m)
+    {
+        using Reactants = ReactionRule::reactant_container_type;
+        using Products = ReactionRule::product_container_type;
+
+        py::class_<ReactionRule> reaction_rule(m, "ReactionRule");
+        reaction_rule
+            .def(py::init<>())
+            .def(py::init<const ReactionRule&>())
+            .def(py::init<const Reactants&, const Products&>())
+            .def(py::init<const Reactants&, const Products&, const Real&>())
+            .def(py::init<const Reactants&, const Products&, const Quantity<Real>&>())
+            .def("k", &ReactionRule::k)
+            .def("set_k", (void (ReactionRule::*)(const Real&)) &ReactionRule::set_k)
+            .def("set_k", (void (ReactionRule::*)(const Quantity<Real>&)) &ReactionRule::set_k)
+            .def("get_k", &ReactionRule::get_k)
+            .def("reactants", &ReactionRule::reactants)
+            .def("products", &ReactionRule::products)
+            .def("add_reactant", &ReactionRule::add_reactant)
+            .def("add_product", &ReactionRule::add_product)
+            .def("as_string", &ReactionRule::as_string)
+            .def("policy", &ReactionRule::policy)
+            .def("set_policy", &ReactionRule::set_policy)
+            .def("count", &ReactionRule::count)
+            .def("generate", &ReactionRule::generate)
+            .def("set_descriptor", &ReactionRule::set_descriptor)
+            .def("get_descriptor", &ReactionRule::get_descriptor)
+            .def("has_descriptor", &ReactionRule::has_descriptor)
+            .def("reset_descriptor", &ReactionRule::reset_descriptor)
+            .def(py::pickle(
+                [](const ReactionRule& self)
+                {
+                    return py::make_tuple(self.reactants(), self.products(), self.k(), self.get_descriptor());
+                },
+                [](py::tuple t)
+                {
+                    if (t.size() != 4)
+                        throw std::runtime_error("Invalid state");
+                    ReactionRule rr(
+                        t[0].cast<Reactants>(),
+                        t[1].cast<Products>(),
+                        t[2].cast<Real>()
+                    );
+                    rr.set_descriptor(t[3].cast<boost::shared_ptr<ReactionRuleDescriptor>>());
+                    return rr;
+                }
+            ));
+
+        py::enum_<ReactionRule::policy_type>(reaction_rule, "Policy")
+            .value("STRICT", ReactionRule::policy_type::STRICT)
+            .value("IMPLICIT", ReactionRule::policy_type::IMPLICIT)
+            .value("DESTROY", ReactionRule::policy_type::DESTROY)
+            .export_values();
+
+        m.def("create_degradation_reaction_rule", &create_degradation_reaction_rule);
+        m.def("create_synthesis_reaction_rule", &create_synthesis_reaction_rule);
+        m.def("create_unimolecular_reaction_rule", &create_unimolecular_reaction_rule);
+        m.def("create_binding_reaction_rule", &create_binding_reaction_rule);
+        m.def("create_unbinding_reaction_rule", &create_unbinding_reaction_rule);
+    }
+
     void setup_module(py::module& m)
     {
         define_real3(m);
@@ -289,5 +350,6 @@ namespace {
         define_species(m);
         define_particle(m);
         define_rng(m);
+        define_reaction_rule(m);
     }
 }
