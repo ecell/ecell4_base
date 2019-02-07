@@ -132,6 +132,33 @@ namespace {
 
     void define_species(py::module& m)
     {
+        py::class_<UnitSpecies>(m, "UnitSpecies")
+            .def(py::init<>())
+            .def(py::init<const std::string&>())
+            .def("__hash__",
+                [](const UnitSpecies& self)
+                {
+                    return ECELL4_HASH_STRUCT<UnitSpecies>()(self);
+                }
+            )
+            .def("serial", &UnitSpecies::serial)
+            .def("name", &UnitSpecies::name)
+            .def("add_site", &UnitSpecies::add_site)
+            .def("deserialize", &UnitSpecies::deserialize)
+            .def(py::pickle(
+                [](const UnitSpecies& self)
+                {
+                    return py::make_tuple(self.serial());
+                },
+                [](py::tuple t)
+                {
+                    if (t.size() != 1)
+                        throw std::runtime_error("Invalid state");
+                    auto usp = UnitSpecies();
+                    usp.deserialize(t[0].cast<UnitSpecies::serial_type>());
+                    return usp;
+                }
+            ));
         py::class_<Species>(m, "Species")
             .def(py::init<const Species::serial_type&>())
             .def(py::init<const Species::serial_type&, const Real&, const Real&>())
@@ -144,7 +171,8 @@ namespace {
                 [](const Species& self)
                 {
                     return ECELL4_HASH_STRUCT<Species>()(self);
-                })
+                }
+            )
             .def("serial", &Species::serial)
             .def("get_attribute", &Species::get_attribute)
             .def("set_attribute", &Species::set_attribute<std::string>)
