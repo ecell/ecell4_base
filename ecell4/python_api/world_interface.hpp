@@ -96,42 +96,29 @@ namespace python_api
             PYBIND11_OVERLOAD(bool, Base, has_particle, pid);
         }
 
-        // std::pair<ParticleID, Particle> get_particle(const ParticleID& pid) const override
-        // {
-        //     PYBIND11_OVERLOAD(std::pair<ParticleID, Particle>, Base, get_particle, pid);
-        // }
+        using ParticleWithID = std::pair<ParticleID, Particle>;
+        std::pair<ParticleID, Particle> get_particle(const ParticleID& pid) const override
+        {
+            PYBIND11_OVERLOAD(ParticleWithID, Base, get_particle, pid);
+        }
 
-        // std::vector<std::pair<ParticleID, Particle>>
-        // list_particles() const override
-        // {
-        //     PYBIND11_OVERLOAD(
-        //         std::vector<std::pair<ParticleID, Particle>>,
-        //         Base,
-        //         list_particles,
-        //     );
-        // }
+        std::vector<std::pair<ParticleID, Particle>>
+        list_particles() const override
+        {
+            PYBIND11_OVERLOAD(std::vector<ParticleWithID>, Base, list_particles,);
+        }
 
-        // std::vector<std::pair<ParticleID, Particle>>
-        // list_particles(const Species& sp) const override
-        // {
-        //     PYBIND11_OVERLOAD(
-        //         std::vector<std::pair<ParticleID, Particle>>,
-        //         Base,
-        //         list_particles,
-        //         sp
-        //     );
-        // }
+        std::vector<std::pair<ParticleID, Particle>>
+        list_particles(const Species& sp) const override
+        {
+            PYBIND11_OVERLOAD(std::vector<ParticleWithID>, Base, list_particles, sp);
+        }
 
-        // std::vector<std::pair<ParticleID, Particle>>
-        // list_particles_exact(const Species& sp) const override
-        // {
-        //     PYBIND11_OVERLOAD(
-        //         std::vector<std::pair<ParticleID, Particle>>,
-        //         Base,
-        //         list_particles_exact,
-        //         sp
-        //     );
-        // }
+        std::vector<std::pair<ParticleID, Particle>>
+        list_particles_exact(const Species& sp) const override
+        {
+            PYBIND11_OVERLOAD(std::vector<ParticleWithID>, Base, list_particles_exact, sp);
+        }
     };
 
     template<class Base>
@@ -172,14 +159,14 @@ namespace python_api
                 (Integer (WorldInterface::*)(const Species&) const) &WorldInterface::num_particles)
             .def("num_particles_exact", &WorldInterface::num_particles_exact)
             .def("has_particle", &WorldInterface::has_particle)
-            // .def("get_particle", &WorldInterface::get_particle)
-            // .def("list_particles",
-            //     (std::vector<std::pair<ParticleID, Particle>> (WorldInterface::*)() const)
-            //     &WorldInterface::list_particles)
-            // .def("list_particles",
-            //     (std::vector<std::pair<ParticleID, Particle>> (WorldInterface::*)(const Species&) const)
-            //     &WorldInterface::list_particles)
-            // .def("list_particles_exact", &WorldInterface::list_particles_exact)
+            .def("get_particle", &WorldInterface::get_particle)
+            .def("list_particles",
+                (std::vector<std::pair<ParticleID, Particle>> (WorldInterface::*)() const)
+                &WorldInterface::list_particles)
+            .def("list_particles",
+                (std::vector<std::pair<ParticleID, Particle>> (WorldInterface::*)(const Species&) const)
+                &WorldInterface::list_particles)
+            .def("list_particles_exact", &WorldInterface::list_particles_exact)
             ;
     }
 
