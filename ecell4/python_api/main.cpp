@@ -4,6 +4,7 @@
 #include "core.hpp"
 #include "world_interface.hpp"
 #include "reaction_rule_descriptor.hpp"
+#include "model.hpp"
 
 namespace py = pybind11;
 
@@ -30,5 +31,6 @@ PYBIND11_MODULE(ecell4, m) {
     setup_module(m);
     define_world_interface(m);
     define_reaction_rule_descriptor(m);
+    define_model(m);
     setup_spatiocyte_module(m_spatiocyte);
 }
