@@ -235,6 +235,23 @@ namespace {
             ));
     }
 
+    void define_rng(py::module& m)
+    {
+        py::class_<GSLRandomNumberGenerator>(m, "GSLRandomNumberGenerator")
+            .def(py::init<>())
+            .def(py::init<const Integer>())
+            .def(py::init<const std::string&>())
+            .def("uniform", &GSLRandomNumberGenerator::uniform)
+            .def("uniform_int", &GSLRandomNumberGenerator::uniform_int)
+            .def("gaussian", &GSLRandomNumberGenerator::gaussian,
+                py::arg("sigma"), py::arg("mean") = 0.0)
+            .def("binomial", &GSLRandomNumberGenerator::binomial)
+            .def("seed", (void (GSLRandomNumberGenerator::*)()) &GSLRandomNumberGenerator::seed)
+            .def("seed", (void (GSLRandomNumberGenerator::*)(Integer)) &GSLRandomNumberGenerator::seed)
+            .def("save", (void (GSLRandomNumberGenerator::*)(const std::string&) const) &GSLRandomNumberGenerator::save)
+            .def("load", (void (GSLRandomNumberGenerator::*)(const std::string&)) &GSLRandomNumberGenerator::load);
+    }
+
     void setup_module(py::module& m)
     {
         define_real3(m);
@@ -243,5 +260,6 @@ namespace {
         define_quantity<Integer>(m, "Quantity_Integer");
         define_species(m);
         define_particle(m);
+        define_rng(m);
     }
 }
