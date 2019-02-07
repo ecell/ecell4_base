@@ -188,6 +188,53 @@ namespace {
         m.def("format_species", &format_species);
     }
 
+    void define_particle(py::module& m)
+    {
+        py::class_<ParticleID>(m, "ParticleID")
+            .def(py::init<>())
+            .def(py::init<const ParticleID::value_type>())
+            .def("lot", (const ParticleID::lot_type& (ParticleID::*)() const) &ParticleID::lot)
+            .def("serial", (const ParticleID::serial_type& (ParticleID::*)() const) &ParticleID::serial)
+            .def(py::pickle(
+                [](const ParticleID& pid)
+                {
+                    return py::make_tuple(pid.lot(), pid.serial());
+                },
+                [](py::tuple t)
+                {
+                    if (t.size() != 2)
+                        throw std::runtime_error("Invalid state");
+                    return ParticleID(std::make_pair(
+                        t[0].cast<ParticleID::lot_type>(),
+                        t[1].cast<ParticleID::serial_type>()
+                    ));
+                }
+            ));
+        py::class_<Particle>(m, "Particle")
+            .def(py::init<const Species&, const Real3&, const Real&, const Real&>())
+            .def("position", (const Real3& (Particle::*)() const) &Particle::position)
+            .def("radius", (const Real& (Particle::*)() const) &Particle::radius)
+            .def("D", (const Real& (Particle::*)() const) &Particle::D)
+            .def("species", (const Species& (Particle::*)() const) &Particle::species)
+            .def(py::pickle(
+                [](const Particle& self)
+                {
+                    return py::make_tuple(self.species(), self.position(), self.radius(), self.D());
+                },
+                [](py::tuple t)
+                {
+                    if (t.size() != 4)
+                        throw std::runtime_error("Invalid state");
+                    return Particle(
+                        t[0].cast<Species>(),
+                        t[1].cast<Real3>(),
+                        t[2].cast<Real>(),
+                        t[3].cast<Real>()
+                    );
+                }
+            ));
+    }
+
     void setup_module(py::module& m)
     {
         define_real3(m);
@@ -195,5 +242,6 @@ namespace {
         define_quantity<Real>(m, "Quantity_Real");
         define_quantity<Integer>(m, "Quantity_Integer");
         define_species(m);
+        define_particle(m);
     }
 }
