@@ -1,4 +1,4 @@
-from ecell4.core import *
+from ecell4_base.core import *
 
 import unittest
 
