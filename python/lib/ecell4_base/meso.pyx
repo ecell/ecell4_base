@@ -3,7 +3,7 @@ import numbers
 
 from cython cimport address
 from cython.operator cimport dereference as deref, preincrement as inc
-from ecell4.core cimport *
+from ecell4_base.core cimport *
 
 from deprecated import deprecated
 
